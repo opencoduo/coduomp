@@ -9,6 +9,12 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Spawn reload animation is fixed, it won't play anymore
 - Local server map list limit increased to 2048
 
+### Server browser
+
+- Server refreshes distinguish human players from bots reported with the conventional 999 ping. The player column shows the human count against the server capacity and appends the bot count in subdued text; remembered bot counts remain stable while later refresh responses arrive.
+- Server-name sorting follows visible names, ignoring color escapes and ordering digits consistently. Final roster updates preserve the selected row and viewport while applying deterministic tie-breaking.
+- Favorites retain their last known or user-supplied hostname when a refresh times out instead of falling back to the numeric address.
+
 ### Mods/Server
 
 - Attached models reload correctly when detached
