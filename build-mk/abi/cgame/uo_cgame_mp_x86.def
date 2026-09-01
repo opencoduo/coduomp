@@ -1,0 +1,4 @@
+LIBRARY uo_cgame_mp_x86
+EXPORTS
+    dllEntry @1
+    vmMain @2

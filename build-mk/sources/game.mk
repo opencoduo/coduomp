@@ -1,0 +1,39 @@
+include build-mk/sources/common.mk
+
+GAME_C_SOURCES := \
+	src/server/game/animation.c \
+	src/server/game/bg_player_state.c \
+	src/server/game/client_commands.c \
+	src/server/game/client_fields.c \
+	src/server/game/client_frame.c \
+	src/server/game/client_lifecycle.c \
+	src/server/game/client_think.c \
+	src/server/game/client_transform.c \
+	src/server/game/common_math.c \
+	src/server/game/damage_system.c \
+	src/server/game/damage.c \
+	src/server/game/debug_draw.c \
+	src/server/game/dobj_link.c \
+	src/server/game/entity_dispatch.c \
+	src/server/game/entity_management.c \
+	src/server/game/fire_weapon.c \
+	src/server/game/game_frame.c \
+	src/server/game/game_globals.c \
+	src/server/game/game_helpers.c \
+	src/server/game/hudelem.c \
+	src/server/game/items.c \
+	src/server/game/missile.c \
+	src/server/game/movement.c \
+	src/server/game/player_die.c \
+	src/server/game/script_builtins.c \
+	src/server/game/script_cvar.c \
+	src/server/game/script_entity_methods.c \
+	src/server/game/script_object.c \
+	src/server/game/script_objectives.c \
+	src/server/game/script_player.c \
+	src/server/game/script_vm_bridge.c \
+	src/server/game/server_main.c \
+	src/server/game/spatial_methods.c \
+	src/server/game/syscall_veneers.c \
+	src/server/game/trigger_damage.c \
+	src/server/game/vehicle.c

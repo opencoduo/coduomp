@@ -1,0 +1,63 @@
+include build-mk/sources/common.mk
+
+STANDALONE_SERVER_C_SOURCES := \
+	src/server/standalone/abi/vm_native.c \
+	src/server/standalone/animation/xanim_debug.c \
+	src/server/standalone/animation/xmodel_wrappers.c \
+	src/server/standalone/core_hash/checksum/seeded_md5_checksum.c \
+	src/server/standalone/core_math/core_math_tables.c \
+	src/server/standalone/core_math/gunrandom.c \
+	src/server/standalone/core_math/matrix_transform_point43_affine.c \
+	src/server/standalone/core_math/matrix_transform_point43_compact_in_place.c \
+	src/server/standalone/core_math/matrix_transform_point43_compact.c \
+	src/server/standalone/core_math/triangle_normal.c \
+	src/server/standalone/core_memory/weapon_info_memory.c \
+	src/server/standalone/core_runtime/client_cvars.c \
+	src/server/standalone/core_runtime/com_build_version.c \
+	src/server/standalone/core_runtime/com_cdkey.c \
+	src/server/standalone/core_runtime/com_configure_runtime.c \
+	src/server/standalone/core_runtime/com_error_runtime.c \
+	src/server/standalone/core_runtime/com_frame_runtime.c \
+	src/server/standalone/core_runtime/com_init_runtime.c \
+	src/server/standalone/core_runtime/com_name_value.c \
+	src/server/standalone/core_runtime/com_print_message.c \
+	src/server/standalone/core_runtime/com_printf.c \
+	src/server/standalone/core_runtime/com_server_runtime_pools.c \
+	src/server/standalone/core_runtime/console_backend_stubs.c \
+	src/server/standalone/core_runtime/input_runtime.c \
+	src/server/standalone/core_runtime/sys_console_input.c \
+	src/server/standalone/core_runtime/sys_error.c \
+	src/server/standalone/core_runtime/sys_event_runtime.c \
+	src/server/standalone/core_runtime/sys_exit.c \
+	src/server/standalone/core_runtime/sys_network_runtime.c \
+	src/server/standalone/core_runtime/sys_platform.c \
+	src/server/standalone/core_runtime/sys_process_runtime.c \
+	src/server/standalone/core_runtime/sys_small.c \
+	src/server/standalone/core_runtime/sys_terminal_helpers.c \
+	src/server/standalone/core_runtime/sys_terminal_history.c \
+	src/server/standalone/core_runtime/sys_terminal.c \
+	src/server/standalone/core_runtime/sys_utility_runtime.c \
+	src/server/standalone/engine_global_storage.c \
+	src/server/standalone/filesystem/fs_archive_services.c \
+	src/server/standalone/filesystem/fs_check_file_system_started.c \
+	src/server/standalone/filesystem/fs_little_long.c \
+	src/server/standalone/filesystem/unzip_runtime.c \
+	src/server/standalone/filesystem/zlib_bridge.c \
+	src/server/standalone/map_loading/cm_collision_digest.c \
+	src/server/standalone/model_assets/xmodel_optimize_compat.c \
+	src/server/standalone/networking/net_oob_services.c \
+	src/server/standalone/networking/netchan.c \
+	src/server/standalone/parser/pc_noops.c \
+	src/server/standalone/physics_collision/cm_collision_build_support.c \
+	src/server/standalone/physics_collision/cm_trace_float_abs.c \
+	src/server/standalone/punkbuster/pb_disabled.c \
+	src/server/standalone/punkbuster/pb_server.c \
+	src/server/standalone/scripting/script_runtime_state.c \
+	src/server/standalone/server/server_client_message_services.c \
+	src/server/standalone/server/surface_types.c \
+	src/server/standalone/server/sv_operator_commands.c \
+	src/server/standalone/server/sv_punkbuster_services.c \
+	src/server/standalone/server/sv_startup_services.c \
+	src/server/standalone/sound_alias/sound_alias_localize_command.c
+
+STANDALONE_SERVER_CXX_SOURCES :=

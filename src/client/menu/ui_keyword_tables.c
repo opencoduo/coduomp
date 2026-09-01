@@ -1,0 +1,130 @@
+#include "ui_parse.h"
+
+#include <stddef.h>
+
+/*
+ * Complete shared item/menu parser keyword tables and their runtime hash
+ * storage. The PE32 tables agree entry-for-entry, including order and the
+ * terminal null record:
+ *
+ *                         cgame                    UI
+ * itemParseKeywords       0x3008b2e0 (70 rows)    0x40040bd8 (70 rows)
+ * menuParseKeywords       0x3008b628 (33 rows)    0x40040f20 (33 rows)
+ * itemKeywordHashTable    0x30136140              0x401c5ae0
+ * menuKeywordHashTable    0x30169080              0x401f8a20
+ *
+ * Handler implementations still resolve within each module. In particular,
+ * MenuParse_visible deliberately remains module-local because the original UI
+ * body ignores the parsed value while cgame sets WINDOW_VISIBLE.
+ */
+keywordHash_t itemParseKeywords[] = {
+    {"name", ItemParse_name, NULL},
+    {"text", ItemParse_text, NULL},
+    {"textfile", ItemParse_textfile, NULL},
+    {"group", ItemParse_group, NULL},
+    {"asset_model", ItemParse_asset_model, NULL},
+    {"asset_shader", ItemParse_asset_shader, NULL},
+    {"model_origin", ItemParse_model_origin, NULL},
+    {"model_fovx", ItemParse_model_fovx, NULL},
+    {"model_fovy", ItemParse_model_fovy, NULL},
+    {"model_rotation", ItemParse_model_rotation, NULL},
+    {"model_angle", ItemParse_model_angle, NULL},
+    {"model_animplay", ItemParse_model_animplay, NULL},
+    {"rect", ItemParse_rect, NULL},
+    {"origin", ItemParse_origin, NULL},
+    {"style", ItemParse_style, NULL},
+    {"decoration", ItemParse_decoration, NULL},
+    {"notselectable", ItemParse_notselectable, NULL},
+    {"wrapped", ItemParse_wrapped, NULL},
+    {"autowrapped", ItemParse_autowrapped, NULL},
+    {"horizontalscroll", ItemParse_horizontalscroll, NULL},
+    {"type", ItemParse_type, NULL},
+    {"elementwidth", ItemParse_elementwidth, NULL},
+    {"elementheight", ItemParse_elementheight, NULL},
+    {"feeder", ItemParse_feeder, NULL},
+    {"elementtype", ItemParse_elementtype, NULL},
+    {"columns", ItemParse_columns, NULL},
+    {"border", ItemParse_border, NULL},
+    {"bordersize", ItemParse_bordersize, NULL},
+    {"visible", ItemParse_visible, NULL},
+    {"ownerdraw", ItemParse_ownerdraw, NULL},
+    {"align", ItemParse_align, NULL},
+    {"textalign", ItemParse_textalign, NULL},
+    {"textalignx", ItemParse_textalignx, NULL},
+    {"textaligny", ItemParse_textaligny, NULL},
+    {"textscale", ItemParse_textscale, NULL},
+    {"textstyle", ItemParse_textstyle, NULL},
+    {"textfont", ItemParse_textfont, NULL},
+    {"backcolor", ItemParse_backcolor, NULL},
+    {"forecolor", ItemParse_forecolor, NULL},
+    {"bordercolor", ItemParse_bordercolor, NULL},
+    {"outlinecolor", ItemParse_outlinecolor, NULL},
+    {"background", ItemParse_background, NULL},
+    {"onFocus", ItemParse_onFocus, NULL},
+    {"leaveFocus", ItemParse_leaveFocus, NULL},
+    {"mouseEnter", ItemParse_mouseEnter, NULL},
+    {"mouseExit", ItemParse_mouseExit, NULL},
+    {"mouseEnterText", ItemParse_mouseEnterText, NULL},
+    {"mouseExitText", ItemParse_mouseExitText, NULL},
+    {"action", ItemParse_action, NULL},
+    {"accept", ItemParse_accept, NULL},
+    {"special", ItemParse_special, NULL},
+    {"cvar", ItemParse_cvar, NULL},
+    {"maxChars", ItemParse_maxChars, NULL},
+    {"maxCharsGotoNext", ItemParse_maxCharsGotoNext, NULL},
+    {"maxPaintChars", ItemParse_maxPaintChars, NULL},
+    {"focusSound", ItemParse_focusSound, NULL},
+    {"cvarFloat", ItemParse_cvarFloat, NULL},
+    {"cvarStrList", ItemParse_cvarStrList, NULL},
+    {"cvarFloatList", ItemParse_cvarFloatList, NULL},
+    {"addColorRange", ItemParse_addColorRange, NULL},
+    {"addColorRangeRel", ItemParse_addColorRangeRel, NULL},
+    {"ownerdrawFlag", ItemParse_ownerdrawFlag, NULL},
+    {"enableCvar", ItemParse_enableCvar, NULL},
+    {"cvarTest", ItemParse_cvarTest, NULL},
+    {"disableCvar", ItemParse_disableCvar, NULL},
+    {"showCvar", ItemParse_showCvar, NULL},
+    {"hideCvar", ItemParse_hideCvar, NULL},
+    {"cinematic", ItemParse_cinematic, NULL},
+    {"doubleclick", ItemParse_doubleClick, NULL},
+    {NULL, NULL, NULL}
+};
+
+menuKeywordHash_t menuParseKeywords[] = {
+    {"font", MenuParse_font, NULL},
+    {"name", MenuParse_name, NULL},
+    {"fullscreen", MenuParse_fullscreen, NULL},
+    {"rect", MenuParse_rect, NULL},
+    {"style", MenuParse_style, NULL},
+    {"visible", MenuParse_visible, NULL},
+    {"onOpen", MenuParse_onOpen, NULL},
+    {"onClose", MenuParse_onClose, NULL},
+    {"onESC", MenuParse_onESC, NULL},
+    {"onAnyKey", MenuParse_onAnyKey, NULL},
+    {"border", MenuParse_border, NULL},
+    {"borderSize", MenuParse_borderSize, NULL},
+    {"backcolor", MenuParse_backcolor, NULL},
+    {"forecolor", MenuParse_forecolor, NULL},
+    {"bordercolor", MenuParse_bordercolor, NULL},
+    {"focuscolor", MenuParse_focuscolor, NULL},
+    {"disablecolor", MenuParse_disablecolor, NULL},
+    {"outlinecolor", MenuParse_outlinecolor, NULL},
+    {"background", MenuParse_background, NULL},
+    {"ownerdraw", MenuParse_ownerdraw, NULL},
+    {"ownerdrawFlag", MenuParse_ownerdrawFlag, NULL},
+    {"outOfBoundsClick", MenuParse_outOfBoundsClick, NULL},
+    {"soundLoop", MenuParse_soundLoop, NULL},
+    {"itemDef", MenuParse_itemDef, NULL},
+    {"cinematic", MenuParse_cinematic, NULL},
+    {"popup", MenuParse_popup, NULL},
+    {"fadeClamp", MenuParse_fadeClamp, NULL},
+    {"fadeCycle", MenuParse_fadeCycle, NULL},
+    {"fadeAmount", MenuParse_fadeAmount, NULL},
+    {"fadeInAmount", MenuParse_fadeInAmount, NULL},
+    {"execKey", MenuParse_execKey, NULL},
+    {"execKeyInt", MenuParse_execKeyInt, NULL},
+    {NULL, NULL, NULL}
+};
+
+keywordHash_t *itemKeywordHashTable[KEYWORDHASH_SIZE];
+menuKeywordHash_t *menuKeywordHashTable[KEYWORDHASH_SIZE];

@@ -1,0 +1,187 @@
+#ifndef QCOMMON_UI_MODULE_ABI_TYPES_H
+#define QCOMMON_UI_MODULE_ABI_TYPES_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "client_connection_types.h"
+#include "qcommon_limits.h"
+
+/* UI-to-engine syscall identifiers. CoDUOMP.exe and uo_ui_mp_x86.dll use this
+ * same command domain on opposite sides of the module boundary. */
+typedef enum uiImport_e {
+    UI_ERROR = 0,
+    UI_PRINT = 1,
+    UI_GET_LANGUAGE_NAME = 2,
+    UI_VERIFY_LANGUAGE_SELECTION = 3,
+    UI_MILLISECONDS = 4,
+    UI_CVAR_REGISTER = 5,
+    UI_CVAR_UPDATE = 6,
+    UI_CVAR_SET = 7,
+    UI_CVAR_VARIABLE_VALUE = 8,
+    UI_CVAR_VARIABLE_STRING_BUFFER = 9,
+    UI_CVAR_SET_VALUE = 10,
+    UI_CVAR_RESET = 11,
+    UI_CVAR_CREATE = 12,
+    UI_CVAR_INFO_STRING_BUFFER = 13,
+    UI_ARGC = 14,
+    UI_ARGV = 15,
+    UI_CMD_EXECUTE_TEXT = 16,
+    UI_FS_FOPEN_FILE = 17,
+    UI_FS_READ = 18,
+    UI_FS_SEEK = 19,
+    UI_FS_WRITE = 20,
+    UI_FS_FCLOSE_FILE = 21,
+    UI_FS_GET_FILE_LIST = 22,
+    UI_FS_DELETE = 23,
+    UI_R_REGISTER_MODEL = 24,
+    UI_R_REGISTER_SHADER_NO_MIP = 25,
+    UI_R_CLEAR_SCENE = 26,
+    UI_R_ADD_REF_ENTITY = 27,
+    UI_R_ADD_POLY_TO_SCENE = 28,
+    UI_R_ADD_POLYS_TO_SCENE = 29,
+    UI_R_ADD_LIGHT_TO_SCENE = 30,
+    UI_R_ADD_CORONA_TO_SCENE = 31,
+    UI_R_RENDER_SCENE = 32,
+    UI_R_SET_COLOR = 33,
+    UI_R_DRAW_STRETCH_PIC = 34,
+    UI_R_MODEL_BOUNDS = 35,
+    UI_UPDATE_SCREEN = 36,
+    UI_RESERVED_37 = 37,
+    UI_S_REGISTER_SOUND = 38,
+    UI_MSS_PLAY_LOCAL_SOUND_ALIAS = 39,
+    UI_MSS_FADE_ALL_SOUNDS = 40,
+    UI_KEY_KEYNUM_TO_STRING_BUF = 41,
+    UI_KEY_GET_BINDING_BUF = 42,
+    UI_KEY_SET_BINDING = 43,
+    UI_KEY_IS_DOWN = 44,
+    UI_KEY_GET_OVERSTRIKE_MODE = 45,
+    UI_KEY_SET_OVERSTRIKE_MODE = 46,
+    UI_KEY_CLEAR_STATES = 47,
+    UI_KEY_GET_CATCHER = 48,
+    UI_KEY_SET_CATCHER = 49,
+    UI_GET_CLIPBOARD_DATA = 50,
+    UI_GET_CLIENT_STATE = 51,
+    UI_GET_GLCONFIG = 52,
+    UI_GET_CONFIG_STRING = 53,
+    UI_GET_CLIENT_NAME = 54,
+    UI_RESERVED_55 = 55,
+    UI_RESERVED_56 = 56,
+    UI_RESERVED_57 = 57,
+    UI_RESERVED_58 = 58,
+    UI_LAN_GET_PING_QUEUE_COUNT = 59,
+    UI_LAN_CLEAR_PING = 60,
+    UI_LAN_GET_PING = 61,
+    UI_LAN_GET_PING_INFO = 62,
+    UI_MEMORY_REMAINING = 63,
+    UI_GET_CD_KEY = 64,
+    UI_SET_CD_KEY = 65,
+    UI_R_REGISTER_FONT = 66,
+    UI_R_TEXT_WIDTH = 67,
+    UI_R_TEXT_HEIGHT = 68,
+    UI_R_TEXT_PAINT = 69,
+    UI_R_TEXT_PAINT_WITH_CURSOR = 70,
+    UI_SE_TRANSLATE_REFERENCE = 71,
+    UI_SE_LOCALIZE_MESSAGE = 72,
+    UI_PC_ADD_GLOBAL_DEFINE = 73,
+    UI_PC_LOAD_SOURCE = 74,
+    UI_PC_FREE_SOURCE = 75,
+    UI_PC_READ_TOKEN = 76,
+    UI_PC_SOURCE_FILE_AND_LINE = 77,
+    UI_REAL_TIME = 78,
+    UI_LAN_GET_SERVER_COUNT = 79,
+    UI_LAN_WAIT_SERVER_RESPONSE = 80,
+    UI_LAN_GET_SERVER_ADDRESS_STRING = 81,
+    UI_LAN_GET_SERVER_INFO = 82,
+    UI_LAN_MARK_SERVER_DIRTY = 83,
+    UI_LAN_UPDATE_DIRTY_PINGS = 84,
+    UI_LAN_RESET_PINGS = 85,
+    UI_LAN_LOAD_CACHED_SERVERS = 86,
+    UI_LAN_SAVE_CACHED_SERVERS = 87,
+    UI_LAN_ADD_SERVER = 88,
+    UI_LAN_REMOVE_SERVER = 89,
+    UI_CIN_PLAY_CINEMATIC = 90,
+    UI_CIN_STOP_CINEMATIC = 91,
+    UI_CIN_RUN_CINEMATIC = 92,
+    UI_CIN_DRAW_CINEMATIC = 93,
+    UI_CIN_SET_EXTENTS = 94,
+    UI_VERIFY_CD_KEY = 95,
+    UI_LAN_SERVER_STATUS = 96,
+    UI_LAN_GET_SERVER_PING = 97,
+    UI_LAN_SERVER_IS_PUNKBUSTER = 98,
+    UI_LAN_SERVER_IS_DIRTY = 99,
+    UI_LAN_COMPARE_SERVERS = 100,
+    UI_SET_PB_CLIENT_STATUS = 101,
+    UI_GET_AUTO_UPDATE = 102,
+    UI_RUNNING_GAME = 103,
+    UI_MEMSET = 104,
+    UI_MEMCPY = 105,
+    UI_STRNCPY = 106,
+    UI_SIN = 107,
+    UI_COS = 108,
+    UI_ATAN2 = 109,
+    UI_SQRT = 110,
+    UI_FLOOR = 111,
+    UI_CEIL = 112,
+    UI_MALLOC = 113,
+    UI_FREE = 114
+} uiImport_t;
+
+typedef struct uiClientState_s {
+    connstate_t connState;
+    int32_t connectPacketCount;
+    int32_t clientNum;
+    char servername[MAX_STRING_CHARS];
+    char updateInfoString[MAX_STRING_CHARS];
+    char messageString[MAX_STRING_CHARS];
+} uiClientState_t;
+
+typedef char q_ui_client_state_client_num_offset[
+    offsetof(uiClientState_t, clientNum) == 0x8 ? 1 : -1];
+typedef char q_ui_client_state_size[
+    sizeof(uiClientState_t) == 0xc0c ? 1 : -1];
+
+typedef enum uiVmCommand_e {
+    UIVM_GET_API_VERSION = 0,
+    UIVM_INIT = 1,
+    UIVM_SHUTDOWN = 2,
+    UIVM_KEY_EVENT = 3,
+    UIVM_MOUSE_EVENT = 4,
+    UIVM_REFRESH = 5,
+    UIVM_IS_FULLSCREEN = 6,
+    UIVM_SET_ACTIVE_MENU = 7,
+    UIVM_GET_ACTIVE_MENU = 8,
+    UIVM_GET_MAP_DISPLAY_NAME = 9,
+    UIVM_GET_GAMETYPE_DISPLAY_NAME = 10,
+    UIVM_CONSOLE_COMMAND = 11,
+    UIVM_DRAW_CONNECT_SCREEN = 12,
+    UIVM_USES_UNIQUE_CD_KEY = 13,
+    UIVM_CHECK_EXEC_KEY = 14,
+    UIVM_LOAD_SCRIPT_MENU = 15,
+    UIVM_GET_FONT = 16
+} uiVmCommand_t;
+
+enum {
+    UIVM_API_VERSION = 9,
+    UIVM_COMMAND_COUNT = 17,
+    UIVM_LAST_COMMAND = UIVM_GET_FONT
+};
+
+typedef enum uiMenuCommand_e {
+    UI_MENU_NONE = 0,
+    UI_MENU_MAIN = 1,
+    UI_MENU_INGAME = 2,
+    UI_MENU_NEED_CD = 3,
+    UI_MENU_BAD_CD = 4,
+    UI_MENU_TEAM = 5,
+    UI_MENU_UNUSED_6 = 6,
+    UI_MENU_HELP = 7,
+    UI_MENU_QUICK_MESSAGE = 8,
+    UI_MENU_AUTOUPDATE = 9,
+    UI_MENU_SCRIPT = 10,
+    UI_MENU_SCRIPT_FULLSCREEN = 11,
+    UI_MENU_QUICK_MAP = 12,
+    UI_MENU_PURCHASE = 13
+} uiMenuCommand_t;
+
+#endif

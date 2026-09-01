@@ -1,0 +1,15 @@
+/.workbench/
+/build/
+/run/
+
+.DS_Store
+__pycache__/
+*.pyc
+
+*.o
+*.d
+*.a
+*.so
+*.dylib
+*.dll
+*.exe

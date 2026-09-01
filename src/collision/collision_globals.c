@@ -1,0 +1,43 @@
+#include "collision_map_load.h"
+#include "collision_static_models.h"
+
+int32_t cm_staticModelCount; /* original 0x0494de00 */
+worldSectorAreaLink_t *cm_staticModels; /* original 0x0494de04 */
+uint8_t *cm_fileBase; /* original 0x04957f1c */
+char cm_mapName[MAX_QPATH]; /* original 0x0494ddc0 */
+int32_t cm_checksum; /* original 0x008d09a8 */
+int32_t cm_entityStringLength; /* original 0x0494de60 */
+int32_t cm_numMaterials; /* original 0x0494de08 */
+dshader_t *cm_materials; /* original 0x0494de0c */
+int32_t cm_numPlanes; /* original 0x0494de18 */
+cplane_t *cm_planes; /* original 0x0494de1c */
+int32_t cm_numNodes; /* original 0x0494de20 */
+int32_t cm_numSubModels; /* original 0x0494de40 */
+collisionModel_t *cm_models; /* original 0x0494de44 */
+char *cm_entityString; /* original 0x0494de64 */
+collisionBrush_t *cm_boxBrush; /* original 0x0494de9c */
+collisionModel_t cm_boxModel; /* original 0x0494dea0 */
+collisionNode_t *cm_nodes; /* original 0x0494de24 */
+collisionLeaf_t *cm_leafs; /* original 0x0494de2c */
+int32_t *cm_leafbrushes; /* original 0x0494de34 */
+int32_t cm_numLeafBrushes; /* original 0x0494de30 */
+int32_t cm_numLeafSurfaces; /* original 0x0494de38 */
+int32_t *cm_leafsurfaces; /* original 0x0494de3c */
+int32_t cm_numBrushSides; /* original 0x0494de10 */
+collisionBrushSide_t *cm_brushSides; /* original 0x0494de14 */
+int32_t cm_numBrushes; /* original 0x0494de48 */
+collisionBrush_t *cm_brushes; /* original 0x0494de4c */
+int32_t cm_numLeafs; /* original 0x0494de28 */
+int32_t cm_numClusters; /* original 0x0494de50 */
+int32_t cm_numAreas; /* original 0x0494de68 */
+collisionArea_t *cm_areas; /* original 0x0494de6c */
+int32_t *cm_areaPortals; /* original 0x0494de70 */
+int32_t cm_floodValid; /* original 0x0494de7c */
+int32_t cm_numTerrainPatches; /* original 0x0494de74 */
+collisionTerrainPatch_t *cm_terrainPatches; /* original 0x0494de78 */
+cvar_t *cm_noCurves; /* original 0x0494ddbc */
+cvar_t *cm_playerCurveClip; /* original 0x04957f20 */
+int32_t cm_checkcount; /* original 0x0494de80 */
+int32_t cm_clusterBytes; /* original 0x0494de54 */
+uint8_t *cm_visibility; /* original 0x0494de58 */
+qboolean cm_visibilityLoaded; /* original 0x0494de5c */
