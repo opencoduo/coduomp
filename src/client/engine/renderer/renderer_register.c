@@ -1,7 +1,9 @@
 #include "backend.h"
 
 #include "gl_state.h"
+#include "platform_gamma.h"
 #include "renderer_cvars.h"
+#include "../platform/hardware_profile.h"
 
 enum {
     R_DEFAULT_MAX_POLYS = 4096,
@@ -50,8 +52,11 @@ cvar_t *r_stencilbits;
 cvar_t *r_depthbits;
 cvar_t *r_overBrightBits;
 cvar_t *r_ignorehwgamma;
+cvar_t *r_gammaMode;
 cvar_t *r_mode;
 cvar_t *r_fullscreen;
+cvar_t *r_aspectMode;
+cvar_t *r_hiresReticles;
 cvar_t *r_customwidth;
 cvar_t *r_customheight;
 cvar_t *r_customaspect;
@@ -64,6 +69,7 @@ cvar_t *r_intensity;
 cvar_t *r_singleShader;
 cvar_t *r_lodbias;
 cvar_t *r_flares;
+cvar_t *r_flareOcclusionQuery;
 cvar_t *r_znear;
 cvar_t *r_zfar;
 cvar_t *r_znear_depthhack;
@@ -252,7 +258,8 @@ void R_Register(void)
         ri.Cvar_Get("r_ati_fragment_shader", "1", CVAR_LATCH);
     r_vbo_smc_static_draw = ri.Cvar_Get(
         "r_vbo_smc_static_draw", "1", CVAR_ARCHIVE | CVAR_LATCH);
-    r_vbo_stream_draw = ri.Cvar_Get("r_vbo_stream_draw", "1", CVAR_ARCHIVE | CVAR_LATCH);
+    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): default to the reusable dynamic-VBO upload path while preserving user selection. */
+    r_vbo_stream_draw = ri.Cvar_Get("r_vbo_stream_draw", "0", CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_interleave = ri.Cvar_Get(
         "r_vbo_interleave", "0", CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_paranoia =
@@ -282,9 +289,32 @@ void R_Register(void)
         "r_overBrightBits", "1", CVAR_ARCHIVE | CVAR_LATCH);
     r_ignorehwgamma = ri.Cvar_Get(
         "r_ignorehwgamma", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): select disabled,
+     * automatic native-with-fallback, or forced final-frame software gamma.
+     * The existing r_ignorehwgamma remains an independent native-ramp veto. */
+    r_gammaMode = ri.Cvar_Get(
+        "r_gammaMode", "1", CVAR_ARCHIVE | CVAR_LATCH);
+    AssertCvarRange(r_gammaMode,
+                    (float)CODUOMP_GAMMA_MODE_DISABLED,
+                    (float)CODUOMP_GAMMA_MODE_SOFTWARE, qtrue);
     r_mode = ri.Cvar_Get("r_mode", "3", CVAR_ARCHIVE | CVAR_LATCH);
     r_fullscreen =
         ri.Cvar_Get("r_fullscreen", "1", CVAR_ARCHIVE | CVAR_LATCH);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): zero uses the native
+     * display aspect; one presents the complete renderer in a fitted 4:3
+     * viewport with black bars. Keep the cgame and renderer presentation
+     * transition atomic by applying it only during a vid_restart. */
+    r_aspectMode =
+        ri.Cvar_Get(
+            "r_aspectMode", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    /* NOT_FROM_ORIGINAL_SOURCE: platform-discovered renderer-mode bits for
+     * the separately linked compatibility UI. */
+    (void)ri.Cvar_Get("r_availableModes", "0", CVAR_ROM);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): edge-preserving
+     * load-time upscale of gfx/reticle/ images; latched because the
+     * transform runs when images load. */
+    r_hiresReticles = ri.Cvar_Get(
+        "r_hiresReticles", "1", CVAR_ARCHIVE | CVAR_LATCH);
     r_customwidth = ri.Cvar_Get(
         "r_customwidth", "1600", CVAR_ARCHIVE | CVAR_LATCH);
     r_customheight = ri.Cvar_Get(
@@ -308,6 +338,13 @@ void R_Register(void)
         ri.Cvar_Get("r_singleShader", "0", CVAR_CHEAT | CVAR_LATCH);
     r_lodbias = ri.Cvar_Get("r_lodbias", "0", CVAR_ARCHIVE);
     r_flares = ri.Cvar_Get("r_flares", "1", CVAR_CHEAT);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): Apple Silicon avoids
+     * synchronous depth readback through nonblocking occlusion queries.
+     * Other hardware retains the recovered path unless explicitly enabled. */
+    r_flareOcclusionQuery = ri.Cvar_Get(
+        "r_flareOcclusionQuery",
+        coduomp_is_apple_silicon() != qfalse ? "1" : "0",
+        CVAR_ARCHIVE);
     r_znear = ri.Cvar_Get("r_znear", "4", CVAR_CHEAT);
     AssertCvarRange(r_znear, 0.0010000000474974513f, 200.0f, qtrue);
     r_zfar = ri.Cvar_Get("r_zfar", "0", CVAR_CHEAT);

@@ -1894,6 +1894,15 @@ typedef enum renderer_command_id_e {
     RC_SAVE_SCREEN = 9,
     RC_BLEND_SAVED_SCREEN = 10,
     RC_SWAP_BUFFERS = 11,
+    /* NOT_FROM_ORIGINAL_SOURCE: explicit command-buffer presentation scope.
+     * Cgame 2D can be submitted while the separate UI VM reports fullscreen;
+     * recording the source in command order prevents that later UI state from
+     * reinterpreting a complete cgame composition. */
+    RC_SET_CGAME_2D_PRESENTATION = 12,
+    /* NOT_FROM_ORIGINAL_SOURCE: explicit native-width console canvas scope. */
+    RC_SET_CONSOLE_2D_PRESENTATION = 13,
+    /* NOT_FROM_ORIGINAL_SOURCE: explicit fitted UI composition scope. */
+    RC_SET_UI_2D_PRESENTATION = 14
 } renderer_command_id_t;
 
 /* Variable-length command. The text begins immediately after the one-byte
@@ -1913,6 +1922,26 @@ typedef struct text_paint_command_s {
     char text[];                            /* original +0x25 */
 } text_paint_command_t;
 
+/* NOT_FROM_ORIGINAL_SOURCE: command-buffer marker for one complete cgame
+ * presentation scope. */
+typedef struct coduomp_cgame_2d_presentation_command_s {
+    int32_t commandId;
+    qboolean enabled;
+} coduomp_cgame_2d_presentation_command_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE: command-buffer marker for one complete console
+ * presentation scope. */
+typedef struct coduomp_console_2d_presentation_command_s {
+    int32_t commandId;
+    qboolean enabled;
+} coduomp_console_2d_presentation_command_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE: command-buffer marker for one complete UI
+ * presentation scope. */
+typedef struct coduomp_ui_2d_presentation_command_s {
+    int32_t commandId;
+    qboolean enabled;
+} coduomp_ui_2d_presentation_command_t;
 
 #pragma pack(pop)
 
@@ -1922,6 +1951,9 @@ extern renderer_fog_t rendererFogs[R_FOG_SLOT_COUNT];
 extern int32_t rendererFogCount;
 extern int32_t rendererCurrentFogIndex;
 extern qboolean rendererSkyboxPortalActive;
+extern qboolean coduomp_backend_cgame_2d_compat_active;
+extern qboolean coduomp_backend_console_2d_compat_active;
+extern qboolean coduomp_backend_ui_2d_compat_active;
 extern shaderCommands_t tess;
 extern renderer_surface_fn_t rb_surfaceTable[];
 extern shader_t rendererParsedShader;
@@ -4486,6 +4518,7 @@ void RE_EndRegistration(void);
 void RE_Shutdown(qboolean destroyWindow);
 void R_SyncRenderThread(void);
 void RE_ClearFlares(void);
+void coduomp_flare_query_shutdown(void);
 void RE_ClearScene(void);
 void R_InitAllocators(void);
 void R_SetColorMappings(void);
@@ -5010,6 +5043,16 @@ void GL_SetupVBO(void);
 void GL_CheckErrors(const char *location);
 qboolean R_GetModeInfo(int32_t *width, int32_t *height,
                        float *windowAspect, int32_t mode);
+typedef qboolean (*coduomp_display_mode_available_callback_t)(
+    int32_t width, int32_t height);
+void coduomp_renderer_publish_available_video_modes_compat(
+    coduomp_display_mode_available_callback_t modeAvailable);
+enum {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): unlike custom mode -1,
+     * this resolves the active display's hardware-sized automatic mode on
+     * every vid_restart. */
+    R_CURRENT_DISPLAY_VIDEO_MODE = -2
+};
 void R_ModeList_f(void);
 void R_SetNVFogMode(void);
 void GL_TextureMode(const char *textureMode);
@@ -5221,6 +5264,18 @@ void GLimp_EndFrame(void);
 void GLimp_LogComment(const char *comment);
 void GLW_MissingDriverFeatureError(const char *featureErrorKey);
 void RB_SetGL2D(void);
+void coduomp_apply_2d_presentation_viewport(void);
+void coduomp_get_presentation_viewport(int32_t *x, int32_t *y,
+                                       int32_t *width, int32_t *height);
+void coduomp_configure_output_presentation_compat(
+    int32_t renderWidth, int32_t renderHeight,
+    int32_t outputWidth, int32_t outputHeight,
+    int32_t nativeWidth, int32_t nativeHeight,
+    qboolean fullscreenOutput);
+qboolean coduomp_get_output_presentation_compat(
+    int32_t *outputWidth, int32_t *outputHeight,
+    int32_t *viewportX, int32_t *viewportY,
+    int32_t *viewportWidth, int32_t *viewportHeight);
 void RB_DrawDebug(void);
 void RB_EndMultitexture(void);
 const void *RB_SetColor(const setColorCommand_t *command);
@@ -5296,6 +5351,9 @@ void RE_Text_PaintWithCursor(float x, float y, int32_t fontHandle,
                              uint8_t cursorCharacter, float fixedAdvance,
                              int32_t limit, int32_t textStyle);
 void *R_GetCommandBuffer(int32_t byteCount);
+void coduomp_queue_cgame_2d_presentation(qboolean enabled);
+void coduomp_queue_console_2d_presentation(qboolean enabled);
+void coduomp_queue_ui_2d_presentation(qboolean enabled);
 void RE_SetColor(const float *rgba);
 void RE_StretchPic(float x, float y, float width, float height,
                    float s1, float t1, float s2, float t2,

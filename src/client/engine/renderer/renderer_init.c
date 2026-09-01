@@ -2,6 +2,8 @@
 
 #include "gl_api.h"
 #include "gl_state.h"
+#include "output_gamma_compat.h"
+#include "platform_gamma.h"
 
 #include <string.h>
 
@@ -41,6 +43,23 @@ static const renderer_video_mode_t rendererVideoModes[R_VIDEO_MODE_COUNT] = {
     { "Mode 12: 1920x1200 (wide)", 1920, 1200, 1.0f }
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: modern square-pixel display modes
+ * appended after the original stable 0..12 mode-number range. */
+static const renderer_video_mode_t coduompModernVideoModes[] = {
+    { "Mode 13: 1280x720 (wide)",   1280,  720, 1.0f },
+    { "Mode 14: 1280x800 (wide)",   1280,  800, 1.0f },
+    { "Mode 15: 1366x768 (wide)",   1366,  768, 1.0f },
+    { "Mode 16: 1440x900 (wide)",   1440,  900, 1.0f },
+    { "Mode 17: 1600x900 (wide)",   1600,  900, 1.0f },
+    { "Mode 18: 1680x1050 (wide)",  1680, 1050, 1.0f },
+    { "Mode 19: 1920x1080 (wide)",  1920, 1080, 1.0f },
+    { "Mode 20: 2560x1440 (wide)",  2560, 1440, 1.0f },
+    { "Mode 21: 2560x1600 (wide)",  2560, 1600, 1.0f },
+    { "Mode 22: 2880x1800 (wide)",  2880, 1800, 1.0f },
+    { "Mode 23: 3024x1964 (wide)",  3024, 1964, 1.0f },
+    { "Mode 24: 3456x2234 (wide)",  3456, 2234, 1.0f },
+    { "Mode 25: 3840x2160 (wide)",  3840, 2160, 1.0f }
+};
 
 #if UINTPTR_MAX == UINT32_MAX
 _Static_assert(_Alignof(renderer_video_mode_t) == 4,
@@ -193,8 +212,14 @@ qboolean R_GetModeInfo(int32_t *width, int32_t *height,
                        float *windowAspect, int32_t mode)
 {
     const renderer_video_mode_t *videoMode;
-    if (mode < R_CUSTOM_VIDEO_MODE || mode >= R_VIDEO_MODE_COUNT)
+    const int32_t modernModeCount =
+        (int32_t)(sizeof(coduompModernVideoModes) /
+                  sizeof(coduompModernVideoModes[0]));
+
+    if (mode < R_CUSTOM_VIDEO_MODE ||
+        mode >= R_VIDEO_MODE_COUNT + modernModeCount) {
         return qfalse;
+    }
 
     if (mode == R_CUSTOM_VIDEO_MODE) {
         *width = r_customwidth->integer;
@@ -203,7 +228,14 @@ qboolean R_GetModeInfo(int32_t *width, int32_t *height,
         return qtrue;
     }
 
-    videoMode = &rendererVideoModes[mode];
+    if (mode < R_VIDEO_MODE_COUNT) {
+        videoMode = &rendererVideoModes[mode];
+    } else {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve all stock
+         * indices while accepting appended modern display modes. */
+        videoMode =
+            &coduompModernVideoModes[mode - R_VIDEO_MODE_COUNT];
+    }
     *width = videoMode->width;
     *height = videoMode->height;
     *windowAspect = (float)videoMode->width /
@@ -211,6 +243,31 @@ qboolean R_GetModeInfo(int32_t *width, int32_t *height,
     return qtrue;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: publishes one bit per stable renderer mode so the
+ * separately linked compatibility UI can omit presets that the primary
+ * display does not report. */
+void coduomp_renderer_publish_available_video_modes_compat(
+    coduomp_display_mode_available_callback_t modeAvailable)
+{
+    const int32_t modeCount =
+        R_VIDEO_MODE_COUNT +
+        (int32_t)(sizeof(coduompModernVideoModes) /
+                  sizeof(coduompModernVideoModes[0]));
+    uint32_t availableModes = 0;
+
+    for (int32_t mode = 0; mode < modeCount; ++mode) {
+        int32_t width;
+        int32_t height;
+        float aspect;
+
+        if (R_GetModeInfo(&width, &height, &aspect, mode) != qfalse &&
+            modeAvailable(width, height) != qfalse) {
+            availableModes |= UINT32_C(1) << mode;
+        }
+    }
+
+    ri.Cvar_Set("r_availableModes", va("%u", availableModes));
+}
 
 /* Source: CoDUOMP.exe 0x004c17a0..0x004c17f5.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c17a0_004c17f5.mcode. Ghidra left
@@ -222,8 +279,17 @@ void R_ModeList_f(void)
     int32_t mode;
 
     ri.Printf(R_PRINT_ALL, "\n");
+    ri.Printf(R_PRINT_ALL, "Maximum display, automatic (r_mode %d)\n",
+              R_CURRENT_DISPLAY_VIDEO_MODE);
     for (mode = 0; mode < R_VIDEO_MODE_COUNT; ++mode)
         ri.Printf(R_PRINT_ALL, "%s\n", rendererVideoModes[mode].description);
+    for (mode = 0;
+         mode < (int32_t)(sizeof(coduompModernVideoModes) /
+                          sizeof(coduompModernVideoModes[0]));
+         ++mode) {
+        ri.Printf(R_PRINT_ALL, "%s\n",
+                  coduompModernVideoModes[mode].description);
+    }
     ri.Printf(R_PRINT_ALL, "\n");
 }
 
@@ -380,8 +446,8 @@ void GfxInfo_f(void)
     const char *const enabledNames[2] = {
         "disabled", "enabled"
     };
-    const char *const windowModeNames[2] = {
-        "windowed", "fullscreen"
+    const char *const windowModeNames[3] = {
+        "windowed", "fullscreen", "borderless"
     };
     cvar_t *cpuString;
 
@@ -402,23 +468,34 @@ void GfxInfo_f(void)
               "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n",
               glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits);
 
+    int32_t windowMode = r_fullscreen->integer;
+    if (windowMode < 0 || windowMode > 2)
+        windowMode = 0;
 
     ri.Printf(R_PRINT_ALL, "MODE: %d, %d x %d %s hz:",
               r_mode->integer, glConfig.vidWidth, glConfig.vidHeight,
-              windowModeNames[r_fullscreen->integer == 1]);
+              windowModeNames[windowMode]);
     if (glConfig.displayFrequency != 0)
         ri.Printf(R_PRINT_ALL, "%d\n", glConfig.displayFrequency);
     else
         ri.Printf(R_PRINT_ALL, "N/A\n");
 
-    if (glConfig.deviceSupportsGamma) {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): name the selected gamma
+     * provider rather than reporting every non-native policy as software. */
+    if (glConfig.deviceSupportsGamma != qfalse) {
         ri.Printf(R_PRINT_ALL,
                   "GAMMA: hardware w/ %d overbright bits\n",
                   tr.overbrightBits);
-    } else {
+    } else if (coduomp_output_gamma_software_active_compat() != qfalse) {
         ri.Printf(R_PRINT_ALL,
-                  "GAMMA: software w/ %d overbright bits\n",
+                  "GAMMA: full-frame software w/ %d overbright bits\n",
                   tr.overbrightBits);
+    } else if (coduomp_gamma_texture_fallback_enabled_compat() != qfalse) {
+        ri.Printf(R_PRINT_ALL,
+                  "GAMMA: texture fallback w/ %d overbright bits\n",
+                  tr.overbrightBits);
+    } else {
+        ri.Printf(R_PRINT_ALL, "GAMMA: disabled\n");
     }
 
     ri.Printf(R_PRINT_ALL, "CPU: %s\n", cpuString->string);
@@ -428,10 +505,16 @@ void GfxInfo_f(void)
         ri.Printf(R_PRINT_ALL, "none\n");
         break;
     case R_PRIMITIVES_AUTOMATIC:
+#if defined(__APPLE__) && defined(__aarch64__)
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): report the native
+         * automatic-mode adaptation implemented in R_DrawElements. */
+        ri.Printf(R_PRINT_ALL, "single glDrawElements\n");
+#else
         ri.Printf(R_PRINT_ALL,
                   qglLockArraysEXT != NULL
                       ? "single glDrawElements\n"
                       : "multiple glArrayElement\n");
+#endif
         break;
     case R_PRIMITIVES_ARRAY_ELEMENTS:
         ri.Printf(R_PRINT_ALL, "multiple glArrayElement\n");

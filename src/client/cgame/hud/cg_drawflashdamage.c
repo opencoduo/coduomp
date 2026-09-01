@@ -103,5 +103,7 @@ void CG_DrawFlashDamage(void)
     color[2] = 0.0f;
 
     // Fill the whole virtual screen (10px overscan on all sides) with the tint.
-    CG_FillRect(-10.0f, -10.0f, 650.0f, 490.0f, color);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): this is one complete
+     * screen effect, not an ordinary centered-canvas HUD rectangle. */
+    cgame_compat_fill_native_screen_effect(color);
 }

@@ -19,6 +19,12 @@ int32_t FS_FOpenFileWrite(const char *qpath)
     if (coduo_compat_path_is_safe_relative(qpath) == qfalse)
         return 0;
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): screenshots are user
+     * output rather than connection-owned state. Keep ordinary TGA/JPEG
+     * screenshots together under fs_homepath regardless of the active server
+     * namespace or mod directory. */
+    if (strncmp(qpath, "screenshots/", sizeof("screenshots/") - 1u) == 0)
+        return coduomp_fs_root_fopen_file_write(fs_homepath->string, qpath);
 
     const int32_t handle = FS_HandleForFile(qfalse);
     fileHandleData_t *const fileHandle = &fs_handleFiles[handle];

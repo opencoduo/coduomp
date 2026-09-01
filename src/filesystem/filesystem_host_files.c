@@ -138,6 +138,11 @@ qboolean FS_FileExists(const char *qpath)
     if (coduo_compat_path_is_safe_relative(qpath) == qfalse)
         return qfalse;
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): inspect the same
+     * canonical directory used by FS_FOpenFileWrite so numbered screenshots
+     * cannot overwrite files merely because a server namespace changed. */
+    if (strncmp(qpath, "screenshots/", sizeof("screenshots/") - 1u) == 0)
+        return coduomp_fs_root_file_exists(fs_homepath->string, qpath);
 
     char osPath[MAX_OSPATH];
     const char *const stateRoot =

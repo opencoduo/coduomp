@@ -13,6 +13,22 @@ enum {
 
 #define UI_KEY_UNBOUND ((int32_t)-1)
 
+/* NOT_FROM_ORIGINAL_SOURCE: the native UI adds one configurable console row
+ * outside the retail 55-row g_bindings table owned by src/client/menu. */
+bind_t ui_compat_consoleBinding = {
+    "toggleconsole", { -1, -1, -1 }, -1, -1
+};
+
+static char ui_compat_consoleBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
+static char ui_compat_consoleSecondBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
+
+/* NOT_FROM_ORIGINAL_SOURCE: recognize the one UI-only compatibility row. */
+static qboolean ui_compat_is_console_binding(const char *command)
+{
+    return command != NULL &&
+           Q_stricmp(command, ui_compat_consoleBinding.command) == 0
+               ? qtrue : qfalse;
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: restore module load state for the shared retail
  * table and, when enabled, the separate UI-only console row. */
@@ -24,6 +40,8 @@ void ui_compat_reset_control_binding_state(void)
         g_bindings[index].bind1 = UI_KEY_UNBOUND;
         g_bindings[index].bind2 = 0;
     }
+    ui_compat_consoleBinding.bind1 = UI_KEY_UNBOUND;
+    ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: refresh the retail table through its original
@@ -31,12 +49,27 @@ void ui_compat_reset_control_binding_state(void)
 void ui_compat_controls_get_config(void)
 {
     Controls_GetConfig();
+    {
+        int32_t keys[2];
+
+        Controls_GetKeyAssignment(ui_compat_consoleBinding.command, keys);
+        ui_compat_consoleBinding.bind1 = keys[0];
+        ui_compat_consoleBinding.bind2 = keys[1];
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: apply the optional UI-only console row, then commit
  * the retail table so its original in_restart command remains the final action. */
 void client_ui_compat_controls_set_config(void)
 {
+    if (ui_compat_consoleBinding.bind1 != UI_KEY_UNBOUND) {
+        DC->setBinding(ui_compat_consoleBinding.bind1,
+                       ui_compat_consoleBinding.command);
+        if (ui_compat_consoleBinding.bind2 != UI_KEY_UNBOUND) {
+            DC->setBinding(ui_compat_consoleBinding.bind2,
+                           ui_compat_consoleBinding.command);
+        }
+    }
     Controls_SetConfig();
 }
 
@@ -45,13 +78,17 @@ void client_ui_compat_controls_set_config(void)
 void ui_compat_controls_set_defaults(void)
 {
     Controls_SetDefaults();
+    ui_compat_consoleBinding.bind1 = UI_KEY_UNBOUND;
+    ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: expose exactly one target-private row without
  * changing BindingIDFromName's retail index domain. */
 bind_t *client_ui_compat_extra_binding_for_name(const char *command)
 {
-    (void)command;
+    if (ui_compat_is_console_binding(command) != qfalse) {
+        return &ui_compat_consoleBinding;
+    }
     return NULL;
 }
 
@@ -59,7 +96,13 @@ bind_t *client_ui_compat_extra_binding_for_name(const char *command)
  * removal to the optional target-private console row. */
 void client_ui_compat_remove_key_from_extra_bindings(int32_t key)
 {
-    (void)key;
+    if (ui_compat_consoleBinding.bind2 == key) {
+        ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
+    }
+    if (ui_compat_consoleBinding.bind1 == key) {
+        ui_compat_consoleBinding.bind1 = ui_compat_consoleBinding.bind2;
+        ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: render the optional console row using the same UI
@@ -67,6 +110,39 @@ void client_ui_compat_remove_key_from_extra_bindings(int32_t key)
 const char *client_ui_compat_binding_from_name(const char *command,
                                                qboolean firstKeyOnly)
 {
+    bind_t *binding;
+
+    if (ui_compat_is_console_binding(command) != qfalse) {
+        binding = &ui_compat_consoleBinding;
+        if (binding->bind1 == UI_KEY_UNBOUND) {
+            coduo_client_crt_strcpy(
+                ui_compat_consoleBindingText,
+                DC->getLocalizedString("KEY_UNBOUND"));
+            return ui_compat_consoleBindingText;
+        }
+
+        DC->keynumToStringBuf(binding->bind1,
+                              ui_compat_consoleBindingText,
+                              UI_COMPAT_KEY_NAME_SIZE);
+        coduo_client_crt_strcpy(
+            ui_compat_consoleBindingText,
+            DC->getLocalizedString(ui_compat_consoleBindingText));
+        if (binding->bind2 == UI_KEY_UNBOUND || firstKeyOnly != qfalse) {
+            return ui_compat_consoleBindingText;
+        }
+
+        DC->keynumToStringBuf(binding->bind2,
+                              ui_compat_consoleSecondBindingText,
+                              UI_COMPAT_KEY_NAME_SIZE);
+        coduo_client_crt_strcpy(
+            ui_compat_consoleSecondBindingText,
+            DC->getLocalizedString(ui_compat_consoleSecondBindingText));
+        strcat(ui_compat_consoleBindingText,
+               va(" %s ", DC->getLocalizedString("KEY_OR")));
+        strcat(ui_compat_consoleBindingText,
+               ui_compat_consoleSecondBindingText);
+        return ui_compat_consoleBindingText;
+    }
     return BindingFromName(command, firstKeyOnly);
 }
 
@@ -74,13 +150,19 @@ const char *client_ui_compat_binding_from_name(const char *command,
  * the optional console-binding row is capturing it. */
 void client_ui_compat_bind_capture_started(itemDef_t *item)
 {
-    (void)item;
+    const qboolean isConsoleBinding =
+        item != NULL &&
+        ui_compat_is_console_binding(item->cvar) != qfalse;
+
+    trap_Cvar_Set(UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR,
+                  isConsoleBinding != qfalse ? "1" : "0");
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: stop the engine-side console-key forwarding after
  * a binding is accepted or capture is cancelled. */
 void client_ui_compat_bind_capture_finished(void)
 {
+    trap_Cvar_Set(UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR, "0");
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: the optional console row accepts the console key
@@ -88,6 +170,13 @@ void client_ui_compat_bind_capture_finished(void)
  * original console-key rejection. */
 qboolean client_ui_compat_bind_key_is_ignored(itemDef_t *item, int32_t key)
 {
-    (void)item;
+    const qboolean isConsoleBinding =
+        item != NULL &&
+        ui_compat_is_console_binding(item->cvar) != qfalse;
+
+    if (isConsoleBinding != qfalse) {
+        return key >= UI_KEY_MOUSE1 && key <= UI_KEY_MWHEELUP
+                   ? qtrue : qfalse;
+    }
     return key == UI_KEY_CONSOLE ? qtrue : qfalse;
 }

@@ -110,6 +110,11 @@ void CG_DrawSingleHudElem(struct hudElem_s *elem)
 
     CG_GetHudElemInfo(&item, elem, scratch, sizeof(scratch));
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the isolated adapter
+     * projects the complete server/mod HUD item's authored alignment anchor
+     * once. Its label, text, shader, and clock dispatch below therefore retain
+     * their stock relative geometry. */
+    cgame_compat_project_server_hud_item(&item, elem);
 
     /* First string: drawn if non-empty; then x += labelWidth (both as floats). */
     if (item.label[0] != '\0') {

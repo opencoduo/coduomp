@@ -18,6 +18,7 @@
 #include "system_info.h"
 #include "system_platform.h"
 #include "system_process_lock.h"
+#include "platform/hardware_profile.h"
 #include "ui/ui_module_loader.h"
 
 #include <setjmp.h>
@@ -77,6 +78,88 @@ static uint32_t Com_ConfigureChecksumValue(
     return checksum + 1u;
 }
 
+#define CODUOMP_APPLE_SILICON_RECOMMENDED_VIDEO_MODE "20"
+
+/* NOT_FROM_ORIGINAL_SOURCE: the retail recommendation table predates unified
+ * Apple GPUs and tops out below the quality that Apple Silicon can sustain.
+ * This override is called only from the existing first-run recommendation
+ * path; it is not a config migration and never rewrites an established
+ * installation merely because the executable version changed. */
+static void coduomp_apply_apple_silicon_first_run_profile(void)
+{
+    static const struct {
+        const char *name;
+        const char *value;
+    } settings[] = {
+        { "com_maxfps", "250" },
+        { "r_mode", CODUOMP_APPLE_SILICON_RECOMMENDED_VIDEO_MODE },
+        { "r_fullscreen", "1" },
+        { "r_aspectMode", "0" },
+        { "r_picmip", "0" },
+        { "r_picmip2", "0" },
+        { "r_textureMode", "GL_LINEAR_MIPMAP_LINEAR" },
+        { "r_texturebits", "32" },
+        { "r_colorbits", "32" },
+        { "r_depthbits", "24" },
+        { "r_stencilbits", "8" },
+        { "r_ext_compressed_textures", "0" },
+        { "r_vertexLight", "0" },
+        { "r_lodbias", "0" },
+        { "r_lodscale", "0" },
+        { "r_subdivisions", "4" },
+        { "r_dynamiclight", "1" },
+        { "r_dlightQuality", "1" },
+        { "r_flareOcclusionQuery", "1" },
+        { "cg_marks", "1" },
+        { "cg_brass", "1" },
+        { "cg_blood", "1" },
+        { "cg_shellshockblur", "1" },
+        { "cg_vehicletrails", "1" },
+        { "ai_corpseCount", "64" },
+        { "fx_cullscale", "1" },
+        { "fx_cullbias", "0" }
+    };
+
+    Com_Printf(
+        "Applying Apple Silicon first-run graphics/performance profile\n");
+    for (size_t index = 0;
+         index < sizeof(settings) / sizeof(settings[0]);
+         ++index) {
+        cvar_t *const cvar =
+            Cvar_Set2(settings[index].name, settings[index].value, qtrue);
+        cvar->flags |= CVAR_ARCHIVE;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: distinguishes an explicit user preference from
+ * the retail default_mp.cfg assignment.  Generated configs use seta, while
+ * the token scan also recognizes equivalent hand-written set/direct forms. */
+static qboolean coduomp_config_sets_cvar(const char *path,
+                                         const char *cvarName)
+{
+    void *fileBuffer = NULL;
+    const int32_t fileLength = FS_ReadFile(path, &fileBuffer);
+    qboolean found = qfalse;
+
+    if (fileLength <= 0 || fileBuffer == NULL)
+        return qfalse;
+
+    char *parseCursor = fileBuffer;
+    Com_BeginParseSession(path);
+    for (;;) {
+        const char *const token = Com_Parse(&parseCursor);
+
+        if (token[0] == '\0')
+            break;
+        if (Q_stricmp(token, cvarName) == 0) {
+            found = qtrue;
+            break;
+        }
+    }
+    Com_EndParseSession();
+    FS_FreeFile(fileBuffer);
+    return found;
+}
 
 /* Source: CoDUOMP.exe 0x0043bba0..0x0043bc0f.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043bba0_0043bc10.mcode.
@@ -368,6 +451,8 @@ parsing_complete:
         cvar->flags |= CVAR_ARCHIVE;
     }
 
+    if (coduomp_is_apple_silicon() != qfalse)
+        coduomp_apply_apple_silicon_first_run_profile();
 
     Sys_ArchiveInfo((int32_t)checksum);
     if (restartSound != qfalse)
@@ -401,6 +486,13 @@ void Com_Init(char *commandLine)
     Cmd_Init();
     Com_StartupVariable(NULL);
     Com_StartupVariable("developer");
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): establish the improved
+     * reset/default value before default_mp.cfg creates this cvar with the
+     * retail disabled value. Config and command-line selections still replace
+     * the live value below. */
+    qboolean allowDownloadConfigured =
+        Cvar_FindVar("cl_allowDownload") != NULL ? qtrue : qfalse;
+    (void)Cvar_Get("cl_allowDownload", "1", CVAR_ARCHIVE);
     Key_Init();
     /* A prior process may have crashed while a server mod was active. The
      * selected provider resets only transient in-memory ownership here; no
@@ -409,6 +501,13 @@ void Com_Init(char *commandLine)
     FS_InitFilesystem();
     Com_InitJournaling();
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve an explicit
+     * user choice, but do not let the retail default_mp.cfg silently disable
+     * downloads when the saved config and autoexec omit the setting. */
+    allowDownloadConfigured =
+        allowDownloadConfigured ||
+        coduomp_config_sets_cvar("uoconfig_mp.cfg", "cl_allowDownload") ||
+        coduomp_config_sets_cvar("autoexec_mp.cfg", "cl_allowDownload");
 
     Cbuf_AddText("exec default_mp.cfg\n");
     Cbuf_AddText("exec language.cfg\n");
@@ -429,6 +528,11 @@ void Com_Init(char *commandLine)
     if (Sys_InfoChanged() != qfalse)
         Com_SetRecommended(qfalse);
 
+    if (allowDownloadConfigured == qfalse) {
+        cvar_t *const allowDownload =
+            Cvar_Set2("cl_allowDownload", "1", qtrue);
+        allowDownload->flags |= CVAR_ARCHIVE;
+    }
 
     Com_StartupVariable(NULL);
     SEH_UpdateLanguageInfo();
@@ -445,8 +549,15 @@ void Com_Init(char *commandLine)
     Com_InitHunkMemory();
     cvar_modifiedFlags &= ~(uint32_t)CVAR_ARCHIVE;
 
-    com_maxfps =
-        Cvar_Get("com_maxfps", "85", CVAR_ARCHIVE);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): use the high-rate
+     * frame-rate default only on Apple-Silicon hosts. This is the
+     * missing-cvar path; the first-run recommendation profile above supplies
+     * the same value after retail configure_mp.cfg sets 85. Intel Macs and
+     * every non-Apple-Silicon target retain the retail default. */
+    com_maxfps = Cvar_Get(
+        "com_maxfps",
+        coduomp_is_apple_silicon() != qfalse ? "250" : "85",
+        CVAR_ARCHIVE);
     com_developer =
         Cvar_Get("developer", "0", CVAR_TEMP);
     com_developerScript =
@@ -482,6 +593,7 @@ void Com_Init(char *commandLine)
     Cmd_AddCommand("quit", Com_Quit_f);
     Cmd_AddCommand("writeconfig", Com_WriteConfig_f);
     Cmd_AddCommand("writedefaults", Com_WriteDefaults_f);
+    coduomp_server_namespace_register_commands();
 
     com_version =
         Cvar_Get("version",

@@ -16,6 +16,7 @@ void Con_PageUp(void)
         con.displayLine = (int32_t)(
             (uint32_t)con.currentLine - (uint32_t)con.totalLines + 1u);
     }
+    coduomp_console_manually_scrolled = qtrue;
 }
 
 /* Source: CoDUOMP.exe 0x0040b440..0x0040b45d.
@@ -27,6 +28,8 @@ void Con_PageDown(void)
         (uint32_t)con.displayLine + (uint32_t)CON_PAGE_SCROLL_LINES);
     if (con.displayLine > con.currentLine)
         con.displayLine = con.currentLine;
+    coduomp_console_manually_scrolled =
+        con.displayLine != con.currentLine;
 }
 
 /* Source: CoDUOMP.exe 0x0040b460..0x0040b47d.
@@ -39,6 +42,7 @@ void Con_Top(void)
         (uint32_t)con.currentLine - (uint32_t)con.totalLines);
     if (oldestLine >= con.totalLines)
         con.displayLine = (int32_t)((uint32_t)oldestLine + 1u);
+    coduomp_console_manually_scrolled = qtrue;
 }
 
 /* Source: CoDUOMP.exe 0x0040b480..0x0040b48a.
@@ -47,4 +51,5 @@ void Con_Top(void)
 void Con_Bottom(void)
 {
     con.displayLine = con.currentLine;
+    coduomp_console_manually_scrolled = qfalse;
 }

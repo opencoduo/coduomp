@@ -4,6 +4,9 @@
 #include "gl_state.h"
 
 #include "../client/debug_lines.h"
+#if defined(__APPLE__) && defined(__aarch64__)
+#include "../platform/sdl_platform.h"
+#endif
 
 #include <math.h>
 #include <string.h>
@@ -31,6 +34,54 @@ const void *RB_Text_Paint(const text_paint_command_t *command)
     return (const uint8_t *)command + alignedCommandSize;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: apply one command-ordered cgame presentation
+ * transition. Flush pending 2D geometry before changing the viewport, then
+ * update an already-active 2D projection for the following composition. */
+static const void *coduomp_rb_set_cgame_2d_presentation(
+    const coduomp_cgame_2d_presentation_command_t *command)
+{
+    if (tess.indexCount != 0)
+        RB_EndSurface();
+
+    coduomp_backend_cgame_2d_compat_active = command->enabled;
+    if (backEnd.projection2D != qfalse)
+        coduomp_apply_2d_presentation_viewport();
+
+    return command + 1;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: apply one command-ordered console presentation
+ * transition. Pending geometry must be flushed because this scope selects a
+ * different viewport and text projection from both cgame and fullscreen UI. */
+static const void *coduomp_rb_set_console_2d_presentation(
+    const coduomp_console_2d_presentation_command_t *command)
+{
+    if (tess.indexCount != 0)
+        RB_EndSurface();
+
+    coduomp_backend_console_2d_compat_active = command->enabled;
+    if (backEnd.projection2D != qfalse)
+        coduomp_apply_2d_presentation_viewport();
+
+    return command + 1;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: apply one command-ordered UI presentation
+ * transition. This keeps a menu background and every item painted after it on
+ * one fitted canvas even if menu scripts rebuild the open-menu stack. */
+static const void *coduomp_rb_set_ui_2d_presentation(
+    const coduomp_ui_2d_presentation_command_t *command)
+{
+    if (tess.indexCount != 0)
+        RB_EndSurface();
+
+    coduomp_backend_ui_2d_compat_active = command->enabled;
+    if (backEnd.projection2D != qfalse)
+        coduomp_apply_2d_presentation_viewport();
+
+    return command + 1;
+}
+
 
 /* Source: CoDUOMP.exe 0x004c0950..0x004c09a1.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c0950_004c09a1.mcode.
@@ -54,6 +105,13 @@ const void *RB_DrawSurfs(const drawSurfsCommand_t *command)
  * Name: same-module Mac symbol RB_DrawBuffer. */
 const void *RB_DrawBuffer(const drawBufferCommand_t *command)
 {
+    /* NOT_FROM_ORIGINAL_SOURCE: an error abort between a scope's queued open
+     * and close markers leaves the backend presentation flags stuck across
+     * frames. No legitimate scope spans this frame-begin command, so it
+     * restores the neutral presentation state. */
+    coduomp_backend_cgame_2d_compat_active = qfalse;
+    coduomp_backend_console_2d_compat_active = qfalse;
+    coduomp_backend_ui_2d_compat_active = qfalse;
     qglDrawBuffer(command->buffer);
 
     if (r_clear->integer != 0) {
@@ -61,6 +119,19 @@ const void *RB_DrawBuffer(const drawBufferCommand_t *command)
         qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    if ((r_aspectMode != NULL && r_aspectMode->integer != 0) ||
+        (r_uifullscreen != NULL && r_uifullscreen->integer != 0)) {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): erase the complete
+         * drawable before classic 4:3 presentation or fullscreen 2D menus
+         * restrict their viewport. Native gameplay leaves its full-width 3D
+         * scene visible behind the aspect-correct HUD. The explicit full
+         * scissor matters because the previous frame may have ended with the
+         * fitted 2D scissor still active. */
+        qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+        qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+        qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        qglClear(GL_COLOR_BUFFER_BIT);
+    }
 
     return command + 1;
 }
@@ -437,6 +508,21 @@ void RB_ExecuteRenderCommands(const void *data)
         case RC_SWAP_BUFFERS:
             commandBytes = RB_SwapBuffers(
                 (const swapBuffersCommand_t *)commandBytes);
+            break;
+
+        case RC_SET_CGAME_2D_PRESENTATION:
+            commandBytes = coduomp_rb_set_cgame_2d_presentation(
+                (const coduomp_cgame_2d_presentation_command_t *)commandBytes);
+            break;
+
+        case RC_SET_CONSOLE_2D_PRESENTATION:
+            commandBytes = coduomp_rb_set_console_2d_presentation(
+                (const coduomp_console_2d_presentation_command_t *)commandBytes);
+            break;
+
+        case RC_SET_UI_2D_PRESENTATION:
+            commandBytes = coduomp_rb_set_ui_2d_presentation(
+                (const coduomp_ui_2d_presentation_command_t *)commandBytes);
             break;
 
 

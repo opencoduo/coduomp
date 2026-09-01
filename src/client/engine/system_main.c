@@ -46,6 +46,11 @@ int WINAPI WinMain(HINSTANCE applicationInstance,
     char workingDirectory[MAX_OSPATH];
 
     (void)showCommand;
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): opt out of DPI
+     * virtualization before the console, splash, or game window exists so
+     * fullscreen fills the display exactly under Windows display scaling.
+     * See coduomp_sys_enable_dpi_awareness. */
+    coduomp_sys_enable_dpi_awareness();
     coduomp_restore_retail_x87_precision();
     (void)Sys_InitLocalization();
 

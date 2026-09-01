@@ -208,6 +208,16 @@ void CL_Record_f(void)
     MSG_WriteLong(&message, clc.checksumFeed);
     MSG_WriteByte(&message, CL_DEMO_SVC_EOF);
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the extended client can
+     * accumulate more configstring data through runtime updates than the
+     * unchanged 32-KiB demo gamestate message can serialize. Close the new
+     * recording through its normal terminator path instead of compressing a
+     * partial message after MSG_Write* publishes overflowed. */
+    if (message.overflowed != qfalse) {
+        Com_Printf("ERROR: gamestate is too large to record.\n");
+        CL_StopRecord_f();
+        return;
+    }
 
     memcpy(compressedData, messageData, sizeof(int32_t));
     const int32_t compressedSize =

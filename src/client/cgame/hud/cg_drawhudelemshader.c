@@ -87,6 +87,13 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
      */
     float sizeW = CG_HudElemShaderWidth(elem, item);       /* [S+0xc] */
     float sizeH = CG_HudElemShaderHeight(elem, item);    /* [S+0x4] */
+    float drawX = item->x;
+
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): make a complete
+     * server/mod full-width shader (for example a killcam band) cover the
+     * native drawable. Partial HUD shaders retain their stock dimensions. */
+    cgame_compat_expand_native_server_hud_shader(
+        item, elem, &drawX, &sizeW);
 
     /*
      * 3002a221..a266: vertical placement of the element's top edge (yTop),
@@ -127,7 +134,7 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
          * 3002a286..a29e: CG_DrawPic(x, y, w, h, hShader) with
          *   x = item->x, y = yTop, w = sizeW, h = sizeH.
          */
-        CG_DrawPic(item->x, yTop, sizeW, sizeH, hShader);
+        CG_DrawPic(drawX, yTop, sizeW, sizeH, hShader);
     } else {
         /*
          * 3002a2a3..a2ea: CG_DrawStretchPic with explicit texcoords.
@@ -146,7 +153,7 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
         } else {
             s1 = 0.0f;   t1 = 0.0f; s2 = right; t2 = bottom;
         }
-        CG_DrawStretchPic(item->x, item->y, sizeW, sizeH,
+        CG_DrawStretchPic(drawX, item->y, sizeW, sizeH,
                           s1, t1, s2, t2, hShader);
     }
 

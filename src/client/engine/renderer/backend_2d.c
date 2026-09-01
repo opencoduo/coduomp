@@ -11,6 +11,30 @@ enum {
     RB_X86_SHIFT_COUNT_MASK = 31
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE: computes the aspect-correct physical output
+ * region for the stock 640x480 2D coordinate system. Native presentation
+ * uses this safe area for fullscreen menus; classic presentation uses it
+ * for the complete renderer. The stock source line omits this interface. */
+void coduomp_get_presentation_viewport(int32_t *x, int32_t *y,
+                                       int32_t *width, int32_t *height)
+{
+    *x = 0;
+    *y = 0;
+    *width = glConfig.vidWidth;
+    *height = glConfig.vidHeight;
+
+    if (*width <= 0 || *height <= 0) {
+        return;
+    }
+
+    if ((int64_t)*width * 3 > (int64_t)*height * 4) {
+        *width = (*height * 4 / 3) & ~1;
+        *x = (glConfig.vidWidth - *width) / 2;
+    } else if ((int64_t)*width * 3 < (int64_t)*height * 4) {
+        *height = (*width * 3 / 4) & ~1;
+        *y = (glConfig.vidHeight - *height) / 2;
+    }
+}
 
 /* Source: CoDUOMP.exe 0x00590e9c..0x00590ebc (.rdata). These are the
  * RGBA byte sequences selected by inline color escapes ^0 through ^7. */
@@ -82,6 +106,130 @@ void RB_EndMultitexture(void)
     GL_TexEnv(GL_MODULATE);
 }
 
+typedef struct coduomp_output_presentation_s {
+    int32_t renderWidth;
+    int32_t renderHeight;
+    int32_t outputWidth;
+    int32_t outputHeight;
+    int32_t nativeWidth;
+    int32_t nativeHeight;
+    qboolean preserveSelectedAspect;
+} coduomp_output_presentation_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: separates the resolution rendered by
+ * the game from the hardware-native fullscreen surface that presents it. */
+static coduomp_output_presentation_t coduompOutputPresentation;
+
+/* NOT_FROM_ORIGINAL_SOURCE: records the drawable and selected render sizes.
+ * A narrower selected fullscreen aspect is fitted inside the hardware aspect;
+ * explicit classic mode remains an inner 4:3 composition and takes final
+ * precedence over the selected aspect. */
+void coduomp_configure_output_presentation_compat(
+    int32_t renderWidth, int32_t renderHeight,
+    int32_t outputWidth, int32_t outputHeight,
+    int32_t nativeWidth, int32_t nativeHeight,
+    qboolean fullscreenOutput)
+{
+    coduompOutputPresentation.renderWidth = renderWidth;
+    coduompOutputPresentation.renderHeight = renderHeight;
+    coduompOutputPresentation.outputWidth = outputWidth;
+    coduompOutputPresentation.outputHeight = outputHeight;
+    coduompOutputPresentation.nativeWidth = nativeWidth;
+    coduompOutputPresentation.nativeHeight = nativeHeight;
+    coduompOutputPresentation.preserveSelectedAspect =
+        fullscreenOutput != qfalse &&
+        renderWidth > 0 && renderHeight > 0 &&
+        nativeWidth > 0 && nativeHeight > 0 &&
+        (int64_t)renderWidth * nativeHeight <
+            (int64_t)nativeWidth * renderHeight
+            ? qtrue
+            : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: returns the final presentation rectangle. The
+ * renderer composites only when its selected render surface differs from the
+ * drawable; black outside this rectangle supplies automatic fullscreen bars. */
+qboolean coduomp_get_output_presentation_compat(
+    int32_t *outputWidth, int32_t *outputHeight,
+    int32_t *viewportX, int32_t *viewportY,
+    int32_t *viewportWidth, int32_t *viewportHeight)
+{
+    const int32_t renderWidth = coduompOutputPresentation.renderWidth;
+    const int32_t renderHeight = coduompOutputPresentation.renderHeight;
+
+    *outputWidth = coduompOutputPresentation.outputWidth;
+    *outputHeight = coduompOutputPresentation.outputHeight;
+    *viewportX = 0;
+    *viewportY = 0;
+    *viewportWidth = *outputWidth;
+    *viewportHeight = *outputHeight;
+
+    if (renderWidth <= 0 || renderHeight <= 0 ||
+        *outputWidth <= 0 || *outputHeight <= 0) {
+        return qfalse;
+    }
+
+    /* Explicit classic presentation has final precedence: its 4:3 inner
+     * composition must never be distorted by a differently shaped output. */
+    if (coduompOutputPresentation.preserveSelectedAspect != qfalse ||
+        (r_aspectMode != NULL && r_aspectMode->integer != 0)) {
+        if ((int64_t)*outputWidth * renderHeight >
+            (int64_t)*outputHeight * renderWidth) {
+            *viewportWidth = (int32_t)(
+                (int64_t)*outputHeight * renderWidth / renderHeight);
+            *viewportX = (*outputWidth - *viewportWidth) / 2;
+        } else if ((int64_t)*outputWidth * renderHeight <
+                   (int64_t)*outputHeight * renderWidth) {
+            *viewportHeight = (int32_t)(
+                (int64_t)*outputWidth * renderHeight / renderWidth);
+            *viewportY = (*outputHeight - *viewportHeight) / 2;
+        }
+    }
+
+    return renderWidth != *outputWidth || renderHeight != *outputHeight ||
+                   *viewportX != 0 || *viewportY != 0 ||
+                   *viewportWidth != *outputWidth ||
+                   *viewportHeight != *outputHeight
+               ? qtrue
+               : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the presentation
+ * scope recorded in the renderer command stream. It is distinct from the
+ * frontend submission flag because renderer commands execute later. */
+qboolean coduomp_backend_cgame_2d_compat_active;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the native-width
+ * console scope recorded in the renderer command stream. */
+qboolean coduomp_backend_console_2d_compat_active;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the fitted UI scope
+ * recorded in the renderer command stream. */
+qboolean coduomp_backend_ui_2d_compat_active;
+
+/* NOT_FROM_ORIGINAL_SOURCE: select a viewport for the composition currently
+ * executing in the backend. Native-aspect cgame owns the complete drawable;
+ * classic cgame and fullscreen UI share one fitted 4:3 viewport. The console
+ * is an explicit native-width overlay in either gameplay aspect policy. */
+void coduomp_apply_2d_presentation_viewport(void)
+{
+    if (coduomp_backend_console_2d_compat_active == qfalse &&
+        ((r_aspectMode != NULL && r_aspectMode->integer != 0) ||
+         coduomp_backend_ui_2d_compat_active != qfalse ||
+         (coduomp_backend_cgame_2d_compat_active == qfalse &&
+          r_uifullscreen != NULL && r_uifullscreen->integer != 0))) {
+        int32_t viewportX;
+        int32_t viewportY;
+        int32_t viewportWidth;
+        int32_t viewportHeight;
+
+        coduomp_get_presentation_viewport(
+            &viewportX, &viewportY, &viewportWidth, &viewportHeight);
+        qglViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+        qglScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+    } else {
+        qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+        qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+    }
+}
 
 /* Source: CoDUOMP.exe 0x004bf220..0x004bf335.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004bf220_004bf335.mcode.
@@ -97,8 +245,11 @@ void RB_SetGL2D(void)
     backEnd.projection2D = qtrue;
     RB_EndMultitexture();
 
-    qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
-    qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): native gameplay 2D
+     * shares the drawable with the Hor+ view, while complete fullscreen UI
+     * uses its fitted viewport. The command-buffer presentation scope makes
+     * that decision independent of later UI state. */
+    coduomp_apply_2d_presentation_viewport();
 
     qglMatrixMode(GL_PROJECTION);
     qglLoadIdentity();

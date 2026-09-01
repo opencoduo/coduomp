@@ -41,7 +41,9 @@ enum {
     SYS_ERROR_DIALOG_TYPE = 16
 };
 
-#define CODUOMP_WIN_ALLOW_ALT_TAB_DEFAULT "0"
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): modern clients should
+ * retain normal Windows task switching unless the user disables it. */
+#define CODUOMP_WIN_ALLOW_ALT_TAB_DEFAULT "1"
 
 void *sysApplicationInstance; /* original 0x0489bb8c */
 void *sysConsoleWindow;       /* original 0x009d5950 */
@@ -1231,7 +1233,7 @@ LRESULT CALLBACK MainWndProc(HWND window, UINT message,
         registeredMouseWheelMessage =
             RegisterWindowMessageA("MSWHEEL_ROLLMSG");
 
-        if (r_fullscreen->integer != 0 &&
+        if (r_fullscreen->integer == 1 &&
             win_allowAltTab->integer == 0) {
             WIN_DisableAltTab();
         } else {
@@ -1241,7 +1243,7 @@ LRESULT CALLBACK MainWndProc(HWND window, UINT message,
 
     case WM_DESTROY:
         win32MainWindow = NULL;
-        if (r_fullscreen->integer != 0)
+        if (r_fullscreen->integer == 1)
             WIN_EnableAltTab();
         break;
 

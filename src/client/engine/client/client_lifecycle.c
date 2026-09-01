@@ -1,4 +1,5 @@
 #include "cgame.h"
+#include "widescreen_2d_compat.h"
 #include "cinematic.h"
 #include "console.h"
 #include "debug_lines.h"
@@ -8,6 +9,7 @@
 #include "../effects/fx_runtime.h"
 #include "qcommon/q_string.h"
 #include "filesystem/filesystem.h"
+#include "../filesystem/server_namespace.h"
 #include "../math/vector_math.h"
 #include "qcommon/hunk.h"
 #include "qcommon/com_config.h"
@@ -55,10 +57,17 @@ enum {
     CL_REF_PRINT_BUFFER_CAPACITY = 8192
 };
 
-#define CL_MAXPACKETS_DEFAULT_TEXT "30"
-#define CL_RATE_DEFAULT_TEXT "25000"
-#define CL_SNAPS_DEFAULT_TEXT "20"
-#define CL_NOAUTOUPDATE_DEFAULT_TEXT "0"
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): modern network defaults
+ * apply to every normal client platform. Cvar_Get still preserves values
+ * loaded from the user's config or command line; these strings are used only
+ * when the cvars do not exist. */
+#define CL_MAXPACKETS_DEFAULT_TEXT "125"
+#define CL_RATE_DEFAULT_TEXT "30000"
+#define CL_SNAPS_DEFAULT_TEXT "30"
+/* INTENTIONAL_OVERRIDE: the retired Activision auto-update query is opt-in
+ * for normal recovered-client builds. A command-line cvar created before
+ * CL_Init still takes precedence over this default. */
+#define CL_NOAUTOUPDATE_DEFAULT_TEXT "1"
 
 /* Original Win32 clientStatic_t at 0x04ad3d60..0x04dc464b. */
 clientStatic_t cls;
@@ -129,6 +138,9 @@ cvar_t *cl_executeString;           /* 0x0495807c */
 
 /* Original Win32 CL_Shutdown recursion guard at 0x0389fcec. */
 static qboolean cl_shutdownInProgress;
+/* NOT_FROM_ORIGINAL_SOURCE: frontend startup waits until the command-buffer
+ * pass containing the server-cache teardown has finished. */
+static qboolean coduomp_serverCacheModTeardownRestartPending;
 
 /* Original Win32 ConcatArgs return buffer at 0x008ce4e0. */
 static char cl_concatArgs[CL_CONCAT_ARGS_CAPACITY];
@@ -274,6 +286,39 @@ void CL_ClearStaticDownload(void)
  * unmounted at the next process start. A graceful exit restores front-end
  * cvars and search paths immediately, then schedules config and hunk users at
  * the next safe command-buffer boundary. */
+static void coduomp_client_teardown_server_cache_mod(void)
+{
+    if (coduomp_server_namespace_is_active() == qfalse ||
+        cls.wwwDownloadDisconnected != 0 ||
+        cl_shutdownInProgress != qfalse) {
+        return;
+    }
+
+    Com_WriteConfiguration();
+    CL_ShutdownAll();
+    Hunk_ClearToStart();
+    if (coduomp_server_namespace_deactivate() == qfalse)
+        return;
+
+    FS_PureServerSetLoadedPaks("", "");
+    FS_PureServerSetReferencedPaks("", "");
+    FS_Restart(0);
+    cl_connectedToPureServer = qfalse;
+    coduomp_serverCacheModTeardownRestartPending = qtrue;
+    Cbuf_InsertText("exec uoconfig_mp.cfg");
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: finish the deferred half of server-cache mod
+ * teardown only after Cbuf_Execute has returned and the restored frontend
+ * config has run. */
+void coduomp_client_complete_server_cache_mod_teardown(void)
+{
+    if (coduomp_serverCacheModTeardownRestartPending == qfalse)
+        return;
+
+    coduomp_serverCacheModTeardownRestartPending = qfalse;
+    CL_StartHunkUsers();
+}
 
 /* Source: CoDUOMP.exe 0x004109f0..0x00410b54.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004109f0_00410b55.mcode.
@@ -334,6 +379,7 @@ void CL_Disconnect(qboolean showMainMenu)
     cls.state = CA_DISCONNECTED;
     cl_connectedToPureServer = qfalse;
     fs_checksumFeed = 0;
+    coduomp_client_teardown_server_cache_mod();
 }
 
 /* Source: CoDUOMP.exe 0x00410b60..0x00410baf.
@@ -482,7 +528,16 @@ void CL_Connect_f(void)
     (void)Cvar_Set2("r_uiFullScreen", "0", qtrue);
     clc.serverMessage[0] = '\0';
 
-    const char *const server = Cmd_Argv(CL_CONNECT_SERVER_ARGUMENT);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the isolated server-cache
+     * teardown below restarts the filesystem, whose startup processing reuses
+     * the stock command tokenizer. Preserve the current connect argument only
+     * when that extension is active so the restart cannot replace it. */
+    char serverAfterModTeardown[sizeof(cls.serverName)];
+    const char *server = Cmd_Argv(CL_CONNECT_SERVER_ARGUMENT);
+    if (coduomp_server_namespace_is_active() != qfalse) {
+        Q_strncpyz(serverAfterModTeardown, server, sizeof(serverAfterModTeardown));
+        server = serverAfterModTeardown;
+    }
     if (sv_running->integer != 0 &&
         strcmp(server, "localhost") == 0) {
         Com_Shutdown("EXE_SERVERQUIT");
@@ -824,7 +879,7 @@ void CL_InitRef(void)
         .CIN_RunCinematic = CIN_RunCinematic,
         .CG_GetGameModel = CG_GetGameModel,
         .CG_DObjCalcPose = CG_DObjCalcPose,
-        .AdjustFrom640 = SCR_AdjustFrom640,
+        .AdjustFrom640 = coduomp_scr_adjust_from_640_compat,
         .CL_GetFontInfo = CL_GetFontInfo
     };
 
@@ -1459,7 +1514,11 @@ void CL_Init(void)
     cl_freelook = Cvar_Get("cl_freelook", "1", CVAR_ARCHIVE);
     cl_showmouserate = Cvar_Get("cl_showmouserate", "0", 0);
     cl_allowDownload =
-        Cvar_Get("cl_allowDownload", "0", CVAR_ARCHIVE);
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): downloads are
+         * required by many active servers, and the retail disabled default
+         * fails without a useful connection error.  Archived user choices
+         * still take precedence over this default. */
+        Cvar_Get("cl_allowDownload", "1", CVAR_ARCHIVE);
     cl_serverAllowDownload = Cvar_Get(
         "sv_allowDownload", "1",
         CVAR_ARCHIVE | CVAR_SYSTEMINFO);

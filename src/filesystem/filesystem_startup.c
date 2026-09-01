@@ -5,6 +5,9 @@
 #include "qcommon/q_command.h"
 #include "qcommon/q_string.h"
 
+#if defined(WINDOWS_BEHAVIOR)
+#include <stdlib.h>
+#endif
 #include <string.h>
 
 #if defined(WINDOWS_BEHAVIOR) && defined(LINUX_BEHAVIOR)
@@ -21,6 +24,40 @@ void Com_ReadCDKey(void);
 #endif
 
 #if defined(WINDOWS_BEHAVIOR)
+enum {
+    FILESYSTEM_COMPAT_ASPECT_MODE_UNAVAILABLE = -1
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: snapshot the user's presentation preference
+ * before an fs_game transition exposes the destination mod's archived
+ * configuration. r_aspectMode is a compatibility setting rather than a
+ * retail per-mod cvar, so downloaded mods must not stage an old letterboxed
+ * value for the next cgame registration. Preserve a pending graphics-menu
+ * selection when one exists. */
+static int32_t filesystem_compat_saved_aspect_mode(void)
+{
+    const cvar_t *const aspectMode = Cvar_FindVar("r_aspectMode");
+
+    if (aspectMode == NULL)
+        return FILESYSTEM_COMPAT_ASPECT_MODE_UNAVAILABLE;
+    if (aspectMode->latchedString != NULL)
+        return atoi(aspectMode->latchedString) != 0 ? 1 : 0;
+    return aspectMode->integer != 0 ? 1 : 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: run immediately after the destination mod's
+ * uoconfig_mp.cfg. If that file tried to replace r_aspectMode, restoring the
+ * already-active value cancels its latch before a later CG_RegisterCvars can
+ * apply it. The normal archived-config writer then heals the stale mod copy. */
+static void filesystem_compat_queue_saved_aspect_mode(int32_t aspectMode)
+{
+    if (aspectMode == FILESYSTEM_COMPAT_ASPECT_MODE_UNAVAILABLE)
+        return;
+
+    Cbuf_AddText(aspectMode != 0
+                     ? "set r_aspectMode 1\n"
+                     : "set r_aspectMode 0\n");
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the two identical
  * basegame/fs_game directory-addition blocks in FS_Startup. */
@@ -166,6 +203,8 @@ void FS_InitFilesystem(void)
  * recursive retry. */
 void FS_Restart(int32_t checksumFeed)
 {
+    const int32_t savedAspectMode =
+        filesystem_compat_saved_aspect_mode();
 
     FS_Shutdown(qfalse);
     fs_checksumFeed = checksumFeed;
@@ -199,6 +238,7 @@ void FS_Restart(int32_t checksumFeed)
     if (Q_stricmp(fs_game->string, fs_savedGame) != 0 &&
         Com_SafeMode() == qfalse) {
         Cbuf_AddText(va("exec %s\n", "uoconfig_mp.cfg"));
+        filesystem_compat_queue_saved_aspect_mode(savedAspectMode);
     }
 
     Q_strncpyz(fs_savedBasePath, fs_basepath->string,

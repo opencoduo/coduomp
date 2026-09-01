@@ -89,7 +89,12 @@ typedef void (*ui_startLocalSound_t)(const char *soundName);
 typedef qboolean (*ui_ownerDrawHandleKey_t)(int32_t ownerDraw, int32_t flags,
                                             float *special, int32_t key);
 typedef int32_t (*ui_feederCount_t)(float feeder);
-enum { UI_FEEDER_IMAGE_HANDLE_NONE = -1 };
+enum {
+    UI_FEEDER_IMAGE_HANDLE_NONE = -1,
+    /* NOT_FROM_ORIGINAL_SOURCE: a feeder may return two adjacent C strings;
+     * the second is painted as a grey suffix by the listbox renderer. */
+    UI_FEEDER_TEXT_GREY_SUFFIX = -2
+};
 typedef const char *(*ui_feederItemText_t)(float feeder, int32_t index,
                                            int32_t column,
                                            int32_t *imageHandle);

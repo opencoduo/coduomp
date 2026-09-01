@@ -135,6 +135,9 @@ under `.workbench/build/client/native/uo/`. `fs_cdpath` locates the game-data
 `main/` and `uo/` directories. `fs_homepath` keeps generated configuration,
 logs, downloads, and caches isolated from personal profiles.
 
+On the `master` branch, see [client gamma control](docs/client-gamma.md) for
+the selectable output-gamma policies and provider order.
+
 See [per-server client configuration](docs/client-server-configs.md) for the
 console commands that promote the current server profile to the global config
 or clear every isolated server config while preserving downloaded content.

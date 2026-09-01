@@ -31,6 +31,11 @@ qboolean coduomp_sdl_get_window_gamma_ramp(uint16_t red[256],
 qboolean coduomp_sdl_set_window_gamma_ramp(const uint16_t red[256],
                                            const uint16_t green[256],
                                            const uint16_t blue[256]);
+#if defined(__linux__)
+qboolean coduomp_sdl_get_x11_window_compat(
+    void **display, unsigned long *window,
+    int32_t *x, int32_t *y, int32_t *width, int32_t *height);
+#endif
 const char *coduomp_sdl_error_compat(void);
 void CoduoSDL_GetOpenGLFormat(int32_t *colorBits, int32_t *depthBits,
                               int32_t *stencilBits);

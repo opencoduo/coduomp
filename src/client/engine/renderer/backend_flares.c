@@ -2,6 +2,7 @@
 #include "gl_api.h"
 #include "gl_state.h"
 #include "renderer_cvars.h"
+#include "wgl_debug.h"
 
 #include "../math/vector_math.h"
 #include "../platform/crt_boundary.h"
@@ -42,6 +43,171 @@ static renderer_flare_t *rendererActiveFlares;
 static renderer_flare_t *rendererFreeFlares;
 static float rendererSunFlareVisibility;
 
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_gen_queries_t)(
+    int32_t count, uint32_t *queries);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_delete_queries_t)(
+    int32_t count, const uint32_t *queries);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_begin_query_t)(
+    uint32_t target, uint32_t query);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_end_query_t)(uint32_t target);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_get_query_object_t)(
+    uint32_t query, uint32_t parameter, uint32_t *value);
+
+typedef struct coduomp_flare_query_state_s {
+    uint32_t query[2];
+    uint32_t sequence[2];
+    int32_t sampleArea[2];
+    qboolean pending[2];
+    int32_t nextSlot;
+    uint32_t nextSequence;
+    uint32_t completedSequence;
+    float visibility;
+} coduomp_flare_query_state_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: asynchronous query state is kept
+ * beside, never inside, the exact 0x4c retail flare records. */
+static coduomp_flare_query_state_t
+    coduompFlareQueries[R_MAX_FLARES];
+static coduomp_gl_gen_queries_t coduompGlGenQueries;
+static coduomp_gl_delete_queries_t coduompGlDeleteQueries;
+static coduomp_gl_begin_query_t coduompGlBeginQuery;
+static coduomp_gl_end_query_t coduompGlEndQuery;
+static coduomp_gl_get_query_object_t coduompGlGetQueryObject;
+static qboolean coduompFlareQueryApiChecked;
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolves core 1.5 query entry points, with ARB
+ * spellings retained for compatibility contexts that expose only the
+ * extension names. */
+static qboolean coduomp_flare_query_load_api(void)
+{
+    if (coduompFlareQueryApiChecked != qfalse) {
+        return coduompGlGenQueries != NULL &&
+               coduompGlDeleteQueries != NULL &&
+               coduompGlBeginQuery != NULL &&
+               coduompGlEndQuery != NULL &&
+               coduompGlGetQueryObject != NULL;
+    }
+
+    coduompFlareQueryApiChecked = qtrue;
+    coduompGlGenQueries =
+        (coduomp_gl_gen_queries_t)qwglGetProcAddress("glGenQueries");
+    coduompGlDeleteQueries =
+        (coduomp_gl_delete_queries_t)qwglGetProcAddress("glDeleteQueries");
+    coduompGlBeginQuery =
+        (coduomp_gl_begin_query_t)qwglGetProcAddress("glBeginQuery");
+    coduompGlEndQuery =
+        (coduomp_gl_end_query_t)qwglGetProcAddress("glEndQuery");
+    coduompGlGetQueryObject =
+        (coduomp_gl_get_query_object_t)
+            qwglGetProcAddress("glGetQueryObjectuiv");
+
+    if (coduompGlGenQueries == NULL ||
+        coduompGlDeleteQueries == NULL ||
+        coduompGlBeginQuery == NULL ||
+        coduompGlEndQuery == NULL ||
+        coduompGlGetQueryObject == NULL) {
+        coduompGlGenQueries =
+            (coduomp_gl_gen_queries_t)
+                qwglGetProcAddress("glGenQueriesARB");
+        coduompGlDeleteQueries =
+            (coduomp_gl_delete_queries_t)
+                qwglGetProcAddress("glDeleteQueriesARB");
+        coduompGlBeginQuery =
+            (coduomp_gl_begin_query_t)
+                qwglGetProcAddress("glBeginQueryARB");
+        coduompGlEndQuery =
+            (coduomp_gl_end_query_t)
+                qwglGetProcAddress("glEndQueryARB");
+        coduompGlGetQueryObject =
+            (coduomp_gl_get_query_object_t)
+                qwglGetProcAddress("glGetQueryObjectuivARB");
+    }
+
+    if (coduompGlGenQueries == NULL ||
+        coduompGlDeleteQueries == NULL ||
+        coduompGlBeginQuery == NULL ||
+        coduompGlEndQuery == NULL ||
+        coduompGlGetQueryObject == NULL) {
+        coduompGlGenQueries = NULL;
+        coduompGlDeleteQueries = NULL;
+        coduompGlBeginQuery = NULL;
+        coduompGlEndQuery = NULL;
+        coduompGlGetQueryObject = NULL;
+        ri.Printf(R_PRINT_WARNING,
+                  "Occlusion queries unavailable; using flare depth readback\n");
+        return qfalse;
+    }
+
+    for (int32_t index = 0; index < R_MAX_FLARES; ++index)
+        coduompGlGenQueries(2, coduompFlareQueries[index].query);
+    ri.Printf(R_PRINT_ALL,
+              "Using asynchronous occlusion queries for flare visibility\n");
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: deletes sidecar query objects while their owning
+ * GL context is current and clears context-specific entry points. */
+void coduomp_flare_query_shutdown(void)
+{
+    if (coduompGlDeleteQueries != NULL) {
+        for (int32_t index = 0; index < R_MAX_FLARES; ++index) {
+            if (coduompFlareQueries[index].query[0] != 0 ||
+                coduompFlareQueries[index].query[1] != 0) {
+                coduompGlDeleteQueries(
+                    2, coduompFlareQueries[index].query);
+            }
+        }
+    }
+    memset(coduompFlareQueries, 0, sizeof(coduompFlareQueries));
+    coduompGlGenQueries = NULL;
+    coduompGlDeleteQueries = NULL;
+    coduompGlBeginQuery = NULL;
+    coduompGlEndQuery = NULL;
+    coduompGlGetQueryObject = NULL;
+    coduompFlareQueryApiChecked = qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: discard map-local query history without allowing
+ * an in-flight result to become the visibility of a newly reused flare. */
+static void coduomp_flare_query_reset(void)
+{
+    if (coduompGlDeleteQueries != NULL) {
+        for (int32_t index = 0; index < R_MAX_FLARES; ++index) {
+            coduompGlDeleteQueries(
+                2, coduompFlareQueries[index].query);
+        }
+    }
+    memset(coduompFlareQueries, 0, sizeof(coduompFlareQueries));
+    if (coduompGlGenQueries != NULL) {
+        for (int32_t index = 0; index < R_MAX_FLARES; ++index)
+            coduompGlGenQueries(2, coduompFlareQueries[index].query);
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: prevents a recycled retail pool slot from
+ * inheriting an earlier flare's delayed visibility result. New active
+ * sources start optimistically visible so a one-frame muzzle-light flare is
+ * not lost while its first asynchronous result is still in flight; the
+ * retail fade-in limits that provisional contribution until the query
+ * corrects it. */
+static void coduomp_flare_query_reset_slot(renderer_flare_t *flare,
+                                            qboolean active)
+{
+    const ptrdiff_t index = flare - rendererFlarePool;
+    coduomp_flare_query_state_t *queryState;
+
+    if (index < 0 || index >= R_MAX_FLARES)
+        return;
+    queryState = &coduompFlareQueries[index];
+    if (coduompGlDeleteQueries != NULL &&
+        (queryState->query[0] != 0 || queryState->query[1] != 0)) {
+        coduompGlDeleteQueries(2, queryState->query);
+    }
+    memset(queryState, 0, sizeof(*queryState));
+    queryState->visibility = active != qfalse ? 1.0f : 0.0f;
+    if (coduompGlGenQueries != NULL)
+        coduompGlGenQueries(2, queryState->query);
+}
 
 #if UINTPTR_MAX == UINT32_MAX
 _Static_assert(_Alignof(renderer_flare_t) == 0x4,
@@ -125,6 +291,7 @@ _Static_assert(sizeof(renderer_flare_t) == 0x4c,
  * back toward the first record. */
 void RE_ClearFlares(void)
 {
+    coduomp_flare_query_reset();
     memset(rendererFlarePool, 0, sizeof(rendererFlarePool));
     rendererActiveFlares = NULL;
     rendererSunFlareVisibility = 0.0f;
@@ -230,6 +397,7 @@ void RB_AddFlare(const renderer_flare_source_t *source,
             return;
 
         rendererFreeFlares = flare->next;
+        coduomp_flare_query_reset_slot(flare, source->active);
         flare->next = rendererActiveFlares;
         rendererActiveFlares = flare;
         flare->frameSceneNum = backEnd.viewParms.frameSceneNum;
@@ -377,6 +545,117 @@ void RB_AddCoronaFlares(void)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: polls completed results without waiting, then
+ * submits one depth-tested screen-space square into an alternate query slot.
+ * The last completed fraction remains the target while both slots are still
+ * in flight, which turns the retail synchronous readback into a short
+ * pipeline without changing its fade behavior. */
+static qboolean coduomp_test_flare_occlusion_query(
+    renderer_flare_t *flare, int32_t sampleX, int32_t sampleY,
+    int32_t sampleWidth, int32_t sampleHeight, int32_t sampleArea,
+    float *targetVisibility)
+{
+    const ptrdiff_t flareIndex = flare - rendererFlarePool;
+    coduomp_flare_query_state_t *queryState;
+    int32_t submitSlot = -1;
+
+    if (r_flareOcclusionQuery == NULL ||
+        r_flareOcclusionQuery->integer == 0 ||
+        flareIndex < 0 || flareIndex >= R_MAX_FLARES ||
+        coduomp_flare_query_load_api() == qfalse) {
+        return qfalse;
+    }
+
+    queryState = &coduompFlareQueries[flareIndex];
+    for (int32_t slot = 0; slot < 2; ++slot) {
+        uint32_t available = 0;
+
+        if (queryState->pending[slot] == qfalse)
+            continue;
+        coduompGlGetQueryObject(
+            queryState->query[slot], GL_QUERY_RESULT_AVAILABLE, &available);
+        if (available != 0) {
+            uint32_t samplesPassed = 0;
+            float visibility;
+
+            coduompGlGetQueryObject(
+                queryState->query[slot], GL_QUERY_RESULT, &samplesPassed);
+            queryState->pending[slot] = qfalse;
+            visibility =
+                queryState->sampleArea[slot] > 0
+                    ? (float)samplesPassed /
+                          (float)queryState->sampleArea[slot]
+                    : 0.0f;
+            if (visibility > 1.0f)
+                visibility = 1.0f;
+            if (queryState->sequence[slot] >=
+                queryState->completedSequence) {
+                queryState->completedSequence =
+                    queryState->sequence[slot];
+                queryState->visibility = visibility;
+            }
+        }
+    }
+    *targetVisibility = queryState->visibility;
+
+    for (int32_t offset = 0; offset < 2; ++offset) {
+        const int32_t slot = (queryState->nextSlot + offset) & 1;
+
+        if (queryState->pending[slot] == qfalse) {
+            submitSlot = slot;
+            break;
+        }
+    }
+    if (submitSlot < 0 || sampleWidth <= 0 || sampleHeight <= 0)
+        return qtrue;
+
+    if (tess.indexCount != 0)
+        RB_EndSurface();
+    GL_State(0);
+    GL_Cull(CT_TWO_SIDED);
+    if (backEnd.viewParms.isPortal != qfalse)
+        qglDisable(GL_CLIP_PLANE0);
+
+    qglMatrixMode(GL_PROJECTION);
+    qglPushMatrix();
+    qglLoadIdentity();
+    qglOrtho(0.0, (double)glConfig.vidWidth,
+             0.0, (double)glConfig.vidHeight, -1.0, 1.0);
+    qglMatrixMode(GL_MODELVIEW);
+    qglPushMatrix();
+    qglLoadIdentity();
+
+    qglColorMask(qfalse, qfalse, qfalse, qfalse);
+    coduompGlBeginQuery(
+        GL_SAMPLES_PASSED, queryState->query[submitSlot]);
+    qglBegin(GL_QUADS);
+    {
+        const float left = (float)sampleX;
+        const float right = (float)(sampleX + sampleWidth);
+        const float bottom = (float)sampleY;
+        const float top = (float)(sampleY + sampleHeight);
+        const float depth = 1.0f - 2.0f * flare->eyeZ;
+
+        qglVertex3f(left, bottom, depth);
+        qglVertex3f(left, top, depth);
+        qglVertex3f(right, top, depth);
+        qglVertex3f(right, bottom, depth);
+    }
+    qglEnd();
+    coduompGlEndQuery(GL_SAMPLES_PASSED);
+    qglColorMask(qtrue, qtrue, qtrue, qtrue);
+
+    qglPopMatrix();
+    qglMatrixMode(GL_PROJECTION);
+    qglPopMatrix();
+    qglMatrixMode(GL_MODELVIEW);
+
+    queryState->pending[submitSlot] = qtrue;
+    queryState->sampleArea[submitSlot] = sampleArea;
+    queryState->sequence[submitSlot] = ++queryState->nextSequence;
+    queryState->nextSlot = (submitSlot + 1) & 1;
+    return qtrue;
+}
 
 /* Source: CoDUOMP.exe 0x004ef430..0x004ef655.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004ef430_004ef656.mcode.
@@ -397,12 +676,18 @@ static void RB_TestFlare(renderer_flare_t *flare)
 
     ++backEnd.pc.flareTestCount;
 
-    if (flare->windowX + flare->screenRadius < 0 ||
+    if (flare->windowX + flare->screenRadius <
+            backEnd.viewParms.viewportX ||
         flare->windowX - flare->screenRadius >=
-            backEnd.viewParms.viewportWidth ||
-        flare->windowY + flare->screenRadius < 0 ||
+            backEnd.viewParms.viewportX +
+                backEnd.viewParms.viewportWidth ||
+        flare->windowY + flare->screenRadius <
+            backEnd.viewParms.viewportY ||
         flare->windowY - flare->screenRadius >=
-            backEnd.viewParms.viewportHeight) {
+            backEnd.viewParms.viewportY +
+                backEnd.viewParms.viewportHeight) {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): viewport origins
+         * matter for centered classic presentation and reduced viewsize. */
         targetVisibility = (flare->active & 1) != 0 ? 1.0f : 0.0f;
     } else {
         int32_t sampleSide = flare->screenRadius * 2 + 1;
@@ -420,38 +705,48 @@ static void RB_TestFlare(renderer_flare_t *flare)
         int32_t sampleWidth = sampleSide;
         int32_t sampleHeight = sampleSide;
 
-        if (sampleX < 0) {
-            sampleWidth += sampleX;
-            sampleX = 0;
+        if (sampleX < backEnd.viewParms.viewportX) {
+            sampleWidth -= backEnd.viewParms.viewportX - sampleX;
+            sampleX = backEnd.viewParms.viewportX;
         } else if (sampleWidth >
-                   backEnd.viewParms.viewportWidth - sampleX) {
-            sampleWidth = backEnd.viewParms.viewportWidth - sampleX;
+                   backEnd.viewParms.viewportX +
+                       backEnd.viewParms.viewportWidth - sampleX) {
+            sampleWidth =
+                backEnd.viewParms.viewportX +
+                backEnd.viewParms.viewportWidth - sampleX;
         }
 
-        if (sampleY < 0) {
-            sampleHeight += sampleY;
-            sampleY = 0;
+        if (sampleY < backEnd.viewParms.viewportY) {
+            sampleHeight -= backEnd.viewParms.viewportY - sampleY;
+            sampleY = backEnd.viewParms.viewportY;
         } else if (sampleHeight >
-                   backEnd.viewParms.viewportHeight - sampleY) {
-            sampleHeight = backEnd.viewParms.viewportHeight - sampleY;
+                   backEnd.viewParms.viewportY +
+                       backEnd.viewParms.viewportHeight - sampleY) {
+            sampleHeight =
+                backEnd.viewParms.viewportY +
+                backEnd.viewParms.viewportHeight - sampleY;
         }
 
-        glState.finishCalled = qfalse;
-        if (sampleWidth > 0 && sampleHeight > 0) {
-            const int32_t readPixelCount = sampleWidth * sampleHeight;
+        if (coduomp_test_flare_occlusion_query(
+                flare, sampleX, sampleY, sampleWidth, sampleHeight,
+                sampleArea, &targetVisibility) == qfalse) {
+            glState.finishCalled = qfalse;
+            if (sampleWidth > 0 && sampleHeight > 0) {
+                const int32_t readPixelCount = sampleWidth * sampleHeight;
 
-            qglReadPixels(sampleX, sampleY, sampleWidth, sampleHeight,
-                          GL_DEPTH_COMPONENT, GL_FLOAT, depthSamples);
-            for (int32_t sampleIndex = 0;
-                 sampleIndex < readPixelCount;
-                 ++sampleIndex) {
-                if (flare->eyeZ <= depthSamples[sampleIndex])
-                    ++visiblePixelCount;
+                qglReadPixels(sampleX, sampleY, sampleWidth, sampleHeight,
+                              GL_DEPTH_COMPONENT, GL_FLOAT, depthSamples);
+                for (int32_t sampleIndex = 0;
+                     sampleIndex < readPixelCount;
+                     ++sampleIndex) {
+                    if (flare->eyeZ <= depthSamples[sampleIndex])
+                        ++visiblePixelCount;
+                }
             }
-        }
 
-        targetVisibility =
-            (float)visiblePixelCount / (float)sampleArea;
+            targetVisibility =
+                (float)visiblePixelCount / (float)sampleArea;
+        }
     }
 
     if (flare->id == -1)

@@ -1,5 +1,7 @@
 #include "backend.h"
 
+#include "output_gamma_compat.h"
+#include "platform_gamma.h"
 #include "renderer_cvars.h"
 
 #include <math.h>
@@ -10,19 +12,17 @@
 /* Source: CoDUOMP.exe 0x0050a650..0x0050a851.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050a650_0050a852.mcode.
  * Name and source boundary: exact same-module Mac symbol
- * R_SetColorMappings. The four tables consumed by R_LightScaleTexture are
- * kept distinct because hardware gamma changes which overbright operation
- * must be performed in software. */
+ * R_SetColorMappings. This compatibility provider is selected as a whole so
+ * output-LUT policy does not interleave preprocessor branches through the
+ * recovered provider. */
 void R_SetColorMappings(void)
 {
     tr.overbrightBits = 0;
-    if (glConfig.deviceSupportsGamma && glConfig.isFullscreen &&
-        r_overBrightBits->integer != 0) {
+    if (coduomp_gamma_output_available() != qfalse &&
+        glConfig.isFullscreen && r_overBrightBits->integer != 0) {
         tr.overbrightBits = 1;
     }
 
-    /* 0x0050a693..0x0050a6a9 stores the reciprocal to identityLight but
-     * retains it for the identity-byte conversion. */
     const long double identityLightRaw =
         1.0L / (long double)(1 << tr.overbrightBits);
     tr.identityLight = (float)identityLightRaw;
@@ -79,9 +79,27 @@ void R_SetColorMappings(void)
         rendererIntensityTable[input] = (uint8_t)intensityValue;
     }
 
-    if (glConfig.deviceSupportsGamma) {
+    const qboolean nativeGammaBeforeSet =
+        glConfig.deviceSupportsGamma;
+    if (nativeGammaBeforeSet != qfalse) {
         GLimp_SetGamma(rendererGammaOverbrightTable,
                        rendererGammaOverbrightTable,
                        rendererGammaOverbrightTable);
+    }
+
+    if (coduomp_output_gamma_software_active_compat() != qfalse) {
+        coduomp_output_gamma_set_lut_compat(
+            rendererGammaOverbrightTable,
+            rendererGammaOverbrightTable,
+            rendererGammaOverbrightTable);
+    }
+
+    /* NOT_FROM_ORIGINAL_SOURCE: if every native and final-output path failed
+     * after mappings were built with overbright, rebuild once without that
+     * hardware-only assumption. */
+    if (nativeGammaBeforeSet != qfalse &&
+        coduomp_gamma_output_available() == qfalse &&
+        tr.overbrightBits != 0) {
+        R_SetColorMappings();
     }
 }

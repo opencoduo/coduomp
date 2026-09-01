@@ -45,9 +45,7 @@ void UI_BuildServerDisplayList(int32_t force)
     trap_Cvar_VariableStringBuffer("cl_motdString", ui_motd,
                                    sizeof(ui_motd));
     if (ui_motd[0] == '\0') {
-        strcpy(ui_motd,
-               va("%s - %s",
-                  UI_SafeTranslateString("EXE_COD_MULTIPLAYER"), "1.51"));
+        strcpy(ui_motd, CODUOMP_DISPLAY_LABEL);
     }
     if ((int32_t)strlen(ui_motd) != ui_motdLength) {
         ui_motdLength = (int32_t)strlen(ui_motd);

@@ -1,6 +1,7 @@
 #include "renderer_api.h"
 
 #include "../client/debug_lines.h"
+#include "../client/widescreen_2d_compat.h"
 #include "../effects/fx_api.h"
 
 #include <string.h>
@@ -27,6 +28,7 @@ void RE_StretchPicRotate(float x, float y, float width, float height,
 void RE_DrawQuadPic(const vec2_t positions[4], const vec2_t texCoords[4],
                     int32_t shaderHandle);
 void RE_BeginFrame(stereoFrame_t stereoFrame);
+void coduomp_re_begin_frame_compat(stereoFrame_t stereoFrame);
 void RE_EndFrame(int32_t *frontEndMsec, int32_t *backEndMsec);
 void RE_SaveScreen(void);
 void RE_BlendSavedScreen(int32_t duration);
@@ -91,13 +93,15 @@ refexport_t *GetRefAPI(int32_t apiVersion,
     rendererModuleExports.RenderScene = RE_RenderScene;
     rendererModuleExports.ClearFlares = RE_ClearFlares;
     rendererModuleExports.SetColor = RE_SetColor;
-    rendererModuleExports.StretchPic = RE_StretchPic;
-    rendererModuleExports.StretchPicGradient = RE_StretchPicGradient;
-    rendererModuleExports.StretchPicRotate = RE_StretchPicRotate;
-    rendererModuleExports.DrawQuadPic = RE_DrawQuadPic;
+    rendererModuleExports.StretchPic = coduomp_re_stretch_pic_compat;
+    rendererModuleExports.StretchPicGradient =
+        coduomp_re_stretch_pic_gradient_compat;
+    rendererModuleExports.StretchPicRotate =
+        coduomp_re_stretch_pic_rotate_compat;
+    rendererModuleExports.DrawQuadPic = coduomp_re_draw_quad_pic_compat;
     rendererModuleExports.StretchRaw = RE_StretchRaw;
     rendererModuleExports.UploadCinematic = RE_UploadCinematic;
-    rendererModuleExports.BeginFrame = RE_BeginFrame;
+    rendererModuleExports.BeginFrame = coduomp_re_begin_frame_compat;
     rendererModuleExports.EndFrame = RE_EndFrame;
     rendererModuleExports.SaveScreen = RE_SaveScreen;
     rendererModuleExports.BlendSavedScreen = RE_BlendSavedScreen;

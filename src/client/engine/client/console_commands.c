@@ -42,6 +42,11 @@ int32_t chat_playerNum;
 
 /* Original Win32 console state begins at 0x04e1cc20. */
 console_state_t con;
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): distinguish an intentional
+ * user backscroll from a temporary stock-created display/current mismatch.
+ * This sidecar is absent from the stock source and leaves the recovered retail
+ * console record unchanged there. */
+qboolean coduomp_console_manually_scrolled;
 
 enum {
     CON_CHAT_FIELD_WIDTH = 588,
@@ -149,6 +154,8 @@ void Con_Init(void)
  * Name and signature: exact same-module Mac symbol Con_ToggleConsole_f. */
 void Con_ToggleConsole_f(void)
 {
+    const qboolean openingConsole =
+        (cls.keyCatchers & KEYCATCH_CONSOLE) == 0;
 
     if (cls.state == CA_DISCONNECTED && cls.keyCatchers == KEYCATCH_CONSOLE) {
         Cbuf_AddText("d1\n");
@@ -168,6 +175,10 @@ void Con_ToggleConsole_f(void)
     con_inputField.charWidth = con_fieldCharWidth;
     con_inputField.charHeight = con_fieldCharHeight;
     con_inputField.fixedSize = qtrue;
+    if (openingConsole != qfalse &&
+        coduomp_console_manually_scrolled == qfalse) {
+        con.displayLine = con.currentLine;
+    }
     cls.keyCatchers ^= KEYCATCH_CONSOLE;
 }
 
@@ -225,6 +236,7 @@ void Con_Clear_f(void)
     for (int32_t cell = 0; cell < CON_TEXT_CELL_COUNT; ++cell)
         con.text[cell] = CON_EMPTY_TEXT_CELL;
     con.displayLine = con.currentLine;
+    coduomp_console_manually_scrolled = qfalse;
 }
 
 /* Source: CoDUOMP.exe 0x00409160..0x004092f5.
@@ -291,6 +303,36 @@ void Con_Dump_f(void)
  * Con_Bottom as con.displayLine = con.currentLine. */
 void Console_Key(int32_t key)
 {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): provide the terminal
+     * Ctrl-W word erase convention without changing shared chat-field input.
+     * Treat whitespace and underscores as delimiters, deleting delimiters
+     * immediately before the cursor and then the preceding word while
+     * retaining any command text after the cursor. */
+    if (key == 'w' && keyStates[K_CTRL].down != qfalse) {
+        int32_t deleteStart = con_inputField.cursor;
+
+        while (deleteStart > 0 &&
+               (con_inputField.buffer[deleteStart - 1] == '_' ||
+                coduo_crt_isspace((int32_t)(signed char)
+                    con_inputField.buffer[deleteStart - 1]))) {
+            --deleteStart;
+        }
+        while (deleteStart > 0 &&
+               con_inputField.buffer[deleteStart - 1] != '_' &&
+               !coduo_crt_isspace((int32_t)(signed char)
+                   con_inputField.buffer[deleteStart - 1])) {
+            --deleteStart;
+        }
+
+        if (deleteStart != con_inputField.cursor) {
+            memmove(&con_inputField.buffer[deleteStart],
+                    &con_inputField.buffer[con_inputField.cursor],
+                    strlen(&con_inputField.buffer[con_inputField.cursor]) + 1);
+            con_inputField.cursor = deleteStart;
+            Field_AdjustScroll(&con_inputField);
+        }
+        return;
+    }
 
     if (key == 'l' && keyStates[K_CTRL].down != qfalse) {
         Cbuf_AddText("clear\n");

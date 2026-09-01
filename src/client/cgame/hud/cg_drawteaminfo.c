@@ -45,6 +45,9 @@
 // (base = the loop-top ESP), not the raw [ESP+X] literals.
 void CG_DrawTeamInfo(void)
 {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): one explicit group
+     * translation is reused for both the chat strip image and its text. */
+    const float compatLeftX = cgame_compat_left_hud_virtual_offset();
 
     // 0x30018770..0x30018810: clamp the visible-line count to [1..8]. A count of
     // 0 (or negative) means the team-chat HUD is off -> nothing to draw.
@@ -165,7 +168,8 @@ void CG_DrawTeamInfo(void)
                              (long double)barWidth);           /* 0x30018937..3d */
         float barY = (float)((long double)cgs_screenYScale *
                              (long double)(float)yBar);        /* 0x30018945..4b */
-        float barX = (float)((long double)cgs_screenXScale * 0.0L); /* 0x30018953..59 */
+        float barX = (float)((long double)cgs_screenXScale *
+                             (long double)compatLeftX);
         trap_R_DrawStretchPic(CG_FloatBits(barX), CG_FloatBits(barY),
                               CG_FloatBits(barW), CG_FloatBits(barH),
                               0, 0,                            /* s1=0, t1=0 */
@@ -183,7 +187,7 @@ void CG_DrawTeamInfo(void)
             (uint32_t)fromTopText * 10u + 93u);               /* 0x30018977..0x30018984 */
         vec4_t whiteColor = { 1.0f, 1.0f, 1.0f, alpha };
         cgame_syscall(CG_R_TEXT_PAINT,
-                      CG_FloatBits(8.0f),                     /* x-origin (0x41000000) */
+                      CG_FloatBits(8.0f + compatLeftX),
                       CG_FloatBits((float)yText),             /* baseline y */
                       0,                                      /* style */
                       0x3e555555,                             /* text scale 0.20833333 */

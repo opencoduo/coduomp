@@ -13,6 +13,8 @@ void CG_UpdateCvars(void) /* 0x3002b260 */
     for (int32_t i = 0; i < CG_CVAR_TABLE_COUNT; ++i) {
         cgame_syscall(CG_CVAR_UPDATE, (intptr_t)cg_cvarTable[i].vmCvar);
     }
+    cgame_compat_update_presentation_cvars();
+    cgame_compat_configure_screen_scales();
 }
 
 /* The Mac CG_VoiceChatListForClient is the corresponding selector used by

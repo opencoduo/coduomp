@@ -290,7 +290,7 @@ CODUOMP_FLOAT_FLAGS := -ffp-contract=off
 # 16 KiB segment limit.  This does not change the global's declared alignment,
 # layout, or zero-initialization semantics.
 CODUOMP_STORAGE_FLAGS := -fno-common
-CODUOMP_NATIVE_BUILD_DIR ?= .workbench/build/client-engine/native-stock
+CODUOMP_NATIVE_BUILD_DIR ?= .workbench/build/client-engine/native
 CODUOMP_NATIVE_EXECUTABLE ?= $(CODUOMP_NATIVE_BUILD_DIR)/CoDUOMP
 CODUOMP_INCLUDE_FLAGS := -Isrc \
 	-iquote src/client/engine/bindings \
@@ -321,6 +321,15 @@ CODUOMP_NATIVE_C_OBJECTS := $(patsubst src/client/engine/%.c,$(CODUOMP_NATIVE_BU
 CODUOMP_NATIVE_CXX_OBJECTS := $(patsubst src/client/engine/%.cpp,$(CODUOMP_NATIVE_BUILD_DIR)/%.cpp.o,$(CODUOMP_CXX_SOURCES)) \
 	$(patsubst $(SHARED_SCRIPT_DIR)/%.cpp,$(CODUOMP_NATIVE_BUILD_DIR)/src/scripting/%.cpp.o,$(SHARED_SCRIPT_CXX_SOURCES))
 CODUOMP_NATIVE_OBJC_OBJECTS := $(patsubst src/client/engine/%.m,$(CODUOMP_NATIVE_BUILD_DIR)/%.m.o,$(CODUOMP_MACOS_OBJC_SOURCES))
+CODUOMP_NATIVE_SELECTIVE_O2_C_OBJECTS := \
+	$(patsubst src/client/engine/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/%.c.o,$(filter src/client/engine/%.c,$(CLIENT_ENGINE_SELECTIVE_O2_C_SOURCES))) \
+	$(patsubst $(SHARED_MATH_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/src/math/%.c.o,$(filter $(SHARED_MATH_DIR)/%.c,$(CLIENT_ENGINE_SELECTIVE_O2_C_SOURCES))) \
+	$(patsubst $(SHARED_ANIMATION_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/src/animation/%.c.o,$(filter $(SHARED_ANIMATION_DIR)/%.c,$(CLIENT_ENGINE_SELECTIVE_O2_C_SOURCES))) \
+	$(patsubst $(SHARED_COLLISION_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/src/collision/%.c.o,$(filter $(SHARED_COLLISION_DIR)/%.c,$(CLIENT_ENGINE_SELECTIVE_O2_C_SOURCES))) \
+	$(patsubst $(SHARED_FILESYSTEM_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/src/filesystem/%.c.o,$(filter $(SHARED_FILESYSTEM_DIR)/%.c,$(CLIENT_ENGINE_SELECTIVE_O2_C_SOURCES))) \
+	$(patsubst $(SHARED_SOUND_ALIAS_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/src/sound/alias/%.c.o,$(filter $(SHARED_SOUND_ALIAS_DIR)/%.c,$(CLIENT_ENGINE_SELECTIVE_O2_C_SOURCES)))
+$(CODUOMP_NATIVE_SELECTIVE_O2_C_OBJECTS): \
+	CODUOMP_NATIVE_C_OPTIMIZATION_FLAGS := $(CLIENT_ENGINE_SELECTIVE_O2_CFLAGS)
 ifeq ($(shell uname -s),Darwin)
 CLIENT_NATIVE_LIBRARY := .workbench/build/cgame/native/libcoduo_cgame.dylib
 CLIENT_NATIVE_LDFLAGS := -dynamiclib

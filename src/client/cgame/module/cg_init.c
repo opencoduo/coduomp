@@ -61,6 +61,10 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
         (long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
     cgs_screenYScale = (float)(
         (long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep the recovered
+     * assignments above intact, then let the isolated presentation interface
+     * select the proportional centered-canvas scale for native widescreen. */
+    cgame_compat_configure_screen_scales();
 
     cgame_syscall(CG_GET_GAME_STATE, &cg_gameState);
 

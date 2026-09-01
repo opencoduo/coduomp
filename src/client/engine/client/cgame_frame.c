@@ -1,4 +1,5 @@
 #include "cgame.h"
+#include "widescreen_2d_compat.h"
 
 #include "cinematic.h"
 #include "console.h"
@@ -33,8 +34,11 @@ cvar_t *com_timescale;
 static uint32_t cl_previousCommandFrameTime;
 uint32_t cl_commandFrameMsec;
 
-#define CL_MAXPACKETS_MAX_VALUE 100
-#define CL_MAXPACKETS_MAX_TEXT "100"
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the retail packet scheduler
+ * clamps cl_maxpackets to 100. Improved builds accept the modern default of
+ * 125; the stock source retains the original 15..100 domain. */
+#define CL_MAXPACKETS_MAX_VALUE 125
+#define CL_MAXPACKETS_MAX_TEXT "125"
 
 /* Source: CoDUOMP.exe 0x0058ebd8..0x0058ec58 (.rdata). Standard inline-text
  * colors ^0 through ^7, stored as four-float RGBA vectors. */
@@ -1175,11 +1179,20 @@ qboolean CL_GameCommand(void)
  * six semantic frame arguments. */
 void CL_CGameRendering(int32_t stereoView, qboolean drawFrame)
 {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): identify every renderer
+     * command submitted by the cgame VM. The command-buffer markers preserve
+     * that identity until deferred backend execution; a simultaneous
+     * fullscreen state in the separate UI VM must not reinterpret cgame
+     * menus, scoreboard, text, or HUD geometry. */
+    coduomp_queue_cgame_2d_presentation(qtrue);
+    coduomp_cgame_rendering_compat_active = qtrue;
     (void)VM_Call(
         coduo_cgameVm, CGVM_DRAW_ACTIVE_FRAME,
         cl.serverTime, stereoView, clc.demoPlayback,
         0, 0, drawFrame,
         0, 0, 0, 0, 0, 0);
+    coduomp_cgame_rendering_compat_active = qfalse;
+    coduomp_queue_cgame_2d_presentation(qfalse);
 }
 
 /* Source: CoDUOMP.exe 0x00405b50..0x00405caa.

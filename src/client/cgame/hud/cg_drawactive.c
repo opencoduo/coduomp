@@ -312,7 +312,10 @@ void CG_DrawActive(int32_t stereoView)
             CG_UpdateFadeOverlay(swayParams, swayStart, swayDuration);
         }
 
-        CG_TileClear();                                      /* 0x3001c473 CALL CG_TileClear */
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): one isolated
+         * presentation interface preserves this recovered call in native mode
+         * and leaves the engine-cleared black bars intact in classic mode. */
+        cgame_compat_tile_clear();
         CG_Draw2D();                               /* 0x3001c478 CALL CG_Draw2D */
         /* fall through to the shared cookie-checked epilogue (RET) */
     }

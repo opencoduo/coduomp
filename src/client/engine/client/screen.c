@@ -7,6 +7,7 @@
 #include "../platform/crt_boundary.h"
 #include "../renderer/renderer_api.h"
 #include "../system_event.h"
+#include "widescreen_2d_compat.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -81,6 +82,47 @@ static const char *const
  * leaving the current frame through com_abortFrame. */
 qboolean scr_updateScreenRecursionGuard; /* original 0x0389fcf4 */
 
+/* NOT_FROM_ORIGINAL_SOURCE: true when the widescreen backdrop below has
+ * already been queued into the renderer command buffer that the next
+ * SCR_DrawScreenField will extend. */
+static qboolean scr_widescreenBackdropQueued;
+
+/* NOT_FROM_ORIGINAL_SOURCE: queue the native-size black backdrop that blacks
+ * out the sides a fitted 4:3 loading screen, scope, or menu leaves uncovered
+ * on a widescreen drawable. The renderer command buffer is linear and only
+ * resets when a frame is issued, so 2D commands the cgame loading pump submits
+ * between two frames (draw levelshot/progress bar, then trap CG_UPDATE_SCREEN)
+ * sit in the buffer BEFORE SCR_DrawScreenField runs; a backdrop emitted there
+ * would paint over them (black loading flicker, hidden progress bar). The
+ * backdrop is therefore pre-queued right after the previous frame's EndFrame,
+ * making it the first command of the new buffer. */
+static void coduomp_scr_queue_widescreen_backdrop_compat(void)
+{
+    enum {
+        SCR_WIDESCREEN_REFERENCE_WIDTH = 640,
+        SCR_WIDESCREEN_REFERENCE_HEIGHT = 480
+    };
+
+    if (cls.rendererConfig.vidWidth * SCR_WIDESCREEN_REFERENCE_HEIGHT >
+            cls.rendererConfig.vidHeight * SCR_WIDESCREEN_REFERENCE_WIDTH) {
+        vec4_t black;
+        CL_LookupColor('0', black);
+        rendererExports.SetColor(black);
+        rendererExports.StretchPic(
+            0.0f, 0.0f,
+            (float)cls.rendererConfig.vidWidth,
+            (float)cls.rendererConfig.vidHeight,
+            0.0f, 0.0f, 0.0f, 0.0f, cls.whiteShader);
+        rendererExports.SetColor(NULL);
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: a renderer restart discards the command buffer,
+ * so a backdrop pre-queued before the restart no longer exists. */
+void coduomp_scr_reset_widescreen_backdrop_compat(void)
+{
+    scr_widescreenBackdropQueued = qfalse;
+}
 
 /* Source: CoDUOMP.exe 0x00419b60..0x00419b8b, recovered from an exporter
  * function-boundary gap. Exact same-module Mac symbol SCR_DebugGraph. MSVC
@@ -154,6 +196,14 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
 {
     rendererExports.BeginFrame(stereoFrame);
 
+    /* NOT_FROM_ORIGINAL_SOURCE: the widescreen backdrop is normally already
+     * pre-queued at the head of this frame's command buffer (see
+     * coduomp_scr_queue_widescreen_backdrop_compat). Emit it here only when no
+     * pre-queue happened: the first frame after a renderer (re)start, and the
+     * second field of a stereo frame. */
+    if (scr_widescreenBackdropQueued == qfalse)
+        coduomp_scr_queue_widescreen_backdrop_compat();
+    scr_widescreenBackdropQueued = qfalse;
 
     if (coduo_uiVm == NULL) {
         Com_DPrintf("draw screen without UI loaded\n");
@@ -163,6 +213,26 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
     const qboolean uiFullscreen = (qboolean)VM_Call(
         coduo_uiVm, UIVM_IS_FULLSCREEN,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    /* NOT_FROM_ORIGINAL_SOURCE: the connecting, challenging, and connected
+     * screens and every key-capturing UI menu are complete 640x480
+     * compositions even when the UI VM correctly reports that a transparent
+     * in-game popup is not fullscreen. Give only their later UI paint pass the
+     * same fitted 4:3 presentation as a fullscreen menu. Keep uiFullscreen
+     * itself unchanged below: changing that stock frame-dispatch result would
+     * suppress the full-width cgame world behind a transparent team/weapon
+     * menu. The renderer's command-ordered cgame scope keeps the preceding
+     * world and HUD native-width while this state fits the subsequent UI VM
+     * commands as one coherent composition. */
+    const qboolean connectScreenFullscreen =
+        cls.state >= CA_CONNECTING && cls.state <= CA_CONNECTED
+            ? qtrue
+            : qfalse;
+    const qboolean uiMenuCanvasActive =
+        (cls.keyCatchers & KEYCATCH_UI) != 0 ? qtrue : qfalse;
+    coduomp_set_ui_fullscreen_compat(
+        uiFullscreen != qfalse ||
+        connectScreenFullscreen != qfalse ||
+        uiMenuCanvasActive != qfalse);
 
     if (uiFullscreen == qfalse) {
         switch (cls.state) {
@@ -177,17 +247,20 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
         case CA_CONNECTING:
         case CA_CHALLENGING:
         case CA_CONNECTED:
+            coduomp_queue_ui_2d_presentation(qtrue);
             (void)VM_Call(
                 coduo_uiVm, UIVM_REFRESH, cls.realTime,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             (void)VM_Call(
                 coduo_uiVm, UIVM_DRAW_CONNECT_SCREEN, qfalse,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            coduomp_queue_ui_2d_presentation(qfalse);
             break;
 
         case CA_LOADING:
         case CA_PRIMED:
             CL_CGameRendering(stereoFrame, qtrue);
+            coduomp_queue_ui_2d_presentation(qtrue);
             (void)VM_Call(
                 coduo_uiVm, UIVM_REFRESH, cls.realTime,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -196,6 +269,7 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
             (void)VM_Call(
                 coduo_uiVm, UIVM_DRAW_CONNECT_SCREEN, qtrue,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            coduomp_queue_ui_2d_presentation(qfalse);
             break;
 
         case CA_ACTIVE:
@@ -225,9 +299,11 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
     }
 
     if ((cls.keyCatchers & KEYCATCH_UI) != 0) {
+        coduomp_queue_ui_2d_presentation(qtrue);
         (void)VM_Call(
             coduo_uiVm, UIVM_REFRESH, cls.realTime,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        coduomp_queue_ui_2d_presentation(qfalse);
     }
 
     Con_DrawConsole();
@@ -257,6 +333,16 @@ void SCR_UpdateScreen(void)
     }
 
     scr_updateScreenRecursionGuard = qtrue;
+    /* NOT_FROM_ORIGINAL_SOURCE: a Com_Error longjmp out of a VM draw call
+     * (asset registration hitting an unpure or missing file mid-frame) skips
+     * the closing half of an open presentation scope, leaving the frontend
+     * flag stuck for every later frame: menu pictures inherit the cgame
+     * centered-canvas bias (a doubled left letterbox) while text takes the
+     * cgame transform. No scope legitimately spans frames — the recursion
+     * guard above blocks the one nested caller that runs inside a scope — so
+     * frame start restores the neutral state. */
+    coduomp_cgame_rendering_compat_active = qfalse;
+    coduomp_console_rendering_compat_active = qfalse;
     if (cls.state == CA_ACTIVE) {
         dobj_skelCacheKey =
             (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
@@ -279,6 +365,15 @@ void SCR_UpdateScreen(void)
         rendererExports.EndFrame(NULL, NULL);
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: EndFrame issued and reset the command buffer;
+     * pre-queue the next frame's widescreen backdrop now so it precedes any
+     * 2D the cgame loading pump submits before the next BeginFrame. Stereo
+     * keeps the per-field emission in SCR_DrawScreenField, where the draw
+     * buffer of each eye is already selected. */
+    if (cls.rendererConfig.stereoEnabled == qfalse) {
+        coduomp_scr_queue_widescreen_backdrop_compat();
+        scr_widescreenBackdropQueued = qtrue;
+    }
 
     if (cls.state == CA_ACTIVE) {
         cl_frameRunning = qfalse;

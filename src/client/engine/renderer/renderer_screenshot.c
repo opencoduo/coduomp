@@ -2,6 +2,7 @@
 
 #include "gl_api.h"
 #include "gl_state.h"
+#include "output_gamma_compat.h"
 #include "platform_gamma.h"
 #include "../math/vector_math.h"
 #include "qcommon/com_sprintf.h"
@@ -336,6 +337,12 @@ void R_LevelShot(void)
     tga[TGA_HEADER_HEIGHT_LOW_OFFSET] = R_LEVELSHOT_HEIGHT;
     tga[TGA_HEADER_PIXEL_DEPTH_OFFSET] = TGA_TRUECOLOR_PIXEL_DEPTH;
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): when the composited
+     * output presentation owns the presented image, GL_FRONT holds the
+     * scaled hardware drawable, not this render-sized frame. */
+    if (coduomp_capture_presented_frame_compat(
+            0, 0, glConfig.vidWidth, glConfig.vidHeight,
+            GL_RGB, source) == qfalse)
     {
         qglReadBuffer(GL_FRONT);
         qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight,
@@ -438,6 +445,11 @@ void R_SaveGameShot(const char *name)
         (uint32_t)glConfig.vidHeight *
         (uint32_t)R_SAVEGAME_BYTES_PER_PIXEL;
     source = ri.Hunk_AllocateTempMemory((size_t)sourceByteCount);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): capture the presented
+     * render-sized frame when the output compositor owns GL_FRONT. */
+    if (coduomp_capture_presented_frame_compat(
+            0, 0, glConfig.vidWidth, glConfig.vidHeight,
+            GL_RGBA, source) == qfalse)
     {
         qglReadBuffer(GL_FRONT);
         qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight,
@@ -891,6 +903,10 @@ void R_TakeScreenshot(int32_t x, int32_t y,
     tga[TGA_HEADER_PIXEL_DEPTH_OFFSET] = TGA_TRUECOLOR_PIXEL_DEPTH;
 
     pixels = tga + TGA_HEADER_SIZE;
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): capture the presented
+     * render-sized frame when the output compositor owns GL_FRONT. */
+    if (coduomp_capture_presented_frame_compat(
+            x, y, width, height, GL_RGB, pixels) == qfalse)
     {
         qglReadBuffer(GL_FRONT);
         qglReadPixels(x, y, width, height,
@@ -1022,6 +1038,10 @@ void R_TakeScreenshotJPEG(int32_t x, int32_t y,
     pixels = ri.Hunk_AllocateTempMemory((size_t)byteCountBits);
 #endif
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): capture the presented
+     * render-sized frame when the output compositor owns GL_FRONT. */
+    if (coduomp_capture_presented_frame_compat(
+            x, y, width, height, GL_RGBA, pixels) == qfalse)
     {
         qglReadBuffer(GL_FRONT);
         qglReadPixels(x, y, width, height,

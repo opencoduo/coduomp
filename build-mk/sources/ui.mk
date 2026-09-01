@@ -57,6 +57,7 @@ UI_C_SOURCES := \
 	src/client/ui/menu/ui_load_menus.c \
 	src/client/ui/menu/ui_load.c \
 	src/client/ui/menu/ui_parse_menu.c \
+	src/client/ui/module/ui_compat_graphics_menu.c \
 	src/client/ui/module/ui_console.c \
 	src/client/ui/module/ui_draw_connect_screen.c \
 	src/client/ui/module/ui_empty_callback_400079c0.c \

@@ -18,6 +18,66 @@ extern cvar_t *cm_playerCurveClip;
  * contracts agree. Platform bodies retain their proven x87 graphs and spills.
  */
 #if defined(WINDOWS_BEHAVIOR)
+/* NOT_FROM_ORIGINAL_SOURCE: precompute the two invariant capsule support points used by every tested patch plane. */
+static qboolean coduomp_position_test_sphere_patch(const traceWork_t *traceWork, const patchCollide_t *patchCollide)
+{
+    if (patchCollide->numFacets <= 0)
+        return qfalse;
+
+    const vec3_t negativeSupportPoint = {
+        traceWork->start[0] - traceWork->sphere.offset[0],
+        traceWork->start[1] - traceWork->sphere.offset[1],
+        traceWork->start[2] - traceWork->sphere.offset[2]
+    };
+    const vec3_t positiveSupportPoint = {
+        traceWork->start[0] + traceWork->sphere.offset[0],
+        traceWork->start[1] + traceWork->sphere.offset[1],
+        traceWork->start[2] + traceWork->sphere.offset[2]
+    };
+    const float *const sphereOffset = traceWork->sphere.offset;
+    const patchPlane_t *const planes = patchCollide->planes;
+    const facet_t *facet = patchCollide->facets;
+    const facet_t *const facetEnd = facet + patchCollide->numFacets;
+
+    for (; facet != facetEnd; ++facet) {
+        qboolean outside = qfalse;
+
+        for (int32_t facetPlaneIndex = -1; facetPlaneIndex < facet->numBorders; ++facetPlaneIndex) {
+            const int32_t planeIndex = facetPlaneIndex < 0 ? facet->surfacePlane : facet->borderPlanes[facetPlaneIndex];
+            const qboolean inward = facetPlaneIndex < 0 ? qfalse : facet->borderInward[facetPlaneIndex];
+            const patchPlane_t *const sourcePlane = &planes[planeIndex];
+            float planeX = sourcePlane->normal[0];
+            float planeY = sourcePlane->normal[1];
+            float planeZ = sourcePlane->normal[2];
+            float planeDist = sourcePlane->dist;
+
+            if (inward != qfalse) {
+                planeX = -planeX;
+                planeY = -planeY;
+                planeZ = -planeZ;
+                planeDist = -planeDist;
+            }
+
+            const long double offsetDistance = ((long double)planeX * sphereOffset[0] +
+                                                (long double)planeZ * sphereOffset[2]) +
+                                               (long double)planeY * sphereOffset[1];
+            const float *const supportPoint = offsetDistance > 0.0L ? negativeSupportPoint : positiveSupportPoint;
+            const long double distance = ((long double)planeZ * supportPoint[2] + (long double)planeY * supportPoint[1]) +
+                                         (long double)planeX * supportPoint[0] -
+                                         ((long double)planeDist + traceWork->sphere.radius);
+
+            if (distance > 0.0L) {
+                outside = qtrue;
+                break;
+            }
+        }
+
+        if (outside == qfalse)
+            return qtrue;
+    }
+
+    return qfalse;
+}
 
 /* Source: CoDUOMP.exe 0x00421510..0x0042179b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00421510_0042179b.mcode.
@@ -32,6 +92,8 @@ qboolean CM_PositionTestInPatchCollide(
     if (traceWork->isPoint != qfalse)
         return qfalse;
 
+    if (traceWork->sphere.use != qfalse)
+        return coduomp_position_test_sphere_patch(traceWork, patchCollide);
 
     for (int32_t facetIndex = 0;
          facetIndex < patchCollide->numFacets;
@@ -841,6 +903,76 @@ qboolean CM_CheckFacetPlane(
 
 #else
 
+/* NOT_FROM_ORIGINAL_SOURCE: Linux-behavior counterpart that precomputes the invariant capsule support points. */
+static qboolean coduomp_linux_position_test_sphere_patch(const traceWork_t *traceWork, const patchCollide_t *patchCollide)
+{
+    const int32_t facetCount = patchCollide->numFacets;
+    if (facetCount <= 0)
+        return qfalse;
+
+    const float sphereRadius = traceWork->sphere.radius;
+    const vec3_t negativeSupportPoint = {
+        traceWork->start[0] - traceWork->sphere.offset[0],
+        traceWork->start[1] - traceWork->sphere.offset[1],
+        traceWork->start[2] - traceWork->sphere.offset[2]
+    };
+    const vec3_t positiveSupportPoint = {
+        traceWork->start[0] + traceWork->sphere.offset[0],
+        traceWork->start[1] + traceWork->sphere.offset[1],
+        traceWork->start[2] + traceWork->sphere.offset[2]
+    };
+    const float *const sphereOffset = traceWork->sphere.offset;
+    const patchPlane_t *const planes = patchCollide->planes;
+    const facet_t *facet = patchCollide->facets;
+    const facet_t *const facetEnd = facet + facetCount;
+
+    for (; facet != facetEnd; ++facet) {
+        const patchPlane_t *plane = &planes[facet->surfacePlane];
+        vec3_t planeNormal = {plane->normal[0], plane->normal[1], plane->normal[2]};
+        float planeDist = plane->dist;
+        planeDist += sphereRadius;
+
+        const float sphereSupportDot = ((planeNormal[0] * sphereOffset[0]) + (planeNormal[1] * sphereOffset[1])) +
+                                       (planeNormal[2] * sphereOffset[2]);
+        const float *testPoint = sphereSupportDot > 0.0f ? negativeSupportPoint : positiveSupportPoint;
+
+        if (!((((planeNormal[0] * testPoint[0]) + (planeNormal[1] * testPoint[1])) +
+               (planeNormal[2] * testPoint[2])) - planeDist > 0.0f)) {
+            int32_t childIndex;
+
+            for (childIndex = 0; childIndex < facet->numBorders; ++childIndex) {
+                plane = &planes[facet->borderPlanes[childIndex]];
+
+                if (facet->borderInward[childIndex] == 0) {
+                    planeNormal[0] = plane->normal[0];
+                    planeNormal[1] = plane->normal[1];
+                    planeNormal[2] = plane->normal[2];
+                    planeDist = plane->dist;
+                } else {
+                    planeNormal[0] = -plane->normal[0];
+                    planeNormal[1] = -plane->normal[1];
+                    planeNormal[2] = -plane->normal[2];
+                    planeDist = -plane->dist;
+                }
+
+                planeDist += sphereRadius;
+                const float borderSupportDot = ((planeNormal[0] * sphereOffset[0]) + (planeNormal[1] * sphereOffset[1])) +
+                                               (planeNormal[2] * sphereOffset[2]);
+                testPoint = borderSupportDot > 0.0f ? negativeSupportPoint : positiveSupportPoint;
+
+                if ((((planeNormal[0] * testPoint[0]) + (planeNormal[1] * testPoint[1])) +
+                     (planeNormal[2] * testPoint[2])) - planeDist > 0.0f) {
+                    break;
+                }
+            }
+
+            if (childIndex >= facet->numBorders)
+                return qtrue;
+        }
+    }
+
+    return qfalse;
+}
 
 
 qboolean CM_PositionTestInPatchCollide(
@@ -851,6 +983,8 @@ qboolean CM_PositionTestInPatchCollide(
         return 0;
     }
 
+    if (traceWork->sphere.use != 0)
+        return coduomp_linux_position_test_sphere_patch(traceWork, patchCollide);
 
     const facet_t *facet = patchCollide->facets;
     for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets;

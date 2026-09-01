@@ -4,6 +4,23 @@
 
 #include <string.h>
 
+#if defined(__linux__)
+enum {
+    /* Highest video-memory tier used by United Offensive's shipped
+     * configure_mp.csv recommendation table. */
+    CODUOMP_LINUX_VIDEO_MEMORY_PROFILE_MB = 256
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: native Linux hardware discovery currently runs
+ * before SDL creates the OpenGL renderer, so no renderer-backed video-memory
+ * value is available at this boundary.  Zero means unknown; future native
+ * providers return a positive measured value and automatically bypass the
+ * recommendation fallback in Sys_GetVideoMemoryMB. */
+static int32_t coduomp_linux_detect_video_memory_mb(void)
+{
+    return 0;
+}
+#endif
 
 #if defined(_WIN32)
 #define COBJMACROS
@@ -348,6 +365,17 @@ int32_t Sys_GetVideoMemoryMB(void)
     if (bucketMegabytes - measuredMegabytes > 32u)
         bucketMegabytes >>= 1;
     return (int32_t)bucketMegabytes;
+#elif defined(__linux__)
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): reporting unknown video
+     * memory as zero selected UO's 32-MB profile, whose r_picmip2=3 setting
+     * admits repeating model textures into a non-wrapping texture sheet.  A
+     * positive native measurement remains authoritative.  Until a provider
+     * is available, use the shipped recommendation table's 256-MB ceiling. */
+    const int32_t detectedMegabytes =
+        coduomp_linux_detect_video_memory_mb();
+    return detectedMegabytes > 0
+               ? detectedMegabytes
+               : CODUOMP_LINUX_VIDEO_MEMORY_PROFILE_MB;
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: the recovered probe is entirely Win32
      * DirectDraw/WGL code. Native render backends will supply a platform GPU

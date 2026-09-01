@@ -40,21 +40,57 @@ enum cgCrosshairVehiclePosition_e {
     CG_CROSSHAIR_VEHICLE_POSITION_WEAPON_RETICLE = 3
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE: the draw sites below construct physical
+ * refdef-pixel geometry.  The isolated adapter prevents the generic centered
+ * 640-canvas image bias from being applied a second time. */
 #define DRAW_CROSSHAIR_STRETCH_PIC( \
     x_, y_, w_, h_, s1_, t1_, s2_, t2_, shader_) \
-    trap_R_DrawStretchPic( \
-        CG_FloatBits((x_)), CG_FloatBits((y_)), \
-        CG_FloatBits((w_)), CG_FloatBits((h_)), \
-        CG_FloatBits((s1_)), CG_FloatBits((t1_)), \
-        CG_FloatBits((s2_)), CG_FloatBits((t2_)), (shader_))
+    cgame_compat_draw_physical_stretch_pic( \
+        (x_), (y_), (w_), (h_), (s1_), (t1_), (s2_), (t2_), (shader_))
 #define DRAW_CROSSHAIR_QUAD_PIC( \
     x_, y_, w_, h_, s1_, t1_, s2_, t2_, angle_, shader_) \
-    trap_R_DrawQuadPic( \
-        CG_FloatBits((x_)), CG_FloatBits((y_)), \
-        CG_FloatBits((w_)), CG_FloatBits((h_)), \
-        CG_FloatBits((s1_)), CG_FloatBits((t1_)), \
-        CG_FloatBits((s2_)), CG_FloatBits((t2_)), \
-        CG_FloatBits((angle_)), (shader_))
+    cgame_compat_draw_physical_quad_pic( \
+        (x_), (y_), (w_), (h_), (s1_), (t1_), (s2_), (t2_), \
+        (angle_), (shader_))
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): reticleCenterSize and
+ * reticleSideSize are authored in stock-era 640x480 pixels, and this function
+ * consumes them as raw physical pixels, so on a high-resolution drawable the
+ * ordinary crosshair shrinks toward invisibility (the stock ADS overlay and
+ * 3D weapon icon already multiply their sizes by the screen scale; this
+ * drawer is the one stock omission).  Scale each authored size ONCE, where it
+ * enters, so every downstream anchor, spread, nudge, and hip-position
+ * computation reproduces the recovered 640x480 composition proportionally.
+ * Rectangles must never be re-expanded at the draw boundary: the arm pieces
+ * are anchored, not centered, and post-hoc expansion collapses the arm gaps. */
+/* Per-axis factors: in classic 4:3 presentation the backend compresses 2D x
+ * by the fitted-viewport ratio and cgame pre-compensates through
+ * cgs_screenXScale (exactly as the stock spread conversion does), so width
+ * terms must scale by the X factor and height terms by the Y factor.  In
+ * native widescreen the two factors are equal. */
+/* Half the 640x480 screen fraction: matches the raw-pixel reticle feel of
+ * the era's common 1280x960 presentation, validated in play twice (via the
+ * since-removed cg_crosshairScale calibration knob at its 0.5 default). */
+#define CG_CROSSHAIR_PROPORTION 0.5f
+
+static float cg_crosshair_reticle_scale_x(void)
+{
+    const float screenScale =
+        cgs_screenXScale > 0.0f ? cgs_screenXScale : 1.0f;
+    const float scale = screenScale * CG_CROSSHAIR_PROPORTION;
+
+    /* Never below the stock raw-pixel size. */
+    return scale > 1.0f ? scale : 1.0f;
+}
+
+static float cg_crosshair_reticle_scale_y(void)
+{
+    const float screenScale =
+        cgs_screenYScale > 0.0f ? cgs_screenYScale : 1.0f;
+    const float scale = screenScale * CG_CROSSHAIR_PROPORTION;
+
+    return scale > 1.0f ? scale : 1.0f;
+}
 
 void CG_DrawCrosshair(void)
 {
@@ -257,8 +293,10 @@ void CG_DrawCrosshair(void)
                     float size = (float)((long double)weapon->reticleCenterSize *
                                          ((long double)1.5f -
                                           (long double)sizeScale));
-#define sizeForX size
-#define sizeForY size
+                    const float sizeForX =
+                        size * cg_crosshair_reticle_scale_x();
+                    const float sizeForY =
+                        size * cg_crosshair_reticle_scale_y();
                     // 0x3001a047..0x3001a072 (y), 0x3001a076..0x3001a098 (x):
                     // centered in the view rect, shifted by the projected
                     // impact point (NOT yet overridden), + refdef origin last.
@@ -278,8 +316,6 @@ void CG_DrawCrosshair(void)
                     DRAW_CROSSHAIR_STRETCH_PIC(
                         x, y, sizeForX, sizeForY,
                         0.0f, 0.0f, 1.0f, 1.0f, hShader);
-#undef sizeForX
-#undef sizeForY
                     /* 0x3001a0a0 reloads after the stretch-pic call. */
                     weapon = cg_currentWeaponInfo;
                 }
@@ -352,8 +388,10 @@ void CG_DrawCrosshair(void)
         // 0x3001a18c..0x3001a19c: ADS shrink applies after the pulse growth.
         centerSize = (float)((long double)centerSize *
                              (long double)sizeScale);
-#define centerSizeForX centerSize
-#define centerSizeForY centerSize
+        const float centerSizeForX =
+            centerSize * cg_crosshair_reticle_scale_x();
+        const float centerSizeForY =
+            centerSize * cg_crosshair_reticle_scale_y();
 
         // 0x3001a1a0..0x3001a1f6: y then x; the refdef origin is added BEFORE
         // the scaled projection here (opposite term order vs the ADS overlay).
@@ -373,8 +411,6 @@ void CG_DrawCrosshair(void)
         DRAW_CROSSHAIR_STRETCH_PIC(
             x, y, centerSizeForX, centerSizeForY,
             0.0f, 0.0f, 1.0f, 1.0f, hCenterShader);
-#undef centerSizeForX
-#undef centerSizeForY
         /* 0x3001a1fe reloads the global before the side-name dereference. */
         weapon = cg_currentWeaponInfo;
     }
@@ -434,8 +470,11 @@ void CG_DrawCrosshair(void)
 
         // 0x3001a299..0x3001a2b7: separate horizontal/vertical pixel spreads
         // (640/fovX vs 480/fovY degrees-to-virtual-pixels).
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): 640/fov_x is
+         * authored against the 4:3 canvas; use the 4:3-equivalent angle so
+         * the Hor+ expansion does not narrow the horizontal spread. */
         spreadX = (float)(((long double)640.0f /
-                           (long double)cg_refdef.fov_x) * spreadScaled);
+                           cgame_compat_spread_fov_x()) * spreadScaled);
         spreadYRaw = ((long double)480.0f /
                       (long double)cg_refdef.fov_y) * spreadScaled;
         // 0x3001a2b9..0x3001a2e7: both clamped up to reticleMinOfs.
@@ -487,8 +526,10 @@ void CG_DrawCrosshair(void)
             // 0x3001a3a3/0x3001a3b2: recomputed each pass.
             float sideSize = (float)((long double)weapon->reticleSideSize *
                                      (long double)sizeScale);
-#define sideSizeForX sideSize
-#define sideSizeForY sideSize
+            const float sideSizeForX =
+                sideSize * cg_crosshair_reticle_scale_x();
+            const float sideSizeForY =
+                sideSize * cg_crosshair_reticle_scale_y();
             // 0x3001a3ab/0x3001a3c3/0x3001a3d0: odd pieces rotate 90 degrees.
             float angle = (float)((long double)(i & 1) * 90.0f);
             // 0x3001a3d6/0x3001a3f3: t1 = 0,0,1,1.
@@ -507,6 +548,8 @@ void CG_DrawCrosshair(void)
             yRaw *= (long double)cgs_screenYScale;
             yRaw += (long double)sideSizeForY * (long double)align[i][1];
             yRaw += (long double)nudge[i][1];
+            yRaw += (long double)nudge[i][1] *
+                    ((long double)cg_crosshair_reticle_scale_y() - 1.0L);
             yRaw -= (long double)sideSizeForY * (long double)dir[i][1] *
                     (long double)weapon->hipReticleSidePos;
             yRaw += (long double)cg_refdef.height * 0.5f;
@@ -518,6 +561,8 @@ void CG_DrawCrosshair(void)
             xRaw *= (long double)cgs_screenXScale;
             xRaw += (long double)sideSizeForX * (long double)align[i][0];
             xRaw += (long double)nudge[i][0];
+            xRaw += (long double)nudge[i][0] *
+                    ((long double)cg_crosshair_reticle_scale_x() - 1.0L);
             xRaw -= (long double)sideSizeForX * (long double)dir[i][0] *
                     (long double)weapon->hipReticleSidePos;
             xRaw += (long double)cg_refdef.width * 0.5f;
@@ -526,11 +571,29 @@ void CG_DrawCrosshair(void)
 
             // 0x3001a49b CALL 0x3003e200 (10 args, ADD ESP,0x28): the trap-75
             // quad draw; arg 9 is the rotation in degrees (0 or 90).
-            DRAW_CROSSHAIR_QUAD_PIC(
-                x, y, sideSize, sideSize,
-                0.0f, t1, 1.0f, t2, angle, hSideShader);
-#undef sideSizeForX
-#undef sideSizeForY
+            /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the odd pieces
+             * rotate 90 degrees about their center BEFORE the classic-mode
+             * backend applies its horizontal viewport compression, so their
+             * width/height pre-compensation factors swap, and the rect is
+             * re-anchored so the post-rotation footprint occupies exactly
+             * [x, x+sideSizeForX] by [y, y+sideSizeForY].  With equal axis
+             * factors (native widescreen, true 4:3) this is an exact no-op. */
+            {
+                float drawX = x;
+                float drawY = y;
+                float drawW = sideSizeForX;
+                float drawH = sideSizeForY;
+
+                if ((i & 1) != 0) {
+                    drawW = sideSizeForY;
+                    drawH = sideSizeForX;
+                    drawX = x + (sideSizeForX - sideSizeForY) * 0.5f;
+                    drawY = y + (sideSizeForY - sideSizeForX) * 0.5f;
+                }
+                DRAW_CROSSHAIR_QUAD_PIC(
+                    drawX, drawY, drawW, drawH,
+                    0.0f, t1, 1.0f, t2, angle, hSideShader);
+            }
         }
     }
 

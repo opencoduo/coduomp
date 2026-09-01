@@ -4,6 +4,9 @@
 
 #include <string.h>
 
+#if defined(__APPLE__) && defined(__aarch64__)
+#include <arm_neon.h>
+#endif
 
 enum {
     RB_XMODEL_TEXCOORD_POINTER_COUNT = 4
@@ -146,6 +149,23 @@ static void RB_TransformRigidVertex(
           vertex->position[0] * matrix->axis[0][0]) +
          vertex->position[2] * matrix->axis[2][0]) +
         matrix->origin[0];
+#if defined(__APPLE__) && defined(__aarch64__)
+    /* NOT_FROM_ORIGINAL_SOURCE: Apple ARM64 evaluates the machine-code-proven
+     * Y/Z operation graphs in parallel. Explicit multiply and add intrinsics
+     * retain the original non-contracted association in each lane. */
+    float32x2_t positionYZ = vmul_n_f32(
+        vld1_f32(&matrix->axis[1][1]), vertex->position[1]);
+    positionYZ = vadd_f32(
+        positionYZ,
+        vmul_n_f32(vld1_f32(&matrix->axis[2][1]),
+                   vertex->position[2]));
+    positionYZ = vadd_f32(
+        positionYZ,
+        vmul_n_f32(vld1_f32(&matrix->axis[0][1]),
+                   vertex->position[0]));
+    positionYZ = vadd_f32(positionYZ, vld1_f32(&matrix->origin[1]));
+    vst1_f32(&outPosition[1], positionYZ);
+#else
     outPosition[1] =
         ((vertex->position[1] * matrix->axis[1][1] +
           vertex->position[2] * matrix->axis[2][1]) +
@@ -156,11 +176,25 @@ static void RB_TransformRigidVertex(
           vertex->position[2] * matrix->axis[2][2]) +
          vertex->position[0] * matrix->axis[0][2]) +
         matrix->origin[2];
+#endif
 
     outNormal[0] =
         (vertex->normal[1] * matrix->axis[1][0] +
          vertex->normal[0] * matrix->axis[0][0]) +
         vertex->normal[2] * matrix->axis[2][0];
+#if defined(__APPLE__) && defined(__aarch64__)
+    float32x2_t normalYZ = vmul_n_f32(
+        vld1_f32(&matrix->axis[0][1]), vertex->normal[0]);
+    normalYZ = vadd_f32(
+        normalYZ,
+        vmul_n_f32(vld1_f32(&matrix->axis[2][1]),
+                   vertex->normal[2]));
+    normalYZ = vadd_f32(
+        normalYZ,
+        vmul_n_f32(vld1_f32(&matrix->axis[1][1]),
+                   vertex->normal[1]));
+    vst1_f32(&outNormal[1], normalYZ);
+#else
     outNormal[1] =
         (vertex->normal[0] * matrix->axis[0][1] +
          vertex->normal[2] * matrix->axis[2][1]) +
@@ -169,6 +203,7 @@ static void RB_TransformRigidVertex(
         (vertex->normal[0] * matrix->axis[0][2] +
          vertex->normal[2] * matrix->axis[2][2]) +
         vertex->normal[1] * matrix->axis[1][2];
+#endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: portable scalar spelling of the four-lane SSE
@@ -226,6 +261,30 @@ static void coduomp_accumulate_weighted_point_x87_order(
         (long double)matrix->origin[0];
     outPosition[0] = (float)(
         transformedX * point->weight + (long double)outPosition[0]);
+#if defined(__APPLE__) && defined(__aarch64__)
+    /* NOT_FROM_ORIGINAL_SOURCE: Darwin arm64 long double is IEEE binary64,
+     * so the original Y/Z x87 operation graphs can share two binary64 lanes
+     * without changing any per-component multiply/add or conversion. */
+    float64x2_t transformedYZ = vmulq_n_f64(
+        vcvt_f64_f32(vld1_f32(&matrix->axis[0][1])),
+        (double)point->blend.position[0]);
+    transformedYZ = vaddq_f64(
+        transformedYZ,
+        vmulq_n_f64(vcvt_f64_f32(vld1_f32(&matrix->axis[1][1])),
+                    (double)point->blend.position[1]));
+    transformedYZ = vaddq_f64(
+        transformedYZ,
+        vmulq_n_f64(vcvt_f64_f32(vld1_f32(&matrix->axis[2][1])),
+                    (double)point->blend.position[2]));
+    transformedYZ = vaddq_f64(
+        transformedYZ,
+        vcvt_f64_f32(vld1_f32(&matrix->origin[1])));
+    transformedYZ = vmulq_n_f64(transformedYZ, (double)point->weight);
+    transformedYZ = vaddq_f64(
+        transformedYZ,
+        vcvt_f64_f32(vld1_f32(&outPosition[1])));
+    vst1_f32(&outPosition[1], vcvt_f32_f64(transformedYZ));
+#else
     for (int32_t component = 1; component < 3; ++component) {
         const long double transformed =
             (((long double)point->blend.position[0] *
@@ -240,6 +299,7 @@ static void coduomp_accumulate_weighted_point_x87_order(
             transformed * point->weight +
             (long double)outPosition[component]);
     }
+#endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
@@ -308,15 +368,20 @@ void RB_SurfaceXModelRigid(renderer_surface_t *surfaceData)
     uint32_t remainingVertices =
         (uint32_t)(int32_t)surface->vertexCount;
     if (remainingVertices != 0U) {
-        uint32_t vertexIndex = 0;
+        /* NOT_FROM_ORIGINAL_SOURCE: non-stock builds express the original
+         * fixed-width streams as pointer walks so every supported compiler
+         * can keep their addresses live across iterations. */
+        const XSurfaceRigidVert *vertex =
+            surface->vertexData.rigidVertices;
+        vec3_t *position = range.positions;
+        vec3_t *normal = range.normals;
 
         do {
             RB_TransformRigidVertex(
-                boneMatrix,
-                &surface->vertexData.rigidVertices[vertexIndex],
-                range.positions[vertexIndex],
-                range.normals[vertexIndex]);
-            ++vertexIndex;
+                boneMatrix, vertex, *position, *normal);
+            ++vertex;
+            ++position;
+            ++normal;
             remainingVertices -= 1u;
         } while (remainingVertices != 0U);
     }
@@ -559,7 +624,10 @@ void RB_SurfaceXModelWeight(renderer_surface_t *surfaceData)
         surface->weightedPoints;
     uint32_t remainingVertices =
         (uint32_t)(int32_t)surface->vertexCount;
-    uint32_t vertexIndex = 0;
+    /* NOT_FROM_ORIGINAL_SOURCE: non-stock builds walk the fixed destination
+     * streams directly instead of reconstructing indexed addresses. */
+    vec3_t *position = range.positions;
+    vec3_t *normal = range.normals;
 
     if (remainingVertices == 0U)
         return;
@@ -579,38 +647,34 @@ void RB_SurfaceXModelWeight(renderer_surface_t *surfaceData)
         };
 
         RB_TransformRigidVertex(
-            primaryMatrix, &primaryVertex, range.positions[vertexIndex],
-            range.normals[vertexIndex]);
+            primaryMatrix, &primaryVertex, *position, *normal);
 
         if (primary->additiveWeightCount <= 0) {
             primaryCursor += sizeof(*primary);
-            ++vertexIndex;
-            remainingVertices -= 1u;
-            continue;
+        } else {
+            const XSurfaceBlendVert *expandedPrimary =
+                (const XSurfaceBlendVert *)(const void *)
+                    primaryCursor;
+            (*position)[0] *= expandedPrimary->primaryWeight;
+            (*position)[1] *= expandedPrimary->primaryWeight;
+            (*position)[2] *= expandedPrimary->primaryWeight;
+
+            uint32_t remainingWeights =
+                (uint32_t)primary->additiveWeightCount;
+            do {
+                const DObjSkelMat *additiveMatrix =
+                    (const DObjSkelMat *)(const void *)(
+                        (const uint8_t *)basePose +
+                        additivePoint->blend.boneMatrixOffset);
+                coduomp_accumulate_weighted_point_x87_order(
+                    additivePoint, additiveMatrix, *position);
+                ++additivePoint;
+                remainingWeights -= 1u;
+            } while (remainingWeights != 0U);
+            primaryCursor += sizeof(*expandedPrimary);
         }
-
-        const XSurfaceBlendVert *expandedPrimary =
-            (const XSurfaceBlendVert *)(const void *)
-                primaryCursor;
-        range.positions[vertexIndex][0] *= expandedPrimary->primaryWeight;
-        range.positions[vertexIndex][1] *= expandedPrimary->primaryWeight;
-        range.positions[vertexIndex][2] *= expandedPrimary->primaryWeight;
-
-        uint32_t remainingWeights =
-            (uint32_t)primary->additiveWeightCount;
-        do {
-            const DObjSkelMat *additiveMatrix =
-                (const DObjSkelMat *)(const void *)(
-                    (const uint8_t *)basePose +
-                    additivePoint->blend.boneMatrixOffset);
-            coduomp_accumulate_weighted_point_x87_order(
-                additivePoint, additiveMatrix,
-                range.positions[vertexIndex]);
-            ++additivePoint;
-            remainingWeights -= 1u;
-        } while (remainingWeights != 0U);
-        primaryCursor += sizeof(*expandedPrimary);
-        ++vertexIndex;
+        ++position;
+        ++normal;
         remainingVertices -= 1u;
     } while (remainingVertices != 0U);
 }
@@ -639,7 +703,10 @@ void RB_SurfaceXModelWeightSSE(renderer_surface_t *surfaceData)
         surface->weightedPoints;
     uint32_t remainingVertices =
         (uint32_t)(int32_t)surface->vertexCount;
-    uint32_t vertexIndex = 0;
+    /* NOT_FROM_ORIGINAL_SOURCE: non-stock builds walk the fixed destination
+     * streams directly instead of reconstructing indexed addresses. */
+    vec3_t *position = range.positions;
+    vec3_t *normal = range.normals;
 
     do {
         const XSurfaceBlendVertNoWeight *primary =
@@ -652,50 +719,48 @@ void RB_SurfaceXModelWeightSSE(renderer_surface_t *surfaceData)
 
         RB_TransformWeightedPrimarySSEOrder(
             primaryMatrix, primary->normal, primary->blend.position,
-            range.positions[vertexIndex], range.normals[vertexIndex]);
+            *position, *normal);
 
         if (primary->additiveWeightCount <= 0) {
             primaryCursor += sizeof(*primary);
-            ++vertexIndex;
-            remainingVertices -= 1u;
-            continue;
-        }
-
-        const XSurfaceBlendVert *expandedPrimary =
-            (const XSurfaceBlendVert *)(const void *)
-                primaryCursor;
-        for (int32_t component = 0; component < 3; ++component) {
-            range.positions[vertexIndex][component] *=
-                expandedPrimary->primaryWeight;
-        }
-
-        uint32_t remainingWeights =
-            (uint32_t)primary->additiveWeightCount;
-        do {
-            const DObjSkelMat *additiveMatrix =
-                (const DObjSkelMat *)(const void *)(
-                    (const uint8_t *)basePose +
-                    additivePoint->blend.boneMatrixOffset);
-            vec3_t transformed;
-            vec3_t unusedNormal;
-            /* The original inlined path has no addressable zero-vector
-             * object; its unused normal calculation is eliminated. Keep the
-             * source-factoring input automatic so it does not invent one. */
-            const vec3_t zeroNormal = {0.0f, 0.0f, 0.0f};
-
-            RB_TransformVertexSSEOrder(
-                additiveMatrix, zeroNormal,
-                additivePoint->blend.position,
-                transformed, unusedNormal);
+        } else {
+            const XSurfaceBlendVert *expandedPrimary =
+                (const XSurfaceBlendVert *)(const void *)
+                    primaryCursor;
             for (int32_t component = 0; component < 3; ++component) {
-                range.positions[vertexIndex][component] +=
-                    transformed[component] * additivePoint->weight;
+                (*position)[component] *= expandedPrimary->primaryWeight;
             }
-            ++additivePoint;
-            remainingWeights -= 1u;
-        } while (remainingWeights != 0U);
-        primaryCursor += sizeof(*expandedPrimary);
-        ++vertexIndex;
+
+            uint32_t remainingWeights =
+                (uint32_t)primary->additiveWeightCount;
+            do {
+                const DObjSkelMat *additiveMatrix =
+                    (const DObjSkelMat *)(const void *)(
+                        (const uint8_t *)basePose +
+                        additivePoint->blend.boneMatrixOffset);
+                vec3_t transformed;
+                vec3_t unusedNormal;
+                /* The original inlined path has no addressable zero-vector
+                 * object; its unused normal calculation is eliminated. Keep
+                 * the source-factoring input automatic so it does not invent
+                 * one. */
+                const vec3_t zeroNormal = {0.0f, 0.0f, 0.0f};
+
+                RB_TransformVertexSSEOrder(
+                    additiveMatrix, zeroNormal,
+                    additivePoint->blend.position,
+                    transformed, unusedNormal);
+                for (int32_t component = 0; component < 3; ++component) {
+                    (*position)[component] +=
+                        transformed[component] * additivePoint->weight;
+                }
+                ++additivePoint;
+                remainingWeights -= 1u;
+            } while (remainingWeights != 0U);
+            primaryCursor += sizeof(*expandedPrimary);
+        }
+        ++position;
+        ++normal;
         remainingVertices -= 1u;
     } while (remainingVertices != 0U);
 }

@@ -148,11 +148,11 @@ renderer_wgl_setup_result_t GLW_SetPFD(
 qboolean GLW_InitDriver(int32_t colorBits);
 qboolean GLW_CreateWindow(const char *driverName, int32_t width,
                           int32_t height, int32_t colorBits,
-                          qboolean fullscreen);
+                          int32_t windowMode);
 void GLW_PrintDisplayChangeError(int32_t result);
 renderer_mode_set_result_t GLW_SetMode(
     const char *driverName, int32_t mode, int32_t colorBits,
-    qboolean fullscreen);
+    int32_t windowMode);
 qboolean GLW_CheckOpenGLVersion(int32_t requiredMajor,
                                 int32_t requiredMinor);
 qboolean GLW_HasExtension(const char *extensionString,

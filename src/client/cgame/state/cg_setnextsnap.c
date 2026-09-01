@@ -140,6 +140,15 @@ void CG_SetNextSnap(snapshot_t *snap)
         CG_SnapshotTransitionStage2();
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
+    if (spawnCountChanged) {
+        int32_t currentWeapon = cg_predictedPlayerState.currentWeapon;
+
+        CG_ResetWeaponAnimTrees(&cg_predictedPlayerState);
+        if (currentWeapon > 0 && currentWeapon <= bg_numWeapons) {
+            cg_weaponInfos[currentWeapon].lastRunAnim = -1;
+        }
+    }
 
     for (int32_t i = 0; i < snap->numEntities; i++) {
         entityState_t *entity = &snap->entities[i];

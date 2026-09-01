@@ -275,6 +275,61 @@ void Sys_CreateCrashMarker(void)
 #endif
 }
 
+#if defined(_WIN32)
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the retail client predates
+ * Windows DPI virtualization, so modern Windows treats the process as
+ * DPI-unaware and stretches its windows by the display scale factor. The
+ * Native fullscreen mode sizes the game window from EnumDisplaySettings,
+ * which always reports physical pixels, so at 125% scale the window is
+ * created 25% larger than the screen and cropped to its top-left corner.
+ * Declaring DPI awareness before the first window exists makes one window
+ * unit equal one physical pixel for every metric, window, and cursor API the
+ * client uses, which also keeps borderless mode at true desktop resolution
+ * instead of a stretched virtualized size. The three setters are resolved
+ * dynamically because each first appeared in a newer Windows release:
+ * per-monitor-v2 awareness (Windows 10 1703), per-monitor awareness
+ * (Windows 8.1), then system awareness (Windows Vista). Systems without any
+ * of them have no DPI virtualization to opt out of. */
+void coduomp_sys_enable_dpi_awareness(void)
+{
+    typedef BOOL(WINAPI *sys_set_dpi_context_fn)(void *);
+    typedef HRESULT(WINAPI *sys_set_dpi_awareness_fn)(int32_t);
+    typedef BOOL(WINAPI *sys_set_dpi_aware_fn)(void);
+    /* DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2; the SDK handle constant
+     * is absent from older MinGW headers. */
+    void *const perMonitorAwareV2 = (void *)(intptr_t)-4;
+    /* PROCESS_PER_MONITOR_DPI_AWARE from the Windows 8.1 shell-scaling
+     * enumeration, likewise absent from older MinGW headers. */
+    enum { SYS_PROCESS_PER_MONITOR_DPI_AWARE = 2 };
+
+    HMODULE user32 = GetModuleHandleA("user32.dll");
+    if (user32 != NULL) {
+        sys_set_dpi_context_fn setContext = (sys_set_dpi_context_fn)
+            GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+        if (setContext != NULL && setContext(perMonitorAwareV2) != FALSE)
+            return;
+    }
+
+    HMODULE shcore = LoadLibraryA("shcore.dll");
+    if (shcore != NULL) {
+        sys_set_dpi_awareness_fn setAwareness = (sys_set_dpi_awareness_fn)
+            GetProcAddress(shcore, "SetProcessDpiAwareness");
+        if (setAwareness != NULL &&
+            SUCCEEDED(setAwareness(SYS_PROCESS_PER_MONITOR_DPI_AWARE))) {
+            FreeLibrary(shcore);
+            return;
+        }
+        FreeLibrary(shcore);
+    }
+
+    if (user32 != NULL) {
+        sys_set_dpi_aware_fn setAware = (sys_set_dpi_aware_fn)
+            GetProcAddress(user32, "SetProcessDPIAware");
+        if (setAware != NULL)
+            (void)setAware();
+    }
+}
+#endif
 
 /* Source: CoDUOMP.exe 0x0046e2e0..0x0046e474.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0046e2e0_0046e475.mcode and the PE

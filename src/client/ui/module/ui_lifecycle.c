@@ -15,6 +15,9 @@ int32_t _UI_GetActiveMenu(void)
 // menu array; the same-module PPC call graph retains the source-level call.
 void UI_Shutdown(void)
 {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): do not leave the engine
+     * routing its reserved console key into an unloaded UI capture. */
+    trap_Cvar_Set(UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR, "0");
     Menus_CloseAll();
     trap_LAN_SaveCachedServers();
 }

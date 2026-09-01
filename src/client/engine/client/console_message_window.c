@@ -197,10 +197,20 @@ void Con_Linefeed(console_message_destination_t destination,
 {
     Con_UpdateNotifyLine(destination, qtrue, messageTime);
 
-    if (con.displayLine == con.currentLine)
-        ++con.displayLine;
     con.lineCursor = 0;
     ++con.currentLine;
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): follow new output until
+     * the user explicitly backscrolls. Equality alone cannot express this
+     * because the stock error path also offsets displayLine internally. */
+    if (coduomp_console_manually_scrolled == qfalse) {
+        con.displayLine = con.currentLine;
+    } else if ((int32_t)((uint32_t)con.currentLine -
+                         (uint32_t)con.displayLine) >= con.totalLines) {
+        /* Once the selected line ages out of the ring, hold at the oldest
+         * retained line instead of presenting an all-blank stale position. */
+        con.displayLine = (int32_t)(
+            (uint32_t)con.currentLine - (uint32_t)con.totalLines + 1u);
+    }
 
     const int32_t row = con.currentLine % con.totalLines;
     for (int32_t column = 0; column < con.lineWidth; ++column)

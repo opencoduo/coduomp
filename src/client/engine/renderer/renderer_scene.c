@@ -465,12 +465,10 @@ void RE_AddRefEntityToScene(
 
     if (rendererSceneFrameState.entityCount >=
         R_MAX_ACTIVE_SCENE_ENTITIES) {
-        if (rendererVisibleModelWarningView != tr.viewCount) {
-            rendererVisibleModelWarningView = tr.viewCount;
-            ri.Printf(R_PRINT_WARNING,
-                      "too many visible models (more than %i)\n",
-                      R_VISIBLE_MODEL_WARNING_LIMIT);
-        }
+        /* INTENTIONAL_OVERRIDE (NOT_FROM_ORIGINAL_SOURCE): dense custom maps
+         * can exceed the retail scene-entity cap every view and flood the
+         * console. Keep the original replacement/drop behavior below while
+         * suppressing only the diagnostic print. */
 
         entityIndex = R_FurthestReplaceableRefEntity();
         if (entityIndex < 0)

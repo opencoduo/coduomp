@@ -17,12 +17,14 @@ enum weaponOverlayReticle_e {
     WEAPON_OVERLAY_RETICLE_GEWEHR43 = 4
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE: this recovered function's rectangles are already
+ * physical refdef pixels. Keep the stock optical composition proportional and
+ * clip it to the centered 4:3 optical canvas; the native side extensions are
+ * painted as a true letterbox instead of stretching the mask texture. */
 #define DRAW_RETICLE_PIC(x_, y_, w_, h_, s1_, t1_, s2_, t2_, shader_) \
-    trap_R_DrawStretchPic(CG_FloatBits((x_)), CG_FloatBits((y_)), \
-                          CG_FloatBits((w_)), CG_FloatBits((h_)), \
-                          CG_FloatBits((s1_)), CG_FloatBits((t1_)), \
-                          CG_FloatBits((s2_)), CG_FloatBits((t2_)), \
-                          (int32_t)(shader_))
+    cgame_compat_draw_letterboxed_optical_pic( \
+        (x_), (y_), (w_), (h_), (s1_), (t1_), (s2_), (t2_), \
+        (int32_t)(shader_))
 
 long double CG_DrawWeapReticle(void)
 {
@@ -69,6 +71,11 @@ long double CG_DrawWeapReticle(void)
                       (long double)cg_refdef.y);
     color[3] = overlayFrac;
     trap_R_SetColor(color);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the recovered optical
+     * draws below remain intact and are clipped by the isolated adapter. Draw
+     * the native-width side bars first and restore the stock white/alpha draw
+     * color before entering those stock-derived branches. */
+    cgame_compat_draw_optical_letterbox(overlayFrac);
 
     /* 0x300196b0 reloads the global after SetColor before testing +0x280. */
     weapon = cg_currentWeaponInfo;
@@ -103,6 +110,10 @@ long double CG_DrawWeapReticle(void)
          * left-strip draw. 0x30019766 then loads the current viewport width. */
         float right = (float)((long double)left + (long double)width);
         long double viewRight = (long double)cg_refdef.width;
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the stock endpoint
+         * above excludes refdef.x even though the scope center includes it.
+         * Resolve that asymmetry at the optical-composition boundary. */
+        viewRight = cgame_compat_optical_canvas_right(viewRight);
         if (right < viewRight) {
             /* 0x30019779: full-height strip (y=viewTop, h=viewBottom-viewTop) with
              * texcoords (s1,t1,s2,t2)=(0,0,0,1) -- 0x30019789/0x3001978d PUSH 0 for

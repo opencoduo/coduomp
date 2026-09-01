@@ -49,8 +49,11 @@ void dllEntry(game_syscall_t syscallPtr)
 #define CVAR_NOTIFY_UNRELIABLE 0
 #define UI_CVAR_BUFFER_SIZE 256
 #define GAMETYPE_DEFAULT "dm"
-#define GAME_LOG_DISPLAY_NAME "CoD:United Offensive"
-#define GAME_LOG_DISPLAY_DATE "Feb 10 2005"
+/* INTENTIONAL_OVERRIDE (NOT_FROM_ORIGINAL_SOURCE): display-only identity for
+ * the two G_InitGame console-log lines. The gamename and gamedate server-info
+ * cvars retain their retail values in gameCvarTable. */
+#define GAME_LOG_DISPLAY_NAME "Open CoD:United Offensive"
+#define GAME_LOG_DISPLAY_DATE "Aug 20 2026"
 /* rodata 0xa1100: "e \"GAME_SERVER\x15: %s \x14GAME_CHANGEDTO\x15 %s\"" -
  * the marker before GAME_CHANGEDTO is 0x14, not 0x15. */
 #define CVAR_CHANGE_COMMAND "e \"GAME_SERVER\x15: %s \x14GAME_CHANGEDTO\x15 %s\""

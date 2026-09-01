@@ -132,6 +132,14 @@ qboolean Sys_InfoChanged(void)
 
     Sys_RegisterInfoCvars();
 
+#if defined(__linux__)
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): migrate configurations
+     * archived while the native Linux video-memory boundary always returned
+     * zero.  Com_Init responds to true by rerunning the shipped recommendation
+     * table, and Com_SetRecommended archives the corrected hardware profile. */
+    if (sys_vidMB->integer == 0 && sysVideoMemoryMB > 0)
+        return qtrue;
+#endif
 
     if ((double)sys_cpuMHz->value >
             sysCpuFrequencyMHz * maximumCpuRatio ||

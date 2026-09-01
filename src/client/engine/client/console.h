@@ -10,7 +10,10 @@
 #include "qcommon/q_key_types.h"
 
 enum {
-    CON_TEXT_CELL_COUNT = 65536,
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): retain four times the
+     * retail scrollback so a noisy map load remains available at native-width
+     * resolutions. The stock source keeps the 65,536-cell layout. */
+    CON_TEXT_CELL_COUNT = 262144,
     CON_DUMP_BUFFER_SIZE = CON_TEXT_CELL_COUNT + 2,
     CON_COMPLETION_MATCH_SIZE = 1024,
     CON_MINICON_MIN_LINES = 0,
@@ -32,9 +35,11 @@ typedef enum console_message_destination_e {
     CON_DEST_NONE = 4
 } console_message_destination_t;
 
-/* Complete original console_t at 0x04e1cc20. Each 16-bit text cell stores its
- * character in the low byte and color in the high byte. The next retail object
- * begins after visiblePixelHeight at 0x04e3cc4c. */
+/* The stock console_t at 0x04e1cc20 has the original layout. Each 16-bit
+ * text cell stores its character in the low byte and color in the high byte.
+ * The default compatibility build enlarges only the in-process text ring; the
+ * following fields move with it and do not cross a serialized or module ABI.
+ * The next retail object begins after visiblePixelHeight at 0x04e3cc4c. */
 typedef struct console_state_s {
     qboolean initialized;                         /* original +0x00000 */
     uint16_t text[CON_TEXT_CELL_COUNT];           /* original +0x00004 */
@@ -73,6 +78,7 @@ extern console_input_field_t con_historyFields[CON_HISTORY_FIELD_COUNT];
 extern int32_t con_historyLine;
 extern int32_t con_nextHistoryLine;
 extern console_state_t con;
+extern qboolean coduomp_console_manually_scrolled;
 extern key_state_t keyStates[MAX_KEYS];
 extern qboolean key_overstrikeMode;
 extern qboolean chat_team;
@@ -119,6 +125,7 @@ void Con_PageDown(void);
 void Con_PageUp(void);
 void Con_RunConsole(void);
 void Con_DrawConsole(void);
+void coduomp_console_draw_compat(void);
 void Con_DrawSolidConsole(float fraction);
 void Con_DrawMessageWindow(console_message_window_t *window,
                            int32_t x, int32_t y, float alpha,
@@ -221,59 +228,6 @@ _Static_assert(sizeof(((console_input_field_t *)0)->buffer) == 0x100,
 _Static_assert(sizeof(console_input_field_t) == 0x11c,
                "console_input_field_t original size");
 
-_Static_assert(_Alignof(console_state_t) == 0x4,
-               "console_state_t original alignment");
-_Static_assert(offsetof(console_state_t, initialized) == 0x00000,
-               "console_state_t initialized offset");
-_Static_assert(sizeof(((console_state_t *)0)->initialized) == 0x00004,
-               "console_state_t initialized extent");
-_Static_assert(offsetof(console_state_t, text) == 0x00004,
-               "console_state_t text offset");
-_Static_assert(sizeof(((console_state_t *)0)->text) == 0x20000,
-               "console_state_t text extent");
-_Static_assert(offsetof(console_state_t, currentLine) == 0x20004,
-               "console_state_t currentLine offset");
-_Static_assert(sizeof(((console_state_t *)0)->currentLine) == 0x00004,
-               "console_state_t currentLine extent");
-_Static_assert(offsetof(console_state_t, lineCursor) == 0x20008,
-               "console_state_t lineCursor offset");
-_Static_assert(sizeof(((console_state_t *)0)->lineCursor) == 0x00004,
-               "console_state_t lineCursor extent");
-_Static_assert(offsetof(console_state_t, displayLine) == 0x2000c,
-               "console_state_t displayLine offset");
-_Static_assert(sizeof(((console_state_t *)0)->displayLine) == 0x00004,
-               "console_state_t displayLine extent");
-_Static_assert(offsetof(console_state_t, lastMessageDestination) == 0x20010,
-               "console_state_t lastMessageDestination offset");
-_Static_assert(sizeof(((console_state_t *)0)->lastMessageDestination) ==
-                   0x00004,
-               "console_state_t lastMessageDestination extent");
-_Static_assert(offsetof(console_state_t, lineWidth) == 0x20014,
-               "console_state_t lineWidth offset");
-_Static_assert(sizeof(((console_state_t *)0)->lineWidth) == 0x00004,
-               "console_state_t lineWidth extent");
-_Static_assert(offsetof(console_state_t, totalLines) == 0x20018,
-               "console_state_t totalLines offset");
-_Static_assert(sizeof(((console_state_t *)0)->totalLines) == 0x00004,
-               "console_state_t totalLines extent");
-_Static_assert(offsetof(console_state_t, xAdjust) == 0x2001c,
-               "console_state_t xAdjust offset");
-_Static_assert(sizeof(((console_state_t *)0)->xAdjust) == 0x00004,
-               "console_state_t xAdjust extent");
-_Static_assert(offsetof(console_state_t, displayFrac) == 0x20020,
-               "console_state_t displayFrac offset");
-_Static_assert(sizeof(((console_state_t *)0)->displayFrac) == 0x00004,
-               "console_state_t displayFrac extent");
-_Static_assert(offsetof(console_state_t, finalFrac) == 0x20024,
-               "console_state_t finalFrac offset");
-_Static_assert(sizeof(((console_state_t *)0)->finalFrac) == 0x00004,
-               "console_state_t finalFrac extent");
-_Static_assert(offsetof(console_state_t, visiblePixelHeight) == 0x20028,
-               "console_state_t visiblePixelHeight offset");
-_Static_assert(sizeof(((console_state_t *)0)->visiblePixelHeight) == 0x00004,
-               "console_state_t visiblePixelHeight extent");
-_Static_assert(sizeof(console_state_t) == 0x2002c,
-               "console_state_t original size");
 
 _Static_assert(_Alignof(console_message_window_t) == 0x4,
                "console_message_window_t original alignment");

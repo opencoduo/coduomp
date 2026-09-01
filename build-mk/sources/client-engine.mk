@@ -18,6 +18,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/client/console_animation.c \
 	src/client/engine/client/console_clear.c \
 	src/client/engine/client/console_commands.c \
+	src/client/engine/client/console_display_compat.c \
 	src/client/engine/client/console_draw_messages.c \
 	src/client/engine/client/console_draw_solid.c \
 	src/client/engine/client/console_message_window.c \
@@ -38,6 +39,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/client/server_message_entities.c \
 	src/client/engine/client/snapshots.c \
 	src/client/engine/client/statmon.c \
+	src/client/engine/client/widescreen_2d_compat.c \
 	src/client/engine/com_error.c \
 	src/client/engine/com_frame.c \
 	src/client/engine/com_globals.c \
@@ -64,6 +66,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/platform/crt_boundary.c \
 	src/client/engine/platform/dynamic_library_boundary.c \
 	src/client/engine/platform/floating_point_boundary.c \
+	src/client/engine/platform/hardware_profile.c \
 	src/client/engine/platform/libwww_curl_boundary.c \
 	src/client/engine/platform/minizip_boundary.c \
 	src/client/engine/platform/punkbuster_boundary.c \
@@ -91,6 +94,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/renderer/gl_profile.c \
 	src/client/engine/renderer/gl_state.c \
 	src/client/engine/renderer/platform_wgl.c \
+	src/client/engine/renderer/presentation_2d_compat.c \
 	src/client/engine/renderer/punkbuster_gl.c \
 	src/client/engine/renderer/qgl_dispatch.c \
 	src/client/engine/renderer/renderer_api.c \
@@ -105,6 +109,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/renderer/renderer_frame_commands.c \
 	src/client/engine/renderer/renderer_freetype.c \
 	src/client/engine/renderer/renderer_image.c \
+	src/client/engine/renderer/reticle_upscale_compat.c \
 	src/client/engine/renderer/renderer_immediate.c \
 	src/client/engine/renderer/renderer_init.c \
 	src/client/engine/renderer/renderer_light_visibility.c \
@@ -179,10 +184,11 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/ui/ui_shutdown.c \
 	src/client/engine/ui/ui_syscalls.c
 
-# NOT_FROM_ORIGINAL_SOURCE: the stock source line owns the stock-behavior
+# NOT_FROM_ORIGINAL_SOURCE: the improved source line owns the compatibility
 # providers for filesystem and renderer policy.
 CLIENT_ENGINE_C_SOURCES += \
 	src/client/engine/filesystem/server_namespace_provider.c \
+	src/client/engine/renderer/output_gamma_compat.c \
 	src/client/engine/renderer/platform_gamma.c \
 	src/client/engine/renderer/renderer_color_mappings.c
 

@@ -20,6 +20,39 @@ int32_t cl_serverStatusNextSlot;
 cvar_t *cl_serverStatusResendTime;
 static char cl_serverIPAddress[128];
 
+typedef enum coduomp_server_player_query_state_e {
+    CODUOMP_SERVER_PLAYER_QUERY_QUEUED = 0,
+    CODUOMP_SERVER_PLAYER_QUERY_PENDING = 1,
+    CODUOMP_SERVER_PLAYER_QUERY_COMPLETE = 2
+} coduomp_server_player_query_state_t;
+
+typedef struct coduomp_server_player_query_s {
+    netadr_t address;
+    int32_t requestStartTime;
+    int32_t timeoutMsec;
+    coduomp_server_player_query_state_t state;
+} coduomp_server_player_query_t;
+
+static coduomp_server_player_query_t
+    coduomp_serverPlayerQueries[LAN_GLOBAL_SERVER_CAPACITY];
+static int32_t coduomp_serverPlayerQueryCount;
+
+typedef struct coduomp_server_bot_cache_entry_s {
+    netadr_t address;
+    uint8_t cachedBotCount;
+    uint8_t displayedBotCount;
+    uint8_t occupied;
+} coduomp_server_bot_cache_entry_t;
+
+enum {
+    CODUOMP_SERVER_BOT_CACHE_CAPACITY = 65536
+};
+
+#define CODUOMP_SERVER_ADDRESS_HASH_OFFSET UINT32_C(2166136261)
+#define CODUOMP_SERVER_ADDRESS_HASH_PRIME UINT32_C(16777619)
+
+static coduomp_server_bot_cache_entry_t
+    coduomp_serverBotCache[CODUOMP_SERVER_BOT_CACHE_CAPACITY];
 
 /* Mac symbol and the call at 0x0041b2f8 identify the message-pump boundary.
  * Its recovery is owned by the common event-loop subsystem. */
@@ -35,6 +68,10 @@ enum {
     LAN_SERVER_RECENT_MASTER_RESPONSE_AGE_LIMIT = 3,
     CL_SERVERINFO_CONFIGSTRING = 0,
     CL_CDKEY_PB_COPY_LIMIT = 32,
+    CODUOMP_SERVER_BOT_PING = 999,
+    CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC = 1000,
+    CODUOMP_SERVER_STATUS_MAX_TIMEOUT_MSEC = 3000,
+    CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC = 250
 };
 
 /* Original Win32 CD-key storage at 0x005c51cc. The primary CoD:UO key and an
@@ -382,6 +419,64 @@ void CL_ServersResponsePacket(msg_t *message)
                parsedCount, globalServerCount);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: hash the fields used by
+ * NET_CompareAdrSigned so cached roster metadata follows a server across
+ * browser lists and refresh generations. */
+static uint32_t coduomp_server_address_hash(netadr_t address)
+{
+    uint32_t hash = CODUOMP_SERVER_ADDRESS_HASH_OFFSET;
+    hash = (hash ^ (uint32_t)address.type) *
+           CODUOMP_SERVER_ADDRESS_HASH_PRIME;
+
+    const uint8_t *addressBytes = NULL;
+    size_t addressByteCount = 0;
+    if (address.type == NA_IP) {
+        addressBytes = address.ip;
+        addressByteCount = sizeof(address.ip);
+    } else if (address.type == NA_IPX) {
+        addressBytes = address.ipx;
+        addressByteCount = sizeof(address.ipx);
+    }
+
+    if (addressBytes != NULL) {
+        hash = (hash ^ (uint32_t)address.port) *
+               CODUOMP_SERVER_ADDRESS_HASH_PRIME;
+        for (size_t index = 0; index < addressByteCount; ++index) {
+            hash = (hash ^ addressBytes[index]) *
+                   CODUOMP_SERVER_ADDRESS_HASH_PRIME;
+        }
+    }
+    return hash;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: look up the persistent bot-count sidecar without
+ * changing the original fixed-layout lan_server_info_t records. */
+static coduomp_server_bot_cache_entry_t *coduomp_find_server_bot_cache(
+    netadr_t address, qboolean create)
+{
+    const uint32_t slotMask = CODUOMP_SERVER_BOT_CACHE_CAPACITY - 1u;
+    const uint32_t firstSlot =
+        coduomp_server_address_hash(address) & slotMask;
+
+    for (uint32_t offset = 0;
+         offset < CODUOMP_SERVER_BOT_CACHE_CAPACITY; ++offset) {
+        coduomp_server_bot_cache_entry_t *const entry =
+            &coduomp_serverBotCache[(firstSlot + offset) & slotMask];
+        if (entry->occupied == 0) {
+            if (create == qfalse)
+                return NULL;
+            entry->address = address;
+            entry->cachedBotCount = 0;
+            entry->displayedBotCount = 0;
+            entry->occupied = 1;
+            return entry;
+        }
+        if (NET_CompareAdrSigned(&address, &entry->address) == 0)
+            return entry;
+    }
+    return NULL;
+}
+
 /* Source: CoDUOMP.exe 0x00415180..0x0041537e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00415180_0041537f.mcode and the exact
  * key strings at 0x0058e7e0/0x00593334..0x005933dc.
@@ -395,7 +490,18 @@ void CL_SetServerInfo(lan_server_info_t *server, const char *info,
         return;
 
     if (info != NULL) {
-        server->clients = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "clients"));
+        const uint8_t aggregateClientCount =
+            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "clients"));
+        coduomp_server_bot_cache_entry_t *const botCache =
+            coduomp_find_server_bot_cache(server->address, qtrue);
+        uint8_t displayedBotCount = 0;
+        if (botCache != NULL) {
+            displayedBotCount =
+                botCache->cachedBotCount < aggregateClientCount
+                    ? botCache->cachedBotCount : aggregateClientCount;
+            botCache->displayedBotCount = displayedBotCount;
+        }
+        server->clients = aggregateClientCount - displayedBotCount;
 
         strncpy(server->hostName, Info_ValueForKey(info, "hostname"),
                 sizeof(server->hostName) - 1);
@@ -544,6 +650,218 @@ void CL_SetServerInfoByAddress(netadr_t address, const char *info,
     }
 }
 
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): discard the automatic
+ * getstatus generation whenever the UI starts a new server refresh. */
+static void coduomp_reset_server_player_queries(void)
+{
+    coduomp_serverPlayerQueryCount = 0;
+}
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): queue a bounded getstatus
+ * request for a nonempty server. The timeout follows the successful getinfo
+ * round trip, with limits that prevent one silent server from stalling the
+ * browser indefinitely. */
+static void coduomp_queue_server_player_query(netadr_t address,
+                                               int32_t pingMsec)
+{
+    if (coduomp_serverPlayerQueryCount >= LAN_GLOBAL_SERVER_CAPACITY)
+        return;
+
+    int32_t timeoutMsec = CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC;
+    if (pingMsec > 0 &&
+        pingMsec <= (CODUOMP_SERVER_STATUS_MAX_TIMEOUT_MSEC -
+                     CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC) / 2) {
+        timeoutMsec = pingMsec * 2 +
+                      CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC;
+        if (timeoutMsec < CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC)
+            timeoutMsec = CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC;
+    } else if (pingMsec > 0) {
+        timeoutMsec = CODUOMP_SERVER_STATUS_MAX_TIMEOUT_MSEC;
+    }
+
+    coduomp_server_player_query_t *const query =
+        &coduomp_serverPlayerQueries[coduomp_serverPlayerQueryCount++];
+    query->address = address;
+    query->requestStartTime = 0;
+    query->timeoutMsec = timeoutMsec;
+    query->state = CODUOMP_SERVER_PLAYER_QUERY_QUEUED;
+}
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): replace the aggregate
+ * getinfo count in every browser list containing this address with the
+ * heuristic human count obtained from getstatus. */
+static void coduomp_apply_server_human_count(netadr_t address,
+                                              uint8_t humanCount)
+{
+    qboolean localChanged = qfalse;
+    for (int32_t index = 0; index < LAN_LOCAL_SERVER_CAPACITY; ++index) {
+        if (NET_CompareAdrSigned(
+                &address, &cls.localServers[index].address) == 0) {
+            cls.localServers[index].clients = humanCount;
+            localChanged = qtrue;
+        }
+    }
+    if (localChanged != qfalse) {
+        CL_UpdateServerRefreshCvars(
+            cls.localServers, cls.numLocalServers,
+            LAN_SERVER_SOURCE_LOCAL);
+    }
+
+    qboolean globalChanged = qfalse;
+    int32_t lower = 0;
+    int32_t upper = cls.numGlobalServers;
+    while (lower < upper) {
+        const int32_t middle = (lower + upper) / 2;
+        const int32_t comparison = NET_CompareAdrSigned(
+            &address, &cls.globalServers[middle].address);
+        if (comparison < 0) {
+            upper = middle;
+        } else if (comparison > 0) {
+            lower = middle + 1;
+        } else {
+            int32_t first = middle;
+            while (first > 0 &&
+                   NET_CompareAdrSigned(
+                       &address,
+                       &cls.globalServers[first - 1].address) == 0) {
+                --first;
+            }
+            for (int32_t index = first;
+                 index < cls.numGlobalServers; ++index) {
+                if (NET_CompareAdrSigned(
+                        &address,
+                        &cls.globalServers[index].address) != 0) {
+                    break;
+                }
+                cls.globalServers[index].clients = humanCount;
+                globalChanged = qtrue;
+            }
+            break;
+        }
+    }
+    if (globalChanged != qfalse) {
+        CL_UpdateServerRefreshCvars(
+            cls.globalServers, cls.numGlobalServers,
+            LAN_SERVER_SOURCE_GLOBAL);
+    }
+
+    qboolean favoriteChanged = qfalse;
+    for (int32_t index = 0; index < LAN_FAVORITE_SERVER_CAPACITY; ++index) {
+        if (NET_CompareAdrSigned(
+                &address, &cls.favoriteServers[index].address) == 0) {
+            cls.favoriteServers[index].clients = humanCount;
+            favoriteChanged = qtrue;
+        }
+    }
+    if (favoriteChanged != qfalse) {
+        CL_UpdateServerRefreshCvars(
+            cls.favoriteServers, cls.numFavoriteServers,
+            LAN_SERVER_SOURCE_FAVORITES);
+    }
+}
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): count every well-formed
+ * status roster entry, retaining the requested 999-ping bot heuristic by
+ * server address. The caller supplies a copied message cursor so the stock
+ * status-cache parser can consume the same packet independently. */
+static void coduomp_record_server_player_status(netadr_t address,
+                                                 msg_t *message)
+{
+    qboolean tracked = qfalse;
+    for (int32_t index = 0;
+         index < coduomp_serverPlayerQueryCount; ++index) {
+        const coduomp_server_player_query_t *const query =
+            &coduomp_serverPlayerQueries[index];
+        if (query->state == CODUOMP_SERVER_PLAYER_QUERY_PENDING &&
+            NET_CompareAdrSigned(&address, &query->address) == 0) {
+            tracked = qtrue;
+            break;
+        }
+    }
+    if (tracked == qfalse)
+        return;
+
+    (void)MSG_ReadStringLine(message);
+    uint8_t humanCount = 0;
+    uint8_t botCount = 0;
+    qboolean validRoster = qtrue;
+    const char *player = MSG_ReadStringLine(message);
+    while (player[0] != '\0') {
+        int32_t score;
+        int32_t ping;
+        if (sscanf(player, "%d %d", &score, &ping) != 2) {
+            validRoster = qfalse;
+        } else if (ping == CODUOMP_SERVER_BOT_PING) {
+            if (botCount < UINT8_MAX)
+                ++botCount;
+        } else if (humanCount < UINT8_MAX) {
+            ++humanCount;
+        }
+        player = MSG_ReadStringLine(message);
+    }
+
+    for (int32_t index = 0;
+         index < coduomp_serverPlayerQueryCount; ++index) {
+        coduomp_server_player_query_t *const query =
+            &coduomp_serverPlayerQueries[index];
+        if (query->state == CODUOMP_SERVER_PLAYER_QUERY_PENDING &&
+            NET_CompareAdrSigned(&address, &query->address) == 0) {
+            query->state = CODUOMP_SERVER_PLAYER_QUERY_COMPLETE;
+        }
+    }
+
+    if (validRoster == qfalse)
+        return;
+
+    coduomp_server_bot_cache_entry_t *const botCache =
+        coduomp_find_server_bot_cache(address, qtrue);
+    if (botCache != NULL) {
+        botCache->cachedBotCount = botCount;
+        botCache->displayedBotCount = botCount;
+    }
+    coduomp_apply_server_human_count(address, humanCount);
+}
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): maintain at most the stock
+ * status-cache width of concurrent automatic queries. Completed and timed-out
+ * records stay inert until the next browser refresh resets the generation. */
+static qboolean coduomp_pump_server_player_queries(void)
+{
+    const int32_t now = (int32_t)Sys_Milliseconds();
+    int32_t pendingCount = 0;
+    qboolean active = qfalse;
+
+    for (int32_t index = 0;
+         index < coduomp_serverPlayerQueryCount; ++index) {
+        coduomp_server_player_query_t *const query =
+            &coduomp_serverPlayerQueries[index];
+        if (query->state != CODUOMP_SERVER_PLAYER_QUERY_PENDING)
+            continue;
+        if ((uint32_t)now - (uint32_t)query->requestStartTime >=
+            (uint32_t)query->timeoutMsec) {
+            query->state = CODUOMP_SERVER_PLAYER_QUERY_COMPLETE;
+            continue;
+        }
+        ++pendingCount;
+        active = qtrue;
+    }
+
+    for (int32_t index = 0;
+         index < coduomp_serverPlayerQueryCount &&
+         pendingCount < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
+        coduomp_server_player_query_t *const query =
+            &coduomp_serverPlayerQueries[index];
+        if (query->state != CODUOMP_SERVER_PLAYER_QUERY_QUEUED)
+            continue;
+        query->requestStartTime = now;
+        query->state = CODUOMP_SERVER_PLAYER_QUERY_PENDING;
+        NET_OutOfBandPrint(NS_CLIENT, query->address, "getstatus");
+        ++pendingCount;
+        active = qtrue;
+    }
+
+    return active;
+}
 
 /* Source: CoDUOMP.exe 0x004155f0..0x00415a3f.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004155f0_00415a40.mcode.
@@ -611,6 +929,12 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
             ping->serverInfo, "nettype", va("%d", netType));
         CL_SetServerInfoByAddress(
             address, info, ping->pingMsec);
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): getinfo has only an
+         * aggregate client count. Ask nonempty servers for the roster needed
+         * to remove 999-ping entries from the browser count. */
+        if (coduo_crt_atoi(Info_ValueForKey(info, "clients")) > 0) {
+            coduomp_queue_server_player_query(address, ping->pingMsec);
+        }
         return;
     }
 
@@ -1110,6 +1434,8 @@ qboolean CL_UpdateDirtyPings(lan_server_source_t source)
         }
     }
 
+    if (coduomp_pump_server_player_queries() != qfalse)
+        stillUpdating = qtrue;
 
     return stillUpdating;
 }
@@ -1234,6 +1560,8 @@ qboolean CL_ServerStatus(const char *address, char *status,
  * pairs and players as number/score/ping/name. */
 void CL_ServerStatusResponse(netadr_t address, msg_t *message)
 {
+    msg_t playerCountMessage = *message;
+    coduomp_record_server_player_status(address, &playerCountMessage);
 
     cl_server_status_t *serverStatus = NULL;
     for (int32_t index = 0; index < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
@@ -1572,6 +1900,7 @@ void LAN_ResetPings(lan_server_source_t source)
         cl_pingList[pingIndex].address.port = 0;
     }
 
+    coduomp_reset_server_player_queries();
 
     for (int32_t index = 0; index < serverCount; ++index)
         servers[index].ping = -1;
@@ -1731,6 +2060,11 @@ void LAN_GetServerInfo(lan_server_source_t source, int32_t serverIndex,
     Info_SetValueForKey(info, "mapname", server->mapName);
     Info_SetValueForKey(info, "clients", va("%i", server->clients));
     Info_SetValueForKey(info, "sv_maxclients", va("%i", server->maxClients));
+    const coduomp_server_bot_cache_entry_t *const botCache =
+        coduomp_find_server_bot_cache(server->address, qfalse);
+    Info_SetValueForKey(info, "bots",
+                        va("%i", botCache != NULL
+                                      ? botCache->displayedBotCount : 0));
     Info_SetValueForKey(info, "ping", va("%i", server->ping));
     Info_SetValueForKey(info, "minping", va("%i", server->minPing));
     Info_SetValueForKey(info, "maxping", va("%i", server->maxPing));
@@ -1800,15 +2134,135 @@ void LAN_CleanHostname(const char *source, char *destination)
     const char *const sourceEnd =
         source + LAN_SERVER_HOSTNAME_SIZE - 1;
     while (source < sourceEnd && *source != '\0') {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the renderer hides
+         * ^0 through ^9, and the extended UI convention also hides ^#.
+         * Neither byte of those pairs participates in the visible name. */
+        if (*source == '^' && source + 1 < sourceEnd &&
+            ((source[1] >= '0' && source[1] <= '9') ||
+             source[1] == '#')) {
+            source += 2;
+            continue;
+        }
         const unsigned char character = (unsigned char)*source++;
-        /* The CRT callee at 0x0056ce4d tests ctype mask 0x0103 (_ALPHA),
-         * so digits and punctuation do not participate in collation. */
-        if (coduo_crt_isalpha(character) != 0)
+        if (coduo_crt_isalpha(character) != 0 ||
+            (character >= '0' && character <= '9'))
             *destination++ = (char)character;
     }
     *destination = '\0';
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: compatibility ordering for human-visible server
+ * names. ASCII letters precede digits; names without either use visible
+ * punctuation, and names with no visible bytes use their raw byte sequence. */
+static int32_t coduomp_server_name_compare_compat(const char *left,
+                                                  const char *right)
+{
+    enum {
+        CODUOMP_SERVER_NAME_SIDE_COUNT = 2,
+        CODUOMP_SERVER_NAME_LETTER_COUNT = 26
+    };
+    char alnumKeys[CODUOMP_SERVER_NAME_SIDE_COUNT][LAN_SERVER_HOSTNAME_SIZE];
+    uint8_t visibleKeys[CODUOMP_SERVER_NAME_SIDE_COUNT]
+                       [LAN_SERVER_HOSTNAME_SIZE];
+    size_t visibleLengths[CODUOMP_SERVER_NAME_SIDE_COUNT] = {0, 0};
+    const char *const names[CODUOMP_SERVER_NAME_SIDE_COUNT] = {left, right};
+
+    LAN_CleanHostname(left, alnumKeys[0]);
+    LAN_CleanHostname(right, alnumKeys[1]);
+
+    if ((alnumKeys[0][0] == '\0') != (alnumKeys[1][0] == '\0'))
+        return alnumKeys[0][0] == '\0' ? 1 : -1;
+
+    if (alnumKeys[0][0] != '\0') {
+        size_t index = 0;
+
+        for (;;) {
+            const unsigned char leftCharacter =
+                (unsigned char)alnumKeys[0][index];
+            const unsigned char rightCharacter =
+                (unsigned char)alnumKeys[1][index];
+            int32_t leftRank;
+            int32_t rightRank;
+
+            if (leftCharacter == '\0' || rightCharacter == '\0') {
+                if (leftCharacter == rightCharacter)
+                    return 0;
+                return leftCharacter == '\0' ? -1 : 1;
+            }
+
+            if (leftCharacter >= '0' && leftCharacter <= '9') {
+                leftRank = CODUOMP_SERVER_NAME_LETTER_COUNT +
+                           leftCharacter - '0';
+            } else if (leftCharacter >= 'a' && leftCharacter <= 'z') {
+                leftRank = leftCharacter - 'a';
+            } else {
+                leftRank = leftCharacter - 'A';
+            }
+
+            if (rightCharacter >= '0' && rightCharacter <= '9') {
+                rightRank = CODUOMP_SERVER_NAME_LETTER_COUNT +
+                            rightCharacter - '0';
+            } else if (rightCharacter >= 'a' && rightCharacter <= 'z') {
+                rightRank = rightCharacter - 'a';
+            } else {
+                rightRank = rightCharacter - 'A';
+            }
+
+            if (leftRank != rightRank)
+                return leftRank < rightRank ? -1 : 1;
+            ++index;
+        }
+    }
+
+    for (size_t side = 0; side < CODUOMP_SERVER_NAME_SIDE_COUNT; ++side) {
+        const char *source = names[side];
+        const char *const sourceEnd =
+            source + LAN_SERVER_HOSTNAME_SIZE - 1;
+
+        while (source < sourceEnd && *source != '\0') {
+            if (*source == '^' && source + 1 < sourceEnd &&
+                ((source[1] >= '0' && source[1] <= '9') ||
+                 source[1] == '#')) {
+                source += 2;
+                continue;
+            }
+
+            const uint8_t character = (uint8_t)*source++;
+            if (character >= (uint8_t)' ' && character <= (uint8_t)'~') {
+                visibleKeys[side][visibleLengths[side]++] = character;
+            }
+        }
+    }
+
+    if ((visibleLengths[0] == 0) != (visibleLengths[1] == 0))
+        return visibleLengths[0] == 0 ? 1 : -1;
+
+    if (visibleLengths[0] != 0) {
+        const size_t commonLength =
+            visibleLengths[0] < visibleLengths[1]
+                ? visibleLengths[0] : visibleLengths[1];
+
+        for (size_t index = 0; index < commonLength; ++index) {
+            if (visibleKeys[0][index] != visibleKeys[1][index]) {
+                return visibleKeys[0][index] < visibleKeys[1][index] ? -1 : 1;
+            }
+        }
+        if (visibleLengths[0] != visibleLengths[1])
+            return visibleLengths[0] < visibleLengths[1] ? -1 : 1;
+        return 0;
+    }
+
+    for (size_t index = 0; index < LAN_SERVER_HOSTNAME_SIZE; ++index) {
+        const uint8_t leftCharacter = (uint8_t)left[index];
+        const uint8_t rightCharacter = (uint8_t)right[index];
+
+        if (leftCharacter != rightCharacter)
+            return leftCharacter < rightCharacter ? -1 : 1;
+        if (leftCharacter == '\0')
+            return 0;
+    }
+    return 0;
+}
 
 /* Source: CoDUOMP.exe 0x0041b0a0..0x0041b108.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041b0a0_0041b109.mcode.
@@ -1818,19 +2272,12 @@ void LAN_CleanHostname(const char *source, char *destination)
  * above instead. */
 int32_t LAN_CompareHostname(const char *left, const char *right)
 {
-    char cleanLeft[LAN_SERVER_HOSTNAME_SIZE];
-    char cleanRight[LAN_SERVER_HOSTNAME_SIZE];
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (left == NULL || right == NULL)
         return -1;
 
-    LAN_CleanHostname(left, cleanLeft);
-    LAN_CleanHostname(right, cleanRight);
-    int32_t comparison = Q_stricmp(cleanLeft, cleanRight);
-    if (comparison != 0)
-        return comparison;
-    return Q_stricmpn(left, right, LAN_SERVER_HOSTNAME_SIZE);
+    return coduomp_server_name_compare_compat(left, right);
 }
 
 /* Source: CoDUOMP.exe 0x0041b110..0x0041b230.
@@ -1888,17 +2335,27 @@ int32_t LAN_CompareServers(lan_server_source_t source,
         comparison = (int32_t)first->mod - (int32_t)second->mod;
         break;
     case LAN_SERVER_SORT_PING:
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): ping remains the
+         * primary key even though compatibility tie breaking starts at the
+         * hostname. */
+        comparison = (int32_t)first->ping - (int32_t)second->ping;
         break;
     default:
         return 0;
     }
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep equal primary keys
+     * stable under the complete user-facing server identity. */
+    if (comparison == 0)
+        comparison = LAN_CompareHostname(first->hostName, second->hostName);
     if (comparison == 0)
         comparison = (int32_t)first->ping - (int32_t)second->ping;
     if (comparison == 0)
-        comparison = Q_stricmp(first->gameType, second->gameType);
+        comparison = (int32_t)first->maxClients - (int32_t)second->maxClients;
     if (comparison == 0)
-        comparison = LAN_CompareHostname(first->hostName, second->hostName);
+        comparison = Q_stricmp(first->mapName, second->mapName);
+    if (comparison == 0)
+        comparison = Q_stricmp(first->gameType, second->gameType);
 
     return sortDescending != qfalse ? -comparison : comparison;
 }

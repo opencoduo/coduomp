@@ -23,6 +23,14 @@ typedef struct key_name_s {
 key_state_t keyStates[MAX_KEYS];
 static int32_t keyDownCount; /* original 0x04e19adc */
 static char keyNameBuffer[5]; /* original 0x008ce0cc */
+#define CODUOMP_CONSOLE_BIND_CAPTURE_CVAR \
+    "ui_coduomp_consoleBindCapture"
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): when printable ASCII opens
+ * the console through a toggleconsole binding, discard only that opening
+ * keystroke's later character event.  Subsequent presses remain ordinary
+ * console input. */
+static int32_t coduomp_consoleToggleCharacterKey = -1;
 cvar_t *cl_nodelta;           /* original 0x0495818c */
 cvar_t *cl_debugMove;         /* original 0x04e19980 */
 clKeyButton_t in_left;         /* original 0x008cddf8 */
@@ -1017,6 +1025,14 @@ void Key_SetBinding(int32_t key, const char *binding)
         return;
     }
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep toggleconsole
+     * keyboard-only even when a bind is entered manually or loaded from a
+     * configuration file instead of going through the controls menu. */
+    if (key >= K_MOUSE1 && key <= K_MWHEELUP && binding != NULL &&
+        Q_stricmp(binding, "toggleconsole") == 0) {
+        Com_Printf("Mouse inputs cannot be bound to toggleconsole.\n");
+        return;
+    }
 
     if (keyStates[key].binding != NULL)
         free(keyStates[key].binding);
@@ -1190,8 +1206,48 @@ void CL_ClearKeys(void)
 void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
 {
     key_state_t *const state = &keyStates[key];
-    const qboolean coduompSpecialConsoleKey =
+    const char *const coduompBinding = state->binding;
+    /* Keep the retail keys as an unconditional fallback.  Alternate
+     * toggleconsole bindings get the conditional text-input behavior below. */
+    const qboolean coduompDefaultConsoleKey =
         key == '`' || key == '~';
+    const qboolean coduompToggleConsoleBinding =
+        coduompBinding != NULL && coduompBinding[0] != '\0' &&
+        Q_stricmp(coduompBinding, "toggleconsole") == 0;
+    const qboolean coduompUiHasKeyboardFocus =
+        (cls.keyCatchers & KEYCATCH_UI) != 0 &&
+        (cls.keyCatchers & KEYCATCH_CONSOLE) == 0;
+    const qboolean coduompCapturingConsoleBinding =
+        (coduompDefaultConsoleKey != qfalse ||
+         coduompToggleConsoleBinding != qfalse) &&
+        coduompUiHasKeyboardFocus != qfalse &&
+        Cvar_VariableIntegerValue(
+            CODUOMP_CONSOLE_BIND_CAPTURE_CVAR) != 0;
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): a left mouse button
+     * accidentally captured as toggleconsole must still reach menu controls,
+     * especially the stock defaults dialog that repairs all bindings. */
+    const qboolean coduompConsoleMouseMenuClick =
+        key == K_MOUSE1 && coduompToggleConsoleBinding != qfalse &&
+        coduompUiHasKeyboardFocus != qfalse;
+    const qboolean coduompValidConsoleAscii =
+        key >= ' ' && key <= '~' && key != '`' && key != '~';
+    const qboolean coduompConsoleWasOpen =
+        (cls.keyCatchers & KEYCATCH_CONSOLE) != 0;
+    const qboolean coduompSpecialConsoleKey =
+        coduompCapturingConsoleBinding == qfalse &&
+        coduompConsoleMouseMenuClick == qfalse &&
+        (coduompDefaultConsoleKey != qfalse ||
+         (coduompToggleConsoleBinding != qfalse &&
+          (coduompConsoleWasOpen == qfalse ||
+           coduompValidConsoleAscii == qfalse)));
+
+    if (coduomp_consoleToggleCharacterKey != -1 &&
+        ((down == qfalse &&
+          key == coduomp_consoleToggleCharacterKey) ||
+         (down != qfalse &&
+          key != coduomp_consoleToggleCharacterKey))) {
+        coduomp_consoleToggleCharacterKey = -1;
+    }
     state->down = down;
 
     if (down != qfalse) {
@@ -1236,6 +1292,12 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
             (cls.keyCatchers & KEYCATCH_CONSOLE) != 0 ||
             sv_running->integer != 0 ||
             sv_disableClientConsole->integer == 0;
+        if (down != qfalse &&
+            coduompConsoleWasOpen == qfalse &&
+            coduompToggleConsoleBinding != qfalse &&
+            coduompValidConsoleAscii != qfalse) {
+            coduomp_consoleToggleCharacterKey = key;
+        }
         if (down != qfalse && consoleAllowed != qfalse)
             Con_ToggleConsole_f();
         return;
@@ -1444,6 +1506,11 @@ void Key_WriteBindings(int32_t fileHandle)
  * are all direct machine-code operands. */
 void CL_CharEvent(int32_t character)
 {
+    if (coduomp_consoleToggleCharacterKey != -1) {
+        coduomp_consoleToggleCharacterKey = -1;
+        if (character >= ' ' && character <= '~')
+            return;
+    }
     if (character == '`' || character == '~')
         return;
 

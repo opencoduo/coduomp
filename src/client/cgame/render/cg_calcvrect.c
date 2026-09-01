@@ -106,13 +106,35 @@ void CG_CalcVrect(void)
     {
         int32_t vidWidth  = cgs_glconfig.vidWidth;
         int32_t vidHeight = cgs_glconfig.vidHeight;
+        int32_t presentationX = 0;
+        int32_t presentationY = 0;
+        int32_t presentationWidth = vidWidth;
+        int32_t presentationHeight = vidHeight;
+
+        if (cgame_compat_uses_classic_aspect() != qfalse) {
+            /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fit the 3D
+             * view into the same 4:3 region used by the renderer's 2D path. */
+            if ((int64_t)vidWidth * 3 > (int64_t)vidHeight * 4) {
+                presentationWidth = (vidHeight * 4 / 3) & ~1;
+                presentationX = (vidWidth - presentationWidth) / 2;
+            } else if ((int64_t)vidWidth * 3 <
+                       (int64_t)vidHeight * 4) {
+                presentationHeight = (vidWidth * 3 / 4) & ~1;
+                presentationY = (vidHeight - presentationHeight) / 2;
+            }
+        }
+
         /* size percentage of the backbuffer, forced to an even pixel count. */
-        int32_t width  = (vidWidth  * widthSize  / 100) & ~1;
-        int32_t height = (vidHeight * heightSize / 100) & ~1;
+        int32_t width =
+            (presentationWidth * widthSize / 100) & ~1;
+        int32_t height =
+            (presentationHeight * heightSize / 100) & ~1;
 
         /* Center the view rect on screen (signed halving rounds toward zero). */
-        int32_t viewX = (vidWidth  - width ) / 2;
-        int32_t viewY = (vidHeight - height) / 2;
+        int32_t viewX =
+            presentationX + (presentationWidth - width) / 2;
+        int32_t viewY =
+            presentationY + (presentationHeight - height) / 2;
 
         cg_refdef.x      = (uint32_t)viewX;
         cg_refdef.height = (uint32_t)height;

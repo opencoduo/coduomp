@@ -7,6 +7,7 @@
 #include "gl_state.h"
 #include "qcommon/com_sprintf.h"
 #include "compat/crt/qsort_compat.h"
+#include "reticle_upscale_compat.h"
 
 #include <math.h>
 #include <setjmp.h>
@@ -1209,7 +1210,7 @@ void R_LightScaleTexture(uint8_t *pixels, int32_t width, int32_t height,
     if (coduomp_gamma_output_available() != qfalse) {
         if (noOverbright)
             secondTable = rendererInverseOverbrightTable;
-    } else {
+    } else if (coduomp_gamma_texture_fallback_enabled_compat() != qfalse) {
         secondTable = noOverbright
             ? rendererGammaTable : rendererGammaOverbrightTable;
     }
@@ -2075,6 +2076,11 @@ image_t *R_FindImageFile(const char *name, uint32_t textureTarget,
         R_LoadImage(name, &pixels, &width, &height, &format,
                     &mipMapsAvailable, loadMode);
 
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): sharpen the tiny
+         * stock-era reticle images before upload; see
+         * reticle_upscale_compat.c. Applies to every create path below. */
+        coduomp_compat_upscale_reticle_pixels(
+            name, &pixels, &width, &height, format, loadMode);
 
         if (mipMapsAvailable == qfalse &&
             (flags & IMAGE_FLAG_MIPMAP) != 0) {

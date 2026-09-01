@@ -5,6 +5,8 @@
 #include "gl_debug.h"
 #include "platform_gamma.h"
 #include "wgl_debug.h"
+#include "output_gamma_compat.h"
+#include "../platform/hardware_profile.h"
 #include "../server/server.h"
 
 #include <inttypes.h>
@@ -18,6 +20,9 @@
 #include "../system_localization.h"
 #include "../system_platform.h"
 
+#if !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0601
+#endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -53,6 +58,11 @@ enum {
     R_AUTOCONFIG_VALUE_SIZE = 64
 };
 
+enum {
+    R_WINDOW_MODE_WINDOWED = 0,
+    R_WINDOW_MODE_FULLSCREEN = 1,
+    R_WINDOW_MODE_BORDERLESS = 2
+};
 
 typedef enum renderer_display_change_result_e {
     R_DISPLAY_CHANGE_BAD_PARAMETER = -5,
@@ -443,7 +453,7 @@ qboolean GLW_InitDriver(int32_t colorBits)
  * class and creates or repositions win32MainWindow before GLW_InitDriver. */
 qboolean GLW_CreateWindow(const char *driverName, int32_t width,
                           int32_t height, int32_t colorBits,
-                          qboolean fullscreen)
+                          int32_t windowMode)
 {
 #if defined(_WIN32)
     static const char windowClassName[] =
@@ -475,9 +485,14 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
     int32_t windowX;
     int32_t windowY;
 
-    if (fullscreen != qfalse) {
+    if (windowMode != R_WINDOW_MODE_WINDOWED) {
         style = WS_POPUP | WS_VISIBLE | WS_SYSMENU;
-        extendedStyle = WS_EX_TOPMOST;
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): default fullscreen
+         * is a desktop-sized non-exclusive popup, so both fullscreen modes
+         * must participate in the normal desktop z-order. Keeping the stock
+         * topmost style here hides non-activating OS overlays such as Windows
+         * screen snipping behind the game. */
+        extendedStyle = 0;
         windowX = 0;
         windowY = 0;
     } else {
@@ -499,7 +514,7 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
 
     const int32_t windowWidth = windowRect.right - windowRect.left;
     const int32_t windowHeight = windowRect.bottom - windowRect.top;
-    if (fullscreen == qfalse &&
+    if (windowMode == R_WINDOW_MODE_WINDOWED &&
         windowWidth < rendererWin32DesktopWidth &&
         windowHeight < rendererWin32DesktopHeight) {
         if (windowX + windowWidth > rendererWin32DesktopWidth)
@@ -549,10 +564,156 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
     (void)driverName;
     return CoduoSDL_CreateOpenGLWindow(
         width, height, colorBits, r_depthbits->integer,
-        r_stencilbits->integer, fullscreen);
+        r_stencilbits->integer, windowMode);
 #endif
 }
 
+#if defined(_WIN32)
+/* NOT_FROM_ORIGINAL_SOURCE: asks Windows for the primary output target's
+ * preferred signal mode. Unlike ENUM_CURRENT_SETTINGS, this is independent of
+ * desktop scaling and the user's current logical desktop resolution. */
+static qboolean coduomp_glw_get_windows_native_display_mode_compat(
+    int32_t *width, int32_t *height, int32_t *refreshRate)
+{
+    DISPLAY_DEVICEA primaryDevice = {0};
+    UINT32 pathCount = 0;
+    UINT32 modeCount = 0;
+    DISPLAYCONFIG_PATH_INFO *paths = NULL;
+    DISPLAYCONFIG_MODE_INFO *modes = NULL;
+    qboolean found = qfalse;
+
+    primaryDevice.cb = sizeof(primaryDevice);
+    for (DWORD index = 0;; ++index) {
+        DISPLAY_DEVICEA device = {0};
+
+        device.cb = sizeof(device);
+        if (EnumDisplayDevicesA(NULL, index, &device, 0) == FALSE)
+            break;
+        if ((device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0) {
+            primaryDevice = device;
+            break;
+        }
+    }
+
+    if (GetDisplayConfigBufferSizes(
+            QDC_ONLY_ACTIVE_PATHS, &pathCount, &modeCount) != ERROR_SUCCESS ||
+        pathCount == 0 || modeCount == 0) {
+        return qfalse;
+    }
+
+    paths = calloc(pathCount, sizeof(*paths));
+    modes = calloc(modeCount, sizeof(*modes));
+    if (paths == NULL || modes == NULL)
+        goto cleanup;
+    if (QueryDisplayConfig(
+            QDC_ONLY_ACTIVE_PATHS, &pathCount, paths,
+            &modeCount, modes, NULL) != ERROR_SUCCESS) {
+        goto cleanup;
+    }
+
+    for (UINT32 index = 0; index < pathCount; ++index) {
+        DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName = {0};
+        DISPLAYCONFIG_TARGET_PREFERRED_MODE preferredMode = {0};
+        char sourceDeviceName[CCHDEVICENAME];
+
+        sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+        sourceName.header.size = sizeof(sourceName);
+        sourceName.header.adapterId = paths[index].sourceInfo.adapterId;
+        sourceName.header.id = paths[index].sourceInfo.id;
+        if (DisplayConfigGetDeviceInfo(&sourceName.header) != ERROR_SUCCESS)
+            continue;
+        if (WideCharToMultiByte(
+                CP_ACP, 0, sourceName.viewGdiDeviceName, -1,
+                sourceDeviceName, sizeof(sourceDeviceName),
+                NULL, NULL) == 0) {
+            continue;
+        }
+        if (primaryDevice.DeviceName[0] != '\0' &&
+            strcmp(primaryDevice.DeviceName, sourceDeviceName) != 0) {
+            continue;
+        }
+
+        preferredMode.header.type =
+            DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_PREFERRED_MODE;
+        preferredMode.header.size = sizeof(preferredMode);
+        preferredMode.header.adapterId = paths[index].targetInfo.adapterId;
+        preferredMode.header.id = paths[index].targetInfo.id;
+        if (DisplayConfigGetDeviceInfo(&preferredMode.header) != ERROR_SUCCESS ||
+            preferredMode.width == 0 || preferredMode.height == 0) {
+            continue;
+        }
+
+        *width = (int32_t)preferredMode.width;
+        *height = (int32_t)preferredMode.height;
+        const DISPLAYCONFIG_RATIONAL verticalFrequency =
+            preferredMode.targetMode.targetVideoSignalInfo.vSyncFreq;
+        *refreshRate = verticalFrequency.Denominator != 0
+            ? (int32_t)((verticalFrequency.Numerator +
+                         verticalFrequency.Denominator / 2) /
+                        verticalFrequency.Denominator)
+            : 0;
+        found = qtrue;
+        break;
+    }
+
+cleanup:
+    free(modes);
+    free(paths);
+    return found;
+}
+#endif
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolves the active primary output's automatic
+ * hardware-sized mode before either platform enters fixed-mode setup. */
+static qboolean coduomp_glw_get_native_display_mode_compat(
+    int32_t *width, int32_t *height, float *aspect, int32_t *refreshRate)
+{
+#if defined(_WIN32)
+    if (coduomp_glw_get_windows_native_display_mode_compat(
+            width, height, refreshRate) == qfalse) {
+        return qfalse;
+    }
+#else
+    if (coduomp_sdl_get_native_display_mode_compat(
+            width, height, refreshRate) == qfalse) {
+        return qfalse;
+    }
+#endif
+    *aspect = (float)*width / (float)*height;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: tests a fixed renderer preset against the modes
+ * exposed by the primary display on the current platform. */
+static qboolean coduomp_glw_display_mode_available_compat(int32_t width,
+                                                          int32_t height)
+{
+#if defined(_WIN32)
+    int32_t nativeWidth;
+    int32_t nativeHeight;
+    int32_t nativeRefreshRate;
+
+    if (coduomp_glw_get_windows_native_display_mode_compat(
+            &nativeWidth, &nativeHeight,
+            &nativeRefreshRate) != qfalse &&
+        (width > nativeWidth || height > nativeHeight)) {
+        return qfalse;
+    }
+    for (DWORD index = 0;; ++index) {
+        DEVMODEA mode = {0};
+
+        mode.dmSize = sizeof(mode);
+        if (EnumDisplaySettingsA(NULL, index, &mode) == FALSE)
+            return qfalse;
+        if ((int32_t)mode.dmPelsWidth == width &&
+            (int32_t)mode.dmPelsHeight == height) {
+            return qtrue;
+        }
+    }
+#else
+    return coduomp_sdl_display_mode_available_compat(width, height);
+#endif
+}
 
 /* Source: CoDUOMP.exe 0x004f4780..0x004f4806.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f4780_004f4807.mcode and the jump
@@ -591,23 +752,55 @@ void GLW_PrintDisplayChangeError(int32_t result)
  * the Win32 mode-setting stage immediately above GLW_CreateWindow. */
 renderer_mode_set_result_t GLW_SetMode(
     const char *driverName, int32_t mode, int32_t colorBits,
-    qboolean fullscreen)
+    int32_t windowMode)
 {
+    int32_t currentDisplayWidth = 0;
+    int32_t currentDisplayHeight = 0;
+    int32_t currentDisplayRefreshRate = 0;
+    float currentDisplayAspect = 0.0f;
+    const qboolean currentDisplayModeAvailable =
+        coduomp_glw_get_native_display_mode_compat(
+            &currentDisplayWidth, &currentDisplayHeight,
+            &currentDisplayAspect, &currentDisplayRefreshRate);
+
+    coduomp_renderer_publish_available_video_modes_compat(
+        coduomp_glw_display_mode_available_compat);
+
+    if (mode == R_CURRENT_DISPLAY_VIDEO_MODE) {
+        ri.Printf(R_PRINT_ALL, "...setting automatic hardware mode:");
+        if (currentDisplayModeAvailable == qfalse) {
+            ri.Printf(R_PRINT_ALL, " unavailable\n");
+            return R_MODE_SET_INVALID;
+        }
+        glConfig.vidWidth = currentDisplayWidth;
+        glConfig.vidHeight = currentDisplayHeight;
+        glConfig.windowAspect = currentDisplayAspect;
+    }
 #if defined(_WIN32)
-    ri.Printf(R_PRINT_ALL, "...setting mode %d:", mode);
-    if (R_GetModeInfo(&glConfig.vidWidth, &glConfig.vidHeight,
-                      &glConfig.windowAspect, mode) == qfalse) {
-        ri.Printf(R_PRINT_ALL, " invalid mode\n");
-        return R_MODE_SET_INVALID;
+    if (mode != R_CURRENT_DISPLAY_VIDEO_MODE) {
+        ri.Printf(R_PRINT_ALL, "...setting mode %d:", mode);
+        if (R_GetModeInfo(&glConfig.vidWidth, &glConfig.vidHeight,
+                          &glConfig.windowAspect, mode) == qfalse) {
+            ri.Printf(R_PRINT_ALL, " invalid mode\n");
+            return R_MODE_SET_INVALID;
+        }
+    }
+    if (currentDisplayModeAvailable == qfalse) {
+        currentDisplayWidth = glConfig.vidWidth;
+        currentDisplayHeight = glConfig.vidHeight;
+        currentDisplayAspect = glConfig.windowAspect;
+        currentDisplayRefreshRate = 0;
     }
 
     const char *modeKind;
-    if (fullscreen != qfalse) {
+    if (windowMode == R_WINDOW_MODE_FULLSCREEN) {
         if (r_displayRefresh->integer != 0) {
             modeKind = va("FS (%i Hz)", r_displayRefresh->integer);
         } else {
             modeKind = "FS";
         }
+    } else if (windowMode == R_WINDOW_MODE_BORDERLESS) {
+        modeKind = "B";
     } else {
         modeKind = "W";
     }
@@ -623,7 +816,8 @@ renderer_mode_set_result_t GLW_SetMode(
         GetDeviceCaps(desktopDeviceContext, VERTRES);
     ReleaseDC(GetDesktopWindow(), desktopDeviceContext);
 
-    if (fullscreen == qfalse) {
+    if (windowMode == R_WINDOW_MODE_WINDOWED) {
+        if (mode != R_CURRENT_DISPLAY_VIDEO_MODE) {
             while (rendererWin32DesktopWidth < glConfig.vidWidth ||
                    rendererWin32DesktopHeight < glConfig.vidHeight) {
                 --mode;
@@ -632,6 +826,7 @@ renderer_mode_set_result_t GLW_SetMode(
                     &glConfig.windowAspect, mode);
             }
             ri.Cvar_Set("r_mode", va("%d", mode));
+        }
     }
 
     if ((rendererWin32DesktopColorBits <
@@ -639,7 +834,7 @@ renderer_mode_set_result_t GLW_SetMode(
          rendererWin32DesktopColorBits ==
              R_DESKTOP_COLOR_WARNING_BITS) &&
         (colorBits == 0 ||
-         (fullscreen == qfalse &&
+         (windowMode != R_WINDOW_MODE_FULLSCREEN &&
           colorBits >= R_MIN_ACCEPTABLE_COLOR_BITS))) {
         const int32_t choice = MessageBoxA(
             NULL,
@@ -650,80 +845,24 @@ renderer_mode_set_result_t GLW_SetMode(
             return R_MODE_SET_INVALID;
     }
 
-    if (fullscreen != qfalse) {
-        DEVMODEA deviceMode = {0};
-        deviceMode.dmSize = sizeof(deviceMode);
-        deviceMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-        deviceMode.dmPelsWidth = (DWORD)glConfig.vidWidth;
-        deviceMode.dmPelsHeight = (DWORD)glConfig.vidHeight;
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fullscreen presentation
+     * must not change or capture the OS display mode. The game keeps its
+     * selected hardware-sized render surface and composites it into a popup
+     * covering the current primary desktop, leaving other monitors active. */
+    if (rendererWin32FullscreenModeSet != qfalse)
+        ChangeDisplaySettingsA(NULL, 0);
+    rendererWin32FullscreenModeSet = qfalse;
 
-        if (r_displayRefresh->integer != 0) {
-            deviceMode.dmFields |= DM_DISPLAYFREQUENCY;
-            deviceMode.dmDisplayFrequency =
-                (DWORD)r_displayRefresh->integer;
-        }
-        if (colorBits != 0) {
-            deviceMode.dmFields |= DM_BITSPERPEL;
-            deviceMode.dmBitsPerPel = (DWORD)colorBits;
-            ri.Printf(R_PRINT_ALL,
-                      "...using colorbits of %d\n", colorBits);
-        } else {
-            ri.Printf(
-                R_PRINT_ALL,
-                "...using desktop display depth of %d\n",
-                rendererWin32DesktopColorBits);
-        }
-
-        if (rendererWin32FullscreenModeSet != qfalse) {
-            ri.Printf(
-                R_PRINT_ALL,
-                "...already fullscreen, avoiding redundant CDS\n");
-            if (GLW_CreateWindow(
-                    driverName, glConfig.vidWidth, glConfig.vidHeight,
-                    colorBits, qtrue) == qfalse) {
-                ri.Printf(R_PRINT_ALL,
-                          "...restoring display settings\n");
-                ChangeDisplaySettingsA(NULL, 0);
-                return R_MODE_SET_INVALID;
-            }
-        } else {
-            ri.Printf(R_PRINT_ALL, "...calling CDS: ");
-            const int32_t displayResult =
-                ChangeDisplaySettingsA(&deviceMode, CDS_FULLSCREEN);
-            if (displayResult == DISP_CHANGE_SUCCESSFUL) {
-                ri.Printf(R_PRINT_ALL, "ok\n");
-                if (GLW_CreateWindow(
-                        driverName, glConfig.vidWidth,
-                        glConfig.vidHeight, colorBits,
-                        qtrue) == qfalse) {
-                    ri.Printf(R_PRINT_ALL,
-                              "...restoring display settings\n");
-                    ChangeDisplaySettingsA(NULL, 0);
-                    return R_MODE_SET_INVALID;
-                }
-                rendererWin32FullscreenModeSet = qtrue;
-            } else {
-                ri.Printf(R_PRINT_ALL, "failed, ");
-                ChangeDisplaySettingsA(NULL, 0);
-                GLW_PrintDisplayChangeError(displayResult);
-
-                --mode;
-                ri.Cvar_Set("r_mode", va("%d", mode));
-                ri.Printf(R_PRINT_ALL, "switch Mode to %d", mode);
-                /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                return GLW_SetMode(
-                    driverName, mode, colorBits, fullscreen);
-            }
-        }
-    } else {
-        if (rendererWin32FullscreenModeSet != qfalse)
-            ChangeDisplaySettingsA(NULL, 0);
-        rendererWin32FullscreenModeSet = qfalse;
-        if (GLW_CreateWindow(
-                driverName, glConfig.vidWidth, glConfig.vidHeight,
-                colorBits, qfalse) == qfalse) {
-            return R_MODE_SET_INVALID;
-        }
+    int32_t outputWindowWidth = glConfig.vidWidth;
+    int32_t outputWindowHeight = glConfig.vidHeight;
+    if (windowMode != R_WINDOW_MODE_WINDOWED) {
+        outputWindowWidth = rendererWin32DesktopWidth;
+        outputWindowHeight = rendererWin32DesktopHeight;
+    }
+    if (GLW_CreateWindow(
+            driverName, outputWindowWidth, outputWindowHeight,
+            colorBits, windowMode) == qfalse) {
+        return R_MODE_SET_INVALID;
     }
 
     DEVMODEA currentMode = {0};
@@ -733,22 +872,44 @@ renderer_mode_set_result_t GLW_SetMode(
         glConfig.displayFrequency =
             (int32_t)currentMode.dmDisplayFrequency;
     }
-    glConfig.isFullscreen = fullscreen;
+    coduomp_configure_output_presentation_compat(
+        glConfig.vidWidth, glConfig.vidHeight,
+        windowMode != R_WINDOW_MODE_WINDOWED
+            ? rendererWin32DesktopWidth : glConfig.vidWidth,
+        windowMode != R_WINDOW_MODE_WINDOWED
+            ? rendererWin32DesktopHeight : glConfig.vidHeight,
+        currentDisplayWidth, currentDisplayHeight,
+        windowMode != R_WINDOW_MODE_WINDOWED ? qtrue : qfalse);
+    glConfig.isFullscreen =
+        windowMode != R_WINDOW_MODE_WINDOWED ? qtrue : qfalse;
     return R_MODE_SET_SUCCESS;
 #else
     int32_t refreshRate;
 
-    ri.Printf(R_PRINT_ALL, "...setting mode %d:", mode);
-    if (R_GetModeInfo(&glConfig.vidWidth, &glConfig.vidHeight,
-                      &glConfig.windowAspect, mode) == qfalse) {
-        ri.Printf(R_PRINT_ALL, " invalid mode\n");
-        return R_MODE_SET_INVALID;
+    if (mode != R_CURRENT_DISPLAY_VIDEO_MODE) {
+        ri.Printf(R_PRINT_ALL, "...setting mode %d:", mode);
+        if (R_GetModeInfo(&glConfig.vidWidth, &glConfig.vidHeight,
+                          &glConfig.windowAspect, mode) == qfalse) {
+            ri.Printf(R_PRINT_ALL, " invalid mode\n");
+            return R_MODE_SET_INVALID;
+        }
+    }
+    if (currentDisplayModeAvailable == qfalse) {
+        currentDisplayWidth = glConfig.vidWidth;
+        currentDisplayHeight = glConfig.vidHeight;
+        currentDisplayAspect = glConfig.windowAspect;
+        currentDisplayRefreshRate = 0;
     }
 
     CoduoSDL_GetDesktopMode(
         &rendererWin32DesktopWidth, &rendererWin32DesktopHeight,
         &refreshRate);
-    if (fullscreen == qfalse) {
+    if (mode == R_CURRENT_DISPLAY_VIDEO_MODE &&
+        currentDisplayRefreshRate != 0) {
+        refreshRate = currentDisplayRefreshRate;
+    }
+    if (windowMode == R_WINDOW_MODE_WINDOWED) {
+        if (mode != R_CURRENT_DISPLAY_VIDEO_MODE) {
             while ((rendererWin32DesktopWidth > 0 &&
                     rendererWin32DesktopWidth < glConfig.vidWidth) ||
                    (rendererWin32DesktopHeight > 0 &&
@@ -761,17 +922,24 @@ renderer_mode_set_result_t GLW_SetMode(
                 }
             }
             ri.Cvar_Set("r_mode", va("%d", mode));
+        }
     }
 
     ri.Printf(
         R_PRINT_ALL, " %d %d %s\n",
         glConfig.vidWidth, glConfig.vidHeight,
-        fullscreen != qfalse ? "FS" : "W");
+        windowMode == R_WINDOW_MODE_FULLSCREEN
+            ? "FS"
+            : (windowMode == R_WINDOW_MODE_BORDERLESS ? "B" : "W"));
     int32_t outputWindowWidth = glConfig.vidWidth;
     int32_t outputWindowHeight = glConfig.vidHeight;
+    if (windowMode == R_WINDOW_MODE_FULLSCREEN) {
+        outputWindowWidth = currentDisplayWidth;
+        outputWindowHeight = currentDisplayHeight;
+    }
     if (GLW_CreateWindow(
             driverName, outputWindowWidth, outputWindowHeight,
-            colorBits, fullscreen) == qfalse) {
+            colorBits, windowMode) == qfalse) {
         return R_MODE_SET_INVALID;
     }
 
@@ -779,12 +947,16 @@ renderer_mode_set_result_t GLW_SetMode(
     int32_t outputDrawableHeight;
     CoduoSDL_GetFramebufferSize(
         &outputDrawableWidth, &outputDrawableHeight);
-    glConfig.vidWidth = outputDrawableWidth;
-    glConfig.vidHeight = outputDrawableHeight;
+    coduomp_configure_output_presentation_compat(
+        glConfig.vidWidth, glConfig.vidHeight,
+        outputDrawableWidth, outputDrawableHeight,
+        currentDisplayWidth, currentDisplayHeight,
+        windowMode != R_WINDOW_MODE_WINDOWED ? qtrue : qfalse);
     glConfig.windowAspect =
         (float)glConfig.vidWidth / (float)glConfig.vidHeight;
     glConfig.displayFrequency = refreshRate;
-    glConfig.isFullscreen = fullscreen;
+    glConfig.isFullscreen =
+        windowMode != R_WINDOW_MODE_WINDOWED ? qtrue : qfalse;
     return R_MODE_SET_SUCCESS;
 #endif
 }
@@ -1984,7 +2156,14 @@ void GLimp_Init(void)
     const char *const rendererString = glConfig.rendererString;
     if (lastValidRenderer->string == NULL || rendererString == NULL ||
         Q_stricmp(lastValidRenderer->string, rendererString) != 0) {
-        ri.Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_NEAREST");
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the stock
+         * renderer-change fallback silently downgrades to bilinear filtering.
+         * Apple Silicon uses trilinear as its missing/first-run default. */
+        ri.Cvar_Set(
+            "r_textureMode",
+            coduomp_is_apple_silicon() != qfalse
+                ? "GL_LINEAR_MIPMAP_LINEAR"
+                : "GL_LINEAR_MIPMAP_NEAREST");
     }
     ri.Cvar_Set("r_lastValidRenderer", rendererString);
 
@@ -2008,8 +2187,12 @@ void GLimp_Shutdown(void)
 #endif
 
     ri.Printf(R_PRINT_ALL, "Shutting down OpenGL subsystem\n");
+    coduomp_flare_query_shutdown();
+    coduomp_configure_output_presentation_compat(
+        0, 0, 0, 0, 0, 0, qfalse);
 
     GLimp_RestoreGamma();
+    coduomp_output_gamma_shutdown_compat();
 
 #if defined(_WIN32)
     ri.Printf(
@@ -2096,6 +2279,7 @@ void GLimp_EndFrame(void)
             R_VERTEX_ARRAY_RANGE_NONE) {
             qglFlushVertexArrayRangeNV();
         }
+        coduomp_output_gamma_present_compat();
 #if defined(_WIN32)
         SwapBuffers((HDC)rendererWin32DeviceContext);
 #else

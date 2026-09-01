@@ -9,6 +9,9 @@ extern uint32_t sysExecutableChecksum;
 
 void Sys_Init(void);
 void Sys_CreateCrashMarker(void);
+#if defined(_WIN32)
+void coduomp_sys_enable_dpi_awareness(void);
+#endif
 void Sys_CreateSplashWindow(void);
 void Sys_ShowSplashWindow(void);
 void Sys_HideSplashWindow(void);

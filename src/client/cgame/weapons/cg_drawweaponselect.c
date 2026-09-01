@@ -21,6 +21,8 @@
 
 #include <math.h>
 
+/* NOT_FROM_ORIGINAL_SOURCE: isolated widescreen presentation interface. */
+extern float cgame_compat_right_hud_virtual_offset(void);
 
 enum { CG_WEAPON_SELECT_FADE_MSEC = 1800 }; /* 0x30046bec: ECX=0x708 */
 
@@ -42,6 +44,11 @@ void CG_DrawWeaponSelect(void)
     float pos[MAX_WEAPONS];
     float x = 632.0f; /* 0x30046c53: [ESP+0x10] = 0x441e0000 */
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the strip is authored
+     * right-flush at x=632 and every icon, alt-chain row, and key hint below
+     * derives from this one walker, so a single constant translation anchors
+     * the complete composition to the native widescreen right edge. */
+    x += cgame_compat_right_hud_virtual_offset();
 
     /* 0x30046bb6..0x30046bd1: milliseconds since the previous carousel frame;
      * latch the new draw time and clamp a backwards clock to zero (JNS). */

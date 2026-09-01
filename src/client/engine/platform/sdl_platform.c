@@ -10,6 +10,9 @@
 #include "qcommon/q_memory.h"
 
 #include <SDL.h>
+#if defined(__linux__)
+#include <SDL_syswm.h>
+#endif
 
 #if defined(__APPLE__)
 #include <CoreGraphics/CoreGraphics.h>
@@ -136,7 +139,7 @@ char *coduomp_sdl_get_clipboard_text_compat(void)
 /* NOT_FROM_ORIGINAL_SOURCE: native equivalent of the Win32 window, pixel
  * format, and WGL-context setup in GLW_CreateWindow/GLW_InitDriver. A legacy
  * compatibility context is required because the original renderer uses the
- * OpenGL fixed-function pipeline. This stock provider uses only the original
+ * OpenGL fixed-function pipeline. The stock source uses only the original
  * boolean window-mode domain, leaving the borderless extension unreachable. */
 qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
                                      int32_t colorBits, int32_t depthBits,
@@ -198,6 +201,14 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
             height = desktopMode.h;
         }
         flags |= SDL_WINDOW_BORDERLESS;
+#if defined(__APPLE__)
+    } else {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): SDL window sizes
+         * are screen coordinates on macOS, while the graphics menu expresses
+         * render pixels. Convert through the active backing scale so a
+         * requested 1920x1080 window has a 1920x1080 drawable. */
+        coduomp_sdl_window_size_for_drawable_compat(&width, &height);
+#endif
     }
 
     coduoSdlWindow = SDL_CreateWindow(
@@ -528,6 +539,38 @@ qboolean coduomp_sdl_set_window_gamma_ramp(const uint16_t red[256],
                : qfalse;
 }
 
+#if defined(__linux__)
+/* NOT_FROM_ORIGINAL_SOURCE: expose the X11 handles already owned by SDL to
+ * the compatibility-only XRandR gamma provider. No X11 types cross this
+ * platform boundary, and Wayland windows fail the subsystem check. */
+qboolean coduomp_sdl_get_x11_window_compat(
+    void **display, unsigned long *window,
+    int32_t *x, int32_t *y, int32_t *width, int32_t *height)
+{
+    SDL_SysWMinfo info;
+
+    *display = NULL;
+    *window = 0;
+    *x = 0;
+    *y = 0;
+    *width = 0;
+    *height = 0;
+    if (coduoSdlWindow == NULL)
+        return qfalse;
+
+    SDL_VERSION(&info.version);
+    if (SDL_GetWindowWMInfo(coduoSdlWindow, &info) != SDL_TRUE ||
+        info.subsystem != SDL_SYSWM_X11) {
+        return qfalse;
+    }
+
+    *display = info.info.x11.display;
+    *window = info.info.x11.window;
+    SDL_GetWindowPosition(coduoSdlWindow, x, y);
+    SDL_GetWindowSize(coduoSdlWindow, width, height);
+    return qtrue;
+}
+#endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain SDL's diagnostic for a failed portable
  * display operation instead of reducing every backend failure to one generic
@@ -767,6 +810,16 @@ void CoduoSDL_PumpEvents(void)
 
         switch (event.type) {
         case SDL_QUIT:
+#if defined(__APPLE__)
+            /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): Cocoa turns
+             * Command-Q into SDL_QUIT before the recovered input/binding path
+             * can decide what to do with it. Ignore only that modifier-held
+             * request so an accidental adjacent-key chord cannot terminate an
+             * active game. Window-close, clicked-menu, in-game, and console
+             * quit paths remain available. */
+            if ((SDL_GetModState() & KMOD_GUI) != 0)
+                break;
+#endif
             Com_Quit_f();
             break;
 
@@ -876,6 +929,19 @@ void CoduoSDL_PumpEvents(void)
             if (sysInputAppActive == qfalse)
                 break;
             int32_t wheelY = event.wheel.y;
+#if defined(__APPLE__)
+            /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): macOS turns a
+             * conventional vertical wheel into horizontal scrolling while
+             * Shift is held. The original engine has only MWHEELUP and
+             * MWHEELDOWN keys and no horizontal-wheel consumer, so fold any
+             * otherwise-unused horizontal-only event into that domain. SDL's
+             * Cocoa backend negates NSEvent deltaX, so negate it again to
+             * retain the physical vertical-wheel direction for the
+             * Shift-converted case. */
+            if (wheelY == 0 && event.wheel.x != 0) {
+                wheelY = -event.wheel.x;
+            }
+#endif
             const int32_t key =
                 wheelY > 0 ? K_MWHEELUP : K_MWHEELDOWN;
             if (wheelY != 0) {

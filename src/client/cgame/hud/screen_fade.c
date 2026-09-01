@@ -147,9 +147,8 @@ void CG_ScreenFade(void)
         color[2] = 0.0f;
         color[3] = alpha;
 
-        CG_FillRect(0.0f, 0.0f,
-                    (float)CG_SCREEN_VIRTUAL_WIDTH,
-                    (float)CG_SCREEN_VIRTUAL_HEIGHT,
-                    color);
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): this stock 640x480
+         * fill is a complete screen fade, so cover the native drawable. */
+        cgame_compat_fill_native_screen_effect(color);
     }
 }

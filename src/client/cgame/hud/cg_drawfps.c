@@ -77,6 +77,8 @@
 #include "../client_recovered.h"
 #include "../globals.h"
 
+/* NOT_FROM_ORIGINAL_SOURCE: isolated widescreen presentation interface. */
+extern float cgame_compat_right_hud_virtual_offset(void);
 
 /* trap id 6: no-argument engine-milliseconds query (see CG_MILLISECONDS in
  * client_recovered.h). Named by proven role at this call site. */
@@ -205,14 +207,34 @@ float CG_DrawFPS(float y)
     jitterInt = coduo_x87_fistp_i32(
         (long double)avgDeviation + CG_STATS_FISTP_BIAS);
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep the recovered FPS
+     * column intact and translate its authored right edge to the native
+     * widescreen edge. */
+    const float rightAnchor =
+        620.0f + cgame_compat_right_hud_virtual_offset();
+
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): cg_drawFPSMode 1 keeps
+     * the original 32-frame aggregate but presents only its rounded number. Use
+     * the stock big-string path so the compact readout retains its built-in
+     * one-pixel black shadow and does not reduce the glyphs to the blurry,
+     * unshadowed 8-pixel debug font. cg_drawFPS still owns visibility. */
+    if (cgame_compat_uses_simple_fps_display() != qfalse) {
+        text = va("%i", fpsInt);
+        x = (float)((long double)rightAnchor -
+                    (long double)cgame_compat_stats_visible_len(text) *
+                        (long double)16.0f);
+        CG_DrawBigString(
+            x, (float)((long double)y + (long double)2.0f), text, 1.0f);
+        return (float)((long double)y + (long double)20.0f);
+    }
 
     /* --- fps line (big glyphs) ---------------------------------------------- */
     text = va("%ifps(%i-%i,%i)", fpsInt, minStat, maxStat, jitterInt);
     int32_t visibleLength = cgame_compat_stats_visible_len(text);
     float drawY = (float)((long double)y + (long double)2.0f);
-    x = (float)((long double)620.0f -
+    x = (float)((long double)rightAnchor -
                 (long double)visibleLength *
-                    (long double)16.0f); /* cellW 0x3007bf00 = 16.0 */
+                    (long double)16.0f);
     CG_DrawBigString(x, drawY, text, 1.0f);               /* +2.0f = 0x3007bce4 */
     int32_t detailLevel = cg_drawFPS_vmCvar.integer;
     y = (float)((long double)y + (long double)20.0f);     /* 0x3007be04 */
@@ -230,7 +252,7 @@ float CG_DrawFPS(float y)
      * the first "%i" = indexCount/3 (0x84c4) and the second = drawnIndexCount/3 (0x84c8). */
     text = va("%i/%i tris", cg_rendererStats.indexCount / 3,
               cg_rendererStats.drawnIndexCount / 3);
-    x = (float)((long double)620.0f -
+    x = (float)((long double)rightAnchor -
                 (long double)cgame_compat_stats_visible_len(text) *
                     (long double)8.0f);
     CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
@@ -239,7 +261,7 @@ float CG_DrawFPS(float y)
 
     /* --- "%i vert" ----------------------------------------------------------- */
     text = va("%i vert", cg_rendererStats.vertexCount);
-    x = (float)((long double)620.0f -
+    x = (float)((long double)rightAnchor -
                 (long double)cgame_compat_stats_visible_len(text) *
                     (long double)8.0f);
     CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
@@ -248,7 +270,7 @@ float CG_DrawFPS(float y)
 
     /* --- "%i prim" ----------------------------------------------------------- */
     text = va("%i prim", cg_rendererStats.drawCallCount);
-    x = (float)((long double)620.0f -
+    x = (float)((long double)rightAnchor -
                 (long double)cgame_compat_stats_visible_len(text) *
                     (long double)8.0f);
     CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
@@ -257,7 +279,7 @@ float CG_DrawFPS(float y)
 
     /* --- "%i ents" ----------------------------------------------------------- */
     text = va("%i ents", cg_rendererStats.entityCount);
-    x = (float)((long double)620.0f -
+    x = (float)((long double)rightAnchor -
                 (long double)cgame_compat_stats_visible_len(text) *
                     (long double)8.0f);
     CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
@@ -293,7 +315,7 @@ float CG_DrawFPS(float y)
         text = va("%.2f/%.2f/%.2f mb  ", textureMemoryMb,
                   nonLightmapImageMemoryMb, imageMemoryMb);
     }
-    x = (float)((long double)620.0f -
+    x = (float)((long double)rightAnchor -
                 (long double)cgame_compat_stats_visible_len(text) *
                     (long double)8.0f);
     CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
@@ -303,7 +325,7 @@ float CG_DrawFPS(float y)
     /* --- "%.2f dc  " (only when depth complexity is non-zero) ---------------- */
     if (cg_rendererStats.overdrawRatio != 0.0f) { /* FUCOMPP vs 0.0f @0x3007bcec */
         text = va("%.2f dc  ", (double)cg_rendererStats.overdrawRatio);
-        x = (float)((long double)620.0f -
+        x = (float)((long double)rightAnchor -
                     (long double)cgame_compat_stats_visible_len(text) *
                         (long double)8.0f);
         CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),

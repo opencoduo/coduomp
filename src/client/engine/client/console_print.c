@@ -389,5 +389,7 @@ void PbMsgToScreen(const char *prefix, const char *message)
 void CL_ConsoleFixPosition(void)
 {
     CL_ConsolePrint("\n", CON_DEST_MINICONSOLE, 0, 0);
-    con.displayLine = con.currentLine - 1;
+    /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
+    if (coduomp_console_manually_scrolled == qfalse)
+        con.displayLine = con.currentLine;
 }

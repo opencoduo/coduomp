@@ -15,7 +15,7 @@ enum {
  * retain in its 20-KiB packed pool. The stock source keeps the original
  * engine/cgame ABI; the improved source expands both client-side copies to a
  * 32-KiB packed pool. */
-enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_RETAIL };
+enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_EXTENDED };
 
 /*
  * Shared multiplayer config-string layout.  The Windows cgame asset loaders
@@ -105,8 +105,8 @@ GAME_STATE_LAYOUT_ASSERT(q_game_state_size,
                          sizeof(gameState_t) ==
                              0x2004 + MAX_GAMESTATE_CHARS);
 
-GAME_STATE_LAYOUT_ASSERT(q_game_state_selected_retail_capacity,
-                         MAX_GAMESTATE_CHARS == 0x5000);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_selected_extended_capacity,
+                         MAX_GAMESTATE_CHARS == 0x8000);
 
 #undef GAME_STATE_LAYOUT_ASSERT
 

@@ -3,6 +3,7 @@
 #include "../math/vector_math.h"
 #include "../renderer/renderer_api.h"
 
+#include "widescreen_2d_compat.h"
 
 enum {
     CON_DRAW_MESSAGE_DEFAULT_MODE = 0,
@@ -268,6 +269,11 @@ void Con_DrawSay(int32_t y)
     if ((cls.keyCatchers & KEYCATCH_MESSAGE) == 0)
         return;
 
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the chat prompt is the
+     * left-edge sibling of the Con_DrawNotify feed directly above it; give
+     * the complete prompt+field composition the same native left-edge
+     * translation so the two columns stay aligned on widescreen. */
+    promptX = coduomp_left_hud_virtual_x_compat(CON_CHAT_PROMPT_X);
 
     if (chat_team != qfalse)
         localizationKey = "EXE_SAYTEAM";

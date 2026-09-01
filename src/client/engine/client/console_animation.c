@@ -35,28 +35,8 @@ void Con_RunConsole(void)
  * Name and signature: exact same-module Mac symbol Con_DrawConsole. */
 void Con_DrawConsole(void)
 {
-    Con_CheckResize();
-
-    if (cls.state == CA_DISCONNECTED) {
-        if ((cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME)) == 0) {
-            Con_DrawSolidConsole(1.0f);
-            return;
-        }
-    } else if (cls.state == CA_LOADING) {
-        if (con_debug->integer != 0 &&
-            (cls.keyCatchers & KEYCATCH_UI) == 0) {
-            Con_DrawSolidConsole(1.0f);
-            return;
-        }
-    } else if (cls.state == CA_ACTIVE) {
-        if (con.displayFrac == 0.0f)
-            return;
-        if (con_debug->integer == 2) {
-            Con_DrawSolidConsole(con.displayFrac * 2.0f);
-            return;
-        }
-    }
-
-    if (con.displayFrac != 0.0f)
-        Con_DrawSolidConsole(con.displayFrac);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the improved source
+     * delegates to an isolated native-width, resolution-aware console
+     * composition; the stock source retains the recovered body. */
+    coduomp_console_draw_compat();
 }

@@ -73,4 +73,5 @@ void Con_CheckResize(void)
 
     con.currentLine = con.totalLines - 1;
     con.displayLine = con.currentLine;
+    coduomp_console_manually_scrolled = qfalse;
 }

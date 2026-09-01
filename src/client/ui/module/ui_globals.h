@@ -27,6 +27,10 @@ enum {
     UI_MAX_MAPS = 2048
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE: transient handshake allowing the engine to send
+ * its normally-reserved console key to this module during that row's capture. */
+#define UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR \
+    "ui_coduomp_consoleBindCapture"
 
 enum { UI_MAX_MOVIES = 256 };
 

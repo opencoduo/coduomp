@@ -3,6 +3,7 @@
 #include "platform_gamma.h"
 #include "renderer_cvars.h"
 #include "wgl_debug.h"
+#include "output_gamma_compat.h"
 
 #if !defined(_WIN32)
 #include "../platform/sdl_platform.h"
@@ -19,6 +20,7 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#include "../system_input.h"
 #endif
 
 enum {
@@ -32,8 +34,9 @@ enum {
 
 renderer_wgl_device_context_t rendererWin32DeviceContext;
 
-/* Original 0x0389f6e0..0x0389fce0. GLimp_InitGamma captures the desktop
- * device's ramp here so the platform shutdown path can restore it. */
+/* Original 0x0389f6e0..0x0389fce0. Retail GLimp_InitGamma captures the
+ * desktop device's ramp here; the multi-monitor compatibility path captures
+ * the game display's ramp so shutdown restores the same hardware target. */
 uint16_t rendererOriginalGammaRamp
     [GLIMP_GAMMA_CHANNEL_COUNT][GLIMP_GAMMA_ENTRY_COUNT];
 
@@ -48,14 +51,80 @@ static qboolean coduompCurrentGammaRampValid;
 static qboolean coduompGammaWindowActive = qtrue;
 #endif
 
-/* NOT_FROM_ORIGINAL_SOURCE: stable renderer-facing query shared with the
- * compatibility provider selected by non-stock builds. */
+/* NOT_FROM_ORIGINAL_SOURCE: return the latched compatibility policy selected
+ * at renderer startup. Registration clamps the archived cvar to this enum. */
+static coduomp_gamma_mode_t coduomp_gamma_mode_compat(void)
+{
+    if (r_gammaMode == NULL)
+        return CODUOMP_GAMMA_MODE_AUTOMATIC;
+
+    switch (r_gammaMode->integer) {
+    case CODUOMP_GAMMA_MODE_DISABLED:
+        return CODUOMP_GAMMA_MODE_DISABLED;
+    case CODUOMP_GAMMA_MODE_SOFTWARE:
+        return CODUOMP_GAMMA_MODE_SOFTWARE;
+    default:
+        return CODUOMP_GAMMA_MODE_AUTOMATIC;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: native ramps are considered only in automatic
+ * mode, and the original r_ignorehwgamma cvar remains a permanent veto. */
+static qboolean coduomp_gamma_native_allowed_compat(void)
+{
+    return coduomp_gamma_mode_compat() == CODUOMP_GAMMA_MODE_AUTOMATIC &&
+                   r_ignorehwgamma->integer == 0
+               ? qtrue
+               : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: retain the recovered texture-upload fallback as
+ * the final automatic provider. Disabled and forced full-frame software modes
+ * must not silently substitute this visibly different, limited correction. */
+qboolean coduomp_gamma_texture_fallback_enabled_compat(void)
+{
+    return coduomp_gamma_mode_compat() == CODUOMP_GAMMA_MODE_AUTOMATIC
+               ? qtrue
+               : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: report whether the final output has either the
+ * recovered native ramp or the compatibility provider's exact table lookup.
+ * Renderer table policy does not need to know which output boundary won. */
 qboolean coduomp_gamma_output_available(void)
 {
-    return glConfig.deviceSupportsGamma;
+    return glConfig.deviceSupportsGamma != qfalse ||
+                   coduomp_output_gamma_software_active_compat() != qfalse
+               ? qtrue
+               : qfalse;
 }
 
 #if defined(_WIN32)
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE: on a multi-monitor desktop, retain the
+ * device context created for the display containing the game window so gamma
+ * capture, application, and restoration all address the same hardware. */
+static HDC coduomp_windows_gamma_device_context;
+
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): GetDesktopWindow selects
+ * the primary-monitor compatibility surface. Resolve the game window's
+ * HMONITOR to its GDI device name and create a DC for that specific display. */
+static HDC coduomp_windows_gamma_create_monitor_dc_compat(void)
+{
+    if (win32MainWindow == NULL)
+        return NULL;
+
+    HMONITOR monitor = MonitorFromWindow(
+        win32MainWindow, MONITOR_DEFAULTTONEAREST);
+    MONITORINFOEXA monitorInformation = {0};
+    monitorInformation.cbSize = sizeof(monitorInformation);
+    if (monitor == NULL ||
+        GetMonitorInfoA(monitor, (MONITORINFO *)&monitorInformation) == FALSE) {
+        return NULL;
+    }
+
+    return CreateDCA(monitorInformation.szDevice, NULL, NULL, NULL);
+}
+
 /* The callback appends only to these original globals at 0x005d06c8 and
  * 0x005d06cc; no instruction in the executable reads either object. The next
  * original global starts at 0x005d06e0, proving the five-HWND capacity. */
@@ -152,15 +221,54 @@ void GLimp_InitGamma(void)
     coduompCurrentGammaRampValid = qfalse;
 #endif
 
-    if (r_ignorehwgamma->integer != 0)
+    if (coduomp_gamma_mode_compat() == CODUOMP_GAMMA_MODE_DISABLED) {
+        ri.Printf(R_PRINT_ALL,
+                  "Gamma correction is disabled by r_gammaMode 0.\n");
         return;
+    }
+
+    coduomp_output_gamma_initialize_compat();
+
+    if (coduomp_gamma_mode_compat() == CODUOMP_GAMMA_MODE_SOFTWARE) {
+        (void)coduomp_output_gamma_activate_software_compat(
+            "Full-frame software gamma is forced by r_gammaMode 2");
+        return;
+    }
+
+    if (r_ignorehwgamma->integer != 0) {
+        (void)coduomp_output_gamma_activate_software_compat(
+            "Native display gamma is disabled by r_ignorehwgamma");
+        return;
+    }
 
 #if defined(_WIN32)
-    HWND desktopWindow = GetDesktopWindow();
-    HDC desktopDeviceContext = GetDC(desktopWindow);
+    HWND desktopWindow = NULL;
+    HDC gammaDeviceContext;
+    if (GetSystemMetrics(SM_CMONITORS) > 1) {
+        gammaDeviceContext =
+            coduomp_windows_gamma_create_monitor_dc_compat();
+        if (gammaDeviceContext == NULL) {
+            ri.Printf(R_PRINT_WARNING,
+                      "WARNING: could not create gamma device context for "
+                      "the game monitor\n");
+            (void)coduomp_output_gamma_activate_software_compat(
+                "The game monitor has no usable native gamma context");
+            return;
+        }
+        coduomp_windows_gamma_device_context = gammaDeviceContext;
+    } else {
+        desktopWindow = GetDesktopWindow();
+        gammaDeviceContext = GetDC(desktopWindow);
+    }
+
     glConfig.deviceSupportsGamma = GetDeviceGammaRamp(
-        desktopDeviceContext, rendererOriginalGammaRamp);
-    ReleaseDC(desktopWindow, desktopDeviceContext);
+        gammaDeviceContext, rendererOriginalGammaRamp);
+    if (desktopWindow != NULL)
+        ReleaseDC(desktopWindow, gammaDeviceContext);
+    if (glConfig.deviceSupportsGamma == qfalse) {
+        (void)coduomp_output_gamma_activate_software_compat(
+            "Windows could not read the display gamma ramp");
+    }
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: SDL supplies the native display/window
      * boundary corresponding to the original desktop-device gamma calls. */
@@ -168,6 +276,15 @@ void GLimp_InitGamma(void)
         rendererOriginalGammaRamp[0],
         rendererOriginalGammaRamp[1],
         rendererOriginalGammaRamp[2]);
+    if (glConfig.deviceSupportsGamma == qfalse) {
+        glConfig.deviceSupportsGamma =
+            coduomp_output_gamma_try_xrandr_compat(
+                rendererOriginalGammaRamp);
+        if (glConfig.deviceSupportsGamma == qfalse) {
+            (void)coduomp_output_gamma_activate_software_compat(
+                "SDL could not read a native display gamma ramp");
+        }
+    }
 #endif
 
     if (glConfig.deviceSupportsGamma == qfalse)
@@ -183,6 +300,18 @@ void GLimp_InitGamma(void)
         ri.Printf(R_PRINT_WARNING,
                   "WARNING: device has broken gamma support, generated "
                   "gamma.dat\n");
+#if !defined(_WIN32)
+        glConfig.deviceSupportsGamma =
+            coduomp_output_gamma_try_xrandr_compat(
+                rendererOriginalGammaRamp);
+        if (glConfig.deviceSupportsGamma == qfalse) {
+            (void)coduomp_output_gamma_activate_software_compat(
+                "The native display returned a broken gamma ramp");
+        }
+#else
+        (void)coduomp_output_gamma_activate_software_compat(
+            "Windows returned a broken display gamma ramp");
+#endif
     }
 
     /* Some drivers report a saturated restoration ramp. The PE tests the
@@ -211,7 +340,7 @@ void GLimp_SetGamma(const uint8_t red[GLIMP_GAMMA_ENTRY_COUNT],
                     const uint8_t blue[GLIMP_GAMMA_ENTRY_COUNT])
 {
     if (glConfig.deviceSupportsGamma == qfalse ||
-        r_ignorehwgamma->integer != 0) {
+        coduomp_gamma_native_allowed_compat() == qfalse) {
         return;
     }
 #if defined(_WIN32)
@@ -268,9 +397,15 @@ void GLimp_SetGamma(const uint8_t red[GLIMP_GAMMA_ENTRY_COUNT],
     }
 
 #if defined(_WIN32)
-    if (SetDeviceGammaRamp((HDC)rendererWin32DeviceContext,
-                           gammaRamp) == FALSE) {
+    HDC gammaDeviceContext =
+        coduomp_windows_gamma_device_context != NULL
+            ? coduomp_windows_gamma_device_context
+            : (HDC)rendererWin32DeviceContext;
+    if (SetDeviceGammaRamp(gammaDeviceContext, gammaRamp) == FALSE) {
         Com_Printf("SetDeviceGammaRamp failed.\n");
+        glConfig.deviceSupportsGamma = qfalse;
+        (void)coduomp_output_gamma_activate_software_compat(
+            "Windows rejected the display gamma ramp");
     }
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: apply the original renderer's computed ramp
@@ -278,11 +413,29 @@ void GLimp_SetGamma(const uint8_t red[GLIMP_GAMMA_ENTRY_COUNT],
     memcpy(coduompCurrentGammaRamp, gammaRamp,
            sizeof(coduompCurrentGammaRamp));
     coduompCurrentGammaRampValid = qtrue;
-    if (coduompGammaWindowActive != qfalse &&
-        coduomp_sdl_set_window_gamma_ramp(
-            gammaRamp[0], gammaRamp[1], gammaRamp[2]) == qfalse) {
-        Com_Printf("SDL_SetWindowGammaRamp failed: %s\n",
-                   coduomp_sdl_error_compat());
+    if (coduompGammaWindowActive != qfalse) {
+        qboolean gammaSet;
+
+        if (coduomp_output_gamma_xrandr_active_compat() != qfalse) {
+            gammaSet = coduomp_output_gamma_set_xrandr_compat(gammaRamp);
+        } else {
+            gammaSet = coduomp_sdl_set_window_gamma_ramp(
+                gammaRamp[0], gammaRamp[1], gammaRamp[2]);
+            if (gammaSet == qfalse) {
+                Com_Printf("SDL_SetWindowGammaRamp failed: %s\n",
+                           coduomp_sdl_error_compat());
+                if (coduomp_output_gamma_try_xrandr_compat(
+                        rendererOriginalGammaRamp) != qfalse) {
+                    gammaSet = coduomp_output_gamma_set_xrandr_compat(
+                        gammaRamp);
+                }
+            }
+        }
+        if (gammaSet == qfalse) {
+            glConfig.deviceSupportsGamma = qfalse;
+            (void)coduomp_output_gamma_activate_software_compat(
+                "SDL and native X11 gamma are unavailable");
+        }
     }
 #endif
 }
@@ -297,12 +450,24 @@ void coduomp_gamma_window_focus_changed(qboolean active)
 {
     coduompGammaWindowActive = active;
 
+    if (coduomp_output_gamma_xrandr_active_compat() != qfalse) {
+        if (active != qfalse &&
+            coduompCurrentGammaRampValid != qfalse &&
+            coduomp_gamma_native_allowed_compat() != qfalse) {
+            (void)coduomp_output_gamma_set_xrandr_compat(
+                coduompCurrentGammaRamp);
+        } else {
+            coduomp_output_gamma_restore_xrandr_compat();
+        }
+        return;
+    }
+
     if (glConfig.deviceSupportsGamma == qfalse)
         return;
 
     if (active != qfalse &&
         coduompCurrentGammaRampValid != qfalse &&
-        r_ignorehwgamma->integer == 0) {
+        coduomp_gamma_native_allowed_compat() != qfalse) {
         (void)coduomp_sdl_set_window_gamma_ramp(
             coduompCurrentGammaRamp[0],
             coduompCurrentGammaRamp[1],
@@ -320,9 +485,29 @@ void coduomp_gamma_window_focus_changed(qboolean active)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00524020_00524055.mcode.
  * Provisional role name: retained out-of-line body of the gamma restoration
  * helper inlined by the Windows compiler into GLimp_Shutdown at 0x004f6f51.
- * It restores the exact desktop ramp captured by GLimp_InitGamma. */
+ * Retail restores the desktop ramp; the compatibility branch restores the
+ * game monitor through the same display-specific DC used for capture. */
 void GLimp_RestoreGamma(void)
 {
+#if defined(_WIN32)
+    if (coduomp_windows_gamma_device_context != NULL) {
+        if (glConfig.deviceSupportsGamma != qfalse) {
+            SetDeviceGammaRamp(coduomp_windows_gamma_device_context,
+                               rendererOriginalGammaRamp);
+        }
+        DeleteDC(coduomp_windows_gamma_device_context);
+        coduomp_windows_gamma_device_context = NULL;
+        return;
+    }
+#endif
+
+#if !defined(_WIN32)
+    if (coduomp_output_gamma_xrandr_active_compat() != qfalse) {
+        coduomp_output_gamma_restore_xrandr_compat();
+        return;
+    }
+#endif
+
     if (glConfig.deviceSupportsGamma == qfalse)
         return;
 

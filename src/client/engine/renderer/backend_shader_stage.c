@@ -3153,9 +3153,18 @@ void R_DrawElements(int32_t indexCount, const uint16_t *indexes)
         (renderer_primitive_mode_t)r_primitives->integer;
 
     if (primitiveMode == R_PRIMITIVES_AUTOMATIC) {
+#if defined(__APPLE__) && defined(__aarch64__)
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): Apple's
+         * Metal-backed OpenGL omits EXT_compiled_vertex_array but supports
+         * core glDrawElements. Preserve the stock automatic cvar value while
+         * selecting the efficient supported submission path on this native
+         * host. Explicit primitive modes remain unchanged. */
+        primitiveMode = R_PRIMITIVES_DRAW_ELEMENTS;
+#else
         primitiveMode = qglLockArraysEXT != NULL
                             ? R_PRIMITIVES_DRAW_ELEMENTS
                             : R_PRIMITIVES_ARRAY_ELEMENTS;
+#endif
     }
 
     if (primitiveMode == R_PRIMITIVES_DRAW_ELEMENTS) {
@@ -3948,6 +3957,19 @@ void RB_SingleStageGenericARB2(shaderStage_t *stage, int32_t indexCount,
     int32_t capacity;
     uint32_t buffer;
 
+#if defined(__APPLE__) && defined(__aarch64__)
+    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): AppleMetalOpenGLRenderer
+     * synchronizes an in-flight persistent VBO at glBufferSubData, which is
+     * especially expensive for the many shader changes in text rendering.
+     * Preserve draw order and the persistent path for ordinary geometry, but
+     * send 2D surfaces through the stock interleaved packer. That packer uses
+     * fresh buffer storage below instead of updating the shared VBO. */
+    if (backEnd.projection2D != qfalse &&
+        tess.entity == &backEnd.entity2D) {
+        RB_SingleStageGenericARB(stage, indexCount, indexes);
+        return;
+    }
+#endif
 
     if (backEnd.dynamicBuffer.storage.glBuffer != 0) {
         buffer = backEnd.dynamicBuffer.storage.glBuffer;
@@ -4132,7 +4154,20 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
 
     const uint32_t configuredPersistentBuffer =
         backEnd.dynamicBuffer.storage.glBuffer;
+#if defined(__APPLE__) && defined(__aarch64__)
+    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): a call redirected from
+     * RB_SingleStageGenericARB2 for a 2D surface must not fall back onto the
+     * same persistent VBO. A fresh buffer name plus BufferData replaces its
+     * storage without waiting for earlier glyph draws to finish. */
+    const qboolean useTransient2DBuffer =
+        configuredPersistentBuffer != 0 &&
+        backEnd.projection2D != qfalse &&
+        tess.entity == &backEnd.entity2D;
+    const uint32_t persistentBuffer =
+        useTransient2DBuffer != qfalse ? 0 : configuredPersistentBuffer;
+#else
     const uint32_t persistentBuffer = configuredPersistentBuffer;
+#endif
     uint32_t activeBuffer;
     int32_t bufferOffset = 0;
 
@@ -4201,10 +4236,16 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
     uint8_t *packedVertices = NULL;
     uint8_t *temporaryVertices = NULL;
     if (persistentBuffer == 0) {
+#if defined(__APPLE__) && defined(__aarch64__)
+        if (useTransient2DBuffer == qfalse) {
+#endif
             qglBufferDataARB(GL_ARRAY_BUFFER_ARB, (intptr_t)packedBytes,
                              NULL, GL_STREAM_DRAW_ARB);
             packedVertices = qglMapBufferARB(GL_ARRAY_BUFFER_ARB,
                                              GL_WRITE_ONLY_ARB);
+#if defined(__APPLE__) && defined(__aarch64__)
+        }
+#endif
     }
     if (packedVertices == NULL) {
         temporaryVertices =
@@ -4220,21 +4261,24 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
     if (arrayFlags == (texture0Flag | SHADER_STAGE_NORMAL_ARRAY) &&
         texCoordComponentCounts[0] == RB_ARB_TEXCOORD_COMPONENTS_2D &&
         tess.vertexComponentCount == RB_ARB_VERTEX_COMPONENTS_3D) {
-        for (int32_t vertexIndex = 0;
-             vertexIndex < tess.vertexCount; ++vertexIndex) {
-            uint8_t *const destination =
-                packedVertices + vertexIndex * vertexStride;
-            memcpy(destination + texCoordOffsets[0],
-                   texCoordSources[0] +
-                       vertexIndex * RB_ARB_TEXCOORD_COMPONENTS_2D *
-                           (int32_t)sizeof(float),
-                   RB_ARB_TEXCOORD_COMPONENTS_2D * sizeof(float));
-            memcpy(destination + normalOffset,
-                   tess.stageNormals[vertexIndex],
-                   sizeof(tess.stageNormals[vertexIndex]));
-            memcpy(destination + vertexOffset,
-                   &tess.xyz[vertexIndex * tess.vertexComponentCount],
+        /* NOT_FROM_ORIGINAL_SOURCE: non-stock builds expose the fixed-width common packing streams as pointer walks for all target compilers. */
+        uint8_t *destination = packedVertices;
+        const uint8_t *texCoordSource = texCoordSources[0];
+        const vec3_t *normalSource = tess.stageNormals;
+        const float *positionSource = tess.xyz;
+        /* Snapshot the invariant count so stores through packedVertices cannot force a global reload on every iteration. */
+        const int32_t vertexCount = tess.vertexCount;
+
+        /* 0x0051e780..0x0051e7d3 advances the three source streams by their proven fixed widths instead of re-reading vertexComponentCount. */
+        for (int32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
+            memcpy(destination, texCoordSource, RB_ARB_TEXCOORD_COMPONENTS_2D * sizeof(float));
+            memcpy(destination + RB_ARB_TEXCOORD_COMPONENTS_2D * sizeof(float), *normalSource, sizeof(*normalSource));
+            memcpy(destination + RB_ARB_TEXCOORD_COMPONENTS_2D * sizeof(float) + sizeof(*normalSource), positionSource,
                    RB_ARB_VERTEX_COMPONENTS_3D * sizeof(float));
+            destination += RB_ARB_TEXCOORD_COMPONENTS_2D * sizeof(float) + sizeof(*normalSource) + RB_ARB_VERTEX_COMPONENTS_3D * sizeof(float);
+            texCoordSource += RB_ARB_TEXCOORD_COMPONENTS_2D * sizeof(float);
+            ++normalSource;
+            positionSource += RB_ARB_VERTEX_COMPONENTS_3D;
         }
     } else if (arrayFlags ==
                    (texture0Flag | SHADER_STAGE_COLOR_ARRAY) &&

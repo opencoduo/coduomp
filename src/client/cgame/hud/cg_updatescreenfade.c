@@ -79,7 +79,9 @@ void CG_UpdateScreenFade(void)
         if (out[3] != 0.0f) {
             /* 0x3001ac97..acaa: CG_FillRect(0, 0, 640.0f, 480.0f, out).
              * 0x44200000 = 640.0f (width), 0x43f00000 = 480.0f (height). */
-            CG_FillRect(0.0f, 0.0f, 640.0f, 480.0f, out);
+            /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve the
+             * complete effect's native-drawable coverage on widescreen. */
+            cgame_compat_fill_native_screen_effect(out);
         }
         return; /* 0x3001acb2: RET (shared epilogue) */
     }
@@ -103,7 +105,9 @@ void CG_UpdateScreenFade(void)
         /* 0x3001ac0d..ac12 then 0x3001ac9c..acaa: push &cg_screenFade.color, then
          * CG_FillRect(0, 0, 640.0f, 480.0f, cg_screenFade.color). The fade stays
          * active (rate is NOT cleared here), so the settled color keeps drawing. */
-        CG_FillRect(0.0f, 0.0f, 640.0f, 480.0f, cg_screenFade.color);
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): settled full-screen
+         * fades retain the same native coverage as their animated phase. */
+        cgame_compat_fill_native_screen_effect(cg_screenFade.color);
         return; /* 0x3001acb2: RET */
     }
 

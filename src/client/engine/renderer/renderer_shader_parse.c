@@ -3368,6 +3368,15 @@ qboolean ParseImage(
             imageName, GL_TEXTURE_2D, imageFlags, imageTrack,
             colorScale, heightScale);
         if (*outImage == NULL) {
+            /* NOT_FROM_ORIGINAL_SOURCE: the stock sfx shader retains this
+             * Quake III rail-trail debug material, but no stock CoD or UO PK3
+             * supplies its image. Suppress only that known orphan; preserve
+             * the parse failure and every other missing-image warning. */
+            if (Q_stricmp(rendererParsedShader.name, "railCore") == 0 &&
+                Q_stricmp(imageName,
+                          "gfx/misc/railcorethin_mono.tga") == 0) {
+                return qfalse;
+            }
 
             ri.Printf(
                 R_PRINT_WARNING,
@@ -8867,6 +8876,16 @@ shader_t *FinishShader(void)
             }
         }
 
+        if (rendererParsedShader.sort == SHADER_SORT_WATER) {
+            /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail water
+             * shaders select either blended NVIDIA/ATI stages or an opaque
+             * fixed-function fallback. Blending clears depth writes, but the
+             * fallback otherwise retains them and can mask companion shoreline
+             * geometry on hardware without those obsolete vendor extensions.
+             * Give every water-sorted path the accelerated path's depth-mask
+             * behavior without depending on a map or shader name. */
+            stage->stateBits &= ~GLS_DEPTHMASK_TRUE;
+        }
 
         if ((rendererParsedShader.flags &
              SHADER_FLAG_POLYGON_OFFSET_DOUBLE) != 0) {

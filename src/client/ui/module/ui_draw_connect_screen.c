@@ -56,9 +56,7 @@ void UI_DrawConnectScreen(qboolean overlay)
     if (state.connState < CA_LOADING) {
         if (Q_stricmpn("localhost", state.servername,
                        UI_SERVER_NAME_COMPARE_LIMIT) == 0) {
-            text = va("%s - %s",
-                      UI_SafeTranslateString("GMI_EXE_CODUO_MULTIPLAYER"),
-                      "1.51");
+            text = CODUOMP_DISPLAY_LABEL;
             Text_PaintCenter(320.0f, 55.0f, text, 0.5f, white, 0);
         } else if (Q_stricmpn("Auto-Updater", state.servername,
                               UI_SERVER_NAME_COMPARE_LIMIT) == 0) {

@@ -38,9 +38,17 @@ enum {
 #define LAGOMETER_SNAPSHOT_RANGE_FACTOR 0.5f       /* 0x3007bce8 */
 #define LAGOMETER_SNAPSHOT_SCALE_RECIP 0.0011111111f /* 0x3a91a2b4 */
 
+/* NOT_FROM_ORIGINAL_SOURCE: isolated widescreen presentation interface. */
+extern float cgame_compat_right_hud_virtual_offset(void);
+
 void CG_DrawLagometer(void)
 {
     if (cg_lagometer_vmCvar.integer != qfalse && cgs_localServer == 0) {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve the
+         * recovered graph as one fixed-size composition while translating its
+         * stock right-side anchor to the native widescreen edge. */
+        const float lagometerX =
+            LAGOMETER_X + cgame_compat_right_hud_virtual_offset();
         float ax;
         float ay;
         float aw;
@@ -53,20 +61,35 @@ void CG_DrawLagometer(void)
 
         trap_R_SetColor(NULL);
         qhandle_t lagometerShader = cgs_lagometerShader;
-        CG_DrawPic(LAGOMETER_X, LAGOMETER_Y,
+        CG_DrawPic(lagometerX, LAGOMETER_Y,
                    LAGOMETER_WIDTH, LAGOMETER_HEIGHT,
                    lagometerShader);
 
         /* 0x30018c08..0x30018c4c read the four screen scales only after the
          * set-color and background-picture calls have returned. */
         ax = (float)((long double)cgs_screenXScale *
-                     (long double)LAGOMETER_X);
+                     (long double)lagometerX);
         ay = (float)((long double)cgs_screenYScale *
                      (long double)LAGOMETER_Y);
         aw = (float)((long double)cgs_screenXScale *
                      (long double)LAGOMETER_WIDTH);
         ah = (float)((long double)cgs_screenYScale *
                      (long double)LAGOMETER_HEIGHT);
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail draws one
+         * ring entry per physical pixel.  Modern high-density drawables can
+         * make this 48-unit box wider than the 128-entry ring, which wraps the
+         * index and redraws the same history two or three times.  Use every
+         * entry at most once and widen adjacent columns to retain the box's
+         * physical width.  At widths up to LAG_SAMPLES this remains the exact
+         * one-pixel retail presentation. */
+        float renderedSampleLimit = aw;
+        float renderedSampleStep = 1.0f;
+        float renderedColumnWidth = 1.0f;
+        if (aw > (float)LAG_SAMPLES) {
+            renderedSampleLimit = (float)LAG_SAMPLES;
+            renderedSampleStep = aw / (float)LAG_SAMPLES;
+            renderedColumnWidth = renderedSampleStep;
+        }
 
         /* 0x30018c5a is FST (keep), not FSTP: `range` is stored rounded and then
          * RELOADED at 0x30018c66 for vscale, but `mid` at 0x30018c5e adds ay to the
@@ -86,7 +109,7 @@ void CG_DrawLagometer(void)
             /* The loop tail FILDs a, stores it to binary32, and compares that
              * stored float with aw. The first iteration uses the same +0.0 bits. */
             float aFloat = (float)a;
-            if (!(aFloat < aw)) {
+            if (!(aFloat < renderedSampleLimit)) {
                 break;
             }
             uint32_t indexBits = (uint32_t)cg_lagometerFrameCount -
@@ -107,13 +130,14 @@ void CG_DrawLagometer(void)
                 if (value > range) {
                     value = range;
                 }
-                const long double sampleOffset = (long double)aFloat;
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
                 float drawX = (float)((long double)ax + (long double)aw -
                                       sampleOffset);
                 float drawY = (float)((long double)mid - (long double)value);
                 trap_R_DrawStretchPic(CG_FloatBits(drawX),
                                       CG_FloatBits(drawY),
-                                      CG_FloatBits(1.0f),
+                                      CG_FloatBits(renderedColumnWidth),
                                       CG_FloatBits(value),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
@@ -129,12 +153,13 @@ void CG_DrawLagometer(void)
                 if (value > range) {
                     value = range;
                 }
-                const long double sampleOffset = (long double)aFloat;
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
                 float drawX = (float)((long double)ax + (long double)aw -
                                       sampleOffset);
                 trap_R_DrawStretchPic(CG_FloatBits(drawX),
                                       CG_FloatBits(mid),
-                                      CG_FloatBits(1.0f),
+                                      CG_FloatBits(renderedColumnWidth),
                                       CG_FloatBits(value),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
@@ -157,7 +182,7 @@ void CG_DrawLagometer(void)
         a = 0;
         for (;;) {
             float aFloat = (float)a;
-            if (!(aFloat < aw)) {
+            if (!(aFloat < renderedSampleLimit)) {
                 break;
             }
             uint32_t indexBits = (uint32_t)cg_lagometer.snapshotCount -
@@ -192,12 +217,13 @@ void CG_DrawLagometer(void)
                 float drawnHeight = (float)drawnHeightRaw;
                 float drawY = (float)((long double)ah + (long double)ay -
                                       drawnHeightRaw);
-                const long double sampleOffset = (long double)aFloat;
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
                 float drawX = (float)((long double)ax + (long double)aw -
                                       sampleOffset);
                 trap_R_DrawStretchPic(CG_FloatBits(drawX),
                                       CG_FloatBits(drawY),
-                                      CG_FloatBits(1.0f),
+                                      CG_FloatBits(renderedColumnWidth),
                                       CG_FloatBits(drawnHeight),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
@@ -211,12 +237,13 @@ void CG_DrawLagometer(void)
                 }
                 float drawY = (float)((long double)ah + (long double)ay -
                                       (long double)range);
-                const long double sampleOffset = (long double)aFloat;
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
                 float drawX = (float)((long double)ax + (long double)aw -
                                       sampleOffset);
                 trap_R_DrawStretchPic(CG_FloatBits(drawX),
                                       CG_FloatBits(drawY),
-                                      CG_FloatBits(1.0f),
+                                      CG_FloatBits(renderedColumnWidth),
                                       CG_FloatBits(range),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       CG_FloatBits(0.0f), CG_FloatBits(0.0f),

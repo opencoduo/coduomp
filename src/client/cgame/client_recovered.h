@@ -2523,12 +2523,48 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
 void CGAME_ABI_CDECL dllEntry(cgame_syscall_t systemCall);
 void CG_OffsetThirdPersonView(void);
 
+/* NOT_FROM_ORIGINAL_SOURCE: dllEntry lifecycle reset used by every build. */
+void cgame_compat_reset_presentation_state(void);
+
 /* Core view-refdef builder cluster. CG_CalcViewValues (0x30041a30) dispatches
  * these no-argument helpers. CG_CalcTurretViewValues and
  * CG_OffsetFirstPersonView are caller-observed declarations whose names are
  * supported by their view-origin/angle behavior and the same-module PPC bank;
  * their full signatures are superseded when their own ranges are reconstructed. */
 void CG_CalcVrect(void);
+void cgame_compat_register_presentation_cvars(void);
+void cgame_compat_update_presentation_cvars(void);
+qboolean cgame_compat_uses_simple_fps_display(void);
+void cgame_compat_configure_screen_scales(void);
+float cgame_compat_begin_open_menu_canvas(void);
+void cgame_compat_end_open_menu_canvas(float previousXScale);
+float cgame_compat_begin_passive_hud_menu(struct menuDef_s *menu);
+void cgame_compat_end_passive_hud_menu(void);
+void cgame_compat_project_server_hud_item(
+    cgAlignedDrawItem *item, const struct hudElem_s *elem);
+float cgame_compat_left_hud_virtual_offset(void);
+qboolean cgame_compat_uses_classic_aspect(void);
+void cgame_compat_tile_clear(void);
+void cgame_compat_draw_physical_stretch_pic(
+    float x, float y, float width, float height,
+    float s1, float t1, float s2, float t2, int32_t shaderHandle);
+void cgame_compat_fill_native_screen_effect(const float color[4]);
+void cgame_compat_expand_native_server_hud_shader(
+    const cgAlignedDrawItem *item, const struct hudElem_s *elem,
+    float *drawX, float *drawWidth);
+void cgame_compat_draw_optical_letterbox(float alpha);
+long double cgame_compat_optical_canvas_right(long double stockViewRight);
+void cgame_compat_draw_letterboxed_optical_pic(
+    float x, float y, float width, float height,
+    float s1, float t1, float s2, float t2, int32_t shaderHandle);
+void cgame_compat_draw_physical_quad_pic(
+    float x, float y, float width, float height,
+    float s1, float t1, float s2, float t2,
+    float angleDegrees, int32_t shaderHandle);
+long double cgame_compat_spread_fov_x(void);
+long double cgame_compat_expand_horizontal_fov(long double baseFov,
+                                               int32_t width,
+                                               int32_t height);
 void CG_BuildLockedViewRefdef(void);
 qboolean CG_CalcViewProjection(void);
 void CG_CalcTurretViewValues(void);

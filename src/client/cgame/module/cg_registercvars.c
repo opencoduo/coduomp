@@ -59,6 +59,7 @@ void CG_RegisterCvars(void)
         trap_Cvar_Register(entry->vmCvar, entry->cvarName,
                            entry->defaultString, entry->cvarFlags);
     }
+    cgame_compat_register_presentation_cvars();
 
     // 3002b1e0..3002b1fc: read "sv_running" into a 0x400 buffer, then Q_atoi it.
     char svRunning[MAX_STRING_CHARS];

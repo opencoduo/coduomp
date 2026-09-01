@@ -564,6 +564,7 @@ void CL_FirstSnapshot(void);
 void CL_GetCurrentSnapshotNumber(int32_t *snapshotNumber,
                                  int32_t *serverTime);
 void CL_Disconnect(qboolean showMainMenu);
+void coduomp_client_complete_server_cache_mod_teardown(void);
 void CL_Disconnect_f(void);
 void CL_Init(void);
 void CL_Shutdown(void);
@@ -582,6 +583,9 @@ void CL_UpdateLevelHunkUsage(void);
 void CL_CheckForResend(void);
 void SCR_UpdateScreen(void);
 void SCR_Init(void);
+/* NOT_FROM_ORIGINAL_SOURCE: forget a widescreen backdrop pre-queued into a
+ * renderer command buffer that a renderer restart has discarded. */
+void coduomp_scr_reset_widescreen_backdrop_compat(void);
 void CL_CheckAutoUpdate(void);
 void CL_GetAutoUpdate(void);
 void CL_AddReliableCommand(const char *command);

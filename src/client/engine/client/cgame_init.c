@@ -92,6 +92,7 @@ void CL_InitRenderer(void)
     };
 
     rendererExports.BeginRegistration(&cls.rendererConfig);
+    coduomp_scr_reset_widescreen_backdrop_compat();
     cls.whiteShader = rendererExports.RegisterShader(
         "white", CL_RENDERER_SHADER_LOAD_MODE);
     cls.consoleShader = rendererExports.RegisterShader(

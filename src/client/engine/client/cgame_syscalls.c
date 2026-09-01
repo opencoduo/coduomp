@@ -20,6 +20,7 @@
 #include "../scripting/script_runtime.h"
 #include "../sound/miles_boundary.h"
 #include "sound/alias/sound_alias.h"
+#include "widescreen_2d_compat.h"
 
 #include <float.h>
 #include <math.h>
@@ -228,6 +229,28 @@ static void CL_CgameResetUi(void)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: cgame 2D submitted outside CL_CGameRendering —
+ * the loading pump draws its levelshot/progress bar and then forces a present
+ * via CG_UPDATE_SCREEN — must receive the same centered-canvas presentation
+ * as the cgame rendering scope, or widescreen loading frames alternate
+ * between two different levelshot placements. Open a one-command scope only
+ * when no outer scope is active. */
+static qboolean CL_CgamePump2dScopeBegin(void)
+{
+    if (coduomp_cgame_rendering_compat_active != qfalse)
+        return qfalse;
+    coduomp_queue_cgame_2d_presentation(qtrue);
+    coduomp_cgame_rendering_compat_active = qtrue;
+    return qtrue;
+}
+
+static void CL_CgamePump2dScopeEnd(qboolean opened)
+{
+    if (opened == qfalse)
+        return;
+    coduomp_cgame_rendering_compat_active = qfalse;
+    coduomp_queue_cgame_2d_presentation(qfalse);
+}
 
 /* Source: CoDUOMP.exe 0x00401f30..0x00404ae7, with its command jump table at
  * 0x00404ae8. Name and signature: exact same-module Mac symbol
@@ -324,7 +347,11 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
         SCR_UpdateScreen();
         return 0;
     case CG_DRAW_SLIDING_FADE_ELEMENT:
-        Con_DrawNotify(CG_INT(1), CG_INT(2),
+        /* NOT_FROM_ORIGINAL_SOURCE: only the left-side gameplay notify group
+         * is edge-expanded; scoreboard and centered fade groups remain on the
+         * stock 640x480 composition. */
+        Con_DrawNotify(coduomp_left_hud_virtual_x_compat(CG_INT(1)),
+                       CG_INT(2),
                        CL_CgameSyscallFloatArgument(CG_ARG(3)),
                        CG_INT(4));
         return 0;
@@ -524,6 +551,7 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
         rendererExports.SetColor(CG_CONST_PTR(float, 1));
         return 0;
     case CG_R_DRAWSTRETCHPIC: {
+        const qboolean pumpScope = CL_CgamePump2dScopeBegin();
         rendererExports.StretchPic(
             CL_CgameSyscallFloatArgument(CG_ARG(1)),
             CL_CgameSyscallFloatArgument(CG_ARG(2)),
@@ -533,9 +561,11 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
             CL_CgameSyscallFloatArgument(CG_ARG(6)),
             CL_CgameSyscallFloatArgument(CG_ARG(7)),
             CL_CgameSyscallFloatArgument(CG_ARG(8)), CG_INT(9));
+        CL_CgamePump2dScopeEnd(pumpScope);
         return 0;
     }
     case CG_R_DRAW_STRETCH_PIC_ROTATE: {
+        const qboolean pumpScope = CL_CgamePump2dScopeBegin();
         rendererExports.StretchPicGradient(
             CL_CgameSyscallFloatArgument(CG_ARG(1)),
             CL_CgameSyscallFloatArgument(CG_ARG(2)),
@@ -546,9 +576,11 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
             CL_CgameSyscallFloatArgument(CG_ARG(7)),
             CL_CgameSyscallFloatArgument(CG_ARG(8)), CG_INT(9),
             CG_CONST_PTR(float, 10), CG_INT(11));
+        CL_CgamePump2dScopeEnd(pumpScope);
         return 0;
     }
     case CG_R_DRAW_QUAD_PIC: {
+        const qboolean pumpScope = CL_CgamePump2dScopeBegin();
         rendererExports.StretchPicRotate(
             CL_CgameSyscallFloatArgument(CG_ARG(1)),
             CL_CgameSyscallFloatArgument(CG_ARG(2)),
@@ -559,12 +591,15 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
             CL_CgameSyscallFloatArgument(CG_ARG(7)),
             CL_CgameSyscallFloatArgument(CG_ARG(8)),
             CL_CgameSyscallFloatArgument(CG_ARG(9)), CG_INT(10));
+        CL_CgamePump2dScopeEnd(pumpScope);
         return 0;
     }
     case CG_R_DRAW_ROTATED_QUAD: {
+        const qboolean pumpScope = CL_CgamePump2dScopeBegin();
         rendererExports.DrawQuadPic(
             CG_CONST_PTR(vec2_t, 1), CG_CONST_PTR(vec2_t, 2),
             CG_INT(3));
+        CL_CgamePump2dScopeEnd(pumpScope);
         return 0;
     }
     case CG_R_MODEL_BOUNDS:

@@ -65,6 +65,9 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
         cgame_syscall(CG_CVAR_UPDATE,
                       (intptr_t)cg_cvarTable[i].vmCvar);
     }
+    /* NOT_FROM_ORIGINAL_SOURCE: refresh the compatibility cvars beside the
+     * recovered table so live presentation-mode changes take effect. */
+    cgame_compat_update_presentation_cvars();
 
     /* Asset-registration status text owns the frame until it is cleared. */
     if (cg_loadingScratch[0] != '\0') {

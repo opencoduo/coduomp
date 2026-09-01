@@ -16,7 +16,11 @@
 
 #define PS_EFLAG_VOTE_KEYS_HIDDEN ((uint32_t)0x10000)
 
-#define CG_VOTE_TEXT_X 8.0f
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the vote/complaint text
+ * block is authored left-flush at x=8 like the notify feed directly above
+ * it; give the complete composition the same native left-edge translation
+ * so the two columns stay aligned on widescreen. */
+#define CG_VOTE_TEXT_X (8.0f + cgame_compat_left_hud_virtual_offset())
 
 enum {
     CG_VOTE_TEXT_STYLE = 3,
