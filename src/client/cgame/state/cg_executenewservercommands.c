@@ -64,7 +64,8 @@ void CG_ExecuteNewServerCommands(int32_t latestSequence)
      * executed, up to latestSequence. The gate and the loop test are both signed. */
     while (cgs_serverCommandSequence < latestSequence) {
         /* 0x3003b480/0x3003b484: advance and commit the sequence BEFORE fetching. */
-        cgs_serverCommandSequence = coduo_int32_from_bits((uint32_t)cgs_serverCommandSequence + 1u);
+        cgs_serverCommandSequence = coduo_int32_from_bits(
+            (uint32_t)cgs_serverCommandSequence + 1u);
 
         /* 0x3003b489: fetch this reliable command into the engine's argv buffer;
          * nonzero means the command is present and ready to dispatch. */

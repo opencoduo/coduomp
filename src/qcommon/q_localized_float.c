@@ -49,7 +49,9 @@ int32_t Q_GetDecimalDelimiter(language_t language)
     }
 }
 
-void Q_LocalizedFloatToString(float value, char *buffer, uint32_t bufferSize, int32_t precision, language_t language)
+void Q_LocalizedFloatToString(float value, char *buffer,
+                              uint32_t bufferSize, int32_t precision,
+                              language_t language)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: a zero-sized output has no writable
      * terminator slot. */
@@ -78,14 +80,17 @@ int32_t Q_GetDecimalDelimiter(language_t language)
     return '.';
 }
 
-void Q_LocalizedFloatToString(float value, char *buffer, uint32_t bufferSize, int32_t precision, language_t language)
+void Q_LocalizedFloatToString(float value, char *buffer,
+                              uint32_t bufferSize, int32_t precision,
+                              language_t language)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: a zero-sized output has no writable
      * terminator slot. */
     if (bufferSize == 0) {
         return;
     }
-    snprintf(buffer, (size_t)(bufferSize - 1u), "%.*f", precision, (double)value);
+    snprintf(buffer, (size_t)(bufferSize - 1u), "%.*f", precision,
+             (double)value);
     buffer[bufferSize - 1u] = '\0';
 
     const int32_t delimiter = Q_GetDecimalDelimiter(language);

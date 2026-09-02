@@ -51,7 +51,8 @@
 // (0x3001ca4f MOV precedes 0x3001ca53 CALL), so all four components are valid when
 // the trap reads them. Only the alpha component is scaled; r,g,b pass through raw.
 
-void CG_DrawRect(float x, float y, float width, float height, float size, const float *color)
+void CG_DrawRect(float x, float y, float width, float height, float size,
+                 const float *color)
 {
     vec4_t dc;
     long double hudAlpha = (long double)cg_hudAlpha_vmCvar.value;

@@ -56,9 +56,9 @@ enum {
 };
 
 /* Exact .rdata constants (addresses dumped, not inferred from neighbours). */
-#define PM_MS_TO_SEC 0.001f  /* 0x3007bd94 = 0x3a83126f */
-#define PM_VEL_QUARTER 0.25f   /* 0x3007be58 = 0x3e800000 */
-#define PM_ONE 1.0f    /* 0x3007bce0 = 0x3f800000 (float pool 1.0/2.0/0.5/0.0) */
+#define PM_MS_TO_SEC     0.001f  /* 0x3007bd94 = 0x3a83126f */
+#define PM_VEL_QUARTER   0.25f   /* 0x3007be58 = 0x3e800000 */
+#define PM_ONE           1.0f    /* 0x3007bce0 = 0x3f800000 (float pool 1.0/2.0/0.5/0.0) */
 
 /*
  * Provisional caller-observed callee decls for the pmove steps not yet
@@ -92,29 +92,29 @@ void PmoveSingle(pmove_t *move)
     c_pmove++;
 
     ps = move->ps;              /* 0x3000e073: ECX = move->ps */
-    move->watertype = 0;         /* 0x3000e076: [move+0xf0] = 0 */
+    move->watertype  = 0;         /* 0x3000e076: [move+0xf0] = 0 */
     move->waterlevel = 0;         /* 0x3000e07c: [move+0xf1] = 0 */
     uint32_t setupFlags = ps->playerStateFlags; /* MOV EAX,[ECX+0xc] */
-    pm = move;        /* 0x3000e088: [0x30539850] = move */
+    pm  = move;        /* 0x3000e088: [0x30539850] = move */
 
     /* 0x3000e085: if (ps->playerStateFlags & 0x4000) clear the command/state
      * bytes (TEST AH,0x40 — AH holds flag bits 8..15). */
     if (setupFlags & PMF_FOLLOW) {
         uint8_t maskedWButtons = (uint8_t)(move->command.wbuttons & 0xc2u);
-        move->command.buttons = 0;
-        move->command.wbuttons = maskedWButtons;
+        move->command.buttons     = 0;
+        move->command.wbuttons    = maskedWButtons;
         move->command.forwardmove = 0;
-        move->command.rightmove = 0;
-        move->command.upmove = 0;
+        move->command.rightmove   = 0;
+        move->command.upmove     = 0;
     }
 
     /* 0x3000e0a6: if (move->command.buttons & 0x2) restrict it and clear the command bytes. */
     if (move->command.buttons & 0x2u) {
-        move->command.buttons = (uint8_t)(move->command.buttons & 0x12u);
-        move->command.wbuttons = (uint8_t)(move->command.wbuttons & 0xc2u);
+        move->command.buttons     = (uint8_t)(move->command.buttons & 0x12u);
+        move->command.wbuttons    = (uint8_t)(move->command.wbuttons & 0xc2u);
         move->command.forwardmove = 0;
-        move->command.rightmove = 0;
-        move->command.upmove = 0;
+        move->command.rightmove   = 0;
+        move->command.upmove     = 0;
     }
 
     /* 0x3000e0be: ps->playerStateFlags &= ~0x8000. */
@@ -152,10 +152,8 @@ void PmoveSingle(pmove_t *move)
                  * integer compare. */
                 int acur = (int)(int8_t)move->command.forwardmove;
                 int aold = (int)(int8_t)move->oldCommand.forwardmove;
-                if (acur < 0)
-                    acur = -acur;
-                if (aold < 0)
-                    aold = -aold;
+                if (acur < 0) acur = -acur;
+                if (aold < 0) aold = -aold;
                 if (aold < acur)
                     takeFinishPath = 1;   /* JNP -> 0x3000e159 finish path */
                 else
@@ -173,10 +171,8 @@ void PmoveSingle(pmove_t *move)
                      * magnitude increased goes to the finish path. */
                     int acur = (int)(int8_t)move->command.rightmove;
                     int aold = (int)(int8_t)move->oldCommand.rightmove;
-                    if (acur < 0)
-                        acur = -acur;
-                    if (aold < 0)
-                        aold = -aold;
+                    if (acur < 0) acur = -acur;
+                    if (aold < 0) aold = -aold;
                     if (aold >= acur)
                         takeFinishPath = -1;  /* JP -> block E (0x3000e1a1) */
                     else
@@ -226,7 +222,7 @@ void PmoveSingle(pmove_t *move)
         /* 0x3000e1db: if (ps->playerStateFlags & 0x20) && viewLerpMode == 1, clear command bytes. */
         if ((ps->playerStateFlags & PMF_ADS) && viewLerpMode == 1) {
             move->command.forwardmove = 0;
-            move->command.rightmove = 0;
+            move->command.rightmove   = 0;
         }
     }
 
@@ -237,7 +233,7 @@ void PmoveSingle(pmove_t *move)
         wi = bg_weaponInfos[ps->currentWeapon];
         if (wi->weaponClass == WEAPCLASS_LMG) {   /* CMP [wi+0x80],3 */
             move->command.forwardmove = 0;
-            move->command.rightmove = 0;
+            move->command.rightmove   = 0;
         }
     }
 
@@ -287,14 +283,13 @@ void PmoveSingle(pmove_t *move)
     /* pml.msec = clamp(move->command.commandTime - ps->commandTime, 1, 200); ps->commandTime = move->command.commandTime. */
     {
         ps = move->ps;
-        int32_t delta = coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)ps->commandTime);
-        pml.msec = delta; /* MOV before clamps */
-        if (delta < PMOVE_FRAME_MSEC_MIN)
-            pml.msec = PMOVE_FRAME_MSEC_MIN;
-        else if (delta > PMOVE_FRAME_MSEC_MAX)
-            pml.msec = PMOVE_FRAME_MSEC_MAX;
-        ps = move->ps; /* MOV EAX,[EBP] */
-        ps->commandTime = move->command.commandTime; /* MOV [ps],[&move->command.commandTime] */
+        int32_t delta = coduo_int32_from_bits(
+            (uint32_t)move->command.commandTime - (uint32_t)ps->commandTime);
+        pml.msec = delta;                                  /* MOV before clamps */
+        if (delta < PMOVE_FRAME_MSEC_MIN)      pml.msec = PMOVE_FRAME_MSEC_MIN;
+        else if (delta > PMOVE_FRAME_MSEC_MAX) pml.msec = PMOVE_FRAME_MSEC_MAX;
+        ps = move->ps;                                       /* MOV EAX,[EBP] */
+        ps->commandTime = move->command.commandTime;                      /* MOV [ps],[&move->command.commandTime] */
     }
 
     /* FILD pml.msec begins the frame-time expression before these snapshots;
@@ -313,16 +308,18 @@ void PmoveSingle(pmove_t *move)
     ps = move->ps;
     float previousVelocityZ = ps->velocity[2];
 #if EMULATE_X87
-    pml.frametime = x87f_store_f32(x87f_mul(x87f_load_i32(pml.msec), x87f_load_f32(PM_MS_TO_SEC)));
+    pml.frametime = x87f_store_f32(x87f_mul(
+        x87f_load_i32(pml.msec), x87f_load_f32(PM_MS_TO_SEC)));
 #else
-    pml.frametime = (float)((long double)pml.msec * (long double)PM_MS_TO_SEC);
+    pml.frametime = (float)((long double)pml.msec *
+                            (long double)PM_MS_TO_SEC);
 #endif
     pml.previousVelocity[2] = previousVelocityZ;
 
     ps = move->ps;
     pml.weaponInfo = bg_weaponInfos[ps->currentWeapon]; /* 0x3000e363: re-cache */
 
-    PM_AdjustAimSpreadScale(); /* 0x30013a90 */
+    PM_AdjustAimSpreadScale();                           /* 0x30013a90 */
 
     /* 0x3000e36e/379: PM_UpdateViewAngles(ps, &move->command.commandTime, move->trace3). The command
      * pointer is LEA ESI,[EBP+0x4] — the usercmd window at pmove_t +0x04, which
@@ -347,73 +344,74 @@ void PmoveSingle(pmove_t *move)
     /* 0x3000e3b5: re-derive the view-lock bit from the command forward-move sign. */
     if (stepPm->command.forwardmove < 0) {
         ps = stepPm->ps;
-        ps->playerStateFlags |= (uint32_t)PMF_BACKPEDAL; /* OR 0x40 */
-    } else if (stepPm->command.forwardmove > 0 || stepPm->command.rightmove != 0) {
+        ps->playerStateFlags |= (uint32_t)PMF_BACKPEDAL;            /* OR 0x40 */
+    } else if (stepPm->command.forwardmove > 0 ||
+               stepPm->command.rightmove != 0) {
         ps = stepPm->ps;
-        ps->playerStateFlags &= ~(uint32_t)PMF_BACKPEDAL; /* AND ~0x40 */
+        ps->playerStateFlags &= ~(uint32_t)PMF_BACKPEDAL;           /* AND ~0x40 */
     }
 
     /* 0x3000e3de: if (ps->pmType >= 6) clear the three command/state bytes. */
     ps = stepPm->ps;
     if (ps->pmType >= PM_TYPE_DEAD) {
         stepPm->command.forwardmove = 0;
-        stepPm->command.rightmove = 0;
-        stepPm->command.upmove = 0;
+        stepPm->command.rightmove   = 0;
+        stepPm->command.upmove      = 0;
     }
 
     /* 0x3000e3f5: if (viewLerpMode == 1 && (ps->playerStateFlags & 0x400)) clear command bytes. */
-    if (viewLerpMode == 1 && (ps->playerStateFlags & PMF_PRONE_MOVEMENT_OVERRIDE)) { /* TEST DH,0x4 */
+    if (viewLerpMode == 1 && (ps->playerStateFlags & PMF_PRONE_MOVEMENT_OVERRIDE)) {   /* TEST DH,0x4 */
         stepPm->command.forwardmove = 0;
-        stepPm->command.rightmove = 0;
+        stepPm->command.rightmove   = 0;
     }
 
     /* ---- pmType dispatch (0x3000e410) ---- */
     pmType = (uint32_t)ps->pmType;
-    if ((uint32_t)(pmType - 1) > 6) /* CMP EDX,ESI(6); JA default */
+    if ((uint32_t)(pmType - 1) > 6)                      /* CMP EDX,ESI(6); JA default */
         goto pm_default_tail;
 
     switch (pmType) {
-    case PM_TYPE_SPECTATOR: /* table[3] -> 0x3000e423 */
+    case PM_TYPE_SPECTATOR:   /* table[3] -> 0x3000e423 */
         ps->playerStateFlags &= ~(uint32_t)PMF_LADDER;
-        PM_UpdateAimDownSightFlag(); /* 0x30011b60 */
-        PM_UpdatePlayerWalkingFlag(); /* 0x3000d7a0 */
-        PM_UpdatePlayerSprintingFlag(); /* 0x3000d800 */
-        PM_CheckDuck(); /* 0x3000b010 */
-        PM_FlyMove(); /* 0x30008f20 */
-        PM_DropTimers(); /* 0x3000c320 */
-        PM_UpdateFatigue(); /* tail JMP 0x3000c420 */
+        PM_UpdateAimDownSightFlag();                     /* 0x30011b60 */
+        PM_UpdatePlayerWalkingFlag();                    /* 0x3000d7a0 */
+        PM_UpdatePlayerSprintingFlag();                  /* 0x3000d800 */
+        PM_CheckDuck();                                  /* 0x3000b010 */
+        PM_FlyMove();                              /* 0x30008f20 */
+        PM_DropTimers();                                 /* 0x3000c320 */
+        PM_UpdateFatigue();                              /* tail JMP 0x3000c420 */
         return;
 
-    case PM_TYPE_NOCLIP: /* table[1] -> 0x3000e451 */
+    case PM_TYPE_NOCLIP:   /* table[1] -> 0x3000e451 */
         ps->playerStateFlags &= ~(uint32_t)PMF_LADDER;
         PM_UpdateAimDownSightFlag();
         PM_UpdatePlayerWalkingFlag();
         PM_UpdatePlayerSprintingFlag();
-        PM_NoclipMove(); /* 0x30009700 */
-        goto pm_weapon_fatigue_tail; /* JMP 0x3000e483 */
+        PM_NoclipMove();                                 /* 0x30009700 */
+        goto pm_weapon_fatigue_tail;                     /* JMP 0x3000e483 */
 
     case PM_TYPE_UFO: /* table[2] -> 0x3000e46b */
         ps->playerStateFlags &= ~(uint32_t)PMF_LADDER;
         PM_UpdateAimDownSightFlag();
         PM_UpdatePlayerWalkingFlag();
         PM_UpdatePlayerSprintingFlag();
-        PM_UFOMove(); /* 0x300098c0 */
+        PM_UFOMove();                                    /* 0x300098c0 */
     pm_weapon_fatigue_tail:
-        PM_Weapon(); /* 0x3000e483 CALL 0x30014710 */
-        PM_DropTimers(); /* 0x3000e488 CALL 0x3000c320 */
-        PM_UpdateFatigue(); /* tail JMP 0x3000c420 */
+        PM_Weapon();                                     /* 0x3000e483 CALL 0x30014710 */
+        PM_DropTimers();                                 /* 0x3000e488 CALL 0x3000c320 */
+        PM_UpdateFatigue();                              /* tail JMP 0x3000c420 */
         return;
 
-    case PM_TYPE_INTERMISSION: /* table[4] -> 0x3000e499: minimal path */
+    case PM_TYPE_INTERMISSION:   /* table[4] -> 0x3000e499: minimal path */
         ps->playerStateFlags &= ~(uint32_t)PMF_LADDER;
         return;
 
-    case PM_TYPE_DEAD: /* table[5] -> 0x3000e52d: the SAME tail as out-of-range
+    case PM_TYPE_DEAD:   /* table[5] -> 0x3000e52d: the SAME tail as out-of-range
                        * pmType values (verified from the jump table dwords at
                        * 0x3000e720), NOT the grounded 0x3000e4aa body. */
         goto pm_default_tail;
 
-    case PM_TYPE_LINKED: /* table[0]/table[6] -> 0x3000e4aa */
+    case PM_TYPE_LINKED:   /* table[0]/table[6] -> 0x3000e4aa */
     case PM_TYPE_LINKED_DEAD:
     default:
         break;
@@ -421,11 +419,11 @@ void PmoveSingle(pmove_t *move)
 
     /* ---- PM_TYPE_LINKED / PM_TYPE_LINKED_DEAD body (0x3000e4aa) ---- */
     ps->playerStateFlags &= ~(uint32_t)PMF_LADDER;
-    ps = stepPm->ps; /* MOV EDX,[ECX] */
-    ps->groundEntityNum = ENTITYNUM_NONE; /* MOV [ps+0x58],0x3ff */
-    pml.groundPlane = 0; /* 0x305395b0 */
-    pml.groundLiftFlag = 0; /* 0x305395b4 */
-    pml.walking = 0; /* 0x305395ac */
+    ps = stepPm->ps;                                     /* MOV EDX,[ECX] */
+    ps->groundEntityNum = ENTITYNUM_NONE;                /* MOV [ps+0x58],0x3ff */
+    pml.groundPlane    = 0;                              /* 0x305395b0 */
+    pml.groundLiftFlag = 0;                              /* 0x305395b4 */
+    pml.walking        = 0;                              /* 0x305395ac */
     PM_UpdateAimDownSightFlag();
     PM_UpdatePlayerWalkingFlag();
     PM_UpdatePlayerSprintingFlag();
@@ -439,29 +437,29 @@ void PmoveSingle(pmove_t *move)
      * (PM_Weapon) at 0x3000e51c, the other vehicle path first CALLs 0x30011f50
      * (PM_UpdateAimDownSightLerp) at 0x3000e50b. */
     ps = pm->ps;
-    if (ps->entityStateFlags & EF_RESTRICTED_MASK) { /* TEST +0x84,0x106000 */
-        if (ps->vehicleType == 1 && ps->vehiclePosition == 3) { /* +0x618==1 && +0x614==3 */
-            PM_Weapon(); /* 0x3000e51c CALL 0x30014710 */
-            PM_Footsteps(); /* JMP 0x3000bba0 */
+    if (ps->entityStateFlags & EF_RESTRICTED_MASK) {   /* TEST +0x84,0x106000 */
+        if (ps->vehicleType == 1 && ps->vehiclePosition == 3) {  /* +0x618==1 && +0x614==3 */
+            PM_Weapon();                             /* 0x3000e51c CALL 0x30014710 */
+            PM_Footsteps();                          /* JMP 0x3000bba0 */
             return;
         }
-        PM_UpdateAimDownSightLerp(); /* 0x3000e50b CALL 0x30011f50 */
-        PM_Footsteps(); /* JMP 0x3000bba0 */
+        PM_UpdateAimDownSightLerp();                 /* 0x3000e50b CALL 0x30011f50 */
+        PM_Footsteps();                              /* JMP 0x3000bba0 */
         return;
     }
-    PM_Weapon(); /* 0x3000e51c CALL 0x30014710 */
-    PM_Footsteps(); /* JMP 0x3000bba0 */
+    PM_Weapon();                                     /* 0x3000e51c CALL 0x30014710 */
+    PM_Footsteps();                                  /* JMP 0x3000bba0 */
     return;
 
 pm_default_tail:
     /* ---- pmType==6 / out-of-range body (0x3000e52d) ---- */
-    if (ps->entityStateFlags & EF_RESTRICTED_MASK) { /* TEST +0x84,0x106000; JZ full */
+    if (ps->entityStateFlags & EF_RESTRICTED_MASK) {   /* TEST +0x84,0x106000; JZ full */
         ps->playerStateFlags &= ~(uint32_t)PMF_LADDER;
-        ps = stepPm->ps; /* MOV ECX,[ECX] */
+        ps = stepPm->ps;                                 /* MOV ECX,[ECX] */
         ps->groundEntityNum = ENTITYNUM_NONE;
-        pml.groundPlane = 0;
+        pml.groundPlane    = 0;
         pml.groundLiftFlag = 0;
-        pml.walking = 0;
+        pml.walking        = 0;
         PM_UpdateAimDownSightFlag();
         PM_UpdatePlayerWalkingFlag();
         PM_UpdatePlayerSprintingFlag();
@@ -474,49 +472,49 @@ pm_default_tail:
          * or PM_UpdateAimDownSightLerp (0x3000e5a0) respectively. */
         ps = pm->ps;
         if (ps->vehicleType == 1 && ps->vehiclePosition == 3) {
-            PM_Weapon(); /* 0x3000e58f CALL 0x30014710 */
-            PM_Footsteps(); /* JMP 0x3000bba0 */
+            PM_Weapon();                             /* 0x3000e58f CALL 0x30014710 */
+            PM_Footsteps();                          /* JMP 0x3000bba0 */
             return;
         }
-        PM_UpdateAimDownSightLerp(); /* 0x3000e5a0 CALL 0x30011f50 */
-        PM_Footsteps(); /* JMP 0x3000bba0 */
+        PM_UpdateAimDownSightLerp();                 /* 0x3000e5a0 CALL 0x30011f50 */
+        PM_Footsteps();                              /* JMP 0x3000bba0 */
         return;
     }
 
     /* ---- full move body (0x3000e5b1): no sprint-mask disable ---- */
-    PM_SetWaterLevel(); /* 0x3000a7a0 */
-    pml.previousWaterLevel = move->waterlevel; /* MOVZX [move+0xf1]; store 0x30539604 */
-    PM_CheckDuck(); /* 0x3000b010 */
-    PM_GroundTrace(); /* 0x3000a470 */
-    PM_UpdateAimDownSightFlag(); /* 0x30011b60 */
-    PM_UpdatePlayerWalkingFlag(); /* 0x3000d7a0 */
-    PM_UpdatePlayerSprintingFlag(); /* 0x3000d800 */
-    PM_UpdatePronePitch(); /* 0x3000d470 */
+    PM_SetWaterLevel();                                  /* 0x3000a7a0 */
+    pml.previousWaterLevel = move->waterlevel;                  /* MOVZX [move+0xf1]; store 0x30539604 */
+    PM_CheckDuck();                                      /* 0x3000b010 */
+    PM_GroundTrace();                                    /* 0x3000a470 */
+    PM_UpdateAimDownSightFlag();                         /* 0x30011b60 */
+    PM_UpdatePlayerWalkingFlag();                        /* 0x3000d7a0 */
+    PM_UpdatePlayerSprintingFlag();                      /* 0x3000d800 */
+    PM_UpdatePronePitch();                               /* 0x3000d470 */
 
     ps = pm->ps;
-    if (ps->pmType == PM_TYPE_DEAD) /* CMP [ps+0x4],6 */
-        PM_DeadMove(); /* 0x30009660 */
+    if (ps->pmType == PM_TYPE_DEAD)                      /* CMP [ps+0x4],6 */
+        PM_DeadMove();                                   /* 0x30009660 */
 
-    PM_CheckLadderMove(); /* 0x3000d920 */
-    PM_DropTimers(); /* 0x3000c320 */
-    PM_UpdateFatigue(); /* 0x3000c420 */
+    PM_CheckLadderMove();                                /* 0x3000d920 */
+    PM_DropTimers();                                     /* 0x3000c320 */
+    PM_UpdateFatigue();                                  /* 0x3000c420 */
 
     /* 0x3000e601: movement mode select. */
     ps = pm->ps;
-    if (ps->playerStateFlags & PMF_LADDER) { /* TEST [ps+0xc],0x10 */
-        PM_LadderMove(); /* 0x3000dc70 */
-    } else if (pml.walking != 0) { /* CMP [0x305395ac],0 */
-        PM_WalkMove(); /* 0x300091e0 */
+    if (ps->playerStateFlags & PMF_LADDER) {                        /* TEST [ps+0xc],0x10 */
+        PM_LadderMove();                                 /* 0x3000dc70 */
+    } else if (pml.walking != 0) {                       /* CMP [0x305395ac],0 */
+        PM_WalkMove();                                   /* 0x300091e0 */
     } else {
-        PM_AirMove(); /* 0x30009060 */
+        PM_AirMove();                                    /* 0x30009060 */
     }
 
-    PM_GroundTrace(); /* 0x3000a470 */
-    PM_SetWaterLevel(); /* 0x3000a7a0 */
-    PM_Footsteps(); /* 0x3000bba0 */
-    PM_Weapon(); /* 0x30014710 */
-    PM_FoliageSounds(); /* 0x3000c110 */
-    PM_WaterEvents(); /* 0x3000c290 */
+    PM_GroundTrace();                                    /* 0x3000a470 */
+    PM_SetWaterLevel();                                  /* 0x3000a7a0 */
+    PM_Footsteps();                                      /* 0x3000bba0 */
+    PM_Weapon();                                         /* 0x30014710 */
+    PM_FoliageSounds();                                  /* 0x3000c110 */
+    PM_WaterEvents();                                    /* 0x3000c290 */
 
     /*
      * ---- derive velocity from the frame position delta (0x3000e647) ----
@@ -533,8 +531,8 @@ pm_default_tail:
      *   ps->velocity = d / pml.frametime.
      */
     {
-        pmove_t *notifyPm = pm; /* MOV EDX,[global] */
-        playerState_t *p = notifyPm->ps; /* MOV ECX,[EDX] */
+        pmove_t *notifyPm = pm;                /* MOV EDX,[global] */
+        playerState_t *p = notifyPm->ps;                  /* MOV ECX,[EDX] */
         /* dy and dz are spilled to float ([ESP+0x14]/[ESP+0x18] @ 0x3000e661/e66e),
          * but dx is kept in the x87 stack across dx*dx (FMUL ST5 @ 0x3000e68f) and
          * the velocity[0] rebuild (FMUL ST1 @ 0x3000e6d2) with no store -- asymmetric,
@@ -542,36 +540,65 @@ pm_default_tail:
          * register-carried into the FCOMPP (0x3000e6b7), never stored to a float slot. */
 #if defined(WINDOWS_BEHAVIOR)
 #if EMULATE_X87
-        const x87f dx = x87f_sub(x87f_load_f32(p->psOrigin[0]), x87f_load_f32(pml.previousOrigin[0]));
-        const float dy = x87f_store_f32(x87f_sub(x87f_load_f32(p->psOrigin[1]), x87f_load_f32(pml.previousOrigin[1])));
-        const float dz = x87f_store_f32(x87f_sub(x87f_load_f32(p->psOrigin[2]), x87f_load_f32(pml.previousOrigin[2])));
+        const x87f dx = x87f_sub(x87f_load_f32(p->psOrigin[0]),
+                                 x87f_load_f32(pml.previousOrigin[0]));
+        const float dy = x87f_store_f32(x87f_sub(
+            x87f_load_f32(p->psOrigin[1]),
+            x87f_load_f32(pml.previousOrigin[1])));
+        const float dz = x87f_store_f32(x87f_sub(
+            x87f_load_f32(p->psOrigin[2]),
+            x87f_load_f32(pml.previousOrigin[2])));
         const x87f moveSq = x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(dz), x87f_load_f32(dz)), x87f_mul(x87f_load_f32(dy), x87f_load_f32(dy))), x87f_mul(dx, dx));
-        const x87f lhs = x87f_div(moveSq, x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(pml.frametime)));
-        const x87f velSq = x87f_add(x87f_add(x87f_mul(x87f_load_f32(p->velocity[0]), x87f_load_f32(p->velocity[0])),
-                                             x87f_mul(x87f_load_f32(p->velocity[1]), x87f_load_f32(p->velocity[1]))),
-                                    x87f_mul(x87f_load_f32(p->velocity[2]), x87f_load_f32(p->velocity[2])));
+            x87f_add(x87f_mul(x87f_load_f32(dz), x87f_load_f32(dz)),
+                     x87f_mul(x87f_load_f32(dy), x87f_load_f32(dy))),
+            x87f_mul(dx, dx));
+        const x87f lhs = x87f_div(
+            moveSq, x87f_mul(x87f_load_f32(pml.frametime),
+                             x87f_load_f32(pml.frametime)));
+        const x87f velSq = x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(p->velocity[0]),
+                              x87f_load_f32(p->velocity[0])),
+                     x87f_mul(x87f_load_f32(p->velocity[1]),
+                              x87f_load_f32(p->velocity[1]))),
+            x87f_mul(x87f_load_f32(p->velocity[2]),
+                     x87f_load_f32(p->velocity[2])));
         const x87f rhs = x87f_mul(velSq, x87f_load_f32(PM_VEL_QUARTER));
 
         if (x87f_lt_signaling(lhs, rhs)) {
-            p->velocity[0] = x87f_store_f32(x87f_mul(x87f_div(x87f_load_f32(PM_ONE), x87f_load_f32(pml.frametime)), dx));
+            p->velocity[0] = x87f_store_f32(x87f_mul(
+                x87f_div(x87f_load_f32(PM_ONE),
+                         x87f_load_f32(pml.frametime)), dx));
             p = notifyPm->ps;
-            p->velocity[1] = x87f_store_f32(x87f_mul(x87f_div(x87f_load_f32(PM_ONE), x87f_load_f32(pml.frametime)), x87f_load_f32(dy)));
+            p->velocity[1] = x87f_store_f32(x87f_mul(
+                x87f_div(x87f_load_f32(PM_ONE),
+                         x87f_load_f32(pml.frametime)),
+                x87f_load_f32(dy)));
             p = notifyPm->ps;
-            p->velocity[2] = x87f_store_f32(x87f_mul(x87f_div(x87f_load_f32(PM_ONE), x87f_load_f32(pml.frametime)), x87f_load_f32(dz)));
+            p->velocity[2] = x87f_store_f32(x87f_mul(
+                x87f_div(x87f_load_f32(PM_ONE),
+                         x87f_load_f32(pml.frametime)),
+                x87f_load_f32(dz)));
         }
 #else
-        const long double dx = (long double)p->psOrigin[0] - (long double)pml.previousOrigin[0];
-        const float dy = (float)((long double)p->psOrigin[1] - (long double)pml.previousOrigin[1]);
-        const float dz = (float)((long double)p->psOrigin[2] - (long double)pml.previousOrigin[2]);
-        const long double moveSq = ((long double)dz * dz + (long double)dy * dy) + dx * dx;
-        const long double lhs = moveSq / ((long double)pml.frametime * (long double)pml.frametime);
-        const long double velSq = ((long double)p->velocity[0] * p->velocity[0] + (long double)p->velocity[1] * p->velocity[1]) +
-                                  (long double)p->velocity[2] * p->velocity[2];
+        const long double dx = (long double)p->psOrigin[0] -
+                               (long double)pml.previousOrigin[0];
+        const float dy = (float)((long double)p->psOrigin[1] -
+                                 (long double)pml.previousOrigin[1]);
+        const float dz = (float)((long double)p->psOrigin[2] -
+                                 (long double)pml.previousOrigin[2]);
+        const long double moveSq =
+            ((long double)dz * dz + (long double)dy * dy) + dx * dx;
+        const long double lhs = moveSq /
+            ((long double)pml.frametime * (long double)pml.frametime);
+        const long double velSq =
+            ((long double)p->velocity[0] * p->velocity[0] +
+             (long double)p->velocity[1] * p->velocity[1]) +
+            (long double)p->velocity[2] * p->velocity[2];
         const long double rhs = velSq * (long double)PM_VEL_QUARTER;
 
         if (lhs < rhs) {
-            long double inverseFrame = (long double)PM_ONE / (long double)pml.frametime;
+            long double inverseFrame =
+                (long double)PM_ONE / (long double)pml.frametime;
             p->velocity[0] = (float)(inverseFrame * dx);
             p = notifyPm->ps;
             inverseFrame = (long double)PM_ONE / (long double)pml.frametime;
@@ -585,42 +612,66 @@ pm_default_tail:
         /* Linux RVAs 0x0002e072..0x0002e12c store all three deltas, the
          * distance-derived speed, and the velocity squared to binary32. */
 #if EMULATE_X87
-        const float dx = x87f_store_f32(x87f_sub(x87f_load_f32(p->psOrigin[0]), x87f_load_f32(pml.previousOrigin[0])));
-        const float dy = x87f_store_f32(x87f_sub(x87f_load_f32(p->psOrigin[1]), x87f_load_f32(pml.previousOrigin[1])));
-        const float dz = x87f_store_f32(x87f_sub(x87f_load_f32(p->psOrigin[2]), x87f_load_f32(pml.previousOrigin[2])));
-        const float deltaSpeedSq = x87f_store_f32(
-            x87f_div(x87f_add(x87f_add(x87f_mul(x87f_load_f32(dx), x87f_load_f32(dx)), x87f_mul(x87f_load_f32(dy), x87f_load_f32(dy))),
-                              x87f_mul(x87f_load_f32(dz), x87f_load_f32(dz))),
-                     x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(pml.frametime))));
-        const float velocitySpeedSq =
-            x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(p->velocity[0]), x87f_load_f32(p->velocity[0])),
-                                             x87f_mul(x87f_load_f32(p->velocity[1]), x87f_load_f32(p->velocity[1]))),
-                                    x87f_mul(x87f_load_f32(p->velocity[2]), x87f_load_f32(p->velocity[2]))));
-        const x87f rhs = x87f_mul(x87f_load_f32(velocitySpeedSq), x87f_load_f32(PM_VEL_QUARTER));
+        const float dx = x87f_store_f32(x87f_sub(
+            x87f_load_f32(p->psOrigin[0]),
+            x87f_load_f32(pml.previousOrigin[0])));
+        const float dy = x87f_store_f32(x87f_sub(
+            x87f_load_f32(p->psOrigin[1]),
+            x87f_load_f32(pml.previousOrigin[1])));
+        const float dz = x87f_store_f32(x87f_sub(
+            x87f_load_f32(p->psOrigin[2]),
+            x87f_load_f32(pml.previousOrigin[2])));
+        const float deltaSpeedSq = x87f_store_f32(x87f_div(
+            x87f_add(
+                x87f_add(x87f_mul(x87f_load_f32(dx), x87f_load_f32(dx)),
+                         x87f_mul(x87f_load_f32(dy), x87f_load_f32(dy))),
+                x87f_mul(x87f_load_f32(dz), x87f_load_f32(dz))),
+            x87f_mul(x87f_load_f32(pml.frametime),
+                     x87f_load_f32(pml.frametime))));
+        const float velocitySpeedSq = x87f_store_f32(x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(p->velocity[0]),
+                              x87f_load_f32(p->velocity[0])),
+                     x87f_mul(x87f_load_f32(p->velocity[1]),
+                              x87f_load_f32(p->velocity[1]))),
+            x87f_mul(x87f_load_f32(p->velocity[2]),
+                     x87f_load_f32(p->velocity[2]))));
+        const x87f rhs = x87f_mul(x87f_load_f32(velocitySpeedSq),
+                                  x87f_load_f32(PM_VEL_QUARTER));
 
         if (x87f_lt(x87f_load_f32(deltaSpeedSq), rhs)) {
             for (int32_t lane = 0; lane < 3; ++lane) {
                 const float delta = lane == 0 ? dx : lane == 1 ? dy : dz;
                 p = notifyPm->ps;
-                p->velocity[lane] =
-                    x87f_store_f32(x87f_mul(x87f_div(x87f_load_f32(PM_ONE), x87f_load_f32(pml.frametime)), x87f_load_f32(delta)));
+                p->velocity[lane] = x87f_store_f32(x87f_mul(
+                    x87f_div(x87f_load_f32(PM_ONE),
+                             x87f_load_f32(pml.frametime)),
+                    x87f_load_f32(delta)));
             }
         }
 #else
-        const float dx = (float)((long double)p->psOrigin[0] - (long double)pml.previousOrigin[0]);
-        const float dy = (float)((long double)p->psOrigin[1] - (long double)pml.previousOrigin[1]);
-        const float dz = (float)((long double)p->psOrigin[2] - (long double)pml.previousOrigin[2]);
-        const float deltaSpeedSq = (float)((((long double)dx * dx + (long double)dy * dy) + (long double)dz * dz) /
-                                           ((long double)pml.frametime * (long double)pml.frametime));
-        const float velocitySpeedSq =
-            (float)(((long double)p->velocity[0] * p->velocity[0] + (long double)p->velocity[1] * p->velocity[1]) +
-                    (long double)p->velocity[2] * p->velocity[2]);
+        const float dx = (float)((long double)p->psOrigin[0] -
+                                 (long double)pml.previousOrigin[0]);
+        const float dy = (float)((long double)p->psOrigin[1] -
+                                 (long double)pml.previousOrigin[1]);
+        const float dz = (float)((long double)p->psOrigin[2] -
+                                 (long double)pml.previousOrigin[2]);
+        const float deltaSpeedSq = (float)(
+            (((long double)dx * dx + (long double)dy * dy) +
+             (long double)dz * dz) /
+            ((long double)pml.frametime * (long double)pml.frametime));
+        const float velocitySpeedSq = (float)(
+            ((long double)p->velocity[0] * p->velocity[0] +
+             (long double)p->velocity[1] * p->velocity[1]) +
+            (long double)p->velocity[2] * p->velocity[2]);
 
-        if ((long double)deltaSpeedSq < (long double)velocitySpeedSq * (long double)PM_VEL_QUARTER) {
+        if ((long double)deltaSpeedSq <
+            (long double)velocitySpeedSq * (long double)PM_VEL_QUARTER) {
             const float delta[3] = {dx, dy, dz};
             for (int32_t lane = 0; lane < 3; ++lane) {
                 p = notifyPm->ps;
-                p->velocity[lane] = (float)(((long double)PM_ONE / (long double)pml.frametime) * (long double)delta[lane]);
+                p->velocity[lane] = (float)(
+                    ((long double)PM_ONE / (long double)pml.frametime) *
+                    (long double)delta[lane]);
             }
         }
 #endif

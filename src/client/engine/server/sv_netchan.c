@@ -21,7 +21,10 @@ enum {
 void SV_ProfDraw(const char *text, int32_t y)
 {
     if (coduo_cgameVm != NULL) {
-        (void)VM_Call(coduo_cgameVm, CGVM_DRAW_SCALED, SV_PROFILE_DRAW_X, y, (intptr_t)text, SV_PROFILE_DRAW_MODE,
-                      SV_PROFILE_DRAW_CHAR_WIDTH, SV_PROFILE_DRAW_CHAR_HEIGHT, SV_PROFILE_DRAW_STYLE, 0, 0, 0, 0, 0);
+        (void)VM_Call(
+            coduo_cgameVm, CGVM_DRAW_SCALED,
+            SV_PROFILE_DRAW_X, y, (intptr_t)text, SV_PROFILE_DRAW_MODE,
+            SV_PROFILE_DRAW_CHAR_WIDTH, SV_PROFILE_DRAW_CHAR_HEIGHT,
+            SV_PROFILE_DRAW_STYLE, 0, 0, 0, 0, 0);
     }
 }

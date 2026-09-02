@@ -9,15 +9,20 @@ enum {
 
 /* NOT_FROM_ORIGINAL_SOURCE: resolves the engine-backed key/value carrier used
  * at the start of both original indexed-mutation functions. */
-static void ScriptImport_ResolveKeyValue(script_variable_node_t *node, VariableValue *resolved)
+static void ScriptImport_ResolveKeyValue(script_variable_node_t *node,
+                                         VariableValue *resolved)
 {
-    ScriptRuntime_GetObjectFieldValue((int32_t)GetVariableName((uint16_t)(node - script_variableNodes)),
-                                      node->payload.halves.valueOrRefCount, node->payload.halves.parentHandle, resolved);
+    ScriptRuntime_GetObjectFieldValue(
+        (int32_t)GetVariableName(
+            (uint16_t)(node - script_variableNodes)),
+        node->payload.halves.valueOrRefCount,
+        node->payload.halves.parentHandle, resolved);
 }
 
 /* Source: CoDUOMP.exe 0x00485910..0x00485c77.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00485910_00485c78.mcode. */
-uint16_t EvalArrayRef(uint16_t handle, VariableValue index[2])
+uint16_t EvalArrayRef(uint16_t handle,
+                      VariableValue index[2])
 {
     script_variable_node_t *node = &script_variableNodes[handle];
     script_variable_type_t type = GetVarType(handle);
@@ -39,16 +44,20 @@ uint16_t EvalArrayRef(uint16_t handle, VariableValue index[2])
         }
 
         if (type != SCRIPT_VAR_OBJECT) {
-            script_errorParameterIndex = SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
+            script_errorParameterIndex =
+                SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
             if (type == SCRIPT_VAR_STRING) {
-                Scr_Error("string characters cannot be individually changed");
+                Scr_Error(
+                    "string characters cannot be individually changed");
                 return 0;
             }
             if (type == SCRIPT_VAR_VECTOR) {
-                Scr_Error("vector components cannot be individually changed");
+                Scr_Error(
+                    "vector components cannot be individually changed");
                 return 0;
             }
-            Scr_Error(va("%s is not an array", script_variableTypeNames[type]));
+            Scr_Error(va("%s is not an array",
+                         script_variableTypeNames[type]));
             return 0;
         }
     }
@@ -56,12 +65,15 @@ uint16_t EvalArrayRef(uint16_t handle, VariableValue index[2])
     uint16_t object = (uint16_t)payload;
     script_variable_type_t objectType = GetVarType(object);
     if (objectType != SCRIPT_VAR_ARRAY) {
-        script_errorParameterIndex = SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
-        Scr_Error(va("%s is not an array", script_variableTypeNames[objectType]));
+        script_errorParameterIndex =
+            SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
+        Scr_Error(va("%s is not an array",
+                     script_variableTypeNames[objectType]));
         return 0;
     }
 
-    if (script_variableNodes[object].payload.halves.valueOrRefCount != 0) {
+    if (script_variableNodes[object]
+            .payload.halves.valueOrRefCount != 0) {
         uint16_t oldObject = object;
 
         RemoveRefToObject(oldObject);
@@ -89,13 +101,15 @@ uint16_t EvalArrayRef(uint16_t handle, VariableValue index[2])
         return child;
     }
 
-    Scr_Error(va("%s is not an array index", script_variableTypeNames[index->type]));
+    Scr_Error(va("%s is not an array index",
+                 script_variableTypeNames[index->type]));
     return 0;
 }
 
 /* Source: CoDUOMP.exe 0x00485ca0..0x00485fd2.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00485ca0_00485fd3.mcode. */
-void ClearArray(uint16_t handle, VariableValue index[2])
+void ClearArray(uint16_t handle,
+                VariableValue index[2])
 {
     script_variable_node_t *node = &script_variableNodes[handle];
     script_variable_type_t type = GetVarType(handle);
@@ -111,20 +125,25 @@ void ClearArray(uint16_t handle, VariableValue index[2])
     }
 
     if (type != SCRIPT_VAR_OBJECT) {
-        script_errorParameterIndex = SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
-        Scr_Error(va("%s is not an array", script_variableTypeNames[type]));
+        script_errorParameterIndex =
+            SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
+        Scr_Error(va("%s is not an array",
+                     script_variableTypeNames[type]));
         return;
     }
 
     uint16_t object = (uint16_t)payload;
     script_variable_type_t objectType = GetVarType(object);
     if (objectType != SCRIPT_VAR_ARRAY) {
-        script_errorParameterIndex = SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
-        Scr_Error(va("%s is not an array", script_variableTypeNames[objectType]));
+        script_errorParameterIndex =
+            SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
+        Scr_Error(va("%s is not an array",
+                     script_variableTypeNames[objectType]));
         return;
     }
 
-    if (script_variableNodes[object].payload.halves.valueOrRefCount != 0) {
+    if (script_variableNodes[object]
+            .payload.halves.valueOrRefCount != 0) {
         uint16_t oldObject = object;
 
         RemoveRefToObject(oldObject);
@@ -153,5 +172,6 @@ void ClearArray(uint16_t handle, VariableValue index[2])
         return;
     }
 
-    Scr_Error(va("%s is not an array index", script_variableTypeNames[index->type]));
+    Scr_Error(va("%s is not an array index",
+                 script_variableTypeNames[index->type]));
 }

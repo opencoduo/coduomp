@@ -16,7 +16,8 @@ char sysProcessLockFile[SYS_PROCESS_LOCK_NAME_CAPACITY];
 
 enum {
     SYS_PROCESS_ID_BYTES = 4,
-    SYS_PROCESS_LOCK_DIALOG_FLAGS = MB_YESNOCANCEL | MB_ICONWARNING,
+    SYS_PROCESS_LOCK_DIALOG_FLAGS =
+        MB_YESNOCANCEL | MB_ICONWARNING,
     SYS_PROCESS_LOCK_ERROR_FLAGS = MB_ICONERROR,
     SYS_FATAL_EXIT_STATUS = -1
 };
@@ -33,7 +34,8 @@ qboolean Sys_ProcessMatchesExecutable(uint32_t processId)
         return qfalse;
     CloseHandle(process);
 
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, processId);
+    HANDLE snapshot =
+        CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, processId);
     if (snapshot == INVALID_HANDLE_VALUE)
         return qfalse;
 
@@ -49,7 +51,9 @@ qboolean Sys_ProcessMatchesExecutable(uint32_t processId)
     currentPath[sizeof(currentPath) - 1] = '\0';
 
     const char *currentName = currentPath;
-    for (const char *cursor = currentPath; *cursor != '\0'; ++cursor) {
+    for (const char *cursor = currentPath;
+         *cursor != '\0';
+         ++cursor) {
         if (*cursor == '\\' || *cursor == ':')
             currentName = cursor + 1;
     }
@@ -73,11 +77,14 @@ qboolean Sys_ProcessMatchesExecutable(uint32_t processId)
 void Sys_InitProcessLockFile(void)
 {
     char executablePath[MAX_OSPATH];
-    (void)GetModuleFileNameA(NULL, executablePath, sizeof(executablePath));
+    (void)GetModuleFileNameA(
+        NULL, executablePath, sizeof(executablePath));
     executablePath[sizeof(executablePath) - 1] = '\0';
 
     char *executableName = executablePath;
-    for (char *cursor = executablePath; *cursor != '\0'; ++cursor) {
+    for (char *cursor = executablePath;
+         *cursor != '\0';
+         ++cursor) {
         if (*cursor == '\\' || *cursor == ':')
             executableName = cursor + 1;
         else if (*cursor == '.')
@@ -85,7 +92,8 @@ void Sys_InitProcessLockFile(void)
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    Com_sprintf(sysProcessLockFile, sizeof(sysProcessLockFile), "__%s", executableName);
+    Com_sprintf(sysProcessLockFile, sizeof(sysProcessLockFile), "__%s",
+                executableName);
 }
 
 /* Source: CoDUOMP.exe 0x0046c5b0..0x0046c5bb.
@@ -106,44 +114,62 @@ void Sys_DeleteProcessLockFile(void)
 qboolean Sys_CheckProcessLock(void)
 {
     const uint32_t currentProcessId = GetCurrentProcessId();
-    HANDLE lockFile = CreateFileA(sysProcessLockFile, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_HIDDEN, NULL);
+    HANDLE lockFile = CreateFileA(
+        sysProcessLockFile, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+        FILE_ATTRIBUTE_HIDDEN, NULL);
 
     if (lockFile != INVALID_HANDLE_VALUE) {
         uint32_t savedProcessId;
         DWORD bytesRead;
-        const BOOL readSucceeded = ReadFile(lockFile, &savedProcessId, sizeof(savedProcessId), &bytesRead, NULL);
+        const BOOL readSucceeded = ReadFile(
+            lockFile, &savedProcessId, sizeof(savedProcessId),
+            &bytesRead, NULL);
         CloseHandle(lockFile);
 
-        if (readSucceeded != FALSE && bytesRead == SYS_PROCESS_ID_BYTES && savedProcessId != currentProcessId &&
+        if (readSucceeded != FALSE &&
+            bytesRead == SYS_PROCESS_ID_BYTES &&
+            savedProcessId != currentProcessId &&
             Sys_ProcessMatchesExecutable(savedProcessId) != qfalse) {
             return qfalse;
         }
 
-        const char *const title = Sys_LocalizeString("WIN_IMPROPER_QUIT_TITLE");
-        const char *const body = Sys_LocalizeString("WIN_IMPROPER_QUIT_BODY");
-        const int32_t response = MessageBoxA(NULL, body, title, SYS_PROCESS_LOCK_DIALOG_FLAGS);
+        const char *const title =
+            Sys_LocalizeString("WIN_IMPROPER_QUIT_TITLE");
+        const char *const body =
+            Sys_LocalizeString("WIN_IMPROPER_QUIT_BODY");
+        const int32_t response = MessageBoxA(
+            NULL, body, title, SYS_PROCESS_LOCK_DIALOG_FLAGS);
         if (response == IDYES)
             Com_SetSafeMode();
         else if (response == IDCANCEL)
             return qfalse;
     }
 
-    lockFile = CreateFileA(sysProcessLockFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_HIDDEN, NULL);
+    lockFile = CreateFileA(
+        sysProcessLockFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+        FILE_ATTRIBUTE_HIDDEN, NULL);
     if (lockFile == INVALID_HANDLE_VALUE)
         goto disk_full;
 
     DWORD bytesWritten;
-    const BOOL writeSucceeded = WriteFile(lockFile, &currentProcessId, sizeof(currentProcessId), &bytesWritten, NULL);
+    const BOOL writeSucceeded = WriteFile(
+        lockFile, &currentProcessId, sizeof(currentProcessId),
+        &bytesWritten, NULL);
     CloseHandle(lockFile);
-    if (writeSucceeded != FALSE && bytesWritten == SYS_PROCESS_ID_BYTES) {
+    if (writeSucceeded != FALSE &&
+        bytesWritten == SYS_PROCESS_ID_BYTES) {
         return qtrue;
     }
 
-disk_full: {
-    const char *const title = Sys_LocalizeString("WIN_DISK_FULL_TITLE");
-    const char *const body = Sys_LocalizeString("WIN_DISK_FULL_BODY");
-    (void)MessageBoxA(NULL, body, title, SYS_PROCESS_LOCK_ERROR_FLAGS);
-    exit(SYS_FATAL_EXIT_STATUS);
-}
+disk_full:
+    {
+        const char *const title =
+            Sys_LocalizeString("WIN_DISK_FULL_TITLE");
+        const char *const body =
+            Sys_LocalizeString("WIN_DISK_FULL_BODY");
+        (void)MessageBoxA(
+            NULL, body, title, SYS_PROCESS_LOCK_ERROR_FLAGS);
+        exit(SYS_FATAL_EXIT_STATUS);
+    }
 }
 #endif

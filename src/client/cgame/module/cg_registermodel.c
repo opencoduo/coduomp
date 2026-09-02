@@ -83,13 +83,19 @@ qhandle_t CG_RegisterModel(const char *name, int category)
 
         /* Clear each server-set load cvar that is currently flagged as set. */
         if (cl_serverloadmap.string[0] != 0) {  /* 0x3003d966 MOV AL,[..0030] */
-            cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadmap", (intptr_t)"");   /* 0x3003d979..0x3003d985 */
+            cgame_syscall(CG_CVAR_SET,
+                          (intptr_t)"cl_serverloadmap",
+                          (intptr_t)"");   /* 0x3003d979..0x3003d985 */
         }
         if (cl_serverloadgametype.string[0] != 0) {    /* 0x3003d98e MOV AL,[..8970] */
-            cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadgametype", (intptr_t)""); /* 0x3003d997..0x3003d9a3 */
+            cgame_syscall(CG_CVAR_SET,
+                          (intptr_t)"cl_serverloadgametype",
+                          (intptr_t)"");   /* 0x3003d997..0x3003d9a3 */
         }
-        if (cl_serverloadwaiting.integer != 0) { /* 0x3003d9ac MOV EAX,[..346c] */
-            cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadwaiting", (intptr_t)"0"); /* 0x3003d9b5..0x3003d9c1 */
+        if (cl_serverloadwaiting.integer != 0) {     /* 0x3003d9ac MOV EAX,[..346c] */
+            cgame_syscall(CG_CVAR_SET,
+                          (intptr_t)"cl_serverloadwaiting",
+                          (intptr_t)"0");  /* 0x3003d9b5..0x3003d9c1 */
         }
 
         /*
@@ -100,22 +106,24 @@ qhandle_t CG_RegisterModel(const char *name, int category)
          * fall back to "menu/art/unknownmap".
          */
         serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]; /* 0x3003d9ca..0x3003d9d2 */
-        mapName = Info_ValueForKey(serverInfo, "mapname"); /* 0x3003d9dd CALL Info_ValueForKey */
+        mapName = Info_ValueForKey(serverInfo, "mapname");                  /* 0x3003d9dd CALL Info_ValueForKey */
 
         levelShotShader = 0;
-        if (mapName != NULL && mapName[0] != '\0') { /* 0x3003d9e2..0x3003d9e9 */
+        if (mapName != NULL && mapName[0] != '\0') {   /* 0x3003d9e2..0x3003d9e9 */
             const char *shaderName = va("levelshots/%s.tga", mapName); /* 0x3003d9ec..0x3003d9f1 CALL va */
-            CG_DrawInformation(0); /* 0x3003d9fa loading-screen information */
+            CG_DrawInformation(0);                     /* 0x3003d9fa loading-screen information */
             /* trap(0x59, name, 2) -> shader handle (CG_R_RegisterShader). */
-            levelShotShader = (int32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)shaderName, 2); /* 0x3003d9ff..0x3003da04 */
+            levelShotShader = (int32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                            (intptr_t)shaderName, 2); /* 0x3003d9ff..0x3003da04 */
         }
-        if (levelShotShader == 0) { /* 0x3003da0f TEST ESI,ESI */
-            CG_DrawInformation(0); /* 0x3003da15 loading-screen information */
-            levelShotShader = (int32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"menu/art/unknownmap", 2); /* 0x3003da1c..0x3003da23 */
+        if (levelShotShader == 0) {                    /* 0x3003da0f TEST ESI,ESI */
+            CG_DrawInformation(0);                     /* 0x3003da15 loading-screen information */
+            levelShotShader = (int32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                            (intptr_t)"menu/art/unknownmap", 2); /* 0x3003da1c..0x3003da23 */
         }
 
         /* Reset the 2D draw color to white (R_SetColor(NULL)). */
-        cgame_syscall(CG_R_SETCOLOR, 0); /* 0x3003da2e..0x3003da32 */
+        cgame_syscall(CG_R_SETCOLOR, 0);               /* 0x3003da2e..0x3003da32 */
 
         /*
          * Draw the levelshot full-screen. Coordinates are virtual->real scaled:
@@ -124,14 +132,15 @@ qhandle_t CG_RegisterModel(const char *name, int category)
          * trap_R_DrawStretchPic forwards its slots as raw 32-bit float words.
          */
         {
-            float h = cgs_screenYScale * 480.0f; /* 0x3003da38 FMUL 480.0 (0x3007c148) */
-            float w = cgs_screenXScale * 640.0f; /* 0x3003da5d FMUL 640.0 (0x3007bf34) */
-            float y = cgs_screenYScale * 0.0f; /* 0x3003da6d FMUL 0.0 (0x3007bcec) */
-            float x = cgs_screenXScale * 0.0f; /* 0x3003da7d FMUL 0.0 (0x3007bcec) */
-            trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y), CG_FloatBits(w), CG_FloatBits(h), CG_FloatBits(0.0f),
-                                  CG_FloatBits(0.0f), /* s1, t1 = 0,0 */
-                                  CG_FloatBits(1.0f), CG_FloatBits(1.0f), /* s2, t2 = 1,1 */
-                                  levelShotShader); /* 0x3003da8c CALL trap_R_DrawStretchPic */
+            float h = cgs_screenYScale * 480.0f;       /* 0x3003da38 FMUL 480.0 (0x3007c148) */
+            float w = cgs_screenXScale * 640.0f;       /* 0x3003da5d FMUL 640.0 (0x3007bf34) */
+            float y = cgs_screenYScale * 0.0f;         /* 0x3003da6d FMUL 0.0 (0x3007bcec) */
+            float x = cgs_screenXScale * 0.0f;         /* 0x3003da7d FMUL 0.0 (0x3007bcec) */
+            trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y),
+                                  CG_FloatBits(w), CG_FloatBits(h),
+                                  CG_FloatBits(0.0f), CG_FloatBits(0.0f),   /* s1, t1 = 0,0 */
+                                  CG_FloatBits(1.0f), CG_FloatBits(1.0f),   /* s2, t2 = 1,1 */
+                                  levelShotShader);    /* 0x3003da8c CALL trap_R_DrawStretchPic */
         }
 
         /*
@@ -139,9 +148,11 @@ qhandle_t CG_RegisterModel(const char *name, int category)
          * atoi it; if positive, divide the current hunk usage (trap 0x3f) by it,
          * clamp to 1.0, and draw the loading bar.
          */
-        cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)"com_expectedhunkusage", (intptr_t)hunkUsageStr,
-                      (int32_t)sizeof(hunkUsageStr)); /* 0x3003da91..0x3003da9f (0x40 = 64) */
-        expectedHunkUsage = coduo_crt_atoi(hunkUsageStr); /* 0x3003daaa CALL (via thunk 0x3005b6ce) */
+        cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
+                      (intptr_t)"com_expectedhunkusage",
+                      (intptr_t)hunkUsageStr,
+                      (int32_t)sizeof(hunkUsageStr));  /* 0x3003da91..0x3003da9f (0x40 = 64) */
+        expectedHunkUsage = coduo_crt_atoi(hunkUsageStr);      /* 0x3003daaa CALL (via thunk 0x3005b6ce) */
 
         /*
          * 0x3003dab9..0x3003dad1 pre-fill four scratch slots with 0.8f
@@ -152,27 +163,30 @@ qhandle_t CG_RegisterModel(const char *name, int category)
          */
         loadFraction = 0.8f;
 
-        if (expectedHunkUsage > 0) { /* 0x3003dab2 TEST + 0x3003dada JLE */
-            int32_t currentHunkUsage = (int32_t)cgame_syscall(CG_HUNK_USED); /* 0x3003dadc trap(0x3f) */
+        if (expectedHunkUsage > 0) {                   /* 0x3003dab2 TEST + 0x3003dada JLE */
+            int32_t currentHunkUsage = (int32_t)cgame_syscall(CG_HUNK_USED);  /* 0x3003dadc trap(0x3f) */
             /* Both integers are loaded with FILD and divided in x87 extended
              * precision.  0x3003daf3 stores the rounded drawing argument but
              * leaves the quotient live for the following comparison. */
-            long double loadFractionWide = (long double)currentHunkUsage / (long double)expectedHunkUsage;
-            loadFraction = (float)loadFractionWide; /* 0x3003daf3 FST */
-            if (loadFractionWide > 1.0L) { /* 0x3003daf6 FCOMP 1.0 */
-                loadFraction = 1.0f; /* 0x3003db03 store 0x3f800000 */
+            long double loadFractionWide =
+                (long double)currentHunkUsage /
+                (long double)expectedHunkUsage;
+            loadFraction = (float)loadFractionWide;    /* 0x3003daf3 FST */
+            if (loadFractionWide > 1.0L) {             /* 0x3003daf6 FCOMP 1.0 */
+                loadFraction = 1.0f;                   /* 0x3003db03 store 0x3f800000 */
             }
             /* Draw the fixed-rect gray-on-white filled progress bar. */
             CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, loadFraction); /* 0x3003db22 */
         }
 
         /* Force an out-of-frame present so the load screen animates. */
-        cgame_syscall(CG_UPDATE_SCREEN); /* 0x3003db2c trap(0x19) */
+        cgame_syscall(CG_UPDATE_SCREEN);               /* 0x3003db2c trap(0x19) */
 
         cg_updateScreenActive = cg_updateScreenActive - 1; /* 0x3003db3a..0x3003db3b DEC */
     }
 
     /* ---- Register the model and return its full qhandle_t. ---- */
     /* 0x3003db40: the name and category are forwarded in source order. */
-    return (qhandle_t)cgame_syscall(CG_R_REGISTER_MODEL, (intptr_t)name, category);
+    return (qhandle_t)cgame_syscall(CG_R_REGISTER_MODEL,
+                                    (intptr_t)name, category);
 }

@@ -22,7 +22,9 @@ int32_t Com_VPrintf(const char *format, va_list args)
     if (com_redirectBuffer != NULL) {
         redirectTextLength = strlen(text);
         redirectLength = strlen(com_redirectBuffer);
-        redirectCapacityLimit = (size_t)(com_redirectBufferSize - CODUO_COM_REDIRECT_NUL_BYTE);
+        redirectCapacityLimit =
+            (size_t)(com_redirectBufferSize -
+                     CODUO_COM_REDIRECT_NUL_BYTE);
         if (redirectCapacityLimit < redirectLength + redirectTextLength) {
             com_redirectFlush(com_redirectBuffer);
             com_redirectBuffer[0] = '\0';
@@ -31,13 +33,19 @@ int32_t Com_VPrintf(const char *format, va_list args)
         return (int32_t)strlen(text);
     }
 
-    if (dedicated != NULL && dedicated->integer == CODUO_COM_DEDICATED_DISABLED) {
-        CL_ConsolePrint(CODUO_COM_PRINT_CHANNEL_DEFAULT, text, CODUO_COM_CONSOLE_STUB_ARG2, CODUO_COM_CONSOLE_STUB_ARG3);
+    if (dedicated != NULL &&
+        dedicated->integer == CODUO_COM_DEDICATED_DISABLED) {
+        CL_ConsolePrint(CODUO_COM_PRINT_CHANNEL_DEFAULT, text,
+                        CODUO_COM_CONSOLE_STUB_ARG2,
+                        CODUO_COM_CONSOLE_STUB_ARG3);
     }
     Sys_Print(text);
 
-    if (com_logfile != NULL && com_logfile->integer != CODUO_COM_LOGFILE_DISABLED) {
-        if (com_consoleLogFile == CODUO_COM_LOG_FILE_CLOSED_HANDLE && FS_Initialized() != qfalse && com_vprintfOpeningLog == qfalse) {
+    if (com_logfile != NULL &&
+        com_logfile->integer != CODUO_COM_LOGFILE_DISABLED) {
+        if (com_consoleLogFile == CODUO_COM_LOG_FILE_CLOSED_HANDLE &&
+            FS_Initialized() != qfalse &&
+            com_vprintfOpeningLog == qfalse) {
             com_vprintfOpeningLog = qtrue;
             time(&rawTime);
             localTime = localtime(&rawTime);
@@ -49,9 +57,11 @@ int32_t Com_VPrintf(const char *format, va_list args)
             com_vprintfOpeningLog = qfalse;
         }
 
-        if (com_consoleLogFile != CODUO_COM_LOG_FILE_CLOSED_HANDLE && FS_Initialized() != qfalse) {
+        if (com_consoleLogFile != CODUO_COM_LOG_FILE_CLOSED_HANDLE &&
+            FS_Initialized() != qfalse) {
             textLength = strlen(text);
-            FS_Write(text, (int32_t)textLength, com_consoleLogFile);
+            FS_Write(text, (int32_t)textLength,
+                     com_consoleLogFile);
         }
     }
 

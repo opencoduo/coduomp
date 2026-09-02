@@ -19,7 +19,8 @@ void UI_BuildServerStatus(qboolean force)
         if (ui_serverStatusNextRefresh == 0) {
             return;
         }
-        if (ui_serverStatusNextRefresh > ui_displayContextStorage.context.realTime) {
+        if (ui_serverStatusNextRefresh >
+            ui_displayContextStorage.context.realTime) {
             return;
         }
     } else {
@@ -37,14 +38,18 @@ void UI_BuildServerStatus(qboolean force)
         }
     }
 
-    if (ui_currentServer < 0 || ui_currentServer > ui_displayServerCount || ui_displayServerCount == 0) {
+    if (ui_currentServer < 0 ||
+        ui_currentServer > ui_displayServerCount ||
+        ui_displayServerCount == 0) {
         return;
     }
-    if (UI_GetServerStatusInfo(ui_serverStatusAddress, &ui_serverStatusInfo)) {
+    if (UI_GetServerStatusInfo(ui_serverStatusAddress,
+                               &ui_serverStatusInfo)) {
         ui_serverStatusNextRefresh = 0;
         trap_LAN_ServerStatus(ui_serverStatusAddress, NULL, 0);
         return;
     }
-    ui_serverStatusNextRefresh =
-        (int32_t)((uint32_t)ui_displayContextStorage.context.realTime + (uint32_t)UI_SERVER_STATUS_RETRY_MILLISECONDS);
+    ui_serverStatusNextRefresh = (int32_t)(
+        (uint32_t)ui_displayContextStorage.context.realTime +
+        (uint32_t)UI_SERVER_STATUS_RETRY_MILLISECONDS);
 }

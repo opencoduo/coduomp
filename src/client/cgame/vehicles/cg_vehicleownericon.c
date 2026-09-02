@@ -68,11 +68,11 @@
 #define CG_HEADICON_SPIN_RATE 0.053333335f
 
 enum {
-    CG_HEADICON_CYCLE_MS = 1500, /* full pulse cycle length (IDIV divisor 0x5dc) */
-    CG_HEADICON_PHASE_MS = 500,  /* per-phase offset / ramp width (0x1f4) */
-    CG_HEADICON_HOLD_MS = 1000, /* full-alpha hold boundary (0x3e8) */
+    CG_HEADICON_CYCLE_MS   = 1500, /* full pulse cycle length (IDIV divisor 0x5dc) */
+    CG_HEADICON_PHASE_MS   = 500,  /* per-phase offset / ramp width (0x1f4) */
+    CG_HEADICON_HOLD_MS    = 1000, /* full-alpha hold boundary (0x3e8) */
     CG_HEADICON_FADEOUT_MS = 2000, /* tail-off window before iconFadeEndTime */
-    CG_HEADICON_ARG_ANGLE = 180   /* fixed secondary angle arg (0xb4) */
+    CG_HEADICON_ARG_ANGLE  = 180   /* fixed secondary angle arg (0xb4) */
 };
 
 void CG_VehicleOwnerIcon(centity_t *cent)
@@ -86,37 +86,46 @@ void CG_VehicleOwnerIcon(centity_t *cent)
      * reads as the world origin (raw component copy). */
     memcpy(cent->lerpOrigin, cent->currentState.origin, sizeof(cent->lerpOrigin));
 
-    for (int32_t phaseOffset = 0; phaseOffset < CG_HEADICON_CYCLE_MS; phaseOffset += CG_HEADICON_PHASE_MS) {
+    for (int32_t phaseOffset = 0; phaseOffset < CG_HEADICON_CYCLE_MS;
+         phaseOffset += CG_HEADICON_PHASE_MS) {
         int32_t now = coduo_int32_from_bits((uint32_t)cg_time);
         /* Signed remainder of (phaseOffset + cg_time) / 1500 (CDQ + IDIV). For the
          * positive time base this lands in [0, 1499]. */
-        int32_t phaseTime = coduo_int32_from_bits((uint32_t)phaseOffset + (uint32_t)now);
+        int32_t phaseTime = coduo_int32_from_bits(
+            (uint32_t)phaseOffset + (uint32_t)now);
         int32_t phaseRem = phaseTime % CG_HEADICON_CYCLE_MS;
 
         float fade;
         if (phaseRem < CG_HEADICON_PHASE_MS) {
             /* Bare FILD feeds the FMUL directly (0x30021591..95): no FSTP DWORD
              * before the multiply, so no (float) cast (Class 4). */
-            fade = (float)((long double)phaseRem * (long double)CG_HEADICON_PULSE_RAMP);
+            fade = (float)((long double)phaseRem *
+                           (long double)CG_HEADICON_PULSE_RAMP);
         } else if (phaseRem <= CG_HEADICON_HOLD_MS) {
             fade = 1.0f;
         } else {
             /* (1500 - phaseRem) is an integer MOV'd to a slot then FILD'd
              * (0x300215ae..b8) — bare FILD into the FMUL, no (float) cast. */
-            int32_t descending = coduo_int32_from_bits((uint32_t)CG_HEADICON_CYCLE_MS - (uint32_t)phaseRem);
-            fade = (float)((long double)descending * (long double)CG_HEADICON_PULSE_RAMP);
+            int32_t descending = coduo_int32_from_bits(
+                (uint32_t)CG_HEADICON_CYCLE_MS - (uint32_t)phaseRem);
+            fade = (float)((long double)descending *
+                           (long double)CG_HEADICON_PULSE_RAMP);
         }
 
         /* Tail-off: once cg_time is within the 2000ms window ending at
          * iconFadeEndTime, scale the pulse alpha down toward 0 (signed compare). */
         int32_t fadeEnd = cent->currentState.iconFadeEndTime;
-        int32_t fadeWindowStart = coduo_int32_from_bits((uint32_t)fadeEnd - (uint32_t)CG_HEADICON_FADEOUT_MS);
+        int32_t fadeWindowStart = coduo_int32_from_bits(
+            (uint32_t)fadeEnd -
+            (uint32_t)CG_HEADICON_FADEOUT_MS);
         if (now > fadeWindowStart) {
             /* (iconFadeEndTime - cg_time) is an integer MOV'd to a slot then FILD'd
              * (0x300215db..df) and fed straight through FMUL fade; FMUL 0.0005f with
              * no intermediate float store — bare FILD, so no (float) cast (Class 4). */
-            int32_t remaining = coduo_int32_from_bits((uint32_t)fadeEnd - (uint32_t)now);
-            fade = (float)(((long double)remaining * (long double)fade) * (long double)CG_HEADICON_FADEOUT_RATE);
+            int32_t remaining = coduo_int32_from_bits(
+                (uint32_t)fadeEnd - (uint32_t)now);
+            fade = (float)(((long double)remaining * (long double)fade) *
+                           (long double)CG_HEADICON_FADEOUT_RATE);
         }
 
         /* alphaScale = pow(fade, 1.5): _CIpow leaves the raw 80-bit result in
@@ -131,8 +140,10 @@ void CG_VehicleOwnerIcon(centity_t *cent)
         /* Both int operands enter through bare FILD (phaseRem at 0x30021609, spin at
          * 0x3002161e) with no FSTP DWORD before the FMUL/FSUBR — no (float) casts
          * (Class 4). coduo_fp_to_i32_extended consumes the raw st(0) and truncates. */
-        int32_t spin = coduo_fp_to_i32_extended((long double)phaseRem * (long double)CG_HEADICON_SPIN_RATE);
-        int32_t yaw = coduo_fp_to_i32_extended((long double)cent->currentState.iconBaseYaw - (long double)spin);
+        int32_t spin = coduo_fp_to_i32_extended(
+            (long double)phaseRem * (long double)CG_HEADICON_SPIN_RATE);
+        int32_t yaw = coduo_fp_to_i32_extended(
+            (long double)cent->currentState.iconBaseYaw - (long double)spin);
 
         CG_AddHudHeadIconSprite(cent, material, yaw, 0, CG_HEADICON_ARG_ANGLE, alphaScale);
     }

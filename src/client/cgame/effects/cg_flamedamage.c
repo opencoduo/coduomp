@@ -44,15 +44,14 @@
 #include "compat/coduo_native_x87.h"
 
 /* Radius shaping constants (see the FLOAT CONSTANTS note above). */
-enum {
-    CG_FLAME_DAMAGE_TRACE_MODEL = 0x2802031
-}; /* EAX handle passed to CG_Trace */
+enum { CG_FLAME_DAMAGE_TRACE_MODEL = 0x2802031 }; /* EAX handle passed to CG_Trace */
 
 /* chunk->lifeFraction (flameChunk_t +0xe8) — a chunk strength/alpha the self-damage path
  * requires to exceed this before the local player can be hurt by their own flame. */
 static const double CG_FLAME_SELF_DAMAGE_MIN = 0.4;
 
-void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum, float radiusBase, const flameChunk_t *chunk)
+void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
+                             float radiusBase, const flameChunk_t *chunk)
 {
     snapshot_t *snap;
     float radius;
@@ -128,24 +127,12 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum, float radiusB
     box[1] = flamePos[1] - snap->ps.psOrigin[1];   /* 0x300266ba */
     box[2] = flamePos[2] - snap->ps.psOrigin[2];   /* 0x300266c4 */
 
-    if (box[0] > snap->ps.playerMaxs[0]) {
-        box[0] = snap->ps.playerMaxs[0];
-    } /* 0x300266ce */
-    if (box[0] < snap->ps.playerMins[0]) {
-        box[0] = snap->ps.playerMins[0];
-    } /* 0x300266e9 */
-    if (box[1] > snap->ps.playerMaxs[1]) {
-        box[1] = snap->ps.playerMaxs[1];
-    } /* 0x30026704 */
-    if (box[1] < snap->ps.playerMins[1]) {
-        box[1] = snap->ps.playerMins[1];
-    } /* 0x3002671f */
-    if (box[2] > snap->ps.playerMaxs[2]) {
-        box[2] = snap->ps.playerMaxs[2];
-    } /* 0x3002673a */
-    if (box[2] < snap->ps.playerMins[2]) {
-        box[2] = snap->ps.playerMins[2];
-    } /* 0x30026755 */
+    if (box[0] > snap->ps.playerMaxs[0]) { box[0] = snap->ps.playerMaxs[0]; } /* 0x300266ce */
+    if (box[0] < snap->ps.playerMins[0]) { box[0] = snap->ps.playerMins[0]; } /* 0x300266e9 */
+    if (box[1] > snap->ps.playerMaxs[1]) { box[1] = snap->ps.playerMaxs[1]; } /* 0x30026704 */
+    if (box[1] < snap->ps.playerMins[1]) { box[1] = snap->ps.playerMins[1]; } /* 0x3002671f */
+    if (box[2] > snap->ps.playerMaxs[2]) { box[2] = snap->ps.playerMaxs[2]; } /* 0x3002673a */
+    if (box[2] < snap->ps.playerMins[2]) { box[2] = snap->ps.playerMins[2]; } /* 0x30026755 */
 
     /* 0x30026770..0x30026795: closest box point back in world space. */
     closest[0] = box[0] + snap->ps.psOrigin[0];    /* 0x30026770 */
@@ -170,8 +157,10 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum, float radiusB
      * hands the CRT sqrt helper its argument RAW in st0, so the argument must not
      * round to float. sqrtl on the 80-bit chain, one float rounding at the result
      * store (0x300267f7). */
-    dist = (float)coduo_x87_sqrtl((long double)diff[2] * diff[2] + (long double)diff[1] * diff[1] +
-                                  (long double)diff[0] * diff[0]); /* CALL 0x3006bee0 */
+    dist = (float)coduo_x87_sqrtl(
+        (long double)diff[2] * diff[2] +
+        (long double)diff[1] * diff[1] +
+        (long double)diff[0] * diff[0]); /* CALL 0x3006bee0 */
     /* TEST AH,5 / JP rejects greater, equal, and unordered. */
     if (!(dist < radius)) {                            /* 0x300267ff FCOMP [ESP+0xc]; JP ret */
         return;                                        /* 0x30026808 */
@@ -199,13 +188,15 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum, float radiusB
          * the mins branch. JP taken when (maxs.z-1) >= dz, so this maxs branch runs only when
          * dz > (maxs.z - 1.0f) (strict; equality falls to the mins branch). */
         if (dz > snap->ps.playerMaxs[2] - 1.0f) {        /* 0x30026830 FSUB [0x3007bce0] */
-            traceStart[2] = snap->ps.playerMaxs[2] + snap->ps.psOrigin[2] - 1.0f; /* 0x3002683f..0x3002684e */
+            traceStart[2] = snap->ps.playerMaxs[2]
+                          + snap->ps.psOrigin[2] - 1.0f; /* 0x3002683f..0x3002684e */
         } else {
             /* 0x30026850..0x3002686a: FCOMPP compares (mins.z + 1) vs dz; TEST AH,0x41; JNZ
              * skips the store. JNZ taken when (mins.z+1) <= dz (equal or less), so the store
              * runs only when dz < (mins.z + 1.0f); otherwise traceStart.z stays flamePos.z. */
             if (dz < snap->ps.playerMins[2] + 1.0f) {    /* 0x3002685d FADD [0x3007bce0] */
-                traceStart[2] = snap->ps.playerMins[2] + snap->ps.psOrigin[2] + 1.0f; /* 0x3002686c..0x3002687b */
+                traceStart[2] = snap->ps.playerMins[2]
+                              + snap->ps.psOrigin[2] + 1.0f; /* 0x3002686c..0x3002687b */
             }
         }
 
@@ -215,7 +206,8 @@ void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum, float radiusB
         {
             trace_t out;
 
-            CG_Trace(CG_FLAME_DAMAGE_TRACE_MODEL, traceStart, 0, &out, flamePos, 0, -1);
+            CG_Trace(CG_FLAME_DAMAGE_TRACE_MODEL, traceStart, 0, &out,
+                               flamePos, 0, -1);
 
             /* 0x30026899..0x300268b7: accept when the projection reached the flame
              * (out.fraction == 1.0f, compared as raw bits 0x3f800000) OR when it struck

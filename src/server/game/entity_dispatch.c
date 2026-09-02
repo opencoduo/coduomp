@@ -24,7 +24,8 @@
 #include "math/q_math.h"
 
 #define ENTITY_TIMEOUT_MS 300
-#define ENTITY_LAST_RESERVED_INDEX (PLAYER_CLONE_ENTITYNUM_BASE + PLAYER_CLONE_COUNT - 1)
+#define ENTITY_LAST_RESERVED_INDEX \
+    (PLAYER_CLONE_ENTITYNUM_BASE + PLAYER_CLONE_COUNT - 1)
 #define DROPPED_WEAPON_SLOT_COUNT 32
 #define FUNC_ROTATING_UNLINKED_FLAG 0x04u
 
@@ -213,7 +214,8 @@ void G_FreeEntityRefs(gentity_t *ent)
     for (int i = 0; i < MAX_CLIENTS; i++) {
         gentity_t *player = &g_entities[i];
 
-        if (player->linked != 0 && player->client->lookAtEntity == ent) {
+        if (player->linked != 0 &&
+            player->client->lookAtEntity == ent) {
             player->client->lookAtEntity = NULL;
         }
     }
@@ -313,7 +315,8 @@ void G_RunMover(gentity_t *ent)
     if (ent->linkInfo == NULL) {
         /* Special case: flag at +0x18c bit 2 with model/index checks */
         if ((ent->flags & FUNC_ROTATING_UNLINKED_FLAG) != 0) {
-            if (ent->linkedState != 0 && ent->scriptClassname == scr_const_func_tramcar) {
+            if (ent->linkedState != 0 &&
+                ent->scriptClassname == scr_const_func_tramcar) {
                 trap_UnlinkEntity(ent);
                 return;
             }
@@ -370,12 +373,15 @@ void Reached_BinaryMover(gentity_t *ent);
 void ReturnToPos1(gentity_t *ent);
 void ReturnToPos1Rotate(gentity_t *ent);
 void InitMover(gentity_t *ent);
-void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator);
-void Use_Func_Rotate(gentity_t *ent, gentity_t *other, gentity_t *activator);
+void Use_BinaryMover(gentity_t *ent, gentity_t *other,
+                            gentity_t *activator);
+void Use_Func_Rotate(gentity_t *ent, gentity_t *other,
+                     gentity_t *activator);
 void Blocked_Door(gentity_t *ent, gentity_t *blocker);
 void Blocked_DoorRotate(gentity_t *ent, gentity_t *blocker);
-void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, const float *dir, const float *point, int damage, int flags,
-              int mod, int hitLocation);
+void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
+                     const float *dir, const float *point, int damage, int flags,
+                     int mod, int hitLocation);
 gentity_t *G_Spawn(void);
 void MatchTeam(gentity_t *ent, int moverState, int time);
 
@@ -459,8 +465,7 @@ void MatchTeam(gentity_t *ent, int moverState, int time);
 #define FUNC_DOOR_ROTATING_LOCKED_DEFAULT "0"
 #define FUNC_DOOR_ROTATING_HEALTH_DEFAULT "0"
 #define FUNC_DOOR_ROTATING_AXIS_ERROR \
-    "Too many axis marked in func_door_rotating entity.  Only choose one axis of rotation. (defaulting to standard " \
-    "door rotation)"
+    "Too many axis marked in func_door_rotating entity.  Only choose one axis of rotation. (defaulting to standard door rotation)"
 #define TRIGGER_USE_HINTSTRING_INHERIT 255
 #define TRIGGER_USE_HINTSTRING_LIMIT CS_HINTSTRINGS_COUNT
 #define TRIGGER_USE_HINTSTRING_LIMIT_ERROR \
@@ -488,8 +493,10 @@ mover_push_record_t pushed[MAX_GENTITIES];
 
 #if UINTPTR_MAX == 0xffffffffu
 GAME_STATIC_ASSERT(mover_push_record_size, sizeof(mover_push_record_t) == 0x20);
-GAME_STATIC_ASSERT(mover_push_record_angles_offset, offsetof(mover_push_record_t, angles) == 0x10);
-GAME_STATIC_ASSERT(mover_push_record_yaw_offset, offsetof(mover_push_record_t, yawDelta) == 0x1c);
+GAME_STATIC_ASSERT(mover_push_record_angles_offset,
+                 offsetof(mover_push_record_t, angles) == 0x10);
+GAME_STATIC_ASSERT(mover_push_record_yaw_offset,
+                 offsetof(mover_push_record_t, yawDelta) == 0x1c);
 #endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: angle short conversion shared by mover push/rollback; extracted during reconstruction of 0x605e5. */
@@ -498,9 +505,11 @@ static int game_compat_g_mover_angle_to_short(float angle)
 {
     /* 0x6080d/0x60ab3: the product feeds truncating fistp directly. */
 #if EMULATE_X87
-    int32_t packed = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(MOVER_ANGLE_SHORT_SCALE)));
+    int32_t packed = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_f32(angle), x87f_load_f32(MOVER_ANGLE_SHORT_SCALE)));
 #else
-    int32_t packed = game_compat_int32_from_long_double_trunc((long double)angle * MOVER_ANGLE_SHORT_SCALE);
+    int32_t packed = game_compat_int32_from_long_double_trunc(
+        (long double)angle * MOVER_ANGLE_SHORT_SCALE);
 #endif
     return packed & 0xffff;
 }
@@ -526,7 +535,8 @@ static float *game_compat_g_binary_mover_speed(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: shared pushed-entity origin update block; extracted during reconstruction of 0x605e5. */
 /* VERIFIED_DECOMPILER(0x605e5, 705e5_G_TryPushingEntity.c, VERIFY-WORKER-MOVER-STATIC-2026-06-17): DATAFLOW_VERIFIED - source-only helper checked against groundEntityNum reset, currentOrigin/pos.trBase stores, client deltaAngles[1] add, and client psOrigin stores. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_TryPushingEntity (0x605e5); no standalone original body. */
-static void game_compat_g_mover_set_pushed_origin(gentity_t *ent, const float *origin, int moverEntityNum, float yawDelta)
+static void game_compat_g_mover_set_pushed_origin(gentity_t *ent, const float *origin,
+                                   int moverEntityNum, float yawDelta)
 {
     if (ent->s.groundEntityNum != moverEntityNum) {
         ent->s.groundEntityNum = ENTITYNUM_NONE;
@@ -594,8 +604,11 @@ void G_Trigger(gentity_t *ent, gentity_t *activator)
 /* VERIFIED_DECOMPILER(0x762f6, 862f6_InitTrigger.c, VERIFY-TRIGGER-TOUCH-PACKET-2026-06-17): DATAFLOW_VERIFIED - nonzero-angle movedir branch, brush model call, contents/svFlags/s_flags stores, and void return checked. */
 void InitTrigger(gentity_t *ent)
 {
-    if (ent->currentAngles[0] != 0.0f || ent->currentAngles[1] != 0.0f || ent->currentAngles[2] != 0.0f) {
-        G_SetMovedir(ent->currentAngles, ent->moverDir);
+    if (ent->currentAngles[0] != 0.0f ||
+        ent->currentAngles[1] != 0.0f ||
+        ent->currentAngles[2] != 0.0f) {
+        G_SetMovedir(ent->currentAngles,
+                     ent->moverDir);
     }
 
     trap_SetBrushModel(ent);
@@ -659,17 +672,23 @@ void multi_trigger(gentity_t *ent, gentity_t *activator)
          * remaining wait and millisecond conversion in the x87 carrier. */
 #if EMULATE_X87
         {
-            x87f randSigned = x87f_load_f64(coduo_server_rand_signed_unit());
+            x87f randSigned =
+                x87f_load_f64(coduo_server_rand_signed_unit());
             ent->nextthink =
                 level.time +
-                x87f_store_i32_trunc(x87f_mul(x87f_add(x87f_load_f32(ent->itemWait), x87f_mul(randSigned, x87f_load_f32(ent->itemRandom))),
-                                              x87f_load_f32(1000.0f)));
+                x87f_store_i32_trunc(x87f_mul(
+                    x87f_add(x87f_load_f32(ent->itemWait),
+                             x87f_mul(randSigned,
+                                      x87f_load_f32(ent->itemRandom))),
+                    x87f_load_f32(1000.0f)));
         }
 #else
-        ent->nextthink =
-            level.time +
+        ent->nextthink = level.time +
             game_compat_int32_from_long_double_trunc(
-                ((long double)ent->itemWait + (long double)coduo_server_rand_signed_unit() * (long double)ent->itemRandom) * 1000.0f);
+                ((long double)ent->itemWait +
+                 (long double)coduo_server_rand_signed_unit() *
+                     (long double)ent->itemRandom) *
+                1000.0f);
 #endif
     } else {
         ent->touch = NULL;
@@ -740,7 +759,9 @@ void use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
      * register for both the compare and the add -- a (float) cast would
      * insert an extra rounding under -std=c99. */
     if ((long double)ent->itemWait < (long double)level.time) {
-        ent->itemWait = (float)((long double)level.time + (long double)ent->concussiveFxEndTime);
+        ent->itemWait =
+            (float)((long double)level.time +
+                    (long double)ent->concussiveFxEndTime);
         if (other->client == NULL) {
             if ((ent->spawnflags & TRIGGER_USE_SPAWNFLAG_TOGGLE) == 0) {
                 ent->spawnflags |= TRIGGER_USE_SPAWNFLAG_TOGGLE;
@@ -789,9 +810,12 @@ void trigger_use(gentity_t *ent)
     ent->s.hintStringIndex = TRIGGER_USE_HINTSTRING_INHERIT;
     if (G_SpawnString("hintstring", "", &value) != 0) {
         for (index = 0; index < TRIGGER_USE_HINTSTRING_LIMIT; index++) {
-            trap_GetConfigstring(CS_HINTSTRINGS + (int)index, hintString, MAX_STRING_CHARS);
+            trap_GetConfigstring(CS_HINTSTRINGS + (int)index,
+                                 hintString,
+                                 MAX_STRING_CHARS);
             if (hintString[0] == '\0') {
-                trap_SetConfigstring(CS_HINTSTRINGS + (int)index, value);
+                trap_SetConfigstring(CS_HINTSTRINGS + (int)index,
+                                     value);
                 ent->s.hintStringIndex = (int)(index & 0xffu);
                 break;
             }
@@ -801,7 +825,8 @@ void trigger_use(gentity_t *ent)
             }
         }
         if (index == TRIGGER_USE_HINTSTRING_LIMIT) {
-            Com_Error(1, TRIGGER_USE_HINTSTRING_LIMIT_ERROR, TRIGGER_USE_HINTSTRING_LIMIT);
+            Com_Error(1, TRIGGER_USE_HINTSTRING_LIMIT_ERROR,
+                      TRIGGER_USE_HINTSTRING_LIMIT);
         }
     }
 }
@@ -832,7 +857,8 @@ gentity_t *G_TestEntityPosition(gentity_t *ent, const float *origin)
         passEntityNum = ent->s.number;
     }
 
-    trap_Trace(&trace, origin, ent->mins, ent->maxs, origin, passEntityNum, contentMask);
+    trap_Trace(&trace, origin, ent->mins, ent->maxs, origin, passEntityNum,
+               contentMask);
     if (trace.startsolid == 0) {
         return NULL;
     }
@@ -881,7 +907,8 @@ void G_RotatePoint(float *point, float matrix[3][3])
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
         point[i] = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(matrix[i][0]), x87f_load_f32(x)), x87f_mul(x87f_load_f32(matrix[i][1]), x87f_load_f32(y))),
+            x87f_add(x87f_mul(x87f_load_f32(matrix[i][0]), x87f_load_f32(x)),
+                     x87f_mul(x87f_load_f32(matrix[i][1]), x87f_load_f32(y))),
             x87f_mul(x87f_load_f32(matrix[i][2]), x87f_load_f32(z))));
     }
 #else
@@ -896,7 +923,8 @@ void G_RotatePoint(float *point, float matrix[3][3])
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x605e5, 705e5_G_TryPushingEntity.c, VERIFY-WAVE2-ENTITY-DISPATCH-COLLISION-2026-06-17): DATAFLOW_VERIFIED - rotate-ground guard, translated/rotated origin math, collision probes, 4-unit fallback search, pushed-origin/client stores, stack advance, and unblocked-current-origin fallback checked. */
-int G_TryPushingEntity(gentity_t *ent, gentity_t *mover, float *posDelta, float *angDelta)
+int G_TryPushingEntity(gentity_t *ent, gentity_t *mover,
+                       float *posDelta, float *angDelta)
 {
     vec3_t pushedOrigin;
     float rotationMatrix[3][3];
@@ -906,7 +934,8 @@ int G_TryPushingEntity(gentity_t *ent, gentity_t *mover, float *posDelta, float 
     vec3_t rotateDelta;
     vec3_t trialOrigin;
 
-    if ((mover->s.eFlags & MOVER_ROTATE_GROUND_ONLY_FLAG) != 0 && ent->s.groundEntityNum != mover->s.number) {
+    if ((mover->s.eFlags & MOVER_ROTATE_GROUND_ONLY_FLAG) != 0 &&
+        ent->s.groundEntityNum != mover->s.number) {
         return 0;
     }
 
@@ -945,18 +974,28 @@ int G_TryPushingEntity(gentity_t *ent, gentity_t *mover, float *posDelta, float 
      * 80-bit register for every comparison and never stored to a float --
      * do not hoist it into a float temporary. */
     if (MOVER_PUSH_STEP < ent->maxs[0] / 2.0) {
-        for (float zStep = 0.0f; zStep < ent->maxs[0] / 2.0; zStep += MOVER_PUSH_STEP) {
-            for (float zOffset = -zStep; zOffset <= zStep; zOffset += zStep + zStep) {
-                for (float xStep = MOVER_PUSH_STEP; xStep < ent->maxs[0] / 2.0; xStep += MOVER_PUSH_STEP) {
-                    for (float xOffset = -xStep; xOffset <= xStep; xOffset += xStep + xStep) {
-                        for (float yStep = MOVER_PUSH_STEP; yStep < ent->maxs[0] / 2.0; yStep += MOVER_PUSH_STEP) {
-                            for (float yOffset = -yStep; yOffset <= yStep; yOffset += yStep + yStep) {
+        for (float zStep = 0.0f; zStep < ent->maxs[0] / 2.0;
+             zStep += MOVER_PUSH_STEP) {
+            for (float zOffset = -zStep; zOffset <= zStep;
+                 zOffset += zStep + zStep) {
+                for (float xStep = MOVER_PUSH_STEP;
+                     xStep < ent->maxs[0] / 2.0;
+                     xStep += MOVER_PUSH_STEP) {
+                    for (float xOffset = -xStep; xOffset <= xStep;
+                         xOffset += xStep + xStep) {
+                        for (float yStep = MOVER_PUSH_STEP;
+                             yStep < ent->maxs[0] / 2.0;
+                             yStep += MOVER_PUSH_STEP) {
+                            for (float yOffset = -yStep; yOffset <= yStep;
+                                 yOffset += yStep + yStep) {
                                 trialOrigin[0] = pushedOrigin[0] + xOffset;
                                 trialOrigin[1] = pushedOrigin[1] + yOffset;
                                 trialOrigin[2] = pushedOrigin[2] + zOffset;
 
                                 if (G_TestEntityPosition(ent, trialOrigin) == NULL) {
-                                    game_compat_g_mover_set_pushed_origin(ent, trialOrigin, mover->s.number, angDelta[1]);
+                                    game_compat_g_mover_set_pushed_origin(ent, trialOrigin,
+                                                           mover->s.number,
+                                                           angDelta[1]);
                                     game_compat_g_mover_push_record_advance();
                                     return 1;
                                 }
@@ -998,12 +1037,14 @@ void G_KillBox(gentity_t *ent)
     maxs[1] = ent->client->ps.psOrigin[1] + ent->maxs[1];
     maxs[2] = ent->client->ps.psOrigin[2] + ent->maxs[2];
 
-    count = trap_EntitiesInBox(mins, maxs, entityNums, KILLBOX_MAX_ENTITIES, CONTENTS_BODY);
+    count = trap_EntitiesInBox(mins, maxs, entityNums, KILLBOX_MAX_ENTITIES,
+                               CONTENTS_BODY);
     for (int i = 0; i < count; i++) {
         gentity_t *hit = &g_entities[entityNums[i]];
 
         if (hit->client != NULL && hit->linkedState != 0) {
-            G_Damage(hit, ent, ent, NULL, NULL, KILLBOX_DAMAGE, DAMAGE_NO_PROTECTION, MOD_TELEFRAG, HITLOC_NONE);
+            G_Damage(hit, ent, ent, NULL, NULL, KILLBOX_DAMAGE,
+                     DAMAGE_NO_PROTECTION, MOD_TELEFRAG, HITLOC_NONE);
         }
     }
 }
@@ -1013,16 +1054,25 @@ void G_KillBox(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_MoverPush (0x60c1b); no standalone original body. */
 static int game_compat_g_mover_push_entity_type(gentity_t *ent)
 {
-    return ent->s.eType == ET_MISSILE || ent->s.eType == ET_ITEM || ent->s.eType == ET_PLAYER || ent->linkedByte16d != 0;
+    return ent->s.eType == ET_MISSILE ||
+           ent->s.eType == ET_ITEM ||
+           ent->s.eType == ET_PLAYER ||
+           ent->linkedByte16d != 0;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: mover push bounds predicate; extracted during reconstruction of 0x60c1b. */
 /* VERIFIED_DECOMPILER(0x60c1b, 70c1b_FUN_00070c1b.c, VERIFY-WAVE2-ENTITY-DISPATCH-COLLISION-2026-06-17): DATAFLOW_VERIFIED - source-only helper checked against parent strict absMin/absMax overlap chain. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_MoverPush (0x60c1b); no standalone original body. */
-static int game_compat_g_mover_push_bounds_overlap(const gentity_t *ent, const float *mins, const float *maxs)
+static int game_compat_g_mover_push_bounds_overlap(const gentity_t *ent,
+                                    const float *mins,
+                                    const float *maxs)
 {
-    return ent->absMin[0] < maxs[0] && ent->absMin[1] < maxs[1] && ent->absMin[2] < maxs[2] && mins[0] < ent->absMax[0] &&
-           mins[1] < ent->absMax[1] && mins[2] < ent->absMax[2];
+    return ent->absMin[0] < maxs[0] &&
+           ent->absMin[1] < maxs[1] &&
+           ent->absMin[2] < maxs[2] &&
+           mins[0] < ent->absMax[0] &&
+           mins[1] < ent->absMax[1] &&
+           mins[2] < ent->absMax[2];
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: pushed stack record writer; extracted during reconstruction of 0x60c1b. */
@@ -1041,7 +1091,8 @@ static void game_compat_g_mover_push_record(gentity_t *ent, const float *angDelt
 }
 
 /* VERIFIED_DECOMPILER(0x60c1b, 70c1b_FUN_00070c1b.c, VERIFY-WAVE2-ENTITY-DISPATCH-COLLISION-2026-06-17): DATAFLOW_VERIFIED - blocker clear, rotating/swept bounds, mover unlink/link ordering, candidate filtering, push-stack record writes, TryPushing result paths, item relink, sine crush damage, blocker return, and final relink checked. */
-int G_MoverPush(gentity_t *mover, float *posDelta, float *angDelta, gentity_t **blocker)
+int G_MoverPush(gentity_t *mover, float *posDelta, float *angDelta,
+                gentity_t **blocker)
 {
     int entityList[MOVER_PUSH_MAX_ENTITIES];
     int pushList[MOVER_PUSH_MAX_ENTITIES];
@@ -1055,8 +1106,12 @@ int G_MoverPush(gentity_t *mover, float *posDelta, float *angDelta, gentity_t **
 
     *blocker = 0;
 
-    rotates = mover->currentAngles[0] != 0.0f || mover->currentAngles[1] != 0.0f || mover->currentAngles[2] != 0.0f ||
-              angDelta[0] != 0.0f || angDelta[1] != 0.0f || angDelta[2] != 0.0f;
+    rotates = mover->currentAngles[0] != 0.0f ||
+              mover->currentAngles[1] != 0.0f ||
+              mover->currentAngles[2] != 0.0f ||
+              angDelta[0] != 0.0f ||
+              angDelta[1] != 0.0f ||
+              angDelta[2] != 0.0f;
 
     if (rotates) {
         float radius = RadiusFromBounds(mover->mins, mover->maxs);
@@ -1085,7 +1140,9 @@ int G_MoverPush(gentity_t *mover, float *posDelta, float *angDelta, gentity_t **
     }
 
     trap_UnlinkEntity(mover);
-    listedEntities = trap_EntitiesInBox(queryMins, queryMaxs, entityList, MOVER_PUSH_MAX_ENTITIES, MOVER_PUSH_QUERY_MASK);
+    listedEntities = trap_EntitiesInBox(queryMins, queryMaxs, entityList,
+                                        MOVER_PUSH_MAX_ENTITIES,
+                                        MOVER_PUSH_QUERY_MASK);
 
     for (int axis = 0; axis < 3; axis++) {
         mover->currentOrigin[axis] += posDelta[axis];
@@ -1125,11 +1182,13 @@ int G_MoverPush(gentity_t *mover, float *posDelta, float *angDelta, gentity_t **
         if (G_TryPushingEntity(check, mover, posDelta, angDelta) == 0) {
             if (check->s.eType == ET_ITEM) {
                 trap_LinkEntity(check);
-            } else if (mover->s.pos.trType != TR_SINE && mover->s.apos.trType != TR_SINE) {
+            } else if (mover->s.pos.trType != TR_SINE &&
+                       mover->s.apos.trType != TR_SINE) {
                 *blocker = check;
                 return 0;
             } else {
-                G_Damage(check, mover, mover, NULL, NULL, MOVER_CRUSH_DAMAGE, 0, MOD_CRUSH, 0);
+                G_Damage(check, mover, mover, NULL, NULL, MOVER_CRUSH_DAMAGE,
+                         0, MOD_CRUSH, 0);
             }
         } else {
             trap_LinkEntity(check);
@@ -1163,12 +1222,16 @@ void G_MoverTeam(gentity_t *ent)
             for (current = ent; current != NULL; current = current->teamChain) {
                 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 if (current->s.pos.trType != TR_STATIONARY &&
-                    coduo_int32_from_bits((uint32_t)current->s.pos.trTime + (uint32_t)current->s.pos.trDuration) <= level.time &&
+                    coduo_int32_from_bits((uint32_t)current->s.pos.trTime +
+                                          (uint32_t)current->s.pos.trDuration) <=
+                        level.time &&
                     current->moverReached != NULL) {
                     current->moverReached(current);
                 }
                 if (current->s.apos.trType != TR_STATIONARY &&
-                    coduo_int32_from_bits((uint32_t)current->s.apos.trTime + (uint32_t)current->s.apos.trDuration) <= level.time &&
+                    coduo_int32_from_bits((uint32_t)current->s.apos.trTime +
+                                          (uint32_t)current->s.apos.trDuration) <=
+                        level.time &&
                     current->moverReached != NULL) {
                     current->moverReached(current);
                 }
@@ -1187,8 +1250,7 @@ void G_MoverTeam(gentity_t *ent)
         angDelta[2] = angEval[2] - current->currentAngles[2];
 
         result = G_MoverPush(current, posDelta, angDelta, &blocker);
-        if (result == 0)
-            break;
+        if (result == 0) break;
 
         current = current->teamChain;
     }
@@ -1219,10 +1281,13 @@ void G_MoverTeam(gentity_t *ent)
     }
 
     for (current = ent; current != NULL; current = current->teamChain) {
-        uint32_t frameDelta = (uint32_t)level.time - (uint32_t)level.previousTime;
+        uint32_t frameDelta =
+            (uint32_t)level.time - (uint32_t)level.previousTime;
 
-        current->s.pos.trTime = coduo_int32_from_bits((uint32_t)current->s.pos.trTime + frameDelta);
-        current->s.apos.trTime = coduo_int32_from_bits((uint32_t)current->s.apos.trTime + frameDelta);
+        current->s.pos.trTime = coduo_int32_from_bits(
+            (uint32_t)current->s.pos.trTime + frameDelta);
+        current->s.apos.trTime = coduo_int32_from_bits(
+            (uint32_t)current->s.apos.trTime + frameDelta);
         BG_EvaluateTrajectory(&current->s.pos, level.time, current->currentOrigin);
         BG_EvaluateTrajectory(&current->s.apos, level.time, current->currentAngles);
         trap_LinkEntity(current);
@@ -1242,7 +1307,8 @@ void G_MoverTeam(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original InitMoverRotate (0x631c0); no standalone original body. */
 static uint32_t game_compat_g_mover_light_component(float value, float scale)
 {
-    int32_t component = game_compat_int32_from_long_double_trunc((long double)value * (long double)scale);
+    int32_t component = game_compat_int32_from_long_double_trunc(
+        (long double)value * (long double)scale);
 
     if (component > 255) {
         component = 255;
@@ -1262,7 +1328,8 @@ static int game_compat_g_binary_mover_has_alt_speed(const gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: linear position trajectory setup; extracted during reconstruction of 0x61791. */
 /* VERIFIED_DECOMPILER(0x61791, 71791_SetMoverState.c, VERIFY-ENTITY-DISPATCH-MOVER-PACKET-2026-06-17): DATAFLOW_VERIFIED - source-only helper checked against pos.trBase, trDuration, trDelta, and TR_LINEAR_STOP stores for door move cases 3 through 6. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original SetMoverState (0x61791); no standalone original body. */
-static void game_compat_g_binary_mover_set_pos_move(gentity_t *ent, const float *start, const float *end, int duration)
+static void game_compat_g_binary_mover_set_pos_move(gentity_t *ent, const float *start,
+                                    const float *end, int duration)
 {
     vec3_t delta;
     float scale;
@@ -1279,7 +1346,8 @@ static void game_compat_g_binary_mover_set_pos_move(gentity_t *ent, const float 
      * (float)duration round) -> single divide, shim. delta subs and the
      * delta*scale trDelta muls are single ops stored to floats (native). */
 #if EMULATE_X87
-    scale = x87f_store_f32(x87f_div(x87f_load_f32(1000.0f), x87f_load_i32(duration)));
+    scale = x87f_store_f32(x87f_div(x87f_load_f32(1000.0f),
+                                    x87f_load_i32(duration)));
 #else
     scale = (float)((long double)1000.0f / (long double)duration);
 #endif
@@ -1315,18 +1383,23 @@ static void game_compat_g_binary_mover_set_rotate_move_to_pos2(gentity_t *ent, i
      * (int->80, exact) -> single divide, shim. */
     if (slow == 0) {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_div(x87f_load_f32(1000.0f), x87f_load_i32(ent->moverDuration)));
+        scale = x87f_store_f32(x87f_div(x87f_load_f32(1000.0f),
+                                        x87f_load_i32(ent->moverDuration)));
 #else
-        scale = (float)((long double)1000.0f / (long double)ent->moverDuration);
+        scale = (float)((long double)1000.0f /
+                        (long double)ent->moverDuration);
 #endif
         ent->s.apos.trDuration = ent->moverDuration;
     } else {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_div(x87f_load_f32(500.0f), x87f_load_i32(ent->moverDuration)));
+        scale = x87f_store_f32(x87f_div(x87f_load_f32(500.0f),
+                                        x87f_load_i32(ent->moverDuration)));
 #else
-        scale = (float)((long double)500.0f / (long double)ent->moverDuration);
+        scale = (float)((long double)500.0f /
+                        (long double)ent->moverDuration);
 #endif
-        ent->s.apos.trDuration = coduo_int32_from_bits((uint32_t)ent->moverDuration * UINT32_C(2));
+        ent->s.apos.trDuration = coduo_int32_from_bits(
+            (uint32_t)ent->moverDuration * UINT32_C(2));
     }
 
     /* 0x61cbc..0x61d07: stock multiplies scale*doorYawOffset first, then by
@@ -1334,8 +1407,9 @@ static void game_compat_g_binary_mover_set_rotate_move_to_pos2(gentity_t *ent, i
      * each (scale*doorYawOffset)*damageDir[i] 2-mul cascade. */
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        ent->s.apos.trDelta[i] =
-            x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(scale), x87f_load_f32(ent->doorYawOffset)), x87f_load_f32(ent->damageDir[i])));
+        ent->s.apos.trDelta[i] = x87f_store_f32(x87f_mul(
+            x87f_mul(x87f_load_f32(scale), x87f_load_f32(ent->doorYawOffset)),
+            x87f_load_f32(ent->damageDir[i])));
     }
 #else
     ent->s.apos.trDelta[0] = scale * ent->doorYawOffset * ent->damageDir[0];
@@ -1355,9 +1429,11 @@ static void game_compat_g_binary_mover_set_rotate_move_to_pos1(gentity_t *ent, i
      * scale*=0.5 (exact) and trDelta = -trBase*scale (negate + single mul) all
      * native. */
 #if EMULATE_X87
-    float scale = x87f_store_f32(x87f_div(x87f_load_f32(1000.0f), x87f_load_i32(ent->moverDuration)));
+    float scale = x87f_store_f32(x87f_div(x87f_load_f32(1000.0f),
+                                          x87f_load_i32(ent->moverDuration)));
 #else
-    float scale = (float)((long double)1000.0f / (long double)ent->moverDuration);
+    float scale = (float)((long double)1000.0f /
+                          (long double)ent->moverDuration);
 #endif
 
     ent->s.apos.trBase[0] = ent->damageDir[0] * ent->doorYawOffset;
@@ -1366,7 +1442,8 @@ static void game_compat_g_binary_mover_set_rotate_move_to_pos1(gentity_t *ent, i
     ent->s.apos.trDuration = ent->moverDuration;
 
     if (slow != 0) {
-        ent->s.apos.trDuration = coduo_int32_from_bits((uint32_t)ent->s.apos.trDuration * UINT32_C(2));
+        ent->s.apos.trDuration = coduo_int32_from_bits(
+            (uint32_t)ent->s.apos.trDuration * UINT32_C(2));
         scale *= 0.5f;
     }
 
@@ -1404,17 +1481,22 @@ void SetMoverState(gentity_t *ent, int moverState, int time)
         ent->s.pos.trType = TR_STATIONARY;
         break;
     case MOVER_STATE_DOOR_MOVING_TO_POS2:
-        game_compat_g_binary_mover_set_pos_move(ent, ent->moverPos1, ent->moverPos2, ent->moverDuration);
+        game_compat_g_binary_mover_set_pos_move(ent, ent->moverPos1, ent->moverPos2,
+                                ent->moverDuration);
         break;
     case MOVER_STATE_DOOR_MOVING_TO_POS1:
         game_compat_g_binary_mover_set_pos_move(ent, ent->moverPos2, ent->moverPos1,
-                                                game_compat_g_binary_mover_has_alt_speed(ent) ? ent->moverAltDuration : ent->moverDuration);
+                                game_compat_g_binary_mover_has_alt_speed(ent)
+                                    ? ent->moverAltDuration
+                                    : ent->moverDuration);
         break;
     case MOVER_STATE_DOOR_MOVING_TO_POS3:
-        game_compat_g_binary_mover_set_pos_move(ent, ent->moverPos2, ent->damagePoint, ent->s.pos.trDuration);
+        game_compat_g_binary_mover_set_pos_move(ent, ent->moverPos2, ent->damagePoint,
+                                ent->s.pos.trDuration);
         break;
     case MOVER_STATE_DOOR_MOVING_TO_POS2_FROM_POS3:
-        game_compat_g_binary_mover_set_pos_move(ent, ent->damagePoint, ent->moverPos2, ent->s.pos.trDuration);
+        game_compat_g_binary_mover_set_pos_move(ent, ent->damagePoint, ent->moverPos2,
+                                ent->s.pos.trDuration);
         break;
     case MOVER_STATE_ROTATE_POS1:
     case MOVER_STATE_ROTATE_POS2:
@@ -1430,7 +1512,8 @@ void SetMoverState(gentity_t *ent, int moverState, int time)
     }
 
     BG_EvaluateTrajectory(&ent->s.pos, level.time, ent->currentOrigin);
-    if ((ent->svFlags & BINARY_MOVER_SKIP_LINK_FLAG) == 0 || ent->scriptContents != 0) {
+    if ((ent->svFlags & BINARY_MOVER_SKIP_LINK_FLAG) == 0 ||
+        ent->scriptContents != 0) {
         trap_LinkEntity(ent);
     }
 }
@@ -1444,7 +1527,8 @@ void MatchTeam(gentity_t *ent, int moverState, int time)
 {
     int propagateQuiet = (ent->flags & BINARY_MOVER_QUIET_FLAG) != 0;
 
-    for (gentity_t *current = ent; current != NULL; current = current->teamChain) {
+    for (gentity_t *current = ent; current != NULL;
+         current = current->teamChain) {
         if (propagateQuiet != 0) {
             current->flags |= BINARY_MOVER_QUIET_FLAG;
         }
@@ -1457,11 +1541,13 @@ void MatchTeam(gentity_t *ent, int moverState, int time)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x61ed6, 71ed6_MatchTeamReverseAngleOnSlaves.c, VERIFY-WORKER-MOVER-STATIC-2026-06-17): DATAFLOW_VERIFIED - teamChain loop, per-slave yaw negation, quiet flag propagation from master, SetMoverState args, and void return checked. */
-static void MatchTeamReverseAngleOnSlaves(gentity_t *ent, int moverState, int time)
+static void MatchTeamReverseAngleOnSlaves(gentity_t *ent, int moverState,
+                                          int time)
 {
     int propagateQuiet = (ent->flags & BINARY_MOVER_QUIET_FLAG) != 0;
 
-    for (gentity_t *current = ent; current != NULL; current = current->teamChain) {
+    for (gentity_t *current = ent; current != NULL;
+         current = current->teamChain) {
         current->doorYawOffset = -current->doorYawOffset;
         if (propagateQuiet != 0) {
             current->flags |= BINARY_MOVER_QUIET_FLAG;
@@ -1487,9 +1573,11 @@ void ReturnToPos1(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original ReturnToPos1Rotate (0x620c3); no standalone original body. */
 static int game_compat_g_binary_mover_first_player_in_pvs(gentity_t *ent)
 {
-    gentity_t *player = G_Find(NULL, offsetof(gentity_t, scriptClassname), scr_const_player);
+    gentity_t *player =
+        G_Find(NULL, offsetof(gentity_t, scriptClassname), scr_const_player);
 
-    return player != NULL && trap_InPVS(player->currentOrigin, ent->currentOrigin) != qfalse;
+    return player != NULL &&
+           trap_InPVS(player->currentOrigin, ent->currentOrigin) != qfalse;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1523,15 +1611,18 @@ static void game_compat_g_binary_mover_adjust_area_portal(gentity_t *ent, qboole
 /* NOT_FROM_ORIGINAL_SOURCE: binary mover auto-return scheduling; extracted during reconstruction of 0x621ae. */
 /* VERIFIED_DECOMPILER(0x621ae, 721ae_Reached_BinaryMover.c, VERIFY-WORKER-MOVER-STATIC-2026-06-17): DATAFLOW_VERIFIED - source-only helper checked against toggle activeState clear, think install, nextthink zero, and non-toggle wait sentinel/x87 truncate wait+level.time scheduling. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original Reached_BinaryMover (0x621ae); no standalone original body. */
-static void game_compat_g_binary_mover_schedule_return(gentity_t *ent, void (*think)(gentity_t *))
+static void game_compat_g_binary_mover_schedule_return(gentity_t *ent,
+                                        void (*think)(gentity_t *))
 {
     if ((ent->flags & BINARY_MOVER_TOGGLE_FLAG) == 0) {
         if (ent->itemWait != BINARY_MOVER_NO_AUTORETURN_WAIT) {
-            int32_t wait = game_compat_int32_from_long_double_trunc((long double)ent->itemWait);
+            int32_t wait = game_compat_int32_from_long_double_trunc(
+                (long double)ent->itemWait);
 
             ent->think = think;
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)wait);
+            ent->nextthink = coduo_int32_from_bits(
+                (uint32_t)level.time + (uint32_t)wait);
         }
     } else {
         ent->activeState = 0;
@@ -1553,18 +1644,21 @@ void Reached_BinaryMover(gentity_t *ent)
 
     if (ent->moverState == MOVER_STATE_DOOR_MOVING_TO_POS2) {
         SetMoverState(ent, MOVER_STATE_DOOR_POS2, level.time);
-        G_PlaySoundAlias(ent, normalSound ? ent->doorSoundOpenEnd : ent->doorSoundOpenQuietEnd);
+        G_PlaySoundAlias(ent, normalSound ? ent->doorSoundOpenEnd
+                                          : ent->doorSoundOpenQuietEnd);
         if (ent->triggerActivator == NULL) {
             ent->triggerActivator = ent;
         }
         game_compat_g_binary_mover_schedule_return(ent, ReturnToPos1);
     } else if (ent->moverState == MOVER_STATE_DOOR_MOVING_TO_POS1) {
         SetMoverState(ent, MOVER_STATE_DOOR_POS1, level.time);
-        G_PlaySoundAlias(ent, normalSound ? ent->doorSoundCloseEnd : ent->doorSoundCloseQuietEnd);
+        G_PlaySoundAlias(ent, normalSound ? ent->doorSoundCloseEnd
+                                          : ent->doorSoundCloseQuietEnd);
         game_compat_g_binary_mover_adjust_area_portal(ent, qfalse);
     } else if (ent->moverState == MOVER_STATE_ROTATE_MOVING_TO_POS2) {
         SetMoverState(ent, MOVER_STATE_ROTATE_POS2, level.time);
-        G_PlaySoundAlias(ent, normalSound ? ent->doorSoundOpenEnd : ent->doorSoundOpenQuietEnd);
+        G_PlaySoundAlias(ent, normalSound ? ent->doorSoundOpenEnd
+                                          : ent->doorSoundOpenQuietEnd);
         if (ent->triggerActivator == NULL) {
             ent->triggerActivator = ent;
         }
@@ -1572,7 +1666,8 @@ void Reached_BinaryMover(gentity_t *ent)
     } else if (ent->moverState == MOVER_STATE_ROTATE_MOVING_TO_POS1) {
         SetMoverState(ent, MOVER_STATE_ROTATE_POS1, level.time);
         if (game_compat_g_binary_mover_first_player_in_pvs(ent) != 0) {
-            G_PlaySoundAlias(ent, normalSound ? ent->doorSoundCloseEnd : ent->doorSoundCloseQuietEnd);
+            G_PlaySoundAlias(ent, normalSound ? ent->doorSoundCloseEnd
+                                              : ent->doorSoundCloseQuietEnd);
         }
         ent->flags &= ~BINARY_MOVER_QUIET_FLAG;
         game_compat_g_binary_mover_adjust_area_portal(ent, qfalse);
@@ -1586,7 +1681,8 @@ void Reached_BinaryMover(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x62608, 72608_IsBinaryMoverBlocked.c, VERIFY-ENTITY-DISPATCH-MOVER-PACKET-2026-06-17): DATAFLOW_VERIFIED - classname/spawnflag gates, center and angle vectors, NaN-aware axis selection, AngleVectors/VectorNormalize calls, dot-product comparison, and return values checked. */
-static int IsBinaryMoverBlocked(gentity_t *ent, gentity_t *other, gentity_t *activator)
+static int IsBinaryMoverBlocked(gentity_t *ent, gentity_t *other,
+                                gentity_t *activator)
 {
     vec3_t center;
     vec3_t toCenter;
@@ -1599,7 +1695,8 @@ static int IsBinaryMoverBlocked(gentity_t *ent, gentity_t *other, gentity_t *act
     if (ent->scriptClassname != scr_const_func_door_rotating) {
         return 0;
     }
-    if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_SKIP_BLOCK_CHECK) != 0) {
+    if ((ent->spawnflags &
+         FUNC_DOOR_ROTATING_SPAWNFLAG_SKIP_BLOCK_CHECK) != 0) {
         return 0;
     }
 
@@ -1638,11 +1735,14 @@ static int IsBinaryMoverBlocked(gentity_t *ent, gentity_t *other, gentity_t *act
      * (single add stored) then *0.5 (exact power-of-two scale) stay native. */
     {
 #if EMULATE_X87
-        float dot = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(toActivator[0]), x87f_load_f32(forward[0])),
-                                                     x87f_mul(x87f_load_f32(toActivator[1]), x87f_load_f32(forward[1]))),
-                                            x87f_mul(x87f_load_f32(toActivator[2]), x87f_load_f32(forward[2]))));
+        float dot = x87f_store_f32(x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(toActivator[0]), x87f_load_f32(forward[0])),
+                     x87f_mul(x87f_load_f32(toActivator[1]), x87f_load_f32(forward[1]))),
+            x87f_mul(x87f_load_f32(toActivator[2]), x87f_load_f32(forward[2]))));
 #else
-        float dot = toActivator[0] * forward[0] + toActivator[1] * forward[1] + toActivator[2] * forward[2];
+        float dot = toActivator[0] * forward[0] +
+                    toActivator[1] * forward[1] +
+                    toActivator[2] * forward[2];
 #endif
 
         return dot >= 0.0f;
@@ -1693,13 +1793,16 @@ void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator)
         return;
     }
 
-    if (ent->moverState == MOVER_STATE_DOOR_POS1 || ent->moverState == MOVER_STATE_ROTATE_POS1) {
+    if (ent->moverState == MOVER_STATE_DOOR_POS1 ||
+        ent->moverState == MOVER_STATE_ROTATE_POS1) {
         blocked = IsBinaryMoverBlocked(ent, other, activator);
     }
 
     if (blocked != 0) {
         MatchTeamReverseAngleOnSlaves(ent, MOVER_STATE_ROTATE_MOVING_TO_POS2,
-                                      coduo_int32_from_bits((uint32_t)level.time + BINARY_MOVER_START_DELAY_MS));
+                                      coduo_int32_from_bits(
+                                          (uint32_t)level.time +
+                                          BINARY_MOVER_START_DELAY_MS));
         if (playSounds != 0) {
             game_compat_g_binary_mover_start_opening_sound(ent, quiet);
         }
@@ -1708,20 +1811,25 @@ void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator)
     }
 
     ent->triggerActivator = activator;
-    if (ent->targetLocationNext != NULL && ent->targetLocationNext->itemWait == BINARY_MOVER_LINK_WAIT_SENTINEL &&
+    if (ent->targetLocationNext != NULL &&
+        ent->targetLocationNext->itemWait == BINARY_MOVER_LINK_WAIT_SENTINEL &&
         ent->targetLocationNext->itemCount == BINARY_MOVER_LINK_ITEM_COUNT) {
         ent->targetLocationNext->itemCount = 0;
         return;
     }
 
     if (ent->moverState == MOVER_STATE_DOOR_POS1) {
-        MatchTeam(ent, MOVER_STATE_DOOR_MOVING_TO_POS2, coduo_int32_from_bits((uint32_t)level.time + BINARY_MOVER_START_DELAY_MS));
+        MatchTeam(ent, MOVER_STATE_DOOR_MOVING_TO_POS2,
+                  coduo_int32_from_bits((uint32_t)level.time +
+                                        BINARY_MOVER_START_DELAY_MS));
         if (playSounds != 0) {
             G_PlaySoundAlias(ent, ent->doorSoundOpening);
         }
         game_compat_g_binary_mover_start_open_loop(ent, playSounds);
     } else if (ent->moverState == MOVER_STATE_ROTATE_POS1) {
-        MatchTeam(ent, MOVER_STATE_ROTATE_MOVING_TO_POS2, coduo_int32_from_bits((uint32_t)level.time + BINARY_MOVER_START_DELAY_MS));
+        MatchTeam(ent, MOVER_STATE_ROTATE_MOVING_TO_POS2,
+                  coduo_int32_from_bits((uint32_t)level.time +
+                                        BINARY_MOVER_START_DELAY_MS));
         if (playSounds != 0) {
             game_compat_g_binary_mover_start_opening_sound(ent, quiet);
         }
@@ -1729,20 +1837,26 @@ void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator)
     } else if (ent->moverState == MOVER_STATE_DOOR_POS2) {
         if ((ent->flags & BINARY_MOVER_TOGGLE_FLAG) == 0) {
             if (ent->itemWait != BINARY_MOVER_NO_AUTORETURN_WAIT) {
-                int32_t wait = game_compat_int32_from_long_double_trunc((long double)ent->itemWait);
+                int32_t wait = game_compat_int32_from_long_double_trunc(
+                    (long double)ent->itemWait);
 
-                ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)wait);
+                ent->nextthink = coduo_int32_from_bits(
+                    (uint32_t)level.time + (uint32_t)wait);
             }
         } else {
-            ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + BINARY_MOVER_START_DELAY_MS);
+            ent->nextthink = coduo_int32_from_bits(
+                (uint32_t)level.time + BINARY_MOVER_START_DELAY_MS);
         }
     } else if (ent->moverState == MOVER_STATE_ROTATE_POS2) {
         if ((ent->flags & BINARY_MOVER_TOGGLE_FLAG) == 0) {
-            int32_t wait = game_compat_int32_from_long_double_trunc((long double)ent->itemWait);
+            int32_t wait = game_compat_int32_from_long_double_trunc(
+                (long double)ent->itemWait);
 
-            ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)wait);
+            ent->nextthink = coduo_int32_from_bits(
+                (uint32_t)level.time + (uint32_t)wait);
         } else {
-            ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + BINARY_MOVER_START_DELAY_MS);
+            ent->nextthink = coduo_int32_from_bits(
+                (uint32_t)level.time + BINARY_MOVER_START_DELAY_MS);
         }
     } else if (ent->moverState == MOVER_STATE_DOOR_MOVING_TO_POS1) {
         Blocked_Door(ent, NULL);
@@ -1807,7 +1921,8 @@ void InitMover(gentity_t *ent)
         uint32_t blue = game_compat_g_mover_light_component(color[2], 255.0f);
         uint32_t intensity = game_compat_g_mover_light_component(light, 0.25f);
 
-        ent->s.constantLight = (intensity << 24) | (blue << 16) | (green << 8) | red;
+        ent->s.constantLight =
+            (intensity << 24) | (blue << 16) | (green << 8) | red;
     }
 
     if (game_compat_g_binary_mover_is_func_rotating(ent) != 0) {
@@ -1835,15 +1950,18 @@ void InitMover(gentity_t *ent)
      * for sqrt -> shim (store_f64), then (float)sqrt. */
 #if EMULATE_X87
     distance = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])), x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+        x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
+                 x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
         x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2])))));
 #else
-    distance = (float)CoduoLibm_Sqrt((double)delta[0] * (double)delta[0] + (double)delta[1] * (double)delta[1] +
-                                     (double)delta[2] * (double)delta[2]);
+    distance = (float)CoduoLibm_Sqrt((double)delta[0] * (double)delta[0] +
+                           (double)delta[1] * (double)delta[1] +
+                           (double)delta[2] * (double)delta[2]);
 #endif
 
     if ((*game_compat_g_binary_mover_speed(ent)) == 0.0f) {
-        (*game_compat_g_binary_mover_speed(ent)) = BINARY_MOVER_DEFAULT_SPEED;
+        (*game_compat_g_binary_mover_speed(ent)) =
+            BINARY_MOVER_DEFAULT_SPEED;
     }
 
     /* Stock 0x63113..0x63130: distance*1000 then /speed kept 80-bit, fistp
@@ -1851,10 +1969,13 @@ void InitMover(gentity_t *ent)
      * The #else forces the 80-bit product/quotient with a long double multiply
      * (1000 exact) so the reference build also fistp's directly. */
 #if EMULATE_X87
-    duration = x87f_store_i32_trunc(
-        x87f_div(x87f_mul(x87f_load_f32(distance), x87f_load_f32(1000.0f)), x87f_load_f32(*game_compat_g_binary_mover_speed(ent))));
+    duration = x87f_store_i32_trunc(x87f_div(
+        x87f_mul(x87f_load_f32(distance), x87f_load_f32(1000.0f)),
+        x87f_load_f32(*game_compat_g_binary_mover_speed(ent))));
 #else
-    duration = game_compat_int32_from_long_double_trunc((long double)distance * 1000.0f / (*game_compat_g_binary_mover_speed(ent)));
+    duration = game_compat_int32_from_long_double_trunc(
+        (long double)distance * 1000.0f /
+        (*game_compat_g_binary_mover_speed(ent)));
 #endif
     if (duration < 1) {
         duration = 1;
@@ -1868,10 +1989,12 @@ void InitMover(gentity_t *ent)
         /* Same as the primary duration: distance*1000 / doorAltSpeed kept 80-bit,
          * fistp directly on the quotient. */
 #if EMULATE_X87
-        duration =
-            x87f_store_i32_trunc(x87f_div(x87f_mul(x87f_load_f32(distance), x87f_load_f32(1000.0f)), x87f_load_f32(ent->doorAltSpeed)));
+        duration = x87f_store_i32_trunc(x87f_div(
+            x87f_mul(x87f_load_f32(distance), x87f_load_f32(1000.0f)),
+            x87f_load_f32(ent->doorAltSpeed)));
 #else
-        duration = game_compat_int32_from_long_double_trunc((long double)distance * 1000.0f / ent->doorAltSpeed);
+        duration = game_compat_int32_from_long_double_trunc(
+            (long double)distance * 1000.0f / ent->doorAltSpeed);
 #endif
         if (duration < 1) {
             duration = 1;
@@ -1897,7 +2020,8 @@ void InitMoverRotate(gentity_t *ent)
         uint32_t blue = game_compat_g_mover_light_component(color[2], 255.0f);
         uint32_t intensity = game_compat_g_mover_light_component(light, 0.25f);
 
-        ent->s.constantLight = (intensity << 24) | (blue << 16) | (green << 8) | red;
+        ent->s.constantLight =
+            (intensity << 24) | (blue << 16) | (green << 8) | red;
     }
 
     ent->use = Use_BinaryMover;
@@ -1916,10 +2040,12 @@ void InitMoverRotate(gentity_t *ent)
     ent->s.pos.trBase[2] = ent->currentOrigin[2];
 
     if ((*game_compat_g_binary_mover_speed(ent)) == 0.0f) {
-        (*game_compat_g_binary_mover_speed(ent)) = BINARY_MOVER_DEFAULT_SPEED;
+        (*game_compat_g_binary_mover_speed(ent)) =
+            BINARY_MOVER_DEFAULT_SPEED;
     }
 
-    duration = game_compat_int32_from_float_trunc(*game_compat_g_binary_mover_speed(ent));
+    duration = game_compat_int32_from_float_trunc(
+        *game_compat_g_binary_mover_speed(ent));
     if (duration < 1) {
         duration = 1;
     }
@@ -1944,19 +2070,26 @@ void Blocked_Door(gentity_t *ent, gentity_t *blocker)
         }
 
         if (ent->damage != 0) {
-            G_Damage(blocker, ent, ent, NULL, NULL, ent->damage, 0, MOD_CRUSH, HITLOC_NONE);
+            G_Damage(blocker, ent, ent, NULL, NULL, ent->damage, 0, MOD_CRUSH,
+                     HITLOC_NONE);
         }
     }
 
     if ((ent->spawnflags & DOOR_SPAWNFLAG_CRUSHER) == 0) {
-        for (gentity_t *current = ent; current != NULL; current = current->teamChain) {
-            int reverseTime = coduo_int32_from_bits((uint32_t)level.time * UINT32_C(2) - (uint32_t)current->s.pos.trTime -
-                                                    (uint32_t)current->s.pos.trDuration);
+        for (gentity_t *current = ent; current != NULL;
+             current = current->teamChain) {
+            int reverseTime = coduo_int32_from_bits(
+                (uint32_t)level.time * UINT32_C(2) -
+                (uint32_t)current->s.pos.trTime -
+                (uint32_t)current->s.pos.trDuration);
 
-            if (current->moverState == MOVER_STATE_DOOR_MOVING_TO_POS2) {
-                SetMoverState(current, MOVER_STATE_DOOR_MOVING_TO_POS1, reverseTime);
+            if (current->moverState ==
+                MOVER_STATE_DOOR_MOVING_TO_POS2) {
+                SetMoverState(current, MOVER_STATE_DOOR_MOVING_TO_POS1,
+                              reverseTime);
             } else {
-                SetMoverState(current, MOVER_STATE_DOOR_MOVING_TO_POS2, reverseTime);
+                SetMoverState(current, MOVER_STATE_DOOR_MOVING_TO_POS2,
+                              reverseTime);
             }
             trap_LinkEntity(current);
         }
@@ -1978,21 +2111,30 @@ void Blocked_DoorRotate(gentity_t *ent, gentity_t *blocker)
         }
 
         if (blocker->health < 1) {
-            G_Damage(blocker, ent, ent, NULL, NULL, DOOR_ROTATE_FALLBACK_DAMAGE, 0, MOD_CRUSH, HITLOC_NONE);
+            G_Damage(blocker, ent, ent, NULL, NULL,
+                     DOOR_ROTATE_FALLBACK_DAMAGE, 0, MOD_CRUSH,
+                     HITLOC_NONE);
         }
         if (ent->damage != 0) {
-            G_Damage(blocker, ent, ent, NULL, NULL, ent->damage, 0, MOD_CRUSH, HITLOC_NONE);
+            G_Damage(blocker, ent, ent, NULL, NULL, ent->damage, 0, MOD_CRUSH,
+                     HITLOC_NONE);
         }
     }
 
-    for (gentity_t *current = ent; current != NULL; current = current->teamChain) {
-        int reverseTime = coduo_int32_from_bits((uint32_t)level.time * UINT32_C(2) - (uint32_t)current->s.apos.trTime -
-                                                (uint32_t)current->s.apos.trDuration);
+    for (gentity_t *current = ent; current != NULL;
+         current = current->teamChain) {
+        int reverseTime = coduo_int32_from_bits(
+            (uint32_t)level.time * UINT32_C(2) -
+            (uint32_t)current->s.apos.trTime -
+            (uint32_t)current->s.apos.trDuration);
 
-        if (current->moverState == MOVER_STATE_ROTATE_MOVING_TO_POS2) {
-            SetMoverState(current, MOVER_STATE_ROTATE_MOVING_TO_POS1, reverseTime);
+        if (current->moverState ==
+            MOVER_STATE_ROTATE_MOVING_TO_POS2) {
+            SetMoverState(current, MOVER_STATE_ROTATE_MOVING_TO_POS1,
+                          reverseTime);
         } else {
-            SetMoverState(current, MOVER_STATE_ROTATE_MOVING_TO_POS2, reverseTime);
+            SetMoverState(current, MOVER_STATE_ROTATE_MOVING_TO_POS2,
+                          reverseTime);
         }
         trap_LinkEntity(current);
     }
@@ -2015,7 +2157,9 @@ void Touch_DoorTrigger(gentity_t *trigger, gentity_t *other, int traceMode)
     }
 
     state = door->moverState;
-    if (state == MOVER_STATE_DOOR_POS1 || state == MOVER_STATE_ROTATE_POS1 || state == MOVER_STATE_ROTATE_MOVING_TO_POS1) {
+    if (state == MOVER_STATE_DOOR_POS1 ||
+        state == MOVER_STATE_ROTATE_POS1 ||
+        state == MOVER_STATE_ROTATE_MOVING_TO_POS1) {
         Use_BinaryMover(door, trigger, other);
     }
 }
@@ -2032,7 +2176,8 @@ static gentity_t *Think_SpawnNewDoorTriggerInternal(gentity_t *ent)
     vec3_t maxs;
     int narrowAxis;
 
-    for (gentity_t *current = ent; current != NULL; current = current->teamChain) {
+    for (gentity_t *current = ent; current != NULL;
+         current = current->teamChain) {
         current->takeDamage = 1;
     }
 
@@ -2043,7 +2188,8 @@ static gentity_t *Think_SpawnNewDoorTriggerInternal(gentity_t *ent)
     maxs[1] = ent->absMax[1];
     maxs[2] = ent->absMax[2];
 
-    for (gentity_t *current = ent->teamChain; current != NULL; current = current->teamChain) {
+    for (gentity_t *current = ent->teamChain; current != NULL;
+         current = current->teamChain) {
         AddPointToBounds(current->absMin, mins, maxs);
         AddPointToBounds(current->absMax, mins, maxs);
     }
@@ -2094,7 +2240,8 @@ void Think_SpawnNewDoorTrigger(gentity_t *ent)
 static void DoorRotateStartOpen(gentity_t *ent)
 {
     ent->think = ReturnToPos1Rotate;
-    ent->currentAngles[1] += ent->doorYawOffset;
+    ent->currentAngles[1] +=
+        ent->doorYawOffset;
     SetMoverState(ent, MOVER_STATE_ROTATE_POS2, level.time);
 
     if (ent->teamMaster == ent || ent->teamMaster == NULL) {
@@ -2131,11 +2278,14 @@ void Think_MatchTeam(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x63a9c, 73a9c_finishSpawningKeyedMover.c, VERIFY-WAVE4-ENTITY-DISPATCH-C09-2026-06-17): DATAFLOW_VERIFIED - nextthink delay, command-blocked gate, think selection branches, and doorLocked team-chain propagation checked. */
 void finishSpawningKeyedMover(gentity_t *ent)
 {
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + KEYED_MOVER_FINISH_DELAY_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + KEYED_MOVER_FINISH_DELAY_MS);
 
-    if ((ent->flags & KEYED_MOVER_COMMAND_BLOCKED_FLAG) == 0) {
+    if ((ent->flags &
+         KEYED_MOVER_COMMAND_BLOCKED_FLAG) == 0) {
         if (ent->takeDamage == 0) {
-            if (ent->scriptClassname == scr_const_func_door_rotating) {
+            if (ent->scriptClassname ==
+                scr_const_func_door_rotating) {
                 ent->think = Think_SpawnNewAutoDoorTrigger;
             } else if ((ent->spawnflags & KEYED_MOVER_SPAWNFLAG_TRIGGER) == 0) {
                 ent->think = Think_MatchTeam;
@@ -2146,7 +2296,8 @@ void finishSpawningKeyedMover(gentity_t *ent)
             ent->think = Think_MatchTeam;
         }
 
-        for (gentity_t *current = ent; current != NULL; current = current->teamChain) {
+        for (gentity_t *current = ent; current != NULL;
+             current = current->teamChain) {
             if (current != ent) {
                 current->doorLocked = ent->doorLocked;
             }
@@ -2175,8 +2326,10 @@ void Door_reverse_sounds(gentity_t *ent)
     game_compat_door_swap_sound_slots(&ent->doorSoundOpening, &ent->doorSoundClosing);
     game_compat_door_swap_sound_slots(&ent->doorSoundCloseEnd, &ent->doorSoundOpenEnd);
     game_compat_door_swap_sound_slots(&ent->doorSoundOpenLoop, &ent->doorSoundCloseLoop);
-    game_compat_door_swap_sound_slots(&ent->doorSoundOpeningQuiet, &ent->doorSoundClosingQuiet);
-    game_compat_door_swap_sound_slots(&ent->doorSoundOpenQuietEnd, &ent->doorSoundCloseQuietEnd);
+    game_compat_door_swap_sound_slots(&ent->doorSoundOpeningQuiet,
+                       &ent->doorSoundClosingQuiet);
+    game_compat_door_swap_sound_slots(&ent->doorSoundOpenQuietEnd,
+                       &ent->doorSoundCloseQuietEnd);
 }
 
 /* ------------------------------------------------------------------ */
@@ -2216,12 +2369,15 @@ void DoorSetSounds(gentity_t *ent, int isRotating)
 /* VERIFIED_DECOMPILER(0x63d8c, 73d8c_G_TryDoor.c, VERIFY-WAVE4-ENTITY-DISPATCH-C10-2026-06-17): DATAFLOW_VERIFIED - stationary pos/apos and in-use gates, doorLocked sound path, trigger notify arguments, team-master selection, activeState write, sticky flag propagation from original ent, and Use_BinaryMover argument order checked. */
 void G_TryDoor(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
-    uint32_t moverFlags = ent->flags;
+    uint32_t moverFlags =
+        ent->flags;
     gentity_t *door = ent;
 
     (void)other;
 
-    if (ent->s.apos.trType != TR_STATIONARY || ent->s.pos.trType != TR_STATIONARY || ent->activeState != 0) {
+    if (ent->s.apos.trType != TR_STATIONARY ||
+        ent->s.pos.trType != TR_STATIONARY ||
+        ent->activeState != 0) {
         return;
     }
 
@@ -2233,13 +2389,16 @@ void G_TryDoor(gentity_t *ent, gentity_t *other, gentity_t *activator)
     Scr_AddEntity(activator);
     Scr_Notify(ent, scr_const_trigger, 1);
 
-    if (ent->teamMaster != NULL && (uint16_t)ent->teamName != 0 && ent != ent->teamMaster) {
+    if (ent->teamMaster != NULL &&
+        (uint16_t)ent->teamName != 0 &&
+        ent != ent->teamMaster) {
         door = ent->teamMaster;
     }
 
     door->activeState = 1;
     if ((moverFlags & DOOR_MOVER_STICKY_FLAG) != 0) {
-        door->flags |= DOOR_MOVER_STICKY_FLAG;
+        door->flags |=
+            DOOR_MOVER_STICKY_FLAG;
     }
     Use_BinaryMover(door, activator, activator);
 }
@@ -2284,7 +2443,8 @@ void SP_func_door(gentity_t *ent)
     ent->moverBlocked = Blocked_Door;
 
     if ((*game_compat_g_binary_mover_speed(ent)) == 0.0f) {
-        (*game_compat_g_binary_mover_speed(ent)) = DOOR_DEFAULT_SPEED;
+        (*game_compat_g_binary_mover_speed(ent)) =
+            DOOR_DEFAULT_SPEED;
     }
     if (ent->itemWait == 0.0f) {
         ent->itemWait = DOOR_DEFAULT_WAIT_SECONDS;
@@ -2306,7 +2466,8 @@ void SP_func_door(gentity_t *ent)
     game_compat_door_copy_vector_to_ent(ent->moverPos1, pos1);
 
     trap_SetBrushModel(ent);
-    G_SetMovedir(ent->currentAngles, ent->moverDir);
+    G_SetMovedir(ent->currentAngles,
+                 ent->moverDir);
 
     size[0] = ent->maxs[0] - ent->mins[0];
     size[1] = ent->maxs[1] - ent->mins[1];
@@ -2315,24 +2476,42 @@ void SP_func_door(gentity_t *ent)
      * floats (native), then the dot minus lip is kept 80-bit until the store ->
      * shim ((m0+m1)+m2) - lip. */
 #if EMULATE_X87
-    moveDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(fabsf(ent->moverDir[0])), x87f_load_f32(size[0])),
-                                                             x87f_mul(x87f_load_f32(fabsf(ent->moverDir[1])), x87f_load_f32(size[1]))),
-                                                    x87f_mul(x87f_load_f32(fabsf(ent->moverDir[2])), x87f_load_f32(size[2]))),
-                                           x87f_load_f32(lip)));
+    moveDistance = x87f_store_f32(x87f_sub(
+        x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(fabsf(ent->moverDir[0])),
+                              x87f_load_f32(size[0])),
+                     x87f_mul(x87f_load_f32(fabsf(ent->moverDir[1])),
+                              x87f_load_f32(size[1]))),
+            x87f_mul(x87f_load_f32(fabsf(ent->moverDir[2])),
+                     x87f_load_f32(size[2]))),
+        x87f_load_f32(lip)));
 #else
-    moveDistance = fabsf(ent->moverDir[0]) * size[0] + fabsf(ent->moverDir[1]) * size[1] + fabsf(ent->moverDir[2]) * size[2] - lip;
+    moveDistance =
+        fabsf(ent->moverDir[0]) * size[0] +
+        fabsf(ent->moverDir[1]) * size[1] +
+        fabsf(ent->moverDir[2]) * size[2] -
+        lip;
 #endif
 
     /* pos2[i] = pos1[i] + moverDir[i]*moveDistance: mul then add, 80-bit, one
      * store per component -> shim. */
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        pos2[i] = x87f_store_f32(x87f_add(x87f_load_f32(pos1[i]), x87f_mul(x87f_load_f32(ent->moverDir[i]), x87f_load_f32(moveDistance))));
+        pos2[i] = x87f_store_f32(x87f_add(
+            x87f_load_f32(pos1[i]),
+            x87f_mul(x87f_load_f32(ent->moverDir[i]),
+                     x87f_load_f32(moveDistance))));
     }
 #else
-    pos2[0] = pos1[0] + ent->moverDir[0] * moveDistance;
-    pos2[1] = pos1[1] + ent->moverDir[1] * moveDistance;
-    pos2[2] = pos1[2] + ent->moverDir[2] * moveDistance;
+    pos2[0] = pos1[0] +
+              ent->moverDir[0] *
+                  moveDistance;
+    pos2[1] = pos1[1] +
+              ent->moverDir[1] *
+                  moveDistance;
+    pos2[2] = pos1[2] +
+              ent->moverDir[2] *
+                  moveDistance;
 #endif
     game_compat_door_copy_vector_to_ent(ent->moverPos2, pos2);
 
@@ -2341,29 +2520,35 @@ void SP_func_door(gentity_t *ent)
         game_compat_door_copy_vector_to_ent(ent->moverPos2, ent->currentOrigin);
         game_compat_door_copy_vector_to_ent(ent->moverPos1, temp);
 
-        if (ent->doorAltSpeed != 0.0f || isnan(ent->doorAltSpeed)) {
-            float speed = (*game_compat_g_binary_mover_speed(ent));
+        if (ent->doorAltSpeed != 0.0f ||
+            isnan(ent->doorAltSpeed)) {
+            float speed =
+                (*game_compat_g_binary_mover_speed(ent));
 
-            (*game_compat_g_binary_mover_speed(ent)) = ent->doorAltSpeed;
+            (*game_compat_g_binary_mover_speed(ent)) =
+                ent->doorAltSpeed;
             ent->doorAltSpeed = speed;
         }
         Door_reverse_sounds(ent);
     }
 
     if ((ent->spawnflags & DOOR_SPAWNFLAG_TOGGLE) != 0) {
-        ent->flags |= DOOR_MOVER_HINT_FLAG;
+        ent->flags |=
+            DOOR_MOVER_HINT_FLAG;
     }
 
     InitMover(ent);
 
-    if ((ent->flags & KEYED_MOVER_COMMAND_BLOCKED_FLAG) == 0) {
+    if ((ent->flags &
+         KEYED_MOVER_COMMAND_BLOCKED_FLAG) == 0) {
         G_SpawnInt("health", DOOR_HEALTH_DEFAULT, &health);
         if (health != 0) {
             ent->takeDamage = 1;
         }
     }
 
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + KEYED_MOVER_FINISH_DELAY_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + KEYED_MOVER_FINISH_DELAY_MS);
     ent->think = finishSpawningKeyedMover;
 }
 
@@ -2389,7 +2574,9 @@ void Use_Static(gentity_t *ent, gentity_t *other, gentity_t *activator)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x64323, 74323_Static_Pain.c, VERIFY-WAVE4-ENTITY-DISPATCH-C10-2026-06-17): DATAFLOW_VERIFIED - callback signature adaptation, pain-delay timing expression, rand modulo/base delay, level.time comparison, itemWait update, spawnflag bit 4 split, and damagePoint currentOrigin save/copy/restore side effects checked. */
-void Static_Pain(gentity_t *ent, gentity_t *attacker, int damage, const float *point, int mod, const float *dir, int hitLocation)
+void Static_Pain(gentity_t *ent, gentity_t *attacker, int damage,
+                 const float *point, int mod, const float *dir,
+                 int hitLocation)
 {
     float painDelay;
     float nextPainTime;
@@ -2416,23 +2603,28 @@ void Static_Pain(gentity_t *ent, gentity_t *attacker, int damage, const float *p
     {
         const float levelTimeFloat = (float)level.time;
 #if EMULATE_X87
-        if (x87f_lt(x87f_add(x87f_add(x87f_load_f32(nextPainTime), x87f_load_i32(coduo_server_randrange(0, STATIC_PAIN_RANDOM_MS))),
-                             x87f_load_f32(STATIC_PAIN_BASE_DELAY_MS)),
-                    x87f_load_f32(levelTimeFloat))) {
+        if (x87f_lt(
+                x87f_add(x87f_add(x87f_load_f32(nextPainTime),
+                                  x87f_load_i32(coduo_server_randrange(
+                                      0, STATIC_PAIN_RANDOM_MS))),
+                         x87f_load_f32(STATIC_PAIN_BASE_DELAY_MS)),
+                x87f_load_f32(levelTimeFloat))) {
 #else
-        if (nextPainTime + coduo_server_randrange(0, STATIC_PAIN_RANDOM_MS) + STATIC_PAIN_BASE_DELAY_MS < levelTimeFloat) {
+        if (nextPainTime + coduo_server_randrange(0, STATIC_PAIN_RANDOM_MS) +
+                STATIC_PAIN_BASE_DELAY_MS <
+            levelTimeFloat) {
 #endif
-            ent->itemWait = (float)level.time;
+        ent->itemWait = (float)level.time;
 
-            if ((ent->spawnflags & STATIC_PAIN_DAMAGE_POINT_FLAG) != 0) {
-                vec3_t savedOrigin;
+        if ((ent->spawnflags & STATIC_PAIN_DAMAGE_POINT_FLAG) != 0) {
+            vec3_t savedOrigin;
 
-                /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                game_compat_g_copy_vector3(ent->currentOrigin, savedOrigin);
-                game_compat_g_copy_vector3(ent->damagePoint, ent->currentOrigin);
-                game_compat_g_copy_vector3(savedOrigin, ent->currentOrigin);
-            }
+            /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
+            game_compat_g_copy_vector3(ent->currentOrigin, savedOrigin);
+            game_compat_g_copy_vector3(ent->damagePoint, ent->currentOrigin);
+            game_compat_g_copy_vector3(savedOrigin, ent->currentOrigin);
         }
+    }
     }
 }
 
@@ -2474,8 +2666,11 @@ void SP_func_static(gentity_t *ent)
         }
     }
 
-    if ((ent->spawnflags & (STATIC_SPAWNFLAG_PAIN_TIMER | STATIC_PAIN_DAMAGE_POINT_FLAG)) != 0) {
-        float *painDelay = &ent->concussiveFxEndTime;
+    if ((ent->spawnflags &
+         (STATIC_SPAWNFLAG_PAIN_TIMER |
+          STATIC_PAIN_DAMAGE_POINT_FLAG)) != 0) {
+        float *painDelay =
+            &ent->concussiveFxEndTime;
 
         ent->pain = Static_Pain;
         if (*painDelay == 0.0f) {
@@ -2503,15 +2698,19 @@ void Use_Func_Rotate(gentity_t *ent, gentity_t *other, gentity_t *activator)
     (void)activator;
 
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_Z_AXIS) != 0) {
-        ent->s.apos.trDelta[2] = (*game_compat_g_binary_mover_speed(ent));
+        ent->s.apos.trDelta[2] =
+            (*game_compat_g_binary_mover_speed(ent));
     } else if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_X_AXIS) != 0) {
-        ent->s.apos.trDelta[0] = (*game_compat_g_binary_mover_speed(ent));
+        ent->s.apos.trDelta[0] =
+            (*game_compat_g_binary_mover_speed(ent));
     } else {
-        ent->s.apos.trDelta[1] = (*game_compat_g_binary_mover_speed(ent));
+        ent->s.apos.trDelta[1] =
+            (*game_compat_g_binary_mover_speed(ent));
     }
 
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_START_UNLINKED) != 0) {
-        ent->flags &= ~FUNC_ROTATING_UNLINKED_FLAG;
+        ent->flags &=
+            ~FUNC_ROTATING_UNLINKED_FLAG;
     }
     trap_LinkEntity(ent);
 }
@@ -2524,18 +2723,23 @@ void Use_Func_Rotate(gentity_t *ent, gentity_t *other, gentity_t *activator)
 void SP_func_rotating(gentity_t *ent)
 {
     if ((*game_compat_g_binary_mover_speed(ent)) == 0.0f) {
-        (*game_compat_g_binary_mover_speed(ent)) = FUNC_ROTATING_DEFAULT_SPEED;
+        (*game_compat_g_binary_mover_speed(ent)) =
+            FUNC_ROTATING_DEFAULT_SPEED;
     }
 
     ent->s.apos.trType = TR_LINEAR;
 
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_START_ON) != 0) {
         if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_Z_AXIS) != 0) {
-            ent->s.apos.trDelta[2] = (*game_compat_g_binary_mover_speed(ent));
-        } else if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_X_AXIS) != 0) {
-            ent->s.apos.trDelta[0] = (*game_compat_g_binary_mover_speed(ent));
+            ent->s.apos.trDelta[2] =
+                (*game_compat_g_binary_mover_speed(ent));
+        } else if ((ent->spawnflags &
+                    FUNC_ROTATING_SPAWNFLAG_X_AXIS) != 0) {
+            ent->s.apos.trDelta[0] =
+                (*game_compat_g_binary_mover_speed(ent));
         } else {
-            ent->s.apos.trDelta[1] = (*game_compat_g_binary_mover_speed(ent));
+            ent->s.apos.trDelta[1] =
+                (*game_compat_g_binary_mover_speed(ent));
         }
     }
 
@@ -2550,7 +2754,8 @@ void SP_func_rotating(gentity_t *ent)
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_START_UNLINKED) == 0) {
         trap_LinkEntity(ent);
     } else {
-        ent->flags |= FUNC_ROTATING_UNLINKED_FLAG;
+        ent->flags |=
+            FUNC_ROTATING_UNLINKED_FLAG;
         trap_UnlinkEntity(ent);
     }
 }
@@ -2565,7 +2770,8 @@ void SP_func_bobbing(gentity_t *ent)
     float height;
     float phase;
 
-    G_SpawnFloat("speed", FUNC_BOBBING_DEFAULT_SPEED, game_compat_g_binary_mover_speed(ent));
+    G_SpawnFloat("speed", FUNC_BOBBING_DEFAULT_SPEED,
+                 game_compat_g_binary_mover_speed(ent));
     G_SpawnFloat("height", FUNC_BOBBING_DEFAULT_HEIGHT, &height);
     G_SpawnInt("dmg", FUNC_BOBBING_DEFAULT_DAMAGE, &ent->damage);
     G_SpawnFloat("phase", FUNC_BOBBING_DEFAULT_PHASE, &phase);
@@ -2579,12 +2785,17 @@ void SP_func_bobbing(gentity_t *ent)
      * -> truncate the 80-bit product; the #else long double casts force the
      * 80-bit product so the ref build fistp's directly too. */
 #if EMULATE_X87
-    ent->s.pos.trDuration = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(*game_compat_g_binary_mover_speed(ent)), x87f_load_f32(1000.0f)));
-    ent->s.pos.trTime = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(ent->s.pos.trDuration), x87f_load_f32(phase)));
+    ent->s.pos.trDuration = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_f32(*game_compat_g_binary_mover_speed(ent)), x87f_load_f32(1000.0f)));
+    ent->s.pos.trTime = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_i32(ent->s.pos.trDuration), x87f_load_f32(phase)));
 #else
     ent->s.pos.trDuration =
-        game_compat_int32_from_long_double_trunc((long double)(*game_compat_g_binary_mover_speed(ent)) * (long double)1000.0f);
-    ent->s.pos.trTime = game_compat_int32_from_long_double_trunc((long double)ent->s.pos.trDuration * (long double)phase);
+        game_compat_int32_from_long_double_trunc(
+            (long double)(*game_compat_g_binary_mover_speed(ent)) *
+            (long double)1000.0f);
+    ent->s.pos.trTime = game_compat_int32_from_long_double_trunc(
+        (long double)ent->s.pos.trDuration * (long double)phase);
 #endif
     ent->s.pos.trType = TR_SINE;
 
@@ -2628,25 +2839,39 @@ void SP_func_pendulum(gentity_t *ent)
      * gravityFrequency(float) * FREQ_SCALE(QWORD double) kept 80-bit -> float;
      * duration = 1000.0/frequency, fistp DIRECTLY on the 80-bit quotient. */
 #if EMULATE_X87
-    gravityFrequency = (float)CoduoLibm_Sqrt(x87f_store_f64(
-        x87f_div(x87f_load_f32(g_gravity.value), x87f_mul(x87f_load_f32(length), x87f_load_f32(FUNC_PENDULUM_GRAVITY_SCALE)))));
-    frequency = x87f_store_f32(x87f_mul(x87f_load_f32(gravityFrequency), x87f_load_f64(FUNC_PENDULUM_FREQ_SCALE)));
-    duration = x87f_store_i32_trunc(x87f_div(x87f_load_f32(1000.0f), x87f_load_f32(frequency)));
+    gravityFrequency = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_div(
+        x87f_load_f32(g_gravity.value),
+        x87f_mul(x87f_load_f32(length),
+                 x87f_load_f32(FUNC_PENDULUM_GRAVITY_SCALE)))));
+    frequency = x87f_store_f32(x87f_mul(
+        x87f_load_f32(gravityFrequency),
+        x87f_load_f64(FUNC_PENDULUM_FREQ_SCALE)));
+    duration = x87f_store_i32_trunc(x87f_div(x87f_load_f32(1000.0f),
+                                             x87f_load_f32(frequency)));
     (void)gravityRatio;
 #elif defined(__i386__) || defined(__x86_64__)
-    gravityRatio = (long double)g_gravity.value / ((long double)length * (long double)FUNC_PENDULUM_GRAVITY_SCALE);
+    gravityRatio =
+        (long double)g_gravity.value /
+        ((long double)length * (long double)FUNC_PENDULUM_GRAVITY_SCALE);
     gravityFrequency = (float)CoduoLibm_Sqrt((double)gravityRatio);
-    frequency = (float)((long double)gravityFrequency * (long double)FUNC_PENDULUM_FREQ_SCALE);
+    frequency = (float)((long double)gravityFrequency *
+                        (long double)FUNC_PENDULUM_FREQ_SCALE);
     {
         static const float numerator = 1000.0f;
         coduo_x87_truncation_control_t durationControl;
-        duration = CODUO_X87_TRUNCATE_I32_FIRST(&durationControl, (long double)numerator / (long double)frequency);
+        duration = CODUO_X87_TRUNCATE_I32_FIRST(
+            &durationControl,
+            (long double)numerator / (long double)frequency);
     }
 #else
-    gravityRatio = (long double)g_gravity.value / ((long double)length * (long double)FUNC_PENDULUM_GRAVITY_SCALE);
+    gravityRatio =
+        (long double)g_gravity.value /
+        ((long double)length * (long double)FUNC_PENDULUM_GRAVITY_SCALE);
     gravityFrequency = (float)CoduoLibm_Sqrt((double)gravityRatio);
-    frequency = (float)((long double)gravityFrequency * (long double)FUNC_PENDULUM_FREQ_SCALE);
-    duration = game_compat_int32_from_long_double_trunc((long double)1000.0f / (long double)frequency);
+    frequency = (float)((long double)gravityFrequency *
+                        (long double)FUNC_PENDULUM_FREQ_SCALE);
+    duration = game_compat_int32_from_long_double_trunc(
+        (long double)1000.0f / (long double)frequency);
 #endif
 
     ent->s.pos.trDuration = duration;
@@ -2657,18 +2882,28 @@ void SP_func_pendulum(gentity_t *ent)
     /* 0x64b65..0x64b7a: duration enters through bare fild and the product
      * feeds truncating fistp directly. */
 #if EMULATE_X87
-    ent->s.apos.trDuration = x87f_store_i32_trunc(x87f_div(x87f_load_f32(1000.0f), x87f_load_f32(frequency)));
-    ent->s.apos.trTime = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(ent->s.apos.trDuration), x87f_load_f32(phase)));
+    ent->s.apos.trDuration =
+        x87f_store_i32_trunc(x87f_div(x87f_load_f32(1000.0f),
+                                      x87f_load_f32(frequency)));
+    ent->s.apos.trTime = x87f_store_i32_trunc(
+        x87f_mul(x87f_load_i32(ent->s.apos.trDuration),
+                 x87f_load_f32(phase)));
 #elif defined(__i386__) || defined(__x86_64__)
     {
         static const float numerator = 1000.0f;
         coduo_x87_truncation_control_t durationControl;
-        ent->s.apos.trDuration = CODUO_X87_TRUNCATE_I32_FIRST(&durationControl, (long double)numerator / (long double)frequency);
-        ent->s.apos.trTime = CODUO_X87_TRUNCATE_I32_NEXT(&durationControl, (long double)ent->s.apos.trDuration * (long double)phase);
+        ent->s.apos.trDuration = CODUO_X87_TRUNCATE_I32_FIRST(
+            &durationControl,
+            (long double)numerator / (long double)frequency);
+        ent->s.apos.trTime = CODUO_X87_TRUNCATE_I32_NEXT(
+            &durationControl,
+            (long double)ent->s.apos.trDuration * (long double)phase);
     }
 #else
-    ent->s.apos.trDuration = game_compat_int32_from_long_double_trunc((long double)1000.0f / (long double)frequency);
-    ent->s.apos.trTime = game_compat_int32_from_long_double_trunc((long double)ent->s.apos.trDuration * (long double)phase);
+    ent->s.apos.trDuration = game_compat_int32_from_long_double_trunc(
+        (long double)1000.0f / (long double)frequency);
+    ent->s.apos.trTime = game_compat_int32_from_long_double_trunc(
+        (long double)ent->s.apos.trDuration * (long double)phase);
 #endif
     ent->s.apos.trType = TR_SINE;
     ent->s.apos.trDelta[2] = speed;
@@ -2693,19 +2928,24 @@ void SP_func_door_rotating(gentity_t *ent)
     DoorSetSounds(ent, 1);
 
     if ((*game_compat_g_binary_mover_speed(ent)) == 0.0f) {
-        (*game_compat_g_binary_mover_speed(ent)) = FUNC_DOOR_ROTATING_DEFAULT_SPEED;
+        (*game_compat_g_binary_mover_speed(ent)) =
+            FUNC_DOOR_ROTATING_DEFAULT_SPEED;
     }
     if (ent->doorYawOffset == 0.0f) {
-        ent->doorYawOffset = FUNC_DOOR_ROTATING_DEFAULT_YAW;
+        ent->doorYawOffset =
+            FUNC_DOOR_ROTATING_DEFAULT_YAW;
     }
     if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_REVERSE) != 0) {
-        ent->doorYawOffset = -ent->doorYawOffset;
+        ent->doorYawOffset =
+            -ent->doorYawOffset;
     }
     if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_TOGGLE) != 0) {
-        ent->flags |= DOOR_MOVER_HINT_FLAG;
+        ent->flags |=
+            DOOR_MOVER_HINT_FLAG;
     }
 
-    if (G_SpawnInt("key", FUNC_DOOR_ROTATING_LOCKED_DEFAULT, &locked) == 0) {
+    if (G_SpawnInt("key", FUNC_DOOR_ROTATING_LOCKED_DEFAULT,
+                   &locked) == 0) {
         ent->doorLocked = 0;
     } else {
         ent->doorLocked = 1;
@@ -2714,9 +2954,11 @@ void SP_func_door_rotating(gentity_t *ent)
     ent->damageDir[0] = 0.0f;
     ent->damageDir[1] = 0.0f;
     ent->damageDir[2] = 0.0f;
-    if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_AXIS_MASK) == FUNC_DOOR_ROTATING_SPAWNFLAG_AXIS_MASK) {
+    if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_AXIS_MASK) ==
+        FUNC_DOOR_ROTATING_SPAWNFLAG_AXIS_MASK) {
         ent->damageDir[1] = 1.0f;
-    } else if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_Z_AXIS) == 0) {
+    } else if ((ent->spawnflags &
+                FUNC_DOOR_ROTATING_SPAWNFLAG_Z_AXIS) == 0) {
         if ((ent->spawnflags & FUNC_DOOR_ROTATING_SPAWNFLAG_X_AXIS) == 0) {
             ent->damageDir[1] = 1.0f;
         } else {
@@ -2730,14 +2972,17 @@ void SP_func_door_rotating(gentity_t *ent)
      * CoduoLibm_Sqrt() call boundary, then the result to float -- sqrtf() would
      * round the argument to float instead. */
 #if EMULATE_X87
-    axisLength = (float)CoduoLibm_Sqrt(
-        x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(ent->damageDir[0]), x87f_load_f32(ent->damageDir[0])),
-                                         x87f_mul(x87f_load_f32(ent->damageDir[1]), x87f_load_f32(ent->damageDir[1]))),
-                                x87f_mul(x87f_load_f32(ent->damageDir[2]), x87f_load_f32(ent->damageDir[2])))));
+    axisLength = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(ent->damageDir[0]),
+                          x87f_load_f32(ent->damageDir[0])),
+                 x87f_mul(x87f_load_f32(ent->damageDir[1]),
+                          x87f_load_f32(ent->damageDir[1]))),
+        x87f_mul(x87f_load_f32(ent->damageDir[2]),
+                 x87f_load_f32(ent->damageDir[2])))));
 #else
     axisLength = (float)CoduoLibm_Sqrt((double)ent->damageDir[0] * (double)ent->damageDir[0] +
-                                       (double)ent->damageDir[1] * (double)ent->damageDir[1] +
-                                       (double)ent->damageDir[2] * (double)ent->damageDir[2]);
+                             (double)ent->damageDir[1] * (double)ent->damageDir[1] +
+                             (double)ent->damageDir[2] * (double)ent->damageDir[2]);
 #endif
     if (axisLength > 1.0f) {
         G_Error(FUNC_DOOR_ROTATING_AXIS_ERROR);
@@ -2754,14 +2999,16 @@ void SP_func_door_rotating(gentity_t *ent)
     trap_SetBrushModel(ent);
     InitMoverRotate(ent);
 
-    if ((ent->flags & KEYED_MOVER_COMMAND_BLOCKED_FLAG) == 0) {
+    if ((ent->flags &
+         KEYED_MOVER_COMMAND_BLOCKED_FLAG) == 0) {
         G_SpawnInt("health", FUNC_DOOR_ROTATING_HEALTH_DEFAULT, &health);
         if (health != 0) {
             ent->takeDamage = 1;
         }
     }
 
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + KEYED_MOVER_FINISH_DELAY_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + KEYED_MOVER_FINISH_DELAY_MS);
     ent->think = finishSpawningKeyedMover;
     ent->moverBlocked = Blocked_DoorRotate;
 }

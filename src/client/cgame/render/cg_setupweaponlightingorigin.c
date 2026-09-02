@@ -42,7 +42,8 @@
 
 #include <string.h>
 
-void CG_SetupWeaponLightingOrigin(centity_t *ent /* ECX */, refEntity_t *re /* EDX */)
+void CG_SetupWeaponLightingOrigin(centity_t *ent /* ECX */,
+                                  refEntity_t *re /* EDX */)
 {
     /* MOV EAX,[ECX+8]; TEST AH,AH; JNS -> test the sign bit of the AH byte, i.e.
      * bit 15 of eFlags. JNS (not signed) means bit 15 clear. */
@@ -58,7 +59,8 @@ void CG_SetupWeaponLightingOrigin(centity_t *ent /* ECX */, refEntity_t *re /* E
     /* Seed the smoothed angles from the current weapon angles only while every
      * component still holds the 0.0f "unset" sentinel (first-use init). Any
      * component already differing means the smoothed value is live -> keep it. */
-    if (ent->smoothedWeaponAngles[0] == CG_WEAPON_ANGLE_SMOOTH_UNSET && ent->smoothedWeaponAngles[1] == CG_WEAPON_ANGLE_SMOOTH_UNSET &&
+    if (ent->smoothedWeaponAngles[0] == CG_WEAPON_ANGLE_SMOOTH_UNSET &&
+        ent->smoothedWeaponAngles[1] == CG_WEAPON_ANGLE_SMOOTH_UNSET &&
         ent->smoothedWeaponAngles[2] == CG_WEAPON_ANGLE_SMOOTH_UNSET) {
         ent->smoothedWeaponAngles[0] = ent->lerpOrigin[0];
         ent->smoothedWeaponAngles[1] = ent->lerpOrigin[1];
@@ -73,7 +75,8 @@ void CG_SetupWeaponLightingOrigin(centity_t *ent /* ECX */, refEntity_t *re /* E
     memcpy(&re->lightingOrigin[0], &componentBits, sizeof(componentBits));
     memcpy(&componentBits, &ent->smoothedWeaponAngles[1], sizeof(componentBits));
     memcpy(&re->lightingOrigin[1], &componentBits, sizeof(componentBits));
-    int32_t renderfx = coduo_int32_from_bits((uint32_t)re->renderfx | (uint32_t)RF_LIGHTING_ORIGIN);
+    int32_t renderfx = coduo_int32_from_bits(
+        (uint32_t)re->renderfx | (uint32_t)RF_LIGHTING_ORIGIN);
     memcpy(&componentBits, &ent->smoothedWeaponAngles[2], sizeof(componentBits));
     memcpy(&re->lightingOrigin[2], &componentBits, sizeof(componentBits));
     re->renderfx = renderfx;

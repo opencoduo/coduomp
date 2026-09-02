@@ -32,7 +32,8 @@
 #define AUTODEMO_STOP_COMMAND "D"
 #define AUTOSCREENSHOT_COMMAND "E"
 #define PLAYER_SWITCH_WEAPON_COMMAND "a %i"
-#define GIVEWEAPON_NO_SLOT_ERROR "Can not give player weapon without having an empty weapon slot\n"
+#define GIVEWEAPON_NO_SLOT_ERROR \
+    "Can not give player weapon without having an empty weapon slot\n"
 #define PLAYER_NO_WEAPON_NAME "none"
 #define PLAYER_PS_FLAG_PING 0x00040000u
 #define PLAYER_PING_DURATION_MS 4000
@@ -61,8 +62,7 @@
 #define PLAYER_IPRINTLN_COMMAND "f"
 #define PLAYER_IPRINTLN_BOLD_COMMAND "g"
 #define UNKNOWN_WEAPON_SLOT_ERROR \
-    "Unknown weaponslot name %s. Valid weaponslots are \"primary\", \"primaryb\", \"pistol\", \"grenade\", and " \
-    "\"smokegrenade\""
+    "Unknown weaponslot name %s. Valid weaponslots are \"primary\", \"primaryb\", \"pistol\", \"grenade\", and \"smokegrenade\""
 #define PLAYER_CLONE_KEEP_S_FLAG 0x00000008u
 #define PLAYER_CLONE_PS_FLAGS_MASK 0xffeffff7u
 #define PLAYER_CLONE_TEMP_S_FLAG 0x00000400u
@@ -70,7 +70,8 @@
 #define PLAYER_CLONE_CLIPMASK 0x00010001
 #define PLAYER_CLONE_LIFETIME_MS 250
 uint8_t G_SoundAliasIndex(const char *name);
-void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *message);
+void G_Say(gentity_t *ent, gentity_t *target, int mode,
+                  const char *message);
 int G_ModelIndex(const char *modelName);
 gentity_t *G_TempEntity(const float *origin, int event);
 gentity_t *G_SpawnPlayerClone(void);
@@ -95,7 +96,8 @@ static void game_compat_script_player_open_menu(uint32_t entityNum, const char *
     if (ent->client->connectedState == CON_CONNECTED) {
         int menuIndex = GScr_GetScriptMenuIndex(Scr_GetString(0));
 
-        trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND, va(commandFormat, menuIndex));
+        trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND,
+                               va(commandFormat, menuIndex));
         Scr_AddInt(1);
     } else {
         Scr_AddInt(0);
@@ -103,10 +105,13 @@ static void game_compat_script_player_open_menu(uint32_t entityNum, const char *
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared client cvar message/string argument handling. */
-static const char *game_compat_script_player_get_client_cvar_value(char messageBuffer[MAX_STRING_CHARS])
+static const char *game_compat_script_player_get_client_cvar_value(
+    char messageBuffer[MAX_STRING_CHARS])
 {
     if (Scr_GetType(1) == SCRIPT_VAR_LOCALIZED_STRING) {
-        Scr_ConstructMessageString(1, messageBuffer, MAX_STRING_CHARS, SCRIPT_MESSAGE_MODE_CLIENT_CVAR_VALUE);
+        Scr_ConstructMessageString(1, messageBuffer,
+                                   MAX_STRING_CHARS,
+                                   SCRIPT_MESSAGE_MODE_CLIENT_CVAR_VALUE);
         return messageBuffer;
     }
 
@@ -114,7 +119,9 @@ static const char *game_compat_script_player_get_client_cvar_value(char messageB
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared client cvar sanitization buffer handling. */
-static qboolean game_compat_script_player_clean_client_cvar_value(const char *value, char cleaned[MAX_STRING_CHARS])
+static qboolean game_compat_script_player_clean_client_cvar_value(
+    const char *value,
+    char cleaned[MAX_STRING_CHARS])
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve every cleaned client-cvar result that
      * fits the fixed command value and report an over-capacity source. */
@@ -122,7 +129,8 @@ static qboolean game_compat_script_player_clean_client_cvar_value(const char *va
 
     int32_t index = 0;
     while (index < MAX_STRING_CHARS - 1 && value[index] != '\0') {
-        cleaned[index] = Q_CleanCharacter((int)(int8_t)value[index]);
+        cleaned[index] =
+            Q_CleanCharacter((int)(int8_t)value[index]);
         if (cleaned[index] == '"') {
             cleaned[index] = '\'';
         }
@@ -146,7 +154,8 @@ static void game_compat_script_player_say(uint32_t entityNum, int mode)
     }
     char message[MAX_STRING_CHARS];
 
-    Scr_ConstructMessageString(0, &message[1], PLAYER_SAY_TEXT_SIZE, SCRIPT_MESSAGE_MODE_CLIENT_CHAT);
+    Scr_ConstructMessageString(0, &message[1], PLAYER_SAY_TEXT_SIZE,
+                               SCRIPT_MESSAGE_MODE_CLIENT_CHAT);
     message[0] = PLAYER_SAY_PREFIX;
     G_Say(ent, NULL, mode, message);
 }
@@ -171,7 +180,9 @@ static uint32_t game_compat_script_player_spectate_team_deny_mask(uint16_t teamN
         return PLAYER_SPECTATE_DENY_MASK_FREELOOK;
     }
 
-    Scr_ParamError(0, "team must be \"axis\", \"allies\", \"none\", or \"freelook\"");
+    Scr_ParamError(
+        0,
+        "team must be \"axis\", \"allies\", \"none\", or \"freelook\"");
     return 0;
 }
 
@@ -191,15 +202,19 @@ static int game_compat_script_player_parse_weapon_slot(uint32_t paramIndex)
     if (slot == 0) {
         const char *errorSlotString = SL_ConvertToString(slotName);
 
-        Scr_ParamError(paramIndex, va(UNKNOWN_WEAPON_SLOT_ERROR, errorSlotString));
+        Scr_ParamError(paramIndex,
+                       va(UNKNOWN_WEAPON_SLOT_ERROR, errorSlotString));
     }
 
     return slot;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared auto-demo/autoscreenshot command helper. */
-static void game_compat_script_player_auto_client_command(uint32_t entityNum, const char *usage, const char *enableCvar,
-                                                          const char *command)
+static void game_compat_script_player_auto_client_command(
+    uint32_t entityNum,
+    const char *usage,
+    const char *enableCvar,
+    const char *command)
 {
     if (entityNum > ENTITYNUM_NONE) {
         Scr_Error(va("%i is not a valid entity number", (int)entityNum));
@@ -252,7 +267,8 @@ void PlayerCmd_giveWeapon(uint32_t entityNum)
     int weapon = BG_GetWeaponIndexForName(Scr_GetString(0)) & 0xff;
     int alreadyOwned = Com_BitCheck(ent->client->ps.weaponBits, weapon);
 
-    if (BG_GetEmptySlotForWeapon(&ent->client->ps, weapon) == 0 && BG_GetStackSlotForWeapon(&ent->client->ps, weapon, 0) == 0) {
+    if (BG_GetEmptySlotForWeapon(&ent->client->ps, weapon) == 0 &&
+        BG_GetStackSlotForWeapon(&ent->client->ps, weapon, 0) == 0) {
         Scr_ParamError(0, GIVEWEAPON_NO_SLOT_ERROR);
     }
 
@@ -337,7 +353,8 @@ void PlayerCmd_getCurrentWeapon(uint32_t entityNum)
         return;
     }
 
-    Scr_AddString(((weaponInfo_t *)BG_GetInfoForWeapon(ent->client->ps.currentWeapon))->pickupName);
+    Scr_AddString(((weaponInfo_t *)BG_GetInfoForWeapon(
+                      ent->client->ps.currentWeapon))->pickupName);
 }
 
 /* VERIFIED_DECOMPILER(0x45f46, 55f46_PlayerCmd_hasWeapon.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; weapon lookup and weaponBits Com_BitCheck bool result checked. */
@@ -378,7 +395,8 @@ void PlayerCmd_switchToWeapon(uint32_t entityNum)
         return;
     }
 
-    trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND, va(PLAYER_SWITCH_WEAPON_COMMAND, weapon));
+    trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND,
+                           va(PLAYER_SWITCH_WEAPON_COMMAND, weapon));
     Scr_AddBool(1);
 }
 
@@ -406,7 +424,8 @@ void PlayerCmd_giveClipAmmo(uint32_t entityNum)
     const weaponInfo_t *weaponInfo = BG_GetInfoForWeapon(weapon);
     int ammoIndex = weaponInfo->ammoIndex;
     int clipSize = weaponInfo->clipSize;
-    int ammoNeeded = clipSize * clipCount - ent->client->ps.ammo[ammoIndex];
+    int ammoNeeded =
+        clipSize * clipCount - ent->client->ps.ammo[ammoIndex];
 
     if (ammoNeeded > 0) {
         Add_Ammo(ent, weapon, ammoNeeded, 1);
@@ -464,7 +483,8 @@ void PlayerCmd_giveMaxAmmo(uint32_t entityNum)
     const weaponInfo_t *weaponInfo = BG_GetInfoForWeapon(weapon);
     int ammoIndex = weaponInfo->ammoIndex;
     int maxAmmo = BG_GetAmmoTypeMax(ammoIndex);
-    int ammoNeeded = maxAmmo - ent->client->ps.ammo[weaponInfo->ammoIndex];
+    int ammoNeeded =
+        maxAmmo - ent->client->ps.ammo[weaponInfo->ammoIndex];
 
     if (ammoNeeded > 0) {
         Add_Ammo(ent, weapon, ammoNeeded, 0);
@@ -499,7 +519,8 @@ void PlayerCmd_getFractionStartAmmo(uint32_t entityNum)
         return;
     }
 
-    int reserveAmmo = ent->client->ps.ammo[weaponInfo->ammoIndex];
+    int reserveAmmo =
+        ent->client->ps.ammo[weaponInfo->ammoIndex];
 
     if (reserveAmmo < 1) {
         Scr_AddFloat(0.0f);
@@ -509,10 +530,14 @@ void PlayerCmd_getFractionStartAmmo(uint32_t entityNum)
     /* 0x465f6..0x46608: fild reserve, fild start, fdivp, one float rounding
      * at the result store — neither integer is rounded to float first. */
 #if EMULATE_X87
-    Scr_AddFloat(
-        x87f_store_f32(x87f_div(x87f_load_i32(ent->client->ps.ammo[weaponInfo->ammoIndex]), x87f_load_i32(weaponInfo->startAmmo))));
+    Scr_AddFloat(x87f_store_f32(
+        x87f_div(x87f_load_i32(
+                     ent->client->ps.ammo[weaponInfo->ammoIndex]),
+                 x87f_load_i32(weaponInfo->startAmmo))));
 #else
-    Scr_AddFloat((float)((long double)ent->client->ps.ammo[weaponInfo->ammoIndex] / (long double)weaponInfo->startAmmo));
+    Scr_AddFloat((float)((long double)
+                             ent->client->ps.ammo[weaponInfo->ammoIndex] /
+                         (long double)weaponInfo->startAmmo));
 #endif
 }
 
@@ -544,7 +569,8 @@ void PlayerCmd_getFractionMaxAmmo(uint32_t entityNum)
         return;
     }
 
-    int reserveAmmo = ent->client->ps.ammo[weaponInfo->ammoIndex];
+    int reserveAmmo =
+        ent->client->ps.ammo[weaponInfo->ammoIndex];
 
     if (reserveAmmo < 1) {
         Scr_AddFloat(0.0f);
@@ -555,12 +581,15 @@ void PlayerCmd_getFractionMaxAmmo(uint32_t entityNum)
      * fstp DWORD) before the divide, while the max-ammo divisor is fild'd
      * directly with no float rounding.  So load reserve via (float) (rounds),
      * maxAmmo via fild (exact). */
-    float reserveAmmoAsFloat = (float)ent->client->ps.ammo[weaponInfo->ammoIndex];
+    float reserveAmmoAsFloat =
+        (float)ent->client->ps.ammo[weaponInfo->ammoIndex];
     int maxAmmo = BG_GetAmmoTypeMax(weaponInfo->ammoIndex);
 #if EMULATE_X87
-    Scr_AddFloat(x87f_store_f32(x87f_div(x87f_load_f32(reserveAmmoAsFloat), x87f_load_i32(maxAmmo))));
+    Scr_AddFloat(x87f_store_f32(x87f_div(
+        x87f_load_f32(reserveAmmoAsFloat), x87f_load_i32(maxAmmo))));
 #else
-    Scr_AddFloat((float)((long double)reserveAmmoAsFloat / (long double)maxAmmo));
+    Scr_AddFloat((float)((long double)reserveAmmoAsFloat /
+                         (long double)maxAmmo));
 #endif
 }
 
@@ -748,16 +777,21 @@ void PlayerCmd_allowComplaint(uint32_t entityNum)
     }
 
     if (target->client->complaintDisabled != 0) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), RELIABLE_SERVER_COMMAND, PLAYER_COMPLAINT_DISABLED_COMMAND);
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
+                               RELIABLE_SERVER_COMMAND,
+                               PLAYER_COMPLAINT_DISABLED_COMMAND);
         return;
     }
 
-    trap_SendServerCommand((uint32_t)(int)(ent - g_entities), RELIABLE_SERVER_COMMAND,
-                           va(PLAYER_COMPLAINT_PROMPT_COMMAND, target->s.number));
+    trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
+                           RELIABLE_SERVER_COMMAND,
+                           va(PLAYER_COMPLAINT_PROMPT_COMMAND,
+                              target->s.number));
     ent->client->pendingComplaintClient = target->s.clientNum;
     /* NOT_FROM_ORIGINAL_SOURCE: retain the target-width wrapping deadline;
      * the consumer orders this short interval by modulo-32-bit difference. */
-    ent->client->pendingComplaintTime = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)GAME_COMPLAINT_WINDOW_MSEC);
+    ent->client->pendingComplaintTime = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)GAME_COMPLAINT_WINDOW_MSEC);
 }
 
 /* VERIFIED_DECOMPILER(0x4718a, 5718a_script_method_player_showscoreboard.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; entity validation and Cmd_Score_f target checked. */
@@ -865,10 +899,12 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (Scr_GetType(0) != 0 && Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(0) != 0 &&
+        Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY) {
         inflictor = Scr_GetEntity(1);
     }
-    if (Scr_GetType(1) != 0 && Scr_GetPointerType(1) == SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(1) != 0 &&
+        Scr_GetPointerType(1) == SCRIPT_VAR_ENTITY) {
         attacker = Scr_GetEntity(1);
     }
 
@@ -885,7 +921,8 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
         rawDirPtr = rawDir;
     }
 
-    int hitLocation = G_GetHitLocationIndexFromString(Scr_GetConstString(8));
+    int hitLocation =
+        G_GetHitLocationIndexFromString(Scr_GetConstString(8));
 
     if (rawDirPtr == 0) {
         dir[0] = 0.0f;
@@ -896,20 +933,25 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
     }
 
     int knockback = 0;
-    if ((ent->flags & ENTITY_FLAG_NO_KNOCKBACK) == 0 && (damageFlags & DAMAGE_FLAG_NO_KNOCKBACK) == 0) {
+    if ((ent->flags & ENTITY_FLAG_NO_KNOCKBACK) == 0 &&
+        (damageFlags & DAMAGE_FLAG_NO_KNOCKBACK) == 0) {
         float knockbackScale = PLAYER_DAMAGE_KNOCKBACK_NORMAL;
 
-        if ((ent->client->ps.playerStateFlags & PMF_PRONE) != 0) {
+        if ((ent->client->ps.playerStateFlags &
+             PMF_PRONE) != 0) {
             knockbackScale = PLAYER_DAMAGE_KNOCKBACK_PRONE;
-        } else if ((ent->client->ps.playerStateFlags & PMF_DUCKED) != 0) {
+        } else if ((ent->client->ps.playerStateFlags &
+                    PMF_DUCKED) != 0) {
             knockbackScale = PLAYER_DAMAGE_KNOCKBACK_CROUCH;
         }
 
         /* Stock 0x476ba: (int)(fild(damage) * knockbackScale) fistp-direct. */
 #if EMULATE_X87
-        knockback = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(damage), x87f_load_f32(knockbackScale)));
+        knockback = x87f_store_i32_trunc(
+            x87f_mul(x87f_load_i32(damage), x87f_load_f32(knockbackScale)));
 #else
-        knockback = game_compat_int32_from_long_double_trunc((long double)damage * (long double)knockbackScale);
+        knockback = game_compat_int32_from_long_double_trunc(
+            (long double)damage * (long double)knockbackScale);
 #endif
         if (knockback > PLAYER_DAMAGE_KNOCKBACK_MAX) {
             knockback = PLAYER_DAMAGE_KNOCKBACK_MAX;
@@ -923,18 +965,32 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
              * Stock recomputes the base per k; deterministic, so one reused
              * x87f base is value-identical. */
 #if EMULATE_X87
-            x87f impulseBase = x87f_div(x87f_mul(x87f_load_i32(knockback), x87f_load_f32(g_knockback.value)),
-                                        x87f_load_f32(PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
-            impulseDelta[0] = x87f_store_f32(x87f_mul(x87f_load_f32(dir[0]), impulseBase));
-            impulseDelta[1] = x87f_store_f32(x87f_mul(x87f_load_f32(dir[1]), impulseBase));
-            impulseDelta[2] = x87f_store_f32(x87f_mul(x87f_load_f32(dir[2]), impulseBase));
+            x87f impulseBase = x87f_div(
+                x87f_mul(x87f_load_i32(knockback),
+                         x87f_load_f32(g_knockback.value)),
+                x87f_load_f32(PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
+            impulseDelta[0] =
+                x87f_store_f32(x87f_mul(x87f_load_f32(dir[0]), impulseBase));
+            impulseDelta[1] =
+                x87f_store_f32(x87f_mul(x87f_load_f32(dir[1]), impulseBase));
+            impulseDelta[2] =
+                x87f_store_f32(x87f_mul(x87f_load_f32(dir[2]), impulseBase));
 #else
-            impulseDelta[0] = (float)((long double)dir[0] * (((long double)knockback * (long double)g_knockback.value) /
-                                                             (long double)PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
-            impulseDelta[1] = (float)((long double)dir[1] * (((long double)knockback * (long double)g_knockback.value) /
-                                                             (long double)PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
-            impulseDelta[2] = (float)((long double)dir[2] * (((long double)knockback * (long double)g_knockback.value) /
-                                                             (long double)PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
+            impulseDelta[0] = (float)(
+                (long double)dir[0] *
+                (((long double)knockback *
+                  (long double)g_knockback.value) /
+                 (long double)PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
+            impulseDelta[1] = (float)(
+                (long double)dir[1] *
+                (((long double)knockback *
+                  (long double)g_knockback.value) /
+                 (long double)PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
+            impulseDelta[2] = (float)(
+                (long double)dir[2] *
+                (((long double)knockback *
+                  (long double)g_knockback.value) /
+                 (long double)PLAYER_DAMAGE_KNOCKBACK_DIVISOR));
 #endif
 
             ent->client->ps.velocity[0] += impulseDelta[0];
@@ -951,8 +1007,10 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
                     pmTime = PLAYER_DAMAGE_KNOCKBACK_PM_TIME_MAX;
                 }
 
-                ent->client->ps.pmTime = pmTime;
-                ent->client->ps.playerStateFlags |= PMF_NO_GROUNDFRICTION;
+                ent->client->ps.pmTime =
+                    pmTime;
+                ent->client->ps.playerStateFlags |=
+                    PMF_NO_GROUNDFRICTION;
             }
         }
     }
@@ -962,7 +1020,8 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
     }
 
     if (weapon != 0) {
-        const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(weapon);
+        const weaponInfo_t *weaponInfo =
+            (const weaponInfo_t *)BG_GetInfoForWeapon(weapon);
 
         if (weaponInfo->weaponType == WEAPTYPE_BULLET) {
             gentity_t *temp = G_TempEntity(point, EV_BULLET_HIT);
@@ -976,7 +1035,10 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
             temp->tempClientNumFc = ent->client->ps.psClientNum;
 
             weaponInfo = BG_GetInfoForWeapon(weapon);
-            int tempEvent = (weaponInfo->ricochet == 0) ? EV_BULLET_HIT_CLIENT_SMALL : EV_BULLET_HIT_CLIENT_LARGE;
+            int tempEvent =
+                (weaponInfo->ricochet == 0)
+                    ? EV_BULLET_HIT_CLIENT_SMALL
+                    : EV_BULLET_HIT_CLIENT_LARGE;
 
             temp = G_TempEntity(point, tempEvent);
             temp->s.surfType = PLAYER_DAMAGE_SURFACE_TYPE_FLESH;
@@ -1016,7 +1078,8 @@ void PlayerCmd_finishPlayerDamage(uint32_t entityNum)
 
         gentity_die_t die = ent->die;
         if (die != 0) {
-            die(ent, inflictor, attacker, damage, meansOfDeath, weapon, dir, hitLocation);
+            die(ent, inflictor, attacker, damage, meansOfDeath, weapon, dir,
+                hitLocation);
         }
         if (ent->linked == 0) {
             return;
@@ -1048,7 +1111,8 @@ void PlayerCmd_Suicide(uint32_t entityNum)
     ent->flags &= ~ENTITY_FLAG_GODMODE;
     ent->health = 0;
     ent->client->ps.stats[STAT_HEALTH] = 0;
-    player_die(ent, ent, ent, PLAYER_SUICIDE_DAMAGE, MOD_SUICIDE, 0, 0, 0);
+    player_die(ent, ent, ent, PLAYER_SUICIDE_DAMAGE, MOD_SUICIDE,
+               0, 0, 0);
 }
 
 /* VERIFIED_DECOMPILER(0x47d64, 57d64_script_method_player_openmenu.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; connected-state gate, script menu index, open command, and int result checked. */
@@ -1066,7 +1130,8 @@ void PlayerCmd_OpenMenuNoMouse(uint32_t entityNum)
 /* VERIFIED_DECOMPILER(0x47f4e, 57f4e_script_method_player_closemenu.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; close menu server command checked. */
 void PlayerCmd_CloseMenu(uint32_t entityNum)
 {
-    trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND, PLAYER_CLOSEMENU_COMMAND);
+    trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND,
+                           PLAYER_CLOSEMENU_COMMAND);
 }
 
 /* VERIFIED_DECOMPILER(0x47f9e, 57f9e_script_method_player_getweaponslotweapon.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; invalid session none result, slot parse, slot byte, and pickupName/none result checked. */
@@ -1095,7 +1160,7 @@ void PlayerCmd_GetWeaponSlotWeapon(uint32_t entityNum)
         return;
     }
 
-    Scr_AddString(((weaponInfo_t *)BG_GetInfoForWeapon(weapon))->pickupName);
+    Scr_AddString(((weaponInfo_t*)BG_GetInfoForWeapon(weapon))->pickupName);
 }
 
 /* VERIFIED_DECOMPILER(0x480f9, 580f9_script_method_player_setweaponslotweapon.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; slot parse, none/unknown weapon handling, primary slot compatibility, old take, give, and primaryB move checked. */
@@ -1127,30 +1192,40 @@ void PlayerCmd_SetWeaponSlotWeapon(uint32_t entityNum)
         const weaponInfo_t *weaponInfo = BG_GetInfoForWeapon(weapon);
         int weaponSlot = weaponInfo->slot;
 
-        if (weaponSlot != slot && !((weaponSlot == WEAPSLOT_PRIMARY || weaponSlot == WEAPSLOT_PRIMARYB) &&
-                                    (slot == WEAPSLOT_PRIMARY || slot == WEAPSLOT_PRIMARYB))) {
-            const char *requestedSlotName = BG_GetWeaponSlotNameForIndex(slot);
-            const char *weaponSlotName = BG_GetWeaponSlotNameForIndex(weaponSlot);
+        if (weaponSlot != slot &&
+            !((weaponSlot == WEAPSLOT_PRIMARY ||
+               weaponSlot == WEAPSLOT_PRIMARYB) &&
+              (slot == WEAPSLOT_PRIMARY ||
+               slot == WEAPSLOT_PRIMARYB))) {
+            const char *requestedSlotName =
+                BG_GetWeaponSlotNameForIndex(slot);
+            const char *weaponSlotName =
+                BG_GetWeaponSlotNameForIndex(weaponSlot);
 
             Scr_ParamError(
-                1, va("Weapon %s goes in the %s weaponslot, not the %s weaponslot.", weaponName, weaponSlotName, requestedSlotName));
+                1,
+                va("Weapon %s goes in the %s weaponslot, not the %s weaponslot.",
+                   weaponName, weaponSlotName, requestedSlotName));
         }
     }
 
-    int oldWeapon = (int)(int8_t)ent->client->ps.weaponSlots[slot];
+    int oldWeapon =
+        (int)(int8_t)ent->client->ps.weaponSlots[slot];
     if (oldWeapon != 0) {
         BG_TakePlayerWeapon(&ent->client->ps, oldWeapon);
     }
 
     if (weapon != 0) {
-        if (slot == WEAPSLOT_PRIMARYB && (int)ent->client->ps.weaponSlots[WEAPSLOT_PRIMARY] == 0) {
+        if (slot == WEAPSLOT_PRIMARYB &&
+            (int)ent->client->ps.weaponSlots[WEAPSLOT_PRIMARY] == 0) {
             movePrimaryToPrimaryB = 1;
         }
 
         BG_GivePlayerWeapon(&ent->client->ps, weapon);
 
         if (movePrimaryToPrimaryB != 0) {
-            ent->client->ps.weaponSlots[WEAPSLOT_PRIMARYB] = ent->client->ps.weaponSlots[WEAPSLOT_PRIMARY];
+            ent->client->ps.weaponSlots[WEAPSLOT_PRIMARYB] =
+                ent->client->ps.weaponSlots[WEAPSLOT_PRIMARY];
             ent->client->ps.weaponSlots[WEAPSLOT_PRIMARY] = 0;
         }
     }
@@ -1383,26 +1458,37 @@ void PlayerCmd_ClonePlayer(uint32_t entityNum)
     gentity_t *clone = G_SpawnPlayerClone();
 
     clone->s.clientNum = client->ps.psClientNum;
-    clone->s.eFlags = (clone->s.eFlags & PLAYER_CLONE_KEEP_S_FLAG) | (client->ps.entityStateFlags & PLAYER_CLONE_PS_FLAGS_MASK) |
-                      PLAYER_CLONE_TEMP_S_FLAG;
+    clone->s.eFlags =
+        (clone->s.eFlags & PLAYER_CLONE_KEEP_S_FLAG) |
+        (client->ps.entityStateFlags & PLAYER_CLONE_PS_FLAGS_MASK) |
+        PLAYER_CLONE_TEMP_S_FLAG;
 
     G_SetOrigin(clone, ent->currentOrigin);
     G_SetAngle(clone, ent->currentAngles);
     clone->currentOrigin[2] += 1.0f;
-    clone->s.pos.trBase[2] += 1.0f;
+    clone->s.pos.trBase[2] +=
+        1.0f;
 
-    clone->s.pos.trType = TR_GRAVITY;
-    clone->s.pos.trTime = level.time;
-    clone->s.pos.trDelta[0] = client->ps.velocity[0];
-    clone->s.pos.trDelta[1] = client->ps.velocity[1];
-    clone->s.pos.trDelta[2] = client->ps.velocity[2];
+    clone->s.pos.trType =
+        TR_GRAVITY;
+    clone->s.pos.trTime =
+        level.time;
+    clone->s.pos.trDelta[0] =
+        client->ps.velocity[0];
+    clone->s.pos.trDelta[1] =
+        client->ps.velocity[1];
+    clone->s.pos.trDelta[2] =
+        client->ps.velocity[2];
 
     clone->s.eType = ET_PLAYER_CORPSE;
-    clone->scriptContents = PLAYER_CLONE_CONTENTS;
+    clone->scriptContents =
+        PLAYER_CLONE_CONTENTS;
     clone->linkedByte16d = 1;
-    clone->s.groundEntityNum = ENTITYNUM_NONE;
+    clone->s.groundEntityNum =
+        ENTITYNUM_NONE;
     /* 0x48d3e writes 0x200 to gentity +0x0f8, the server svFlags slot. */
-    clone->svFlags = SVF_CAPSULE;
+    clone->svFlags =
+        SVF_CAPSULE;
 
     memcpy(clone->mins, ent->mins, sizeof(clone->mins));
     memcpy(clone->maxs, ent->maxs, sizeof(clone->maxs));
@@ -1410,13 +1496,17 @@ void PlayerCmd_ClonePlayer(uint32_t entityNum)
     memcpy(clone->absMin, ent->absMin, sizeof(clone->absMin));
     memcpy(clone->absMax, ent->absMax, sizeof(clone->absMax));
 
-    clone->s.legsAnim = client->ps.legsAnim;
-    clone->s.torsoAnim = client->ps.torsoAnim;
-    clone->clipmask = PLAYER_CLONE_CLIPMASK;
+    clone->s.legsAnim =
+        client->ps.legsAnim;
+    clone->s.torsoAnim =
+        client->ps.torsoAnim;
+    clone->clipmask =
+        PLAYER_CLONE_CLIPMASK;
 
     trap_LinkEntity(clone);
 
-    clone->nextthink = level.time + PLAYER_CLONE_LIFETIME_MS;
+    clone->nextthink =
+        level.time + PLAYER_CLONE_LIFETIME_MS;
     clone->think = BodyEnd;
 
     GScr_AddEntity(clone);
@@ -1442,12 +1532,16 @@ void PlayerCmd_SetClientCvar(uint32_t entityNum)
     value = game_compat_script_player_get_client_cvar_value(messageValue);
 
     (void)strlen(value);
-    if (game_compat_script_player_clean_client_cvar_value(value, cleaned) == qfalse) {
+    if (game_compat_script_player_clean_client_cvar_value(value, cleaned) ==
+        qfalse) {
         Scr_ParamError(1, "setclientcvar value is too long");
         return;
     }
 
-    trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND, va("v %s \"%s\"", name, cleaned));
+    trap_SendServerCommand(
+        entityNum,
+        RELIABLE_SERVER_COMMAND,
+        va("v %s \"%s\"", name, cleaned));
 }
 
 /* VERIFIED_DECOMPILER(0x49043, 59043_script_method_player_freezecontrols.c, VERIFY-P1-SCRIPTPLAYER-2026-06-17): DATAFLOW_VERIFIED - entity validation prologue and Scr_GetBool(0) store to controlsFrozen checked against current decompiler output. */
@@ -1526,14 +1620,18 @@ void PlayerCmd_SetReverb(uint32_t entityNum)
         fadeTime = Scr_GetFloat(2);
         wetLevel = Scr_GetFloat(1);
     } else if (paramCount != 1) {
-        Scr_Error("USAGE: player setReverb(\"roomtype\", wetlevel = 0.5, fadetime = 1);\n"
-                  "wetlevel is a float from 0 (no effect) to 1 (full effect), "
-                  "fadetime is in sec and just modifies wetlevel\n");
+        Scr_Error(
+            "USAGE: player setReverb(\"roomtype\", wetlevel = 0.5, fadetime = 1);\n"
+            "wetlevel is a float from 0 (no effect) to 1 (full effect), "
+            "fadetime is in sec and just modifies wetlevel\n");
         return;
     }
 
     roomType = Scr_GetString(0);
-    trap_SendServerCommand(entityNum, RELIABLE_SERVER_COMMAND, va("r \"%s\" %g %g", roomType, (double)wetLevel, (double)fadeTime));
+    trap_SendServerCommand(
+        entityNum,
+        RELIABLE_SERVER_COMMAND,
+        va("r \"%s\" %g %g", roomType, (double)wetLevel, (double)fadeTime));
 }
 
 /* VERIFIED_DECOMPILER(0x4935b, 5935b_script_method_player_islookingat.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; Scr_GetEntity and lookAtEntity pointer comparison checked. */
@@ -1705,19 +1803,31 @@ void PlayerCmd_SetFatigue(uint32_t entityNum)
 /* VERIFIED_DECOMPILER(0x49c48, 59c48_script_method_player_autodemostart.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; no-param validation, g_autodemo gate, start command, and enabled-only int result checked. */
 void PlayerCmd_AutoDemoStart(uint32_t entityNum)
 {
-    game_compat_script_player_auto_client_command(entityNum, "USAGE: self autoDemoStart()\n", "g_autodemo", AUTODEMO_START_COMMAND);
+    game_compat_script_player_auto_client_command(
+        entityNum,
+        "USAGE: self autoDemoStart()\n",
+        "g_autodemo",
+        AUTODEMO_START_COMMAND);
 }
 
 /* VERIFIED_DECOMPILER(0x49d22, 59d22_script_method_player_autodemostop.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; no-param validation, g_autodemo gate, stop command, and enabled-only int result checked. */
 void PlayerCmd_AutoDemoStop(uint32_t entityNum)
 {
-    game_compat_script_player_auto_client_command(entityNum, "USAGE: self autoDemoStop()\n", "g_autodemo", AUTODEMO_STOP_COMMAND);
+    game_compat_script_player_auto_client_command(
+        entityNum,
+        "USAGE: self autoDemoStop()\n",
+        "g_autodemo",
+        AUTODEMO_STOP_COMMAND);
 }
 
 /* VERIFIED_DECOMPILER(0x49dfc, 59dfc_script_method_player_autoscreenshot.c, VERIFY-SCRIPT-PLAYER-CMDS-2026-06-17): DATAFLOW_VERIFIED; no-param validation, g_autoscreenshot gate, screenshot command, and enabled-only int result checked. */
 void PlayerCmd_ClientAutoScreenshot(uint32_t entityNum)
 {
-    game_compat_script_player_auto_client_command(entityNum, "USAGE: self autoScreenshot()\n", "g_autoscreenshot", AUTOSCREENSHOT_COMMAND);
+    game_compat_script_player_auto_client_command(
+        entityNum,
+        "USAGE: self autoScreenshot()\n",
+        "g_autoscreenshot",
+        AUTOSCREENSHOT_COMMAND);
 }
 
 static const script_method_t playerMethods[] = {
@@ -1788,7 +1898,8 @@ script_method_callback_t Player_GetMethod(const char **name)
 {
     const char *requestedName = *name;
 
-    for (uint32_t index = 0; index < sizeof(playerMethods) / sizeof(playerMethods[0]); index++) {
+    for (uint32_t index = 0; index < sizeof(playerMethods) / sizeof(playerMethods[0]);
+         index++) {
         if (strcmp(requestedName, playerMethods[index].name) == 0) {
             *name = playerMethods[index].name;
             return playerMethods[index].callback;

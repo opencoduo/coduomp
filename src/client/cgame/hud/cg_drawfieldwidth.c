@@ -59,17 +59,15 @@
 static const char CG_HUDELEM_NUM_FORMAT[] = "%i";
 
 /* MOV ESI,0x10 -> Com_sprintf size argument (the value-text buffer size). */
-enum {
-    CG_HUDELEM_NUM_BUFSIZE = 16
-};
+enum { CG_HUDELEM_NUM_BUFSIZE = 16 };
 
 /* Per-digit-count magnitude clamps (jump table at 0x30017ba8). */
 enum {
-    CG_HUDELEM_W1_MAX = 9,  /* 0x9 */
-    CG_HUDELEM_W2_MAX = 99,  /* 0x63 */
-    CG_HUDELEM_W2_MIN = -9,  /* 0xfffffff7 */
-    CG_HUDELEM_W3_MAX = 999,  /* 0x3e7 */
-    CG_HUDELEM_W3_MIN = -99,  /* 0xffffff9d */
+    CG_HUDELEM_W1_MAX =    9,  /* 0x9 */
+    CG_HUDELEM_W2_MAX =   99,  /* 0x63 */
+    CG_HUDELEM_W2_MIN =   -9,  /* 0xfffffff7 */
+    CG_HUDELEM_W3_MAX =  999,  /* 0x3e7 */
+    CG_HUDELEM_W3_MIN =  -99,  /* 0xffffff9d */
     CG_HUDELEM_W4_MAX = 9999,  /* 0x270f */
     CG_HUDELEM_W4_MIN = -999,  /* 0xfffffc19 */
 };

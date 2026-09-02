@@ -34,12 +34,18 @@ typedef struct archivedEntity_s {
     vec3_t absmax;
 } archivedEntity_t;
 
-typedef char q_archived_entity_state_offset[offsetof(archivedEntity_t, state) == 0x000 ? 1 : -1];
-typedef char q_archived_entity_svflags_offset[offsetof(archivedEntity_t, svFlags) == 0x0f4 ? 1 : -1];
-typedef char q_archived_entity_single_client_offset[offsetof(archivedEntity_t, singleClient) == 0x0f8 ? 1 : -1];
-typedef char q_archived_entity_absmin_offset[offsetof(archivedEntity_t, absmin) == 0x0fc ? 1 : -1];
-typedef char q_archived_entity_absmax_offset[offsetof(archivedEntity_t, absmax) == 0x108 ? 1 : -1];
-typedef char q_archived_entity_size[sizeof(archivedEntity_t) == 0x114 ? 1 : -1];
+typedef char q_archived_entity_state_offset[
+    offsetof(archivedEntity_t, state) == 0x000 ? 1 : -1];
+typedef char q_archived_entity_svflags_offset[
+    offsetof(archivedEntity_t, svFlags) == 0x0f4 ? 1 : -1];
+typedef char q_archived_entity_single_client_offset[
+    offsetof(archivedEntity_t, singleClient) == 0x0f8 ? 1 : -1];
+typedef char q_archived_entity_absmin_offset[
+    offsetof(archivedEntity_t, absmin) == 0x0fc ? 1 : -1];
+typedef char q_archived_entity_absmax_offset[
+    offsetof(archivedEntity_t, absmax) == 0x108 ? 1 : -1];
+typedef char q_archived_entity_size[
+    sizeof(archivedEntity_t) == 0x114 ? 1 : -1];
 
 /*
  * Engine-to-cgame snapshot boundary.  CoDUOMP.exe CL_GetSnapshot
@@ -66,21 +72,45 @@ typedef struct snapshot_s {
     int32_t serverCommandSequence;                       /* +0x1501c */
 } snapshot_t;
 
-#define SNAPSHOT_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
+#define SNAPSHOT_LAYOUT_ASSERT(name_, expression_) \
+    typedef char name_[(expression_) ? 1 : -1]
 
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_offset, offsetof(snapshot_t, ps) == 0x0000c);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_client_num_offset, offsetof(snapshot_t, ps) + offsetof(playerState_t, psClientNum) == 0x000e0);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_current_weapon_offset, offsetof(snapshot_t, ps) + offsetof(playerState_t, currentWeapon) == 0x000e4);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_objectives_offset, offsetof(snapshot_t, ps) + offsetof(playerState_t, objectives) == 0x00644);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_hud_current_offset, offsetof(snapshot_t, ps) + offsetof(playerState_t, hudCurrent) == 0x00804);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_hud_archival_offset, offsetof(snapshot_t, ps) + offsetof(playerState_t, hudArchival) == 0x02688);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_num_entities_offset, offsetof(snapshot_t, numEntities) == 0x04510);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_num_clients_offset, offsetof(snapshot_t, numClients) == 0x04514);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_entities_offset, offsetof(snapshot_t, entities) == 0x04518);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_clients_offset, offsetof(snapshot_t, clients) == 0x13918);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_unused_offset, offsetof(snapshot_t, unused15018) == 0x15018);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_server_command_sequence_offset, offsetof(snapshot_t, serverCommandSequence) == 0x1501c);
-SNAPSHOT_LAYOUT_ASSERT(q_snapshot_size, sizeof(snapshot_t) == 0x15020);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_offset,
+                       offsetof(snapshot_t, ps) == 0x0000c);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_client_num_offset,
+                       offsetof(snapshot_t, ps) +
+                               offsetof(playerState_t, psClientNum) ==
+                           0x000e0);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_current_weapon_offset,
+                       offsetof(snapshot_t, ps) +
+                               offsetof(playerState_t, currentWeapon) ==
+                           0x000e4);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_objectives_offset,
+                       offsetof(snapshot_t, ps) +
+                               offsetof(playerState_t, objectives) ==
+                           0x00644);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_hud_current_offset,
+                       offsetof(snapshot_t, ps) +
+                               offsetof(playerState_t, hudCurrent) ==
+                           0x00804);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_ps_hud_archival_offset,
+                       offsetof(snapshot_t, ps) +
+                               offsetof(playerState_t, hudArchival) ==
+                           0x02688);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_num_entities_offset,
+                       offsetof(snapshot_t, numEntities) == 0x04510);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_num_clients_offset,
+                       offsetof(snapshot_t, numClients) == 0x04514);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_entities_offset,
+                       offsetof(snapshot_t, entities) == 0x04518);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_clients_offset,
+                       offsetof(snapshot_t, clients) == 0x13918);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_unused_offset,
+                       offsetof(snapshot_t, unused15018) == 0x15018);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_server_command_sequence_offset,
+                       offsetof(snapshot_t, serverCommandSequence) == 0x1501c);
+SNAPSHOT_LAYOUT_ASSERT(q_snapshot_size,
+                       sizeof(snapshot_t) == 0x15020);
 
 #undef SNAPSHOT_LAYOUT_ASSERT
 

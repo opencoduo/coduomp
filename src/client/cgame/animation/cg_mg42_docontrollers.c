@@ -59,19 +59,22 @@
 _Static_assert(offsetof(entityState_t, origin2) == 0x5c, "currentState.origin2 +0x5c");
 _Static_assert(offsetof(entityState_t, angles2) == 0x68, "currentState.angles2 +0x68");
 _Static_assert(offsetof(entityState_t, leanf) == 0xd8, "currentState.leanf +0xd8");
-_Static_assert(offsetof(entityState_t, turretOverheatState) == 0xe4, "currentState.turretOverheatState +0xe4");
-_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, origin2) == 0x150, "nextState.origin2 +0x150");
-_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, angles2) == 0x15c, "nextState.angles2 +0x15c");
-_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, leanf) == 0x1cc, "nextState.leanf +0x1cc");
-_Static_assert(offsetof(centity_t, lerpAngles) == 0x214, "cent.lerpAngles +0x214");
+_Static_assert(offsetof(entityState_t, turretOverheatState) == 0xe4,
+               "currentState.turretOverheatState +0xe4");
+_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, origin2) == 0x150,
+               "nextState.origin2 +0x150");
+_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, angles2) == 0x15c,
+               "nextState.angles2 +0x15c");
+_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, leanf) == 0x1cc,
+               "nextState.leanf +0x1cc");
+_Static_assert(offsetof(centity_t, lerpAngles) == 0x214,
+               "cent.lerpAngles +0x214");
 #endif
 
 /* Bit 9 (0x200) of currentState.eFlags is authored by the fixed-turret server
  * path while the turret fires and cleared when it stops. Win32 TEST CH,0x2 and
  * PowerPC rlwinm both prove this exact bit and role. */
-enum {
-    CG_MG42_STATE_FIRING = 0x200
-};
+enum { CG_MG42_STATE_FIRING = 0x200 };
 
 /* CG_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL overlay sub-mode. When the aim gate holds (or the part is not overlay-
  * flagged) the tail uses mode 1; only a firing, non-aim turret whose overheat state
@@ -117,7 +120,8 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
 
     /* 0x3001e9f0..0x3001ea08: self = cgame_syscall(CG_DOBJ_GET_HANDLE,
      * part->currentState.number). */
-    intptr_t self = cgame_syscall(CG_DOBJ_GET_HANDLE, part->currentState.number);
+    intptr_t self = cgame_syscall(
+        CG_DOBJ_GET_HANDLE, part->currentState.number);
 
     /* 0x3001ea0a..0x3001ea2f: aim-tag gate. Take the clamped-aim path only when this
      * predicted-player entity is in the scope/zoom-FOV state (entityStateFlags & 0x6000,
@@ -127,8 +131,11 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
      * Otherwise (else block) the aim angles come straight from a single interpolated
      * pair with no clamp. */
     float aim[2]; /* C[0], C[1] */
-    qboolean aimGate = (cg_predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
-                       cg_predictedPlayerState.viewLockedEntityNum == part->currentState.number && cg_thirdPerson == 0;
+    qboolean aimGate =
+        (cg_predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
+        cg_predictedPlayerState.viewLockedEntityNum ==
+            part->currentState.number &&
+        cg_thirdPerson == 0;
 
     if (aimGate) {
         /* 0x3001ea35..0x3001ea8e: four LerpAngle bounds, blended by cg_frameInterpolation.
@@ -136,7 +143,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
         float frac = cg_frameInterpolation;
         float maxAngle[2];
         float minAngle[2];
-        maxAngle[0] = LerpAngle(part->currentState.leanf, nextState->leanf, frac); /* B[0] */
+        maxAngle[0] = LerpAngle(part->currentState.leanf,      nextState->leanf,      frac); /* B[0] */
         maxAngle[1] = LerpAngle(part->currentState.origin2[0], nextState->origin2[0], frac); /* B[1] */
         minAngle[0] = LerpAngle(part->currentState.origin2[1], nextState->origin2[1], frac); /* A[0] */
         minAngle[1] = LerpAngle(part->currentState.origin2[2], nextState->origin2[2], frac); /* A[1] */
@@ -145,7 +152,7 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
          * angular difference between the animated spin angle and the model's aim basis,
          * then clamp it into [minAngle, maxAngle]. spinAngles[] is the contiguous
          * {pitch, yaw} spin-angle pair at 0x30487ac8 (indexed by the ECX byte offset). */
-        const float spinAngles[2] = {cg_refdefViewAngles[0], cg_refdefViewAngles[1]};
+        const float spinAngles[2] = { cg_refdefViewAngles[0], cg_refdefViewAngles[1] };
         for (int k = 0; k < 2; ++k) {
             float d = AngleSubtract(spinAngles[k], part->lerpAngles[k]);
             aim[k] = clamp_angle(d, minAngle[k], maxAngle[k]);
@@ -167,15 +174,22 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
      * if it exists (>= 0) and binding a control rot/trans slot succeeds, set the local
      * tag orientation to the aim vector. */
     {
-        vec3_t aimAngles = {aim[0], aim[1], 0.0f};
-        int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, self, (intptr_t)cg_aimTagName));
-        if (boneIndex >= 0 && cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self, (intptr_t)partBits, boneIndex) != 0) {
+        vec3_t aimAngles = { aim[0], aim[1], 0.0f };
+        int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_DOBJ_GET_BONE_INDEX, self, (intptr_t)cg_aimTagName));
+        if (boneIndex >= 0 &&
+            cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self,
+                          (intptr_t)partBits, boneIndex) != 0) {
             CG_DObjSetLocalTagInternal((void *)(intptr_t)self, boneIndex, aimAngles, *tagOrigin);
         }
 
         /* 0x3001eb68..0x3001eba9: tag_aim_animated — same aim vector and bone-bind flow. */
-        boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, self, (intptr_t)cg_animatedAimTagName));
-        if (boneIndex >= 0 && cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self, (intptr_t)partBits, boneIndex) != 0) {
+        boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_DOBJ_GET_BONE_INDEX, self,
+            (intptr_t)cg_animatedAimTagName));
+        if (boneIndex >= 0 &&
+            cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self,
+                          (intptr_t)partBits, boneIndex) != 0) {
             CG_DObjSetLocalTagInternal((void *)(intptr_t)self, boneIndex, aimAngles, *tagOrigin);
         }
     }
@@ -183,10 +197,15 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
     /* 0x3001ebac..0x3001ec0f: tag_flash. Its angle is a fresh single interpolated value;
      * the vector is {flashAngle, 0, 0}. Same bone-resolve / control-bind / set flow. */
     {
-        float flashAngle = LerpAngle(part->currentState.angles2[2], nextState->angles2[2], cg_frameInterpolation);
-        vec3_t flashAngles = {flashAngle, 0.0f, 0.0f};
-        int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, self, (intptr_t)cg_muzzleFlashTagName));
-        if (boneIndex >= 0 && cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self, (intptr_t)partBits, boneIndex) != 0) {
+        float flashAngle = LerpAngle(part->currentState.angles2[2], nextState->angles2[2],
+                                     cg_frameInterpolation);
+        vec3_t flashAngles = { flashAngle, 0.0f, 0.0f };
+        int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_DOBJ_GET_BONE_INDEX, self,
+            (intptr_t)cg_muzzleFlashTagName));
+        if (boneIndex >= 0 &&
+            cgame_syscall(CG_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, self,
+                          (intptr_t)partBits, boneIndex) != 0) {
             CG_DObjSetLocalTagInternal((void *)(intptr_t)self, boneIndex, flashAngles, *tagOrigin);
         }
     }
@@ -199,12 +218,17 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
     /* 0x3001ec1e..0x3001ec5b: pick the overlay sub-mode. Mode 1 unless this is a non-aim,
      * firing turret whose overheat state is clear, in which case mode 2. The aim gate
      * here re-tests the same first-person / current-effect-entity condition as above. */
-    qboolean aimGate2 = (cg_predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
-                        cg_predictedPlayerState.viewLockedEntityNum == part->currentState.number && cg_thirdPerson == 0;
+    qboolean aimGate2 =
+        (cg_predictedPlayerState.entityStateFlags & EF_ZOOM_FOV_MASK) != 0 &&
+        cg_predictedPlayerState.viewLockedEntityNum ==
+            part->currentState.number &&
+        cg_thirdPerson == 0;
 
     int32_t overlayMode;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (!aimGate2 && (part->currentState.eFlags & CG_MG42_STATE_FIRING) != 0 && part->currentState.turretOverheatState == 0) {
+    if (!aimGate2 &&
+        (part->currentState.eFlags & CG_MG42_STATE_FIRING) != 0 &&
+        part->currentState.turretOverheatState == 0) {
         overlayMode = STATE_PART_OVERLAY_MODE_2;
     } else {
         overlayMode = STATE_PART_OVERLAY_MODE_1;
@@ -216,7 +240,14 @@ void CG_mg42_DoControllers(centity_t *part, uint32_t *partBits)
      * 16-bit value (always 1 or 2 here). */
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (runtimeTree != 0) {
-        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL, runtimeTree, overlayMode, 0, CG_FloatBits(1.0f), CG_FloatBits(0.1f),
-                      CG_FloatBits(1.0f), 0, 0);
+        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL,
+                      runtimeTree,
+                      overlayMode,
+                      0,
+                      CG_FloatBits(1.0f),
+                      CG_FloatBits(0.1f),
+                      CG_FloatBits(1.0f),
+                      0,
+                      0);
     }
 }

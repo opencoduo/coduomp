@@ -35,7 +35,13 @@
 // service returns void in practice; cgame_syscall's declared int32_t result is
 // simply not consumed here.
 
-void trap_R_AddLightToScene(const vec3_t org, float intensity, float r, float g, float b)
+void trap_R_AddLightToScene(const vec3_t org, float intensity,
+                            float r, float g, float b)
 {
-    cgame_syscall(CG_R_ADD_LIGHT_TO_SCENE, (intptr_t)org, CG_FloatBits(intensity), CG_FloatBits(r), CG_FloatBits(g), CG_FloatBits(b));
+    cgame_syscall(CG_R_ADD_LIGHT_TO_SCENE,
+                  (intptr_t)org,
+                  CG_FloatBits(intensity),
+                  CG_FloatBits(r),
+                  CG_FloatBits(g),
+                  CG_FloatBits(b));
 }

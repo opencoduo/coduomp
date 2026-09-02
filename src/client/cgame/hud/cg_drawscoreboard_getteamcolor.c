@@ -76,7 +76,8 @@
 
 /* NOT_FROM_ORIGINAL_SOURCE: source spelling of the three inlined clamp
  * clusters; forced inline so it cannot create an extra recovered function. */
-static CG_SB_COLOR_ALWAYS_INLINE void cgame_compat_clamp_scoreboard_color(vec_t *c)
+static CG_SB_COLOR_ALWAYS_INLINE void
+cgame_compat_clamp_scoreboard_color(vec_t *c)
 {
     /* clamp(*c, 0.0f, 1.0f) — the per-component idiom at 0x30036fb9, 0x30036feb,
      * 0x3003701d. */
@@ -92,11 +93,13 @@ void CG_DrawScoreboard_GetTeamColor(int team, vec3_t colorOut)
 
     if (team == TEAM_AXIS) {
         /* 0x30036f87: g_TeamColor_Axis */
-        trap_Cvar_VariableStringBuffer("g_TeamColor_Axis", cvarValue, (int32_t)sizeof(cvarValue));
+        trap_Cvar_VariableStringBuffer("g_TeamColor_Axis", cvarValue,
+                                       (int32_t)sizeof(cvarValue));
         sscanf(cvarValue, "%f %f %f", &colorOut[0], &colorOut[1], &colorOut[2]);
     } else if (team == TEAM_ALLIES) {
         /* 0x30036f5b: g_TeamColor_Allies */
-        trap_Cvar_VariableStringBuffer("g_TeamColor_Allies", cvarValue, (int32_t)sizeof(cvarValue));
+        trap_Cvar_VariableStringBuffer("g_TeamColor_Allies", cvarValue,
+                                       (int32_t)sizeof(cvarValue));
         sscanf(cvarValue, "%f %f %f", &colorOut[0], &colorOut[1], &colorOut[2]);
     } else {
         /* 0x30036f41: any other team selector -> white. */

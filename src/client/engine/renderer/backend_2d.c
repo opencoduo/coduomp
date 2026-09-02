@@ -14,10 +14,16 @@ enum {
 
 /* Source: CoDUOMP.exe 0x00590e9c..0x00590ebc (.rdata). These are the
  * RGBA byte sequences selected by inline color escapes ^0 through ^7. */
-static const renderer_rgba8_t rendererBaseColorCodes[8] = {{.components = {0, 0, 0, 255}},     {.components = {255, 0, 0, 255}},
-                                                           {.components = {0, 255, 0, 255}},   {.components = {255, 255, 0, 255}},
-                                                           {.components = {0, 0, 255, 255}},   {.components = {0, 255, 255, 255}},
-                                                           {.components = {255, 0, 255, 255}}, {.components = {255, 255, 255, 255}}};
+static const renderer_rgba8_t rendererBaseColorCodes[8] = {
+    {.components = {0, 0, 0, 255}},
+    {.components = {255, 0, 0, 255}},
+    {.components = {0, 255, 0, 255}},
+    {.components = {255, 255, 0, 255}},
+    {.components = {0, 0, 255, 255}},
+    {.components = {0, 255, 255, 255}},
+    {.components = {255, 0, 255, 255}},
+    {.components = {255, 255, 255, 255}}
+};
 
 /* Source: CoDUOMP.exe 0x004ea900..0x004ea96e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004ea900_004ea96e.mcode.
@@ -46,13 +52,16 @@ void RB_DisableTMU(int32_t textureUnit)
  * Name: same-module Mac symbol RB_EndMultitexture. */
 void RB_EndMultitexture(void)
 {
-    for (int32_t textureUnit = 1; textureUnit < glConfig.maxActiveTextures; ++textureUnit) {
+    for (int32_t textureUnit = 1;
+         textureUnit < glConfig.maxActiveTextures; ++textureUnit) {
         /* D3 E6 at 0x004eb19c masks CL to five bits. */
-        const uint32_t texcoordArrayBit = 1u << ((uint32_t)textureUnit & RB_X86_SHIFT_COUNT_MASK);
+        const uint32_t texcoordArrayBit =
+            1u << ((uint32_t)textureUnit & RB_X86_SHIFT_COUNT_MASK);
 
         if ((glState.clientStateBits & texcoordArrayBit) != 0) {
             if (glState.currentClientTmu != textureUnit) {
-                qglClientActiveTextureARB(GL_TEXTURE0_ARB + (uint32_t)textureUnit);
+                qglClientActiveTextureARB(GL_TEXTURE0_ARB +
+                                          (uint32_t)textureUnit);
                 glState.currentClientTmu = textureUnit;
             }
             qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -80,7 +89,9 @@ void RB_EndMultitexture(void)
 void RB_SetGL2D(void)
 {
     enum {
-        GLS_2D = GLS_DEPTHTEST_DISABLE | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA
+        GLS_2D = GLS_DEPTHTEST_DISABLE |
+                 GLS_SRCBLEND_SRC_ALPHA |
+                 GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA
     };
 
     backEnd.projection2D = qtrue;
@@ -91,7 +102,8 @@ void RB_SetGL2D(void)
 
     qglMatrixMode(GL_PROJECTION);
     qglLoadIdentity();
-    qglOrtho(0.0, (double)glConfig.vidWidth, (double)glConfig.vidHeight, 0.0, 0.0, 1.0);
+    qglOrtho(0.0, (double)glConfig.vidWidth,
+             (double)glConfig.vidHeight, 0.0, 0.0, 1.0);
     qglMatrixMode(GL_MODELVIEW);
     qglLoadIdentity();
 
@@ -108,7 +120,8 @@ void RB_SetGL2D(void)
 
     backEnd.refdef.time = ri.Milliseconds();
     /* Exact float32 at 0x005b9b44; semantically milliseconds / 1000. */
-    backEnd.refdef.floatTime = (float)backEnd.refdef.time * 0.0010000000474974513f;
+    backEnd.refdef.floatTime =
+        (float)backEnd.refdef.time * 0.0010000000474974513f;
 }
 
 /* Source: CoDUOMP.exe 0x004bf930..0x004bf93d.
@@ -123,7 +136,9 @@ const void *RB_SetColor(const setColorCommand_t *command)
 /* Source: CoDUOMP.exe 0x004bf940..0x004bfb34.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004bf940_004bfb34.mcode.
  * Name: same-module Mac symbol RB_DrawStretchPic. */
-void RB_DrawStretchPic(shader_t *shader, float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+void RB_DrawStretchPic(shader_t *shader,
+                       float x, float y, float width, float height,
+                       float s1, float t1, float s2, float t2,
                        const renderer_rgba8_t *color)
 {
     int32_t baseVertex;
@@ -150,7 +165,8 @@ void RB_DrawStretchPic(shader_t *shader, float x, float y, float width, float he
         RB_BeginSurface(shader, 3);
     }
 
-    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES || tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
+    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES ||
+        tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
         RB_CheckOverflow(4, 6);
     }
 
@@ -211,7 +227,11 @@ void RB_DrawStretchPic(shader_t *shader, float x, float y, float width, float he
  * Windows render-command dispatcher at 0x004c1110. */
 const void *RB_StretchPic(const stretchPicCommand_t *command)
 {
-    RB_DrawStretchPic(command->shader, command->x, command->y, command->w, command->h, command->s1, command->t1, command->s2, command->t2,
+    RB_DrawStretchPic(command->shader,
+                      command->x, command->y,
+                      command->w, command->h,
+                      command->s1, command->t1,
+                      command->s2, command->t2,
                       &backEnd.color2D);
     return command + 1;
 }
@@ -219,15 +239,18 @@ const void *RB_StretchPic(const stretchPicCommand_t *command)
 /* Source: CoDUOMP.exe 0x004bfb80..0x004bfd80.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004bfb80_004bfd80.mcode.
  * Name: same-module Mac symbol RB_StretchPicGradient. */
-const void *RB_StretchPicGradient(const stretch_pic_gradient_command_t *command)
+const void *RB_StretchPicGradient(
+    const stretch_pic_gradient_command_t *command)
 {
     int32_t baseVertex;
     int32_t xyzOffset;
     uint32_t packedColor2D;
     uint32_t packedGradientColor;
 
-    memcpy(&packedColor2D, backEnd.color2D.components, sizeof(packedColor2D));
-    memcpy(&packedGradientColor, command->gradientColor.components, sizeof(packedGradientColor));
+    memcpy(&packedColor2D, backEnd.color2D.components,
+           sizeof(packedColor2D));
+    memcpy(&packedGradientColor, command->gradientColor.components,
+           sizeof(packedGradientColor));
 
     if (!backEnd.projection2D)
         RB_SetGL2D();
@@ -247,7 +270,8 @@ const void *RB_StretchPicGradient(const stretch_pic_gradient_command_t *command)
         RB_BeginSurface(command->shader, 3);
     }
 
-    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES || tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
+    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES ||
+        tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
         RB_CheckOverflow(4, 6);
     }
 
@@ -337,7 +361,8 @@ const void *RB_StretchPicRotate(const stretch_pic_rotate_command_t *command)
         RB_BeginSurface(command->shader, 3);
     }
 
-    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES || tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
+    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES ||
+        tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
         RB_CheckOverflow(4, 6);
     }
 
@@ -371,12 +396,15 @@ const void *RB_StretchPicRotate(const stretch_pic_rotate_command_t *command)
     centerY = command->y + halfHeight;
     /* Exact float32 constants at 0x005b9ca8 and 0x005b9da8. The original
      * performs both multiplications before FSINCOS. */
-    radians = (command->angleDegrees * 3.1415927410125732f) * 0.0055555556900799274f;
+    radians = (command->angleDegrees * 3.1415927410125732f) *
+              0.0055555556900799274f;
     coduo_x87_sincosf(radians, &sine, &cosine);
     /* 0x4bff5e..0x4c0023 retains these products across all four vertex
      * constructions; only the left/lower intermediates are stored. */
-    sineWidthRaw = (long double)sine * (long double)halfWidth;
-    cosineWidthRaw = (long double)cosine * (long double)halfWidth;
+    sineWidthRaw =
+        (long double)sine * (long double)halfWidth;
+    cosineWidthRaw =
+        (long double)cosine * (long double)halfWidth;
     /* 0x4bff75..0x4bff92: the FCHS lands on sine*halfHeight; the height
      * products pair as {-sin*hh, +cos*hh}. A prior pass swapped the sine and
      * cosine roles across both axes, which rendered every quad at 90-angle
@@ -387,24 +415,38 @@ const void *RB_StretchPicRotate(const stretch_pic_rotate_command_t *command)
     cosineHeight = cosine * halfHeight;
 
     xyzOffset = baseVertex * tess.vertexComponentCount;
-    const long double leftXRaw = (long double)centerX - cosineWidthRaw;
+    const long double leftXRaw =
+        (long double)centerX - cosineWidthRaw;
     const float leftX = (float)leftXRaw;
-    const long double lowerYRaw = (long double)centerY - sineWidthRaw;
+    const long double lowerYRaw =
+        (long double)centerY - sineWidthRaw;
     const float lowerY = (float)lowerYRaw;
-    tess.xyz[xyzOffset + 0] = (float)(leftXRaw - (long double)negativeSineHeight);
-    tess.xyz[xyzOffset + 1] = (float)(lowerYRaw - (long double)cosineHeight);
+    tess.xyz[xyzOffset + 0] = (float)(
+        leftXRaw - (long double)negativeSineHeight);
+    tess.xyz[xyzOffset + 1] = (float)(
+        lowerYRaw - (long double)cosineHeight);
     tess.xyz[xyzOffset + 2] = 0.0f;
     xyzOffset += 3;
-    tess.xyz[xyzOffset + 0] = (float)((cosineWidthRaw + (long double)centerX) - (long double)negativeSineHeight);
-    tess.xyz[xyzOffset + 1] = (float)(((long double)centerY + sineWidthRaw) - (long double)cosineHeight);
+    tess.xyz[xyzOffset + 0] = (float)(
+        (cosineWidthRaw + (long double)centerX) -
+        (long double)negativeSineHeight);
+    tess.xyz[xyzOffset + 1] = (float)(
+        ((long double)centerY + sineWidthRaw) -
+        (long double)cosineHeight);
     tess.xyz[xyzOffset + 2] = 0.0f;
     xyzOffset += 3;
-    tess.xyz[xyzOffset + 0] = (float)(((long double)negativeSineHeight + cosineWidthRaw) + (long double)centerX);
-    tess.xyz[xyzOffset + 1] = (float)(((long double)cosineHeight + sineWidthRaw) + (long double)centerY);
+    tess.xyz[xyzOffset + 0] = (float)(
+        ((long double)negativeSineHeight + cosineWidthRaw) +
+        (long double)centerX);
+    tess.xyz[xyzOffset + 1] = (float)(
+        ((long double)cosineHeight + sineWidthRaw) +
+        (long double)centerY);
     tess.xyz[xyzOffset + 2] = 0.0f;
     xyzOffset += 3;
-    tess.xyz[xyzOffset + 0] = leftX + negativeSineHeight;
-    tess.xyz[xyzOffset + 1] = lowerY + cosineHeight;
+    tess.xyz[xyzOffset + 0] =
+        leftX + negativeSineHeight;
+    tess.xyz[xyzOffset + 1] =
+        lowerY + cosineHeight;
     tess.xyz[xyzOffset + 2] = 0.0f;
 
     return command + 1;
@@ -439,7 +481,8 @@ const void *RB_DrawQuadPic(const draw_quad_pic_command_t *command)
         RB_BeginSurface(command->shader, 3);
     }
 
-    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES || tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
+    if (tess.vertexCount + 4 >= R_MAX_TESS_VERTICES ||
+        tess.indexCount + 6 >= R_MAX_TESS_INDEXES) {
         RB_CheckOverflow(4, 6);
     }
 
@@ -458,8 +501,10 @@ const void *RB_DrawQuadPic(const draw_quad_pic_command_t *command)
     xyzOffset = baseVertex * tess.vertexComponentCount;
     for (int32_t vertex = 0; vertex < 4; ++vertex) {
         tess.vertexColors[baseVertex + vertex] = packedColor;
-        tess.texCoords[R_TESS_BASE_TEXCOORD_SET][baseVertex + vertex][0] = command->texCoords[vertex][0];
-        tess.texCoords[R_TESS_BASE_TEXCOORD_SET][baseVertex + vertex][1] = command->texCoords[vertex][1];
+        tess.texCoords[R_TESS_BASE_TEXCOORD_SET][baseVertex + vertex][0] =
+            command->texCoords[vertex][0];
+        tess.texCoords[R_TESS_BASE_TEXCOORD_SET][baseVertex + vertex][1] =
+            command->texCoords[vertex][1];
 
         tess.xyz[xyzOffset + 0] = command->positions[vertex][0];
         tess.xyz[xyzOffset + 1] = command->positions[vertex][1];
@@ -499,7 +544,8 @@ void RB_UpdateColorInternal(const float color[4], uint8_t outColor[4])
 
         /* The MSVC x87 sequence stores the float product, reloads it, adds
          * this exact double bias, then uses FISTP under round-to-nearest. */
-        outColor[component] = (uint8_t)lrint((double)scaled + 9.31322574615478515625e-10);
+        outColor[component] = (uint8_t)lrint(
+            (double)scaled + 9.31322574615478515625e-10);
     }
 }
 
@@ -517,8 +563,10 @@ void RB_UpdateColor(const float color8[4], const float color9[4])
  * Name: same-module Mac symbol RB_Text_PaintChar. The Windows compiler keeps
  * shaderHandle in EAX and the remaining arguments on the stack; the maintained
  * source expresses the same logical call with a normal C prototype. */
-void RB_Text_PaintChar(int32_t shaderHandle, float x, float y, float width, float height, float scale, float s1, float t1, float s2,
-                       float t2, const renderer_rgba8_t *color)
+void RB_Text_PaintChar(int32_t shaderHandle,
+                       float x, float y, float width, float height, float scale,
+                       float s1, float t1, float s2, float t2,
+                       const renderer_rgba8_t *color)
 {
     shader_t *shader;
 
@@ -529,20 +577,27 @@ void RB_Text_PaintChar(int32_t shaderHandle, float x, float y, float width, floa
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
         /* 0x004c029d calls through refimport slot 0 (Printf), not slot 1
          * (Error); the paint continues with the default shader. */
-        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
+        ri.Printf(R_PRINT_WARNING,
+                  "R_GetShaderByHandle: out of range hShader '%d'\n",
+                  shaderHandle);
         shader = tr.defaultShader;
     } else {
         shader = tr.shaders[shaderHandle];
     }
 
-    RB_DrawStretchPic(shader, x, y, width, height, s1, t1, s2, t2, color);
+    RB_DrawStretchPic(shader, x, y, width, height,
+                      s1, t1, s2, t2, color);
 }
 
 /* Source: CoDUOMP.exe 0x004c03a0..0x004c0900.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c03a0_004c0900.mcode.
  * Name: same-module Mac symbol RB_Text_PaintWithCursor. */
-int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, float y, float scale, const renderer_rgba8_t *color,
-                                int32_t cursorPosition, uint8_t cursorCharacter, float fixedAdvance, int32_t textStyle)
+int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text,
+                                float x, float y, float scale,
+                                const renderer_rgba8_t *color,
+                                int32_t cursorPosition,
+                                uint8_t cursorCharacter,
+                                float fixedAdvance, int32_t textStyle)
 {
     enum renderer_text_style_e {
         R_TEXT_STYLE_SHADOWED = 3,
@@ -552,7 +607,9 @@ int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, f
     fontInfo_t *font = ri.CL_GetFontInfo(fontHandle, scale);
     const float effectiveScale = scale * font->glyphScale;
     const renderer_rgba8_t originalColor = *color;
-    const renderer_rgba8_t shadowColor = {.components = {0, 0, 0, originalColor.components[3]}};
+    const renderer_rgba8_t shadowColor = {
+        .components = {0, 0, 0, originalColor.components[3]}
+    };
     const int32_t textLength = (int32_t)strlen(text);
     const char *cursor = text;
     float asianScale = 1.0f;
@@ -564,7 +621,9 @@ int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, f
 
     if (rendererMultibyteTextEnabled != qfalse) {
         asianScale = R_GetAsianScale(font, scale);
-        asianTopOffset = ((float)rendererAsianGlyph.height * asianScale * scale - scale * font->lineHeight) * 0.125f;
+        asianTopOffset =
+            ((float)rendererAsianGlyph.height * asianScale * scale -
+             scale * font->lineHeight) * 0.125f;
     }
 
     while (*cursor != '\0' && characterIndex < textLength) {
@@ -577,18 +636,24 @@ int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, f
 
             switch (cl_language->integer) {
             case LANGUAGE_KOREAN:
-                validPair = firstByte >= 0xb0 && firstByte <= 0xc8 && secondByte >= 0xa1 && secondByte <= 0xfe;
+                validPair = firstByte >= 0xb0 && firstByte <= 0xc8 &&
+                            secondByte >= 0xa1 && secondByte <= 0xfe;
                 break;
             case LANGUAGE_TAIWANESE:
-                validPair = ((firstByte >= 0xa1 && firstByte <= 0xc6) || (firstByte >= 0xc9 && firstByte <= 0xf9)) &&
-                            ((secondByte >= 0x40 && secondByte <= 0x7e) || (secondByte >= 0xa1 && secondByte <= 0xfe));
+                validPair = ((firstByte >= 0xa1 && firstByte <= 0xc6) ||
+                             (firstByte >= 0xc9 && firstByte <= 0xf9)) &&
+                            ((secondByte >= 0x40 && secondByte <= 0x7e) ||
+                             (secondByte >= 0xa1 && secondByte <= 0xfe));
                 break;
             case LANGUAGE_JAPANESE:
-                validPair = ((firstByte >= 0x81 && firstByte <= 0x9f) || (firstByte >= 0xe0 && firstByte <= 0xef)) &&
-                            ((secondByte >= 0x40 && secondByte <= 0x7e) || (secondByte >= 0x80 && secondByte <= 0xfc));
+                validPair = ((firstByte >= 0x81 && firstByte <= 0x9f) ||
+                             (firstByte >= 0xe0 && firstByte <= 0xef)) &&
+                            ((secondByte >= 0x40 && secondByte <= 0x7e) ||
+                             (secondByte >= 0x80 && secondByte <= 0xfc));
                 break;
             case LANGUAGE_CHINESE:
-                validPair = firstByte >= 0xa1 && firstByte <= 0xf7 && secondByte >= 0xa1 && secondByte <= 0xfe;
+                validPair = firstByte >= 0xa1 && firstByte <= 0xf7 &&
+                            secondByte >= 0xa1 && secondByte <= 0xfe;
                 break;
             default:
                 break;
@@ -604,7 +669,8 @@ int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, f
             ++cursor;
         }
 
-        if (character == '^' && *cursor != '^' && *cursor >= '0' && *cursor <= '9') {
+        if (character == '^' && *cursor != '^' &&
+            *cursor >= '0' && *cursor <= '9') {
             const uint8_t colorCode = (uint8_t)*cursor++;
 
             if (colorCode == (uint8_t)'7') {
@@ -646,26 +712,43 @@ int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, f
             topOffset += asianTopOffset;
 
         if (fixedAdvance != 0.0f) {
-            leftOffset += (fixedAdvance - characterScale * glyph->xSkip) * 0.5f;
+            leftOffset +=
+                (fixedAdvance - characterScale * glyph->xSkip) * 0.5f;
         }
 
-        if (textStyle == R_TEXT_STYLE_SHADOWED || textStyle == R_TEXT_STYLE_SHADOWED_MORE) {
-            const float shadowOffset = textStyle == R_TEXT_STYLE_SHADOWED ? 1.0f : 2.0f;
+        if (textStyle == R_TEXT_STYLE_SHADOWED ||
+            textStyle == R_TEXT_STYLE_SHADOWED_MORE) {
+            const float shadowOffset =
+                textStyle == R_TEXT_STYLE_SHADOWED ? 1.0f : 2.0f;
 
-            RB_Text_PaintChar(glyph->glyph, currentX + leftOffset + shadowOffset, currentY - topOffset + shadowOffset,
-                              (float)glyph->imageWidth, (float)glyph->imageHeight, characterScale, glyph->s, glyph->t, glyph->s2, glyph->t2,
+            RB_Text_PaintChar(glyph->glyph,
+                              currentX + leftOffset + shadowOffset,
+                              currentY - topOffset + shadowOffset,
+                              (float)glyph->imageWidth,
+                              (float)glyph->imageHeight, characterScale,
+                              glyph->s, glyph->t, glyph->s2, glyph->t2,
                               &shadowColor);
         }
 
-        RB_Text_PaintChar(glyph->glyph, currentX + leftOffset, currentY - topOffset, (float)glyph->imageWidth, (float)glyph->imageHeight,
-                          characterScale, glyph->s, glyph->t, glyph->s2, glyph->t2, &currentColor);
+        RB_Text_PaintChar(glyph->glyph,
+                          currentX + leftOffset, currentY - topOffset,
+                          (float)glyph->imageWidth,
+                          (float)glyph->imageHeight, characterScale,
+                          glyph->s, glyph->t, glyph->s2, glyph->t2,
+                          &currentColor);
 
-        if (characterIndex == cursorPosition && ((Sys_Milliseconds() / R_CURSOR_BLINK_INTERVAL_MSEC) & 1u) != 0) {
+        if (characterIndex == cursorPosition &&
+            ((Sys_Milliseconds() / R_CURSOR_BLINK_INTERVAL_MSEC) & 1u) != 0) {
             glyphInfo_t *cursorGlyph = &font->glyphs[cursorCharacter];
 
-            RB_Text_PaintChar(cursorGlyph->glyph, currentX, currentY - characterScale * cursorGlyph->top, (float)cursorGlyph->imageWidth,
-                              (float)cursorGlyph->imageHeight, characterScale, cursorGlyph->s, cursorGlyph->t, cursorGlyph->s2,
-                              cursorGlyph->t2, &currentColor);
+            RB_Text_PaintChar(cursorGlyph->glyph,
+                              currentX,
+                              currentY - characterScale * cursorGlyph->top,
+                              (float)cursorGlyph->imageWidth,
+                              (float)cursorGlyph->imageHeight, characterScale,
+                              cursorGlyph->s, cursorGlyph->t,
+                              cursorGlyph->s2, cursorGlyph->t2,
+                              &currentColor);
         }
 
         if (fixedAdvance != 0.0f)
@@ -675,11 +758,17 @@ int32_t RB_Text_PaintWithCursor(int32_t fontHandle, const char *text, float x, f
         ++characterIndex;
     }
 
-    if (cursorPosition == textLength && ((Sys_Milliseconds() / R_CURSOR_BLINK_INTERVAL_MSEC) & 1u) != 0) {
+    if (cursorPosition == textLength &&
+        ((Sys_Milliseconds() / R_CURSOR_BLINK_INTERVAL_MSEC) & 1u) != 0) {
         glyphInfo_t *cursorGlyph = &font->glyphs[cursorCharacter];
 
-        RB_Text_PaintChar(cursorGlyph->glyph, currentX, currentY - effectiveScale * cursorGlyph->top, (float)cursorGlyph->imageWidth,
-                          (float)cursorGlyph->imageHeight, effectiveScale, cursorGlyph->s, cursorGlyph->t, cursorGlyph->s2, cursorGlyph->t2,
+        RB_Text_PaintChar(cursorGlyph->glyph,
+                          currentX,
+                          currentY - effectiveScale * cursorGlyph->top,
+                          (float)cursorGlyph->imageWidth,
+                          (float)cursorGlyph->imageHeight, effectiveScale,
+                          cursorGlyph->s, cursorGlyph->t,
+                          cursorGlyph->s2, cursorGlyph->t2,
                           &currentColor);
     }
 

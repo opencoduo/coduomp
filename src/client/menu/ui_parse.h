@@ -48,7 +48,8 @@ void Menu_New(int32_t sourceHandle, int32_t loadMode);
 int32_t trap_PC_LoadSource(const char *filename);
 void trap_PC_FreeSource(int32_t sourceHandle);
 qboolean trap_PC_ReadToken(int32_t sourceHandle, pc_token_t *token);
-void trap_PC_SourceFileAndLine(int32_t sourceHandle, char *filename, int32_t *line);
+void trap_PC_SourceFileAndLine(int32_t sourceHandle, char *filename,
+                               int32_t *line);
 
 /* Parser keyword handlers shared by the cgame and UI modules. */
 qboolean ItemParse_name(itemDef_t *item, int32_t sourceHandle);
@@ -71,7 +72,8 @@ qboolean ItemParse_decoration(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_notselectable(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_wrapped(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_autowrapped(itemDef_t *item, int32_t sourceHandle);
-qboolean ItemParse_horizontalscroll(itemDef_t *item, int32_t sourceHandle);
+qboolean ItemParse_horizontalscroll(itemDef_t *item,
+                                    int32_t sourceHandle);
 qboolean ItemParse_type(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_elementwidth(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_elementheight(itemDef_t *item, int32_t sourceHandle);
@@ -108,13 +110,16 @@ qboolean ItemParse_special(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_cvarTest(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_cvar(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_maxChars(itemDef_t *item, int32_t sourceHandle);
-qboolean ItemParse_maxCharsGotoNext(itemDef_t *item, int32_t sourceHandle);
+qboolean ItemParse_maxCharsGotoNext(itemDef_t *item,
+                                    int32_t sourceHandle);
 qboolean ItemParse_maxPaintChars(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_cvarFloat(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_cvarStrList(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_cvarFloatList(itemDef_t *item, int32_t sourceHandle);
-qboolean ParseColorRange(int32_t sourceHandle, int32_t rangeType, itemDef_t *item);
-qboolean ItemParse_addColorRangeRel(itemDef_t *item, int32_t sourceHandle);
+qboolean ParseColorRange(int32_t sourceHandle, int32_t rangeType,
+                         itemDef_t *item);
+qboolean ItemParse_addColorRangeRel(itemDef_t *item,
+                                    int32_t sourceHandle);
 qboolean ItemParse_addColorRange(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_ownerdrawFlag(itemDef_t *item, int32_t sourceHandle);
 qboolean ItemParse_enableCvar(itemDef_t *item, int32_t sourceHandle);
@@ -144,7 +149,8 @@ qboolean MenuParse_cinematic(menuDef_t *menu, int32_t sourceHandle);
 qboolean MenuParse_ownerdrawFlag(menuDef_t *menu, int32_t sourceHandle);
 qboolean MenuParse_ownerdraw(menuDef_t *menu, int32_t sourceHandle);
 qboolean MenuParse_popup(menuDef_t *menu, int32_t sourceHandle);
-qboolean MenuParse_outOfBoundsClick(menuDef_t *menu, int32_t sourceHandle);
+qboolean MenuParse_outOfBoundsClick(menuDef_t *menu,
+                                    int32_t sourceHandle);
 qboolean MenuParse_soundLoop(menuDef_t *menu, int32_t sourceHandle);
 qboolean MenuParse_fadeClamp(menuDef_t *menu, int32_t sourceHandle);
 qboolean MenuParse_fadeAmount(menuDef_t *menu, int32_t sourceHandle);

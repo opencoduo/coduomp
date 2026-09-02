@@ -10,9 +10,17 @@
 // call; the other five payloads remain full dwords. The recovered engine
 // dispatcher independently proves this exact service and argument order.
 
-int32_t trap_XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, uint32_t anim, uint32_t knob, float weight, float blendTime, float rate,
-                                               uint16_t notifyName, qboolean restart)
+int32_t trap_XAnimSetCompleteGoalWeightKnobAll(
+    XAnimTree *tree, uint32_t anim, uint32_t knob, float weight,
+    float blendTime, float rate, uint16_t notifyName, qboolean restart)
 {
-    return (int32_t)cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL, (intptr_t)tree, (uint16_t)anim, (uint16_t)knob,
-                                  CG_FloatBits(weight), CG_FloatBits(blendTime), CG_FloatBits(rate), notifyName, restart);
+    return (int32_t)cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL,
+                                   (intptr_t)tree,
+                                   (uint16_t)anim,
+                                   (uint16_t)knob,
+                                   CG_FloatBits(weight),
+                                   CG_FloatBits(blendTime),
+                                   CG_FloatBits(rate),
+                                   notifyName,
+                                   restart);
 }

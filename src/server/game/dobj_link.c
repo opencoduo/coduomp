@@ -37,7 +37,8 @@ void G_SafeDObjFree(gentity_t *ent);
 void G_UpdateTags(gentity_t *ent, qboolean updateBoneIndex);
 void G_UpdateClientInfo(gentity_t *ent);
 void G_UpdateVehicleTags(gentity_t *ent);
-void G_UpdateTagInfoOfChildren(gentity_t *parent, qboolean updateBoneIndex);
+void G_UpdateTagInfoOfChildren(gentity_t *parent,
+                                      qboolean updateBoneIndex);
 void G_CalcTagAxis(gentity_t *ent, int useLinkedAngles);
 
 /* NOT_FROM_ORIGINAL_SOURCE: local accessor for attach-ignore bit byte at gentity+0x182. */
@@ -61,7 +62,8 @@ static uint8_t game_compat_g_attach_ignore_collision_value(const gentity_t *ent)
  * boundary so WINDOWS_BEHAVIOR retains the original Windows arithmetic and the
  * rest of the game module retains one honest DObjSkelMat representation.
  */
-static void game_compat_dobj_skel2_matrix_multiply43(const DObjSkelMat *left, const matrix43_t *right, DObjSkelMat *output)
+static void game_compat_dobj_skel2_matrix_multiply43(
+    const DObjSkelMat *left, const matrix43_t *right, DObjSkelMat *output)
 {
     float compactLeft[3][4];
     float compactRight[3][4];
@@ -76,7 +78,9 @@ static void game_compat_dobj_skel2_matrix_multiply43(const DObjSkelMat *left, co
         compactRight[row][3] = right->origin[row];
     }
 
-    DObjSkel2MatrixMultiply43((const float(*)[4])compactLeft, (const float(*)[4])compactRight, compactOutput);
+    DObjSkel2MatrixMultiply43((const float (*)[4])compactLeft,
+                              (const float (*)[4])compactRight,
+                              compactOutput);
 
     for (int32_t row = 0; row < 3; ++row) {
         for (int32_t column = 0; column < 3; ++column) {
@@ -110,7 +114,8 @@ static char s_vtosfBuffers[VTOS_RING_COUNT][VTOSF_BUFFER_SIZE];
 
 /* VERIFIED_DECOMPILER(0x7799c, 8799c_G_FindConfigstringIndex.c, VERIFY-P1-DOBJLINK-2026-06-17): DATAFLOW_VERIFIED - empty-name return, lookup/create loop, not-precached error, overflow check, configstring write, and return index checked against current decompiler output. */
 /* 0x7799c G_FindConfigstringIndex */
-int G_FindConfigstringIndex(const char *name, int start, int max, qboolean create, const char *fieldname)
+int G_FindConfigstringIndex(const char *name, int start, int max,
+                            qboolean create, const char *fieldname)
 {
     int index;
 
@@ -156,7 +161,8 @@ int G_ModelIndex(const char *modelName)
     }
 
     for (index = 1; index < CS_MODELS_COUNT; index++) {
-        const char *configstring = trap_GetConfigstringConst(CS_MODELS + index);
+        const char *configstring =
+            trap_GetConfigstringConst(CS_MODELS + index);
 
         if (configstring[0] == '\0') {
             break;
@@ -198,7 +204,12 @@ const char *G_ModelName(int modelIndex)
 /* 0x77d42 G_SoundAliasIndex */
 uint8_t G_SoundAliasIndex(const char *name)
 {
-    return (uint8_t)G_FindConfigstringIndex(name, CS_SOUNDS, CS_SOUNDS_COUNT, qtrue, NULL);
+    return (uint8_t)G_FindConfigstringIndex(
+        name,
+        CS_SOUNDS,
+        CS_SOUNDS_COUNT,
+        qtrue,
+        NULL);
 }
 
 /* VERIFIED_DECOMPILER(0x77d88, 87d88_G_GetGameId.c, VERIFY-P1-DOBJLINK-2026-06-17): DATAFLOW_VERIFIED - Scr_GetEntityId arguments and uint16_t return checked against current decompiler output. */
@@ -226,7 +237,9 @@ static void game_compat_dobj_print_current_attachments(gentity_t *ent)
 
     for (int slot = 0; slot < 6; slot++) {
         if (ent->attachModelIndex[slot] != 0 && ent->attachTagIndex[slot] != 0) {
-            Com_Printf("model: '%s', tag: '%s'\n", G_ModelName(ent->attachModelIndex[slot]), SL_ConvertToString(ent->attachTagIndex[slot]));
+            Com_Printf("model: '%s', tag: '%s'\n",
+                       G_ModelName(ent->attachModelIndex[slot]),
+                       SL_ConvertToString(ent->attachTagIndex[slot]));
         }
     }
 }
@@ -234,7 +247,8 @@ static void game_compat_dobj_print_current_attachments(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: extracted script parameter validation helper. */
 static void game_compat_dobj_require_entity_parameter(uint32_t index)
 {
-    if (Scr_GetType(index) != SCRIPT_VAR_OBJECT || Scr_GetPointerType(index) != SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(index) != SCRIPT_VAR_OBJECT ||
+        Scr_GetPointerType(index) != SCRIPT_VAR_ENTITY) {
         Scr_ParamError(index, "not an entity");
     }
 }
@@ -247,12 +261,14 @@ static void game_compat_dobj_report_link_failure(gentity_t *parent, const char *
             Scr_Error("failed to link entity since parent has no model");
         }
 
-        Scr_Error(va("failed to link entity since parent model '%s' is invalid", G_ModelName(parent->modelIndex)));
+        Scr_Error(va("failed to link entity since parent model '%s' is invalid",
+                     G_ModelName(parent->modelIndex)));
     }
 
     if (tagName[0] != '\0' && trap_DObjGetBoneIndex(parent, tagName) < 0) {
         trap_DObjDumpInfo(parent);
-        Scr_Error(va("failed to link entity since tag '%s' does not exist in parent model '%s'", tagName, G_ModelName(parent->modelIndex)));
+        Scr_Error(va("failed to link entity since tag '%s' does not exist in parent model '%s'",
+                     tagName, G_ModelName(parent->modelIndex)));
     }
 
     Scr_Error("failed to link entity due to link cycle");
@@ -338,7 +354,8 @@ void G_DObjUpdate(gentity_t *ent)
         models[modelCount].model = G_GetModel(modelIndex);
         models[modelCount].tagName = SL_ConvertToString(ent->attachTagIndex[slot]);
         models[modelCount].modelIndex = -(int16_t)modelIndex;
-        models[modelCount].ignoreCollision = (game_compat_g_attach_ignore_collision_value(ent) >> slot) & 1;
+        models[modelCount].ignoreCollision =
+            (game_compat_g_attach_ignore_collision_value(ent) >> slot) & 1;
         modelCount++;
     }
 
@@ -348,7 +365,8 @@ void G_DObjUpdate(gentity_t *ent)
 
 /* VERIFIED_DECOMPILER(0x780bc, 880bc_G_EntAttach.c, VERIFY-P1-DOBJLINK-2026-06-17): DATAFLOW_VERIFIED - free slot search, full-slot return, model/tag stores, ignore-collision bit set, DObj update, and return checked against current decompiler output. */
 /* 0x780bc G_EntAttach */
-qboolean G_EntAttach(gentity_t *ent, const char *modelName, const char *tagName, qboolean ignoreCollision)
+qboolean G_EntAttach(gentity_t *ent, const char *modelName,
+                     const char *tagName, qboolean ignoreCollision)
 {
     int slot;
 
@@ -399,7 +417,8 @@ qboolean G_EntDetach(gentity_t *ent, const char *modelName, const char *tagName)
         Scr_SetString(&ent->attachTagIndex[slot], 0);
 
         for (; slot < DOBJ_ATTACH_SLOT_COUNT - 1; slot++) {
-            uint8_t nextIgnoreCollision = (game_compat_g_attach_ignore_collision_value(ent) >> (slot + 1)) & 1;
+            uint8_t nextIgnoreCollision =
+                (game_compat_g_attach_ignore_collision_value(ent) >> (slot + 1)) & 1;
 
             ent->attachModelIndex[slot] = ent->attachModelIndex[slot + 1];
             ent->attachTagIndex[slot] = ent->attachTagIndex[slot + 1];
@@ -413,7 +432,8 @@ qboolean G_EntDetach(gentity_t *ent, const char *modelName, const char *tagName)
 
         ent->attachModelIndex[DOBJ_ATTACH_SLOT_COUNT - 1] = 0;
         ent->attachTagIndex[DOBJ_ATTACH_SLOT_COUNT - 1] = 0;
-        (*game_compat_g_attach_ignore_collision_byte(ent)) &= (uint8_t)~(1u << (DOBJ_ATTACH_SLOT_COUNT - 1));
+        (*game_compat_g_attach_ignore_collision_byte(ent)) &=
+            (uint8_t)~(1u << (DOBJ_ATTACH_SLOT_COUNT - 1));
 
         G_DObjUpdate(ent);
         return 1;
@@ -437,7 +457,8 @@ void G_EntDetachAll(gentity_t *ent)
 
 /* VERIFIED_DECOMPILER(0x783c7, 883c7_FUN_000883c7.c, VERIFY-P1-DOBJLINK-2026-06-17): DATAFLOW_VERIFIED - pre-unlink, tag validation, parent-chain cycle checks, linkInfo allocation/layout, child insertion, axis zeroing, and return paths checked against current decompiler output. */
 /* 0x783c7 G_EntLinkToInternal: exact original identity supplied by the UO Mac symbol. */
-static qboolean G_EntLinkToInternal(gentity_t *child, gentity_t *parent, const char *tagName)
+static qboolean G_EntLinkToInternal(gentity_t *child, gentity_t *parent,
+                                    const char *tagName)
 {
     int parentTagIndex;
     gentity_t *ancestor;
@@ -458,7 +479,8 @@ static qboolean G_EntLinkToInternal(gentity_t *child, gentity_t *parent, const c
         }
     }
 
-    for (ancestor = parent; ancestor->linkInfo != NULL; ancestor = ancestor->linkInfo->parent) {
+    for (ancestor = parent; ancestor->linkInfo != NULL;
+         ancestor = ancestor->linkInfo->parent) {
         if (ancestor == child) {
             return qfalse;
         }
@@ -469,7 +491,8 @@ static qboolean G_EntLinkToInternal(gentity_t *child, gentity_t *parent, const c
 
     linkInfo = MT_Alloc(sizeof(*linkInfo), 0x10);
     linkInfo->parent = parent;
-    linkInfo->tagStringId = tagName[0] == '\0' ? 0 : SL_GetLowercaseString(tagName, 0);
+    linkInfo->tagStringId =
+        tagName[0] == '\0' ? 0 : SL_GetLowercaseString(tagName, 0);
     linkInfo->nextChild = parent->firstChild;
     linkInfo->parentTagIndex = parentTagIndex;
     memset(&linkInfo->relAxis, 0, sizeof(linkInfo->relAxis));
@@ -494,7 +517,9 @@ qboolean G_EntLinkTo(gentity_t *child, gentity_t *parent, const char *tagName)
 
 /* VERIFIED_DECOMPILER(0x7859b, 8859b_G_EntLinkToWithOffset.c, VERIFY-P1-DOBJLINK-2026-06-17): DATAFLOW_VERIFIED - create-link guard, AnglesToAxis target, origin-offset stores, and return paths checked against current decompiler output. */
 /* 0x7859b G_EntLinkToWithOffset */
-qboolean G_EntLinkToWithOffset(gentity_t *child, gentity_t *parent, const char *tagName, const float *originOffset,
+qboolean G_EntLinkToWithOffset(gentity_t *child, gentity_t *parent,
+                               const char *tagName,
+                               const float *originOffset,
                                const float *anglesOffset)
 {
     entityLinkInfo_t *linkInfo;
@@ -528,7 +553,8 @@ void G_EntUnlink(gentity_t *ent)
     G_SetAngle(ent, ent->currentAngles);
 
     previousChild = NULL;
-    for (child = linkInfo->parent->firstChild; child != ent; child = child->linkInfo->nextChild) {
+    for (child = linkInfo->parent->firstChild; child != ent;
+         child = child->linkInfo->nextChild) {
         previousChild = child;
     }
 
@@ -566,7 +592,9 @@ void G_UpdateTagInfo(gentity_t *ent, qboolean updateBoneIndex)
         linkInfo->parentTagIndex = -1;
     } else {
         if (updateBoneIndex) {
-            linkInfo->parentTagIndex = trap_DObjGetBoneIndex(linkInfo->parent, SL_ConvertToString(linkInfo->tagStringId));
+            linkInfo->parentTagIndex =
+                trap_DObjGetBoneIndex(linkInfo->parent,
+                                      SL_ConvertToString(linkInfo->tagStringId));
             if (linkInfo->parentTagIndex >= 0) {
                 return;
             }
@@ -610,7 +638,8 @@ void G_CalcTagParentAxis(gentity_t *child, matrix43_t *outAxis)
         parentAxis.origin[1] = parent->currentOrigin[1];
         parentAxis.origin[2] = parent->currentOrigin[2];
 
-        if ((uint32_t)linkInfo->parentTagIndex >= (uint32_t)trap_DObjNumBones(parent)) {
+        if ((uint32_t)linkInfo->parentTagIndex >=
+            (uint32_t)trap_DObjNumBones(parent)) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             *outAxis = parentAxis;
             return;
@@ -624,7 +653,10 @@ void G_CalcTagParentAxis(gentity_t *child, matrix43_t *outAxis)
             return;
         }
 
-        DObjSkelMatrixMultiply43((const DObjSkelMat *)(const void *)&matrixArray[linkInfo->parentTagIndex * 16], &parentAxis, outAxis);
+        DObjSkelMatrixMultiply43(
+            (const DObjSkelMat *)(const void *)&matrixArray[
+                linkInfo->parentTagIndex * 16],
+            &parentAxis, outAxis);
     }
 }
 
@@ -657,12 +689,16 @@ void G_CalcTagAxis(gentity_t *ent, int useLinkedAngles)
         localAxis.origin[0] = ent->currentOrigin[0];
         localAxis.origin[1] = ent->currentOrigin[1];
         localAxis.origin[2] = ent->currentOrigin[2];
-        MatrixMultiply43(&localAxis, &inverseParentAxis, &linkInfo->relAxis);
+        MatrixMultiply43(&localAxis, &inverseParentAxis,
+                         &linkInfo->relAxis);
     } else {
         /* C99 cannot add element qualification through the axis_t array
          * typedef implicitly; MatrixTranspose retains a read-only input. */
-        MatrixTranspose((const vec_t(*)[3])parentAxis.axis, inverseParentAxis.axis);
-        MatrixMultiply(localAxis.axis, inverseParentAxis.axis, linkInfo->relAxis.axis);
+        MatrixTranspose((const vec_t (*)[3])parentAxis.axis,
+                        inverseParentAxis.axis);
+        MatrixMultiply(localAxis.axis,
+                       inverseParentAxis.axis,
+                       linkInfo->relAxis.axis);
     }
 }
 
@@ -691,10 +727,12 @@ void G_SetFixedLink(gentity_t *ent, int mode)
             ent->currentOrigin[2] = linkedAxis.origin[2];
             /* C99 multidimensional-array qualifier bridge; the input axis is
              * not modified by AxisToAngles. */
-            AxisToAngles((const vec_t(*)[3])linkedAxis.axis, ent->currentAngles);
+            AxisToAngles((const vec_t (*)[3])linkedAxis.axis,
+                         ent->currentAngles);
         }
     } else if (mode == 2) {
-        MatrixTransformVector43(linkInfo->relAxis.origin, &parentAxis, linkedAxis.origin);
+        MatrixTransformVector43(linkInfo->relAxis.origin,
+                                &parentAxis, linkedAxis.origin);
         ent->currentOrigin[0] = linkedAxis.origin[0];
         ent->currentOrigin[1] = linkedAxis.origin[1];
         ent->currentOrigin[2] = linkedAxis.origin[2];
@@ -727,12 +765,16 @@ int G_DObjUpdateServerTime(gentity_t *ent, int notify)
      * through the multiply, then rounds once for the float argument;
      * casting frameTime to float before the multiply would add an
      * intermediate rounding under -std=c99. */
-    return trap_DObjUpdateServerTime(ent, (float)((long double)level.frameTime * 0.001f), notify);
+    return trap_DObjUpdateServerTime(
+        ent,
+        (float)((long double)level.frameTime * 0.001f),
+        notify);
 }
 
 /* VERIFIED_DECOMPILER(0x78cf6, 88cf6_FUN_00088cf6.c, VERIFY-DOBJ-POSE-PACKET-2026-06-17): DATAFLOW_VERIFIED - rot/trans array index scaling, yaw/pitch/roll quaternion order, quaternion multiplies, accumulatedWeight store, and translation[0..2] stores checked against current decompiler output and DObjAnimMat layout. */
 /* 0x78cf6 G_DObjSetLocalTagInternal */
-static void G_DObjSetLocalTagInternal(gentity_t *ent, const float *origin, const float *angles, int boneIndex)
+static void G_DObjSetLocalTagInternal(gentity_t *ent, const float *origin,
+                                      const float *angles, int boneIndex)
 {
     float yawQuat[4];
     float pitchQuat[4];
@@ -753,7 +795,9 @@ static void G_DObjSetLocalTagInternal(gentity_t *ent, const float *origin, const
 
 /* VERIFIED_DECOMPILER(0x78dcc, 88dcc_G_DObjSetLocalBoneIndex.c, VERIFY-DOBJ-POSE-PACKET-2026-06-17): DATAFLOW_VERIFIED - rot/trans index gate, helper call argument order, and qboolean result checked against current decompiler output. */
 /* 0x78dcc G_DObjSetLocalBoneIndex */
-qboolean G_DObjSetLocalBoneIndex(gentity_t *ent, uint32_t *partBits, int boneIndex, const float *origin, const float *angles)
+qboolean G_DObjSetLocalBoneIndex(gentity_t *ent, uint32_t *partBits,
+                                 int boneIndex, const float *origin,
+                                 const float *angles)
 {
     if (!trap_DObjSetRotTransIndex(ent, partBits, boneIndex)) {
         return qfalse;
@@ -765,11 +809,14 @@ qboolean G_DObjSetLocalBoneIndex(gentity_t *ent, uint32_t *partBits, int boneInd
 
 /* VERIFIED_DECOMPILER(0x78e34, 88e34_G_DObjSetLocalTag.c, VERIFY-DOBJ-POSE-PACKET-2026-06-17): DATAFLOW_VERIFIED - tag bone lookup, negative-index false path, rot/trans index gate, helper call argument order, and qboolean result checked against current decompiler output. */
 /* 0x78e34 G_DObjSetLocalTag */
-qboolean G_DObjSetLocalTag(gentity_t *ent, uint32_t *partBits, const char *tagName, const float *origin, const float *angles)
+qboolean G_DObjSetLocalTag(gentity_t *ent, uint32_t *partBits,
+                           const char *tagName, const float *origin,
+                           const float *angles)
 {
     int boneIndex = trap_DObjGetBoneIndex(ent, tagName);
 
-    if (boneIndex < 0 || !trap_DObjSetRotTransIndex(ent, partBits, boneIndex)) {
+    if (boneIndex < 0 ||
+        !trap_DObjSetRotTransIndex(ent, partBits, boneIndex)) {
         return qfalse;
     }
 
@@ -779,11 +826,13 @@ qboolean G_DObjSetLocalTag(gentity_t *ent, uint32_t *partBits, const char *tagNa
 
 /* VERIFIED_DECOMPILER(0x78ec0, 88ec0_G_DObjSetControlTagAngles.c, VERIFY-DOBJ-POSE-PACKET-2026-06-17): DATAFLOW_VERIFIED - tag bone lookup, negative-index false path, control rot/trans gate, vec3_origin helper argument, and qboolean result checked against current decompiler output. */
 /* 0x78ec0 G_DObjSetControlTagAngles */
-qboolean G_DObjSetControlTagAngles(gentity_t *ent, uint32_t *partBits, const char *tagName, const float *angles)
+qboolean G_DObjSetControlTagAngles(gentity_t *ent, uint32_t *partBits,
+                                   const char *tagName, const float *angles)
 {
     int boneIndex = trap_DObjGetBoneIndex(ent, tagName);
 
-    if (boneIndex < 0 || !trap_DObjSetControlRotTransIndex(ent, partBits, boneIndex)) {
+    if (boneIndex < 0 ||
+        !trap_DObjSetControlRotTransIndex(ent, partBits, boneIndex)) {
         return qfalse;
     }
 
@@ -847,10 +896,12 @@ DObjSkelMat *G_DObjGetLocalBoneIndexMatrix(gentity_t *ent, int boneIndex)
 
 /* VERIFIED_DECOMPILER(0x790b4, 890b4_G_DObjGetWorldBoneIndexMatrix.c, VERIFY-DOBJ-LOOKUP-TARGET-2026-06-17): DATAFLOW_VERIFIED - local bone matrix call, currentAngles/currentOrigin axis construction, and DObjSkel2MatrixMultiply43 argument order checked against current decompiler output. */
 /* 0x790b4 G_DObjGetWorldBoneIndexMatrix */
-void G_DObjGetWorldBoneIndexMatrix(gentity_t *ent, int boneIndex, DObjSkelMat *outMatrix)
+void G_DObjGetWorldBoneIndexMatrix(gentity_t *ent, int boneIndex,
+                                   DObjSkelMat *outMatrix)
 {
     matrix43_t entityAxis;
-    const DObjSkelMat *localMatrix = G_DObjGetLocalBoneIndexMatrix(ent, boneIndex);
+    const DObjSkelMat *localMatrix =
+        G_DObjGetLocalBoneIndexMatrix(ent, boneIndex);
 
     AnglesToAxis(ent->currentAngles, entityAxis.axis);
     entityAxis.origin[0] = ent->currentOrigin[0];
@@ -860,14 +911,16 @@ void G_DObjGetWorldBoneIndexMatrix(gentity_t *ent, int boneIndex, DObjSkelMat *o
         memset(outMatrix, 0, sizeof(*outMatrix));
         for (int32_t row = 0; row < 3; ++row) {
             for (int32_t column = 0; column < 3; ++column) {
-                outMatrix->axis[row][column] = entityAxis.axis[row][column];
+                outMatrix->axis[row][column] =
+                    entityAxis.axis[row][column];
             }
             outMatrix->origin[row] = entityAxis.origin[row];
         }
         return;
     }
 #if defined(WINDOWS_BEHAVIOR)
-    game_compat_dobj_skel2_matrix_multiply43(localMatrix, &entityAxis, outMatrix);
+    game_compat_dobj_skel2_matrix_multiply43(localMatrix, &entityAxis,
+                                             outMatrix);
 #else
     DObjSkel2MatrixMultiply43(localMatrix, &entityAxis, outMatrix);
 #endif
@@ -893,7 +946,8 @@ DObjSkelMat *G_DObjGetLocalTagMatrix(gentity_t *ent, const char *tagName)
 
 /* VERIFIED_DECOMPILER(0x791a0, 891a0_G_DObjGetWorldTagMatrix.c, VERIFY-DOBJ-LOOKUP-TARGET-2026-06-17): DATAFLOW_VERIFIED - local tag matrix truth return, conditional axis construction, and DObjSkel2MatrixMultiply43 argument order checked against current decompiler output. */
 /* 0x791a0 G_DObjGetWorldTagMatrix */
-qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, const char *tagName, DObjSkelMat *outMatrix)
+qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, const char *tagName,
+                                 DObjSkelMat *outMatrix)
 {
     matrix43_t entityAxis;
     const DObjSkelMat *localMatrix = G_DObjGetLocalTagMatrix(ent, tagName);
@@ -907,7 +961,8 @@ qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, const char *tagName, DObjSkelMa
     entityAxis.origin[1] = ent->currentOrigin[1];
     entityAxis.origin[2] = ent->currentOrigin[2];
 #if defined(WINDOWS_BEHAVIOR)
-    game_compat_dobj_skel2_matrix_multiply43(localMatrix, &entityAxis, outMatrix);
+    game_compat_dobj_skel2_matrix_multiply43(localMatrix, &entityAxis,
+                                             outMatrix);
 #else
     DObjSkel2MatrixMultiply43(localMatrix, &entityAxis, outMatrix);
 #endif
@@ -948,7 +1003,8 @@ gentity_t *G_FindStr(gentity_t *from, size_t fieldOffset, const char *match)
 
     for (int index = startIndex; index < level.num_entities; index++) {
         gentity_t *ent = &g_entities[index];
-        const char *value = *(const char **)(void *)&((uint8_t *)ent)[fieldOffset];
+        const char *value =
+            *(const char **)(void *)&((uint8_t *)ent)[fieldOffset];
 
         if (ent->linked != 0 && value != NULL && Q_stricmp(value, match) == 0) {
             return ent;
@@ -980,7 +1036,8 @@ gentity_t *G_PickTarget(uint16_t targetname)
     }
 
     if (count == 0) {
-        G_Printf("G_PickTarget: target %s not found\n", SL_ConvertToString(targetname));
+        G_Printf("G_PickTarget: target %s not found\n",
+                 SL_ConvertToString(targetname));
         return NULL;
     }
 
@@ -994,8 +1051,10 @@ const char *vtos(const float *value)
     char *buffer = s_vtosBuffers[s_vtosIndex];
 
     s_vtosIndex = (s_vtosIndex + 1) & (VTOS_RING_COUNT - 1);
-    Com_sprintf(buffer, VTOS_BUFFER_SIZE, "(%i %i %i)", (int)game_compat_int32_from_float_trunc(value[0]),
-                (int)game_compat_int32_from_float_trunc(value[1]), (int)game_compat_int32_from_float_trunc(value[2]));
+    Com_sprintf(buffer, VTOS_BUFFER_SIZE, "(%i %i %i)",
+                (int)game_compat_int32_from_float_trunc(value[0]),
+                (int)game_compat_int32_from_float_trunc(value[1]),
+                (int)game_compat_int32_from_float_trunc(value[2]));
     return buffer;
 }
 
@@ -1006,7 +1065,10 @@ const char *vtosf(const float *value)
     char *buffer = s_vtosfBuffers[s_vtosfIndex];
 
     s_vtosfIndex = (s_vtosfIndex + 1) & (VTOS_RING_COUNT - 1);
-    Com_sprintf(buffer, VTOSF_BUFFER_SIZE, "(%f %f %f)", (double)value[0], (double)value[1], (double)value[2]);
+    Com_sprintf(buffer, VTOSF_BUFFER_SIZE, "(%f %f %f)",
+                (double)value[0],
+                (double)value[1],
+                (double)value[2]);
     return buffer;
 }
 
@@ -1017,11 +1079,13 @@ void G_SetMovedir(float *angles, float *movedir)
     static const vec3_t vecUp = {0.0f, -1.0f, 0.0f};
     static const vec3_t vecDown = {0.0f, -2.0f, 0.0f};
 
-    if (angles[0] == vecUp[0] && angles[1] == vecUp[1] && angles[2] == vecUp[2]) {
+    if (angles[0] == vecUp[0] && angles[1] == vecUp[1] &&
+        angles[2] == vecUp[2]) {
         movedir[0] = 0.0f;
         movedir[1] = 0.0f;
         movedir[2] = 1.0f;
-    } else if (angles[0] == vecDown[0] && angles[1] == vecDown[1] && angles[2] == vecDown[2]) {
+    } else if (angles[0] == vecDown[0] && angles[1] == vecDown[1] &&
+               angles[2] == vecDown[2]) {
         movedir[0] = 0.0f;
         movedir[1] = 0.0f;
         movedir[2] = -1.0f;
@@ -1095,7 +1159,9 @@ void ScrCmd_GetAttachSize(uint32_t scriptObject)
     gentity_t *ent = script_object_to_gentity(scriptObject);
     int count;
 
-    for (count = 0; count < DOBJ_ATTACH_SLOT_COUNT && ent->attachModelIndex[count] != 0; count++) {
+    for (count = 0;
+         count < DOBJ_ATTACH_SLOT_COUNT && ent->attachModelIndex[count] != 0;
+         count++) {
     }
 
     Scr_AddInt(count);
@@ -1108,7 +1174,8 @@ void ScrCmd_GetAttachModelName(uint32_t scriptObject)
     gentity_t *ent = script_object_to_gentity(scriptObject);
     uint32_t index = (uint32_t)Scr_GetInt(0);
 
-    if (index >= DOBJ_ATTACH_SLOT_COUNT || ent->attachModelIndex[index] == 0) {
+    if (index >= DOBJ_ATTACH_SLOT_COUNT ||
+        ent->attachModelIndex[index] == 0) {
         Scr_ParamError(0, "bad index");
     }
 
@@ -1122,7 +1189,8 @@ void ScrCmd_GetAttachTagName(uint32_t scriptObject)
     gentity_t *ent = script_object_to_gentity(scriptObject);
     uint32_t index = (uint32_t)Scr_GetInt(0);
 
-    if (index >= DOBJ_ATTACH_SLOT_COUNT || ent->attachModelIndex[index] == 0) {
+    if (index >= DOBJ_ATTACH_SLOT_COUNT ||
+        ent->attachModelIndex[index] == 0) {
         Scr_ParamError(0, "bad index");
     }
 
@@ -1136,7 +1204,8 @@ void ScrCmd_GetAttachIgnoreCollision(uint32_t scriptObject)
     gentity_t *ent = script_object_to_gentity(scriptObject);
     uint32_t index = (uint32_t)Scr_GetInt(0);
 
-    if (index >= DOBJ_ATTACH_SLOT_COUNT || ent->attachModelIndex[index] == 0) {
+    if (index >= DOBJ_ATTACH_SLOT_COUNT ||
+        ent->attachModelIndex[index] == 0) {
         Scr_ParamError(0, "bad index");
     }
 
@@ -1156,7 +1225,8 @@ void ScrCmd_LinkTo(uint32_t scriptObject)
     game_compat_dobj_require_entity_parameter(0);
 
     if ((child->flags & FL_SUPPORTS_LINKTO) == 0) {
-        Scr_ObjectError(va("entity (classname: '%s') does not currently support linkTo", SL_ConvertToString(child->scriptClassname)));
+        Scr_ObjectError(va("entity (classname: '%s') does not currently support linkTo",
+                           SL_ConvertToString(child->scriptClassname)));
     }
 
     parent = Scr_GetEntity(0);
@@ -1175,7 +1245,8 @@ void ScrCmd_LinkTo(uint32_t scriptObject)
 
         Scr_GetVector(2, originOffset);
         Scr_GetVector(3, anglesOffset);
-        linked = G_EntLinkToWithOffset(child, parent, tagName, originOffset, anglesOffset);
+        linked = G_EntLinkToWithOffset(child, parent, tagName,
+                                       originOffset, anglesOffset);
     }
 
     if (!linked) {
@@ -1203,7 +1274,8 @@ void ScrCmd_EnableLinkTo(uint32_t scriptObject)
     }
 
     if (!game_compat_dobj_can_enable_link_to(ent)) {
-        Scr_ObjectError(va("entity (classname: '%s') does not currently support enableLinkTo", SL_ConvertToString(ent->scriptClassname)));
+        Scr_ObjectError(va("entity (classname: '%s') does not currently support enableLinkTo",
+                           SL_ConvertToString(ent->scriptClassname)));
     }
 
     ent->nextthink = level.time;

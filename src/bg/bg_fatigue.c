@@ -34,14 +34,16 @@ const int32_t pm_fatigueRegenDelay = PM_FATIGUE_REGEN_DELAY;
 void PM_PlayFatigueSound(void)
 {
     playerState_t *const ps = pm->ps;
-    const int32_t nextSoundTime = coduo_int32_from_bits((uint32_t)ps->fatigueSoundTime + PM_FATIGUE_SOUND_INTERVAL);
+    const int32_t nextSoundTime = coduo_int32_from_bits(
+        (uint32_t)ps->fatigueSoundTime + PM_FATIGUE_SOUND_INTERVAL);
 
     if ((ps->playerStateFlags & PMF_FATIGUED) != 0) {
         if (nextSoundTime < pm->command.commandTime) {
             PM_AddEvent(EV_FATIGUE_LAST_SOUND);
             pm->ps->fatigueSoundTime = pm->command.commandTime;
         }
-    } else if (ps->fatigueSoundTime > 0 && nextSoundTime < pm->command.commandTime) {
+    } else if (ps->fatigueSoundTime > 0 &&
+               nextSoundTime < pm->command.commandTime) {
         ps->fatigueSoundTime = 0;
     }
 }
@@ -57,12 +59,17 @@ void PM_UpdateFatigue(void)
 
         ps->lastSprintTime = pm->command.commandTime;
 #if EMULATE_X87
-        ps->fatigueScale =
-            x87f_store_f32(x87f_sub(x87f_load_f32(ps->fatigueScale),
-                                    x87f_mul(x87f_mul(x87f_load_i32(pml.msec), x87f_load_f32(0.001f)), x87f_load_f32(pm_sprintFatigue))));
+        ps->fatigueScale = x87f_store_f32(x87f_sub(
+            x87f_load_f32(ps->fatigueScale),
+            x87f_mul(
+                x87f_mul(x87f_load_i32(pml.msec),
+                         x87f_load_f32(0.001f)),
+                x87f_load_f32(pm_sprintFatigue))));
 #else
-        ps->fatigueScale =
-            (float)((long double)ps->fatigueScale - (long double)pml.msec * (long double)0.001f * (long double)pm_sprintFatigue);
+        ps->fatigueScale = (float)(
+            (long double)ps->fatigueScale -
+            (long double)pml.msec * (long double)0.001f *
+                (long double)pm_sprintFatigue);
 #endif
 
         if (ps->fatigueScale < 0.5f) {
@@ -76,19 +83,26 @@ void PM_UpdateFatigue(void)
     }
 
     if ((pm->command.buttons & PM_BUTTON_SPRINT) == 0) {
-        const int32_t regenTime = coduo_int32_from_bits((uint32_t)ps->lastSprintTime + (uint32_t)pm_fatigueRegenDelay);
+        const int32_t regenTime = coduo_int32_from_bits(
+            (uint32_t)ps->lastSprintTime +
+            (uint32_t)pm_fatigueRegenDelay);
 
         if (pm->command.commandTime < regenTime) {
             return;
         }
 
 #if EMULATE_X87
-        ps->fatigueScale =
-            x87f_store_f32(x87f_add(x87f_load_f32(ps->fatigueScale),
-                                    x87f_mul(x87f_mul(x87f_load_i32(pml.msec), x87f_load_f32(0.001f)), x87f_load_f32(pm_fatigueRegen))));
+        ps->fatigueScale = x87f_store_f32(x87f_add(
+            x87f_load_f32(ps->fatigueScale),
+            x87f_mul(
+                x87f_mul(x87f_load_i32(pml.msec),
+                         x87f_load_f32(0.001f)),
+                x87f_load_f32(pm_fatigueRegen))));
 #else
-        ps->fatigueScale =
-            (float)((long double)ps->fatigueScale + (long double)pml.msec * (long double)0.001f * (long double)pm_fatigueRegen);
+        ps->fatigueScale = (float)(
+            (long double)ps->fatigueScale +
+            (long double)pml.msec * (long double)0.001f *
+                (long double)pm_fatigueRegen);
 #endif
 
         if (ps->fatigueScale >= 1.0f) {

@@ -54,7 +54,8 @@ int32_t server_compat_generate_checksum_feed(void)
     checksumTime = (uint32_t)Sys_Milliseconds();
     checksumHigh = (uint32_t)coduo_server_rand() << 16;
     checksumLow = (uint32_t)coduo_server_rand();
-    return coduo_int32_from_bits(checksumTime ^ checksumHigh ^ checksumLow);
+    return coduo_int32_from_bits(
+        checksumTime ^ checksumHigh ^ checksumLow);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: target adapter for the Windows new-server DObj

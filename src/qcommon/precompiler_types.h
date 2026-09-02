@@ -143,9 +143,14 @@ enum pc_number_subtype_e {
     PC_TOKEN_SUBTYPE_INTEGER = 0x1000,
     PC_TOKEN_SUBTYPE_LONG = 0x2000,
     PC_TOKEN_SUBTYPE_UNSIGNED = 0x4000,
-    PC_TOKEN_SUBTYPE_DECIMAL_INTEGER = PC_TOKEN_SUBTYPE_DECIMAL | PC_TOKEN_SUBTYPE_INTEGER,
-    PC_TOKEN_SUBTYPE_DECIMAL_FLOAT_LONG = PC_TOKEN_SUBTYPE_DECIMAL | PC_TOKEN_SUBTYPE_FLOAT | PC_TOKEN_SUBTYPE_LONG,
-    PC_TOKEN_SUBTYPE_DECIMAL_INTEGER_LONG = PC_TOKEN_SUBTYPE_DECIMAL | PC_TOKEN_SUBTYPE_INTEGER | PC_TOKEN_SUBTYPE_LONG
+    PC_TOKEN_SUBTYPE_DECIMAL_INTEGER =
+        PC_TOKEN_SUBTYPE_DECIMAL | PC_TOKEN_SUBTYPE_INTEGER,
+    PC_TOKEN_SUBTYPE_DECIMAL_FLOAT_LONG =
+        PC_TOKEN_SUBTYPE_DECIMAL | PC_TOKEN_SUBTYPE_FLOAT |
+        PC_TOKEN_SUBTYPE_LONG,
+    PC_TOKEN_SUBTYPE_DECIMAL_INTEGER_LONG =
+        PC_TOKEN_SUBTYPE_DECIMAL | PC_TOKEN_SUBTYPE_INTEGER |
+        PC_TOKEN_SUBTYPE_LONG
 };
 
 typedef struct token_s token_t;
@@ -241,34 +246,50 @@ struct source_s {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-#define PC_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+#define PC_LAYOUT_ASSERT(name, expression) \
+    typedef char name[(expression) ? 1 : -1]
 
-PC_LAYOUT_ASSERT(pc_punctuation_text_offset, offsetof(punctuation_t, text) == 0x00);
-PC_LAYOUT_ASSERT(pc_punctuation_subtype_offset, offsetof(punctuation_t, subtype) == 0x04);
+PC_LAYOUT_ASSERT(pc_punctuation_text_offset,
+                 offsetof(punctuation_t, text) == 0x00);
+PC_LAYOUT_ASSERT(pc_punctuation_subtype_offset,
+                 offsetof(punctuation_t, subtype) == 0x04);
 PC_LAYOUT_ASSERT(pc_punctuation_size, sizeof(punctuation_t) == 0x0c);
 PC_LAYOUT_ASSERT(pc_indent_size, sizeof(indent_t) == 0x10);
-PC_LAYOUT_ASSERT(pc_define_name_storage_offset, offsetof(define_t, nameStorage) == 0x20);
+PC_LAYOUT_ASSERT(pc_define_name_storage_offset,
+                 offsetof(define_t, nameStorage) == 0x20);
 PC_LAYOUT_ASSERT(pc_define_size, sizeof(define_t) == 0x20);
 
 #if defined(WINDOWS_BEHAVIOR)
-PC_LAYOUT_ASSERT(pc_windows_token_float_offset, offsetof(token_t, floatValue) == 0x410);
-PC_LAYOUT_ASSERT(pc_windows_token_next_offset, offsetof(token_t, next) == 0x428);
+PC_LAYOUT_ASSERT(pc_windows_token_float_offset,
+                 offsetof(token_t, floatValue) == 0x410);
+PC_LAYOUT_ASSERT(pc_windows_token_next_offset,
+                 offsetof(token_t, next) == 0x428);
 PC_LAYOUT_ASSERT(pc_windows_token_size, sizeof(token_t) == 0x430);
-PC_LAYOUT_ASSERT(pc_windows_script_buffer_offset, offsetof(script_t, buffer) == 0x104);
-PC_LAYOUT_ASSERT(pc_windows_script_token_offset, offsetof(script_t, token) == 0x138);
+PC_LAYOUT_ASSERT(pc_windows_script_buffer_offset,
+                 offsetof(script_t, buffer) == 0x104);
+PC_LAYOUT_ASSERT(pc_windows_script_token_offset,
+                 offsetof(script_t, token) == 0x138);
 PC_LAYOUT_ASSERT(pc_windows_script_size, sizeof(script_t) == 0x570);
-PC_LAYOUT_ASSERT(pc_windows_source_include_path_offset, offsetof(source_t, includePath) == 0x104);
-PC_LAYOUT_ASSERT(pc_windows_source_token_offset, offsetof(source_t, token) == 0x228);
+PC_LAYOUT_ASSERT(pc_windows_source_include_path_offset,
+                 offsetof(source_t, includePath) == 0x104);
+PC_LAYOUT_ASSERT(pc_windows_source_token_offset,
+                 offsetof(source_t, token) == 0x228);
 PC_LAYOUT_ASSERT(pc_windows_source_size, sizeof(source_t) == 0x658);
 #else
-PC_LAYOUT_ASSERT(pc_linux_token_float_offset, offsetof(token_t, floatValue) == 0x40c);
-PC_LAYOUT_ASSERT(pc_linux_token_next_offset, offsetof(token_t, next) == 0x428);
+PC_LAYOUT_ASSERT(pc_linux_token_float_offset,
+                 offsetof(token_t, floatValue) == 0x40c);
+PC_LAYOUT_ASSERT(pc_linux_token_next_offset,
+                 offsetof(token_t, next) == 0x428);
 PC_LAYOUT_ASSERT(pc_linux_token_size, sizeof(token_t) == 0x42c);
-PC_LAYOUT_ASSERT(pc_linux_script_buffer_offset, offsetof(script_t, buffer) == 0x040);
-PC_LAYOUT_ASSERT(pc_linux_script_token_offset, offsetof(script_t, token) == 0x074);
+PC_LAYOUT_ASSERT(pc_linux_script_buffer_offset,
+                 offsetof(script_t, buffer) == 0x040);
+PC_LAYOUT_ASSERT(pc_linux_script_token_offset,
+                 offsetof(script_t, token) == 0x074);
 PC_LAYOUT_ASSERT(pc_linux_script_size, sizeof(script_t) == 0x4a4);
-PC_LAYOUT_ASSERT(pc_linux_source_include_path_offset, offsetof(source_t, includePath) == 0x040);
-PC_LAYOUT_ASSERT(pc_linux_source_token_offset, offsetof(source_t, token) == 0x09c);
+PC_LAYOUT_ASSERT(pc_linux_source_include_path_offset,
+                 offsetof(source_t, includePath) == 0x040);
+PC_LAYOUT_ASSERT(pc_linux_source_token_offset,
+                 offsetof(source_t, token) == 0x09c);
 PC_LAYOUT_ASSERT(pc_linux_source_size, sizeof(source_t) == 0x4c8);
 #endif
 

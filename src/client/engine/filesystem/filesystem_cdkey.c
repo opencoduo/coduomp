@@ -12,14 +12,17 @@
 #endif
 
 enum {
-    COM_CDKEY_PAYLOAD_BYTES = CL_CDKEY_PART_SIZE + CL_CDKEY_CHECKSUM_SIZE,
+    COM_CDKEY_PAYLOAD_BYTES =
+        CL_CDKEY_PART_SIZE + CL_CDKEY_CHECKSUM_SIZE,
     COM_WINDOWS_CDKEY_RECORD_BYTES = COM_CDKEY_PAYLOAD_BYTES + 1
 };
 
-static const char comDefaultCdKey[CL_CDKEY_PART_SIZE + 1] = "                ";
+static const char comDefaultCdKey[CL_CDKEY_PART_SIZE + 1] =
+    "                ";
 
 #if defined(_WIN32)
-static const char comCdKeyRegistryPath[] = "SOFTWARE\\Activision\\Call of Duty United Offensive";
+static const char comCdKeyRegistryPath[] =
+    "SOFTWARE\\Activision\\Call of Duty United Offensive";
 static const char comCdKeyRegistryValue[] = "key";
 #endif
 
@@ -30,7 +33,8 @@ static const char comCdKeyRegistryValue[] = "key";
  * only the primary CoD:UO key and leaves the checksum bytes untouched. */
 void Com_ResetCDKeyToDefault(void)
 {
-    memcpy(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], comDefaultCdKey, sizeof(comDefaultCdKey));
+    memcpy(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+           comDefaultCdKey, sizeof(comDefaultCdKey));
 }
 
 #if defined(_WIN32)
@@ -45,11 +49,15 @@ void Com_ReadCDKey(void)
     qboolean readSucceeded = qfalse;
     HKEY keyHandle;
 
-    if (RegOpenKeyA(HKEY_LOCAL_MACHINE, comCdKeyRegistryPath, &keyHandle) == ERROR_SUCCESS) {
+    if (RegOpenKeyA(HKEY_LOCAL_MACHINE, comCdKeyRegistryPath,
+                    &keyHandle) == ERROR_SUCCESS) {
         DWORD valueType = REG_SZ;
         DWORD recordSize = sizeof(record);
 
-        if (RegQueryValueExA(keyHandle, comCdKeyRegistryValue, NULL, &valueType, (BYTE *)record, &recordSize) == ERROR_SUCCESS &&
+        if (RegQueryValueExA(
+                keyHandle, comCdKeyRegistryValue, NULL,
+                &valueType, (BYTE *)record,
+                &recordSize) == ERROR_SUCCESS &&
             recordSize == sizeof(record)) {
             readSucceeded = qtrue;
         }
@@ -61,12 +69,16 @@ void Com_ReadCDKey(void)
         return;
     }
 
-    memcpy(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], record, CL_CDKEY_PART_SIZE);
+    memcpy(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+           record, CL_CDKEY_PART_SIZE);
     cl_cdkey[CL_UNIQUE_MOD_CDKEY_OFFSET] = '\0';
-    memcpy(&cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET], &record[CL_CDKEY_PART_SIZE], CL_CDKEY_CHECKSUM_SIZE);
+    memcpy(&cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET],
+           &record[CL_CDKEY_PART_SIZE], CL_CDKEY_CHECKSUM_SIZE);
     cl_cdkeyChecksums[CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET] = '\0';
 
-    if (CL_CDKeyValidate(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+    if (CL_CDKeyValidate(
+            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
         Com_ResetCDKeyToDefault();
     }
 }
@@ -78,21 +90,29 @@ void Com_ReadCDKey(void)
  * four checksum bytes, and a final NUL. */
 void Com_WriteCDKey(void)
 {
-    if (CL_CDKeyValidate(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+    if (CL_CDKeyValidate(
+            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
         Com_ResetCDKeyToDefault();
         return;
     }
 
     char record[COM_WINDOWS_CDKEY_RECORD_BYTES];
-    memcpy(record, &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], CL_CDKEY_PART_SIZE);
-    memcpy(&record[CL_CDKEY_PART_SIZE], &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET], CL_CDKEY_CHECKSUM_SIZE);
+    memcpy(record, &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+           CL_CDKEY_PART_SIZE);
+    memcpy(&record[CL_CDKEY_PART_SIZE],
+           &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET],
+           CL_CDKEY_CHECKSUM_SIZE);
     record[COM_WINDOWS_CDKEY_RECORD_BYTES - 1] = '\0';
 
     HKEY keyHandle;
-    if (RegCreateKeyA(HKEY_LOCAL_MACHINE, comCdKeyRegistryPath, &keyHandle) != ERROR_SUCCESS) {
+    if (RegCreateKeyA(HKEY_LOCAL_MACHINE, comCdKeyRegistryPath,
+                      &keyHandle) != ERROR_SUCCESS) {
         return;
     }
-    (void)RegSetValueExA(keyHandle, comCdKeyRegistryValue, 0, REG_SZ, (const BYTE *)record, sizeof(record));
+    (void)RegSetValueExA(
+        keyHandle, comCdKeyRegistryValue, 0, REG_SZ,
+        (const BYTE *)record, sizeof(record));
     RegCloseKey(keyHandle);
 }
 
@@ -103,31 +123,36 @@ void Com_WriteCDKey(void)
  * key. UO_CODKEY uses the same 20-character key-plus-checksum payload as the
  * leading bytes of codkey. The value is never logged or written to disk.
  */
-static qboolean coduomp_load_uo_codkey_environment(char *keyDestination, char *checksumDestination)
+static qboolean coduomp_load_uo_codkey_environment(
+    char *keyDestination, char *checksumDestination)
 {
     const char *const value = getenv("UO_CODKEY");
     if (value == NULL || value[0] == '\0')
         return qfalse;
 
     if (strlen(value) != COM_CDKEY_PAYLOAD_BYTES) {
-        Com_Printf("WARNING: ignoring invalid UO_CODKEY environment value\n");
+        Com_Printf(
+            "WARNING: ignoring invalid UO_CODKEY environment value\n");
         return qfalse;
     }
 
     char key[CL_CDKEY_PART_SIZE + 1] = {0};
     char checksum[CL_CDKEY_CHECKSUM_SIZE + 1] = {0};
     memcpy(key, value, CL_CDKEY_PART_SIZE);
-    memcpy(checksum, &value[CL_CDKEY_PART_SIZE], CL_CDKEY_CHECKSUM_SIZE);
+    memcpy(checksum, &value[CL_CDKEY_PART_SIZE],
+           CL_CDKEY_CHECKSUM_SIZE);
     Q_strupr(key);
     Q_strupr(checksum);
 
     if (CL_CDKeyValidate(key, checksum) == qfalse) {
-        Com_Printf("WARNING: ignoring invalid UO_CODKEY environment value\n");
+        Com_Printf(
+            "WARNING: ignoring invalid UO_CODKEY environment value\n");
         return qfalse;
     }
 
     Q_strncpyz(keyDestination, key, CL_CDKEY_PART_SIZE + 1);
-    Q_strncpyz(checksumDestination, checksum, CL_CDKEY_CHECKSUM_SIZE + 1);
+    Q_strncpyz(checksumDestination, checksum,
+               CL_CDKEY_CHECKSUM_SIZE + 1);
     return qtrue;
 }
 
@@ -136,7 +161,9 @@ static qboolean coduomp_load_uo_codkey_environment(char *keyDestination, char *c
  * "<gameDirectory>/codkey", reads exactly the leading 16 key bytes and four
  * checksum bytes, validates them, and installs them into its destination.
  * The modern native call uses an empty gameDirectory for a root-level codkey. */
-static qboolean Com_LoadCDKeyFile(const char *gameDirectory, char *keyDestination, char *checksumDestination)
+static qboolean Com_LoadCDKeyFile(const char *gameDirectory,
+                                  char *keyDestination,
+                                  char *checksumDestination)
 {
     char qpath[MAX_OSPATH];
     char key[CL_CDKEY_PART_SIZE + 1] = {0};
@@ -144,27 +171,35 @@ static qboolean Com_LoadCDKeyFile(const char *gameDirectory, char *keyDestinatio
     int32_t fileHandle = 0;
 
     if (gameDirectory[0] != '\0') {
-        Com_sprintf(qpath, sizeof(qpath), "%s/%s", gameDirectory, "codkey");
+        Com_sprintf(qpath, sizeof(qpath), "%s/%s",
+                    gameDirectory, "codkey");
     } else {
         Q_strncpyz(qpath, "codkey", sizeof(qpath));
     }
-    const int32_t fileSize = FS_SV_FOpenFileRead(qpath, &fileHandle);
-    if (fileHandle == 0 || fileSize < COM_CDKEY_PAYLOAD_BYTES) {
+    const int32_t fileSize =
+        FS_SV_FOpenFileRead(qpath, &fileHandle);
+    if (fileHandle == 0 ||
+        fileSize < COM_CDKEY_PAYLOAD_BYTES) {
         if (fileHandle != 0)
             FS_FCloseFile(fileHandle);
         return qfalse;
     }
 
-    const qboolean readSucceeded = FS_Read(key, CL_CDKEY_PART_SIZE, fileHandle) == CL_CDKEY_PART_SIZE &&
-                                   FS_Read(checksum, CL_CDKEY_CHECKSUM_SIZE, fileHandle) == CL_CDKEY_CHECKSUM_SIZE;
+    const qboolean readSucceeded =
+        FS_Read(key, CL_CDKEY_PART_SIZE, fileHandle) ==
+            CL_CDKEY_PART_SIZE &&
+        FS_Read(checksum, CL_CDKEY_CHECKSUM_SIZE, fileHandle) ==
+            CL_CDKEY_CHECKSUM_SIZE;
     FS_FCloseFile(fileHandle);
 
-    if (readSucceeded == qfalse || CL_CDKeyValidate(key, checksum) == qfalse) {
+    if (readSucceeded == qfalse ||
+        CL_CDKeyValidate(key, checksum) == qfalse) {
         return qfalse;
     }
 
     Q_strncpyz(keyDestination, key, CL_CDKEY_PART_SIZE + 1);
-    Q_strncpyz(checksumDestination, checksum, CL_CDKEY_CHECKSUM_SIZE + 1);
+    Q_strncpyz(checksumDestination, checksum,
+               CL_CDKEY_CHECKSUM_SIZE + 1);
     return qtrue;
 }
 
@@ -176,15 +211,22 @@ static qboolean Com_LoadCDKeyFile(const char *gameDirectory, char *keyDestinatio
  * primary key resides directly below fs_homepath. */
 void Com_ReadCDKey(const char *gameDirectory)
 {
-    if (gameDirectory[0] == '\0' && coduomp_load_uo_codkey_environment(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
-                                                                       &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) != qfalse) {
+    if (gameDirectory[0] == '\0' &&
+        coduomp_load_uo_codkey_environment(
+            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) != qfalse) {
         return;
     }
 
-    if (Com_LoadCDKeyFile(gameDirectory, &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) ==
-        qfalse) {
-        Q_strncpyz(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], comDefaultCdKey, CL_CDKEY_PART_SIZE + 1);
-        Q_strncpyz(&cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET], "    ", CL_CDKEY_CHECKSUM_SIZE + 1);
+    if (Com_LoadCDKeyFile(
+            gameDirectory,
+            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+        Q_strncpyz(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+                   comDefaultCdKey, CL_CDKEY_PART_SIZE + 1);
+        Q_strncpyz(
+            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET],
+            "    ", CL_CDKEY_CHECKSUM_SIZE + 1);
     }
 }
 
@@ -194,10 +236,15 @@ void Com_ReadCDKey(const char *gameDirectory)
  * file. This second slot is not the retail CoD1 key. */
 void Com_AppendCDKey(const char *gameDirectory)
 {
-    if (Com_LoadCDKeyFile(gameDirectory, &cl_cdkey[CL_UNIQUE_MOD_CDKEY_OFFSET], &cl_cdkeyChecksums[CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET]) ==
-        qfalse) {
-        Q_strncpyz(&cl_cdkey[CL_UNIQUE_MOD_CDKEY_OFFSET], comDefaultCdKey, CL_CDKEY_PART_SIZE + 1);
-        Q_strncpyz(&cl_cdkeyChecksums[CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET], "    ", CL_CDKEY_CHECKSUM_SIZE + 1);
+    if (Com_LoadCDKeyFile(
+            gameDirectory,
+            &cl_cdkey[CL_UNIQUE_MOD_CDKEY_OFFSET],
+            &cl_cdkeyChecksums[CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+        Q_strncpyz(&cl_cdkey[CL_UNIQUE_MOD_CDKEY_OFFSET],
+                   comDefaultCdKey, CL_CDKEY_PART_SIZE + 1);
+        Q_strncpyz(
+            &cl_cdkeyChecksums[CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET],
+            "    ", CL_CDKEY_CHECKSUM_SIZE + 1);
     }
 }
 
@@ -205,23 +252,27 @@ void Com_AppendCDKey(const char *gameDirectory)
  * Name and signature: exact symbol Com_WriteCDKey. The original uppercases
  * and validates the supplied pair, writes the 20-byte payload to
  * "<gameDirectory>/codkey", then appends human-readable warnings. */
-void Com_WriteCDKey(const char *gameDirectory, const char *key, const char *checksum)
+void Com_WriteCDKey(const char *gameDirectory,
+                    const char *key, const char *checksum)
 {
     char qpath[MAX_OSPATH];
     char normalizedKey[CL_CDKEY_PART_SIZE + 1];
     char normalizedChecksum[CL_CDKEY_CHECKSUM_SIZE + 1];
 
     Q_strncpyz(normalizedKey, key, sizeof(normalizedKey));
-    Q_strncpyz(normalizedChecksum, checksum, sizeof(normalizedChecksum));
+    Q_strncpyz(normalizedChecksum, checksum,
+               sizeof(normalizedChecksum));
     Q_strupr(normalizedKey);
     Q_strupr(normalizedChecksum);
 
-    if (CL_CDKeyValidate(normalizedKey, normalizedChecksum) == qfalse) {
+    if (CL_CDKeyValidate(
+            normalizedKey, normalizedChecksum) == qfalse) {
         return;
     }
 
     if (gameDirectory[0] != '\0') {
-        Com_sprintf(qpath, sizeof(qpath), "%s/%s", gameDirectory, "codkey");
+        Com_sprintf(qpath, sizeof(qpath), "%s/%s",
+                    gameDirectory, "codkey");
     } else {
         Q_strncpyz(qpath, "codkey", sizeof(qpath));
     }
@@ -232,10 +283,14 @@ void Com_WriteCDKey(const char *gameDirectory, const char *key, const char *chec
     }
 
     (void)FS_Write(normalizedKey, CL_CDKEY_PART_SIZE, fileHandle);
-    (void)FS_Write(normalizedChecksum, CL_CDKEY_CHECKSUM_SIZE, fileHandle);
-    FS_Printf(fileHandle, "\n// generated by CoD, do not modify\n");
-    FS_Printf(fileHandle, "// Do not give this file to ANYONE.\n");
-    FS_Printf(fileHandle, "// Aspyr will NOT ask you to send this file to them.\n");
+    (void)FS_Write(
+        normalizedChecksum, CL_CDKEY_CHECKSUM_SIZE, fileHandle);
+    FS_Printf(fileHandle,
+              "\n// generated by CoD, do not modify\n");
+    FS_Printf(fileHandle,
+              "// Do not give this file to ANYONE.\n");
+    FS_Printf(fileHandle,
+              "// Aspyr will NOT ask you to send this file to them.\n");
     FS_FCloseFile(fileHandle);
 }
 

@@ -62,10 +62,13 @@ float PM_CmdScale(const usercmd_t *command)
 
 #if EMULATE_X87
     {
-        x87f scale = x87f_div(x87f_mul(x87f_load_i32(ps->speed), x87f_load_i32(maximum)),
-                              x87f_mul(x87f_sqrt(x87f_load_i32(lengthSquared)), x87f_load_f32(127.0f)));
+        x87f scale = x87f_div(
+            x87f_mul(x87f_load_i32(ps->speed), x87f_load_i32(maximum)),
+            x87f_mul(x87f_sqrt(x87f_load_i32(lengthSquared)),
+                     x87f_load_f32(127.0f)));
 
-        if ((ps->playerStateFlags & PMF_WALKING) != 0 || ps->leanFraction != 0.0f) {
+        if ((ps->playerStateFlags & PMF_WALKING) != 0 ||
+            ps->leanFraction != 0.0f) {
             scale = x87f_mul(scale, x87f_load_f32(ps->walkSpeedScale));
         } else if ((ps->playerStateFlags & PMF_SPRINTING) != 0) {
             scale = x87f_mul(scale, x87f_load_f32(ps->sprintSpeedScale));
@@ -83,9 +86,12 @@ float PM_CmdScale(const usercmd_t *command)
     }
 #else
     {
-        long double scale = ((long double)ps->speed * (long double)maximum) / (coduo_x87_sqrtl((long double)lengthSquared) * 127.0L);
+        long double scale =
+            ((long double)ps->speed * (long double)maximum) /
+            (coduo_x87_sqrtl((long double)lengthSquared) * 127.0L);
 
-        if ((ps->playerStateFlags & PMF_WALKING) != 0 || ps->leanFraction != 0.0f) {
+        if ((ps->playerStateFlags & PMF_WALKING) != 0 ||
+            ps->leanFraction != 0.0f) {
             scale *= (long double)ps->walkSpeedScale;
         } else if ((ps->playerStateFlags & PMF_SPRINTING) != 0) {
             scale *= (long double)ps->sprintSpeedScale;
@@ -143,42 +149,54 @@ float PM_CmdScale(const usercmd_t *command)
     ps = pm->ps;
     length = (float)CoduoLibm_SqrtGlibc((double)lengthSquared);
 #if EMULATE_X87
-    scale = x87f_store_f32(
-        x87f_div(x87f_mul(x87f_load_i32(ps->speed), x87f_load_i32(maximum)), x87f_mul(x87f_load_f32(length), x87f_load_f32(127.0f))));
+    scale = x87f_store_f32(x87f_div(
+        x87f_mul(x87f_load_i32(ps->speed), x87f_load_i32(maximum)),
+        x87f_mul(x87f_load_f32(length), x87f_load_f32(127.0f))));
 #else
-    scale = (float)(((long double)ps->speed * (long double)maximum) / ((long double)length * 127.0L));
+    scale = (float)(
+        ((long double)ps->speed * (long double)maximum) /
+        ((long double)length * 127.0L));
 #endif
 
-    if ((ps->playerStateFlags & PMF_WALKING) != 0 || ps->leanFraction != 0.0f) {
+    if ((ps->playerStateFlags & PMF_WALKING) != 0 ||
+        ps->leanFraction != 0.0f) {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_mul(x87f_load_f32(scale), x87f_load_f32(ps->walkSpeedScale)));
+        scale = x87f_store_f32(x87f_mul(
+            x87f_load_f32(scale), x87f_load_f32(ps->walkSpeedScale)));
 #else
-        scale = (float)((long double)scale * (long double)ps->walkSpeedScale);
+        scale = (float)((long double)scale *
+                        (long double)ps->walkSpeedScale);
 #endif
     } else if ((ps->playerStateFlags & PMF_SPRINTING) != 0) {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_mul(x87f_load_f32(scale), x87f_load_f32(ps->sprintSpeedScale)));
+        scale = x87f_store_f32(x87f_mul(
+            x87f_load_f32(scale), x87f_load_f32(ps->sprintSpeedScale)));
 #else
-        scale = (float)((long double)scale * (long double)ps->sprintSpeedScale);
+        scale = (float)((long double)scale *
+                        (long double)ps->sprintSpeedScale);
 #endif
     } else {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_mul(x87f_load_f32(scale), x87f_load_f32(ps->runSpeedScale)));
+        scale = x87f_store_f32(x87f_mul(
+            x87f_load_f32(scale), x87f_load_f32(ps->runSpeedScale)));
 #else
-        scale = (float)((long double)scale * (long double)ps->runSpeedScale);
+        scale = (float)((long double)scale *
+                        (long double)ps->runSpeedScale);
 #endif
     }
 
     if (ps->pmType == PM_TYPE_NOCLIP) {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_mul(x87f_load_f32(scale), x87f_load_f32(3.0f)));
+        scale = x87f_store_f32(x87f_mul(
+            x87f_load_f32(scale), x87f_load_f32(3.0f)));
 #else
         scale = (float)((long double)scale * 3.0L);
 #endif
     }
     if (ps->pmType == PM_TYPE_UFO) {
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_mul(x87f_load_f32(scale), x87f_load_f32(6.0f)));
+        scale = x87f_store_f32(x87f_mul(
+            x87f_load_f32(scale), x87f_load_f32(6.0f)));
 #else
         scale = (float)((long double)scale * 6.0L);
 #endif

@@ -27,7 +27,9 @@ void Script_AddListItem(itemDef_t *item, char **arguments)
     const char *name;
     itemDef_t *target;
 
-    if (!String_Parse(arguments, &listName) || !String_Parse(arguments, &value) || !String_Parse(arguments, &name)) {
+    if (!String_Parse(arguments, &listName) ||
+        !String_Parse(arguments, &value) ||
+        !String_Parse(arguments, &name)) {
         return;
     }
     target = Menu_FindItemByName(item->parent, listName);
@@ -58,15 +60,18 @@ void Script_ScriptMenuResponse(itemDef_t *item, char **arguments)
     int32_t menuIndex;
     int32_t serverId;
 
-    if (DC->getCVarValue("ui_scriptMenuAllowResponse") == 0.0f || !String_Parse(arguments, &response)) {
+    if (DC->getCVarValue("ui_scriptMenuAllowResponse") == 0.0f ||
+        !String_Parse(arguments, &response)) {
         return;
     }
 
     for (menuIndex = 0; menuIndex < SCRIPT_MENU_CONFIG_COUNT; ++menuIndex) {
-        const char *menuName = DC->getConfigString(SCRIPT_MENU_CONFIG_BASE + menuIndex);
+        const char *menuName =
+            DC->getConfigString(SCRIPT_MENU_CONFIG_BASE + menuIndex);
 
         if (menuName[0] != '\0' && item->parent->window.name != NULL &&
-            Q_stricmpn(menuName, item->parent->window.name, SCRIPT_MENU_NAME_COMPARE_LIMIT) == 0) {
+            Q_stricmpn(menuName, item->parent->window.name,
+                       SCRIPT_MENU_NAME_COMPARE_LIMIT) == 0) {
             break;
         }
     }
@@ -74,7 +79,10 @@ void Script_ScriptMenuResponse(itemDef_t *item, char **arguments)
         menuIndex = SCRIPT_MENU_NOT_FOUND;
     }
 
-    serverId = coduo_fp_to_i32_extended(DC->getCVarValue("sv_serverId"));
+    serverId =
+        coduo_fp_to_i32_extended(DC->getCVarValue("sv_serverId"));
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    DC->executeText(EXEC_APPEND, va("cmd mr %i %i %s\n", serverId, menuIndex, response));
+    DC->executeText(
+        EXEC_APPEND,
+        va("cmd mr %i %i %s\n", serverId, menuIndex, response));
 }

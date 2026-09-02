@@ -19,11 +19,16 @@ typedef struct xsurface_remap_s {
 } xsurface_remap_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(xsurface_remap_t) == 4, "i386 XSurface remap alignment changed");
-_Static_assert(offsetof(xsurface_remap_t, sourceShader) == 0x00, "i386 XSurface remap source shader moved");
-_Static_assert(offsetof(xsurface_remap_t, sourceSurface) == 0x04, "i386 XSurface remap source surface moved");
-_Static_assert(offsetof(xsurface_remap_t, remappedSurface) == 0x08, "i386 XSurface remap result surface moved");
-_Static_assert(sizeof(xsurface_remap_t) == 0x0c, "i386 XSurface remap size changed");
+_Static_assert(_Alignof(xsurface_remap_t) == 4,
+               "i386 XSurface remap alignment changed");
+_Static_assert(offsetof(xsurface_remap_t, sourceShader) == 0x00,
+               "i386 XSurface remap source shader moved");
+_Static_assert(offsetof(xsurface_remap_t, sourceSurface) == 0x04,
+               "i386 XSurface remap source surface moved");
+_Static_assert(offsetof(xsurface_remap_t, remappedSurface) == 0x08,
+               "i386 XSurface remap result surface moved");
+_Static_assert(sizeof(xsurface_remap_t) == 0x0c,
+               "i386 XSurface remap size changed");
 #endif
 
 /* Source: CoDUOMP.exe 0x00517880..0x005178aa.
@@ -33,7 +38,8 @@ _Static_assert(sizeof(xsurface_remap_t) == 0x0c, "i386 XSurface remap size chang
  * index difference (pointer difference divided by the 0x198 shader stride).
  * qsort consumes only the sign. Explicit address ordering retains that sign
  * without narrowing native 64-bit pointers into the original int32_t result. */
-static int compare_xsurface_remap(const void *leftValue, const void *rightValue)
+static int compare_xsurface_remap(const void *leftValue,
+                                  const void *rightValue)
 {
     const xsurface_remap_t *left = leftValue;
     const xsurface_remap_t *right = rightValue;
@@ -80,10 +86,13 @@ void R_FixupXModelTexCoords(void)
 
         lodCount = XModelGetNumLods(model->xmodel);
         for (int32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex) {
-            int32_t surfaceCount = XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
+            int32_t surfaceCount =
+                XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
-                uint16_t shaderHandle = model->shaderHandles[lodIndex][surfaceIndex];
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < surfaceCount; ++surfaceIndex) {
+                uint16_t shaderHandle =
+                    model->shaderHandles[lodIndex][surfaceIndex];
                 shader_t *sourceShader;
                 int32_t remapIndex;
 
@@ -95,15 +104,19 @@ void R_FixupXModelTexCoords(void)
                     sourceShader = NULL;
 
                 if (remapCount == R_MAX_XSURFACE_REMAPS) {
-                    ri.Error(ERR_DROP,
-                             "\x15More than %i xmodel surfaces need to be remapped\n"
-                             "You may need to set r_optimizeTextures temporarily to 0\n"
-                             "Eventually you want to use fewer unique model surfaces\n",
-                             remapCount);
+                    ri.Error(
+                        ERR_DROP,
+                        "\x15More than %i xmodel surfaces need to be remapped\n"
+                        "You may need to set r_optimizeTextures temporarily to 0\n"
+                        "Eventually you want to use fewer unique model surfaces\n",
+                        remapCount);
                 }
 
-                for (remapIndex = 0; remapIndex < remapCount; ++remapIndex) {
-                    if (remaps[remapIndex].sourceSurface == surfaces[surfaceIndex] && remaps[remapIndex].sourceShader == sourceShader) {
+                for (remapIndex = 0; remapIndex < remapCount;
+                     ++remapIndex) {
+                    if (remaps[remapIndex].sourceSurface ==
+                            surfaces[surfaceIndex] &&
+                        remaps[remapIndex].sourceShader == sourceShader) {
                         break;
                     }
                 }
@@ -121,19 +134,23 @@ void R_FixupXModelTexCoords(void)
     if (remapCount == 0)
         return;
 
-    coduo_crt_qsort(remaps, (size_t)remapCount, sizeof(remaps[0]), compare_xsurface_remap);
+    coduo_crt_qsort(remaps, (size_t)remapCount, sizeof(remaps[0]),
+                        compare_xsurface_remap);
 
     /* Determinized sentinel: NULL never equals a real surface pointer, so
      * the final record deterministically takes the keep-original branch.
      * See the ORIGINAL_BINARY_BUG note below. */
     remaps[remapCount].sourceSurface = NULL;
 
-    for (int32_t remapIndex = 0; remapIndex < remapCount; ++remapIndex) {
+    for (int32_t remapIndex = 0;
+         remapIndex < remapCount; ++remapIndex) {
         xsurface_remap_t *remap = &remaps[remapIndex];
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (remapIndex < remapCount && remaps[remapIndex + 1].sourceSurface == remap->sourceSurface) {
-            remap->remappedSurface = XSurfaceCloneSurface(remap->sourceSurface, Hunk_AllocInternal);
+        if (remapIndex < remapCount &&
+            remaps[remapIndex + 1].sourceSurface == remap->sourceSurface) {
+            remap->remappedSurface =
+                XSurfaceCloneSurface(remap->sourceSurface, Hunk_AllocInternal);
         } else {
             remap->remappedSurface = remap->sourceSurface;
         }
@@ -144,8 +161,12 @@ void R_FixupXModelTexCoords(void)
             int32_t sourceUIndex;
             int32_t sourceVIndex;
 
-            R_SetupTextureCoordinateRemap(remap->sourceShader, scale, offset, &sourceUIndex, &sourceVIndex);
-            XSurfaceRemapTextureCoordinates(remap->remappedSurface, scale, offset, sourceUIndex, sourceVIndex);
+            R_SetupTextureCoordinateRemap(
+                remap->sourceShader, scale, offset,
+                &sourceUIndex, &sourceVIndex);
+            XSurfaceRemapTextureCoordinates(
+                remap->remappedSurface, scale, offset,
+                sourceUIndex, sourceVIndex);
         }
     }
 
@@ -159,10 +180,13 @@ void R_FixupXModelTexCoords(void)
 
         lodCount = XModelGetNumLods(model->xmodel);
         for (int32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex) {
-            int32_t surfaceCount = XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
+            int32_t surfaceCount =
+                XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
-                uint16_t *shaderHandle = &model->shaderHandles[lodIndex][surfaceIndex];
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < surfaceCount; ++surfaceIndex) {
+                uint16_t *shaderHandle =
+                    &model->shaderHandles[lodIndex][surfaceIndex];
                 shader_t *sourceShader;
 
                 if (*shaderHandle == 0)
@@ -170,14 +194,19 @@ void R_FixupXModelTexCoords(void)
 
                 sourceShader = tr.shaders[*shaderHandle];
                 if ((sourceShader->flags & SHADER_FLAG_REMAPPED) != 0) {
-                    *shaderHandle = (uint16_t)sourceShader->remappedShader->index;
+                    *shaderHandle =
+                        (uint16_t)sourceShader->remappedShader->index;
                 } else {
                     sourceShader = NULL;
                 }
 
-                for (int32_t remapIndex = 0; remapIndex < remapCount; ++remapIndex) {
-                    if (remaps[remapIndex].sourceShader == sourceShader && remaps[remapIndex].sourceSurface == surfaces[surfaceIndex]) {
-                        surfaces[surfaceIndex] = remaps[remapIndex].remappedSurface;
+                for (int32_t remapIndex = 0;
+                     remapIndex < remapCount; ++remapIndex) {
+                    if (remaps[remapIndex].sourceShader == sourceShader &&
+                        remaps[remapIndex].sourceSurface ==
+                            surfaces[surfaceIndex]) {
+                        surfaces[surfaceIndex] =
+                            remaps[remapIndex].remappedSurface;
                         break;
                     }
                 }

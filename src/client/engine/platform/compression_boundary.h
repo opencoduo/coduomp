@@ -56,13 +56,17 @@ extern "C" {
 
 unzFile unzReOpen(const char *path, unzFile source);
 unzFile unzOpen(const char *path);
-int unzGetGlobalInfo(unzFile file, coduomp_unz_global_info_t *globalInfo);
+int unzGetGlobalInfo(unzFile file,
+                     coduomp_unz_global_info_t *globalInfo);
 int unzGoToFirstFile(unzFile file);
 int unzGoToNextFile(unzFile file);
-int unzGetFilePos(unzFile file, coduomp_unz_file_position_t *position);
+int unzGetFilePos(unzFile file,
+                  coduomp_unz_file_position_t *position);
 int unzSetCurrentFileInfoPosition(unzFile file, unsigned long position);
-int unzGetCurrentFileInfo(unzFile file, coduomp_unz_file_info_t *fileInfo, char *filename, unsigned long filenameBufferSize,
-                          void *extraData, unsigned long extraDataBufferSize, char *comment, unsigned long commentBufferSize);
+int unzGetCurrentFileInfo(unzFile file, coduomp_unz_file_info_t *fileInfo,
+                          char *filename, unsigned long filenameBufferSize,
+                          void *extraData, unsigned long extraDataBufferSize,
+                          char *comment, unsigned long commentBufferSize);
 int unzOpenCurrentFile(unzFile file);
 int unzReadCurrentFile(unzFile file, void *buffer, unsigned int length);
 long unztell(unzFile file);

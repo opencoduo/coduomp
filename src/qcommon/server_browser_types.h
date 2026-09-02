@@ -7,9 +7,7 @@ typedef enum lan_server_source_e {
     LAN_SERVER_SOURCE_FAVORITES = 2
 } lan_server_source_t;
 
-enum {
-    LAN_SERVER_SOURCE_COUNT = LAN_SERVER_SOURCE_FAVORITES + 1
-};
+enum { LAN_SERVER_SOURCE_COUNT = LAN_SERVER_SOURCE_FAVORITES + 1 };
 
 typedef enum lan_server_sort_key_e {
     LAN_SERVER_SORT_PASSWORD = 0,

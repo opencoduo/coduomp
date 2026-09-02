@@ -39,12 +39,9 @@
 /* Per-line temporary buffer: the copy loop takes at most 75 (0x4b) characters of a
  * line before forcing a break (0x300192b0 CMP EAX,0x4b / JL), then NUL-terminates.
  * The frame reserves the buffer at [ESP+0x2c]; 128 bytes is ample for 75 chars + NUL. */
-enum {
-    CG_CENTERSTRING_MAX_LINE_CHARS = 75
-}; /* 0x4b: max glyphs copied per line */
+enum { CG_CENTERSTRING_MAX_LINE_CHARS = 75 }; /* 0x4b: max glyphs copied per line */
 
-void CG_DrawCenterString(void)
-{
+void CG_DrawCenterString(void) {
     const char *s;
     vec_t *color;
     int32_t fadeMs;
@@ -62,7 +59,8 @@ void CG_DrawCenterString(void)
     /* 0x300191d4: fade duration in ms = truncate(cg_centertime_vmCvar.value * 1000).
      * 0x300191ea: CG_FadeColor(startMsec = cg_centerPrintTime, totalMsec = fadeMs)
      * returns the static fade color, or NULL once the message has fully expired. */
-    fadeMs = coduo_fp_to_i32_extended((long double)cg_centertime_vmCvar.value * (long double)1000.0f);
+    fadeMs = coduo_fp_to_i32_extended(
+        (long double)cg_centertime_vmCvar.value * (long double)1000.0f);
     color = CG_FadeColor(cg_centerPrintTime, fadeMs);
     if (color == NULL) {
         /* 0x300191f7: expired -> clear the queue and stop. */
@@ -76,20 +74,25 @@ void CG_DrawCenterString(void)
 
     /* 0x30019220: text scale = cg_centerPrintCharWidth * 0.03125
      * (1/32, 0x3007bf3c). The integer enters the FMUL directly via FILD. */
-    scale = (float)((long double)cg_centerPrintCharWidth * (long double)0.03125f);
+    scale = (float)((long double)cg_centerPrintCharWidth *
+                    (long double)0.03125f);
 
     s = cg_centerPrintString; /* 0x30019226 ESI = &cg_centerPrintString[0] */
 
     /* 0x30019239: line/char height for this scale. trap(53, 0, scale) -> int. */
-    charHeight = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_HEIGHT, 0, CG_FloatBits(scale)));
+    charHeight = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_R_TEXT_HEIGHT, 0, CG_FloatBits(scale)));
 
     /* 0x30019256..0x3001928b: vertical start, centered on the total block height.
      *   yBaseline = cg_centerPrintY - 0.5*cg_centerPrintLines*charHeight - charHeight
      *   lineStep  = 1.2 * charHeight
      * (FILD cg_centerPrintY; FILD charHeight; FMUL 0.5; FIMUL cg_centerPrintLines;
      *  FSUBP; FSUB charHeight; -> yBaseline. FMUL 1.2 (0x3007bf38) -> lineStep.) */
-    yBaseline = (float)((long double)cg_centerPrintY - ((long double)charHeight * (long double)0.5f) * (long double)cg_centerPrintLines -
-                        (long double)charHeight); /* FILD cg_centerPrintY (0x30019256) / FIMUL
+    yBaseline = (float)(
+        (long double)cg_centerPrintY -
+        ((long double)charHeight * (long double)0.5f) *
+            (long double)cg_centerPrintLines -
+        (long double)charHeight); /* FILD cg_centerPrintY (0x30019256) / FIMUL
                                * cg_centerPrintLines (0x30019276): both integers
                                * enter the chain exact, no float round/cast. */
     lineStep = (float)((long double)charHeight * (long double)1.2f);
@@ -114,7 +117,8 @@ void CG_DrawCenterString(void)
         line[n] = '\0';          /* 0x300192c0 MOV [ESP+EAX+0x38],BL */
 
         /* 0x300192cf: pixel width of this line. trap(52, line, 0, scale, 0). */
-        textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)line, 0, CG_FloatBits(scale), 0));
+        textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_TEXT_WIDTH, (intptr_t)line, 0, CG_FloatBits(scale), 0));
 
         /* 0x300192ed..0x300192fa: horizontal center. centeredX = (640 - width)*0.5.
          * (FILD width (0x300192dd); FSUBR 640.0 (0x3007bf34); FMUL 0.5
@@ -123,8 +127,14 @@ void CG_DrawCenterString(void)
 
         /* 0x3001930d: draw the line.
          * trap(54, centeredX, yBaseline, 0, scale, color, line, 0, 0, 3). */
-        cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(centeredX), CG_FloatBits(yBaseline), 0, CG_FloatBits(scale), (intptr_t)color,
-                      (intptr_t)line, 0, 0, 3);
+        cgame_syscall(CG_R_TEXT_PAINT,
+                      CG_FloatBits(centeredX),
+                      CG_FloatBits(yBaseline),
+                      0,
+                      CG_FloatBits(scale),
+                      (intptr_t)color,
+                      (intptr_t)line,
+                      0, 0, 3);
 
         /* 0x30019313: advance to the next line's baseline. */
         yBaseline = (float)((long double)yBaseline + (long double)lineStep);

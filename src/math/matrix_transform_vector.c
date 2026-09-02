@@ -19,7 +19,8 @@
  * source difference and the positive-zero vec3_origin subtractions.
  */
 #if defined(WINDOWS_BEHAVIOR)
-void MatrixInverseOrthogonal43(const matrix43_t *input, matrix43_t *output)
+void MatrixInverseOrthogonal43(const matrix43_t *input,
+                               matrix43_t *output)
 {
     vec3_t negativeTranslation;
 
@@ -34,48 +35,67 @@ void MatrixInverseOrthogonal43(const matrix43_t *input, matrix43_t *output)
     output->axis[2][2] = input->axis[2][2];
 
 #if EMULATE_X87
-    negativeTranslation[0] = x87f_store_f32(x87f_sub(x87f_load_f32(vec3_origin[0]), x87f_load_f32(input->origin[0])));
-    negativeTranslation[1] = x87f_store_f32(x87f_sub(x87f_load_f32(vec3_origin[1]), x87f_load_f32(input->origin[1])));
-    negativeTranslation[2] = x87f_store_f32(x87f_sub(x87f_load_f32(vec3_origin[2]), x87f_load_f32(input->origin[2])));
+    negativeTranslation[0] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(vec3_origin[0]), x87f_load_f32(input->origin[0])));
+    negativeTranslation[1] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(vec3_origin[1]), x87f_load_f32(input->origin[1])));
+    negativeTranslation[2] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(vec3_origin[2]), x87f_load_f32(input->origin[2])));
 
-    output->origin[0] =
-        x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(negativeTranslation[1]), x87f_load_f32(output->axis[1][0])),
-                                         x87f_mul(x87f_load_f32(negativeTranslation[2]), x87f_load_f32(output->axis[2][0]))),
-                                x87f_mul(x87f_load_f32(negativeTranslation[0]), x87f_load_f32(output->axis[0][0]))));
-    output->origin[1] =
-        x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(negativeTranslation[1]), x87f_load_f32(output->axis[1][1])),
-                                         x87f_mul(x87f_load_f32(negativeTranslation[2]), x87f_load_f32(output->axis[2][1]))),
-                                x87f_mul(x87f_load_f32(negativeTranslation[0]), x87f_load_f32(output->axis[0][1]))));
-    output->origin[2] =
-        x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(negativeTranslation[2]), x87f_load_f32(output->axis[2][2])),
-                                         x87f_mul(x87f_load_f32(negativeTranslation[0]), x87f_load_f32(output->axis[0][2]))),
-                                x87f_mul(x87f_load_f32(negativeTranslation[1]), x87f_load_f32(output->axis[1][2]))));
+    output->origin[0] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(negativeTranslation[1]),
+                          x87f_load_f32(output->axis[1][0])),
+                 x87f_mul(x87f_load_f32(negativeTranslation[2]),
+                          x87f_load_f32(output->axis[2][0]))),
+        x87f_mul(x87f_load_f32(negativeTranslation[0]),
+                 x87f_load_f32(output->axis[0][0]))));
+    output->origin[1] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(negativeTranslation[1]),
+                          x87f_load_f32(output->axis[1][1])),
+                 x87f_mul(x87f_load_f32(negativeTranslation[2]),
+                          x87f_load_f32(output->axis[2][1]))),
+        x87f_mul(x87f_load_f32(negativeTranslation[0]),
+                 x87f_load_f32(output->axis[0][1]))));
+    output->origin[2] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(negativeTranslation[2]),
+                          x87f_load_f32(output->axis[2][2])),
+                 x87f_mul(x87f_load_f32(negativeTranslation[0]),
+                          x87f_load_f32(output->axis[0][2]))),
+        x87f_mul(x87f_load_f32(negativeTranslation[1]),
+                 x87f_load_f32(output->axis[1][2]))));
 #else
     negativeTranslation[0] = vec3_origin[0] - input->origin[0];
     negativeTranslation[1] = vec3_origin[1] - input->origin[1];
     negativeTranslation[2] = vec3_origin[2] - input->origin[2];
 
-    output->origin[0] =
-        (float)(((long double)negativeTranslation[1] * output->axis[1][0] + (long double)negativeTranslation[2] * output->axis[2][0]) +
-                (long double)negativeTranslation[0] * output->axis[0][0]);
-    output->origin[1] =
-        (float)(((long double)negativeTranslation[1] * output->axis[1][1] + (long double)negativeTranslation[2] * output->axis[2][1]) +
-                (long double)negativeTranslation[0] * output->axis[0][1]);
-    output->origin[2] =
-        (float)(((long double)negativeTranslation[2] * output->axis[2][2] + (long double)negativeTranslation[0] * output->axis[0][2]) +
-                (long double)negativeTranslation[1] * output->axis[1][2]);
+    output->origin[0] = (float)(
+        ((long double)negativeTranslation[1] * output->axis[1][0] +
+         (long double)negativeTranslation[2] * output->axis[2][0]) +
+        (long double)negativeTranslation[0] * output->axis[0][0]);
+    output->origin[1] = (float)(
+        ((long double)negativeTranslation[1] * output->axis[1][1] +
+         (long double)negativeTranslation[2] * output->axis[2][1]) +
+        (long double)negativeTranslation[0] * output->axis[0][1]);
+    output->origin[2] = (float)(
+        ((long double)negativeTranslation[2] * output->axis[2][2] +
+         (long double)negativeTranslation[0] * output->axis[0][2]) +
+        (long double)negativeTranslation[1] * output->axis[1][2]);
 #endif
 }
 #else
-void MatrixInverseOrthogonal43(const matrix43_t *input, matrix43_t *output)
+void MatrixInverseOrthogonal43(const matrix43_t *input,
+                               matrix43_t *output)
 {
     vec3_t negativeTranslation;
 
     MatrixTranspose(input->axis, output->axis);
 #if EMULATE_X87
-    negativeTranslation[0] = x87f_store_f32(x87f_sub(x87f_load_f32(vec3_origin[0]), x87f_load_f32(input->origin[0])));
-    negativeTranslation[1] = x87f_store_f32(x87f_sub(x87f_load_f32(vec3_origin[1]), x87f_load_f32(input->origin[1])));
-    negativeTranslation[2] = x87f_store_f32(x87f_sub(x87f_load_f32(vec3_origin[2]), x87f_load_f32(input->origin[2])));
+    negativeTranslation[0] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(vec3_origin[0]), x87f_load_f32(input->origin[0])));
+    negativeTranslation[1] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(vec3_origin[1]), x87f_load_f32(input->origin[1])));
+    negativeTranslation[2] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(vec3_origin[2]), x87f_load_f32(input->origin[2])));
 #else
     negativeTranslation[0] = vec3_origin[0] - input->origin[0];
     negativeTranslation[1] = vec3_origin[1] - input->origin[1];
@@ -83,7 +103,9 @@ void MatrixInverseOrthogonal43(const matrix43_t *input, matrix43_t *output)
 #endif
     /* C before C23 does not propagate an element qualifier through an array
      * typedef.  Make the read-only view explicit without changing storage. */
-    MatrixTransformVector(negativeTranslation, (const float(*)[3])output->axis, output->origin);
+    MatrixTransformVector(negativeTranslation,
+                          (const float (*)[3])output->axis,
+                          output->origin);
 }
 #endif
 
@@ -103,47 +125,85 @@ void MatrixInverseOrthogonal43(const matrix43_t *input, matrix43_t *output)
  * difference.  Each dot remains unspilled until its final binary32 store.
  */
 #if defined(WINDOWS_BEHAVIOR)
-void MatrixTransformVector(const vec3_t input, const axis_t matrix, vec3_t output)
+void MatrixTransformVector(const vec3_t input, const axis_t matrix,
+                           vec3_t output)
 {
 #if EMULATE_X87
-    output[0] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][0])),
-                                                 x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][0]))),
-                                        x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][0]))));
-    output[1] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][1])),
-                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][1]))),
-                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][1]))));
-    output[2] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][2])),
-                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][2]))),
-                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][2]))));
+    output[0] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(input[1]),
+                          x87f_load_f32(matrix[1][0])),
+                 x87f_mul(x87f_load_f32(input[2]),
+                          x87f_load_f32(matrix[2][0]))),
+        x87f_mul(x87f_load_f32(input[0]),
+                 x87f_load_f32(matrix[0][0]))));
+    output[1] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(input[0]),
+                          x87f_load_f32(matrix[0][1])),
+                 x87f_mul(x87f_load_f32(input[1]),
+                          x87f_load_f32(matrix[1][1]))),
+        x87f_mul(x87f_load_f32(input[2]),
+                 x87f_load_f32(matrix[2][1]))));
+    output[2] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(input[0]),
+                          x87f_load_f32(matrix[0][2])),
+                 x87f_mul(x87f_load_f32(input[1]),
+                          x87f_load_f32(matrix[1][2]))),
+        x87f_mul(x87f_load_f32(input[2]),
+                 x87f_load_f32(matrix[2][2]))));
 #else
-    output[0] =
-        (float)(((long double)input[1] * matrix[1][0] + (long double)input[2] * matrix[2][0]) + (long double)input[0] * matrix[0][0]);
-    output[1] =
-        (float)(((long double)input[0] * matrix[0][1] + (long double)input[1] * matrix[1][1]) + (long double)input[2] * matrix[2][1]);
-    output[2] =
-        (float)(((long double)input[0] * matrix[0][2] + (long double)input[1] * matrix[1][2]) + (long double)input[2] * matrix[2][2]);
+    output[0] = (float)(
+        ((long double)input[1] * matrix[1][0] +
+         (long double)input[2] * matrix[2][0]) +
+        (long double)input[0] * matrix[0][0]);
+    output[1] = (float)(
+        ((long double)input[0] * matrix[0][1] +
+         (long double)input[1] * matrix[1][1]) +
+        (long double)input[2] * matrix[2][1]);
+    output[2] = (float)(
+        ((long double)input[0] * matrix[0][2] +
+         (long double)input[1] * matrix[1][2]) +
+        (long double)input[2] * matrix[2][2]);
 #endif
 }
 #else
-void MatrixTransformVector(const vec3_t input, const axis_t matrix, vec3_t output)
+void MatrixTransformVector(const vec3_t input, const axis_t matrix,
+                           vec3_t output)
 {
 #if EMULATE_X87
-    output[0] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][0])),
-                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][0]))),
-                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][0]))));
-    output[1] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][1])),
-                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][1]))),
-                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][1]))));
-    output[2] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][2])),
-                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][2]))),
-                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][2]))));
+    output[0] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(input[0]),
+                          x87f_load_f32(matrix[0][0])),
+                 x87f_mul(x87f_load_f32(input[1]),
+                          x87f_load_f32(matrix[1][0]))),
+        x87f_mul(x87f_load_f32(input[2]),
+                 x87f_load_f32(matrix[2][0]))));
+    output[1] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(input[0]),
+                          x87f_load_f32(matrix[0][1])),
+                 x87f_mul(x87f_load_f32(input[1]),
+                          x87f_load_f32(matrix[1][1]))),
+        x87f_mul(x87f_load_f32(input[2]),
+                 x87f_load_f32(matrix[2][1]))));
+    output[2] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(input[0]),
+                          x87f_load_f32(matrix[0][2])),
+                 x87f_mul(x87f_load_f32(input[1]),
+                          x87f_load_f32(matrix[1][2]))),
+        x87f_mul(x87f_load_f32(input[2]),
+                 x87f_load_f32(matrix[2][2]))));
 #else
-    output[0] =
-        (float)(((long double)input[0] * matrix[0][0] + (long double)input[1] * matrix[1][0]) + (long double)input[2] * matrix[2][0]);
-    output[1] =
-        (float)(((long double)input[0] * matrix[0][1] + (long double)input[1] * matrix[1][1]) + (long double)input[2] * matrix[2][1]);
-    output[2] =
-        (float)(((long double)input[0] * matrix[0][2] + (long double)input[1] * matrix[1][2]) + (long double)input[2] * matrix[2][2]);
+    output[0] = (float)(
+        ((long double)input[0] * matrix[0][0] +
+         (long double)input[1] * matrix[1][0]) +
+        (long double)input[2] * matrix[2][0]);
+    output[1] = (float)(
+        ((long double)input[0] * matrix[0][1] +
+         (long double)input[1] * matrix[1][1]) +
+        (long double)input[2] * matrix[2][1]);
+    output[2] = (float)(
+        ((long double)input[0] * matrix[0][2] +
+         (long double)input[1] * matrix[1][2]) +
+        (long double)input[2] * matrix[2][2]);
 #endif
 }
 #endif

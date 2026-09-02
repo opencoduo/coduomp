@@ -54,12 +54,13 @@
 #include "math/q_math.h"
 #include <math.h>
 
-qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/, float *pRate /*ECX*/, float dt,          /* [esp+0xc]  */
-                                                          float posLimit,    /* [esp+0x10] */
-                                                          float springAccel, /* [esp+0x14] */
-                                                          float velLimit,    /* [esp+0x18] */
-                                                          float dampCoef,    /* [esp+0x1c] */
-                                                          float dampAccel)   /* [esp+0x20] */
+qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/, float *pRate /*ECX*/,
+                             float dt,          /* [esp+0xc]  */
+                             float posLimit,    /* [esp+0x10] */
+                             float springAccel, /* [esp+0x14] */
+                             float velLimit,    /* [esp+0x18] */
+                             float dampCoef,    /* [esp+0x1c] */
+                             float dampAccel)   /* [esp+0x20] */
 {
 #if defined(WINDOWS_BEHAVIOR)
     /* [esp+0x4] scratch: the float-rounded integrated value, reused by the
@@ -79,7 +80,8 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/,
     }
 
     /* --- 0x30015642: integrate position and clamp to [-posLimit, posLimit] --- */
-    long double integratedWide = (long double)dt * (*pRate) + (*pValue); /* FLD dt; FMUL [ECX]; FADD [EDX] */
+    long double integratedWide =
+        (long double)dt * (*pRate) + (*pValue); /* FLD dt; FMUL [ECX]; FADD [EDX] */
     integrated = (float)integratedWide;          /* FST [esp+0x4] */
     *pValue = (float)integratedWide;             /* FST [EDX], x87 value retained */
 
@@ -112,39 +114,41 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/,
     /* --- 0x300156dc: damping --- */
     {
         /* damped = *pRate - dt*(*pRate)*dampCoef  == *pRate * (1 - dt*dampCoef) */
-        long double damped = *pRate - (long double)dt * (*pRate) * dampCoef; /* FLD dt;FMUL [ECX];FMUL dampCoef;FSUBR [ECX] */
-        long double extra = (long double)dt * dampAccel; /* FLD dt;FMUL dampAccel (pushed after FCOM) */
-        *pRate = (float)damped; /* FST [ECX], x87 value retained */
+        long double damped =
+            *pRate - (long double)dt * (*pRate) * dampCoef; /* FLD dt;FMUL [ECX];FMUL dampCoef;FSUBR [ECX] */
+        long double extra =
+            (long double)dt * dampAccel;                    /* FLD dt;FMUL dampAccel (pushed after FCOM) */
+        *pRate = (float)damped;                              /* FST [ECX], x87 value retained */
 
         /* Sign of `damped` (FCOM 0.0f at 0x300156e8, read at 0x300156fa) selects
          * whether the additional dampAccel pull subtracts or adds; either way it
          * pulls toward 0, and if it overshoots 0 the rate snaps to 0. */
-        if (damped > 0.0f) { /* JNZ==le -> 0x30015712 (add branch) */
-            long double r = damped - extra; /* FSUBP; FST [ECX] */
+        if (damped > 0.0f) {                 /* JNZ==le -> 0x30015712 (add branch) */
+            long double r = damped - extra;  /* FSUBP; FST [ECX] */
             *pRate = (float)r;
-            if (r < 0.0f) { /* FCOMP 0.0f; JP==ge keeps, else fall */
-                *pRate = 0.0f; /* 0x30015723 */
+            if (r < 0.0f) {                  /* FCOMP 0.0f; JP==ge keeps, else fall */
+                *pRate = 0.0f;               /* 0x30015723 */
             }
         } else {
-            long double r = damped + extra; /* FADDP; FST [ECX] */
+            long double r = damped + extra;  /* FADDP; FST [ECX] */
             *pRate = (float)r;
-            if (r > 0.0f) { /* FCOMP 0.0f; JNZ==le keeps, else fall */
-                *pRate = 0.0f; /* 0x30015723 */
+            if (r > 0.0f) {                  /* FCOMP 0.0f; JNZ==le keeps, else fall */
+                *pRate = 0.0f;               /* 0x30015723 */
             }
         }
     }
 
     /* --- 0x30015729: clamp rate to [-velLimit, velLimit], return qfalse --- */
-    if (*pRate > velLimit) { /* FLD [ECX];FCOMP velLimit; JNZ==le -> 0x30015741 */
-        *pRate = velLimit; /* MOV [ECX],velLimit; 0x30015736 */
-        return qfalse; /* MOV EAX,ESI (0) */
+    if (*pRate > velLimit) {                 /* FLD [ECX];FCOMP velLimit; JNZ==le -> 0x30015741 */
+        *pRate = velLimit;                   /* MOV [ECX],velLimit; 0x30015736 */
+        return qfalse;                       /* MOV EAX,ESI (0) */
     }
     /* 0x30015741: compare -velLimit against *pRate (FLD velLimit;FCHS;FCOM [ECX]). */
-    if (-velLimit > *pRate) { /* (-velLimit) <= *pRate -> in range (JNZ) */
-        *pRate = -velLimit; /* FSTP [ECX]; 0x30015752 */
+    if (-velLimit > *pRate) {                /* (-velLimit) <= *pRate -> in range (JNZ) */
+        *pRate = -velLimit;                  /* FSTP [ECX]; 0x30015752 */
     }
     /* 0x30015757 in-range path discards -velLimit (FSTP ST0). */
-    return qfalse; /* MOV EAX,ESI (0) */
+    return qfalse;                           /* MOV EAX,ESI (0) */
 #else
     if (fabsf(*pValue) < 0.25f && fabsf(*pRate) < 1.0f) {
         *pValue = 0.0f;
@@ -153,7 +157,9 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/,
     }
 
 #if EMULATE_X87
-    *pValue = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(*pRate), x87f_load_f32(dt)), x87f_load_f32(*pValue)));
+    *pValue = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(*pRate), x87f_load_f32(dt)),
+        x87f_load_f32(*pValue)));
 #else
     *pValue += *pRate * dt;
 #endif
@@ -171,27 +177,40 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/,
 
     if (*pValue > 0.0f) {
 #if EMULATE_X87
-        *pRate = x87f_store_f32(x87f_sub(x87f_load_f32(*pRate), x87f_mul(x87f_load_f32(springAccel), x87f_load_f32(dt))));
+        *pRate = x87f_store_f32(x87f_sub(
+            x87f_load_f32(*pRate),
+            x87f_mul(x87f_load_f32(springAccel),
+                     x87f_load_f32(dt))));
 #else
         *pRate -= springAccel * dt;
 #endif
     } else if (*pValue < 0.0f) {
 #if EMULATE_X87
-        *pRate = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(springAccel), x87f_load_f32(dt)), x87f_load_f32(*pRate)));
+        *pRate = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(springAccel),
+                     x87f_load_f32(dt)),
+            x87f_load_f32(*pRate)));
 #else
         *pRate += springAccel * dt;
 #endif
     }
 
 #if EMULATE_X87
-    *pRate = x87f_store_f32(
-        x87f_sub(x87f_load_f32(*pRate), x87f_mul(x87f_mul(x87f_load_f32(*pRate), x87f_load_f32(dampCoef)), x87f_load_f32(dt))));
+    *pRate = x87f_store_f32(x87f_sub(
+        x87f_load_f32(*pRate),
+        x87f_mul(
+            x87f_mul(x87f_load_f32(*pRate),
+                     x87f_load_f32(dampCoef)),
+            x87f_load_f32(dt))));
 #else
     *pRate -= *pRate * dampCoef * dt;
 #endif
     if (*pRate > 0.0f) {
 #if EMULATE_X87
-        *pRate = x87f_store_f32(x87f_sub(x87f_load_f32(*pRate), x87f_mul(x87f_load_f32(dampAccel), x87f_load_f32(dt))));
+        *pRate = x87f_store_f32(x87f_sub(
+            x87f_load_f32(*pRate),
+            x87f_mul(x87f_load_f32(dampAccel),
+                     x87f_load_f32(dt))));
 #else
         *pRate -= dampAccel * dt;
 #endif
@@ -200,7 +219,10 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *pValue /*EDX*/,
         }
     } else {
 #if EMULATE_X87
-        *pRate = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(dampAccel), x87f_load_f32(dt)), x87f_load_f32(*pRate)));
+        *pRate = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(dampAccel),
+                     x87f_load_f32(dt)),
+            x87f_load_f32(*pRate)));
 #else
         *pRate += dampAccel * dt;
 #endif

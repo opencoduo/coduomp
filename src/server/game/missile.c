@@ -20,7 +20,8 @@
 #include "scr_vm.h"
 #include "compat/libm/coduo_libm.h"
 
-void G_MissileLandAngles(gentity_t *ent, trace_t *trace, float *angles, int forceAngles);
+void G_MissileLandAngles(gentity_t *ent, trace_t *trace, float *angles,
+                         int forceAngles);
 int G_BounceMissile(gentity_t *ent, trace_t *trace);
 void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir);
 
@@ -102,13 +103,15 @@ void G_ExplodeSmokeGrenade(gentity_t *ent)
     origin[1] = (float)game_compat_int32_from_float_trunc(origin[1]);
     origin[2] = (float)game_compat_int32_from_float_trunc(origin[2]);
 
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)MISSILE_EXPLODED_LIFETIME_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)MISSILE_EXPLODED_LIFETIME_MS);
     ent->think = G_FreeEntity;
 
     end[0] = ent->currentOrigin[0];
     end[1] = ent->currentOrigin[1];
     end[2] = ent->currentOrigin[2] - MISSILE_GROUND_TRACE_DEPTH;
-    trap_Trace(&trace, ent->currentOrigin, vec3_origin, vec3_origin, end, ent->s.number, MASK_GRENADE_TRACE);
+    trap_Trace(&trace, ent->currentOrigin, vec3_origin, vec3_origin, end,
+               ent->s.number, MASK_GRENADE_TRACE);
 
     byteDir = DirToByte(trace.normal);
     G_AddEvent(ent, EV_PROJECTILE_EXPLODE, byteDir);
@@ -116,8 +119,12 @@ void G_ExplodeSmokeGrenade(gentity_t *ent)
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
     ent->s.hintStringIndex = weaponInfo->projectileExplosionType;
 
-    if (trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE, MISSILE_WATER_CONTENTS) == 0) {
-        ent->s.surfType = (trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT;
+    if (trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE,
+                           MISSILE_WATER_CONTENTS) == 0) {
+        ent->s.surfType =
+            (trace.surfaceFlags &
+             (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
+            SURFACE_TYPE_SHIFT;
     } else {
         ent->s.surfType = SURFACE_TYPE_WATER;
     }
@@ -141,13 +148,15 @@ void G_ExplodeSmokeGrenade(gentity_t *ent)
  * recovered. Field names/types are inferred from usage patterns.
  */
 /* VERIFIED_DECOMPILER(0x5edae, 6edae_G_MissileTrace.c, VERIFY-MISSILE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void G_MissileTrace(trace_t *trace, float *start, float *end, int passEntityNum, int contentMask)
+void G_MissileTrace(trace_t *trace, float *start, float *end,
+                    int passEntityNum, int contentMask)
 {
     vec3_t dir;
 
     trap_LocationalTrace(trace, start, end, passEntityNum, contentMask, bulletPriorityMap);
 
-    if (trace->startsolid == 0 || (trace->contents & CONTENTS_SKY) == 0) {
+    if (trace->startsolid == 0 ||
+        (trace->contents & CONTENTS_SKY) == 0) {
         if (trace->startsolid != 0) {
             trace->fraction = 0.0f;
             dir[0] = start[0] - end[0];
@@ -203,11 +212,13 @@ void G_RunMissile(gentity_t *ent)
     startOrigin[2] = ent->currentOrigin[2];
 
     /* Pre-trace: adjust Z down by 1.5 and check for immediate collision */
-    if (ent->s.pos.trType == TR_STATIONARY && ent->s.groundEntityNum != ENTITYNUM_WORLD) {
+    if (ent->s.pos.trType == TR_STATIONARY &&
+        ent->s.groundEntityNum != ENTITYNUM_WORLD) {
         endOrigin[0] = ent->currentOrigin[0];
         endOrigin[1] = ent->currentOrigin[1];
         endOrigin[2] = ent->currentOrigin[2] - 1.5f;
-        G_MissileTrace(&trace, ent->currentOrigin, endOrigin, ent->passEntityNum, ent->clipmask);
+        G_MissileTrace(&trace, ent->currentOrigin, endOrigin,
+                       ent->passEntityNum, ent->clipmask);
         if (trace.fraction == 1.0f) {
             ent->s.pos.trType = TR_GRAVITY;
             ent->s.pos.trTime = level.time;
@@ -242,15 +253,21 @@ void G_RunMissile(gentity_t *ent)
     }
 
     /* Main trace: check for water splash if velocity is low */
-    if (!(fabsf(ent->s.pos.trDelta[2]) > MISSILE_WATER_TRACE_VERTICAL_SPEED) ||
-        trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE, MISSILE_WATER_CONTENTS) != 0) {
-        G_MissileTrace(&trace, ent->currentOrigin, endOrigin, ent->passEntityNum, ent->clipmask);
+    if (!(fabsf(ent->s.pos.trDelta[2]) >
+          MISSILE_WATER_TRACE_VERTICAL_SPEED) ||
+        trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE,
+                           MISSILE_WATER_CONTENTS) != 0) {
+        G_MissileTrace(&trace, ent->currentOrigin, endOrigin,
+                       ent->passEntityNum, ent->clipmask);
     } else {
-        G_MissileTrace(&trace, ent->currentOrigin, endOrigin, ent->passEntityNum, ent->clipmask | MISSILE_WATER_CONTENTS);
+        G_MissileTrace(&trace, ent->currentOrigin, endOrigin,
+                       ent->passEntityNum, ent->clipmask | MISSILE_WATER_CONTENTS);
     }
 
     /* Surface effects: create splash temp entity if hit surface */
-    if ((trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) == (SURFACE_TYPE_WATER << SURFACE_TYPE_SHIFT)) {
+    if ((trace.surfaceFlags &
+         (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) ==
+        (SURFACE_TYPE_WATER << SURFACE_TYPE_SHIFT)) {
         vec3_t normal;
 
         VectorNormalize2(ent->s.pos.trDelta, normal);
@@ -263,17 +280,22 @@ void G_RunMissile(gentity_t *ent)
         tempEnt->s.tempEffectId = byteDir & 0xff;
         byteDir = DirToByte(normal);
         tempEnt->s.hintStringIndex = byteDir & 0xff;
-        tempEnt->s.surfType = (trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT;
+        tempEnt->s.surfType =
+            (trace.surfaceFlags &
+             (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
+            SURFACE_TYPE_SHIFT;
         tempEnt->s.weapon = ent->s.weapon;
         tempEnt->s.vehicleEntityNum = ent->s.number;
 
         weaponInfo = (weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
-        if (weaponInfo->projectileExplosionType == PROJECTILE_EXPLOSION_TYPE_SMOKE) {
+        if (weaponInfo->projectileExplosionType ==
+            PROJECTILE_EXPLOSION_TYPE_SMOKE) {
             G_FreeEntity(ent);
             return;
         }
 
-        G_MissileTrace(&trace, ent->currentOrigin, endOrigin, ent->passEntityNum, ent->clipmask);
+        G_MissileTrace(&trace, ent->currentOrigin, endOrigin,
+                       ent->passEntityNum, ent->clipmask);
     }
 
     /* Original G_RunMissile 0x5f24e..0x5f284 nudges sky-surface hits by
@@ -291,7 +313,8 @@ void G_RunMissile(gentity_t *ent)
         if ((hitEnt->flags & GENTITY_OVERLAP_LINKED_ENTITY_FLAG) != 0) {
             int savedContents = hitEnt->scriptContents;
             hitEnt->scriptContents = 0;
-            G_MissileTrace(&trace, ent->currentOrigin, endOrigin, ent->passEntityNum, ent->clipmask);
+            G_MissileTrace(&trace, ent->currentOrigin, endOrigin,
+                           ent->passEntityNum, ent->clipmask);
             hitEnt->scriptContents = savedContents;
         }
     }
@@ -306,19 +329,23 @@ void G_RunMissile(gentity_t *ent)
     }
 
     /* Special handling for certain entity flags */
-    if (((ent->s.eFlags & MISSILE_BOUNCE_FLAGS) != 0) && (trace.fraction == 1.0f || (trace.fraction < 1.0f && trace.normal[2] > 0.7f))) {
+    if (((ent->s.eFlags & MISSILE_BOUNCE_FLAGS) != 0) &&
+        (trace.fraction == 1.0f || (trace.fraction < 1.0f && trace.normal[2] > 0.7f))) {
         trace_t trace2;
         endOrigin[0] = ent->currentOrigin[0];
         endOrigin[1] = ent->currentOrigin[1];
         endOrigin[2] = ent->currentOrigin[2] - 1.5f;
-        G_MissileTrace(&trace2, ent->currentOrigin, endOrigin, ent->passEntityNum, ent->clipmask);
+        G_MissileTrace(&trace2, ent->currentOrigin, endOrigin,
+                       ent->passEntityNum, ent->clipmask);
         if (trace2.fraction != 1.0f && trace2.entityNum == ENTITYNUM_WORLD) {
             trace = trace2;
             /* Adjust entity position based on trace result */
 #if EMULATE_X87
-            ent->s.pos.trBase[2] = x87f_store_f32(
-                x87f_add(x87f_load_f32(ent->s.pos.trBase[2]),
-                         x87f_sub(x87f_add(x87f_load_f32(trace.endpos[2]), x87f_load_f32(1.5f)), x87f_load_f32(ent->currentOrigin[2]))));
+            ent->s.pos.trBase[2] = x87f_store_f32(x87f_add(
+                x87f_load_f32(ent->s.pos.trBase[2]),
+                x87f_sub(x87f_add(x87f_load_f32(trace.endpos[2]),
+                                  x87f_load_f32(1.5f)),
+                         x87f_load_f32(ent->currentOrigin[2]))));
 #else
             ent->s.pos.trBase[2] += (trace.endpos[2] + 1.5f) - ent->currentOrigin[2];
 #endif
@@ -333,7 +360,8 @@ void G_RunMissile(gentity_t *ent)
 
     /* Grenade trigger damage */
     if (ent->methodOfDeath == MOD_GRENADE) {
-        G_GrenadeTouchTriggerDamage(ent, startOrigin, ent->currentOrigin, ent->splashDamage, ent->methodOfDeath);
+        G_GrenadeTouchTriggerDamage(ent, startOrigin, ent->currentOrigin,
+                                    ent->splashDamage, ent->methodOfDeath);
     }
 
     /* Impact handling */
@@ -351,14 +379,20 @@ void G_RunMissile(gentity_t *ent)
     } else {
         float velocityMag;
 #if EMULATE_X87
-        velocityMag = (float)CoduoLibm_Sqrt(
-            x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(ent->s.pos.trDelta[0]), x87f_load_f32(ent->s.pos.trDelta[0])),
-                                             x87f_mul(x87f_load_f32(ent->s.pos.trDelta[1]), x87f_load_f32(ent->s.pos.trDelta[1]))),
-                                    x87f_mul(x87f_load_f32(ent->s.pos.trDelta[2]), x87f_load_f32(ent->s.pos.trDelta[2])))));
+        velocityMag = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(ent->s.pos.trDelta[0]),
+                              x87f_load_f32(ent->s.pos.trDelta[0])),
+                     x87f_mul(x87f_load_f32(ent->s.pos.trDelta[1]),
+                              x87f_load_f32(ent->s.pos.trDelta[1]))),
+            x87f_mul(x87f_load_f32(ent->s.pos.trDelta[2]),
+                     x87f_load_f32(ent->s.pos.trDelta[2])))));
 #else
-        velocityMag =
-            (float)CoduoLibm_Sqrt((double)(ent->s.pos.trDelta[0] * ent->s.pos.trDelta[0] + ent->s.pos.trDelta[1] * ent->s.pos.trDelta[1] +
-                                           ent->s.pos.trDelta[2] * ent->s.pos.trDelta[2]));
+        velocityMag = (float)CoduoLibm_Sqrt((double)(ent->s.pos.trDelta[0] *
+                                           ent->s.pos.trDelta[0] +
+                                           ent->s.pos.trDelta[1] *
+                                           ent->s.pos.trDelta[1] +
+                                           ent->s.pos.trDelta[2] *
+                                           ent->s.pos.trDelta[2]));
 #endif
         if (velocityMag != 0.0f) {
             ent->s.groundEntityNum = ENTITYNUM_NONE;
@@ -376,22 +410,27 @@ void G_RunMissile(gentity_t *ent)
  * impact-time expression in G_MissileLandAngles. */
 static int game_compat_g_missile_trace_time(const trace_t *trace)
 {
-    int32_t frameMsec = coduo_int32_from_bits((uint32_t)level.time - (uint32_t)level.previousTime);
+    int32_t frameMsec = coduo_int32_from_bits(
+        (uint32_t)level.time - (uint32_t)level.previousTime);
     int32_t elapsed;
 
 #if EMULATE_X87
     /* (frameMsec * fraction) in x87 width (long double is 64-bit on arm64),
      * truncated to int, then + previousTime. */
-    elapsed = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(frameMsec), x87f_load_f32(trace->fraction)));
+    elapsed = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_i32(frameMsec), x87f_load_f32(trace->fraction)));
 #else
-    elapsed = game_compat_int32_from_long_double_trunc((long double)frameMsec * (long double)trace->fraction);
+    elapsed = game_compat_int32_from_long_double_trunc(
+        (long double)frameMsec * (long double)trace->fraction);
 #endif
 
-    return coduo_int32_from_bits((uint32_t)elapsed + (uint32_t)level.previousTime);
+    return coduo_int32_from_bits((uint32_t)elapsed +
+                                 (uint32_t)level.previousTime);
 }
 
 /* VERIFIED_DECOMPILER(0x29304, 29304_G_MissileLandAngles.c, VERIFY-MISSILE-REMAINING-2026-06-17): DATAFLOW_VERIFIED - generated file is a self-call thunk/alias; implementation body verified against 6d444_G_MissileLandAngles.c. */
-void G_MissileLandAngles(gentity_t *ent, trace_t *trace, float *angles, int forceAngles)
+void G_MissileLandAngles(gentity_t *ent, trace_t *trace, float *angles,
+                         int forceAngles)
 {
     int impactTime;
 
@@ -420,22 +459,29 @@ void G_MissileLandAngles(gentity_t *ent, trace_t *trace, float *angles, int forc
                 /* rand/2^31 is exact; *0.3f + 0.85f and the trDelta multiply
                  * stay 80-bit (0.3/0.85 are DWORD float loads). */
                 double r = coduo_server_rand_unit();
-                ent->s.apos.trDelta[0] =
-                    x87f_store_f32(x87f_mul(x87f_load_f32(ent->s.apos.trDelta[0]),
-                                            x87f_neg(x87f_add(x87f_mul(x87f_load_f64(r), x87f_load_f32(0.3f)), x87f_load_f32(0.85f)))));
+                ent->s.apos.trDelta[0] = x87f_store_f32(x87f_mul(
+                    x87f_load_f32(ent->s.apos.trDelta[0]),
+                    x87f_neg(x87f_add(x87f_mul(x87f_load_f64(r),
+                                               x87f_load_f32(0.3f)),
+                                      x87f_load_f32(0.85f)))));
 #else
                 ent->s.apos.trDelta[0] =
-                    (float)((long double)ent->s.apos.trDelta[0] * -((long double)coduo_server_rand_unit() * 0.3f + 0.85f));
+                    (float)((long double)ent->s.apos.trDelta[0] *
+                            -((long double)coduo_server_rand_unit() * 0.3f +
+                              0.85f));
 #endif
             } else {
 #if EMULATE_X87
                 double r = coduo_server_rand_unit();
-                ent->s.apos.trDelta[0] =
-                    x87f_store_f32(x87f_mul(x87f_load_f32(ent->s.apos.trDelta[0]),
-                                            x87f_add(x87f_mul(x87f_load_f64(r), x87f_load_f32(0.3f)), x87f_load_f32(0.85f))));
+                ent->s.apos.trDelta[0] = x87f_store_f32(x87f_mul(
+                    x87f_load_f32(ent->s.apos.trDelta[0]),
+                    x87f_add(x87f_mul(x87f_load_f64(r), x87f_load_f32(0.3f)),
+                             x87f_load_f32(0.85f))));
 #else
                 ent->s.apos.trDelta[0] =
-                    (float)((long double)ent->s.apos.trDelta[0] * ((long double)coduo_server_rand_unit() * 0.3f + 0.85f));
+                    (float)((long double)ent->s.apos.trDelta[0] *
+                            ((long double)coduo_server_rand_unit() * 0.3f +
+                             0.85f));
 #endif
             }
         }
@@ -456,7 +502,9 @@ void G_MissileLandAngles(gentity_t *ent, trace_t *trace, float *angles, int forc
         /* 0x5d6c8: fild feeds the add directly; the only rounding is the
          * float argument store (value-identical either way: the int is
          * 7-bit, but keep the structure faithful). */
-        ent->s.apos.trDelta[0] = AngleNormalize360((long double)((coduo_server_rand() & 0x7f) - 0x3f) + ent->s.apos.trDelta[0]);
+        ent->s.apos.trDelta[0] =
+            AngleNormalize360((long double)((coduo_server_rand() & 0x7f) - 0x3f) +
+                              ent->s.apos.trDelta[0]);
     }
 }
 
@@ -474,20 +522,28 @@ int G_BounceMissile(gentity_t *ent, trace_t *trace)
     int pointContents;
     int impactTime;
 
-    pointContents = trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE, MISSILE_WATER_CONTENTS);
+    pointContents = trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE,
+                                       MISSILE_WATER_CONTENTS);
     impactTime = game_compat_g_missile_trace_time(trace);
     BG_EvaluateTrajectoryDelta(&ent->s.pos, impactTime, velocity);
 
 #if EMULATE_X87
-    dot = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(velocity[0]), x87f_load_f32(trace->normal[0])),
-                                           x87f_mul(x87f_load_f32(velocity[1]), x87f_load_f32(trace->normal[1]))),
-                                  x87f_mul(x87f_load_f32(velocity[2]), x87f_load_f32(trace->normal[2]))));
+    dot = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(velocity[0]),
+                          x87f_load_f32(trace->normal[0])),
+                 x87f_mul(x87f_load_f32(velocity[1]),
+                          x87f_load_f32(trace->normal[1]))),
+        x87f_mul(x87f_load_f32(velocity[2]), x87f_load_f32(trace->normal[2]))));
     for (int i = 0; i < 3; i++) {
         ent->s.pos.trDelta[i] = x87f_store_f32(x87f_sub(
-            x87f_load_f32(velocity[i]), x87f_mul(x87f_mul(x87f_load_f32(dot), x87f_load_f32(2.0f)), x87f_load_f32(trace->normal[i]))));
+            x87f_load_f32(velocity[i]),
+            x87f_mul(x87f_mul(x87f_load_f32(dot), x87f_load_f32(2.0f)),
+                     x87f_load_f32(trace->normal[i]))));
     }
 #else
-    dot = velocity[0] * trace->normal[0] + velocity[1] * trace->normal[1] + velocity[2] * trace->normal[2];
+    dot = velocity[0] * trace->normal[0] +
+          velocity[1] * trace->normal[1] +
+          velocity[2] * trace->normal[2];
 
     ent->s.pos.trDelta[0] = velocity[0] - dot * 2.0f * trace->normal[0];
     ent->s.pos.trDelta[1] = velocity[1] - dot * 2.0f * trace->normal[1];
@@ -501,7 +557,8 @@ int G_BounceMissile(gentity_t *ent, trace_t *trace)
     if ((ent->s.eFlags & MISSILE_LOW_BOUNCE_FLAG) != 0) {
         float scale;
 
-        if (pointContents == 0 && (trace->contents & CONTENTS_BODY) == 0) {
+        if (pointContents == 0 &&
+            (trace->contents & CONTENTS_BODY) == 0) {
             scale = 0.4f;
         } else {
             scale = 0.1f;
@@ -516,14 +573,20 @@ int G_BounceMissile(gentity_t *ent, trace_t *trace)
             float speed;
 
 #if EMULATE_X87
-            speed = (float)CoduoLibm_Sqrt(
-                x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(ent->s.pos.trDelta[0]), x87f_load_f32(ent->s.pos.trDelta[0])),
-                                                 x87f_mul(x87f_load_f32(ent->s.pos.trDelta[1]), x87f_load_f32(ent->s.pos.trDelta[1]))),
-                                        x87f_mul(x87f_load_f32(ent->s.pos.trDelta[2]), x87f_load_f32(ent->s.pos.trDelta[2])))));
+            speed = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+                x87f_add(x87f_mul(x87f_load_f32(ent->s.pos.trDelta[0]),
+                                  x87f_load_f32(ent->s.pos.trDelta[0])),
+                         x87f_mul(x87f_load_f32(ent->s.pos.trDelta[1]),
+                                  x87f_load_f32(ent->s.pos.trDelta[1]))),
+                x87f_mul(x87f_load_f32(ent->s.pos.trDelta[2]),
+                         x87f_load_f32(ent->s.pos.trDelta[2])))));
 #else
-            speed = (float)CoduoLibm_Sqrt((double)(ent->s.pos.trDelta[0] * ent->s.pos.trDelta[0] +
-                                                   ent->s.pos.trDelta[1] * ent->s.pos.trDelta[1] +
-                                                   ent->s.pos.trDelta[2] * ent->s.pos.trDelta[2]));
+            speed = (float)CoduoLibm_Sqrt((double)(ent->s.pos.trDelta[0] *
+                                         ent->s.pos.trDelta[0] +
+                                         ent->s.pos.trDelta[1] *
+                                         ent->s.pos.trDelta[1] +
+                                         ent->s.pos.trDelta[2] *
+                                         ent->s.pos.trDelta[2]));
 #endif
             if (speed < MISSILE_STOP_SPEED) {
                 vec3_t angles;
@@ -566,14 +629,17 @@ int G_BounceMissile(gentity_t *ent, trace_t *trace)
         delta[1] = ent->s.pos.trDelta[1] - velocity[1];
         delta[2] = ent->s.pos.trDelta[2] - velocity[2];
 #if EMULATE_X87
-        if ((float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
-                                                                   x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
-                                                          x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2]))))) >
+        if ((float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+                x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
+                         x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+                x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2]))))) >
             MISSILE_BOUNCE_EVENT_SPEED_DELTA) {
             return qtrue;
         }
 #else
-        if ((float)CoduoLibm_Sqrt((double)(delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2])) >
+        if ((float)CoduoLibm_Sqrt((double)(delta[0] * delta[0] +
+                                 delta[1] * delta[1] +
+                                 delta[2] * delta[2])) >
             MISSILE_BOUNCE_EVENT_SPEED_DELTA) {
             return qtrue;
         }
@@ -600,14 +666,16 @@ int G_BounceMissile(gentity_t *ent, trace_t *trace)
  * RECOVERED(UO-GAME-UNK-0157): The trace result structure layout is
  * recovered. Field names/types are inferred from missile usage patterns.
  */
-void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, const float *dir, const float *point, int damage, int flags,
-              int meansOfDeath, int hitLocation);
-void G_CheckHitTriggerDamage(gentity_t *trigger, const float *start, const float *end, int damage, int mod);
+void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
+                     const float *dir, const float *point, int damage, int flags,
+                     int meansOfDeath, int hitLocation);
+void G_CheckHitTriggerDamage(gentity_t *trigger, const float *start,
+                                    const float *end, int damage, int mod);
 
 /* VERIFIED_DECOMPILER(0x5db67, 6db67_G_MissileImpact.c, VERIFY-MISSILE-PACKET-2026-06-17): DATAFLOW_VERIFIED - 27ee4_G_MissileImpact.c is the PLT/import thunk to this body. */
 void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
 {
-    (void)dir; /* Parameter not used in original code */
+    (void)dir;  /* Parameter not used in original code */
     weaponInfo_t *weaponInfo;
     gentity_t *other;
     gentity_t *inflictor;
@@ -628,12 +696,18 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
     attacker = NULL;
 
     /* Handle non-damage missile (bounce only) */
-    if (!game_compat_gentity_can_take_damage(other) && (ent->s.eFlags & MISSILE_BOUNCE_FLAGS) != 0) {
-        if (G_BounceMissile(ent, trace) != qfalse && trace->startsolid == 0 && ent->scriptClassname != scr_const_no_bounce_missile) {
+    if (!game_compat_gentity_can_take_damage(other) &&
+        (ent->s.eFlags & MISSILE_BOUNCE_FLAGS) != 0) {
+        if (G_BounceMissile(ent, trace) != qfalse &&
+            trace->startsolid == 0 &&
+            ent->scriptClassname != scr_const_no_bounce_missile) {
             if (ent->scriptClassname == scr_const_flamebarrel) {
                 G_AddEvent(ent, EV_FLAMEBARREL_BOUNCE, 0);
             } else {
-                G_AddEvent(ent, EV_GRENADE_BOUNCE, (trace->surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT);
+                G_AddEvent(ent, EV_GRENADE_BOUNCE,
+                           (trace->surfaceFlags &
+                            (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
+                               SURFACE_TYPE_SHIFT);
             }
         }
         return;
@@ -643,12 +717,14 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
     if (ent->passEntityNum != ENTITYNUM_NONE) {
         gentity_t *parent = &g_entities[ent->passEntityNum];
         inflictor = ent;
-        if (parent->s.eType == ET_TURRET && parent->passEntityNum != ENTITYNUM_NONE) {
+        if (parent->s.eType == ET_TURRET &&
+            parent->passEntityNum != ENTITYNUM_NONE) {
             inflictor = parent;
             attacker = &g_entities[parent->passEntityNum];
         } else {
             attacker = parent;
-            if (parent->s.eType == ET_VEHICLE && ent->parentEntityNum != ENTITYNUM_NONE) {
+            if (parent->s.eType == ET_VEHICLE &&
+                ent->parentEntityNum != ENTITYNUM_NONE) {
                 attacker = &g_entities[ent->parentEntityNum];
                 inflictor = parent;
             }
@@ -665,28 +741,37 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
         if (weaponInfo == NULL) {
             damage = (float)ent->damage;
         } else {
-            damage = Damage_Falloff(distance, (float)ent->damage, (float)weaponInfo->damageFalloffMinDamagePercent,
-                                    weaponInfo->damageFalloffMinRange, weaponInfo->damageFalloffMaxRange);
+            damage = Damage_Falloff(distance, (float)ent->damage,
+                                    (float)weaponInfo->damageFalloffMinDamagePercent,
+                                    weaponInfo->damageFalloffMinRange,
+                                    weaponInfo->damageFalloffMaxRange);
         }
         if (damage > 0.0f) {
-            gentity_t *accuracyAttacker = &g_entities[ent->passEntityNum];
+            gentity_t *accuracyAttacker =
+                &g_entities[ent->passEntityNum];
 
             if (LogAccuracyHit(other, accuracyAttacker) != 0) {
                 hitLogged = 1;
             }
             BG_EvaluateTrajectoryDelta(&ent->s.pos, level.time, velocity);
 #if EMULATE_X87
-            speed =
-                (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(velocity[0]), x87f_load_f32(velocity[0])),
-                                                                       x87f_mul(x87f_load_f32(velocity[1]), x87f_load_f32(velocity[1]))),
-                                                              x87f_mul(x87f_load_f32(velocity[2]), x87f_load_f32(velocity[2])))));
+            speed = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+                x87f_add(x87f_mul(x87f_load_f32(velocity[0]),
+                                  x87f_load_f32(velocity[0])),
+                         x87f_mul(x87f_load_f32(velocity[1]),
+                                  x87f_load_f32(velocity[1]))),
+                x87f_mul(x87f_load_f32(velocity[2]),
+                         x87f_load_f32(velocity[2])))));
 #else
-            speed = (float)CoduoLibm_Sqrt((double)(velocity[0] * velocity[0] + velocity[1] * velocity[1] + velocity[2] * velocity[2]));
+            speed = (float)CoduoLibm_Sqrt((double)(velocity[0] * velocity[0] +
+                                         velocity[1] * velocity[1] +
+                                         velocity[2] * velocity[2]));
 #endif
             if (speed == 0.0f) {
                 velocity[2] = 1.0f;
             }
-            G_Damage(other, inflictor, attacker, velocity, ent->currentOrigin, game_compat_int32_from_float_trunc(damage), 0,
+            G_Damage(other, inflictor, attacker, velocity, ent->currentOrigin,
+                     game_compat_int32_from_float_trunc(damage), 0,
                      ent->methodOfDeath, 0);
         }
     }
@@ -697,7 +782,8 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
         if (attacker == NULL) {
             trigger = &g_entities[ENTITYNUM_WORLD];
         }
-        G_CheckHitTriggerDamage(trigger, ent->currentOrigin, trace->endpos, ent->damage, ent->methodOfDeath);
+        G_CheckHitTriggerDamage(trigger, ent->currentOrigin, trace->endpos,
+                               ent->damage, ent->methodOfDeath);
     }
 
     /* Determine impact event type */
@@ -711,9 +797,13 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
     ent->skipTypeDispatch = 1;
 
     /* Determine surface type */
-    surfaceType = trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE, MISSILE_WATER_CONTENTS);
+    surfaceType = trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE,
+                                     MISSILE_WATER_CONTENTS);
     if (surfaceType == 0) {
-        ent->s.surfType = (trace->surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT;
+        ent->s.surfType =
+            (trace->surfaceFlags &
+             (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
+            SURFACE_TYPE_SHIFT;
     } else {
         ent->s.surfType = SURFACE_TYPE_WATER;
     }
@@ -740,18 +830,25 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, float *dir)
         splashOrigin[0] = trace->endpos[0];
         splashOrigin[1] = trace->endpos[1];
         splashOrigin[2] = trace->endpos[2];
-        splashEnd[0] = trace->endpos[0] + trace->normal[0] * MISSILE_IMPACT_TRACE_OFFSET;
-        splashEnd[1] = trace->endpos[1] + trace->normal[1] * MISSILE_IMPACT_TRACE_OFFSET;
-        splashEnd[2] = trace->endpos[2] + trace->normal[2] * MISSILE_IMPACT_TRACE_OFFSET;
+        splashEnd[0] = trace->endpos[0] +
+                       trace->normal[0] * MISSILE_IMPACT_TRACE_OFFSET;
+        splashEnd[1] = trace->endpos[1] +
+                       trace->normal[1] * MISSILE_IMPACT_TRACE_OFFSET;
+        splashEnd[2] = trace->endpos[2] +
+                       trace->normal[2] * MISSILE_IMPACT_TRACE_OFFSET;
 
-        trap_Trace(trace, splashOrigin, vec3_origin, vec3_origin, splashEnd, ent->s.number, MASK_GRENADE_TRACE);
+        trap_Trace(trace, splashOrigin, vec3_origin, vec3_origin,
+                   splashEnd, ent->s.number,
+                   MASK_GRENADE_TRACE);
 
         splashInflictor = inflictor;
         if (inflictor == NULL) {
             splashInflictor = ent;
         }
-        G_RadiusDamage(trace->endpos, splashInflictor, attacker, (float)ent->splashDamage, (float)ent->splashMinDamage,
-                       (float)ent->splashRadius, other, ent->splashMethodOfDeath);
+        G_RadiusDamage(trace->endpos, splashInflictor, attacker,
+                       (float)ent->splashDamage, (float)ent->splashMinDamage,
+                       (float)ent->splashRadius, other,
+                       ent->splashMethodOfDeath);
     }
 
     trap_LinkEntity(ent);
@@ -769,7 +866,8 @@ void Concussive_think(gentity_t *ent)
     if (ent->concussiveFxEndTime < (long double)level.time) {
         ent->think = G_FreeEntity;
     }
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)CONCUSSIVE_THINK_INTERVAL_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)CONCUSSIVE_THINK_INTERVAL_MS);
 }
 
 /* ------------------------------------------------------------------ */
@@ -786,10 +884,12 @@ void Concussive_fx(float *origin)
     ent->currentOrigin[1] = origin[1];
     ent->currentOrigin[2] = origin[2];
     ent->think = Concussive_think;
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)CONCUSSIVE_THINK_INTERVAL_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)CONCUSSIVE_THINK_INTERVAL_MS);
     /* 0x5e29b: fild level.time feeds the add directly (one rounding at
      * the final store), so level.time is not rounded to float first. */
-    ent->concussiveFxEndTime = (float)((long double)level.time + CONCUSSIVE_LIFETIME_MS);
+    ent->concussiveFxEndTime =
+        (float)((long double)level.time + CONCUSSIVE_LIFETIME_MS);
 }
 
 /* ------------------------------------------------------------------ */
@@ -812,7 +912,9 @@ void G_ExplodeMissile(gentity_t *ent)
         ent->passEntityNum = ent->parentEntityNum;
     }
     attacker = ent->entityRef;
-    if (attacker != NULL && attacker->s.eType == ET_TURRET && attacker->passEntityNum != ENTITYNUM_NONE) {
+    if (attacker != NULL &&
+        attacker->s.eType == ET_TURRET &&
+        attacker->passEntityNum != ENTITYNUM_NONE) {
         attacker = &g_entities[attacker->passEntityNum];
     }
 
@@ -837,7 +939,8 @@ void G_ExplodeMissile(gentity_t *ent)
     end[0] = ent->currentOrigin[0];
     end[1] = ent->currentOrigin[1];
     end[2] = ent->currentOrigin[2] - MISSILE_GROUND_TRACE_DEPTH;
-    trap_Trace(&trace, ent->currentOrigin, vec3_origin, vec3_origin, end, ent->s.number, MASK_GRENADE_TRACE);
+    trap_Trace(&trace, ent->currentOrigin, vec3_origin, vec3_origin, end,
+               ent->s.number, MASK_GRENADE_TRACE);
 
     byteDir = DirToByte(trace.normal);
     G_AddEvent(ent, EV_PROJECTILE_EXPLODE, byteDir);
@@ -845,13 +948,19 @@ void G_ExplodeMissile(gentity_t *ent)
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
     ent->s.hintStringIndex = weaponInfo->projectileExplosionType;
 
-    if (trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE, MISSILE_WATER_CONTENTS) == 0) {
-        ent->s.surfType = (trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT;
+    if (trap_PointContents(ent->currentOrigin, PASS_ENTITY_NONE,
+                           MISSILE_WATER_CONTENTS) == 0) {
+        ent->s.surfType =
+            (trace.surfaceFlags &
+             (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
+            SURFACE_TYPE_SHIFT;
     } else {
         splashEnd[0] = ent->currentOrigin[0];
         splashEnd[1] = ent->currentOrigin[1];
-        splashEnd[2] = ent->currentOrigin[2] + MISSILE_WATER_SURFACE_TRACE_HEIGHT;
-        trap_Trace(&trace, splashEnd, vec3_origin, vec3_origin, end, ent->s.number, MISSILE_WATER_CONTENTS);
+        splashEnd[2] = ent->currentOrigin[2] +
+                       MISSILE_WATER_SURFACE_TRACE_HEIGHT;
+        trap_Trace(&trace, splashEnd, vec3_origin, vec3_origin, end,
+                   ent->s.number, MISSILE_WATER_CONTENTS);
         if (trace.fraction < 1.0f) {
             G_SetOrigin(ent, trace.endpos);
         }
@@ -866,9 +975,12 @@ void G_ExplodeMissile(gentity_t *ent)
         splashEnd[0] = ent->currentOrigin[0] + 0.0f;
         splashEnd[1] = ent->currentOrigin[1] + 0.0f;
         splashEnd[2] = ent->currentOrigin[2] + MISSILE_SPLASH_TRACE_OFFSET;
-        trap_Trace(&trace, ent->currentOrigin, vec3_origin, vec3_origin, splashEnd, ent->s.number, MASK_GRENADE_TRACE);
-        G_RadiusDamage(trace.endpos, ent, attacker, (float)ent->splashDamage, (float)ent->splashMinDamage, (float)ent->splashRadius, ent,
-                       ent->splashMethodOfDeath);
+        trap_Trace(&trace, ent->currentOrigin, vec3_origin, vec3_origin,
+                   splashEnd, ent->s.number,
+                   MASK_GRENADE_TRACE);
+        G_RadiusDamage(trace.endpos, ent, attacker, (float)ent->splashDamage,
+                       (float)ent->splashMinDamage, (float)ent->splashRadius,
+                       ent, ent->splashMethodOfDeath);
     }
 
     trap_LinkEntity(ent);
@@ -893,25 +1005,34 @@ void G_BarrageThink(gentity_t *ent)
     angles[2] = 0.0f;
 
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
-    ent->nextthink = coduo_int32_from_bits((uint32_t)ent->nextthink + (uint32_t)ARTILLERY_BARRAGE_THINK_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)ent->nextthink + (uint32_t)ARTILLERY_BARRAGE_THINK_MS);
 
-    if (ent->itemCount < weaponInfo->artilleryBarrageCount && ent->splashDamage < level.time) {
+    if (ent->itemCount < weaponInfo->artilleryBarrageCount &&
+        ent->splashDamage < level.time) {
         ent->itemCount = coduo_int32_from_bits((uint32_t)ent->itemCount + 1u);
-        delay = irand(weaponInfo->artilleryBarrageDelayMin, weaponInfo->artilleryBarrageDelayMax);
+        delay = irand(weaponInfo->artilleryBarrageDelayMin,
+                      weaponInfo->artilleryBarrageDelayMax);
         /* NO shim: delay*0.5 is exact (delay/2, a power-of-two scale) and
          * (float)splashDamage is an exact small integer; their sum is exact in
          * both 64-bit and 80-bit, so the (int) truncation is identical (rule 6).
          */
-        ent->splashDamage =
-            game_compat_int32_from_long_double_trunc((long double)delay * (long double)0.5f + (long double)(float)ent->splashDamage);
-        tempEnt = G_TempEntity(ent->currentOrigin, EV_PROJECTILE_LAUNCH);
+        ent->splashDamage = game_compat_int32_from_long_double_trunc(
+            (long double)delay * (long double)0.5f +
+            (long double)(float)ent->splashDamage);
+        tempEnt = G_TempEntity(ent->currentOrigin,
+                               EV_PROJECTILE_LAUNCH);
         tempEnt->s.tempEffectId = weaponInfo->projectileExplosionType;
     }
 
-    if (ent->droppedClipCount < weaponInfo->artilleryBarrageCount && ent->splashMinDamage < level.time) {
-        ent->droppedClipCount = coduo_int32_from_bits((uint32_t)ent->droppedClipCount + 1u);
-        delay = irand(weaponInfo->artilleryBarrageDelayMin, weaponInfo->artilleryBarrageDelayMax);
-        ent->splashMinDamage = coduo_int32_from_bits((uint32_t)ent->splashMinDamage + (uint32_t)delay);
+    if (ent->droppedClipCount < weaponInfo->artilleryBarrageCount &&
+        ent->splashMinDamage < level.time) {
+        ent->droppedClipCount = coduo_int32_from_bits(
+            (uint32_t)ent->droppedClipCount + 1u);
+        delay = irand(weaponInfo->artilleryBarrageDelayMin,
+                      weaponInfo->artilleryBarrageDelayMax);
+        ent->splashMinDamage = coduo_int32_from_bits(
+            (uint32_t)ent->splashMinDamage + (uint32_t)delay);
 
         angles[1] = (float)irand(0, 360);
         AngleVectors(angles, forward, NULL, NULL);
@@ -923,18 +1044,26 @@ void G_BarrageThink(gentity_t *ent)
             double sr = coduo_server_rand_signed_unit();
             origin[i] = x87f_store_f32(x87f_add(
                 x87f_load_f32(ent->currentOrigin[i]),
-                x87f_mul(x87f_mul(x87f_load_i32(weaponInfo->artilleryBarrageSpread), x87f_load_f64(sr)), x87f_load_f32(forward[i]))));
+                x87f_mul(x87f_mul(x87f_load_i32(weaponInfo->artilleryBarrageSpread),
+                                  x87f_load_f64(sr)),
+                         x87f_load_f32(forward[i]))));
         }
 #else
         origin[0] =
-            (float)((long double)ent->currentOrigin[0] + (long double)weaponInfo->artilleryBarrageSpread *
-                                                             (long double)coduo_server_rand_signed_unit() * (long double)forward[0]);
+            (float)((long double)ent->currentOrigin[0] +
+                    (long double)weaponInfo->artilleryBarrageSpread *
+                        (long double)coduo_server_rand_signed_unit() *
+                        (long double)forward[0]);
         origin[1] =
-            (float)((long double)ent->currentOrigin[1] + (long double)weaponInfo->artilleryBarrageSpread *
-                                                             (long double)coduo_server_rand_signed_unit() * (long double)forward[1]);
+            (float)((long double)ent->currentOrigin[1] +
+                    (long double)weaponInfo->artilleryBarrageSpread *
+                        (long double)coduo_server_rand_signed_unit() *
+                        (long double)forward[1]);
         origin[2] =
-            (float)((long double)ent->currentOrigin[2] + (long double)weaponInfo->artilleryBarrageSpread *
-                                                             (long double)coduo_server_rand_signed_unit() * (long double)forward[2]);
+            (float)((long double)ent->currentOrigin[2] +
+                    (long double)weaponInfo->artilleryBarrageSpread *
+                        (long double)coduo_server_rand_signed_unit() *
+                        (long double)forward[2]);
 #endif
 
         tempEnt = G_TempEntity(origin, EV_PROJECTILE_INCOMING);
@@ -944,7 +1073,8 @@ void G_BarrageThink(gentity_t *ent)
         fire_artillery(ent, origin, ARTILLERY_BARRAGE_FIRE_DELAY_MS);
     }
 
-    if (weaponInfo->artilleryBarrageCount <= ent->itemCount && weaponInfo->artilleryBarrageCount <= ent->droppedClipCount) {
+    if (weaponInfo->artilleryBarrageCount <= ent->itemCount &&
+        weaponInfo->artilleryBarrageCount <= ent->droppedClipCount) {
         ent->think = G_FreeEntity;
     }
 }
@@ -956,11 +1086,13 @@ void G_BarrageThink(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x5eabe, 6eabe_G_DropArtillery.c, VERIFY-MISSILE-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
 void G_DropArtillery(gentity_t *ent)
 {
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)ARTILLERY_DROP_LIFETIME_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)ARTILLERY_DROP_LIFETIME_MS);
     ent->think = G_ExplodeMissile;
     ent->svFlags = ARTILLERY_DROP_SVFLAGS;
     ent->s.pos.trType = TR_GRAVITY;
-    ent->s.pos.trTime = coduo_int32_from_bits((uint32_t)level.time - (uint32_t)MISSILE_TRAJECTORY_BACKDATE_MS);
+    ent->s.pos.trTime = coduo_int32_from_bits(
+        (uint32_t)level.time - (uint32_t)MISSILE_TRAJECTORY_BACKDATE_MS);
 }
 
 /* ------------------------------------------------------------------ */
@@ -968,7 +1100,8 @@ void G_DropArtillery(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x5eb25, 6eb25_G_MissileDie.c, VERIFY-MISSILE-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
-void G_MissileDie(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int weapon, const float *dir,
+void G_MissileDie(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker,
+                  int damage, int mod, int weapon, const float *dir,
                   int hitLocation)
 {
     (void)attacker;
@@ -981,7 +1114,8 @@ void G_MissileDie(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker, int
     if (inflictor != ent) {
         ent->takeDamage = 0;
         ent->think = G_ExplodeMissile;
-        ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)MISSILE_DIE_DELAY_MS);
+        ent->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time + (uint32_t)MISSILE_DIE_DELAY_MS);
     }
 }
 
@@ -996,10 +1130,12 @@ void DynaSink(gentity_t *ent)
     ent->scriptContents = 0;
     if (ent->dynaSinkEndTime < level.time) {
         ent->think = G_FreeEntity;
-        ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)DYNA_SINK_FREE_INTERVAL_MS);
+        ent->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time + (uint32_t)DYNA_SINK_FREE_INTERVAL_MS);
     } else {
         ent->s.pos.trBase[2] -= 0.5f;
-        ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)DYNA_SINK_INTERVAL_MS);
+        ent->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time + (uint32_t)DYNA_SINK_INTERVAL_MS);
     }
 }
 
@@ -1008,7 +1144,8 @@ void DynaSink(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x5f683, 6f683_G_GrenadeDie.c, VERIFY-MISSILE-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
-void G_GrenadeDie(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int weapon, const float *dir,
+void G_GrenadeDie(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker,
+                  int damage, int mod, int weapon, const float *dir,
                   int hitLocation)
 {
     (void)inflictor;
@@ -1019,7 +1156,8 @@ void G_GrenadeDie(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker, int
     (void)dir;
     (void)hitLocation;
 
-    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)GRENADE_DIE_THINK_MS);
+    ent->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)GRENADE_DIE_THINK_MS);
     ent->takeDamage = 0;
 }
 
@@ -1033,10 +1171,15 @@ void G_GrenadeLeaveOwnerThink(gentity_t *ent)
     trace_t trace;
     const weaponInfo_t *weaponInfo;
 
-    G_MissileTrace(&trace, ent->currentOrigin, ent->currentOrigin, ENTITYNUM_NONE, MISSILE_OWNER_TRACE_CONTENTS);
-    if (level.time < coduo_int32_from_bits((uint32_t)ent->missileFuseTime - (uint32_t)GRENADE_OWNER_LEAVE_RECHECK_MS) &&
+    G_MissileTrace(&trace, ent->currentOrigin, ent->currentOrigin,
+                   ENTITYNUM_NONE, MISSILE_OWNER_TRACE_CONTENTS);
+    if (level.time < coduo_int32_from_bits(
+                         (uint32_t)ent->missileFuseTime -
+                         (uint32_t)GRENADE_OWNER_LEAVE_RECHECK_MS) &&
         (trace.allsolid != 0 || trace.startsolid != 0)) {
-        ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)GRENADE_OWNER_LEAVE_RECHECK_MS);
+        ent->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time +
+            (uint32_t)GRENADE_OWNER_LEAVE_RECHECK_MS);
         return;
     }
 
@@ -1045,7 +1188,8 @@ void G_GrenadeLeaveOwnerThink(gentity_t *ent)
     trap_LinkEntity(ent);
 
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
-    if (weaponInfo->projectileExplosionType == PROJECTILE_EXPLOSION_TYPE_SMOKE) {
+    if (weaponInfo->projectileExplosionType ==
+        PROJECTILE_EXPLOSION_TYPE_SMOKE) {
         ent->think = G_ExplodeSmokeGrenade;
     } else {
         ent->think = G_ExplodeMissile;
@@ -1064,9 +1208,12 @@ gentity_t *fire_grenade(gentity_t *self, float *start, float *dir, int weapon)
 
     grenade = G_Spawn();
     if (self->client == NULL || self->client->ps.grenadeTimeLeft == 0) {
-        grenade->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)GRENADE_DEFAULT_FUSE_MS);
+        grenade->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time + (uint32_t)GRENADE_DEFAULT_FUSE_MS);
     } else {
-        grenade->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)self->client->ps.grenadeTimeLeft);
+        grenade->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time +
+            (uint32_t)self->client->ps.grenadeTimeLeft);
     }
     grenade->missileFuseTime = grenade->nextthink;
     if (self->client != NULL) {
@@ -1074,7 +1221,8 @@ gentity_t *fire_grenade(gentity_t *self, float *start, float *dir, int weapon)
     }
 
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(weapon);
-    if (weaponInfo->projectileExplosionType == PROJECTILE_EXPLOSION_TYPE_SMOKE) {
+    if (weaponInfo->projectileExplosionType ==
+        PROJECTILE_EXPLOSION_TYPE_SMOKE) {
         grenade->think = G_ExplodeSmokeGrenade;
     } else {
         grenade->think = G_ExplodeMissile;
@@ -1115,7 +1263,9 @@ gentity_t *fire_grenade(gentity_t *self, float *start, float *dir, int weapon)
 
     grenade->takeDamage = (uint8_t)weaponInfo->grenadeTouchDamageEnabled;
     if (grenade->takeDamage != 0 &&
-        coduo_int32_from_bits((uint32_t)level.time + (uint32_t)GRENADE_OWNER_LEAVE_DELAY_MS) < grenade->missileFuseTime) {
+        coduo_int32_from_bits((uint32_t)level.time +
+                              (uint32_t)GRENADE_OWNER_LEAVE_DELAY_MS) <
+            grenade->missileFuseTime) {
         grenade->mins[0] = -6.0f;
         grenade->mins[1] = -6.0f;
         grenade->mins[2] = 0.0f;
@@ -1130,7 +1280,9 @@ gentity_t *fire_grenade(gentity_t *self, float *start, float *dir, int weapon)
         grenade->die = G_GrenadeDie;
         grenade->parentEntityNum = grenade->passEntityNum;
         grenade->think = G_GrenadeLeaveOwnerThink;
-        grenade->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)GRENADE_OWNER_LEAVE_DELAY_MS);
+        grenade->nextthink = coduo_int32_from_bits(
+            (uint32_t)level.time +
+            (uint32_t)GRENADE_OWNER_LEAVE_DELAY_MS);
         trap_LinkEntity(grenade);
     }
 
@@ -1152,7 +1304,8 @@ gentity_t *fire_rocket(gentity_t *self, float *start, float *dir)
     rocket = G_Spawn();
 
     Scr_SetString(&rocket->scriptClassname, scr_const_rocket_projectile);
-    rocket->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)ROCKET_LIFETIME_MS);
+    rocket->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)ROCKET_LIFETIME_MS);
     rocket->think = G_ExplodeMissile;
     rocket->s.eType = ET_MISSILE;
     rocket->s.eFlags |= MISSILE_LAUNCH_S_FLAG;
@@ -1174,7 +1327,8 @@ gentity_t *fire_rocket(gentity_t *self, float *start, float *dir)
     rocket->clipmask = MISSILE_CLIPMASK;
 
     rocket->s.pos.trType = TR_LINEAR;
-    rocket->s.pos.trTime = coduo_int32_from_bits((uint32_t)level.time - (uint32_t)MISSILE_TRAJECTORY_BACKDATE_MS);
+    rocket->s.pos.trTime = coduo_int32_from_bits(
+        (uint32_t)level.time - (uint32_t)MISSILE_TRAJECTORY_BACKDATE_MS);
     game_compat_g_missile_vector_copy(start, rocket->s.pos.trBase);
     /* 0x5fe32: fild missileSpeed feeds the multiply directly; the integer
      * is never rounded to float, only the final store rounds. */
@@ -1208,7 +1362,8 @@ gentity_t *fire_artillery(gentity_t *self, float *origin, int delay)
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(self->s.weapon);
     artillery = G_Spawn();
     Scr_SetString(&artillery->scriptClassname, scr_const_rocket_projectile);
-    artillery->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)delay);
+    artillery->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)delay);
     artillery->think = G_DropArtillery;
     artillery->s.eType = ET_MISSILE;
     artillery->s.eFlags |= MISSILE_LAUNCH_S_FLAG;
@@ -1217,7 +1372,8 @@ gentity_t *fire_artillery(gentity_t *self, float *origin, int delay)
 
     if (g_entities[self->s.number].s.eType == ET_GENERAL) {
         artillery->passEntityNum = self->passEntityNum;
-        artillery->entityRef = &g_entities[self->passEntityNum];
+        artillery->entityRef =
+            &g_entities[self->passEntityNum];
     } else {
         artillery->passEntityNum = self->s.number;
         artillery->entityRef = self;
@@ -1264,7 +1420,8 @@ void fire_artillery_barrage(gentity_t *self, float *origin, int weapon)
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(weapon);
     barrage = G_Spawn();
     Scr_SetString(&barrage->scriptClassname, scr_const_rocket_projectile);
-    barrage->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)ARTILLERY_BARRAGE_THINK_MS);
+    barrage->nextthink = coduo_int32_from_bits(
+        (uint32_t)level.time + (uint32_t)ARTILLERY_BARRAGE_THINK_MS);
     barrage->think = G_BarrageThink;
     barrage->s.eType = ET_GENERAL;
     barrage->svFlags = ARTILLERY_PENDING_SVFLAGS;
@@ -1274,8 +1431,12 @@ void fire_artillery_barrage(gentity_t *self, float *origin, int weapon)
     game_compat_g_missile_vector_copy(origin, barrage->currentOrigin);
     barrage->itemCount = 0;
     barrage->droppedClipCount = 0;
-    barrage->splashDamage = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)ARTILLERY_BARRAGE_WARNING_DELAY_MS);
-    barrage->splashMinDamage = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)weaponInfo->artilleryBarrageFirstDelay);
+    barrage->splashDamage = coduo_int32_from_bits(
+        (uint32_t)level.time +
+        (uint32_t)ARTILLERY_BARRAGE_WARNING_DELAY_MS);
+    barrage->splashMinDamage = coduo_int32_from_bits(
+        (uint32_t)level.time +
+        (uint32_t)weaponInfo->artilleryBarrageFirstDelay);
 
     Scr_AddVector(origin);
     Scr_Notify(self, scr_const_artillery_impact, 1);

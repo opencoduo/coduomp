@@ -21,7 +21,8 @@ void Vec10Copy(const uint32_t input[10], uint32_t output[10])
     }
 }
 
-void _Vector5Add(const float first[5], const float second[5], float result[5])
+void _Vector5Add(const float first[5], const float second[5],
+                 float result[5])
 {
     for (int32_t lane = 0; lane < 5; ++lane) {
         result[lane] = first[lane] + second[lane];

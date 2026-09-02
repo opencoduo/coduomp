@@ -16,15 +16,18 @@
 void R_SetColorMappings(void)
 {
     tr.overbrightBits = 0;
-    if (glConfig.deviceSupportsGamma && glConfig.isFullscreen && r_overBrightBits->integer != 0) {
+    if (glConfig.deviceSupportsGamma && glConfig.isFullscreen &&
+        r_overBrightBits->integer != 0) {
         tr.overbrightBits = 1;
     }
 
     /* 0x0050a693..0x0050a6a9 stores the reciprocal to identityLight but
      * retains it for the identity-byte conversion. */
-    const long double identityLightRaw = 1.0L / (long double)(1 << tr.overbrightBits);
+    const long double identityLightRaw =
+        1.0L / (long double)(1 << tr.overbrightBits);
     tr.identityLight = (float)identityLightRaw;
-    tr.identityLightByte = ((int32_t)(255.0L * identityLightRaw)) & 255;
+    tr.identityLightByte =
+        ((int32_t)(255.0L * identityLightRaw)) & 255;
 
     if (r_intensity->value <= 1.0f)
         ri.Cvar_Set("r_intensity", "1");
@@ -38,7 +41,9 @@ void R_SetColorMappings(void)
         int32_t gammaValue = input;
 
         if (r_gamma->value != 1.0f) {
-            gammaValue = (int32_t)(pow((double)((float)input * R_COLOR_MAPPING_INV_255_F), (double)inverseGamma) * 255.0 + 0.5);
+            gammaValue = (int32_t)(
+                pow((double)((float)input * R_COLOR_MAPPING_INV_255_F),
+                    (double)inverseGamma) * 255.0 + 0.5);
         }
         if (gammaValue < 0)
             gammaValue = 0;
@@ -52,18 +57,22 @@ void R_SetColorMappings(void)
         else if (overbrightValue > 255)
             overbrightValue = 255;
         rendererOverbrightTable[input] = (uint8_t)overbrightValue;
-        rendererInverseOverbrightTable[input] = (uint8_t)(input >> tr.overbrightBits);
+        rendererInverseOverbrightTable[input] =
+            (uint8_t)(input >> tr.overbrightBits);
 
-        int32_t gammaOverbrightValue = gammaValue << tr.overbrightBits;
+        int32_t gammaOverbrightValue =
+            gammaValue << tr.overbrightBits;
         if (gammaOverbrightValue < 0)
             gammaOverbrightValue = 0;
         else if (gammaOverbrightValue > 255)
             gammaOverbrightValue = 255;
-        rendererGammaOverbrightTable[input] = (uint8_t)gammaOverbrightValue;
+        rendererGammaOverbrightTable[input] =
+            (uint8_t)gammaOverbrightValue;
     }
 
     for (int32_t input = 0; input < 256; ++input) {
-        int32_t intensityValue = (int32_t)((float)input * r_intensity->value);
+        int32_t intensityValue =
+            (int32_t)((float)input * r_intensity->value);
 
         if (intensityValue > 255)
             intensityValue = 255;
@@ -71,6 +80,8 @@ void R_SetColorMappings(void)
     }
 
     if (glConfig.deviceSupportsGamma) {
-        GLimp_SetGamma(rendererGammaOverbrightTable, rendererGammaOverbrightTable, rendererGammaOverbrightTable);
+        GLimp_SetGamma(rendererGammaOverbrightTable,
+                       rendererGammaOverbrightTable,
+                       rendererGammaOverbrightTable);
     }
 }

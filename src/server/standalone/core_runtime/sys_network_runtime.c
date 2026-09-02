@@ -77,9 +77,11 @@ static int32_t sys_lastMilliseconds;
 static qboolean sys_winsockInitialized;
 #endif
 
-coduo_socket_handle_t Sys_OpenIPSocket(const char *netInterface, int32_t port);
+coduo_socket_handle_t Sys_OpenIPSocket(const char *netInterface,
+                                       int32_t port);
 
-void Sys_NetadrToSockaddr(const netadr_t *adr, struct sockaddr_in *sockadr)
+void Sys_NetadrToSockaddr(const netadr_t *adr,
+                          struct sockaddr_in *sockadr)
 {
     memset(sockadr, 0, SYS_NET_SOCKADDR_BYTES);
 
@@ -89,12 +91,14 @@ void Sys_NetadrToSockaddr(const netadr_t *adr, struct sockaddr_in *sockadr)
         sockadr->sin_addr.s_addr = UINT32_MAX;
     } else if (adr->type == NA_IP) {
         sockadr->sin_family = AF_INET;
-        memcpy(&sockadr->sin_addr.s_addr, adr->ip, sizeof(sockadr->sin_addr.s_addr));
+        memcpy(&sockadr->sin_addr.s_addr, adr->ip,
+               sizeof(sockadr->sin_addr.s_addr));
         sockadr->sin_port = adr->port;
     }
 }
 
-void Sys_SockaddrToNetadr(const struct sockaddr_in *sockadr, netadr_t *adr)
+void Sys_SockaddrToNetadr(const struct sockaddr_in *sockadr,
+                          netadr_t *adr)
 {
     adr->type = NA_IP;
     memcpy(adr->ip, &sockadr->sin_addr.s_addr, sizeof(adr->ip));
@@ -103,7 +107,8 @@ void Sys_SockaddrToNetadr(const struct sockaddr_in *sockadr, netadr_t *adr)
 
 const char *NET_BaseAdrToString(netadr_t adr)
 {
-    Com_sprintf(com_netadrString, sizeof(com_netadrString), "%i.%i.%i.%i", adr.ip[0], adr.ip[1], adr.ip[2], adr.ip[3]);
+    Com_sprintf(com_netadrString, sizeof(com_netadrString), "%i.%i.%i.%i",
+                adr.ip[0], adr.ip[1], adr.ip[2], adr.ip[3]);
     return com_netadrString;
 }
 
@@ -119,7 +124,8 @@ qboolean Sys_StringToSockaddr(const char *name, struct sockaddr_in *sockadr)
             return qfalse;
         }
 
-        memcpy(&sockadr->sin_addr, host->h_addr_list[0], sizeof(sockadr->sin_addr));
+        memcpy(&sockadr->sin_addr, host->h_addr_list[0],
+               sizeof(sockadr->sin_addr));
     } else {
         const uint32_t numericAddress = inet_addr(name);
 
@@ -131,14 +137,17 @@ qboolean Sys_StringToSockaddr(const char *name, struct sockaddr_in *sockadr)
             memset(&hints, 0, sizeof(hints));
             hints.ai_family = AF_INET;
             hints.ai_flags = AI_NUMERICHOST;
-            if (getaddrinfo(name, NULL, &hints, &numericResult) != 0 || numericResult == NULL || numericResult->ai_addr == NULL ||
+            if (getaddrinfo(name, NULL, &hints, &numericResult) != 0 ||
+                numericResult == NULL || numericResult->ai_addr == NULL ||
                 numericResult->ai_addrlen < sizeof(struct sockaddr_in)) {
                 if (numericResult != NULL) {
                     freeaddrinfo(numericResult);
                 }
                 return qfalse;
             }
-            sockadr->sin_addr.s_addr = ((const struct sockaddr_in *)numericResult->ai_addr)->sin_addr.s_addr;
+            sockadr->sin_addr.s_addr =
+                ((const struct sockaddr_in *)numericResult->ai_addr)
+                    ->sin_addr.s_addr;
             freeaddrinfo(numericResult);
         } else {
             sockadr->sin_addr.s_addr = numericAddress;
@@ -162,8 +171,11 @@ qboolean Sys_StringToAdr(const char *name, netadr_t *adr)
 
 qboolean Sys_GetPacket(netadr_t *from, msg_t *msg)
 {
-    for (int32_t socketIndex = 0; socketIndex < SYS_NET_SOCKET_COUNT; ++socketIndex) {
-        coduo_socket_handle_t socket = socketIndex == SYS_NET_IP_SOCKET_INDEX ? sys_ipSocket : sys_ipxSocket;
+    for (int32_t socketIndex = 0; socketIndex < SYS_NET_SOCKET_COUNT;
+         ++socketIndex) {
+        coduo_socket_handle_t socket =
+            socketIndex == SYS_NET_IP_SOCKET_INDEX ? sys_ipSocket
+                                                   : sys_ipxSocket;
         if (socket == 0) {
             continue;
         }
@@ -171,13 +183,15 @@ qboolean Sys_GetPacket(netadr_t *from, msg_t *msg)
         struct sockaddr_in sockadr;
         coduo_socket_length_t sockadrLength = SYS_NET_SOCKADDR_BYTES;
         coduo_socket_receive_count_t received =
-            recvfrom(socket, (char *)msg->data, msg->maxsize, 0, (struct sockaddr *)&sockadr, &sockadrLength);
+            recvfrom(socket, (char *)msg->data, msg->maxsize, 0,
+                     (struct sockaddr *)&sockadr, &sockadrLength);
         msg->readcount = 0;
 
         if (received == CODUO_SOCKET_ERROR_RESULT) {
             int socketError = CODUO_SOCKET_LAST_ERROR();
 
-            if (socketError != CODUO_SOCKET_WOULD_BLOCK && socketError != CODUO_SOCKET_CONNECTION_REFUSED) {
+            if (socketError != CODUO_SOCKET_WOULD_BLOCK &&
+                socketError != CODUO_SOCKET_CONNECTION_REFUSED) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 Com_Printf("NET_GetPacket: %s\n", NET_ErrorString());
             }
@@ -198,14 +212,16 @@ qboolean Sys_GetPacket(netadr_t *from, msg_t *msg)
     return qfalse;
 }
 
-void Sys_SendPacket(int32_t length, const void *data, netadr_t to)
+void Sys_SendPacket(int32_t length, const void *data,
+                    netadr_t to)
 {
     coduo_socket_handle_t socket;
     struct sockaddr_in sockadr;
 
     if (to.type == NA_BROADCAST || to.type == NA_IP) {
         socket = sys_ipSocket;
-    } else if (to.type == NA_IPX || to.type == NA_BROADCAST_IPX) {
+    } else if (to.type == NA_IPX ||
+               to.type == NA_BROADCAST_IPX) {
         socket = sys_ipxSocket;
     } else {
         Com_Error(ERR_FATAL, "NET_SendPacket: bad address type");
@@ -223,17 +239,20 @@ void Sys_SendPacket(int32_t length, const void *data, netadr_t to)
     }
 
     Sys_NetadrToSockaddr(&to, &sockadr);
-    if (sendto(socket, (const char *)data, (size_t)length, 0, (struct sockaddr *)&sockadr, SYS_NET_SOCKADDR_BYTES) ==
-        CODUO_SOCKET_ERROR_RESULT) {
+    if (sendto(socket, (const char *)data, (size_t)length, 0,
+               (struct sockaddr *)&sockadr,
+               SYS_NET_SOCKADDR_BYTES) == CODUO_SOCKET_ERROR_RESULT) {
         /* Stock formats the address first, then snapshots errno text. */
         const char *addressText = NET_AdrToString(to);
         const char *errorText = NET_ErrorString();
 
-        Com_Printf("NET_SendPacket ERROR: %s to %s\n", errorText, addressText);
+        Com_Printf("NET_SendPacket ERROR: %s to %s\n", errorText,
+                   addressText);
     }
 }
 
-void Sys_SendPacketByName(const char *address, uint16_t port, const void *data, int32_t length)
+void Sys_SendPacketByName(const char *address, uint16_t port, const void *data,
+                          int32_t length)
 {
     netadr_t adr;
 
@@ -254,12 +273,16 @@ qboolean Sys_IsLANAddress(netadr_t adr)
         return qfalse;
     }
 
-    if (adr.ip[0] == 10 || adr.ip[0] == 127 || (adr.ip[0] == 172 && (adr.ip[1] & 0xf0) == 16) || (adr.ip[0] == 192 && adr.ip[1] == 168)) {
+    if (adr.ip[0] == 10 || adr.ip[0] == 127 ||
+        (adr.ip[0] == 172 && (adr.ip[1] & 0xf0) == 16) ||
+        (adr.ip[0] == 192 && adr.ip[1] == 168)) {
         return qtrue;
     }
 
     for (int32_t index = 0; index < sys_localIPCount; ++index) {
-        if (adr.ip[0] == sys_localIP[index][0] && adr.ip[1] == sys_localIP[index][1] && adr.ip[2] == sys_localIP[index][2]) {
+        if (adr.ip[0] == sys_localIP[index][0] &&
+            adr.ip[1] == sys_localIP[index][1] &&
+            adr.ip[2] == sys_localIP[index][2]) {
             return qtrue;
         }
     }
@@ -270,7 +293,9 @@ qboolean Sys_IsLANAddress(netadr_t adr)
 void Sys_ShowIP(void)
 {
     for (int32_t index = 0; index < sys_localIPCount; ++index) {
-        Com_Printf("IP: %i.%i.%i.%i\n", sys_localIP[index][0], sys_localIP[index][1], sys_localIP[index][2], sys_localIP[index][3]);
+        Com_Printf("IP: %i.%i.%i.%i\n", sys_localIP[index][0],
+                   sys_localIP[index][1], sys_localIP[index][2],
+                   sys_localIP[index][3]);
     }
 }
 
@@ -288,7 +313,8 @@ void Sys_GetLocalIP(void)
     }
 
     Com_Printf("Hostname: %s\n", host->h_name);
-    for (int32_t aliasIndex = 0; host->h_aliases[aliasIndex] != NULL; ++aliasIndex) {
+    for (int32_t aliasIndex = 0; host->h_aliases[aliasIndex] != NULL;
+         ++aliasIndex) {
         Com_Printf("Alias: %s\n", host->h_aliases[aliasIndex]);
     }
 
@@ -309,25 +335,31 @@ void Sys_GetLocalIP(void)
         }
 
         memcpy(&ip, address, sizeof(ip));
-        memcpy(sys_localIP[sys_localIPCount], address, sizeof(sys_localIP[sys_localIPCount]));
+        memcpy(sys_localIP[sys_localIPCount], address,
+               sizeof(sys_localIP[sys_localIPCount]));
 
         uint32_t hostOrderIP = ntohl(ip);
-        Com_Printf("IP: %i.%i.%i.%i\n", (int32_t)(hostOrderIP >> 24) & 0xff, (int32_t)(hostOrderIP >> 16) & 0xff,
-                   (int32_t)(hostOrderIP >> 8) & 0xff, (int32_t)hostOrderIP & 0xff);
+        Com_Printf("IP: %i.%i.%i.%i\n", (int32_t)(hostOrderIP >> 24) & 0xff,
+                   (int32_t)(hostOrderIP >> 16) & 0xff,
+                   (int32_t)(hostOrderIP >> 8) & 0xff,
+                   (int32_t)hostOrderIP & 0xff);
     }
 }
 
 void NET_OpenIP(void)
 {
     cvar_t *netIP = Cvar_Get("net_ip", "localhost", 0);
-    cvar_t *netPort = Cvar_Get("net_port", va("%i", SYS_NET_DEFAULT_PORT), 0);
+    cvar_t *netPort =
+        Cvar_Get("net_port", va("%i", SYS_NET_DEFAULT_PORT), 0);
 #if defined(__x86_64__)
-    int32_t basePort = CODUO_X87_TRUNCATE_I32((long double)netPort->value);
+    int32_t basePort =
+        CODUO_X87_TRUNCATE_I32((long double)netPort->value);
 #else
     int32_t basePort = (int32_t)netPort->value;
 #endif
 
-    for (int32_t portOffset = 0; portOffset < SYS_NET_PORT_RETRY_COUNT; ++portOffset) {
+    for (int32_t portOffset = 0; portOffset < SYS_NET_PORT_RETRY_COUNT;
+         ++portOffset) {
         int32_t port = basePort + portOffset;
 
         sys_ipSocket = Sys_OpenIPSocket(netIP->string, port);
@@ -360,7 +392,8 @@ void NET_Init(void)
     }
 }
 
-coduo_socket_handle_t Sys_OpenIPSocket(const char *netInterface, int32_t port)
+coduo_socket_handle_t Sys_OpenIPSocket(const char *netInterface,
+                                       int32_t port)
 {
     struct sockaddr_in address;
     int32_t enabled = SYS_NET_SOCKET_OPTION_ENABLED;
@@ -401,24 +434,29 @@ coduo_socket_handle_t Sys_OpenIPSocket(const char *netInterface, int32_t port)
 #else
     if (ioctl(socketFd, FIONBIO, &nonblocking) == -1) {
 #endif
-        Com_Printf("ERROR: UDP_OpenSocket: ioctl FIONBIO:%s\n", NET_ErrorString());
+        Com_Printf("ERROR: UDP_OpenSocket: ioctl FIONBIO:%s\n",
+                   NET_ErrorString());
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         CODUO_CLOSE_SOCKET(socketFd);
         return 0;
     }
 
 #if defined(_WIN32)
-    if (setsockopt(socketFd, SOL_SOCKET, SO_BROADCAST, (const char *)&enabled, sizeof(enabled)) == SOCKET_ERROR) {
+    if (setsockopt(socketFd, SOL_SOCKET, SO_BROADCAST,
+                   (const char *)&enabled, sizeof(enabled)) == SOCKET_ERROR) {
 #else
-    if (setsockopt(socketFd, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled)) == -1) {
+    if (setsockopt(socketFd, SOL_SOCKET, SO_BROADCAST, &enabled,
+                   sizeof(enabled)) == -1) {
 #endif
-        Com_Printf("ERROR: UDP_OpenSocket: setsockopt SO_BROADCAST:%s\n", NET_ErrorString());
+        Com_Printf("ERROR: UDP_OpenSocket: setsockopt SO_BROADCAST:%s\n",
+                   NET_ErrorString());
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         CODUO_CLOSE_SOCKET(socketFd);
         return 0;
     }
 
-    if (netInterface == NULL || netInterface[0] == '\0' || Q_stricmp(netInterface, "localhost") == 0) {
+    if (netInterface == NULL || netInterface[0] == '\0' ||
+        Q_stricmp(netInterface, "localhost") == 0) {
         address.sin_addr.s_addr = 0;
         address.sin_family = AF_INET;
     } else {
@@ -438,7 +476,8 @@ coduo_socket_handle_t Sys_OpenIPSocket(const char *netInterface, int32_t port)
     }
     address.sin_family = AF_INET;
 
-    if (bind(socketFd, (struct sockaddr *)&address, SYS_NET_SOCKADDR_BYTES) == CODUO_SOCKET_ERROR_RESULT) {
+    if (bind(socketFd, (struct sockaddr *)&address, SYS_NET_SOCKADDR_BYTES) ==
+        CODUO_SOCKET_ERROR_RESULT) {
         Com_Printf("ERROR: UDP_OpenSocket: bind: %s\n", NET_ErrorString());
         CODUO_CLOSE_SOCKET(socketFd);
         return 0;
@@ -457,7 +496,8 @@ void NET_CloseIP(void)
 
 void NET_Sleep(int32_t msec)
 {
-    if (sys_ipSocket == 0 || dedicated->integer == 0) {
+    if (sys_ipSocket == 0 ||
+        dedicated->integer == 0) {
         return;
     }
 
@@ -473,7 +513,8 @@ void NET_Sleep(int32_t msec)
 
     struct timeval timeout;
     timeout.tv_sec = msec / SYS_NET_SELECT_USECS_PER_MSEC;
-    timeout.tv_usec = (msec % SYS_NET_SELECT_USECS_PER_MSEC) * SYS_NET_SELECT_USECS_PER_MSEC;
+    timeout.tv_usec = (msec % SYS_NET_SELECT_USECS_PER_MSEC) *
+                      SYS_NET_SELECT_USECS_PER_MSEC;
     select((int)(sys_ipSocket + 1), &readSet, NULL, NULL, &timeout);
 }
 
@@ -482,7 +523,8 @@ const char *NET_ErrorString(void)
 #if defined(_WIN32)
     static char errorText[64];
 
-    snprintf(errorText, sizeof(errorText), "Winsock error %d", WSAGetLastError());
+    snprintf(errorText, sizeof(errorText), "Winsock error %d",
+             WSAGetLastError());
     return errorText;
 #else
     return strerror(errno);
@@ -500,6 +542,8 @@ int32_t Sys_Milliseconds(void)
         return (int32_t)(tv.tv_usec / 1000);
     }
 
-    sys_lastMilliseconds = (int32_t)(tv.tv_usec / 1000) + ((int32_t)tv.tv_sec - sys_timeBaseSeconds) * 1000;
+    sys_lastMilliseconds =
+        (int32_t)(tv.tv_usec / 1000) +
+        ((int32_t)tv.tv_sec - sys_timeBaseSeconds) * 1000;
     return sys_lastMilliseconds;
 }

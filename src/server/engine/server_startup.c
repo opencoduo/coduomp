@@ -87,14 +87,17 @@ void NET_Sleep(int32_t milliseconds);
  * mins/maxs at +0x108/+0x114. */
 void SV_CreateBaseline(void)
 {
-    for (int32_t entityNum = 1; entityNum < sv_numGentities; ++entityNum) {
+    for (int32_t entityNum = 1;
+         entityNum < sv_numGentities;
+         ++entityNum) {
         sharedEntity_t *gentity = SV_GentityNum(entityNum);
         if (gentity->linked == qfalse) {
             continue;
         }
 
         gentity->entityState.number = entityNum;
-        archivedEntity_t *baseline = &sv_entities[entityNum].baseline;
+        archivedEntity_t *baseline =
+            &sv_entities[entityNum].baseline;
         baseline->state = gentity->entityState;
         baseline->svFlags = (int32_t)gentity->svFlags;
         baseline->singleClient = gentity->singleClient;
@@ -115,9 +118,11 @@ void SV_BoundMaxClients(int32_t minimumClientCount)
     sv_maxclients->modified = qfalse;
 
     if (sv_maxclients->integer < minimumClientCount) {
-        (void)Cvar_Set2("sv_maxclients", va("%i", minimumClientCount), qtrue);
+        (void)Cvar_Set2("sv_maxclients", va("%i", minimumClientCount),
+                        qtrue);
     } else if (sv_maxclients->integer > MAX_CLIENTS) {
-        (void)Cvar_Set2("sv_maxclients", va("%i", MAX_CLIENTS), qtrue);
+        (void)Cvar_Set2("sv_maxclients", va("%i", MAX_CLIENTS),
+                        qtrue);
     }
 }
 
@@ -128,8 +133,8 @@ void SV_BoundMaxClients(int32_t minimumClientCount)
 void SV_Startup(void)
 {
     if (svs.initialized != qfalse) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "SV_Startup: svs.initialized");
+        Com_Error(ERR_FATAL,
+                  "\x15" "SV_Startup: svs.initialized");
     }
 
     SV_BoundMaxClients(SERVER_MIN_CLIENTS);
@@ -137,16 +142,22 @@ void SV_Startup(void)
     const int32_t clientCount = sv_maxclients->integer;
     svs.clients = calloc(1, (size_t)clientCount * sizeof(*svs.clients));
     if (svs.clients == NULL) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "SV_Startup: unable to allocate svs.clients");
+        Com_Error(ERR_FATAL,
+                  "\x15" "SV_Startup: unable to allocate svs.clients");
     }
 
     if (dedicated->integer != 0) {
-        svs.numEntityStateSnapshots = clientCount * SERVER_DEDICATED_ENTITY_SNAPSHOTS_PER_CLIENT;
-        svs.numClientSnapshots = clientCount * clientCount * SERVER_DEDICATED_CLIENT_SNAPSHOTS_PER_PAIR;
+        svs.numEntityStateSnapshots =
+            clientCount * SERVER_DEDICATED_ENTITY_SNAPSHOTS_PER_CLIENT;
+        svs.numClientSnapshots =
+            clientCount * clientCount *
+            SERVER_DEDICATED_CLIENT_SNAPSHOTS_PER_PAIR;
     } else {
-        svs.numEntityStateSnapshots = clientCount * SERVER_LOCAL_ENTITY_SNAPSHOTS_PER_CLIENT;
-        svs.numClientSnapshots = clientCount * clientCount * SERVER_LOCAL_CLIENT_SNAPSHOTS_PER_PAIR;
+        svs.numEntityStateSnapshots =
+            clientCount * SERVER_LOCAL_ENTITY_SNAPSHOTS_PER_CLIENT;
+        svs.numClientSnapshots =
+            clientCount * clientCount *
+            SERVER_LOCAL_CLIENT_SNAPSHOTS_PER_PAIR;
     }
 
     svs.initialized = qtrue;
@@ -163,8 +174,11 @@ void SV_ChangeMaxClients(void)
     int32_t preservedClientCount = 0;
     const int32_t oldMaxClients = sv_maxclients->integer;
 
-    for (int32_t clientNum = 0; clientNum < oldMaxClients; ++clientNum) {
-        if (svs.clients[clientNum].state >= CS_CONNECTED && preservedClientCount < clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < oldMaxClients;
+         ++clientNum) {
+        if (svs.clients[clientNum].state >= CS_CONNECTED &&
+            preservedClientCount < clientNum) {
             preservedClientCount = clientNum;
         }
     }
@@ -175,8 +189,11 @@ void SV_ChangeMaxClients(void)
         return;
     }
 
-    client_t *oldClients = Hunk_AllocateTempMemoryInternal((size_t)preservedClientCount * sizeof(*oldClients));
-    for (int32_t clientNum = 0; clientNum < preservedClientCount; ++clientNum) {
+    client_t *oldClients = Hunk_AllocateTempMemoryInternal(
+        (size_t)preservedClientCount * sizeof(*oldClients));
+    for (int32_t clientNum = 0;
+         clientNum < preservedClientCount;
+         ++clientNum) {
         if (svs.clients[clientNum].state >= CS_CONNECTED) {
             oldClients[clientNum] = svs.clients[clientNum];
         } else {
@@ -188,12 +205,15 @@ void SV_ChangeMaxClients(void)
     const int32_t newMaxClients = sv_maxclients->integer;
     svs.clients = calloc(1, (size_t)newMaxClients * sizeof(*svs.clients));
     if (svs.clients == NULL) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "SV_Startup: unable to allocate svs.clients");
+        Com_Error(ERR_FATAL,
+                  "\x15" "SV_Startup: unable to allocate svs.clients");
     }
-    memset(svs.clients, 0, (size_t)newMaxClients * sizeof(*svs.clients));
+    memset(svs.clients, 0,
+           (size_t)newMaxClients * sizeof(*svs.clients));
 
-    for (int32_t clientNum = 0; clientNum < preservedClientCount; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < preservedClientCount;
+         ++clientNum) {
         if (oldClients[clientNum].state >= CS_CONNECTED) {
             svs.clients[clientNum] = oldClients[clientNum];
         }
@@ -201,11 +221,17 @@ void SV_ChangeMaxClients(void)
     Hunk_FreeTempMemory(oldClients);
 
     if (dedicated->integer != 0) {
-        svs.numEntityStateSnapshots = newMaxClients * SERVER_DEDICATED_ENTITY_SNAPSHOTS_PER_CLIENT;
-        svs.numClientSnapshots = newMaxClients * newMaxClients * SERVER_DEDICATED_CLIENT_SNAPSHOTS_PER_PAIR;
+        svs.numEntityStateSnapshots =
+            newMaxClients * SERVER_DEDICATED_ENTITY_SNAPSHOTS_PER_CLIENT;
+        svs.numClientSnapshots =
+            newMaxClients * newMaxClients *
+            SERVER_DEDICATED_CLIENT_SNAPSHOTS_PER_PAIR;
     } else {
-        svs.numEntityStateSnapshots = newMaxClients * SERVER_LOCAL_ENTITY_SNAPSHOTS_PER_CLIENT;
-        svs.numClientSnapshots = newMaxClients * newMaxClients * SERVER_LOCAL_CLIENT_SNAPSHOTS_PER_PAIR;
+        svs.numEntityStateSnapshots =
+            newMaxClients * SERVER_LOCAL_ENTITY_SNAPSHOTS_PER_CLIENT;
+        svs.numClientSnapshots =
+            newMaxClients * newMaxClients *
+            SERVER_LOCAL_CLIENT_SNAPSHOTS_PER_PAIR;
     }
 }
 
@@ -217,7 +243,8 @@ void SV_ChangeMaxClients(void)
 void SV_SetExpectedHunkUsage(const char *mapBspPath)
 {
     int32_t fileHandle;
-    const int32_t fileLength = FS_FOpenFileByMode("hunkusage.dat", &fileHandle, FS_READ);
+    const int32_t fileLength =
+        FS_FOpenFileByMode("hunkusage.dat", &fileHandle, FS_READ);
     if (fileLength < 0) {
         (void)Cvar_Set2("com_expectedhunkusage", "-1", qtrue);
         return;
@@ -257,7 +284,9 @@ void SV_SetExpectedHunkUsage(const char *mapBspPath)
  * rather than by an invalid cross-object byte span. */
 void SV_ClearServer(void)
 {
-    for (int32_t index = 0; index < MAX_CONFIGSTRINGS; ++index) {
+    for (int32_t index = 0;
+         index < MAX_CONFIGSTRINGS;
+         ++index) {
         if (sv_configstrings[index] != NULL)
             Z_FreeInternal(sv_configstrings[index]);
     }
@@ -274,16 +303,19 @@ void SV_ClearServer(void)
     sv_gameClients = NULL;
     sv_gameClientSize = 0;
 
-    memset(sv_compressedBpsWindow, 0, sizeof(sv_compressedBpsWindow));
+    memset(sv_compressedBpsWindow, 0,
+           sizeof(sv_compressedBpsWindow));
     sv_averageBpsFrameCount = 0;
     sv_totalBytesSentThisFrame = 0;
     sv_compressedBpsMax = 0;
-    memset(sv_uncompressedBpsWindow, 0, sizeof(sv_uncompressedBpsWindow));
+    memset(sv_uncompressedBpsWindow, 0,
+           sizeof(sv_uncompressedBpsWindow));
     sv_totalUncompressedBytesThisFrame = 0;
     sv_uncompressedBpsMax = 0;
     sv_averageCompressionRatioSum = 0.0f;
     sv_averageCompressionRatioCount = 0;
-    memset(sv_gametypeNormalizeBuffer, 0, sizeof(sv_gametypeNormalizeBuffer));
+    memset(sv_gametypeNormalizeBuffer, 0,
+           sizeof(sv_gametypeNormalizeBuffer));
 }
 
 /* Source: CoDUOMP.exe 0x0045f9a0..0x0045fa2c.
@@ -293,9 +325,13 @@ void SV_ClearServer(void)
  * script-set-serverinfo bit from every cvar. */
 void SV_InitCvar(void)
 {
-    Q_strncpyz(sv_gametypeNormalizeBuffer, Cvar_VariableString("g_gametype"), sizeof(sv_gametypeNormalizeBuffer));
+    Q_strncpyz(sv_gametypeNormalizeBuffer,
+               Cvar_VariableString("g_gametype"),
+               sizeof(sv_gametypeNormalizeBuffer));
 
-    for (char *cursor = sv_gametypeNormalizeBuffer; *cursor != '\0'; ++cursor) {
+    for (char *cursor = sv_gametypeNormalizeBuffer;
+         *cursor != '\0';
+         ++cursor) {
         *cursor = (char)server_compat_tolower_gametype_byte(*cursor);
     }
 
@@ -312,19 +348,28 @@ void SV_SpawnServer(const char *serverName)
     char systemInfo[SERVER_SYSTEMINFO_BUFFER_SIZE];
     qboolean restarting;
 
-    XModelEnforceExist(Cvar_Get("cl_xmodelcheck", "0", SERVER_XMODEL_CHECK_FLAGS)->integer);
+    XModelEnforceExist(
+        Cvar_Get("cl_xmodelcheck", "0", SERVER_XMODEL_CHECK_FLAGS)->integer);
     (void)Cvar_Get("g_gametype", "dm", SERVER_GAMETYPE_FLAGS);
 
     if (Cvar_VariableValue("sv_running") != 0.0f) {
-        restarting = VM_Call(sv_gameVM, GAME_GET_MATCH_STATE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0 ? qtrue : qfalse;
+        restarting = VM_Call(sv_gameVM, GAME_GET_MATCH_STATE,
+                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0
+                         ? qtrue
+                         : qfalse;
         if (restarting != qfalse) {
             Cvar_Set("g_gametype", sv_gametypeNormalizeBuffer);
         }
 
-        for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+        for (int32_t clientNum = 0;
+             clientNum < sv_maxclients->integer;
+             ++clientNum) {
             client_t *const client = &svs.clients[clientNum];
             if (client->state >= CS_PRIMED) {
-                NET_OutOfBandPrint(NS_SERVER, client->netchan.remoteAddress, "loadingnewmap\n%s\n%s", serverName, g_gametype->string);
+                NET_OutOfBandPrint(
+                    NS_SERVER, client->netchan.remoteAddress,
+                    "loadingnewmap\n%s\n%s", serverName,
+                    g_gametype->string);
             }
         }
         NET_Sleep(SERVER_LOADING_RECONNECT_DELAY_MSEC);
@@ -350,7 +395,9 @@ void SV_SpawnServer(const char *serverName)
     FS_Restart(sv.gamestateChecksumFeed);
     FS_RefreshLookupCache();
 
-    for (int32_t index = 0; index < MAX_CONFIGSTRINGS; ++index) {
+    for (int32_t index = 0;
+         index < MAX_CONFIGSTRINGS;
+         ++index) {
         sv_configstrings[index] = CopyStringInternal("");
     }
 
@@ -365,9 +412,12 @@ void SV_SpawnServer(const char *serverName)
     }
 
     SV_InitCvar();
-    svs.entityStateSnapshots = Hunk_AllocInternal((size_t)svs.numEntityStateSnapshots * sizeof(*svs.entityStateSnapshots));
+    svs.entityStateSnapshots = Hunk_AllocInternal(
+        (size_t)svs.numEntityStateSnapshots *
+        sizeof(*svs.entityStateSnapshots));
     svs.nextEntityStateSnapshot = 0;
-    svs.clientSnapshots = Hunk_AllocInternal((size_t)svs.numClientSnapshots * sizeof(*svs.clientSnapshots));
+    svs.clientSnapshots = Hunk_AllocInternal(
+        (size_t)svs.numClientSnapshots * sizeof(*svs.clientSnapshots));
     svs.nextClientSnapshot = 0;
     SV_InitArchivedSnapshot();
     svs.snapFlagServerBit ^= SERVER_SNAPSHOT_RESTART_FLAG;
@@ -389,11 +439,14 @@ void SV_SpawnServer(const char *serverName)
     sv.state = SS_LOADING;
     Cvar_Set("sv_serverRestarting", "1");
 
-    Com_LoadSoundAliases(va("maps/mp/%s.bsp", serverName), SND_ALIAS_BANK_GAME);
+    Com_LoadSoundAliases(va("maps/mp/%s.bsp", serverName),
+                         SND_ALIAS_BANK_GAME);
     XAnimSetUser(XANIM_USER_SERVER);
     SV_InitGameProgs(restarting);
 
-    for (int32_t frame = 0; frame < SERVER_RESTART_WARMUP_FRAMES; ++frame) {
+    for (int32_t frame = 0;
+         frame < SERVER_RESTART_WARMUP_FRAMES;
+         ++frame) {
         svs.realTime += SERVER_RESTART_WARMUP_MSEC;
         svs.time += SERVER_RESTART_WARMUP_MSEC;
         SV_RunFrame();
@@ -401,10 +454,15 @@ void SV_SpawnServer(const char *serverName)
 
     SV_CreateBaseline();
 
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state >= CS_CONNECTED) {
-            const intptr_t reject = VM_Call(sv_gameVM, GAME_CLIENT_CONNECT, clientNum, client->scriptId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            const intptr_t reject =
+                VM_Call(sv_gameVM, GAME_CLIENT_CONNECT,
+                        clientNum, client->scriptId,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             if (reject == 0) {
                 client->state = CS_CONNECTED;
             } else {
@@ -427,14 +485,18 @@ void SV_SpawnServer(const char *serverName)
     Cvar_Set("sv_referencedPaks", FS_ReferencedPakChecksums());
     Cvar_Set("sv_referencedPakNames", FS_ReferencedPakNames());
 
-    Q_strncpyz(systemInfo, Cvar_InfoString_Big(CVAR_SYSTEMINFO_SYNC_MASK), sizeof(systemInfo));
+    Q_strncpyz(systemInfo, Cvar_InfoString_Big(CVAR_SYSTEMINFO_SYNC_MASK),
+               sizeof(systemInfo));
     cvar_modifiedFlags &= ~CVAR_SYSTEMINFO_SYNC_MASK;
     SV_SetConfigstring(CS_SYSTEMINFO, systemInfo);
 
-    SV_SetConfigstring(CS_SERVERINFO, Cvar_InfoString(CVAR_SERVERINFO_SYNC_MASK));
+    SV_SetConfigstring(CS_SERVERINFO,
+                       Cvar_InfoString(CVAR_SERVERINFO_SYNC_MASK));
     cvar_modifiedFlags &= ~CVAR_SERVERINFO_SYNC_MASK;
 
-    Cvar_SetConfigstringValues(CS_CONFIGVALUE_NAMES, CS_CONFIGVALUE_COUNT, CVAR_SYSTEMINFO_KEY_VALUE_SYNC_MASK);
+    Cvar_SetConfigstringValues(CS_CONFIGVALUE_NAMES,
+                               CS_CONFIGVALUE_COUNT,
+                               CVAR_SYSTEMINFO_KEY_VALUE_SYNC_MASK);
     cvar_modifiedFlags &= ~CVAR_SYSTEMINFO_KEY_VALUE_SYNC_MASK;
 
     sv.state = SS_GAME;
@@ -442,5 +504,8 @@ void SV_SpawnServer(const char *serverName)
     Cvar_Set("sv_serverRestarting", "0");
     Com_Printf("-----------------------------------\n");
 
-    server_compat_notify_punkbuster_state(Cvar_VariableString("sv_punkbuster")[0] == '1' ? qtrue : qfalse);
+    server_compat_notify_punkbuster_state(
+        Cvar_VariableString("sv_punkbuster")[0] == '1'
+            ? qtrue
+            : qfalse);
 }

@@ -16,7 +16,8 @@ qboolean UI_GameType_HandleKey(int32_t flags, float *special, int32_t key)
 
     (void)special;
 
-    if (key != K_MOUSE1 && key != K_MOUSE2 && key != K_ENTER && key != K_KP_ENTER) {
+    if (key != K_MOUSE1 && key != K_MOUSE2 &&
+        key != K_ENTER && key != K_KP_ENTER) {
         return qfalse;
     }
 

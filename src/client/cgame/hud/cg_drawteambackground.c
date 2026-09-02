@@ -54,7 +54,8 @@
 // order in the machine code is h, w, y, x; written here in argument order since each
 // product is independent.
 
-void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float height, float alpha)
+void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float height,
+                          float alpha)
 {
     /* Local RGBA color: 0x3f800000 == 1.0f, 0x0 == 0.0f. */
     float color[4];
@@ -78,13 +79,24 @@ void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float he
 
     /* Preserve the retail evaluation order: height, width, y, then x. Each
      * x87 product is rounded once by its FSTP float argument slot. */
-    float scaledHeight = (float)((long double)cgs_screenYScale * (long double)height);
-    float scaledWidth = (float)((long double)cgs_screenXScale * (long double)width);
-    float scaledY = (float)((long double)cgs_screenYScale * (long double)y);
-    float scaledX = (float)((long double)cgs_screenXScale * (long double)x);
+    float scaledHeight = (float)(
+        (long double)cgs_screenYScale * (long double)height);
+    float scaledWidth = (float)(
+        (long double)cgs_screenXScale * (long double)width);
+    float scaledY = (float)(
+        (long double)cgs_screenYScale * (long double)y);
+    float scaledX = (float)(
+        (long double)cgs_screenXScale * (long double)x);
 
-    trap_R_DrawStretchPic(CG_FloatBits(scaledX), CG_FloatBits(scaledY), CG_FloatBits(scaledWidth), CG_FloatBits(scaledHeight),
-                          CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), cgs_media_hudColorBar);
+    trap_R_DrawStretchPic(CG_FloatBits(scaledX),
+                          CG_FloatBits(scaledY),
+                          CG_FloatBits(scaledWidth),
+                          CG_FloatBits(scaledHeight),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(1.0f),
+                          CG_FloatBits(1.0f),
+                          cgs_media_hudColorBar);
 
     trap_R_SetColor((const float *)0);
 }

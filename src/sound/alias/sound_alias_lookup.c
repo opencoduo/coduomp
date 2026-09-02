@@ -14,7 +14,8 @@ static const float SOUND_ALIAS_STRING_SELECTOR = -1.0f;
 
 /* CoDUOMP.exe 0x004366b0 and coduo_lnxded 0x0806c8ba implement the same
  * half-open LOD test. */
-qboolean Com_ValidateSoundAliasLOD(const snd_alias_t *alias, float selector)
+qboolean Com_ValidateSoundAliasLOD(const snd_alias_t *alias,
+                                   float selector)
 {
     if (alias->lodMin < 0.0f) {
         return qtrue;
@@ -29,7 +30,9 @@ qboolean Com_ValidateSoundAliasLOD(const snd_alias_t *alias, float selector)
 
 /* CoDUOMP.exe 0x00436710 and coduo_lnxded 0x0806c93d walk the same bank hash
  * chain and return the first name/LOD match. */
-snd_alias_t *Com_FindSoundAlias(const char *name, sndAliasBank_t bank, float selector)
+snd_alias_t *Com_FindSoundAlias(const char *name,
+                                sndAliasBank_t bank,
+                                float selector)
 {
     snd_alias_t *alias;
 
@@ -39,7 +42,9 @@ snd_alias_t *Com_FindSoundAlias(const char *name, sndAliasBank_t bank, float sel
 
     alias = com_soundAliasHash[bank][Com_HashAliasName(name)];
     while (alias != NULL) {
-        if (alias->aliasName != NULL && Q_stricmpn(alias->aliasName, name, SOUND_ALIAS_COMPARE_LIMIT) == 0 &&
+        if (alias->aliasName != NULL &&
+            Q_stricmpn(alias->aliasName, name,
+                       SOUND_ALIAS_COMPARE_LIMIT) == 0 &&
             Com_ValidateSoundAliasLOD(alias, selector)) {
             return alias;
         }
@@ -54,7 +59,8 @@ snd_alias_t *Com_FindSoundAlias(const char *name, sndAliasBank_t bank, float sel
  * canonical name. */
 const char *Com_SoundAliasString(const char *name, sndAliasBank_t bank)
 {
-    snd_alias_t *alias = Com_FindSoundAlias(name, bank, SOUND_ALIAS_STRING_SELECTOR);
+    snd_alias_t *alias =
+        Com_FindSoundAlias(name, bank, SOUND_ALIAS_STRING_SELECTOR);
     return alias != NULL ? alias->aliasName : NULL;
 }
 
@@ -79,16 +85,22 @@ snd_alias_t *Com_GetSoundAlias(int32_t soundHandle, sndAliasBank_t bank)
 int32_t Com_SoundAliasIndex(const snd_alias_t *alias, sndAliasBank_t bank)
 {
 #if UINTPTR_MAX == UINT32_MAX
-    const uint32_t rawOffset = (uint32_t)(uintptr_t)alias - (uint32_t)(uintptr_t)com_soundAliases[bank] + (uint32_t)sizeof(*alias);
+    const uint32_t rawOffset =
+        (uint32_t)(uintptr_t)alias -
+        (uint32_t)(uintptr_t)com_soundAliases[bank] +
+        (uint32_t)sizeof(*alias);
 
 #if defined(WINDOWS_BEHAVIOR)
-    const int32_t soundHandle = coduo_int32_from_bits(rawOffset) / (int32_t)sizeof(*alias);
+    const int32_t soundHandle =
+        coduo_int32_from_bits(rawOffset) / (int32_t)sizeof(*alias);
 #elif defined(LINUX_BEHAVIOR)
     enum {
         SOUND_ALIAS_STRIDE_WORD_INVERSE = UINT32_C(0x286bca1b)
     };
     const uint32_t wordOffset = coduo_int32_sar_bits(rawOffset, 2U);
-    const int32_t soundHandle = coduo_int32_from_bits(wordOffset * SOUND_ALIAS_STRIDE_WORD_INVERSE);
+    const int32_t soundHandle =
+        coduo_int32_from_bits(
+            wordOffset * SOUND_ALIAS_STRIDE_WORD_INVERSE);
 #else
 #error "Com_SoundAliasIndex requires WINDOWS_BEHAVIOR or LINUX_BEHAVIOR"
 #endif
@@ -98,7 +110,8 @@ int32_t Com_SoundAliasIndex(const snd_alias_t *alias, sndAliasBank_t bank)
     }
 
     const uintptr_t aliasAddress = (uintptr_t)alias;
-    const uintptr_t tableAddress = (uintptr_t)com_soundAliases[bank];
+    const uintptr_t tableAddress =
+        (uintptr_t)com_soundAliases[bank];
     if (aliasAddress < tableAddress) {
         return SOUND_ALIAS_INDEX_NONE;
     }

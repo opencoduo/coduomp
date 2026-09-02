@@ -54,14 +54,19 @@ void CL_WWWDownload(void)
         char destinationPath[MAX_OSPATH];
 
         clc.downloadFile = 0;
-        if (coduomp_server_namespace_build_download_path(cls.staticDownload.originalDownloadName, destinationPath,
-                                                         sizeof(destinationPath)) == qfalse) {
-            Com_Error(ERR_DROP, "Refusing invalid redirected download path\n");
+        if (coduomp_server_namespace_build_download_path(
+                cls.staticDownload.originalDownloadName,
+                destinationPath, sizeof(destinationPath)) == qfalse) {
+            Com_Error(ERR_DROP,
+                      "Refusing invalid redirected download path\n");
             return;
         }
 
-        if (rename(cls.staticDownload.downloadTempName, destinationPath) != 0) {
-            FS_Copyfiles(cls.staticDownload.downloadTempName, destinationPath);
+        if (rename(cls.staticDownload.downloadTempName,
+                   destinationPath) != 0) {
+            FS_Copyfiles(
+                cls.staticDownload.downloadTempName,
+                destinationPath);
             FS_Remove(cls.staticDownload.downloadTempName);
         }
         coduomp_case_path_cache_clear();
@@ -80,17 +85,24 @@ void CL_WWWDownload(void)
         } else {
             CL_AddReliableCommand("wwwdl done");
 
-            const size_t historyLength = strlen(clc.redirectedList);
-            const size_t nameLength = strlen(cls.staticDownload.originalDownloadName);
-            if (historyLength + nameLength + 1u >= sizeof(clc.redirectedList)) {
-                Com_Printf("ERROR: redirectedList overflow (%s)\n", cls.staticDownload.originalDownloadName);
+            const size_t historyLength =
+                strlen(clc.redirectedList);
+            const size_t nameLength = strlen(
+                cls.staticDownload.originalDownloadName);
+            if (historyLength + nameLength + 1u >=
+                sizeof(clc.redirectedList)) {
+                Com_Printf(
+                    "ERROR: redirectedList overflow (%s)\n",
+                    cls.staticDownload.originalDownloadName);
                 clc.wwwDownloadActive = qfalse;
                 CL_NextDownload();
                 return;
             }
 
             strcat(clc.redirectedList, "@");
-            strcat(clc.redirectedList, cls.staticDownload.originalDownloadName);
+            strcat(
+                clc.redirectedList,
+                cls.staticDownload.originalDownloadName);
         }
 
         clc.wwwDownloadActive = qfalse;
@@ -99,7 +111,9 @@ void CL_WWWDownload(void)
     }
 
     if (cls.wwwDownloadDisconnected != 0) {
-        const char *const errorMessage = va("Download failure while getting '%s'\n", cls.staticDownload.downloadName);
+        const char *const errorMessage = va(
+            "Download failure while getting '%s'\n",
+            cls.staticDownload.downloadName);
         cls.wwwDownloadDisconnected = 0;
         CL_ClearStaticDownload();
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
@@ -107,7 +121,9 @@ void CL_WWWDownload(void)
         return;
     }
 
-    Com_Printf("Download failure while getting '%s'\n", cls.staticDownload.downloadName);
+    Com_Printf(
+        "Download failure while getting '%s'\n",
+        cls.staticDownload.downloadName);
     CL_AddReliableCommand("wwwdl fail");
     clc.wwwDownloadAborting = qtrue;
 }
@@ -120,26 +136,35 @@ void CL_WWWDownload(void)
  * again during the same connection. */
 qboolean CL_WWWBadChecksum(const char *pakName)
 {
-    if (strstr(clc.redirectedList, va("@%s", pakName)) == NULL) {
+    if (strstr(
+            clc.redirectedList,
+            va("@%s", pakName)) == NULL) {
         return qfalse;
     }
 
-    Com_Printf("WARNING: file %s obtained through download redirect "
-               "has wrong checksum\n",
-               pakName);
-    Com_Printf("         this likely means the server configuration "
-               "is broken\n");
+    Com_Printf(
+        "WARNING: file %s obtained through download redirect "
+        "has wrong checksum\n",
+        pakName);
+    Com_Printf(
+        "         this likely means the server configuration "
+        "is broken\n");
 
-    const size_t historyLength = strlen(clc.badChecksumList);
+    const size_t historyLength =
+        strlen(clc.badChecksumList);
     const size_t nameLength = strlen(pakName);
-    if (historyLength + nameLength + 1u >= sizeof(clc.badChecksumList)) {
-        Com_Printf("ERROR: badChecksumList overflowed (%s)\n", clc.badChecksumList);
+    if (historyLength + nameLength + 1u >=
+        sizeof(clc.badChecksumList)) {
+        Com_Printf(
+            "ERROR: badChecksumList overflowed (%s)\n",
+            clc.badChecksumList);
         return qfalse;
     }
 
     strcat(clc.badChecksumList, "@");
     strcat(clc.badChecksumList, pakName);
-    Com_DPrintf("bad checksums: %s\n", clc.badChecksumList);
+    Com_DPrintf(
+        "bad checksums: %s\n", clc.badChecksumList);
     return qtrue;
 }
 
@@ -151,12 +176,16 @@ qboolean CL_WWWBadChecksum(const char *pakName)
  * telling the server "donedl"; a no-download path enters map loading. */
 void CL_DownloadsComplete(void)
 {
-    (void)Cvar_Set2("cl_downloadName", "", qtrue);
+    (void)Cvar_Set2(
+        "cl_downloadName", "", qtrue);
 
     if (cl_updateStarted != qfalse) {
-        if (strlen(cl_updateFileName) >= CL_UPDATE_FILE_NAME_MINIMUM_LENGTH) {
-            const char *const updateDirectory = FS_ShiftStr("ni]Zm^l", CL_UPDATE_PATH_SHIFT);
-            const char *const updatePath = va("%s/%s", updateDirectory, cl_updateFileName);
+        if (strlen(cl_updateFileName) >=
+            CL_UPDATE_FILE_NAME_MINIMUM_LENGTH) {
+            const char *const updateDirectory =
+                FS_ShiftStr("ni]Zm^l", CL_UPDATE_PATH_SHIFT);
+            const char *const updatePath =
+                va("%s/%s", updateDirectory, cl_updateFileName);
 
             if (cls.wwwDownloadDisconnected != 0) {
                 cls.wwwDownloadDisconnected = 0;
@@ -188,7 +217,8 @@ void CL_DownloadsComplete(void)
     if (cls.state != CA_LOADING)
         return;
 
-    (void)Cvar_Set2("r_uiFullScreen", "0", qtrue);
+    (void)Cvar_Set2(
+        "r_uiFullScreen", "0", qtrue);
     if (sv_running->integer == 0) {
         CL_ShutdownAll();
         Hunk_ClearToStart();
@@ -212,28 +242,45 @@ void CL_DownloadsComplete(void)
  * initialized before the reliable "download" command is queued. */
 void CL_BeginDownload(const char *localName, const char *remoteName)
 {
-    const qboolean authorizedUpdate = cl_updateStarted != qfalse && NET_CompareAdrSigned(&clc.serverAddress, &cls.autoUpdateServer) == 0;
+    const qboolean authorizedUpdate =
+        cl_updateStarted != qfalse &&
+        NET_CompareAdrSigned(
+            &clc.serverAddress, &cls.autoUpdateServer) == 0;
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    if (coduo_compat_path_is_safe_relative(localName) == qfalse || coduo_compat_path_is_safe_relative(remoteName) == qfalse ||
-        (authorizedUpdate == qfalse && (coduo_compat_path_is_pk3(localName) == qfalse || coduo_compat_path_is_pk3(remoteName) == qfalse))) {
-        Com_Error(ERR_DROP, "Refusing invalid download path\n");
+    if (coduo_compat_path_is_safe_relative(localName) == qfalse ||
+        coduo_compat_path_is_safe_relative(remoteName) == qfalse ||
+        (authorizedUpdate == qfalse &&
+         (coduo_compat_path_is_pk3(localName) == qfalse ||
+          coduo_compat_path_is_pk3(remoteName) == qfalse))) {
+        Com_Error(
+            ERR_DROP,
+            "Refusing invalid download path\n");
         return;
     }
 
-    Com_DPrintf("***** CL_BeginDownload *****\n"
-                "Localname: %s\n"
-                "Remotename: %s\n"
-                "****************************\n",
-                localName, remoteName);
+    Com_DPrintf(
+        "***** CL_BeginDownload *****\n"
+        "Localname: %s\n"
+        "Remotename: %s\n"
+        "****************************\n",
+        localName, remoteName);
 
-    strncpy(cls.staticDownload.downloadName, localName, CL_DOWNLOAD_NAME_CAPACITY - 1);
-    cls.staticDownload.downloadName[CL_DOWNLOAD_NAME_CAPACITY - 1] = '\0';
-    Com_sprintf(cls.staticDownload.downloadTempName, CL_DOWNLOAD_NAME_CAPACITY, "%s.tmp", localName);
+    strncpy(
+        cls.staticDownload.downloadName, localName,
+        CL_DOWNLOAD_NAME_CAPACITY - 1);
+    cls.staticDownload.downloadName[
+        CL_DOWNLOAD_NAME_CAPACITY - 1] = '\0';
+    Com_sprintf(
+        cls.staticDownload.downloadTempName,
+        CL_DOWNLOAD_NAME_CAPACITY, "%s.tmp", localName);
 
-    (void)Cvar_Set2("cl_downloadName", remoteName, qtrue);
-    (void)Cvar_Set2("cl_downloadSize", "0", qtrue);
-    (void)Cvar_Set2("cl_downloadCount", "0", qtrue);
+    (void)Cvar_Set2(
+        "cl_downloadName", remoteName, qtrue);
+    (void)Cvar_Set2(
+        "cl_downloadSize", "0", qtrue);
+    (void)Cvar_Set2(
+        "cl_downloadCount", "0", qtrue);
     Cvar_SetValue("cl_downloadTime", (float)cls.realtime);
 
     clc.downloadBlock = 0;
@@ -276,7 +323,9 @@ void CL_NextDownload(void)
 
     CL_BeginDownload(localName, remoteName);
     cls.staticDownload.downloadRestart = qtrue;
-    memmove(clc.downloadList, remaining, strlen(remaining) + 1);
+    memmove(
+        clc.downloadList, remaining,
+        strlen(remaining) + 1);
 }
 
 /* Source: CoDUOMP.exe 0x00411c20..0x00411e58.
@@ -288,28 +337,42 @@ void CL_NextDownload(void)
 void CL_InitDownloads(void)
 {
     char missingPaks[CL_DOWNLOAD_LIST_CAPACITY];
-    const char *const updateDirectory = FS_ShiftStr("ni]Zm^l", CL_UPDATE_PATH_SHIFT);
+    const char *const updateDirectory =
+        FS_ShiftStr("ni]Zm^l", CL_UPDATE_PATH_SHIFT);
 
     clc.wwwDownloadActive = qfalse;
     clc.wwwDownloadAborting = qfalse;
     cls.wwwDownloadDisconnected = 0;
     CL_ClearStaticDownload();
 
-    if (cl_updateStarted != qfalse && NET_CompareAdrSigned(&clc.serverAddress, &cls.autoUpdateServer) == 0 &&
-        strlen(cl_updateFiles->string) >= CL_UPDATE_FILE_NAME_MINIMUM_LENGTH) {
-        strncpy(cl_updateFileName, cl_updateFiles->string, sizeof(cl_updateFileName) - 1);
+    if (cl_updateStarted != qfalse &&
+        NET_CompareAdrSigned(
+            &clc.serverAddress, &cls.autoUpdateServer) == 0 &&
+        strlen(cl_updateFiles->string) >=
+            CL_UPDATE_FILE_NAME_MINIMUM_LENGTH) {
+        strncpy(
+            cl_updateFileName, cl_updateFiles->string,
+            sizeof(cl_updateFileName) - 1);
         cl_updateFileName[sizeof(cl_updateFileName) - 1] = '\0';
 
-        strncpy(clc.downloadList, va("@%s/%s@%s/%s", updateDirectory, cl_updateFiles->string, updateDirectory, cl_updateFiles->string),
-                sizeof(clc.downloadList) - 1);
+        strncpy(
+            clc.downloadList,
+            va("@%s/%s@%s/%s",
+               updateDirectory, cl_updateFiles->string,
+               updateDirectory, cl_updateFiles->string),
+            sizeof(clc.downloadList) - 1);
         clc.downloadList[sizeof(clc.downloadList) - 1] = '\0';
         cls.state = CA_CONNECTED;
         CL_NextDownload();
         return;
     }
 
-    if (sv_running->integer == 0 && cl_allowDownload->integer != 0 && cl_serverAllowDownload->integer != 0 &&
-        FS_ComparePaks(clc.downloadList, sizeof(clc.downloadList), qtrue) != qfalse) {
+    if (sv_running->integer == 0 &&
+        cl_allowDownload->integer != 0 &&
+        cl_serverAllowDownload->integer != 0 &&
+        FS_ComparePaks(
+            clc.downloadList, sizeof(clc.downloadList),
+            qtrue) != qfalse) {
         Com_Printf("Need paks: %s\n", clc.downloadList);
         if (clc.downloadList[0] != '\0') {
             cls.state = CA_CONNECTED;
@@ -320,21 +383,24 @@ void CL_InitDownloads(void)
         return;
     }
 
-    if (FS_ComparePaks(missingPaks, sizeof(missingPaks), qfalse) != qfalse) {
+    if (FS_ComparePaks(
+            missingPaks, sizeof(missingPaks), qfalse) != qfalse) {
         if (cl_serverAllowDownload->integer == 0) {
-            Com_Printf("\nWARNING: You are missing some files referenced by "
-                       "the server:\n%s"
-                       "You might not be able to join the game\n"
-                       "Go to the settings menu to turn on autodownload, "
-                       "or get the file elsewhere\n\n",
-                       missingPaks);
+            Com_Printf(
+                "\nWARNING: You are missing some files referenced by "
+                "the server:\n%s"
+                "You might not be able to join the game\n"
+                "Go to the settings menu to turn on autodownload, "
+                "or get the file elsewhere\n\n",
+                missingPaks);
         } else {
-            Com_Printf("\nWARNING: You are missing some files referenced by "
-                       "the server:\n%s"
-                       "You might not be able to join the game\n"
-                       "If you are unable to join, you will need to get the "
-                       "file elsewhere\n\n",
-                       missingPaks);
+            Com_Printf(
+                "\nWARNING: You are missing some files referenced by "
+                "the server:\n%s"
+                "You might not be able to join the game\n"
+                "If you are unable to join, you will need to get the "
+                "file elsewhere\n\n",
+                missingPaks);
         }
     }
 

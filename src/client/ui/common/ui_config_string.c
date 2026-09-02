@@ -8,6 +8,7 @@ static char ui_configStringBuffer[MAX_STRING_CHARS];
 // Exact same-module PPC symbol: UI_ConfigString.
 const char *UI_ConfigString(int32_t index)
 {
-    trap_GetConfigString(index, ui_configStringBuffer, (int32_t)sizeof(ui_configStringBuffer));
+    trap_GetConfigString(index, ui_configStringBuffer,
+                         (int32_t)sizeof(ui_configStringBuffer));
     return ui_configStringBuffer;
 }

@@ -66,12 +66,18 @@ void MSG_ReadData(msg_t *message, void *data, int32_t length);
 
 #if UINTPTR_MAX == UINT32_MAX
 MSG_STATIC_ASSERT(sizeof(msg_t) == 0x18, "i386 msg_t size changed");
-MSG_STATIC_ASSERT(offsetof(msg_t, overflowed) == 0x00, "i386 msg_t overflow flag moved");
-MSG_STATIC_ASSERT(offsetof(msg_t, data) == 0x04, "i386 msg_t data pointer moved");
-MSG_STATIC_ASSERT(offsetof(msg_t, maxsize) == 0x08, "i386 msg_t maximum size moved");
-MSG_STATIC_ASSERT(offsetof(msg_t, cursize) == 0x0c, "i386 msg_t current size moved");
-MSG_STATIC_ASSERT(offsetof(msg_t, readcount) == 0x10, "i386 msg_t read cursor moved");
-MSG_STATIC_ASSERT(offsetof(msg_t, bit) == 0x14, "i386 msg_t bit cursor moved");
+MSG_STATIC_ASSERT(offsetof(msg_t, overflowed) == 0x00,
+                  "i386 msg_t overflow flag moved");
+MSG_STATIC_ASSERT(offsetof(msg_t, data) == 0x04,
+                  "i386 msg_t data pointer moved");
+MSG_STATIC_ASSERT(offsetof(msg_t, maxsize) == 0x08,
+                  "i386 msg_t maximum size moved");
+MSG_STATIC_ASSERT(offsetof(msg_t, cursize) == 0x0c,
+                  "i386 msg_t current size moved");
+MSG_STATIC_ASSERT(offsetof(msg_t, readcount) == 0x10,
+                  "i386 msg_t read cursor moved");
+MSG_STATIC_ASSERT(offsetof(msg_t, bit) == 0x14,
+                  "i386 msg_t bit cursor moved");
 #endif
 
 #undef MSG_STATIC_ASSERT

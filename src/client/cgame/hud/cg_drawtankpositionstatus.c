@@ -74,11 +74,11 @@
 /* eType value that enables the HUD entity tag (an ET_* entity type; exact enum name
  * unproven — only value 12 is proven by the CMP [entity+0x4],0xc gate). Shared with
  * the tag-family siblings. */
-enum {
-    CG_TAG_ENTITY_ETYPE = 12
-};
+enum { CG_TAG_ENTITY_ETYPE = 12 };
 
-void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter, int32_t hShader, const float *color, int32_t bitIndex)
+void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
+                               int32_t hShader,
+                             const float *color, int32_t bitIndex)
 {
     /* 0x30031f70..0x30031f88: gate on the local predicted player's entityStateFlags. */
     uint32_t flags = cg_predictedPlayerState.entityStateFlags;
@@ -91,8 +91,7 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter, int32
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_DrawTankPositionStatus: invalid view-lock "
+                  "\x15" "CG_DrawTankPositionStatus: invalid view-lock "
                   "entity %i",
                   entityNum);
         return;
@@ -122,7 +121,9 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter, int32
     /* 0x30031feb..0x30032006: set the 2D draw color, then compute the slid X.
      * The slid X (0x3007bce0 = 1.0f, 0x3007c1e0 = 112.0f) is evaluated before the
      * color call in the machine code but is only consumed by the draw below. */
-    float slidX = (float)(((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L + (long double)rect->x);
+    float slidX = (float)(
+        ((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L +
+        (long double)rect->x);
     trap_R_SetColor(color);
 
     /* 0x30032010..0x3003202b: draw the tag quad, sliding in from slidX and rotated by

@@ -14,7 +14,8 @@ enum {
  * symbol R_CanOptimizeStaticModelStage. The Windows selector bytes at
  * 0x00503644 prove the four accepted color generators; the parser's string
  * comparisons at 0x004ff429..0x004ff676 prove their names. */
-qboolean R_CanOptimizeStaticModelStage(const shaderStage_t *stage, const shaderStage_t *firstStage)
+qboolean R_CanOptimizeStaticModelStage(
+    const shaderStage_t *stage, const shaderStage_t *firstStage)
 {
     if (stage->bundle[0].numTexMods != 0)
         return qfalse;
@@ -47,14 +48,16 @@ qboolean R_CanOptimizeStaticModelStage(const shaderStage_t *stage, const shaderS
     if (stage->rgbGen != firstStage->rgbGen)
         return qfalse;
 
-    if (stage->rgbGen == CGEN_CONSTANT && memcmp(stage->constantColor, firstStage->constantColor, 3) != 0) {
+    if (stage->rgbGen == CGEN_CONSTANT &&
+        memcmp(stage->constantColor, firstStage->constantColor, 3) != 0) {
         return qfalse;
     }
 
     if (stage->alphaGen != firstStage->alphaGen)
         return qfalse;
 
-    if (stage->alphaGen == AGEN_CONSTANT && stage->constantColor[3] != firstStage->constantColor[3]) {
+    if (stage->alphaGen == AGEN_CONSTANT &&
+        stage->constantColor[3] != firstStage->constantColor[3]) {
         return qfalse;
     }
 
@@ -71,10 +74,14 @@ void CloneShader(const shader_t *shader)
     int32_t stageIndex;
 
     rendererParsedShader = *shader;
-    memset(rendererParsedShaderStages, 0, sizeof(rendererParsedShaderStages));
+    memset(rendererParsedShaderStages, 0,
+           sizeof(rendererParsedShaderStages));
 
-    for (stageIndex = 0; stageIndex < shader->numUnfoggedPasses; ++stageIndex) {
-        rendererParsedShader.stages[stageIndex] = &rendererParsedShaderStages[stageIndex];
+    for (stageIndex = 0;
+         stageIndex < shader->numUnfoggedPasses;
+         ++stageIndex) {
+        rendererParsedShader.stages[stageIndex] =
+            &rendererParsedShaderStages[stageIndex];
         rendererParsedShaderStages[stageIndex] = *shader->stages[stageIndex];
     }
 }
@@ -102,7 +109,8 @@ shader_t *R_CacheableStaticModelShader(const shader_t *shader)
         return NULL;
     if ((shader->lightingFlags & SHADER_LIGHTING_PER_ENTITY) != 0)
         return NULL;
-    if ((shader->surfaceFlags & SHADER_SURFACE_CACHE_MASK_A) != 0 && (shader->surfaceFlags & SHADER_SURFACE_CACHE_MASK_B) != 0) {
+    if ((shader->surfaceFlags & SHADER_SURFACE_CACHE_MASK_A) != 0 &&
+        (shader->surfaceFlags & SHADER_SURFACE_CACHE_MASK_B) != 0) {
         return NULL;
     }
     if (shader->numUnfoggedPasses == 0)
@@ -111,8 +119,11 @@ shader_t *R_CacheableStaticModelShader(const shader_t *shader)
     if (R_CanOptimizeStaticModelStage(shader->stages[0], NULL) == qfalse)
         return NULL;
 
-    for (stageIndex = 1; stageIndex < shader->numUnfoggedPasses; ++stageIndex) {
-        if (R_CanOptimizeStaticModelStage(shader->stages[stageIndex], shader->stages[0]) == qfalse) {
+    for (stageIndex = 1;
+         stageIndex < shader->numUnfoggedPasses;
+         ++stageIndex) {
+        if (R_CanOptimizeStaticModelStage(
+                shader->stages[stageIndex], shader->stages[0]) == qfalse) {
             return NULL;
         }
     }
@@ -135,10 +146,14 @@ shader_t *R_CacheableStaticModelShader(const shader_t *shader)
     /* The preflight above proves prefix + name + NUL fits this field. */
     memcpy(rendererParsedShader.name, cachedName, sourceNameLength + 2u);
     rendererParsedShader.flags |= SHADER_FLAG_ENTITY_MERGABLE;
-    rendererParsedShader.lightingFlags &= ~SHADER_LIGHTING_ENTITY_MASK;
-    rendererParsedShader.optimizedBackend = (shader_optimized_backend_t)tr.cachedStaticModelSurfaceType;
+    rendererParsedShader.lightingFlags &=
+        ~SHADER_LIGHTING_ENTITY_MASK;
+    rendererParsedShader.optimizedBackend =
+        (shader_optimized_backend_t)tr.cachedStaticModelSurfaceType;
 
-    for (stageIndex = 0; stageIndex < rendererParsedShader.numUnfoggedPasses; ++stageIndex) {
+    for (stageIndex = 0;
+         stageIndex < rendererParsedShader.numUnfoggedPasses;
+         ++stageIndex) {
         shaderStage_t *stage = rendererParsedShader.stages[stageIndex];
 
         stage->flags &= ~SHADER_LIGHTING_ENTITY_MASK;

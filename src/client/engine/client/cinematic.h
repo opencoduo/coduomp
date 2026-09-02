@@ -29,7 +29,8 @@ typedef enum cinematic_wall_state_e {
     CIN_WALL_VIDEO_ENABLED = 1
 } cinematic_wall_state_t;
 
-typedef void (*roq_vq_blitter_t)(uint32_t *const *quadDestinations, const uint8_t *encodedData);
+typedef void (*roq_vq_blitter_t)(uint32_t *const *quadDestinations,
+                                 const uint8_t *encodedData);
 
 /* CoDUOMP.exe and the PowerPC Mac client independently use 16 records at an
  * original 0x1d0-byte stride. Named producers and consumers prove every field;
@@ -90,8 +91,10 @@ typedef struct cinematic_s {
 extern cinematic_t cinematics[MAX_VIDEO_HANDLES];
 
 int32_t CIN_HandleForVideo(void);
-int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width, int32_t height, int32_t flags);
-void CIN_SetExtents(int32_t handle, int32_t x, int32_t y, int32_t width, int32_t height);
+int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y,
+                          int32_t width, int32_t height, int32_t flags);
+void CIN_SetExtents(int32_t handle, int32_t x, int32_t y,
+                    int32_t width, int32_t height);
 void CIN_SetLooping(int32_t handle, qboolean looping);
 void CIN_DrawCinematic(int32_t handle);
 void CIN_UploadCinematic(int32_t handle);
@@ -104,24 +107,39 @@ void SCR_StopCinematic(void);
 void CL_PlayCinematic_f(void);
 
 void RllSetupTable(void);
-int32_t RllDecodeMonoToMono(const uint8_t *input, int16_t *output, uint32_t sampleCount, qboolean signedOutput, uint16_t initialSample);
-int32_t RllDecodeMonoToStereo(const uint8_t *input, int16_t *output, uint32_t sampleCount, qboolean signedOutput, uint16_t initialSample);
-int32_t RllDecodeStereoToStereo(const uint8_t *input, int16_t *output, uint32_t encodedByteCount, qboolean signedOutput,
+int32_t RllDecodeMonoToMono(const uint8_t *input, int16_t *output,
+                            uint32_t sampleCount, qboolean signedOutput,
+                            uint16_t initialSample);
+int32_t RllDecodeMonoToStereo(const uint8_t *input, int16_t *output,
+                              uint32_t sampleCount, qboolean signedOutput,
+                              uint16_t initialSample);
+int32_t RllDecodeStereoToStereo(const uint8_t *input, int16_t *output,
+                                uint32_t encodedByteCount,
+                                qboolean signedOutput,
                                 uint16_t initialSamples);
-int32_t RllDecodeStereoToMono(const uint8_t *input, int16_t *output, uint32_t sampleFrameCount, qboolean signedOutput,
+int32_t RllDecodeStereoToMono(const uint8_t *input, int16_t *output,
+                              uint32_t sampleFrameCount,
+                              qboolean signedOutput,
                               uint16_t initialSamples);
 
-void blit2_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes);
-void blit4_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes);
-void blit8_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes);
-void move4_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes);
-void move8_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes);
+void blit2_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes);
+void blit4_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes);
+void blit8_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes);
+void move4_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes);
+void move8_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes);
 
 void ROQ_GenYUVTables(void);
 uint16_t yuv_to_rgb(int32_t y, int32_t u, int32_t v);
 uint32_t yuv_to_rgba32(int32_t y, int32_t u, int32_t v);
-void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedData);
-void recurseQuad(int32_t startX, int32_t startY, int32_t quadSize, int32_t xOffset, int32_t yOffset);
+void blitVQQuad32fs(uint32_t *const *quadDestinations,
+                    const uint8_t *encodedData);
+void recurseQuad(int32_t startX, int32_t startY, int32_t quadSize,
+                 int32_t xOffset, int32_t yOffset);
 void setupQuad(int32_t xOffset, int32_t yOffset);
 void readQuadInfo(const uint8_t *data);
 void RoQPrepMcomp(int32_t xOffset, int32_t yOffset);
@@ -133,13 +151,20 @@ void RoQInterrupt(void);
 void decodeCodeBook(const uint8_t *data, uint16_t chunkArgument);
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(cinematic_t) == 464, "i386 cinematic record size changed");
-_Static_assert(offsetof(cinematic_t, samplesPerLine) == 0x164, "i386 cinematic sample-stride offset changed");
-_Static_assert(offsetof(cinematic_t, targetFrame) == 0x14c, "i386 cinematic target-frame offset changed");
-_Static_assert(offsetof(cinematic_t, lumaTable) == 0x184, "i386 cinematic luma-table offset changed");
-_Static_assert(offsetof(cinematic_t, playOnWalls) == 0x1c0, "i386 cinematic play-on-walls offset changed");
-_Static_assert(offsetof(cinematic_t, roqWidth) == 0x188, "i386 cinematic RoQ-width offset changed");
-_Static_assert(offsetof(cinematic_t, displayHeight) == 0x1cc, "i386 cinematic display-height offset changed");
+_Static_assert(sizeof(cinematic_t) == 464,
+               "i386 cinematic record size changed");
+_Static_assert(offsetof(cinematic_t, samplesPerLine) == 0x164,
+               "i386 cinematic sample-stride offset changed");
+_Static_assert(offsetof(cinematic_t, targetFrame) == 0x14c,
+               "i386 cinematic target-frame offset changed");
+_Static_assert(offsetof(cinematic_t, lumaTable) == 0x184,
+               "i386 cinematic luma-table offset changed");
+_Static_assert(offsetof(cinematic_t, playOnWalls) == 0x1c0,
+               "i386 cinematic play-on-walls offset changed");
+_Static_assert(offsetof(cinematic_t, roqWidth) == 0x188,
+               "i386 cinematic RoQ-width offset changed");
+_Static_assert(offsetof(cinematic_t, displayHeight) == 0x1cc,
+               "i386 cinematic display-height offset changed");
 #endif
 
 #endif

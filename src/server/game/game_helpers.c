@@ -49,15 +49,19 @@ typedef struct activate_candidate_s {
 } activate_candidate_t;
 
 #if UINTPTR_MAX == 0xffffffffu
-GAME_STATIC_ASSERT(activate_candidate_size, sizeof(activate_candidate_t) == 0x8);
-GAME_STATIC_ASSERT(activate_candidate_score_offset, offsetof(activate_candidate_t, score) == 0x4);
+GAME_STATIC_ASSERT(activate_candidate_size,
+                   sizeof(activate_candidate_t) == 0x8);
+GAME_STATIC_ASSERT(activate_candidate_score_offset,
+                   offsetof(activate_candidate_t, score) == 0x4);
 #endif
 
 void *trap_Hunk_AllocAlignInternal(size_t size, int alignment);
 qboolean G_IsVehicleUsable(gentity_t *vehicle, gentity_t *player);
 qboolean G_IsTurretUsable(gentity_t *turret, gentity_t *player);
-void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator);
-int G_CheckPointInsideTriggerMount(gentity_t *ent, const float *point, int *mountHintData);
+void Use_BinaryMover(gentity_t *ent, gentity_t *other,
+                            gentity_t *activator);
+int G_CheckPointInsideTriggerMount(gentity_t *ent, const float *point,
+                                          int *mountHintData);
 
 /* NOT_FROM_ORIGINAL_SOURCE: local vector copy helper for activation recovery. */
 static void game_compat_g_vector_copy3(const float *src, float *dst)
@@ -82,9 +86,10 @@ static void game_compat_g_vector_subtract3(const float *lhs, const float *rhs, f
 static float game_compat_g_dot_product3(const float *lhs, const float *rhs)
 {
 #if EMULATE_X87
-    return x87f_store_f32(
-        x87f_add(x87f_add(x87f_mul(x87f_load_f32(lhs[0]), x87f_load_f32(rhs[0])), x87f_mul(x87f_load_f32(lhs[1]), x87f_load_f32(rhs[1]))),
-                 x87f_mul(x87f_load_f32(lhs[2]), x87f_load_f32(rhs[2]))));
+    return x87f_store_f32(x87f_add(x87f_add(
+        x87f_mul(x87f_load_f32(lhs[0]), x87f_load_f32(rhs[0])),
+        x87f_mul(x87f_load_f32(lhs[1]), x87f_load_f32(rhs[1]))),
+        x87f_mul(x87f_load_f32(lhs[2]), x87f_load_f32(rhs[2]))));
 #else
     return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
 #endif
@@ -246,9 +251,11 @@ int Game_RoundFloatPlusHalf(float value)
     /* 0x56a8f-0x56aac: the +0.5f sum is truncated straight from the x87
      * register (fistp direct), with no float32 rounding of the sum -> shim. */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
+    return x87f_store_i32_trunc(
+        x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
 #else
-    return game_compat_int32_from_long_double_trunc((long double)value + (long double)0.5f);
+    return game_compat_int32_from_long_double_trunc(
+        (long double)value + (long double)0.5f);
 #endif
 }
 
@@ -261,9 +268,11 @@ int G_CompareActivateEntScores(const void *lhs, const void *rhs)
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_sub(x87f_load_f32(a->score), x87f_load_f32(b->score)));
+    return x87f_store_i32_trunc(
+        x87f_sub(x87f_load_f32(a->score), x87f_load_f32(b->score)));
 #else
-    return game_compat_int32_from_long_double_trunc((long double)a->score - (long double)b->score);
+    return game_compat_int32_from_long_double_trunc(
+        (long double)a->score - (long double)b->score);
 #endif
 }
 
@@ -296,7 +305,9 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
     searchMaxs[1] = muzzle[1] + ACTIVATE_SEARCH_XY;
     searchMaxs[2] = muzzle[2] + ACTIVATE_SEARCH_Z;
 
-    entityCount = trap_EntitiesInBox(searchMins, searchMaxs, entityNums, ACTIVATE_MAX_CANDIDATES, ACTIVATE_ENTITY_CONTENTS);
+    entityCount = trap_EntitiesInBox(searchMins, searchMaxs, entityNums,
+                                     ACTIVATE_MAX_CANDIDATES,
+                                     ACTIVATE_ENTITY_CONTENTS);
     for (index = 0; index < entityCount; index++) {
         gentity_t *candidate = &g_entities[entityNums[index]];
         vec3_t center;
@@ -305,7 +316,9 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
         float dot;
         float baseScore;
 
-        if (candidate == ent || (candidate->s.eType != ET_ITEM && (candidate->scriptContents & ACTIVATE_ENTITY_CONTENTS) == 0)) {
+        if (candidate == ent ||
+            (candidate->s.eType != ET_ITEM &&
+             (candidate->scriptContents & ACTIVATE_ENTITY_CONTENTS) == 0)) {
             continue;
         }
 
@@ -317,15 +330,18 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
              * one store -> shim (mul+add). */
 #if EMULATE_X87
             for (int k = 0; k < 3; k++) {
-                center[k] = x87f_store_f32(
-                    x87f_add(x87f_mul(x87f_load_f32(forward[k]), x87f_load_f32(ACTIVATE_MAX_DISTANCE)), x87f_load_f32(muzzle[k])));
+                center[k] = x87f_store_f32(x87f_add(
+                    x87f_mul(x87f_load_f32(forward[k]),
+                             x87f_load_f32(ACTIVATE_MAX_DISTANCE)),
+                    x87f_load_f32(muzzle[k])));
             }
 #else
             center[0] = muzzle[0] + forward[0] * ACTIVATE_MAX_DISTANCE;
             center[1] = muzzle[1] + forward[1] * ACTIVATE_MAX_DISTANCE;
             center[2] = muzzle[2] + forward[2] * ACTIVATE_MAX_DISTANCE;
 #endif
-            trap_Trace(&trace, muzzle, vec3_origin, vec3_origin, center, client->ps.psClientNum, ACTIVATE_VEHICLE_TRACE_MASK);
+            trap_Trace(&trace, muzzle, vec3_origin, vec3_origin, center,
+                       client->ps.psClientNum, ACTIVATE_VEHICLE_TRACE_MASK);
             if (trace.entityNum != candidate->s.number) {
                 continue;
             }
@@ -336,22 +352,28 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
 
         distance = VectorNormalize(direction);
         dot = game_compat_g_dot_product3(direction, forward);
-        if (distance > ACTIVATE_MAX_DISTANCE || dot <= 0.0f || dot < ACTIVATE_MIN_DOT) {
+        if (distance > ACTIVATE_MAX_DISTANCE || dot <= 0.0f ||
+            dot < ACTIVATE_MIN_DOT) {
             continue;
         }
 
         /* Stock 0x5727e..0x572a0: 1.0 - (dot-MIN)/(1.0-MIN), the divide kept
          * 80-bit through the outer subtract, one store -> shim. */
 #if EMULATE_X87
-        baseScore = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_div(x87f_sub(x87f_load_f32(dot), x87f_load_f32(ACTIVATE_MIN_DOT)),
-                                                                          x87f_sub(x87f_load_f32(1.0f), x87f_load_f32(ACTIVATE_MIN_DOT)))));
+        baseScore = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_div(
+                x87f_sub(x87f_load_f32(dot), x87f_load_f32(ACTIVATE_MIN_DOT)),
+                x87f_sub(x87f_load_f32(1.0f), x87f_load_f32(ACTIVATE_MIN_DOT)))));
 #else
-        baseScore = 1.0f - (dot - ACTIVATE_MIN_DOT) / (1.0f - ACTIVATE_MIN_DOT);
+        baseScore = 1.0f - (dot - ACTIVATE_MIN_DOT) /
+                    (1.0f - ACTIVATE_MIN_DOT);
 #endif
         /* 0x572a0/0x572c2: the falloff factor is stored to a float32 slot
          * before the distance-scale multiply, which rounds again. */
         baseScore *= ACTIVATE_MAX_DISTANCE + ACTIVATE_MAX_DISTANCE;
-        if (candidate->s.eType == ET_ITEM && BG_CanItemBeGrabbed(&candidate->s, &client->ps, 0) == 0) {
+        if (candidate->s.eType == ET_ITEM &&
+            BG_CanItemBeGrabbed(&candidate->s, &client->ps, 0) == 0) {
             baseScore += ACTIVATE_UNUSABLE_ITEM_PENALTY;
             unusableItemCount++;
         }
@@ -361,7 +383,8 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
         candidateCount++;
     }
 
-    coduo_qsort(candidates, (size_t)candidateCount, sizeof(candidates[0]), G_CompareActivateEntScores);
+    coduo_qsort(candidates, (size_t)candidateCount, sizeof(candidates[0]),
+                G_CompareActivateEntScores);
     candidateCount -= unusableItemCount;
 
     for (index = 0; index < candidateCount; index++) {
@@ -377,12 +400,14 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
         if (candidate->s.eType == ET_TURRET) {
             DObjSkelMat tagMatrix;
 
-            if (G_DObjGetWorldTagMatrix(candidate, "tag_aim", &tagMatrix) != 0) {
+            if (G_DObjGetWorldTagMatrix(candidate, "tag_aim",
+                                        &tagMatrix) != 0) {
                 game_compat_g_vector_copy3(tagMatrix.origin, center);
             }
         }
 
-        trap_Trace(&trace, muzzle, vec3_origin, vec3_origin, center, client->ps.psClientNum, ACTIVATE_VIS_TRACE_MASK);
+        trap_Trace(&trace, muzzle, vec3_origin, vec3_origin, center,
+                   client->ps.psClientNum, ACTIVATE_VIS_TRACE_MASK);
         if (trace.entityNum != ENTITYNUM_WORLD) {
             break;
         }
@@ -391,7 +416,8 @@ int G_GetActivateEnt(gentity_t *ent, activate_candidate_t *candidates)
         occludedCount++;
     }
 
-    coduo_qsort(candidates, (size_t)candidateCount, sizeof(candidates[0]), G_CompareActivateEntScores);
+    coduo_qsort(candidates, (size_t)candidateCount, sizeof(candidates[0]),
+                G_CompareActivateEntScores);
     return candidateCount - occludedCount;
 }
 
@@ -404,13 +430,17 @@ void G_Activate(gentity_t *ent, gentity_t *activator)
 {
     gentity_t *target;
 
-    if (ent->s.apos.trType != TR_STATIONARY || ent->s.pos.trType != TR_STATIONARY || (*game_compat_g_binary_mover_in_use_byte(ent)) != 0 ||
+    if (ent->s.apos.trType != TR_STATIONARY ||
+        ent->s.pos.trType != TR_STATIONARY ||
+        (*game_compat_g_binary_mover_in_use_byte(ent)) != 0 ||
         ent->doorLocked != 0) {
         return;
     }
 
     target = ent;
-    if (ent->teamMaster != NULL && (uint16_t)ent->teamName != 0 && ent != ent->teamMaster) {
+    if (ent->teamMaster != NULL &&
+        (uint16_t)ent->teamName != 0 &&
+        ent != ent->teamMaster) {
         target = ent->teamMaster;
     }
 
@@ -439,14 +469,16 @@ void G_CheckForCursorHints(gentity_t *ent)
     client->ps.serverCursorHintVal = 0;
     client->ps.cursorHintEntNum = ENTITYNUM_NONE;
 
-    if (ent->health <= 0 || (*game_compat_g_binary_mover_in_use_byte(ent)) != 0) {
+    if (ent->health <= 0 ||
+        (*game_compat_g_binary_mover_in_use_byte(ent)) != 0) {
         return;
     }
 
     client->ps.serverCursorHintString = -1;
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(client->ps.currentWeapon);
     weaponClass = weaponInfo->weaponClass;
-    if (((client->ps.playerStateFlags & CURSOR_STANCE_FLAG) != 0 && weaponClass == WEAPCLASS_LMG) ||
+    if (((client->ps.playerStateFlags & CURSOR_STANCE_FLAG) != 0 &&
+         weaponClass == WEAPCLASS_LMG) ||
         (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
         return;
     }
@@ -464,8 +496,9 @@ void G_CheckForCursorHints(gentity_t *ent)
          * one store -> shim (mul+add). */
 #if EMULATE_X87
         for (int k = 0; k < 3; k++) {
-            mountPoint[k] =
-                x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(forward[k]), x87f_load_f32(15.0f)), x87f_load_f32(ent->currentOrigin[k])));
+            mountPoint[k] = x87f_store_f32(x87f_add(
+                x87f_mul(x87f_load_f32(forward[k]), x87f_load_f32(15.0f)),
+                x87f_load_f32(ent->currentOrigin[k])));
         }
 #else
         mountPoint[0] = ent->currentOrigin[0] + forward[0] * 15.0f;
@@ -476,8 +509,10 @@ void G_CheckForCursorHints(gentity_t *ent)
          * the already-rounded mountPoint[2] (single add -> native). */
         mountPoint[2] += 1.0f;
 
-        contents = trap_PointContents(mountPoint, PASS_ENTITY_NONE, CURSOR_MOUNT_CONTENTS);
-        if (contents != 0 || G_CheckPointInsideTriggerMount(ent, mountPoint, &mountHintData) != 0) {
+        contents = trap_PointContents(mountPoint, PASS_ENTITY_NONE,
+                                      CURSOR_MOUNT_CONTENTS);
+        if (contents != 0 ||
+            G_CheckPointInsideTriggerMount(ent, mountPoint, &mountHintData) != 0) {
             hint = CURSOR_HINT_LMG;
             hintData = mountHintData;
             if (game_compat_g_weapon_info_has_hint_string(weaponInfo)) {
@@ -500,7 +535,8 @@ void G_CheckForCursorHints(gentity_t *ent)
 
         if (candidate->s.number == ENTITYNUM_WORLD) {
             if ((client->ps.cursorHintFlags & CURSOR_FLAG_WORLD_HINT) != 0 &&
-                (client->ps.playerStateFlags & CURSOR_PLAYERSTATE_WORLD_HINT_BLOCKED) == 0) {
+                (client->ps.playerStateFlags &
+                 CURSOR_PLAYERSTATE_WORLD_HINT_BLOCKED) == 0) {
                 hint = CURSOR_HINT_LADDER;
             }
             break;
@@ -513,13 +549,16 @@ void G_CheckForCursorHints(gentity_t *ent)
         if (candidate->s.eType == ET_GENERAL) {
             if (candidate->scriptClassname == scr_const_trigger_use) {
                 hint = candidate->s.cursorHint;
-                if (candidate->s.cursorHint != 0 && candidate->s.hintStringIndex != CURSOR_HINT_STRING_INHERIT) {
+                if (candidate->s.cursorHint != 0 &&
+                    candidate->s.hintStringIndex != CURSOR_HINT_STRING_INHERIT) {
                     hintString = candidate->s.hintStringIndex;
                 }
             }
         } else if (candidate->s.eType == ET_TURRET) {
             if (G_IsTurretUsable(candidate, ent) != 0) {
-                const weaponInfo_t *turretWeaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(candidate->s.weapon);
+                const weaponInfo_t *turretWeaponInfo =
+                    (const weaponInfo_t *)BG_GetInfoForWeapon(
+                        candidate->s.weapon);
 
                 hint = CURSOR_HINT_MG42;
                 if (game_compat_g_weapon_info_has_hint_string(turretWeaponInfo)) {
@@ -530,7 +569,8 @@ void G_CheckForCursorHints(gentity_t *ent)
             }
         } else if (candidate->s.eType == ET_VEHICLE) {
             if (G_IsVehicleUsable(candidate, ent) != 0) {
-                const vehicle_state_t *vehicle = (const vehicle_state_t *)candidate->vehicle;
+                const vehicle_state_t *vehicle =
+                    (const vehicle_state_t *)candidate->vehicle;
 
                 hint = CURSOR_HINT_ACTIVATE;
                 hintString = vehicle->hintStringIndex;
@@ -555,18 +595,22 @@ void G_CheckForCursorHints(gentity_t *ent)
             }
         } else if (candidate->s.eType == ET_MOVER) {
             uint16_t classname = candidate->scriptClassname;
-            uint8_t moverState = candidate->moverState;
-            uint8_t moverFlags = (uint8_t)candidate->flags;
+            uint8_t moverState =
+                candidate->moverState;
+            uint8_t moverFlags =
+                (uint8_t)candidate->flags;
 
             if (classname == scr_const_func_door_rotating) {
-                if (moverState == 7 || (moverState == 8 && (moverFlags & 0x80u) != 0)) {
+                if (moverState == 7 ||
+                    (moverState == 8 && (moverFlags & 0x80u) != 0)) {
                     hint = CURSOR_HINT_DOOR;
                     if (candidate->doorLocked != 0) {
                         hint = CURSOR_HINT_DOOR_LOCKED;
                     }
                 }
             } else if (classname == scr_const_func_door) {
-                if (moverState == 0 || (moverState == 1 && (moverFlags & 0x80u) != 0)) {
+                if (moverState == 0 ||
+                    (moverState == 1 && (moverFlags & 0x80u) != 0)) {
                     hint = CURSOR_HINT_DOOR;
                     if (candidate->doorLocked != 0) {
                         hint = CURSOR_HINT_DOOR_LOCKED;
@@ -575,7 +619,8 @@ void G_CheckForCursorHints(gentity_t *ent)
             }
         }
 
-        if (candidate->s.cursorHint > CURSOR_HINT_OFF && hint != CURSOR_HINT_OFF) {
+        if (candidate->s.cursorHint > CURSOR_HINT_OFF &&
+            hint != CURSOR_HINT_OFF) {
             hint = candidate->s.cursorHint;
         }
         break;
@@ -625,8 +670,9 @@ void G_CheckForPreventFriendlyFire(gentity_t *ent)
      * one store -> shim (mul+add). */
 #if EMULATE_X87
     for (int k = 0; k < 3; k++) {
-        end[k] =
-            x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(muzzle.forward[k]), x87f_load_f32(8192.0f)), x87f_load_f32(muzzle.origin[k])));
+        end[k] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(muzzle.forward[k]), x87f_load_f32(8192.0f)),
+            x87f_load_f32(muzzle.origin[k])));
     }
 #else
     end[0] = muzzle.origin[0] + muzzle.forward[0] * 8192.0f;
@@ -634,12 +680,14 @@ void G_CheckForPreventFriendlyFire(gentity_t *ent)
     end[2] = muzzle.origin[2] + muzzle.forward[2] * 8192.0f;
 #endif
 
-    trap_LocationalTrace(&trace, muzzle.origin, end, ent->s.number, PREVENT_FRIENDLY_FIRE_MASK, priorityMap);
+    trap_LocationalTrace(&trace, muzzle.origin, end, ent->s.number,
+                         PREVENT_FRIENDLY_FIRE_MASK, priorityMap);
     if (trace.entityNum >= ENTITYNUM_WORLD) {
         return;
     }
 
-    trap_LocationalTrace(&trace, muzzle.origin, end, ent->s.number, PREVENT_FRIENDLY_FIRE_CONFIRM_MASK, priorityMap);
+    trap_LocationalTrace(&trace, muzzle.origin, end, ent->s.number,
+                         PREVENT_FRIENDLY_FIRE_CONFIRM_MASK, priorityMap);
     if (trace.entityNum < ENTITYNUM_WORLD) {
         gentity_t *hitEnt = &g_entities[trace.entityNum];
 
@@ -660,9 +708,12 @@ void G_PlayerEvent(int entityNum, int event)
     vec3_t viewKick;
     gentity_t *ent;
 
-    if ((event >= PLAYER_RECOIL_VIEWKICK_EVENT_MIN && event <= PLAYER_RECOIL_VIEWKICK_EVENT_MAX) || event == EV_FIRE_WEAPON_MG42) {
+    if ((event >= PLAYER_RECOIL_VIEWKICK_EVENT_MIN &&
+         event <= PLAYER_RECOIL_VIEWKICK_EVENT_MAX) ||
+        event == EV_FIRE_WEAPON_MG42) {
         ent = &g_entities[entityNum];
-        BG_WeaponFireRecoil(&ent->client->ps, ent->client->fireRecoilVelocity, viewKick);
+        BG_WeaponFireRecoil(&ent->client->ps,
+                            ent->client->fireRecoilVelocity, viewKick);
     }
 }
 
@@ -691,12 +742,14 @@ void G_AddEvent(gentity_t *ent, int event, int eventParm)
         slot = ent->s.eventCount & EVENT_RING_MASK;
         ent->s.events[slot] = event;
         ent->s.eventParms[slot] = eventParm;
-        ent->s.eventCount = coduo_int32_from_bits((uint32_t)ent->s.eventCount + UINT32_C(1));
+        ent->s.eventCount = coduo_int32_from_bits(
+            (uint32_t)ent->s.eventCount + UINT32_C(1));
     } else {
         slot = ent->client->ps.eventIndex & EVENT_RING_MASK;
         ent->client->ps.events[slot] = event;
         ent->client->ps.eventParms[slot] = eventParm;
-        ent->client->ps.eventIndex = coduo_int32_from_bits((uint32_t)ent->client->ps.eventIndex + UINT32_C(1));
+        ent->client->ps.eventIndex = coduo_int32_from_bits(
+            (uint32_t)ent->client->ps.eventIndex + UINT32_C(1));
     }
 
     game_compat_g_set_entity_event_times(ent);
@@ -768,21 +821,36 @@ int G_LocalizedStringIndex(const char *value)
         return 0;
     }
 
-    return G_FindConfigstringIndex(value, CS_LOCALIZED_STRINGS, CS_LOCALIZED_STRINGS_COUNT, level.spawning != 0, "localized string");
+    return G_FindConfigstringIndex(
+        value,
+        CS_LOCALIZED_STRINGS,
+        CS_LOCALIZED_STRINGS_COUNT,
+        level.spawning != 0,
+        "localized string");
 }
 
 /* 0x77aed G_ShaderIndex */
 /* VERIFIED_DECOMPILER(0x77aed, 87aed_G_ShaderIndex.c, VERIFY-GAMEHELPERS-EVENTS-2026-06-17): DATAFLOW_VERIFIED; shader configstring lookup; Ghidra's void inference drops the propagated return value. */
 int G_ShaderIndex(const char *name)
 {
-    return G_FindConfigstringIndex(name, CS_SHADERS, CS_SHADERS_COUNT, level.spawning != 0, "shader");
+    return G_FindConfigstringIndex(
+        name,
+        CS_SHADERS,
+        CS_SHADERS_COUNT,
+        level.spawning != 0,
+        "shader");
 }
 
 /* 0x77c72 G_TagIndex */
 /* VERIFIED_DECOMPILER(0x77c72, 87c72_G_TagIndex.c, VERIFY-GAMEHELPERS-EVENTS-2026-06-17): DATAFLOW_VERIFIED; tag configstring lookup with forced create; Ghidra's void inference drops the propagated return value. */
 int G_TagIndex(const char *tagName)
 {
-    return G_FindConfigstringIndex(tagName, CS_TAGS, CS_TAGS_COUNT, qtrue, NULL);
+    return G_FindConfigstringIndex(
+        tagName,
+        CS_TAGS,
+        CS_TAGS_COUNT,
+        qtrue,
+        NULL);
 }
 
 /* 0x77cb5 G_EffectIndex */
@@ -791,18 +859,29 @@ int G_EffectIndex(const char *name)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: require an effect key that fits the client
      * scheduler field before its configstring is published. */
-    if (name != NULL && strcspn(name, ".") >= FX_EFFECT_TEMPLATE_NAME_CAPACITY) {
+    if (name != NULL &&
+        strcspn(name, ".") >= FX_EFFECT_TEMPLATE_NAME_CAPACITY) {
         G_Error("G_EffectIndex: effect name is too long");
     }
 
-    return G_FindConfigstringIndex(name, CS_EFFECTS, CS_EFFECTS_COUNT, level.spawning != 0, "effect");
+    return G_FindConfigstringIndex(
+        name,
+        CS_EFFECTS,
+        CS_EFFECTS_COUNT,
+        level.spawning != 0,
+        "effect");
 }
 
 /* 0x77cff G_ShellShockIndex */
 /* VERIFIED_DECOMPILER(0x77cff, 87cff_G_ShellShockIndex.c, VERIFY-GAMEHELPERS-EVENTS-2026-06-17): DATAFLOW_VERIFIED; shellshock configstring lookup with forced create; Ghidra's void inference drops the propagated return value. */
 int G_ShellShockIndex(const char *name)
 {
-    return G_FindConfigstringIndex(name, CS_SHELLSHOCKS, CS_SHELLSHOCKS_COUNT, qtrue, NULL);
+    return G_FindConfigstringIndex(
+        name,
+        CS_SHELLSHOCKS,
+        CS_SHELLSHOCKS_COUNT,
+        qtrue,
+        NULL);
 }
 
 /*  0x7a391 G_SetConstString                                          */
@@ -830,13 +909,15 @@ void G_BackupSpawnVars(gentity_t *ent)
     ent->savedSpawnTextLength = lvl->spawnTextLength;
     memcpy(ent->savedSpawnText, spawnText, (size_t)lvl->spawnTextLength);
 
-    ent->savedSpawnVarPairs = trap_Hunk_AllocAlignInternal((size_t)lvl->spawnVarCount * 2u * sizeof(char *), 1);
+    ent->savedSpawnVarPairs =
+        trap_Hunk_AllocAlignInternal((size_t)lvl->spawnVarCount * 2u * sizeof(char *), 1);
     ent->savedSpawnVarCount = lvl->spawnVarCount;
 
     for (int pairIndex = 0; pairIndex < lvl->spawnVarCount; pairIndex++) {
         for (int slot = 0; slot < 2; slot++) {
             int index = pairIndex * 2 + slot;
-            ent->savedSpawnVarPairs[index] = &ent->savedSpawnText[spawnVarPairs[index] - spawnText];
+            ent->savedSpawnVarPairs[index] =
+                &ent->savedSpawnText[spawnVarPairs[index] - spawnText];
         }
     }
 }

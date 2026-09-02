@@ -3,7 +3,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void *GetWeaponInfoMemory(int32_t bytes, int32_t *priorState, int32_t callerState)
+void *GetWeaponInfoMemory(int32_t bytes,
+                          int32_t *priorState,
+                          int32_t callerState)
 {
     if (bytes <= 0) {
         return NULL;
@@ -23,7 +25,8 @@ void *GetWeaponInfoMemory(int32_t bytes, int32_t *priorState, int32_t callerStat
     return weaponInfo_memory;
 }
 
-void FreeWeaponInfoMemory(int32_t callerState, qboolean keepMemory)
+void FreeWeaponInfoMemory(int32_t callerState,
+                          qboolean keepMemory)
 {
     if (callerState == weaponInfo_memoryState) {
         if (keepMemory == qfalse) {

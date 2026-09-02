@@ -22,7 +22,8 @@ void CL_DObjCalcAnim(DObj *obj, const uint32_t *partBits)
  * addition preserves the original wrapping INC before zero is skipped. */
 void CL_DObjInvalidateSkels(void)
 {
-    dobj_skelCacheKey = (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
+    dobj_skelCacheKey =
+        (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
     if (dobj_skelCacheKey == 0)
         dobj_skelCacheKey = 1;
 
@@ -39,11 +40,14 @@ qboolean CL_DObjCreateSkelForBone(DObj *obj, int32_t boneIndex)
         return qfalse;
     }
 
-    if (DObjRefreshEvalStorageKey(obj, dobj_skelCacheKey) != qfalse) {
+    if (DObjRefreshEvalStorageKey(
+            obj, dobj_skelCacheKey) != qfalse) {
         return DObjSkelIsBoneUpToDate(obj, boneIndex);
     }
 
-    dobj_eval_storage_t *const storage = Hunk_AllocateTempMemoryInternal((size_t)DObjGetAllocSkelSize(obj));
+    dobj_eval_storage_t *const storage =
+        Hunk_AllocateTempMemoryInternal(
+            (size_t)DObjGetAllocSkelSize(obj));
     DObjCreateSkel(obj, storage);
     return qfalse;
 }
@@ -51,17 +55,21 @@ qboolean CL_DObjCreateSkelForBone(DObj *obj, int32_t boneIndex)
 /* Source: CoDUOMP.exe 0x00401d30..0x00401d9e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00401d30_00401d9f.mcode.
  * Name: exact same-module Mac symbol CL_DObjCreateSkelForBones. */
-qboolean CL_DObjCreateSkelForBones(DObj *obj, const uint32_t *partBits)
+qboolean CL_DObjCreateSkelForBones(
+    DObj *obj, const uint32_t *partBits)
 {
     if (obj == NULL || partBits == NULL) {
         return qfalse;
     }
 
-    if (DObjRefreshEvalStorageKey(obj, dobj_skelCacheKey) != qfalse) {
+    if (DObjRefreshEvalStorageKey(
+            obj, dobj_skelCacheKey) != qfalse) {
         return DObjSkelAreBonesUpToDate(obj, partBits);
     }
 
-    dobj_eval_storage_t *const storage = Hunk_AllocateTempMemoryInternal((size_t)DObjGetAllocSkelSize(obj));
+    dobj_eval_storage_t *const storage =
+        Hunk_AllocateTempMemoryInternal(
+            (size_t)DObjGetAllocSkelSize(obj));
     DObjCreateSkel(obj, storage);
     return qfalse;
 }

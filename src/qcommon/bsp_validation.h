@@ -16,7 +16,8 @@ enum {
  * offset/length does not form a range inside the loaded file. Empty lumps do
  * not consume file bytes, and shipped/community maps can leave their unused
  * offsets outside the file. */
-static inline int32_t coduo_compat_bsp_invalid_lump_index(const void *fileData, int32_t fileLength)
+static inline int32_t coduo_compat_bsp_invalid_lump_index(
+    const void *fileData, int32_t fileLength)
 {
     if (fileData == NULL || fileLength < (int32_t)sizeof(dheader_t)) {
         return CODUO_BSP_VALIDATION_SHORT_HEADER;
@@ -33,7 +34,9 @@ static inline int32_t coduo_compat_bsp_invalid_lump_index(const void *fileData, 
             continue;
         }
 
-        if (fileOffset < 0 || lumpLength < 0 || (uint32_t)fileOffset > fileSize || (uint32_t)lumpLength > fileSize - (uint32_t)fileOffset) {
+        if (fileOffset < 0 || lumpLength < 0 ||
+            (uint32_t)fileOffset > fileSize ||
+            (uint32_t)lumpLength > fileSize - (uint32_t)fileOffset) {
             return lumpIndex;
         }
     }

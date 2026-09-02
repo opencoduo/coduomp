@@ -89,8 +89,10 @@ void CG_DrawVote(void)
                 /* This one status leg calls the syscall pointer directly at
                  * 0x3001b92c; the other four draw sites call the wrapper at
                  * 0x3003de30. Preserve the distinct call target. */
-                cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0, CG_FloatBits(0.20833333f),
-                              (intptr_t)color, (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
+                cgame_syscall(CG_R_TEXT_PAINT,
+                              CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0,
+                              CG_FloatBits(0.20833333f), (intptr_t)color,
+                              (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
             }
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
             return;
@@ -100,8 +102,7 @@ void CG_DrawVote(void)
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)validityClientNum >= MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "CG_DrawVote: invalid complaint client number "
+                      "\x15" "CG_DrawVote: invalid complaint client number "
                       "%i",
                       validityClientNum);
             return;
@@ -113,39 +114,44 @@ void CG_DrawVote(void)
 
         /* 0x3001b960 translates first, then 0x3001b96f reloads the possibly
          * callback-mutated client number and repeats the target-width IMUL. */
-        const char *teamkillFormat = CG_SafeTranslateString_Internal("cgame", "CGAME_COMPLAINTTEAMKILLFILE");
+        const char *teamkillFormat =
+            CG_SafeTranslateString_Internal("cgame", "CGAME_COMPLAINTTEAMKILLFILE");
         int32_t nameClientNum = cg_complaintClientNum;
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)nameClientNum >= MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "CG_DrawVote: invalid complaint client number "
+                      "\x15" "CG_DrawVote: invalid complaint client number "
                       "%i after localization",
                       nameClientNum);
             return;
         }
         clientInfo_t *nameClient = &bgs.clientinfo[nameClientNum];
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        if (client_compat_validate_format_signature(teamkillFormat, "s") == qfalse) {
+        if (client_compat_validate_format_signature(teamkillFormat, "s") ==
+            qfalse) {
             Com_Printf("WARNING: rejected invalid complaint format\n");
             text = teamkillFormat;
         } else {
             text = va(teamkillFormat, nameClient->name);
         }
-        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0, CG_FloatBits(0.20833333f), (intptr_t)color, (intptr_t)text,
-                          0, 0, CG_VOTE_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0,
+                  CG_FloatBits(0.20833333f), (intptr_t)color,
+                  (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
 
         /* 0x3001b9ae/0x3001b9b6: va() receives BOTH yesKey and noKey (PUSH noKey then
          * yesKey); the format has two %s. A prior pass passed only yesKey. */
-        const char *const pressFormat = CG_SafeTranslateString_Internal("cgame", "CGAME_PRESSYESNO");
-        if (client_compat_validate_format_signature(pressFormat, "ss") == qfalse) {
+        const char *const pressFormat =
+            CG_SafeTranslateString_Internal("cgame", "CGAME_PRESSYESNO");
+        if (client_compat_validate_format_signature(pressFormat, "ss") ==
+            qfalse) {
             Com_Printf("WARNING: rejected invalid vote-key format\n");
             text = pressFormat;
         } else {
             text = va(pressFormat, yesKey, noKey);
         }
-        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(210.0f), 0, CG_FloatBits(0.20833333f), (intptr_t)color, (intptr_t)text,
-                          0, 0, CG_VOTE_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(210.0f), 0,
+                  CG_FloatBits(0.20833333f), (intptr_t)color,
+                  (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
         return;
     }
 
@@ -165,8 +171,10 @@ void CG_DrawVote(void)
     }
 
     {
-        int32_t milliseconds = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MILLISECONDS));
-        int32_t delta = coduo_int32_from_bits((uint32_t)cg_voteTime - (uint32_t)milliseconds);
+        int32_t milliseconds = coduo_int32_from_bits(
+            (uint32_t)cgame_syscall(CG_MILLISECONDS));
+        int32_t delta = coduo_int32_from_bits(
+            (uint32_t)cg_voteTime - (uint32_t)milliseconds);
         int32_t seconds = delta / 1000;
         qboolean keysHidden;
         const char *voteLabel;
@@ -183,11 +191,13 @@ void CG_DrawVote(void)
 
         /* The entity-state flag is tested at 0x3001ba6f, before either path's
          * translation/format/draw calls. Do not reload cg_snap after them. */
-        keysHidden = (cg_snap->ps.entityStateFlags & PS_EFLAG_VOTE_KEYS_HIDDEN) != 0;
+        keysHidden = (cg_snap->ps.entityStateFlags &
+                      PS_EFLAG_VOTE_KEYS_HIDDEN) != 0;
         voteLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_VOTE");
         text = va("%s(%i):%s", voteLabel, seconds, cg_voteString);
-        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0, CG_FloatBits(0.20833333f), (intptr_t)color, (intptr_t)text,
-                          0, 0, CG_VOTE_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(200.0f), 0,
+                  CG_FloatBits(0.20833333f), (intptr_t)color,
+                  (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
 
         noLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_NO");
         yesLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_YES");
@@ -200,10 +210,12 @@ void CG_DrawVote(void)
             if (keysHidden) {
                 text = va("%s:%i, %s:%i", yesLabel, voteYes, noLabel, voteNo);
             } else {
-                text = va("%s(%s):%i, %s(%s):%i", yesLabel, yesKey, voteYes, noLabel, noKey, voteNo);
+                text = va("%s(%s):%i, %s(%s):%i", yesLabel, yesKey, voteYes,
+                          noLabel, noKey, voteNo);
             }
         }
-        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(210.0f), 0, CG_FloatBits(0.20833333f), (intptr_t)color, (intptr_t)text,
-                          0, 0, CG_VOTE_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(CG_VOTE_TEXT_X), CG_FloatBits(210.0f), 0,
+                  CG_FloatBits(0.20833333f), (intptr_t)color,
+                  (intptr_t)text, 0, 0, CG_VOTE_TEXT_STYLE);
     }
 }

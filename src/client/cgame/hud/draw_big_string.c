@@ -53,16 +53,13 @@
  */
 
 /* Vertical bias added to the incoming y coordinate: FADD 16.0f then FSUB 2.0f. */
-enum {
-    CG_TRAP54_Y_ADD = 16,
-    CG_TRAP54_Y_SUB = 2
-};
+enum { CG_TRAP54_Y_ADD = 16, CG_TRAP54_Y_SUB = 2 };
 
 /* Fixed trap-54 draw parameters proven from the pushed immediates. */
 #define CG_TRAP54_STYLE 4          /* PUSH 4 (int)                     */
-#define CG_TRAP54_MODE 3          /* trailing PUSH 3 (int)            */
+#define CG_TRAP54_MODE  3          /* trailing PUSH 3 (int)            */
 #define CG_TRAP54_SCALE (1.0f / 3.0f) /* 0x3eaaaaab, one-third scale   */
-#define CG_TRAP54_SIZE 16.0f      /* 0x41800000, forwarded as a dword */
+#define CG_TRAP54_SIZE  16.0f      /* 0x41800000, forwarded as a dword */
 
 void CG_DrawBigString(float x, float y, const char *string, float scale)
 {
@@ -83,6 +80,14 @@ void CG_DrawBigString(float x, float y, const char *string, float scale)
     color[1] = 1.0f;
     color[2] = 1.0f;
 
-    cgame_syscall(CG_R_TEXT_PAINT, xBits, CG_FloatBits(yPos), CG_TRAP54_STYLE, CG_FloatBits(CG_TRAP54_SCALE), (intptr_t)color,
-                  (intptr_t)string, CG_FloatBits(CG_TRAP54_SIZE), 0, CG_TRAP54_MODE);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  xBits,
+                  CG_FloatBits(yPos),
+                  CG_TRAP54_STYLE,
+                  CG_FloatBits(CG_TRAP54_SCALE),
+                  (intptr_t)color,
+                  (intptr_t)string,
+                  CG_FloatBits(CG_TRAP54_SIZE),
+                  0,
+                  CG_TRAP54_MODE);
 }

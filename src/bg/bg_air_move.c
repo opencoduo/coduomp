@@ -46,21 +46,34 @@ void PM_AirMove(void)
 
     vec3_t wishDirection;
 #if EMULATE_X87
-    wishDirection[0] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pml.right[0]), x87f_load_f32(rightMove)),
-                                               x87f_mul(x87f_load_f32(pml.forward[0]), x87f_load_f32(forwardMove))));
-    wishDirection[1] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pml.right[1]), x87f_load_f32(rightMove)),
-                                               x87f_mul(x87f_load_f32(pml.forward[1]), x87f_load_f32(forwardMove))));
+    wishDirection[0] = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(pml.right[0]),
+                 x87f_load_f32(rightMove)),
+        x87f_mul(x87f_load_f32(pml.forward[0]),
+                 x87f_load_f32(forwardMove))));
+    wishDirection[1] = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(pml.right[1]),
+                 x87f_load_f32(rightMove)),
+        x87f_mul(x87f_load_f32(pml.forward[1]),
+                 x87f_load_f32(forwardMove))));
 #else
-    wishDirection[0] = (float)((long double)pml.right[0] * (long double)rightMove + (long double)pml.forward[0] * (long double)forwardMove);
-    wishDirection[1] = (float)((long double)pml.right[1] * (long double)rightMove + (long double)pml.forward[1] * (long double)forwardMove);
+    wishDirection[0] = (float)(
+        (long double)pml.right[0] * (long double)rightMove +
+        (long double)pml.forward[0] * (long double)forwardMove);
+    wishDirection[1] = (float)(
+        (long double)pml.right[1] * (long double)rightMove +
+        (long double)pml.forward[1] * (long double)forwardMove);
 #endif
     wishDirection[2] = 0.0f;
 
     const float normalizedLength = VectorNormalize(wishDirection);
 #if EMULATE_X87
-    const float wishSpeed = x87f_store_f32(x87f_mul(x87f_load_f32(normalizedLength), x87f_load_f32(commandScale)));
+    const float wishSpeed = x87f_store_f32(x87f_mul(
+        x87f_load_f32(normalizedLength),
+        x87f_load_f32(commandScale)));
 #else
-    const float wishSpeed = (float)((long double)normalizedLength * (long double)commandScale);
+    const float wishSpeed = (float)(
+        (long double)normalizedLength * (long double)commandScale);
 #endif
     PM_Accelerate(wishDirection, wishSpeed, pm_airaccelerate);
 
@@ -68,28 +81,47 @@ void PM_AirMove(void)
         playerState_t *const ps = move->ps;
 
 #if EMULATE_X87
-        x87f backoff = x87f_add(x87f_add(x87f_mul(x87f_load_f32(pml.groundTrace.normal[1]), x87f_load_f32(ps->velocity[1])),
-                                         x87f_mul(x87f_load_f32(pml.groundTrace.normal[2]), x87f_load_f32(ps->velocity[2]))),
-                                x87f_mul(x87f_load_f32(pml.groundTrace.normal[0]), x87f_load_f32(ps->velocity[0])));
-        const float overbounce = x87f_lt_signaling(backoff, x87f_load_f32(0.0f)) ? 1.001f : 0.99900097f;
+        x87f backoff = x87f_add(
+            x87f_add(
+                x87f_mul(x87f_load_f32(pml.groundTrace.normal[1]),
+                         x87f_load_f32(ps->velocity[1])),
+                x87f_mul(x87f_load_f32(pml.groundTrace.normal[2]),
+                         x87f_load_f32(ps->velocity[2]))),
+            x87f_mul(x87f_load_f32(pml.groundTrace.normal[0]),
+                     x87f_load_f32(ps->velocity[0])));
+        const float overbounce = x87f_lt_signaling(
+            backoff, x87f_load_f32(0.0f)) ? 1.001f : 0.99900097f;
         backoff = x87f_mul(backoff, x87f_load_f32(overbounce));
 
-        ps->velocity[0] =
-            x87f_store_f32(x87f_sub(x87f_load_f32(ps->velocity[0]), x87f_mul(x87f_load_f32(pml.groundTrace.normal[0]), backoff)));
-        ps->velocity[1] =
-            x87f_store_f32(x87f_sub(x87f_load_f32(ps->velocity[1]), x87f_mul(x87f_load_f32(pml.groundTrace.normal[1]), backoff)));
-        ps->velocity[2] =
-            x87f_store_f32(x87f_sub(x87f_load_f32(ps->velocity[2]), x87f_mul(x87f_load_f32(pml.groundTrace.normal[2]), backoff)));
+        ps->velocity[0] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(ps->velocity[0]),
+            x87f_mul(x87f_load_f32(pml.groundTrace.normal[0]), backoff)));
+        ps->velocity[1] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(ps->velocity[1]),
+            x87f_mul(x87f_load_f32(pml.groundTrace.normal[1]), backoff)));
+        ps->velocity[2] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(ps->velocity[2]),
+            x87f_mul(x87f_load_f32(pml.groundTrace.normal[2]), backoff)));
 #else
-        long double backoff = ((long double)pml.groundTrace.normal[1] * (long double)ps->velocity[1] +
-                               (long double)pml.groundTrace.normal[2] * (long double)ps->velocity[2]) +
-                              (long double)pml.groundTrace.normal[0] * (long double)ps->velocity[0];
+        long double backoff =
+            ((long double)pml.groundTrace.normal[1] *
+                 (long double)ps->velocity[1] +
+             (long double)pml.groundTrace.normal[2] *
+                 (long double)ps->velocity[2]) +
+            (long double)pml.groundTrace.normal[0] *
+                (long double)ps->velocity[0];
         const float overbounce = backoff < 0.0L ? 1.001f : 0.99900097f;
         backoff *= (long double)overbounce;
 
-        ps->velocity[0] = (float)((long double)ps->velocity[0] - (long double)pml.groundTrace.normal[0] * backoff);
-        ps->velocity[1] = (float)((long double)ps->velocity[1] - (long double)pml.groundTrace.normal[1] * backoff);
-        ps->velocity[2] = (float)((long double)ps->velocity[2] - (long double)pml.groundTrace.normal[2] * backoff);
+        ps->velocity[0] = (float)(
+            (long double)ps->velocity[0] -
+            (long double)pml.groundTrace.normal[0] * backoff);
+        ps->velocity[1] = (float)(
+            (long double)ps->velocity[1] -
+            (long double)pml.groundTrace.normal[1] * backoff);
+        ps->velocity[2] = (float)(
+            (long double)ps->velocity[2] -
+            (long double)pml.groundTrace.normal[2] * backoff);
 #endif
     }
 
@@ -116,11 +148,15 @@ void PM_AirMove(void)
 
     for (int32_t lane = 0; lane < 2; ++lane) {
 #if EMULATE_X87
-        wishVelocity[lane] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pml.forward[lane]), x87f_load_f32(forwardMove)),
-                                                     x87f_mul(x87f_load_f32(pml.right[lane]), x87f_load_f32(rightMove))));
+        wishVelocity[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(pml.forward[lane]),
+                     x87f_load_f32(forwardMove)),
+            x87f_mul(x87f_load_f32(pml.right[lane]),
+                     x87f_load_f32(rightMove))));
 #else
-        wishVelocity[lane] =
-            (float)((long double)pml.forward[lane] * (long double)forwardMove + (long double)pml.right[lane] * (long double)rightMove);
+        wishVelocity[lane] = (float)(
+            (long double)pml.forward[lane] * (long double)forwardMove +
+            (long double)pml.right[lane] * (long double)rightMove);
 #endif
     }
     wishVelocity[2] = 0.0f;
@@ -130,15 +166,18 @@ void PM_AirMove(void)
     wishDirection[2] = 0.0f;
     float wishSpeed = VectorNormalize(wishDirection);
 #if EMULATE_X87
-    wishSpeed = x87f_store_f32(x87f_mul(x87f_load_f32(wishSpeed), x87f_load_f32(commandScale)));
+    wishSpeed = x87f_store_f32(x87f_mul(
+        x87f_load_f32(wishSpeed), x87f_load_f32(commandScale)));
 #else
-    wishSpeed = (float)((long double)wishSpeed * (long double)commandScale);
+    wishSpeed = (float)((long double)wishSpeed *
+                        (long double)commandScale);
 #endif
 
     PM_Accelerate(wishDirection, wishSpeed, pm_airaccelerate);
 
     if (pml.groundPlane != 0) {
-        PM_ClipVelocity(pm->ps->velocity, pml.groundTrace.normal, pm->ps->velocity, 1.001f);
+        PM_ClipVelocity(pm->ps->velocity, pml.groundTrace.normal,
+                        pm->ps->velocity, 1.001f);
     }
 
     PM_StepSlideMove(1);

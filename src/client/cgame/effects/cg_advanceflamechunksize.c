@@ -50,7 +50,9 @@ void CG_AdvanceFlameChunkSize(flameChunk_t *f /* EAX */, int32_t flameTime)
         // 30025c90 FST float [ESI+0xe4] stores newRadius ROUNDED to radius but
         // KEEPS the unrounded ST0, which the FCOMP at 30025c96 compares -- so
         // newRadius is long double and only f->radius rounds (the FST).
-        long double newRadius = f->radius + rate * (((long double)flameTime - f->spawnTimeCopy) * f->soundAmpRate);
+        long double newRadius = f->radius
+                  + rate * (((long double)flameTime - f->spawnTimeCopy)
+                            * f->soundAmpRate);
         f->radius = newRadius;                       // FST float [ESI+0xe4]
 
         // 30025c96: TEST AH,0x41 after FCOMP newRadius vs startSpeedBits; JNZ

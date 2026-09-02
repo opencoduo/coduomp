@@ -14,21 +14,26 @@
 void trap_Cvar_VariableStringBuffer(const char *name, char *buffer, int size);
 int trap_Cvar_VariableIntegerValue(const char *name);
 float trap_Cvar_VariableValue(const char *name);
-void trap_Cvar_Register(vmCvar_t *cvar, const char *name, const char *value, int flags);
+void trap_Cvar_Register(vmCvar_t *cvar, const char *name, const char *value,
+                        int flags);
 void trap_Cvar_Set(const char *name, const char *value);
 
 static const char *game_compat_script_cvar_get_value_arg(char messageBuffer[MAX_STRING_CHARS])
 {
     /* NOT_FROM_ORIGINAL_SOURCE: factored from setcvar/makecvarserverinfo bodies. */
     if (Scr_GetType(1) == SCRIPT_VAR_LOCALIZED_STRING) {
-        Scr_ConstructMessageString(1, messageBuffer, MAX_STRING_CHARS, SCRIPT_MESSAGE_MODE_CVAR_VALUE);
+        Scr_ConstructMessageString(1, messageBuffer,
+                                   MAX_STRING_CHARS,
+                                   SCRIPT_MESSAGE_MODE_CVAR_VALUE);
         return messageBuffer;
     }
 
     return Scr_GetString(1);
 }
 
-static qboolean game_compat_script_cvar_build_observed_clean_buffer(const char *value, char cleaned[MAX_STRING_CHARS])
+static qboolean game_compat_script_cvar_build_observed_clean_buffer(
+    const char *value,
+    char cleaned[MAX_STRING_CHARS])
 {
     /* NOT_FROM_ORIGINAL_SOURCE: shared by setcvar and makecvarserverinfo;
      * preserve a complete cleaned value when it fits and report otherwise. */
@@ -84,7 +89,8 @@ void GScr_SetCvar(void)
     /* The retail clean pass has no consumer in this function. Bound it while
      * retaining the original cvar value, including values longer than the
      * dead local array. */
-    (void)game_compat_script_cvar_build_observed_clean_buffer(value, observedCleaned);
+    (void)game_compat_script_cvar_build_observed_clean_buffer(
+        value, observedCleaned);
 
     if (Scr_GetNumParam() > 2 && Scr_GetBool(2)) {
         flags |= CVAR_SCRIPT_SETCVAR_SERVERINFO;
@@ -105,7 +111,9 @@ void GScr_MakeCvarServerInfo(void)
     (void)strlen(value);
     /* As in GScr_SetCvar, this result is unobserved; the original value remains
      * the registration value. */
-    (void)game_compat_script_cvar_build_observed_clean_buffer(value, observedCleaned);
+    (void)game_compat_script_cvar_build_observed_clean_buffer(
+        value, observedCleaned);
 
-    trap_Cvar_Register(0, name, value, CVAR_SCRIPT_MAKE_SERVERINFO);
+    trap_Cvar_Register(0, name, value,
+                       CVAR_SCRIPT_MAKE_SERVERINFO);
 }

@@ -8,7 +8,8 @@
 extern "C" {
 #endif
 
-int32_t Com_sprintf(char *destination, size_t destinationSize, const char *format, ...);
+int32_t Com_sprintf(char *destination, size_t destinationSize,
+                    const char *format, ...);
 
 #ifdef __cplusplus
 }

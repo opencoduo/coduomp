@@ -32,10 +32,12 @@ static void coduomp_con_zero_dwords(int32_t *values, uint32_t count)
  * Name and signature: exact same-module Mac symbol Con_ClearMessageWindow. */
 void Con_ClearMessageWindow(console_message_window_t *window)
 {
-    const uint32_t startByteCount = (uint32_t)window->lineCapacity * (uint32_t)sizeof(uint32_t);
+    const uint32_t startByteCount =
+        (uint32_t)window->lineCapacity * (uint32_t)sizeof(uint32_t);
     memset(window->lineStartTimes, 0, (size_t)startByteCount);
 
-    const uint32_t endByteCount = (uint32_t)window->lineCapacity * (uint32_t)sizeof(uint32_t);
+    const uint32_t endByteCount =
+        (uint32_t)window->lineCapacity * (uint32_t)sizeof(uint32_t);
     memset(window->lineEndTimes, 0, (size_t)endByteCount);
     window->activeLineIndex = 0;
 }
@@ -44,12 +46,20 @@ void Con_ClearMessageWindow(console_message_window_t *window)
  * Name: exact same-module Mac symbol Con_ClearNotify. */
 void Con_ClearNotify(void)
 {
-    coduomp_con_zero_dwords(con_gameMessageWindow.lineStartTimes, (uint32_t)con_gameMessageWindow.lineCapacity);
-    coduomp_con_zero_dwords(con_gameMessageWindow.lineEndTimes, (uint32_t)con_gameMessageWindow.lineCapacity);
+    coduomp_con_zero_dwords(
+        con_gameMessageWindow.lineStartTimes,
+        (uint32_t)con_gameMessageWindow.lineCapacity);
+    coduomp_con_zero_dwords(
+        con_gameMessageWindow.lineEndTimes,
+        (uint32_t)con_gameMessageWindow.lineCapacity);
     con_gameMessageWindow.activeLineIndex = 0;
 
-    coduomp_con_zero_dwords(con_boldGameMessageWindow.lineStartTimes, (uint32_t)con_boldGameMessageWindow.lineCapacity);
-    coduomp_con_zero_dwords(con_boldGameMessageWindow.lineEndTimes, (uint32_t)con_boldGameMessageWindow.lineCapacity);
+    coduomp_con_zero_dwords(
+        con_boldGameMessageWindow.lineStartTimes,
+        (uint32_t)con_boldGameMessageWindow.lineCapacity);
+    coduomp_con_zero_dwords(
+        con_boldGameMessageWindow.lineEndTimes,
+        (uint32_t)con_boldGameMessageWindow.lineCapacity);
     con_boldGameMessageWindow.activeLineIndex = 0;
 }
 
@@ -67,8 +77,12 @@ void Con_ClearMiniConsole(void)
     } else if (lineCapacity > CON_MINICON_MAX_LINES) {
         lineCapacity = CON_MINICON_MAX_LINES;
     }
-    coduomp_con_zero_dwords(con_miniConsoleWindow.lineStartTimes, (uint32_t)lineCapacity);
-    coduomp_con_zero_dwords(con_miniConsoleWindow.lineEndTimes, (uint32_t)lineCapacity);
+    coduomp_con_zero_dwords(
+        con_miniConsoleWindow.lineStartTimes,
+        (uint32_t)lineCapacity);
+    coduomp_con_zero_dwords(
+        con_miniConsoleWindow.lineEndTimes,
+        (uint32_t)lineCapacity);
     con_miniConsoleWindow.activeLineIndex = 0;
 }
 
@@ -78,8 +92,12 @@ void Con_ClearMiniConsole(void)
  * Name: exact same-module Mac symbol Con_ClearSubtitles. */
 void Con_ClearSubtitles(void)
 {
-    coduomp_con_zero_dwords(con_subtitleWindow.lineStartTimes, (uint32_t)con_subtitleWindow.lineCapacity);
-    coduomp_con_zero_dwords(con_subtitleWindow.lineEndTimes, (uint32_t)con_subtitleWindow.lineCapacity);
+    coduomp_con_zero_dwords(
+        con_subtitleWindow.lineStartTimes,
+        (uint32_t)con_subtitleWindow.lineCapacity);
+    coduomp_con_zero_dwords(
+        con_subtitleWindow.lineEndTimes,
+        (uint32_t)con_subtitleWindow.lineCapacity);
     con_subtitleWindow.activeLineIndex = 0;
 }
 

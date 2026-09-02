@@ -21,7 +21,8 @@ void UI_BinaryServerInsertion(int32_t index, int32_t server)
     }
 
     ++ui_displayServerCount;
-    for (shiftIndex = ui_displayServerCount - 1; shiftIndex > index; --shiftIndex) {
+    for (shiftIndex = ui_displayServerCount - 1; shiftIndex > index;
+         --shiftIndex) {
         ui_displayServers[shiftIndex] = ui_displayServers[shiftIndex - 1];
     }
     ui_displayServers[index] = server;
@@ -58,7 +59,9 @@ void UI_InsertServerIntoDisplayList(int32_t server)
         int32_t half = range / 2;
         int32_t middle = offset + half;
 
-        comparison = trap_LAN_CompareServers(ui_netSource, ui_serverSortKey, ui_serverSortDirection, server, ui_displayServers[middle]);
+        comparison = trap_LAN_CompareServers(
+            ui_netSource, ui_serverSortKey, ui_serverSortDirection, server,
+            ui_displayServers[middle]);
         if (comparison == 0) {
             UI_BinaryServerInsertion(middle, server);
             return;

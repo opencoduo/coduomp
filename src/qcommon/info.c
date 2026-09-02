@@ -71,8 +71,8 @@ const char *Info_ValueForKey(const char *info, const char *key)
             end++;
         }
         if ((size_t)(end - info) >= BIG_INFO_STRING) {
-            INFO_ERROR(INFO_ERROR_DROP, "\x15"
-                                        "Info_ValueForKey: oversize infostring");
+            INFO_ERROR(INFO_ERROR_DROP,
+                       "\x15" "Info_ValueForKey: oversize infostring");
         }
     }
 
@@ -160,8 +160,8 @@ void Info_RemoveKey(char *info, const char *key)
     char *cursor = info;
 
     if (strlen(info) >= MAX_INFO_STRING) {
-        INFO_ERROR(INFO_ERROR_DROP, "\x15"
-                                    "Info_RemoveKey: oversize infostring");
+        INFO_ERROR(INFO_ERROR_DROP,
+                   "\x15" "Info_RemoveKey: oversize infostring");
     }
     if (strchr(key, '\\') != NULL) {
         return;
@@ -214,8 +214,8 @@ void Info_RemoveKey_Big(char *info, const char *key)
     char *cursor = info;
 
     if (strlen(info) >= BIG_INFO_STRING) {
-        INFO_ERROR(INFO_ERROR_DROP, "\x15"
-                                    "Info_RemoveKey_Big: oversize infostring");
+        INFO_ERROR(INFO_ERROR_DROP,
+                   "\x15" "Info_RemoveKey_Big: oversize infostring");
     }
     if (strchr(key, '\\') != NULL) {
         return;
@@ -284,11 +284,11 @@ void Info_SetValueForKey(char *info, const char *key, const char *value)
     int32_t writeIndex = 0;
 
     if (strlen(info) >= MAX_INFO_STRING) {
-        Com_Printf("\x15"
-                   "Info_SetValueForKey: oversize infostring");
+        Com_Printf("\x15" "Info_SetValueForKey: oversize infostring");
         return;
     }
-    while (readIndex < MAX_INFO_STRING_LAST_INDEX && value[readIndex] != '\0') {
+    while (readIndex < MAX_INFO_STRING_LAST_INDEX &&
+           value[readIndex] != '\0') {
         char character = value[readIndex];
         if (character != '\\' && character != ';' && character != '"') {
             cleaned[writeIndex++] = character;
@@ -298,21 +298,17 @@ void Info_SetValueForKey(char *info, const char *key, const char *value)
     cleaned[writeIndex] = '\0';
 
     if (strchr(key, '\\') != NULL) {
-        Com_Printf("\x15"
-                   "Can't use keys with a \\\nkey: '%s'\nvalue: '%s'",
+        Com_Printf("\x15" "Can't use keys with a \\\nkey: '%s'\nvalue: '%s'",
                    key, value);
         return;
     }
     if (strchr(key, ';') != NULL) {
-        Com_Printf("\x15"
-                   "Can't use keys with a semicolon\nkey: '%s'\n"
-                   "value: '%s'",
-                   key, value);
+        Com_Printf("\x15" "Can't use keys with a semicolon\nkey: '%s'\n"
+                   "value: '%s'", key, value);
         return;
     }
     if (strchr(key, '"') != NULL) {
-        Com_Printf("\x15"
-                   "Can't use keys with a \"\nkey: '%s'\nvalue: '%s'",
+        Com_Printf("\x15" "Can't use keys with a \"\nkey: '%s'\nvalue: '%s'",
                    key, value);
         return;
     }
@@ -322,18 +318,15 @@ void Info_SetValueForKey(char *info, const char *key, const char *value)
         return;
     }
     if (Com_sprintf(pair, sizeof(pair), "\\%s\\%s", key, cleaned) <= 0) {
-        Com_Printf("\x15"
-                   "Server info buffer length exceeded, not including "
+        Com_Printf("\x15" "Server info buffer length exceeded, not including "
                    "key/value pair in response\n");
         return;
     }
     /* NOT_FROM_ORIGINAL_SOURCE: the combined info pair must leave room for
      * strcat's trailing NUL. */
     if ((uint32_t)strlen(info) + (uint32_t)strlen(pair) >= MAX_INFO_STRING) {
-        Com_Printf("\x15"
-                   "Info string length exceeded\nkey: '%s'\n"
-                   "value: '%s'\nInfo string:\n%s\n",
-                   key, value, info);
+        Com_Printf("\x15" "Info string length exceeded\nkey: '%s'\n"
+                   "value: '%s'\nInfo string:\n%s\n", key, value, info);
         return;
     }
     strcat(info, pair);
@@ -353,11 +346,11 @@ void Info_SetValueForKey_Big(char *info, const char *key, const char *value)
     int32_t writeIndex = 0;
 
     if (strlen(info) >= BIG_INFO_STRING) {
-        Com_Printf("\x15"
-                   "Info_SetValueForKey: oversize infostring");
+        Com_Printf("\x15" "Info_SetValueForKey: oversize infostring");
         return;
     }
-    while (readIndex < BIG_INFO_STRING_LAST_INDEX && value[readIndex] != '\0') {
+    while (readIndex < BIG_INFO_STRING_LAST_INDEX &&
+           value[readIndex] != '\0') {
         char character = value[readIndex];
         if (character != '\\' && character != ';' && character != '"') {
             cleaned[writeIndex++] = character;
@@ -367,21 +360,17 @@ void Info_SetValueForKey_Big(char *info, const char *key, const char *value)
     cleaned[writeIndex] = '\0';
 
     if (strchr(key, '\\') != NULL) {
-        Com_Printf("\x15"
-                   "Can't use keys with a \\\nkey: '%s'\nvalue: '%s'",
+        Com_Printf("\x15" "Can't use keys with a \\\nkey: '%s'\nvalue: '%s'",
                    key, value);
         return;
     }
     if (strchr(key, ';') != NULL) {
-        Com_Printf("\x15"
-                   "Can't use keys with a semicolon\nkey: '%s'\n"
-                   "value: '%s'",
-                   key, value);
+        Com_Printf("\x15" "Can't use keys with a semicolon\nkey: '%s'\n"
+                   "value: '%s'", key, value);
         return;
     }
     if (strchr(key, '"') != NULL) {
-        Com_Printf("\x15"
-                   "Can't use keys with a \"\nkey: '%s'\nvalue: '%s'",
+        Com_Printf("\x15" "Can't use keys with a \"\nkey: '%s'\nvalue: '%s'",
                    key, value);
         return;
     }
@@ -391,18 +380,15 @@ void Info_SetValueForKey_Big(char *info, const char *key, const char *value)
         return;
     }
     if (Com_sprintf(pair, sizeof(pair), "\\%s\\%s", key, cleaned) <= 0) {
-        Com_Printf("\x15"
-                   "Server info buffer length exceeded, not including "
+        Com_Printf("\x15" "Server info buffer length exceeded, not including "
                    "key/value pair in response\n");
         return;
     }
     /* NOT_FROM_ORIGINAL_SOURCE: the combined large info pair must leave room
      * for strcat's trailing NUL. */
     if ((uint32_t)strlen(info) + (uint32_t)strlen(pair) >= BIG_INFO_STRING) {
-        Com_Printf("\x15"
-                   "BIG Info string length exceeded\nkey: '%s'\n"
-                   "value: '%s'\nInfo string:\n%s\n",
-                   key, value, info);
+        Com_Printf("\x15" "BIG Info string length exceeded\nkey: '%s'\n"
+                   "value: '%s'\nInfo string:\n%s\n", key, value, info);
         return;
     }
     strcat(info, pair);
@@ -415,8 +401,11 @@ void Info_SetValueForKey_Big(char *info, const char *key, const char *value)
  * Source: coduo_lnxded 0x080877a3..0x080879a9.
  * Source: game.mp.uo.i386.so 0x000943ea..0x00094601.
  * Name: same-family Mac client/game symbol ParseConfigStringToStruct. */
-qboolean ParseConfigStringToStruct(void *base, const parseField_t *fields, int32_t fieldCount, const char *info, int32_t customTypeLimit,
-                                   parse_config_custom_t customParser, parse_config_copy_string_t stringSetter)
+qboolean ParseConfigStringToStruct(
+    void *base, const parseField_t *fields, int32_t fieldCount,
+    const char *info, int32_t customTypeLimit,
+    parse_config_custom_t customParser,
+    parse_config_copy_string_t stringSetter)
 {
     int32_t fieldIndex;
 
@@ -430,9 +419,7 @@ qboolean ParseConfigStringToStruct(void *base, const parseField_t *fields, int32
         }
         if (field->type >= PARSE_FIELD_CUSTOM_FIRST) {
             if (customTypeLimit <= 0 || field->type >= customTypeLimit) {
-                INFO_ERROR(INFO_ERROR_DROP,
-                           "\x15"
-                           "Bad field type %i\n",
+                INFO_ERROR(INFO_ERROR_DROP, "\x15" "Bad field type %i\n",
                            field->type);
             } else if (customParser(base, value, field->type) == 0) {
                 return 0;
@@ -518,7 +505,8 @@ qboolean ParseConfigStringToStruct(void *base, const parseField_t *fields, int32
             parsed = coduo_fp_to_i32_f64(scaledMilliseconds);
 #else
             volatile float seconds = (float)atof(value);
-            const long double scaledMilliseconds = (long double)seconds * (long double)1000.0f;
+            const long double scaledMilliseconds =
+                (long double)seconds * (long double)1000.0f;
 
             /* ORIGINAL_PLATFORM_DIFFERENCE: both authoritative Linux server
              * bodies explicitly spill atof to binary32 before multiplying.

@@ -65,18 +65,10 @@
 
 // 16px big-glyph metrics and screen geometry used to lay out the line. These are
 // one-off layout constants for this overlay line; kept file-local.
-enum {
-    CG_BIGCHAR_WIDTH = 16
-};   /* px advance per big glyph (16.0f) */
-enum {
-    CG_SNAPSHOT_LINE_HEIGHT = 20
-}; /* px to next debug line (20.0f) */
-enum {
-    CG_SNAPSHOT_RIGHT_EDGE = 620
-}; /* right screen edge for this line (620.0f) */
-enum {
-    CG_SNAPSHOT_LINE_Y_OFFSET = 2
-};/* px below `y` the text is drawn (2.0f) */
+enum { CG_BIGCHAR_WIDTH = 16 };   /* px advance per big glyph (16.0f) */
+enum { CG_SNAPSHOT_LINE_HEIGHT = 20 }; /* px to next debug line (20.0f) */
+enum { CG_SNAPSHOT_RIGHT_EDGE = 620 }; /* right screen edge for this line (620.0f) */
+enum { CG_SNAPSHOT_LINE_Y_OFFSET = 2 };/* px below `y` the text is drawn (2.0f) */
 
 float CG_DrawSnapshot(float y)
 {
@@ -87,16 +79,23 @@ float CG_DrawSnapshot(float y)
     int32_t snapshotNumber = cg_latestSnapshotNum;
     snapshot_t *snapshot = cg_snap;
     int32_t serverTime = snapshot->serverTime;
-    s = va("time:%i snap:%i cmd:%i", serverTime, snapshotNumber, commandSequence);
+    s = va("time:%i snap:%i cmd:%i",
+           serverTime, snapshotNumber, commandSequence);
 
     /* The DLL computes and stores the draw Y before calling Q_DrawStrlen. */
-    float drawY = (float)((long double)y + (long double)CG_SNAPSHOT_LINE_Y_OFFSET);
+    float drawY = (float)(
+        (long double)y + (long double)CG_SNAPSHOT_LINE_Y_OFFSET);
     w = Q_DrawStrlen(s);
 
     /* 0x30018064 FILD w feeds 0x30018069 FMUL 16.0f directly with no float store,
      * so w enters the product exact; a (float)w cast would round it first (Class 4). */
-    float drawX = (float)((long double)CG_SNAPSHOT_RIGHT_EDGE - (long double)w * (long double)CG_BIGCHAR_WIDTH);
-    CG_DrawBigString(drawX, drawY, s, 1.0f);
+    float drawX = (float)(
+        (long double)CG_SNAPSHOT_RIGHT_EDGE -
+        (long double)w * (long double)CG_BIGCHAR_WIDTH);
+    CG_DrawBigString(drawX,
+                     drawY,
+                     s,
+                     1.0f);
 
     return (long double)y + (long double)CG_SNAPSHOT_LINE_HEIGHT;
 }

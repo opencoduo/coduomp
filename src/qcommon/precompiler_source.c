@@ -52,9 +52,11 @@ source_t *LoadSourceFile(const char *filename)
     source->filename[sizeof(source->filename) - 1u] = '\0';
     source->scriptStack = script;
 #if defined(WINDOWS_BEHAVIOR)
-    source->defineHash = GetClearedMemory(PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
+    source->defineHash = GetClearedMemory(
+        PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
 #else
-    source->defineHash = Com_ZoneDebugAllocClear(PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
+    source->defineHash = Com_ZoneDebugAllocClear(
+        PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
 #endif
     PC_AddGlobalDefinesToSource(source);
     return source;
@@ -64,7 +66,8 @@ source_t *LoadSourceFile(const char *filename)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00446cb0_00446d5f.mcode.
  * Name: same-module family name LoadSourceMemory. */
-source_t *LoadSourceMemory(const char *buffer, size_t length, const char *name)
+source_t *LoadSourceMemory(const char *buffer, size_t length,
+                           const char *name)
 {
     PC_InitTokenHeap();
 
@@ -88,9 +91,11 @@ source_t *LoadSourceMemory(const char *buffer, size_t length, const char *name)
     source->filename[sizeof(source->filename) - 1u] = '\0';
     source->scriptStack = script;
 #if defined(WINDOWS_BEHAVIOR)
-    source->defineHash = GetClearedMemory(PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
+    source->defineHash = GetClearedMemory(
+        PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
 #else
-    source->defineHash = Com_ZoneDebugAllocClear(PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
+    source->defineHash = Com_ZoneDebugAllocClear(
+        PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source->defineHash));
 #endif
     PC_AddGlobalDefinesToSource(source);
     return source;
@@ -113,7 +118,8 @@ void FreeSource(source_t *source)
         PC_FreeToken(token);
     }
 
-    for (int32_t bucket = 0; bucket < PC_DEFINE_HASH_BUCKET_COUNT; ++bucket) {
+    for (int32_t bucket = 0; bucket < PC_DEFINE_HASH_BUCKET_COUNT;
+         ++bucket) {
         while (source->defineHash[bucket] != NULL) {
             define_t *define = source->defineHash[bucket];
             source->defineHash[bucket] = define->hashNext;
@@ -214,7 +220,8 @@ qboolean PC_ReadTokenHandle(int32_t handle, pc_token_t *token)
     token->floatValue = (float)readToken.floatValue;
 #elif EMULATE_X87
     /* coduo_lnxded loads the token's TBYTE directly and stores binary32. */
-    token->floatValue = x87f_store_f32(coduo_pc_load_token_float80(readToken.floatValue));
+    token->floatValue = x87f_store_f32(
+        coduo_pc_load_token_float80(readToken.floatValue));
 #else
     long double floatValue = 0.0L;
     size_t valueSize = sizeof(floatValue);
@@ -234,7 +241,8 @@ qboolean PC_ReadTokenHandle(int32_t handle, pc_token_t *token)
 /* Source: CoDUOMP.exe 0x00447050..0x004470aa.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00447050_004470aa.mcode.
  * Name: exact same-module Mac symbol PC_SourceFileAndLine. */
-qboolean PC_SourceFileAndLine(int32_t handle, char *filename, int32_t *line)
+qboolean PC_SourceFileAndLine(int32_t handle, char *filename,
+                              int32_t *line)
 {
     if (handle < 1 || handle >= PC_SOURCE_HANDLE_COUNT)
         return qfalse;
@@ -272,7 +280,8 @@ void PC_CheckOpenSourceHandles(void)
     for (int32_t handle = 1; handle < PC_SOURCE_HANDLE_COUNT; ++handle) {
         source_t *source = pc_sourceFiles[handle];
         if (source != NULL) {
-            Com_Printf("^1Error: file %s still open in precompiler\n", source->scriptStack->filename);
+            Com_Printf("^1Error: file %s still open in precompiler\n",
+                       source->scriptStack->filename);
         }
     }
 }

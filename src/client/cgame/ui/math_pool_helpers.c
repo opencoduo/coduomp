@@ -27,14 +27,14 @@ void CG_FreeMarkPoly(markPoly_t *mark) /* 0x3002e450 */
 
 void UI_ReportMemory(void) /* 0x3004ff30 */
 {
-    enum {
-        UI_POOL_BYTES = 0x20000
-    };
+    enum { UI_POOL_BYTES = 0x20000 };
 
     Com_Printf("Memory/String Pool Info\n");
     Com_Printf("----------------\n");
-    Com_Printf("String Pool is %.1f%% full, %i bytes out of %i used.\n", (double)strPoolIndex * (double)0x1p-17f * (double)100.0f,
+    Com_Printf("String Pool is %.1f%% full, %i bytes out of %i used.\n",
+               (double)strPoolIndex * (double)0x1p-17f * (double)100.0f,
                strPoolIndex, UI_POOL_BYTES);
-    Com_Printf("Memory Pool is %.1f%% full, %i bytes out of %i used.\n", (double)allocPoint * (double)0x1p-17f * (double)100.0f, allocPoint,
-               UI_POOL_BYTES);
+    Com_Printf("Memory Pool is %.1f%% full, %i bytes out of %i used.\n",
+               (double)allocPoint * (double)0x1p-17f * (double)100.0f,
+               allocPoint, UI_POOL_BYTES);
 }

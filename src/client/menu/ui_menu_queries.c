@@ -7,9 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
-enum {
-    MENU_NAME_COMPARE_LIMIT = 99999
-};
+enum { MENU_NAME_COMPARE_LIMIT = 99999 };
 
 /*
  * The authoritative Windows cgame/UI pairs below are instruction-identical
@@ -49,7 +47,9 @@ itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *name)
     for (index = 0; index < itemCount; ++index) {
         itemDef_t *item = menu->items[index];
 
-        if (item->window.name != NULL && Q_stricmpn(name, item->window.name, MENU_NAME_COMPARE_LIMIT) == 0) {
+        if (item->window.name != NULL &&
+            Q_stricmpn(name, item->window.name,
+                       MENU_NAME_COMPARE_LIMIT) == 0) {
             return menu->items[index];
         }
     }
@@ -59,7 +59,8 @@ itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *name)
 int32_t Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name)
 {
     const char *wildcard = strstr(name, "*");
-    int32_t wildcardOffset = wildcard == NULL ? -1 : (int32_t)(wildcard - name);
+    int32_t wildcardOffset =
+        wildcard == NULL ? -1 : (int32_t)(wildcard - name);
     int32_t itemCount = menu->itemCount;
     int32_t index;
     int32_t count = 0;
@@ -70,11 +71,19 @@ int32_t Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name)
 
         if (wildcardOffset >= 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            matches = (item->window.name != NULL && Q_strncmp(item->window.name, name, wildcardOffset) == 0) ||
-                      (item->window.group != NULL && Q_strncmp(item->window.group, name, wildcardOffset) == 0);
+            matches =
+                (item->window.name != NULL &&
+                 Q_strncmp(item->window.name, name, wildcardOffset) == 0) ||
+                (item->window.group != NULL &&
+                 Q_strncmp(item->window.group, name, wildcardOffset) == 0);
         } else {
-            matches = (item->window.name != NULL && name != NULL && Q_stricmpn(item->window.name, name, MENU_NAME_COMPARE_LIMIT) == 0) ||
-                      (item->window.group != NULL && name != NULL && Q_stricmpn(item->window.group, name, MENU_NAME_COMPARE_LIMIT) == 0);
+            matches =
+                (item->window.name != NULL && name != NULL &&
+                 Q_stricmpn(item->window.name, name,
+                            MENU_NAME_COMPARE_LIMIT) == 0) ||
+                (item->window.group != NULL && name != NULL &&
+                 Q_stricmpn(item->window.group, name,
+                            MENU_NAME_COMPARE_LIMIT) == 0);
         }
         if (matches) {
             ++count;
@@ -83,10 +92,12 @@ int32_t Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name)
     return count;
 }
 
-itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, const char *name, int32_t requestedIndex)
+itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, const char *name,
+                                        int32_t requestedIndex)
 {
     const char *wildcard = strstr(name, "*");
-    int32_t wildcardOffset = wildcard == NULL ? -1 : (int32_t)(wildcard - name);
+    int32_t wildcardOffset =
+        wildcard == NULL ? -1 : (int32_t)(wildcard - name);
     int32_t itemCount = menu->itemCount;
     int32_t index;
     int32_t matchIndex = 0;
@@ -97,11 +108,19 @@ itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, const char *name, int32
 
         if (wildcardOffset >= 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            matches = (item->window.name != NULL && Q_strncmp(item->window.name, name, wildcardOffset) == 0) ||
-                      (item->window.group != NULL && Q_strncmp(item->window.group, name, wildcardOffset) == 0);
+            matches =
+                (item->window.name != NULL &&
+                 Q_strncmp(item->window.name, name, wildcardOffset) == 0) ||
+                (item->window.group != NULL &&
+                 Q_strncmp(item->window.group, name, wildcardOffset) == 0);
         } else {
-            matches = (item->window.name != NULL && name != NULL && Q_stricmpn(item->window.name, name, MENU_NAME_COMPARE_LIMIT) == 0) ||
-                      (item->window.group != NULL && name != NULL && Q_stricmpn(item->window.group, name, MENU_NAME_COMPARE_LIMIT) == 0);
+            matches =
+                (item->window.name != NULL && name != NULL &&
+                 Q_stricmpn(item->window.name, name,
+                            MENU_NAME_COMPARE_LIMIT) == 0) ||
+                (item->window.group != NULL && name != NULL &&
+                 Q_stricmpn(item->window.group, name,
+                            MENU_NAME_COMPARE_LIMIT) == 0);
         }
         if (!matches) {
             continue;
@@ -151,7 +170,9 @@ menuDef_t *Menus_FindByName(const char *name)
     int32_t index;
 
     for (index = 0; index < count; ++index) {
-        if (Menus[index].window.name != NULL && name != NULL && Q_stricmpn(Menus[index].window.name, name, MENU_NAME_COMPARE_LIMIT) == 0) {
+        if (Menus[index].window.name != NULL && name != NULL &&
+            Q_stricmpn(Menus[index].window.name, name,
+                       MENU_NAME_COMPARE_LIMIT) == 0) {
             return &Menus[index];
         }
     }
@@ -165,7 +186,8 @@ menuDef_t *Menu_GetFocused(void)
     while (index >= 0) {
         int32_t flags = menuStack[index]->window.flags;
 
-        if ((flags & WINDOW_HASFOCUS) != 0 && (flags & WINDOW_VISIBLE) != 0) {
+        if ((flags & WINDOW_HASFOCUS) != 0 &&
+            (flags & WINDOW_VISIBLE) != 0) {
             return menuStack[index];
         }
         --index;
@@ -180,7 +202,8 @@ qboolean Menus_AnyFullScreenVisible(void)
     while (index >= 0) {
         menuDef_t *menu = menuStack[index];
 
-        if ((menu->window.flags & WINDOW_VISIBLE) != 0 && menu->fullScreen != 0) {
+        if ((menu->window.flags & WINDOW_VISIBLE) != 0 &&
+            menu->fullScreen != 0) {
             return qtrue;
         }
         --index;
@@ -197,8 +220,10 @@ menuDef_t *Menu_GetAtPoint(int32_t x, int32_t y)
     while (index >= 0) {
         menuDef_t *menu = menuStack[index];
 
-        if (menu != NULL && pointX >= menu->window.rect.x && pointX <= menu->window.rect.x + menu->window.rect.w &&
-            pointY >= menu->window.rect.y && pointY <= menu->window.rect.y + menu->window.rect.h) {
+        if (menu != NULL && pointX >= menu->window.rect.x &&
+            pointX <= menu->window.rect.x + menu->window.rect.w &&
+            pointY >= menu->window.rect.y &&
+            pointY <= menu->window.rect.y + menu->window.rect.h) {
             return menu;
         }
         --index;

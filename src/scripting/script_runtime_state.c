@@ -7,7 +7,8 @@
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00488360_004883ff.mcode. */
 void ScriptRuntime_ResetValueRuntime(void)
 {
-    script_valueStackLimit = &script_valueStack[SCRIPT_VALUE_STACK_COUNT - 1];
+    script_valueStackLimit =
+        &script_valueStack[SCRIPT_VALUE_STACK_COUNT - 1];
     script_valueStackTop = &script_valueStack[0];
     script_callStackDepth = 0;
     script_errorMessage = NULL;
@@ -43,7 +44,8 @@ qboolean ScriptRuntime_PruneGameVariableArray(uint16_t handle)
 {
     script_variable_node_t *array = &script_variableNodes[handle];
 
-    if ((array->packedTypeIndex & SCRIPT_VARIABLE_TYPE_MASK) != SCRIPT_VAR_ARRAY) {
+    if ((array->packedTypeIndex & SCRIPT_VARIABLE_TYPE_MASK) !=
+        SCRIPT_VAR_ARRAY) {
         return qfalse;
     }
 
@@ -55,9 +57,14 @@ qboolean ScriptRuntime_PruneGameVariableArray(uint16_t handle)
                 return qtrue;
             }
 
-            script_variable_node_t *childNode = &script_variableNodes[child];
-            script_variable_type_t childType = (script_variable_type_t)(childNode->packedTypeIndex & SCRIPT_VARIABLE_TYPE_MASK);
-            uint32_t childName = childNode->packedTypeIndex >> SCRIPT_VARIABLE_NAME_SHIFT;
+            script_variable_node_t *childNode =
+                &script_variableNodes[child];
+            script_variable_type_t childType =
+                (script_variable_type_t)(
+                    childNode->packedTypeIndex &
+                    SCRIPT_VARIABLE_TYPE_MASK);
+            uint32_t childName =
+                childNode->packedTypeIndex >> SCRIPT_VARIABLE_NAME_SHIFT;
 
             switch (childType) {
             case SCRIPT_VAR_CODEPOS:
@@ -68,7 +75,9 @@ qboolean ScriptRuntime_PruneGameVariableArray(uint16_t handle)
                 break;
 
             case SCRIPT_VAR_OBJECT:
-                if (ScriptRuntime_PruneGameVariableArray(childNode->payload.halves.valueOrRefCount) == qfalse) {
+                if (ScriptRuntime_PruneGameVariableArray(
+                        childNode->payload.halves.valueOrRefCount) ==
+                    qfalse) {
                     RemoveVariable(handle, childName);
                     break;
                 }
@@ -88,7 +97,10 @@ qboolean ScriptRuntime_PruneGameVariableArray(uint16_t handle)
 
 /* Source: CoDUOMP.exe 0x00490bd0..0x00490cc5.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00490bd0_00490cc6.mcode. */
-void ScriptRuntime_SetObjectFieldValue(int32_t classNum, int32_t objectNum, int32_t fieldIndex, VariableValue *value)
+void ScriptRuntime_SetObjectFieldValue(int32_t classNum,
+                                       int32_t objectNum,
+                                       int32_t fieldIndex,
+                                       VariableValue *value)
 {
     script_parameterCount = 1;
     script_valueStackTop = value;
@@ -103,7 +115,10 @@ void ScriptRuntime_SetObjectFieldValue(int32_t classNum, int32_t objectNum, int3
 
 /* Source: CoDUOMP.exe 0x00490cf0..0x00490d1e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00490cf0_00490d1f.mcode. */
-void ScriptRuntime_GetObjectFieldValue(int32_t classNum, int32_t objectNum, int32_t fieldIndex, VariableValue *value)
+void ScriptRuntime_GetObjectFieldValue(int32_t classNum,
+                                       int32_t objectNum,
+                                       int32_t fieldIndex,
+                                       VariableValue *value)
 {
     script_valueStackTop = value - 1;
     value->type = SCRIPT_VAR_UNDEFINED;
@@ -117,7 +132,9 @@ void ScriptRuntime_GetObjectFieldValue(int32_t classNum, int32_t objectNum, int3
 void Scr_FreeGameVariable(qboolean shutdown)
 {
     if (shutdown == qfalse) {
-        ScriptRuntime_PruneGameVariableArray(script_variableNodes[script_animArrayHandle].payload.halves.valueOrRefCount);
+        ScriptRuntime_PruneGameVariableArray(
+            script_variableNodes[script_animArrayHandle]
+                .payload.halves.valueOrRefCount);
         return;
     }
 
@@ -132,7 +149,8 @@ void Scr_FreeGameVariable(qboolean shutdown)
  * the same source identity is independently present in the Mac engine. The
  * five post-reset stores address the same load state and animation-tree root
  * in both authoritative targets. */
-void Scr_Init(int32_t debugReport, int32_t developerScript, int32_t developer)
+void Scr_Init(int32_t debugReport, int32_t developerScript,
+              int32_t developer)
 {
     script_runtimeDebugReportFlag = debugReport;
     script_runtimeDeveloperScriptFlag = developerScript;
@@ -197,5 +215,6 @@ void Scr_GetChecksum(uint32_t checksum[3])
 {
     checksum[0] = script_sourceChecksum;
     checksum[1] = script_sourceBufferOffset;
-    checksum[2] = (uint32_t)((uintptr_t)script_sourceBufferEnd - (uintptr_t)script_sourceBufferStart);
+    checksum[2] = (uint32_t)((uintptr_t)script_sourceBufferEnd -
+                             (uintptr_t)script_sourceBufferStart);
 }

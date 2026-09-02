@@ -57,14 +57,20 @@ int32_t CG_FindVoiceChatFileIndex(const char *fileName)
     // 0x30039d98..0x30039daa
     //   length = cgame_syscall(CG_FS_FOPEN_FILE, fileName, &fileHandle, FS_READ);
     // FS_READ mode is the literal 0 pushed at 0x30039d98; ESI = length (MOV ESI,EAX).
-    length = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)fileName, (intptr_t)&fileHandle, FS_READ));
+    length = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_FS_FOPEN_FILE,
+        (intptr_t)fileName,
+        (intptr_t)&fileHandle,
+        FS_READ));
 
     // 0x30039dac MOV EAX,[fileHandle] ; 0x30039db3 TEST EAX,EAX ; 0x30039db5 JNZ
     // A zero handle means the file was not found.
     if (fileHandle == 0) {
         // 0x30039db7..0x30039dcb
         //   cgame_syscall(CG_PRINT, va("voice chat file not found: %s\n", fileName));
-        cgame_syscall(CG_PRINT, (intptr_t)va("voice chat file not found: %s\n", fileName));
+        cgame_syscall(CG_PRINT,
+                      (intptr_t)va("voice chat file not found: %s\n",
+                                            fileName));
         // 0x30039dcf OR EAX,0xffffffff ; ... RET
         return -1;
     }
@@ -78,7 +84,10 @@ int32_t CG_FindVoiceChatFileIndex(const char *fileName)
         //          fileName, length, 0x4000));
         // The .rdata literal at 0x3007a2c4 has NO trailing '\n' (unlike the
         // not-found message above).
-        cgame_syscall(CG_PRINT, (intptr_t)va("^1voice chat file too large: %s is %i, max allowed is %i", fileName, length, 0x4000));
+        cgame_syscall(CG_PRINT,
+                      (intptr_t)va(
+                          "^1voice chat file too large: %s is %i, max allowed is %i",
+                          fileName, length, 0x4000));
         // 0x30039e08..0x30039e15
         //   cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
         cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
@@ -90,7 +99,10 @@ int32_t CG_FindVoiceChatFileIndex(const char *fileName)
 
     // 0x30039e30..0x30039e3f
     //   cgame_syscall(CG_FS_READ, fileText, length, fileHandle);
-    cgame_syscall(CG_FS_READ, (intptr_t)fileText, length, fileHandle);
+    cgame_syscall(CG_FS_READ,
+                  (intptr_t)fileText,
+                  length,
+                  fileHandle);
 
     // 0x30039e46 MOV byte ptr [ESP + ESI + 0x28],0x0  => fileText[length] = '\0'.
     fileText[length] = '\0';

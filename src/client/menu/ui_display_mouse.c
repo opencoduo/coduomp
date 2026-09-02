@@ -30,7 +30,8 @@ qboolean Display_MouseMove(menuDef_t *menu, int32_t cursorX, int32_t cursorY)
 
     uint32_t indexBits = (uint32_t)openMenuCount - 1u;
     while (coduo_int32_from_bits(indexBits) >= 0) {
-        if (Menu_HandleMouseMove(menuStack[indexBits], (float)cursorX, (float)cursorY)) {
+        if (Menu_HandleMouseMove(menuStack[indexBits], (float)cursorX,
+                                 (float)cursorY)) {
             return qtrue;
         }
         indexBits -= 1u;

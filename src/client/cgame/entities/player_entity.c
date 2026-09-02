@@ -55,10 +55,14 @@
  * asserted next to their definitions in the shared headers; here we assert only the
  * few this file dereferences by name and that contain no pointer (safe at both ABIs),
  * plus the pointer-containing ones under a 32-bit guard. */
-_Static_assert(offsetof(entityState_t, eFlags) == 0x08, "modelInfo.eFlags +0x08");
-_Static_assert(offsetof(entityState_t, clientNum) == 0x94, "modelInfo.clientNum +0x94");
-_Static_assert(offsetof(entityState_t, weapon) == 0xcc, "modelInfo.weapon +0xcc");
-_Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8, "modelInfo.fTorsoHeight +0xe8");
+_Static_assert(offsetof(entityState_t, eFlags) == 0x08,
+               "modelInfo.eFlags +0x08");
+_Static_assert(offsetof(entityState_t, clientNum) == 0x94,
+               "modelInfo.clientNum +0x94");
+_Static_assert(offsetof(entityState_t, weapon) == 0xcc,
+               "modelInfo.weapon +0xcc");
+_Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8,
+               "modelInfo.fTorsoHeight +0xe8");
 #if UINTPTR_MAX == 0xFFFFFFFFu
 _Static_assert(offsetof(clientInfo_t, viewPitch) == 0x3e8, "animState.viewPitch +0x3e8");
 _Static_assert(offsetof(clientInfo_t, viewYaw) == 0x3ec, "animState.viewYaw +0x3ec");
@@ -69,7 +73,8 @@ _Static_assert(offsetof(weaponInfo_t, weaponType) == 0x7c, "weaponInfo_t.weaponT
 _Static_assert(offsetof(struct centity_s, corpseModelInfo) == 0xf4, "cent.modelInfo +0xf4");
 _Static_assert(offsetof(struct centity_s, lerpOrigin) == 0x208, "cent.lerpOrigin +0x208");
 _Static_assert(offsetof(struct centity_s, lerpAngles) == 0x214, "cent.lerpAngles +0x214");
-_Static_assert(offsetof(snapshot_t, ps.playerStateFlags) == 0x18, "cg_snap.ps.playerStateFlags +0x18");
+_Static_assert(offsetof(snapshot_t, ps.playerStateFlags) == 0x18,
+               "cg_snap.ps.playerStateFlags +0x18");
 _Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap.clientNum +0xe0");
 #endif
 
@@ -109,8 +114,7 @@ void CG_Player(centity_t *cent)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if (animStateIndex >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_Player: invalid client number %u",
+                  "\x15" "CG_Player: invalid client number %u",
                   animStateIndex);
         return;
     }
@@ -130,7 +134,8 @@ void CG_Player(centity_t *cent)
     /* 0x30034488 TEST flags,0x100000 ; 0x3003448f TEST AL,1 — special view-path branch,
      * taken only when SPECIAL_VIEW is set and NODRAW is clear. */
     uint32_t flags = modelInfo->eFlags;
-    if ((flags & EF_IN_VEHICLE) != 0 && (flags & EF_DEAD) == 0) {
+    if ((flags & EF_IN_VEHICLE) != 0 &&
+        (flags & EF_DEAD) == 0) {
         /* 0x30034495 CG_PlayerVehiclePositionAndBlend(cent) (EBX=cent). Zero => add the
          * held weapon against the (zeroed, white-RGBA) refEntity and return early.
          * Both CG_AddPlayerWeapon call sites pass ECX = &re: LEA ECX,[ESP+0x78] after
@@ -191,14 +196,20 @@ void CG_Player(centity_t *cent)
     float originZ;
     memcpy(&originZ, &originZBits, sizeof originZ);
     if ((modelInfo->eFlags & CG_PLAYER_LIGHTOFS_FLAG40) != 0)
-        re.lightingOrigin[2] =
-            (float)((long double)originZ + (long double)modelInfo->fTorsoHeight + (long double)12.0f);  /* FADD [0x3007bdc4] */
+        re.lightingOrigin[2] = (float)(
+            (long double)originZ +
+            (long double)modelInfo->fTorsoHeight +
+            (long double)12.0f);  /* FADD [0x3007bdc4] */
     else if ((modelInfo->eFlags & CG_PLAYER_LIGHTOFS_FLAG20) != 0)
-        re.lightingOrigin[2] =
-            (float)((long double)originZ + (long double)modelInfo->fTorsoHeight + (long double)20.0f);  /* FADD [0x3007be04] */
+        re.lightingOrigin[2] = (float)(
+            (long double)originZ +
+            (long double)modelInfo->fTorsoHeight +
+            (long double)20.0f);  /* FADD [0x3007be04] */
     else
-        re.lightingOrigin[2] =
-            (float)((long double)originZ + (long double)modelInfo->fTorsoHeight + (long double)32.0f);  /* FADD [0x3007bdd0] */
+        re.lightingOrigin[2] = (float)(
+            (long double)originZ +
+            (long double)modelInfo->fTorsoHeight +
+            (long double)32.0f);  /* FADD [0x3007bdd0] */
 
     re.oldorigin[0] = originX;
     re.oldorigin[1] = originY;
@@ -250,9 +261,11 @@ void CG_Player(centity_t *cent)
     /* 0x3003462c the held weapon must be a GAS-type weapon (the flamethrower). */
     const int32_t weaponIndex = modelInfo->weaponIndex;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    if (weaponIndex <= 0 || weaponIndex > bg_numWeapons || (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
+    if (weaponIndex <= 0 || weaponIndex > bg_numWeapons ||
+        (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
         bg_weaponInfos[weaponIndex] == NULL) {
-        Com_Printf("WARNING: CG_Player: invalid weapon index %i\n", weaponIndex);
+        Com_Printf("WARNING: CG_Player: invalid weapon index %i\n",
+                   weaponIndex);
         return;
     }
     weaponInfo_t *weapon = bg_weaponInfos[weaponIndex]; /* [0x30134cd8 + idx*4] */
@@ -261,14 +274,17 @@ void CG_Player(centity_t *cent)
 
     /* 0x30034641 re-query the DObj handle for the model part; a zero handle means no live
      * skeleton to attach the flame to. */
-    intptr_t flameDobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelInfo->numberBits);
+    intptr_t flameDobjHandle =
+        cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelInfo->numberBits);
     if (flameDobjHandle == 0)
         return;
 
     /* 0x30034659 resolve the "tag_flash" bone world matrix on the player DObj. A zero
      * (qfalse) return means the tag could not be resolved; skip the emission. */
     DObjSkelMat tagFlashMatrix;
-    if (CG_DObjGetWorldTagMatrix((void *)flameDobjHandle, cg_muzzleFlashTagName, cent, &tagFlashMatrix) == qfalse)
+    if (CG_DObjGetWorldTagMatrix((void *)flameDobjHandle,
+                                        cg_muzzleFlashTagName,
+                                        cent, &tagFlashMatrix) == qfalse)
         return;
 
     /* 0x30034670..0x300346a0 emit the flame chunks. The EAX register argument is a

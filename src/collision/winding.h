@@ -42,19 +42,28 @@ void PrintWinding(const winding_t *winding);
 winding_t *AllocWinding(int32_t pointCapacity);
 void FreeWinding(winding_t *winding);
 void RemoveColinearPoints(winding_t *winding);
-void WindingPlane(const winding_t *winding, vec3_t normal, float *distance);
+void WindingPlane(const winding_t *winding, vec3_t normal,
+                  float *distance);
 float WindingArea(const winding_t *winding);
 void WindingBounds(const winding_t *winding, vec3_t mins, vec3_t maxs);
 void WindingCenter(const winding_t *winding, vec3_t center);
 winding_t *BaseWindingForPlane(const vec3_t normal, float distance);
 winding_t *CopyWinding(const winding_t *winding);
 winding_t *ReverseWinding(const winding_t *winding);
-void ClipWindingEpsilon(const winding_t *winding, const vec3_t normal, float distance, float epsilon, winding_t **front, winding_t **back);
-winding_t *ChopWinding(winding_t *winding, const vec3_t normal, float distance);
-void ChopWindingInPlace(winding_t **winding, const vec3_t normal, float distance, float epsilon);
+void ClipWindingEpsilon(const winding_t *winding,
+                        const vec3_t normal, float distance,
+                        float epsilon, winding_t **front,
+                        winding_t **back);
+winding_t *ChopWinding(winding_t *winding,
+                       const vec3_t normal, float distance);
+void ChopWindingInPlace(winding_t **winding, const vec3_t normal,
+                        float distance, float epsilon);
 void CheckWinding(const winding_t *winding);
-int32_t WindingOnPlaneSide(const winding_t *winding, const vec3_t normal, float distance);
-void AddWindingToConvexHull(const winding_t *source, winding_t **winding, const vec3_t normal);
+int32_t WindingOnPlaneSide(const winding_t *winding,
+                           const vec3_t normal, float distance);
+void AddWindingToConvexHull(const winding_t *source,
+                            winding_t **winding,
+                            const vec3_t normal);
 
 #ifdef __cplusplus
 }

@@ -13,9 +13,7 @@
 
 // The source representation used a 260-byte local. The maintained representation
 // is defined by the complete item-bitfield domain consumed below.
-enum {
-    CG_RETAIL_ITEMS_CONFIGSTRING_BUFSIZE = 260
-};
+enum { CG_RETAIL_ITEMS_CONFIGSTRING_BUFSIZE = 260 };
 
 // Highest item index the loop registers; the machine code compares i against the
 // fixed literal 0x86 (134), so i runs 1..133 inclusive. This is the map's item
@@ -23,10 +21,12 @@ enum {
 // bound is unproven; named by its proven role.
 enum {
     CG_REGISTER_ITEMS_COUNT = 134,
-    CG_ITEMS_CONFIGSTRING_NIBBLE_COUNT = (CG_REGISTER_ITEMS_COUNT + 3) / 4
+    CG_ITEMS_CONFIGSTRING_NIBBLE_COUNT =
+        (CG_REGISTER_ITEMS_COUNT + 3) / 4
 };
 
-_Static_assert(CG_REGISTER_ITEMS_COUNT <= INT_MAX - 3, "item count must permit ceiling division by four");
+_Static_assert(CG_REGISTER_ITEMS_COUNT <= INT_MAX - 3,
+               "item count must permit ceiling division by four");
 
 void CG_RegisterItems(void)
 {
@@ -35,9 +35,12 @@ void CG_RegisterItems(void)
 
     // 0x30044ba2..0x30044ba7: inlined CG_ConfigString(CS_ITEMS). The config
     // string is a hex-packed item-present bitfield.
-    const char *itemBits = &cg_gameState.stringData[cg_gameState.stringOffsets[CS_ITEMS]];
+    const char *itemBits =
+        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_ITEMS]];
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    for (int n = 0; n < CG_ITEMS_CONFIGSTRING_NIBBLE_COUNT && itemBits[n] != '\0'; ++n) {
+    for (int n = 0;
+         n < CG_ITEMS_CONFIGSTRING_NIBBLE_COUNT && itemBits[n] != '\0';
+         ++n) {
         items[n] = itemBits[n];
     }
 

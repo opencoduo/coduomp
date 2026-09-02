@@ -57,7 +57,9 @@
  * comment). Modeled here as plain pointer parameters; the register mapping is a
  * calling-convention detail, not source-level behavior.
  */
-void ConstrainVectorTowardForward(const vec3_t forwardDir, const vec3_t reference, vec3_t out)
+void ConstrainVectorTowardForward(const vec3_t forwardDir,
+                                  const vec3_t reference,
+                                  vec3_t out)
 {
     /*
      * Inline length of forwardDir: sqrt(x*x + y*y + z*z), computed on the x87
@@ -66,7 +68,8 @@ void ConstrainVectorTowardForward(const vec3_t forwardDir, const vec3_t referenc
      * stays in 80-bit registers with NO float store, so the length local is
      * long double and the comparison constant is the double 1.0.
      */
-    long double forwardLen = sqrtl((long double)forwardDir[0] * forwardDir[0] + (long double)forwardDir[1] * forwardDir[1] +
+    long double forwardLen = sqrtl((long double)forwardDir[0] * forwardDir[0] +
+                                   (long double)forwardDir[1] * forwardDir[1] +
                                    (long double)forwardDir[2] * forwardDir[2]);
 
     vec3_t forward;
@@ -106,7 +109,8 @@ void ConstrainVectorTowardForward(const vec3_t forwardDir, const vec3_t referenc
      * consumes the unrounded 80-bit dot (no float store), so the local is
      * long double and the C term order mirrors the instruction stream.
      */
-    long double dot = (long double)v[2] * forward[2] + v[1] * forward[1] + v[0] * forward[0];
+    long double dot = (long double)v[2] * forward[2] + v[1] * forward[1] +
+                      v[0] * forward[0];
     if (dot < threshold) {
         /* Fixed step increment = 0.5f * forward. 0x300064ae..0x300064d4. */
         vec3_t step;
@@ -123,7 +127,8 @@ void ConstrainVectorTowardForward(const vec3_t forwardDir, const vec3_t referenc
             VectorNormalize(v);
             /* 0x3000650f..0x3000652b: same z,y,x FADDP order and unrounded
              * 80-bit FCOMP as the pre-loop dot. */
-            dot = (long double)v[2] * forward[2] + v[1] * forward[1] + v[0] * forward[0];
+            dot = (long double)v[2] * forward[2] + v[1] * forward[1] +
+                  v[0] * forward[0];
         } while (dot < threshold);
     }
 

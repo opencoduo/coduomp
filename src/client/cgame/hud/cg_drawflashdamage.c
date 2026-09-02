@@ -68,7 +68,8 @@ void CG_DrawFlashDamage(void)
     }
 
     // remaining = endTime - cg_time, converted int -> float by FILD.
-    int32_t remaining = coduo_int32_from_bits((uint32_t)endTime - (uint32_t)cgameTime);
+    int32_t remaining = coduo_int32_from_bits((uint32_t)endTime -
+                                         (uint32_t)cgameTime);
 
     // alpha ramps down over the 500 ms window, scaled by the (signed) flash
     // magnitude; fabs()'d then capped at 5.0, then attenuated by 0.2 * 0.7.
@@ -85,7 +86,8 @@ void CG_DrawFlashDamage(void)
     // clamp and again at the 0.2*0.7 attenuation -- three roundings the DLL does
     // not perform. The clamp's not-taken path (FSTP ST0; FLD 5.0f, 0x3001a922)
     // DISCARDS st0 and reloads the float 5.0f, which the assignment models.
-    long double alpha = __builtin_fabsl((long double)remaining * (1.0f / 500.0f) * cg_damageFlashScale);
+    long double alpha = __builtin_fabsl((long double)remaining * (1.0f / 500.0f)
+                                        * cg_damageFlashScale);
     if (alpha > 5.0f) {
         alpha = 5.0f;
     }

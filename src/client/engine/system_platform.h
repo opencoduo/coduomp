@@ -13,7 +13,8 @@ void Sys_CreateSplashWindow(void);
 void Sys_ShowSplashWindow(void);
 void Sys_HideSplashWindow(void);
 void Sys_DestroySplashWindow(void);
-qboolean Sys_FunctionsMatch(const uint8_t *leftFunction, const uint8_t *rightFunction);
+qboolean Sys_FunctionsMatch(const uint8_t *leftFunction,
+                            const uint8_t *rightFunction);
 uint32_t Sys_FunctionChecksum(const uint8_t *function);
 qboolean Sys_CheckCrashOrRerun(void);
 uint32_t Sys_GetExecutableChecksum(const void *imageBase);

@@ -58,102 +58,42 @@ static inline void x87f_init(void)
 }
 
 /* flds — widen a 32-bit float to the working precision (exact). */
-static inline x87f x87f_load_f32(float v)
-{
-    return (double)v;
-}
+static inline x87f x87f_load_f32(float v) { return (double)v; }
 /* fildl — load a 32-bit int. */
-static inline x87f x87f_load_i32(int32_t v)
-{
-    return (double)v;
-}
+static inline x87f x87f_load_i32(int32_t v) { return (double)v; }
 /* fldl — a 64-bit double is already the working precision (exact). */
-static inline x87f x87f_load_f64(double v)
-{
-    return v;
-}
+static inline x87f x87f_load_f64(double v) { return v; }
 
 /* Arithmetic: native double, one rounding to 53-bit mantissa per op. */
-static inline x87f x87f_mul(x87f a, x87f b)
-{
-    return a * b;
-}
-static inline x87f x87f_add(x87f a, x87f b)
-{
-    return a + b;
-}
-static inline x87f x87f_sub(x87f a, x87f b)
-{
-    return a - b;
-}
-static inline x87f x87f_div(x87f a, x87f b)
-{
-    return a / b;
-}
-static inline x87f x87f_sqrt(x87f a)
-{
-    return sqrt(a);
-}
-static inline x87f x87f_neg(x87f a)
-{
-    return -a;
-}
-static inline x87f x87f_abs(x87f a)
-{
-    return fabs(a);
-}
+static inline x87f x87f_mul(x87f a, x87f b) { return a * b; }
+static inline x87f x87f_add(x87f a, x87f b) { return a + b; }
+static inline x87f x87f_sub(x87f a, x87f b) { return a - b; }
+static inline x87f x87f_div(x87f a, x87f b) { return a / b; }
+static inline x87f x87f_sqrt(x87f a) { return sqrt(a); }
+static inline x87f x87f_neg(x87f a) { return -a; }
+static inline x87f x87f_abs(x87f a) { return fabs(a); }
 
 /* Comparisons: native `<`/`<=`/`==` are quiet in the default FP environment
  * (unordered -> false), matching fucompp's non-signaling semantics that the
  * reconstructed negated-form branch conditions rely on. */
-static inline bool x87f_lt(x87f a, x87f b)
-{
-    return a < b;
-}
-static inline bool x87f_le(x87f a, x87f b)
-{
-    return a <= b;
-}
-static inline bool x87f_eq(x87f a, x87f b)
-{
-    return a == b;
-}
-static inline bool x87f_lt_signaling(x87f a, x87f b)
-{
-    return a < b;
-}
-static inline bool x87f_le_signaling(x87f a, x87f b)
-{
-    return a <= b;
-}
-static inline bool x87f_eq_signaling(x87f a, x87f b)
-{
-    return a == b;
-}
+static inline bool x87f_lt(x87f a, x87f b) { return a < b; }
+static inline bool x87f_le(x87f a, x87f b) { return a <= b; }
+static inline bool x87f_eq(x87f a, x87f b) { return a == b; }
+static inline bool x87f_lt_signaling(x87f a, x87f b) { return a < b; }
+static inline bool x87f_le_signaling(x87f a, x87f b) { return a <= b; }
+static inline bool x87f_eq_signaling(x87f a, x87f b) { return a == b; }
 
 /* fstps — the store point x87 rounds a value to a 32-bit float slot. This is
  * the rounding that governs collision-classification behavior; it is the same
  * in this backend as in the exact one, only the value being rounded carries
  * 53-bit rather than 64-bit intermediate precision. */
-static inline float x87f_store_f32(x87f a)
-{
-    return (float)a;
-}
+static inline float x87f_store_f32(x87f a) { return (float)a; }
 /* fstpl — the working precision is already double; no-op. */
-static inline double x87f_store_f64(x87f a)
-{
-    return a;
-}
+static inline double x87f_store_f64(x87f a) { return a; }
 
 /* fistp under round-to-nearest (default control word). */
-static inline int32_t x87f_store_i32(x87f a)
-{
-    return (int32_t)rint(a);
-}
+static inline int32_t x87f_store_i32(x87f a) { return (int32_t)rint(a); }
 /* fistp under the truncate control word (Q_rint's toward-zero bracket). */
-static inline int32_t x87f_store_i32_trunc(x87f a)
-{
-    return (int32_t)trunc(a);
-}
+static inline int32_t x87f_store_i32_trunc(x87f a) { return (int32_t)trunc(a); }
 
 #endif /* CODUO_X87EMU_DOUBLE_H */

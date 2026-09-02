@@ -11,7 +11,8 @@ extern "C" {
 
 client_t *SV_GetPlayerByName(void);
 client_t *SV_GetPlayerByNum(void);
-int32_t SV_KickClient(client_t *client, char *nameOut, int32_t nameOutSize);
+int32_t SV_KickClient(client_t *client, char *nameOut,
+                      int32_t nameOutSize);
 int32_t SV_KickUser_f(char *nameOut, int32_t nameOutSize);
 int32_t SV_KickClient_f(char *nameOut, int32_t nameOutSize);
 void SV_TempBan_f(void);

@@ -10,7 +10,8 @@ extern "C" {
 char *Com_SkipPath(char *path);
 void Com_StripExtension(const char *input, char *output);
 void Com_StripFilename(const char *input, char *output);
-void Com_DefaultExtension(char *path, int32_t maximumSize, const char *extension);
+void Com_DefaultExtension(char *path, int32_t maximumSize,
+                          const char *extension);
 
 #ifdef __cplusplus
 }

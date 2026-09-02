@@ -37,20 +37,27 @@
 #include "client/cgame/globals.h"          /* cg_weaponInfos, cgWeaponInfo_t, cgame_syscall */
 #include "client/cgame/client_recovered.h" /* CG_XANIM_SET_GOAL_WEIGHT */
 
-void CG_StartWeaponAnim(int32_t weaponIndex, intptr_t animTree, int32_t activeAnimIndex)
+void CG_StartWeaponAnim(int32_t weaponIndex, intptr_t animTree,
+                        int32_t activeAnimIndex)
 {
     cgWeaponInfo_t *info = &cg_weaponInfos[weaponIndex];
 
     /* The 21 per-node dwords are cgWeaponInfo_t.animRates[1..21] at record
      * +0x8..+0x58 (LEA EDI,[EAX+0x8]). */
     int32_t animIndex;
-    for (animIndex = WEAPON_XANIM_IDLE; animIndex < WEAPON_XANIM_ADS_UP; ++animIndex) {
+    for (animIndex = WEAPON_XANIM_IDLE;
+         animIndex < WEAPON_XANIM_ADS_UP;
+         ++animIndex) {
         int32_t animRateBits = CG_FloatBits(info->animRates[animIndex]);
 
         if (animIndex == activeAnimIndex) {
-            cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, animIndex, CG_FloatBits(1.0f), CG_FloatBits(0.0f), animRateBits, 1, 1);
+            cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, animIndex,
+                          CG_FloatBits(1.0f), CG_FloatBits(0.0f),
+                          animRateBits, 1, 1);
         } else {
-            cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, animIndex, CG_FloatBits(0.0f), CG_FloatBits(0.0f), animRateBits, 0, 0);
+            cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, animIndex,
+                          CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                          animRateBits, 0, 0);
         }
     }
 }

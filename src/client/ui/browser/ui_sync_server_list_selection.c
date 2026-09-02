@@ -13,17 +13,16 @@ void UI_SyncServerListSelection(itemDef_t *item)
     int32_t offset;
     int32_t maximum;
 
-    if (item->special != (float)UI_SERVER_LIST_FEEDER)
-        return;
+    if (item->special != (float)UI_SERVER_LIST_FEEDER) return;
 
     listBox = (listBoxDef_t *)item->typeData;
     if (listBox->endPos == 0) {
         item->cursorPos = -1;
         return;
     }
-    if (ui_currentServer < 0)
-        return;
-    if (item->cursorPos < listBox->startPos || item->cursorPos > listBox->endPos) {
+    if (ui_currentServer < 0) return;
+    if (item->cursorPos < listBox->startPos ||
+        item->cursorPos > listBox->endPos) {
         return;
     }
 
@@ -34,10 +33,8 @@ void UI_SyncServerListSelection(itemDef_t *item)
     item->cursorPos = ui_currentServer;
 
     maximum = Item_ListBox_MaxScroll(item);
-    if (listBox->startPos > maximum)
-        listBox->startPos = maximum;
-    if (listBox->startPos < 0)
-        listBox->startPos = 0;
+    if (listBox->startPos > maximum) listBox->startPos = maximum;
+    if (listBox->startPos < 0) listBox->startPos = 0;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: bind the shared listbox entry points to the UI

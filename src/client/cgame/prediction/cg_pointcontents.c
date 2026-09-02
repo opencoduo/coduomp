@@ -8,11 +8,16 @@
 /* Layout guards for the collision-entity fields this function reads. Proven at the
  * i386 target width against the machine code (CMP [ESI], MOV [ESI+0x8c],
  * CMP [ESI+0xa0], LEA [ESI+0x214], ADD ESI,0x208). */
-_Static_assert(offsetof(centity_t, currentState.number) == 0x00, "centity_t.entityNum at +0x00");
-_Static_assert(offsetof(centity_t, currentState.itemIndex) == 0x8c, "centity_t.itemIndex at +0x8c");
-_Static_assert(offsetof(centity_t, currentState.solid) == 0xa0, "centity_t.solid at +0xa0");
-_Static_assert(offsetof(centity_t, lerpOrigin) == 0x208, "centity_t.lerpOrigin at +0x208");
-_Static_assert(offsetof(centity_t, lerpAngles) == 0x214, "centity_t.lerpAngles at +0x214");
+_Static_assert(offsetof(centity_t, currentState.number) == 0x00,
+               "centity_t.entityNum at +0x00");
+_Static_assert(offsetof(centity_t, currentState.itemIndex) == 0x8c,
+               "centity_t.itemIndex at +0x8c");
+_Static_assert(offsetof(centity_t, currentState.solid) == 0xa0,
+               "centity_t.solid at +0xa0");
+_Static_assert(offsetof(centity_t, lerpOrigin) == 0x208,
+               "centity_t.lerpOrigin at +0x208");
+_Static_assert(offsetof(centity_t, lerpAngles) == 0x214,
+               "centity_t.lerpAngles at +0x214");
 
 /*
  * CG_PointContents (0x30035420)
@@ -60,10 +65,12 @@ _Static_assert(offsetof(centity_t, lerpAngles) == 0x214, "centity_t.lerpAngles a
  *   300354a4  EAX = acc & mask
  *   300354a7  RET
  */
-int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum, int32_t contentMask)
+int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum,
+                         int32_t contentMask)
 {
     /* World contents seed the accumulator before inline-model contributions. */
-    int32_t acc = (int32_t)cgame_syscall(CG_CM_POINT_CONTENTS, (intptr_t)point, 0);
+    int32_t acc = (int32_t)cgame_syscall(CG_CM_POINT_CONTENTS,
+                                (intptr_t)point, 0);
 
     /* Signed loop bound: JLE / JL against cg_numSolidEntities. */
     for (int32_t i = 0; i < cg_numSolidEntities; i++) {
@@ -81,8 +88,10 @@ int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum, int32_t cont
             continue;
         }
 
-        acc |= (int32_t)cgame_syscall(CG_CM_TRANSFORMED_POINT_CONTENTS, (intptr_t)point, inlineModel, (intptr_t)cent->lerpOrigin,
-                                      (intptr_t)cent->lerpAngles);
+        acc |= (int32_t)cgame_syscall(CG_CM_TRANSFORMED_POINT_CONTENTS,
+                             (intptr_t)point, inlineModel,
+                             (intptr_t)cent->lerpOrigin,
+                             (intptr_t)cent->lerpAngles);
     }
 
     return acc & contentMask;

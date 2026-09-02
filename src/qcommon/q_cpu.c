@@ -22,7 +22,8 @@
  * instruction-level difference is outside the source contract. */
 uint32_t rdtsc(void)
 {
-#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
+#if defined(_M_IX86) || defined(_M_X64) || \
+    defined(__i386__) || defined(__x86_64__)
     return (uint32_t)__rdtsc();
 #elif defined(__APPLE__)
     /* The supporting Mac client reads the PowerPC time base. */
@@ -31,6 +32,7 @@ uint32_t rdtsc(void)
     struct timespec counter;
 
     (void)clock_gettime(CLOCK_MONOTONIC, &counter);
-    return (uint32_t)((uint64_t)counter.tv_sec * UINT64_C(1000000000) + (uint64_t)counter.tv_nsec);
+    return (uint32_t)((uint64_t)counter.tv_sec * UINT64_C(1000000000) +
+                      (uint64_t)counter.tv_nsec);
 #endif
 }

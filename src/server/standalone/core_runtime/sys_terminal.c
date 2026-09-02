@@ -70,14 +70,18 @@ void Sys_InitTerminalConsole(void)
     Sys_TTYResetLine(&sys_ttyCurrentLine);
     tcgetattr(SYS_STDIN_FILE_DESCRIPTOR, &sys_ttyOriginalTermios);
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    sys_ttyEraseChar = (unsigned char)terminalSettings.c_cc[SYS_LINUX_TERMIOS_VERASE_INDEX];
-    sys_ttyEofChar = (unsigned char)terminalSettings.c_cc[SYS_LINUX_TERMIOS_VEOF_INDEX];
+    sys_ttyEraseChar =
+        (unsigned char)terminalSettings.c_cc[SYS_LINUX_TERMIOS_VERASE_INDEX];
+    sys_ttyEofChar =
+        (unsigned char)terminalSettings.c_cc[SYS_LINUX_TERMIOS_VEOF_INDEX];
 
     terminalSettings = sys_ttyOriginalTermios;
     terminalSettings.c_lflag &= ~SYS_LINUX_TERMIOS_NONCANONICAL_LOCAL_MASK;
     terminalSettings.c_iflag &= ~SYS_LINUX_TERMIOS_RAW_INPUT_MASK;
-    terminalSettings.c_cc[SYS_LINUX_TERMIOS_VMIN_INDEX] = SYS_LINUX_TERMIOS_MIN_READ_BYTES;
-    terminalSettings.c_cc[SYS_LINUX_TERMIOS_VTIME_INDEX] = SYS_LINUX_TERMIOS_READ_TIMEOUT;
+    terminalSettings.c_cc[SYS_LINUX_TERMIOS_VMIN_INDEX] =
+        SYS_LINUX_TERMIOS_MIN_READ_BYTES;
+    terminalSettings.c_cc[SYS_LINUX_TERMIOS_VTIME_INDEX] =
+        SYS_LINUX_TERMIOS_READ_TIMEOUT;
     tcsetattr(SYS_STDIN_FILE_DESCRIPTOR, TCSADRAIN, &terminalSettings);
     sys_ttyConsoleActive = 1;
 #endif

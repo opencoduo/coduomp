@@ -50,10 +50,12 @@ void Menus_HandleOOBClick(menuDef_t *menu, int32_t key, qboolean down)
             uint32_t clearIndexBits = lastIndexBits;
 
             while (coduo_int32_from_bits(clearIndexBits) >= 0) {
-                menuStack[clearIndexBits]->window.flags &= ~(int32_t)WINDOW_HASFOCUS;
+                menuStack[clearIndexBits]->window.flags &=
+                    ~(int32_t)WINDOW_HASFOCUS;
                 clearIndexBits -= 1u;
             }
-            menuStack[indexBits]->window.flags |= (int32_t)(WINDOW_HASFOCUS | WINDOW_VISIBLE);
+            menuStack[indexBits]->window.flags |=
+                (int32_t)(WINDOW_HASFOCUS | WINDOW_VISIBLE);
 
             cursorY = display->cursory;
             cursorX = display->cursorx;
@@ -64,7 +66,8 @@ void Menus_HandleOOBClick(menuDef_t *menu, int32_t key, qboolean down)
                 menuDef_t *movementMenu = menuStack[indexBits];
                 int32_t movementX = movementDisplay->cursorx;
 
-                Menu_HandleMouseMove(movementMenu, (float)movementX, (float)movementY);
+                Menu_HandleMouseMove(movementMenu,
+                                     (float)movementX, (float)movementY);
             }
             Menu_HandleKey(menuStack[indexBits], key, down);
             display = DC;
@@ -78,7 +81,8 @@ void Menus_HandleOOBClick(menuDef_t *menu, int32_t key, qboolean down)
         menuDef_t *registeredMenu = &Menus[0];
 
         while (remaining > 0) {
-            if (((uint32_t)registeredMenu->window.flags & WINDOW_MOUSE_ACTIVE) != 0u) {
+            if (((uint32_t)registeredMenu->window.flags &
+                 WINDOW_MOUSE_ACTIVE) != 0u) {
                 visibleCountBits += 1u;
             }
             ++registeredMenu;
@@ -139,9 +143,13 @@ void Menu_HandleKey(menuDef_t *menu, int32_t key, qboolean down)
         return;
     }
     if (down && ((uint32_t)menu->window.flags & WINDOW_MODAL) == 0u &&
-        (display = DC, cursorY = display->cursory, cursorX = display->cursorx,
-         !Rect_ContainsPoint(&menu->window.rect, (float)cursorX, (float)cursorY)) &&
-        !inHandleKey && (key == K_MOUSE1 || key == K_MOUSE2 || key == K_MOUSE3)) {
+        (display = DC,
+         cursorY = display->cursory,
+         cursorX = display->cursorx,
+         !Rect_ContainsPoint(&menu->window.rect,
+                             (float)cursorX, (float)cursorY)) &&
+        !inHandleKey &&
+        (key == K_MOUSE1 || key == K_MOUSE2 || key == K_MOUSE3)) {
         inHandleKey = qtrue;
         Menus_HandleOOBClick(menu, key, down);
         inHandleKey = qfalse;
@@ -209,7 +217,8 @@ void Menu_HandleKey(menuDef_t *menu, int32_t key, qboolean down)
     case K_KP_ENTER:
     case K_MOUSE3:
         if (focusItem != NULL) {
-            if (focusItem->type == ITEM_TYPE_EDITFIELD || focusItem->type == ITEM_TYPE_NUMERICFIELD ||
+            if (focusItem->type == ITEM_TYPE_EDITFIELD ||
+                focusItem->type == ITEM_TYPE_NUMERICFIELD ||
                 focusItem->type == ITEM_TYPE_UPREDITFIELD) {
                 display = DC;
                 focusItem->cursorPos = 0;
@@ -270,15 +279,18 @@ void Menu_HandleKey(menuDef_t *menu, int32_t key, qboolean down)
             cursorY = display->cursory;
             cursorX = display->cursorx;
             correctedRect = Item_CorrectedTextRect(focusItem);
-            if (Rect_ContainsPoint(correctedRect, (float)cursorX, (float)cursorY)) {
+            if (Rect_ContainsPoint(correctedRect,
+                                   (float)cursorX, (float)cursorY)) {
                 Item_Action(focusItem);
             }
-        } else if (focusItem->type == ITEM_TYPE_EDITFIELD || focusItem->type == ITEM_TYPE_NUMERICFIELD ||
+        } else if (focusItem->type == ITEM_TYPE_EDITFIELD ||
+                   focusItem->type == ITEM_TYPE_NUMERICFIELD ||
                    focusItem->type == ITEM_TYPE_UPREDITFIELD) {
             display = DC;
             cursorY = display->cursory;
             cursorX = display->cursorx;
-            if (Rect_ContainsPoint(&focusItem->window.rect, (float)cursorX, (float)cursorY)) {
+            if (Rect_ContainsPoint(&focusItem->window.rect,
+                                   (float)cursorX, (float)cursorY)) {
                 editFieldDef_t *edit = Item_GetEditFieldDef(focusItem);
 
                 if (edit != NULL) {
@@ -294,7 +306,8 @@ void Menu_HandleKey(menuDef_t *menu, int32_t key, qboolean down)
             display = DC;
             cursorY = display->cursory;
             cursorX = display->cursorx;
-            if (Rect_ContainsPoint(&focusItem->window.rect, (float)cursorX, (float)cursorY)) {
+            if (Rect_ContainsPoint(&focusItem->window.rect,
+                                   (float)cursorX, (float)cursorY)) {
                 Item_Action(focusItem);
             }
         }

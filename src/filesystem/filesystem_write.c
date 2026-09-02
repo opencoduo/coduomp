@@ -19,13 +19,16 @@ void FS_Printf(int32_t fileHandle, const char *format, ...)
     va_list arguments;
 
     va_start(arguments, format);
-    const int32_t formattedLength = vsnprintf(buffer, sizeof(buffer), format, arguments);
+    const int32_t formattedLength =
+        vsnprintf(buffer, sizeof(buffer), format, arguments);
     va_end(arguments);
 
     /* NOT_FROM_ORIGINAL_SOURCE: write only a complete formatted record that
      * fits the fixed staging buffer. */
-    if (formattedLength < 0 || (size_t)formattedLength >= sizeof(buffer)) {
-        Com_Printf("FS_Printf: formatted output exceeds %i bytes\n", FS_PRINTF_BUFFER_SIZE - 1);
+    if (formattedLength < 0 ||
+        (size_t)formattedLength >= sizeof(buffer)) {
+        Com_Printf("FS_Printf: formatted output exceeds %i bytes\n",
+                   FS_PRINTF_BUFFER_SIZE - 1);
         return;
     }
 
@@ -56,7 +59,8 @@ int32_t FS_Write(const void *buffer, int32_t byteCount, int32_t handle)
     uint32_t remaining = (uint32_t)byteCount;
     qboolean sawZeroByteWrite = qfalse;
     while (remaining != 0) {
-        const uint32_t bytesWritten = (uint32_t)fwrite(cursor, 1, (size_t)remaining, file);
+        const uint32_t bytesWritten = (uint32_t)fwrite(
+            cursor, 1, (size_t)remaining, file);
         if (bytesWritten == 0) {
             if (sawZeroByteWrite != qfalse) {
                 Com_Printf("FS_Write: 0 bytes written\n");
@@ -79,13 +83,13 @@ int32_t FS_Write(const void *buffer, int32_t byteCount, int32_t handle)
 
 /* Source: CoDUOMP.exe 0x0042e910..0x0042e967. Name and signature: exact
  * same-module Mac symbol FS_WriteFile. */
-void FS_WriteFile(const char *qpath, const void *buffer, int32_t byteCount)
+void FS_WriteFile(const char *qpath, const void *buffer,
+                  int32_t byteCount)
 {
     filesystem_compat_check_started();
 
     if (qpath == NULL || buffer == NULL)
-        Com_Error(ERR_FATAL, "\x15"
-                             "FS_WriteFile: NULL parameter");
+        Com_Error(ERR_FATAL, "\x15" "FS_WriteFile: NULL parameter");
 
     const int32_t handle = FS_FOpenFileWrite(qpath);
     if (handle == 0) {

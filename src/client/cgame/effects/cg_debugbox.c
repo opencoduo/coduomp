@@ -52,6 +52,11 @@ void CG_DebugBox(const vec3_t mins, const vec3_t maxs, const float color[4], int
         uint32_t b = cg_debugBoxEdges[i][1];   /* MOV EAX,[ESI+0x300718bc] */
         /* PUSH 0; PUSH EDI(param); PUSH EBX(color); PUSH ECX(&corner[b]);
          * PUSH EAX(&corner[a]); PUSH 0xca; CALL cgame_syscall; ADD ESP,0x18 */
-        cgame_syscall(CG_ADD_DEBUG_LINE, (intptr_t)corners[a], (intptr_t)corners[b], (intptr_t)color, (int32_t)param, 0);
+        cgame_syscall(CG_ADD_DEBUG_LINE,
+                      (intptr_t)corners[a],
+                      (intptr_t)corners[b],
+                      (intptr_t)color,
+                      (int32_t)param,
+                      0);
     }
 }

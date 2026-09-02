@@ -35,9 +35,13 @@ qboolean FS_DirectoryHasNonDotEntries(const char *path)
         return qfalse;
 
     do {
-        if ((findData.attrib & _A_SUBDIR) == 0 || (Q_stricmpn(findData.name, ".", FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
-                                                   Q_stricmpn(findData.name, "..", FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
-                                                   Q_stricmpn(findData.name, "CVS", FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0)) {
+        if ((findData.attrib & _A_SUBDIR) == 0 ||
+            (Q_stricmpn(findData.name, ".",
+                        FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
+             Q_stricmpn(findData.name, "..",
+                        FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
+             Q_stricmpn(findData.name, "CVS",
+                        FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0)) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             (void)_findclose(findHandle);
             return qtrue;
@@ -56,9 +60,12 @@ qboolean FS_DirectoryHasNonDotEntries(const char *path)
         const struct dirent *const entry = readdir(directory);
         if (entry == NULL)
             break;
-        if (Q_stricmpn(entry->d_name, ".", FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
-            Q_stricmpn(entry->d_name, "..", FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
-            Q_stricmpn(entry->d_name, "CVS", FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0) {
+        if (Q_stricmpn(entry->d_name, ".",
+                       FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
+            Q_stricmpn(entry->d_name, "..",
+                       FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0 &&
+            Q_stricmpn(entry->d_name, "CVS",
+                       FS_DIRECTORY_NAME_COMPARE_LIMIT) != 0) {
             (void)closedir(directory);
             return qtrue;
         }
@@ -84,7 +91,8 @@ qboolean FS_DirectoryHasNonDotEntries(const char *path)
         return qfalse;
 
     do {
-        if (strcmp(findData.name, ".") != 0 && strcmp(findData.name, "..") != 0) {
+        if (strcmp(findData.name, ".") != 0 &&
+            strcmp(findData.name, "..") != 0) {
             (void)_findclose(findHandle);
             return qtrue;
         }
@@ -103,7 +111,8 @@ qboolean FS_DirectoryHasNonDotEntries(const char *path)
         const struct dirent *const entry = readdir(directory);
         if (entry == NULL)
             break;
-        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+        if (strcmp(entry->d_name, ".") != 0 &&
+            strcmp(entry->d_name, "..") != 0) {
             hasEntries = qtrue;
             break;
         }

@@ -102,9 +102,7 @@
 #define SHORT2ANGLE 0.0054931640625f
 
 /* MAX_GENTITIES-1 sentinel: cg_predictedPlayerState.viewLockedEntityNum == 0x3ff means "no vehicle entity". */
-enum {
-    CG_EFFECT_ENTITY_NONE = 0x3ff
-};
+enum { CG_EFFECT_ENTITY_NONE = 0x3ff };
 
 /* The three contiguous per-frame view-angle delta inputs (signed ints, FILD'd then
  * scaled by SHORT2ANGLE). Owned across the vehicle-view family; two carry the
@@ -124,8 +122,7 @@ void CG_CalcVehicleViewValues(void)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_CalcVehicleViewValues: invalid view-lock "
+                  "\x15" "CG_CalcVehicleViewValues: invalid view-lock "
                   "entity %i",
                   entityNum);
         return;
@@ -133,7 +130,8 @@ void CG_CalcVehicleViewValues(void)
     centity_t *vehicle = &cg_entities[entityNum];
 
     /* 0x300405b4: the vehicle's DObj skeleton handle (0 => no skeleton this frame). */
-    intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
+    intptr_t dobjHandle =
+        cgame_syscall(CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
 
     /* 0x300405c4 / 0x300405d6 / 0x300405e3: require the gunner state, a
      * non-transitional vehicle position, and a valid DObj handle. */
@@ -156,7 +154,8 @@ void CG_CalcVehicleViewValues(void)
      * the DObj handle. A prior pass passed `vehicle` as self; every sibling
      * (cg_calcturretviewvalues/cg_calcvehicleviewpos/cg_calcmuzzlepoint) passes the
      * handle. */
-    if (!CG_DObjGetWorldTagMatrix((void *)dobjHandle, "tag_player", vehicle, &worldMatrix)) {
+    if (!CG_DObjGetWorldTagMatrix((void *)dobjHandle, "tag_player", vehicle,
+                                  &worldMatrix)) {
         return;
     }
 
@@ -170,8 +169,10 @@ void CG_CalcVehicleViewValues(void)
     /* 0x3004061e..0x30040662: second gate cluster. On any failure, save the current
      * tagAxis (transposed) into the previous-frame basis and return. */
     if ((cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) == 0 ||
-        cg_predictedPlayerState.viewLockedEntityNum == CG_EFFECT_ENTITY_NONE || vehicle->currentState.stateFilter == 5 ||
-        BG_AllowPlayerWeaponAtVehiclePos(cg_predictedPlayerState.vehicleType, cg_predictedPlayerState.vehiclePosition) != 0 ||
+        cg_predictedPlayerState.viewLockedEntityNum == CG_EFFECT_ENTITY_NONE ||
+        vehicle->currentState.stateFilter == 5 ||
+        BG_AllowPlayerWeaponAtVehiclePos(cg_predictedPlayerState.vehicleType,
+                                         cg_predictedPlayerState.vehiclePosition) != 0 ||
         cg_predictedPlayerState.currentWeapon == 0) {
         /* 0x3004079b: MatrixTranspose(in=tagAxis, out=cg_vehicleViewPrevAxis). */
         MatrixTranspose(tagAxis, cg_vehicleViewPrevAxis);
@@ -218,9 +219,15 @@ void CG_CalcVehicleViewValues(void)
     /* 0x30040711: this frame's engine-supplied angle deltas, SHORT2ANGLE-scaled.
      * FILD reads them as signed int32; the middle global is shared with pmovesingle. */
     vec3_t angleDelta;
-    angleDelta[0] = (float)((long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[0]) * SHORT2ANGLE);
-    angleDelta[1] = (float)((long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[1]) * SHORT2ANGLE);
-    angleDelta[2] = (float)((long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[2]) * SHORT2ANGLE);
+    angleDelta[0] = (float)(
+        (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[0]) *
+        SHORT2ANGLE);
+    angleDelta[1] = (float)(
+        (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[1]) *
+        SHORT2ANGLE);
+    angleDelta[2] = (float)(
+        (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[2]) *
+        SHORT2ANGLE);
 
     /* 0x3004074c: angleDelta = cg_predictedPlayerState.viewAngles - angleDelta (per-axis short-way).
      * 0x30040758: angleDelta -= cg_adsViewErrorAngles (the idle aim-wander offset). */

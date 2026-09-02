@@ -3,12 +3,14 @@
 
 #include "../client_recovered.h"
 
-void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader, int32_t radius, int32_t duration)
+void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader,
+                             int32_t radius, int32_t duration)
 {
     localEntity_t *le = CG_AllocLocalEntity();
     le->leType = LE_SCALE_FADE;
     le->leFlags = LEF_SCALE_FADE_NO_RADIUS;
-    le->endTime = coduo_int32_from_bits((uint32_t)cg_time + (uint32_t)duration);
+    le->endTime = coduo_int32_from_bits(
+        (uint32_t)cg_time + (uint32_t)duration);
     /* duration enters via a bare FILD fed straight into FDIVR (0x30048055 FILD;
      * 0x30048061 FDIVR 1.0f) with no FSTP DWORD between, so drop the (float) cast
      * (Class 4). */

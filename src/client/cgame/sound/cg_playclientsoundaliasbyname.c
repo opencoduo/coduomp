@@ -39,5 +39,6 @@ void CG_PlayClientSoundAliasByName(const char *sound)
 {
     /* 3002ca35 / 3002ca38: the local player's own sound channel object and client
      * number come straight out of the current snapshot. */
-    (void)CG_PlaySoundAliasByName(cg_snap->ps.psClientNum, &cg_snap->ps.psOrigin, sound);
+    (void)CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
+                                  &cg_snap->ps.psOrigin, sound);
 }

@@ -38,9 +38,13 @@ gentity_t *script_object_to_player(uint32_t scriptObject)
             targetname = SL_ConvertToString(ent->targetname);
         }
 
-        Scr_Error(va("only valid on players; called on entity %i at %.0f %.0f %.0f classname %s targetname %s\n", (int)scriptObject,
-                     (double)ent->currentOrigin[0], (double)ent->currentOrigin[1], (double)ent->currentOrigin[2],
-                     SL_ConvertToString(ent->scriptClassname), targetname));
+        Scr_Error(va("only valid on players; called on entity %i at %.0f %.0f %.0f classname %s targetname %s\n",
+                     (int)scriptObject,
+                     (double)ent->currentOrigin[0],
+                     (double)ent->currentOrigin[1],
+                     (double)ent->currentOrigin[2],
+                     SL_ConvertToString(ent->scriptClassname),
+                     targetname));
     }
 
     return ent;

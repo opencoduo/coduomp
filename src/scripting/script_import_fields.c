@@ -13,7 +13,8 @@ enum {
     SCRIPT_FIELD_TYPE_INT = 5,
     SCRIPT_FIELD_OFFSET_SIZE = sizeof(uint16_t),
     SCRIPT_FIELD_TYPE_SIZE = sizeof(int8_t),
-    SCRIPT_FIELD_VALUE_SIZE = SCRIPT_FIELD_OFFSET_SIZE + SCRIPT_FIELD_TYPE_SIZE,
+    SCRIPT_FIELD_VALUE_SIZE =
+        SCRIPT_FIELD_OFFSET_SIZE + SCRIPT_FIELD_TYPE_SIZE,
     SCRIPT_FIELD_NOT_FOUND = 0,
     SCRIPT_FIELD_QPATH_SIZE = MAX_QPATH,
     SCRIPT_FIELD_STREAM_TERMINATOR_SIZE = 1
@@ -50,20 +51,19 @@ uint16_t Scr_FindField(const char *name, int32_t *typeOut)
 static void Scr_AddFieldsForFile(const char *filename)
 {
     int32_t fileHandle;
-    int32_t fileLength = FS_FOpenFileByMode(filename, &fileHandle, FS_READ);
+    int32_t fileLength =
+        FS_FOpenFileByMode(filename, &fileHandle, FS_READ);
 
     if (fileLength < 0) {
         /* NOT_FROM_ORIGINAL_SOURCE: keep the filename as data through the
          * single variadic formatting pass. */
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "cannot find '%s'",
-                  filename);
+        Com_Error(ERR_DROP, "\x15" "cannot find '%s'", filename);
     }
 
     /* Both i386 bodies increment the dword length before passing the
      * allocation extent.  Express the original wrapping ADD on wider hosts. */
-    char *fileText = SCRIPT_HUNK_ALLOC_TEMP_HIGH((size_t)((uint32_t)fileLength + 1u));
+    char *fileText = SCRIPT_HUNK_ALLOC_TEMP_HIGH(
+        (size_t)((uint32_t)fileLength + 1u));
     FS_Read(fileText, fileLength, fileHandle);
     fileText[fileLength] = '\0';
     FS_FCloseFile(fileHandle);
@@ -90,9 +90,7 @@ static void Scr_AddFieldsForFile(const char *filename)
         } else {
             /* NOT_FROM_ORIGINAL_SOURCE: keep parsed tokens as data through the
              * single variadic formatting pass. */
-            Com_Error(ERR_DROP,
-                      "\x15"
-                      "unknown type '%s' in '%s'",
+            Com_Error(ERR_DROP, "\x15" "unknown type '%s' in '%s'",
                       typeToken, filename);
             return;
         }
@@ -100,9 +98,7 @@ static void Scr_AddFieldsForFile(const char *filename)
         char *name = Com_Parse(&parse);
         if (parse == NULL) {
             /* NOT_FROM_ORIGINAL_SOURCE: keep the completed path as data. */
-            Com_Error(ERR_DROP,
-                      "\x15"
-                      "missing field name in '%s'",
+            Com_Error(ERR_DROP, "\x15" "missing field name in '%s'",
                       filename);
         }
 
@@ -119,13 +115,13 @@ static void Scr_AddFieldsForFile(const char *filename)
         int32_t existingType;
         if (Scr_FindField(name, &existingType) != 0) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "duplicate key '%s' in '%s'",
-                      name, filename);
+                      "\x15" "duplicate key '%s' in '%s'", name, filename);
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        uint8_t *record = TempMalloc(nameSize + SCRIPT_FIELD_VALUE_SIZE) - SCRIPT_FIELD_STREAM_TERMINATOR_SIZE;
+        uint8_t *record =
+            TempMalloc(nameSize + SCRIPT_FIELD_VALUE_SIZE) -
+            SCRIPT_FIELD_STREAM_TERMINATOR_SIZE;
         memcpy(record, name, nameSize);
         memcpy(record + nameSize, &offset, sizeof(offset));
         record[nameSize + SCRIPT_FIELD_OFFSET_SIZE] = (uint8_t)fieldType;
@@ -142,7 +138,8 @@ void Scr_AddFields(const char *path, const char *extension)
 
     TempMemoryReset();
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    script_importFieldBuffer = TempMalloc(SCRIPT_FIELD_STREAM_TERMINATOR_SIZE);
+    script_importFieldBuffer =
+        TempMalloc(SCRIPT_FIELD_STREAM_TERMINATOR_SIZE);
     *script_importFieldBuffer = '\0';
 
     for (int32_t fileIndex = 0; fileIndex < fileCount; ++fileIndex) {
@@ -153,11 +150,13 @@ void Scr_AddFields(const char *path, const char *extension)
         /* NOT_FROM_ORIGINAL_SOURCE: require the complete mounted field qpath,
          * separator, and terminator to fit; do not substitute a truncated
          * filename. */
-        if (pathLength > sizeof(qpath) - 2 || fileLength > sizeof(qpath) - pathLength - 2) {
+        if (pathLength > sizeof(qpath) - 2 ||
+            fileLength > sizeof(qpath) - pathLength - 2) {
             Com_Printf("WARNING: ignoring overlong script-field path\n");
             continue;
         }
-        Com_sprintf(qpath, sizeof(qpath), "%s/%s", path, files[fileIndex]);
+        Com_sprintf(qpath, sizeof(qpath), "%s/%s", path,
+                    files[fileIndex]);
         Scr_AddFieldsForFile(qpath);
     }
 

@@ -74,13 +74,18 @@ void Com_ErrorCleanup(void)
 
     case ERR_DROP:
     case ERR_DISCONNECT:
-        Com_Printf("\n********************\nERROR: %s\n********************\n", com_errorMessage);
-        if (com_errorCode == ERR_DROP && (dedicated == NULL || dedicated->integer == 0)) {
+        Com_Printf(
+            "\n********************\nERROR: %s\n********************\n",
+            com_errorMessage);
+        if (com_errorCode == ERR_DROP &&
+            (dedicated == NULL || dedicated->integer == 0)) {
             CL_ConsoleFixPosition();
         }
         Com_Shutdown(com_errorMessage);
         com_errorEntered = qfalse;
-        if (com_errorCode == ERR_DROP && Cvar_Get("r_vc_compile", "0", 0)->integer == COM_VC_COMPILE_QUIT_MODE) {
+        if (com_errorCode == ERR_DROP &&
+            Cvar_Get("r_vc_compile", "0", 0)->integer ==
+                COM_VC_COMPILE_QUIT_MODE) {
             Com_Quit_f();
         }
         break;
@@ -107,21 +112,24 @@ void Com_CleanupSkeletons(void)
  * Name and argument: exact same-module Mac symbol Com_SetErrorMessage. */
 void Com_SetErrorMessage(const char *message)
 {
-    (void)Cvar_Get("com_errorMessage", "", COM_ERROR_MESSAGE_CVAR_FLAGS);
+    (void)Cvar_Get(
+        "com_errorMessage", "", COM_ERROR_MESSAGE_CVAR_FLAGS);
 
     if (message == NULL || message[0] == '\0') {
         Cvar_Set("com_errorMessage", "");
         return;
     }
 
-    const char *const localized = SEH_LocalizeTextMessage(message, "error message", LOCMSG_NOERR);
+    const char *const localized = SEH_LocalizeTextMessage(
+        message, "error message", LOCMSG_NOERR);
     if (localized == NULL) {
         Cvar_Set("com_errorMessage", message);
         return;
     }
 
     Cvar_Set("com_errorMessage", localized);
-    Q_strncpyz(com_errorMessage, localized, COM_ERROR_MESSAGE_CAPACITY);
+    Q_strncpyz(com_errorMessage, localized,
+               COM_ERROR_MESSAGE_CAPACITY);
 }
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -141,7 +149,8 @@ _Noreturn void Com_Error(errorParm_t errorCode, const char *format, ...)
     va_end(args);
     Q_strncpyz(originalMessage, com_errorMessage, sizeof(originalMessage));
 
-    if (errorCode == ERR_SCRIPT || errorCode == ERR_LOCALIZATION) {
+    if (errorCode == ERR_SCRIPT ||
+        errorCode == ERR_LOCALIZATION) {
         errorCode = ERR_DROP;
     }
 
@@ -149,16 +158,21 @@ _Noreturn void Com_Error(errorParm_t errorCode, const char *format, ...)
     FS_PureServerSetLoadedPaks("", "");
     SEH_UpdateLanguageInfo();
 
-    if (errorCode == ERR_DISCONNECT || errorCode == ERR_NEED_CD || errorCode == ERR_END_GAME) {
+    if (errorCode == ERR_DISCONNECT ||
+        errorCode == ERR_NEED_CD ||
+        errorCode == ERR_END_GAME) {
         if (com_errorMessage[0] != '\0') {
-            const char *const localized = SEH_LocalizeTextMessage(com_errorMessage, "error message", LOCMSG_NOERR);
+            const char *const localized = SEH_LocalizeTextMessage(
+                com_errorMessage, "error message", LOCMSG_NOERR);
             if (localized != NULL) {
-                Q_strncpyz(com_errorMessage, localized, COM_ERROR_MESSAGE_CAPACITY);
+                Q_strncpyz(com_errorMessage, localized,
+                           COM_ERROR_MESSAGE_CAPACITY);
             }
         }
     } else {
         if (coduo_uiVm != NULL) {
-            (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
         Com_SetErrorMessage(com_errorMessage);
     }
@@ -180,9 +194,11 @@ _Noreturn void Com_Error(errorParm_t errorCode, const char *format, ...)
     Com_FreeWeaponInfoMemory(COM_WEAPON_MEMORY_CGAME_OWNER, qfalse);
 
     const uint32_t now = Sys_Milliseconds();
-    if ((int32_t)(now - com_lastErrorTime) < COM_ERROR_BURST_INTERVAL_MSEC) {
+    if ((int32_t)(now - com_lastErrorTime) <
+        COM_ERROR_BURST_INTERVAL_MSEC) {
         ++com_consecutiveErrorCount;
-        if (com_consecutiveErrorCount > COM_ERROR_BURST_FATAL_THRESHOLD) {
+        if (com_consecutiveErrorCount >
+            COM_ERROR_BURST_FATAL_THRESHOLD) {
             errorCode = ERR_FATAL;
         }
     } else {
@@ -205,7 +221,8 @@ _Noreturn void Com_Error(errorParm_t errorCode, const char *format, ...)
     }
 
     CL_Shutdown();
-    SV_Shutdown(va("EXE_SERVER_FATAL_CRASHED\x15 %s", originalMessage));
+    SV_Shutdown(va("EXE_SERVER_FATAL_CRASHED\x15 %s",
+                   originalMessage));
     Hunk_Clear();
     Com_Close();
     Sys_Error("%s", com_errorMessage);

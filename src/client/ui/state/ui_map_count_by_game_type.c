@@ -7,7 +7,8 @@ int32_t UI_MapCountByGameType(void)
 {
     int32_t mapIndex;
     int32_t count = 0;
-    uint32_t gameTypeBit = 1u << ((uint32_t)ui_netGameType & 31u);
+    uint32_t gameTypeBit =
+        1u << ((uint32_t)ui_netGameType & 31u);
 
     for (mapIndex = 0; mapIndex < ui_mapCount; ++mapIndex) {
         uiMapInfo_t *map = &ui_maps[mapIndex];

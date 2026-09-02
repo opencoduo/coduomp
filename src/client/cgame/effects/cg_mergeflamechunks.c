@@ -90,12 +90,14 @@ void CG_MergeFlameChunks(flameChunk_t *f1, flameChunk_t *f2)
     /* 0x30025900..0936: field_130 fill. TEST AH,0x44 plus JNP skips when
      * f2 compares equal to zero; nonzero or unordered f2 values continue. The
      * second TEST/JP permits the copy only when f1 compares equal to zero. */
-    if (f2->lifeStartTime != FLAME_MERGE_ZERO && f1->lifeStartTime == FLAME_MERGE_ZERO) {
+    if (f2->lifeStartTime != FLAME_MERGE_ZERO &&
+        f1->lifeStartTime == FLAME_MERGE_ZERO) {
         f1->lifeStartTime = f2->lifeStartTime;               /* 0x3002592a/30 (double) */
     }
 
     /* 0x30025936..096c: field_140 override, identical fill-if-zero rule. */
-    if (f2->lifeStartTime2 != FLAME_MERGE_ZERO && f1->lifeStartTime2 == FLAME_MERGE_ZERO) {
+    if (f2->lifeStartTime2 != FLAME_MERGE_ZERO &&
+        f1->lifeStartTime2 == FLAME_MERGE_ZERO) {
         f1->lifeStartTime2 = f2->lifeStartTime2;               /* 0x30025960/66 (double) */
     }
 

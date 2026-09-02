@@ -89,12 +89,14 @@ _Static_assert(offsetof(rectDef_t, h) == 0xc, "rectDef_t.h +0xc");
 static const char CG_HUD_EMIT_VALUE_FORMAT[] = "%i";
 
 /* The value-text buffer size (MOV ESI,0x10 -> Com_sprintf size argument). */
-enum {
-    CG_HUD_EMIT_VALUE_BUFSIZE = 16
-};
+enum { CG_HUD_EMIT_VALUE_BUFSIZE = 16 };
 
-void CG_HudEmitIconOrValue(qhandle_t hIcon /*ECX*/, const rectDef_t *rect /*EBX*/, int32_t drawParamA /*stack arg0, EBP*/,
-                           int32_t drawParamB /*stack arg1*/, const vec4_t drawColor /*stack arg2*/, int32_t drawParamD /*stack arg3*/)
+void CG_HudEmitIconOrValue(qhandle_t hIcon /*ECX*/,
+                           const rectDef_t *rect /*EBX*/,
+                           int32_t drawParamA /*stack arg0, EBP*/,
+                           int32_t drawParamB /*stack arg1*/,
+                           const vec4_t drawColor /*stack arg2*/,
+                           int32_t drawParamD /*stack arg3*/)
 {
     int32_t idx = cg_currentSelectedPlayer_vmCvar.integer;
 
@@ -105,8 +107,10 @@ void CG_HudEmitIconOrValue(qhandle_t hIcon /*ECX*/, const rectDef_t *rect /*EBX*
         cg_currentSelectedPlayer_vmCvar.integer = 0;
     }
 
-    int32_t clientNum = cgame_compat_read_target_i32_index(cg_hudEmitClientTable, idx);
-    clientInfo_t *state = cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], clientNum);
+    int32_t clientNum = cgame_compat_read_target_i32_index(
+        cg_hudEmitClientTable, idx);
+    clientInfo_t *state = cgame_compat_unchecked_clientinfo(
+        &bgs.clientinfo[0], clientNum);
 
     /* No valid per-client state at this table slot -> emit nothing. */
     if (state->infoValid == 0) {
@@ -127,7 +131,8 @@ void CG_HudEmitIconOrValue(qhandle_t hIcon /*ECX*/, const rectDef_t *rect /*EBX*
     /* VALUE mode (0x30030f99): format the iterated client's integer and draw it
      * centered horizontally in the rect. */
     char valueText[CG_HUD_EMIT_VALUE_BUFSIZE];
-    Com_sprintf(valueText, CG_HUD_EMIT_VALUE_BUFSIZE, CG_HUD_EMIT_VALUE_FORMAT, state->health);
+    Com_sprintf(valueText, CG_HUD_EMIT_VALUE_BUFSIZE,
+               CG_HUD_EMIT_VALUE_FORMAT, state->health);
 
     /* trap_R_Text_Width (trap id 52) measures the text width; the caller FILDs it below.
      * The four data slots are (text, drawParamA[arg0], drawParamB[arg1], 0),
@@ -136,18 +141,22 @@ void CG_HudEmitIconOrValue(qhandle_t hIcon /*ECX*/, const rectDef_t *rect /*EBX*
     int32_t textWidth = trap_R_Text_Width(valueText, drawParamA, drawParamB, 0);
 
     /* y = rect.h + rect.y (FLD [EBX+0xc]; FADD [EBX+4]). */
-    float drawY = (float)((long double)rect->h + (long double)rect->y);
+    float drawY = (float)((long double)rect->h +
+                          (long double)rect->y);
 
     /* Centered x = rect.x + 0.5f * (rect.w - textWidth)
      * (FILD width; FSUBR [EBX+8]; FMUL 0.5f (0x3007bce8); FADD [EBX]). textWidth
      * enters via a bare FILD (0x30030ff5) straight into the FSUBR with no FSTP
      * DWORD, so it stays exact in 80-bit -- no (float) cast (that would round). */
-    float centerX = (float)((long double)rect->x + ((long double)rect->w - (long double)textWidth) * 0.5L);
+    float centerX = (float)(
+        (long double)rect->x +
+        ((long double)rect->w - (long double)textWidth) * 0.5L);
 
     /* trap_R_Text_Paint slot mapping (proven from the push order 0x30030fdf..0x30031004):
      *   a0 = centerX (float bits), a1 = drawY (float bits),
      *   a2 = drawParamA (arg0), a3 = drawParamB (arg1), a4 = drawColor (arg2),
      *   a5 = valueText, a6 = 0, a7 = 0, a8 = drawParamD (arg3). */
-    trap_R_Text_Paint(CG_FloatBits(centerX), CG_FloatBits(drawY), drawParamA, drawParamB, (intptr_t)drawColor, (intptr_t)valueText, 0, 0,
-                      drawParamD);
+    trap_R_Text_Paint(CG_FloatBits(centerX), CG_FloatBits(drawY),
+              drawParamA, drawParamB, (intptr_t)drawColor,
+              (intptr_t)valueText, 0, 0, drawParamD);
 }

@@ -80,35 +80,33 @@ enum {
 
 /* Exact .rdata literals. Source addresses are retained in comments, but runtime
  * source uses native string objects rather than original-image absolute pointers. */
-#define STR_SET "set" /* 0x300724a8 */
-#define STR_STATE "state" /* 0x3007237c */
-#define STR_STATECHANGE "statechange" /* 0x3007224c */
-#define STR_OPEN_BRACE "{" /* 0x30072384 */
-#define STR_CLOSE_BRACE "}" /* 0x30072764 */
-#define STR_EQUALS "=" /* 0x300723bc */
-#define STR_SESSION_NAME "BG_AnimParseAnimScript" /* 0x30072508 */
-#define STR_COULDNT_LOAD \
-    "\x15" \
-    "Couldn't load player animation script %s\n" /* 0x30072520 */
-#define STR_UNEXPECTED "BG_AnimParseAnimScript: unexpected '%s'" /* 0x300724ac */
-#define STR_END_OF_FILE "BG_AnimParseAnimScript: unexpected end of file: %s" /* 0x300724d4 */
-#define STR_COND_TYPE "BG_AnimParseAnimScript: expected condition type string" /* 0x30072470 */
-#define STR_MAKE_DEFINE "BG_AnimParseAnimScript: can not make a define of type '%s'" /* 0x30072434 */
-#define STR_COND_DEFINE "BG_AnimParseAnimScript: expected condition define string" /* 0x300723f8 */
+#define STR_SET             "set" /* 0x300724a8 */
+#define STR_STATE           "state" /* 0x3007237c */
+#define STR_STATECHANGE     "statechange" /* 0x3007224c */
+#define STR_OPEN_BRACE      "{" /* 0x30072384 */
+#define STR_CLOSE_BRACE     "}" /* 0x30072764 */
+#define STR_EQUALS          "=" /* 0x300723bc */
+#define STR_SESSION_NAME    "BG_AnimParseAnimScript" /* 0x30072508 */
+#define STR_COULDNT_LOAD    "\x15" "Couldn't load player animation script %s\n" /* 0x30072520 */
+#define STR_UNEXPECTED      "BG_AnimParseAnimScript: unexpected '%s'" /* 0x300724ac */
+#define STR_END_OF_FILE     "BG_AnimParseAnimScript: unexpected end of file: %s" /* 0x300724d4 */
+#define STR_COND_TYPE       "BG_AnimParseAnimScript: expected condition type string" /* 0x30072470 */
+#define STR_MAKE_DEFINE     "BG_AnimParseAnimScript: can not make a define of type '%s'" /* 0x30072434 */
+#define STR_COND_DEFINE     "BG_AnimParseAnimScript: expected condition define string" /* 0x300723f8 */
 #define STR_MAX_COND_DEFINES "BG_AnimParseAnimScript: exceeded maximum condition defines (%i)"
-#define STR_EQ_EOL "BG_AnimParseAnimScript: expected '=', found end of line" /* 0x300723c0 */
-#define STR_EQ_FOUND "BG_AnimParseAnimScript: expected '=', found '%s'" /* 0x30072388 */
-#define STR_EXPECT_STATE "BG_AnimParseAnimScript: expected 'state'" /* 0x30072350 */
-#define STR_STATE_TYPE "BG_AnimParseAnimScript: expected state type" /* 0x30072324 */
-#define STR_EXPECT_OPEN "BG_AnimParseAnimScript: expected '{'" /* 0x300722fc */
-#define STR_INTERNAL "BG_AnimParseAnimScript: internal error" /* 0x300722d4 */
-#define STR_MAX_ITEMS "BG_AnimParseAnimScript: exceeded maximum items per script (%i)" /* 0x30072294 */
-#define STR_MAX_GLOBAL "BG_AnimParseAnimScript: exceeded maximum global items (%i)" /* 0x30072258 */
-#define STR_EXPECT_SCHANGE "BG_AnimParseAnimScript: expected 'statechange', got '%s'" /* 0x30072210 */
-#define STR_STATE_TYPE2 "BG_AnimParseAnimScript: expected <state type>" /* 0x300721e0 */
+#define STR_EQ_EOL          "BG_AnimParseAnimScript: expected '=', found end of line" /* 0x300723c0 */
+#define STR_EQ_FOUND        "BG_AnimParseAnimScript: expected '=', found '%s'" /* 0x30072388 */
+#define STR_EXPECT_STATE    "BG_AnimParseAnimScript: expected 'state'" /* 0x30072350 */
+#define STR_STATE_TYPE      "BG_AnimParseAnimScript: expected state type" /* 0x30072324 */
+#define STR_EXPECT_OPEN     "BG_AnimParseAnimScript: expected '{'" /* 0x300722fc */
+#define STR_INTERNAL        "BG_AnimParseAnimScript: internal error" /* 0x300722d4 */
+#define STR_MAX_ITEMS       "BG_AnimParseAnimScript: exceeded maximum items per script (%i)" /* 0x30072294 */
+#define STR_MAX_GLOBAL      "BG_AnimParseAnimScript: exceeded maximum global items (%i)" /* 0x30072258 */
+#define STR_EXPECT_SCHANGE  "BG_AnimParseAnimScript: expected 'statechange', got '%s'" /* 0x30072210 */
+#define STR_STATE_TYPE2     "BG_AnimParseAnimScript: expected <state type>" /* 0x300721e0 */
 
 /* section-keyword and sub-keyword indexed-string tables. */
-#define ANIM_SECTION_TABLE bgAnimParseSectionStrings
+#define ANIM_SECTION_TABLE   bgAnimParseSectionStrings
 #define ANIM_STATETYPE_TABLE animStateStr
 #define ANIM_ANIMSTATE_TABLE bgAnimGroupStrings
 #define ANIM_EVENTTYPE_TABLE bgAnimEventStrings
@@ -121,7 +119,8 @@ enum {
  * the flag unconditionally, then Com_ParseExt(data_p, 1). */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of repeated retail inlined
  * parser-state plumbing; no additional recovered binary function is claimed. */
-static char *bg_compat_anim_get_token(char **data_p, qboolean allowLineBreaks)
+static char *bg_compat_anim_get_token(char **data_p,
+                                         qboolean allowLineBreaks)
 {
     com_parse_session_t *sess = com_parseSession;
     if (sess->ungetToken != 0) {
@@ -157,7 +156,8 @@ static char *bg_compat_anim_get_token_on_line(char **data_p)
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the repeated retail
  * rewind-and-verify instruction sequence. */
-static void bg_compat_unget_token_and_verify(char **data_p, const char *token)
+static void bg_compat_unget_token_and_verify(char **data_p,
+                                                const char *token)
 {
     int32_t len = (int32_t)strlen(token);
     *data_p -= len;
@@ -173,8 +173,9 @@ static void bg_compat_unget_token_and_verify(char **data_p, const char *token)
  * the bounds checks precede it at 0x30002a68 / 0x30002d80. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the shared retail append
  * tail at 0x30002dd8, not an additional binary function. */
-static bg_anim_script_t *bg_compat_append_command_block(bg_static_animation_table_t *table, bg_anim_script_list_t *list,
-                                                        const bg_anim_script_t *scratch)
+static bg_anim_script_t *bg_compat_append_command_block(
+    bg_static_animation_table_t *table, bg_anim_script_list_t *list,
+    const bg_anim_script_t *scratch)
 {
     int32_t *globalCount = &table->globalItemCount; /* +0xa7ac4 */
     bg_anim_script_t *dst;
@@ -198,7 +199,8 @@ static bg_anim_script_t *bg_compat_append_command_block(bg_static_animation_tabl
 /* NOT_FROM_ORIGINAL_SOURCE: the original event-list region is contiguous but
  * the recovered table gives its first ten and last six entries distinct names.
  * This preserves every valid event address without out-of-bounds C indexing. */
-static bg_anim_script_list_t *bg_compat_anim_parser_event_list(bg_static_animation_table_t *table, int32_t event)
+static bg_anim_script_list_t *bg_compat_anim_parser_event_list(
+    bg_static_animation_table_t *table, int32_t event)
 {
     if (event < ANIM_EVENT_RELOAD) {
         return &table->events[event];
@@ -206,12 +208,14 @@ static bg_anim_script_list_t *bg_compat_anim_parser_event_list(bg_static_animati
     return &table->scriptLists[event - ANIM_EVENT_RELOAD];
 }
 
-void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_animation_t *runtimeArr, int32_t *runtimeCount)
+void BG_AnimParseAnimScript(bg_static_animation_table_t *table,
+                            bg_runtime_animation_t *runtimeArr,
+                            int32_t *runtimeCount)
 {
     char *data_p;
     int32_t state = 0;
     bg_anim_script_list_t *currentSlot = NULL;
-    int32_t idx[3] = {-1, -1, -1};
+    int32_t idx[3] = { -1, -1, -1 };
     /* [ESP+0x24]: NULL-initialized (0x30002492); tracks the most recently
      * appended global command block, which the command-body parses target. */
     bg_anim_script_t *lastCommandBlock = NULL;
@@ -224,7 +228,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
         int32_t fileHandle;
         int32_t fileLen;
 
-        fileLen = bg_compat_anim_script_open(bgPlayerAnimScriptPath, &fileHandle);
+        fileLen = bg_compat_anim_script_open(bgPlayerAnimScriptPath,
+                                             &fileHandle);
         if (fileLen <= 0) {
             Com_Error(ERR_DROP, STR_COULDNT_LOAD, bgPlayerAnimScriptPath);
         }
@@ -245,8 +250,10 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
     BG_InitWeaponStrings();
 
     memset(bgAnimConditionAliases, 0, sizeof(bgAnimConditionAliases));
-    memset(bgAnimConditionAliasStringBuffer, 0, sizeof(bgAnimConditionAliasStringBuffer));
-    memset(bgAnimConditionAliasCounts, 0, sizeof(bgAnimConditionAliasCounts));
+    memset(bgAnimConditionAliasStringBuffer, 0,
+           sizeof(bgAnimConditionAliasStringBuffer));
+    memset(bgAnimConditionAliasCounts, 0,
+           sizeof(bgAnimConditionAliasCounts));
     bgAnimConditionAliasStringUsed = 0;
 
     data_p = bgAnimScriptFileBuffer;
@@ -256,7 +263,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
     for (;;) {
         int32_t s;
 
-        token = bg_compat_anim_get_token(&data_p, qtrue); /* main-loop unget-restore + Com_ParseExt(,1) */
+        token = bg_compat_anim_get_token(
+            &data_p, qtrue); /* main-loop unget-restore + Com_ParseExt(,1) */
         if (token == NULL || token[0] == 0) {
             break; /* end of file (0x30002e70) */
         }
@@ -301,15 +309,21 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
             }
             /* NOT_FROM_ORIGINAL_SOURCE: enforce the per-condition definition
              * capacity before copying a name or indexing the hash and mask rows. */
-            if ((uint32_t)bgAnimConditionAliasCounts[condType] >= (uint32_t)BG_ANIM_CONDITION_VALUE_COUNT) {
-                BG_AnimParseError(STR_MAX_COND_DEFINES, BG_ANIM_CONDITION_VALUE_COUNT);
+            if ((uint32_t)bgAnimConditionAliasCounts[condType] >=
+                (uint32_t)BG_ANIM_CONDITION_VALUE_COUNT) {
+                BG_AnimParseError(STR_MAX_COND_DEFINES,
+                                  BG_ANIM_CONDITION_VALUE_COUNT);
                 return;
             }
             {
                 const char *copiedName = BG_CopyStringIntoBuffer(
-                    value, bgAnimConditionAliasStringBuffer, BG_ANIM_CONDITION_ALIAS_STRING_BUFFER_SIZE, &bgAnimConditionAliasStringUsed);
+                    value, bgAnimConditionAliasStringBuffer,
+                    BG_ANIM_CONDITION_ALIAS_STRING_BUFFER_SIZE,
+                    &bgAnimConditionAliasStringUsed);
 
-                base = coduo_int32_from_bits((uint32_t)bgAnimConditionAliasCounts[condType] + ((uint32_t)condType << 4));
+                base = coduo_int32_from_bits(
+                    (uint32_t)bgAnimConditionAliasCounts[condType]
+                    + ((uint32_t)condType << 4));
                 bgAnimConditionAliases[base].name = copiedName;
             }
             {
@@ -317,7 +331,9 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
 
                 /* Retail reloads the live count after the hash call instead of
                  * retaining the name-store index from above. */
-                base = coduo_int32_from_bits((uint32_t)bgAnimConditionAliasCounts[condType] + ((uint32_t)condType << 4));
+                base = coduo_int32_from_bits(
+                    (uint32_t)bgAnimConditionAliasCounts[condType]
+                    + ((uint32_t)condType << 4));
                 bgAnimConditionAliases[base].hash = valueHash;
             }
 
@@ -329,8 +345,11 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
             }
             /* stringTable arg is bgAnimConditionTypes[condType].values (0x3008238c[c]),
              * not the value-names window; result is &bgAnimConditionAliasBits[base]. */
-            BG_ParseConditionBits(&data_p, bgAnimConditionTypes[condType].values, condType, &bgAnimConditionAliasBits[base]);
-            bgAnimConditionAliasCounts[condType] = coduo_int32_from_bits((uint32_t)bgAnimConditionAliasCounts[condType] + 1u);
+            BG_ParseConditionBits(&data_p,
+                                  bgAnimConditionTypes[condType].values,
+                                  condType, &bgAnimConditionAliasBits[base]);
+            bgAnimConditionAliasCounts[condType] = coduo_int32_from_bits(
+                (uint32_t)bgAnimConditionAliasCounts[condType] + 1u);
             continue;
         }
 
@@ -372,7 +391,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
                 }
                 idx[0] = BG_IndexForString(token, ANIM_STATETYPE_TABLE, qfalse);
                 token = Com_Parse(&data_p);
-                if (token == NULL || Q_stricmpn(STR_OPEN_BRACE, token, ANIM_SCRIPT_TEXT_MAX) != 0) {
+                if (token == NULL
+                    || Q_stricmpn(STR_OPEN_BRACE, token, ANIM_SCRIPT_TEXT_MAX) != 0) {
                     BG_AnimParseError(STR_EXPECT_OPEN);
                 }
                 state = 1;
@@ -392,7 +412,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
                  * region == region[idx[0]][animState] (LEA x9, x2 fan-out). */
                 if (currentSection == ANIM_SECTION_ANIMATIONS) {
                     currentSlot = &table->animations[idx[0]][animState];
-                    bgAnimParseCurrentAnimGroup = (bg_anim_move_type_t)animState; /* only "animations" sets this */
+                    bgAnimParseCurrentAnimGroup =
+                        (bg_anim_move_type_t)animState; /* only "animations" sets this */
                 } else { /* ANIM_SECTION_CANNED_ANIMATIONS */
                     currentSlot = &table->canned[idx[0]][animState];
                 }
@@ -406,14 +427,16 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
                 bg_compat_unget_token_and_verify(&data_p, token);
                 memset(&block, 0, sizeof(block));
                 idx[2] = BG_ParseConditions(&data_p, &block); /* returns qtrue */
-                lastCommandBlock = bg_compat_append_command_block(table, currentSlot, &block);
+                lastCommandBlock =
+                    bg_compat_append_command_block(table, currentSlot, &block);
                 continue;
             }
             /* state == 3: command body (no idx guard at 0x30002ac5). 0x30002b10
              * passes the [ESP+0x24] slot — the LAST APPENDED command block the
              * conditions pass just linked — not currentSlot. */
             bg_compat_unget_token_and_verify(&data_p, token);
-            BG_ParseCommands(&data_p, lastCommandBlock, (bg_static_animation_t *)table);
+            BG_ParseCommands(&data_p, lastCommandBlock,
+                             (bg_static_animation_t *)table);
             continue;
 
         case ANIM_SECTION_STATECHANGES:
@@ -459,14 +482,16 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
                     if (fromToken == NULL) {
                         BG_AnimParseError(STR_STATE_TYPE2);
                     }
-                    fromState = BG_IndexForString(fromToken, ANIM_STATETYPE_TABLE, qfalse);
+                    fromState = BG_IndexForString(
+                        fromToken, ANIM_STATETYPE_TABLE, qfalse);
                     /* 0x30002c57..0x30002c67 computes
                      * (toState * 4 + fromState) * 0x204. Linux retail
                      * 0x1bb39..0x1bb68 proves the same token order and layout. */
                     idx[0] = fromState;
                     currentSlot = &table->statechanges[toState][fromState];
                     token = Com_Parse(&data_p);
-                    if (token == NULL || Q_stricmpn(STR_OPEN_BRACE, token, ANIM_SCRIPT_TEXT_MAX) != 0) {
+                    if (token == NULL
+                        || Q_stricmpn(STR_OPEN_BRACE, token, ANIM_SCRIPT_TEXT_MAX) != 0) {
                         BG_AnimParseError(STR_EXPECT_OPEN);
                     }
                     state = 1;
@@ -476,7 +501,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
                     int32_t eventType = BG_IndexForString(token, ANIM_EVENTTYPE_TABLE, qfalse);
                     idx[0] = eventType;
                     /* eventType*0x204 into the events region == events[eventType]. */
-                    currentSlot = bg_compat_anim_parser_event_list(table, eventType);
+                    currentSlot =
+                        bg_compat_anim_parser_event_list(table, eventType);
                     bgAnimParseCurrentEvent = (bg_anim_event_t)eventType;
                     memset(currentSlot, 0, sizeof(*currentSlot));
                     continue;
@@ -489,7 +515,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
                 bg_compat_unget_token_and_verify(&data_p, token);
                 memset(&block, 0, sizeof(block));
                 idx[1] = BG_ParseConditions(&data_p, &block);
-                lastCommandBlock = bg_compat_append_command_block(table, currentSlot, &block);
+                lastCommandBlock =
+                    bg_compat_append_command_block(table, currentSlot, &block);
                 continue;
             }
             /* 0x30002e06: only state == 2 reaches the command body; state == 3
@@ -501,7 +528,8 @@ void BG_AnimParseAnimScript(bg_static_animation_table_t *table, bg_runtime_anima
             /* 0x30002e58 passes the last appended command block ([ESP+0x24]),
              * not currentSlot. */
             bg_compat_unget_token_and_verify(&data_p, token);
-            BG_ParseCommands(&data_p, lastCommandBlock, (bg_static_animation_t *)table);
+            BG_ParseCommands(&data_p, lastCommandBlock,
+                             (bg_static_animation_t *)table);
             continue;
 
         default:

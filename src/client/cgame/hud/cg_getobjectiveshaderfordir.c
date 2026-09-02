@@ -65,22 +65,27 @@
 
 enum {
     CG_OBJECTIVE_NAME_MAX = MAX_QPATH, /* 0x3002fdc7 PUSH 0x40 */
-    CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH = sizeof(CG_OBJECTIVE_LONGEST_SUFFIX) - 1,
-    CG_OBJECTIVE_COMPOSED_NAME_CAPACITY = MAX_QPATH + CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH
+    CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH =
+        sizeof(CG_OBJECTIVE_LONGEST_SUFFIX) - 1,
+    CG_OBJECTIVE_COMPOSED_NAME_CAPACITY =
+        MAX_QPATH + CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH
 };
 
-_Static_assert(MAX_QPATH <= INT32_MAX - CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH, "objective shader composition capacity overflows int32_t");
+_Static_assert(MAX_QPATH <=
+                   INT32_MAX - CG_OBJECTIVE_LONGEST_SUFFIX_LENGTH,
+               "objective shader composition capacity overflows int32_t");
 
 qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex)
 {
     /* Direction-suffix table: index 0/1/2 -> "" / "_up" / "_down"
      * (0x30074a0c / 0x300798a0 / 0x30079898). */
-    const char *const dirSuffix[3] = {"", "_up", "_down"};
+    const char *const dirSuffix[3] = { "", "_up", "_down" };
 
     char name[CG_OBJECTIVE_COMPOSED_NAME_CAPACITY];
     char *cut;
 
-    if (shaderIndex != 0 && CG_GetShaderConfigString(shaderIndex, name, CG_OBJECTIVE_NAME_MAX)) {
+    if (shaderIndex != 0 &&
+        CG_GetShaderConfigString(shaderIndex, name, CG_OBJECTIVE_NAME_MAX)) {
 
         /* Strip the file extension: truncate at the first '.'. */
         cut = name;
@@ -93,14 +98,16 @@ qhandle_t CG_GetObjectiveShaderForDir(int dir, int shaderIndex)
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (baseLength + suffixLength >= MAX_QPATH) {
-            Com_Printf("WARNING: rejected overlong objective shader name\n");
+            Com_Printf(
+                "WARNING: rejected overlong objective shader name\n");
             return cg_objectiveShaders[dir];
         }
         coduo_client_crt_strcpy(name + baseLength, dirSuffix[dir]);
 
         CG_DrawInformation(qfalse);
 
-        return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, name, R_IMAGE_TRACK_HUD));
+        return coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_REGISTERSHADER, name, R_IMAGE_TRACK_HUD));
     }
 
     /* No per-shader override, or the lookup failed: use the preregistered

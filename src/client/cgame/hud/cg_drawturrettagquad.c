@@ -45,16 +45,20 @@
  * (* M_PI) then (* 1/180). Written as named constants rather than one fused
  * 0.017453f to preserve the exact two-step float rounding the DLL performs.
  */
-#define CG_PI_F 3.1415927410125732f /* 0x3007bd88 = 0x40490fdb */
-#define CG_INV_180_F 0.0055555556900799274f /* 0x3007bed4 = 0x3bb60b61; 1/180 */
+#define CG_PI_F        3.1415927410125732f /* 0x3007bd88 = 0x40490fdb */
+#define CG_INV_180_F   0.0055555556900799274f /* 0x3007bed4 = 0x3bb60b61; 1/180 */
 
-void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y, const float *shaderParams, float angleDegrees, int32_t hShader)
+void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
+                          const float *shaderParams, float angleDegrees,
+                          int32_t hShader)
 {
     const float *m = cornerOffsets; /* EDX: four {x,y} corner offsets, M[0..7] */
 
     /* angleDegrees -> radians remains one x87 chain through both m32 multiplies,
      * with its only binary32 store after the second product. */
-    float angleRad = (float)(((long double)angleDegrees * (long double)CG_PI_F) * (long double)CG_INV_180_F);
+    float angleRad = (float)(
+        ((long double)angleDegrees * (long double)CG_PI_F)
+        * (long double)CG_INV_180_F);
 
     /* One hardware FSINCOS, with cosine committed before sine. */
     float s;
@@ -74,18 +78,24 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y, const float *s
      * and the ys* pair stays float; a float C/S would add two roundings the DLL
      * does not perform.
      */
-    long double C = (long double)cgs_screenXScale * (long double)c;
-    long double S = (long double)cgs_screenXScale * (long double)s;
-    float ysSin = (float)((long double)cgs_screenYScale * (long double)s);
-    float ysCos = (float)((long double)cgs_screenYScale * (long double)c);
+    long double C =
+        (long double)cgs_screenXScale * (long double)c;
+    long double S =
+        (long double)cgs_screenXScale * (long double)s;
+    float ysSin = (float)(
+        (long double)cgs_screenYScale * (long double)s);
+    float ysCos = (float)(
+        (long double)cgs_screenYScale * (long double)c);
 
     /* Scaled center offsets (0x3001cd5a..0x3001cd6e):
      *   tx = xs * x   (arg0, [ESP+0x48]; stays as x87 ST0 across the vertex block,
      *                  never rounded -> long double)
      *   ty = ys * y   (arg1, [ESP+0x4c]; rounded by FSTP 0x3001cd6e to [ESP+0x10])
      */
-    long double tx = (long double)cgs_screenXScale * (long double)x;
-    float ty = (float)((long double)cgs_screenYScale * (long double)y);
+    long double tx =
+        (long double)cgs_screenXScale * (long double)x;
+    float ty = (float)(
+        (long double)cgs_screenYScale * (long double)y);
 
     /* Four output vertices. For corner i (matrix pair m[2i], m[2i+1]):
      *   vert.x = C*m[2i]     + tx - S*m[2i+1]        (FLD C; FMUL m; FADD tx; FLD S; FMUL m1; FSUBP)
@@ -97,17 +107,30 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y, const float *s
      */
     float verts[8];
 
-    verts[0] = (float)((C * (long double)m[0] + tx) - S * (long double)m[1]);
-    verts[1] = (float)(((long double)ysSin * (long double)m[0] + (long double)ysCos * (long double)m[1]) + (long double)ty);
+    verts[0] = (float)((C * (long double)m[0] + tx)
+                       - S * (long double)m[1]);
+    verts[1] = (float)(((long double)ysSin * (long double)m[0]
+                        + (long double)ysCos * (long double)m[1])
+                       + (long double)ty);
 
-    verts[2] = (float)((C * (long double)m[2] + tx) - S * (long double)m[3]);
-    verts[3] = (float)(((long double)ysCos * (long double)m[3] + (long double)ysSin * (long double)m[2]) + (long double)ty);
+    verts[2] = (float)((C * (long double)m[2] + tx)
+                       - S * (long double)m[3]);
+    verts[3] = (float)(((long double)ysCos * (long double)m[3]
+                        + (long double)ysSin * (long double)m[2])
+                       + (long double)ty);
 
-    verts[4] = (float)((C * (long double)m[4] + tx) - S * (long double)m[5]);
-    verts[5] = (float)(((long double)ysCos * (long double)m[5] + (long double)ysSin * (long double)m[4]) + (long double)ty);
+    verts[4] = (float)((C * (long double)m[4] + tx)
+                       - S * (long double)m[5]);
+    verts[5] = (float)(((long double)ysCos * (long double)m[5]
+                        + (long double)ysSin * (long double)m[4])
+                       + (long double)ty);
 
-    verts[6] = (float)((C * (long double)m[6] + tx) - S * (long double)m[7]);
-    long double lastY = ((long double)ysCos * (long double)m[7] + (long double)ysSin * (long double)m[6]) + (long double)ty;
+    verts[6] = (float)((C * (long double)m[6] + tx)
+                       - S * (long double)m[7]);
+    long double lastY =
+        ((long double)ysCos * (long double)m[7]
+         + (long double)ysSin * (long double)m[6])
+        + (long double)ty;
 
     /* The last y result remains in ST0 while the final scalar arguments are
      * loaded and pushed, then is rounded into the vertex array. */
@@ -119,6 +142,9 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y, const float *s
      * 0x3001ce1e..ce2b: cgame_syscall(76, &verts[0], shaderParams, hShader).
      * Push order proves the argument order: PUSH hShader; PUSH shaderParams;
      * PUSH &verts; PUSH 0x4c; CALL. */
-    cgame_syscall(CG_R_DRAW_ROTATED_QUAD, (intptr_t)&verts[0], (intptr_t)drawShaderParams, drawShader);
+    cgame_syscall(CG_R_DRAW_ROTATED_QUAD,
+                  (intptr_t)&verts[0],
+                  (intptr_t)drawShaderParams,
+                  drawShader);
     /* 0x3001ce31 ADD ESP,0x54 ; 0x3001ce34 RET (bare) — void return. */
 }

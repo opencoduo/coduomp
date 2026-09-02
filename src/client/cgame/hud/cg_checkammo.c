@@ -79,7 +79,8 @@ void CG_CheckAmmo(void)
      * as the channel object, the registered sound identifier, and the local
      * client number. */
     if (cg_outOfAmmoState == 0) {
-        CG_PlaySoundAliasByName(snap->ps.psClientNum, &snap->ps.psOrigin, cg_soundOutOfAmmo);
+        CG_PlaySoundAliasByName(snap->ps.psClientNum, &snap->ps.psOrigin,
+                                cg_soundOutOfAmmo);
     }
 
     /* Record the warned state: 2 when completely out of ammo, 1 otherwise. */

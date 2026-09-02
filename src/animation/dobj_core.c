@@ -29,7 +29,8 @@ typedef struct dobj_compat_model_part_layout_s {
 } dobj_compat_model_part_layout_t;
 
 /* NOT_FROM_ORIGINAL_SOURCE: resolves the nested XModel part-name payload. */
-static dobj_compat_model_part_layout_t dobj_compat_model_part_layout(XModel *model)
+static dobj_compat_model_part_layout_t dobj_compat_model_part_layout(
+    XModel *model)
 {
     XModelInfo *collision;
     fileData_t *partsEntry;
@@ -57,32 +58,42 @@ static uint8_t dobj_compat_part_bit_mask(int32_t partIndex)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: byte-level access to packed DObj part bitsets. */
-static qboolean dobj_compat_part_bit_is_set(const void *partBits, int32_t partIndex)
+static qboolean dobj_compat_part_bit_is_set(const void *partBits,
+                                             int32_t partIndex)
 {
     const uint8_t *bytes = (const uint8_t *)partBits;
 
-    return (bytes[partIndex >> DOBJ_PART_BIT_INDEX_SHIFT] & dobj_compat_part_bit_mask(partIndex)) != 0 ? qtrue : qfalse;
+    return (bytes[partIndex >> DOBJ_PART_BIT_INDEX_SHIFT] &
+            dobj_compat_part_bit_mask(partIndex)) != 0
+               ? qtrue
+               : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: byte-level access to packed DObj part bitsets. */
-static qboolean dobj_compat_part_bit_byte_has_any(const void *partBits, int32_t partIndex)
+static qboolean dobj_compat_part_bit_byte_has_any(
+    const void *partBits, int32_t partIndex)
 {
     const uint8_t *bytes = (const uint8_t *)partBits;
 
-    return bytes[partIndex >> DOBJ_PART_BIT_INDEX_SHIFT] != 0 ? qtrue : qfalse;
+    return bytes[partIndex >> DOBJ_PART_BIT_INDEX_SHIFT] != 0 ? qtrue
+                                                              : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: byte-level access to packed DObj part bitsets. */
-static void dobj_compat_part_bit_set(uint32_t *partBits, int32_t partIndex)
+static void dobj_compat_part_bit_set(uint32_t *partBits,
+                                     int32_t partIndex)
 {
     uint8_t *bytes = (uint8_t *)partBits;
     int32_t byteIndex = partIndex >> DOBJ_PART_BIT_INDEX_SHIFT;
 
-    bytes[byteIndex] = (uint8_t)(bytes[byteIndex] | dobj_compat_part_bit_mask(partIndex));
+    bytes[byteIndex] =
+        (uint8_t)(bytes[byteIndex] |
+                  dobj_compat_part_bit_mask(partIndex));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed copy between eval-part quaternion lanes. */
-static void dobj_compat_eval_part_load_quat(const DObjAnimMat *part, vec4_t quat)
+static void dobj_compat_eval_part_load_quat(const DObjAnimMat *part,
+                                             vec4_t quat)
 {
     quat[0] = part->quat[0];
     quat[1] = part->quat[1];
@@ -91,7 +102,8 @@ static void dobj_compat_eval_part_load_quat(const DObjAnimMat *part, vec4_t quat
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed copy between eval-part quaternion lanes. */
-static void dobj_compat_eval_part_store_quat(DObjAnimMat *part, const vec4_t quat)
+static void dobj_compat_eval_part_store_quat(DObjAnimMat *part,
+                                              const vec4_t quat)
 {
     part->quat[0] = quat[0];
     part->quat[1] = quat[1];
@@ -100,7 +112,8 @@ static void dobj_compat_eval_part_store_quat(DObjAnimMat *part, const vec4_t qua
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed copy between eval-part quaternion lanes. */
-static void dobj_compat_eval_part_copy_quat(DObjAnimMat *dest, const DObjAnimMat *source)
+static void dobj_compat_eval_part_copy_quat(DObjAnimMat *dest,
+                                             const DObjAnimMat *source)
 {
     dest->quat[0] = source->quat[0];
     dest->quat[1] = source->quat[1];
@@ -109,7 +122,8 @@ static void dobj_compat_eval_part_copy_quat(DObjAnimMat *dest, const DObjAnimMat
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed copy between eval-part translation lanes. */
-static void dobj_compat_eval_part_load_translation(const DObjAnimMat *part, vec3_t translation)
+static void dobj_compat_eval_part_load_translation(
+    const DObjAnimMat *part, vec3_t translation)
 {
     translation[0] = part->translation[0];
     translation[1] = part->translation[1];
@@ -117,7 +131,8 @@ static void dobj_compat_eval_part_load_translation(const DObjAnimMat *part, vec3
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed copy between eval-part translation lanes. */
-static void dobj_compat_eval_part_store_translation(DObjAnimMat *part, const vec3_t translation)
+static void dobj_compat_eval_part_store_translation(
+    DObjAnimMat *part, const vec3_t translation)
 {
     part->translation[0] = translation[0];
     part->translation[1] = translation[1];
@@ -125,7 +140,8 @@ static void dobj_compat_eval_part_store_translation(DObjAnimMat *part, const vec
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed copy between eval-part translation lanes. */
-static void dobj_compat_eval_part_copy_translation(DObjAnimMat *dest, const DObjAnimMat *source)
+static void dobj_compat_eval_part_copy_translation(
+    DObjAnimMat *dest, const DObjAnimMat *source)
 {
     dest->translation[0] = source->translation[0];
     dest->translation[1] = source->translation[1];
@@ -133,9 +149,12 @@ static void dobj_compat_eval_part_copy_translation(DObjAnimMat *dest, const DObj
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserves the original remap-pair scan shape. */
-static int32_t dobj_compat_trace_remap_target_for_source(const DObjTracePartRemap *traceRemap, int32_t sourcePart)
+static int32_t
+dobj_compat_trace_remap_target_for_source(
+    const DObjTracePartRemap *traceRemap, int32_t sourcePart)
 {
-    const uint8_t *pair = traceRemap->duplicatePairs;
+    const uint8_t *pair =
+        traceRemap->duplicatePairs;
 
     while (sourcePart != (int32_t)pair[0] - 1) {
         pair += DOBJ_TRACE_REMAP_PAIR_STRIDE;
@@ -145,7 +164,9 @@ static int32_t dobj_compat_trace_remap_target_for_source(const DObjTracePartRema
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: returns a duplicate target and advances on match. */
-static qboolean dobj_compat_trace_remap_consume_source(const uint8_t **pairCursor, int32_t sourcePart, int32_t *targetPart)
+static qboolean dobj_compat_trace_remap_consume_source(
+    const uint8_t **pairCursor,
+    int32_t sourcePart, int32_t *targetPart)
 {
     const uint8_t *pair = *pairCursor;
 
@@ -159,7 +180,8 @@ static qboolean dobj_compat_trace_remap_consume_source(const uint8_t **pairCurso
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: routes quaternion multiply through recovered funcs. */
-static void dobj_compat_eval_part_multiply_into_self(DObjAnimMat *part, const DObjAnimMat *rhsPart)
+static void dobj_compat_eval_part_multiply_into_self(
+    DObjAnimMat *part, const DObjAnimMat *rhsPart)
 {
     vec4_t quat;
     vec4_t rhs;
@@ -171,7 +193,8 @@ static void dobj_compat_eval_part_multiply_into_self(DObjAnimMat *part, const DO
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: routes quaternion multiply through recovered funcs. */
-static void dobj_compat_eval_part_multiply_into_rhs(const DObjAnimMat *lhsPart, DObjAnimMat *part)
+static void dobj_compat_eval_part_multiply_into_rhs(
+    const DObjAnimMat *lhsPart, DObjAnimMat *part)
 {
     vec4_t lhs;
     vec4_t quat;
@@ -183,7 +206,8 @@ static void dobj_compat_eval_part_multiply_into_rhs(const DObjAnimMat *lhsPart, 
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: expands quaternion lanes into a base-pose matrix. */
-static void dobj_compat_eval_part_build_matrix(const DObjAnimMat *part, DObjSkelMat *matrix)
+static void dobj_compat_eval_part_build_matrix(
+    const DObjAnimMat *part, DObjSkelMat *matrix)
 {
     vec4_t quat;
 
@@ -192,7 +216,8 @@ static void dobj_compat_eval_part_build_matrix(const DObjAnimMat *part, DObjSkel
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: transforms eval-part translation in place. */
-static void dobj_compat_eval_part_transform_translation(DObjAnimMat *part, const DObjSkelMat *matrix)
+static void dobj_compat_eval_part_transform_translation(
+    DObjAnimMat *part, const DObjSkelMat *matrix)
 {
     vec3_t translation;
 
@@ -202,7 +227,8 @@ static void dobj_compat_eval_part_transform_translation(DObjAnimMat *part, const
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: writes matrix origin from eval translation lanes. */
-static void dobj_compat_base_pose_store_origin(DObjSkelMat *matrix, const DObjAnimMat *part)
+static void dobj_compat_base_pose_store_origin(
+    DObjSkelMat *matrix, const DObjAnimMat *part)
 {
     matrix->origin[0] = part->translation[0];
     matrix->origin[1] = part->translation[1];
@@ -211,7 +237,8 @@ static void dobj_compat_base_pose_store_origin(DObjSkelMat *matrix, const DObjAn
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: applies the model base translation for a child part. */
-static void dobj_compat_eval_part_add_base_translation(DObjAnimMat *part, const vec3_t baseTranslation)
+static void dobj_compat_eval_part_add_base_translation(
+    DObjAnimMat *part, const vec3_t baseTranslation)
 {
     part->translation[0] += baseTranslation[0];
     part->translation[1] += baseTranslation[1];
@@ -223,7 +250,8 @@ static size_t dobj_compat_trace_remap_stack_size(DObj *state)
 {
     size_t size;
 
-    size = (size_t)state->boneCount * 2U + DOBJ_PART_REMAP_PREFIX_SIZE + 1U;
+    size = (size_t)state->boneCount * 2U +
+           DOBJ_PART_REMAP_PREFIX_SIZE + 1U;
     return (size + 15U) & ~15U;
 }
 
@@ -237,7 +265,9 @@ void DObjInit(void)
 
     Com_Memset(defaultTraceRemap, 0, DOBJ_DEFAULT_TRACE_REMAP_STORAGE_BYTES);
     xanimDefaultPartRemapHandle =
-        SL_GetStringOfLen(defaultTraceRemap, 0, DOBJ_DEFAULT_TRACE_REMAP_PAYLOAD_SIZE, DOBJ_DEFAULT_TRACE_REMAP_STRING_TYPE);
+        SL_GetStringOfLen(defaultTraceRemap, 0,
+                                 DOBJ_DEFAULT_TRACE_REMAP_PAYLOAD_SIZE,
+                                 DOBJ_DEFAULT_TRACE_REMAP_STRING_TYPE);
 }
 
 /* Sources: CoDUOMP.exe 0x00493870 and coduo_lnxded 0x080c5384.
@@ -245,7 +275,8 @@ void DObjInit(void)
 void DObjShutdown(void)
 {
     if (xanimDefaultPartRemapHandle != 0) {
-        SL_RemoveRefToStringOfLen(xanimDefaultPartRemapHandle, DOBJ_DEFAULT_TRACE_REMAP_PAYLOAD_SIZE);
+        SL_RemoveRefToStringOfLen(xanimDefaultPartRemapHandle,
+                                  DOBJ_DEFAULT_TRACE_REMAP_PAYLOAD_SIZE);
         xanimDefaultPartRemapHandle = 0;
     }
 }
@@ -268,11 +299,13 @@ void DObjBuildTracePartRemap(DObj *state)
     partBase = XModelNumBones(state->models[0]);
     remapOffset = DOBJ_PART_REMAP_PREFIX_SIZE;
 
-    for (int32_t childIndex = 1; childIndex < state->modelCount; ++childIndex) {
+    for (int32_t childIndex = 1; childIndex < state->modelCount;
+         ++childIndex) {
         XModel *model;
 
         model = state->models[childIndex];
-        if (record->modelParentPartIndices[childIndex] == DOBJ_CHILD_PARENT_NONE) {
+        if (record->modelParentPartIndices[childIndex] ==
+            DOBJ_CHILD_PARENT_NONE) {
             const uint16_t *partNames;
             int32_t partNameCount;
             qboolean remappedRootPart;
@@ -281,7 +314,8 @@ void DObjBuildTracePartRemap(DObj *state)
             partNameCount = XModelNumBones(model);
             remappedRootPart = 0;
 
-            for (int32_t localPart = 0; localPart < partNameCount; ++localPart) {
+            for (int32_t localPart = 0; localPart < partNameCount;
+                 ++localPart) {
                 int32_t remapSource;
                 int32_t remapTarget;
 
@@ -293,7 +327,9 @@ void DObjBuildTracePartRemap(DObj *state)
                     }
 
                     remap[remapOffset] = (uint8_t)(remapSource + 1);
-                    remap[remapSource >> 3] = (uint8_t)(remap[remapSource >> 3] | (1U << (remapSource & 7)));
+                    remap[remapSource >> 3] =
+                        (uint8_t)(remap[remapSource >> 3] |
+                                  (1U << (remapSource & 7)));
                     ++remapOffset;
                     remap[remapOffset] = (uint8_t)(remapTarget + 1);
                     ++remapOffset;
@@ -301,13 +337,16 @@ void DObjBuildTracePartRemap(DObj *state)
             }
 
             if (remappedRootPart == 0) {
-                XModel *modelRecord = (XModel *)model;
-                XModel *rootModelRecord = (XModel *)state->models[0];
+                XModel *modelRecord =
+                    (XModel *)model;
+                XModel *rootModelRecord =
+                    (XModel *)state->models[0];
 
                 Com_Printf("WARNING: Attempting to meld model, but root part "
                            "'%s' of model '%s' not found in model '%s' or any "
                            "of its descendants\n",
-                           SL_ConvertToString(partNames[0]), modelRecord->name, rootModelRecord->name);
+                           SL_ConvertToString(partNames[0]),
+                           modelRecord->name, rootModelRecord->name);
             }
         }
 
@@ -317,7 +356,9 @@ void DObjBuildTracePartRemap(DObj *state)
     if (remapOffset > DOBJ_PART_REMAP_PREFIX_SIZE) {
         remap[remapOffset] = 0;
         ++remapOffset;
-        state->tracePartRemapHandle = SL_GetStringOfLen((const char *)remap, 0, remapOffset, DOBJ_DEFAULT_TRACE_REMAP_STRING_TYPE);
+        state->tracePartRemapHandle =
+            SL_GetStringOfLen((const char *)remap, 0, remapOffset,
+                              DOBJ_DEFAULT_TRACE_REMAP_STRING_TYPE);
     } else {
         state->tracePartRemapHandle = xanimDefaultPartRemapHandle;
     }
@@ -326,7 +367,9 @@ void DObjBuildTracePartRemap(DObj *state)
 /* Sources: CoDUOMP.exe 0x00493f00..0x0049406c and coduo_lnxded
  * 0x080c5832..0x080c5a16.  The shared interface is non-const because a
  * missing trace-remap table is built and attached on demand. */
-void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
+void DObjGetHierarchyBits(DObj *state,
+                          int32_t boneIndex,
+                          uint32_t *partBits)
 {
     DObj *record;
     const DObjTracePartRemap *traceRemap;
@@ -337,7 +380,8 @@ void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
         return;
     }
 
-    for (int32_t wordIndex = 0; wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
+    for (int32_t wordIndex = 0;
+         wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
         partBits[wordIndex] = 0;
     }
 
@@ -352,7 +396,8 @@ void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
         DObjBuildTracePartRemap(state);
     }
 
-    traceRemap = (const DObjTracePartRemap *)SL_ConvertToString(state->tracePartRemapHandle);
+    traceRemap = (const DObjTracePartRemap *)SL_ConvertToString(
+        state->tracePartRemapHandle);
 
     /* NOT_FROM_ORIGINAL_SOURCE: model loading and DObj construction validate
      * every bone count before these cumulative child bases are used. */
@@ -360,8 +405,10 @@ void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
     childIndex = 0;
     while (childIndex < state->modelCount) {
         XModel *model = state->models[childIndex];
-        dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(model);
-        int32_t childEnd = childBases[childIndex] + layout.partNameTable->count;
+        dobj_compat_model_part_layout_t layout =
+            dobj_compat_model_part_layout(model);
+        int32_t childEnd =
+            childBases[childIndex] + layout.partNameTable->count;
 
         if (boneIndex < childEnd) {
             break;
@@ -375,20 +422,27 @@ void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
         childBases[childIndex] = childEnd;
     }
 
-    dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(state->models[childIndex]);
+    dobj_compat_model_part_layout_t layout =
+        dobj_compat_model_part_layout(state->models[childIndex]);
     while (qtrue) {
         int32_t localPart = boneIndex - childBases[childIndex];
 
         while (qtrue) {
             dobj_compat_part_bit_set(partBits, boneIndex);
 
-            if (dobj_compat_part_bit_is_set(traceRemap->sourcePartBits, boneIndex) != qfalse) {
-                boneIndex = dobj_compat_trace_remap_target_for_source(traceRemap, boneIndex);
+            if (dobj_compat_part_bit_is_set(traceRemap->sourcePartBits,
+                                             boneIndex) != qfalse) {
+                boneIndex = dobj_compat_trace_remap_target_for_source(
+                    traceRemap, boneIndex);
             } else {
-                int32_t parentDeltaIndex = localPart - layout.payload->rootPartCount;
+                int32_t parentDeltaIndex =
+                    localPart - layout.payload->rootPartCount;
 
                 if (parentDeltaIndex >= 0) {
-                    boneIndex = (int32_t)(boneIndex - layout.parentPartDeltas[parentDeltaIndex]);
+                    boneIndex =
+                        (int32_t)(boneIndex -
+                                                  layout.parentPartDeltas
+                                                      [parentDeltaIndex]);
                     break;
                 }
 
@@ -406,7 +460,8 @@ void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
                 localPart = boneIndex - childBases[childIndex];
             } while (localPart < 0);
 
-            layout = dobj_compat_model_part_layout(state->models[childIndex]);
+            layout =
+                dobj_compat_model_part_layout(state->models[childIndex]);
         }
     }
 }
@@ -414,7 +469,8 @@ void DObjGetHierarchyBits(DObj *state, int32_t boneIndex, uint32_t *partBits)
 /* Sources: CoDUOMP.exe 0x00494070..0x004941da and coduo_lnxded
  * 0x080c5a16..0x080c5c08.  Name: same-version Mac symbol
  * DObjCompleteHierarchyBits. */
-void DObjCompleteHierarchyBits(DObj *state, uint32_t *partBits)
+void DObjCompleteHierarchyBits(DObj *state,
+                               uint32_t *partBits)
 {
     DObj *record;
     const DObjTracePartRemap *traceRemap;
@@ -429,7 +485,8 @@ void DObjCompleteHierarchyBits(DObj *state, uint32_t *partBits)
         DObjBuildTracePartRemap(state);
     }
 
-    traceRemap = (const DObjTracePartRemap *)SL_ConvertToString(state->tracePartRemapHandle);
+    traceRemap = (const DObjTracePartRemap *)SL_ConvertToString(
+        state->tracePartRemapHandle);
 
     /* NOT_FROM_ORIGINAL_SOURCE: model loading and DObj construction validate
      * every authored count feeding these cumulative child bases. */
@@ -437,8 +494,10 @@ void DObjCompleteHierarchyBits(DObj *state, uint32_t *partBits)
     childIndex = 0;
     while (qtrue) {
         XModel *model = state->models[childIndex];
-        dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(model);
-        int32_t childEnd = childBases[childIndex] + layout.partNameTable->count;
+        dobj_compat_model_part_layout_t layout =
+            dobj_compat_model_part_layout(model);
+        int32_t childEnd =
+            childBases[childIndex] + layout.partNameTable->count;
 
         if (boneIndex < childEnd) {
             break;
@@ -448,7 +507,8 @@ void DObjCompleteHierarchyBits(DObj *state, uint32_t *partBits)
         childBases[childIndex] = childEnd;
     }
 
-    dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(state->models[childIndex]);
+    dobj_compat_model_part_layout_t layout =
+        dobj_compat_model_part_layout(state->models[childIndex]);
     while (qtrue) {
         int32_t localPart;
 
@@ -462,27 +522,37 @@ void DObjCompleteHierarchyBits(DObj *state, uint32_t *partBits)
             if (childIndex < 0) {
                 return;
             }
-            layout = dobj_compat_model_part_layout(state->models[childIndex]);
+            layout =
+                dobj_compat_model_part_layout(state->models[childIndex]);
         } while (qtrue);
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (dobj_compat_part_bit_byte_has_any(partBits, boneIndex) == qfalse &&
-            (dobj_compat_part_bit_mask(boneIndex) & DOBJ_PART_BIT_LOW_MASK) != 0) {
+        if (dobj_compat_part_bit_byte_has_any(partBits, boneIndex) ==
+                qfalse &&
+            (dobj_compat_part_bit_mask(boneIndex) &
+             DOBJ_PART_BIT_LOW_MASK) != 0) {
             --boneIndex;
             continue;
         }
 
         int32_t parentPart;
-        if (dobj_compat_part_bit_is_set(traceRemap->sourcePartBits, boneIndex) != qfalse) {
-            parentPart = dobj_compat_trace_remap_target_for_source(traceRemap, boneIndex);
+        if (dobj_compat_part_bit_is_set(traceRemap->sourcePartBits,
+                                         boneIndex) != qfalse) {
+            parentPart = dobj_compat_trace_remap_target_for_source(
+                traceRemap, boneIndex);
         } else {
-            int32_t parentDeltaIndex = localPart - layout.payload->rootPartCount;
+            int32_t parentDeltaIndex =
+                localPart - layout.payload->rootPartCount;
 
             if (parentDeltaIndex >= 0) {
-                parentPart = (int32_t)(boneIndex - layout.parentPartDeltas[parentDeltaIndex]);
+                parentPart =
+                    (int32_t)(boneIndex -
+                                              layout.parentPartDeltas
+                                                  [parentDeltaIndex]);
             } else {
                 parentPart = record->modelParentPartIndices[childIndex];
-                if (parentPart == DOBJ_CHILD_PARENT_NONE) {
+                if (parentPart ==
+                    DOBJ_CHILD_PARENT_NONE) {
                     --boneIndex;
                     continue;
                 }
@@ -505,8 +575,10 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
     uint32_t skipQuatBits[DOBJ_PART_BITSET_WORD_COUNT];
     qboolean allPartsAlreadyBlocked = qtrue;
 
-    for (int32_t wordIndex = 0; wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
-        blockedOrNotRequestedBits[wordIndex] = ~partBits[wordIndex] | storage->blockedPartBits[wordIndex];
+    for (int32_t wordIndex = 0;
+         wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
+        blockedOrNotRequestedBits[wordIndex] =
+            ~partBits[wordIndex] | storage->blockedPartBits[wordIndex];
         if (blockedOrNotRequestedBits[wordIndex] != UINT32_MAX) {
             allPartsAlreadyBlocked = qfalse;
         }
@@ -520,53 +592,80 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
         DObjBuildTracePartRemap(state);
     }
 
-    const DObjTracePartRemap *traceRemap = (const DObjTracePartRemap *)SL_ConvertToString(state->tracePartRemapHandle);
+    const DObjTracePartRemap *traceRemap =
+        (const DObjTracePartRemap *)SL_ConvertToString(
+            state->tracePartRemapHandle);
 
-    for (int32_t wordIndex = 0; wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
+    for (int32_t wordIndex = 0;
+         wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
         uint32_t traceSourcePartBits;
 
-        memcpy(&traceSourcePartBits, &traceRemap->sourcePartBits[(size_t)wordIndex * sizeof(traceSourcePartBits)],
+        memcpy(&traceSourcePartBits,
+               &traceRemap->sourcePartBits[
+                   (size_t)wordIndex * sizeof(traceSourcePartBits)],
                sizeof(traceSourcePartBits));
         storage->blockedPartBits[wordIndex] |= partBits[wordIndex];
-        buildPartBits[wordIndex] = ~blockedOrNotRequestedBits[wordIndex] & storage->controlPartBits[wordIndex];
-        skipQuatBits[wordIndex] = blockedOrNotRequestedBits[wordIndex] | buildPartBits[wordIndex] | traceSourcePartBits;
+        buildPartBits[wordIndex] =
+            ~blockedOrNotRequestedBits[wordIndex] &
+            storage->controlPartBits[wordIndex];
+        skipQuatBits[wordIndex] =
+            blockedOrNotRequestedBits[wordIndex] | buildPartBits[wordIndex] |
+            traceSourcePartBits;
     }
 
-    for (int32_t wordIndex = 0; wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
-        buildPartBits[wordIndex] = ~skipQuatBits[wordIndex] | buildPartBits[wordIndex];
+    for (int32_t wordIndex = 0;
+         wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
+        buildPartBits[wordIndex] =
+            ~skipQuatBits[wordIndex] | buildPartBits[wordIndex];
     }
 
     DObjSkelMat *matrices = &storage->partSpans[0].basePose;
     DObjAnimMat *evalParts = DObjGetRotTransArray(state);
     DObjAnimMat *evalPart = evalParts;
     int32_t globalPart = 0;
-    const uint8_t *remapPair = traceRemap->duplicatePairs;
+    const uint8_t *remapPair =
+        traceRemap->duplicatePairs;
 
-    for (int32_t childIndex = 0; childIndex < state->modelCount; ++childIndex) {
-        dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(state->models[childIndex]);
-        uint8_t parentPart = record->modelParentPartIndices[childIndex];
+    for (int32_t childIndex = 0; childIndex < state->modelCount;
+         ++childIndex) {
+        dobj_compat_model_part_layout_t layout =
+            dobj_compat_model_part_layout(state->models[childIndex]);
+        uint8_t parentPart =
+            record->modelParentPartIndices[childIndex];
 
         if (parentPart == DOBJ_CHILD_PARENT_NONE) {
-            for (int32_t remaining = layout.payload->rootPartCount; remaining > 0; --remaining) {
+            for (int32_t remaining = layout.payload->rootPartCount;
+                 remaining > 0; --remaining) {
                 int32_t duplicatePart;
 
-                if (dobj_compat_part_bit_is_set(buildPartBits, globalPart) == qfalse &&
-                    dobj_compat_trace_remap_consume_source(&remapPair, globalPart, &duplicatePart) != qfalse &&
-                    dobj_compat_part_bit_is_set(blockedOrNotRequestedBits, globalPart) == qfalse) {
-                    dobj_compat_eval_part_copy_quat(evalPart, &evalParts[duplicatePart]);
+                if (dobj_compat_part_bit_is_set(buildPartBits,
+                                                 globalPart) == qfalse &&
+                    dobj_compat_trace_remap_consume_source(
+                        &remapPair, globalPart, &duplicatePart) != qfalse &&
+                    dobj_compat_part_bit_is_set(blockedOrNotRequestedBits,
+                                                 globalPart) == qfalse) {
+                    dobj_compat_eval_part_copy_quat(
+                        evalPart, &evalParts[duplicatePart]);
                 }
 
                 ++evalPart;
                 ++globalPart;
             }
         } else {
-            DObjAnimMat *parentEvalPart = &evalParts[parentPart];
+            DObjAnimMat *parentEvalPart =
+                &evalParts[parentPart];
 
-            for (int32_t remaining = layout.payload->rootPartCount; remaining > 0; --remaining) {
-                if (dobj_compat_part_bit_is_set(skipQuatBits, globalPart) == qfalse) {
-                    dobj_compat_eval_part_multiply_into_self(evalPart, parentEvalPart);
-                } else if (dobj_compat_part_bit_is_set(buildPartBits, globalPart) != qfalse) {
-                    dobj_compat_eval_part_multiply_into_rhs(parentEvalPart, evalPart);
+            for (int32_t remaining = layout.payload->rootPartCount;
+                 remaining > 0; --remaining) {
+                if (dobj_compat_part_bit_is_set(skipQuatBits,
+                                                 globalPart) == qfalse) {
+                    dobj_compat_eval_part_multiply_into_self(
+                        evalPart, parentEvalPart);
+                } else if (dobj_compat_part_bit_is_set(buildPartBits,
+                                                        globalPart) !=
+                           qfalse) {
+                    dobj_compat_eval_part_multiply_into_rhs(parentEvalPart,
+                                                            evalPart);
                 }
 
                 ++evalPart;
@@ -575,7 +674,8 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
         }
 
         uint8_t *parentDeltas = layout.parentPartDeltas;
-        int32_t nonRootPartCount = layout.partNameTable->count - layout.payload->rootPartCount;
+        int32_t nonRootPartCount =
+            layout.partNameTable->count - layout.payload->rootPartCount;
 
         /* NOT_FROM_ORIGINAL_SOURCE: loading proves this difference
          * nonnegative; retain a positive sink countdown. */
@@ -584,15 +684,22 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
             uint8_t parentDelta = parentDeltas[localPart];
             int32_t duplicatePart;
 
-            if (dobj_compat_part_bit_is_set(skipQuatBits, globalPart) == qfalse) {
-                dobj_compat_eval_part_multiply_into_self(evalPart, &evalParts[globalPart - parentDelta]);
-            } else if (dobj_compat_part_bit_is_set(buildPartBits, globalPart) == qfalse) {
-                if (dobj_compat_trace_remap_consume_source(&remapPair, globalPart, &duplicatePart) != qfalse &&
-                    dobj_compat_part_bit_is_set(blockedOrNotRequestedBits, globalPart) == qfalse) {
-                    dobj_compat_eval_part_copy_quat(evalPart, &evalParts[duplicatePart]);
+            if (dobj_compat_part_bit_is_set(skipQuatBits,
+                                             globalPart) == qfalse) {
+                dobj_compat_eval_part_multiply_into_self(
+                    evalPart, &evalParts[globalPart - parentDelta]);
+            } else if (dobj_compat_part_bit_is_set(buildPartBits,
+                                                    globalPart) == qfalse) {
+                if (dobj_compat_trace_remap_consume_source(
+                        &remapPair, globalPart, &duplicatePart) != qfalse &&
+                    dobj_compat_part_bit_is_set(blockedOrNotRequestedBits,
+                                                 globalPart) == qfalse) {
+                    dobj_compat_eval_part_copy_quat(
+                        evalPart, &evalParts[duplicatePart]);
                 }
             } else {
-                dobj_compat_eval_part_multiply_into_rhs(&evalParts[globalPart - parentDelta], evalPart);
+                dobj_compat_eval_part_multiply_into_rhs(
+                    &evalParts[globalPart - parentDelta], evalPart);
             }
 
             ++evalPart;
@@ -607,18 +714,28 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
     globalPart = 0;
     remapPair = traceRemap->duplicatePairs;
 
-    for (int32_t childIndex = 0; childIndex < state->modelCount; ++childIndex) {
-        dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(state->models[childIndex]);
-        uint8_t parentPart = record->modelParentPartIndices[childIndex];
+    for (int32_t childIndex = 0; childIndex < state->modelCount;
+         ++childIndex) {
+        dobj_compat_model_part_layout_t layout =
+            dobj_compat_model_part_layout(state->models[childIndex]);
+        uint8_t parentPart =
+            record->modelParentPartIndices[childIndex];
 
         if (parentPart == DOBJ_CHILD_PARENT_NONE) {
-            for (int32_t remaining = layout.payload->rootPartCount; remaining > 0; --remaining) {
+            for (int32_t remaining = layout.payload->rootPartCount;
+                 remaining > 0; --remaining) {
                 int32_t duplicatePart;
 
-                if (dobj_compat_part_bit_is_set(buildPartBits, globalPart) == qfalse) {
-                    if (dobj_compat_trace_remap_consume_source(&remapPair, globalPart, &duplicatePart) != qfalse &&
-                        dobj_compat_part_bit_is_set(blockedOrNotRequestedBits, globalPart) == qfalse) {
-                        dobj_compat_eval_part_copy_translation(evalPart, &evalParts[duplicatePart]);
+                if (dobj_compat_part_bit_is_set(buildPartBits,
+                                                 globalPart) == qfalse) {
+                    if (dobj_compat_trace_remap_consume_source(
+                            &remapPair, globalPart,
+                            &duplicatePart) != qfalse &&
+                        dobj_compat_part_bit_is_set(
+                            blockedOrNotRequestedBits,
+                            globalPart) == qfalse) {
+                        dobj_compat_eval_part_copy_translation(
+                            evalPart, &evalParts[duplicatePart]);
                         *matrix = matrices[duplicatePart];
                     }
                 } else {
@@ -633,10 +750,13 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
         } else {
             DObjSkelMat *parentMatrix = &matrices[parentPart];
 
-            for (int32_t remaining = layout.payload->rootPartCount; remaining > 0; --remaining) {
-                if (dobj_compat_part_bit_is_set(buildPartBits, globalPart) != qfalse) {
+            for (int32_t remaining = layout.payload->rootPartCount;
+                 remaining > 0; --remaining) {
+                if (dobj_compat_part_bit_is_set(buildPartBits,
+                                                 globalPart) != qfalse) {
                     dobj_compat_eval_part_build_matrix(evalPart, matrix);
-                    dobj_compat_eval_part_transform_translation(evalPart, parentMatrix);
+                    dobj_compat_eval_part_transform_translation(
+                        evalPart, parentMatrix);
                     dobj_compat_base_pose_store_origin(matrix, evalPart);
                 }
 
@@ -648,23 +768,30 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
 
         uint8_t *parentDeltas = layout.parentPartDeltas;
         vec3_t *baseTranslations = layout.baseTranslations;
-        int32_t nonRootPartCount = layout.partNameTable->count - layout.payload->rootPartCount;
+        int32_t nonRootPartCount =
+            layout.partNameTable->count - layout.payload->rootPartCount;
 
         int32_t localPart = 0;
         while (nonRootPartCount > 0) {
             uint8_t parentDelta = parentDeltas[localPart];
             int32_t duplicatePart;
 
-            if (dobj_compat_part_bit_is_set(buildPartBits, globalPart) == qfalse) {
-                if (dobj_compat_trace_remap_consume_source(&remapPair, globalPart, &duplicatePart) != qfalse &&
-                    dobj_compat_part_bit_is_set(blockedOrNotRequestedBits, globalPart) == qfalse) {
-                    dobj_compat_eval_part_copy_translation(evalPart, &evalParts[duplicatePart]);
+            if (dobj_compat_part_bit_is_set(buildPartBits,
+                                             globalPart) == qfalse) {
+                if (dobj_compat_trace_remap_consume_source(
+                        &remapPair, globalPart, &duplicatePart) != qfalse &&
+                    dobj_compat_part_bit_is_set(blockedOrNotRequestedBits,
+                                                 globalPart) == qfalse) {
+                    dobj_compat_eval_part_copy_translation(
+                        evalPart, &evalParts[duplicatePart]);
                     *matrix = matrices[duplicatePart];
                 }
             } else {
                 dobj_compat_eval_part_build_matrix(evalPart, matrix);
-                dobj_compat_eval_part_add_base_translation(evalPart, baseTranslations[localPart]);
-                dobj_compat_eval_part_transform_translation(evalPart, &matrices[globalPart - parentDelta]);
+                dobj_compat_eval_part_add_base_translation(
+                    evalPart, baseTranslations[localPart]);
+                dobj_compat_eval_part_transform_translation(
+                    evalPart, &matrices[globalPart - parentDelta]);
                 dobj_compat_base_pose_store_origin(matrix, evalPart);
             }
 
@@ -683,16 +810,18 @@ void DObjCalcSkel(DObj *state, const uint32_t *partBits)
  * SL_FindStringOfLen; Linux invokes SL_FindString, whose complete body at
  * 0x080a47e8 computes the same length and forwards to SL_FindStringOfLen.
  * The common spelling below therefore preserves both original paths. */
-void DObjCreate(const DObjModel *models, uint16_t modelCount, XAnimTree *runtimeTree, DObj *state, uint16_t gameId)
+void DObjCreate(const DObjModel *models,
+                uint16_t modelCount,
+                XAnimTree *runtimeTree,
+                DObj *state,
+                uint16_t gameId)
 {
     uint8_t childCount;
     int32_t partCount;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (modelCount > DOBJ_MAX_MODELS) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "dobj has more than %d models",
+        Com_Error(ERR_DROP, "\x15" "dobj has more than %d models",
                   DOBJ_MAX_MODELS);
         modelCount = DOBJ_MAX_MODELS;
     }
@@ -710,32 +839,38 @@ void DObjCreate(const DObjModel *models, uint16_t modelCount, XAnimTree *runtime
         uint8_t *generation;
 
         sourceTree = runtimeTree->sourceTree;
-        partRemapTableBytes = coduo_xanim_part_remap_table_bytes(runtimeTree, runtimeTree->partRemapTableSelector);
+        partRemapTableBytes = coduo_xanim_part_remap_table_bytes(
+            runtimeTree, runtimeTree->partRemapTableSelector);
         state->partRemapTable = partRemapTableBytes;
 
-        generation = coduo_xanim_part_remap_generation_bytes(partRemapTableBytes, sourceTree->nodeCount);
+        generation = coduo_xanim_part_remap_generation_bytes(
+            partRemapTableBytes, sourceTree->nodeCount);
         ++*generation;
         if (*generation == 0) {
             *generation = 1;
             Com_Memset(generation + 1, 0, sourceTree->nodeCount);
         }
 
-        runtimeTree->partRemapTableSelector = 1 - runtimeTree->partRemapTableSelector;
+        runtimeTree->partRemapTableSelector =
+            1 - runtimeTree->partRemapTableSelector;
     } else {
         state->partRemapTable = 0;
     }
 
     childCount = 0;
     partCount = 0;
-    for (int32_t modelIndex = 0; modelIndex < modelCount; ++modelIndex, ++models) {
+    for (int32_t modelIndex = 0; modelIndex < modelCount;
+         ++modelIndex, ++models) {
         XModel *model;
         int32_t modelPartCount;
 
         model = models->model;
         state->models[childCount] = model;
-        state->modelParentPartIndices[childCount] = DOBJ_CHILD_PARENT_NONE;
+        state->modelParentPartIndices[childCount] =
+            DOBJ_CHILD_PARENT_NONE;
         state->modelIndices[childCount] = models->modelIndex;
-        state->modelPartBaseIndices[childCount] = (uint8_t)partCount;
+        state->modelPartBaseIndices[childCount] =
+            (uint8_t)partCount;
 
         if (models->ignoreCollision != 0) {
             state->collisionSkipModelMask |= 1U << modelIndex;
@@ -748,20 +883,27 @@ void DObjCreate(const DObjModel *models, uint16_t modelCount, XAnimTree *runtime
             if (tagName[0] != '\0') {
                 uint16_t tagHandle;
 
-                tagHandle = SL_FindStringOfLen(tagName, strlen(tagName) + 1U);
+                tagHandle = SL_FindStringOfLen(tagName,
+                                               strlen(tagName) + 1U);
                 if (tagHandle != 0) {
                     for (int32_t parent = 0; parent < childCount; ++parent) {
                         int32_t localPart;
 
-                        localPart = XModelGetBoneIndex(state->models[parent], tagHandle);
+                        localPart =
+                            XModelGetBoneIndex(state->models[parent],
+                                               tagHandle);
                         if (localPart >= 0) {
-                            state->modelParentPartIndices[childCount] = (uint8_t)(localPart + state->modelPartBaseIndices[parent]);
+                            state->modelParentPartIndices[childCount] =
+                                (uint8_t)(
+                                    localPart +
+                                    state->modelPartBaseIndices[parent]);
                             goto update_part_count;
                         }
                     }
                 }
 
-                XModel *rootModelRecord = (XModel *)state->models[0];
+                XModel *rootModelRecord =
+                    (XModel *)state->models[0];
 
                 Com_Printf("WARNING: Part '%s' not found in model '%s' or any "
                            "of its descendants\n",
@@ -769,24 +911,23 @@ void DObjCreate(const DObjModel *models, uint16_t modelCount, XAnimTree *runtime
             }
         }
 
-    update_part_count:
+update_part_count:
         /* NOT_FROM_ORIGINAL_SOURCE: each model contributes a positive count to
          * the bounded cumulative DObj span. */
         modelPartCount = XModelNumBones(model);
         if (modelPartCount <= 0) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "dobj xmodel '%s' has an invalid bone count",
+                      "\x15" "dobj xmodel '%s' has an invalid bone count",
                       model->name);
             goto finish;
         }
         partCount += modelPartCount;
         if (partCount > DOBJ_MAX_BONE_INDEX) {
-            XModel *rootModelRecord = (XModel *)state->models[0];
+            XModel *rootModelRecord =
+                (XModel *)state->models[0];
 
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "dobj for xmodel '%s' has more than %d bones",
+                      "\x15" "dobj for xmodel '%s' has more than %d bones",
                       rootModelRecord->name, DOBJ_MAX_BONE_INDEX);
             goto finish;
         }
@@ -811,7 +952,8 @@ void DObjFree(DObj *state, qboolean releaseRuntimeTree)
             XAnimClearTree(runtimeTree);
         }
 
-        if (state->partRemapTable == coduo_xanim_part_remap_table_bytes(runtimeTree, 0)) {
+        if (state->partRemapTable ==
+            coduo_xanim_part_remap_table_bytes(runtimeTree, 0)) {
             runtimeTree->partRemapTableSelector = 0;
         } else {
             runtimeTree->partRemapTableSelector = 1;
@@ -825,9 +967,12 @@ void DObjFree(DObj *state, qboolean releaseRuntimeTree)
         if (state->tracePartRemapHandle != xanimDefaultPartRemapHandle) {
             const char *payload;
 
-            payload = SL_ConvertToString(state->tracePartRemapHandle);
-            SL_RemoveRefToStringOfLen(state->tracePartRemapHandle,
-                                      (uint32_t)(strlen(payload + DOBJ_PART_REMAP_PREFIX_SIZE) + DOBJ_PART_REMAP_PREFIX_SIZE + 1U));
+            payload =
+                SL_ConvertToString(state->tracePartRemapHandle);
+            SL_RemoveRefToStringOfLen(
+                state->tracePartRemapHandle,
+                (uint32_t)(strlen(payload + DOBJ_PART_REMAP_PREFIX_SIZE) +
+                           DOBJ_PART_REMAP_PREFIX_SIZE + 1U));
         }
 
         state->tracePartRemapHandle = 0;
@@ -842,17 +987,22 @@ void DObjFree(DObj *state, qboolean releaseRuntimeTree)
 #if defined(WINDOWS_BEHAVIOR)
 /* Source: CoDUOMP.exe 0x00495240..0x0049590c.
  * Name and collision flow match the machine-audited Linux engine function. */
-void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const uint8_t *partState, dobj_trace_result_t *trace)
+void DObjTraceParts(const DObj *obj, const vec3_t start,
+                    const vec3_t end, const uint8_t *partState,
+                    dobj_trace_result_t *trace)
 {
     vec3_t delta;
     delta[0] = end[0] - start[0];
     delta[1] = end[1] - start[1];
     /* 0x00495297 FST keeps the Z subtraction live for its square; X and Y
      * have already been rounded to their float stack slots. */
-    const long double deltaZRaw = (long double)end[2] - (long double)start[2];
+    const long double deltaZRaw =
+        (long double)end[2] - (long double)start[2];
     delta[2] = (float)deltaZRaw;
     const long double lengthSquared =
-        deltaZRaw * deltaZRaw + (long double)delta[1] * (long double)delta[1] + (long double)delta[0] * (long double)delta[0];
+        deltaZRaw * deltaZRaw +
+        (long double)delta[1] * (long double)delta[1] +
+        (long double)delta[0] * (long double)delta[0];
     float invLenSq = (float)((long double)1.0f / lengthSquared);
     DObjSkelMat *basePose = DObjGetMatrixArray(obj, 0);
     /* NOT_FROM_ORIGINAL_SOURCE: DObj construction proves the cumulative child
@@ -869,19 +1019,27 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
     trace->normal[0] = 0.0f;
 
     uint32_t bestPriority = DOBJ_TRACE_PART_MIN_PRIORITY;
-    const uint8_t *traceRemap = (const uint8_t *)SL_ConvertToString(obj->tracePartRemapHandle) + DOBJ_PART_REMAP_PREFIX_SIZE;
+    const uint8_t *traceRemap =
+        (const uint8_t *)SL_ConvertToString(
+            obj->tracePartRemapHandle) + DOBJ_PART_REMAP_PREFIX_SIZE;
     int32_t globalPart = 0;
 
-    for (int32_t modelIndex = 0; modelIndex < obj->modelCount; ++modelIndex) {
-        dobj_compat_model_part_layout_t layout = dobj_compat_model_part_layout(obj->models[modelIndex]);
+    for (int32_t modelIndex = 0; modelIndex < obj->modelCount;
+         ++modelIndex) {
+        dobj_compat_model_part_layout_t layout =
+            dobj_compat_model_part_layout(obj->models[modelIndex]);
         const uint16_t *partNames = layout.partNameTable->handles;
         int32_t partCount = layout.partNameTable->count;
-        const XModelPartColl *parts = layout.payload->partCollisions;
-        const uint8_t *partStateMap = layout.payload->partStateIndices;
+        const XModelPartColl *parts =
+            layout.payload->partCollisions;
+        const uint8_t *partStateMap =
+            layout.payload->partStateIndices;
         int32_t rootPartCount = layout.payload->rootPartCount;
-        uint32_t modelSkipped = (1U << (modelIndex & 31)) & obj->collisionSkipModelMask;
+        uint32_t modelSkipped =
+            (1U << (modelIndex & 31)) & obj->collisionSkipModelMask;
 
-        for (int32_t localPart = 0; localPart < partCount; ++localPart, ++globalPart, ++basePose) {
+        for (int32_t localPart = 0; localPart < partCount;
+             ++localPart, ++globalPart, ++basePose) {
             uint16_t partStateIndex = partStateMap[localPart];
             uint32_t partPriority = partState[partStateIndex];
 
@@ -889,16 +1047,25 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
                 const uint8_t *remapEntry = traceRemap;
                 traceRemap += 2;
                 if (partPriority == DOBJ_TRACE_PART_INHERIT_PRIORITY) {
-                    partStateIndex = remappedPartStateIndices[remapEntry[1] - 1];
+                    partStateIndex =
+                        remappedPartStateIndices[remapEntry[1] - 1];
                     partPriority = partState[partStateIndex];
                 }
-            } else if (partPriority == DOBJ_TRACE_PART_INHERIT_PRIORITY) {
+            } else if (partPriority ==
+                       DOBJ_TRACE_PART_INHERIT_PRIORITY) {
                 if (localPart < rootPartCount) {
-                    uint8_t parentPart = obj->modelParentPartIndices[modelIndex];
-                    partStateIndex = parentPart == DOBJ_CHILD_PARENT_NONE ? 0 : remappedPartStateIndices[parentPart];
+                    uint8_t parentPart =
+                        obj->modelParentPartIndices[modelIndex];
+                    partStateIndex =
+                        parentPart == DOBJ_CHILD_PARENT_NONE
+                            ? 0
+                            : remappedPartStateIndices[parentPart];
                 } else {
-                    uint8_t parentBack = layout.parentPartDeltas[localPart - rootPartCount];
-                    partStateIndex = remappedPartStateIndices[globalPart - parentBack];
+                    uint8_t parentBack =
+                        layout.parentPartDeltas[
+                            localPart - rootPartCount];
+                    partStateIndex =
+                        remappedPartStateIndices[globalPart - parentBack];
                 }
                 partPriority = partState[partStateIndex];
             }
@@ -920,11 +1087,15 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
             startToCenter[1] = start[1] - center[1];
             /* 0x004954e1 retains the unrounded Z subtraction through the dot;
              * its float copy is reloaded only by the later nearest-point path. */
-            const long double startToCenterZRaw = (long double)start[2] - (long double)center[2];
+            const long double startToCenterZRaw =
+                (long double)start[2] - (long double)center[2];
             startToCenter[2] = (float)startToCenterZRaw;
             const long double projectionRaw =
-                -((startToCenterZRaw * (long double)delta[2] + (long double)startToCenter[1] * (long double)delta[1]) +
-                  (long double)startToCenter[0] * (long double)delta[0]) *
+                -((startToCenterZRaw * (long double)delta[2] +
+                   (long double)startToCenter[1] *
+                       (long double)delta[1]) +
+                  (long double)startToCenter[0] *
+                      (long double)delta[0]) *
                 (long double)invLenSq;
             float projection = (float)projectionRaw;
             float distanceSq;
@@ -933,16 +1104,28 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
              * retained x87 result. */
             if (projectionRaw < (long double)1.0f) {
                 if (projectionRaw > (long double)0.0f) {
-                    vec3_t nearest = {startToCenter[0] + delta[0] * projection, startToCenter[1] + delta[1] * projection,
-                                      startToCenter[2] + delta[2] * projection};
-                    distanceSq = nearest[2] * nearest[2] + nearest[1] * nearest[1] + nearest[0] * nearest[0];
+                    vec3_t nearest = {
+                        startToCenter[0] + delta[0] * projection,
+                        startToCenter[1] + delta[1] * projection,
+                        startToCenter[2] + delta[2] * projection
+                    };
+                    distanceSq = nearest[2] * nearest[2] +
+                                 nearest[1] * nearest[1] +
+                                 nearest[0] * nearest[0];
                 } else {
                     distanceSq =
-                        startToCenter[2] * startToCenter[2] + startToCenter[1] * startToCenter[1] + startToCenter[0] * startToCenter[0];
+                        startToCenter[2] * startToCenter[2] +
+                        startToCenter[1] * startToCenter[1] +
+                        startToCenter[0] * startToCenter[0];
                 }
             } else {
-                vec3_t endToCenter = {end[0] - center[0], end[1] - center[1], end[2] - center[2]};
-                distanceSq = endToCenter[2] * endToCenter[2] + endToCenter[1] * endToCenter[1] + endToCenter[0] * endToCenter[0];
+                vec3_t endToCenter = {
+                    end[0] - center[0], end[1] - center[1],
+                    end[2] - center[2]
+                };
+                distanceSq = endToCenter[2] * endToCenter[2] +
+                             endToCenter[1] * endToCenter[1] +
+                             endToCenter[0] * endToCenter[0];
             }
 
             float radiusDelta = part->radiusSq - distanceSq;
@@ -950,8 +1133,12 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
                 continue;
             }
             if (bestPriority == partPriority) {
-                const long double sphereFractionRaw = (long double)projection - sqrtl((long double)radiusDelta * (long double)invLenSq);
-                if (sphereFractionRaw >= (long double)trace->fraction) {
+                const long double sphereFractionRaw =
+                    (long double)projection -
+                    sqrtl((long double)radiusDelta *
+                          (long double)invLenSq);
+                if (sphereFractionRaw >=
+                    (long double)trace->fraction) {
                     continue;
                 }
             }
@@ -971,19 +1158,28 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
 
             for (;;) {
                 for (int32_t axis = 0; axis < 3; ++axis) {
-                    float startDist = (float)(((long double)localStart[axis] - (long double)bounds[axis]) * (long double)sign);
+                    float startDist = (float)(
+                        ((long double)localStart[axis] -
+                         (long double)bounds[axis]) *
+                        (long double)sign);
                     /* startDist is FSTP-rounded at 0x004956ef; endDist remains
                      * live through both zero tests and the subtraction. */
-                    const long double endDistRaw = ((long double)localEnd[axis] - (long double)bounds[axis]) * (long double)sign;
+                    const long double endDistRaw =
+                        ((long double)localEnd[axis] -
+                         (long double)bounds[axis]) *
+                        (long double)sign;
 
                     if (startDist > 0.0f) {
                         if (endDistRaw > (long double)0.0f) {
                             goto next_part;
                         }
                         startInside = qfalse;
-                        const long double denom = (long double)startDist - endDistRaw;
-                        if ((long double)enter * denom < (long double)startDist) {
-                            const long double enterCandidate = (long double)startDist / denom;
+                        const long double denom =
+                            (long double)startDist - endDistRaw;
+                        if ((long double)enter * denom <
+                            (long double)startDist) {
+                            const long double enterCandidate =
+                                (long double)startDist / denom;
                             /* 0x00495742 FST rounds the saved candidate but
                              * leaves the wide quotient for this comparison. */
                             enter = (float)enterCandidate;
@@ -995,8 +1191,10 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
                         }
                     } else if (endDistRaw > (long double)0.0f) {
                         endInside = qfalse;
-                        const long double denom = (long double)startDist - endDistRaw;
-                        if ((long double)exit * denom < (long double)startDist) {
+                        const long double denom =
+                            (long double)startDist - endDistRaw;
+                        if ((long double)exit * denom <
+                            (long double)startDist) {
                             exit = (float)((long double)startDist / denom);
                             if (exit <= enter) {
                                 goto next_part;
@@ -1041,13 +1239,15 @@ void DObjTraceParts(const DObj *obj, const vec3_t start, const vec3_t end, const
                 }
             }
 
-        next_part:;
+next_part:;
         }
     }
 }
 #else
 /* Source: coduo_lnxded 0x080c7394..0x080c7be8. */
-void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, const uint8_t *partState, dobj_trace_result_t *trace)
+void DObjTraceParts(const DObj *state, const vec3_t start,
+                    const vec3_t end, const uint8_t *partState,
+                    dobj_trace_result_t *trace)
 {
     const DObj *record;
     DObjSkelMat *basePose;
@@ -1066,11 +1266,15 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
     delta[2] = end[2] - start[2];
     /* 1.0 / (delta.delta) kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-    invLenSq = x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_add(x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
-                                                                              x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
-                                                                     x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2])))));
+    invLenSq = x87f_store_f32(x87f_div(
+        x87f_load_f32(1.0f),
+        x87f_add(x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
+                          x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+                 x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2])))));
 #else
-    invLenSq = 1.0f / (delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2]);
+    invLenSq =
+        1.0f / (delta[0] * delta[0] + delta[1] * delta[1] +
+                delta[2] * delta[2]);
 #endif
     basePose = DObjGetMatrixArray(state, 0);
 
@@ -1084,10 +1288,14 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
     trace->normal[0] = 0.0f;
 
     bestPriority = DOBJ_TRACE_PART_MIN_PRIORITY;
-    traceRemap = (const uint8_t *)SL_ConvertToString(state->tracePartRemapHandle) + DOBJ_PART_REMAP_PREFIX_SIZE;
+    traceRemap =
+        (const uint8_t *)SL_ConvertToString(
+            state->tracePartRemapHandle) +
+        DOBJ_PART_REMAP_PREFIX_SIZE;
     globalPart = 0;
 
-    for (int32_t childIndex = 0; childIndex < state->modelCount; ++childIndex) {
+    for (int32_t childIndex = 0; childIndex < state->modelCount;
+         ++childIndex) {
         XModel *model;
         dobj_compat_model_part_layout_t layout;
         const uint16_t *partNames;
@@ -1111,7 +1319,8 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
         parentThreshold = layout.payload->rootPartCount;
         childSkipped = (1U << (childIndex & 31)) & state->collisionSkipModelMask;
 
-        for (int32_t localPart = 0; localPart < partNameCount; ++localPart, ++globalPart, ++basePose) {
+        for (int32_t localPart = 0; localPart < partNameCount;
+             ++localPart, ++globalPart, ++basePose) {
             uint16_t partStateIndex;
             uint32_t partPriority;
 
@@ -1124,7 +1333,8 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
                 remapEntry = traceRemap;
                 traceRemap += 2;
                 if (partPriority == DOBJ_TRACE_PART_INHERIT_PRIORITY) {
-                    partStateIndex = remappedPartStateIndices[remapEntry[1] - 1];
+                    partStateIndex =
+                        remappedPartStateIndices[remapEntry[1] - 1];
                     partPriority = partState[partStateIndex];
                 }
             } else if (partPriority == DOBJ_TRACE_PART_INHERIT_PRIORITY) {
@@ -1140,8 +1350,10 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
                 } else {
                     uint8_t parentBack;
 
-                    parentBack = layout.parentPartDeltas[localPart - parentThreshold];
-                    partStateIndex = remappedPartStateIndices[globalPart - parentBack];
+                    parentBack =
+                        layout.parentPartDeltas[localPart - parentThreshold];
+                    partStateIndex =
+                        remappedPartStateIndices[globalPart - parentBack];
                 }
                 partPriority = partState[partStateIndex];
             }
@@ -1168,13 +1380,18 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
             startToCenter[2] = start[2] - center[2];
             /* -(startToCenter.delta) * invLenSq kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-            projection =
-                x87f_store_f32(x87f_mul(x87f_neg(x87f_add(x87f_add(x87f_mul(x87f_load_f32(startToCenter[0]), x87f_load_f32(delta[0])),
-                                                                   x87f_mul(x87f_load_f32(startToCenter[1]), x87f_load_f32(delta[1]))),
-                                                          x87f_mul(x87f_load_f32(startToCenter[2]), x87f_load_f32(delta[2])))),
-                                        x87f_load_f32(invLenSq)));
+            projection = x87f_store_f32(x87f_mul(
+                x87f_neg(x87f_add(x87f_add(
+                    x87f_mul(x87f_load_f32(startToCenter[0]), x87f_load_f32(delta[0])),
+                    x87f_mul(x87f_load_f32(startToCenter[1]), x87f_load_f32(delta[1]))),
+                    x87f_mul(x87f_load_f32(startToCenter[2]), x87f_load_f32(delta[2])))),
+                x87f_load_f32(invLenSq)));
 #else
-            projection = -(startToCenter[0] * delta[0] + startToCenter[1] * delta[1] + startToCenter[2] * delta[2]) * invLenSq;
+            projection =
+                -(startToCenter[0] * delta[0] +
+                  startToCenter[1] * delta[1] +
+                  startToCenter[2] * delta[2]) *
+                invLenSq;
 #endif
 
             if (projection < 1.0f) {
@@ -1185,27 +1402,32 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
                      * nearest.nearest dot -> shim. */
 #if EMULATE_X87
                     for (int32_t k = 0; k < 3; k++) {
-                        nearest[k] = x87f_store_f32(
-                            x87f_add(x87f_mul(x87f_load_f32(delta[k]), x87f_load_f32(projection)), x87f_load_f32(startToCenter[k])));
+                        nearest[k] = x87f_store_f32(x87f_add(
+                            x87f_mul(x87f_load_f32(delta[k]), x87f_load_f32(projection)),
+                            x87f_load_f32(startToCenter[k])));
                     }
-                    distanceSq = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(nearest[0]), x87f_load_f32(nearest[0])),
-                                                                  x87f_mul(x87f_load_f32(nearest[1]), x87f_load_f32(nearest[1]))),
-                                                         x87f_mul(x87f_load_f32(nearest[2]), x87f_load_f32(nearest[2]))));
+                    distanceSq = x87f_store_f32(x87f_add(x87f_add(
+                        x87f_mul(x87f_load_f32(nearest[0]), x87f_load_f32(nearest[0])),
+                        x87f_mul(x87f_load_f32(nearest[1]), x87f_load_f32(nearest[1]))),
+                        x87f_mul(x87f_load_f32(nearest[2]), x87f_load_f32(nearest[2]))));
 #else
                     nearest[0] = startToCenter[0] + delta[0] * projection;
                     nearest[1] = startToCenter[1] + delta[1] * projection;
                     nearest[2] = startToCenter[2] + delta[2] * projection;
-                    distanceSq = nearest[0] * nearest[0] + nearest[1] * nearest[1] + nearest[2] * nearest[2];
+                    distanceSq = nearest[0] * nearest[0] +
+                                 nearest[1] * nearest[1] +
+                                 nearest[2] * nearest[2];
 #endif
                 } else {
 #if EMULATE_X87
-                    distanceSq =
-                        x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(startToCenter[0]), x87f_load_f32(startToCenter[0])),
-                                                         x87f_mul(x87f_load_f32(startToCenter[1]), x87f_load_f32(startToCenter[1]))),
-                                                x87f_mul(x87f_load_f32(startToCenter[2]), x87f_load_f32(startToCenter[2]))));
+                    distanceSq = x87f_store_f32(x87f_add(x87f_add(
+                        x87f_mul(x87f_load_f32(startToCenter[0]), x87f_load_f32(startToCenter[0])),
+                        x87f_mul(x87f_load_f32(startToCenter[1]), x87f_load_f32(startToCenter[1]))),
+                        x87f_mul(x87f_load_f32(startToCenter[2]), x87f_load_f32(startToCenter[2]))));
 #else
-                    distanceSq =
-                        startToCenter[0] * startToCenter[0] + startToCenter[1] * startToCenter[1] + startToCenter[2] * startToCenter[2];
+                    distanceSq = startToCenter[0] * startToCenter[0] +
+                                 startToCenter[1] * startToCenter[1] +
+                                 startToCenter[2] * startToCenter[2];
 #endif
                 }
             } else {
@@ -1215,11 +1437,14 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
                 endToCenter[1] = end[1] - center[1];
                 endToCenter[2] = end[2] - center[2];
 #if EMULATE_X87
-                distanceSq = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(endToCenter[0]), x87f_load_f32(endToCenter[0])),
-                                                              x87f_mul(x87f_load_f32(endToCenter[1]), x87f_load_f32(endToCenter[1]))),
-                                                     x87f_mul(x87f_load_f32(endToCenter[2]), x87f_load_f32(endToCenter[2]))));
+                distanceSq = x87f_store_f32(x87f_add(x87f_add(
+                    x87f_mul(x87f_load_f32(endToCenter[0]), x87f_load_f32(endToCenter[0])),
+                    x87f_mul(x87f_load_f32(endToCenter[1]), x87f_load_f32(endToCenter[1]))),
+                    x87f_mul(x87f_load_f32(endToCenter[2]), x87f_load_f32(endToCenter[2]))));
 #else
-                distanceSq = endToCenter[0] * endToCenter[0] + endToCenter[1] * endToCenter[1] + endToCenter[2] * endToCenter[2];
+                distanceSq = endToCenter[0] * endToCenter[0] +
+                             endToCenter[1] * endToCenter[1] +
+                             endToCenter[2] * endToCenter[2];
 #endif
             }
 
@@ -1236,12 +1461,17 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
                  * float local here.
                  */
 #if EMULATE_X87
-                if (x87f_le(x87f_load_f32(trace->fraction),
-                            x87f_sub(x87f_load_f32(projection), x87f_load_f32((float)sqrt((double)(radiusDelta * invLenSq)))))) {
+                if (x87f_le(
+                        x87f_load_f32(trace->fraction),
+                        x87f_sub(x87f_load_f32(projection),
+                                 x87f_load_f32((float)sqrt(
+                                     (double)(radiusDelta * invLenSq)))))) {
                     continue;
                 }
 #else
-                if (projection - (float)sqrt((double)(radiusDelta * invLenSq)) >= trace->fraction) {
+                if (projection -
+                        (float)sqrt((double)(radiusDelta * invLenSq)) >=
+                    trace->fraction) {
                     continue;
                 }
 #endif
@@ -1342,7 +1572,7 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
                 }
             }
 
-        next_part:;
+next_part:;
         }
     }
 }
@@ -1351,7 +1581,10 @@ void DObjTraceParts(const DObj *state, const vec3_t start, const vec3_t end, con
 
 /* Sources: CoDUOMP.exe 0x00495910..0x004959ec and coduo_lnxded
  * 0x080c7be8..0x080c7d10. */
-void DObjTraceModelParts(const DObj *state, const vec3_t start, const vec3_t end, int32_t contentMask, dobj_trace_result_t *trace)
+void DObjTraceModelParts(const DObj *state, const vec3_t start,
+                         const vec3_t end,
+                         int32_t contentMask,
+                         dobj_trace_result_t *trace)
 {
     DObjSkelMat *basePose;
     trace_t traceState;
@@ -1368,14 +1601,17 @@ void DObjTraceModelParts(const DObj *state, const vec3_t start, const vec3_t end
     traceState.normal[2] = 0.0f;
     traceState.surfaceFlags = 0;
 
-    for (int32_t childIndex = 0; childIndex < state->modelCount; ++childIndex) {
+    for (int32_t childIndex = 0; childIndex < state->modelCount;
+         ++childIndex) {
         XModel *model;
         const uint16_t *partNames;
         int32_t hitPart;
 
         model = state->models[childIndex];
         partNames = XModelBoneNames(model);
-        hitPart = XModelTraceLine(model, &traceState, basePose, start, end, contentMask);
+        hitPart =
+            XModelTraceLine(model, &traceState, basePose, start, end,
+                            contentMask);
         if (hitPart >= 0) {
             trace->hitPartNameHandle = partNames[hitPart];
         }

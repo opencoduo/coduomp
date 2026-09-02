@@ -63,8 +63,7 @@ void CG_ScriptMover(centity_t *cent /* one 32-bit stack arg */)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)modelIndex >= (uint32_t)CS_MODELS_COUNT) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_ScriptMover: invalid model index %i",
+                  "\x15" "CG_ScriptMover: invalid model index %i",
                   modelIndex);
         return;
     }
@@ -82,7 +81,8 @@ void CG_ScriptMover(centity_t *cent /* one 32-bit stack arg */)
     /* 0x3001f2b9..0x3001f2c7: CMP [cent+0xa0],0xffffff; JZ skips the null-skeleton
      * reject. When solid != SOLID_BMODEL and the DObj
      * handle came back 0, there is no model to draw this frame -> return. */
-    if (cent->currentState.solid != (int32_t)SOLID_BMODEL && dobj == NULL)
+    if (cent->currentState.solid != (int32_t)SOLID_BMODEL &&
+        dobj == NULL)
         return;
 
     uint32_t zBits;

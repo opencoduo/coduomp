@@ -45,20 +45,31 @@ long double QuatEigenTrace(const vec4_t quaternion)
     float lengthSquared;
 
 #if EMULATE_X87
-    xSquared = x87f_store_f32(x87f_mul(x87f_load_f32(quaternion[0]), x87f_load_f32(quaternion[0])));
-    ySquared = x87f_store_f32(x87f_mul(x87f_load_f32(quaternion[1]), x87f_load_f32(quaternion[1])));
-    zSquared = x87f_store_f32(x87f_mul(x87f_load_f32(quaternion[2]), x87f_load_f32(quaternion[2])));
-    lengthSquared = x87f_store_f32(
-        x87f_add(x87f_add(x87f_add(x87f_mul(x87f_load_f32(quaternion[3]), x87f_load_f32(quaternion[3])), x87f_load_f32(zSquared)),
-                          x87f_load_f32(ySquared)),
-                 x87f_load_f32(xSquared)));
+    xSquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(quaternion[0]), x87f_load_f32(quaternion[0])));
+    ySquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(quaternion[1]), x87f_load_f32(quaternion[1])));
+    zSquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(quaternion[2]), x87f_load_f32(quaternion[2])));
+    lengthSquared = x87f_store_f32(x87f_add(
+        x87f_add(x87f_add(
+            x87f_mul(x87f_load_f32(quaternion[3]),
+                     x87f_load_f32(quaternion[3])),
+            x87f_load_f32(zSquared)), x87f_load_f32(ySquared)),
+        x87f_load_f32(xSquared)));
 
     if (lengthSquared != 0.0f) {
-        const float reciprocal = x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_load_f32(lengthSquared)));
-        const float scaledX = x87f_store_f32(x87f_mul(x87f_load_f32(reciprocal), x87f_load_f32(xSquared)));
-        const float scaledY = x87f_store_f32(x87f_mul(x87f_load_f32(reciprocal), x87f_load_f32(ySquared)));
-        const float scaledZ = x87f_store_f32(x87f_mul(x87f_load_f32(reciprocal), x87f_load_f32(zSquared)));
-        const x87f result = x87f_add(x87f_add(x87f_load_f32(scaledZ), x87f_load_f32(scaledY)), x87f_load_f32(scaledX));
+        const float reciprocal = x87f_store_f32(x87f_div(
+            x87f_load_f32(1.0f), x87f_load_f32(lengthSquared)));
+        const float scaledX = x87f_store_f32(x87f_mul(
+            x87f_load_f32(reciprocal), x87f_load_f32(xSquared)));
+        const float scaledY = x87f_store_f32(x87f_mul(
+            x87f_load_f32(reciprocal), x87f_load_f32(ySquared)));
+        const float scaledZ = x87f_store_f32(x87f_mul(
+            x87f_load_f32(reciprocal), x87f_load_f32(zSquared)));
+        const x87f result = x87f_add(
+            x87f_add(x87f_load_f32(scaledZ), x87f_load_f32(scaledY)),
+            x87f_load_f32(scaledX));
 
         return (long double)x87f_store_f64(result);
     }
@@ -66,13 +77,19 @@ long double QuatEigenTrace(const vec4_t quaternion)
     xSquared = (float)((long double)quaternion[0] * quaternion[0]);
     ySquared = (float)((long double)quaternion[1] * quaternion[1]);
     zSquared = (float)((long double)quaternion[2] * quaternion[2]);
-    lengthSquared = (float)((((long double)quaternion[3] * quaternion[3] + zSquared) + ySquared) + xSquared);
+    lengthSquared = (float)(
+        (((long double)quaternion[3] * quaternion[3] + zSquared) +
+         ySquared) + xSquared);
 
     if (lengthSquared != 0.0f) {
-        const float reciprocal = (float)((long double)1.0f / lengthSquared);
-        const float scaledX = (float)((long double)reciprocal * xSquared);
-        const float scaledY = (float)((long double)reciprocal * ySquared);
-        const float scaledZ = (float)((long double)reciprocal * zSquared);
+        const float reciprocal =
+            (float)((long double)1.0f / lengthSquared);
+        const float scaledX =
+            (float)((long double)reciprocal * xSquared);
+        const float scaledY =
+            (float)((long double)reciprocal * ySquared);
+        const float scaledZ =
+            (float)((long double)reciprocal * zSquared);
 
         return ((long double)scaledZ + scaledY) + scaledX;
     }
@@ -89,25 +106,40 @@ long double QuatEigenTrace(const vec4_t quaternion)
     float lengthSquared;
 
 #if EMULATE_X87
-    xSquared = x87f_store_f32(x87f_mul(x87f_load_f32(quaternion[0]), x87f_load_f32(quaternion[0])));
-    ySquared = x87f_store_f32(x87f_mul(x87f_load_f32(quaternion[1]), x87f_load_f32(quaternion[1])));
-    zSquared = x87f_store_f32(x87f_mul(x87f_load_f32(quaternion[2]), x87f_load_f32(quaternion[2])));
-    lengthSquared = x87f_store_f32(x87f_add(x87f_add(x87f_add(x87f_load_f32(xSquared), x87f_load_f32(ySquared)), x87f_load_f32(zSquared)),
-                                            x87f_mul(x87f_load_f32(quaternion[3]), x87f_load_f32(quaternion[3]))));
+    xSquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(quaternion[0]), x87f_load_f32(quaternion[0])));
+    ySquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(quaternion[1]), x87f_load_f32(quaternion[1])));
+    zSquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(quaternion[2]), x87f_load_f32(quaternion[2])));
+    lengthSquared = x87f_store_f32(x87f_add(
+        x87f_add(x87f_add(x87f_load_f32(xSquared),
+                          x87f_load_f32(ySquared)),
+                 x87f_load_f32(zSquared)),
+        x87f_mul(x87f_load_f32(quaternion[3]),
+                 x87f_load_f32(quaternion[3]))));
 
     if (lengthSquared != 0.0f) {
-        const float reciprocal = x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_load_f32(lengthSquared)));
-        const float scaledX = x87f_store_f32(x87f_mul(x87f_load_f32(xSquared), x87f_load_f32(reciprocal)));
-        const float scaledY = x87f_store_f32(x87f_mul(x87f_load_f32(ySquared), x87f_load_f32(reciprocal)));
-        const float scaledZ = x87f_store_f32(x87f_mul(x87f_load_f32(zSquared), x87f_load_f32(reciprocal)));
+        const float reciprocal = x87f_store_f32(x87f_div(
+            x87f_load_f32(1.0f), x87f_load_f32(lengthSquared)));
+        const float scaledX = x87f_store_f32(x87f_mul(
+            x87f_load_f32(xSquared), x87f_load_f32(reciprocal)));
+        const float scaledY = x87f_store_f32(x87f_mul(
+            x87f_load_f32(ySquared), x87f_load_f32(reciprocal)));
+        const float scaledZ = x87f_store_f32(x87f_mul(
+            x87f_load_f32(zSquared), x87f_load_f32(reciprocal)));
 
-        return x87f_store_f32(x87f_add(x87f_add(x87f_load_f32(scaledX), x87f_load_f32(scaledY)), x87f_load_f32(scaledZ)));
+        return x87f_store_f32(x87f_add(
+            x87f_add(x87f_load_f32(scaledX), x87f_load_f32(scaledY)),
+            x87f_load_f32(scaledZ)));
     }
 #else
     xSquared = quaternion[0] * quaternion[0];
     ySquared = quaternion[1] * quaternion[1];
     zSquared = quaternion[2] * quaternion[2];
-    lengthSquared = ((xSquared + ySquared) + zSquared) + quaternion[3] * quaternion[3];
+    lengthSquared =
+        ((xSquared + ySquared) + zSquared) +
+        quaternion[3] * quaternion[3];
 
     if (lengthSquared != 0.0f) {
         const float reciprocal = 1.0f / lengthSquared;
@@ -133,7 +165,8 @@ long double QuatEigenTrace(const vec4_t quaternion)
 #if defined(WINDOWS_BEHAVIOR)
 float AngleEigenTrace(float degrees)
 {
-    const double sine = (double)coduo_x87_sinl((long double)degrees * 0.01745329238474369f);
+    const double sine = (double)coduo_x87_sinl(
+        (long double)degrees * 0.01745329238474369f);
 
     return (float)(sine * sine);
 }
@@ -144,11 +177,15 @@ float AngleEigenTrace(float degrees)
     double sine;
 
 #if EMULATE_X87
-    radians = x87f_store_f64(x87f_mul(x87f_load_f32(degrees), x87f_load_f64(0.017453292519943295)));
+    radians = x87f_store_f64(x87f_mul(
+        x87f_load_f32(degrees),
+        x87f_load_f64(0.017453292519943295)));
     sine = sin(radians);
-    return x87f_store_f32(x87f_mul(x87f_load_f64(sine), x87f_load_f64(sine)));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_f64(sine), x87f_load_f64(sine)));
 #else
-    radians = (double)((long double)degrees * (long double)0.017453292519943295);
+    radians = (double)((long double)degrees *
+                       (long double)0.017453292519943295);
     sine = sin(radians);
     return (float)((long double)sine * sine);
 #endif
@@ -186,19 +223,35 @@ float RotationToYaw(const vec2_t rotation)
     double denominator;
 
 #if EMULATE_X87
-    xSquared = x87f_store_f32(x87f_mul(x87f_load_f32(rotation[0]), x87f_load_f32(rotation[0])));
-    lengthSquared = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(rotation[1]), x87f_load_f32(rotation[1])), x87f_load_f32(xSquared)));
-    scale = x87f_store_f32(x87f_div(x87f_load_f32(2.0f), x87f_load_f32(lengthSquared)));
-    numerator = x87f_store_f64(x87f_mul(x87f_mul(x87f_load_f32(rotation[1]), x87f_load_f32(rotation[0])), x87f_load_f32(scale)));
-    denominator = x87f_store_f64(x87f_sub(x87f_load_f32(1.0f), x87f_mul(x87f_load_f32(scale), x87f_load_f32(xSquared))));
-    return x87f_store_f32(x87f_mul(x87f_load_f64(atan2(numerator, denominator)), x87f_load_f64(57.2957763671875)));
+    xSquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(rotation[0]), x87f_load_f32(rotation[0])));
+    lengthSquared = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(rotation[1]),
+                 x87f_load_f32(rotation[1])),
+        x87f_load_f32(xSquared)));
+    scale = x87f_store_f32(x87f_div(
+        x87f_load_f32(2.0f), x87f_load_f32(lengthSquared)));
+    numerator = x87f_store_f64(x87f_mul(
+        x87f_mul(x87f_load_f32(rotation[1]),
+                 x87f_load_f32(rotation[0])),
+        x87f_load_f32(scale)));
+    denominator = x87f_store_f64(x87f_sub(
+        x87f_load_f32(1.0f),
+        x87f_mul(x87f_load_f32(scale), x87f_load_f32(xSquared))));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_f64(atan2(numerator, denominator)),
+        x87f_load_f64(57.2957763671875)));
 #else
     xSquared = (float)((long double)rotation[0] * rotation[0]);
-    lengthSquared = (float)((long double)rotation[1] * rotation[1] + xSquared);
+    lengthSquared = (float)(
+        (long double)rotation[1] * rotation[1] + xSquared);
     scale = (float)((long double)2.0f / lengthSquared);
-    numerator = (double)((long double)rotation[1] * rotation[0] * scale);
-    denominator = (double)((long double)1.0f - (long double)scale * xSquared);
-    return (float)((long double)atan2(numerator, denominator) * (long double)57.2957763671875);
+    numerator = (double)(
+        (long double)rotation[1] * rotation[0] * scale);
+    denominator = (double)(
+        (long double)1.0f - (long double)scale * xSquared);
+    return (float)((long double)atan2(numerator, denominator) *
+                   (long double)57.2957763671875);
 #endif
 }
 #else
@@ -211,19 +264,34 @@ float RotationToYaw(const vec2_t rotation)
     double denominator;
 
 #if EMULATE_X87
-    xSquared = x87f_store_f32(x87f_mul(x87f_load_f32(rotation[0]), x87f_load_f32(rotation[0])));
-    lengthSquared = x87f_store_f32(x87f_add(x87f_load_f32(xSquared), x87f_mul(x87f_load_f32(rotation[1]), x87f_load_f32(rotation[1]))));
-    scale = x87f_store_f32(x87f_div(x87f_load_f32(2.0f), x87f_load_f32(lengthSquared)));
-    denominator = x87f_store_f64(x87f_sub(x87f_load_f64(1.0), x87f_mul(x87f_load_f32(xSquared), x87f_load_f32(scale))));
-    numerator = x87f_store_f64(x87f_mul(x87f_mul(x87f_load_f32(rotation[0]), x87f_load_f32(rotation[1])), x87f_load_f32(scale)));
-    return x87f_store_f32(x87f_mul(x87f_load_f64(atan2(numerator, denominator)), x87f_load_f64(57.29577951308232)));
+    xSquared = x87f_store_f32(x87f_mul(
+        x87f_load_f32(rotation[0]), x87f_load_f32(rotation[0])));
+    lengthSquared = x87f_store_f32(x87f_add(
+        x87f_load_f32(xSquared),
+        x87f_mul(x87f_load_f32(rotation[1]),
+                 x87f_load_f32(rotation[1]))));
+    scale = x87f_store_f32(x87f_div(
+        x87f_load_f32(2.0f), x87f_load_f32(lengthSquared)));
+    denominator = x87f_store_f64(x87f_sub(
+        x87f_load_f64(1.0),
+        x87f_mul(x87f_load_f32(xSquared), x87f_load_f32(scale))));
+    numerator = x87f_store_f64(x87f_mul(
+        x87f_mul(x87f_load_f32(rotation[0]),
+                 x87f_load_f32(rotation[1])),
+        x87f_load_f32(scale)));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_f64(atan2(numerator, denominator)),
+        x87f_load_f64(57.29577951308232)));
 #else
     xSquared = rotation[0] * rotation[0];
     lengthSquared = xSquared + rotation[1] * rotation[1];
     scale = 2.0f / lengthSquared;
-    denominator = (double)((long double)1.0 - (long double)xSquared * scale);
-    numerator = (double)((long double)rotation[0] * rotation[1] * scale);
-    return (float)((long double)atan2(numerator, denominator) * (long double)57.29577951308232);
+    denominator = (double)(
+        (long double)1.0 - (long double)xSquared * scale);
+    numerator = (double)(
+        (long double)rotation[0] * rotation[1] * scale);
+    return (float)((long double)atan2(numerator, denominator) *
+                   (long double)57.29577951308232);
 #endif
 }
 #endif

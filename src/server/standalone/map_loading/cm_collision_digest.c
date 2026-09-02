@@ -56,7 +56,8 @@ void coduo_engine_collision_load_timing_end(const char *mapName)
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     double elapsedMsec =
-        ((double)(end.tv_sec - cd_loadTimingStart.tv_sec) * 1000.0) + ((double)(end.tv_nsec - cd_loadTimingStart.tv_nsec) / 1000000.0);
+        ((double)(end.tv_sec - cd_loadTimingStart.tv_sec) * 1000.0) +
+        ((double)(end.tv_nsec - cd_loadTimingStart.tv_nsec) / 1000000.0);
 
     /* Report the terrain/curved split: the two collide builders have very
      * different FP cost. Terrain patches go through CM_GenerateTerrainCollide;
@@ -69,7 +70,8 @@ void coduo_engine_collision_load_timing_end(const char *mapName)
         }
     }
 
-    Com_Printf("LOADTIMING map=%s msec=%.3f patches=%d curved=%d brushes=%d\n", mapName, elapsedMsec, cm_numTerrainPatches, curvedCount,
+    Com_Printf("LOADTIMING map=%s msec=%.3f patches=%d curved=%d brushes=%d\n",
+               mapName, elapsedMsec, cm_numTerrainPatches, curvedCount,
                cm_numBrushes);
 }
 
@@ -115,7 +117,8 @@ void coduo_engine_collision_digest_bytes_external(const void *data, size_t lengt
  * through a volatile slot, so each step rounds to single precision everywhere.
  * This is an input constructor for the parity probe.
  */
-static float coduo_engine_collision_probe_lerp(float lo, float hi, int32_t numerator, int32_t denominator)
+static float coduo_engine_collision_probe_lerp(float lo, float hi, int32_t numerator,
+                          int32_t denominator)
 {
     volatile float frac = (float)numerator / (float)denominator;
     volatile float span = hi - lo;
@@ -138,8 +141,11 @@ static int cm_flipDump;
 static int64_t cm_flipSeq;
 
 /* NOT_FROM_ORIGINAL_SOURCE: trace once and fold the result into the digests. */
-static void coduo_engine_collision_probe_trace(const vec3_t start, const vec3_t end, const vec3_t mins, const vec3_t maxs, qboolean capsule,
-                                               uint64_t *hitDigest, int64_t *traceCount, int64_t *hitCount, int64_t *solidCount)
+static void coduo_engine_collision_probe_trace(const vec3_t start, const vec3_t end,
+                          const vec3_t mins, const vec3_t maxs,
+                          qboolean capsule, uint64_t *hitDigest,
+                          int64_t *traceCount, int64_t *hitCount,
+                          int64_t *solidCount)
 {
     /* Mask -1 = stop on any content, so every solid surface (brush or patch)
      * registers; we only need a deterministic, broadly-hitting probe. */
@@ -149,8 +155,9 @@ static void coduo_engine_collision_probe_trace(const vec3_t start, const vec3_t 
 
     if (cm_flipDump) {
         const uint32_t *n = (const uint32_t *)trace.normal;
-        Com_Printf("TR %lld f=%08x n=%08x,%08x,%08x s=%d%d\n", (long long)cm_flipSeq++, *(const uint32_t *)&trace.fraction, n[0], n[1],
-                   n[2], (int)trace.allsolid, (int)trace.startsolid);
+        Com_Printf("TR %lld f=%08x n=%08x,%08x,%08x s=%d%d\n",
+                   (long long)cm_flipSeq++, *(const uint32_t *)&trace.fraction,
+                   n[0], n[1], n[2], (int)trace.allsolid, (int)trace.startsolid);
     }
 
     coduo_engine_collision_digest_bytes(&trace.fraction, sizeof(trace.fraction));
@@ -215,8 +222,10 @@ void coduo_engine_emit_capsule_patch_digest(const char *mapName)
     static const float kRadius = 15.0f;
     static const float kHalfheight = 40.0f;
 
-    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches; ++patchIndex) {
-        const collisionTerrainPatch_t *patch = &cm_terrainPatches[patchIndex];
+    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches;
+         ++patchIndex) {
+        const collisionTerrainPatch_t *patch =
+            &cm_terrainPatches[patchIndex];
         if (patch->terrainCollide == NULL || patch->curveCollide != NULL) {
             continue;
         }
@@ -225,20 +234,22 @@ void coduo_engine_emit_capsule_patch_digest(const char *mapName)
          * and diagonally across, from just above the patch to just below, at
          * a few offsets so the facet / vertex-sphere / edge-cylinder branches
          * all get exercised. */
-        enum {
-            N = 4
-        };
+        enum { N = 4 };
         for (int32_t gx = 0; gx < N; ++gx) {
             for (int32_t gy = 0; gy < N; ++gy) {
                 traceWork_t tw;
                 memset(&tw, 0, sizeof(tw));
 
-                tw.start[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0], gx * 2 + 1, N * 2);
-                tw.start[1] = coduo_engine_collision_probe_lerp(patch->bounds[0][1], patch->bounds[1][1], gy * 2 + 1, N * 2);
+                tw.start[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0],
+                                           gx * 2 + 1, N * 2);
+                tw.start[1] = coduo_engine_collision_probe_lerp(patch->bounds[0][1], patch->bounds[1][1],
+                                           gy * 2 + 1, N * 2);
                 tw.start[2] = patch->bounds[1][2] + 24.0f;
                 /* diagonal end: shifted one cell over so delta is non-axial */
-                tw.end[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0], (N - gx) * 2 - 1, N * 2);
-                tw.end[1] = coduo_engine_collision_probe_lerp(patch->bounds[0][1], patch->bounds[1][1], (N - gy) * 2 - 1, N * 2);
+                tw.end[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0],
+                                         (N - gx) * 2 - 1, N * 2);
+                tw.end[1] = coduo_engine_collision_probe_lerp(patch->bounds[0][1], patch->bounds[1][1],
+                                         (N - gy) * 2 - 1, N * 2);
                 tw.end[2] = patch->bounds[0][2] - 24.0f;
 
                 /* delta and its length², forced to single precision at EVERY
@@ -274,7 +285,8 @@ void coduo_engine_emit_capsule_patch_digest(const char *mapName)
                 cm_digestAccum = digest;
                 coduo_engine_collision_digest_bytes(&tw.trace.fraction, sizeof(tw.trace.fraction));
                 coduo_engine_collision_digest_bytes(tw.trace.normal, sizeof(tw.trace.normal));
-                coduo_engine_collision_digest_bytes(&tw.trace.startsolid, sizeof(tw.trace.startsolid));
+                coduo_engine_collision_digest_bytes(&tw.trace.startsolid,
+                               sizeof(tw.trace.startsolid));
                 digest = cm_digestAccum;
 
                 ++calls;
@@ -285,7 +297,8 @@ void coduo_engine_emit_capsule_patch_digest(const char *mapName)
         }
     }
 
-    Com_Printf("CAPSULEPATCHDIGEST map=%s calls=%lld hits=%lld digest=%016llx\n", mapName, (long long)calls, (long long)hits,
+    Com_Printf("CAPSULEPATCHDIGEST map=%s calls=%lld hits=%lld digest=%016llx\n",
+               mapName, (long long)calls, (long long)hits,
                (unsigned long long)digest);
 }
 
@@ -337,9 +350,7 @@ void coduo_engine_emit_collision_digest(const char *mapName)
      * purpose and confirm the digest moves. A probe that cannot fail is not a
      * probe.
      */
-    enum {
-        GRID = 24
-    };
+    enum { GRID = 24 };
     int64_t traceCount = 0;
     int64_t solidCount = 0;
     int64_t hitCount = 0;    /* fraction < 1: ray actually struck geometry */
@@ -356,14 +367,17 @@ void coduo_engine_emit_collision_digest(const char *mapName)
         for (int32_t gy = 0; gy < GRID; ++gy) {
             vec3_t start;
             vec3_t end;
-            start[0] = coduo_engine_collision_probe_lerp(worldMins[0], worldMaxs[0], gx * 2 + 1, GRID * 2);
-            start[1] = coduo_engine_collision_probe_lerp(worldMins[1], worldMaxs[1], gy * 2 + 1, GRID * 2);
+            start[0] = coduo_engine_collision_probe_lerp(worldMins[0], worldMaxs[0], gx * 2 + 1,
+                                    GRID * 2);
+            start[1] = coduo_engine_collision_probe_lerp(worldMins[1], worldMaxs[1], gy * 2 + 1,
+                                    GRID * 2);
             start[2] = worldMaxs[2] + 64.0f;
             end[0] = start[0];
             end[1] = start[1];
             end[2] = worldMins[2] - 64.0f;
 
-            coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest, &traceCount, &hitCount, &solidCount);
+            coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest,
+                          &traceCount, &hitCount, &solidCount);
         }
     }
 
@@ -374,9 +388,7 @@ void coduo_engine_emit_collision_digest(const char *mapName)
      * side tests, and the split-fraction math) instead of the exact axial
      * subtract. This is the pattern the original probe was missing.
      */
-    enum {
-        ANGLED = 16
-    };
+    enum { ANGLED = 16 };
     for (int32_t i = 0; i < ANGLED; ++i) {
         for (int32_t j = 0; j < ANGLED; ++j) {
             vec3_t start;
@@ -384,21 +396,28 @@ void coduo_engine_emit_collision_digest(const char *mapName)
 
             /* start high on one side, end low on the opposite side: the ray
              * crosses the map diagonally in all three axes. */
-            start[0] = coduo_engine_collision_probe_lerp(worldMins[0], worldMaxs[0], i * 2 + 1, ANGLED * 2);
-            start[1] = coduo_engine_collision_probe_lerp(worldMins[1], worldMaxs[1], j * 2 + 1, ANGLED * 2);
+            start[0] = coduo_engine_collision_probe_lerp(worldMins[0], worldMaxs[0], i * 2 + 1,
+                                    ANGLED * 2);
+            start[1] = coduo_engine_collision_probe_lerp(worldMins[1], worldMaxs[1], j * 2 + 1,
+                                    ANGLED * 2);
             start[2] = worldMaxs[2];
-            end[0] = coduo_engine_collision_probe_lerp(worldMins[0], worldMaxs[0], (ANGLED - i) * 2 - 1, ANGLED * 2);
-            end[1] = coduo_engine_collision_probe_lerp(worldMins[1], worldMaxs[1], (ANGLED - j) * 2 - 1, ANGLED * 2);
+            end[0] = coduo_engine_collision_probe_lerp(worldMins[0], worldMaxs[0],
+                                  (ANGLED - i) * 2 - 1, ANGLED * 2);
+            end[1] = coduo_engine_collision_probe_lerp(worldMins[1], worldMaxs[1],
+                                  (ANGLED - j) * 2 - 1, ANGLED * 2);
             end[2] = worldMins[2];
 
-            coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest, &traceCount, &hitCount, &solidCount);
+            coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest,
+                          &traceCount, &hitCount, &solidCount);
 
             /* same ray, box swept: isPoint == 0 exercises the bounds/offset
              * paths and the 2048.0f non-axial node offset. */
-            coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qfalse, &hitDigest, &traceCount, &hitCount, &solidCount);
+            coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qfalse, &hitDigest,
+                          &traceCount, &hitCount, &solidCount);
 
             /* and as a capsule: the sphere radius/offset math. */
-            coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qtrue, &hitDigest, &traceCount, &hitCount, &solidCount);
+            coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qtrue, &hitDigest,
+                          &traceCount, &hitCount, &solidCount);
         }
     }
 
@@ -409,8 +428,10 @@ void coduo_engine_emit_collision_digest(const char *mapName)
      * is what exercises CM_TraceThroughPatch and, below it,
      * CM_TracePointThroughTerrainCollide / CM_TraceThroughPatchCollide.
      */
-    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches; ++patchIndex) {
-        const collisionTerrainPatch_t *patch = &cm_terrainPatches[patchIndex];
+    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches;
+         ++patchIndex) {
+        const collisionTerrainPatch_t *patch =
+            &cm_terrainPatches[patchIndex];
         vec3_t start;
         vec3_t end;
 
@@ -422,7 +443,8 @@ void coduo_engine_emit_collision_digest(const char *mapName)
         end[1] = start[1];
         end[2] = patch->bounds[0][2] - 16.0f;
 
-        coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest, &traceCount, &hitCount, &solidCount);
+        coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest,
+                      &traceCount, &hitCount, &solidCount);
 
         /* an angled ray across the same patch, so the patch facet math sees a
          * non-degenerate direction too */
@@ -431,8 +453,10 @@ void coduo_engine_emit_collision_digest(const char *mapName)
         end[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0], 3, 4);
         end[1] = coduo_engine_collision_probe_lerp(patch->bounds[0][1], patch->bounds[1][1], 3, 4);
 
-        coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest, &traceCount, &hitCount, &solidCount);
-        coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qfalse, &hitDigest, &traceCount, &hitCount, &solidCount);
+        coduo_engine_collision_probe_trace(start, end, pointMins, pointMaxs, qfalse, &hitDigest,
+                      &traceCount, &hitCount, &solidCount);
+        coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qfalse, &hitDigest,
+                      &traceCount, &hitCount, &solidCount);
     }
 
     /*
@@ -458,8 +482,10 @@ void coduo_engine_emit_collision_digest(const char *mapName)
      * the capsule function and watch the digest move) — a probe that cannot fail
      * is not a probe.
      */
-    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches; ++patchIndex) {
-        const collisionTerrainPatch_t *patch = &cm_terrainPatches[patchIndex];
+    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches;
+         ++patchIndex) {
+        const collisionTerrainPatch_t *patch =
+            &cm_terrainPatches[patchIndex];
 
         /* soup patches only: patchCollide populated, terrainCollide empty */
         if (patch->terrainCollide == NULL || patch->curveCollide != NULL) {
@@ -477,7 +503,8 @@ void coduo_engine_emit_collision_digest(const char *mapName)
         end[1] = start[1];
         end[2] = patch->bounds[0][2] - 16.0f;
 
-        coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qtrue, &hitDigest, &traceCount, &hitCount, &solidCount);
+        coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qtrue, &hitDigest,
+                      &traceCount, &hitCount, &solidCount);
 
         /* angled across the patch so the capsule sees a non-axial sweep */
         start[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0], 1, 4);
@@ -485,13 +512,16 @@ void coduo_engine_emit_collision_digest(const char *mapName)
         end[0] = coduo_engine_collision_probe_lerp(patch->bounds[0][0], patch->bounds[1][0], 3, 4);
         end[1] = coduo_engine_collision_probe_lerp(patch->bounds[0][1], patch->bounds[1][1], 3, 4);
 
-        coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qtrue, &hitDigest, &traceCount, &hitCount, &solidCount);
+        coduo_engine_collision_probe_trace(start, end, boxMins, boxMaxs, qtrue, &hitDigest,
+                      &traceCount, &hitCount, &solidCount);
     }
 
     Com_Printf("COLLISIONDIGEST map=%s brushes=%d patches=%d traces=%lld "
                "hits=%lld solid=%lld digest=%016llx hitdigest=%016llx\n",
-               mapName, cm_numBrushes, cm_numTerrainPatches, (long long)traceCount, (long long)hitCount, (long long)solidCount,
-               (unsigned long long)cm_digestAccum, (unsigned long long)hitDigest);
+               mapName, cm_numBrushes, cm_numTerrainPatches,
+               (long long)traceCount, (long long)hitCount, (long long)solidCount,
+               (unsigned long long)cm_digestAccum,
+               (unsigned long long)hitDigest);
 }
 
 /*
@@ -515,8 +545,10 @@ void coduo_engine_emit_collision_parity(const char *mapName)
 
     uint64_t mapAccum = UINT64_C(0xcbf29ce484222325);
 
-    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches; ++patchIndex) {
-        const collisionTerrainPatch_t *patch = &cm_terrainPatches[patchIndex];
+    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches;
+         ++patchIndex) {
+        const collisionTerrainPatch_t *patch =
+            &cm_terrainPatches[patchIndex];
 
         cm_digestAccum = UINT64_C(0xcbf29ce484222325);
         coduo_engine_collision_digest_bytes(patch->bounds[0], sizeof(patch->bounds[0]));
@@ -526,11 +558,16 @@ void coduo_engine_emit_collision_parity(const char *mapName)
         const collisionTriangleSoup_t *pc = patch->terrainCollide;
         if (pc != NULL) {
             facetCount = (int32_t)pc->triangleCount;
-            for (int32_t facetIndex = 0; facetIndex < facetCount; ++facetIndex) {
-                const collisionSoupTriangle_t *facet = &pc->triangles[facetIndex];
-                coduo_engine_collision_digest_bytes(&facet->plane, sizeof(facet->plane));
-                coduo_engine_collision_digest_bytes(facet->svec, sizeof(facet->svec));
-                coduo_engine_collision_digest_bytes(facet->tvec, sizeof(facet->tvec));
+            for (int32_t facetIndex = 0; facetIndex < facetCount;
+                 ++facetIndex) {
+                const collisionSoupTriangle_t *facet =
+                    &pc->triangles[facetIndex];
+                coduo_engine_collision_digest_bytes(&facet->plane,
+                                                    sizeof(facet->plane));
+                coduo_engine_collision_digest_bytes(facet->svec,
+                                                    sizeof(facet->svec));
+                coduo_engine_collision_digest_bytes(facet->tvec,
+                                                    sizeof(facet->tvec));
             }
         }
 
@@ -545,27 +582,41 @@ void coduo_engine_emit_collision_parity(const char *mapName)
         Com_Printf("PATCHPARITY %s patch=%d facets=%d "
                    "mins=[%.9g %.9g %.9g] maxs=[%.9g %.9g %.9g] "
                    "digest=%016llx\n",
-                   mapName, patchIndex, facetCount, (double)patch->bounds[0][0], (double)patch->bounds[0][1], (double)patch->bounds[0][2],
-                   (double)patch->bounds[1][0], (double)patch->bounds[1][1], (double)patch->bounds[1][2], (unsigned long long)patchDigest);
+                   mapName, patchIndex, facetCount,
+                   (double)patch->bounds[0][0], (double)patch->bounds[0][1],
+                   (double)patch->bounds[0][2], (double)patch->bounds[1][0],
+                   (double)patch->bounds[1][1], (double)patch->bounds[1][2],
+                   (unsigned long long)patchDigest);
 
         /* Raw per-facet plane float bits for the first patch, to localize
          * exactly which plane value diverges (cd_collisionParityRaw 1). */
-        if (pc != NULL && patchIndex == 0 && Cvar_VariableIntegerValue("cd_collisionParityRaw") != 0) {
-            for (int32_t facetIndex = 0; facetIndex < facetCount; ++facetIndex) {
-                const collisionSoupTriangle_t *facet = &pc->triangles[facetIndex];
+        if (pc != NULL && patchIndex == 0 &&
+            Cvar_VariableIntegerValue("cd_collisionParityRaw") != 0) {
+            for (int32_t facetIndex = 0; facetIndex < facetCount;
+                 ++facetIndex) {
+                const collisionSoupTriangle_t *facet =
+                    &pc->triangles[facetIndex];
                 const float *sp = facet->plane.components.normal;
                 Com_Printf("PARITYRAW f%d surf=%08x,%08x,%08x,%08x "
                            "e0=%08x,%08x,%08x,%08x e1=%08x,%08x,%08x,%08x\n",
-                           facetIndex, ((const uint32_t *)sp)[0], ((const uint32_t *)sp)[1], ((const uint32_t *)sp)[2],
-                           *(const uint32_t *)&facet->plane.components.distance, ((const uint32_t *)facet->svec)[0],
-                           ((const uint32_t *)facet->svec)[1], ((const uint32_t *)facet->svec)[2], ((const uint32_t *)facet->svec)[3],
-                           ((const uint32_t *)facet->tvec)[0], ((const uint32_t *)facet->tvec)[1], ((const uint32_t *)facet->tvec)[2],
+                           facetIndex,
+                           ((const uint32_t *)sp)[0], ((const uint32_t *)sp)[1],
+                           ((const uint32_t *)sp)[2],
+                           *(const uint32_t *)&facet->plane.components.distance,
+                           ((const uint32_t *)facet->svec)[0],
+                           ((const uint32_t *)facet->svec)[1],
+                           ((const uint32_t *)facet->svec)[2],
+                           ((const uint32_t *)facet->svec)[3],
+                           ((const uint32_t *)facet->tvec)[0],
+                           ((const uint32_t *)facet->tvec)[1],
+                           ((const uint32_t *)facet->tvec)[2],
                            ((const uint32_t *)facet->tvec)[3]);
             }
         }
     }
 
-    Com_Printf("PATCHPARITY %s TOTAL patches=%d digest=%016llx\n", mapName, cm_numTerrainPatches, (unsigned long long)mapAccum);
+    Com_Printf("PATCHPARITY %s TOTAL patches=%d digest=%016llx\n",
+               mapName, cm_numTerrainPatches, (unsigned long long)mapAccum);
 
     /*
      * Soup-facet vertex-sphere / edge-cylinder data. PATCHPARITY above hashes
@@ -579,21 +630,25 @@ void coduo_engine_emit_collision_parity(const char *mapName)
     uint64_t scAccum = UINT64_C(0xcbf29ce484222325);
     int64_t sphereCount = 0;
     int64_t cylinderCount = 0;
-    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches; ++patchIndex) {
-        const collisionTerrainPatch_t *patch = &cm_terrainPatches[patchIndex];
+    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches;
+         ++patchIndex) {
+        const collisionTerrainPatch_t *patch =
+            &cm_terrainPatches[patchIndex];
         const collisionTriangleSoup_t *pc = patch->terrainCollide;
         if (pc == NULL) {
             continue;
         }
         cm_digestAccum = scAccum;
-        for (int32_t facetIndex = 0; facetIndex < (int32_t)pc->triangleCount; ++facetIndex) {
+        for (int32_t facetIndex = 0; facetIndex < (int32_t)pc->triangleCount;
+             ++facetIndex) {
             const collisionSoupTriangle_t *facet = &pc->triangles[facetIndex];
             for (int32_t e = 0; e < 3; ++e) {
                 const collisionSoupVertex_t *vs = facet->vertices[e];
                 uint8_t present = (vs != NULL);
                 coduo_engine_collision_digest_bytes(&present, sizeof(present));
                 if (vs != NULL) {
-                    coduo_engine_collision_digest_bytes(vs->position, sizeof(vs->position));
+                    coduo_engine_collision_digest_bytes(vs->position,
+                                                        sizeof(vs->position));
                     ++sphereCount;
                 }
                 const collisionSoupEdge_t *ec = facet->oppositeEdges[e];
@@ -602,7 +657,8 @@ void coduo_engine_emit_collision_parity(const char *mapName)
                 if (ec != NULL) {
                     coduo_engine_collision_digest_bytes(ec->origin, sizeof(ec->origin));
                     coduo_engine_collision_digest_bytes(ec->radialAxes, sizeof(ec->radialAxes));
-                    coduo_engine_collision_digest_bytes(ec->unitDirection, sizeof(ec->unitDirection));
+                    coduo_engine_collision_digest_bytes(
+                        ec->unitDirection, sizeof(ec->unitDirection));
                     coduo_engine_collision_digest_bytes(&ec->length, sizeof(ec->length));
                     ++cylinderCount;
                 }
@@ -612,7 +668,8 @@ void coduo_engine_emit_collision_parity(const char *mapName)
     }
     Com_Printf("SPHERECYLPARITY %s TOTAL spheres=%lld cylinders=%lld "
                "digest=%016llx\n",
-               mapName, (long long)sphereCount, (long long)cylinderCount, (unsigned long long)scAccum);
+               mapName, (long long)sphereCount, (long long)cylinderCount,
+               (unsigned long long)scAccum);
 
     /*
      * Curved patches populate curveCollide (CM_GeneratePatchCollide) instead
@@ -624,8 +681,10 @@ void coduo_engine_emit_collision_parity(const char *mapName)
     uint64_t curvedAccum = UINT64_C(0xcbf29ce484222325);
     int32_t curvedCount = 0;
 
-    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches; ++patchIndex) {
-        const collisionTerrainPatch_t *patch = &cm_terrainPatches[patchIndex];
+    for (int32_t patchIndex = 0; patchIndex < cm_numTerrainPatches;
+         ++patchIndex) {
+        const collisionTerrainPatch_t *patch =
+            &cm_terrainPatches[patchIndex];
         if (patch->curveCollide == NULL) {
             continue;
         }
@@ -633,17 +692,20 @@ void coduo_engine_emit_collision_parity(const char *mapName)
         uint64_t patchAccum = UINT64_C(0xcbf29ce484222325);
         int32_t planeCount = 0;
         int32_t facetCount = 0;
-        coduo_engine_digest_curve_collide(patch->curveCollide, &patchAccum, &planeCount, &facetCount);
+        coduo_engine_digest_curve_collide(patch->curveCollide, &patchAccum,
+                                          &planeCount, &facetCount);
         ++curvedCount;
 
         coduo_engine_collision_digest_bytes_external(&patchAccum, sizeof(patchAccum), &curvedAccum);
 
         Com_Printf("CURVEDPARITY %s patch=%d planes=%d facets=%d "
                    "digest=%016llx\n",
-                   mapName, patchIndex, planeCount, facetCount, (unsigned long long)patchAccum);
+                   mapName, patchIndex, planeCount, facetCount,
+                   (unsigned long long)patchAccum);
     }
 
-    Com_Printf("CURVEDPARITY %s TOTAL curved=%d digest=%016llx\n", mapName, curvedCount, (unsigned long long)curvedAccum);
+    Com_Printf("CURVEDPARITY %s TOTAL curved=%d digest=%016llx\n", mapName,
+               curvedCount, (unsigned long long)curvedAccum);
 }
 
 /*
@@ -678,22 +740,26 @@ void coduo_engine_emit_core_math_digest(void)
     }
 
     static const vec3_t battery[] = {
-        {0.0f, 0.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f},
-        {-4.5f, 0.25f, 16.0f},
-        {0.1f, 0.2f, 0.3f},
-        {1024.5f, -2048.25f, 4096.125f},
-        {16777217.0f, 3.0f, -7.0f}, /* 2^24+1: inexact float */
-        {-0.0009765625f, 12345.6789f, -0.5f},
-        {123456.0f, 654321.0f, 0.03125f},
+        {         0.0f,          0.0f,        0.0f },
+        {         1.0f,          2.0f,        3.0f },
+        {        -4.5f,          0.25f,      16.0f },
+        {         0.1f,          0.2f,        0.3f },
+        {      1024.5f,      -2048.25f,    4096.125f },
+        {  16777217.0f,          3.0f,       -7.0f }, /* 2^24+1: inexact float */
+        { -0.0009765625f,  12345.6789f,      -0.5f },
+        {    123456.0f,     654321.0f,      0.03125f },
     };
     const int n = (int)(sizeof(battery) / sizeof(battery[0]));
 
     /* vec4 battery for the quaternion / vec4 helpers, and positive scalars for
      * Q_rsqrt (its input domain is a magnitude). */
     static const vec4_t battery4[] = {
-        {1.0f, 2.0f, 3.0f, 4.0f},         {-4.5f, 0.25f, 16.0f, -0.5f}, {0.1f, 0.2f, 0.3f, 0.4f}, {1024.5f, -2048.25f, 4096.125f, 0.03125f},
-        {16777217.0f, 3.0f, -7.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 0.0f},
+        {  1.0f,   2.0f,   3.0f,   4.0f },
+        { -4.5f,   0.25f, 16.0f,  -0.5f },
+        {  0.1f,   0.2f,   0.3f,   0.4f },
+        {  1024.5f, -2048.25f, 4096.125f, 0.03125f },
+        { 16777217.0f, 3.0f, -7.0f, 1.0f },
+        {  0.0f,   0.0f,   0.0f,   0.0f },
     };
     const int n4 = (int)(sizeof(battery4) / sizeof(battery4[0]));
     static const float scalars[] = {
@@ -727,7 +793,7 @@ void coduo_engine_emit_core_math_digest(void)
 
     for (int i = 0; i < n; ++i) {
         float r;
-        vec2_t v2i = {battery[i][0], battery[i][1]};
+        vec2_t v2i = { battery[i][0], battery[i][1] };
         vec3_t angles;
         vec3_t color;
         vec3_t avF, avR, avU;
@@ -787,30 +853,35 @@ void coduo_engine_emit_core_math_digest(void)
     /* In-place vec2/vec4 normalizers: hash both the returned length and the
      * mutated vector (copy each input first — the battery is const). */
     for (int i = 0; i < n; ++i) {
-        vec2_t v2 = {battery[i][0], battery[i][1]};
+        vec2_t v2 = { battery[i][0], battery[i][1] };
         float r = VectorNormalize2D(v2);
         coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dVectorNormalize2D);
         coduo_engine_collision_digest_bytes_external(v2, sizeof(v2), &dVectorNormalize2D);
     }
     for (int i = 0; i < n4; ++i) {
-        vec4_t v4 = {battery4[i][0], battery4[i][1], battery4[i][2], battery4[i][3]};
+        vec4_t v4 = { battery4[i][0], battery4[i][1], battery4[i][2],
+                      battery4[i][3] };
         float r = VectorNormalize4D(v4);
         coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dVectorNormalize4);
         coduo_engine_collision_digest_bytes_external(v4, sizeof(v4), &dVectorNormalize4);
 
         r = (float)QuatEigenTrace(battery4[i]);
-        coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dQuatEigenTrace);
+        coduo_engine_collision_digest_bytes_external(
+            &r, sizeof(r), &dQuatEigenTrace);
     }
     for (int i = 0; i < ns; ++i) {
         float r = (float)Q_rsqrt(scalars[i]);
         coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dQrsqrt);
 
         r = AngleEigenTrace((float)(i * 47) - 123.5f);
-        coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dAngleEigenTrace);
+        coduo_engine_collision_digest_bytes_external(
+            &r, sizeof(r), &dAngleEigenTrace);
     }
     {
         /* acos domain is [-1, 1]; include the +-pi clamp edges. */
-        static const float acosInputs[] = {-1.0f, -0.9f, -0.5f, -0.03125f, 0.0f, 0.25f, 0.5f, 0.75f, 0.9999f, 1.0f};
+        static const float acosInputs[] = { -1.0f,  -0.9f, -0.5f, -0.03125f,
+                                             0.0f,    0.25f, 0.5f,  0.75f,
+                                             0.9999f, 1.0f };
         const int na = (int)(sizeof(acosInputs) / sizeof(acosInputs[0]));
         for (int i = 0; i < na; ++i) {
             float r = (float)Q_acos(acosInputs[i]);
@@ -818,31 +889,53 @@ void coduo_engine_emit_core_math_digest(void)
         }
     }
 
-    Com_Printf("COREMATHDIGEST fn=DistanceSquared digest=%016llx\n", (unsigned long long)dDistanceSquared);
-    Com_Printf("COREMATHDIGEST fn=DistanceSquared2D digest=%016llx\n", (unsigned long long)dDistanceSquared2D);
-    Com_Printf("COREMATHDIGEST fn=Distance digest=%016llx\n", (unsigned long long)dDistance);
-    Com_Printf("COREMATHDIGEST fn=Distance2D digest=%016llx\n", (unsigned long long)dDistance2D);
-    Com_Printf("COREMATHDIGEST fn=VectorLength digest=%016llx\n", (unsigned long long)dVectorLength);
-    Com_Printf("COREMATHDIGEST fn=DotProduct digest=%016llx\n", (unsigned long long)dDotProduct);
-    Com_Printf("COREMATHDIGEST fn=VectorMax digest=%016llx\n", (unsigned long long)dVectorMax);
-    Com_Printf("COREMATHDIGEST fn=VectorNormalize2D digest=%016llx\n", (unsigned long long)dVectorNormalize2D);
-    Com_Printf("COREMATHDIGEST fn=VectorNormalize4 digest=%016llx\n", (unsigned long long)dVectorNormalize4);
+    Com_Printf("COREMATHDIGEST fn=DistanceSquared digest=%016llx\n",
+               (unsigned long long)dDistanceSquared);
+    Com_Printf("COREMATHDIGEST fn=DistanceSquared2D digest=%016llx\n",
+               (unsigned long long)dDistanceSquared2D);
+    Com_Printf("COREMATHDIGEST fn=Distance digest=%016llx\n",
+               (unsigned long long)dDistance);
+    Com_Printf("COREMATHDIGEST fn=Distance2D digest=%016llx\n",
+               (unsigned long long)dDistance2D);
+    Com_Printf("COREMATHDIGEST fn=VectorLength digest=%016llx\n",
+               (unsigned long long)dVectorLength);
+    Com_Printf("COREMATHDIGEST fn=DotProduct digest=%016llx\n",
+               (unsigned long long)dDotProduct);
+    Com_Printf("COREMATHDIGEST fn=VectorMax digest=%016llx\n",
+               (unsigned long long)dVectorMax);
+    Com_Printf("COREMATHDIGEST fn=VectorNormalize2D digest=%016llx\n",
+               (unsigned long long)dVectorNormalize2D);
+    Com_Printf("COREMATHDIGEST fn=VectorNormalize4 digest=%016llx\n",
+               (unsigned long long)dVectorNormalize4);
     Com_Printf("COREMATHDIGEST fn=QuatEigenTrace "
                "digest=%016llx\n",
                (unsigned long long)dQuatEigenTrace);
-    Com_Printf("COREMATHDIGEST fn=Q_rsqrt digest=%016llx\n", (unsigned long long)dQrsqrt);
-    Com_Printf("COREMATHDIGEST fn=vectoyaw digest=%016llx\n", (unsigned long long)dvectoyaw);
-    Com_Printf("COREMATHDIGEST fn=vectopitch digest=%016llx\n", (unsigned long long)dvectopitch);
-    Com_Printf("COREMATHDIGEST fn=vectosignedyaw digest=%016llx\n", (unsigned long long)dvectosignedyaw);
-    Com_Printf("COREMATHDIGEST fn=vectosignedpitch digest=%016llx\n", (unsigned long long)dvectosignedpitch);
-    Com_Printf("COREMATHDIGEST fn=vectoangles digest=%016llx\n", (unsigned long long)dvectoangles);
-    Com_Printf("COREMATHDIGEST fn=vectosignedangles digest=%016llx\n", (unsigned long long)dvectosignedangles);
-    Com_Printf("COREMATHDIGEST fn=Q_acos digest=%016llx\n", (unsigned long long)dQ_acos);
-    Com_Printf("COREMATHDIGEST fn=AngleEigenTrace digest=%016llx\n", (unsigned long long)dAngleEigenTrace);
-    Com_Printf("COREMATHDIGEST fn=RotationToYaw digest=%016llx\n", (unsigned long long)dRotationToYaw);
-    Com_Printf("COREMATHDIGEST fn=NormalizeColor digest=%016llx\n", (unsigned long long)dNormalizeColor);
-    Com_Printf("COREMATHDIGEST fn=ColorNormalize digest=%016llx\n", (unsigned long long)dColorNormalize);
-    Com_Printf("COREMATHDIGEST fn=AngleVectors digest=%016llx\n", (unsigned long long)dAngleVectors);
+    Com_Printf("COREMATHDIGEST fn=Q_rsqrt digest=%016llx\n",
+               (unsigned long long)dQrsqrt);
+    Com_Printf("COREMATHDIGEST fn=vectoyaw digest=%016llx\n",
+               (unsigned long long)dvectoyaw);
+    Com_Printf("COREMATHDIGEST fn=vectopitch digest=%016llx\n",
+               (unsigned long long)dvectopitch);
+    Com_Printf("COREMATHDIGEST fn=vectosignedyaw digest=%016llx\n",
+               (unsigned long long)dvectosignedyaw);
+    Com_Printf("COREMATHDIGEST fn=vectosignedpitch digest=%016llx\n",
+               (unsigned long long)dvectosignedpitch);
+    Com_Printf("COREMATHDIGEST fn=vectoangles digest=%016llx\n",
+               (unsigned long long)dvectoangles);
+    Com_Printf("COREMATHDIGEST fn=vectosignedangles digest=%016llx\n",
+               (unsigned long long)dvectosignedangles);
+    Com_Printf("COREMATHDIGEST fn=Q_acos digest=%016llx\n",
+               (unsigned long long)dQ_acos);
+    Com_Printf("COREMATHDIGEST fn=AngleEigenTrace digest=%016llx\n",
+               (unsigned long long)dAngleEigenTrace);
+    Com_Printf("COREMATHDIGEST fn=RotationToYaw digest=%016llx\n",
+               (unsigned long long)dRotationToYaw);
+    Com_Printf("COREMATHDIGEST fn=NormalizeColor digest=%016llx\n",
+               (unsigned long long)dNormalizeColor);
+    Com_Printf("COREMATHDIGEST fn=ColorNormalize digest=%016llx\n",
+               (unsigned long long)dColorNormalize);
+    Com_Printf("COREMATHDIGEST fn=AngleVectors digest=%016llx\n",
+               (unsigned long long)dAngleVectors);
 
     /* Matrix / transform helpers (self-contained battery). */
     {
@@ -851,35 +944,46 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dMatrixMultiply = UINT64_C(0xcbf29ce484222325);
         uint64_t dVectorAngleMultiply = UINT64_C(0xcbf29ce484222325);
         uint64_t dRotatePointAroundVector = UINT64_C(0xcbf29ce484222325);
-        uint64_t dMatrixTransposeTransformVector = UINT64_C(0xcbf29ce484222325);
+        uint64_t dMatrixTransposeTransformVector =
+            UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixMultiplyEquals = UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixMultiply34 = UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixTransformPoint43Affine = UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixTransformPoint43Compact = UINT64_C(0xcbf29ce484222325);
-        uint64_t dMatrixTransformPoint43CompactInPlace = UINT64_C(0xcbf29ce484222325);
+        uint64_t dMatrixTransformPoint43CompactInPlace =
+            UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixMultiply43 = UINT64_C(0xcbf29ce484222325);
         uint64_t dDObjSkelMatrixMultiply43 = UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixInverse = UINT64_C(0xcbf29ce484222325);
-        uint64_t dMatrixTransposeTransformVector43 = UINT64_C(0xcbf29ce484222325);
+        uint64_t dMatrixTransposeTransformVector43 =
+            UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixInverseOrthogonal43 = UINT64_C(0xcbf29ce484222325);
         uint64_t dDObjSkel2MatrixMultiply43 = UINT64_C(0xcbf29ce484222325);
         uint64_t dMatrixInverse44 = UINT64_C(0xcbf29ce484222325);
         for (int i = 0; i < n; ++i) {
-            vec3_t m[3] = {{battery[i][0], battery[i][1], battery[i][2]},
-                           {battery[(i + 1) % n][0], battery[(i + 1) % n][1], battery[(i + 1) % n][2]},
-                           {battery[(i + 2) % n][0], battery[(i + 2) % n][1], battery[(i + 2) % n][2]}};
+            vec3_t m[3] = { { battery[i][0], battery[i][1], battery[i][2] },
+                            { battery[(i + 1) % n][0], battery[(i + 1) % n][1],
+                              battery[(i + 1) % n][2] },
+                            { battery[(i + 2) % n][0], battery[(i + 2) % n][1],
+                              battery[(i + 2) % n][2] } };
             vec3_t out;
             MatrixTransformVector(battery[(i + 3) % n], m, out);
             coduo_engine_collision_digest_bytes_external(out, sizeof(out), &dMatrixTransformVector);
             VectorRotate(battery[(i + 3) % n], m, out);
             coduo_engine_collision_digest_bytes_external(out, sizeof(out), &dVectorRotate);
             MatrixTransposeTransformVector(battery[(i + 3) % n], m, out);
-            coduo_engine_collision_digest_bytes_external(out, sizeof(out), &dMatrixTransposeTransformVector);
+            coduo_engine_collision_digest_bytes_external(out, sizeof(out),
+                                   &dMatrixTransposeTransformVector);
 
-            vec3_t le[3] = {{battery[(i + 1) % n][0], battery[(i + 1) % n][1], battery[(i + 1) % n][2]},
-                            {battery[(i + 2) % n][0], battery[(i + 2) % n][1], battery[(i + 2) % n][2]},
-                            {battery[(i + 3) % n][0], battery[(i + 3) % n][1], battery[(i + 3) % n][2]}};
-            vec3_t re[3] = {{m[0][0], m[0][1], m[0][2]}, {m[1][0], m[1][1], m[1][2]}, {m[2][0], m[2][1], m[2][2]}};
+            vec3_t le[3] = { { battery[(i + 1) % n][0], battery[(i + 1) % n][1],
+                               battery[(i + 1) % n][2] },
+                             { battery[(i + 2) % n][0], battery[(i + 2) % n][1],
+                               battery[(i + 2) % n][2] },
+                             { battery[(i + 3) % n][0], battery[(i + 3) % n][1],
+                               battery[(i + 3) % n][2] } };
+            vec3_t re[3] = { { m[0][0], m[0][1], m[0][2] },
+                             { m[1][0], m[1][1], m[1][2] },
+                             { m[2][0], m[2][1], m[2][2] } };
             MatrixMultiplyEquals(le, re);
             coduo_engine_collision_digest_bytes_external(re, sizeof(re), &dMatrixMultiplyEquals);
 
@@ -891,7 +995,8 @@ void coduo_engine_emit_core_math_digest(void)
                 }
             }
             MatrixMultiply34(L43, R43, O43);
-            coduo_engine_collision_digest_bytes_external(O43, sizeof(O43), &dMatrixMultiply34);
+            coduo_engine_collision_digest_bytes_external(O43, sizeof(O43),
+                                   &dMatrixMultiply34);
 
             matrix43_t cm, cm2;
             DObjSkelMat am;
@@ -909,12 +1014,16 @@ void coduo_engine_emit_core_math_digest(void)
             }
             vec3_t pOut;
             MatrixTransformPoint43Affine(battery[(i + 4) % n], &am, pOut);
-            coduo_engine_collision_digest_bytes_external(pOut, sizeof(pOut), &dMatrixTransformPoint43Affine);
+            coduo_engine_collision_digest_bytes_external(pOut, sizeof(pOut),
+                                   &dMatrixTransformPoint43Affine);
             MatrixTransformPoint43Compact(battery[(i + 4) % n], &cm, pOut);
-            coduo_engine_collision_digest_bytes_external(pOut, sizeof(pOut), &dMatrixTransformPoint43Compact);
-            vec3_t pip = {battery[(i + 4) % n][0], battery[(i + 4) % n][1], battery[(i + 4) % n][2]};
+            coduo_engine_collision_digest_bytes_external(pOut, sizeof(pOut),
+                                   &dMatrixTransformPoint43Compact);
+            vec3_t pip = { battery[(i + 4) % n][0], battery[(i + 4) % n][1],
+                           battery[(i + 4) % n][2] };
             MatrixTransformPoint43CompactInPlace(pip, &cm);
-            coduo_engine_collision_digest_bytes_external(pip, sizeof(pip), &dMatrixTransformPoint43CompactInPlace);
+            coduo_engine_collision_digest_bytes_external(pip, sizeof(pip),
+                                   &dMatrixTransformPoint43CompactInPlace);
             /* second compact factor for the 43-compact multiply */
             for (int r = 0; r < 3; ++r) {
                 for (int c = 0; c < 3; ++c) {
@@ -924,10 +1033,12 @@ void coduo_engine_emit_core_math_digest(void)
             }
             matrix43_t cmOut;
             MatrixMultiply43(&cm, &cm2, &cmOut);
-            coduo_engine_collision_digest_bytes_external(&cmOut, sizeof(cmOut), &dMatrixMultiply43);
+            coduo_engine_collision_digest_bytes_external(&cmOut, sizeof(cmOut),
+                                   &dMatrixMultiply43);
 
             DObjSkelMatrixMultiply43(&am, &cm2, &cmOut);
-            coduo_engine_collision_digest_bytes_external(&cmOut, sizeof(cmOut), &dDObjSkelMatrixMultiply43);
+            coduo_engine_collision_digest_bytes_external(&cmOut, sizeof(cmOut),
+                                   &dDObjSkelMatrixMultiply43);
 
             vec3_t inv[3], invOut[3];
             for (int r = 0; r < 3; ++r) {
@@ -936,15 +1047,18 @@ void coduo_engine_emit_core_math_digest(void)
                 inv[r][2] = m[r][2];
             }
             MatrixInverse(inv, invOut);
-            coduo_engine_collision_digest_bytes_external(invOut, sizeof(invOut), &dMatrixInverse);
+            coduo_engine_collision_digest_bytes_external(
+                invOut, sizeof(invOut), &dMatrixInverse);
 
             vec3_t itv;
             MatrixTransposeTransformVector43(battery[(i + 4) % n], &cm, itv);
-            coduo_engine_collision_digest_bytes_external(itv, sizeof(itv), &dMatrixTransposeTransformVector43);
+            coduo_engine_collision_digest_bytes_external(itv, sizeof(itv),
+                                   &dMatrixTransposeTransformVector43);
 
             matrix43_t io;
             MatrixInverseOrthogonal43(&cm, &io);
-            coduo_engine_collision_digest_bytes_external(&io, sizeof(io), &dMatrixInverseOrthogonal43);
+            coduo_engine_collision_digest_bytes_external(&io, sizeof(io),
+                                   &dMatrixInverseOrthogonal43);
 
             DObjSkelMat am2, amOut;
             for (int r = 0; r < 3; ++r) {
@@ -955,12 +1069,14 @@ void coduo_engine_emit_core_math_digest(void)
             }
             am2.origin[3] = 1.0f;
             DObjSkel2MatrixMultiply43(&am, &cm2, &amOut);
-            coduo_engine_collision_digest_bytes_external(&amOut, sizeof(amOut), &dDObjSkel2MatrixMultiply43);
+            coduo_engine_collision_digest_bytes_external(&amOut, sizeof(amOut),
+                                   &dDObjSkel2MatrixMultiply43);
 
             float m44[4][4], inv44[4][4];
             for (int r = 0; r < 4; ++r) {
                 for (int c = 0; c < 4; ++c) {
-                    m44[r][c] = battery[(i + r) % n][c % 3] + (r == c ? 1.0f : 0.0f);
+                    m44[r][c] = battery[(i + r) % n][c % 3] +
+                                (r == c ? 1.0f : 0.0f);
                 }
             }
             MatrixInverse44(m44, inv44);
@@ -977,37 +1093,59 @@ void coduo_engine_emit_core_math_digest(void)
             MatrixMultiply(A, B, C);
             coduo_engine_collision_digest_bytes_external(C, sizeof(C), &dMatrixMultiply);
 
-            vec2_t p = {battery[i][0], battery[i][1]};
+            vec2_t p = { battery[i][0], battery[i][1] };
             VectorAngleMultiply(p, (float)(i * 37) - 90.0f);
             coduo_engine_collision_digest_bytes_external(p, sizeof(p), &dVectorAngleMultiply);
 
             /* non-zero dir (battery[0] is the zero vector). */
             vec3_t dst;
-            RotatePointAroundVector(dst, m[1], battery[(i + 2) % n], (float)(i * 53) - 120.0f);
+            RotatePointAroundVector(dst, m[1], battery[(i + 2) % n],
+                                    (float)(i * 53) - 120.0f);
             coduo_engine_collision_digest_bytes_external(dst, sizeof(dst), &dRotatePointAroundVector);
         }
-        Com_Printf("COREMATHDIGEST fn=MatrixTransformVector digest=%016llx\n", (unsigned long long)dMatrixTransformVector);
-        Com_Printf("COREMATHDIGEST fn=VectorRotate digest=%016llx\n", (unsigned long long)dVectorRotate);
-        Com_Printf("COREMATHDIGEST fn=MatrixMultiply digest=%016llx\n", (unsigned long long)dMatrixMultiply);
-        Com_Printf("COREMATHDIGEST fn=VectorAngleMultiply digest=%016llx\n", (unsigned long long)dVectorAngleMultiply);
-        Com_Printf("COREMATHDIGEST fn=RotatePointAroundVector digest=%016llx\n", (unsigned long long)dRotatePointAroundVector);
-        Com_Printf("COREMATHDIGEST fn=MatrixTransposeTransformVector digest=%016llx\n",
-                   (unsigned long long)dMatrixTransposeTransformVector);
-        Com_Printf("COREMATHDIGEST fn=MatrixMultiplyEquals digest=%016llx\n", (unsigned long long)dMatrixMultiplyEquals);
-        Com_Printf("COREMATHDIGEST fn=MatrixMultiply34 digest=%016llx\n", (unsigned long long)dMatrixMultiply34);
-        Com_Printf("COREMATHDIGEST fn=MatrixTransformPoint43Affine digest=%016llx\n", (unsigned long long)dMatrixTransformPoint43Affine);
-        Com_Printf("COREMATHDIGEST fn=MatrixTransformPoint43Compact digest=%016llx\n", (unsigned long long)dMatrixTransformPoint43Compact);
+        Com_Printf("COREMATHDIGEST fn=MatrixTransformVector digest=%016llx\n",
+                   (unsigned long long)dMatrixTransformVector);
+        Com_Printf("COREMATHDIGEST fn=VectorRotate digest=%016llx\n",
+                   (unsigned long long)dVectorRotate);
+        Com_Printf("COREMATHDIGEST fn=MatrixMultiply digest=%016llx\n",
+                   (unsigned long long)dMatrixMultiply);
+        Com_Printf("COREMATHDIGEST fn=VectorAngleMultiply digest=%016llx\n",
+                   (unsigned long long)dVectorAngleMultiply);
+        Com_Printf("COREMATHDIGEST fn=RotatePointAroundVector digest=%016llx\n",
+                   (unsigned long long)dRotatePointAroundVector);
+        Com_Printf(
+            "COREMATHDIGEST fn=MatrixTransposeTransformVector digest=%016llx\n",
+            (unsigned long long)dMatrixTransposeTransformVector);
+        Com_Printf("COREMATHDIGEST fn=MatrixMultiplyEquals digest=%016llx\n",
+                   (unsigned long long)dMatrixMultiplyEquals);
+        Com_Printf("COREMATHDIGEST fn=MatrixMultiply34 digest=%016llx\n",
+                   (unsigned long long)dMatrixMultiply34);
+        Com_Printf(
+            "COREMATHDIGEST fn=MatrixTransformPoint43Affine digest=%016llx\n",
+            (unsigned long long)dMatrixTransformPoint43Affine);
+        Com_Printf(
+            "COREMATHDIGEST fn=MatrixTransformPoint43Compact digest=%016llx\n",
+            (unsigned long long)dMatrixTransformPoint43Compact);
         Com_Printf("COREMATHDIGEST fn=MatrixTransformPoint43CompactInPlace "
                    "digest=%016llx\n",
                    (unsigned long long)dMatrixTransformPoint43CompactInPlace);
-        Com_Printf("COREMATHDIGEST fn=MatrixMultiply43 digest=%016llx\n", (unsigned long long)dMatrixMultiply43);
-        Com_Printf("COREMATHDIGEST fn=DObjSkelMatrixMultiply43 digest=%016llx\n", (unsigned long long)dDObjSkelMatrixMultiply43);
-        Com_Printf("COREMATHDIGEST fn=MatrixInverse digest=%016llx\n", (unsigned long long)dMatrixInverse);
-        Com_Printf("COREMATHDIGEST fn=MatrixTransposeTransformVector43 digest=%016llx\n",
-                   (unsigned long long)dMatrixTransposeTransformVector43);
-        Com_Printf("COREMATHDIGEST fn=MatrixInverseOrthogonal43 digest=%016llx\n", (unsigned long long)dMatrixInverseOrthogonal43);
-        Com_Printf("COREMATHDIGEST fn=DObjSkel2MatrixMultiply43 digest=%016llx\n", (unsigned long long)dDObjSkel2MatrixMultiply43);
-        Com_Printf("COREMATHDIGEST fn=MatrixInverse44 digest=%016llx\n", (unsigned long long)dMatrixInverse44);
+        Com_Printf("COREMATHDIGEST fn=MatrixMultiply43 digest=%016llx\n",
+                   (unsigned long long)dMatrixMultiply43);
+        Com_Printf("COREMATHDIGEST fn=DObjSkelMatrixMultiply43 digest=%016llx\n",
+                   (unsigned long long)dDObjSkelMatrixMultiply43);
+        Com_Printf("COREMATHDIGEST fn=MatrixInverse digest=%016llx\n",
+                   (unsigned long long)dMatrixInverse);
+        Com_Printf(
+            "COREMATHDIGEST fn=MatrixTransposeTransformVector43 digest=%016llx\n",
+            (unsigned long long)dMatrixTransposeTransformVector43);
+        Com_Printf(
+            "COREMATHDIGEST fn=MatrixInverseOrthogonal43 digest=%016llx\n",
+            (unsigned long long)dMatrixInverseOrthogonal43);
+        Com_Printf(
+            "COREMATHDIGEST fn=DObjSkel2MatrixMultiply43 digest=%016llx\n",
+            (unsigned long long)dDObjSkel2MatrixMultiply43);
+        Com_Printf("COREMATHDIGEST fn=MatrixInverse44 digest=%016llx\n",
+                   (unsigned long long)dMatrixInverse44);
     }
 
     /* Quaternion helpers (self-contained battery). */
@@ -1020,15 +1158,21 @@ void coduo_engine_emit_core_math_digest(void)
             QuatMultiply(battery4[i], battery4[(i + 1) % n4], out);
             coduo_engine_collision_digest_bytes_external(out, sizeof(out), &dQuatMultiply);
 
-            float qm[9] = {battery4[i][0], battery4[i][1], battery4[i][2], battery4[i][3], 0, 0, 0, 0, 0};
+            float qm[9] = { battery4[i][0], battery4[i][1], battery4[i][2],
+                            battery4[i][3], 0, 0, 0, 0, 0 };
             ConvertQuatToMat(qm);
-            coduo_engine_collision_digest_bytes_external(qm, sizeof(qm), &dConvertQuatToMat);
+            coduo_engine_collision_digest_bytes_external(
+                qm, sizeof(qm), &dConvertQuatToMat);
 
-            float r = (float)QuatRatioEigenTrace(battery4[i], battery4[(i + 2) % n4]);
-            coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dQuatRatioEigenTrace);
+            float r = (float)QuatRatioEigenTrace(
+                battery4[i], battery4[(i + 2) % n4]);
+            coduo_engine_collision_digest_bytes_external(
+                &r, sizeof(r), &dQuatRatioEigenTrace);
         }
-        Com_Printf("COREMATHDIGEST fn=QuatMultiply digest=%016llx\n", (unsigned long long)dQuatMultiply);
-        Com_Printf("COREMATHDIGEST fn=ConvertQuatToMat digest=%016llx\n", (unsigned long long)dConvertQuatToMat);
+        Com_Printf("COREMATHDIGEST fn=QuatMultiply digest=%016llx\n",
+                   (unsigned long long)dQuatMultiply);
+        Com_Printf("COREMATHDIGEST fn=ConvertQuatToMat digest=%016llx\n",
+                   (unsigned long long)dConvertQuatToMat);
         Com_Printf("COREMATHDIGEST fn=QuatRatioEigenTrace "
                    "digest=%016llx\n",
                    (unsigned long long)dQuatRatioEigenTrace);
@@ -1043,42 +1187,58 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dBoxDistSqrdExceeds = UINT64_C(0xcbf29ce484222325);
         uint64_t dTriangleNormal = UINT64_C(0xcbf29ce484222325);
         for (int i = 0; i < n; ++i) {
-            vec3_t fwd = {battery[(i + 1) % n][0], battery[(i + 1) % n][1], battery[(i + 1) % n][2]};
+            vec3_t fwd = { battery[(i + 1) % n][0], battery[(i + 1) % n][1],
+                           battery[(i + 1) % n][2] };
             vec3_t rgt, up3, out3;
             MakeNormalVectors(fwd, rgt, up3);
             coduo_engine_collision_digest_bytes_external(rgt, sizeof(rgt), &dMakeNormalVectors);
             coduo_engine_collision_digest_bytes_external(up3, sizeof(up3), &dMakeNormalVectors);
 
-            ProjectPointOntoVector(battery[i], battery[(i + 2) % n], battery[(i + 3) % n], out3);
-            coduo_engine_collision_digest_bytes_external(out3, sizeof(out3), &dProjectPointOntoVector);
+            ProjectPointOntoVector(battery[i], battery[(i + 2) % n],
+                                   battery[(i + 3) % n], out3);
+            coduo_engine_collision_digest_bytes_external(out3, sizeof(out3),
+                                   &dProjectPointOntoVector);
 
-            vec3_t rad[3] = {{fwd[0], fwd[1], fwd[2]}, {0, 0, 0}, {0, 0, 0}};
+            vec3_t rad[3] = { { fwd[0], fwd[1], fwd[2] },
+                              { 0, 0, 0 },
+                              { 0, 0, 0 } };
             RotateAroundDirection(rad, (float)(i * 40) - 60.0f);
             coduo_engine_collision_digest_bytes_external(rad, sizeof(rad), &dRotateAroundDirection);
 
             vec4_t plane;
-            qboolean ok = PlaneFromPoints(plane, battery[i], battery[(i + 1) % n], battery[(i + 2) % n]);
+            qboolean ok = PlaneFromPoints(plane, battery[i],
+                                          battery[(i + 1) % n],
+                                          battery[(i + 2) % n]);
             coduo_engine_collision_digest_bytes_external(plane, sizeof(plane), &dPlaneFromPoints);
             coduo_engine_collision_digest_bytes_external(&ok, sizeof(ok), &dPlaneFromPoints);
 
-            qboolean ex = BoxDistSqrdExceeds(battery[i], battery[(i + 1) % n], battery[(i + 2) % n], 0.5f);
+            qboolean ex = BoxDistSqrdExceeds(battery[i], battery[(i + 1) % n],
+                                             battery[(i + 2) % n], 0.5f);
             coduo_engine_collision_digest_bytes_external(&ex, sizeof(ex), &dBoxDistSqrdExceeds);
 
-            TriangleNormal(battery[i], battery[(i + 1) % n], battery[(i + 2) % n], out3);
+            TriangleNormal(battery[i], battery[(i + 1) % n],
+                           battery[(i + 2) % n], out3);
             coduo_engine_collision_digest_bytes_external(out3, sizeof(out3), &dTriangleNormal);
         }
-        Com_Printf("COREMATHDIGEST fn=MakeNormalVectors digest=%016llx\n", (unsigned long long)dMakeNormalVectors);
-        Com_Printf("COREMATHDIGEST fn=ProjectPointOntoVector digest=%016llx\n", (unsigned long long)dProjectPointOntoVector);
-        Com_Printf("COREMATHDIGEST fn=RotateAroundDirection digest=%016llx\n", (unsigned long long)dRotateAroundDirection);
-        Com_Printf("COREMATHDIGEST fn=PlaneFromPoints digest=%016llx\n", (unsigned long long)dPlaneFromPoints);
-        Com_Printf("COREMATHDIGEST fn=BoxDistSqrdExceeds digest=%016llx\n", (unsigned long long)dBoxDistSqrdExceeds);
-        Com_Printf("COREMATHDIGEST fn=TriangleNormal digest=%016llx\n", (unsigned long long)dTriangleNormal);
+        Com_Printf("COREMATHDIGEST fn=MakeNormalVectors digest=%016llx\n",
+                   (unsigned long long)dMakeNormalVectors);
+        Com_Printf("COREMATHDIGEST fn=ProjectPointOntoVector digest=%016llx\n",
+                   (unsigned long long)dProjectPointOntoVector);
+        Com_Printf("COREMATHDIGEST fn=RotateAroundDirection digest=%016llx\n",
+                   (unsigned long long)dRotateAroundDirection);
+        Com_Printf("COREMATHDIGEST fn=PlaneFromPoints digest=%016llx\n",
+                   (unsigned long long)dPlaneFromPoints);
+        Com_Printf("COREMATHDIGEST fn=BoxDistSqrdExceeds digest=%016llx\n",
+                   (unsigned long long)dBoxDistSqrdExceeds);
+        Com_Printf("COREMATHDIGEST fn=TriangleNormal digest=%016llx\n",
+                   (unsigned long long)dTriangleNormal);
     }
 
     /* fsincos-envelope helpers (self-contained battery). The fsincos leaf is
      * the real x87 instruction in both x86 builds, so these verify. */
     {
-        static const float degs[] = {0.0f, 30.0f, 45.0f, 90.0f, 135.0f, 180.0f, 270.0f, -60.0f};
+        static const float degs[] = { 0.0f,   30.0f,  45.0f, 90.0f,
+                                      135.0f, 180.0f, 270.0f, -60.0f };
         const int ndg = (int)(sizeof(degs) / sizeof(degs[0]));
         uint64_t dYawVectors = UINT64_C(0xcbf29ce484222325);
         uint64_t dRollToQuaternion = UINT64_C(0xcbf29ce484222325);
@@ -1095,25 +1255,37 @@ void coduo_engine_emit_core_math_digest(void)
             coduo_engine_collision_digest_bytes_external(fwd, sizeof(fwd), &dYawVectors);
             coduo_engine_collision_digest_bytes_external(rgt, sizeof(rgt), &dYawVectors);
             RollToQuaternion(degs[i], q);
-            coduo_engine_collision_digest_bytes_external(q, sizeof(q), &dRollToQuaternion);
+            coduo_engine_collision_digest_bytes_external(
+                q, sizeof(q), &dRollToQuaternion);
             PitchToQuaternion(degs[i], q);
-            coduo_engine_collision_digest_bytes_external(q, sizeof(q), &dPitchToQuaternion);
+            coduo_engine_collision_digest_bytes_external(
+                q, sizeof(q), &dPitchToQuaternion);
             YawToQuaternion(degs[i], q);
-            coduo_engine_collision_digest_bytes_external(q, sizeof(q), &dYawToQuaternion);
+            coduo_engine_collision_digest_bytes_external(
+                q, sizeof(q), &dYawToQuaternion);
             VectorPolar(out3, (float)(i + 1), degs[i]);
             coduo_engine_collision_digest_bytes_external(out3, sizeof(out3), &dVectorPolar);
             AnglesToAxis(battery[i % n], axis);
-            coduo_engine_collision_digest_bytes_external(axis, sizeof(axis), &dAnglesToAxis);
+            coduo_engine_collision_digest_bytes_external(
+                axis, sizeof(axis), &dAnglesToAxis);
             YawToAxis(degs[i], axis);
-            coduo_engine_collision_digest_bytes_external(axis, sizeof(axis), &dYawToAxis);
+            coduo_engine_collision_digest_bytes_external(
+                axis, sizeof(axis), &dYawToAxis);
         }
-        Com_Printf("COREMATHDIGEST fn=YawVectors digest=%016llx\n", (unsigned long long)dYawVectors);
-        Com_Printf("COREMATHDIGEST fn=RollToQuaternion digest=%016llx\n", (unsigned long long)dRollToQuaternion);
-        Com_Printf("COREMATHDIGEST fn=PitchToQuaternion digest=%016llx\n", (unsigned long long)dPitchToQuaternion);
-        Com_Printf("COREMATHDIGEST fn=YawToQuaternion digest=%016llx\n", (unsigned long long)dYawToQuaternion);
-        Com_Printf("COREMATHDIGEST fn=VectorPolar digest=%016llx\n", (unsigned long long)dVectorPolar);
-        Com_Printf("COREMATHDIGEST fn=AnglesToAxis digest=%016llx\n", (unsigned long long)dAnglesToAxis);
-        Com_Printf("COREMATHDIGEST fn=YawToAxis digest=%016llx\n", (unsigned long long)dYawToAxis);
+        Com_Printf("COREMATHDIGEST fn=YawVectors digest=%016llx\n",
+                   (unsigned long long)dYawVectors);
+        Com_Printf("COREMATHDIGEST fn=RollToQuaternion digest=%016llx\n",
+                   (unsigned long long)dRollToQuaternion);
+        Com_Printf("COREMATHDIGEST fn=PitchToQuaternion digest=%016llx\n",
+                   (unsigned long long)dPitchToQuaternion);
+        Com_Printf("COREMATHDIGEST fn=YawToQuaternion digest=%016llx\n",
+                   (unsigned long long)dYawToQuaternion);
+        Com_Printf("COREMATHDIGEST fn=VectorPolar digest=%016llx\n",
+                   (unsigned long long)dVectorPolar);
+        Com_Printf("COREMATHDIGEST fn=AnglesToAxis digest=%016llx\n",
+                   (unsigned long long)dAnglesToAxis);
+        Com_Printf("COREMATHDIGEST fn=YawToAxis digest=%016llx\n",
+                   (unsigned long long)dYawToAxis);
     }
 
     /* Basic vector ops (VectorMA / VectorCompareEpsilon need the shim; the rest
@@ -1128,7 +1300,8 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dVectorInverse = UINT64_C(0xcbf29ce484222325);
         for (int i = 0; i < n; ++i) {
             vec3_t o3;
-            _VectorMA(battery[i], battery[(i + 1) % n][0], battery[(i + 2) % n], o3);
+            _VectorMA(battery[i], battery[(i + 1) % n][0],
+                      battery[(i + 2) % n], o3);
             coduo_engine_collision_digest_bytes_external(o3, sizeof(o3), &dVectorMA);
             _VectorScale(battery[i], battery[(i + 1) % n][1], o3);
             coduo_engine_collision_digest_bytes_external(o3, sizeof(o3), &dVectorScale);
@@ -1136,7 +1309,7 @@ void coduo_engine_emit_core_math_digest(void)
             coduo_engine_collision_digest_bytes_external(o3, sizeof(o3), &dVectorAdd);
             _VectorSubtract(battery[i], battery[(i + 1) % n], o3);
             coduo_engine_collision_digest_bytes_external(o3, sizeof(o3), &dVectorSubtract);
-            vec3_t inv = {battery[i][0], battery[i][1], battery[i][2]};
+            vec3_t inv = { battery[i][0], battery[i][1], battery[i][2] };
             VectorInverse(inv);
             coduo_engine_collision_digest_bytes_external(inv, sizeof(inv), &dVectorInverse);
             vec4_t o4;
@@ -1147,13 +1320,20 @@ void coduo_engine_emit_core_math_digest(void)
                 coduo_engine_collision_digest_bytes_external(&eq, sizeof(eq), &dVectorCompareEpsilon);
             }
         }
-        Com_Printf("COREMATHDIGEST fn=VectorMA digest=%016llx\n", (unsigned long long)dVectorMA);
-        Com_Printf("COREMATHDIGEST fn=VectorCompareEpsilon digest=%016llx\n", (unsigned long long)dVectorCompareEpsilon);
-        Com_Printf("COREMATHDIGEST fn=VectorScale digest=%016llx\n", (unsigned long long)dVectorScale);
-        Com_Printf("COREMATHDIGEST fn=_VectorAdd digest=%016llx\n", (unsigned long long)dVectorAdd);
-        Com_Printf("COREMATHDIGEST fn=_VectorSubtract digest=%016llx\n", (unsigned long long)dVectorSubtract);
-        Com_Printf("COREMATHDIGEST fn=Vector4Scale digest=%016llx\n", (unsigned long long)dVector4Scale);
-        Com_Printf("COREMATHDIGEST fn=VectorInverse digest=%016llx\n", (unsigned long long)dVectorInverse);
+        Com_Printf("COREMATHDIGEST fn=VectorMA digest=%016llx\n",
+                   (unsigned long long)dVectorMA);
+        Com_Printf("COREMATHDIGEST fn=VectorCompareEpsilon digest=%016llx\n",
+                   (unsigned long long)dVectorCompareEpsilon);
+        Com_Printf("COREMATHDIGEST fn=VectorScale digest=%016llx\n",
+                   (unsigned long long)dVectorScale);
+        Com_Printf("COREMATHDIGEST fn=_VectorAdd digest=%016llx\n",
+                   (unsigned long long)dVectorAdd);
+        Com_Printf("COREMATHDIGEST fn=_VectorSubtract digest=%016llx\n",
+                   (unsigned long long)dVectorSubtract);
+        Com_Printf("COREMATHDIGEST fn=Vector4Scale digest=%016llx\n",
+                   (unsigned long long)dVector4Scale);
+        Com_Printf("COREMATHDIGEST fn=VectorInverse digest=%016llx\n",
+                   (unsigned long long)dVectorInverse);
     }
 
     /* Axis<->angle extraction + angle-rotation + sway/gun helpers. */
@@ -1167,14 +1347,18 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dgunrandom = UINT64_C(0xcbf29ce484222325);
         uint64_t dPitchForYawOnNormal = UINT64_C(0xcbf29ce484222325);
         for (int i = 0; i < n; ++i) {
-            vec3_t ax[3] = {{battery[(i + 1) % n][0], battery[(i + 1) % n][1], battery[(i + 1) % n][2]},
-                            {battery[(i + 2) % n][0], battery[(i + 2) % n][1], battery[(i + 2) % n][2]},
-                            {battery[(i + 3) % n][0], battery[(i + 3) % n][1], battery[(i + 3) % n][2]}};
+            vec3_t ax[3] = { { battery[(i + 1) % n][0], battery[(i + 1) % n][1],
+                               battery[(i + 1) % n][2] },
+                             { battery[(i + 2) % n][0], battery[(i + 2) % n][1],
+                               battery[(i + 2) % n][2] },
+                             { battery[(i + 3) % n][0], battery[(i + 3) % n][1],
+                               battery[(i + 3) % n][2] } };
             vec3_t angOut, rotOut;
             AxisToAngles(ax, angOut);
             coduo_engine_collision_digest_bytes_external(angOut, sizeof(angOut), &dAxisToAngles);
             AxisToSignedAngles(ax, angOut);
-            coduo_engine_collision_digest_bytes_external(angOut, sizeof(angOut), &dAxisToSignedAngles);
+            coduo_engine_collision_digest_bytes_external(angOut, sizeof(angOut),
+                                   &dAxisToSignedAngles);
             DObjSkelMat am4;
             for (int r = 0; r < 3; ++r) {
                 for (int c = 0; c < 4; ++c) {
@@ -1185,14 +1369,19 @@ void coduo_engine_emit_core_math_digest(void)
             coduo_engine_collision_digest_bytes_external(angOut, sizeof(angOut), &dAxis4ToAngles);
 
             VectorRotateAngles(battery[i], battery[(i + 1) % n], rotOut);
-            coduo_engine_collision_digest_bytes_external(rotOut, sizeof(rotOut), &dVectorRotateAngles);
-            VectorRotateAnglesAroundPoint(battery[i], battery[(i + 1) % n], battery[(i + 2) % n], rotOut);
-            coduo_engine_collision_digest_bytes_external(rotOut, sizeof(rotOut), &dVectorRotateAnglesAroundPoint);
+            coduo_engine_collision_digest_bytes_external(rotOut, sizeof(rotOut),
+                                   &dVectorRotateAngles);
+            VectorRotateAnglesAroundPoint(battery[i], battery[(i + 1) % n],
+                                          battery[(i + 2) % n], rotOut);
+            coduo_engine_collision_digest_bytes_external(rotOut, sizeof(rotOut),
+                                   &dVectorRotateAnglesAroundPoint);
 
-            float sway = (float)Q_SwayRand((float)(i + 1), (float)(i + 2), (float)(i * 250));
+            float sway = (float)Q_SwayRand((float)(i + 1), (float)(i + 2),
+                                           (float)(i * 250));
             coduo_engine_collision_digest_bytes_external(&sway, sizeof(sway), &dQ_SwayRand);
 
-            float pfy = (float)PitchForYawOnNormal((float)(i * 30), battery[(i + 1) % n]);
+            float pfy = (float)PitchForYawOnNormal((float)(i * 30),
+                                                   battery[(i + 1) % n]);
             coduo_engine_collision_digest_bytes_external(&pfy, sizeof(pfy), &dPitchForYawOnNormal);
         }
         srand(12345u);
@@ -1202,16 +1391,23 @@ void coduo_engine_emit_core_math_digest(void)
             coduo_engine_collision_digest_bytes_external(&gx, sizeof(gx), &dgunrandom);
             coduo_engine_collision_digest_bytes_external(&gy, sizeof(gy), &dgunrandom);
         }
-        Com_Printf("COREMATHDIGEST fn=AxisToAngles digest=%016llx\n", (unsigned long long)dAxisToAngles);
-        Com_Printf("COREMATHDIGEST fn=Axis4ToAngles digest=%016llx\n", (unsigned long long)dAxis4ToAngles);
-        Com_Printf("COREMATHDIGEST fn=AxisToSignedAngles digest=%016llx\n", (unsigned long long)dAxisToSignedAngles);
-        Com_Printf("COREMATHDIGEST fn=VectorRotateAngles digest=%016llx\n", (unsigned long long)dVectorRotateAngles);
+        Com_Printf("COREMATHDIGEST fn=AxisToAngles digest=%016llx\n",
+                   (unsigned long long)dAxisToAngles);
+        Com_Printf("COREMATHDIGEST fn=Axis4ToAngles digest=%016llx\n",
+                   (unsigned long long)dAxis4ToAngles);
+        Com_Printf("COREMATHDIGEST fn=AxisToSignedAngles digest=%016llx\n",
+                   (unsigned long long)dAxisToSignedAngles);
+        Com_Printf("COREMATHDIGEST fn=VectorRotateAngles digest=%016llx\n",
+                   (unsigned long long)dVectorRotateAngles);
         Com_Printf("COREMATHDIGEST fn=VectorRotateAnglesAroundPoint "
                    "digest=%016llx\n",
                    (unsigned long long)dVectorRotateAnglesAroundPoint);
-        Com_Printf("COREMATHDIGEST fn=Q_SwayRand digest=%016llx\n", (unsigned long long)dQ_SwayRand);
-        Com_Printf("COREMATHDIGEST fn=gunrandom digest=%016llx\n", (unsigned long long)dgunrandom);
-        Com_Printf("COREMATHDIGEST fn=PitchForYawOnNormal digest=%016llx\n", (unsigned long long)dPitchForYawOnNormal);
+        Com_Printf("COREMATHDIGEST fn=Q_SwayRand digest=%016llx\n",
+                   (unsigned long long)dQ_SwayRand);
+        Com_Printf("COREMATHDIGEST fn=gunrandom digest=%016llx\n",
+                   (unsigned long long)dgunrandom);
+        Com_Printf("COREMATHDIGEST fn=PitchForYawOnNormal digest=%016llx\n",
+                   (unsigned long long)dPitchForYawOnNormal);
     }
 
     /* Normalize-fast / perpendicular / centered-RNG helpers. */
@@ -1221,24 +1417,29 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dCrossProductUp = UINT64_C(0xcbf29ce484222325);
         uint64_t dQ_crandom = UINT64_C(0xcbf29ce484222325);
         for (int i = 0; i < n; ++i) {
-            vec3_t nf = {battery[i][0], battery[i][1], battery[i][2]};
+            vec3_t nf = { battery[i][0], battery[i][1], battery[i][2] };
             VectorNormalizeFast(nf);
             coduo_engine_collision_digest_bytes_external(nf, sizeof(nf), &dVectorNormalizeFast);
             vec3_t pv;
             PerpendicularVector(pv, battery[(i + 1) % n]);
             coduo_engine_collision_digest_bytes_external(pv, sizeof(pv), &dPerpendicularVector);
             CrossProductUp(battery[i], pv);
-            coduo_engine_collision_digest_bytes_external(pv, sizeof(pv), &dCrossProductUp);
+            coduo_engine_collision_digest_bytes_external(
+                pv, sizeof(pv), &dCrossProductUp);
         }
         int32_t seed = 0x2545f491;
         for (int i = 0; i < 12; ++i) {
             float c = (float)Q_crandom(&seed);
             coduo_engine_collision_digest_bytes_external(&c, sizeof(c), &dQ_crandom);
         }
-        Com_Printf("COREMATHDIGEST fn=VectorNormalizeFast digest=%016llx\n", (unsigned long long)dVectorNormalizeFast);
-        Com_Printf("COREMATHDIGEST fn=PerpendicularVector digest=%016llx\n", (unsigned long long)dPerpendicularVector);
-        Com_Printf("COREMATHDIGEST fn=CrossProductUp digest=%016llx\n", (unsigned long long)dCrossProductUp);
-        Com_Printf("COREMATHDIGEST fn=Q_crandom digest=%016llx\n", (unsigned long long)dQ_crandom);
+        Com_Printf("COREMATHDIGEST fn=VectorNormalizeFast digest=%016llx\n",
+                   (unsigned long long)dVectorNormalizeFast);
+        Com_Printf("COREMATHDIGEST fn=PerpendicularVector digest=%016llx\n",
+                   (unsigned long long)dPerpendicularVector);
+        Com_Printf("COREMATHDIGEST fn=CrossProductUp digest=%016llx\n",
+                   (unsigned long long)dCrossProductUp);
+        Com_Printf("COREMATHDIGEST fn=Q_crandom digest=%016llx\n",
+                   (unsigned long long)dQ_crandom);
     }
 
     /* Color-pack / rounding / dir-encode helpers. */
@@ -1247,12 +1448,15 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dColorBytes4 = UINT64_C(0xcbf29ce484222325);
         uint64_t dQ_rint = UINT64_C(0xcbf29ce484222325);
         uint64_t dDirToByte = UINT64_C(0xcbf29ce484222325);
-        static const float cols[] = {0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 0.333333f, 0.9999f, 0.501960f};
+        static const float cols[] = { 0.0f,  0.25f,     0.5f, 0.75f,
+                                      1.0f,  0.333333f, 0.9999f, 0.501960f };
         const int nc = (int)(sizeof(cols) / sizeof(cols[0]));
         for (int i = 0; i < nc; ++i) {
-            uint32_t p3 = ColorBytes3(cols[i], cols[(i + 1) % nc], cols[(i + 2) % nc]);
+            uint32_t p3 =
+                ColorBytes3(cols[i], cols[(i + 1) % nc], cols[(i + 2) % nc]);
             coduo_engine_collision_digest_bytes_external(&p3, sizeof(p3), &dColorBytes3);
-            uint32_t p4 = ColorBytes4(cols[i], cols[(i + 1) % nc], cols[(i + 2) % nc], cols[(i + 3) % nc]);
+            uint32_t p4 = ColorBytes4(cols[i], cols[(i + 1) % nc],
+                                      cols[(i + 2) % nc], cols[(i + 3) % nc]);
             coduo_engine_collision_digest_bytes_external(&p4, sizeof(p4), &dColorBytes4);
             float ri = Q_rint((float)(i * 64) - 200.5f);
             coduo_engine_collision_digest_bytes_external(&ri, sizeof(ri), &dQ_rint);
@@ -1261,17 +1465,22 @@ void coduo_engine_emit_core_math_digest(void)
             uint8_t b = DirToByte(battery[i]);
             coduo_engine_collision_digest_bytes_external(&b, sizeof(b), &dDirToByte);
         }
-        Com_Printf("COREMATHDIGEST fn=ColorBytes3 digest=%016llx\n", (unsigned long long)dColorBytes3);
-        Com_Printf("COREMATHDIGEST fn=ColorBytes4 digest=%016llx\n", (unsigned long long)dColorBytes4);
-        Com_Printf("COREMATHDIGEST fn=Q_rint digest=%016llx\n", (unsigned long long)dQ_rint);
-        Com_Printf("COREMATHDIGEST fn=DirToByte digest=%016llx\n", (unsigned long long)dDirToByte);
+        Com_Printf("COREMATHDIGEST fn=ColorBytes3 digest=%016llx\n",
+                   (unsigned long long)dColorBytes3);
+        Com_Printf("COREMATHDIGEST fn=ColorBytes4 digest=%016llx\n",
+                   (unsigned long long)dColorBytes4);
+        Com_Printf("COREMATHDIGEST fn=Q_rint digest=%016llx\n",
+                   (unsigned long long)dQ_rint);
+        Com_Printf("COREMATHDIGEST fn=DirToByte digest=%016llx\n",
+                   (unsigned long long)dDirToByte);
     }
 
     /* Geometry angle / round helpers (self-contained battery). */
     {
         static const float angles[] = {
-            0.0f,   45.0f,  90.0f,  179.9f,  180.0f,  180.1f, 270.0f,   359.9f,
-            360.0f, 400.0f, -45.0f, -180.0f, -400.0f, 720.5f, 0.03125f, 123.4567f,
+            0.0f,     45.0f,   90.0f,   179.9f,  180.0f,   180.1f,
+            270.0f,   359.9f,  360.0f,  400.0f,  -45.0f,   -180.0f,
+            -400.0f,  720.5f,  0.03125f, 123.4567f,
         };
         const int na = (int)(sizeof(angles) / sizeof(angles[0]));
         uint64_t dAngleMod = UINT64_C(0xcbf29ce484222325);
@@ -1300,7 +1509,8 @@ void coduo_engine_emit_core_math_digest(void)
             r = (float)AngleNormalize180Accurate(angles[i]);
             coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dAngleNormalize180Accurate);
             r = FloatRoundNearest(angles[i]);
-            coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dFloatRoundNearest);
+            coduo_engine_collision_digest_bytes_external(
+                &r, sizeof(r), &dFloatRoundNearest);
             for (int j = 0; j < na; ++j) {
                 r = (float)AngleSubtract(angles[i], angles[j]);
                 coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dAngleSubtract);
@@ -1323,18 +1533,30 @@ void coduo_engine_emit_core_math_digest(void)
             VectorSnap(snap);
             coduo_engine_collision_digest_bytes_external(snap, sizeof(snap), &dVectorSnap);
         }
-        Com_Printf("COREMATHDIGEST fn=AngleMod digest=%016llx\n", (unsigned long long)dAngleMod);
-        Com_Printf("COREMATHDIGEST fn=AngleNormalize360 digest=%016llx\n", (unsigned long long)dAngleNormalize360);
-        Com_Printf("COREMATHDIGEST fn=AngleNormalize180 digest=%016llx\n", (unsigned long long)dAngleNormalize180);
-        Com_Printf("COREMATHDIGEST fn=AngleNormalize360Accurate digest=%016llx\n", (unsigned long long)dAngleNormalize360Accurate);
-        Com_Printf("COREMATHDIGEST fn=AngleNormalize180Accurate digest=%016llx\n", (unsigned long long)dAngleNormalize180Accurate);
-        Com_Printf("COREMATHDIGEST fn=AngleSubtract digest=%016llx\n", (unsigned long long)dAngleSubtract);
-        Com_Printf("COREMATHDIGEST fn=AngleDelta digest=%016llx\n", (unsigned long long)dAngleDelta);
-        Com_Printf("COREMATHDIGEST fn=LerpAngle digest=%016llx\n", (unsigned long long)dLerpAngle);
-        Com_Printf("COREMATHDIGEST fn=AnglesSubtract digest=%016llx\n", (unsigned long long)dAnglesSubtract);
-        Com_Printf("COREMATHDIGEST fn=RadiusFromBounds digest=%016llx\n", (unsigned long long)dRadiusFromBounds);
-        Com_Printf("COREMATHDIGEST fn=FloatRoundNearest digest=%016llx\n", (unsigned long long)dFloatRoundNearest);
-        Com_Printf("COREMATHDIGEST fn=VectorSnap digest=%016llx\n", (unsigned long long)dVectorSnap);
+        Com_Printf("COREMATHDIGEST fn=AngleMod digest=%016llx\n",
+                   (unsigned long long)dAngleMod);
+        Com_Printf("COREMATHDIGEST fn=AngleNormalize360 digest=%016llx\n",
+                   (unsigned long long)dAngleNormalize360);
+        Com_Printf("COREMATHDIGEST fn=AngleNormalize180 digest=%016llx\n",
+                   (unsigned long long)dAngleNormalize180);
+        Com_Printf("COREMATHDIGEST fn=AngleNormalize360Accurate digest=%016llx\n",
+                   (unsigned long long)dAngleNormalize360Accurate);
+        Com_Printf("COREMATHDIGEST fn=AngleNormalize180Accurate digest=%016llx\n",
+                   (unsigned long long)dAngleNormalize180Accurate);
+        Com_Printf("COREMATHDIGEST fn=AngleSubtract digest=%016llx\n",
+                   (unsigned long long)dAngleSubtract);
+        Com_Printf("COREMATHDIGEST fn=AngleDelta digest=%016llx\n",
+                   (unsigned long long)dAngleDelta);
+        Com_Printf("COREMATHDIGEST fn=LerpAngle digest=%016llx\n",
+                   (unsigned long long)dLerpAngle);
+        Com_Printf("COREMATHDIGEST fn=AnglesSubtract digest=%016llx\n",
+                   (unsigned long long)dAnglesSubtract);
+        Com_Printf("COREMATHDIGEST fn=RadiusFromBounds digest=%016llx\n",
+                   (unsigned long long)dRadiusFromBounds);
+        Com_Printf("COREMATHDIGEST fn=FloatRoundNearest digest=%016llx\n",
+                   (unsigned long long)dFloatRoundNearest);
+        Com_Printf("COREMATHDIGEST fn=VectorSnap digest=%016llx\n",
+                   (unsigned long long)dVectorSnap);
     }
 
     /* libm-envelope + RNG helpers. flrand advances sharedRandSeed, so seed
@@ -1343,13 +1565,17 @@ void coduo_engine_emit_core_math_digest(void)
         uint64_t dflrand = UINT64_C(0xcbf29ce484222325);
         uint64_t dRoundFloat = UINT64_C(0xcbf29ce484222325);
         uint64_t dNormalToLatLong = UINT64_C(0xcbf29ce484222325);
-        static const int32_t decimalsList[] = {0, 1, 2, 3, 4, -1, -2};
+        static const int32_t decimalsList[] = { 0, 1, 2, 3, 4, -1, -2 };
         const int nd = (int)(sizeof(decimalsList) / sizeof(decimalsList[0]));
         /* unit-ish normals so acos(normal[2]) stays in domain. */
         static const vec3_t normals[] = {
-            {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f},        {1.0f, 0.0f, 0.0f},
-            {0.6f, 0.8f, 0.0f}, {0.5f, -0.5f, 0.70710677f}, {-0.267261f, 0.534522f, 0.801784f},
-            {0.0f, 1.0f, 0.0f},
+            {  0.0f,      0.0f,      1.0f },
+            {  0.0f,      0.0f,     -1.0f },
+            {  1.0f,      0.0f,      0.0f },
+            {  0.6f,      0.8f,      0.0f },
+            {  0.5f,     -0.5f,      0.70710677f },
+            { -0.267261f, 0.534522f, 0.801784f },
+            {  0.0f,      1.0f,      0.0f },
         };
         const int nn = (int)(sizeof(normals) / sizeof(normals[0]));
 
@@ -1361,7 +1587,8 @@ void coduo_engine_emit_core_math_digest(void)
         for (int i = 0; i < ns; ++i) {
             for (int d = 0; d < nd; ++d) {
                 float r = RoundFloat(scalars[i], decimalsList[d]);
-                coduo_engine_collision_digest_bytes_external(&r, sizeof(r), &dRoundFloat);
+                coduo_engine_collision_digest_bytes_external(
+                    &r, sizeof(r), &dRoundFloat);
             }
         }
         for (int i = 0; i < nn; ++i) {
@@ -1369,9 +1596,12 @@ void coduo_engine_emit_core_math_digest(void)
             NormalToLatLong(normals[i], enc);
             coduo_engine_collision_digest_bytes_external(enc, sizeof(enc), &dNormalToLatLong);
         }
-        Com_Printf("COREMATHDIGEST fn=flrand digest=%016llx\n", (unsigned long long)dflrand);
-        Com_Printf("COREMATHDIGEST fn=RoundFloat digest=%016llx\n", (unsigned long long)dRoundFloat);
-        Com_Printf("COREMATHDIGEST fn=NormalToLatLong digest=%016llx\n", (unsigned long long)dNormalToLatLong);
+        Com_Printf("COREMATHDIGEST fn=flrand digest=%016llx\n",
+                   (unsigned long long)dflrand);
+        Com_Printf("COREMATHDIGEST fn=RoundFloat digest=%016llx\n",
+                   (unsigned long long)dRoundFloat);
+        Com_Printf("COREMATHDIGEST fn=NormalToLatLong digest=%016llx\n",
+                   (unsigned long long)dNormalToLatLong);
     }
 }
 

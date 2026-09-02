@@ -67,8 +67,9 @@ qboolean CG_SelectFirstWeaponInSlot(int32_t forward, int32_t requireAmmo)
                  * (0x3004786e JNZ -> select). */
                 weaponInfo_t *weaponInfo = bg_weaponInfos[(int32_t)(int8_t)weaponInSlot];
                 /* ADD EBX,[ammo] is modulo 2^32; only ZF is consumed. */
-                uint32_t totalBits = (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
-                                     (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
+                uint32_t totalBits =
+                    (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
+                    (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
                 qualifies = (totalBits != 0u) ? qtrue : qfalse;
             }
 
@@ -78,7 +79,8 @@ qboolean CG_SelectFirstWeaponInSlot(int32_t forward, int32_t requireAmmo)
                  * 0x30047885 MOV ECX,cg_weaponSelect_vmCvar.integer.
                  * 0x3004788b CALL CG_SelectWeaponIndex(weapon, currentWeapon).
                  * 0x30047891 MOV EAX,1: return qtrue. */
-                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot], cg_weaponSelect_vmCvar.integer);
+                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot],
+                                     cg_weaponSelect_vmCvar.integer);
                 return qtrue;
             }
         }

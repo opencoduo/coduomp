@@ -34,21 +34,36 @@ struct cfx_bolt_frame_s {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(fx_cull_plane_t) == 4, "i386 FX cull-plane alignment changed");
-_Static_assert(offsetof(fx_cull_plane_t, normal) == 0x00, "i386 FX cull-plane normal moved");
-_Static_assert(sizeof(((fx_cull_plane_t *)0)->normal) == 0x0c, "i386 FX cull-plane normal extent changed");
-_Static_assert(offsetof(fx_cull_plane_t, distance) == 0x0c, "i386 FX cull-plane distance moved");
-_Static_assert(sizeof(fx_cull_plane_t) == 0x10, "i386 FX cull-plane size changed");
-_Static_assert(_Alignof(cfx_bolt_frame_ptr_t) == 4, "i386 bolt-frame pointer wrapper alignment changed");
-_Static_assert(offsetof(cfx_bolt_frame_ptr_t, frame) == 0x00, "i386 bolt-frame pointer moved");
-_Static_assert(sizeof(cfx_bolt_frame_ptr_t) == 0x04, "i386 bolt-frame pointer wrapper size changed");
-_Static_assert(_Alignof(cfx_bolt_frame_t) == 4, "i386 bolt-frame alignment changed");
-_Static_assert(offsetof(cfx_bolt_frame_t, referenceCount) == 0x00, "i386 bolt-frame reference count moved");
-_Static_assert(offsetof(cfx_bolt_frame_t, lastSkeletonCacheKey) == 0x04, "i386 bolt-frame skeleton key moved");
-_Static_assert(offsetof(cfx_bolt_frame_t, orientation) == 0x08, "i386 bolt-frame orientation moved");
-_Static_assert(offsetof(cfx_bolt_frame_t, next) == 0x38, "i386 CFxBoltFrame list-link offset changed");
-_Static_assert(offsetof(cfx_bolt_frame_t, boltInfo) == 0x3c, "i386 CFxBoltFrame info offset changed");
-_Static_assert(sizeof(cfx_bolt_frame_t) == 0x44, "i386 CFxBoltFrame size changed");
+_Static_assert(_Alignof(fx_cull_plane_t) == 4,
+               "i386 FX cull-plane alignment changed");
+_Static_assert(offsetof(fx_cull_plane_t, normal) == 0x00,
+               "i386 FX cull-plane normal moved");
+_Static_assert(sizeof(((fx_cull_plane_t *)0)->normal) == 0x0c,
+               "i386 FX cull-plane normal extent changed");
+_Static_assert(offsetof(fx_cull_plane_t, distance) == 0x0c,
+               "i386 FX cull-plane distance moved");
+_Static_assert(sizeof(fx_cull_plane_t) == 0x10,
+               "i386 FX cull-plane size changed");
+_Static_assert(_Alignof(cfx_bolt_frame_ptr_t) == 4,
+               "i386 bolt-frame pointer wrapper alignment changed");
+_Static_assert(offsetof(cfx_bolt_frame_ptr_t, frame) == 0x00,
+               "i386 bolt-frame pointer moved");
+_Static_assert(sizeof(cfx_bolt_frame_ptr_t) == 0x04,
+               "i386 bolt-frame pointer wrapper size changed");
+_Static_assert(_Alignof(cfx_bolt_frame_t) == 4,
+               "i386 bolt-frame alignment changed");
+_Static_assert(offsetof(cfx_bolt_frame_t, referenceCount) == 0x00,
+               "i386 bolt-frame reference count moved");
+_Static_assert(offsetof(cfx_bolt_frame_t, lastSkeletonCacheKey) == 0x04,
+               "i386 bolt-frame skeleton key moved");
+_Static_assert(offsetof(cfx_bolt_frame_t, orientation) == 0x08,
+               "i386 bolt-frame orientation moved");
+_Static_assert(offsetof(cfx_bolt_frame_t, next) == 0x38,
+               "i386 CFxBoltFrame list-link offset changed");
+_Static_assert(offsetof(cfx_bolt_frame_t, boltInfo) == 0x3c,
+               "i386 CFxBoltFrame info offset changed");
+_Static_assert(sizeof(cfx_bolt_frame_t) == 0x44,
+               "i386 CFxBoltFrame size changed");
 #endif
 
 extern cfx_bolt_frame_t *fxBoltFrames;
@@ -68,13 +83,16 @@ extern fx_cull_plane_t fxCullPlanes[];
 extern int32_t fxCullPlaneCount; /* 0x038b5090 */
 extern vec3_t fx_windDirection;  /* 0x038b5094 */
 
-cfx_bolt_frame_t *CFxBoltFrame_Construct(cfx_bolt_frame_t *frame, const sfx_bolt_info_t *boltInfo);
+cfx_bolt_frame_t *CFxBoltFrame_Construct(
+    cfx_bolt_frame_t *frame, const sfx_bolt_info_t *boltInfo);
 cfx_bolt_frame_t *CFxBoltFrame_Acquire(const sfx_bolt_info_t *boltInfo);
 void CFxBoltFrame_Release(cfx_bolt_frame_t *frame);
 orientation_t *CFxBoltFrame_GetOrientation(cfx_bolt_frame_t *frame);
-void CFxBoltFramePtr_Archive(cfx_bolt_frame_ptr_t *framePtr, fx_archive_t *archive);
+void CFxBoltFramePtr_Archive(cfx_bolt_frame_ptr_t *framePtr,
+                             fx_archive_t *archive);
 void CFxBoltFramePtr_Destroy(cfx_bolt_frame_ptr_t *framePtr);
-qboolean FX_GetBoneOrientation(const sfx_bolt_info_t *boltInfo, orientation_t *orientation);
+qboolean FX_GetBoneOrientation(const sfx_bolt_info_t *boltInfo,
+                               orientation_t *orientation);
 #ifdef __cplusplus
 }
 #endif

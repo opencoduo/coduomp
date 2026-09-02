@@ -39,5 +39,6 @@ void CG_ConfigString11Modified(void)
     /* Config string N = &cg_gameState.stringData[cg_gameState.stringOffsets[N]];
      * here N = 11. Parse it as a float (atof returns a double in ST(0)); the FSTP
      * of a DWORD narrows the result to the 32-bit float cg_hudSpinBaseTime. */
-    cg_hudSpinBaseTime = (float)atof(&cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
+    cg_hudSpinBaseTime =
+        (float)atof(&cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
 }

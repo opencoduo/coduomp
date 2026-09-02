@@ -40,7 +40,8 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType, int32_t animTreeParam)
+intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
+                                      int32_t animTreeParam)
 {
     /* One DObjModel descriptor handed to CG_CLIENT_DOBJ_CREATE. Recovered
      * from the 0x10-byte frame reservation (SUB ESP,0x10) written at
@@ -58,11 +59,13 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType, int32_t 
      * at this call site. Spell out the implicit stack argument in portable
      * source; otherwise a native 64-bit build passes unrelated stack contents
      * to CG_DOBJ_GET_HANDLE. 30021eb9 then saves the returned handle in EBX. */
-    intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    intptr_t dObjHandle =
+        cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
 
     /* 30021eb6 PUSH EBP / PUSH 0x32 / CALL -> CG_DOBJ_WRAP_MODEL(modelHandle);
      *   30021ec6 MOV EDI,EAX. Both syscall arg blocks cleaned by ADD ESP,0x10. */
-    XModel *wrappedModel = (XModel *)(intptr_t)cgame_syscall(CG_DOBJ_WRAP_MODEL, modelHandle);
+    XModel *wrappedModel = (XModel *)(intptr_t)cgame_syscall(
+        CG_DOBJ_WRAP_MODEL, modelHandle);
 
     /* Register-value aliasing in the original:
      *   EBX = dObjHandle (from trap 0xa5), EDI = wrappedModel (from trap 0x32). */
@@ -76,7 +79,9 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType, int32_t 
          * 30021ece MOV EAX,[ESP+0x20] -> arg0 (eType), the cached key.
          * 30021ed2 CMP cg_dObjInfoKeys[entityNum],EAX
          * 30021edb CMP cg_dObjInfoHandles[entityNum],EDI */
-        if (wrappedModel == 0 || cg_dObjInfoKeys[entityNum] != (uint32_t)eType || cg_dObjInfoHandles[entityNum] != wrappedModel) {
+        if (wrappedModel == 0 ||
+            cg_dObjInfoKeys[entityNum] != (uint32_t)eType ||
+            cg_dObjInfoHandles[entityNum] != wrappedModel) {
             /* 30021ee8 PUSH 0x1 / PUSH ESI / PUSH 0xa8 / CALL -> release the stale
              *   DObj registration for this index (flag 1). ADD ESP,0xc.
              * 30021ef9 XOR EBX,EBX ; store 0 into both cached table slots. */
@@ -110,7 +115,8 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType, int32_t 
          *   &cg_effectSlots[entityNum] (centity_t, stride 0x288), passed in
          *   EAX (register argument) to CG_CreateMG42WeaponAnimTree. Index the typed
          *   cg_entities[] base by entity number, matching the other centity consumers. */
-        intptr_t masterTree = CG_CreateMG42WeaponAnimTree(cg_entities + entityNum);
+        intptr_t masterTree = CG_CreateMG42WeaponAnimTree(
+            cg_entities + entityNum);
 
         /* 30021f2c TEST EAX,EAX / JZ 0x30021f41: only instantiate a non-zero tree.
          * 30021f30 PUSH EAX / PUSH 0x86 / CALL -> CG_XANIM_CREATE_TREE(masterTree)
@@ -134,7 +140,8 @@ intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType, int32_t 
     /* 30021f43 PUSH ESI / PUSH EAX / PUSH 0x1 / LEA ECX,[ESP+0x18] / PUSH ECX /
      *   PUSH 0xa7 / CALL -> CG_CLIENT_DOBJ_CREATE(&element, 1, animTreeInstance,
      *   entityNum). ADD ESP shared with the following syscall's cleanup. */
-    cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)&element, 1, animTreeInstance, entityNum);
+    cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)&element, 1,
+                  animTreeInstance, entityNum);
 
     /* 30021f70..0x30021f84 publishes both cache words between pushing the
      * entity-number argument and invoking CG_DOBJ_GET_HANDLE. In logical source

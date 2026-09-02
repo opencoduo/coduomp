@@ -12,7 +12,8 @@ extern "C" {
 
 int32_t FastFloor(float value);
 void gunrandom(float *x, float *y);
-void AxisTransformVector(const axis_t axis, float x, float y, float z, vec3_t transformed);
+void AxisTransformVector(const axis_t axis, float x, float y, float z,
+                         vec3_t transformed);
 #ifdef __cplusplus
 }
 #endif

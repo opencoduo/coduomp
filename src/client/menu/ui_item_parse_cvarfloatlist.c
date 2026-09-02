@@ -23,7 +23,8 @@ qboolean ItemParse_cvarFloatList(itemDef_t *item, int handle)
 
     multi->count = 0;
     multi->strDef = 0;
-    if (!trap_PC_ReadToken(handle, &token) || token.string[0] != '{')
+    if (!trap_PC_ReadToken(handle, &token) ||
+        token.string[0] != '{')
         return qfalse;
 
     while (trap_PC_ReadToken(handle, &token)) {

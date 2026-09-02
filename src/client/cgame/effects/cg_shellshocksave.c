@@ -61,7 +61,11 @@ int CG_ShellShockSave(const char *name)
     // 0x3003b88f..0x3003b8b4: serialize the 27 cg_shock_* cvars into `buf`.
     //   PUSH 0x10000 (bufferSize); LEA &buf; PUSH 27; PUSH cg_shockParamNames; PUSH 0x14
     //   ADD ESP,0x14 (5 dwords); TEST EAX,EAX; JZ fail.
-    if (cgame_syscall(CG_COM_SAVE_CVARS_TO_BUFFER, (intptr_t)cg_shockParamNames, CG_SHOCK_PARAM_COUNT, (intptr_t)buf, sizeof(buf)) == 0) {
+    if (cgame_syscall(CG_COM_SAVE_CVARS_TO_BUFFER,
+                      (intptr_t)cg_shockParamNames,
+                      CG_SHOCK_PARAM_COUNT,
+                      (intptr_t)buf,
+                      sizeof(buf)) == 0) {
         return 0; // 0x3003b8df XOR EAX,EAX ; RET
     }
 
@@ -70,7 +74,10 @@ int CG_ShellShockSave(const char *name)
     //   cgame_syscall(0xf, va_result, &fileHandle, 1); ADD ESP,0x18 (2 va + 4 syscall
     //   dwords); TEST EAX,EAX; JGE success (i.e. fail when the signed length < 0).
     const char *path = va("scripts/%s.shock", name);
-    if (cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)path, (intptr_t)&fileHandle, FS_WRITE) < 0) {
+    if (cgame_syscall(CG_FS_FOPEN_FILE,
+                      (intptr_t)path,
+                      (intptr_t)&fileHandle,
+                      FS_WRITE) < 0) {
         return 0; // 0x3003b8df XOR EAX,EAX ; RET
     }
 
@@ -80,7 +87,10 @@ int CG_ShellShockSave(const char *name)
     // index of the NUL = strlen(buf).
     // 0x3003b907..0x3003b91b: write strlen(buf) bytes of buf to the open handle.
     //   PUSH fileHandle; PUSH strlen; PUSH &buf; PUSH 0x11; then ADD ESP,0x18.
-    cgame_syscall(CG_FS_WRITE, (intptr_t)buf, (int32_t)strlen(buf), fileHandle);
+    cgame_syscall(CG_FS_WRITE,
+                  (intptr_t)buf,
+                  (int32_t)strlen(buf),
+                  fileHandle);
 
     // 0x3003b91b..0x3003b928: close the handle.
     cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);

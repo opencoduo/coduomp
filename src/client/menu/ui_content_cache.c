@@ -67,7 +67,8 @@ void Menu_CacheContents(menuDef_t *menu)
         if (item != NULL && item->window.cinematicName != NULL) {
             const char *cinematicName = item->window.cinematicName;
             displayContextDef_t *display = DC;
-            int32_t handle = display->playCinematic(cinematicName, 0, 0, 0, 0);
+            int32_t handle =
+                display->playCinematic(cinematicName, 0, 0, 0, 0);
 
             display = DC;
             display->stopCinematic(handle);
@@ -90,18 +91,24 @@ qboolean Menu_OverActiveItem(menuDef_t *menu, float x, float y)
 {
     uint32_t indexBits;
 
-    if (menu == NULL || ((uint32_t)menu->window.flags & WINDOW_MOUSE_ACTIVE) == 0u || !Rect_ContainsPoint(&menu->window.rect, x, y)) {
+    if (menu == NULL ||
+        ((uint32_t)menu->window.flags & WINDOW_MOUSE_ACTIVE) == 0u ||
+        !Rect_ContainsPoint(&menu->window.rect, x, y)) {
         return qfalse;
     }
 
-    for (indexBits = 0u; coduo_int32_from_bits(indexBits) < menu->itemCount; indexBits += 1u) {
+    for (indexBits = 0u;
+         coduo_int32_from_bits(indexBits) < menu->itemCount;
+         indexBits += 1u) {
         itemDef_t *item = menu->items[indexBits];
 
-        if (((uint32_t)item->window.flags & WINDOW_MOUSE_ACTIVE) == 0u || ((uint32_t)item->window.flags & WINDOW_DECORATION) != 0u ||
+        if (((uint32_t)item->window.flags & WINDOW_MOUSE_ACTIVE) == 0u ||
+            ((uint32_t)item->window.flags & WINDOW_DECORATION) != 0u ||
             !Rect_ContainsPoint(&item->window.rect, x, y)) {
             continue;
         }
-        if (item->type != ITEM_TYPE_TEXT || item->text == NULL || Rect_ContainsPoint(Item_CorrectedTextRect(item), x, y)) {
+        if (item->type != ITEM_TYPE_TEXT || item->text == NULL ||
+            Rect_ContainsPoint(Item_CorrectedTextRect(item), x, y)) {
             return qtrue;
         }
     }

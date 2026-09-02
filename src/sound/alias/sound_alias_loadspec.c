@@ -5,13 +5,15 @@
 #define SOUND_ALIAS_LOADSPEC_LIST_LIMIT 4095
 #define SOUND_ALIAS_DEFAULT_LOADSPEC "soundloadspecs/mp/default.csv"
 #define SOUND_ALIAS_LOADSPEC_NOT_FOUND_MESSAGE \
-    "\x15" \
-    "Could not load either sound loadspec file %s or %s"
+    "\x15" "Could not load either sound loadspec file %s or %s"
 
 /* CoDUOMP.exe 0x00437ce0..0x00437d36 and coduo_lnxded
  * 0x0806e081..0x0806e108; canonical name confirmed by the supporting Mac
  * engine symbol. */
-int32_t Com_AddFileToList(const char *text, char **table, int32_t count)
+int32_t
+Com_AddFileToList(
+    const char *text, char **table,
+    int32_t count)
 {
     int32_t index;
 
@@ -50,7 +52,8 @@ void Com_FreeFileList(char **list)
 /* CoDUOMP.exe 0x00437d70..0x00437f3e and coduo_lnxded
  * 0x0806e15e..0x0806e35a; canonical name confirmed by the supporting Mac
  * engine symbol. */
-char **Com_ParseLoadSpecFile(const char *filename, int32_t *countOut)
+char **Com_ParseLoadSpecFile(
+    const char *filename, int32_t *countOut)
 {
     const char *activeFilename;
     void *fileBuffer;
@@ -66,7 +69,9 @@ char **Com_ParseLoadSpecFile(const char *filename, int32_t *countOut)
     if (FS_ReadFile(activeFilename, &fileBuffer) < 0) {
         activeFilename = SOUND_ALIAS_DEFAULT_LOADSPEC;
         if (FS_ReadFile(activeFilename, &fileBuffer) < 0) {
-            Com_Error(ERR_DROP, SOUND_ALIAS_LOADSPEC_NOT_FOUND_MESSAGE, filename, activeFilename);
+            Com_Error(ERR_DROP,
+                      SOUND_ALIAS_LOADSPEC_NOT_FOUND_MESSAGE,
+                      filename, activeFilename);
             return NULL;
         }
     }
@@ -79,7 +84,8 @@ char **Com_ParseLoadSpecFile(const char *filename, int32_t *countOut)
         if (token[0] == '\0' || token[0] == '#') {
             Com_SkipRestOfLine(&parseCursor);
         } else {
-            count = Com_AddFileToList(token, loadspecs, count);
+            count =
+                Com_AddFileToList(token, loadspecs, count);
             Com_SkipRestOfLine(&parseCursor);
         }
     }

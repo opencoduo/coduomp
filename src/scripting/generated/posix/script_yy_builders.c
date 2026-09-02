@@ -5,41 +5,54 @@
 #include "server/standalone/scripting/script_compile_private.h"
 #include "scripting/script_memory.h"
 
-#define AST_MEMBER_SIZE(member_) (offsetof(scr_ast_node_t, payload) + sizeof(((scr_ast_node_t *)0)->payload.member_))
+#define AST_MEMBER_SIZE(member_) \
+    (offsetof(scr_ast_node_t, payload) + \
+     sizeof(((scr_ast_node_t *)0)->payload.member_))
 
 /* NOT_FROM_ORIGINAL_SOURCE: native-width allocation for the original
  * fixed-dword AST constructors.  Kind-selected stores below retain 32-bit
  * source positions, opcodes, and string handles while widening only real
  * pointers on native 64-bit builds. */
-static scr_ast_node_t *coduomp_script_ast_allocate(scr_ast_kind_t kind, size_t size)
+static scr_ast_node_t *coduomp_script_ast_allocate(scr_ast_kind_t kind,
+                                                    size_t size)
 {
     scr_ast_node_t *node = Hunk_AllocateTempMemoryHighInternal(size);
     node->kind = kind;
     return node;
 }
 
-sval_u *node1_(sval_u *out, coduo_script_yystype_word_t word)
+sval_u *
+node1_(sval_u *out,
+       coduo_script_yystype_word_t word)
 {
     out->words[0] = word;
     return out;
 }
 
-sval_u *node_pos(sval_u *out, coduo_script_yystype_word_t word)
+sval_u *
+node_pos(sval_u *out,
+         coduo_script_yystype_word_t word)
 {
     out->words[0] = word;
     return out;
 }
 
-sval_u *node0(sval_u *out, coduo_script_yystype_word_t word0)
+sval_u *
+node0(sval_u *out,
+                      coduo_script_yystype_word_t word0)
 {
-    uintptr_t *word = Hunk_AllocateTempMemoryHighInternal(sizeof(*word));
+    uintptr_t *word =
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*word));
 
     *word = word0;
     out->words[0] = (coduo_script_yystype_word_t)word;
     return out;
 }
 
-sval_u *node1(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1)
+sval_u *
+node1(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1)
 {
     const scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
@@ -52,7 +65,8 @@ sval_u *node1(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
         node->payload.child.node = (scr_ast_node_t *)word1;
         break;
     default:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(sourceOnlyStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(sourceOnlyStatement));
         node->payload.sourceOnlyStatement.sourcePos = (uint32_t)word1;
         break;
     }
@@ -61,7 +75,11 @@ sval_u *node1(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
     return out;
 }
 
-sval_u *node2(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2)
+sval_u *
+node2(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2)
 {
     const scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
@@ -114,8 +132,10 @@ sval_u *node2(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
         break;
     case SCR_AST_KIND_STATEMENT_BLOCK:
     case SCR_AST_KIND_DEVELOPER_STATEMENT_BLOCK:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(developerStatementBlock));
-        node->payload.developerStatementBlock.block = (scr_ast_statement_block_t *)word1;
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(developerStatementBlock));
+        node->payload.developerStatementBlock.block =
+            (scr_ast_statement_block_t *)word1;
         node->payload.developerStatementBlock.sourcePos = (uint32_t)word2;
         break;
     case SCR_AST_KIND_CASE_STATEMENT:
@@ -139,25 +159,31 @@ sval_u *node2(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
     return out;
 }
 
-sval_u *node2_(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1)
+sval_u *
+node2_(sval_u *out,
+                  coduo_script_yystype_word_t word0,
+                  coduo_script_yystype_word_t word1)
 {
     void *value;
 
 #if UINTPTR_MAX > UINT32_MAX
     if (word0 <= UINT16_MAX) {
-        scr_ast_string_entry_t *entry = Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
+        scr_ast_string_entry_t *entry =
+            Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
         entry->stringHandle = (uint32_t)word0;
         entry->sourcePos = (uint32_t)word1;
         value = entry;
     } else {
-        scr_ast_expression_entry_t *entry = Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
+        scr_ast_expression_entry_t *entry =
+            Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
         entry->node = (scr_ast_node_t *)word0;
         entry->sourcePos = (uint32_t)word1;
         value = entry;
     }
 #else
     {
-        scr_ast_string_entry_t *entry = Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
+        scr_ast_string_entry_t *entry =
+            Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
         entry->stringHandle = (uint32_t)word0;
         entry->sourcePos = (uint32_t)word1;
         value = entry;
@@ -171,16 +197,23 @@ sval_u *node2_(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yyst
 /* NOT_FROM_ORIGINAL_SOURCE: typed rule-1 use of the original two-word
  * constructor, separated from node2_ so a legitimate string handle equal to
  * the root-kind value cannot be misclassified on native 64-bit builds. */
-sval_u *coduomp_script_ast_new_script_root(sval_u *out, coduo_script_yystype_word_t entries)
+sval_u *coduomp_script_ast_new_script_root(
+    sval_u *out, coduo_script_yystype_word_t entries)
 {
-    scr_ast_node_t *root = coduomp_script_ast_allocate(SCR_AST_KIND_SCRIPT_ROOT, AST_MEMBER_SIZE(scriptRoot));
-    root->payload.scriptRoot.entries = (scr_ast_script_entry_block_t *)entries;
+    scr_ast_node_t *root = coduomp_script_ast_allocate(
+        SCR_AST_KIND_SCRIPT_ROOT, AST_MEMBER_SIZE(scriptRoot));
+    root->payload.scriptRoot.entries =
+        (scr_ast_script_entry_block_t *)entries;
     out->words[0] = (coduo_script_yystype_word_t)root;
     return out;
 }
 
-sval_u *node3(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3)
+sval_u *
+node3(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3)
 {
     const scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
@@ -234,10 +267,14 @@ sval_u *node3(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
     return out;
 }
 
-sval_u *ScriptAst_NewTriple(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1,
-                            coduo_script_yystype_word_t word2)
+sval_u *
+ScriptAst_NewTriple(sval_u *out,
+                    coduo_script_yystype_word_t word0,
+                    coduo_script_yystype_word_t word1,
+                    coduo_script_yystype_word_t word2)
 {
-    uintptr_t *words = Hunk_AllocateTempMemoryHighInternal(3 * sizeof(words[0]));
+    uintptr_t *words = Hunk_AllocateTempMemoryHighInternal(
+        3 * sizeof(words[0]));
 
     words[0] = word0;
     words[1] = word1;
@@ -246,8 +283,13 @@ sval_u *ScriptAst_NewTriple(sval_u *out, coduo_script_yystype_word_t word0, codu
     return out;
 }
 
-sval_u *node4(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3, coduo_script_yystype_word_t word4)
+sval_u *
+node4(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3,
+                   coduo_script_yystype_word_t word4)
 {
     const scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
@@ -307,7 +349,8 @@ sval_u *node4(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
         node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(functionDefinition));
         node->payload.functionDefinition.nameHandle = (uint32_t)word1;
         node->payload.functionDefinition.parameters = (scr_ast_list_t *)word2;
-        node->payload.functionDefinition.body = (scr_ast_statement_block_t *)word3;
+        node->payload.functionDefinition.body =
+            (scr_ast_statement_block_t *)word3;
         node->payload.functionDefinition.sourcePos = (uint32_t)word4;
         break;
     case SCR_AST_KIND_ENDON_STATEMENT:
@@ -330,10 +373,15 @@ sval_u *node4(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
     return out;
 }
 
-sval_u *ScriptAst_NewQuad(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1,
-                          coduo_script_yystype_word_t word2, coduo_script_yystype_word_t word3)
+sval_u *
+ScriptAst_NewQuad(sval_u *out,
+                  coduo_script_yystype_word_t word0,
+                  coduo_script_yystype_word_t word1,
+                  coduo_script_yystype_word_t word2,
+                  coduo_script_yystype_word_t word3)
 {
-    uintptr_t *words = Hunk_AllocateTempMemoryHighInternal(4 * sizeof(words[0]));
+    uintptr_t *words = Hunk_AllocateTempMemoryHighInternal(
+        4 * sizeof(words[0]));
 
     words[0] = word0;
     words[1] = word1;
@@ -343,8 +391,14 @@ sval_u *ScriptAst_NewQuad(sval_u *out, coduo_script_yystype_word_t word0, coduo_
     return out;
 }
 
-sval_u *node5(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3, coduo_script_yystype_word_t word4, coduo_script_yystype_word_t word5)
+sval_u *
+node5(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3,
+                   coduo_script_yystype_word_t word4,
+                   coduo_script_yystype_word_t word5)
 {
     const scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
@@ -369,11 +423,18 @@ sval_u *node5(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
     return out;
 }
 
-sval_u *node6(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3, coduo_script_yystype_word_t word4, coduo_script_yystype_word_t word5,
-              coduo_script_yystype_word_t word6)
+sval_u *
+node6(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3,
+                   coduo_script_yystype_word_t word4,
+                   coduo_script_yystype_word_t word5,
+                   coduo_script_yystype_word_t word6)
 {
-    scr_ast_node_t *node = coduomp_script_ast_allocate((scr_ast_kind_t)word0, AST_MEMBER_SIZE(forStatement));
+    scr_ast_node_t *node = coduomp_script_ast_allocate(
+        (scr_ast_kind_t)word0, AST_MEMBER_SIZE(forStatement));
 
     node->payload.forStatement.initNode = (scr_ast_node_t *)word1;
     node->payload.forStatement.conditionNode = (scr_ast_node_t *)word2;
@@ -385,13 +446,17 @@ sval_u *node6(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yysty
     return out;
 }
 
-sval_u *linked_list_end(sval_u *out, coduo_script_yystype_word_t value)
+sval_u *
+linked_list_end(sval_u *out,
+                      coduo_script_yystype_word_t value)
 {
-    scr_ast_list_item_t *item = Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*item));
+    scr_ast_list_item_t *item =
+        Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*item));
     item->value = value;
     item->next = NULL;
 
-    scr_ast_list_t *list = Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*list));
+    scr_ast_list_t *list =
+        Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*list));
     list->head = item;
     list->tail = item;
 
@@ -399,10 +464,15 @@ sval_u *linked_list_end(sval_u *out, coduo_script_yystype_word_t value)
     return out;
 }
 
-sval_u *prepend_node(sval_u *out, coduo_script_yystype_word_t value, coduo_script_yystype_word_t headValue)
+sval_u *
+prepend_node(sval_u *out,
+                         coduo_script_yystype_word_t value,
+                         coduo_script_yystype_word_t headValue)
 {
-    scr_ast_list_item_t **head = (scr_ast_list_item_t **)headValue;
-    scr_ast_list_item_t *item = Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*item));
+    scr_ast_list_item_t **head =
+        (scr_ast_list_item_t **)headValue;
+    scr_ast_list_item_t *item =
+        Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*item));
 
     item->value = value;
     item->next = *head;
@@ -411,10 +481,15 @@ sval_u *prepend_node(sval_u *out, coduo_script_yystype_word_t value, coduo_scrip
     return out;
 }
 
-sval_u *append_node(sval_u *out, coduo_script_yystype_word_t listValue, coduo_script_yystype_word_t value)
+sval_u *
+append_node(sval_u *out,
+                        coduo_script_yystype_word_t listValue,
+                        coduo_script_yystype_word_t value)
 {
-    scr_ast_list_t *list = (scr_ast_list_t *)listValue;
-    scr_ast_list_item_t *item = Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*item));
+    scr_ast_list_t *list =
+        (scr_ast_list_t *)listValue;
+    scr_ast_list_item_t *item =
+        Hunk_AllocateTempMemoryHighInternal((size_t)sizeof(*item));
 
     item->value = value;
     item->next = NULL;
@@ -424,7 +499,10 @@ sval_u *append_node(sval_u *out, coduo_script_yystype_word_t listValue, coduo_sc
     return out;
 }
 
-sval_u *ScriptYyList_Concat(sval_u *out, scr_ast_list_t *left, scr_ast_list_t *right)
+sval_u *
+ScriptYyList_Concat(sval_u *out,
+                    scr_ast_list_t *left,
+                    scr_ast_list_t *right)
 {
     left->tail->next = right->head;
     left->tail = right->tail;

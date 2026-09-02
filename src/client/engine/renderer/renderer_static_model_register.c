@@ -15,11 +15,12 @@ enum {
 };
 
 #define R_AUTOSPRITE_BOUNDS_SCALE 0.550000011920929f /* 0x3f0ccccd */
-#define R_AUTOSPRITE_BOUNDS_PAD 2.0f              /* 0x40000000 */
+#define R_AUTOSPRITE_BOUNDS_PAD   2.0f              /* 0x40000000 */
 #define R_STATIC_MODEL_CENTER_SCALE 0.5f             /* 0x3f000000 */
-#define R_STATIC_MODEL_COLOR_SCALE 255.0f           /* 0x437f0000 */
+#define R_STATIC_MODEL_COLOR_SCALE  255.0f           /* 0x437f0000 */
 
-static renderer_static_model_instance_t *rendererStaticModelInstances; /* 0x0389fec4 */
+static renderer_static_model_instance_t
+    *rendererStaticModelInstances; /* 0x0389fec4 */
 
 enum {
     R_STATIC_MODEL_REFRESH_VERTEX_CAPACITY = UINT16_MAX + 1U
@@ -28,25 +29,33 @@ enum {
 /* NOT_FROM_ORIGINAL_SOURCE: shared scratch carrier introduced by the
  * factored refresh helper for its mutually exclusive interleaved formats. */
 typedef union renderer_static_model_refresh_staging_u {
-    renderer_static_model_t2v3_vertex_t t2v3[R_STATIC_MODEL_REFRESH_VERTEX_CAPACITY];
-    renderer_static_model_t2n3v3_vertex_t t2n3v3[R_STATIC_MODEL_REFRESH_VERTEX_CAPACITY];
+    renderer_static_model_t2v3_vertex_t
+        t2v3[R_STATIC_MODEL_REFRESH_VERTEX_CAPACITY];
+    renderer_static_model_t2n3v3_vertex_t
+        t2n3v3[R_STATIC_MODEL_REFRESH_VERTEX_CAPACITY];
 } renderer_static_model_refresh_staging_t;
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the identical ARB
  * buffer refresh bodies in R_RefreshStaticModels_ARB and
  * R_IncrementalRefreshStaticModels_ARB. The public functions retain their
  * original traversal, eligibility, and buffer-orphaning behavior. */
-static void R_RefreshStaticModelSurface_ARB(renderer_static_model_surface_t *surface, renderer_vbo_refresh_components_t refreshComponents,
-                                            qboolean orphanBuffers)
+static void R_RefreshStaticModelSurface_ARB(
+    renderer_static_model_surface_t *surface,
+    renderer_vbo_refresh_components_t refreshComponents,
+    qboolean orphanBuffers)
 {
     if ((refreshComponents & R_VBO_REFRESH_INDEXES) != 0) {
-        const size_t indexBytes = (size_t)surface->indexCount * sizeof(surface->indices[0]);
+        const size_t indexBytes =
+            (size_t)surface->indexCount * sizeof(surface->indices[0]);
 
-        qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, surface->backend.arb.indexBuffer);
+        qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
+                         surface->backend.arb.indexBuffer);
         if (orphanBuffers) {
-            qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBytes, NULL, GL_STATIC_DRAW_ARB);
+            qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBytes,
+                             NULL, GL_STATIC_DRAW_ARB);
         }
-        qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBytes, surface->indices, GL_STATIC_DRAW_ARB);
+        qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBytes,
+                         surface->indices, GL_STATIC_DRAW_ARB);
         qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
     }
 
@@ -55,25 +64,42 @@ static void R_RefreshStaticModelSurface_ARB(renderer_static_model_surface_t *sur
         size_t vertexBytes;
 
         if (surface->surfaceType == R_SURFACE_STATIC_MODEL_T2V3_ARB) {
-            for (uint16_t vertexIndex = 0; vertexIndex < surface->vertexCount; ++vertexIndex) {
-                memcpy(staging.t2v3[vertexIndex].texCoord, surface->texCoords[vertexIndex], sizeof(staging.t2v3[vertexIndex].texCoord));
-                memcpy(staging.t2v3[vertexIndex].position, surface->vertices[vertexIndex], sizeof(staging.t2v3[vertexIndex].position));
+            for (uint16_t vertexIndex = 0;
+                 vertexIndex < surface->vertexCount; ++vertexIndex) {
+                memcpy(staging.t2v3[vertexIndex].texCoord,
+                       surface->texCoords[vertexIndex],
+                       sizeof(staging.t2v3[vertexIndex].texCoord));
+                memcpy(staging.t2v3[vertexIndex].position,
+                       surface->vertices[vertexIndex],
+                       sizeof(staging.t2v3[vertexIndex].position));
             }
-            vertexBytes = (size_t)surface->vertexCount * sizeof(staging.t2v3[0]);
+            vertexBytes = (size_t)surface->vertexCount *
+                          sizeof(staging.t2v3[0]);
         } else {
-            for (uint16_t vertexIndex = 0; vertexIndex < surface->vertexCount; ++vertexIndex) {
-                memcpy(staging.t2n3v3[vertexIndex].texCoord, surface->texCoords[vertexIndex], sizeof(staging.t2n3v3[vertexIndex].texCoord));
-                memcpy(staging.t2n3v3[vertexIndex].normal, surface->normals[vertexIndex], sizeof(staging.t2n3v3[vertexIndex].normal));
-                memcpy(staging.t2n3v3[vertexIndex].position, surface->vertices[vertexIndex], sizeof(staging.t2n3v3[vertexIndex].position));
+            for (uint16_t vertexIndex = 0;
+                 vertexIndex < surface->vertexCount; ++vertexIndex) {
+                memcpy(staging.t2n3v3[vertexIndex].texCoord,
+                       surface->texCoords[vertexIndex],
+                       sizeof(staging.t2n3v3[vertexIndex].texCoord));
+                memcpy(staging.t2n3v3[vertexIndex].normal,
+                       surface->normals[vertexIndex],
+                       sizeof(staging.t2n3v3[vertexIndex].normal));
+                memcpy(staging.t2n3v3[vertexIndex].position,
+                       surface->vertices[vertexIndex],
+                       sizeof(staging.t2n3v3[vertexIndex].position));
             }
-            vertexBytes = (size_t)surface->vertexCount * sizeof(staging.t2n3v3[0]);
+            vertexBytes = (size_t)surface->vertexCount *
+                          sizeof(staging.t2n3v3[0]);
         }
 
-        qglBindBufferARB(GL_ARRAY_BUFFER_ARB, surface->optimized.vertexBuffer);
+        qglBindBufferARB(GL_ARRAY_BUFFER_ARB,
+                         surface->optimized.vertexBuffer);
         if (orphanBuffers) {
-            qglBufferDataARB(GL_ARRAY_BUFFER_ARB, vertexBytes, NULL, GL_STATIC_DRAW_ARB);
+            qglBufferDataARB(GL_ARRAY_BUFFER_ARB, vertexBytes, NULL,
+                             GL_STATIC_DRAW_ARB);
         }
-        qglBufferDataARB(GL_ARRAY_BUFFER_ARB, vertexBytes, &staging, GL_STATIC_DRAW_ARB);
+        qglBufferDataARB(GL_ARRAY_BUFFER_ARB, vertexBytes, &staging,
+                         GL_STATIC_DRAW_ARB);
         qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
     }
 }
@@ -86,13 +112,16 @@ static void R_RefreshStaticModelSurface_ARB(renderer_static_model_surface_t *sur
  * entity DObj's LOD-zero surface names before registration has completed. */
 qboolean R_NeedsBoundsAdjustment(const refEntity_t *entity)
 {
-    const renderer_registered_static_model_t *registration = entity->staticModelRegistration;
+    const renderer_registered_static_model_t *registration =
+        entity->staticModelRegistration;
 
     if (registration != NULL) {
         const renderer_static_model_lod_t *lod = registration->lods[0];
 
-        for (int32_t surfaceIndex = 0; surfaceIndex < lod->surfaceCount; ++surfaceIndex) {
-            if ((lod->surfaces[surfaceIndex].shader->surfaceFlags & SHADER_SURFACE_DEFORMED_POSITIONS) != 0) {
+        for (int32_t surfaceIndex = 0;
+             surfaceIndex < lod->surfaceCount; ++surfaceIndex) {
+            if ((lod->surfaces[surfaceIndex].shader->surfaceFlags &
+                 SHADER_SURFACE_DEFORMED_POSITIONS) != 0) {
                 return qtrue;
             }
         }
@@ -106,16 +135,23 @@ qboolean R_NeedsBoundsAdjustment(const refEntity_t *entity)
     int32_t lodIndex = 0;
     uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
     const int32_t surfaceCount = DObjGetNumSurfaces(obj, &lodIndex);
-    dobj_surface_ref_t *surfaceRefs = CODUOMP_ALLOCA((size_t)surfaceCount * sizeof(surfaceRefs[0]));
+    dobj_surface_ref_t *surfaceRefs = CODUOMP_ALLOCA(
+        (size_t)surfaceCount * sizeof(surfaceRefs[0]));
 
     DObjGetSurfaces(obj, surfaceRefs, partBits, &lodIndex);
 
-    for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
+    for (int32_t surfaceIndex = 0;
+         surfaceIndex < surfaceCount; ++surfaceIndex) {
         const dobj_surface_ref_t *surfaceRef = &surfaceRefs[surfaceIndex];
-        const char *surfaceName = DObjGetSurfaceName(obj, (uint8_t)surfaceRef->modelIndex, surfaceRef->surfaceIndex, &lodIndex);
-        shader_t *shader = R_FindShader(va("skins/%s", surfaceName), R_STATIC_MODEL_LIGHTMAP_MODE, qtrue, R_STATIC_MODEL_SHADER_USAGE);
+        const char *surfaceName = DObjGetSurfaceName(
+            obj, (uint8_t)surfaceRef->modelIndex,
+            surfaceRef->surfaceIndex, &lodIndex);
+        shader_t *shader = R_FindShader(
+            va("skins/%s", surfaceName), R_STATIC_MODEL_LIGHTMAP_MODE,
+            qtrue, R_STATIC_MODEL_SHADER_USAGE);
 
-        if ((shader->surfaceFlags & SHADER_SURFACE_DEFORMED_POSITIONS) != 0)
+        if ((shader->surfaceFlags &
+             SHADER_SURFACE_DEFORMED_POSITIONS) != 0)
             return qtrue;
     }
 
@@ -127,20 +163,28 @@ qboolean R_NeedsBoundsAdjustment(const refEntity_t *entity)
  * objdump of the original executable. Exact same-module Mac symbol
  * R_AdjustBoundsForAutosprite. The constants retain the original float bit
  * patterns; the radius uses the full opposite-corner distance. */
-void R_AdjustBoundsForAutosprite(const refEntity_t *entity, vec3_t mins, vec3_t maxs)
+void R_AdjustBoundsForAutosprite(const refEntity_t *entity,
+                                 vec3_t mins, vec3_t maxs)
 {
     if (R_NeedsBoundsAdjustment(entity) == qfalse)
         return;
 
-    const float centerX = (float)(((long double)mins[0] + maxs[0]) * 0.5L);
-    const long double centerY = ((long double)mins[1] + maxs[1]) * 0.5L;
-    const float centerZSum = (float)((long double)mins[2] + maxs[2]);
+    const float centerX = (float)(
+        ((long double)mins[0] + maxs[0]) * 0.5L);
+    const long double centerY =
+        ((long double)mins[1] + maxs[1]) * 0.5L;
+    const float centerZSum =
+        (float)((long double)mins[2] + maxs[2]);
     const long double centerZ = (long double)centerZSum * 0.5L;
     const long double diagonalX = (long double)maxs[0] - mins[0];
     const long double diagonalY = (long double)maxs[1] - mins[1];
     const long double diagonalZ = (long double)maxs[2] - mins[2];
-    const long double diagonalLength = sqrtl((diagonalZ * diagonalZ + diagonalY * diagonalY) + diagonalX * diagonalX);
-    const long double radius = diagonalLength * (long double)R_AUTOSPRITE_BOUNDS_SCALE + (long double)R_AUTOSPRITE_BOUNDS_PAD;
+    const long double diagonalLength = sqrtl(
+        (diagonalZ * diagonalZ + diagonalY * diagonalY) +
+        diagonalX * diagonalX);
+    const long double radius =
+        diagonalLength * (long double)R_AUTOSPRITE_BOUNDS_SCALE +
+        (long double)R_AUTOSPRITE_BOUNDS_PAD;
 
     mins[0] = (float)((long double)centerX - radius);
     mins[1] = (float)(centerY - radius);
@@ -156,29 +200,37 @@ void R_AdjustBoundsForAutosprite(const refEntity_t *entity, vec3_t mins, vec3_t 
  * R_RegisterStaticModel. Windows proves the case-insensitive cache lookup,
  * hard 2048-entry limit, delayed-image group lifetime, and the rule that an
  * unoptimized registration is cached but returned to callers as NULL. */
-renderer_registered_static_model_t *R_RegisterStaticModel(const char *name, const DObj *obj)
+renderer_registered_static_model_t *R_RegisterStaticModel(
+    const char *name, const DObj *obj)
 {
-    for (int32_t modelIndex = 0; modelIndex < tr.registeredStaticModelCount; ++modelIndex) {
-        renderer_registered_static_model_t *registration = tr.registeredStaticModels[modelIndex];
+    for (int32_t modelIndex = 0;
+         modelIndex < tr.registeredStaticModelCount; ++modelIndex) {
+        renderer_registered_static_model_t *registration =
+            tr.registeredStaticModels[modelIndex];
 
-        if (registration->name != NULL && name != NULL && Q_stricmp(registration->name, name) == 0) {
+        if (registration->name != NULL && name != NULL &&
+            Q_stricmp(registration->name, name) == 0) {
             return registration->model != NULL ? registration : NULL;
         }
     }
 
-    if (tr.registeredStaticModelCount == R_MAX_REGISTERED_STATIC_MODELS) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_RegisterStaticModel failed for '%s' -- more than %i unique "
-                  "static models\n",
-                  name, tr.registeredStaticModelCount);
+    if (tr.registeredStaticModelCount ==
+        R_MAX_REGISTERED_STATIC_MODELS) {
+        ri.Printf(
+            R_PRINT_WARNING,
+            "R_RegisterStaticModel failed for '%s' -- more than %i unique "
+            "static models\n",
+            name, tr.registeredStaticModelCount);
         return NULL;
     }
 
     R_BeginDelayedImageGroup(name);
-    renderer_registered_static_model_t *registration = R_SetupDObjToStaticModel(name, obj);
+    renderer_registered_static_model_t *registration =
+        R_SetupDObjToStaticModel(name, obj);
     R_EndDelayedImageGroup();
 
-    tr.registeredStaticModels[tr.registeredStaticModelCount++] = registration;
+    tr.registeredStaticModels[tr.registeredStaticModelCount++] =
+        registration;
     return registration->model != NULL ? registration : NULL;
 }
 
@@ -188,7 +240,9 @@ renderer_registered_static_model_t *R_RegisterStaticModel(const char *name, cons
  * R_CreateStaticModel. Windows proves the five source arguments, stripped
  * xmodel/ name storage, temporary one-model DObj evaluation, scaled axis and
  * translated bounds, conditional optimized registration, and list prepend. */
-void R_CreateStaticModel(const char *name, const vec3_t origin, const vec3_t angles, const vec3_t scale, const vec3_t lightingPrecalc)
+void R_CreateStaticModel(const char *name, const vec3_t origin,
+                         const vec3_t angles, const vec3_t scale,
+                         const vec3_t lightingPrecalc)
 {
     enum {
         R_STATIC_MODEL_PREFIX_LENGTH = 6,
@@ -197,22 +251,28 @@ void R_CreateStaticModel(const char *name, const vec3_t origin, const vec3_t ang
     };
     static const char xmodelPrefix[] = "xmodel";
 
-    if (coduo_crt_strnicmp(name, xmodelPrefix, R_STATIC_MODEL_PREFIX_LENGTH) != 0 ||
-        (name[R_STATIC_MODEL_PREFIX_LENGTH] != '/' && name[R_STATIC_MODEL_PREFIX_LENGTH] != '\\')) {
+    if (coduo_crt_strnicmp(
+            name, xmodelPrefix, R_STATIC_MODEL_PREFIX_LENGTH) != 0 ||
+        (name[R_STATIC_MODEL_PREFIX_LENGTH] != '/' &&
+         name[R_STATIC_MODEL_PREFIX_LENGTH] != '\\')) {
         Com_Printf("Model '%s' is not an xmodel\n", name);
         return;
     }
 
     if (strlen(name) >= R_STATIC_MODEL_MAX_PATH_LENGTH) {
-        Com_Printf("Model '%s' has a name longer than %i characters\n", name, R_STATIC_MODEL_MAX_PATH_LENGTH);
+        Com_Printf("Model '%s' has a name longer than %i characters\n",
+                   name, R_STATIC_MODEL_MAX_PATH_LENGTH);
         return;
     }
 
     R_SyncRenderThread();
-    renderer_static_model_instance_t *instance = ri.Z_Malloc(sizeof(*instance));
-    strcpy(instance->name, name + R_STATIC_MODEL_PREFIX_AND_SEPARATOR_LENGTH);
+    renderer_static_model_instance_t *instance =
+        ri.Z_Malloc(sizeof(*instance));
+    strcpy(instance->name,
+           name + R_STATIC_MODEL_PREFIX_AND_SEPARATOR_LENGTH);
 
-    const int16_t modelHandle = (int16_t)RE_RegisterModel(name, R_STATIC_MODEL_SHADER_USAGE);
+    const int16_t modelHandle =
+        (int16_t)RE_RegisterModel(name, R_STATIC_MODEL_SHADER_USAGE);
     DObjModel model = {0};
     DObj obj;
 
@@ -223,7 +283,8 @@ void R_CreateStaticModel(const char *name, const vec3_t origin, const vec3_t ang
     model.modelIndex = modelHandle;
     DObjCreate(&model, 1, NULL, &obj, 0);
 
-    dobj_eval_storage_t *storage = CODUOMP_ALLOCA((size_t)DObjGetAllocSkelSize(&obj));
+    dobj_eval_storage_t *storage = CODUOMP_ALLOCA(
+        (size_t)DObjGetAllocSkelSize(&obj));
     DObjCreateSkel(&obj, storage);
 
     uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
@@ -246,7 +307,8 @@ void R_CreateStaticModel(const char *name, const vec3_t origin, const vec3_t ang
         instance->nonNormalizedAxes = VectorMax(scale);
     }
 
-    R_GetXModelBounds(&obj, instance->axis, instance->mins, instance->maxs);
+    R_GetXModelBounds(&obj, instance->axis,
+                      instance->mins, instance->maxs);
     for (int32_t axis = 0; axis < 3; ++axis) {
         instance->mins[axis] += instance->origin[axis];
         instance->maxs[axis] += instance->origin[axis];
@@ -279,14 +341,17 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
 
     if (instance->registration != NULL) {
         entityType = RT_STATIC_MODEL;
-        for (int32_t lodIndex = 0; lodIndex < instance->registration->lodCount; ++lodIndex) {
-            surfaceCacheCount += instance->registration->lods[lodIndex]->surfaceCount;
+        for (int32_t lodIndex = 0;
+             lodIndex < instance->registration->lodCount; ++lodIndex) {
+            surfaceCacheCount +=
+                instance->registration->lods[lodIndex]->surfaceCount;
         }
     } else {
         entityType = RT_MODEL;
         obj = ri.Hunk_Alloc(sizeof(*obj));
 
-        const int16_t modelHandle = (int16_t)RE_RegisterModel(va("xmodel/%s", instance->name), R_STATIC_MODEL_SHADER_USAGE);
+        const int16_t modelHandle = (int16_t)RE_RegisterModel(
+            va("xmodel/%s", instance->name), R_STATIC_MODEL_SHADER_USAGE);
         DObjModel model = {0};
         model.model = R_GetModelByHandle(modelHandle)->xmodel;
         /* 0x005197fa stores this handle in the descriptor. Leaving the word
@@ -295,7 +360,8 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
         model.modelIndex = modelHandle;
         DObjCreate(&model, 1, NULL, obj, 0);
 
-        dobj_eval_storage_t *storage = ri.Hunk_Alloc((size_t)DObjGetAllocSkelSize(obj));
+        dobj_eval_storage_t *storage = ri.Hunk_Alloc(
+            (size_t)DObjGetAllocSkelSize(obj));
         DObjCreateSkel(obj, storage);
 
         uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
@@ -304,8 +370,10 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
         DObjCalcSkel(obj, partBits);
     }
 
-    renderer_static_model_t *worldModel =
-        ri.Hunk_Alloc(sizeof(*worldModel) + (size_t)surfaceCacheCount * sizeof(worldModel->surfaceLightingCache[0]));
+    renderer_static_model_t *worldModel = ri.Hunk_Alloc(
+        sizeof(*worldModel) +
+        (size_t)surfaceCacheCount *
+            sizeof(worldModel->surfaceLightingCache[0]));
 
     /* The original clears exactly the 0x9c-byte refEntity prefix. The light
      * arrays and variable surface cache remain owned, lazily filled storage. */
@@ -318,24 +386,30 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
     for (int32_t axis = 0; axis < 3; ++axis) {
         worldModel->entity.origin[axis] = instance->origin[axis];
         for (int32_t component = 0; component < 3; ++component) {
-            worldModel->entity.axis[axis][component] = instance->axis[axis][component];
+            worldModel->entity.axis[axis][component] =
+                instance->axis[axis][component];
         }
     }
     worldModel->entity.nonNormalizedAxes = instance->nonNormalizedAxes;
 
-    R_AdjustBoundsForAutosprite(&worldModel->entity, instance->mins, instance->maxs);
+    R_AdjustBoundsForAutosprite(&worldModel->entity,
+                                instance->mins, instance->maxs);
     for (int32_t axis = 0; axis < 3; ++axis) {
-        worldModel->entity.lightingOrigin[axis] = (instance->mins[axis] + instance->maxs[axis]) * R_STATIC_MODEL_CENTER_SCALE;
+        worldModel->entity.lightingOrigin[axis] =
+            (instance->mins[axis] + instance->maxs[axis]) *
+            R_STATIC_MODEL_CENTER_SCALE;
     }
 
     for (int32_t component = 0; component < 3; ++component) {
-        float color = tr.identityLight * instance->lightingPrecalc[component] * R_STATIC_MODEL_COLOR_SCALE;
+        float color = tr.identityLight * instance->lightingPrecalc[component] *
+                      R_STATIC_MODEL_COLOR_SCALE;
         if (color > R_STATIC_MODEL_COLOR_SCALE) {
             color = R_STATIC_MODEL_COLOR_SCALE;
         } else if (color < 0.0f) {
             color = 0.0f;
         }
-        worldModel->entity.shaderRGBA[component] = (uint8_t)(int32_t)color;
+        worldModel->entity.shaderRGBA[component] =
+            (uint8_t)(int32_t)color;
     }
     worldModel->entity.shaderRGBA[3] = UINT8_MAX;
 
@@ -345,9 +419,12 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
     }
     worldModel->viewCount = 0;
 
-    R_FilterStaticModelIntoCells_r(tr.world, tr.world->nodes, worldModel, worldModel->mins, worldModel->maxs);
-    worldModel->lightCount = R_GetStaticLightContributions(worldModel->entity.lightingOrigin, worldModel->contributions,
-                                                           &worldModel->diffuseSunContribution, worldModel->lights);
+    R_FilterStaticModelIntoCells_r(
+        tr.world, tr.world->nodes, worldModel,
+        worldModel->mins, worldModel->maxs);
+    worldModel->lightCount = R_GetStaticLightContributions(
+        worldModel->entity.lightingOrigin, worldModel->contributions,
+        &worldModel->diffuseSunContribution, worldModel->lights);
 }
 
 /* Source: CoDUOMP.exe 0x00519b70..0x00519d16.
@@ -358,13 +435,17 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
  * instance is then installed and released from the renderer zone. */
 void R_FinishLoadingStaticModels(void)
 {
-    for (int32_t modelIndex = 0; modelIndex < tr.registeredStaticModelCount; ++modelIndex) {
-        renderer_registered_static_model_t *registration = tr.registeredStaticModels[modelIndex];
+    for (int32_t modelIndex = 0;
+         modelIndex < tr.registeredStaticModelCount; ++modelIndex) {
+        renderer_registered_static_model_t *registration =
+            tr.registeredStaticModels[modelIndex];
 
         if (registration->lods[0] != NULL)
             continue;
 
-        const int16_t modelHandle = (int16_t)RE_RegisterModel(va("xmodel/%s", registration->name), R_STATIC_MODEL_SHADER_USAGE);
+        const int16_t modelHandle = (int16_t)RE_RegisterModel(
+            va("xmodel/%s", registration->name),
+            R_STATIC_MODEL_SHADER_USAGE);
         DObjModel model = {0};
         DObj obj;
 
@@ -373,7 +454,8 @@ void R_FinishLoadingStaticModels(void)
         model.modelIndex = modelHandle;
         DObjCreate(&model, 1, NULL, &obj, 0);
 
-        dobj_eval_storage_t *storage = ri.Hunk_AllocateTempMemory((size_t)DObjGetAllocSkelSize(&obj));
+        dobj_eval_storage_t *storage = ri.Hunk_AllocateTempMemory(
+            (size_t)DObjGetAllocSkelSize(&obj));
         DObjCreateSkel(&obj, storage);
 
         uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
@@ -384,7 +466,8 @@ void R_FinishLoadingStaticModels(void)
         ri.Hunk_FreeTempMemory(storage);
     }
 
-    renderer_static_model_instance_t *instance = rendererStaticModelInstances;
+    renderer_static_model_instance_t *instance =
+        rendererStaticModelInstances;
     while (instance != NULL) {
         renderer_static_model_instance_t *next = instance->next;
         R_AddStaticModelToWorld(instance);
@@ -400,22 +483,30 @@ void R_FinishLoadingStaticModels(void)
  * registry/LOD/surface traversal, the requirement that both ARB buffer names
  * exist, the independent index/vertex flag bits, and the single upload used
  * for each selected buffer in the full refresh path. */
-void R_RefreshStaticModels_ARB(renderer_vbo_refresh_components_t refreshComponents)
+void R_RefreshStaticModels_ARB(
+    renderer_vbo_refresh_components_t refreshComponents)
 {
-    for (int32_t modelIndex = 0; modelIndex < tr.registeredStaticModelCount; ++modelIndex) {
-        renderer_registered_static_model_t *registration = tr.registeredStaticModels[modelIndex];
+    for (int32_t modelIndex = 0;
+         modelIndex < tr.registeredStaticModelCount; ++modelIndex) {
+        renderer_registered_static_model_t *registration =
+            tr.registeredStaticModels[modelIndex];
 
-        for (int32_t lodIndex = 0; lodIndex < registration->lodCount; ++lodIndex) {
+        for (int32_t lodIndex = 0;
+             lodIndex < registration->lodCount; ++lodIndex) {
             renderer_static_model_lod_t *lod = registration->lods[lodIndex];
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < lod->surfaceCount; ++surfaceIndex) {
-                renderer_static_model_surface_t *surface = &lod->surfaces[surfaceIndex];
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < lod->surfaceCount; ++surfaceIndex) {
+                renderer_static_model_surface_t *surface =
+                    &lod->surfaces[surfaceIndex];
 
-                if (surface->optimized.vertexBuffer == 0 || surface->backend.arb.indexBuffer == 0) {
+                if (surface->optimized.vertexBuffer == 0 ||
+                    surface->backend.arb.indexBuffer == 0) {
                     continue;
                 }
 
-                R_RefreshStaticModelSurface_ARB(surface, refreshComponents, qfalse);
+                R_RefreshStaticModelSurface_ARB(
+                    surface, refreshComponents, qfalse);
             }
         }
     }
@@ -431,11 +522,14 @@ void R_RefreshStaticModels_ARB(renderer_vbo_refresh_components_t refreshComponen
  * Windows addresses the independent static-model cursor at
  * 0x04887b08/0x04887b0c/0x04887b10; the XModel cursor is the preceding three
  * words at 0x04887afc/0x04887b00/0x04887b04. */
-void R_IncrementalRefreshStaticModels_ARB(renderer_vbo_refresh_components_t refreshComponents)
+void R_IncrementalRefreshStaticModels_ARB(
+    renderer_vbo_refresh_components_t refreshComponents)
 {
-    const int32_t initialModelIndex = tr.staticModelRefreshModelIndex;
+    const int32_t initialModelIndex =
+        tr.staticModelRefreshModelIndex;
 
-    if (tr.registeredStaticModelCount == 0 || rendererStaticModelInstances != NULL) {
+    if (tr.registeredStaticModelCount == 0 ||
+        rendererStaticModelInstances != NULL) {
         return;
     }
 
@@ -443,34 +537,42 @@ void R_IncrementalRefreshStaticModels_ARB(renderer_vbo_refresh_components_t refr
     do {
         ++tr.staticModelRefreshSurfaceIndex;
 
-        renderer_registered_static_model_t *registration = tr.registeredStaticModels[tr.staticModelRefreshModelIndex];
+        renderer_registered_static_model_t *registration =
+            tr.registeredStaticModels[
+                tr.staticModelRefreshModelIndex];
         if (registration->model == NULL)
             return;
 
-        renderer_static_model_lod_t *lod = registration->lods[tr.staticModelRefreshLodIndex];
+        renderer_static_model_lod_t *lod = registration->lods[
+            tr.staticModelRefreshLodIndex];
         if (tr.staticModelRefreshSurfaceIndex >= lod->surfaceCount) {
             tr.staticModelRefreshSurfaceIndex = 0;
             ++tr.staticModelRefreshLodIndex;
 
-            if (tr.staticModelRefreshLodIndex >= registration->lodCount) {
+            if (tr.staticModelRefreshLodIndex >=
+                registration->lodCount) {
                 tr.staticModelRefreshLodIndex = 0;
                 ++tr.staticModelRefreshModelIndex;
 
-                if (tr.staticModelRefreshModelIndex >= tr.registeredStaticModelCount) {
+                if (tr.staticModelRefreshModelIndex >=
+                    tr.registeredStaticModelCount) {
                     tr.staticModelRefreshModelIndex = 0;
                 }
 
-                if (tr.staticModelRefreshModelIndex == initialModelIndex) {
+                if (tr.staticModelRefreshModelIndex ==
+                    initialModelIndex) {
                     return;
                 }
             }
 
-            registration = tr.registeredStaticModels[tr.staticModelRefreshModelIndex];
+            registration = tr.registeredStaticModels[
+                tr.staticModelRefreshModelIndex];
             lod = registration->lods[tr.staticModelRefreshLodIndex];
         }
 
         surface = &lod->surfaces[tr.staticModelRefreshSurfaceIndex];
-    } while (surface->optimized.vertexBuffer == 0 || surface->backend.arb.indexBuffer == 0);
+    } while (surface->optimized.vertexBuffer == 0 ||
+             surface->backend.arb.indexBuffer == 0);
 
     R_RefreshStaticModelSurface_ARB(surface, refreshComponents, qtrue);
 }
@@ -482,7 +584,8 @@ void R_IncrementalRefreshStaticModels_ARB(renderer_vbo_refresh_components_t refr
  * here; persistent registrations and world records belong to the hunk. */
 void R_ShutdownStaticModels(void)
 {
-    renderer_static_model_instance_t *instance = rendererStaticModelInstances;
+    renderer_static_model_instance_t *instance =
+        rendererStaticModelInstances;
     while (instance != NULL) {
         renderer_static_model_instance_t *next = instance->next;
         ri.Z_Free(instance);

@@ -48,11 +48,11 @@
 void CG_ResetPlayerEntity(entityState_t *renderEntity)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t clientNum = coduo_int32_from_bits(renderEntity->clientNumBits);
+    const int32_t clientNum =
+        coduo_int32_from_bits(renderEntity->clientNumBits);
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_ResetPlayerEntity: invalid client number %i",
+                  "\x15" "CG_ResetPlayerEntity: invalid client number %i",
                   clientNum);
         return;
     }
@@ -63,19 +63,23 @@ void CG_ResetPlayerEntity(entityState_t *renderEntity)
         XAnimTree *animTree = state->animTree;   /* [ESI+0x4c4] on i386 */
 
         /* trap(0x8a, handle, rootAnim16, 0) — clear the root subtree's goal weights. */
-        cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS, (intptr_t)animTree, (int32_t)bgs.rootAnimHandle.animIndex, 0);
+        cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS, (intptr_t)animTree,
+                      (int32_t)bgs.rootAnimHandle.animIndex, 0);
 
         /* trap(0x90, handle, torsoBone16, 0, 0, 1.0f, 0, 0). */
-        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)animTree, (int32_t)bgs.resolvedTorsoAnimHandle.animIndex, 0, 0,
-                      CG_TRAP_ARG_ONE_F, 0, 0);
+        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)animTree,
+                      (int32_t)bgs.resolvedTorsoAnimHandle.animIndex,
+                      0, 0, CG_TRAP_ARG_ONE_F, 0, 0);
 
         /* trap(0x90, handle, legsBone16, 1.0f, 0, 1.0f, 0, 0). */
-        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)animTree, (int32_t)bgs.resolvedLegsAnimHandle.animIndex,
+        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)animTree,
+                      (int32_t)bgs.resolvedLegsAnimHandle.animIndex,
                       CG_TRAP_ARG_ONE_F, 0, CG_TRAP_ARG_ONE_F, 0, 0);
 
         /* trap(0x90, handle, turningBone16, 0, 0, 1.0f, 0, 0). */
-        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)animTree, (int32_t)bgs.resolvedTurningAnimHandle.animIndex, 0, 0,
-                      CG_TRAP_ARG_ONE_F, 0, 0);
+        cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)animTree,
+                      (int32_t)bgs.resolvedTurningAnimHandle.animIndex,
+                      0, 0, CG_TRAP_ARG_ONE_F, 0, 0);
 
         /* 0x30034967 reset the legs swing block (0x380..0x3b0, one 0x30-byte block via
          * REP STOSD ECX=0xc), then seed legsYawAngle from the current view yaw. */
@@ -86,13 +90,15 @@ void CG_ResetPlayerEntity(entityState_t *renderEntity)
          * yaw/lean angles: torsoYawAngle from view yaw, leanAngle from view pitch. */
         memset(&state->torsoYawAngle, 0, 0x30);
         state->torsoYawAngle = state->viewYaw;  /* [ESI+0x3b0] = [ESI+0x3ec] */
-        state->leanAngle = state->viewPitch;/* [ESI+0x3b8] = [ESI+0x3e8] */
+        state->leanAngle     = state->viewPitch;/* [ESI+0x3b8] = [ESI+0x3e8] */
         /* torsoYawActive/leanActive land in the just-memset block (explicit 0 stores at
          * 0x300349b4/0x300349c0 re-write what REP STOSD already cleared). */
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (cg_debugposition_vmCvar.integer != 0) {
-        Com_PrintMessage("%i ResetPlayerEntity yaw=%f\n", (int32_t)renderEntity->numberBits, (double)state->torsoYawAngle);
+        Com_PrintMessage("%i ResetPlayerEntity yaw=%f\n",
+                         (int32_t)renderEntity->numberBits,
+                         (double)state->torsoYawAngle);
     }
 }

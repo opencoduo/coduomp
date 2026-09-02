@@ -2,13 +2,16 @@
 
 #include <stddef.h>
 
-#define AST_MEMBER_SIZE(member_) (offsetof(scr_ast_node_t, payload) + sizeof(((scr_ast_node_t *)0)->payload.member_))
+#define AST_MEMBER_SIZE(member_) \
+    (offsetof(scr_ast_node_t, payload) + \
+     sizeof(((scr_ast_node_t *)0)->payload.member_))
 
 /* NOT_FROM_ORIGINAL_SOURCE: native-width allocation and common kind store for
  * the original fixed-word parser constructors. Each public constructor below
  * selects a typed payload before assigning fields, so 32-bit source positions
  * and opcodes do not become pointer-width slots on 64-bit hosts. */
-static scr_ast_node_t *coduomp_script_ast_allocate(scr_ast_kind_t kind, size_t size)
+static scr_ast_node_t *coduomp_script_ast_allocate(scr_ast_kind_t kind,
+                                                    size_t size)
 {
     scr_ast_node_t *node = coduomp_script_parse_allocate(size);
     node->kind = kind;
@@ -19,7 +22,7 @@ static scr_ast_node_t *coduomp_script_ast_allocate(scr_ast_kind_t kind, size_t s
  * Same-module Mac identity: node1_. The retained Windows body is a bare RET:
  * all parser uses are inlined, and their proved action is the dword identity
  * expressed here. */
-uint32_t(node1_)(uint32_t word)
+uint32_t (node1_)(uint32_t word)
 {
     return word;
 }
@@ -27,7 +30,7 @@ uint32_t(node1_)(uint32_t word)
 /* Source: CoDUOMP.exe 0x00481c70..0x00481c70.
  * Same-module Mac identity: node_pos. Its inlined parser uses prove the
  * identical source-position dword operation. */
-uint32_t(node_pos)(uint32_t word)
+uint32_t (node_pos)(uint32_t word)
 {
     return word;
 }
@@ -54,7 +57,8 @@ scr_ast_node_t *node1(uintptr_t word0, uintptr_t word1)
         node->payload.child.node = (scr_ast_node_t *)word1;
         break;
     default:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(sourceOnlyStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(sourceOnlyStatement));
         node->payload.sourceOnlyStatement.sourcePos = (uint32_t)word1;
         break;
     }
@@ -98,7 +102,8 @@ scr_ast_node_t *node2(uintptr_t word0, uintptr_t word1, uintptr_t word2)
         node->payload.namedCall.sourcePos = (uint32_t)word2;
         break;
     case SCR_AST_KIND_EXPRESSION_LIST:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(expressionList));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(expressionList));
         node->payload.expressionList.list = (scr_ast_list_t *)word1;
         node->payload.expressionList.sourcePos = (uint32_t)word2;
         break;
@@ -109,23 +114,28 @@ scr_ast_node_t *node2(uintptr_t word0, uintptr_t word1, uintptr_t word2)
         break;
     case SCR_AST_KIND_INC_STATEMENT:
     case SCR_AST_KIND_DEC_STATEMENT:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(incDecStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(incDecStatement));
         node->payload.incDecStatement.refNode = (scr_ast_node_t *)word1;
         node->payload.incDecStatement.sourcePos = (uint32_t)word2;
         break;
     case SCR_AST_KIND_STATEMENT_BLOCK:
     case SCR_AST_KIND_DEVELOPER_STATEMENT_BLOCK:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(developerStatementBlock));
-        node->payload.developerStatementBlock.block = (scr_ast_statement_block_t *)word1;
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(developerStatementBlock));
+        node->payload.developerStatementBlock.block =
+            (scr_ast_statement_block_t *)word1;
         node->payload.developerStatementBlock.sourcePos = (uint32_t)word2;
         break;
     case SCR_AST_KIND_CASE_STATEMENT:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(caseStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(caseStatement));
         node->payload.caseStatement.valueNode = (scr_ast_node_t *)word1;
         node->payload.caseStatement.sourcePos = (uint32_t)word2;
         break;
     case SCR_AST_KIND_USING_ANIMTREE:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(usingAnimTree));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(usingAnimTree));
         node->payload.usingAnimTree.nameHandle = (uint32_t)word1;
         node->payload.usingAnimTree.sourcePos = (uint32_t)word2;
         break;
@@ -150,18 +160,21 @@ void *node2_(uintptr_t word0, uintptr_t word1)
 
 #if UINTPTR_MAX > UINT32_MAX
     if (word0 <= UINT16_MAX) {
-        scr_ast_string_entry_t *entry = coduomp_script_parse_allocate(sizeof(*entry));
+        scr_ast_string_entry_t *entry =
+            coduomp_script_parse_allocate(sizeof(*entry));
         entry->stringHandle = (uint32_t)word0;
         entry->sourcePos = (uint32_t)word1;
         pair = entry;
     } else {
-        scr_ast_expression_entry_t *entry = coduomp_script_parse_allocate(sizeof(*entry));
+        scr_ast_expression_entry_t *entry =
+            coduomp_script_parse_allocate(sizeof(*entry));
         entry->node = (scr_ast_node_t *)word0;
         entry->sourcePos = (uint32_t)word1;
         pair = entry;
 #else
     {
-        scr_ast_string_entry_t *entry = coduomp_script_parse_allocate(sizeof(*entry));
+        scr_ast_string_entry_t *entry =
+            coduomp_script_parse_allocate(sizeof(*entry));
         entry->stringHandle = (uint32_t)word0;
         entry->sourcePos = (uint32_t)word1;
         pair = entry;
@@ -174,22 +187,27 @@ void *node2_(uintptr_t word0, uintptr_t word1)
 /* NOT_FROM_ORIGINAL_SOURCE: typed rule-1 use of the original pair
  * constructor. The compiler consumes the second word as scriptRoot.entries;
  * the first word is the grammar-provided root kind. */
-scr_ast_node_t *coduomp_script_ast_new_script_root(uintptr_t kind, uintptr_t entries)
+scr_ast_node_t *coduomp_script_ast_new_script_root(uintptr_t kind,
+                                                   uintptr_t entries)
 {
-    scr_ast_node_t *root = coduomp_script_ast_allocate((scr_ast_kind_t)kind, AST_MEMBER_SIZE(scriptRoot));
-    root->payload.scriptRoot.entries = (scr_ast_script_entry_block_t *)entries;
+    scr_ast_node_t *root = coduomp_script_ast_allocate(
+        (scr_ast_kind_t)kind, AST_MEMBER_SIZE(scriptRoot));
+    root->payload.scriptRoot.entries =
+        (scr_ast_script_entry_block_t *)entries;
     return root;
 }
 
 /* Source: CoDUOMP.exe 0x00481e10..0x00481e77. */
-scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3)
+scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3)
 {
     scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
 
     switch (kind) {
     case SCR_AST_KIND_SCRIPT_FUNCTION_REF:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(scriptFunctionRef));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(scriptFunctionRef));
         node->payload.scriptFunctionRef.filenameHandle = (uint32_t)word1;
         node->payload.scriptFunctionRef.nameHandle = (uint32_t)word2;
         node->payload.scriptFunctionRef.sourcePos = (uint32_t)word3;
@@ -201,19 +219,22 @@ scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr
         node->payload.call.methodSourcePos = (uint32_t)word3;
         break;
     case SCR_AST_KIND_FUNCTION_CALL_VALUE:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(functionCallValue));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(functionCallValue));
         node->payload.functionCallValue.callee = (scr_ast_node_t *)word1;
         node->payload.functionCallValue.args = (scr_ast_list_t *)word2;
         node->payload.functionCallValue.callSourcePos = (uint32_t)word3;
         break;
     case SCR_AST_KIND_ASSIGNMENT_STATEMENT:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(assignmentStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(assignmentStatement));
         node->payload.assignmentStatement.refNode = (scr_ast_node_t *)word1;
         node->payload.assignmentStatement.valueNode = (scr_ast_node_t *)word2;
         node->payload.assignmentStatement.sourcePos = (uint32_t)word3;
         break;
     case SCR_AST_KIND_WAIT_STATEMENT:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(waitStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(waitStatement));
         node->payload.waitStatement.timeNode = (scr_ast_node_t *)word1;
         node->payload.waitStatement.timeSourcePos = (uint32_t)word2;
         node->payload.waitStatement.opcodeSourcePos = (uint32_t)word3;
@@ -225,7 +246,8 @@ scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr
         node->payload.ifStatement.sourcePos = (uint32_t)word3;
         break;
     default:
-        node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(switchStatement));
+        node = coduomp_script_ast_allocate(
+            kind, AST_MEMBER_SIZE(switchStatement));
         node->payload.switchStatement.valueNode = (scr_ast_node_t *)word1;
         node->payload.switchStatement.bodyNode = (scr_ast_node_t *)word2;
         node->payload.switchStatement.sourcePos = (uint32_t)word3;
@@ -240,7 +262,8 @@ scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr
  * this unused overload. */
 uintptr_t *node3_(uintptr_t word0, uintptr_t word1, uintptr_t word2)
 {
-    uintptr_t *record = coduomp_script_parse_allocate(3 * sizeof(record[0]));
+    uintptr_t *record =
+        coduomp_script_parse_allocate(3 * sizeof(record[0]));
 
     record[0] = word0;
     record[1] = word1;
@@ -249,7 +272,8 @@ uintptr_t *node3_(uintptr_t word0, uintptr_t word1, uintptr_t word2)
 }
 
 /* Source: CoDUOMP.exe 0x00481ef0..0x00481f5e. */
-scr_ast_node_t *node4(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3, uintptr_t word4)
+scr_ast_node_t *node4(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3, uintptr_t word4)
 {
     scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;
@@ -309,7 +333,8 @@ scr_ast_node_t *node4(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr
         node = coduomp_script_ast_allocate(kind, AST_MEMBER_SIZE(functionDefinition));
         node->payload.functionDefinition.nameHandle = (uint32_t)word1;
         node->payload.functionDefinition.parameters = (scr_ast_list_t *)word2;
-        node->payload.functionDefinition.body = (scr_ast_statement_block_t *)word3;
+        node->payload.functionDefinition.body =
+            (scr_ast_statement_block_t *)word3;
         node->payload.functionDefinition.sourcePos = (uint32_t)word4;
         break;
     case SCR_AST_KIND_ENDON_STATEMENT:
@@ -333,9 +358,11 @@ scr_ast_node_t *node4(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr
 /* Source: CoDUOMP.exe 0x00481f60..0x00481fc7.
  * Four-word counterpart to node3_. The Windows linker kept
  * this unused out-of-line body even though all live parser uses were inlined. */
-uintptr_t *node4_(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3)
+uintptr_t *node4_(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                  uintptr_t word3)
 {
-    uintptr_t *record = coduomp_script_parse_allocate(4 * sizeof(record[0]));
+    uintptr_t *record =
+        coduomp_script_parse_allocate(4 * sizeof(record[0]));
 
     record[0] = word0;
     record[1] = word1;
@@ -345,7 +372,8 @@ uintptr_t *node4_(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t w
 }
 
 /* Source: CoDUOMP.exe 0x00481fd0..0x00482045. */
-scr_ast_node_t *node5(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3, uintptr_t word4, uintptr_t word5)
+scr_ast_node_t *node5(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3, uintptr_t word4, uintptr_t word5)
 {
     scr_ast_kind_t kind = (scr_ast_kind_t)word0;
     scr_ast_node_t *node;

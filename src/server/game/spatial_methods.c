@@ -14,7 +14,8 @@
 
 qboolean trap_DObjExists(gentity_t *ent);
 void trap_DObjDumpInfo(gentity_t *ent);
-int G_DObjGetWorldTagMatrix(gentity_t *ent, const char *tagName, DObjSkelMat *matrix);
+int G_DObjGetWorldTagMatrix(gentity_t *ent, const char *tagName,
+                            DObjSkelMat *matrix);
 const char *G_ModelName(int modelIndex);
 
 #define SCRIPT_STANCE_FLAG_PRONE UINT32_C(1)
@@ -42,7 +43,8 @@ static DObjSkelMat *ScriptSpatial_GetTagMatrix(uint32_t scriptObject)
     gentity_t *ent;
     level_locals_t *lvl = &level;
 
-    if ((uint32_t)lvl->cachedTagMatrixObject == scriptObject && lvl->cachedTagMatrixTime == level.time) {
+    if ((uint32_t)lvl->cachedTagMatrixObject == scriptObject &&
+        lvl->cachedTagMatrixTime == level.time) {
         tagName = Scr_GetConstString(0);
         if (lvl->cachedTagName == tagName) {
             return &lvl->cachedTagMatrix;
@@ -51,13 +53,17 @@ static DObjSkelMat *ScriptSpatial_GetTagMatrix(uint32_t scriptObject)
 
     ent = script_object_to_gentity(scriptObject);
     if (!trap_DObjExists(ent)) {
-        Scr_ObjectError(va("entity has no model defined (classname '%s')", SL_ConvertToString(ent->scriptClassname)));
+        Scr_ObjectError(va("entity has no model defined (classname '%s')",
+                           SL_ConvertToString(ent->scriptClassname)));
     }
 
-    if (G_DObjGetWorldTagMatrix(ent, Scr_GetString(0), &lvl->cachedTagMatrix) == 0) {
+    if (G_DObjGetWorldTagMatrix(ent, Scr_GetString(0),
+                                &lvl->cachedTagMatrix) == 0) {
         trap_DObjDumpInfo(ent);
         Scr_ParamError(
-            0, va("tag '%s' does not exist in model '%s' (or any attached submodels)", Scr_GetString(0), G_ModelName(ent->modelIndex)));
+            0,
+            va("tag '%s' does not exist in model '%s' (or any attached submodels)",
+               Scr_GetString(0), G_ModelName(ent->modelIndex)));
     }
 
     lvl->cachedTagMatrixObject = (int32_t)scriptObject;

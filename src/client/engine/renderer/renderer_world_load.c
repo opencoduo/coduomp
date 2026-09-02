@@ -27,15 +27,14 @@ enum {
 /* NOT_FROM_ORIGINAL_SOURCE: validate the complete renderer-owned triangle-
  * soup record graph before R_BuildLightmapMergability or R_LoadSurfaces turns
  * any disk field into an array index or pointer. */
-static qboolean coduomp_renderer_validate_triangle_soup_records(const lump_t *surfaceLump, const lump_t *vertexLump,
-                                                                const lump_t *indexLump)
+static qboolean coduomp_renderer_validate_triangle_soup_records(
+    const lump_t *surfaceLump, const lump_t *vertexLump,
+    const lump_t *indexLump)
 {
-    if ((uint32_t)surfaceLump->filelen % sizeof(dsurface_t) != 0U || (uint32_t)vertexLump->filelen % sizeof(drawVert_t) != 0U ||
+    if ((uint32_t)surfaceLump->filelen % sizeof(dsurface_t) != 0U ||
+        (uint32_t)vertexLump->filelen % sizeof(drawVert_t) != 0U ||
         (uint32_t)indexLump->filelen % sizeof(int16_t) != 0U) {
-        ri.Error(ERR_DROP,
-                 "\x15"
-                 "LoadMap: funny triangle soup lump size in %s",
-                 rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15" "LoadMap: funny triangle soup lump size in %s", rendererWorldData.name);
         return qfalse;
     }
 
@@ -47,28 +46,27 @@ static qboolean coduomp_renderer_validate_triangle_soup_records(const lump_t *su
 
     for (uint32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
         const dsurface_t *const surface = &surfaces[surfaceIndex];
-        if (surface->shaderNum < 0 || surface->shaderNum >= rendererWorldData.numShaders || surface->lightmapNum < -1 ||
-            surface->lightmapNum >= R_MAX_LIGHTMAPS || surface->firstVert < 0 || (uint32_t)surface->firstVert > vertexCount ||
-            (uint32_t)surface->numVerts > vertexCount - (uint32_t)surface->firstVert || surface->firstIndex > indexCount ||
-            (uint32_t)surface->numIndexes > indexCount - surface->firstIndex || surface->numVerts == 0 || surface->numIndexes == 0 ||
+        if (surface->shaderNum < 0 || surface->shaderNum >= rendererWorldData.numShaders ||
+            surface->lightmapNum < -1 || surface->lightmapNum >= R_MAX_LIGHTMAPS ||
+            surface->firstVert < 0 || (uint32_t)surface->firstVert > vertexCount ||
+            (uint32_t)surface->numVerts > vertexCount - (uint32_t)surface->firstVert ||
+            surface->firstIndex > indexCount ||
+            (uint32_t)surface->numIndexes > indexCount - surface->firstIndex ||
+            surface->numVerts == 0 || surface->numIndexes == 0 ||
             surface->numIndexes % R_TRIANGLE_SOUP_INDEX_COUNT != 0) {
-            ri.Error(ERR_DROP,
-                     "\x15"
-                     "LoadMap: invalid triangle soup surface %u",
-                     surfaceIndex);
+            ri.Error(ERR_DROP, "\x15" "LoadMap: invalid triangle soup surface %u", surfaceIndex);
             return qfalse;
         }
 
         const int16_t *const surfaceIndices = &indices[surface->firstIndex];
         if (surfaceIndices[0] != 0) {
-            ri.Error(ERR_DROP, "\x15"
-                               "First index is not 0 in triangle soup surface");
+            ri.Error(ERR_DROP, "\x15" "First index is not 0 in triangle soup surface");
             return qfalse;
         }
         for (uint32_t index = 0; index < surface->numIndexes; ++index) {
-            if (surfaceIndices[index] < 0 || (uint32_t)surfaceIndices[index] >= (uint32_t)surface->numVerts) {
-                ri.Error(ERR_DROP, "\x15"
-                                   "Bad index in triangle soup surface");
+            if (surfaceIndices[index] < 0 ||
+                (uint32_t)surfaceIndices[index] >= (uint32_t)surface->numVerts) {
+                ri.Error(ERR_DROP, "\x15" "Bad index in triangle soup surface");
                 return qfalse;
             }
         }
@@ -77,11 +75,16 @@ static qboolean coduomp_renderer_validate_triangle_soup_records(const lump_t *su
 }
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(dheader_t) == 4, "renderer BSP header alignment changed");
-_Static_assert(offsetof(dheader_t, ident) == 0, "renderer BSP header ident moved");
-_Static_assert(offsetof(dheader_t, version) == 4, "renderer BSP header version moved");
-_Static_assert(offsetof(dheader_t, lumps) == 8, "renderer BSP header lump table moved");
-_Static_assert(sizeof(dheader_t) == 272, "renderer BSP header layout changed");
+_Static_assert(_Alignof(dheader_t) == 4,
+               "renderer BSP header alignment changed");
+_Static_assert(offsetof(dheader_t, ident) == 0,
+               "renderer BSP header ident moved");
+_Static_assert(offsetof(dheader_t, version) == 4,
+               "renderer BSP header version moved");
+_Static_assert(offsetof(dheader_t, lumps) == 8,
+               "renderer BSP header lump table moved");
+_Static_assert(sizeof(dheader_t) == 272,
+               "renderer BSP header layout changed");
 #endif
 
 /* R_LoadEntities stores each parsed entity as fixed key/value records. Record
@@ -93,23 +96,37 @@ typedef struct renderer_entity_pair_s {
 } renderer_entity_pair_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_entity_pair_t) == 1, "renderer entity-pair alignment changed");
-_Static_assert(offsetof(renderer_entity_pair_t, key) == 0, "renderer entity-pair key moved");
-_Static_assert(offsetof(renderer_entity_pair_t, value) == 2048, "renderer entity-pair value moved");
-_Static_assert(sizeof(renderer_entity_pair_t) == 4096, "renderer entity-pair layout changed");
+_Static_assert(_Alignof(renderer_entity_pair_t) == 1,
+               "renderer entity-pair alignment changed");
+_Static_assert(offsetof(renderer_entity_pair_t, key) == 0,
+               "renderer entity-pair key moved");
+_Static_assert(offsetof(renderer_entity_pair_t, value) == 2048,
+               "renderer entity-pair value moved");
+_Static_assert(sizeof(renderer_entity_pair_t) == 4096,
+               "renderer entity-pair layout changed");
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(dmodel_t) == 4, "renderer disk-submodel alignment changed");
-_Static_assert(sizeof(dmodel_t) == 0x30, "renderer disk-submodel layout changed");
-_Static_assert(offsetof(dmodel_t, mins) == 0x00, "renderer disk-submodel minimum bounds moved");
-_Static_assert(offsetof(dmodel_t, maxs) == 0x0c, "renderer disk-submodel maximum bounds moved");
-_Static_assert(offsetof(dmodel_t, firstSurface) == 0x18, "renderer disk-submodel first surface moved");
-_Static_assert(offsetof(dmodel_t, numSurfaces) == 0x1c, "renderer disk-submodel surface count moved");
-_Static_assert(offsetof(dmodel_t, firstLeafSurface) == 0x20, "renderer disk-submodel first leaf surface moved");
-_Static_assert(offsetof(dmodel_t, numLeafSurfaces) == 0x24, "renderer disk-submodel leaf-surface count moved");
-_Static_assert(offsetof(dmodel_t, firstLeafBrush) == 0x28, "renderer disk-submodel first leaf brush moved");
-_Static_assert(offsetof(dmodel_t, numLeafBrushes) == 0x2c, "renderer disk-submodel leaf-brush count moved");
+_Static_assert(_Alignof(dmodel_t) == 4,
+               "renderer disk-submodel alignment changed");
+_Static_assert(sizeof(dmodel_t) == 0x30,
+               "renderer disk-submodel layout changed");
+_Static_assert(offsetof(dmodel_t, mins) == 0x00,
+               "renderer disk-submodel minimum bounds moved");
+_Static_assert(offsetof(dmodel_t, maxs) == 0x0c,
+               "renderer disk-submodel maximum bounds moved");
+_Static_assert(offsetof(dmodel_t, firstSurface) == 0x18,
+               "renderer disk-submodel first surface moved");
+_Static_assert(offsetof(dmodel_t, numSurfaces) == 0x1c,
+               "renderer disk-submodel surface count moved");
+_Static_assert(offsetof(dmodel_t, firstLeafSurface) == 0x20,
+               "renderer disk-submodel first leaf surface moved");
+_Static_assert(offsetof(dmodel_t, numLeafSurfaces) == 0x24,
+               "renderer disk-submodel leaf-surface count moved");
+_Static_assert(offsetof(dmodel_t, firstLeafBrush) == 0x28,
+               "renderer disk-submodel first leaf brush moved");
+_Static_assert(offsetof(dmodel_t, numLeafBrushes) == 0x2c,
+               "renderer disk-submodel leaf-brush count moved");
 #endif
 
 /* The node and leaf lumps both use 36-byte records. R_LoadNodesAndLeafs
@@ -119,23 +136,42 @@ _Static_assert(offsetof(dmodel_t, numLeafBrushes) == 0x2c, "renderer disk-submod
  * The collision loader consumes the other five leaf fields from this same disk
  * record. */
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(dnode_t) == 4, "renderer disk-node alignment changed");
-_Static_assert(offsetof(dnode_t, planeNum) == 0x00, "renderer disk-node plane index moved");
-_Static_assert(offsetof(dnode_t, children) == 0x04, "renderer disk-node children moved");
-_Static_assert(offsetof(dnode_t, mins) == 0x0c, "renderer disk-node minimum bounds moved");
-_Static_assert(offsetof(dnode_t, maxs) == 0x18, "renderer disk-node maximum bounds moved");
-_Static_assert(sizeof(dnode_t) == 0x24, "renderer disk-node layout changed");
-_Static_assert(_Alignof(dleaf_t) == 4, "renderer disk-leaf alignment changed");
-_Static_assert(sizeof(dleaf_t) == 0x24, "renderer disk-leaf layout changed");
-_Static_assert(offsetof(dleaf_t, cluster) == 0x00, "renderer disk-leaf cluster moved");
-_Static_assert(offsetof(dleaf_t, area) == 0x04, "renderer disk-leaf area moved");
-_Static_assert(offsetof(dleaf_t, firstLeafTerrainPatch) == 0x08, "renderer disk-leaf first terrain patch moved");
-_Static_assert(offsetof(dleaf_t, numLeafTerrainPatches) == 0x0c, "renderer disk-leaf terrain-patch count moved");
-_Static_assert(offsetof(dleaf_t, firstLeafBrush) == 0x10, "renderer disk-leaf first brush moved");
-_Static_assert(offsetof(dleaf_t, numLeafBrushes) == 0x14, "renderer disk-leaf brush count moved");
-_Static_assert(offsetof(dleaf_t, cellNum) == 0x18, "renderer disk-leaf cell offset moved");
-_Static_assert(offsetof(dleaf_t, firstLightIndex) == 0x1c, "renderer disk-leaf first light moved");
-_Static_assert(offsetof(dleaf_t, lightCount) == 0x20, "renderer disk-leaf light count moved");
+_Static_assert(_Alignof(dnode_t) == 4,
+               "renderer disk-node alignment changed");
+_Static_assert(offsetof(dnode_t, planeNum) == 0x00,
+               "renderer disk-node plane index moved");
+_Static_assert(offsetof(dnode_t, children) == 0x04,
+               "renderer disk-node children moved");
+_Static_assert(offsetof(dnode_t, mins) == 0x0c,
+               "renderer disk-node minimum bounds moved");
+_Static_assert(offsetof(dnode_t, maxs) == 0x18,
+               "renderer disk-node maximum bounds moved");
+_Static_assert(sizeof(dnode_t) == 0x24,
+               "renderer disk-node layout changed");
+_Static_assert(_Alignof(dleaf_t) == 4,
+               "renderer disk-leaf alignment changed");
+_Static_assert(sizeof(dleaf_t) == 0x24,
+               "renderer disk-leaf layout changed");
+_Static_assert(offsetof(dleaf_t, cluster) == 0x00,
+               "renderer disk-leaf cluster moved");
+_Static_assert(offsetof(dleaf_t, area) == 0x04,
+               "renderer disk-leaf area moved");
+_Static_assert(offsetof(dleaf_t,
+                        firstLeafTerrainPatch) == 0x08,
+               "renderer disk-leaf first terrain patch moved");
+_Static_assert(offsetof(dleaf_t,
+                        numLeafTerrainPatches) == 0x0c,
+               "renderer disk-leaf terrain-patch count moved");
+_Static_assert(offsetof(dleaf_t, firstLeafBrush) == 0x10,
+               "renderer disk-leaf first brush moved");
+_Static_assert(offsetof(dleaf_t, numLeafBrushes) == 0x14,
+               "renderer disk-leaf brush count moved");
+_Static_assert(offsetof(dleaf_t, cellNum) == 0x18,
+               "renderer disk-leaf cell offset moved");
+_Static_assert(offsetof(dleaf_t, firstLightIndex) == 0x1c,
+               "renderer disk-leaf first light moved");
+_Static_assert(offsetof(dleaf_t, lightCount) == 0x20,
+               "renderer disk-leaf light count moved");
 #endif
 
 /* Serialized type-selected light payload. The shorter variants deliberately
@@ -163,21 +199,37 @@ typedef union renderer_disk_light_parameters_u {
 } renderer_disk_light_parameters_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_disk_light_parameters_t) == 4, "renderer disk-light parameter alignment changed");
-_Static_assert(sizeof(renderer_disk_light_parameters_t) == 0x10, "renderer disk-light parameter allocation changed");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, linearPoint.linearAttenuation) == 0x00, "renderer disk linear attenuation moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, customPoint.quadraticAttenuation) == 0x00,
+_Static_assert(_Alignof(renderer_disk_light_parameters_t) == 4,
+               "renderer disk-light parameter alignment changed");
+_Static_assert(sizeof(renderer_disk_light_parameters_t) == 0x10,
+               "renderer disk-light parameter allocation changed");
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        linearPoint.linearAttenuation) == 0x00,
+               "renderer disk linear attenuation moved");
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        customPoint.quadraticAttenuation) == 0x00,
                "renderer disk custom-point quadratic attenuation moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, customPoint.constantAttenuation) == 0x04,
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        customPoint.constantAttenuation) == 0x04,
                "renderer disk custom-point constant attenuation moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, spot.cutoffCos) == 0x00, "renderer disk spot cutoff moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, spot.exponent) == 0x04, "renderer disk spot exponent moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, customSpot.quadraticAttenuation) == 0x00,
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        spot.cutoffCos) == 0x00,
+               "renderer disk spot cutoff moved");
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        spot.exponent) == 0x04,
+               "renderer disk spot exponent moved");
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        customSpot.quadraticAttenuation) == 0x00,
                "renderer disk custom-spot quadratic attenuation moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, customSpot.constantAttenuation) == 0x04,
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        customSpot.constantAttenuation) == 0x04,
                "renderer disk custom-spot constant attenuation moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, customSpot.cutoffCos) == 0x08, "renderer disk custom-spot cutoff moved");
-_Static_assert(offsetof(renderer_disk_light_parameters_t, customSpot.exponent) == 0x0c, "renderer disk custom-spot exponent moved");
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        customSpot.cutoffCos) == 0x08,
+               "renderer disk custom-spot cutoff moved");
+_Static_assert(offsetof(renderer_disk_light_parameters_t,
+                        customSpot.exponent) == 0x0c,
+               "renderer disk custom-spot exponent moved");
 #endif
 
 /* Serialized 72-byte static-light record. Windows and both shipped PPC
@@ -193,16 +245,28 @@ typedef struct renderer_disk_light_s {
 } renderer_disk_light_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_disk_light_t) == 4, "renderer disk-light alignment changed");
-_Static_assert(sizeof(renderer_disk_light_t) == 0x48, "renderer disk-light layout changed");
-_Static_assert(offsetof(renderer_disk_light_t, type) == 0x00, "renderer disk-light type moved");
-_Static_assert(offsetof(renderer_disk_light_t, color) == 0x04, "renderer disk-light color moved");
-_Static_assert(offsetof(renderer_disk_light_t, position) == 0x10, "renderer disk-light position moved");
-_Static_assert(offsetof(renderer_disk_light_t, direction) == 0x1c, "renderer disk-light direction moved");
-_Static_assert(offsetof(renderer_disk_light_t, parameters) == 0x28, "renderer disk-light parameters moved");
-_Static_assert(offsetof(renderer_disk_light_t, parameters.customSpot.cutoffCos) == 0x30, "renderer disk-light custom-spot cutoff moved");
-_Static_assert(offsetof(renderer_disk_light_t, parameters.customSpot.exponent) == 0x34, "renderer disk-light custom-spot exponent moved");
-_Static_assert(offsetof(renderer_disk_light_t, unconsumed038) == 0x38, "renderer disk-light unconsumed tail moved");
+_Static_assert(_Alignof(renderer_disk_light_t) == 4,
+               "renderer disk-light alignment changed");
+_Static_assert(sizeof(renderer_disk_light_t) == 0x48,
+               "renderer disk-light layout changed");
+_Static_assert(offsetof(renderer_disk_light_t, type) == 0x00,
+               "renderer disk-light type moved");
+_Static_assert(offsetof(renderer_disk_light_t, color) == 0x04,
+               "renderer disk-light color moved");
+_Static_assert(offsetof(renderer_disk_light_t, position) == 0x10,
+               "renderer disk-light position moved");
+_Static_assert(offsetof(renderer_disk_light_t, direction) == 0x1c,
+               "renderer disk-light direction moved");
+_Static_assert(offsetof(renderer_disk_light_t, parameters) == 0x28,
+               "renderer disk-light parameters moved");
+_Static_assert(offsetof(renderer_disk_light_t,
+                        parameters.customSpot.cutoffCos) == 0x30,
+               "renderer disk-light custom-spot cutoff moved");
+_Static_assert(offsetof(renderer_disk_light_t,
+                        parameters.customSpot.exponent) == 0x34,
+               "renderer disk-light custom-spot exponent moved");
+_Static_assert(offsetof(renderer_disk_light_t, unconsumed038) == 0x38,
+               "renderer disk-light unconsumed tail moved");
 #endif
 
 /* Source: CoDUOMP.exe 0x0050bdf0..0x0050be5e and same-module Mac symbol
@@ -211,22 +275,32 @@ _Static_assert(offsetof(renderer_disk_light_t, unconsumed038) == 0x38, "renderer
  * Windows LTCG retains this out-of-line body and also inlines it into
  * R_LoadSurfaces at 0x0050c0e6..0x0050c151. Both builds prove the six source
  * arguments and the same disk-record field accesses. */
-void ParseTriangleSoup(const dsurface_t *diskSurface, renderer_shader_surface_build_t *build,
-                       const renderer_lightmap_placement_t *lightmapPlacements, const drawVert_t *vertices, msurface_t *worldSurface,
-                       const int16_t *indices)
+void ParseTriangleSoup(
+    const dsurface_t *diskSurface,
+    renderer_shader_surface_build_t *build,
+    const renderer_lightmap_placement_t *lightmapPlacements,
+    const drawVert_t *vertices,
+    msurface_t *worldSurface,
+    const int16_t *indices)
 {
     worldSurface->shader = build->shader;
-    if (r_singleShader->integer != 0 && (worldSurface->shader->flags & SHADER_FLAG_SKY) == 0) {
+    if (r_singleShader->integer != 0 &&
+        (worldSurface->shader->flags & SHADER_FLAG_SKY) == 0) {
         worldSurface->shader = tr.defaultShader;
     }
 
     const renderer_lightmap_placement_t *lightmapPlacement = NULL;
     if (diskSurface->lightmapNum >= 0) {
-        lightmapPlacement = &lightmapPlacements[diskSurface->lightmapNum];
+        lightmapPlacement =
+            &lightmapPlacements[diskSurface->lightmapNum];
     }
 
-    (void)BuildOptimizedSurface(worldSurface, build, lightmapPlacement, diskSurface->numVerts, &vertices[diskSurface->firstVert],
-                                diskSurface->numIndexes, &indices[diskSurface->firstIndex]);
+    (void)BuildOptimizedSurface(
+        worldSurface, build, lightmapPlacement,
+        diskSurface->numVerts,
+        &vertices[diskSurface->firstVert],
+        diskSurface->numIndexes,
+        &indices[diskSurface->firstIndex]);
 }
 
 /* Source: CoDUOMP.exe 0x0050be60..0x0050c240.
@@ -235,58 +309,86 @@ void ParseTriangleSoup(const dsurface_t *diskSurface, renderer_shader_surface_bu
  * Sys_PumpEvents boundary: exact same-module Mac symbol R_LoadSurfaces.
  * Windows LTCG inlines ShaderForShaderNum, ParseTriangleSoup, and the Win32
  * body of Sys_PumpEvents; this source restores those original calls. */
-void R_LoadSurfaces(const lump_t *surfaceLump, const lump_t *vertexLump, const lump_t *indexLump,
-                    const renderer_lightmap_placement_t *lightmapPlacements)
+void R_LoadSurfaces(
+    const lump_t *surfaceLump,
+    const lump_t *vertexLump,
+    const lump_t *indexLump,
+    const renderer_lightmap_placement_t *lightmapPlacements)
 {
-    const dsurface_t *diskSurfaces = (const dsurface_t *)(rendererWorldFileBase + surfaceLump->fileofs);
-    if (((uint32_t)surfaceLump->filelen % sizeof(*diskSurfaces)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    const dsurface_t *diskSurfaces =
+        (const dsurface_t *)(
+            rendererWorldFileBase + surfaceLump->fileofs);
+    if (((uint32_t)surfaceLump->filelen %
+         sizeof(*diskSurfaces)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const drawVert_t *vertices = (const drawVert_t *)(rendererWorldFileBase + vertexLump->fileofs);
+    const drawVert_t *vertices =
+        (const drawVert_t *)(
+            rendererWorldFileBase + vertexLump->fileofs);
     if (((uint32_t)vertexLump->filelen % sizeof(*vertices)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int16_t *indices = (const int16_t *)(rendererWorldFileBase + indexLump->fileofs);
+    const int16_t *indices = (const int16_t *)(
+        rendererWorldFileBase + indexLump->fileofs);
     if (((uint32_t)indexLump->filelen % sizeof(*indices)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t surfaceCount = (int32_t)((uint32_t)surfaceLump->filelen / sizeof(*diskSurfaces));
+    const int32_t surfaceCount =
+        (int32_t)((uint32_t)surfaceLump->filelen /
+                  sizeof(*diskSurfaces));
     rendererWorldData.numsurfaces = surfaceCount;
     if (surfaceCount == 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: no surfaces in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: no surfaces in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.surfaces = ri.Hunk_Alloc((size_t)surfaceCount * sizeof(*rendererWorldData.surfaces));
+    rendererWorldData.surfaces =
+        ri.Hunk_Alloc((size_t)surfaceCount *
+                      sizeof(*rendererWorldData.surfaces));
 
-    int32_t *surfaceGroupMarkers = ri.Hunk_AllocateTempMemory((size_t)surfaceCount * sizeof(*surfaceGroupMarkers));
-    memset(surfaceGroupMarkers, 0, (size_t)surfaceCount * sizeof(*surfaceGroupMarkers));
+    int32_t *surfaceGroupMarkers =
+        ri.Hunk_AllocateTempMemory(
+            (size_t)surfaceCount * sizeof(*surfaceGroupMarkers));
+    memset(surfaceGroupMarkers, 0,
+           (size_t)surfaceCount * sizeof(*surfaceGroupMarkers));
 
     int32_t groupMarker = 0;
     shader_t *skyShader = NULL;
-    for (int32_t shaderIndex = 0; shaderIndex < rendererWorldData.numShaders; ++shaderIndex) {
-        for (int32_t lightmapIndex = -1; lightmapIndex < tr.lightmapCount; ++lightmapIndex) {
+    for (int32_t shaderIndex = 0;
+         shaderIndex < rendererWorldData.numShaders;
+         ++shaderIndex) {
+        for (int32_t lightmapIndex = -1;
+             lightmapIndex < tr.lightmapCount;
+             ++lightmapIndex) {
             ++groupMarker;
             int32_t selectedSurfaceCount = 0;
             int32_t totalVertexCount = 0;
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
-                const dsurface_t *diskSurface = &diskSurfaces[surfaceIndex];
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < surfaceCount;
+                 ++surfaceIndex) {
+                const dsurface_t *diskSurface =
+                    &diskSurfaces[surfaceIndex];
                 if (diskSurface->shaderNum != shaderIndex)
                     continue;
 
                 int32_t mappedLightmapIndex = diskSurface->lightmapNum;
                 if (mappedLightmapIndex >= 0) {
-                    mappedLightmapIndex = lightmapPlacements[mappedLightmapIndex].atlasIndex;
+                    mappedLightmapIndex =
+                        lightmapPlacements[mappedLightmapIndex].atlasIndex;
                 }
                 if (mappedLightmapIndex != lightmapIndex)
                     continue;
 
-                if ((uint32_t)totalVertexCount > UINT16_MAX - (uint32_t)diskSurface->numVerts) {
-                    ri.Error(ERR_DROP, "\x15"
-                                       "surface group has more than 65,535 vertices");
+                if ((uint32_t)totalVertexCount >
+                    UINT16_MAX - (uint32_t)diskSurface->numVerts) {
+                    ri.Error(ERR_DROP, "\x15" "surface group has more than 65,535 vertices");
                     ri.Hunk_FreeTempMemory(surfaceGroupMarkers);
                     return;
                 }
@@ -298,31 +400,48 @@ void R_LoadSurfaces(const lump_t *surfaceLump, const lump_t *vertexLump, const l
             if (totalVertexCount == 0)
                 continue;
 
-            shader_t *shader = ShaderForShaderNum(shaderIndex, lightmapIndex, R_WORLD_SURFACE_SHADER_USAGE);
+            shader_t *shader = ShaderForShaderNum(
+                shaderIndex, lightmapIndex,
+                R_WORLD_SURFACE_SHADER_USAGE);
             renderer_shader_surface_build_t build;
             BeginShaderSurfaces(shader, totalVertexCount, &build);
 
-            const qboolean isSky = shader->optimalStageIteratorFunc == RB_StageIteratorSky;
+            const qboolean isSky =
+                shader->optimalStageIteratorFunc == RB_StageIteratorSky;
             if (isSky != qfalse) {
                 if (lightmapIndex != -1) {
-                    ri.Error(ERR_DROP, "\x15sky shader '%s' has a lightmap\n", shader->name);
+                    ri.Error(ERR_DROP,
+                             "\x15sky shader '%s' has a lightmap\n",
+                             shader->name);
                 }
                 if (skyShader != NULL) {
-                    ri.Error(ERR_DROP, "\x15more than one sky shader: at least '%s' and '%s'\n", shader->name, skyShader->name);
+                    ri.Error(
+                        ERR_DROP,
+                        "\x15more than one sky shader: at least '%s' and '%s'\n",
+                        shader->name, skyShader->name);
                 }
                 skyShader = shader;
-                rendererWorldData.skySurfaces = ri.Hunk_Alloc((size_t)selectedSurfaceCount * sizeof(*rendererWorldData.skySurfaces));
+                rendererWorldData.skySurfaces =
+                    ri.Hunk_Alloc(
+                        (size_t)selectedSurfaceCount *
+                        sizeof(*rendererWorldData.skySurfaces));
             }
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < surfaceCount;
+                 ++surfaceIndex) {
                 if (surfaceGroupMarkers[surfaceIndex] != groupMarker)
                     continue;
 
-                msurface_t *worldSurface = &rendererWorldData.surfaces[surfaceIndex];
-                ParseTriangleSoup(&diskSurfaces[surfaceIndex], &build, lightmapPlacements, vertices, worldSurface, indices);
+                msurface_t *worldSurface =
+                    &rendererWorldData.surfaces[surfaceIndex];
+                ParseTriangleSoup(
+                    &diskSurfaces[surfaceIndex], &build,
+                    lightmapPlacements, vertices, worldSurface, indices);
 
                 if (isSky != qfalse) {
-                    rendererWorldData.skySurfaces[rendererWorldData.skySurfaceCount++] = worldSurface;
+                    rendererWorldData.skySurfaces[
+                        rendererWorldData.skySurfaceCount++] = worldSurface;
                 }
             }
         }
@@ -340,35 +459,50 @@ void R_LoadSurfaces(const lump_t *surfaceLump, const lump_t *vertexLump, const l
  * source creates one renderer model named "*n" for every BSP brush model. */
 void R_LoadSubmodels(const lump_t *submodelLump)
 {
-    const dmodel_t *diskSubmodels = (const dmodel_t *)(rendererWorldFileBase + submodelLump->fileofs);
-    if (((uint32_t)submodelLump->filelen % sizeof(*diskSubmodels)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    const dmodel_t *diskSubmodels =
+        (const dmodel_t *)(
+            rendererWorldFileBase + submodelLump->fileofs);
+    if (((uint32_t)submodelLump->filelen %
+         sizeof(*diskSubmodels)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t submodelCount = (int32_t)((uint32_t)submodelLump->filelen / sizeof(*diskSubmodels));
+    const int32_t submodelCount =
+        (int32_t)((uint32_t)submodelLump->filelen /
+                  sizeof(*diskSubmodels));
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (submodelCount > R_MAX_MODELS - tr.modelCount) {
-        ri.Error(ERR_DROP,
-                 "\x15"
-                 "LoadMap: too many submodels in %s",
+        ri.Error(ERR_DROP, "\x15" "LoadMap: too many submodels in %s",
                  rendererWorldData.name);
         return;
     }
 
-    rendererWorldData.bmodels = ri.Hunk_Alloc((size_t)submodelCount * sizeof(*rendererWorldData.bmodels));
+    rendererWorldData.bmodels =
+        ri.Hunk_Alloc((size_t)submodelCount *
+                      sizeof(*rendererWorldData.bmodels));
 
-    for (int32_t submodelIndex = 0; submodelIndex < submodelCount; ++submodelIndex) {
-        bmodel_t *bmodel = &rendererWorldData.bmodels[submodelIndex];
+    for (int32_t submodelIndex = 0;
+         submodelIndex < submodelCount;
+         ++submodelIndex) {
+        bmodel_t *bmodel =
+            &rendererWorldData.bmodels[submodelIndex];
         model_t *model = R_AllocModel();
         model->type = MODEL_BMODEL;
         model->bmodel = bmodel;
-        Com_sprintf(model->name, sizeof(model->name), "*%d", submodelIndex);
+        Com_sprintf(model->name, sizeof(model->name), "*%d",
+                    submodelIndex);
 
-        memcpy(bmodel->bounds[0], diskSubmodels[submodelIndex].mins, sizeof(bmodel->bounds[0]));
-        memcpy(bmodel->bounds[1], diskSubmodels[submodelIndex].maxs, sizeof(bmodel->bounds[1]));
-        bmodel->firstSurface = &rendererWorldData.surfaces[diskSubmodels[submodelIndex].firstSurface];
-        bmodel->numSurfaces = diskSubmodels[submodelIndex].numSurfaces;
+        memcpy(bmodel->bounds[0], diskSubmodels[submodelIndex].mins,
+               sizeof(bmodel->bounds[0]));
+        memcpy(bmodel->bounds[1], diskSubmodels[submodelIndex].maxs,
+               sizeof(bmodel->bounds[1]));
+        bmodel->firstSurface =
+            &rendererWorldData.surfaces[
+                diskSubmodels[submodelIndex].firstSurface];
+        bmodel->numSurfaces =
+            diskSubmodels[submodelIndex].numSurfaces;
     }
 }
 
@@ -377,7 +511,8 @@ void R_LoadSubmodels(const lump_t *submodelLump)
  * Name and ordinary node/parent signature: exact same-module Mac symbol
  * R_SetParentAndCell. An internal node inherits a concrete cell only when
  * both child subtrees resolve to the same cell. */
-void R_SetParentAndCell(mnode_t *node, mnode_t *parent)
+void R_SetParentAndCell(mnode_t *node,
+                        mnode_t *parent)
 {
     node->parent = parent;
     if (node->contents != R_WORLD_NODE_NO_CELL)
@@ -386,7 +521,8 @@ void R_SetParentAndCell(mnode_t *node, mnode_t *parent)
     R_SetParentAndCell(node->data.node.children[0], node);
     R_SetParentAndCell(node->data.node.children[1], node);
     node->cellIndex = R_WORLD_NODE_INTERNAL;
-    if (node->data.node.children[0]->cellIndex == node->data.node.children[1]->cellIndex) {
+    if (node->data.node.children[0]->cellIndex ==
+        node->data.node.children[1]->cellIndex) {
         node->cellIndex = node->data.node.children[0]->cellIndex;
     }
 }
@@ -395,31 +531,47 @@ void R_SetParentAndCell(mnode_t *node, mnode_t *parent)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050c3c0_0050c594.mcode.
  * Name, two-lump signature, disk strides, and R_SetParentAndCell boundary:
  * exact same-module Mac symbol R_LoadNodesAndLeafs. */
-void R_LoadNodesAndLeafs(const lump_t *nodeLump, const lump_t *leafLump)
+void R_LoadNodesAndLeafs(const lump_t *nodeLump,
+                         const lump_t *leafLump)
 {
-    const dnode_t *diskNodes = (const dnode_t *)(rendererWorldFileBase + nodeLump->fileofs);
-    const dleaf_t *diskLeafs = (const dleaf_t *)(rendererWorldFileBase + leafLump->fileofs);
-    if (((uint32_t)nodeLump->filelen % sizeof(*diskNodes)) != 0 || ((uint32_t)leafLump->filelen % sizeof(*diskLeafs)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    const dnode_t *diskNodes =
+        (const dnode_t *)(
+            rendererWorldFileBase + nodeLump->fileofs);
+    const dleaf_t *diskLeafs =
+        (const dleaf_t *)(
+            rendererWorldFileBase + leafLump->fileofs);
+    if (((uint32_t)nodeLump->filelen % sizeof(*diskNodes)) != 0 ||
+        ((uint32_t)leafLump->filelen % sizeof(*diskLeafs)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t nodeCount = (int32_t)((uint32_t)nodeLump->filelen / sizeof(*diskNodes));
-    const int32_t leafCount = (int32_t)((uint32_t)leafLump->filelen / sizeof(*diskLeafs));
+    const int32_t nodeCount =
+        (int32_t)((uint32_t)nodeLump->filelen / sizeof(*diskNodes));
+    const int32_t leafCount =
+        (int32_t)((uint32_t)leafLump->filelen / sizeof(*diskLeafs));
     rendererWorldData.numDecisionNodes = nodeCount;
     rendererWorldData.numnodes = nodeCount + leafCount;
-    rendererWorldData.nodes = ri.Hunk_Alloc((size_t)rendererWorldData.numnodes * sizeof(*rendererWorldData.nodes));
+    rendererWorldData.nodes =
+        ri.Hunk_Alloc((size_t)rendererWorldData.numnodes *
+                      sizeof(*rendererWorldData.nodes));
 
     for (int32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex) {
-        mnode_t *node = &rendererWorldData.nodes[nodeIndex];
+        mnode_t *node =
+            &rendererWorldData.nodes[nodeIndex];
         node->contents = R_WORLD_NODE_NO_CELL;
-        node->data.node.plane = ri.CM_PlaneForIndex(diskNodes[nodeIndex].planeNum);
+        node->data.node.plane =
+            ri.CM_PlaneForIndex(diskNodes[nodeIndex].planeNum);
 
         for (int32_t childIndex = 0; childIndex < 2; ++childIndex) {
-            const int32_t diskChild = diskNodes[nodeIndex].children[childIndex];
+            const int32_t diskChild =
+                diskNodes[nodeIndex].children[childIndex];
             if (diskChild >= 0) {
-                node->data.node.children[childIndex] = &rendererWorldData.nodes[diskChild];
+                node->data.node.children[childIndex] =
+                    &rendererWorldData.nodes[diskChild];
             } else {
-                node->data.node.children[childIndex] = &rendererWorldData.nodes[nodeCount - diskChild - 1];
+                node->data.node.children[childIndex] =
+                    &rendererWorldData.nodes[nodeCount - diskChild - 1];
             }
         }
     }
@@ -430,20 +582,27 @@ void R_LoadNodesAndLeafs(const lump_t *nodeLump, const lump_t *leafLump)
         leaf->cellIndex = diskLeafs[leafIndex].cellNum;
         leaf->data.leaf.cluster = diskLeafs[leafIndex].cluster;
         if (leaf->data.leaf.cluster >= rendererWorldData.numClusters) {
-            rendererWorldData.numClusters = leaf->data.leaf.cluster + 1;
+            rendererWorldData.numClusters =
+                leaf->data.leaf.cluster + 1;
         }
 
         leaf->data.leaf.hasSunLight = qfalse;
-        leaf->data.leaf.firstLightIndex = diskLeafs[leafIndex].firstLightIndex;
+        leaf->data.leaf.firstLightIndex =
+            diskLeafs[leafIndex].firstLightIndex;
         leaf->data.leaf.lightCount = diskLeafs[leafIndex].lightCount;
-        if (leaf->data.leaf.lightCount != 0 && rendererWorldData.lightIndexes[leaf->data.leaf.firstLightIndex] < 0) {
+        if (leaf->data.leaf.lightCount != 0 &&
+            rendererWorldData.lightIndexes[
+                leaf->data.leaf.firstLightIndex] < 0) {
             leaf->data.leaf.hasSunLight = qtrue;
             ++leaf->data.leaf.firstLightIndex;
             --leaf->data.leaf.lightCount;
         }
 
-        if (leaf->data.leaf.lightCount > R_MAX_INDEXED_LIGHTS_PER_LEAF) {
-            ri.Error(ERR_DROP, "\x15R_LoadNodesAndLeafs: too many lights in leaf. The map needs to be recompiled.");
+        if (leaf->data.leaf.lightCount >
+            R_MAX_INDEXED_LIGHTS_PER_LEAF) {
+            ri.Error(
+                ERR_DROP,
+                "\x15R_LoadNodesAndLeafs: too many lights in leaf. The map needs to be recompiled.");
         }
     }
 
@@ -458,13 +617,21 @@ void R_LoadNodesAndLeafs(const lump_t *nodeLump, const lump_t *leafLump)
  * little-endian target. */
 void R_LoadShaders(const lump_t *shaderLump)
 {
-    const dshader_t *diskShaders = (const dshader_t *)(rendererWorldFileBase + shaderLump->fileofs);
-    if (((uint32_t)shaderLump->filelen % sizeof(*diskShaders)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    const dshader_t *diskShaders =
+        (const dshader_t *)(
+            rendererWorldFileBase + shaderLump->fileofs);
+    if (((uint32_t)shaderLump->filelen %
+         sizeof(*diskShaders)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.numShaders = (int32_t)((uint32_t)shaderLump->filelen / sizeof(*diskShaders));
-    const size_t shaderBytes = (size_t)rendererWorldData.numShaders * sizeof(*rendererWorldData.shaders);
+    rendererWorldData.numShaders =
+        (int32_t)((uint32_t)shaderLump->filelen /
+                  sizeof(*diskShaders));
+    const size_t shaderBytes =
+        (size_t)rendererWorldData.numShaders *
+        sizeof(*rendererWorldData.shaders);
     rendererWorldData.shaders = ri.Hunk_Alloc(shaderBytes);
     memcpy(rendererWorldData.shaders, diskShaders, shaderBytes);
 }
@@ -482,24 +649,36 @@ void R_LoadLights(const lump_t *lightLump)
     const float localAmbientScale = 0.10000000149011612f;
     const float localDiffuseScale = 0.800000011920929f;
     const double radiansToDegrees = 57.29577791868205; /* 180 / pi */
-    const renderer_disk_light_t *diskLights = (const renderer_disk_light_t *)(rendererWorldFileBase + lightLump->fileofs);
+    const renderer_disk_light_t *diskLights =
+        (const renderer_disk_light_t *)(
+            rendererWorldFileBase + lightLump->fileofs);
 
     if (((uint32_t)lightLump->filelen % sizeof(*diskLights)) != 0) {
-        ri.Error(ERR_DROP, "\x15R_LoadLights: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15R_LoadLights: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.lightCount = (int32_t)((uint32_t)lightLump->filelen / sizeof(*diskLights));
-    rendererWorldData.lights = ri.Hunk_Alloc((size_t)rendererWorldData.lightCount * sizeof(*rendererWorldData.lights));
+    rendererWorldData.lightCount =
+        (int32_t)((uint32_t)lightLump->filelen / sizeof(*diskLights));
+    rendererWorldData.lights =
+        ri.Hunk_Alloc((size_t)rendererWorldData.lightCount *
+                      sizeof(*rendererWorldData.lights));
     rendererWorldData.sunLight = NULL;
 
-    for (int32_t lightIndex = 0; lightIndex < rendererWorldData.lightCount; ++lightIndex) {
+    for (int32_t lightIndex = 0;
+         lightIndex < rendererWorldData.lightCount;
+         ++lightIndex) {
         const renderer_disk_light_t *diskLight = &diskLights[lightIndex];
         renderer_light_t *light = &rendererWorldData.lights[lightIndex];
         vec3_t scaledColor;
 
         light->type = diskLight->type;
-        const long double scaledColor0Raw = (long double)tr.identityLight * (long double)diskLight->color[0];
-        const long double scaledColor2Raw = (long double)tr.identityLight * (long double)diskLight->color[2];
+        const long double scaledColor0Raw =
+            (long double)tr.identityLight *
+            (long double)diskLight->color[0];
+        const long double scaledColor2Raw =
+            (long double)tr.identityLight *
+            (long double)diskLight->color[2];
         scaledColor[0] = (float)scaledColor0Raw;
         scaledColor[1] = tr.identityLight * diskLight->color[1];
         scaledColor[2] = (float)scaledColor2Raw;
@@ -507,32 +686,50 @@ void R_LoadLights(const lump_t *lightLump)
         /* 0x0050c6a4..0x0050c6e3 keeps scaled color 0 live, stores color 1,
          * and stores color 2 without popping before the luminance dot. */
         const long double intensityRaw =
-            (scaledColor2Raw * (long double)luminanceBlue + (long double)scaledColor[1] * (long double)luminanceGreen) +
+            (scaledColor2Raw * (long double)luminanceBlue +
+             (long double)scaledColor[1] *
+                 (long double)luminanceGreen) +
             scaledColor0Raw * (long double)luminanceRed;
         light->intensity = (float)intensityRaw;
 
-        const long double inverseIntensityRaw = intensityRaw != 0.0L ? 1.0L / intensityRaw : intensityRaw;
-        light->color[0] = (float)(scaledColor0Raw * inverseIntensityRaw);
-        light->color[1] = (float)((long double)scaledColor[1] * inverseIntensityRaw);
-        light->color[2] = (float)(inverseIntensityRaw * (long double)scaledColor[2]);
+        const long double inverseIntensityRaw =
+            intensityRaw != 0.0L ? 1.0L / intensityRaw
+                                 : intensityRaw;
+        light->color[0] = (float)(
+            scaledColor0Raw * inverseIntensityRaw);
+        light->color[1] = (float)(
+            (long double)scaledColor[1] * inverseIntensityRaw);
+        light->color[2] = (float)(
+            inverseIntensityRaw * (long double)scaledColor[2]);
 
         if (light->type == R_LIGHT_TYPE_SUN) {
             memset(light->ambient, 0, sizeof(light->ambient));
-            memcpy(light->diffuse, rendererWorldData.sunDiffuseColor, sizeof(light->diffuse));
-            light->intensity = light->diffuse[0] * luminanceRed + light->diffuse[1] * luminanceGreen + light->diffuse[2] * luminanceBlue;
+            memcpy(light->diffuse, rendererWorldData.sunDiffuseColor,
+                   sizeof(light->diffuse));
+            light->intensity =
+                light->diffuse[0] * luminanceRed +
+                light->diffuse[1] * luminanceGreen +
+                light->diffuse[2] * luminanceBlue;
             rendererWorldData.sunLight = light;
-            rendererWorldData.entitySunLightIntensity = rendererWorldData.entityAmbientScale[0] * luminanceRed +
-                                                        rendererWorldData.entityAmbientScale[1] * luminanceGreen +
-                                                        rendererWorldData.entityAmbientScale[2] * luminanceBlue;
+            rendererWorldData.entitySunLightIntensity =
+                rendererWorldData.entityAmbientScale[0] * luminanceRed +
+                rendererWorldData.entityAmbientScale[1] * luminanceGreen +
+                rendererWorldData.entityAmbientScale[2] * luminanceBlue;
         } else {
             /* The surviving scaled-color-0 register feeds both 0x0050c7a8
              * and 0x0050c7d3; components 1/2 reload their float spills. */
-            light->ambient[0] = (float)(scaledColor0Raw * (long double)localAmbientScale);
-            light->ambient[1] = scaledColor[1] * localAmbientScale;
-            light->ambient[2] = scaledColor[2] * localAmbientScale;
-            light->diffuse[0] = (float)(scaledColor0Raw * (long double)localDiffuseScale);
-            light->diffuse[1] = scaledColor[1] * localDiffuseScale;
-            light->diffuse[2] = scaledColor[2] * localDiffuseScale;
+            light->ambient[0] = (float)(
+                scaledColor0Raw * (long double)localAmbientScale);
+            light->ambient[1] =
+                scaledColor[1] * localAmbientScale;
+            light->ambient[2] =
+                scaledColor[2] * localAmbientScale;
+            light->diffuse[0] = (float)(
+                scaledColor0Raw * (long double)localDiffuseScale);
+            light->diffuse[1] =
+                scaledColor[1] * localDiffuseScale;
+            light->diffuse[2] =
+                scaledColor[2] * localDiffuseScale;
             light->ambient[3] = 1.0f;
             light->diffuse[3] = 1.0f;
         }
@@ -549,51 +746,70 @@ void R_LoadLights(const lump_t *lightLump)
 
         switch (light->type) {
         case R_LIGHT_TYPE_SUN:
-            memcpy(light->position, diskLight->direction, sizeof(diskLight->direction));
+            memcpy(light->position, diskLight->direction,
+                   sizeof(diskLight->direction));
             light->position[3] = 0.0f;
             light->constantAttenuation = 1.0f;
             break;
 
         case R_LIGHT_TYPE_POINT:
-            memcpy(light->position, diskLight->position, sizeof(diskLight->position));
+            memcpy(light->position, diskLight->position,
+                   sizeof(diskLight->position));
             light->position[3] = 1.0f;
             light->quadraticAttenuation = 1.0f;
             break;
 
         case R_LIGHT_TYPE_LINEAR_POINT:
-            memcpy(light->position, diskLight->position, sizeof(diskLight->position));
+            memcpy(light->position, diskLight->position,
+                   sizeof(diskLight->position));
             light->position[3] = 1.0f;
-            light->linearAttenuation = diskLight->parameters.linearPoint.linearAttenuation;
+            light->linearAttenuation =
+                diskLight->parameters.linearPoint.linearAttenuation;
             break;
 
         case R_LIGHT_TYPE_CUSTOM_POINT:
-            memcpy(light->position, diskLight->position, sizeof(diskLight->position));
+            memcpy(light->position, diskLight->position,
+                   sizeof(diskLight->position));
             light->position[3] = 1.0f;
-            light->quadraticAttenuation = diskLight->parameters.customPoint.quadraticAttenuation;
-            light->constantAttenuation = diskLight->parameters.customPoint.constantAttenuation;
+            light->quadraticAttenuation =
+                diskLight->parameters.customPoint.quadraticAttenuation;
+            light->constantAttenuation =
+                diskLight->parameters.customPoint.constantAttenuation;
             break;
 
         case R_LIGHT_TYPE_SPOT:
-            memcpy(light->position, diskLight->position, sizeof(diskLight->position));
+            memcpy(light->position, diskLight->position,
+                   sizeof(diskLight->position));
             light->position[3] = 1.0f;
             light->quadraticAttenuation = 1.0f;
             for (int32_t component = 0; component < 3; ++component) {
-                light->spotDirection[component] = -diskLight->direction[component];
+                light->spotDirection[component] =
+                    -diskLight->direction[component];
             }
-            light->spotCutoff = (float)(acos((double)diskLight->parameters.spot.cutoffCos) * radiansToDegrees);
-            light->spotExponent = (float)diskLight->parameters.spot.exponent;
+            light->spotCutoff = (float)(
+                acos((double)diskLight->parameters.spot.cutoffCos) *
+                radiansToDegrees);
+            light->spotExponent =
+                (float)diskLight->parameters.spot.exponent;
             break;
 
         case R_LIGHT_TYPE_CUSTOM_SPOT:
-            memcpy(light->position, diskLight->position, sizeof(diskLight->position));
+            memcpy(light->position, diskLight->position,
+                   sizeof(diskLight->position));
             light->position[3] = 1.0f;
-            light->quadraticAttenuation = diskLight->parameters.customSpot.quadraticAttenuation;
-            light->constantAttenuation = diskLight->parameters.customSpot.constantAttenuation;
+            light->quadraticAttenuation =
+                diskLight->parameters.customSpot.quadraticAttenuation;
+            light->constantAttenuation =
+                diskLight->parameters.customSpot.constantAttenuation;
             for (int32_t component = 0; component < 3; ++component) {
-                light->spotDirection[component] = -diskLight->direction[component];
+                light->spotDirection[component] =
+                    -diskLight->direction[component];
             }
-            light->spotCutoff = (float)(acos((double)diskLight->parameters.customSpot.cutoffCos) * radiansToDegrees);
-            light->spotExponent = (float)diskLight->parameters.customSpot.exponent;
+            light->spotCutoff = (float)(
+                acos((double)diskLight->parameters.customSpot.cutoffCos) *
+                radiansToDegrees);
+            light->spotExponent =
+                (float)diskLight->parameters.customSpot.exponent;
             break;
 
         case R_LIGHT_TYPE_COLOR_ONLY:
@@ -611,15 +827,24 @@ void R_LoadLights(const lump_t *lightLump)
  * performs the corresponding LittleShort conversion. */
 void R_LoadLightIndexes(const lump_t *lightIndexLump)
 {
-    const int16_t *diskLightIndexes = (const int16_t *)(rendererWorldFileBase + lightIndexLump->fileofs);
-    if (((uint32_t)lightIndexLump->filelen % sizeof(*diskLightIndexes)) != 0) {
-        ri.Error(ERR_DROP, "\x15R_LoadLightIndexes: funny lump size in %s", rendererWorldData.name);
+    const int16_t *diskLightIndexes = (const int16_t *)(
+        rendererWorldFileBase + lightIndexLump->fileofs);
+    if (((uint32_t)lightIndexLump->filelen %
+         sizeof(*diskLightIndexes)) != 0) {
+        ri.Error(ERR_DROP,
+                 "\x15R_LoadLightIndexes: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.lightIndexCount = (int32_t)((uint32_t)lightIndexLump->filelen / sizeof(*diskLightIndexes));
-    const size_t lightIndexBytes = (size_t)rendererWorldData.lightIndexCount * sizeof(*rendererWorldData.lightIndexes);
+    rendererWorldData.lightIndexCount =
+        (int32_t)((uint32_t)lightIndexLump->filelen /
+                  sizeof(*diskLightIndexes));
+    const size_t lightIndexBytes =
+        (size_t)rendererWorldData.lightIndexCount *
+        sizeof(*rendererWorldData.lightIndexes);
     rendererWorldData.lightIndexes = ri.Hunk_Alloc(lightIndexBytes);
-    memcpy(rendererWorldData.lightIndexes, diskLightIndexes, lightIndexBytes);
+    memcpy(rendererWorldData.lightIndexes, diskLightIndexes,
+           lightIndexBytes);
 }
 
 /* Source: CoDUOMP.exe 0x0050c9e0..0x0050ca14.
@@ -630,11 +855,16 @@ void R_LoadLightIndexes(const lump_t *lightIndexLump)
 void R_LoadLightVisCache(const lump_t *lightVisLump)
 {
     const renderer_light_vis_disk_entry_t *diskCache =
-        (const renderer_light_vis_disk_entry_t *)(rendererWorldFileBase + lightVisLump->fileofs);
+        (const renderer_light_vis_disk_entry_t *)(
+            rendererWorldFileBase + lightVisLump->fileofs);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (lightVisLump->filelen > 0 && R_InitLightVisCacheFromBuffer(diskCache, lightVisLump->filelen) == qfalse) {
-        ri.Error(ERR_DROP, "\x15R_LoadLightVisCache: funny lump size in %s", rendererWorldData.name);
+    if (lightVisLump->filelen > 0 &&
+        R_InitLightVisCacheFromBuffer(diskCache,
+                                      lightVisLump->filelen) == qfalse) {
+        ri.Error(ERR_DROP,
+                 "\x15R_LoadLightVisCache: funny lump size in %s",
+                 rendererWorldData.name);
     }
 }
 
@@ -642,7 +872,9 @@ void R_LoadLightVisCache(const lump_t *lightVisLump)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050ca20_0050ca71.mcode.
  * Name and lookup direction: exact same-module Mac symbol R_ValueForKey.
  * Windows proves the 4096-byte record stride and value offset 2048. */
-const char *R_ValueForKey(int32_t pairCount, const renderer_entity_pair_t *pairs, const char *key)
+const char *R_ValueForKey(int32_t pairCount,
+                          const renderer_entity_pair_t *pairs,
+                          const char *key)
 {
     for (int32_t pairIndex = 1; pairIndex < pairCount; ++pairIndex) {
         if (coduo_crt_stricmp(pairs[pairIndex].key, key) == 0)
@@ -656,7 +888,9 @@ const char *R_ValueForKey(int32_t pairCount, const renderer_entity_pair_t *pairs
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050ca80_0050ca9c.mcode.
  * Name and default-value behavior: exact same-module Mac symbol
  * R_FloatForKey. This was another missing Ghidra function boundary. */
-float R_FloatForKey(int32_t pairCount, const renderer_entity_pair_t *pairs, const char *key, float defaultValue)
+float R_FloatForKey(int32_t pairCount,
+                    const renderer_entity_pair_t *pairs,
+                    const char *key, float defaultValue)
 {
     const char *value = R_ValueForKey(pairCount, pairs, key);
     return value != NULL ? (float)atof(value) : defaultValue;
@@ -666,7 +900,10 @@ float R_FloatForKey(int32_t pairCount, const renderer_entity_pair_t *pairs, cons
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050caa0_0050cad5.mcode.
  * Name, boolean result, and default-text behavior: exact same-module Mac
  * symbol R_VectorForKey. This was another missing Ghidra boundary. */
-qboolean R_VectorForKey(int32_t pairCount, const renderer_entity_pair_t *pairs, const char *key, const char *defaultValue, vec3_t vector)
+qboolean R_VectorForKey(int32_t pairCount,
+                        const renderer_entity_pair_t *pairs,
+                        const char *key, const char *defaultValue,
+                        vec3_t vector)
 {
     const char *value = R_ValueForKey(pairCount, pairs, key);
     const qboolean found = value != NULL ? qtrue : qfalse;
@@ -683,26 +920,30 @@ qboolean R_VectorForKey(int32_t pairCount, const renderer_entity_pair_t *pairs, 
  * R_LoadMiscModel. Windows inlines portions of R_VectorForKey but proves the
  * same keys, defaults, nonzero scalar-angle gate, shadow-model exclusion,
  * and R_CreateStaticModel call. */
-void R_LoadMiscModel(int32_t pairCount, const renderer_entity_pair_t *pairs)
+void R_LoadMiscModel(int32_t pairCount,
+                     const renderer_entity_pair_t *pairs)
 {
     static const char defaultOrigin[] = "0 0 0";
     static const char defaultScale[] = "1 1 1";
     static const char shadowModelPrefix[] = "xmodel/shadow_";
-    enum {
-        R_SHADOW_MODEL_PREFIX_LENGTH = 14
-    };
+    enum { R_SHADOW_MODEL_PREFIX_LENGTH = 14 };
 
     vec3_t origin;
-    if (R_VectorForKey(pairCount, pairs, "origin", defaultOrigin, origin) == qfalse) {
-        ri.Error(ERR_DROP, "\x15R_LoadMiscModel: no origin specified\n");
+    if (R_VectorForKey(pairCount, pairs, "origin", defaultOrigin,
+                       origin) == qfalse) {
+        ri.Error(ERR_DROP,
+                 "\x15R_LoadMiscModel: no origin specified\n");
     }
 
     const char *model = R_ValueForKey(pairCount, pairs, "model");
     if (model == NULL) {
-        ri.Error(ERR_DROP, "\x15R_LoadMiscModel: no model specified in misc_model at (%.0f %.0f %.0f)\n", origin[0], origin[1], origin[2]);
+        ri.Error(ERR_DROP,
+                 "\x15R_LoadMiscModel: no model specified in misc_model at (%.0f %.0f %.0f)\n",
+                 origin[0], origin[1], origin[2]);
     }
 
-    if (coduo_crt_strnicmp(model, shadowModelPrefix, R_SHADOW_MODEL_PREFIX_LENGTH) == 0) {
+    if (coduo_crt_strnicmp(model, shadowModelPrefix,
+                             R_SHADOW_MODEL_PREFIX_LENGTH) == 0) {
         return;
     }
 
@@ -714,19 +955,23 @@ void R_LoadMiscModel(int32_t pairCount, const renderer_entity_pair_t *pairs)
         angles[1] = (float)scalarAngle;
         angles[2] = 0.0f;
     } else {
-        (void)R_VectorForKey(pairCount, pairs, "angles", defaultOrigin, angles);
+        (void)R_VectorForKey(pairCount, pairs, "angles", defaultOrigin,
+                             angles);
     }
 
     vec3_t scale;
-    if (R_VectorForKey(pairCount, pairs, "modelscale_vec", defaultScale, scale) == qfalse) {
-        const float uniformScale = R_FloatForKey(pairCount, pairs, "modelscale", 1.0f);
+    if (R_VectorForKey(pairCount, pairs, "modelscale_vec", defaultScale,
+                       scale) == qfalse) {
+        const float uniformScale =
+            R_FloatForKey(pairCount, pairs, "modelscale", 1.0f);
         scale[0] = uniformScale;
         scale[1] = uniformScale;
         scale[2] = uniformScale;
     }
 
     vec3_t lightingPrecalc;
-    (void)R_VectorForKey(pairCount, pairs, "lightingPrecalc", defaultScale, lightingPrecalc);
+    (void)R_VectorForKey(pairCount, pairs, "lightingPrecalc",
+                         defaultScale, lightingPrecalc);
     R_CreateStaticModel(model, origin, angles, scale, lightingPrecalc);
 }
 
@@ -735,44 +980,55 @@ void R_LoadMiscModel(int32_t pairCount, const renderer_entity_pair_t *pairs)
  * Name, entity keys, defaults, 512-record limit, and complete 32-byte output
  * layout: exact same-module Mac symbol R_LoadCorona plus Windows operand
  * widths and world-relative addresses. */
-void R_LoadCorona(int32_t pairCount, const renderer_entity_pair_t *pairs)
+void R_LoadCorona(int32_t pairCount,
+                  const renderer_entity_pair_t *pairs)
 {
     const float coronaScale = 25.5f;
     const float defaultZCutoff = -0.15000000596046448f;
     const float defaultZFadeOut = -0.25f;
 
     if (rendererWorldData.coronaCount >= R_MAX_MAP_CORONAS) {
-        ri.Error(ERR_DROP, va("\x15MAX_MAP_CORONAS(%i) exceeded", R_MAX_MAP_CORONAS));
+        ri.Error(
+            ERR_DROP,
+            va("\x15MAX_MAP_CORONAS(%i) exceeded", R_MAX_MAP_CORONAS));
     }
 
-    renderer_world_corona_t *corona = &rendererWorldData.coronas[rendererWorldData.coronaCount++];
-    corona->shader = R_FindShader("flareShader", -1, qtrue, R_CORONA_SHADER_USAGE);
+    renderer_world_corona_t *corona =
+        &rendererWorldData.coronas[rendererWorldData.coronaCount++];
+    corona->shader = R_FindShader("flareShader", -1, qtrue,
+                                  R_CORONA_SHADER_USAGE);
 
-    (void)R_VectorForKey(pairCount, pairs, "origin", "0 0 0", corona->origin);
+    (void)R_VectorForKey(pairCount, pairs, "origin", "0 0 0",
+                         corona->origin);
 
-    const char *scaleText = R_ValueForKey(pairCount, pairs, "scale");
-    const long double scaleRaw = scaleText != NULL ? (long double)atof(scaleText) : 1.0L;
+    const char *scaleText =
+        R_ValueForKey(pairCount, pairs, "scale");
+    const long double scaleRaw =
+        scaleText != NULL ? (long double)atof(scaleText) : 1.0L;
     const float scale = (float)scaleRaw;
     /* R_FloatForKey is inlined at 0x0050cd5f..0x0050cd93: atof's value is
      * stored as float but the positivity check consumes retained ST0.
      * TEST AH,0x41 followed by JP accepts the unordered NaN case. */
     if (scaleRaw <= 0.0L) {
-        ri.Error(ERR_DROP, "\x15"
-                           "corona scale must be > 0");
+        ri.Error(ERR_DROP, "\x15" "corona scale must be > 0");
     }
     corona->scale = scale * coronaScale;
-    corona->zCutoff = R_FloatForKey(pairCount, pairs, "zcutoff", defaultZCutoff);
-    corona->zFadeOut = R_FloatForKey(pairCount, pairs, "zfadeout", defaultZFadeOut);
+    corona->zCutoff =
+        R_FloatForKey(pairCount, pairs, "zcutoff", defaultZCutoff);
+    corona->zFadeOut =
+        R_FloatForKey(pairCount, pairs, "zfadeout", defaultZFadeOut);
 
     vec3_t color;
     (void)R_VectorForKey(pairCount, pairs, "dl_color", "1 1 1", color);
     for (int32_t component = 0; component < 3; ++component) {
-        long double scaled = (long double)color[component] * (long double)255.0f;
+        long double scaled =
+            (long double)color[component] * (long double)255.0f;
         if (scaled < 0.0L)
             scaled = 0.0L;
         else if (scaled > 255.0L)
             scaled = 255.0L;
-        corona->color[component] = (uint8_t)coduo_fp_to_i32_extended(scaled);
+        corona->color[component] = (uint8_t)
+            coduo_fp_to_i32_extended(scaled);
     }
     corona->color[3] = 255;
 }
@@ -784,12 +1040,16 @@ void R_LoadCorona(int32_t pairCount, const renderer_entity_pair_t *pairs)
  * classname dispatch, temporary 512-corona table, and final hunk copy. */
 void R_LoadEntities(const lump_t *entityLump)
 {
-    const float legacyAmbientScale = 0.01568627543747425f; /* 4 / 255 */
-    const char *diskEntityString = (const char *)(rendererWorldFileBase + entityLump->fileofs);
+    const float legacyAmbientScale =
+        0.01568627543747425f; /* 4 / 255 */
+    const char *diskEntityString = (const char *)(
+        rendererWorldFileBase + entityLump->fileofs);
 
-    rendererWorldData.entityString = ri.Hunk_Alloc((size_t)entityLump->filelen + 1u);
+    rendererWorldData.entityString =
+        ri.Hunk_Alloc((size_t)entityLump->filelen + 1u);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    memcpy(rendererWorldData.entityString, diskEntityString, (size_t)entityLump->filelen);
+    memcpy(rendererWorldData.entityString, diskEntityString,
+           (size_t)entityLump->filelen);
     rendererWorldData.entityString[entityLump->filelen] = '\0';
     rendererWorldData.entityParsePoint = rendererWorldData.entityString;
 
@@ -825,54 +1085,67 @@ void R_LoadEntities(const lump_t *entityLump)
             /* 0x0050d133 stores ambient as float while comparing retained
              * atof precision with the legacy-scale threshold. */
             if (ambientRaw > 2.0L) {
-                ri.Printf(R_PRINT_ALL,
-                          "^3WARNING: ambient too big, assuming it uses the old 0-255 scale instead of the proper 0-1 "
-                          "scale (value = '%s')\n",
-                          value);
+                ri.Printf(
+                    R_PRINT_ALL,
+                    "^3WARNING: ambient too big, assuming it uses the old 0-255 scale instead of the proper 0-1 scale (value = '%s')\n",
+                    value);
                 ambient *= legacyAmbientScale;
             }
         } else if (Q_stricmp(key, "_color") == 0) {
-            (void)sscanf(value, "%f %f %f", &entityAmbientColor[0], &entityAmbientColor[1], &entityAmbientColor[2]);
+            (void)sscanf(value, "%f %f %f", &entityAmbientColor[0],
+                         &entityAmbientColor[1], &entityAmbientColor[2]);
         } else if (Q_stricmp(key, "diffuseFraction") == 0) {
             diffuseFraction = (float)atof(value);
         } else if (Q_stricmp(key, "suncolor") == 0) {
-            (void)sscanf(value, "%f %f %f", &sunColor[0], &sunColor[1], &sunColor[2]);
+            (void)sscanf(value, "%f %f %f", &sunColor[0],
+                         &sunColor[1], &sunColor[2]);
             (void)ColorNormalize(sunColor, sunColor);
         } else if (Q_stricmp(key, "sundiffusecolor") == 0) {
-            (void)sscanf(value, "%f %f %f", &sunDiffuseColor[0], &sunDiffuseColor[1], &sunDiffuseColor[2]);
+            (void)sscanf(value, "%f %f %f", &sunDiffuseColor[0],
+                         &sunDiffuseColor[1], &sunDiffuseColor[2]);
             (void)ColorNormalize(sunDiffuseColor, sunDiffuseColor);
             hasSunDiffuseColor = qtrue;
         } else if (Q_stricmp(key, "sunlight") == 0) {
             sunlight = (float)atof(value);
         } else if (Q_stricmp(key, "sundirection") == 0) {
             vec3_t sunDirectionAngles;
-            (void)sscanf(value, "%f %f %f", &sunDirectionAngles[0], &sunDirectionAngles[1], &sunDirectionAngles[2]);
+            (void)sscanf(value, "%f %f %f", &sunDirectionAngles[0],
+                         &sunDirectionAngles[1], &sunDirectionAngles[2]);
             AngleVectors(sunDirectionAngles, tr.sunDirection, NULL, NULL);
         }
     }
 
     rendererWorldData.entityAmbientBase[3] = 1.0f;
-    if (ambient != 0.0f && ColorNormalize(entityAmbientColor, entityAmbientColor) != 0.0f) {
-        const long double ambientScale = (long double)tr.identityLight * ambient;
+    if (ambient != 0.0f &&
+        ColorNormalize(entityAmbientColor, entityAmbientColor) != 0.0f) {
+        const long double ambientScale =
+            (long double)tr.identityLight * ambient;
         for (int32_t component = 0; component < 3; ++component) {
-            rendererWorldData.entityAmbientBase[component] = (float)((long double)entityAmbientColor[component] * ambientScale);
+            rendererWorldData.entityAmbientBase[component] = (float)(
+                (long double)entityAmbientColor[component] * ambientScale);
         }
-        qglLightModelfv(GL_LIGHT_MODEL_AMBIENT, rendererWorldData.entityAmbientBase);
+        qglLightModelfv(GL_LIGHT_MODEL_AMBIENT,
+                        rendererWorldData.entityAmbientBase);
     }
 
     if (hasSunDiffuseColor == qfalse) {
         memcpy(sunDiffuseColor, sunColor, sizeof(sunDiffuseColor));
     }
 
-    const long double sunScale = ((long double)sunlight - ambient) * tr.identityLight;
-    const long double directScale = (1.0L - (long double)diffuseFraction) * sunScale;
+    const long double sunScale =
+        ((long double)sunlight - ambient) * tr.identityLight;
+    const long double directScale =
+        (1.0L - (long double)diffuseFraction) * sunScale;
     /* The third direct-color FSTP at 0x0050d3f5 consumes directScale and
      * exposes the still-live sunScale. 0x0050d3fb then multiplies that value
      * by diffuseFraction for the authored sundiffusecolor path. */
-    const long double diffuseScale = sunScale * (long double)diffuseFraction;
+    const long double diffuseScale =
+        sunScale * (long double)diffuseFraction;
     for (int32_t component = 0; component < 3; ++component) {
-        rendererWorldData.sunDiffuseColor[component] = (float)((long double)sunColor[component] * directScale);
-        rendererWorldData.entityAmbientScale[component] = (float)((long double)sunDiffuseColor[component] * diffuseScale);
+        rendererWorldData.sunDiffuseColor[component] = (float)(
+            (long double)sunColor[component] * directScale);
+        rendererWorldData.entityAmbientScale[component] = (float)(
+            (long double)sunDiffuseColor[component] * diffuseScale);
     }
     rendererWorldData.sunDiffuseColor[3] = 1.0f;
     rendererWorldData.entityAmbientScale[3] = 1.0f;
@@ -902,7 +1175,9 @@ void R_LoadEntities(const lump_t *entityLump)
             }
 
             if (pairCount == R_MAX_ENTITY_PAIRS) {
-                ri.Error(ERR_DROP, "\x15R_LoadEntities: MAX_SPAWN_VARS (%i) reached\n", R_MAX_ENTITY_PAIRS);
+                ri.Error(ERR_DROP,
+                         "\x15R_LoadEntities: MAX_SPAWN_VARS (%i) reached\n",
+                         R_MAX_ENTITY_PAIRS);
             }
 
             strcpy(pairs[pairCount].key, token);
@@ -912,7 +1187,8 @@ void R_LoadEntities(const lump_t *entityLump)
         }
 
         if (pairs[0].key[0] == '\0') {
-            ri.Error(ERR_DROP, "\x15R_LoadEntities: entity without a classname\n");
+            ri.Error(ERR_DROP,
+                     "\x15R_LoadEntities: entity without a classname\n");
         }
 
         if (coduo_crt_stricmp(pairs[0].value, "misc_model") == 0) {
@@ -923,9 +1199,12 @@ void R_LoadEntities(const lump_t *entityLump)
     }
 
     if (rendererWorldData.coronaCount != 0) {
-        const size_t coronaBytes = (size_t)rendererWorldData.coronaCount * sizeof(*rendererWorldData.coronas);
+        const size_t coronaBytes =
+            (size_t)rendererWorldData.coronaCount *
+            sizeof(*rendererWorldData.coronas);
         rendererWorldData.coronas = ri.Hunk_Alloc(coronaBytes);
-        Com_Memcpy(rendererWorldData.coronas, temporaryCoronas, coronaBytes);
+        Com_Memcpy(rendererWorldData.coronas, temporaryCoronas,
+                   coronaBytes);
     } else {
         rendererWorldData.coronas = NULL;
     }
@@ -953,7 +1232,8 @@ qboolean R_GetEntityToken(char *buffer, int32_t bufferSize)
  * Name and recursive two-argument signature: exact same-module Mac symbol
  * R_FinishLoadingAABBTrees_r. Windows inlines ClearBounds, then expands a
  * terminal tree from surface bounds or an internal tree from its children. */
-int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree, int32_t nextTreeIndex)
+int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree,
+                                   int32_t nextTreeIndex)
 {
     const float clearBound = 262144.0f; /* exact bits 0x48800000 */
     for (int32_t component = 0; component < 3; ++component) {
@@ -962,18 +1242,25 @@ int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree, int32_t nextTreeI
     }
 
     if (tree->childCount == 0) {
-        for (int32_t surfaceIndex = 0; surfaceIndex < tree->surfaceCount; ++surfaceIndex) {
-            const renderer_lit_surface_t *surface = (const renderer_lit_surface_t *)tree->surfaces[surfaceIndex].data;
-            ExpandBounds(surface->boundsMin, surface->boundsMax, tree->mins, tree->maxs);
+        for (int32_t surfaceIndex = 0;
+             surfaceIndex < tree->surfaceCount; ++surfaceIndex) {
+            const renderer_lit_surface_t *surface =
+                (const renderer_lit_surface_t *)
+                    tree->surfaces[surfaceIndex].data;
+            ExpandBounds(surface->boundsMin, surface->boundsMax,
+                         tree->mins, tree->maxs);
         }
         return nextTreeIndex;
     }
 
     tree->children = &rendererWorldData.aabbTrees[nextTreeIndex];
-    nextTreeIndex = (int32_t)((uint32_t)nextTreeIndex + (uint32_t)tree->childCount);
-    for (int32_t childIndex = 0; childIndex < tree->childCount; ++childIndex) {
+    nextTreeIndex = (int32_t)(
+        (uint32_t)nextTreeIndex + (uint32_t)tree->childCount);
+    for (int32_t childIndex = 0;
+         childIndex < tree->childCount; ++childIndex) {
         renderer_aabb_tree_t *child = &tree->children[childIndex];
-        nextTreeIndex = R_FinishLoadingAABBTrees_r(child, nextTreeIndex);
+        nextTreeIndex =
+            R_FinishLoadingAABBTrees_r(child, nextTreeIndex);
         ExpandBounds(child->mins, child->maxs, tree->mins, tree->maxs);
     }
     return nextTreeIndex;
@@ -986,24 +1273,35 @@ int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree, int32_t nextTreeI
  * pass resolves those spans and derives every tree's bounds. */
 void R_LoadAABBTrees(const lump_t *aabbTreeLump)
 {
-    const renderer_disk_aabb_tree_t *diskTrees = (const renderer_disk_aabb_tree_t *)(rendererWorldFileBase + aabbTreeLump->fileofs);
+    const renderer_disk_aabb_tree_t *diskTrees =
+        (const renderer_disk_aabb_tree_t *)(
+            rendererWorldFileBase + aabbTreeLump->fileofs);
     if (((uint32_t)aabbTreeLump->filelen % sizeof(*diskTrees)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.aabbTreeCount = (int32_t)((uint32_t)aabbTreeLump->filelen / sizeof(*diskTrees));
-    rendererWorldData.aabbTrees = ri.Hunk_Alloc((size_t)rendererWorldData.aabbTreeCount * sizeof(*rendererWorldData.aabbTrees));
+    rendererWorldData.aabbTreeCount =
+        (int32_t)((uint32_t)aabbTreeLump->filelen /
+                  sizeof(*diskTrees));
+    rendererWorldData.aabbTrees =
+        ri.Hunk_Alloc((size_t)rendererWorldData.aabbTreeCount *
+                      sizeof(*rendererWorldData.aabbTrees));
 
-    for (int32_t treeIndex = 0; treeIndex < rendererWorldData.aabbTreeCount; ++treeIndex) {
-        renderer_aabb_tree_t *tree = &rendererWorldData.aabbTrees[treeIndex];
-        tree->surfaces = &rendererWorldData.surfaces[diskTrees[treeIndex].firstSurface];
+    for (int32_t treeIndex = 0;
+         treeIndex < rendererWorldData.aabbTreeCount; ++treeIndex) {
+        renderer_aabb_tree_t *tree =
+            &rendererWorldData.aabbTrees[treeIndex];
+        tree->surfaces =
+            &rendererWorldData.surfaces[diskTrees[treeIndex].firstSurface];
         tree->surfaceCount = diskTrees[treeIndex].surfaceCount;
         tree->childCount = diskTrees[treeIndex].childCount;
     }
 
     int32_t treeIndex = 0;
     while (treeIndex < rendererWorldData.aabbTreeCount) {
-        treeIndex = R_FinishLoadingAABBTrees_r(&rendererWorldData.aabbTrees[treeIndex], treeIndex + 1);
+        treeIndex = R_FinishLoadingAABBTrees_r(
+            &rendererWorldData.aabbTrees[treeIndex], treeIndex + 1);
     }
 }
 
@@ -1015,26 +1313,36 @@ void R_LoadAABBTrees(const lump_t *aabbTreeLump)
  * every other authored index is resolved immediately to native storage. */
 void R_LoadCells(const lump_t *cellLump)
 {
-    const renderer_disk_cell_t *diskCells = (const renderer_disk_cell_t *)(rendererWorldFileBase + cellLump->fileofs);
+    const renderer_disk_cell_t *diskCells =
+        (const renderer_disk_cell_t *)(
+            rendererWorldFileBase + cellLump->fileofs);
     if (((uint32_t)cellLump->filelen % sizeof(*diskCells)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.cellCount = (int32_t)((uint32_t)cellLump->filelen / sizeof(*diskCells));
-    rendererWorldData.cells = ri.Hunk_Alloc((size_t)rendererWorldData.cellCount * sizeof(*rendererWorldData.cells));
+    rendererWorldData.cellCount =
+        (int32_t)((uint32_t)cellLump->filelen / sizeof(*diskCells));
+    rendererWorldData.cells =
+        ri.Hunk_Alloc((size_t)rendererWorldData.cellCount *
+                      sizeof(*rendererWorldData.cells));
 
-    for (int32_t cellIndex = 0; cellIndex < rendererWorldData.cellCount; ++cellIndex) {
+    for (int32_t cellIndex = 0;
+         cellIndex < rendererWorldData.cellCount; ++cellIndex) {
         const renderer_disk_cell_t *diskCell = &diskCells[cellIndex];
         renderer_world_cell_t *cell = &rendererWorldData.cells[cellIndex];
 
         memcpy(cell->mins, diskCell->mins, sizeof(cell->mins));
         memcpy(cell->maxs, diskCell->maxs, sizeof(cell->maxs));
-        cell->aabbTree = &rendererWorldData.aabbTrees[diskCell->aabbTreeIndex];
+        cell->aabbTree =
+            &rendererWorldData.aabbTrees[diskCell->aabbTreeIndex];
         cell->portalReference.firstPortal = diskCell->firstPortal;
         cell->portalCount = diskCell->portalCount;
-        cell->cullGroups = &rendererWorldData.cullGroupIndexes[diskCell->firstCullGroup];
+        cell->cullGroups =
+            &rendererWorldData.cullGroupIndexes[diskCell->firstCullGroup];
         cell->cullGroupCount = diskCell->cullGroupCount;
-        cell->occluders = &rendererWorldData.occluderIndexes[diskCell->firstOccluder];
+        cell->occluders =
+            &rendererWorldData.occluderIndexes[diskCell->firstOccluder];
         cell->occluderCount = diskCell->occluderCount;
     }
 }
@@ -1045,17 +1353,27 @@ void R_LoadCells(const lump_t *cellLump)
  * The Windows four-record unroll copies the three float words verbatim. */
 void R_LoadPortalVerts(const lump_t *portalVertexLump)
 {
-    const vec3_t *diskVertices = (const vec3_t *)(rendererWorldFileBase + portalVertexLump->fileofs);
-    if (((uint32_t)portalVertexLump->filelen % sizeof(*diskVertices)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    const vec3_t *diskVertices =
+        (const vec3_t *)(rendererWorldFileBase +
+                         portalVertexLump->fileofs);
+    if (((uint32_t)portalVertexLump->filelen %
+         sizeof(*diskVertices)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t vertexCount = (int32_t)((uint32_t)portalVertexLump->filelen / sizeof(*diskVertices));
-    const uint32_t portalVertexBytes = (uint32_t)vertexCount * (uint32_t)sizeof(*rendererWorldData.portalVerts);
-    rendererWorldData.portalVerts = ri.Hunk_Alloc((size_t)portalVertexBytes);
+    const int32_t vertexCount =
+        (int32_t)((uint32_t)portalVertexLump->filelen /
+                  sizeof(*diskVertices));
+    const uint32_t portalVertexBytes =
+        (uint32_t)vertexCount *
+        (uint32_t)sizeof(*rendererWorldData.portalVerts);
+    rendererWorldData.portalVerts =
+        ri.Hunk_Alloc((size_t)portalVertexBytes);
 
     for (int32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
-        memcpy(rendererWorldData.portalVerts[vertexIndex], diskVertices[vertexIndex], sizeof(vec3_t));
+        memcpy(rendererWorldData.portalVerts[vertexIndex],
+               diskVertices[vertexIndex], sizeof(vec3_t));
     }
 }
 
@@ -1067,37 +1385,54 @@ void R_LoadPortalVerts(const lump_t *portalVertexLump)
  * first-portal values after the portal table exists. */
 void R_LoadPortals(const lump_t *portalLump)
 {
-    const renderer_disk_portal_t *diskPortals = (const renderer_disk_portal_t *)(rendererWorldFileBase + portalLump->fileofs);
+    const renderer_disk_portal_t *diskPortals =
+        (const renderer_disk_portal_t *)(
+            rendererWorldFileBase + portalLump->fileofs);
     if (((uint32_t)portalLump->filelen % sizeof(*diskPortals)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.portalCount = (int32_t)((uint32_t)portalLump->filelen / sizeof(*diskPortals));
-    rendererWorldData.portals = ri.Hunk_Alloc((size_t)rendererWorldData.portalCount * sizeof(*rendererWorldData.portals));
+    rendererWorldData.portalCount =
+        (int32_t)((uint32_t)portalLump->filelen /
+                  sizeof(*diskPortals));
+    rendererWorldData.portals =
+        ri.Hunk_Alloc((size_t)rendererWorldData.portalCount *
+                      sizeof(*rendererWorldData.portals));
 
-    for (int32_t portalIndex = 0; portalIndex < rendererWorldData.portalCount; ++portalIndex) {
-        const renderer_disk_portal_t *diskPortal = &diskPortals[portalIndex];
-        renderer_portal_t *portal = &rendererWorldData.portals[portalIndex];
+    for (int32_t portalIndex = 0;
+         portalIndex < rendererWorldData.portalCount; ++portalIndex) {
+        const renderer_disk_portal_t *diskPortal =
+            &diskPortals[portalIndex];
+        renderer_portal_t *portal =
+            &rendererWorldData.portals[portalIndex];
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-        if (diskPortal->vertexCount < 0 || diskPortal->vertexCount > R_PORTAL_CLIP_VERTEX_CAPACITY) {
-            ri.Error(ERR_DROP, "R_LoadPortals: portal %i has invalid vertex count %i", portalIndex, diskPortal->vertexCount);
+        if (diskPortal->vertexCount < 0 ||
+            diskPortal->vertexCount > R_PORTAL_CLIP_VERTEX_CAPACITY) {
+            ri.Error(ERR_DROP,
+                     "R_LoadPortals: portal %i has invalid vertex count %i",
+                     portalIndex, diskPortal->vertexCount);
         }
 
-        const cplane_t *collisionPlane = ri.CM_PlaneForIndex(diskPortal->planeIndex);
+        const cplane_t *collisionPlane =
+            ri.CM_PlaneForIndex(diskPortal->planeIndex);
 
         memcpy(&portal->plane, collisionPlane, sizeof(plane_t));
         R_SetPlaneSidesDPVS(&portal->plane);
         portal->cell = &rendererWorldData.cells[diskPortal->cellIndex];
-        portal->vertices = &rendererWorldData.portalVerts[diskPortal->firstVertex];
+        portal->vertices =
+            &rendererWorldData.portalVerts[diskPortal->firstVertex];
         portal->vertexCount = diskPortal->vertexCount;
         portal->recursionActive = qfalse;
     }
 
-    for (int32_t cellIndex = 0; cellIndex < rendererWorldData.cellCount; ++cellIndex) {
+    for (int32_t cellIndex = 0;
+         cellIndex < rendererWorldData.cellCount; ++cellIndex) {
         renderer_world_cell_t *cell = &rendererWorldData.cells[cellIndex];
         const ptrdiff_t firstPortal = cell->portalReference.firstPortal;
-        cell->portalReference.portals = &rendererWorldData.portals[firstPortal];
+        cell->portalReference.portals =
+            &rendererWorldData.portals[firstPortal];
     }
 }
 
@@ -1106,21 +1441,32 @@ void R_LoadPortals(const lump_t *portalLump)
  * Name and one-lump signature: exact same-module Mac symbol R_LoadCullGroups. */
 void R_LoadCullGroups(const lump_t *cullGroupLump)
 {
-    const renderer_disk_cull_group_t *diskGroups = (const renderer_disk_cull_group_t *)(rendererWorldFileBase + cullGroupLump->fileofs);
+    const renderer_disk_cull_group_t *diskGroups =
+        (const renderer_disk_cull_group_t *)(
+            rendererWorldFileBase + cullGroupLump->fileofs);
     if (((uint32_t)cullGroupLump->filelen % sizeof(*diskGroups)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.cullGroupCount = (int32_t)((uint32_t)cullGroupLump->filelen / sizeof(*diskGroups));
-    rendererWorldData.cullGroups = ri.Hunk_Alloc((size_t)rendererWorldData.cullGroupCount * sizeof(*rendererWorldData.cullGroups));
+    rendererWorldData.cullGroupCount =
+        (int32_t)((uint32_t)cullGroupLump->filelen /
+                  sizeof(*diskGroups));
+    rendererWorldData.cullGroups =
+        ri.Hunk_Alloc((size_t)rendererWorldData.cullGroupCount *
+                      sizeof(*rendererWorldData.cullGroups));
 
-    for (int32_t groupIndex = 0; groupIndex < rendererWorldData.cullGroupCount; ++groupIndex) {
-        const renderer_disk_cull_group_t *diskGroup = &diskGroups[groupIndex];
-        renderer_cull_group_t *group = &rendererWorldData.cullGroups[groupIndex];
+    for (int32_t groupIndex = 0;
+         groupIndex < rendererWorldData.cullGroupCount; ++groupIndex) {
+        const renderer_disk_cull_group_t *diskGroup =
+            &diskGroups[groupIndex];
+        renderer_cull_group_t *group =
+            &rendererWorldData.cullGroups[groupIndex];
 
         memcpy(group->mins, diskGroup->mins, sizeof(group->mins));
         memcpy(group->maxs, diskGroup->maxs, sizeof(group->maxs));
-        group->surfaces = &rendererWorldData.surfaces[diskGroup->firstSurface];
+        group->surfaces =
+            &rendererWorldData.surfaces[diskGroup->firstSurface];
         group->surfaceCount = diskGroup->surfaceCount;
     }
 }
@@ -1131,17 +1477,24 @@ void R_LoadCullGroups(const lump_t *cullGroupLump)
  * R_LoadCullGroupIndexes. Serialized int32 indexes become native pointers. */
 void R_LoadCullGroupIndexes(const lump_t *indexLump)
 {
-    const int32_t *diskIndexes = (const int32_t *)(rendererWorldFileBase + indexLump->fileofs);
+    const int32_t *diskIndexes =
+        (const int32_t *)(rendererWorldFileBase + indexLump->fileofs);
     if (((uint32_t)indexLump->filelen % sizeof(*diskIndexes)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.cullGroupIndexCount = (int32_t)((uint32_t)indexLump->filelen / sizeof(*diskIndexes));
+    rendererWorldData.cullGroupIndexCount =
+        (int32_t)((uint32_t)indexLump->filelen /
+                  sizeof(*diskIndexes));
     rendererWorldData.cullGroupIndexes =
-        ri.Hunk_Alloc((size_t)rendererWorldData.cullGroupIndexCount * sizeof(*rendererWorldData.cullGroupIndexes));
+        ri.Hunk_Alloc((size_t)rendererWorldData.cullGroupIndexCount *
+                      sizeof(*rendererWorldData.cullGroupIndexes));
 
-    for (int32_t index = 0; index < rendererWorldData.cullGroupIndexCount; ++index) {
-        rendererWorldData.cullGroupIndexes[index] = &rendererWorldData.cullGroups[diskIndexes[index]];
+    for (int32_t index = 0;
+         index < rendererWorldData.cullGroupIndexCount; ++index) {
+        rendererWorldData.cullGroupIndexes[index] =
+            &rendererWorldData.cullGroups[diskIndexes[index]];
     }
 }
 
@@ -1150,45 +1503,70 @@ void R_LoadCullGroupIndexes(const lump_t *indexLump)
  * Name and three-lump signature: exact same-module Mac symbol R_LoadOccluders.
  * Plane-index words select collision planes; each four-byte edge record then
  * selects two of those resolved planes and two portal vertices. */
-void R_LoadOccluders(const lump_t *occluderLump, const lump_t *planeIndexLump, const lump_t *edgeLump)
+void R_LoadOccluders(const lump_t *occluderLump,
+                     const lump_t *planeIndexLump,
+                     const lump_t *edgeLump)
 {
-    const renderer_disk_occluder_t *diskOccluders = (const renderer_disk_occluder_t *)(rendererWorldFileBase + occluderLump->fileofs);
-    const int32_t *diskPlaneIndexes = (const int32_t *)(rendererWorldFileBase + planeIndexLump->fileofs);
-    const renderer_disk_occluder_edge_t *diskEdges = (const renderer_disk_occluder_edge_t *)(rendererWorldFileBase + edgeLump->fileofs);
+    const renderer_disk_occluder_t *diskOccluders =
+        (const renderer_disk_occluder_t *)(
+            rendererWorldFileBase + occluderLump->fileofs);
+    const int32_t *diskPlaneIndexes =
+        (const int32_t *)(rendererWorldFileBase +
+                          planeIndexLump->fileofs);
+    const renderer_disk_occluder_edge_t *diskEdges =
+        (const renderer_disk_occluder_edge_t *)(
+            rendererWorldFileBase + edgeLump->fileofs);
 
-    if (((uint32_t)occluderLump->filelen % sizeof(*diskOccluders)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    if (((uint32_t)occluderLump->filelen %
+         sizeof(*diskOccluders)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t occluderCount = (int32_t)((uint32_t)occluderLump->filelen / sizeof(*diskOccluders));
-    renderer_occluder_t *occluders = ri.Hunk_Alloc((size_t)occluderCount * sizeof(*occluders));
+    const int32_t occluderCount =
+        (int32_t)((uint32_t)occluderLump->filelen /
+                  sizeof(*diskOccluders));
+    renderer_occluder_t *occluders =
+        ri.Hunk_Alloc((size_t)occluderCount * sizeof(*occluders));
 
-    if (((uint32_t)planeIndexLump->filelen % sizeof(*diskPlaneIndexes)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+    if (((uint32_t)planeIndexLump->filelen %
+         sizeof(*diskPlaneIndexes)) != 0) {
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t planeCount = (int32_t)((uint32_t)planeIndexLump->filelen / sizeof(*diskPlaneIndexes));
-    renderer_dpvs_plane_t *planes = ri.Hunk_Alloc((size_t)planeCount * sizeof(*planes));
+    const int32_t planeCount =
+        (int32_t)((uint32_t)planeIndexLump->filelen /
+                  sizeof(*diskPlaneIndexes));
+    renderer_dpvs_plane_t *planes =
+        ri.Hunk_Alloc((size_t)planeCount * sizeof(*planes));
 
     if (((uint32_t)edgeLump->filelen % sizeof(*diskEdges)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    const int32_t edgeCount = (int32_t)((uint32_t)edgeLump->filelen / sizeof(*diskEdges));
-    renderer_occluder_edge_t *edges = ri.Hunk_Alloc((size_t)edgeCount * sizeof(*edges));
+    const int32_t edgeCount =
+        (int32_t)((uint32_t)edgeLump->filelen / sizeof(*diskEdges));
+    renderer_occluder_edge_t *edges =
+        ri.Hunk_Alloc((size_t)edgeCount * sizeof(*edges));
 
     rendererWorldData.occluderCount = occluderCount;
     rendererWorldData.occluders = occluders;
 
-    for (int32_t occluderIndex = 0; occluderIndex < occluderCount; ++occluderIndex) {
-        const renderer_disk_occluder_t *diskOccluder = &diskOccluders[occluderIndex];
+    for (int32_t occluderIndex = 0;
+         occluderIndex < occluderCount; ++occluderIndex) {
+        const renderer_disk_occluder_t *diskOccluder =
+            &diskOccluders[occluderIndex];
         renderer_occluder_t *occluder = &occluders[occluderIndex];
 
         occluder->planes = &planes[diskOccluder->firstPlane];
         occluder->planeCount = diskOccluder->planeCount;
-        for (int32_t planeIndex = 0; planeIndex < occluder->planeCount; ++planeIndex) {
+        for (int32_t planeIndex = 0;
+             planeIndex < occluder->planeCount; ++planeIndex) {
             renderer_dpvs_plane_t *plane = &occluder->planes[planeIndex];
-            const cplane_t *collisionPlane = ri.CM_PlaneForIndex(diskPlaneIndexes[diskOccluder->firstPlane + planeIndex]);
+            const cplane_t *collisionPlane = ri.CM_PlaneForIndex(
+                diskPlaneIndexes[diskOccluder->firstPlane + planeIndex]);
 
             memcpy(plane, collisionPlane, sizeof(plane_t));
             R_SetPlaneSidesDPVS(plane);
@@ -1197,21 +1575,29 @@ void R_LoadOccluders(const lump_t *occluderLump, const lump_t *planeIndexLump, c
         occluder->edgeCount = diskOccluder->edgeCount;
         occluder->edges = &edges[diskOccluder->firstEdge];
         occluder->vertexCount = diskOccluder->vertexCount;
-        occluder->vertices = &rendererWorldData.portalVerts[diskOccluder->firstVertex];
+        occluder->vertices =
+            &rendererWorldData.portalVerts[diskOccluder->firstVertex];
 
-        for (int32_t edgeIndex = 0; edgeIndex < occluder->edgeCount; ++edgeIndex) {
+        for (int32_t edgeIndex = 0;
+             edgeIndex < occluder->edgeCount; ++edgeIndex) {
             /* 0x0050e237 reloads the saved start of the disk-edge lump and
              * advances that pointer by four bytes per local edge.  The
              * occluder's firstEdge is used only for the runtime destination
              * span at 0x0050e21f..0x0050e22b; adding it to this input lookup
              * resolves the disk-local plane and vertex bytes twice. */
-            const renderer_disk_occluder_edge_t *diskEdge = &diskEdges[edgeIndex];
-            renderer_occluder_edge_t *edge = &occluder->edges[edgeIndex];
+            const renderer_disk_occluder_edge_t *diskEdge =
+                &diskEdges[edgeIndex];
+            renderer_occluder_edge_t *edge =
+                &occluder->edges[edgeIndex];
 
-            edge->planes[0] = &occluder->planes[diskEdge->planeIndices[0]];
-            edge->planes[1] = &occluder->planes[diskEdge->planeIndices[1]];
-            edge->vertices[0] = &occluder->vertices[diskEdge->vertexIndices[0]];
-            edge->vertices[1] = &occluder->vertices[diskEdge->vertexIndices[1]];
+            edge->planes[0] =
+                &occluder->planes[diskEdge->planeIndices[0]];
+            edge->planes[1] =
+                &occluder->planes[diskEdge->planeIndices[1]];
+            edge->vertices[0] =
+                &occluder->vertices[diskEdge->vertexIndices[0]];
+            edge->vertices[1] =
+                &occluder->vertices[diskEdge->vertexIndices[1]];
         }
 
         occluder->activePlaneCount = 0;
@@ -1226,17 +1612,24 @@ void R_LoadOccluders(const lump_t *occluderLump, const lump_t *planeIndexLump, c
  * pointers into the runtime occluder table. */
 void R_LoadOccluderIndexes(const lump_t *indexLump)
 {
-    const int16_t *diskIndexes = (const int16_t *)(rendererWorldFileBase + indexLump->fileofs);
+    const int16_t *diskIndexes =
+        (const int16_t *)(rendererWorldFileBase + indexLump->fileofs);
     if (((uint32_t)indexLump->filelen % sizeof(*diskIndexes)) != 0) {
-        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s", rendererWorldData.name);
+        ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",
+                 rendererWorldData.name);
     }
 
-    rendererWorldData.occluderIndexCount = (int32_t)((uint32_t)indexLump->filelen / sizeof(*diskIndexes));
+    rendererWorldData.occluderIndexCount =
+        (int32_t)((uint32_t)indexLump->filelen /
+                  sizeof(*diskIndexes));
     rendererWorldData.occluderIndexes =
-        ri.Hunk_Alloc((size_t)rendererWorldData.occluderIndexCount * sizeof(*rendererWorldData.occluderIndexes));
+        ri.Hunk_Alloc((size_t)rendererWorldData.occluderIndexCount *
+                      sizeof(*rendererWorldData.occluderIndexes));
 
-    for (int32_t index = 0; index < rendererWorldData.occluderIndexCount; ++index) {
-        rendererWorldData.occluderIndexes[index] = &rendererWorldData.occluders[diskIndexes[index]];
+    for (int32_t index = 0;
+         index < rendererWorldData.occluderIndexCount; ++index) {
+        rendererWorldData.occluderIndexes[index] =
+            &rendererWorldData.occluders[diskIndexes[index]];
     }
 }
 
@@ -1250,12 +1643,13 @@ void R_LoadOccluderIndexes(const lump_t *indexLump)
 void RE_LoadWorldMap(const char *name, int32_t *checksum)
 {
     void *fileBuffer = NULL;
-    renderer_lightmap_placement_t lightmapPlacements[R_MAX_LIGHTMAPS];
+    renderer_lightmap_placement_t
+        lightmapPlacements[R_MAX_LIGHTMAPS];
 
     rendererFogCount = 0;
     if (tr.worldMapLoaded != qfalse) {
-        ri.Error(ERR_DROP, "\x15"
-                           "ERROR: attempted to redundantly load world map\n");
+        ri.Error(ERR_DROP,
+                 "\x15" "ERROR: attempted to redundantly load world map\n");
     }
 
     R_InitStaticModelCache();
@@ -1276,9 +1670,7 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
     const int32_t fileLength = ri.FS_ReadFile(name, &fileBuffer);
     if (fileBuffer == NULL) {
         ri.Error(ERR_DROP,
-                 "\x15"
-                 "RE_LoadWorldMap: %s not found",
-                 name);
+                 "\x15" "RE_LoadWorldMap: %s not found", name);
     }
 
     if (checksum != NULL) {
@@ -1287,16 +1679,20 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
 
     tr.world = NULL;
     memset(&rendererWorldData, 0, sizeof(rendererWorldData));
-    strncpy(rendererWorldData.name, name, sizeof(rendererWorldData.name) - 1U);
+    strncpy(rendererWorldData.name, name,
+            sizeof(rendererWorldData.name) - 1U);
     rendererWorldData.name[sizeof(rendererWorldData.name) - 1U] = '\0';
 
     const char *baseName = rendererWorldData.name;
-    for (const char *cursor = rendererWorldData.name; *cursor != '\0'; ++cursor) {
+    for (const char *cursor = rendererWorldData.name;
+         *cursor != '\0'; ++cursor) {
         if (*cursor == '/')
             baseName = cursor + 1;
     }
-    strncpy(rendererWorldData.baseName, baseName, sizeof(rendererWorldData.baseName) - 1U);
-    rendererWorldData.baseName[sizeof(rendererWorldData.baseName) - 1U] = '\0';
+    strncpy(rendererWorldData.baseName, baseName,
+            sizeof(rendererWorldData.baseName) - 1U);
+    rendererWorldData.baseName[
+        sizeof(rendererWorldData.baseName) - 1U] = '\0';
     char *extension = strchr(rendererWorldData.baseName, '.');
     if (extension != NULL)
         *extension = '\0';
@@ -1304,12 +1700,15 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
     R_SetSkyBox(&rendererWorldData.skyVertexStorage);
     uint8_t *const hunkStart = (uint8_t *)ri.Hunk_Alloc(0);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    const int32_t invalidLump = coduo_compat_bsp_invalid_lump_index(fileBuffer, fileLength);
+    const int32_t invalidLump =
+        coduo_compat_bsp_invalid_lump_index(fileBuffer, fileLength);
     if (invalidLump == CODUO_BSP_VALIDATION_SHORT_HEADER) {
-        ri.Error(ERR_DROP, "RE_LoadWorldMap: %s has a truncated BSP header", name);
+        ri.Error(ERR_DROP, "RE_LoadWorldMap: %s has a truncated BSP header",
+                 name);
     }
     if (invalidLump >= 0) {
-        ri.Error(ERR_DROP, "RE_LoadWorldMap: %s has invalid BSP lump %i", name, invalidLump);
+        ri.Error(ERR_DROP, "RE_LoadWorldMap: %s has invalid BSP lump %i",
+                 name, invalidLump);
     }
 
     const dheader_t *header = (const dheader_t *)fileBuffer;
@@ -1319,29 +1718,36 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
      * LittleLong pass over the 68 header words consequently compiled into an
      * empty counted loop; direct typed reads preserve those exact values. */
     if (header->version != BSP_VERSION) {
-        ri.Error(ERR_DROP, va("EXE_ERR_WRONG_MAP_VERSION_NUM\x15%s\x15(%i "
-                              "\x14"
-                              "EXE_ERR_SHOULD_BE\x15 %i)",
-                              name, header->version, BSP_VERSION));
+        ri.Error(
+            ERR_DROP,
+            va("EXE_ERR_WRONG_MAP_VERSION_NUM\x15%s\x15(%i "
+               "\x14" "EXE_ERR_SHOULD_BE\x15 %i)",
+               name, header->version, BSP_VERSION));
     }
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
     R_LoadShaders(&header->lumps[BSP_LUMP_SHADERS]);
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    if (coduomp_renderer_validate_triangle_soup_records(&header->lumps[BSP_LUMP_SURFACES], &header->lumps[BSP_LUMP_DRAW_VERTICES],
-                                                        &header->lumps[BSP_LUMP_DRAW_INDICES]) == qfalse) {
+    if (coduomp_renderer_validate_triangle_soup_records(
+            &header->lumps[BSP_LUMP_SURFACES],
+            &header->lumps[BSP_LUMP_DRAW_VERTICES],
+            &header->lumps[BSP_LUMP_DRAW_INDICES]) == qfalse) {
         ri.FS_FreeFile(fileBuffer);
         tr.worldMapLoaded = qfalse;
         return;
     }
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
-    R_LoadLightmaps(&header->lumps[BSP_LUMP_LIGHTMAPS], &header->lumps[BSP_LUMP_SURFACES], lightmapPlacements);
+    R_LoadLightmaps(&header->lumps[BSP_LUMP_LIGHTMAPS],
+                    &header->lumps[BSP_LUMP_SURFACES],
+                    lightmapPlacements);
 
-    ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
+        ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
     ri.Printf(R_PRINT_ALL, "Loading surfaces...\n");
-    R_LoadSurfaces(&header->lumps[BSP_LUMP_SURFACES], &header->lumps[BSP_LUMP_DRAW_VERTICES], &header->lumps[BSP_LUMP_DRAW_INDICES],
+    R_LoadSurfaces(&header->lumps[BSP_LUMP_SURFACES],
+                   &header->lumps[BSP_LUMP_DRAW_VERTICES],
+                   &header->lumps[BSP_LUMP_DRAW_INDICES],
                    lightmapPlacements);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
@@ -1349,17 +1755,21 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
     R_LoadCullGroups(&header->lumps[BSP_LUMP_CULL_GROUPS]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
-    R_LoadCullGroupIndexes(&header->lumps[BSP_LUMP_CULL_GROUP_INDICES]);
+    R_LoadCullGroupIndexes(
+        &header->lumps[BSP_LUMP_CULL_GROUP_INDICES]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
     ri.Printf(R_PRINT_ALL, "Loading visibility info...\n");
     R_LoadPortalVerts(&header->lumps[BSP_LUMP_PORTAL_VERTICES]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
-    R_LoadOccluders(&header->lumps[BSP_LUMP_OCCLUDERS], &header->lumps[BSP_LUMP_OCCLUDER_PLANES], &header->lumps[BSP_LUMP_OCCLUDER_EDGES]);
+    R_LoadOccluders(&header->lumps[BSP_LUMP_OCCLUDERS],
+                    &header->lumps[BSP_LUMP_OCCLUDER_PLANES],
+                    &header->lumps[BSP_LUMP_OCCLUDER_EDGES]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
-    R_LoadOccluderIndexes(&header->lumps[BSP_LUMP_OCCLUDER_INDICES]);
+    R_LoadOccluderIndexes(
+        &header->lumps[BSP_LUMP_OCCLUDER_INDICES]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
     R_LoadAABBTrees(&header->lumps[BSP_LUMP_AABB_TREES]);
@@ -1372,7 +1782,8 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
     R_LoadLightIndexes(&header->lumps[BSP_LUMP_LIGHT_INDICES]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
-    R_LoadNodesAndLeafs(&header->lumps[BSP_LUMP_NODES], &header->lumps[BSP_LUMP_LEAFS]);
+    R_LoadNodesAndLeafs(&header->lumps[BSP_LUMP_NODES],
+                        &header->lumps[BSP_LUMP_LEAFS]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
     ri.Printf(R_PRINT_ALL, "Loading models and entities...\n");
@@ -1389,7 +1800,8 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
     R_LoadLightVisCache(&header->lumps[BSP_LUMP_LIGHT_VIS_CACHE]);
 
     ri.Cmd_ExecuteText(EXEC_NOW, "updatescreen\n");
-    rendererWorldData.dataSize = (int32_t)((uint8_t *)ri.Hunk_Alloc(0) - hunkStart);
+    rendererWorldData.dataSize = (int32_t)(
+        (uint8_t *)ri.Hunk_Alloc(0) - hunkStart);
     tr.world = &rendererWorldData;
 
     if (r_vc_compile->integer != 0)

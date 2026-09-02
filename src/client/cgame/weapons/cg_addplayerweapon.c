@@ -44,18 +44,22 @@ enum {
  * machine code (30046178..300461ef for tag_brass, 3004628e..30046313 for
  * tag_flash) as 12 plain dword copies: entity axis[0..2] -> rows[0..2], entity
  * origin -> rows[3]. */
-static void cgame_compat_weapon_entity_placement(const refEntity_t *entity, matrix43_t *placement)
+static void cgame_compat_weapon_entity_placement(
+    const refEntity_t *entity, matrix43_t *placement)
 {
     memcpy(placement->axis, entity->axis, sizeof(placement->axis));
     memcpy(placement->origin, entity->origin, sizeof(entity->origin));
 }
 
-void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent, qboolean viewWeapon, float viewOriginOffset)
+void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
+                        centity_t *cent, qboolean viewWeapon,
+                        float viewOriginOffset)
 {
     /* 30045cc3..30045cee: localFirstPerson = snapshot first-person view flags
      * set AND this centity is the snapshot's own client. */
     qboolean localFirstPerson =
-        (cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 && cent->currentState.number == cg_snap->ps.psClientNum;
+        (cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
+        cent->currentState.number == cg_snap->ps.psClientNum;
     /* 30045cee: EDI = cent->currentState.weapon (+0xcc). */
     int32_t weaponIndex = cent->currentState.weapon;
     weaponInfo_t *weapon;
@@ -73,11 +77,14 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
         if (ps != NULL) {
             /* 30045d21: [ps+0x618] != 1 -> return; 30045d2e: [ps+0x614] == 3
              * continues, else return (inline epilogue at 30045d37). */
-            if (ps->vehicleType != CG_WEAPON_VEHICLE_TYPE_ALLOWED || ps->vehiclePosition != CG_WEAPON_VEHICLE_POSITION_ALLOWED) {
+            if (ps->vehicleType != CG_WEAPON_VEHICLE_TYPE_ALLOWED ||
+                ps->vehiclePosition != CG_WEAPON_VEHICLE_POSITION_ALLOWED) {
                 return;
             }
-        } else if ((cent->currentState.stateFilter & CG_WEAPON_POSE_CLASS_MASK) != CG_WEAPON_POSE_CLASS_ALLOWED ||
-                   (cent->currentState.stateFilter & CG_WEAPON_POSE_SUBSTATE_MASK) != CG_WEAPON_POSE_SUBSTATE_ALLOWED) {
+        } else if ((cent->currentState.stateFilter & CG_WEAPON_POSE_CLASS_MASK) !=
+                       CG_WEAPON_POSE_CLASS_ALLOWED ||
+                   (cent->currentState.stateFilter & CG_WEAPON_POSE_SUBSTATE_MASK) !=
+                       CG_WEAPON_POSE_SUBSTATE_ALLOWED) {
             /* 30045d4e..30045d66: AND 0x38 == 8 and AND 7 == 3 on stateFilter. */
             return;
         }
@@ -101,7 +108,8 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
      * lightingOrigin (+0xc..0x14), shadowPlane (+0x18). Axis and origin are NOT
      * copied here; that happens only inside the ps branch. */
     weaponEntity.renderfx = parent->renderfx;
-    memcpy(weaponEntity.lightingOrigin, parent->lightingOrigin, sizeof(weaponEntity.lightingOrigin));
+    memcpy(weaponEntity.lightingOrigin, parent->lightingOrigin,
+           sizeof(weaponEntity.lightingOrigin));
     weaponEntity.shadowPlane = parent->shadowPlane;
 
     /* 30045de6: JZ on (ps != NULL) — the world-player path skips straight to the
@@ -115,22 +123,28 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
          * eye height added on Z (FLD ps->psOrigin[2]; FADD ps->viewHeightCurrent +0xf8). */
         weaponEntity.lightingOrigin[0] = ps->psOrigin[0];
         weaponEntity.lightingOrigin[1] = ps->psOrigin[1];
-        weaponEntity.lightingOrigin[2] = (float)((long double)ps->psOrigin[2] + (long double)ps->viewHeightCurrent);
+        weaponEntity.lightingOrigin[2] = (float)(
+            (long double)ps->psOrigin[2] +
+            (long double)ps->viewHeightCurrent);
         /* 30045e65: reType = 1; 30045e70: renderfx = 0x8c (whole-field write). */
         weaponEntity.reType = RT_MODEL;
         weaponEntity.renderfx = RF_LIGHTING_ORIGIN | RF_DEPTHHACK | RF_FIRST_PERSON;
         /* 30045e20/30045e57..30045e7b: AddLeanToPosition(EDX=&lightingOrigin,
          * ps->viewAngles[1] (+0xec, yaw), ps->leanFraction (+0x44), 16.0f
          * (imm 0x41800000), 20.0f (imm 0x41a00000)). */
-        AddLeanToPosition(weaponEntity.lightingOrigin, ps->viewAngles[1], ps->leanFraction, 16.0f, 20.0f);
+        AddLeanToPosition(weaponEntity.lightingOrigin, ps->viewAngles[1],
+                              ps->leanFraction, 16.0f, 20.0f);
 
         /* 30045e80..30045eae: FILD cg.frametime (0x304831ac), FSTP to a float
          * temporary, reload, then FMUL 0.001f (.rdata 0x3007bd94 = 0x3a83126f);
          * trap(0x98, viewDObjSelf, float bits) advances the view DObj animation. */
         {
             float frameTime = (float)(long double)cg_frametime;
-            float dtSeconds = (float)((long double)frameTime * (long double)0.001f);
-            cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, (intptr_t)registered->viewDObjSelf, CG_FloatBits(dtSeconds));
+            float dtSeconds = (float)(
+                (long double)frameTime * (long double)0.001f);
+            cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME,
+                          (intptr_t)registered->viewDObjSelf,
+                          CG_FloatBits(dtSeconds));
         }
 
         /* 30045eb5..30045f14: calculate every view-weapon DObj bone using a
@@ -139,10 +153,18 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
          * then CalcSkel (0xae); a nonzero create result skips both. Same sequence
          * as CG_DObjCalcPose but intentionally without entity controllers. */
         {
-            uint32_t partBits[4] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX};
-            if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONES, (intptr_t)registered->viewDObjSelf, (intptr_t)partBits) == 0) {
-                cgame_syscall(CG_DOBJ_CALC_ANIM, (intptr_t)registered->viewDObjSelf, (intptr_t)partBits);
-                cgame_syscall(CG_DOBJ_CALC_SKEL, (intptr_t)registered->viewDObjSelf, (intptr_t)partBits);
+            uint32_t partBits[4] = {
+                UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX
+            };
+            if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONES,
+                              (intptr_t)registered->viewDObjSelf,
+                              (intptr_t)partBits) == 0) {
+                cgame_syscall(CG_DOBJ_CALC_ANIM,
+                              (intptr_t)registered->viewDObjSelf,
+                              (intptr_t)partBits);
+                cgame_syscall(CG_DOBJ_CALC_SKEL,
+                              (intptr_t)registered->viewDObjSelf,
+                              (intptr_t)partBits);
             }
         }
 
@@ -182,21 +204,26 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
         /* 300460a7..3004614a: unconditionally commit the view-weapon placement
          * to cg_specialTagPlacement — origin to 0x3048b0e4/e8/ec, the nine axis
          * floats to 0x3048b0f0..0x3048b110. */
-        memcpy(cg_specialTagPlacement.origin, weaponEntity.origin, sizeof(cg_specialTagPlacement.origin));
-        memcpy(cg_specialTagPlacement.axis, weaponEntity.axis, sizeof(cg_specialTagPlacement.axis));
+        memcpy(cg_specialTagPlacement.origin, weaponEntity.origin,
+               sizeof(cg_specialTagPlacement.origin));
+        memcpy(cg_specialTagPlacement.axis, weaponEntity.axis,
+               sizeof(cg_specialTagPlacement.axis));
 
         /* 30046119..30046234: publish the tag_brass bone's world position.
          * trap(0xb2, viewDObjSelf, "tag_brass" @0x3007a8cc); 3004615e JLE skips
          * the block when the bone index is <= -1. */
         {
-            int32_t brassBone = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, (intptr_t)registered->viewDObjSelf, (intptr_t)cg_brassEjectTagName));
+            int32_t brassBone = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_DOBJ_GET_BONE_INDEX,
+                (intptr_t)registered->viewDObjSelf,
+                (intptr_t)cg_brassEjectTagName));
             if (brassBone > -1) {
                 /* 30046164..30046172: bone-matrix table = trap(0xa0, self, 0);
                  * 300461f6/30046204: entry at table + (bone << 6) — a 0x40-byte
                  * (16-float) stride. */
-                DObjSkelMat *boneMatrixTable =
-                    (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, (intptr_t)registered->viewDObjSelf, 0);
+                DObjSkelMat *boneMatrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(
+                    CG_DOBJ_GET_BONE_MATRICES,
+                    (intptr_t)registered->viewDObjSelf, 0);
                 matrix43_t placement;
                 DObjSkelMat worldMatrix;
 
@@ -204,7 +231,8 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
                 cgame_compat_weapon_entity_placement(&weaponEntity, &placement);
                 /* 3004620e: CG_ComposeBoneMatrix(ECX=bone entry, EAX=&placement,
                  * EDX=&worldMatrix). */
-                CG_ComposeBoneMatrix(&boneMatrixTable[brassBone], &placement, &worldMatrix);
+                CG_ComposeBoneMatrix(&boneMatrixTable[brassBone], &placement,
+                                     &worldMatrix);
                 /* 30046213..30046234: world translation (out +0x30/34/38) to
                  * cg_brassEffectOrigin (0x301698c0/c4/c8). */
                 cg_brassEffectOrigin[0] = worldMatrix.origin[0];
@@ -216,39 +244,48 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
         /* 3004623d: weapon->weaponType (+0x7c) == 4; 30046247/3004624c: TEST
          * AH,0x2 on cg_predictedPlayerState.entityStateFlags (0x30483248) —
          * flame chunks only for an actively-firing GAS weapon. */
-        if (weapon->weaponType == WEAPTYPE_GAS && (cg_predictedPlayerState.entityStateFlags & EF_FIRING) != 0) {
+        if (weapon->weaponType == WEAPTYPE_GAS &&
+            (cg_predictedPlayerState.entityStateFlags &
+             EF_FIRING) != 0) {
             /* 30046255..30046274: trap(0xb2, viewDObjSelf, "tag_flash"
              * @0x300772c0); 30046274 JLE skips emission when the bone is
              * absent. */
-            int32_t flashBone = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, (intptr_t)registered->viewDObjSelf, (intptr_t)cg_muzzleFlashTagName));
+            int32_t flashBone = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_DOBJ_GET_BONE_INDEX,
+                (intptr_t)registered->viewDObjSelf,
+                (intptr_t)cg_muzzleFlashTagName));
             if (flashBone > -1) {
                 /* 3004627a..30046324: same bone-matrix composition as the
                  * tag_brass block, on the tag_flash bone. */
-                DObjSkelMat *boneMatrixTable =
-                    (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, (intptr_t)registered->viewDObjSelf, 0);
+                DObjSkelMat *boneMatrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(
+                    CG_DOBJ_GET_BONE_MATRICES,
+                    (intptr_t)registered->viewDObjSelf, 0);
                 matrix43_t placement;
                 DObjSkelMat worldMatrix;
                 vec3_t flameViewAngles;
 
                 cgame_compat_weapon_entity_placement(&weaponEntity, &placement);
-                CG_ComposeBoneMatrix(&boneMatrixTable[flashBone], &placement, &worldMatrix);
+                CG_ComposeBoneMatrix(&boneMatrixTable[flashBone], &placement,
+                                     &worldMatrix);
 
                 /* 30046330..3004633e: the snapshot's own client uses the
                  * predicted view angles (0x304832ac =
                  * cg_predictedPlayerState.viewAngles); anyone else uses
                  * cent->lerpAngles (+0x214..0x21c) (30046353..3004635f). */
                 if (cent->currentState.number == cg_snap->ps.psClientNum) {
-                    memcpy(flameViewAngles, cg_predictedPlayerState.viewAngles, sizeof(flameViewAngles));
+                    memcpy(flameViewAngles, cg_predictedPlayerState.viewAngles,
+                           sizeof(flameViewAngles));
                 } else {
-                    memcpy(flameViewAngles, cent->lerpAngles, sizeof(flameViewAngles));
+                    memcpy(flameViewAngles, cent->lerpAngles,
+                           sizeof(flameViewAngles));
                 }
 
                 /* 30046365..30046387: CG_EmitPlayerFlameChunks(
                  * EAX=&flameViewAngles, cent, &worldMatrix[12] (tag_flash world
                  * position, out +0x30), 1.8f (imm 0x3fe66666), 1, 0) — same
                  * shape as the CG_Player call site (player_entity.c). */
-                CG_EmitPlayerFlameChunks(flameViewAngles, cent, worldMatrix.origin, 1.8f, 1, 0);
+                CG_EmitPlayerFlameChunks(flameViewAngles, cent, worldMatrix.origin,
+                                         1.8f, 1, 0);
             }
         }
     }
@@ -283,7 +320,8 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
         if (ps != NULL) {
             /* 300463d3/300463dd: DObj entity id = weaponIndex + 0x400, the
              * view-weapon pseudo-entity band above MAX_GENTITIES. */
-            int32_t dobjEntityNum = coduo_int32_from_bits((uint32_t)weaponIndex + (uint32_t)MAX_GENTITIES);
+            int32_t dobjEntityNum = coduo_int32_from_bits(
+                (uint32_t)weaponIndex + (uint32_t)MAX_GENTITIES);
 
             /* 300463d7..300463f1: viewFlashEffect (+0xc8) with worldFlashEffect
              * (+0xcc) fallback; zero -> return. */
@@ -299,7 +337,9 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
              * cg_muzzleTagNames[0] (0x30085eec -> "tag_flash");
              * bone = trap(0xe3, dobjEntityNum, tagName). */
             muzzleBolt.entityNum = dobjEntityNum;
-            boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_RESOLVE_TAG, dobjEntityNum, (intptr_t)cg_muzzleTagNames[0]));
+            boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_RESOLVE_TAG, dobjEntityNum,
+                (intptr_t)cg_muzzleTagNames[0]));
             /* 30046411: the bone is stored next to the entity number before the
              * sign check; 30046415 JL -> return on a negative index. */
             muzzleBolt.boneIndex = boneIndex;
@@ -310,8 +350,9 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
             /* 30046417..3004646d: trap(0xe9, effect,
              * cg_specialTagPlacement.origin (0x3048b0e4 — the placement
              * committed above), 0, &muzzleBolt). */
-            cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect, (intptr_t)cg_specialTagPlacement.origin, (intptr_t)NULL,
-                          (intptr_t)&muzzleBolt);
+            cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect,
+                          (intptr_t)cg_specialTagPlacement.origin,
+                          (intptr_t)NULL, (intptr_t)&muzzleBolt);
         } else {
             /* 30046425..3004642d: world players use worldFlashEffect only — no
              * viewFlashEffect fallback; zero -> return. */
@@ -323,8 +364,9 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
             /* 3004642f..30046442: bone = trap(0xe3, cent->currentState.number,
              * cg_muzzleTagNames[0]); entity number stored at 3004643e. */
             muzzleBolt.entityNum = cent->currentState.number;
-            boneIndex =
-                coduo_int32_from_bits((uint32_t)cgame_syscall(CG_RESOLVE_TAG, cent->currentState.number, (intptr_t)cg_muzzleTagNames[0]));
+            boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_RESOLVE_TAG, cent->currentState.number,
+                (intptr_t)cg_muzzleTagNames[0]));
             muzzleBolt.boneIndex = boneIndex;
             if (boneIndex < 0) {
                 return;
@@ -332,7 +374,9 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent,
 
             /* 30046453..3004646d: trap(0xe9, effect, &cent->lerpOrigin
              * (+0x208), 0, &muzzleBolt). */
-            cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect, (intptr_t)cent->lerpOrigin, (intptr_t)NULL, (intptr_t)&muzzleBolt);
+            cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (intptr_t)effect,
+                          (intptr_t)cent->lerpOrigin,
+                          (intptr_t)NULL, (intptr_t)&muzzleBolt);
         }
     }
     /* 30046470: shared epilogue (i386 /GS cookie check, not modeled). */

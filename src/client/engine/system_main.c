@@ -38,7 +38,10 @@ static char sysCommandLine[SYS_COMMAND_LINE_CAPACITY];
  * WinMain ABI. The optional PunkBuster calls retain their positions through
  * the disabled modern platform boundary; no retired backend code is carried
  * into the recovered executable. */
-int WINAPI WinMain(HINSTANCE applicationInstance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
+int WINAPI WinMain(HINSTANCE applicationInstance,
+                   HINSTANCE previousInstance,
+                   LPSTR commandLine,
+                   int showCommand)
 {
     char workingDirectory[MAX_OSPATH];
 
@@ -46,8 +49,11 @@ int WINAPI WinMain(HINSTANCE applicationInstance, HINSTANCE previousInstance, LP
     coduomp_restore_retail_x87_precision();
     (void)Sys_InitLocalization();
 
-    if (coduo_crt_strnicmp(commandLine, "allowdupe", SYS_ALLOW_DUPLICATE_PREFIX_LENGTH) != 0 ||
-        (int8_t)commandLine[SYS_ALLOW_DUPLICATE_PREFIX_LENGTH] > (int8_t)' ') {
+    if (coduo_crt_strnicmp(
+            commandLine, "allowdupe",
+            SYS_ALLOW_DUPLICATE_PREFIX_LENGTH) != 0 ||
+        (int8_t)commandLine[SYS_ALLOW_DUPLICATE_PREFIX_LENGTH] >
+            (int8_t)' ') {
         Sys_InitProcessLockFile();
         if (Sys_CheckProcessLock() == qfalse) {
             Sys_ShutdownLocalization();
@@ -64,10 +70,12 @@ int WINAPI WinMain(HINSTANCE applicationInstance, HINSTANCE previousInstance, LP
 
     /* The optimized retail helper receives the PE image base implicitly in
      * EDI. The maintained platform API makes that dependency explicit. */
-    sysExecutableChecksum = Sys_GetExecutableChecksum(applicationInstance);
+    sysExecutableChecksum =
+        Sys_GetExecutableChecksum(applicationInstance);
     sysApplicationInstance = applicationInstance;
 
-    strncpy(sysCommandLine, commandLine, sizeof(sysCommandLine) - 1);
+    strncpy(sysCommandLine, commandLine,
+            sizeof(sysCommandLine) - 1);
     sysCommandLine[sizeof(sysCommandLine) - 1] = '\0';
 
     Sys_CreateConsole();
@@ -80,10 +88,12 @@ int WINAPI WinMain(HINSTANCE applicationInstance, HINSTANCE previousInstance, LP
     (void)Sys_Milliseconds();
 
     Com_Init(sysCommandLine);
-    (void)coduomp_crt_getcwd(workingDirectory, sizeof(workingDirectory));
+    (void)coduomp_crt_getcwd(
+        workingDirectory, sizeof(workingDirectory));
     Com_Printf("Working directory: %s\n", workingDirectory);
 
-    if ((dedicated == NULL || dedicated->integer == 0) && com_viewlog->integer == 0) {
+    if ((dedicated == NULL || dedicated->integer == 0) &&
+        com_viewlog->integer == 0) {
         Sys_ShowConsole(SYS_CONSOLE_HIDDEN, qfalse);
     }
 
@@ -93,7 +103,8 @@ int WINAPI WinMain(HINSTANCE applicationInstance, HINSTANCE previousInstance, LP
     (void)SetFocus(win32MainWindow);
 
     for (;;) {
-        if (sysWindowMinimized != qfalse || (dedicated != NULL && dedicated->integer != 0)) {
+        if (sysWindowMinimized != qfalse ||
+            (dedicated != NULL && dedicated->integer != 0)) {
             Sleep(SYS_IDLE_SLEEP_MSEC);
         }
 
@@ -134,16 +145,21 @@ enum {
  * Com_ParseCommandLine from the native argc/argv process interface. Quoting is
  * retained for arguments containing whitespace so startup cvar values survive
  * the source-level conversion. */
-static qboolean Sys_BuildNativeCommandLine(int argc, char **argv, char *commandLine, size_t commandLineSize)
+static qboolean Sys_BuildNativeCommandLine(
+    int argc, char **argv, char *commandLine, size_t commandLineSize)
 {
     size_t cursor = 0;
 
     commandLine[0] = '\0';
-    for (int argumentIndex = 1; argumentIndex < argc; ++argumentIndex) {
+    for (int argumentIndex = 1;
+         argumentIndex < argc; ++argumentIndex) {
         const char *argument = argv[argumentIndex];
-        const qboolean quote = strpbrk(argument, " \t") != NULL ? qtrue : qfalse;
+        const qboolean quote =
+            strpbrk(argument, " \t") != NULL ? qtrue : qfalse;
         const size_t argumentLength = strlen(argument);
-        const size_t required = argumentLength + (quote != qfalse ? 2U : 0U) + (cursor != 0 ? 1U : 0U);
+        const size_t required =
+            argumentLength + (quote != qfalse ? 2U : 0U) +
+            (cursor != 0 ? 1U : 0U);
 
         if (required >= commandLineSize - cursor)
             return qfalse;
@@ -173,7 +189,8 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
 #endif
 
-    if (Sys_BuildNativeCommandLine(argc, argv, commandLine, sizeof(commandLine)) == qfalse) {
+    if (Sys_BuildNativeCommandLine(
+            argc, argv, commandLine, sizeof(commandLine)) == qfalse) {
         fputs("CoDUOMP: command line is too long\n", stderr);
         return EXIT_FAILURE;
     }
@@ -191,7 +208,8 @@ int main(int argc, char **argv)
 
     (void)Sys_Milliseconds();
     Com_Init(commandLine);
-    (void)coduomp_crt_getcwd(workingDirectory, sizeof(workingDirectory));
+    (void)coduomp_crt_getcwd(
+        workingDirectory, sizeof(workingDirectory));
     Com_Printf("Working directory: %s\n", workingDirectory);
 
     for (;;) {

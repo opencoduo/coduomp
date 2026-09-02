@@ -10,7 +10,9 @@
  * use the statically linked MSVC behavior. Shared server code uses coduo_qsort,
  * selected by WINDOWS_BEHAVIOR or LINUX_BEHAVIOR.
  */
-void coduo_crt_qsort(void *base, size_t count, size_t width, int (*compare)(const void *, const void *));
-void coduo_qsort(void *base, size_t count, size_t width, int (*compare)(const void *, const void *));
+void coduo_crt_qsort(void *base, size_t count, size_t width,
+                     int (*compare)(const void *, const void *));
+void coduo_qsort(void *base, size_t count, size_t width,
+                 int (*compare)(const void *, const void *));
 
 #endif /* CODUO_CRT_QSORT_COMPAT_H */

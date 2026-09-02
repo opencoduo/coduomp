@@ -58,7 +58,11 @@
 // the caller matches Quake3 CG_TileClear and the same-module PPC bank lists
 // cgame_mp!CG_TileClearBox as its helper. The prior role name
 // "CG_DrawTiledPicSegment" is superseded.
-int32_t CG_TileClearBox(int32_t hShader, int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3)
+int32_t CG_TileClearBox(int32_t hShader,
+                        int32_t arg0,
+                        int32_t arg1,
+                        int32_t arg2,
+                        int32_t arg3)
 {
     /* 0x3001d0d3..0x3001d0f5: round arg1, form its wrapped sum with arg3,
      * then round arg0. The remaining declarations follow the target's x87
@@ -75,13 +79,23 @@ int32_t CG_TileClearBox(int32_t hShader, int32_t arg0, int32_t arg1, int32_t arg
     t2Value *= (long double)CG_TILE_TEXCOORD_STEP;
     float t2 = (float)t2Value;
 
-    float s2 = (float)((long double)sum_ac * (long double)CG_TILE_TEXCOORD_STEP);
-    float t1 = (float)((long double)y * (long double)CG_TILE_TEXCOORD_STEP);
-    float s1 = (float)((long double)x * (long double)CG_TILE_TEXCOORD_STEP);
+    float s2 = (float)((long double)sum_ac *
+                       (long double)CG_TILE_TEXCOORD_STEP);
+    float t1 = (float)((long double)y *
+                       (long double)CG_TILE_TEXCOORD_STEP);
+    float s1 = (float)((long double)x *
+                       (long double)CG_TILE_TEXCOORD_STEP);
     float h = (float)arg3;
     float w = (float)arg2;
 
     /* Every non-integer slot is forwarded as its raw 32-bit float bit pattern. */
-    return trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y), CG_FloatBits(w), CG_FloatBits(h), CG_FloatBits(s1), CG_FloatBits(t1),
-                                 CG_FloatBits(s2), CG_FloatBits(t2), hShader);
+    return trap_R_DrawStretchPic(CG_FloatBits(x),
+                                 CG_FloatBits(y),
+                                 CG_FloatBits(w),
+                                 CG_FloatBits(h),
+                                 CG_FloatBits(s1),
+                                 CG_FloatBits(t1),
+                                 CG_FloatBits(s2),
+                                 CG_FloatBits(t2),
+                                 hShader);
 }

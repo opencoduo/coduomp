@@ -23,7 +23,8 @@ static void add_bit(int8_t bit, uint8_t *output)
 {
     if ((bloc & HUFFMAN_BYTE_BIT_MASK) == 0)
         output[bloc >> HUFFMAN_BYTE_OFFSET_SHIFT] = 0;
-    output[bloc >> HUFFMAN_BYTE_OFFSET_SHIFT] |= (uint8_t)(bit << (bloc & HUFFMAN_BYTE_BIT_MASK));
+    output[bloc >> HUFFMAN_BYTE_OFFSET_SHIFT] |=
+        (uint8_t)(bit << (bloc & HUFFMAN_BYTE_BIT_MASK));
     ++bloc;
 }
 
@@ -33,7 +34,9 @@ static void add_bit(int8_t bit, uint8_t *output)
  * Name: exact same-module Mac symbol get_bit. */
 static int32_t get_bit(const uint8_t *input)
 {
-    const int32_t bit = (input[bloc >> HUFFMAN_BYTE_OFFSET_SHIFT] >> (bloc & HUFFMAN_BYTE_BIT_MASK)) & 1;
+    const int32_t bit =
+        (input[bloc >> HUFFMAN_BYTE_OFFSET_SHIFT] >>
+         (bloc & HUFFMAN_BYTE_BIT_MASK)) & 1;
     ++bloc;
     return bit;
 }
@@ -93,7 +96,8 @@ static void free_ppnode(huff_t *state, node_t **head)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004416e0_00441725.mcode.
  * Static helper role is proved by increment: exchange two tree nodes
  * without changing their linked-list positions. */
-static void swap(huff_t *state, node_t *first, node_t *second)
+static void swap(huff_t *state, node_t *first,
+                 node_t *second)
 {
     node_t *firstParent = first->parent;
     node_t *secondParent = second->parent;
@@ -278,7 +282,8 @@ void Huff_addRef(huff_t *state, uint8_t symbol)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00441a10_00441a69.mcode.
  * Name and arguments: exact same-module Mac symbol Huff_Receive. A null path
  * returns zero without modifying the caller's output symbol. */
-int32_t Huff_Receive(node_t *node, int32_t *symbol, const uint8_t *input)
+int32_t Huff_Receive(node_t *node, int32_t *symbol,
+                     const uint8_t *input)
 {
     while (node != NULL && node->symbol == INTERNAL_NODE) {
         node = get_bit(input) != 0 ? node->right : node->left;
@@ -295,7 +300,8 @@ int32_t Huff_Receive(node_t *node, int32_t *symbol, const uint8_t *input)
  * Name and arguments: exact same-module Mac symbol Huff_offsetReceive. If
  * traversal fails, the output symbol is cleared but the caller's offset is
  * deliberately not advanced. */
-void Huff_offsetReceive(node_t *node, int32_t *symbol, const uint8_t *input, int32_t *offset)
+void Huff_offsetReceive(node_t *node, int32_t *symbol,
+                        const uint8_t *input, int32_t *offset)
 {
     bloc = *offset;
     while (node != NULL && node->symbol == INTERNAL_NODE) {
@@ -314,7 +320,8 @@ void Huff_offsetReceive(node_t *node, int32_t *symbol, const uint8_t *input, int
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00441ae0_00441b64.mcode.
  * Name: exact same-module Mac symbol huffman_send. Recursing to the root before
  * emitting the edge bit produces the symbol's root-to-leaf code. */
-static void huffman_send(node_t *node, node_t *child, uint8_t *output)
+static void huffman_send(node_t *node, node_t *child,
+                         uint8_t *output)
 {
     if (node->parent != NULL)
         huffman_send(node->parent, node, output);
@@ -345,7 +352,8 @@ void Huff_transmit(huff_t *state, int32_t symbol, uint8_t *output)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00441d10_00441d3d.mcode.
  * Name and arguments: exact same-module Mac symbol Huff_offsetTransmit. */
-void Huff_offsetTransmit(huff_t *state, int32_t symbol, uint8_t *output, int32_t *offset)
+void Huff_offsetTransmit(huff_t *state, int32_t symbol,
+                         uint8_t *output, int32_t *offset)
 {
     node_t *node = state->loc[symbol];
     bloc = *offset;
@@ -366,8 +374,9 @@ qboolean Huff_Decompress(msg_t *message, int32_t offset)
     /* NOT_FROM_ORIGINAL_SOURCE: validate the complete message window before
      * deriving either pointer or extent. A qfalse result publishes no decoded
      * bytes, so the caller must discard the packet. */
-    if (message == NULL || message->data == NULL || offset < 0 || message->cursize > message->maxsize || offset > message->cursize ||
-        offset > message->maxsize) {
+    if (message == NULL || message->data == NULL || offset < 0 ||
+        message->cursize > message->maxsize ||
+        offset > message->cursize || offset > message->maxsize) {
         return qfalse;
     }
 
@@ -394,11 +403,13 @@ qboolean Huff_Decompress(msg_t *message, int32_t offset)
     state.tree->left = NULL;
     state.tree->parent = NULL;
 
-    int32_t outputLength = ((int32_t)input[0] << HUFFMAN_BITS_PER_BYTE) + input[1];
+    int32_t outputLength =
+        ((int32_t)input[0] << HUFFMAN_BITS_PER_BYTE) + input[1];
     if (outputLength > message->maxsize - offset)
         outputLength = message->maxsize - offset;
 
-    const int64_t inputBitCount = (int64_t)compressedLength * HUFFMAN_BITS_PER_BYTE;
+    const int64_t inputBitCount =
+        (int64_t)compressedLength * HUFFMAN_BITS_PER_BYTE;
     int32_t bitOffset = HUFFMAN_INITIAL_BIT_OFFSET;
     for (int32_t index = 0; index < outputLength; ++index) {
         node_t *node = state.tree;
@@ -407,7 +418,9 @@ qboolean Huff_Decompress(msg_t *message, int32_t offset)
              * the declared input extent. */
             if ((int64_t)bitOffset >= inputBitCount)
                 return qfalse;
-            node = Huff_getBit(input, &bitOffset) != 0 ? node->right : node->left;
+            node = Huff_getBit(input, &bitOffset) != 0
+                ? node->right
+                : node->left;
         }
         if (node == NULL)
             return qfalse;
@@ -429,7 +442,8 @@ qboolean Huff_Decompress(msg_t *message, int32_t offset)
 
     bloc = bitOffset;
     message->cursize = offset + outputLength;
-    Com_Memcpy(message->data + offset, output, (size_t)(uint32_t)outputLength);
+    Com_Memcpy(message->data + offset, output,
+               (size_t)(uint32_t)outputLength);
     return qtrue;
 }
 
@@ -472,7 +486,8 @@ void Huff_Compress(msg_t *message, int32_t offset)
     bloc += HUFFMAN_BITS_PER_BYTE;
     const int32_t outputLength = bloc >> HUFFMAN_BYTE_OFFSET_SHIFT;
     message->cursize = offset + outputLength;
-    Com_Memcpy(message->data + offset, output, (size_t)(uint32_t)outputLength);
+    Com_Memcpy(message->data + offset, output,
+               (size_t)(uint32_t)outputLength);
 }
 
 /* Source: CoDUOMP.exe 0x004420f0..0x004421c7.

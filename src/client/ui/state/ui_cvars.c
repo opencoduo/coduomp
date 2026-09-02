@@ -9,7 +9,8 @@ void UI_RegisterCvars(void)
     for (int32_t index = 0; index < ui_cvarCount; ++index) {
         cvarTable_t *entry = &ui_cvarTable[index];
 
-        trap_Cvar_Register(entry->vmCvar, entry->cvarName, entry->defaultString, entry->cvarFlags);
+        trap_Cvar_Register(entry->vmCvar, entry->cvarName,
+                           entry->defaultString, entry->cvarFlags);
     }
 }
 

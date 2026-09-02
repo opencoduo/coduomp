@@ -101,7 +101,8 @@ void CG_ConsolidateHudElemText(cgAlignedDrawItem *self, int maxlen, char *out)
     // FLD [EDI+0x1c] / FADD [EDI+0x14] / (store) / FSTP [EDI+0x1c] — the add is
     // evaluated before self->text / self->textWidth are written, matching the
     // instruction order (FADD reads +0x14 before the +0x14 store below).
-    long double combinedWidth = (long double)self->textWidth + (long double)self->labelWidth; // FLD +0x1c; FADD +0x14
+    long double combinedWidth =
+        (long double)self->textWidth + (long double)self->labelWidth; // FLD +0x1c; FADD +0x14
     self->text = out;              // MOV [EDI+0x18],EBP — expanded buffer becomes the arg
     self->textWidth = (float)combinedWidth;  // FSTP [EDI+0x1c]
     self->label = (char *)g_str_empty; // MOV [EDI+0x10],0x30074a0c; shared empty string

@@ -50,14 +50,16 @@ void CG_WeaponSway_ApplyShellShock(void)
 {
     /* bg_weaponInfos[cg.predictedPlayerState.currentWeapon] (0x30044c13..0x30044c1e):
      * EAX = currentWeapon; ECX = bg_weaponInfos; EDX = bg_weaponInfos[EAX]. */
-    const weaponInfo_t *weapon = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+    const weaponInfo_t *weapon =
+        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
 
     /* remaining = (duration - cg.time) + startTime, evaluated as signed 32-bit
      * (0x30044c21..0x30044c34: MOV EAX,[end]; SUB EAX,[cg.time]; ADD EAX,ESI[=start];
      * TEST EAX,EAX; JLE is a SIGNED test). cg_time is stored unsigned, so cast it to
      * int32_t to keep the subtraction and the <= 0 branch signed like the ALU op. */
-    int32_t remaining =
-        coduo_int32_from_bits(((uint32_t)cg_shellShockSwayDuration - (uint32_t)cg_time) + (uint32_t)cg_shellShockSwayStartTime);
+    int32_t remaining = coduo_int32_from_bits(
+        ((uint32_t)cg_shellShockSwayDuration - (uint32_t)cg_time) +
+        (uint32_t)cg_shellShockSwayStartTime);
 
     float scale;
 
@@ -79,7 +81,9 @@ void CG_WeaponSway_ApplyShellShock(void)
          * NEVER stored to a float slot: it is carried 80-bit through the smoothstep,
          * so it must be long double, not float, or it would round here. 1.0f is the
          * .rdata constant at 0x3007bce0. */
-        long double x = (remaining >= duration) ? 1.0f : (long double)remaining / (long double)duration;
+        long double x = (remaining >= duration)
+                      ? 1.0f
+                      : (long double)remaining / (long double)duration;
 
         /* smoothstep s = x*x*(3 - 2x) (0x30044c5e..0x30044c6a):
          *   FLD ST0 ; FADD ST0,ST1 (= 2x) ; FSUBR 3.0f (= 3 - 2x) ;
@@ -101,8 +105,10 @@ void CG_WeaponSway_ApplyShellShock(void)
      * (0x30487ae0), EAX = &swayOffset (0x30487aec),
      * ESI = &cg.predictedPlayerState (0x304831c4).
      * Caller cleans the 3 pushed dwords (ADD ESP,0xc at 0x30044cb5). */
-    BG_CalculateWeaponPosition_Sway(&cg_predictedPlayerState, cg_weaponSwayViewAngles, /* stack: previous view angles */
-                                    cg_weaponSwayOffset, /* EAX: positional sway */
-                                    cg_weaponSwayAngles, /* EDI: sway angles */
-                                    scale, cg_frametime);
+    BG_CalculateWeaponPosition_Sway(
+        &cg_predictedPlayerState,
+        cg_weaponSwayViewAngles,                   /* stack: previous view angles */
+        cg_weaponSwayOffset,                       /* EAX: positional sway */
+        cg_weaponSwayAngles,                       /* EDI: sway angles */
+        scale, cg_frametime);
 }

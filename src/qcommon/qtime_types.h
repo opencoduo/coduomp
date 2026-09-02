@@ -19,9 +19,12 @@ typedef struct qtime_s {
 } qtime_t;
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-_Static_assert(sizeof(qtime_t) == 0x24, "qtime_t size mismatch");
-_Static_assert(offsetof(qtime_t, tm_sec) == 0x00, "qtime_t.tm_sec offset mismatch");
-_Static_assert(offsetof(qtime_t, tm_isdst) == 0x20, "qtime_t.tm_isdst offset mismatch");
+_Static_assert(sizeof(qtime_t) == 0x24,
+               "qtime_t size mismatch");
+_Static_assert(offsetof(qtime_t, tm_sec) == 0x00,
+               "qtime_t.tm_sec offset mismatch");
+_Static_assert(offsetof(qtime_t, tm_isdst) == 0x20,
+               "qtime_t.tm_isdst offset mismatch");
 #endif
 
 #endif

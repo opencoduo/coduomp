@@ -84,9 +84,7 @@
 #define CG_WEAPON_NAME_PLATE_PAD 36.0f
 
 /* CG_FadeColor lifetime for the selected-weapon-name overlay (ms). MOV ECX,0x708. */
-enum {
-    CG_WEAPON_NAME_FADE_MS = 1800
-};
+enum { CG_WEAPON_NAME_FADE_MS = 1800 };
 
 /* Vehicle-view gate discriminants (proven from the CMP immediates at 0x3002ed72/
  * 0x3002ed7f). Exact CoD enum names for vehicleType/vehiclePosition are unproven;
@@ -96,7 +94,9 @@ enum {
     CG_VEHICLE_POSITION_DRIVER = 3   /* cg_predictedPlayerState.vehiclePosition == 3 to draw */
 };
 
-void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect, int32_t metricA, int32_t metricB, qhandle_t hShader)
+void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect,
+                                         int32_t metricA, int32_t metricB,
+                                         qhandle_t hShader)
 {
     weaponInfo_t *wi;
     const char *name;
@@ -139,7 +139,8 @@ void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect, int32_t me
      * the weapon's held bit is set; otherwise the cached cg_currentWeaponInfo.
      */
     w = cg_weaponSelect_vmCvar.integer;
-    if (w >= 0 && w < bg_numWeapons && (cg_predictedPlayerState.weaponBits[(uint32_t)w >> 5] & (1u << ((uint32_t)w & 31)))) {
+    if (w >= 0 && w < bg_numWeapons &&
+        (cg_predictedPlayerState.weaponBits[(uint32_t)w >> 5] & (1u << ((uint32_t)w & 31)))) {
         wi = bg_weaponInfos[w];
     } else {
         wi = cg_currentWeaponInfo;
@@ -179,12 +180,18 @@ void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect, int32_t me
      * cgame_syscall(52, name, metricA, metricB, 0).
      */
     {
-        int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)name, metricA, metricB, 0));
+        int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                                      CG_R_TEXT_WIDTH,
+                                      (intptr_t)name,
+                                      metricA,
+                                      metricB,
+                                      0));
 
         /* 0x3002ee69 FILD [width]; 0x3002ee74 FADD 36.0f -- width is FILDed straight
          * into the add (no float store), so it stays exact in 80-bit; no (float)
          * cast. Plate width = measured width + 36.0f padding. */
-        float plateWidth = (float)((long double)width + (long double)CG_WEAPON_NAME_PLATE_PAD);
+        float plateWidth = (float)((long double)width +
+                                   (long double)CG_WEAPON_NAME_PLATE_PAD);
 
         /*
          * 0x3002ee7e..ee87 computes the right-aligned plate left edge after
@@ -194,7 +201,9 @@ void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect, int32_t me
          * i.e. rect.right - plateWidth, so the plate hugs the rect's right edge.
          */
         {
-            float plateX = (float)(((long double)rect->w + (long double)rect->x) - (long double)plateWidth);
+            float plateX = (float)(((long double)rect->w +
+                                    (long double)rect->x) -
+                                   (long double)plateWidth);
 
             /* 0x3002ee8b: set the 2D draw color only after both plate
              * coordinates have been materialized. */

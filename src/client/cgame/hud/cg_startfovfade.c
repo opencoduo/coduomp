@@ -52,7 +52,8 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
      * is published. ADD is target-dword wrapping and precedes durationMs' store. */
     long double startValueRaw = (long double)numerator255;
     cg_fovFade.startTime = startTime;
-    int32_t endTime = coduo_int32_from_bits((uint32_t)startTime + (uint32_t)durationMs);
+    int32_t endTime = coduo_int32_from_bits(
+        (uint32_t)startTime + (uint32_t)durationMs);
     cg_fovFade.durationMs = durationMs;
     startValueRaw *= (long double)CG_FOV_FADE_BYTE_SCALE;
     int32_t now = cg_time;
@@ -65,7 +66,8 @@ void CG_StartFovFade(int32_t startTime, int32_t durationMs, int32_t numerator255
      * when the schedule has already elapsed (endTime <= cg.time) is the target
      * snapped in immediately. */
     if (expired) {
-        uint32_t startValueBits = (uint32_t)CG_FloatBits(cg_fovFade.startValue);
+        uint32_t startValueBits = (uint32_t)CG_FloatBits(
+            cg_fovFade.startValue);
         cg_fovFade.currentValue = CG_FloatFromBits(startValueBits);
     }
 }

@@ -10,7 +10,8 @@ extern "C" {
 #endif
 
 int32_t CM_PointContents(const vec3_t point, int32_t modelHandle);
-int32_t CM_TransformedPointContents(const vec3_t point, int32_t modelHandle, const vec3_t origin, const vec3_t angles);
+int32_t CM_TransformedPointContents(const vec3_t point, int32_t modelHandle,
+                                    const vec3_t origin, const vec3_t angles);
 
 #ifdef __cplusplus
 }

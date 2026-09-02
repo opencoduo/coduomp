@@ -48,11 +48,15 @@ void CG_RegisterWeapon(int weaponIndex)
 
     if (weapon->gunModel[0] != '\0') {
         const char *animNames[WEAPON_XANIM_COUNT - 1] = {
-            weapon->idleAnim,         weapon->emptyIdleAnim,   weapon->fireAnim,         weapon->holdFireAnim,    weapon->lastShotAnim,
-            weapon->rechamberAnim,    weapon->meleeAnim,       weapon->reloadAnim,       weapon->reloadEmptyAnim, weapon->reloadStartAnim,
-            weapon->reloadEndAnim,    weapon->raiseAnim,       weapon->dropAnim,         weapon->altRaiseAnim,    weapon->altDropAnim,
-            weapon->adsFireAnim,      weapon->adsLastShotAnim, weapon->adsRechamberAnim, weapon->lmgDeployedAnim, weapon->lmgDeployAnim,
-            weapon->lmgBreakdownAnim, weapon->adsUpAnim,       weapon->adsDownAnim};
+            weapon->idleAnim, weapon->emptyIdleAnim, weapon->fireAnim,
+            weapon->holdFireAnim, weapon->lastShotAnim, weapon->rechamberAnim,
+            weapon->meleeAnim, weapon->reloadAnim, weapon->reloadEmptyAnim,
+            weapon->reloadStartAnim, weapon->reloadEndAnim, weapon->raiseAnim,
+            weapon->dropAnim, weapon->altRaiseAnim, weapon->altDropAnim,
+            weapon->adsFireAnim, weapon->adsLastShotAnim, weapon->adsRechamberAnim,
+            weapon->lmgDeployedAnim, weapon->lmgDeployAnim,
+            weapon->lmgBreakdownAnim, weapon->adsUpAnim, weapon->adsDownAnim
+        };
         /* The PE32 producer writes every consumed lane below but leaves each
          * abiGap_00a word untouched; CoDUOMP.exe skips that word. */
         DObjModel models[CG_WEAPON_DOBJ_MODEL_COUNT];
@@ -61,14 +65,24 @@ void CG_RegisterWeapon(int weaponIndex)
         int32_t animIndex;
 
         if (weapon->handModel == NULL || weapon->handModel[0] == '\0') {
-            Com_Error(ERR_DROP, cg_registerWeaponMissingHandError, weapon->displayName);
+            Com_Error(
+                ERR_DROP,
+                cg_registerWeaponMissingHandError,
+                weapon->displayName);
         }
         if (weapon->idleAnim == NULL || weapon->idleAnim[0] == '\0') {
-            Com_Error(ERR_DROP, cg_registerWeaponMissingIdleError, weapon->displayName);
+            Com_Error(
+                ERR_DROP,
+                cg_registerWeaponMissingIdleError,
+                weapon->displayName);
         }
 
-        xanimDefinition = cgame_syscall(CG_XANIM_CREATE_ANIMS, (intptr_t)"VIEWMODEL", WEAPON_XANIM_COUNT);
-        cgame_syscall(CG_XANIM_BLEND, xanimDefinition, 0, (intptr_t)"root", 1, WEAPON_XANIM_COUNT - 1, 0);
+        xanimDefinition = cgame_syscall(CG_XANIM_CREATE_ANIMS,
+                                        (intptr_t)"VIEWMODEL",
+                                        WEAPON_XANIM_COUNT);
+        cgame_syscall(CG_XANIM_BLEND, xanimDefinition, 0,
+                      (intptr_t)"root", 1,
+                      WEAPON_XANIM_COUNT - 1, 0);
 
         for (animIndex = 1; animIndex < WEAPON_XANIM_COUNT; ++animIndex) {
             const char *animName = animNames[animIndex - 1];
@@ -76,7 +90,8 @@ void CG_RegisterWeapon(int weaponIndex)
                 animName = weapon->idleAnim;
             }
             cgame_syscall(CG_XANIM_PRECACHE, (intptr_t)animName);
-            cgame_syscall(CG_XANIM_CREATE, xanimDefinition, animIndex, (intptr_t)animName);
+            cgame_syscall(CG_XANIM_CREATE, xanimDefinition, animIndex,
+                          (intptr_t)animName);
         }
 
         xanimTree = cgame_syscall(CG_XANIM_CREATE_TREE, xanimDefinition);
@@ -90,15 +105,16 @@ void CG_RegisterWeapon(int weaponIndex)
          * Both operands must therefore enter exact: long double preserves the
          * x87-register evaluation convention, where a (float) cast would round
          * each operand first (Class 4). */
-#define SET_ANIM_RATE(animNumber, durationMsec) \
-    do { \
-        int32_t duration_ = (durationMsec); \
-        weaponInfo->animRates[(animNumber)] = \
-            duration_ <= 0 \
-                ? 0.0f \
-                : (long double)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_XANIM_GET_LENGTH, xanimDefinition, (animNumber))) / \
-                      (long double)duration_; \
-    } while (0)
+#define SET_ANIM_RATE(animNumber, durationMsec)                                      \
+        do {                                                                         \
+            int32_t duration_ = (durationMsec);                                      \
+            weaponInfo->animRates[(animNumber)] =                                   \
+                duration_ <= 0                                                       \
+                    ? 0.0f                                                           \
+                    : (long double)coduo_int32_from_bits((uint32_t)cgame_syscall(         \
+                          CG_XANIM_GET_LENGTH, xanimDefinition, (animNumber))) /      \
+                          (long double)duration_;                                     \
+        } while (0)
 
         SET_ANIM_RATE(WEAPON_XANIM_HOLD_FIRE, weapon->specialFireDelay);
         SET_ANIM_RATE(WEAPON_XANIM_MELEE, weapon->meleeTime);
@@ -116,57 +132,89 @@ void CG_RegisterWeapon(int weaponIndex)
 #undef SET_ANIM_RATE
 
         cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS, xanimTree, 0, 0);
-        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, xanimTree, 0, CG_FloatBits(1.0f), CG_FloatBits(0.0f),
+        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, xanimTree, 0,
+                      CG_FloatBits(1.0f), CG_FloatBits(0.0f),
                       CG_FloatBits(weaponInfo->animRates[0]), 1, 0);
 
-        if (weapon->adsUpAnim[0] != '\0' && cgame_syscall(CG_XANIM_IS_LOOPING, xanimDefinition, WEAPON_XANIM_ADS_UP) != 0) {
-            Com_Error(ERR_DROP, cg_registerWeaponLoopingAdsError, weapon->adsUpAnim);
+        if (weapon->adsUpAnim[0] != '\0' &&
+            cgame_syscall(CG_XANIM_IS_LOOPING, xanimDefinition,
+                          WEAPON_XANIM_ADS_UP) != 0) {
+            Com_Error(
+                ERR_DROP,
+                cg_registerWeaponLoopingAdsError,
+                weapon->adsUpAnim);
         }
-        if (weapon->adsDownAnim[0] != '\0' && cgame_syscall(CG_XANIM_IS_LOOPING, xanimDefinition, WEAPON_XANIM_ADS_DOWN) != 0) {
-            Com_Error(ERR_DROP, cg_registerWeaponLoopingAdsError, weapon->adsDownAnim);
+        if (weapon->adsDownAnim[0] != '\0' &&
+            cgame_syscall(CG_XANIM_IS_LOOPING, xanimDefinition,
+                          WEAPON_XANIM_ADS_DOWN) != 0) {
+            Com_Error(
+                ERR_DROP,
+                cg_registerWeaponLoopingAdsError,
+                weapon->adsDownAnim);
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        if (strlen(weapon->handModel) > sizeof(handModelPath) - sizeof("xmodel/") ||
-            strlen(weapon->gunModel) > sizeof(gunModelPath) - sizeof("xmodel/")) {
-            Com_Error(ERR_DROP, "\x15"
-                                "CG_RegisterWeapon: model path is too long");
+        if (strlen(weapon->handModel) >
+            sizeof(handModelPath) - sizeof("xmodel/") ||
+            strlen(weapon->gunModel) >
+            sizeof(gunModelPath) - sizeof("xmodel/")) {
+            Com_Error(ERR_DROP,
+                      "\x15" "CG_RegisterWeapon: model path is too long");
             return;
         }
-        Com_sprintf(handModelPath, sizeof(handModelPath), "xmodel/%s", weapon->handModel);
-        models[0].modelIndex = (int16_t)CG_RegisterModel(handModelPath, CG_REGISTER_VIEW_MODEL_CATEGORY);
-        models[0].model = (XModel *)(intptr_t)cgame_syscall(CG_DOBJ_WRAP_MODEL, models[0].modelIndex);
+        Com_sprintf(handModelPath, sizeof(handModelPath), "xmodel/%s",
+                    weapon->handModel);
+        models[0].modelIndex = (int16_t)CG_RegisterModel(
+            handModelPath, CG_REGISTER_VIEW_MODEL_CATEGORY);
+        models[0].model = (XModel *)(intptr_t)cgame_syscall(
+            CG_DOBJ_WRAP_MODEL, models[0].modelIndex);
         models[0].tagName = NULL;
         models[0].ignoreCollision = 0;
 
-        Com_sprintf(gunModelPath, sizeof(gunModelPath), "xmodel/%s", weapon->gunModel);
-        models[1].modelIndex = (int16_t)CG_RegisterModel(gunModelPath, CG_REGISTER_VIEW_MODEL_CATEGORY);
-        models[1].model = (XModel *)(intptr_t)cgame_syscall(CG_DOBJ_WRAP_MODEL, models[1].modelIndex);
+        Com_sprintf(gunModelPath, sizeof(gunModelPath), "xmodel/%s",
+                    weapon->gunModel);
+        models[1].modelIndex = (int16_t)CG_RegisterModel(
+            gunModelPath, CG_REGISTER_VIEW_MODEL_CATEGORY);
+        models[1].model = (XModel *)(intptr_t)cgame_syscall(
+            CG_DOBJ_WRAP_MODEL, models[1].modelIndex);
         models[1].tagName = "tag_weapon";
         models[1].ignoreCollision = 0;
 
-        cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)models, CG_WEAPON_DOBJ_MODEL_COUNT, xanimTree,
+        cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)models,
+                      CG_WEAPON_DOBJ_MODEL_COUNT, xanimTree,
                       weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
-        weaponInfo->viewDObjSelf =
-            (struct DObj_s *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
+        weaponInfo->viewDObjSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
+            CG_DOBJ_GET_HANDLE,
+            weaponIndex + CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
         Q_strncpyz(weaponInfo->name, weapon->handModel, CG_WEAPON_NAME_COPY_SIZE);
         weaponInfo->name[CG_WEAPON_NAME_COPY_SIZE] = '\0';
     }
 
     if (weapon->worldModel[0] != '\0') {
-        weaponInfo->worldModelHandle = CG_RegisterModel(weapon->worldModel, CG_REGISTER_WEAPON_MODEL_CATEGORY);
+        weaponInfo->worldModelHandle = CG_RegisterModel(
+            weapon->worldModel, CG_REGISTER_WEAPON_MODEL_CATEGORY);
     }
     if (weapon->worldModel[0] != '\0' && weaponInfo->worldModelHandle == 0) {
-        Com_Printf(cg_registerWeaponWorldModelWarning, weapon->worldModel);
+        Com_Printf(cg_registerWeaponWorldModelWarning,
+                   weapon->worldModel);
     }
 
-    weaponInfo->viewModelHandle = weapon->viewModel[0] != '\0' ? CG_RegisterModel(weapon->viewModel, CG_REGISTER_WEAPON_MODEL_CATEGORY) : 0;
+    weaponInfo->viewModelHandle =
+        weapon->viewModel[0] != '\0'
+            ? CG_RegisterModel(weapon->viewModel, CG_REGISTER_WEAPON_MODEL_CATEGORY)
+            : 0;
     weaponInfo->pickupModelHandle =
-        weapon->pickupModel[0] != '\0' ? CG_RegisterModel(weapon->pickupModel, CG_REGISTER_WEAPON_MODEL_CATEGORY) : 0;
+        weapon->pickupModel[0] != '\0'
+            ? CG_RegisterModel(weapon->pickupModel, CG_REGISTER_WEAPON_MODEL_CATEGORY)
+            : 0;
 
-    weaponInfo->itemHudIconShader = CG_RegisterMaterial(item->hudIcon, CG_REGISTER_WEAPON_SHADER_SORT);
-    weaponInfo->itemSelectIconShader = CG_RegisterMaterial(va("%s_select", item->hudIcon), CG_REGISTER_WEAPON_SHADER_SORT);
-    weaponInfo->itemAmmoIconShader = CG_RegisterMaterial(item->ammoIcon, CG_REGISTER_WEAPON_SHADER_SORT);
+    weaponInfo->itemHudIconShader =
+        CG_RegisterMaterial(item->hudIcon, CG_REGISTER_WEAPON_SHADER_SORT);
+    weaponInfo->itemSelectIconShader =
+        CG_RegisterMaterial(va("%s_select", item->hudIcon),
+                            CG_REGISTER_WEAPON_SHADER_SORT);
+    weaponInfo->itemAmmoIconShader =
+        CG_RegisterMaterial(item->ammoIcon, CG_REGISTER_WEAPON_SHADER_SORT);
 
     if (weapon->reticleCenter[0] != '\0') {
         if (cg_snap == NULL && cg_updateScreenActive == 0) {
@@ -178,30 +226,43 @@ void CG_RegisterWeapon(int weaponIndex)
 
             cg_updateScreenActive = 1;
             if (cl_serverloadmap.string[0] != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadmap", (intptr_t)"");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadmap",
+                              (intptr_t)"");
             }
             if (cl_serverloadgametype.string[0] != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadgametype", (intptr_t)"");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadgametype",
+                              (intptr_t)"");
             }
             if (cl_serverloadwaiting.integer != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadwaiting", (intptr_t)"0");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadwaiting",
+                              (intptr_t)"0");
             }
 
             serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
             mapName = Info_ValueForKey(serverInfo, "mapname");
             if (mapName != NULL && mapName[0] != '\0') {
-                levelShot = trap_R_RegisterShaderNoMip(va("levelshots/%s.tga", mapName), 2);
+                levelShot = trap_R_RegisterShaderNoMip(
+                    va("levelshots/%s.tga", mapName), 2);
             }
             if (levelShot == 0) {
                 levelShot = trap_R_RegisterShaderNoMip("menu/art/unknownmap", 2);
             }
 
             cgame_syscall(CG_R_SETCOLOR, 0);
-            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale), CG_FloatBits(0.0f * cgs_screenYScale),
-                                  CG_FloatBits(640.0f * cgs_screenXScale), CG_FloatBits(480.0f * cgs_screenYScale), CG_FloatBits(0.0f),
-                                  CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), levelShot);
+            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale),
+                                  CG_FloatBits(0.0f * cgs_screenYScale),
+                                  CG_FloatBits(640.0f * cgs_screenXScale),
+                                  CG_FloatBits(480.0f * cgs_screenYScale),
+                                  CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                  CG_FloatBits(1.0f), CG_FloatBits(1.0f),
+                                  levelShot);
 
-            cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)"com_expectedhunkusage", (intptr_t)expectedUsageString,
+            cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
+                          (intptr_t)"com_expectedhunkusage",
+                          (intptr_t)expectedUsageString,
                           (int32_t)sizeof(expectedUsageString));
             expectedUsage = coduo_crt_atoi(expectedUsageString);
             /* mcode note (0x30043e04-0x30043e1c here, repeated in the two
@@ -215,19 +276,25 @@ void CG_RegisterWeapon(int weaponIndex)
              * to the drawing helper. */
             if (expectedUsage > 0) {
                 long double fractionRaw =
-                    (long double)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_HUNK_USED)) / (long double)expectedUsage;
+                    (long double)coduo_int32_from_bits(
+                        (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                    (long double)expectedUsage;
                 float fraction = (float)fractionRaw;
                 if (fractionRaw > 1.0f) {
                     fraction = 1.0f;
                 }
-                CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, fraction);
+                CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f,
+                                       fraction);
             }
 
             cgame_syscall(CG_UPDATE_SCREEN);
-            cg_updateScreenActive = coduo_int32_from_bits((uint32_t)cg_updateScreenActive - 1u);
+            cg_updateScreenActive = coduo_int32_from_bits(
+                (uint32_t)cg_updateScreenActive - 1u);
         }
-        weaponInfo->reticleCenterShader =
-            (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)weapon->reticleCenter, CG_REGISTER_WEAPON_SHADER_SORT);
+        weaponInfo->reticleCenterShader = (qhandle_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)weapon->reticleCenter,
+            CG_REGISTER_WEAPON_SHADER_SORT);
     }
     if (weapon->reticleSide[0] != '\0') {
         if (cg_snap == NULL && cg_updateScreenActive == 0) {
@@ -239,47 +306,66 @@ void CG_RegisterWeapon(int weaponIndex)
 
             cg_updateScreenActive = 1;
             if (cl_serverloadmap.string[0] != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadmap", (intptr_t)"");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadmap",
+                              (intptr_t)"");
             }
             if (cl_serverloadgametype.string[0] != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadgametype", (intptr_t)"");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadgametype",
+                              (intptr_t)"");
             }
             if (cl_serverloadwaiting.integer != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadwaiting", (intptr_t)"0");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadwaiting",
+                              (intptr_t)"0");
             }
 
             serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
             mapName = Info_ValueForKey(serverInfo, "mapname");
             if (mapName != NULL && mapName[0] != '\0') {
-                levelShot = trap_R_RegisterShaderNoMip(va("levelshots/%s.tga", mapName), 2);
+                levelShot = trap_R_RegisterShaderNoMip(
+                    va("levelshots/%s.tga", mapName), 2);
             }
             if (levelShot == 0) {
                 levelShot = trap_R_RegisterShaderNoMip("menu/art/unknownmap", 2);
             }
 
             cgame_syscall(CG_R_SETCOLOR, 0);
-            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale), CG_FloatBits(0.0f * cgs_screenYScale),
-                                  CG_FloatBits(640.0f * cgs_screenXScale), CG_FloatBits(480.0f * cgs_screenYScale), CG_FloatBits(0.0f),
-                                  CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), levelShot);
+            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale),
+                                  CG_FloatBits(0.0f * cgs_screenYScale),
+                                  CG_FloatBits(640.0f * cgs_screenXScale),
+                                  CG_FloatBits(480.0f * cgs_screenYScale),
+                                  CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                  CG_FloatBits(1.0f), CG_FloatBits(1.0f),
+                                  levelShot);
 
-            cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)"com_expectedhunkusage", (intptr_t)expectedUsageString,
+            cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
+                          (intptr_t)"com_expectedhunkusage",
+                          (intptr_t)expectedUsageString,
                           (int32_t)sizeof(expectedUsageString));
             expectedUsage = coduo_crt_atoi(expectedUsageString);
             if (expectedUsage > 0) {
                 long double fractionRaw =
-                    (long double)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_HUNK_USED)) / (long double)expectedUsage;
+                    (long double)coduo_int32_from_bits(
+                        (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                    (long double)expectedUsage;
                 float fraction = (float)fractionRaw;
                 if (fractionRaw > 1.0f) {
                     fraction = 1.0f;
                 }
-                CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, fraction);
+                CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f,
+                                       fraction);
             }
 
             cgame_syscall(CG_UPDATE_SCREEN);
-            cg_updateScreenActive = coduo_int32_from_bits((uint32_t)cg_updateScreenActive - 1u);
+            cg_updateScreenActive = coduo_int32_from_bits(
+                (uint32_t)cg_updateScreenActive - 1u);
         }
-        weaponInfo->reticleSideShader =
-            (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)weapon->reticleSide, CG_REGISTER_WEAPON_SHADER_SORT);
+        weaponInfo->reticleSideShader = (qhandle_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)weapon->reticleSide,
+            CG_REGISTER_WEAPON_SHADER_SORT);
     }
     if (weapon->adsOverlayShader[0] != '\0') {
         if (cg_snap == NULL && cg_updateScreenActive == 0) {
@@ -291,54 +377,75 @@ void CG_RegisterWeapon(int weaponIndex)
 
             cg_updateScreenActive = 1;
             if (cl_serverloadmap.string[0] != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadmap", (intptr_t)"");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadmap",
+                              (intptr_t)"");
             }
             if (cl_serverloadgametype.string[0] != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadgametype", (intptr_t)"");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadgametype",
+                              (intptr_t)"");
             }
             if (cl_serverloadwaiting.integer != 0) {
-                cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadwaiting", (intptr_t)"0");
+                cgame_syscall(CG_CVAR_SET,
+                              (intptr_t)"cl_serverloadwaiting",
+                              (intptr_t)"0");
             }
 
             serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
             mapName = Info_ValueForKey(serverInfo, "mapname");
             if (mapName != NULL && mapName[0] != '\0') {
-                levelShot = trap_R_RegisterShaderNoMip(va("levelshots/%s.tga", mapName), 2);
+                levelShot = trap_R_RegisterShaderNoMip(
+                    va("levelshots/%s.tga", mapName), 2);
             }
             if (levelShot == 0) {
                 levelShot = trap_R_RegisterShaderNoMip("menu/art/unknownmap", 2);
             }
 
             cgame_syscall(CG_R_SETCOLOR, 0);
-            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale), CG_FloatBits(0.0f * cgs_screenYScale),
-                                  CG_FloatBits(640.0f * cgs_screenXScale), CG_FloatBits(480.0f * cgs_screenYScale), CG_FloatBits(0.0f),
-                                  CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), levelShot);
+            trap_R_DrawStretchPic(CG_FloatBits(0.0f * cgs_screenXScale),
+                                  CG_FloatBits(0.0f * cgs_screenYScale),
+                                  CG_FloatBits(640.0f * cgs_screenXScale),
+                                  CG_FloatBits(480.0f * cgs_screenYScale),
+                                  CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                  CG_FloatBits(1.0f), CG_FloatBits(1.0f),
+                                  levelShot);
 
-            cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)"com_expectedhunkusage", (intptr_t)expectedUsageString,
+            cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
+                          (intptr_t)"com_expectedhunkusage",
+                          (intptr_t)expectedUsageString,
                           (int32_t)sizeof(expectedUsageString));
             expectedUsage = coduo_crt_atoi(expectedUsageString);
             if (expectedUsage > 0) {
                 long double fractionRaw =
-                    (long double)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_HUNK_USED)) / (long double)expectedUsage;
+                    (long double)coduo_int32_from_bits(
+                        (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                    (long double)expectedUsage;
                 float fraction = (float)fractionRaw;
                 if (fractionRaw > 1.0f) {
                     fraction = 1.0f;
                 }
-                CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, fraction);
+                CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f,
+                                       fraction);
             }
 
             cgame_syscall(CG_UPDATE_SCREEN);
-            cg_updateScreenActive = coduo_int32_from_bits((uint32_t)cg_updateScreenActive - 1u);
+            cg_updateScreenActive = coduo_int32_from_bits(
+                (uint32_t)cg_updateScreenActive - 1u);
         }
-        weaponInfo->adsOverlayShader =
-            (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)weapon->adsOverlayShader, CG_REGISTER_WEAPON_SHADER_SORT);
+        weaponInfo->adsOverlayShader = (qhandle_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)weapon->adsOverlayShader,
+            CG_REGISTER_WEAPON_SHADER_SORT);
     }
 
     if (weapon->viewFlashEffect[0] != '\0') {
-        weaponInfo->viewFlashEffect = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)weapon->viewFlashEffect);
+        weaponInfo->viewFlashEffect = (uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->viewFlashEffect);
     }
     if (weapon->worldFlashEffect[0] != '\0') {
-        weaponInfo->worldFlashEffect = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)weapon->worldFlashEffect);
+        weaponInfo->worldFlashEffect = (uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->worldFlashEffect);
     }
 
     weaponInfo->projectileSound = trap_Com_SoundAliasString(weapon->projectileSound);
@@ -379,58 +486,78 @@ void CG_RegisterWeapon(int weaponIndex)
         itemInfo->pickupSoundAlt = trap_Com_SoundAliasString("weap_ammo_pickup");
     }
     if (weapon->shellEjectEffect[0] != '\0') {
-        weaponInfo->shellEjectEffect = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)weapon->shellEjectEffect);
+        weaponInfo->shellEjectEffect = (uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->shellEjectEffect);
     }
     if (weapon->lastShotEjectEffect[0] != '\0') {
-        weaponInfo->lastShotEjectEffect = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)weapon->lastShotEjectEffect);
+        weaponInfo->lastShotEjectEffect = (uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->lastShotEjectEffect);
     } else {
         weaponInfo->lastShotEjectEffect = weaponInfo->shellEjectEffect;
     }
 
     if (weapon->clipModel[0] != '\0') {
-        weaponInfo->clipModelHandle = CG_RegisterModel(weapon->clipModel, CG_REGISTER_WEAPON_MODEL_CATEGORY);
+        weaponInfo->clipModelHandle = CG_RegisterModel(
+            weapon->clipModel, CG_REGISTER_WEAPON_MODEL_CATEGORY);
         if (weaponInfo->clipModelHandle == 0) {
-            Com_ErrorMessage(cg_registerWeaponInvalidProjectileModel, weapon->pickupName, weapon->worldModel);
+            Com_ErrorMessage(
+                cg_registerWeaponInvalidProjectileModel,
+                weapon->pickupName, weapon->worldModel);
         }
     }
     if (weapon->projectileExplosionEffect[0] != '\0') {
-        weaponInfo->projectileExplosionEffect = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)weapon->projectileExplosionEffect);
+        weaponInfo->projectileExplosionEffect = (uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT,
+            (intptr_t)weapon->projectileExplosionEffect);
     }
-    weaponInfo->projectileExplosionSound = trap_Com_SoundAliasString(weapon->projectileExplosionSound);
+    weaponInfo->projectileExplosionSound =
+        trap_Com_SoundAliasString(weapon->projectileExplosionSound);
     if (weapon->projectileTrailEffect[0] != '\0') {
-        weaponInfo->projectileTrailEffect = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)weapon->projectileTrailEffect);
+        weaponInfo->projectileTrailEffect = (uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)weapon->projectileTrailEffect);
     }
-    weaponInfo->projectileDLight = (float)(long double)coduo_int32_from_bits((uint32_t)weapon->projectileDLight);
+    weaponInfo->projectileDLight =
+        (float)(long double)coduo_int32_from_bits((uint32_t)weapon->projectileDLight);
 
     if (weapon->hudIcon[0] != '\0') {
-        weaponInfo->hudIconShader = CG_RegisterMaterial(weapon->hudIcon, CG_REGISTER_WEAPON_SHADER_SORT);
+        weaponInfo->hudIconShader = CG_RegisterMaterial(
+            weapon->hudIcon, CG_REGISTER_WEAPON_SHADER_SORT);
         cg_weaponHudIcons[weaponIndex] = (qhandle_t)weaponInfo->hudIconShader;
     } else {
-        cg_weaponHudIcons[weaponIndex] = cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE];
+        cg_weaponHudIcons[weaponIndex] =
+            cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE];
     }
     if (weapon->killIcon[0] != '\0') {
-        (void)CG_RegisterMaterial(weapon->killIcon, CG_REGISTER_WEAPON_SHADER_SORT);
+        (void)CG_RegisterMaterial(weapon->killIcon,
+                                       CG_REGISTER_WEAPON_SHADER_SORT);
     }
     if (weapon->modeIcon[0] != '\0') {
-        weaponInfo->modeIconShader = CG_RegisterMaterial(weapon->modeIcon, CG_REGISTER_WEAPON_SHADER_SORT);
+        weaponInfo->modeIconShader = CG_RegisterMaterial(
+            weapon->modeIcon, CG_REGISTER_WEAPON_SHADER_SORT);
     }
     if (weapon->ammoIcon[0] != '\0') {
-        weaponInfo->ammoIconShader = CG_RegisterMaterial(weapon->ammoIcon, CG_REGISTER_WEAPON_SHADER_SORT);
+        weaponInfo->ammoIconShader = CG_RegisterMaterial(
+            weapon->ammoIcon, CG_REGISTER_WEAPON_SHADER_SORT);
         cg_weaponAmmoIcons[weaponIndex] = (qhandle_t)weaponInfo->ammoIconShader;
     } else {
-        cg_weaponAmmoIcons[weaponIndex] = cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE];
+        cg_weaponAmmoIcons[weaponIndex] =
+            cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE];
     }
 
     {
         const char *reference = weapon->displayName;
-        const char *translated = (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
+        const char *translated = (const char *)(intptr_t)cgame_syscall(
+            CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
 
         if (translated == NULL) {
             if (cl_languagewarnings_vmCvar.integer != 0) {
                 if (cl_languagewarningsaserrors_vmCvar.integer != 0) {
-                    Com_Error(ERR_LOCALIZATION, cg_registerWeaponErrorDisplayName, weapon->pickupName, reference);
+                    Com_Error(ERR_LOCALIZATION,
+                                       cg_registerWeaponErrorDisplayName,
+                                       weapon->pickupName, reference);
                 } else {
-                    Com_Printf(cg_registerWeaponWarnDisplayName, weapon->pickupName, reference);
+                    Com_Printf(cg_registerWeaponWarnDisplayName,
+                               weapon->pickupName, reference);
                 }
             }
             translated = reference;
@@ -440,14 +567,18 @@ void CG_RegisterWeapon(int weaponIndex)
 
     {
         const char *reference = weapon->modeName;
-        const char *translated = (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
+        const char *translated = (const char *)(intptr_t)cgame_syscall(
+            CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
 
         if (translated == NULL) {
             if (cl_languagewarnings_vmCvar.integer != 0) {
                 if (cl_languagewarningsaserrors_vmCvar.integer != 0) {
-                    Com_Error(ERR_LOCALIZATION, cg_registerWeaponErrorModeName, weapon->pickupName, reference);
+                    Com_Error(ERR_LOCALIZATION,
+                                       cg_registerWeaponErrorModeName,
+                                       weapon->pickupName, reference);
                 } else {
-                    Com_Printf(cg_registerWeaponWarnModeName, weapon->pickupName, reference);
+                    Com_Printf(cg_registerWeaponWarnModeName,
+                               weapon->pickupName, reference);
                 }
             }
             translated = reference;
@@ -457,14 +588,18 @@ void CG_RegisterWeapon(int weaponIndex)
 
     {
         const char *reference = weapon->aiOverlayDescription;
-        const char *translated = (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
+        const char *translated = (const char *)(intptr_t)cgame_syscall(
+            CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
 
         if (translated == NULL) {
             if (cl_languagewarnings_vmCvar.integer != 0) {
                 if (cl_languagewarningsaserrors_vmCvar.integer != 0) {
-                    Com_Error(ERR_LOCALIZATION, cg_registerWeaponErrorAiOverlay, weapon->pickupName, reference);
+                    Com_Error(ERR_LOCALIZATION,
+                                       cg_registerWeaponErrorAiOverlay,
+                                       weapon->pickupName, reference);
                 } else {
-                    Com_Printf(cg_registerWeaponWarnAiOverlay, weapon->pickupName, reference);
+                    Com_Printf(cg_registerWeaponWarnAiOverlay,
+                               weapon->pickupName, reference);
                 }
             }
             translated = reference;

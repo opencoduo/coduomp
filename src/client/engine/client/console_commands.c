@@ -70,28 +70,41 @@ static void Con_BeginMessageInput(int32_t widthInPixels)
  * already within that trailing span, the original rewinds before scanning. */
 void Con_JumpToDemoEnd_f(void)
 {
-    if (clc.demoPlayback == qfalse || clc.demoFile == 0) {
+    if (clc.demoPlayback == qfalse ||
+        clc.demoFile == 0) {
         return;
     }
 
-    const int32_t trailingBytes = Cmd_Argc() >= 2 ? coduo_crt_atoi(Cmd_Argv(1)) : 0;
+    const int32_t trailingBytes =
+        Cmd_Argc() >= 2 ? coduo_crt_atoi(Cmd_Argv(1)) : 0;
 
-    int32_t currentPosition = FS_FTell(clc.demoFile);
-    int32_t fileLength = FS_filelength(clc.demoFile);
-    if ((int32_t)((uint32_t)fileLength - (uint32_t)trailingBytes) < currentPosition) {
-        (void)FS_Seek(clc.demoFile, 0, FS_SEEK_ORIGIN_SET);
+    int32_t currentPosition =
+        FS_FTell(clc.demoFile);
+    int32_t fileLength =
+        FS_filelength(clc.demoFile);
+    if ((int32_t)((uint32_t)fileLength -
+                  (uint32_t)trailingBytes) <
+        currentPosition) {
+        (void)FS_Seek(
+            clc.demoFile, 0, FS_SEEK_ORIGIN_SET);
     }
 
     while (clc.demoFile != 0) {
-        currentPosition = FS_FTell(clc.demoFile);
-        fileLength = FS_filelength(clc.demoFile);
-        const int32_t remainingBytes = (int32_t)((uint32_t)fileLength - (uint32_t)currentPosition);
+        currentPosition =
+            FS_FTell(clc.demoFile);
+        fileLength =
+            FS_filelength(clc.demoFile);
+        const int32_t remainingBytes =
+            (int32_t)((uint32_t)fileLength -
+                      (uint32_t)currentPosition);
         if (remainingBytes < trailingBytes)
             break;
 
         CL_ReadDemoMessage();
         cl.serverTime = cl.snap.serverTime;
-        cls.realtime = (int32_t)((uint32_t)cl.snap.serverTime - (uint32_t)cl.serverTimeDelta);
+        cls.realtime =
+            (int32_t)((uint32_t)cl.snap.serverTime -
+                      (uint32_t)cl.serverTimeDelta);
     }
 }
 
@@ -112,7 +125,8 @@ void Con_Init(void)
     con_inputField.fixedSize = qtrue;
 
     for (int32_t history = 0; history < CON_HISTORY_FIELD_COUNT; ++history) {
-        memset(&con_historyFields[history], 0, sizeof(con_historyFields[history]));
+        memset(&con_historyFields[history], 0,
+               sizeof(con_historyFields[history]));
         con_historyFields[history].widthInChars = CON_INPUT_BUFFER_SIZE;
         con_historyFields[history].widthInPixels = con_fieldWidthPixels;
         con_historyFields[history].charWidth = con_fieldCharWidth;
@@ -142,7 +156,9 @@ void Con_ToggleConsole_f(void)
         return;
     }
 
-    if (con_restricted->integer != 0 && keyStates[K_SHIFT].down == qfalse && (cls.keyCatchers & KEYCATCH_CONSOLE) == 0) {
+    if (con_restricted->integer != 0 &&
+        keyStates[K_SHIFT].down == qfalse &&
+        (cls.keyCatchers & KEYCATCH_CONSOLE) == 0) {
         return;
     }
 
@@ -179,7 +195,9 @@ void Con_MessageMode2_f(void)
  * Name and signature: exact same-module Mac symbol Con_MessageMode3_f. */
 void Con_MessageMode3_f(void)
 {
-    chat_playerNum = (int32_t)VM_Call(coduo_cgameVm, CGVM_CROSSHAIR_PLAYER, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    chat_playerNum = (int32_t)VM_Call(
+        coduo_cgameVm, CGVM_CROSSHAIR_PLAYER,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS) {
         chat_playerNum = -1;
         return;
@@ -234,7 +252,8 @@ void Con_Dump_f(void)
 
     line = con.currentLine - con.totalLines + 1;
     while (line <= con.currentLine) {
-        const uint16_t *cells = &con.text[(line % con.totalLines) * con.lineWidth];
+        const uint16_t *cells =
+            &con.text[(line % con.totalLines) * con.lineWidth];
         int32_t column;
 
         for (column = 0; column < con.lineWidth; ++column) {
@@ -248,7 +267,8 @@ void Con_Dump_f(void)
 
     lineBuffer[con.lineWidth] = '\0';
     for (; line <= con.currentLine; ++line) {
-        const uint16_t *cells = &con.text[(line % con.totalLines) * con.lineWidth];
+        const uint16_t *cells =
+            &con.text[(line % con.totalLines) * con.lineWidth];
         int32_t length = con.lineWidth;
 
         for (int32_t column = 0; column < con.lineWidth; ++column)
@@ -280,16 +300,20 @@ void Console_Key(int32_t key)
     if (key == K_ENTER || key == K_KP_ENTER) {
         char command[CON_MESSAGE_COMMAND_SIZE];
 
-        if ((cl_autocmd->integer != 0 || cls.state != CA_ACTIVE) && con_inputField.buffer[0] != '\\' && con_inputField.buffer[0] != '/') {
+        if ((cl_autocmd->integer != 0 || cls.state != CA_ACTIVE) &&
+            con_inputField.buffer[0] != '\\' &&
+            con_inputField.buffer[0] != '/') {
             strncpy(command, con_inputField.buffer, sizeof(command) - 1);
             command[sizeof(command) - 1] = '\0';
-            Com_sprintf(con_inputField.buffer, CON_INPUT_BUFFER_SIZE, "\\%s", command);
+            Com_sprintf(con_inputField.buffer, CON_INPUT_BUFFER_SIZE,
+                        "\\%s", command);
             ++con_inputField.cursor;
         }
 
         Com_Printf("]%s\n", con_inputField.buffer);
 
-        if (con_inputField.buffer[0] != '\\' && con_inputField.buffer[0] != '/') {
+        if (con_inputField.buffer[0] != '\\' &&
+            con_inputField.buffer[0] != '/') {
             if (con_inputField.buffer[0] == '\0')
                 return;
 
@@ -300,7 +324,8 @@ void Console_Key(int32_t key)
         }
         Cbuf_AddText("\n");
 
-        con_historyFields[con_nextHistoryLine % CON_HISTORY_FIELD_COUNT] = con_inputField;
+        con_historyFields[
+            con_nextHistoryLine % CON_HISTORY_FIELD_COUNT] = con_inputField;
         ++con_nextHistoryLine;
         con_historyLine = con_nextHistoryLine;
 
@@ -323,23 +348,31 @@ void Console_Key(int32_t key)
         return;
     }
 
-    if ((key == K_MWHEELUP && keyStates[K_SHIFT].down != qfalse) || key == K_UPARROW || key == K_KP_UPARROW ||
-        (coduo_crt_tolower(key) == 'p' && keyStates[K_CTRL].down != qfalse)) {
-        if (con_nextHistoryLine - con_historyLine < CON_HISTORY_FIELD_COUNT && con_historyLine > 0) {
+    if ((key == K_MWHEELUP && keyStates[K_SHIFT].down != qfalse) ||
+        key == K_UPARROW || key == K_KP_UPARROW ||
+        (coduo_crt_tolower(key) == 'p' &&
+         keyStates[K_CTRL].down != qfalse)) {
+        if (con_nextHistoryLine - con_historyLine <
+                CON_HISTORY_FIELD_COUNT &&
+            con_historyLine > 0) {
             --con_historyLine;
         }
-        con_inputField = con_historyFields[con_historyLine % CON_HISTORY_FIELD_COUNT];
+        con_inputField =
+            con_historyFields[con_historyLine % CON_HISTORY_FIELD_COUNT];
         Field_AdjustScroll(&con_inputField);
         return;
     }
 
-    if ((key == K_MWHEELDOWN && keyStates[K_SHIFT].down != qfalse) || key == K_DOWNARROW || key == K_KP_DOWNARROW ||
-        (coduo_crt_tolower(key) == 'n' && keyStates[K_CTRL].down != qfalse)) {
+    if ((key == K_MWHEELDOWN && keyStates[K_SHIFT].down != qfalse) ||
+        key == K_DOWNARROW || key == K_KP_DOWNARROW ||
+        (coduo_crt_tolower(key) == 'n' &&
+         keyStates[K_CTRL].down != qfalse)) {
         if (con_historyLine == con_nextHistoryLine)
             return;
 
         ++con_historyLine;
-        con_inputField = con_historyFields[con_historyLine % CON_HISTORY_FIELD_COUNT];
+        con_inputField =
+            con_historyFields[con_historyLine % CON_HISTORY_FIELD_COUNT];
         Field_AdjustScroll(&con_inputField);
         return;
     }
@@ -353,13 +386,21 @@ void Console_Key(int32_t key)
         return;
     }
     if (key == K_MWHEELUP) {
-        for (int32_t page = 0; page < (keyStates[K_CTRL].down != qfalse ? CON_WHEEL_SCROLL_PAGES : 1); ++page) {
+        for (int32_t page = 0;
+             page < (keyStates[K_CTRL].down != qfalse
+                         ? CON_WHEEL_SCROLL_PAGES
+                         : 1);
+             ++page) {
             Con_PageUp();
         }
         return;
     }
     if (key == K_MWHEELDOWN) {
-        for (int32_t page = 0; page < (keyStates[K_CTRL].down != qfalse ? CON_WHEEL_SCROLL_PAGES : 1); ++page) {
+        for (int32_t page = 0;
+             page < (keyStates[K_CTRL].down != qfalse
+                         ? CON_WHEEL_SCROLL_PAGES
+                         : 1);
+             ++page) {
             Con_PageDown();
         }
         return;
@@ -387,18 +428,25 @@ void Message_Key(int32_t key)
         return;
     }
 
-    if (key != K_ESCAPE && chatField.buffer[0] != '\0' && cls.state == CA_ACTIVE) {
+    if (key != K_ESCAPE &&
+        chatField.buffer[0] != '\0' &&
+        cls.state == CA_ACTIVE) {
         char command[CON_MESSAGE_COMMAND_SIZE];
 
         if (chat_playerNum != -1) {
-            Com_sprintf(command, sizeof(command), "tell %i \"\x15%s\"\n", chat_playerNum, chatField.buffer);
+            Com_sprintf(command, sizeof(command),
+                        "tell %i \"\x15%s\"\n",
+                        chat_playerNum, chatField.buffer);
         } else if (chat_team != qfalse) {
-            Com_sprintf(command, sizeof(command), "say_team \"\x15%s\"\n", chatField.buffer);
+            Com_sprintf(command, sizeof(command),
+                        "say_team \"\x15%s\"\n", chatField.buffer);
         } else if (chat_squad != qfalse) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            Com_sprintf(command, sizeof(command), "say_squad \"\x15%s\"\n", chatField.buffer);
+            Com_sprintf(command, sizeof(command),
+                        "say_squad \"\x15%s\"\n", chatField.buffer);
         } else {
-            Com_sprintf(command, sizeof(command), "say \"\x15%s\"\n", chatField.buffer);
+            Com_sprintf(command, sizeof(command),
+                        "say \"\x15%s\"\n", chatField.buffer);
         }
         CL_AddReliableCommand(command);
     }

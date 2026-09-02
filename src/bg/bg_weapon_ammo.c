@@ -26,7 +26,8 @@ void PM_WeaponUseAmmo(int32_t weapon, int32_t amount)
     const int32_t clipIndex = BG_GetInfoForWeapon(weapon)->clipIndex;
     playerState_t *const ps = pm->ps;
 
-    ps->clips[clipIndex] = coduo_int32_from_bits((uint32_t)ps->clips[clipIndex] - (uint32_t)amount);
+    ps->clips[clipIndex] = coduo_int32_from_bits(
+        (uint32_t)ps->clips[clipIndex] - (uint32_t)amount);
     if (ps->clips[clipIndex] < 0) {
         ps->clips[clipIndex] = 0;
     }

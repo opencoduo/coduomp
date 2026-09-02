@@ -34,26 +34,33 @@ void Com_DPrintf(const char *format, ...);
 
 void CM_InitWorldSector(void)
 {
-    CM_ModelBounds(CM_InlineModel(CM_WORLD_MODEL), cm_worldMins, cm_worldMaxs);
+    CM_ModelBounds(CM_InlineModel(CM_WORLD_MODEL),
+                   cm_worldMins, cm_worldMaxs);
 
     cm_freeWorldSectors = &cm_worldSectorPool[0];
-    for (int32_t sectorIndex = 0; sectorIndex < SERVER_WORLD_SECTOR_POOL_COUNT - 1; ++sectorIndex) {
-        cm_worldSectorPool[sectorIndex].parent = &cm_worldSectorPool[sectorIndex + 1];
+    for (int32_t sectorIndex = 0;
+         sectorIndex < SERVER_WORLD_SECTOR_POOL_COUNT - 1;
+         ++sectorIndex) {
+        cm_worldSectorPool[sectorIndex].parent =
+            &cm_worldSectorPool[sectorIndex + 1];
     }
     cm_worldSectorPool[SERVER_WORLD_SECTOR_POOL_COUNT - 1].parent = NULL;
 
 #if defined(WINDOWS_BEHAVIOR)
     /* Windows compares both unspilled x87 subtractions. */
-    const long double widthX = (long double)cm_worldMaxs[0] - (long double)cm_worldMins[0];
-    const long double widthY = (long double)cm_worldMaxs[1] - (long double)cm_worldMins[1];
+    const long double widthX =
+        (long double)cm_worldMaxs[0] - (long double)cm_worldMins[0];
+    const long double widthY =
+        (long double)cm_worldMaxs[1] - (long double)cm_worldMins[1];
 #else
     /* Linux stores both widths to binary32 before comparing them. */
     const float widthX = cm_worldMaxs[0] - cm_worldMins[0];
     const float widthY = cm_worldMaxs[1] - cm_worldMins[1];
 #endif
     cm_worldSectorRoot.axis = widthX <= widthY ? 1 : 0;
-    cm_worldSectorRoot.dist =
-        (float)(((long double)cm_worldMins[cm_worldSectorRoot.axis] + (long double)cm_worldMaxs[cm_worldSectorRoot.axis]) * 0.5L);
+    cm_worldSectorRoot.dist = (float)(
+        ((long double)cm_worldMins[cm_worldSectorRoot.axis] +
+         (long double)cm_worldMaxs[cm_worldSectorRoot.axis]) * 0.5L);
     cm_worldSectorRoot.children[0] = &cm_nullWorldSector;
     cm_worldSectorRoot.children[1] = &cm_nullWorldSector;
 }
@@ -70,7 +77,8 @@ worldSector_t *CM_AllocWorldSector(const vec2_t mins, const vec2_t maxs)
 
 #if defined(WINDOWS_BEHAVIOR)
     /* Windows keeps the X subtraction live while storing both array lanes. */
-    const long double liveSizeX = (long double)maxs[0] - (long double)mins[0];
+    const long double liveSizeX =
+        (long double)maxs[0] - (long double)mins[0];
     sizes[0] = (float)liveSizeX;
     sizes[1] = (float)((long double)maxs[1] - (long double)mins[1]);
     axis = liveSizeX <= (long double)sizes[1] ? 1 : 0;
@@ -87,13 +95,16 @@ worldSector_t *CM_AllocWorldSector(const vec2_t mins, const vec2_t maxs)
 
     cm_freeWorldSectors = sector->parent;
     sector->axis = axis;
-    sector->dist = (float)(((long double)mins[axis] + (long double)maxs[axis]) * 0.5L);
+    sector->dist = (float)(
+        ((long double)mins[axis] + (long double)maxs[axis]) * 0.5L);
     sector->children[0] = &cm_nullWorldSector;
     sector->children[1] = &cm_nullWorldSector;
     return sector;
 }
 
-void CM_RebucketWorldSectorLinks(worldSector_t *sector, const vec2_t sectorMins, const vec2_t sectorMaxs)
+void CM_RebucketWorldSectorLinks(worldSector_t *sector,
+                                 const vec2_t sectorMins,
+                                 const vec2_t sectorMaxs)
 {
     const int32_t axis = sector->axis;
     const float distance = sector->dist;
@@ -133,7 +144,8 @@ void CM_RebucketWorldSectorLinks(worldSector_t *sector, const vec2_t sectorMins,
         entity->worldSector = child;
         entity->nextInWorldSector = child->entityLinkHead;
         child->entityLinkHead = entity;
-        child->entityContentsMask |= SV_GEntityForSvEntity(entity)->contents;
+        child->entityContentsMask |=
+            SV_GEntityForSvEntity(entity)->contents;
 
         if (previousEntity == NULL) {
             sector->entityLinkHead = next;
@@ -214,7 +226,9 @@ void SV_UnlinkEntityFromWorldSector(svEntity_t *serverEntity)
         previous->nextInWorldSector = serverEntity->nextInWorldSector;
     }
 
-    while (sector->entityLinkHead == NULL && sector->staticModelLinkHead == NULL && sector->children[0] == &cm_nullWorldSector &&
+    while (sector->entityLinkHead == NULL &&
+           sector->staticModelLinkHead == NULL &&
+           sector->children[0] == &cm_nullWorldSector &&
            sector->children[1] == &cm_nullWorldSector) {
         worldSector_t *const parent = sector->parent;
 
@@ -235,9 +249,13 @@ void SV_UnlinkEntityFromWorldSector(svEntity_t *serverEntity)
     }
 
     for (; sector != NULL; sector = sector->parent) {
-        int32_t contentsMask = sector->children[0]->entityContentsMask | sector->children[1]->entityContentsMask;
+        int32_t contentsMask =
+            sector->children[0]->entityContentsMask |
+            sector->children[1]->entityContentsMask;
 
-        for (svEntity_t *scan = sector->entityLinkHead; scan != NULL; scan = scan->nextInWorldSector) {
+        for (svEntity_t *scan = sector->entityLinkHead;
+             scan != NULL;
+             scan = scan->nextInWorldSector) {
             contentsMask |= SV_GEntityForSvEntity(scan)->contents;
         }
 
@@ -246,9 +264,11 @@ void SV_UnlinkEntityFromWorldSector(svEntity_t *serverEntity)
 }
 
 /* CoDUOMP.exe 0x0042a930; coduo_lnxded 0x0805de1a. */
-void SV_LinkEntityToWorldSector(svEntity_t *serverEntity, const vec2_t mins, const vec2_t maxs)
+void SV_LinkEntityToWorldSector(svEntity_t *serverEntity,
+                                const vec2_t mins, const vec2_t maxs)
 {
-    const int32_t contentsMask = SV_GEntityForSvEntity(serverEntity)->contents;
+    const int32_t contentsMask =
+        SV_GEntityForSvEntity(serverEntity)->contents;
 
     for (;;) {
         vec2_t sectorMins = {cm_worldMins[0], cm_worldMins[1]};
@@ -285,7 +305,9 @@ void SV_LinkEntityToWorldSector(svEntity_t *serverEntity, const vec2_t mins, con
             sector = sector->children[1];
         }
 
-        if (stoppedAtNullChild == qfalse && serverEntity->worldSector == sector && ((~contentsMask & serverEntity->contentsMask) == 0)) {
+        if (stoppedAtNullChild == qfalse &&
+            serverEntity->worldSector == sector &&
+            ((~contentsMask & serverEntity->contentsMask) == 0)) {
             serverEntity->contentsMask = contentsMask;
             serverEntity->linkMins[0] = mins[0];
             serverEntity->linkMins[1] = mins[1];
@@ -295,13 +317,15 @@ void SV_LinkEntityToWorldSector(svEntity_t *serverEntity, const vec2_t mins, con
         }
 
         if (serverEntity->worldSector != NULL) {
-            if (serverEntity->worldSector == sector && ((~contentsMask & serverEntity->contentsMask) == 0)) {
+            if (serverEntity->worldSector == sector &&
+                ((~contentsMask & serverEntity->contentsMask) == 0)) {
                 serverEntity->contentsMask = contentsMask;
                 serverEntity->linkMins[0] = mins[0];
                 serverEntity->linkMins[1] = mins[1];
                 serverEntity->linkMaxs[0] = maxs[0];
                 serverEntity->linkMaxs[1] = maxs[1];
-                CM_RebucketWorldSectorLinks(sector, sectorMins, sectorMaxs);
+                CM_RebucketWorldSectorLinks(
+                    sector, sectorMins, sectorMaxs);
                 return;
             }
 
@@ -328,13 +352,16 @@ qboolean CM_IsBigStaticModel(const vec3_t mins, const vec3_t maxs)
 #if defined(WINDOWS_BEHAVIOR)
     /* CoDUOMP.exe 0x004c57b0 and the inlined copy at 0x0042aaa0 test Z,
      * Y, then X.  Unordered extents follow the large-model path. */
-    if ((long double)maxs[2] - (long double)mins[2] < (long double)CM_BIG_STATIC_MODEL_MIN_VERTICAL_EXTENT) {
+    if ((long double)maxs[2] - (long double)mins[2] <
+        (long double)CM_BIG_STATIC_MODEL_MIN_VERTICAL_EXTENT) {
         return qfalse;
     }
-    if ((long double)maxs[1] - (long double)mins[1] < (long double)CM_BIG_STATIC_MODEL_MIN_HORIZONTAL_EXTENT) {
+    if ((long double)maxs[1] - (long double)mins[1] <
+        (long double)CM_BIG_STATIC_MODEL_MIN_HORIZONTAL_EXTENT) {
         return qfalse;
     }
-    if ((long double)maxs[0] - (long double)mins[0] < (long double)CM_BIG_STATIC_MODEL_MIN_HORIZONTAL_EXTENT) {
+    if ((long double)maxs[0] - (long double)mins[0] <
+        (long double)CM_BIG_STATIC_MODEL_MIN_HORIZONTAL_EXTENT) {
         return qfalse;
     }
     return qtrue;
@@ -348,7 +375,8 @@ qboolean CM_IsBigStaticModel(const vec3_t mins, const vec3_t maxs)
 
 void CM_LinkStaticModel(worldSectorAreaLink_t *areaLink)
 {
-    areaLink->sightTraceEligible = CM_IsBigStaticModel(areaLink->linkMins, areaLink->linkMaxs);
+    areaLink->sightTraceEligible =
+        CM_IsBigStaticModel(areaLink->linkMins, areaLink->linkMaxs);
     const int32_t contentsMask = XModelGetContents(areaLink->model);
     vec2_t sectorMins = {cm_worldMins[0], cm_worldMins[1]};
     vec2_t sectorMaxs = {cm_worldMaxs[0], cm_worldMaxs[1]};
@@ -394,8 +422,11 @@ void CM_AreaEntities_r(worldSector_t *sector, cmAreaEntitiesWork_t *work)
         return;
     }
 
-    for (svEntity_t *serverEntity = sector->entityLinkHead; serverEntity != NULL; serverEntity = serverEntity->nextInWorldSector) {
-        const sharedEntity_t *const entity = SV_GEntityForSvEntity(serverEntity);
+    for (svEntity_t *serverEntity = sector->entityLinkHead;
+         serverEntity != NULL;
+         serverEntity = serverEntity->nextInWorldSector) {
+        const sharedEntity_t *const entity =
+            SV_GEntityForSvEntity(serverEntity);
 
         if ((work->contentsMask & entity->contents) == 0) {
             continue;
@@ -403,8 +434,12 @@ void CM_AreaEntities_r(worldSector_t *sector, cmAreaEntitiesWork_t *work)
 
         /* Both originals reject only ordered separation.  NaN bounds remain
          * eligible, matching the x87 unordered branch paths. */
-        if (entity->absMin[0] > work->maxs[0] || entity->absMax[0] < work->mins[0] || entity->absMin[1] > work->maxs[1] ||
-            entity->absMax[1] < work->mins[1] || entity->absMin[2] > work->maxs[2] || entity->absMax[2] < work->mins[2]) {
+        if (entity->absMin[0] > work->maxs[0] ||
+            entity->absMax[0] < work->mins[0] ||
+            entity->absMin[1] > work->maxs[1] ||
+            entity->absMax[1] < work->mins[1] ||
+            entity->absMin[2] > work->maxs[2] ||
+            entity->absMax[2] < work->mins[2]) {
             continue;
         }
 
@@ -413,7 +448,8 @@ void CM_AreaEntities_r(worldSector_t *sector, cmAreaEntitiesWork_t *work)
             return;
         }
 
-        work->entityList[work->count] = (int32_t)(serverEntity - sv_entities);
+        work->entityList[work->count] =
+            (int32_t)(serverEntity - sv_entities);
         ++work->count;
     }
 
@@ -426,7 +462,9 @@ void CM_AreaEntities_r(worldSector_t *sector, cmAreaEntitiesWork_t *work)
     }
 }
 
-int32_t CM_AreaEntities(const vec3_t mins, const vec3_t maxs, int32_t *entityList, int32_t maxEntityCount, int32_t contentsMask)
+int32_t CM_AreaEntities(const vec3_t mins, const vec3_t maxs,
+                        int32_t *entityList, int32_t maxEntityCount,
+                        int32_t contentsMask)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (entityList == NULL || maxEntityCount <= 0) {
@@ -434,7 +472,13 @@ int32_t CM_AreaEntities(const vec3_t mins, const vec3_t maxs, int32_t *entityLis
     }
 
     cmAreaEntitiesWork_t work = {
-        .mins = mins, .maxs = maxs, .entityList = entityList, .count = 0, .maxCount = maxEntityCount, .contentsMask = contentsMask};
+        .mins = mins,
+        .maxs = maxs,
+        .entityList = entityList,
+        .count = 0,
+        .maxCount = maxEntityCount,
+        .contentsMask = contentsMask
+    };
 
     CM_AreaEntities_r(&cm_worldSectorRoot, &work);
     return work.count;

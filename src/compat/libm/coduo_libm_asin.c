@@ -47,10 +47,10 @@
 #include <math.h>
 #include <string.h>
 
-#define ASIN_HIGH_SIGN_MASK 0x80000000u
+#define ASIN_HIGH_SIGN_MASK     0x80000000u
 #define ASIN_HIGH_EXPONENT_MASK 0x7ff00000u
 #define ASIN_HIGH_MANTISSA_MASK 0x000fffffu
-#define ASIN_EXPONENT_OF_ONE 0x3ff00000u
+#define ASIN_EXPONENT_OF_ONE    0x3ff00000u
 
 #if !EMULATE_X87
 static uint32_t AsinHighDword(double value)
@@ -84,7 +84,9 @@ static double AsinIndefiniteNaN(void)
  * from a decimal literal so the value is exact. */
 static long double AsinHalfPi(void)
 {
-    const unsigned char raw[10] = {0x35, 0xc2, 0x68, 0x21, 0xa2, 0xda, 0x0f, 0xc9, 0xff, 0x3f};
+    const unsigned char raw[10] = {
+        0x35, 0xc2, 0x68, 0x21, 0xa2, 0xda, 0x0f, 0xc9, 0xff, 0x3f
+    };
     long double value = 0.0L;
 
     memcpy(&value, raw, sizeof(raw));
@@ -157,7 +159,8 @@ double CoduoLibm_Asin(double value)
         const long double root = AsinRoot(x);
 
         /* No FXCH: st(0)=root, st(1)=x -> atan(x/root). */
-        __asm__ __volatile__("fpatan" : "=t"(result) : "0"(root), "u"(x) : "st(1)");
+        __asm__ __volatile__("fpatan" : "=t"(result) : "0"(root), "u"(x)
+                             : "st(1)");
     }
     AsinRestoreControlWord(saved);
     return (double)result;
@@ -202,7 +205,8 @@ double CoduoLibm_Acos(double value)
         const long double root = AsinRoot(x);
 
         /* FXCH first: st(0)=x, st(1)=root -> atan(root/x). */
-        __asm__ __volatile__("fpatan" : "=t"(result) : "0"(x), "u"(root) : "st(1)");
+        __asm__ __volatile__("fpatan" : "=t"(result) : "0"(x), "u"(root)
+                             : "st(1)");
     }
     AsinRestoreControlWord(saved);
     return (double)result;

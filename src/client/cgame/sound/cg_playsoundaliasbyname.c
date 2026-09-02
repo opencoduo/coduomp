@@ -45,10 +45,12 @@
 
 #include <math.h>
 
-int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const char *aliasName)
+int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
+                            const char *aliasName)
 {
     /* 3002ca87: choose the named sound alias for this origin. */
-    snd_alias_t *alias = trap_Com_PickSoundAlias(aliasName, (const float *)soundPosition);
+    snd_alias_t *alias = trap_Com_PickSoundAlias(
+        aliasName, (const float *)soundPosition);
 
     /* 3002ca99: registration failed -> return the syscall's 0. */
     if (alias == NULL) {
@@ -71,7 +73,8 @@ int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const 
          * (default x87 mode), so nearbyint -- not a truncating (int) cast (Class
          * 5) -- reproduces it. The 2^-30 bias is added at double precision before
          * the round; this is the house idiom (cf. cg_updatefadeoverlay.c). */
-        double rounded = nearbyint((double)timeMs + 9.313225746154785e-10);
+        double rounded = nearbyint(
+            (double)timeMs + 9.313225746154785e-10);
         int32_t v;
 
         /* FISTP dword returns its integer-indefinite value for NaN and values
@@ -89,10 +92,13 @@ int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const 
         if (v <= durationMs) {
             clamped = durationMs;
         } else {
-            float timeMsAgain = cg_subtitleMinTime_vmCvar.value * 1000.0f;
-            double roundedAgain = nearbyint((double)timeMsAgain + 9.313225746154785e-10);
+            float timeMsAgain =
+                cg_subtitleMinTime_vmCvar.value * 1000.0f;
+            double roundedAgain = nearbyint(
+                (double)timeMsAgain + 9.313225746154785e-10);
 
-            if (!(roundedAgain >= (double)INT32_MIN && roundedAgain <= (double)INT32_MAX)) {
+            if (!(roundedAgain >= (double)INT32_MIN &&
+                  roundedAgain <= (double)INT32_MAX)) {
                 clamped = INT32_MIN;
             } else {
                 clamped = (int32_t)roundedAgain;
@@ -100,7 +106,11 @@ int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const 
         }
 
         /* 3002cb21: sound-update trap. */
-        cgame_syscall(CG_SUBTITLE, (intptr_t)alias->subtitle, clamped, (int32_t)cg_subtitleWidth_vmCvar.integer);
+        cgame_syscall(
+            CG_SUBTITLE,
+            (intptr_t)alias->subtitle,
+            clamped,
+            (int32_t)cg_subtitleWidth_vmCvar.integer);
     }
 
     /* 3002cb38: return the playback duration (EDI). */

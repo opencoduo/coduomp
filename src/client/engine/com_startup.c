@@ -55,19 +55,23 @@ static char comBuildVersion[COM_BUILD_VERSION_CAPACITY];
  * out-of-line definition while also inlining it into Com_Init. */
 const char *Com_GetBuildVersion(void)
 {
-    (void)sprintf(comBuildVersion, "%d %s %s", COM_BUILD_NUMBER, CODUOMP_DISPLAY_BUILD_DATE, "20:33:18");
+    (void)sprintf(comBuildVersion, "%d %s %s",
+                  COM_BUILD_NUMBER, CODUOMP_DISPLAY_BUILD_DATE, "20:33:18");
     return comBuildVersion;
 }
 
 /* Source: CoDUOMP.exe 0x0043b2c0..0x0043b2e8. Exact symbol is absent from
  * the Mac traceback table; the same multiplier, signed-byte input, mask, and
  * nonzero increment are inlined into Com_ConfigureChecksum. */
-static uint32_t Com_ConfigureChecksumValue(const int8_t *data, int32_t length)
+static uint32_t Com_ConfigureChecksumValue(
+    const int8_t *data, int32_t length)
 {
     uint32_t checksum = 0;
 
     for (int32_t index = 0; index < length; ++index) {
-        checksum = checksum * (uint32_t)COM_CONFIGURE_CHECKSUM_MULTIPLIER + (uint32_t)(int32_t)data[index];
+        checksum =
+            checksum * (uint32_t)COM_CONFIGURE_CHECKSUM_MULTIPLIER +
+            (uint32_t)(int32_t)data[index];
     }
     checksum &= (uint32_t)COM_CONFIGURE_CHECKSUM_MASK;
     return checksum + 1u;
@@ -82,9 +86,12 @@ static uint32_t Com_ConfigureChecksumValue(const int8_t *data, int32_t length)
  * the three cvar reads. */
 void Script_Init(void)
 {
-    const qboolean debugReport = com_developer->integer != 0 || com_logfile->integer != 0;
+    const qboolean debugReport =
+        com_developer->integer != 0 ||
+        com_logfile->integer != 0;
 
-    Scr_Init(debugReport, com_developerScript->integer, com_developer->integer);
+    Scr_Init(debugReport, com_developerScript->integer,
+             com_developer->integer);
 }
 
 /* Source: CoDUOMP.exe 0x0043b2f0..0x0043b359.
@@ -96,15 +103,17 @@ void Script_Init(void)
 qboolean Com_ConfigureChecksum(void)
 {
     void *fileBuffer;
-    const int32_t fileLength = FS_ReadFile("configure_mp.csv", &fileBuffer);
+    const int32_t fileLength =
+        FS_ReadFile("configure_mp.csv", &fileBuffer);
     uint32_t checksum;
 
     if (fileLength < 0) {
-        Com_Error(ERR_FATAL, "EXE_ERR_NOT_FOUND\x15"
-                             "configure_mp.csv");
+        Com_Error(ERR_FATAL,
+                  "EXE_ERR_NOT_FOUND\x15" "configure_mp.csv");
     }
 
-    checksum = Com_ConfigureChecksumValue((const int8_t *)fileBuffer, fileLength);
+    checksum = Com_ConfigureChecksumValue(
+        (const int8_t *)fileBuffer, fileLength);
     FS_FreeFile(fileBuffer);
     return Sys_ConfigureChecksumChanged((int32_t)checksum);
 }
@@ -123,25 +132,34 @@ qboolean Com_ConfigureChecksum(void)
  * current row would look more conventional. */
 void Com_SetRecommended(qboolean restartSound)
 {
-    char cvarNames[COM_RECOMMENDED_CVAR_LIMIT][COM_RECOMMENDED_CVAR_NAME_BYTES];
-    char cvarValues[COM_RECOMMENDED_CVAR_LIMIT][COM_RECOMMENDED_CVAR_VALUE_BYTES];
+    char cvarNames[COM_RECOMMENDED_CVAR_LIMIT]
+                  [COM_RECOMMENDED_CVAR_NAME_BYTES];
+    char cvarValues[COM_RECOMMENDED_CVAR_LIMIT]
+                   [COM_RECOMMENDED_CVAR_VALUE_BYTES];
     void *fileBuffer;
 
     Com_Printf("========= autoconfigure\n");
 
     sys_info_t hardware;
     Sys_GetInfo(&hardware);
-    const double cpuAllowance = hardware.cpuFrequencyMHz * 1.0200000000000000178;
-    const int32_t systemMemoryAllowance = hardware.physicalMemoryMB < COM_RECOMMENDED_MINIMUM_SYSTEM_MB
-                                              ? COM_RECOMMENDED_MINIMUM_SYSTEM_MB
-                                              : hardware.physicalMemoryMB + COM_RECOMMENDED_SYSTEM_ALLOWANCE_MB;
+    const double cpuAllowance =
+        hardware.cpuFrequencyMHz * 1.0200000000000000178;
+    const int32_t systemMemoryAllowance =
+        hardware.physicalMemoryMB < COM_RECOMMENDED_MINIMUM_SYSTEM_MB
+            ? COM_RECOMMENDED_MINIMUM_SYSTEM_MB
+            : hardware.physicalMemoryMB +
+                  COM_RECOMMENDED_SYSTEM_ALLOWANCE_MB;
     const int32_t videoMemoryAllowance =
-        hardware.videoMemoryMB < COM_RECOMMENDED_MINIMUM_VIDEO_MB ? COM_RECOMMENDED_MINIMUM_VIDEO_MB : hardware.videoMemoryMB;
+        hardware.videoMemoryMB < COM_RECOMMENDED_MINIMUM_VIDEO_MB
+            ? COM_RECOMMENDED_MINIMUM_VIDEO_MB
+            : hardware.videoMemoryMB;
 
-    const int32_t fileLength = FS_ReadFile("configure_mp.csv", &fileBuffer);
+    const int32_t fileLength =
+        FS_ReadFile("configure_mp.csv", &fileBuffer);
     if (fileLength < 0) {
-        Com_Error(ERR_FATAL, "EXE_ERR_NOT_FOUND\x15"
-                             "configure_mp.csv");
+        Com_Error(ERR_FATAL,
+                  "EXE_ERR_NOT_FOUND\x15"
+                  "configure_mp.csv");
     }
 
     Com_BeginParseSession("configure_mp.csv");
@@ -160,37 +178,45 @@ void Com_SetRecommended(qboolean restartSound)
     }
 
     if (strcmp(token, "cpu mhz") != 0) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "configure_mp.csv: \"cpu mhz\" should be the first column\n");
+        Com_Error(
+            ERR_FATAL,
+            "\x15"
+            "configure_mp.csv: \"cpu mhz\" should be the first column\n");
     }
 
     token = Com_ParseOnLine(&parseCursor);
     if (strcmp(token, "sys mb") != 0) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "configure_mp.csv: \"sys mb\" should be the second column\n");
+        Com_Error(
+            ERR_FATAL,
+            "\x15"
+            "configure_mp.csv: \"sys mb\" should be the second column\n");
     }
 
     token = Com_ParseOnLine(&parseCursor);
     if (strcmp(token, "vid mb") != 0) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "configure_mp.csv: \"vid mb\" should be the third column\n");
+        Com_Error(
+            ERR_FATAL,
+            "\x15"
+            "configure_mp.csv: \"vid mb\" should be the third column\n");
     }
 
     for (;;) {
         token = Com_ParseOnLine(&parseCursor);
         if (parseCursor == NULL) {
-            Com_Error(ERR_FATAL, "\x15"
-                                 "configure_mp.csv: unexpected end-of-file");
+            Com_Error(ERR_FATAL,
+                      "\x15"
+                      "configure_mp.csv: unexpected end-of-file");
         }
         if (token[0] == '\0')
             break;
 
         const size_t nameLength = strlen(token);
         if (nameLength >= COM_RECOMMENDED_CVAR_NAME_BYTES) {
-            Com_Error(ERR_FATAL,
-                      "\x15"
-                      "configure_mp.csv: cvar name \"%s\" longer than %i\n",
-                      token, COM_RECOMMENDED_CVAR_NAME_BYTES - 1);
+            Com_Error(
+                ERR_FATAL,
+                "\x15"
+                "configure_mp.csv: cvar name \"%s\" longer than %i\n",
+                token, COM_RECOMMENDED_CVAR_NAME_BYTES - 1);
         }
         if (cvarCount >= COM_RECOMMENDED_CVAR_LIMIT) {
             Com_Error(ERR_FATAL,
@@ -219,33 +245,42 @@ void Com_SetRecommended(qboolean restartSound)
 
         const double rowCpuMHz = atof(token);
         if (rowCpuMHz < 0.0) {
-            Com_Error(ERR_FATAL,
-                      "\x15"
-                      "configure_mp.csv: cpu mhz %g not allowed to be less than 0\n",
-                      rowCpuMHz);
+            Com_Error(
+                ERR_FATAL,
+                "\x15"
+                "configure_mp.csv: cpu mhz %g not allowed to be less than 0\n",
+                rowCpuMHz);
         }
 
-        const int32_t rowSystemMB = coduo_crt_atoi(Com_ParseOnLine(&parseCursor));
+        const int32_t rowSystemMB =
+            coduo_crt_atoi(Com_ParseOnLine(&parseCursor));
         if (rowSystemMB < COM_RECOMMENDED_MINIMUM_SYSTEM_MB) {
-            Com_Error(ERR_FATAL,
-                      "\x15"
-                      "configure_mp.csv: sys mb %i not allowed to be less than 128\n",
-                      rowSystemMB);
+            Com_Error(
+                ERR_FATAL,
+                "\x15"
+                "configure_mp.csv: sys mb %i not allowed to be less than 128\n",
+                rowSystemMB);
         }
 
-        const int32_t rowVideoMB = coduo_crt_atoi(Com_ParseOnLine(&parseCursor));
+        const int32_t rowVideoMB =
+            coduo_crt_atoi(Com_ParseOnLine(&parseCursor));
         if (rowVideoMB < COM_RECOMMENDED_MINIMUM_VIDEO_MB) {
-            Com_Error(ERR_FATAL,
-                      "\x15"
-                      "configure_mp.csv: vid mb %i not allowed to be less than 32\n",
-                      rowVideoMB);
+            Com_Error(
+                ERR_FATAL,
+                "\x15"
+                "configure_mp.csv: vid mb %i not allowed to be less than 32\n",
+                rowVideoMB);
         }
 
         qboolean selectRow = qfalse;
-        if (cpuAllowance >= rowCpuMHz && systemMemoryAllowance >= rowSystemMB && videoMemoryAllowance >= rowVideoMB) {
-            if (selectedCpuMHz < cpuAllowance || (selectedCpuMHz == cpuAllowance &&
-                                                  (selectedVideoMB < videoMemoryAllowance || (selectedVideoMB == videoMemoryAllowance &&
-                                                                                              selectedSystemMB < systemMemoryAllowance)))) {
+        if (cpuAllowance >= rowCpuMHz &&
+            systemMemoryAllowance >= rowSystemMB &&
+            videoMemoryAllowance >= rowVideoMB) {
+            if (selectedCpuMHz < cpuAllowance ||
+                (selectedCpuMHz == cpuAllowance &&
+                 (selectedVideoMB < videoMemoryAllowance ||
+                  (selectedVideoMB == videoMemoryAllowance &&
+                   selectedSystemMB < systemMemoryAllowance)))) {
                 selectRow = qtrue;
                 selectedCpuMHz = rowCpuMHz;
                 selectedSystemMB = rowSystemMB;
@@ -253,25 +288,31 @@ void Com_SetRecommended(qboolean restartSound)
             }
         }
 
-        for (int32_t cvarIndex = 0; cvarIndex < cvarCount; ++cvarIndex) {
+        for (int32_t cvarIndex = 0;
+             cvarIndex < cvarCount; ++cvarIndex) {
             token = Com_ParseOnLine(&parseCursor);
             if (parseCursor == NULL) {
-                Com_Error(ERR_FATAL, "\x15"
-                                     "configure_mp.csv: unexpected end-of-file");
-            }
-            if (token[0] == '\0') {
                 Com_Error(ERR_FATAL,
                           "\x15"
-                          "configure_mp.csv: missing entry for cvar '%s' in row %lg %i %i\n",
-                          cvarNames[cvarIndex], rowCpuMHz, rowSystemMB, rowVideoMB);
+                          "configure_mp.csv: unexpected end-of-file");
+            }
+            if (token[0] == '\0') {
+                Com_Error(
+                    ERR_FATAL,
+                    "\x15"
+                    "configure_mp.csv: missing entry for cvar '%s' in row %lg %i %i\n",
+                    cvarNames[cvarIndex], rowCpuMHz, rowSystemMB,
+                    rowVideoMB);
             }
 
             const size_t valueLength = strlen(token);
             if (valueLength >= COM_RECOMMENDED_CVAR_VALUE_BYTES) {
-                Com_Error(ERR_FATAL,
-                          "\x15"
-                          "configure_mp.csv: entry '%s' for cvar '%s' in row %lg %i %i is longer than %i\n",
-                          token, cvarNames[cvarIndex], rowCpuMHz, rowSystemMB, rowVideoMB, COM_RECOMMENDED_CVAR_VALUE_BYTES - 1);
+                Com_Error(
+                    ERR_FATAL,
+                    "\x15"
+                    "configure_mp.csv: entry '%s' for cvar '%s' in row %lg %i %i is longer than %i\n",
+                    token, cvarNames[cvarIndex], rowCpuMHz, rowSystemMB,
+                    rowVideoMB, COM_RECOMMENDED_CVAR_VALUE_BYTES - 1);
             }
 
             if (selectRow != qfalse) {
@@ -281,10 +322,11 @@ void Com_SetRecommended(qboolean restartSound)
 
         token = Com_ParseOnLine(&parseCursor);
         if (token[0] != '\0') {
-            Com_Error(ERR_FATAL,
-                      "\x15"
-                      "configure_mp.csv: extra cvar value column(s) in row %lg %i %i\n",
-                      rowCpuMHz, rowSystemMB, rowVideoMB);
+            Com_Error(
+                ERR_FATAL,
+                "\x15"
+                "configure_mp.csv: extra cvar value column(s) in row %lg %i %i\n",
+                rowCpuMHz, rowSystemMB, rowVideoMB);
         }
     }
 
@@ -293,28 +335,35 @@ parsing_complete:
 
     uint32_t checksum = 0;
     for (int32_t index = 0; index < fileLength; ++index) {
-        checksum = checksum * (uint32_t)COM_CONFIGURE_CHECKSUM_MULTIPLIER + (uint32_t)(int32_t)((const int8_t *)fileBuffer)[index];
+        checksum =
+            checksum * (uint32_t)COM_CONFIGURE_CHECKSUM_MULTIPLIER +
+            (uint32_t)(int32_t)((const int8_t *)fileBuffer)[index];
     }
     checksum &= (uint32_t)COM_CONFIGURE_CHECKSUM_MASK;
     ++checksum;
     FS_FreeFile(fileBuffer);
 
-    if (selectedCpuMHz < 0.0 || selectedSystemMB == 0 || selectedVideoMB == 0) {
-        Com_Error(ERR_FATAL,
-                  "\x15"
-                  "configure_mp.csv: \x14"
-                  "EXE_ERR_COULDNT_CONFIGURE\x15"
-                  " %.0f cpu MHz %i sys MB %i vid MB\n",
-                  hardware.cpuFrequencyMHz, hardware.physicalMemoryMB, hardware.videoMemoryMB);
+    if (selectedCpuMHz < 0.0 ||
+        selectedSystemMB == 0 || selectedVideoMB == 0) {
+        Com_Error(
+            ERR_FATAL,
+            "\x15"
+            "configure_mp.csv: \x14"
+            "EXE_ERR_COULDNT_CONFIGURE\x15"
+            " %.0f cpu MHz %i sys MB %i vid MB\n",
+            hardware.cpuFrequencyMHz, hardware.physicalMemoryMB,
+            hardware.videoMemoryMB);
     }
 
-    Com_Printf("configure_mp.csv: using configuration %.0f cpu MHz %i sys MB %i vid MB\n", selectedCpuMHz, selectedSystemMB,
-               selectedVideoMB);
+    Com_Printf(
+        "configure_mp.csv: using configuration %.0f cpu MHz %i sys MB %i vid MB\n",
+        selectedCpuMHz, selectedSystemMB, selectedVideoMB);
     Cbuf_AddText("exec configure_mp.cfg");
     Cbuf_Execute();
 
     for (int32_t cvarIndex = 0; cvarIndex < cvarCount; ++cvarIndex) {
-        (void)Cvar_Set2(cvarNames[cvarIndex], cvarValues[cvarIndex], qtrue);
+        (void)Cvar_Set2(cvarNames[cvarIndex],
+                        cvarValues[cvarIndex], qtrue);
         cvar_t *const cvar = Cvar_FindVar(cvarNames[cvarIndex]);
         cvar->flags |= CVAR_ARCHIVE;
     }
@@ -334,7 +383,9 @@ parsing_complete:
  * intentionally consecutive: the Windows executable performs both. */
 void Com_Init(char *commandLine)
 {
-    Com_Printf("%s %s build %s %s\n", CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION, "win-x86", CODUOMP_DISPLAY_BUILD_DATE);
+    Com_Printf("%s %s build %s %s\n",
+               CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION, "win-x86",
+               CODUOMP_DISPLAY_BUILD_DATE);
 
     if (setjmp(com_abortFrame) != 0) {
         Com_ErrorCleanup();
@@ -367,8 +418,10 @@ void Com_Init(char *commandLine)
         Cbuf_AddText("exec safemode_mp.cfg\n");
     Cbuf_Execute();
 
-    com_recommendedSet = Cvar_Get("com_recommendedSet", "0", CVAR_ARCHIVE);
-    if (com_recommendedSet->integer == 0 || Com_ConfigureChecksum() != qfalse) {
+    com_recommendedSet =
+        Cvar_Get("com_recommendedSet", "0", CVAR_ARCHIVE);
+    if (com_recommendedSet->integer == 0 ||
+        Com_ConfigureChecksum() != qfalse) {
         Com_SetRecommended(qfalse);
         (void)Cvar_Set2("com_recommendedSet", "1", qtrue);
     }
@@ -392,20 +445,29 @@ void Com_Init(char *commandLine)
     Com_InitHunkMemory();
     cvar_modifiedFlags &= ~(uint32_t)CVAR_ARCHIVE;
 
-    com_maxfps = Cvar_Get("com_maxfps", "85", CVAR_ARCHIVE);
-    com_developer = Cvar_Get("developer", "0", CVAR_TEMP);
-    com_developerScript = Cvar_Get("developer_script", "0", CVAR_TEMP);
+    com_maxfps =
+        Cvar_Get("com_maxfps", "85", CVAR_ARCHIVE);
+    com_developer =
+        Cvar_Get("developer", "0", CVAR_TEMP);
+    com_developerScript =
+        Cvar_Get("developer_script", "0", CVAR_TEMP);
     com_logfile = Cvar_Get("logfile", "0", 0);
     com_statmon = Cvar_Get("com_statmon", "0", 0);
-    com_timescale = Cvar_Get("timescale", "1", CVAR_CHEAT | CVAR_SCRIPT_MAKE_SERVERINFO);
-    com_fixedtime = Cvar_Get("fixedtime", "0", CVAR_CHEAT);
-    com_viewlog = Cvar_Get("viewlog", "0", CVAR_CHEAT);
+    com_timescale =
+        Cvar_Get("timescale", "1",
+                 CVAR_CHEAT |
+                     CVAR_SCRIPT_MAKE_SERVERINFO);
+    com_fixedtime =
+        Cvar_Get("fixedtime", "0", CVAR_CHEAT);
+    com_viewlog =
+        Cvar_Get("viewlog", "0", CVAR_CHEAT);
     com_speeds = Cvar_Get("com_speeds", "0", 0);
     sv_paused = Cvar_Get("sv_paused", "0", CVAR_ROM);
     cl_paused = Cvar_Get("cl_paused", "0", CVAR_ROM);
     sv_running = Cvar_Get("sv_running", "0", CVAR_ROM);
     cl_running = Cvar_Get("cl_running", "0", CVAR_ROM);
-    com_introPlayed = Cvar_Get("com_introplayed", "0", CVAR_ARCHIVE);
+    com_introPlayed =
+        Cvar_Get("com_introplayed", "0", CVAR_ARCHIVE);
     com_animCheck = Cvar_Get("com_animCheck", "0", 0);
     hunk_used = 0;
 
@@ -421,9 +483,15 @@ void Com_Init(char *commandLine)
     Cmd_AddCommand("writeconfig", Com_WriteConfig_f);
     Cmd_AddCommand("writedefaults", Com_WriteDefaults_f);
 
-    com_version = Cvar_Get(
-        "version", va("%s %s build %s %s", CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION, Com_GetBuildVersion(), "win-x86"), CVAR_ROM);
-    com_shortVersion = Cvar_Get("shortversion", "1.51", CVAR_ROM | CVAR_SERVERINFO);
+    com_version =
+        Cvar_Get("version",
+                 va("%s %s build %s %s",
+                    CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION,
+                    Com_GetBuildVersion(), "win-x86"),
+                 CVAR_ROM);
+    com_shortVersion =
+        Cvar_Get("shortversion", "1.51",
+                 CVAR_ROM | CVAR_SERVERINFO);
 
     Sys_Init();
     Netchan_Init((int32_t)(Com_Milliseconds() & COM_QPORT_MASK));
@@ -450,10 +518,13 @@ void Com_Init(char *commandLine)
         (void)Cvar_Set2("cl_movieplaying", "0", qtrue);
 
         if (com_introPlayed->integer == 0) {
-            (void)Cvar_Set2(com_introPlayed->name, "1", qtrue);
+            (void)Cvar_Set2(
+                com_introPlayed->name, "1", qtrue);
             Cbuf_AddText("cinematic atvi.bik\n");
-            (void)Cvar_Set2("nextmap", "cinematic gmi_logo.roq", qtrue);
-            (void)Cvar_Set2("nextmap", "cinematic iw_logo.roq", qtrue);
+            (void)Cvar_Set2(
+                "nextmap", "cinematic gmi_logo.roq", qtrue);
+            (void)Cvar_Set2(
+                "nextmap", "cinematic iw_logo.roq", qtrue);
         }
     }
 

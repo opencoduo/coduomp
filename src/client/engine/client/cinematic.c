@@ -50,20 +50,29 @@ enum {
  * CoDUOMP.exe and the PowerPC Mac client prove the byte-addressed decoder view
  * and the normal RGBA32 blitter view, but not retail C union declarations. */
 typedef union roq_vq2_storage_u {
-    uint8_t bytes[ROQ_CODEBOOK_ENTRY_COUNT * ROQ_VQ2_SMOOTHED_HEIGHT * ROQ_VQ2_NORMAL_WIDTH * sizeof(uint32_t)];
-    uint32_t normalRgba32[ROQ_CODEBOOK_ENTRY_COUNT][ROQ_VQ2_NORMAL_HEIGHT][ROQ_VQ2_NORMAL_WIDTH];
+    uint8_t bytes[ROQ_CODEBOOK_ENTRY_COUNT * ROQ_VQ2_SMOOTHED_HEIGHT *
+                  ROQ_VQ2_NORMAL_WIDTH * sizeof(uint32_t)];
+    uint32_t normalRgba32[ROQ_CODEBOOK_ENTRY_COUNT]
+                         [ROQ_VQ2_NORMAL_HEIGHT][ROQ_VQ2_NORMAL_WIDTH];
 } roq_vq2_storage_t;
 
 typedef union roq_vq4_storage_u {
-    uint8_t bytes[ROQ_CODEBOOK_ENTRY_COUNT * (ROQ_VQ2_SMOOTHED_HEIGHT * ROQ_VQ_SCALE) * (ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE) *
+    uint8_t bytes[ROQ_CODEBOOK_ENTRY_COUNT *
+                  (ROQ_VQ2_SMOOTHED_HEIGHT * ROQ_VQ_SCALE) *
+                  (ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE) *
                   sizeof(uint32_t)];
-    uint32_t normalRgba32[ROQ_CODEBOOK_ENTRY_COUNT][ROQ_VQ2_NORMAL_HEIGHT * ROQ_VQ_SCALE][ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE];
+    uint32_t normalRgba32[ROQ_CODEBOOK_ENTRY_COUNT]
+                         [ROQ_VQ2_NORMAL_HEIGHT * ROQ_VQ_SCALE]
+                         [ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE];
 } roq_vq4_storage_t;
 
 typedef union roq_vq8_storage_u {
-    uint8_t bytes[ROQ_CODEBOOK_ENTRY_COUNT * (ROQ_VQ2_SMOOTHED_HEIGHT * ROQ_VQ_SCALE * ROQ_VQ_SCALE) *
-                  (ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE * ROQ_VQ_SCALE) * sizeof(uint32_t)];
-    uint32_t normalRgba32[ROQ_CODEBOOK_ENTRY_COUNT][ROQ_VQ2_NORMAL_HEIGHT * ROQ_VQ_SCALE * ROQ_VQ_SCALE]
+    uint8_t bytes[ROQ_CODEBOOK_ENTRY_COUNT *
+                  (ROQ_VQ2_SMOOTHED_HEIGHT * ROQ_VQ_SCALE * ROQ_VQ_SCALE) *
+                  (ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE * ROQ_VQ_SCALE) *
+                  sizeof(uint32_t)];
+    uint32_t normalRgba32[ROQ_CODEBOOK_ENTRY_COUNT]
+                         [ROQ_VQ2_NORMAL_HEIGHT * ROQ_VQ_SCALE * ROQ_VQ_SCALE]
                          [ROQ_VQ2_NORMAL_WIDTH * ROQ_VQ_SCALE * ROQ_VQ_SCALE];
 } roq_vq8_storage_t;
 
@@ -92,7 +101,8 @@ enum {
     ROQ_FRAME_BUFFER_BYTES = 2097152,
     ROQ_FILE_BUFFER_BYTES = 65536,
     ROQ_CHUNK_HEADER_BYTES = 8,
-    ROQ_MAX_CHUNK_PAYLOAD_BYTES = ROQ_FILE_BUFFER_BYTES - ROQ_CHUNK_HEADER_BYTES,
+    ROQ_MAX_CHUNK_PAYLOAD_BYTES =
+        ROQ_FILE_BUFFER_BYTES - ROQ_CHUNK_HEADER_BYTES,
     ROQ_QUAD_POINTER_CAPACITY = 32768,
     ROQ_QUAD_TERMINATOR_COUNT = 64,
     ROQ_ROOT_QUAD_SIZE = 16,
@@ -106,8 +116,10 @@ enum {
     ROQ_AUDIO_SAMPLE_WIDTH_BYTES = 2,
     ROQ_AUDIO_MONO_CHANNELS = 1,
     ROQ_AUDIO_STEREO_CHANNELS = 2,
-    ROQ_AUDIO_MONO_MAX_ENCODED_BYTES = ROQ_FILE_BUFFER_BYTES / (2 * sizeof(int16_t)),
-    ROQ_AUDIO_STEREO_MAX_ENCODED_BYTES = ROQ_FILE_BUFFER_BYTES / sizeof(int16_t)
+    ROQ_AUDIO_MONO_MAX_ENCODED_BYTES =
+        ROQ_FILE_BUFFER_BYTES / (2 * sizeof(int16_t)),
+    ROQ_AUDIO_STEREO_MAX_ENCODED_BYTES =
+        ROQ_FILE_BUFFER_BYTES / sizeof(int16_t)
 };
 
 /* Source: CoDUOMP.exe 0x005d26e0..0x007d26e0 (.bss). Two-megabyte decoded
@@ -190,8 +202,7 @@ int32_t CIN_HandleForVideo(void)
             return handle;
     }
 
-    Com_Error(1, "\x15"
-                 "CIN_HandleForVideo: none free");
+    Com_Error(1, "\x15" "CIN_HandleForVideo: none free");
     return 0;
 }
 
@@ -224,10 +235,12 @@ void RllSetupTable(void)
  * CIN_PlayCinematic. The original clears one contiguous i386 BSS interval
  * containing the separately typed RoQ work areas below; each maintained
  * object is cleared separately so native pointer width cannot alter ownership. */
-int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width, int32_t height, int32_t flags)
+int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y,
+                          int32_t width, int32_t height, int32_t flags)
 {
     char fileName[CINEMATIC_NAME_SIZE];
-    const qboolean systemCinematic = (flags & CIN_SYSTEM) != 0 ? qtrue : qfalse;
+    const qboolean systemCinematic =
+        (flags & CIN_SYSTEM) != 0 ? qtrue : qfalse;
 
     if (strstr(name, "/") == NULL && strstr(name, "\\") == NULL) {
         Com_sprintf(fileName, sizeof(fileName), "video/%s", name);
@@ -240,7 +253,8 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width,
             if (Q_stricmp(fileName, cinematics[handle].fileName) == 0)
                 return handle;
         }
-    } else if (cls.state != CA_DISCONNECTED && cls.state != CA_CINEMATIC && cls.state != CA_LOGO) {
+    } else if (cls.state != CA_DISCONNECTED &&
+               cls.state != CA_CINEMATIC && cls.state != CA_LOGO) {
         Com_Printf("Can't play a cinematic while connected to a server; "
                    "use 'disconnect' first\n");
         return -1;
@@ -265,7 +279,8 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width,
     cinematic->fileSize = 0;
 
     fs_fileAccessed = 1;
-    cinematic->fileSize = FS_FOpenFileRead(cinematic->fileName, &cinematic->fileHandle, qtrue);
+    cinematic->fileSize = FS_FOpenFileRead(
+        cinematic->fileName, &cinematic->fileHandle, qtrue);
     if (cinematic->fileSize <= 0) {
         Com_DPrintf("play(%s), ROQSize<=0\n", name);
         cinematic->fileName[0] = '\0';
@@ -273,7 +288,8 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width,
     }
 
     CIN_SetExtents(handle, x, y, width, height);
-    CIN_SetLooping(handle, (flags & CIN_LOOP) != 0 ? qtrue : qfalse);
+    CIN_SetLooping(handle,
+                   (flags & CIN_LOOP) != 0 ? qtrue : qfalse);
 
     cinematic->width = ROQ_DEFAULT_DIMENSION;
     cinematic->height = ROQ_DEFAULT_DIMENSION;
@@ -287,7 +303,8 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width,
 
     if (cinematic->alterGameState != qfalse) {
         if (coduo_uiVm != NULL) {
-            (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
     } else {
         cinematic->playOnWalls = r_inGameVideo->integer;
@@ -300,7 +317,8 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width,
     RllSetupTable();
 
     FS_Read(roqFileBuffer, ROQ_FILE_HEADER_BYTES, cinematic->fileHandle);
-    const uint16_t fileId = (uint16_t)(roqFileBuffer[0] | ((uint16_t)roqFileBuffer[1] << 8));
+    const uint16_t fileId = (uint16_t)(
+        roqFileBuffer[0] | ((uint16_t)roqFileBuffer[1] << 8));
     if (fileId != ROQ_FILE) {
         Com_DPrintf("trFMV::play(), invalid RoQ ID\n");
         RoQShutdown();
@@ -319,7 +337,8 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width,
 /* Source: CoDUOMP.exe 0x004087d0..0x00408816.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004087d0_00408817.mcode.
  * Name and argument order: exact same-module Mac symbol CIN_SetExtents. */
-void CIN_SetExtents(int32_t handle, int32_t x, int32_t y, int32_t width, int32_t height)
+void CIN_SetExtents(int32_t handle, int32_t x, int32_t y,
+                    int32_t width, int32_t height)
 {
     if (handle < 0 || handle >= MAX_VIDEO_HANDLES)
         return;
@@ -374,66 +393,112 @@ void CIN_DrawCinematic(int32_t handle)
     SCR_AdjustFrom640(&x, &y, &width, &height);
 
     if (cinematic->letterBox != qfalse) {
-        const float barHeight = (float)((long double)cls.rendererConfig.vidHeight * (long double)CIN_LETTERBOX_HEIGHT_FRACTION);
+        const float barHeight = (float)(
+            (long double)cls.rendererConfig.vidHeight *
+            (long double)CIN_LETTERBOX_HEIGHT_FRACTION);
         rendererExports.SetColor(colorBlack);
-        rendererExports.StretchPic(0.0f, 0.0f, width, barHeight, 0.0f, 0.0f, 0.0f, 0.0f, cls.whiteShader);
-        rendererExports.StretchPic(0.0f, (float)cls.rendererConfig.vidHeight - barHeight - 1.0f, width, barHeight + 1.0f, 0.0f, 0.0f, 0.0f,
-                                   0.0f, cls.whiteShader);
+        rendererExports.StretchPic(
+            0.0f, 0.0f, width, barHeight,
+            0.0f, 0.0f, 0.0f, 0.0f, cls.whiteShader);
+        rendererExports.StretchPic(
+            0.0f,
+            (float)cls.rendererConfig.vidHeight - barHeight - 1.0f,
+            width, barHeight + 1.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, cls.whiteShader);
     }
 
-    if (cinematic->dirty != qfalse && (cinematic->width != cinematic->displayWidth || cinematic->height != cinematic->displayHeight)) {
-        const int32_t horizontalScale = cinematic->width / ROQ_LEGACY_MAX_DIMENSION;
-        const int32_t verticalScale = cinematic->height / ROQ_LEGACY_MAX_DIMENSION;
-        const size_t scaledFrameBytes = (size_t)ROQ_LEGACY_MAX_DIMENSION * ROQ_LEGACY_MAX_DIMENSION * sizeof(roq_rgba_pixel_t);
-        roq_rgba_pixel_t *const scaledFrame = Hunk_AllocateTempMemoryInternal(scaledFrameBytes);
-        const roq_rgba_pixel_t *const decodedFrame = (const roq_rgba_pixel_t *)cinematic->decodedFrame;
+    if (cinematic->dirty != qfalse &&
+        (cinematic->width != cinematic->displayWidth ||
+         cinematic->height != cinematic->displayHeight)) {
+        const int32_t horizontalScale =
+            cinematic->width / ROQ_LEGACY_MAX_DIMENSION;
+        const int32_t verticalScale =
+            cinematic->height / ROQ_LEGACY_MAX_DIMENSION;
+        const size_t scaledFrameBytes =
+            (size_t)ROQ_LEGACY_MAX_DIMENSION *
+            ROQ_LEGACY_MAX_DIMENSION * sizeof(roq_rgba_pixel_t);
+        roq_rgba_pixel_t *const scaledFrame =
+            Hunk_AllocateTempMemoryInternal(scaledFrameBytes);
+        const roq_rgba_pixel_t *const decodedFrame =
+            (const roq_rgba_pixel_t *)cinematic->decodedFrame;
 
         if (horizontalScale == 2 && verticalScale == 2) {
-            for (int32_t outputY = 0; outputY < ROQ_LEGACY_MAX_DIMENSION; ++outputY) {
+            for (int32_t outputY = 0;
+                 outputY < ROQ_LEGACY_MAX_DIMENSION; ++outputY) {
                 const int32_t sourceY = outputY * 2;
-                for (int32_t outputX = 0; outputX < ROQ_LEGACY_MAX_DIMENSION; ++outputX) {
+                for (int32_t outputX = 0;
+                     outputX < ROQ_LEGACY_MAX_DIMENSION; ++outputX) {
                     const int32_t sourceX = outputX * 2;
-                    roq_rgba_pixel_t *const output = &scaledFrame[outputY * ROQ_LEGACY_MAX_DIMENSION + outputX];
-                    const roq_rgba_pixel_t *const topLeft = &decodedFrame[sourceY * ROQ_DEFAULT_DIMENSION + sourceX];
+                    roq_rgba_pixel_t *const output =
+                        &scaledFrame[outputY * ROQ_LEGACY_MAX_DIMENSION +
+                                     outputX];
+                    const roq_rgba_pixel_t *const topLeft =
+                        &decodedFrame[sourceY * ROQ_DEFAULT_DIMENSION +
+                                      sourceX];
                     const roq_rgba_pixel_t *const topRight = topLeft + 1;
-                    const roq_rgba_pixel_t *const bottomLeft = topLeft + ROQ_DEFAULT_DIMENSION;
-                    const roq_rgba_pixel_t *const bottomRight = bottomLeft + 1;
-                    for (int32_t component = 0; component < ROQ_PIXEL_BYTES_RGBA32; ++component) {
-                        output->rgba[component] = (uint8_t)(((int32_t)topLeft->rgba[component] + topRight->rgba[component] +
-                                                             bottomLeft->rgba[component] + bottomRight->rgba[component]) /
-                                                            4);
+                    const roq_rgba_pixel_t *const bottomLeft =
+                        topLeft + ROQ_DEFAULT_DIMENSION;
+                    const roq_rgba_pixel_t *const bottomRight =
+                        bottomLeft + 1;
+                    for (int32_t component = 0;
+                         component < ROQ_PIXEL_BYTES_RGBA32; ++component) {
+                        output->rgba[component] = (uint8_t)(
+                            ((int32_t)topLeft->rgba[component] +
+                             topRight->rgba[component] +
+                             bottomLeft->rgba[component] +
+                             bottomRight->rgba[component]) / 4);
                     }
                 }
             }
         } else if (horizontalScale == 2 && verticalScale == 1) {
-            for (int32_t outputY = 0; outputY < ROQ_LEGACY_MAX_DIMENSION; ++outputY) {
-                for (int32_t outputX = 0; outputX < ROQ_LEGACY_MAX_DIMENSION; ++outputX) {
+            for (int32_t outputY = 0;
+                 outputY < ROQ_LEGACY_MAX_DIMENSION; ++outputY) {
+                for (int32_t outputX = 0;
+                     outputX < ROQ_LEGACY_MAX_DIMENSION; ++outputX) {
                     const int32_t sourceX = outputX * 2;
-                    roq_rgba_pixel_t *const output = &scaledFrame[outputY * ROQ_LEGACY_MAX_DIMENSION + outputX];
-                    const roq_rgba_pixel_t *const left = &decodedFrame[outputY * ROQ_DEFAULT_DIMENSION + sourceX];
+                    roq_rgba_pixel_t *const output =
+                        &scaledFrame[outputY * ROQ_LEGACY_MAX_DIMENSION +
+                                     outputX];
+                    const roq_rgba_pixel_t *const left =
+                        &decodedFrame[outputY * ROQ_DEFAULT_DIMENSION +
+                                      sourceX];
                     const roq_rgba_pixel_t *const right = left + 1;
-                    for (int32_t component = 0; component < ROQ_PIXEL_BYTES_RGBA32; ++component) {
-                        output->rgba[component] = (uint8_t)(((int32_t)left->rgba[component] + right->rgba[component]) / 2);
+                    for (int32_t component = 0;
+                         component < ROQ_PIXEL_BYTES_RGBA32; ++component) {
+                        output->rgba[component] = (uint8_t)(
+                            ((int32_t)left->rgba[component] +
+                             right->rgba[component]) / 2);
                     }
                 }
             }
         } else {
-            const int32_t sourceRowPixels = cinematic->width == ROQ_DEFAULT_DIMENSION ? ROQ_DEFAULT_DIMENSION : ROQ_LEGACY_MAX_DIMENSION;
-            for (int32_t outputY = 0; outputY < ROQ_LEGACY_MAX_DIMENSION; ++outputY) {
+            const int32_t sourceRowPixels =
+                cinematic->width == ROQ_DEFAULT_DIMENSION
+                    ? ROQ_DEFAULT_DIMENSION
+                    : ROQ_LEGACY_MAX_DIMENSION;
+            for (int32_t outputY = 0;
+                 outputY < ROQ_LEGACY_MAX_DIMENSION; ++outputY) {
                 const int32_t sourceY = outputY * verticalScale;
-                for (int32_t outputX = 0; outputX < ROQ_LEGACY_MAX_DIMENSION; ++outputX) {
+                for (int32_t outputX = 0;
+                     outputX < ROQ_LEGACY_MAX_DIMENSION; ++outputX) {
                     const int32_t sourceX = outputX * horizontalScale;
-                    scaledFrame[outputY * ROQ_LEGACY_MAX_DIMENSION + outputX] = decodedFrame[sourceY * sourceRowPixels + sourceX];
+                    scaledFrame[outputY * ROQ_LEGACY_MAX_DIMENSION +
+                                outputX] =
+                        decodedFrame[sourceY * sourceRowPixels + sourceX];
                 }
             }
         }
 
-        rendererExports.StretchRaw((int32_t)x, (int32_t)y, (int32_t)width, (int32_t)height, ROQ_LEGACY_MAX_DIMENSION,
-                                   ROQ_LEGACY_MAX_DIMENSION, (const uint8_t *)scaledFrame, handle, qtrue);
+        rendererExports.StretchRaw(
+            (int32_t)x, (int32_t)y, (int32_t)width, (int32_t)height,
+            ROQ_LEGACY_MAX_DIMENSION, ROQ_LEGACY_MAX_DIMENSION,
+            (const uint8_t *)scaledFrame, handle, qtrue);
         Hunk_FreeTempMemory(scaledFrame);
     } else {
-        rendererExports.StretchRaw((int32_t)x, (int32_t)y, (int32_t)width, (int32_t)height, cinematic->displayWidth,
-                                   cinematic->displayHeight, cinematic->decodedFrame, handle, cinematic->dirty);
+        rendererExports.StretchRaw(
+            (int32_t)x, (int32_t)y, (int32_t)width, (int32_t)height,
+            cinematic->displayWidth, cinematic->displayHeight,
+            cinematic->decodedFrame, handle, cinematic->dirty);
     }
 
     cinematic->dirty = qfalse;
@@ -444,7 +509,8 @@ void CIN_DrawCinematic(int32_t handle)
  * Name and signature: exact same-module Mac symbol SCR_DrawCinematic. */
 void SCR_DrawCinematic(void)
 {
-    if (clientCinematicHandle >= 0 && clientCinematicHandle < MAX_VIDEO_HANDLES) {
+    if (clientCinematicHandle >= 0 &&
+        clientCinematicHandle < MAX_VIDEO_HANDLES) {
         CIN_DrawCinematic(clientCinematicHandle);
     }
 }
@@ -455,7 +521,8 @@ void SCR_DrawCinematic(void)
  * Name and signature: exact same-module Mac symbol SCR_RunCinematic. */
 void SCR_RunCinematic(void)
 {
-    if (clientCinematicHandle >= 0 && clientCinematicHandle < MAX_VIDEO_HANDLES) {
+    if (clientCinematicHandle >= 0 &&
+        clientCinematicHandle < MAX_VIDEO_HANDLES) {
         (void)CIN_RunCinematic(clientCinematicHandle);
     }
 }
@@ -466,7 +533,8 @@ void SCR_RunCinematic(void)
  * Name and signature: exact same-module Mac symbol SCR_StopCinematic. */
 void SCR_StopCinematic(void)
 {
-    if (clientCinematicHandle >= 0 && clientCinematicHandle < MAX_VIDEO_HANDLES) {
+    if (clientCinematicHandle >= 0 &&
+        clientCinematicHandle < MAX_VIDEO_HANDLES) {
         (void)CIN_StopCinematic(clientCinematicHandle);
         MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
         clientCinematicHandle = -1;
@@ -496,10 +564,13 @@ void CIN_UploadCinematic(int32_t handle)
         }
     }
 
-    rendererExports.UploadCinematic(ROQ_LEGACY_MAX_DIMENSION, ROQ_LEGACY_MAX_DIMENSION, ROQ_LEGACY_MAX_DIMENSION, ROQ_LEGACY_MAX_DIMENSION,
-                                    cinematic->decodedFrame, handle, cinematic->dirty);
+    rendererExports.UploadCinematic(
+        ROQ_LEGACY_MAX_DIMENSION, ROQ_LEGACY_MAX_DIMENSION,
+        ROQ_LEGACY_MAX_DIMENSION, ROQ_LEGACY_MAX_DIMENSION,
+        cinematic->decodedFrame, handle, cinematic->dirty);
 
-    if (r_inGameVideo->integer == 0 && cinematic->playOnWalls == CIN_WALL_VIDEO_ENABLED) {
+    if (r_inGameVideo->integer == 0 &&
+        cinematic->playOnWalls == CIN_WALL_VIDEO_ENABLED) {
         cinematic->playOnWalls = CIN_WALL_VIDEO_DISABLED;
     }
 }
@@ -520,12 +591,20 @@ void CL_PlayCinematic_f(void)
     }
 
     const int32_t argumentCount = Cmd_Argc();
-    const char *const name = argumentCount > CIN_COMMAND_NAME_ARGUMENT ? Cmd_Argv(CIN_COMMAND_NAME_ARGUMENT) : "";
-    const char *const option = argumentCount > CIN_COMMAND_OPTION_ARGUMENT ? Cmd_Argv(CIN_COMMAND_OPTION_ARGUMENT) : "";
+    const char *const name =
+        argumentCount > CIN_COMMAND_NAME_ARGUMENT
+            ? Cmd_Argv(CIN_COMMAND_NAME_ARGUMENT)
+            : "";
+    const char *const option =
+        argumentCount > CIN_COMMAND_OPTION_ARGUMENT
+            ? Cmd_Argv(CIN_COMMAND_OPTION_ARGUMENT)
+            : "";
 
     int32_t flags = CIN_SYSTEM;
     if ((option != NULL && option[0] == CIN_OPTION_HOLD) ||
-        (name != NULL && (Q_stricmp(name, "end.roq") == 0 || Q_stricmp(name, "demoend.roq") == 0))) {
+        (name != NULL &&
+         (Q_stricmp(name, "end.roq") == 0 ||
+          Q_stricmp(name, "demoend.roq") == 0))) {
         flags = CIN_SYSTEM | CIN_HOLD;
     }
 
@@ -537,10 +616,13 @@ void CL_PlayCinematic_f(void)
     }
 
     if ((flags & CIN_LETTERBOX) != 0) {
-        clientCinematicHandle =
-            CIN_PlayCinematic(name, 0, CIN_LETTERBOX_SCREEN_Y, CIN_VIRTUAL_SCREEN_WIDTH, CIN_LETTERBOX_SCREEN_HEIGHT, flags);
+        clientCinematicHandle = CIN_PlayCinematic(
+            name, 0, CIN_LETTERBOX_SCREEN_Y, CIN_VIRTUAL_SCREEN_WIDTH,
+            CIN_LETTERBOX_SCREEN_HEIGHT, flags);
     } else {
-        clientCinematicHandle = CIN_PlayCinematic(name, 0, 0, CIN_VIRTUAL_SCREEN_WIDTH, CIN_VIRTUAL_SCREEN_HEIGHT, flags);
+        clientCinematicHandle = CIN_PlayCinematic(
+            name, 0, 0, CIN_VIRTUAL_SCREEN_WIDTH,
+            CIN_VIRTUAL_SCREEN_HEIGHT, flags);
     }
 
     if (clientCinematicHandle < 0)
@@ -554,7 +636,8 @@ void CL_PlayCinematic_f(void)
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (currentCinematicHandle < 0)
             break;
-    } while (cinematics[currentCinematicHandle].decodedFrame == NULL && cinematics[currentCinematicHandle].status == FMV_PLAY);
+    } while (cinematics[currentCinematicHandle].decodedFrame == NULL &&
+             cinematics[currentCinematicHandle].status == FMV_PLAY);
 }
 
 /* Source: CoDUOMP.exe 0x00405de0..0x00405e1b.
@@ -562,14 +645,17 @@ void CL_PlayCinematic_f(void)
  * coduomp/mcode/CoDUOMP/FUN_00405de0_00405e1c.mcode.
  * Role name: the Windows-only mono-input/mono-output counterpart of the named
  * Mac RLL decoder variants. */
-int32_t RllDecodeMonoToMono(const uint8_t *input, int16_t *output, uint32_t sampleCount, qboolean signedOutput, uint16_t initialSample)
+int32_t RllDecodeMonoToMono(const uint8_t *input, int16_t *output,
+                            uint32_t sampleCount, qboolean signedOutput,
+                            uint16_t initialSample)
 {
     uint16_t predictor = initialSample;
     if (signedOutput)
         predictor = (uint16_t)(predictor - UINT16_C(0x8000));
 
     for (uint32_t sample = 0; sample < sampleCount; ++sample) {
-        predictor = (uint16_t)(predictor + (uint16_t)rllSquareTable[input[sample]]);
+        predictor = (uint16_t)(
+            predictor + (uint16_t)rllSquareTable[input[sample]]);
         output[sample] = (int16_t)predictor;
     }
     return (int32_t)sampleCount;
@@ -579,14 +665,17 @@ int32_t RllDecodeMonoToMono(const uint8_t *input, int16_t *output, uint32_t samp
  * Evidence: repaired function record
  * coduomp/mcode/CoDUOMP/FUN_00405e20_00405e5d.mcode.
  * Name: exact same-module Mac symbol RllDecodeMonoToStereo. */
-int32_t RllDecodeMonoToStereo(const uint8_t *input, int16_t *output, uint32_t sampleCount, qboolean signedOutput, uint16_t initialSample)
+int32_t RllDecodeMonoToStereo(const uint8_t *input, int16_t *output,
+                              uint32_t sampleCount, qboolean signedOutput,
+                              uint16_t initialSample)
 {
     uint16_t predictor = initialSample;
     if (signedOutput)
         predictor = (uint16_t)(predictor - UINT16_C(0x8000));
 
     for (uint32_t sample = 0; sample < sampleCount; ++sample) {
-        predictor = (uint16_t)(predictor + (uint16_t)rllSquareTable[input[sample]]);
+        predictor = (uint16_t)(
+            predictor + (uint16_t)rllSquareTable[input[sample]]);
         output[sample * 2] = (int16_t)predictor;
         output[sample * 2 + 1] = (int16_t)predictor;
     }
@@ -597,7 +686,9 @@ int32_t RllDecodeMonoToStereo(const uint8_t *input, int16_t *output, uint32_t sa
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00405e60_00405ee2.mcode.
  * Name and argument order: same-module Mac symbol
  * RllDecodeStereoToStereo and PowerPC r3..r7 entry state. */
-int32_t RllDecodeStereoToStereo(const uint8_t *input, int16_t *output, uint32_t encodedByteCount, qboolean signedOutput,
+int32_t RllDecodeStereoToStereo(const uint8_t *input, int16_t *output,
+                                uint32_t encodedByteCount,
+                                qboolean signedOutput,
                                 uint16_t initialSamples)
 {
     uint16_t leftPredictor = initialSamples & UINT16_C(0xff00);
@@ -607,9 +698,13 @@ int32_t RllDecodeStereoToStereo(const uint8_t *input, int16_t *output, uint32_t 
         rightPredictor = (uint16_t)(rightPredictor - UINT16_C(0x8000));
     }
 
-    for (uint32_t byteIndex = 0; byteIndex < encodedByteCount; byteIndex += 2) {
-        leftPredictor = (uint16_t)(leftPredictor + (uint16_t)rllSquareTable[input[byteIndex]]);
-        rightPredictor = (uint16_t)(rightPredictor + (uint16_t)rllSquareTable[input[byteIndex + 1]]);
+    for (uint32_t byteIndex = 0; byteIndex < encodedByteCount;
+         byteIndex += 2) {
+        leftPredictor = (uint16_t)(
+            leftPredictor + (uint16_t)rllSquareTable[input[byteIndex]]);
+        rightPredictor = (uint16_t)(
+            rightPredictor +
+            (uint16_t)rllSquareTable[input[byteIndex + 1]]);
         output[byteIndex] = (int16_t)leftPredictor;
         output[byteIndex + 1] = (int16_t)rightPredictor;
     }
@@ -620,7 +715,9 @@ int32_t RllDecodeStereoToStereo(const uint8_t *input, int16_t *output, uint32_t 
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00405ef0_00405f8a.mcode.
  * Role name: the Windows-only stereo-input/mono-output counterpart of the
  * named Mac RLL decoder variants. */
-int32_t RllDecodeStereoToMono(const uint8_t *input, int16_t *output, uint32_t sampleFrameCount, qboolean signedOutput,
+int32_t RllDecodeStereoToMono(const uint8_t *input, int16_t *output,
+                              uint32_t sampleFrameCount,
+                              qboolean signedOutput,
                               uint16_t initialSamples)
 {
     uint16_t leftPredictor = initialSamples & UINT16_C(0xff00);
@@ -631,9 +728,14 @@ int32_t RllDecodeStereoToMono(const uint8_t *input, int16_t *output, uint32_t sa
     }
 
     for (uint32_t frame = 0; frame < sampleFrameCount; ++frame) {
-        leftPredictor = (uint16_t)(leftPredictor + (uint16_t)rllSquareTable[input[frame * 2]]);
-        rightPredictor = (uint16_t)(rightPredictor + (uint16_t)rllSquareTable[input[frame * 2 + 1]]);
-        const int32_t mixed = (int32_t)(int16_t)leftPredictor + (int32_t)(int16_t)rightPredictor;
+        leftPredictor = (uint16_t)(
+            leftPredictor + (uint16_t)rllSquareTable[input[frame * 2]]);
+        rightPredictor = (uint16_t)(
+            rightPredictor +
+            (uint16_t)rllSquareTable[input[frame * 2 + 1]]);
+        const int32_t mixed =
+            (int32_t)(int16_t)leftPredictor +
+            (int32_t)(int16_t)rightPredictor;
         output[frame] = (int16_t)(mixed / 2);
     }
     return (int32_t)sampleFrameCount;
@@ -645,14 +747,18 @@ int32_t RllDecodeStereoToMono(const uint8_t *input, int16_t *output, uint32_t sa
  * PowerPC entry registers. Both images copy an 8-by-8 block between surfaces
  * having the same positive row stride. The original rounds that stride down
  * to an eight-byte boundary before copying. */
-void move8_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes)
+void move8_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes)
 {
-    const int32_t alignedStrideBytes = rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
-    const size_t rowStride = (size_t)alignedStrideBytes / sizeof(*destination);
+    const int32_t alignedStrideBytes =
+        rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
+    const size_t rowStride =
+        (size_t)alignedStrideBytes / sizeof(*destination);
 
     for (size_t row = 0; row < ROQ_BLOCK_8; ++row) {
         for (size_t column = 0; column < ROQ_BLOCK_8; ++column) {
-            destination[row * rowStride + column] = source[row * rowStride + column];
+            destination[row * rowStride + column] =
+                source[row * rowStride + column];
         }
     }
 }
@@ -662,14 +768,18 @@ void move8_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBy
  * coduomp/mcode/CoDUOMP/FUN_00406070_004060b0.mcode.
  * Name and argument roles: exact same-module Mac symbol move4_32 and its
  * PowerPC entry registers. */
-void move4_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes)
+void move4_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes)
 {
-    const int32_t alignedStrideBytes = rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
-    const size_t rowStride = (size_t)alignedStrideBytes / sizeof(*destination);
+    const int32_t alignedStrideBytes =
+        rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
+    const size_t rowStride =
+        (size_t)alignedStrideBytes / sizeof(*destination);
 
     for (size_t row = 0; row < ROQ_BLOCK_4; ++row) {
         for (size_t column = 0; column < ROQ_BLOCK_4; ++column) {
-            destination[row * rowStride + column] = source[row * rowStride + column];
+            destination[row * rowStride + column] =
+                source[row * rowStride + column];
         }
     }
 }
@@ -679,14 +789,18 @@ void move4_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBy
  * Name and argument roles: exact same-module Mac symbol blit8_32 and its
  * PowerPC entry registers. The input block is tightly packed; only the output
  * uses the aligned surface row stride. */
-void blit8_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes)
+void blit8_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes)
 {
-    const int32_t alignedStrideBytes = rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
-    const size_t destinationRowStride = (size_t)alignedStrideBytes / sizeof(*destination);
+    const int32_t alignedStrideBytes =
+        rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
+    const size_t destinationRowStride =
+        (size_t)alignedStrideBytes / sizeof(*destination);
 
     for (size_t row = 0; row < ROQ_BLOCK_8; ++row) {
         for (size_t column = 0; column < ROQ_BLOCK_8; ++column) {
-            destination[row * destinationRowStride + column] = source[row * ROQ_BLOCK_8 + column];
+            destination[row * destinationRowStride + column] =
+                source[row * ROQ_BLOCK_8 + column];
         }
     }
 }
@@ -696,14 +810,18 @@ void blit8_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBy
  * coduomp/mcode/CoDUOMP/FUN_004061b0_004061f7.mcode.
  * Name and argument roles: exact same-module Mac symbol blit4_32 and its
  * PowerPC entry registers. */
-void blit4_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes)
+void blit4_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes)
 {
-    const int32_t alignedStrideBytes = rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
-    const size_t destinationRowStride = (size_t)alignedStrideBytes / sizeof(*destination);
+    const int32_t alignedStrideBytes =
+        rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
+    const size_t destinationRowStride =
+        (size_t)alignedStrideBytes / sizeof(*destination);
 
     for (size_t row = 0; row < ROQ_BLOCK_4; ++row) {
         for (size_t column = 0; column < ROQ_BLOCK_4; ++column) {
-            destination[row * destinationRowStride + column] = source[row * ROQ_BLOCK_4 + column];
+            destination[row * destinationRowStride + column] =
+                source[row * ROQ_BLOCK_4 + column];
         }
     }
 }
@@ -713,14 +831,18 @@ void blit4_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBy
  * coduomp/mcode/CoDUOMP/FUN_00406200_0040620e.mcode.
  * Name and argument roles: exact same-module Mac symbol blit2_32 and its
  * PowerPC entry registers. */
-void blit2_32(const uint32_t *source, uint32_t *destination, int32_t rowStrideBytes)
+void blit2_32(const uint32_t *source, uint32_t *destination,
+              int32_t rowStrideBytes)
 {
-    const int32_t alignedStrideBytes = rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
-    const size_t destinationRowStride = (size_t)alignedStrideBytes / sizeof(*destination);
+    const int32_t alignedStrideBytes =
+        rowStrideBytes - rowStrideBytes % ROQ_COPY_ALIGNMENT_BYTES;
+    const size_t destinationRowStride =
+        (size_t)alignedStrideBytes / sizeof(*destination);
 
     for (size_t row = 0; row < ROQ_BLOCK_2; ++row) {
         for (size_t column = 0; column < ROQ_BLOCK_2; ++column) {
-            destination[row * destinationRowStride + column] = source[row * ROQ_BLOCK_2 + column];
+            destination[row * destinationRowStride + column] =
+                source[row * ROQ_BLOCK_2 + column];
         }
     }
 }
@@ -739,10 +861,14 @@ void ROQ_GenYUVTables(void)
 
     for (int32_t component = 0; component < 256; ++component) {
         const int32_t centered = component * 2 - 255;
-        roqUbTable[component] = (int32_t)((float)centered * ubCoefficient + 32.0f);
-        roqVrTable[component] = (int32_t)((float)centered * vrCoefficient + 32.0f);
-        roqUgTable[component] = (int32_t)((float)centered * ugCoefficient);
-        roqVgTable[component] = (int32_t)((float)centered * vgCoefficient + 32.0f);
+        roqUbTable[component] = (int32_t)(
+            (float)centered * ubCoefficient + 32.0f);
+        roqVrTable[component] = (int32_t)(
+            (float)centered * vrCoefficient + 32.0f);
+        roqUgTable[component] = (int32_t)(
+            (float)centered * ugCoefficient);
+        roqVgTable[component] = (int32_t)(
+            (float)centered * vgCoefficient + 32.0f);
         roqYyTable[component] = (component << 6) | (component >> 2);
     }
 }
@@ -754,7 +880,8 @@ void ROQ_GenYUVTables(void)
 uint16_t yuv_to_rgb(int32_t y, int32_t u, int32_t v)
 {
     int32_t red = (roqYyTable[y] + roqVrTable[v]) >> 9;
-    int32_t green = (roqYyTable[y] + roqUgTable[u] + roqVgTable[v]) >> 8;
+    int32_t green =
+        (roqYyTable[y] + roqUgTable[u] + roqVgTable[v]) >> 8;
     int32_t blue = (roqYyTable[y] + roqUbTable[u]) >> 9;
 
     if (red < 0)
@@ -780,7 +907,8 @@ uint16_t yuv_to_rgb(int32_t y, int32_t u, int32_t v)
 uint32_t yuv_to_rgba32(int32_t y, int32_t u, int32_t v)
 {
     int32_t red = (roqYyTable[y] + roqVrTable[v]) >> 6;
-    int32_t green = (roqYyTable[y] + roqUgTable[u] + roqVgTable[v]) >> 6;
+    int32_t green =
+        (roqYyTable[y] + roqUgTable[u] + roqVgTable[v]) >> 6;
     int32_t blue = (roqYyTable[y] + roqUbTable[u]) >> 6;
 
     if (red < 0)
@@ -796,7 +924,10 @@ uint32_t yuv_to_rgba32(int32_t y, int32_t u, int32_t v)
     if (blue > 255)
         blue = 255;
 
-    return UINT32_C(0xff000000) | ((uint32_t)blue << 16) | ((uint32_t)green << 8) | (uint32_t)red;
+    return UINT32_C(0xff000000) |
+           ((uint32_t)blue << 16) |
+           ((uint32_t)green << 8) |
+           (uint32_t)red;
 }
 
 /* Source: CoDUOMP.exe 0x00406210..0x00406481.
@@ -805,17 +936,21 @@ uint32_t yuv_to_rgba32(int32_t y, int32_t u, int32_t v)
  * its PowerPC entry registers. Each little-endian command word supplies eight
  * two-bit commands from its most-significant end. A top-level subdivide command
  * consumes four child entries from the terminated quad-destination list. */
-void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedData)
+void blitVQQuad32fs(uint32_t *const *quadDestinations,
+                    const uint8_t *encodedData)
 {
-    const int32_t rowStrideBytes = cinematics[currentCinematicHandle].samplesPerLine;
-    const size_t rowStridePixels = (size_t)rowStrideBytes / sizeof(**quadDestinations);
+    const int32_t rowStrideBytes =
+        cinematics[currentCinematicHandle].samplesPerLine;
+    const size_t rowStridePixels =
+        (size_t)rowStrideBytes / sizeof(**quadDestinations);
     uint16_t commandWord = 0;
     int32_t commandsRemaining = 0;
     size_t quadIndex = 0;
 
     while (quadDestinations[quadIndex] != NULL) {
         if (commandsRemaining == 0) {
-            commandWord = (uint16_t)(encodedData[0] | ((uint16_t)encodedData[1] << 8));
+            commandWord = (uint16_t)(
+                encodedData[0] | ((uint16_t)encodedData[1] << 8));
             encodedData += 2;
             commandsRemaining = 7;
         } else {
@@ -833,7 +968,9 @@ void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedDat
 
         case ROQ_VQ_MOTION: {
             const uint8_t motionIndex = *encodedData++;
-            const uint32_t *source = (const uint32_t *)((const uint8_t *)destination + roqMotionOffsets[motionIndex]);
+            const uint32_t *source = (const uint32_t *)(
+                (const uint8_t *)destination +
+                roqMotionOffsets[motionIndex]);
             move8_32(source, destination, rowStrideBytes);
             quadIndex += 5;
             break;
@@ -841,7 +978,9 @@ void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedDat
 
         case ROQ_VQ_VECTOR: {
             const uint8_t codebookIndex = *encodedData++;
-            blit8_32(&roqVq8Codebook.normalRgba32[codebookIndex][0][0], destination, rowStrideBytes);
+            blit8_32(
+                &roqVq8Codebook.normalRgba32[codebookIndex][0][0],
+                destination, rowStrideBytes);
             quadIndex += 5;
             break;
         }
@@ -850,16 +989,20 @@ void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedDat
             ++quadIndex;
             for (int32_t child = 0; child < 4; ++child, ++quadIndex) {
                 if (commandsRemaining == 0) {
-                    commandWord = (uint16_t)(encodedData[0] | ((uint16_t)encodedData[1] << 8));
+                    commandWord = (uint16_t)(
+                        encodedData[0] |
+                        ((uint16_t)encodedData[1] << 8));
                     encodedData += 2;
                     commandsRemaining = 7;
                 } else {
                     --commandsRemaining;
                 }
 
-                const uint16_t childCommand = commandWord & ROQ_VQ_SUBDIVIDE;
+                const uint16_t childCommand =
+                    commandWord & ROQ_VQ_SUBDIVIDE;
                 commandWord = (uint16_t)(commandWord << 2);
-                uint32_t *const childDestination = quadDestinations[quadIndex];
+                uint32_t *const childDestination =
+                    quadDestinations[quadIndex];
 
                 switch (childCommand) {
                 case ROQ_VQ_SKIP:
@@ -867,26 +1010,43 @@ void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedDat
 
                 case ROQ_VQ_MOTION: {
                     const uint8_t motionIndex = *encodedData++;
-                    const uint32_t *source = (const uint32_t *)((const uint8_t *)childDestination + roqMotionOffsets[motionIndex]);
+                    const uint32_t *source = (const uint32_t *)(
+                        (const uint8_t *)childDestination +
+                        roqMotionOffsets[motionIndex]);
                     move4_32(source, childDestination, rowStrideBytes);
                     break;
                 }
 
                 case ROQ_VQ_VECTOR: {
                     const uint8_t codebookIndex = *encodedData++;
-                    blit4_32(&roqVq4Codebook.normalRgba32[codebookIndex][0][0], childDestination, rowStrideBytes);
+                    blit4_32(
+                        &roqVq4Codebook.normalRgba32[codebookIndex][0][0],
+                        childDestination, rowStrideBytes);
                     break;
                 }
 
                 case ROQ_VQ_SUBDIVIDE: {
-                    const uint32_t *const topLeft = &roqVq2Codebook.normalRgba32[encodedData[0]][0][0];
-                    const uint32_t *const topRight = &roqVq2Codebook.normalRgba32[encodedData[1]][0][0];
-                    const uint32_t *const bottomLeft = &roqVq2Codebook.normalRgba32[encodedData[2]][0][0];
-                    const uint32_t *const bottomRight = &roqVq2Codebook.normalRgba32[encodedData[3]][0][0];
+                    const uint32_t *const topLeft =
+                        &roqVq2Codebook.normalRgba32
+                             [encodedData[0]][0][0];
+                    const uint32_t *const topRight =
+                        &roqVq2Codebook.normalRgba32
+                             [encodedData[1]][0][0];
+                    const uint32_t *const bottomLeft =
+                        &roqVq2Codebook.normalRgba32
+                             [encodedData[2]][0][0];
+                    const uint32_t *const bottomRight =
+                        &roqVq2Codebook.normalRgba32
+                             [encodedData[3]][0][0];
                     blit2_32(topLeft, childDestination, rowStrideBytes);
-                    blit2_32(topRight, childDestination + 2, rowStrideBytes);
-                    blit2_32(bottomLeft, childDestination + rowStridePixels * 2, rowStrideBytes);
-                    blit2_32(bottomRight, childDestination + rowStridePixels * 2 + 2, rowStrideBytes);
+                    blit2_32(topRight, childDestination + 2,
+                             rowStrideBytes);
+                    blit2_32(bottomLeft,
+                             childDestination + rowStridePixels * 2,
+                             rowStrideBytes);
+                    blit2_32(bottomRight,
+                             childDestination + rowStridePixels * 2 + 2,
+                             rowStrideBytes);
                     encodedData += 4;
                     break;
                 }
@@ -902,22 +1062,33 @@ void blitVQQuad32fs(uint32_t *const *quadDestinations, const uint8_t *encodedDat
  * Name and arguments: exact same-module Mac symbol recurseQuad and its
  * PowerPC entry registers. The root 16-by-16 tile is structural; stored
  * destinations are its 8-by-8 children and their 4-by-4 children. */
-void recurseQuad(int32_t startX, int32_t startY, int32_t quadSize, int32_t xOffset, int32_t yOffset)
+void recurseQuad(int32_t startX, int32_t startY, int32_t quadSize,
+                 int32_t xOffset, int32_t yOffset)
 {
     cinematic_t *const cinematic = &cinematics[currentCinematicHandle];
-    const int32_t effectiveWidth = cinematic->roqWidth < cinematic->width ? cinematic->roqWidth : cinematic->width;
-    const int32_t effectiveHeight = cinematic->roqHeight < cinematic->height ? cinematic->roqHeight : cinematic->height;
+    const int32_t effectiveWidth =
+        cinematic->roqWidth < cinematic->width
+            ? cinematic->roqWidth
+            : cinematic->width;
+    const int32_t effectiveHeight =
+        cinematic->roqHeight < cinematic->height
+            ? cinematic->roqHeight
+            : cinematic->height;
 
-    if (startX >= 0 && startX + quadSize <= effectiveWidth && startY >= 0 && startY + quadSize <= effectiveHeight &&
+    if (startX >= 0 && startX + quadSize <= effectiveWidth &&
+        startY >= 0 && startY + quadSize <= effectiveHeight &&
         quadSize <= ROQ_MAX_STORED_QUAD_SIZE) {
-        const int32_t destinationY = (cinematic->height - effectiveHeight) / 2 + startY + yOffset;
+        const int32_t destinationY =
+            (cinematic->height - effectiveHeight) / 2 + startY + yOffset;
         const int32_t destinationX = startX + xOffset;
         uint8_t *const destinationBytes =
-            roqFrameBuffer + destinationY * cinematic->samplesPerLine + destinationX * cinematic->samplesPerPixel;
+            roqFrameBuffer + destinationY * cinematic->samplesPerLine +
+            destinationX * cinematic->samplesPerPixel;
         uint32_t *const destination = (uint32_t *)destinationBytes;
 
         roqQuadDestinations[0][cinematic->quadCount] = destination;
-        roqQuadDestinations[1][cinematic->quadCount] = (uint32_t *)(destinationBytes + cinematic->frameSize);
+        roqQuadDestinations[1][cinematic->quadCount] =
+            (uint32_t *)(destinationBytes + cinematic->frameSize);
         ++cinematic->quadCount;
     }
 
@@ -928,7 +1099,8 @@ void recurseQuad(int32_t startX, int32_t startY, int32_t quadSize, int32_t xOffs
     recurseQuad(startX, startY, childSize, xOffset, yOffset);
     recurseQuad(startX + childSize, startY, childSize, xOffset, yOffset);
     recurseQuad(startX, startY + childSize, childSize, xOffset, yOffset);
-    recurseQuad(startX + childSize, startY + childSize, childSize, xOffset, yOffset);
+    recurseQuad(startX + childSize, startY + childSize, childSize,
+                xOffset, yOffset);
 }
 
 /* Source: CoDUOMP.exe 0x004075d0..0x004076d7.
@@ -939,7 +1111,9 @@ void recurseQuad(int32_t startX, int32_t startY, int32_t quadSize, int32_t xOffs
 void setupQuad(int32_t xOffset, int32_t yOffset)
 {
     cinematic_t *const cinematic = &cinematics[currentCinematicHandle];
-    if (roqQuadSetupCache.xOffset == xOffset && roqQuadSetupCache.yOffset == yOffset && roqQuadSetupCache.height == cinematic->roqHeight &&
+    if (roqQuadSetupCache.xOffset == xOffset &&
+        roqQuadSetupCache.yOffset == yOffset &&
+        roqQuadSetupCache.height == cinematic->roqHeight &&
         roqQuadSetupCache.width == cinematic->roqWidth) {
         return;
     }
@@ -950,16 +1124,23 @@ void setupQuad(int32_t xOffset, int32_t yOffset)
     roqQuadSetupCache.width = cinematic->roqWidth;
     cinematic->quadCount = 0;
 
-    const int32_t sixteenthPixels = (cinematic->roqWidth * cinematic->roqHeight) >> 4;
-    const int32_t listEnd = sixteenthPixels + sixteenthPixels / 4 + ROQ_QUAD_TERMINATOR_COUNT;
+    const int32_t sixteenthPixels =
+        (cinematic->roqWidth * cinematic->roqHeight) >> 4;
+    const int32_t listEnd =
+        sixteenthPixels + sixteenthPixels / 4 +
+        ROQ_QUAD_TERMINATOR_COUNT;
 
-    for (int32_t startY = 0; startY < cinematic->roqHeight; startY += ROQ_ROOT_QUAD_SIZE) {
-        for (int32_t startX = 0; startX < cinematic->roqWidth; startX += ROQ_ROOT_QUAD_SIZE) {
-            recurseQuad(startX, startY, ROQ_ROOT_QUAD_SIZE, xOffset, yOffset);
+    for (int32_t startY = 0; startY < cinematic->roqHeight;
+         startY += ROQ_ROOT_QUAD_SIZE) {
+        for (int32_t startX = 0; startX < cinematic->roqWidth;
+             startX += ROQ_ROOT_QUAD_SIZE) {
+            recurseQuad(startX, startY, ROQ_ROOT_QUAD_SIZE,
+                        xOffset, yOffset);
         }
     }
 
-    for (int32_t index = listEnd - ROQ_QUAD_TERMINATOR_COUNT; index < listEnd; ++index) {
+    for (int32_t index = listEnd - ROQ_QUAD_TERMINATOR_COUNT;
+         index < listEnd; ++index) {
         roqQuadDestinations[0][index] = NULL;
         roqQuadDestinations[1][index] = NULL;
     }
@@ -975,19 +1156,29 @@ void readQuadInfo(const uint8_t *data)
         return;
 
     cinematic_t *const cinematic = &cinematics[currentCinematicHandle];
-    cinematic->roqWidth = (int32_t)(data[0] | ((uint16_t)data[1] << 8));
-    cinematic->roqHeight = (int32_t)(data[2] | ((uint16_t)data[3] << 8));
-    cinematic->roqMaxSize = (int32_t)(data[4] | ((uint16_t)data[5] << 8));
-    cinematic->roqMinSize = (int32_t)(data[6] | ((uint16_t)data[7] << 8));
+    cinematic->roqWidth =
+        (int32_t)(data[0] | ((uint16_t)data[1] << 8));
+    cinematic->roqHeight =
+        (int32_t)(data[2] | ((uint16_t)data[3] << 8));
+    cinematic->roqMaxSize =
+        (int32_t)(data[4] | ((uint16_t)data[5] << 8));
+    cinematic->roqMinSize =
+        (int32_t)(data[6] | ((uint16_t)data[7] << 8));
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    const uint64_t pixelCount = (uint64_t)(uint32_t)cinematic->roqWidth * (uint64_t)(uint32_t)cinematic->roqHeight;
-    const uint64_t frameSize = pixelCount * (uint64_t)(uint32_t)cinematic->samplesPerPixel;
+    const uint64_t pixelCount =
+        (uint64_t)(uint32_t)cinematic->roqWidth *
+        (uint64_t)(uint32_t)cinematic->roqHeight;
+    const uint64_t frameSize =
+        pixelCount * (uint64_t)(uint32_t)cinematic->samplesPerPixel;
     const uint64_t sixteenthPixels = pixelCount >> 4;
-    const uint64_t quadListEnd = sixteenthPixels + sixteenthPixels / 4 + ROQ_QUAD_TERMINATOR_COUNT;
-    if (cinematic->roqWidth == 0 || cinematic->roqHeight == 0 || frameSize > ROQ_FRAME_BUFFER_BYTES / 2 ||
+    const uint64_t quadListEnd =
+        sixteenthPixels + sixteenthPixels / 4 + ROQ_QUAD_TERMINATOR_COUNT;
+    if (cinematic->roqWidth == 0 || cinematic->roqHeight == 0 ||
+        frameSize > ROQ_FRAME_BUFFER_BYTES / 2 ||
         quadListEnd > ROQ_QUAD_POINTER_CAPACITY) {
-        Com_Printf("WARNING: rejecting RoQ dimensions %i x %i\n", cinematic->roqWidth, cinematic->roqHeight);
+        Com_Printf("WARNING: rejecting RoQ dimensions %i x %i\n",
+                   cinematic->roqWidth, cinematic->roqHeight);
         cinematic->looping = qfalse;
         cinematic->status = FMV_EOF;
         return;
@@ -995,8 +1186,10 @@ void readQuadInfo(const uint8_t *data)
 
     cinematic->width = cinematic->roqWidth;
     cinematic->height = cinematic->roqHeight;
-    cinematic->samplesPerLine = cinematic->width * cinematic->samplesPerPixel;
-    cinematic->frameSize = cinematic->height * cinematic->samplesPerLine;
+    cinematic->samplesPerLine =
+        cinematic->width * cinematic->samplesPerPixel;
+    cinematic->frameSize =
+        cinematic->height * cinematic->samplesPerLine;
     cinematic->half = qfalse;
     cinematic->smoothedDouble = qfalse;
     cinematic->frameBlitters[0] = cinematic->configuredFrameBlitters[0];
@@ -1011,7 +1204,8 @@ void readQuadInfo(const uint8_t *data)
             cinematic->displayWidth = ROQ_LEGACY_MAX_DIMENSION;
         if (cinematic->displayHeight > ROQ_LEGACY_MAX_DIMENSION)
             cinematic->displayHeight = ROQ_LEGACY_MAX_DIMENSION;
-        if (cinematic->width != ROQ_LEGACY_MAX_DIMENSION || cinematic->height != ROQ_LEGACY_MAX_DIMENSION) {
+        if (cinematic->width != ROQ_LEGACY_MAX_DIMENSION ||
+            cinematic->height != ROQ_LEGACY_MAX_DIMENSION) {
             Com_Printf("HACK: approxmimating cinematic for Rage Pro or Voodoo\n");
         }
     }
@@ -1024,23 +1218,30 @@ void readQuadInfo(const uint8_t *data)
  * because blitVQQuad32fs applies them to decoded-frame addresses. */
 void RoQPrepMcomp(int32_t xOffset, int32_t yOffset)
 {
-    const cinematic_t *const cinematic = &cinematics[currentCinematicHandle];
+    const cinematic_t *const cinematic =
+        &cinematics[currentCinematicHandle];
     int32_t pixelStride = cinematic->samplesPerPixel;
     int32_t rowStride = cinematic->samplesPerLine;
 
-    if (cinematic->roqWidth == cinematic->roqHeight * 4 && cinematic->half == qfalse) {
+    if (cinematic->roqWidth == cinematic->roqHeight * 4 &&
+        cinematic->half == qfalse) {
         pixelStride *= 2;
         rowStride *= 2;
     }
 
-    const int32_t initialHorizontalOffset = (xOffset - 8) * pixelStride;
+    const int32_t initialHorizontalOffset =
+        (xOffset - 8) * pixelStride;
     int32_t verticalOffset = (yOffset - 8) * rowStride;
 
-    for (int32_t verticalIndex = 0; verticalIndex < ROQ_MOTION_DIMENSION; ++verticalIndex) {
+    for (int32_t verticalIndex = 0;
+         verticalIndex < ROQ_MOTION_DIMENSION; ++verticalIndex) {
         int32_t horizontalOffset = initialHorizontalOffset;
-        for (int32_t horizontalIndex = 0; horizontalIndex < ROQ_MOTION_DIMENSION; ++horizontalIndex) {
-            roqMotionOffsets[horizontalIndex * ROQ_MOTION_DIMENSION + verticalIndex] =
-                cinematic->motionBaseOffset - verticalOffset - horizontalOffset;
+        for (int32_t horizontalIndex = 0;
+             horizontalIndex < ROQ_MOTION_DIMENSION; ++horizontalIndex) {
+            roqMotionOffsets[
+                horizontalIndex * ROQ_MOTION_DIMENSION + verticalIndex] =
+                cinematic->motionBaseOffset - verticalOffset -
+                horizontalOffset;
             horizontalOffset += pixelStride;
         }
         verticalOffset += rowStride;
@@ -1056,7 +1257,8 @@ void initRoQ(void)
     if (currentCinematicHandle < 0)
         return;
 
-    cinematic_t *const cinematic = &cinematics[currentCinematicHandle];
+    cinematic_t *const cinematic =
+        &cinematics[currentCinematicHandle];
     cinematic->configuredFrameBlitters[0] = blitVQQuad32fs;
     cinematic->configuredFrameBlitters[1] = blitVQQuad32fs;
     cinematic->samplesPerPixel = ROQ_PIXEL_BYTES_RGBA32;
@@ -1081,14 +1283,20 @@ void RoQ_init(void)
     cinematic->lastTime = cinematic->startTime;
     cinematic->fileOffset = 24;
 
-    cinematic->frameRate = (int32_t)(roqFileBuffer[6] | ((uint16_t)roqFileBuffer[7] << 8));
+    cinematic->frameRate = (int32_t)(
+        roqFileBuffer[6] | ((uint16_t)roqFileBuffer[7] << 8));
     if (cinematic->frameRate == 0)
         cinematic->frameRate = 30;
 
-    cinematic->chunkId = (int32_t)(roqFileBuffer[8] | ((uint16_t)roqFileBuffer[9] << 8));
+    cinematic->chunkId = (int32_t)(
+        roqFileBuffer[8] | ((uint16_t)roqFileBuffer[9] << 8));
     cinematic->frameNumber = -1;
-    cinematic->chunkSize = (int32_t)roqFileBuffer[10] | ((int32_t)roqFileBuffer[11] << 8) | ((int32_t)roqFileBuffer[12] << 16);
-    cinematic->chunkArgument = (int32_t)(roqFileBuffer[14] | ((uint16_t)roqFileBuffer[15] << 8));
+    cinematic->chunkSize =
+        (int32_t)roqFileBuffer[10] |
+        ((int32_t)roqFileBuffer[11] << 8) |
+        ((int32_t)roqFileBuffer[12] << 16);
+    cinematic->chunkArgument = (int32_t)(
+        roqFileBuffer[14] | ((uint16_t)roqFileBuffer[15] << 8));
 }
 
 /* Source: CoDUOMP.exe 0x00407910..0x00407998.
@@ -1105,7 +1313,8 @@ void RoQReset(void)
     FS_FCloseFile(cinematic->fileHandle);
     cinematic->fileHandle = 0;
     fs_fileAccessed = 1;
-    (void)FS_FOpenFileRead(cinematic->fileName, &cinematic->fileHandle, qtrue);
+    (void)FS_FOpenFileRead(cinematic->fileName, &cinematic->fileHandle,
+                           qtrue);
     FS_Read(roqFileBuffer, ROQ_FILE_HEADER_BYTES, cinematic->fileHandle);
     RoQ_init();
     cinematic->status = FMV_LOOPED;
@@ -1113,7 +1322,10 @@ void RoQReset(void)
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the pixel stores in the
  * nine unrolled format/geometry branches of decodeCodeBook. */
-static void RoQ_StoreCodebookPixel(uint8_t *destination, int32_t pixelBytes, uint8_t y, uint8_t u, uint8_t v, const uint8_t *lumaTable)
+static void RoQ_StoreCodebookPixel(uint8_t *destination,
+                                   int32_t pixelBytes, uint8_t y,
+                                   uint8_t u, uint8_t v,
+                                   const uint8_t *lumaTable)
 {
     switch (pixelBytes) {
     case ROQ_PIXEL_BYTES_LUMA:
@@ -1151,14 +1363,18 @@ void decodeCodeBook(const uint8_t *data, uint16_t chunkArgument)
         vq2EntryCount = ROQ_CODEBOOK_ENTRY_COUNT;
         vq4EntryCount = ROQ_CODEBOOK_ENTRY_COUNT;
     } else {
-        vq2EntryCount = (int32_t)(chunkArgument >> ROQ_CODEBOOK_VQ2_COUNT_SHIFT);
+        vq2EntryCount =
+            (int32_t)(chunkArgument >> ROQ_CODEBOOK_VQ2_COUNT_SHIFT);
         if (vq2EntryCount == 0)
             vq2EntryCount = ROQ_CODEBOOK_ENTRY_COUNT;
-        vq4EntryCount = (int32_t)(chunkArgument & ROQ_CODEBOOK_COUNT_MASK);
+        vq4EntryCount =
+            (int32_t)(chunkArgument & ROQ_CODEBOOK_COUNT_MASK);
     }
 
     const int32_t pixelBytes = cinematic->samplesPerPixel;
-    if (pixelBytes != ROQ_PIXEL_BYTES_LUMA && pixelBytes != ROQ_PIXEL_BYTES_RGB565 && pixelBytes != ROQ_PIXEL_BYTES_RGBA32) {
+    if (pixelBytes != ROQ_PIXEL_BYTES_LUMA &&
+        pixelBytes != ROQ_PIXEL_BYTES_RGB565 &&
+        pixelBytes != ROQ_PIXEL_BYTES_RGBA32) {
         return;
     }
 
@@ -1208,9 +1424,12 @@ void decodeCodeBook(const uint8_t *data, uint16_t chunkArgument)
 
         const uint8_t u = data[4];
         const uint8_t v = data[5];
-        uint8_t *const destination = roqVq2Codebook.bytes + entry * vq2EntryBytes;
+        uint8_t *const destination =
+            roqVq2Codebook.bytes + entry * vq2EntryBytes;
         for (int32_t pixel = 0; pixel < lumaCount; ++pixel) {
-            RoQ_StoreCodebookPixel(destination + pixel * pixelBytes, pixelBytes, luma[pixel], u, v, cinematic->lumaTable);
+            RoQ_StoreCodebookPixel(
+                destination + pixel * pixelBytes, pixelBytes, luma[pixel],
+                u, v, cinematic->lumaTable);
         }
         data += ROQ_CODEBOOK_RECORD_BYTES;
     }
@@ -1223,34 +1442,53 @@ void decodeCodeBook(const uint8_t *data, uint16_t chunkArgument)
     const int32_t vq8EntryBytes = vq8Width * vq8Height * pixelBytes;
 
     for (int32_t entry = 0; entry < vq4EntryCount; ++entry) {
-        const uint8_t sourceIndices[ROQ_CODEBOOK_INDEX_COUNT] = {data[0], data[1], data[2], data[3]};
+        const uint8_t sourceIndices[ROQ_CODEBOOK_INDEX_COUNT] = {
+            data[0], data[1], data[2], data[3]
+        };
         data += ROQ_CODEBOOK_INDEX_COUNT;
 
-        uint8_t *const vq4Destination = roqVq4Codebook.bytes + entry * vq4EntryBytes;
-        for (int32_t quadrantY = 0; quadrantY < ROQ_VQ_SCALE; ++quadrantY) {
-            for (int32_t quadrantX = 0; quadrantX < ROQ_VQ_SCALE; ++quadrantX) {
-                const int32_t sourceIndex = sourceIndices[quadrantY * ROQ_VQ_SCALE + quadrantX];
-                const uint8_t *const source = roqVq2Codebook.bytes + sourceIndex * vq2EntryBytes;
+        uint8_t *const vq4Destination =
+            roqVq4Codebook.bytes + entry * vq4EntryBytes;
+        for (int32_t quadrantY = 0; quadrantY < ROQ_VQ_SCALE;
+             ++quadrantY) {
+            for (int32_t quadrantX = 0; quadrantX < ROQ_VQ_SCALE;
+                 ++quadrantX) {
+                const int32_t sourceIndex =
+                    sourceIndices[quadrantY * ROQ_VQ_SCALE + quadrantX];
+                const uint8_t *const source =
+                    roqVq2Codebook.bytes + sourceIndex * vq2EntryBytes;
                 for (int32_t y = 0; y < vq2Height; ++y) {
                     for (int32_t x = 0; x < vq2Width; ++x) {
-                        const uint8_t *const sourcePixel = source + (y * vq2Width + x) * pixelBytes;
+                        const uint8_t *const sourcePixel =
+                            source + (y * vq2Width + x) * pixelBytes;
                         uint8_t *const destinationPixel =
-                            vq4Destination + ((quadrantY * vq2Height + y) * vq4Width + quadrantX * vq2Width + x) * pixelBytes;
-                        memcpy(destinationPixel, sourcePixel, (size_t)pixelBytes);
+                            vq4Destination +
+                            ((quadrantY * vq2Height + y) * vq4Width +
+                             quadrantX * vq2Width + x) * pixelBytes;
+                        memcpy(destinationPixel, sourcePixel,
+                               (size_t)pixelBytes);
                     }
                 }
             }
         }
 
-        uint8_t *const vq8Destination = roqVq8Codebook.bytes + entry * vq8EntryBytes;
+        uint8_t *const vq8Destination =
+            roqVq8Codebook.bytes + entry * vq8EntryBytes;
         for (int32_t y = 0; y < vq4Height; ++y) {
             for (int32_t x = 0; x < vq4Width; ++x) {
-                const uint8_t *const sourcePixel = vq4Destination + (y * vq4Width + x) * pixelBytes;
-                for (int32_t duplicateY = 0; duplicateY < ROQ_VQ_SCALE; ++duplicateY) {
-                    for (int32_t duplicateX = 0; duplicateX < ROQ_VQ_SCALE; ++duplicateX) {
+                const uint8_t *const sourcePixel =
+                    vq4Destination + (y * vq4Width + x) * pixelBytes;
+                for (int32_t duplicateY = 0; duplicateY < ROQ_VQ_SCALE;
+                     ++duplicateY) {
+                    for (int32_t duplicateX = 0;
+                         duplicateX < ROQ_VQ_SCALE;
+                         ++duplicateX) {
                         uint8_t *const destinationPixel =
-                            vq8Destination + (((y * ROQ_VQ_SCALE + duplicateY) * vq8Width) + x * ROQ_VQ_SCALE + duplicateX) * pixelBytes;
-                        memcpy(destinationPixel, sourcePixel, (size_t)pixelBytes);
+                            vq8Destination +
+                            (((y * ROQ_VQ_SCALE + duplicateY) * vq8Width) +
+                             x * ROQ_VQ_SCALE + duplicateX) * pixelBytes;
+                        memcpy(destinationPixel, sourcePixel,
+                               (size_t)pixelBytes);
                     }
                 }
             }
@@ -1273,13 +1511,16 @@ void RoQInterrupt(void)
     cinematic_t *cinematic = &cinematics[currentCinematicHandle];
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if ((uint32_t)cinematic->chunkSize > ROQ_MAX_CHUNK_PAYLOAD_BYTES) {
-        Com_Printf("WARNING: rejecting oversized RoQ chunk (%i bytes)\n", cinematic->chunkSize);
+        Com_Printf("WARNING: rejecting oversized RoQ chunk (%i bytes)\n",
+                   cinematic->chunkSize);
         cinematic->looping = qfalse;
         cinematic->status = FMV_EOF;
         return;
     }
-    const int32_t stagedByteCount = cinematic->chunkSize + ROQ_CHUNK_HEADER_BYTES;
-    if (FS_Read(roqFileBuffer, stagedByteCount, cinematic->fileHandle) != stagedByteCount) {
+    const int32_t stagedByteCount =
+        cinematic->chunkSize + ROQ_CHUNK_HEADER_BYTES;
+    if (FS_Read(roqFileBuffer, stagedByteCount, cinematic->fileHandle) !=
+        stagedByteCount) {
         Com_Printf("WARNING: rejecting truncated RoQ chunk\n");
         cinematic->looping = qfalse;
         cinematic->status = FMV_EOF;
@@ -1316,7 +1557,8 @@ void RoQInterrupt(void)
                     return;
                 setupQuad(0, 0);
                 int32_t scaledTime = CL_ScaledMilliseconds();
-                scaledTime = (int32_t)((float)scaledTime * com_timescale->value);
+                scaledTime = (int32_t)(
+                    (float)scaledTime * com_timescale->value);
                 cinematic = &cinematics[currentCinematicHandle];
                 cinematic->currentTime = scaledTime;
                 cinematic->startTime = scaledTime;
@@ -1332,14 +1574,19 @@ void RoQInterrupt(void)
         case ROQ_QUAD_VQ:
             if ((cinematic->frameNumber & 1) != 0) {
                 cinematic->motionBaseOffset = cinematic->frameOffsets[1];
-                RoQPrepMcomp(cinematic->motionXOffset, cinematic->motionYOffset);
-                cinematic->frameBlitters[1](roqQuadDestinations[1], chunkData);
+                RoQPrepMcomp(cinematic->motionXOffset,
+                             cinematic->motionYOffset);
+                cinematic->frameBlitters[1](roqQuadDestinations[1],
+                                            chunkData);
                 cinematic = &cinematics[currentCinematicHandle];
-                cinematic->decodedFrame = roqFrameBuffer + cinematic->frameSize;
+                cinematic->decodedFrame =
+                    roqFrameBuffer + cinematic->frameSize;
             } else {
                 cinematic->motionBaseOffset = cinematic->frameOffsets[0];
-                RoQPrepMcomp(cinematic->motionXOffset, cinematic->motionYOffset);
-                cinematic->frameBlitters[0](roqQuadDestinations[0], chunkData);
+                RoQPrepMcomp(cinematic->motionXOffset,
+                             cinematic->motionYOffset);
+                cinematic->frameBlitters[0](roqQuadDestinations[0],
+                                            chunkData);
                 cinematic = &cinematics[currentCinematicHandle];
                 cinematic->decodedFrame = roqFrameBuffer;
             }
@@ -1347,8 +1594,11 @@ void RoQInterrupt(void)
             if (cinematic->frameNumber == 0) {
                 /* The i386 IMUL retains the low 32 bits before Com_Memcpy
                  * widens the byte count to the native size_t. */
-                const uint32_t frameBytes = (uint32_t)cinematic->roqHeight * (uint32_t)cinematic->samplesPerLine;
-                Com_Memcpy(roqFrameBuffer + cinematic->frameSize, roqFrameBuffer, (size_t)frameBytes);
+                const uint32_t frameBytes =
+                    (uint32_t)cinematic->roqHeight *
+                    (uint32_t)cinematic->samplesPerLine;
+                Com_Memcpy(roqFrameBuffer + cinematic->frameSize,
+                           roqFrameBuffer, (size_t)frameBytes);
             }
             ++cinematic->frameNumber;
             cinematic->dirty = qtrue;
@@ -1364,15 +1614,19 @@ void RoQInterrupt(void)
         case ROQ_SOUND_MONO:
             if (cinematic->silent == qfalse) {
                 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-                if ((uint32_t)cinematic->chunkSize > ROQ_AUDIO_MONO_MAX_ENCODED_BYTES) {
+                if ((uint32_t)cinematic->chunkSize >
+                    ROQ_AUDIO_MONO_MAX_ENCODED_BYTES) {
                     Com_Printf("WARNING: rejecting oversized RoQ mono audio chunk\n");
                     cinematic->looping = qfalse;
                     cinematic->status = FMV_EOF;
                     return;
                 }
-                const int32_t sampleFrames = RllDecodeMonoToStereo(chunkData, audioSamples, (uint32_t)cinematic->chunkSize, qfalse,
-                                                                   (uint16_t)cinematic->chunkArgument);
-                MSS_RawSamples(sampleFrames, ROQ_AUDIO_SAMPLE_RATE, ROQ_AUDIO_SAMPLE_WIDTH_BYTES, ROQ_AUDIO_MONO_CHANNELS, audioSamples);
+                const int32_t sampleFrames = RllDecodeMonoToStereo(
+                    chunkData, audioSamples, (uint32_t)cinematic->chunkSize,
+                    qfalse, (uint16_t)cinematic->chunkArgument);
+                MSS_RawSamples(sampleFrames, ROQ_AUDIO_SAMPLE_RATE,
+                               ROQ_AUDIO_SAMPLE_WIDTH_BYTES,
+                               ROQ_AUDIO_MONO_CHANNELS, audioSamples);
                 cinematic = &cinematics[currentCinematicHandle];
                 cinematic->rawAudioActive = qtrue;
             }
@@ -1381,24 +1635,32 @@ void RoQInterrupt(void)
         case ROQ_SOUND_STEREO:
             if (cinematic->silent == qfalse) {
                 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-                if ((uint32_t)cinematic->chunkSize > ROQ_AUDIO_STEREO_MAX_ENCODED_BYTES || (cinematic->chunkSize & 1) != 0) {
+                if ((uint32_t)cinematic->chunkSize >
+                        ROQ_AUDIO_STEREO_MAX_ENCODED_BYTES ||
+                    (cinematic->chunkSize & 1) != 0) {
                     Com_Printf("WARNING: rejecting invalid RoQ stereo audio chunk\n");
                     cinematic->looping = qfalse;
                     cinematic->status = FMV_EOF;
                     return;
                 }
-                const int32_t sampleFrames = RllDecodeStereoToStereo(chunkData, audioSamples, (uint32_t)cinematic->chunkSize, qfalse,
-                                                                     (uint16_t)cinematic->chunkArgument);
-                MSS_RawSamples(sampleFrames, ROQ_AUDIO_SAMPLE_RATE, ROQ_AUDIO_SAMPLE_WIDTH_BYTES, ROQ_AUDIO_STEREO_CHANNELS, audioSamples);
+                const int32_t sampleFrames = RllDecodeStereoToStereo(
+                    chunkData, audioSamples, (uint32_t)cinematic->chunkSize,
+                    qfalse, (uint16_t)cinematic->chunkArgument);
+                MSS_RawSamples(sampleFrames, ROQ_AUDIO_SAMPLE_RATE,
+                               ROQ_AUDIO_SAMPLE_WIDTH_BYTES,
+                               ROQ_AUDIO_STEREO_CHANNELS, audioSamples);
                 cinematic = &cinematics[currentCinematicHandle];
                 cinematic->rawAudioActive = qtrue;
             }
             break;
 
         case ROQ_PACKET: {
-            const size_t packetOffset = (size_t)(chunkData - roqFileBuffer);
+            const size_t packetOffset =
+                (size_t)(chunkData - roqFileBuffer);
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-            if (packetOffset > (size_t)stagedByteCount || (uint32_t)cinematic->chunkSize > (size_t)stagedByteCount - packetOffset) {
+            if (packetOffset > (size_t)stagedByteCount ||
+                (uint32_t)cinematic->chunkSize >
+                    (size_t)stagedByteCount - packetOffset) {
                 Com_Printf("WARNING: rejecting invalid RoQ packet extent\n");
                 cinematic->looping = qfalse;
                 cinematic->status = FMV_EOF;
@@ -1427,39 +1689,57 @@ void RoQInterrupt(void)
             return;
         }
 
-        const size_t chunkOffset = (size_t)(chunkData - roqFileBuffer);
-        if (chunkOffset > (size_t)stagedByteCount || (uint32_t)cinematic->chunkSize > (size_t)stagedByteCount - chunkOffset ||
-            (size_t)stagedByteCount - chunkOffset - (uint32_t)cinematic->chunkSize < ROQ_CHUNK_HEADER_BYTES) {
+        const size_t chunkOffset =
+            (size_t)(chunkData - roqFileBuffer);
+        if (chunkOffset > (size_t)stagedByteCount ||
+            (uint32_t)cinematic->chunkSize >
+                (size_t)stagedByteCount - chunkOffset ||
+            (size_t)stagedByteCount - chunkOffset -
+                    (uint32_t)cinematic->chunkSize <
+                ROQ_CHUNK_HEADER_BYTES) {
             Com_Printf("WARNING: rejecting truncated RoQ chunk header\n");
             cinematic->looping = qfalse;
             cinematic->status = FMV_EOF;
             return;
         }
-        const size_t headerOffset = chunkOffset + (uint32_t)cinematic->chunkSize;
+        const size_t headerOffset =
+            chunkOffset + (uint32_t)cinematic->chunkSize;
         chunkData = roqFileBuffer + headerOffset;
-        cinematic->chunkId = (int32_t)(chunkData[0] | ((uint16_t)chunkData[1] << 8));
-        cinematic->chunkSize = (int32_t)chunkData[2] | ((int32_t)chunkData[3] << 8) | ((int32_t)chunkData[4] << 16);
-        cinematic->chunkArgument = (int32_t)(chunkData[6] | ((uint16_t)chunkData[7] << 8));
+        cinematic->chunkId = (int32_t)(
+            chunkData[0] | ((uint16_t)chunkData[1] << 8));
+        cinematic->chunkSize =
+            (int32_t)chunkData[2] |
+            ((int32_t)chunkData[3] << 8) |
+            ((int32_t)chunkData[4] << 16);
+        cinematic->chunkArgument = (int32_t)(
+            chunkData[6] | ((uint16_t)chunkData[7] << 8));
         cinematic->motionXOffset = (int8_t)chunkData[7];
         cinematic->motionYOffset = (int8_t)chunkData[6];
 
-        if ((uint32_t)cinematic->chunkSize > ROQ_MAX_CHUNK_PAYLOAD_BYTES) {
-            Com_Printf("WARNING: rejecting oversized RoQ chunk (%i bytes)\n", cinematic->chunkSize);
+        if ((uint32_t)cinematic->chunkSize >
+            ROQ_MAX_CHUNK_PAYLOAD_BYTES) {
+            Com_Printf("WARNING: rejecting oversized RoQ chunk (%i bytes)\n",
+                       cinematic->chunkSize);
             cinematic->looping = qfalse;
             cinematic->status = FMV_EOF;
             return;
         }
         if (cinematic->chunkId == ROQ_FILE) {
-            Com_DPrintf("roq_id==0x1084 (roq_size=%i,roq_id=%i)\n", cinematic->chunkSize, cinematic->chunkId);
+            Com_DPrintf("roq_id==0x1084 (roq_size=%i,roq_id=%i)\n",
+                        cinematic->chunkSize, cinematic->chunkId);
             cinematic->status = FMV_EOF;
             if (cinematic->looping != qfalse)
                 RoQReset();
             return;
         }
 
-        if (cinematic->packetChunkCount != 0 && cinematic->status != FMV_EOF) {
-            const size_t payloadOffset = headerOffset + ROQ_CHUNK_HEADER_BYTES;
-            if (payloadOffset > packetEndOffset || (uint32_t)cinematic->chunkSize > packetEndOffset - payloadOffset) {
+        if (cinematic->packetChunkCount != 0 &&
+            cinematic->status != FMV_EOF) {
+            const size_t payloadOffset =
+                headerOffset + ROQ_CHUNK_HEADER_BYTES;
+            if (payloadOffset > packetEndOffset ||
+                (uint32_t)cinematic->chunkSize >
+                    packetEndOffset - payloadOffset) {
                 Com_Printf("WARNING: rejecting RoQ packet subchunk extent\n");
                 cinematic->looping = qfalse;
                 cinematic->status = FMV_EOF;
@@ -1470,7 +1750,8 @@ void RoQInterrupt(void)
             continue;
         }
 
-        cinematic->fileOffset += cinematic->chunkSize + ROQ_CHUNK_HEADER_BYTES;
+        cinematic->fileOffset +=
+            cinematic->chunkSize + ROQ_CHUNK_HEADER_BYTES;
         return;
     }
 }
@@ -1571,39 +1852,51 @@ cinematic_status_t CIN_RunCinematic(int32_t handle)
 
     const int32_t now = CL_ScaledMilliseconds();
     if (cinematic->shader != qfalse) {
-        const int32_t timeDelta = (int32_t)((uint32_t)now - (uint32_t)cinematic->currentTime);
-        const int32_t absoluteTimeDelta = timeDelta < 0 ? -timeDelta : timeDelta;
+        const int32_t timeDelta =
+            (int32_t)((uint32_t)now - (uint32_t)cinematic->currentTime);
+        const int32_t absoluteTimeDelta =
+            timeDelta < 0 ? -timeDelta : timeDelta;
         if (absoluteTimeDelta > 100) {
-            cinematic->startTime = (int32_t)((uint32_t)cinematic->startTime + (uint32_t)timeDelta);
+            cinematic->startTime = (int32_t)(
+                (uint32_t)cinematic->startTime + (uint32_t)timeDelta);
         }
     }
 
     int32_t targetFrame;
     if (cinematic->rawAudioActive != qfalse) {
         const int32_t rawAudioTime = MSS_RawSamplesTime();
-        const int32_t scaledAudioTime = (int32_t)((uint32_t)rawAudioTime * (uint32_t)cinematic->frameRate);
+        const int32_t scaledAudioTime = (int32_t)(
+            (uint32_t)rawAudioTime * (uint32_t)cinematic->frameRate);
         targetFrame = scaledAudioTime / 1000 + 1;
     } else {
-        const uint32_t elapsed = (uint32_t)now - (uint32_t)cinematic->startTime;
-        targetFrame = (int32_t)((elapsed * (uint32_t)cinematic->frameRate) / UINT32_C(1000));
+        const uint32_t elapsed =
+            (uint32_t)now - (uint32_t)cinematic->startTime;
+        targetFrame = (int32_t)(
+            (elapsed * (uint32_t)cinematic->frameRate) / UINT32_C(1000));
     }
 
     if (cinematic->targetFrame < targetFrame) {
         cinematic->targetFrame = targetFrame;
         cinematic->lastTime = now;
     } else {
-        const uint32_t stalledTime = (uint32_t)now - (uint32_t)cinematic->lastTime;
+        const uint32_t stalledTime =
+            (uint32_t)now - (uint32_t)cinematic->lastTime;
         if (stalledTime * (uint32_t)cinematic->frameRate > UINT32_C(4000))
             cinematic->status = FMV_EOF;
     }
 
     int32_t decoderStartTime = cinematic->startTime;
-    while (cinematic->targetFrame != cinematic->frameNumber && cinematic->status == FMV_PLAY) {
+    while (cinematic->targetFrame != cinematic->frameNumber &&
+           cinematic->status == FMV_PLAY) {
         RoQInterrupt();
         cinematic = &cinematics[currentCinematicHandle];
         if (decoderStartTime != cinematic->startTime) {
-            const uint32_t elapsed = (uint32_t)CL_ScaledMilliseconds() - (uint32_t)cinematic->startTime;
-            cinematic->targetFrame = (int32_t)((elapsed * (uint32_t)cinematic->frameRate) / UINT32_C(1000));
+            const uint32_t elapsed =
+                (uint32_t)CL_ScaledMilliseconds() -
+                (uint32_t)cinematic->startTime;
+            cinematic->targetFrame = (int32_t)(
+                (elapsed * (uint32_t)cinematic->frameRate) /
+                UINT32_C(1000));
             decoderStartTime = cinematic->startTime;
         }
     }

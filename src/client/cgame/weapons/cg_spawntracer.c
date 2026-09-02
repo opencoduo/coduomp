@@ -35,18 +35,21 @@
 
 #include <stdint.h>
 
-enum {
-    CG_TRACER_DIRECT_SURFACE_TYPE = 7
-};
+enum { CG_TRACER_DIRECT_SURFACE_TYPE = 7 };
 
 /* cg_entities[] base (centity_t, stride 0x288) at 0x3048c6e0, accessed through
  * the same typed view CG_CalcMuzzlePoint uses. */
 
-void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex, int32_t surfaceType, const char *tagName)
+void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
+                    int32_t surfaceType, const char *tagName)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    if (weaponIndex < 0 || weaponIndex > bg_numWeapons || (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS) {
-        Com_Printf("WARNING: CG_SpawnTracer: invalid weapon index %i\n", weaponIndex);
+    if (weaponIndex < 0 ||
+        weaponIndex > bg_numWeapons ||
+        (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS) {
+        Com_Printf(
+            "WARNING: CG_SpawnTracer: invalid weapon index %i\n",
+            weaponIndex);
         return;
     }
 
@@ -89,7 +92,9 @@ void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
         const weaponInfo_t *weapon = bg_weaponInfos[weaponIndex];
         if (weapon != 0) {
             weaponAmmoType_t ammoType = weapon->ammoType;   /* +0x90 */
-            if (ammoType == WEAPON_AMMO_TYPE_LMG || ammoType == WEAPON_AMMO_TYPE_HMG || ammoType == WEAPON_AMMO_TYPE_UMG) {
+            if (ammoType == WEAPON_AMMO_TYPE_LMG ||
+                ammoType == WEAPON_AMMO_TYPE_HMG ||
+                ammoType == WEAPON_AMMO_TYPE_UMG) {
                 chance = cg_tracerchancelmg_vmCvar.value;
             }
         }

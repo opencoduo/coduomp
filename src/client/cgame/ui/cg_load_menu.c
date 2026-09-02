@@ -26,14 +26,10 @@
 // single-character C string "}" (bytes 7d 00 00 00); the exporter attributed the
 // dword to the adjacent "BG_ParseConditions: no conditions found" string, but the
 // machine code (MOV ECX,0x30072764 ; Q_stricmpn) uses it as a NUL-terminated "}".
-enum {
-    OPEN_BRACE = '{'
-};
+enum { OPEN_BRACE = '{' };
 
 // Universal Q_stricmp limit: Q_stricmpn(99999, ...) degenerates to a full compare.
-enum {
-    STRICMP_NO_LIMIT = 99999
-};
+enum { STRICMP_NO_LIMIT = 99999 };
 
 // EAX at entry (modeled as `loadMode`) is moved to a preserved register (ESI) and
 // forwarded unchanged to CG_ParseMenu. The sole caller supplies the scalar menu

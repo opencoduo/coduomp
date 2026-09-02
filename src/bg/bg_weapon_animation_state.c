@@ -19,7 +19,8 @@ void PM_StartWeaponAnim(pmWeaponAnim_t weaponAnim)
 {
     playerState_t *const ps = pm->ps;
 
-    if (ps->pmType >= PM_TYPE_DEAD || pm->command.weapon == 0) {
+    if (ps->pmType >= PM_TYPE_DEAD ||
+        pm->command.weapon == 0) {
         return;
     }
 
@@ -28,12 +29,16 @@ void PM_StartWeaponAnim(pmWeaponAnim_t weaponAnim)
         return;
     }
 
-    ps->weaponAnim = ((~ps->weaponAnim) & (uint32_t)ANIM_TOGGLEBIT) | (uint32_t)weaponAnim;
+    ps->weaponAnim =
+        ((~ps->weaponAnim) & (uint32_t)ANIM_TOGGLEBIT) |
+        (uint32_t)weaponAnim;
 }
 
 void PM_ContinueWeaponAnim(pmWeaponAnim_t weaponAnim)
 {
-    if (pm->command.weapon == 0 || (pm->ps->weaponAnim & ~(uint32_t)ANIM_TOGGLEBIT) == (uint32_t)weaponAnim) {
+    if (pm->command.weapon == 0 ||
+        (pm->ps->weaponAnim & ~(uint32_t)ANIM_TOGGLEBIT) ==
+            (uint32_t)weaponAnim) {
         return;
     }
 

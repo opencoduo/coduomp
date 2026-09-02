@@ -44,13 +44,16 @@ void VM_Init(void)
 #if UINTPTR_MAX != UINT32_MAX
 /* NOT_FROM_ORIGINAL_SOURCE: returns the promoted native type sequence for one
  * game-module syscall before rebuilding the original intptr_t vector. */
-static coduo_native_vararg_layout_t coduo_vm_native_syscall_argument_layout(intptr_t command)
+static coduo_native_vararg_layout_t
+coduo_vm_native_syscall_argument_layout(intptr_t command)
 {
     switch ((game_syscall_id_t)command) {
 #define CODUO_VM_SYSCALL_LAYOUT_CASE(enumName, argumentTypes) \
-    case enumName: \
-        return (coduo_native_vararg_layout_t){argumentTypes, sizeof(argumentTypes) - 1};
-        CODUO_VM_NATIVE_GAME_SYSCALL_LAYOUTS(CODUO_VM_SYSCALL_LAYOUT_CASE)
+    case enumName:                                             \
+        return (coduo_native_vararg_layout_t){                 \
+            argumentTypes, sizeof(argumentTypes) - 1};
+        CODUO_VM_NATIVE_GAME_SYSCALL_LAYOUTS(
+            CODUO_VM_SYSCALL_LAYOUT_CASE)
 #undef CODUO_VM_SYSCALL_LAYOUT_CASE
     default:
         return (coduo_native_vararg_layout_t){"", 0};
@@ -59,13 +62,16 @@ static coduo_native_vararg_layout_t coduo_vm_native_syscall_argument_layout(intp
 
 /* NOT_FROM_ORIGINAL_SOURCE: returns the promoted native type sequence for one
  * engine-to-game vmMain command before rebuilding its twelve-word vector. */
-static coduo_native_vararg_layout_t coduo_vm_native_game_command_argument_layout(int32_t command)
+static coduo_native_vararg_layout_t
+coduo_vm_native_game_command_argument_layout(int32_t command)
 {
     switch ((game_command_t)command) {
 #define CODUO_VM_GAME_LAYOUT_CASE(enumName, argumentTypes) \
-    case enumName: \
-        return (coduo_native_vararg_layout_t){argumentTypes, sizeof(argumentTypes) - 1};
-        CODUO_VM_NATIVE_GAME_COMMAND_LAYOUTS(CODUO_VM_GAME_LAYOUT_CASE)
+    case enumName:                                          \
+        return (coduo_native_vararg_layout_t){              \
+            argumentTypes, sizeof(argumentTypes) - 1};
+        CODUO_VM_NATIVE_GAME_COMMAND_LAYOUTS(
+            CODUO_VM_GAME_LAYOUT_CASE)
 #undef CODUO_VM_GAME_LAYOUT_CASE
     default:
         return (coduo_native_vararg_layout_t){"", 0};
@@ -74,7 +80,8 @@ static coduo_native_vararg_layout_t coduo_vm_native_game_command_argument_layout
 
 /* NOT_FROM_ORIGINAL_SOURCE: reads one native promoted vararg without assuming
  * the original i386 adjacent-stack-word ABI. */
-static intptr_t coduo_vm_read_native_argument(va_list *arguments, coduo_native_vararg_type_t type)
+static intptr_t coduo_vm_read_native_argument(
+    va_list *arguments, coduo_native_vararg_type_t type)
 {
     switch (type) {
     case CODUO_NATIVE_VARARG_POINTER:
@@ -104,7 +111,8 @@ intptr_t VM_CDECL VM_DllSyscall(intptr_t command, ...)
     return currentVM->systemCall(&command);
 #else
     intptr_t arguments[VM_SYSCALL_ARGUMENT_COUNT + 1] = {0};
-    coduo_native_vararg_layout_t layout = coduo_vm_native_syscall_argument_layout(command);
+    coduo_native_vararg_layout_t layout =
+        coduo_vm_native_syscall_argument_layout(command);
     size_t argumentCount = layout.argumentCount;
     if (argumentCount > VM_SYSCALL_ARGUMENT_COUNT)
         argumentCount = VM_SYSCALL_ARGUMENT_COUNT;
@@ -113,7 +121,8 @@ intptr_t VM_CDECL VM_DllSyscall(intptr_t command, ...)
     va_list ap;
     va_start(ap, command);
     for (size_t index = 0; index < argumentCount; ++index) {
-        arguments[index + 1] = coduo_vm_read_native_argument(&ap, CODUO_NATIVE_VARARG_TYPE_AT(layout, index));
+        arguments[index + 1] = coduo_vm_read_native_argument(
+            &ap, CODUO_NATIVE_VARARG_TYPE_AT(layout, index));
     }
     va_end(ap);
     return currentVM->systemCall(arguments);
@@ -140,7 +149,9 @@ vm_t *VM_Create(const char *moduleName, vmSystemCall_t systemCall)
     vm_compat_before_create();
 
     for (int32_t slot = 0; slot < VM_COUNT; ++slot) {
-        if (vmTable[slot].name[0] != '\0' && Q_stricmpn(vmTable[slot].name, moduleName, VM_NAME_COMPARE_LIMIT) == 0) {
+        if (vmTable[slot].name[0] != '\0' &&
+            Q_stricmpn(vmTable[slot].name, moduleName,
+                       VM_NAME_COMPARE_LIMIT) == 0) {
             return &vmTable[slot];
         }
     }
@@ -159,11 +170,13 @@ vm_t *VM_Create(const char *moduleName, vmSystemCall_t systemCall)
 
     Q_strncpyz(vm->name, moduleName, (int32_t)sizeof(vm->name));
     vm->systemCall = systemCall;
-    vm->libraryHandle = vm_compat_load_library(moduleName, vm->loadedPath, &vm->vmMain, VM_DllSyscall,
+    vm->libraryHandle = vm_compat_load_library(
+        moduleName, vm->loadedPath, &vm->vmMain,
+        VM_DllSyscall,
 #if UINTPTR_MAX == UINT32_MAX
-                                               NULL
+        NULL
 #else
-                                               coduo_vm_dll_syscall_vector
+        coduo_vm_dll_syscall_vector
 #endif
     );
     if (vm->libraryHandle == NULL) {
@@ -177,7 +190,8 @@ void *VM_Find(char *nameAndPathOut)
 {
     for (int32_t slot = 0; slot < VM_COUNT; ++slot) {
         if (Q_stricmp(nameAndPathOut, vmTable[slot].name) == 0) {
-            Q_strncpyz(nameAndPathOut, vmTable[slot].loadedPath, VM_FIND_PATH_SIZE);
+            Q_strncpyz(nameAndPathOut, vmTable[slot].loadedPath,
+                       VM_FIND_PATH_SIZE);
             return vmTable[slot].libraryHandle;
         }
     }
@@ -218,19 +232,23 @@ intptr_t VM_Call(vm_t *vm, int32_t command, ...)
         for (size_t index = 0; index < VM_CALL_ARGUMENT_COUNT; ++index)
             arguments[index] = va_arg(ap, intptr_t);
     } else {
-        coduo_native_vararg_layout_t layout = coduo_vm_native_game_command_argument_layout(command);
+        coduo_native_vararg_layout_t layout =
+            coduo_vm_native_game_command_argument_layout(command);
         size_t argumentCount = layout.argumentCount;
         if (argumentCount > VM_CALL_ARGUMENT_COUNT)
             argumentCount = VM_CALL_ARGUMENT_COUNT;
         for (size_t index = 0; index < argumentCount; ++index) {
-            arguments[index] = coduo_vm_read_native_argument(&ap, CODUO_NATIVE_VARARG_TYPE_AT(layout, index));
+            arguments[index] = coduo_vm_read_native_argument(
+                &ap, CODUO_NATIVE_VARARG_TYPE_AT(layout, index));
         }
     }
 #endif
     va_end(ap);
 
-    const intptr_t result = vm->vmMain(command, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5],
-                                       arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11]);
+    const intptr_t result = vm->vmMain(
+        command, arguments[0], arguments[1], arguments[2], arguments[3],
+        arguments[4], arguments[5], arguments[6], arguments[7],
+        arguments[8], arguments[9], arguments[10], arguments[11]);
     currentVM = previousVM;
     return result;
 }

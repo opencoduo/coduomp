@@ -32,23 +32,27 @@ void R_OptimizeXModelSurfaces(void)
         lodCount = XModelGetNumLods(model->xmodel);
         for (int32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex) {
             uint16_t *shaderHandles = model->shaderHandles[lodIndex];
-            int32_t surfaceCount = XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
+            int32_t surfaceCount =
+                XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
 
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
             if (surfaceCount > R_MAX_XMODEL_SURFACES_PER_LOD) {
-                ri.Printf(R_PRINT_WARNING, "WARNING: model '%s' LOD %i has %i surfaces; skipping optimization (limit %i)\n", model->name,
-                          lodIndex, surfaceCount, R_MAX_XMODEL_SURFACES_PER_LOD);
+                ri.Printf(R_PRINT_WARNING, "WARNING: model '%s' LOD %i has %i surfaces; skipping optimization (limit %i)\n", model->name, lodIndex, surfaceCount, R_MAX_XMODEL_SURFACES_PER_LOD);
                 continue;
             }
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < surfaceCount; ++surfaceIndex) {
                 largeSurface[surfaceIndex] = qfalse;
-                if (shaderHandles[surfaceIndex] != 0 && XSurfaceGetNumVerts(surfaces[surfaceIndex]) >= r_optimizeXModels->integer) {
+                if (shaderHandles[surfaceIndex] != 0 &&
+                    XSurfaceGetNumVerts(surfaces[surfaceIndex]) >=
+                        r_optimizeXModels->integer) {
                     largeSurface[surfaceIndex] = qtrue;
                 }
             }
 
-            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
+            for (int32_t surfaceIndex = 0;
+                 surfaceIndex < surfaceCount; ++surfaceIndex) {
                 uint16_t shaderHandle = shaderHandles[surfaceIndex];
 
                 if (shaderHandle == 0)
@@ -57,8 +61,11 @@ void R_OptimizeXModelSurfaces(void)
                 if (largeSurface[surfaceIndex] == qfalse) {
                     int32_t matchingSurface;
 
-                    for (matchingSurface = 0; matchingSurface < surfaceCount; ++matchingSurface) {
-                        if (matchingSurface != surfaceIndex && shaderHandles[matchingSurface] == shaderHandle) {
+                    for (matchingSurface = 0;
+                         matchingSurface < surfaceCount;
+                         ++matchingSurface) {
+                        if (matchingSurface != surfaceIndex &&
+                            shaderHandles[matchingSurface] == shaderHandle) {
                             break;
                         }
                     }
@@ -66,7 +73,8 @@ void R_OptimizeXModelSurfaces(void)
                         continue;
                 }
 
-                XSurfaceOptimize(surfaces[surfaceIndex], Hunk_AllocXModelPrecacheMesh);
+                XSurfaceOptimize(
+                    surfaces[surfaceIndex], Hunk_AllocXModelPrecacheMesh);
             }
         }
     }

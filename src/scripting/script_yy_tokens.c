@@ -23,7 +23,8 @@ static void coduomp_script_yy_set_string_handle_token(uint16_t handle)
  * inlined into yylex at 0x00492de6 and 0x00492e1c. */
 void TextValue(const char *text, int32_t length)
 {
-    coduomp_script_yy_set_string_handle_token(SL_GetLowercaseStringOfLen(text, 0, (size_t)length + 1, SCRIPT_YY_STRING_TOKEN_TYPE));
+    coduomp_script_yy_set_string_handle_token(SL_GetLowercaseStringOfLen(
+        text, 0, (size_t)length + 1, SCRIPT_YY_STRING_TOKEN_TYPE));
 }
 
 /* Source: CoDUOMP.exe 0x00491ed0..0x00491f5b.
@@ -60,7 +61,8 @@ void StringValue(const char *text, int32_t length)
     }
 
     unescaped[writeIndex] = '\0';
-    coduomp_script_yy_set_string_handle_token(SL_GetString_(unescaped, 0, SCRIPT_YY_STRING_TOKEN_TYPE));
+    coduomp_script_yy_set_string_handle_token(
+        SL_GetString_(unescaped, 0, SCRIPT_YY_STRING_TOKEN_TYPE));
 }
 
 /* Source: CoDUOMP.exe 0x00491f60..0x00491f73. The same source action is

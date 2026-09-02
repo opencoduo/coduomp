@@ -72,7 +72,8 @@ void CG_EntityEffects(centity_t *cent)
 
     /* --- Looping sound --- */
     if (clientSound != 0) {
-        int32_t cfgIndex = coduo_int32_from_bits((uint32_t)clientSound + (uint32_t)CS_SOUNDS);
+        int32_t cfgIndex = coduo_int32_from_bits(
+            (uint32_t)clientSound + (uint32_t)CS_SOUNDS);
         const char *soundName;
         void *channelObj;
         vec3_t soundOrigin;
@@ -108,15 +109,22 @@ void CG_EntityEffects(centity_t *cent)
             /* 0x3001e8c9/0x3001e8f5/0x3001e91a: each masked byte is FILDed
              * straight into the FMUL by 1/255 with no intermediate FSTP DWORD, so
              * no (float) cast (it would round under -std=c11; the byte enters exact). */
-            float b = (float)((long double)((constantLight >> 16) & 0xffu) * (long double)BYTE_TO_UNIT);
-            float g = (float)((long double)((constantLight >> 8) & 0xffu) * (long double)BYTE_TO_UNIT);
-            float r = (float)((long double)(constantLight & 0xffu) * (long double)BYTE_TO_UNIT);
+            float b = (float)((long double)((constantLight >> 16) & 0xffu) *
+                              (long double)BYTE_TO_UNIT);
+            float g = (float)((long double)((constantLight >> 8) & 0xffu) *
+                              (long double)BYTE_TO_UNIT);
+            float r = (float)((long double)(constantLight & 0xffu) *
+                              (long double)BYTE_TO_UNIT);
             /* 0x3001e92d FILD; 0x3001e936 FSTP DWORD: intensity IS rounded to
              * float (no multiply follows), so the (float) conversion is kept. */
             float intensity = (float)((constantLight >> 24) << 2);
 
-            cgame_syscall(CG_R_ADD_LIGHT_TO_SCENE, (intptr_t)cent->lerpOrigin, /* &cent->lerpOrigin (cent+0x208) */
-                          CG_FloatBits(intensity), CG_FloatBits(r), CG_FloatBits(g), CG_FloatBits(b));
+            cgame_syscall(CG_R_ADD_LIGHT_TO_SCENE,
+                          (intptr_t)cent->lerpOrigin, /* &cent->lerpOrigin (cent+0x208) */
+                          CG_FloatBits(intensity),
+                          CG_FloatBits(r),
+                          CG_FloatBits(g),
+                          CG_FloatBits(b));
         }
     }
 }

@@ -63,31 +63,55 @@
 enum {
     CG_SCRIPTSTAT_STYLE = 5, /* arg3 style/font id                              */
     CG_SCRIPTSTAT_EXTRA = 0, /* arg8 opaque extra dword                         */
-    CG_SCRIPTSTAT_MODE = 3, /* arg9 draw mode                                  */
+    CG_SCRIPTSTAT_MODE  = 3, /* arg9 draw mode                                  */
 };
-#define CG_SCRIPTSTAT_X 480.0f          /* arg1 x position               */
-#define CG_SCRIPTSTAT_Y0 92.8f           /* arg2 y of first line          */
-#define CG_SCRIPTSTAT_Y_STEP 16.0f           /* line pitch (92.8/108.8/124.8) */
-#define CG_SCRIPTSTAT_SCALE (1.0f / 3.0f)   /* arg4 scale (0x3eaaaaab)        */
-#define CG_SCRIPTSTAT_WIDTH 8.0f            /* arg7 width / char size        */
+#define CG_SCRIPTSTAT_X       480.0f          /* arg1 x position               */
+#define CG_SCRIPTSTAT_Y0      92.8f           /* arg2 y of first line          */
+#define CG_SCRIPTSTAT_Y_STEP  16.0f           /* line pitch (92.8/108.8/124.8) */
+#define CG_SCRIPTSTAT_SCALE   (1.0f / 3.0f)   /* arg4 scale (0x3eaaaaab)        */
+#define CG_SCRIPTSTAT_WIDTH   8.0f            /* arg7 width / char size        */
 
 void CG_DrawScriptUsage(void)
 {
-    int32_t numVars = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_NUM_SCRIPT_VARS));
+    int32_t numVars = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_GET_NUM_SCRIPT_VARS));
     const char *text = va(cg_scriptNumVarsDebugFormat, numVars);
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(CG_SCRIPTSTAT_X), CG_FloatBits(CG_SCRIPTSTAT_Y0), CG_SCRIPTSTAT_STYLE,
-                  CG_FloatBits(CG_SCRIPTSTAT_SCALE), (intptr_t)&cg_colorWhite, (intptr_t)text, CG_FloatBits(CG_SCRIPTSTAT_WIDTH),
-                  CG_SCRIPTSTAT_EXTRA, CG_SCRIPTSTAT_MODE);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(CG_SCRIPTSTAT_X),
+                  CG_FloatBits(CG_SCRIPTSTAT_Y0),
+                  CG_SCRIPTSTAT_STYLE,
+                  CG_FloatBits(CG_SCRIPTSTAT_SCALE),
+                  (intptr_t)&cg_colorWhite,
+                  (intptr_t)text,
+                  CG_FloatBits(CG_SCRIPTSTAT_WIDTH),
+                  CG_SCRIPTSTAT_EXTRA,
+                  CG_SCRIPTSTAT_MODE);
 
-    int32_t numThreads = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_NUM_SCRIPT_THREADS));
+    int32_t numThreads = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_GET_NUM_SCRIPT_THREADS));
     text = va(cg_scriptNumThreadsDebugFormat, numThreads);
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(CG_SCRIPTSTAT_X), CG_FloatBits(CG_SCRIPTSTAT_Y0 + CG_SCRIPTSTAT_Y_STEP),
-                  CG_SCRIPTSTAT_STYLE, CG_FloatBits(CG_SCRIPTSTAT_SCALE), (intptr_t)&cg_colorWhite, (intptr_t)text,
-                  CG_FloatBits(CG_SCRIPTSTAT_WIDTH), CG_SCRIPTSTAT_EXTRA, CG_SCRIPTSTAT_MODE);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(CG_SCRIPTSTAT_X),
+                  CG_FloatBits(CG_SCRIPTSTAT_Y0 + CG_SCRIPTSTAT_Y_STEP),
+                  CG_SCRIPTSTAT_STYLE,
+                  CG_FloatBits(CG_SCRIPTSTAT_SCALE),
+                  (intptr_t)&cg_colorWhite,
+                  (intptr_t)text,
+                  CG_FloatBits(CG_SCRIPTSTAT_WIDTH),
+                  CG_SCRIPTSTAT_EXTRA,
+                  CG_SCRIPTSTAT_MODE);
 
-    int32_t stringUsage = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_STRING_USAGE));
+    int32_t stringUsage = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_GET_STRING_USAGE));
     text = va(cg_scriptStringUsageDebugFormat, stringUsage);
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(CG_SCRIPTSTAT_X), CG_FloatBits(CG_SCRIPTSTAT_Y0 + 2.0f * CG_SCRIPTSTAT_Y_STEP),
-                  CG_SCRIPTSTAT_STYLE, CG_FloatBits(CG_SCRIPTSTAT_SCALE), (intptr_t)&cg_colorWhite, (intptr_t)text,
-                  CG_FloatBits(CG_SCRIPTSTAT_WIDTH), CG_SCRIPTSTAT_EXTRA, CG_SCRIPTSTAT_MODE);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(CG_SCRIPTSTAT_X),
+                  CG_FloatBits(CG_SCRIPTSTAT_Y0 + 2.0f * CG_SCRIPTSTAT_Y_STEP),
+                  CG_SCRIPTSTAT_STYLE,
+                  CG_FloatBits(CG_SCRIPTSTAT_SCALE),
+                  (intptr_t)&cg_colorWhite,
+                  (intptr_t)text,
+                  CG_FloatBits(CG_SCRIPTSTAT_WIDTH),
+                  CG_SCRIPTSTAT_EXTRA,
+                  CG_SCRIPTSTAT_MODE);
 }

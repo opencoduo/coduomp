@@ -37,5 +37,6 @@
  */
 void CG_GameMessage(const char *message)
 {
-    cgame_syscall(CG_GAME_MESSAGE, (intptr_t)message, cg_gameMessageWidth_vmCvar.integer);
+    cgame_syscall(CG_GAME_MESSAGE, (intptr_t)message,
+                  cg_gameMessageWidth_vmCvar.integer);
 }

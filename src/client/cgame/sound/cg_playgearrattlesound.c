@@ -3,7 +3,8 @@
 
 #include "../client_recovered.h"
 
-int32_t CG_PlayGearRattleSound(int32_t entityNum, qboolean sprinting, qboolean running)
+int32_t CG_PlayGearRattleSound(int32_t entityNum, qboolean sprinting,
+                               qboolean running)
 {
     const char *soundName;
     if (sprinting) {
@@ -13,5 +14,6 @@ int32_t CG_PlayGearRattleSound(int32_t entityNum, qboolean sprinting, qboolean r
     } else {
         soundName = cg_soundGearRattleWalk;
     }
-    return CG_PlaySoundAliasByName(entityNum, &cg_entities[entityNum].currentState.pos.trBase, soundName);
+    return CG_PlaySoundAliasByName(
+        entityNum, &cg_entities[entityNum].currentState.pos.trBase, soundName);
 }

@@ -63,7 +63,8 @@ void R_LoadAsianFont(int32_t loadMode)
 
     currentLanguage = cl_language->integer;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (rendererAsianFontLoaded != qfalse && rendererAsianFontLoadedLanguage == currentLanguage) {
+    if (rendererAsianFontLoaded != qfalse &&
+        rendererAsianFontLoadedLanguage == currentLanguage) {
         return;
     }
 
@@ -93,12 +94,18 @@ void R_LoadAsianFont(int32_t loadMode)
         return;
     }
 
-    glyphCellSize = R_ASIAN_FONT_ATLAS_SIZE / rendererAsianFontPageDimension;
-    for (int32_t pageIndex = 0; pageIndex < rendererAsianFontPageCount; ++pageIndex) {
+    glyphCellSize =
+        R_ASIAN_FONT_ATLAS_SIZE / rendererAsianFontPageDimension;
+    for (int32_t pageIndex = 0;
+         pageIndex < rendererAsianFontPageCount;
+         ++pageIndex) {
         char shaderName[MAX_QPATH];
 
-        Com_sprintf(shaderName, sizeof(shaderName), "font/%s_%d_1024_%d.tga", languagePrefix, glyphCellSize, pageIndex);
-        rendererAsianFontPageHandles[pageIndex] = RE_RegisterShaderNoMip(shaderName, loadMode);
+        Com_sprintf(shaderName, sizeof(shaderName),
+                    "font/%s_%d_1024_%d.tga",
+                    languagePrefix, glyphCellSize, pageIndex);
+        rendererAsianFontPageHandles[pageIndex] =
+            RE_RegisterShaderNoMip(shaderName, loadMode);
     }
 
     rendererAsianFontLastPageHalfHeight = qtrue;
@@ -138,12 +145,15 @@ int32_t R_GetAsianCode(int32_t character)
 /* Source: CoDUOMP.exe 0x004e8a20..0x004e8c0d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e8a20_004e8c0e.mcode.
  * Name: exact same-module Mac symbol R_GetCharacterGlyph. */
-glyphInfo_t *R_GetCharacterGlyph(int32_t character, fontInfo_t *font)
+glyphInfo_t *R_GetCharacterGlyph(int32_t character,
+                                    fontInfo_t *font)
 {
     const int32_t asianCode = R_GetAsianCode(character);
 
     if (asianCode != 0) {
-        const int32_t pageArea = rendererAsianFontPageDimension * rendererAsianFontPageDimension;
+        const int32_t pageArea =
+            rendererAsianFontPageDimension *
+            rendererAsianFontPageDimension;
         int32_t pageIndex = asianCode / pageArea;
         int32_t pageOffset;
         int32_t column;
@@ -157,32 +167,52 @@ glyphInfo_t *R_GetCharacterGlyph(int32_t character, fontInfo_t *font)
         row = pageOffset / rendererAsianFontPageDimension;
         column = pageOffset % rendererAsianFontPageDimension;
         pageRowCount = rendererAsianFontPageDimension;
-        if (pageIndex == rendererAsianFontPageCount - 1 && rendererAsianFontLastPageHalfHeight != qfalse) {
+        if (pageIndex == rendererAsianFontPageCount - 1 &&
+            rendererAsianFontLastPageHalfHeight != qfalse) {
             pageRowCount = rendererAsianFontPageDimension / 2;
         }
 
         if (cl_language->integer == LANGUAGE_TAIWANESE) {
-            const int32_t cellPixels = R_ASIAN_FONT_ATLAS_SIZE / rendererAsianFontPageDimension;
+            const int32_t cellPixels =
+                R_ASIAN_FONT_ATLAS_SIZE /
+                rendererAsianFontPageDimension;
 
-            rendererAsianGlyph.s = (float)(cellPixels * column + 1) * 0.0009765625f;
-            rendererAsianGlyph.t = (float)(cellPixels * row + 1) * 0.0009765625f;
-            rendererAsianGlyph.s2 = (float)(cellPixels * (column + 1)) * 0.0009765625f;
-            rendererAsianGlyph.t2 = (float)(cellPixels * (row + 1)) * 0.0009765625f;
-        } else if (cl_language->integer == LANGUAGE_JAPANESE || cl_language->integer == LANGUAGE_CHINESE) {
-            const int32_t cellPixels = R_ASIAN_FONT_ATLAS_SIZE / rendererAsianFontPageDimension;
+            rendererAsianGlyph.s =
+                (float)(cellPixels * column + 1) * 0.0009765625f;
+            rendererAsianGlyph.t =
+                (float)(cellPixels * row + 1) * 0.0009765625f;
+            rendererAsianGlyph.s2 =
+                (float)(cellPixels * (column + 1)) * 0.0009765625f;
+            rendererAsianGlyph.t2 =
+                (float)(cellPixels * (row + 1)) * 0.0009765625f;
+        } else if (cl_language->integer == LANGUAGE_JAPANESE ||
+                   cl_language->integer == LANGUAGE_CHINESE) {
+            const int32_t cellPixels =
+                R_ASIAN_FONT_ATLAS_SIZE /
+                rendererAsianFontPageDimension;
 
-            rendererAsianGlyph.s = (float)(cellPixels * column) * 0.0009765625f;
-            rendererAsianGlyph.t = (float)(cellPixels * row) * 0.0009765625f;
-            rendererAsianGlyph.s2 = (float)(cellPixels * (column + 1) - 1) * 0.0009765625f;
-            rendererAsianGlyph.t2 = (float)(cellPixels * (row + 1) - 1) * 0.0009765625f;
+            rendererAsianGlyph.s =
+                (float)(cellPixels * column) * 0.0009765625f;
+            rendererAsianGlyph.t =
+                (float)(cellPixels * row) * 0.0009765625f;
+            rendererAsianGlyph.s2 =
+                (float)(cellPixels * (column + 1) - 1) * 0.0009765625f;
+            rendererAsianGlyph.t2 =
+                (float)(cellPixels * (row + 1) - 1) * 0.0009765625f;
         } else {
-            rendererAsianGlyph.s = (float)column / (float)rendererAsianFontPageDimension;
-            rendererAsianGlyph.t = (float)row / (float)pageRowCount;
-            rendererAsianGlyph.s2 = (float)(column + 1) / (float)rendererAsianFontPageDimension;
-            rendererAsianGlyph.t2 = (float)(row + 1) / (float)pageRowCount;
+            rendererAsianGlyph.s =
+                (float)column / (float)rendererAsianFontPageDimension;
+            rendererAsianGlyph.t =
+                (float)row / (float)pageRowCount;
+            rendererAsianGlyph.s2 =
+                (float)(column + 1) /
+                (float)rendererAsianFontPageDimension;
+            rendererAsianGlyph.t2 =
+                (float)(row + 1) / (float)pageRowCount;
         }
 
-        rendererAsianGlyph.glyph = rendererAsianFontPageHandles[pageIndex];
+        rendererAsianGlyph.glyph =
+            rendererAsianFontPageHandles[pageIndex];
         return &rendererAsianGlyph;
     }
 
@@ -214,13 +244,17 @@ float R_GetGlyphHorizAdvance(fontInfo_t *font, int32_t character)
  * call, then returns the independently retained scale value. */
 float R_GetAsianScale(fontInfo_t *font, float scale)
 {
-    float asianScale = 48.0f / font->glyphScale / (float)rendererAsianGlyph.height;
+    float asianScale =
+        48.0f / font->glyphScale / (float)rendererAsianGlyph.height;
 
     if (scale > 0.25f) {
-        asianScale *= ((scale - 0.25f) * 0.40000000596046448f + 0.25f) / scale;
+        asianScale *=
+            ((scale - 0.25f) * 0.40000000596046448f + 0.25f) / scale;
     }
 
-    float adjustedHeight = (float)rendererAsianGlyph.imageHeight * asianScale * scale * font->glyphScale;
+    float adjustedHeight =
+        (float)rendererAsianGlyph.imageHeight * asianScale * scale *
+        font->glyphScale;
     ri.AdjustFrom640(NULL, NULL, NULL, &adjustedHeight);
     return asianScale;
 }
@@ -261,7 +295,9 @@ const char *RE_GetFontLanguageDAT(const char *fontDataName)
         return fontDataName;
 
     Com_StripFilename(fontDataName, directory);
-    localizedName = va("%s%s/%s", directory, SEH_GetLanguageName(language), R_FontBaseName(fontDataName));
+    localizedName = va("%s%s/%s", directory,
+                       SEH_GetLanguageName(language),
+                       R_FontBaseName(fontDataName));
     if (ri.FS_ReadFile(localizedName, NULL) >= 0)
         return localizedName;
     return fontDataName;
@@ -297,11 +333,13 @@ const char *RE_GetFontLanguageTGA(const char *shaderName)
     }
     *destination = '\0';
 
-    localizedName = va("%s%s/%s%s", directory, SEH_GetLanguageName(language), baseName, ".tga");
+    localizedName = va("%s%s/%s%s", directory,
+                       SEH_GetLanguageName(language), baseName, ".tga");
     if (ri.FS_ReadFile(localizedName, NULL) >= 0)
         return localizedName;
 
-    localizedName = va("%s%s/%s%s", directory, SEH_GetLanguageName(language), baseName, ".dds");
+    localizedName = va("%s%s/%s%s", directory,
+                       SEH_GetLanguageName(language), baseName, ".dds");
     if (ri.FS_ReadFile(localizedName, NULL) >= 0)
         return localizedName;
     return shaderName;
@@ -319,7 +357,11 @@ static const uint8_t *rendererFontDataCursor;
 static uint32_t readInt(void)
 {
     const uint8_t *bytes = rendererFontDataCursor;
-    const uint32_t value = (uint32_t)bytes[0] | ((uint32_t)bytes[1] << 8) | ((uint32_t)bytes[2] << 16) | ((uint32_t)bytes[3] << 24);
+    const uint32_t value =
+        (uint32_t)bytes[0] |
+        ((uint32_t)bytes[1] << 8) |
+        ((uint32_t)bytes[2] << 16) |
+        ((uint32_t)bytes[3] << 24);
 
     rendererFontDataCursor += sizeof(value);
     return value;
@@ -354,7 +396,8 @@ static void R_ReadFontGlyph(glyphInfo_t *glyph)
     glyph->s2 = readFloat();
     glyph->t2 = readFloat();
     glyph->glyph = (int32_t)readInt();
-    memcpy(glyph->shaderName, rendererFontDataCursor, sizeof(glyph->shaderName));
+    memcpy(glyph->shaderName, rendererFontDataCursor,
+           sizeof(glyph->shaderName));
     rendererFontDataCursor += sizeof(glyph->shaderName);
 }
 
@@ -363,7 +406,8 @@ static void R_ReadFontGlyph(glyphInfo_t *glyph)
  * Name: exact same-module Mac symbol RE_RegisterFont. The Windows body
  * inlines readInt/readFloat and RE_RegisterShaderNoMip while decoding the
  * fixed little-endian font record. */
-void RE_RegisterFont(const char *name, int32_t pointSize, fontInfo_t *font, int32_t loadMode)
+void RE_RegisterFont(const char *name, int32_t pointSize,
+                     fontInfo_t *font, int32_t loadMode)
 {
     char fontDataName[R_FONT_PATH_SIZE];
     void *fileBuffer = NULL;
@@ -378,49 +422,68 @@ void RE_RegisterFont(const char *name, int32_t pointSize, fontInfo_t *font, int3
     R_LoadAsianFont(loadMode);
 
     if (rendererRegisteredFontCount >= R_FONT_CACHE_COUNT) {
-        ri.Printf(R_PRINT_ALL, "RE_RegisterFont: Too many fonts registered already.\n");
+        ri.Printf(R_PRINT_ALL,
+                  "RE_RegisterFont: Too many fonts registered already.\n");
         return;
     }
 
-    Com_sprintf(fontDataName, sizeof(fontDataName), "fonts/fontImage_%i.dat", pointSize);
-    for (int32_t fontIndex = 0; fontIndex < rendererRegisteredFontCount; ++fontIndex) {
-        if (Q_stricmp(rendererRegisteredFonts[fontIndex].fontDataName, fontDataName) == 0) {
+    Com_sprintf(fontDataName, sizeof(fontDataName),
+                "fonts/fontImage_%i.dat", pointSize);
+    for (int32_t fontIndex = 0;
+         fontIndex < rendererRegisteredFontCount;
+         ++fontIndex) {
+        if (Q_stricmp(rendererRegisteredFonts[fontIndex].fontDataName,
+                      fontDataName) == 0) {
             *font = rendererRegisteredFonts[fontIndex];
             return;
         }
     }
 
-    if (ri.FS_ReadFile(RE_GetFontLanguageDAT(fontDataName), NULL) != (int32_t)sizeof(*font)) {
-        ri.Printf(R_PRINT_ALL, "RE_RegisterFont: Unable to load font data %s\n", fontDataName);
+    if (ri.FS_ReadFile(RE_GetFontLanguageDAT(fontDataName), NULL) !=
+        (int32_t)sizeof(*font)) {
+        ri.Printf(R_PRINT_ALL,
+                  "RE_RegisterFont: Unable to load font data %s\n",
+                  fontDataName);
         return;
     }
 
-    const int32_t loadedFontDataSize = ri.FS_ReadFile(RE_GetFontLanguageDAT(fontDataName), &fileBuffer);
+    const int32_t loadedFontDataSize =
+        ri.FS_ReadFile(RE_GetFontLanguageDAT(fontDataName), &fileBuffer);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (loadedFontDataSize != (int32_t)sizeof(*font)) {
         if (fileBuffer != NULL)
             ri.FS_FreeFile(fileBuffer);
-        ri.Printf(R_PRINT_ALL, "RE_RegisterFont: Unable to load font data %s\n", fontDataName);
+        ri.Printf(R_PRINT_ALL,
+                  "RE_RegisterFont: Unable to load font data %s\n",
+                  fontDataName);
         return;
     }
     rendererFontDataCursor = fileBuffer;
-    for (int32_t glyphIndex = 0; glyphIndex < R_FONT_GLYPH_COUNT; ++glyphIndex) {
+    for (int32_t glyphIndex = 0;
+         glyphIndex < R_FONT_GLYPH_COUNT;
+         ++glyphIndex) {
         R_ReadFontGlyph(&font->glyphs[glyphIndex]);
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-        if (memchr(font->glyphs[glyphIndex].shaderName, '\0', sizeof(font->glyphs[glyphIndex].shaderName)) == NULL) {
+        if (memchr(font->glyphs[glyphIndex].shaderName, '\0',
+                   sizeof(font->glyphs[glyphIndex].shaderName)) == NULL) {
             ri.FS_FreeFile(fileBuffer);
-            ri.Error(ERR_DROP, "\x15RE_RegisterFont: unterminated glyph shader name");
+            ri.Error(ERR_DROP,
+                     "\x15RE_RegisterFont: unterminated glyph shader name");
             return;
         }
     }
     font->glyphScale = readFloat();
     font->lineHeight = readFloat();
     rendererFontDataCursor += sizeof(font->fontDataName);
-    Q_strncpyz(font->fontDataName, fontDataName, sizeof(font->fontDataName));
+    Q_strncpyz(font->fontDataName, fontDataName,
+               sizeof(font->fontDataName));
 
-    for (int32_t glyphIndex = 0; glyphIndex < R_FONT_GLYPH_SHADER_COUNT; ++glyphIndex) {
+    for (int32_t glyphIndex = 0;
+         glyphIndex < R_FONT_GLYPH_SHADER_COUNT;
+         ++glyphIndex) {
         glyphInfo_t *glyph = &font->glyphs[glyphIndex];
-        glyph->glyph = RE_RegisterShaderNoMip(RE_GetFontLanguageTGA(glyph->shaderName), loadMode);
+        glyph->glyph = RE_RegisterShaderNoMip(
+            RE_GetFontLanguageTGA(glyph->shaderName), loadMode);
     }
 
     rendererRegisteredFonts[rendererRegisteredFontCount++] = *font;

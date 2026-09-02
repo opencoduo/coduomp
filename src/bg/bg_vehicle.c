@@ -17,7 +17,8 @@ const vec3_t bgVehicleTankPosition1Offset = {0.0f, 0.0f, -20.0f};
  * have the same four-way pointer selection. Linux game RVA 0x230e5 preserves
  * the same comparisons and results. The default is the canonical zero vector.
  */
-const float *BG_GetVehiclePosOffset(vehicle_type_t vehicleType, int32_t vehiclePosition)
+const float *BG_GetVehiclePosOffset(vehicle_type_t vehicleType,
+                                    int32_t vehiclePosition)
 {
     if (vehicleType == VEHICLE_TYPE_ARTILLERY) {
         return bgVehicleArtilleryPositionOffset;
@@ -33,7 +34,8 @@ const float *BG_GetVehiclePosOffset(vehicle_type_t vehicleType, int32_t vehicleP
 
 /* Windows cgame 0x30008210, Windows game 0x20007fc0, and Linux game RVA
  * 0x23148 all accept only the four-wheel gunner position. */
-int32_t BG_AllowPlayerWeaponAtVehiclePos(vehicle_type_t vehicleType, int32_t vehiclePosition)
+int32_t BG_AllowPlayerWeaponAtVehiclePos(vehicle_type_t vehicleType,
+                                         int32_t vehiclePosition)
 {
     return vehicleType == VEHICLE_TYPE_4_WHEEL && vehiclePosition == 3;
 }

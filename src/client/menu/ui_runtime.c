@@ -35,16 +35,19 @@ void Com_Printf(const char *format, ...);
  * cgame reconstruction's local Window_IsVisible spelling.
  */
 
-void Fade(int32_t *flags, float *alpha, float clamp, int32_t *nextTime, int32_t offsetTime, qboolean clearFlags, float fadeAmount,
+void Fade(int32_t *flags, float *alpha, float clamp, int32_t *nextTime,
+          int32_t offsetTime, qboolean clearFlags, float fadeAmount,
           float fadeInAmount)
 {
     const int32_t realTime = DC->realTime;
 
-    if ((*flags & (WINDOW_FADINGOUT | WINDOW_FADINGIN)) == 0 || realTime <= *nextTime) {
+    if ((*flags & (WINDOW_FADINGOUT | WINDOW_FADINGIN)) == 0 ||
+        realTime <= *nextTime) {
         return;
     }
 
-    *nextTime = coduo_int32_from_bits((uint32_t)realTime + (uint32_t)offsetTime);
+    *nextTime = coduo_int32_from_bits((uint32_t)realTime +
+                                      (uint32_t)offsetTime);
     if ((*flags & WINDOW_FADINGOUT) != 0) {
         /* Both PE32 bodies store the rounded binary32 result with FST while
          * retaining the unrounded x87 value for the following comparison. */
@@ -156,7 +159,9 @@ void Item_ValidateTypeData(itemDef_t *item, int32_t sourceHandle)
         memset(item->typeData, 0, sizeof(editFieldDef_t));
         /* Both binaries reload the parsed type after the allocator callback. */
         type = item->type;
-        if (type == ITEM_TYPE_EDITFIELD || type == ITEM_TYPE_NUMERICFIELD || type == ITEM_TYPE_UPREDITFIELD) {
+        if (type == ITEM_TYPE_EDITFIELD ||
+            type == ITEM_TYPE_NUMERICFIELD ||
+            type == ITEM_TYPE_UPREDITFIELD) {
             editField = Item_GetEditFieldDef(item);
             if (editField->maxPaintChars == 0) {
                 editField->maxPaintChars = 256;
@@ -240,7 +245,8 @@ multiDef_t *Item_GetMultiDef(itemDef_t *item)
 
 modelDef_t *Item_GetModelDef(itemDef_t *item)
 {
-    if (item->typeValidated == ITEM_TYPE_MODEL || item->typeValidated == ITEM_TYPE_MENUMODEL) {
+    if (item->typeValidated == ITEM_TYPE_MODEL ||
+        item->typeValidated == ITEM_TYPE_MENUMODEL) {
         return (modelDef_t *)item->typeData;
     }
     Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_MODEL, or "
@@ -255,10 +261,14 @@ qboolean Rect_ContainsPoint(const rectDef_t *rect, float x, float y)
     }
 
     /* Positive ordered comparisons preserve the originals' NaN rejection. */
-    return (x >= rect->x && x <= rect->x + rect->w && y >= rect->y && y <= rect->y + rect->h) ? qtrue : qfalse;
+    return (x >= rect->x && x <= rect->x + rect->w &&
+            y >= rect->y && y <= rect->y + rect->h)
+               ? qtrue
+               : qfalse;
 }
 
 qboolean IsVisible(int32_t flags)
 {
-    return (flags & WINDOW_VISIBLE) != 0 && (flags & WINDOW_FADINGOUT) == 0;
+    return (flags & WINDOW_VISIBLE) != 0 &&
+           (flags & WINDOW_FADINGOUT) == 0;
 }

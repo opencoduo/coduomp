@@ -63,7 +63,8 @@ qboolean in_mlooking;          /* original 0x008ce0c0 */
  * and 0x005c4178. Their key lanes and terminators are identical; only the name
  * pointers differ. This X-macro is source factoring for those two original
  * tables, not a third runtime table. */
-#define KEY_NAME_STANDARD(entry_, key_, display_) entry_(key_, display_, "KEY_" display_)
+#define KEY_NAME_STANDARD(entry_, key_, display_) \
+    entry_(key_, display_, "KEY_" display_)
 #define KEY_NAME_DEFINITIONS(entry_) \
     KEY_NAME_STANDARD(entry_, K_TAB, "TAB") \
     KEY_NAME_STANDARD(entry_, K_ENTER, "ENTER") \
@@ -172,25 +173,43 @@ qboolean in_mlooking;          /* original 0x008ce0c0 */
     KEY_NAME_STANDARD(entry_, K_PAUSE, "PAUSE") \
     KEY_NAME_STANDARD(entry_, ';', "SEMICOLON") \
     KEY_NAME_STANDARD(entry_, K_COMMAND, "COMMAND") \
-    entry_(K_CHAR_MICRO, "181", "\xb5") entry_(K_CHAR_INVERTED_QUESTION, "191", "\xbf") entry_(K_CHAR_SHARP_S, "223", "\xdf") \
-        entry_(K_CHAR_A_GRAVE, "224", "\xe0") entry_(K_CHAR_A_ACUTE, "225", "\xe1") entry_(K_CHAR_A_DIAERESIS, "228", "\xe4") \
-            entry_(K_CHAR_A_RING, "229", "\xe5") entry_(K_CHAR_AE, "230", "\xe6") entry_(K_CHAR_C_CEDILLA, "231", "\xe7") \
-                entry_(K_CHAR_E_GRAVE, "232", "\xe8") entry_(K_CHAR_E_ACUTE, "233", "\xe9") entry_(K_CHAR_I_GRAVE, "236", "\xec") \
-                    entry_(K_CHAR_N_TILDE, "241", "\xf1") entry_(K_CHAR_O_GRAVE, "242", "\xf2") entry_(K_CHAR_O_ACUTE, "243", "\xf3") \
-                        entry_(K_CHAR_O_DIAERESIS, "246", "\xf6") entry_(K_CHAR_O_STROKE, "248", "\xf8") \
-                            entry_(K_CHAR_U_GRAVE, "249", "\xf9") entry_(K_CHAR_U_ACUTE, "250", "\xfa") \
-                                entry_(K_CHAR_U_DIAERESIS, "252", "\xfc")
+    entry_(K_CHAR_MICRO, "181", "\xb5") \
+    entry_(K_CHAR_INVERTED_QUESTION, "191", "\xbf") \
+    entry_(K_CHAR_SHARP_S, "223", "\xdf") \
+    entry_(K_CHAR_A_GRAVE, "224", "\xe0") \
+    entry_(K_CHAR_A_ACUTE, "225", "\xe1") \
+    entry_(K_CHAR_A_DIAERESIS, "228", "\xe4") \
+    entry_(K_CHAR_A_RING, "229", "\xe5") \
+    entry_(K_CHAR_AE, "230", "\xe6") \
+    entry_(K_CHAR_C_CEDILLA, "231", "\xe7") \
+    entry_(K_CHAR_E_GRAVE, "232", "\xe8") \
+    entry_(K_CHAR_E_ACUTE, "233", "\xe9") \
+    entry_(K_CHAR_I_GRAVE, "236", "\xec") \
+    entry_(K_CHAR_N_TILDE, "241", "\xf1") \
+    entry_(K_CHAR_O_GRAVE, "242", "\xf2") \
+    entry_(K_CHAR_O_ACUTE, "243", "\xf3") \
+    entry_(K_CHAR_O_DIAERESIS, "246", "\xf6") \
+    entry_(K_CHAR_O_STROKE, "248", "\xf8") \
+    entry_(K_CHAR_U_GRAVE, "249", "\xf9") \
+    entry_(K_CHAR_U_ACUTE, "250", "\xfa") \
+    entry_(K_CHAR_U_DIAERESIS, "252", "\xfc")
 
-#define KEY_DISPLAY_ENTRY(key_, display_, localized_) {display_, key_},
+#define KEY_DISPLAY_ENTRY(key_, display_, localized_) { display_, key_ },
 /* Original display-name table at 0x005c3d78, including the NULL terminator.
  * PE_RELOCATION_VALUES_VERIFIED: all 128 pointer targets match in order. */
-static const key_name_t keyNames[] = {KEY_NAME_DEFINITIONS(KEY_DISPLAY_ENTRY){NULL, 0}};
+static const key_name_t keyNames[] = {
+    KEY_NAME_DEFINITIONS(KEY_DISPLAY_ENTRY)
+    { NULL, 0 }
+};
 #undef KEY_DISPLAY_ENTRY
 
-#define KEY_LOCALIZED_ENTRY(key_, display_, localized_) {localized_, key_},
+#define KEY_LOCALIZED_ENTRY(key_, display_, localized_) { localized_, key_ },
 /* Original localized-name table at 0x005c4178, including the NULL terminator.
  * PE_RELOCATION_VALUES_VERIFIED: all 128 pointer targets match in order. */
-static const key_name_t localizedKeyNames[] = {KEY_NAME_DEFINITIONS(KEY_LOCALIZED_ENTRY){NULL, 0}};
+static const key_name_t localizedKeyNames[] = {
+    KEY_NAME_DEFINITIONS(KEY_LOCALIZED_ENTRY)
+    { NULL, 0 }
+};
 #undef KEY_LOCALIZED_ENTRY
 #undef KEY_NAME_DEFINITIONS
 #undef KEY_NAME_STANDARD
@@ -198,14 +217,22 @@ static const key_name_t localizedKeyNames[] = {KEY_NAME_DEFINITIONS(KEY_LOCALIZE
 /* Original pointer table at 0x005c4578. The pointed-to strings are exact
  * one-byte French AZERTY number-row labels, not UTF-8 text.
  * PE_RELOCATION_VALUES_VERIFIED. */
-static const char *const keyFrenchDigitNames[10] = {"\x26", "\xe9", "\x22", "\x27", "\x28", "\x2d", "\xe8", "\x5f", "\xe7", "\xe0"};
+static const char *const keyFrenchDigitNames[10] = {
+    "\x26", "\xe9", "\x22", "\x27", "\x28",
+    "\x2d", "\xe8", "\x5f", "\xe7", "\xe0"
+};
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(key_state_t) == 4, "original i386 key-state alignment");
-_Static_assert(offsetof(key_state_t, down) == 0x00, "original i386 key-state down offset");
-_Static_assert(offsetof(key_state_t, repeatCount) == 0x04, "original i386 key-state repeat-count offset");
-_Static_assert(offsetof(key_state_t, binding) == 0x08, "original i386 key-state binding offset");
-_Static_assert(sizeof(key_state_t) == 0x0c, "original i386 key-state extent");
+_Static_assert(_Alignof(key_state_t) == 4,
+               "original i386 key-state alignment");
+_Static_assert(offsetof(key_state_t, down) == 0x00,
+               "original i386 key-state down offset");
+_Static_assert(offsetof(key_state_t, repeatCount) == 0x04,
+               "original i386 key-state repeat-count offset");
+_Static_assert(offsetof(key_state_t, binding) == 0x08,
+               "original i386 key-state binding offset");
+_Static_assert(sizeof(key_state_t) == 0x0c,
+               "original i386 key-state extent");
 #endif
 
 /* Source: CoDUOMP.exe 0x0040b570..0x0040b5ed.
@@ -219,7 +246,8 @@ static void IN_KeyDown(clKeyButton_t *button)
     if (cmd_argc > 1 && cmd_argv[1][0] != '\0')
         key = coduo_crt_atoi(cmd_argv[1]);
 
-    if (key == button->downKeys[0] || key == button->downKeys[1]) {
+    if (key == button->downKeys[0] ||
+        key == button->downKeys[1]) {
         return;
     }
 
@@ -235,7 +263,8 @@ static void IN_KeyDown(clKeyButton_t *button)
     if (button->active != qfalse)
         return;
 
-    button->downtime = cmd_argc > 2 ? coduo_crt_atoi(cmd_argv[2]) : 0;
+    button->downtime =
+        cmd_argc > 2 ? coduo_crt_atoi(cmd_argv[2]) : 0;
     button->active = qtrue;
     button->wasPressed = qtrue;
 }
@@ -267,11 +296,17 @@ static void IN_KeyUp(clKeyButton_t *button)
         return;
 
     button->active = qfalse;
-    const int32_t eventTime = cmd_argc > 2 ? coduo_crt_atoi(cmd_argv[2]) : 0;
+    const int32_t eventTime =
+        cmd_argc > 2 ? coduo_crt_atoi(cmd_argv[2]) : 0;
     if (eventTime != 0) {
-        button->accumulatedMsec = (int32_t)((uint32_t)button->accumulatedMsec + ((uint32_t)eventTime - (uint32_t)button->downtime));
+        button->accumulatedMsec =
+            (int32_t)((uint32_t)button->accumulatedMsec +
+                      ((uint32_t)eventTime -
+                       (uint32_t)button->downtime));
     } else {
-        button->accumulatedMsec = (int32_t)((uint32_t)button->accumulatedMsec + (cl_commandFrameMsec >> 1));
+        button->accumulatedMsec =
+            (int32_t)((uint32_t)button->accumulatedMsec +
+                      (cl_commandFrameMsec >> 1));
     }
 }
 
@@ -285,7 +320,11 @@ enum {
  * Name and role: exact same-module Mac symbol CL_SetTempStanceStatus. */
 void CL_SetTempStanceStatus(void)
 {
-    const char *const value = in_prone.active != qfalse || in_down.active != qfalse ? "1" : "0";
+    const char *const value =
+        in_prone.active != qfalse ||
+                in_down.active != qfalse
+            ? "1"
+            : "0";
     (void)Cvar_Set2("cl_stanceTemp", value, qtrue);
 }
 
@@ -297,7 +336,8 @@ void IN_UpDown(void)
 {
     IN_KeyDown(&in_stanceUp);
 
-    if (in_prone.active != qfalse || in_down.active != qfalse) {
+    if (in_prone.active != qfalse ||
+        in_down.active != qfalse) {
         return;
     }
 
@@ -614,7 +654,9 @@ void IN_UnboundCommandButton1Up(void)
  * Name and pitch operation: exact same-module Mac symbol IN_CenterView. */
 void IN_CenterView(void)
 {
-    cl.inputState.viewAngles[0] = -(float)cl.snap.ps.deltaAngles[0] * 0.0054931640625f; /* exact 0x3bb40000, 360 / 65536 */
+    cl.inputState.viewAngles[0] =
+        -(float)cl.snap.ps.deltaAngles[0] *
+        0.0054931640625f; /* exact 0x3bb40000, 360 / 65536 */
 }
 
 /* Source: CoDUOMP.exe 0x0040bc50..0x0040bcec.
@@ -622,7 +664,8 @@ void IN_CenterView(void)
  * and IN_RaiseStance. */
 void IN_LowerStance(void)
 {
-    if (in_prone.active != qfalse || in_down.active != qfalse) {
+    if (in_prone.active != qfalse ||
+        in_down.active != qfalse) {
         return;
     }
 
@@ -635,7 +678,8 @@ void IN_LowerStance(void)
 
 void IN_RaiseStance(void)
 {
-    if (in_prone.active != qfalse || in_down.active != qfalse) {
+    if (in_prone.active != qfalse ||
+        in_down.active != qfalse) {
         return;
     }
 
@@ -651,32 +695,42 @@ void IN_RaiseStance(void)
  * IN_ToggleCrouch, IN_ToggleProne, IN_GoProne, and IN_GoCrouch. */
 void IN_ToggleCrouch(void)
 {
-    if (in_prone.active != qfalse || in_down.active != qfalse) {
+    if (in_prone.active != qfalse ||
+        in_down.active != qfalse) {
         return;
     }
 
-    (void)Cvar_Set2("cl_stance", cl_stance->integer == CL_STANCE_CROUCH ? "0" : "1", qtrue);
+    (void)Cvar_Set2(
+        "cl_stance",
+        cl_stance->integer == CL_STANCE_CROUCH ? "0" : "1",
+        qtrue);
 }
 
 void IN_ToggleProne(void)
 {
-    if (in_prone.active != qfalse || in_down.active != qfalse) {
+    if (in_prone.active != qfalse ||
+        in_down.active != qfalse) {
         return;
     }
 
-    (void)Cvar_Set2("cl_stance", cl_stance->integer == CL_STANCE_PRONE ? "0" : "2", qtrue);
+    (void)Cvar_Set2(
+        "cl_stance",
+        cl_stance->integer == CL_STANCE_PRONE ? "0" : "2",
+        qtrue);
 }
 
 void IN_GoProne(void)
 {
-    if (in_prone.active == qfalse && in_down.active == qfalse) {
+    if (in_prone.active == qfalse &&
+        in_down.active == qfalse) {
         (void)Cvar_Set2("cl_stance", "2", qtrue);
     }
 }
 
 void IN_GoCrouch(void)
 {
-    if (in_prone.active == qfalse && in_down.active == qfalse) {
+    if (in_prone.active == qfalse &&
+        in_down.active == qfalse) {
         (void)Cvar_Set2("cl_stance", "1", qtrue);
     }
 }
@@ -691,16 +745,22 @@ void IN_GoStandDown(void)
 {
     IN_KeyDown(&in_stanceUp);
 
-    const int32_t jumpWindow = cl_goStandJumpTime->integer;
-    if ((jumpWindow <= 0 && cl_stance->integer == CL_STANCE_STAND) ||
-        (jumpWindow > 0 && (int32_t)((uint32_t)com_frameTime - (uint32_t)cl_lastGoStandTime) < jumpWindow)) {
+    const int32_t jumpWindow =
+        cl_goStandJumpTime->integer;
+    if ((jumpWindow <= 0 &&
+         cl_stance->integer == CL_STANCE_STAND) ||
+        (jumpWindow > 0 &&
+         (int32_t)((uint32_t)com_frameTime -
+                   (uint32_t)cl_lastGoStandTime) <
+             jumpWindow)) {
         IN_KeyDown(&in_up);
         cl_lastGoStandTime = 0;
         return;
     }
 
     cl_lastGoStandTime = com_frameTime;
-    if (in_prone.active == qfalse && in_down.active == qfalse) {
+    if (in_prone.active == qfalse &&
+        in_down.active == qfalse) {
         (void)Cvar_Set2("cl_stance", "0", qtrue);
     }
 }
@@ -733,11 +793,12 @@ void IN_MLookUp(void)
  * six-element destination array. */
 void CL_JoystickEvent(int32_t axis, int32_t value)
 {
-    if (axis < 0 || axis >= (int32_t)(sizeof(cl.inputState.joystickAxis) / sizeof(cl.inputState.joystickAxis[0]))) {
+    if (axis < 0 ||
+        axis >=
+            (int32_t)(sizeof(cl.inputState.joystickAxis) /
+                      sizeof(cl.inputState.joystickAxis[0]))) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CL_JoystickEvent: bad axis %i",
-                  axis);
+                  "\x15" "CL_JoystickEvent: bad axis %i", axis);
     }
 
     cl.inputState.joystickAxis[axis] = value;
@@ -748,18 +809,27 @@ void CL_JoystickEvent(int32_t axis, int32_t value)
  * Name and delta routing: exact same-module Mac symbol CL_MouseEvent. */
 void CL_MouseEvent(int32_t deltaX, int32_t deltaY)
 {
-    if ((cls.keyCatchers & KEYCATCH_UI) != 0 && cl_bypassMouseInput->integer != 1) {
-        (void)VM_Call(coduo_uiVm, UIVM_MOUSE_EVENT, deltaX, deltaY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    if ((cls.keyCatchers & KEYCATCH_UI) != 0 &&
+        cl_bypassMouseInput->integer != 1) {
+        (void)VM_Call(
+            coduo_uiVm, UIVM_MOUSE_EVENT,
+            deltaX, deltaY,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         return;
     }
 
     if ((cls.keyCatchers & KEYCATCH_CGAME) != 0) {
-        (void)VM_Call(coduo_cgameVm, CGVM_MOUSE_EVENT, deltaX, deltaY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        (void)VM_Call(
+            coduo_cgameVm, CGVM_MOUSE_EVENT,
+            deltaX, deltaY,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         return;
     }
 
-    cl.inputState.mouseDx[cl.inputState.mouseIndex] += deltaX;
-    cl.inputState.mouseDy[cl.inputState.mouseIndex] += deltaY;
+    cl.inputState.mouseDx[cl.inputState.mouseIndex] +=
+        deltaX;
+    cl.inputState.mouseDy[cl.inputState.mouseIndex] +=
+        deltaY;
 }
 
 /* Source: CoDUOMP.exe 0x0040e880..0x0040e953.
@@ -791,7 +861,9 @@ int32_t Key_StringToKeynum(const char *string)
         return value;
     }
 
-    for (const key_name_t *entry = keyNames; entry->name != NULL; ++entry) {
+    for (const key_name_t *entry = keyNames;
+         entry->name != NULL;
+         ++entry) {
         if (Q_stricmpn(entry->name, string, KEY_BINDING_COMPARE_LIMIT) == 0)
             return entry->key;
     }
@@ -810,7 +882,9 @@ const char *Key_KeynumToString(int32_t key, qboolean localized)
     if (key < 0 || key >= MAX_KEYS)
         return "<OUT OF RANGE>";
 
-    if (localized != qfalse && cl_language->integer == LANGUAGE_FRENCH && key >= '0' && key <= '9') {
+    if (localized != qfalse &&
+        cl_language->integer == LANGUAGE_FRENCH &&
+        key >= '0' && key <= '9') {
         return keyFrenchDigitNames[key - '0'];
     }
 
@@ -821,8 +895,11 @@ const char *Key_KeynumToString(int32_t key, qboolean localized)
             return keyNameBuffer;
     }
 
-    const key_name_t *names = localized != qfalse ? localizedKeyNames : keyNames;
-    for (const key_name_t *entry = names; entry->name != NULL; ++entry) {
+    const key_name_t *names =
+        localized != qfalse ? localizedKeyNames : keyNames;
+    for (const key_name_t *entry = names;
+         entry->name != NULL;
+         ++entry) {
         if ((int32_t)entry->key == key)
             return entry->name;
     }
@@ -831,8 +908,12 @@ const char *Key_KeynumToString(int32_t key, qboolean localized)
     keyNameBuffer[1] = 'x';
     int32_t highNibble = key >> 4;
     int32_t lowNibble = key & 15;
-    keyNameBuffer[2] = (char)(highNibble > 9 ? highNibble + ('a' - 10) : highNibble + '0');
-    keyNameBuffer[3] = (char)(lowNibble > 9 ? lowNibble + ('a' - 10) : lowNibble + '0');
+    keyNameBuffer[2] = (char)(highNibble > 9
+                                  ? highNibble + ('a' - 10)
+                                  : highNibble + '0');
+    keyNameBuffer[3] = (char)(lowNibble > 9
+                                  ? lowNibble + ('a' - 10)
+                                  : lowNibble + '0');
     keyNameBuffer[4] = '\0';
     return keyNameBuffer;
 }
@@ -901,14 +982,16 @@ void Key_GetBindingBuf(int32_t key, char *buffer, int32_t bufferSize)
         return;
     }
 
-    strncpy(buffer, binding, (size_t)((uint32_t)bufferSize - 1u));
+    strncpy(buffer, binding,
+            (size_t)((uint32_t)bufferSize - 1u));
     buffer[bufferSize - 1] = '\0';
 }
 
 /* Source: CoDUOMP.exe 0x0041b490..0x0041b4af.
  * Name and argument roles: exact same-module Mac symbol
  * Key_KeynumToStringBuf. */
-void Key_KeynumToStringBuf(int32_t key, char *buffer, int32_t bufferSize)
+void Key_KeynumToStringBuf(int32_t key, char *buffer,
+                           int32_t bufferSize)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (bufferSize <= 0) {
@@ -917,7 +1000,8 @@ void Key_KeynumToStringBuf(int32_t key, char *buffer, int32_t bufferSize)
     }
 
     const char *name = Key_KeynumToString(key, qtrue);
-    strncpy(buffer, name, (size_t)((uint32_t)bufferSize - 1u));
+    strncpy(buffer, name,
+            (size_t)((uint32_t)bufferSize - 1u));
     buffer[bufferSize - 1] = '\0';
 }
 
@@ -980,12 +1064,14 @@ void Key_Bind_f(void)
 {
     const int32_t argumentCount = Cmd_Argc();
     if (argumentCount < 2) {
-        Com_Printf("bind <key> [command] : attach a command to a key\n");
+        Com_Printf(
+            "bind <key> [command] : attach a command to a key\n");
         return;
     }
 
     const char *const keyName = Cmd_Argv(1);
-    const int32_t key = coduo_crt_tolower(Key_StringToKeynum(keyName));
+    const int32_t key =
+        coduo_crt_tolower(Key_StringToKeynum(keyName));
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if ((uint32_t)key >= (uint32_t)MAX_KEYS) {
         Com_Printf("\"%s\" isn't a valid key\n", keyName);
@@ -1012,7 +1098,8 @@ void Key_Bindlist_f(void)
     for (int32_t key = 0; key < MAX_KEYS; ++key) {
         const char *const binding = keyStates[key].binding;
         if (binding != NULL && binding[0] != '\0') {
-            Com_Printf("%s \"%s\"\n", Key_KeynumToString(key, qfalse), binding);
+            Com_Printf("%s \"%s\"\n",
+                       Key_KeynumToString(key, qfalse), binding);
         }
     }
 }
@@ -1058,7 +1145,9 @@ int32_t Key_GetKey(const char *binding)
         return -1;
 
     for (int32_t key = 0; key < MAX_KEYS; ++key) {
-        if (keyStates[key].binding != NULL && Q_stricmpn(keyStates[key].binding, binding, KEY_BINDING_COMPARE_LIMIT) == 0) {
+        if (keyStates[key].binding != NULL &&
+            Q_stricmpn(keyStates[key].binding, binding,
+                       KEY_BINDING_COMPARE_LIMIT) == 0) {
             return key;
         }
     }
@@ -1073,35 +1162,19 @@ int32_t Key_GetKey(const char *binding)
  * instead of relying on linker adjacency. */
 void CL_ClearKeys(void)
 {
-    clKeyButton_t *const buttons[] = {&in_left,
-                                      &in_right,
-                                      &in_forward,
-                                      &in_back,
-                                      &in_lookup,
-                                      &in_lookdown,
-                                      &in_moveleft,
-                                      &in_moveright,
-                                      &in_strafe,
-                                      &in_speed,
-                                      &in_up,
-                                      &in_down,
-                                      &in_stanceUp,
-                                      &in_attack,
-                                      &in_commandButton1,
-                                      &in_dropWeapon,
-                                      &in_sprint,
-                                      &in_commandButton4,
-                                      &in_melee,
-                                      &in_activate,
-                                      &in_commandButton7,
-                                      &in_commandButton8,
-                                      &in_commandButton9,
-                                      &in_reload,
-                                      &in_leanLeft,
-                                      &in_leanRight,
-                                      &in_prone};
+    clKeyButton_t *const buttons[] = {
+        &in_left, &in_right, &in_forward, &in_back,
+        &in_lookup, &in_lookdown, &in_moveleft, &in_moveright,
+        &in_strafe, &in_speed, &in_up, &in_down, &in_stanceUp,
+        &in_attack, &in_commandButton1, &in_dropWeapon, &in_sprint,
+        &in_commandButton4, &in_melee, &in_activate,
+        &in_commandButton7, &in_commandButton8, &in_commandButton9,
+        &in_reload, &in_leanLeft, &in_leanRight, &in_prone
+    };
 
-    for (size_t index = 0; index < sizeof(buttons) / sizeof(buttons[0]); ++index) {
+    for (size_t index = 0;
+         index < sizeof(buttons) / sizeof(buttons[0]);
+         ++index) {
         memset(buttons[index], 0, sizeof(*buttons[index]));
     }
     in_mlooking = qfalse;
@@ -1117,30 +1190,37 @@ void CL_ClearKeys(void)
 void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
 {
     key_state_t *const state = &keyStates[key];
-    const qboolean coduompSpecialConsoleKey = key == '`' || key == '~';
+    const qboolean coduompSpecialConsoleKey =
+        key == '`' || key == '~';
     state->down = down;
 
     if (down != qfalse) {
         ++state->repeatCount;
         if (state->repeatCount == 1) {
             ++keyDownCount;
-        } else if ((cls.keyCatchers & (KEYCATCH_CONSOLE | KEYCATCH_MESSAGE)) == 0) {
+        } else if ((cls.keyCatchers &
+                    (KEYCATCH_CONSOLE | KEYCATCH_MESSAGE)) == 0) {
             if ((cls.keyCatchers & KEYCATCH_UI) == 0)
                 return;
-            if (key != K_UPARROW && key != K_DOWNARROW && key != K_PGDN && key != K_PGUP) {
+            if (key != K_UPARROW && key != K_DOWNARROW &&
+                key != K_PGDN && key != K_PGUP) {
                 return;
             }
-        } else if (coduompSpecialConsoleKey != qfalse || key == K_ESCAPE) {
+        } else if (coduompSpecialConsoleKey != qfalse ||
+                   key == K_ESCAPE) {
             return;
         }
 
-        if (cl_waitForFire != NULL && cl_waitForFire->integer != 0) {
+        if (cl_waitForFire != NULL &&
+            cl_waitForFire->integer != 0) {
             if ((cls.keyCatchers & KEYCATCH_CONSOLE) != 0)
                 Con_ToggleConsole_f();
 
             const char *const binding = state->binding;
             CL_ClearKeys();
-            if (binding != NULL && Q_stricmpn(binding, "+attack", KEY_BINDING_COMPARE_LIMIT) == 0) {
+            if (binding != NULL &&
+                Q_stricmpn(binding, "+attack",
+                           KEY_BINDING_COMPARE_LIMIT) == 0) {
                 (void)Cvar_Set2("cl_waitForFire", "0", qtrue);
             }
             return;
@@ -1153,14 +1233,20 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
 
     if (coduompSpecialConsoleKey != qfalse) {
         const qboolean consoleAllowed =
-            (cls.keyCatchers & KEYCATCH_CONSOLE) != 0 || sv_running->integer != 0 || sv_disableClientConsole->integer == 0;
+            (cls.keyCatchers & KEYCATCH_CONSOLE) != 0 ||
+            sv_running->integer != 0 ||
+            sv_disableClientConsole->integer == 0;
         if (down != qfalse && consoleAllowed != qfalse)
             Con_ToggleConsole_f();
         return;
     }
 
-    if (down != qfalse && (key < K_CHAR_MICRO || key == K_MOUSE1) &&
-        (clc.demoPlayback != qfalse || cls.state == CA_CINEMATIC || cls.state == CA_LOGO) && cls.keyCatchers == 0) {
+    if (down != qfalse &&
+        (key < K_CHAR_MICRO || key == K_MOUSE1) &&
+        (clc.demoPlayback != qfalse ||
+         cls.state == CA_CINEMATIC ||
+         cls.state == CA_LOGO) &&
+        cls.keyCatchers == 0) {
         (void)Cvar_Set2("nextdemo", "", qtrue);
         key = K_ESCAPE;
     }
@@ -1172,11 +1258,16 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
         }
         if ((cls.keyCatchers & KEYCATCH_CGAME) != 0) {
             cls.keyCatchers &= ~KEYCATCH_CGAME;
-            (void)VM_Call(coduo_cgameVm, CGVM_EVENT_HANDLING, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            (void)VM_Call(
+                coduo_cgameVm, CGVM_EVENT_HANDLING,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             return;
         }
         if ((cls.keyCatchers & KEYCATCH_UI) != 0) {
-            (void)VM_Call(coduo_uiVm, UIVM_KEY_EVENT, K_ESCAPE, down, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            (void)VM_Call(
+                coduo_uiVm, UIVM_KEY_EVENT,
+                K_ESCAPE, down, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0);
             return;
         }
 
@@ -1190,29 +1281,42 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
             return;
 
         case CA_ACTIVE:
-            (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU,
-                          clc.demoPlayback != qfalse || cl_serverLoadWaiting->integer != 0 ? UI_MENU_MAIN : UI_MENU_INGAME, 0, 0, 0, 0, 0,
-                          0, 0, 0, 0, 0, 0);
+            (void)VM_Call(
+                coduo_uiVm, UIVM_SET_ACTIVE_MENU,
+                clc.demoPlayback != qfalse ||
+                        cl_serverLoadWaiting->integer != 0
+                    ? UI_MENU_MAIN
+                    : UI_MENU_INGAME,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             return;
 
         case CA_CINEMATIC:
         case CA_LOGO:
             CL_Disconnect_f();
             MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
-            (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU, UI_MENU_MAIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            (void)VM_Call(
+                coduo_uiVm, UIVM_SET_ACTIVE_MENU,
+                UI_MENU_MAIN,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             return;
 
         case CA_DISCONNECTED:
         case CA_LOADING:
         case CA_PRIMED:
             if (coduo_uiVm != NULL) {
-                (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU, UI_MENU_MAIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                (void)VM_Call(
+                    coduo_uiVm, UIVM_SET_ACTIVE_MENU,
+                    UI_MENU_MAIN,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
             return;
         }
     }
 
-    if (coduo_cgameVm != NULL && VM_Call(coduo_cgameVm, CGVM_KEY_EVENT, key, down, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0) {
+    if (coduo_cgameVm != NULL &&
+        VM_Call(coduo_cgameVm, CGVM_KEY_EVENT,
+                key, down, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0) != 0) {
         return;
     }
 
@@ -1220,22 +1324,33 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
         const char *const binding = keyStates[key].binding;
         if (binding != NULL && binding[0] == '+') {
             char command[KEY_EVENT_COMMAND_SIZE];
-            Com_sprintf(command, sizeof(command), "-%s %i %i\n", &binding[1], key, (int32_t)time);
+            Com_sprintf(command, sizeof(command), "-%s %i %i\n",
+                        &binding[1], key, (int32_t)time);
             Cbuf_AddText(command);
         }
 
-        if ((cls.keyCatchers & KEYCATCH_UI) != 0 && coduo_uiVm != NULL) {
-            (void)VM_Call(coduo_uiVm, UIVM_KEY_EVENT, key, qfalse, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        } else if ((cls.keyCatchers & KEYCATCH_CGAME) != 0 && coduo_cgameVm != NULL) {
-            (void)VM_Call(coduo_cgameVm, CGVM_LAST_ATTACKER, key, qfalse, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        if ((cls.keyCatchers & KEYCATCH_UI) != 0 &&
+            coduo_uiVm != NULL) {
+            (void)VM_Call(
+                coduo_uiVm, UIVM_KEY_EVENT,
+                key, qfalse, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0);
+        } else if ((cls.keyCatchers & KEYCATCH_CGAME) != 0 &&
+                   coduo_cgameVm != NULL) {
+            (void)VM_Call(
+                coduo_cgameVm, CGVM_LAST_ATTACKER,
+                key, qfalse, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0);
         }
         return;
     }
 
     qboolean bypassUi = qfalse;
-    if (cl_bypassMouseInput != NULL && cl_bypassMouseInput->integer != 0) {
+    if (cl_bypassMouseInput != NULL &&
+        cl_bypassMouseInput->integer != 0) {
         if (key == K_MOUSE1 || key == K_MOUSE2 || key == K_MOUSE3) {
-            bypassUi = cl_bypassMouseInput->integer == 1 ? qtrue : qfalse;
+            bypassUi =
+                cl_bypassMouseInput->integer == 1 ? qtrue : qfalse;
         } else if (UI_checkKeyExec(key) == 0) {
             bypassUi = qtrue;
         }
@@ -1246,19 +1361,31 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
         return;
     }
 
-    if ((cls.keyCatchers & KEYCATCH_UI) != 0 && bypassUi == qfalse) {
+    if ((cls.keyCatchers & KEYCATCH_UI) != 0 &&
+        bypassUi == qfalse) {
         const char *const binding = keyStates[key].binding;
-        if (binding != NULL && Q_stricmp(binding, "help") == 0 &&
-            VM_Call(coduo_uiVm, UIVM_GET_ACTIVE_MENU, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) == UI_MENU_HELP) {
+        if (binding != NULL &&
+            Q_stricmp(binding, "help") == 0 &&
+            VM_Call(coduo_uiVm, UIVM_GET_ACTIVE_MENU,
+                    0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0) ==
+                UI_MENU_HELP) {
             key = K_ESCAPE;
         }
 
-        (void)VM_Call(coduo_uiVm, UIVM_KEY_EVENT, key, down, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        (void)VM_Call(
+            coduo_uiVm, UIVM_KEY_EVENT,
+            key, down, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0);
         return;
     }
 
-    if ((cls.keyCatchers & KEYCATCH_CGAME) != 0 && coduo_cgameVm != NULL) {
-        (void)VM_Call(coduo_cgameVm, CGVM_LAST_ATTACKER, key, down, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    if ((cls.keyCatchers & KEYCATCH_CGAME) != 0 &&
+        coduo_cgameVm != NULL) {
+        (void)VM_Call(
+            coduo_cgameVm, CGVM_LAST_ATTACKER,
+            key, down, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0);
         return;
     }
 
@@ -1275,14 +1402,16 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
     const char *const binding = keyStates[key].binding;
     if (binding == NULL) {
         if (key >= K_MOUSE1) {
-            Com_Printf("%s is unbound, use controls menu to set.\n", Key_KeynumToString(key, qfalse));
+            Com_Printf("%s is unbound, use controls menu to set.\n",
+                       Key_KeynumToString(key, qfalse));
         }
         return;
     }
 
     if (binding[0] == '+') {
         char command[KEY_EVENT_COMMAND_SIZE];
-        Com_sprintf(command, sizeof(command), "%s %i %i\n", binding, key, (int32_t)time);
+        Com_sprintf(command, sizeof(command), "%s %i %i\n",
+                    binding, key, (int32_t)time);
         Cbuf_AddText(command);
     } else {
         Cbuf_AddText(binding);
@@ -1302,7 +1431,8 @@ void Key_WriteBindings(int32_t fileHandle)
     for (int32_t key = 0; key < MAX_KEYS; ++key) {
         const char *const binding = keyStates[key].binding;
         if (binding != NULL && binding[0] != '\0') {
-            FS_Printf(fileHandle, "bind %s \"%s\"\n", Key_KeynumToString(key, qfalse), binding);
+            FS_Printf(fileHandle, "bind %s \"%s\"\n",
+                      Key_KeynumToString(key, qfalse), binding);
         }
     }
 }
@@ -1323,7 +1453,9 @@ void CL_CharEvent(int32_t character)
     }
 
     if ((cls.keyCatchers & KEYCATCH_UI) != 0) {
-        (void)VM_Call(coduo_uiVm, UIVM_KEY_EVENT, (intptr_t)(character | K_CHAR_FLAG), (intptr_t)qtrue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        (void)VM_Call(coduo_uiVm, UIVM_KEY_EVENT,
+                      (intptr_t)(character | K_CHAR_FLAG), (intptr_t)qtrue,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         return;
     }
 

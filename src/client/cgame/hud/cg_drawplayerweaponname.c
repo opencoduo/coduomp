@@ -96,9 +96,7 @@
 #define CG_WEAPON_NAME_X_BIAS 28.0f
 
 /* CG_FadeColor lifetime for the selected-weapon-name overlay (ms). MOV ECX,0x708. */
-enum {
-    CG_WEAPON_NAME_FADE_MS = 1800
-};
+enum { CG_WEAPON_NAME_FADE_MS = 1800 };
 
 /* Vehicle-view gate discriminants (proven from the CMP immediates). Exact CoD
  * enum names for vehiclePosition/vehicleType are unproven; named by proven value. */
@@ -107,7 +105,8 @@ enum {
     CG_VEHICLE_POSITION_DRIVER = 3   /* cg_predictedPlayerState.vehiclePosition == 3 to draw */
 };
 
-void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj, int32_t regWord, int32_t arg0, int32_t arg1)
+void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj,
+                               int32_t regWord, int32_t arg0, int32_t arg1)
 {
     weaponInfo_t *wi;
     const char *text;
@@ -150,7 +149,8 @@ void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj, int32_t regWord
      * the weapon's held bit is set; otherwise the cached cg_currentWeaponInfo.
      */
     w = cg_weaponSelect_vmCvar.integer;
-    if (w >= 0 && w < bg_numWeapons && (cg_predictedPlayerState.weaponBits[(uint32_t)w >> 5] & (1u << ((uint32_t)w & 31)))) {
+    if (w >= 0 && w < bg_numWeapons &&
+        (cg_predictedPlayerState.weaponBits[(uint32_t)w >> 5] & (1u << ((uint32_t)w & 31)))) {
         wi = bg_weaponInfos[w];
     } else {
         wi = cg_currentWeaponInfo;
@@ -189,7 +189,12 @@ void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj, int32_t regWord
      * cgame_syscall(52, text, regWord, arg0, 0).
      */
     {
-        int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, regWord, arg0, 0));
+        int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                                      CG_R_TEXT_WIDTH,
+                                      (intptr_t)text,
+                                      regWord,
+                                      arg0,
+                                      0));
 
         /*
          * 0x3002ed13..ed3c: centered left edge, computed as ONE 80-bit x87 chain:
@@ -199,7 +204,9 @@ void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj, int32_t regWord
          * rounded. `width` enters via FISUB -- an INTEGER subtract, so it is NOT
          * converted to float first; the (long double) keeps it exact as x87 does.
          */
-        long double drawX = ((long double)obj->w + (long double)obj->x) - (long double)width - (long double)CG_WEAPON_NAME_X_BIAS;
+        long double drawX = ((long double)obj->w + (long double)obj->x)
+                            - (long double)width
+                            - (long double)CG_WEAPON_NAME_X_BIAS;
 
         /*
          * 0x3002ed46: emit the draw via the shared 9-arg trap-54 wrapper.
@@ -207,6 +214,14 @@ void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj, int32_t regWord
          *           a5=text, a6=0, a7=0, a8=arg1) -> cgame_syscall(54, a0..a8).
          * drawX and obj->y are forwarded as raw float bit patterns.
          */
-        trap_R_Text_Paint(CG_FloatBits(drawX), CG_FloatBits(obj->y), regWord, arg0, (intptr_t)params, (intptr_t)text, 0, 0, arg1);
+        trap_R_Text_Paint(CG_FloatBits(drawX),
+                  CG_FloatBits(obj->y),
+                  regWord,
+                  arg0,
+                  (intptr_t)params,
+                  (intptr_t)text,
+                  0,
+                  0,
+                  arg1);
     }
 }

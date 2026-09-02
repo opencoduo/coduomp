@@ -100,7 +100,8 @@ void CG_Draw2D(void)
     if (cg_lockedViewFace != 0) {
         return; /* bare RET at 0x3001c0f6 */
     }
-    if (g_cgScreenReadyState != 0 || cg_draw2D_vmCvar.integer == 0) {
+    if (g_cgScreenReadyState != 0 ||
+        cg_draw2D_vmCvar.integer == 0) {
         CG_ScreenFade(); /* fade-overlay tail at 0x3001c0f1 */
         return;
     }

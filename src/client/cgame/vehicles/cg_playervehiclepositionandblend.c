@@ -105,7 +105,8 @@
  * is never referenced here). The reciprocal branch is FLD 1.0f; FDIV st0,st1 (1.0/rate);
  * the zero branch is a stored 0.0f. cg_frametime is FILD'd from .data 0x304831ac.
  */
-static CG_VEHICLE_COMPAT_ALWAYS_INLINE float cgame_compat_turret_blend_step(float sample, float reference)
+static CG_VEHICLE_COMPAT_ALWAYS_INLINE float
+cgame_compat_turret_blend_step(float sample, float reference)
 {
     /* diff/mag/rate live in 80-bit x87 registers in the DLL: FSUB reference; FABS;
      * FILD ft; FDIVR 1000.0f; FMULP (0x30033223..0x30033238) never store to a float
@@ -113,9 +114,11 @@ static CG_VEHICLE_COMPAT_ALWAYS_INLINE float cgame_compat_turret_blend_step(floa
      * them unrounded; float locals would round three intermediates the DLL does not.
      * cg_frametime enters via a bare FILD (0x3003322c) with no FSTP DWORD before the
      * FDIVR, so no (float) cast (Class 4). */
-    long double diff = (long double)sample - (long double)reference;      /* FSUB reference */
-    long double mag = __builtin_fabsl(diff);             /* FABS */
-    long double rate = mag * (1000.0L / (long double)cg_frametime);       /* FILD ft; FDIVR 1000.0f; FMULP */
+    long double diff =
+        (long double)sample - (long double)reference;      /* FSUB reference */
+    long double mag  = __builtin_fabsl(diff);             /* FABS */
+    long double rate =
+        mag * (1000.0L / (long double)cg_frametime);       /* FILD ft; FDIVR 1000.0f; FMULP */
     return rate > 0.0L ? (float)(1.0L / rate) : 0.0f;     /* FCOM 0.0; TEST AH,0x41; JNZ */
 }
 
@@ -136,8 +139,9 @@ static CG_VEHICLE_COMPAT_ALWAYS_INLINE float cgame_compat_turret_blend_step(floa
  *   animNumber = anim->legsAnimWord & ~ANIM_TOGGLEBIT (& 0xfdff).
  *   animTree   = anim->animTree (forwarded to the XAnim traps).
  */
-static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t cgame_compat_turret_bisect_sample_node(XAnimTree *animTree, int32_t animNumber,
-                                                                                      int32_t *outNode, int32_t *outChildCountB)
+static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t
+cgame_compat_turret_bisect_sample_node(XAnimTree *animTree, int32_t animNumber,
+                                      int32_t *outNode, int32_t *outChildCountB)
 {
     int32_t childCountA, midChild, node, childCountB, midGrandchild, sampleNode;
 
@@ -145,14 +149,16 @@ static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t cgame_compat_turret_bisect_sample
 
     childCountA = trap_XAnimGetNumChildren((uint32_t)animNumber);    /* 0x30033101 */
     if (childCountA == 0) {                             /* 0x3003310b..0x30033122 */
-        Com_Error(1, cg_playerAnimNoChildrenError, trap_XAnimGetAnimName((uint32_t)animNumber));
+        Com_Error(1, cg_playerAnimNoChildrenError,
+                           trap_XAnimGetAnimName((uint32_t)animNumber));
     }
     midChild = childCountA / 2;                         /* 0x30033125 (SAR after CDQ) */
     node = trap_XAnimGetChildAt((uint32_t)animNumber, midChild); /* 0x3003312d */
 
     childCountB = trap_XAnimGetNumChildren((uint32_t)node);          /* 0x30033135 */
     if (childCountB == 0) {                             /* 0x3003313d..0x30033158 */
-        Com_Error(1, cg_playerAnimNoChildrenError, trap_XAnimGetAnimName((uint32_t)node));
+        Com_Error(1, cg_playerAnimNoChildrenError,
+                           trap_XAnimGetAnimName((uint32_t)node));
     }
     midGrandchild = childCountB / 2;                    /* 0x3003315b */
     sampleNode = trap_XAnimGetChildAt((uint32_t)node, midGrandchild); /* 0x30033164 */
@@ -175,14 +181,17 @@ static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t cgame_compat_turret_bisect_sample
  * absolute slot F+0x8 — the 0x3003309c FSTP target of the LerpAngle result. The
  * sampleNode int (F+0x4) is never FLD'd; no int-bit reinterpretation happens.
  */
-static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t cgame_compat_turret_bone_frame(XAnimTree *animTree, int32_t animNumber, float lerpValue,
-                                                                              float *outFraction, int32_t *outNode, int32_t *outSampleNode)
+static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t
+cgame_compat_turret_bone_frame(XAnimTree *animTree, int32_t animNumber,
+                               float lerpValue, float *outFraction,
+                               int32_t *outNode, int32_t *outSampleNode)
 {
     int32_t node, childCountB, frameIndex;
     int32_t sampleNode;
     float fraction;
 
-    sampleNode = cgame_compat_turret_bisect_sample_node(animTree, animNumber, &node, &childCountB);
+    sampleNode = cgame_compat_turret_bisect_sample_node(
+        animTree, animNumber, &node, &childCountB);
 
     if (lerpValue > 0.0f) {              /* 0x30033172 FCOMP 0.0; TEST AH,0x41; JNZ b5 */
         float frac = lerpValue * (1.0f / 60.0f); /* FMUL 0x3007c2c8 = 0x3c888889 */
@@ -219,11 +228,13 @@ static CG_VEHICLE_COMPAT_ALWAYS_INLINE int32_t cgame_compat_turret_bone_frame(XA
  * carry BG_ANIM_ENTRY_TURRET. The original stores a pointer in this i386 slot;
  * native builds resolve the table-relative offset stored in the same word.
  */
-static CG_VEHICLE_COMPAT_ALWAYS_INLINE qboolean cgame_compat_turret_state_positioned(const clientInfo_t *anim)
+static CG_VEHICLE_COMPAT_ALWAYS_INLINE qboolean
+cgame_compat_turret_state_positioned(const clientInfo_t *anim)
 {
     const bg_static_animation_t *entry;
 
-    if (anim->legsAnimWord == 0 || anim->legsAnimEntryWord == 0) { /* 0x300330a0..b9 */
+    if (anim->legsAnimWord == 0 ||
+        anim->legsAnimEntryWord == 0) { /* 0x300330a0..b9 */
         return qfalse;
     }
     entry = cgame_compat_anim_entry_from_word(anim->legsAnimEntryWord);
@@ -264,7 +275,8 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
         return qfalse;                                   /* JZ 0x30033b5f */
     }
     seatRole = rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK;
-    if (seatRole < CG_VEHICLE_SEAT_ROLE_FIRST || seatRole > CG_VEHICLE_SEAT_ROLE_LAST) { /* JLE / JGE 0x30033b5f */
+    if (seatRole < CG_VEHICLE_SEAT_ROLE_FIRST ||
+        seatRole > CG_VEHICLE_SEAT_ROLE_LAST) {           /* JLE / JGE 0x30033b5f */
         return qfalse;
     }
 
@@ -273,20 +285,19 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
     riderClientNum = rider->currentState.clientNum;
     if ((uint32_t)riderClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_PlayerVehiclePositionAndBlend: "
+                  "\x15" "CG_PlayerVehiclePositionAndBlend: "
                   "invalid client number %i",
                   riderClientNum);
         return qfalse;
     }
     anim = &bgs.clientinfo[riderClientNum];
-    if (anim->infoValid == 0) { /* CMP [EDI],0 / JZ 0x30033035 */
+    if (anim->infoValid == 0) {                    /* CMP [EDI],0 / JZ 0x30033035 */
         return qfalse;
     }
 
     /* ---- 0x3003303f..0x30033065: vehicle owns a live DObj ---- */
     vehicle = cgame_compat_unchecked_cgentity(vehicleEntityNum);
-    if (vehicle->currentValid == 0) { /* TEST EAX,EAX / JZ */
+    if (vehicle->currentValid == 0) {                            /* TEST EAX,EAX / JZ */
         return qfalse;
     }
 
@@ -299,12 +310,14 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
          * (0x30033083..0x3003309c, FSTP [ESP+0x20] -> F+0x8) is LIVE: it is the
          * exact value the sub-frame-fraction logic in CG_TurretBoneFrame FLDs
          * (0x3003316a / 0x3003317b both resolve to F+0x8). */
-        float lerpYaw = LerpAngle(vehicle->currentState.iconBaseYaw, vehicle->corpseModelInfo.leanf, cg_frameInterpolation);
+        float lerpYaw = LerpAngle(vehicle->currentState.iconBaseYaw,
+                                  vehicle->corpseModelInfo.leanf,
+                                  cg_frameInterpolation);
 
         if (cgame_compat_turret_state_positioned(anim)) {
             XAnimTree *animTree = anim->animTree;
             int32_t animNumber, node, sampleNode;
-            int32_t frameNode; /* F+0xc: the resolved final frame node
+            int32_t frameNode;             /* F+0xc: the resolved final frame node
                                             *   (trap_XAnimGetChildAt @0x300331f4, stored @0x30033200);
                                             *   Block A's channel-1 override bone. Consumed
                                             *   only inside this block — NOT the tail compare
@@ -316,11 +329,13 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
              * into the HIGH u16 (F+0x6) over the masked legsAnimWord u16 (F+0x4),
              * and the packed dword is the anim-node handle every trap receives —
              * the same rootNodePacked idiom as CG_PlayerTurretPositionAndBlend. */
-            animNumber = coduo_int32_from_bits(
-                ((uint32_t)(uint16_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
-                (anim->legsAnimWord & (uint32_t)~ANIM_TOGGLEBIT));
+            animNumber = coduo_int32_from_bits(((uint32_t)(uint16_t)Scr_GetAnimsIndex(
+                bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
+                (anim->legsAnimWord &
+                 (uint32_t)~ANIM_TOGGLEBIT));
 
-            frameNode = cgame_compat_turret_bone_frame(animTree, animNumber, lerpYaw, &frameFrac, &node, &sampleNode);
+            frameNode = cgame_compat_turret_bone_frame(
+                animTree, animNumber, lerpYaw, &frameFrac, &node, &sampleNode);
 
             /* ---- 0x300331fc..0x30033361: three channel overrides + tail blend ---- */
             trap_XAnimClearTreeGoalWeightsStrict(animTree, animNumber, 0.0f); /* 0x30033204 emitter re-setup */
@@ -330,28 +345,39 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
              * trap_XAnimSetGoalWeight bone arg ECX = [ESP+0x10] = F+0x4 = sampleNode
              * again at 0x30033267/0x30033276 (frameNode lives at F+0xc and is used
              * only by channel 1). reference = (1.0f - frameFrac). */
-            ch0Reference = 1.0f - frameFrac; /* FLD 1.0f; FSUB [ESP+0x20] */
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
-                                                   ch0Reference); /* 0x3003321e sample=sampleNode */
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, ch0Reference, blend, CG_TURRET_ONE, 0,
-                                          qfalse); /* 0x30033278 bone=sampleNode */
+            ch0Reference = 1.0f - frameFrac;                /* FLD 1.0f; FSUB [ESP+0x20] */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
+                ch0Reference);       /* 0x3003321e sample=sampleNode */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          ch0Reference, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x30033278 bone=sampleNode */
 
             /* Channel 1 — frameNode bone, reference frameFrac. Runs only when the
              * sub-frame fraction is non-zero (0x3003327d FLD 0.0f; 0x30033283 FLD
              * frameFrac; FUCOMPP; TEST AH,0x44; JNP skip). */
-            if (frameFrac != 0.0f) { /* 0x3003328e..0x30033291 */
-                blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)frameNode),
-                                                       frameFrac); /* 0x3003329a sample; 0x300332a6 */
-                (void)trap_XAnimSetGoalWeight(animTree, frameNode, frameFrac, blend, CG_TURRET_ONE, 0, qfalse); /* 0x300332f0 */
+            if (frameFrac != 0.0f) {                        /* 0x3003328e..0x30033291 */
+                blend = cgame_compat_turret_blend_step(
+                    trap_XAnimGetWeight(animTree, (uint16_t)frameNode),
+                    frameFrac);      /* 0x3003329a sample; 0x300332a6 */
+                (void)trap_XAnimSetGoalWeight(animTree, frameNode,
+                                              frameFrac, blend,
+                                              CG_TURRET_ONE, 0, qfalse); /* 0x300332f0 */
             }
 
             /* Channel 2 — node bone, base reset to identity (1.0f,1.0f,1.0f). 0x3003330d. */
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x3003330d */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x3003330d */
 
             /* Tail blend — node bone, reference 1.0f. 0x30033312 sample; tail Trap143 at
              * 0x3003391b via the shared 0x30033908 entry (arg1=node, arg2=1.0f). */
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)node), 1.0f); /* 0x30033315 sample; 0x30033323 */
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)node),
+                1.0f);               /* 0x30033315 sample; 0x30033323 */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
         }
     } else if (mode == 1 && seatRole == 2) {
         /* ============= Block B (0x30033366) — secondary passenger ============= */
@@ -365,28 +391,41 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
             float blend;
 
             /* 0x300333bd/0x300333ca: packed handle, (treeHandle<<16)|(word&0xfdff). */
-            animNumber = coduo_int32_from_bits(
-                ((uint32_t)(uint16_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
-                (anim->legsAnimWord & (uint32_t)~ANIM_TOGGLEBIT)); /* 0x300333ae */
+            animNumber = coduo_int32_from_bits(((uint32_t)(uint16_t)Scr_GetAnimsIndex(
+                bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
+                (anim->legsAnimWord &
+                 (uint32_t)~ANIM_TOGGLEBIT));                           /* 0x300333ae */
 
-            sampleNode = cgame_compat_turret_bisect_sample_node(animTree, animNumber, &node, &childCountB);
+            sampleNode = cgame_compat_turret_bisect_sample_node(
+                animTree, animNumber, &node, &childCountB);
 
             /* Channel 0 — sampleNode bone, base reset to identity. 0x3003345d. */
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x3003345d */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x3003345d */
 
             /* Channel 1 — sampleNode bone, reference 1.0f. 0x30033466 re-setup; sample. */
             trap_XAnimClearTreeGoalWeightsStrict(animTree, animNumber, 0.0f); /* 0x30033466 */
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
-                                                   1.0f); /* 0x30033472 sample; 0x30033480 */
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x300334ce */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
+                1.0f);               /* 0x30033472 sample; 0x30033480 */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x300334ce */
 
             /* Channel 2 — node bone, base reset to identity. 0x300334e8. */
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x300334e8 */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x300334e8 */
 
             /* Tail blend — node bone, reference 1.0f. 0x300334f0 sample; tail Trap143 at
              * 0x3003391b via the shared 0x30033912 entry (arg1=node, arg2=1.0f). */
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)node), 1.0f); /* 0x300334f0 sample; 0x300334fe */
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)node),
+                1.0f);               /* 0x300334f0 sample; 0x300334fe */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
         }
     } else if (mode == 5) {
         /* ============= Block C (0x3003355e) — mode-5 vehicle ============= */
@@ -397,23 +436,36 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
             float blend;
 
             /* 0x300335a3/0x300335b0: packed handle, (treeHandle<<16)|(word&0xfdff). */
-            animNumber = coduo_int32_from_bits(
-                ((uint32_t)(uint16_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
-                (anim->legsAnimWord & (uint32_t)~ANIM_TOGGLEBIT)); /* 0x30033594 */
+            animNumber = coduo_int32_from_bits(((uint32_t)(uint16_t)Scr_GetAnimsIndex(
+                bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
+                (anim->legsAnimWord &
+                 (uint32_t)~ANIM_TOGGLEBIT));                           /* 0x30033594 */
 
-            sampleNode = cgame_compat_turret_bisect_sample_node(animTree, animNumber, &node, &childCountB);
+            sampleNode = cgame_compat_turret_bisect_sample_node(
+                animTree, animNumber, &node, &childCountB);
 
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x30033643 */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x30033643 */
 
             trap_XAnimClearTreeGoalWeightsStrict(animTree, animNumber, 0.0f); /* 0x3003364c */
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
-                                                   1.0f); /* 0x30033658 sample; 0x30033666 */
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x300336b4 */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
+                1.0f);               /* 0x30033658 sample; 0x30033666 */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x300336b4 */
 
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x300336ce */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x300336ce */
 
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)node), 1.0f); /* 0x300336d6 sample; 0x300336e4 */
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)node),
+                1.0f);               /* 0x300336d6 sample; 0x300336e4 */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
         }
     } else if (mode == 2 && seatRole == 2) {
         /* ============= Block D (0x3003374c) — mode-2 secondary ============= */
@@ -426,23 +478,36 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
             float blend;
 
             /* 0x30033788/0x3003379d: packed handle, (treeHandle<<16)|(word&0xfdff). */
-            animNumber = coduo_int32_from_bits(
-                ((uint32_t)(uint16_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
-                (anim->legsAnimWord & (uint32_t)~ANIM_TOGGLEBIT)); /* 0x30033782 */
+            animNumber = coduo_int32_from_bits(((uint32_t)(uint16_t)Scr_GetAnimsIndex(
+                bgs.animationTable.animTreeHandle) << SCR_ANIM_TREE_INDEX_SHIFT) |
+                (anim->legsAnimWord &
+                 (uint32_t)~ANIM_TOGGLEBIT));                           /* 0x30033782 */
 
-            sampleNode = cgame_compat_turret_bisect_sample_node(animTree, animNumber, &node, &childCountB);
+            sampleNode = cgame_compat_turret_bisect_sample_node(
+                animTree, animNumber, &node, &childCountB);
 
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x30033830 */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x30033830 */
 
             trap_XAnimClearTreeGoalWeightsStrict(animTree, animNumber, 0.0f); /* 0x30033839 */
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
-                                                   1.0f); /* 0x30033845 sample; 0x30033853 */
-            (void)trap_XAnimSetGoalWeight(animTree, sampleNode, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x300338a1 */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)sampleNode),
+                1.0f);               /* 0x30033845 sample; 0x30033853 */
+            (void)trap_XAnimSetGoalWeight(animTree, sampleNode,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x300338a1 */
 
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, CG_TURRET_ONE, CG_TURRET_ONE, 0, qfalse); /* 0x300338bb */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, CG_TURRET_ONE,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x300338bb */
 
-            blend = cgame_compat_turret_blend_step(trap_XAnimGetWeight(animTree, (uint16_t)node), 1.0f); /* 0x300338c3 sample; 0x300338d1 */
-            (void)trap_XAnimSetGoalWeight(animTree, node, CG_TURRET_ONE, blend, CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
+            blend = cgame_compat_turret_blend_step(
+                trap_XAnimGetWeight(animTree, (uint16_t)node),
+                1.0f);               /* 0x300338c3 sample; 0x300338d1 */
+            (void)trap_XAnimSetGoalWeight(animTree, node,
+                                          CG_TURRET_ONE, blend,
+                                          CG_TURRET_ONE, 0, qfalse); /* 0x3003391b */
         }
     }
     /* every block falls through to the common tail at 0x3003392b */
@@ -460,28 +525,30 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
      * (F+0x10, written via [ESP+0x24] at the deeper esp=F-0x20 @0x30033200); the shared
      * displacement 0x24 aliases two different absolute slots at the two ESP depths. So the
      * tail compares the rider's own client number, and no uninitialized read occurs. */
-    mode = vehicle->currentState.stateFilter; /* retail reload at 0x3003392b */
-    if (mode == 1) { /* 0x30033971 */
-        if (riderClientNum == cg_snap->ps.psClientNum && cg_thirdPerson == 0) {
+    mode = vehicle->currentState.stateFilter;                         /* retail reload at 0x3003392b */
+    if (mode == 1) {                                     /* 0x30033971 */
+        if (riderClientNum == cg_snap->ps.psClientNum
+            && cg_thirdPerson == 0) {
             int32_t r = rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK;
             if (r == 2 || r == 3) {
-                return qfalse; /* 0x30033998 / 0x3003399d */
+                return qfalse;                           /* 0x30033998 / 0x3003399d */
             }
             /* 0x3003399f FUCOMPP vs 0.0; TEST AH,0x44; JNP 0x30033965 — the JNP
              * (exactly-one-bit) leg is the ORDERED-EQUAL case: return qfalse when
              * adsFraction == 0.0; proceed to position when != 0.0 (or NaN). */
             if (cg_predictedPlayerState.adsFraction == 0.0f) {
-                return qfalse; /* 0x300339b2 -> 0x30033965 */
+                return qfalse;                           /* 0x300339b2 -> 0x30033965 */
             }
         }
-    } else if (mode == 2) { /* 0x30033937 */
+    } else if (mode == 2) {                              /* 0x30033937 */
         int32_t r = rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK;
         if (r == 1) {
-            return qfalse; /* 0x30033943 -> 0x30033965 */
+            return qfalse;                               /* 0x30033943 -> 0x30033965 */
         }
-        if (r == 2) { /* 0x30033948 */
-            if (riderClientNum == cg_snap->ps.psClientNum && cg_thirdPerson == 0) {
-                return qfalse; /* 0x30033963 -> 0x30033965 */
+        if (r == 2) {                                    /* 0x30033948 */
+            if (riderClientNum == cg_snap->ps.psClientNum
+                && cg_thirdPerson == 0) {
+                return qfalse;                           /* 0x30033963 -> 0x30033965 */
             }
         }
     }
@@ -490,14 +557,16 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
     /* ---- 0x300339b4: resolve the vehicle DObj + rider seat tag, build bone matrix ---- */
     {
         intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
-        if (dObjHandle == 0) { /* TEST ECX,ECX / JZ 0x30033965 */
+        if (dObjHandle == 0) {                           /* TEST ECX,ECX / JZ 0x30033965 */
             return qfalse;
         }
 
-        const char *tagName = CG_GetRiderTagName(rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK); /* 0x300339d5 */
+        const char *tagName = CG_GetRiderTagName(
+            rider->currentState.stateFilter & CG_VEHICLE_SEAT_ROLE_MASK); /* 0x300339d5 */
 
-        DObjSkelMat worldMatrix; /* [ESP+0x2c] */
-        if (CG_DObjGetWorldTagMatrix((void *)dObjHandle, tagName, vehicle, &worldMatrix) == 0) { /* 0x300339e4 */
+        DObjSkelMat worldMatrix;                         /* [ESP+0x2c] */
+        if (CG_DObjGetWorldTagMatrix((void *)dObjHandle, tagName,
+                                            vehicle, &worldMatrix) == 0) {  /* 0x300339e4 */
             /* 0x300339f0: tag bone does not exist — warn and abort. */
             Com_Printf(cg_missingTurretTagWarning, tagName);
             return qfalse;
@@ -507,18 +576,12 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
          * worldMatrix.axis holds the padded 3x3 rotation and worldMatrix.origin
          * holds the bone origin. AxisToAngles takes the compact 3x3 copy. */
         axis_t boneAxis;
-        boneAxis[0][0] = worldMatrix.axis[0][0];
-        boneAxis[0][1] = worldMatrix.axis[0][1];
-        boneAxis[0][2] = worldMatrix.axis[0][2];
-        boneAxis[1][0] = worldMatrix.axis[1][0];
-        boneAxis[1][1] = worldMatrix.axis[1][1];
-        boneAxis[1][2] = worldMatrix.axis[1][2];
-        boneAxis[2][0] = worldMatrix.axis[2][0];
-        boneAxis[2][1] = worldMatrix.axis[2][1];
-        boneAxis[2][2] = worldMatrix.axis[2][2];
+        boneAxis[0][0] = worldMatrix.axis[0][0]; boneAxis[0][1] = worldMatrix.axis[0][1]; boneAxis[0][2] = worldMatrix.axis[0][2];
+        boneAxis[1][0] = worldMatrix.axis[1][0]; boneAxis[1][1] = worldMatrix.axis[1][1]; boneAxis[1][2] = worldMatrix.axis[1][2];
+        boneAxis[2][0] = worldMatrix.axis[2][0]; boneAxis[2][1] = worldMatrix.axis[2][1]; boneAxis[2][2] = worldMatrix.axis[2][2];
 
-        AxisToAngles(boneAxis, rider->lerpAngles); /* 0x30033a68 -> rider +0x214 */
-        AxisToAngles(boneAxis, anim->turretOverrideAngles); /* 0x30033a77 -> anim +0x3f4 */
+        AxisToAngles(boneAxis, rider->lerpAngles);              /* 0x30033a68 -> rider +0x214 */
+        AxisToAngles(boneAxis, anim->turretOverrideAngles);    /* 0x30033a77 -> anim +0x3f4 */
 
         /* ---- 0x30033a7c..end: lerpOrigin = boneOrigin + boneRotation * seatOffset ----
          * seatOffset is selected by (vehicle->currentState.stateFilter, rider->currentState.stateFilter & 7). The
@@ -532,7 +595,8 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
         rider->lerpOrigin[1] = worldMatrix.origin[1];
         vehicle_type_t offsetVehicleType = (vehicle_type_t)vehicle->currentState.stateFilter;
         offsetSeatRole &= CG_VEHICLE_SEAT_ROLE_MASK;
-        const float *seatOffset = BG_GetVehiclePosOffset(offsetVehicleType, offsetSeatRole);
+        const float *seatOffset = BG_GetVehiclePosOffset(offsetVehicleType,
+                                                         offsetSeatRole);
         float ox = seatOffset[0], oy = seatOffset[1], oz = seatOffset[2];
 
         /* The DLL accumulates each component in THREE rounding steps, spilling the
@@ -540,18 +604,18 @@ qboolean CG_PlayerVehiclePositionAndBlend(centity_t *rider)
          * reload 0x30033ae8, store 0x30033aee / reload 0x30033b21). A single rvalue
          * would keep the sum 80-bit and round only once; force the DLL's per-step
          * float rounding with staged accumulation (Class 1). */
-        rider->lerpOrigin[0] = worldMatrix.axis[0][0] * ox + worldMatrix.origin[0]; /* 0x30033aae..abb */
-        rider->lerpOrigin[0] += worldMatrix.axis[1][0] * oy; /* 0x30033ae1..aee */
-        rider->lerpOrigin[0] += worldMatrix.axis[2][0] * oz; /* 0x30033b1a..b27 */
-        rider->lerpOrigin[1] = worldMatrix.axis[0][1] * ox + worldMatrix.origin[1]; /* 0x30033ac1..acb */
-        rider->lerpOrigin[1] += worldMatrix.axis[1][1] * oy; /* 0x30033af4..b01 */
-        rider->lerpOrigin[1] += worldMatrix.axis[2][1] * oz; /* 0x30033b2d..b3a */
-        rider->lerpOrigin[2] = worldMatrix.axis[0][2] * ox + worldMatrix.origin[2]; /* 0x30033ad1..adb */
-        rider->lerpOrigin[2] += worldMatrix.axis[1][2] * oy; /* 0x30033b07..b14 */
-        rider->lerpOrigin[2] += worldMatrix.axis[2][2] * oz; /* 0x30033b40..b4c */
+        rider->lerpOrigin[0]  = worldMatrix.axis[0][0] * ox + worldMatrix.origin[0]; /* 0x30033aae..abb */
+        rider->lerpOrigin[0] += worldMatrix.axis[1][0] * oy;                         /* 0x30033ae1..aee */
+        rider->lerpOrigin[0] += worldMatrix.axis[2][0] * oz;                         /* 0x30033b1a..b27 */
+        rider->lerpOrigin[1]  = worldMatrix.axis[0][1] * ox + worldMatrix.origin[1]; /* 0x30033ac1..acb */
+        rider->lerpOrigin[1] += worldMatrix.axis[1][1] * oy;                         /* 0x30033af4..b01 */
+        rider->lerpOrigin[1] += worldMatrix.axis[2][1] * oz;                         /* 0x30033b2d..b3a */
+        rider->lerpOrigin[2]  = worldMatrix.axis[0][2] * ox + worldMatrix.origin[2]; /* 0x30033ad1..adb */
+        rider->lerpOrigin[2] += worldMatrix.axis[1][2] * oy;                         /* 0x30033b07..b14 */
+        rider->lerpOrigin[2] += worldMatrix.axis[2][2] * oz;                         /* 0x30033b40..b4c */
     }
 
-    return qtrue; /* MOV EAX,1 (0x30033b47) */
+    return qtrue;                                        /* MOV EAX,1 (0x30033b47) */
 }
 
 #undef CG_VEHICLE_COMPAT_ALWAYS_INLINE

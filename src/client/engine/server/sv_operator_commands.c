@@ -58,7 +58,10 @@ cvar_t *sv_packet_info;         /* original 0x0491cd08 */
 cvar_t *sv_showAverageBPS;      /* original 0x0491cd28 */
 /* Original 0x005cef30..0x005cf097. The PE initializes only magic +0x000 and
  * loadPending +0x138; all module handles and callback slots begin zero. */
-serverPbState_t sv_pbServerState = {.magic = SERVER_PUNKBUSTER_MAGIC, .loadPending = qtrue}; /* original 0x005cef30 */
+serverPbState_t sv_pbServerState = {
+    .magic = SERVER_PUNKBUSTER_MAGIC,
+    .loadPending = qtrue
+}; /* original 0x005cef30 */
 char sv_gametypeNormalizeBuffer[MAX_QPATH]; /* original 0x04907b6c */
 vm_t *sv_gameVM;       /* original 0x0389fdbc */
 int32_t sv_serverId;        /* original 0x0389fdb8 */
@@ -79,7 +82,8 @@ svEntity_t sv_entities[MAX_GENTITIES];
  * wins until the client lifecycle consumes or clears it. */
 void SV_DelayDropClient(client_t *client, const char *dropReason)
 {
-    if (client->state != CS_ZOMBIE && client->deferredDropReason == NULL) {
+    if (client->state != CS_ZOMBIE &&
+        client->deferredDropReason == NULL) {
         client->deferredDropReason = dropReason;
     }
 }
@@ -92,26 +96,33 @@ void SV_XModelDebugBoxes(int32_t entityNum)
 {
     /* Source: CoDUOMP.exe 0x005ca3a8..0x005ca4c7. The original table contains
      * one min/max selector for each axis of both endpoints of all 12 edges. */
-    static const int32_t serverBoxCornerSelectors[12][2][3] = {/* 0x005ca3a8 */
-                                                               {{0, 0, 0}, {1, 0, 0}}, {{0, 0, 0}, {0, 1, 0}}, {{1, 1, 0}, {1, 0, 0}},
-                                                               {{1, 1, 0}, {0, 1, 0}}, {{0, 0, 1}, {1, 0, 1}}, {{0, 0, 1}, {0, 1, 1}},
-                                                               {{1, 1, 1}, {1, 0, 1}}, {{1, 1, 1}, {0, 1, 1}}, {{0, 0, 0}, {0, 0, 1}},
-                                                               {{1, 0, 0}, {1, 0, 1}}, {{0, 1, 0}, {0, 1, 1}}, {{1, 1, 0}, {1, 1, 1}}};
+    static const int32_t serverBoxCornerSelectors[12][2][3] = { /* 0x005ca3a8 */
+        {{0, 0, 0}, {1, 0, 0}}, {{0, 0, 0}, {0, 1, 0}},
+        {{1, 1, 0}, {1, 0, 0}}, {{1, 1, 0}, {0, 1, 0}},
+        {{0, 0, 1}, {1, 0, 1}}, {{0, 0, 1}, {0, 1, 1}},
+        {{1, 1, 1}, {1, 0, 1}}, {{1, 1, 1}, {0, 1, 1}},
+        {{0, 0, 0}, {0, 0, 1}}, {{1, 0, 0}, {1, 0, 1}},
+        {{0, 1, 0}, {0, 1, 1}}, {{1, 1, 0}, {1, 1, 1}}
+    };
     const vec4_t boxColor = {1.0f, 1.0f, 1.0f, 0.0f};
     DObj *obj = Com_GetServerDObj(entityNum);
-    XModelPartColl **partCollisions = CODUOMP_ALLOCA((size_t)obj->boneCount * sizeof(*partCollisions));
+    XModelPartColl **partCollisions = CODUOMP_ALLOCA(
+        (size_t)obj->boneCount * sizeof(*partCollisions));
     DObjSkelMat *boneMatrix = DObjGetMatrixArray(obj, 0);
-    sharedEntity_t *gentity = (sharedEntity_t *)((uint8_t *)sv_gentities + (ptrdiff_t)entityNum * sv_gentitySize);
+    sharedEntity_t *gentity = (sharedEntity_t *)(
+        (uint8_t *)sv_gentities + (ptrdiff_t)entityNum * sv_gentitySize);
     axis_t entityAxis;
     vec3_t right;
 
     DObjGetBoneInfo(obj, partCollisions);
-    AngleVectors(gentity->currentAngles, entityAxis[0], right, entityAxis[2]);
+    AngleVectors(gentity->currentAngles, entityAxis[0], right,
+                 entityAxis[2]);
     for (int32_t component = 0; component < 3; ++component) {
         entityAxis[1][component] = -right[component];
     }
 
-    for (int32_t modelIndex = 0; modelIndex < obj->modelCount; ++modelIndex) {
+    for (int32_t modelIndex = 0; modelIndex < obj->modelCount;
+         ++modelIndex) {
         int32_t partCount;
 
         if ((obj->collisionSkipModelMask & (1U << modelIndex)) != 0) {
@@ -132,33 +143,50 @@ void SV_XModelDebugBoxes(int32_t entityNum)
 
                     for (int32_t axis = 0; axis < 3; ++axis) {
                         localPoint[axis] =
-                            serverBoxCornerSelectors[edgeIndex][endpoint][axis] ? collision->maxs[axis] : collision->mins[axis];
+                            serverBoxCornerSelectors[edgeIndex][endpoint][axis]
+                            ? collision->maxs[axis] : collision->mins[axis];
                     }
 
                     /* These groupings reproduce the inlined x87 transform,
                      * including its component-specific addition order. */
-                    modelPoint[0] = ((localPoint[0] * boneMatrix->axis[0][0] + localPoint[2] * boneMatrix->axis[2][0]) +
-                                     localPoint[1] * boneMatrix->axis[1][0]) +
-                                    boneMatrix->origin[0];
-                    modelPoint[1] = ((localPoint[2] * boneMatrix->axis[2][1] + localPoint[1] * boneMatrix->axis[1][1]) +
-                                     localPoint[0] * boneMatrix->axis[0][1]) +
-                                    boneMatrix->origin[1];
-                    modelPoint[2] = ((localPoint[0] * boneMatrix->axis[0][2] + localPoint[2] * boneMatrix->axis[2][2]) +
-                                     localPoint[1] * boneMatrix->axis[1][2]) +
-                                    boneMatrix->origin[2];
+                    modelPoint[0] =
+                        ((localPoint[0] * boneMatrix->axis[0][0] +
+                          localPoint[2] * boneMatrix->axis[2][0]) +
+                         localPoint[1] * boneMatrix->axis[1][0]) +
+                        boneMatrix->origin[0];
+                    modelPoint[1] =
+                        ((localPoint[2] * boneMatrix->axis[2][1] +
+                          localPoint[1] * boneMatrix->axis[1][1]) +
+                         localPoint[0] * boneMatrix->axis[0][1]) +
+                        boneMatrix->origin[1];
+                    modelPoint[2] =
+                        ((localPoint[0] * boneMatrix->axis[0][2] +
+                          localPoint[2] * boneMatrix->axis[2][2]) +
+                         localPoint[1] * boneMatrix->axis[1][2]) +
+                        boneMatrix->origin[2];
 
                     rotatedPoint[0] =
-                        (modelPoint[2] * entityAxis[2][0] + modelPoint[1] * entityAxis[1][0]) + modelPoint[0] * entityAxis[0][0];
+                        (modelPoint[2] * entityAxis[2][0] +
+                         modelPoint[1] * entityAxis[1][0]) +
+                        modelPoint[0] * entityAxis[0][0];
                     rotatedPoint[1] =
-                        (modelPoint[2] * entityAxis[2][1] + modelPoint[0] * entityAxis[0][1]) + modelPoint[1] * entityAxis[1][1];
+                        (modelPoint[2] * entityAxis[2][1] +
+                         modelPoint[0] * entityAxis[0][1]) +
+                        modelPoint[1] * entityAxis[1][1];
                     rotatedPoint[2] =
-                        (modelPoint[2] * entityAxis[2][2] + modelPoint[0] * entityAxis[0][2]) + modelPoint[1] * entityAxis[1][2];
-                    worldPoints[endpoint][0] = rotatedPoint[0] + gentity->currentOrigin[0];
-                    worldPoints[endpoint][1] = rotatedPoint[1] + gentity->currentOrigin[1];
-                    worldPoints[endpoint][2] = rotatedPoint[2] + gentity->currentOrigin[2];
+                        (modelPoint[2] * entityAxis[2][2] +
+                         modelPoint[0] * entityAxis[0][2]) +
+                        modelPoint[1] * entityAxis[1][2];
+                    worldPoints[endpoint][0] =
+                        rotatedPoint[0] + gentity->currentOrigin[0];
+                    worldPoints[endpoint][1] =
+                        rotatedPoint[1] + gentity->currentOrigin[1];
+                    worldPoints[endpoint][2] =
+                        rotatedPoint[2] + gentity->currentOrigin[2];
                 }
 
-                CL_AddDebugLine(worldPoints[0], worldPoints[1], boxColor, qtrue, 0, qfalse);
+                CL_AddDebugLine(worldPoints[0], worldPoints[1], boxColor,
+                                qtrue, 0, qfalse);
             }
             ++boneMatrix;
         }

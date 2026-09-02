@@ -23,36 +23,38 @@ enum {
  * handlers.  The table and its separately loaded count remain writable
  * initialized data, as in both original PE32 modules.
  */
-static commandDef_t scriptCommandList[UI_SCRIPT_COMMAND_COUNT] = {{"fadein", Script_FadeIn},
-                                                                  {"fadeout", Script_FadeOut},
-                                                                  {"show", Script_Show},
-                                                                  {"hide", Script_Hide},
-                                                                  {"setcolor", Script_SetColor},
-                                                                  {"open", Script_Open},
-                                                                  {"openforgametype", Script_OpenForGameType},
-                                                                  {"closeforgametype", Script_CloseForGameType},
-                                                                  {"conditionalopen", Script_ConditionalOpen},
-                                                                  {"close", Script_Close},
-                                                                  {"ingameopen", Script_InGameOpen},
-                                                                  {"ingameclose", Script_InGameClose},
-                                                                  {"setasset", Script_SetAsset},
-                                                                  {"setbackground", Script_SetBackground},
-                                                                  {"setitemcolor", Script_SetItemColor},
-                                                                  {"setteamcolor", Script_SetTeamColor},
-                                                                  {"setfocus", Script_SetFocus},
-                                                                  {"setplayermodel", Script_SetPlayerModel},
-                                                                  {"setplayerhead", Script_SetPlayerHead},
-                                                                  {"transition", Script_Transition},
-                                                                  {"setcvar", Script_SetCvar},
-                                                                  {"exec", Script_Exec},
-                                                                  {"execOnCvarStringValue", Script_ExecOnCvarStringValue},
-                                                                  {"execOnCvarIntValue", Script_ExecOnCvarIntValue},
-                                                                  {"execOnCvarFloatValue", Script_ExecOnCvarFloatValue},
-                                                                  {"play", Script_Play},
-                                                                  {"orbit", Script_Orbit},
-                                                                  {"addlistitem", Script_AddListItem},
-                                                                  {"getautoupdate", Script_GetAutoUpdate},
-                                                                  {"scriptmenuresponse", Script_ScriptMenuResponse}};
+static commandDef_t scriptCommandList[UI_SCRIPT_COMMAND_COUNT] = {
+    { "fadein", Script_FadeIn },
+    { "fadeout", Script_FadeOut },
+    { "show", Script_Show },
+    { "hide", Script_Hide },
+    { "setcolor", Script_SetColor },
+    { "open", Script_Open },
+    { "openforgametype", Script_OpenForGameType },
+    { "closeforgametype", Script_CloseForGameType },
+    { "conditionalopen", Script_ConditionalOpen },
+    { "close", Script_Close },
+    { "ingameopen", Script_InGameOpen },
+    { "ingameclose", Script_InGameClose },
+    { "setasset", Script_SetAsset },
+    { "setbackground", Script_SetBackground },
+    { "setitemcolor", Script_SetItemColor },
+    { "setteamcolor", Script_SetTeamColor },
+    { "setfocus", Script_SetFocus },
+    { "setplayermodel", Script_SetPlayerModel },
+    { "setplayerhead", Script_SetPlayerHead },
+    { "transition", Script_Transition },
+    { "setcvar", Script_SetCvar },
+    { "exec", Script_Exec },
+    { "execOnCvarStringValue", Script_ExecOnCvarStringValue },
+    { "execOnCvarIntValue", Script_ExecOnCvarIntValue },
+    { "execOnCvarFloatValue", Script_ExecOnCvarFloatValue },
+    { "play", Script_Play },
+    { "orbit", Script_Orbit },
+    { "addlistitem", Script_AddListItem },
+    { "getautoupdate", Script_GetAutoUpdate },
+    { "scriptmenuresponse", Script_ScriptMenuResponse }
+};
 static int32_t scriptCommandCount = UI_SCRIPT_COMMAND_COUNT;
 
 void Item_RunScript(itemDef_t *item, const char *script)
@@ -84,7 +86,9 @@ void Item_RunScript(itemDef_t *item, const char *script)
         for (index = 0; index < scriptCommandCount; ++index) {
             const char *name = scriptCommandList[index].name;
 
-            if (name != NULL && Q_stricmpn(name, token, UI_SCRIPT_COMMAND_COMPARE_LIMIT) == 0) {
+            if (name != NULL &&
+                Q_stricmpn(name, token,
+                           UI_SCRIPT_COMMAND_COMPARE_LIMIT) == 0) {
                 scriptCommandList[index].handler(item, &cursor);
                 matched = qtrue;
                 break;

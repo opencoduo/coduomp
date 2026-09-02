@@ -48,32 +48,45 @@ void CG_ParseScores(void)
 
     clientArg = CG_SCORE_FIRST_CLIENT_ARG;
     for (i = 0; i < cg_scoreboardNumClients;
-         i = coduo_int32_from_bits((uint32_t)i + 1u), clientArg = coduo_int32_from_bits((uint32_t)clientArg + CG_SCORE_ARGS_PER_CLIENT)) {
+         i = coduo_int32_from_bits((uint32_t)i + 1u),
+         clientArg = coduo_int32_from_bits((uint32_t)clientArg +
+                                      CG_SCORE_ARGS_PER_CLIENT)) {
         int32_t client;
         int32_t status;
 
-        trap_Argv(clientArg, g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
+        trap_Argv(clientArg, g_textScratchBuffer,
+                  (int32_t)sizeof(g_textScratchBuffer));
         client = coduo_crt_atoi(g_textScratchBuffer);
         cg_scoreboardEntries[i].client = client;
 
-        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 1u), g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
+        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 1u),
+                  g_textScratchBuffer,
+                  (int32_t)sizeof(g_textScratchBuffer));
         cg_scoreboardEntries[i].score = coduo_crt_atoi(g_textScratchBuffer);
 
-        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 2u), g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
+        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 2u),
+                  g_textScratchBuffer,
+                  (int32_t)sizeof(g_textScratchBuffer));
         cg_scoreboardEntries[i].ping = coduo_crt_atoi(g_textScratchBuffer);
 
-        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 3u), g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
+        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 3u),
+                  g_textScratchBuffer,
+                  (int32_t)sizeof(g_textScratchBuffer));
         cg_scoreboardEntries[i].deaths = coduo_crt_atoi(g_textScratchBuffer);
 
-        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 4u), g_textScratchBuffer, (int32_t)sizeof(g_textScratchBuffer));
+        trap_Argv(coduo_int32_from_bits((uint32_t)clientArg + 4u),
+                  g_textScratchBuffer,
+                  (int32_t)sizeof(g_textScratchBuffer));
         status = coduo_crt_atoi(g_textScratchBuffer);
         cg_scoreboardEntries[i].statusIcon = status;
 
         if (status >= CG_SCORE_STATUS_FIRST && status <= CG_SCORE_STATUS_LAST) {
-            const char *shaderName = CG_ConfigString(status + CG_SCORE_STATUS_CONFIG_BASE);
+            const char *shaderName =
+                CG_ConfigString(status + CG_SCORE_STATUS_CONFIG_BASE);
             CG_DrawInformation(0);
-            cg_scoreboardEntries[i].statusIcon =
-                coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)shaderName, 5));
+            cg_scoreboardEntries[i].statusIcon = coduo_int32_from_bits(
+                (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                        (intptr_t)shaderName, 5));
         }
 
         if (client < 0 || client >= CG_SCORE_MAX_CLIENTS) {
@@ -96,13 +109,17 @@ void CG_ParseScores(void)
 
         /* clientState_t.team is a two-bit snapshot netfield, so the direct
          * four-row aggregate lookup at 0x30038295/0x300382a2 has domain 0..3. */
-        cg_scoreboardTeamCount[team] = coduo_int32_from_bits((uint32_t)cg_scoreboardTeamCount[team] + 1u);
-        cg_scoreboardTeamPings[team] =
-            coduo_int32_from_bits((uint32_t)cg_scoreboardTeamPings[team] + (uint32_t)cg_scoreboardEntries[i].ping);
+        cg_scoreboardTeamCount[team] = coduo_int32_from_bits(
+            (uint32_t)cg_scoreboardTeamCount[team] + 1u);
+        cg_scoreboardTeamPings[team] = coduo_int32_from_bits(
+            (uint32_t)cg_scoreboardTeamPings[team] +
+            (uint32_t)cg_scoreboardEntries[i].ping);
     }
 
-    for (team = 0; team < 4; team = coduo_int32_from_bits((uint32_t)team + 1u)) {
-        if (cg_scoreboardTeamCount[team] >= 1 && cg_scoreboardTeamPings[team] >= 1) {
+    for (team = 0; team < 4;
+         team = coduo_int32_from_bits((uint32_t)team + 1u)) {
+        if (cg_scoreboardTeamCount[team] >= 1
+            && cg_scoreboardTeamPings[team] >= 1) {
             cg_scoreboardTeamPings[team] /= cg_scoreboardTeamCount[team];
         } else {
             cg_scoreboardTeamPings[team] = 0;

@@ -3,7 +3,8 @@
 // Source: uo_ui_mp_x86.dll 0x40007a60..0x40007b26
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_40007a60_40007b26.mcode
 // Same-module PPC role: UI_DrawHandlePic.
-void UI_DrawHandlePic(float x, float y, float width, float height, qhandle_t shader)
+void UI_DrawHandlePic(float x, float y, float width, float height,
+                      qhandle_t shader)
 {
     float s0;
     float s1;
@@ -27,7 +28,9 @@ void UI_DrawHandlePic(float x, float y, float width, float height, qhandle_t sha
         t1 = 1.0f;
     }
 
-    trap_R_DrawStretchPic(x * ui_displayContextStorage.context.xscale, y * ui_displayContextStorage.context.yscale,
-                          width * ui_displayContextStorage.context.xscale, height * ui_displayContextStorage.context.yscale, s0, t0, s1, t1,
-                          shader);
+    trap_R_DrawStretchPic(x * ui_displayContextStorage.context.xscale,
+                          y * ui_displayContextStorage.context.yscale,
+                          width * ui_displayContextStorage.context.xscale,
+                          height * ui_displayContextStorage.context.yscale,
+                          s0, t0, s1, t1, shader);
 }

@@ -39,12 +39,12 @@ const char *CG_HudElemTenthsTimerString(const struct hudElem_s *elem)
     int32_t ms = CG_GetHudElemTime(elem);
 
     int32_t centis = ms / 100;      /* hundredths of a second */
-    int32_t hours = centis / 36000;
+    int32_t hours  = centis / 36000;
     centis -= hours * 36000;
     int32_t minutes = centis / 600;
     centis -= minutes * 600;
     int32_t seconds = centis / 10;
-    int32_t tenths = centis - seconds * 10;
+    int32_t tenths  = centis - seconds * 10;
 
     if (hours != 0)
         return va("%i:%02i:%02i.%i", hours, minutes, seconds, tenths);

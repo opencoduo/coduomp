@@ -30,8 +30,10 @@ typedef struct parseField_s {
     int32_t type;
 } parseField_t;
 
-typedef qboolean (*parse_config_custom_t)(void *base, const char *value, int32_t fieldType);
-typedef void (*parse_config_copy_string_t)(char *destination, const char *value);
+typedef qboolean (*parse_config_custom_t)(void *base, const char *value,
+                                          int32_t fieldType);
+typedef void (*parse_config_copy_string_t)(char *destination,
+                                           const char *value);
 
 const char *Info_ValueForKey(const char *info, const char *key);
 void Info_NextPair(const char **head, char *key, char *value);
@@ -40,8 +42,11 @@ void Info_RemoveKey_Big(char *info, const char *key);
 qboolean Info_Validate(const char *info);
 void Info_SetValueForKey(char *info, const char *key, const char *value);
 void Info_SetValueForKey_Big(char *info, const char *key, const char *value);
-qboolean ParseConfigStringToStruct(void *base, const parseField_t *fields, int32_t fieldCount, const char *info, int32_t customTypeLimit,
-                                   parse_config_custom_t customParser, parse_config_copy_string_t stringSetter);
+qboolean ParseConfigStringToStruct(
+    void *base, const parseField_t *fields, int32_t fieldCount,
+    const char *info, int32_t customTypeLimit,
+    parse_config_custom_t customParser,
+    parse_config_copy_string_t stringSetter);
 void Info_Print(const char *info);
 
 #ifdef __cplusplus

@@ -4,9 +4,7 @@
 
 #include <string.h>
 
-enum {
-    UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT = 99999
-};
+enum { UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT = 99999 };
 
 /*
  * Complete visual-property menu-command cluster.  The authoritative Windows
@@ -36,13 +34,16 @@ void Script_SetColor(itemDef_t *item, char **arguments)
     if (!String_Parse(arguments, &fieldName) || fieldName == NULL) {
         return;
     }
-    if (Q_stricmpn("backcolor", fieldName, UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
+    if (Q_stricmpn("backcolor", fieldName,
+                   UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
         item->window.flags |= WINDOW_BACKCOLOR_SET;
         target = &item->window.backColor;
-    } else if (Q_stricmpn("forecolor", fieldName, UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
+    } else if (Q_stricmpn("forecolor", fieldName,
+                          UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
         item->window.flags |= WINDOW_FORECOLORSET;
         target = &item->window.foreColor;
-    } else if (Q_stricmpn("bordercolor", fieldName, UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
+    } else if (Q_stricmpn("bordercolor", fieldName,
+                          UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
         target = &item->window.borderColor;
     }
     if (target == NULL) {
@@ -71,7 +72,8 @@ void Script_SetBackground(itemDef_t *item, char **arguments)
     if (!String_Parse(arguments, &background)) {
         return;
     }
-    item->window.background = DC->registerShaderNoMip(background, item->loadMode);
+    item->window.background =
+        DC->registerShaderNoMip(background, item->loadMode);
 }
 
 void Script_SetTeamColor(itemDef_t *item, char **arguments)
@@ -81,11 +83,12 @@ void Script_SetTeamColor(itemDef_t *item, char **arguments)
     (void)arguments;
     if (getTeamColor != NULL) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        vec4_t color = {0.0f, 0.0f, 0.0f, 0.0f};
+        vec4_t color = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         getTeamColor(color);
         item->window.backColor[0] = color[0];
-        memcpy(&item->window.backColor[1], &color[1], 3u * sizeof(color[0]));
+        memcpy(&item->window.backColor[1], &color[1],
+               3u * sizeof(color[0]));
     }
 }
 
@@ -97,7 +100,8 @@ void Script_SetItemColor(itemDef_t *item, char **arguments)
     int32_t count;
     int32_t index;
 
-    if (!String_Parse(arguments, &name) || !String_Parse(arguments, &fieldName)) {
+    if (!String_Parse(arguments, &name) ||
+        !String_Parse(arguments, &fieldName)) {
         return;
     }
     count = Menu_ItemsMatchingGroup(item->parent, name);
@@ -106,18 +110,22 @@ void Script_SetItemColor(itemDef_t *item, char **arguments)
     }
 
     for (index = 0; index < count; ++index) {
-        itemDef_t *matched = Menu_GetMatchingItemByNumber(item->parent, name, index);
+        itemDef_t *matched = Menu_GetMatchingItemByNumber(
+            item->parent, name, index);
         vec4_t *target = NULL;
 
         if (matched == NULL || fieldName == NULL) {
             continue;
         }
-        if (Q_stricmpn("backcolor", fieldName, UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
+        if (Q_stricmpn("backcolor", fieldName,
+                       UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
             target = &matched->window.backColor;
-        } else if (Q_stricmpn("forecolor", fieldName, UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
+        } else if (Q_stricmpn("forecolor", fieldName,
+                              UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
             matched->window.flags |= WINDOW_FORECOLORSET;
             target = &matched->window.foreColor;
-        } else if (Q_stricmpn("bordercolor", fieldName, UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
+        } else if (Q_stricmpn("bordercolor", fieldName,
+                              UI_SCRIPT_COLOR_FIELD_COMPARE_LIMIT) == 0) {
             target = &matched->window.borderColor;
         }
         if (target != NULL) {

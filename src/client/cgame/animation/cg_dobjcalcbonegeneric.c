@@ -36,21 +36,25 @@ void CG_DObjCalcBoneGeneric(int32_t index, int32_t boneIndex)
     // syscall 0xa5. Thus the original variadic i386 syscall observes saved EDI
     // as argument 1. Make that implicit stack argument explicit for the native
     // ABI. 0x300220f0 MOV ESI,EAX: `self` for the remaining traps.
-    struct DObj_s *self = (struct DObj_s *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, index);
+    struct DObj_s *self = (struct DObj_s *)(intptr_t)cgame_syscall(
+        CG_DOBJ_GET_HANDLE, index);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_NUM_BONES, (intptr_t)self));
+    int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_DOBJ_NUM_BONES, (intptr_t)self));
     if ((uint32_t)boneIndex >= (uint32_t)boneCount) {
         return;
     }
 
     // 0x300220f4: an already-current skeleton returns nonzero.
-    if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONE, (intptr_t)self, boneIndex) != 0) {
+    if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONE,
+                      (intptr_t)self, boneIndex) != 0) {
         return;
     }
 
     // 0x3002210d: expand the requested bone to its hierarchy bits.
-    cgame_syscall(CG_DOBJ_GET_HIERARCHY_BITS, (intptr_t)self, boneIndex, (intptr_t)partBits);
+    cgame_syscall(CG_DOBJ_GET_HIERARCHY_BITS, (intptr_t)self, boneIndex,
+                  (intptr_t)partBits);
 
     // 0x3002211e: calculate animation for the selected hierarchy.
     cgame_syscall(CG_DOBJ_CALC_ANIM, (intptr_t)self, (intptr_t)partBits);
@@ -63,9 +67,13 @@ void CG_DObjCalcBoneGeneric(int32_t index, int32_t boneIndex)
         // of effect slot [index]. The
         // slot base is the same array CG_StartFlameDamageEffect indexes (still a
         // mechanical symbol), so take its address and index by the effect index.
-        uint32_t offsetBits = (uint32_t)index * (uint32_t)sizeof(cg_entities[0]);
-        intptr_t displacement = (intptr_t)coduo_int32_from_bits(offsetBits);
-        centity_t *part = (centity_t *)((uintptr_t)(void *)cg_entities + (uintptr_t)displacement);
+        uint32_t offsetBits =
+            (uint32_t)index * (uint32_t)sizeof(cg_entities[0]);
+        intptr_t displacement =
+            (intptr_t)coduo_int32_from_bits(offsetBits);
+        centity_t *part = (centity_t *)(
+            (uintptr_t)(void *)cg_entities +
+            (uintptr_t)displacement);
 
         // 0x30022145: dispatch with the selected hierarchy bitset.
         CG_DoControllers(part, partBits);

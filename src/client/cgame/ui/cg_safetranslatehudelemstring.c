@@ -64,7 +64,8 @@ const char *CG_SafeTranslateHudElemString(int index /* EAX */)
         return g_str_empty;
     }
 
-    cfgIndex = coduo_int32_from_bits((uint32_t)index + (uint32_t)CS_LOCALIZED_STRINGS);
+    cfgIndex = coduo_int32_from_bits((uint32_t)index +
+                                (uint32_t)CS_LOCALIZED_STRINGS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
         /* Shared inlined CG_ConfigString bounds report; the lookup still proceeds
          * with the out-of-range index, matching every other inlined site. */

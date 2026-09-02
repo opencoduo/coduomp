@@ -19,7 +19,8 @@ int32_t yyinput(void)
     char *yyText = script_yyText;
     char *bufferPosition = script_yyCBufferPosition;
     if (*script_yyCBufferPosition == '\0') {
-        if (script_yyCBufferPosition < script_yyCurrentBuffer->chBuf + script_yyNChars) {
+        if (script_yyCBufferPosition <
+            script_yyCurrentBuffer->chBuf + script_yyNChars) {
             *script_yyCBufferPosition = '\0';
         } else {
             ++script_yyCBufferPosition;
@@ -36,7 +37,8 @@ int32_t yyinput(void)
             }
 
             if (action == SCRIPT_YY_EOB_ACT_CONTINUE_SCAN) {
-                script_yyCBufferPosition = script_yyText + (bufferPosition - yyText);
+                script_yyCBufferPosition =
+                    script_yyText + (bufferPosition - yyText);
             } else if (action == SCRIPT_YY_EOB_ACT_LAST_MATCH) {
                 yyrestart(script_yyInputFile);
                 if (yywrap() != 0) {

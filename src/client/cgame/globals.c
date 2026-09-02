@@ -10,13 +10,18 @@
 static const gitem_t cgame_compat_bg_itemlist_load_state[] = {
 #include "recovered_initializers/bg_itemlist.inc"
 };
-_Static_assert(sizeof(cgame_compat_bg_itemlist_load_state) == sizeof(bg_itemlist),
+_Static_assert(sizeof(cgame_compat_bg_itemlist_load_state) ==
+                   sizeof(bg_itemlist),
                "bg_itemlist load-state template must cover the whole table");
 
 /* NOT_FROM_ORIGINAL_SOURCE: immutable copy of the five PE-initialized flame
  * sprite words. CG_InitFlameChunks changes the second word from one to zero. */
-static const uint32_t cgame_compat_flame_sprite_load_state[] = {1u, 1u, UINT32_C(0x3f800000), UINT32_C(0x3f800000), UINT32_C(0x3f800000)};
-_Static_assert(sizeof(cgame_compat_flame_sprite_load_state) == sizeof(cg_flameSpriteState),
+static const uint32_t cgame_compat_flame_sprite_load_state[] = {
+    1u, 1u, UINT32_C(0x3f800000), UINT32_C(0x3f800000),
+    UINT32_C(0x3f800000)
+};
+_Static_assert(sizeof(cgame_compat_flame_sprite_load_state) ==
+                   sizeof(cg_flameSpriteState),
                "flame sprite load-state template must cover every word");
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of CG_Init's original
@@ -49,18 +54,13 @@ void cgame_compat_reset_module_load_state(void)
     int32_t index;
     keywordHash_t *itemKeyword;
     menuKeywordHash_t *menuKeyword;
-    bg_indexed_string_t *indexedStringTables[] = {animStateStr,
-                                                  bgAnimGroupStrings,
-                                                  bgAnimEventStrings,
-                                                  animBodyPartsStr,
-                                                  animMountedStr,
-                                                  animVehicleMotionStr,
-                                                  animVehicleStr,
-                                                  animWeaponClassStr,
-                                                  animWeaponPositionStr,
-                                                  animStrafeStateStr,
-                                                  bgAnimConditionTypeStrings,
-                                                  bgAnimParseSectionStrings};
+    bg_indexed_string_t *indexedStringTables[] = {
+        animStateStr, bgAnimGroupStrings, bgAnimEventStrings,
+        animBodyPartsStr, animMountedStr, animVehicleMotionStr,
+        animVehicleStr, animWeaponClassStr, animWeaponPositionStr,
+        animStrafeStateStr, bgAnimConditionTypeStrings,
+        bgAnimParseSectionStrings
+    };
 
     cgame_compat_reset_recovered_cgs_state();
     cgame_compat_reset_recovered_cg_state();
@@ -81,8 +81,10 @@ void cgame_compat_reset_module_load_state(void)
     sharedRandSeed = UINT32_C(0x89abcdef);
     bgPlayerAnimScriptPath = "mp/playeranim.script";
 
-    memcpy(bg_itemlist, cgame_compat_bg_itemlist_load_state, sizeof(bg_itemlist));
-    memcpy(cg_flameSpriteState, cgame_compat_flame_sprite_load_state, sizeof(cg_flameSpriteState));
+    memcpy(bg_itemlist, cgame_compat_bg_itemlist_load_state,
+           sizeof(bg_itemlist));
+    memcpy(cg_flameSpriteState, cgame_compat_flame_sprite_load_state,
+           sizeof(cg_flameSpriteState));
     for (index = 0; index < CONTROL_BINDING_COUNT; ++index) {
         g_bindings[index].bind1 = -1;
         g_bindings[index].bind2 = 0;
@@ -97,7 +99,10 @@ void cgame_compat_reset_module_load_state(void)
         if (menuKeyword->keyword == NULL)
             break;
     }
-    for (index = 0; index < (int32_t)(sizeof(indexedStringTables) / sizeof(indexedStringTables[0])); ++index) {
+    for (index = 0;
+         index < (int32_t)(sizeof(indexedStringTables) /
+                           sizeof(indexedStringTables[0]));
+         ++index) {
         bg_indexed_string_t *entry = indexedStringTables[index];
 
         for (;;) {
@@ -129,7 +134,8 @@ cgame_syscall_t cgame_syscall = (cgame_syscall_t)(intptr_t)-1;
 #else
 /* NOT_FROM_ORIGINAL_SOURCE: native-width vector form of the original
  * command-plus-stack-dwords trap callback. */
-cgame_syscall_t cgame_syscall_vector = (cgame_syscall_t)(intptr_t)-1;
+cgame_syscall_t cgame_syscall_vector =
+    (cgame_syscall_t)(intptr_t)-1;
 #endif
 
 /* Source: uo_cgame_mp_x86.dll 0x30538600: first 0x100-byte trap string buffer. */
@@ -154,8 +160,7 @@ const char bg_leftWeaponTagName[16] = "tag_weapon_left";
  * scalar (0x756f4315); repaired in place to the real string. objdump .rdata bytes:
  *   3007156c: 15 43 6f 75 6c 64 20 6e 6f 74 20 6c 6f 61 64 20 6d 6f 64 65 6c 20 27 25 73 27 00
  * i.e. "\x15Could not load model '%s'" (0x15 = console-severity prefix). */
-const char bg_couldNotLoadModelErrorFormat[27] = "\x15"
-                                                 "Could not load model '%s'";
+const char bg_couldNotLoadModelErrorFormat[27] = "\x15" "Could not load model '%s'";
 /* Source: uo_cgame_mp_x86.dll 0x30071588 (.rdata); refs=2 width=imm; first=0x30005816; owner=normaltolatlong.
  * Example: 30005816   68 88 15 07 30               PUSH 0x30071588 | 3001f0bb   68 88 15 07 30               PUSH 0x30071588
  */
@@ -169,38 +174,42 @@ const char cg_originTagName[11] = "tag_origin";
  * function pointer before calling. Consumed by CG_ConsoleCommand (0x300178c0) and
  * registered/removed by CG_InitConsoleCommands (0x30017920).
  * PE_RELOCATION_VALUES_VERIFIED: all name and handler pointers match the PE. */
-const consoleCommand_t cg_consoleCommands[] = {{"viewpos", CG_PrintViewOriginAndSpin_f},
-                                               {"+scores", CG_ScoresDown_f},
-                                               {"-scores", CG_ScoresUp_f},
-                                               {"sizeup", CG_SizeUp_f},
-                                               {"sizedown", CG_SizeDown_f},
-                                               {"weapnext", CG_NextWeapon_f},
-                                               {"weapprev", CG_PrevWeapon_f},
-                                               {"weapalt", CG_AltWeapon_f},
-                                               {"weaponslot", CG_WeaponSlot_f},
-                                               {"tcmd", CG_Tcmd_f},
-                                               {"loadhud", CG_LoadHud_f},
-                                               {"fade", CG_Fade_f},
-                                               {"fxSetTestPosition", CG_FxSetTestPosition},
-                                               {"fxTest", CG_FxTest},
-                                               {"fxRestart", CG_FxRestart},
-                                               {"cg_shellshock", CG_ShellShock_f},
-                                               {"cg_shellshock_load", CG_ShellShock_Load_f},
-                                               {"cg_shellshock_save", CG_ShellShock_Save_f},
-                                               {"tell_target", CG_TellTarget_f},
-                                               {"mp_QuickMessage", CG_QuickMessage_f},
-                                               {"mp_quickmap", CG_QuickMap_f},
-                                               {"VoiceChat", CG_VoiceChat_f},
-                                               {"VoiceTeamChat", CG_TeamVoiceChat_f},
-                                               {"mp_Purchase", CG_OpenWMPurchase_f},
-                                               {"mr", NULL},     /* registered name-only; NULL handler */
-                                               {NULL, NULL}};
+const consoleCommand_t cg_consoleCommands[] = {
+    { "viewpos", CG_PrintViewOriginAndSpin_f },
+    { "+scores", CG_ScoresDown_f },
+    { "-scores", CG_ScoresUp_f },
+    { "sizeup", CG_SizeUp_f },
+    { "sizedown", CG_SizeDown_f },
+    { "weapnext", CG_NextWeapon_f },
+    { "weapprev", CG_PrevWeapon_f },
+    { "weapalt", CG_AltWeapon_f },
+    { "weaponslot", CG_WeaponSlot_f },
+    { "tcmd", CG_Tcmd_f },
+    { "loadhud", CG_LoadHud_f },
+    { "fade", CG_Fade_f },
+    { "fxSetTestPosition", CG_FxSetTestPosition },
+    { "fxTest", CG_FxTest },
+    { "fxRestart", CG_FxRestart },
+    { "cg_shellshock", CG_ShellShock_f },
+    { "cg_shellshock_load", CG_ShellShock_Load_f },
+    { "cg_shellshock_save", CG_ShellShock_Save_f },
+    { "tell_target", CG_TellTarget_f },
+    { "mp_QuickMessage", CG_QuickMessage_f },
+    { "mp_quickmap", CG_QuickMap_f },
+    { "VoiceChat", CG_VoiceChat_f },
+    { "VoiceTeamChat", CG_TeamVoiceChat_f },
+    { "mp_Purchase", CG_OpenWMPurchase_f },
+    { "mr", NULL },     /* registered name-only; NULL handler */
+    { NULL, NULL }
+};
 /* Source: uo_cgame_mp_x86.dll 0x30071854 (.rdata) — cg_damageDirShaderParams, the
  * static rotated-quad shader/texcoord param block for the damage-direction HUD arrow
  * (floats {1,1,0,1,0,0,1,0} verified via objdump -s -j .rdata). Consumed by
  * CG_DrawDamageDirectionIndicators (0x3001aad5 PUSHes its address). Supersedes the mechanical
  * single-dword export g_const_float_one_30071854 (which saw only the leading 1.0f). */
-const float cg_damageDirShaderParams[8] = {1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+const float cg_damageDirShaderParams[8] = {
+    1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f
+};
 /* Source: uo_cgame_mp_x86.dll 0x30071874..0x300718b4 (.rdata); refs=1; first=0x3001ccbd.
  * cg_rotatedPicShaderParams: the static shader/texcoord param block CG_DrawRotatedPic
  * (0x3001cb60) hands by address (PUSH 0x30071874) to CG_R_DRAW_ROTATED_QUAD. Sixteen floats, dumped
@@ -208,7 +217,10 @@ const float cg_damageDirShaderParams[8] = {1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1
  * Supersedes the mechanical single-dword export g_const_u32_00000000_30071874.
  */
 const float cg_rotatedPicShaderParams[16] = {
-    0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,
+     0.0f,  0.0f,  1.0f,  0.0f,
+     1.0f,  1.0f,  0.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,  1.0f,
 };
 /* Source: uo_cgame_mp_x86.dll 0x300718b8..0x30071918 (.rdata); consumed by
  * CG_DebugBox (0x3001d970), which indexes it with ESI = 0,8,...,0x58.
@@ -218,7 +230,9 @@ const float cg_rotatedPicShaderParams[16] = {
  * corner indices (0..7) into the 8-corner array. Values verified byte-for-byte
  * from the .rdata dump. Supersedes the two mislabeled mechanical scalars. */
 const uint32_t cg_debugBoxEdges[12][2] = {
-    {0, 1}, {0, 2}, {0, 4}, {1, 3}, {1, 5}, {2, 3}, {2, 6}, {3, 7}, {4, 5}, {4, 6}, {5, 7}, {6, 7},
+    { 0, 1 }, { 0, 2 }, { 0, 4 }, { 1, 3 },
+    { 1, 5 }, { 2, 3 }, { 2, 6 }, { 3, 7 },
+    { 4, 5 }, { 4, 6 }, { 5, 7 }, { 6, 7 },
 };
 /* Source: uo_cgame_mp_x86.dll 0x30071918..0x30071a38 (.rdata); consumed by
  * CG_DObjGetBoneBoundsWireframe (0x30020020), whose loop does
@@ -231,18 +245,18 @@ const uint32_t cg_debugBoxEdges[12][2] = {
  * selector 0 (mins) or 1 (maxs). Values verified byte-for-byte from the .rdata
  * dump. Supersedes the mislabeled single-dword scalar g_const_u32_*_30071918. */
 const uint32_t cg_boxCornerSelectors[24][3] = {
-    {0, 0, 0}, {1, 0, 0},  /* edge 0: mins.x .. maxs.x  (y=min, z=min) */
-    {0, 0, 0}, {0, 1, 0},  /* edge 1: mins.y .. maxs.y  (x=min, z=min) */
-    {1, 1, 0}, {1, 0, 0},  /* edge 2 */
-    {1, 1, 0}, {0, 1, 0},  /* edge 3 */
-    {0, 0, 1}, {1, 0, 1},  /* edge 4 */
-    {0, 0, 1}, {0, 1, 1},  /* edge 5 */
-    {1, 1, 1}, {1, 0, 1},  /* edge 6 */
-    {1, 1, 1}, {0, 1, 1},  /* edge 7 */
-    {0, 0, 0}, {0, 0, 1},  /* edge 8: mins.z .. maxs.z  (x=min, y=min) */
-    {1, 0, 0}, {1, 0, 1},  /* edge 9 */
-    {0, 1, 0}, {0, 1, 1},  /* edge 10 */
-    {1, 1, 0}, {1, 1, 1},  /* edge 11 */
+    { 0, 0, 0 }, { 1, 0, 0 },  /* edge 0: mins.x .. maxs.x  (y=min, z=min) */
+    { 0, 0, 0 }, { 0, 1, 0 },  /* edge 1: mins.y .. maxs.y  (x=min, z=min) */
+    { 1, 1, 0 }, { 1, 0, 0 },  /* edge 2 */
+    { 1, 1, 0 }, { 0, 1, 0 },  /* edge 3 */
+    { 0, 0, 1 }, { 1, 0, 1 },  /* edge 4 */
+    { 0, 0, 1 }, { 0, 1, 1 },  /* edge 5 */
+    { 1, 1, 1 }, { 1, 0, 1 },  /* edge 6 */
+    { 1, 1, 1 }, { 0, 1, 1 },  /* edge 7 */
+    { 0, 0, 0 }, { 0, 0, 1 },  /* edge 8: mins.z .. maxs.z  (x=min, y=min) */
+    { 1, 0, 0 }, { 1, 0, 1 },  /* edge 9 */
+    { 0, 1, 0 }, { 0, 1, 1 },  /* edge 10 */
+    { 1, 1, 0 }, { 1, 1, 1 },  /* edge 11 */
 };
 /* Source: uo_cgame_mp_x86.dll 0x30071a3c..0x30071a5c (.rdata); refs=1; first=0x30031f4a.
  * Example: 30031f4a   68 3c 1a 07 30               PUSH 0x30071a3c
@@ -252,8 +266,14 @@ const uint32_t cg_boxCornerSelectors[24][3] = {
  * original RE_DrawQuadPic copies all four pairs at 0x004f0468..0x004f04cb. The
  * dword at 0x30071a5c is alignment padding before the next datum at 0x30071a60.
  */
-const float cg_turretTagShaderParams[8] = {1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-_Static_assert(sizeof(cg_turretTagShaderParams) == sizeof(vec2_t) * 4u, "turret tag must provide one texture coordinate per vertex");
+const float cg_turretTagShaderParams[8] = {
+    1.0f, 1.0f,
+    1.0f, 0.0f,
+    0.0f, 0.0f,
+    0.0f, 1.0f
+};
+_Static_assert(sizeof(cg_turretTagShaderParams) == sizeof(vec2_t) * 4u,
+               "turret tag must provide one texture coordinate per vertex");
 /* Source: uo_cgame_mp_x86.dll 0x30071a60 (.rdata); first=0x30037314.
  * cg_scoreboardColumnValueSelect[5] — per-column value-source selector lane read
  * by CG_DrawScoreboardTeamHeader (0x30037314, stride 0x10); see globals.h. The
@@ -282,14 +302,16 @@ _Static_assert(sizeof(cg_turretTagShaderParams) == sizeof(vec2_t) * 4u, "turret 
  * EBP at 0x30037593).
  * PE_RELOCATION_VALUES_VERIFIED: header string pointers match the PE.
  */
-const cgScoreboardLayout_t cg_scoreboardLayout = {4,
-                                                  {
-                                                      {0.05f, "", 0, 0},
-                                                      {0.41f, "", 0, 1},
-                                                      {0.16f, "CGAME_SB_SCORE", 2, 2},
-                                                      {0.20f, "CGAME_SB_DEATHS", 2, 3},
-                                                  },
-                                                  {0.18f, "CGAME_SB_PING", 2}};
+const cgScoreboardLayout_t cg_scoreboardLayout = {
+  4,
+  {
+    { 0.05f, "",                0, 0 },
+    { 0.41f, "",                0, 1 },
+    { 0.16f, "CGAME_SB_SCORE",  2, 2 },
+    { 0.20f, "CGAME_SB_DEATHS", 2, 3 },
+  },
+  { 0.18f, "CGAME_SB_PING", 2 }
+};
 /* Source: uo_cgame_mp_x86.dll 0x30071b18 (.rdata); refs=2; first=0x30036352.
  * cg_shellshockRandomTable: precomputed 2-D noise/direction table of (x,y) float
  * pairs driving the shellshock screen-blur displacement. Consumed by the per-frame
@@ -299,39 +321,146 @@ const cgScoreboardLayout_t cg_scoreboardLayout = {4,
  * mechanical single-uint32 g_const_float_neg_0_56355101 (wrong type). Exact source
  * symbol name unresolved; named by proven role. */
 const float cg_shellshockRandomTable[CG_SHELLSHOCK_RANDOM_TABLE_ROWS][2] = {
-    {-0.563551f, -0.00443f},  {-0.282062f, -0.757933f}, {0.413047f, 0.244246f},   {0.527895f, -0.723897f},  {-0.329777f, 0.6698f},
-    {-0.394248f, -0.76309f},  {0.126207f, 0.497769f},   {0.004986f, -0.01413f},   {0.559913f, 0.112825f},   {-0.333089f, -0.573283f},
-    {0.335404f, -0.107176f},  {-0.56906f, -0.213141f},  {-0.166676f, 0.785084f},  {0.299592f, 0.037593f},   {-0.516867f, 0.510759f},
-    {0.138009f, 0.034823f},   {-0.156167f, 0.829048f},  {-0.999458f, 0.020317f},  {0.300029f, 0.252944f},   {0.030215f, -0.295732f},
-    {-0.917362f, -0.050711f}, {0.044177f, -0.269289f},  {0.588424f, 0.362577f},   {-0.379913f, 0.619214f},  {0.204432f, -0.019423f},
-    {0.018499f, 0.468079f},   {0.916187f, -0.247878f},  {0.003799f, 0.10821f},    {0.057363f, 0.60624f},    {0.324595f, 0.158733f},
-    {-0.130529f, -0.183388f}, {0.715672f, -0.363858f},  {0.984258f, 0.106096f},   {-0.003313f, 0.345535f},  {-0.320351f, -0.573936f},
-    {0.063455f, -0.003239f},  {-0.570173f, -0.759313f}, {0.106456f, 0.283726f},   {-0.668163f, 0.142388f},  {-0.501119f, -0.720006f},
-    {-0.253281f, 0.524032f},  {-0.064084f, -0.165943f}, {-0.194672f, 0.43355f},   {-0.2818f, -0.417744f},   {0.045786f, 0.402986f},
-    {0.105064f, -0.558937f},  {0.312244f, 0.688318f},   {-0.263294f, -0.256811f}, {0.659186f, 0.070672f},   {0.093625f, -0.046812f},
-    {-0.87502f, 0.288509f},   {0.329359f, 0.105941f},   {-0.181309f, 0.259865f},  {0.261597f, -0.07407f},   {-0.296082f, 0.031858f},
-    {0.038584f, 0.565947f},   {-0.253445f, -0.717865f}, {-0.211836f, 0.336521f},  {0.890123f, 0.00495f},    {-0.979825f, -0.17079f},
-    {0.045346f, 0.02224f},    {-0.345796f, 0.522712f},  {0.108525f, 0.165424f},   {-0.572796f, -0.473399f}, {0.368605f, -0.865844f},
-    {0.075571f, -0.327703f},  {-0.466353f, -0.565594f}, {-0.358837f, 0.610302f},  {0.603884f, 0.440023f},   {0.002465f, -0.144449f},
-    {-0.294915f, 0.79997f},   {-0.028347f, -0.112071f}, {-0.009472f, 0.686061f},  {0.07115f, 0.01991f},     {0.96269f, 0.024926f},
-    {0.309208f, 0.871549f},   {-0.123782f, -0.312301f}, {-0.433055f, -0.895981f}, {0.962495f, -0.263777f},  {-0.51146f, -0.359478f},
-    {-0.044013f, 0.02021f},   {-0.10934f, -0.76123f},   {0.171003f, -0.107461f},  {0.418912f, 0.435294f},   {0.44494f, -0.139643f},
-    {0.518574f, 0.365965f},   {-0.506997f, 0.655597f},  {0.510525f, 0.508961f},   {-0.296173f, -0.675837f}, {0.851332f, 0.307192f},
-    {-0.008474f, -0.188744f}, {0.552703f, 0.427086f},   {0.080334f, -0.002805f},  {0.035656f, 0.610991f},   {0.770593f, 0.398874f},
-    {-0.522137f, 0.324362f},  {0.006045f, 0.042788f},   {0.482456f, 0.848994f},   {0.226058f, -0.522367f},  {-0.674606f, -0.547814f},
-    {-0.441998f, 0.59884f},   {-0.183957f, -0.270234f}, {0.51885f, 0.634946f},    {0.430386f, 0.125257f},   {-0.185496f, -0.264459f},
-    {0.02369f, 0.312978f},    {-0.444287f, 0.849928f},  {0.291978f, -0.897679f},  {-0.045826f, -0.047128f}, {-0.114246f, 0.511975f},
-    {0.738133f, 0.607667f},   {-0.786889f, -0.384057f}, {0.182993f, 0.265086f},   {-0.39945f, -0.309031f},  {-0.482895f, 0.265662f},
-    {0.059671f, 0.09776f},    {0.793174f, -0.015972f},  {0.201658f, 0.492445f},   {-0.707371f, -0.02619f},  {-0.320882f, 0.37228f},
-    {0.572813f, -0.537255f},  {0.337619f, 0.116293f},   {-0.606537f, 0.173373f},  {-0.166593f, -0.335112f}, {-0.583993f, 0.182916f},
-    {-0.573519f, -0.623348f}, {-0.392707f, 0.449474f},  {0.151474f, 0.840401f},   {-0.563551f, -0.00443f},  {-0.282062f, -0.757933f},
-    {0.413047f, 0.244246f},
+    { -0.563551f, -0.00443f },
+    { -0.282062f, -0.757933f },
+    { 0.413047f, 0.244246f },
+    { 0.527895f, -0.723897f },
+    { -0.329777f, 0.6698f },
+    { -0.394248f, -0.76309f },
+    { 0.126207f, 0.497769f },
+    { 0.004986f, -0.01413f },
+    { 0.559913f, 0.112825f },
+    { -0.333089f, -0.573283f },
+    { 0.335404f, -0.107176f },
+    { -0.56906f, -0.213141f },
+    { -0.166676f, 0.785084f },
+    { 0.299592f, 0.037593f },
+    { -0.516867f, 0.510759f },
+    { 0.138009f, 0.034823f },
+    { -0.156167f, 0.829048f },
+    { -0.999458f, 0.020317f },
+    { 0.300029f, 0.252944f },
+    { 0.030215f, -0.295732f },
+    { -0.917362f, -0.050711f },
+    { 0.044177f, -0.269289f },
+    { 0.588424f, 0.362577f },
+    { -0.379913f, 0.619214f },
+    { 0.204432f, -0.019423f },
+    { 0.018499f, 0.468079f },
+    { 0.916187f, -0.247878f },
+    { 0.003799f, 0.10821f },
+    { 0.057363f, 0.60624f },
+    { 0.324595f, 0.158733f },
+    { -0.130529f, -0.183388f },
+    { 0.715672f, -0.363858f },
+    { 0.984258f, 0.106096f },
+    { -0.003313f, 0.345535f },
+    { -0.320351f, -0.573936f },
+    { 0.063455f, -0.003239f },
+    { -0.570173f, -0.759313f },
+    { 0.106456f, 0.283726f },
+    { -0.668163f, 0.142388f },
+    { -0.501119f, -0.720006f },
+    { -0.253281f, 0.524032f },
+    { -0.064084f, -0.165943f },
+    { -0.194672f, 0.43355f },
+    { -0.2818f, -0.417744f },
+    { 0.045786f, 0.402986f },
+    { 0.105064f, -0.558937f },
+    { 0.312244f, 0.688318f },
+    { -0.263294f, -0.256811f },
+    { 0.659186f, 0.070672f },
+    { 0.093625f, -0.046812f },
+    { -0.87502f, 0.288509f },
+    { 0.329359f, 0.105941f },
+    { -0.181309f, 0.259865f },
+    { 0.261597f, -0.07407f },
+    { -0.296082f, 0.031858f },
+    { 0.038584f, 0.565947f },
+    { -0.253445f, -0.717865f },
+    { -0.211836f, 0.336521f },
+    { 0.890123f, 0.00495f },
+    { -0.979825f, -0.17079f },
+    { 0.045346f, 0.02224f },
+    { -0.345796f, 0.522712f },
+    { 0.108525f, 0.165424f },
+    { -0.572796f, -0.473399f },
+    { 0.368605f, -0.865844f },
+    { 0.075571f, -0.327703f },
+    { -0.466353f, -0.565594f },
+    { -0.358837f, 0.610302f },
+    { 0.603884f, 0.440023f },
+    { 0.002465f, -0.144449f },
+    { -0.294915f, 0.79997f },
+    { -0.028347f, -0.112071f },
+    { -0.009472f, 0.686061f },
+    { 0.07115f, 0.01991f },
+    { 0.96269f, 0.024926f },
+    { 0.309208f, 0.871549f },
+    { -0.123782f, -0.312301f },
+    { -0.433055f, -0.895981f },
+    { 0.962495f, -0.263777f },
+    { -0.51146f, -0.359478f },
+    { -0.044013f, 0.02021f },
+    { -0.10934f, -0.76123f },
+    { 0.171003f, -0.107461f },
+    { 0.418912f, 0.435294f },
+    { 0.44494f, -0.139643f },
+    { 0.518574f, 0.365965f },
+    { -0.506997f, 0.655597f },
+    { 0.510525f, 0.508961f },
+    { -0.296173f, -0.675837f },
+    { 0.851332f, 0.307192f },
+    { -0.008474f, -0.188744f },
+    { 0.552703f, 0.427086f },
+    { 0.080334f, -0.002805f },
+    { 0.035656f, 0.610991f },
+    { 0.770593f, 0.398874f },
+    { -0.522137f, 0.324362f },
+    { 0.006045f, 0.042788f },
+    { 0.482456f, 0.848994f },
+    { 0.226058f, -0.522367f },
+    { -0.674606f, -0.547814f },
+    { -0.441998f, 0.59884f },
+    { -0.183957f, -0.270234f },
+    { 0.51885f, 0.634946f },
+    { 0.430386f, 0.125257f },
+    { -0.185496f, -0.264459f },
+    { 0.02369f, 0.312978f },
+    { -0.444287f, 0.849928f },
+    { 0.291978f, -0.897679f },
+    { -0.045826f, -0.047128f },
+    { -0.114246f, 0.511975f },
+    { 0.738133f, 0.607667f },
+    { -0.786889f, -0.384057f },
+    { 0.182993f, 0.265086f },
+    { -0.39945f, -0.309031f },
+    { -0.482895f, 0.265662f },
+    { 0.059671f, 0.09776f },
+    { 0.793174f, -0.015972f },
+    { 0.201658f, 0.492445f },
+    { -0.707371f, -0.02619f },
+    { -0.320882f, 0.37228f },
+    { 0.572813f, -0.537255f },
+    { 0.337619f, 0.116293f },
+    { -0.606537f, 0.173373f },
+    { -0.166593f, -0.335112f },
+    { -0.583993f, 0.182916f },
+    { -0.573519f, -0.623348f },
+    { -0.392707f, 0.449474f },
+    { 0.151474f, 0.840401f },
+    { -0.563551f, -0.00443f },
+    { -0.282062f, -0.757933f },
+    { 0.413047f, 0.244246f },
 };
 /* Source: uo_cgame_mp_x86.dll 0x30071f30..0x30071f57 (.rdata); refs=1;
  * first=0x3003c0f3. Ten consecutive 1.0f values restore every alias-channel
  * volume through trap 220 / MSS_FadeSelectSounds. The following address
  * 0x30071f58 begins vec3_origin and is not part of this table. */
-const float cg_soundChannelFullVolumes[SND_ALIAS_CHANNEL_COUNT] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+const float cg_soundChannelFullVolumes[SND_ALIAS_CHANNEL_COUNT] = {
+    1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+};
 /* Source: uo_cgame_mp_x86.dll 0x30071f58 (.rdata); refs=32; first=0x300057b2.
  * A shared read-only zero vec3 {0,0,0}. The .rdata bytes are three consecutive
  * 0x00000000 dwords (0x30071f58/5c/60), NOT 1.0f: objdump -s -j .rdata around
@@ -358,22 +487,22 @@ const float cg_soundChannelFullVolumes[SND_ALIAS_CHANNEL_COUNT] = {1.0f, 1.0f, 1
  * mechanical export had truncated the run to a single 0x00000000 u32 and
  * mislabeled it; the three-dword read pattern above proves the shared type. */
 /* Source: uo_cgame_mp_x86.dll 0x30071f74..0x30071f83 (.rdata). */
-const vec4_t bg_proneColorRed = {1.0f, 0.0f, 0.0f, 1.0f};
+const vec4_t bg_proneColorRed = { 1.0f, 0.0f, 0.0f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30071f84..0x30071f93 (.rdata). */
-const vec4_t bg_proneColorGreen = {0.0f, 1.0f, 0.0f, 1.0f};
+const vec4_t bg_proneColorGreen = { 0.0f, 1.0f, 0.0f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30071fb4..0x30071fc3 (.rdata). */
-const vec4_t bg_proneColorYellow = {1.0f, 1.0f, 0.0f, 1.0f};
+const vec4_t bg_proneColorYellow = { 1.0f, 1.0f, 0.0f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30071fe4..0x30071ff3 (.rdata). */
-const vec4_t bg_proneColorMagenta = {1.0f, 0.0f, 1.0f, 1.0f};
+const vec4_t bg_proneColorMagenta = { 1.0f, 0.0f, 1.0f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30071ff4..0x30072003 (.rdata). */
-const vec4_t bg_proneColorCyan = {0.0f, 1.0f, 1.0f, 1.0f};
+const vec4_t bg_proneColorCyan = { 0.0f, 1.0f, 1.0f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30072014..0x30072023 (.rdata). Client-specific
  * medium cyan: raw component bits are 0, 0x3f000000, 0x3f000000, 0x3f800000. */
-const vec4_t bg_proneColorMediumCyan = {0.0f, 0.5f, 0.5f, 1.0f};
+const vec4_t bg_proneColorMediumCyan = { 0.0f, 0.5f, 0.5f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30072034 (.rdata); refs=7 width=imm; first=0x3000ccf6; owner=veh_findvaliddismountspot.
  * Example: 3000ccf6   68 34 20 07 30               PUSH 0x30072034 | 3000cd71   68 34 20 07 30               PUSH 0x30072034 | 30017ebb   68 34 20 07 30               PUSH 0x30072034
  */
-const vec4_t cg_colorWhite = {1.0f, 1.0f, 1.0f, 1.0f};
+const vec4_t cg_colorWhite = { 1.0f, 1.0f, 1.0f, 1.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3007285c (.rdata); refs=4 width=imm; first=0x300016e5; owner=bg_calculateweaponposition_sway.
  * Example: 300016e5   68 5c 28 07 30               PUSH 0x3007285c | 30005b55   68 5c 28 07 30               PUSH 0x3007285c | 3001e989   68 5c 28 07 30               PUSH 0x3007285c
  */
@@ -419,15 +548,15 @@ const char bg_unusedBoneName[9] = "*unused*";
  * datum is the "\x15BG_CanItemBeGrabbed: IT_BAD" Com_Error format taken by address at
  * 30005eff (PUSH 0x30072ddc). Leading '\x15' is the CoD error-channel marker byte.
  */
-const char bg_canItemBeGrabbedInvalidItemErrorMessage[29] = "\x15"
-                                                            "BG_CanItemBeGrabbed: IT_BAD";
+const char bg_canItemBeGrabbedInvalidItemErrorMessage[29] =
+    "\x15" "BG_CanItemBeGrabbed: IT_BAD";
 /* Source: uo_cgame_mp_x86.dll 0x30072dfc (.rdata); NUL-terminated string; first=0x30005e18.
  * Repaired from the mechanical first-dword uint32 g_const_u32_5f474215_30072dfc: the
  * datum is the "\x15BG_CanItemBeGrabbed: index out of range" Com_Error format taken by
  * address at 30005e18 (PUSH 0x30072dfc).
  */
-const char bg_canItemBeGrabbedIndexOutOfRangeErrorMessage[41] = "\x15"
-                                                                "BG_CanItemBeGrabbed: index out of range";
+const char bg_canItemBeGrabbedIndexOutOfRangeErrorMessage[41] =
+    "\x15" "BG_CanItemBeGrabbed: index out of range";
 /* Source: uo_cgame_mp_x86.dll 0x30074a0c (.rdata); refs=60 width=1..4; first=0x3000fe23.
  * Repaired: the mechanical export truncated a NUL-terminated .rdata string to its
  * first dword (0x00000000) as a uint32_t. Machine code proves it is the shared
@@ -680,11 +809,13 @@ const char cg_ammoCountSeparator[2] = "|";
 /* Source: uo_cgame_mp_x86.dll 0x30079a88 (.rdata); refs=1 width=imm; first=0x300339f1; owner=pm_checkduck.
  * Example: 300339f1   68 88 9a 07 30               PUSH 0x30079a88
  */
-const char cg_missingTurretTagWarning[] = "WARNING: aborting player positioning on turret since '%s' does not exist\n";
+const char cg_missingTurretTagWarning[] =
+    "WARNING: aborting player positioning on turret since '%s' does not exist\n";
 /* Source: uo_cgame_mp_x86.dll 0x30079ad4 (.rdata); refs=10 width=imm; first=0x30033116; owner=pm_checkduck.
  * Example: 30033116   68 d4 9a 07 30               PUSH 0x30079ad4 | 3003314c   68 d4 9a 07 30               PUSH 0x30079ad4 | 300333f0   68 d4 9a 07 30               PUSH 0x30079ad4
  */
-const char cg_playerAnimNoChildrenError[] = "\x15Player anim '%s' has no children";
+const char cg_playerAnimNoChildrenError[] =
+    "\x15Player anim '%s' has no children";
 /* Source: uo_cgame_mp_x86.dll 0x30079bbc (.rdata); refs=2 width=imm; first=0x30037b17; owner=item_textfield_paint.
  * Example: 30037b17   68 bc 9b 07 30               PUSH 0x30079bbc | 30037f77   68 bc 9b 07 30               PUSH 0x30079bbc
  */
@@ -780,11 +911,13 @@ const char g_str_ui_newScriptMenu[17] = "ui_newScriptMenu";
 /* Source: uo_cgame_mp_x86.dll 0x30079fd0..0x30079fdf (.rdata). */
 const char g_str_cmd_mr_noop_fmt[16] = "cmd mr %s noop\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a074..0x3007a0ab (.rdata). */
-const char g_str_scriptMenuNotLoadedFmt[57] = "Server tried to open a non-loaded script menu index: %i\n";
+const char g_str_scriptMenuNotLoadedFmt[57] =
+    "Server tried to open a non-loaded script menu index: %i\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a0b0..0x3007a0bd (.rdata). */
 const char g_str_cmd_mr_bad_fmt[15] = "cmd mr %i bad\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a0c0..0x3007a0f0 (.rdata). */
-const char g_str_scriptMenuBadIndexFmt[50] = "Server tried to open a bad script menu index: %i\n";
+const char g_str_scriptMenuBadIndexFmt[50] =
+    "Server tried to open a bad script menu index: %i\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a0f4 (.rdata); refs=1 width=imm; first=0x3003a56e; owner=bg_canitembegrabbed.
  * Example: 3003a56e   bf f4 a0 07 30               MOV EDI,0x3007a0f4
  */
@@ -848,14 +981,17 @@ const char cg_genericShellshockAliasName[8] = "generic";
 const char cg_clientFrameDiagnostic[] = "cg.clientFrame:%i\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a4f8 (.rdata); adjacent NUL-terminated
  * diagnostic string proven by the original bytes through 0x3007a53b. */
-const char cg_invalidWeaponSelectWarning[] = "WARNING: Invalid cg_weaponSelect setting %i (out of range 0 - %i)\n";
+const char cg_invalidWeaponSelectWarning[] =
+    "WARNING: Invalid cg_weaponSelect setting %i (out of range 0 - %i)\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a698 (.rdata); fatal view-builder diagnostic.
  * Preserve the original misspelling and newline exactly. */
-const char cg_cinematicCameraUnavailableMessage[52] = "Cinimatic Cameras are not available in the MP exe.\n";
+const char cg_cinematicCameraUnavailableMessage[52] =
+    "Cinimatic Cameras are not available in the MP exe.\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a6cc (.rdata); refs=1 width=imm; first=0x300415d1; owner=g_moverpush.
  * Example: 300415d1   68 cc a6 07 30               PUSH 0x3007a6cc
  */
-const char cg_turretMissingTagPlayerError[33] = "\x15Turret has no bone: tag_player\n";
+const char cg_turretMissingTagPlayerError[33] =
+    "\x15Turret has no bone: tag_player\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a850 (.rdata); refs=2 width=imm; first=0x30047c10; owner=script_method_scriptbuiltin_detach.
  * Example: 30047c10   68 50 a8 07 30               PUSH 0x3007a850 | 30047d68   68 50 a8 07 30               PUSH 0x3007a850
  */
@@ -870,7 +1006,8 @@ const char cg_weaponSlotCvarNameFormat[14] = "weaponslot %s";
 const char cg_brassEjectTagName[10] = "tag_brass";
 /* Source: uo_cgame_mp_x86.dll 0x3007a8d8 (.rdata); CG_FakeTrajectoryEffects
  * diagnostic emitted when the camera aim trace starts in solid. */
-const char cg_fakeTrajectoryStartedInSolidMessage[29] = "%i: bullet started in solid\n";
+const char cg_fakeTrajectoryStartedInSolidMessage[29] =
+    "%i: bullet started in solid\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007a8f8 (.rdata); refs=1 width=imm; first=0x30044861; owner=bg_checkpronevalid.
  * Example: 30044861   68 f8 a8 07 30               PUSH 0x3007a8f8
  */
@@ -906,18 +1043,15 @@ const char cg_registerWeaponWorldModelWarning[] = "WARNING: Weapon %s could not 
 /* Source: uo_cgame_mp_x86.dll 0x3007ab18 (.rdata); refs=2 width=imm; first=0x30043a95; owner=bg_checkpronevalid.
  * Example: 30043a95   68 18 ab 07 30               PUSH 0x3007ab18 | 30043ac5   68 18 ab 07 30               PUSH 0x3007ab18
  */
-const char cg_registerWeaponLoopingAdsError[] = "\x15"
-                                                "CG_RegisterWeapon: ADS anim [%s] cannot be looping";
+const char cg_registerWeaponLoopingAdsError[] = "\x15" "CG_RegisterWeapon: ADS anim [%s] cannot be looping";
 /* Source: uo_cgame_mp_x86.dll 0x3007ab58 (.rdata); refs=1 width=imm; first=0x3004369e; owner=bg_checkpronevalid.
  * Example: 3004369e   68 58 ab 07 30               PUSH 0x3007ab58
  */
-const char cg_registerWeaponMissingIdleError[] = "\x15"
-                                                 "CG_RegisterWeapon: No idle anim specified for [%s]";
+const char cg_registerWeaponMissingIdleError[] = "\x15" "CG_RegisterWeapon: No idle anim specified for [%s]";
 /* Source: uo_cgame_mp_x86.dll 0x3007ab8c (.rdata); refs=1 width=imm; first=0x3004367f; owner=bg_checkpronevalid.
  * Example: 3004367f   68 8c ab 07 30               PUSH 0x3007ab8c
  */
-const char cg_registerWeaponMissingHandError[] = "\x15"
-                                                 "CG_RegisterWeapon: No hand model specified for [%s]";
+const char cg_registerWeaponMissingHandError[] = "\x15" "CG_RegisterWeapon: No hand model specified for [%s]";
 /* Source: uo_cgame_mp_x86.dll 0x3007abc4 (.rdata); refs=1 width=imm; first=0x30042f45; owner=CG_WeaponRunXModelAnims.
  * Example: 30042f45   68 c4 ab 07 30               PUSH 0x3007abc4
  * Repaired mechanical global -> the real datum is a Com_Printf format string, its
@@ -927,7 +1061,8 @@ const char cg_registerWeaponMissingHandError[] = "\x15"
  *   3007abe4  20776561 706f6e20 616e696d 6174696f   weapon animatio
  *   3007abf4  6e202569 0a00                         n %i\0
  */
-const char cg_weaponRunXModelAnimsInvalidAnimFmt[54] = "CG_WeaponRunXModelAnims: Unknown weapon animation %i\n";
+const char cg_weaponRunXModelAnimsInvalidAnimFmt[54] =
+    "CG_WeaponRunXModelAnims: Unknown weapon animation %i\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007ace0 (.rdata); refs=1; first=0x3004d3b7.
  * Mechanical owner g_dropartillery is wrong and the width was wrong: this is a
  * NUL-terminated format string the exporter truncated to its first dword
@@ -937,8 +1072,7 @@ const char cg_weaponRunXModelAnimsInvalidAnimFmt[54] = "CG_WeaponRunXModelAnims:
  * Consumed by Com_ScriptError (0x3004d370) as the Com_Error format string.
  * Example: 3004d3b7   68 e0 ac 07 30               PUSH 0x3007ace0
  */
-const char com_scriptErrorWithSourceFormat[22] = "\x15"
-                                                 "File %s, line %i: %s";
+const char com_scriptErrorWithSourceFormat[22] = "\x15" "File %s, line %i: %s";
 /* Source: uo_cgame_mp_x86.dll 0x3007ad20 (.rdata); refs=1; first=0x3004d25a.
  * The Com_BeginParseSession session-overflow error text. The mechanical export
  * truncated this NUL-terminated string to its first dword (0x6d6f4315); the real
@@ -946,24 +1080,22 @@ const char com_scriptErrorWithSourceFormat[22] = "\x15"
  * leading 0x15 is the CoD console error-channel marker byte.
  * Example: 3004d25a   68 20 ad 07 30               PUSH 0x3007ad20
  */
-const char com_parseSessionOverflowErrorMessage[] = "\x15"
-                                                    "Com_BeginParseSession: session overflow";
+const char com_parseSessionOverflowErrorMessage[] =
+    "\x15" "Com_BeginParseSession: session overflow";
 /* Source: uo_cgame_mp_x86.dll 0x3007afc8 (.rdata); refs=1 first=0x3004e8d5; consumed by va.
  * Example: 3004e8d5   68 c8 af 07 30               PUSH 0x3007afc8
  * The mechanical export truncated this NUL-terminated string to its first dword
  * (0x74744115 = bytes 15 41 74 74). It is the va() overflow message; the leading
  * 0x15 is the CoD console error-channel marker byte Com_Error emits verbatim.
  */
-const char va_overrunErrorString[] = "\x15"
-                                     "Attempted to overrun string in call to va()\n";
+const char va_overrunErrorString[] = "\x15" "Attempted to overrun string in call to va()\n";
 /* Source: uo_cgame_mp_x86.dll 0x3007bc40 (.rdata); refs=1; first=0x3004ff0c.
  * Example: 3004ff0c   68 40 bc 07 30               PUSH 0x3007bc40
  * NUL-terminated .rdata string; the mechanical export truncated it to its first dword
  * (0x72745315). Consumed on the String_Alloc (0x3004fe00) pool-overflow path as the
  * Com_Error(ERR_FATAL, ...) format. \x15 / \x14 are CoD console channel-marker
  * bytes emitted verbatim; EXE_ERR_OUT_OF_MEMORY is a localization token. */
-const char stringAlloc_outOfMemory_msg[] = "\x15String_Alloc: \x14"
-                                           "EXE_ERR_OUT_OF_MEMORY";
+const char stringAlloc_outOfMemory_msg[] = "\x15String_Alloc: \x14" "EXE_ERR_OUT_OF_MEMORY";
 /* Source: uo_cgame_mp_x86.dll 0x3007bc68 (.rdata); refs=1; first=0x3004ff02.
  * Example: 3004ff02   68 68 bc 07 30               PUSH 0x3007bc68
  * NUL-terminated .rdata string; the mechanical export truncated it to its first dword
@@ -976,8 +1108,7 @@ const char stringAlloc_allocFailed_fmt[] = "String_Alloc: failed to allocate %d 
  * (0x5f495515). Consumed on the UI_Alloc (0x3004fd50) pool-overflow path as the
  * Com_Error(ERR_DROP, ...) format. \x15 / \x14 are CoD console channel-marker
  * bytes emitted verbatim; EXE_ERR_OUT_OF_MEMORY is a localization token. */
-const char uiAlloc_outOfMemory_msg[] = "\x15UI_Alloc: \x14"
-                                       "EXE_ERR_OUT_OF_MEMORY";
+const char uiAlloc_outOfMemory_msg[] = "\x15UI_Alloc: \x14" "EXE_ERR_OUT_OF_MEMORY";
 /* Source: uo_cgame_mp_x86.dll 0x3007bcb8 (.rdata); refs=1; first=0x3004fd61.
  * Example: 3004fd61   68 b8 bc 07 30               PUSH 0x3007bcb8
  * NUL-terminated .rdata string; the mechanical export truncated it to its first dword
@@ -1095,7 +1226,10 @@ gitem_t bg_itemlist[134] = {
 #include "recovered_initializers/bg_itemlist.inc"
 };
 /* Source: uo_cgame_mp_x86.dll 0x3008425c..0x30084280 (.data). */
-const pmLerpEntry_t pm_viewHeightCrouchToProneLinear[3] = {{0, 40.0f, 0}, {100, 11.0f, 0}, {PM_LERP_TABLE_END, 0.0f, 0}};
+const pmLerpEntry_t pm_viewHeightCrouchToProneLinear[3] = {
+    { 0, 40.0f, 0 }, { 100, 11.0f, 0 },
+    { PM_LERP_TABLE_END, 0.0f, 0 }
+};
 /* Source: uo_cgame_mp_x86.dll 0x300842e0 (.data); refs=2 width=4; first=0x30014a9a.
  * Example: 30014a9a   8b 15 e0 42 08 30            MOV EDX,dword ptr [0x300842e0] | 30014bd7   8b 15 e0 42 08 30            MOV EDX,dword ptr [0x300842e0]
  * Debug tag string pointer read as the "%s" of the shared " %i %s_" line prefix.
@@ -1119,28 +1253,37 @@ int32_t PMDebugLastWeaponState = -1;
  * PMDebugLastWeaponState; repaired from the mechanical uint32_t/owner label. */
 uint32_t PMDebugLastWeaponAnim = (uint32_t)0xffffffffu;
 /* Source: uo_cgame_mp_x86.dll 0x3008516c..0x300851ac (.data). */
-const vec4_t cg_hudColorTable[4] = {{1.0f, 0.2f, 0.2f, 1.0f}, {0.2f, 0.2f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.7f, 0.7f, 0.7f, 1.0f}};
+const vec4_t cg_hudColorTable[4] = {
+    { 1.0f, 0.2f, 0.2f, 1.0f }, { 0.2f, 0.2f, 1.0f, 1.0f },
+    { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.7f, 0.7f, 0.7f, 1.0f }
+};
 /* Source: uo_cgame_mp_x86.dll 0x300851ac..0x300851c4 (.data), six pointers.
  * Raw pointer order (objdump): 0x30077278, 0x30077260, 0x3007724c,
  * 0x30077234, 0x3007721c, 0x30077204. CG_Vehicle_DoControllers walks exactly
  * these six cells and passes each pointed-to string directly to trap 0xb2.
  * PE_RELOCATION_VALUES_VERIFIED. */
 const char *const cg_vehicleWheelTags[6] = {
-    "tag_wheel_front_left", "tag_wheel_front_right", "tag_wheel_back_left",
-    "tag_wheel_back_right", "tag_wheel_middle_left", "tag_wheel_middle_right",
+    "tag_wheel_front_left",
+    "tag_wheel_front_right",
+    "tag_wheel_back_left",
+    "tag_wheel_back_right",
+    "tag_wheel_middle_left",
+    "tag_wheel_middle_right",
 };
 /* Source: uo_cgame_mp_x86.dll 0x300851c4 (.data); refs=4 width=imm; first=0x3002132f; owner=bg_animparseanimscript.
  * Example: 3002132f   3d c4 51 08 30               CMP EAX,0x300851c4 | 3002449e   68 c4 51 08 30               PUSH 0x300851c4 | 300260f5   ba c4 51 08 30               MOV EDX,0x300851c4
  */
-vec3_t cg_flameTraceMins = {-2.0f, -2.0f, -2.0f};
+vec3_t cg_flameTraceMins = { -2.0f, -2.0f, -2.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300851d0 (.data); refs=4 width=4; first=0x300244c4; owner=cg_addflamechunks.
  * Example: 300244c4   bb d0 51 08 30               MOV EBX,0x300851d0 | 3002606b   d8 1d d0 51 08 30            FCOMP float ptr [0x300851d0] | 300260f0   b9 d0 51 08 30               MOV ECX,0x300851d0
  */
-vec3_t cg_flameTraceMaxs = {2.0f, 2.0f, 2.0f};
+vec3_t cg_flameTraceMaxs = { 2.0f, 2.0f, 2.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300851dc (.data); refs=1 width=4; first=0x30026db1; owner=cg_addflamespritetoscene.
  * Example: 30026db1   a1 dc 51 08 30               MOV EAX,[0x300851dc]
  */
-uint32_t cg_flameSpriteState[5] = {1u, 1u, 0x3f800000u, 0x3f800000u, 0x3f800000u};
+uint32_t cg_flameSpriteState[5] = {
+    1u, 1u, 0x3f800000u, 0x3f800000u, 0x3f800000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x300851e0 (.data); refs=1 width=4; first=0x30027a99; owner=bg_finditem.
  * Example: 30027a99   c7 05 e0 51 08 30 00 00 00 00 MOV dword ptr [0x300851e0],0x0
  * Renamed cg_flameInitStateReset; role provisional (single write to 0, no reader).
@@ -1152,8 +1295,7 @@ uint32_t cg_flameSpriteState[5] = {1u, 1u, 0x3f800000u, 0x3f800000u, 0x3f800000u
  * PE_DIRECT_RELOCATION_INITIALIZER: recover_cvar_table.py emits every pointer
  * and scalar from the corresponding PE entry. */
 #include "recovered_initializers/cg_cvar_object_decls.inc"
-const cvarTable_t cg_cvarTable[CG_CVAR_TABLE_COUNT] = {
-/* 0x300851f0; PE_DIRECT_RELOCATION_INITIALIZER */
+const cvarTable_t cg_cvarTable[CG_CVAR_TABLE_COUNT] = { /* 0x300851f0; PE_DIRECT_RELOCATION_INITIALIZER */
 #include "recovered_initializers/cg_cvar_table.inc"
 };
 /* Source: uo_cgame_mp_x86.dll 0x30085d70..0x30085d9b (.data); 11 initialized string pointers.
@@ -1161,10 +1303,14 @@ const cvarTable_t cg_cvarTable[CG_CVAR_TABLE_COUNT] = {
  * export captured only element 0 (the "zero_32b" pointer at 0x300784b8); superseded here as
  * the full initialized table (pointer values verified via objdump of 0x30085d70).
  * PE_RELOCATION_VALUES_VERIFIED. */
-const char *const cg_numberShaderNames[11] = {"gfx/2d/numbers/zero_32b",  "gfx/2d/numbers/one_32b",   "gfx/2d/numbers/two_32b",
-                                              "gfx/2d/numbers/three_32b", "gfx/2d/numbers/four_32b",  "gfx/2d/numbers/five_32b",
-                                              "gfx/2d/numbers/six_32b",   "gfx/2d/numbers/seven_32b", "gfx/2d/numbers/eight_32b",
-                                              "gfx/2d/numbers/nine_32b",  "gfx/2d/numbers/minus_32b"};
+const char *const cg_numberShaderNames[11] = {
+    "gfx/2d/numbers/zero_32b",  "gfx/2d/numbers/one_32b",
+    "gfx/2d/numbers/two_32b",   "gfx/2d/numbers/three_32b",
+    "gfx/2d/numbers/four_32b",  "gfx/2d/numbers/five_32b",
+    "gfx/2d/numbers/six_32b",   "gfx/2d/numbers/seven_32b",
+    "gfx/2d/numbers/eight_32b", "gfx/2d/numbers/nine_32b",
+    "gfx/2d/numbers/minus_32b"
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085da0 (.data); refs=6 width=4; first=0x3002f005; owner=bullet_fire_extended.
  * cg_stanceHintChangeTime — cg.time (ms) at which the player's stance/snapshot flags
  * last changed; the animation windows key off (cg.time - this) against 0xbb8/0x7d0/
@@ -1217,33 +1363,33 @@ int32_t cg_scoreboardLeadTeam = 2;
  * PE_RELOCATION_VALUES_VERIFIED: both 27-entry pointer tables match the PE.
  */
 const char *const cg_shockParamNames[CG_SHOCK_PARAM_COUNT] = {
-    "cg_shock_screenBlendTime", /* 0x30078bc8 */
-    "cg_shock_screenBlendFadeTime", /* 0x30078ba8 */
-    "cg_shock_viewKickPeriod", /* 0x30078b90 */
-    "cg_shock_viewKickRadius", /* 0x30078b74 */
-    "cg_shock_sound", /* 0x30078b60 */
-    "cg_shock_soundFadeInTime", /* 0x30078b44 */
-    "cg_shock_soundFadeOutTime", /* 0x30078b20 */
-    "cg_shock_soundLoopFadeTime", /* 0x30078b00 */
-    "cg_shock_soundLoopEndDelay", /* 0x30078ae0 */
-    "cg_shock_soundRoomType", /* 0x30078ac0 */
-    "cg_shock_soundWetLevel", /* 0x30078a9c */
-    "cg_shock_soundModEndDelay", /* 0x30078a7c */
-    "cg_shock_volume_auto", /* 0x30078a64 */
-    "cg_shock_volume_menu", /* 0x30078a48 */
-    "cg_shock_volume_weapon", /* 0x30078a30 */
-    "cg_shock_volume_voice", /* 0x30078a18 */
-    "cg_shock_volume_item", /* 0x300789fc */
-    "cg_shock_volume_body", /* 0x300789e4 */
-    "cg_shock_volume_local", /* 0x300789cc */
-    "cg_shock_volume_music", /* 0x300789b4 */
-    "cg_shock_volume_announcer", /* 0x30078998 */
-    "cg_shock_volume_shellshock", /* 0x3007897c */
-    "cg_shock_mouse", /* 0x3007896c */
-    "cg_shock_mouse_maxpitchspeed", /* 0x3007894c */
-    "cg_shock_mouse_maxyawspeed", /* 0x3007892c */
-    "cg_shock_mouse_sensitivityscale", /* 0x3007890c */
-    "cg_shock_mouse_fadeTime", /* 0x300788f4 */
+    "cg_shock_screenBlendTime",       /* 0x30078bc8 */
+    "cg_shock_screenBlendFadeTime",   /* 0x30078ba8 */
+    "cg_shock_viewKickPeriod",        /* 0x30078b90 */
+    "cg_shock_viewKickRadius",        /* 0x30078b74 */
+    "cg_shock_sound",                 /* 0x30078b60 */
+    "cg_shock_soundFadeInTime",       /* 0x30078b44 */
+    "cg_shock_soundFadeOutTime",      /* 0x30078b20 */
+    "cg_shock_soundLoopFadeTime",     /* 0x30078b00 */
+    "cg_shock_soundLoopEndDelay",     /* 0x30078ae0 */
+    "cg_shock_soundRoomType",         /* 0x30078ac0 */
+    "cg_shock_soundWetLevel",         /* 0x30078a9c */
+    "cg_shock_soundModEndDelay",      /* 0x30078a7c */
+    "cg_shock_volume_auto",           /* 0x30078a64 */
+    "cg_shock_volume_menu",           /* 0x30078a48 */
+    "cg_shock_volume_weapon",         /* 0x30078a30 */
+    "cg_shock_volume_voice",          /* 0x30078a18 */
+    "cg_shock_volume_item",           /* 0x300789fc */
+    "cg_shock_volume_body",           /* 0x300789e4 */
+    "cg_shock_volume_local",          /* 0x300789cc */
+    "cg_shock_volume_music",          /* 0x300789b4 */
+    "cg_shock_volume_announcer",      /* 0x30078998 */
+    "cg_shock_volume_shellshock",     /* 0x3007897c */
+    "cg_shock_mouse",                 /* 0x3007896c */
+    "cg_shock_mouse_maxpitchspeed",   /* 0x3007894c */
+    "cg_shock_mouse_maxyawspeed",     /* 0x3007892c */
+    "cg_shock_mouse_sensitivityscale",/* 0x3007890c */
+    "cg_shock_mouse_fadeTime",        /* 0x300788f4 */
 };
 /* The 27 target-table entries at 0x30085e30 are scattered vmCvar_t objects,
  * not one contiguous array. Each address below is the corresponding original
@@ -1307,74 +1453,72 @@ vmCvar_t cg_shockMouseFadeTime;
  * exactly the values listed above, in cg_shockParamNames order.
  * PE_RELOCATION_VALUES_VERIFIED. */
 vmCvar_t *const cg_shockParamTargets[CG_SHOCK_PARAM_COUNT] = {
-    &cg_shockScreenBlendTime,
-    &cg_shockScreenBlendFadeTime,
-    &cg_shockViewKickPeriod,
-    &cg_shockViewKickRadius,
-    &cg_shockSound,
-    &cg_shockSoundFadeInTime,
-    &cg_shockSoundFadeOutTime,
-    &cg_shockSoundLoopFadeTime,
-    &cg_shockSoundLoopEndDelay,
-    &cg_shockSoundRoomType,
-    &cg_shockSoundWetLevel,
-    &cg_shockSoundModEndDelay,
-    &cg_shockVolumeAuto,
-    &cg_shockVolumeMenu,
-    &cg_shockVolumeWeapon,
-    &cg_shockVolumeVoice,
-    &cg_shockVolumeItem,
-    &cg_shockVolumeBody,
-    &cg_shockVolumeLocal,
-    &cg_shockVolumeMusic,
-    &cg_shockVolumeAnnouncer,
-    &cg_shockVolumeShellshock,
-    &cg_shockMouse,
-    &cg_shockMouseMaxPitchSpeed,
-    &cg_shockMouseMaxYawSpeed,
-    &cg_shockMouseSensitivityScale,
+    &cg_shockScreenBlendTime, &cg_shockScreenBlendFadeTime,
+    &cg_shockViewKickPeriod, &cg_shockViewKickRadius, &cg_shockSound,
+    &cg_shockSoundFadeInTime, &cg_shockSoundFadeOutTime,
+    &cg_shockSoundLoopFadeTime, &cg_shockSoundLoopEndDelay,
+    &cg_shockSoundRoomType, &cg_shockSoundWetLevel, &cg_shockSoundModEndDelay,
+    &cg_shockVolumeAuto, &cg_shockVolumeMenu, &cg_shockVolumeWeapon,
+    &cg_shockVolumeVoice, &cg_shockVolumeItem, &cg_shockVolumeBody,
+    &cg_shockVolumeLocal, &cg_shockVolumeMusic, &cg_shockVolumeAnnouncer,
+    &cg_shockVolumeShellshock, &cg_shockMouse, &cg_shockMouseMaxPitchSpeed,
+    &cg_shockMouseMaxYawSpeed, &cg_shockMouseSensitivityScale,
     &cg_shockMouseFadeTime,
 };
 /* Source: uo_cgame_mp_x86.dll 0x30085ea0 (.data); refs=3 width=imm; first=0x3003f7bb; owner=scr_vehicle_damagescale.
  * Example: 3003f7bb   68 a0 5e 08 30               PUSH 0x30085ea0 | 3003f846   68 a0 5e 08 30               PUSH 0x30085ea0 | 3003f8b8   68 a0 5e 08 30               PUSH 0x30085ea0
  */
-uint32_t cg_vehicleDamageBoundsMinsBits[3] = {0xc0800000u, 0xc0800000u, 0xc0800000u};
+uint32_t cg_vehicleDamageBoundsMinsBits[3] = {
+    0xc0800000u, 0xc0800000u, 0xc0800000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085eac (.data); refs=1 width=imm; first=0x3003f7df; owner=scr_vehicle_damagescale.
  * Example: 3003f7df   bb ac 5e 08 30               MOV EBX,0x30085eac
  */
-uint32_t cg_vehicleDamageBoundsMaxsBits[3] = {0x40800000u, 0x40800000u, 0x40800000u};
+uint32_t cg_vehicleDamageBoundsMaxsBits[3] = {
+    0x40800000u, 0x40800000u, 0x40800000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085eb8 (.data); refs=1 width=imm; first=0x3003fd06; owner=pm_weapon_finishweaponchange.
  * Example: 3003fd06   68 b8 5e 08 30               PUSH 0x30085eb8
  */
-uint32_t cg_weaponChangeBoundsMinsBits[3] = {0xc1000000u, 0xc1000000u, 0xc1000000u};
+uint32_t cg_weaponChangeBoundsMinsBits[3] = {
+    0xc1000000u, 0xc1000000u, 0xc1000000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085ec4 (.data); refs=1 width=imm; first=0x3003fcc0; owner=pm_weapon_finishweaponchange.
  * Example: 3003fcc0   bb c4 5e 08 30               MOV EBX,0x30085ec4
  */
-uint32_t cg_weaponChangeBoundsMaxsBits[3] = {0x41000000u, 0x41000000u, 0x41000000u};
+uint32_t cg_weaponChangeBoundsMaxsBits[3] = {
+    0x41000000u, 0x41000000u, 0x41000000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085ed0 (.data). */
 float cg_weaponChangeAngleLimit = 90.0f;
 /* Source: uo_cgame_mp_x86.dll 0x30085ed4 (.data); refs=1 width=imm; first=0x30041d52; owner=pm_ufomove.
  * Example: 30041d52   68 d4 5e 08 30               PUSH 0x30085ed4
  */
-uint32_t cg_ufoMoveBoundsMinsBits[3] = {0xc1000000u, 0xc1000000u, 0xc1000000u};
+uint32_t cg_ufoMoveBoundsMinsBits[3] = {
+    0xc1000000u, 0xc1000000u, 0xc1000000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085ee0 (.data); refs=1 width=imm; first=0x30041d72; owner=pm_ufomove.
  * Example: 30041d72   bb e0 5e 08 30               MOV EBX,0x30085ee0
  */
-uint32_t cg_ufoMoveBoundsMaxsBits[3] = {0x41000000u, 0x41000000u, 0x41000000u};
+uint32_t cg_ufoMoveBoundsMaxsBits[3] = {
+    0x41000000u, 0x41000000u, 0x41000000u
+};
 /* Source: uo_cgame_mp_x86.dll 0x30085eec (.data); refs=6 width=4; first=0x300463f5; owner=item_listbox_paint.
  * Example: 300463f5   8b 15 ec 5e 08 30            MOV EDX,dword ptr [0x30085eec] | 3004642f   8b 0d ec 5e 08 30            MOV ECX,dword ptr [0x30085eec] | 30047e15   8b 04 8d ec 5e 08 30         MOV EAX,dword ptr [ECX*0x4 + 0x30085eec]
  * PE_RELOCATION_VALUES_VERIFIED: six tag-string pointers match the PE.
  */
 const char *cg_muzzleTagNames[6] = {
-    "tag_flash", /* [0] 0x300772c0 */
-    "tag_flash_11", /* [1] 0x3007ac38 */
-    "tag_flash_2", /* [2] 0x3007ac2c */
-    "tag_flash_22", /* [3] 0x3007ac1c */
-    "tag_altfire", /* [4] 0x3007ac10 */
+    "tag_flash",           /* [0] 0x300772c0 */
+    "tag_flash_11",        /* [1] 0x3007ac38 */
+    "tag_flash_2",         /* [2] 0x3007ac2c */
+    "tag_flash_22",        /* [3] 0x3007ac1c */
+    "tag_altfire",         /* [4] 0x3007ac10 */
     "tag_secondary_flash", /* [5] 0x3007abfc */
 };
 /* Source: uo_cgame_mp_x86.dll 0x30085f04..0x30085f20 (.data). */
-const float cg_muzzleEffectBoundsAndBias[7] = {-4.0f, -4.0f, -4.0f, 4.0f, 4.0f, 4.0f, 0.0f};
+const float cg_muzzleEffectBoundsAndBias[7] = {
+    -4.0f, -4.0f, -4.0f, 4.0f, 4.0f, 4.0f, 0.0f
+};
 /* 0x30085efc and 0x30085f00 are cg_muzzleTagNames[4] and [5], not standalone
  * globals; their direct dword loads select tag_altfire/tag_secondary_flash. */
 /* Source: uo_cgame_mp_x86.dll 0x30134cdc; reset after CG_LoadHud_f reloads HUD menus. */
@@ -1513,11 +1657,11 @@ renderer_frame_statistics_t cg_rendererStats = {0};
  * vec4_t into four owner=pm_addtouchent dwords (a size-match misname, rejected);
  * unified here. Example: 3001d24b MOV [0x300a84e8],0x3f800000 (=1.0f) |
  * 3001d255 MOV EAX,0x300a84e8 | 3001d25a FSTP float ptr [0x300a84f4]. */
-vec4_t cg_fadeColor = {0.0f, 0.0f, 0.0f, 0.0f};
+vec4_t cg_fadeColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300a84f8..0x300a8503 (.data) — cg_flameSpriteSrcRight vec3.
  * Written by CG_FireFlameChunks (0x30027dbd/dc7/dd3) = cg_refdef.viewaxis[1]; read by
  * CG_AddFlameSpriteToScene (0x30026de7/ded/df2). Retyped from three uint32_t placeholders. */
-vec3_t cg_flameSpriteSrcRight = {0.0f, 0.0f, 0.0f};
+vec3_t cg_flameSpriteSrcRight = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300a8508 (.data); refs=3 width=4; first=0x30027119; owner=cg_addflamespritetoscene.
  * Example: 30027119   8b 04 8d 08 85 0a 30         MOV EAX,dword ptr [ECX*0x4 + 0x300a8508] | 3002723d   8b 14 b5 08 85 0a 30         MOV EDX,dword ptr [ESI*0x4 + 0x300a8508] | 30027a24   89 04 9d 08 85 0a 30         MOV dword ptr [EBX*0x4 + 0x300a8508],EAX
  * Retyped to the flamethrower-fire material handle table cg_flameFireMaterials[43]
@@ -1610,7 +1754,7 @@ vec3_t cg_flameLastSpritePos = {0.0f, 0.0f, 0.0f};
 /* Source: uo_cgame_mp_x86.dll 0x300ab744..0x300ab74f (.data) — cg_flameSpriteSrcUp vec3.
  * Written by CG_FireFlameChunks (0x30027ddf/de4/dea) = cg_refdef.viewaxis[2]; read by
  * CG_AddFlameSpriteToScene (0x30026dfe/e09/e14). Retyped from three uint32_t placeholders. */
-vec3_t cg_flameSpriteSrcUp = {0.0f, 0.0f, 0.0f};
+vec3_t cg_flameSpriteSrcUp = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300ab750 (.data); refs=9 width=4; first=0x300240a3; owner=cg_addflamechunks.
  * Example: 300240a3   81 c5 50 b7 0a 30            ADD EBP,0x300ab750 | 30025589   bf 50 b7 0a 30               MOV EDI,0x300ab750 | 30025e36   8b b0 50 b7 0a 30            MOV ESI,dword ptr [EAX + 0x300ab750]
  */
@@ -1648,7 +1792,7 @@ int32_t cg_numActiveFlameChunks = 0;
  * supersedes the three mechanical dword aliases (0x300d9760/64/68) into one vec3. The
  * mechanical owner=item_listbox_overlb was the first toucher, not the identity.
  * Example: 30026694 MOV [0x300d9760],EAX | 3002669c MOV [0x300d9764],ECX | 300266a5 MOV [0x300d9768],EDX */
-vec3_t cg_flameDamageBestPos = {0.0f, 0.0f, 0.0f};
+vec3_t cg_flameDamageBestPos = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300d9770..0x300d9880 (.data) — r_overbrightbits
  * vmCvar mirror. 0x300d977c is its .integer at +0x0c. The comparison immediate
  * 0x300d97b0 in CG_UpdateFlamethrowerSounds is independently a one-past cursor
@@ -1675,7 +1819,7 @@ char cg_translateMessageBuffers[2][MAX_STRING_CHARS];
  * read as a C string by Q_stricmpn; many other sites (e.g. 0x3002b4d5) reuse it as
  * a formatting/argv workspace. owner=script_func_vectordot is the wrong first-toucher label.
  */
-char g_textScratchBuffer[MAX_STRING_CHARS] = {0};
+char g_textScratchBuffer[MAX_STRING_CHARS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300da888..0x300db888 (.data); 4096-byte text buffer.
  * cg_menuListText — the buffer CG_LoadMenus (0x3002d2d0) reads a "loadmenu { ... }"
  * menu-list file into (CG_FS_READ), NUL-terminates, Com_Compress()es, and parses in
@@ -1683,7 +1827,7 @@ char g_textScratchBuffer[MAX_STRING_CHARS] = {0};
  * the next distinct global at 0x300db888. The mechanical export captured only the
  * first dword (width=1/4) with the wrong owner label bg_setupweaponalts (a rejected
  * size-guess for CG_LoadMenus); superseded here by the real char[4096] buffer. */
-char cg_menuListText[MAX_MENULIST_FILE] = {0};
+char cg_menuListText[MAX_MENULIST_FILE] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300db888..0x300dbc88 (.data); 1024-byte result buffer.
  * cg_translatedLocationString — the static buffer CG_GetTranslatedLocationString
  * (0x300310b0) builds an untranslated location name into. The mechanical export
@@ -1691,12 +1835,12 @@ char cg_menuListText[MAX_MENULIST_FILE] = {0};
  * (g_data_menus_removefromstack_300db888/88c/890/894/898); those are one buffer and
  * are superseded here by the proven array shape (owner=menus_removefromstack was a
  * size-match first-toucher label). */
-char cg_translatedLocationString[MAX_STRING_CHARS] = {0};
+char cg_translatedLocationString[MAX_STRING_CHARS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300dbc88 (.data); 256-entry trigger-entity list
  * built by CG_BuildSolidList and consumed by CG_TouchTriggerPrediction.
  * Example: 3003508a   89 04 9d 88 bc 0d 30         MOV dword ptr [EBX*0x4 + 0x300dbc88],EAX | 30035750   8b 3c b5 88 bc 0d 30         MOV EDI,dword ptr [ESI*0x4 + 0x300dbc88]
  */
-centity_t *cg_triggerEntities[256] = {0};
+centity_t *cg_triggerEntities[256] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300dc088 (.data); refs=4 width=4; first=0x3003504e; owner=concussive_fx.
  * Valid-pointer count for cg_triggerEntities[].
  * Example: 3003504e   89 1d 88 c0 0d 30            MOV dword ptr [0x300dc088],EBX | 300350b7   89 1d 88 c0 0d 30            MOV dword ptr [0x300dc088],EBX | 3003573d   a1 88 c0 0d 30               MOV EAX,[0x300dc088]
@@ -1709,7 +1853,7 @@ int32_t cg_numSolidEntities = 0;
 /* Source: uo_cgame_mp_x86.dll 0x300dc090 (.data); refs=3 width=4; first=0x30035098.
  * Per-frame 256-entry solid-entity collision list.
  * Example: 30035098 89 04 ad 90 c0 0d 30 MOV [EBP*4 + 0x300dc090],EAX | 30035443 8b 34 bd 90 c0 0d 30 MOV ESI,[EDI*4 + 0x300dc090] */
-centity_t *cg_solidEntities[256] = {0};
+centity_t *cg_solidEntities[256] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300dc490 (.data); refs=11 width=4; first=0x30035865; owner=pmovesingle.
  * Example: 30035865   c7 05 90 c4 0d 30 c4 31 48 30 MOV dword ptr [0x300dc490],0x304831c4 | 30035898   8b 15 90 c4 0d 30            MOV EDX,dword ptr [0x300dc490] | 3003595f   a1 90 c4 0d 30               MOV EAX,[0x300dc490]
  */
@@ -1811,7 +1955,7 @@ pmove_t cg_pmove = {0};
  * dword/byte symbols (…b0/…b4/…b8/…bc/…c0, first=0x3003a1ad) which were really
  * stores into offsets 0/4/8/0xc/0x10 during the inlined strcpy of the constant
  * prefix; superseded here as the single buffer. */
-char cg_translatedVoiceChatString[MAX_STRING_CHARS] = {0};
+char cg_translatedVoiceChatString[MAX_STRING_CHARS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9b0 (.data); owner=CG_CalcVehicleViewPos (0x30040810;
  * the mechanical owner=pm_slidemove was that function's rejected size-guess name).
  * Example: 3004109d   89 15 b0 c9 0d 30            MOV dword ptr [0x300dc9b0],cg_time
@@ -1822,16 +1966,16 @@ int32_t cg_vehicleViewSwayPrevTime = 0;
  * mechanical per-dword pm_slidemove symbols).
  * Example: 30041097 FSTP [0x300dc9b4] | 30041190 FSTP [0x300dc9b8] | 300411a4 MOV EAX,[0x300dc9b4]
  */
-vec3_t cg_vehicleViewSwayOrigin = {0.0f, 0.0f, 0.0f};
+vec3_t cg_vehicleViewSwayOrigin = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9c0 (.data); previous view angles passed
  * on the stack to BG_CalculateWeaponPosition_Sway at 0x30041796.
  * Example: 30041796   68 c0 c9 0d 30               PUSH 0x300dc9c0
  */
-vec3_t cg_turretViewSwayPreviousViewAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_turretViewSwayPreviousViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9cc (.data); refs=1 width=imm; first=0x3004179b; owner=g_moverpush.
  * Example: 3004179b   bf cc c9 0d 30               MOV EDI,0x300dc9cc
  */
-vec2_t cg_turretViewSwayViewAngles = {0.0f, 0.0f};
+vec2_t cg_turretViewSwayViewAngles = { 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9d8 (.data); refs=4 width=4; first=0x300400f6; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 300400f6   39 35 d8 c9 0d 30            CMP dword ptr [0x300dc9d8],ESI | 30040120   89 35 d8 c9 0d 30            MOV dword ptr [0x300dc9d8],ESI | 30040200   a1 d8 c9 0d 30               MOV EAX,[0x300dc9d8]
  */
@@ -1841,13 +1985,13 @@ int32_t cg_fovLastVehiclePosition = 0; /* 0x300dc9d8; see globals.h. CG_CalcFov 
  * scalars in the thompson-sway blend arm. Consolidated from the per-dword pm_slidemove symbols.
  * Example: 30040977 MOV EAX,0x300dc9dc | 30040b2a FMUL [0x300dc9dc] | 30040be7 FLD [0x300dc9e4]
  */
-vec3_t cg_vehicleViewSwayOffset = {0.0f, 0.0f, 0.0f};
+vec3_t cg_vehicleViewSwayOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9e8/ec/f0 (.data); owner=CG_CalcVehicleViewPos.
  * Previous view angles passed on the stack to BG_CalculateWeaponPosition_Sway
  * (address at 0x3004096d).
  * Example: 3004096d   68 e8 c9 0d 30               PUSH 0x300dc9e8
  */
-vec3_t cg_vehicleViewSwayPreviousViewAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_vehicleViewSwayPreviousViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dc9f4 (.data); refs=5 width=4; first=0x300400ea; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 300400ea   89 15 f4 c9 0d 30            MOV dword ptr [0x300dc9f4],EDX | 30040113   89 15 f4 c9 0d 30            MOV dword ptr [0x300dc9f4],EDX | 30040234   89 15 f4 c9 0d 30            MOV dword ptr [0x300dc9f4],EDX
  */
@@ -1856,12 +2000,12 @@ int32_t cg_fovTransitionTime = 0; /* 0x300dc9f4; see globals.h. CG_CalcFov FOV-z
  * BG_CalculateWeaponPosition_Sway out_angles vec2 output buffer (address at 0x30040972).
  * Example: 30040972   bf f8 c9 0d 30               MOV EDI,0x300dc9f8
  */
-vec2_t cg_vehicleViewSwayViewAngles = {0.0f, 0.0f};
+vec2_t cg_vehicleViewSwayViewAngles = { 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dca04 (.data); positional sway output passed
  * in EAX to BG_CalculateWeaponPosition_Sway at 0x300417a0.
  * Example: 300417a0   b8 04 ca 0d 30               MOV EAX,0x300dca04 | 300418ab   d8 0d 04 ca 0d 30            FMUL float ptr [0x300dca04] | 300418bd   d8 0d 04 ca 0d 30            FMUL float ptr [0x300dca04]
  */
-vec3_t cg_turretViewSwayOffset = {0.0f, 0.0f, 0.0f};
+vec3_t cg_turretViewSwayOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x300dca08 (.data); refs=3 width=4; first=0x300418e1; owner=g_moverpush.
  * Example: 300418e1   d8 0d 08 ca 0d 30            FMUL float ptr [0x300dca08] | 300418f3   d8 0d 08 ca 0d 30            FMUL float ptr [0x300dca08] | 30041905   d8 0d 08 ca 0d 30            FMUL float ptr [0x300dca08]
  */
@@ -1871,7 +2015,7 @@ vec3_t cg_turretViewSwayOffset = {0.0f, 0.0f, 0.0f};
 /* Source: uo_cgame_mp_x86.dll 0x300dca10 (.data); refs=3 width=4; first=0x300400ae; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 300400ae   8b 04 bd 10 ca 0d 30         MOV EAX,dword ptr [EDI*0x4 + 0x300dca10] | 300400e3   89 14 bd 10 ca 0d 30         MOV dword ptr [EDI*0x4 + 0x300dca10],EDX | 30040119   89 14 bd 10 ca 0d 30         MOV dword ptr [EDI*0x4 + 0x300dca10],EDX
  */
-int32_t cg_fovAdsUpdateTime[2] = {0, 0}; /* 0x300dca10..0x300dca18; see globals.h. CG_CalcFov FOV-zoom state. */
+int32_t cg_fovAdsUpdateTime[2] = { 0, 0 }; /* 0x300dca10..0x300dca18; see globals.h. CG_CalcFov FOV-zoom state. */
 /* Source: uo_cgame_mp_x86.dll 0x300dca18 (.data); refs=2 width=4; first=0x30045579; owner=cg_drawplayerstance.
  * Example: 30045579   39 2d 18 ca 0d 30            CMP dword ptr [0x300dca18],EBP | 3004558c   89 2d 18 ca 0d 30            MOV dword ptr [0x300dca18],EBP
  */
@@ -1902,11 +2046,11 @@ cg_scriptImportTable_t cg_scriptImports;
 /* Source: uo_cgame_mp_x86.dll 0x300f0b90..0x300f1b90 (.data).
  * PC_SourceWarning formats its variadic message into this private 4096-byte
  * buffer before reporting the current parser filename and line. */
-char pc_sourceWarningMessage[4096] = {0};
+char pc_sourceWarningMessage[4096] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x300f1b90 (.data); refs=3 width=4; first=0x3004fe24; owner=scriptentcmd_moveto.
  * Example: 3004fe24   8b 1c 85 90 1b 0f 30         MOV EBX,dword ptr [EAX*0x4 + 0x300f1b90] | 3004fef2   89 04 8d 90 1b 0f 30         MOV dword ptr [ECX*0x4 + 0x300f1b90],EAX | 3004ffbb   bf 90 1b 0f 30               MOV EDI,0x300f1b90
  */
-stringDef_t *strHandle[UI_STRING_HASH_SIZE] = {0}; /* 0x300f1b90 */
+stringDef_t *strHandle[UI_STRING_HASH_SIZE] = { 0 }; /* 0x300f1b90 */
 /* Source: uo_cgame_mp_x86.dll 0x300f3b90 (.data); refs=1 width=4; first=0x3004fd8d.
  * Example: 3004fd8d   8d 81 90 3b 0f 30            LEA EAX,[ECX + 0x300f3b90]
  * The 0x20000-byte (128 KiB) UI general allocation pool that UI_Alloc (0x3004fd50)
@@ -1916,7 +2060,7 @@ stringDef_t *strHandle[UI_STRING_HASH_SIZE] = {0}; /* 0x300f1b90 */
 /* The original base 0x300f3b90 is 16-byte aligned and UI_Alloc rounds every
  * block to 16 bytes. Preserve that host-object alignment explicitly so native
  * pointer-bearing UI records are not formed at under-aligned char storage. */
-_Alignas(16) unsigned char memoryPool[UI_MEMORY_POOL_CAPACITY] = {0};
+_Alignas(16) unsigned char memoryPool[UI_MEMORY_POOL_CAPACITY] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30113c10 (.data); refs=1 width=1; first=0x3004fe93.
  * Example: 3004fe93   8d b9 10 3c 11 30            LEA EDI,[ECX + 0x30113c10]
  * The ui_shared.c string-intern character pool. String_Alloc (0x3004fe00) strcpy's each
@@ -1924,7 +2068,7 @@ _Alignas(16) unsigned char memoryPool[UI_MEMORY_POOL_CAPACITY] = {0};
  * strlen+1, erroring past the 0x20000 limit. Extent 0x30113c10..0x30133c10 == 0x20000
  * bytes exactly (next .data symbol is allocPoint). Cleared to 0 by String_Init.
  * (Mechanical owner scriptentcmd_moveto / uint32_t width were export artifacts.) */
-char strPool[UI_STRING_POOL_CAPACITY] = {0}; /* 0x30113c10 */
+char strPool[UI_STRING_POOL_CAPACITY] = { 0 }; /* 0x30113c10 */
 /* Source: uo_cgame_mp_x86.dll 0x30133c10 (.data); refs=3 width=4; first=0x3004fd50; owner=script_setplayermodel.
  * Example: 3004fd50   8b 0d 10 3c 13 30            MOV ECX,dword ptr [0x30133c10] | 3004fd95   89 0d 10 3c 13 30            MOV dword ptr [0x30133c10],ECX | 3004ffda   89 35 10 3c 13 30            MOV dword ptr [0x30133c10],ESI
  */
@@ -1944,7 +2088,7 @@ scrollInfo_t ui_scrollInfo = {0};
  * (0x30050090) formats into it (vsprintf, PUSH at 0x300500b2) then reads it
  * back as the "%s" message to Com_Printf (PUSH at 0x300500e4).
  */
-char pc_sourceErrorMessage[4096] = {0};
+char pc_sourceErrorMessage[4096] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30134cc8 (.data); refs=35 width=4; first=0x300012b4; owner=g_testentityposition.
  * Example: 300012b4   8b 3d c8 4c 13 30            MOV EDI,dword ptr [0x30134cc8] | 300016a5   8b 35 c8 4c 13 30            MOV ESI,dword ptr [0x30134cc8] | 300016d0   a1 c8 4c 13 30               MOV EAX,[0x30134cc8]
  */
@@ -2187,11 +2331,11 @@ menuDef_t Menus[MAX_MENUS];
  * supersedes both (owner label `vectoranglemultiply` was a size-only false name).
  * Example: 30051840   39 1c 85 80 98 16 30         CMP dword ptr [EAX*0x4 + 0x30169880],EBX | 3005185b   8d 3c 85 80 98 16 30         LEA EDI,[EAX*0x4 + 0x30169880] | 30051888   89 1c 85 80 98 16 30         MOV dword ptr [EAX*0x4 + 0x30169880],EBX
  */
-menuDef_t *menuStack[MAX_OPEN_MENUS] = {0};
+menuDef_t *menuStack[MAX_OPEN_MENUS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x301698c0 (.data); refs=3 width=4; first=0x30046228; owner=item_listbox_paint.
  * Example: 30046228   89 0d c0 98 16 30            MOV dword ptr [0x301698c0],ECX | 30047c99   68 c0 98 16 30               PUSH 0x301698c0 | 30047cfb   68 c0 98 16 30               PUSH 0x301698c0
  */
-vec3_t cg_brassEffectOrigin = {0.0f, 0.0f, 0.0f};
+vec3_t cg_brassEffectOrigin = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x301698c4 (.data); refs=1 width=4; first=0x3004622e; owner=item_listbox_paint.
  * Example: 3004622e   89 15 c4 98 16 30            MOV dword ptr [0x301698c4],EDX
  */
@@ -2302,10 +2446,10 @@ cgWeaponInfo_t cg_weaponInfos[MAX_WEAPONS];
  * copies 0xe00 eight-byte pairs plus one final dword: exactly 0x7004 bytes.
  * Windows consumers place stringData at +0x2000, proving the complete layout in
  * gameState_t and the exact +0x7000 dataCount field. */
-gameState_t cg_gameState = {{0}, {0}, 0};
+gameState_t cg_gameState = { { 0 }, { 0 }, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447a04 (.data): cgs.glconfig, filled by
  * CG_Init's trap 0x4e. vidWidth/vidHeight are at original +0x84/+0x88. */
-glconfig_t cgs_glconfig = {0};
+glconfig_t cgs_glconfig = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447aa4 (.data); refs=96; owner=pm_cmdscale label is wrong.
  * cgs.screenXScale (float). Written in the cgs-init path at 0x3002e016 as
  * (float)glconfig.vidWidth * (1.0f/640.0f) [FILD [0x30447a88]; FMUL
@@ -2355,11 +2499,11 @@ int32_t cgs_localServer = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447abc (.data). cgs.gametype (g_gametype
  * value, Q_strncpyz size 0x20). Written by CG_ParseServerinfo 0x300383bd; read
  * by 0x3002d5ef/0x30031c40/0x30036361. */
-char cgs_gametype[32] = {0};
+char cgs_gametype[32] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447adc (.data). cgs.hostname (sv_hostname
  * value, Q_strncpyz size 0x100). Written by CG_ParseServerinfo 0x300383a1; read
  * by 0x30036757/0x300367cd/0x3003682e. */
-char cgs_hostname[256] = {0};
+char cgs_hostname[256] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447bdc (.data). cgs.maxclients
  * (atoi(sv_maxclients)). Written by CG_ParseServerinfo 0x300383fd; read as int
  * by 0x30026344 (CMP) and 0x300327f1 (MOV EBP). */
@@ -2367,11 +2511,11 @@ int32_t cgs_maxclients = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30447be0 (.data). cgs.mapname ("maps/mp/%s.bsp"
  * from serverinfo mapname, Com_sprintf size 0x40). Written by CG_ParseServerinfo
  * 0x30038412; read by 0x3002e0f7..0x3002e1f8 and 0x30036420. */
-char cgs_mapname[MAX_QPATH] = {0};
+char cgs_mapname[MAX_QPATH] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447c20..0x30447ca0 (.data).
  * cgs red/blue team-name buffers.  They occupy the two 64-byte fields between
  * mapname and the vote state; this build never directly references either field. */
-char cgs_teamNames[2][64] = {{0}};
+char cgs_teamNames[2][64] = { { 0 } };
 /* cgame vote HUD display cluster (see globals.h for full evidence). Rebuilt in
  * batch by CG_BuildVoteHudStrings (0x3002ddf0), per-field by the config-string
  * dispatcher (0x30038e70 cases 0x10/0x11/0x12/0x13), drawn by 0x3001b7d0. */
@@ -2390,20 +2534,20 @@ qboolean cg_voteModified = qfalse;
 /* Source: uo_cgame_mp_x86.dll 0x30447cb0..0x30447daf (.data); refs=5;
  * cgs.voteString[256]. The two byte stores at +255 explicitly terminate the
  * preceding strncpy(...,255); there is no consumer proving a separate flag. */
-char cg_voteString[256] = {0};
+char cg_voteString[256] = { 0 };
 /* The standard two-team vote block: four parallel two-int arrays followed by
  * two 256-byte vote strings.  No instruction in this build references the block,
  * but its field sizes exactly fill the interval before cg_timeoutEndTime. */
 /* Source: uo_cgame_mp_x86.dll 0x30447db0..0x30447db8 (.data). */
-int32_t cg_teamVoteTime[2] = {0};
+int32_t cg_teamVoteTime[2] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447db8..0x30447dc0 (.data). */
-int32_t cg_teamVoteYes[2] = {0};
+int32_t cg_teamVoteYes[2] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447dc0..0x30447dc8 (.data). */
-int32_t cg_teamVoteNo[2] = {0};
+int32_t cg_teamVoteNo[2] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30447dc8..0x30447dd0 (.data). */
-qboolean cg_teamVoteModified[2] = {qfalse};
+qboolean cg_teamVoteModified[2] = { qfalse };
 /* Source: uo_cgame_mp_x86.dll 0x30447dd0..0x30447fd0 (.data). */
-char cg_teamVoteString[2][256] = {{0}};
+char cg_teamVoteString[2][256] = { { 0 } };
 /* Source: uo_cgame_mp_x86.dll 0x30447fd0 (.data); refs=11 width=4; first=0x3001bbd3; owner=pm_reloadclip.
  * Example: 3001bbd3   a1 d0 7f 44 30               MOV EAX,[0x30447fd0] | 3001bc08   8b 0d d0 7f 44 30            MOV ECX,dword ptr [0x30447fd0] | 3002dea3   c7 05 d0 7f 44 30 00 00 00 00 MOV dword ptr [0x30447fd0],0x0
  */
@@ -2416,7 +2560,7 @@ int32_t cg_timeoutActive = 0;
  * Example: 3001bc31   68 d8 7f 44 30               PUSH 0x30447fd8 | 3002df0d   68 d8 7f 44 30               PUSH 0x30447fd8 | 30039137   68 d8 7f 44 30               PUSH 0x30447fd8
  * The stores at 0x3002df1a/0x30039144 write the final terminator byte of the
  * same 256-byte string, not a separately consumed dirty flag. */
-char cg_timeoutString[256] = {0};
+char cg_timeoutString[256] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x304480d8 (.data): first signed HUD-stat sibling,
  * initialized from config string 14 by Q_atoi. */
 int32_t cg_hudStat14Value = 0;
@@ -2441,7 +2585,7 @@ int32_t cg_hudStat6Value = 0;
  * vmMain command 10 and four entity render paths index the same base directly as
  * [index*4 + 0x304480e4]. The previous split scalar at 0x304480e4 plus an array at
  * 0x304480e8 was therefore one element late. */
-qhandle_t cg_gameModels[CS_MODELS_COUNT] = {0};
+qhandle_t cg_gameModels[CS_MODELS_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x304484e4..0x30448624 (.data); the cgame effect-handle
  * table cg_effectDefs[80] (see globals.h). Consumers index cg_effectDefs[id] for
  * 0 < id < 80 (0x300164f1, 0x30021b17, 0x3002272f); the registration loop at
@@ -2489,11 +2633,11 @@ vec3_t cg_inlineModelMidpoints[MAX_SUBMODELS];
  * TEAMCHAT_LINE_BYTES (271 = stride 0x10f). Written by CG_AddToTeamChat
  * (0x30039390); read by the team-info drawer (0x30018770). Mechanically captured
  * as one uint32_t; the 0x10f stride over an 8-entry mod ring proves the array. */
-char teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_LINE_BYTES] = {{0}};
+char teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_LINE_BYTES] = { { 0 } };
 /* Source: uo_cgame_mp_x86.dll 0x3044b660 (.data); refs=4 width=4; owner=reached_binarymover.
  * cgs.teamChatMsgTimes[TEAMCHAT_HEIGHT] — cg.time stamp per ring line, indexed
  * [teamChatPos % chatHeight]. */
-int teamChatMsgTimes[TEAMCHAT_HEIGHT] = {0};
+int teamChatMsgTimes[TEAMCHAT_HEIGHT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b680 (.data); refs=11 width=4; owner=reached_binarymover.
  * cgs.teamChatPos — monotonic ring write cursor (indexed modulo chatHeight). */
 int teamChatPos = 0;
@@ -2512,7 +2656,7 @@ int32_t cgs_cursorY = 0;
  * four uint32 g_data_vectosignedangles_* scalars (wrong first-touch owner);
  * superseded here as one 16-byte struct. Writers: CG_StartFovFade (0x3001ab50),
  * CG_CalcFov (0x3003ffc0). Reader/evaluator: 0x3001a7c0. Zero-initialized. */
-cgFovFade_t cg_fovFade = {0.0f, 0.0f, 0, 0};
+cgFovFade_t cg_fovFade = { 0.0f, 0.0f, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b6ac (.data); refs=10 width=4; first=0x30018cfa.
  * (owner=cmd_veh_fireturret label is wrong.)
  * cgs.media hudSoftLine shader handle. Registered at 0x3002dfcc as
@@ -2522,9 +2666,9 @@ cgFovFade_t cg_fovFade = {0.0f, 0.0f, 0, 0};
  * family: CG_FillRect (0x3001c4e0) and the line drawers at 0x3001c8e0/0x3001c980/
  * 0x3001ca20. Zero-initialized .data (BSS tail); the engine fills it at asset
  * registration. */
-qhandle_t cgs_media_whiteShader = 0; /* 0x3044b6ac */
+qhandle_t cgs_media_whiteShader = 0;       /* 0x3044b6ac */
 qhandle_t cgs_media_hudSoftLineShader = 0; /* 0x3044b6b0 */
-qhandle_t cgs_media_hudSoftLineHShader = 0; /* 0x3044b6b4 */
+qhandle_t cgs_media_hudSoftLineHShader = 0;/* 0x3044b6b4 */
 /* Source: uo_cgame_mp_x86.dll 0x3044b6b8 (.data); refs=1 width=4; first=0x3002c4d6; owner=pm_updateviewangles.
  * Example: 3002c4d6   a3 b8 b6 44 30               MOV [0x3044b6b8],EAX
  */
@@ -2591,8 +2735,7 @@ qhandle_t cgs_lagometerShader = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6f0 (.data); refs=5 width=4; first=0x3001d1a8; owner=initweaponinfo.
  * Example: 3001d1a8   a1 f0 b6 44 30               MOV EAX,[0x3044b6f0] | 3001d1ba   a1 f0 b6 44 30               MOV EAX,[0x3044b6f0] | 3001d1cf   a1 f0 b6 44 30               MOV EAX,[0x3044b6f0]
  */
-qhandle_t cgs_media_backTileShader =
-    0; /* 0x3044b6f0; resolved from CG_TileClear (0x3001d160): registered via CG_RegisterShader (0x3003db80) at 0x3002c481, read 5x by CG_TileClear as the background-tile shader handle. */
+qhandle_t cgs_media_backTileShader = 0; /* 0x3044b6f0; resolved from CG_TileClear (0x3001d160): registered via CG_RegisterShader (0x3003db80) at 0x3002c481, read 5x by CG_TileClear as the background-tile shader handle. */
 /* Source: uo_cgame_mp_x86.dll 0x3044b6f4 (.data); refs=2 width=4; first=0x3002c492; owner=pm_updateviewangles.
  * Example: 3002c492   a3 f4 b6 44 30               MOV [0x3044b6f4],EAX | 30046cc9   8b 15 f4 b6 44 30            MOV EDX,dword ptr [0x3044b6f4]
  */
@@ -2600,15 +2743,15 @@ qhandle_t cgs_media_hudNoWeaponIcon = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044b6f8..0x3044b720 (.data).
  * CG_DrawCursorhint indexes this same shared cursor-hint range; the eight
  * registered shader stores prove elements 2..9 and elements 0..1 remain zero. */
-qhandle_t cgs_media_usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT] = {0};
+qhandle_t cgs_media_usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b720 (.data); refs=3 width=4; first=0x3002bc8a; owner=pm_updateviewangles.
  * Example: 3002bc8a   a3 20 b7 44 30               MOV [0x3044b720],EAX | 300446d7   89 04 9d 20 b7 44 30         MOV dword ptr [EBX*0x4 + 0x3044b720],EAX | 300446e6   89 0c 9d 20 b7 44 30         MOV dword ptr [EBX*0x4 + 0x3044b720],ECX
  */
-qhandle_t cg_weaponHudIcons[MAX_WEAPONS] = {0};
+qhandle_t cg_weaponHudIcons[MAX_WEAPONS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044b920 (.data); refs=2 width=4; first=0x3004473b; owner=bg_checkpronevalid.
  * Example: 3004473b   89 04 9d 20 b9 44 30         MOV dword ptr [EBX*0x4 + 0x3044b920],EAX | 3004474a   89 14 9d 20 b9 44 30         MOV dword ptr [EBX*0x4 + 0x3044b920],EDX
  */
-qhandle_t cg_weaponAmmoIcons[MAX_WEAPONS] = {0};
+qhandle_t cg_weaponAmmoIcons[MAX_WEAPONS] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb24..0x3044bb47 (.data); nine consecutive
  * 4-byte qhandle_t slots. Consolidated from the mechanical
  * g_data_pm_updateviewangles_3044bb{24,28,2c,30,34,38,3c,40,44} (that owner label
@@ -2618,7 +2761,7 @@ qhandle_t cg_weaponAmmoIcons[MAX_WEAPONS] = {0};
  *   [4]=hudStanceFlash   [5]=hudFatigueStand [6]=hudFatigueCrouch
  *   [7]=hudFatigueProne  [8]=hudFatigueSprint
  * Read as indexed handles by CG_DrawPlayerStance (0x3002f63b..0x3002f8db). */
-qhandle_t cg_stanceHudShaders[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+qhandle_t cg_stanceHudShaders[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb48 (.data); refs=1 width=4; first=0x3002bd2b; owner=pm_updateviewangles.
  * Example: 3002bd2b   c7 05 48 bb 44 30 00 00 00 00 MOV dword ptr [0x3044bb48],0x0
  */
@@ -2633,18 +2776,18 @@ qhandle_t cg_hudObjectiveReserved = 0;
  *   3002bd52 MOV [0x3044bb50],EAX  (= RegisterShader("hudObjectiveUp"))
  *   3002bd63 MOV [0x3044bb54],EAX  (= RegisterShader("hudObjectiveDown"))
  */
-qhandle_t cg_objectiveShaders[3] = {0, 0, 0};
+qhandle_t cg_objectiveShaders[3] = { 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb58 (.data); refs=2 width=4; first=0x30016b9d; owner=cg_asset_parse.
  * Example: 30016b9d   8b 14 b5 58 bb 44 30         MOV EDX,dword ptr [ESI*0x4 + 0x3044bb58] | 3002bd77   a3 58 bb 44 30               MOV [0x3044bb58],EAX
  */
-qhandle_t cg_compassFriendlyShaders[2] = {0, 0};
+qhandle_t cg_compassFriendlyShaders[2] = { 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb5c (.data); refs=2 width=4; first=0x30016b80; owner=cg_asset_parse.
  * Example: 30016b80   8b 15 5c bb 44 30            MOV EDX,dword ptr [0x3044bb5c] | 3002bd88   a3 5c bb 44 30               MOV [0x3044bb5c],EAX
  */
 /* Source: uo_cgame_mp_x86.dll 0x3044bb60 (.data); refs=2 width=4; first=0x30017193; owner=cg_drawcompasstanks.
  * Example: 30017193   8b 0d 60 bb 44 30            MOV ECX,dword ptr [0x3044bb60] | 3002bd92   a3 60 bb 44 30               MOV [0x3044bb60],EAX
  */
-qhandle_t cg_compassTankShaders[3] = {0, 0, 0};
+qhandle_t cg_compassTankShaders[3] = { 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044bb64 (.data); refs=2 width=4; first=0x300171c7; owner=cg_drawcompasstanks.
  * Example: 300171c7   a1 64 bb 44 30               MOV EAX,[0x3044bb64] | 3002bdaa   a3 64 bb 44 30               MOV [0x3044bb64],EAX
  */
@@ -2975,7 +3118,7 @@ qhandle_t cg_flameSmokeEffectLarge = 0;
 /* Source: uo_cgame_mp_x86.dll 0x3044cac0 (.data); refs=2 width=4; first=0x30021251; owner=bg_animparseanimscript.
  * Example: 30021251   8b 04 9d c0 ca 44 30         MOV EAX,dword ptr [EBX*0x4 + 0x3044cac0] | 300212df   8b 14 9d c0 ca 44 30         MOV EDX,dword ptr [EBX*0x4 + 0x3044cac0]
  */
-qhandle_t cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT] = {0};
+qhandle_t cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3044cac4 (.data); refs=1 width=4; first=0x3002c860; owner=pm_updateviewangles.
  * Example: 3002c860   a3 c4 ca 44 30               MOV [0x3044cac4],EAX
  */
@@ -3592,7 +3735,7 @@ qboolean cg_thirdPerson = qfalse;
  * &cg.predictedPlayerState, passed to BG/CG helpers (e.g. CG_TouchItem hands it to
  * BG_PlayerTouchesItem and BG_CanItemBeGrabbed). owner=veh_playercollision was only
  * the first toucher, not the identity. */
-playerState_t cg_predictedPlayerState = {0};
+playerState_t cg_predictedPlayerState = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x304876c8..0x30487950 (.data).
  * Complete predicted local-player centity. Its nextState, interpolated fields,
  * event latches, and voice-chat fields are all members of this one object. */
@@ -3624,17 +3767,17 @@ qboolean cg_adsZoomingIn = qfalse;
  * angle offset computed and applied this frame (the "owner=com_dprintf" label
  * was a wrong size-based auto-name). Sole writer; role-proven provisional name.
  */
-vec3_t cg_weaponMovementAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponMovementAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487964 (.data); refs=2 width=4; first=0x3004670d; owner=bg_playerstatetoentitystate.
  * Example: 3004670d   8b 15 64 79 48 30            MOV EDX,dword ptr [0x30487964] | 3004686c   89 15 64 79 48 30            MOV dword ptr [0x30487964],EDX
  */
 float cg_weaponPositionMoveScale = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x30487968..0x30487973 (.data). */
-vec3_t cg_weaponMoveAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponMoveAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487974 (.data); refs=2 width=4; first=0x300466cd; owner=bg_playerstatetoentitystate.
  * Example: 300466cd   8b 15 74 79 48 30            MOV EDX,dword ptr [0x30487974] | 3004684f   89 15 74 79 48 30            MOV dword ptr [0x30487974],EDX
  */
-vec3_t cg_weaponPositionPrevAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponPositionPrevAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487978 (.data); refs=2 width=4; first=0x300466c8; owner=bg_playerstatetoentitystate.
  * Example: 300466c8   a1 78 79 48 30               MOV EAX,[0x30487978] | 30046859   a3 78 79 48 30               MOV [0x30487978],EAX
  */
@@ -3656,7 +3799,7 @@ weaponInfo_t *cg_currentWeaponInfo = 0;
 int32_t cg_predictedErrorTime = 0;
 /* Source: uo_cgame_mp_x86.dll 0x30487988..0x30487993: three-component
  * positional prediction error. */
-vec3_t cg_predictedError = {0.0f, 0.0f, 0.0f};
+vec3_t cg_predictedError = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487994 (.data). RESOLVED: cg_predictedEventSequence,
  * the predicted-event counter incremented by CG_CheckPlayerstateEvents. See
  * globals.h. Supersedes the mechanical owner=sp_script_vehicle. */
@@ -3753,17 +3896,17 @@ cgDObjPreviewOrientation_t cg_dobjPreviewOrientations[CG_DOBJ_PREVIEW_ORIENTATIO
  * Role name; owner=g_getnonpvsfriendlyinfo was a wrong size-match. */
 /* Source: uo_cgame_mp_x86.dll 0x30487a78..0x30487ac7 (.data): the contiguous
  * renderer refdef prefix saved and restored as 0x50 bytes by CG_DrawSkyBoxPortal. */
-refdef_t cg_refdef = {0};
+refdef_t cg_refdef = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30487ac8..0x30487ad3 (.data).
  * cg_refdefViewAngles — contiguous pitch/yaw/roll Euler vector. CG_CalcVehicleViewPos
  * passes its base to AnglesToAxisNegRight at 0x30040f1c; CG_CalcViewShake updates all
  * three components at 0x3001b6ba..0x3001b716. */
-vec3_t cg_refdefViewAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_refdefViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ad4 (.data); previous view angles passed
  * on the stack to BG_CalculateWeaponPosition_Sway at 0x30044c9c.
  * Example: 30034d9e   89 15 d4 7a 48 30            MOV dword ptr [0x30487ad4],EDX | 30044c9c   68 d4 7a 48 30               PUSH 0x30487ad4
  */
-vec3_t cg_weaponSwayViewAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponSwayViewAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ad8 (.data); refs=1 width=4; first=0x30034d98; owner=cg_addscalefade.
  * Example: 30034d98   89 15 d8 7a 48 30            MOV dword ptr [0x30487ad8],EDX
  */
@@ -3773,7 +3916,7 @@ vec3_t cg_weaponSwayViewAngles = {0.0f, 0.0f, 0.0f};
 /* Source: uo_cgame_mp_x86.dll 0x30487ae0 (.data); refs=3 width=4; first=0x30034db0; owner=cg_addscalefade.
  * Example: 30034db0   89 15 e0 7a 48 30            MOV dword ptr [0x30487ae0],EDX | 30044ca1   bf e0 7a 48 30               MOV EDI,0x30487ae0 | 30046777   8b 0d e0 7a 48 30            MOV ECX,dword ptr [0x30487ae0]
  */
-vec3_t cg_weaponSwayAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponSwayAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487ae4 (.data); refs=2 width=4; first=0x30034daa; owner=cg_addscalefade.
  * Example: 30034daa   89 15 e4 7a 48 30            MOV dword ptr [0x30487ae4],EDX | 30046781   8b 15 e4 7a 48 30            MOV EDX,dword ptr [0x30487ae4]
  */
@@ -3784,7 +3927,7 @@ vec3_t cg_weaponSwayAngles = {0.0f, 0.0f, 0.0f};
  * in EAX to BG_CalculateWeaponPosition_Sway at 0x30044ca6.
  * Example: 30034dc2   89 15 ec 7a 48 30            MOV dword ptr [0x30487aec],EDX | 30044ca6   b8 ec 7a 48 30               MOV EAX,0x30487aec
  */
-vec3_t cg_weaponSwayOffset = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponSwayOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x30487af0 (.data); refs=2 width=4; first=0x30034dbc; owner=cg_addscalefade.
  * Example: 30034dbc   89 15 f0 7a 48 30            MOV dword ptr [0x30487af0],EDX | 300453d8   d8 25 f0 7a 48 30            FSUB float ptr [0x30487af0]
  */
@@ -3828,7 +3971,7 @@ int32_t cg_vehicleViewReset = 0;
  * previous frame's vehicle/turret tag orientation basis (axis_t, 3x3). Read/written only by
  * CG_CalcVehicleViewValues (0x30040580) for view-angle smoothing; owner=convertquattomat was a
  * mechanical first-toucher. See globals.h. */
-axis_t cg_vehicleViewPrevAxis = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
+axis_t cg_vehicleViewPrevAxis = { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 /* Source: uo_cgame_mp_x86.dll 0x30489f1c (.data); refs=2 width=4; first=0x30037dd7; owner=yawvectors.
  * Example: 30037dd7   8b 0d 1c 9f 48 30            MOV ECX,dword ptr [0x30489f1c] | 30037df3   a3 1c 9f 48 30               MOV [0x30489f1c],EAX
  */
@@ -3847,7 +3990,7 @@ int32_t cg_scoreboardNumClients = 0;
  * array, not four scalars. Team-indexed store 0x300380a1 MOV [0x30489f24],EAX and
  * loads 0x3003732d MOV EAX,[EBX*4 + 0x30489f24] (header) / 0x30037c0c-c11 (body).
  */
-int32_t cg_scoreboardTeamScores[TEAM_COUNT] = {0, 0, 0, 0};
+int32_t cg_scoreboardTeamScores[TEAM_COUNT] = { 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30489f34..0x30489f43 (.data), 16 bytes.
  * cg_scoreboardTeamPings[TEAM_COUNT] — per-team ping sum, then integer average (totals-row
  * ping column); see globals.h. Supersedes the mechanical per-element split (0x30489f38/
@@ -3855,13 +3998,13 @@ int32_t cg_scoreboardTeamScores[TEAM_COUNT] = {0, 0, 0, 0};
  * scalars. Team-indexed accumulate 0x300382a2 ADD [EAX*4 + 0x30489f34],ECX and
  * load 0x30037336 MOV EAX,[EBX*4 + 0x30489f34] (header).
  */
-int32_t cg_scoreboardTeamPings[TEAM_COUNT] = {0, 0, 0, 0};
+int32_t cg_scoreboardTeamPings[TEAM_COUNT] = { 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30489f44..0x30489f53 (.data); refs=6+4+4+4 width=4.
  * cg_scoreboardTeamCount[team_t] — see globals.h. Proven as a 4-element int
  * array indexed by team by 0x30038295 (`inc [0x30489f44 + eax*4]`) and
  * 0x30037121 (`mov eax,[ebx*4 + 0x30489f44]`).
  */
-int32_t cg_scoreboardTeamCount[TEAM_COUNT] = {0, 0, 0, 0};
+int32_t cg_scoreboardTeamCount[TEAM_COUNT] = { 0, 0, 0, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x30489f54..0x3048a553 (.data), 0x600 bytes.
  * cg_scoreboardEntries[64] — collected scoreboard rows (cgScore_t, stride 0x18),
  * see globals.h. Supersedes the mechanical single-dword symbol
@@ -3899,7 +4042,7 @@ qboolean cg_scoreboardOverflowed = qfalse;
  * Example: 3002251d PUSH 0x3048a568 (strncpy dest) | 30031a90 MOV AL,[0x3048a568]
  * (name[0] gate) | 30031aaa PUSH 0x3048a568 (va %s). See globals.h for the full
  * proof (strncpy count 0x1f + terminator zero at 0x3048a587). */
-char cg_fraggedByName[32] = {0};
+char cg_fraggedByName[32] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048a588..0x3048a9ac (.data).
  * Dormant spectator/HUD fields in the cg aggregate. The preceding name buffer
  * has a proven bound, and no instruction or relocation addresses this interval. */
@@ -4100,10 +4243,10 @@ qboolean cg_viewWeaponSuppressed = qfalse;
  * emitter (0x30042110): a 64-byte effect-name string, world origin, last emit
  * time, and interval. Q_strncpyz(..., 63) plus the explicit NUL store at +0x3f
  * proves that 0x3048b004 is char[64], not an effectDef_t payload. */
-char cg_periodicEffectName[MAX_QPATH]; /* 0x3048b004: name handed to CG_FX_REGISTER_EFFECT */
-vec3_t cg_periodicEffectOrigin; /* 0x3048b044: origin handed to CG_PLAY_EFFECT_ORIGIN */
-int32_t cg_periodicEffectLastTime; /* 0x3048b050: cg.time at last emit */
-int32_t cg_periodicEffectInterval; /* 0x3048b054: min ms between emits (>=1 gate) */
+char         cg_periodicEffectName[MAX_QPATH]; /* 0x3048b004: name handed to CG_FX_REGISTER_EFFECT */
+vec3_t      cg_periodicEffectOrigin;      /* 0x3048b044: origin handed to CG_PLAY_EFFECT_ORIGIN */
+int32_t     cg_periodicEffectLastTime;    /* 0x3048b050: cg.time at last emit */
+int32_t     cg_periodicEffectInterval;    /* 0x3048b054: min ms between emits (>=1 gate) */
 /* Source: uo_cgame_mp_x86.dll 0x3048b058..0x3048b063 (.data) — cg_viewKickVel,
  * the view-kick angular-velocity vec3 (.x@0x3048b058, .y@0x3048b05c, .z@0x3048b060).
  * CG_UpdateViewKick (0x3003f9f0) iterates it as a 3-float array in lockstep with
@@ -4112,7 +4255,7 @@ int32_t cg_periodicEffectInterval; /* 0x3048b054: min ms between emits (>=1 gate
  * all three; 0x30042592/88/7e also zeroes them as a unit. Consolidates the three
  * uint32_t g_data_cg_addscalefade_3048b05{8,c}/3048b060 placeholders into one vec3.
  */
-vec3_t cg_viewKickVel = {0.0f, 0.0f, 0.0f};
+vec3_t cg_viewKickVel = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b064..0x3048b06f (.data) — cg_viewKickAngles,
  * the view-kick angular-offset vec3 (.x@0x3048b064, .y@0x3048b068, .z@0x3048b06c)
  * added to the view during first-person rendering. CG_UpdateViewKick (0x3003f9f0)
@@ -4122,7 +4265,7 @@ vec3_t cg_viewKickVel = {0.0f, 0.0f, 0.0f};
  * 0x3004271a). Consolidates the three uint32_t g_data_cg_addscalefade_3048b06{4,8,c}
  * placeholders into one vec3.
  */
-vec3_t cg_viewKickAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_viewKickAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b070..0x3048b07b (.data) — cg_adsViewErrorAngles,
  * the persistent ADS view-error (idle aim-wander) angular-offset vec3
  * (.x@0x3048b070, .y@0x3048b074, .z@0x3048b078). CG_UpdateAdsViewError (0x30036070)
@@ -4134,7 +4277,7 @@ vec3_t cg_viewKickAngles = {0.0f, 0.0f, 0.0f};
  * into one vec3; the scriptent_moveaxis / g_moverpush owner labels were mechanical
  * first-touchers and are wrong.
  */
-vec3_t cg_adsViewErrorAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_adsViewErrorAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b07c..0x3048b0b8 (.data).
  * Five dormant vec3-sized lanes in the contiguous view-kick/ADS state block. */
 vec3_t cg_unreferencedViewVectors[5];
@@ -4156,11 +4299,11 @@ float cg_effectProjAngleYaw = 0.0f;
  * fully proved.
  * Example: 300451d9   d9 1d c0 b0 48 30            FSTP float ptr [0x3048b0c0] | 30045206   c7 05 c0 b0 48 30 00 00 00 00 MOV dword ptr [0x3048b0c0],0x0
  */
-vec3_t cg_adsViewOffset = {0.0f, 0.0f, 0.0f};
+vec3_t cg_adsViewOffset = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b0cc (.data); refs=3 width=4; first=0x30034e22; owner=cg_addscalefade.
  * Example: 30034e22   a3 cc b0 48 30               MOV [0x3048b0cc],EAX | 30046734   8b 0d cc b0 48 30            MOV ECX,dword ptr [0x3048b0cc] | 30046876   a3 cc b0 48 30               MOV [0x3048b0cc],EAX
  */
-vec3_t cg_weaponPositionBaseAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponPositionBaseAngles = { 0.0f, 0.0f, 0.0f };
 /* Source: uo_cgame_mp_x86.dll 0x3048b0d0 (.data); refs=3 width=4; first=0x30034e1d; owner=cg_addscalefade.
  * Example: 30034e1d   a3 d0 b0 48 30               MOV [0x3048b0d0],EAX | 30046747   8b 15 d0 b0 48 30            MOV EDX,dword ptr [0x3048b0d0] | 3004687f   89 0d d0 b0 48 30            MOV dword ptr [0x3048b0d0],ECX
  */
@@ -4174,7 +4317,7 @@ vec3_t cg_weaponPositionBaseAngles = {0.0f, 0.0f, 0.0f};
  * Example: 30034e2c   a3 dc b0 48 30               MOV [0x3048b0dc],EAX | 30046764   8b 15 dc b0 48 30            MOV EDX,dword ptr [0x3048b0dc] | 3004689b   89 0d dc b0 48 30            MOV dword ptr [0x3048b0dc],ECX
  */
 /* Source: uo_cgame_mp_x86.dll 0x3048b0d8..0x3048b0e3 (.data). */
-vec3_t cg_weaponRecoilAngles = {0.0f, 0.0f, 0.0f};
+vec3_t cg_weaponRecoilAngles = { 0.0f, 0.0f, 0.0f };
 /* cg_specialTagPlacement — supersedes the 13 mechanical
  * g_data_pm_beginreloadloop_3048b0{e4..110} scalars (the "pm_beginreloadloop" owner
  * was only the first toucher, not the subsystem). One fixed entity placement, laid
@@ -4188,8 +4331,8 @@ vec3_t cg_weaponRecoilAngles = {0.0f, 0.0f, 0.0f};
  * around 0x300460b0.. and read as origin+axis by CG_GetEntityOriginAxis (0x3002adb0)
  * and 0x3001fec0. Provisional name by role. */
 orientation_t cg_specialTagPlacement = {
-    {0.0f, 0.0f, 0.0f},
-    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+    { 0.0f, 0.0f, 0.0f },
+    { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } },
 };
 /* Source: uo_cgame_mp_x86.dll 0x3048b114 (.data); refs=5 width=4; first=0x3001bffb; owner=fire_lead.
  * Example: 3001bffb   a1 14 b1 48 30               MOV EAX,[0x3048b114] | 30034511   8b 0d 14 b1 48 30            MOV ECX,dword ptr [0x3048b114] | 30034d8c   89 15 14 b1 48 30            MOV dword ptr [0x3048b114],EDX
@@ -4209,10 +4352,10 @@ uint8_t cg_unreferencedViewEffectState[1044];
  * CG_EvaluateCameraShakeSource (0x3001b390) and the aggregate walker (0x3001b550).
  */
 cg_shakeSource_t cg_shakeSources[4] = {
-    {0, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, 0.0f, 0.0f},
-    {0, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, 0.0f, 0.0f},
-    {0, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, 0.0f, 0.0f},
-    {0, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, 0.0f, 0.0f},
+    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
+    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
+    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
+    { 0, 0.0f, 0.0f, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f },
 };
 /* Source: uo_cgame_mp_x86.dll 0x3048b5bc (.data); refs=5 width=4; first=0x3001b4ac.
  * cg_shakeSpinPhase — the random phase offset (radians) applied to the camera-shake
@@ -4265,7 +4408,7 @@ float cg_compassRefVel = 0.0f;
 /* Source: uo_cgame_mp_x86.dll 0x3048b5dc (.data); refs=3 width=4; first=0x30016617; owner=cg_asset_parse.
  * Example: 30016617   89 91 dc b5 48 30            MOV dword ptr [ECX + 0x3048b5dc],EDX | 30016693   89 8f dc b5 48 30            MOV dword ptr [EDI + 0x3048b5dc],ECX | 300167f2   be dc b5 48 30               MOV ESI,0x3048b5dc
  */
-cgCompassBlip_t cg_compassFriendlies[CG_COMPASS_BLIP_COUNT] = {0};
+cgCompassBlip_t cg_compassFriendlies[CG_COMPASS_BLIP_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048b5e0 (.data); refs=4 width=4; first=0x30016623; owner=cg_asset_parse.
  * Example: 30016623   89 91 e0 b5 48 30            MOV dword ptr [ECX + 0x3048b5e0],EDX | 3001674e   d9 9f e0 b5 48 30            FSTP float ptr [EDI + 0x3048b5e0] | 3001677b   89 97 e0 b5 48 30            MOV dword ptr [EDI + 0x3048b5e0],EDX
  */
@@ -4281,7 +4424,7 @@ cgCompassBlip_t cg_compassFriendlies[CG_COMPASS_BLIP_COUNT] = {0};
 /* Source: uo_cgame_mp_x86.dll 0x3048badc (.data); refs=3 width=4; first=0x30016cbb; owner=cg_drawcompasstanks.
  * Example: 30016cbb   89 91 dc ba 48 30            MOV dword ptr [ECX + 0x3048badc],EDX | 30016d38   89 87 dc ba 48 30            MOV dword ptr [EDI + 0x3048badc],EAX | 30016e37   bd dc ba 48 30               MOV EBP,0x3048badc
  */
-cgCompassBlip_t cg_compassTanks[CG_COMPASS_BLIP_COUNT] = {0};
+cgCompassBlip_t cg_compassTanks[CG_COMPASS_BLIP_COUNT] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x3048bae0 (.data); refs=5 width=4; first=0x30016bcd; owner=cg_asset_parse.
  * Example: 30016bcd   81 ff e0 ba 48 30            CMP EDI,0x3048bae0 | 30016cc7   89 91 e0 ba 48 30            MOV dword ptr [ECX + 0x3048bae0],EDX | 30016dbd   d9 9f e0 ba 48 30            FSTP float ptr [EDI + 0x3048bae0]
  */
@@ -4570,7 +4713,7 @@ localEntity_t cg_activeLocalEntities;
 /* Source: uo_cgame_mp_x86.dll 0x30537ea0 (.data); refs=2 width=4; first=0x30018c9e; owner=cmd_veh_fireturret.
  * Example: 30018c9e   db 04 8d a0 7e 53 30         FILD dword ptr [ECX*0x4 + 0x30537ea0] | 300421ee   89 04 95 a0 7e 53 30         MOV dword ptr [EDX*0x4 + 0x30537ea0],EAX
  */
-int32_t cg_lagometerFrameSamples[LAG_SAMPLES] = {0};
+int32_t cg_lagometerFrameSamples[LAG_SAMPLES] = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x305380a0 (.data); refs=3 width=4; first=0x30018c92; owner=cmd_veh_fireturret.
  * Example: 30018c92   8b 0d a0 80 53 30            MOV ECX,dword ptr [0x305380a0] | 300421df   8b 15 a0 80 53 30            MOV EDX,dword ptr [0x305380a0] | 300421f5   ff 05 a0 80 53 30            INC dword ptr [0x305380a0]
  */
@@ -4582,7 +4725,7 @@ int32_t cg_lagometerFrameCount = 0;
  * uint32_t symbols (owner=vector4scale was the first-touching function, not the identity).
  * Example: 30018a4c   c7 04 85 a4 82 53 30 ff ff ff ff MOV dword ptr [EAX*0x4 + 0x305382a4],0xffffffff | 30018a57   ff 05 a4 84 53 30            INC dword ptr [0x305384a4] | 30018e28   f6 04 8d a4 80 53 30 01      TEST byte ptr [ECX*0x4 + 0x305380a4],0x1
  */
-lagometer_t cg_lagometer = {{0}, {0}, 0};
+lagometer_t cg_lagometer = { { 0 }, { 0 }, 0 };
 /* Source: uo_cgame_mp_x86.dll 0x305384c0 (.data); refs=3 width=4; first=0x30030f3c.
  * RESOLVED: cg_hudEmitClientTable[] — index->clientNum table (see globals.h). Sized to
  * the 8-dword span before the next distinct symbol at 0x305384e0; exact extent unproven.

@@ -67,7 +67,7 @@ enum {
  * enables the delayed airborne footstep update and bit 0x40 selects the alternate
  * locomotion-command family. */
 #define PM_FOOTSTEPS_FLAG_AIRBORNE_UPDATE ((uint32_t)0x00000010u)
-#define PM_FOOTSTEPS_FLAG_ALT_COMMAND ((uint32_t)0x00000040u)
+#define PM_FOOTSTEPS_FLAG_ALT_COMMAND     ((uint32_t)0x00000040u)
 
 /* The +0x84 mask suppresses ordinary locomotion commands for special/vehicle
  * states. It is the same machine-proven mask used by weapon-position bob code. */
@@ -89,14 +89,22 @@ enum {
 
 #if defined(LINUX_BEHAVIOR)
 #if EMULATE_X87
-#define PM_FOOTSTEPS_STEP_INTERVAL(num, den, scale) \
-    x87f_store_f32(x87f_mul(x87f_div(x87f_load_f32(num), x87f_load_f32(den)), x87f_load_f32(scale)))
-#define PM_FOOTSTEPS_BOB_CYCLE(oldTime, msec, step) \
-    (x87f_store_i32_trunc(x87f_add(x87f_load_i32(oldTime), x87f_mul(x87f_load_i32(msec), x87f_load_f32(step)))) & 255)
+#define PM_FOOTSTEPS_STEP_INTERVAL(num, den, scale)                         \
+    x87f_store_f32(x87f_mul(                                               \
+        x87f_div(x87f_load_f32(num), x87f_load_f32(den)),                 \
+        x87f_load_f32(scale)))
+#define PM_FOOTSTEPS_BOB_CYCLE(oldTime, msec, step)                        \
+    (x87f_store_i32_trunc(x87f_add(                                        \
+         x87f_load_i32(oldTime),                                           \
+         x87f_mul(x87f_load_i32(msec), x87f_load_f32(step)))) & 255)
 #else
-#define PM_FOOTSTEPS_STEP_INTERVAL(num, den, scale) (((num) / (den)) * (scale))
-#define PM_FOOTSTEPS_BOB_CYCLE(oldTime, msec, step) \
-    (coduo_fp_to_i32_extended((long double)(oldTime) + (long double)(msec) * (long double)(step)) & 255)
+#define PM_FOOTSTEPS_STEP_INTERVAL(num, den, scale) \
+    (((num) / (den)) * (scale))
+#define PM_FOOTSTEPS_BOB_CYCLE(oldTime, msec, step)                        \
+    (coduo_fp_to_i32_extended((long double)(oldTime) +                    \
+                              (long double)(msec) *                       \
+                                  (long double)(step)) &                  \
+     255)
 #endif
 #endif
 
@@ -134,27 +142,33 @@ void PM_Footsteps(void)
     /* 0x3000bbbc..0x3000bbce: both m32 velocity components are squared and
      * summed in x87 extended precision; only the final FSQRT is stored m32. */
     horizontalSpeedX87 =
-        (long double)ps->velocity[0] * (long double)ps->velocity[0] + (long double)ps->velocity[1] * (long double)ps->velocity[1];
+        (long double)ps->velocity[0] * (long double)ps->velocity[0] +
+        (long double)ps->velocity[1] * (long double)ps->velocity[1];
     horizontalSpeed = (float)__builtin_sqrtl(horizontalSpeedX87);
     move->horizontalSpeed = horizontalSpeed;
 
     if ((ps->entityStateFlags & PM_FOOTSTEPS_DISABLE_MASK) != 0) {
         if ((ps->entityStateFlags & PM_FOOTSTEPS_SPECIAL_DISABLE_MASK) != 0) {
             if (ps->viewHeightTarget == ps->proneViewHeight) {
-                if (BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE_PRONE, qtrue) >= 0) {
+                if (BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                      PM_FOOTSTEPS_ANIM_IDLE_PRONE,
+                                      qtrue) >= 0) {
                     return;
                 }
                 move = pm;
                 ps = move->ps;
             } else if (ps->viewHeightTarget == ps->crouchViewHeight) {
-                if (BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE_CROUCH, qtrue) >= 0) {
+                if (BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                      PM_FOOTSTEPS_ANIM_IDLE_CROUCH,
+                                      qtrue) >= 0) {
                     return;
                 }
                 move = pm;
                 ps = move->ps;
             }
         }
-        (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE, qtrue);
+        (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                PM_FOOTSTEPS_ANIM_IDLE, qtrue);
         return;
     }
 
@@ -167,9 +181,12 @@ void PM_Footsteps(void)
     }
 
     flags = ps->playerStateFlags;
-    if (ps->groundEntityNum == ENTITYNUM_NONE && ps->pmType != PM_TYPE_LINKED) {
+    if (ps->groundEntityNum == ENTITYNUM_NONE &&
+        ps->pmType != PM_TYPE_LINKED) {
         if ((flags & PM_FOOTSTEPS_FLAG_AIRBORNE_UPDATE) == 0 ||
-            coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)ps->lastJumpCommandTime) < PM_FOOTSTEPS_AIRBORNE_DELAY) {
+            coduo_int32_from_bits((uint32_t)move->command.commandTime -
+                             (uint32_t)ps->lastJumpCommandTime) <
+                PM_FOOTSTEPS_AIRBORNE_DELAY) {
             return;
         }
 
@@ -178,19 +195,27 @@ void PM_Footsteps(void)
          * footstep-event phase check. */
         if ((flags & PMF_WALKING) == 0 && ps->leanFraction == 0.0f) {
             airborneBobRate =
-                ps->velocity[2] / (ps->runSpeedScale * PM_FOOTSTEPS_AIRBORNE_SPEED_UNIT) * PM_FOOTSTEPS_AIRBORNE_RUN_BOB_SCALE;
+                ps->velocity[2] /
+                (ps->runSpeedScale * PM_FOOTSTEPS_AIRBORNE_SPEED_UNIT) *
+                PM_FOOTSTEPS_AIRBORNE_RUN_BOB_SCALE;
         } else {
             airborneBobRate =
-                ps->velocity[2] / (ps->walkSpeedScale * PM_FOOTSTEPS_AIRBORNE_SPEED_UNIT) * PM_FOOTSTEPS_AIRBORNE_WALK_BOB_SCALE;
+                ps->velocity[2] /
+                (ps->walkSpeedScale * PM_FOOTSTEPS_AIRBORNE_SPEED_UNIT) *
+                PM_FOOTSTEPS_AIRBORNE_WALK_BOB_SCALE;
         }
-        (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
-                                !(ps->velocity[2] >= 0.0f) ? PM_FOOTSTEPS_ANIM_AIRBORNE_DOWN : PM_FOOTSTEPS_ANIM_AIRBORNE_UP, qtrue);
+        (void)BG_ExecuteCommand(
+            ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+            !(ps->velocity[2] >= 0.0f) ? PM_FOOTSTEPS_ANIM_AIRBORNE_DOWN
+                                       : PM_FOOTSTEPS_ANIM_AIRBORNE_UP,
+            qtrue);
         move = pm;
         ps = move->ps;
         oldBobCycle = ps->bobCycle;
         /* pml.msec and oldBobCycle enter via bare FILD/FIADD (0x3000bd05/0x3000bd1f)
          * -- no (float) casts. */
-        ps->bobCycle = coduo_fp_to_i32_extended(pml.msec * airborneBobRate + oldBobCycle) & PM_FOOTSTEPS_BOB_MASK;
+        ps->bobCycle = coduo_fp_to_i32_extended(pml.msec * airborneBobRate +
+                              oldBobCycle) & PM_FOOTSTEPS_BOB_MASK;
         PM_FootstepEvent(oldBobCycle, ps->bobCycle, qtrue);
 
         move = pm;
@@ -200,7 +225,8 @@ void PM_Footsteps(void)
         /* 0x3000bd4b..0x3000bd59: if the current low two movement flags already
          * encode this stance, the airborne update is complete. Otherwise the
          * function deliberately falls through to the ordinary locomotion path. */
-        if ((uint32_t)stance == (ps->playerStateFlags & (uint32_t)PM_FOOTSTEPS_STANCE_FLAG_MASK)) {
+        if ((uint32_t)stance ==
+            (ps->playerStateFlags & (uint32_t)PM_FOOTSTEPS_STANCE_FLAG_MASK)) {
             return;
         }
         flags = ps->playerStateFlags;
@@ -212,23 +238,29 @@ void PM_Footsteps(void)
 
     /* 0x3000bd61..0x3000bd94 enters the idle path only for ordered speed < 10;
      * unordered input and exactly 10 both continue through locomotion. */
-    if (horizontalSpeed < PM_FOOTSTEPS_MOVEMENT_THRESHOLD || ps->pmType == PM_TYPE_LINKED) {
+    if (horizontalSpeed < PM_FOOTSTEPS_MOVEMENT_THRESHOLD ||
+        ps->pmType == PM_TYPE_LINKED) {
         if (horizontalSpeed < PM_FOOTSTEPS_BOB_RESET_THRESHOLD) {
             ps->bobCycle = 0;
         }
 
         animResult = -1;
         if (ps->viewHeightTarget == ps->proneViewHeight) {
-            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE_PRONE, qtrue);
+            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                           PM_FOOTSTEPS_ANIM_IDLE_PRONE,
+                                           qtrue);
             move = pm;
             ps = move->ps;
         } else if (ps->viewHeightTarget == ps->crouchViewHeight) {
-            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE_CROUCH, qtrue);
+            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                           PM_FOOTSTEPS_ANIM_IDLE_CROUCH,
+                                           qtrue);
             move = pm;
             ps = move->ps;
         }
         if (animResult < 0) {
-            (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE, qtrue);
+            (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                    PM_FOOTSTEPS_ANIM_IDLE, qtrue);
         }
         return;
     }
@@ -238,21 +270,27 @@ void PM_Footsteps(void)
     movementAmountX87 = (long double)ps->speed;
     direction = 0;
     if (move->command.forwardmove != 0 && move->command.rightmove != 0) {
-        movementAmountX87 *= (((long double)ps->strafeSpeedScale - 1.0L) * 0.75L + 1.0L + 1.0L) * 0.5L;
+        movementAmountX87 *=
+            (((long double)ps->strafeSpeedScale - 1.0L) * 0.75L + 1.0L + 1.0L) *
+            0.5L;
         if (move->command.forwardmove < 0) {
-            movementAmountX87 *= ((long double)ps->backSpeedScale + 1.0L) * 0.5L;
+            movementAmountX87 *=
+                ((long double)ps->backSpeedScale + 1.0L) * 0.5L;
         }
     } else if (move->command.forwardmove != 0) {
         if (move->command.forwardmove < 0) {
             movementAmountX87 *= (long double)ps->backSpeedScale;
         }
     } else if (move->command.rightmove != 0) {
-        movementAmountX87 *= ((long double)ps->strafeSpeedScale - 1.0L) * 0.75L + 1.0L;
+        movementAmountX87 *=
+            ((long double)ps->strafeSpeedScale - 1.0L) * 0.75L + 1.0L;
         direction = (move->command.rightmove > 0) ? 2 : 1;
     }
 
     if (move->command.forwardmove != 0 || move->command.rightmove != 0) {
-        BG_UpdateConditionValue(ps->psClientNum, PM_FOOTSTEPS_CONDITION_DIRECTION, direction, qtrue);
+        BG_UpdateConditionValue(ps->psClientNum,
+                                PM_FOOTSTEPS_CONDITION_DIRECTION,
+                                direction, qtrue);
     }
 
     /* The pmove pointer is retained across BG_UpdateConditionValue, but the
@@ -271,11 +309,13 @@ void PM_Footsteps(void)
      * result from both falls back to the current stance's fixed scale. */
     lerp = PM_GetViewHeightLerp(ps->proneViewHeight, ps->crouchViewHeight);
     if (lerp != 0.0f) {
-        stanceScale = (1.0L - lerp) * (long double)ps->crouchSpeedScale + lerp * (long double)ps->proneSpeedScale;
+        stanceScale = (1.0L - lerp) * (long double)ps->crouchSpeedScale +
+                      lerp * (long double)ps->proneSpeedScale;
     } else {
         lerp = PM_GetViewHeightLerp(ps->crouchViewHeight, ps->proneViewHeight);
         if (lerp != 0.0f) {
-            stanceScale = (1.0L - lerp) * (long double)ps->proneSpeedScale + lerp * (long double)ps->crouchSpeedScale;
+            stanceScale = (1.0L - lerp) * (long double)ps->proneSpeedScale +
+                          lerp * (long double)ps->crouchSpeedScale;
         } else if (stance == EFFECTIVE_STANCE_PRONE) {
             stanceScale = (long double)ps->proneSpeedScale;
         } else if (stance == EFFECTIVE_STANCE_CROUCH) {
@@ -285,14 +325,17 @@ void PM_Footsteps(void)
         }
     }
 
-    bobRate = (long double)horizontalSpeed / ((long double)movementAmount * stanceScale);
+    bobRate = (long double)horizontalSpeed /
+              ((long double)movementAmount * stanceScale);
     if (stance == EFFECTIVE_STANCE_PRONE) {
         if ((flags & PMF_WALKING) != 0) {
             bobRate *= PM_FOOTSTEPS_PRONE_WALK_BOB_SCALE;
         } else {
             bobRate *= PM_FOOTSTEPS_PRONE_RUN_BOB_SCALE;
         }
-        animCommand = (flags & PM_FOOTSTEPS_FLAG_ALT_COMMAND) ? PM_FOOTSTEPS_ANIM_PRONE_B : PM_FOOTSTEPS_ANIM_PRONE_A;
+        animCommand = (flags & PM_FOOTSTEPS_FLAG_ALT_COMMAND)
+                          ? PM_FOOTSTEPS_ANIM_PRONE_B
+                          : PM_FOOTSTEPS_ANIM_PRONE_A;
     } else if (stance == EFFECTIVE_STANCE_CROUCH) {
         if ((flags & PMF_WALKING) != 0) {
             bobRate *= PM_FOOTSTEPS_CROUCH_WALK_BOB_SCALE;
@@ -300,9 +343,13 @@ void PM_Footsteps(void)
             bobRate *= PM_FOOTSTEPS_CROUCH_RUN_BOB_SCALE;
         }
         if ((flags & PM_FOOTSTEPS_FLAG_ALT_COMMAND) != 0) {
-            animCommand = (flags & PMF_WALKING) ? PM_FOOTSTEPS_ANIM_CROUCH_B : PM_FOOTSTEPS_ANIM_CROUCH_D;
+            animCommand = (flags & PMF_WALKING)
+                              ? PM_FOOTSTEPS_ANIM_CROUCH_B
+                              : PM_FOOTSTEPS_ANIM_CROUCH_D;
         } else {
-            animCommand = (flags & PMF_WALKING) ? PM_FOOTSTEPS_ANIM_CROUCH_A : PM_FOOTSTEPS_ANIM_CROUCH_C;
+            animCommand = (flags & PMF_WALKING)
+                              ? PM_FOOTSTEPS_ANIM_CROUCH_A
+                              : PM_FOOTSTEPS_ANIM_CROUCH_C;
         }
     } else {
         if ((flags & PM_FOOTSTEPS_FLAG_ALT_COMMAND) != 0) {
@@ -322,7 +369,8 @@ void PM_Footsteps(void)
         }
     }
 
-    animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, animCommand, qtrue);
+    animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                   animCommand, qtrue);
     animChanged = PM_ShouldMakeFootsteps();
 
     move = pm;
@@ -331,24 +379,30 @@ void PM_Footsteps(void)
     /* pml.msec and oldBobCycle enter via bare FILD/FIADD (0x3000bfd8/0x3000bff1)
      * -- no (float) casts. (bobRate itself is a register-carried cluster; see the
      * file note.) */
-    ps->bobCycle = coduo_fp_to_i32_extended(pml.msec * bobRate + oldBobCycle) & PM_FOOTSTEPS_BOB_MASK;
+    ps->bobCycle = coduo_fp_to_i32_extended(pml.msec * bobRate +
+                          oldBobCycle) & PM_FOOTSTEPS_BOB_MASK;
 
     if (move->command.forwardmove == 0 && move->command.rightmove == 0) {
         if (horizontalSpeed > PM_FOOTSTEPS_NO_INPUT_SPEED_LIMIT) {
             return;
         }
         if (ps->viewHeightTarget == ps->proneViewHeight) {
-            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE_PRONE, qtrue);
+            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                           PM_FOOTSTEPS_ANIM_IDLE_PRONE,
+                                           qtrue);
             move = pm;
             ps = move->ps;
         } else if (ps->viewHeightTarget == ps->crouchViewHeight) {
-            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE_CROUCH, qtrue);
+            animResult = BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                           PM_FOOTSTEPS_ANIM_IDLE_CROUCH,
+                                           qtrue);
             move = pm;
             ps = move->ps;
         }
     }
     if (animResult < 0) {
-        (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY, PM_FOOTSTEPS_ANIM_IDLE, qtrue);
+        (void)BG_ExecuteCommand(ps, PM_FOOTSTEPS_ANIM_CATEGORY,
+                                PM_FOOTSTEPS_ANIM_IDLE, qtrue);
         move = pm;
         ps = move->ps;
     }
@@ -380,11 +434,16 @@ void PM_Footsteps(void)
     }
 
 #if EMULATE_X87
-    speed2d =
-        (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_mul(x87f_load_f32(pm->ps->velocity[0]), x87f_load_f32(pm->ps->velocity[0])),
-                                                      x87f_mul(x87f_load_f32(pm->ps->velocity[1]), x87f_load_f32(pm->ps->velocity[1])))));
+    speed2d = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+        x87f_mul(x87f_load_f32(pm->ps->velocity[0]),
+                 x87f_load_f32(pm->ps->velocity[0])),
+        x87f_mul(x87f_load_f32(pm->ps->velocity[1]),
+                 x87f_load_f32(pm->ps->velocity[1])))));
 #else
-    speed2d = (float)CoduoLibm_Sqrt((double)(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]));
+    speed2d = (float)CoduoLibm_Sqrt((double)(pm->ps->velocity[0] *
+                                   pm->ps->velocity[0] +
+                                   pm->ps->velocity[1] *
+                                   pm->ps->velocity[1]));
 #endif
     pm->horizontalSpeed = speed2d;
 
@@ -406,44 +465,57 @@ void PM_Footsteps(void)
     effectiveStance = PM_GetEffectiveStance(pm->ps);
 
     /* Prone crawling footstep */
-    if (pm->ps->groundEntityNum == ENTITYNUM_NONE && pm->ps->pmType != PM_TYPE_LINKED) {
+    if (pm->ps->groundEntityNum == ENTITYNUM_NONE &&
+        pm->ps->pmType != PM_TYPE_LINKED) {
         if ((pm->ps->playerStateFlags & PMF_LADDER) != 0) {
-            if (coduo_int32_from_bits((uint32_t)pm->command.commandTime - (uint32_t)pm->ps->lastJumpCommandTime) < pm_ladderJumpTime) {
+            if (coduo_int32_from_bits(
+                    (uint32_t)pm->command.commandTime -
+                    (uint32_t)pm->ps->lastJumpCommandTime) <
+                pm_ladderJumpTime) {
                 return;
             }
             {
 #if EMULATE_X87
-                float ladderDenom =
-                    x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(pm_ladderScale), x87f_load_f32(1.5f)), x87f_load_f32(127.0f)));
+                float ladderDenom = x87f_store_f32(x87f_mul(
+                    x87f_mul(x87f_load_f32(pm_ladderScale), x87f_load_f32(1.5f)),
+                    x87f_load_f32(127.0f)));
 #else
                 float ladderDenom = pm_ladderScale * 1.5f * 127.0f;
 #endif
                 float velZ = pm->ps->velocity[2];
-                if ((pm->ps->playerStateFlags & 0x80) != 0 || pm->ps->leanFraction != 0.0f || isnan(pm->ps->leanFraction)) {
+                if ((pm->ps->playerStateFlags & 0x80) != 0 || pm->ps->leanFraction != 0.0f ||
+                    isnan(pm->ps->leanFraction)) {
 #if EMULATE_X87
-                    stepInterval = x87f_store_f32(
-                        x87f_mul(x87f_div(x87f_load_f32(velZ), x87f_mul(x87f_load_f32(pm->ps->walkSpeedScale), x87f_load_f32(ladderDenom))),
-                                 x87f_load_f32(0.35f)));
+                    stepInterval = x87f_store_f32(x87f_mul(
+                        x87f_div(x87f_load_f32(velZ),
+                                 x87f_mul(x87f_load_f32(pm->ps->walkSpeedScale),
+                                          x87f_load_f32(ladderDenom))),
+                        x87f_load_f32(0.35f)));
 #else
                     stepInterval = (velZ / (pm->ps->walkSpeedScale * ladderDenom)) * 0.35f;
 #endif
                 } else {
 #if EMULATE_X87
-                    stepInterval = x87f_store_f32(
-                        x87f_mul(x87f_div(x87f_load_f32(velZ), x87f_mul(x87f_load_f32(pm->ps->runSpeedScale), x87f_load_f32(ladderDenom))),
-                                 x87f_load_f32(0.45f)));
+                    stepInterval = x87f_store_f32(x87f_mul(
+                        x87f_div(x87f_load_f32(velZ),
+                                 x87f_mul(x87f_load_f32(pm->ps->runSpeedScale),
+                                          x87f_load_f32(ladderDenom))),
+                        x87f_load_f32(0.45f)));
 #else
                     stepInterval = (velZ / (pm->ps->runSpeedScale * ladderDenom)) * 0.45f;
 #endif
                 }
             }
             if (pm->ps->velocity[2] >= 0.0f) {
-                anim = BG_ExecuteCommand(pm->ps, 3, PM_FOOTSTEPS_ANIM_AIRBORNE_UP, 1);
+                anim = BG_ExecuteCommand(pm->ps, 3,
+                                              PM_FOOTSTEPS_ANIM_AIRBORNE_UP, 1);
             } else {
-                anim = BG_ExecuteCommand(pm->ps, 3, PM_FOOTSTEPS_ANIM_AIRBORNE_DOWN, 1);
+                anim = BG_ExecuteCommand(
+                    pm->ps, 3, PM_FOOTSTEPS_ANIM_AIRBORNE_DOWN, 1);
             }
             oldTime = pm->ps->bobCycle;
-            pm->ps->bobCycle = PM_FOOTSTEPS_BOB_CYCLE(oldTime, pml.msec, stepInterval);
+            pm->ps->bobCycle =
+                PM_FOOTSTEPS_BOB_CYCLE(oldTime, pml.msec, stepInterval);
             PM_FootstepEvent(oldTime, pm->ps->bobCycle, 1);
         }
         if (effectiveStance == (int)(pm->ps->playerStateFlags & 3)) {
@@ -455,7 +527,8 @@ void PM_Footsteps(void)
     stanceBits = pm->ps->playerStateFlags;
 
     /* Idle / very slow movement */
-    if (pm->horizontalSpeed < 10.0f || pm->ps->pmType == PM_TYPE_LINKED) {
+    if (pm->horizontalSpeed < 10.0f ||
+        pm->ps->pmType == PM_TYPE_LINKED) {
         if (pm->horizontalSpeed < 1.0f) {
             pm->ps->bobCycle = 0;
         }
@@ -477,10 +550,12 @@ void PM_Footsteps(void)
     if (pm->command.forwardmove == 0) {
         if (pm->command.rightmove != 0) {
 #if EMULATE_X87
-            moveSpeed = x87f_store_f32(
-                x87f_mul(x87f_load_f32(moveSpeed),
-                         x87f_add(x87f_mul(x87f_sub(x87f_load_f32(pm->ps->strafeSpeedScale), x87f_load_f32(1.0f)), x87f_load_f32(0.75f)),
-                                  x87f_load_f32(1.0f))));
+            moveSpeed = x87f_store_f32(x87f_mul(
+                x87f_load_f32(moveSpeed),
+                x87f_add(x87f_mul(x87f_sub(x87f_load_f32(pm->ps->strafeSpeedScale),
+                                           x87f_load_f32(1.0f)),
+                                  x87f_load_f32(0.75f)),
+                         x87f_load_f32(1.0f))));
 #else
             moveSpeed *= (pm->ps->strafeSpeedScale - 1.0f) * 0.75f + 1.0f;
 #endif
@@ -497,21 +572,26 @@ void PM_Footsteps(void)
             }
         } else {
 #if EMULATE_X87
-            moveSpeed = x87f_store_f32(
-                x87f_mul(x87f_load_f32(moveSpeed),
-                         x87f_mul(x87f_add(x87f_add(x87f_mul(x87f_sub(x87f_load_f32(pm->ps->strafeSpeedScale), x87f_load_f32(1.0f)),
-                                                             x87f_load_f32(0.75f)),
-                                                    x87f_load_f32(1.0f)),
-                                           x87f_load_f32(1.0f)),
-                                  x87f_load_f32(0.5f))));
+            moveSpeed = x87f_store_f32(x87f_mul(
+                x87f_load_f32(moveSpeed),
+                x87f_mul(x87f_add(x87f_add(
+                                      x87f_mul(x87f_sub(x87f_load_f32(
+                                                            pm->ps->strafeSpeedScale),
+                                                        x87f_load_f32(1.0f)),
+                                               x87f_load_f32(0.75f)),
+                                      x87f_load_f32(1.0f)),
+                                  x87f_load_f32(1.0f)),
+                         x87f_load_f32(0.5f))));
 #else
             moveSpeed *= ((pm->ps->strafeSpeedScale - 1.0f) * 0.75f + 1.0f + 1.0f) * 0.5f;
 #endif
             if (pm->command.forwardmove < 0) {
 #if EMULATE_X87
-                moveSpeed = x87f_store_f32(
-                    x87f_mul(x87f_load_f32(moveSpeed),
-                             x87f_mul(x87f_add(x87f_load_f32(pm->ps->backSpeedScale), x87f_load_f32(1.0f)), x87f_load_f32(0.5f))));
+                moveSpeed = x87f_store_f32(x87f_mul(
+                    x87f_load_f32(moveSpeed),
+                    x87f_mul(x87f_add(x87f_load_f32(pm->ps->backSpeedScale),
+                                      x87f_load_f32(1.0f)),
+                             x87f_load_f32(0.5f))));
 #else
                 moveSpeed *= (pm->ps->backSpeedScale + 1.0f) * 0.5f;
 #endif
@@ -533,26 +613,36 @@ void PM_Footsteps(void)
 
     /* Apply viewheight lerp speed modifier */
     {
-        float lerpFrac = PM_GetViewHeightLerp(pm->ps->crouchViewHeight, pm->ps->proneViewHeight);
+        float lerpFrac = PM_GetViewHeightLerp(pm->ps->crouchViewHeight,
+                                              pm->ps->proneViewHeight);
         if (lerpFrac != 0.0f || isnan(lerpFrac)) {
 #if EMULATE_X87
-            moveSpeed = x87f_store_f32(
-                x87f_mul(x87f_load_f32(moveSpeed),
-                         x87f_add(x87f_mul(x87f_sub(x87f_load_f32(1.0f), x87f_load_f32(lerpFrac)), x87f_load_f32(pm->ps->crouchSpeedScale)),
-                                  x87f_mul(x87f_load_f32(lerpFrac), x87f_load_f32(pm->ps->proneSpeedScale)))));
+            moveSpeed = x87f_store_f32(x87f_mul(
+                x87f_load_f32(moveSpeed),
+                x87f_add(x87f_mul(x87f_sub(x87f_load_f32(1.0f),
+                                           x87f_load_f32(lerpFrac)),
+                                  x87f_load_f32(pm->ps->crouchSpeedScale)),
+                         x87f_mul(x87f_load_f32(lerpFrac),
+                                  x87f_load_f32(pm->ps->proneSpeedScale)))));
 #else
-            moveSpeed *= (1.0f - lerpFrac) * pm->ps->crouchSpeedScale + lerpFrac * pm->ps->proneSpeedScale;
+            moveSpeed *= (1.0f - lerpFrac) * pm->ps->crouchSpeedScale +
+                          lerpFrac * pm->ps->proneSpeedScale;
 #endif
         } else {
-            lerpFrac = PM_GetViewHeightLerp(pm->ps->proneViewHeight, pm->ps->crouchViewHeight);
+            lerpFrac = PM_GetViewHeightLerp(pm->ps->proneViewHeight,
+                                            pm->ps->crouchViewHeight);
             if (lerpFrac != 0.0f || isnan(lerpFrac)) {
 #if EMULATE_X87
                 moveSpeed = x87f_store_f32(x87f_mul(
                     x87f_load_f32(moveSpeed),
-                    x87f_add(x87f_mul(x87f_sub(x87f_load_f32(1.0f), x87f_load_f32(lerpFrac)), x87f_load_f32(pm->ps->proneSpeedScale)),
-                             x87f_mul(x87f_load_f32(lerpFrac), x87f_load_f32(pm->ps->crouchSpeedScale)))));
+                    x87f_add(x87f_mul(x87f_sub(x87f_load_f32(1.0f),
+                                               x87f_load_f32(lerpFrac)),
+                                      x87f_load_f32(pm->ps->proneSpeedScale)),
+                             x87f_mul(x87f_load_f32(lerpFrac),
+                                      x87f_load_f32(pm->ps->crouchSpeedScale)))));
 #else
-                moveSpeed *= (1.0f - lerpFrac) * pm->ps->proneSpeedScale + lerpFrac * pm->ps->crouchSpeedScale;
+                moveSpeed *= (1.0f - lerpFrac) * pm->ps->proneSpeedScale +
+                              lerpFrac * pm->ps->crouchSpeedScale;
 #endif
             } else if (effectiveStance == 1) {
                 moveSpeed *= pm->ps->proneSpeedScale;
@@ -565,9 +655,11 @@ void PM_Footsteps(void)
     /* Select animation and compute step interval */
     if (effectiveStance == 1) {
         if (sprintBit == 0) {
-            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.25f);
+            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+                pm->horizontalSpeed, moveSpeed, 0.25f);
         } else {
-            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.24f);
+            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+                pm->horizontalSpeed, moveSpeed, 0.24f);
         }
         if ((pm->ps->playerStateFlags & 0x40) == 0) {
             anim = BG_ExecuteCommand(pm->ps, 3, 8, 1);
@@ -576,40 +668,49 @@ void PM_Footsteps(void)
         }
     } else if (effectiveStance == 2) {
         if (sprintBit == 0) {
-            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.34f);
+            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+                pm->horizontalSpeed, moveSpeed, 0.34f);
         } else {
-            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.315f);
+            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+                pm->horizontalSpeed, moveSpeed, 0.315f);
         }
         if ((pm->ps->playerStateFlags & 0x40) == 0) {
             if (sprintBit == 0) {
-                anim = BG_ExecuteCommand(pm->ps, 3, PM_FOOTSTEPS_ANIM_CROUCH_C, 1);
+                anim = BG_ExecuteCommand(
+                    pm->ps, 3, PM_FOOTSTEPS_ANIM_CROUCH_C, 1);
             } else {
                 anim = BG_ExecuteCommand(pm->ps, 3, 6, 1);
             }
         } else if (sprintBit == 0) {
-            anim = BG_ExecuteCommand(pm->ps, 3, PM_FOOTSTEPS_ANIM_CROUCH_D, 1);
+            anim = BG_ExecuteCommand(
+                pm->ps, 3, PM_FOOTSTEPS_ANIM_CROUCH_D, 1);
         } else {
             anim = BG_ExecuteCommand(pm->ps, 3, 7, 1);
         }
     } else if ((pm->ps->playerStateFlags & 0x40) == 0) {
         if (sprintBit == 0) {
-            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.335f);
+            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+                pm->horizontalSpeed, moveSpeed, 0.335f);
             anim = BG_ExecuteCommand(pm->ps, 3, 10, 1);
         } else {
-            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.305f);
+            stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+                pm->horizontalSpeed, moveSpeed, 0.305f);
             anim = BG_ExecuteCommand(pm->ps, 3, 4, 1);
         }
     } else if (sprintBit == 0) {
-        stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.36f);
+        stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+            pm->horizontalSpeed, moveSpeed, 0.36f);
         anim = BG_ExecuteCommand(pm->ps, 3, PM_FOOTSTEPS_ANIM_STAND_D, 1);
     } else {
-        stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(pm->horizontalSpeed, moveSpeed, 0.325f);
+        stepInterval = PM_FOOTSTEPS_STEP_INTERVAL(
+            pm->horizontalSpeed, moveSpeed, 0.325f);
         anim = BG_ExecuteCommand(pm->ps, 3, 5, 1);
     }
 
     shouldMake = PM_ShouldMakeFootsteps();
     oldTime = pm->ps->bobCycle;
-    pm->ps->bobCycle = PM_FOOTSTEPS_BOB_CYCLE(oldTime, pml.msec, stepInterval);
+    pm->ps->bobCycle =
+        PM_FOOTSTEPS_BOB_CYCLE(oldTime, pml.msec, stepInterval);
 
     /* Idle animation if not moving */
     if (pm->command.forwardmove == 0 && pm->command.rightmove == 0) {

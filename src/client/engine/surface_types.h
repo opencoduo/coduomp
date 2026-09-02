@@ -25,12 +25,18 @@ typedef struct surfaceParm_s {
 } surfaceParm_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(surfaceParm_t) == 4, "i386 surface-parm alignment changed");
-_Static_assert(offsetof(surfaceParm_t, name) == 0x00, "i386 surface-parm name moved");
-_Static_assert(offsetof(surfaceParm_t, clearSolid) == 0x04, "i386 surface-parm clear-solid flag moved");
-_Static_assert(offsetof(surfaceParm_t, surfaceFlags) == 0x08, "i386 surface-parm surface flags moved");
-_Static_assert(offsetof(surfaceParm_t, contents) == 0x0c, "i386 surface-parm contents moved");
-_Static_assert(sizeof(surfaceParm_t) == 0x10, "i386 surface-parm stride changed");
+_Static_assert(_Alignof(surfaceParm_t) == 4,
+               "i386 surface-parm alignment changed");
+_Static_assert(offsetof(surfaceParm_t, name) == 0x00,
+               "i386 surface-parm name moved");
+_Static_assert(offsetof(surfaceParm_t, clearSolid) == 0x04,
+               "i386 surface-parm clear-solid flag moved");
+_Static_assert(offsetof(surfaceParm_t, surfaceFlags) == 0x08,
+               "i386 surface-parm surface flags moved");
+_Static_assert(offsetof(surfaceParm_t, contents) == 0x0c,
+               "i386 surface-parm contents moved");
+_Static_assert(sizeof(surfaceParm_t) == 0x10,
+               "i386 surface-parm stride changed");
 #endif
 
 extern const surfaceParm_t surfaceParms[];

@@ -16,7 +16,8 @@ typedef enum vehicle_type_e {
     VEHICLE_TYPE_COUNT = 6
 } vehicle_type_t;
 
-typedef char vehicle_type_storage_size[sizeof(vehicle_type_t) == sizeof(int32_t) ? 1 : -1];
+typedef char vehicle_type_storage_size[
+    sizeof(vehicle_type_t) == sizeof(int32_t) ? 1 : -1];
 
 /* Packed entityState_t::vehicleAnimState lanes. Both Windows cgame export
  * bodies and the Windows/Linux game export bodies clear and replace these

@@ -11,7 +11,8 @@
  * 'i' is int32_t, and 'f' is double. Templates may omit trailing arguments,
  * but cannot consume more arguments or change their types. Fixed flags,
  * widths, and precision are safe; '*' and length modifiers are not. */
-static inline qboolean client_compat_validate_format_signature(const char *format, const char *signature)
+static inline qboolean client_compat_validate_format_signature(
+    const char *format, const char *signature)
 {
     int32_t argumentIndex = 0;
 
@@ -24,7 +25,8 @@ static inline qboolean client_compat_validate_format_signature(const char *forma
             continue;
         }
 
-        while (*cursor == '-' || *cursor == '+' || *cursor == ' ' || *cursor == '#' || *cursor == '0') {
+        while (*cursor == '-' || *cursor == '+' || *cursor == ' ' ||
+               *cursor == '#' || *cursor == '0') {
             ++cursor;
         }
         if (*cursor == '*') {
@@ -47,8 +49,11 @@ static inline qboolean client_compat_validate_format_signature(const char *forma
         if (expected == '\0') {
             return qfalse;
         }
-        if ((expected == 's' && *cursor != 's') || (expected == 'i' && *cursor != 'd' && *cursor != 'i') ||
-            (expected == 'f' && *cursor != 'f' && *cursor != 'F' && *cursor != 'e' && *cursor != 'E' && *cursor != 'g' && *cursor != 'G')) {
+        if ((expected == 's' && *cursor != 's') ||
+            (expected == 'i' && *cursor != 'd' && *cursor != 'i') ||
+            (expected == 'f' && *cursor != 'f' && *cursor != 'F' &&
+             *cursor != 'e' && *cursor != 'E' && *cursor != 'g' &&
+             *cursor != 'G')) {
             return qfalse;
         }
         ++argumentIndex;

@@ -32,7 +32,8 @@ typedef struct trajectory_s {
     vec3_t trDelta;        /* +0x18 */
 } trajectory_t;
 
-#define TRAJECTORY_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
+#define TRAJECTORY_LAYOUT_ASSERT(name_, expression_) \
+    typedef char name_[(expression_) ? 1 : -1]
 
 #if defined(_MSC_VER)
 #define TRAJECTORY_ALIGNOF(type_) __alignof(type_)
@@ -45,14 +46,22 @@ typedef struct trajectory_s {
 #endif
 
 TRAJECTORY_LAYOUT_ASSERT(q_trajectory_type_size, sizeof(trType_t) == 4);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_alignment, TRAJECTORY_ALIGNOF(trajectory_t) == 4);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_type_offset, offsetof(trajectory_t, trType) == 0x00);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_time_offset, offsetof(trajectory_t, trTime) == 0x04);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_duration_offset, offsetof(trajectory_t, trDuration) == 0x08);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_base_offset, offsetof(trajectory_t, trBase) == 0x0c);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_base_extent, sizeof(((trajectory_t *)0)->trBase) == 0x0c);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_delta_offset, offsetof(trajectory_t, trDelta) == 0x18);
-TRAJECTORY_LAYOUT_ASSERT(q_trajectory_delta_extent, sizeof(((trajectory_t *)0)->trDelta) == 0x0c);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_alignment,
+                         TRAJECTORY_ALIGNOF(trajectory_t) == 4);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_type_offset,
+                         offsetof(trajectory_t, trType) == 0x00);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_time_offset,
+                         offsetof(trajectory_t, trTime) == 0x04);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_duration_offset,
+                         offsetof(trajectory_t, trDuration) == 0x08);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_base_offset,
+                         offsetof(trajectory_t, trBase) == 0x0c);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_base_extent,
+                         sizeof(((trajectory_t *)0)->trBase) == 0x0c);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_delta_offset,
+                         offsetof(trajectory_t, trDelta) == 0x18);
+TRAJECTORY_LAYOUT_ASSERT(q_trajectory_delta_extent,
+                         sizeof(((trajectory_t *)0)->trDelta) == 0x0c);
 TRAJECTORY_LAYOUT_ASSERT(q_trajectory_size, sizeof(trajectory_t) == 0x24);
 
 #undef TRAJECTORY_ALIGNOF

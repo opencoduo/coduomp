@@ -17,7 +17,9 @@ enum renderer_model_box_side_e {
  * 0x0051844a..0x00518481. Both binaries prove that only the current list head
  * is checked for duplicate model identity before a new eight-byte link is
  * prepended. */
-void R_AddStaticModelToCell(world_t *world, renderer_static_model_t *model, int32_t cellIndex)
+void R_AddStaticModelToCell(world_t *world,
+                            renderer_static_model_t *model,
+                            int32_t cellIndex)
 {
     renderer_world_cell_t *cell = &world->cells[cellIndex];
     renderer_cell_model_link_t *link = cell->modelLinks;
@@ -40,20 +42,26 @@ void R_AddStaticModelToCell(world_t *world, renderer_static_model_t *model, int3
  * and turns several recursive calls into tail traversal. Its instructions
  * remain authoritative for the -2/-1 cell sentinels, axial bounds splitting,
  * side-to-child mapping, and allocation behavior. */
-void R_FilterStaticModelIntoCells_r(world_t *world, const mnode_t *node, renderer_static_model_t *model, const vec3_t mins,
-                                    const vec3_t maxs)
+void R_FilterStaticModelIntoCells_r(
+    world_t *world, const mnode_t *node,
+    renderer_static_model_t *model, const vec3_t mins, const vec3_t maxs)
 {
     while (node->cellIndex == R_WORLD_NODE_INTERNAL) {
-        const int32_t side = BoxOnPlaneSide(mins, maxs, node->data.node.plane);
+        const int32_t side =
+            BoxOnPlaneSide(mins, maxs, node->data.node.plane);
 
         if (side != R_MODEL_BOX_SIDE_CROSS) {
-            node = node->data.node.children[side - R_MODEL_BOX_SIDE_FRONT];
+            node = node->data.node.children[
+                side - R_MODEL_BOX_SIDE_FRONT];
             continue;
         }
 
-        if (node->data.node.plane->type >= R_MODEL_AXIAL_PLANE_TYPE_COUNT) {
-            R_FilterStaticModelIntoCells_r(world, node->data.node.children[0], model, mins, maxs);
-            R_FilterStaticModelIntoCells_r(world, node->data.node.children[1], model, mins, maxs);
+        if (node->data.node.plane->type >=
+            R_MODEL_AXIAL_PLANE_TYPE_COUNT) {
+            R_FilterStaticModelIntoCells_r(
+                world, node->data.node.children[0], model, mins, maxs);
+            R_FilterStaticModelIntoCells_r(
+                world, node->data.node.children[1], model, mins, maxs);
             return;
         }
 
@@ -65,9 +73,12 @@ void R_FilterStaticModelIntoCells_r(world_t *world, const mnode_t *node, rendere
         backMaxs[axis] = node->data.node.plane->dist;
 
         if (frontMins[axis] < maxs[axis]) {
-            R_FilterStaticModelIntoCells_r(world, node->data.node.children[0], model, frontMins, maxs);
+            R_FilterStaticModelIntoCells_r(
+                world, node->data.node.children[0], model,
+                frontMins, maxs);
         }
-        R_FilterStaticModelIntoCells_r(world, node->data.node.children[1], model, mins, backMaxs);
+        R_FilterStaticModelIntoCells_r(
+            world, node->data.node.children[1], model, mins, backMaxs);
         return;
     }
 

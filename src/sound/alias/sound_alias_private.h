@@ -24,16 +24,20 @@ char *va(const char *format, ...);
 
 int32_t FS_ReadFile(const char *path, void **buffer);
 void FS_FreeFile(void *buffer);
-char **FS_ListFiles(const char *path, const char *extension, int32_t *fileCount);
+char **FS_ListFiles(const char *path, const char *extension,
+                    int32_t *fileCount);
 void FS_FreeFileList(char **files);
-int32_t FS_Write(const void *buffer, int32_t byteCount, int32_t fileHandle);
-int32_t FS_FOpenFileRead(const char *path, int32_t *fileHandle, qboolean uniqueFile);
+int32_t FS_Write(const void *buffer, int32_t byteCount,
+                 int32_t fileHandle);
+int32_t FS_FOpenFileRead(const char *path, int32_t *fileHandle,
+                         qboolean uniqueFile);
 void FS_FCloseFile(int32_t fileHandle);
 int32_t FS_FOpenFileWrite(const char *path);
 int32_t FS_FOpenTextFileWrite(const char *path);
 void FS_Rename(const char *sourcePath, const char *destinationPath);
 void FS_Remove(const char *path);
-void FS_BuildOSPath(const char *base, const char *game, const char *qpath, char *osPath);
+void FS_BuildOSPath(const char *base, const char *game,
+                    const char *qpath, char *osPath);
 void FS_Copyfiles(const char *sourceOSPath, char *destinationOSPath);
 
 void *Hunk_AllocateTempMemoryInternal(size_t size);

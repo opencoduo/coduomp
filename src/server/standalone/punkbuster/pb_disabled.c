@@ -2,7 +2,8 @@
 #include <stdint.h>
 
 /* NOT_FROM_ORIGINAL_SOURCE: disabled PunkBuster bridge stubs for default builds. */
-void PB_CallServerSbGlobal(int32_t opcode, int32_t clientNum, uint32_t length, const char *text)
+void PB_CallServerSbGlobal(int32_t opcode, int32_t clientNum, uint32_t length,
+                           const char *text)
 {
     (void)opcode;
     (void)clientNum;
@@ -33,7 +34,8 @@ void PB_InvokeEventCallback(const char *text, const uint8_t *packetData)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: disabled PunkBuster bridge stub for default builds. */
-const char *PB_InvokeStringQueryCallback(const char *text, intptr_t arg1, intptr_t arg2)
+const char *PB_InvokeStringQueryCallback(const char *text, intptr_t arg1,
+                                         intptr_t arg2)
 {
     (void)text;
     (void)arg1;

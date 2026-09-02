@@ -26,15 +26,24 @@ typedef struct com_name_value_s {
 } com_name_value_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(com_name_value_t *) == 4, "com_name_value_t pointer width changed");
-_Static_assert(sizeof(com_name_value_t) == 0x18, "com_name_value_t extent changed");
-_Static_assert(offsetof(com_name_value_t, name) == 0x00, "com_name_value_t.name moved");
-_Static_assert(offsetof(com_name_value_t, stringValue) == 0x04, "com_name_value_t.stringValue moved");
-_Static_assert(offsetof(com_name_value_t, reserved08) == 0x08, "com_name_value_t.reserved08 moved");
-_Static_assert(offsetof(com_name_value_t, modified) == 0x0c, "com_name_value_t.modified moved");
-_Static_assert(offsetof(com_name_value_t, floatValue) == 0x10, "com_name_value_t.floatValue moved");
-_Static_assert(offsetof(com_name_value_t, next) == 0x14, "com_name_value_t.next moved");
-_Static_assert(offsetof(com_name_value_t, inlineName) == 0x18, "com_name_value_t.inlineName moved");
+_Static_assert(sizeof(com_name_value_t *) == 4,
+               "com_name_value_t pointer width changed");
+_Static_assert(sizeof(com_name_value_t) == 0x18,
+               "com_name_value_t extent changed");
+_Static_assert(offsetof(com_name_value_t, name) == 0x00,
+               "com_name_value_t.name moved");
+_Static_assert(offsetof(com_name_value_t, stringValue) == 0x04,
+               "com_name_value_t.stringValue moved");
+_Static_assert(offsetof(com_name_value_t, reserved08) == 0x08,
+               "com_name_value_t.reserved08 moved");
+_Static_assert(offsetof(com_name_value_t, modified) == 0x0c,
+               "com_name_value_t.modified moved");
+_Static_assert(offsetof(com_name_value_t, floatValue) == 0x10,
+               "com_name_value_t.floatValue moved");
+_Static_assert(offsetof(com_name_value_t, next) == 0x14,
+               "com_name_value_t.next moved");
+_Static_assert(offsetof(com_name_value_t, inlineName) == 0x18,
+               "com_name_value_t.inlineName moved");
 #endif
 
 enum {
@@ -69,7 +78,8 @@ float Com_ParseNameValueFloat(const char *text)
     int32_t divisor = 0;
 
     while (*text != '\0') {
-        if (*text < COM_NAME_VALUE_DIGIT_ZERO || *text > COM_NAME_VALUE_DIGIT_NINE) {
+        if (*text < COM_NAME_VALUE_DIGIT_ZERO ||
+            *text > COM_NAME_VALUE_DIGIT_NINE) {
             if (divisor == 0 && *text == COM_NAME_VALUE_DECIMAL_POINT) {
                 divisor = COM_NAME_VALUE_DECIMAL_BASE;
                 ++text;
@@ -83,19 +93,26 @@ float Com_ParseNameValueFloat(const char *text)
         if (divisor != 0) {
             /* value + fild(digit)/fild(divisor), one float store -> shim. */
 #if EMULATE_X87
-            value = x87f_store_f32(x87f_add(x87f_load_f32(value), x87f_div(x87f_load_i32(digit), x87f_load_i32(divisor))));
+            value = x87f_store_f32(x87f_add(
+                x87f_load_f32(value),
+                x87f_div(x87f_load_i32(digit), x87f_load_i32(divisor))));
 #else
-            value = (float)((long double)value + ((long double)digit / (long double)divisor));
+            value = (float)((long double)value +
+                            ((long double)digit / (long double)divisor));
 #endif
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             divisor *= COM_NAME_VALUE_DECIMAL_BASE;
         } else {
             /* value * 10.0(double) + fild(digit), one float store -> shim. */
 #if EMULATE_X87
-            value = x87f_store_f32(
-                x87f_add(x87f_mul(x87f_load_f32(value), x87f_load_f64((double)COM_NAME_VALUE_DECIMAL_BASE)), x87f_load_i32(digit)));
+            value = x87f_store_f32(x87f_add(
+                x87f_mul(x87f_load_f32(value),
+                         x87f_load_f64((double)COM_NAME_VALUE_DECIMAL_BASE)),
+                x87f_load_i32(digit)));
 #else
-            value = (float)(((long double)value * (double)COM_NAME_VALUE_DECIMAL_BASE) + (long double)digit);
+            value = (float)(((long double)value *
+                              (double)COM_NAME_VALUE_DECIMAL_BASE) +
+                             (long double)digit);
 #endif
         }
 
@@ -160,7 +177,8 @@ void Com_DebugFree(void *ptr)
 com_name_value_t *Com_AllocNameValue(const char *name)
 {
     size_t nameLength = strlen(name) + COM_NAME_VALUE_HEADER_EXTRA_NUL;
-    com_name_value_t *entry = Com_ZoneDebugAlloc(sizeof(*entry) + nameLength);
+    com_name_value_t *entry =
+        Com_ZoneDebugAlloc(sizeof(*entry) + nameLength);
 
     memset(entry, 0, sizeof(*entry));
     entry->name = entry->inlineName;
@@ -195,7 +213,8 @@ void Com_ClearNameValues(void)
 
 com_name_value_t *Com_FindNameValue(const char *name)
 {
-    for (com_name_value_t *entry = com_nameValueList; entry != NULL; entry = entry->next) {
+    for (com_name_value_t *entry = com_nameValueList; entry != NULL;
+         entry = entry->next) {
         if (Q_stricmp(entry->name, name) == 0) {
             return entry;
         }
@@ -226,7 +245,8 @@ float Com_GetNameValueFloat(const char *name)
     return 0.0f;
 }
 
-com_name_value_t *Com_GetOrCreateNameValue(const char *name, const char *value)
+com_name_value_t *Com_GetOrCreateNameValue(const char *name,
+                                                    const char *value)
 {
     com_name_value_t *entry = Com_FindNameValue(name);
 
@@ -235,7 +255,8 @@ com_name_value_t *Com_GetOrCreateNameValue(const char *name, const char *value)
     }
 
     entry = Com_AllocNameValue(name);
-    entry->stringValue = Com_ZoneDebugAlloc(strlen(value) + 1);
+    entry->stringValue =
+        Com_ZoneDebugAlloc(strlen(value) + 1);
     strcpy(entry->stringValue, value);
     entry->floatValue = Com_ParseNameValueFloat(entry->stringValue);
     entry->modified = qtrue;
@@ -243,16 +264,19 @@ com_name_value_t *Com_GetOrCreateNameValue(const char *name, const char *value)
     return entry;
 }
 
-const char *Com_GetOrCreateNameValueString(const char *name, const char *value)
+const char *Com_GetOrCreateNameValueString(const char *name,
+                                           const char *value)
 {
-    com_name_value_t *entry = Com_GetOrCreateNameValue(name, value);
+    com_name_value_t *entry =
+        Com_GetOrCreateNameValue(name, value);
 
     return entry->stringValue;
 }
 
 float Com_GetOrCreateNameValueFloat(const char *name, const char *value)
 {
-    com_name_value_t *entry = Com_GetOrCreateNameValue(name, value);
+    com_name_value_t *entry =
+        Com_GetOrCreateNameValue(name, value);
 
     return entry->floatValue;
 }
@@ -267,7 +291,8 @@ void Com_SetNameValueString(const char *name, const char *value)
         entry = Com_AllocNameValue(name);
     }
 
-    entry->stringValue = Com_ZoneDebugAlloc(strlen(value) + 1);
+    entry->stringValue =
+        Com_ZoneDebugAlloc(strlen(value) + 1);
     strcpy(entry->stringValue, value);
     entry->floatValue = Com_ParseNameValueFloat(entry->stringValue);
     entry->modified = qtrue;
@@ -301,7 +326,8 @@ void Com_OpenLog(const char *filename)
     }
 
     if (com_openLogFile != NULL) {
-        Com_Printf("^1Error: log file %s is already opened\n", com_openLogFilename);
+        Com_Printf("^1Error: log file %s is already opened\n",
+                   com_openLogFilename);
         return;
     }
 

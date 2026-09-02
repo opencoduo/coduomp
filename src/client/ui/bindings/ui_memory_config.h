@@ -11,15 +11,11 @@ enum {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-enum {
-    UI_MEMORY_POOL_CAPACITY = UI_MEMORY_POOL_PE32_CAPACITY
-};
+enum { UI_MEMORY_POOL_CAPACITY = UI_MEMORY_POOL_PE32_CAPACITY };
 #else
 /* NOT_FROM_ORIGINAL_SOURCE: the PE32 pool held pointer-bearing UI objects.
  * Double native storage so widened pointers do not reduce its workload. */
-enum {
-    UI_MEMORY_POOL_CAPACITY = 2 * UI_MEMORY_POOL_PE32_CAPACITY
-};
+enum { UI_MEMORY_POOL_CAPACITY = 2 * UI_MEMORY_POOL_PE32_CAPACITY };
 #endif
 
 extern unsigned char memoryPool[UI_MEMORY_POOL_CAPACITY];

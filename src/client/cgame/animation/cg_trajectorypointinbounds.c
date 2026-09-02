@@ -28,8 +28,10 @@
 // Offsets this function relies on (i386 target proves 4-byte pointer width):
 //   entity->currentState.pos at +0x0c  (EBX = ECX + 0x0c handed to BG_EvaluateTrajectory)
 //   ps->psOrigin at +0x14 (ESI+0x14/+0x18/+0x1c comparisons)
-_Static_assert(offsetof(centity_t, currentState.pos) == 0x0c, "entity position trajectory must sit at +0x0c");
-_Static_assert(offsetof(playerState_t, psOrigin) == 0x14, "reference point must sit at +0x14");
+_Static_assert(offsetof(centity_t, currentState.pos) == 0x0c,
+               "entity position trajectory must sit at +0x0c");
+_Static_assert(offsetof(playerState_t, psOrigin) == 0x14,
+               "reference point must sit at +0x14");
 
 // Bounding half-extents / limits proven from the .rdata float constants compared
 // against each axis delta:
@@ -42,7 +44,9 @@ _Static_assert(offsetof(playerState_t, psOrigin) == 0x14, "reference point must 
 #define CG_TRAJBOX_Z_MAX 18.0f
 #define CG_TRAJBOX_Z_MIN (-88.0f)
 
-qboolean CG_TrajectoryPointInBounds(const centity_t *entity, const playerState_t *ps, int32_t atTime)
+qboolean CG_TrajectoryPointInBounds(const centity_t *entity,
+                                    const playerState_t *ps,
+                                    int32_t atTime)
 {
     vec3_t pos;
     /* The DLL leaves each axis delta (FLD psOrigin[i]; FSUB pos[i]) in ST0 and

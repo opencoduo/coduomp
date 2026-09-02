@@ -53,20 +53,25 @@ int CG_GetSortedHudElems(hudElem_t **sortedList)
     /* Loop 1: gather from the archival array (ps+0x267c == snapshot+0x2688).
      * LEA EAX,[EDI+0x267c]; while active (type != 0) and index < 0x3f, store the
      * element pointer and advance by 0x7c. */
-    for (i = 0; i < PLAYERSTATE_HUD_ELEM_COUNT && snap->ps.hudArchival[i].type != 0; i++) {
+    for (i = 0; i < PLAYERSTATE_HUD_ELEM_COUNT &&
+                snap->ps.hudArchival[i].type != 0;
+         i++) {
         sortedList[count++] = &snap->ps.hudArchival[i];
     }
 
     /* Loop 2: gather from the current array (ps+0x7f8 == snapshot+0x804).
      * LEA EAX,[EDI+0x7f8]; same active-and-in-range test, appending after the
      * archival entries already stored (ESI is not reset, ECX is). */
-    for (i = 0; i < PLAYERSTATE_HUD_ELEM_COUNT && snap->ps.hudCurrent[i].type != 0; i++) {
+    for (i = 0; i < PLAYERSTATE_HUD_ELEM_COUNT &&
+                snap->ps.hudCurrent[i].type != 0;
+         i++) {
         sortedList[count++] = &snap->ps.hudCurrent[i];
     }
 
     /* PUSH 0x3002a400; PUSH 4; PUSH ESI; PUSH EDX; CALL qsort; ADD ESP,0x10.
      * cdecl args (base, count, size, cmp); element size 4 = sizeof(hudElem_t *). */
-    coduo_crt_qsort(sortedList, (size_t)count, sizeof(sortedList[0]), hudElemSortCompare);
+    coduo_crt_qsort(sortedList, (size_t)count, sizeof(sortedList[0]),
+                        hudElemSortCompare);
 
     /* MOV EAX,ESI: return the total number of gathered elements. */
     return count;

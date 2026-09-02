@@ -57,7 +57,8 @@ _Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "infoValid +0x00");
 _Static_assert(offsetof(clientInfo_t, health) == 0x3c, "health +0x3c");
 #if UINTPTR_MAX == 0xFFFFFFFFu
 _Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap->ps.psClientNum +0xe0");
-_Static_assert(offsetof(snapshot_t, ps.stats[STAT_HEALTH]) == 0x128, "cg_snap->ps.stats[STAT_HEALTH] +0x128");
+_Static_assert(offsetof(snapshot_t, ps.stats[STAT_HEALTH]) == 0x128,
+               "cg_snap->ps.stats[STAT_HEALTH] +0x128");
 _Static_assert(offsetof(rectDef_t, x) == 0x0, "rectDef_t.x +0x0");
 _Static_assert(offsetof(rectDef_t, y) == 0x4, "rectDef_t.y +0x4");
 _Static_assert(offsetof(rectDef_t, w) == 0x8, "rectDef_t.w +0x8");
@@ -68,9 +69,7 @@ _Static_assert(offsetof(rectDef_t, h) == 0xc, "rectDef_t.h +0xc");
 static const char CG_HUD_EMIT_DIGIT_FORMAT[] = "%i";
 
 /* MOV ESI,0x10 -> Com_sprintf size argument (the value-text buffer size). */
-enum {
-    CG_HUD_EMIT_DIGIT_BUFSIZE = 16
-};
+enum { CG_HUD_EMIT_DIGIT_BUFSIZE = 16 };
 
 /* Value clamp range for digit mode (CMP EDI,0x3e7 / CMP EDI,-0x63): the number is
  * clamped to at most three characters worth of magnitude before formatting. */
@@ -80,14 +79,10 @@ enum {
 };
 
 /* Maximum glyphs drawn (CMP EBX,3 / MOV EBX,3): at most three characters. */
-enum {
-    CG_HUD_EMIT_MAX_GLYPHS = 3
-};
+enum { CG_HUD_EMIT_MAX_GLYPHS = 3 };
 
 /* The minus sign occupies the last cg_numberShaders[] slot (MOV ESI,0xa on '-'). */
-enum {
-    CG_NUMBER_SHADER_MINUS = 10
-};
+enum { CG_NUMBER_SHADER_MINUS = 10 };
 
 /* cgs_screenXScale (0x30447aa4) / cgs_screenYScale (0x30447aa8): virtual-640x480 ->
  * real-pixel scale factors read as floats by every 2D-draw path (FMUL [0x30447aa4] /
@@ -96,9 +91,11 @@ enum {
 /* charScale*20 (0x3007be04 == 20.0f) and charScale*32 (0x3007bdd0 == 32.0f): the
  * per-glyph horizontal advance and the glyph cell height, in virtual pixels. */
 #define CG_HUD_DIGIT_ADVANCE_SCALE 20.0f /* .rdata 0x3007be04 */
-#define CG_HUD_DIGIT_HEIGHT_SCALE 32.0f /* .rdata 0x3007bdd0 */
+#define CG_HUD_DIGIT_HEIGHT_SCALE  32.0f /* .rdata 0x3007bdd0 */
 
-void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/, const vec4_t color /*EDX*/, const rectDef_t *rect /*stack arg0, ESI*/,
+void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/,
+                      const vec4_t color /*EDX*/,
+                      const rectDef_t *rect /*stack arg0, ESI*/,
                       float charScale /*stack arg1*/)
 {
     /* --- Pick the integer to display (0x30031310..0x30031351). --- */
@@ -111,8 +108,7 @@ void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/, const vec4_t color /*EDX*/, const
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "CG_HudEmitDigits: invalid client number %i",
+                      "\x15" "CG_HudEmitDigits: invalid client number %i",
                       clientNum);
             return;
         }
@@ -152,7 +148,8 @@ void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/, const vec4_t color /*EDX*/, const
      * 0x3006be3c is MSVC _ftol2 -- it FISTPs round-to-nearest then applies a sign-aware
      * +-1 residue correction, i.e. it TRUNCATES toward zero (C (int) cast semantics), NOT
      * round-to-nearest; coduo_fp_to_i32_extended models that truncation. */
-    int32_t charAdvance = coduo_fp_to_i32_extended((long double)charScale * (long double)CG_HUD_DIGIT_ADVANCE_SCALE);
+    int32_t charAdvance = coduo_fp_to_i32_extended(
+        (long double)charScale * (long double)CG_HUD_DIGIT_ADVANCE_SCALE);
     int32_t drawY = coduo_fp_to_i32_extended((long double)rect->y);
     int32_t cursorX = coduo_fp_to_i32_extended((long double)rect->x);
 
@@ -199,7 +196,9 @@ void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/, const vec4_t color /*EDX*/, const
 
         /* Glyph cell height in whole pixels: trunc(charScale*32) via _ftol2
          * (0x30031440..0x3003146a; coduo_fp_to_i32_extended truncates toward zero). */
-        int32_t charHeight = coduo_fp_to_i32_extended((long double)charScale * (long double)CG_HUD_DIGIT_HEIGHT_SCALE);
+        int32_t charHeight = coduo_fp_to_i32_extended(
+            (long double)charScale *
+            (long double)CG_HUD_DIGIT_HEIGHT_SCALE);
 
         /* Convert the integer virtual-screen rect into real device pixels; the texture
          * spans the whole glyph (s1=0, t1=0, s2=1, t2=1). Each integer coordinate enters
@@ -207,17 +206,25 @@ void CG_HudEmitDigits(qhandle_t hIcon /*ECX*/, const vec4_t color /*EDX*/, const
          * axis screen scale (0x3003148b/a5/b9/cc) -- no FSTP DWORD rounds the int first,
          * so no (float) casts (they would round under -std=c11); the sole rounding per
          * coordinate is the FSTP DWORD to its arg slot (0x30031496/ac/bf/d2). */
-        float px = (float)((long double)cursorX * (long double)cgs_screenXScale);
-        float py = (float)((long double)drawY * (long double)cgs_screenYScale);
-        float pw = (float)((long double)charAdvance * (long double)cgs_screenXScale);
-        float ph = (float)((long double)charHeight * (long double)cgs_screenYScale);
+        float px = (float)((long double)cursorX *
+                           (long double)cgs_screenXScale);
+        float py = (float)((long double)drawY *
+                           (long double)cgs_screenYScale);
+        float pw = (float)((long double)charAdvance *
+                           (long double)cgs_screenXScale);
+        float ph = (float)((long double)charHeight *
+                           (long double)cgs_screenYScale);
 
-        trap_R_DrawStretchPic(CG_FloatBits(px), CG_FloatBits(py), CG_FloatBits(pw), CG_FloatBits(ph), CG_FloatBits(0.0f),
-                              CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), cg_numberShaders[glyphIndex]);
+        trap_R_DrawStretchPic(CG_FloatBits(px), CG_FloatBits(py),
+                              CG_FloatBits(pw), CG_FloatBits(ph),
+                              CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                              CG_FloatBits(1.0f), CG_FloatBits(1.0f),
+                              cg_numberShaders[glyphIndex]);
 
         /* Advance the cursor and step to the next character (0x300314e3..0x300314f7);
          * the loop stops on NUL or when the three-glyph budget is exhausted. */
-        cursorX = coduo_int32_from_bits((uint32_t)cursorX + (uint32_t)charAdvance);
+        cursorX = coduo_int32_from_bits(
+            (uint32_t)cursorX + (uint32_t)charAdvance);
         char next = cp[1];
         ++cp;
         --glyphs;

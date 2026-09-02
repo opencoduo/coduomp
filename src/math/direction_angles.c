@@ -43,26 +43,41 @@
 #endif
 
 #if EMULATE_X87
-#define Q_DIRECTION_DEGREES(y, x, scale) \
-    x87f_store_f32( \
-        x87f_div(x87f_mul(x87f_load_f64(atan2((double)(y), (double)(x))), x87f_load_f64((double)(scale))), x87f_load_f64(Q_DIRECTION_PI)))
+#define Q_DIRECTION_DEGREES(y, x, scale)                                    \
+    x87f_store_f32(x87f_div(                                                \
+        x87f_mul(x87f_load_f64(atan2((double)(y), (double)(x))),           \
+                 x87f_load_f64((double)(scale))),                           \
+        x87f_load_f64(Q_DIRECTION_PI)))
 #if defined(WINDOWS_BEHAVIOR)
-#define Q_DIRECTION_HORIZONTAL(x, y) \
-    x87f_store_f32(x87f_sqrt(x87f_add(x87f_mul(x87f_load_f32(x), x87f_load_f32(x)), x87f_mul(x87f_load_f32(y), x87f_load_f32(y)))))
+#define Q_DIRECTION_HORIZONTAL(x, y)                                        \
+    x87f_store_f32(x87f_sqrt(                                               \
+        x87f_add(x87f_mul(x87f_load_f32(x), x87f_load_f32(x)),             \
+                 x87f_mul(x87f_load_f32(y), x87f_load_f32(y)))))
 #else
-#define Q_DIRECTION_HORIZONTAL(x, y) \
-    ((float)sqrt(x87f_store_f64(x87f_add(x87f_mul(x87f_load_f32(x), x87f_load_f32(x)), x87f_mul(x87f_load_f32(y), x87f_load_f32(y))))))
+#define Q_DIRECTION_HORIZONTAL(x, y)                                        \
+    ((float)sqrt(x87f_store_f64(                                            \
+        x87f_add(x87f_mul(x87f_load_f32(x), x87f_load_f32(x)),             \
+                 x87f_mul(x87f_load_f32(y), x87f_load_f32(y))))))
 #endif
-#define Q_DIRECTION_WRAP(value) x87f_store_f32(x87f_add(x87f_load_f32(value), x87f_load_f32(360.0f)))
+#define Q_DIRECTION_WRAP(value)                                             \
+    x87f_store_f32(                                                         \
+        x87f_add(x87f_load_f32(value), x87f_load_f32(360.0f)))
 #else
-#define Q_DIRECTION_DEGREES(y, x, scale) \
-    ((float)(((long double)atan2((double)(y), (double)(x)) * (long double)(scale)) / (long double)Q_DIRECTION_PI))
+#define Q_DIRECTION_DEGREES(y, x, scale)                                    \
+    ((float)(((long double)atan2((double)(y), (double)(x)) *               \
+              (long double)(scale)) /                                       \
+             (long double)Q_DIRECTION_PI))
 #if defined(WINDOWS_BEHAVIOR)
-#define Q_DIRECTION_HORIZONTAL(x, y) ((float)coduo_x87_sqrtl((long double)(x) * (long double)(x) + (long double)(y) * (long double)(y)))
+#define Q_DIRECTION_HORIZONTAL(x, y)                                        \
+    ((float)coduo_x87_sqrtl((long double)(x) * (long double)(x) +          \
+                            (long double)(y) * (long double)(y)))
 #else
-#define Q_DIRECTION_HORIZONTAL(x, y) ((float)sqrt((double)((long double)(x) * (long double)(x) + (long double)(y) * (long double)(y))))
+#define Q_DIRECTION_HORIZONTAL(x, y)                                        \
+    ((float)sqrt((double)((long double)(x) * (long double)(x) +            \
+                          (long double)(y) * (long double)(y))))
 #endif
-#define Q_DIRECTION_WRAP(value) ((float)((long double)(value) + 360.0L))
+#define Q_DIRECTION_WRAP(value)                                             \
+    ((float)((long double)(value) + 360.0L))
 #endif
 
 float vectoyaw(const vec3_t direction)
@@ -97,7 +112,8 @@ float vectopitch(const vec3_t direction)
         return direction[2] > 0.0f ? 270.0f : 90.0f;
     }
 
-    const float horizontal = Q_DIRECTION_HORIZONTAL(direction[0], direction[1]);
+    const float horizontal =
+        Q_DIRECTION_HORIZONTAL(direction[0], direction[1]);
     pitch = Q_DIRECTION_DEGREES(direction[2], horizontal, -180.0);
     if (pitch < 0.0f) {
         pitch = Q_DIRECTION_WRAP(pitch);
@@ -111,7 +127,8 @@ float vectosignedpitch(const vec3_t direction)
         return direction[2] > 0.0f ? -90.0f : 90.0f;
     }
 
-    const float horizontal = Q_DIRECTION_HORIZONTAL(direction[0], direction[1]);
+    const float horizontal =
+        Q_DIRECTION_HORIZONTAL(direction[0], direction[1]);
     return Q_DIRECTION_DEGREES(direction[2], horizontal, -180.0);
 }
 

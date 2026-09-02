@@ -23,10 +23,14 @@ qboolean NET_StringToAdr(const char *text, netadr_t *address);
 
 /* Target socket transport consumed by the common connectionless-packet
  * constructors. */
-void NET_SendPacket(netsrc_t source, int32_t length, const void *data, netadr_t address);
-void NET_OutOfBandPrint(netsrc_t source, netadr_t address, const char *format, ...);
-void NET_OutOfBandData(netsrc_t source, netadr_t address, const uint8_t *data, int32_t length);
-void NET_OutOfBandPbPacket(netsrc_t source, netadr_t address, const void *data, int32_t length);
+void NET_SendPacket(netsrc_t source, int32_t length, const void *data,
+                    netadr_t address);
+void NET_OutOfBandPrint(netsrc_t source, netadr_t address,
+                        const char *format, ...);
+void NET_OutOfBandData(netsrc_t source, netadr_t address,
+                       const uint8_t *data, int32_t length);
+void NET_OutOfBandPbPacket(netsrc_t source, netadr_t address,
+                           const void *data, int32_t length);
 
 /* Platform resolver boundary used by NET_StringToAdr. */
 qboolean Sys_StringToAdr(const char *name, netadr_t *address);

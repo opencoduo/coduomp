@@ -17,9 +17,13 @@
 // ui_mp inlines; powl/_CIpow-style transcendental caveats do not apply here.)
 float AngleDelta(float left, float right)
 {
-    const uint32_t packed = (uint32_t)coduo_fp_to_i32_extended(((long double)left - right) * (65536.0f / 360.0f)) & 65535u;
+    const uint32_t packed =
+        (uint32_t)coduo_fp_to_i32_extended(
+            ((long double)left - right) * (65536.0f / 360.0f)) &
+        65535u;
     const float packedFloat = (float)(int32_t)packed;
-    float delta = (float)((long double)packedFloat * (360.0f / 65536.0f));
+    float delta =
+        (float)((long double)packedFloat * (360.0f / 65536.0f));
 
     if (delta > 180.0f) {
         delta = (float)((long double)delta - 360.0f);

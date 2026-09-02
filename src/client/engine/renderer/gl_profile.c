@@ -9,10 +9,12 @@
 enum {
     R_DRAW_PROFILE_MIN_MODE = 2,
     R_DRAW_PROFILE_REPEAT_MODE_MAX = 32,
-    R_DRAW_PROFILE_INDEX_CAPACITY = R_MAX_TESS_INDEXES * R_DRAW_PROFILE_REPEAT_MODE_MAX,
+    R_DRAW_PROFILE_INDEX_CAPACITY =
+        R_MAX_TESS_INDEXES * R_DRAW_PROFILE_REPEAT_MODE_MAX,
     R_DRAW_PROFILE_CALLS_PER_FRAME = 350,
     R_TRIANGLE_INDEX_COUNT = 3,
-    R_DRAW_PROFILE_ABSOLUTE_TRIANGLE_MAX = R_DRAW_PROFILE_INDEX_CAPACITY / R_TRIANGLE_INDEX_COUNT
+    R_DRAW_PROFILE_ABSOLUTE_TRIANGLE_MAX =
+        R_DRAW_PROFILE_INDEX_CAPACITY / R_TRIANGLE_INDEX_COUNT
 };
 
 /* Original scratch storage begins at 0x00f933d0. Its source carrier uses the
@@ -34,7 +36,8 @@ static qboolean rendererDrawProfilingEnabled;
  * absolute triangle target: the original list is repeated or truncated to
  * mode*3 indices. At most 350 profiled calls are submitted per renderer frame;
  * backEnd.pc.drawnIndexCount is corrected to the count actually submitted. */
-static void RENDERER_GL_API_CALL QGL_ProfileDrawElements(uint32_t mode, int32_t count, uint32_t type, const void *indexes)
+static void RENDERER_GL_API_CALL QGL_ProfileDrawElements(
+    uint32_t mode, int32_t count, uint32_t type, const void *indexes)
 {
     const uint16_t *sourceIndexes = (const uint16_t *)indexes;
     int32_t profileMode;
@@ -47,9 +50,13 @@ static void RENDERER_GL_API_CALL QGL_ProfileDrawElements(uint32_t mode, int32_t 
 
     profileMode = r_profileDrawElements->integer;
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    if (profileMode < R_DRAW_PROFILE_MIN_MODE || profileMode > R_DRAW_PROFILE_ABSOLUTE_TRIANGLE_MAX) {
-        rendererGlDrawElementsDriver(mode, R_TRIANGLE_INDEX_COUNT, type, indexes);
-        backEnd.pc.drawnIndexCount = (int32_t)((uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)R_TRIANGLE_INDEX_COUNT - (uint32_t)count);
+    if (profileMode < R_DRAW_PROFILE_MIN_MODE ||
+        profileMode > R_DRAW_PROFILE_ABSOLUTE_TRIANGLE_MAX) {
+        rendererGlDrawElementsDriver(mode, R_TRIANGLE_INDEX_COUNT, type,
+                                     indexes);
+        backEnd.pc.drawnIndexCount = (int32_t)(
+            (uint32_t)backEnd.pc.drawnIndexCount +
+            (uint32_t)R_TRIANGLE_INDEX_COUNT - (uint32_t)count);
         return;
     }
 
@@ -57,9 +64,11 @@ static void RENDERER_GL_API_CALL QGL_ProfileDrawElements(uint32_t mode, int32_t 
         rendererDrawProfileFrame = tr.frameCount;
         rendererDrawProfileCallCount = 0;
     }
-    rendererDrawProfileCallCount = (int32_t)((uint32_t)rendererDrawProfileCallCount + 1u);
+    rendererDrawProfileCallCount = (int32_t)(
+        (uint32_t)rendererDrawProfileCallCount + 1u);
     if (rendererDrawProfileCallCount > R_DRAW_PROFILE_CALLS_PER_FRAME) {
-        backEnd.pc.drawnIndexCount = (int32_t)((uint32_t)backEnd.pc.drawnIndexCount - (uint32_t)count);
+        backEnd.pc.drawnIndexCount = (int32_t)(
+            (uint32_t)backEnd.pc.drawnIndexCount - (uint32_t)count);
         return;
     }
 
@@ -68,30 +77,39 @@ static void RENDERER_GL_API_CALL QGL_ProfileDrawElements(uint32_t mode, int32_t 
         uint16_t *destination = rendererDrawProfileIndexes;
 
         for (repeatIndex = 0; repeatIndex < profileMode; ++repeatIndex) {
-            memcpy(destination, sourceIndexes, (size_t)count * sizeof(*sourceIndexes));
+            memcpy(destination, sourceIndexes,
+                   (size_t)count * sizeof(*sourceIndexes));
             destination += count;
         }
         submittedCount = profileMode * count;
-        rendererGlDrawElementsDriver(mode, submittedCount, type, rendererDrawProfileIndexes);
-        backEnd.pc.drawnIndexCount =
-            (int32_t)((uint32_t)backEnd.pc.drawnIndexCount + ((uint32_t)r_profileDrawElements->integer - 1u) * (uint32_t)count);
+        rendererGlDrawElementsDriver(mode, submittedCount, type,
+                                     rendererDrawProfileIndexes);
+        backEnd.pc.drawnIndexCount = (int32_t)(
+            (uint32_t)backEnd.pc.drawnIndexCount +
+            ((uint32_t)r_profileDrawElements->integer - 1u) *
+                (uint32_t)count);
     } else {
         int32_t remainingCount = profileMode * R_TRIANGLE_INDEX_COUNT;
         int32_t destinationIndex = 0;
 
         while (count <= remainingCount) {
-            memcpy(&rendererDrawProfileIndexes[destinationIndex], sourceIndexes, (size_t)count * sizeof(*sourceIndexes));
+            memcpy(&rendererDrawProfileIndexes[destinationIndex],
+                   sourceIndexes, (size_t)count * sizeof(*sourceIndexes));
             remainingCount -= count;
             destinationIndex += count;
         }
         if (remainingCount != 0) {
-            memcpy(&rendererDrawProfileIndexes[destinationIndex], sourceIndexes, (size_t)remainingCount * sizeof(*sourceIndexes));
+            memcpy(&rendererDrawProfileIndexes[destinationIndex],
+                   sourceIndexes,
+                   (size_t)remainingCount * sizeof(*sourceIndexes));
         }
         submittedCount = profileMode * R_TRIANGLE_INDEX_COUNT;
-        rendererGlDrawElementsDriver(mode, submittedCount, type, rendererDrawProfileIndexes);
-        backEnd.pc.drawnIndexCount =
-            (int32_t)((uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)r_profileDrawElements->integer * (uint32_t)R_TRIANGLE_INDEX_COUNT -
-                      (uint32_t)count);
+        rendererGlDrawElementsDriver(mode, submittedCount, type,
+                                     rendererDrawProfileIndexes);
+        backEnd.pc.drawnIndexCount = (int32_t)(
+            (uint32_t)backEnd.pc.drawnIndexCount +
+            (uint32_t)r_profileDrawElements->integer *
+                (uint32_t)R_TRIANGLE_INDEX_COUNT - (uint32_t)count);
     }
 }
 
@@ -100,7 +118,8 @@ static void RENDERER_GL_API_CALL QGL_ProfileDrawElements(uint32_t mode, int32_t 
  * core draw-elements path owns the synthetic draw, so this ATI submission is
  * suppressed and removed from the submitted-index counter. The fallback mode
  * submits exactly one triangle, matching the core wrapper above. */
-static void RENDERER_GL_API_CALL QGL_ProfileDrawElementArrayATI(uint32_t mode, int32_t count)
+static void RENDERER_GL_API_CALL QGL_ProfileDrawElementArrayATI(
+    uint32_t mode, int32_t count)
 {
     if (backEnd.projection2D != qfalse) {
         rendererGlDrawElementArrayATIDriver(mode, count);
@@ -109,13 +128,16 @@ static void RENDERER_GL_API_CALL QGL_ProfileDrawElementArrayATI(uint32_t mode, i
 
     if (r_profileDrawElements->integer >= R_DRAW_PROFILE_MIN_MODE) {
         /* SUB at 0x004db335 wraps the signed counter in 32 bits. */
-        backEnd.pc.drawnIndexCount = (int32_t)((uint32_t)backEnd.pc.drawnIndexCount - (uint32_t)count);
+        backEnd.pc.drawnIndexCount = (int32_t)(
+            (uint32_t)backEnd.pc.drawnIndexCount - (uint32_t)count);
         return;
     }
 
     rendererGlDrawElementArrayATIDriver(mode, R_TRIANGLE_INDEX_COUNT);
     /* SUB/ADD at 0x004db35b..0x004db35d both wrap in 32 bits. */
-    backEnd.pc.drawnIndexCount = (int32_t)((uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)R_TRIANGLE_INDEX_COUNT - (uint32_t)count);
+    backEnd.pc.drawnIndexCount = (int32_t)(
+        (uint32_t)backEnd.pc.drawnIndexCount +
+        (uint32_t)R_TRIANGLE_INDEX_COUNT - (uint32_t)count);
 }
 
 /* Source: CoDUOMP.exe 0x004db370..0x004db3b9.

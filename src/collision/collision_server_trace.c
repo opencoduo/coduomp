@@ -28,11 +28,16 @@ enum {
  * separate client and dedicated-server ownership.
  */
 
-void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
-              int32_t contentMask, qboolean capsule, qboolean useDObj, const uint8_t *dobjTracePartState, qboolean locational)
+void SV_Trace(trace_t *trace, const vec3_t start,
+              const vec3_t mins, const vec3_t maxs, const vec3_t end,
+              int32_t passEntityNum, int32_t contentMask,
+              qboolean capsule, qboolean useDObj,
+              const uint8_t *dobjTracePartState, qboolean locational)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (passEntityNum != ENTITYNUM_NONE && (passEntityNum < 0 || passEntityNum >= sv_numGentities || passEntityNum >= MAX_GENTITIES)) {
+    if (passEntityNum != ENTITYNUM_NONE &&
+        (passEntityNum < 0 || passEntityNum >= sv_numGentities ||
+         passEntityNum >= MAX_GENTITIES)) {
         passEntityNum = ENTITYNUM_NONE;
     }
 
@@ -42,8 +47,10 @@ void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_
 
     memset(&worldTrace, 0, sizeof(worldTrace));
     worldTrace.fraction = 1.0f;
-    CM_BoxTrace(&worldTrace, start, end, traceMins, traceMaxs, 0, contentMask, capsule);
-    worldTrace.entityNum = worldTrace.fraction == 1.0f ? ENTITYNUM_NONE : ENTITYNUM_WORLD;
+    CM_BoxTrace(&worldTrace, start, end, traceMins, traceMaxs,
+                0, contentMask, capsule);
+    worldTrace.entityNum =
+        worldTrace.fraction == 1.0f ? ENTITYNUM_NONE : ENTITYNUM_WORLD;
 
     if (worldTrace.fraction == 0.0f) {
         *trace = worldTrace;
@@ -60,9 +67,11 @@ void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_
 
     /* Both originals evaluate one flat x87 chain, rather than three
      * separately rounded axis differences. */
-    const long double traceExtentRaw = ((((long double)traceMaxs[0] - (long double)traceMins[0]) + (long double)traceMaxs[1]) -
-                                        (long double)traceMins[1] + (long double)traceMaxs[2]) -
-                                       (long double)traceMins[2];
+    const long double traceExtentRaw =
+        ((((long double)traceMaxs[0] - (long double)traceMins[0]) +
+          (long double)traceMaxs[1]) -
+         (long double)traceMins[1] + (long double)traceMaxs[2]) -
+        (long double)traceMins[2];
     if (traceExtentRaw == 0.0L) {
         cmPointTraceWork_t work;
 
@@ -76,7 +85,8 @@ void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_
         work.passEntityNum = passEntityNum;
         work.passOwnerNum = SV_TRACE_OWNER_NONE;
         if (passEntityNum != ENTITYNUM_NONE) {
-            const int32_t ownerNum = SV_GentityNum(passEntityNum)->ownerNum;
+            const int32_t ownerNum =
+                SV_GentityNum(passEntityNum)->ownerNum;
             if (ownerNum != ENTITYNUM_NONE) {
                 work.passOwnerNum = ownerNum;
             }
@@ -95,10 +105,13 @@ void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_
     /* CoDUOMP.exe 0x00467d2f..0x00467f91 retains selected PC=53
      * intermediates; the X half-size and Y/Z center paths are not the same
      * sequence of binary32 spills used by the dedicated binary. */
-    const long double halfXRaw = ((long double)traceMaxs[0] - (long double)traceMins[0]) * 0.5L;
+    const long double halfXRaw =
+        ((long double)traceMaxs[0] - (long double)traceMins[0]) * 0.5L;
     const float halfX = (float)halfXRaw;
-    const float halfY = (float)(((long double)traceMaxs[1] - (long double)traceMins[1]) * 0.5L);
-    const float deltaZ = (float)((long double)traceMaxs[2] - (long double)traceMins[2]);
+    const float halfY = (float)(
+        ((long double)traceMaxs[1] - (long double)traceMins[1]) * 0.5L);
+    const float deltaZ = (float)(
+        (long double)traceMaxs[2] - (long double)traceMins[2]);
     const long double halfZRaw = (long double)deltaZ * 0.5L;
     const float halfZ = (float)halfZRaw;
     work.mins[0] = (float)-halfXRaw;
@@ -111,9 +124,12 @@ void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_
     work.expandedHalfSize[1] = halfY + 1.0f;
     work.expandedHalfSize[2] = (float)(halfZRaw + 1.0L);
 
-    const float centerX = (float)(((long double)traceMaxs[0] + (long double)traceMins[0]) * 0.5L);
-    const long double centerYRaw = ((long double)traceMaxs[1] + (long double)traceMins[1]) * 0.5L;
-    const float centerZSum = (float)((long double)traceMaxs[2] + (long double)traceMins[2]);
+    const float centerX = (float)(
+        ((long double)traceMaxs[0] + (long double)traceMins[0]) * 0.5L);
+    const long double centerYRaw =
+        ((long double)traceMaxs[1] + (long double)traceMins[1]) * 0.5L;
+    const float centerZSum = (float)(
+        (long double)traceMaxs[2] + (long double)traceMins[2]);
     const long double centerZRaw = (long double)centerZSum * 0.5L;
     work.start[0] = start[0] + centerX;
     work.start[1] = (float)((long double)start[1] + centerYRaw);
@@ -154,30 +170,45 @@ void SV_Trace(trace_t *trace, const vec3_t start, const vec3_t mins, const vec3_
 
     if (work.bestTrace.fraction < worldTrace.fraction) {
         /* Both originals spill end-start to binary32 before interpolation. */
-        const vec3_t delta = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
-        work.bestTrace.endpos[0] = start[0] + delta[0] * work.bestTrace.fraction;
-        work.bestTrace.endpos[1] = start[1] + delta[1] * work.bestTrace.fraction;
-        work.bestTrace.endpos[2] = start[2] + delta[2] * work.bestTrace.fraction;
+        const vec3_t delta = {
+            end[0] - start[0],
+            end[1] - start[1],
+            end[2] - start[2]
+        };
+        work.bestTrace.endpos[0] =
+            start[0] + delta[0] * work.bestTrace.fraction;
+        work.bestTrace.endpos[1] =
+            start[1] + delta[1] * work.bestTrace.fraction;
+        work.bestTrace.endpos[2] =
+            start[2] + delta[2] * work.bestTrace.fraction;
     }
 
     *trace = work.bestTrace;
 }
 
-void SV_SightTrace(int32_t *traceResult, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
-                   int32_t passOwnerNum, int32_t contentMask, qboolean capsule)
+void SV_SightTrace(int32_t *traceResult, const vec3_t start,
+                   const vec3_t mins, const vec3_t maxs, const vec3_t end,
+                   int32_t passEntityNum, int32_t passOwnerNum,
+                   int32_t contentMask, qboolean capsule)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (passEntityNum != ENTITYNUM_NONE && (passEntityNum < 0 || passEntityNum >= sv_numGentities || passEntityNum >= MAX_GENTITIES)) {
+    if (passEntityNum != ENTITYNUM_NONE &&
+        (passEntityNum < 0 || passEntityNum >= sv_numGentities ||
+         passEntityNum >= MAX_GENTITIES)) {
         passEntityNum = ENTITYNUM_NONE;
     }
-    if (passOwnerNum != ENTITYNUM_NONE && (passOwnerNum < 0 || passOwnerNum >= sv_numGentities || passOwnerNum >= MAX_GENTITIES)) {
+    if (passOwnerNum != ENTITYNUM_NONE &&
+        (passOwnerNum < 0 || passOwnerNum >= sv_numGentities ||
+         passOwnerNum >= MAX_GENTITIES)) {
         passOwnerNum = ENTITYNUM_NONE;
     }
 
     const float *const traceMins = mins != NULL ? mins : vec3_origin;
     const float *const traceMaxs = maxs != NULL ? maxs : vec3_origin;
 
-    *traceResult = CM_BoxSightTrace(*traceResult, start, end, traceMins, traceMaxs, 0, contentMask, capsule);
+    *traceResult = CM_BoxSightTrace(
+        *traceResult, start, end, traceMins, traceMaxs,
+        0, contentMask, capsule);
     if (*traceResult != 0) {
         return;
     }
@@ -198,9 +229,11 @@ void SV_SightTrace(int32_t *traceResult, const vec3_t start, const vec3_t mins, 
         }
     }
 
-    const long double traceExtentRaw = ((((long double)traceMaxs[0] - (long double)traceMins[0]) + (long double)traceMaxs[1]) -
-                                        (long double)traceMins[1] + (long double)traceMaxs[2]) -
-                                       (long double)traceMins[2];
+    const long double traceExtentRaw =
+        ((((long double)traceMaxs[0] - (long double)traceMins[0]) +
+          (long double)traceMaxs[1]) -
+         (long double)traceMins[1] + (long double)traceMaxs[2]) -
+        (long double)traceMins[2];
     if (traceExtentRaw == 0.0L) {
         cmPointSightTraceWork_t work;
 
@@ -222,10 +255,13 @@ void SV_SightTrace(int32_t *traceResult, const vec3_t start, const vec3_t mins, 
 
     cmClipSightTraceWork_t work;
 #if defined(WINDOWS_BEHAVIOR)
-    const long double halfXRaw = ((long double)traceMaxs[0] - (long double)traceMins[0]) * 0.5L;
+    const long double halfXRaw =
+        ((long double)traceMaxs[0] - (long double)traceMins[0]) * 0.5L;
     const float halfX = (float)halfXRaw;
-    const float halfY = (float)(((long double)traceMaxs[1] - (long double)traceMins[1]) * 0.5L);
-    const float deltaZ = (float)((long double)traceMaxs[2] - (long double)traceMins[2]);
+    const float halfY = (float)(
+        ((long double)traceMaxs[1] - (long double)traceMins[1]) * 0.5L);
+    const float deltaZ = (float)(
+        (long double)traceMaxs[2] - (long double)traceMins[2]);
     const long double halfZRaw = (long double)deltaZ * 0.5L;
     const float halfZ = (float)halfZRaw;
     work.mins[0] = (float)-halfXRaw;
@@ -238,9 +274,12 @@ void SV_SightTrace(int32_t *traceResult, const vec3_t start, const vec3_t mins, 
     work.expandedHalfSize[1] = halfY + 1.0f;
     work.expandedHalfSize[2] = (float)(halfZRaw + 1.0L);
 
-    const float centerX = (float)(((long double)traceMaxs[0] + (long double)traceMins[0]) * 0.5L);
-    const long double centerYRaw = ((long double)traceMaxs[1] + (long double)traceMins[1]) * 0.5L;
-    const float centerZSum = (float)((long double)traceMaxs[2] + (long double)traceMins[2]);
+    const float centerX = (float)(
+        ((long double)traceMaxs[0] + (long double)traceMins[0]) * 0.5L);
+    const long double centerYRaw =
+        ((long double)traceMaxs[1] + (long double)traceMins[1]) * 0.5L;
+    const float centerZSum = (float)(
+        (long double)traceMaxs[2] + (long double)traceMins[2]);
     const long double centerZRaw = (long double)centerZSum * 0.5L;
     work.start[0] = start[0] + centerX;
     work.start[1] = (float)((long double)start[1] + centerYRaw);
@@ -273,11 +312,15 @@ void SV_SightTrace(int32_t *traceResult, const vec3_t start, const vec3_t mins, 
     *traceResult = CM_ClipSightTraceToEntities(&work);
 }
 
-int32_t SV_SightTraceToEntity(const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t entityNum,
-                              int32_t contentMask, qboolean capsule)
+int32_t SV_SightTraceToEntity(
+    const vec3_t start, const vec3_t mins,
+    const vec3_t maxs, const vec3_t end,
+    int32_t entityNum, int32_t contentMask,
+    qboolean capsule)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (entityNum < 0 || entityNum >= sv_numGentities || entityNum >= MAX_GENTITIES) {
+    if (entityNum < 0 || entityNum >= sv_numGentities ||
+        entityNum >= MAX_GENTITIES) {
         return 0;
     }
 
@@ -301,13 +344,20 @@ int32_t SV_SightTraceToEntity(const vec3_t start, const vec3_t mins, const vec3_
         }
     }
 
-    if (traceAbsMax[0] < gentity->absMin[0] || traceAbsMax[1] < gentity->absMin[1] || traceAbsMax[2] < gentity->absMin[2] ||
-        gentity->absMax[0] < traceAbsMin[0] || gentity->absMax[1] < traceAbsMin[1] || gentity->absMax[2] < traceAbsMin[2]) {
+    if (traceAbsMax[0] < gentity->absMin[0] ||
+        traceAbsMax[1] < gentity->absMin[1] ||
+        traceAbsMax[2] < gentity->absMin[2] ||
+        gentity->absMax[0] < traceAbsMin[0] ||
+        gentity->absMax[1] < traceAbsMin[1] ||
+        gentity->absMax[2] < traceAbsMin[2]) {
         return 0;
     }
 
-    const float *const angles = gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
-    const int32_t hit = CM_TransformedBoxSightTrace(0, start, end, mins, maxs, SV_ClipHandleForEntity(gentity), contentMask,
-                                                    gentity->currentOrigin, angles, capsule);
+    const float *const angles =
+        gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
+    const int32_t hit = CM_TransformedBoxSightTrace(
+        0, start, end, mins, maxs,
+        SV_ClipHandleForEntity(gentity), contentMask,
+        gentity->currentOrigin, angles, capsule);
     return hit != 0 ? SV_SIGHT_TRACE_ENTITY_HIT : 0;
 }

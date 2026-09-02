@@ -45,7 +45,8 @@
 
 #include <string.h>
 
-void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime, int32_t endTime)
+void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime,
+                              int32_t endTime)
 {
     /* [ECX+0x68]: disabled mouse effect restores neutral limits. */
     if (params->mouseEnabled == 0) {
@@ -54,7 +55,8 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime, int32_t e
         return;
     }
 
-    int32_t t = coduo_int32_from_bits((uint32_t)endTime - (uint32_t)startTime);
+    int32_t t = coduo_int32_from_bits((uint32_t)endTime -
+                                 (uint32_t)startTime);
     int32_t duration = params->mouseFadeTime;
 
     if (t < duration) {
@@ -73,7 +75,8 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime, int32_t e
         long double frac = (long double)t / duration;
         if (frac != 1.0f) {
             /* Interpolate sensitivity from 1.0f toward the configured scale. */
-            cg_shellshockMouseSensitivityScale = (params->mouseSensitivityScale - 1.0f) * frac + 1.0f;
+            cg_shellshockMouseSensitivityScale =
+                (params->mouseSensitivityScale - 1.0f) * frac + 1.0f;
 
             /* Scale both mouse-speed limits by 1.0f/frac (FDIVR 1.0f at
              * 0x3003c5ee). Both trap args remain raw float bit patterns. */
@@ -84,7 +87,8 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime, int32_t e
             int32_t colorArg, alphaArg;
             memcpy(&colorArg, &color, sizeof colorArg);
             memcpy(&alphaArg, &alpha, sizeof alphaArg);
-            cgame_syscall(CG_SET_SHELLSHOCK_MOUSE_LIMITS, colorArg, alphaArg);
+            cgame_syscall(CG_SET_SHELLSHOCK_MOUSE_LIMITS,
+                          colorArg, alphaArg);
             return;
         }
         /* frac == 1.0f exactly: fall through to the finished end-state below. */

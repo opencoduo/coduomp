@@ -46,10 +46,13 @@ void ScriptSave_WriteStack(VariableStackBuffer *frame);
 VariableStackBuffer *ScriptLoad_ReadStack(void);
 
 void ScriptSave_PrepareStack(VariableStackBuffer *frame);
-void ScriptSave_PrepareValue(script_variable_type_t type, coduo_script_value_payload_t payload);
+void ScriptSave_PrepareValue(script_variable_type_t type,
+                             coduo_script_value_payload_t payload);
 void ScriptSave_PrepareValueObjectRefs(VariableValue *value);
-void ScriptSave_WriteValue(script_variable_type_t type, coduo_script_value_payload_t payload);
-void ScriptSave_WriteChildValue(const VariableValue *value, uint32_t name, qboolean parentIsArray);
+void ScriptSave_WriteValue(script_variable_type_t type,
+                           coduo_script_value_payload_t payload);
+void ScriptSave_WriteChildValue(const VariableValue *value, uint32_t name,
+                                qboolean parentIsArray);
 void ScriptLoad_ReadValue(VariableValue *value);
 uint32_t ScriptLoad_ReadChildValue(VariableValue *value);
 void ScriptSave_PrepareObject(uint16_t object);

@@ -99,8 +99,9 @@ qboolean CG_SelectFirstWeaponNotInSlot(int32_t forward, int32_t requireAmmo)
                         // total = clips[wi->clipIndex] + ammo[wi->ammoIndex].
                         // The ADD sets ZF; total == 0 means the weapon has no ammo.
                         weaponInfo_t *wi = bg_weaponInfos[weapon];
-                        int32_t total = coduo_int32_from_bits((uint32_t)cg_predictedPlayerState.clips[wi->clipIndex] +
-                                                              (uint32_t)cg_predictedPlayerState.ammo[wi->ammoIndex]);
+                        int32_t total = coduo_int32_from_bits(
+                            (uint32_t)cg_predictedPlayerState.clips[wi->clipIndex] +
+                            (uint32_t)cg_predictedPlayerState.ammo[wi->ammoIndex]);
                         qualifies = (total != 0) ? qtrue : qfalse;
                     }
 

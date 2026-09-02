@@ -28,24 +28,30 @@ enum {
 
 int32_t Com_BitCheck(const uint32_t *bits, int32_t bit)
 {
-    const uint32_t mask = UINT32_C(1) << ((uint32_t)bit & COM_BIT_INDEX_MASK);
-    const int32_t word = coduo_int32_sar((uint32_t)bit, COM_BIT_WORD_SHIFT);
+    const uint32_t mask = UINT32_C(1) <<
+                          ((uint32_t)bit & COM_BIT_INDEX_MASK);
+    const int32_t word =
+        coduo_int32_sar((uint32_t)bit, COM_BIT_WORD_SHIFT);
 
     return (bits[word] & mask) != 0;
 }
 
 void Com_BitSet(uint32_t *bits, int32_t bit)
 {
-    const int32_t word = coduo_int32_sar((uint32_t)bit, COM_BIT_WORD_SHIFT);
+    const int32_t word =
+        coduo_int32_sar((uint32_t)bit, COM_BIT_WORD_SHIFT);
 
-    bits[word] |= UINT32_C(1) << ((uint32_t)bit & COM_BIT_INDEX_MASK);
+    bits[word] |=
+        UINT32_C(1) << ((uint32_t)bit & COM_BIT_INDEX_MASK);
 }
 
 void Com_BitClear(uint32_t *bits, int32_t bit)
 {
-    const int32_t word = coduo_int32_sar((uint32_t)bit, COM_BIT_WORD_SHIFT);
+    const int32_t word =
+        coduo_int32_sar((uint32_t)bit, COM_BIT_WORD_SHIFT);
 
-    bits[word] &= ~(UINT32_C(1) << ((uint32_t)bit & COM_BIT_INDEX_MASK));
+    bits[word] &=
+        ~(UINT32_C(1) << ((uint32_t)bit & COM_BIT_INDEX_MASK));
 }
 
 /* The original helper returns a binary32 payload as an integer unchanged:

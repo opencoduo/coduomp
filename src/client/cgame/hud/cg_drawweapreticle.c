@@ -18,14 +18,17 @@ enum weaponOverlayReticle_e {
 };
 
 #define DRAW_RETICLE_PIC(x_, y_, w_, h_, s1_, t1_, s2_, t2_, shader_) \
-    trap_R_DrawStretchPic(CG_FloatBits((x_)), CG_FloatBits((y_)), CG_FloatBits((w_)), CG_FloatBits((h_)), CG_FloatBits((s1_)), \
-                          CG_FloatBits((t1_)), CG_FloatBits((s2_)), CG_FloatBits((t2_)), (int32_t)(shader_))
+    trap_R_DrawStretchPic(CG_FloatBits((x_)), CG_FloatBits((y_)), \
+                          CG_FloatBits((w_)), CG_FloatBits((h_)), \
+                          CG_FloatBits((s1_)), CG_FloatBits((t1_)), \
+                          CG_FloatBits((s2_)), CG_FloatBits((t2_)), \
+                          (int32_t)(shader_))
 
 long double CG_DrawWeapReticle(void)
 {
     weaponInfo_t *weapon;
     int32_t weaponIndex;
-    vec4_t color = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec4_t color = { 1.0f, 1.0f, 1.0f, 1.0f };
     float overlayFrac;
     float projectedX;
     float projectedY;
@@ -48,15 +51,21 @@ long double CG_DrawWeapReticle(void)
      * both overlay dimensions. */
     float widthScale = cgs_screenXScale;
     weapon = cg_currentWeaponInfo;
-    width = (float)((long double)widthScale * (long double)weapon->adsOverlayWidth);
-    height = (float)((long double)cgs_screenYScale * (long double)weapon->adsOverlayHeight);
+    width = (float)((long double)widthScale *
+                    (long double)weapon->adsOverlayWidth);
+    height = (float)((long double)cgs_screenYScale *
+                     (long double)weapon->adsOverlayHeight);
     /* cg_refdef.x/y/width/height are FILD'd / FIADD'd (integer) with no FSTP DWORD
      * (0x30019670 FILD width; FMUL 0.5f; 0x3001967e FIADD x, and the y/height pair
      * at 0x30019692/0x300196a0), so the implicit int->float conversions stay exact;
      * no (float) casts (they would round under -std=c11). One store rounding each. */
-    centerX =
-        (float)(((long double)cgs_screenXScale * (long double)projectedX) + (long double)cg_refdef.width * 0.5f + (long double)cg_refdef.x);
-    centerY = (float)(((long double)cgs_screenYScale * (long double)projectedY) + (long double)cg_refdef.height * 0.5f +
+    centerX = (float)(((long double)cgs_screenXScale *
+                       (long double)projectedX) +
+                      (long double)cg_refdef.width * 0.5f +
+                      (long double)cg_refdef.x);
+    centerY = (float)(((long double)cgs_screenYScale *
+                       (long double)projectedY) +
+                      (long double)cg_refdef.height * 0.5f +
                       (long double)cg_refdef.y);
     color[3] = overlayFrac;
     trap_R_SetColor(color);
@@ -78,13 +87,16 @@ long double CG_DrawWeapReticle(void)
         left = (float)((long double)centerX - (long double)width * 0.5f);
         top = (float)((long double)centerY - (long double)height * 0.5f);
 
-        DRAW_RETICLE_PIC(left, top, width, height, 0.0f, 0.0f, 1.0f, 1.0f, shader);
+        DRAW_RETICLE_PIC(left, top, width, height, 0.0f, 0.0f, 1.0f, 1.0f,
+                         shader);
         if (left > 0.0f) {
             /* 0x30019737: full-viewport-height strip -- y=viewTop (PUSH 0 @0x3001974e),
              * h=viewBottom-viewTop (FILD cg_refdef.height @0x30019737), NOT the scope
              * band top/height a prior pass used (which left the corners unmasked). */
             long double viewHeight = (long double)cg_refdef.height;
-            DRAW_RETICLE_PIC(0.0f, 0.0f, left, viewHeight, 0.0f, 0.0f, 0.0f, 1.0f, shader);
+            DRAW_RETICLE_PIC(0.0f, 0.0f, left,
+                             viewHeight,
+                             0.0f, 0.0f, 0.0f, 1.0f, shader);
         }
 
         /* The right edge is formed only after the first draw and optional
@@ -96,10 +108,13 @@ long double CG_DrawWeapReticle(void)
              * texcoords (s1,t1,s2,t2)=(0,0,0,1) -- 0x30019789/0x3001978d PUSH 0 for
              * s2/s1. A prior pass used the scope band top/height and s1=s2=1.0. */
             long double viewHeight = (long double)cg_refdef.height;
-            DRAW_RETICLE_PIC(right, 0.0f, viewRight - (long double)right, viewHeight, 0.0f, 0.0f, 0.0f, 1.0f, shader);
+            DRAW_RETICLE_PIC(right, 0.0f, viewRight - (long double)right,
+                             viewHeight,
+                             0.0f, 0.0f, 0.0f, 1.0f, shader);
         }
         if (top > 0.0f) {
-            DRAW_RETICLE_PIC(left, 0.0f, width, top, 0.0f, 0.0f, 1.0f, 0.0f, shader);
+            DRAW_RETICLE_PIC(left, 0.0f, width, top,
+                             0.0f, 0.0f, 1.0f, 0.0f, shader);
         }
 
         /* Likewise, the bottom edge and viewport-height load occur only after
@@ -110,7 +125,8 @@ long double CG_DrawWeapReticle(void)
             /* 0x300197f9: texcoords (s1,t1,s2,t2)=(0,0,1,0) -- 0x300197fe/0x30019805
              * PUSH 0 for t2/t1 (same edge coords as the top bar). A prior pass used
              * t1=t2=1.0. */
-            DRAW_RETICLE_PIC(left, bottom, width, viewBottom - bottom, 0.0f, 0.0f, 1.0f, 0.0f, shader);
+            DRAW_RETICLE_PIC(left, bottom, width, viewBottom - bottom,
+                             0.0f, 0.0f, 1.0f, 0.0f, shader);
         }
     }
 
@@ -128,15 +144,21 @@ long double CG_DrawWeapReticle(void)
          * so no (float) casts on them either. */
         long double size = weapon->reticleCenterSize;
         float w = (float)((long double)cgs_screenXScale * size);
-        qhandle_t centerShader = cg_weaponInfos[weaponIndex].reticleCenterShader;
+        qhandle_t centerShader =
+            cg_weaponInfos[weaponIndex].reticleCenterShader;
         float h = (float)((long double)cgs_screenYScale * size);
         /* 0x30019886..0x300198ac stages Y first, then 0x300198b0..0x300198cc
          * computes X. */
-        float y = (float)(((long double)cgs_screenYScale * (long double)projectedY) +
-                          ((long double)cg_refdef.height - (long double)h) * 0.5f + (long double)cg_refdef.y);
-        float x = (float)(((long double)cgs_screenXScale * (long double)projectedX) +
-                          ((long double)cg_refdef.width - (long double)w) * 0.5f + (long double)cg_refdef.x);
-        DRAW_RETICLE_PIC(x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, centerShader);
+        float y = (float)(((long double)cgs_screenYScale *
+                           (long double)projectedY) +
+                          ((long double)cg_refdef.height - (long double)h) * 0.5f +
+                          (long double)cg_refdef.y);
+        float x = (float)(((long double)cgs_screenXScale *
+                           (long double)projectedX) +
+                          ((long double)cg_refdef.width - (long double)w) * 0.5f +
+                          (long double)cg_refdef.x);
+        DRAW_RETICLE_PIC(x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f,
+                         centerShader);
         break;
     }
 
@@ -156,13 +178,19 @@ long double CG_DrawWeapReticle(void)
         trap_R_SetColor(color);
         verticalHeight = (float)((long double)height * 0.9f);
         verticalX = (float)((long double)centerX - 1.0L);
-        DRAW_RETICLE_PIC(verticalX, centerY, 3.0f, verticalHeight, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineShader);
+        DRAW_RETICLE_PIC(verticalX, centerY, 3.0f, verticalHeight,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineShader);
         horizontalWidth = (float)((long double)width * 0.75f);
         horizontalY = (float)((long double)centerY - 1.0L);
         leftX = (float)((long double)centerX - (long double)width * 0.9f);
-        DRAW_RETICLE_PIC(leftX, horizontalY, horizontalWidth, 3.0f, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineHShader);
+        DRAW_RETICLE_PIC(leftX, horizontalY, horizontalWidth, 3.0f,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineHShader);
         rightX = (float)((long double)centerX + (long double)width * 0.15f);
-        DRAW_RETICLE_PIC(rightX, horizontalY, horizontalWidth, 3.0f, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineHShader);
+        DRAW_RETICLE_PIC(rightX, horizontalY, horizontalWidth, 3.0f,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineHShader);
         break;
     }
 
@@ -179,13 +207,19 @@ long double CG_DrawWeapReticle(void)
         color[0] = 0.0f;
         trap_R_SetColor(color);
         verticalHeight = (float)((long double)height * 1.8f);
-        verticalY = (float)((long double)centerY - (long double)height * 0.9f);
+        verticalY = (float)((long double)centerY -
+                            (long double)height * 0.9f);
         verticalX = (float)((long double)centerX - 1.0L);
-        DRAW_RETICLE_PIC(verticalX, verticalY, 3.0f, verticalHeight, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineShader);
+        DRAW_RETICLE_PIC(verticalX, verticalY, 3.0f, verticalHeight,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineShader);
         horizontalWidth = (float)((long double)width * 1.8f);
         horizontalY = (float)((long double)centerY - 1.0L);
-        horizontalX = (float)((long double)centerX - (long double)width * 0.9f);
-        DRAW_RETICLE_PIC(horizontalX, horizontalY, horizontalWidth, 3.0f, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineHShader);
+        horizontalX = (float)((long double)centerX -
+                              (long double)width * 0.9f);
+        DRAW_RETICLE_PIC(horizontalX, horizontalY, horizontalWidth, 3.0f,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineHShader);
         break;
     }
 
@@ -203,13 +237,19 @@ long double CG_DrawWeapReticle(void)
         trap_R_SetColor(color);
         verticalHeight = (float)((long double)height * 0.9f);
         verticalX = (float)((long double)centerX - 1.0L);
-        DRAW_RETICLE_PIC(verticalX, centerY, 3.0f, verticalHeight, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineShader);
+        DRAW_RETICLE_PIC(verticalX, centerY, 3.0f, verticalHeight,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineShader);
         horizontalWidth = (float)((long double)width * 0.75f);
         horizontalY = (float)((long double)centerY - 1.0L);
         leftX = (float)((long double)centerX - (long double)width * 0.9f);
-        DRAW_RETICLE_PIC(leftX, horizontalY, horizontalWidth, 3.0f, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineHShader);
+        DRAW_RETICLE_PIC(leftX, horizontalY, horizontalWidth, 3.0f,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineHShader);
         rightX = (float)((long double)centerX + (long double)width * 0.15f);
-        DRAW_RETICLE_PIC(rightX, horizontalY, horizontalWidth, 3.0f, 0.0f, 0.0f, 1.0f, 1.0f, cgs_media_hudSoftLineHShader);
+        DRAW_RETICLE_PIC(rightX, horizontalY, horizontalWidth, 3.0f,
+                         0.0f, 0.0f, 1.0f, 1.0f,
+                         cgs_media_hudSoftLineHShader);
         break;
     }
     }

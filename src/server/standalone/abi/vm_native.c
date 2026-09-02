@@ -17,7 +17,8 @@
 
 void Sys_UnloadDll(void *dllHandle);
 void Sys_UnableToLoadDLLError(void);
-void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint, game_syscall_t syscall);
+void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint,
+                  game_syscall_t syscall);
 
 static game_dll_entry_t
 /* NOT_FROM_ORIGINAL_SOURCE:
@@ -33,7 +34,8 @@ coduomp_vm_load_dll_entry_symbol(void *handle, const char *symbolName)
 #endif
     game_dll_entry_t function = NULL;
 
-    _Static_assert(sizeof(function) == sizeof(symbol), "dlsym function pointer size mismatch");
+    _Static_assert(sizeof(function) == sizeof(symbol),
+                   "dlsym function pointer size mismatch");
     memcpy(&function, &symbol, sizeof(function));
     return function;
 }
@@ -52,7 +54,8 @@ coduomp_vm_load_dll_main_symbol(void *handle, const char *symbolName)
 #endif
     vmMain_t function = NULL;
 
-    _Static_assert(sizeof(function) == sizeof(symbol), "dlsym function pointer size mismatch");
+    _Static_assert(sizeof(function) == sizeof(symbol),
+                   "dlsym function pointer size mismatch");
     memcpy(&function, &symbol, sizeof(function));
     return function;
 }
@@ -67,24 +70,25 @@ void vm_compat_before_create(void)
 /* NOT_FROM_ORIGINAL_SOURCE: retains the Linux executable's exact fatal text. */
 void vm_compat_bad_create_parameters(void)
 {
-    Com_Error(0, "\x15"
-                 "VM_Create: bad parms");
+    Com_Error(0, "\x15" "VM_Create: bad parms");
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: retains the Linux executable's exact fatal text. */
 void vm_compat_no_free_slot(void)
 {
-    Com_Error(0, "\x15"
-                 "VM_Create: no free vm_t");
+    Com_Error(0, "\x15" "VM_Create: no free vm_t");
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: the dedicated loader owns only game modules and
  * therefore consumes the common variadic game syscall adapter. */
-void *vm_compat_load_library(const char *moduleName, char *loadedPath, vmMain_t *entryPoint, vmDllSyscall_t variadicSyscall,
+void *vm_compat_load_library(const char *moduleName, char *loadedPath,
+                             vmMain_t *entryPoint,
+                             vmDllSyscall_t variadicSyscall,
                              vmSystemCall_t vectorSyscall)
 {
     (void)vectorSyscall;
-    return Sys_LoadDll(moduleName, loadedPath, entryPoint, variadicSyscall);
+    return Sys_LoadDll(moduleName, loadedPath, entryPoint,
+                       variadicSyscall);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserves the dedicated loader's fatal boundary. */
@@ -123,7 +127,8 @@ void Sys_UnloadDll(void *dllHandle)
 
 #if defined(_WIN32)
     if (FreeLibrary((HMODULE)dllHandle) == 0) {
-        Com_Printf("Sys_UnloadGame failed on FreeLibrary: %lu!\n", (unsigned long)GetLastError());
+        Com_Printf("Sys_UnloadGame failed on FreeLibrary: %lu!\n",
+                   (unsigned long)GetLastError());
     }
 #else
     dlclose(dllHandle);
@@ -140,7 +145,8 @@ void Sys_UnableToLoadDLLError(void)
     Com_Error(0, "Unable to load shared library\n");
 }
 
-void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint, game_syscall_t syscall)
+void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint,
+                  game_syscall_t syscall)
 {
 #if !defined(_WIN32)
     const char *error = NULL;
@@ -180,7 +186,8 @@ void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint, game_sys
 #endif
         if (handle == NULL) {
 #if defined(_WIN32)
-            Com_Printf("\nSys_LoadDll(%s) failed with Windows error %lu\n", dllPath, (unsigned long)GetLastError());
+            Com_Printf("\nSys_LoadDll(%s) failed with Windows error %lu\n",
+                       dllPath, (unsigned long)GetLastError());
 #else
             error = dlerror();
             Com_Printf("\nSys_LoadDll(%s) failed:\n\"%s\"\n", dllPath, error);
@@ -191,7 +198,8 @@ void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint, game_sys
 
         if (handle == NULL) {
 #if defined(_WIN32)
-            Com_Printf("Sys_LoadDll(%s) failed LoadLibrary() completely!\n", name);
+            Com_Printf("Sys_LoadDll(%s) failed LoadLibrary() completely!\n",
+                       name);
 #else
             Com_Printf("Sys_LoadDll(%s) failed dlopen() completely!\n", name);
 #endif
@@ -203,8 +211,12 @@ void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint, game_sys
 
     Q_strncpyz(fqpath, dllPath, MAX_QPATH);
 
-    game_dll_entry_t dllEntry = coduomp_vm_load_dll_entry_symbol(handle, VM_DLL_ENTRY_SYMBOL);
-    *entryPoint = coduomp_vm_load_dll_main_symbol(handle, VM_MAIN_SYMBOL);
+    game_dll_entry_t dllEntry =
+        coduomp_vm_load_dll_entry_symbol(handle,
+                                         VM_DLL_ENTRY_SYMBOL);
+    *entryPoint =
+        coduomp_vm_load_dll_main_symbol(handle,
+                                        VM_MAIN_SYMBOL);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (*entryPoint == NULL || dllEntry == NULL) {
@@ -220,19 +232,22 @@ void *Sys_LoadDll(const char *name, char *fqpath, vmMain_t *entryPoint, game_sys
         }
 #else
         error = dlerror();
-        Com_Printf("Sys_LoadDll(%s) failed dlsym(vmMain):\n\"%s\" !\n", name, error);
+        Com_Printf("Sys_LoadDll(%s) failed dlsym(vmMain):\n\"%s\" !\n", name,
+                   error);
 
         dlclose(handle);
         error = dlerror();
         if (error != NULL) {
-            Com_Printf("Sys_LoadDll(%s) failed dlcose:\n\"%s\"\n", name, error);
+            Com_Printf("Sys_LoadDll(%s) failed dlcose:\n\"%s\"\n", name,
+                       error);
         }
 #endif
 
         return NULL;
     }
 
-    Com_Printf("Sys_LoadDll(%s) found **vmMain** at  %p  \n", name, *entryPoint);
+    Com_Printf("Sys_LoadDll(%s) found **vmMain** at  %p  \n", name,
+               *entryPoint);
     dllEntry(syscall);
     Com_Printf("Sys_LoadDll(%s) succeeded!\n", name);
 

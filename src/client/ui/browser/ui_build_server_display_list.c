@@ -23,7 +23,8 @@ void UI_BuildServerDisplayList(int32_t force)
     int32_t serverCount;
     int32_t server;
 
-    if (force == 0 && ui_displayContextStorage.context.realTime <= ui_nextDisplayRefresh) {
+    if (force == 0 &&
+        ui_displayContextStorage.context.realTime <= ui_nextDisplayRefresh) {
         return;
     }
     if (force == UI_SERVER_REBUILD_FINAL) {
@@ -31,17 +32,22 @@ void UI_BuildServerDisplayList(int32_t force)
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (ui_joinGameType < 0 || ui_joinGameType >= ui_joinGameTypeCount) {
+    if (ui_joinGameType < 0 ||
+        ui_joinGameType >= ui_joinGameTypeCount) {
         ui_joinGameType = 0;
         trap_Cvar_Set("ui_joinGameType", "0");
     }
-    if (ui_serverFilterType < 0 || ui_serverFilterType >= UI_SERVER_FILTER_COUNT) {
+    if (ui_serverFilterType < 0 ||
+        ui_serverFilterType >= UI_SERVER_FILTER_COUNT) {
         ui_serverFilterType = 0;
     }
 
-    trap_Cvar_VariableStringBuffer("cl_motdString", ui_motd, sizeof(ui_motd));
+    trap_Cvar_VariableStringBuffer("cl_motdString", ui_motd,
+                                   sizeof(ui_motd));
     if (ui_motd[0] == '\0') {
-        strcpy(ui_motd, va("%s - %s", UI_SafeTranslateString("EXE_COD_MULTIPLAYER"), "1.51"));
+        strcpy(ui_motd,
+               va("%s - %s",
+                  UI_SafeTranslateString("EXE_COD_MULTIPLAYER"), "1.51"));
     }
     if ((int32_t)strlen(ui_motd) != ui_motdLength) {
         ui_motdLength = (int32_t)strlen(ui_motd);
@@ -56,15 +62,19 @@ void UI_BuildServerDisplayList(int32_t force)
         if (ui_currentServer >= 0) {
             Menu_SetFeederSelection(NULL, NULL, UI_SERVER_FEEDER, 0);
         }
-        trap_LAN_MarkServerDirty((int32_t)ui_netSource, UI_ALL_SERVERS, qtrue);
+        trap_LAN_MarkServerDirty((int32_t)ui_netSource, UI_ALL_SERVERS,
+                                 qtrue);
     }
 
     serverCount = trap_LAN_GetServerCount((int32_t)ui_netSource);
-    if (trap_LAN_WaitServerResponse((int32_t)ui_netSource) || (ui_netSource == LAN_SERVER_SOURCE_LOCAL && serverCount == 0)) {
+    if (trap_LAN_WaitServerResponse((int32_t)ui_netSource) ||
+        (ui_netSource == LAN_SERVER_SOURCE_LOCAL && serverCount == 0)) {
         ui_displayServerCount = 0;
         ui_numPlayers = 0;
         ui_serverCount = trap_LAN_GetServerCount((int32_t)ui_netSource);
-        ui_nextDisplayRefresh = ui_displayContextStorage.context.realTime + UI_SERVER_LIST_RETRY_MILLISECONDS;
+        ui_nextDisplayRefresh =
+            ui_displayContextStorage.context.realTime +
+            UI_SERVER_LIST_RETRY_MILLISECONDS;
         return;
     }
 
@@ -82,58 +92,79 @@ void UI_BuildServerDisplayList(int32_t force)
             continue;
         }
 
-        ui_compat_lan_get_server_info((int32_t)ui_netSource, server, serverInfo, sizeof(serverInfo));
+        ui_compat_lan_get_server_info((int32_t)ui_netSource, server,
+                                      serverInfo, sizeof(serverInfo));
         clients = coduo_crt_atoi(Info_ValueForKey(serverInfo, "clients"));
         ui_numPlayers += clients;
 
-        if (Q_stricmpn(Info_ValueForKey(serverInfo, "addr"), "000.000.000.000", 15) == 0) {
+        if (Q_stricmpn(Info_ValueForKey(serverInfo, "addr"),
+                       "000.000.000.000", 15) == 0) {
             filtered = qtrue;
         } else if (!ui_browserShowEmpty.integer && clients == 0) {
             filtered = qtrue;
-        } else if (!ui_browserShowFull.integer && clients == coduo_crt_atoi(Info_ValueForKey(serverInfo, "sv_maxclients"))) {
+        } else if (!ui_browserShowFull.integer &&
+                   clients == coduo_crt_atoi(
+                                  Info_ValueForKey(serverInfo,
+                                                   "sv_maxclients"))) {
             filtered = qtrue;
-        } else if (!ui_browserShowPassword.integer && coduo_crt_atoi(Info_ValueForKey(serverInfo, "pswrd")) != 0) {
+        } else if (!ui_browserShowPassword.integer &&
+                   coduo_crt_atoi(
+                       Info_ValueForKey(serverInfo, "pswrd")) != 0) {
             filtered = qtrue;
-        } else if (!ui_browserShowNoPassword.integer && coduo_crt_atoi(Info_ValueForKey(serverInfo, "pswrd")) == 0) {
+        } else if (!ui_browserShowNoPassword.integer &&
+                   coduo_crt_atoi(
+                       Info_ValueForKey(serverInfo, "pswrd")) == 0) {
             filtered = qtrue;
-        } else if (ui_browserShowPure.integer && coduo_crt_atoi(Info_ValueForKey(serverInfo, "pure")) == 0) {
+        } else if (ui_browserShowPure.integer &&
+                   coduo_crt_atoi(
+                       Info_ValueForKey(serverInfo, "pure")) == 0) {
             filtered = qtrue;
         } else if (ui_browserShowDedicated.integer) {
-            int32_t hardware = coduo_crt_atoi(Info_ValueForKey(serverInfo, "hw"));
+            int32_t hardware =
+                coduo_crt_atoi(Info_ValueForKey(serverInfo, "hw"));
             if (hardware != 1 && hardware != 2 && hardware != 3) {
                 filtered = qtrue;
             }
         }
 
-        if (!filtered && ui_browserMod.integer >= 0 && coduo_crt_atoi(Info_ValueForKey(serverInfo, "mod")) != ui_browserMod.integer) {
+        if (!filtered && ui_browserMod.integer >= 0 &&
+            coduo_crt_atoi(Info_ValueForKey(serverInfo, "mod")) !=
+                ui_browserMod.integer) {
             filtered = qtrue;
         }
         if (!filtered && ui_browserFriendlyfire.integer >= 0 &&
-            coduo_crt_atoi(Info_ValueForKey(serverInfo, "ff")) != ui_browserFriendlyfire.integer) {
+            coduo_crt_atoi(Info_ValueForKey(serverInfo, "ff")) !=
+                ui_browserFriendlyfire.integer) {
             filtered = qtrue;
         }
         if (!filtered && ui_browserKillcam.integer >= 0 &&
-            coduo_crt_atoi(Info_ValueForKey(serverInfo, "kc")) != ui_browserKillcam.integer) {
+            coduo_crt_atoi(Info_ValueForKey(serverInfo, "kc")) !=
+                ui_browserKillcam.integer) {
             filtered = qtrue;
         }
         if (!filtered && ui_browserShowPunkBuster.integer >= 0 &&
-            coduo_crt_atoi(Info_ValueForKey(serverInfo, "pb")) != ui_browserShowPunkBuster.integer) {
+            coduo_crt_atoi(Info_ValueForKey(serverInfo, "pb")) !=
+                ui_browserShowPunkBuster.integer) {
             filtered = qtrue;
         }
         if (!filtered && ui_joinGameTypes[ui_joinGameType].displayName[0] &&
-            Q_stricmp(ui_joinGameTypes[ui_joinGameType].gameType, Info_ValueForKey(serverInfo, "gametype")) != 0) {
+            Q_stricmp(ui_joinGameTypes[ui_joinGameType].gameType,
+                      Info_ValueForKey(serverInfo, "gametype")) != 0) {
             filtered = qtrue;
         }
         if (!filtered && ui_serverFilterType > 0 &&
-            Q_stricmp(ui_serverFilters[ui_serverFilterType].gameName, Info_ValueForKey(serverInfo, "game")) != 0) {
+            Q_stricmp(ui_serverFilters[ui_serverFilterType].gameName,
+                      Info_ValueForKey(serverInfo, "game")) != 0) {
             filtered = qtrue;
         }
         if (!filtered && ui_browserShowJeeps.integer > 0 &&
-            coduo_crt_atoi(Info_ValueForKey(serverInfo, "jps")) != ui_browserShowJeeps.integer) {
+            coduo_crt_atoi(Info_ValueForKey(serverInfo, "jps")) !=
+                ui_browserShowJeeps.integer) {
             filtered = qtrue;
         }
         if (!filtered && ui_browserShowTanks.integer > 0 &&
-            coduo_crt_atoi(Info_ValueForKey(serverInfo, "tnk")) != ui_browserShowTanks.integer) {
+            coduo_crt_atoi(Info_ValueForKey(serverInfo, "tnk")) !=
+                ui_browserShowTanks.integer) {
             filtered = qtrue;
         }
 

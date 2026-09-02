@@ -11,7 +11,8 @@
 extern "C" {
 #endif
 
-void Fade(int32_t *flags, float *alpha, float clamp, int32_t *nextTime, int32_t offsetTime, qboolean clearFlags, float fadeAmount,
+void Fade(int32_t *flags, float *alpha, float clamp, int32_t *nextTime,
+          int32_t offsetTime, qboolean clearFlags, float fadeAmount,
           float fadeInAmount);
 void Window_Init(windowDef_t *window);
 void Menu_Init(menuDef_t *menu, int32_t loadMode);
@@ -26,14 +27,17 @@ void Controls_SetDefaults(void);
 int32_t BindingIDFromName(const char *command);
 const char *BindingFromName(const char *command, qboolean firstKeyOnly);
 qboolean GetCommandHasBinding(const char *command);
-int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName, const char *command);
+int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName,
+                              const char *command);
 int32_t UI_KeysStringForBinding(const char *command, char **bindingText);
 
-void LerpColor(vec4_t output, const vec4_t from, const vec4_t to, float fraction);
+void LerpColor(vec4_t output, const vec4_t from, const vec4_t to,
+               float fraction);
 
 int32_t KeywordHash_Key(const char *keyword);
 void KeywordHash_Add(keywordHash_t **hashTable, keywordHash_t *keyword);
-keywordHash_t *KeywordHash_Find(keywordHash_t *const *hashTable, const char *keyword);
+keywordHash_t *KeywordHash_Find(keywordHash_t *const *hashTable,
+                                const char *keyword);
 
 void Window_CacheContents(windowDef_t *window);
 void Item_CacheContents(itemDef_t *item);
@@ -56,9 +60,12 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key);
 void Item_Slider_Paint(itemDef_t *item);
 
 void Item_TextColor(itemDef_t *item, vec4_t color);
-void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const char *text);
-void Item_Text_AutoWrapped_Paint(itemDef_t *item, const char *text, const vec4_t color);
-void Item_Text_Wrapped_Paint(itemDef_t *item, const char *text, const vec4_t color);
+void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height,
+                         const char *text);
+void Item_Text_AutoWrapped_Paint(itemDef_t *item, const char *text,
+                                 const vec4_t color);
+void Item_Text_Wrapped_Paint(itemDef_t *item, const char *text,
+                             const vec4_t color);
 void Item_Text_Paint(itemDef_t *item);
 qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key);
 void Item_TextField_Paint(itemDef_t *item);
@@ -75,14 +82,16 @@ int32_t Item_ListBox_ThumbPosition(itemDef_t *item);
 int32_t Item_ListBox_ThumbDrawPosition(itemDef_t *item);
 int32_t Item_ListBox_OverLB(itemDef_t *item, float x, float y);
 void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y);
-qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force);
+qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key,
+                                qboolean force);
 void Item_ListBox_Paint(itemDef_t *item);
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for the UI DLL's original
  * server-browser selection synchronization. Cgame has no corresponding work. */
 void client_ui_compat_sync_server_list_selection(itemDef_t *item);
 
-qboolean Item_Bind_HandleKey(itemDef_t *item, int32_t key, qboolean down);
+qboolean Item_Bind_HandleKey(itemDef_t *item, int32_t key,
+                             qboolean down);
 void Item_Bind_Paint(itemDef_t *item);
 void Item_Paint(itemDef_t *item);
 void Menu_PaintAll(void);
@@ -92,10 +101,12 @@ void Menu_PaintAll(void);
 bind_t *client_ui_compat_extra_binding_for_name(const char *command);
 void client_ui_compat_remove_key_from_extra_bindings(int32_t key);
 void client_ui_compat_controls_set_config(void);
-const char *client_ui_compat_binding_from_name(const char *command, qboolean firstKeyOnly);
+const char *client_ui_compat_binding_from_name(const char *command,
+                                               qboolean firstKeyOnly);
 void client_ui_compat_bind_capture_started(itemDef_t *item);
 void client_ui_compat_bind_capture_finished(void);
-qboolean client_ui_compat_bind_key_is_ignored(itemDef_t *item, int32_t key);
+qboolean client_ui_compat_bind_key_is_ignored(itemDef_t *item,
+                                               int32_t key);
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for cgame's optional passive-HUD
  * translation around the common original item painter. UI implements no work. */
@@ -104,11 +115,17 @@ void client_ui_compat_end_item_paint(itemDef_t *item, float offset);
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for cgame's optional widescreen
  * projection around the shared original per-menu paint body. */
-qboolean client_ui_compat_should_skip_menu_paint(menuDef_t *menu, qboolean passiveHudPass);
-void client_ui_compat_begin_menu_paint(menuDef_t *menu, qboolean passiveHudPass, float *passiveHudOffset, float *openMenuPreviousXScale);
-void client_ui_compat_finish_menu_window_paint(menuDef_t *menu, qboolean passiveHudPass, float passiveHudOffset);
-void client_ui_compat_finish_menu_items(menuDef_t *menu, qboolean passiveHudPass);
-void client_ui_compat_end_menu_paint(menuDef_t *menu, qboolean passiveHudPass, float openMenuPreviousXScale);
+qboolean client_ui_compat_should_skip_menu_paint(
+    menuDef_t *menu, qboolean passiveHudPass);
+void client_ui_compat_begin_menu_paint(
+    menuDef_t *menu, qboolean passiveHudPass, float *passiveHudOffset,
+    float *openMenuPreviousXScale);
+void client_ui_compat_finish_menu_window_paint(
+    menuDef_t *menu, qboolean passiveHudPass, float passiveHudOffset);
+void client_ui_compat_finish_menu_items(
+    menuDef_t *menu, qboolean passiveHudPass);
+void client_ui_compat_end_menu_paint(
+    menuDef_t *menu, qboolean passiveHudPass, float openMenuPreviousXScale);
 
 listBoxDef_t *Item_GetListBoxDef(itemDef_t *item);
 qboolean Item_IsEditFieldDef(itemDef_t *item);
@@ -128,7 +145,8 @@ void Rect_ToWindowCoords(rectDef_t *rect, const windowDef_t *window);
 
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *name);
 int32_t Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name);
-itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, const char *name, int32_t index);
+itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, const char *name,
+                                        int32_t index);
 itemDef_t *Menu_GetFocusedItem(menuDef_t *menu);
 qboolean Menus_MenuIsInStack(menuDef_t *menu);
 menuDef_t *Menus_FindByName(const char *name);
@@ -150,7 +168,8 @@ qboolean Menus_OpenByName(const char *name);
 int32_t Menus_VisibleCount(void);
 
 void Menu_ShowItemByName(menuDef_t *menu, const char *name, qboolean show);
-void Menu_FadeItemByName(menuDef_t *menu, const char *name, qboolean fadeOut);
+void Menu_FadeItemByName(menuDef_t *menu, const char *name,
+                         qboolean fadeOut);
 void Script_Show(itemDef_t *item, char **arguments);
 void Script_Hide(itemDef_t *item, char **arguments);
 void Script_FadeOut(itemDef_t *item, char **arguments);
@@ -193,9 +212,13 @@ qboolean Menu_HandleMouseMove(menuDef_t *menu, float x, float y);
 itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu);
 itemDef_t *Menu_SetNextCursorItem(menuDef_t *menu);
 
-void Menu_TransitionItemByName(menuDef_t *menu, const char *name, rectDef_t rectFrom, rectDef_t rectTo, int32_t time, float amount);
+void Menu_TransitionItemByName(menuDef_t *menu, const char *name,
+                               rectDef_t rectFrom, rectDef_t rectTo,
+                               int32_t time, float amount);
 void Script_Transition(itemDef_t *item, char **arguments);
-void Menu_OrbitItemByName(menuDef_t *menu, const char *name, float startX, float startY, float centerX, float centerY, int32_t time);
+void Menu_OrbitItemByName(menuDef_t *menu, const char *name,
+                          float startX, float startY, float centerX,
+                          float centerY, int32_t time);
 void Script_Orbit(itemDef_t *item, char **arguments);
 
 void Scroll_ListBox_AutoFunc(void *captureData);
@@ -206,14 +229,17 @@ void Item_StopCapture(void);
 qboolean Item_HandleKey(itemDef_t *item, int32_t key, qboolean down);
 void Menus_HandleOOBClick(menuDef_t *menu, int32_t key, qboolean down);
 void Menu_HandleKey(menuDef_t *menu, int32_t key, qboolean down);
-qboolean Display_MouseMove(menuDef_t *menu, int32_t cursorX, int32_t cursorY);
+qboolean Display_MouseMove(menuDef_t *menu, int32_t cursorX,
+                           int32_t cursorY);
 uiCursorType_t Display_CursorType(int32_t cursorX, int32_t cursorY);
 void Display_HandleKey(int32_t x, int32_t y, int32_t key, qboolean down);
 void Menu_ScrollFeeder(menuDef_t *menu, int32_t feeder, qboolean down);
-void Menu_SetFeederSelection(menuDef_t *menu, const char *menuName, int32_t feeder, int32_t index);
+void Menu_SetFeederSelection(menuDef_t *menu, const char *menuName,
+                             int32_t feeder, int32_t index);
 
 void GradientBar_Paint(const rectDef_t *rect, const vec4_t color);
-void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount, float fadeClamp, float fadeCycle);
+void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
+                  float fadeClamp, float fadeCycle);
 void Menu_Paint(menuDef_t *menu, qboolean forcePaint);
 
 void Copy40Bytes(void *destination, const void *source);

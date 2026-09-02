@@ -19,10 +19,13 @@ void Script_FadeIn(itemDef_t *item, char **arguments)
     menu = item->parent;
     count = Menu_ItemsMatchingGroup(menu, name);
     for (index = 0; index < count; ++index) {
-        itemDef_t *matchingItem = Menu_GetMatchingItemByNumber(menu, name, index);
+        itemDef_t *matchingItem =
+            Menu_GetMatchingItemByNumber(menu, name, index);
 
         if (matchingItem != NULL) {
-            matchingItem->window.flags = (matchingItem->window.flags & ~WINDOW_FADINGOUT) | WINDOW_FADINGIN | WINDOW_VISIBLE;
+            matchingItem->window.flags =
+                (matchingItem->window.flags & ~WINDOW_FADINGOUT) |
+                WINDOW_FADINGIN | WINDOW_VISIBLE;
         }
     }
 }

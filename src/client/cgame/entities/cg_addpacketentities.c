@@ -71,7 +71,8 @@ void CG_AddPacketEntities(void)
             /* 3001f85a: advance the animation by cg_frametime seconds. FILD
              * cg_frametime; FMUL 0.001f; trap(0x98, dObjHandle, dtSeconds). */
             float frameMilliseconds = (float)cg_frametime;
-            float dtSeconds = (float)((long double)frameMilliseconds * (long double)0.001f);
+            float dtSeconds = (float)(
+                (long double)frameMilliseconds * (long double)0.001f);
             cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, dObjHandle, CG_FloatBits(dtSeconds));
 
             /* 3001f883: re-read cg_nextSnap->entities[i].number into EDI, then
@@ -103,7 +104,8 @@ void CG_AddPacketEntities(void)
         /* Each FILD result is first rounded through the shared float scratch.
          * The first FDIV result remains live on x87 through the six zero stores. */
         float spin0AsFloat = (float)spin0;
-        long double yaw0Carrier = (long double)spin0AsFloat / (long double)4095.0f;
+        long double yaw0Carrier =
+            (long double)spin0AsFloat / (long double)4095.0f;
 
         /* 3001f901: cg_shakeExternAmplitude cleared to 0 (MOV [0x3048b5c0],EBP with
          * EBP==0). Consumed by CG_CalcViewShake (0x3001b550), which merges it as an
@@ -123,12 +125,14 @@ void CG_AddPacketEntities(void)
         /* 3001f93f/3001f94d: o1.angles.yaw = spin1 / 2048.0f. */
         {
             float spin1AsFloat = (float)spin1;
-            o1->angles[1] = (float)((long double)spin1AsFloat / (long double)2048.0f);
+            o1->angles[1] = (float)(
+                (long double)spin1AsFloat / (long double)2048.0f);
         }
         /* 3001f95b/3001f965: o2.angles.yaw = spin2 / 1024.0f. */
         {
             float spin2AsFloat = (float)spin2;
-            o2->angles[1] = (float)((long double)spin2AsFloat / (long double)1024.0f);
+            o2->angles[1] = (float)(
+                (long double)spin2AsFloat / (long double)1024.0f);
         }
 
         /* 3001f96b: AngleVectors(o0.angles, forward=o0.forward, right=tmp,
@@ -164,12 +168,14 @@ void CG_AddPacketEntities(void)
      * template. Register ABI: es=ESI=&cg_predictedEventEntity.nextState,
      * ps=EDI=cg.predictedPlayerState (0x304831c4), snap=EAX=0. The template lives at
      * 0x304877bc, the source of the MOVSD.REP copy just below. */
-    BG_PlayerStateToEntityState(&cg_predictedPlayerState, &cg_predictedEventEntity.nextState, qfalse);
+    BG_PlayerStateToEntityState(&cg_predictedPlayerState,
+                                &cg_predictedEventEntity.nextState, qfalse);
 
     /* 3001fa41: MOVSD.REP of 0x3d (=61) dwords from the template (0x304877bc) into
      * cg_predictedEventEntity (0x304876c8). 61 dwords == 244 bytes == one
      * entityState_t / the leading currentState of the centity. */
-    memcpy(&cg_predictedEventEntity, &cg_predictedEventEntity.nextState, sizeof(cg_predictedEventEntity.nextState));
+    memcpy(&cg_predictedEventEntity, &cg_predictedEventEntity.nextState,
+           sizeof(cg_predictedEventEntity.nextState));
 
     /* 3001fa52..3001fad6: this whole stage runs ONLY when the local player has a
      * live first-person DObj (ps.playerStateFlags & 0xc0000). The JZ at 0x3001fa5e
@@ -178,13 +184,15 @@ void CG_AddPacketEntities(void)
      * ps.playerStateFlags at snapshot+0x18; clientNum is at +0xe0. */
     if ((cg_nextSnap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
         /* 3001fa60: dObjHandle = trap(0xa5, cg_nextSnap->ps.psClientNum). */
-        intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, cg_nextSnap->ps.psClientNum);
+        intptr_t dObjHandle =
+            cgame_syscall(CG_DOBJ_GET_HANDLE, cg_nextSnap->ps.psClientNum);
         /* 3001fa77: JZ 0x3001fab6 — a zero handle skips only the anim-advance and
          * falls into the predicted-entity add. */
         if (dObjHandle != 0) {
             /* 3001fa79: advance by cg_frametime seconds (same idiom as loop 1). */
             float frameMilliseconds = (float)cg_frametime;
-            float dtSeconds = (float)((long double)frameMilliseconds * (long double)0.001f);
+            float dtSeconds = (float)(
+                (long double)frameMilliseconds * (long double)0.001f);
             cgame_syscall(CG_DOBJ_ADVANCE_SERVER_TIME, dObjHandle, CG_FloatBits(dtSeconds));
             /* 3001faa2: CG_SetGunHandFromNotetracks(cg_nextSnap->ps.psClientNum). */
             CG_SetGunHandFromNotetracks(cg_nextSnap->ps.psClientNum);
@@ -208,7 +216,8 @@ void CG_AddPacketEntities(void)
     for (i = 0; i < cg_nextSnap->numEntities; i++) {
         /* 3001faf0: cent = &cg_entities[ cg_nextSnap->entities[i].number ]
          * (stride 0x288, base 0x3048c6e0 — the established cg_entities[] view). */
-        centity_t *cent = cg_entities + cg_nextSnap->entities[i].number;
+        centity_t *cent = cg_entities +
+                               cg_nextSnap->entities[i].number;
 
         /* 3001fb03: only ordinary entity types below ET_EVENTS are added. */
         if (cent->currentState.eType < ET_EVENTS) {
@@ -222,9 +231,12 @@ void CG_AddPacketEntities(void)
     /* 3001fb2f: finalize the special view/local DObj. Requires the index in
      * [0, MAX_GENTITIES) and the draw-inhibit gate clear; then fetch its handle and
      * commit it if valid. The signed compares JL/JGE prove a signed index range. */
-    if (cg_dumpAnims_vmCvar.integer >= 0 && cg_dumpAnims_vmCvar.integer < MAX_GENTITIES && cl_paused_vmCvar.integer == 0) {
+    if (cg_dumpAnims_vmCvar.integer >= 0 &&
+        cg_dumpAnims_vmCvar.integer < MAX_GENTITIES &&
+        cl_paused_vmCvar.integer == 0) {
         /* 3001fb47: handle = trap(0xa5, cg_dumpAnims_vmCvar.integer). */
-        intptr_t dObjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, cg_dumpAnims_vmCvar.integer);
+        intptr_t dObjHandle =
+            cgame_syscall(CG_DOBJ_GET_HANDLE, cg_dumpAnims_vmCvar.integer);
         if (dObjHandle != 0) {
             /* 3001fb5a: trap(0x9b, handle) — display the selected DObj's
              * animation diagnostics. */

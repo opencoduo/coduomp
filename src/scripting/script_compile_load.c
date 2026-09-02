@@ -47,10 +47,13 @@ qboolean Scr_IsIdentifier(const char *text)
 
 /* Source: CoDUOMP.exe 0x0047fe50..0x0047ff24.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047fe50_0047ff25.mcode. */
-uint32_t Scr_GetFunctionHandle(const char *scriptName, const char *functionName)
+uint32_t Scr_GetFunctionHandle(const char *scriptName,
+                               const char *functionName)
 {
     uint16_t canonicalScript = Scr_CreateCanonicalFilename(scriptName);
-    uint16_t scriptHandle = FindVariable(script_loadScriptHandleRoot, canonicalScript);
+    uint16_t scriptHandle =
+        FindVariable(script_loadScriptHandleRoot,
+                                 canonicalScript);
     SL_RemoveRefToString(canonicalScript);
 
     if (scriptHandle == 0) {
@@ -63,15 +66,18 @@ uint32_t Scr_GetFunctionHandle(const char *scriptName, const char *functionName)
         return 0;
     }
 
-    uint16_t functionHandle = FindVariable(functionRoot, functionNameHandle);
+    uint16_t functionHandle =
+        FindVariable(functionRoot, functionNameHandle);
     if (functionHandle == 0) {
         return 0;
     }
 
-    uint8_t *codePos = (uint8_t *)GetVariableValueAddress(functionHandle)->payload;
+    uint8_t *codePos =
+        (uint8_t *)GetVariableValueAddress(functionHandle)->payload;
     uintptr_t codeAddress = (uintptr_t)codePos;
     uintptr_t codeBaseAddress = (uintptr_t)script_codeBase;
-    if (codeAddress < codeBaseAddress || codeAddress >= codeBaseAddress + script_codeSize) {
+    if (codeAddress < codeBaseAddress ||
+        codeAddress >= codeBaseAddress + script_codeSize) {
         return 0;
     }
 
@@ -146,10 +152,15 @@ qboolean Scr_LoadScript(const char *filename)
     scr_ast_node_t *scriptNode;
 
     uint16_t canonicalFilename = Scr_CreateCanonicalFilename(filename);
-    uint16_t scriptHandle = FindVariable(script_loadScriptCodeRoot, canonicalFilename);
+    uint16_t scriptHandle =
+        FindVariable(script_loadScriptCodeRoot,
+                                 canonicalFilename);
     if (scriptHandle != 0) {
         SL_RemoveRefToString(canonicalFilename);
-        return FindVariable(script_loadScriptHandleRoot, canonicalFilename) != 0 ? qtrue : qfalse;
+        return FindVariable(script_loadScriptHandleRoot,
+                                        canonicalFilename) != 0
+                   ? qtrue
+                   : qfalse;
     }
 
     const char *canonicalName = SL_ConvertToString(canonicalFilename);
@@ -167,7 +178,8 @@ qboolean Scr_LoadScript(const char *filename)
     Com_sprintf(scriptPath, sizeof(scriptPath), "%s.gsc", canonicalName);
 
     const char *savedSourcePos = script_sourcePos;
-    char *source = Scr_AddSourceBuffer(scriptPath, SCRIPT_HUNK_ALLOC_LOW(0), script_codeRelocationEnd);
+    char *source = Scr_AddSourceBuffer(
+        scriptPath, SCRIPT_HUNK_ALLOC_LOW(0), script_codeRelocationEnd);
     const char *savedSourceFilename = script_sourceFilename;
     if (source == NULL) {
         script_sourceFilename = savedSourceFilename;
@@ -183,7 +195,9 @@ qboolean Scr_LoadScript(const char *filename)
     script_sourceFilename = scriptPath;
     ScriptImport_ParseSource(source, &scriptNode);
 
-    uint16_t functionRoot = GetObject(GetVariable(script_loadScriptHandleRoot, canonicalFilename));
+    uint16_t functionRoot = GetObject(
+        GetVariable(script_loadScriptHandleRoot,
+                                canonicalFilename));
     ScriptCompile(scriptNode, functionRoot);
 
     script_sourceFilename = savedSourceFilename;
@@ -209,9 +223,12 @@ void Scr_EndLoadScripts(void)
 
 /* Source: CoDUOMP.exe 0x004804b0..0x004804ee.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004804b0_004804ef.mcode. */
-void CODUO_SCRIPT_CDECL Scr_PrecacheAnimTrees(script_anim_tree_alloc_t allocCallback)
+void CODUO_SCRIPT_CDECL Scr_PrecacheAnimTrees(
+    script_anim_tree_alloc_t allocCallback)
 {
-    for (int32_t treeIndex = 1; treeIndex <= script_animTreeCounts[xanim_activePoolPayloadSlot]; ++treeIndex) {
+    for (int32_t treeIndex = 1;
+         treeIndex <= script_animTreeCounts[xanim_activePoolPayloadSlot];
+         ++treeIndex) {
         Scr_LoadAnimTreeAtIndex(treeIndex, allocCallback);
     }
 }
@@ -263,23 +280,31 @@ void EmitThreadInternal(scr_ast_node_t *node, uint32_t sourcePos)
     script_codeStackDepth = 0;
     script_codeMaxStackDepth = 0;
     script_codeMaxLocalDepth = 0;
-    CompileTransferRefToString(SCR_AST_STRING_HANDLE(node->payload.functionDefinition.nameHandle), SCRIPT_STRING_USAGE_FUNCTION);
-    EmitFormalParameterListRef(node->payload.functionDefinition.parameters, sourcePos);
+    CompileTransferRefToString(
+        SCR_AST_STRING_HANDLE(
+            node->payload.functionDefinition.nameHandle),
+        SCRIPT_STRING_USAGE_FUNCTION);
+    EmitFormalParameterListRef(node->payload.functionDefinition.parameters,
+                               sourcePos);
     EmitStatementList(node->payload.functionDefinition.body);
 #if defined(WINDOWS_BEHAVIOR)
     /* Windows flushes a pending deferred developer check before END
      * (CoDUOMP.exe 0x0047f482..0x0047f498). Linux coduo_lnxded
      * 0x080a163e..0x080a16f2 proceeds directly from the statement-list call to
      * END. This is an original behavior difference, not recovery latitude. */
-    if (script_codeNeedsDeferredCheck != qfalse && script_codegenMode == SCRIPT_CODEGEN_MODE_INTERN_STRINGS) {
+    if (script_codeNeedsDeferredCheck != qfalse &&
+        script_codegenMode == SCRIPT_CODEGEN_MODE_INTERN_STRINGS) {
         script_codeNeedsDeferredCheck = qfalse;
         Scr_TransferStatementListToDeveloperBuffer();
     }
 #endif
     EmitOpcode(SCRIPT_OPCODE_END, 0, 0);
 
-    if (SCRIPT_FUNCTION_OPERAND_STACK_LIMIT < script_codeMaxLocalDepth * SCRIPT_FUNCTION_LOCAL_SLOT_WIDTH + script_codeMaxStackDepth) {
-        CompileError(sourcePos, "function exceeds operand stack size");
+    if (SCRIPT_FUNCTION_OPERAND_STACK_LIMIT <
+        script_codeMaxLocalDepth * SCRIPT_FUNCTION_LOCAL_SLOT_WIDTH +
+            script_codeMaxStackDepth) {
+        CompileError(sourcePos,
+                              "function exceeds operand stack size");
     }
 }
 
@@ -287,10 +312,14 @@ void EmitThreadInternal(scr_ast_node_t *node, uint32_t sourcePos)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047f510_0047f589.mcode. */
 void EmitNormalThread(scr_ast_node_t *node, uint32_t sourcePos)
 {
-    uint16_t functionName = SCR_AST_STRING_HANDLE(node->payload.functionDefinition.nameHandle);
-    uint16_t functionObject = FindObject(FindVariable(script_currentFunctionRoot, functionName));
+    uint16_t functionName =
+        SCR_AST_STRING_HANDLE(
+            node->payload.functionDefinition.nameHandle);
+    uint16_t functionObject = FindObject(
+        FindVariable(script_currentFunctionRoot, functionName));
 
-    SetThreadPosition(functionObject, node->payload.functionDefinition.sourcePos);
+    SetThreadPosition(functionObject,
+                      node->payload.functionDefinition.sourcePos);
     EmitThreadInternal(node, sourcePos);
 }
 
@@ -310,9 +339,14 @@ void EmitDeveloperThread(scr_ast_node_t *node, uint32_t sourcePos)
         EmitThreadInternal(node, sourcePos);
     } else {
         script_codegenMode = SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS;
-        uint16_t functionName = SCR_AST_STRING_HANDLE(node->payload.functionDefinition.nameHandle);
-        uint16_t functionObject = FindObject(FindVariable(script_currentFunctionRoot, functionName));
-        SetDeveloperThreadPosition(functionObject, node->payload.functionDefinition.sourcePos);
+        uint16_t functionName =
+            SCR_AST_STRING_HANDLE(
+                node->payload.functionDefinition.nameHandle);
+        uint16_t functionObject = FindObject(
+            FindVariable(script_currentFunctionRoot,
+                                     functionName));
+        SetDeveloperThreadPosition(
+            functionObject, node->payload.functionDefinition.sourcePos);
         EmitThreadInternal(node, sourcePos);
         Scr_TransferToDeveloperBuffer();
     }
@@ -337,7 +371,8 @@ void EmitThread(scr_ast_node_t *node, uint32_t sourcePos)
     }
 
     if (node->kind == SCR_AST_KIND_USING_ANIMTREE) {
-        uint16_t animTreeNameHandle = SCR_AST_STRING_HANDLE(node->payload.usingAnimTree.nameHandle);
+        uint16_t animTreeNameHandle =
+            SCR_AST_STRING_HANDLE(node->payload.usingAnimTree.nameHandle);
         const char *animTreeName = SL_ConvertToString(animTreeNameHandle);
         Scr_UsingTree(animTreeName, node->payload.usingAnimTree.sourcePos);
         CompileRemoveRefToString(animTreeNameHandle);
@@ -348,18 +383,21 @@ void EmitThread(scr_ast_node_t *node, uint32_t sourcePos)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047f730_0047f77b.mcode. */
 void EmitThreadList(scr_ast_script_entry_block_t *block)
 {
-    for (scr_ast_list_item_t *item = block->sentinel->head; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = block->sentinel->head;
+         item != NULL; item = item->next) {
         SpecifyThread(item->entry->node);
     }
 
-    for (scr_ast_list_item_t *item = block->sentinel->head; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = block->sentinel->head;
+         item != NULL; item = item->next) {
         EmitThread(item->entry->node, item->entry->sourcePos);
     }
 }
 
 /* Source: CoDUOMP.exe 0x0047f780..0x0047f94c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047f780_0047f94c.mcode. */
-void ScriptCompile(scr_ast_node_t *script, uint16_t currentFunctionRoot)
+void ScriptCompile(scr_ast_node_t *script,
+                   uint16_t currentFunctionRoot)
 {
     script_currentFunctionRoot = currentFunctionRoot;
     script_codeEmitCursor = TempMalloc(0);
@@ -374,30 +412,38 @@ void ScriptCompile(scr_ast_node_t *script, uint16_t currentFunctionRoot)
         /* NOT_FROM_ORIGINAL_SOURCE: recursive compilation keeps pending-load
          * records on this stack frame. Enforce the per-source record capacity
          * before reserving that storage. */
-        if (pendingLoadCapacity < 0 || pendingLoadCapacity > SCRIPT_PENDING_LOAD_COUNT_LIMIT) {
+        if (pendingLoadCapacity < 0 ||
+            pendingLoadCapacity > SCRIPT_PENDING_LOAD_COUNT_LIMIT) {
             CompileError(0, "script has too many cross-script references (maximum %i)", SCRIPT_PENDING_LOAD_COUNT_LIMIT);
             return;
         }
 
-        uint32_t pendingLoadBytes = (uint32_t)pendingLoadCapacity * (uint32_t)sizeof(*pendingLoads);
+        uint32_t pendingLoadBytes =
+            (uint32_t)pendingLoadCapacity *
+            (uint32_t)sizeof(*pendingLoads);
         pendingLoads = SCRIPT_HOST_ALLOCA((size_t)pendingLoadBytes);
     }
     script_pendingScriptLoadCursor = pendingLoads;
 
     EmitOpcode(SCRIPT_OPCODE_END, 0, 0);
     EmitThreadList(script->payload.scriptRoot.entries);
-    script_codeSize = (size_t)(TempMalloc(0) - script_codeBase);
+    script_codeSize =
+        (size_t)(TempMalloc(0) - script_codeBase);
     AdjustFunctionAddresses();
     SCRIPT_HUNK_COMMIT_TEMP();
     SCRIPT_HUNK_CLEAR_TEMP_HIGH();
 
     int32_t pendingLoadCount = script_pendingScriptLoadCount;
     for (int32_t index = 0; index < pendingLoadCount; ++index) {
-        const char *filename = SL_ConvertToString(pendingLoads[index].filenameHandle);
+        const char *filename =
+            SL_ConvertToString(pendingLoads[index].filenameHandle);
 
         if (Scr_LoadScript(filename) == qfalse) {
-            const char *errorFilename = SL_ConvertToString(pendingLoads[index].filenameHandle);
-            CompileError(pendingLoads[index].sourcePos, "Could not find script '%s'", errorFilename);
+            const char *errorFilename =
+                SL_ConvertToString(pendingLoads[index].filenameHandle);
+            CompileError(pendingLoads[index].sourcePos,
+                                  "Could not find script '%s'",
+                                  errorFilename);
         }
 
         SL_RemoveRefToString(pendingLoads[index].filenameHandle);

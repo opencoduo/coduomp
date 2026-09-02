@@ -15,9 +15,7 @@ enum {
  * retain in its 20-KiB packed pool. The stock source keeps the original
  * engine/cgame ABI; the improved source expands both client-side copies to a
  * 32-KiB packed pool. */
-enum {
-    MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_RETAIL
-};
+enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_RETAIL };
 
 /*
  * Shared multiplayer config-string layout.  The Windows cgame asset loaders
@@ -76,7 +74,8 @@ typedef enum configStringIndex_e {
     CS_TIMEOUT_STRING = 1910
 } configStringIndex_t;
 
-typedef char q_config_string_index_abi_size[sizeof(configStringIndex_t) == 4 ? 1 : -1];
+typedef char q_config_string_index_abi_size[
+    sizeof(configStringIndex_t) == 4 ? 1 : -1];
 
 /* Packed config-string state copied across the client-engine/cgame boundary.
  * Retail CoDUOMP.exe CL_GetGameState (0x00401180) copies 0x1c01 dwords,
@@ -89,15 +88,25 @@ typedef struct gameState_s {
     int32_t dataCount; /* retail +0x7000; extended +0xa000 */
 } gameState_t;
 
-#define GAME_STATE_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
+#define GAME_STATE_LAYOUT_ASSERT(name_, expression_) \
+    typedef char name_[(expression_) ? 1 : -1]
 
-GAME_STATE_LAYOUT_ASSERT(q_game_state_offsets_extent, sizeof(((gameState_t *)0)->stringOffsets) == 0x2000);
-GAME_STATE_LAYOUT_ASSERT(q_game_state_data_offset, offsetof(gameState_t, stringData) == 0x2000);
-GAME_STATE_LAYOUT_ASSERT(q_game_state_data_extent, sizeof(((gameState_t *)0)->stringData) == MAX_GAMESTATE_CHARS);
-GAME_STATE_LAYOUT_ASSERT(q_game_state_count_offset, offsetof(gameState_t, dataCount) == 0x2000 + MAX_GAMESTATE_CHARS);
-GAME_STATE_LAYOUT_ASSERT(q_game_state_size, sizeof(gameState_t) == 0x2004 + MAX_GAMESTATE_CHARS);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_offsets_extent,
+                         sizeof(((gameState_t *)0)->stringOffsets) == 0x2000);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_data_offset,
+                         offsetof(gameState_t, stringData) == 0x2000);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_data_extent,
+                         sizeof(((gameState_t *)0)->stringData) ==
+                             MAX_GAMESTATE_CHARS);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_count_offset,
+                         offsetof(gameState_t, dataCount) ==
+                             0x2000 + MAX_GAMESTATE_CHARS);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_size,
+                         sizeof(gameState_t) ==
+                             0x2004 + MAX_GAMESTATE_CHARS);
 
-GAME_STATE_LAYOUT_ASSERT(q_game_state_selected_retail_capacity, MAX_GAMESTATE_CHARS == 0x5000);
+GAME_STATE_LAYOUT_ASSERT(q_game_state_selected_retail_capacity,
+                         MAX_GAMESTATE_CHARS == 0x5000);
 
 #undef GAME_STATE_LAYOUT_ASSERT
 

@@ -90,12 +90,12 @@
 /* Fixed CG_R_TEXT_PAINT draw parameters, proven from the pushed immediates. */
 enum {
     CG_TIMEOUT_STYLE = 0, /* trap 52/54 style slot (PUSH 0)                        */
-    CG_TIMEOUT_MODE = 6, /* trailing trap 54 mode (PUSH 6)                        */
+    CG_TIMEOUT_MODE  = 6, /* trailing trap 54 mode (PUSH 6)                        */
 };
-#define CG_TIMEOUT_SCREEN_WIDTH 640.0f /* 0x3007bf34; horizontal centering ref     */
+#define CG_TIMEOUT_SCREEN_WIDTH  640.0f /* 0x3007bf34; horizontal centering ref     */
 #define CG_TIMEOUT_SCREEN_HEIGHT 480.0f /* 0x3007c148; vertical centering ref       */
-#define CG_TIMEOUT_HALF 0.5f   /* 0x3007bce8; center = (dim - size) * 0.5f  */
-#define CG_TIMEOUT_SCALE 0.5f   /* 0x3007bce8; measure + draw scale          */
+#define CG_TIMEOUT_HALF          0.5f   /* 0x3007bce8; center = (dim - size) * 0.5f  */
+#define CG_TIMEOUT_SCALE         0.5f   /* 0x3007bce8; measure + draw scale          */
 
 void CG_DrawMatchTimeout(void)
 {
@@ -112,8 +112,10 @@ void CG_DrawMatchTimeout(void)
     /* max(0, (cg_timeoutEndTime - engineMilliseconds) / 1000). Computed with the
      * signed divide-by-1000 magic sequence; negative quotients clamp to 0. Only
      * used on the "not active" display branch below. */
-    int32_t milliseconds = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MILLISECONDS));
-    int32_t remainingMs = coduo_int32_from_bits((uint32_t)cg_timeoutEndTime - (uint32_t)milliseconds);
+    int32_t milliseconds = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_MILLISECONDS));
+    int32_t remainingMs = coduo_int32_from_bits(
+        (uint32_t)cg_timeoutEndTime - (uint32_t)milliseconds);
     int32_t secondsRemaining = remainingMs / 1000;
     if (secondsRemaining < 0) {
         secondsRemaining = 0;
@@ -126,28 +128,43 @@ void CG_DrawMatchTimeout(void)
     int32_t timeoutActive = cg_timeoutActive;
     char *str;
     if (timeoutActive != 0) {
-        char *translated = CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED");
+        char *translated =
+            CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED");
         str = (char *)va("%s\n%s", translated, cg_timeoutString);
     } else {
-        char *translated = CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED");
-        str = (char *)va("%s: %i \n%s", translated, secondsRemaining, cg_timeoutString);
+        char *translated =
+            CG_SafeTranslateString_Internal("cgame", "CGAME_PAUSED");
+        str = (char *)va("%s: %i \n%s", translated, secondsRemaining,
+                         cg_timeoutString);
     }
 
     /* Measure the text and center it on the 640x480 virtual screen. */
-    int32_t width =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)str, CG_TIMEOUT_STYLE, CG_FloatBits(CG_TIMEOUT_SCALE), 0));
+    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_R_TEXT_WIDTH, (intptr_t)str, CG_TIMEOUT_STYLE,
+        CG_FloatBits(CG_TIMEOUT_SCALE), 0));
     /* 0x3001bc90 FILD [width]; 0x3001bca1 FSUBR 640.0f -- width is FILDed straight
      * into the subtract (no float store), so it stays exact in 80-bit; no (float)
      * cast. */
-    float x = (float)(((long double)CG_TIMEOUT_SCREEN_WIDTH - (long double)width) * (long double)CG_TIMEOUT_HALF);
+    float x = (float)(((long double)CG_TIMEOUT_SCREEN_WIDTH -
+                       (long double)width) * (long double)CG_TIMEOUT_HALF);
 
-    int32_t height = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_HEIGHT, 0, CG_FloatBits(CG_TIMEOUT_SCALE)));
+    int32_t height = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_R_TEXT_HEIGHT, 0, CG_FloatBits(CG_TIMEOUT_SCALE)));
     /* 0x3001bcd3 FILD [height]; 0x3001bcdf FSUBR 480.0f -- direct FILD, no float
      * store; height stays exact in 80-bit. No (float) cast. */
-    float y = (float)(((long double)CG_TIMEOUT_SCREEN_HEIGHT - (long double)height) * (long double)CG_TIMEOUT_HALF);
+    float y = (float)(((long double)CG_TIMEOUT_SCREEN_HEIGHT -
+                       (long double)height) * (long double)CG_TIMEOUT_HALF);
 
     /* Draw the centered line in white (same 10-slot trap-54 draw shape as the
      * sibling emitters). */
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(x), CG_FloatBits(y), CG_TIMEOUT_STYLE, CG_FloatBits(CG_TIMEOUT_SCALE), (intptr_t)white,
-                  (intptr_t)str, 0, 0, CG_TIMEOUT_MODE);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(x),
+                  CG_FloatBits(y),
+                  CG_TIMEOUT_STYLE,
+                  CG_FloatBits(CG_TIMEOUT_SCALE),
+                  (intptr_t)white,
+                  (intptr_t)str,
+                  0,
+                  0,
+                  CG_TIMEOUT_MODE);
 }

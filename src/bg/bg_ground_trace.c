@@ -46,7 +46,8 @@ void PM_GroundTrace(void)
         end[2] = ps->psOrigin[2] - 0.25f;
     }
 
-    PM_trace(&trace, start, move->mins, move->maxs, end, ps->psClientNum, move->traceMask);
+    PM_trace(&trace, start, move->mins, move->maxs, end,
+             ps->psClientNum, move->traceMask);
     pml.groundTrace = trace;
 
     if (trace.allsolid != 0 && PM_CorrectAllSolid(&trace) == qfalse) {
@@ -56,7 +57,8 @@ void PM_GroundTrace(void)
     if (trace.startsolid != 0) {
         move = pm;
         start[2] = move->ps->psOrigin[2] - 0.001f;
-        PM_trace(&trace, start, move->mins, move->maxs, end, move->ps->psClientNum, move->traceMask);
+        PM_trace(&trace, start, move->mins, move->maxs, end,
+                 move->ps->psClientNum, move->traceMask);
         if (trace.startsolid != 0) {
             move = pm;
             move->ps->groundEntityNum = ENTITYNUM_NONE;
@@ -75,7 +77,8 @@ void PM_GroundTrace(void)
 
     move = pm;
     ps = move->ps;
-    if ((ps->playerStateFlags & PMF_LADDER) == 0 && ps->velocity[2] > 0.0f) {
+    if ((ps->playerStateFlags & PMF_LADDER) == 0 &&
+        ps->velocity[2] > 0.0f) {
         qboolean kickoff;
 
         /* Windows cgame/game both evaluate Y+X+Z (0x3000a5fc and
@@ -84,24 +87,38 @@ void PM_GroundTrace(void)
          * platform distinction in this function. */
 #if EMULATE_X87
 #if defined(WINDOWS_BEHAVIOR)
-        const x87f velocityDot = x87f_add(x87f_add(x87f_mul(x87f_load_f32(trace.normal[1]), x87f_load_f32(ps->velocity[1])),
-                                                   x87f_mul(x87f_load_f32(trace.normal[0]), x87f_load_f32(ps->velocity[0]))),
-                                          x87f_mul(x87f_load_f32(trace.normal[2]), x87f_load_f32(ps->velocity[2])));
-        kickoff = x87f_lt_signaling(x87f_load_f32(10.0f), velocityDot) ? qtrue : qfalse;
+        const x87f velocityDot = x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(trace.normal[1]),
+                              x87f_load_f32(ps->velocity[1])),
+                     x87f_mul(x87f_load_f32(trace.normal[0]),
+                              x87f_load_f32(ps->velocity[0]))),
+            x87f_mul(x87f_load_f32(trace.normal[2]),
+                     x87f_load_f32(ps->velocity[2])));
+        kickoff = x87f_lt_signaling(x87f_load_f32(10.0f), velocityDot)
+                       ? qtrue
+                       : qfalse;
 #else
-        const x87f velocityDot = x87f_add(x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]), x87f_load_f32(trace.normal[0])),
-                                                   x87f_mul(x87f_load_f32(ps->velocity[1]), x87f_load_f32(trace.normal[1]))),
-                                          x87f_mul(x87f_load_f32(ps->velocity[2]), x87f_load_f32(trace.normal[2])));
-        kickoff = x87f_lt(x87f_load_f32(10.0f), velocityDot) ? qtrue : qfalse;
+        const x87f velocityDot = x87f_add(
+            x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]),
+                              x87f_load_f32(trace.normal[0])),
+                     x87f_mul(x87f_load_f32(ps->velocity[1]),
+                              x87f_load_f32(trace.normal[1]))),
+            x87f_mul(x87f_load_f32(ps->velocity[2]),
+                     x87f_load_f32(trace.normal[2])));
+        kickoff = x87f_lt(x87f_load_f32(10.0f), velocityDot)
+                       ? qtrue
+                       : qfalse;
 #endif
 #else
 #if defined(WINDOWS_BEHAVIOR)
         const long double velocityDot =
-            ((long double)trace.normal[1] * (long double)ps->velocity[1] + (long double)trace.normal[0] * (long double)ps->velocity[0]) +
+            ((long double)trace.normal[1] * (long double)ps->velocity[1] +
+             (long double)trace.normal[0] * (long double)ps->velocity[0]) +
             (long double)trace.normal[2] * (long double)ps->velocity[2];
 #else
         const long double velocityDot =
-            ((long double)ps->velocity[0] * (long double)trace.normal[0] + (long double)ps->velocity[1] * (long double)trace.normal[1]) +
+            ((long double)ps->velocity[0] * (long double)trace.normal[0] +
+             (long double)ps->velocity[1] * (long double)trace.normal[1]) +
             (long double)ps->velocity[2] * (long double)trace.normal[2];
 #endif
         kickoff = velocityDot > 10.0L ? qtrue : qfalse;
@@ -113,7 +130,12 @@ void PM_GroundTrace(void)
                 move = pm;
             }
 
-            BG_AnimScriptEvent(move->ps, move->command.forwardmove < 0 ? ANIM_EVENT_JUMP_BACK : ANIM_EVENT_JUMP, qfalse, qfalse);
+            BG_AnimScriptEvent(
+                move->ps,
+                move->command.forwardmove < 0
+                    ? ANIM_EVENT_JUMP_BACK
+                    : ANIM_EVENT_JUMP,
+                qfalse, qfalse);
             move = pm;
             pml.groundLiftFlag = qfalse;
             move->ps->groundEntityNum = ENTITYNUM_NONE;

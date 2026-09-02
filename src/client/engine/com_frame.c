@@ -50,7 +50,9 @@ void Com_Frame(void)
     Com_WriteConfiguration();
 
     if (com_statmon->integer != 0 && fs_fileAccessed != qfalse) {
-        StatMon_Warning(COM_STATMON_FILE_ENTRY, COM_STATMON_WARNING_DURATION_MSEC, "gfx/2d/warning@file.jpg");
+        StatMon_Warning(COM_STATMON_FILE_ENTRY,
+                        COM_STATMON_WARNING_DURATION_MSEC,
+                        "gfx/2d/warning@file.jpg");
         fs_fileAccessed = qfalse;
     }
 
@@ -97,9 +99,11 @@ void Com_Frame(void)
             processLockAvailable = Sys_CheckProcessLock();
 #endif
             if (processLockAvailable == qfalse) {
-                Com_Printf("cannot become non-dedicated, since a non-dedicated "
-                           "game is already running\n");
-                (void)Cvar_Set2("dedicated", va("%i", previousDedicated), qtrue);
+                Com_Printf(
+                    "cannot become non-dedicated, since a non-dedicated "
+                    "game is already running\n");
+                (void)Cvar_Set2("dedicated",
+                                va("%i", previousDedicated), qtrue);
                 (void)Cvar_Get("dedicated", "1", 0);
                 dedicated->modified = qfalse;
             } else {
@@ -131,13 +135,21 @@ void Com_Frame(void)
 
         CL_Frame(scaledMsec, realMsec);
 
-        if (com_statmon->integer != 0 || com_speeds->integer != 0) {
-            const int32_t previousFrameTime = comPreviousStatmonFrameTime;
-            const int32_t currentFrameTime = (int32_t)Sys_Milliseconds();
+        if (com_statmon->integer != 0 ||
+            com_speeds->integer != 0) {
+            const int32_t previousFrameTime =
+                comPreviousStatmonFrameTime;
+            const int32_t currentFrameTime =
+                (int32_t)Sys_Milliseconds();
             comPreviousStatmonFrameTime = currentFrameTime;
 
-            if (com_statmon->integer != 0 && currentFrameTime - previousFrameTime > COM_STATMON_SLOW_FRAME_MSEC && previousFrameTime != 0) {
-                StatMon_Warning(COM_STATMON_FPS_ENTRY, COM_STATMON_WARNING_DURATION_MSEC, "gfx/2d/warning@fps.jpg");
+            if (com_statmon->integer != 0 &&
+                currentFrameTime - previousFrameTime >
+                    COM_STATMON_SLOW_FRAME_MSEC &&
+                previousFrameTime != 0) {
+                StatMon_Warning(COM_STATMON_FPS_ENTRY,
+                                COM_STATMON_WARNING_DURATION_MSEC,
+                                "gfx/2d/warning@fps.jpg");
             }
 
             if (com_speeds->integer != 0)
@@ -151,11 +163,19 @@ void Com_Frame(void)
     if (com_speeds->integer != 0) {
         /* The three renderer/game counters are subtracted from their owning
          * frame phases exactly as in the original instruction sequence. */
-        Com_Printf("frame:%i all:%3i sv:%3i ev:%3i cl:%3i "
-                   "gm:%3i rf:%3i bk:%3i\n",
-                   comFrameNumber, frameEndTime - serverStartTime, postServerTime - com_timeGame - serverStartTime,
-                   clientStartTime - postServerTime - frameStartTime + serverStartTime,
-                   frameEndTime - com_timeBackend - com_timeFrontend - clientStartTime, com_timeGame, com_timeFrontend, com_timeBackend);
+        Com_Printf(
+            "frame:%i all:%3i sv:%3i ev:%3i cl:%3i "
+            "gm:%3i rf:%3i bk:%3i\n",
+            comFrameNumber,
+            frameEndTime - serverStartTime,
+            postServerTime - com_timeGame - serverStartTime,
+            clientStartTime - postServerTime -
+                frameStartTime + serverStartTime,
+            frameEndTime - com_timeBackend -
+                com_timeFrontend - clientStartTime,
+            com_timeGame,
+            com_timeFrontend,
+            com_timeBackend);
     }
 
     ++comFrameNumber;

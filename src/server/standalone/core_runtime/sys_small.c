@@ -18,7 +18,8 @@ qboolean Sys_InfoChanged(void)
     return SYS_CONFIGURE_PLATFORM_STUB_RESULT;
 }
 
-qboolean Sys_ConfigureChecksumChanged(int32_t checksum)
+qboolean
+Sys_ConfigureChecksumChanged(int32_t checksum)
 {
     (void)checksum;
     return SYS_CONFIGURE_PLATFORM_STUB_RESULT;

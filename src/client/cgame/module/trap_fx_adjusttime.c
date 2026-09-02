@@ -42,5 +42,6 @@
  */
 void trap_MSS_FadeAllSounds(float targetVolume, int32_t durationMsec)
 {
-    cgame_syscall(CG_MSS_FADE_ALL_SOUNDS, CG_FloatBits(targetVolume), durationMsec);
+    cgame_syscall(CG_MSS_FADE_ALL_SOUNDS, CG_FloatBits(targetVolume),
+                  durationMsec);
 }

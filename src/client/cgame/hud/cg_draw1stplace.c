@@ -79,7 +79,9 @@
 //   cgame_syscall(CG_R_TEXT_PAINT, bits(obj->x), bits(obj->y), arg0, arg1, arg2,
 //                 va("%2i", formattedValue), 0, 0, arg3)
 
-void CG_Draw1stPlace(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
+void CG_Draw1stPlace(rectDef_t *obj,
+                     intptr_t arg0, intptr_t arg1, intptr_t arg2,
+                     intptr_t arg3)
 {
     /*
      * Signed int32 config value formatted for the trap-54 HUD string. -9999 is the
@@ -93,6 +95,14 @@ void CG_Draw1stPlace(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2
     if (formattedValue == CG_SCORE_VALUE_UNSET)
         return;
 
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(obj->x), CG_FloatBits(obj->y), arg0, arg1, arg2, (intptr_t)va("%2i", formattedValue), 0, 0,
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(obj->x),
+                  CG_FloatBits(obj->y),
+                  arg0,
+                  arg1,
+                  arg2,
+                  (intptr_t)va("%2i", formattedValue),
+                  0,
+                  0,
                   arg3);
 }

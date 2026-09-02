@@ -61,7 +61,14 @@
  * stores the same six relocated strings at 0x200833e0..0x200833f4. The Linux
  * game table has the same order. The following 0x300823f8 datum is independent,
  * not a seventh entry. */
-const char *const BG_ControllerTagNames[CLIENT_INFO_SPINE_CONTROL_COUNT] = {"back_low", "back_mid", "back_up", "neck", "head", "pelvis"};
+const char *const BG_ControllerTagNames[CLIENT_INFO_SPINE_CONTROL_COUNT] = {
+    "back_low",
+    "back_mid",
+    "back_up",
+    "neck",
+    "head",
+    "pelvis"
+};
 
 static const char BG_ControllerOriginTagName[] = "tag_origin";
 
@@ -70,13 +77,17 @@ static const char BG_ControllerOriginTagName[] = "tag_origin";
 static float bg_compat_controller_frame_scale(float scale)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_mul(x87f_load_i32(bg_compat_animation_frame_time()), x87f_load_f32(scale)));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_i32(bg_compat_animation_frame_time()),
+        x87f_load_f32(scale)));
 #else
-    return (float)((long double)bg_compat_animation_frame_time() * (long double)scale);
+    return (float)((long double)bg_compat_animation_frame_time() *
+                   (long double)scale);
 #endif
 }
 
-void BG_Player_DoControllers(void *dobjOwner, const entityState_t *entity, uint32_t *partBits, clientInfo_t *record)
+void BG_Player_DoControllers(void *dobjOwner, const entityState_t *entity,
+                             uint32_t *partBits, clientInfo_t *record)
 {
     /*
      * 0x3000573a..0x30005741: compute all eight target angle/offset vec3s once into
@@ -117,7 +128,9 @@ void BG_Player_DoControllers(void *dobjOwner, const entityState_t *entity, uint3
          * trap(CG_DOBJ_GET_BONE_INDEX, dobjHandle, cg_spineControlTagNames[i]).
          * A negative result (JL) means the tag is absent -> skip this bone.
          */
-        bg_compat_controller_set_control_tag_angles(dobjOwner, partBits, BG_ControllerTagNames[i], record->controllerAngles[i]);
+        bg_compat_controller_set_control_tag_angles(
+            dobjOwner, partBits, BG_ControllerTagNames[i],
+            record->controllerAngles[i]);
     }
 
     /*
@@ -142,5 +155,7 @@ void BG_Player_DoControllers(void *dobjOwner, const entityState_t *entity, uint3
      * ESI = boneIndex = trap(CG_DOBJ_GET_BONE_INDEX, dobjHandle, "tag_origin").
      * The name string is 0x30071588 (cg_originTagName). Negative -> done.
      */
-    bg_compat_controller_set_local_tag(dobjOwner, partBits, BG_ControllerOriginTagName, record->localTagOffset, record->localTagAngles);
+    bg_compat_controller_set_local_tag(
+        dobjOwner, partBits, BG_ControllerOriginTagName,
+        record->localTagOffset, record->localTagAngles);
 }

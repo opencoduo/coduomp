@@ -27,10 +27,14 @@ typedef struct console_input_field_s {
 } console_input_field_t;
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-_Static_assert(sizeof(console_input_field_t) == 0x11c, "console_input_field_t size mismatch");
-_Static_assert(offsetof(console_input_field_t, widthInPixels) == 0x0c, "console_input_field_t.widthInPixels offset mismatch");
-_Static_assert(offsetof(console_input_field_t, fixedSize) == 0x18, "console_input_field_t.fixedSize offset mismatch");
-_Static_assert(offsetof(console_input_field_t, buffer) == 0x1c, "console_input_field_t.buffer offset mismatch");
+_Static_assert(sizeof(console_input_field_t) == 0x11c,
+               "console_input_field_t size mismatch");
+_Static_assert(offsetof(console_input_field_t, widthInPixels) == 0x0c,
+               "console_input_field_t.widthInPixels offset mismatch");
+_Static_assert(offsetof(console_input_field_t, fixedSize) == 0x18,
+               "console_input_field_t.fixedSize offset mismatch");
+_Static_assert(offsetof(console_input_field_t, buffer) == 0x1c,
+               "console_input_field_t.buffer offset mismatch");
 #endif
 
 #endif

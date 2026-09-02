@@ -69,26 +69,46 @@ typedef struct renderer_light_s {
                                               * CoDUOMP */
 } renderer_light_t;
 
-_Static_assert(sizeof(renderer_light_type_t) == 0x04, "renderer light-type enum width changed");
-_Static_assert(RENDERER_ENTITY_ALIGNOF(renderer_light_type_t) == 0x04, "renderer light-type enum alignment changed");
-_Static_assert(offsetof(renderer_light_t, type) == 0x00, "renderer light type moved");
-_Static_assert(offsetof(renderer_light_t, color) == 0x04, "renderer light normalized color moved");
-_Static_assert(offsetof(renderer_light_t, intensity) == 0x10, "renderer light intensity moved");
-_Static_assert(offsetof(renderer_light_t, ambient) == 0x14, "renderer light ambient color moved");
-_Static_assert(offsetof(renderer_light_t, diffuse) == 0x24, "renderer light diffuse color moved");
-_Static_assert(offsetof(renderer_light_t, specular) == 0x34, "renderer light specular color moved");
-_Static_assert(offsetof(renderer_light_t, position) == 0x44, "renderer light homogeneous position moved");
-_Static_assert(offsetof(renderer_light_t, spotDirection) == 0x54, "renderer light spot direction moved");
-_Static_assert(offsetof(renderer_light_t, constantAttenuation) == 0x60, "renderer light constant attenuation moved");
-_Static_assert(offsetof(renderer_light_t, linearAttenuation) == 0x64, "renderer light linear attenuation moved");
-_Static_assert(offsetof(renderer_light_t, quadraticAttenuation) == 0x68, "renderer light quadratic attenuation moved");
-_Static_assert(offsetof(renderer_light_t, spotExponent) == 0x6c, "renderer light spot exponent moved");
-_Static_assert(offsetof(renderer_light_t, spotCutoff) == 0x70, "renderer light spot cutoff moved");
-_Static_assert(offsetof(renderer_light_t, radius) == 0x74, "renderer light radius moved");
-_Static_assert(offsetof(renderer_light_t, transformedPosition) == 0x78, "renderer light transformed position moved");
-_Static_assert(offsetof(renderer_light_t, overdraw) == 0x84, "renderer light dormant overdraw slot moved");
-_Static_assert(RENDERER_ENTITY_ALIGNOF(renderer_light_t) == 0x04, "renderer light alignment changed");
-_Static_assert(sizeof(renderer_light_t) == 0x88, "renderer light size changed");
+_Static_assert(sizeof(renderer_light_type_t) == 0x04,
+               "renderer light-type enum width changed");
+_Static_assert(RENDERER_ENTITY_ALIGNOF(renderer_light_type_t) == 0x04,
+               "renderer light-type enum alignment changed");
+_Static_assert(offsetof(renderer_light_t, type) == 0x00,
+               "renderer light type moved");
+_Static_assert(offsetof(renderer_light_t, color) == 0x04,
+               "renderer light normalized color moved");
+_Static_assert(offsetof(renderer_light_t, intensity) == 0x10,
+               "renderer light intensity moved");
+_Static_assert(offsetof(renderer_light_t, ambient) == 0x14,
+               "renderer light ambient color moved");
+_Static_assert(offsetof(renderer_light_t, diffuse) == 0x24,
+               "renderer light diffuse color moved");
+_Static_assert(offsetof(renderer_light_t, specular) == 0x34,
+               "renderer light specular color moved");
+_Static_assert(offsetof(renderer_light_t, position) == 0x44,
+               "renderer light homogeneous position moved");
+_Static_assert(offsetof(renderer_light_t, spotDirection) == 0x54,
+               "renderer light spot direction moved");
+_Static_assert(offsetof(renderer_light_t, constantAttenuation) == 0x60,
+               "renderer light constant attenuation moved");
+_Static_assert(offsetof(renderer_light_t, linearAttenuation) == 0x64,
+               "renderer light linear attenuation moved");
+_Static_assert(offsetof(renderer_light_t, quadraticAttenuation) == 0x68,
+               "renderer light quadratic attenuation moved");
+_Static_assert(offsetof(renderer_light_t, spotExponent) == 0x6c,
+               "renderer light spot exponent moved");
+_Static_assert(offsetof(renderer_light_t, spotCutoff) == 0x70,
+               "renderer light spot cutoff moved");
+_Static_assert(offsetof(renderer_light_t, radius) == 0x74,
+               "renderer light radius moved");
+_Static_assert(offsetof(renderer_light_t, transformedPosition) == 0x78,
+               "renderer light transformed position moved");
+_Static_assert(offsetof(renderer_light_t, overdraw) == 0x84,
+               "renderer light dormant overdraw slot moved");
+_Static_assert(RENDERER_ENTITY_ALIGNOF(renderer_light_t) == 0x04,
+               "renderer light alignment changed");
+_Static_assert(sizeof(renderer_light_t) == 0x88,
+               "renderer light size changed");
 
 typedef struct renderer_entity_light_s {
     renderer_light_t *light;
@@ -135,32 +155,56 @@ typedef struct trRefEntity_s {
     cull_result_t cullState;                /* original +0x2b4 */
 } trRefEntity_t;
 
-_Static_assert(sizeof(cull_result_t) == 0x04, "renderer cull-result enum width changed");
-_Static_assert(RENDERER_ENTITY_ALIGNOF(cull_result_t) == 0x04, "renderer cull-result enum alignment changed");
+_Static_assert(sizeof(cull_result_t) == 0x04,
+               "renderer cull-result enum width changed");
+_Static_assert(RENDERER_ENTITY_ALIGNOF(cull_result_t) == 0x04,
+               "renderer cull-result enum alignment changed");
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(renderer_entity_light_t, light) == 0x00, "i386 entity-light pointer moved");
-_Static_assert(offsetof(renderer_entity_light_t, scale) == 0x04, "i386 entity-light scale moved");
-_Static_assert(RENDERER_ENTITY_ALIGNOF(renderer_entity_light_t) == 0x04, "i386 entity-light alignment changed");
-_Static_assert(sizeof(renderer_entity_light_t) == 0x08, "i386 entity-light size changed");
-_Static_assert(offsetof(trRefEntity_t, e) == 0x000, "i386 renderer-entity public prefix moved");
-_Static_assert(offsetof(trRefEntity_t, dlightBits) == 0x09c, "i386 renderer-entity dlight-bit offset changed");
-_Static_assert(offsetof(trRefEntity_t, hasDynamicLights) == 0x0a0, "i386 renderer-entity dynamic-light marker offset changed");
-_Static_assert(offsetof(trRefEntity_t, lightingCalculated) == 0x0a1, "i386 renderer-entity lighting marker offset changed");
-_Static_assert(offsetof(trRefEntity_t, padding0a2) == 0x0a2, "i386 renderer-entity flag padding moved");
-_Static_assert(offsetof(trRefEntity_t, lightDir) == 0x0a4, "i386 renderer-entity light-direction offset changed");
-_Static_assert(offsetof(trRefEntity_t, ambientLight) == 0x0b0, "i386 renderer-entity ambient-light offset changed");
-_Static_assert(offsetof(trRefEntity_t, ambientLightInt) == 0x0bc, "i386 renderer-entity packed-ambient offset changed");
-_Static_assert(offsetof(trRefEntity_t, directedLight) == 0x0c0, "i386 renderer-entity directed-light offset changed");
-_Static_assert(offsetof(trRefEntity_t, lightCount) == 0x0cc, "i386 renderer-entity light-count offset changed");
-_Static_assert(offsetof(trRefEntity_t, lights) == 0x0d0, "i386 renderer-entity light-array offset changed");
-_Static_assert(offsetof(trRefEntity_t, diffuseSunContribution) == 0x110, "i386 renderer-entity diffuse-sun offset changed");
-_Static_assert(offsetof(trRefEntity_t, generatedLights) == 0x114, "i386 renderer-entity generated-light offset changed");
-_Static_assert(offsetof(trRefEntity_t, normalizationTarget) == 0x2ac, "i386 renderer-entity normalization-target offset changed");
-_Static_assert(offsetof(trRefEntity_t, staticModelLighting) == 0x2b0, "i386 renderer-entity static-lighting offset changed");
-_Static_assert(offsetof(trRefEntity_t, cullState) == 0x2b4, "i386 renderer-entity cull-state offset changed");
-_Static_assert(RENDERER_ENTITY_ALIGNOF(trRefEntity_t) == 0x04, "i386 renderer-entity alignment changed");
-_Static_assert(sizeof(trRefEntity_t) == 0x2b8, "i386 renderer-entity size changed");
+_Static_assert(offsetof(renderer_entity_light_t, light) == 0x00,
+               "i386 entity-light pointer moved");
+_Static_assert(offsetof(renderer_entity_light_t, scale) == 0x04,
+               "i386 entity-light scale moved");
+_Static_assert(RENDERER_ENTITY_ALIGNOF(renderer_entity_light_t) == 0x04,
+               "i386 entity-light alignment changed");
+_Static_assert(sizeof(renderer_entity_light_t) == 0x08,
+               "i386 entity-light size changed");
+_Static_assert(offsetof(trRefEntity_t, e) == 0x000,
+               "i386 renderer-entity public prefix moved");
+_Static_assert(offsetof(trRefEntity_t, dlightBits) == 0x09c,
+               "i386 renderer-entity dlight-bit offset changed");
+_Static_assert(offsetof(trRefEntity_t, hasDynamicLights) == 0x0a0,
+               "i386 renderer-entity dynamic-light marker offset changed");
+_Static_assert(offsetof(trRefEntity_t, lightingCalculated) == 0x0a1,
+               "i386 renderer-entity lighting marker offset changed");
+_Static_assert(offsetof(trRefEntity_t, padding0a2) == 0x0a2,
+               "i386 renderer-entity flag padding moved");
+_Static_assert(offsetof(trRefEntity_t, lightDir) == 0x0a4,
+               "i386 renderer-entity light-direction offset changed");
+_Static_assert(offsetof(trRefEntity_t, ambientLight) == 0x0b0,
+               "i386 renderer-entity ambient-light offset changed");
+_Static_assert(offsetof(trRefEntity_t, ambientLightInt) == 0x0bc,
+               "i386 renderer-entity packed-ambient offset changed");
+_Static_assert(offsetof(trRefEntity_t, directedLight) == 0x0c0,
+               "i386 renderer-entity directed-light offset changed");
+_Static_assert(offsetof(trRefEntity_t, lightCount) == 0x0cc,
+               "i386 renderer-entity light-count offset changed");
+_Static_assert(offsetof(trRefEntity_t, lights) == 0x0d0,
+               "i386 renderer-entity light-array offset changed");
+_Static_assert(offsetof(trRefEntity_t, diffuseSunContribution) == 0x110,
+               "i386 renderer-entity diffuse-sun offset changed");
+_Static_assert(offsetof(trRefEntity_t, generatedLights) == 0x114,
+               "i386 renderer-entity generated-light offset changed");
+_Static_assert(offsetof(trRefEntity_t, normalizationTarget) == 0x2ac,
+               "i386 renderer-entity normalization-target offset changed");
+_Static_assert(offsetof(trRefEntity_t, staticModelLighting) == 0x2b0,
+               "i386 renderer-entity static-lighting offset changed");
+_Static_assert(offsetof(trRefEntity_t, cullState) == 0x2b4,
+               "i386 renderer-entity cull-state offset changed");
+_Static_assert(RENDERER_ENTITY_ALIGNOF(trRefEntity_t) == 0x04,
+               "i386 renderer-entity alignment changed");
+_Static_assert(sizeof(trRefEntity_t) == 0x2b8,
+               "i386 renderer-entity size changed");
 #endif
 
 #undef RENDERER_ENTITY_ALIGNOF

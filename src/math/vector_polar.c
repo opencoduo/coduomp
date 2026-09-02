@@ -30,12 +30,22 @@ void VectorPolar(vec3_t output, float radius, float angle)
     coduo_x87_sincosf(angle, &secondSine, &secondCosine);
 
 #if EMULATE_X87
-    output[0] = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(secondCosine), x87f_load_f32(firstCosine)), x87f_load_f32(radius)));
-    output[1] = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(secondCosine), x87f_load_f32(firstSine)), x87f_load_f32(radius)));
-    output[2] = x87f_store_f32(x87f_mul(x87f_load_f32(secondSine), x87f_load_f32(radius)));
+    output[0] = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(secondCosine),
+                 x87f_load_f32(firstCosine)),
+        x87f_load_f32(radius)));
+    output[1] = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(secondCosine),
+                 x87f_load_f32(firstSine)),
+        x87f_load_f32(radius)));
+    output[2] = x87f_store_f32(
+        x87f_mul(x87f_load_f32(secondSine), x87f_load_f32(radius)));
 #else
-    output[0] = (float)((long double)secondCosine * (long double)firstCosine * (long double)radius);
-    output[1] = (float)((long double)secondCosine * (long double)firstSine * (long double)radius);
-    output[2] = (float)((long double)secondSine * (long double)radius);
+    output[0] = (float)((long double)secondCosine *
+                        (long double)firstCosine * (long double)radius);
+    output[1] = (float)((long double)secondCosine *
+                        (long double)firstSine * (long double)radius);
+    output[2] =
+        (float)((long double)secondSine * (long double)radius);
 #endif
 }

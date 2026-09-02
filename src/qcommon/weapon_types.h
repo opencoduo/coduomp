@@ -37,9 +37,7 @@ typedef enum weaponFieldParseType_e {
     WEAPON_FIELD_PARSE_PROJECTILE_EXPLOSION = 14
 } weaponFieldParseType_t;
 
-enum {
-    WEAPON_FIELD_CUSTOM_TYPE_LIMIT = 15
-};
+enum { WEAPON_FIELD_CUSTOM_TYPE_LIMIT = 15 };
 
 /* The retained weapon-field parser tables and the cgame/game discriminant
  * consumers agree on this five-value projectile-kind domain. */
@@ -136,20 +134,20 @@ typedef enum pmWeaponAnim_e {
 #define PM_WEAPON_ADS_RAISE_THRESHOLD 0.75f
 
 typedef enum weaponState_e {
-    WEAPON_STATE_IDLE = 0,
-    WEAPON_STATE_RAISING = 1,
-    WEAPON_STATE_DROPPING = 2,
-    WEAPON_STATE_FIRING = 3,
-    WEAPON_STATE_RECHAMBERING = 4,
-    WEAPON_STATE_RELOADING = 5,
-    WEAPON_STATE_RELOADING_INTERRUPT = 6,
-    WEAPON_STATE_RELOAD_START = 7,
+    WEAPON_STATE_IDLE                   = 0,
+    WEAPON_STATE_RAISING                = 1,
+    WEAPON_STATE_DROPPING               = 2,
+    WEAPON_STATE_FIRING                 = 3,
+    WEAPON_STATE_RECHAMBERING           = 4,
+    WEAPON_STATE_RELOADING              = 5,
+    WEAPON_STATE_RELOADING_INTERRUPT    = 6,
+    WEAPON_STATE_RELOAD_START           = 7,
     WEAPON_STATE_RELOAD_START_INTERRUPT = 8,
-    WEAPON_STATE_RELOAD_END = 9,
-    WEAPON_STATE_MELEE_WINDUP = 10,
-    WEAPON_STATE_MELEE_RELAX = 11,
-    WEAPON_STATE_DEPLOYING = 12,
-    WEAPON_STATE_BREAKING_DOWN = 13
+    WEAPON_STATE_RELOAD_END             = 9,
+    WEAPON_STATE_MELEE_WINDUP           = 10,
+    WEAPON_STATE_MELEE_RELAX            = 11,
+    WEAPON_STATE_DEPLOYING              = 12,
+    WEAPON_STATE_BREAKING_DOWN          = 13
 } weaponState_t;
 
 /*
@@ -863,11 +861,13 @@ typedef struct weaponInfo_s {
                                * Matches server weaponInfo_s::adsFireDelayOutRate (+0x4b8). */
 } weaponInfo_t;
 
-#define WEAPON_TYPE_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
+#define WEAPON_TYPE_LAYOUT_ASSERT(name_, expression_) \
+    typedef char name_[(expression_) ? 1 : -1]
 
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_type_size, sizeof(weaponType_t) == 4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_class_size, sizeof(weaponClass_t) == 4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_ammo_type_size, sizeof(weaponAmmoType_t) == 4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_ammo_type_size,
+                          sizeof(weaponAmmoType_t) == 4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_slot_size, sizeof(weaponSlot_t) == 4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_pm_weapon_anim_size, sizeof(pmWeaponAnim_t) == 4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_state_size, sizeof(weaponState_t) == 4);
@@ -881,28 +881,48 @@ WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_mode_name_offset, offsetof(weaponInfo_t,
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_weaponType_offset, offsetof(weaponInfo_t, weaponType) == 0x07c);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_weaponClass_offset, offsetof(weaponInfo_t, weaponClass) == 0x080);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_slot_offset, offsetof(weaponInfo_t, slot) == 0x084);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stance_offset, offsetof(weaponInfo_t, stance) == 0x08c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stance_offset,
+                 offsetof(weaponInfo_t, stance) == 0x08c);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ammo_type_offset, offsetof(weaponInfo_t, ammoType) == 0x090);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pickup_sound_offset, offsetof(weaponInfo_t, pickupSound) == 0x09c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_loop_sound_offset, offsetof(weaponInfo_t, loopFireSound) == 0x0b0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_stop_sound_offset, offsetof(weaponInfo_t, stopFireSound) == 0x0b4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sprint_move_offset, offsetof(weaponInfo_t, sprintMove) == 0x11c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sprint_rot_offset, offsetof(weaponInfo_t, sprintRot) == 0x128);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stand_move_offset, offsetof(weaponInfo_t, standMove) == 0x134);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stand_rot_offset, offsetof(weaponInfo_t, standRot) == 0x140);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ducked_move_offset, offsetof(weaponInfo_t, duckedMove) == 0x158);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ducked_rot_offset, offsetof(weaponInfo_t, duckedRot) == 0x164);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_prone_move_offset, offsetof(weaponInfo_t, proneMove) == 0x17c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_prone_rot_offset, offsetof(weaponInfo_t, proneRot) == 0x188);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_move_rate_offset, offsetof(weaponInfo_t, moveSmooth) == 0x194);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_prone_move_rate_offset, offsetof(weaponInfo_t, moveSmoothProne) == 0x198);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_rot_rate_offset, offsetof(weaponInfo_t, posRotRate) == 0x1ac);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_prone_rot_rate_offset, offsetof(weaponInfo_t, posProneRotRate) == 0x1b0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sprint_rot_min_speed_offset, offsetof(weaponInfo_t, sprintRotMinSpeed) == 0x1b4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_script_classname_offset, offsetof(weaponInfo_t, scriptClassname) == 0x1c4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pickup_model_offset, offsetof(weaponInfo_t, pickupModel) == 0x1cc);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hud_icon_offset, offsetof(weaponInfo_t, hudIcon) == 0x1d4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_mode_icon_offset, offsetof(weaponInfo_t, modeIcon) == 0x1d8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_loop_sound_offset,
+                 offsetof(weaponInfo_t, loopFireSound) == 0x0b0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_stop_sound_offset,
+                 offsetof(weaponInfo_t, stopFireSound) == 0x0b4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sprint_move_offset,
+                 offsetof(weaponInfo_t, sprintMove) == 0x11c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sprint_rot_offset,
+                 offsetof(weaponInfo_t, sprintRot) == 0x128);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stand_move_offset,
+                 offsetof(weaponInfo_t, standMove) == 0x134);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stand_rot_offset,
+                 offsetof(weaponInfo_t, standRot) == 0x140);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ducked_move_offset,
+                 offsetof(weaponInfo_t, duckedMove) == 0x158);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ducked_rot_offset,
+                 offsetof(weaponInfo_t, duckedRot) == 0x164);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_prone_move_offset,
+                 offsetof(weaponInfo_t, proneMove) == 0x17c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_prone_rot_offset,
+                 offsetof(weaponInfo_t, proneRot) == 0x188);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_move_rate_offset,
+                 offsetof(weaponInfo_t, moveSmooth) == 0x194);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_prone_move_rate_offset,
+                 offsetof(weaponInfo_t, moveSmoothProne) == 0x198);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_rot_rate_offset,
+                 offsetof(weaponInfo_t, posRotRate) == 0x1ac);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pos_prone_rot_rate_offset,
+                 offsetof(weaponInfo_t, posProneRotRate) == 0x1b0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sprint_rot_min_speed_offset,
+                 offsetof(weaponInfo_t, sprintRotMinSpeed) == 0x1b4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_script_classname_offset,
+                 offsetof(weaponInfo_t, scriptClassname) == 0x1c4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_pickup_model_offset,
+                 offsetof(weaponInfo_t, pickupModel) == 0x1cc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hud_icon_offset,
+                 offsetof(weaponInfo_t, hudIcon) == 0x1d4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_mode_icon_offset,
+                 offsetof(weaponInfo_t, modeIcon) == 0x1d8);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ammo_icon_offset, offsetof(weaponInfo_t, ammoIcon) == 0x1dc);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_start_ammo_offset, offsetof(weaponInfo_t, startAmmo) == 0x1e0);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ammo_name_offset, offsetof(weaponInfo_t, ammoName) == 0x1e4);
@@ -911,142 +931,262 @@ WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clip_name_offset, offsetof(weaponInfo_t,
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clip_index_offset, offsetof(weaponInfo_t, clipIndex) == 0x1f0);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ammo_max_offset, offsetof(weaponInfo_t, maxAmmo) == 0x1f4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clip_size_offset, offsetof(weaponInfo_t, clipSize) == 0x1f8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_shared_ammo_cap_name_offset, offsetof(weaponInfo_t, sharedAmmoCapName) == 0x1fc);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_shared_ammo_cap_size_offset, offsetof(weaponInfo_t, sharedAmmoCap) == 0x204);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_flame_damage_offset, offsetof(weaponInfo_t, flameDamage) == 0x208);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_grenade_touch_damage_enabled_offset, offsetof(weaponInfo_t, grenadeTouchDamageEnabled) == 0x20c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_shared_ammo_cap_name_offset,
+                 offsetof(weaponInfo_t, sharedAmmoCapName) == 0x1fc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_shared_ammo_cap_size_offset,
+                 offsetof(weaponInfo_t, sharedAmmoCap) == 0x204);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_flame_damage_offset,
+                 offsetof(weaponInfo_t, flameDamage) == 0x208);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_grenade_touch_damage_enabled_offset,
+                 offsetof(weaponInfo_t, grenadeTouchDamageEnabled) == 0x20c);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_damage_falloff_min_damage_percent_offset,
-                          offsetof(weaponInfo_t, damageFalloffMinDamagePercent) == 0x210);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_damage_falloff_min_range_offset, offsetof(weaponInfo_t, damageFalloffMinRange) == 0x214);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_damage_falloff_max_range_offset, offsetof(weaponInfo_t, damageFalloffMaxRange) == 0x218);
+                 offsetof(weaponInfo_t, damageFalloffMinDamagePercent) == 0x210);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_damage_falloff_min_range_offset,
+                 offsetof(weaponInfo_t, damageFalloffMinRange) == 0x214);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_damage_falloff_max_range_offset,
+                 offsetof(weaponInfo_t, damageFalloffMaxRange) == 0x218);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_melee_damage_offset, offsetof(weaponInfo_t, meleeDamage) == 0x21c);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fire_delay_offset, offsetof(weaponInfo_t, fireDelay) == 0x224);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reload_time_offset, offsetof(weaponInfo_t, reloadTime) == 0x240);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_movement_speed_scale_offset, offsetof(weaponInfo_t, moveSpeedScale) == 0x26c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sensitivity_offset, offsetof(weaponInfo_t, adsSensitivity) == 0x270);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_zoom_fov_offset, offsetof(weaponInfo_t, adsZoomFov) == 0x274);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_decay_rate_offset, offsetof(weaponInfo_t, aimSpreadDecayRate) == 0x2a8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fire_aim_spread_scale_offset, offsetof(weaponInfo_t, fireAimSpreadScale) == 0x2ac);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_overlay_reticle_offset, offsetof(weaponInfo_t, adsOverlayReticle) == 0x284);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_turn_rate_offset, offsetof(weaponInfo_t, aimSpreadTurnRate) == 0x2b0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_move_add_offset, offsetof(weaponInfo_t, aimSpreadMoveAdd) == 0x2b4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_crouch_scale_offset, offsetof(weaponInfo_t, aimSpreadCrouchScale) == 0x2b8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_prone_scale_offset, offsetof(weaponInfo_t, aimSpreadProneScale) == 0x2bc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sensitivity_offset,
+                 offsetof(weaponInfo_t, adsSensitivity) == 0x270);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_zoom_fov_offset,
+                 offsetof(weaponInfo_t, adsZoomFov) == 0x274);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_decay_rate_offset,
+                 offsetof(weaponInfo_t, aimSpreadDecayRate) == 0x2a8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fire_aim_spread_scale_offset,
+                 offsetof(weaponInfo_t, fireAimSpreadScale) == 0x2ac);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_overlay_reticle_offset,
+                 offsetof(weaponInfo_t, adsOverlayReticle) == 0x284);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_turn_rate_offset,
+                 offsetof(weaponInfo_t, aimSpreadTurnRate) == 0x2b0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_move_add_offset,
+                 offsetof(weaponInfo_t, aimSpreadMoveAdd) == 0x2b4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_crouch_scale_offset,
+                 offsetof(weaponInfo_t, aimSpreadCrouchScale) == 0x2b8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aim_spread_prone_scale_offset,
+                 offsetof(weaponInfo_t, aimSpreadProneScale) == 0x2bc);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_in_time_offset, offsetof(weaponInfo_t, adsInTime) == 0x2c4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_out_time_offset, offsetof(weaponInfo_t, adsOutTime) == 0x2c8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_max_angle_offset, offsetof(weaponInfo_t, swayMaxAngle) == 0x2e4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_lerp_speed_offset, offsetof(weaponInfo_t, swayLerpSpeed) == 0x2e8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_pitch_scale_offset, offsetof(weaponInfo_t, swayPitchScale) == 0x2ec);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_yaw_scale_offset, offsetof(weaponInfo_t, swayYawScale) == 0x2f0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_horiz_scale_offset, offsetof(weaponInfo_t, swayHorizScale) == 0x2f4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_vert_scale_offset, offsetof(weaponInfo_t, swayVertScale) == 0x2f8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_max_angle_offset, offsetof(weaponInfo_t, adsSwayMaxAngle) == 0x300);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_lerp_speed_offset, offsetof(weaponInfo_t, adsSwayLerpSpeed) == 0x304);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_pitch_scale_offset, offsetof(weaponInfo_t, adsSwayPitchScale) == 0x308);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_yaw_scale_offset, offsetof(weaponInfo_t, adsSwayYawScale) == 0x30c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_horiz_scale_offset, offsetof(weaponInfo_t, adsSwayHorizScale) == 0x310);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_vert_scale_offset, offsetof(weaponInfo_t, adsSwayVertScale) == 0x314);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_max_angle_offset,
+                 offsetof(weaponInfo_t, swayMaxAngle) == 0x2e4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_lerp_speed_offset,
+                 offsetof(weaponInfo_t, swayLerpSpeed) == 0x2e8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_pitch_scale_offset,
+                 offsetof(weaponInfo_t, swayPitchScale) == 0x2ec);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_yaw_scale_offset,
+                 offsetof(weaponInfo_t, swayYawScale) == 0x2f0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_horiz_scale_offset,
+                 offsetof(weaponInfo_t, swayHorizScale) == 0x2f4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sway_vert_scale_offset,
+                 offsetof(weaponInfo_t, swayVertScale) == 0x2f8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_max_angle_offset,
+                 offsetof(weaponInfo_t, adsSwayMaxAngle) == 0x300);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_lerp_speed_offset,
+                 offsetof(weaponInfo_t, adsSwayLerpSpeed) == 0x304);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_pitch_scale_offset,
+                 offsetof(weaponInfo_t, adsSwayPitchScale) == 0x308);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_yaw_scale_offset,
+                 offsetof(weaponInfo_t, adsSwayYawScale) == 0x30c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_horiz_scale_offset,
+                 offsetof(weaponInfo_t, adsSwayHorizScale) == 0x310);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_sway_vert_scale_offset,
+                 offsetof(weaponInfo_t, adsSwayVertScale) == 0x314);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_two_handed_offset, offsetof(weaponInfo_t, twoHanded) == 0x318);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_weapon_time_hold_offset, offsetof(weaponInfo_t, weaponTimeHold) == 0x320);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_enabled_offset, offsetof(weaponInfo_t, adsEnabled) == 0x328);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_raise_enabled_offset, offsetof(weaponInfo_t, adsRaiseEnabled) == 0x32c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_fire_delay_enabled_offset, offsetof(weaponInfo_t, adsFireDelayEnabled) == 0x348);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_kill_icon_offset, offsetof(weaponInfo_t, killIcon) == 0x350);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_alt_weapon_name_offset, offsetof(weaponInfo_t, altWeaponName) == 0x368);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_alt_weapon_offset, offsetof(weaponInfo_t, altWeapon) == 0x36c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_splash_radius_offset, offsetof(weaponInfo_t, missileSplashRadius) == 0x378);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_splash_damage_offset, offsetof(weaponInfo_t, missileSplashDamage) == 0x37c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_splash_min_damage_offset, offsetof(weaponInfo_t, missileSplashMinDamage) == 0x380);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_speed_offset, offsetof(weaponInfo_t, missileSpeed) == 0x384);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_vertical_speed_offset, offsetof(weaponInfo_t, missileVerticalSpeed) == 0x388);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clip_model_offset, offsetof(weaponInfo_t, clipModel) == 0x38c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_projectile_explosion_type_offset, offsetof(weaponInfo_t, projectileExplosionType) == 0x390);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_projectile_explosion_effect_offset, offsetof(weaponInfo_t, projectileExplosionEffect) == 0x394);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_projectile_trail_effect_offset, offsetof(weaponInfo_t, projectileTrailEffect) == 0x3b4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_count_offset, offsetof(weaponInfo_t, artilleryBarrageCount) == 0x3a0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_spread_offset, offsetof(weaponInfo_t, artilleryBarrageSpread) == 0x3a4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_first_delay_offset, offsetof(weaponInfo_t, artilleryBarrageFirstDelay) == 0x3a8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_delay_min_offset, offsetof(weaponInfo_t, artilleryBarrageDelayMin) == 0x3ac);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_delay_max_offset, offsetof(weaponInfo_t, artilleryBarrageDelayMax) == 0x3b0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reload_loop_time_offset, offsetof(weaponInfo_t, reloadLoopTime) == 0x460);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ai_effective_range_offset, offsetof(weaponInfo_t, aiEffectiveRange) == 0x458);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ai_miss_range_offset, offsetof(weaponInfo_t, aiMissRange) == 0x45c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_left_arc_offset, offsetof(weaponInfo_t, turretLeftArcDefault) == 0x468);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_right_arc_offset, offsetof(weaponInfo_t, turretRightArcDefault) == 0x46c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_top_arc_offset, offsetof(weaponInfo_t, turretTopArcDefault) == 0x470);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_bottom_arc_offset, offsetof(weaponInfo_t, turretBottomArcDefault) == 0x474);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_pitch_rate_offset, offsetof(weaponInfo_t, turretPitchRate) == 0x47c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_yaw_rate_offset, offsetof(weaponInfo_t, turretYawRate) == 0x480);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_anim_horizontal_rotate_increment_offset, offsetof(weaponInfo_t, animHorRotateInc) == 0x48c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_player_spacing_offset, offsetof(weaponInfo_t, turretPlayerSpacing) == 0x490);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hint_string_offset, offsetof(weaponInfo_t, hintString) == 0x494);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hint_string_index_offset, offsetof(weaponInfo_t, hintStringIndex) == 0x498);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_heat_per_shot_offset, offsetof(weaponInfo_t, turretHeatPerShot) == 0x49c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_heat_decay_offset, offsetof(weaponInfo_t, turretHeatDecay) == 0x4a0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_horizontal_view_jitter_offset, offsetof(weaponInfo_t, horizViewJitter) == 0x4a4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_vertical_view_jitter_offset, offsetof(weaponInfo_t, vertViewJitter) == 0x4a8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_raise_enabled_offset,
+                 offsetof(weaponInfo_t, adsRaiseEnabled) == 0x32c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ads_fire_delay_enabled_offset,
+                 offsetof(weaponInfo_t, adsFireDelayEnabled) == 0x348);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_kill_icon_offset,
+                 offsetof(weaponInfo_t, killIcon) == 0x350);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_alt_weapon_name_offset,
+                 offsetof(weaponInfo_t, altWeaponName) == 0x368);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_alt_weapon_offset,
+                 offsetof(weaponInfo_t, altWeapon) == 0x36c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_splash_radius_offset,
+                 offsetof(weaponInfo_t, missileSplashRadius) == 0x378);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_splash_damage_offset,
+                 offsetof(weaponInfo_t, missileSplashDamage) == 0x37c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_splash_min_damage_offset,
+                 offsetof(weaponInfo_t, missileSplashMinDamage) == 0x380);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_speed_offset,
+                 offsetof(weaponInfo_t, missileSpeed) == 0x384);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_missile_vertical_speed_offset,
+                 offsetof(weaponInfo_t, missileVerticalSpeed) == 0x388);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clip_model_offset,
+                 offsetof(weaponInfo_t, clipModel) == 0x38c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_projectile_explosion_type_offset,
+                 offsetof(weaponInfo_t, projectileExplosionType) == 0x390);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_projectile_explosion_effect_offset,
+                 offsetof(weaponInfo_t, projectileExplosionEffect) == 0x394);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_projectile_trail_effect_offset,
+                 offsetof(weaponInfo_t, projectileTrailEffect) == 0x3b4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_count_offset,
+                 offsetof(weaponInfo_t, artilleryBarrageCount) == 0x3a0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_spread_offset,
+                 offsetof(weaponInfo_t, artilleryBarrageSpread) == 0x3a4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_first_delay_offset,
+                 offsetof(weaponInfo_t, artilleryBarrageFirstDelay) == 0x3a8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_delay_min_offset,
+                 offsetof(weaponInfo_t, artilleryBarrageDelayMin) == 0x3ac);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_artillery_barrage_delay_max_offset,
+                 offsetof(weaponInfo_t, artilleryBarrageDelayMax) == 0x3b0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reload_loop_time_offset,
+                 offsetof(weaponInfo_t, reloadLoopTime) == 0x460);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ai_effective_range_offset,
+                 offsetof(weaponInfo_t, aiEffectiveRange) == 0x458);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ai_miss_range_offset,
+                 offsetof(weaponInfo_t, aiMissRange) == 0x45c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_left_arc_offset,
+                 offsetof(weaponInfo_t, turretLeftArcDefault) == 0x468);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_right_arc_offset,
+                 offsetof(weaponInfo_t, turretRightArcDefault) == 0x46c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_top_arc_offset,
+                 offsetof(weaponInfo_t, turretTopArcDefault) == 0x470);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_bottom_arc_offset,
+                 offsetof(weaponInfo_t, turretBottomArcDefault) == 0x474);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_pitch_rate_offset,
+                 offsetof(weaponInfo_t, turretPitchRate) == 0x47c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_yaw_rate_offset,
+                 offsetof(weaponInfo_t, turretYawRate) == 0x480);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_anim_horizontal_rotate_increment_offset,
+                 offsetof(weaponInfo_t, animHorRotateInc) == 0x48c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_player_spacing_offset,
+                 offsetof(weaponInfo_t, turretPlayerSpacing) == 0x490);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hint_string_offset,
+                 offsetof(weaponInfo_t, hintString) == 0x494);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hint_string_index_offset,
+                 offsetof(weaponInfo_t, hintStringIndex) == 0x498);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_heat_per_shot_offset,
+                 offsetof(weaponInfo_t, turretHeatPerShot) == 0x49c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_turret_heat_decay_offset,
+                 offsetof(weaponInfo_t, turretHeatDecay) == 0x4a0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_horizontal_view_jitter_offset,
+                 offsetof(weaponInfo_t, horizViewJitter) == 0x4a4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_vertical_view_jitter_offset,
+                 offsetof(weaponInfo_t, vertViewJitter) == 0x4a8);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_grenade_splash_vehicle_damage_scale_offset,
-                          offsetof(weaponInfo_t, grenadeSplashVehicleDamageScale) == 0x4ac);
+                 offsetof(weaponInfo_t, grenadeSplashVehicleDamageScale) == 0x4ac);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_script_offset, offsetof(weaponInfo_t, script) == 0x4b0);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsFireDelayRate_offset, offsetof(weaponInfo_t, adsFireDelayRate) == 0x4b4);
 WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsFireDelayOutRate_offset, offsetof(weaponInfo_t, adsFireDelayOutRate) == 0x4b8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aiOverlayDescription_offset, offsetof(weaponInfo_t, aiOverlayDescription) == 0x0c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_gunModel_offset, offsetof(weaponInfo_t, gunModel) == 0x10);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleAnim_offset, offsetof(weaponInfo_t, idleAnim) == 0x1c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsDownAnim_offset, offsetof(weaponInfo_t, adsDownAnim) == 0x74);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stackable_offset, offsetof(weaponInfo_t, stackable) == 0x88);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsZoomInFrac_offset, offsetof(weaponInfo_t, adsZoomInFrac) == 0x278);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsZoomOutFrac_offset, offsetof(weaponInfo_t, adsZoomOutFrac) == 0x27c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsOverlayShader_offset, offsetof(weaponInfo_t, adsOverlayShader) == 0x280);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsBobFactor_offset, offsetof(weaponInfo_t, adsBobFactor) == 0x290);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewBobScale_offset, offsetof(weaponInfo_t, adsViewBobScale) == 0x294);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayAds_offset, offsetof(weaponInfo_t, idleSwayAds) == 0x2cc);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayHip_offset, offsetof(weaponInfo_t, idleSwayHip) == 0x2d0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayCrouchScale_offset, offsetof(weaponInfo_t, idleSwayCrouchScale) == 0x2d4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayProneScale_offset, offsetof(weaponInfo_t, idleSwayProneScale) == 0x2d8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_gunMaxPitch_offset, offsetof(weaponInfo_t, gunMaxPitch) == 0x2dc);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_gunMaxYaw_offset, offsetof(weaponInfo_t, gunMaxYaw) == 0x2e0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilReturnAds_offset, offsetof(weaponInfo_t, recoilReturnAds) == 0x3e4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilFrictionAds_offset, offsetof(weaponInfo_t, recoilFrictionAds) == 0x3f0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilReturnHip_offset, offsetof(weaponInfo_t, recoilReturnHip) == 0x42c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilFrictionHip_offset, offsetof(weaponInfo_t, recoilFrictionHip) == 0x438);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_swayShellShockScale_offset, offsetof(weaponInfo_t, swayShellShockScale) == 0x2fc);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clipRequired_offset, offsetof(weaponInfo_t, clipRequired) == 0x340);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewErrorMin_offset, offsetof(weaponInfo_t, adsViewErrorMin) == 0x330);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewErrorMax_offset, offsetof(weaponInfo_t, adsViewErrorMax) == 0x334);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsPitchOffset_offset, offsetof(weaponInfo_t, adsPitchOffset) == 0x3c8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_raiseTime_offset, offsetof(weaponInfo_t, raiseTime) == 0x230);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_raiseInterruptTime_offset, offsetof(weaponInfo_t, raiseInterruptTime) == 0x234);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_meleeTime_offset, offsetof(weaponInfo_t, meleeTime) == 0x23c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadEmptyTime_offset, offsetof(weaponInfo_t, reloadEmptyTime) == 0x244);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadAddTime_offset, offsetof(weaponInfo_t, reloadAddTime) == 0x248);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadStartTime_offset, offsetof(weaponInfo_t, reloadStartTime) == 0x24c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadStartAddTime_offset, offsetof(weaponInfo_t, reloadStartAddTime) == 0x250);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_lowerTime_offset, offsetof(weaponInfo_t, lowerTime) == 0x258);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_altSwitchLowerTime_offset, offsetof(weaponInfo_t, altSwitchLowerTime) == 0x260);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_segmentedReload_offset, offsetof(weaponInfo_t, segmentedReload) == 0x35c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadAmmoAdd_offset, offsetof(weaponInfo_t, reloadAmmoAdd) == 0x360);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_raiseEnabled_offset, offsetof(weaponInfo_t, raiseEnabled) == 0x324);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ammoPickupSound_offset, offsetof(weaponInfo_t, ammoPickupSound) == 0xa0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reticleCenter_offset, offsetof(weaponInfo_t, reticleCenter) == 0x108);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reticleSide_offset, offsetof(weaponInfo_t, reticleSide) == 0x10c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_worldModel_offset, offsetof(weaponInfo_t, worldModel) == 0x1c8);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sharedAmmoCapIndex_offset, offsetof(weaponInfo_t, sharedAmmoCapIndex) == 0x200);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_meleeWindup_offset, offsetof(weaponInfo_t, meleeWindup) == 0x228);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireTime_offset, offsetof(weaponInfo_t, fireTime) == 0x22c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_specialFireDelay_offset, offsetof(weaponInfo_t, specialFireDelay) == 0x238);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_specialTimeThreshold_offset, offsetof(weaponInfo_t, specialTimeThreshold) == 0x268);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewKickCenterSpeed_offset, offsetof(weaponInfo_t, adsViewKickCenterSpeed) == 0x404);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hipViewKickCenterSpeed_offset, offsetof(weaponInfo_t, hipViewKickCenterSpeed) == 0x44c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilAdsPitchMin_offset, offsetof(weaponInfo_t, fireRecoilAdsPitchMin) == 0x3d4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilAdsYawMax_offset, offsetof(weaponInfo_t, fireRecoilAdsYawMax) == 0x3e0);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickAdsPitchMin_offset, offsetof(weaponInfo_t, fireViewkickAdsPitchMin) == 0x3f4);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickAdsYawMax_offset, offsetof(weaponInfo_t, fireViewkickAdsYawMax) == 0x400);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilHipPitchMin_offset, offsetof(weaponInfo_t, fireRecoilHipPitchMin) == 0x41c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilHipYawMax_offset, offsetof(weaponInfo_t, fireRecoilHipYawMax) == 0x428);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickHipPitchMin_offset, offsetof(weaponInfo_t, fireViewkickHipPitchMin) == 0x43c);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickHipYawMax_offset, offsetof(weaponInfo_t, fireViewkickHipYawMax) == 0x448);
-WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_size, sizeof(weaponInfo_t) == 0x4bc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_aiOverlayDescription_offset,
+                          offsetof(weaponInfo_t, aiOverlayDescription) == 0x0c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_gunModel_offset,
+                          offsetof(weaponInfo_t, gunModel) == 0x10);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleAnim_offset,
+                          offsetof(weaponInfo_t, idleAnim) == 0x1c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsDownAnim_offset,
+                          offsetof(weaponInfo_t, adsDownAnim) == 0x74);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_stackable_offset,
+                          offsetof(weaponInfo_t, stackable) == 0x88);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsZoomInFrac_offset,
+                          offsetof(weaponInfo_t, adsZoomInFrac) == 0x278);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsZoomOutFrac_offset,
+                          offsetof(weaponInfo_t, adsZoomOutFrac) == 0x27c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsOverlayShader_offset,
+                          offsetof(weaponInfo_t, adsOverlayShader) == 0x280);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsBobFactor_offset,
+                          offsetof(weaponInfo_t, adsBobFactor) == 0x290);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewBobScale_offset,
+                          offsetof(weaponInfo_t, adsViewBobScale) == 0x294);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayAds_offset,
+                          offsetof(weaponInfo_t, idleSwayAds) == 0x2cc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayHip_offset,
+                          offsetof(weaponInfo_t, idleSwayHip) == 0x2d0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayCrouchScale_offset,
+                          offsetof(weaponInfo_t, idleSwayCrouchScale) == 0x2d4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_idleSwayProneScale_offset,
+                          offsetof(weaponInfo_t, idleSwayProneScale) == 0x2d8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_gunMaxPitch_offset,
+                          offsetof(weaponInfo_t, gunMaxPitch) == 0x2dc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_gunMaxYaw_offset,
+                          offsetof(weaponInfo_t, gunMaxYaw) == 0x2e0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilReturnAds_offset,
+                          offsetof(weaponInfo_t, recoilReturnAds) == 0x3e4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilFrictionAds_offset,
+                          offsetof(weaponInfo_t, recoilFrictionAds) == 0x3f0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilReturnHip_offset,
+                          offsetof(weaponInfo_t, recoilReturnHip) == 0x42c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_recoilFrictionHip_offset,
+                          offsetof(weaponInfo_t, recoilFrictionHip) == 0x438);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_swayShellShockScale_offset,
+                          offsetof(weaponInfo_t, swayShellShockScale) == 0x2fc);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_clipRequired_offset,
+                          offsetof(weaponInfo_t, clipRequired) == 0x340);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewErrorMin_offset,
+                          offsetof(weaponInfo_t, adsViewErrorMin) == 0x330);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewErrorMax_offset,
+                          offsetof(weaponInfo_t, adsViewErrorMax) == 0x334);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsPitchOffset_offset,
+                          offsetof(weaponInfo_t, adsPitchOffset) == 0x3c8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_raiseTime_offset,
+                          offsetof(weaponInfo_t, raiseTime) == 0x230);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_raiseInterruptTime_offset,
+                          offsetof(weaponInfo_t, raiseInterruptTime) == 0x234);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_meleeTime_offset,
+                          offsetof(weaponInfo_t, meleeTime) == 0x23c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadEmptyTime_offset,
+                          offsetof(weaponInfo_t, reloadEmptyTime) == 0x244);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadAddTime_offset,
+                          offsetof(weaponInfo_t, reloadAddTime) == 0x248);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadStartTime_offset,
+                          offsetof(weaponInfo_t, reloadStartTime) == 0x24c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadStartAddTime_offset,
+                          offsetof(weaponInfo_t, reloadStartAddTime) == 0x250);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_lowerTime_offset,
+                          offsetof(weaponInfo_t, lowerTime) == 0x258);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_altSwitchLowerTime_offset,
+                          offsetof(weaponInfo_t, altSwitchLowerTime) == 0x260);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_segmentedReload_offset,
+                          offsetof(weaponInfo_t, segmentedReload) == 0x35c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reloadAmmoAdd_offset,
+                          offsetof(weaponInfo_t, reloadAmmoAdd) == 0x360);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_raiseEnabled_offset,
+                          offsetof(weaponInfo_t, raiseEnabled) == 0x324);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_ammoPickupSound_offset,
+                          offsetof(weaponInfo_t, ammoPickupSound) == 0xa0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reticleCenter_offset,
+                          offsetof(weaponInfo_t, reticleCenter) == 0x108);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_reticleSide_offset,
+                          offsetof(weaponInfo_t, reticleSide) == 0x10c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_worldModel_offset,
+                          offsetof(weaponInfo_t, worldModel) == 0x1c8);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_sharedAmmoCapIndex_offset,
+                          offsetof(weaponInfo_t, sharedAmmoCapIndex) == 0x200);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_meleeWindup_offset,
+                          offsetof(weaponInfo_t, meleeWindup) == 0x228);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireTime_offset,
+                          offsetof(weaponInfo_t, fireTime) == 0x22c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_specialFireDelay_offset,
+                          offsetof(weaponInfo_t, specialFireDelay) == 0x238);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_specialTimeThreshold_offset,
+                          offsetof(weaponInfo_t, specialTimeThreshold) == 0x268);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_adsViewKickCenterSpeed_offset,
+                          offsetof(weaponInfo_t, adsViewKickCenterSpeed) == 0x404);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_hipViewKickCenterSpeed_offset,
+                          offsetof(weaponInfo_t, hipViewKickCenterSpeed) == 0x44c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilAdsPitchMin_offset,
+                          offsetof(weaponInfo_t, fireRecoilAdsPitchMin) == 0x3d4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilAdsYawMax_offset,
+                          offsetof(weaponInfo_t, fireRecoilAdsYawMax) == 0x3e0);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickAdsPitchMin_offset,
+                          offsetof(weaponInfo_t, fireViewkickAdsPitchMin) == 0x3f4);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickAdsYawMax_offset,
+                          offsetof(weaponInfo_t, fireViewkickAdsYawMax) == 0x400);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilHipPitchMin_offset,
+                          offsetof(weaponInfo_t, fireRecoilHipPitchMin) == 0x41c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireRecoilHipYawMax_offset,
+                          offsetof(weaponInfo_t, fireRecoilHipYawMax) == 0x428);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickHipPitchMin_offset,
+                          offsetof(weaponInfo_t, fireViewkickHipPitchMin) == 0x43c);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_fireViewkickHipYawMax_offset,
+                          offsetof(weaponInfo_t, fireViewkickHipYawMax) == 0x448);
+WEAPON_TYPE_LAYOUT_ASSERT(q_weapon_info_size,
+                          sizeof(weaponInfo_t) == 0x4bc);
 #endif
 
 #undef WEAPON_TYPE_LAYOUT_ASSERT

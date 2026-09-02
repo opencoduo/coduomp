@@ -55,10 +55,10 @@ void Item_ListBox_Paint(itemDef_t *item)
     listBoxDef_t *listBox;
     int32_t count;   /* EBX: DC->feederCount(item->special) */
     int32_t i;       /* EBP: current element index */
-    float thumb;   /* clamped scrollbar-thumb draw coordinate */
-    float x;       /* running paint x (rect.x + 1, advanced by elementWidth) */
-    float y;       /* running paint y (rect.y + 1, advanced by elementHeight) */
-    float remaining; /* remaining scroll-axis length budget for elements */
+    float   thumb;   /* clamped scrollbar-thumb draw coordinate */
+    float   x;       /* running paint x (rect.x + 1, advanced by elementWidth) */
+    float   y;       /* running paint y (rect.y + 1, advanced by elementHeight) */
+    float   remaining; /* remaining scroll-axis length budget for elements */
     long double thumbMax;
 
     /* 0x300576d6: only validated listbox items paint here; anything else is an
@@ -86,12 +86,15 @@ void Item_ListBox_Paint(itemDef_t *item)
         /* Scroll axis is X; arrows sit at the bottom-left/right of the item. */
 
         float leftX = (float)((long double)item->window.rect.x + 1.0f);
-        float barY = (float)((long double)item->window.rect.h + item->window.rect.y - SCROLLBAR_SIZE - 1.0f);
+        float barY =
+            (float)((long double)item->window.rect.h + item->window.rect.y -
+                    SCROLLBAR_SIZE - 1.0f);
         displayContextDef_t *display = DC;
         qhandle_t shader = display->scrollBarArrowLeft;
 
         /* 0x3005775e: left arrow; display was reloaded after feederCount. */
-        display->drawHandlePic(leftX, barY, SCROLLBAR_SIZE, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(leftX, barY, SCROLLBAR_SIZE, SCROLLBAR_SIZE,
+                               shader);
 
         /* 0x300577a4: the track, spanning (rect.w - 32) + 1 between the two
          * arrows. Its y is the SAME EBP value computed once at 0x3005773e-
@@ -101,16 +104,20 @@ void Item_ListBox_Paint(itemDef_t *item)
         float trackX = (float)((long double)leftX + 15.0f);
         display = DC;
         shader = display->scrollBar;
-        float trackWidthBase = (float)((long double)item->window.rect.w - 32.0f);
+        float trackWidthBase =
+            (float)((long double)item->window.rect.w - 32.0f);
         float trackWidth = (float)((long double)trackWidthBase + 1.0f);
-        display->drawHandlePic(trackX, barY, trackWidth, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(trackX, barY, trackWidth, SCROLLBAR_SIZE,
+                               shader);
 
         /* 0x300577d5: right arrow at the far end of the track; y is the same
          * shared EBP again (0x300577cb PUSH EBP). */
-        float rightX = (float)((long double)trackWidthBase - 1.0f + trackX);
+        float rightX =
+            (float)((long double)trackWidthBase - 1.0f + trackX);
         display = DC;
         shader = display->scrollBarArrowRight;
-        display->drawHandlePic(rightX, barY, SCROLLBAR_SIZE, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(rightX, barY, SCROLLBAR_SIZE, SCROLLBAR_SIZE,
+                               shader);
 
         /* 0x300577db: thumb draw position, clamped so the thumb never runs past
          * the far end of the track (0x30057800 FCOMP/clamp). The clamp base is
@@ -124,7 +131,8 @@ void Item_ListBox_Paint(itemDef_t *item)
         /* 0x3005783f: draw the thumb. */
         display = DC;
         shader = display->scrollBarThumb;
-        display->drawHandlePic(thumb, barY, SCROLLBAR_SIZE, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(thumb, barY, SCROLLBAR_SIZE, SCROLLBAR_SIZE,
+                               shader);
 
         /* 0x30057842: begin painting elements at the current scroll top. */
         i = listBox->startPos;
@@ -146,7 +154,10 @@ void Item_ListBox_Paint(itemDef_t *item)
             if (image != 0) {
                 /* 0x300578dd: draw the row image inset by 1px, sized to the
                  * element cell minus 2px. */
-                DC->drawHandlePic(x + 1.0f, y + 1.0f, listBox->elementWidth - 2.0f, listBox->elementHeight - 2.0f, image);
+                DC->drawHandlePic(x + 1.0f, y + 1.0f,
+                                    listBox->elementWidth - 2.0f,
+                                    listBox->elementHeight - 2.0f,
+                                    image);
             }
 
             /* 0x300578e3: the selected element gets a border outline
@@ -154,8 +165,11 @@ void Item_ListBox_Paint(itemDef_t *item)
             if (i == item->cursorPos) {
                 /* 0x30057921: drawRect(x, y, elementWidth-1, elementHeight-1,
                  *             size=item->window.borderSize, &borderColor). */
-                DC->drawRect(x, y, listBox->elementWidth - 1.0f, listBox->elementHeight - 1.0f, item->window.borderSize,
-                             item->window.borderColor);
+                DC->drawRect(x, y,
+                               listBox->elementWidth - 1.0f,
+                               listBox->elementHeight - 1.0f,
+                               item->window.borderSize,
+                               item->window.borderColor);
             }
 
             /* 0x30057927-0x30057932: consume one element width from the budget.
@@ -175,7 +189,8 @@ void Item_ListBox_Paint(itemDef_t *item)
             }
             /* 0x3005793c: advance to the next element. */
             x = (float)((long double)x + listBox->elementWidth);
-            listBox->endPos = coduo_int32_from_bits((uint32_t)listBox->endPos + 1u);
+            listBox->endPos =
+                coduo_int32_from_bits((uint32_t)listBox->endPos + 1u);
             i = coduo_int32_from_bits((uint32_t)i + 1u);
             if (i >= count) {                        /* 0x30057951 JL loop */
                 return;
@@ -187,13 +202,16 @@ void Item_ListBox_Paint(itemDef_t *item)
 
         client_ui_compat_sync_server_list_selection(item);
 
-        float barX = (float)((long double)item->window.rect.w + item->window.rect.x - SCROLLBAR_SIZE - 1.0f);
+        float barX =
+            (float)((long double)item->window.rect.w + item->window.rect.x -
+                    SCROLLBAR_SIZE - 1.0f);
         float topY = (float)((long double)item->window.rect.y + 1.0f);
         displayContextDef_t *display = DC;
         qhandle_t shader = display->scrollBarArrowUp;
 
         /* 0x300579b0: up arrow. */
-        display->drawHandlePic(barX, topY, SCROLLBAR_SIZE, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(barX, topY, SCROLLBAR_SIZE, SCROLLBAR_SIZE,
+                               shader);
 
         /* 0x300579bd/0x300579bf: MOV EAX,[EDI]; MOV [EDI+4],EAX -- reset endPos to
          * startPos at the top of the vertical path, mirroring the horizontal path
@@ -210,16 +228,21 @@ void Item_ListBox_Paint(itemDef_t *item)
         float trackY = (float)((long double)topY + 15.0f);
         display = DC;
         shader = display->scrollBar;
-        float trackHeightBase = (float)((long double)item->window.rect.h - 32.0f);
-        float trackHeight = (float)((long double)trackHeightBase + 1.0f);
-        display->drawHandlePic(barX, trackY, SCROLLBAR_SIZE, trackHeight, shader);
+        float trackHeightBase =
+            (float)((long double)item->window.rect.h - 32.0f);
+        float trackHeight =
+            (float)((long double)trackHeightBase + 1.0f);
+        display->drawHandlePic(barX, trackY, SCROLLBAR_SIZE, trackHeight,
+                               shader);
 
         /* 0x30057a2c: down arrow at the far (bottom) end of the track; x is the
          * same shared EBP again (0x30057a2b PUSH EBP). */
-        float bottomY = (float)((long double)trackHeightBase - 1.0f + trackY);
+        float bottomY =
+            (float)((long double)trackHeightBase - 1.0f + trackY);
         display = DC;
         shader = display->scrollBarArrowDown;
-        display->drawHandlePic(barX, bottomY, SCROLLBAR_SIZE, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(barX, bottomY, SCROLLBAR_SIZE, SCROLLBAR_SIZE,
+                               shader);
 
         /* 0x30057a32: thumb draw position, clamped to the track end. The clamp
          * base is the down-arrow y saved into the [ESP+0x10] slot at 0x30057a22
@@ -232,7 +255,8 @@ void Item_ListBox_Paint(itemDef_t *item)
         /* 0x30057a84: draw the thumb (x = the shared EBP, 0x30057a83 PUSH EBP). */
         display = DC;
         shader = display->scrollBarThumb;
-        display->drawHandlePic(barX, thumb, SCROLLBAR_SIZE, SCROLLBAR_SIZE, shader);
+        display->drawHandlePic(barX, thumb, SCROLLBAR_SIZE, SCROLLBAR_SIZE,
+                               shader);
 
         remaining = (float)((long double)item->window.rect.h - 2.0f);
         x = (float)((long double)item->window.rect.x + 1.0f);
@@ -246,8 +270,10 @@ void Item_ListBox_Paint(itemDef_t *item)
             /* 0x30057abc: clamp startPos so the last page cannot scroll past the
              * bottom: startPos = min(startPos, count - round(remaining/elementH) + 1). */
             if (count != 0) {
-                int32_t visibleRows = coduo_fp_to_i32_extended((long double)remaining / listBox->elementHeight);
-                int32_t maxTop = coduo_int32_from_bits((uint32_t)count - (uint32_t)visibleRows + 1u);
+                int32_t visibleRows = coduo_fp_to_i32_extended(
+                    (long double)remaining / listBox->elementHeight);
+                int32_t maxTop = coduo_int32_from_bits(
+                    (uint32_t)count - (uint32_t)visibleRows + 1u);
                 if (listBox->startPos > maxTop) {
                     listBox->startPos = maxTop;
                 }
@@ -265,14 +291,20 @@ void Item_ListBox_Paint(itemDef_t *item)
                 int32_t image = DC->feederItemImage(item->special, i);
                 if (image != 0) {
                     /* 0x30057b4b: draw the row image inset by 1px. */
-                    DC->drawHandlePic(x + 1.0f, y + 1.0f, listBox->elementWidth - 2.0f, listBox->elementHeight - 2.0f, image);
+                    DC->drawHandlePic(x + 1.0f, y + 1.0f,
+                                        listBox->elementWidth - 2.0f,
+                                        listBox->elementHeight - 2.0f,
+                                        image);
                 }
                 /* 0x30057b51: selected element outline. */
                 if (i == item->cursorPos) {
                     /* 0x30057b8c: drawRect(x, y, elementWidth-1, elementHeight-1,
                      *             size=borderSize, &borderColor). */
-                    DC->drawRect(x, y, listBox->elementWidth - 1.0f, listBox->elementHeight - 1.0f, item->window.borderSize,
-                                 item->window.borderColor);
+                    DC->drawRect(x, y,
+                                   listBox->elementWidth - 1.0f,
+                                   listBox->elementHeight - 1.0f,
+                                   item->window.borderSize,
+                                   item->window.borderColor);
                 }
                 /* 0x30057b92-0x30057ba4: endPos++, then FSUB [EDI+0x10]
                  * (elementWIDTH, NOT Height -- the DLL decrements the vertical budget
@@ -281,7 +313,8 @@ void Item_ListBox_Paint(itemDef_t *item)
                  * and FCOMP [EDI+0x14] (elementHeight) on the UNROUNDED difference
                  * (Class 8). This width/height asymmetry is a preserved original
                  * quirk -- see the report. */
-                listBox->endPos = coduo_int32_from_bits((uint32_t)listBox->endPos + 1u);
+                listBox->endPos =
+                    coduo_int32_from_bits((uint32_t)listBox->endPos + 1u);
                 {
                     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
                     long double rem = (long double)remaining - listBox->elementWidth;
@@ -289,7 +322,9 @@ void Item_ListBox_Paint(itemDef_t *item)
                     if (rem < listBox->elementHeight) {
                         /* 0x30057e02: publish the leftover run (elementHeight -
                          * remaining, rounded) and stop. */
-                        listBox->drawPadding = coduo_fp_to_i32_extended((long double)listBox->elementHeight - remaining);
+                        listBox->drawPadding =
+                            coduo_fp_to_i32_extended(
+                                (long double)listBox->elementHeight - remaining);
                         return;
                     }
                 }
@@ -297,7 +332,7 @@ void Item_ListBox_Paint(itemDef_t *item)
                  * in [esp+0x24] (stored once at entry, 0x30057717). */
                 y = (float)((long double)y + listBox->elementHeight);
                 i = coduo_int32_from_bits((uint32_t)i + 1u);
-                if (i >= count) { /* 0x30057bbe CMP EBP,[esp+0x24] */
+                if (i >= count) {             /* 0x30057bbe CMP EBP,[esp+0x24] */
                     return;
                 }
             }
@@ -305,17 +340,19 @@ void Item_ListBox_Paint(itemDef_t *item)
             /* ---- Column (multi-cell) vertical list ---- */
             /* 0x30057bd2: same startPos clamp as the simple path. */
             if (count != 0) {
-                int32_t visibleRows = coduo_fp_to_i32_extended((long double)remaining / listBox->elementHeight);
-                int32_t maxTop = coduo_int32_from_bits((uint32_t)count - (uint32_t)visibleRows + 1u);
+                int32_t visibleRows = coduo_fp_to_i32_extended(
+                    (long double)remaining / listBox->elementHeight);
+                int32_t maxTop = coduo_int32_from_bits(
+                    (uint32_t)count - (uint32_t)visibleRows + 1u);
                 if (listBox->startPos > maxTop) {
                     listBox->startPos = maxTop;
                 }
             }
-            if (listBox->startPos < 0) { /* 0x30057bef */
+            if (listBox->startPos < 0) {          /* 0x30057bef */
                 listBox->startPos = 0;
             }
-            i = listBox->startPos; /* 0x30057bfa EBX = row index */
-            if (i >= count) { /* 0x30057bfc CMP; JGE epilogue */
+            i = listBox->startPos;                /* 0x30057bfa EBX = row index */
+            if (i >= count) {                     /* 0x30057bfc CMP; JGE epilogue */
                 return;
             }
 
@@ -332,7 +369,8 @@ void Item_ListBox_Paint(itemDef_t *item)
                     for (column = 0; column < listBox->numColumns; column++) {
                         /* 0x30057c47: fetch this cell's text (and optional image
                          * handle) from the feeder. */
-                        const char *text = DC->feederItemText(item->special, i, column, &handle);
+                        const char *text = DC->feederItemText(item->special, i,
+                                                                column, &handle);
                         if (handle >= 0) {
                             /* 0x30057c8c: cell drawn as an image, a col->width
                              * square at (col->pos + x + 2, rowY + 3). Proven
@@ -342,8 +380,10 @@ void Item_ListBox_Paint(itemDef_t *item)
                              * FADD 3.0f); both size args are (float)col->width. */
                             float cellSize = (float)col->width;
                             float cellY = (float)((long double)y + 3.0f);
-                            float cellX = (float)((long double)col->pos + x + 2.0f);
-                            DC->drawHandlePic(cellX, cellY, cellSize, cellSize, handle);
+                            float cellX =
+                                (float)((long double)col->pos + x + 2.0f);
+                            DC->drawHandlePic(cellX, cellY, cellSize,
+                                                cellSize, handle);
                         } else if (text != NULL) {
                             /* 0x30057ce8: cell drawn as text via drawText. Proven:
                              *   x = col->pos + item->textalignx + x + 4.0f
@@ -356,23 +396,42 @@ void Item_ListBox_Paint(itemDef_t *item)
                              *   color=&item->window.foreColor, style=0,
                              *   limit=col->maxChars (0x30057ca4 MOV ECX,[EBX+0x4];
                              *   0x30057cab PUSH ECX), font=item->textStyle. */
-                            float textY = (float)((long double)item->textaligny + listBox->elementHeight + y);
-                            float textX = (float)((long double)col->pos + item->textalignx + x + 4.0f);
-                            DC->drawText(textX, textY, item->font, item->textscale, item->window.foreColor, text, 0, col->maxChars,
-                                         item->textStyle);
+                            float textY =
+                                (float)((long double)item->textaligny +
+                                        listBox->elementHeight + y);
+                            float textX =
+                                (float)((long double)col->pos +
+                                        item->textalignx + x + 4.0f);
+                            DC->drawText(
+                                textX, textY,
+                                item->font,
+                                item->textscale,
+                                item->window.foreColor,
+                                text,
+                                0, col->maxChars,
+                                item->textStyle);
                         }
-                        col++; /* advance one columnInfo_t (0xc bytes); 0x30057cf9 ADD EBX,0xc */
+                        col++;  /* advance one columnInfo_t (0xc bytes); 0x30057cf9 ADD EBX,0xc */
                     }
                 } else {
                     /* 0x30057d03: single-column row — one feeder text cell. */
-                    const char *text = DC->feederItemText(item->special, i, 0, &handle);
+                    const char *text = DC->feederItemText(item->special, i,
+                                                            0, &handle);
                     if (handle < 0 && text != NULL) {
                         /* 0x30057d6c: drawText(rowX + 4.0f, y + elementHeight,
                          *             adjust=font, scale=textscale,
                          *             &foreColor, text, 0, 0, font). */
-                        float textY = (float)((long double)y + listBox->elementHeight);
+                        float textY =
+                            (float)((long double)y + listBox->elementHeight);
                         float textX = (float)((long double)x + 4.0f);
-                        DC->drawText(textX, textY, item->font, item->textscale, item->window.foreColor, text, 0, 0, item->textStyle);
+                        DC->drawText(
+                            textX, textY,
+                            item->font,
+                            item->textscale,
+                            item->window.foreColor,
+                            text,
+                            0, 0,
+                            item->textStyle);
                     }
                 }
 
@@ -381,10 +440,14 @@ void Item_ListBox_Paint(itemDef_t *item)
                     /* 0x30057dbc: DC->fillRect(x + 2.0f, y + 2.0f,
                      *             rect.w - 16 - 4, elementHeight(+0x14),
                      *             &item->window.outlineColor(+0xa4)). */
-                    float fillWidth = (float)((long double)item->window.rect.w - SCROLLBAR_SIZE - 4.0f);
+                    float fillWidth =
+                        (float)((long double)item->window.rect.w -
+                                SCROLLBAR_SIZE - 4.0f);
                     float fillX = (float)((long double)x + 2.0f);
                     float fillY = (float)((long double)y + 2.0f);
-                    DC->fillRect(fillX, fillY, fillWidth, listBox->elementHeight, item->window.outlineColor);
+                    DC->fillRect(fillX, fillY, fillWidth,
+                                   listBox->elementHeight,
+                                   item->window.outlineColor);
                 }
 
                 /* 0x30057dc2: advance the vertical budget by one element height.
@@ -400,16 +463,19 @@ void Item_ListBox_Paint(itemDef_t *item)
                     remaining = (float)rem;
                     if (rem < listBox->elementHeight) {
                         /* 0x30057e02: publish the leftover run and stop. */
-                        listBox->drawPadding = coduo_fp_to_i32_extended((long double)listBox->elementHeight - remaining);
+                        listBox->drawPadding =
+                            coduo_fp_to_i32_extended(
+                                (long double)listBox->elementHeight - remaining);
                         return;
                     }
                 }
-                listBox->endPos = coduo_int32_from_bits((uint32_t)listBox->endPos + 1u);
+                listBox->endPos =
+                    coduo_int32_from_bits((uint32_t)listBox->endPos + 1u);
                 /* 0x30057dd7: next row. The loop bound is the feeder count held
                  * in a stack slot ([esp+0x24]); the row index is [esp+0x20]. */
                 y = (float)((long double)y + listBox->elementHeight);
                 i = coduo_int32_from_bits((uint32_t)i + 1u);
-                if (i >= count) { /* 0x30057de7 CMP; JL 0x30057c10 */
+                if (i >= count) {                 /* 0x30057de7 CMP; JL 0x30057c10 */
                     return;
                 }
             }

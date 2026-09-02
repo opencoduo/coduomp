@@ -30,5 +30,6 @@ double PmTimeScale(void)
     /* 0x3000845d FILD; 0x30008460 FMUL const: pmTime enters the multiply via a
      * bare FILD with no FSTP DWORD, so no (float) cast (it would round under
      * -std=c11). 1.5f/1700.0f folds to the single FMUL const at 0x3007be64. */
-    return (double)pmTime * (double)(1.5f / 1700.0f) + (double)1.0f;
+    return (double)pmTime * (double)(1.5f / 1700.0f) +
+           (double)1.0f;
 }

@@ -25,7 +25,8 @@ void server_compat_handle_pb_packet(netadr_t from, msg_t *message)
  * PunkBuster server event callback at CoDUOMP.exe 0x004bd500. The original
  * target belongs to the classified optional_punkbuster_server static-linkage
  * range; modern builds intentionally do not load its retired backend. */
-void PB_InvokeEventCallback(const char *address, const uint8_t *packetData)
+void PB_InvokeEventCallback(const char *address,
+                            const uint8_t *packetData)
 {
     (void)address;
     (void)packetData;
@@ -80,7 +81,8 @@ void PB_SetClientEnabled(qboolean enabled)
  * PbClientConnecting consumer called by CL_CheckForResend. The original
  * PunkBuster callback can inspect or alter the connection packet and length;
  * modern builds deliberately send the engine-built packet unchanged. */
-void PbClientConnecting(pbClientConnectingEvent_t event, char *packet, int32_t *packetLength)
+void PbClientConnecting(pbClientConnectingEvent_t event,
+                        char *packet, int32_t *packetLength)
 {
     (void)event;
     (void)packet;

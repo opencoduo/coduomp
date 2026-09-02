@@ -15,7 +15,8 @@ qboolean ItemParse_model_animplay(itemDef_t *item, int handle)
     int32_t nextFrame;
 
     Item_ValidateTypeData(item, handle);
-    if (item->typeValidated != ITEM_TYPE_MODEL && item->typeValidated != ITEM_TYPE_MENUMODEL) {
+    if (item->typeValidated != ITEM_TYPE_MODEL &&
+        item->typeValidated != ITEM_TYPE_MENUMODEL) {
         Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_MODEL, or ITEM_TYPE_MENUMODEL\n");
         return qfalse;
     }
@@ -25,8 +26,10 @@ qboolean ItemParse_model_animplay(itemDef_t *item, int handle)
         return qfalse;
 
     model->animated = 1;
-    if (!PC_Int_Parse(handle, &model->startFrame) || !PC_Int_Parse(handle, &model->numFrames) ||
-        !PC_Int_Parse(handle, &model->loopFrames) || !PC_Int_Parse(handle, &model->fps))
+    if (!PC_Int_Parse(handle, &model->startFrame) ||
+        !PC_Int_Parse(handle, &model->numFrames) ||
+        !PC_Int_Parse(handle, &model->loopFrames) ||
+        !PC_Int_Parse(handle, &model->fps))
         return qfalse;
 
     /* NOT_FROM_ORIGINAL_SOURCE: publish animation state only when the frame

@@ -24,76 +24,86 @@ void *Com_ZoneDebugAlloc(size_t size);
  * contiguous original initializer. PE_RELOCATION_VALUES_VERIFIED: all 52
  * punctuation-string pointers match the original targets; every initial
  * next-pointer and the sentinel are null. */
-static punctuation_t pc_defaultPunctuations[] = {{">>=", PC_PUNCTUATION_SHIFT_RIGHT_ASSIGN, NULL},
-                                                 {"<<=", PC_PUNCTUATION_SHIFT_LEFT_ASSIGN, NULL},
-                                                 {"...", PC_PUNCTUATION_ELLIPSIS, NULL},
-                                                 {"##", PC_PUNCTUATION_TOKEN_PASTE, NULL},
-                                                 {"&&", PC_OPERATOR_LOGICAL_AND, NULL},
-                                                 {"||", PC_OPERATOR_LOGICAL_OR, NULL},
-                                                 {">=", PC_OPERATOR_GREATER_OR_EQUAL, NULL},
-                                                 {"<=", PC_OPERATOR_LESS_OR_EQUAL, NULL},
-                                                 {"==", PC_OPERATOR_EQUAL, NULL},
-                                                 {"!=", PC_OPERATOR_NOT_EQUAL, NULL},
-                                                 {"*=", PC_PUNCTUATION_MULTIPLY_ASSIGN, NULL},
-                                                 {"/=", PC_PUNCTUATION_DIVIDE_ASSIGN, NULL},
-                                                 {"%=", PC_PUNCTUATION_MODULO_ASSIGN, NULL},
-                                                 {"+=", PC_PUNCTUATION_ADD_ASSIGN, NULL},
-                                                 {"-=", PC_PUNCTUATION_SUBTRACT_ASSIGN, NULL},
-                                                 {"++", PC_OPERATOR_INCREMENT, NULL},
-                                                 {"--", PC_OPERATOR_DECREMENT, NULL},
-                                                 {"&=", PC_PUNCTUATION_BITWISE_AND_ASSIGN, NULL},
-                                                 {"|=", PC_PUNCTUATION_BITWISE_OR_ASSIGN, NULL},
-                                                 {"^=", PC_PUNCTUATION_BITWISE_XOR_ASSIGN, NULL},
-                                                 {">>", PC_OPERATOR_SHIFT_RIGHT, NULL},
-                                                 {"<<", PC_OPERATOR_SHIFT_LEFT, NULL},
-                                                 {"->", PC_PUNCTUATION_POINTER_MEMBER, NULL},
-                                                 {"::", PC_PUNCTUATION_SCOPE, NULL},
-                                                 {".*", PC_PUNCTUATION_MEMBER_POINTER, NULL},
-                                                 {"*", PC_OPERATOR_MULTIPLY, NULL},
-                                                 {"/", PC_OPERATOR_DIVIDE, NULL},
-                                                 {"%", PC_OPERATOR_MODULO, NULL},
-                                                 {"+", PC_OPERATOR_ADD, NULL},
-                                                 {"-", PC_OPERATOR_SUBTRACT, NULL},
-                                                 {"=", PC_PUNCTUATION_ASSIGN, NULL},
-                                                 {"&", PC_OPERATOR_BITWISE_AND, NULL},
-                                                 {"|", PC_OPERATOR_BITWISE_OR, NULL},
-                                                 {"^", PC_OPERATOR_BITWISE_XOR, NULL},
-                                                 {"~", PC_OPERATOR_BITWISE_NOT, NULL},
-                                                 {"!", PC_OPERATOR_LOGICAL_NOT, NULL},
-                                                 {">", PC_OPERATOR_GREATER, NULL},
-                                                 {"<", PC_OPERATOR_LESS, NULL},
-                                                 {".", PC_PUNCTUATION_PERIOD, NULL},
-                                                 {",", PC_PUNCTUATION_COMMA, NULL},
-                                                 {";", PC_PUNCTUATION_SEMICOLON, NULL},
-                                                 {":", PC_OPERATOR_TERNARY_COLON, NULL},
-                                                 {"?", PC_OPERATOR_TERNARY_QUESTION, NULL},
-                                                 {"(", PC_OPERATOR_OPEN_PARENTHESIS, NULL},
-                                                 {")", PC_OPERATOR_CLOSE_PARENTHESIS, NULL},
-                                                 {"{", PC_PUNCTUATION_OPEN_BRACE, NULL},
-                                                 {"}", PC_PUNCTUATION_CLOSE_BRACE, NULL},
-                                                 {"[", PC_PUNCTUATION_OPEN_BRACKET, NULL},
-                                                 {"]", PC_PUNCTUATION_CLOSE_BRACKET, NULL},
-                                                 {"\\", PC_PUNCTUATION_BACKSLASH, NULL},
-                                                 {"#", PC_PUNCTUATION_PREPROCESSOR, NULL},
-                                                 {"$", PC_PUNCTUATION_DOLLAR, NULL},
-                                                 {NULL, 0, NULL}};
+static punctuation_t pc_defaultPunctuations[] = {
+    {">>=", PC_PUNCTUATION_SHIFT_RIGHT_ASSIGN, NULL},
+    {"<<=", PC_PUNCTUATION_SHIFT_LEFT_ASSIGN, NULL},
+    {"...", PC_PUNCTUATION_ELLIPSIS, NULL},
+    {"##", PC_PUNCTUATION_TOKEN_PASTE, NULL},
+    {"&&", PC_OPERATOR_LOGICAL_AND, NULL},
+    {"||", PC_OPERATOR_LOGICAL_OR, NULL},
+    {">=", PC_OPERATOR_GREATER_OR_EQUAL, NULL},
+    {"<=", PC_OPERATOR_LESS_OR_EQUAL, NULL},
+    {"==", PC_OPERATOR_EQUAL, NULL},
+    {"!=", PC_OPERATOR_NOT_EQUAL, NULL},
+    {"*=", PC_PUNCTUATION_MULTIPLY_ASSIGN, NULL},
+    {"/=", PC_PUNCTUATION_DIVIDE_ASSIGN, NULL},
+    {"%=", PC_PUNCTUATION_MODULO_ASSIGN, NULL},
+    {"+=", PC_PUNCTUATION_ADD_ASSIGN, NULL},
+    {"-=", PC_PUNCTUATION_SUBTRACT_ASSIGN, NULL},
+    {"++", PC_OPERATOR_INCREMENT, NULL},
+    {"--", PC_OPERATOR_DECREMENT, NULL},
+    {"&=", PC_PUNCTUATION_BITWISE_AND_ASSIGN, NULL},
+    {"|=", PC_PUNCTUATION_BITWISE_OR_ASSIGN, NULL},
+    {"^=", PC_PUNCTUATION_BITWISE_XOR_ASSIGN, NULL},
+    {">>", PC_OPERATOR_SHIFT_RIGHT, NULL},
+    {"<<", PC_OPERATOR_SHIFT_LEFT, NULL},
+    {"->", PC_PUNCTUATION_POINTER_MEMBER, NULL},
+    {"::", PC_PUNCTUATION_SCOPE, NULL},
+    {".*", PC_PUNCTUATION_MEMBER_POINTER, NULL},
+    {"*", PC_OPERATOR_MULTIPLY, NULL},
+    {"/", PC_OPERATOR_DIVIDE, NULL},
+    {"%", PC_OPERATOR_MODULO, NULL},
+    {"+", PC_OPERATOR_ADD, NULL},
+    {"-", PC_OPERATOR_SUBTRACT, NULL},
+    {"=", PC_PUNCTUATION_ASSIGN, NULL},
+    {"&", PC_OPERATOR_BITWISE_AND, NULL},
+    {"|", PC_OPERATOR_BITWISE_OR, NULL},
+    {"^", PC_OPERATOR_BITWISE_XOR, NULL},
+    {"~", PC_OPERATOR_BITWISE_NOT, NULL},
+    {"!", PC_OPERATOR_LOGICAL_NOT, NULL},
+    {">", PC_OPERATOR_GREATER, NULL},
+    {"<", PC_OPERATOR_LESS, NULL},
+    {".", PC_PUNCTUATION_PERIOD, NULL},
+    {",", PC_PUNCTUATION_COMMA, NULL},
+    {";", PC_PUNCTUATION_SEMICOLON, NULL},
+    {":", PC_OPERATOR_TERNARY_COLON, NULL},
+    {"?", PC_OPERATOR_TERNARY_QUESTION, NULL},
+    {"(", PC_OPERATOR_OPEN_PARENTHESIS, NULL},
+    {")", PC_OPERATOR_CLOSE_PARENTHESIS, NULL},
+    {"{", PC_PUNCTUATION_OPEN_BRACE, NULL},
+    {"}", PC_PUNCTUATION_CLOSE_BRACE, NULL},
+    {"[", PC_PUNCTUATION_OPEN_BRACKET, NULL},
+    {"]", PC_PUNCTUATION_CLOSE_BRACKET, NULL},
+    {"\\", PC_PUNCTUATION_BACKSLASH, NULL},
+    {"#", PC_PUNCTUATION_PREPROCESSOR, NULL},
+    {"$", PC_PUNCTUATION_DOLLAR, NULL},
+    {NULL, 0, NULL}
+};
 
 /* Source: CoDUOMP.exe 0x00447100..0x00447209.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00447100_00447209.mcode.
  * Name: exact same-module Mac symbol SetScriptPunctuations. */
-void SetScriptPunctuations(script_t *script, punctuation_t *punctuations)
+void SetScriptPunctuations(script_t *script,
+                           punctuation_t *punctuations)
 {
     if (script->punctuationTable == NULL) {
 #if defined(WINDOWS_BEHAVIOR)
-        script->punctuationTable = GetMemory(PC_PUNCTUATION_BUCKET_COUNT * sizeof(*script->punctuationTable));
+        script->punctuationTable = GetMemory(
+            PC_PUNCTUATION_BUCKET_COUNT *
+            sizeof(*script->punctuationTable));
 #else
-        script->punctuationTable = Com_ZoneDebugAlloc(PC_PUNCTUATION_BUCKET_COUNT * sizeof(*script->punctuationTable));
+        script->punctuationTable = Com_ZoneDebugAlloc(
+            PC_PUNCTUATION_BUCKET_COUNT *
+            sizeof(*script->punctuationTable));
 #endif
     }
 
-    memset(script->punctuationTable, 0, PC_PUNCTUATION_BUCKET_COUNT * sizeof(*script->punctuationTable));
+    memset(script->punctuationTable, 0,
+           PC_PUNCTUATION_BUCKET_COUNT *
+           sizeof(*script->punctuationTable));
 
-    for (punctuation_t *punctuation = punctuations; punctuation->text != NULL; ++punctuation) {
+    for (punctuation_t *punctuation = punctuations;
+         punctuation->text != NULL; ++punctuation) {
         /* NOT_FROM_ORIGINAL_SOURCE: punctuation buckets cover the complete
          * unsigned-byte domain. */
         const uint32_t bucket = (uint8_t)punctuation->text[0];
@@ -119,9 +129,11 @@ void SetScriptPunctuations(script_t *script, punctuation_t *punctuations)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00447210_00447247.mcode.
  * Name: same-module family name PS_PunctuationStringForSubtype. */
-const char *PS_PunctuationStringForSubtype(script_t *script, int32_t subtype)
+const char *PS_PunctuationStringForSubtype(script_t *script,
+                                           int32_t subtype)
 {
-    for (punctuation_t *punctuation = script->punctuations; punctuation->text != NULL; ++punctuation) {
+    for (punctuation_t *punctuation = script->punctuations;
+         punctuation->text != NULL; ++punctuation) {
         if (punctuation->subtype == subtype)
             return punctuation->text;
     }
@@ -144,7 +156,8 @@ void ScriptError(script_t *script, const char *format, ...)
     (void)vsnprintf(message, sizeof(message), format, args);
     va_end(args);
 
-    Com_Printf("^1Error: file %s, line %d: %s\n", script->filename, script->line, message);
+    Com_Printf("^1Error: file %s, line %d: %s\n",
+               script->filename, script->line, message);
 }
 
 /* Source: CoDUOMP.exe 0x004472c0..0x00447322.
@@ -163,14 +176,16 @@ void ScriptWarning(script_t *script, const char *format, ...)
     (void)vsnprintf(message, sizeof(message), format, args);
     va_end(args);
 
-    Com_Printf("file %s, line %d: %s\n", script->filename, script->line, message);
+    Com_Printf("file %s, line %d: %s\n",
+               script->filename, script->line, message);
 }
 
 /* Source: CoDUOMP.exe 0x00447330..0x0044735e.
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00447330_0044735e.mcode.
  * Name: exact same-module Mac symbol PS_CreatePunctuationTable. */
-void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations)
+void PS_CreatePunctuationTable(script_t *script,
+                               punctuation_t *punctuations)
 {
     if (punctuations != NULL) {
         SetScriptPunctuations(script, punctuations);
@@ -223,7 +238,8 @@ qboolean PS_ReadWhiteSpace(script_t *script)
                 return qfalse;
             if (*script->scriptCursor == '\n')
                 ++script->line;
-        } while (*script->scriptCursor != '*' || script->scriptCursor[1] != '/');
+        } while (*script->scriptCursor != '*' ||
+                 script->scriptCursor[1] != '/');
 
         ++script->scriptCursor;
         if (*script->scriptCursor == '\0')
@@ -246,39 +262,17 @@ qboolean PS_ReadEscapeCharacter(script_t *script, char *out)
     ++script->scriptCursor;
 
     switch (*script->scriptCursor) {
-    case '"':
-        value = '"';
-        break;
-    case '\'':
-        value = '\'';
-        break;
-    case '?':
-        value = '?';
-        break;
-    case '\\':
-        value = '\\';
-        break;
-    case 'a':
-        value = '\a';
-        break;
-    case 'b':
-        value = '\b';
-        break;
-    case 'f':
-        value = '\f';
-        break;
-    case 'n':
-        value = '\n';
-        break;
-    case 'r':
-        value = '\r';
-        break;
-    case 't':
-        value = '\t';
-        break;
-    case 'v':
-        value = '\v';
-        break;
+    case '"': value = '"'; break;
+    case '\'': value = '\''; break;
+    case '?': value = '?'; break;
+    case '\\': value = '\\'; break;
+    case 'a': value = '\a'; break;
+    case 'b': value = '\b'; break;
+    case 'f': value = '\f'; break;
+    case 'n': value = '\n'; break;
+    case 'r': value = '\r'; break;
+    case 't': value = '\t'; break;
+    case 'v': value = '\v'; break;
     case 'x':
         ++script->scriptCursor;
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -300,11 +294,13 @@ qboolean PS_ReadEscapeCharacter(script_t *script, char *out)
         --script->scriptCursor;
         break;
     default:
-        if (*script->scriptCursor < '0' || *script->scriptCursor > '9') {
+        if (*script->scriptCursor < '0' ||
+            *script->scriptCursor > '9') {
             ScriptError(script, "unknown escape char");
         }
 
-        while (*script->scriptCursor >= '0' && *script->scriptCursor <= '9') {
+        while (*script->scriptCursor >= '0' &&
+               *script->scriptCursor <= '9') {
             value = value * 10 + *script->scriptCursor - '0';
             ++script->scriptCursor;
         }
@@ -327,16 +323,20 @@ qboolean PS_ReadEscapeCharacter(script_t *script, char *out)
 /* Source: CoDUOMP.exe 0x00447640..0x0044779b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00447640_0044779b.mcode.
  * Name: exact same-module Mac symbol PS_ReadString. */
-qboolean PS_ReadString(script_t *script, token_t *token, int32_t quote)
+qboolean PS_ReadString(script_t *script, token_t *token,
+                       int32_t quote)
 {
-    token->type = quote == '"' ? PC_TOKEN_TYPE_STRING : PC_TOKEN_TYPE_LITERAL;
+    token->type = quote == '"' ? PC_TOKEN_TYPE_STRING
+                               : PC_TOKEN_TYPE_LITERAL;
     token->string[0] = *script->scriptCursor;
     ++script->scriptCursor;
 
     int32_t length = 1;
     for (;;) {
-        if (*script->scriptCursor == '\\' && (script->flags & PC_SCRIPT_FLAG_NO_STRING_ESCAPE_CHARS) == 0) {
-            if (PS_ReadEscapeCharacter(script, &token->string[length]) == qfalse) {
+        if (*script->scriptCursor == '\\' &&
+            (script->flags & PC_SCRIPT_FLAG_NO_STRING_ESCAPE_CHARS) == 0) {
+            if (PS_ReadEscapeCharacter(script, &token->string[length]) ==
+                qfalse) {
                 token->string[length] = '\0';
                 return qfalse;
             }
@@ -348,7 +348,8 @@ qboolean PS_ReadString(script_t *script, token_t *token, int32_t quote)
 
             char *savedCursor = script->scriptCursor;
             const int32_t savedLine = script->line;
-            if (PS_ReadWhiteSpace(script) == qfalse || *script->scriptCursor != quote) {
+            if (PS_ReadWhiteSpace(script) == qfalse ||
+                *script->scriptCursor != quote) {
                 script->scriptCursor = savedCursor;
                 script->line = savedLine;
                 break;
@@ -370,7 +371,8 @@ qboolean PS_ReadString(script_t *script, token_t *token, int32_t quote)
         }
 
         if (length >= MAX_TOKEN_CHARS - 2) {
-            ScriptError(script, "string longer than MAX_TOKEN = %d", MAX_TOKEN_CHARS);
+            ScriptError(script, "string longer than MAX_TOKEN = %d",
+                        MAX_TOKEN_CHARS);
             return qfalse;
         }
     }
@@ -394,14 +396,19 @@ qboolean PS_ReadName(script_t *script, token_t *token)
          * its NUL before copying another name byte. */
         if (length >= MAX_TOKEN_CHARS - 1) {
             token->string[MAX_TOKEN_CHARS - 1] = '\0';
-            ScriptError(script, "name longer than MAX_TOKEN = %d", MAX_TOKEN_CHARS);
+            ScriptError(script, "name longer than MAX_TOKEN = %d",
+                        MAX_TOKEN_CHARS);
             return qfalse;
         }
         token->string[length++] = *script->scriptCursor;
         ++script->scriptCursor;
-    } while ((*script->scriptCursor >= 'a' && *script->scriptCursor <= 'z') ||
-             (*script->scriptCursor >= 'A' && *script->scriptCursor <= 'Z') ||
-             (*script->scriptCursor >= '0' && *script->scriptCursor <= '9') || *script->scriptCursor == '_');
+    } while ((*script->scriptCursor >= 'a' &&
+              *script->scriptCursor <= 'z') ||
+             (*script->scriptCursor >= 'A' &&
+              *script->scriptCursor <= 'Z') ||
+             (*script->scriptCursor >= '0' &&
+              *script->scriptCursor <= '9') ||
+             *script->scriptCursor == '_');
 
     token->string[length] = '\0';
     token->subtype = length;
@@ -412,7 +419,8 @@ qboolean PS_ReadName(script_t *script, token_t *token)
 /* Source: CoDUOMP.exe 0x00447820..0x00447977.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00447820_00447977.mcode.
  * Name: exact same-module Mac symbol NumberValue. */
-void NumberValue(const char *string, int32_t subtype, int32_t *intValue, double *floatValue)
+void NumberValue(const char *string, int32_t subtype,
+                 int32_t *intValue, double *floatValue)
 {
     *intValue = 0;
     *floatValue = 0.0;
@@ -478,7 +486,9 @@ void NumberValue(const char *string, int32_t subtype, int32_t *intValue, double 
  * x87 TBYTE and stores that ten-byte payload in the token's twelve-byte slot.
  * The whole body remains separate because changing only its field access
  * would silently change the arithmetic precision and conversion width. */
-void NumberValue(const char *string, int32_t subtype, int32_t *intValue, uint8_t floatValue[PC_TOKEN_FLOAT_VALUE_SIZE])
+void NumberValue(const char *string, int32_t subtype,
+                 int32_t *intValue,
+                 uint8_t floatValue[PC_TOKEN_FLOAT_VALUE_SIZE])
 {
 #if EMULATE_X87
     x87f numberValue = x87f_load_f32(0.0f);
@@ -500,12 +510,14 @@ void NumberValue(const char *string, int32_t subtype, int32_t *intValue, uint8_t
             if (*string == '.') {
                 if (divisor != 0) {
 #if EMULATE_X87
-                    coduo_pc_store_token_float80(floatValue, numberValue);
+                    coduo_pc_store_token_float80(floatValue,
+                                                 numberValue);
 #else
                     /* Stock clears the 12-byte token slot, then fstp writes
                      * only the 10-byte x87 TBYTE payload.  Relaxed non-x87
                      * hosts copy only their valid native long-double bytes. */
-                    memcpy(floatValue, &numberValue, numberValueCopySize);
+                    memcpy(floatValue, &numberValue,
+                           numberValueCopySize);
 #endif
                     return;
                 }
@@ -517,16 +529,25 @@ void NumberValue(const char *string, int32_t subtype, int32_t *intValue, uint8_t
             if (divisor == 0) {
 #if EMULATE_X87
                 /* fild(digit) + fld(10.0L)*numberValue */
-                numberValue = x87f_add(x87f_load_i32(*string - '0'), x87f_mul(x87f_load_f64((double)PC_NUMBER_FLOAT_BASE), numberValue));
+                numberValue = x87f_add(
+                    x87f_load_i32(*string - '0'),
+                    x87f_mul(x87f_load_f64((double)PC_NUMBER_FLOAT_BASE),
+                             numberValue));
 #else
-                numberValue = (long double)(*string - '0') + PC_NUMBER_FLOAT_BASE * numberValue;
+                numberValue =
+                    (long double)(*string - '0') +
+                    PC_NUMBER_FLOAT_BASE * numberValue;
 #endif
             } else {
 #if EMULATE_X87
                 /* numberValue += fild(digit) / (uint32->80)divisor */
-                numberValue = x87f_add(numberValue, x87f_div(x87f_load_i32(*string - '0'), x87f_load_f64((double)divisor)));
+                numberValue = x87f_add(
+                    numberValue,
+                    x87f_div(x87f_load_i32(*string - '0'),
+                             x87f_load_f64((double)divisor)));
 #else
-                numberValue += (long double)(*string - '0') / (long double)divisor;
+                numberValue += (long double)(*string - '0') /
+                               (long double)divisor;
 #endif
                 divisor *= 10;
             }
@@ -535,7 +556,8 @@ void NumberValue(const char *string, int32_t subtype, int32_t *intValue, uint8_t
         /* 0x807df16: fistp QWORD + low dword = unsigned-int conversion,
          * not the fistp DWORD a direct (int32_t) cast would emit. */
 #if EMULATE_X87
-        *intValue = (int32_t)(uint32_t)extF80_to_i64(numberValue, softfloat_round_minMag, false);
+        *intValue = (int32_t)(uint32_t)extF80_to_i64(
+            numberValue, softfloat_round_minMag, false);
         coduo_pc_store_token_float80(floatValue, numberValue);
 #else
         *intValue = (int32_t)(uint32_t)numberValue;
@@ -628,33 +650,45 @@ qboolean PS_ReadNumber(script_t *script, token_t *token)
      * do.  The former Linux reconstruction's explicit subtype clear was not
      * present in the machine code. */
 
-    if (script->scriptCursor[0] == '0' && (script->scriptCursor[1] == 'x' || script->scriptCursor[1] == 'X')) {
+    if (script->scriptCursor[0] == '0' &&
+        (script->scriptCursor[1] == 'x' ||
+         script->scriptCursor[1] == 'X')) {
         token->string[length++] = *script->scriptCursor++;
         token->string[length++] = *script->scriptCursor++;
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        while ((*script->scriptCursor >= '0' && *script->scriptCursor <= '9') ||
-               (*script->scriptCursor >= 'a' && *script->scriptCursor <= 'f') || *script->scriptCursor == 'A') {
+        while ((*script->scriptCursor >= '0' &&
+                *script->scriptCursor <= '9') ||
+               (*script->scriptCursor >= 'a' &&
+                *script->scriptCursor <= 'f') ||
+               *script->scriptCursor == 'A') {
             /* NOT_FROM_ORIGINAL_SOURCE: reserve the token field's final byte
              * for its NUL before copying another hexadecimal digit. */
             if (length >= MAX_TOKEN_CHARS - 1) {
                 token->string[MAX_TOKEN_CHARS - 1] = '\0';
-                ScriptError(script, "hexadecimal number longer than MAX_TOKEN = %d", MAX_TOKEN_CHARS);
+                ScriptError(script,
+                            "hexadecimal number longer than MAX_TOKEN = %d",
+                            MAX_TOKEN_CHARS);
                 return qfalse;
             }
             token->string[length++] = *script->scriptCursor++;
         }
         token->subtype |= PC_TOKEN_SUBTYPE_HEX;
-    } else if (script->scriptCursor[0] == '0' && (script->scriptCursor[1] == 'b' || script->scriptCursor[1] == 'B')) {
+    } else if (script->scriptCursor[0] == '0' &&
+               (script->scriptCursor[1] == 'b' ||
+                script->scriptCursor[1] == 'B')) {
         token->string[length++] = *script->scriptCursor++;
         token->string[length++] = *script->scriptCursor++;
 
-        while (*script->scriptCursor == '0' || *script->scriptCursor == '1') {
+        while (*script->scriptCursor == '0' ||
+               *script->scriptCursor == '1') {
             /* NOT_FROM_ORIGINAL_SOURCE: reserve the token field's final byte
              * for its NUL before copying another binary digit. */
             if (length >= MAX_TOKEN_CHARS - 1) {
                 token->string[MAX_TOKEN_CHARS - 1] = '\0';
-                ScriptError(script, "binary number longer than MAX_TOKEN = %d", MAX_TOKEN_CHARS);
+                ScriptError(script,
+                            "binary number longer than MAX_TOKEN = %d",
+                            MAX_TOKEN_CHARS);
                 return qfalse;
             }
             token->string[length++] = *script->scriptCursor++;
@@ -671,7 +705,9 @@ qboolean PS_ReadNumber(script_t *script, token_t *token)
             } else if (character == '8' || character == '9') {
                 octal = qfalse;
             } else if (character < '0' || character > '9') {
-                token->subtype |= octal != qfalse ? PC_TOKEN_SUBTYPE_OCTAL : PC_TOKEN_SUBTYPE_DECIMAL;
+                token->subtype |= octal != qfalse
+                    ? PC_TOKEN_SUBTYPE_OCTAL
+                    : PC_TOKEN_SUBTYPE_DECIMAL;
                 if (hasDot != qfalse)
                     token->subtype |= PC_TOKEN_SUBTYPE_FLOAT;
                 break;
@@ -679,18 +715,23 @@ qboolean PS_ReadNumber(script_t *script, token_t *token)
 
             token->string[length++] = *script->scriptCursor++;
             if (length >= MAX_TOKEN_CHARS - 1) {
-                ScriptError(script, "number longer than MAX_TOKEN = %d", MAX_TOKEN_CHARS);
+                ScriptError(script, "number longer than MAX_TOKEN = %d",
+                            MAX_TOKEN_CHARS);
                 return qfalse;
             }
         }
     }
 
-    for (int32_t suffix = 0; suffix < PC_NUMBER_SUFFIX_CHECK_COUNT; ++suffix) {
+    for (int32_t suffix = 0; suffix < PC_NUMBER_SUFFIX_CHECK_COUNT;
+         ++suffix) {
         const char character = *script->scriptCursor;
-        if ((character == 'l' || character == 'L') && (token->subtype & PC_TOKEN_SUBTYPE_LONG) == 0) {
+        if ((character == 'l' || character == 'L') &&
+            (token->subtype & PC_TOKEN_SUBTYPE_LONG) == 0) {
             ++script->scriptCursor;
             token->subtype |= PC_TOKEN_SUBTYPE_LONG;
-        } else if ((character == 'u' || character == 'U') && (token->subtype & (PC_TOKEN_SUBTYPE_UNSIGNED | PC_TOKEN_SUBTYPE_FLOAT)) == 0) {
+        } else if ((character == 'u' || character == 'U') &&
+                   (token->subtype & (PC_TOKEN_SUBTYPE_UNSIGNED |
+                                      PC_TOKEN_SUBTYPE_FLOAT)) == 0) {
             ++script->scriptCursor;
             token->subtype |= PC_TOKEN_SUBTYPE_UNSIGNED;
         }
@@ -731,7 +772,9 @@ qboolean PS_ReadLiteral(script_t *script, token_t *token)
 
     if (*script->scriptCursor != '\'') {
         ScriptWarning(script, "too many characters in literal, ignored");
-        while (*script->scriptCursor != '\0' && *script->scriptCursor != '\'' && *script->scriptCursor != '\n') {
+        while (*script->scriptCursor != '\0' &&
+               *script->scriptCursor != '\'' &&
+               *script->scriptCursor != '\n') {
             ++script->scriptCursor;
         }
         /* NOT_FROM_ORIGINAL_SOURCE: recovery leaves the cursor on a closing
@@ -751,19 +794,25 @@ qboolean PS_ReadLiteral(script_t *script, token_t *token)
 /* Source: CoDUOMP.exe 0x00447d30..0x00447dc6.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00447d30_00447dc6.mcode.
  * Name: exact same-module Mac symbol PS_ReadPunctuation. */
-qboolean PS_ReadPunctuation(script_t *script, token_t *token)
+qboolean PS_ReadPunctuation(script_t *script,
+                            token_t *token)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: punctuation lookup uses the same complete
      * unsigned-byte bucket domain as table construction. */
     const uint32_t bucket = (uint8_t)*script->scriptCursor;
-    for (punctuation_t *punctuation = script->punctuationTable[bucket]; punctuation != NULL; punctuation = punctuation->next) {
+    for (punctuation_t *punctuation =
+             script->punctuationTable[bucket];
+         punctuation != NULL; punctuation = punctuation->next) {
         const size_t length = strlen(punctuation->text);
-        const size_t remaining = (size_t)(script->endCursor - script->scriptCursor);
-        if (length > remaining || strncmp(script->scriptCursor, punctuation->text, length) != 0) {
+        const size_t remaining =
+            (size_t)(script->endCursor - script->scriptCursor);
+        if (length > remaining ||
+            strncmp(script->scriptCursor, punctuation->text, length) != 0) {
             continue;
         }
 
-        strncpy(token->string, punctuation->text, MAX_TOKEN_CHARS);
+        strncpy(token->string, punctuation->text,
+                MAX_TOKEN_CHARS);
         script->scriptCursor += length;
         token->type = PC_TOKEN_TYPE_PUNCTUATION;
         token->subtype = punctuation->subtype;
@@ -776,15 +825,19 @@ qboolean PS_ReadPunctuation(script_t *script, token_t *token)
  * Evidence: repaired Ghidra function-boundary record
  * coduomp/mcode/CoDUOMP/FUN_00447dd0_00447e42.mcode.
  * Name: exact same-module Mac symbol PS_ReadPrimitive. */
-qboolean PS_ReadPrimitive(script_t *script, token_t *token)
+qboolean PS_ReadPrimitive(script_t *script,
+                          token_t *token)
 {
     int32_t length = 0;
-    while ((int8_t)*script->scriptCursor > ' ' && *script->scriptCursor != ';') {
+    while ((int8_t)*script->scriptCursor > ' ' &&
+           *script->scriptCursor != ';') {
         /* NOT_FROM_ORIGINAL_SOURCE: reserve the token field's final byte for
          * its NUL before copying another primitive byte. */
         if (length >= MAX_TOKEN_CHARS - 1) {
             token->string[MAX_TOKEN_CHARS - 1] = '\0';
-            ScriptError(script, "primitive token longer than MAX_TOKEN = %d", MAX_TOKEN_CHARS);
+            ScriptError(script,
+                        "primitive token longer than MAX_TOKEN = %d",
+                        MAX_TOKEN_CHARS);
             return qfalse;
         }
         token->string[length++] = *script->scriptCursor++;
@@ -828,11 +881,14 @@ qboolean PS_ReadToken(script_t *script, token_t *token)
     } else if (character == '\'') {
         read = PS_ReadString(script, token, '\'');
     } else if ((character >= '0' && character <= '9') ||
-               (character == '.' && script->scriptCursor[1] >= '0' && script->scriptCursor[1] <= '9')) {
+               (character == '.' && script->scriptCursor[1] >= '0' &&
+                script->scriptCursor[1] <= '9')) {
         read = PS_ReadNumber(script, token);
     } else if ((script->flags & PC_SCRIPT_FLAG_PRIMITIVE) != 0) {
         return PS_ReadPrimitive(script, token);
-    } else if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character == '_') {
+    } else if ((character >= 'a' && character <= 'z') ||
+               (character >= 'A' && character <= 'Z') ||
+               character == '_') {
         read = PS_ReadName(script, token);
     } else {
         read = PS_ReadPunctuation(script, token);
@@ -870,7 +926,9 @@ qboolean PS_ExpectTokenString(script_t *script, const char *string)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00448090_004483aa.mcode.
  * Name: exact same-module Mac symbol PS_ExpectTokenType. */
-qboolean PS_ExpectTokenType(script_t *script, int32_t type, int32_t subtype, token_t *token)
+qboolean PS_ExpectTokenType(script_t *script, int32_t type,
+                            int32_t subtype,
+                            token_t *token)
 {
     char expected[MAX_TOKEN_CHARS];
 
@@ -893,11 +951,13 @@ qboolean PS_ExpectTokenType(script_t *script, int32_t type, int32_t subtype, tok
         if (type == PC_TOKEN_TYPE_PUNCTUATION)
             strcpy(expected, "punctuation");
 
-        ScriptError(script, "expected a %s, found %s", expected, token->string);
+        ScriptError(script, "expected a %s, found %s", expected,
+                    token->string);
         return qfalse;
     }
 
-    if (token->type == PC_TOKEN_TYPE_NUMBER && (token->subtype & subtype) != subtype) {
+    if (token->type == PC_TOKEN_TYPE_NUMBER &&
+        (token->subtype & subtype) != subtype) {
         /* NOT_FROM_ORIGINAL_SOURCE: initialize the expected-description text
          * before appending requested subtype labels in their established order. */
         expected[0] = '\0';
@@ -930,7 +990,8 @@ qboolean PS_ExpectTokenType(script_t *script, int32_t type, int32_t subtype, tok
             strcat(expected, "integer");
         }
 
-        ScriptError(script, "expected %s, found %s", expected, token->string);
+        ScriptError(script, "expected %s, found %s", expected,
+                    token->string);
         return qfalse;
     }
 
@@ -942,8 +1003,10 @@ qboolean PS_ExpectTokenType(script_t *script, int32_t type, int32_t subtype, tok
         if (token->subtype != subtype) {
             /* NOT_FROM_ORIGINAL_SOURCE: punctuation subtypes are one-based;
              * select the matching zero-based row and pass only its text. */
-            const punctuation_t punctuation = script->punctuations[subtype - 1];
-            ScriptError(script, "expected %s, found %s", punctuation.text, token->string);
+            const punctuation_t punctuation =
+                script->punctuations[subtype - 1];
+            ScriptError(script, "expected %s, found %s",
+                        punctuation.text, token->string);
             return qfalse;
         }
     }
@@ -954,7 +1017,8 @@ qboolean PS_ExpectTokenType(script_t *script, int32_t type, int32_t subtype, tok
 /* Source: CoDUOMP.exe 0x004483b0..0x004483d4.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004483b0_004483d4.mcode.
  * Name: same-family symbol PS_ReadTokenOrError. */
-qboolean PS_ReadTokenOrError(script_t *script, token_t *token)
+qboolean PS_ReadTokenOrError(script_t *script,
+                             token_t *token)
 {
     if (PS_ReadToken(script, token) == qfalse) {
         ScriptError(script, "couldn't read expected token");
@@ -985,13 +1049,16 @@ qboolean PS_CheckTokenString(script_t *script, const char *string)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00448480_00448513.mcode.
  * Name: same-family symbol PS_CheckTokenType. */
-qboolean PS_CheckTokenType(script_t *script, int32_t type, int32_t subtype, token_t *token)
+qboolean PS_CheckTokenType(script_t *script, int32_t type,
+                           int32_t subtype,
+                           token_t *token)
 {
     token_t readToken;
     if (PS_ReadToken(script, &readToken) == qfalse)
         return qfalse;
 
-    if (readToken.type == type && (readToken.subtype & subtype) == subtype) {
+    if (readToken.type == type &&
+        (readToken.subtype & subtype) == subtype) {
         memcpy(token, &readToken, sizeof(*token));
         return qtrue;
     }
@@ -1028,7 +1095,8 @@ void PS_UnreadLastToken(script_t *script)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_004485e0_004485fe.mcode.
  * Name: same-family symbol PS_UnreadToken. */
-void PS_UnreadToken(script_t *script, const token_t *token)
+void PS_UnreadToken(script_t *script,
+                    const token_t *token)
 {
     memcpy(&script->token, token, sizeof(script->token));
     script->tokenAvailable = qtrue;
@@ -1095,9 +1163,11 @@ double PS_ReadFloat(script_t *script)
     (void)PS_ReadTokenOrError(script, &token);
     if (strcmp(token.string, "-") == 0) {
         sign = -1.0;
-        (void)PS_ExpectTokenType(script, PC_TOKEN_TYPE_NUMBER, PC_TOKEN_SUBTYPE_NONE, &token);
+        (void)PS_ExpectTokenType(script, PC_TOKEN_TYPE_NUMBER,
+                                 PC_TOKEN_SUBTYPE_NONE, &token);
     } else if (token.type != PC_TOKEN_TYPE_NUMBER) {
-        ScriptError(script, "expected float value, found %s\n", token.string);
+        ScriptError(script, "expected float value, found %s\n",
+                    token.string);
     }
 
     return sign * token.floatValue;
@@ -1122,9 +1192,11 @@ long double PS_ReadFloat(script_t *script)
 #else
         sign = -1.0L;
 #endif
-        PS_ExpectTokenType(script, PC_TOKEN_TYPE_NUMBER, PC_TOKEN_SUBTYPE_NONE, &token);
+        PS_ExpectTokenType(script, PC_TOKEN_TYPE_NUMBER, PC_TOKEN_SUBTYPE_NONE,
+                     &token);
     } else if (token.type != PC_TOKEN_TYPE_NUMBER) {
-        ScriptError(script, "expected float value, found %s\n", token.string);
+        ScriptError(script, "expected float value, found %s\n",
+                     token.string);
     }
 
 #if EMULATE_X87
@@ -1156,10 +1228,13 @@ int32_t PS_ReadInteger(script_t *script)
     (void)PS_ReadTokenOrError(script, &token);
     if (strcmp(token.string, "-") == 0) {
         sign = -1;
-        (void)PS_ExpectTokenType(script, PC_TOKEN_TYPE_NUMBER, PC_TOKEN_SUBTYPE_INTEGER, &token);
-    } else if (token.type != PC_TOKEN_TYPE_NUMBER || token.subtype == PC_TOKEN_SUBTYPE_FLOAT) {
+        (void)PS_ExpectTokenType(script, PC_TOKEN_TYPE_NUMBER,
+                                 PC_TOKEN_SUBTYPE_INTEGER, &token);
+    } else if (token.type != PC_TOKEN_TYPE_NUMBER ||
+               token.subtype == PC_TOKEN_SUBTYPE_FLOAT) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        ScriptError(script, "expected integer value, found %s\n", token.string);
+        ScriptError(script, "expected integer value, found %s\n",
+                    token.string);
     }
 
     return sign * token.intValue;
@@ -1227,7 +1302,8 @@ qboolean PS_FindStringInScript(script_t *script, const char *string)
     const size_t length = strlen(string);
 
     while (PS_ReadWhiteSpace(script) != qfalse) {
-        if (*script->scriptCursor == first && strncmp(script->scriptCursor, string, length) == 0) {
+        if (*script->scriptCursor == first &&
+            strncmp(script->scriptCursor, string, length) == 0) {
             return qtrue;
         }
         ++script->scriptCursor;

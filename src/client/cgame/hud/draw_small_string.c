@@ -55,8 +55,7 @@
 // extra arguments; the compiler placed it inside the outgoing frame. arg10 is a
 // leftover scratch dword occupying an alignment slot in that same region.
 
-void CG_DrawSmallString(float x, float yBase, const char *string, float scale)
-{
+void CG_DrawSmallString(float x, float yBase, const char *string, float scale) {
     int32_t scaleBits = CG_FloatBits(scale);              /* 0x3001cff3 */
     long double yCarrier = (long double)yBase;            /* 0x3001cff7 */
     int32_t xBits = CG_FloatBits(x);                       /* 0x3001d001 */
@@ -73,6 +72,14 @@ void CG_DrawSmallString(float x, float yBase, const char *string, float scale)
     /* cgame_syscall(54, position, y, 5, 1/3, &color, data, 8.0f, 0, 0, flags).
      * All non-integer args are passed as their raw 32-bit dword bit patterns,
      * matching the VM trap ABI (int32_t command, ...). */
-    cgame_syscall(CG_R_TEXT_PAINT, xBits, CG_FloatBits(y), 5, CG_FloatBits(1.0f / 3.0f), (intptr_t)color, (intptr_t)string,
-                  CG_FloatBits(8.0f), 0, 0);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  xBits,
+                  CG_FloatBits(y),
+                  5,
+                  CG_FloatBits(1.0f / 3.0f),
+                  (intptr_t)color,
+                  (intptr_t)string,
+                  CG_FloatBits(8.0f),
+                  0,
+                  0);
 }

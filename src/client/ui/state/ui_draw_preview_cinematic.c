@@ -22,13 +22,17 @@ void UI_DrawPreviewCinematic(const rectDef_t *rect)
         ui_previewMovie = UI_CINEMATIC_DISABLED;
         return;
     }
-    ui_previewMovie = trap_CIN_PlayCinematic(va("%s.roq", ui_movieNames[ui_movieIndex]), 0, 0, 0, 0, UI_PREVIEW_CINEMATIC_FLAGS);
+    ui_previewMovie = trap_CIN_PlayCinematic(
+        va("%s.roq", ui_movieNames[ui_movieIndex]),
+        0, 0, 0, 0, UI_PREVIEW_CINEMATIC_FLAGS);
     if (ui_previewMovie < 0) {
         ui_previewMovie = UI_CINEMATIC_DISABLED;
         return;
     }
 
     trap_CIN_RunCinematic(ui_previewMovie);
-    trap_CIN_SetExtents(ui_previewMovie, (int32_t)rect->x, (int32_t)rect->y, (int32_t)rect->w, (int32_t)rect->h);
+    trap_CIN_SetExtents(ui_previewMovie, (int32_t)rect->x,
+                        (int32_t)rect->y, (int32_t)rect->w,
+                        (int32_t)rect->h);
     trap_CIN_DrawCinematic(ui_previewMovie);
 }

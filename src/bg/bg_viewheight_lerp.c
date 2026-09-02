@@ -41,7 +41,7 @@ enum {
  * proven role; exact source constant names unresolved.
  */
 enum {
-    VIEWHEIGHT_LERP_MS_LONG = 400, /* 0x190: prone-origin lerp, and crouched-origin
+    VIEWHEIGHT_LERP_MS_LONG  = 400, /* 0x190: prone-origin lerp, and crouched-origin
                                      *        lerp when viewHeightLerpDown == 0 */
     VIEWHEIGHT_LERP_MS_SHORT = 200  /* 0xc8:  default, and crouched-origin lerp when
                                      *        viewHeightLerpDown != 0 */
@@ -67,7 +67,7 @@ long double PM_GetViewHeightLerp(int32_t fromViewheight, int32_t toViewheight)
      * 0x3000a9df, the "reject" exits return 0.0f.
      */
     if (fromViewheight != VIEWHEIGHT_NONE &&      /* CMP ESI,-1 / JZ compute  */
-        toViewheight != VIEWHEIGHT_NONE) {      /* CMP ECX,-1 / JZ compute  */
+        toViewheight   != VIEWHEIGHT_NONE) {      /* CMP ECX,-1 / JZ compute  */
         int32_t activeTarget = ps->viewHeightLerpTarget;
         if (toViewheight != activeTarget) {       /* CMP ECX,[+0x100] / JNZ reject */
             return 0.0f;                          /* FLD 0.0f */
@@ -118,8 +118,9 @@ long double PM_GetViewHeightLerp(int32_t fromViewheight, int32_t toViewheight)
              * when zero.
              */
             int32_t lerpDown = ps->viewHeightLerpDown;
-            durationMs = (lerpDown != 0) ? VIEWHEIGHT_LERP_MS_SHORT   /* 400 + (-200) */
-                                         : VIEWHEIGHT_LERP_MS_LONG;   /* 400 + 0 */
+            durationMs = (lerpDown != 0)
+                             ? VIEWHEIGHT_LERP_MS_SHORT   /* 400 + (-200) */
+                             : VIEWHEIGHT_LERP_MS_LONG;   /* 400 + 0 */
         } else {
             durationMs = VIEWHEIGHT_LERP_MS_SHORT;    /* 0x3000aa19: 200 (0xc8) */
         }
@@ -130,7 +131,8 @@ long double PM_GetViewHeightLerp(int32_t fromViewheight, int32_t toViewheight)
      * ECX = [EDI+0x4] = move->command.commandTime; SUB ECX,EDX; FILD elapsed; FIDIV durationMs
      * (integer divisor loaded from the [ESP+8] slot).
      */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)lerpStartTime);
+    int32_t elapsed = coduo_int32_from_bits(
+        (uint32_t)move->command.commandTime - (uint32_t)lerpStartTime);
     /* FILD elapsed (bare, no float cast) / FIDIV durationMs (integer divisor):
      * the quotient is never stored to a float slot before the clamp/return, so
      * it stays 80-bit (long double). A float frac (or float casts on the
@@ -167,18 +169,28 @@ long double PM_GetViewHeightLerp(int32_t fromViewheight, int32_t toViewheight)
         return 0.0f;
     }
 
-    if ((fromViewheight == VIEWHEIGHT_NONE || toViewheight == VIEWHEIGHT_NONE) ||
+    if ((fromViewheight == VIEWHEIGHT_NONE ||
+         toViewheight == VIEWHEIGHT_NONE) ||
         (toViewheight == pm->ps->viewHeightLerpTarget &&
-         ((toViewheight != pm->ps->crouchViewHeight || (fromViewheight == pm->ps->proneViewHeight && pm->ps->viewHeightLerpDown == 0)) ||
-          (fromViewheight == pm->ps->standViewHeight && pm->ps->viewHeightLerpDown != 0)))) {
+         ((toViewheight != pm->ps->crouchViewHeight ||
+           (fromViewheight == pm->ps->proneViewHeight &&
+            pm->ps->viewHeightLerpDown == 0)) ||
+          (fromViewheight == pm->ps->standViewHeight &&
+           pm->ps->viewHeightLerpDown != 0)))) {
         int32_t elapsed;
 
-        lerpTime = PM_GetViewHeightLerpTime(pm->ps, pm->ps->viewHeightLerpTarget, pm->ps->viewHeightLerpDown);
-        elapsed = coduo_int32_from_bits((uint32_t)pm->command.commandTime - (uint32_t)pm->ps->viewHeightLerpTime);
+        lerpTime = PM_GetViewHeightLerpTime(
+            pm->ps, pm->ps->viewHeightLerpTarget,
+            pm->ps->viewHeightLerpDown);
+        elapsed = coduo_int32_from_bits(
+            (uint32_t)pm->command.commandTime -
+            (uint32_t)pm->ps->viewHeightLerpTime);
 #if EMULATE_X87
-        fraction = x87f_store_f32(x87f_div(x87f_load_i32(elapsed), x87f_load_i32(lerpTime)));
+        fraction = x87f_store_f32(x87f_div(
+            x87f_load_i32(elapsed), x87f_load_i32(lerpTime)));
 #else
-        fraction = (float)((long double)elapsed / (long double)lerpTime);
+        fraction =
+            (float)((long double)elapsed / (long double)lerpTime);
 #endif
         if (fraction < 0.0f) {
             fraction = 0.0f;

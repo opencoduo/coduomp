@@ -16,11 +16,16 @@ void CL_JoystickEvent(int32_t axis, int32_t value);
 void CL_PacketEvent(netadr_t from, msg_t *message, int32_t time);
 
 #define COM_EVENT_MILLISECONDS() Sys_Milliseconds()
-#define COM_EVENT_DISPATCH_KEY(event_) CL_KeyEvent((event_).value, (event_).value2, (uint32_t)(event_).time)
-#define COM_EVENT_DISPATCH_CHAR(event_) CL_CharEvent((event_).value)
-#define COM_EVENT_DISPATCH_MOUSE(event_) CL_MouseEvent((event_).value, (event_).value2)
-#define COM_EVENT_DISPATCH_JOYSTICK(event_) CL_JoystickEvent((event_).value, (event_).value2)
-#define COM_EVENT_DISPATCH_CLIENT_PACKET(from_, message_, time_) CL_PacketEvent((from_), &(message_), (time_))
+#define COM_EVENT_DISPATCH_KEY(event_) \
+    CL_KeyEvent((event_).value, (event_).value2, (uint32_t)(event_).time)
+#define COM_EVENT_DISPATCH_CHAR(event_) \
+    CL_CharEvent((event_).value)
+#define COM_EVENT_DISPATCH_MOUSE(event_) \
+    CL_MouseEvent((event_).value, (event_).value2)
+#define COM_EVENT_DISPATCH_JOYSTICK(event_) \
+    CL_JoystickEvent((event_).value, (event_).value2)
+#define COM_EVENT_DISPATCH_CLIENT_PACKET(from_, message_, time_) \
+    CL_PacketEvent((from_), &(message_), (time_))
 #define COM_EVENT_FREE_PAYLOAD(payload_) free(payload_)
 
 #endif

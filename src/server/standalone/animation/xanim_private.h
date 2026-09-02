@@ -13,7 +13,8 @@
 
 extern XAnimTree *xanim_currentTree;
 extern int32_t xanim_deferredNotifyCount;
-extern xanim_deferred_notify_t xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
+extern xanim_deferred_notify_t
+    xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
 extern uint16_t xanim_endNotifyHandle;
 extern int16_t xanim_evalCurrentFrame;
 extern float xanim_evalCurrentTime;

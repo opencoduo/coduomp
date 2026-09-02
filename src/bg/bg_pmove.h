@@ -32,14 +32,16 @@ extern const char *PMDebugPrefix;
 
 void Pmove(pmove_t *move);
 void PmoveSingle(pmove_t *move);
-void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *command, pm_trace_fn_t traceFunc);
+void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *command,
+                         pm_trace_fn_t traceFunc);
 /* Remaining pmove driver dependencies. Their complete bodies remain separately
  * owned until each whole subsystem is adjudicated and extracted. */
 void PM_CheckDuck(void);
 void PM_Weapon(void);
 void PM_Weapon_PrintWeaponState(void);
 void PM_Weapon_PrintWeaponAnim(void);
-void PM_trace(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
+void PM_trace(trace_t *results, const vec3_t start, const vec3_t mins,
+              const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
               int32_t traceType);
 float PM_CmdScale(const usercmd_t *command);
 float PM_CmdScale_Walk(const usercmd_t *command);
@@ -65,19 +67,34 @@ void PM_CheckLadderMove(void);
 void PM_LadderMove(void);
 void PM_AddEvent(int32_t event);
 void PM_AddTouchEnt(int32_t entityNum);
-void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output, float overbounce);
+void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
+                     float overbounce);
 
 /* Shared 17-argument prone-capsule validator used by the common pmove code.
  * Windows cgame names it at 0x30006e10; the game modules retain the same
  * interface and trace-callback contract. */
-int32_t BG_CheckProneValid(int32_t clientNum, const vec3_t origin, float radius, float height, float yaw, float *groundOffset,
-                           float *pitchDown, float *pitchUp, qboolean skipInitialTrace, qboolean allowFallback, const vec3_t groundNormal,
-                           pm_trace_fn_t traceFunc, pm_trace_fn_t traceDownFunc, qboolean useAltContentMask, float proneLength,
-                           qboolean checkForwardClearance, pm_entity_type_fn_t entityTypeFunc);
-int32_t BG_CheckProne(int32_t clientNum, const vec3_t origin, float radius, float height, float yaw, float *groundOffset, float *pitchDown,
-                      float *pitchUp, qboolean skipInitialTrace, qboolean allowFallback, const vec3_t groundNormal, pm_trace_fn_t traceFunc,
-                      pm_trace_fn_t traceDownFunc, qboolean useAltContentMask, float proneLength, pm_entity_type_fn_t entityTypeFunc);
-int32_t BG_CheckProneTurned(playerState_t *ps, float yaw, pm_trace_fn_t traceFunc);
+int32_t BG_CheckProneValid(int32_t clientNum, const vec3_t origin,
+                           float radius, float height, float yaw,
+                           float *groundOffset, float *pitchDown,
+                           float *pitchUp, qboolean skipInitialTrace,
+                           qboolean allowFallback,
+                           const vec3_t groundNormal,
+                           pm_trace_fn_t traceFunc,
+                           pm_trace_fn_t traceDownFunc,
+                           qboolean useAltContentMask, float proneLength,
+                           qboolean checkForwardClearance,
+                           pm_entity_type_fn_t entityTypeFunc);
+int32_t BG_CheckProne(int32_t clientNum, const vec3_t origin,
+                      float radius, float height, float yaw,
+                      float *groundOffset, float *pitchDown,
+                      float *pitchUp, qboolean skipInitialTrace,
+                      qboolean allowFallback, const vec3_t groundNormal,
+                      pm_trace_fn_t traceFunc,
+                      pm_trace_fn_t traceDownFunc,
+                      qboolean useAltContentMask, float proneLength,
+                      pm_entity_type_fn_t entityTypeFunc);
+int32_t BG_CheckProneTurned(playerState_t *ps, float yaw,
+                            pm_trace_fn_t traceFunc);
 void PM_UpdatePronePitch(void);
 #if defined(WINDOWS_BEHAVIOR)
 int32_t Script_RoundToNearestInt(float value);
@@ -93,7 +110,8 @@ int32_t PM_MediumLandingForSurface(void);
 int32_t PM_HardLandingForSurface(void);
 int32_t PM_DamageLandingForSurface(void);
 
-void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle, int32_t shouldMake);
+void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle,
+                      int32_t shouldMake);
 int32_t PM_ShouldMakeFootsteps(void);
 void PM_Footsteps(void);
 
@@ -143,7 +161,8 @@ void PM_UpdatePlayerWalkingFlag(void);
 void PM_UpdatePlayerSprintingFlag(void);
 void PM_PlayFatigueSound(void);
 void PM_UpdateFatigue(void);
-void PM_UpdateLean(playerState_t *ps, const usercmd_t *command, pm_trace_fn_t traceFunc);
+void PM_UpdateLean(playerState_t *ps, const usercmd_t *command,
+                   pm_trace_fn_t traceFunc);
 void PM_SetWaterLevel(void);
 void PM_WaterEvents(void);
 void PM_FoliageSounds(void);
@@ -158,10 +177,16 @@ void PM_SetProneMovementOverride(void);
 #define PM_WEAPON_LMG_ADS_FRACTION_MIN 0.99f
 
 /* Original BG/viewheight dependencies used by the shared pmove cluster. */
-int32_t BG_ExecuteCommand(playerState_t *ps, int32_t stateIndex, int32_t moveType, qboolean restartSame);
-long double PM_GetViewHeightLerp(int32_t fromViewheight, int32_t toViewheight);
-int32_t PM_GetViewHeightLerpTime(const playerState_t *ps, int32_t fromViewheight, int32_t viewHeightLerpDown);
-long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, float *outOriginAdjust);
+int32_t BG_ExecuteCommand(playerState_t *ps, int32_t stateIndex,
+                          int32_t moveType, qboolean restartSame);
+long double PM_GetViewHeightLerp(int32_t fromViewheight,
+                                 int32_t toViewheight);
+int32_t PM_GetViewHeightLerpTime(const playerState_t *ps,
+                                 int32_t fromViewheight,
+                                 int32_t viewHeightLerpDown);
+long double PM_ViewHeightTableLerp(int32_t percent,
+                                   const pmLerpEntry_t *table,
+                                   float *outOriginAdjust);
 void PM_ViewHeightAdjust(void);
 effectiveStance_t PM_GetEffectiveStance(const playerState_t *ps);
 

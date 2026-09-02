@@ -18,7 +18,8 @@ void UI_LoadArenasFromFile(const char *filename)
         return;
     }
     if (length >= UI_ARENA_FILE_BUFFER_SIZE) {
-        trap_Print(va("^1file too large: %s is %i, max allowed is %i", filename, length, UI_ARENA_FILE_BUFFER_SIZE));
+        trap_Print(va("^1file too large: %s is %i, max allowed is %i",
+                      filename, length, UI_ARENA_FILE_BUFFER_SIZE));
         trap_FS_FCloseFile(handle);
         return;
     }
@@ -26,5 +27,7 @@ void UI_LoadArenasFromFile(const char *filename)
     trap_FS_Read(buffer, length, handle);
     buffer[length] = '\0';
     trap_FS_FCloseFile(handle);
-    ui_arenaInfoCount += UI_ParseInfos(buffer, UI_MAX_ARENA_INFOS - ui_arenaInfoCount, &ui_arenaInfos[ui_arenaInfoCount]);
+    ui_arenaInfoCount += UI_ParseInfos(
+        buffer, UI_MAX_ARENA_INFOS - ui_arenaInfoCount,
+        &ui_arenaInfos[ui_arenaInfoCount]);
 }

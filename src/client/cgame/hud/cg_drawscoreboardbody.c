@@ -46,14 +46,14 @@
 /* Starting Y coordinate of the objective-text band. */
 #define CG_SB_OBJECTIVE_BAND_START_Y 52.0f
 /* Banner height passed to each team-section header. */
-#define CG_SB_TEAM_BANNER_HEIGHT 32.0f
+#define CG_SB_TEAM_BANNER_HEIGHT   32.0f
 /* Vertical gap added after each drawn section. */
-#define CG_SB_SECTION_GAP 4.0f
+#define CG_SB_SECTION_GAP          4.0f
 /* Visible-area height; if the list is taller a scrollbar is shown. */
-#define CG_SB_VISIBLE_HEIGHT 432.0f
+#define CG_SB_VISIBLE_HEIGHT       432.0f
 /* Board width with / without the scrollbar column. */
-#define CG_SB_WIDTH_SCROLLING 374.0f
-#define CG_SB_WIDTH_FULL 382.0f
+#define CG_SB_WIDTH_SCROLLING      374.0f
+#define CG_SB_WIDTH_FULL           382.0f
 
 void CG_DrawScoreboardBody(float fadeAlpha)
 {
@@ -74,7 +74,8 @@ void CG_DrawScoreboardBody(float fadeAlpha)
 
     /* 0x30037b88: draw the top objective-info band; it returns the Y at which the
      * scored list begins. */
-    float startY = CG_DrawObjectiveInfo(&drawCtx, CG_SB_OBJECTIVE_BAND_START_Y);
+    float startY = CG_DrawObjectiveInfo(&drawCtx,
+                                                  CG_SB_OBJECTIVE_BAND_START_Y);
 
     /* 0x30037b98: measure the full list height and its line count. */
     float listHeight = CG_ScoreboardHeight(&lineCount);
@@ -83,7 +84,8 @@ void CG_DrawScoreboardBody(float fadeAlpha)
      * (432 - startY < listHeight), reserve a scrollbar column: use the narrower
      * board width and raise the scrollbar flag. Otherwise use the full width. */
     float boardWidth;
-    if ((long double)CG_SB_VISIBLE_HEIGHT - (long double)startY < (long double)listHeight) {
+    if ((long double)CG_SB_VISIBLE_HEIGHT - (long double)startY <
+        (long double)listHeight) {
         boardWidth = CG_SB_WIDTH_SCROLLING;
         scrollable = 1;
     } else {
@@ -95,7 +97,10 @@ void CG_DrawScoreboardBody(float fadeAlpha)
      * below the header row, kept both as the running section Y and for the scroll
      * indicators. colorPtr is the {1,1,1,alpha} draw color. */
     float headerBottomY =
-        CG_DrawScoreboard_ListColumnHeaders((float)((long double)startY + (long double)CG_SB_SECTION_GAP), boardWidth, drawColor);
+        CG_DrawScoreboard_ListColumnHeaders(
+            (float)((long double)startY +
+                    (long double)CG_SB_SECTION_GAP),
+            boardWidth, drawColor);
 
     /* 0x30037be8/0x30037bef: the result is stored into both the running-Y slot
      * and the scroll-indicator baseline slot. Both stores round the same live
@@ -105,14 +110,16 @@ void CG_DrawScoreboardBody(float fadeAlpha)
 
     /* 0x30037bf3..0x30037c06: draw the two scored team sections only when either
      * has any rows. */
-    if (cg_scoreboardTeamCount[TEAM_AXIS] != 0 || cg_scoreboardTeamCount[TEAM_ALLIES] != 0) {
+    if (cg_scoreboardTeamCount[TEAM_AXIS] != 0 ||
+        cg_scoreboardTeamCount[TEAM_ALLIES] != 0) {
         /* 0x30037c0c..0x30037c2f: the team with the higher aggregate leads and is
          * drawn first; on an exact tie reuse the previously latched lead team so
          * the order is stable across frames. Then latch the result. */
         int leadTeam;
         if (cg_scoreboardTeamScores[TEAM_ALLIES] < cg_scoreboardTeamScores[TEAM_AXIS]) {
             leadTeam = TEAM_AXIS;
-        } else if (cg_scoreboardTeamScores[TEAM_ALLIES] > cg_scoreboardTeamScores[TEAM_AXIS]) {
+        } else if (cg_scoreboardTeamScores[TEAM_ALLIES] >
+                   cg_scoreboardTeamScores[TEAM_AXIS]) {
             leadTeam = TEAM_ALLIES;
         } else {
             leadTeam = cg_scoreboardLeadTeam;
@@ -121,8 +128,11 @@ void CG_DrawScoreboardBody(float fadeAlpha)
 
         /* 0x30037c33..0x30037c71: lead team section — header, then its score rows.
          * The section is followed by a 4.0f gap. */
-        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth, CG_SB_TEAM_BANNER_HEIGHT, leadTeam, &sectionLine);
-        y = (float)((long double)CG_DrawScoreboard_ScoresList(&drawCtx, y, leadTeam, boardWidth, &sectionLine) +
+        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,
+                                        CG_SB_TEAM_BANNER_HEIGHT, leadTeam,
+                                        &sectionLine);
+        y = (float)((long double)CG_DrawScoreboard_ScoresList(
+                        &drawCtx, y, leadTeam, boardWidth, &sectionLine) +
                     (long double)CG_SB_SECTION_GAP);
 
         /* 0x30037c73..0x30037c84: the trailing team is the other scored team
@@ -130,15 +140,21 @@ void CG_DrawScoreboardBody(float fadeAlpha)
         int trailTeam = (leadTeam == TEAM_AXIS) ? TEAM_ALLIES : TEAM_AXIS;
 
         /* 0x30037c79..0x30037cb4: trailing team section, same shape. */
-        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth, CG_SB_TEAM_BANNER_HEIGHT, trailTeam, &sectionLine);
-        y = (float)((long double)CG_DrawScoreboard_ScoresList(&drawCtx, y, trailTeam, boardWidth, &sectionLine) +
+        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,
+                                        CG_SB_TEAM_BANNER_HEIGHT, trailTeam,
+                                        &sectionLine);
+        y = (float)((long double)CG_DrawScoreboard_ScoresList(
+                        &drawCtx, y, trailTeam, boardWidth, &sectionLine) +
                     (long double)CG_SB_SECTION_GAP);
     }
 
     /* 0x30037cbb..0x30037d02: free-for-all section, drawn when it has rows. */
     if (cg_scoreboardTeamCount[TEAM_FREE] != 0) {
-        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth, CG_SB_TEAM_BANNER_HEIGHT, TEAM_FREE, &sectionLine);
-        y = (float)((long double)CG_DrawScoreboard_ScoresList(&drawCtx, y, TEAM_FREE, boardWidth, &sectionLine) +
+        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,
+                                        CG_SB_TEAM_BANNER_HEIGHT, TEAM_FREE,
+                                        &sectionLine);
+        y = (float)((long double)CG_DrawScoreboard_ScoresList(
+                        &drawCtx, y, TEAM_FREE, boardWidth, &sectionLine) +
                     (long double)CG_SB_SECTION_GAP);
     }
 
@@ -146,8 +162,11 @@ void CG_DrawScoreboardBody(float fadeAlpha)
      * ScoresList result is discarded (0x30037d47 FSTP ST0): there is nothing
      * below it, so the running Y is not advanced past this section. */
     if (cg_scoreboardTeamCount[TEAM_SPECTATOR] != 0) {
-        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth, CG_SB_TEAM_BANNER_HEIGHT, TEAM_SPECTATOR, &sectionLine);
-        (void)CG_DrawScoreboard_ScoresList(&drawCtx, y, TEAM_SPECTATOR, boardWidth, &sectionLine);
+        y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,
+                                        CG_SB_TEAM_BANNER_HEIGHT, TEAM_SPECTATOR,
+                                        &sectionLine);
+        (void)CG_DrawScoreboard_ScoresList(&drawCtx, y, TEAM_SPECTATOR, boardWidth,
+                                           &sectionLine);
     }
 
     /* 0x30037d4c..0x30037d67: when a scrollbar is needed, draw the scroll frame /
@@ -156,7 +175,8 @@ void CG_DrawScoreboardBody(float fadeAlpha)
      * 0x30037d58 loads EBX = sectionLine (the running visible-line cursor), passed
      * as the callee's EBX register arg (visibleLineCount). */
     if (scrollable) {
-        CG_DrawScoreboard_ScrollIndicators(drawColor, headerBottomY, lineCount, sectionLine);
+        CG_DrawScoreboard_ScrollIndicators(drawColor, headerBottomY, lineCount,
+                                           sectionLine);
     }
 
     /* 0x30037d6a..0x30037d7f: clamp the scroll position so it can never point past

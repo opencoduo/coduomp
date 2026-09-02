@@ -46,7 +46,9 @@
  * the id keeps its honest CG_R_TEXT_WIDTH name and the wrapper is named trap_R_Text_Width by its
  * proven trap id, per corpus convention. Sibling of trap_R_Text_Height (0x3003de10).
  */
-int32_t trap_R_Text_Width(const char *text, int32_t font, int32_t scaleBits, int32_t limit)
+int32_t trap_R_Text_Width(const char *text, int32_t font,
+                          int32_t scaleBits, int32_t limit)
 {
-    return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, font, scaleBits, limit));
+    return coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_R_TEXT_WIDTH, (intptr_t)text, font, scaleBits, limit));
 }

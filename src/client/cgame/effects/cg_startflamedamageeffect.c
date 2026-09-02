@@ -59,7 +59,8 @@ void CG_StartFlameDamageEffect(int32_t clientNum)
     // Index the typed cg_entities[] base directly by client number.
     // The spawner reaches the entity's +0x1e8 state field through self+0x1e8
     // (see centity_t / CG_SpawnFlameChunkOnBone in the header).
-    centity_t *slot = cg_entities + clientNum;
+    centity_t *slot =
+        cg_entities + clientNum;
 
     // 0x30024020..0x30024041: for each limb bone, spawn a flame chunk on it.
     for (const char *const *name = limbBoneNames; *name != NULL; ++name) {

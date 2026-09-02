@@ -17,11 +17,17 @@ void CG_RegisterSounds(void)
     int32_t memoryBefore;
     int32_t memoryAfter;
 
-    memoryBefore = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MEMORY_REMAINING));
-    CG_ParseVoiceChats("mp/axis_chat.voice", &cg_voiceChatTables[0], CG_MAX_VOICE_CHATS);
-    CG_ParseVoiceChats("mp/allies_chat.voice", &cg_voiceChatTables[1], CG_MAX_VOICE_CHATS);
-    memoryAfter = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MEMORY_REMAINING));
-    Com_PrintMessage("voice chat memory size = %d\n", coduo_int32_from_bits((uint32_t)memoryBefore - (uint32_t)memoryAfter));
+    memoryBefore = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_MEMORY_REMAINING));
+    CG_ParseVoiceChats("mp/axis_chat.voice", &cg_voiceChatTables[0],
+                       CG_MAX_VOICE_CHATS);
+    CG_ParseVoiceChats("mp/allies_chat.voice", &cg_voiceChatTables[1],
+                       CG_MAX_VOICE_CHATS);
+    memoryAfter = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_MEMORY_REMAINING));
+    Com_PrintMessage("voice chat memory size = %d\n",
+                     coduo_int32_from_bits((uint32_t)memoryBefore -
+                                      (uint32_t)memoryAfter));
 
     cg_soundMpAnnounceGTwoMinutes = trap_Com_SoundAliasString("mp_announce_g_twominutes");
     cg_soundMpAnnounceATwoMinutes = trap_Com_SoundAliasString("mp_announce_a_twominutes");

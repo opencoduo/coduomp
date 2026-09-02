@@ -34,9 +34,7 @@
 
 /* Case-insensitive length-limited compare uses the universal 99999 (0x1869f)
  * scan limit that all Q_stricmpn call sites in this module pass. */
-enum {
-    Q_STRICMPN_UNBOUNDED = 99999
-};
+enum { Q_STRICMPN_UNBOUNDED = 99999 };
 
 qboolean BG_ParseConditions(char **text_pp, bg_anim_script_t *script)
 {
@@ -86,7 +84,10 @@ qboolean BG_ParseConditions(char **text_pp, bg_anim_script_t *script)
             int32_t mode = bgAnimConditionTypes[condType].mode;
 
             if (mode == ANIM_CONDMODE_BITMASK) {
-                BG_ParseConditionBits(text_pp, bgAnimConditionTypes[condType].values, condType, &value);
+                BG_ParseConditionBits(
+                    text_pp,
+                    bgAnimConditionTypes[condType].values,
+                    condType, &value);
             } else if (mode == ANIM_CONDMODE_EQUAL) {
                 if (bgAnimConditionTypes[condType].values == NULL) {
                     /* No value table for this condition type: assume value 1. */
@@ -115,7 +116,7 @@ qboolean BG_ParseConditions(char **text_pp, bg_anim_script_t *script)
 
                     if (valueToken == NULL || valueToken[0] == '\0') {
                         BG_AnimParseError("BG_ParseConditions: expected condition value, "
-                                          "found end of line");
+                                  "found end of line");
                     }
 
                     /* Two independent strlen scans surround the optional comma
@@ -125,15 +126,20 @@ qboolean BG_ParseConditions(char **text_pp, bg_anim_script_t *script)
                         valueLength = strlen(valueToken);
                         valueToken[valueLength - 1] = '\0';
                     }
-                    value.bits[0] = BG_IndexForString(valueToken, bgAnimConditionTypes[condType].values, qfalse);
+                    value.bits[0] = BG_IndexForString(
+                        valueToken, bgAnimConditionTypes[condType].values,
+                        qfalse);
                 }
             }
             /* Any other mode: leave value[0]/value[1] as-is (a pass-through). */
 
             /* NOT_FROM_ORIGINAL_SOURCE: enforce the fixed condition capacity
              * before writing the type or either value word. */
-            if ((uint32_t)script->conditionCount >= (uint32_t)ANIM_COND_COUNT) {
-                BG_AnimParseError("BG_ParseConditions: exceeded maximum conditions (%i)", ANIM_COND_COUNT);
+            if ((uint32_t)script->conditionCount >=
+                (uint32_t)ANIM_COND_COUNT) {
+                BG_AnimParseError(
+                    "BG_ParseConditions: exceeded maximum conditions (%i)",
+                    ANIM_COND_COUNT);
                 return qfalse;
             }
             {
@@ -145,7 +151,8 @@ qboolean BG_ParseConditions(char **text_pp, bg_anim_script_t *script)
 
                 conditionIndex = script->conditionCount;                /* 0x30001e53 */
                 script->conditions[conditionIndex].value[1] = value.bits[1];
-                script->conditionCount = coduo_int32_from_bits((uint32_t)script->conditionCount + 1u); /* INC [ESI] */
+                script->conditionCount =
+                    coduo_int32_from_bits((uint32_t)script->conditionCount + 1u); /* INC [ESI] */
             }
         }
     }

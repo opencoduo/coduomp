@@ -12,10 +12,14 @@
  * entityNum (+0x28), allsolid (+0x2e), and the 48-byte total the final REP MOVSD
  * (ECX=12 dwords) copies out. Proven at the i386 target width. */
 #if UINTPTR_MAX == 0xFFFFFFFFu
-_Static_assert(offsetof(trace_t, fraction) == 0x00, "trace_t.fraction at +0x00");
-_Static_assert(offsetof(trace_t, entityNum) == 0x28, "trace_t.entityNum at +0x28");
-_Static_assert(offsetof(trace_t, allsolid) == 0x2e, "trace_t.allsolid at +0x2e");
-_Static_assert(sizeof(trace_t) == 0x30, "trace_t is 48 bytes (12 dwords copied by REP MOVSD)");
+_Static_assert(offsetof(trace_t, fraction) == 0x00,
+               "trace_t.fraction at +0x00");
+_Static_assert(offsetof(trace_t, entityNum) == 0x28,
+               "trace_t.entityNum at +0x28");
+_Static_assert(offsetof(trace_t, allsolid) == 0x2e,
+               "trace_t.allsolid at +0x2e");
+_Static_assert(sizeof(trace_t) == 0x30,
+               "trace_t is 48 bytes (12 dwords copied by REP MOVSD)");
 #endif
 
 /*
@@ -102,7 +106,9 @@ _Static_assert(sizeof(trace_t) == 0x30, "trace_t is 48 bytes (12 dwords copied b
  *   30025d8c  epilogue: POP EDI/ESI/EBP/EBX ; ADD ESP,0x30 ; RET (caller-cleaned
  *             stack args).
  */
-void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs, const vec3_t mins, trace_t *out, const vec3_t start, const vec3_t end,
+void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
+                          const vec3_t mins, trace_t *out,
+                          const vec3_t start, const vec3_t end,
                           int32_t entityNum)
 {
     trace_t result;
@@ -117,11 +123,17 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs, const vec3_t m
         return;
     }
 
-    handle42 = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_CM_TEMP_CAPSULE_MODEL, (intptr_t)cg_snap->ps.playerMins,
-                                                             (intptr_t)cg_snap->ps.playerMaxs, (int32_t)CONTENTS_BODY));
+    handle42 = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_CM_TEMP_CAPSULE_MODEL,
+        (intptr_t)cg_snap->ps.playerMins,
+        (intptr_t)cg_snap->ps.playerMaxs,
+        (int32_t)CONTENTS_BODY));
 
-    cgame_syscall(CG_CM_TRANSFORMED_CAPSULE_TRACE, (intptr_t)&result, (intptr_t)start, (intptr_t)end, (intptr_t)mins, (intptr_t)maxs,
-                  handle42, contentMask, (intptr_t)&cg_snap->ps.psOrigin, (intptr_t)&vec3_origin);
+    cgame_syscall(CG_CM_TRANSFORMED_CAPSULE_TRACE, (intptr_t)&result,
+                  (intptr_t)start, (intptr_t)end, (intptr_t)mins,
+                  (intptr_t)maxs, handle42, contentMask,
+                  (intptr_t)&cg_snap->ps.psOrigin,
+                  (intptr_t)&vec3_origin);
 
     /* Keep the body result when it actually hit, or when it came back nearer than
      * the world trace. Otherwise leave the world result in *out. */

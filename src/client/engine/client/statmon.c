@@ -17,23 +17,25 @@ int32_t statmonEntryCount;                              /* 0x009cd528 */
  * Name and source structure: exact same-module Mac symbol StatMon_Warning.
  * The Windows compiler inlines Sys_Milliseconds and the internal
  * StatMon_UpdateEntry body whose invalid-index diagnostic survives here. */
-void StatMon_Warning(int32_t entryIndex, int32_t durationMsec, const char *shaderName)
+void StatMon_Warning(int32_t entryIndex, int32_t durationMsec,
+                     const char *shaderName)
 {
     if (com_statmon->integer == 0)
         return;
 
     if (entryIndex < 0 || entryIndex >= STATMON_ENTRY_CAPACITY) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "StatMon_UpdateEntry: invalid entry '%i'\n",
+                  "\x15" "StatMon_UpdateEntry: invalid entry '%i'\n",
                   entryIndex);
     }
 
     statmon_entry_t *const entry = &statmonEntries[entryIndex];
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    entry->expireTime = (int32_t)(Sys_Milliseconds() + (uint32_t)durationMsec);
+    entry->expireTime = (int32_t)(
+        Sys_Milliseconds() + (uint32_t)durationMsec);
     if (entry->shaderHandle == 0 && cls.rendererStarted != qfalse) {
-        entry->shaderHandle = RE_RegisterShaderNoMip(shaderName, STATMON_SHADER_LOAD_MODE);
+        entry->shaderHandle = RE_RegisterShaderNoMip(
+            shaderName, STATMON_SHADER_LOAD_MODE);
     }
 
     if (entryIndex >= statmonEntryCount)

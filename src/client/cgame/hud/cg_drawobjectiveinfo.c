@@ -39,7 +39,8 @@ static const float SCOREBOARD_RULE_WIDTH = 390.0f;
 static const float SCOREBOARD_RULE_HEIGHT = 1.0f;
 static const float SCOREBOARD_RULE_ALPHA_SCALE = 0.1f;
 
-float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
+float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
+                                     float y)
 {
     const char *localized;
     const char *lineStart;
@@ -51,7 +52,8 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
     }
 
     y += SCOREBOARD_OBJECTIVE_TOP_PAD;
-    localized = CG_TranslateMessage(cg_objectiveText.string, "scoreboard objective info");
+    localized = CG_TranslateMessage(cg_objectiveText.string,
+                          "scoreboard objective info");
     lineStart = localized;
     cursor = localized;
     lastSpace = NULL;
@@ -84,19 +86,36 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
 
             cursor++;
             if (*cursor == '\0') {
-                length = coduo_int32_from_bits((uint32_t)(uintptr_t)cursor - (uint32_t)(uintptr_t)lineStart);
-                trap_R_Text_Paint(CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_X), CG_FloatBits(y + SCOREBOARD_OBJECTIVE_BASELINE_OFFSET), 0,
-                                  CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE), (intptr_t)drawCtx, (intptr_t)lineStart, 0, length,
-                                  SCOREBOARD_OBJECTIVE_DRAW_MODE);
+                length = coduo_int32_from_bits(
+                    (uint32_t)(uintptr_t)cursor -
+                    (uint32_t)(uintptr_t)lineStart);
+                trap_R_Text_Paint(CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_X),
+                          CG_FloatBits(y + SCOREBOARD_OBJECTIVE_BASELINE_OFFSET),
+                          0,
+                          CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE),
+                          (intptr_t)drawCtx,
+                          (intptr_t)lineStart,
+                          0,
+                          length,
+                          SCOREBOARD_OBJECTIVE_DRAW_MODE);
                 y += SCOREBOARD_OBJECTIVE_LINE_ADVANCE;
                 break;
             }
 
-            if (*cursor == '\n' || (*cursor == '\\' && cursor[1] == 'n')) {
-                length = coduo_int32_from_bits((uint32_t)(uintptr_t)cursor - (uint32_t)(uintptr_t)lineStart);
-                trap_R_Text_Paint(CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_X), CG_FloatBits(y + SCOREBOARD_OBJECTIVE_BASELINE_OFFSET), 0,
-                                  CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE), (intptr_t)drawCtx, (intptr_t)lineStart, 0, length,
-                                  SCOREBOARD_OBJECTIVE_DRAW_MODE);
+            if (*cursor == '\n' ||
+                (*cursor == '\\' && cursor[1] == 'n')) {
+                length = coduo_int32_from_bits(
+                    (uint32_t)(uintptr_t)cursor -
+                    (uint32_t)(uintptr_t)lineStart);
+                trap_R_Text_Paint(CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_X),
+                          CG_FloatBits(y + SCOREBOARD_OBJECTIVE_BASELINE_OFFSET),
+                          0,
+                          CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE),
+                          (intptr_t)drawCtx,
+                          (intptr_t)lineStart,
+                          0,
+                          length,
+                          SCOREBOARD_OBJECTIVE_DRAW_MODE);
                 lineStart = cursor + ((*cursor == '\n') ? 1 : 2);
                 cursor = lineStart;
                 lastSpace = NULL;
@@ -104,9 +123,15 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
                 continue;
             }
 
-            length = coduo_int32_from_bits((uint32_t)(uintptr_t)cursor - (uint32_t)(uintptr_t)lineStart);
-            textWidth = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)lineStart, 0, CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE), length));
+            length = coduo_int32_from_bits(
+                (uint32_t)(uintptr_t)cursor -
+                (uint32_t)(uintptr_t)lineStart);
+            textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_R_TEXT_WIDTH,
+                (intptr_t)lineStart,
+                0,
+                CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE),
+                length));
 
             if (textWidth > SCOREBOARD_OBJECTIVE_MAX_WIDTH) {
                 /* The DLL computes the draw length as the raw 32-bit
@@ -114,10 +139,20 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
                  * the no-space continuation point. Preserve that original edge
                  * case rather than substituting lineEnd-lineStart. */
                 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                length = (lastSpace != NULL) ? coduo_int32_from_bits((uint32_t)(uintptr_t)lastSpace - (uint32_t)(uintptr_t)lineStart) : -1;
-                trap_R_Text_Paint(CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_X), CG_FloatBits(y + SCOREBOARD_OBJECTIVE_BASELINE_OFFSET), 0,
-                                  CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE), (intptr_t)drawCtx, (intptr_t)lineStart, 0, length,
-                                  SCOREBOARD_OBJECTIVE_DRAW_MODE);
+                length = (lastSpace != NULL)
+                    ? coduo_int32_from_bits(
+                          (uint32_t)(uintptr_t)lastSpace -
+                          (uint32_t)(uintptr_t)lineStart)
+                    : -1;
+                trap_R_Text_Paint(CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_X),
+                          CG_FloatBits(y + SCOREBOARD_OBJECTIVE_BASELINE_OFFSET),
+                          0,
+                          CG_FloatBits(SCOREBOARD_OBJECTIVE_TEXT_SCALE),
+                          (intptr_t)drawCtx,
+                          (intptr_t)lineStart,
+                          0,
+                          length,
+                          SCOREBOARD_OBJECTIVE_DRAW_MODE);
                 lineStart = (lastSpace != NULL) ? lastSpace + 1 : cursor - 1;
                 cursor = lineStart;
                 lastSpace = NULL;
@@ -153,23 +188,35 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
             trap_Cvar_Set("cl_serverloadwaiting", "0");
         }
 
-        serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
+        serverInfo =
+            &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
         mapName = Info_ValueForKey(serverInfo, "mapname");
         if (mapName != NULL && mapName[0] != '\0') {
-            levelshotShader = trap_R_RegisterShaderNoMip(va("levelshots/%s.tga", mapName), SHADER_REGISTER_SORT_LEVELSHOT);
+            levelshotShader = trap_R_RegisterShaderNoMip(
+                va("levelshots/%s.tga", mapName),
+                SHADER_REGISTER_SORT_LEVELSHOT);
         } else {
             levelshotShader = 0;
         }
         if (levelshotShader == 0) {
-            levelshotShader = trap_R_RegisterShaderNoMip("menu/art/unknownmap", SHADER_REGISTER_SORT_LEVELSHOT);
+            levelshotShader = trap_R_RegisterShaderNoMip(
+                "menu/art/unknownmap", SHADER_REGISTER_SORT_LEVELSHOT);
         }
 
         trap_R_SetColor(NULL);
-        trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * 0.0f), CG_FloatBits(cgs_screenYScale * 0.0f),
-                              CG_FloatBits(cgs_screenXScale * 640.0f), CG_FloatBits(cgs_screenYScale * 480.0f), CG_FloatBits(0.0f),
-                              CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), levelshotShader);
+        trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * 0.0f),
+                              CG_FloatBits(cgs_screenYScale * 0.0f),
+                              CG_FloatBits(cgs_screenXScale * 640.0f),
+                              CG_FloatBits(cgs_screenYScale * 480.0f),
+                              CG_FloatBits(0.0f),
+                              CG_FloatBits(0.0f),
+                              CG_FloatBits(1.0f),
+                              CG_FloatBits(1.0f),
+                              levelshotShader);
 
-        trap_Cvar_VariableStringBuffer("com_expectedhunkusage", hunkUsageString, LOADING_HUNK_USAGE_BUFFER_SIZE);
+        trap_Cvar_VariableStringBuffer("com_expectedhunkusage",
+                                       hunkUsageString,
+                                       LOADING_HUNK_USAGE_BUFFER_SIZE);
         expectedHunkUsage = coduo_crt_atoi(hunkUsageString);
         (void)progressColor;
 
@@ -181,23 +228,29 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
              * the UNROUNDED value. Keeping the chain in a long double preserves both
              * the single rounding and the unrounded compare. (Same shape as
              * cg_drawinformation.c.) */
-            int32_t hunkUsed = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_HUNK_USED));
-            long double progressRaw = (long double)hunkUsed / (long double)expectedHunkUsage;
+            int32_t hunkUsed = coduo_int32_from_bits(
+                (uint32_t)cgame_syscall(CG_HUNK_USED));
+            long double progressRaw =
+                (long double)hunkUsed / (long double)expectedHunkUsage;
             float progress = (float)progressRaw; /* 0x30036c7b FST DWORD [0x10] */
 
             if (progressRaw > 1.0f) {
-                progress = 1.0f; /* 0x30036c8c MOV [0x10],0x3f800000 */
+                progress = 1.0f;                 /* 0x30036c8c MOV [0x10],0x3f800000 */
             }
-            CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, progress);
+            CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f,
+                                   progress);
         }
 
         cgame_syscall(CG_UPDATE_SCREEN);
-        cg_updateScreenActive = coduo_int32_from_bits((uint32_t)cg_updateScreenActive - 1u);
+        cg_updateScreenActive = coduo_int32_from_bits(
+            (uint32_t)cg_updateScreenActive - 1u);
     }
 
     {
-        qhandle_t whiteShader =
-            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"white", SHADER_REGISTER_SORT_UI));
+        qhandle_t whiteShader = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)"white",
+            SHADER_REGISTER_SORT_UI));
         vec4_t ruleColor;
 
         ruleColor[0] = drawCtx->color[0];
@@ -205,7 +258,8 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y)
         ruleColor[2] = drawCtx->color[2];
         ruleColor[3] = drawCtx->color[3] * SCOREBOARD_RULE_ALPHA_SCALE;
         trap_R_SetColor(ruleColor);
-        CG_DrawPic(SCOREBOARD_RULE_X, y, SCOREBOARD_RULE_WIDTH, SCOREBOARD_RULE_HEIGHT, whiteShader);
+        CG_DrawPic(SCOREBOARD_RULE_X, y, SCOREBOARD_RULE_WIDTH,
+                   SCOREBOARD_RULE_HEIGHT, whiteShader);
     }
 
     return y + SCOREBOARD_RULE_HEIGHT;

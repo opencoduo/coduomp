@@ -40,6 +40,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset, int32_t loadMode)
         }
     }
 
-    Com_DPrintf("UI menu load time = %d milli seconds\n", trap_Milliseconds() - startTime);
+    Com_DPrintf("UI menu load time = %d milli seconds\n",
+                trap_Milliseconds() - startTime);
     trap_PC_FreeSource(sourceHandle);
 }

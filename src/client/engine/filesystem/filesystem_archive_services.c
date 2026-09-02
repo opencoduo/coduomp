@@ -5,19 +5,22 @@
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local minizip adaptation for the shared
  * original filesystem handle functions. */
-int32_t filesystem_compat_archive_tell(const fileHandleData_t *fileHandle)
+int32_t filesystem_compat_archive_tell(
+    const fileHandleData_t *fileHandle)
 {
     return (int32_t)unztell((unzFile)fileHandle->ioObject);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local minizip adaptation for the shared
  * original filesystem handle functions. */
-int32_t filesystem_compat_archive_length(const fileHandleData_t *fileHandle)
+int32_t filesystem_compat_archive_length(
+    const fileHandleData_t *fileHandle)
 {
     coduomp_unz_file_info_t fileInfo = {0};
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    if (unzGetCurrentFileInfo((unzFile)fileHandle->ioObject, &fileInfo, NULL, 0, NULL, 0, NULL, 0) != 0 ||
+    if (unzGetCurrentFileInfo((unzFile)fileHandle->ioObject, &fileInfo,
+                              NULL, 0, NULL, 0, NULL, 0) != 0 ||
         fileInfo.uncompressedSize > FS_MAX_PAK_ENTRY_BYTES) {
         return -1;
     }
@@ -38,15 +41,18 @@ void filesystem_compat_archive_close(fileHandleData_t *fileHandle)
     (void)unzClose((unzFile)fileHandle->ioObject);
 }
 
-int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle, void *buffer, uint32_t byteCount)
+int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle,
+                                       void *buffer, uint32_t byteCount)
 {
-    return unzReadCurrentFile((unzFile)fileHandle->ioObject, buffer, (unsigned int)byteCount);
+    return unzReadCurrentFile((unzFile)fileHandle->ioObject, buffer,
+                              (unsigned int)byteCount);
 }
 
 int32_t filesystem_compat_archive_rewind(fileHandleData_t *fileHandle)
 {
-    const int32_t positionStatus =
-        unzSetCurrentFileInfoPosition((unzFile)fileHandle->ioObject, (unsigned long)(uint32_t)fileHandle->zipRewindOffset);
+    const int32_t positionStatus = unzSetCurrentFileInfoPosition(
+        (unzFile)fileHandle->ioObject,
+        (unsigned long)(uint32_t)fileHandle->zipRewindOffset);
     if (positionStatus != 0)
         return positionStatus;
     return unzOpenCurrentFile((unzFile)fileHandle->ioObject);
@@ -60,8 +66,10 @@ void filesystem_compat_pack_close(pack_t *pack)
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local classic-minizip realization of the
  * archive-entry edge used by the shared original read-open algorithm. */
-qboolean filesystem_compat_archive_open_entry(pack_t *pack, const fileInPack_t *packFile, fileHandleData_t *fileHandle, qboolean uniqueFile,
-                                              qboolean quiet)
+qboolean filesystem_compat_archive_open_entry(
+    pack_t *pack, const fileInPack_t *packFile,
+    fileHandleData_t *fileHandle, qboolean uniqueFile,
+    qboolean quiet)
 {
     unzFile archive = (unzFile)pack->zipFile;
 
@@ -69,18 +77,19 @@ qboolean filesystem_compat_archive_open_entry(pack_t *pack, const fileInPack_t *
         archive = unzReOpen(pack->pakFilename, (unzFile)pack->zipFile);
         if (archive == NULL) {
             if (quiet == qfalse) {
-                Com_Error(ERR_FATAL,
-                          "\x15"
-                          "Couldn't reopen %s",
+                Com_Error(ERR_FATAL, "\x15" "Couldn't reopen %s",
                           pack->pakFilename);
             }
             return qfalse;
         }
     }
 
-    int32_t status = unzSetCurrentFileInfoPosition((unzFile)pack->zipFile, (unsigned long)(uint32_t)packFile->zipPosition);
+    int32_t status = unzSetCurrentFileInfoPosition(
+        (unzFile)pack->zipFile,
+        (unsigned long)(uint32_t)packFile->zipPosition);
     if (status == 0 && archive != (unzFile)pack->zipFile) {
-        status = unzSetCurrentFileInfoPosition(archive, (unsigned long)(uint32_t)packFile->zipPosition);
+        status = unzSetCurrentFileInfoPosition(
+            archive, (unsigned long)(uint32_t)packFile->zipPosition);
     }
     if (status == 0)
         status = unzOpenCurrentFile(archive);
@@ -90,7 +99,8 @@ qboolean filesystem_compat_archive_open_entry(pack_t *pack, const fileInPack_t *
         if (archive != (unzFile)pack->zipFile)
             (void)unzClose(archive);
         if (quiet == qfalse)
-            Com_Printf("WARNING: could not open '%s' from pak '%s'\n", packFile->name, pack->pakFilename);
+            Com_Printf("WARNING: could not open '%s' from pak '%s'\n",
+                       packFile->name, pack->pakFilename);
         return qfalse;
     }
 
@@ -102,7 +112,8 @@ qboolean filesystem_compat_archive_open_entry(pack_t *pack, const fileInPack_t *
 
 /* NOT_FROM_ORIGINAL_SOURCE: classic-minizip catalog adapters for the shared
  * FS_LoadZipFile algorithm. */
-qboolean filesystem_compat_archive_open_catalog(const char *path, void **archiveOut, uint32_t *entryCountOut)
+qboolean filesystem_compat_archive_open_catalog(
+    const char *path, void **archiveOut, uint32_t *entryCountOut)
 {
     unzFile const archive = unzOpen(path);
     if (archive == NULL)
@@ -140,15 +151,19 @@ int32_t filesystem_compat_archive_go_to_next(void *archive)
     return unzGoToNextFile((unzFile)archive);
 }
 
-int32_t filesystem_compat_archive_get_current_info(void *archive, filesystem_compat_archive_file_info_t *fileInfo, char *filename,
-                                                   uint32_t filenameSize)
+int32_t filesystem_compat_archive_get_current_info(
+    void *archive, filesystem_compat_archive_file_info_t *fileInfo,
+    char *filename, uint32_t filenameSize)
 {
     coduomp_unz_file_info_t targetInfo = {0};
-    const int32_t status = unzGetCurrentFileInfo((unzFile)archive, &targetInfo, filename, (unsigned long)filenameSize, NULL, 0, NULL, 0);
+    const int32_t status = unzGetCurrentFileInfo(
+        (unzFile)archive, &targetInfo, filename,
+        (unsigned long)filenameSize, NULL, 0, NULL, 0);
     if (status == 0) {
         fileInfo->crc = (uint32_t)targetInfo.crc;
         fileInfo->uncompressedSize = (uint64_t)targetInfo.uncompressedSize;
-        fileInfo->filenameLength = (uint32_t)targetInfo.filenameSize;
+        fileInfo->filenameLength =
+            (uint32_t)targetInfo.filenameSize;
     }
     return status;
 }

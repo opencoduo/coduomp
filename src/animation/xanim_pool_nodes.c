@@ -66,8 +66,8 @@ XAnimInfo *XAnimAllocInfo(XAnimTree *tree, uint32_t animIndex)
     uint16_t handle = xanim_pool[0].freeNext;
 
     if (handle == 0) {
-        Com_Error(ERR_DROP, "\x15"
-                            "exceeded maximum number of anim info");
+        Com_Error(ERR_DROP,
+                  "\x15" "exceeded maximum number of anim info");
         return NULL;
     }
 

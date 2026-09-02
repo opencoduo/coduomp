@@ -48,8 +48,10 @@
 #include "client/cgame/globals.h"
 
 // Offsets this function proves against the machine code (i386, 4-byte words):
-_Static_assert(offsetof(snapshot_t, ps.commandTime) == 0x0c, "predicted-state copy source = cg_snap + 0xc (embedded playerState)");
-_Static_assert(offsetof(snapshot_t, ps.currentWeapon) == 0xe4, "cg_snap->ps.currentWeapon read at MOV EAX,[EDX+0xe4]");
+_Static_assert(offsetof(snapshot_t, ps.commandTime) == 0x0c,
+               "predicted-state copy source = cg_snap + 0xc (embedded playerState)");
+_Static_assert(offsetof(snapshot_t, ps.currentWeapon) == 0xe4,
+               "cg_snap->ps.currentWeapon read at MOV EAX,[EDX+0xe4]");
 
 void CG_SnapshotTransitionStage2(void)
 {
@@ -58,13 +60,15 @@ void CG_SnapshotTransitionStage2(void)
 
     // 0x30034d43..0x30034d5d: copy the installed snapshot's playerState into
     // cg.predictedPlayerState. Source is the embedded playerState (cg_snap + 0xc).
-    memcpy(&cg_predictedPlayerState, &cg_snap->ps, sizeof(cg_predictedPlayerState));
+    memcpy(&cg_predictedPlayerState, &cg_snap->ps,
+           sizeof(cg_predictedPlayerState));
 
     // 0x30034d5f..0x30034d79: cache the current predicted weapon's weaponInfo_t and
     // restart the weapon-select timer at cg.time. The pointer is loaded first, then
     // stock publishes the timestamp before the pointer.
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    weaponInfo_t *selectedWeapon = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+    weaponInfo_t *selectedWeapon =
+        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
     int32_t weaponSelectTime = coduo_int32_from_bits(cg_time);
     cg_weaponSelectTime = weaponSelectTime;
     cg_currentWeaponInfo = selectedWeapon;
@@ -145,9 +149,12 @@ void CG_SnapshotTransitionStage2(void)
 
     // 0x30034e69..0x30034ea6: re-seed the three engine cvars via trap_Cvar_Set (id 9).
     // trap_Cvar_Set("cg_weaponSelect", va("%i", cg_snap->ps.currentWeapon))
-    cgame_syscall(CG_CVAR_SET, (intptr_t)cg_weaponSelectCvarName, (intptr_t)va("%i", snap->ps.currentWeapon));
+    cgame_syscall(CG_CVAR_SET, (intptr_t)cg_weaponSelectCvarName,
+                  (intptr_t)va("%i", snap->ps.currentWeapon));
     // trap_Cvar_Set("cl_stance", "0")
-    cgame_syscall(CG_CVAR_SET, (intptr_t)cl_stanceCvarName, (intptr_t)g_str_zero);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)cl_stanceCvarName,
+                  (intptr_t)g_str_zero);
     // trap_Cvar_Set("cl_run", "1")
-    cgame_syscall(CG_CVAR_SET, (intptr_t)cl_runCvarName, (intptr_t)cvarEnabledValue);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)cl_runCvarName,
+                  (intptr_t)cvarEnabledValue);
 }

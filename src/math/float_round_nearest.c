@@ -21,7 +21,8 @@
  */
 float FloatRoundNearest(float value)
 {
-    const double floorArgument = (double)((long double)value + (long double)0.5f);
+    const double floorArgument =
+        (double)((long double)value + (long double)0.5f);
 
     return (float)floor(floorArgument);
 }

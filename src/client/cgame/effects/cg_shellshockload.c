@@ -32,7 +32,10 @@ int CG_ShellShockLoad(const char *name)
     //   length = cgame_syscall(CG_FS_FOPEN_FILE, path, &fileHandle, FS_READ);
     // EDI = length (MOV EDI,EAX). FS_READ mode is the literal 0 pushed at 0x3003b95e.
     const char *path = va("scripts/%s.shock", name);
-    length = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)path, (intptr_t)&fileHandle, FS_READ);
+    length = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE,
+                           (intptr_t)path,
+                           (intptr_t)&fileHandle,
+                           FS_READ);
 
     // 0x3003b975 TEST EDI,EDI ; 0x3003b977 JGE 0x3003b98d
     // Signed length < 0 (JGE not taken) => open failed.
@@ -44,13 +47,18 @@ int CG_ShellShockLoad(const char *name)
 
     // 0x3003b98e..0x3003b997
     //   fileText = cgame_syscall(CG_Z_MALLOC_INTERNAL, length + 1);   // temp alloc
-    fileText = (char *)(intptr_t)cgame_syscall(CG_Z_MALLOC_INTERNAL, coduo_int32_from_bits((uint32_t)length + 1u));
+    fileText = (char *)(intptr_t)cgame_syscall(
+        CG_Z_MALLOC_INTERNAL,
+        coduo_int32_from_bits((uint32_t)length + 1u));
 
     // 0x3003b99f..0x3003b9a8
     //   cgame_syscall(CG_FS_READ, fileText, length, fileHandle);
     // Note the machine code pushes fileHandle from [ESP+0x14] (the out slot),
     // length from EDI, and fileText from ESI.
-    cgame_syscall(CG_FS_READ, (intptr_t)fileText, length, fileHandle);
+    cgame_syscall(CG_FS_READ,
+                  (intptr_t)fileText,
+                  length,
+                  fileHandle);
 
     // 0x3003b9ae MOV byte ptr [ESI + EDI],0x0
     fileText[length] = '\0';
@@ -62,8 +70,11 @@ int CG_ShellShockLoad(const char *name)
     // 0x3003b9bf..0x3003b9ca
     //   result = cgame_syscall(CG_COM_LOAD_CVARS_FROM_BUFFER, cg_shockParamNames, 27, fileText, path);
     // EBX still holds `path` here (set at 0x3003b965). EDI = result (MOV EDI,EAX).
-    result = (int32_t)cgame_syscall(CG_COM_LOAD_CVARS_FROM_BUFFER, (intptr_t)cg_shockParamNames, CG_SHOCK_PARAM_COUNT, (intptr_t)fileText,
-                                    (intptr_t)path);
+    result = (int32_t)cgame_syscall(CG_COM_LOAD_CVARS_FROM_BUFFER,
+                           (intptr_t)cg_shockParamNames,
+                           CG_SHOCK_PARAM_COUNT,
+                           (intptr_t)fileText,
+                           (intptr_t)path);
 
     // 0x3003b9d0..0x3003b9d8
     //   cgame_syscall(CG_Z_FREE_INTERNAL, fileText);   // free the temp buffer

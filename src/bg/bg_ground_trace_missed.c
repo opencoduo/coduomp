@@ -33,7 +33,8 @@ void PM_GroundTraceMissed(void)
         end[0] = ps->psOrigin[0];
         end[1] = ps->psOrigin[1];
         end[2] = ps->psOrigin[2] - PM_GROUNDTRACE_DROP_AIRBORNE;
-        move->trace(&trace, ps->psOrigin, move->mins, move->maxs, end, ps->psClientNum, move->traceMask);
+        move->trace(&trace, ps->psOrigin, move->mins, move->maxs, end,
+                    ps->psClientNum, move->traceMask);
         pml.groundLiftFlag = trace.fraction != 1.0f ? qtrue : qfalse;
     } else {
         if (move->debugMove != 0) {
@@ -45,15 +46,22 @@ void PM_GroundTraceMissed(void)
         end[0] = ps->psOrigin[0];
         end[1] = ps->psOrigin[1];
         end[2] = ps->psOrigin[2] - PM_GROUNDTRACE_DROP_GROUNDED;
-        move->trace(&trace, ps->psOrigin, move->mins, move->maxs, end, ps->psClientNum, move->traceMask);
+        move->trace(&trace, ps->psOrigin, move->mins, move->maxs, end,
+                    ps->psClientNum, move->traceMask);
 
         if (trace.fraction == 1.0f) {
-            const bg_anim_event_t event = move->command.forwardmove < 0 ? ANIM_EVENT_JUMP_BACK : ANIM_EVENT_JUMP;
+            const bg_anim_event_t event =
+                move->command.forwardmove < 0
+                    ? ANIM_EVENT_JUMP_BACK
+                    : ANIM_EVENT_JUMP;
 
             BG_AnimScriptEvent(move->ps, event, qfalse, qtrue);
             pml.groundLiftFlag = qfalse;
         } else {
-            pml.groundLiftFlag = trace.fraction < PM_GROUNDTRACE_SNAP_FRACTION ? qtrue : qfalse;
+            pml.groundLiftFlag =
+                trace.fraction < PM_GROUNDTRACE_SNAP_FRACTION
+                    ? qtrue
+                    : qfalse;
         }
     }
 

@@ -55,15 +55,18 @@
 void CGScr_LoadAnimTrees(void)
 {
     int32_t runtimeAnimationCount = 0; /* frame+0x0000 */
-    bg_runtime_animation_t runtimeAnimations[BG_ANIM_MAX_ANIMATIONS]; /* frame+0x0004..+0x9003 */
+    bg_runtime_animation_t
+        runtimeAnimations[BG_ANIM_MAX_ANIMATIONS]; /* frame+0x0004..+0x9003 */
 
-    _Static_assert(sizeof(runtimeAnimations) == 0x9000, "CGScr_LoadAnimTrees runtime array must match the original frame");
+    _Static_assert(sizeof(runtimeAnimations) == 0x9000,
+                   "CGScr_LoadAnimTrees runtime array must match the original frame");
 
     Scr_BeginLoadAnimTrees();
 
     BG_FindAnims();
 
-    BG_AnimParseAnimScript(&bgs.animationTable, runtimeAnimations, &runtimeAnimationCount);
+    BG_AnimParseAnimScript(&bgs.animationTable, runtimeAnimations,
+                           &runtimeAnimationCount);
 
     Scr_PrecacheAnimTrees(CG_AllocAnimTree);
 

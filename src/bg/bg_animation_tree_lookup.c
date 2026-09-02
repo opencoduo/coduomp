@@ -38,22 +38,19 @@ XAnim *BG_FindAnimTree(const char *treeName, qboolean errorIfMissing)
 
     if (tree == NULL && errorIfMissing != qfalse) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Could not find animation tree '%s'",
-                  treeName);
+                  "\x15" "Could not find animation tree '%s'", treeName);
     }
     return tree;
 }
 #else
-script_anim_tree_ref_t BG_FindAnimTree(const char *treeName, qboolean errorIfMissing)
+script_anim_tree_ref_t BG_FindAnimTree(const char *treeName,
+                                       qboolean errorIfMissing)
 {
     script_anim_tree_ref_t tree = Scr_FindAnimTree(treeName);
 
     if (tree.tree == NULL && errorIfMissing != qfalse) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Could not find animation tree '%s'",
-                  treeName);
+                  "\x15" "Could not find animation tree '%s'", treeName);
     }
     return tree;
 }

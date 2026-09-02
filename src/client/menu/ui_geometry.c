@@ -40,7 +40,8 @@ void Item_SetScreenCoords(itemDef_t *item, float x, float y)
     item->window.rect.w = item->window.rectClient.w;
     item->window.rect.h = item->window.rectClient.h;
     item->window.rect.x = x + item->window.rectClient.x;
-    item->window.rect.y = (float)(effectiveY + item->window.rectClient.y);
+    item->window.rect.y =
+        (float)(effectiveY + item->window.rectClient.y);
     item->textRect.w = 0.0f;
     item->textRect.h = 0.0f;
 }
@@ -100,12 +101,14 @@ void Menu_UpdatePosition(menuDef_t *menu)
             itemY = (float)(menuY + item->window.borderSize);
         }
 
-        item->window.rect.x = (float)(itemX + item->window.rectClient.x);
+        item->window.rect.x =
+            (float)(itemX + item->window.rectClient.x);
         item->window.rect.w = item->window.rectClient.w;
         item->window.rect.h = item->window.rectClient.h;
         item->textRect.w = 0.0f;
         item->textRect.h = 0.0f;
-        item->window.rect.y = (float)((long double)itemY + item->window.rectClient.y);
+        item->window.rect.y =
+            (float)((long double)itemY + item->window.rectClient.y);
     }
 }
 

@@ -21,10 +21,15 @@ static cvar_t *sys_vidMB;  /* original 0x009cf2f0 */
 /* NOT_FROM_ORIGINAL_SOURCE: portable factoring of the two identical direct
  * MessageBoxA calls in Sys_UpdateForConfigChange and
  * Sys_UpdateForInfoChange. */
-static qboolean coduomp_show_reconfigure_dialog(const char *body, const char *title)
+static qboolean coduomp_show_reconfigure_dialog(const char *body,
+                                                const char *title)
 {
 #if defined(_WIN32)
-    return MessageBoxA(NULL, body, title, SYS_RECONFIGURE_DIALOG_FLAGS) == SYS_DIALOG_RESULT_YES ? qtrue : qfalse;
+    return MessageBoxA(NULL, body, title,
+                       SYS_RECONFIGURE_DIALOG_FLAGS) ==
+                   SYS_DIALOG_RESULT_YES
+               ? qtrue
+               : qfalse;
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: a native platform question-dialog backend
      * will replace the Win32 MessageBox operation. Until then, decline the
@@ -51,8 +56,10 @@ void Sys_GetInfo(sys_info_t *info)
  * Name: exact same-module Mac symbol Sys_UpdateForConfigChange. */
 qboolean Sys_UpdateForConfigChange(void)
 {
-    const char *title = Sys_LocalizeString("WIN_CONFIGURE_UPDATED_TITLE");
-    const char *body = Sys_LocalizeString("WIN_CONFIGURE_UPDATED_BODY");
+    const char *title =
+        Sys_LocalizeString("WIN_CONFIGURE_UPDATED_TITLE");
+    const char *body =
+        Sys_LocalizeString("WIN_CONFIGURE_UPDATED_BODY");
     return coduomp_show_reconfigure_dialog(body, title);
 }
 
@@ -63,13 +70,16 @@ qboolean Sys_UpdateForConfigChange(void)
 qboolean Sys_ConfigureChecksumChanged(int32_t checksum)
 {
     qboolean reconfigure = qfalse;
-    cvar_t *const archivedChecksum = Cvar_Get("sys_configSum", "0", SYS_INFO_CVAR_FLAGS);
+    cvar_t *const archivedChecksum =
+        Cvar_Get("sys_configSum", "0", SYS_INFO_CVAR_FLAGS);
 
-    if (archivedChecksum->integer != 0 && archivedChecksum->integer != checksum) {
+    if (archivedChecksum->integer != 0 &&
+        archivedChecksum->integer != checksum) {
         reconfigure = Sys_UpdateForConfigChange();
     }
 
-    if (archivedChecksum->integer == 0 || archivedChecksum->integer != checksum) {
+    if (archivedChecksum->integer == 0 ||
+        archivedChecksum->integer != checksum) {
         (void)Cvar_Set2("sys_configSum", va("%i", checksum), qtrue);
     }
 
@@ -104,8 +114,10 @@ void Sys_InitHardwareInfo(void)
 qboolean Sys_UpdateForInfoChange(void)
 {
     Sys_ArchiveInfo(0);
-    const char *title = Sys_LocalizeString("WIN_COMPUTER_CHANGE_TITLE");
-    const char *body = Sys_LocalizeString("WIN_COMPUTER_CHANGE_BODY");
+    const char *title =
+        Sys_LocalizeString("WIN_COMPUTER_CHANGE_TITLE");
+    const char *body =
+        Sys_LocalizeString("WIN_COMPUTER_CHANGE_BODY");
     return coduomp_show_reconfigure_dialog(body, title);
 }
 
@@ -121,18 +133,24 @@ qboolean Sys_InfoChanged(void)
     Sys_RegisterInfoCvars();
 
 
-    if ((double)sys_cpuMHz->value > sysCpuFrequencyMHz * maximumCpuRatio ||
-        (double)sys_cpuMHz->value < sysCpuFrequencyMHz * minimumCpuRatio) {
+    if ((double)sys_cpuMHz->value >
+            sysCpuFrequencyMHz * maximumCpuRatio ||
+        (double)sys_cpuMHz->value <
+            sysCpuFrequencyMHz * minimumCpuRatio) {
         return Sys_UpdateForInfoChange();
     }
 
-    if (sys_sysMB->integer > sysPhysicalMemoryMB + SYS_INFO_MEMORY_TOLERANCE_MB ||
-        sys_sysMB->integer < sysPhysicalMemoryMB - SYS_INFO_MEMORY_TOLERANCE_MB) {
+    if (sys_sysMB->integer >
+            sysPhysicalMemoryMB + SYS_INFO_MEMORY_TOLERANCE_MB ||
+        sys_sysMB->integer <
+            sysPhysicalMemoryMB - SYS_INFO_MEMORY_TOLERANCE_MB) {
         return Sys_UpdateForInfoChange();
     }
 
-    if (sys_vidMB->integer > sysVideoMemoryMB + SYS_INFO_VIDEO_MEMORY_TOLERANCE_MB ||
-        sys_vidMB->integer < sysVideoMemoryMB - SYS_INFO_VIDEO_MEMORY_TOLERANCE_MB) {
+    if (sys_vidMB->integer >
+            sysVideoMemoryMB + SYS_INFO_VIDEO_MEMORY_TOLERANCE_MB ||
+        sys_vidMB->integer <
+            sysVideoMemoryMB - SYS_INFO_VIDEO_MEMORY_TOLERANCE_MB) {
         return Sys_UpdateForInfoChange();
     }
 

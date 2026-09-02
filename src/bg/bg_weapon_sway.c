@@ -36,45 +36,64 @@
  * operation instead of calling this function; Linux calls it four times.
  */
 #if defined(WINDOWS_BEHAVIOR)
-long double BG_SmoothWeaponSwayValue(float target, float current, float rate, int32_t msec)
+long double BG_SmoothWeaponSwayValue(float target, float current, float rate,
+                                     int32_t msec)
 {
 #if EMULATE_X87
-    const x87f delta = x87f_sub(x87f_load_f32(target), x87f_load_f32(current));
-    const float step = x87f_store_f32(
-        x87f_mul(x87f_mul(x87f_mul(x87f_load_i32(msec), x87f_load_f32(BG_SWAY_MILLISECONDS_TO_SECONDS)), delta), x87f_load_f32(rate)));
+    const x87f delta = x87f_sub(x87f_load_f32(target),
+                                x87f_load_f32(current));
+    const float step = x87f_store_f32(x87f_mul(
+        x87f_mul(
+            x87f_mul(x87f_load_i32(msec),
+                     x87f_load_f32(BG_SWAY_MILLISECONDS_TO_SECONDS)),
+            delta),
+        x87f_load_f32(rate)));
     const x87f absoluteDelta = x87f_abs(delta);
     const x87f absoluteStep = x87f_abs(x87f_load_f32(step));
     const x87f epsilon = x87f_load_f64((double)BG_SWAY_SNAP_EPSILON);
 
-    if (x87f_lt_signaling(epsilon, absoluteDelta) && !x87f_lt_signaling(absoluteDelta, absoluteStep)) {
-        return (long double)x87f_store_f64(x87f_add(x87f_load_f32(current), x87f_load_f32(step)));
+    if (x87f_lt_signaling(epsilon, absoluteDelta) &&
+        !x87f_lt_signaling(absoluteDelta, absoluteStep)) {
+        return (long double)x87f_store_f64(
+            x87f_add(x87f_load_f32(current), x87f_load_f32(step)));
     }
     return (long double)target;
 #else
-    const long double delta = (long double)target - (long double)current;
-    const float step = (float)((long double)msec * (long double)BG_SWAY_MILLISECONDS_TO_SECONDS * delta * (long double)rate);
+    const long double delta =
+        (long double)target - (long double)current;
+    const float step = (float)(
+        (long double)msec * (long double)BG_SWAY_MILLISECONDS_TO_SECONDS *
+        delta * (long double)rate);
     const long double absoluteDelta = __builtin_fabsl(delta);
-    const long double absoluteStep = (long double)fabsf(step);
+    const long double absoluteStep =
+        (long double)fabsf(step);
 
-    if (absoluteDelta > (long double)(double)BG_SWAY_SNAP_EPSILON && !(absoluteDelta < absoluteStep)) {
+    if (absoluteDelta > (long double)(double)BG_SWAY_SNAP_EPSILON &&
+        !(absoluteDelta < absoluteStep)) {
         return (long double)current + (long double)step;
     }
     return (long double)target;
 #endif
 }
 #else
-float BG_SmoothWeaponSwayValue(float target, float current, float rate, int32_t msec)
+float BG_SmoothWeaponSwayValue(float target, float current, float rate,
+                               int32_t msec)
 {
     float delta;
     float step;
 
 #if EMULATE_X87
-    delta = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(current)));
-    step = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(rate), x87f_load_f32(delta)),
-                                   x87f_mul(x87f_load_i32(msec), x87f_load_f32(BG_SWAY_MILLISECONDS_TO_SECONDS))));
+    delta = x87f_store_f32(x87f_sub(x87f_load_f32(target),
+                                    x87f_load_f32(current)));
+    step = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(rate), x87f_load_f32(delta)),
+        x87f_mul(x87f_load_i32(msec),
+                 x87f_load_f32(BG_SWAY_MILLISECONDS_TO_SECONDS))));
 #else
     delta = target - current;
-    step = (float)((long double)rate * (long double)delta * ((long double)msec * (long double)BG_SWAY_MILLISECONDS_TO_SECONDS));
+    step = (float)((long double)rate * (long double)delta *
+                   ((long double)msec *
+                    (long double)BG_SWAY_MILLISECONDS_TO_SECONDS));
 #endif
 
     if (!(fabsf(delta) > 0.001)) {
@@ -85,7 +104,8 @@ float BG_SmoothWeaponSwayValue(float target, float current, float rate, int32_t 
     }
 
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(x87f_load_f32(current), x87f_load_f32(step)));
+    return x87f_store_f32(x87f_add(x87f_load_f32(current),
+                                   x87f_load_f32(step)));
 #else
     return current + step;
 #endif
@@ -93,8 +113,10 @@ float BG_SmoothWeaponSwayValue(float target, float current, float rate, int32_t 
 #endif
 
 #if defined(WINDOWS_BEHAVIOR)
-void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousViewAngles, vec3_t outPosition, vec2_t outAngles, float scale,
-                                     int frameTime)
+void BG_CalculateWeaponPosition_Sway(const playerState_t *ps,
+                                     vec3_t previousViewAngles,
+                                     vec3_t outPosition, vec2_t outAngles,
+                                     float scale, int frameTime)
 {
     weaponInfo_t **weaponTable = bg_weaponInfos;
     float adsFraction = ps->adsFraction;
@@ -122,37 +144,72 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
         }
 #if EMULATE_X87
         maxAngle = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayMaxAngle), x87f_load_f32(weapon->swayMaxAngle)), x87f_load_f32(adsFraction)),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayMaxAngle),
+                         x87f_load_f32(weapon->swayMaxAngle)),
+                x87f_load_f32(adsFraction)),
             x87f_load_f32(weapon->swayMaxAngle)));
         lerpSpeed = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayLerpSpeed), x87f_load_f32(weapon->swayLerpSpeed)), x87f_load_f32(adsFraction)),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayLerpSpeed),
+                         x87f_load_f32(weapon->swayLerpSpeed)),
+                x87f_load_f32(adsFraction)),
             x87f_load_f32(weapon->swayLerpSpeed)));
         pitchScale = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayPitchScale), x87f_load_f32(weapon->swayPitchScale)), x87f_load_f32(adsFraction)),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayPitchScale),
+                         x87f_load_f32(weapon->swayPitchScale)),
+                x87f_load_f32(adsFraction)),
             x87f_load_f32(weapon->swayPitchScale)));
         yawScale = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayYawScale), x87f_load_f32(weapon->swayYawScale)), x87f_load_f32(adsFraction)),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayYawScale),
+                         x87f_load_f32(weapon->swayYawScale)),
+                x87f_load_f32(adsFraction)),
             x87f_load_f32(weapon->swayYawScale)));
         horizontalScale = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayHorizScale), x87f_load_f32(weapon->swayHorizScale)), x87f_load_f32(adsFraction)),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayHorizScale),
+                         x87f_load_f32(weapon->swayHorizScale)),
+                x87f_load_f32(adsFraction)),
             x87f_load_f32(weapon->swayHorizScale)));
         verticalScale = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayVertScale), x87f_load_f32(weapon->swayVertScale)), x87f_load_f32(adsFraction)),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayVertScale),
+                         x87f_load_f32(weapon->swayVertScale)),
+                x87f_load_f32(adsFraction)),
             x87f_load_f32(weapon->swayVertScale)));
 #else
-        maxAngle = (float)(((long double)weapon->adsSwayMaxAngle - (long double)weapon->swayMaxAngle) * (long double)adsFraction +
-                           (long double)weapon->swayMaxAngle);
-        lerpSpeed = (float)(((long double)weapon->adsSwayLerpSpeed - (long double)weapon->swayLerpSpeed) * (long double)adsFraction +
-                            (long double)weapon->swayLerpSpeed);
-        pitchScale = (float)(((long double)weapon->adsSwayPitchScale - (long double)weapon->swayPitchScale) * (long double)adsFraction +
-                             (long double)weapon->swayPitchScale);
-        yawScale = (float)(((long double)weapon->adsSwayYawScale - (long double)weapon->swayYawScale) * (long double)adsFraction +
-                           (long double)weapon->swayYawScale);
-        horizontalScale =
-            (float)(((long double)weapon->adsSwayHorizScale - (long double)weapon->swayHorizScale) * (long double)adsFraction +
-                    (long double)weapon->swayHorizScale);
-        verticalScale = (float)(((long double)weapon->adsSwayVertScale - (long double)weapon->swayVertScale) * (long double)adsFraction +
-                                (long double)weapon->swayVertScale);
+        maxAngle = (float)(
+            ((long double)weapon->adsSwayMaxAngle -
+             (long double)weapon->swayMaxAngle) *
+                (long double)adsFraction +
+            (long double)weapon->swayMaxAngle);
+        lerpSpeed = (float)(
+            ((long double)weapon->adsSwayLerpSpeed -
+             (long double)weapon->swayLerpSpeed) *
+                (long double)adsFraction +
+            (long double)weapon->swayLerpSpeed);
+        pitchScale = (float)(
+            ((long double)weapon->adsSwayPitchScale -
+             (long double)weapon->swayPitchScale) *
+                (long double)adsFraction +
+            (long double)weapon->swayPitchScale);
+        yawScale = (float)(
+            ((long double)weapon->adsSwayYawScale -
+             (long double)weapon->swayYawScale) *
+                (long double)adsFraction +
+            (long double)weapon->swayYawScale);
+        horizontalScale = (float)(
+            ((long double)weapon->adsSwayHorizScale -
+             (long double)weapon->swayHorizScale) *
+                (long double)adsFraction +
+            (long double)weapon->swayHorizScale);
+        verticalScale = (float)(
+            ((long double)weapon->adsSwayVertScale -
+             (long double)weapon->swayVertScale) *
+                (long double)adsFraction +
+            (long double)weapon->swayVertScale);
 #endif
     } else {
         maxAngle = weapon->swayMaxAngle;
@@ -164,10 +221,14 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     }
 
 #if EMULATE_X87
-    pitchScale = x87f_store_f32(x87f_mul(x87f_load_f32(pitchScale), x87f_load_f32(scale)));
-    yawScale = x87f_store_f32(x87f_mul(x87f_load_f32(yawScale), x87f_load_f32(scale)));
-    horizontalScale = x87f_store_f32(x87f_mul(x87f_load_f32(horizontalScale), x87f_load_f32(scale)));
-    verticalScale = x87f_store_f32(x87f_mul(x87f_load_f32(verticalScale), x87f_load_f32(scale)));
+    pitchScale = x87f_store_f32(x87f_mul(x87f_load_f32(pitchScale),
+                                         x87f_load_f32(scale)));
+    yawScale = x87f_store_f32(x87f_mul(x87f_load_f32(yawScale),
+                                       x87f_load_f32(scale)));
+    horizontalScale = x87f_store_f32(x87f_mul(
+        x87f_load_f32(horizontalScale), x87f_load_f32(scale)));
+    verticalScale = x87f_store_f32(x87f_mul(
+        x87f_load_f32(verticalScale), x87f_load_f32(scale)));
 #else
     pitchScale *= scale;
     yawScale *= scale;
@@ -196,7 +257,9 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
 
 #if EMULATE_X87
     dt = x87f_store_f32(x87f_load_i32(frameTime));
-    dt = x87f_store_f32(x87f_mul(x87f_load_f32(dt), x87f_load_f32(BG_SWAY_MILLISECONDS_TO_SECONDS)));
+    dt = x87f_store_f32(x87f_mul(
+        x87f_load_f32(dt),
+        x87f_load_f32(BG_SWAY_MILLISECONDS_TO_SECONDS)));
 #else
     dt = (float)frameTime * BG_SWAY_MILLISECONDS_TO_SECONDS;
 #endif
@@ -207,22 +270,38 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
      * |step| <= |error| OR the compare is unordered (TEST AH,0x41/JZ snaps
      * only on strictly-greater) -- hence `>` and `!(>)` below. */
 #if EMULATE_X87
-    target = x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta), x87f_load_f32(horizontalScale)));
-    error = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(outPosition[1])));
-    step = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)), x87f_load_f32(lerpSpeed)));
-    if (x87f_lt_signaling(x87f_load_f64((double)BG_SWAY_SNAP_EPSILON), x87f_abs(x87f_load_f32(error))) &&
-        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)), x87f_abs(x87f_load_f32(step)))) {
-        outPosition[1] = x87f_store_f32(x87f_add(x87f_load_f32(outPosition[1]), x87f_load_f32(step)));
+    target = x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta),
+                                     x87f_load_f32(horizontalScale)));
+    error = x87f_store_f32(x87f_sub(x87f_load_f32(target),
+                                    x87f_load_f32(outPosition[1])));
+    step = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)),
+        x87f_load_f32(lerpSpeed)));
+    if (x87f_lt_signaling(
+            x87f_load_f64((double)BG_SWAY_SNAP_EPSILON),
+            x87f_abs(x87f_load_f32(error))) &&
+        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)),
+                           x87f_abs(x87f_load_f32(step)))) {
+        outPosition[1] = x87f_store_f32(x87f_add(
+            x87f_load_f32(outPosition[1]), x87f_load_f32(step)));
     } else {
         outPosition[1] = target;
     }
 
-    target = x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta), x87f_load_f32(verticalScale)));
-    error = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(outPosition[2])));
-    step = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)), x87f_load_f32(lerpSpeed)));
-    if (x87f_lt_signaling(x87f_load_f64((double)BG_SWAY_SNAP_EPSILON), x87f_abs(x87f_load_f32(error))) &&
-        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)), x87f_abs(x87f_load_f32(step)))) {
-        outPosition[2] = x87f_store_f32(x87f_add(x87f_load_f32(outPosition[2]), x87f_load_f32(step)));
+    target = x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta),
+                                     x87f_load_f32(verticalScale)));
+    error = x87f_store_f32(x87f_sub(x87f_load_f32(target),
+                                    x87f_load_f32(outPosition[2])));
+    step = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)),
+        x87f_load_f32(lerpSpeed)));
+    if (x87f_lt_signaling(
+            x87f_load_f64((double)BG_SWAY_SNAP_EPSILON),
+            x87f_abs(x87f_load_f32(error))) &&
+        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)),
+                           x87f_abs(x87f_load_f32(step)))) {
+        outPosition[2] = x87f_store_f32(x87f_add(
+            x87f_load_f32(outPosition[2]), x87f_load_f32(step)));
     } else {
         outPosition[2] = target;
     }
@@ -230,7 +309,8 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     target = yawDelta * horizontalScale;
     error = target - outPosition[1];
     step = dt * error * lerpSpeed;
-    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON && !(fabs((double)step) > fabs((double)error))) {
+    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON &&
+        !(fabs((double)step) > fabs((double)error))) {
         outPosition[1] += step;
     } else {
         outPosition[1] = target;
@@ -239,7 +319,8 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     target = pitchDelta * verticalScale;
     error = target - outPosition[2];
     step = dt * error * lerpSpeed;
-    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON && !(fabs((double)step) > fabs((double)error))) {
+    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON &&
+        !(fabs((double)step) > fabs((double)error))) {
         outPosition[2] += step;
     } else {
         outPosition[2] = target;
@@ -247,28 +328,52 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
 #endif
 
 #if EMULATE_X87
-    target = x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta), x87f_load_f32(pitchScale)));
-    while (x87f_lt_signaling(x87f_load_f32(BG_SWAY_HALF_TURN), x87f_sub(x87f_load_f32(target), x87f_load_f32(outAngles[0])))) {
-        target = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(BG_SWAY_FULL_TURN)));
+    target = x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta),
+                                     x87f_load_f32(pitchScale)));
+    while (x87f_lt_signaling(
+        x87f_load_f32(BG_SWAY_HALF_TURN),
+        x87f_sub(x87f_load_f32(target),
+                 x87f_load_f32(outAngles[0])))) {
+        target = x87f_store_f32(x87f_sub(
+            x87f_load_f32(target), x87f_load_f32(BG_SWAY_FULL_TURN)));
     }
-    error = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(outAngles[0])));
-    step = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)), x87f_load_f32(lerpSpeed)));
-    if (x87f_lt_signaling(x87f_load_f64((double)BG_SWAY_SNAP_EPSILON), x87f_abs(x87f_load_f32(error))) &&
-        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)), x87f_abs(x87f_load_f32(step)))) {
-        outAngles[0] = x87f_store_f32(x87f_add(x87f_load_f32(outAngles[0]), x87f_load_f32(step)));
+    error = x87f_store_f32(x87f_sub(x87f_load_f32(target),
+                                    x87f_load_f32(outAngles[0])));
+    step = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)),
+        x87f_load_f32(lerpSpeed)));
+    if (x87f_lt_signaling(
+            x87f_load_f64((double)BG_SWAY_SNAP_EPSILON),
+            x87f_abs(x87f_load_f32(error))) &&
+        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)),
+                           x87f_abs(x87f_load_f32(step)))) {
+        outAngles[0] = x87f_store_f32(x87f_add(
+            x87f_load_f32(outAngles[0]), x87f_load_f32(step)));
     } else {
         outAngles[0] = target;
     }
 
-    target = x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta), x87f_load_f32(yawScale)));
-    while (x87f_lt_signaling(x87f_load_f32(BG_SWAY_HALF_TURN), x87f_sub(x87f_load_f32(target), x87f_load_f32(outAngles[1])))) {
-        target = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(BG_SWAY_FULL_TURN)));
+    target = x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta),
+                                     x87f_load_f32(yawScale)));
+    while (x87f_lt_signaling(
+        x87f_load_f32(BG_SWAY_HALF_TURN),
+        x87f_sub(x87f_load_f32(target),
+                 x87f_load_f32(outAngles[1])))) {
+        target = x87f_store_f32(x87f_sub(
+            x87f_load_f32(target), x87f_load_f32(BG_SWAY_FULL_TURN)));
     }
-    error = x87f_store_f32(x87f_sub(x87f_load_f32(target), x87f_load_f32(outAngles[1])));
-    step = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)), x87f_load_f32(lerpSpeed)));
-    if (x87f_lt_signaling(x87f_load_f64((double)BG_SWAY_SNAP_EPSILON), x87f_abs(x87f_load_f32(error))) &&
-        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)), x87f_abs(x87f_load_f32(step)))) {
-        outAngles[1] = x87f_store_f32(x87f_add(x87f_load_f32(outAngles[1]), x87f_load_f32(step)));
+    error = x87f_store_f32(x87f_sub(x87f_load_f32(target),
+                                    x87f_load_f32(outAngles[1])));
+    step = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(dt), x87f_load_f32(error)),
+        x87f_load_f32(lerpSpeed)));
+    if (x87f_lt_signaling(
+            x87f_load_f64((double)BG_SWAY_SNAP_EPSILON),
+            x87f_abs(x87f_load_f32(error))) &&
+        !x87f_lt_signaling(x87f_abs(x87f_load_f32(error)),
+                           x87f_abs(x87f_load_f32(step)))) {
+        outAngles[1] = x87f_store_f32(x87f_add(
+            x87f_load_f32(outAngles[1]), x87f_load_f32(step)));
     } else {
         outAngles[1] = target;
     }
@@ -279,7 +384,8 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     }
     error = target - outAngles[0];
     step = dt * error * lerpSpeed;
-    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON && !(fabs((double)step) > fabs((double)error))) {
+    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON &&
+        !(fabs((double)step) > fabs((double)error))) {
         outAngles[0] += step;
     } else {
         outAngles[0] = target;
@@ -291,7 +397,8 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     }
     error = target - outAngles[1];
     step = dt * error * lerpSpeed;
-    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON && !(fabs((double)step) > fabs((double)error))) {
+    if (fabs((double)error) > BG_SWAY_SNAP_EPSILON &&
+        !(fabs((double)step) > fabs((double)error))) {
         outAngles[1] += step;
     } else {
         outAngles[1] = target;
@@ -305,8 +412,10 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     previousViewAngles[2] = ps->viewAngles[2];
 }
 #else
-void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousViewAngles, vec3_t outPosition, vec2_t outAngles, float scale,
-                                     int32_t frameTime)
+void BG_CalculateWeaponPosition_Sway(const playerState_t *ps,
+                                     vec3_t previousViewAngles,
+                                     vec3_t outPosition, vec2_t outAngles,
+                                     float scale, int32_t frameTime)
 {
     const weaponInfo_t *weapon = BG_GetInfoForWeapon(ps->currentWeapon);
     float adsFraction = ps->adsFraction;
@@ -329,31 +438,59 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
 #if EMULATE_X87
         maxAngle = x87f_store_f32(x87f_add(
             x87f_load_f32(weapon->swayMaxAngle),
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayMaxAngle), x87f_load_f32(weapon->swayMaxAngle)), x87f_load_f32(adsFraction))));
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayMaxAngle),
+                         x87f_load_f32(weapon->swayMaxAngle)),
+                x87f_load_f32(adsFraction))));
         lerpSpeed = x87f_store_f32(x87f_add(
             x87f_load_f32(weapon->swayLerpSpeed),
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayLerpSpeed), x87f_load_f32(weapon->swayLerpSpeed)), x87f_load_f32(adsFraction))));
-        pitchScale =
-            x87f_store_f32(x87f_add(x87f_load_f32(weapon->swayPitchScale),
-                                    x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayPitchScale), x87f_load_f32(weapon->swayPitchScale)),
-                                             x87f_load_f32(adsFraction))));
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayLerpSpeed),
+                         x87f_load_f32(weapon->swayLerpSpeed)),
+                x87f_load_f32(adsFraction))));
+        pitchScale = x87f_store_f32(x87f_add(
+            x87f_load_f32(weapon->swayPitchScale),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayPitchScale),
+                         x87f_load_f32(weapon->swayPitchScale)),
+                x87f_load_f32(adsFraction))));
         yawScale = x87f_store_f32(x87f_add(
             x87f_load_f32(weapon->swayYawScale),
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayYawScale), x87f_load_f32(weapon->swayYawScale)), x87f_load_f32(adsFraction))));
-        horizontalScale =
-            x87f_store_f32(x87f_add(x87f_load_f32(weapon->swayHorizScale),
-                                    x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayHorizScale), x87f_load_f32(weapon->swayHorizScale)),
-                                             x87f_load_f32(adsFraction))));
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayYawScale),
+                         x87f_load_f32(weapon->swayYawScale)),
+                x87f_load_f32(adsFraction))));
+        horizontalScale = x87f_store_f32(x87f_add(
+            x87f_load_f32(weapon->swayHorizScale),
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayHorizScale),
+                         x87f_load_f32(weapon->swayHorizScale)),
+                x87f_load_f32(adsFraction))));
         verticalScale = x87f_store_f32(x87f_add(
             x87f_load_f32(weapon->swayVertScale),
-            x87f_mul(x87f_sub(x87f_load_f32(weapon->adsSwayVertScale), x87f_load_f32(weapon->swayVertScale)), x87f_load_f32(adsFraction))));
+            x87f_mul(
+                x87f_sub(x87f_load_f32(weapon->adsSwayVertScale),
+                         x87f_load_f32(weapon->swayVertScale)),
+                x87f_load_f32(adsFraction))));
 #else
-        maxAngle = weapon->swayMaxAngle + (weapon->adsSwayMaxAngle - weapon->swayMaxAngle) * adsFraction;
-        lerpSpeed = weapon->swayLerpSpeed + (weapon->adsSwayLerpSpeed - weapon->swayLerpSpeed) * adsFraction;
-        pitchScale = weapon->swayPitchScale + (weapon->adsSwayPitchScale - weapon->swayPitchScale) * adsFraction;
-        yawScale = weapon->swayYawScale + (weapon->adsSwayYawScale - weapon->swayYawScale) * adsFraction;
-        horizontalScale = weapon->swayHorizScale + (weapon->adsSwayHorizScale - weapon->swayHorizScale) * adsFraction;
-        verticalScale = weapon->swayVertScale + (weapon->adsSwayVertScale - weapon->swayVertScale) * adsFraction;
+        maxAngle = weapon->swayMaxAngle +
+                   (weapon->adsSwayMaxAngle - weapon->swayMaxAngle) *
+                       adsFraction;
+        lerpSpeed = weapon->swayLerpSpeed +
+                    (weapon->adsSwayLerpSpeed - weapon->swayLerpSpeed) *
+                        adsFraction;
+        pitchScale = weapon->swayPitchScale +
+                     (weapon->adsSwayPitchScale - weapon->swayPitchScale) *
+                         adsFraction;
+        yawScale = weapon->swayYawScale +
+                   (weapon->adsSwayYawScale - weapon->swayYawScale) *
+                       adsFraction;
+        horizontalScale = weapon->swayHorizScale +
+                          (weapon->adsSwayHorizScale -
+                           weapon->swayHorizScale) * adsFraction;
+        verticalScale = weapon->swayVertScale +
+                        (weapon->adsSwayVertScale - weapon->swayVertScale) *
+                            adsFraction;
 #endif
     } else {
         adsFraction = 0.0f;
@@ -366,10 +503,14 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     }
 
 #if EMULATE_X87
-    pitchScale = x87f_store_f32(x87f_mul(x87f_load_f32(pitchScale), x87f_load_f32(scale)));
-    yawScale = x87f_store_f32(x87f_mul(x87f_load_f32(yawScale), x87f_load_f32(scale)));
-    horizontalScale = x87f_store_f32(x87f_mul(x87f_load_f32(horizontalScale), x87f_load_f32(scale)));
-    verticalScale = x87f_store_f32(x87f_mul(x87f_load_f32(verticalScale), x87f_load_f32(scale)));
+    pitchScale = x87f_store_f32(x87f_mul(x87f_load_f32(pitchScale),
+                                         x87f_load_f32(scale)));
+    yawScale = x87f_store_f32(x87f_mul(x87f_load_f32(yawScale),
+                                       x87f_load_f32(scale)));
+    horizontalScale = x87f_store_f32(x87f_mul(
+        x87f_load_f32(horizontalScale), x87f_load_f32(scale)));
+    verticalScale = x87f_store_f32(x87f_mul(
+        x87f_load_f32(verticalScale), x87f_load_f32(scale)));
 #else
     pitchScale *= scale;
     yawScale *= scale;
@@ -392,37 +533,59 @@ void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousVie
     }
 
 #if EMULATE_X87
-    outPosition[1] = BG_SmoothWeaponSwayValue(x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta), x87f_load_f32(horizontalScale))),
-                                              outPosition[1], lerpSpeed, frameTime);
-    outPosition[2] = BG_SmoothWeaponSwayValue(x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta), x87f_load_f32(verticalScale))),
-                                              outPosition[2], lerpSpeed, frameTime);
-    targetPitch = x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta), x87f_load_f32(pitchScale)));
-    targetYaw = x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta), x87f_load_f32(yawScale)));
+    outPosition[1] = BG_SmoothWeaponSwayValue(
+        x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta),
+                                x87f_load_f32(horizontalScale))),
+        outPosition[1], lerpSpeed, frameTime);
+    outPosition[2] = BG_SmoothWeaponSwayValue(
+        x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta),
+                                x87f_load_f32(verticalScale))),
+        outPosition[2], lerpSpeed, frameTime);
+    targetPitch = x87f_store_f32(x87f_mul(x87f_load_f32(pitchDelta),
+                                          x87f_load_f32(pitchScale)));
+    targetYaw = x87f_store_f32(x87f_mul(x87f_load_f32(yawDelta),
+                                        x87f_load_f32(yawScale)));
 #else
-    outPosition[1] = BG_SmoothWeaponSwayValue(yawDelta * horizontalScale, outPosition[1], lerpSpeed, frameTime);
-    outPosition[2] = BG_SmoothWeaponSwayValue(pitchDelta * verticalScale, outPosition[2], lerpSpeed, frameTime);
+    outPosition[1] = BG_SmoothWeaponSwayValue(
+        yawDelta * horizontalScale, outPosition[1], lerpSpeed, frameTime);
+    outPosition[2] = BG_SmoothWeaponSwayValue(
+        pitchDelta * verticalScale, outPosition[2], lerpSpeed, frameTime);
     targetPitch = pitchDelta * pitchScale;
     targetYaw = yawDelta * yawScale;
 #endif
 
 #if EMULATE_X87
-    while (x87f_lt(x87f_load_f32(BG_SWAY_HALF_TURN), x87f_sub(x87f_load_f32(targetPitch), x87f_load_f32(outAngles[0])))) {
-        targetPitch = x87f_store_f32(x87f_sub(x87f_load_f32(targetPitch), x87f_load_f32(BG_SWAY_FULL_TURN)));
+    while (x87f_lt(
+        x87f_load_f32(BG_SWAY_HALF_TURN),
+        x87f_sub(x87f_load_f32(targetPitch),
+                 x87f_load_f32(outAngles[0])))) {
+        targetPitch = x87f_store_f32(x87f_sub(
+            x87f_load_f32(targetPitch),
+            x87f_load_f32(BG_SWAY_FULL_TURN)));
     }
-    while (x87f_lt(x87f_load_f32(BG_SWAY_HALF_TURN), x87f_sub(x87f_load_f32(targetYaw), x87f_load_f32(outAngles[1])))) {
-        targetYaw = x87f_store_f32(x87f_sub(x87f_load_f32(targetYaw), x87f_load_f32(BG_SWAY_FULL_TURN)));
+    while (x87f_lt(
+        x87f_load_f32(BG_SWAY_HALF_TURN),
+        x87f_sub(x87f_load_f32(targetYaw),
+                 x87f_load_f32(outAngles[1])))) {
+        targetYaw = x87f_store_f32(x87f_sub(
+            x87f_load_f32(targetYaw),
+            x87f_load_f32(BG_SWAY_FULL_TURN)));
     }
 #else
-    while ((long double)targetPitch - (long double)outAngles[0] > (long double)BG_SWAY_HALF_TURN) {
+    while ((long double)targetPitch - (long double)outAngles[0] >
+           (long double)BG_SWAY_HALF_TURN) {
         targetPitch -= BG_SWAY_FULL_TURN;
     }
-    while ((long double)targetYaw - (long double)outAngles[1] > (long double)BG_SWAY_HALF_TURN) {
+    while ((long double)targetYaw - (long double)outAngles[1] >
+           (long double)BG_SWAY_HALF_TURN) {
         targetYaw -= BG_SWAY_FULL_TURN;
     }
 #endif
 
-    outAngles[0] = BG_SmoothWeaponSwayValue(targetPitch, outAngles[0], lerpSpeed, frameTime);
-    outAngles[1] = BG_SmoothWeaponSwayValue(targetYaw, outAngles[1], lerpSpeed, frameTime);
+    outAngles[0] = BG_SmoothWeaponSwayValue(
+        targetPitch, outAngles[0], lerpSpeed, frameTime);
+    outAngles[1] = BG_SmoothWeaponSwayValue(
+        targetYaw, outAngles[1], lerpSpeed, frameTime);
     outAngles[0] = AngleNormalize180(outAngles[0]);
     outAngles[1] = AngleNormalize180(outAngles[1]);
     previousViewAngles[0] = ps->viewAngles[0];

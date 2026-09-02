@@ -45,13 +45,24 @@
 // DrawStretchPic takes all nine as opaque 32-bit words, so CG_FloatBits reproduces
 // the exact forwarding. The multiply order in the machine code is h, x, y, w.
 
-void CG_DrawStretchPic(float x, float y, float width, float height, float s1, float t1, float s2, float t2, qhandle_t hShader)
+void CG_DrawStretchPic(float x, float y, float width, float height,
+                       float s1, float t1, float s2, float t2,
+                       qhandle_t hShader)
 {
-    float scaledHeight = (float)((long double)cgs_screenYScale * (long double)height);
+    float scaledHeight = (float)((long double)cgs_screenYScale *
+                                 (long double)height);
     float scaledX = (float)((long double)cgs_screenXScale * (long double)x);
     float scaledY = (float)((long double)cgs_screenYScale * (long double)y);
-    float scaledWidth = (float)((long double)cgs_screenXScale * (long double)width);
+    float scaledWidth = (float)((long double)cgs_screenXScale *
+                                (long double)width);
 
-    trap_R_DrawStretchPic(CG_FloatBits(scaledX), CG_FloatBits(scaledY), CG_FloatBits(scaledWidth), CG_FloatBits(scaledHeight),
-                          CG_FloatBits(s1), CG_FloatBits(t1), CG_FloatBits(s2), CG_FloatBits(t2), hShader);
+    trap_R_DrawStretchPic(CG_FloatBits(scaledX),
+                          CG_FloatBits(scaledY),
+                          CG_FloatBits(scaledWidth),
+                          CG_FloatBits(scaledHeight),
+                          CG_FloatBits(s1),
+                          CG_FloatBits(t1),
+                          CG_FloatBits(s2),
+                          CG_FloatBits(t2),
+                          hShader);
 }

@@ -14,9 +14,12 @@
  * FSINCOS instruction. */
 void gunrandom(float *x, float *y)
 {
-    const float degrees = ((float)coduo_crt_rand() / 32768.0f) * 360.0f;
-    const float radius = (float)coduo_crt_rand() / 32768.0f;
-    const float radians = degrees * 3.1415927410125732f / 180.0f;
+    const float degrees =
+        ((float)coduo_crt_rand() / 32768.0f) * 360.0f;
+    const float radius =
+        (float)coduo_crt_rand() / 32768.0f;
+    const float radians =
+        degrees * 3.1415927410125732f / 180.0f;
     float sine;
     float cosine;
     coduo_x87_sincosf(radians, &sine, &cosine);
@@ -35,7 +38,8 @@ void gunrandom(float *x, float *y)
  * platform emits no separate FastFloor symbol. */
 int32_t FastFloor(float value)
 {
-    const double floorBias = 0.499999999068677425384521484375; /* 0.5 - 2^-30 */
+    const double floorBias =
+        0.499999999068677425384521484375; /* 0.5 - 2^-30 */
     const double rounded = rint((double)value - floorBias);
 
     /* Masked x87 FISTP produces its signed 32-bit indefinite result for NaN
@@ -52,9 +56,13 @@ int32_t FastFloor(float value)
  * Name and signature: exact same-module Mac symbol
  * AxisTransformVector(float const (*)[3], float, float, float, float *). The
  * Windows build carries axis in EAX and transformed in ECX. */
-void AxisTransformVector(const axis_t axis, float x, float y, float z, vec3_t transformed)
+void AxisTransformVector(const axis_t axis, float x, float y, float z,
+                         vec3_t transformed)
 {
-    transformed[0] = (y * axis[1][0] + z * axis[2][0]) + x * axis[0][0];
-    transformed[1] = (x * axis[0][1] + y * axis[1][1]) + z * axis[2][1];
-    transformed[2] = (x * axis[0][2] + y * axis[1][2]) + z * axis[2][2];
+    transformed[0] =
+        (y * axis[1][0] + z * axis[2][0]) + x * axis[0][0];
+    transformed[1] =
+        (x * axis[0][1] + y * axis[1][1]) + z * axis[2][1];
+    transformed[2] =
+        (x * axis[0][2] + y * axis[1][2]) + z * axis[2][2];
 }

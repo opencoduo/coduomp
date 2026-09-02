@@ -61,35 +61,34 @@
 #define CG_SB_SCROLL_WINDOW_HEIGHT 432.0f
 
 /* Track (background bar) geometry. */
-#define CG_SB_SCROLL_TRACK_X 505.0f  /* 0x3007c00c */
-#define CG_SB_SCROLL_TRACK_WIDTH 8.0f  /* 0x3007be08 */
+#define CG_SB_SCROLL_TRACK_X       505.0f  /* 0x3007c00c */
+#define CG_SB_SCROLL_TRACK_WIDTH     8.0f  /* 0x3007be08 */
 /* The track spans from topY to the window bottom, less a 1px top inset. */
-#define CG_SB_SCROLL_TOP_INSET 1.0f  /* 0x3007bce0 */
+#define CG_SB_SCROLL_TOP_INSET       1.0f  /* 0x3007bce0 */
 
 /* Thumb (proportional handle) geometry. */
-#define CG_SB_SCROLL_THUMB_X 506.0f  /* 0x3007c008 */
-#define CG_SB_SCROLL_THUMB_WIDTH 6.0f  /* 0x3007bddc */
+#define CG_SB_SCROLL_THUMB_X       506.0f  /* 0x3007c008 */
+#define CG_SB_SCROLL_THUMB_WIDTH     6.0f  /* 0x3007bddc */
 /* Thumb travel/height is measured in the track less this 2px end margin. */
-#define CG_SB_SCROLL_THUMB_MARGIN 2.0f  /* 0x3007bce4 */
+#define CG_SB_SCROLL_THUMB_MARGIN    2.0f  /* 0x3007bce4 */
 
 /* Alpha scale applied to the incoming color: dim for the track, dimmer for the
  * thumb, full for the arrow/key glyphs. */
-#define CG_SB_SCROLL_TRACK_ALPHA 0.5f    /* 0x3007bce8 */
-#define CG_SB_SCROLL_THUMB_ALPHA 0.25f   /* 0x3007be58 */
+#define CG_SB_SCROLL_TRACK_ALPHA   0.5f    /* 0x3007bce8 */
+#define CG_SB_SCROLL_THUMB_ALPHA   0.25f   /* 0x3007be58 */
 
 /* Arrow/key glyph geometry (fixed virtual pixels). */
-#define CG_SB_SCROLL_GLYPH_X 521.0f  /* 0x44024000 */
-#define CG_SB_SCROLL_GLYPH_SIZE 16.0f  /* 0x41800000 */
-#define CG_SB_SCROLL_UPKEY_DY 18.0f  /* 0x3007bf10: up-key below up-arrow */
-#define CG_SB_SCROLL_DOWNARROW_Y 415.0f  /* 0x43cf8000 */
-#define CG_SB_SCROLL_DOWNKEY_Y 397.0f  /* 0x43c68000 */
+#define CG_SB_SCROLL_GLYPH_X       521.0f  /* 0x44024000 */
+#define CG_SB_SCROLL_GLYPH_SIZE     16.0f  /* 0x41800000 */
+#define CG_SB_SCROLL_UPKEY_DY       18.0f  /* 0x3007bf10: up-key below up-arrow */
+#define CG_SB_SCROLL_DOWNARROW_Y   415.0f  /* 0x43cf8000 */
+#define CG_SB_SCROLL_DOWNKEY_Y     397.0f  /* 0x43c68000 */
 
 /* sort/precache class passed to the register-shader trap for every element. */
-enum {
-    CG_SB_SCROLL_SHADER_SORT = 5
-};
+enum { CG_SB_SCROLL_SHADER_SORT = 5 };
 
-void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int lineCount, int visibleLineCount)
+void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
+                                        int lineCount, int visibleLineCount)
 {
     /* 0x300378b3..0x300378cb: copy r/g/b out of the incoming color; the alpha slot
      * is filled per element below. This mirrors the machine's stack-local color. */
@@ -102,9 +101,12 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int line
      * 0x300378cf..0x300378fd: pump the loading HUD, register "black", set the 2D
      * color to {r,g,b, alpha*0.5}. */
     CG_DrawInformation(0);
-    qhandle_t blackShader =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName, CG_SB_SCROLL_SHADER_SORT));
-    drawColor[3] = (float)((long double)color[3] * (long double)CG_SB_SCROLL_TRACK_ALPHA);
+    qhandle_t blackShader = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                (intptr_t)cg_blackMaterialName,
+                                CG_SB_SCROLL_SHADER_SORT));
+    drawColor[3] = (float)((long double)color[3] *
+                           (long double)CG_SB_SCROLL_TRACK_ALPHA);
     trap_R_SetColor(drawColor);
 
     /* 0x300378ff..0x3003795d: draw the track. The track height (in virtual pixels)
@@ -116,12 +118,20 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int line
     /* 0x300378ff FLD 432.0f; FSUB topY; 0x30037912 FSUB 1.0f -- the result is NEVER
      * stored to a float slot: it stays live in st(0) across the draw call below and
      * is re-consumed unrounded by thumbHeight at 0x3003797a. Hence long double. */
-    long double trackHeight = (long double)CG_SB_SCROLL_WINDOW_HEIGHT - (long double)topY - (long double)CG_SB_SCROLL_TOP_INSET;
-    trap_R_DrawStretchPic(CG_FloatBits((float)((long double)cgs_screenXScale * (long double)CG_SB_SCROLL_TRACK_X)),
-                          CG_FloatBits((float)((long double)cgs_screenYScale * (long double)topY)),
-                          CG_FloatBits((float)((long double)cgs_screenXScale * (long double)CG_SB_SCROLL_TRACK_WIDTH)),
-                          CG_FloatBits((float)((long double)cgs_screenYScale * trackHeight)), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                          CG_FloatBits(1.0f), CG_FloatBits(1.0f), (int32_t)blackShader);
+    long double trackHeight =
+        (long double)CG_SB_SCROLL_WINDOW_HEIGHT - (long double)topY -
+        (long double)CG_SB_SCROLL_TOP_INSET;
+    trap_R_DrawStretchPic(
+        CG_FloatBits((float)((long double)cgs_screenXScale *
+                             (long double)CG_SB_SCROLL_TRACK_X)),
+        CG_FloatBits((float)((long double)cgs_screenYScale *
+                             (long double)topY)),
+        CG_FloatBits((float)((long double)cgs_screenXScale *
+                             (long double)CG_SB_SCROLL_TRACK_WIDTH)),
+        CG_FloatBits((float)((long double)cgs_screenYScale * trackHeight)),
+        CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+        CG_FloatBits(1.0f), CG_FloatBits(1.0f),
+        (int32_t)blackShader);
 
     /* ---- thumb geometry (computed before the white draw) ---------------------
      * 0x30037962..0x300379be. Base position and full-travel extent:
@@ -135,38 +145,55 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int line
      *   if ((visibleLineCount - scrollPos) > 1 && lineCount > 1)
      *       thumbHeight = ((visibleLineCount - scrollPos) / lineCount) * thumbHeight
      * All ratios are integer/integer promoted to float (FILD/FIDIV) then scaled. */
-    float thumbY = (float)((long double)topY + (long double)CG_SB_SCROLL_TOP_INSET);
-    float thumbHeight = (float)(trackHeight - (long double)CG_SB_SCROLL_THUMB_MARGIN);
+    float thumbY = (float)((long double)topY +
+                           (long double)CG_SB_SCROLL_TOP_INSET);
+    float thumbHeight = (float)(trackHeight -
+                                (long double)CG_SB_SCROLL_THUMB_MARGIN);
 
     if (cg_scoreboardScrollPos != 0 && lineCount != 0) {
         /* 0x3003798a FILD scrollPos; 0x30037990 FIDIV dword lineCount -- both operands
          * are integers fed straight into the FP divide, kept exact in 80-bit (no float
          * store). (long double)/int keeps that structure; (float) casts would round
          * each int first. Value-identical for the reachable line counts, but faithful. */
-        thumbY = (float)(((long double)cg_scoreboardScrollPos / (long double)lineCount) * (long double)thumbHeight + (long double)thumbY);
+        thumbY = (float)(((long double)cg_scoreboardScrollPos /
+                          (long double)lineCount) *
+                         (long double)thumbHeight + (long double)thumbY);
     }
 
-    int visibleRows = coduo_int32_from_bits((uint32_t)visibleLineCount - (uint32_t)cg_scoreboardScrollPos);
+    int visibleRows = coduo_int32_from_bits((uint32_t)visibleLineCount -
+                                       (uint32_t)cg_scoreboardScrollPos);
     if (visibleRows > 1 && lineCount > 1) {
         /* 0x300379b2 FILD visibleRows; 0x300379b6 FIDIV dword lineCount -- same exact
          * integer FP-divide as above; no (float) rounding of the operands. */
-        thumbHeight = (float)(((long double)visibleRows / (long double)lineCount) * (long double)thumbHeight);
+        thumbHeight = (float)(((long double)visibleRows /
+                               (long double)lineCount) *
+                              (long double)thumbHeight);
     }
 
     /* ---- 2. white thumb ------------------------------------------------------
      * 0x300379c2..0x30037a44: pump, register "white", set color {r,g,b, alpha*0.25},
      * draw the thumb at x=506, y=thumbY, w=6, h=thumbHeight (texcoords (0,0)-(1,1)). */
     CG_DrawInformation(0);
-    qhandle_t whiteShader =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName, CG_SB_SCROLL_SHADER_SORT));
-    drawColor[3] = (float)((long double)color[3] * (long double)CG_SB_SCROLL_THUMB_ALPHA);
+    qhandle_t whiteShader = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                (intptr_t)cg_whiteMaterialName,
+                                CG_SB_SCROLL_SHADER_SORT));
+    drawColor[3] = (float)((long double)color[3] *
+                           (long double)CG_SB_SCROLL_THUMB_ALPHA);
     trap_R_SetColor(drawColor);
 
-    trap_R_DrawStretchPic(CG_FloatBits((float)((long double)cgs_screenXScale * (long double)CG_SB_SCROLL_THUMB_X)),
-                          CG_FloatBits((float)((long double)cgs_screenYScale * (long double)thumbY)),
-                          CG_FloatBits((float)((long double)cgs_screenXScale * (long double)CG_SB_SCROLL_THUMB_WIDTH)),
-                          CG_FloatBits((float)((long double)cgs_screenYScale * (long double)thumbHeight)), CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), (int32_t)whiteShader);
+    trap_R_DrawStretchPic(
+        CG_FloatBits((float)((long double)cgs_screenXScale *
+                             (long double)CG_SB_SCROLL_THUMB_X)),
+        CG_FloatBits((float)((long double)cgs_screenYScale *
+                             (long double)thumbY)),
+        CG_FloatBits((float)((long double)cgs_screenXScale *
+                             (long double)CG_SB_SCROLL_THUMB_WIDTH)),
+        CG_FloatBits((float)((long double)cgs_screenYScale *
+                             (long double)thumbHeight)),
+        CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+        CG_FloatBits(1.0f), CG_FloatBits(1.0f),
+        (int32_t)whiteShader);
 
     /* 0x30037a49..0x30037a5b: restore the draw color to the full incoming alpha for
      * the glyphs (no scale). */
@@ -179,14 +206,21 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int line
     if (cg_scoreboardScrollPos > 0) {
         CG_DrawInformation(0);
         qhandle_t upArrow = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollUpArrowMaterialName, CG_SB_SCROLL_SHADER_SORT));
-        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, topY, CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, upArrow);
+            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                (intptr_t)cg_scoreboardScrollUpArrowMaterialName,
+                CG_SB_SCROLL_SHADER_SORT));
+        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, topY,
+                   CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, upArrow);
 
         CG_DrawInformation(0);
         qhandle_t upKey = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollUpKeyMaterialName, CG_SB_SCROLL_SHADER_SORT));
-        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, (float)((long double)topY + (long double)CG_SB_SCROLL_UPKEY_DY), CG_SB_SCROLL_GLYPH_SIZE,
-                   CG_SB_SCROLL_GLYPH_SIZE, upKey);
+            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                (intptr_t)cg_scoreboardScrollUpKeyMaterialName,
+                CG_SB_SCROLL_SHADER_SORT));
+        CG_DrawPic(CG_SB_SCROLL_GLYPH_X,
+                   (float)((long double)topY +
+                           (long double)CG_SB_SCROLL_UPKEY_DY),
+                   CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, upKey);
     }
 
     /* ---- 4. down-arrow + down-key (only when rows remain below) ---------------
@@ -196,12 +230,18 @@ void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int line
     if (visibleLineCount < lineCount) {
         CG_DrawInformation(0);
         qhandle_t downArrow = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollDownArrowMaterialName, CG_SB_SCROLL_SHADER_SORT));
-        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, CG_SB_SCROLL_DOWNARROW_Y, CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, downArrow);
+            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                (intptr_t)cg_scoreboardScrollDownArrowMaterialName,
+                CG_SB_SCROLL_SHADER_SORT));
+        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, CG_SB_SCROLL_DOWNARROW_Y,
+                   CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, downArrow);
 
         CG_DrawInformation(0);
         qhandle_t downKey = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollDownKeyMaterialName, CG_SB_SCROLL_SHADER_SORT));
-        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, CG_SB_SCROLL_DOWNKEY_Y, CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, downKey);
+            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                (intptr_t)cg_scoreboardScrollDownKeyMaterialName,
+                CG_SB_SCROLL_SHADER_SORT));
+        CG_DrawPic(CG_SB_SCROLL_GLYPH_X, CG_SB_SCROLL_DOWNKEY_Y,
+                   CG_SB_SCROLL_GLYPH_SIZE, CG_SB_SCROLL_GLYPH_SIZE, downKey);
     }
 }

@@ -35,13 +35,15 @@
  * their proven role, exact source constant names unresolved.
  */
 enum {
-    VIEWHEIGHT_LERP_MS_LONG = 400, /* 0x190: prone-origin lerp, and crouched-origin
+    VIEWHEIGHT_LERP_MS_LONG  = 400, /* 0x190: prone-origin lerp, and crouched-origin
                                      *        lerp when viewHeightLerpDown == 0 */
     VIEWHEIGHT_LERP_MS_SHORT = 200  /* 0xc8:  default, and crouched-origin lerp when
                                      *        viewHeightLerpDown != 0 */
 };
 
-int32_t PM_GetViewHeightLerpTime(const playerState_t *ps, int32_t fromViewheight, int32_t viewHeightLerpDown)
+int32_t PM_GetViewHeightLerpTime(const playerState_t *ps,
+                                 int32_t fromViewheight,
+                                 int32_t viewHeightLerpDown)
 {
     /* 0x3000a8b0: CMP EAX,[ECX+0x574] / JNZ / MOV EAX,0x190 / RET. */
     if (fromViewheight == ps->proneViewHeight) {          /* +0x574 proneViewHeight */
@@ -56,8 +58,9 @@ int32_t PM_GetViewHeightLerpTime(const playerState_t *ps, int32_t fromViewheight
          * yields 0 or -1; AND with 0xffffff38 (== -200) then ADD 400 gives 200
          * when the flag is nonzero, 400 when it is zero.
          */
-        return (viewHeightLerpDown != 0) ? VIEWHEIGHT_LERP_MS_SHORT   /* 400 + (-200) */
-                                         : VIEWHEIGHT_LERP_MS_LONG;   /* 400 + 0 */
+        return (viewHeightLerpDown != 0)
+                   ? VIEWHEIGHT_LERP_MS_SHORT   /* 400 + (-200) */
+                   : VIEWHEIGHT_LERP_MS_LONG;   /* 400 + 0 */
     }
 
     /* 0x3000a8d9: MOV EAX,0xc8 / RET. */

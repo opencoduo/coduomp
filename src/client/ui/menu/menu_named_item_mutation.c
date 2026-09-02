@@ -8,7 +8,8 @@ void Menu_SetItemBackground(const char *itemName, const char *backgroundName)
     itemDef_t *item = Menu_FindItemByName(Menu_GetFocused(), itemName);
 
     if (item != NULL) {
-        item->window.background = DC->registerShaderNoMip(backgroundName, R_IMAGE_TRACK_UI);
+        item->window.background = DC->registerShaderNoMip(
+            backgroundName, R_IMAGE_TRACK_UI);
     }
 }
 

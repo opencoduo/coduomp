@@ -32,7 +32,8 @@ void SetPlaneSignbits(cplane_t *plane)
 
     for (int32_t axis = 0; axis < 3; ++axis) {
 #if EMULATE_X87
-        if (x87f_lt(x87f_load_f32(plane->normal[axis]), x87f_load_f32(0.0f))) {
+        if (x87f_lt(x87f_load_f32(plane->normal[axis]),
+                    x87f_load_f32(0.0f))) {
 #else
         if (plane->normal[axis] < 0.0f) {
 #endif

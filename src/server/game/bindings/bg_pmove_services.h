@@ -31,16 +31,21 @@ static inline int32_t bg_compat_pmove_weapon_debug_target_none(void)
     return 2;
 }
 
-void G_DebugArc(const float *center, float radius, float startAngle, float endAngle, const float *color, int depthTest, int duration);
+void G_DebugArc(const float *center, float radius, float startAngle,
+                float endAngle, const float *color, int depthTest,
+                int duration);
 extern const vec4_t colorWhite;
 
 /* NOT_FROM_ORIGINAL_SOURCE: local side of the shared PM debug-draw boundary. */
-static inline void bg_compat_pmove_debug_line(const vec3_t start, const vec3_t end)
+static inline void bg_compat_pmove_debug_line(const vec3_t start,
+                                              const vec3_t end)
 {
     G_DebugLine(start, end, colorWhite, qtrue, 1);
 }
 
-static inline void bg_compat_pmove_debug_arc(const vec3_t center, float startAngle, float endAngle)
+static inline void bg_compat_pmove_debug_arc(const vec3_t center,
+                                             float startAngle,
+                                             float endAngle)
 {
     G_DebugArc(center, 16.0f, startAngle, endAngle, colorWhite, qtrue, 1);
 }

@@ -37,7 +37,9 @@ int32_t SV_ClipHandleForEntity(const sharedEntity_t *entity)
         return CM_InlineModel(entity->entityState.index);
     }
 
-    return CM_TempBoxModel(entity->mins, entity->maxs, entity->contents, (entity->svFlags & SVF_CAPSULE) != 0 ? qtrue : qfalse);
+    return CM_TempBoxModel(
+        entity->mins, entity->maxs, entity->contents,
+        (entity->svFlags & SVF_CAPSULE) != 0 ? qtrue : qfalse);
 }
 
 /*
@@ -62,13 +64,15 @@ void SV_SetBrushModel(sharedEntity_t *entity)
  * itself against the entity model with all contents enabled, then return the
  * transformed trace's byte-sized startsolid result.
  */
-qboolean SV_EntityContact(const vec3_t mins, const vec3_t maxs, const sharedEntity_t *entity, qboolean capsule)
+qboolean SV_EntityContact(const vec3_t mins, const vec3_t maxs,
+                          const sharedEntity_t *entity, qboolean capsule)
 {
     trace_t trace;
     const int32_t clipHandle = SV_ClipHandleForEntity(entity);
 
-    CM_TransformedBoxTraceExternal(&trace, vec3_origin, vec3_origin, mins, maxs, clipHandle, -1, entity->currentOrigin,
-                                   entity->currentAngles, capsule);
+    CM_TransformedBoxTraceExternal(
+        &trace, vec3_origin, vec3_origin, mins, maxs, clipHandle, -1,
+        entity->currentOrigin, entity->currentAngles, capsule);
     return trace.startsolid != 0 ? qtrue : qfalse;
 }
 
@@ -87,7 +91,8 @@ void SV_SnapVector(vec3_t vector)
         const int32_t rounded = FastRound(vector[axis]);
 
 #if EMULATE_X87
-        const x87f difference = x87f_sub(x87f_load_i32(rounded), x87f_load_f32(vector[axis]));
+        const x87f difference = x87f_sub(
+            x87f_load_i32(rounded), x87f_load_f32(vector[axis]));
         const x87f squared = x87f_mul(difference, difference);
         if (x87f_lt(squared, x87f_load_f32(sv_snapVectorEpsilon))) {
             vector[axis] = (float)rounded;
@@ -95,8 +100,10 @@ void SV_SnapVector(vec3_t vector)
 #else
         /* CoDUOMP.exe 0x00467021 keeps the difference and its square live
          * under the process PC=53 policy until the binary32 comparison. */
-        const long double difference = (long double)rounded - (long double)vector[axis];
-        if (difference * difference < (long double)sv_snapVectorEpsilon) {
+        const long double difference =
+            (long double)rounded - (long double)vector[axis];
+        if (difference * difference <
+            (long double)sv_snapVectorEpsilon) {
             vector[axis] = (float)rounded;
         }
 #endif
@@ -109,16 +116,20 @@ void SV_SnapVector(vec3_t vector)
         const int32_t rounded = FastRound(vector[axis]);
 
 #if EMULATE_X87
-        const float difference = x87f_store_f32(x87f_sub(x87f_load_i32(rounded), x87f_load_f32(vector[axis])));
-        const x87f squared = x87f_mul(x87f_load_f32(difference), x87f_load_f32(difference));
+        const float difference = x87f_store_f32(x87f_sub(
+            x87f_load_i32(rounded), x87f_load_f32(vector[axis])));
+        const x87f squared = x87f_mul(
+            x87f_load_f32(difference), x87f_load_f32(difference));
         if (x87f_lt(squared, x87f_load_f32(sv_snapVectorEpsilon))) {
             vector[axis] = (float)rounded;
         }
 #else
         /* coduo_lnxded 0x08099dba stores the difference to binary32 before
          * reloading and squaring it under the Linux PC=64 policy. */
-        const float difference = (float)((long double)rounded - (long double)vector[axis]);
-        if ((long double)difference * (long double)difference < (long double)sv_snapVectorEpsilon) {
+        const float difference = (float)(
+            (long double)rounded - (long double)vector[axis]);
+        if ((long double)difference * (long double)difference <
+            (long double)sv_snapVectorEpsilon) {
             vector[axis] = (float)rounded;
         }
 #endif
@@ -144,9 +155,12 @@ void SV_LinkEntity(sharedEntity_t *entity)
          * The shared adapter preserves the platform-selected invalid result.
          * These three operation graphs contain only exact float/integer
          * widening and addition/subtraction before the conversion. */
-        int32_t x = coduo_fp_to_i32_extended((long double)entity->maxs[0]);
-        int32_t zDown = coduo_fp_to_i32_extended(1.0L - (long double)entity->mins[2]);
-        int32_t zUp = coduo_fp_to_i32_extended((long double)entity->maxs[2] + 32.0L);
+        int32_t x = coduo_fp_to_i32_extended(
+            (long double)entity->maxs[0]);
+        int32_t zDown = coduo_fp_to_i32_extended(
+            1.0L - (long double)entity->mins[2]);
+        int32_t zUp = coduo_fp_to_i32_extended(
+            (long double)entity->maxs[2] + 32.0L);
 
         if (x < SV_WORLD_SOLID_COMPONENT_MIN) {
             x = SV_WORLD_SOLID_COMPONENT_MIN;
@@ -164,16 +178,22 @@ void SV_LinkEntity(sharedEntity_t *entity)
             zUp = SV_WORLD_SOLID_COMPONENT_MAX;
         }
 
-        entity->entityState.solid = x | (zDown << SV_WORLD_SOLID_ZDOWN_SHIFT) | (zUp << SV_WORLD_SOLID_ZUP_SHIFT);
+        entity->entityState.solid =
+            x | (zDown << SV_WORLD_SOLID_ZDOWN_SHIFT) |
+            (zUp << SV_WORLD_SOLID_ZUP_SHIFT);
     }
 
     SV_SnapVector(entity->currentAngles);
 
     if (entity->bmodel == qfalse ||
-        (entity->currentAngles[0] == 0.0f && entity->currentAngles[1] == 0.0f && entity->currentAngles[2] == 0.0f)) {
+        (entity->currentAngles[0] == 0.0f &&
+         entity->currentAngles[1] == 0.0f &&
+         entity->currentAngles[2] == 0.0f)) {
         for (int32_t axis = 0; axis < 3; ++axis) {
-            entity->absMin[axis] = entity->currentOrigin[axis] + entity->mins[axis];
-            entity->absMax[axis] = entity->currentOrigin[axis] + entity->maxs[axis];
+            entity->absMin[axis] =
+                entity->currentOrigin[axis] + entity->mins[axis];
+            entity->absMax[axis] =
+                entity->currentOrigin[axis] + entity->maxs[axis];
         }
     } else {
         const float radius = RadiusFromBounds(entity->mins, entity->maxs);
@@ -193,7 +213,9 @@ void SV_LinkEntity(sharedEntity_t *entity)
     serverEntity->areaNum = -1;
     serverEntity->areaNum2 = -1;
 
-    const int32_t leafCount = CM_BoxLeafnums(entity->absMin, entity->absMax, leafs, SV_WORLD_LINK_LEAF_COUNT, &lastLeaf);
+    const int32_t leafCount = CM_BoxLeafnums(
+        entity->absMin, entity->absMax, leafs,
+        SV_WORLD_LINK_LEAF_COUNT, &lastLeaf);
     if (leafCount == 0) {
         SV_UnlinkEntityFromWorldSector(serverEntity);
         return;
@@ -205,12 +227,18 @@ void SV_LinkEntity(sharedEntity_t *entity)
         if (area == -1) {
             continue;
         }
-        if (serverEntity->areaNum == -1 || serverEntity->areaNum == area) {
+        if (serverEntity->areaNum == -1 ||
+            serverEntity->areaNum == area) {
             serverEntity->areaNum = area;
             continue;
         }
-        if (serverEntity->areaNum2 != -1 && serverEntity->areaNum2 != area && sv.state == SS_LOADING) {
-            Com_DPrintf("Object %i touching 3 areas at %f %f %f\n", entityNum, (double)entity->absMin[0], (double)entity->absMin[1],
+        if (serverEntity->areaNum2 != -1 &&
+            serverEntity->areaNum2 != area &&
+            sv.state == SS_LOADING) {
+            Com_DPrintf("Object %i touching 3 areas at %f %f %f\n",
+                        entityNum,
+                        (double)entity->absMin[0],
+                        (double)entity->absMin[1],
                         (double)entity->absMin[2]);
         }
         serverEntity->areaNum2 = area;
@@ -241,14 +269,17 @@ void SV_LinkEntity(sharedEntity_t *entity)
     }
 
     DObj *const dobj = Com_GetServerDObj(entityNum);
-    if (dobj != NULL && (entity->svFlags & SVF_DOBJ_BOUNDS_MASK) != 0U) {
+    if (dobj != NULL &&
+        (entity->svFlags & SVF_DOBJ_BOUNDS_MASK) != 0U) {
         vec2_t linkMins;
         vec2_t linkMaxs;
 
         if ((entity->svFlags & SVF_DOBJ_USE_DEFAULT_BOUNDS) != 0U) {
             for (int32_t axis = 0; axis < 2; ++axis) {
-                linkMins[axis] = entity->currentOrigin[axis] + sv_defaultEntityClipMins[axis];
-                linkMaxs[axis] = entity->currentOrigin[axis] + sv_defaultEntityClipMaxs[axis];
+                linkMins[axis] = entity->currentOrigin[axis] +
+                                 sv_defaultEntityClipMins[axis];
+                linkMaxs[axis] = entity->currentOrigin[axis] +
+                                 sv_defaultEntityClipMaxs[axis];
             }
         } else {
             vec3_t modelMins;
@@ -256,8 +287,10 @@ void SV_LinkEntity(sharedEntity_t *entity)
 
             DObjGetBounds(dobj, modelMins, modelMaxs);
             for (int32_t axis = 0; axis < 2; ++axis) {
-                linkMins[axis] = entity->currentOrigin[axis] + modelMins[axis];
-                linkMaxs[axis] = entity->currentOrigin[axis] + modelMaxs[axis];
+                linkMins[axis] =
+                    entity->currentOrigin[axis] + modelMins[axis];
+                linkMaxs[axis] =
+                    entity->currentOrigin[axis] + modelMaxs[axis];
             }
         }
 
@@ -265,5 +298,6 @@ void SV_LinkEntity(sharedEntity_t *entity)
         return;
     }
 
-    SV_LinkEntityToWorldSector(serverEntity, entity->absMin, entity->absMax);
+    SV_LinkEntityToWorldSector(
+        serverEntity, entity->absMin, entity->absMax);
 }

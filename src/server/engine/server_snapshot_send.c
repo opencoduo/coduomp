@@ -28,7 +28,8 @@ enum {
     SV_PACKET_END_SORT_KEY = 9999,
     SV_SNAPSHOT_ENTITY_NUMBER_BITS = 10,
     SV_SNAPSHOT_ENTITY_END_NUMBER = MAX_GENTITIES - 1,
-    SV_SNAPSHOT_MAX_DELTA_FRAMES = SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 4,
+    SV_SNAPSHOT_MAX_DELTA_FRAMES =
+        SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 4,
     SV_SNAPSHOT_NO_DELTA = 0,
     SV_SNAPSHOT_RATE_DELAYED_FLAG = 1,
     SV_SNAPSHOT_NOT_ACTIVE_FLAG = 2,
@@ -46,11 +47,13 @@ enum {
  * compression-ratio average when sv_showAverageBPS is enabled. The original
  * executable resets and samples sv_totalUncompressedBytesThisFrame but has no
  * direct instruction that increments it. */
-int32_t sv_compressedBpsWindow[SERVER_AVERAGE_BPS_WINDOW_COUNT];
+int32_t
+    sv_compressedBpsWindow[SERVER_AVERAGE_BPS_WINDOW_COUNT];
 int32_t sv_averageBpsFrameCount;
 int32_t sv_totalBytesSentThisFrame;
 int32_t sv_compressedBpsMax;
-int32_t sv_uncompressedBpsWindow[SERVER_AVERAGE_BPS_WINDOW_COUNT];
+int32_t
+    sv_uncompressedBpsWindow[SERVER_AVERAGE_BPS_WINDOW_COUNT];
 int32_t sv_totalUncompressedBytesThisFrame;
 int32_t sv_uncompressedBpsMax;
 float sv_averageCompressionRatioSum;
@@ -80,7 +83,11 @@ int32_t sv_averageCompressionRatioCount;
  * Name: exact same-module Mac symbol SV_EmitPacketEntities. The old and new
  * rings are sorted by entity number, so one merge walk emits unchanged,
  * introduced, and removed entities without serializing the ring order. */
-void SV_EmitPacketEntities(int32_t oldNumEntities, int32_t oldFirstEntity, int32_t newNumEntities, int32_t newFirstEntity, msg_t *message)
+void SV_EmitPacketEntities(int32_t oldNumEntities,
+                           int32_t oldFirstEntity,
+                           int32_t newNumEntities,
+                           int32_t newFirstEntity,
+                           msg_t *message)
 {
     int32_t oldIndex = 0;
     int32_t newIndex = 0;
@@ -92,12 +99,18 @@ void SV_EmitPacketEntities(int32_t oldNumEntities, int32_t oldFirstEntity, int32
         int32_t newEntityNum = SV_PACKET_END_SORT_KEY;
 
         if (newIndex < newNumEntities) {
-            newEntity = &svs.entityStateSnapshots[(newIndex + newFirstEntity) % svs.numEntityStateSnapshots];
+            newEntity =
+                &svs.entityStateSnapshots[
+                    (newIndex + newFirstEntity) %
+                    svs.numEntityStateSnapshots];
             newEntityNum = newEntity->number;
         }
 
         if (oldIndex < oldNumEntities) {
-            oldEntity = &svs.entityStateSnapshots[(oldIndex + oldFirstEntity) % svs.numEntityStateSnapshots];
+            oldEntity =
+                &svs.entityStateSnapshots[
+                    (oldIndex + oldFirstEntity) %
+                    svs.numEntityStateSnapshots];
             oldEntityNum = oldEntity->number;
         }
 
@@ -106,7 +119,10 @@ void SV_EmitPacketEntities(int32_t oldNumEntities, int32_t oldFirstEntity, int32
             ++oldIndex;
             ++newIndex;
         } else if (newEntityNum < oldEntityNum) {
-            MSG_WriteDeltaEntity(message, &sv_entities[newEntityNum].baseline.state, newEntity, qtrue);
+            MSG_WriteDeltaEntity(
+                message,
+                &sv_entities[newEntityNum].baseline.state,
+                newEntity, qtrue);
             ++newIndex;
         } else {
             MSG_WriteDeltaEntity(message, oldEntity, NULL, qtrue);
@@ -114,7 +130,8 @@ void SV_EmitPacketEntities(int32_t oldNumEntities, int32_t oldFirstEntity, int32
         }
     }
 
-    MSG_WriteBits(message, SV_SNAPSHOT_ENTITY_END_NUMBER, SV_SNAPSHOT_ENTITY_NUMBER_BITS);
+    MSG_WriteBits(message, SV_SNAPSHOT_ENTITY_END_NUMBER,
+                  SV_SNAPSHOT_ENTITY_NUMBER_BITS);
 }
 
 /* Source: CoDUOMP.exe 0x00464170..0x0046438d.
@@ -122,7 +139,11 @@ void SV_EmitPacketEntities(int32_t oldNumEntities, int32_t oldFirstEntity, int32
  * Name: exact same-module Mac symbol SV_EmitPacketClients. The compiler
  * inlines MSG_WriteDeltaClient, including its zero baseline and force bit;
  * the maintained call preserves those proven semantics. */
-void SV_EmitPacketClients(int32_t oldNumClients, int32_t oldFirstClient, int32_t newNumClients, int32_t newFirstClient, msg_t *message)
+void SV_EmitPacketClients(int32_t oldNumClients,
+                          int32_t oldFirstClient,
+                          int32_t newNumClients,
+                          int32_t newFirstClient,
+                          msg_t *message)
 {
     int32_t oldIndex = 0;
     int32_t newIndex = 0;
@@ -134,12 +155,18 @@ void SV_EmitPacketClients(int32_t oldNumClients, int32_t oldFirstClient, int32_t
         int32_t newClientNum = SV_PACKET_END_SORT_KEY;
 
         if (newIndex < newNumClients) {
-            newClient = &svs.clientSnapshots[(newIndex + newFirstClient) % svs.numClientSnapshots];
+            newClient =
+                &svs.clientSnapshots[
+                    (newIndex + newFirstClient) %
+                    svs.numClientSnapshots];
             newClientNum = newClient->clientNum;
         }
 
         if (oldIndex < oldNumClients) {
-            oldClient = &svs.clientSnapshots[(oldIndex + oldFirstClient) % svs.numClientSnapshots];
+            oldClient =
+                &svs.clientSnapshots[
+                    (oldIndex + oldFirstClient) %
+                    svs.numClientSnapshots];
             oldClientNum = oldClient->clientNum;
         }
 
@@ -166,24 +193,37 @@ void SV_EmitPacketClients(int32_t oldNumClients, int32_t oldFirstClient, int32_t
  * live; otherwise the client receives a full player-state/entity snapshot. */
 void SV_WriteSnapshotToClient(client_t *client, msg_t *message)
 {
-    clientSnapshot_t *const newFrame = &client->snapshotFrames[client->netchan.outgoingSequence & (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)];
+    clientSnapshot_t *const newFrame =
+        &client->snapshotFrames[
+            client->netchan.outgoingSequence &
+            (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)];
     clientSnapshot_t *oldFrame = NULL;
     int32_t deltaFrame = SV_SNAPSHOT_NO_DELTA;
 
-    if (client->deltaMessage > SV_SNAPSHOT_NO_DELTA && client->state == CS_ACTIVE) {
-        const int32_t requestedDeltaFrames = client->netchan.outgoingSequence - client->deltaMessage;
+    if (client->deltaMessage > SV_SNAPSHOT_NO_DELTA &&
+        client->state == CS_ACTIVE) {
+        const int32_t requestedDeltaFrames =
+            client->netchan.outgoingSequence - client->deltaMessage;
 
         if (requestedDeltaFrames <= SV_SNAPSHOT_MAX_DELTA_FRAMES) {
-            oldFrame = &client->snapshotFrames[client->deltaMessage & (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)];
+            oldFrame =
+                &client->snapshotFrames[
+                    client->deltaMessage &
+                    (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)];
             deltaFrame = requestedDeltaFrames;
 
-            if (oldFrame->firstEntity < svs.nextEntityStateSnapshot - svs.numEntityStateSnapshots) {
-                Com_DPrintf("%s: Delta request from out of date entities.\n", client->name);
+            if (oldFrame->firstEntity <
+                svs.nextEntityStateSnapshot -
+                    svs.numEntityStateSnapshots) {
+                Com_DPrintf(
+                    "%s: Delta request from out of date entities.\n",
+                    client->name);
                 oldFrame = NULL;
                 deltaFrame = SV_SNAPSHOT_NO_DELTA;
             }
         } else {
-            Com_DPrintf("%s: Delta request from out of date packet.\n", client->name);
+            Com_DPrintf("%s: Delta request from out of date packet.\n",
+                        client->name);
         }
     }
 
@@ -211,7 +251,8 @@ void SV_WriteSnapshotToClient(client_t *client, msg_t *message)
     int32_t oldNumClients = 0;
     int32_t oldFirstClient = 0;
     if (oldFrame != NULL) {
-        MSG_WriteDeltaPlayerstate(message, &oldFrame->playerState, &newFrame->playerState);
+        MSG_WriteDeltaPlayerstate(message, &oldFrame->playerState,
+                                  &newFrame->playerState);
         oldNumEntities = oldFrame->numEntities;
         oldFirstEntity = oldFrame->firstEntity;
         oldNumClients = oldFrame->numClients;
@@ -220,10 +261,15 @@ void SV_WriteSnapshotToClient(client_t *client, msg_t *message)
         MSG_WriteDeltaPlayerstate(message, NULL, &newFrame->playerState);
     }
 
-    SV_EmitPacketEntities(oldNumEntities, oldFirstEntity, newFrame->numEntities, newFrame->firstEntity, message);
-    SV_EmitPacketClients(oldNumClients, oldFirstClient, newFrame->numClients, newFrame->firstClient, message);
+    SV_EmitPacketEntities(oldNumEntities, oldFirstEntity,
+                          newFrame->numEntities, newFrame->firstEntity,
+                          message);
+    SV_EmitPacketClients(oldNumClients, oldFirstClient,
+                         newFrame->numClients, newFrame->firstClient,
+                         message);
 
-    for (int32_t padIndex = 0; padIndex < sv_padPackets->integer; ++padIndex) {
+    for (int32_t padIndex = 0; padIndex < sv_padPackets->integer;
+         ++padIndex) {
         MSG_WriteByte(message, SV_SNAPSHOT_PAD_BYTE);
     }
 }
@@ -240,14 +286,19 @@ int32_t SV_RateMsec(client_t *client, int32_t messageSize)
 
     int32_t rate = client->rate;
     if (sv_maxRate->integer != 0) {
-        if (sv_maxRate->integer < SV_RATE_MINIMUM_BYTES_PER_SECOND) {
-            (void)Cvar_Set2("sv_MaxRate", "1000", qtrue);
+        if (sv_maxRate->integer <
+            SV_RATE_MINIMUM_BYTES_PER_SECOND) {
+            (void)Cvar_Set2(
+                "sv_MaxRate", "1000", qtrue);
         }
         if (sv_maxRate->integer < rate)
             rate = sv_maxRate->integer;
     }
 
-    return ((messageSize + SV_RATE_PACKET_OVERHEAD_BYTES) * SV_RATE_MILLISECONDS_PER_SECOND) / rate;
+    return
+        ((messageSize + SV_RATE_PACKET_OVERHEAD_BYTES) *
+         SV_RATE_MILLISECONDS_PER_SECOND) /
+        rate;
 }
 
 /* Source: CoDUOMP.exe 0x00465da0..0x00465f3c.
@@ -261,10 +312,14 @@ void SV_SendMessageToClient(msg_t *message, client_t *client)
 {
     uint8_t packetData[MAX_MSGLEN];
 
-    memcpy(packetData, message->data, SV_MESSAGE_ACKNOWLEDGEMENT_BYTES);
+    memcpy(
+        packetData, message->data,
+        SV_MESSAGE_ACKNOWLEDGEMENT_BYTES);
     const int32_t packetSize =
-        MSG_WriteBitsCompress(message->data + SV_MESSAGE_ACKNOWLEDGEMENT_BYTES, packetData + SV_MESSAGE_ACKNOWLEDGEMENT_BYTES,
-                              message->cursize - SV_MESSAGE_ACKNOWLEDGEMENT_BYTES) +
+        MSG_WriteBitsCompress(
+            message->data + SV_MESSAGE_ACKNOWLEDGEMENT_BYTES,
+            packetData + SV_MESSAGE_ACKNOWLEDGEMENT_BYTES,
+            message->cursize - SV_MESSAGE_ACKNOWLEDGEMENT_BYTES) +
         SV_MESSAGE_ACKNOWLEDGEMENT_BYTES;
 
     if (client->deferredDropReason != NULL) {
@@ -272,14 +327,17 @@ void SV_SendMessageToClient(msg_t *message, client_t *client)
     }
 
     clientSnapshot_t *const snapshotFrame =
-        &client->snapshotFrames[client->netchan.outgoingSequence & (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)];
+        &client->snapshotFrames[
+            client->netchan.outgoingSequence &
+                (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)];
     snapshotFrame->messageSize = packetSize;
     snapshotFrame->messageSentTime = svs.realTime;
     snapshotFrame->messageAcknowledgedTime = -1;
 
     SV_Netchan_Transmit(client, packetData, packetSize);
 
-    if (client->netchan.remoteAddress.type == NA_LOOPBACK || Sys_IsLANAddress(client->netchan.remoteAddress) != qfalse) {
+    if (client->netchan.remoteAddress.type == NA_LOOPBACK ||
+        Sys_IsLANAddress(client->netchan.remoteAddress) != qfalse) {
         client->nextSnapshotTime = svs.realTime - 1;
         return;
     }
@@ -292,10 +350,16 @@ void SV_SendMessageToClient(msg_t *message, client_t *client)
         client->rateDelayed = qtrue;
     }
 
-    client->nextSnapshotTime = svs.realTime + rateMsec;
-    if (client->state != CS_ACTIVE && client->download.fileName[0] == '\0' &&
-        client->nextSnapshotTime < svs.realTime + SV_CONNECTING_CLIENT_MIN_SNAPSHOT_MSEC) {
-        client->nextSnapshotTime = svs.realTime + SV_CONNECTING_CLIENT_MIN_SNAPSHOT_MSEC;
+    client->nextSnapshotTime =
+        svs.realTime + rateMsec;
+    if (client->state != CS_ACTIVE &&
+        client->download.fileName[0] == '\0' &&
+        client->nextSnapshotTime <
+            svs.realTime +
+                SV_CONNECTING_CLIENT_MIN_SNAPSHOT_MSEC) {
+        client->nextSnapshotTime =
+            svs.realTime +
+                SV_CONNECTING_CLIENT_MIN_SNAPSHOT_MSEC;
     }
 
     sv_totalBytesSentThisFrame += packetSize;
@@ -310,7 +374,8 @@ void SV_SendMessageToClient(msg_t *message, client_t *client)
  * disconnecting a client whose reduced message still does not fit. */
 void SV_SendClientSnapshot(client_t *client)
 {
-    if (client->state == CS_ACTIVE || client->state == CS_ZOMBIE) {
+    if (client->state == CS_ACTIVE ||
+        client->state == CS_ZOMBIE) {
         SV_BuildClientSnapshot(client);
     }
 
@@ -319,7 +384,8 @@ void SV_SendClientSnapshot(client_t *client)
     MSG_Init(&message, messageData, sizeof(messageData));
     MSG_WriteLong(&message, client->lastClientCommand);
 
-    if (client->state == CS_ACTIVE || client->state == CS_ZOMBIE) {
+    if (client->state == CS_ACTIVE ||
+        client->state == CS_ZOMBIE) {
         SV_UpdateServerCommandsToClient(client, &message);
         SV_WriteSnapshotToClient(client, &message);
     }
@@ -329,21 +395,32 @@ void SV_SendClientSnapshot(client_t *client)
 
     MSG_WriteByte(&message, SERVER_SVC_EOF);
     if (message.overflowed != qfalse) {
-        Com_Printf("WARNING: msg overflowed for %s, trying to recover\n", client->name);
+        Com_Printf(
+            "WARNING: msg overflowed for %s, trying to recover\n",
+            client->name);
 
-        if (client->state == CS_ACTIVE || client->state == CS_ZOMBIE) {
+        if (client->state == CS_ACTIVE ||
+            client->state == CS_ZOMBIE) {
             SV_PrintServerCommandsForClient(client);
 
-            MSG_Init(&message, messageData, sizeof(messageData));
-            MSG_WriteLong(&message, client->lastClientCommand);
-            SV_UpdateServerCommandsToClient_PreventOverflow(client, &message, sizeof(messageData));
+            MSG_Init(
+                &message, messageData, sizeof(messageData));
+            MSG_WriteLong(
+                &message, client->lastClientCommand);
+            SV_UpdateServerCommandsToClient_PreventOverflow(
+                client, &message, sizeof(messageData));
             MSG_WriteByte(&message, SERVER_SVC_EOF);
         }
 
         if (message.overflowed != qfalse) {
-            Com_Printf("WARNING: client disconnected for msg overflow: %s\n", client->name);
-            NET_OutOfBandPrint(NS_SERVER, client->netchan.remoteAddress, "disconnect");
-            SV_DropClient(client, "EXE_SERVERMESSAGEOVERFLOW");
+            Com_Printf(
+                "WARNING: client disconnected for msg overflow: %s\n",
+                client->name);
+            NET_OutOfBandPrint(
+                NS_SERVER, client->netchan.remoteAddress,
+                "disconnect");
+            SV_DropClient(
+                client, "EXE_SERVERMESSAGEOVERFLOW");
         }
     }
 
@@ -362,9 +439,13 @@ void SV_SendClientMessages(void)
     sv_totalBytesSentThisFrame = 0;
     sv_totalUncompressedBytesThisFrame = 0;
 
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
-        client_t *const client = &svs.clients[clientNum];
-        if (client->state == CS_FREE || client->nextSnapshotTime > svs.realTime) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
+        client_t *const client =
+            &svs.clients[clientNum];
+        if (client->state == CS_FREE ||
+            client->nextSnapshotTime > svs.realTime) {
             continue;
         }
 
@@ -372,13 +453,19 @@ void SV_SendClientMessages(void)
         if (client->netchan.unsentFragments == qfalse) {
             SV_SendClientSnapshot(client);
         } else {
-            const int32_t remainingFragmentBytes = client->netchan.unsentLength - client->netchan.unsentFragmentStart;
-            client->nextSnapshotTime = svs.realTime + SV_RateMsec(client, remainingFragmentBytes);
-            SV_Netchan_TransmitNextFragment(&client->netchan);
+            const int32_t remainingFragmentBytes =
+                client->netchan.unsentLength -
+                client->netchan.unsentFragmentStart;
+            client->nextSnapshotTime =
+                svs.realTime +
+                SV_RateMsec(client, remainingFragmentBytes);
+            SV_Netchan_TransmitNextFragment(
+                &client->netchan);
         }
     }
 
-    if (sv_showAverageBPS->integer == 0 || sentClientCount <= 0) {
+    if (sv_showAverageBPS->integer == 0 ||
+        sentClientCount <= 0) {
         return;
     }
 
@@ -388,46 +475,72 @@ void SV_SendClientMessages(void)
     long double compressedBytes = 0.0L;
 #endif
     float uncompressedBytes = 0.0f;
-    for (int32_t sampleIndex = 0; sampleIndex < SERVER_AVERAGE_BPS_WINDOW_COUNT - 1; ++sampleIndex) {
-        sv_compressedBpsWindow[sampleIndex] = sv_compressedBpsWindow[sampleIndex + 1];
+    for (int32_t sampleIndex = 0;
+        sampleIndex <
+             SERVER_AVERAGE_BPS_WINDOW_COUNT - 1;
+         ++sampleIndex) {
+        sv_compressedBpsWindow[sampleIndex] =
+            sv_compressedBpsWindow[sampleIndex + 1];
 #if EMULATE_X87
-        compressedBytes = x87f_add(compressedBytes, x87f_load_i32(sv_compressedBpsWindow[sampleIndex]));
+        compressedBytes = x87f_add(
+            compressedBytes,
+            x87f_load_i32(sv_compressedBpsWindow[sampleIndex]));
 #else
-        compressedBytes += (long double)sv_compressedBpsWindow[sampleIndex];
+        compressedBytes +=
+            (long double)sv_compressedBpsWindow[sampleIndex];
 #endif
 
-        sv_uncompressedBpsWindow[sampleIndex] = sv_uncompressedBpsWindow[sampleIndex + 1];
+        sv_uncompressedBpsWindow[sampleIndex] =
+            sv_uncompressedBpsWindow[sampleIndex + 1];
 #if EMULATE_X87
-        uncompressedBytes =
-            x87f_store_f32(x87f_add(x87f_load_f32(uncompressedBytes), x87f_load_i32(sv_uncompressedBpsWindow[sampleIndex])));
+        uncompressedBytes = x87f_store_f32(x87f_add(
+            x87f_load_f32(uncompressedBytes),
+            x87f_load_i32(sv_uncompressedBpsWindow[sampleIndex])));
 #else
-        uncompressedBytes = (float)((long double)uncompressedBytes + (long double)sv_uncompressedBpsWindow[sampleIndex]);
+        uncompressedBytes = (float)(
+            (long double)uncompressedBytes +
+            (long double)sv_uncompressedBpsWindow[sampleIndex]);
 #endif
     }
 
-    sv_compressedBpsWindow[SERVER_AVERAGE_BPS_WINDOW_COUNT - 1] = sv_totalBytesSentThisFrame;
+    sv_compressedBpsWindow[
+        SERVER_AVERAGE_BPS_WINDOW_COUNT - 1] =
+        sv_totalBytesSentThisFrame;
 #if EMULATE_X87
-    compressedBytes = x87f_add(compressedBytes, x87f_load_i32(sv_totalBytesSentThisFrame));
+    compressedBytes = x87f_add(
+        compressedBytes,
+        x87f_load_i32(sv_totalBytesSentThisFrame));
 #else
     compressedBytes += (long double)sv_totalBytesSentThisFrame;
 #endif
 
-    sv_uncompressedBpsWindow[SERVER_AVERAGE_BPS_WINDOW_COUNT - 1] = sv_totalUncompressedBytesThisFrame;
+    sv_uncompressedBpsWindow[
+        SERVER_AVERAGE_BPS_WINDOW_COUNT - 1] =
+        sv_totalUncompressedBytesThisFrame;
 #if EMULATE_X87
-    uncompressedBytes = x87f_store_f32(x87f_add(x87f_load_f32(uncompressedBytes), x87f_load_i32(sv_totalUncompressedBytesThisFrame)));
+    uncompressedBytes = x87f_store_f32(x87f_add(
+        x87f_load_f32(uncompressedBytes),
+        x87f_load_i32(sv_totalUncompressedBytesThisFrame)));
 #else
-    uncompressedBytes = (float)((long double)uncompressedBytes + (long double)sv_totalUncompressedBytesThisFrame);
+    uncompressedBytes = (float)(
+        (long double)uncompressedBytes +
+        (long double)sv_totalUncompressedBytesThisFrame);
 #endif
 
-    if (sv_totalBytesSentThisFrame >= sv_compressedBpsMax) {
-        sv_compressedBpsMax = sv_totalBytesSentThisFrame;
+    if (sv_totalBytesSentThisFrame >=
+        sv_compressedBpsMax) {
+        sv_compressedBpsMax =
+            sv_totalBytesSentThisFrame;
     }
-    if (sv_totalUncompressedBytesThisFrame >= sv_uncompressedBpsMax) {
-        sv_uncompressedBpsMax = sv_totalUncompressedBytesThisFrame;
+    if (sv_totalUncompressedBytesThisFrame >=
+        sv_uncompressedBpsMax) {
+        sv_uncompressedBpsMax =
+            sv_totalUncompressedBytesThisFrame;
     }
 
     ++sv_averageBpsFrameCount;
-    if (sv_averageBpsFrameCount < SERVER_AVERAGE_BPS_WINDOW_COUNT) {
+    if (sv_averageBpsFrameCount <
+        SERVER_AVERAGE_BPS_WINDOW_COUNT) {
         return;
     }
     sv_averageBpsFrameCount = 0;
@@ -437,40 +550,65 @@ void SV_SendClientMessages(void)
      * compression ratio on the x87 stack through all seven variadic
      * arguments. Only the running ratio sum is rounded to float. */
 #if EMULATE_X87
-    const x87f averageScale = x87f_load_f32(0.05000000074505806f);
-    const x87f uncompressedBytesRaw = x87f_mul(x87f_load_f32(uncompressedBytes), averageScale);
-    const x87f compressedBytesRaw = x87f_mul(compressedBytes, averageScale);
-    const x87f compressionRatioRaw =
-        x87f_mul(x87f_sub(x87f_load_f32(1.0f), x87f_div(compressedBytesRaw, uncompressedBytesRaw)), x87f_load_f32(100.0f));
-    sv_averageCompressionRatioSum = x87f_store_f32(x87f_add(x87f_load_f32(sv_averageCompressionRatioSum), compressionRatioRaw));
+    const x87f averageScale =
+        x87f_load_f32(0.05000000074505806f);
+    const x87f uncompressedBytesRaw = x87f_mul(
+        x87f_load_f32(uncompressedBytes), averageScale);
+    const x87f compressedBytesRaw = x87f_mul(
+        compressedBytes, averageScale);
+    const x87f compressionRatioRaw = x87f_mul(
+        x87f_sub(x87f_load_f32(1.0f),
+                 x87f_div(compressedBytesRaw,
+                          uncompressedBytesRaw)),
+        x87f_load_f32(100.0f));
+    sv_averageCompressionRatioSum = x87f_store_f32(x87f_add(
+        x87f_load_f32(sv_averageCompressionRatioSum),
+        compressionRatioRaw));
 #else
-    const long double uncompressedBytesRaw = (long double)uncompressedBytes * (long double)0.05000000074505806f;
-    const long double compressedBytesRaw = compressedBytes * (long double)0.05000000074505806f;
-    const long double compressionRatioRaw = ((long double)1.0f - compressedBytesRaw / uncompressedBytesRaw) * (long double)100.0f;
-    sv_averageCompressionRatioSum = (float)((long double)sv_averageCompressionRatioSum + compressionRatioRaw);
+    const long double uncompressedBytesRaw =
+        (long double)uncompressedBytes *
+        (long double)0.05000000074505806f;
+    const long double compressedBytesRaw =
+        compressedBytes * (long double)0.05000000074505806f;
+    const long double compressionRatioRaw =
+        ((long double)1.0f -
+         compressedBytesRaw / uncompressedBytesRaw) *
+        (long double)100.0f;
+    sv_averageCompressionRatioSum = (float)(
+        (long double)sv_averageCompressionRatioSum +
+        compressionRatioRaw);
 #endif
     ++sv_averageCompressionRatioCount;
 
-    Com_DPrintf("bpspc(%2.0f) bps(%2.0f) pk(%i) "
-                "ubps(%2.0f) upk(%i) cr(%2.2f) "
-                "acr(%2.2f)\n",
+    Com_DPrintf(
+        "bpspc(%2.0f) bps(%2.0f) pk(%i) "
+        "ubps(%2.0f) upk(%i) cr(%2.2f) "
+        "acr(%2.2f)\n",
 #if EMULATE_X87
-                x87f_store_f64(x87f_div(compressedBytesRaw, x87f_load_i32(sentClientCount))), x87f_store_f64(compressedBytesRaw),
+        x87f_store_f64(x87f_div(
+            compressedBytesRaw,
+            x87f_load_i32(sentClientCount))),
+        x87f_store_f64(compressedBytesRaw),
 #else
-                (double)(compressedBytesRaw / (long double)sentClientCount), (double)compressedBytesRaw,
+        (double)(compressedBytesRaw /
+                 (long double)sentClientCount),
+        (double)compressedBytesRaw,
 #endif
-                sv_compressedBpsMax,
+        sv_compressedBpsMax,
 #if EMULATE_X87
-                x87f_store_f64(uncompressedBytesRaw),
+        x87f_store_f64(uncompressedBytesRaw),
 #else
-                (double)uncompressedBytesRaw,
+        (double)uncompressedBytesRaw,
 #endif
-                sv_uncompressedBpsMax,
+        sv_uncompressedBpsMax,
 #if EMULATE_X87
-                x87f_store_f64(compressionRatioRaw),
-                x87f_store_f64(x87f_div(x87f_load_f32(sv_averageCompressionRatioSum), x87f_load_i32(sv_averageCompressionRatioCount))));
+        x87f_store_f64(compressionRatioRaw),
+        x87f_store_f64(x87f_div(
+            x87f_load_f32(sv_averageCompressionRatioSum),
+            x87f_load_i32(sv_averageCompressionRatioCount))));
 #else
-                (double)compressionRatioRaw,
-                (double)((long double)sv_averageCompressionRatioSum / (long double)sv_averageCompressionRatioCount));
+        (double)compressionRatioRaw,
+        (double)((long double)sv_averageCompressionRatioSum /
+                 (long double)sv_averageCompressionRatioCount));
 #endif
 }

@@ -26,7 +26,8 @@ int32_t cmd_argc;                                  /* original 0x009677c0 */
 static console_input_field_t *fieldCompletionField; /* original 0x00969218 */
 static const char *fieldCompletionString;           /* original 0x00981e84 */
 static int32_t fieldCompletionMatchCount;           /* original 0x0098022c */
-static char fieldCompletionShortestMatch[FIELD_COMPLETION_MATCH_CAPACITY];               /* original 0x00980278 */
+static char fieldCompletionShortestMatch[
+    FIELD_COMPLETION_MATCH_CAPACITY];               /* original 0x00980278 */
 
 /* Source: CoDUOMP.exe 0x0043ca50..0x0043ca6a.
  * Evidence: repaired executable-gap boundary and direct stores.
@@ -48,23 +49,32 @@ void Field_Clear(console_input_field_t *field)
  * original static name. */
 static void Field_FindMatches(const char *candidate)
 {
-    const int32_t prefixLength = (int32_t)strlen(fieldCompletionString);
+    const int32_t prefixLength =
+        (int32_t)strlen(fieldCompletionString);
 
-    if (Q_stricmpn(fieldCompletionString, candidate, prefixLength) != 0) {
+    if (Q_stricmpn(fieldCompletionString, candidate,
+                   prefixLength) != 0) {
         return;
     }
 
     ++fieldCompletionMatchCount;
     if (fieldCompletionMatchCount == 1) {
-        strncpy(fieldCompletionShortestMatch, candidate, FIELD_COMPLETION_MATCH_CAPACITY - 1);
-        fieldCompletionShortestMatch[FIELD_COMPLETION_MATCH_CAPACITY - 1] = '\0';
+        strncpy(fieldCompletionShortestMatch, candidate,
+                FIELD_COMPLETION_MATCH_CAPACITY - 1);
+        fieldCompletionShortestMatch[
+            FIELD_COMPLETION_MATCH_CAPACITY - 1] = '\0';
         return;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    for (int32_t index = 0; index < FIELD_COMPLETION_MATCH_CAPACITY && candidate[index] != '\0'; ++index) {
-        if (coduo_crt_tolower((int32_t)(int8_t)fieldCompletionShortestMatch[index]) !=
-            coduo_crt_tolower((int32_t)(int8_t)candidate[index])) {
+    for (int32_t index = 0;
+         index < FIELD_COMPLETION_MATCH_CAPACITY &&
+         candidate[index] != '\0'; ++index) {
+        if (coduo_crt_tolower(
+                (int32_t)(int8_t)
+                    fieldCompletionShortestMatch[index]) !=
+            coduo_crt_tolower(
+                (int32_t)(int8_t)candidate[index])) {
             fieldCompletionShortestMatch[index] = '\0';
         }
     }
@@ -75,9 +85,11 @@ static void Field_FindMatches(const char *candidate)
  * callback sites. */
 static void Field_PrintMatches(const char *candidate)
 {
-    const int32_t prefixLength = (int32_t)strlen(fieldCompletionShortestMatch);
+    const int32_t prefixLength =
+        (int32_t)strlen(fieldCompletionShortestMatch);
 
-    if (Q_stricmpn(fieldCompletionShortestMatch, candidate, prefixLength) == 0) {
+    if (Q_stricmpn(fieldCompletionShortestMatch, candidate,
+                   prefixLength) == 0) {
         Com_Printf("    %s\n", candidate);
     }
 }
@@ -88,17 +100,24 @@ static void Field_PrintMatches(const char *candidate)
  * in the optimized Windows body. */
 static void Field_ConcatArgs(void)
 {
-    for (int32_t argumentIndex = 1; argumentIndex < cmd_argc; ++argumentIndex) {
+    for (int32_t argumentIndex = 1;
+         argumentIndex < cmd_argc;
+         ++argumentIndex) {
         const char *const argument = cmd_argv[argumentIndex];
-        const qboolean quoteArgument = strchr(argument, ' ') != NULL ? qtrue : qfalse;
+        const qboolean quoteArgument =
+            strchr(argument, ' ') != NULL ? qtrue : qfalse;
 
-        Q_strcat(fieldCompletionField->buffer, CON_INPUT_BUFFER_SIZE, " ");
+        Q_strcat(fieldCompletionField->buffer,
+                 CON_INPUT_BUFFER_SIZE, " ");
         if (quoteArgument != qfalse) {
-            Q_strcat(fieldCompletionField->buffer, CON_INPUT_BUFFER_SIZE, "\"");
+            Q_strcat(fieldCompletionField->buffer,
+                     CON_INPUT_BUFFER_SIZE, "\"");
         }
-        Q_strcat(fieldCompletionField->buffer, CON_INPUT_BUFFER_SIZE, argument);
+        Q_strcat(fieldCompletionField->buffer,
+                 CON_INPUT_BUFFER_SIZE, argument);
         if (quoteArgument != qfalse) {
-            Q_strcat(fieldCompletionField->buffer, CON_INPUT_BUFFER_SIZE, "\"");
+            Q_strcat(fieldCompletionField->buffer,
+                     CON_INPUT_BUFFER_SIZE, "\"");
         }
     }
 }
@@ -106,7 +125,8 @@ static void Field_ConcatArgs(void)
 /* Source: CoDUOMP.exe 0x0043cd20..0x0043cd65.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043cd20_0043cd66.mcode.
  * Provisional source name by role. */
-static void Field_ConcatRemaining(const char *source, const char *separator)
+static void Field_ConcatRemaining(const char *source,
+                                  const char *separator)
 {
     const char *const remaining = strstr(source, separator);
 
@@ -115,7 +135,8 @@ static void Field_ConcatRemaining(const char *source, const char *separator)
         return;
     }
 
-    Q_strcat(fieldCompletionField->buffer, CON_INPUT_BUFFER_SIZE, remaining + strlen(separator));
+    Q_strcat(fieldCompletionField->buffer, CON_INPUT_BUFFER_SIZE,
+             remaining + strlen(separator));
 }
 
 /* Source: CoDUOMP.exe 0x0043cd70..0x0043cf4e.
@@ -129,7 +150,8 @@ void Field_CompleteCommand(console_input_field_t *field)
     Cmd_TokenizeString(field->buffer);
     fieldCompletionString = Cmd_Argv(0);
 
-    if (*fieldCompletionString == '\\' || *fieldCompletionString == '/') {
+    if (*fieldCompletionString == '\\' ||
+        *fieldCompletionString == '/') {
         ++fieldCompletionString;
     }
 
@@ -146,20 +168,23 @@ void Field_CompleteCommand(console_input_field_t *field)
     }
 
     const console_input_field_t originalField = *field;
-    Com_sprintf(field->buffer, CON_INPUT_BUFFER_SIZE, "\\%s", fieldCompletionShortestMatch);
+    Com_sprintf(field->buffer, CON_INPUT_BUFFER_SIZE,
+                "\\%s", fieldCompletionShortestMatch);
 
     if (fieldCompletionMatchCount == 1) {
         if (Cmd_Argc() == 1) {
             Q_strcat(field->buffer, CON_INPUT_BUFFER_SIZE, " ");
         } else {
-            Field_ConcatRemaining(originalField.buffer, fieldCompletionString);
+            Field_ConcatRemaining(originalField.buffer,
+                                  fieldCompletionString);
         }
         field->cursor = (int32_t)strlen(field->buffer);
         return;
     }
 
     field->cursor = (int32_t)strlen(field->buffer);
-    Field_ConcatRemaining(originalField.buffer, fieldCompletionString);
+    Field_ConcatRemaining(originalField.buffer,
+                          fieldCompletionString);
     Com_Printf("]%s\n", field->buffer);
     Cmd_CommandCompletion(Field_PrintMatches);
     Cvar_CommandCompletion(Field_PrintMatches);

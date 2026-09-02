@@ -13,7 +13,8 @@ enum {
  * and print the operation-specific diagnostic only for a nonzero result.
  * Provisional Checked names distinguish this layer from the separate
  * GL_Log* stream wrappers at 0x004cab50..0x004cae95. */
-void RENDERER_GL_API_CALL GL_CheckedMultiTexCoord2fARB(uint32_t target, float s, float t)
+void RENDERER_GL_API_CALL GL_CheckedMultiTexCoord2fARB(
+    uint32_t target, float s, float t)
 {
     uint32_t error;
 
@@ -40,10 +41,12 @@ void RENDERER_GL_API_CALL GL_CheckedClientActiveTextureARB(uint32_t texture)
     rendererGlClientActiveTextureARBDriver(texture);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glClientActiveTextureARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glClientActiveTextureARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLockArraysEXT(int32_t first, int32_t count)
+void RENDERER_GL_API_CALL GL_CheckedLockArraysEXT(
+    int32_t first, int32_t count)
 {
     uint32_t error;
 
@@ -63,7 +66,8 @@ void RENDERER_GL_API_CALL GL_CheckedUnlockArraysEXT(void)
         Com_Printf("^3glUnlockArraysEXT: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPNTrianglesiATI(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedPNTrianglesiATI(
+    uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
@@ -73,7 +77,8 @@ void RENDERER_GL_API_CALL GL_CheckedPNTrianglesiATI(uint32_t parameter, int32_t 
         Com_Printf("^3glPNTrianglesiATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPNTrianglesfATI(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedPNTrianglesfATI(
+    uint32_t parameter, float value)
 {
     uint32_t error;
 
@@ -86,100 +91,130 @@ void RENDERER_GL_API_CALL GL_CheckedPNTrianglesfATI(uint32_t parameter, float va
 /* Source: CoDUOMP.exe 0x004d0720..0x004d097d. Checked dispatch for the draw-
  * range and ARB compressed-texture entry points. Argument order and widths are
  * proven by the explicit right-to-left stack copies before each driver call. */
-void RENDERER_GL_API_CALL GL_CheckedDrawRangeElementsEXT(uint32_t mode, uint32_t start, uint32_t end, int32_t count, uint32_t type,
-                                                         const void *indices)
+void RENDERER_GL_API_CALL GL_CheckedDrawRangeElementsEXT(
+    uint32_t mode, uint32_t start, uint32_t end, int32_t count,
+    uint32_t type, const void *indices)
 {
     uint32_t error;
 
-    rendererGlDrawRangeElementsEXTDriver(mode, start, end, count, type, indices);
+    rendererGlDrawRangeElementsEXTDriver(
+        mode, start, end, count, type, indices);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glDrawRangeElementsEXT: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glDrawRangeElementsEXT: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCompressedTexImage3DARB(uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
-                                                            int32_t height, int32_t depth, int32_t border, int32_t imageSize,
-                                                            const void *data)
+void RENDERER_GL_API_CALL GL_CheckedCompressedTexImage3DARB(
+    uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
+    int32_t height, int32_t depth, int32_t border, int32_t imageSize,
+    const void *data)
 {
     uint32_t error;
 
-    rendererGlCompressedTexImage3DARBDriver(target, level, internalFormat, width, height, depth, border, imageSize, data);
+    rendererGlCompressedTexImage3DARBDriver(
+        target, level, internalFormat, width, height, depth, border, imageSize,
+        data);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCompressedTexImage3DARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCompressedTexImage3DARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCompressedTexImage2DARB(uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
-                                                            int32_t height, int32_t border, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_CheckedCompressedTexImage2DARB(
+    uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
+    int32_t height, int32_t border, int32_t imageSize, const void *data)
 {
     uint32_t error;
 
-    rendererGlCompressedTexImage2DARBDriver(target, level, internalFormat, width, height, border, imageSize, data);
+    rendererGlCompressedTexImage2DARBDriver(
+        target, level, internalFormat, width, height, border, imageSize, data);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCompressedTexImage2DARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCompressedTexImage2DARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCompressedTexImage1DARB(uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
-                                                            int32_t border, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_CheckedCompressedTexImage1DARB(
+    uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
+    int32_t border, int32_t imageSize, const void *data)
 {
     uint32_t error;
 
-    rendererGlCompressedTexImage1DARBDriver(target, level, internalFormat, width, border, imageSize, data);
+    rendererGlCompressedTexImage1DARBDriver(
+        target, level, internalFormat, width, border, imageSize, data);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCompressedTexImage1DARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCompressedTexImage1DARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCompressedTexSubImage3DARB(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
-                                                               int32_t zOffset, int32_t width, int32_t height, int32_t depth,
-                                                               uint32_t format, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_CheckedCompressedTexSubImage3DARB(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t zOffset, int32_t width, int32_t height, int32_t depth,
+    uint32_t format, int32_t imageSize, const void *data)
 {
     uint32_t error;
 
-    rendererGlCompressedTexSubImage3DARBDriver(target, level, xOffset, yOffset, zOffset, width, height, depth, format, imageSize, data);
+    rendererGlCompressedTexSubImage3DARBDriver(
+        target, level, xOffset, yOffset, zOffset, width, height, depth, format,
+        imageSize, data);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCompressedTexSubImage3DARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glCompressedTexSubImage3DARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCompressedTexSubImage2DARB(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
-                                                               int32_t width, int32_t height, uint32_t format, int32_t imageSize,
-                                                               const void *data)
+void RENDERER_GL_API_CALL GL_CheckedCompressedTexSubImage2DARB(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t width, int32_t height, uint32_t format, int32_t imageSize,
+    const void *data)
 {
     uint32_t error;
 
-    rendererGlCompressedTexSubImage2DARBDriver(target, level, xOffset, yOffset, width, height, format, imageSize, data);
+    rendererGlCompressedTexSubImage2DARBDriver(
+        target, level, xOffset, yOffset, width, height, format, imageSize,
+        data);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCompressedTexSubImage2DARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glCompressedTexSubImage2DARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCompressedTexSubImage1DARB(uint32_t target, int32_t level, int32_t xOffset, int32_t width,
-                                                               uint32_t format, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_CheckedCompressedTexSubImage1DARB(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t width,
+    uint32_t format, int32_t imageSize, const void *data)
 {
     uint32_t error;
 
-    rendererGlCompressedTexSubImage1DARBDriver(target, level, xOffset, width, format, imageSize, data);
+    rendererGlCompressedTexSubImage1DARBDriver(
+        target, level, xOffset, width, format, imageSize, data);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCompressedTexSubImage1DARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glCompressedTexSubImage1DARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetCompressedTexImageARB(uint32_t target, int32_t level, void *image)
+void RENDERER_GL_API_CALL GL_CheckedGetCompressedTexImageARB(
+    uint32_t target, int32_t level, void *image)
 {
     uint32_t error;
 
     rendererGlGetCompressedTexImageARBDriver(target, level, image);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetCompressedTexImageARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetCompressedTexImageARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
 /* Source: CoDUOMP.exe 0x004d0980..0x004d0bcd. Checked ARB buffer-object
  * dispatch. glIsBufferARB and glUnmapBufferARB save AL across glGetError;
  * glMapBufferARB saves the complete returned pointer in ESI. */
-void RENDERER_GL_API_CALL GL_CheckedBindBufferARB(uint32_t target, uint32_t buffer)
+void RENDERER_GL_API_CALL GL_CheckedBindBufferARB(
+    uint32_t target, uint32_t buffer)
 {
     uint32_t error;
 
@@ -189,7 +224,8 @@ void RENDERER_GL_API_CALL GL_CheckedBindBufferARB(uint32_t target, uint32_t buff
         Com_Printf("^3glBindBufferARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDeleteBuffersARB(int32_t count, const uint32_t *buffers)
+void RENDERER_GL_API_CALL GL_CheckedDeleteBuffersARB(
+    int32_t count, const uint32_t *buffers)
 {
     uint32_t error;
 
@@ -199,7 +235,8 @@ void RENDERER_GL_API_CALL GL_CheckedDeleteBuffersARB(int32_t count, const uint32
         Com_Printf("^3glDeleteBuffersARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGenBuffersARB(int32_t count, uint32_t *buffers)
+void RENDERER_GL_API_CALL GL_CheckedGenBuffersARB(
+    int32_t count, uint32_t *buffers)
 {
     uint32_t error;
 
@@ -221,7 +258,8 @@ uint8_t RENDERER_GL_API_CALL GL_CheckedIsBufferARB(uint32_t buffer)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedBufferDataARB(uint32_t target, intptr_t size, const void *data, uint32_t usage)
+void RENDERER_GL_API_CALL GL_CheckedBufferDataARB(
+    uint32_t target, intptr_t size, const void *data, uint32_t usage)
 {
     uint32_t error;
 
@@ -231,7 +269,8 @@ void RENDERER_GL_API_CALL GL_CheckedBufferDataARB(uint32_t target, intptr_t size
         Com_Printf("^3glBufferDataARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedBufferSubDataARB(uint32_t target, intptr_t offset, intptr_t size, const void *data)
+void RENDERER_GL_API_CALL GL_CheckedBufferSubDataARB(
+    uint32_t target, intptr_t offset, intptr_t size, const void *data)
 {
     uint32_t error;
 
@@ -241,7 +280,8 @@ void RENDERER_GL_API_CALL GL_CheckedBufferSubDataARB(uint32_t target, intptr_t o
         Com_Printf("^3glBufferSubDataARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetBufferSubDataARB(uint32_t target, intptr_t offset, intptr_t size, void *data)
+void RENDERER_GL_API_CALL GL_CheckedGetBufferSubDataARB(
+    uint32_t target, intptr_t offset, intptr_t size, void *data)
 {
     uint32_t error;
 
@@ -251,7 +291,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetBufferSubDataARB(uint32_t target, intptr_
         Com_Printf("^3glGetBufferSubDataARB: glGetError() = 0x%04x\n", error);
 }
 
-void *RENDERER_GL_API_CALL GL_CheckedMapBufferARB(uint32_t target, uint32_t access)
+void *RENDERER_GL_API_CALL GL_CheckedMapBufferARB(
+    uint32_t target, uint32_t access)
 {
     void *result;
     uint32_t error;
@@ -275,30 +316,35 @@ uint8_t RENDERER_GL_API_CALL GL_CheckedUnmapBufferARB(uint32_t target)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetBufferParameterivARB(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetBufferParameterivARB(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
     rendererGlGetBufferParameterivARBDriver(target, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetBufferParameterivARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetBufferParameterivARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetBufferPointervARB(uint32_t target, uint32_t parameter, void **pointer)
+void RENDERER_GL_API_CALL GL_CheckedGetBufferPointervARB(
+    uint32_t target, uint32_t parameter, void **pointer)
 {
     uint32_t error;
 
     rendererGlGetBufferPointervARBDriver(target, parameter, pointer);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetBufferPointervARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetBufferPointervARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
 /* Source: CoDUOMP.exe 0x004d0bd0..0x004d0e7b. Checked ATI object-buffer and
  * array-object dispatch. glNewObjectBufferATI saves the returned object name
  * in ESI and glIsObjectBufferATI saves AL while each wrapper checks the error. */
-uint32_t RENDERER_GL_API_CALL GL_CheckedNewObjectBufferATI(int32_t size, const void *data, uint32_t usage)
+uint32_t RENDERER_GL_API_CALL GL_CheckedNewObjectBufferATI(
+    int32_t size, const void *data, uint32_t usage)
 {
     uint32_t result;
     uint32_t error;
@@ -322,18 +368,21 @@ uint8_t RENDERER_GL_API_CALL GL_CheckedIsObjectBufferATI(uint32_t buffer)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedUpdateObjectBufferATI(uint32_t buffer, uint32_t offset, int32_t size, const void *data,
-                                                          uint32_t preserveMode)
+void RENDERER_GL_API_CALL GL_CheckedUpdateObjectBufferATI(
+    uint32_t buffer, uint32_t offset, int32_t size, const void *data,
+    uint32_t preserveMode)
 {
     uint32_t error;
 
-    rendererGlUpdateObjectBufferATIDriver(buffer, offset, size, data, preserveMode);
+    rendererGlUpdateObjectBufferATIDriver(
+        buffer, offset, size, data, preserveMode);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glUpdateObjectBufferATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetObjectBufferfvATI(uint32_t buffer, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetObjectBufferfvATI(
+    uint32_t buffer, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -343,7 +392,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetObjectBufferfvATI(uint32_t buffer, uint32
         Com_Printf("^3glGetObjectBufferfvATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetObjectBufferivATI(uint32_t buffer, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetObjectBufferivATI(
+    uint32_t buffer, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -363,8 +413,9 @@ void RENDERER_GL_API_CALL GL_CheckedFreeObjectBufferATI(uint32_t buffer)
         Com_Printf("^3glFreeObjectBufferATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedArrayObjectATI(uint32_t array, int32_t size, uint32_t type, int32_t stride, uint32_t buffer,
-                                                   uint32_t offset)
+void RENDERER_GL_API_CALL GL_CheckedArrayObjectATI(
+    uint32_t array, int32_t size, uint32_t type, int32_t stride,
+    uint32_t buffer, uint32_t offset)
 {
     uint32_t error;
 
@@ -374,7 +425,8 @@ void RENDERER_GL_API_CALL GL_CheckedArrayObjectATI(uint32_t array, int32_t size,
         Com_Printf("^3glArrayObjectATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetArrayObjectfvATI(uint32_t array, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetArrayObjectfvATI(
+    uint32_t array, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -384,7 +436,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetArrayObjectfvATI(uint32_t array, uint32_t
         Com_Printf("^3glGetArrayObjectfvATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetArrayObjectivATI(uint32_t array, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetArrayObjectivATI(
+    uint32_t array, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -394,7 +447,9 @@ void RENDERER_GL_API_CALL GL_CheckedGetArrayObjectivATI(uint32_t array, uint32_t
         Com_Printf("^3glGetArrayObjectivATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVariantArrayObjectATI(uint32_t id, uint32_t type, int32_t stride, uint32_t buffer, uint32_t offset)
+void RENDERER_GL_API_CALL GL_CheckedVariantArrayObjectATI(
+    uint32_t id, uint32_t type, int32_t stride, uint32_t buffer,
+    uint32_t offset)
 {
     uint32_t error;
 
@@ -404,27 +459,34 @@ void RENDERER_GL_API_CALL GL_CheckedVariantArrayObjectATI(uint32_t id, uint32_t 
         Com_Printf("^3glVariantArrayObjectATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetVariantArrayObjectfvATI(uint32_t id, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetVariantArrayObjectfvATI(
+    uint32_t id, uint32_t parameter, float *values)
 {
     uint32_t error;
 
     rendererGlGetVariantArrayObjectfvATIDriver(id, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetVariantArrayObjectfvATI: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetVariantArrayObjectfvATI: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetVariantArrayObjectivATI(uint32_t id, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetVariantArrayObjectivATI(
+    uint32_t id, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
     rendererGlGetVariantArrayObjectivATIDriver(id, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetVariantArrayObjectivATI: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetVariantArrayObjectivATI: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedElementPointerATI(uint32_t type, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedElementPointerATI(
+    uint32_t type, const void *pointer)
 {
     uint32_t error;
 
@@ -438,7 +500,8 @@ void RENDERER_GL_API_CALL GL_CheckedElementPointerATI(uint32_t type, const void 
  * NV vertex-array/fence dispatch. The WGL allocator preserves its native
  * pointer result across GetLastError; the two fence predicates preserve AL
  * across glGetError. */
-void RENDERER_GL_API_CALL GL_CheckedDrawElementArrayATI(uint32_t mode, int32_t count)
+void RENDERER_GL_API_CALL GL_CheckedDrawElementArrayATI(
+    uint32_t mode, int32_t count)
 {
     uint32_t error;
 
@@ -448,14 +511,17 @@ void RENDERER_GL_API_CALL GL_CheckedDrawElementArrayATI(uint32_t mode, int32_t c
         Com_Printf("^3glDrawElementArrayATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDrawRangeElementArrayATI(uint32_t mode, uint32_t start, uint32_t end, int32_t count)
+void RENDERER_GL_API_CALL GL_CheckedDrawRangeElementArrayATI(
+    uint32_t mode, uint32_t start, uint32_t end, int32_t count)
 {
     uint32_t error;
 
     rendererGlDrawRangeElementArrayATIDriver(mode, start, end, count);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glDrawRangeElementArrayATI: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glDrawRangeElementArrayATI: glGetError() = 0x%04x\n",
+            error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedFlushVertexArrayRangeNV(void)
@@ -465,10 +531,13 @@ void RENDERER_GL_API_CALL GL_CheckedFlushVertexArrayRangeNV(void)
     rendererGlFlushVertexArrayRangeNVDriver();
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glFlushVertexArrayRangeNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glFlushVertexArrayRangeNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexArrayRangeNV(int32_t length, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedVertexArrayRangeNV(
+    int32_t length, const void *pointer)
 {
     uint32_t error;
 
@@ -478,12 +547,14 @@ void RENDERER_GL_API_CALL GL_CheckedVertexArrayRangeNV(int32_t length, const voi
         Com_Printf("^3glVertexArrayRangeNV: glGetError() = 0x%04x\n", error);
 }
 
-void *RENDERER_GL_API_CALL GL_CheckedAllocateMemoryNV(int32_t size, float readFrequency, float writeFrequency, float priority)
+void *RENDERER_GL_API_CALL GL_CheckedAllocateMemoryNV(
+    int32_t size, float readFrequency, float writeFrequency, float priority)
 {
     void *result;
     uint32_t error;
 
-    result = rendererGlAllocateMemoryNVDriver(size, readFrequency, writeFrequency, priority);
+    result = rendererGlAllocateMemoryNVDriver(
+        size, readFrequency, writeFrequency, priority);
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     error = coduomp_platform_last_error();
     if (error != RENDERER_PLATFORM_NO_ERROR)
@@ -502,7 +573,8 @@ void RENDERER_GL_API_CALL GL_CheckedFreeMemoryNV(void *memory)
         Com_Printf("^3wglFreeMemoryNV: GetLastError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDeleteFencesNV(int32_t count, const uint32_t *fences)
+void RENDERER_GL_API_CALL GL_CheckedDeleteFencesNV(
+    int32_t count, const uint32_t *fences)
 {
     uint32_t error;
 
@@ -512,7 +584,8 @@ void RENDERER_GL_API_CALL GL_CheckedDeleteFencesNV(int32_t count, const uint32_t
         Com_Printf("^3glDeleteFencesNV: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGenFencesNV(int32_t count, uint32_t *fences)
+void RENDERER_GL_API_CALL GL_CheckedGenFencesNV(
+    int32_t count, uint32_t *fences)
 {
     uint32_t error;
 
@@ -546,7 +619,8 @@ uint8_t RENDERER_GL_API_CALL GL_CheckedTestFenceNV(uint32_t fence)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetFenceivNV(uint32_t fence, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetFenceivNV(
+    uint32_t fence, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -566,7 +640,8 @@ void RENDERER_GL_API_CALL GL_CheckedFinishFenceNV(uint32_t fence)
         Com_Printf("^3glFinishFenceNV: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedSetFenceNV(uint32_t fence, uint32_t condition)
+void RENDERER_GL_API_CALL GL_CheckedSetFenceNV(
+    uint32_t fence, uint32_t condition)
 {
     uint32_t error;
 
@@ -579,159 +654,205 @@ void RENDERER_GL_API_CALL GL_CheckedSetFenceNV(uint32_t fence, uint32_t conditio
 /* Source: CoDUOMP.exe 0x004d1100..0x004d1460. Checked NV register-combiner
  * setters and queries. Argument order and the three GLboolean output controls
  * match the corresponding extension driver signatures. */
-void RENDERER_GL_API_CALL GL_CheckedCombinerParameterfvNV(uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedCombinerParameterfvNV(
+    uint32_t parameter, const float *values)
 {
     uint32_t error;
 
     rendererGlCombinerParameterfvNVDriver(parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCombinerParameterfvNV: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCombinerParameterfvNV: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCombinerParameterfNV(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedCombinerParameterfNV(
+    uint32_t parameter, float value)
 {
     uint32_t error;
 
     rendererGlCombinerParameterfNVDriver(parameter, value);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCombinerParameterfNV: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCombinerParameterfNV: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCombinerParameterivNV(uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedCombinerParameterivNV(
+    uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
 
     rendererGlCombinerParameterivNVDriver(parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCombinerParameterivNV: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCombinerParameterivNV: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCombinerParameteriNV(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedCombinerParameteriNV(
+    uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
     rendererGlCombinerParameteriNVDriver(parameter, value);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCombinerParameteriNV: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCombinerParameteriNV: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCombinerInputNV(uint32_t stage, uint32_t portion, uint32_t variable, uint32_t input, uint32_t mapping,
-                                                    uint32_t componentUsage)
+void RENDERER_GL_API_CALL GL_CheckedCombinerInputNV(
+    uint32_t stage, uint32_t portion, uint32_t variable, uint32_t input,
+    uint32_t mapping, uint32_t componentUsage)
 {
     uint32_t error;
 
-    rendererGlCombinerInputNVDriver(stage, portion, variable, input, mapping, componentUsage);
+    rendererGlCombinerInputNVDriver(
+        stage, portion, variable, input, mapping, componentUsage);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glCombinerInputNV: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCombinerOutputNV(uint32_t stage, uint32_t portion, uint32_t abOutput, uint32_t cdOutput,
-                                                     uint32_t sumOutput, uint32_t scale, uint32_t bias, uint8_t abDotProduct,
-                                                     uint8_t cdDotProduct, uint8_t muxSum)
+void RENDERER_GL_API_CALL GL_CheckedCombinerOutputNV(
+    uint32_t stage, uint32_t portion, uint32_t abOutput, uint32_t cdOutput,
+    uint32_t sumOutput, uint32_t scale, uint32_t bias,
+    uint8_t abDotProduct, uint8_t cdDotProduct, uint8_t muxSum)
 {
     uint32_t error;
 
-    rendererGlCombinerOutputNVDriver(stage, portion, abOutput, cdOutput, sumOutput, scale, bias, abDotProduct, cdDotProduct, muxSum);
+    rendererGlCombinerOutputNVDriver(
+        stage, portion, abOutput, cdOutput, sumOutput, scale, bias,
+        abDotProduct, cdDotProduct, muxSum);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glCombinerOutputNV: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedFinalCombinerInputNV(uint32_t variable, uint32_t input, uint32_t mapping, uint32_t componentUsage)
+void RENDERER_GL_API_CALL GL_CheckedFinalCombinerInputNV(
+    uint32_t variable, uint32_t input, uint32_t mapping,
+    uint32_t componentUsage)
 {
     uint32_t error;
 
-    rendererGlFinalCombinerInputNVDriver(variable, input, mapping, componentUsage);
+    rendererGlFinalCombinerInputNVDriver(
+        variable, input, mapping, componentUsage);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glFinalCombinerInputNV: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glFinalCombinerInputNV: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetCombinerInputParameterfvNV(uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
-                                                                  float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetCombinerInputParameterfvNV(
+    uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
+    float *values)
 {
     uint32_t error;
 
-    rendererGlGetCombinerInputParameterfvNVDriver(stage, portion, variable, parameter, values);
+    rendererGlGetCombinerInputParameterfvNVDriver(
+        stage, portion, variable, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetCombinerInputParameterfvNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetCombinerInputParameterfvNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetCombinerInputParameterivNV(uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
-                                                                  int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetCombinerInputParameterivNV(
+    uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
+    int32_t *values)
 {
     uint32_t error;
 
-    rendererGlGetCombinerInputParameterivNVDriver(stage, portion, variable, parameter, values);
+    rendererGlGetCombinerInputParameterivNVDriver(
+        stage, portion, variable, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetCombinerInputParameterivNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetCombinerInputParameterivNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetCombinerOutputParameterfvNV(uint32_t stage, uint32_t portion, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetCombinerOutputParameterfvNV(
+    uint32_t stage, uint32_t portion, uint32_t parameter, float *values)
 {
     uint32_t error;
 
-    rendererGlGetCombinerOutputParameterfvNVDriver(stage, portion, parameter, values);
+    rendererGlGetCombinerOutputParameterfvNVDriver(
+        stage, portion, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetCombinerOutputParameterfvNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetCombinerOutputParameterfvNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetCombinerOutputParameterivNV(uint32_t stage, uint32_t portion, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetCombinerOutputParameterivNV(
+    uint32_t stage, uint32_t portion, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
-    rendererGlGetCombinerOutputParameterivNVDriver(stage, portion, parameter, values);
+    rendererGlGetCombinerOutputParameterivNVDriver(
+        stage, portion, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetCombinerOutputParameterivNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetCombinerOutputParameterivNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetFinalCombinerInputParameterfvNV(uint32_t variable, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetFinalCombinerInputParameterfvNV(
+    uint32_t variable, uint32_t parameter, float *values)
 {
     uint32_t error;
 
-    rendererGlGetFinalCombinerInputParameterfvNVDriver(variable, parameter, values);
+    rendererGlGetFinalCombinerInputParameterfvNVDriver(
+        variable, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetFinalCombinerInputParameterfvNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetFinalCombinerInputParameterfvNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetFinalCombinerInputParameterivNV(uint32_t variable, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetFinalCombinerInputParameterivNV(
+    uint32_t variable, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
-    rendererGlGetFinalCombinerInputParameterivNVDriver(variable, parameter, values);
+    rendererGlGetFinalCombinerInputParameterivNVDriver(
+        variable, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetFinalCombinerInputParameterivNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetFinalCombinerInputParameterivNV: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCombinerStageParameterfvNV(uint32_t stage, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedCombinerStageParameterfvNV(
+    uint32_t stage, uint32_t parameter, const float *values)
 {
     uint32_t error;
 
     rendererGlCombinerStageParameterfvNVDriver(stage, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCombinerStageParameterfvNV: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCombinerStageParameterfvNV: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetCombinerStageParameterfvNV(uint32_t stage, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetCombinerStageParameterfvNV(
+    uint32_t stage, uint32_t parameter, float *values)
 {
     uint32_t error;
 
     rendererGlGetCombinerStageParameterfvNVDriver(stage, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetCombinerStageParameterfvNV: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetCombinerStageParameterfvNV: glGetError() = 0x%04x\n",
+            error);
 }
 
 /* Source: CoDUOMP.exe 0x004d1460..0x004d17cb. Checked ATI fragment-shader
@@ -745,7 +866,8 @@ uint32_t RENDERER_GL_API_CALL GL_CheckedGenFragmentShadersATI(uint32_t range)
     result = rendererGlGenFragmentShadersATIDriver(range);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGenFragmentShadersATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGenFragmentShadersATI: glGetError() = 0x%04x\n",
+                   error);
     return result;
 }
 
@@ -756,7 +878,8 @@ void RENDERER_GL_API_CALL GL_CheckedBindFragmentShaderATI(uint32_t shader)
     rendererGlBindFragmentShaderATIDriver(shader);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glBindFragmentShaderATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glBindFragmentShaderATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedDeleteFragmentShaderATI(uint32_t shader)
@@ -766,7 +889,8 @@ void RENDERER_GL_API_CALL GL_CheckedDeleteFragmentShaderATI(uint32_t shader)
     rendererGlDeleteFragmentShaderATIDriver(shader);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glDeleteFragmentShaderATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glDeleteFragmentShaderATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedBeginFragmentShaderATI(void)
@@ -776,7 +900,8 @@ void RENDERER_GL_API_CALL GL_CheckedBeginFragmentShaderATI(void)
     rendererGlBeginFragmentShaderATIDriver();
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glBeginFragmentShaderATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glBeginFragmentShaderATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedEndFragmentShaderATI(void)
@@ -790,7 +915,8 @@ void RENDERER_GL_API_CALL GL_CheckedEndFragmentShaderATI(void)
         Com_Printf("^3glEndFragmentShaderATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPassTexCoordATI(uint32_t destination, uint32_t coordinate, uint32_t swizzle)
+void RENDERER_GL_API_CALL GL_CheckedPassTexCoordATI(
+    uint32_t destination, uint32_t coordinate, uint32_t swizzle)
 {
     uint32_t error;
 
@@ -800,7 +926,8 @@ void RENDERER_GL_API_CALL GL_CheckedPassTexCoordATI(uint32_t destination, uint32
         Com_Printf("^3glPassTexCoordATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedSampleMapATI(uint32_t destination, uint32_t interpolation, uint32_t swizzle)
+void RENDERER_GL_API_CALL GL_CheckedSampleMapATI(
+    uint32_t destination, uint32_t interpolation, uint32_t swizzle)
 {
     uint32_t error;
 
@@ -810,102 +937,135 @@ void RENDERER_GL_API_CALL GL_CheckedSampleMapATI(uint32_t destination, uint32_t 
         Com_Printf("^3glSampleMapATI: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColorFragmentOp1ATI(uint32_t operation, uint32_t destination, uint32_t destinationMask,
-                                                        uint32_t destinationModifier, uint32_t argument1, uint32_t argument1Replication,
-                                                        uint32_t argument1Modifier)
+void RENDERER_GL_API_CALL GL_CheckedColorFragmentOp1ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationMask,
+    uint32_t destinationModifier, uint32_t argument1,
+    uint32_t argument1Replication, uint32_t argument1Modifier)
 {
     uint32_t error;
 
-    rendererGlColorFragmentOp1ATIDriver(operation, destination, destinationMask, destinationModifier, argument1, argument1Replication,
-                                        argument1Modifier);
+    rendererGlColorFragmentOp1ATIDriver(
+        operation, destination, destinationMask, destinationModifier,
+        argument1, argument1Replication, argument1Modifier);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glColorFragmentOp1ATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glColorFragmentOp1ATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColorFragmentOp2ATI(uint32_t operation, uint32_t destination, uint32_t destinationMask,
-                                                        uint32_t destinationModifier, uint32_t argument1, uint32_t argument1Replication,
-                                                        uint32_t argument1Modifier, uint32_t argument2, uint32_t argument2Replication,
-                                                        uint32_t argument2Modifier)
+void RENDERER_GL_API_CALL GL_CheckedColorFragmentOp2ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationMask,
+    uint32_t destinationModifier, uint32_t argument1,
+    uint32_t argument1Replication, uint32_t argument1Modifier,
+    uint32_t argument2, uint32_t argument2Replication,
+    uint32_t argument2Modifier)
 {
     uint32_t error;
 
-    rendererGlColorFragmentOp2ATIDriver(operation, destination, destinationMask, destinationModifier, argument1, argument1Replication,
-                                        argument1Modifier, argument2, argument2Replication, argument2Modifier);
+    rendererGlColorFragmentOp2ATIDriver(
+        operation, destination, destinationMask, destinationModifier,
+        argument1, argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glColorFragmentOp2ATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glColorFragmentOp2ATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColorFragmentOp3ATI(uint32_t operation, uint32_t destination, uint32_t destinationMask,
-                                                        uint32_t destinationModifier, uint32_t argument1, uint32_t argument1Replication,
-                                                        uint32_t argument1Modifier, uint32_t argument2, uint32_t argument2Replication,
-                                                        uint32_t argument2Modifier, uint32_t argument3, uint32_t argument3Replication,
-                                                        uint32_t argument3Modifier)
+void RENDERER_GL_API_CALL GL_CheckedColorFragmentOp3ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationMask,
+    uint32_t destinationModifier, uint32_t argument1,
+    uint32_t argument1Replication, uint32_t argument1Modifier,
+    uint32_t argument2, uint32_t argument2Replication,
+    uint32_t argument2Modifier, uint32_t argument3,
+    uint32_t argument3Replication, uint32_t argument3Modifier)
 {
     uint32_t error;
 
-    rendererGlColorFragmentOp3ATIDriver(operation, destination, destinationMask, destinationModifier, argument1, argument1Replication,
-                                        argument1Modifier, argument2, argument2Replication, argument2Modifier, argument3,
-                                        argument3Replication, argument3Modifier);
+    rendererGlColorFragmentOp3ATIDriver(
+        operation, destination, destinationMask, destinationModifier,
+        argument1, argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier, argument3,
+        argument3Replication, argument3Modifier);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glColorFragmentOp3ATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glColorFragmentOp3ATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedAlphaFragmentOp1ATI(uint32_t operation, uint32_t destination, uint32_t destinationModifier,
-                                                        uint32_t argument1, uint32_t argument1Replication, uint32_t argument1Modifier)
+void RENDERER_GL_API_CALL GL_CheckedAlphaFragmentOp1ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationModifier,
+    uint32_t argument1, uint32_t argument1Replication,
+    uint32_t argument1Modifier)
 {
     uint32_t error;
 
-    rendererGlAlphaFragmentOp1ATIDriver(operation, destination, destinationModifier, argument1, argument1Replication, argument1Modifier);
+    rendererGlAlphaFragmentOp1ATIDriver(
+        operation, destination, destinationModifier, argument1,
+        argument1Replication, argument1Modifier);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glAlphaFragmentOp1ATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glAlphaFragmentOp1ATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedAlphaFragmentOp2ATI(uint32_t operation, uint32_t destination, uint32_t destinationModifier,
-                                                        uint32_t argument1, uint32_t argument1Replication, uint32_t argument1Modifier,
-                                                        uint32_t argument2, uint32_t argument2Replication, uint32_t argument2Modifier)
+void RENDERER_GL_API_CALL GL_CheckedAlphaFragmentOp2ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationModifier,
+    uint32_t argument1, uint32_t argument1Replication,
+    uint32_t argument1Modifier, uint32_t argument2,
+    uint32_t argument2Replication, uint32_t argument2Modifier)
 {
     uint32_t error;
 
-    rendererGlAlphaFragmentOp2ATIDriver(operation, destination, destinationModifier, argument1, argument1Replication, argument1Modifier,
-                                        argument2, argument2Replication, argument2Modifier);
+    rendererGlAlphaFragmentOp2ATIDriver(
+        operation, destination, destinationModifier, argument1,
+        argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glAlphaFragmentOp2ATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glAlphaFragmentOp2ATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedAlphaFragmentOp3ATI(uint32_t operation, uint32_t destination, uint32_t destinationModifier,
-                                                        uint32_t argument1, uint32_t argument1Replication, uint32_t argument1Modifier,
-                                                        uint32_t argument2, uint32_t argument2Replication, uint32_t argument2Modifier,
-                                                        uint32_t argument3, uint32_t argument3Replication, uint32_t argument3Modifier)
+void RENDERER_GL_API_CALL GL_CheckedAlphaFragmentOp3ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationModifier,
+    uint32_t argument1, uint32_t argument1Replication,
+    uint32_t argument1Modifier, uint32_t argument2,
+    uint32_t argument2Replication, uint32_t argument2Modifier,
+    uint32_t argument3, uint32_t argument3Replication,
+    uint32_t argument3Modifier)
 {
     uint32_t error;
 
-    rendererGlAlphaFragmentOp3ATIDriver(operation, destination, destinationModifier, argument1, argument1Replication, argument1Modifier,
-                                        argument2, argument2Replication, argument2Modifier, argument3, argument3Replication,
-                                        argument3Modifier);
+    rendererGlAlphaFragmentOp3ATIDriver(
+        operation, destination, destinationModifier, argument1,
+        argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier, argument3,
+        argument3Replication, argument3Modifier);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glAlphaFragmentOp3ATI: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glAlphaFragmentOp3ATI: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedSetFragmentShaderConstantATI(uint32_t destination, const float *value)
+void RENDERER_GL_API_CALL GL_CheckedSetFragmentShaderConstantATI(
+    uint32_t destination, const float *value)
 {
     uint32_t error;
 
     rendererGlSetFragmentShaderConstantATIDriver(destination, value);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glSetFragmentShaderConstantATI: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glSetFragmentShaderConstantATI: glGetError() = 0x%04x\n",
+            error);
 }
 
 /* Source: CoDUOMP.exe 0x004d17d0..0x004d1aca. Checked scalar ARB vertex
  * attributes. Typed parameters preserve the original signed-short, float,
  * double, and normalized-unsigned-byte API widths without i386 stack math. */
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1sARB(uint32_t index, int16_t x)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1sARB(
+    uint32_t index, int16_t x)
 {
     uint32_t error;
 
@@ -915,7 +1075,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1sARB(uint32_t index, int16_t x)
         Com_Printf("^3glVertexAttrib1sARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1fARB(uint32_t index, float x)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1fARB(
+    uint32_t index, float x)
 {
     uint32_t error;
 
@@ -925,7 +1086,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1fARB(uint32_t index, float x)
         Com_Printf("^3glVertexAttrib1fARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1dARB(uint32_t index, double x)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1dARB(
+    uint32_t index, double x)
 {
     uint32_t error;
 
@@ -935,7 +1097,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1dARB(uint32_t index, double x)
         Com_Printf("^3glVertexAttrib1dARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2sARB(uint32_t index, int16_t x, int16_t y)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2sARB(
+    uint32_t index, int16_t x, int16_t y)
 {
     uint32_t error;
 
@@ -945,7 +1108,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2sARB(uint32_t index, int16_t x,
         Com_Printf("^3glVertexAttrib2sARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2fARB(uint32_t index, float x, float y)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2fARB(
+    uint32_t index, float x, float y)
 {
     uint32_t error;
 
@@ -955,7 +1119,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2fARB(uint32_t index, float x, f
         Com_Printf("^3glVertexAttrib2fARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2dARB(uint32_t index, double x, double y)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2dARB(
+    uint32_t index, double x, double y)
 {
     uint32_t error;
 
@@ -965,7 +1130,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2dARB(uint32_t index, double x, 
         Com_Printf("^3glVertexAttrib2dARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3sARB(uint32_t index, int16_t x, int16_t y, int16_t z)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3sARB(
+    uint32_t index, int16_t x, int16_t y, int16_t z)
 {
     uint32_t error;
 
@@ -975,7 +1141,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3sARB(uint32_t index, int16_t x,
         Com_Printf("^3glVertexAttrib3sARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3fARB(uint32_t index, float x, float y, float z)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3fARB(
+    uint32_t index, float x, float y, float z)
 {
     uint32_t error;
 
@@ -985,7 +1152,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3fARB(uint32_t index, float x, f
         Com_Printf("^3glVertexAttrib3fARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3dARB(uint32_t index, double x, double y, double z)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3dARB(
+    uint32_t index, double x, double y, double z)
 {
     uint32_t error;
 
@@ -995,7 +1163,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3dARB(uint32_t index, double x, 
         Com_Printf("^3glVertexAttrib3dARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4sARB(uint32_t index, int16_t x, int16_t y, int16_t z, int16_t w)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4sARB(
+    uint32_t index, int16_t x, int16_t y, int16_t z, int16_t w)
 {
     uint32_t error;
 
@@ -1005,7 +1174,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4sARB(uint32_t index, int16_t x,
         Com_Printf("^3glVertexAttrib4sARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4fARB(uint32_t index, float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4fARB(
+    uint32_t index, float x, float y, float z, float w)
 {
     uint32_t error;
 
@@ -1015,7 +1185,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4fARB(uint32_t index, float x, f
         Com_Printf("^3glVertexAttrib4fARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4dARB(uint32_t index, double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4dARB(
+    uint32_t index, double x, double y, double z, double w)
 {
     uint32_t error;
 
@@ -1025,7 +1196,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4dARB(uint32_t index, double x, 
         Com_Printf("^3glVertexAttrib4dARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NubARB(uint32_t index, uint8_t x, uint8_t y, uint8_t z, uint8_t w)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NubARB(
+    uint32_t index, uint8_t x, uint8_t y, uint8_t z, uint8_t w)
 {
     uint32_t error;
 
@@ -1038,7 +1210,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NubARB(uint32_t index, uint8_t 
 /* Source: CoDUOMP.exe 0x004d1ad0..0x004d1f1b. Checked ARB vector attribute
  * entry points. Each function retains its exact signedness, element width,
  * normalization variant, and const-qualified vector pointer. */
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1svARB(
+    uint32_t index, const int16_t *values)
 {
     uint32_t error;
 
@@ -1048,7 +1221,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1svARB(uint32_t index, const int
         Com_Printf("^3glVertexAttrib1svARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1fvARB(
+    uint32_t index, const float *values)
 {
     uint32_t error;
 
@@ -1058,7 +1232,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1fvARB(uint32_t index, const flo
         Com_Printf("^3glVertexAttrib1fvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1dvARB(
+    uint32_t index, const double *values)
 {
     uint32_t error;
 
@@ -1068,7 +1243,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib1dvARB(uint32_t index, const dou
         Com_Printf("^3glVertexAttrib1dvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2svARB(
+    uint32_t index, const int16_t *values)
 {
     uint32_t error;
 
@@ -1078,7 +1254,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2svARB(uint32_t index, const int
         Com_Printf("^3glVertexAttrib2svARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2fvARB(
+    uint32_t index, const float *values)
 {
     uint32_t error;
 
@@ -1088,7 +1265,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2fvARB(uint32_t index, const flo
         Com_Printf("^3glVertexAttrib2fvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2dvARB(
+    uint32_t index, const double *values)
 {
     uint32_t error;
 
@@ -1098,7 +1276,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib2dvARB(uint32_t index, const dou
         Com_Printf("^3glVertexAttrib2dvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3svARB(
+    uint32_t index, const int16_t *values)
 {
     uint32_t error;
 
@@ -1108,7 +1287,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3svARB(uint32_t index, const int
         Com_Printf("^3glVertexAttrib3svARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3fvARB(
+    uint32_t index, const float *values)
 {
     uint32_t error;
 
@@ -1118,7 +1298,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3fvARB(uint32_t index, const flo
         Com_Printf("^3glVertexAttrib3fvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3dvARB(
+    uint32_t index, const double *values)
 {
     uint32_t error;
 
@@ -1128,7 +1309,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib3dvARB(uint32_t index, const dou
         Com_Printf("^3glVertexAttrib3dvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4bvARB(uint32_t index, const int8_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4bvARB(
+    uint32_t index, const int8_t *values)
 {
     uint32_t error;
 
@@ -1138,7 +1320,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4bvARB(uint32_t index, const int
         Com_Printf("^3glVertexAttrib4bvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4svARB(
+    uint32_t index, const int16_t *values)
 {
     uint32_t error;
 
@@ -1148,7 +1331,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4svARB(uint32_t index, const int
         Com_Printf("^3glVertexAttrib4svARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4ivARB(uint32_t index, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4ivARB(
+    uint32_t index, const int32_t *values)
 {
     uint32_t error;
 
@@ -1158,7 +1342,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4ivARB(uint32_t index, const int
         Com_Printf("^3glVertexAttrib4ivARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4ubvARB(uint32_t index, const uint8_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4ubvARB(
+    uint32_t index, const uint8_t *values)
 {
     uint32_t error;
 
@@ -1168,7 +1353,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4ubvARB(uint32_t index, const ui
         Com_Printf("^3glVertexAttrib4ubvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4usvARB(uint32_t index, const uint16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4usvARB(
+    uint32_t index, const uint16_t *values)
 {
     uint32_t error;
 
@@ -1178,7 +1364,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4usvARB(uint32_t index, const ui
         Com_Printf("^3glVertexAttrib4usvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4uivARB(uint32_t index, const uint32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4uivARB(
+    uint32_t index, const uint32_t *values)
 {
     uint32_t error;
 
@@ -1188,7 +1375,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4uivARB(uint32_t index, const ui
         Com_Printf("^3glVertexAttrib4uivARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4fvARB(
+    uint32_t index, const float *values)
 {
     uint32_t error;
 
@@ -1198,7 +1386,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4fvARB(uint32_t index, const flo
         Com_Printf("^3glVertexAttrib4fvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4dvARB(
+    uint32_t index, const double *values)
 {
     uint32_t error;
 
@@ -1208,7 +1397,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4dvARB(uint32_t index, const dou
         Com_Printf("^3glVertexAttrib4dvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NbvARB(uint32_t index, const int8_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NbvARB(
+    uint32_t index, const int8_t *values)
 {
     uint32_t error;
 
@@ -1218,7 +1408,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NbvARB(uint32_t index, const in
         Com_Printf("^3glVertexAttrib4NbvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NsvARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NsvARB(
+    uint32_t index, const int16_t *values)
 {
     uint32_t error;
 
@@ -1228,7 +1419,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NsvARB(uint32_t index, const in
         Com_Printf("^3glVertexAttrib4NsvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NivARB(uint32_t index, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NivARB(
+    uint32_t index, const int32_t *values)
 {
     uint32_t error;
 
@@ -1238,7 +1430,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NivARB(uint32_t index, const in
         Com_Printf("^3glVertexAttrib4NivARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NubvARB(uint32_t index, const uint8_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NubvARB(
+    uint32_t index, const uint8_t *values)
 {
     uint32_t error;
 
@@ -1248,7 +1441,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NubvARB(uint32_t index, const u
         Com_Printf("^3glVertexAttrib4NubvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NusvARB(uint32_t index, const uint16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NusvARB(
+    uint32_t index, const uint16_t *values)
 {
     uint32_t error;
 
@@ -1258,7 +1452,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NusvARB(uint32_t index, const u
         Com_Printf("^3glVertexAttrib4NusvARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NuivARB(uint32_t index, const uint32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NuivARB(
+    uint32_t index, const uint32_t *values)
 {
     uint32_t error;
 
@@ -1271,15 +1466,18 @@ void RENDERER_GL_API_CALL GL_CheckedVertexAttrib4NuivARB(uint32_t index, const u
 /* Source: CoDUOMP.exe 0x004d1f20..0x004d208b. Checked ARB generic-attribute
  * array setup and initial program-object lifecycle calls. The vertex pointer
  * remains a native host pointer; only the API's normalized flag is byte-wide. */
-void RENDERER_GL_API_CALL GL_CheckedVertexAttribPointerARB(uint32_t index, int32_t size, uint32_t type, uint8_t normalized, int32_t stride,
-                                                           const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedVertexAttribPointerARB(
+    uint32_t index, int32_t size, uint32_t type, uint8_t normalized,
+    int32_t stride, const void *pointer)
 {
     uint32_t error;
 
-    rendererGlVertexAttribPointerARBDriver(index, size, type, normalized, stride, pointer);
+    rendererGlVertexAttribPointerARBDriver(
+        index, size, type, normalized, stride, pointer);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glVertexAttribPointerARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glVertexAttribPointerARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedEnableVertexAttribArrayARB(uint32_t index)
@@ -1289,7 +1487,9 @@ void RENDERER_GL_API_CALL GL_CheckedEnableVertexAttribArrayARB(uint32_t index)
     rendererGlEnableVertexAttribArrayARBDriver(index);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glEnableVertexAttribArrayARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glEnableVertexAttribArrayARB: glGetError() = 0x%04x\n",
+            error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedDisableVertexAttribArrayARB(uint32_t index)
@@ -1299,10 +1499,13 @@ void RENDERER_GL_API_CALL GL_CheckedDisableVertexAttribArrayARB(uint32_t index)
     rendererGlDisableVertexAttribArrayARBDriver(index);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glDisableVertexAttribArrayARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glDisableVertexAttribArrayARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramStringARB(uint32_t target, uint32_t format, int32_t length, const void *string)
+void RENDERER_GL_API_CALL GL_CheckedProgramStringARB(
+    uint32_t target, uint32_t format, int32_t length, const void *string)
 {
     uint32_t error;
 
@@ -1312,7 +1515,8 @@ void RENDERER_GL_API_CALL GL_CheckedProgramStringARB(uint32_t target, uint32_t f
         Com_Printf("^3glProgramStringARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedBindProgramARB(uint32_t target, uint32_t program)
+void RENDERER_GL_API_CALL GL_CheckedBindProgramARB(
+    uint32_t target, uint32_t program)
 {
     uint32_t error;
 
@@ -1322,7 +1526,8 @@ void RENDERER_GL_API_CALL GL_CheckedBindProgramARB(uint32_t target, uint32_t pro
         Com_Printf("^3glBindProgramARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDeleteProgramsARB(int32_t count, const uint32_t *programs)
+void RENDERER_GL_API_CALL GL_CheckedDeleteProgramsARB(
+    int32_t count, const uint32_t *programs)
 {
     uint32_t error;
 
@@ -1332,7 +1537,8 @@ void RENDERER_GL_API_CALL GL_CheckedDeleteProgramsARB(int32_t count, const uint3
         Com_Printf("^3glDeleteProgramsARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGenProgramsARB(int32_t count, uint32_t *programs)
+void RENDERER_GL_API_CALL GL_CheckedGenProgramsARB(
+    int32_t count, uint32_t *programs)
 {
     uint32_t error;
 
@@ -1345,130 +1551,169 @@ void RENDERER_GL_API_CALL GL_CheckedGenProgramsARB(int32_t count, uint32_t *prog
 /* Source: CoDUOMP.exe 0x004d2090..0x004d226d. Checked ARB program
  * environment/local-parameter setters. The scalar-double wrappers preserve
  * all four 64-bit arguments; the vector wrappers pass the original arrays. */
-void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4fARB(uint32_t target, uint32_t index, float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4fARB(
+    uint32_t target, uint32_t index, float x, float y, float z, float w)
 {
     uint32_t error;
 
     rendererGlProgramEnvParameter4fARBDriver(target, index, x, y, z, w);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramEnvParameter4fARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramEnvParameter4fARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4dARB(uint32_t target, uint32_t index, double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4dARB(
+    uint32_t target, uint32_t index,
+    double x, double y, double z, double w)
 {
     uint32_t error;
 
     rendererGlProgramEnvParameter4dARBDriver(target, index, x, y, z, w);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramEnvParameter4dARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramEnvParameter4dARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4fvARB(uint32_t target, uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4fvARB(
+    uint32_t target, uint32_t index, const float *values)
 {
     uint32_t error;
 
     rendererGlProgramEnvParameter4fvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramEnvParameter4fvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramEnvParameter4fvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4dvARB(uint32_t target, uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedProgramEnvParameter4dvARB(
+    uint32_t target, uint32_t index, const double *values)
 {
     uint32_t error;
 
     rendererGlProgramEnvParameter4dvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramEnvParameter4dvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramEnvParameter4dvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4fARB(uint32_t target, uint32_t index, float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4fARB(
+    uint32_t target, uint32_t index, float x, float y, float z, float w)
 {
     uint32_t error;
 
     rendererGlProgramLocalParameter4fARBDriver(target, index, x, y, z, w);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramLocalParameter4fARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramLocalParameter4fARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4dARB(uint32_t target, uint32_t index, double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4dARB(
+    uint32_t target, uint32_t index,
+    double x, double y, double z, double w)
 {
     uint32_t error;
 
     rendererGlProgramLocalParameter4dARBDriver(target, index, x, y, z, w);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramLocalParameter4dARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramLocalParameter4dARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4fvARB(uint32_t target, uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4fvARB(
+    uint32_t target, uint32_t index, const float *values)
 {
     uint32_t error;
 
     rendererGlProgramLocalParameter4fvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramLocalParameter4fvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramLocalParameter4fvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4dvARB(uint32_t target, uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedProgramLocalParameter4dvARB(
+    uint32_t target, uint32_t index, const double *values)
 {
     uint32_t error;
 
     rendererGlProgramLocalParameter4dvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glProgramLocalParameter4dvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glProgramLocalParameter4dvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
 /* Source: CoDUOMP.exe 0x004d2270..0x004d247c. Checked ARB program and
  * generic-attribute queries. GL_CheckedIsProgramARB preserves the driver's
  * byte-wide result across the subsequent glGetError call. */
-void RENDERER_GL_API_CALL GL_CheckedGetProgramEnvParameterfvARB(uint32_t target, uint32_t index, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetProgramEnvParameterfvARB(
+    uint32_t target, uint32_t index, float *values)
 {
     uint32_t error;
 
     rendererGlGetProgramEnvParameterfvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetProgramEnvParameterfvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetProgramEnvParameterfvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetProgramEnvParameterdvARB(uint32_t target, uint32_t index, double *values)
+void RENDERER_GL_API_CALL GL_CheckedGetProgramEnvParameterdvARB(
+    uint32_t target, uint32_t index, double *values)
 {
     uint32_t error;
 
     rendererGlGetProgramEnvParameterdvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetProgramEnvParameterdvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetProgramEnvParameterdvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetProgramLocalParameterfvARB(uint32_t target, uint32_t index, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetProgramLocalParameterfvARB(
+    uint32_t target, uint32_t index, float *values)
 {
     uint32_t error;
 
     rendererGlGetProgramLocalParameterfvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetProgramLocalParameterfvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetProgramLocalParameterfvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetProgramLocalParameterdvARB(uint32_t target, uint32_t index, double *values)
+void RENDERER_GL_API_CALL GL_CheckedGetProgramLocalParameterdvARB(
+    uint32_t target, uint32_t index, double *values)
 {
     uint32_t error;
 
     rendererGlGetProgramLocalParameterdvARBDriver(target, index, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetProgramLocalParameterdvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetProgramLocalParameterdvARB: glGetError() = 0x%04x\n",
+            error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetProgramivARB(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetProgramivARB(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -1478,54 +1723,65 @@ void RENDERER_GL_API_CALL GL_CheckedGetProgramivARB(uint32_t target, uint32_t pa
         Com_Printf("^3glGetProgramivARB: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetProgramStringARB(uint32_t target, uint32_t parameter, void *string)
+void RENDERER_GL_API_CALL GL_CheckedGetProgramStringARB(
+    uint32_t target, uint32_t parameter, void *string)
 {
     uint32_t error;
 
     rendererGlGetProgramStringARBDriver(target, parameter, string);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetProgramStringARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetProgramStringARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribdvARB(uint32_t index, uint32_t parameter, double *values)
+void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribdvARB(
+    uint32_t index, uint32_t parameter, double *values)
 {
     uint32_t error;
 
     rendererGlGetVertexAttribdvARBDriver(index, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetVertexAttribdvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetVertexAttribdvARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribfvARB(uint32_t index, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribfvARB(
+    uint32_t index, uint32_t parameter, float *values)
 {
     uint32_t error;
 
     rendererGlGetVertexAttribfvARBDriver(index, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetVertexAttribfvARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetVertexAttribfvARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribivARB(uint32_t index, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribivARB(
+    uint32_t index, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
     rendererGlGetVertexAttribivARBDriver(index, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetVertexAttribivARB: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glGetVertexAttribivARB: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribPointervARB(uint32_t index, uint32_t parameter, void **pointer)
+void RENDERER_GL_API_CALL GL_CheckedGetVertexAttribPointervARB(
+    uint32_t index, uint32_t parameter, void **pointer)
 {
     uint32_t error;
 
     rendererGlGetVertexAttribPointervARBDriver(index, parameter, pointer);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetVertexAttribPointervARB: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetVertexAttribPointervARB: glGetError() = 0x%04x\n",
+            error);
 }
 
 uint8_t RENDERER_GL_API_CALL GL_CheckedIsProgramARB(uint32_t program)
@@ -1553,7 +1809,8 @@ void RENDERER_GL_API_CALL GL_CheckedAccum(uint32_t operation, float value)
         Com_Printf("^3glAccum: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedAlphaFunc(uint32_t function, float reference)
+void RENDERER_GL_API_CALL GL_CheckedAlphaFunc(
+    uint32_t function, float reference)
 {
     uint32_t error;
 
@@ -1563,7 +1820,8 @@ void RENDERER_GL_API_CALL GL_CheckedAlphaFunc(uint32_t function, float reference
         Com_Printf("^3glAlphaFunc: glGetError() = 0x%04x\n", error);
 }
 
-uint8_t RENDERER_GL_API_CALL GL_CheckedAreTexturesResident(int32_t count, const uint32_t *textures, uint8_t *residences)
+uint8_t RENDERER_GL_API_CALL GL_CheckedAreTexturesResident(
+    int32_t count, const uint32_t *textures, uint8_t *residences)
 {
     uint8_t result;
     uint32_t error;
@@ -1571,7 +1829,8 @@ uint8_t RENDERER_GL_API_CALL GL_CheckedAreTexturesResident(int32_t count, const 
     result = rendererGlAreTexturesResidentDriver(count, textures, residences);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glAreTexturesResident: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glAreTexturesResident: glGetError() = 0x%04x\n",
+                   error);
     return result;
 }
 
@@ -1597,7 +1856,8 @@ void RENDERER_GL_API_CALL GL_CheckedBegin(uint32_t mode)
         Com_Printf("^3glBegin: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedBindTexture(uint32_t target, uint32_t texture)
+void RENDERER_GL_API_CALL GL_CheckedBindTexture(
+    uint32_t target, uint32_t texture)
 {
     uint32_t error;
 
@@ -1607,12 +1867,14 @@ void RENDERER_GL_API_CALL GL_CheckedBindTexture(uint32_t target, uint32_t textur
         Com_Printf("^3glBindTexture: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedBitmap(int32_t width, int32_t height, float xOrigin, float yOrigin, float xMove, float yMove,
-                                           const uint8_t *bitmap)
+void RENDERER_GL_API_CALL GL_CheckedBitmap(
+    int32_t width, int32_t height, float xOrigin, float yOrigin,
+    float xMove, float yMove, const uint8_t *bitmap)
 {
     uint32_t error;
 
-    rendererGlBitmapDriver(width, height, xOrigin, yOrigin, xMove, yMove, bitmap);
+    rendererGlBitmapDriver(
+        width, height, xOrigin, yOrigin, xMove, yMove, bitmap);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glBitmap: glGetError() = 0x%04x\n", error);
@@ -1621,7 +1883,8 @@ void RENDERER_GL_API_CALL GL_CheckedBitmap(int32_t width, int32_t height, float 
 /* Source: CoDUOMP.exe 0x004d2600..0x004d27c6. Checked blend, display-list,
  * and clear-state wrappers. ClearDepth is the original double-precision API;
  * the remaining scalar and component arguments retain their native GL widths. */
-void RENDERER_GL_API_CALL GL_CheckedBlendFunc(uint32_t sourceFactor, uint32_t destinationFactor)
+void RENDERER_GL_API_CALL GL_CheckedBlendFunc(
+    uint32_t sourceFactor, uint32_t destinationFactor)
 {
     uint32_t error;
 
@@ -1642,7 +1905,8 @@ void RENDERER_GL_API_CALL GL_CheckedCallList(uint32_t list)
         Com_Printf("^3glCallList: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCallLists(int32_t count, uint32_t type, const void *lists)
+void RENDERER_GL_API_CALL GL_CheckedCallLists(
+    int32_t count, uint32_t type, const void *lists)
 {
     uint32_t error;
 
@@ -1662,7 +1926,8 @@ void RENDERER_GL_API_CALL GL_CheckedClear(uint32_t mask)
         Com_Printf("^3glClear: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedClearAccum(float red, float green, float blue, float alpha)
+void RENDERER_GL_API_CALL GL_CheckedClearAccum(
+    float red, float green, float blue, float alpha)
 {
     uint32_t error;
 
@@ -1672,7 +1937,8 @@ void RENDERER_GL_API_CALL GL_CheckedClearAccum(float red, float green, float blu
         Com_Printf("^3glClearAccum: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedClearColor(float red, float green, float blue, float alpha)
+void RENDERER_GL_API_CALL GL_CheckedClearColor(
+    float red, float green, float blue, float alpha)
 {
     uint32_t error;
 
@@ -1715,7 +1981,8 @@ void RENDERER_GL_API_CALL GL_CheckedClearStencil(int32_t stencil)
 /* Source: CoDUOMP.exe 0x004d27d0..0x004d2b06. Checked clip-plane and
  * complete Color3 family. Scalar signedness and width follow the individual
  * OpenGL entry points; vector forms forward their typed source arrays. */
-void RENDERER_GL_API_CALL GL_CheckedClipPlane(uint32_t plane, const double *equation)
+void RENDERER_GL_API_CALL GL_CheckedClipPlane(
+    uint32_t plane, const double *equation)
 {
     uint32_t error;
 
@@ -1726,7 +1993,8 @@ void RENDERER_GL_API_CALL GL_CheckedClipPlane(uint32_t plane, const double *equa
 }
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-void RENDERER_GL_API_CALL GL_CheckedColor3b(int8_t red, int8_t green, int8_t blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3b(
+    int8_t red, int8_t green, int8_t blue)
 {
     uint32_t error;
 
@@ -1746,7 +2014,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3bv(const int8_t *values)
         Com_Printf("^3glColor3bv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3d(double red, double green, double blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3d(
+    double red, double green, double blue)
 {
     uint32_t error;
 
@@ -1766,7 +2035,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3dv(const double *values)
         Com_Printf("^3glColor3dv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3f(float red, float green, float blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3f(
+    float red, float green, float blue)
 {
     uint32_t error;
 
@@ -1786,7 +2056,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3fv(const float *values)
         Com_Printf("^3glColor3fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3i(int32_t red, int32_t green, int32_t blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3i(
+    int32_t red, int32_t green, int32_t blue)
 {
     uint32_t error;
 
@@ -1806,7 +2077,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3iv(const int32_t *values)
         Com_Printf("^3glColor3iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3s(int16_t red, int16_t green, int16_t blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3s(
+    int16_t red, int16_t green, int16_t blue)
 {
     uint32_t error;
 
@@ -1826,7 +2098,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3sv(const int16_t *values)
         Com_Printf("^3glColor3sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3ub(uint8_t red, uint8_t green, uint8_t blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3ub(
+    uint8_t red, uint8_t green, uint8_t blue)
 {
     uint32_t error;
 
@@ -1846,7 +2119,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3ubv(const uint8_t *values)
         Com_Printf("^3glColor3ubv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3ui(uint32_t red, uint32_t green, uint32_t blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3ui(
+    uint32_t red, uint32_t green, uint32_t blue)
 {
     uint32_t error;
 
@@ -1866,7 +2140,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3uiv(const uint32_t *values)
         Com_Printf("^3glColor3uiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor3us(uint16_t red, uint16_t green, uint16_t blue)
+void RENDERER_GL_API_CALL GL_CheckedColor3us(
+    uint16_t red, uint16_t green, uint16_t blue)
 {
     uint32_t error;
 
@@ -1889,7 +2164,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor3usv(const uint16_t *values)
 /* Source: CoDUOMP.exe 0x004d2b10..0x004d2e96. Complete checked Color4
  * family. Each scalar variant retains the original component signedness and
  * width; each vector variant forwards the corresponding typed array. */
-void RENDERER_GL_API_CALL GL_CheckedColor4b(int8_t red, int8_t green, int8_t blue, int8_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4b(
+    int8_t red, int8_t green, int8_t blue, int8_t alpha)
 {
     uint32_t error;
 
@@ -1909,7 +2185,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4bv(const int8_t *values)
         Com_Printf("^3glColor4bv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4d(double red, double green, double blue, double alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4d(
+    double red, double green, double blue, double alpha)
 {
     uint32_t error;
 
@@ -1929,7 +2206,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4dv(const double *values)
         Com_Printf("^3glColor4dv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4f(float red, float green, float blue, float alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4f(
+    float red, float green, float blue, float alpha)
 {
     uint32_t error;
 
@@ -1949,7 +2227,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4fv(const float *values)
         Com_Printf("^3glColor4fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4i(int32_t red, int32_t green, int32_t blue, int32_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4i(
+    int32_t red, int32_t green, int32_t blue, int32_t alpha)
 {
     uint32_t error;
 
@@ -1969,7 +2248,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4iv(const int32_t *values)
         Com_Printf("^3glColor4iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4s(int16_t red, int16_t green, int16_t blue, int16_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4s(
+    int16_t red, int16_t green, int16_t blue, int16_t alpha)
 {
     uint32_t error;
 
@@ -1989,7 +2269,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4sv(const int16_t *values)
         Com_Printf("^3glColor4sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4ub(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4ub(
+    uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
 {
     uint32_t error;
 
@@ -2009,7 +2290,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4ubv(const uint8_t *values)
         Com_Printf("^3glColor4ubv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4ui(uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4ui(
+    uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha)
 {
     uint32_t error;
 
@@ -2029,7 +2311,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4uiv(const uint32_t *values)
         Com_Printf("^3glColor4uiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColor4us(uint16_t red, uint16_t green, uint16_t blue, uint16_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColor4us(
+    uint16_t red, uint16_t green, uint16_t blue, uint16_t alpha)
 {
     uint32_t error;
 
@@ -2053,7 +2336,8 @@ void RENDERER_GL_API_CALL GL_CheckedColor4usv(const uint16_t *values)
  * framebuffer-to-framebuffer/texture copies, and face culling. Native host
  * pointers are retained for ColorPointer; copy dimensions remain signed GL
  * sizes/coordinates while targets and formats remain enum-width values. */
-void RENDERER_GL_API_CALL GL_CheckedColorMask(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+void RENDERER_GL_API_CALL GL_CheckedColorMask(
+    uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
 {
     uint32_t error;
 
@@ -2063,7 +2347,8 @@ void RENDERER_GL_API_CALL GL_CheckedColorMask(uint8_t red, uint8_t green, uint8_
         Com_Printf("^3glColorMask: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColorMaterial(uint32_t face, uint32_t mode)
+void RENDERER_GL_API_CALL GL_CheckedColorMaterial(
+    uint32_t face, uint32_t mode)
 {
     uint32_t error;
 
@@ -2073,7 +2358,8 @@ void RENDERER_GL_API_CALL GL_CheckedColorMaterial(uint32_t face, uint32_t mode)
         Com_Printf("^3glColorMaterial: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedColorPointer(int32_t size, uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedColorPointer(
+    int32_t size, uint32_t type, int32_t stride, const void *pointer)
 {
     uint32_t error;
 
@@ -2083,7 +2369,8 @@ void RENDERER_GL_API_CALL GL_CheckedColorPointer(int32_t size, uint32_t type, in
         Com_Printf("^3glColorPointer: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCopyPixels(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t type)
+void RENDERER_GL_API_CALL GL_CheckedCopyPixels(
+    int32_t x, int32_t y, int32_t width, int32_t height, uint32_t type)
 {
     uint32_t error;
 
@@ -2093,47 +2380,57 @@ void RENDERER_GL_API_CALL GL_CheckedCopyPixels(int32_t x, int32_t y, int32_t wid
         Com_Printf("^3glCopyPixels: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCopyTexImage1D(uint32_t target, int32_t level, uint32_t internalFormat, int32_t x, int32_t y,
-                                                   int32_t width, int32_t border)
+void RENDERER_GL_API_CALL GL_CheckedCopyTexImage1D(
+    uint32_t target, int32_t level, uint32_t internalFormat,
+    int32_t x, int32_t y, int32_t width, int32_t border)
 {
     uint32_t error;
 
-    rendererGlCopyTexImage1DDriver(target, level, internalFormat, x, y, width, border);
+    rendererGlCopyTexImage1DDriver(
+        target, level, internalFormat, x, y, width, border);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glCopyTexImage1D: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCopyTexImage2D(uint32_t target, int32_t level, uint32_t internalFormat, int32_t x, int32_t y,
-                                                   int32_t width, int32_t height, int32_t border)
+void RENDERER_GL_API_CALL GL_CheckedCopyTexImage2D(
+    uint32_t target, int32_t level, uint32_t internalFormat,
+    int32_t x, int32_t y, int32_t width, int32_t height, int32_t border)
 {
     uint32_t error;
 
-    rendererGlCopyTexImage2DDriver(target, level, internalFormat, x, y, width, height, border);
+    rendererGlCopyTexImage2DDriver(
+        target, level, internalFormat, x, y, width, height, border);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glCopyTexImage2D: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCopyTexSubImage1D(uint32_t target, int32_t level, int32_t xOffset, int32_t x, int32_t y, int32_t width)
+void RENDERER_GL_API_CALL GL_CheckedCopyTexSubImage1D(
+    uint32_t target, int32_t level, int32_t xOffset,
+    int32_t x, int32_t y, int32_t width)
 {
     uint32_t error;
 
     rendererGlCopyTexSubImage1DDriver(target, level, xOffset, x, y, width);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCopyTexSubImage1D: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCopyTexSubImage1D: glGetError() = 0x%04x\n",
+                   error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedCopyTexSubImage2D(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset, int32_t x,
-                                                      int32_t y, int32_t width, int32_t height)
+void RENDERER_GL_API_CALL GL_CheckedCopyTexSubImage2D(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t x, int32_t y, int32_t width, int32_t height)
 {
     uint32_t error;
 
-    rendererGlCopyTexSubImage2DDriver(target, level, xOffset, yOffset, x, y, width, height);
+    rendererGlCopyTexSubImage2DDriver(
+        target, level, xOffset, yOffset, x, y, width, height);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glCopyTexSubImage2D: glGetError() = 0x%04x\n", error);
+        Com_Printf("^3glCopyTexSubImage2D: glGetError() = 0x%04x\n",
+                   error);
 }
 
 void RENDERER_GL_API_CALL GL_CheckedCullFace(uint32_t mode)
@@ -2150,7 +2447,8 @@ void RENDERER_GL_API_CALL GL_CheckedCullFace(uint32_t mode)
  * drawing, edge-flag, display-list, and evaluator dispatch. The original
  * wrappers forward each argument to the driver slot, query glGetError once,
  * and print only when that query returns a nonzero error. */
-void RENDERER_GL_API_CALL GL_CheckedDeleteLists(uint32_t list, int32_t range)
+void RENDERER_GL_API_CALL GL_CheckedDeleteLists(
+    uint32_t list, int32_t range)
 {
     uint32_t error;
 
@@ -2160,7 +2458,8 @@ void RENDERER_GL_API_CALL GL_CheckedDeleteLists(uint32_t list, int32_t range)
         Com_Printf("^3glDeleteLists: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDeleteTextures(int32_t count, const uint32_t *textures)
+void RENDERER_GL_API_CALL GL_CheckedDeleteTextures(
+    int32_t count, const uint32_t *textures)
 {
     uint32_t error;
 
@@ -2190,7 +2489,8 @@ void RENDERER_GL_API_CALL GL_CheckedDepthMask(uint8_t enabled)
         Com_Printf("^3glDepthMask: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDepthRange(double nearValue, double farValue)
+void RENDERER_GL_API_CALL GL_CheckedDepthRange(
+    double nearValue, double farValue)
 {
     uint32_t error;
 
@@ -2220,7 +2520,8 @@ void RENDERER_GL_API_CALL GL_CheckedDisableClientState(uint32_t array)
         Com_Printf("^3glDisableClientState: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDrawArrays(uint32_t mode, int32_t first, int32_t count)
+void RENDERER_GL_API_CALL GL_CheckedDrawArrays(
+    uint32_t mode, int32_t first, int32_t count)
 {
     uint32_t error;
 
@@ -2240,7 +2541,8 @@ void RENDERER_GL_API_CALL GL_CheckedDrawBuffer(uint32_t buffer)
         Com_Printf("^3glDrawBuffer: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDrawElements(uint32_t mode, int32_t count, uint32_t type, const void *indices)
+void RENDERER_GL_API_CALL GL_CheckedDrawElements(
+    uint32_t mode, int32_t count, uint32_t type, const void *indices)
 {
     uint32_t error;
 
@@ -2250,7 +2552,9 @@ void RENDERER_GL_API_CALL GL_CheckedDrawElements(uint32_t mode, int32_t count, u
         Com_Printf("^3glDrawElements: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedDrawPixels(int32_t width, int32_t height, uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedDrawPixels(
+    int32_t width, int32_t height, uint32_t format, uint32_t type,
+    const void *pixels)
 {
     uint32_t error;
 
@@ -2271,7 +2575,8 @@ void RENDERER_GL_API_CALL GL_CheckedEdgeFlag(uint8_t flag)
         Com_Printf("^3glEdgeFlag: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedEdgeFlagPointer(int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedEdgeFlagPointer(
+    int32_t stride, const void *pointer)
 {
     uint32_t error;
 
@@ -2417,7 +2722,8 @@ void RENDERER_GL_API_CALL GL_CheckedEvalCoord2fv(const float *values)
         Com_Printf("^3glEvalCoord2fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedEvalMesh1(uint32_t mode, int32_t i1, int32_t i2)
+void RENDERER_GL_API_CALL GL_CheckedEvalMesh1(
+    uint32_t mode, int32_t i1, int32_t i2)
 {
     uint32_t error;
 
@@ -2427,7 +2733,8 @@ void RENDERER_GL_API_CALL GL_CheckedEvalMesh1(uint32_t mode, int32_t i1, int32_t
         Com_Printf("^3glEvalMesh1: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedEvalMesh2(uint32_t mode, int32_t i1, int32_t i2, int32_t j1, int32_t j2)
+void RENDERER_GL_API_CALL GL_CheckedEvalMesh2(
+    uint32_t mode, int32_t i1, int32_t i2, int32_t j1, int32_t j2)
 {
     uint32_t error;
 
@@ -2457,7 +2764,8 @@ void RENDERER_GL_API_CALL GL_CheckedEvalPoint2(int32_t i, int32_t j)
         Com_Printf("^3glEvalPoint2: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedFeedbackBuffer(int32_t size, uint32_t type, float *buffer)
+void RENDERER_GL_API_CALL GL_CheckedFeedbackBuffer(
+    int32_t size, uint32_t type, float *buffer)
 {
     uint32_t error;
 
@@ -2497,7 +2805,8 @@ void RENDERER_GL_API_CALL GL_CheckedFogf(uint32_t parameter, float value)
         Com_Printf("^3glFogf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedFogfv(uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedFogfv(
+    uint32_t parameter, const float *values)
 {
     uint32_t error;
 
@@ -2517,7 +2826,8 @@ void RENDERER_GL_API_CALL GL_CheckedFogi(uint32_t parameter, int32_t value)
         Com_Printf("^3glFogi: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedFogiv(uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedFogiv(
+    uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
 
@@ -2537,7 +2847,9 @@ void RENDERER_GL_API_CALL GL_CheckedFrontFace(uint32_t mode)
         Com_Printf("^3glFrontFace: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedFrustum(double left, double right, double bottom, double top, double nearValue, double farValue)
+void RENDERER_GL_API_CALL GL_CheckedFrustum(
+    double left, double right, double bottom, double top,
+    double nearValue, double farValue)
 {
     uint32_t error;
 
@@ -2559,7 +2871,8 @@ uint32_t RENDERER_GL_API_CALL GL_CheckedGenLists(int32_t range)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGenTextures(int32_t count, uint32_t *textures)
+void RENDERER_GL_API_CALL GL_CheckedGenTextures(
+    int32_t count, uint32_t *textures)
 {
     uint32_t error;
 
@@ -2569,7 +2882,8 @@ void RENDERER_GL_API_CALL GL_CheckedGenTextures(int32_t count, uint32_t *texture
         Com_Printf("^3glGenTextures: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetBooleanv(uint32_t parameter, uint8_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetBooleanv(
+    uint32_t parameter, uint8_t *values)
 {
     uint32_t error;
 
@@ -2579,7 +2893,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetBooleanv(uint32_t parameter, uint8_t *val
         Com_Printf("^3glGetBooleanv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetClipPlane(uint32_t plane, double *equation)
+void RENDERER_GL_API_CALL GL_CheckedGetClipPlane(
+    uint32_t plane, double *equation)
 {
     uint32_t error;
 
@@ -2589,7 +2904,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetClipPlane(uint32_t plane, double *equatio
         Com_Printf("^3glGetClipPlane: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetDoublev(uint32_t parameter, double *values)
+void RENDERER_GL_API_CALL GL_CheckedGetDoublev(
+    uint32_t parameter, double *values)
 {
     uint32_t error;
 
@@ -2612,11 +2928,13 @@ uint32_t RENDERER_GL_API_CALL GL_CheckedGetError(void)
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     diagnosticError = rendererGlGetErrorDriver();
     if (diagnosticError != GL_NO_ERROR)
-        Com_Printf("^3glGetError: glGetError() = 0x%04x\n", diagnosticError);
+        Com_Printf("^3glGetError: glGetError() = 0x%04x\n",
+                   diagnosticError);
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetFloatv(uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetFloatv(
+    uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -2626,7 +2944,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetFloatv(uint32_t parameter, float *values)
         Com_Printf("^3glGetFloatv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetIntegerv(uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetIntegerv(
+    uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -2636,7 +2955,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetIntegerv(uint32_t parameter, int32_t *val
         Com_Printf("^3glGetIntegerv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetLightfv(uint32_t light, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetLightfv(
+    uint32_t light, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -2646,7 +2966,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetLightfv(uint32_t light, uint32_t paramete
         Com_Printf("^3glGetLightfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetLightiv(uint32_t light, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetLightiv(
+    uint32_t light, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -2656,7 +2977,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetLightiv(uint32_t light, uint32_t paramete
         Com_Printf("^3glGetLightiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetMapdv(uint32_t target, uint32_t query, double *values)
+void RENDERER_GL_API_CALL GL_CheckedGetMapdv(
+    uint32_t target, uint32_t query, double *values)
 {
     uint32_t error;
 
@@ -2666,7 +2988,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetMapdv(uint32_t target, uint32_t query, do
         Com_Printf("^3glGetMapdv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetMapfv(uint32_t target, uint32_t query, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetMapfv(
+    uint32_t target, uint32_t query, float *values)
 {
     uint32_t error;
 
@@ -2676,7 +2999,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetMapfv(uint32_t target, uint32_t query, fl
         Com_Printf("^3glGetMapfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetMapiv(uint32_t target, uint32_t query, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetMapiv(
+    uint32_t target, uint32_t query, int32_t *values)
 {
     uint32_t error;
 
@@ -2686,7 +3010,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetMapiv(uint32_t target, uint32_t query, in
         Com_Printf("^3glGetMapiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetMaterialfv(uint32_t face, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetMaterialfv(
+    uint32_t face, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -2696,7 +3021,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetMaterialfv(uint32_t face, uint32_t parame
         Com_Printf("^3glGetMaterialfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetMaterialiv(uint32_t face, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetMaterialiv(
+    uint32_t face, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -2706,7 +3032,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetMaterialiv(uint32_t face, uint32_t parame
         Com_Printf("^3glGetMaterialiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetPixelMapfv(uint32_t map, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetPixelMapfv(
+    uint32_t map, float *values)
 {
     uint32_t error;
 
@@ -2716,7 +3043,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetPixelMapfv(uint32_t map, float *values)
         Com_Printf("^3glGetPixelMapfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetPixelMapuiv(uint32_t map, uint32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetPixelMapuiv(
+    uint32_t map, uint32_t *values)
 {
     uint32_t error;
 
@@ -2726,7 +3054,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetPixelMapuiv(uint32_t map, uint32_t *value
         Com_Printf("^3glGetPixelMapuiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetPixelMapusv(uint32_t map, uint16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetPixelMapusv(
+    uint32_t map, uint16_t *values)
 {
     uint32_t error;
 
@@ -2736,7 +3065,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetPixelMapusv(uint32_t map, uint16_t *value
         Com_Printf("^3glGetPixelMapusv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetPointerv(uint32_t parameter, void **value)
+void RENDERER_GL_API_CALL GL_CheckedGetPointerv(
+    uint32_t parameter, void **value)
 {
     uint32_t error;
 
@@ -2768,7 +3098,8 @@ const uint8_t *RENDERER_GL_API_CALL GL_CheckedGetString(uint32_t name)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexEnvfv(uint32_t target, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexEnvfv(
+    uint32_t target, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -2778,7 +3109,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexEnvfv(uint32_t target, uint32_t parame
         Com_Printf("^3glGetTexEnvfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexEnviv(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexEnviv(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -2788,7 +3120,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexEnviv(uint32_t target, uint32_t parame
         Com_Printf("^3glGetTexEnviv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexGendv(uint32_t coordinate, uint32_t parameter, double *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexGendv(
+    uint32_t coordinate, uint32_t parameter, double *values)
 {
     uint32_t error;
 
@@ -2798,7 +3131,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexGendv(uint32_t coordinate, uint32_t pa
         Com_Printf("^3glGetTexGendv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexGenfv(uint32_t coordinate, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexGenfv(
+    uint32_t coordinate, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -2808,7 +3142,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexGenfv(uint32_t coordinate, uint32_t pa
         Com_Printf("^3glGetTexGenfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexGeniv(uint32_t coordinate, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexGeniv(
+    uint32_t coordinate, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -2818,7 +3153,9 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexGeniv(uint32_t coordinate, uint32_t pa
         Com_Printf("^3glGetTexGeniv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexImage(uint32_t target, int32_t level, uint32_t format, uint32_t type, void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedGetTexImage(
+    uint32_t target, int32_t level, uint32_t format, uint32_t type,
+    void *pixels)
 {
     uint32_t error;
 
@@ -2828,27 +3165,32 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexImage(uint32_t target, int32_t level, 
         Com_Printf("^3glGetTexImage: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexLevelParameterfv(uint32_t target, int32_t level, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexLevelParameterfv(
+    uint32_t target, int32_t level, uint32_t parameter, float *values)
 {
     uint32_t error;
 
     rendererGlGetTexLevelParameterfvDriver(target, level, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetTexLevelParameterfv: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetTexLevelParameterfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexLevelParameteriv(uint32_t target, int32_t level, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexLevelParameteriv(
+    uint32_t target, int32_t level, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
     rendererGlGetTexLevelParameterivDriver(target, level, parameter, values);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
-        Com_Printf("^3glGetTexLevelParameteriv: glGetError() = 0x%04x\n", error);
+        Com_Printf(
+            "^3glGetTexLevelParameteriv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexParameterfv(uint32_t target, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexParameterfv(
+    uint32_t target, uint32_t parameter, float *values)
 {
     uint32_t error;
 
@@ -2858,7 +3200,8 @@ void RENDERER_GL_API_CALL GL_CheckedGetTexParameterfv(uint32_t target, uint32_t 
         Com_Printf("^3glGetTexParameterfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedGetTexParameteriv(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedGetTexParameteriv(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     uint32_t error;
 
@@ -2892,7 +3235,8 @@ void RENDERER_GL_API_CALL GL_CheckedIndexMask(uint32_t mask)
         Com_Printf("^3glIndexMask: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedIndexPointer(uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedIndexPointer(
+    uint32_t type, int32_t stride, const void *pointer)
 {
     uint32_t error;
 
@@ -3013,7 +3357,8 @@ void RENDERER_GL_API_CALL GL_CheckedInitNames(void)
         Com_Printf("^3glInitNames: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedInterleavedArrays(uint32_t format, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedInterleavedArrays(
+    uint32_t format, int32_t stride, const void *pointer)
 {
     uint32_t error;
 
@@ -3059,7 +3404,8 @@ uint8_t RENDERER_GL_API_CALL GL_CheckedIsTexture(uint32_t texture)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLightModelf(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedLightModelf(
+    uint32_t parameter, float value)
 {
     uint32_t error;
 
@@ -3069,7 +3415,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightModelf(uint32_t parameter, float value)
         Com_Printf("^3glLightModelf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLightModelfv(uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedLightModelfv(
+    uint32_t parameter, const float *values)
 {
     uint32_t error;
 
@@ -3079,7 +3426,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightModelfv(uint32_t parameter, const float
         Com_Printf("^3glLightModelfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLightModeli(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedLightModeli(
+    uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
@@ -3089,7 +3437,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightModeli(uint32_t parameter, int32_t valu
         Com_Printf("^3glLightModeli: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLightModeliv(uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedLightModeliv(
+    uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
 
@@ -3099,7 +3448,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightModeliv(uint32_t parameter, const int32
         Com_Printf("^3glLightModeliv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLightf(uint32_t light, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedLightf(
+    uint32_t light, uint32_t parameter, float value)
 {
     uint32_t error;
 
@@ -3112,7 +3462,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightf(uint32_t light, uint32_t parameter, f
 /* Source: CoDUOMP.exe 0x004d42c0..0x004d44b6. Checked lighting completion,
  * line/list state, matrix loads, selection-name loading, and logic operation
  * dispatch. The line stipple pattern retains its GLushort width. */
-void RENDERER_GL_API_CALL GL_CheckedLightfv(uint32_t light, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedLightfv(
+    uint32_t light, uint32_t parameter, const float *values)
 {
     uint32_t error;
 
@@ -3122,7 +3473,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightfv(uint32_t light, uint32_t parameter, 
         Com_Printf("^3glLightfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLighti(uint32_t light, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedLighti(
+    uint32_t light, uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
@@ -3132,7 +3484,8 @@ void RENDERER_GL_API_CALL GL_CheckedLighti(uint32_t light, uint32_t parameter, i
         Com_Printf("^3glLighti: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLightiv(uint32_t light, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedLightiv(
+    uint32_t light, uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
 
@@ -3142,7 +3495,8 @@ void RENDERER_GL_API_CALL GL_CheckedLightiv(uint32_t light, uint32_t parameter, 
         Com_Printf("^3glLightiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedLineStipple(int32_t factor, uint16_t pattern)
+void RENDERER_GL_API_CALL GL_CheckedLineStipple(
+    int32_t factor, uint16_t pattern)
 {
     uint32_t error;
 
@@ -3227,7 +3581,9 @@ void RENDERER_GL_API_CALL GL_CheckedLogicOp(uint32_t operation)
  * that every d-suffixed domain argument remains a double at the driver
  * boundary; the remaining scalar and pointer widths match the OpenGL 1.1
  * entry-point signatures. */
-void RENDERER_GL_API_CALL GL_CheckedMap1d(uint32_t target, double u1, double u2, int32_t stride, int32_t order, const double *points)
+void RENDERER_GL_API_CALL GL_CheckedMap1d(
+    uint32_t target, double u1, double u2, int32_t stride, int32_t order,
+    const double *points)
 {
     uint32_t error;
 
@@ -3237,7 +3593,9 @@ void RENDERER_GL_API_CALL GL_CheckedMap1d(uint32_t target, double u1, double u2,
         Com_Printf("^3glMap1d: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMap1f(uint32_t target, float u1, float u2, int32_t stride, int32_t order, const float *points)
+void RENDERER_GL_API_CALL GL_CheckedMap1f(
+    uint32_t target, float u1, float u2, int32_t stride, int32_t order,
+    const float *points)
 {
     uint32_t error;
 
@@ -3247,29 +3605,36 @@ void RENDERER_GL_API_CALL GL_CheckedMap1f(uint32_t target, float u1, float u2, i
         Com_Printf("^3glMap1f: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMap2d(uint32_t target, double u1, double u2, int32_t uStride, int32_t uOrder, double v1, double v2,
-                                          int32_t vStride, int32_t vOrder, const double *points)
+void RENDERER_GL_API_CALL GL_CheckedMap2d(
+    uint32_t target, double u1, double u2, int32_t uStride, int32_t uOrder,
+    double v1, double v2, int32_t vStride, int32_t vOrder,
+    const double *points)
 {
     uint32_t error;
 
-    rendererGlMap2dDriver(target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
+    rendererGlMap2dDriver(
+        target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glMap2d: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMap2f(uint32_t target, float u1, float u2, int32_t uStride, int32_t uOrder, float v1, float v2,
-                                          int32_t vStride, int32_t vOrder, const float *points)
+void RENDERER_GL_API_CALL GL_CheckedMap2f(
+    uint32_t target, float u1, float u2, int32_t uStride, int32_t uOrder,
+    float v1, float v2, int32_t vStride, int32_t vOrder,
+    const float *points)
 {
     uint32_t error;
 
-    rendererGlMap2fDriver(target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
+    rendererGlMap2fDriver(
+        target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glMap2f: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMapGrid1d(int32_t count, double u1, double u2)
+void RENDERER_GL_API_CALL GL_CheckedMapGrid1d(
+    int32_t count, double u1, double u2)
 {
     uint32_t error;
 
@@ -3279,7 +3644,8 @@ void RENDERER_GL_API_CALL GL_CheckedMapGrid1d(int32_t count, double u1, double u
         Com_Printf("^3glMapGrid1d: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMapGrid1f(int32_t count, float u1, float u2)
+void RENDERER_GL_API_CALL GL_CheckedMapGrid1f(
+    int32_t count, float u1, float u2)
 {
     uint32_t error;
 
@@ -3289,7 +3655,9 @@ void RENDERER_GL_API_CALL GL_CheckedMapGrid1f(int32_t count, float u1, float u2)
         Com_Printf("^3glMapGrid1f: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMapGrid2d(int32_t uCount, double u1, double u2, int32_t vCount, double v1, double v2)
+void RENDERER_GL_API_CALL GL_CheckedMapGrid2d(
+    int32_t uCount, double u1, double u2,
+    int32_t vCount, double v1, double v2)
 {
     uint32_t error;
 
@@ -3299,7 +3667,9 @@ void RENDERER_GL_API_CALL GL_CheckedMapGrid2d(int32_t uCount, double u1, double 
         Com_Printf("^3glMapGrid2d: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMapGrid2f(int32_t uCount, float u1, float u2, int32_t vCount, float v1, float v2)
+void RENDERER_GL_API_CALL GL_CheckedMapGrid2f(
+    int32_t uCount, float u1, float u2,
+    int32_t vCount, float v1, float v2)
 {
     uint32_t error;
 
@@ -3309,7 +3679,8 @@ void RENDERER_GL_API_CALL GL_CheckedMapGrid2f(int32_t uCount, float u1, float u2
         Com_Printf("^3glMapGrid2f: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMaterialf(uint32_t face, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedMaterialf(
+    uint32_t face, uint32_t parameter, float value)
 {
     uint32_t error;
 
@@ -3319,7 +3690,8 @@ void RENDERER_GL_API_CALL GL_CheckedMaterialf(uint32_t face, uint32_t parameter,
         Com_Printf("^3glMaterialf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMaterialfv(uint32_t face, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedMaterialfv(
+    uint32_t face, uint32_t parameter, const float *values)
 {
     uint32_t error;
 
@@ -3329,7 +3701,8 @@ void RENDERER_GL_API_CALL GL_CheckedMaterialfv(uint32_t face, uint32_t parameter
         Com_Printf("^3glMaterialfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMateriali(uint32_t face, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedMateriali(
+    uint32_t face, uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
@@ -3339,7 +3712,8 @@ void RENDERER_GL_API_CALL GL_CheckedMateriali(uint32_t face, uint32_t parameter,
         Com_Printf("^3glMateriali: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedMaterialiv(uint32_t face, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedMaterialiv(
+    uint32_t face, uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
 
@@ -3454,7 +3828,8 @@ void RENDERER_GL_API_CALL GL_CheckedNormal3fv(const float *values)
         Com_Printf("^3glNormal3fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedNormal3i(int32_t x, int32_t y, int32_t z)
+void RENDERER_GL_API_CALL GL_CheckedNormal3i(
+    int32_t x, int32_t y, int32_t z)
 {
     uint32_t error;
 
@@ -3474,7 +3849,8 @@ void RENDERER_GL_API_CALL GL_CheckedNormal3iv(const int32_t *values)
         Com_Printf("^3glNormal3iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedNormal3s(int16_t x, int16_t y, int16_t z)
+void RENDERER_GL_API_CALL GL_CheckedNormal3s(
+    int16_t x, int16_t y, int16_t z)
 {
     uint32_t error;
 
@@ -3494,7 +3870,8 @@ void RENDERER_GL_API_CALL GL_CheckedNormal3sv(const int16_t *values)
         Com_Printf("^3glNormal3sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedNormalPointer(uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedNormalPointer(
+    uint32_t type, int32_t stride, const void *pointer)
 {
     uint32_t error;
 
@@ -3504,7 +3881,9 @@ void RENDERER_GL_API_CALL GL_CheckedNormalPointer(uint32_t type, int32_t stride,
         Com_Printf("^3glNormalPointer: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedOrtho(double left, double right, double bottom, double top, double nearValue, double farValue)
+void RENDERER_GL_API_CALL GL_CheckedOrtho(
+    double left, double right, double bottom, double top,
+    double nearValue, double farValue)
 {
     uint32_t error;
 
@@ -3524,7 +3903,8 @@ void RENDERER_GL_API_CALL GL_CheckedPassThrough(float token)
         Com_Printf("^3glPassThrough: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPixelMapfv(uint32_t map, int32_t mapSize, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedPixelMapfv(
+    uint32_t map, int32_t mapSize, const float *values)
 {
     uint32_t error;
 
@@ -3534,7 +3914,8 @@ void RENDERER_GL_API_CALL GL_CheckedPixelMapfv(uint32_t map, int32_t mapSize, co
         Com_Printf("^3glPixelMapfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPixelMapuiv(uint32_t map, int32_t mapSize, const uint32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedPixelMapuiv(
+    uint32_t map, int32_t mapSize, const uint32_t *values)
 {
     uint32_t error;
 
@@ -3544,7 +3925,8 @@ void RENDERER_GL_API_CALL GL_CheckedPixelMapuiv(uint32_t map, int32_t mapSize, c
         Com_Printf("^3glPixelMapuiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPixelMapusv(uint32_t map, int32_t mapSize, const uint16_t *values)
+void RENDERER_GL_API_CALL GL_CheckedPixelMapusv(
+    uint32_t map, int32_t mapSize, const uint16_t *values)
 {
     uint32_t error;
 
@@ -3554,7 +3936,8 @@ void RENDERER_GL_API_CALL GL_CheckedPixelMapusv(uint32_t map, int32_t mapSize, c
         Com_Printf("^3glPixelMapusv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPixelStoref(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedPixelStoref(
+    uint32_t parameter, float value)
 {
     uint32_t error;
 
@@ -3564,7 +3947,8 @@ void RENDERER_GL_API_CALL GL_CheckedPixelStoref(uint32_t parameter, float value)
         Com_Printf("^3glPixelStoref: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPixelStorei(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedPixelStorei(
+    uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
@@ -3579,7 +3963,8 @@ void RENDERER_GL_API_CALL GL_CheckedPixelStorei(uint32_t parameter, int32_t valu
  * PolygonMode is the two-enum OpenGL entry immediately between PointSize and
  * PolygonOffset; its operation string and driver slot independently identify
  * the function. */
-void RENDERER_GL_API_CALL GL_CheckedPixelTransferf(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedPixelTransferf(
+    uint32_t parameter, float value)
 {
     uint32_t error;
 
@@ -3589,7 +3974,8 @@ void RENDERER_GL_API_CALL GL_CheckedPixelTransferf(uint32_t parameter, float val
         Com_Printf("^3glPixelTransferf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPixelTransferi(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedPixelTransferi(
+    uint32_t parameter, int32_t value)
 {
     uint32_t error;
 
@@ -3619,7 +4005,8 @@ void RENDERER_GL_API_CALL GL_CheckedPointSize(float size)
         Com_Printf("^3glPointSize: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPolygonMode(uint32_t face, uint32_t mode)
+void RENDERER_GL_API_CALL GL_CheckedPolygonMode(
+    uint32_t face, uint32_t mode)
 {
     uint32_t error;
 
@@ -3689,7 +4076,8 @@ void RENDERER_GL_API_CALL GL_CheckedPopName(void)
         Com_Printf("^3glPopName: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedPrioritizeTextures(int32_t count, const uint32_t *textures, const float *priorities)
+void RENDERER_GL_API_CALL GL_CheckedPrioritizeTextures(
+    int32_t count, const uint32_t *textures, const float *priorities)
 {
     uint32_t error;
 
@@ -3815,7 +4203,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos2sv(const int16_t *values)
         Com_Printf("^3glRasterPos2sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos3d(double x, double y, double z)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos3d(
+    double x, double y, double z)
 {
     uint32_t error;
     rendererGlRasterPos3dDriver(x, y, z);
@@ -3851,7 +4240,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos3fv(const float *values)
         Com_Printf("^3glRasterPos3fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos3i(int32_t x, int32_t y, int32_t z)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos3i(
+    int32_t x, int32_t y, int32_t z)
 {
     uint32_t error;
     rendererGlRasterPos3iDriver(x, y, z);
@@ -3869,7 +4259,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos3iv(const int32_t *values)
         Com_Printf("^3glRasterPos3iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos3s(int16_t x, int16_t y, int16_t z)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos3s(
+    int16_t x, int16_t y, int16_t z)
 {
     uint32_t error;
     rendererGlRasterPos3sDriver(x, y, z);
@@ -3887,7 +4278,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos3sv(const int16_t *values)
         Com_Printf("^3glRasterPos3sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos4d(double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos4d(
+    double x, double y, double z, double w)
 {
     uint32_t error;
     rendererGlRasterPos4dDriver(x, y, z, w);
@@ -3905,7 +4297,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos4dv(const double *values)
         Com_Printf("^3glRasterPos4dv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos4f(float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos4f(
+    float x, float y, float z, float w)
 {
     uint32_t error;
     rendererGlRasterPos4fDriver(x, y, z, w);
@@ -3923,7 +4316,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos4fv(const float *values)
         Com_Printf("^3glRasterPos4fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos4i(int32_t x, int32_t y, int32_t z, int32_t w)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos4i(
+    int32_t x, int32_t y, int32_t z, int32_t w)
 {
     uint32_t error;
     rendererGlRasterPos4iDriver(x, y, z, w);
@@ -3941,7 +4335,8 @@ void RENDERER_GL_API_CALL GL_CheckedRasterPos4iv(const int32_t *values)
         Com_Printf("^3glRasterPos4iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRasterPos4s(int16_t x, int16_t y, int16_t z, int16_t w)
+void RENDERER_GL_API_CALL GL_CheckedRasterPos4s(
+    int16_t x, int16_t y, int16_t z, int16_t w)
 {
     uint32_t error;
     rendererGlRasterPos4sDriver(x, y, z, w);
@@ -3972,8 +4367,9 @@ void RENDERER_GL_API_CALL GL_CheckedReadBuffer(uint32_t mode)
         Com_Printf("^3glReadBuffer: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedReadPixels(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t format, uint32_t type,
-                                               void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedReadPixels(
+    int32_t x, int32_t y, int32_t width, int32_t height,
+    uint32_t format, uint32_t type, void *pixels)
 {
     uint32_t error;
     rendererGlReadPixelsDriver(x, y, width, height, format, type, pixels);
@@ -3982,7 +4378,8 @@ void RENDERER_GL_API_CALL GL_CheckedReadPixels(int32_t x, int32_t y, int32_t wid
         Com_Printf("^3glReadPixels: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRectd(double x1, double y1, double x2, double y2)
+void RENDERER_GL_API_CALL GL_CheckedRectd(
+    double x1, double y1, double x2, double y2)
 {
     uint32_t error;
     rendererGlRectdDriver(x1, y1, x2, y2);
@@ -3991,7 +4388,8 @@ void RENDERER_GL_API_CALL GL_CheckedRectd(double x1, double y1, double x2, doubl
         Com_Printf("^3glRectd: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRectdv(const double *vertex1, const double *vertex2)
+void RENDERER_GL_API_CALL GL_CheckedRectdv(
+    const double *vertex1, const double *vertex2)
 {
     uint32_t error;
     rendererGlRectdvDriver(vertex1, vertex2);
@@ -4000,7 +4398,8 @@ void RENDERER_GL_API_CALL GL_CheckedRectdv(const double *vertex1, const double *
         Com_Printf("^3glRectdv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRectf(float x1, float y1, float x2, float y2)
+void RENDERER_GL_API_CALL GL_CheckedRectf(
+    float x1, float y1, float x2, float y2)
 {
     uint32_t error;
     rendererGlRectfDriver(x1, y1, x2, y2);
@@ -4009,7 +4408,8 @@ void RENDERER_GL_API_CALL GL_CheckedRectf(float x1, float y1, float x2, float y2
         Com_Printf("^3glRectf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRectfv(const float *vertex1, const float *vertex2)
+void RENDERER_GL_API_CALL GL_CheckedRectfv(
+    const float *vertex1, const float *vertex2)
 {
     uint32_t error;
     rendererGlRectfvDriver(vertex1, vertex2);
@@ -4018,7 +4418,8 @@ void RENDERER_GL_API_CALL GL_CheckedRectfv(const float *vertex1, const float *ve
         Com_Printf("^3glRectfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRecti(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
+void RENDERER_GL_API_CALL GL_CheckedRecti(
+    int32_t x1, int32_t y1, int32_t x2, int32_t y2)
 {
     uint32_t error;
     rendererGlRectiDriver(x1, y1, x2, y2);
@@ -4027,7 +4428,8 @@ void RENDERER_GL_API_CALL GL_CheckedRecti(int32_t x1, int32_t y1, int32_t x2, in
         Com_Printf("^3glRecti: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRectiv(const int32_t *vertex1, const int32_t *vertex2)
+void RENDERER_GL_API_CALL GL_CheckedRectiv(
+    const int32_t *vertex1, const int32_t *vertex2)
 {
     uint32_t error;
     rendererGlRectivDriver(vertex1, vertex2);
@@ -4036,7 +4438,8 @@ void RENDERER_GL_API_CALL GL_CheckedRectiv(const int32_t *vertex1, const int32_t
         Com_Printf("^3glRectiv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRects(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+void RENDERER_GL_API_CALL GL_CheckedRects(
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
     uint32_t error;
     rendererGlRectsDriver(x1, y1, x2, y2);
@@ -4045,7 +4448,8 @@ void RENDERER_GL_API_CALL GL_CheckedRects(int16_t x1, int16_t y1, int16_t x2, in
         Com_Printf("^3glRects: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRectsv(const int16_t *vertex1, const int16_t *vertex2)
+void RENDERER_GL_API_CALL GL_CheckedRectsv(
+    const int16_t *vertex1, const int16_t *vertex2)
 {
     uint32_t error;
     rendererGlRectsvDriver(vertex1, vertex2);
@@ -4066,7 +4470,8 @@ int32_t RENDERER_GL_API_CALL GL_CheckedRenderMode(uint32_t mode)
     return result;
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRotated(double angle, double x, double y, double z)
+void RENDERER_GL_API_CALL GL_CheckedRotated(
+    double angle, double x, double y, double z)
 {
     uint32_t error;
     rendererGlRotatedDriver(angle, x, y, z);
@@ -4075,7 +4480,8 @@ void RENDERER_GL_API_CALL GL_CheckedRotated(double angle, double x, double y, do
         Com_Printf("^3glRotated: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedRotatef(float angle, float x, float y, float z)
+void RENDERER_GL_API_CALL GL_CheckedRotatef(
+    float angle, float x, float y, float z)
 {
     uint32_t error;
     rendererGlRotatefDriver(angle, x, y, z);
@@ -4102,7 +4508,8 @@ void RENDERER_GL_API_CALL GL_CheckedScalef(float x, float y, float z)
         Com_Printf("^3glScalef: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedScissor(int32_t x, int32_t y, int32_t width, int32_t height)
+void RENDERER_GL_API_CALL GL_CheckedScissor(
+    int32_t x, int32_t y, int32_t width, int32_t height)
 {
     uint32_t error;
     rendererGlScissorDriver(x, y, width, height);
@@ -4111,7 +4518,8 @@ void RENDERER_GL_API_CALL GL_CheckedScissor(int32_t x, int32_t y, int32_t width,
         Com_Printf("^3glScissor: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedSelectBuffer(int32_t size, uint32_t *buffer)
+void RENDERER_GL_API_CALL GL_CheckedSelectBuffer(
+    int32_t size, uint32_t *buffer)
 {
     uint32_t error;
     rendererGlSelectBufferDriver(size, buffer);
@@ -4129,7 +4537,8 @@ void RENDERER_GL_API_CALL GL_CheckedShadeModel(uint32_t mode)
         Com_Printf("^3glShadeModel: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedStencilFunc(uint32_t function, int32_t reference, uint32_t mask)
+void RENDERER_GL_API_CALL GL_CheckedStencilFunc(
+    uint32_t function, int32_t reference, uint32_t mask)
 {
     uint32_t error;
     rendererGlStencilFuncDriver(function, reference, mask);
@@ -4147,7 +4556,8 @@ void RENDERER_GL_API_CALL GL_CheckedStencilMask(uint32_t mask)
         Com_Printf("^3glStencilMask: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedStencilOp(uint32_t stencilFail, uint32_t depthFail, uint32_t depthPass)
+void RENDERER_GL_API_CALL GL_CheckedStencilOp(
+    uint32_t stencilFail, uint32_t depthFail, uint32_t depthPass)
 {
     uint32_t error;
     rendererGlStencilOpDriver(stencilFail, depthFail, depthPass);
@@ -4306,7 +4716,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord2sv(const int16_t *values)
 /* Source: CoDUOMP.exe 0x004d5ba0..0x004d5f00. Complete checked texture-
  * coordinate families for dimensions 3 and 4. Scalar double calls retain the
  * x87-proven width; GLshort scalar calls retain their OpenGL source type. */
-void RENDERER_GL_API_CALL GL_CheckedTexCoord3d(double s, double t, double r)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord3d(
+    double s, double t, double r)
 {
     uint32_t error;
     rendererGlTexCoord3dDriver(s, t, r);
@@ -4342,7 +4753,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord3fv(const float *values)
         Com_Printf("^3glTexCoord3fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexCoord3i(int32_t s, int32_t t, int32_t r)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord3i(
+    int32_t s, int32_t t, int32_t r)
 {
     uint32_t error;
     rendererGlTexCoord3iDriver(s, t, r);
@@ -4360,7 +4772,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord3iv(const int32_t *values)
         Com_Printf("^3glTexCoord3iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexCoord3s(int16_t s, int16_t t, int16_t r)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord3s(
+    int16_t s, int16_t t, int16_t r)
 {
     uint32_t error;
     rendererGlTexCoord3sDriver(s, t, r);
@@ -4378,7 +4791,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord3sv(const int16_t *values)
         Com_Printf("^3glTexCoord3sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexCoord4d(double s, double t, double r, double q)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord4d(
+    double s, double t, double r, double q)
 {
     uint32_t error;
     rendererGlTexCoord4dDriver(s, t, r, q);
@@ -4396,7 +4810,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord4dv(const double *values)
         Com_Printf("^3glTexCoord4dv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexCoord4f(float s, float t, float r, float q)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord4f(
+    float s, float t, float r, float q)
 {
     uint32_t error;
     rendererGlTexCoord4fDriver(s, t, r, q);
@@ -4414,7 +4829,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord4fv(const float *values)
         Com_Printf("^3glTexCoord4fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexCoord4i(int32_t s, int32_t t, int32_t r, int32_t q)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord4i(
+    int32_t s, int32_t t, int32_t r, int32_t q)
 {
     uint32_t error;
     rendererGlTexCoord4iDriver(s, t, r, q);
@@ -4432,7 +4848,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord4iv(const int32_t *values)
         Com_Printf("^3glTexCoord4iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexCoord4s(int16_t s, int16_t t, int16_t r, int16_t q)
+void RENDERER_GL_API_CALL GL_CheckedTexCoord4s(
+    int16_t s, int16_t t, int16_t r, int16_t q)
 {
     uint32_t error;
     rendererGlTexCoord4sDriver(s, t, r, q);
@@ -4452,7 +4869,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoord4sv(const int16_t *values)
 
 /* Source: CoDUOMP.exe 0x004d5f00..0x004d6130. Checked texture-coordinate
  * array, texture-environment, and texture-coordinate-generation entry points. */
-void RENDERER_GL_API_CALL GL_CheckedTexCoordPointer(int32_t size, uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedTexCoordPointer(
+    int32_t size, uint32_t type, int32_t stride, const void *pointer)
 {
     uint32_t error;
     rendererGlTexCoordPointerDriver(size, type, stride, pointer);
@@ -4461,7 +4879,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexCoordPointer(int32_t size, uint32_t type,
         Com_Printf("^3glTexCoordPointer: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexEnvf(uint32_t target, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedTexEnvf(
+    uint32_t target, uint32_t parameter, float value)
 {
     uint32_t error;
     rendererGlTexEnvfDriver(target, parameter, value);
@@ -4470,7 +4889,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexEnvf(uint32_t target, uint32_t parameter,
         Com_Printf("^3glTexEnvf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexEnvfv(uint32_t target, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedTexEnvfv(
+    uint32_t target, uint32_t parameter, const float *values)
 {
     uint32_t error;
     rendererGlTexEnvfvDriver(target, parameter, values);
@@ -4479,7 +4899,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexEnvfv(uint32_t target, uint32_t parameter
         Com_Printf("^3glTexEnvfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexEnvi(uint32_t target, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedTexEnvi(
+    uint32_t target, uint32_t parameter, int32_t value)
 {
     uint32_t error;
     rendererGlTexEnviDriver(target, parameter, value);
@@ -4488,7 +4909,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexEnvi(uint32_t target, uint32_t parameter,
         Com_Printf("^3glTexEnvi: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexEnviv(uint32_t target, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedTexEnviv(
+    uint32_t target, uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
     rendererGlTexEnvivDriver(target, parameter, values);
@@ -4497,7 +4919,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexEnviv(uint32_t target, uint32_t parameter
         Com_Printf("^3glTexEnviv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexGend(uint32_t coordinate, uint32_t parameter, double value)
+void RENDERER_GL_API_CALL GL_CheckedTexGend(
+    uint32_t coordinate, uint32_t parameter, double value)
 {
     uint32_t error;
     rendererGlTexGendDriver(coordinate, parameter, value);
@@ -4506,7 +4929,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexGend(uint32_t coordinate, uint32_t parame
         Com_Printf("^3glTexGend: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexGendv(uint32_t coordinate, uint32_t parameter, const double *values)
+void RENDERER_GL_API_CALL GL_CheckedTexGendv(
+    uint32_t coordinate, uint32_t parameter, const double *values)
 {
     uint32_t error;
     rendererGlTexGendvDriver(coordinate, parameter, values);
@@ -4515,7 +4939,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexGendv(uint32_t coordinate, uint32_t param
         Com_Printf("^3glTexGendv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexGenf(uint32_t coordinate, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedTexGenf(
+    uint32_t coordinate, uint32_t parameter, float value)
 {
     uint32_t error;
     rendererGlTexGenfDriver(coordinate, parameter, value);
@@ -4524,7 +4949,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexGenf(uint32_t coordinate, uint32_t parame
         Com_Printf("^3glTexGenf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexGenfv(uint32_t coordinate, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedTexGenfv(
+    uint32_t coordinate, uint32_t parameter, const float *values)
 {
     uint32_t error;
     rendererGlTexGenfvDriver(coordinate, parameter, values);
@@ -4533,7 +4959,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexGenfv(uint32_t coordinate, uint32_t param
         Com_Printf("^3glTexGenfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexGeni(uint32_t coordinate, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedTexGeni(
+    uint32_t coordinate, uint32_t parameter, int32_t value)
 {
     uint32_t error;
     rendererGlTexGeniDriver(coordinate, parameter, value);
@@ -4542,7 +4969,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexGeni(uint32_t coordinate, uint32_t parame
         Com_Printf("^3glTexGeni: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexGeniv(uint32_t coordinate, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedTexGeniv(
+    uint32_t coordinate, uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
     rendererGlTexGenivDriver(coordinate, parameter, values);
@@ -4553,27 +4981,34 @@ void RENDERER_GL_API_CALL GL_CheckedTexGeniv(uint32_t coordinate, uint32_t param
 
 /* Source: CoDUOMP.exe 0x004d6130..0x004d6330. Checked texture image upload,
  * texture-parameter, and texture sub-image upload entry points. */
-void RENDERER_GL_API_CALL GL_CheckedTexImage1D(uint32_t target, int32_t level, int32_t internalFormat, int32_t width, int32_t border,
-                                               uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedTexImage1D(
+    uint32_t target, int32_t level, int32_t internalFormat, int32_t width,
+    int32_t border, uint32_t format, uint32_t type, const void *pixels)
 {
     uint32_t error;
-    rendererGlTexImage1DDriver(target, level, internalFormat, width, border, format, type, pixels);
+    rendererGlTexImage1DDriver(
+        target, level, internalFormat, width, border, format, type, pixels);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glTexImage1D: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexImage2D(uint32_t target, int32_t level, int32_t internalFormat, int32_t width, int32_t height,
-                                               int32_t border, uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedTexImage2D(
+    uint32_t target, int32_t level, int32_t internalFormat, int32_t width,
+    int32_t height, int32_t border, uint32_t format, uint32_t type,
+    const void *pixels)
 {
     uint32_t error;
-    rendererGlTexImage2DDriver(target, level, internalFormat, width, height, border, format, type, pixels);
+    rendererGlTexImage2DDriver(
+        target, level, internalFormat, width, height, border, format, type,
+        pixels);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glTexImage2D: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexParameterf(uint32_t target, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_CheckedTexParameterf(
+    uint32_t target, uint32_t parameter, float value)
 {
     uint32_t error;
     rendererGlTexParameterfDriver(target, parameter, value);
@@ -4582,7 +5017,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexParameterf(uint32_t target, uint32_t para
         Com_Printf("^3glTexParameterf: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexParameterfv(uint32_t target, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_CheckedTexParameterfv(
+    uint32_t target, uint32_t parameter, const float *values)
 {
     uint32_t error;
     rendererGlTexParameterfvDriver(target, parameter, values);
@@ -4591,7 +5027,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexParameterfv(uint32_t target, uint32_t par
         Com_Printf("^3glTexParameterfv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexParameteri(uint32_t target, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_CheckedTexParameteri(
+    uint32_t target, uint32_t parameter, int32_t value)
 {
     uint32_t error;
     rendererGlTexParameteriDriver(target, parameter, value);
@@ -4600,7 +5037,8 @@ void RENDERER_GL_API_CALL GL_CheckedTexParameteri(uint32_t target, uint32_t para
         Com_Printf("^3glTexParameteri: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexParameteriv(uint32_t target, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_CheckedTexParameteriv(
+    uint32_t target, uint32_t parameter, const int32_t *values)
 {
     uint32_t error;
     rendererGlTexParameterivDriver(target, parameter, values);
@@ -4609,21 +5047,26 @@ void RENDERER_GL_API_CALL GL_CheckedTexParameteriv(uint32_t target, uint32_t par
         Com_Printf("^3glTexParameteriv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexSubImage1D(uint32_t target, int32_t level, int32_t xOffset, int32_t width, uint32_t format,
-                                                  uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedTexSubImage1D(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t width,
+    uint32_t format, uint32_t type, const void *pixels)
 {
     uint32_t error;
-    rendererGlTexSubImage1DDriver(target, level, xOffset, width, format, type, pixels);
+    rendererGlTexSubImage1DDriver(
+        target, level, xOffset, width, format, type, pixels);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glTexSubImage1D: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedTexSubImage2D(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset, int32_t width,
-                                                  int32_t height, uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_CheckedTexSubImage2D(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t width, int32_t height, uint32_t format, uint32_t type,
+    const void *pixels)
 {
     uint32_t error;
-    rendererGlTexSubImage2DDriver(target, level, xOffset, yOffset, width, height, format, type, pixels);
+    rendererGlTexSubImage2DDriver(
+        target, level, xOffset, yOffset, width, height, format, type, pixels);
     error = rendererGlGetErrorDriver();
     if (error != GL_NO_ERROR)
         Com_Printf("^3glTexSubImage2D: glGetError() = 0x%04x\n", error);
@@ -4776,7 +5219,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertex3iv(const int32_t *values)
         Com_Printf("^3glVertex3iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertex3s(int16_t x, int16_t y, int16_t z)
+void RENDERER_GL_API_CALL GL_CheckedVertex3s(
+    int16_t x, int16_t y, int16_t z)
 {
     uint32_t error;
     rendererGlVertex3sDriver(x, y, z);
@@ -4794,7 +5238,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertex3sv(const int16_t *values)
         Com_Printf("^3glVertex3sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertex4d(double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_CheckedVertex4d(
+    double x, double y, double z, double w)
 {
     uint32_t error;
     rendererGlVertex4dDriver(x, y, z, w);
@@ -4812,7 +5257,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertex4dv(const double *values)
         Com_Printf("^3glVertex4dv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertex4f(float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_CheckedVertex4f(
+    float x, float y, float z, float w)
 {
     uint32_t error;
     rendererGlVertex4fDriver(x, y, z, w);
@@ -4830,7 +5276,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertex4fv(const float *values)
         Com_Printf("^3glVertex4fv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertex4i(int32_t x, int32_t y, int32_t z, int32_t w)
+void RENDERER_GL_API_CALL GL_CheckedVertex4i(
+    int32_t x, int32_t y, int32_t z, int32_t w)
 {
     uint32_t error;
     rendererGlVertex4iDriver(x, y, z, w);
@@ -4848,7 +5295,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertex4iv(const int32_t *values)
         Com_Printf("^3glVertex4iv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertex4s(int16_t x, int16_t y, int16_t z, int16_t w)
+void RENDERER_GL_API_CALL GL_CheckedVertex4s(
+    int16_t x, int16_t y, int16_t z, int16_t w)
 {
     uint32_t error;
     rendererGlVertex4sDriver(x, y, z, w);
@@ -4866,7 +5314,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertex4sv(const int16_t *values)
         Com_Printf("^3glVertex4sv: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedVertexPointer(int32_t size, uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_CheckedVertexPointer(
+    int32_t size, uint32_t type, int32_t stride, const void *pointer)
 {
     uint32_t error;
     rendererGlVertexPointerDriver(size, type, stride, pointer);
@@ -4875,7 +5324,8 @@ void RENDERER_GL_API_CALL GL_CheckedVertexPointer(int32_t size, uint32_t type, i
         Com_Printf("^3glVertexPointer: glGetError() = 0x%04x\n", error);
 }
 
-void RENDERER_GL_API_CALL GL_CheckedViewport(int32_t x, int32_t y, int32_t width, int32_t height)
+void RENDERER_GL_API_CALL GL_CheckedViewport(
+    int32_t x, int32_t y, int32_t width, int32_t height)
 {
     uint32_t error;
     rendererGlViewportDriver(x, y, width, height);

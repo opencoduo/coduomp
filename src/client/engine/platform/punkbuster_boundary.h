@@ -9,7 +9,8 @@
 extern "C" {
 #endif
 
-void PB_InvokeEventCallback(const char *address, const uint8_t *packetData);
+void PB_InvokeEventCallback(const char *address,
+                            const uint8_t *packetData);
 void PB_CallServerSaCommandDrain(void);
 void PB_InitializeClient(void *applicationInstance);
 void PB_InitializeServer(void);
@@ -20,7 +21,8 @@ typedef enum pbClientConnectingEvent_e {
     PB_CLIENT_CONNECTING_CHALLENGE = 1,
     PB_CLIENT_CONNECTING_REQUEST = 2
 } pbClientConnectingEvent_t;
-void PbClientConnecting(pbClientConnectingEvent_t event, char *packet, int32_t *packetLength);
+void PbClientConnecting(pbClientConnectingEvent_t event,
+                        char *packet, int32_t *packetLength);
 qboolean PB_ClientTrapConsole(const char *text);
 void PB_DispatchClientConsoleCommand(const char *text);
 void PB_DispatchServerConsoleCommand(const char *text);

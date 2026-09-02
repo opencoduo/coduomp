@@ -13,9 +13,7 @@ enum {
 // Exact same-module PPC symbol: UI_LoadDemos.
 void UI_LoadDemos(void)
 {
-    enum {
-        UI_DEMO_SUFFIX_COMPARE_LIMIT = 99999
-    };
+    enum { UI_DEMO_SUFFIX_COMPARE_LIMIT = 99999 };
     char extension[UI_DEMO_EXTENSION_BUFFER_SIZE];
     char suffix[UI_DEMO_EXTENSION_BUFFER_SIZE];
     char list[UI_DEMO_LIST_BUFFER_SIZE];
@@ -23,7 +21,8 @@ void UI_LoadDemos(void)
     int32_t demoIndex;
 
     Com_sprintf(extension, sizeof(extension), "dm_%d", UI_DEMO_PROTOCOL);
-    ui_demoCount = trap_FS_GetFileList("demos", extension, list, sizeof(list));
+    ui_demoCount = trap_FS_GetFileList("demos", extension, list,
+                                       sizeof(list));
     Com_sprintf(suffix, sizeof(suffix), ".dm_%d", UI_DEMO_PROTOCOL);
     if (ui_demoCount > UI_MAX_DEMOS) {
         ui_demoCount = UI_MAX_DEMOS;

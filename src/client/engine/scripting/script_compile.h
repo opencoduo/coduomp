@@ -23,15 +23,20 @@ enum {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(script_yy_buffer_t) == 40, "i386 Flex buffer layout changed");
-_Static_assert(offsetof(sval_u, source.sourcePos) == 4, "i386 yacc source-position word moved");
-_Static_assert(sizeof(sval_u) == 8, "i386 yacc value record size changed");
+_Static_assert(sizeof(script_yy_buffer_t) == 40,
+               "i386 Flex buffer layout changed");
+_Static_assert(offsetof(sval_u, source.sourcePos) == 4,
+               "i386 yacc source-position word moved");
+_Static_assert(sizeof(sval_u) == 8,
+               "i386 yacc value record size changed");
 #endif
 
 scr_ast_list_t *linked_list_end(void *entry);
-scr_ast_list_item_t **prepend_node(void *entry, scr_ast_list_item_t **headLink);
+scr_ast_list_item_t **prepend_node(void *entry,
+                                   scr_ast_list_item_t **headLink);
 scr_ast_list_t *append_node(scr_ast_list_t *list, void *entry);
-scr_ast_list_t *ScriptParse_ConcatLists(scr_ast_list_t *first, const scr_ast_list_t *second);
+scr_ast_list_t *ScriptParse_ConcatLists(scr_ast_list_t *first,
+                                        const scr_ast_list_t *second);
 void *coduomp_script_parse_allocate(size_t size);
 
 void AddOpcodePos(uint32_t sourcePos);
@@ -80,23 +85,31 @@ extern const int16_t script_yypgoto[];
 extern const int16_t script_yytable[];
 extern const int16_t script_yycheck[];
 
-uint32_t(node1_)(uint32_t word);
-uint32_t(node_pos)(uint32_t word);
+uint32_t (node1_)(uint32_t word);
+uint32_t (node_pos)(uint32_t word);
 /* NOT_FROM_ORIGINAL_SOURCE: the yacc reconstruction names the destination
  * semantic-value temporary explicitly. The original node1_/node_pos helpers
  * are dword identities; their calls were inlined into the parser actions. */
-#define node1_(out_, word_) ((out_)->source.value = (node1_)((uint32_t)(word_)))
-#define node_pos(out_, word_) ((out_)->source.value = (node_pos)((uint32_t)(word_)))
+#define node1_(out_, word_) \
+    ((out_)->source.value = (node1_)((uint32_t)(word_)))
+#define node_pos(out_, word_) \
+    ((out_)->source.value = (node_pos)((uint32_t)(word_)))
 uintptr_t *node0(uintptr_t word0);
 scr_ast_node_t *node1(uintptr_t word0, uintptr_t word1);
 scr_ast_node_t *node2(uintptr_t word0, uintptr_t word1, uintptr_t word2);
 void *node2_(uintptr_t word0, uintptr_t word1);
-scr_ast_node_t *coduomp_script_ast_new_script_root(uintptr_t kind, uintptr_t entries);
-scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3);
+scr_ast_node_t *coduomp_script_ast_new_script_root(uintptr_t kind,
+                                                   uintptr_t entries);
+scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3);
 uintptr_t *node3_(uintptr_t word0, uintptr_t word1, uintptr_t word2);
-scr_ast_node_t *node4(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3, uintptr_t word4);
-uintptr_t *node4_(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3);
-scr_ast_node_t *node5(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3, uintptr_t word4, uintptr_t word5);
-scr_ast_node_t *node6(uintptr_t word0, uintptr_t word1, uintptr_t word2, uintptr_t word3, uintptr_t word4, uintptr_t word5,
+scr_ast_node_t *node4(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3, uintptr_t word4);
+uintptr_t *node4_(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                  uintptr_t word3);
+scr_ast_node_t *node5(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3, uintptr_t word4, uintptr_t word5);
+scr_ast_node_t *node6(uintptr_t word0, uintptr_t word1, uintptr_t word2,
+                      uintptr_t word3, uintptr_t word4, uintptr_t word5,
                       uintptr_t word6);
 #endif

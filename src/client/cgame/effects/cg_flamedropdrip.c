@@ -52,7 +52,9 @@
  * the operation and the constant the bytes actually use. */
 #define FLAME_DRIP_RAND_NORM 3.0517578125e-05f   /* 0x3007bec0 == 1/32768 */
 
-flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [esp+0x170] */, float b /* [esp+0x174] */)
+flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */,
+                                       float a /* [esp+0x170] */,
+                                       float b /* [esp+0x174] */)
 {
     // 30027ae1/30027ae3: ESI=0 (root parent), CALL CG_SpawnFlameChunk. The pool
     // spawner takes its `parent` arg in ESI; XOR ESI,ESI means a ROOT chunk.
@@ -79,14 +81,14 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [e
     *chunk = *parent;                   // 30027b19/30027b1d: rep movsd parent -> chunk
 
     // 30027b1f..30027b4c: restore the new node's own list links from the saved copy.
-    chunk->next = savedLinks.next;      // 30027b1f/30027b2d
-    chunk->prev = savedLinks.prev;      // 30027b26/30027b2a
-    chunk->parent = savedLinks.parent;    // 30027b0c/30027b23
+    chunk->next     = savedLinks.next;      // 30027b1f/30027b2d
+    chunk->prev     = savedLinks.prev;      // 30027b26/30027b2a
+    chunk->parent   = savedLinks.parent;    // 30027b0c/30027b23
     chunk->listNext = savedLinks.listNext;  // 30027b10/30027b49
     chunk->listPrev = savedLinks.listPrev;  // 30027b2f/30027b4c
 
     // 30027b38/30027b3f: overwrite two cloned-from-parent fields with fresh values.
-    chunk->kind = 3;             // provisional flame-chunk kind == 3
+    chunk->kind  = 3;             // provisional flame-chunk kind == 3
     chunk->emitCounter = 0xffffffff;    // emit counter reset to -1
 
     // 30027b4f..30027b6d: seed the drift speed. When b is not ordered above 0.0
@@ -94,7 +96,8 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [e
     if (driftGateZero) {
         chunk->driftSpeed = 0.0f;               // 30027b65
     } else {
-        chunk->driftSpeed = (float)((long double)chunk->driftSpeed * (long double)0.6f);
+        chunk->driftSpeed = (float)(
+            (long double)chunk->driftSpeed * (long double)0.6f);
     }
 
     // 30027b6f..30027bee: perturb the drift direction (field_88/8c/90) by an
@@ -103,12 +106,21 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [e
     // ESI is left pointing at &field_88 for the VectorNormalize call below.
     /* FILD feeds FMUL directly at 0x30027b7e/b82, 0x30027ba3/ba7 and 0x30027bd0/bd4
      * (no intervening store), so rand() stays exact in 80-bit -- no (float) cast. */
-    chunk->driftDir[0] = (float)((long double)chunk->driftDir[0] +
-                                 (((long double)coduo_crt_rand() * (long double)FLAME_DRIP_RAND_NORM * 2.0L) - 1.0L) * (long double)0.05f);
-    chunk->driftDir[1] = (float)((long double)chunk->driftDir[1] +
-                                 (((long double)coduo_crt_rand() * (long double)FLAME_DRIP_RAND_NORM * 2.0L) - 1.0L) * (long double)0.05f);
-    chunk->driftDir[2] = (float)((long double)chunk->driftDir[2] +
-                                 (((long double)coduo_crt_rand() * (long double)FLAME_DRIP_RAND_NORM * 2.0L) - 1.0L) * (long double)0.05f);
+    chunk->driftDir[0] = (float)(
+        (long double)chunk->driftDir[0] +
+        (((long double)coduo_crt_rand() *
+              (long double)FLAME_DRIP_RAND_NORM * 2.0L) -
+         1.0L) * (long double)0.05f);
+    chunk->driftDir[1] = (float)(
+        (long double)chunk->driftDir[1] +
+        (((long double)coduo_crt_rand() *
+              (long double)FLAME_DRIP_RAND_NORM * 2.0L) -
+         1.0L) * (long double)0.05f);
+    chunk->driftDir[2] = (float)(
+        (long double)chunk->driftDir[2] +
+        (((long double)coduo_crt_rand() *
+              (long double)FLAME_DRIP_RAND_NORM * 2.0L) -
+         1.0L) * (long double)0.05f);
 
     // 30027bf4/30027c00: renormalize the drift direction in place (ESI = &field_88).
     // The returned length (left on ST0) is discarded (FSTP ST0).
@@ -141,7 +153,8 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [e
     // double at 0x3007bcf0 is 0.0 (bytes 00000000 00000000); the 1.0 double is
     // the NEXT slot, 0x3007bcf8.
     chunk->lifeStartTime2 = 0.0;                       // 30027c4a/c50: 0x3007bcf0
-    chunk->spawnTime = (double)coduo_int32_from_bits(cg_flameTime); // 30027c56/c5c: FILD timestamp
+    chunk->spawnTime =
+        (double)coduo_int32_from_bits(cg_flameTime); // 30027c56/c5c: FILD timestamp
 
     // 30027c5f..30027c85: seed the chunk end timestamp.
     //   field_50 = (rand()*(1/32768) * 2.0f + 1.4f)
@@ -152,19 +165,26 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [e
     // FILD 30027c68 feeds FMUL 30027c6c with no store, and nothing narrows the
     // left factor before the FMULP at 30027c80 -- so neither the (float) nor the
     // (double) cast the recon used belongs here.
-    long double endTimeFull = ((long double)coduo_crt_rand() * (long double)FLAME_DRIP_RAND_NORM * 2.0L + (long double)1.4f) *
-                                  ((long double)parent->endTime - (long double)parent->spawnTime) +
-                              (long double)chunk->spawnTime;
+    long double endTimeFull =
+        ((long double)coduo_crt_rand() *
+             (long double)FLAME_DRIP_RAND_NORM * 2.0L +
+         (long double)1.4f) *
+            ((long double)parent->endTime -
+             (long double)parent->spawnTime) +
+        (long double)chunk->spawnTime;
     chunk->endTime = (double)endTimeFull;
 
     // 30027c88..30027cbe: field_138 = (max(a, 3.0) * 25.0 / 3.0)
     //                                 / (field_50 - field_48).
     // FLD a; FCOMP 3.0 => when a <= 3.0 or unordered use 3.0, else use a.
     {
-        long double aClamped = !(a > 3.0f) ? 3.0L : (long double)a;   // includes unordered
+        long double aClamped =
+            !(a > 3.0f) ? 3.0L : (long double)a;   // includes unordered
         // 30027cb7 FXCH/FSUB/FDIVP: the denominator uses the UNROUNDED endTime
         // retained on the x87 stack by the FST above, not the stored double.
-        chunk->lifeRate = (double)((aClamped * (long double)(1.0 / 3.0) * 25.0L) / (endTimeFull - (long double)chunk->spawnTime));
+        chunk->lifeRate = (double)(
+            (aClamped * (long double)(1.0 / 3.0) * 25.0L) /
+            (endTimeFull - (long double)chunk->spawnTime));
     }
 
     // 30027cc4..30027ced: field_130 = cg_flameTime
@@ -173,9 +193,13 @@ flameChunk_t *CG_FlameDropDrip(flameChunk_t *parent /* [esp+4] */, float a /* [e
     // FILD 30027ccd feeds FMUL 30027cd3 with no store, and the chain runs
     // unbroken to the single FSTP double at 30027ced -- no (float)/(double)
     // narrowing of the rand term. (30027cd9 reloads the STORED endTime double.)
-    chunk->lifeStartTime = (double)((long double)coduo_crt_rand() * (long double)FLAME_DRIP_RAND_NORM *
-                                        ((long double)chunk->endTime - (long double)chunk->spawnTime) * (long double)chunk->lifeRate +
-                                    (long double)coduo_int32_from_bits(cg_flameTime));
+    chunk->lifeStartTime = (double)(
+        (long double)coduo_crt_rand() *
+            (long double)FLAME_DRIP_RAND_NORM *
+            ((long double)chunk->endTime -
+             (long double)chunk->spawnTime) *
+            (long double)chunk->lifeRate +
+        (long double)coduo_int32_from_bits(cg_flameTime));
 
     // 30027cd1: MOV EAX,EBX — return the new chunk.
     return chunk;

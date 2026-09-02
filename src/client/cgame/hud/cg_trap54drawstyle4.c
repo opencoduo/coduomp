@@ -3,9 +3,12 @@
 
 #include "../client_recovered.h"
 
-void CG_Trap54DrawStyle4(const vec4_t color, int32_t x, float y, const char *string)
+void CG_Trap54DrawStyle4(const vec4_t color, int32_t x, float y,
+                         const char *string)
 {
     float yAdjusted = (float)(((long double)y + 16.0L) - 2.0L);
-    cgame_syscall(CG_R_TEXT_PAINT, x, CG_FloatBits(yAdjusted), 4, CG_FloatBits(1.0f / 3.0f), (intptr_t)color, (intptr_t)string,
+    cgame_syscall(CG_R_TEXT_PAINT, x, CG_FloatBits(yAdjusted),
+                  4, CG_FloatBits(1.0f / 3.0f), (intptr_t)color,
+                  (intptr_t)string,
                   CG_FloatBits(16.0f), 0, 3);
 }

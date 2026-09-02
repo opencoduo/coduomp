@@ -30,13 +30,17 @@ const char *NET_AdrToString(netadr_t address)
         Com_sprintf(com_netadrString, sizeof(com_netadrString), "loopback");
     } else if (address.type == NA_IP) {
         port = BigShort((int16_t)address.port);
-        Com_sprintf(com_netadrString, sizeof(com_netadrString), "%i.%i.%i.%i:%i", address.ip[0], address.ip[1], address.ip[2],
-                    address.ip[3], port);
+        Com_sprintf(com_netadrString, sizeof(com_netadrString),
+                    "%i.%i.%i.%i:%i", address.ip[0], address.ip[1],
+                    address.ip[2], address.ip[3], port);
     } else {
         port = BigShort((int16_t)address.port);
-        Com_sprintf(com_netadrString, sizeof(com_netadrString), "%02x%02x%02x%02x.%02x%02x%02x%02x%02x%02x:%i", address.ipx[0],
-                    address.ipx[1], address.ipx[2], address.ipx[3], address.ipx[4], address.ipx[5], address.ipx[6], address.ipx[7],
-                    address.ipx[8], address.ipx[9], port);
+        Com_sprintf(com_netadrString, sizeof(com_netadrString),
+                    "%02x%02x%02x%02x.%02x%02x%02x%02x%02x%02x:%i",
+                    address.ipx[0], address.ipx[1], address.ipx[2],
+                    address.ipx[3], address.ipx[4], address.ipx[5],
+                    address.ipx[6], address.ipx[7], address.ipx[8],
+                    address.ipx[9], port);
     }
 
     return com_netadrString;
@@ -69,11 +73,13 @@ qboolean NET_StringToAdr(const char *text, netadr_t *address)
     }
 
     if (Sys_StringToAdr(copy, address) == qfalse ||
-        (address->ip[0] == UINT8_MAX && address->ip[1] == UINT8_MAX && address->ip[2] == UINT8_MAX && address->ip[3] == UINT8_MAX)) {
+        (address->ip[0] == UINT8_MAX && address->ip[1] == UINT8_MAX &&
+         address->ip[2] == UINT8_MAX && address->ip[3] == UINT8_MAX)) {
         address->type = NA_BOT;
         return qfalse;
     }
 
-    address->port = (uint16_t)BigShort((int16_t)(portText != NULL ? atoi(portText) : NET_DEFAULT_PORT));
+    address->port = (uint16_t)BigShort(
+        (int16_t)(portText != NULL ? atoi(portText) : NET_DEFAULT_PORT));
     return qtrue;
 }

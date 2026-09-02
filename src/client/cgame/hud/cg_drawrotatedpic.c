@@ -55,7 +55,7 @@
  * constants, matching the machine code's split of M_PI/180 into (* M_PI) then
  * (* 1/180). Named to preserve the exact two-step float rounding the DLL performs.
  */
-#define CG_PI_F 3.1415927410125732f /* 0x3007bd88 = 0x40490fdb */
+#define CG_PI_F      3.1415927410125732f /* 0x3007bd88 = 0x40490fdb */
 #define CG_INV_180_F 0.0055555556900799274f /* 0x3007bed4 = 0x3bb60b61; 1/180 */
 
 void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t hShader)
@@ -67,7 +67,9 @@ void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t 
     float Y3 = cgs_screenYScale * h;
 
     /* angle (degrees) -> radians, split as the machine code does. */
-    float angleRad = (float)((long double)angle * (long double)CG_PI_F * (long double)CG_INV_180_F);
+    float angleRad = (float)(
+        (long double)angle * (long double)CG_PI_F *
+        (long double)CG_INV_180_F);
 
     /* One hardware FSINCOS on Intel/AMD. The adapter commits cosine first and
      * sine second, matching 0x3001cbc4..0x3001cbd0; ARM64 emulation is outside
@@ -109,15 +111,15 @@ void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t 
      * 0x3007bdb0 = -1.0f, not source-level negations.
      */
     float verts[8];
-    float t0 = cx - cx_hw * 1.0f;      /* 0x3007bce0 = 1.0f  */
+    float t0      = cx - cx_hw * 1.0f;      /* 0x3007bce0 = 1.0f  */
     float negCxHh = -1.0f * cx_hh;          /* 0x3001cc54 FSTP DWORD [0x50] */
     long double t1raw = cx_hw + cx;
-    float t1 = (float)t1raw;           /* 0x3001cc78 FST DWORD [0x54] */
+    float t1      = (float)t1raw;           /* 0x3001cc78 FST DWORD [0x54] */
     long double negSxHhRaw = -1.0f * sx_hh;
     float negSxHh = (float)negSxHhRaw;      /* 0x3001cc60 FST DWORD [0x4c] */
     /* sx_hw is rounded into slot [0x50] only at 0x3001cc94 (FXCH; FSTP DWORD),
      * i.e. AFTER v0.x/v1.x have consumed it unrounded; v2.x/v3.x reload it. */
-    float sxHwR = (float)sx_hw;           /* 0x3001cc94 FSTP DWORD [0x50] */
+    float sxHwR   = (float)sx_hw;           /* 0x3001cc94 FSTP DWORD [0x50] */
 
     verts[0] = t0 - -1.0f * sx_hw;                  /* v0.x  [0x24] 0x3001cc46 */
     verts[1] = (negSxHhRaw + negCxHh) + cy;         /* v0.y  [0x28] 0x3001cc6c */
@@ -129,5 +131,8 @@ void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t 
     verts[7] = (cx_hh + negSxHh) + cy;              /* v3.y  [0x40] 0x3001cce1 */
 
     /* cgame_syscall(76, &verts[0], cg_rotatedPicShaderParams, hShader). */
-    cgame_syscall(CG_R_DRAW_ROTATED_QUAD, (intptr_t)&verts[0], (intptr_t)cg_rotatedPicShaderParams, hShader);
+    cgame_syscall(CG_R_DRAW_ROTATED_QUAD,
+                  (intptr_t)&verts[0],
+                  (intptr_t)cg_rotatedPicShaderParams,
+                  hShader);
 }

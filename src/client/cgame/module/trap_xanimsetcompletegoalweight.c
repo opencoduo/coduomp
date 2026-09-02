@@ -36,9 +36,16 @@
  * is named trap_XAnimSetCompleteGoalWeight. The recovered engine dispatcher
  * independently maps command 0x90 to XAnimSetCompleteGoalWeight.
  */
-void trap_XAnimSetCompleteGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
-                                     qboolean restart)
+void trap_XAnimSetCompleteGoalWeight(XAnimTree *tree, uint32_t anim,
+                                     float weight, float blendTime, float rate,
+                                     uint16_t notifyName, qboolean restart)
 {
-    cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT, (intptr_t)tree, (uint16_t)anim, CG_FloatBits(weight), CG_FloatBits(blendTime),
-                  CG_FloatBits(rate), notifyName, restart);
+    cgame_syscall(CG_XANIM_SET_COMPLETE_GOAL_WEIGHT,
+                  (intptr_t)tree,
+                  (uint16_t)anim,
+                  CG_FloatBits(weight),
+                  CG_FloatBits(blendTime),
+                  CG_FloatBits(rate),
+                  notifyName,
+                  restart);
 }

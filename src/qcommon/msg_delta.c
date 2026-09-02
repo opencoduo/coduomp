@@ -73,14 +73,27 @@ enum {
 /* Source: CoDUOMP.exe 0x005c5698 (.data). Indexed by the keyed message
  * readers with a proven 0..32 bit count. */
 static const uint32_t msg_bitmaskTable[MSG_BITMASK_TABLE_COUNT] = {
-    UINT32_C(0x00000000), UINT32_C(0x00000001), UINT32_C(0x00000003), UINT32_C(0x00000007), UINT32_C(0x0000000f), UINT32_C(0x0000001f),
-    UINT32_C(0x0000003f), UINT32_C(0x0000007f), UINT32_C(0x000000ff), UINT32_C(0x000001ff), UINT32_C(0x000003ff), UINT32_C(0x000007ff),
-    UINT32_C(0x00000fff), UINT32_C(0x00001fff), UINT32_C(0x00003fff), UINT32_C(0x00007fff), UINT32_C(0x0000ffff), UINT32_C(0x0001ffff),
-    UINT32_C(0x0003ffff), UINT32_C(0x0007ffff), UINT32_C(0x000fffff), UINT32_C(0x001fffff), UINT32_C(0x003fffff), UINT32_C(0x007fffff),
-    UINT32_C(0x00ffffff), UINT32_C(0x01ffffff), UINT32_C(0x03ffffff), UINT32_C(0x07ffffff), UINT32_C(0x0fffffff), UINT32_C(0x1fffffff),
-    UINT32_C(0x3fffffff), UINT32_C(0x7fffffff), UINT32_C(0xffffffff)};
+    UINT32_C(0x00000000), UINT32_C(0x00000001),
+    UINT32_C(0x00000003), UINT32_C(0x00000007),
+    UINT32_C(0x0000000f), UINT32_C(0x0000001f),
+    UINT32_C(0x0000003f), UINT32_C(0x0000007f),
+    UINT32_C(0x000000ff), UINT32_C(0x000001ff),
+    UINT32_C(0x000003ff), UINT32_C(0x000007ff),
+    UINT32_C(0x00000fff), UINT32_C(0x00001fff),
+    UINT32_C(0x00003fff), UINT32_C(0x00007fff),
+    UINT32_C(0x0000ffff), UINT32_C(0x0001ffff),
+    UINT32_C(0x0003ffff), UINT32_C(0x0007ffff),
+    UINT32_C(0x000fffff), UINT32_C(0x001fffff),
+    UINT32_C(0x003fffff), UINT32_C(0x007fffff),
+    UINT32_C(0x00ffffff), UINT32_C(0x01ffffff),
+    UINT32_C(0x03ffffff), UINT32_C(0x07ffffff),
+    UINT32_C(0x0fffffff), UINT32_C(0x1fffffff),
+    UINT32_C(0x3fffffff), UINT32_C(0x7fffffff),
+    UINT32_C(0xffffffff)
+};
 
-#define MSG_ENTITY_NETFIELD(name_, member_, bits_) {(name_), (int32_t)offsetof(entityState_t, member_), (bits_)}
+#define MSG_ENTITY_NETFIELD(name_, member_, bits_) \
+    {(name_), (int32_t)offsetof(entityState_t, member_), (bits_)}
 
 /* Source: CoDUOMP.exe 0x0058ec68..0x0058ef37 (.rdata). Each original
  * descriptor is {string VA, entityState_t byte offset, wire bit mode}.
@@ -88,7 +101,8 @@ static const uint32_t msg_bitmaskTable[MSG_BITMASK_TABLE_COUNT] = {
  * member explicit and portable.
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 60 original string pointers and proves their ordered source targets. */
-static const netField_t msg_defaultEntityNetFields[MSG_ENTITY_NETFIELD_COUNT] = {
+static const netField_t
+msg_defaultEntityNetFields[MSG_ENTITY_NETFIELD_COUNT] = {
     MSG_ENTITY_NETFIELD("pos.trTime", pos.trTime, 32),
     MSG_ENTITY_NETFIELD("pos.trBase[0]", pos.trBase[0], 0),
     MSG_ENTITY_NETFIELD("pos.trBase[1]", pos.trBase[1], 0),
@@ -148,13 +162,15 @@ static const netField_t msg_defaultEntityNetFields[MSG_ENTITY_NETFIELD_COUNT] = 
     MSG_ENTITY_NETFIELD("origin2[2]", origin2[2], 0),
     MSG_ENTITY_NETFIELD("angles2[2]", angles2[2], 0),
     MSG_ENTITY_NETFIELD("constantLight", constantLight, 32),
-    MSG_ENTITY_NETFIELD("dmgFlags", dmgFlags, 32)};
+    MSG_ENTITY_NETFIELD("dmgFlags", dmgFlags, 32)
+};
 
 /* Source: CoDUOMP.exe 0x0058ef38..0x0058f207 (.rdata). Vehicle entities use
  * different priorities and encodings for their trajectory/orientation fields.
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 60 original string pointers and proves their ordered source targets. */
-static const netField_t msg_vehicleEntityNetFields[MSG_ENTITY_NETFIELD_COUNT] = {
+static const netField_t
+msg_vehicleEntityNetFields[MSG_ENTITY_NETFIELD_COUNT] = {
     MSG_ENTITY_NETFIELD("pos.trBase[2]", pos.trBase[2], 0),
     MSG_ENTITY_NETFIELD("pos.trBase[0]", pos.trBase[0], 0),
     MSG_ENTITY_NETFIELD("pos.trBase[1]", pos.trBase[1], 0),
@@ -214,18 +230,21 @@ static const netField_t msg_vehicleEntityNetFields[MSG_ENTITY_NETFIELD_COUNT] = 
     MSG_ENTITY_NETFIELD("clientNum", clientNum, 8),
     MSG_ENTITY_NETFIELD("pos.trDelta[1]", pos.trDelta[1], 0),
     MSG_ENTITY_NETFIELD("pos.trDelta[0]", pos.trDelta[0], 0),
-    MSG_ENTITY_NETFIELD("pos.trDelta[2]", pos.trDelta[2], 0)};
+    MSG_ENTITY_NETFIELD("pos.trDelta[2]", pos.trDelta[2], 0)
+};
 
 #undef MSG_ENTITY_NETFIELD
 
-#define MSG_ARCHIVED_ENTITY_NETFIELD(name_, member_, bits_) {(name_), (int32_t)offsetof(archivedEntity_t, member_), (bits_)}
+#define MSG_ARCHIVED_ENTITY_NETFIELD(name_, member_, bits_) \
+    {(name_), (int32_t)offsetof(archivedEntity_t, member_), (bits_)}
 
 /* Source: CoDUOMP.exe 0x0058f208..0x0058f537 (.rdata). The descriptor offsets
  * prove an entityState_t prefix followed by svFlags, singleClient, absmin, and
  * absmax.
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 68 original string pointers and proves their ordered source targets. */
-static const netField_t msg_archivedEntityNetFields[MSG_ARCHIVED_ENTITY_NETFIELD_COUNT] = {
+static const netField_t
+msg_archivedEntityNetFields[MSG_ARCHIVED_ENTITY_NETFIELD_COUNT] = {
     MSG_ARCHIVED_ENTITY_NETFIELD("absmin[1]", absmin[1], 0),
     MSG_ARCHIVED_ENTITY_NETFIELD("absmax[1]", absmax[1], 0),
     MSG_ARCHIVED_ENTITY_NETFIELD("absmin[0]", absmin[0], 0),
@@ -293,16 +312,19 @@ static const netField_t msg_archivedEntityNetFields[MSG_ARCHIVED_ENTITY_NETFIELD
     MSG_ARCHIVED_ENTITY_NETFIELD("origin2[2]", state.origin2[2], 0),
     MSG_ARCHIVED_ENTITY_NETFIELD("angles2[2]", state.angles2[2], 0),
     MSG_ARCHIVED_ENTITY_NETFIELD("constantLight", state.constantLight, 32),
-    MSG_ARCHIVED_ENTITY_NETFIELD("dmgFlags", state.dmgFlags, 32)};
+    MSG_ARCHIVED_ENTITY_NETFIELD("dmgFlags", state.dmgFlags, 32)
+};
 
 #undef MSG_ARCHIVED_ENTITY_NETFIELD
 
-#define MSG_CLIENT_NETFIELD(name_, member_, bits_) {(name_), (int32_t)offsetof(clientState_t, member_), (bits_)}
+#define MSG_CLIENT_NETFIELD(name_, member_, bits_) \
+    {(name_), (int32_t)offsetof(clientState_t, member_), (bits_)}
 
 /* Source: CoDUOMP.exe 0x0058f538..0x0058f63f (.rdata).
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 22 original string pointers and proves their ordered source targets. */
-static const netField_t msg_clientNetFields[MSG_CLIENT_NETFIELD_COUNT] = {
+static const netField_t
+msg_clientNetFields[MSG_CLIENT_NETFIELD_COUNT] = {
     MSG_CLIENT_NETFIELD("team", team, 2),
     MSG_CLIENT_NETFIELD("name[0]", name[0], 32),
     MSG_CLIENT_NETFIELD("name[4]", name[4], 32),
@@ -324,56 +346,63 @@ static const netField_t msg_clientNetFields[MSG_CLIENT_NETFIELD_COUNT] = {
     MSG_CLIENT_NETFIELD("attachTagIndex[5]", attachTagIndex[5], 5),
     MSG_CLIENT_NETFIELD("name[20]", name[20], 32),
     MSG_CLIENT_NETFIELD("name[24]", name[24], 32),
-    MSG_CLIENT_NETFIELD("name[28]", name[28], 32)};
+    MSG_CLIENT_NETFIELD("name[28]", name[28], 32)
+};
 
 #undef MSG_CLIENT_NETFIELD
 
-#define MSG_HUD_ELEM_NETFIELD(name_, member_, bits_) {(name_), (int32_t)offsetof(hudElem_t, member_), (bits_)}
+#define MSG_HUD_ELEM_NETFIELD(name_, member_, bits_) \
+    {(name_), (int32_t)offsetof(hudElem_t, member_), (bits_)}
 
 /* Source: CoDUOMP.exe 0x005c5768..0x005c58cf (.data). The original mutable
  * placement is incidental; no instruction writes the descriptors after image
  * load. The final unused78 dword is outside this wire table.
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 30 original string pointers and proves their ordered source targets. */
-static const netField_t msg_hudElemNetFields[MSG_HUD_ELEM_NETFIELD_COUNT] = {MSG_HUD_ELEM_NETFIELD("color.rgba", color.rgba, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("type", type, 4),
-                                                                             MSG_HUD_ELEM_NETFIELD("fontScale", fontScale, 0),
-                                                                             MSG_HUD_ELEM_NETFIELD("y", y, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("x", x, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("alignY", alignY, 2),
-                                                                             MSG_HUD_ELEM_NETFIELD("alignX", alignX, 2),
-                                                                             MSG_HUD_ELEM_NETFIELD("time", timerValue, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("font", font, 4),
-                                                                             MSG_HUD_ELEM_NETFIELD("text", text, 8),
-                                                                             MSG_HUD_ELEM_NETFIELD("shaderIndex", materialIndex, 8),
-                                                                             MSG_HUD_ELEM_NETFIELD("width", width, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("height", height, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("sort", sortKey, 0),
-                                                                             MSG_HUD_ELEM_NETFIELD("fromColor.rgba", fromColor.rgba, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("fadeStartTime", fadeStartTime, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("fadeTime", fadeTime, 16),
-                                                                             MSG_HUD_ELEM_NETFIELD("scaleStartTime", scaleStartTime, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("scaleTime", scaleTime, 16),
-                                                                             MSG_HUD_ELEM_NETFIELD("fromHeight", scaleFromHeight, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("value", value, 0),
-                                                                             MSG_HUD_ELEM_NETFIELD("label", label, 8),
-                                                                             MSG_HUD_ELEM_NETFIELD("fromWidth", scaleFromWidth, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("moveStartTime", moveStartTime, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("moveTime", moveTime, 16),
-                                                                             MSG_HUD_ELEM_NETFIELD("fromX", moveFromX, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("fromY", moveFromY, 10),
-                                                                             MSG_HUD_ELEM_NETFIELD("duration", rotationPeriodMs, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("SCOORD", shaderRightTexcoord, 32),
-                                                                             MSG_HUD_ELEM_NETFIELD("TCOORD", shaderBottomTexcoord, 32)};
+static const netField_t
+msg_hudElemNetFields[MSG_HUD_ELEM_NETFIELD_COUNT] = {
+    MSG_HUD_ELEM_NETFIELD("color.rgba", color.rgba, 32),
+    MSG_HUD_ELEM_NETFIELD("type", type, 4),
+    MSG_HUD_ELEM_NETFIELD("fontScale", fontScale, 0),
+    MSG_HUD_ELEM_NETFIELD("y", y, 10),
+    MSG_HUD_ELEM_NETFIELD("x", x, 10),
+    MSG_HUD_ELEM_NETFIELD("alignY", alignY, 2),
+    MSG_HUD_ELEM_NETFIELD("alignX", alignX, 2),
+    MSG_HUD_ELEM_NETFIELD("time", timerValue, 32),
+    MSG_HUD_ELEM_NETFIELD("font", font, 4),
+    MSG_HUD_ELEM_NETFIELD("text", text, 8),
+    MSG_HUD_ELEM_NETFIELD("shaderIndex", materialIndex, 8),
+    MSG_HUD_ELEM_NETFIELD("width", width, 10),
+    MSG_HUD_ELEM_NETFIELD("height", height, 10),
+    MSG_HUD_ELEM_NETFIELD("sort", sortKey, 0),
+    MSG_HUD_ELEM_NETFIELD("fromColor.rgba", fromColor.rgba, 32),
+    MSG_HUD_ELEM_NETFIELD("fadeStartTime", fadeStartTime, 32),
+    MSG_HUD_ELEM_NETFIELD("fadeTime", fadeTime, 16),
+    MSG_HUD_ELEM_NETFIELD("scaleStartTime", scaleStartTime, 32),
+    MSG_HUD_ELEM_NETFIELD("scaleTime", scaleTime, 16),
+    MSG_HUD_ELEM_NETFIELD("fromHeight", scaleFromHeight, 10),
+    MSG_HUD_ELEM_NETFIELD("value", value, 0),
+    MSG_HUD_ELEM_NETFIELD("label", label, 8),
+    MSG_HUD_ELEM_NETFIELD("fromWidth", scaleFromWidth, 10),
+    MSG_HUD_ELEM_NETFIELD("moveStartTime", moveStartTime, 32),
+    MSG_HUD_ELEM_NETFIELD("moveTime", moveTime, 16),
+    MSG_HUD_ELEM_NETFIELD("fromX", moveFromX, 10),
+    MSG_HUD_ELEM_NETFIELD("fromY", moveFromY, 10),
+    MSG_HUD_ELEM_NETFIELD("duration", rotationPeriodMs, 32),
+    MSG_HUD_ELEM_NETFIELD("SCOORD", shaderRightTexcoord, 32),
+    MSG_HUD_ELEM_NETFIELD("TCOORD", shaderBottomTexcoord, 32)
+};
 
 #undef MSG_HUD_ELEM_NETFIELD
 
-#define MSG_PLAYERSTATE_NETFIELD(name_, member_, bits_) {(name_), (int32_t)offsetof(playerState_t, member_), (bits_)}
+#define MSG_PLAYERSTATE_NETFIELD(name_, member_, bits_) \
+    {(name_), (int32_t)offsetof(playerState_t, member_), (bits_)}
 
 /* Source: CoDUOMP.exe 0x0058f640..0x0058fb97 (.rdata).
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 114 original string pointers and proves their ordered source targets. */
-static const netField_t msg_playerStateNetFields[MSG_PLAYERSTATE_NETFIELD_COUNT] = {
+static const netField_t
+msg_playerStateNetFields[MSG_PLAYERSTATE_NETFIELD_COUNT] = {
     MSG_PLAYERSTATE_NETFIELD("commandTime", commandTime, 32),
     MSG_PLAYERSTATE_NETFIELD("origin[1]", psOrigin[1], 0),
     MSG_PLAYERSTATE_NETFIELD("origin[0]", psOrigin[0], 0),
@@ -487,20 +516,27 @@ static const netField_t msg_playerStateNetFields[MSG_PLAYERSTATE_NETFIELD_COUNT]
     MSG_PLAYERSTATE_NETFIELD("weapons[2]", weaponBits[2], 32),
     MSG_PLAYERSTATE_NETFIELD("weapons[3]", weaponBits[3], 32),
     MSG_PLAYERSTATE_NETFIELD("weaponrechamber[2]", weaponRechamberBits[2], 32),
-    MSG_PLAYERSTATE_NETFIELD("weaponrechamber[3]", weaponRechamberBits[3], 32)};
+    MSG_PLAYERSTATE_NETFIELD("weaponrechamber[3]", weaponRechamberBits[3], 32)
+};
 
 #undef MSG_PLAYERSTATE_NETFIELD
 
-#define MSG_OBJECTIVE_NETFIELD(name_, member_, bits_) {(name_), (int32_t)offsetof(objective_t, member_), (bits_)}
+#define MSG_OBJECTIVE_NETFIELD(name_, member_, bits_) \
+    {(name_), (int32_t)offsetof(objective_t, member_), (bits_)}
 
 /* Source: CoDUOMP.exe 0x005c5720..0x005c5767 (.data).
  * PE_RELOCATION_VALUES_VERIFIED: the six pointer fields target, in order,
  * "origin[0]", "origin[1]", "origin[2]", "icon", "entNum", and "teamNum".
  * The state member is transmitted separately as a three-bit selector. */
-static const netField_t msg_objectiveNetFields[MSG_OBJECTIVE_NETFIELD_COUNT] = {
-    MSG_OBJECTIVE_NETFIELD("origin[0]", origin[0], 0), MSG_OBJECTIVE_NETFIELD("origin[1]", origin[1], 0),
-    MSG_OBJECTIVE_NETFIELD("origin[2]", origin[2], 0), MSG_OBJECTIVE_NETFIELD("icon", icon, 12),
-    MSG_OBJECTIVE_NETFIELD("entNum", entityNum, 10),   MSG_OBJECTIVE_NETFIELD("teamNum", teamNum, 4)};
+static const netField_t
+msg_objectiveNetFields[MSG_OBJECTIVE_NETFIELD_COUNT] = {
+    MSG_OBJECTIVE_NETFIELD("origin[0]", origin[0], 0),
+    MSG_OBJECTIVE_NETFIELD("origin[1]", origin[1], 0),
+    MSG_OBJECTIVE_NETFIELD("origin[2]", origin[2], 0),
+    MSG_OBJECTIVE_NETFIELD("icon", icon, 12),
+    MSG_OBJECTIVE_NETFIELD("entNum", entityNum, 10),
+    MSG_OBJECTIVE_NETFIELD("teamNum", teamNum, 4)
+};
 
 #undef MSG_OBJECTIVE_NETFIELD
 
@@ -509,7 +545,8 @@ static const netField_t msg_objectiveNetFields[MSG_OBJECTIVE_NETFIELD_COUNT] = {
  * coduomp/mcode/CoDUOMP/FUN_00449de0_00449e21.mcode.
  * Name adopted from the matching recovered server-engine primitive; the Mac
  * linker emitted no traceback name for this small helper. */
-void MSG_WriteDeltaValue(msg_t *message, int32_t oldValue, int32_t newValue, int32_t bitCount)
+void MSG_WriteDeltaValue(msg_t *message, int32_t oldValue,
+                         int32_t newValue, int32_t bitCount)
 {
     if (oldValue == newValue) {
         MSG_WriteBit0(message);
@@ -524,7 +561,8 @@ void MSG_WriteDeltaValue(msg_t *message, int32_t oldValue, int32_t newValue, int
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00449e30_00449e83.mcode.
  * Name adopted from the matching recovered server-engine primitive. */
-int32_t MSG_ReadDeltaValue(msg_t *message, int32_t oldValue, int32_t bitCount)
+int32_t MSG_ReadDeltaValue(msg_t *message, int32_t oldValue,
+                           int32_t bitCount)
 {
     if (MSG_ReadBit(message) == 0)
         return oldValue;
@@ -534,7 +572,8 @@ int32_t MSG_ReadDeltaValue(msg_t *message, int32_t oldValue, int32_t bitCount)
 /* Source: CoDUOMP.exe 0x00449e90..0x00449ed4.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00449e90_00449ed5.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaKey. */
-void MSG_WriteDeltaKey(msg_t *message, uint32_t key, int32_t oldValue, int32_t newValue, int32_t bitCount)
+void MSG_WriteDeltaKey(msg_t *message, uint32_t key, int32_t oldValue,
+                       int32_t newValue, int32_t bitCount)
 {
     if (oldValue == newValue) {
         MSG_WriteBit0(message);
@@ -548,18 +587,21 @@ void MSG_WriteDeltaKey(msg_t *message, uint32_t key, int32_t oldValue, int32_t n
 /* Source: CoDUOMP.exe 0x00449ee0..0x00449f43.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00449ee0_00449f44.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaKey. */
-int32_t MSG_ReadDeltaKey(msg_t *message, uint32_t key, int32_t oldValue, int32_t bitCount)
+int32_t MSG_ReadDeltaKey(msg_t *message, uint32_t key, int32_t oldValue,
+                         int32_t bitCount)
 {
     if (MSG_ReadBit(message) == 0)
         return oldValue;
-    return MSG_ReadBits(message, bitCount) ^ (int32_t)(msg_bitmaskTable[bitCount] & key);
+    return MSG_ReadBits(message, bitCount) ^
+           (int32_t)(msg_bitmaskTable[bitCount] & key);
 }
 
 /* Source: CoDUOMP.exe 0x00449f50..0x00449f5a.
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00449f50_00449f5b.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteKey. */
-void MSG_WriteKey(msg_t *message, uint32_t key, int32_t value, int32_t bitCount)
+void MSG_WriteKey(msg_t *message, uint32_t key, int32_t value,
+                  int32_t bitCount)
 {
     MSG_WriteBits(message, (int32_t)(key ^ (uint32_t)value), bitCount);
 }
@@ -570,13 +612,15 @@ void MSG_WriteKey(msg_t *message, uint32_t key, int32_t value, int32_t bitCount)
  * Name and signature: exact same-module Mac symbol MSG_ReadKey. */
 int32_t MSG_ReadKey(msg_t *message, uint32_t key, int32_t bitCount)
 {
-    return MSG_ReadBits(message, bitCount) ^ (int32_t)(msg_bitmaskTable[bitCount] & key);
+    return MSG_ReadBits(message, bitCount) ^
+           (int32_t)(msg_bitmaskTable[bitCount] & key);
 }
 
 /* Source: CoDUOMP.exe 0x00449f80..0x00449fd9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00449f80_00449fda.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaKeyByte. */
-void MSG_WriteDeltaKeyByte(msg_t *message, uint32_t key, int8_t oldValue, uint32_t newValue)
+void MSG_WriteDeltaKeyByte(msg_t *message, uint32_t key, int8_t oldValue,
+                           uint32_t newValue)
 {
     if (oldValue == (int8_t)newValue) {
         MSG_WriteBit0(message);
@@ -590,7 +634,8 @@ void MSG_WriteDeltaKeyByte(msg_t *message, uint32_t key, int8_t oldValue, uint32
 /* Source: CoDUOMP.exe 0x00449fe0..0x0044a050.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00449fe0_0044a051.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaKeyByte. */
-uint32_t MSG_ReadDeltaKeyByte(msg_t *message, uint8_t key, uint32_t oldValue)
+uint32_t MSG_ReadDeltaKeyByte(msg_t *message, uint8_t key,
+                              uint32_t oldValue)
 {
     if (MSG_ReadBit(message) == 0)
         return oldValue;
@@ -600,7 +645,8 @@ uint32_t MSG_ReadDeltaKeyByte(msg_t *message, uint8_t key, uint32_t oldValue)
 /* Source: CoDUOMP.exe 0x0044a060..0x0044a0c4.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044a060_0044a0c5.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaKeyShort. */
-void MSG_WriteDeltaKeyShort(msg_t *message, uint32_t key, int16_t oldValue, uint32_t newValue)
+void MSG_WriteDeltaKeyShort(msg_t *message, uint32_t key, int16_t oldValue,
+                            uint32_t newValue)
 {
     if (oldValue == (int16_t)newValue) {
         MSG_WriteBit0(message);
@@ -614,7 +660,8 @@ void MSG_WriteDeltaKeyShort(msg_t *message, uint32_t key, int16_t oldValue, uint
 /* Source: CoDUOMP.exe 0x0044a0d0..0x0044a149.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044a0d0_0044a14a.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaKeyShort. */
-int32_t MSG_ReadDeltaKeyShort(msg_t *message, uint16_t key, int32_t oldValue)
+int32_t MSG_ReadDeltaKeyShort(msg_t *message, uint16_t key,
+                              int32_t oldValue)
 {
     if (MSG_ReadBit(message) == 0)
         return oldValue;
@@ -626,19 +673,22 @@ int32_t MSG_ReadDeltaKeyShort(msg_t *message, uint16_t key, int32_t oldValue)
  * Name and signature: exact same-module Mac symbol
  * MSG_WriteReliableCommandToBuffer. The original full-buffer path always
  * terminates output[outputSize - 1]. */
-void MSG_WriteReliableCommandToBuffer(const char *input, char *output, int32_t outputSize)
+void MSG_WriteReliableCommandToBuffer(const char *input, char *output,
+                                      int32_t outputSize)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (outputSize <= 0) {
-        Com_Printf("WARNING: Reliable command output size is invalid (%i)\n", outputSize);
+        Com_Printf("WARNING: Reliable command output size is invalid (%i)\n",
+                   outputSize);
         return;
     }
 
     const int32_t length = (int32_t)strlen(input);
     if (length >= outputSize) {
-        Com_Printf("WARNING: Reliable command is too long (%i/%i) and will be "
-                   "truncated: '%s'\n",
-                   length, outputSize, input);
+        Com_Printf(
+            "WARNING: Reliable command is too long (%i/%i) and will be "
+            "truncated: '%s'\n",
+            length, outputSize, input);
     }
     if (length == 0)
         Com_Printf("WARNING: Empty reliable command\n");
@@ -666,7 +716,8 @@ void MSG_WriteReliableCommandToBuffer(const char *input, char *output, int32_t o
  * Name and signature: exact same-module Mac symbol MSG_SetDefaultUserCmd.
  * The negative angle scale is exact PE float bits 0xc3360b61; retaining the
  * original negate/subtract form preserves the instruction-level arithmetic. */
-void MSG_SetDefaultUserCmd(const playerState_t *playerState, usercmd_t *command)
+void MSG_SetDefaultUserCmd(const playerState_t *playerState,
+                           usercmd_t *command)
 {
     memset(command, 0, sizeof(*command));
     command->weapon = (uint8_t)playerState->currentWeapon;
@@ -674,23 +725,33 @@ void MSG_SetDefaultUserCmd(const playerState_t *playerState, usercmd_t *command)
     for (int32_t axis = 0; axis < 2; ++axis) {
 #if defined(WINDOWS_BEHAVIOR)
 #if EMULATE_X87
-        const x87f scaledAngle = x87f_mul(x87f_load_f32(playerState->viewAngles[axis]), x87f_load_f32(MSG_ANGLE_TO_SHORT_NEGATIVE_SCALE));
+        const x87f scaledAngle = x87f_mul(
+            x87f_load_f32(playerState->viewAngles[axis]),
+            x87f_load_f32(MSG_ANGLE_TO_SHORT_NEGATIVE_SCALE));
         const int64_t convertedAngle = x87f_store_i64_trunc(scaledAngle);
-        const int32_t negativeEncodedAngle = coduo_int32_from_bits((uint32_t)(uint64_t)convertedAngle);
+        const int32_t negativeEncodedAngle = coduo_int32_from_bits(
+            (uint32_t)(uint64_t)convertedAngle);
 #else
         const int32_t negativeEncodedAngle =
-            coduo_fp_to_i32_extended((long double)playerState->viewAngles[axis] * (long double)MSG_ANGLE_TO_SHORT_NEGATIVE_SCALE);
+            coduo_fp_to_i32_extended(
+                (long double)playerState->viewAngles[axis] *
+                (long double)MSG_ANGLE_TO_SHORT_NEGATIVE_SCALE);
 #endif
-        command->angles[axis] = (-playerState->deltaAngles[axis] - negativeEncodedAngle) & UINT16_MAX;
+        command->angles[axis] =
+            (-playerState->deltaAngles[axis] - negativeEncodedAngle) &
+            UINT16_MAX;
 #else
 #if EMULATE_X87
-        const int32_t encodedAngle =
-            x87f_store_i32_trunc(x87f_mul(x87f_load_f32(playerState->viewAngles[axis]), x87f_load_f32(MSG_ANGLE_TO_SHORT_SCALE)));
+        const int32_t encodedAngle = x87f_store_i32_trunc(x87f_mul(
+            x87f_load_f32(playerState->viewAngles[axis]),
+            x87f_load_f32(MSG_ANGLE_TO_SHORT_SCALE)));
 #else
-        const int32_t encodedAngle =
-            coduo_fp_to_i32_extended((long double)playerState->viewAngles[axis] * (long double)MSG_ANGLE_TO_SHORT_SCALE);
+        const int32_t encodedAngle = coduo_fp_to_i32_extended(
+            (long double)playerState->viewAngles[axis] *
+            (long double)MSG_ANGLE_TO_SHORT_SCALE);
 #endif
-        command->angles[axis] = (encodedAngle - playerState->deltaAngles[axis]) & UINT16_MAX;
+        command->angles[axis] =
+            (encodedAngle - playerState->deltaAngles[axis]) & UINT16_MAX;
 #endif
     }
 
@@ -700,7 +761,8 @@ void MSG_SetDefaultUserCmd(const playerState_t *playerState, usercmd_t *command)
     if ((playerState->entityStateFlags & EF_PRONE) != 0) {
         command->wbuttons |= PM_WBUTTON_PRONE;
         command->upmove = MSG_USERCMD_STANCE_UPMOVE;
-    } else if ((playerState->entityStateFlags & EF_CROUCHING) != 0) {
+    } else if ((playerState->entityStateFlags &
+                EF_CROUCHING) != 0) {
         command->wbuttons |= PM_WBUTTON_CROUCH;
         command->upmove = MSG_USERCMD_STANCE_UPMOVE;
     }
@@ -752,7 +814,8 @@ uint32_t MSG_VertMoveFrom(int32_t upMove)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_0044a310_0044a33a.mcode.
  * Name and signature: exact same-module Mac symbol MSG_HorMoveTo. */
-void MSG_HorMoveTo(uint32_t packedMove, int8_t *forwardMove, int8_t *rightMove)
+void MSG_HorMoveTo(uint32_t packedMove, int8_t *forwardMove,
+                   int8_t *rightMove)
 {
     if ((packedMove & MSG_MOVE_POSITIVE_FLAG) != 0)
         *forwardMove = MSG_SMALL_MOVE_POSITIVE;
@@ -788,14 +851,21 @@ void MSG_VertMoveTo(uint32_t packedMove, int8_t *upMove)
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaUsercmdKey.
  * The two control bits select unchanged, the compact pitch/yaw/horizontal
  * form, or the complete command form. */
-void MSG_WriteDeltaUsercmdKey(msg_t *message, uint32_t key, const usercmd_t *from, const usercmd_t *to)
+void MSG_WriteDeltaUsercmdKey(msg_t *message, uint32_t key,
+                              const usercmd_t *from,
+                              const usercmd_t *to)
 {
-    const uint32_t oldHorizontalMove = MSG_HorMoveFrom(from->forwardmove, from->rightmove);
-    const uint32_t newHorizontalMove = MSG_HorMoveFrom(to->forwardmove, to->rightmove);
-    const uint32_t oldVerticalMove = MSG_VertMoveFrom(from->upmove);
-    const uint32_t newVerticalMove = MSG_VertMoveFrom(to->upmove);
+    const uint32_t oldHorizontalMove =
+        MSG_HorMoveFrom(from->forwardmove, from->rightmove);
+    const uint32_t newHorizontalMove =
+        MSG_HorMoveFrom(to->forwardmove, to->rightmove);
+    const uint32_t oldVerticalMove =
+        MSG_VertMoveFrom(from->upmove);
+    const uint32_t newVerticalMove =
+        MSG_VertMoveFrom(to->upmove);
 
-    const uint32_t commandTimeDelta = (uint32_t)to->commandTime - (uint32_t)from->commandTime;
+    const uint32_t commandTimeDelta =
+        (uint32_t)to->commandTime - (uint32_t)from->commandTime;
     if (commandTimeDelta < MSG_USERCMD_TIME_DELTA_LIMIT) {
         MSG_WriteBit1(message);
         MSG_WriteByte(message, (int32_t)commandTimeDelta);
@@ -804,13 +874,20 @@ void MSG_WriteDeltaUsercmdKey(msg_t *message, uint32_t key, const usercmd_t *fro
         MSG_WriteLong(message, to->commandTime);
     }
 
-    const qboolean commonFieldsUnchanged = (from->buttons >> MSG_USERCMD_CONTROL_BITS) == (to->buttons >> MSG_USERCMD_CONTROL_BITS) &&
-                                           from->wbuttons == to->wbuttons && from->weapon == to->weapon &&
-                                           from->angles[2] == to->angles[2] && oldVerticalMove == newVerticalMove;
+    const qboolean commonFieldsUnchanged =
+        (from->buttons >> MSG_USERCMD_CONTROL_BITS) ==
+            (to->buttons >> MSG_USERCMD_CONTROL_BITS) &&
+        from->wbuttons == to->wbuttons &&
+        from->weapon == to->weapon &&
+        from->angles[2] == to->angles[2] &&
+        oldVerticalMove == newVerticalMove;
     if (commonFieldsUnchanged) {
-        const qboolean allFieldsUnchanged = from->angles[0] == to->angles[0] && from->angles[1] == to->angles[1] &&
-                                            (from->buttons & MSG_USERCMD_FIRE_BUTTON) == (to->buttons & MSG_USERCMD_FIRE_BUTTON) &&
-                                            oldHorizontalMove == newHorizontalMove;
+        const qboolean allFieldsUnchanged =
+            from->angles[0] == to->angles[0] &&
+            from->angles[1] == to->angles[1] &&
+            (from->buttons & MSG_USERCMD_FIRE_BUTTON) ==
+                (to->buttons & MSG_USERCMD_FIRE_BUTTON) &&
+            oldHorizontalMove == newHorizontalMove;
         if (allFieldsUnchanged) {
             MSG_WriteKey(message, key, qfalse, MSG_USERCMD_CONTROL_BITS);
             return;
@@ -819,27 +896,46 @@ void MSG_WriteDeltaUsercmdKey(msg_t *message, uint32_t key, const usercmd_t *fro
         MSG_WriteKey(message, key, qtrue, MSG_USERCMD_CONTROL_BITS);
         MSG_WriteKey(message, key, qfalse, MSG_USERCMD_CONTROL_BITS);
         key ^= (uint32_t)to->commandTime;
-        MSG_WriteKey(message, key, to->buttons & MSG_USERCMD_FIRE_BUTTON, MSG_USERCMD_CONTROL_BITS);
-        MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[0], (uint32_t)to->angles[0]);
-        MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[1], (uint32_t)to->angles[1]);
-        MSG_WriteDeltaKey(message, key, (int32_t)oldHorizontalMove, (int32_t)newHorizontalMove, MSG_USERCMD_HORIZONTAL_MOVE_BITS);
+        MSG_WriteKey(message, key,
+                     to->buttons & MSG_USERCMD_FIRE_BUTTON,
+                     MSG_USERCMD_CONTROL_BITS);
+        MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[0],
+                               (uint32_t)to->angles[0]);
+        MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[1],
+                               (uint32_t)to->angles[1]);
+        MSG_WriteDeltaKey(message, key, (int32_t)oldHorizontalMove,
+                          (int32_t)newHorizontalMove,
+                          MSG_USERCMD_HORIZONTAL_MOVE_BITS);
         return;
     }
 
     MSG_WriteKey(message, key, qtrue, MSG_USERCMD_CONTROL_BITS);
     MSG_WriteKey(message, key, qtrue, MSG_USERCMD_CONTROL_BITS);
-    MSG_WriteKey(message, key, to->buttons & MSG_USERCMD_FIRE_BUTTON, MSG_USERCMD_CONTROL_BITS);
-    MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[0], (uint32_t)to->angles[0]);
-    MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[1], (uint32_t)to->angles[1]);
-    MSG_WriteDeltaKey(message, key, (int32_t)oldHorizontalMove, (int32_t)newHorizontalMove, MSG_USERCMD_HORIZONTAL_MOVE_BITS);
+    MSG_WriteKey(message, key,
+                 to->buttons & MSG_USERCMD_FIRE_BUTTON,
+                 MSG_USERCMD_CONTROL_BITS);
+    MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[0],
+                           (uint32_t)to->angles[0]);
+    MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[1],
+                           (uint32_t)to->angles[1]);
+    MSG_WriteDeltaKey(message, key, (int32_t)oldHorizontalMove,
+                      (int32_t)newHorizontalMove,
+                      MSG_USERCMD_HORIZONTAL_MOVE_BITS);
 
     key ^= (uint32_t)to->commandTime;
-    MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[2], (uint32_t)to->angles[2]);
-    MSG_WriteDeltaKey(message, key, from->buttons >> MSG_USERCMD_CONTROL_BITS, to->buttons >> MSG_USERCMD_CONTROL_BITS,
+    MSG_WriteDeltaKeyShort(message, key, (int16_t)from->angles[2],
+                           (uint32_t)to->angles[2]);
+    MSG_WriteDeltaKey(message, key,
+                      from->buttons >> MSG_USERCMD_CONTROL_BITS,
+                      to->buttons >> MSG_USERCMD_CONTROL_BITS,
                       MSG_USERCMD_BUTTON_HIGH_BITS);
-    MSG_WriteDeltaKeyByte(message, key, (int8_t)from->wbuttons, to->wbuttons);
-    MSG_WriteDeltaKey(message, key, (int32_t)oldVerticalMove, (int32_t)newVerticalMove, MSG_USERCMD_VERTICAL_MOVE_BITS);
-    MSG_WriteDeltaKey(message, key, from->weapon, to->weapon, MSG_USERCMD_WEAPON_BITS);
+    MSG_WriteDeltaKeyByte(message, key, (int8_t)from->wbuttons,
+                          to->wbuttons);
+    MSG_WriteDeltaKey(message, key, (int32_t)oldVerticalMove,
+                      (int32_t)newVerticalMove,
+                      MSG_USERCMD_VERTICAL_MOVE_BITS);
+    MSG_WriteDeltaKey(message, key, from->weapon,
+                      to->weapon, MSG_USERCMD_WEAPON_BITS);
 }
 
 /* Source: CoDUOMP.exe 0x0044a770..0x0044aa55.
@@ -847,14 +943,17 @@ void MSG_WriteDeltaUsercmdKey(msg_t *message, uint32_t key, const usercmd_t *fro
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaUsercmdKey.
  * The destination begins as an exact copy of the base command, after which
  * only fields selected by the keyed control bits are replaced. */
-void MSG_ReadDeltaUsercmdKey(msg_t *message, uint32_t key, const usercmd_t *from, usercmd_t *to)
+void MSG_ReadDeltaUsercmdKey(msg_t *message, uint32_t key,
+                             const usercmd_t *from, usercmd_t *to)
 {
     memcpy(to, from, sizeof(*to));
 
     if (MSG_ReadBit(message) == 0)
         to->commandTime = MSG_ReadLong(message);
     else
-        to->commandTime = (int32_t)((uint32_t)from->commandTime + (uint32_t)MSG_ReadByte(message));
+        to->commandTime = (int32_t)(
+            (uint32_t)from->commandTime +
+            (uint32_t)MSG_ReadByte(message));
 
     if (MSG_ReadKey(message, key, MSG_USERCMD_CONTROL_BITS) == qfalse)
         return;
@@ -862,46 +961,71 @@ void MSG_ReadDeltaUsercmdKey(msg_t *message, uint32_t key, const usercmd_t *from
     to->buttons &= (uint8_t)~MSG_USERCMD_FIRE_BUTTON;
     if (MSG_ReadKey(message, key, MSG_USERCMD_CONTROL_BITS) == qfalse) {
         key ^= (uint32_t)to->commandTime;
-        to->buttons |= (uint8_t)MSG_ReadKey(message, key, MSG_USERCMD_CONTROL_BITS);
-        to->angles[0] = MSG_ReadDeltaKeyShort(message, (uint16_t)key, from->angles[0]) & UINT16_MAX;
-        to->angles[1] = MSG_ReadDeltaKeyShort(message, (uint16_t)key, from->angles[1]) & UINT16_MAX;
-        MSG_HorMoveTo((uint32_t)MSG_ReadDeltaKey(message, key, (int32_t)MSG_HorMoveFrom(from->forwardmove, from->rightmove),
-                                                 MSG_USERCMD_HORIZONTAL_MOVE_BITS),
-                      &to->forwardmove, &to->rightmove);
+        to->buttons |= (uint8_t)MSG_ReadKey(
+            message, key, MSG_USERCMD_CONTROL_BITS);
+        to->angles[0] = MSG_ReadDeltaKeyShort(
+            message, (uint16_t)key, from->angles[0]) & UINT16_MAX;
+        to->angles[1] = MSG_ReadDeltaKeyShort(
+            message, (uint16_t)key, from->angles[1]) & UINT16_MAX;
+        MSG_HorMoveTo(
+            (uint32_t)MSG_ReadDeltaKey(
+                message, key, (int32_t)MSG_HorMoveFrom(
+                    from->forwardmove, from->rightmove),
+                MSG_USERCMD_HORIZONTAL_MOVE_BITS),
+            &to->forwardmove, &to->rightmove);
         return;
     }
 
-    to->buttons |= (uint8_t)MSG_ReadKey(message, key, MSG_USERCMD_CONTROL_BITS);
-    to->angles[0] = MSG_ReadDeltaKeyShort(message, (uint16_t)key, from->angles[0]) & UINT16_MAX;
-    to->angles[1] = MSG_ReadDeltaKeyShort(message, (uint16_t)key, from->angles[1]) & UINT16_MAX;
-    MSG_HorMoveTo((uint32_t)MSG_ReadDeltaKey(message, key, (int32_t)MSG_HorMoveFrom(from->forwardmove, from->rightmove),
-                                             MSG_USERCMD_HORIZONTAL_MOVE_BITS),
-                  &to->forwardmove, &to->rightmove);
+    to->buttons |= (uint8_t)MSG_ReadKey(
+        message, key, MSG_USERCMD_CONTROL_BITS);
+    to->angles[0] = MSG_ReadDeltaKeyShort(
+        message, (uint16_t)key, from->angles[0]) & UINT16_MAX;
+    to->angles[1] = MSG_ReadDeltaKeyShort(
+        message, (uint16_t)key, from->angles[1]) & UINT16_MAX;
+    MSG_HorMoveTo(
+        (uint32_t)MSG_ReadDeltaKey(
+            message, key, (int32_t)MSG_HorMoveFrom(
+                from->forwardmove, from->rightmove),
+            MSG_USERCMD_HORIZONTAL_MOVE_BITS),
+        &to->forwardmove, &to->rightmove);
 
     key ^= (uint32_t)to->commandTime;
-    to->angles[2] = MSG_ReadDeltaKeyShort(message, (uint16_t)key, from->angles[2]) & UINT16_MAX;
-    to->buttons = (uint8_t)((MSG_ReadDeltaKey(message, key, from->buttons >> MSG_USERCMD_CONTROL_BITS, MSG_USERCMD_BUTTON_HIGH_BITS)
-                             << MSG_USERCMD_CONTROL_BITS) |
-                            (to->buttons & MSG_USERCMD_FIRE_BUTTON));
-    to->wbuttons = (uint8_t)MSG_ReadDeltaKeyByte(message, (uint8_t)key, from->wbuttons);
-    MSG_VertMoveTo((uint32_t)MSG_ReadDeltaKey(message, key, (int32_t)MSG_VertMoveFrom(from->upmove), MSG_USERCMD_VERTICAL_MOVE_BITS),
-                   &to->upmove);
-    to->weapon = (uint8_t)MSG_ReadDeltaKey(message, key, from->weapon, MSG_USERCMD_WEAPON_BITS);
+    to->angles[2] = MSG_ReadDeltaKeyShort(
+        message, (uint16_t)key, from->angles[2]) & UINT16_MAX;
+    to->buttons = (uint8_t)(
+        (MSG_ReadDeltaKey(
+             message, key,
+             from->buttons >> MSG_USERCMD_CONTROL_BITS,
+             MSG_USERCMD_BUTTON_HIGH_BITS) << MSG_USERCMD_CONTROL_BITS) |
+        (to->buttons & MSG_USERCMD_FIRE_BUTTON));
+    to->wbuttons = (uint8_t)MSG_ReadDeltaKeyByte(
+        message, (uint8_t)key, from->wbuttons);
+    MSG_VertMoveTo(
+        (uint32_t)MSG_ReadDeltaKey(
+            message, key,
+            (int32_t)MSG_VertMoveFrom(from->upmove),
+            MSG_USERCMD_VERTICAL_MOVE_BITS),
+        &to->upmove);
+    to->weapon = (uint8_t)MSG_ReadDeltaKey(
+        message, key, from->weapon, MSG_USERCMD_WEAPON_BITS);
 }
 
 /* Source: CoDUOMP.exe 0x0044aa60..0x0044abe7.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044aa60_0044abe8.mcode.
  * Name and descriptor role: exact same-module Mac symbol MSG_WriteDeltaField;
  * the Windows loads prove the descriptor's offset and bit-mode members. */
-void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to, const netField_t *field)
+void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to,
+                         const netField_t *field)
 {
     int32_t oldValue;
     int32_t newValue;
 
     /* Descriptor-driven records are the intentional raw-data boundary here:
      * every described field is a four-byte scalar at a byte offset. */
-    memcpy(&oldValue, (const uint8_t *)from + field->offset, sizeof(oldValue));
-    memcpy(&newValue, (const uint8_t *)to + field->offset, sizeof(newValue));
+    memcpy(&oldValue, (const uint8_t *)from + field->offset,
+           sizeof(oldValue));
+    memcpy(&newValue, (const uint8_t *)to + field->offset,
+           sizeof(newValue));
 
     if (oldValue == newValue) {
         MSG_WriteBit0(message);
@@ -918,8 +1042,10 @@ void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to, const
 #if EMULATE_X87
         const x87f convertedFloat = x87f_load_f32(newFloat);
 #if defined(WINDOWS_BEHAVIOR)
-        const int64_t convertedInteger = x87f_store_i64_trunc(convertedFloat);
-        rounded = coduo_int32_from_bits((uint32_t)(uint64_t)convertedInteger);
+        const int64_t convertedInteger =
+            x87f_store_i64_trunc(convertedFloat);
+        rounded = coduo_int32_from_bits(
+            (uint32_t)(uint64_t)convertedInteger);
 #else
         rounded = x87f_store_i32_trunc(convertedFloat);
 #endif
@@ -934,7 +1060,8 @@ void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to, const
 
         MSG_WriteBit1(message);
         biased = (int32_t)((uint32_t)rounded + MSG_DELTA_SMALL_INT_BIAS);
-        if ((float)rounded == newFloat && biased >= 0 && biased < MSG_DELTA_SMALL_INT_RANGE) {
+        if ((float)rounded == newFloat && biased >= 0 &&
+            biased < MSG_DELTA_SMALL_INT_RANGE) {
             MSG_WriteBit0(message);
             MSG_WriteBits(message, biased, MSG_DELTA_SMALL_INT_LOW_BITS);
             MSG_WriteByte(message, biased >> MSG_DELTA_SMALL_INT_LOW_BITS);
@@ -966,7 +1093,9 @@ void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to, const
 
     MSG_WriteBit1(message);
     {
-        uint32_t bitCount = field->bits < 0 ? 0u - (uint32_t)field->bits : (uint32_t)field->bits;
+        uint32_t bitCount = field->bits < 0
+            ? 0u - (uint32_t)field->bits
+            : (uint32_t)field->bits;
         uint32_t remaining = bitCount;
         const uint32_t lowBits = bitCount & MSG_DELTA_BYTE_BIT_MASK;
         int32_t value = newValue;
@@ -978,7 +1107,8 @@ void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to, const
         }
         while (remaining != 0) {
             MSG_WriteByte(message, value);
-            value = coduo_int32_sar(coduo_int32_bits(value), MSG_DELTA_BYTE_BITS);
+            value = coduo_int32_sar(coduo_int32_bits(value),
+                                    MSG_DELTA_BYTE_BITS);
             remaining -= MSG_DELTA_BYTE_BITS;
         }
     }
@@ -988,7 +1118,9 @@ void MSG_WriteDeltaField(msg_t *message, const void *from, const void *to, const
  * Evidence: direct PE disassembly of a function omitted by Ghidra's original
  * function inventory. Name and signature: exact same-module Mac symbol
  * MSG_WriteDeltaFields. */
-void MSG_WriteDeltaFields(msg_t *message, const void *from, const void *to, qboolean force, int32_t count, const netField_t *fields)
+void MSG_WriteDeltaFields(msg_t *message, const void *from, const void *to,
+                          qboolean force, int32_t count,
+                          const netField_t *fields)
 {
     if (force == qfalse) {
         int32_t fieldIndex;
@@ -997,8 +1129,12 @@ void MSG_WriteDeltaFields(msg_t *message, const void *from, const void *to, qboo
             int32_t oldValue;
             int32_t newValue;
 
-            memcpy(&oldValue, (const uint8_t *)from + fields[fieldIndex].offset, sizeof(oldValue));
-            memcpy(&newValue, (const uint8_t *)to + fields[fieldIndex].offset, sizeof(newValue));
+            memcpy(&oldValue,
+                   (const uint8_t *)from + fields[fieldIndex].offset,
+                   sizeof(oldValue));
+            memcpy(&newValue,
+                   (const uint8_t *)to + fields[fieldIndex].offset,
+                   sizeof(newValue));
             if (oldValue != newValue)
                 break;
         }
@@ -1017,15 +1153,21 @@ void MSG_WriteDeltaFields(msg_t *message, const void *from, const void *to, qboo
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044acd0_0044aefb.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaStruct;
  * Windows call sites prove the descriptor and callback argument ordering. */
-void MSG_WriteDeltaStruct(msg_t *message, const void *from, const void *to, qboolean force, int32_t count, int32_t numberBits,
-                          const netField_t *fields, msg_delta_extra_writer_t extraWriter, qboolean writeForceBit)
+void MSG_WriteDeltaStruct(msg_t *message, const void *from, const void *to,
+                          qboolean force, int32_t count, int32_t numberBits,
+                          const netField_t *fields,
+                          msg_delta_extra_writer_t extraWriter,
+                          qboolean writeForceBit)
 {
     int32_t recordNumber;
 
     if (to == NULL) {
         memcpy(&recordNumber, from, sizeof(recordNumber));
-        if (cl_shownet != NULL && (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT || cl_shownet->integer == MSG_SHOWNET_ALL)) {
-            Com_Printf("W|%3i: #%-3i remove\n", message->cursize, recordNumber);
+        if (cl_shownet != NULL &&
+            (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT ||
+             cl_shownet->integer == MSG_SHOWNET_ALL)) {
+            Com_Printf("W|%3i: #%-3i remove\n", message->cursize,
+                       recordNumber);
         }
         if (writeForceBit != qfalse)
             MSG_WriteBit1(message);
@@ -1041,8 +1183,10 @@ void MSG_WriteDeltaStruct(msg_t *message, const void *from, const void *to, qboo
         int32_t oldValue;
         int32_t newValue;
 
-        memcpy(&oldValue, (const uint8_t *)from + fields[fieldIndex].offset, sizeof(oldValue));
-        memcpy(&newValue, (const uint8_t *)to + fields[fieldIndex].offset, sizeof(newValue));
+        memcpy(&oldValue, (const uint8_t *)from + fields[fieldIndex].offset,
+               sizeof(oldValue));
+        memcpy(&newValue, (const uint8_t *)to + fields[fieldIndex].offset,
+               sizeof(newValue));
         if (oldValue != newValue)
             lastChanged = fieldIndex + 1;
     }
@@ -1079,9 +1223,11 @@ void MSG_WriteDeltaStruct(msg_t *message, const void *from, const void *to, qboo
  * Evidence: repaired executable-gap record. Exact same-module Mac symbol
  * MSG_WriteDeltaEntity_ChangedCallback. The extra bit selects the vehicle
  * entity netfield table on the corresponding reader path. */
-void MSG_WriteDeltaEntity_ChangedCallback(msg_t *message, const void *entityState)
+void MSG_WriteDeltaEntity_ChangedCallback(msg_t *message,
+                                          const void *entityState)
 {
-    if (entityState != NULL && ((const entityState_t *)entityState)->eType == ET_VEHICLE) {
+    if (entityState != NULL &&
+        ((const entityState_t *)entityState)->eType == ET_VEHICLE) {
         MSG_WriteBit1(message);
     } else {
         MSG_WriteBit0(message);
@@ -1091,31 +1237,40 @@ void MSG_WriteDeltaEntity_ChangedCallback(msg_t *message, const void *entityStat
 /* Source: CoDUOMP.exe 0x0044af50..0x0044afb8.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044af50_0044afb9.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaEntity. */
-void MSG_WriteDeltaEntity(msg_t *message, const entityState_t *from, const entityState_t *to, qboolean force)
+void MSG_WriteDeltaEntity(msg_t *message, const entityState_t *from,
+                          const entityState_t *to, qboolean force)
 {
     const netField_t *fields = msg_defaultEntityNetFields;
 
     if (to != NULL && to->eType == ET_VEHICLE)
         fields = msg_vehicleEntityNetFields;
 
-    MSG_WriteDeltaStruct(message, from, to, force, MSG_ENTITY_NETFIELD_COUNT, MSG_ENTITY_NUMBER_BITS, fields,
+    MSG_WriteDeltaStruct(message, from, to, force,
+                         MSG_ENTITY_NETFIELD_COUNT,
+                         MSG_ENTITY_NUMBER_BITS, fields,
                          MSG_WriteDeltaEntity_ChangedCallback, qfalse);
 }
 
 /* Source: CoDUOMP.exe 0x0044afc0..0x0044afdb.
  * Evidence: repaired executable-gap record. Name and signature: exact
  * same-module Mac symbol MSG_WriteDeltaArchivedEntity. */
-void MSG_WriteDeltaArchivedEntity(msg_t *message, const archivedEntity_t *from, const archivedEntity_t *to, qboolean force)
+void MSG_WriteDeltaArchivedEntity(msg_t *message,
+                                  const archivedEntity_t *from,
+                                  const archivedEntity_t *to,
+                                  qboolean force)
 {
-    MSG_WriteDeltaStruct(message, from, to, force, MSG_ARCHIVED_ENTITY_NETFIELD_COUNT, MSG_ENTITY_NUMBER_BITS, msg_archivedEntityNetFields,
-                         NULL, qfalse);
+    MSG_WriteDeltaStruct(message, from, to, force,
+                         MSG_ARCHIVED_ENTITY_NETFIELD_COUNT,
+                         MSG_ENTITY_NUMBER_BITS,
+                         msg_archivedEntityNetFields, NULL, qfalse);
 }
 
 /* Source: CoDUOMP.exe 0x0044afe0..0x0044b02d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044afe0_0044b02e.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaClient. The
  * MSVC stack-cookie epilogue is compiler support, not maintained source. */
-void MSG_WriteDeltaClient(msg_t *message, const clientState_t *from, const clientState_t *to, qboolean force)
+void MSG_WriteDeltaClient(msg_t *message, const clientState_t *from,
+                          const clientState_t *to, qboolean force)
 {
     clientState_t nullClient;
 
@@ -1124,18 +1279,23 @@ void MSG_WriteDeltaClient(msg_t *message, const clientState_t *from, const clien
         from = &nullClient;
     }
 
-    MSG_WriteDeltaStruct(message, from, to, force, MSG_CLIENT_NETFIELD_COUNT, MSG_CLIENT_NUMBER_BITS, msg_clientNetFields, NULL, qtrue);
+    MSG_WriteDeltaStruct(message, from, to, force,
+                         MSG_CLIENT_NETFIELD_COUNT,
+                         MSG_CLIENT_NUMBER_BITS,
+                         msg_clientNetFields, NULL, qtrue);
 }
 
 /* Source: CoDUOMP.exe 0x0044b030..0x0044b1df.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b030_0044b1e0.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaField. */
-void MSG_ReadDeltaField(msg_t *message, const void *from, void *to, const netField_t *field, qboolean print)
+void MSG_ReadDeltaField(msg_t *message, const void *from, void *to,
+                        const netField_t *field, qboolean print)
 {
     uint8_t *destination = (uint8_t *)to + field->offset;
 
     if (MSG_ReadBit(message) == 0) {
-        memcpy(destination, (const uint8_t *)from + field->offset, sizeof(int32_t));
+        memcpy(destination, (const uint8_t *)from + field->offset,
+               sizeof(int32_t));
         return;
     }
 
@@ -1148,8 +1308,11 @@ void MSG_ReadDeltaField(msg_t *message, const void *from, void *to, const netFie
             /* The low bits are consumed from the stream before the byte;
              * sequence the two reads so no operand-order choice can swap
              * them. */
-            const int32_t integralLowBits = MSG_ReadBits(message, MSG_DELTA_SMALL_INT_LOW_BITS);
-            const int32_t integralValue = integralLowBits + (MSG_ReadByte(message) - 128) * (1 << MSG_DELTA_SMALL_INT_LOW_BITS);
+            const int32_t integralLowBits =
+                MSG_ReadBits(message, MSG_DELTA_SMALL_INT_LOW_BITS);
+            const int32_t integralValue = integralLowBits +
+                (MSG_ReadByte(message) - 128) *
+                    (1 << MSG_DELTA_SMALL_INT_LOW_BITS);
 
             value = (float)integralValue;
             memcpy(destination, &value, sizeof(value));
@@ -1171,7 +1334,9 @@ void MSG_ReadDeltaField(msg_t *message, const void *from, void *to, const netFie
     }
 
     if (field->bits == MSG_DELTA_ANGLE16_BITS) {
-        const float value = MSG_ReadBit(message) == 0 ? 0.0f : MSG_ReadAngle16(message);
+        const float value = MSG_ReadBit(message) == 0
+            ? 0.0f
+            : MSG_ReadAngle16(message);
 
         memcpy(destination, &value, sizeof(value));
         return;
@@ -1185,11 +1350,16 @@ void MSG_ReadDeltaField(msg_t *message, const void *from, void *to, const netFie
     }
 
     {
-        const uint32_t bitCount = field->bits < 0 ? 0u - (uint32_t)field->bits : (uint32_t)field->bits;
+        const uint32_t bitCount = field->bits < 0
+            ? 0u - (uint32_t)field->bits
+            : (uint32_t)field->bits;
         const uint32_t lowBits = bitCount & MSG_DELTA_BYTE_BIT_MASK;
-        uint32_t value = lowBits == 0 ? 0u : (uint32_t)MSG_ReadBits(message, (int32_t)lowBits);
+        uint32_t value = lowBits == 0
+            ? 0u
+            : (uint32_t)MSG_ReadBits(message, (int32_t)lowBits);
 
-        for (uint32_t bit = lowBits; bit < bitCount; bit += MSG_DELTA_BYTE_BITS) {
+        for (uint32_t bit = lowBits; bit < bitCount;
+             bit += MSG_DELTA_BYTE_BITS) {
             value |= (uint32_t)MSG_ReadByte(message) << (bit & 31u);
         }
         memcpy(destination, &value, sizeof(value));
@@ -1201,34 +1371,44 @@ void MSG_ReadDeltaField(msg_t *message, const void *from, void *to, const netFie
 /* Source: CoDUOMP.exe 0x0044b1e0..0x0044b276.
  * Evidence: repaired executable-gap record. Name and signature: exact
  * same-module Mac symbol MSG_ReadDeltaFields. */
-void MSG_ReadDeltaFields(msg_t *message, const void *from, void *to, int32_t count, const netField_t *fields)
+void MSG_ReadDeltaFields(msg_t *message, const void *from, void *to,
+                         int32_t count,
+                         const netField_t *fields)
 {
     if (MSG_ReadBit(message) != 0) {
         for (int32_t fieldIndex = 0; fieldIndex < count; ++fieldIndex) {
-            MSG_ReadDeltaField(message, from, to, &fields[fieldIndex], qfalse);
+            MSG_ReadDeltaField(message, from, to, &fields[fieldIndex],
+                               qfalse);
         }
         return;
     }
 
     for (int32_t fieldIndex = 0; fieldIndex < count; ++fieldIndex) {
-        memcpy((uint8_t *)to + fields[fieldIndex].offset, (const uint8_t *)from + fields[fieldIndex].offset, sizeof(int32_t));
+        memcpy((uint8_t *)to + fields[fieldIndex].offset,
+               (const uint8_t *)from + fields[fieldIndex].offset,
+               sizeof(int32_t));
     }
 }
 
 /* Source: CoDUOMP.exe 0x0044b280..0x0044b41c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b280_0044b41d.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaStruct. */
-qboolean MSG_ReadDeltaStruct(msg_t *message, const void *from, void *to, int32_t number, int32_t count, const netField_t *fields)
+qboolean MSG_ReadDeltaStruct(msg_t *message, const void *from, void *to,
+                             int32_t number, int32_t count,
+                             const netField_t *fields)
 {
     if (MSG_ReadBit(message) != 0) {
-        if (cl_shownet != NULL && (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT || cl_shownet->integer == MSG_SHOWNET_ALL)) {
+        if (cl_shownet != NULL &&
+            (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT ||
+             cl_shownet->integer == MSG_SHOWNET_ALL)) {
             Com_Printf("%3i: #%-3i remove\n", message->readcount, number);
         }
         return qtrue;
     }
 
     if (MSG_ReadBit(message) == 0) {
-        memcpy(to, from, (size_t)count * sizeof(int32_t) + sizeof(int32_t));
+        memcpy(to, from,
+               (size_t)count * sizeof(int32_t) + sizeof(int32_t));
         return qfalse;
     }
 
@@ -1236,15 +1416,17 @@ qboolean MSG_ReadDeltaStruct(msg_t *message, const void *from, void *to, int32_t
     /* NOT_FROM_ORIGINAL_SOURCE: require a decoded field count before forming
      * any descriptor pointer. */
     if (lastChanged < 0) {
-        Com_Error(ERR_DROP, "\x15"
-                            "MSG_ReadDeltaStruct: truncated field count");
+        Com_Error(ERR_DROP,
+                  "\x15" "MSG_ReadDeltaStruct: truncated field count");
         return qtrue;
     }
     if (lastChanged > count)
         lastChanged = count;
 
     qboolean print = qfalse;
-    if (cl_shownet != NULL && (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT || cl_shownet->integer == MSG_SHOWNET_ALL)) {
+    if (cl_shownet != NULL &&
+        (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT ||
+         cl_shownet->integer == MSG_SHOWNET_ALL)) {
         int32_t displayedNumber;
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -1258,7 +1440,9 @@ qboolean MSG_ReadDeltaStruct(msg_t *message, const void *from, void *to, int32_t
         MSG_ReadDeltaField(message, from, to, &fields[fieldIndex], print);
     }
     for (int32_t fieldIndex = lastChanged; fieldIndex < count; ++fieldIndex) {
-        memcpy((uint8_t *)to + fields[fieldIndex].offset, (const uint8_t *)from + fields[fieldIndex].offset, sizeof(int32_t));
+        memcpy((uint8_t *)to + fields[fieldIndex].offset,
+               (const uint8_t *)from + fields[fieldIndex].offset,
+               sizeof(int32_t));
     }
     return qfalse;
 }
@@ -1266,26 +1450,36 @@ qboolean MSG_ReadDeltaStruct(msg_t *message, const void *from, void *to, int32_t
 /* Source: CoDUOMP.exe 0x0044b420..0x0044b493.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b420_0044b494.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaEntity. */
-qboolean MSG_ReadDeltaEntity(msg_t *message, const entityState_t *from, entityState_t *to, int32_t number)
+qboolean MSG_ReadDeltaEntity(msg_t *message, const entityState_t *from,
+                             entityState_t *to, int32_t number)
 {
-    const netField_t *fields = MSG_ReadBit(message) != 0 ? msg_vehicleEntityNetFields : msg_defaultEntityNetFields;
+    const netField_t *fields = MSG_ReadBit(message) != 0
+        ? msg_vehicleEntityNetFields
+        : msg_defaultEntityNetFields;
 
-    return MSG_ReadDeltaStruct(message, from, to, number, MSG_ENTITY_NETFIELD_COUNT, fields);
+    return MSG_ReadDeltaStruct(message, from, to, number,
+                               MSG_ENTITY_NETFIELD_COUNT, fields);
 }
 
 /* Source: CoDUOMP.exe 0x0044b4a0..0x0044b4b8.
  * Evidence: repaired executable-gap record. Name and signature: exact
  * same-module Mac symbol MSG_ReadDeltaArchivedEntity. */
-qboolean MSG_ReadDeltaArchivedEntity(msg_t *message, const archivedEntity_t *from, archivedEntity_t *to, int32_t number)
+qboolean MSG_ReadDeltaArchivedEntity(msg_t *message,
+                                     const archivedEntity_t *from,
+                                     archivedEntity_t *to,
+                                     int32_t number)
 {
-    return MSG_ReadDeltaStruct(message, from, to, number, MSG_ARCHIVED_ENTITY_NETFIELD_COUNT, msg_archivedEntityNetFields);
+    return MSG_ReadDeltaStruct(message, from, to, number,
+                               MSG_ARCHIVED_ENTITY_NETFIELD_COUNT,
+                               msg_archivedEntityNetFields);
 }
 
 /* Source: CoDUOMP.exe 0x0044b4c0..0x0044b504.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b4c0_0044b505.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaClient. The
  * MSVC stack-cookie epilogue is compiler support, not maintained source. */
-qboolean MSG_ReadDeltaClient(msg_t *message, const clientState_t *from, clientState_t *to, int32_t clientNum)
+qboolean MSG_ReadDeltaClient(msg_t *message, const clientState_t *from,
+                             clientState_t *to, int32_t clientNum)
 {
     clientState_t nullClient;
 
@@ -1294,17 +1488,21 @@ qboolean MSG_ReadDeltaClient(msg_t *message, const clientState_t *from, clientSt
         from = &nullClient;
     }
 
-    return MSG_ReadDeltaStruct(message, from, to, clientNum, MSG_CLIENT_NETFIELD_COUNT, msg_clientNetFields);
+    return MSG_ReadDeltaStruct(message, from, to, clientNum,
+                               MSG_CLIENT_NETFIELD_COUNT,
+                               msg_clientNetFields);
 }
 
 /* Source: CoDUOMP.exe 0x0044b510..0x0044b686.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b510_0044b687.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaHudElems. */
-void MSG_WriteDeltaHudElems(msg_t *message, const hudElem_t *from, const hudElem_t *to, int32_t maxHudElems)
+void MSG_WriteDeltaHudElems(msg_t *message, const hudElem_t *from,
+                            const hudElem_t *to, int32_t maxHudElems)
 {
     int32_t hudElemCount = 0;
 
-    while (hudElemCount < maxHudElems && to[hudElemCount].type != HE_TYPE_NONE) {
+    while (hudElemCount < maxHudElems &&
+           to[hudElemCount].type != HE_TYPE_NONE) {
         ++hudElemCount;
     }
     MSG_WriteBits(message, hudElemCount, MSG_HUD_ELEM_COUNT_BITS);
@@ -1312,19 +1510,28 @@ void MSG_WriteDeltaHudElems(msg_t *message, const hudElem_t *from, const hudElem
     for (int32_t elemIndex = 0; elemIndex < hudElemCount; ++elemIndex) {
         int32_t lastChanged = 0;
 
-        for (int32_t fieldIndex = 0; fieldIndex < MSG_HUD_ELEM_NETFIELD_COUNT; ++fieldIndex) {
+        for (int32_t fieldIndex = 0;
+             fieldIndex < MSG_HUD_ELEM_NETFIELD_COUNT; ++fieldIndex) {
             int32_t oldValue;
             int32_t newValue;
 
-            memcpy(&oldValue, (const uint8_t *)&from[elemIndex] + msg_hudElemNetFields[fieldIndex].offset, sizeof(oldValue));
-            memcpy(&newValue, (const uint8_t *)&to[elemIndex] + msg_hudElemNetFields[fieldIndex].offset, sizeof(newValue));
+            memcpy(&oldValue,
+                   (const uint8_t *)&from[elemIndex] +
+                       msg_hudElemNetFields[fieldIndex].offset,
+                   sizeof(oldValue));
+            memcpy(&newValue,
+                   (const uint8_t *)&to[elemIndex] +
+                       msg_hudElemNetFields[fieldIndex].offset,
+                   sizeof(newValue));
             if (oldValue != newValue)
                 lastChanged = fieldIndex;
         }
 
         MSG_WriteBits(message, lastChanged, MSG_HUD_ELEM_LAST_FIELD_BITS);
-        for (int32_t fieldIndex = 0; fieldIndex <= lastChanged; ++fieldIndex) {
-            MSG_WriteDeltaField(message, &from[elemIndex], &to[elemIndex], &msg_hudElemNetFields[fieldIndex]);
+        for (int32_t fieldIndex = 0; fieldIndex <= lastChanged;
+             ++fieldIndex) {
+            MSG_WriteDeltaField(message, &from[elemIndex], &to[elemIndex],
+                                &msg_hudElemNetFields[fieldIndex]);
         }
     }
 }
@@ -1332,46 +1539,59 @@ void MSG_WriteDeltaHudElems(msg_t *message, const hudElem_t *from, const hudElem
 /* Source: CoDUOMP.exe 0x0044b690..0x0044b7a9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b690_0044b7aa.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaHudElems. */
-void MSG_ReadDeltaHudElems(msg_t *message, const hudElem_t *from, hudElem_t *to, int32_t maxHudElems)
+void MSG_ReadDeltaHudElems(msg_t *message, const hudElem_t *from,
+                           hudElem_t *to, int32_t maxHudElems)
 {
-    const int32_t hudElemCount = MSG_ReadBits(message, MSG_HUD_ELEM_COUNT_BITS);
+    const int32_t hudElemCount =
+        MSG_ReadBits(message, MSG_HUD_ELEM_COUNT_BITS);
 
     for (int32_t elemIndex = 0; elemIndex < hudElemCount; ++elemIndex) {
-        const int32_t lastChanged = MSG_ReadBits(message, MSG_HUD_ELEM_LAST_FIELD_BITS);
+        const int32_t lastChanged =
+            MSG_ReadBits(message, MSG_HUD_ELEM_LAST_FIELD_BITS);
 
         /* NOT_FROM_ORIGINAL_SOURCE: the decoded last-field index must belong
          * to the HUD descriptor table before traversal begins. */
         if (lastChanged >= MSG_HUD_ELEM_NETFIELD_COUNT) {
-            Com_Error(ERR_DROP,
-                      "\x15"
-                      "MSG_ReadDeltaHudElems: invalid field index %i",
-                      lastChanged);
+            Com_Error(
+                ERR_DROP,
+                "\x15" "MSG_ReadDeltaHudElems: invalid field index %i",
+                lastChanged);
             return;
         }
-        for (int32_t fieldIndex = 0; fieldIndex <= lastChanged; ++fieldIndex) {
-            MSG_ReadDeltaField(message, &from[elemIndex], &to[elemIndex], &msg_hudElemNetFields[fieldIndex], qfalse);
+        for (int32_t fieldIndex = 0; fieldIndex <= lastChanged;
+             ++fieldIndex) {
+            MSG_ReadDeltaField(message, &from[elemIndex], &to[elemIndex],
+                               &msg_hudElemNetFields[fieldIndex], qfalse);
         }
-        for (int32_t fieldIndex = lastChanged + 1; fieldIndex < MSG_HUD_ELEM_NETFIELD_COUNT; ++fieldIndex) {
-            const netField_t *field = &msg_hudElemNetFields[fieldIndex];
+        for (int32_t fieldIndex = lastChanged + 1;
+             fieldIndex < MSG_HUD_ELEM_NETFIELD_COUNT; ++fieldIndex) {
+            const netField_t *field =
+                &msg_hudElemNetFields[fieldIndex];
 
-            memcpy((uint8_t *)&to[elemIndex] + field->offset, (const uint8_t *)&from[elemIndex] + field->offset, sizeof(int32_t));
+            memcpy((uint8_t *)&to[elemIndex] + field->offset,
+                   (const uint8_t *)&from[elemIndex] + field->offset,
+                   sizeof(int32_t));
         }
     }
 
-    memset(&to[hudElemCount], 0, (size_t)(maxHudElems - hudElemCount) * sizeof(*to));
+    memset(&to[hudElemCount], 0,
+           (size_t)(maxHudElems - hudElemCount) * sizeof(*to));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the player-state field
  * encoding inlined by MSVC throughout MSG_WriteDeltaPlayerstate. Unlike the
  * generic struct codec, player-state float fields have no separate zero bit. */
-static void coduomp_msg_write_delta_playerstate_field(msg_t *message, const playerState_t *from, const playerState_t *to,
-                                                      const netField_t *field)
+static void coduomp_msg_write_delta_playerstate_field(
+    msg_t *message, const playerState_t *from, const playerState_t *to,
+    const netField_t *field)
 {
     int32_t oldValue;
     int32_t newValue;
 
-    memcpy(&oldValue, (const uint8_t *)from + field->offset, sizeof(oldValue));
-    memcpy(&newValue, (const uint8_t *)to + field->offset, sizeof(newValue));
+    memcpy(&oldValue, (const uint8_t *)from + field->offset,
+           sizeof(oldValue));
+    memcpy(&newValue, (const uint8_t *)to + field->offset,
+           sizeof(newValue));
     if (oldValue == newValue) {
         MSG_WriteBit0(message);
         return;
@@ -1386,8 +1606,10 @@ static void coduomp_msg_write_delta_playerstate_field(msg_t *message, const play
 #if EMULATE_X87
         const x87f convertedFloat = x87f_load_f32(newFloat);
 #if defined(WINDOWS_BEHAVIOR)
-        const int64_t convertedInteger = x87f_store_i64_trunc(convertedFloat);
-        rounded = coduo_int32_from_bits((uint32_t)(uint64_t)convertedInteger);
+        const int64_t convertedInteger =
+            x87f_store_i64_trunc(convertedFloat);
+        rounded = coduo_int32_from_bits(
+            (uint32_t)(uint64_t)convertedInteger);
 #else
         rounded = x87f_store_i32_trunc(convertedFloat);
 #endif
@@ -1395,8 +1617,10 @@ static void coduomp_msg_write_delta_playerstate_field(msg_t *message, const play
         rounded = coduo_fp_to_i32_extended((long double)newFloat);
 #endif
 
-        const int32_t biased = (int32_t)((uint32_t)rounded + MSG_DELTA_SMALL_INT_BIAS);
-        if ((float)rounded == newFloat && biased >= 0 && biased < MSG_DELTA_SMALL_INT_RANGE) {
+        const int32_t biased =
+            (int32_t)((uint32_t)rounded + MSG_DELTA_SMALL_INT_BIAS);
+        if ((float)rounded == newFloat && biased >= 0 &&
+            biased < MSG_DELTA_SMALL_INT_RANGE) {
             MSG_WriteBit0(message);
             MSG_WriteBits(message, biased, MSG_DELTA_SMALL_INT_LOW_BITS);
             MSG_WriteByte(message, biased >> MSG_DELTA_SMALL_INT_LOW_BITS);
@@ -1420,7 +1644,9 @@ static void coduomp_msg_write_delta_playerstate_field(msg_t *message, const play
         return;
     }
 
-    uint32_t bitCount = field->bits < 0 ? 0u - (uint32_t)field->bits : (uint32_t)field->bits;
+    uint32_t bitCount = field->bits < 0
+        ? 0u - (uint32_t)field->bits
+        : (uint32_t)field->bits;
     int32_t value = newValue;
     const uint32_t lowBits = bitCount & MSG_DELTA_BYTE_BIT_MASK;
 
@@ -1431,20 +1657,23 @@ static void coduomp_msg_write_delta_playerstate_field(msg_t *message, const play
     }
     while (bitCount != 0) {
         MSG_WriteByte(message, value);
-        value = coduo_int32_sar(coduo_int32_bits(value), MSG_DELTA_BYTE_BITS);
+        value = coduo_int32_sar(coduo_int32_bits(value),
+                                MSG_DELTA_BYTE_BITS);
         bitCount -= MSG_DELTA_BYTE_BITS;
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the corresponding
  * player-state field decoder inlined by MSG_ReadDeltaPlayerstate. */
-static void coduomp_msg_read_delta_playerstate_field(msg_t *message, const playerState_t *from, playerState_t *to, const netField_t *field,
-                                                     qboolean print)
+static void coduomp_msg_read_delta_playerstate_field(
+    msg_t *message, const playerState_t *from, playerState_t *to,
+    const netField_t *field, qboolean print)
 {
     uint8_t *destination = (uint8_t *)to + field->offset;
 
     if (MSG_ReadBit(message) == 0) {
-        memcpy(destination, (const uint8_t *)from + field->offset, sizeof(int32_t));
+        memcpy(destination, (const uint8_t *)from + field->offset,
+               sizeof(int32_t));
         return;
     }
 
@@ -1455,8 +1684,11 @@ static void coduomp_msg_read_delta_playerstate_field(msg_t *message, const playe
             /* The low bits are consumed from the stream before the byte;
              * sequence the two reads so no operand-order choice can swap
              * them. */
-            const int32_t integralLowBits = MSG_ReadBits(message, MSG_DELTA_SMALL_INT_LOW_BITS);
-            const int32_t integralValue = integralLowBits + (MSG_ReadByte(message) - 128) * (1 << MSG_DELTA_SMALL_INT_LOW_BITS);
+            const int32_t integralLowBits =
+                MSG_ReadBits(message, MSG_DELTA_SMALL_INT_LOW_BITS);
+            const int32_t integralValue = integralLowBits +
+                (MSG_ReadByte(message) - 128) *
+                    (1 << MSG_DELTA_SMALL_INT_LOW_BITS);
 
             value = (float)integralValue;
             if (print != qfalse)
@@ -1473,17 +1705,24 @@ static void coduomp_msg_read_delta_playerstate_field(msg_t *message, const playe
     }
 
     if (field->bits == MSG_DELTA_ANGLE16_BITS) {
-        const float value = MSG_ReadBit(message) == 0 ? 0.0f : MSG_ReadAngle16(message);
+        const float value = MSG_ReadBit(message) == 0
+            ? 0.0f
+            : MSG_ReadAngle16(message);
 
         memcpy(destination, &value, sizeof(value));
         return;
     }
 
-    const uint32_t bitCount = field->bits < 0 ? 0u - (uint32_t)field->bits : (uint32_t)field->bits;
+    const uint32_t bitCount = field->bits < 0
+        ? 0u - (uint32_t)field->bits
+        : (uint32_t)field->bits;
     const uint32_t lowBits = bitCount & MSG_DELTA_BYTE_BIT_MASK;
-    uint32_t value = lowBits == 0 ? 0u : (uint32_t)MSG_ReadBits(message, (int32_t)lowBits);
+    uint32_t value = lowBits == 0
+        ? 0u
+        : (uint32_t)MSG_ReadBits(message, (int32_t)lowBits);
 
-    for (uint32_t bit = lowBits; bit < bitCount; bit += MSG_DELTA_BYTE_BITS) {
+    for (uint32_t bit = lowBits; bit < bitCount;
+         bit += MSG_DELTA_BYTE_BITS) {
         value |= (uint32_t)MSG_ReadByte(message) << (bit & 31u);
     }
     memcpy(destination, &value, sizeof(value));
@@ -1494,7 +1733,8 @@ static void coduomp_msg_read_delta_playerstate_field(msg_t *message, const playe
 /* Source: CoDUOMP.exe 0x0044b7b0..0x0044c5b1.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044b7b0_0044c5b2.mcode.
  * Name and signature: exact same-module Mac symbol MSG_WriteDeltaPlayerstate. */
-void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from, const playerState_t *to)
+void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from,
+                               const playerState_t *to)
 {
     playerState_t nullState;
 
@@ -1504,22 +1744,29 @@ void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from, const 
     }
 
     int32_t lastChanged = 0;
-    for (int32_t fieldIndex = 0; fieldIndex < MSG_PLAYERSTATE_NETFIELD_COUNT; ++fieldIndex) {
+    for (int32_t fieldIndex = 0;
+         fieldIndex < MSG_PLAYERSTATE_NETFIELD_COUNT; ++fieldIndex) {
         int32_t oldValue;
         int32_t newValue;
 
-        memcpy(&oldValue, (const uint8_t *)from + msg_playerStateNetFields[fieldIndex].offset, sizeof(oldValue));
-        memcpy(&newValue, (const uint8_t *)to + msg_playerStateNetFields[fieldIndex].offset, sizeof(newValue));
+        memcpy(&oldValue, (const uint8_t *)from +
+                   msg_playerStateNetFields[fieldIndex].offset,
+               sizeof(oldValue));
+        memcpy(&newValue, (const uint8_t *)to +
+                   msg_playerStateNetFields[fieldIndex].offset,
+               sizeof(newValue));
         if (oldValue != newValue)
             lastChanged = fieldIndex + 1;
     }
     MSG_WriteByte(message, lastChanged);
     for (int32_t fieldIndex = 0; fieldIndex < lastChanged; ++fieldIndex) {
-        coduomp_msg_write_delta_playerstate_field(message, from, to, &msg_playerStateNetFields[fieldIndex]);
+        coduomp_msg_write_delta_playerstate_field(
+            message, from, to, &msg_playerStateNetFields[fieldIndex]);
     }
 
     uint32_t statBits = 0;
-    for (int32_t statIndex = 0; statIndex < PLAYERSTATE_STAT_COUNT; ++statIndex) {
+    for (int32_t statIndex = 0; statIndex < PLAYERSTATE_STAT_COUNT;
+         ++statIndex) {
         if (from->stats[statIndex] != to->stats[statIndex])
             statBits |= 1u << statIndex;
     }
@@ -1528,11 +1775,13 @@ void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from, const 
     } else {
         MSG_WriteBit1(message);
         MSG_WriteBits(message, (int32_t)statBits, MSG_PLAYERSTATE_STAT_BITS);
-        for (int32_t statIndex = 0; statIndex < PLAYERSTATE_STAT_COUNT; ++statIndex) {
+        for (int32_t statIndex = 0; statIndex < PLAYERSTATE_STAT_COUNT;
+             ++statIndex) {
             if ((statBits & (1u << statIndex)) == 0)
                 continue;
             if (statIndex == MSG_PLAYERSTATE_STAT_COMPACT_INDEX) {
-                MSG_WriteBits(message, to->stats[statIndex], MSG_PLAYERSTATE_STAT_COMPACT_BITS);
+                MSG_WriteBits(message, to->stats[statIndex],
+                              MSG_PLAYERSTATE_STAT_COMPACT_BITS);
             } else if (statIndex == MSG_PLAYERSTATE_STAT_BYTE_INDEX) {
                 MSG_WriteByte(message, to->stats[statIndex]);
             } else {
@@ -1542,9 +1791,12 @@ void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from, const 
     }
 
     uint32_t ammoBits[MSG_PLAYERSTATE_AMMO_GROUP_COUNT] = {0};
-    for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT; ++group) {
-        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE; ++item) {
-            const int32_t index = group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
+    for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT;
+         ++group) {
+        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE;
+             ++item) {
+            const int32_t index =
+                group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
             if (from->ammo[index] != to->ammo[index])
                 ammoBits[group] |= 1u << item;
         }
@@ -1553,26 +1805,32 @@ void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from, const 
         MSG_WriteBit0(message);
     } else {
         MSG_WriteBit1(message);
-        for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT; ++group) {
+        for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT;
+             ++group) {
             if (ammoBits[group] == 0) {
                 MSG_WriteBit0(message);
                 continue;
             }
             MSG_WriteBit1(message);
             MSG_WriteShort(message, (int32_t)ammoBits[group]);
-            for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE; ++item) {
+            for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE;
+                 ++item) {
                 if ((ammoBits[group] & (1u << item)) != 0) {
-                    const int32_t index = group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
+                    const int32_t index =
+                        group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
                     MSG_WriteShort(message, to->ammo[index]);
                 }
             }
         }
     }
 
-    for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT; ++group) {
+    for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT;
+         ++group) {
         uint32_t clipBits = 0;
-        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE; ++item) {
-            const int32_t index = group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
+        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE;
+             ++item) {
+            const int32_t index =
+                group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
             if (from->clips[index] != to->clips[index])
                 clipBits |= 1u << item;
         }
@@ -1582,38 +1840,50 @@ void MSG_WriteDeltaPlayerstate(msg_t *message, const playerState_t *from, const 
         }
         MSG_WriteBit1(message);
         MSG_WriteShort(message, (int32_t)clipBits);
-        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE; ++item) {
+        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE;
+             ++item) {
             if ((clipBits & (1u << item)) != 0) {
-                const int32_t index = group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
+                const int32_t index =
+                    group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
                 MSG_WriteShort(message, to->clips[index]);
             }
         }
     }
 
-    if (memcmp(from->objectives, to->objectives, sizeof(to->objectives)) == 0) {
+    if (memcmp(from->objectives, to->objectives,
+               sizeof(to->objectives)) == 0) {
         MSG_WriteBit0(message);
     } else {
         MSG_WriteBit1(message);
-        for (int32_t objectiveIndex = 0; objectiveIndex < PLAYERSTATE_OBJECTIVE_COUNT; ++objectiveIndex) {
-            MSG_WriteBits(message, to->objectives[objectiveIndex].state, MSG_OBJECTIVE_STATE_BITS);
-            MSG_WriteDeltaFields(message, &from->objectives[objectiveIndex], &to->objectives[objectiveIndex], qfalse,
-                                 MSG_OBJECTIVE_NETFIELD_COUNT, msg_objectiveNetFields);
+        for (int32_t objectiveIndex = 0;
+             objectiveIndex < PLAYERSTATE_OBJECTIVE_COUNT;
+             ++objectiveIndex) {
+            MSG_WriteBits(message, to->objectives[objectiveIndex].state,
+                          MSG_OBJECTIVE_STATE_BITS);
+            MSG_WriteDeltaFields(
+                message, &from->objectives[objectiveIndex],
+                &to->objectives[objectiveIndex], qfalse,
+                MSG_OBJECTIVE_NETFIELD_COUNT, msg_objectiveNetFields);
         }
     }
 
-    if (memcmp(from->hudCurrent, to->hudCurrent, sizeof(to->hudCurrent) + sizeof(to->hudArchival)) == 0) {
+    if (memcmp(from->hudCurrent, to->hudCurrent,
+               sizeof(to->hudCurrent) + sizeof(to->hudArchival)) == 0) {
         MSG_WriteBit0(message);
     } else {
         MSG_WriteBit1(message);
-        MSG_WriteDeltaHudElems(message, from->hudArchival, to->hudArchival, PLAYERSTATE_HUD_ELEM_COUNT);
-        MSG_WriteDeltaHudElems(message, from->hudCurrent, to->hudCurrent, PLAYERSTATE_HUD_ELEM_COUNT);
+        MSG_WriteDeltaHudElems(message, from->hudArchival, to->hudArchival,
+                               PLAYERSTATE_HUD_ELEM_COUNT);
+        MSG_WriteDeltaHudElems(message, from->hudCurrent, to->hudCurrent,
+                               PLAYERSTATE_HUD_ELEM_COUNT);
     }
 }
 
 /* Source: CoDUOMP.exe 0x0044c5c0..0x0044cf71.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0044c5c0_0044cf72.mcode.
  * Name and signature: exact same-module Mac symbol MSG_ReadDeltaPlayerstate. */
-void MSG_ReadDeltaPlayerstate(msg_t *message, const playerState_t *from, playerState_t *to)
+void MSG_ReadDeltaPlayerstate(msg_t *message, const playerState_t *from,
+                              playerState_t *to)
 {
     playerState_t nullState;
 
@@ -1624,7 +1894,9 @@ void MSG_ReadDeltaPlayerstate(msg_t *message, const playerState_t *from, playerS
     memcpy(to, from, sizeof(*to));
 
     qboolean print = qfalse;
-    if (cl_shownet != NULL && (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT || cl_shownet->integer == MSG_SHOWNET_PLAYERSTATE)) {
+    if (cl_shownet != NULL &&
+        (cl_shownet->integer >= MSG_SHOWNET_DELTA_STRUCT ||
+         cl_shownet->integer == MSG_SHOWNET_PLAYERSTATE)) {
         print = qtrue;
         Com_Printf("%3i: playerstate ", message->readcount);
     }
@@ -1632,27 +1904,33 @@ void MSG_ReadDeltaPlayerstate(msg_t *message, const playerState_t *from, playerS
     const int32_t lastChanged = MSG_ReadByte(message);
     /* NOT_FROM_ORIGINAL_SOURCE: the decoded field count must be representable
      * by the player-state descriptor table before traversal begins. */
-    if (lastChanged < 0 || lastChanged > MSG_PLAYERSTATE_NETFIELD_COUNT) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "MSG_ReadDeltaPlayerstate: invalid field count %i",
-                  lastChanged);
+    if (lastChanged < 0 ||
+        lastChanged > MSG_PLAYERSTATE_NETFIELD_COUNT) {
+        Com_Error(
+            ERR_DROP,
+            "\x15" "MSG_ReadDeltaPlayerstate: invalid field count %i",
+            lastChanged);
         return;
     }
     for (int32_t fieldIndex = 0; fieldIndex < lastChanged; ++fieldIndex) {
-        coduomp_msg_read_delta_playerstate_field(message, from, to, &msg_playerStateNetFields[fieldIndex], print);
+        coduomp_msg_read_delta_playerstate_field(
+            message, from, to, &msg_playerStateNetFields[fieldIndex], print);
     }
 
     if (MSG_ReadBit(message) != 0) {
-        const uint32_t statBits = (uint32_t)MSG_ReadBits(message, MSG_PLAYERSTATE_STAT_BITS);
-        if (cl_shownet != NULL && cl_shownet->integer == MSG_SHOWNET_VERBOSE) {
+        const uint32_t statBits =
+            (uint32_t)MSG_ReadBits(message, MSG_PLAYERSTATE_STAT_BITS);
+        if (cl_shownet != NULL &&
+            cl_shownet->integer == MSG_SHOWNET_VERBOSE) {
             Com_Printf("%s ", "PS_STATS");
         }
-        for (int32_t statIndex = 0; statIndex < PLAYERSTATE_STAT_COUNT; ++statIndex) {
+        for (int32_t statIndex = 0; statIndex < PLAYERSTATE_STAT_COUNT;
+             ++statIndex) {
             if ((statBits & (1u << statIndex)) == 0)
                 continue;
             if (statIndex == MSG_PLAYERSTATE_STAT_COMPACT_INDEX) {
-                to->stats[statIndex] = MSG_ReadBits(message, MSG_PLAYERSTATE_STAT_COMPACT_BITS);
+                to->stats[statIndex] = MSG_ReadBits(
+                    message, MSG_PLAYERSTATE_STAT_COMPACT_BITS);
             } else if (statIndex == MSG_PLAYERSTATE_STAT_BYTE_INDEX) {
                 to->stats[statIndex] = MSG_ReadByte(message);
             } else {
@@ -1662,57 +1940,73 @@ void MSG_ReadDeltaPlayerstate(msg_t *message, const playerState_t *from, playerS
     }
 
     if (MSG_ReadBit(message) != 0) {
-        for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT; ++group) {
+        for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT;
+             ++group) {
             if (MSG_ReadBit(message) == 0)
                 continue;
-            if (cl_shownet != NULL && cl_shownet->integer == MSG_SHOWNET_VERBOSE) {
+            if (cl_shownet != NULL &&
+                cl_shownet->integer == MSG_SHOWNET_VERBOSE) {
                 Com_Printf("%s ", "PS_AMMO");
             }
             const uint32_t ammoBits = (uint32_t)MSG_ReadShort(message);
-            for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE; ++item) {
+            for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE;
+                 ++item) {
                 if ((ammoBits & (1u << item)) != 0) {
-                    const int32_t index = group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
+                    const int32_t index =
+                        group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
                     to->ammo[index] = MSG_ReadShort(message);
                 }
             }
         }
     }
 
-    for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT; ++group) {
+    for (int32_t group = 0; group < MSG_PLAYERSTATE_AMMO_GROUP_COUNT;
+         ++group) {
         if (MSG_ReadBit(message) == 0)
             continue;
-        if (cl_shownet != NULL && cl_shownet->integer == MSG_SHOWNET_VERBOSE) {
+        if (cl_shownet != NULL &&
+            cl_shownet->integer == MSG_SHOWNET_VERBOSE) {
             Com_Printf("%s ", "PS_AMMOCLIP");
         }
         const uint32_t clipBits = (uint32_t)MSG_ReadShort(message);
-        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE; ++item) {
+        for (int32_t item = 0; item < MSG_PLAYERSTATE_AMMO_GROUP_SIZE;
+             ++item) {
             if ((clipBits & (1u << item)) != 0) {
-                const int32_t index = group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
+                const int32_t index =
+                    group * MSG_PLAYERSTATE_AMMO_GROUP_SIZE + item;
                 to->clips[index] = MSG_ReadShort(message);
             }
         }
     }
 
     if (MSG_ReadBit(message) != 0) {
-        for (int32_t objectiveIndex = 0; objectiveIndex < PLAYERSTATE_OBJECTIVE_COUNT; ++objectiveIndex) {
-            to->objectives[objectiveIndex].state = (objectiveState_t)MSG_ReadBits(message, MSG_OBJECTIVE_STATE_BITS);
-            MSG_ReadDeltaFields(message, &from->objectives[objectiveIndex], &to->objectives[objectiveIndex], MSG_OBJECTIVE_NETFIELD_COUNT,
-                                msg_objectiveNetFields);
+        for (int32_t objectiveIndex = 0;
+             objectiveIndex < PLAYERSTATE_OBJECTIVE_COUNT;
+             ++objectiveIndex) {
+            to->objectives[objectiveIndex].state =
+                (objectiveState_t)MSG_ReadBits(message,
+                                               MSG_OBJECTIVE_STATE_BITS);
+            MSG_ReadDeltaFields(
+                message, &from->objectives[objectiveIndex],
+                &to->objectives[objectiveIndex],
+                MSG_OBJECTIVE_NETFIELD_COUNT, msg_objectiveNetFields);
         }
     }
 
     if (MSG_ReadBit(message) != 0) {
-        MSG_ReadDeltaHudElems(message, from->hudArchival, to->hudArchival, PLAYERSTATE_HUD_ELEM_COUNT);
-        MSG_ReadDeltaHudElems(message, from->hudCurrent, to->hudCurrent, PLAYERSTATE_HUD_ELEM_COUNT);
+        MSG_ReadDeltaHudElems(message, from->hudArchival, to->hudArchival,
+                              PLAYERSTATE_HUD_ELEM_COUNT);
+        MSG_ReadDeltaHudElems(message, from->hudCurrent, to->hudCurrent,
+                              PLAYERSTATE_HUD_ELEM_COUNT);
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: after consuming the complete delta, require
      * the view-lock identifier to belong to the coordinated entity domain. */
     if ((uint32_t)to->viewLockedEntityNum >= (uint32_t)MAX_GENTITIES) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "MSG_ReadDeltaPlayerstate: invalid view-lock entity %i",
-                  to->viewLockedEntityNum);
+        Com_Error(
+            ERR_DROP,
+            "\x15" "MSG_ReadDeltaPlayerstate: invalid view-lock entity %i",
+            to->viewLockedEntityNum);
         return;
     }
 
@@ -1720,21 +2014,22 @@ void MSG_ReadDeltaPlayerstate(msg_t *message, const playerState_t *from, playerS
      * every raw weapon-slot byte to belong to the registered weapon domain. */
     for (int32_t slot = 0; slot < WEAPSLOT_COUNT; ++slot) {
         if (to->weaponSlots[slot] < 0) {
-            Com_Error(ERR_DROP,
-                      "\x15"
-                      "MSG_ReadDeltaPlayerstate: invalid weapon %i in slot %i",
-                      (int32_t)to->weaponSlots[slot], slot);
+            Com_Error(
+                ERR_DROP,
+                "\x15" "MSG_ReadDeltaPlayerstate: invalid weapon %i in slot %i",
+                (int32_t)to->weaponSlots[slot], slot);
             return;
         }
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: after consuming the complete delta, require
      * the vehicle position to belong to the supported seat/tag domain. */
-    if (to->vehiclePosition < 0 || to->vehiclePosition >= MSG_PLAYERSTATE_VEHICLE_POSITION_COUNT) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "MSG_ReadDeltaPlayerstate: invalid vehicle position %i",
-                  to->vehiclePosition);
+    if (to->vehiclePosition < 0 ||
+        to->vehiclePosition >= MSG_PLAYERSTATE_VEHICLE_POSITION_COUNT) {
+        Com_Error(
+            ERR_DROP,
+            "\x15" "MSG_ReadDeltaPlayerstate: invalid vehicle position %i",
+            to->vehiclePosition);
         return;
     }
 }

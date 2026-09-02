@@ -77,13 +77,16 @@ void CG_SpinEffectPointToWorld(vec3_t point /* one 32-bit stack arg: vec3_t * */
     AngleVectors(cg_refdefViewAngles, forward, right, up);
 
     /* Seed with the view origin (copied as three dwords), then add the transform. */
-    point[0] =
-        (float)((((negPy * (long double)right[0]) + (long double)pz * (long double)up[0]) + (long double)px * (long double)forward[0]) +
-                (long double)cg_refdef.vieworg[0]);
-    point[1] =
-        (float)((((negPy * (long double)right[1]) + (long double)pz * (long double)up[1]) + (long double)px * (long double)forward[1]) +
-                (long double)cg_refdef.vieworg[1]);
-    point[2] =
-        (float)((((negPy * (long double)right[2]) + (long double)pz * (long double)up[2]) + (long double)px * (long double)forward[2]) +
-                (long double)cg_refdef.vieworg[2]);
+    point[0] = (float)((((negPy * (long double)right[0]) +
+                         (long double)pz * (long double)up[0]) +
+                        (long double)px * (long double)forward[0]) +
+                       (long double)cg_refdef.vieworg[0]);
+    point[1] = (float)((((negPy * (long double)right[1]) +
+                         (long double)pz * (long double)up[1]) +
+                        (long double)px * (long double)forward[1]) +
+                       (long double)cg_refdef.vieworg[1]);
+    point[2] = (float)((((negPy * (long double)right[2]) +
+                         (long double)pz * (long double)up[2]) +
+                        (long double)px * (long double)forward[2]) +
+                       (long double)cg_refdef.vieworg[2]);
 }

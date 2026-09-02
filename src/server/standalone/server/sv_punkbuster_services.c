@@ -26,9 +26,13 @@ void SV_SetPunkBusterCvar(const char *value)
 void server_compat_handle_pb_packet(netadr_t from, msg_t *message)
 {
     int32_t pbClientNum = -1;
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
-        if (client->state != CS_FREE && NET_CompareBaseAdr(from, client->netchan.remoteAddress) != qfalse &&
+        if (client->state != CS_FREE &&
+            NET_CompareBaseAdr(from, client->netchan.remoteAddress) !=
+                qfalse &&
             client->netchan.remoteAddress.port == from.port) {
             pbClientNum = clientNum;
             break;
@@ -37,7 +41,9 @@ void server_compat_handle_pb_packet(netadr_t from, msg_t *message)
 
     const uint8_t command = message->data[SV_PB_MESSAGE_COMMAND_OFFSET];
     if (command != 'C' && command != '1' && command != 'J') {
-        PB_CallServerSbGlobal(SV_PB_SERVER_COMMAND, pbClientNum, (uint32_t)(message->cursize - SV_PB_OOB_MARKER_BYTES),
-                              (const char *)message->data + SV_PB_OOB_MARKER_BYTES);
+        PB_CallServerSbGlobal(
+            SV_PB_SERVER_COMMAND, pbClientNum,
+            (uint32_t)(message->cursize - SV_PB_OOB_MARKER_BYTES),
+            (const char *)message->data + SV_PB_OOB_MARKER_BYTES);
     }
 }

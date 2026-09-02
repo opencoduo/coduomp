@@ -81,13 +81,17 @@ void G_ParseHitLocDmgTable(void)
 
     fileLength = trap_FS_FOpenFile(path, &handle, FS_READ);
     if (fileLength < 1) {
-        Com_Error(1, COM_ERROR_MARKER "Could not load hitloc damage table %s\n", path);
+        Com_Error(1, COM_ERROR_MARKER "Could not load hitloc damage table %s\n",
+                  path);
         return;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (fileLength < magicLength) {
-        Com_Error(1, COM_ERROR_MARKER "\"%s\" does not appear to be a hitloc damage table\n", path);
+        Com_Error(1,
+                  COM_ERROR_MARKER
+                  "\"%s\" does not appear to be a hitloc damage table\n",
+                  path);
         return;
     }
 
@@ -95,13 +99,19 @@ void G_ParseHitLocDmgTable(void)
     trap_FS_Read(buffer, magicLength, handle);
     buffer[magicLength] = '\0';
     if (strncmp(buffer, magic, (size_t)magicLength) != 0) {
-        Com_Error(1, COM_ERROR_MARKER "\"%s\" does not appear to be a hitloc damage table\n", path);
+        Com_Error(1,
+                  COM_ERROR_MARKER
+                  "\"%s\" does not appear to be a hitloc damage table\n",
+                  path);
         return;
     }
 
     payloadLength = fileLength - magicLength;
     if (payloadLength >= HITLOC_TABLE_MAX_INFO_SIZE) {
-        Com_Error(1, COM_ERROR_MARKER "\"%s\" Is too long of a hitloc damage table to parse\n", path);
+        Com_Error(1,
+                  COM_ERROR_MARKER
+                  "\"%s\" Is too long of a hitloc damage table to parse\n",
+                  path);
         return;
     }
 
@@ -111,11 +121,16 @@ void G_ParseHitLocDmgTable(void)
     trap_FS_FCloseFile(handle);
 
     if (Info_Validate(buffer) == 0) {
-        Com_Error(1, COM_ERROR_MARKER "\"%s\" is not a valid hitloc damage table\n", path);
+        Com_Error(1,
+                  COM_ERROR_MARKER
+                  "\"%s\" is not a valid hitloc damage table\n",
+                  path);
         return;
     }
 
-    if (ParseConfigStringToStruct(g_fHitLocDamageMult, fields, HITLOC_COUNT, buffer, 0, 0, G_HitLocStrcpy) == 0) {
+    if (ParseConfigStringToStruct(g_fHitLocDamageMult, fields,
+                                  HITLOC_COUNT, buffer, 0, 0,
+                                  G_HitLocStrcpy) == 0) {
         G_Error("Error parsing hitloc damage table %s\n", path);
     }
 }
@@ -142,11 +157,14 @@ void LookAtKiller(gentity_t *self, gentity_t *inflictor, gentity_t *attacker)
         dir[2] = inflictor->currentOrigin[2] - self->currentOrigin[2];
     } else {
 #if EMULATE_X87
-        self->client->ps.stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(x87f_load_f32(self->currentAngles[1]));
+        self->client->ps.stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(
+            x87f_load_f32(self->currentAngles[1]));
 #elif defined(__x86_64__)
-        self->client->ps.stats[STAT_DEAD_YAW] = CODUO_X87_TRUNCATE_I32((long double)self->currentAngles[1]);
+        self->client->ps.stats[STAT_DEAD_YAW] =
+            CODUO_X87_TRUNCATE_I32((long double)self->currentAngles[1]);
 #else
-        self->client->ps.stats[STAT_DEAD_YAW] = (int32_t)self->currentAngles[1];
+        self->client->ps.stats[STAT_DEAD_YAW] =
+            (int32_t)self->currentAngles[1];
 #endif
         return;
     }
@@ -154,12 +172,14 @@ void LookAtKiller(gentity_t *self, gentity_t *inflictor, gentity_t *attacker)
 #if EMULATE_X87
     {
         const float killerYaw = vectoyaw(dir);
-        self->client->ps.stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(x87f_load_f32(killerYaw));
+        self->client->ps.stats[STAT_DEAD_YAW] =
+            x87f_store_i32_trunc(x87f_load_f32(killerYaw));
     }
 #elif defined(__x86_64__)
     {
         const float killerYaw = vectoyaw(dir);
-        self->client->ps.stats[STAT_DEAD_YAW] = CODUO_X87_TRUNCATE_I32((long double)killerYaw);
+        self->client->ps.stats[STAT_DEAD_YAW] =
+            CODUO_X87_TRUNCATE_I32((long double)killerYaw);
     }
 #else
     self->client->ps.stats[STAT_DEAD_YAW] = (int32_t)vectoyaw(dir);

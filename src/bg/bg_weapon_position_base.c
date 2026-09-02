@@ -22,7 +22,8 @@
 #include "compat/coduo_x87emu.h"
 #include "math/q_math.h"
 
-void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *state, vec3_t angles)
+void BG_CalculateWeaponPosition_BasePosition_angles(
+    pm_weapon_angle_state_t *state, vec3_t angles)
 {
 #if defined(WINDOWS_BEHAVIOR)
     weaponInfo_t **weaponTable = bg_weaponInfos;
@@ -36,7 +37,7 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
      * the x87 stack through their compares and multiplies, so it is long
      * double (a float local would insert roundings the DLL does not have). */
     long double fraction;
-    float target[3] = {0.0f, 0.0f, 0.0f};
+    float target[3] = { 0.0f, 0.0f, 0.0f };
     int i;
 
     /* 0x30014ebb..0x30014ef2: select the speed threshold for sprint or stance. */
@@ -58,8 +59,12 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
      * selected minimum and the weapon is not in state 5. Otherwise normalize
      * speed across [threshold, ps->speed], clamp to [0,1], and scale the selected
      * rotation vector. ADS removes this base-position rotation linearly. */
-    if (state->speed > threshold && ps->weaponState != WEAPON_STATE_RELOADING) {
-        fraction = ((long double)state->speed - (long double)threshold) / ((long double)ps->speed - (long double)threshold);
+    if (state->speed > threshold &&
+        ps->weaponState != WEAPON_STATE_RELOADING) {
+        fraction = ((long double)state->speed -
+                    (long double)threshold) /
+                   ((long double)ps->speed -
+                    (long double)threshold);
         if (fraction < 0.0f) {
             fraction = 0.0f;
         } else if (fraction > 1.0f) {
@@ -96,7 +101,10 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
             continue;
         }
 
-        rate = ((long double)ps->viewHeightCurrent == (long double)ps->proneViewHeight) ? weapon->posProneRotRate : weapon->posRotRate;
+        rate = ((long double)ps->viewHeightCurrent ==
+                (long double)ps->proneViewHeight)
+             ? weapon->posProneRotRate
+             : weapon->posRotRate;
         /* delta stays on the x87 stack unrounded from the FMUL chain at
          * 0x3001507b..0x30015092 through the FADD at 0x300150c0/0x300150ec;
          * only the limit is spilled to a float slot ([ESP+0x10]). */
@@ -109,7 +117,8 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
             if (delta < limit) {
                 delta = limit;                   /* 0x300150ba: min step up */
             }
-            long double currentWide = (long double)current + delta;
+            long double currentWide =
+                (long double)current + delta;
             current = (float)currentWide;        /* FADD [ECX]; FST [ECX] */
             if (currentWide > (long double)target[i]) {
                 current = target[i];             /* 0x300150fb: overshoot snap */
@@ -119,7 +128,8 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
             if (delta > limit) {
                 delta = limit;                   /* 0x300150e6: min step down */
             }
-            long double currentWide = (long double)current + delta;
+            long double currentWide =
+                (long double)current + delta;
             current = (float)currentWide;
             if (currentWide < (long double)target[i]) {
                 current = target[i];
@@ -164,14 +174,20 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
         rotation = &weapon->standRot;
     }
 
-    if (state->speed > threshold && ps->weaponState != WEAPON_STATE_RELOADING) {
+    if (state->speed > threshold &&
+        ps->weaponState != WEAPON_STATE_RELOADING) {
         float fraction;
 
 #if EMULATE_X87
-        fraction = x87f_store_f32(x87f_div(x87f_sub(x87f_load_f32(state->speed), x87f_load_f32(threshold)),
-                                           x87f_sub(x87f_load_i32(ps->speed), x87f_load_f32(threshold))));
+        fraction = x87f_store_f32(x87f_div(
+            x87f_sub(x87f_load_f32(state->speed),
+                     x87f_load_f32(threshold)),
+            x87f_sub(x87f_load_i32(ps->speed),
+                     x87f_load_f32(threshold))));
 #else
-        fraction = (state->speed - threshold) / ((long double)ps->speed - threshold);
+        fraction =
+            (state->speed - threshold) /
+            ((long double)ps->speed - threshold);
 #endif
         if (fraction < 0.0f) {
             fraction = 0.0f;
@@ -195,19 +211,27 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
     for (axis = 0; axis < 3; ++axis) {
         if (state->moveOffset[axis] != target[axis]) {
             float step;
-            const float rate = ps->viewHeightCurrent == (long double)ps->proneViewHeight ? weapon->posProneRotRate : weapon->posRotRate;
+            const float rate =
+                ps->viewHeightCurrent == (long double)ps->proneViewHeight
+                    ? weapon->posProneRotRate
+                    : weapon->posRotRate;
 
 #if EMULATE_X87
             step = x87f_store_f32(x87f_mul(
-                x87f_mul(x87f_sub(x87f_load_f32(target[axis]), x87f_load_f32(state->moveOffset[axis])), x87f_load_f32(state->frameTime)),
+                x87f_mul(x87f_sub(x87f_load_f32(target[axis]),
+                                  x87f_load_f32(state->moveOffset[axis])),
+                         x87f_load_f32(state->frameTime)),
                 x87f_load_f32(rate)));
 #else
-            step = (target[axis] - state->moveOffset[axis]) * state->frameTime * rate;
+            step = (target[axis] - state->moveOffset[axis]) *
+                   state->frameTime * rate;
 #endif
 
             if (state->moveOffset[axis] < target[axis]) {
 #if EMULATE_X87
-                if (x87f_lt(x87f_load_f32(step), x87f_mul(x87f_load_f32(state->frameTime), x87f_load_f32(0.1f)))) {
+                if (x87f_lt(x87f_load_f32(step),
+                            x87f_mul(x87f_load_f32(state->frameTime),
+                                     x87f_load_f32(0.1f)))) {
                     step = state->frameTime * 0.1f;
                 }
 #else
@@ -221,7 +245,10 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
                 }
             } else {
 #if EMULATE_X87
-                if (x87f_lt(x87f_mul(x87f_load_f32(state->frameTime), x87f_load_f32(-0.1f)), x87f_load_f32(step))) {
+                if (x87f_lt(
+                        x87f_mul(x87f_load_f32(state->frameTime),
+                                 x87f_load_f32(-0.1f)),
+                        x87f_load_f32(step))) {
                     step = state->frameTime * -0.1f;
                 }
 #else
@@ -243,14 +270,19 @@ void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *sta
         angles[2] += state->moveOffset[2];
     } else if (ps->adsFraction < 0.5f) {
 #if EMULATE_X87
-        const float fraction =
-            x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(ps->adsFraction), x87f_load_f32(ps->adsFraction))));
+        const float fraction = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(ps->adsFraction),
+                     x87f_load_f32(ps->adsFraction))));
         for (axis = 0; axis < 3; ++axis) {
-            angles[axis] = x87f_store_f32(
-                x87f_add(x87f_mul(x87f_load_f32(state->moveOffset[axis]), x87f_load_f32(fraction)), x87f_load_f32(angles[axis])));
+            angles[axis] = x87f_store_f32(x87f_add(
+                x87f_mul(x87f_load_f32(state->moveOffset[axis]),
+                         x87f_load_f32(fraction)),
+                x87f_load_f32(angles[axis])));
         }
 #else
-        const float fraction = 1.0f - (ps->adsFraction + ps->adsFraction);
+        const float fraction =
+            1.0f - (ps->adsFraction + ps->adsFraction);
         angles[0] += state->moveOffset[0] * fraction;
         angles[1] += state->moveOffset[1] * fraction;
         angles[2] += state->moveOffset[2] * fraction;

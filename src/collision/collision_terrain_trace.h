@@ -13,9 +13,15 @@
 extern "C" {
 #endif
 
-void CM_TracePointThroughTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
-void CM_TraceSphereThroughTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
-qboolean CM_PositionTestSphereWithTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
+void CM_TracePointThroughTerrainCollide(
+    traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide);
+void CM_TraceSphereThroughTerrainCollide(
+    traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide);
+qboolean CM_PositionTestSphereWithTerrainCollide(
+    traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide);
 
 #ifdef __cplusplus
 }
