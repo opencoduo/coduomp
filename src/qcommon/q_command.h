@@ -34,8 +34,7 @@ void Cbuf_Execute(void);
 
 int32_t Cmd_Argc(void);
 const char *Cmd_Argv(int32_t argumentIndex);
-void Cmd_ArgvBuffer(int32_t argumentIndex, char *buffer,
-                    int32_t bufferLength);
+void Cmd_ArgvBuffer(int32_t argumentIndex, char *buffer, int32_t bufferLength);
 char *Cmd_Args(int32_t firstArgument);
 void Cmd_ArgsBuffer(char *buffer, int32_t bufferLength);
 void Cmd_TokenizeString2(const char *text, int32_t maxTokens);

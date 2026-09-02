@@ -43,8 +43,7 @@
  * 0x30079af8, loaded into EAX just before the bone-matrix call. */
 static const char CG_HEAD_TAG_NAME[] = "Bip01 Head";
 
-void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
-                          int32_t iconScale, int32_t attenuateByDistance)
+void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle, int32_t iconScale, int32_t attenuateByDistance)
 {
     /* ---- Spectator/follow-view renderfx gate (0x30032928..0x30032952) ------------
      * renderfx = RF_THIRD_PERSON when the local player is following/spectating this
@@ -68,7 +67,7 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
      *   originX     -> ST1 (refEntity.origin.x)
      *   originYBits -> a raw dword ([ESP+0x10]) (refEntity.origin.y, stored verbatim)
      *   originZ     -> ST0 (iconScale + origin.z + fixed lift) */
-    float   originX;
+    float originX;
     int32_t originYBits;
     /* originZ is a raw-st value: the FILD/FADD/FADD chain (0x3003298a..0x3003299b
      * / 0x300329a9..0x300329b6) is never stored — it rides the x87 stack through
@@ -81,7 +80,7 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
     /* Exact DObjSkelMat output record at [ESP+0x18]; its origin row is at
      * +0x30..+0x38. */
     DObjSkelMat boneMatrix;
-    int   haveHeadTag = 0;
+    int haveHeadTag = 0;
 
     if (dobjHandle != 0) {
         /* The caller loads the tag name into EAX right before the call (MOV EAX,
@@ -89,26 +88,22 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
          * the tagName argument the callee (CG_DObjGetWorldTagMatrix, 0x3001fdf0)
          * forwards to trap(0xb2, self, tagName) — proven from its body; the earlier
          * "EAX is scratch" reading was wrong and the signature is now widened. */
-        haveHeadTag = CG_DObjGetWorldTagMatrix((void *)dobjHandle,
-                                                      CG_HEAD_TAG_NAME, entity,
-                                                      &boneMatrix);
+        haveHeadTag = CG_DObjGetWorldTagMatrix((void *)dobjHandle, CG_HEAD_TAG_NAME, entity, &boneMatrix);
     }
 
     if (dobjHandle != 0 && haveHeadTag) {
         /* Head-tag branch (0x30032982..0x3003299b): at the head bone plus an 18-unit
          * lift, raised by iconScale. */
-        originX     = boneMatrix.origin[0];                  /* FLD [ESP+0x48] (tag.x) */
+        originX = boneMatrix.origin[0];                  /* FLD [ESP+0x48] (tag.x) */
         originYBits = CG_FloatBits(boneMatrix.origin[1]);    /* MOV [ESP+0x10],[ESP+0x4c] (tag.y bits) */
-        originZ = (long double)iconScale +
-                  (long double)boneMatrix.origin[2] + 18.0L;
+        originZ = (long double)iconScale + (long double)boneMatrix.origin[2] + 18.0L;
     } else {
         /* No-tag branch (0x3003299d..0x300329b6): at the entity's placement origin
          * (centity_t +0x208, the interpolated placement vec3 the entity copier
          * fills; the canonical centity name is lerpOrigin) plus a 72-unit lift. */
-        originX     = entity->lerpOrigin[0];               /* FLD [ESI+0x208] */
+        originX = entity->lerpOrigin[0];               /* FLD [ESI+0x208] */
         originYBits = CG_FloatBits(entity->lerpOrigin[1]); /* MOV [ESP+0x10],[ESI+0x20c] */
-        originZ = (long double)iconScale +
-                  (long double)entity->lerpOrigin[2] + 72.0L;
+        originZ = (long double)iconScale + (long double)entity->lerpOrigin[2] + 72.0L;
     }
 
     /* ---- Distance-based radius (0x300329bc..0x30032a34) ---------------------------
@@ -126,12 +121,9 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
 
     if (attenuateByDistance != 0) {
         float originY = CG_FloatFromBits((uint32_t)originYBits);
-        long double dx =
-            (long double)originX - (long double)cg_refdef.vieworg[0];
-        long double dy =
-            (long double)originY - (long double)cg_refdef.vieworg[1];
-        long double dz =
-            originZ - (long double)cg_refdef.vieworg[2];
+        long double dx = (long double)originX - (long double)cg_refdef.vieworg[0];
+        long double dy = (long double)originY - (long double)cg_refdef.vieworg[1];
+        long double dz = originZ - (long double)cg_refdef.vieworg[2];
         long double dist = sqrtl(dz * dz + dy * dy + dx * dx); /* FSQRT (dz^2 + dy^2 + dx^2), summed in that order */
 
         /* scaled = dist*(1/256) + 0.2, floored to 0.6. The FCOM/FNSTSW/TEST AH,5/JP
@@ -160,14 +152,14 @@ void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
      * radius at +0x64 (FSTP). */
     re.origin[0] = originX;                                 /* FSTP [+0x44] */
     re.origin[2] = finalZ;                                  /* FSTP [+0x4c] */
-    re.radius  = radius;                                    /* FST  [+0x7c] (no pop) */
+    re.radius = radius;                                    /* FST  [+0x7c] (no pop) */
     re.radius2 = radius;                                    /* FSTP [+0x64] */
     re.spriteShaderHandle = sfxOrShaderHandle;               /* MOV [+0x68],EAX */
 
     /* These integer stores follow the radius stores in the original body.
      * origin.y is the raw dword carried from the selected source position. */
     memcpy(&re.origin[1], &originYBits, sizeof(originYBits)); /* MOV [+0x48],EDX */
-    re.reType   = (int32_t)RT_SPRITE;             /* MOV [+0x00],4 */
+    re.reType = (int32_t)RT_SPRITE;             /* MOV [+0x00],4 */
     re.renderfx = renderfx;                                  /* MOV [+0x04],EBX */
 
     re.shaderRGBA[0] = 0xff;                                /* MOV byte [+0x6c],0xff */

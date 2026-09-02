@@ -80,9 +80,7 @@ void CG_AddMarks(void)
         return;
     }
 
-    for (mp = cg_activeMarkPolys.nextMark;
-         mp != &cg_activeMarkPolys;
-         mp = next) {
+    for (mp = cg_activeMarkPolys.nextMark; mp != &cg_activeMarkPolys; mp = next) {
         int32_t markTime = mp->markTime;
         int32_t duration = mp->duration;
         int32_t expiry;
@@ -124,9 +122,7 @@ void CG_AddMarks(void)
              * 3002e963..e96e: (timeLeft * colors[3] * 255.0f) / fadeTime kept entirely
              * in the wide register and handed to _ftol2 (0x3002e970) unrounded;
              * timeLeft is still the raw FILD int, so no (float) cast. */
-            int32_t fadeAlpha =
-                coduo_fp_to_i32_extended(((long double)timeLeft * mp->colors[3] * colorByteScale)
-                       / fadeTime);
+            int32_t fadeAlpha = coduo_fp_to_i32_extended(((long double)timeLeft * mp->colors[3] * colorByteScale) / fadeTime);
 
             if (mp->alphaFade != 0) {
                 /* Fade only the alpha byte of every vertex. */
@@ -139,23 +135,13 @@ void CG_AddMarks(void)
                  * the loop); each modulate = _ftol2(fadeAlpha * colors[k]) via a bare
                  * FILD -- fadeAlpha is not narrowed to float. */
                 for (i = 0; i < mp->numVerts; i++) {
-                    mp->verts[i].modulate[0] =
-                        (uint8_t)coduo_fp_to_i32_extended(
-                            (long double)fadeAlpha *
-                            (long double)mp->colors[0]);
-                    mp->verts[i].modulate[1] =
-                        (uint8_t)coduo_fp_to_i32_extended(
-                            (long double)fadeAlpha *
-                            (long double)mp->colors[1]);
-                    mp->verts[i].modulate[2] =
-                        (uint8_t)coduo_fp_to_i32_extended(
-                            (long double)fadeAlpha *
-                            (long double)mp->colors[2]);
+                    mp->verts[i].modulate[0] = (uint8_t)coduo_fp_to_i32_extended((long double)fadeAlpha * (long double)mp->colors[0]);
+                    mp->verts[i].modulate[1] = (uint8_t)coduo_fp_to_i32_extended((long double)fadeAlpha * (long double)mp->colors[1]);
+                    mp->verts[i].modulate[2] = (uint8_t)coduo_fp_to_i32_extended((long double)fadeAlpha * (long double)mp->colors[2]);
                 }
             }
         }
 
-        cgame_syscall(CG_R_ADDPOLYTOSCENE, mp->markShader, mp->numVerts,
-                      mp->verts);
+        cgame_syscall(CG_R_ADDPOLYTOSCENE, mp->markShader, mp->numVerts, mp->verts);
     }
 }

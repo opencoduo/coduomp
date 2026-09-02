@@ -12,16 +12,16 @@ const char *CG_GameTypeString(void)
 // Source RVA: 0x30004d50
 qhandle_t RegisterWorldModel(const char *name)
 {
-    enum { WORLD_MODEL_CATEGORY = 7 };
+    enum {
+        WORLD_MODEL_CATEGORY = 7
+    };
     return CG_RegisterModel(name, WORLD_MODEL_CATEGORY);
 }
 
 // Source RVA: 0x3001c100
 qboolean UpdateShellshockOverlay(void)
 {
-    return CG_UpdateFadeOverlay(cg_shellShockSwayParams,
-                                cg_shellShockSwayStartTime,
-                                cg_shellShockSwayDuration);
+    return CG_UpdateFadeOverlay(cg_shellShockSwayParams, cg_shellShockSwayStartTime, cg_shellShockSwayDuration);
 }
 
 // Source RVA: 0x3002d7f0

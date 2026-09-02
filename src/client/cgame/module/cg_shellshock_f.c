@@ -86,10 +86,8 @@ void CG_ShellShock_f(void)
     /* 0x30017537..0x3001755b: multiply in x87 width, round the product to a
      * float slot, add the double nudge, then use a bare FISTP under the active
      * (normally nearest-even) control word. */
-    float scaledMilliseconds = (float)(
-        (long double)atof(token) * (long double)CG_MS_PER_SECOND);
-    double rounded = nearbyint(
-        (double)scaledMilliseconds + CG_SHELLSHOCK_ROUND_NUDGE);
+    float scaledMilliseconds = (float)((long double)atof(token) * (long double)CG_MS_PER_SECOND);
+    double rounded = nearbyint((double)scaledMilliseconds + CG_SHELLSHOCK_ROUND_NUDGE);
     int32_t durationMs;
     if (!(rounded >= (double)INT32_MIN && rounded <= (double)INT32_MAX)) {
         durationMs = INT32_MIN;

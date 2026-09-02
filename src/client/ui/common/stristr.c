@@ -14,16 +14,11 @@ const char *stristr(const char *string, const char *substring)
     for (candidate = string; *candidate != '\0'; ++candidate) {
         int32_t index;
 
-        for (index = 0;
-             substring[index] != '\0' && candidate[index] != '\0';
-             ++index) {
-            int32_t candidateCharacter =
-                (int32_t)(signed char)candidate[index];
-            int32_t substringCharacter =
-                (int32_t)(signed char)substring[index];
+        for (index = 0; substring[index] != '\0' && candidate[index] != '\0'; ++index) {
+            int32_t candidateCharacter = (int32_t)(signed char)candidate[index];
+            int32_t substringCharacter = (int32_t)(signed char)substring[index];
 
-            if (coduo_crt_toupper(candidateCharacter) !=
-                coduo_crt_toupper(substringCharacter)) {
+            if (coduo_crt_toupper(candidateCharacter) != coduo_crt_toupper(substringCharacter)) {
                 break;
             }
         }

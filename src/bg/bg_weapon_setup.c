@@ -51,18 +51,14 @@ void BG_SetupWeaponADSRates(void)
 {
     int32_t weapon;
 
-    for (weapon = 1; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 1; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
 
         if (weaponInfo->adsInTime > 0) {
 #if EMULATE_X87
-            weaponInfo->adsFireDelayRate = x87f_store_f32(x87f_div(
-                x87f_load_f32(1.0f),
-                x87f_load_i32(weaponInfo->adsInTime)));
+            weaponInfo->adsFireDelayRate = x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_load_i32(weaponInfo->adsInTime)));
 #else
-            weaponInfo->adsFireDelayRate = (float)(
-                1.0L / (long double)weaponInfo->adsInTime);
+            weaponInfo->adsFireDelayRate = (float)(1.0L / (long double)weaponInfo->adsInTime);
 #endif
         } else {
             weaponInfo->adsFireDelayRate = BG_DEFAULT_ADS_IN_RATE;
@@ -70,12 +66,9 @@ void BG_SetupWeaponADSRates(void)
 
         if (weaponInfo->adsOutTime > 0) {
 #if EMULATE_X87
-            weaponInfo->adsFireDelayOutRate = x87f_store_f32(x87f_div(
-                x87f_load_f32(1.0f),
-                x87f_load_i32(weaponInfo->adsOutTime)));
+            weaponInfo->adsFireDelayOutRate = x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_load_i32(weaponInfo->adsOutTime)));
 #else
-            weaponInfo->adsFireDelayOutRate = (float)(
-                1.0L / (long double)weaponInfo->adsOutTime);
+            weaponInfo->adsFireDelayOutRate = (float)(1.0L / (long double)weaponInfo->adsOutTime);
 #endif
         } else {
             weaponInfo->adsFireDelayOutRate = BG_DEFAULT_ADS_OUT_RATE;
@@ -89,9 +82,7 @@ void BG_FillInWeaponItems(void)
 
     /* Weapon-list loaders validate bg_numWeapons against the shared
      * MAX_WEAPON_FILES domain before publishing it to this loop. */
-    for (itemIndex = BG_FIRST_WEAPON_ITEM;
-         itemIndex <= bg_numWeapons;
-         itemIndex = coduo_int32_from_bits((uint32_t)itemIndex + 1u)) {
+    for (itemIndex = BG_FIRST_WEAPON_ITEM; itemIndex <= bg_numWeapons; itemIndex = coduo_int32_from_bits((uint32_t)itemIndex + 1u)) {
         gitem_t *item = &bg_itemlist[itemIndex];
         const weaponInfo_t *weaponInfo = bg_weaponInfos[itemIndex];
         const char *modelName = weaponInfo->pickupModel;
@@ -114,21 +105,17 @@ void BG_FillInWeaponItems(void)
         item->clipIndex = weaponInfo->clipIndex;
     }
 
-    for (; itemIndex < BG_ITEM_ROW_COUNT;
-         itemIndex = coduo_int32_from_bits((uint32_t)itemIndex + 1u)) {
+    for (; itemIndex < BG_ITEM_ROW_COUNT; itemIndex = coduo_int32_from_bits((uint32_t)itemIndex + 1u)) {
         gitem_t *item = &bg_itemlist[itemIndex];
 
         if (item->type == IT_AMMO) {
             int32_t weapon;
 
-            for (weapon = BG_FIRST_WEAPON_ITEM;
-                 weapon <= bg_numWeapons;
-                 weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+            for (weapon = BG_FIRST_WEAPON_ITEM; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
                 const weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
                 int32_t nameLength = (int32_t)strlen(weaponInfo->pickupName);
 
-                if (Q_stricmpn(item->pickupName, weaponInfo->pickupName,
-                               nameLength) == 0) {
+                if (Q_stricmpn(item->pickupName, weaponInfo->pickupName, nameLength) == 0) {
                     item->weapon = weapon;
                     item->ammoIndex = weaponInfo->ammoIndex;
                     item->clipIndex = weaponInfo->clipIndex;
@@ -137,12 +124,9 @@ void BG_FillInWeaponItems(void)
             }
 
             if (item->weapon == -1) {
-                const weaponInfo_t *defaultWeaponInfo =
-                    bg_weaponInfos[BG_FIRST_WEAPON_ITEM];
+                const weaponInfo_t *defaultWeaponInfo = bg_weaponInfos[BG_FIRST_WEAPON_ITEM];
 
-                BG_WEAPON_PRINT(
-                    "^3WARNING^7: Could not find weapon for ammo item %s\n",
-                    item->pickupName);
+                BG_WEAPON_PRINT("^3WARNING^7: Could not find weapon for ammo item %s\n", item->pickupName);
                 item->weapon = BG_FIRST_WEAPON_ITEM;
                 item->ammoIndex = defaultWeaponInfo->ammoIndex;
                 item->clipIndex = defaultWeaponInfo->clipIndex;
@@ -155,39 +139,31 @@ void BG_SetupAmmoIndexes(void)
 {
     int32_t weapon;
 
-    for (weapon = 1; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 1; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
         int32_t ammoIndex;
 
         Q_strlwr((char *)weaponInfo->ammoName);
-        for (ammoIndex = 0; ammoIndex < bg_numAmmoTypes;
-             ammoIndex = coduo_int32_from_bits((uint32_t)ammoIndex + 1u)) {
-            if (Q_stricmp(bg_ammoTypeNames[ammoIndex],
-                          weaponInfo->ammoName) == 0) {
+        for (ammoIndex = 0; ammoIndex < bg_numAmmoTypes; ammoIndex = coduo_int32_from_bits((uint32_t)ammoIndex + 1u)) {
+            if (Q_stricmp(bg_ammoTypeNames[ammoIndex], weaponInfo->ammoName) == 0) {
                 int32_t previous;
 
                 weaponInfo->ammoIndex = ammoIndex;
-                if (bg_ammoTypeMax[ammoIndex] == weaponInfo->maxAmmo ||
-                    ammoIndex == 0) {
+                if (bg_ammoTypeMax[ammoIndex] == weaponInfo->maxAmmo || ammoIndex == 0) {
                     break;
                 }
 
-                for (previous = 1; previous < weapon;
-                     previous = coduo_int32_from_bits(
-                         (uint32_t)previous + 1u)) {
+                for (previous = 1; previous < weapon; previous = coduo_int32_from_bits((uint32_t)previous + 1u)) {
                     weaponInfo_t *previousInfo = bg_weaponInfos[previous];
 
-                    if (Q_stricmp(bg_ammoTypeNames[ammoIndex],
-                                  previousInfo->ammoName) == 0 &&
+                    if (Q_stricmp(bg_ammoTypeNames[ammoIndex], previousInfo->ammoName) == 0 &&
                         previousInfo->maxAmmo == bg_ammoTypeMax[ammoIndex]) {
-                        BG_WEAPON_ERROR(
-                            "\x15" "Max ammo mismatch for \"%s\" ammo: "
-                            "'%s\" set it to %i, but \"%s\" already set it "
-                            "to %i.\n",
-                            weaponInfo->ammoName, weaponInfo->pickupName,
-                            weaponInfo->maxAmmo, previousInfo->pickupName,
-                            previousInfo->maxAmmo);
+                        BG_WEAPON_ERROR("\x15"
+                                        "Max ammo mismatch for \"%s\" ammo: "
+                                        "'%s\" set it to %i, but \"%s\" already set it "
+                                        "to %i.\n",
+                                        weaponInfo->ammoName, weaponInfo->pickupName, weaponInfo->maxAmmo, previousInfo->pickupName,
+                                        previousInfo->maxAmmo);
                     }
                 }
                 break;
@@ -198,8 +174,7 @@ void BG_SetupAmmoIndexes(void)
             bg_ammoTypeNames[ammoIndex] = weaponInfo->ammoName;
             bg_ammoTypeMax[ammoIndex] = weaponInfo->maxAmmo;
             weaponInfo->ammoIndex = ammoIndex;
-            bg_numAmmoTypes = coduo_int32_from_bits(
-                (uint32_t)bg_numAmmoTypes + 1u);
+            bg_numAmmoTypes = coduo_int32_from_bits((uint32_t)bg_numAmmoTypes + 1u);
         }
     }
 }
@@ -208,8 +183,7 @@ void BG_SetupSharedAmmoIndexes(void)
 {
     int32_t weapon;
 
-    for (weapon = 1; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 1; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
         int32_t sharedAmmoCapIndex;
 
@@ -218,44 +192,30 @@ void BG_SetupSharedAmmoIndexes(void)
             continue;
         }
 
-        BG_WEAPON_SHARED_AMMO_DEBUG("%s: %s\n",
-                                    weaponInfo->pickupName,
-                                    weaponInfo->sharedAmmoCapName);
+        BG_WEAPON_SHARED_AMMO_DEBUG("%s: %s\n", weaponInfo->pickupName, weaponInfo->sharedAmmoCapName);
         Q_strlwr((char *)weaponInfo->sharedAmmoCapName);
 
-        for (sharedAmmoCapIndex = 0;
-             sharedAmmoCapIndex < bg_numSharedAmmoCaps;
-             sharedAmmoCapIndex = coduo_int32_from_bits(
-                 (uint32_t)sharedAmmoCapIndex + 1u)) {
-            if (Q_stricmp(bg_sharedAmmoCapNames[sharedAmmoCapIndex],
-                          weaponInfo->sharedAmmoCapName) == 0) {
+        for (sharedAmmoCapIndex = 0; sharedAmmoCapIndex < bg_numSharedAmmoCaps;
+             sharedAmmoCapIndex = coduo_int32_from_bits((uint32_t)sharedAmmoCapIndex + 1u)) {
+            if (Q_stricmp(bg_sharedAmmoCapNames[sharedAmmoCapIndex], weaponInfo->sharedAmmoCapName) == 0) {
                 int32_t previous;
 
                 weaponInfo->sharedAmmoCapIndex = sharedAmmoCapIndex;
-                if (bg_sharedAmmoCapSizes[sharedAmmoCapIndex] ==
-                        weaponInfo->sharedAmmoCap ||
-                    sharedAmmoCapIndex == 0) {
+                if (bg_sharedAmmoCapSizes[sharedAmmoCapIndex] == weaponInfo->sharedAmmoCap || sharedAmmoCapIndex == 0) {
                     break;
                 }
 
-                for (previous = 1; previous < weapon;
-                     previous = coduo_int32_from_bits(
-                         (uint32_t)previous + 1u)) {
+                for (previous = 1; previous < weapon; previous = coduo_int32_from_bits((uint32_t)previous + 1u)) {
                     weaponInfo_t *previousInfo = bg_weaponInfos[previous];
 
-                    if (Q_stricmp(bg_sharedAmmoCapNames[sharedAmmoCapIndex],
-                                  previousInfo->sharedAmmoCapName) == 0 &&
-                        previousInfo->sharedAmmoCap ==
-                            bg_sharedAmmoCapSizes[sharedAmmoCapIndex]) {
-                        BG_WEAPON_ERROR(
-                            "\x15" "Shared ammo cap mismatch for \"%s\" shared "
-                            "ammo cap: '%s\" set it to %i, but \"%s\" already "
-                            "set it to %i.\n",
-                            weaponInfo->sharedAmmoCapName,
-                            weaponInfo->pickupName,
-                            weaponInfo->sharedAmmoCap,
-                            previousInfo->pickupName,
-                            previousInfo->sharedAmmoCap);
+                    if (Q_stricmp(bg_sharedAmmoCapNames[sharedAmmoCapIndex], previousInfo->sharedAmmoCapName) == 0 &&
+                        previousInfo->sharedAmmoCap == bg_sharedAmmoCapSizes[sharedAmmoCapIndex]) {
+                        BG_WEAPON_ERROR("\x15"
+                                        "Shared ammo cap mismatch for \"%s\" shared "
+                                        "ammo cap: '%s\" set it to %i, but \"%s\" already "
+                                        "set it to %i.\n",
+                                        weaponInfo->sharedAmmoCapName, weaponInfo->pickupName, weaponInfo->sharedAmmoCap,
+                                        previousInfo->pickupName, previousInfo->sharedAmmoCap);
                     }
                 }
                 break;
@@ -263,13 +223,10 @@ void BG_SetupSharedAmmoIndexes(void)
         }
 
         if (sharedAmmoCapIndex == bg_numSharedAmmoCaps) {
-            bg_sharedAmmoCapNames[sharedAmmoCapIndex] =
-                weaponInfo->sharedAmmoCapName;
-            bg_sharedAmmoCapSizes[sharedAmmoCapIndex] =
-                weaponInfo->sharedAmmoCap;
+            bg_sharedAmmoCapNames[sharedAmmoCapIndex] = weaponInfo->sharedAmmoCapName;
+            bg_sharedAmmoCapSizes[sharedAmmoCapIndex] = weaponInfo->sharedAmmoCap;
             weaponInfo->sharedAmmoCapIndex = sharedAmmoCapIndex;
-            bg_numSharedAmmoCaps = coduo_int32_from_bits(
-                (uint32_t)bg_numSharedAmmoCaps + 1u);
+            bg_numSharedAmmoCaps = coduo_int32_from_bits((uint32_t)bg_numSharedAmmoCaps + 1u);
         }
     }
 }
@@ -278,40 +235,32 @@ void BG_SetupClipIndexes(void)
 {
     int32_t weapon;
 
-    for (weapon = 1; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 1; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
         int32_t clipIndex;
 
         Q_strlwr((char *)weaponInfo->clipName);
-        for (clipIndex = 0; clipIndex < bg_numAmmoClips;
-             clipIndex = coduo_int32_from_bits((uint32_t)clipIndex + 1u)) {
-            if (Q_stricmp(bg_ammoClipNames[clipIndex],
-                          weaponInfo->clipName) == 0) {
+        for (clipIndex = 0; clipIndex < bg_numAmmoClips; clipIndex = coduo_int32_from_bits((uint32_t)clipIndex + 1u)) {
+            if (Q_stricmp(bg_ammoClipNames[clipIndex], weaponInfo->clipName) == 0) {
                 int32_t previous;
 
                 weaponInfo->clipIndex = clipIndex;
-                if (bg_ammoClipSizes[clipIndex] == weaponInfo->clipSize ||
-                    clipIndex == 0) {
+                if (bg_ammoClipSizes[clipIndex] == weaponInfo->clipSize || clipIndex == 0) {
                     break;
                 }
 
-                for (previous = 1; previous < weapon;
-                     previous = coduo_int32_from_bits(
-                         (uint32_t)previous + 1u)) {
+                for (previous = 1; previous < weapon; previous = coduo_int32_from_bits((uint32_t)previous + 1u)) {
                     weaponInfo_t *previousInfo = bg_weaponInfos[previous];
 
-                    if (Q_stricmp(bg_ammoClipNames[clipIndex],
-                                  previousInfo->clipName) == 0 &&
+                    if (Q_stricmp(bg_ammoClipNames[clipIndex], previousInfo->clipName) == 0 &&
                         previousInfo->clipSize == bg_ammoClipSizes[clipIndex]) {
                         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                        BG_WEAPON_ERROR(
-                            "\x15" "Clip Size mismatch for \"%s\" clip: "
-                            "'%s\" set it to %i, but \"%s\" already set it "
-                            "to %i.\n",
-                            weaponInfo->ammoName, weaponInfo->pickupName,
-                            weaponInfo->clipSize, previousInfo->pickupName,
-                            previousInfo->clipSize);
+                        BG_WEAPON_ERROR("\x15"
+                                        "Clip Size mismatch for \"%s\" clip: "
+                                        "'%s\" set it to %i, but \"%s\" already set it "
+                                        "to %i.\n",
+                                        weaponInfo->ammoName, weaponInfo->pickupName, weaponInfo->clipSize, previousInfo->pickupName,
+                                        previousInfo->clipSize);
                     }
                 }
                 break;
@@ -322,8 +271,7 @@ void BG_SetupClipIndexes(void)
             bg_ammoClipNames[clipIndex] = weaponInfo->clipName;
             bg_ammoClipSizes[clipIndex] = weaponInfo->clipSize;
             weaponInfo->clipIndex = clipIndex;
-            bg_numAmmoClips = coduo_int32_from_bits(
-                (uint32_t)bg_numAmmoClips + 1u);
+            bg_numAmmoClips = coduo_int32_from_bits((uint32_t)bg_numAmmoClips + 1u);
         }
     }
 }
@@ -332,18 +280,15 @@ void BG_SetupAltWeaponIndexes(void)
 {
     int32_t weapon;
 
-    for (weapon = 1; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 1; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         bg_weaponInfos[weapon]->altWeapon = 0;
     }
 
-    for (weapon = 1; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 1; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
         weaponInfo_t *current;
 
-        if (weaponInfo->altWeapon != 0 ||
-            weaponInfo->altWeaponName[0] == '\0') {
+        if (weaponInfo->altWeapon != 0 || weaponInfo->altWeaponName[0] == '\0') {
             continue;
         }
 
@@ -351,36 +296,33 @@ void BG_SetupAltWeaponIndexes(void)
         while (current->altWeapon == 0) {
             int32_t altWeapon;
 
-            for (altWeapon = 1; altWeapon <= bg_numWeapons;
-                 altWeapon = coduo_int32_from_bits(
-                     (uint32_t)altWeapon + 1u)) {
+            for (altWeapon = 1; altWeapon <= bg_numWeapons; altWeapon = coduo_int32_from_bits((uint32_t)altWeapon + 1u)) {
                 weaponInfo_t *altInfo = bg_weaponInfos[altWeapon];
 
-                if (Q_stricmp(current->altWeaponName,
-                              altInfo->pickupName) != 0) {
+                if (Q_stricmp(current->altWeaponName, altInfo->pickupName) != 0) {
                     continue;
                 }
 
                 current->altWeapon = altWeapon;
                 if (current->slot != altInfo->slot) {
-                    BG_WEAPON_ERROR(
-                        "\x15" "weapon '%s' does not have same weaponSlot "
-                        "setting as its alt weapon '%s'",
-                        current->pickupName, altInfo->pickupName);
+                    BG_WEAPON_ERROR("\x15"
+                                    "weapon '%s' does not have same weaponSlot "
+                                    "setting as its alt weapon '%s'",
+                                    current->pickupName, altInfo->pickupName);
                 }
                 if (current->stackable != altInfo->stackable) {
-                    BG_WEAPON_ERROR(
-                        "\x15" "weapon '%s' does not have same slotStackable "
-                        "setting as its alt weapon '%s'",
-                        current->pickupName, altInfo->pickupName);
+                    BG_WEAPON_ERROR("\x15"
+                                    "weapon '%s' does not have same slotStackable "
+                                    "setting as its alt weapon '%s'",
+                                    current->pickupName, altInfo->pickupName);
                 }
                 break;
             }
 
             if (current->altWeapon == 0) {
-                BG_WEAPON_ERROR(
-                    "\x15" "could not find altWeapon '%s' for weapon '%s'",
-                    current->altWeaponName, current->pickupName);
+                BG_WEAPON_ERROR("\x15"
+                                "could not find altWeapon '%s' for weapon '%s'",
+                                current->altWeaponName, current->pickupName);
             }
 
             /* If the fatal-error boundary returns, all retained binaries use
@@ -389,9 +331,9 @@ void BG_SetupAltWeaponIndexes(void)
         }
 
         if (current != weaponInfo) {
-            BG_WEAPON_ERROR(
-                "\x15" "weapon '%s' has a bad altWeapon '%s'",
-                weaponInfo->pickupName, weaponInfo->altWeaponName);
+            BG_WEAPON_ERROR("\x15"
+                            "weapon '%s' has a bad altWeapon '%s'",
+                            weaponInfo->pickupName, weaponInfo->altWeaponName);
         }
     }
 }

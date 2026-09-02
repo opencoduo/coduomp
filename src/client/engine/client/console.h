@@ -46,8 +46,7 @@ typedef struct console_state_s {
     int32_t currentLine;                          /* original +0x20004 */
     int32_t lineCursor;                           /* original +0x20008 */
     int32_t displayLine;                          /* original +0x2000c */
-    console_message_destination_t
-        lastMessageDestination;                   /* original +0x20010 */
+    console_message_destination_t lastMessageDestination;                   /* original +0x20010 */
     int32_t lineWidth;                            /* original +0x20014 */
     int32_t totalLines;                           /* original +0x20018 */
     float xAdjust;                                /* original +0x2001c */
@@ -104,19 +103,12 @@ extern char completionShortestMatch[CON_COMPLETION_MATCH_SIZE];
 void Con_ClearNotify(void);
 void Con_ClearMiniConsole(void);
 void Con_ClearSubtitles(void);
-void Con_InitMessageWindow(console_message_window_t *window,
-                           int32_t *lineStartTimes, int32_t *lineEndTimes,
-                           int32_t *lineIndices, int32_t lineCapacity,
-                           int32_t visibleLineCount, int32_t scrollTime,
-                           int32_t fadeInTime, int32_t fadeOutTime);
+void Con_InitMessageWindow(console_message_window_t *window, int32_t *lineStartTimes, int32_t *lineEndTimes, int32_t *lineIndices,
+                           int32_t lineCapacity, int32_t visibleLineCount, int32_t scrollTime, int32_t fadeInTime, int32_t fadeOutTime);
 void Con_ClearMessageWindow(console_message_window_t *window);
-void Con_UpdateMessageWindowLine(console_message_window_t *window,
-                                 qboolean advanceLine,
-                                 int32_t messageTime);
-void Con_UpdateNotifyLine(console_message_destination_t destination,
-                          qboolean advanceLine, int32_t messageTime);
-void Con_Linefeed(console_message_destination_t destination,
-                  int32_t messageTime);
+void Con_UpdateMessageWindowLine(console_message_window_t *window, qboolean advanceLine, int32_t messageTime);
+void Con_UpdateNotifyLine(console_message_destination_t destination, qboolean advanceLine, int32_t messageTime);
+void Con_Linefeed(console_message_destination_t destination, int32_t messageTime);
 void Con_CheckResize(void);
 void Con_Close(void);
 void Con_Bottom(void);
@@ -127,39 +119,23 @@ void Con_RunConsole(void);
 void Con_DrawConsole(void);
 void coduomp_console_draw_compat(void);
 void Con_DrawSolidConsole(float fraction);
-void Con_DrawMessageWindow(console_message_window_t *window,
-                           int32_t x, int32_t y, float alpha,
-                           int32_t drawMode);
-void Con_DrawMessageWindowBottomUp(console_message_window_t *window,
-                                   int32_t x, int32_t y, float alpha,
-                                   qboolean centered);
-void Con_DrawStringOnHUD(const uint16_t *encodedText,
-                         int32_t encodedCount, int32_t x, int32_t y,
-                         float alpha, qboolean centered);
-void Con_DrawSubtitles(int32_t x, int32_t y, float alpha,
-                       int32_t drawMode);
+void Con_DrawMessageWindow(console_message_window_t *window, int32_t x, int32_t y, float alpha, int32_t drawMode);
+void Con_DrawMessageWindowBottomUp(console_message_window_t *window, int32_t x, int32_t y, float alpha, qboolean centered);
+void Con_DrawStringOnHUD(const uint16_t *encodedText, int32_t encodedCount, int32_t x, int32_t y, float alpha, qboolean centered);
+void Con_DrawSubtitles(int32_t x, int32_t y, float alpha, int32_t drawMode);
 void Con_DrawMiniConsole(int32_t x, int32_t y, float alpha);
-void Con_DrawBoldMessages(int32_t x, int32_t y, float alpha,
-                          int32_t drawMode);
-void Con_DrawNotify(int32_t x, int32_t y, float alpha,
-                    int32_t drawMode);
+void Con_DrawBoldMessages(int32_t x, int32_t y, float alpha, int32_t drawMode);
+void Con_DrawNotify(int32_t x, int32_t y, float alpha, int32_t drawMode);
 void Con_Init(void);
 void Con_OneTimeInit(void);
-int32_t CL_ConsolePrint_AddLine(
-    const char *text, console_message_destination_t destination,
-    int32_t messageTime, int32_t lineWidth, int32_t initialColor);
-void CL_AddConsoleInfoColor(const vec3_t color,
-                            int32_t firstComponentTag);
+int32_t CL_ConsolePrint_AddLine(const char *text, console_message_destination_t destination, int32_t messageTime, int32_t lineWidth,
+                                int32_t initialColor);
+void CL_AddConsoleInfoColor(const vec3_t color, int32_t firstComponentTag);
 void CL_AddConsoleInfoChar(const char *text, int32_t initialColor);
-void CL_ConsolePrint(const char *text,
-                     console_message_destination_t destination,
-                     int32_t messageTime, int32_t lineWidth);
-void CL_DeathMessagePrint(
-    console_message_destination_t destination, const char *attackerName,
-    const float *attackerColor, const char *weaponName,
-    const float *weaponColor, const char *victimName,
-    float weaponIconWidth, float weaponIconHeight,
-    const float *victimColor, int32_t messageTime);
+void CL_ConsolePrint(const char *text, console_message_destination_t destination, int32_t messageTime, int32_t lineWidth);
+void CL_DeathMessagePrint(console_message_destination_t destination, const char *attackerName, const float *attackerColor,
+                          const char *weaponName, const float *weaponColor, const char *victimName, float weaponIconWidth,
+                          float weaponIconHeight, const float *victimColor, int32_t messageTime);
 void Con_DrawInput(void);
 void Con_DrawSay(int32_t y);
 void CL_ConsoleFixPosition(void);
@@ -191,85 +167,46 @@ void PbClientCompleteCommand(char *command, int32_t commandSize);
 void PbServerCompleteCommand(char *command, int32_t commandSize);
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(console_input_field_t) == 0x4,
-               "console_input_field_t original alignment");
-_Static_assert(offsetof(console_input_field_t, cursor) == 0x000,
-               "console_input_field_t cursor offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->cursor) == 0x004,
-               "console_input_field_t cursor extent");
-_Static_assert(offsetof(console_input_field_t, scroll) == 0x004,
-               "console_input_field_t scroll offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->scroll) == 0x004,
-               "console_input_field_t scroll extent");
-_Static_assert(offsetof(console_input_field_t, widthInChars) == 0x008,
-               "console_input_field_t widthInChars offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->widthInChars) == 0x004,
-               "console_input_field_t widthInChars extent");
-_Static_assert(offsetof(console_input_field_t, widthInPixels) == 0x00c,
-               "console_input_field_t widthInPixels offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->widthInPixels) == 0x004,
-               "console_input_field_t widthInPixels extent");
-_Static_assert(offsetof(console_input_field_t, charWidth) == 0x010,
-               "console_input_field_t charWidth offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->charWidth) == 0x004,
-               "console_input_field_t charWidth extent");
-_Static_assert(offsetof(console_input_field_t, charHeight) == 0x014,
-               "console_input_field_t charHeight offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->charHeight) == 0x004,
-               "console_input_field_t charHeight extent");
-_Static_assert(offsetof(console_input_field_t, fixedSize) == 0x018,
-               "console_input_field_t fixedSize offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->fixedSize) == 0x004,
-               "console_input_field_t fixedSize extent");
-_Static_assert(offsetof(console_input_field_t, buffer) == 0x1c,
-               "console_input_field_t buffer offset");
-_Static_assert(sizeof(((console_input_field_t *)0)->buffer) == 0x100,
-               "console_input_field_t buffer extent");
-_Static_assert(sizeof(console_input_field_t) == 0x11c,
-               "console_input_field_t original size");
+_Static_assert(_Alignof(console_input_field_t) == 0x4, "console_input_field_t original alignment");
+_Static_assert(offsetof(console_input_field_t, cursor) == 0x000, "console_input_field_t cursor offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->cursor) == 0x004, "console_input_field_t cursor extent");
+_Static_assert(offsetof(console_input_field_t, scroll) == 0x004, "console_input_field_t scroll offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->scroll) == 0x004, "console_input_field_t scroll extent");
+_Static_assert(offsetof(console_input_field_t, widthInChars) == 0x008, "console_input_field_t widthInChars offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->widthInChars) == 0x004, "console_input_field_t widthInChars extent");
+_Static_assert(offsetof(console_input_field_t, widthInPixels) == 0x00c, "console_input_field_t widthInPixels offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->widthInPixels) == 0x004, "console_input_field_t widthInPixels extent");
+_Static_assert(offsetof(console_input_field_t, charWidth) == 0x010, "console_input_field_t charWidth offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->charWidth) == 0x004, "console_input_field_t charWidth extent");
+_Static_assert(offsetof(console_input_field_t, charHeight) == 0x014, "console_input_field_t charHeight offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->charHeight) == 0x004, "console_input_field_t charHeight extent");
+_Static_assert(offsetof(console_input_field_t, fixedSize) == 0x018, "console_input_field_t fixedSize offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->fixedSize) == 0x004, "console_input_field_t fixedSize extent");
+_Static_assert(offsetof(console_input_field_t, buffer) == 0x1c, "console_input_field_t buffer offset");
+_Static_assert(sizeof(((console_input_field_t *)0)->buffer) == 0x100, "console_input_field_t buffer extent");
+_Static_assert(sizeof(console_input_field_t) == 0x11c, "console_input_field_t original size");
 
 
-_Static_assert(_Alignof(console_message_window_t) == 0x4,
-               "console_message_window_t original alignment");
-_Static_assert(offsetof(console_message_window_t, lineStartTimes) == 0x00,
-               "console_message_window_t lineStartTimes offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->lineStartTimes) == 0x04,
-               "console_message_window_t lineStartTimes extent");
-_Static_assert(offsetof(console_message_window_t, lineEndTimes) == 0x04,
-               "console_message_window_t lineEndTimes offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->lineEndTimes) == 0x04,
-               "console_message_window_t lineEndTimes extent");
-_Static_assert(offsetof(console_message_window_t, lineIndices) == 0x08,
-               "console_message_window_t lineIndices offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->lineIndices) == 0x04,
-               "console_message_window_t lineIndices extent");
-_Static_assert(offsetof(console_message_window_t, activeLineIndex) == 0x0c,
-               "console_message_window_t activeLineIndex offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->activeLineIndex) == 0x04,
-               "console_message_window_t activeLineIndex extent");
-_Static_assert(offsetof(console_message_window_t, lineCapacity) == 0x10,
-               "console_message_window_t lineCapacity offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->lineCapacity) == 0x04,
-               "console_message_window_t lineCapacity extent");
-_Static_assert(offsetof(console_message_window_t, visibleLineCount) == 0x14,
-               "console_message_window_t visibleLineCount offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->visibleLineCount) ==
-                   0x04,
-               "console_message_window_t visibleLineCount extent");
-_Static_assert(offsetof(console_message_window_t, scrollTime) == 0x18,
-               "console_message_window_t scrollTime offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->scrollTime) == 0x04,
-               "console_message_window_t scrollTime extent");
-_Static_assert(offsetof(console_message_window_t, fadeInTime) == 0x1c,
-               "console_message_window_t fadeInTime offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->fadeInTime) == 0x04,
-               "console_message_window_t fadeInTime extent");
-_Static_assert(offsetof(console_message_window_t, fadeOutTime) == 0x20,
-               "console_message_window_t fadeOutTime offset");
-_Static_assert(sizeof(((console_message_window_t *)0)->fadeOutTime) == 0x04,
-               "console_message_window_t fadeOutTime extent");
-_Static_assert(sizeof(console_message_window_t) == 0x24,
-               "console_message_window_t original size");
+_Static_assert(_Alignof(console_message_window_t) == 0x4, "console_message_window_t original alignment");
+_Static_assert(offsetof(console_message_window_t, lineStartTimes) == 0x00, "console_message_window_t lineStartTimes offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->lineStartTimes) == 0x04, "console_message_window_t lineStartTimes extent");
+_Static_assert(offsetof(console_message_window_t, lineEndTimes) == 0x04, "console_message_window_t lineEndTimes offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->lineEndTimes) == 0x04, "console_message_window_t lineEndTimes extent");
+_Static_assert(offsetof(console_message_window_t, lineIndices) == 0x08, "console_message_window_t lineIndices offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->lineIndices) == 0x04, "console_message_window_t lineIndices extent");
+_Static_assert(offsetof(console_message_window_t, activeLineIndex) == 0x0c, "console_message_window_t activeLineIndex offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->activeLineIndex) == 0x04, "console_message_window_t activeLineIndex extent");
+_Static_assert(offsetof(console_message_window_t, lineCapacity) == 0x10, "console_message_window_t lineCapacity offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->lineCapacity) == 0x04, "console_message_window_t lineCapacity extent");
+_Static_assert(offsetof(console_message_window_t, visibleLineCount) == 0x14, "console_message_window_t visibleLineCount offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->visibleLineCount) == 0x04, "console_message_window_t visibleLineCount extent");
+_Static_assert(offsetof(console_message_window_t, scrollTime) == 0x18, "console_message_window_t scrollTime offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->scrollTime) == 0x04, "console_message_window_t scrollTime extent");
+_Static_assert(offsetof(console_message_window_t, fadeInTime) == 0x1c, "console_message_window_t fadeInTime offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->fadeInTime) == 0x04, "console_message_window_t fadeInTime extent");
+_Static_assert(offsetof(console_message_window_t, fadeOutTime) == 0x20, "console_message_window_t fadeOutTime offset");
+_Static_assert(sizeof(((console_message_window_t *)0)->fadeOutTime) == 0x04, "console_message_window_t fadeOutTime extent");
+_Static_assert(sizeof(console_message_window_t) == 0x24, "console_message_window_t original size");
 #endif
 
 #endif

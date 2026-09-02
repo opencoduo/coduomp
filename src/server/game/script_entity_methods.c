@@ -23,8 +23,7 @@
 #define CLEARVEHICLEPOSITION_CONTENTS_MASK MASK_CLEAR_VEHICLE_POSITION
 #define VERIFYPOSITION_MAX_ENTITIES 10
 #define VERIFYPOSITION_EXTRA_CONTENTS 0x00800000u
-#define VERIFYPOSITION_CONTENTS_MASK \
-    (CONTENTS_BODY | VERIFYPOSITION_EXTRA_CONTENTS)
+#define VERIFYPOSITION_CONTENTS_MASK (CONTENTS_BODY | VERIFYPOSITION_EXTRA_CONTENTS)
 #define VERIFYPOSITION_VEHICLE_BOUNDS_SCALE 1.2f
 #define VERIFYPOSITION_VEHICLE_BOTTOM_ADJUST 32.0f
 #define HINT_STRING_CONFIGSTRING_BASE CS_HINTSTRINGS
@@ -32,26 +31,19 @@
 #define CURSOR_HINT_TABLE_LIMIT 267
 #define HINTSTRING_INHERIT 255
 #define HINT_INHERIT_STRING "HINT_INHERIT"
-#define SET_HINTSTRING_TRIGGER_USE_ERROR \
-    "The setHintString command only works on trigger_use entities.\n"
-#define HINTSTRING_LIMIT_ERROR \
-    "Too many different hintstring values. Max allowed is %i different strings"
+#define SET_HINTSTRING_TRIGGER_USE_ERROR "The setHintString command only works on trigger_use entities.\n"
+#define HINTSTRING_LIMIT_ERROR "Too many different hintstring values. Max allowed is %i different strings"
 #define SOUND_EVENT_DURATION_MSEC 300
 
-qboolean trap_EntityContact(const float *mins, const float *maxs,
-                            gentity_t *ent);
-qboolean trap_EntityContactCapsule(const float *mins, const float *maxs,
-                                   gentity_t *ent);
-int trap_EntitiesInBox(const float *mins, const float *maxs,
-                              int *entityList, int maxCount, int contentMask);
-void trap_Trace(trace_t *trace, const float *start, const float *mins,
-                       const float *maxs, const float *end, int passEntityNum,
-                       int contentMask);
+qboolean trap_EntityContact(const float *mins, const float *maxs, gentity_t *ent);
+qboolean trap_EntityContactCapsule(const float *mins, const float *maxs, gentity_t *ent);
+int trap_EntitiesInBox(const float *mins, const float *maxs, int *entityList, int maxCount, int contentMask);
+void trap_Trace(trace_t *trace, const float *start, const float *mins, const float *maxs, const float *end, int passEntityNum,
+                int contentMask);
 /* NOT_FROM_ORIGINAL_SOURCE: local predicate extracted from door method bodies. */
 static qboolean game_compat_script_entity_is_door(gentity_t *ent)
 {
-    return ent->scriptClassname == scr_const_func_door ||
-           ent->scriptClassname == scr_const_func_door_rotating;
+    return ent->scriptClassname == scr_const_func_door || ent->scriptClassname == scr_const_func_door_rotating;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper for repeated currentOrigin + bounds math. */
@@ -67,27 +59,19 @@ static void game_compat_script_entity_add_abs_bounds(gentity_t *ent, vec3_t mins
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-static qboolean game_compat_script_entity_contents_bounds_touch(const vec3_t aMins,
-                                                 const vec3_t aMaxs,
-                                                 gentity_t *b)
+static qboolean game_compat_script_entity_contents_bounds_touch(const vec3_t aMins, const vec3_t aMaxs, gentity_t *b)
 {
     vec3_t bMins;
     vec3_t bMaxs;
 
     game_compat_script_entity_add_abs_bounds(b, bMins, bMaxs);
 
-    return aMins[0] < bMaxs[0] ||
-           aMins[1] < bMaxs[1] ||
-           aMins[2] < bMaxs[2] ||
-           bMins[0] < aMaxs[0] ||
-           bMins[1] < aMaxs[1] ||
+    return aMins[0] < bMaxs[0] || aMins[1] < bMaxs[1] || aMins[2] < bMaxs[2] || bMins[0] < aMaxs[0] || bMins[1] < aMaxs[1] ||
            bMins[2] < aMaxs[2];
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from damage direction setup. */
-static const float *game_compat_script_entity_get_damage_dir(gentity_t *target,
-                                              const vec3_t source,
-                                              vec3_t dir)
+static const float *game_compat_script_entity_get_damage_dir(gentity_t *target, const vec3_t source, vec3_t dir)
 {
     const float *origin;
 
@@ -121,8 +105,7 @@ static void game_compat_script_entity_schedule_death_free(gentity_t *ent)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper for vehicle bounds translation. */
-static void game_compat_script_entity_offset_bounds(vec3_t mins, vec3_t maxs,
-                                      const vec3_t origin)
+static void game_compat_script_entity_offset_bounds(vec3_t mins, vec3_t maxs, const vec3_t origin)
 {
     mins[0] += origin[0];
     mins[1] += origin[1];
@@ -141,8 +124,7 @@ static qboolean game_compat_script_entity_is_trigger_use(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: local predicate extracted from turret heat methods. */
 static qboolean game_compat_script_entity_is_turret(gentity_t *ent)
 {
-    return ent->scriptClassname == scr_const_misc_mg42 ||
-           ent->scriptClassname == scr_const_misc_turret;
+    return ent->scriptClassname == scr_const_misc_mg42 || ent->scriptClassname == scr_const_misc_turret;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local validation helper for turret script methods. */
@@ -168,8 +150,7 @@ qboolean G_GetHintStringIndex(int *outIndex, const char *value)
     int index;
 
     for (index = 0; index < HINT_STRING_CONFIGSTRING_COUNT; index++) {
-        trap_GetConfigstring(HINT_STRING_CONFIGSTRING_BASE + index,
-                             configString, MAX_STRING_CHARS);
+        trap_GetConfigstring(HINT_STRING_CONFIGSTRING_BASE + index, configString, MAX_STRING_CHARS);
 
         if (configString[0] == '\0') {
             trap_SetConfigstring(HINT_STRING_CONFIGSTRING_BASE + index, value);
@@ -379,12 +360,9 @@ void ScrCmd_GetNormalHealth(uint32_t scriptObject)
          * float rounding at the argument store — neither integer is rounded
          * to float before the divide. */
 #if EMULATE_X87
-        Scr_AddFloat(x87f_store_f32(x87f_div(
-            x87f_load_i32(ent->health),
-            x87f_load_i32(ent->client->normalMaxHealth))));
+        Scr_AddFloat(x87f_store_f32(x87f_div(x87f_load_i32(ent->health), x87f_load_i32(ent->client->normalMaxHealth))));
 #else
-        Scr_AddFloat((float)((long double)ent->health /
-                             (long double)ent->client->normalMaxHealth));
+        Scr_AddFloat((float)((long double)ent->health / (long double)ent->client->normalMaxHealth));
 #endif
     }
 }
@@ -406,20 +384,16 @@ void ScrCmd_SetNormalHealth(uint32_t scriptObject)
             health = game_compat_int32_from_float_trunc(value);
         } else {
 #if EMULATE_X87
-            health = x87f_store_i32_trunc(x87f_mul(
-                x87f_load_i32(ent->maxHealth), x87f_load_f32(value)));
+            health = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(ent->maxHealth), x87f_load_f32(value)));
 #else
-            health = game_compat_int32_from_long_double_trunc(
-                (long double)ent->maxHealth * (long double)value);
+            health = game_compat_int32_from_long_double_trunc((long double)ent->maxHealth * (long double)value);
 #endif
         }
     } else {
 #if EMULATE_X87
-        health = x87f_store_i32_trunc(x87f_mul(
-            x87f_load_i32(ent->client->normalMaxHealth), x87f_load_f32(value)));
+        health = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(ent->client->normalMaxHealth), x87f_load_f32(value)));
 #else
-        health = game_compat_int32_from_long_double_trunc(
-            (long double)ent->client->normalMaxHealth * (long double)value);
+        health = game_compat_int32_from_long_double_trunc((long double)ent->client->normalMaxHealth * (long double)value);
 #endif
     }
 
@@ -463,9 +437,7 @@ void ScrCmd_DoDamage(uint32_t scriptObject)
         meansOfDeath = G_IndexForMeansOfDeath(Scr_GetString(4));
     }
 
-    G_Damage(target, inflictor, attacker, dirPtr, point,
-             game_compat_int32_from_float_trunc(damageAmount),
-             0, meansOfDeath, 0);
+    G_Damage(target, inflictor, attacker, dirPtr, point, game_compat_int32_from_float_trunc(damageAmount), 0, meansOfDeath, 0);
 }
 
 /* VERIFIED_DECOMPILER(0x69042, 79042_script_method_scriptbuiltin_dodamagemod.c, VERIFY-SCRIPT-ENTITY-METHODS-PACKET-2026-06-17): DATAFLOW_VERIFIED - param-count error, damage/source/mod parsing, client/non-client origin selection, normalized dir/null dir path, ROUND damage, and world-inflicted G_Damage arguments checked against current decompiler output. */
@@ -493,9 +465,7 @@ void ScrCmd_DoDamageMod(uint32_t scriptObject)
     dirPtr = game_compat_script_entity_get_damage_dir(target, source, dir);
     meansOfDeath = G_IndexForMeansOfDeath(Scr_GetString(2));
 
-    G_Damage(target, 0, 0, dirPtr, point,
-             game_compat_int32_from_float_trunc(damageAmount),
-             0, meansOfDeath, 0);
+    G_Damage(target, 0, 0, dirPtr, point, game_compat_int32_from_float_trunc(damageAmount), 0, meansOfDeath, 0);
 }
 
 /* VERIFIED_DECOMPILER(0x691d2, 791d2_script_method_scriptbuiltin_settakedamage.c, VERIFY-SCRIPT-ENTITY-METHODS-PACKET-2026-06-17): DATAFLOW_VERIFIED - exact one-parameter validation, bool argument, and takeDamage byte store checked against current decompiler output. */
@@ -576,11 +546,8 @@ void ScrCmd_VerifyPosition(uint32_t scriptObject)
         maxs[2] += ent->currentOrigin[2];
         mins[2] -= VERIFYPOSITION_VEHICLE_BOTTOM_ADJUST;
 
-        count = trap_EntitiesInBox(mins, maxs, entityNumbers,
-                                   VERIFYPOSITION_MAX_ENTITIES,
-                                   VERIFYPOSITION_CONTENTS_MASK);
-        if (count == 0 ||
-            (count == 1 && entityNumbers[0] == (int)scriptObject)) {
+        count = trap_EntitiesInBox(mins, maxs, entityNumbers, VERIFYPOSITION_MAX_ENTITIES, VERIFYPOSITION_CONTENTS_MASK);
+        if (count == 0 || (count == 1 && entityNumbers[0] == (int)scriptObject)) {
             if (Scr_GetNumParam() == 1 && Scr_GetInt(0) != 0) {
                 VEH_InitPhysics(ent);
             }
@@ -591,8 +558,7 @@ void ScrCmd_VerifyPosition(uint32_t scriptObject)
     } else {
         trace_t trace;
 
-        trap_Trace(&trace, ent->currentOrigin, ent->mins, ent->maxs,
-                   ent->currentOrigin, ent->s.number, ent->clipmask);
+        trap_Trace(&trace, ent->currentOrigin, ent->mins, ent->maxs, ent->currentOrigin, ent->s.number, ent->clipmask);
         if (trace.allsolid == 0 && trace.startsolid == 0) {
             Scr_AddInt(1);
         } else {
@@ -618,9 +584,7 @@ void ScrCmd_ClearVehiclePosition(uint32_t scriptObject)
     VEH_GetMinsMaxs(vehicle, mins, maxs);
     game_compat_script_entity_offset_bounds(mins, maxs, vehicle->currentOrigin);
 
-    count = trap_EntitiesInBox(mins, maxs, entityNumbers,
-                               CLEARVEHICLEPOSITION_MAX_ENTITIES,
-                               CLEARVEHICLEPOSITION_CONTENTS_MASK);
+    count = trap_EntitiesInBox(mins, maxs, entityNumbers, CLEARVEHICLEPOSITION_MAX_ENTITIES, CLEARVEHICLEPOSITION_CONTENTS_MASK);
 
     for (i = 0; i < count; i++) {
         gentity_t *ent = script_object_to_gentity((uint32_t)entityNumbers[i]);
@@ -656,13 +620,10 @@ void GScr_SetCursorHint(uint32_t scriptObject)
     const char *hint = Scr_GetString(0);
     int index;
 
-    if (game_compat_script_entity_is_trigger_use(ent) &&
-        Q_strcasecmp(hint, HINT_INHERIT_STRING) == 0) {
+    if (game_compat_script_entity_is_trigger_use(ent) && Q_strcasecmp(hint, HINT_INHERIT_STRING) == 0) {
         ent->s.cursorHint = CURSOR_HINT_INHERIT;
     } else {
-        for (index = CURSOR_HINT_NONE;
-             index < CURSOR_HINT_TABLE_LIMIT && hintStrings[index] != 0;
-             index++) {
+        for (index = CURSOR_HINT_NONE; index < CURSOR_HINT_TABLE_LIMIT && hintStrings[index] != 0; index++) {
             if (Q_strcasecmp(hint, hintStrings[index]) == 0) {
                 ent->s.cursorHint = index;
                 return;
@@ -674,14 +635,11 @@ void GScr_SetCursorHint(uint32_t scriptObject)
             Com_Printf("HINT_INHERIT (for trigger_use entities only)\n");
         }
 
-        for (index = CURSOR_HINT_NONE;
-             index < CURSOR_HINT_TABLE_LIMIT && hintStrings[index] != 0;
-             index++) {
+        for (index = CURSOR_HINT_NONE; index < CURSOR_HINT_TABLE_LIMIT && hintStrings[index] != 0; index++) {
             Com_Printf("%s\n", hintStrings[index]);
         }
 
-        Scr_Error(va("%s is not a valid hint type. See above for list of valid hint types\n",
-                     hint));
+        Scr_Error(va("%s is not a valid hint type. See above for list of valid hint types\n", hint));
     }
 }
 
@@ -696,18 +654,15 @@ void GScr_SetHintString(uint32_t scriptObject)
         Scr_Error(SET_HINTSTRING_TRIGGER_USE_ERROR);
     }
 
-    if (Scr_GetType(0) == SCRIPT_VAR_STRING &&
-        Q_stricmp(Scr_GetString(0), HINT_INHERIT_STRING) == 0) {
+    if (Scr_GetType(0) == SCRIPT_VAR_STRING && Q_stricmp(Scr_GetString(0), HINT_INHERIT_STRING) == 0) {
         ent->s.hintStringIndex = HINTSTRING_INHERIT;
         return;
     }
 
-    Scr_ConstructMessageString(0, message, MAX_STRING_CHARS,
-                               SCRIPT_MESSAGE_MODE_HINT_STRING);
+    Scr_ConstructMessageString(0, message, MAX_STRING_CHARS, SCRIPT_MESSAGE_MODE_HINT_STRING);
 
     if (!G_GetHintStringIndex(&index, message)) {
-        Scr_Error(va(HINTSTRING_LIMIT_ERROR,
-                     HINT_STRING_CONFIGSTRING_COUNT));
+        Scr_Error(va(HINTSTRING_LIMIT_ERROR, HINT_STRING_CONFIGSTRING_COUNT));
     }
 
     ent->s.hintStringIndex = index & 0xff;

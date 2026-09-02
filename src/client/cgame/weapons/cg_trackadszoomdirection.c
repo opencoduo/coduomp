@@ -40,8 +40,7 @@ void CG_TrackAdsZoomDirection(void)
      * If adsEnabled == 0 (TEST EAX,EAX / JZ 0x30045542) return immediately,
      * preserving cg_prevAdsFraction as well as the latched direction.
      */
-    const weaponInfo_t *weaponInfo =
-        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+    const weaponInfo_t *weaponInfo = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
 
     if (weaponInfo->adsEnabled == 0) {
         return;
@@ -60,8 +59,7 @@ void CG_TrackAdsZoomDirection(void)
          * 0x300454b5: if (ads == 0.0f) -> tail          (FLD 0.0; FLD ads; ==)
          * Both endpoints of ads exit: only a mid-transition ads proceeds.
          */
-        if (cg_predictedPlayerState.adsFraction != 1.0f &&
-            cg_predictedPlayerState.adsFraction != 0.0f) {
+        if (cg_predictedPlayerState.adsFraction != 1.0f && cg_predictedPlayerState.adsFraction != 0.0f) {
             /*
              * 0x300454ca..0x300454f2: require prev to be exactly on an endpoint.
              *   0x300454ca: if (prev == 1.0f) skip the 0.0f test (JNP 0x300454f4)
@@ -83,8 +81,7 @@ void CG_TrackAdsZoomDirection(void)
                  *     ads >  prev  -> zooming IN   -> cg_adsZoomingIn = qtrue
                  */
                 if (cg_predictedPlayerState.adsFraction != cg_prevAdsFraction) {
-                    const float directionAds =
-                        cg_predictedPlayerState.adsFraction;
+                    const float directionAds = cg_predictedPlayerState.adsFraction;
                     const float directionPrev = cg_prevAdsFraction;
                     /* FCOMP/TEST C0 routes unordered with the less-than path. */
                     if (!(directionAds >= directionPrev)) {

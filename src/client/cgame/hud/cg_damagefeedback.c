@@ -60,16 +60,14 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
     float damageFloat = (float)damageRaw;
 
     // 0x30034ad6..0x30034b19: view-kick magnitude = clamp(damage * 0.2, 5, 90).
-    float kick = (float)(
-        (long double)damageFloat * (long double)0.2f);
+    float kick = (float)((long double)damageFloat * (long double)0.2f);
     if (kick < 5.0f) {                    // 0x3007bde0
         kick = 5.0f;
     } else if (kick > 90.0f) {            // 0x3007be8c
         kick = 90.0f;
     }
 
-    if (yaw == CG_DAMAGE_DIRECTION_ALL &&
-        pitch == CG_DAMAGE_DIRECTION_ALL) {
+    if (yaw == CG_DAMAGE_DIRECTION_ALL && pitch == CG_DAMAGE_DIRECTION_ALL) {
         // 0x30034b26..0x30034b42: attacker direction unknown / all-around damage —
         // no directional arrow, just the plain screen flash: X=0, value=-kick.
         cg_damageFlashX = 0.0f;           // 0x3048af14
@@ -79,24 +77,18 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
         // The wire yaw/pitch are 0..255 fractions of a full turn:
         //   deg = value / 255.0 * 360.0
         float pitchInput = (float)pitch;
-        float pitchDeg = (float)(
-            ((long double)pitchInput / (long double)255.0f)
-            * (long double)360.0f);
+        float pitchDeg = (float)(((long double)pitchInput / (long double)255.0f) * (long double)360.0f);
         float yawInput = (float)yaw;
-        float yawDeg = (float)(
-            ((long double)yawInput / (long double)255.0f)
-            * (long double)360.0f);
+        float yawDeg = (float)(((long double)yawInput / (long double)255.0f) * (long double)360.0f);
 
         /* 0x30034b8f..0x30034be3: each radians product is rounded to binary32,
          * then one hardware FSINCOS stores cosine first and sine second. */
-        float yawRadians = (float)(
-            (long double)yawDeg * (long double)DEG2RAD);
+        float yawRadians = (float)((long double)yawDeg * (long double)DEG2RAD);
         float sinYaw;
         float cosYaw;
         coduo_x87_sincosf(yawRadians, &sinYaw, &cosYaw);
 
-        float pitchRadians = (float)(
-            (long double)pitchDeg * (long double)DEG2RAD);
+        float pitchRadians = (float)((long double)pitchDeg * (long double)DEG2RAD);
         float sinPitch;
         float cosPitch;
         coduo_x87_sincosf(pitchRadians, &sinPitch, &cosPitch);
@@ -106,10 +98,8 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
         //   dir.y =  cos(pitch)*sin(yaw)
         //   dir.z = -sin(pitch)
         vec3_t damageDir;
-        damageDir[0] = (float)(
-            (long double)cosPitch * (long double)cosYaw);
-        damageDir[1] = (float)(
-            (long double)cosPitch * (long double)sinYaw);
+        damageDir[0] = (float)((long double)cosPitch * (long double)cosYaw);
+        damageDir[1] = (float)((long double)cosPitch * (long double)sinYaw);
         damageDir[2] = -sinPitch;
 
         // 0x30034c17..0x30034c6b: project the damage direction onto the view basis
@@ -119,23 +109,15 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
         // x87 FADDP chain order is z-first: (v[2]*d[2] + v[1]*d[1]) + v[0]*d[0]
         // (FLD [..ab0]; FMUL d2; FLD [..aac]; FMUL d1; FADDP; FLD [..aa8];
         //  FMUL d0; FADDP; FMUL kick; [FCHS;] FSTP) -- term order preserved here.
-        long double horizontalRaw =
-            ((long double)cg_refdef.viewaxis[1][2]
-                 * (long double)damageDir[2]
-             + (long double)cg_refdef.viewaxis[1][1]
-                 * (long double)damageDir[1])
-            + (long double)cg_refdef.viewaxis[1][0]
-                 * (long double)damageDir[0];
+        long double horizontalRaw = ((long double)cg_refdef.viewaxis[1][2] * (long double)damageDir[2] +
+                                     (long double)cg_refdef.viewaxis[1][1] * (long double)damageDir[1]) +
+                                    (long double)cg_refdef.viewaxis[1][0] * (long double)damageDir[0];
         horizontalRaw *= (long double)kick;
         cg_damageFlashX = (float)-horizontalRaw;
 
-        long double forwardRaw =
-            ((long double)cg_refdef.viewaxis[0][2]
-                 * (long double)damageDir[2]
-             + (long double)cg_refdef.viewaxis[0][1]
-                 * (long double)damageDir[1])
-            + (long double)cg_refdef.viewaxis[0][0]
-                 * (long double)damageDir[0];
+        long double forwardRaw = ((long double)cg_refdef.viewaxis[0][2] * (long double)damageDir[2] +
+                                  (long double)cg_refdef.viewaxis[0][1] * (long double)damageDir[1]) +
+                                 (long double)cg_refdef.viewaxis[0][0] * (long double)damageDir[0];
         forwardRaw *= (long double)kick;
         cg_damageFlashScale = (float)forwardRaw;
 
@@ -165,27 +147,18 @@ void CG_DamageFeedback(int32_t yaw, int32_t pitch, int32_t damage)
         // 0x3006be3c is _ftol2 (truncation), matching the (int) cast.
         int32_t randomValue = coduo_crt_rand();
         float randomFloat = (float)randomValue;
-        float jitteredYaw = (float)(
-            ((((long double)randomFloat / (long double)32768.0f)
-               - (long double)0.5f)
-              * (long double)20.0f)
-            + (long double)yawDeg);
-        int32_t bams = (int32_t)(
-            (uint32_t)coduo_fp_to_i32_extended(
-                (long double)jitteredYaw
-                * (long double)182.04444885253906f)
-            & 65535u);
+        float jitteredYaw =
+            (float)(((((long double)randomFloat / (long double)32768.0f) - (long double)0.5f) * (long double)20.0f) + (long double)yawDeg);
+        int32_t bams = (int32_t)((uint32_t)coduo_fp_to_i32_extended((long double)jitteredYaw * (long double)182.04444885253906f) & 65535u);
         float bamsFloat = (float)bams;
-        indicator->yaw = (float)(
-            (long double)bamsFloat * (long double)0.0054931640625f);
+        indicator->yaw = (float)((long double)bamsFloat * (long double)0.0054931640625f);
     }
 
     /* 0x30034d0c..0x30034d28: snapshot both globals before the target-width ADD,
      * store the wrapped deadline, then dereference the retained snapshot. */
     int32_t now = coduo_int32_from_bits(cg_time);
     snapshot_t *snap = cg_snap;
-    int32_t flashEndTime = coduo_int32_from_bits(
-        (uint32_t)now + (uint32_t)CG_DAMAGE_FLASH_DURATION_MS);
+    int32_t flashEndTime = coduo_int32_from_bits((uint32_t)now + (uint32_t)CG_DAMAGE_FLASH_DURATION_MS);
     cg_damageFlashEndTime = flashEndTime;
     int32_t latestServerTime = snap->serverTime;
     cg_damageDirLatestServerTime = latestServerTime;

@@ -7,26 +7,17 @@
 #include <string.h>
 
 void RE_ClearScene(void);
-void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount,
-                        const polyVert_t *vertices, int32_t polyCount);
-void RE_AddCoronaToScene(const vec3_t origin, float red, float green,
-                         float blue, float scale, int32_t id,
-                         int32_t flags);
+void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount, const polyVert_t *vertices, int32_t polyCount);
+void RE_AddCoronaToScene(const vec3_t origin, float red, float green, float blue, float scale, int32_t id, int32_t flags);
 void RE_RenderScene(const refdef_t *refdef);
 void RE_ClearFlares(void);
 void RE_SetColor(const float *rgba);
-void RE_StretchPic(float x, float y, float width, float height,
-                   float s1, float t1, float s2, float t2,
-                   int32_t shaderHandle);
-void RE_StretchPicGradient(float x, float y, float width, float height,
-                           float s1, float t1, float s2, float t2,
-                           int32_t shaderHandle, const float *gradientColor,
-                           int32_t gradientType);
-void RE_StretchPicRotate(float x, float y, float width, float height,
-                         float s1, float t1, float s2, float t2,
-                         float angleDegrees, int32_t shaderHandle);
-void RE_DrawQuadPic(const vec2_t positions[4], const vec2_t texCoords[4],
-                    int32_t shaderHandle);
+void RE_StretchPic(float x, float y, float width, float height, float s1, float t1, float s2, float t2, int32_t shaderHandle);
+void RE_StretchPicGradient(float x, float y, float width, float height, float s1, float t1, float s2, float t2, int32_t shaderHandle,
+                           const float *gradientColor, int32_t gradientType);
+void RE_StretchPicRotate(float x, float y, float width, float height, float s1, float t1, float s2, float t2, float angleDegrees,
+                         int32_t shaderHandle);
+void RE_DrawQuadPic(const vec2_t positions[4], const vec2_t texCoords[4], int32_t shaderHandle);
 void RE_BeginFrame(stereoFrame_t stereoFrame);
 void coduomp_re_begin_frame_compat(stereoFrame_t stereoFrame);
 void RE_EndFrame(int32_t *frontEndMsec, int32_t *backEndMsec);
@@ -48,16 +39,13 @@ static refexport_t rendererModuleExports;
  * address. Same-module Mac GetRefAPI corroborates the conventional source ABI
  * order (version, imports) and supplies the exact 59 source function names;
  * Windows machine code remains authoritative for behavior. */
-refexport_t *GetRefAPI(int32_t apiVersion,
-                              const refimport_t *imports)
+refexport_t *GetRefAPI(int32_t apiVersion, const refimport_t *imports)
 {
     memcpy(&ri, imports, sizeof(ri));
     memset(&rendererModuleExports, 0, sizeof(rendererModuleExports));
 
     if (apiVersion != RENDERER_API_VERSION) {
-        ri.Printf(R_PRINT_ALL,
-                  "Mismatched REF_API_VERSION: expected %i, got %i\n",
-                  RENDERER_API_VERSION, apiVersion);
+        ri.Printf(R_PRINT_ALL, "Mismatched REF_API_VERSION: expected %i, got %i\n", RENDERER_API_VERSION, apiVersion);
         return NULL;
     }
 
@@ -69,10 +57,8 @@ refexport_t *GetRefAPI(int32_t apiVersion,
     rendererModuleExports.RegisterShaderNoMip = RE_RegisterShaderNoMip;
     rendererModuleExports.LoadWorldMap = RE_LoadWorldMap;
     rendererModuleExports.FinishLoadingModels = RE_FinishLoadingModels;
-    rendererModuleExports.SetIgnorePrecacheErrors =
-        RE_SetIgnorePrecacheErrors;
-    rendererModuleExports.GetIgnorePrecacheErrors =
-        RE_GetIgnorePrecacheErrors;
+    rendererModuleExports.SetIgnorePrecacheErrors = RE_SetIgnorePrecacheErrors;
+    rendererModuleExports.GetIgnorePrecacheErrors = RE_GetIgnorePrecacheErrors;
     rendererModuleExports.GetShaderFromModel = RE_GetShaderFromModel;
     rendererModuleExports.SetFXImageMemory = RE_SetFXImageMemory;
     rendererModuleExports.GetFXImageMemory = RE_GetFXImageMemory;
@@ -94,10 +80,8 @@ refexport_t *GetRefAPI(int32_t apiVersion,
     rendererModuleExports.ClearFlares = RE_ClearFlares;
     rendererModuleExports.SetColor = RE_SetColor;
     rendererModuleExports.StretchPic = coduomp_re_stretch_pic_compat;
-    rendererModuleExports.StretchPicGradient =
-        coduomp_re_stretch_pic_gradient_compat;
-    rendererModuleExports.StretchPicRotate =
-        coduomp_re_stretch_pic_rotate_compat;
+    rendererModuleExports.StretchPicGradient = coduomp_re_stretch_pic_gradient_compat;
+    rendererModuleExports.StretchPicRotate = coduomp_re_stretch_pic_rotate_compat;
     rendererModuleExports.DrawQuadPic = coduomp_re_draw_quad_pic_compat;
     rendererModuleExports.StretchRaw = RE_StretchRaw;
     rendererModuleExports.UploadCinematic = RE_UploadCinematic;

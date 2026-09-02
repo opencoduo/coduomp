@@ -32,15 +32,12 @@
 void CrossProduct(const vec3_t left, const vec3_t right, vec3_t output)
 {
 #if EMULATE_X87
-    output[0] = x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(left[1]), x87f_load_f32(right[2])),
-        x87f_mul(x87f_load_f32(left[2]), x87f_load_f32(right[1]))));
-    output[1] = x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(left[2]), x87f_load_f32(right[0])),
-        x87f_mul(x87f_load_f32(left[0]), x87f_load_f32(right[2]))));
-    output[2] = x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(left[0]), x87f_load_f32(right[1])),
-        x87f_mul(x87f_load_f32(left[1]), x87f_load_f32(right[0]))));
+    output[0] = x87f_store_f32(
+        x87f_sub(x87f_mul(x87f_load_f32(left[1]), x87f_load_f32(right[2])), x87f_mul(x87f_load_f32(left[2]), x87f_load_f32(right[1]))));
+    output[1] = x87f_store_f32(
+        x87f_sub(x87f_mul(x87f_load_f32(left[2]), x87f_load_f32(right[0])), x87f_mul(x87f_load_f32(left[0]), x87f_load_f32(right[2]))));
+    output[2] = x87f_store_f32(
+        x87f_sub(x87f_mul(x87f_load_f32(left[0]), x87f_load_f32(right[1])), x87f_mul(x87f_load_f32(left[1]), x87f_load_f32(right[0]))));
 #else
     output[0] = left[1] * right[2] - left[2] * right[1];
     output[1] = left[2] * right[0] - left[0] * right[2];

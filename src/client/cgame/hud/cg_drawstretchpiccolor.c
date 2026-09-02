@@ -63,8 +63,7 @@
 // this cluster; not adopted because the proven behavior is a colored rect draw,
 // not a script field set. Exact CoD symbol unproven; role name used.
 
-void CG_DrawStretchPicColor(const rectDef_t *rect, qhandle_t hShader,
-                            const float *color)
+void CG_DrawStretchPicColor(const rectDef_t *rect, qhandle_t hShader, const float *color)
 {
     /* 0x30032053..0x30032089 computes and spills all four products before
      * trap_R_SetColor. Keep that callback boundary and the x/y/w/h store order
@@ -77,15 +76,8 @@ void CG_DrawStretchPicColor(const rectDef_t *rect, qhandle_t hShader,
 
     trap_R_SetColor(color);
 
-    trap_R_DrawStretchPic(CG_FloatBits(realX),
-                          CG_FloatBits(realY),
-                          CG_FloatBits(realW),
-                          CG_FloatBits(realH),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(1.0f),
-                          CG_FloatBits(1.0f),
-                          hShader);
+    trap_R_DrawStretchPic(CG_FloatBits(realX), CG_FloatBits(realY), CG_FloatBits(realW), CG_FloatBits(realH), CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), hShader);
 
     trap_R_SetColor(NULL);
 }

@@ -89,7 +89,8 @@ void CG_DrawWeaponIcon3D(void)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_DrawWeaponIcon3D: invalid view-lock entity %i",
+                  "\x15"
+                  "CG_DrawWeaponIcon3D: invalid view-lock entity %i",
                   entityNum);
         return;
     }
@@ -128,8 +129,7 @@ void CG_DrawWeaponIcon3D(void)
     long double heightRaw = size * (long double)cgs_screenYScale;
     /* 0x30019c67 loads the shader while the unrounded height is still live,
      * before its binary32 store at 0x30019c74. */
-    qhandle_t centerShader =
-        cg_weaponInfos[weaponIndex].reticleCenterShader;
+    qhandle_t centerShader = cg_weaponInfos[weaponIndex].reticleCenterShader;
     height = (float)heightRaw;
 
     /* Center the icon in the cropped 3D-view rect. The `scale*0.0f` terms are
@@ -138,21 +138,15 @@ void CG_DrawWeaponIcon3D(void)
      * (0x30019c7c..0x30019cdc), so no (float) casts -- they would round. */
     /* 0x30019c7c..0x30019cb4 computes and stages Y before the corresponding
      * X chain at 0x30019cb8..0x30019cdc. */
-    y = (float)(
-        ((long double)(int32_t)cg_refdef.height - (long double)height) * 0.5L +
-        (long double)cgs_screenYScale * 0.0f +
-        (long double)(int32_t)cg_refdef.y);
-    x = (float)(
-        ((long double)(int32_t)cg_refdef.width - (long double)width) * 0.5L +
-        (long double)cgs_screenXScale * 0.0f +
-        (long double)(int32_t)cg_refdef.x);
+    y = (float)(((long double)(int32_t)cg_refdef.height - (long double)height) * 0.5L + (long double)cgs_screenYScale * 0.0f +
+                (long double)(int32_t)cg_refdef.y);
+    x = (float)(((long double)(int32_t)cg_refdef.width - (long double)width) * 0.5L + (long double)cgs_screenXScale * 0.0f +
+                (long double)(int32_t)cg_refdef.x);
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): x/y are physical
      * refdef pixels (mounted-gun reticle centered in the world viewport).
      * The isolated adapter prevents the generic centered 640-canvas image
      * bias from being applied a second time, exactly as in the sibling
      * CG_DrawCrosshair draw sites. */
-    cgame_compat_draw_physical_stretch_pic(
-        x, y, width, height, 0.0f, 0.0f, 1.0f, 1.0f,
-        (int32_t)centerShader);
+    cgame_compat_draw_physical_stretch_pic(x, y, width, height, 0.0f, 0.0f, 1.0f, 1.0f, (int32_t)centerShader);
 }

@@ -14,8 +14,7 @@
 
 enum {
     SERVER_CONFIGSTRING_CHUNK_COPY_SIZE = 1000,
-    SERVER_CONFIGSTRING_CHUNK_PAYLOAD_SIZE =
-        SERVER_CONFIGSTRING_CHUNK_COPY_SIZE - 1
+    SERVER_CONFIGSTRING_CHUNK_PAYLOAD_SIZE = SERVER_CONFIGSTRING_CHUNK_COPY_SIZE - 1
 };
 
 extern serverHeader_t sv;
@@ -48,7 +47,9 @@ void SV_SetConfigstring(int32_t index, const char *value)
 {
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_SetConfigstring: bad index %i\n", index);
+                  "\x15"
+                  "SV_SetConfigstring: bad index %i\n",
+                  index);
     }
 
     if (value == NULL) {
@@ -56,9 +57,9 @@ void SV_SetConfigstring(int32_t index, const char *value)
     }
     /* NOT_FROM_ORIGINAL_SOURCE: an effect configstring's key prefix must fit
      * the client's fixed scheduler field before publication. */
-    if (index >= CS_EFFECTS && index < CS_FX &&
-        strcspn(value, ".") >= FX_EFFECT_TEMPLATE_NAME_CAPACITY) {
-        Com_Error(ERR_DROP, "\x15" "SV_SetConfigstring: effect name is too long");
+    if (index >= CS_EFFECTS && index < CS_FX && strcspn(value, ".") >= FX_EFFECT_TEMPLATE_NAME_CAPACITY) {
+        Com_Error(ERR_DROP, "\x15"
+                            "SV_SetConfigstring: effect name is too long");
     }
 
     if (strcmp(value, sv_configstrings[index]) == 0) {
@@ -72,9 +73,7 @@ void SV_SetConfigstring(int32_t index, const char *value)
         return;
     }
 
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state < CS_PRIMED) {
             continue;
@@ -99,10 +98,8 @@ void SV_SetConfigstring(int32_t index, const char *value)
                 command = "y";
             }
 
-            Q_strncpyz(chunk, value + offset,
-                       SERVER_CONFIGSTRING_CHUNK_COPY_SIZE);
-            SV_SendServerCommand(client, qtrue,
-                                 "%s %i %s", command, index, chunk);
+            Q_strncpyz(chunk, value + offset, SERVER_CONFIGSTRING_CHUNK_COPY_SIZE);
+            SV_SendServerCommand(client, qtrue, "%s %i %s", command, index, chunk);
             offset += SERVER_CONFIGSTRING_CHUNK_PAYLOAD_SIZE;
             if (remaining <= SERVER_CONFIGSTRING_CHUNK_PAYLOAD_SIZE) {
                 remaining = 0;
@@ -117,12 +114,15 @@ void SV_GetConfigstring(int32_t index, char *buffer, int32_t bufferSize)
 {
     if (bufferSize < 1) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_GetConfigstring: bufferSize == %i",
+                  "\x15"
+                  "SV_GetConfigstring: bufferSize == %i",
                   bufferSize);
     }
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_GetConfigstring: bad index %i\n", index);
+                  "\x15"
+                  "SV_GetConfigstring: bad index %i\n",
+                  index);
     }
 
     if (sv_configstrings[index] == NULL) {
@@ -143,8 +143,7 @@ const char *SV_GetConfigstringConst(int32_t index)
     return value != NULL ? value : "";
 }
 
-const char *SV_GetConfigValueForKey(int32_t base, int32_t count,
-                                    const char *key)
+const char *SV_GetConfigValueForKey(int32_t base, int32_t count, const char *key)
 {
     for (int32_t slot = 0; slot < count; ++slot) {
         const char *const storedKey = sv_configstrings[base + slot];
@@ -158,8 +157,7 @@ const char *SV_GetConfigValueForKey(int32_t base, int32_t count,
     return "";
 }
 
-void SV_SetConfigValueForKey(int32_t base, int32_t count,
-                             const char *key, const char *value)
+void SV_SetConfigValueForKey(int32_t base, int32_t count, const char *key, const char *value)
 {
     int32_t slot;
     for (slot = 0; slot < count; ++slot) {
@@ -174,8 +172,8 @@ void SV_SetConfigValueForKey(int32_t base, int32_t count,
     }
 
     if (slot == count) {
-        Com_Error(ERR_DROP,
-                  "\x15" "SV_SetConfigValueForKey: overflow");
+        Com_Error(ERR_DROP, "\x15"
+                            "SV_SetConfigValueForKey: overflow");
     }
     SV_SetConfigstring(base + count + slot, value);
 }

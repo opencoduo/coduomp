@@ -14,8 +14,7 @@ extern const vec4_t colorMdCyan;
 
 /* NOT_FROM_ORIGINAL_SOURCE: map the shared prone debug identities to the
  * game-owned original color objects. */
-static inline const float *bg_compat_prone_debug_color(
-    bg_prone_debug_color_t color)
+static inline const float *bg_compat_prone_debug_color(bg_prone_debug_color_t color)
 {
     switch (color) {
     case BG_PRONE_DEBUG_RED:
@@ -41,29 +40,21 @@ static inline qboolean bg_compat_prone_debug_enabled(void)
     return g_debugProneCheck.integer != 0 ? qtrue : qfalse;
 }
 
-static inline void bg_compat_prone_debug_line(
-    const vec3_t start, const vec3_t end, bg_prone_debug_color_t color)
+static inline void bg_compat_prone_debug_line(const vec3_t start, const vec3_t end, bg_prone_debug_color_t color)
 {
     if (bg_compat_prone_debug_enabled() != qfalse) {
-        G_DebugLine(start, end, bg_compat_prone_debug_color(color),
-                    g_debugProneCheckDepthCheck.integer, 1);
+        G_DebugLine(start, end, bg_compat_prone_debug_color(color), g_debugProneCheckDepthCheck.integer, 1);
     }
 }
 
-static inline void bg_compat_prone_debug_box(
-    const vec3_t mins, const vec3_t maxs, bg_prone_debug_color_t color)
+static inline void bg_compat_prone_debug_box(const vec3_t mins, const vec3_t maxs, bg_prone_debug_color_t color)
 {
-    G_DebugBox(mins, maxs, bg_compat_prone_debug_color(color),
-               g_debugProneCheckDepthCheck.integer, 1);
+    G_DebugBox(mins, maxs, bg_compat_prone_debug_color(color), g_debugProneCheckDepthCheck.integer, 1);
 }
 
-static inline void bg_compat_prone_debug_circle(
-    const vec3_t center, float radius, const vec3_t normal,
-    bg_prone_debug_color_t color)
+static inline void bg_compat_prone_debug_circle(const vec3_t center, float radius, const vec3_t normal, bg_prone_debug_color_t color)
 {
-    G_DebugCircleEx(center, radius, normal,
-                    bg_compat_prone_debug_color(color),
-                    g_debugProneCheckDepthCheck.integer, 1);
+    G_DebugCircleEx(center, radius, normal, bg_compat_prone_debug_color(color), g_debugProneCheckDepthCheck.integer, 1);
 }
 
 #endif

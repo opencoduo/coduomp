@@ -7,8 +7,7 @@ enum {
 
 /* Source: CoDUOMP.exe 0x0042df00..0x0042df10 and coduo_lnxded
  * 0x0806252f..0x08062557. */
-int32_t FS_FOpenFileReadStream(const char *qpath, int32_t *handle,
-                               qboolean uniqueFile)
+int32_t FS_FOpenFileReadStream(const char *qpath, int32_t *handle, qboolean uniqueFile)
 {
     return FS_FOpenFileRead_Internal(qpath, handle, uniqueFile, qtrue);
 }
@@ -17,8 +16,7 @@ int32_t FS_FOpenFileReadStream(const char *qpath, int32_t *handle,
  * 0x08062558..0x0806258a.  The Linux global previously reconstructed as
  * fs_loadStack is the same file-access latch used by Windows, not the whole-
  * file temporary-allocation stack. */
-int32_t FS_FOpenFileRead(const char *qpath, int32_t *handle,
-                         qboolean uniqueFile)
+int32_t FS_FOpenFileRead(const char *qpath, int32_t *handle, qboolean uniqueFile)
 {
     fs_fileAccessed = qtrue;
     return FS_FOpenFileRead_Internal(qpath, handle, uniqueFile, qfalse);
@@ -72,7 +70,8 @@ int32_t FS_FOpenFileByMode(const char *qpath, int32_t *handle, fsMode_t mode)
         break;
 
     default:
-        Com_Error(ERR_FATAL, "\x15" "FSH_FOpenFile: bad mode");
+        Com_Error(ERR_FATAL, "\x15"
+                             "FSH_FOpenFile: bad mode");
         break;
     }
 

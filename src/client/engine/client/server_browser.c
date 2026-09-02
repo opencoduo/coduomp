@@ -33,8 +33,7 @@ typedef struct coduomp_server_player_query_s {
     coduomp_server_player_query_state_t state;
 } coduomp_server_player_query_t;
 
-static coduomp_server_player_query_t
-    coduomp_serverPlayerQueries[LAN_GLOBAL_SERVER_CAPACITY];
+static coduomp_server_player_query_t coduomp_serverPlayerQueries[LAN_GLOBAL_SERVER_CAPACITY];
 static int32_t coduomp_serverPlayerQueryCount;
 
 typedef struct coduomp_server_bot_cache_entry_s {
@@ -51,8 +50,7 @@ enum {
 #define CODUOMP_SERVER_ADDRESS_HASH_OFFSET UINT32_C(2166136261)
 #define CODUOMP_SERVER_ADDRESS_HASH_PRIME UINT32_C(16777619)
 
-static coduomp_server_bot_cache_entry_t
-    coduomp_serverBotCache[CODUOMP_SERVER_BOT_CACHE_CAPACITY];
+static coduomp_server_bot_cache_entry_t coduomp_serverBotCache[CODUOMP_SERVER_BOT_CACHE_CAPACITY];
 
 /* Mac symbol and the call at 0x0041b2f8 identify the message-pump boundary.
  * Its recovery is owned by the common event-loop subsystem. */
@@ -80,18 +78,15 @@ enum {
  * unique-mod checksum occupies offsets 4..7. Offset 4 is also where primary-key
  * paths write their terminating NUL, so this is one overlapping nine-byte
  * region rather than two independent C arrays. */
-char cl_cdkey[CL_CDKEY_STRING_SIZE] =
-    "                                "; /* original 0x005c51cc */
-char cl_cdkeyChecksums[CL_CDKEY_CHECKSUM_STORAGE_SIZE] =
-    {' ', ' ', ' ', ' '}; /* original 0x005c51f0 */
+char cl_cdkey[CL_CDKEY_STRING_SIZE] = "                                "; /* original 0x005c51cc */
+char cl_cdkeyChecksums[CL_CDKEY_CHECKSUM_STORAGE_SIZE] = {' ', ' ', ' ', ' '}; /* original 0x005c51f0 */
 
 static const char lan_serverCacheFileName[] = "uoservercache.dat";
 
 /* The cache compatibility marker is the combined byte count of the two
  * serialized arrays. It is 0x2eaf00 in the original build: 0x2e6300 bytes of
  * global-server records followed by 0x4c00 bytes of favorite records. */
-static const int32_t lan_serverCacheArrayBytes =
-    (int32_t)(sizeof(cls.globalServers) + sizeof(cls.favoriteServers));
+static const int32_t lan_serverCacheArrayBytes = (int32_t)(sizeof(cls.globalServers) + sizeof(cls.favoriteServers));
 
 /* Source: CoDUOMP.exe 0x00412500..0x0041250c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00412500_0041250d.mcode.
@@ -110,8 +105,7 @@ int CL_CompareAdrSigned(const void *left, const void *right)
  * CL_SortGlobalServers. */
 void CL_SortGlobalServers(void)
 {
-    coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers,
-                        sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
+    coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers, sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
 }
 
 /* Source: CoDUOMP.exe 0x004124a0..0x004124f6.
@@ -152,8 +146,7 @@ qboolean CL_FindServerInfo(netadr_t address)
 
     while (lower < upper) {
         const int32_t middle = (lower + upper) / 2;
-        const int32_t comparison = NET_CompareAdrSigned(
-            &address, &cls.globalServers[middle].address);
+        const int32_t comparison = NET_CompareAdrSigned(&address, &cls.globalServers[middle].address);
 
         if (comparison < 0) {
             upper = middle;
@@ -165,15 +158,12 @@ qboolean CL_FindServerInfo(netadr_t address)
         }
 
         int32_t first = middle;
-        while (first > 0 &&
-               NET_CompareAdrSigned(
-                   &address, &cls.globalServers[first - 1].address) == 0) {
+        while (first > 0 && NET_CompareAdrSigned(&address, &cls.globalServers[first - 1].address) == 0) {
             --first;
         }
 
         for (int32_t index = first; index < cls.numGlobalServers; ++index) {
-            if (NET_CompareAdrSigned(
-                    &address, &cls.globalServers[index].address) != 0) {
+            if (NET_CompareAdrSigned(&address, &cls.globalServers[index].address) != 0) {
                 break;
             }
             CL_InitServerInfo(&cls.globalServers[index], address);
@@ -195,14 +185,12 @@ void CL_MotdPacket(netadr_t address)
         return;
 
     const char *info = Cmd_Argc() > 1 ? Cmd_Argv(1) : "";
-    if (strcmp(Info_ValueForKey(info, "challenge"),
-               cls.updateChallenge) != 0) {
+    if (strcmp(Info_ValueForKey(info, "challenge"), cls.updateChallenge) != 0) {
         return;
     }
 
     const char *motd = Info_ValueForKey(info, "motd");
-    strncpy(cls.updateInfoString, info,
-            sizeof(cls.updateInfoString) - 1);
+    strncpy(cls.updateInfoString, info, sizeof(cls.updateInfoString) - 1);
     cls.updateInfoString[sizeof(cls.updateInfoString) - 1] = '\0';
     (void)Cvar_Set2("cl_motdString", motd, qtrue);
 }
@@ -236,12 +224,8 @@ const char *CL_GetServerIPAddress(void)
         return cl_serverIPAddress;
     }
 
-    Com_sprintf(
-        cl_serverIPAddress, sizeof(cl_serverIPAddress),
-        "%i.%i.%i.%i:%i",
-        clc.serverAddress.ip[0], clc.serverAddress.ip[1],
-        clc.serverAddress.ip[2], clc.serverAddress.ip[3],
-        (int32_t)(int16_t)BigShort((int16_t)clc.serverAddress.port));
+    Com_sprintf(cl_serverIPAddress, sizeof(cl_serverIPAddress), "%i.%i.%i.%i:%i", clc.serverAddress.ip[0], clc.serverAddress.ip[1],
+                clc.serverAddress.ip[2], clc.serverAddress.ip[3], (int32_t)(int16_t)BigShort((int16_t)clc.serverAddress.port));
     return cl_serverIPAddress;
 }
 
@@ -251,8 +235,7 @@ const char *CL_GetServerIPAddress(void)
  * Name and return role: exact same-module Mac symbol PB_Q_Serverinfo. */
 const char *PB_Q_Serverinfo(void)
 {
-    return &cl.gameState.stringData[
-        cl.gameState.stringOffsets[CL_SERVERINFO_CONFIGSTRING]];
+    return &cl.gameState.stringData[cl.gameState.stringOffsets[CL_SERVERINFO_CONFIGSTRING]];
 }
 
 /* Source: CoDUOMP.exe 0x00412230..0x0041226e.
@@ -280,9 +263,7 @@ void PBget_cl_cdkey(char *destination)
     size_t destinationLength = 0;
     for (size_t index = 0; index < sourceLength; ++index) {
         const char character = cl_cdkey[index];
-        if ((character >= '0' && character <= '9') ||
-            (character >= 'a' && character <= 'z') ||
-            (character >= 'A' && character <= 'Z')) {
+        if ((character >= '0' && character <= '9') || (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) {
             destination[destinationLength++] = character;
         }
     }
@@ -304,8 +285,7 @@ void CL_DisconnectPacket(netadr_t address)
         return;
     if (NET_CompareAdrSigned(&address, &clc.netchan.remoteAddress) != 0)
         return;
-    if (cls.realtime - clc.lastPacketTime <
-            CL_DISCONNECT_PACKET_GRACE_MSEC) {
+    if (cls.realtime - clc.lastPacketTime < CL_DISCONNECT_PACKET_GRACE_MSEC) {
         return;
     }
 
@@ -331,18 +311,15 @@ void CL_ServersResponsePacket(msg_t *message)
         uint8_t ip[4];
         uint16_t port;
     } master_server_address_t;
-    enum { MAX_MASTER_SERVERS_PER_PACKET = 256 };
+    enum {
+        MAX_MASTER_SERVERS_PER_PACKET = 256
+    };
 #if UINTPTR_MAX == UINT32_MAX
-    _Static_assert(_Alignof(master_server_address_t) == 2,
-                   "i386 master-response address alignment changed");
-    _Static_assert(offsetof(master_server_address_t, ip) == 0x0,
-                   "original master-response IP offset");
-    _Static_assert(sizeof(((master_server_address_t *)0)->ip) == 0x4,
-                   "original master-response IP extent");
-    _Static_assert(offsetof(master_server_address_t, port) == 0x4,
-                   "original master-response port offset");
-    _Static_assert(sizeof(master_server_address_t) == 0x6,
-                   "original master-response address extent");
+    _Static_assert(_Alignof(master_server_address_t) == 2, "i386 master-response address alignment changed");
+    _Static_assert(offsetof(master_server_address_t, ip) == 0x0, "original master-response IP offset");
+    _Static_assert(sizeof(((master_server_address_t *)0)->ip) == 0x4, "original master-response IP extent");
+    _Static_assert(offsetof(master_server_address_t, port) == 0x4, "original master-response port offset");
+    _Static_assert(sizeof(master_server_address_t) == 0x6, "original master-response address extent");
 #endif
 
     master_server_address_t parsedAddresses[MAX_MASTER_SERVERS_PER_PACKET];
@@ -369,23 +346,20 @@ void CL_ServersResponsePacket(msg_t *message)
 
             master_server_address_t *parsed = &parsedAddresses[parsedCount];
             memcpy(parsed->ip, cursor, sizeof(parsed->ip));
-            const uint16_t networkPort = (uint16_t)(
-                ((uint16_t)cursor[4] << 8) | cursor[5]);
+            const uint16_t networkPort = (uint16_t)(((uint16_t)cursor[4] << 8) | cursor[5]);
             parsed->port = (uint16_t)BigShort((int16_t)networkPort);
             cursor += 6;
 
             if (*cursor != '\\')
                 break;
 
-            Com_DPrintf("server: %d ip: %d.%d.%d.%d:%d\n",
-                        parsedCount, parsed->ip[0], parsed->ip[1],
-                        parsed->ip[2], parsed->ip[3], parsed->port);
+            Com_DPrintf("server: %d ip: %d.%d.%d.%d:%d\n", parsedCount, parsed->ip[0], parsed->ip[1], parsed->ip[2], parsed->ip[3],
+                        parsed->port);
             ++parsedCount;
 
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
             if (parsedCount >= MAX_MASTER_SERVERS_PER_PACKET ||
-                (end - cursor >= 4 && cursor[1] == 'E' &&
-                 cursor[2] == 'O' && cursor[3] == 'T')) {
+                (end - cursor >= 4 && cursor[1] == 'E' && cursor[2] == 'O' && cursor[3] == 'T')) {
                 break;
             }
         }
@@ -396,27 +370,21 @@ void CL_ServersResponsePacket(msg_t *message)
      * count, 0x004127b4 increments only the stack-local copy, and 0x00412841
      * publishes it immediately before the final qsort. */
     int32_t globalServerCount = cls.numGlobalServers;
-    for (int32_t index = 0;
-         index < parsedCount &&
-             globalServerCount < LAN_GLOBAL_SERVER_CAPACITY;
-         ++index) {
+    for (int32_t index = 0; index < parsedCount && globalServerCount < LAN_GLOBAL_SERVER_CAPACITY; ++index) {
         netadr_t address;
         address.type = NA_IP;
         memcpy(address.ip, parsedAddresses[index].ip, sizeof(address.ip));
         address.port = parsedAddresses[index].port;
 
         if (CL_FindServerInfo(address) == qfalse) {
-            CL_InitServerInfo(&cls.globalServers[globalServerCount],
-                              address);
+            CL_InitServerInfo(&cls.globalServers[globalServerCount], address);
             ++globalServerCount;
         }
     }
 
     cls.numGlobalServers = globalServerCount;
-    coduo_crt_qsort(cls.globalServers, (size_t)globalServerCount,
-                        sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
-    Com_Printf("%d servers parsed (total %d)\n",
-               parsedCount, globalServerCount);
+    coduo_crt_qsort(cls.globalServers, (size_t)globalServerCount, sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
+    Com_Printf("%d servers parsed (total %d)\n", parsedCount, globalServerCount);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: hash the fields used by
@@ -425,8 +393,7 @@ void CL_ServersResponsePacket(msg_t *message)
 static uint32_t coduomp_server_address_hash(netadr_t address)
 {
     uint32_t hash = CODUOMP_SERVER_ADDRESS_HASH_OFFSET;
-    hash = (hash ^ (uint32_t)address.type) *
-           CODUOMP_SERVER_ADDRESS_HASH_PRIME;
+    hash = (hash ^ (uint32_t)address.type) * CODUOMP_SERVER_ADDRESS_HASH_PRIME;
 
     const uint8_t *addressBytes = NULL;
     size_t addressByteCount = 0;
@@ -439,11 +406,9 @@ static uint32_t coduomp_server_address_hash(netadr_t address)
     }
 
     if (addressBytes != NULL) {
-        hash = (hash ^ (uint32_t)address.port) *
-               CODUOMP_SERVER_ADDRESS_HASH_PRIME;
+        hash = (hash ^ (uint32_t)address.port) * CODUOMP_SERVER_ADDRESS_HASH_PRIME;
         for (size_t index = 0; index < addressByteCount; ++index) {
-            hash = (hash ^ addressBytes[index]) *
-                   CODUOMP_SERVER_ADDRESS_HASH_PRIME;
+            hash = (hash ^ addressBytes[index]) * CODUOMP_SERVER_ADDRESS_HASH_PRIME;
         }
     }
     return hash;
@@ -451,17 +416,13 @@ static uint32_t coduomp_server_address_hash(netadr_t address)
 
 /* NOT_FROM_ORIGINAL_SOURCE: look up the persistent bot-count sidecar without
  * changing the original fixed-layout lan_server_info_t records. */
-static coduomp_server_bot_cache_entry_t *coduomp_find_server_bot_cache(
-    netadr_t address, qboolean create)
+static coduomp_server_bot_cache_entry_t *coduomp_find_server_bot_cache(netadr_t address, qboolean create)
 {
     const uint32_t slotMask = CODUOMP_SERVER_BOT_CACHE_CAPACITY - 1u;
-    const uint32_t firstSlot =
-        coduomp_server_address_hash(address) & slotMask;
+    const uint32_t firstSlot = coduomp_server_address_hash(address) & slotMask;
 
-    for (uint32_t offset = 0;
-         offset < CODUOMP_SERVER_BOT_CACHE_CAPACITY; ++offset) {
-        coduomp_server_bot_cache_entry_t *const entry =
-            &coduomp_serverBotCache[(firstSlot + offset) & slotMask];
+    for (uint32_t offset = 0; offset < CODUOMP_SERVER_BOT_CACHE_CAPACITY; ++offset) {
+        coduomp_server_bot_cache_entry_t *const entry = &coduomp_serverBotCache[(firstSlot + offset) & slotMask];
         if (entry->occupied == 0) {
             if (create == qfalse)
                 return NULL;
@@ -483,39 +444,30 @@ static coduomp_server_bot_cache_entry_t *coduomp_find_server_bot_cache(
  * Name and argument roles: exact same-module Mac symbol CL_SetServerInfo.
  * A null info string updates only the ping, while a non-null response replaces
  * the browser fields represented by the received info keys. */
-void CL_SetServerInfo(lan_server_info_t *server, const char *info,
-                      int32_t pingTime)
+void CL_SetServerInfo(lan_server_info_t *server, const char *info, int32_t pingTime)
 {
     if (server == NULL)
         return;
 
     if (info != NULL) {
-        const uint8_t aggregateClientCount =
-            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "clients"));
-        coduomp_server_bot_cache_entry_t *const botCache =
-            coduomp_find_server_bot_cache(server->address, qtrue);
+        const uint8_t aggregateClientCount = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "clients"));
+        coduomp_server_bot_cache_entry_t *const botCache = coduomp_find_server_bot_cache(server->address, qtrue);
         uint8_t displayedBotCount = 0;
         if (botCache != NULL) {
-            displayedBotCount =
-                botCache->cachedBotCount < aggregateClientCount
-                    ? botCache->cachedBotCount : aggregateClientCount;
+            displayedBotCount = botCache->cachedBotCount < aggregateClientCount ? botCache->cachedBotCount : aggregateClientCount;
             botCache->displayedBotCount = displayedBotCount;
         }
         server->clients = aggregateClientCount - displayedBotCount;
 
-        strncpy(server->hostName, Info_ValueForKey(info, "hostname"),
-                sizeof(server->hostName) - 1);
+        strncpy(server->hostName, Info_ValueForKey(info, "hostname"), sizeof(server->hostName) - 1);
         server->hostName[sizeof(server->hostName) - 1] = '\0';
 
-        strncpy(server->mapName, Info_ValueForKey(info, "mapname"),
-                sizeof(server->mapName) - 1);
+        strncpy(server->mapName, Info_ValueForKey(info, "mapname"), sizeof(server->mapName) - 1);
         server->mapName[sizeof(server->mapName) - 1] = '\0';
 
-        server->maxClients =
-            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "sv_maxclients"));
+        server->maxClients = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "sv_maxclients"));
 
-        strncpy(server->game, Info_ValueForKey(info, "game"),
-                sizeof(server->game) - 1);
+        strncpy(server->game, Info_ValueForKey(info, "game"), sizeof(server->game) - 1);
         server->game[sizeof(server->game) - 1] = '\0';
 
         /* The original copies 15 bytes although the containing record reserves
@@ -523,32 +475,21 @@ void CL_SetServerInfo(lan_server_info_t *server, const char *info,
         strncpy(server->gameType, Info_ValueForKey(info, "gametype"), 15);
         server->gameType[15] = '\0';
 
-        server->netType =
-            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "nettype"));
-        server->minPing =
-            (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "minping"));
-        server->maxPing =
-            (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "maxping"));
-        server->allowAnonymous =
-            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "sv_allowAnonymous"));
-        server->consoleDisabled =
-            (int8_t)coduo_crt_atoi(Info_ValueForKey(info, "con_disabled"));
-        server->passwordRequired =
-            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "pswrd"));
+        server->netType = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "nettype"));
+        server->minPing = (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "minping"));
+        server->maxPing = (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "maxping"));
+        server->allowAnonymous = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "sv_allowAnonymous"));
+        server->consoleDisabled = (int8_t)coduo_crt_atoi(Info_ValueForKey(info, "con_disabled"));
+        server->passwordRequired = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "pswrd"));
         server->pure = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "pure"));
-        server->friendlyFire =
-            (int8_t)coduo_crt_atoi(Info_ValueForKey(info, "ff"));
+        server->friendlyFire = (int8_t)coduo_crt_atoi(Info_ValueForKey(info, "ff"));
         server->killCam = (int8_t)coduo_crt_atoi(Info_ValueForKey(info, "kc"));
         server->hardware = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "hw"));
         server->mod = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "mod"));
-        server->timeoutsAllowed =
-            (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "timeoutsallowed"));
-        server->jeepsAllowed =
-            (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "jps"));
-        server->tanksAllowed =
-            (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "tnk"));
-        server->punkBuster =
-            (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "pb"));
+        server->timeoutsAllowed = (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "timeoutsallowed"));
+        server->jeepsAllowed = (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "jps"));
+        server->tanksAllowed = (int16_t)coduo_crt_atoi(Info_ValueForKey(info, "tnk"));
+        server->punkBuster = (uint8_t)coduo_crt_atoi(Info_ValueForKey(info, "pb"));
     }
 
     server->ping = (int16_t)pingTime;
@@ -559,9 +500,7 @@ void CL_SetServerInfo(lan_server_info_t *server, const char *info,
  * The original helper has no Mac traceback symbol. Its role is proven by the
  * two ui_lastServerRefresh cvar format strings and the clean-server/client
  * accumulation over the selected browser list. */
-static void CL_UpdateServerRefreshCvars(lan_server_info_t *servers,
-                                        int32_t serverCount,
-                                        lan_server_source_t source)
+static void CL_UpdateServerRefreshCvars(lan_server_info_t *servers, int32_t serverCount, lan_server_source_t source)
 {
     int32_t cleanServerCount = 0;
     int32_t playerCount = 0;
@@ -588,18 +527,14 @@ static void CL_UpdateServerRefreshCvars(lan_server_info_t *servers,
  * CL_SetServerInfoByAddress. Local and favorite matching deliberately scan
  * their complete 128-slot storage; the sorted global list uses binary search
  * and then updates every adjacent duplicate address. */
-void CL_SetServerInfoByAddress(netadr_t address, const char *info,
-                               int32_t pingTime)
+void CL_SetServerInfoByAddress(netadr_t address, const char *info, int32_t pingTime)
 {
     Com_PumpMessageLoop();
 
     for (int32_t index = 0; index < LAN_LOCAL_SERVER_CAPACITY; ++index) {
-        if (NET_CompareAdrSigned(&address,
-                                 &cls.localServers[index].address) == 0) {
+        if (NET_CompareAdrSigned(&address, &cls.localServers[index].address) == 0) {
             CL_SetServerInfo(&cls.localServers[index], info, pingTime);
-            CL_UpdateServerRefreshCvars(
-                cls.localServers, cls.numLocalServers,
-                LAN_SERVER_SOURCE_LOCAL);
+            CL_UpdateServerRefreshCvars(cls.localServers, cls.numLocalServers, LAN_SERVER_SOURCE_LOCAL);
         }
     }
 
@@ -607,8 +542,7 @@ void CL_SetServerInfoByAddress(netadr_t address, const char *info,
     int32_t upper = cls.numGlobalServers;
     while (lower < upper) {
         const int32_t middle = (lower + upper) / 2;
-        const int32_t comparison = NET_CompareAdrSigned(
-            &address, &cls.globalServers[middle].address);
+        const int32_t comparison = NET_CompareAdrSigned(&address, &cls.globalServers[middle].address);
 
         if (comparison < 0) {
             upper = middle;
@@ -620,32 +554,24 @@ void CL_SetServerInfoByAddress(netadr_t address, const char *info,
         }
 
         int32_t first = middle;
-        while (first > 0 &&
-               NET_CompareAdrSigned(
-                   &address, &cls.globalServers[first - 1].address) == 0) {
+        while (first > 0 && NET_CompareAdrSigned(&address, &cls.globalServers[first - 1].address) == 0) {
             --first;
         }
 
         for (int32_t index = first; index < cls.numGlobalServers; ++index) {
-            if (NET_CompareAdrSigned(
-                    &address, &cls.globalServers[index].address) != 0) {
+            if (NET_CompareAdrSigned(&address, &cls.globalServers[index].address) != 0) {
                 break;
             }
             CL_SetServerInfo(&cls.globalServers[index], info, pingTime);
-            CL_UpdateServerRefreshCvars(
-                cls.globalServers, cls.numGlobalServers,
-                LAN_SERVER_SOURCE_GLOBAL);
+            CL_UpdateServerRefreshCvars(cls.globalServers, cls.numGlobalServers, LAN_SERVER_SOURCE_GLOBAL);
         }
         break;
     }
 
     for (int32_t index = 0; index < LAN_FAVORITE_SERVER_CAPACITY; ++index) {
-        if (NET_CompareAdr(address,
-                           cls.favoriteServers[index].address) != qfalse) {
+        if (NET_CompareAdr(address, cls.favoriteServers[index].address) != qfalse) {
             CL_SetServerInfo(&cls.favoriteServers[index], info, pingTime);
-            CL_UpdateServerRefreshCvars(
-                cls.favoriteServers, cls.numFavoriteServers,
-                LAN_SERVER_SOURCE_FAVORITES);
+            CL_UpdateServerRefreshCvars(cls.favoriteServers, cls.numFavoriteServers, LAN_SERVER_SOURCE_FAVORITES);
         }
     }
 }
@@ -661,26 +587,21 @@ static void coduomp_reset_server_player_queries(void)
  * request for a nonempty server. The timeout follows the successful getinfo
  * round trip, with limits that prevent one silent server from stalling the
  * browser indefinitely. */
-static void coduomp_queue_server_player_query(netadr_t address,
-                                               int32_t pingMsec)
+static void coduomp_queue_server_player_query(netadr_t address, int32_t pingMsec)
 {
     if (coduomp_serverPlayerQueryCount >= LAN_GLOBAL_SERVER_CAPACITY)
         return;
 
     int32_t timeoutMsec = CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC;
-    if (pingMsec > 0 &&
-        pingMsec <= (CODUOMP_SERVER_STATUS_MAX_TIMEOUT_MSEC -
-                     CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC) / 2) {
-        timeoutMsec = pingMsec * 2 +
-                      CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC;
+    if (pingMsec > 0 && pingMsec <= (CODUOMP_SERVER_STATUS_MAX_TIMEOUT_MSEC - CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC) / 2) {
+        timeoutMsec = pingMsec * 2 + CODUOMP_SERVER_STATUS_TIMEOUT_BIAS_MSEC;
         if (timeoutMsec < CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC)
             timeoutMsec = CODUOMP_SERVER_STATUS_MIN_TIMEOUT_MSEC;
     } else if (pingMsec > 0) {
         timeoutMsec = CODUOMP_SERVER_STATUS_MAX_TIMEOUT_MSEC;
     }
 
-    coduomp_server_player_query_t *const query =
-        &coduomp_serverPlayerQueries[coduomp_serverPlayerQueryCount++];
+    coduomp_server_player_query_t *const query = &coduomp_serverPlayerQueries[coduomp_serverPlayerQueryCount++];
     query->address = address;
     query->requestStartTime = 0;
     query->timeoutMsec = timeoutMsec;
@@ -690,21 +611,17 @@ static void coduomp_queue_server_player_query(netadr_t address,
 /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): replace the aggregate
  * getinfo count in every browser list containing this address with the
  * heuristic human count obtained from getstatus. */
-static void coduomp_apply_server_human_count(netadr_t address,
-                                              uint8_t humanCount)
+static void coduomp_apply_server_human_count(netadr_t address, uint8_t humanCount)
 {
     qboolean localChanged = qfalse;
     for (int32_t index = 0; index < LAN_LOCAL_SERVER_CAPACITY; ++index) {
-        if (NET_CompareAdrSigned(
-                &address, &cls.localServers[index].address) == 0) {
+        if (NET_CompareAdrSigned(&address, &cls.localServers[index].address) == 0) {
             cls.localServers[index].clients = humanCount;
             localChanged = qtrue;
         }
     }
     if (localChanged != qfalse) {
-        CL_UpdateServerRefreshCvars(
-            cls.localServers, cls.numLocalServers,
-            LAN_SERVER_SOURCE_LOCAL);
+        CL_UpdateServerRefreshCvars(cls.localServers, cls.numLocalServers, LAN_SERVER_SOURCE_LOCAL);
     }
 
     qboolean globalChanged = qfalse;
@@ -712,25 +629,18 @@ static void coduomp_apply_server_human_count(netadr_t address,
     int32_t upper = cls.numGlobalServers;
     while (lower < upper) {
         const int32_t middle = (lower + upper) / 2;
-        const int32_t comparison = NET_CompareAdrSigned(
-            &address, &cls.globalServers[middle].address);
+        const int32_t comparison = NET_CompareAdrSigned(&address, &cls.globalServers[middle].address);
         if (comparison < 0) {
             upper = middle;
         } else if (comparison > 0) {
             lower = middle + 1;
         } else {
             int32_t first = middle;
-            while (first > 0 &&
-                   NET_CompareAdrSigned(
-                       &address,
-                       &cls.globalServers[first - 1].address) == 0) {
+            while (first > 0 && NET_CompareAdrSigned(&address, &cls.globalServers[first - 1].address) == 0) {
                 --first;
             }
-            for (int32_t index = first;
-                 index < cls.numGlobalServers; ++index) {
-                if (NET_CompareAdrSigned(
-                        &address,
-                        &cls.globalServers[index].address) != 0) {
+            for (int32_t index = first; index < cls.numGlobalServers; ++index) {
+                if (NET_CompareAdrSigned(&address, &cls.globalServers[index].address) != 0) {
                     break;
                 }
                 cls.globalServers[index].clients = humanCount;
@@ -740,23 +650,18 @@ static void coduomp_apply_server_human_count(netadr_t address,
         }
     }
     if (globalChanged != qfalse) {
-        CL_UpdateServerRefreshCvars(
-            cls.globalServers, cls.numGlobalServers,
-            LAN_SERVER_SOURCE_GLOBAL);
+        CL_UpdateServerRefreshCvars(cls.globalServers, cls.numGlobalServers, LAN_SERVER_SOURCE_GLOBAL);
     }
 
     qboolean favoriteChanged = qfalse;
     for (int32_t index = 0; index < LAN_FAVORITE_SERVER_CAPACITY; ++index) {
-        if (NET_CompareAdrSigned(
-                &address, &cls.favoriteServers[index].address) == 0) {
+        if (NET_CompareAdrSigned(&address, &cls.favoriteServers[index].address) == 0) {
             cls.favoriteServers[index].clients = humanCount;
             favoriteChanged = qtrue;
         }
     }
     if (favoriteChanged != qfalse) {
-        CL_UpdateServerRefreshCvars(
-            cls.favoriteServers, cls.numFavoriteServers,
-            LAN_SERVER_SOURCE_FAVORITES);
+        CL_UpdateServerRefreshCvars(cls.favoriteServers, cls.numFavoriteServers, LAN_SERVER_SOURCE_FAVORITES);
     }
 }
 
@@ -764,16 +669,12 @@ static void coduomp_apply_server_human_count(netadr_t address,
  * status roster entry, retaining the requested 999-ping bot heuristic by
  * server address. The caller supplies a copied message cursor so the stock
  * status-cache parser can consume the same packet independently. */
-static void coduomp_record_server_player_status(netadr_t address,
-                                                 msg_t *message)
+static void coduomp_record_server_player_status(netadr_t address, msg_t *message)
 {
     qboolean tracked = qfalse;
-    for (int32_t index = 0;
-         index < coduomp_serverPlayerQueryCount; ++index) {
-        const coduomp_server_player_query_t *const query =
-            &coduomp_serverPlayerQueries[index];
-        if (query->state == CODUOMP_SERVER_PLAYER_QUERY_PENDING &&
-            NET_CompareAdrSigned(&address, &query->address) == 0) {
+    for (int32_t index = 0; index < coduomp_serverPlayerQueryCount; ++index) {
+        const coduomp_server_player_query_t *const query = &coduomp_serverPlayerQueries[index];
+        if (query->state == CODUOMP_SERVER_PLAYER_QUERY_PENDING && NET_CompareAdrSigned(&address, &query->address) == 0) {
             tracked = qtrue;
             break;
         }
@@ -800,12 +701,9 @@ static void coduomp_record_server_player_status(netadr_t address,
         player = MSG_ReadStringLine(message);
     }
 
-    for (int32_t index = 0;
-         index < coduomp_serverPlayerQueryCount; ++index) {
-        coduomp_server_player_query_t *const query =
-            &coduomp_serverPlayerQueries[index];
-        if (query->state == CODUOMP_SERVER_PLAYER_QUERY_PENDING &&
-            NET_CompareAdrSigned(&address, &query->address) == 0) {
+    for (int32_t index = 0; index < coduomp_serverPlayerQueryCount; ++index) {
+        coduomp_server_player_query_t *const query = &coduomp_serverPlayerQueries[index];
+        if (query->state == CODUOMP_SERVER_PLAYER_QUERY_PENDING && NET_CompareAdrSigned(&address, &query->address) == 0) {
             query->state = CODUOMP_SERVER_PLAYER_QUERY_COMPLETE;
         }
     }
@@ -813,8 +711,7 @@ static void coduomp_record_server_player_status(netadr_t address,
     if (validRoster == qfalse)
         return;
 
-    coduomp_server_bot_cache_entry_t *const botCache =
-        coduomp_find_server_bot_cache(address, qtrue);
+    coduomp_server_bot_cache_entry_t *const botCache = coduomp_find_server_bot_cache(address, qtrue);
     if (botCache != NULL) {
         botCache->cachedBotCount = botCount;
         botCache->displayedBotCount = botCount;
@@ -831,14 +728,11 @@ static qboolean coduomp_pump_server_player_queries(void)
     int32_t pendingCount = 0;
     qboolean active = qfalse;
 
-    for (int32_t index = 0;
-         index < coduomp_serverPlayerQueryCount; ++index) {
-        coduomp_server_player_query_t *const query =
-            &coduomp_serverPlayerQueries[index];
+    for (int32_t index = 0; index < coduomp_serverPlayerQueryCount; ++index) {
+        coduomp_server_player_query_t *const query = &coduomp_serverPlayerQueries[index];
         if (query->state != CODUOMP_SERVER_PLAYER_QUERY_PENDING)
             continue;
-        if ((uint32_t)now - (uint32_t)query->requestStartTime >=
-            (uint32_t)query->timeoutMsec) {
+        if ((uint32_t)now - (uint32_t)query->requestStartTime >= (uint32_t)query->timeoutMsec) {
             query->state = CODUOMP_SERVER_PLAYER_QUERY_COMPLETE;
             continue;
         }
@@ -846,11 +740,8 @@ static qboolean coduomp_pump_server_player_queries(void)
         active = qtrue;
     }
 
-    for (int32_t index = 0;
-         index < coduomp_serverPlayerQueryCount &&
-         pendingCount < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
-        coduomp_server_player_query_t *const query =
-            &coduomp_serverPlayerQueries[index];
+    for (int32_t index = 0; index < coduomp_serverPlayerQueryCount && pendingCount < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
+        coduomp_server_player_query_t *const query = &coduomp_serverPlayerQueries[index];
         if (query->state != CODUOMP_SERVER_PLAYER_QUERY_QUEUED)
             continue;
         query->requestStartTime = now;
@@ -869,47 +760,33 @@ static qboolean coduomp_pump_server_player_queries(void)
  * CL_ServerInfoPacket. A response first completes a matching pending ping.
  * An unsolicited response is useful only during local-server discovery: it
  * adds an address-only browser entry which a subsequent ping will populate. */
-void CL_ServerInfoPacket(netadr_t address, msg_t *message,
-                         int32_t packetTime)
+void CL_ServerInfoPacket(netadr_t address, msg_t *message, int32_t packetTime)
 {
     const char *const info = MSG_ReadString(message);
-    const int32_t packetProtocol =
-        coduo_crt_atoi(Info_ValueForKey(info, "protocol"));
+    const int32_t packetProtocol = coduo_crt_atoi(Info_ValueForKey(info, "protocol"));
 
     const float expectedProtocol =
-        Cvar_VariableString("debug_protocol")[0] == '\0'
-            ? (float)CL_NETWORK_PROTOCOL_VERSION
-            : Cvar_VariableValue("debug_protocol");
+        Cvar_VariableString("debug_protocol")[0] == '\0' ? (float)CL_NETWORK_PROTOCOL_VERSION : Cvar_VariableValue("debug_protocol");
 
     if ((float)packetProtocol != expectedProtocol) {
-        Com_DPrintf(
-            "Different protocol info packet: %s\n", info);
+        Com_DPrintf("Different protocol info packet: %s\n", info);
         return;
     }
 
     cl_ping_t *ping = NULL;
-    for (int32_t index = 0;
-         index < CL_MAX_PING_REQUESTS;
-         ++index) {
+    for (int32_t index = 0; index < CL_MAX_PING_REQUESTS; ++index) {
         cl_ping_t *const candidate = &cl_pingList[index];
-        if (candidate->address.port != 0 &&
-            candidate->pingMsec == 0 &&
-            NET_CompareAdrSigned(
-                &candidate->address, &address) == 0) {
+        if (candidate->address.port != 0 && candidate->pingMsec == 0 && NET_CompareAdrSigned(&candidate->address, &address) == 0) {
             ping = candidate;
             break;
         }
     }
 
     if (ping != NULL) {
-        ping->pingMsec =
-            packetTime - ping->requestStartTime + 1;
-        Com_DPrintf(
-            "ping time %dms from %s\n",
-            ping->pingMsec, NET_AdrToString(address));
+        ping->pingMsec = packetTime - ping->requestStartTime + 1;
+        Com_DPrintf("ping time %dms from %s\n", ping->pingMsec, NET_AdrToString(address));
 
-        Q_strncpyz(
-            ping->serverInfo, info, (int32_t)sizeof(ping->serverInfo));
+        Q_strncpyz(ping->serverInfo, info, (int32_t)sizeof(ping->serverInfo));
 
         int32_t netType;
         switch (address.type) {
@@ -925,10 +802,8 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
             netType = 0;
             break;
         }
-        Info_SetValueForKey(
-            ping->serverInfo, "nettype", va("%d", netType));
-        CL_SetServerInfoByAddress(
-            address, info, ping->pingMsec);
+        Info_SetValueForKey(ping->serverInfo, "nettype", va("%d", netType));
+        CL_SetServerInfoByAddress(address, info, ping->pingMsec);
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): getinfo has only an
          * aggregate client count. Ask nonempty servers for the roster needed
          * to remove 999-ping entries from the browser count. */
@@ -942,28 +817,22 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
         return;
 
     int32_t serverIndex;
-    for (serverIndex = 0;
-         serverIndex < LAN_LOCAL_SERVER_CAPACITY;
-         ++serverIndex) {
-        lan_server_info_t *const server =
-            &cls.localServers[serverIndex];
+    for (serverIndex = 0; serverIndex < LAN_LOCAL_SERVER_CAPACITY; ++serverIndex) {
+        lan_server_info_t *const server = &cls.localServers[serverIndex];
         if (server->address.port == 0)
             break;
-        if (NET_CompareAdrSigned(
-                &server->address, &address) == 0) {
+        if (NET_CompareAdrSigned(&server->address, &address) == 0) {
             return;
         }
     }
 
     if (serverIndex == LAN_LOCAL_SERVER_CAPACITY) {
-        Com_DPrintf(
-            "MAX_OTHER_SERVERS hit, dropping infoResponse\n");
+        Com_DPrintf("MAX_OTHER_SERVERS hit, dropping infoResponse\n");
         return;
     }
 
     cls.numLocalServers = serverIndex + 1;
-    lan_server_info_t *const server =
-        &cls.localServers[serverIndex];
+    lan_server_info_t *const server = &cls.localServers[serverIndex];
     server->address = address;
     server->clients = 0;
     server->hostName[0] = '\0';
@@ -979,9 +848,7 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
     server->punkBuster = 0;
 
     char printMessage[LAN_SERVER_PRINT_MESSAGE_CAPACITY];
-    Q_strncpyz(
-        printMessage, MSG_ReadString(message),
-        (int32_t)sizeof(printMessage));
+    Q_strncpyz(printMessage, MSG_ReadString(message), (int32_t)sizeof(printMessage));
     if (printMessage[0] == '\0')
         return;
 
@@ -992,8 +859,7 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
         printMessage[messageLength + 1] = '\0';
     }
 
-    Com_Printf(
-        "%s: %s", NET_AdrToString(address), printMessage);
+    Com_Printf("%s: %s", NET_AdrToString(address), printMessage);
 }
 
 /* Source: CoDUOMP.exe 0x0041a4e0..0x0041a5a3.
@@ -1007,60 +873,44 @@ qboolean LAN_LoadCachedServersInternal(int32_t fileHandle)
     int32_t cacheVersion;
     int32_t serializedArrayBytes;
 
-    if (FS_Read(&cacheVersion, (int32_t)sizeof(cacheVersion), fileHandle) !=
-            (int32_t)sizeof(cacheVersion) ||
+    if (FS_Read(&cacheVersion, (int32_t)sizeof(cacheVersion), fileHandle) != (int32_t)sizeof(cacheVersion) ||
         cacheVersion != LAN_SERVER_CACHE_VERSION) {
         return qfalse;
     }
 
-    if (FS_Read(&cls.numGlobalServers,
-                (int32_t)sizeof(cls.numGlobalServers), fileHandle) !=
-            (int32_t)sizeof(cls.numGlobalServers) ||
+    if (FS_Read(&cls.numGlobalServers, (int32_t)sizeof(cls.numGlobalServers), fileHandle) != (int32_t)sizeof(cls.numGlobalServers) ||
         (uint32_t)cls.numGlobalServers >= LAN_GLOBAL_SERVER_CAPACITY) {
         return qfalse;
     }
 
-    if (FS_Read(&cls.numFavoriteServers,
-                (int32_t)sizeof(cls.numFavoriteServers), fileHandle) !=
-            (int32_t)sizeof(cls.numFavoriteServers) ||
+    if (FS_Read(&cls.numFavoriteServers, (int32_t)sizeof(cls.numFavoriteServers), fileHandle) != (int32_t)sizeof(cls.numFavoriteServers) ||
         (uint32_t)cls.numFavoriteServers >= LAN_FAVORITE_SERVER_CAPACITY) {
         return qfalse;
     }
 
-    if (FS_Read(&serializedArrayBytes,
-                (int32_t)sizeof(serializedArrayBytes), fileHandle) !=
-            (int32_t)sizeof(serializedArrayBytes) ||
+    if (FS_Read(&serializedArrayBytes, (int32_t)sizeof(serializedArrayBytes), fileHandle) != (int32_t)sizeof(serializedArrayBytes) ||
         serializedArrayBytes != lan_serverCacheArrayBytes) {
         return qfalse;
     }
 
-    if (FS_Read(cls.globalServers, (int32_t)sizeof(cls.globalServers),
-                fileHandle) != (int32_t)sizeof(cls.globalServers) ||
-        FS_Read(cls.favoriteServers,
-                (int32_t)sizeof(cls.favoriteServers), fileHandle) !=
-            (int32_t)sizeof(cls.favoriteServers)) {
+    if (FS_Read(cls.globalServers, (int32_t)sizeof(cls.globalServers), fileHandle) != (int32_t)sizeof(cls.globalServers) ||
+        FS_Read(cls.favoriteServers, (int32_t)sizeof(cls.favoriteServers), fileHandle) != (int32_t)sizeof(cls.favoriteServers)) {
         return qfalse;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    for (size_t serverIndex = 0;
-         serverIndex < LAN_GLOBAL_SERVER_CAPACITY; ++serverIndex) {
-        const lan_server_info_t *const server =
-            &cls.globalServers[serverIndex];
+    for (size_t serverIndex = 0; serverIndex < LAN_GLOBAL_SERVER_CAPACITY; ++serverIndex) {
+        const lan_server_info_t *const server = &cls.globalServers[serverIndex];
         if (memchr(server->hostName, '\0', sizeof(server->hostName)) == NULL ||
-            memchr(server->mapName, '\0', sizeof(server->mapName)) == NULL ||
-            memchr(server->game, '\0', sizeof(server->game)) == NULL ||
+            memchr(server->mapName, '\0', sizeof(server->mapName)) == NULL || memchr(server->game, '\0', sizeof(server->game)) == NULL ||
             memchr(server->gameType, '\0', sizeof(server->gameType)) == NULL) {
             return qfalse;
         }
     }
-    for (size_t serverIndex = 0;
-         serverIndex < LAN_FAVORITE_SERVER_CAPACITY; ++serverIndex) {
-        const lan_server_info_t *const server =
-            &cls.favoriteServers[serverIndex];
+    for (size_t serverIndex = 0; serverIndex < LAN_FAVORITE_SERVER_CAPACITY; ++serverIndex) {
+        const lan_server_info_t *const server = &cls.favoriteServers[serverIndex];
         if (memchr(server->hostName, '\0', sizeof(server->hostName)) == NULL ||
-            memchr(server->mapName, '\0', sizeof(server->mapName)) == NULL ||
-            memchr(server->game, '\0', sizeof(server->game)) == NULL ||
+            memchr(server->mapName, '\0', sizeof(server->mapName)) == NULL || memchr(server->game, '\0', sizeof(server->game)) == NULL ||
             memchr(server->gameType, '\0', sizeof(server->gameType)) == NULL) {
             return qfalse;
         }
@@ -1077,8 +927,7 @@ void LAN_LoadCachedServers(void)
 {
     int32_t fileHandle;
 
-    if (FS_SV_FOpenFileRead(
-            lan_serverCacheFileName, &fileHandle) == 0) {
+    if (FS_SV_FOpenFileRead(lan_serverCacheFileName, &fileHandle) == 0) {
         cls.numGlobalServers = 0;
         cls.numFavoriteServers = 0;
         return;
@@ -1092,8 +941,7 @@ void LAN_LoadCachedServers(void)
         return;
     }
 
-    coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers,
-                        sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
+    coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers, sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
 }
 
 /* Source: CoDUOMP.exe 0x0041a620..0x0041a73a.
@@ -1104,28 +952,17 @@ void LAN_LoadCachedServers(void)
  * active prefix is then restored to address order. */
 void LAN_SaveServersToCache(void)
 {
-    const int32_t fileHandle =
-        FS_SV_FOpenFileWrite(lan_serverCacheFileName);
+    const int32_t fileHandle = FS_SV_FOpenFileWrite(lan_serverCacheFileName);
     int32_t cacheVersion = LAN_SERVER_CACHE_VERSION;
     int32_t serializedArrayBytes = lan_serverCacheArrayBytes;
 
     (void)FS_Write(&cacheVersion, (int32_t)sizeof(cacheVersion), fileHandle);
 
-    for (int32_t serverIndex = cls.numGlobalServers - 1;
-         serverIndex >= 0; --serverIndex) {
+    for (int32_t serverIndex = cls.numGlobalServers - 1; serverIndex >= 0; --serverIndex) {
         lan_server_info_t *server = &cls.globalServers[serverIndex];
-        const qboolean stale =
-            server->masterResponseAge >=
-                    LAN_SERVER_RECENT_MASTER_RESPONSE_AGE_LIMIT
-                ? qtrue
-                : qfalse;
+        const qboolean stale = server->masterResponseAge >= LAN_SERVER_RECENT_MASTER_RESPONSE_AGE_LIMIT ? qtrue : qfalse;
         const qboolean duplicate =
-            serverIndex > 0 &&
-                    NET_CompareAdrSigned(
-                        &server->address,
-                        &cls.globalServers[serverIndex - 1].address) == 0
-                ? qtrue
-                : qfalse;
+            serverIndex > 0 && NET_CompareAdrSigned(&server->address, &cls.globalServers[serverIndex - 1].address) == 0 ? qtrue : qfalse;
 
         if (stale != qfalse || duplicate != qfalse) {
             --cls.numGlobalServers;
@@ -1133,18 +970,12 @@ void LAN_SaveServersToCache(void)
         }
     }
 
-    coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers,
-                        sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
-    (void)FS_Write(&cls.numGlobalServers,
-                   (int32_t)sizeof(cls.numGlobalServers), fileHandle);
-    (void)FS_Write(&cls.numFavoriteServers,
-                   (int32_t)sizeof(cls.numFavoriteServers), fileHandle);
-    (void)FS_Write(&serializedArrayBytes,
-                   (int32_t)sizeof(serializedArrayBytes), fileHandle);
-    (void)FS_Write(cls.globalServers, (int32_t)sizeof(cls.globalServers),
-                   fileHandle);
-    (void)FS_Write(cls.favoriteServers,
-                   (int32_t)sizeof(cls.favoriteServers), fileHandle);
+    coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers, sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
+    (void)FS_Write(&cls.numGlobalServers, (int32_t)sizeof(cls.numGlobalServers), fileHandle);
+    (void)FS_Write(&cls.numFavoriteServers, (int32_t)sizeof(cls.numFavoriteServers), fileHandle);
+    (void)FS_Write(&serializedArrayBytes, (int32_t)sizeof(serializedArrayBytes), fileHandle);
+    (void)FS_Write(cls.globalServers, (int32_t)sizeof(cls.globalServers), fileHandle);
+    (void)FS_Write(cls.favoriteServers, (int32_t)sizeof(cls.favoriteServers), fileHandle);
     FS_FCloseFile(fileHandle);
 }
 
@@ -1219,10 +1050,8 @@ void CL_GetPingInfo(int32_t pingIndex, char *buffer, int32_t bufferSize)
     if (ping->address.port == 0)
         return;
 
-    const int32_t copySize =
-        bufferSize < CL_PING_INFO_SIZE ? bufferSize : CL_PING_INFO_SIZE;
-    strncpy(buffer, ping->serverInfo,
-            (size_t)copySize - 1u);
+    const int32_t copySize = bufferSize < CL_PING_INFO_SIZE ? bufferSize : CL_PING_INFO_SIZE;
+    strncpy(buffer, ping->serverInfo, (size_t)copySize - 1u);
     buffer[copySize - 1] = '\0';
 }
 
@@ -1298,16 +1127,14 @@ void CL_Ping_f(void)
  * unfinished request reports a provisional elapsed time only after it reaches
  * cl_maxPing (with the original 100 ms floor); server-list metadata is updated
  * with the stored completed time, not that provisional value. */
-void CL_GetPing(int32_t pingIndex, char *address, int32_t addressSize,
-                int32_t *pingTime)
+void CL_GetPing(int32_t pingIndex, char *address, int32_t addressSize, int32_t *pingTime)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (address != NULL && addressSize > 0)
         address[0] = '\0';
     if (pingTime != NULL)
         *pingTime = 0;
-    if (address == NULL || addressSize <= 0 || pingTime == NULL ||
-        (uint32_t)pingIndex >= CL_MAX_PING_REQUESTS) {
+    if (address == NULL || addressSize <= 0 || pingTime == NULL || (uint32_t)pingIndex >= CL_MAX_PING_REQUESTS) {
         return;
     }
 
@@ -1316,17 +1143,13 @@ void CL_GetPing(int32_t pingIndex, char *address, int32_t addressSize,
     if (ping->address.port == 0)
         return;
 
-    const int32_t copySize =
-        addressSize < NET_ADDRESS_STRING_SIZE
-            ? addressSize : NET_ADDRESS_STRING_SIZE;
-    strncpy(address, NET_AdrToString(ping->address),
-            (size_t)copySize - 1u);
+    const int32_t copySize = addressSize < NET_ADDRESS_STRING_SIZE ? addressSize : NET_ADDRESS_STRING_SIZE;
+    strncpy(address, NET_AdrToString(ping->address), (size_t)copySize - 1u);
     address[copySize - 1] = '\0';
 
     int32_t reportedTime = ping->pingMsec;
     if (reportedTime == 0) {
-        reportedTime =
-            (int32_t)(Sys_Milliseconds() - (uint32_t)ping->requestStartTime);
+        reportedTime = (int32_t)(Sys_Milliseconds() - (uint32_t)ping->requestStartTime);
         const cvar_t *maxPing = Cvar_FindVar("cl_maxPing");
         int32_t reportThreshold = 100;
         if (maxPing != NULL && maxPing->integer >= reportThreshold)
@@ -1336,10 +1159,8 @@ void CL_GetPing(int32_t pingIndex, char *address, int32_t addressSize,
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    const char *responseInfo =
-        ping->pingMsec != 0 ? ping->serverInfo : NULL;
-    CL_SetServerInfoByAddress(ping->address, responseInfo,
-                              ping->pingMsec);
+    const char *responseInfo = ping->pingMsec != 0 ? ping->serverInfo : NULL;
+    CL_SetServerInfoByAddress(ping->address, responseInfo, ping->pingMsec);
     *pingTime = reportedTime;
 }
 
@@ -1351,9 +1172,7 @@ void CL_GetPing(int32_t pingIndex, char *address, int32_t addressSize,
  * harvested through CL_GetPing and released by clearing their address port. */
 qboolean CL_UpdateDirtyPings(lan_server_source_t source)
 {
-    if (cls.state != CA_DISCONNECTED ||
-        source < LAN_SERVER_SOURCE_LOCAL ||
-        source > LAN_SERVER_SOURCE_FAVORITES) {
+    if (cls.state != CA_DISCONNECTED || source < LAN_SERVER_SOURCE_LOCAL || source > LAN_SERVER_SOURCE_FAVORITES) {
         return qfalse;
     }
 
@@ -1380,8 +1199,7 @@ qboolean CL_UpdateDirtyPings(lan_server_source_t source)
             break;
         }
 
-        for (int32_t serverIndex = 0; serverIndex < serverCount;
-             ++serverIndex) {
+        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex) {
             lan_server_info_t *server = &servers[serverIndex];
             if (server->dirty == 0 || server->ping != -1)
                 continue;
@@ -1389,12 +1207,9 @@ qboolean CL_UpdateDirtyPings(lan_server_source_t source)
                 break;
 
             int32_t pingIndex;
-            for (pingIndex = 0; pingIndex < CL_MAX_PING_REQUESTS;
-                 ++pingIndex) {
+            for (pingIndex = 0; pingIndex < CL_MAX_PING_REQUESTS; ++pingIndex) {
                 if (cl_pingList[pingIndex].address.port != 0 &&
-                    NET_CompareAdrSigned(
-                        &server->address,
-                        &cl_pingList[pingIndex].address) == 0) {
+                    NET_CompareAdrSigned(&server->address, &cl_pingList[pingIndex].address) == 0) {
                     break;
                 }
             }
@@ -1402,8 +1217,7 @@ qboolean CL_UpdateDirtyPings(lan_server_source_t source)
                 continue;
 
             stillUpdating = qtrue;
-            for (pingIndex = 0; pingIndex < CL_MAX_PING_REQUESTS;
-                 ++pingIndex) {
+            for (pingIndex = 0; pingIndex < CL_MAX_PING_REQUESTS; ++pingIndex) {
                 if (cl_pingList[pingIndex].address.port == 0)
                     break;
             }
@@ -1420,8 +1234,7 @@ qboolean CL_UpdateDirtyPings(lan_server_source_t source)
     if (pendingCount != 0)
         stillUpdating = qtrue;
 
-    for (int32_t pingIndex = 0; pingIndex < CL_MAX_PING_REQUESTS;
-         ++pingIndex) {
+    for (int32_t pingIndex = 0; pingIndex < CL_MAX_PING_REQUESTS; ++pingIndex) {
         if (cl_pingList[pingIndex].address.port == 0)
             continue;
 
@@ -1449,8 +1262,7 @@ qboolean CL_UpdateDirtyPings(lan_server_source_t source)
 cl_server_status_t *CL_GetServerStatus(netadr_t address)
 {
     for (int32_t index = 0; index < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
-        if (NET_CompareAdrSigned(
-                &address, &cl_serverStatusList[index].address) == 0) {
+        if (NET_CompareAdrSigned(&address, &cl_serverStatusList[index].address) == 0) {
             return &cl_serverStatusList[index];
         }
     }
@@ -1463,8 +1275,7 @@ cl_server_status_t *CL_GetServerStatus(netadr_t address)
     int32_t oldestIndex = -1;
     int32_t oldestStartTime = 0;
     for (int32_t index = 0; index < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
-        if (oldestIndex == -1 ||
-            cl_serverStatusList[index].requestStartTime < oldestStartTime) {
+        if (oldestIndex == -1 || cl_serverStatusList[index].requestStartTime < oldestStartTime) {
             oldestIndex = index;
             oldestStartTime = cl_serverStatusList[index].requestStartTime;
         }
@@ -1472,8 +1283,7 @@ cl_server_status_t *CL_GetServerStatus(netadr_t address)
 
     if (oldestIndex == -1) {
         ++cl_serverStatusNextSlot;
-        oldestIndex = cl_serverStatusNextSlot &
-                      (CL_SERVER_STATUS_SLOT_COUNT - 1);
+        oldestIndex = cl_serverStatusNextSlot & (CL_SERVER_STATUS_SLOT_COUNT - 1);
     }
     return &cl_serverStatusList[oldestIndex];
 }
@@ -1484,8 +1294,7 @@ cl_server_status_t *CL_GetServerStatus(netadr_t address)
  * null address resets the cache; passing a null destination releases the
  * selected record. A completed response is copied once, while pending requests
  * are retransmitted only after cl_serverStatusResendTime expires. */
-qboolean CL_ServerStatus(const char *address, char *status,
-                         int32_t statusSize)
+qboolean CL_ServerStatus(const char *address, char *status, int32_t statusSize)
 {
     if (address == NULL) {
         for (int32_t index = 0; index < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
@@ -1499,8 +1308,7 @@ qboolean CL_ServerStatus(const char *address, char *status,
     if (NET_StringToAdr(address, &serverAddress) == qfalse)
         return qfalse;
 
-    cl_server_status_t *serverStatus =
-        CL_GetServerStatus(serverAddress);
+    cl_server_status_t *serverStatus = CL_GetServerStatus(serverAddress);
     if (status == NULL) {
         serverStatus->responseRetrieved = qtrue;
         return qfalse;
@@ -1509,14 +1317,10 @@ qboolean CL_ServerStatus(const char *address, char *status,
     if (statusSize <= 0)
         return qfalse;
 
-    if (NET_CompareAdrSigned(
-            &serverAddress, &serverStatus->address) == 0) {
+    if (NET_CompareAdrSigned(&serverAddress, &serverStatus->address) == 0) {
         if (serverStatus->requestPending == qfalse) {
-            const int32_t copySize =
-                statusSize < CL_SERVER_STATUS_TEXT_SIZE
-                    ? statusSize : CL_SERVER_STATUS_TEXT_SIZE;
-            strncpy(status, serverStatus->responseText,
-                    (size_t)copySize - 1u);
+            const int32_t copySize = statusSize < CL_SERVER_STATUS_TEXT_SIZE ? statusSize : CL_SERVER_STATUS_TEXT_SIZE;
+            strncpy(status, serverStatus->responseText, (size_t)copySize - 1u);
             status[copySize - 1] = '\0';
             serverStatus->responseRetrieved = qtrue;
             serverStatus->requestStartTime = 0;
@@ -1524,8 +1328,7 @@ qboolean CL_ServerStatus(const char *address, char *status,
         }
 
         const int32_t now = (int32_t)Sys_Milliseconds();
-        if (serverStatus->requestStartTime >=
-            now - cl_serverStatusResendTime->integer) {
+        if (serverStatus->requestStartTime >= now - cl_serverStatusResendTime->integer) {
             return qfalse;
         }
 
@@ -1565,8 +1368,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
 
     cl_server_status_t *serverStatus = NULL;
     for (int32_t index = 0; index < CL_SERVER_STATUS_SLOT_COUNT; ++index) {
-        if (NET_CompareAdrSigned(
-                &address, &cl_serverStatusList[index].address) == 0) {
+        if (NET_CompareAdrSigned(&address, &cl_serverStatusList[index].address) == 0) {
             serverStatus = &cl_serverStatusList[index];
             break;
         }
@@ -1575,8 +1377,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
         return;
 
     const char *settings = MSG_ReadStringLine(message);
-    Com_sprintf(serverStatus->responseText, CL_SERVER_STATUS_TEXT_SIZE,
-                "\x15%s", settings);
+    Com_sprintf(serverStatus->responseText, CL_SERVER_STATUS_TEXT_SIZE, "\x15%s", settings);
 
     if (serverStatus->printResponse != qfalse) {
         Com_Printf("Server settings:\n");
@@ -1588,8 +1389,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
 
                 if (*cursor == '\\')
                     ++cursor;
-                while (*cursor != '\0' && *cursor != '\\' &&
-                       length < (int32_t)sizeof(token) - 1) {
+                while (*cursor != '\0' && *cursor != '\\' && length < (int32_t)sizeof(token) - 1) {
                     token[length++] = *cursor;
                     if (length >= (int32_t)sizeof(token) - 1)
                         break;
@@ -1606,8 +1406,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
     }
 
     size_t textLength = strlen(serverStatus->responseText);
-    Com_sprintf(serverStatus->responseText + textLength,
-                CL_SERVER_STATUS_TEXT_SIZE - (int32_t)textLength, "\\");
+    Com_sprintf(serverStatus->responseText + textLength, CL_SERVER_STATUS_TEXT_SIZE - (int32_t)textLength, "\\");
 
     if (serverStatus->printResponse != qfalse) {
         Com_Printf("\nPlayers:\n");
@@ -1618,9 +1417,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
     const char *player = MSG_ReadStringLine(message);
     while (*player != '\0') {
         textLength = strlen(serverStatus->responseText);
-        Com_sprintf(serverStatus->responseText + textLength,
-                    CL_SERVER_STATUS_TEXT_SIZE - (int32_t)textLength,
-                    "\\%s", player);
+        Com_sprintf(serverStatus->responseText + textLength, CL_SERVER_STATUS_TEXT_SIZE - (int32_t)textLength, "\\%s", player);
 
         if (serverStatus->printResponse != qfalse) {
             int32_t score = 0;
@@ -1636,8 +1433,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
             if (name == NULL)
                 name = "unknown";
 
-            Com_Printf("%-2d    %-3d    %-3d    %s\n",
-                       playerNumber, score, ping, name);
+            Com_Printf("%-2d    %-3d    %-3d    %s\n", playerNumber, score, ping, name);
         }
 
         player = MSG_ReadStringLine(message);
@@ -1645,8 +1441,7 @@ void CL_ServerStatusResponse(netadr_t address, msg_t *message)
     }
 
     textLength = strlen(serverStatus->responseText);
-    Com_sprintf(serverStatus->responseText + textLength,
-                CL_SERVER_STATUS_TEXT_SIZE - (int32_t)textLength, "\\");
+    Com_sprintf(serverStatus->responseText + textLength, CL_SERVER_STATUS_TEXT_SIZE - (int32_t)textLength, "\\");
     serverStatus->responseReceivedTime = (int32_t)Sys_Milliseconds();
     serverStatus->address = address;
     serverStatus->requestPending = qfalse;
@@ -1678,8 +1473,7 @@ void CL_ServerStatus_f(void)
         return;
 
     NET_OutOfBandPrint(NS_CLIENT, serverAddress, "getstatus");
-    cl_server_status_t *serverStatus =
-        CL_GetServerStatus(serverAddress);
+    cl_server_status_t *serverStatus = CL_GetServerStatus(serverAddress);
     serverStatus->address = serverAddress;
     serverStatus->printResponse = qtrue;
     serverStatus->requestPending = qtrue;
@@ -1705,12 +1499,9 @@ void CL_LocalServers_f(void)
         char command[sizeof("getinfo xxx")];
     } localInfoPacket = {-1, "getinfo xxx"};
 
-    _Static_assert(offsetof(struct cl_local_info_packet_s, command) == 4,
-                   "local-info OOB command must follow its four-byte marker");
-    _Static_assert(sizeof(struct cl_local_info_packet_s) == 16,
-                   "local-info OOB packet storage extent changed");
-    _Static_assert(sizeof(localInfoPacket) - 1 == 15,
-                   "local-info OOB transmitted extent changed");
+    _Static_assert(offsetof(struct cl_local_info_packet_s, command) == 4, "local-info OOB command must follow its four-byte marker");
+    _Static_assert(sizeof(struct cl_local_info_packet_s) == 16, "local-info OOB packet storage extent changed");
+    _Static_assert(sizeof(localInfoPacket) - 1 == 15, "local-info OOB transmitted extent changed");
 
     Com_Printf("Scanning for servers on the local network...\n");
     cls.numLocalServers = 0;
@@ -1719,8 +1510,7 @@ void CL_LocalServers_f(void)
 
     for (int32_t index = 0; index < LAN_LOCAL_SERVER_CAPACITY; ++index) {
         const uint8_t dirty = cls.localServers[index].dirty;
-        memset(&cls.localServers[index], 0,
-               offsetof(lan_server_info_t, ping));
+        memset(&cls.localServers[index], 0, offsetof(lan_server_info_t, ping));
         cls.localServers[index].dirty = dirty;
     }
 
@@ -1728,13 +1518,9 @@ void CL_LocalServers_f(void)
     broadcastAddress.type = NA_BROADCAST;
 
     for (int32_t pass = 0; pass < LAN_LOCAL_SCAN_PASSES; ++pass) {
-        for (int32_t portOffset = 0;
-             portOffset < LAN_LOCAL_SCAN_PORT_COUNT; ++portOffset) {
-            broadcastAddress.port = (uint16_t)BigShort(
-                (int16_t)(LAN_LOCAL_SCAN_FIRST_PORT + portOffset));
-            CL_Netchan_SendOOBPacket(
-                broadcastAddress, &localInfoPacket,
-                (int32_t)(sizeof(localInfoPacket) - 1));
+        for (int32_t portOffset = 0; portOffset < LAN_LOCAL_SCAN_PORT_COUNT; ++portOffset) {
+            broadcastAddress.port = (uint16_t)BigShort((int16_t)(LAN_LOCAL_SCAN_FIRST_PORT + portOffset));
+            CL_Netchan_SendOOBPacket(broadcastAddress, &localInfoPacket, (int32_t)(sizeof(localInfoPacket) - 1));
         }
     }
 }
@@ -1755,8 +1541,7 @@ void CL_GlobalServers_f(void)
     };
 
     if (Cmd_Argc() < 3) {
-        Com_Printf(
-            "usage: globalservers <master# 0-1> <protocol> [keywords]\n");
+        Com_Printf("usage: globalservers <master# 0-1> <protocol> [keywords]\n");
         return;
     }
 
@@ -1778,21 +1563,17 @@ void CL_GlobalServers_f(void)
 
     char query[LAN_MASTER_QUERY_SIZE];
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    int32_t queryLength =
-        snprintf(query, sizeof(query), "getservers %s", Cmd_Argv(2));
+    int32_t queryLength = snprintf(query, sizeof(query), "getservers %s", Cmd_Argv(2));
     if (queryLength < 0 || (size_t)queryLength >= sizeof(query)) {
-        Com_Printf("globalservers: query exceeds %i bytes\n",
-                   LAN_MASTER_QUERY_SIZE - 1);
+        Com_Printf("globalservers: query exceeds %i bytes\n", LAN_MASTER_QUERY_SIZE - 1);
         return;
     }
 
     for (int32_t argument = 3; argument < Cmd_Argc(); ++argument) {
         const size_t remaining = sizeof(query) - (size_t)queryLength;
-        const int32_t appended = snprintf(
-            query + queryLength, remaining, " %s", Cmd_Argv(argument));
+        const int32_t appended = snprintf(query + queryLength, remaining, " %s", Cmd_Argv(argument));
         if (appended < 0 || (size_t)appended >= remaining) {
-            Com_Printf("globalservers: query exceeds %i bytes\n",
-                       LAN_MASTER_QUERY_SIZE - 1);
+            Com_Printf("globalservers: query exceeds %i bytes\n", LAN_MASTER_QUERY_SIZE - 1);
             return;
         }
         queryLength += appended;
@@ -1803,11 +1584,9 @@ void CL_GlobalServers_f(void)
      * comparison proves the cvar value differs from zero. */
     if (restrictFilesystem != NULL && restrictFilesystem->value != 0.0f) {
         const size_t remaining = sizeof(query) - (size_t)queryLength;
-        const int32_t appended =
-            snprintf(query + queryLength, remaining, " demo");
+        const int32_t appended = snprintf(query + queryLength, remaining, " demo");
         if (appended < 0 || (size_t)appended >= remaining) {
-            Com_Printf("globalservers: query exceeds %i bytes\n",
-                       LAN_MASTER_QUERY_SIZE - 1);
+            Com_Printf("globalservers: query exceeds %i bytes\n", LAN_MASTER_QUERY_SIZE - 1);
             return;
         }
     }
@@ -1837,8 +1616,7 @@ void LAN_ClearPing(int32_t pingIndex)
  * Evidence: repaired function record
  * coduomp/mcode/CoDUOMP/FUN_0041b290_0041b2a3.mcode.
  * Name: exact same-module Mac symbol LAN_GetPing. */
-void LAN_GetPing(int32_t pingIndex, char *address, int32_t addressSize,
-                 int32_t *pingTime)
+void LAN_GetPing(int32_t pingIndex, char *address, int32_t addressSize, int32_t *pingTime)
 {
     CL_GetPing(pingIndex, address, addressSize, pingTime);
 }
@@ -1864,8 +1642,7 @@ qboolean LAN_UpdateDirtyPings(lan_server_source_t source)
  * Evidence: repaired function record
  * coduomp/mcode/CoDUOMP/FUN_0041b420_0041b42c.mcode.
  * Name and argument roles: exact same-module Mac symbol LAN_GetServerStatus. */
-qboolean LAN_GetServerStatus(const char *address, char *status,
-                             int32_t statusSize)
+qboolean LAN_GetServerStatus(const char *address, char *status, int32_t statusSize)
 {
     return CL_ServerStatus(address, status, statusSize);
 }
@@ -1912,8 +1689,7 @@ void LAN_ResetPings(lan_server_source_t source)
  * LAN_AddServer and UI command 88. Only address, hostname, and dirty are
  * written in the newly exposed slot; the original does not reinitialize the
  * rest of a slot that may previously have been beyond the active count. */
-int32_t LAN_AddServer(lan_server_source_t source, const char *name,
-                      const char *address)
+int32_t LAN_AddServer(lan_server_source_t source, const char *name, const char *address)
 {
     lan_server_info_t *servers;
     int32_t *serverCount;
@@ -1946,8 +1722,7 @@ int32_t LAN_AddServer(lan_server_source_t source, const char *name,
         return LAN_ADD_SERVER_BAD_ADDRESS;
 
     for (int32_t index = 0; index < *serverCount; ++index) {
-        if (NET_CompareAdrSigned(&parsedAddress,
-                                 &servers[index].address) == 0) {
+        if (NET_CompareAdrSigned(&parsedAddress, &servers[index].address) == 0) {
             return LAN_ADD_SERVER_DUPLICATE;
         }
     }
@@ -1960,10 +1735,7 @@ int32_t LAN_AddServer(lan_server_source_t source, const char *name,
     ++*serverCount;
 
     if (source == LAN_SERVER_SOURCE_GLOBAL) {
-        coduo_crt_qsort(cls.globalServers,
-                            (size_t)cls.numGlobalServers,
-                            sizeof(cls.globalServers[0]),
-                            CL_CompareAdrSigned);
+        coduo_crt_qsort(cls.globalServers, (size_t)cls.numGlobalServers, sizeof(cls.globalServers[0]), CL_CompareAdrSigned);
     }
     return LAN_ADD_SERVER_ADDED;
 }
@@ -1998,8 +1770,7 @@ void LAN_RemoveServer(lan_server_source_t source, const char *address)
 
     (void)NET_StringToAdr(address, &parsedAddress);
     for (int32_t index = 0; index < *serverCount; ++index) {
-        if (NET_CompareAdrSigned(&parsedAddress,
-                                 &servers[index].address) != 0) {
+        if (NET_CompareAdrSigned(&parsedAddress, &servers[index].address) != 0) {
             continue;
         }
         for (; index < *serverCount - 1; ++index) {
@@ -2014,9 +1785,7 @@ void LAN_RemoveServer(lan_server_source_t source, const char *address)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041aac0_0041ab7d.mcode.
  * Name and argument roles: exact same-module Mac symbol
  * LAN_GetServerAddressString and UI syscall command 81. */
-void LAN_GetServerAddressString(lan_server_source_t source,
-                                int32_t serverIndex, char *buffer,
-                                int32_t bufferSize)
+void LAN_GetServerAddressString(lan_server_source_t source, int32_t serverIndex, char *buffer, int32_t bufferSize)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (buffer == NULL || bufferSize <= 0)
@@ -2028,11 +1797,8 @@ void LAN_GetServerAddressString(lan_server_source_t source,
     if (server == NULL)
         return;
 
-    const int32_t copySize =
-        bufferSize < NET_ADDRESS_STRING_SIZE
-            ? bufferSize : NET_ADDRESS_STRING_SIZE;
-    strncpy(buffer, NET_AdrToString(server->address),
-            (size_t)copySize - 1u);
+    const int32_t copySize = bufferSize < NET_ADDRESS_STRING_SIZE ? bufferSize : NET_ADDRESS_STRING_SIZE;
+    strncpy(buffer, NET_AdrToString(server->address), (size_t)copySize - 1u);
     buffer[copySize - 1] = '\0';
 }
 
@@ -2043,8 +1809,7 @@ void LAN_GetServerAddressString(lan_server_source_t source,
  * UI syscall command 82. The signed loads for friendly-fire, kill-cam, and
  * console-disabled values, and the signed word loads for the final six numeric
  * fields, are deliberately retained by the record types. */
-void LAN_GetServerInfo(lan_server_source_t source, int32_t serverIndex,
-                       char *buffer, int32_t bufferSize)
+void LAN_GetServerInfo(lan_server_source_t source, int32_t serverIndex, char *buffer, int32_t bufferSize)
 {
     char info[LAN_SERVER_INFO_STRING_SIZE] = "";
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -2060,11 +1825,8 @@ void LAN_GetServerInfo(lan_server_source_t source, int32_t serverIndex,
     Info_SetValueForKey(info, "mapname", server->mapName);
     Info_SetValueForKey(info, "clients", va("%i", server->clients));
     Info_SetValueForKey(info, "sv_maxclients", va("%i", server->maxClients));
-    const coduomp_server_bot_cache_entry_t *const botCache =
-        coduomp_find_server_bot_cache(server->address, qfalse);
-    Info_SetValueForKey(info, "bots",
-                        va("%i", botCache != NULL
-                                      ? botCache->displayedBotCount : 0));
+    const coduomp_server_bot_cache_entry_t *const botCache = coduomp_find_server_bot_cache(server->address, qfalse);
+    Info_SetValueForKey(info, "bots", va("%i", botCache != NULL ? botCache->displayedBotCount : 0));
     Info_SetValueForKey(info, "ping", va("%i", server->ping));
     Info_SetValueForKey(info, "minping", va("%i", server->minPing));
     Info_SetValueForKey(info, "maxping", va("%i", server->maxPing));
@@ -2072,25 +1834,20 @@ void LAN_GetServerInfo(lan_server_source_t source, int32_t serverIndex,
     Info_SetValueForKey(info, "gametype", server->gameType);
     Info_SetValueForKey(info, "nettype", va("%i", server->netType));
     Info_SetValueForKey(info, "addr", NET_AdrToString(server->address));
-    Info_SetValueForKey(info, "sv_allowAnonymous",
-                        va("%i", server->allowAnonymous));
-    Info_SetValueForKey(info, "con_disabled",
-                        va("%i", server->consoleDisabled));
+    Info_SetValueForKey(info, "sv_allowAnonymous", va("%i", server->allowAnonymous));
+    Info_SetValueForKey(info, "con_disabled", va("%i", server->consoleDisabled));
     Info_SetValueForKey(info, "pswrd", va("%i", server->passwordRequired));
     Info_SetValueForKey(info, "pure", va("%i", server->pure));
     Info_SetValueForKey(info, "ff", va("%i", server->friendlyFire));
     Info_SetValueForKey(info, "kc", va("%i", server->killCam));
     Info_SetValueForKey(info, "hw", va("%i", server->hardware));
     Info_SetValueForKey(info, "mod", va("%i", server->mod));
-    Info_SetValueForKey(info, "timeoutsallowed",
-                        va("%i", server->timeoutsAllowed));
+    Info_SetValueForKey(info, "timeoutsallowed", va("%i", server->timeoutsAllowed));
     Info_SetValueForKey(info, "jps", va("%i", server->jeepsAllowed));
     Info_SetValueForKey(info, "tnk", va("%i", server->tanksAllowed));
     Info_SetValueForKey(info, "pb", va("%i", server->punkBuster));
 
-    const int32_t copySize =
-        bufferSize < LAN_SERVER_INFO_STRING_SIZE
-            ? bufferSize : LAN_SERVER_INFO_STRING_SIZE;
+    const int32_t copySize = bufferSize < LAN_SERVER_INFO_STRING_SIZE ? bufferSize : LAN_SERVER_INFO_STRING_SIZE;
     strncpy(buffer, info, (size_t)copySize - 1u);
     buffer[copySize - 1] = '\0';
 }
@@ -2098,8 +1855,7 @@ void LAN_GetServerInfo(lan_server_source_t source, int32_t serverIndex,
 /* Source: CoDUOMP.exe 0x0041b000..0x0041b053.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041b000_0041b054.mcode.
  * Name: exact same-module Mac symbol LAN_GetServerPtr. */
-lan_server_info_t *LAN_GetServerPtr(lan_server_source_t source,
-                                     int32_t serverIndex)
+lan_server_info_t *LAN_GetServerPtr(lan_server_source_t source, int32_t serverIndex)
 {
     if (serverIndex < 0)
         return NULL;
@@ -2131,21 +1887,17 @@ void LAN_CleanHostname(const char *source, char *destination)
         destination[0] = '\0';
         return;
     }
-    const char *const sourceEnd =
-        source + LAN_SERVER_HOSTNAME_SIZE - 1;
+    const char *const sourceEnd = source + LAN_SERVER_HOSTNAME_SIZE - 1;
     while (source < sourceEnd && *source != '\0') {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the renderer hides
          * ^0 through ^9, and the extended UI convention also hides ^#.
          * Neither byte of those pairs participates in the visible name. */
-        if (*source == '^' && source + 1 < sourceEnd &&
-            ((source[1] >= '0' && source[1] <= '9') ||
-             source[1] == '#')) {
+        if (*source == '^' && source + 1 < sourceEnd && ((source[1] >= '0' && source[1] <= '9') || source[1] == '#')) {
             source += 2;
             continue;
         }
         const unsigned char character = (unsigned char)*source++;
-        if (coduo_crt_isalpha(character) != 0 ||
-            (character >= '0' && character <= '9'))
+        if (coduo_crt_isalpha(character) != 0 || (character >= '0' && character <= '9'))
             *destination++ = (char)character;
     }
     *destination = '\0';
@@ -2154,16 +1906,14 @@ void LAN_CleanHostname(const char *source, char *destination)
 /* NOT_FROM_ORIGINAL_SOURCE: compatibility ordering for human-visible server
  * names. ASCII letters precede digits; names without either use visible
  * punctuation, and names with no visible bytes use their raw byte sequence. */
-static int32_t coduomp_server_name_compare_compat(const char *left,
-                                                  const char *right)
+static int32_t coduomp_server_name_compare_compat(const char *left, const char *right)
 {
     enum {
         CODUOMP_SERVER_NAME_SIDE_COUNT = 2,
         CODUOMP_SERVER_NAME_LETTER_COUNT = 26
     };
     char alnumKeys[CODUOMP_SERVER_NAME_SIDE_COUNT][LAN_SERVER_HOSTNAME_SIZE];
-    uint8_t visibleKeys[CODUOMP_SERVER_NAME_SIDE_COUNT]
-                       [LAN_SERVER_HOSTNAME_SIZE];
+    uint8_t visibleKeys[CODUOMP_SERVER_NAME_SIDE_COUNT][LAN_SERVER_HOSTNAME_SIZE];
     size_t visibleLengths[CODUOMP_SERVER_NAME_SIDE_COUNT] = {0, 0};
     const char *const names[CODUOMP_SERVER_NAME_SIDE_COUNT] = {left, right};
 
@@ -2177,10 +1927,8 @@ static int32_t coduomp_server_name_compare_compat(const char *left,
         size_t index = 0;
 
         for (;;) {
-            const unsigned char leftCharacter =
-                (unsigned char)alnumKeys[0][index];
-            const unsigned char rightCharacter =
-                (unsigned char)alnumKeys[1][index];
+            const unsigned char leftCharacter = (unsigned char)alnumKeys[0][index];
+            const unsigned char rightCharacter = (unsigned char)alnumKeys[1][index];
             int32_t leftRank;
             int32_t rightRank;
 
@@ -2191,8 +1939,7 @@ static int32_t coduomp_server_name_compare_compat(const char *left,
             }
 
             if (leftCharacter >= '0' && leftCharacter <= '9') {
-                leftRank = CODUOMP_SERVER_NAME_LETTER_COUNT +
-                           leftCharacter - '0';
+                leftRank = CODUOMP_SERVER_NAME_LETTER_COUNT + leftCharacter - '0';
             } else if (leftCharacter >= 'a' && leftCharacter <= 'z') {
                 leftRank = leftCharacter - 'a';
             } else {
@@ -2200,8 +1947,7 @@ static int32_t coduomp_server_name_compare_compat(const char *left,
             }
 
             if (rightCharacter >= '0' && rightCharacter <= '9') {
-                rightRank = CODUOMP_SERVER_NAME_LETTER_COUNT +
-                            rightCharacter - '0';
+                rightRank = CODUOMP_SERVER_NAME_LETTER_COUNT + rightCharacter - '0';
             } else if (rightCharacter >= 'a' && rightCharacter <= 'z') {
                 rightRank = rightCharacter - 'a';
             } else {
@@ -2216,13 +1962,10 @@ static int32_t coduomp_server_name_compare_compat(const char *left,
 
     for (size_t side = 0; side < CODUOMP_SERVER_NAME_SIDE_COUNT; ++side) {
         const char *source = names[side];
-        const char *const sourceEnd =
-            source + LAN_SERVER_HOSTNAME_SIZE - 1;
+        const char *const sourceEnd = source + LAN_SERVER_HOSTNAME_SIZE - 1;
 
         while (source < sourceEnd && *source != '\0') {
-            if (*source == '^' && source + 1 < sourceEnd &&
-                ((source[1] >= '0' && source[1] <= '9') ||
-                 source[1] == '#')) {
+            if (*source == '^' && source + 1 < sourceEnd && ((source[1] >= '0' && source[1] <= '9') || source[1] == '#')) {
                 source += 2;
                 continue;
             }
@@ -2238,9 +1981,7 @@ static int32_t coduomp_server_name_compare_compat(const char *left,
         return visibleLengths[0] == 0 ? 1 : -1;
 
     if (visibleLengths[0] != 0) {
-        const size_t commonLength =
-            visibleLengths[0] < visibleLengths[1]
-                ? visibleLengths[0] : visibleLengths[1];
+        const size_t commonLength = visibleLengths[0] < visibleLengths[1] ? visibleLengths[0] : visibleLengths[1];
 
         for (size_t index = 0; index < commonLength; ++index) {
             if (visibleKeys[0][index] != visibleKeys[1][index]) {
@@ -2289,15 +2030,11 @@ int32_t LAN_CompareHostname(const char *left, const char *right)
  * builds instead use hostname, ping, maximum players, map name, then game type.
  * Hardware value zero is ordered after nonzero hardware values before optional
  * direction reversal. */
-int32_t LAN_CompareServers(lan_server_source_t source,
-                           lan_server_sort_key_t sortKey,
-                           qboolean sortDescending, int32_t firstServerIndex,
+int32_t LAN_CompareServers(lan_server_source_t source, lan_server_sort_key_t sortKey, qboolean sortDescending, int32_t firstServerIndex,
                            int32_t secondServerIndex)
 {
-    const lan_server_info_t *first =
-        LAN_GetServerPtr(source, firstServerIndex);
-    const lan_server_info_t *second =
-        LAN_GetServerPtr(source, secondServerIndex);
+    const lan_server_info_t *first = LAN_GetServerPtr(source, firstServerIndex);
+    const lan_server_info_t *second = LAN_GetServerPtr(source, secondServerIndex);
     int32_t comparison = 0;
 
     if (first == NULL || second == NULL)
@@ -2305,8 +2042,7 @@ int32_t LAN_CompareServers(lan_server_source_t source,
 
     switch (sortKey) {
     case LAN_SERVER_SORT_PASSWORD:
-        comparison = (int32_t)first->passwordRequired -
-                     (int32_t)second->passwordRequired;
+        comparison = (int32_t)first->passwordRequired - (int32_t)second->passwordRequired;
         break;
     case LAN_SERVER_SORT_HARDWARE:
         comparison = (int32_t)first->hardware - (int32_t)second->hardware;
@@ -2328,8 +2064,7 @@ int32_t LAN_CompareServers(lan_server_source_t source,
         comparison = Q_stricmp(first->gameType, second->gameType);
         break;
     case LAN_SERVER_SORT_PUNKBUSTER:
-        comparison = (int32_t)first->punkBuster -
-                     (int32_t)second->punkBuster;
+        comparison = (int32_t)first->punkBuster - (int32_t)second->punkBuster;
         break;
     case LAN_SERVER_SORT_MOD:
         comparison = (int32_t)first->mod - (int32_t)second->mod;
@@ -2374,8 +2109,7 @@ int32_t LAN_GetServerPing(lan_server_source_t source, int32_t serverIndex)
  * Evidence: repaired function record
  * coduomp/mcode/CoDUOMP/FUN_0041afa0_0041afff.mcode.
  * Name: exact same-module Mac symbol LAN_GetServerPunkBuster. */
-int32_t LAN_GetServerPunkBuster(lan_server_source_t source,
-                                int32_t serverIndex)
+int32_t LAN_GetServerPunkBuster(lan_server_source_t source, int32_t serverIndex)
 {
     const lan_server_info_t *server = LAN_GetServerPtr(source, serverIndex);
     return server != NULL ? server->punkBuster : -1;
@@ -2384,8 +2118,7 @@ int32_t LAN_GetServerPunkBuster(lan_server_source_t source,
 /* Source: CoDUOMP.exe 0x0041b2f0..0x0041b3a0.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0041b2f0_0041b3a1.mcode.
  * Name: exact same-module Mac symbol LAN_MarkServerDirty. */
-void LAN_MarkServerDirty(lan_server_source_t source, int32_t serverIndex,
-                         qboolean dirty)
+void LAN_MarkServerDirty(lan_server_source_t source, int32_t serverIndex, qboolean dirty)
 {
     lan_server_info_t *servers;
     int32_t serverCount;

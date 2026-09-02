@@ -16,7 +16,9 @@
 #include <stdint.h>
 #include <string.h>
 
-enum { SV_FINAL_MESSAGE_PASSES = 2 };
+enum {
+    SV_FINAL_MESSAGE_PASSES = 2
+};
 
 extern serverStatic_t svs;
 extern cvar_t *sv_running;
@@ -80,12 +82,9 @@ void SV_Init(void)
 {
     SV_AddOperatorCommands();
 
-    g_gametype = Cvar_Get("g_gametype", "dm",
-                          CVAR_LATCH | CVAR_SERVERINFO);
-    scr_allow_jeeps = Cvar_Get("scr_allow_jeeps", "1",
-                               CVAR_LATCH | CVAR_SERVERINFO);
-    scr_allow_tanks = Cvar_Get("scr_allow_tanks", "1",
-                               CVAR_LATCH | CVAR_SERVERINFO);
+    g_gametype = Cvar_Get("g_gametype", "dm", CVAR_LATCH | CVAR_SERVERINFO);
+    scr_allow_jeeps = Cvar_Get("scr_allow_jeeps", "1", CVAR_LATCH | CVAR_SERVERINFO);
+    scr_allow_tanks = Cvar_Get("scr_allow_tanks", "1", CVAR_LATCH | CVAR_SERVERINFO);
     (void)Cvar_Get("sv_keywords", "", CVAR_SERVERINFO);
 
     const char *const protocol = va("%i", SERVER_PROTOCOL_VERSION);
@@ -94,32 +93,23 @@ void SV_Init(void)
 
     sv_mapname = Cvar_Get("mapname", "nomap", CVAR_ROM | CVAR_SERVERINFO);
     sv_privateClients = Cvar_Get("sv_privateClients", "0", CVAR_SERVERINFO);
-    sv_hostname = Cvar_Get("sv_hostname", "CoDHost",
-                           CVAR_ARCHIVE | CVAR_SERVERINFO);
-    sv_maxclients = Cvar_Get("sv_maxclients", "20",
-                             CVAR_LATCH | CVAR_SERVERINFO);
-    sv_punkbuster = Cvar_Get("sv_punkbuster", "0",
-                             CVAR_ARCHIVE | CVAR_ROM | CVAR_SERVERINFO);
-    sv_maxRate = Cvar_Get("sv_maxRate", "0",
-                          CVAR_ARCHIVE | CVAR_SERVERINFO);
-    sv_minPing = Cvar_Get("sv_minPing", "0",
-                          CVAR_ARCHIVE | CVAR_SERVERINFO);
-    sv_maxPing = Cvar_Get("sv_maxPing", "0",
-                          CVAR_ARCHIVE | CVAR_SERVERINFO);
-    sv_floodProtect = Cvar_Get("sv_floodProtect", "1",
-                               CVAR_ARCHIVE | CVAR_SERVERINFO);
+    sv_hostname = Cvar_Get("sv_hostname", "CoDHost", CVAR_ARCHIVE | CVAR_SERVERINFO);
+    sv_maxclients = Cvar_Get("sv_maxclients", "20", CVAR_LATCH | CVAR_SERVERINFO);
+    sv_punkbuster = Cvar_Get("sv_punkbuster", "0", CVAR_ARCHIVE | CVAR_ROM | CVAR_SERVERINFO);
+    sv_maxRate = Cvar_Get("sv_maxRate", "0", CVAR_ARCHIVE | CVAR_SERVERINFO);
+    sv_minPing = Cvar_Get("sv_minPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO);
+    sv_maxPing = Cvar_Get("sv_maxPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO);
+    sv_floodProtect = Cvar_Get("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO);
     sv_allowAnonymous = Cvar_Get("sv_allowAnonymous", "0", CVAR_SERVERINFO);
     sv_showCommands = Cvar_Get("sv_showCommands", "0", CVAR_NONE);
-    sv_disableClientConsole = Cvar_Get("sv_disableClientConsole", "0",
-                                       CVAR_SYSTEMINFO);
+    sv_disableClientConsole = Cvar_Get("sv_disableClientConsole", "0", CVAR_SYSTEMINFO);
     (void)Cvar_Get("sv_cheats", "1", CVAR_ROM | CVAR_SYSTEMINFO);
     sv_serverid = Cvar_Get("sv_serverid", "0", CVAR_ROM | CVAR_SYSTEMINFO);
     sv_pure = Cvar_Get("sv_pure", "1", CVAR_SYSTEMINFO | CVAR_SERVERINFO);
     (void)Cvar_Get("sv_paks", "", CVAR_ROM | CVAR_SYSTEMINFO);
     (void)Cvar_Get("sv_pakNames", "", CVAR_ROM | CVAR_SYSTEMINFO);
     (void)Cvar_Get("sv_referencedPaks", "", CVAR_ROM | CVAR_SYSTEMINFO);
-    (void)Cvar_Get("sv_referencedPakNames", "",
-                   CVAR_ROM | CVAR_SYSTEMINFO);
+    (void)Cvar_Get("sv_referencedPakNames", "", CVAR_ROM | CVAR_SYSTEMINFO);
 
     rconPassword = Cvar_Get("rconPassword", "", CVAR_TEMP);
     sv_privatePassword = Cvar_Get("sv_privatePassword", "", CVAR_TEMP);
@@ -127,8 +117,7 @@ void SV_Init(void)
     sv_timeout = Cvar_Get("sv_timeout", "240", CVAR_TEMP);
     sv_zombietime = Cvar_Get("sv_zombietime", "2", CVAR_TEMP);
     (void)Cvar_Get("nextmap", "", CVAR_TEMP);
-    sv_allowDownload = Cvar_Get("sv_allowDownload", "1",
-                                CVAR_ARCHIVE | CVAR_SYSTEMINFO);
+    sv_allowDownload = Cvar_Get("sv_allowDownload", "1", CVAR_ARCHIVE | CVAR_SYSTEMINFO);
     sv_reconnectlimit = Cvar_Get("sv_reconnectlimit", "3", CVAR_NONE);
     sv_showloss = Cvar_Get("sv_showloss", "0", CVAR_NONE);
     sv_padPackets = Cvar_Get("sv_padPackets", "0", CVAR_NONE);
@@ -150,9 +139,7 @@ void SV_FinalMessage(const char *message)
 {
     for (int32_t pass = 0; pass < SV_FINAL_MESSAGE_PASSES; ++pass) {
         client_t *client = svs.clients;
-        for (int32_t clientNum = 0;
-             clientNum < sv_maxclients->integer;
-             ++clientNum, ++client) {
+        for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
             if (client->state < CS_CONNECTED) {
                 continue;
             }

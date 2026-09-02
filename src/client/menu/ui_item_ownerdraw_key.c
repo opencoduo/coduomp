@@ -57,8 +57,5 @@ qboolean Item_OwnerDraw_HandleKey(itemDef_t *item, int32_t key)
 
     // 0x30053474..0x30053486: forward the owner-draw id/flags, the address of the
     // item's feeder id, and the key; return whatever the handler reports.
-    return (qboolean)handler(item->window.ownerDraw,
-                             item->window.ownerDrawFlags,
-                             &item->special,
-                             key);
+    return (qboolean)handler(item->window.ownerDraw, item->window.ownerDrawFlags, &item->special, key);
 }

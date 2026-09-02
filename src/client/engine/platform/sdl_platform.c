@@ -37,11 +37,7 @@ static uint32_t coduoSdlReportedMouseButtons;
 static uint32_t coduoSdlStaleMouseButtons;
 
 enum {
-    CODUO_SDL_SUPPORTED_MOUSE_BUTTON_MASK = SDL_BUTTON_LMASK |
-                                            SDL_BUTTON_RMASK |
-                                            SDL_BUTTON_MMASK |
-                                            SDL_BUTTON_X1MASK |
-                                            SDL_BUTTON_X2MASK
+    CODUO_SDL_SUPPORTED_MOUSE_BUTTON_MASK = SDL_BUTTON_LMASK | SDL_BUTTON_RMASK | SDL_BUTTON_MMASK | SDL_BUTTON_X1MASK | SDL_BUTTON_X2MASK
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: SDL's Cocoa global-state query reads the physical
@@ -52,8 +48,7 @@ static uint32_t coduomp_sdl_current_mouse_buttons_compat(void)
     int cursorX;
     int cursorY;
 
-    return SDL_GetGlobalMouseState(&cursorX, &cursorY) &
-           CODUO_SDL_SUPPORTED_MOUSE_BUTTON_MASK;
+    return SDL_GetGlobalMouseState(&cursorX, &cursorY) & CODUO_SDL_SUPPORTED_MOUSE_BUTTON_MASK;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: SDL_GetMouseState exposes SDL's retained
@@ -64,8 +59,7 @@ static uint32_t coduomp_sdl_latched_mouse_buttons_compat(void)
     int cursorX;
     int cursorY;
 
-    return SDL_GetMouseState(&cursorX, &cursorY) &
-           CODUO_SDL_SUPPORTED_MOUSE_BUTTON_MASK;
+    return SDL_GetMouseState(&cursorX, &cursorY) & CODUO_SDL_SUPPORTED_MOUSE_BUTTON_MASK;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: establish an engine-facing baseline without
@@ -73,11 +67,8 @@ static uint32_t coduomp_sdl_latched_mouse_buttons_compat(void)
  * SDL latches proven stale against the physical Cocoa button state. */
 static void coduomp_sdl_rebase_mouse_buttons_compat(void)
 {
-    coduoSdlReportedMouseButtons =
-        coduomp_sdl_current_mouse_buttons_compat();
-    coduoSdlStaleMouseButtons =
-        coduomp_sdl_latched_mouse_buttons_compat() &
-        ~coduoSdlReportedMouseButtons;
+    coduoSdlReportedMouseButtons = coduomp_sdl_current_mouse_buttons_compat();
+    coduoSdlStaleMouseButtons = coduomp_sdl_latched_mouse_buttons_compat() & ~coduoSdlReportedMouseButtons;
 }
 #endif
 
@@ -98,8 +89,7 @@ qboolean CoduoSDL_Init(void)
     SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0");
 #endif
     SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "0");
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS |
-                 SDL_INIT_GAMECONTROLLER) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) != 0) {
         return qfalse;
     }
 
@@ -141,9 +131,7 @@ char *coduomp_sdl_get_clipboard_text_compat(void)
  * compatibility context is required because the original renderer uses the
  * OpenGL fixed-function pipeline. The stock source uses only the original
  * boolean window-mode domain, leaving the borderless extension unreachable. */
-qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
-                                     int32_t colorBits, int32_t depthBits,
-                                     int32_t stencilBits,
+qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height, int32_t colorBits, int32_t depthBits, int32_t stencilBits,
                                      int32_t windowMode)
 {
     enum {
@@ -151,8 +139,7 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
         CODUO_WINDOW_MODE_BORDERLESS = 2
     };
     const char *windowTitle = "Call of Duty: United Offensive Multiplayer";
-    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI |
-                     SDL_WINDOW_SHOWN;
+    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN;
 
     if (CoduoSDL_Init() == qfalse)
         return qfalse;
@@ -180,8 +167,7 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
     (void)SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencilBits);
     (void)SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     (void)SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    (void)SDL_GL_SetAttribute(
-        SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    (void)SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
     if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN) {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): never capture or
@@ -211,10 +197,7 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
 #endif
     }
 
-    coduoSdlWindow = SDL_CreateWindow(
-        windowTitle,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        width, height, flags);
+    coduoSdlWindow = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
     if (coduoSdlWindow == NULL)
         return qfalse;
 
@@ -264,8 +247,7 @@ void CoduoSDL_DestroyOpenGLWindow(void)
     }
 }
 
-void CoduoSDL_GetDesktopMode(int32_t *width, int32_t *height,
-                             int32_t *refreshRate)
+void CoduoSDL_GetDesktopMode(int32_t *width, int32_t *height, int32_t *refreshRate)
 {
     SDL_DisplayMode mode;
 
@@ -286,8 +268,7 @@ void CoduoSDL_GetDesktopMode(int32_t *width, int32_t *height,
 /* NOT_FROM_ORIGINAL_SOURCE: selects the physical panel mode identified by
  * CoreGraphics. Scaled modes can have larger backing surfaces than the panel,
  * so neither their logical dimensions nor pixel dimensions are native. */
-static qboolean coduomp_sdl_find_native_display_mode_compat(
-    CFArrayRef modes, int32_t *width, int32_t *height, int32_t *refreshRate)
+static qboolean coduomp_sdl_find_native_display_mode_compat(CFArrayRef modes, int32_t *width, int32_t *height, int32_t *refreshRate)
 {
     size_t selectedWidth = 0;
     size_t selectedHeight = 0;
@@ -296,31 +277,21 @@ static qboolean coduomp_sdl_find_native_display_mode_compat(
     const CFIndex modeCount = CFArrayGetCount(modes);
 
     for (CFIndex index = 0; index < modeCount; ++index) {
-        CGDisplayModeRef mode =
-            (CGDisplayModeRef)CFArrayGetValueAtIndex(modes, index);
+        CGDisplayModeRef mode = (CGDisplayModeRef)CFArrayGetValueAtIndex(modes, index);
         const size_t pixelWidth = CGDisplayModeGetPixelWidth(mode);
         const size_t pixelHeight = CGDisplayModeGetPixelHeight(mode);
         const double modeRefreshRate = CGDisplayModeGetRefreshRate(mode);
-        const qboolean modeIsNative =
-            (CGDisplayModeGetIOFlags(mode) & kDisplayModeNativeFlag) != 0
-                ? qtrue
-                : qfalse;
+        const qboolean modeIsNative = (CGDisplayModeGetIOFlags(mode) & kDisplayModeNativeFlag) != 0 ? qtrue : qfalse;
         const qboolean modeIsUnscaled =
-            CGDisplayModeGetWidth(mode) == pixelWidth &&
-                    CGDisplayModeGetHeight(mode) == pixelHeight
-                ? qtrue
-                : qfalse;
+            CGDisplayModeGetWidth(mode) == pixelWidth && CGDisplayModeGetHeight(mode) == pixelHeight ? qtrue : qfalse;
 
-        if (!CGDisplayModeIsUsableForDesktopGUI(mode) ||
-            (modeIsNative == qfalse && modeIsUnscaled == qfalse) ||
+        if (!CGDisplayModeIsUsableForDesktopGUI(mode) || (modeIsNative == qfalse && modeIsUnscaled == qfalse) ||
             (selectedIsNative != qfalse && modeIsNative == qfalse)) {
             continue;
         }
 
-        if ((modeIsNative != qfalse && selectedIsNative == qfalse) ||
-            pixelWidth * pixelHeight > selectedWidth * selectedHeight ||
-            (pixelWidth == selectedWidth && pixelHeight == selectedHeight &&
-             modeRefreshRate > selectedRefreshRate)) {
+        if ((modeIsNative != qfalse && selectedIsNative == qfalse) || pixelWidth * pixelHeight > selectedWidth * selectedHeight ||
+            (pixelWidth == selectedWidth && pixelHeight == selectedHeight && modeRefreshRate > selectedRefreshRate)) {
             selectedWidth = pixelWidth;
             selectedHeight = pixelHeight;
             selectedRefreshRate = modeRefreshRate;
@@ -340,19 +311,15 @@ static qboolean coduomp_sdl_find_native_display_mode_compat(
 
 /* NOT_FROM_ORIGINAL_SOURCE: reports the primary display's hardware-sized
  * pixel mode. Desktop scaling remains a separate logical-window concern. */
-qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
-                                                     int32_t *height,
-                                                     int32_t *refreshRate)
+qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width, int32_t *height, int32_t *refreshRate)
 {
 #if defined(__APPLE__)
-    CFArrayRef modes =
-        CGDisplayCopyAllDisplayModes(CGMainDisplayID(), NULL);
+    CFArrayRef modes = CGDisplayCopyAllDisplayModes(CGMainDisplayID(), NULL);
     qboolean found;
 
     if (modes == NULL)
         return qfalse;
-    found = coduomp_sdl_find_native_display_mode_compat(
-        modes, width, height, refreshRate);
+    found = coduomp_sdl_find_native_display_mode_compat(modes, width, height, refreshRate);
     CFRelease(modes);
     return found;
 #else
@@ -368,14 +335,11 @@ qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
         SDL_DisplayMode mode;
 
         memset(&mode, 0, sizeof(mode));
-        if (SDL_GetDisplayMode(0, index, &mode) != 0 ||
-            mode.w <= 0 || mode.h <= 0) {
+        if (SDL_GetDisplayMode(0, index, &mode) != 0 || mode.w <= 0 || mode.h <= 0) {
             continue;
         }
-        if ((int64_t)mode.w * mode.h >
-                (int64_t)selectedWidth * selectedHeight ||
-            (mode.w == selectedWidth && mode.h == selectedHeight &&
-             mode.refresh_rate > selectedRefreshRate)) {
+        if ((int64_t)mode.w * mode.h > (int64_t)selectedWidth * selectedHeight ||
+            (mode.w == selectedWidth && mode.h == selectedHeight && mode.refresh_rate > selectedRefreshRate)) {
             selectedWidth = mode.w;
             selectedHeight = mode.h;
             selectedRefreshRate = mode.refresh_rate;
@@ -394,12 +358,10 @@ qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
 /* NOT_FROM_ORIGINAL_SOURCE: converts requested drawable pixels to SDL window
  * coordinates using the active macOS backing scale. Other SDL platforms use
  * pixel-sized window coordinates and leave the request unchanged. */
-void coduomp_sdl_window_size_for_drawable_compat(int32_t *width,
-                                                  int32_t *height)
+void coduomp_sdl_window_size_for_drawable_compat(int32_t *width, int32_t *height)
 {
 #if defined(__APPLE__)
-    CGDisplayModeRef currentMode =
-        CGDisplayCopyDisplayMode(CGMainDisplayID());
+    CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(CGMainDisplayID());
 
     if (currentMode == NULL)
         return;
@@ -409,14 +371,9 @@ void coduomp_sdl_window_size_for_drawable_compat(int32_t *width,
     const size_t pixelWidth = CGDisplayModeGetPixelWidth(currentMode);
     const size_t pixelHeight = CGDisplayModeGetPixelHeight(currentMode);
 
-    if (logicalWidth != 0 && logicalHeight != 0 &&
-        pixelWidth != 0 && pixelHeight != 0) {
-        *width = (int32_t)(((int64_t)*width * (int64_t)logicalWidth +
-                            (int64_t)pixelWidth / 2) /
-                           (int64_t)pixelWidth);
-        *height = (int32_t)(((int64_t)*height * (int64_t)logicalHeight +
-                             (int64_t)pixelHeight / 2) /
-                            (int64_t)pixelHeight);
+    if (logicalWidth != 0 && logicalHeight != 0 && pixelWidth != 0 && pixelHeight != 0) {
+        *width = (int32_t)(((int64_t)*width * (int64_t)logicalWidth + (int64_t)pixelWidth / 2) / (int64_t)pixelWidth);
+        *height = (int32_t)(((int64_t)*height * (int64_t)logicalHeight + (int64_t)pixelHeight / 2) / (int64_t)pixelHeight);
     }
     CGDisplayModeRelease(currentMode);
 #else
@@ -429,15 +386,13 @@ void coduomp_sdl_window_size_for_drawable_compat(int32_t *width,
  * exact preset resolution. macOS display modes can include supersampled
  * backing surfaces larger than the physical panel, so cap candidates at the
  * mode that Core Graphics identifies as native. */
-qboolean coduomp_sdl_display_mode_available_compat(int32_t width,
-                                                    int32_t height)
+qboolean coduomp_sdl_display_mode_available_compat(int32_t width, int32_t height)
 {
     if (width <= 0 || height <= 0)
         return qfalse;
 
 #if defined(__APPLE__)
-    CFArrayRef modes =
-        CGDisplayCopyAllDisplayModes(CGMainDisplayID(), NULL);
+    CFArrayRef modes = CGDisplayCopyAllDisplayModes(CGMainDisplayID(), NULL);
     int32_t nativeWidth = 0;
     int32_t nativeHeight = 0;
     int32_t nativeRefreshRate = 0;
@@ -446,9 +401,7 @@ qboolean coduomp_sdl_display_mode_available_compat(int32_t width,
     if (modes == NULL)
         return qfalse;
 
-    if (coduomp_sdl_find_native_display_mode_compat(
-            modes, &nativeWidth, &nativeHeight,
-            &nativeRefreshRate) == qfalse) {
+    if (coduomp_sdl_find_native_display_mode_compat(modes, &nativeWidth, &nativeHeight, &nativeRefreshRate) == qfalse) {
         CFRelease(modes);
         return qfalse;
     }
@@ -457,11 +410,9 @@ qboolean coduomp_sdl_display_mode_available_compat(int32_t width,
         const CFIndex modeCount = CFArrayGetCount(modes);
 
         for (CFIndex index = 0; index < modeCount; ++index) {
-            CGDisplayModeRef mode = (CGDisplayModeRef)
-                CFArrayGetValueAtIndex(modes, index);
+            CGDisplayModeRef mode = (CGDisplayModeRef)CFArrayGetValueAtIndex(modes, index);
 
-            if (CGDisplayModeIsUsableForDesktopGUI(mode) &&
-                CGDisplayModeGetPixelWidth(mode) == (size_t)width &&
+            if (CGDisplayModeIsUsableForDesktopGUI(mode) && CGDisplayModeGetPixelWidth(mode) == (size_t)width &&
                 CGDisplayModeGetPixelHeight(mode) == (size_t)height) {
                 available = qtrue;
                 break;
@@ -478,8 +429,7 @@ qboolean coduomp_sdl_display_mode_available_compat(int32_t width,
         SDL_DisplayMode mode;
 
         memset(&mode, 0, sizeof(mode));
-        if (SDL_GetDisplayMode(0, index, &mode) == 0 &&
-            mode.w == width && mode.h == height) {
+        if (SDL_GetDisplayMode(0, index, &mode) == 0 && mode.w == width && mode.h == height) {
             return qtrue;
         }
     }
@@ -513,39 +463,29 @@ void coduomp_sdl_get_window_size_compat(int32_t *width, int32_t *height)
 /* NOT_FROM_ORIGINAL_SOURCE: native display-gamma boundary used by the
  * recovered renderer's existing 256-entry RGB ramp. SDL selects the display
  * containing this window and maps the operation to the host window system. */
-qboolean coduomp_sdl_get_window_gamma_ramp(uint16_t red[256],
-                                           uint16_t green[256],
-                                           uint16_t blue[256])
+qboolean coduomp_sdl_get_window_gamma_ramp(uint16_t red[256], uint16_t green[256], uint16_t blue[256])
 {
     if (coduoSdlWindow == NULL)
         return qfalse;
 
-    return SDL_GetWindowGammaRamp(coduoSdlWindow, red, green, blue) == 0
-               ? qtrue
-               : qfalse;
+    return SDL_GetWindowGammaRamp(coduoSdlWindow, red, green, blue) == 0 ? qtrue : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: install a renderer-generated gamma ramp on the
  * display containing the native game window. */
-qboolean coduomp_sdl_set_window_gamma_ramp(const uint16_t red[256],
-                                           const uint16_t green[256],
-                                           const uint16_t blue[256])
+qboolean coduomp_sdl_set_window_gamma_ramp(const uint16_t red[256], const uint16_t green[256], const uint16_t blue[256])
 {
     if (coduoSdlWindow == NULL)
         return qfalse;
 
-    return SDL_SetWindowGammaRamp(coduoSdlWindow, red, green, blue) == 0
-               ? qtrue
-               : qfalse;
+    return SDL_SetWindowGammaRamp(coduoSdlWindow, red, green, blue) == 0 ? qtrue : qfalse;
 }
 
 #if defined(__linux__)
 /* NOT_FROM_ORIGINAL_SOURCE: expose the X11 handles already owned by SDL to
  * the compatibility-only XRandR gamma provider. No X11 types cross this
  * platform boundary, and Wayland windows fail the subsystem check. */
-qboolean coduomp_sdl_get_x11_window_compat(
-    void **display, unsigned long *window,
-    int32_t *x, int32_t *y, int32_t *width, int32_t *height)
+qboolean coduomp_sdl_get_x11_window_compat(void **display, unsigned long *window, int32_t *x, int32_t *y, int32_t *width, int32_t *height)
 {
     SDL_SysWMinfo info;
 
@@ -559,8 +499,7 @@ qboolean coduomp_sdl_get_x11_window_compat(
         return qfalse;
 
     SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(coduoSdlWindow, &info) != SDL_TRUE ||
-        info.subsystem != SDL_SYSWM_X11) {
+    if (SDL_GetWindowWMInfo(coduoSdlWindow, &info) != SDL_TRUE || info.subsystem != SDL_SYSWM_X11) {
         return qfalse;
     }
 
@@ -580,8 +519,7 @@ const char *coduomp_sdl_error_compat(void)
     return SDL_GetError();
 }
 
-void CoduoSDL_GetOpenGLFormat(int32_t *colorBits, int32_t *depthBits,
-                              int32_t *stencilBits)
+void CoduoSDL_GetOpenGLFormat(int32_t *colorBits, int32_t *depthBits, int32_t *stencilBits)
 {
     int redBits = 0;
     int greenBits = 0;
@@ -599,8 +537,7 @@ void CoduoSDL_GetOpenGLFormat(int32_t *colorBits, int32_t *depthBits,
 
 /* NOT_FROM_ORIGINAL_SOURCE: confines SDL's object-pointer carrier for OpenGL
  * entry points to the same typed-copy boundary used by the native loader. */
-void CoduoSDL_GetOpenGLSymbol(const char *name, void *destination,
-                              size_t destinationSize)
+void CoduoSDL_GetOpenGLSymbol(const char *name, void *destination, size_t destinationSize)
 {
     void *symbol = SDL_GL_GetProcAddress(name);
 
@@ -626,10 +563,8 @@ void CoduoSDL_SetRelativeMouse(qboolean active)
     if (coduoSdlWindow == NULL)
         return;
 
-    (void)SDL_SetRelativeMouseMode(
-        active != qfalse ? SDL_TRUE : SDL_FALSE);
-    SDL_SetWindowGrab(
-        coduoSdlWindow, active != qfalse ? SDL_TRUE : SDL_FALSE);
+    (void)SDL_SetRelativeMouseMode(active != qfalse ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowGrab(coduoSdlWindow, active != qfalse ? SDL_TRUE : SDL_FALSE);
 }
 
 qboolean CoduoSDL_HasOpenGLWindow(void)
@@ -641,8 +576,7 @@ qboolean CoduoSDL_HasOpenGLWindow(void)
  * MessageBoxA fatal-error boundary. */
 void CoduoSDL_ShowErrorDialog(const char *message, const char *title)
 {
-    (void)SDL_ShowSimpleMessageBox(
-        SDL_MESSAGEBOX_ERROR, title, message, coduoSdlWindow);
+    (void)SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, coduoSdlWindow);
 }
 
 static int32_t CoduoSDL_MapKey(SDL_Keycode key)
@@ -651,73 +585,130 @@ static int32_t CoduoSDL_MapKey(SDL_Keycode key)
         return (int32_t)key;
 
     switch (key) {
-    case SDLK_TAB: return K_TAB;
-    case SDLK_RETURN: return K_ENTER;
-    case SDLK_ESCAPE: return K_ESCAPE;
-    case SDLK_BACKSPACE: return K_BACKSPACE;
-    case SDLK_CAPSLOCK: return K_CAPSLOCK;
-    case SDLK_PAUSE: return K_PAUSE;
-    case SDLK_UP: return K_UPARROW;
-    case SDLK_DOWN: return K_DOWNARROW;
-    case SDLK_LEFT: return K_LEFTARROW;
-    case SDLK_RIGHT: return K_RIGHTARROW;
+    case SDLK_TAB:
+        return K_TAB;
+    case SDLK_RETURN:
+        return K_ENTER;
+    case SDLK_ESCAPE:
+        return K_ESCAPE;
+    case SDLK_BACKSPACE:
+        return K_BACKSPACE;
+    case SDLK_CAPSLOCK:
+        return K_CAPSLOCK;
+    case SDLK_PAUSE:
+        return K_PAUSE;
+    case SDLK_UP:
+        return K_UPARROW;
+    case SDLK_DOWN:
+        return K_DOWNARROW;
+    case SDLK_LEFT:
+        return K_LEFTARROW;
+    case SDLK_RIGHT:
+        return K_RIGHTARROW;
     case SDLK_LALT:
-    case SDLK_RALT: return K_ALT;
+    case SDLK_RALT:
+        return K_ALT;
     case SDLK_LCTRL:
-    case SDLK_RCTRL: return K_CTRL;
+    case SDLK_RCTRL:
+        return K_CTRL;
     case SDLK_LSHIFT:
-    case SDLK_RSHIFT: return K_SHIFT;
+    case SDLK_RSHIFT:
+        return K_SHIFT;
     case SDLK_LGUI:
-    case SDLK_RGUI: return K_COMMAND;
-    case SDLK_INSERT: return K_INS;
-    case SDLK_DELETE: return K_DEL;
-    case SDLK_PAGEDOWN: return K_PGDN;
-    case SDLK_PAGEUP: return K_PGUP;
-    case SDLK_HOME: return K_HOME;
-    case SDLK_END: return K_END;
-    case SDLK_F1: return K_F1;
-    case SDLK_F2: return K_F2;
-    case SDLK_F3: return K_F3;
-    case SDLK_F4: return K_F4;
-    case SDLK_F5: return K_F5;
-    case SDLK_F6: return K_F6;
-    case SDLK_F7: return K_F7;
-    case SDLK_F8: return K_F8;
-    case SDLK_F9: return K_F9;
-    case SDLK_F10: return K_F10;
-    case SDLK_F11: return K_F11;
-    case SDLK_F12: return K_F12;
-    case SDLK_KP_7: return K_KP_HOME;
-    case SDLK_KP_8: return K_KP_UPARROW;
-    case SDLK_KP_9: return K_KP_PGUP;
-    case SDLK_KP_4: return K_KP_LEFTARROW;
-    case SDLK_KP_5: return K_KP_5;
-    case SDLK_KP_6: return K_KP_RIGHTARROW;
-    case SDLK_KP_1: return K_KP_END;
-    case SDLK_KP_2: return K_KP_DOWNARROW;
-    case SDLK_KP_3: return K_KP_PGDN;
-    case SDLK_KP_ENTER: return K_KP_ENTER;
-    case SDLK_KP_0: return K_KP_INS;
-    case SDLK_KP_PERIOD: return K_KP_DEL;
-    case SDLK_KP_DIVIDE: return K_KP_SLASH;
-    case SDLK_KP_MINUS: return K_KP_MINUS;
-    case SDLK_KP_PLUS: return K_KP_PLUS;
-    case SDLK_NUMLOCKCLEAR: return K_KP_NUMLOCK;
-    case SDLK_KP_MULTIPLY: return K_KP_STAR;
-    case SDLK_KP_EQUALS: return K_KP_EQUALS;
-    default: return 0;
+    case SDLK_RGUI:
+        return K_COMMAND;
+    case SDLK_INSERT:
+        return K_INS;
+    case SDLK_DELETE:
+        return K_DEL;
+    case SDLK_PAGEDOWN:
+        return K_PGDN;
+    case SDLK_PAGEUP:
+        return K_PGUP;
+    case SDLK_HOME:
+        return K_HOME;
+    case SDLK_END:
+        return K_END;
+    case SDLK_F1:
+        return K_F1;
+    case SDLK_F2:
+        return K_F2;
+    case SDLK_F3:
+        return K_F3;
+    case SDLK_F4:
+        return K_F4;
+    case SDLK_F5:
+        return K_F5;
+    case SDLK_F6:
+        return K_F6;
+    case SDLK_F7:
+        return K_F7;
+    case SDLK_F8:
+        return K_F8;
+    case SDLK_F9:
+        return K_F9;
+    case SDLK_F10:
+        return K_F10;
+    case SDLK_F11:
+        return K_F11;
+    case SDLK_F12:
+        return K_F12;
+    case SDLK_KP_7:
+        return K_KP_HOME;
+    case SDLK_KP_8:
+        return K_KP_UPARROW;
+    case SDLK_KP_9:
+        return K_KP_PGUP;
+    case SDLK_KP_4:
+        return K_KP_LEFTARROW;
+    case SDLK_KP_5:
+        return K_KP_5;
+    case SDLK_KP_6:
+        return K_KP_RIGHTARROW;
+    case SDLK_KP_1:
+        return K_KP_END;
+    case SDLK_KP_2:
+        return K_KP_DOWNARROW;
+    case SDLK_KP_3:
+        return K_KP_PGDN;
+    case SDLK_KP_ENTER:
+        return K_KP_ENTER;
+    case SDLK_KP_0:
+        return K_KP_INS;
+    case SDLK_KP_PERIOD:
+        return K_KP_DEL;
+    case SDLK_KP_DIVIDE:
+        return K_KP_SLASH;
+    case SDLK_KP_MINUS:
+        return K_KP_MINUS;
+    case SDLK_KP_PLUS:
+        return K_KP_PLUS;
+    case SDLK_NUMLOCKCLEAR:
+        return K_KP_NUMLOCK;
+    case SDLK_KP_MULTIPLY:
+        return K_KP_STAR;
+    case SDLK_KP_EQUALS:
+        return K_KP_EQUALS;
+    default:
+        return 0;
     }
 }
 
 static int32_t CoduoSDL_MapMouseButton(uint8_t button)
 {
     switch (button) {
-    case SDL_BUTTON_LEFT: return K_MOUSE1;
-    case SDL_BUTTON_RIGHT: return K_MOUSE2;
-    case SDL_BUTTON_MIDDLE: return K_MOUSE3;
-    case SDL_BUTTON_X1: return K_MOUSE4;
-    case SDL_BUTTON_X2: return K_MOUSE5;
-    default: return 0;
+    case SDL_BUTTON_LEFT:
+        return K_MOUSE1;
+    case SDL_BUTTON_RIGHT:
+        return K_MOUSE2;
+    case SDL_BUTTON_MIDDLE:
+        return K_MOUSE3;
+    case SDL_BUTTON_X1:
+        return K_MOUSE4;
+    case SDL_BUTTON_X2:
+        return K_MOUSE5;
+    default:
+        return 0;
     }
 }
 
@@ -728,14 +719,11 @@ static int32_t CoduoSDL_MapMouseButton(uint8_t button)
  * press on the replacement window as a duplicate. Publish changes through a
  * separate engine-facing latch so physical-state reconciliation can restore
  * the missing transition without duplicating ordinary SDL button events. */
-static void coduomp_sdl_publish_mouse_button_compat(uint8_t button,
-                                                     qboolean down,
-                                                     int32_t time)
+static void coduomp_sdl_publish_mouse_button_compat(uint8_t button, qboolean down, int32_t time)
 {
     const int32_t key = CoduoSDL_MapMouseButton(button);
     const uint32_t buttonBit = SDL_BUTTON(button);
-    const qboolean wasDown =
-        (coduoSdlReportedMouseButtons & buttonBit) != 0 ? qtrue : qfalse;
+    const qboolean wasDown = (coduoSdlReportedMouseButtons & buttonBit) != 0 ? qtrue : qfalse;
 
     if (key == 0 || wasDown == down)
         return;
@@ -752,18 +740,14 @@ static void coduomp_sdl_publish_mouse_button_compat(uint8_t button,
  * button whose SDL latch was proven stale means SDL suppressed that click's
  * press. Reconstruct both transitions so even a click completed during a
  * blocked restart frame reaches the original +button impulse logic. */
-static void coduomp_sdl_publish_mouse_event_compat(uint8_t button,
-                                                   qboolean down,
-                                                   int32_t time)
+static void coduomp_sdl_publish_mouse_event_compat(uint8_t button, qboolean down, int32_t time)
 {
     const uint32_t buttonBit = SDL_BUTTON(button);
 
     if (CoduoSDL_MapMouseButton(button) == 0)
         return;
 
-    if (down == qfalse &&
-        (coduoSdlReportedMouseButtons & buttonBit) == 0 &&
-        (coduoSdlStaleMouseButtons & buttonBit) != 0) {
+    if (down == qfalse && (coduoSdlReportedMouseButtons & buttonBit) == 0 && (coduoSdlStaleMouseButtons & buttonBit) != 0) {
         coduomp_sdl_publish_mouse_button_compat(button, qtrue, time);
     }
 
@@ -776,20 +760,12 @@ static void coduomp_sdl_publish_mouse_event_compat(uint8_t button,
  * physically held at the pump boundary. */
 static void coduomp_sdl_reconcile_mouse_buttons_compat(void)
 {
-    static const uint8_t buttons[] = {
-        SDL_BUTTON_LEFT,
-        SDL_BUTTON_RIGHT,
-        SDL_BUTTON_MIDDLE,
-        SDL_BUTTON_X1,
-        SDL_BUTTON_X2
-    };
-    const uint32_t physicalButtons =
-        coduomp_sdl_current_mouse_buttons_compat();
+    static const uint8_t buttons[] = {SDL_BUTTON_LEFT, SDL_BUTTON_RIGHT, SDL_BUTTON_MIDDLE, SDL_BUTTON_X1, SDL_BUTTON_X2};
+    const uint32_t physicalButtons = coduomp_sdl_current_mouse_buttons_compat();
 
     for (size_t index = 0; index < sizeof(buttons) / sizeof(buttons[0]); ++index) {
         const uint8_t button = buttons[index];
-        const qboolean down =
-            (physicalButtons & SDL_BUTTON(button)) != 0 ? qtrue : qfalse;
+        const qboolean down = (physicalButtons & SDL_BUTTON(button)) != 0 ? qtrue : qfalse;
 
         coduomp_sdl_publish_mouse_button_compat(button, down, 0);
     }
@@ -843,42 +819,31 @@ void CoduoSDL_PumpEvents(void)
         case SDL_KEYUP: {
             const int32_t key = CoduoSDL_MapKey(event.key.keysym.sym);
             if (key != 0) {
-                Sys_QueEvent(
-                    sysMsgTime, SE_KEY, key,
-                    event.type == SDL_KEYDOWN ? qtrue : qfalse,
-                    0, NULL);
+                Sys_QueEvent(sysMsgTime, SE_KEY, key, event.type == SDL_KEYDOWN ? qtrue : qfalse, 0, NULL);
             }
             /* The original Win32 pump receives both WM_KEYDOWN/VK_BACK and
              * WM_CHAR/'\b'. SDL_TEXTINPUT does not report control characters,
              * so reproduce the missing character event at this platform
              * boundary. Field_KeyDownEvent deliberately does not edit on
              * K_BACKSPACE; Field_CharEvent performs the original deletion. */
-            if (event.type == SDL_KEYDOWN &&
-                event.key.keysym.sym == SDLK_BACKSPACE) {
-                Sys_QueEvent(
-                    sysMsgTime, SE_CHAR, '\b', 0, 0, NULL);
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_BACKSPACE) {
+                Sys_QueEvent(sysMsgTime, SE_CHAR, '\b', 0, 0, NULL);
             }
             /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): Win32 emits
              * character 22 for Ctrl-V, which the recovered field editor uses
              * to paste. SDL_TEXTINPUT omits shortcut control characters, so
              * synthesize that original event for Ctrl-V on Unix and for the
              * native Command-V chord on macOS. */
-            if (event.type == SDL_KEYDOWN &&
-                event.key.keysym.sym == SDLK_v &&
-                (event.key.keysym.mod & (KMOD_CTRL | KMOD_GUI)) != 0) {
-                Sys_QueEvent(
-                    sysMsgTime, SE_CHAR, CODUO_SDL_CHAR_PASTE, 0, 0, NULL);
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_v && (event.key.keysym.mod & (KMOD_CTRL | KMOD_GUI)) != 0) {
+                Sys_QueEvent(sysMsgTime, SE_CHAR, CODUO_SDL_CHAR_PASTE, 0, 0, NULL);
             }
             break;
         }
 
         case SDL_TEXTINPUT:
-            for (const uint8_t *text =
-                     (const uint8_t *)event.text.text;
-                 *text != '\0'; ++text) {
+            for (const uint8_t *text = (const uint8_t *)event.text.text; *text != '\0'; ++text) {
                 if (*text < 0x80U) {
-                    Sys_QueEvent(
-                        sysMsgTime, SE_CHAR, *text, 0, 0, NULL);
+                    Sys_QueEvent(sysMsgTime, SE_CHAR, *text, 0, 0, NULL);
                 }
             }
             break;
@@ -892,10 +857,7 @@ void CoduoSDL_PumpEvents(void)
             if (sysInputAppActive == qfalse)
                 break;
             if (event.motion.xrel != 0 || event.motion.yrel != 0) {
-                Sys_QueEvent(
-                    sysMsgTime, SE_MOUSE,
-                    event.motion.xrel, event.motion.yrel,
-                    0, NULL);
+                Sys_QueEvent(sysMsgTime, SE_MOUSE, event.motion.xrel, event.motion.yrel, 0, NULL);
             }
             break;
 
@@ -904,22 +866,14 @@ void CoduoSDL_PumpEvents(void)
             if (sysInputAppActive == qfalse)
                 break;
 #if defined(__APPLE__)
-            if (coduoSdlWindow == NULL ||
-                event.button.windowID != SDL_GetWindowID(coduoSdlWindow)) {
+            if (coduoSdlWindow == NULL || event.button.windowID != SDL_GetWindowID(coduoSdlWindow)) {
                 break;
             }
-            coduomp_sdl_publish_mouse_event_compat(
-                event.button.button,
-                event.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse,
-                sysMsgTime);
+            coduomp_sdl_publish_mouse_event_compat(event.button.button, event.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse, sysMsgTime);
 #else
-            const int32_t key =
-                CoduoSDL_MapMouseButton(event.button.button);
+            const int32_t key = CoduoSDL_MapMouseButton(event.button.button);
             if (key != 0) {
-                Sys_QueEvent(
-                    sysMsgTime, SE_KEY, key,
-                    event.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse,
-                    0, NULL);
+                Sys_QueEvent(sysMsgTime, SE_KEY, key, event.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse, 0, NULL);
             }
 #endif
             break;
@@ -942,13 +896,10 @@ void CoduoSDL_PumpEvents(void)
                 wheelY = -event.wheel.x;
             }
 #endif
-            const int32_t key =
-                wheelY > 0 ? K_MWHEELUP : K_MWHEELDOWN;
+            const int32_t key = wheelY > 0 ? K_MWHEELUP : K_MWHEELDOWN;
             if (wheelY != 0) {
-                Sys_QueEvent(
-                    sysMsgTime, SE_KEY, key, qtrue, 0, NULL);
-                Sys_QueEvent(
-                    sysMsgTime, SE_KEY, key, qfalse, 0, NULL);
+                Sys_QueEvent(sysMsgTime, SE_KEY, key, qtrue, 0, NULL);
+                Sys_QueEvent(sysMsgTime, SE_KEY, key, qfalse, 0, NULL);
             }
             break;
         }

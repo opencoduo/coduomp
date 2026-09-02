@@ -54,8 +54,10 @@ enum {
 /* Camera-shake constants for the EV_FIRE_WEAPON_MG42 handler (target[3]).
  * Immediates 0x3d4ccccd / 0x64 / 0x42c80000 in the .mcode. */
 #define MODEL_SHAKE_AMPLITUDE 0.05f  /* 0x3d4ccccd */
-enum { MODEL_SHAKE_DURATION = 100 }; /* 0x64 */
-#define MODEL_SHAKE_RADIUS    100.0f /* 0x42c80000 */
+enum {
+    MODEL_SHAKE_DURATION = 100
+}; /* 0x64 */
+#define MODEL_SHAKE_RADIUS 100.0f /* 0x42c80000 */
 
 void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
 {
@@ -81,9 +83,7 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
      * and the event's name. cg_eventNames is the CS-independent event-name table
      * (0x30082774). Reads model->number ([ESI]) as the "ent" number. */
     if (cg_debugevents_vmCvar.integer != 0) {
-        Com_PrintMessage("ent:%3i  preevent:%3i CG_EntityPreEvent:%s\n",
-                         (int)model->numberBits, (int)event,
-                         cg_eventNames[event]);
+        Com_PrintMessage("ent:%3i  preevent:%3i CG_EntityPreEvent:%s\n", (int)model->numberBits, (int)event, cg_eventNames[event]);
     }
 
     /* 0x300236e7: dispatch. The disassembler's jump table only covers ids
@@ -97,8 +97,7 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
     case EV_FIRE_WEAPONB:
     case EV_FIRE_WEAPONC:
     case EV_FIRE_WEAPON_LASTSHOT:
-        CG_FireWeapon((uint32_t)eventParm, cent, model, event,
-                                  MODEL_WEAPON_EFFECT_MODE_0);
+        CG_FireWeapon((uint32_t)eventParm, cent, model, event, MODEL_WEAPON_EFFECT_MODE_0);
         return;
 
     /* target[1] (0x30023829): id 167. Play the held weapon's model sound on this
@@ -106,8 +105,7 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
      * cgWeaponInfo.rechamberSound (+0xf0). A null sound name skips the call. Reads
      * model->number ([ESI]) as the sound entity number. */
     case EV_RECHAMBER_WEAPON: {
-        const char *sound = (const char *)(uintptr_t)
-            cg_weaponInfos[model->weaponIndex].rechamberSound;
+        const char *sound = (const char *)(uintptr_t)cg_weaponInfos[model->weaponIndex].rechamberSound;
         if (sound != 0) {
             CG_PlayEntitySoundAliasByName((int)model->numberBits, sound);
         }
@@ -123,10 +121,8 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
     /* target[3] (0x300237dc): id 173. Add a fixed-size camera shake at the entity's
      * weapon-origin context, then run a weapon effect with the alt flag set. */
     case EV_FIRE_WEAPON_MG42:
-        CG_AddCameraShake(cent->lerpOrigin, MODEL_SHAKE_AMPLITUDE,
-                          MODEL_SHAKE_DURATION, MODEL_SHAKE_RADIUS);
-        CG_FireWeapon(MODEL_WEAPON_EFFECT_FLAG_ALT, cent, model, event,
-                                  MODEL_WEAPON_EFFECT_MODE_0);
+        CG_AddCameraShake(cent->lerpOrigin, MODEL_SHAKE_AMPLITUDE, MODEL_SHAKE_DURATION, MODEL_SHAKE_RADIUS);
+        CG_FireWeapon(MODEL_WEAPON_EFFECT_FLAG_ALT, cent, model, event, MODEL_WEAPON_EFFECT_MODE_0);
         return;
 
     /* target[4] (0x30023796): id 174. Weapon effect run twice, modes 0 then 1, with
@@ -162,9 +158,7 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
 
         /* The model-event consumer validates the seven-bit weapon and eight-bit
          * surface selectors before its table lookups. */
-        CG_BulletHitEvent((int32_t)model->vehicleEntityNumBits,
-                          cent->lerpOrigin, dirA, dirB,
-                          model->weaponIndex, model->surfTypeBits,
+        CG_BulletHitEvent((int32_t)model->vehicleEntityNumBits, cent->lerpOrigin, dirA, dirB, model->weaponIndex, model->surfTypeBits,
                           model->torsoAnimWord, effectSelect);
         return;
     }
@@ -173,9 +167,7 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm)
     case EV_BULLET_HIT_CLIENT_SMALL:
     case EV_BULLET_HIT_CLIENT_LARGE:
         /* The model-event consumer validates both selectors before lookup. */
-        CG_ModelEventFireWeapon(event, model->surfTypeBits, model->weaponIndex,
-                                cent->lerpOrigin,
-                                (int32_t)model->vehicleEntityNumBits);
+        CG_ModelEventFireWeapon(event, model->surfTypeBits, model->weaponIndex, cent->lerpOrigin, (int32_t)model->vehicleEntityNumBits);
         return;
 
     /* target[8] (0x30023866): id 201. Camera shake whose amplitude/radius/duration

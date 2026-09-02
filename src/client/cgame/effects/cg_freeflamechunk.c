@@ -101,15 +101,14 @@ void CG_FreeFlameChunk(flameChunk_t *chunk)
      * fields become 0. Modelled as a whole-node zero followed by re-establishing the
      * five links. */
     flameChunk_t savedLinks = *chunk;            /* 0x30025782 temp[0]=next; +others */
-    *chunk = (flameChunk_t){ 0 };                /* 0x3002578d REP STOSD zero */
+    *chunk = (flameChunk_t){0};                /* 0x3002578d REP STOSD zero */
     chunk->prev = savedLinks.prev;               /* 0x30025797 (temp[1]) */
     chunk->listPrev = savedLinks.listPrev;       /* 0x3002579e (temp[4]) */
     const int32_t activeCount = cg_numActiveFlameChunks; /* 0x300257a1 */
     chunk->next = savedLinks.next;               /* 0x300257a6 */
-    const int32_t nextActiveCount = coduo_int32_from_bits(
-        (uint32_t)activeCount - 1u);              /* 0x300257ad DEC */
-    cg_freeFlameChunks = chunk;                  /* 0x300257af */
-    chunk->parent = savedLinks.parent;           /* 0x300257b5 (temp[2]) */
-    chunk->listNext = savedLinks.listNext;       /* 0x300257b8 (temp[3]) */
-    cg_numActiveFlameChunks = nextActiveCount;   /* 0x300257bb */
+    const int32_t nextActiveCount = coduo_int32_from_bits((uint32_t)activeCount - 1u); /* 0x300257ad DEC */
+    cg_freeFlameChunks = chunk; /* 0x300257af */
+    chunk->parent = savedLinks.parent; /* 0x300257b5 (temp[2]) */
+    chunk->listNext = savedLinks.listNext; /* 0x300257b8 (temp[3]) */
+    cg_numActiveFlameChunks = nextActiveCount; /* 0x300257bb */
 }

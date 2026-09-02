@@ -132,64 +132,38 @@ struct fileHandleData_s {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-#define FS_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
+#define FS_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
 
-FS_LAYOUT_ASSERT(fs_file_in_pack_data_offset,
-                 offsetof(fileInPack_t, data) == 0x04);
-FS_LAYOUT_ASSERT(fs_file_in_pack_name_offset,
-                 offsetof(fileInPack_t, name) == 0x10);
-FS_LAYOUT_ASSERT(fs_file_in_pack_next_offset,
-                 offsetof(fileInPack_t, next) == 0x14);
+FS_LAYOUT_ASSERT(fs_file_in_pack_data_offset, offsetof(fileInPack_t, data) == 0x04);
+FS_LAYOUT_ASSERT(fs_file_in_pack_name_offset, offsetof(fileInPack_t, name) == 0x10);
+FS_LAYOUT_ASSERT(fs_file_in_pack_next_offset, offsetof(fileInPack_t, next) == 0x14);
 FS_LAYOUT_ASSERT(fs_file_in_pack_size, sizeof(fileInPack_t) == 0x18);
-FS_LAYOUT_ASSERT(fs_directory_gamedir_offset,
-                 offsetof(directory_t, gamedir) == 0x100);
+FS_LAYOUT_ASSERT(fs_directory_gamedir_offset, offsetof(directory_t, gamedir) == 0x100);
 FS_LAYOUT_ASSERT(fs_directory_size, sizeof(directory_t) == 0x200);
-FS_LAYOUT_ASSERT(fs_dir_file_next_offset,
-                 offsetof(fs_dir_file_t, next) == 0x0c);
+FS_LAYOUT_ASSERT(fs_dir_file_next_offset, offsetof(fs_dir_file_t, next) == 0x0c);
 FS_LAYOUT_ASSERT(fs_dir_file_size, sizeof(fs_dir_file_t) == 0x10);
-FS_LAYOUT_ASSERT(fs_dir_file_list_num_files_offset,
-                 offsetof(fs_dir_file_list_t, numFiles) == 0x100);
-FS_LAYOUT_ASSERT(fs_dir_file_list_hash_size_offset,
-                 offsetof(fs_dir_file_list_t, hashSize) == 0x104);
-FS_LAYOUT_ASSERT(fs_dir_file_list_hash_table_offset,
-                 offsetof(fs_dir_file_list_t, hashTable) == 0x108);
-FS_LAYOUT_ASSERT(fs_dir_file_list_file_list_offset,
-                 offsetof(fs_dir_file_list_t, fileList) == 0x10c);
-FS_LAYOUT_ASSERT(fs_dir_file_list_next_offset,
-                 offsetof(fs_dir_file_list_t, next) == 0x110);
-FS_LAYOUT_ASSERT(fs_dir_file_list_size,
-                 sizeof(fs_dir_file_list_t) == 0x114);
-FS_LAYOUT_ASSERT(fs_pack_zip_file_offset,
-                 offsetof(pack_t, zipFile) == 0x300);
-FS_LAYOUT_ASSERT(fs_pack_checksum_offset,
-                 offsetof(pack_t, checksum) == 0x304);
-FS_LAYOUT_ASSERT(fs_pack_reference_flags_offset,
-                 offsetof(pack_t, generalReference) == 0x310);
-FS_LAYOUT_ASSERT(fs_pack_hash_size_offset,
-                 offsetof(pack_t, hashSize) == 0x314);
-FS_LAYOUT_ASSERT(fs_pack_hash_table_offset,
-                 offsetof(pack_t, hashTable) == 0x318);
-FS_LAYOUT_ASSERT(fs_pack_file_list_offset,
-                 offsetof(pack_t, fileList) == 0x31c);
+FS_LAYOUT_ASSERT(fs_dir_file_list_num_files_offset, offsetof(fs_dir_file_list_t, numFiles) == 0x100);
+FS_LAYOUT_ASSERT(fs_dir_file_list_hash_size_offset, offsetof(fs_dir_file_list_t, hashSize) == 0x104);
+FS_LAYOUT_ASSERT(fs_dir_file_list_hash_table_offset, offsetof(fs_dir_file_list_t, hashTable) == 0x108);
+FS_LAYOUT_ASSERT(fs_dir_file_list_file_list_offset, offsetof(fs_dir_file_list_t, fileList) == 0x10c);
+FS_LAYOUT_ASSERT(fs_dir_file_list_next_offset, offsetof(fs_dir_file_list_t, next) == 0x110);
+FS_LAYOUT_ASSERT(fs_dir_file_list_size, sizeof(fs_dir_file_list_t) == 0x114);
+FS_LAYOUT_ASSERT(fs_pack_zip_file_offset, offsetof(pack_t, zipFile) == 0x300);
+FS_LAYOUT_ASSERT(fs_pack_checksum_offset, offsetof(pack_t, checksum) == 0x304);
+FS_LAYOUT_ASSERT(fs_pack_reference_flags_offset, offsetof(pack_t, generalReference) == 0x310);
+FS_LAYOUT_ASSERT(fs_pack_hash_size_offset, offsetof(pack_t, hashSize) == 0x314);
+FS_LAYOUT_ASSERT(fs_pack_hash_table_offset, offsetof(pack_t, hashTable) == 0x318);
+FS_LAYOUT_ASSERT(fs_pack_file_list_offset, offsetof(pack_t, fileList) == 0x31c);
 FS_LAYOUT_ASSERT(fs_pack_size, sizeof(pack_t) == 0x320);
-FS_LAYOUT_ASSERT(fs_searchpath_localized_offset,
-                 offsetof(searchpath_t, localized) == 0x0c);
-FS_LAYOUT_ASSERT(fs_searchpath_language_offset,
-                 offsetof(searchpath_t, language) == 0x10);
+FS_LAYOUT_ASSERT(fs_searchpath_localized_offset, offsetof(searchpath_t, localized) == 0x0c);
+FS_LAYOUT_ASSERT(fs_searchpath_language_offset, offsetof(searchpath_t, language) == 0x10);
 FS_LAYOUT_ASSERT(fs_searchpath_size, sizeof(searchpath_t) == 0x14);
-FS_LAYOUT_ASSERT(fs_handle_position_offset,
-                 offsetof(fileHandleData_t, position) == 0x0c);
-FS_LAYOUT_ASSERT(fs_handle_size_offset,
-                 offsetof(fileHandleData_t, size) == 0x10);
-FS_LAYOUT_ASSERT(fs_handle_zip_rewind_offset,
-                 offsetof(fileHandleData_t, zipRewindOffset) == 0x14);
-FS_LAYOUT_ASSERT(fs_handle_zip_archive_offset,
-                 offsetof(fileHandleData_t, zipArchive) == 0x18);
-FS_LAYOUT_ASSERT(fs_handle_seek_guard_offset,
-                 offsetof(fileHandleData_t, seekCallbackGuard) == 0x1c);
-FS_LAYOUT_ASSERT(fs_handle_name_offset,
-                 offsetof(fileHandleData_t, name) == 0x20);
+FS_LAYOUT_ASSERT(fs_handle_position_offset, offsetof(fileHandleData_t, position) == 0x0c);
+FS_LAYOUT_ASSERT(fs_handle_size_offset, offsetof(fileHandleData_t, size) == 0x10);
+FS_LAYOUT_ASSERT(fs_handle_zip_rewind_offset, offsetof(fileHandleData_t, zipRewindOffset) == 0x14);
+FS_LAYOUT_ASSERT(fs_handle_zip_archive_offset, offsetof(fileHandleData_t, zipArchive) == 0x18);
+FS_LAYOUT_ASSERT(fs_handle_seek_guard_offset, offsetof(fileHandleData_t, seekCallbackGuard) == 0x1c);
+FS_LAYOUT_ASSERT(fs_handle_name_offset, offsetof(fileHandleData_t, name) == 0x20);
 FS_LAYOUT_ASSERT(fs_handle_size, sizeof(fileHandleData_t) == 0x120);
 
 #undef FS_LAYOUT_ASSERT

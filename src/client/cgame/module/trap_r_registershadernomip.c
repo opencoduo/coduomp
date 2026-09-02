@@ -48,6 +48,5 @@ int32_t trap_R_RegisterShaderNoMip(const char *name, int32_t loadMode)
 
     /* 0x3003ddb1: cgame_syscall(CG_R_REGISTERSHADER, name, loadMode) — returns the
      * registered shader's qhandle_t (int32_t). */
-    return coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_R_REGISTERSHADER, name, loadMode));
+    return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, name, loadMode));
 }

@@ -24,8 +24,7 @@ static const char coduompSpanishImproperQuitBody[] =
     "\277Quieres ejecutar el juego en modo seguro?\n\n"
     "Esta opci\363n es recomendable para la mayor\355a de los usuarios.\n"
     "Cambiar\341 la configuraci\363n del sistema, pero no tus controles.";
-static const char coduompSpanishImproperQuitTitle[] =
-    "\277Ejecutar en modo seguro?";
+static const char coduompSpanishImproperQuitTitle[] = "\277Ejecutar en modo seguro?";
 
 /* Source: CoDUOMP.exe 0x0046a720..0x0046a7e8.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0046a720_0046a7e9.mcode.
@@ -64,8 +63,7 @@ int32_t Sys_InitLocalization(void)
     }
 
     sysLocalizationBuffer = sysLocalizationText;
-    const uint32_t bytesRead = (uint32_t)fread(
-        sysLocalizationBuffer, 1, (size_t)fileLength, file);
+    const uint32_t bytesRead = (uint32_t)fread(sysLocalizationBuffer, 1, (size_t)fileLength, file);
     (void)fclose(file);
     sysLocalizationBuffer[bytesRead] = '\0';
 
@@ -74,15 +72,11 @@ int32_t Sys_InitLocalization(void)
         return 0;
     }
 
-    for (uint32_t offset = 0;
-         sysLocalizationBuffer[offset] != '\0';
-         ++offset) {
+    for (uint32_t offset = 0; sysLocalizationBuffer[offset] != '\0'; ++offset) {
         if (sysLocalizationBuffer[offset] == '\n') {
             sysLocalizationBuffer[offset] = '\0';
-            sysLocalizationEntries =
-                &sysLocalizationBuffer[offset + 1];
-            (void)SEH_GetLanguageIndexForName(
-                sysLocalizationBuffer, &languageIndex);
+            sysLocalizationEntries = &sysLocalizationBuffer[offset + 1];
+            (void)SEH_GetLanguageIndexForName(sysLocalizationBuffer, &languageIndex);
             coduompLocalizationLanguageIndex = languageIndex;
             break;
         }
@@ -126,8 +120,7 @@ const char *Sys_LocalizeString(const char *reference)
         if (*key == '\0')
             break;
 
-        const qboolean matched =
-            strcmp(key, reference) == 0 ? qtrue : qfalse;
+        const qboolean matched = strcmp(key, reference) == 0 ? qtrue : qfalse;
         const char *value = Com_ParseExt(&parse, qtrue);
         if (*value == '\0')
             break;
@@ -140,9 +133,7 @@ const char *Sys_LocalizeString(const char *reference)
     Com_EndParseSession();
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (result == reference &&
-        coduompLocalizationLanguageIndex ==
-            SYS_LOCALIZATION_LANGUAGE_SPANISH) {
+    if (result == reference && coduompLocalizationLanguageIndex == SYS_LOCALIZATION_LANGUAGE_SPANISH) {
         if (strcmp(reference, "WIN_IMPROPER_QUIT_BODY") == 0) {
             result = coduompSpanishImproperQuitBody;
         } else if (strcmp(reference, "WIN_IMPROPER_QUIT_TITLE") == 0) {

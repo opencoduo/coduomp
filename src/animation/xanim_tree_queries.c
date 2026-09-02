@@ -15,11 +15,9 @@ int32_t XAnimGetNumChildren(XAnim *tree, int32_t animIndex)
 
 /* Sources: CoDUOMP.exe 0x0049ac60 and coduo_lnxded 0x080bf092.
  * Name: exact same-version Mac symbol XAnimGetChildAt. */
-int32_t XAnimGetChildAt(XAnim *tree, int32_t animIndex,
-                        int32_t childIndex)
+int32_t XAnimGetChildAt(XAnim *tree, int32_t animIndex, int32_t childIndex)
 {
-    return tree->entries[animIndex].payload.parent.firstChildIndex +
-           childIndex;
+    return tree->entries[animIndex].payload.parent.firstChildIndex + childIndex;
 }
 
 /* Sources: CoDUOMP.exe 0x0049ac70 and coduo_lnxded 0x080bf0a6.
@@ -28,9 +26,7 @@ const char *XAnimGetAnimName(XAnim *tree, int32_t animIndex)
 {
     XAnimEntry *entry = &tree->entries[animIndex];
 
-    return entry->childCount != 0
-               ? "<non-leaf anim>"
-               : entry->payload.leafAsset->name;
+    return entry->childCount != 0 ? "<non-leaf anim>" : entry->payload.leafAsset->name;
 }
 
 /* Sources: CoDUOMP.exe 0x00496df0 and coduo_lnxded 0x080bf0de.
@@ -54,8 +50,7 @@ qboolean XAnimHasTime(XAnim *tree, int32_t animIndex)
 {
     XAnimEntry *entry = &tree->entries[animIndex];
 
-    return entry->childCount == 0 ||
-           (entry->payload.parent.flags & XANIM_SYNC_MASK) != 0;
+    return entry->childCount == 0 || (entry->payload.parent.flags & XANIM_SYNC_MASK) != 0;
 }
 
 /* Sources: CoDUOMP.exe 0x0049c110 and coduo_lnxded 0x080c0b06.
@@ -73,19 +68,15 @@ qboolean XAnimIsLooped(XAnim *tree, int32_t animIndex)
 {
     XAnimEntry *entry = &tree->entries[animIndex];
 
-    return entry->childCount != 0
-               ? (entry->payload.parent.flags & XANIM_SYNC_LOOPING) != 0
-               : entry->payload.leafAsset->data.xanimParts->looped;
+    return entry->childCount != 0 ? (entry->payload.parent.flags & XANIM_SYNC_LOOPING) != 0
+                                  : entry->payload.leafAsset->data.xanimParts->looped;
 }
 
 /* Sources: CoDUOMP.exe 0x0049c5b0 and coduo_lnxded 0x080c1186.
  * Name: exact same-version Mac symbol XAnimNotetrackExists. */
-qboolean XAnimNotetrackExists(XAnim *tree, int32_t animIndex,
-                              uint16_t notetrack)
+qboolean XAnimNotetrackExists(XAnim *tree, int32_t animIndex, uint16_t notetrack)
 {
-    xanim_notetrack_t *noteTrack =
-        tree->entries[animIndex].payload.leafAsset->data.xanimParts
-            ->noteTracks;
+    xanim_notetrack_t *noteTrack = tree->entries[animIndex].payload.leafAsset->data.xanimParts->noteTracks;
 
     if (noteTrack != NULL) {
         for (; noteTrack->nameHandle != 0; ++noteTrack) {
@@ -114,22 +105,18 @@ qboolean XAnimNotetrackExists(XAnim *tree, int32_t animIndex,
  */
 xanim_length_t XAnimGetLength(XAnim *tree, int32_t animIndex)
 {
-    const XAnimParts *record =
-        tree->entries[animIndex].payload.leafAsset->data.xanimParts;
+    const XAnimParts *record = tree->entries[animIndex].payload.leafAsset->data.xanimParts;
     const int32_t frameCountMinusOne = record->frameCountMinusOne;
 
 #if EMULATE_X87
 #if defined(WINDOWS_BEHAVIOR)
-    volatile double length =
-        (double)frameCountMinusOne / (double)record->frameRate;
+    volatile double length = (double)frameCountMinusOne / (double)record->frameRate;
 
     return length;
 #else
-    return x87f_div(x87f_load_i32(frameCountMinusOne),
-                    x87f_load_f32(record->frameRate));
+    return x87f_div(x87f_load_i32(frameCountMinusOne), x87f_load_f32(record->frameRate));
 #endif
-#elif (defined(__i386__) || defined(__x86_64__)) && \
-      (defined(__GNUC__) || defined(__clang__))
+#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
 #if defined(WINDOWS_BEHAVIOR)
     double length;
 
@@ -137,8 +124,7 @@ xanim_length_t XAnimGetLength(XAnim *tree, int32_t animIndex)
                          "fdivs %[frameRate]\n\t"
                          "fstpl %[length]"
                          : [length] "=m"(length)
-                         : [frameCount] "m"(frameCountMinusOne),
-                           [frameRate] "m"(record->frameRate)
+                         : [frameCount] "m"(frameCountMinusOne), [frameRate] "m"(record->frameRate)
                          : "st", "memory");
     return length;
 #else
@@ -148,8 +134,7 @@ xanim_length_t XAnimGetLength(XAnim *tree, int32_t animIndex)
                          "fdivs %[frameRate]\n\t"
                          "fstpt %[length]"
                          : [length] "=m"(length)
-                         : [frameCount] "m"(frameCountMinusOne),
-                           [frameRate] "m"(record->frameRate)
+                         : [frameCount] "m"(frameCountMinusOne), [frameRate] "m"(record->frameRate)
                          : "st", "memory");
     return length;
 #endif
@@ -159,8 +144,7 @@ xanim_length_t XAnimGetLength(XAnim *tree, int32_t animIndex)
 #if defined(WINDOWS_BEHAVIOR)
     return (double)frameCountMinusOne / (double)record->frameRate;
 #else
-    return (long double)frameCountMinusOne /
-           (long double)record->frameRate;
+    return (long double)frameCountMinusOne / (long double)record->frameRate;
 #endif
 #endif
 }

@@ -78,20 +78,13 @@ void CG_PlaySpinningViewEffect(int effectId)
     axis[2][2] = 1.0f;           /* 0x30016511 MOV [F+0x38],0x3f800000 */
     axis[1][2] = (float)axisLeftZ;
 
-    origin[0] = (float)((long double)axis[0][0] * (long double)256.0f +
-                        (long double)cg_refdef.vieworg[0]);
-    origin[1] = (float)((long double)axis[0][1] * (long double)256.0f +
-                        (long double)cg_refdef.vieworg[1]);
-    origin[2] = (float)((long double)axis[0][2] * (long double)256.0f +
-                        (long double)cg_refdef.vieworg[2]);
+    origin[0] = (float)((long double)axis[0][0] * (long double)256.0f + (long double)cg_refdef.vieworg[0]);
+    origin[1] = (float)((long double)axis[0][1] * (long double)256.0f + (long double)cg_refdef.vieworg[1]);
+    origin[2] = (float)((long double)axis[0][2] * (long double)256.0f + (long double)cg_refdef.vieworg[2]);
 
     /*
      * 0x30016559: fire the effect. cg_effectDefs[effectId] is the engine handle
      * (EAX*4 + 0x304484e4). Trailing argument is a literal 0.
      */
-    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                  coduo_int32_from_bits(effectHandle),
-                  (intptr_t)origin,
-                  (intptr_t)axis,
-                  0);
+    cgame_syscall(CG_PLAY_EFFECT_ON_TAG, coduo_int32_from_bits(effectHandle), (intptr_t)origin, (intptr_t)axis, 0);
 }

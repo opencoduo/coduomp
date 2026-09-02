@@ -27,14 +27,10 @@ typedef struct miles_sample_handle_s *miles_sample_handle_t;
 typedef struct miles_3d_sample_handle_s *miles_3d_sample_handle_t;
 typedef struct miles_stream_handle_s *miles_stream_handle_t;
 typedef struct eax_manager_s eax_manager_t;
-typedef int32_t (MILES_CALLBACK *miles_file_open_callback_t)(
-    const char *filename, int32_t *fileHandle);
-typedef void (MILES_CALLBACK *miles_file_close_callback_t)(
-    int32_t fileHandle);
-typedef int32_t (MILES_CALLBACK *miles_file_seek_callback_t)(
-    int32_t fileHandle, int32_t offset, int32_t origin);
-typedef int32_t (MILES_CALLBACK *miles_file_read_callback_t)(
-    int32_t fileHandle, void *buffer, int32_t byteCount);
+typedef int32_t(MILES_CALLBACK *miles_file_open_callback_t)(const char *filename, int32_t *fileHandle);
+typedef void(MILES_CALLBACK *miles_file_close_callback_t)(int32_t fileHandle);
+typedef int32_t(MILES_CALLBACK *miles_file_seek_callback_t)(int32_t fileHandle, int32_t offset, int32_t origin);
+typedef int32_t(MILES_CALLBACK *miles_file_read_callback_t)(int32_t fileHandle, void *buffer, int32_t byteCount);
 
 typedef enum milesSampleType_e {
     MILES_SAMPLE_TYPE_MONO_8 = 0,
@@ -52,8 +48,7 @@ enum {
     MSS_STREAM_CHANNEL_FIRST = 32,
     MSS_STREAM_CHANNEL_CAPACITY = 13,
     MSS_ALIAS_STREAM_SLOT_FIRST = 5,
-    MSS_ALIAS_STREAM_CHANNEL_FIRST =
-        MSS_STREAM_CHANNEL_FIRST + MSS_ALIAS_STREAM_SLOT_FIRST,
+    MSS_ALIAS_STREAM_CHANNEL_FIRST = MSS_STREAM_CHANNEL_FIRST + MSS_ALIAS_STREAM_SLOT_FIRST,
     MSS_2D_CHANNEL_FIRST = 45,
     MSS_2D_CHANNEL_CAPACITY = 32,
     MSS_TOTAL_CHANNEL_COUNT = 77
@@ -109,7 +104,9 @@ typedef enum mssSoundOverlayType_e {
     MSS_SOUND_OVERLAY_2D = 3
 } mssSoundOverlayType_t;
 
-enum { MSS_RAW_BUFFER_COUNT = 32 };
+enum {
+    MSS_RAW_BUFFER_COUNT = 32
+};
 
 #ifdef __cplusplus
 #define MSS_ALIGNAS_EIGHT alignas(8)
@@ -148,171 +145,94 @@ enum {
 typedef struct miles_sound_info_s {
     snd_alias_sound_file_t publicInfo;
 #if UINTPTR_MAX == UINT32_MAX
-    uint8_t privateState[
-        MILES_SOUND_INFO_I386_EXTENT -
-        MILES_SOUND_INFO_I386_PUBLIC_EXTENT];
+    uint8_t privateState[MILES_SOUND_INFO_I386_EXTENT - MILES_SOUND_INFO_I386_PUBLIC_EXTENT];
 #endif
 } miles_sound_info_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(miles_sound_info_t, privateState) ==
-                   MILES_SOUND_INFO_I386_PUBLIC_EXTENT,
+_Static_assert(offsetof(miles_sound_info_t, privateState) == MILES_SOUND_INFO_I386_PUBLIC_EXTENT,
                "i386 Miles sound-info private-state offset changed");
-_Static_assert(sizeof(miles_sound_info_t) ==
-                   MILES_SOUND_INFO_I386_EXTENT,
-               "i386 Miles sound-info extent changed");
+_Static_assert(sizeof(miles_sound_info_t) == MILES_SOUND_INFO_I386_EXTENT, "i386 Miles sound-info extent changed");
 #endif
 
 #undef MSS_ALIGNAS_EIGHT
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(mss_channel_info_t) == 0x04,
-               "i386 MSS channel-info alignment changed");
-_Static_assert(offsetof(mss_channel_info_t, effectId) == 0x00,
-               "i386 MSS channel effect-id offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->effectId) == 0x04,
-               "i386 MSS channel effect-id extent changed");
-_Static_assert(offsetof(mss_channel_info_t, aliasChannel) == 0x04,
-               "i386 MSS channel alias-channel offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->aliasChannel) == 0x04,
-               "i386 MSS channel alias-channel extent changed");
-_Static_assert(offsetof(mss_channel_info_t, lastUpdateTime) == 0x08,
-               "i386 MSS channel last-update offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->lastUpdateTime) == 0x04,
-               "i386 MSS channel last-update extent changed");
-_Static_assert(offsetof(mss_channel_info_t, endTime) == 0x0c,
-               "i386 MSS channel end-time offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->endTime) == 0x04,
-               "i386 MSS channel end-time extent changed");
-_Static_assert(offsetof(mss_channel_info_t, logicalVolume) == 0x10,
-               "i386 MSS channel volume offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->logicalVolume) == 0x04,
-               "i386 MSS channel volume extent changed");
-_Static_assert(offsetof(mss_channel_info_t, basePlaybackRate) == 0x14,
-               "i386 MSS channel playback-rate offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->basePlaybackRate) == 0x04,
-               "i386 MSS channel playback-rate extent changed");
-_Static_assert(offsetof(mss_channel_info_t, aliasPitchScale) == 0x18,
-               "i386 MSS channel pitch offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->aliasPitchScale) == 0x04,
-               "i386 MSS channel pitch extent changed");
-_Static_assert(offsetof(mss_channel_info_t, alias) == 0x1c,
-               "i386 MSS channel alias offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->alias) == 0x04,
-               "i386 MSS channel alias extent changed");
-_Static_assert(offsetof(mss_channel_info_t, secondaryAlias) == 0x20,
-               "i386 MSS channel secondary-alias offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->secondaryAlias) == 0x04,
-               "i386 MSS channel secondary-alias extent changed");
-_Static_assert(offsetof(mss_channel_info_t, aliasBlend) == 0x24,
-               "i386 MSS channel alias-blend offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->aliasBlend) == 0x04,
-               "i386 MSS channel alias-blend extent changed");
-_Static_assert(offsetof(mss_channel_info_t, effectOffset) == 0x28,
-               "i386 MSS channel effect-offset field changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->effectOffset) == 0x0c,
-               "i386 MSS channel effect-offset extent changed");
-_Static_assert(offsetof(mss_channel_info_t, paused) == 0x34,
-               "i386 MSS channel paused-state offset changed");
-_Static_assert(sizeof(((mss_channel_info_t *)0)->paused) == 0x04,
-               "i386 MSS channel paused-state extent changed");
-_Static_assert(sizeof(mss_channel_info_t) == 0x38,
-               "original i386 MSS channel-info size changed");
-_Static_assert(_Alignof(mss_stream_channel_t) == 0x04,
-               "i386 MSS stream-channel alignment changed");
-_Static_assert(offsetof(mss_stream_channel_t, is3D) == 0x00,
-               "i386 MSS stream 3D-state offset changed");
-_Static_assert(sizeof(((mss_stream_channel_t *)0)->is3D) == 0x04,
-               "i386 MSS stream 3D-state extent changed");
-_Static_assert(offsetof(mss_stream_channel_t, position) == 0x4,
-               "i386 MSS stream position offset changed");
-_Static_assert(sizeof(((mss_stream_channel_t *)0)->position) == 0x0c,
-               "i386 MSS stream position extent changed");
-_Static_assert(sizeof(mss_stream_channel_t) == 0x10,
-               "original i386 MSS stream-channel size changed");
+_Static_assert(_Alignof(mss_channel_info_t) == 0x04, "i386 MSS channel-info alignment changed");
+_Static_assert(offsetof(mss_channel_info_t, effectId) == 0x00, "i386 MSS channel effect-id offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->effectId) == 0x04, "i386 MSS channel effect-id extent changed");
+_Static_assert(offsetof(mss_channel_info_t, aliasChannel) == 0x04, "i386 MSS channel alias-channel offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->aliasChannel) == 0x04, "i386 MSS channel alias-channel extent changed");
+_Static_assert(offsetof(mss_channel_info_t, lastUpdateTime) == 0x08, "i386 MSS channel last-update offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->lastUpdateTime) == 0x04, "i386 MSS channel last-update extent changed");
+_Static_assert(offsetof(mss_channel_info_t, endTime) == 0x0c, "i386 MSS channel end-time offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->endTime) == 0x04, "i386 MSS channel end-time extent changed");
+_Static_assert(offsetof(mss_channel_info_t, logicalVolume) == 0x10, "i386 MSS channel volume offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->logicalVolume) == 0x04, "i386 MSS channel volume extent changed");
+_Static_assert(offsetof(mss_channel_info_t, basePlaybackRate) == 0x14, "i386 MSS channel playback-rate offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->basePlaybackRate) == 0x04, "i386 MSS channel playback-rate extent changed");
+_Static_assert(offsetof(mss_channel_info_t, aliasPitchScale) == 0x18, "i386 MSS channel pitch offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->aliasPitchScale) == 0x04, "i386 MSS channel pitch extent changed");
+_Static_assert(offsetof(mss_channel_info_t, alias) == 0x1c, "i386 MSS channel alias offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->alias) == 0x04, "i386 MSS channel alias extent changed");
+_Static_assert(offsetof(mss_channel_info_t, secondaryAlias) == 0x20, "i386 MSS channel secondary-alias offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->secondaryAlias) == 0x04, "i386 MSS channel secondary-alias extent changed");
+_Static_assert(offsetof(mss_channel_info_t, aliasBlend) == 0x24, "i386 MSS channel alias-blend offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->aliasBlend) == 0x04, "i386 MSS channel alias-blend extent changed");
+_Static_assert(offsetof(mss_channel_info_t, effectOffset) == 0x28, "i386 MSS channel effect-offset field changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->effectOffset) == 0x0c, "i386 MSS channel effect-offset extent changed");
+_Static_assert(offsetof(mss_channel_info_t, paused) == 0x34, "i386 MSS channel paused-state offset changed");
+_Static_assert(sizeof(((mss_channel_info_t *)0)->paused) == 0x04, "i386 MSS channel paused-state extent changed");
+_Static_assert(sizeof(mss_channel_info_t) == 0x38, "original i386 MSS channel-info size changed");
+_Static_assert(_Alignof(mss_stream_channel_t) == 0x04, "i386 MSS stream-channel alignment changed");
+_Static_assert(offsetof(mss_stream_channel_t, is3D) == 0x00, "i386 MSS stream 3D-state offset changed");
+_Static_assert(sizeof(((mss_stream_channel_t *)0)->is3D) == 0x04, "i386 MSS stream 3D-state extent changed");
+_Static_assert(offsetof(mss_stream_channel_t, position) == 0x4, "i386 MSS stream position offset changed");
+_Static_assert(sizeof(((mss_stream_channel_t *)0)->position) == 0x0c, "i386 MSS stream position extent changed");
+_Static_assert(sizeof(mss_stream_channel_t) == 0x10, "original i386 MSS stream-channel size changed");
 
-_Static_assert(_Alignof(mss_channel_volume_t) == 0x04,
-               "i386 MSS channel-volume alignment changed");
-_Static_assert(offsetof(mss_channel_volume_t, current) == 0x00,
-               "i386 MSS channel-volume current offset changed");
-_Static_assert(sizeof(((mss_channel_volume_t *)0)->current) == 0x04,
-               "i386 MSS channel-volume current extent changed");
-_Static_assert(offsetof(mss_channel_volume_t, target) == 0x04,
-               "i386 MSS channel-volume target offset changed");
-_Static_assert(sizeof(((mss_channel_volume_t *)0)->target) == 0x04,
-               "i386 MSS channel-volume target extent changed");
-_Static_assert(offsetof(mss_channel_volume_t, ratePerMsec) == 0x08,
-               "i386 MSS channel-volume rate offset changed");
-_Static_assert(sizeof(((mss_channel_volume_t *)0)->ratePerMsec) == 0x04,
-               "i386 MSS channel-volume rate extent changed");
-_Static_assert(sizeof(mss_channel_volume_t) == 0x0c,
-               "i386 MSS channel-volume size changed");
+_Static_assert(_Alignof(mss_channel_volume_t) == 0x04, "i386 MSS channel-volume alignment changed");
+_Static_assert(offsetof(mss_channel_volume_t, current) == 0x00, "i386 MSS channel-volume current offset changed");
+_Static_assert(sizeof(((mss_channel_volume_t *)0)->current) == 0x04, "i386 MSS channel-volume current extent changed");
+_Static_assert(offsetof(mss_channel_volume_t, target) == 0x04, "i386 MSS channel-volume target offset changed");
+_Static_assert(sizeof(((mss_channel_volume_t *)0)->target) == 0x04, "i386 MSS channel-volume target extent changed");
+_Static_assert(offsetof(mss_channel_volume_t, ratePerMsec) == 0x08, "i386 MSS channel-volume rate offset changed");
+_Static_assert(sizeof(((mss_channel_volume_t *)0)->ratePerMsec) == 0x04, "i386 MSS channel-volume rate extent changed");
+_Static_assert(sizeof(mss_channel_volume_t) == 0x0c, "i386 MSS channel-volume size changed");
 
-_Static_assert(_Alignof(mss_background_fade_t) == 0x04,
-               "i386 MSS background-fade alignment changed");
-_Static_assert(offsetof(mss_background_fade_t, targetVolume) == 0x00,
-               "i386 MSS background target-volume offset changed");
-_Static_assert(sizeof(((mss_background_fade_t *)0)->targetVolume) == 0x04,
-               "i386 MSS background target-volume extent changed");
-_Static_assert(offsetof(mss_background_fade_t, ratePerMsec) == 0x04,
-               "i386 MSS background fade-rate offset changed");
-_Static_assert(sizeof(((mss_background_fade_t *)0)->ratePerMsec) == 0x04,
-               "i386 MSS background fade-rate extent changed");
-_Static_assert(sizeof(mss_background_fade_t) == 0x08,
-               "i386 MSS background-fade size changed");
+_Static_assert(_Alignof(mss_background_fade_t) == 0x04, "i386 MSS background-fade alignment changed");
+_Static_assert(offsetof(mss_background_fade_t, targetVolume) == 0x00, "i386 MSS background target-volume offset changed");
+_Static_assert(sizeof(((mss_background_fade_t *)0)->targetVolume) == 0x04, "i386 MSS background target-volume extent changed");
+_Static_assert(offsetof(mss_background_fade_t, ratePerMsec) == 0x04, "i386 MSS background fade-rate offset changed");
+_Static_assert(sizeof(((mss_background_fade_t *)0)->ratePerMsec) == 0x04, "i386 MSS background fade-rate extent changed");
+_Static_assert(sizeof(mss_background_fade_t) == 0x08, "i386 MSS background-fade size changed");
 
-_Static_assert(_Alignof(mss_raw_sample_state_t) == 0x08,
-               "i386 raw-sample state alignment changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, sample) == 0x00,
-               "i386 raw-sample handle offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sample) == 0x04,
-               "i386 raw-sample handle extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, sampleRate) == 0x04,
-               "i386 raw-sample rate offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleRate) == 0x04,
-               "i386 raw-sample rate extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, sampleWidthBytes) == 0x08,
-               "i386 raw-sample width offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleWidthBytes) == 0x04,
-               "i386 raw-sample width extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, channelCount) == 0x0c,
-               "i386 raw-sample channel-count offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->channelCount) == 0x04,
-               "i386 raw-sample channel-count extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, ringBuffer) == 0x10,
-               "i386 raw-sample buffer-pointer offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->ringBuffer) == 0x04,
-               "i386 raw-sample buffer-pointer extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, segmentReady) == 0x14,
-               "i386 raw-sample ready-ring offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->segmentReady) == 0x20,
-               "i386 raw-sample ready-ring extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, segmentSize) == 0x34,
-               "i386 raw-sample buffer-size offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->segmentSize) == 0x04,
-               "i386 raw-sample buffer-size extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, writeSegmentOffset) == 0x38,
-               "i386 raw-sample write-offset field changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->writeSegmentOffset) == 0x04,
-               "i386 raw-sample write-offset extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, readSegmentIndex) == 0x3c,
-               "i386 raw-sample load-index offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->readSegmentIndex) == 0x04,
-               "i386 raw-sample load-index extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, writeSegmentIndex) == 0x40,
-               "i386 raw-sample write-index offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->writeSegmentIndex) == 0x04,
-               "i386 raw-sample write-index extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, sampleTimeBaseMsec) == 0x48,
-               "i386 raw-sample time-base offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleTimeBaseMsec) == 0x08,
-               "i386 raw-sample time-base extent changed");
-_Static_assert(offsetof(mss_raw_sample_state_t, sampleTimePerByteMsec) == 0x50,
-               "i386 raw-sample time-scale offset changed");
-_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleTimePerByteMsec) == 0x08,
-               "i386 raw-sample time-scale extent changed");
-_Static_assert(sizeof(mss_raw_sample_state_t) == 0x58,
-               "original i386 raw-sample state size changed");
+_Static_assert(_Alignof(mss_raw_sample_state_t) == 0x08, "i386 raw-sample state alignment changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, sample) == 0x00, "i386 raw-sample handle offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sample) == 0x04, "i386 raw-sample handle extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, sampleRate) == 0x04, "i386 raw-sample rate offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleRate) == 0x04, "i386 raw-sample rate extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, sampleWidthBytes) == 0x08, "i386 raw-sample width offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleWidthBytes) == 0x04, "i386 raw-sample width extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, channelCount) == 0x0c, "i386 raw-sample channel-count offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->channelCount) == 0x04, "i386 raw-sample channel-count extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, ringBuffer) == 0x10, "i386 raw-sample buffer-pointer offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->ringBuffer) == 0x04, "i386 raw-sample buffer-pointer extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, segmentReady) == 0x14, "i386 raw-sample ready-ring offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->segmentReady) == 0x20, "i386 raw-sample ready-ring extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, segmentSize) == 0x34, "i386 raw-sample buffer-size offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->segmentSize) == 0x04, "i386 raw-sample buffer-size extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, writeSegmentOffset) == 0x38, "i386 raw-sample write-offset field changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->writeSegmentOffset) == 0x04, "i386 raw-sample write-offset extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, readSegmentIndex) == 0x3c, "i386 raw-sample load-index offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->readSegmentIndex) == 0x04, "i386 raw-sample load-index extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, writeSegmentIndex) == 0x40, "i386 raw-sample write-index offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->writeSegmentIndex) == 0x04, "i386 raw-sample write-index extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, sampleTimeBaseMsec) == 0x48, "i386 raw-sample time-base offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleTimeBaseMsec) == 0x08, "i386 raw-sample time-base extent changed");
+_Static_assert(offsetof(mss_raw_sample_state_t, sampleTimePerByteMsec) == 0x50, "i386 raw-sample time-scale offset changed");
+_Static_assert(sizeof(((mss_raw_sample_state_t *)0)->sampleTimePerByteMsec) == 0x08, "i386 raw-sample time-scale extent changed");
+_Static_assert(sizeof(mss_raw_sample_state_t) == 0x58, "original i386 raw-sample state size changed");
 #endif
 
 extern cvar_t *mss_stereo;
@@ -331,8 +251,7 @@ extern int32_t mss_channelCount;
 extern float mss_playbackRateScale;
 extern float mss_effectVolume;
 extern mss_channel_volume_t mss_masterVolume;
-extern mss_channel_volume_t
-    mss_channelVolumes[SND_ALIAS_CHANNEL_COUNT];
+extern mss_channel_volume_t mss_channelVolumes[SND_ALIAS_CHANNEL_COUNT];
 extern int32_t mss_roomType;
 extern float mss_reverbLevel;
 extern float mss_reverbTarget;
@@ -351,15 +270,11 @@ extern char mss_eaxMapName[MAX_QPATH];
 extern vec3_t mss_listenerOrigin;
 extern axis_t mss_listenerAxis;
 extern int32_t mss_listenerTime;
-extern miles_sample_handle_t
-    mss_2dSampleHandles[MSS_2D_CHANNEL_CAPACITY];
-extern miles_3d_sample_handle_t
-    mss_3dSampleHandles[MSS_3D_CHANNEL_CAPACITY];
-extern miles_stream_handle_t
-    mss_streamHandles[MSS_STREAM_CHANNEL_CAPACITY];
+extern miles_sample_handle_t mss_2dSampleHandles[MSS_2D_CHANNEL_CAPACITY];
+extern miles_3d_sample_handle_t mss_3dSampleHandles[MSS_3D_CHANNEL_CAPACITY];
+extern miles_stream_handle_t mss_streamHandles[MSS_STREAM_CHANNEL_CAPACITY];
 extern int32_t mss_ambientBackgroundIndex;
-extern mss_background_fade_t
-    mss_backgroundFades[MSS_ALIAS_STREAM_SLOT_FIRST];
+extern mss_background_fade_t mss_backgroundFades[MSS_ALIAS_STREAM_SLOT_FIRST];
 extern mss_raw_sample_state_t mss_rawSampleState;
 extern qboolean mss_paused;
 extern int32_t mss_pauseStartTime;
@@ -370,57 +285,35 @@ extern int32_t mss_soundTime;
 extern int32_t mss_lastSoundTime;
 extern qboolean mss_anyMasters;
 extern mss_channel_info_t mss_channelInfo[MSS_TOTAL_CHANNEL_COUNT];
-extern mss_stream_channel_t
-    mss_streamChannels[MSS_STREAM_CHANNEL_CAPACITY];
+extern mss_stream_channel_t mss_streamChannels[MSS_STREAM_CHANNEL_CAPACITY];
 
 /* Miles Sound System linkage boundary. The original Win32 target resolves
  * these stdcall functions from mss32.dll; modern ports provide equivalents. */
-int32_t MILES_CALLBACK AIL_set_preference(int32_t preference,
-                                           int32_t value);
-void MILES_CALLBACK AIL_set_file_callbacks(
-    miles_file_open_callback_t openCallback,
-    miles_file_close_callback_t closeCallback,
-    miles_file_seek_callback_t seekCallback,
-    miles_file_read_callback_t readCallback);
+int32_t MILES_CALLBACK AIL_set_preference(int32_t preference, int32_t value);
+void MILES_CALLBACK AIL_set_file_callbacks(miles_file_open_callback_t openCallback, miles_file_close_callback_t closeCallback,
+                                           miles_file_seek_callback_t seekCallback, miles_file_read_callback_t readCallback);
 void MILES_CALLBACK AIL_set_redist_directory(const char *directory);
 int32_t MILES_CALLBACK AIL_startup(void);
 void MILES_CALLBACK AIL_shutdown(void);
-void MILES_CALLBACK AIL_close_3D_provider(
-    miles_3d_provider_t provider);
-void MILES_CALLBACK AIL_set_DirectSound_HWND(
-    miles_digital_driver_t driver,
-    miles_window_handle_t windowHandle);
-int32_t MILES_CALLBACK AIL_WAV_info(
-    const void *fileData, miles_sound_info_t *soundInfo);
-uint32_t MILES_CALLBACK AIL_size_processed_digital_audio(
-    uint32_t sampleRate, milesSampleType_t sampleType,
-    int32_t bufferCount, const miles_sound_info_t *sourceInfo);
-int32_t MILES_CALLBACK AIL_process_digital_audio(
-    void *destination, uint32_t destinationSize, uint32_t sampleRate,
-    milesSampleType_t sampleType, int32_t bufferCount,
-    miles_sound_info_t *sourceInfo);
-int32_t MILES_CALLBACK AIL_digital_CPU_percent(
-    miles_digital_driver_t driver);
-miles_digital_driver_t MILES_CALLBACK AIL_open_digital_driver(
-    int32_t sampleRate, int32_t sampleFormat, int32_t channels,
-    int32_t flags);
+void MILES_CALLBACK AIL_close_3D_provider(miles_3d_provider_t provider);
+void MILES_CALLBACK AIL_set_DirectSound_HWND(miles_digital_driver_t driver, miles_window_handle_t windowHandle);
+int32_t MILES_CALLBACK AIL_WAV_info(const void *fileData, miles_sound_info_t *soundInfo);
+uint32_t MILES_CALLBACK AIL_size_processed_digital_audio(uint32_t sampleRate, milesSampleType_t sampleType, int32_t bufferCount,
+                                                         const miles_sound_info_t *sourceInfo);
+int32_t MILES_CALLBACK AIL_process_digital_audio(void *destination, uint32_t destinationSize, uint32_t sampleRate,
+                                                 milesSampleType_t sampleType, int32_t bufferCount, miles_sound_info_t *sourceInfo);
+int32_t MILES_CALLBACK AIL_digital_CPU_percent(miles_digital_driver_t driver);
+miles_digital_driver_t MILES_CALLBACK AIL_open_digital_driver(int32_t sampleRate, int32_t sampleFormat, int32_t channels, int32_t flags);
 const char *MILES_CALLBACK AIL_last_error(void);
-int32_t MILES_CALLBACK AIL_enumerate_3D_providers(
-    miles_3d_provider_enumerator_t *enumerator,
-    miles_3d_provider_t *provider, const char **providerName);
+int32_t MILES_CALLBACK AIL_enumerate_3D_providers(miles_3d_provider_enumerator_t *enumerator, miles_3d_provider_t *provider,
+                                                  const char **providerName);
 int32_t MILES_CALLBACK AIL_open_3D_provider(miles_3d_provider_t provider);
-int32_t MILES_CALLBACK AIL_3D_provider_attribute(
-    miles_3d_provider_t provider, const char *attributeName, void *value);
-int32_t MILES_CALLBACK AIL_set_3D_provider_preference(
-    miles_3d_provider_t provider, const char *preferenceName, void *value);
-void MILES_CALLBACK AIL_set_3D_distance_factor(
-    miles_3d_provider_t provider, float distanceFactor);
-miles_sample_handle_t MILES_CALLBACK AIL_allocate_sample_handle(
-    miles_digital_driver_t driver);
-miles_3d_sample_handle_t MILES_CALLBACK AIL_allocate_3D_sample_handle(
-    miles_3d_provider_t provider);
-void MILES_CALLBACK AIL_set_3D_position(
-    miles_3d_sample_handle_t sample, float x, float y, float z);
+int32_t MILES_CALLBACK AIL_3D_provider_attribute(miles_3d_provider_t provider, const char *attributeName, void *value);
+int32_t MILES_CALLBACK AIL_set_3D_provider_preference(miles_3d_provider_t provider, const char *preferenceName, void *value);
+void MILES_CALLBACK AIL_set_3D_distance_factor(miles_3d_provider_t provider, float distanceFactor);
+miles_sample_handle_t MILES_CALLBACK AIL_allocate_sample_handle(miles_digital_driver_t driver);
+miles_3d_sample_handle_t MILES_CALLBACK AIL_allocate_3D_sample_handle(miles_3d_provider_t provider);
+void MILES_CALLBACK AIL_set_3D_position(miles_3d_sample_handle_t sample, float x, float y, float z);
 void MILES_CALLBACK AIL_end_sample(miles_sample_handle_t sample);
 void MILES_CALLBACK AIL_stop_sample(miles_sample_handle_t sample);
 void MILES_CALLBACK AIL_resume_sample(miles_sample_handle_t sample);
@@ -429,123 +322,65 @@ void MILES_CALLBACK AIL_end_3D_sample(miles_3d_sample_handle_t sample);
 void MILES_CALLBACK AIL_stop_3D_sample(miles_3d_sample_handle_t sample);
 void MILES_CALLBACK AIL_resume_3D_sample(miles_3d_sample_handle_t sample);
 int32_t MILES_CALLBACK AIL_3D_sample_status(miles_3d_sample_handle_t sample);
-miles_stream_handle_t MILES_CALLBACK AIL_open_stream(
-    miles_digital_driver_t driver, const char *filename,
-    int32_t streamMemory);
+miles_stream_handle_t MILES_CALLBACK AIL_open_stream(miles_digital_driver_t driver, const char *filename, int32_t streamMemory);
 void MILES_CALLBACK AIL_close_stream(miles_stream_handle_t stream);
-void MILES_CALLBACK AIL_pause_stream(miles_stream_handle_t stream,
-                                     qboolean paused);
+void MILES_CALLBACK AIL_pause_stream(miles_stream_handle_t stream, qboolean paused);
 int32_t MILES_CALLBACK AIL_stream_status(miles_stream_handle_t stream);
-int32_t MILES_CALLBACK AIL_stream_playback_rate(
-    miles_stream_handle_t stream);
-void MILES_CALLBACK AIL_set_stream_playback_rate(
-    miles_stream_handle_t stream, int32_t playbackRate);
-void MILES_CALLBACK AIL_set_stream_volume_pan(
-    miles_stream_handle_t stream, float volume, float pan);
-void MILES_CALLBACK AIL_stream_volume_pan(
-    miles_stream_handle_t stream, float *volume, float *pan);
-void MILES_CALLBACK AIL_set_stream_loop_count(
-    miles_stream_handle_t stream, int32_t loopCount);
-void MILES_CALLBACK AIL_set_stream_reverb_levels(
-    miles_stream_handle_t stream, float dryLevel, float wetLevel);
-void MILES_CALLBACK AIL_stream_ms_position(miles_stream_handle_t stream,
-                                            int32_t *totalMsec,
-                                            int32_t *currentMsec);
-void MILES_CALLBACK AIL_set_stream_ms_position(
-    miles_stream_handle_t stream, int32_t positionMsec);
+int32_t MILES_CALLBACK AIL_stream_playback_rate(miles_stream_handle_t stream);
+void MILES_CALLBACK AIL_set_stream_playback_rate(miles_stream_handle_t stream, int32_t playbackRate);
+void MILES_CALLBACK AIL_set_stream_volume_pan(miles_stream_handle_t stream, float volume, float pan);
+void MILES_CALLBACK AIL_stream_volume_pan(miles_stream_handle_t stream, float *volume, float *pan);
+void MILES_CALLBACK AIL_set_stream_loop_count(miles_stream_handle_t stream, int32_t loopCount);
+void MILES_CALLBACK AIL_set_stream_reverb_levels(miles_stream_handle_t stream, float dryLevel, float wetLevel);
+void MILES_CALLBACK AIL_stream_ms_position(miles_stream_handle_t stream, int32_t *totalMsec, int32_t *currentMsec);
+void MILES_CALLBACK AIL_set_stream_ms_position(miles_stream_handle_t stream, int32_t positionMsec);
 void MILES_CALLBACK AIL_start_stream(miles_stream_handle_t stream);
 void MILES_CALLBACK AIL_init_sample(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_set_sample_type(miles_sample_handle_t sample,
-                                        milesSampleType_t sampleType,
-                                        int32_t flags);
-void MILES_CALLBACK AIL_set_sample_address(miles_sample_handle_t sample,
-                                           const void *data,
-                                           uint32_t dataLength);
-void MILES_CALLBACK AIL_set_sample_adpcm_block_size(
-    miles_sample_handle_t sample, uint32_t blockSize);
-#if (defined(__APPLE__) || defined(__linux__)) && \
-    !defined(CODUOMP_DISABLE_AUDIO)
+void MILES_CALLBACK AIL_set_sample_type(miles_sample_handle_t sample, milesSampleType_t sampleType, int32_t flags);
+void MILES_CALLBACK AIL_set_sample_address(miles_sample_handle_t sample, const void *data, uint32_t dataLength);
+void MILES_CALLBACK AIL_set_sample_adpcm_block_size(miles_sample_handle_t sample, uint32_t blockSize);
+#if (defined(__APPLE__) || defined(__linux__)) && !defined(CODUOMP_DISABLE_AUDIO)
 /* NOT_FROM_ORIGINAL_SOURCE: native OpenAL cache hook for loaded aliases. */
-void coduomp_openal_bind_loaded_sample(
-    miles_sample_handle_t sample,
-    const snd_alias_sound_file_t *soundFile);
+void coduomp_openal_bind_loaded_sample(miles_sample_handle_t sample, const snd_alias_sound_file_t *soundFile);
 /* NOT_FROM_ORIGINAL_SOURCE: release native cache state before the owning
  * loaded-alias hunk payload becomes reusable. */
-void coduomp_openal_forget_loaded_sound(
-    const snd_alias_sound_file_t *soundFile);
+void coduomp_openal_forget_loaded_sound(const snd_alias_sound_file_t *soundFile);
 #endif
-int32_t MILES_CALLBACK AIL_sample_playback_rate(
-    miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_set_sample_playback_rate(
-    miles_sample_handle_t sample, int32_t playbackRate);
-void MILES_CALLBACK AIL_set_sample_volume_pan(miles_sample_handle_t sample,
-                                              float volume, float pan);
-void MILES_CALLBACK AIL_sample_volume_pan(miles_sample_handle_t sample,
-                                          float *volume, float *pan);
-void MILES_CALLBACK AIL_set_sample_loop_count(miles_sample_handle_t sample,
-                                              int32_t loopCount);
-void MILES_CALLBACK AIL_set_sample_reverb_levels(
-    miles_sample_handle_t sample, float dryLevel, float wetLevel);
-void MILES_CALLBACK AIL_sample_ms_position(miles_sample_handle_t sample,
-                                           int32_t *totalMsec,
-                                           int32_t *currentMsec);
-void MILES_CALLBACK AIL_set_sample_ms_position(miles_sample_handle_t sample,
-                                               int32_t positionMsec);
+int32_t MILES_CALLBACK AIL_sample_playback_rate(miles_sample_handle_t sample);
+void MILES_CALLBACK AIL_set_sample_playback_rate(miles_sample_handle_t sample, int32_t playbackRate);
+void MILES_CALLBACK AIL_set_sample_volume_pan(miles_sample_handle_t sample, float volume, float pan);
+void MILES_CALLBACK AIL_sample_volume_pan(miles_sample_handle_t sample, float *volume, float *pan);
+void MILES_CALLBACK AIL_set_sample_loop_count(miles_sample_handle_t sample, int32_t loopCount);
+void MILES_CALLBACK AIL_set_sample_reverb_levels(miles_sample_handle_t sample, float dryLevel, float wetLevel);
+void MILES_CALLBACK AIL_sample_ms_position(miles_sample_handle_t sample, int32_t *totalMsec, int32_t *currentMsec);
+void MILES_CALLBACK AIL_set_sample_ms_position(miles_sample_handle_t sample, int32_t positionMsec);
 void MILES_CALLBACK AIL_start_sample(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_release_sample_handle(
-    miles_sample_handle_t sample);
-int32_t MILES_CALLBACK AIL_minimum_sample_buffer_size(
-    miles_digital_driver_t driver, int32_t sampleRate,
-    milesSampleType_t sampleType);
-uint32_t MILES_CALLBACK AIL_sample_position(
-    miles_sample_handle_t sample);
-int32_t MILES_CALLBACK AIL_sample_buffer_ready(
-    miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_load_sample_buffer(
-    miles_sample_handle_t sample, int32_t bufferIndex,
-    const void *data, int32_t byteCount);
-void MILES_CALLBACK AIL_set_3D_sample_info(
-    miles_3d_sample_handle_t sample,
-    const snd_alias_sound_file_t *soundFile);
-void MILES_CALLBACK AIL_set_3D_sample_volume(
-    miles_3d_sample_handle_t sample, float volume);
-void MILES_CALLBACK AIL_set_3D_sample_distances(
-    miles_3d_sample_handle_t sample, float maximumDistance,
-    float minimumDistance);
-int32_t MILES_CALLBACK AIL_3D_sample_playback_rate(
-    miles_3d_sample_handle_t sample);
-uint32_t MILES_CALLBACK AIL_3D_sample_offset(
-    miles_3d_sample_handle_t sample);
-uint32_t MILES_CALLBACK AIL_3D_sample_length(
-    miles_3d_sample_handle_t sample);
-float MILES_CALLBACK AIL_3D_sample_volume(
-    miles_3d_sample_handle_t sample);
-void MILES_CALLBACK AIL_3D_position(
-    miles_3d_sample_handle_t sample, float *x, float *y, float *z);
-void MILES_CALLBACK AIL_set_3D_sample_playback_rate(
-    miles_3d_sample_handle_t sample, int32_t playbackRate);
-void MILES_CALLBACK AIL_set_3D_sample_loop_count(
-    miles_3d_sample_handle_t sample, int32_t loopCount);
-void MILES_CALLBACK AIL_set_3D_sample_effects_level(
-    miles_3d_sample_handle_t sample, float effectsLevel);
-int32_t MILES_CALLBACK AIL_set_3D_sample_preference(
-    miles_3d_sample_handle_t sample, const char *preferenceName,
-    void *value);
-void MILES_CALLBACK AIL_set_digital_master_room_type(
-    miles_digital_driver_t driver, int32_t roomType);
-void MILES_CALLBACK AIL_set_3D_room_type(
-    miles_3d_provider_t provider, int32_t roomType);
-void MILES_CALLBACK AIL_set_3D_sample_offset(
-    miles_3d_sample_handle_t sample, int32_t byteOffset);
+void MILES_CALLBACK AIL_release_sample_handle(miles_sample_handle_t sample);
+int32_t MILES_CALLBACK AIL_minimum_sample_buffer_size(miles_digital_driver_t driver, int32_t sampleRate, milesSampleType_t sampleType);
+uint32_t MILES_CALLBACK AIL_sample_position(miles_sample_handle_t sample);
+int32_t MILES_CALLBACK AIL_sample_buffer_ready(miles_sample_handle_t sample);
+void MILES_CALLBACK AIL_load_sample_buffer(miles_sample_handle_t sample, int32_t bufferIndex, const void *data, int32_t byteCount);
+void MILES_CALLBACK AIL_set_3D_sample_info(miles_3d_sample_handle_t sample, const snd_alias_sound_file_t *soundFile);
+void MILES_CALLBACK AIL_set_3D_sample_volume(miles_3d_sample_handle_t sample, float volume);
+void MILES_CALLBACK AIL_set_3D_sample_distances(miles_3d_sample_handle_t sample, float maximumDistance, float minimumDistance);
+int32_t MILES_CALLBACK AIL_3D_sample_playback_rate(miles_3d_sample_handle_t sample);
+uint32_t MILES_CALLBACK AIL_3D_sample_offset(miles_3d_sample_handle_t sample);
+uint32_t MILES_CALLBACK AIL_3D_sample_length(miles_3d_sample_handle_t sample);
+float MILES_CALLBACK AIL_3D_sample_volume(miles_3d_sample_handle_t sample);
+void MILES_CALLBACK AIL_3D_position(miles_3d_sample_handle_t sample, float *x, float *y, float *z);
+void MILES_CALLBACK AIL_set_3D_sample_playback_rate(miles_3d_sample_handle_t sample, int32_t playbackRate);
+void MILES_CALLBACK AIL_set_3D_sample_loop_count(miles_3d_sample_handle_t sample, int32_t loopCount);
+void MILES_CALLBACK AIL_set_3D_sample_effects_level(miles_3d_sample_handle_t sample, float effectsLevel);
+int32_t MILES_CALLBACK AIL_set_3D_sample_preference(miles_3d_sample_handle_t sample, const char *preferenceName, void *value);
+void MILES_CALLBACK AIL_set_digital_master_room_type(miles_digital_driver_t driver, int32_t roomType);
+void MILES_CALLBACK AIL_set_3D_room_type(miles_3d_provider_t provider, int32_t roomType);
+void MILES_CALLBACK AIL_set_3D_sample_offset(miles_3d_sample_handle_t sample, int32_t byteOffset);
 void MILES_CALLBACK AIL_start_3D_sample(miles_3d_sample_handle_t sample);
 
-int32_t MILES_CALLBACK MSS_FileOpenCallback(const char *filename,
-                                             int32_t *fileHandle);
+int32_t MILES_CALLBACK MSS_FileOpenCallback(const char *filename, int32_t *fileHandle);
 void MILES_CALLBACK MSS_FileCloseCallback(int32_t fileHandle);
-int32_t MILES_CALLBACK MSS_FileSeekCallback(int32_t fileHandle,
-                                             int32_t offset, int32_t origin);
-int32_t MILES_CALLBACK MSS_FileReadCallback(int32_t fileHandle, void *buffer,
-                                             int32_t byteCount);
+int32_t MILES_CALLBACK MSS_FileSeekCallback(int32_t fileHandle, int32_t offset, int32_t origin);
+int32_t MILES_CALLBACK MSS_FileReadCallback(int32_t fileHandle, void *buffer, int32_t byteCount);
 void StripExtension(const char *input, char *output);
 void *MSS_Alloc(size_t size);
 void MSS_Free(void *memory);
@@ -554,49 +389,25 @@ void MSS_Init(void);
 void MSS_Shutdown(void);
 void MSS_ErrorCleanup(void);
 void MSS_SetWindowHandle(miles_window_handle_t windowHandle);
-int32_t MSS_Write(uint8_t *buffer, int32_t offset,
-                  int32_t bufferSize, const void *source,
-                  size_t byteCount);
-int32_t MSS_Read(const uint8_t *buffer, int32_t offset,
-                 int32_t bufferSize, void *destination,
-                 size_t byteCount);
-int32_t MSS_SaveChanInfo(uint8_t *buffer, int32_t offset,
-                         int32_t bufferSize,
-                         const mss_channel_info_t *channelInfo);
-int32_t MSS_RestoreChanInfo(const uint8_t *buffer, int32_t offset,
-                            int32_t bufferSize,
-                            mss_channel_info_t *channelInfo);
-int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
-                          int32_t bufferSize, int32_t channelIndex);
-int32_t MSS_Restore3DChannel(const uint8_t *buffer, int32_t offset,
-                             int32_t bufferSize,
-                             int32_t primaryAliasIndex);
-int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
-                          int32_t bufferSize, int32_t channelIndex);
-int32_t MSS_Restore2DChannel(const uint8_t *buffer, int32_t offset,
-                             int32_t bufferSize,
-                             int32_t primaryAliasIndex);
-int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
-                              int32_t bufferSize,
-                              int32_t channelIndex);
-int32_t MSS_RestoreStreamChannel(const uint8_t *buffer,
-                                 int32_t offset, int32_t bufferSize,
-                                 int32_t primaryAliasIndex,
+int32_t MSS_Write(uint8_t *buffer, int32_t offset, int32_t bufferSize, const void *source, size_t byteCount);
+int32_t MSS_Read(const uint8_t *buffer, int32_t offset, int32_t bufferSize, void *destination, size_t byteCount);
+int32_t MSS_SaveChanInfo(uint8_t *buffer, int32_t offset, int32_t bufferSize, const mss_channel_info_t *channelInfo);
+int32_t MSS_RestoreChanInfo(const uint8_t *buffer, int32_t offset, int32_t bufferSize, mss_channel_info_t *channelInfo);
+int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset, int32_t bufferSize, int32_t channelIndex);
+int32_t MSS_Restore3DChannel(const uint8_t *buffer, int32_t offset, int32_t bufferSize, int32_t primaryAliasIndex);
+int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset, int32_t bufferSize, int32_t channelIndex);
+int32_t MSS_Restore2DChannel(const uint8_t *buffer, int32_t offset, int32_t bufferSize, int32_t primaryAliasIndex);
+int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset, int32_t bufferSize, int32_t channelIndex);
+int32_t MSS_RestoreStreamChannel(const uint8_t *buffer, int32_t offset, int32_t bufferSize, int32_t primaryAliasIndex,
                                  int32_t requestedChannelIndex);
 int32_t MSS_Save(uint8_t *saveData, int32_t saveCapacity);
 void MSS_QueueRestore(const uint8_t *saveData, int32_t saveSize);
-int32_t MSS_GetSoundOverlay2D(mss_sound_overlay_t *overlay,
-                              int32_t maxCount);
-int32_t MSS_GetSoundOverlay3D(mss_sound_overlay_t *overlay,
-                              int32_t maxCount);
-int32_t MSS_GetSoundOverlayStream(mss_sound_overlay_t *overlay,
-                                  int32_t maxCount);
-int32_t MSS_GetSoundOverlay(mssSoundOverlayType_t overlayType,
-                            mss_sound_overlay_t *overlay,
-                            int32_t maxCount, int32_t *cpuPercent);
+int32_t MSS_GetSoundOverlay2D(mss_sound_overlay_t *overlay, int32_t maxCount);
+int32_t MSS_GetSoundOverlay3D(mss_sound_overlay_t *overlay, int32_t maxCount);
+int32_t MSS_GetSoundOverlayStream(mss_sound_overlay_t *overlay, int32_t maxCount);
+int32_t MSS_GetSoundOverlay(mssSoundOverlayType_t overlayType, mss_sound_overlay_t *overlay, int32_t maxCount, int32_t *cpuPercent);
 qboolean MSS_Init2D(void);
-qboolean MSS_Init3DProvider(const char *preferredProviderName,
-                            qboolean listProviders);
+qboolean MSS_Init3DProvider(const char *preferredProviderName, qboolean listProviders);
 void InitEAXManager(void);
 void ReleaseEAXManager(void);
 void EALFileInit(const char *mapName);
@@ -606,140 +417,86 @@ void UpdateEAXListener(const vec3_t origin);
 void MSS_SetListener(int32_t time, const vec3_t origin, const axis_t axis);
 void MSS_GetListener(axis_t axis, vec3_t origin, int32_t *time);
 void MSS_InitChannels(void);
-long double MSS_Attenuate(float distance, float minimumDistance,
-                          float maximumDistance);
-void MSS_GetCurrent3DPosition(int32_t effectId, const vec3_t localOffset,
-                              vec3_t worldPosition);
-void MSS_Set3DPosition(miles_3d_sample_handle_t sample,
-                       const vec3_t worldPosition);
-void UpdateEAXBuffer(miles_3d_sample_handle_t sample,
-                     const vec3_t position);
+long double MSS_Attenuate(float distance, float minimumDistance, float maximumDistance);
+void MSS_GetCurrent3DPosition(int32_t effectId, const vec3_t localOffset, vec3_t worldPosition);
+void MSS_Set3DPosition(miles_3d_sample_handle_t sample, const vec3_t worldPosition);
+void UpdateEAXBuffer(miles_3d_sample_handle_t sample, const vec3_t position);
 qboolean MSS_IsAliasChannel3D(sndAliasChannel_t aliasChannel);
-int32_t MSS_CompareReplacableChannels(int32_t firstChannelIndex,
-                                      int32_t secondChannelIndex,
-                                      int32_t preferredEffectId);
-qboolean MSS_IsChannelReplacable(int32_t channelIndex,
-                                 sndAliasChannel_t maximumAliasChannel);
-int32_t MSS_FindReplacableChannel(int32_t firstChannelIndex,
-                                  int32_t channelCount,
-                                  int32_t preferredEffectId,
+int32_t MSS_CompareReplacableChannels(int32_t firstChannelIndex, int32_t secondChannelIndex, int32_t preferredEffectId);
+qboolean MSS_IsChannelReplacable(int32_t channelIndex, sndAliasChannel_t maximumAliasChannel);
+int32_t MSS_FindReplacableChannel(int32_t firstChannelIndex, int32_t channelCount, int32_t preferredEffectId,
                                   sndAliasChannel_t maximumAliasChannel);
 void MSS_Stop2DChannel(int32_t channelIndex);
 void MSS_Pause2DChannel(int32_t channelIndex);
 void MSS_Unpause2DChannel(int32_t channelIndex, int32_t timeShift);
 qboolean MSS_Is2DChannelFree(int32_t channelIndex);
-int32_t MSS_FindFree2DChannel(int32_t preferredEffectId,
-                              sndAliasChannel_t maximumAliasChannel);
+int32_t MSS_FindFree2DChannel(int32_t preferredEffectId, sndAliasChannel_t maximumAliasChannel);
 void MSS_Stop3DChannel(int32_t channelIndex);
 void MSS_Pause3DChannel(int32_t channelIndex);
 void MSS_Unpause3DChannel(int32_t channelIndex, int32_t timeShift);
 qboolean MSS_Is3DChannelFree(int32_t channelIndex);
-int32_t MSS_FindFree3DChannel(int32_t preferredEffectId,
-                              sndAliasChannel_t maximumAliasChannel);
+int32_t MSS_FindFree3DChannel(int32_t preferredEffectId, sndAliasChannel_t maximumAliasChannel);
 void MSS_StopStreamChannel(int32_t channelIndex);
 void MSS_PauseStreamChannel(int32_t channelIndex);
 void MSS_UnpauseStreamChannel(int32_t channelIndex, int32_t timeShift);
 qboolean MSS_IsStreamChannelFree(int32_t channelIndex);
-int32_t MSS_FindFreeStreamChannel(int32_t preferredEffectId,
-                                  sndAliasChannel_t maximumAliasChannel);
-void MSS_StopEntityChannel(int32_t effectId,
-                           sndAliasChannel_t aliasChannel);
+int32_t MSS_FindFreeStreamChannel(int32_t preferredEffectId, sndAliasChannel_t maximumAliasChannel);
+void MSS_StopEntityChannel(int32_t effectId, sndAliasChannel_t aliasChannel);
 void MSS_PauseSounds(void);
 void MSS_UnpauseSounds(void);
 void MSS_UpdateLoopingSounds(void);
-qboolean MSS_UpdateBackgroundVolume(int32_t backgroundIndex,
-                                    int32_t elapsedMsec);
-void MSS_UpdateVolume(mss_channel_volume_t *volume,
-                      int32_t elapsedMsec);
+qboolean MSS_UpdateBackgroundVolume(int32_t backgroundIndex, int32_t elapsedMsec);
+void MSS_UpdateVolume(mss_channel_volume_t *volume, int32_t elapsedMsec);
 void MSS_UpdateMasterVolumes(int32_t elapsedMsec);
 qboolean MSS_AnyMasters(void);
 void MSS_Update3DChannel(int32_t channelIndex);
 void MSS_Update2DChannel(int32_t channelIndex);
-void MSS_UpdateStreamChannel(int32_t channelIndex,
-                             int32_t elapsedMsec);
+void MSS_UpdateStreamChannel(int32_t channelIndex, int32_t elapsedMsec);
 void MSS_UpdateAllChannels(int32_t elapsedMsec);
 int32_t MSS_RoomTypeFromString(const char *roomType);
-void MSS_SetEnvironmentEffects(const char *roomType, float reverbLevel,
-                               int32_t fadeMsec);
+void MSS_SetEnvironmentEffects(const char *roomType, float reverbLevel, int32_t fadeMsec);
 void MSS_UpdateRoomEffects(int32_t elapsedMsec);
 void MSS_UpdateTimeScale(void);
 void MSS_UpdatePause(void);
 void MSS_Restore(const uint8_t *saveData, int32_t saveSize);
-milesSampleType_t MSS_SampleType(int32_t waveFormatTag,
-                                 int32_t sampleBits,
-                                 int32_t channelCount);
+milesSampleType_t MSS_SampleType(int32_t waveFormatTag, int32_t sampleBits, int32_t channelCount);
 snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename);
 void MSS_UnloadSoundFile(snd_alias_sound_file_t *soundFile);
 int32_t MSS_GetSoundFileSize(const snd_alias_sound_file_t *soundFile);
-qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
-                                snd_alias_t *alias,
-                                snd_alias_t *secondaryAlias,
-                                float aliasBlend, int32_t effectId,
-                                float volume, float pitch,
-                                int32_t timeShift, float startFraction);
-qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
-                                snd_alias_t *alias,
-                                const vec3_t position,
-                                snd_alias_t *secondaryAlias,
-                                float aliasBlend, int32_t effectId,
-                                float volume, float pitch,
-                                int32_t timeShift, float startFraction);
-qboolean MSS_StartAliasSample(int32_t *outChannelIndex,
-                              snd_alias_t *alias,
-                              snd_alias_t *secondaryAlias,
-                              float aliasBlend, int32_t effectId,
-                              const vec3_t position, float volume,
-                              float pitch, int32_t timeShift);
-int32_t MSS_StartAliasStreamOnChannel(
-    snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend,
-    int32_t effectId, const vec3_t position, float volume, float pitch,
-    int32_t timeShift, float startFraction, int32_t channelIndex);
-int32_t MSS_StartAliasStream(
-    int32_t *outChannelIndex, snd_alias_t *alias,
-    snd_alias_t *secondaryAlias, float aliasBlend, int32_t effectId,
-    const vec3_t position, float volume, float pitch, int32_t timeShift,
-    float startFraction);
-qboolean MSS_ContinueLoopingSound(
-    snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend,
-    float pitchScale, int32_t effectId, const vec3_t position,
-    int32_t *outChannelIndex);
-void MSS_ChoosePitchAndVolume(snd_alias_t *alias,
-                              snd_alias_t *secondaryAlias,
-                              float aliasBlend, float *outVolume,
-                              float *outPitch);
-int32_t MSS_PlaySoundAlias_Internal(
-    snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend,
-    float pitchScale, int32_t effectId, const vec3_t position,
-    int32_t *outChannelIndex, int32_t timeShift);
-int32_t MSS_PlaySoundAlias(snd_alias_t *alias, int32_t effectId,
-                           const vec3_t position, int32_t timeShift);
-qboolean MSS_ValidateSoundAliasBlend(const snd_alias_t *alias,
-                                     const snd_alias_t *secondaryAlias,
-                                     qboolean reportError);
-int32_t MSS_PlayBlendedSoundAliases(
-    snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend,
-    int32_t effectId, const vec3_t position, int32_t timeShift);
+qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex, snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend,
+                                int32_t effectId, float volume, float pitch, int32_t timeShift, float startFraction);
+qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex, snd_alias_t *alias, const vec3_t position, snd_alias_t *secondaryAlias,
+                                float aliasBlend, int32_t effectId, float volume, float pitch, int32_t timeShift, float startFraction);
+qboolean MSS_StartAliasSample(int32_t *outChannelIndex, snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, int32_t effectId,
+                              const vec3_t position, float volume, float pitch, int32_t timeShift);
+int32_t MSS_StartAliasStreamOnChannel(snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, int32_t effectId,
+                                      const vec3_t position, float volume, float pitch, int32_t timeShift, float startFraction,
+                                      int32_t channelIndex);
+int32_t MSS_StartAliasStream(int32_t *outChannelIndex, snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, int32_t effectId,
+                             const vec3_t position, float volume, float pitch, int32_t timeShift, float startFraction);
+qboolean MSS_ContinueLoopingSound(snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, float pitchScale, int32_t effectId,
+                                  const vec3_t position, int32_t *outChannelIndex);
+void MSS_ChoosePitchAndVolume(snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, float *outVolume, float *outPitch);
+int32_t MSS_PlaySoundAlias_Internal(snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, float pitchScale, int32_t effectId,
+                                    const vec3_t position, int32_t *outChannelIndex, int32_t timeShift);
+int32_t MSS_PlaySoundAlias(snd_alias_t *alias, int32_t effectId, const vec3_t position, int32_t timeShift);
+qboolean MSS_ValidateSoundAliasBlend(const snd_alias_t *alias, const snd_alias_t *secondaryAlias, qboolean reportError);
+int32_t MSS_PlayBlendedSoundAliases(snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend, int32_t effectId,
+                                    const vec3_t position, int32_t timeShift);
 int32_t MSS_PlayLocalSoundAlias(const char *name, sndAliasBank_t bank);
-void MSS_StartBackground(int32_t backgroundIndex, snd_alias_t *alias,
-                         int32_t fadeTimeMsec);
+void MSS_StartBackground(int32_t backgroundIndex, snd_alias_t *alias, int32_t fadeTimeMsec);
 void MSS_StopBackground(int32_t backgroundIndex, int32_t fadeTimeMsec);
 void MSS_PlayMusicAlias(snd_alias_t *alias);
 void MSS_StopMusic(int32_t fadeTimeMsec);
 void MSS_PlayAmbientAlias(snd_alias_t *alias, int32_t fadeTimeMsec);
-void MSS_BeginRawSamples(int32_t sampleRate, int32_t sampleWidthBytes,
-                         int32_t channelCount);
+void MSS_BeginRawSamples(int32_t sampleRate, int32_t sampleWidthBytes, int32_t channelCount);
 void MSS_UpdateRawSamples(void);
 void MSS_Update(void);
 void MSS_StopSounds(uint32_t flags);
-void MSS_FadeSelectSounds(
-    const float targetVolumes[SND_ALIAS_CHANNEL_COUNT],
-    int32_t durationMsec);
+void MSS_FadeSelectSounds(const float targetVolumes[SND_ALIAS_CHANNEL_COUNT], int32_t durationMsec);
 void MSS_SpatializeStream(int32_t streamIndex, float *volume, float *pan);
-void MSS_SetChannelInfo(int32_t channelIndex, int32_t effectId,
-                        snd_alias_t *alias, snd_alias_t *secondaryAlias,
-                        float aliasBlend, const vec3_t position, float volume,
-                        float pitch, int32_t playbackRate,
-                        int32_t durationMsec, int32_t timeShift);
+void MSS_SetChannelInfo(int32_t channelIndex, int32_t effectId, snd_alias_t *alias, snd_alias_t *secondaryAlias, float aliasBlend,
+                        const vec3_t position, float volume, float pitch, int32_t playbackRate, int32_t durationMsec, int32_t timeShift);
 
 #ifdef __cplusplus
 }

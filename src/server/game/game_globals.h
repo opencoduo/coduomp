@@ -34,14 +34,10 @@ typedef struct game_cvar_table_s {
 } game_cvar_table_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-GAME_STATIC_ASSERT(game_cvar_table_size,
-                   sizeof(game_cvar_table_t) == 0x18);
-GAME_STATIC_ASSERT(game_cvar_table_flags_offset,
-                   offsetof(game_cvar_table_t, cvarFlags) == 0x0c);
-GAME_STATIC_ASSERT(game_cvar_table_modification_count_offset,
-                   offsetof(game_cvar_table_t, modificationCount) == 0x10);
-GAME_STATIC_ASSERT(game_cvar_table_track_change_offset,
-                   offsetof(game_cvar_table_t, trackChange) == 0x14);
+GAME_STATIC_ASSERT(game_cvar_table_size, sizeof(game_cvar_table_t) == 0x18);
+GAME_STATIC_ASSERT(game_cvar_table_flags_offset, offsetof(game_cvar_table_t, cvarFlags) == 0x0c);
+GAME_STATIC_ASSERT(game_cvar_table_modification_count_offset, offsetof(game_cvar_table_t, modificationCount) == 0x10);
+GAME_STATIC_ASSERT(game_cvar_table_track_change_offset, offsetof(game_cvar_table_t, trackChange) == 0x14);
 #endif
 
 /* Game cvars */

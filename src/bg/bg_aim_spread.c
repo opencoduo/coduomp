@@ -26,42 +26,30 @@ void PM_AdjustAimSpreadScale(void)
     float growth;
 
     if (decayRate != 0.0f) {
-        if (ps->groundEntityNum == ENTITYNUM_NONE &&
-            ps->pmType != PM_TYPE_LINKED) {
+        if (ps->groundEntityNum == ENTITYNUM_NONE && ps->pmType != PM_TYPE_LINKED) {
 #if EMULATE_X87
-            decayRate = x87f_store_f32(x87f_mul(
-                x87f_load_f32(decayRate), x87f_load_f32(0.5f)));
+            decayRate = x87f_store_f32(x87f_mul(x87f_load_f32(decayRate), x87f_load_f32(0.5f)));
 #else
             decayRate = (float)((long double)decayRate * 0.5L);
 #endif
         } else if ((ps->entityStateFlags & EF_PRONE) != 0) {
 #if EMULATE_X87
-            decayRate = x87f_store_f32(x87f_mul(
-                x87f_load_f32(decayRate),
-                x87f_load_f32(weaponInfo->aimSpreadProneScale)));
+            decayRate = x87f_store_f32(x87f_mul(x87f_load_f32(decayRate), x87f_load_f32(weaponInfo->aimSpreadProneScale)));
 #else
-            decayRate = (float)(
-                (long double)decayRate *
-                (long double)weaponInfo->aimSpreadProneScale);
+            decayRate = (float)((long double)decayRate * (long double)weaponInfo->aimSpreadProneScale);
 #endif
         } else if ((ps->entityStateFlags & EF_CROUCHING) != 0) {
 #if EMULATE_X87
-            decayRate = x87f_store_f32(x87f_mul(
-                x87f_load_f32(decayRate),
-                x87f_load_f32(weaponInfo->aimSpreadCrouchScale)));
+            decayRate = x87f_store_f32(x87f_mul(x87f_load_f32(decayRate), x87f_load_f32(weaponInfo->aimSpreadCrouchScale)));
 #else
-            decayRate = (float)(
-                (long double)decayRate *
-                (long double)weaponInfo->aimSpreadCrouchScale);
+            decayRate = (float)((long double)decayRate * (long double)weaponInfo->aimSpreadCrouchScale);
 #endif
         }
 
 #if EMULATE_X87
-        decay = x87f_store_f32(x87f_mul(
-            x87f_load_f32(decayRate), x87f_load_f32(pml.frametime)));
+        decay = x87f_store_f32(x87f_mul(x87f_load_f32(decayRate), x87f_load_f32(pml.frametime)));
 #else
-        decay = (float)((long double)decayRate *
-                        (long double)pml.frametime);
+        decay = (float)((long double)decayRate * (long double)pml.frametime);
 #endif
 
         if (ps->adsFraction == 1.0f) {
@@ -76,80 +64,48 @@ void PM_AdjustAimSpreadScale(void)
                     float delta;
 
 #if EMULATE_X87
-                    currentAngle = x87f_store_f32(x87f_mul(
-                        x87f_load_i32(pm->command.angles[axis]),
-                        x87f_load_f32(PM_SHORT_TO_ANGLE)));
-                    previousAngle = x87f_store_f32(x87f_mul(
-                        x87f_load_i32(pm->oldCommand.angles[axis]),
-                        x87f_load_f32(PM_SHORT_TO_ANGLE)));
+                    currentAngle = x87f_store_f32(x87f_mul(x87f_load_i32(pm->command.angles[axis]), x87f_load_f32(PM_SHORT_TO_ANGLE)));
+                    previousAngle = x87f_store_f32(x87f_mul(x87f_load_i32(pm->oldCommand.angles[axis]), x87f_load_f32(PM_SHORT_TO_ANGLE)));
 #else
-                    currentAngle = (float)(
-                        (long double)pm->command.angles[axis] *
-                        (long double)PM_SHORT_TO_ANGLE);
-                    previousAngle = (float)(
-                        (long double)pm->oldCommand.angles[axis] *
-                        (long double)PM_SHORT_TO_ANGLE);
+                    currentAngle = (float)((long double)pm->command.angles[axis] * (long double)PM_SHORT_TO_ANGLE);
+                    previousAngle = (float)((long double)pm->oldCommand.angles[axis] * (long double)PM_SHORT_TO_ANGLE);
 #endif
-                    delta = fabsf(
-                        AngleSubtract(currentAngle, previousAngle));
+                    delta = fabsf(AngleSubtract(currentAngle, previousAngle));
 
 #if EMULATE_X87
-                    growthRate = x87f_store_f32(x87f_add(
-                        x87f_load_f32(growthRate),
-                        x87f_div(
-                            x87f_mul(
-                                x87f_mul(x87f_load_f32(delta),
-                                         x87f_load_f32(0.01f)),
-                                x87f_load_f32(
-                                    weaponInfo->aimSpreadTurnRate)),
-                            x87f_load_f32(pml.frametime))));
+                    growthRate = x87f_store_f32(
+                        x87f_add(x87f_load_f32(growthRate), x87f_div(x87f_mul(x87f_mul(x87f_load_f32(delta), x87f_load_f32(0.01f)),
+                                                                              x87f_load_f32(weaponInfo->aimSpreadTurnRate)),
+                                                                     x87f_load_f32(pml.frametime))));
 #else
-                    growthRate = (float)(
-                        (long double)growthRate +
-                        (long double)delta * 0.01L *
-                            (long double)weaponInfo->aimSpreadTurnRate /
-                            (long double)pml.frametime);
+                    growthRate = (float)((long double)growthRate + (long double)delta * 0.01L * (long double)weaponInfo->aimSpreadTurnRate /
+                                                                       (long double)pml.frametime);
 #endif
                 }
             }
 
-            if (weaponInfo->aimSpreadMoveAdd != 0.0f &&
-                (pm->command.forwardmove != 0 ||
-                 pm->command.rightmove != 0)) {
+            if (weaponInfo->aimSpreadMoveAdd != 0.0f && (pm->command.forwardmove != 0 || pm->command.rightmove != 0)) {
 #if EMULATE_X87
-                growthRate = x87f_store_f32(x87f_add(
-                    x87f_load_f32(growthRate),
-                    x87f_load_f32(weaponInfo->aimSpreadMoveAdd)));
+                growthRate = x87f_store_f32(x87f_add(x87f_load_f32(growthRate), x87f_load_f32(weaponInfo->aimSpreadMoveAdd)));
 #else
-                growthRate = (float)(
-                    (long double)growthRate +
-                    (long double)weaponInfo->aimSpreadMoveAdd);
+                growthRate = (float)((long double)growthRate + (long double)weaponInfo->aimSpreadMoveAdd);
 #endif
             }
 
-            if (ps->groundEntityNum == ENTITYNUM_NONE &&
-                ps->pmType != PM_TYPE_LINKED) {
+            if (ps->groundEntityNum == ENTITYNUM_NONE && ps->pmType != PM_TYPE_LINKED) {
                 for (int32_t step = 0; step < 2; ++step) {
 #if EMULATE_X87
-                    growthRate = x87f_store_f32(x87f_add(
-                        x87f_load_f32(growthRate),
-                        x87f_mul(x87f_load_f32(0.01f),
-                                 x87f_load_f32(128.0f))));
+                    growthRate = x87f_store_f32(x87f_add(x87f_load_f32(growthRate), x87f_mul(x87f_load_f32(0.01f), x87f_load_f32(128.0f))));
 #else
-                    growthRate = (float)(
-                        (long double)growthRate +
-                        (long double)0.01f * 128.0L);
+                    growthRate = (float)((long double)growthRate + (long double)0.01f * 128.0L);
 #endif
                 }
             }
 
 #if EMULATE_X87
-            growth = x87f_store_f32(x87f_mul(
-                x87f_load_f32(growthRate),
-                x87f_load_f32(pml.frametime)));
+            growth = x87f_store_f32(x87f_mul(x87f_load_f32(growthRate), x87f_load_f32(pml.frametime)));
 #else
-            growth = (float)((long double)growthRate *
-                             (long double)pml.frametime);
+            growth = (float)((long double)growthRate * (long double)pml.frametime);
 #endif
         }
     } else {
@@ -158,16 +114,12 @@ void PM_AdjustAimSpreadScale(void)
     }
 
 #if EMULATE_X87
-    ps->aimSpreadScale = x87f_store_f32(x87f_add(
-        x87f_load_f32(ps->aimSpreadScale),
-        x87f_mul(x87f_sub(x87f_load_f32(growth),
-                          x87f_load_f32(decay)),
-                 x87f_load_i32(PM_AIM_SPREAD_SCALE_MAX))));
+    ps->aimSpreadScale =
+        x87f_store_f32(x87f_add(x87f_load_f32(ps->aimSpreadScale),
+                                x87f_mul(x87f_sub(x87f_load_f32(growth), x87f_load_f32(decay)), x87f_load_i32(PM_AIM_SPREAD_SCALE_MAX))));
 #else
-    ps->aimSpreadScale = (float)(
-        (long double)ps->aimSpreadScale +
-        ((long double)growth - (long double)decay) *
-            (long double)PM_AIM_SPREAD_SCALE_MAX);
+    ps->aimSpreadScale =
+        (float)((long double)ps->aimSpreadScale + ((long double)growth - (long double)decay) * (long double)PM_AIM_SPREAD_SCALE_MAX);
 #endif
 
     if (ps->aimSpreadScale < 0.0f) {

@@ -51,9 +51,9 @@ void CG_Obituary(centity_t *self)
     uint32_t meansOfDeath = (uint32_t)self->currentState.eventParm;
     const char *killIcon = "killIconDied";
     float killIconScale = CG_OBITUARY_ICON_SCALE;
-    vec4_t targetColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    vec4_t attackerColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    vec4_t iconColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    vec4_t targetColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec4_t attackerColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec4_t iconColor = {1.0f, 1.0f, 1.0f, 1.0f};
     char targetName[CG_OBITUARY_COLORED_NAME_SIZE];
     char attackerName[CG_OBITUARY_COLORED_NAME_SIZE];
     clientInfo_t *targetInfo;
@@ -70,18 +70,52 @@ void CG_Obituary(centity_t *self)
          * switch after the if/else keyed on meansOfDeath, so a positive weapon index
          * equal to a MOD case value (e.g. 7) wrongly overrode the weapon's killIcon. */
         switch (meansOfDeath) {
-    case CG_OBIT_MOD_MELEE:       killIcon = "killIconMelee"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_HEADSHOT:    killIcon = "killIconHeadShot"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_ARTILLERY:   killIcon = "gfx/icons/hud@artillery"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_DROWN:       killIcon = "killIconDrown"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_CRUSH:       killIcon = "killIconCrush"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_CRUSH_TANK:  killIcon = "killIconCrushTank"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_CRUSH_JEEP:  killIcon = "killIconCrushJeep"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_FALLING:     killIcon = "killIconFalling"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_SUICIDE:     killIcon = "killIconSuicide"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_DIED:        killIcon = "killIconDied"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    case CG_OBIT_MOD_BINOCULARS:  killIcon = "gfx/icons/hud@bino_owned"; killIconScale = CG_OBITUARY_ICON_SCALE; break;
-    default: break;
+        case CG_OBIT_MOD_MELEE:
+            killIcon = "killIconMelee";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_HEADSHOT:
+            killIcon = "killIconHeadShot";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_ARTILLERY:
+            killIcon = "gfx/icons/hud@artillery";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_DROWN:
+            killIcon = "killIconDrown";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_CRUSH:
+            killIcon = "killIconCrush";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_CRUSH_TANK:
+            killIcon = "killIconCrushTank";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_CRUSH_JEEP:
+            killIcon = "killIconCrushJeep";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_FALLING:
+            killIcon = "killIconFalling";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_SUICIDE:
+            killIcon = "killIconSuicide";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_DIED:
+            killIcon = "killIconDied";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        case CG_OBIT_MOD_BINOCULARS:
+            killIcon = "gfx/icons/hud@bino_owned";
+            killIconScale = CG_OBITUARY_ICON_SCALE;
+            break;
+        default:
+            break;
         }
     } else {
         weaponInfo_t *weapon = bg_weaponInfos[meansOfDeath];
@@ -96,19 +130,14 @@ void CG_Obituary(centity_t *self)
     if (target < 0 || target >= CG_OBITUARY_MAX_CLIENTS) {
         Com_ErrorMessage("CG_Obituary: target out of range");
     }
-    uint32_t targetRowOffsetBits =
-        (uint32_t)target * (uint32_t)sizeof(bgs.clientinfo[0]);
-    intptr_t targetRowDisplacement =
-        (intptr_t)coduo_int32_from_bits(targetRowOffsetBits);
-    targetInfo = (clientInfo_t *)(
-        (uintptr_t)(void *)bgs.clientinfo +
-        (uintptr_t)targetRowDisplacement);
+    uint32_t targetRowOffsetBits = (uint32_t)target * (uint32_t)sizeof(bgs.clientinfo[0]);
+    intptr_t targetRowDisplacement = (intptr_t)coduo_int32_from_bits(targetRowOffsetBits);
+    targetInfo = (clientInfo_t *)((uintptr_t)(void *)bgs.clientinfo + (uintptr_t)targetRowDisplacement);
     if (targetInfo->infoValid == 0) {
         return;
     }
 
-    Q_strncpyz(targetName, targetInfo->name,
-               CG_OBITUARY_NAME_SIZE);
+    Q_strncpyz(targetName, targetInfo->name, CG_OBITUARY_NAME_SIZE);
     targetName[CG_OBITUARY_NAME_SIZE - 1] = '\0';
     strcat(targetName, "^7");
     targetTeam = targetInfo->obituaryTeam;
@@ -123,16 +152,14 @@ void CG_Obituary(centity_t *self)
         if (attackerInfo->infoValid == 0) {
             return;
         }
-        Q_strncpyz(attackerName, attackerInfo->name,
-                   CG_OBITUARY_NAME_SIZE);
+        Q_strncpyz(attackerName, attackerInfo->name, CG_OBITUARY_NAME_SIZE);
         attackerName[CG_OBITUARY_NAME_SIZE - 1] = '\0';
         strcat(attackerName, "^7");
         int32_t attackerColorTeam = attackerInfo->obituaryTeam;
         CG_DrawScoreboard_GetTeamColor(attackerColorTeam, attackerColor);
 
         if (target == cg_snap->ps.psClientNum) {
-            Q_strncpyz(cg_fraggedByName, attackerName,
-                       CG_OBITUARY_NAME_SIZE);
+            Q_strncpyz(cg_fraggedByName, attackerName, CG_OBITUARY_NAME_SIZE);
             cg_fraggedByName[CG_OBITUARY_NAME_SIZE - 1] = '\0';
         }
     } else {
@@ -142,35 +169,20 @@ void CG_Obituary(centity_t *self)
 
     if (attacker == target) {
         attackerName[0] = '\0';
-    } else if (attacker == cg_snap->ps.psClientNum &&
-               (cg_snap->ps.playerStateFlags &
-                CG_OBITUARY_CENTERPRINT_SUPPRESS_FLAG) == 0) {
+    } else if (attacker == cg_snap->ps.psClientNum && (cg_snap->ps.playerStateFlags & CG_OBITUARY_CENTERPRINT_SUPPRESS_FLAG) == 0) {
         const char *message;
         /* 0x30022567 reloads the attacker team after the name/color helpers,
          * then 0x3002256e compares the target row directly rather than retaining
          * either earlier color-selection load. */
-        int32_t liveAttackerTeam =
-            attackerInfo != NULL ? attackerInfo->obituaryTeam : 0;
-        if (liveAttackerTeam != 0 &&
-            targetInfo->obituaryTeam == liveAttackerTeam) {
-            message = va("CGAME_YOUKILLED\x15^1%%s^7 %s\x14%s",
-                         targetName, "CGAME_TEAMMATE");
+        int32_t liveAttackerTeam = attackerInfo != NULL ? attackerInfo->obituaryTeam : 0;
+        if (liveAttackerTeam != 0 && targetInfo->obituaryTeam == liveAttackerTeam) {
+            message = va("CGAME_YOUKILLED\x15^1%%s^7 %s\x14%s", targetName, "CGAME_TEAMMATE");
         } else {
             message = va("CGAME_YOUKILLED\x15%s", targetName);
         }
-        CG_PriorityCenterPrint(message,
-                               CG_OBITUARY_CENTERPRINT_Y,
-                               CG_OBITUARY_CENTERPRINT_CHAR_WIDTH,
-                               CG_OBITUARY_CENTERPRINT_PRIORITY);
+        CG_PriorityCenterPrint(message, CG_OBITUARY_CENTERPRINT_Y, CG_OBITUARY_CENTERPRINT_CHAR_WIDTH, CG_OBITUARY_CENTERPRINT_PRIORITY);
     }
 
-    cgame_syscall(CG_DEATH_MESSAGE,
-                  (intptr_t)attackerName,
-                  (intptr_t)attackerColor,
-                  (intptr_t)targetName,
-                  (intptr_t)targetColor,
-                  (intptr_t)killIcon,
-                  CG_FloatBits(killIconScale),
-                  CG_FloatBits(CG_OBITUARY_ICON_SCALE),
-                  (intptr_t)iconColor);
+    cgame_syscall(CG_DEATH_MESSAGE, (intptr_t)attackerName, (intptr_t)attackerColor, (intptr_t)targetName, (intptr_t)targetColor,
+                  (intptr_t)killIcon, CG_FloatBits(killIconScale), CG_FloatBits(CG_OBITUARY_ICON_SCALE), (intptr_t)iconColor);
 }

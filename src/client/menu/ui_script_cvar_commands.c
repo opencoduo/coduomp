@@ -57,8 +57,7 @@ void Script_SetCvar(itemDef_t *item, char **arguments)
     const char *value;
 
     (void)item;
-    if (!String_Parse(arguments, &name) ||
-        !String_Parse(arguments, &value)) {
+    if (!String_Parse(arguments, &name) || !String_Parse(arguments, &value)) {
         return;
     }
     DC->setCVar(name, value);
@@ -84,15 +83,11 @@ void Script_ExecOnCvarStringValue(itemDef_t *item, char **arguments)
     char currentValue[UI_SCRIPT_CVAR_VALUE_SIZE];
 
     (void)item;
-    if (!String_Parse(arguments, &cvarName) ||
-        !String_Parse(arguments, &compareValue) ||
-        !String_Parse(arguments, &command)) {
+    if (!String_Parse(arguments, &cvarName) || !String_Parse(arguments, &compareValue) || !String_Parse(arguments, &command)) {
         return;
     }
     DC->getCVarString(cvarName, currentValue, sizeof(currentValue));
-    if (compareValue != NULL &&
-        Q_stricmpn(compareValue, currentValue,
-                   UI_SCRIPT_CVAR_STRING_COMPARE_LIMIT) == 0) {
+    if (compareValue != NULL && Q_stricmpn(compareValue, currentValue, UI_SCRIPT_CVAR_STRING_COMPARE_LIMIT) == 0) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         DC->executeText(EXEC_APPEND, va("%s\n", command));
     }
@@ -106,9 +101,7 @@ void Script_ExecOnCvarIntValue(itemDef_t *item, char **arguments)
     char currentValue[UI_SCRIPT_CVAR_VALUE_SIZE];
 
     (void)item;
-    if (!String_Parse(arguments, &cvarName) ||
-        !String_Parse(arguments, &compareValue) ||
-        !String_Parse(arguments, &command)) {
+    if (!String_Parse(arguments, &cvarName) || !String_Parse(arguments, &compareValue) || !String_Parse(arguments, &command)) {
         return;
     }
     DC->getCVarString(cvarName, currentValue, sizeof(currentValue));
@@ -126,9 +119,7 @@ void Script_ExecOnCvarFloatValue(itemDef_t *item, char **arguments)
     double currentValue;
 
     (void)item;
-    if (!String_Parse(arguments, &cvarName) ||
-        !String_Parse(arguments, &compareValue) ||
-        !String_Parse(arguments, &command)) {
+    if (!String_Parse(arguments, &cvarName) || !String_Parse(arguments, &compareValue) || !String_Parse(arguments, &command)) {
         return;
     }
     currentValue = (double)DC->getCVarValue(cvarName);

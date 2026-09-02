@@ -41,8 +41,7 @@ int32_t Com_ModifyMsec(int32_t msec)
     }
 
     if (com_fixedtime->integer == 0) {
-        msec = (int32_t)((long double)msec *
-                         (long double)com_timescale->value);
+        msec = (int32_t)((long double)msec * (long double)com_timescale->value);
     } else {
         msec = com_fixedtime->integer;
     }
@@ -67,8 +66,7 @@ int32_t Com_ClampMsec(int32_t msec)
     int32_t maximumMsec;
 
     if (dedicated->integer != 0) {
-        if (msec > COM_HITCH_WARNING_THRESHOLD_MSEC &&
-            msec < COM_HITCH_WARNING_SANITY_LIMIT_MSEC) {
+        if (msec > COM_HITCH_WARNING_THRESHOLD_MSEC && msec < COM_HITCH_WARNING_SANITY_LIMIT_MSEC) {
             Com_Printf("Hitch warning: %i msec frame time\n", msec);
         }
         maximumMsec = COM_MAX_FRAME_MSEC;

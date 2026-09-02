@@ -41,7 +41,5 @@
  */
 int32_t trap_XAnimGetNumChildren(uint32_t packed)
 {
-    return (int32_t)cgame_syscall(CG_XANIM_GET_NUM_CHILDREN,
-                         (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT),
-                         (uint16_t)packed);
+    return (int32_t)cgame_syscall(CG_XANIM_GET_NUM_CHILDREN, (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT), (uint16_t)packed);
 }

@@ -150,8 +150,7 @@ void GL_TexEnv(int32_t environment)
         qglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, environment);
         break;
     default:
-        ri.Error(ERR_DROP, "\x15GL_TexEnv: invalid env '%x' passed\n",
-                 environment);
+        ri.Error(ERR_DROP, "\x15GL_TexEnv: invalid env '%x' passed\n", environment);
         break;
     }
 }
@@ -209,9 +208,7 @@ void GL_State(uint32_t stateBits)
         qglDepthMask((stateBits & GLS_DEPTHMASK_TRUE) != 0);
 
     if ((diff & GLS_POLYMODE_LINE) != 0) {
-        qglPolygonMode(GL_FRONT_AND_BACK,
-                       (stateBits & GLS_POLYMODE_LINE) != 0
-                           ? GL_LINE : GL_FILL);
+        qglPolygonMode(GL_FRONT_AND_BACK, (stateBits & GLS_POLYMODE_LINE) != 0 ? GL_LINE : GL_FILL);
     }
 
     if ((diff & GLS_ATEST_BITS) != 0) {
@@ -237,8 +234,7 @@ void GL_State(uint32_t stateBits)
     }
 
     if ((diff & GLS_LIGHTING) != 0) {
-        if ((stateBits & GLS_LIGHTING) != 0 &&
-            tr.world->lightIndexCount != 0 && r_fullbright->integer == 0) {
+        if ((stateBits & GLS_LIGHTING) != 0 && tr.world->lightIndexCount != 0 && r_fullbright->integer == 0) {
             qglEnable(GL_LIGHTING);
         } else {
             qglDisable(GL_LIGHTING);
@@ -247,8 +243,7 @@ void GL_State(uint32_t stateBits)
                     qglDisableClientState(GL_COLOR_ARRAY);
                     glState.clientStateBits &= ~GLS_CLIENT_COLOR_ARRAY;
                 }
-                qglColor3f(tr.identityLight, tr.identityLight,
-                           tr.identityLight);
+                qglColor3f(tr.identityLight, tr.identityLight, tr.identityLight);
                 stateBits &= ~GLS_LIGHTING;
             }
         }
@@ -267,11 +262,9 @@ void GL_State(uint32_t stateBits)
         if ((stateBits & GLS_POLYGON_OFFSET_BITS) != 0) {
             qglEnable(GL_POLYGON_OFFSET_FILL);
             if ((stateBits & GLS_POLYGON_OFFSET) != 0) {
-                qglPolygonOffset(r_polygonOffsetFactor->value,
-                                 r_polygonOffsetUnits->value);
+                qglPolygonOffset(r_polygonOffsetFactor->value, r_polygonOffsetUnits->value);
             } else if ((stateBits & GLS_POLYGON_OFFSET_DOUBLE) != 0) {
-                qglPolygonOffset(r_polygonOffsetFactor->value * 2.0f,
-                                 r_polygonOffsetUnits->value * 2.0f);
+                qglPolygonOffset(r_polygonOffsetFactor->value * 2.0f, r_polygonOffsetUnits->value * 2.0f);
             } else {
                 qglPolygonOffset(0.0f, r_polygonOffsetUnits->value);
             }
@@ -318,17 +311,27 @@ void GL_State(uint32_t stateBits)
 
     qglEnable(GL_BLEND);
     switch (stateBits & GLS_SRCBLEND_BITS) {
-    case GLS_SRCBLEND_ZERO: sourceFactor = GL_ZERO; break;
-    case GLS_SRCBLEND_ONE: sourceFactor = GL_ONE; break;
-    case GLS_SRCBLEND_DST_COLOR: sourceFactor = GL_DST_COLOR; break;
+    case GLS_SRCBLEND_ZERO:
+        sourceFactor = GL_ZERO;
+        break;
+    case GLS_SRCBLEND_ONE:
+        sourceFactor = GL_ONE;
+        break;
+    case GLS_SRCBLEND_DST_COLOR:
+        sourceFactor = GL_DST_COLOR;
+        break;
     case GLS_SRCBLEND_ONE_MINUS_DST_COLOR:
         sourceFactor = GL_ONE_MINUS_DST_COLOR;
         break;
-    case GLS_SRCBLEND_SRC_ALPHA: sourceFactor = GL_SRC_ALPHA; break;
+    case GLS_SRCBLEND_SRC_ALPHA:
+        sourceFactor = GL_SRC_ALPHA;
+        break;
     case GLS_SRCBLEND_ONE_MINUS_SRC_ALPHA:
         sourceFactor = GL_ONE_MINUS_SRC_ALPHA;
         break;
-    case GLS_SRCBLEND_DST_ALPHA: sourceFactor = GL_DST_ALPHA; break;
+    case GLS_SRCBLEND_DST_ALPHA:
+        sourceFactor = GL_DST_ALPHA;
+        break;
     case GLS_SRCBLEND_ONE_MINUS_DST_ALPHA:
         sourceFactor = GL_ONE_MINUS_DST_ALPHA;
         break;
@@ -337,30 +340,38 @@ void GL_State(uint32_t stateBits)
         break;
     default:
         sourceFactor = GL_ONE;
-        ri.Error(ERR_DROP,
-                 "\x15GL_State: invalid src blend state bits\n");
+        ri.Error(ERR_DROP, "\x15GL_State: invalid src blend state bits\n");
         break;
     }
 
     switch (stateBits & GLS_DSTBLEND_BITS) {
-    case GLS_DSTBLEND_ZERO: destinationFactor = GL_ZERO; break;
-    case GLS_DSTBLEND_ONE: destinationFactor = GL_ONE; break;
-    case GLS_DSTBLEND_SRC_COLOR: destinationFactor = GL_SRC_COLOR; break;
+    case GLS_DSTBLEND_ZERO:
+        destinationFactor = GL_ZERO;
+        break;
+    case GLS_DSTBLEND_ONE:
+        destinationFactor = GL_ONE;
+        break;
+    case GLS_DSTBLEND_SRC_COLOR:
+        destinationFactor = GL_SRC_COLOR;
+        break;
     case GLS_DSTBLEND_ONE_MINUS_SRC_COLOR:
         destinationFactor = GL_ONE_MINUS_SRC_COLOR;
         break;
-    case GLS_DSTBLEND_SRC_ALPHA: destinationFactor = GL_SRC_ALPHA; break;
+    case GLS_DSTBLEND_SRC_ALPHA:
+        destinationFactor = GL_SRC_ALPHA;
+        break;
     case GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA:
         destinationFactor = GL_ONE_MINUS_SRC_ALPHA;
         break;
-    case GLS_DSTBLEND_DST_ALPHA: destinationFactor = GL_DST_ALPHA; break;
+    case GLS_DSTBLEND_DST_ALPHA:
+        destinationFactor = GL_DST_ALPHA;
+        break;
     case GLS_DSTBLEND_ONE_MINUS_DST_ALPHA:
         destinationFactor = GL_ONE_MINUS_DST_ALPHA;
         break;
     default:
         destinationFactor = GL_ONE;
-        ri.Error(ERR_DROP,
-                 "\x15GL_State: invalid dst blend state bits\n");
+        ri.Error(ERR_DROP, "\x15GL_State: invalid dst blend state bits\n");
         break;
     }
 

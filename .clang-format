@@ -1,0 +1,36 @@
+---
+# Keep source comments manually wrapped at 80 columns while allowing ordinary
+# C code to use the project's 140-column soft limit.
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 140
+ReflowComments: false
+
+IndentWidth: 4
+ContinuationIndentWidth: 4
+UseTab: Never
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+AlignAfterOpenBracket: Align
+AlignEscapedNewlines: DontAlign
+AlignOperands: Align
+AlignTrailingComments: Leave
+BinPackArguments: true
+BinPackParameters: true
+BreakStringLiterals: true
+DerivePointerAlignment: false
+IndentCaseLabels: false
+IndentPPDirectives: None
+MaxEmptyLinesToKeep: 2
+PointerAlignment: Right
+SortIncludes: Never
+...

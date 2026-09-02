@@ -108,29 +108,23 @@ void CG_ParseVoiceChat(int32_t mode)
     /* 0x3003a50e..0x3003a581: if the category filter is enabled, suppress the
      * insult/taunt/praise/gauntlet categories. */
     if (cg_noTaunt_vmCvar.integer != 0) {
-        if (memcmp(g_textScratchBuffer, cg_voiceChatKillInsultCommandName,
-                   sizeof(cg_voiceChatKillInsultCommandName)) == 0) {
+        if (memcmp(g_textScratchBuffer, cg_voiceChatKillInsultCommandName, sizeof(cg_voiceChatKillInsultCommandName)) == 0) {
             return;
         }
-        if (memcmp(g_textScratchBuffer, cg_voiceChatTauntCommandName,
-                   sizeof(cg_voiceChatTauntCommandName)) == 0) {
+        if (memcmp(g_textScratchBuffer, cg_voiceChatTauntCommandName, sizeof(cg_voiceChatTauntCommandName)) == 0) {
             return;
         }
-        if (memcmp(g_textScratchBuffer, cg_voiceChatDeathInsultCommandName,
-                   sizeof(cg_voiceChatDeathInsultCommandName)) == 0) {
+        if (memcmp(g_textScratchBuffer, cg_voiceChatDeathInsultCommandName, sizeof(cg_voiceChatDeathInsultCommandName)) == 0) {
             return;
         }
-        if (memcmp(g_textScratchBuffer, cg_voiceChatGauntletKillCommandName,
-                   sizeof(cg_voiceChatGauntletKillCommandName)) == 0) {
+        if (memcmp(g_textScratchBuffer, cg_voiceChatGauntletKillCommandName, sizeof(cg_voiceChatGauntletKillCommandName)) == 0) {
             return;
         }
-        if (memcmp(g_textScratchBuffer, cg_voiceChatPraiseCommandName,
-                   sizeof(cg_voiceChatPraiseCommandName)) == 0) {
+        if (memcmp(g_textScratchBuffer, cg_voiceChatPraiseCommandName, sizeof(cg_voiceChatPraiseCommandName)) == 0) {
             return;
         }
     }
 
     /* 0x3003a583..0x3003a59d: display the decoded voice-chat message. */
-    CG_VoiceChat(&msg, mode, field1, field2, msg.color,
-                 g_textScratchBuffer);
+    CG_VoiceChat(&msg, mode, field1, field2, msg.color, g_textScratchBuffer);
 }

@@ -34,9 +34,7 @@ void SourceError(source_t *source, const char *format, ...)
     (void)vsnprintf(message, sizeof(message), format, args);
     va_end(args);
 
-    Com_Printf("^1Error: file %s, line %d: %s\n",
-               source->scriptStack->filename,
-               source->scriptStack->line, message);
+    Com_Printf("^1Error: file %s, line %d: %s\n", source->scriptStack->filename, source->scriptStack->line, message);
 }
 
 /* Source: CoDUOMP.exe 0x004428e0..0x00442942.
@@ -53,9 +51,7 @@ void SourceWarning(source_t *source, const char *format, ...)
     (void)vsnprintf(message, sizeof(message), format, args);
     va_end(args);
 
-    Com_Printf("file %s, line %d: %s\n",
-               source->scriptStack->filename,
-               source->scriptStack->line, message);
+    Com_Printf("file %s, line %d: %s\n", source->scriptStack->filename, source->scriptStack->line, message);
 }
 
 /* Source: CoDUOMP.exe 0x00442950..0x004429b7.
@@ -105,8 +101,7 @@ void PC_PopIndent(source_t *source, int32_t *type, qboolean *skip)
  * Name: exact same-module Mac symbol PC_PushScript. */
 void PC_PushScript(source_t *source, script_t *script)
 {
-    for (script_t *scan = source->scriptStack; scan != NULL;
-        scan = scan->next) {
+    for (script_t *scan = source->scriptStack; scan != NULL; scan = scan->next) {
         if (Q_stricmp(script->filename, scan->filename) == 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             SourceError(source, "%s recursively included", script->filename);
@@ -164,8 +159,7 @@ void PC_FreeToken(token_t *token)
 /* Source: CoDUOMP.exe 0x00442b30..0x00442c91.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00442b30_00442c92.mcode.
  * Name: exact same-module Mac symbol PC_ReadSourceToken. */
-qboolean PC_ReadSourceToken(source_t *source,
-                            token_t *token)
+qboolean PC_ReadSourceToken(source_t *source, token_t *token)
 {
     if (source->tokens != NULL) {
         token_t *cachedToken = source->tokens;
@@ -176,10 +170,8 @@ qboolean PC_ReadSourceToken(source_t *source,
     }
 
     while (PS_ReadToken(source->scriptStack, token) == qfalse) {
-        if (source->scriptStack->scriptCursor >=
-            source->scriptStack->endCursor) {
-            while (source->indentStack != NULL &&
-                   source->indentStack->script == source->scriptStack) {
+        if (source->scriptStack->scriptCursor >= source->scriptStack->endCursor) {
+            while (source->indentStack != NULL && source->indentStack->script == source->scriptStack) {
                 int32_t indentType;
                 qboolean indentSkip;
                 SourceWarning(source, "missing #endif");
@@ -201,8 +193,7 @@ qboolean PC_ReadSourceToken(source_t *source,
 /* Source: CoDUOMP.exe 0x00442ca0..0x00442cc0.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00442ca0_00442cc1.mcode.
  * Name: exact same-module Mac symbol PC_UnreadSourceToken. */
-qboolean PC_UnreadSourceToken(source_t *source,
-                              const token_t *token)
+qboolean PC_UnreadSourceToken(source_t *source, const token_t *token)
 {
     token_t *copy = PC_CopyToken(token);
     copy->next = source->tokens;
@@ -219,15 +210,13 @@ qboolean PC_ReadToken(source_t *source, token_t *token)
         if (PC_ReadSourceToken(source, token) == qfalse)
             return qfalse;
 
-        if (token->type == PC_TOKEN_TYPE_PUNCTUATION &&
-            token->string[0] == '#') {
+        if (token->type == PC_TOKEN_TYPE_PUNCTUATION && token->string[0] == '#') {
             if (PC_ReadDirective(source) == qfalse)
                 return qfalse;
             continue;
         }
 
-        if (token->type == PC_TOKEN_TYPE_PUNCTUATION &&
-            token->string[0] == '$') {
+        if (token->type == PC_TOKEN_TYPE_PUNCTUATION && token->string[0] == '$') {
             if (PC_ReadDollarDirective(source) == qfalse)
                 return qfalse;
             continue;
@@ -239,12 +228,9 @@ qboolean PC_ReadToken(source_t *source, token_t *token)
                 if (next.type == PC_TOKEN_TYPE_STRING) {
                     const size_t firstLength = strlen(token->string);
                     token->string[firstLength - 1] = '\0';
-                    const size_t combinedLength =
-                        strlen(token->string) + strlen(next.string + 1) + 1;
+                    const size_t combinedLength = strlen(token->string) + strlen(next.string + 1) + 1;
                     if (combinedLength >= MAX_TOKEN_CHARS) {
-                        SourceError(source,
-                                    "string longer than MAX_TOKEN %d\n",
-                                    MAX_TOKEN_CHARS);
+                        SourceError(source, "string longer than MAX_TOKEN %d\n", MAX_TOKEN_CHARS);
                         return qfalse;
                     }
                     strcat(token->string, next.string + 1);
@@ -258,11 +244,9 @@ qboolean PC_ReadToken(source_t *source, token_t *token)
             continue;
 
         if (token->type == PC_TOKEN_TYPE_NAME) {
-            define_t *define =
-                PC_FindHashedDefine(source->defineHash, token->string);
+            define_t *define = PC_FindHashedDefine(source->defineHash, token->string);
             if (define != NULL) {
-                if (PC_ExpandDefineIntoSource(source, token, define) ==
-                    qfalse)
+                if (PC_ExpandDefineIntoSource(source, token, define) == qfalse)
                     return qfalse;
                 continue;
             }
@@ -296,9 +280,7 @@ qboolean PC_ExpectTokenString(source_t *source, const char *string)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00446610_004468f0.mcode.
  * Name: exact same-module Mac symbol PC_ExpectTokenType. */
-qboolean PC_ExpectTokenType(source_t *source, int32_t type,
-                            int32_t subtype,
-                            token_t *token)
+qboolean PC_ExpectTokenType(source_t *source, int32_t type, int32_t subtype, token_t *token)
 {
     char expected[MAX_TOKEN_CHARS];
 
@@ -320,13 +302,11 @@ qboolean PC_ExpectTokenType(source_t *source, int32_t type,
         else if (type == PC_TOKEN_TYPE_PUNCTUATION)
             strcpy(expected, "punctuation");
 
-        SourceError(source, "expected a %s, found %s", expected,
-                    token->string);
+        SourceError(source, "expected a %s, found %s", expected, token->string);
         return qfalse;
     }
 
-    if (token->type == PC_TOKEN_TYPE_NUMBER &&
-        (token->subtype & subtype) != subtype) {
+    if (token->type == PC_TOKEN_TYPE_NUMBER && (token->subtype & subtype) != subtype) {
         /* Every numeric subtype accepted by this parser includes one radix
          * bit. The PE begins by copying that radix name; it does not clear
          * this buffer on the impossible no-radix path. */
@@ -347,13 +327,11 @@ qboolean PC_ExpectTokenType(source_t *source, int32_t type,
         if ((subtype & PC_TOKEN_SUBTYPE_INTEGER) != 0)
             strcat(expected, " integer");
 
-        SourceError(source, "expected %s, found %s", expected,
-                    token->string);
+        SourceError(source, "expected %s, found %s", expected, token->string);
         return qfalse;
     }
 
-    if (token->type == PC_TOKEN_TYPE_PUNCTUATION &&
-        token->subtype != subtype) {
+    if (token->type == PC_TOKEN_TYPE_PUNCTUATION && token->subtype != subtype) {
         SourceError(source, "found %s", token->string);
         return qfalse;
     }
@@ -365,8 +343,7 @@ qboolean PC_ExpectTokenType(source_t *source, int32_t type,
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_004468f0_00446915.mcode.
  * Name: exact same-module Mac symbol PC_ExpectAnyToken. */
-qboolean PC_ExpectAnyToken(source_t *source,
-                           token_t *token)
+qboolean PC_ExpectAnyToken(source_t *source, token_t *token)
 {
     if (PC_ReadToken(source, token) == qfalse) {
         SourceError(source, "couldn't read expected token");
@@ -395,16 +372,13 @@ qboolean PC_CheckTokenString(source_t *source, const char *string)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_004469d0_00446a79.mcode.
  * Name: role-proven PC_CheckTokenType. */
-qboolean PC_CheckTokenType(source_t *source, int32_t type,
-                           int32_t subtype,
-                           token_t *token)
+qboolean PC_CheckTokenType(source_t *source, int32_t type, int32_t subtype, token_t *token)
 {
     token_t readToken;
     if (PC_ReadToken(source, &readToken) == qfalse)
         return qfalse;
 
-    if (readToken.type == type &&
-        (readToken.subtype & subtype) == subtype) {
+    if (readToken.type == type && (readToken.subtype & subtype) == subtype) {
         memcpy(token, &readToken, sizeof(*token));
         return qtrue;
     }
@@ -441,8 +415,7 @@ void PC_UnreadToken(source_t *source)
  * coduomp/mcode/CoDUOMP/FUN_00446b60_00446b7c.mcode.
  * Name: role-proven PC_UnreadTokenValue; unlike PC_UnreadToken, this form
  * pushes the caller-provided token rather than source->token. */
-void PC_UnreadTokenValue(source_t *source,
-                         const token_t *token)
+void PC_UnreadTokenValue(source_t *source, const token_t *token)
 {
     (void)PC_UnreadSourceToken(source, token);
 }
@@ -454,14 +427,11 @@ void PC_UnreadTokenValue(source_t *source,
 void PC_SetIncludePath(source_t *source, const char *path)
 {
     const size_t length = strlen(path);
-    const qboolean needsSeparator =
-        length != 0 && path[length - 1] != '\\' && path[length - 1] != '/';
+    const qboolean needsSeparator = length != 0 && path[length - 1] != '\\' && path[length - 1] != '/';
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve an empty base path; otherwise require
      * the complete path, optional separator, and final NUL to fit. */
-    if (length >= sizeof(source->includePath) ||
-        (needsSeparator != qfalse &&
-         length >= sizeof(source->includePath) - 1u)) {
+    if (length >= sizeof(source->includePath) || (needsSeparator != qfalse && length >= sizeof(source->includePath) - 1u)) {
         source->includePath[0] = '\0';
         SourceError(source, "include path is too long");
         return;
@@ -478,8 +448,7 @@ void PC_SetIncludePath(source_t *source, const char *path)
  * Evidence: repaired executable-gap record
  * coduomp/mcode/CoDUOMP/FUN_00446bf0_00446bf7.mcode.
  * Name: role-proven PC_SetPunctuations. */
-void PC_SetPunctuations(source_t *source,
-                        punctuation_t *punctuations)
+void PC_SetPunctuations(source_t *source, punctuation_t *punctuations)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     source->punctuations = punctuations;

@@ -84,23 +84,22 @@ int32_t PM_VerifyPronePosition(const vec3_t origin, const vec3_t velocity)
     /* Linux retains this BG_CheckProne call.  Both Windows optimizers inline
      * that one-line wrapper into the direct BG_CheckProneValid call described
      * above, including its checkForwardClearance=qfalse argument. */
-    int32_t result = BG_CheckProne(
-        ps->psClientNum,                        /* arg0  = [EAX+0xd4]  */
-        ps->psOrigin,                           /* arg1  = EAX+0x14    */
-        ps->playerMaxs[0],                      /* arg2  = [EAX+0x568] */
-        30.0f,                                  /* arg3  = 0x41f00000  */
-        ps->proneDirection,                     /* arg4  = [EAX+0x5a4] */
-        &ps->torsoHeight,                     /* arg5  = EAX+0x608   */
-        &ps->torsoPitch,                     /* arg6  = EAX+0x60c   */
-        &ps->waistPitch,                     /* arg7  = EAX+0x610   */
-        qtrue,                                  /* arg8  = PUSH 0x1    */
-        qtrue,                                  /* arg9  = PUSH 0x1    */
-        NULL,                                   /* arg10 = PUSH 0x0    */
-        trace3,                                 /* arg11 = saved [ECX+0x10c] */
-        trace2,                                 /* arg12 = saved [ECX+0x108] */
-        qfalse,                                 /* arg13 = PUSH 0x0    */
-        60.0f,                                  /* arg14 = 0x42700000  */
-        entityType);                            /* wrapper arg15 */
+    int32_t result = BG_CheckProne(ps->psClientNum,                        /* arg0  = [EAX+0xd4]  */
+                                   ps->psOrigin,                           /* arg1  = EAX+0x14    */
+                                   ps->playerMaxs[0],                      /* arg2  = [EAX+0x568] */
+                                   30.0f,                                  /* arg3  = 0x41f00000  */
+                                   ps->proneDirection,                     /* arg4  = [EAX+0x5a4] */
+                                   &ps->torsoHeight,                     /* arg5  = EAX+0x608   */
+                                   &ps->torsoPitch,                     /* arg6  = EAX+0x60c   */
+                                   &ps->waistPitch,                     /* arg7  = EAX+0x610   */
+                                   qtrue,                                  /* arg8  = PUSH 0x1    */
+                                   qtrue,                                  /* arg9  = PUSH 0x1    */
+                                   NULL,                                   /* arg10 = PUSH 0x0    */
+                                   trace3,                                 /* arg11 = saved [ECX+0x10c] */
+                                   trace2,                                 /* arg12 = saved [ECX+0x108] */
+                                   qfalse,                                 /* arg13 = PUSH 0x0    */
+                                   60.0f,                                  /* arg14 = 0x42700000  */
+                                   entityType);                            /* wrapper arg15 */
 
     /* A nonzero result leaves the state untouched and is returned directly
      * (0x3000e8d4 JNZ -> tail). */
@@ -136,33 +135,20 @@ int32_t PM_VerifyPronePosition(const vec3_t origin, const vec3_t velocity)
 }
 
 /* Offsets proven against the machine-code instruction streams. */
-#define BG_VERIFY_PRONE_LAYOUT_ASSERT(name_, expression_) \
-    typedef char name_[(expression_) ? 1 : -1]
+#define BG_VERIFY_PRONE_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
 
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_flags_offset,
-                              offsetof(playerState_t,
-                                       playerStateFlags) == 0x0c);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_origin_offset,
-                              offsetof(playerState_t, psOrigin) == 0x14);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_velocity_offset,
-                              offsetof(playerState_t, velocity) == 0x20);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_client_num_offset,
-                              offsetof(playerState_t, psClientNum) == 0xd4);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_maxs_offset,
-                              offsetof(playerState_t, playerMaxs) == 0x568);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_direction_offset,
-                              offsetof(playerState_t,
-                                       proneDirection) == 0x5a4);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_torso_height_offset,
-                              offsetof(playerState_t, torsoHeight) == 0x608);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_flags_offset, offsetof(playerState_t, playerStateFlags) == 0x0c);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_origin_offset, offsetof(playerState_t, psOrigin) == 0x14);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_velocity_offset, offsetof(playerState_t, velocity) == 0x20);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_client_num_offset, offsetof(playerState_t, psClientNum) == 0xd4);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_maxs_offset, offsetof(playerState_t, playerMaxs) == 0x568);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_direction_offset, offsetof(playerState_t, proneDirection) == 0x5a4);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_torso_height_offset, offsetof(playerState_t, torsoHeight) == 0x608);
 
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_trace2_offset,
-                              offsetof(pmove_t, trace2) == 0x108);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_trace3_offset,
-                              offsetof(pmove_t, trace3) == 0x10c);
-BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_entity_type_offset,
-                              offsetof(pmove_t, entityType) == 0x114);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_trace2_offset, offsetof(pmove_t, trace2) == 0x108);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_trace3_offset, offsetof(pmove_t, trace3) == 0x10c);
+BG_VERIFY_PRONE_LAYOUT_ASSERT(bg_verify_prone_entity_type_offset, offsetof(pmove_t, entityType) == 0x114);
 #endif
 
 #undef BG_VERIFY_PRONE_LAYOUT_ASSERT

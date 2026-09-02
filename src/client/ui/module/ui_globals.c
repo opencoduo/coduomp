@@ -38,9 +38,7 @@ int32_t ui_serverMapCinematic;
 // Source: uo_ui_mp_x86.dll 0x401f96ec; server-filter selection.
 int32_t ui_serverFilterType;
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-const uiServerFilter_t ui_serverFilters[UI_SERVER_FILTER_COUNT] = {
-    { "EXE_ALL", "" }
-};
+const uiServerFilter_t ui_serverFilters[UI_SERVER_FILTER_COUNT] = {{"EXE_ALL", ""}};
 // Source: uo_ui_mp_x86.dll 0x40060400; owner-draw width scratch text.
 char ui_ownerDrawWidthBuffer[64];
 /* Source: uo_ui_mp_x86.dll 0x40060560..0x4006155f.  PC_SourceWarning's
@@ -167,8 +165,7 @@ int32_t ui_foundPlayerServerCount;
  * overlapping slot reserved exactly as the machine-code indexing requires. */
 uiFindPlayerStorage_t ui_findPlayerStorage;
 // Source: uo_ui_mp_x86.dll 0x402397fc..0x40239bfb.
-char ui_foundPlayerServerNames[UI_MAX_FOUND_PLAYER_SERVERS]
-                              [UI_FOUND_PLAYER_SERVER_TEXT_SIZE];
+char ui_foundPlayerServerNames[UI_MAX_FOUND_PLAYER_SERVERS][UI_FOUND_PLAYER_SERVER_TEXT_SIZE];
 // Source: uo_ui_mp_x86.dll 0x402238f4..0x4022390b.
 qhandle_t ui_serverHardwareShaders[UI_SERVER_HARDWARE_SHADER_COUNT];
 // Source: uo_ui_mp_x86.dll 0x4022390c.
@@ -199,15 +196,9 @@ const char *ui_newHighScoreSound;
 int32_t ui_downloadEstimateIndex;
 // Source: uo_ui_mp_x86.dll 0x40040470..0x400405af.
 int32_t ui_downloadEstimates[UI_DOWNLOAD_ESTIMATE_SAMPLES] = {
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
-    60, 60, 60, 60, 60, 60, 60, 60, 60, 60
-};
+    60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
+    60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
+    60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60};
 // Source: uo_ui_mp_x86.dll 0x402230d8/0x40222ed8..0x402230d7.
 int32_t ui_modCount;
 // Source: uo_ui_mp_x86.dll 0x40222ed8..0x402230d7.
@@ -441,87 +432,84 @@ vmCvar_t cl_languageWarningsAsErrorsCvar;
 #define UI_CVAR_SLOT_71 cl_languageWarningsCvar
 #define UI_CVAR_SLOT_72 cl_languageWarningsAsErrorsCvar
 
-#define UI_CVAR_ENTRY(index_, name_, default_, flags_) \
-    { &UI_CVAR_SLOT_##index_, (name_), (default_), (flags_) }
+#define UI_CVAR_ENTRY(index_, name_, default_, flags_) {&UI_CVAR_SLOT_##index_, (name_), (default_), (flags_)}
 
 /* Source: uo_ui_mp_x86.dll data 0x4003fe18..0x400402a7.
  * PE_RELOCATION_VALUES_VERIFIED: all 219 storage/name/default pointers resolve
  * to the original 73 records in order; flags and literal strings match. */
-cvarTable_t ui_cvarTable[UI_MAX_CVARS] = {
-    UI_CVAR_ENTRY(0, "g_arenasFile", "", CVAR_ROM | CVAR_INIT),
-    UI_CVAR_ENTRY(1, "g_allowvote", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(2, "g_allowVoteMapRestart", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(3, "g_allowVoteMapRotate", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(4, "g_allowVoteTypeMap", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(5, "g_allowVoteMap", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(6, "g_allowVoteGameType", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(7, "g_allowVoteKick", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(8, "g_allowVoteClientKick", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(9, "g_allowVoteTempBanUser", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(10, "g_allowVoteTempBanClient", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(11, "cg_brass", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(12, "cg_marks", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(13, "server1", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(14, "server2", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(15, "server3", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(16, "server4", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(17, "server5", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(18, "server6", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(19, "server7", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(20, "server8", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(21, "server9", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(22, "server10", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(23, "server11", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(24, "server12", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(25, "server13", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(26, "server14", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(27, "server15", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(28, "server16", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(29, "ui_dedicated", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(30, "ui_smallFont", "0.25", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(31, "ui_bigFont", "0.4", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(32, "ui_extraBigFont", "0.55", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(33, "ui_cdkeychecked", "0", CVAR_ROM),
-    UI_CVAR_ENTRY(34, "cg_selectedPlayer", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(35, "ui_netSource", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(36, "ui_menuFiles", "ui_mp/menus.txt", CVAR_NONE),
-    UI_CVAR_ENTRY(37, "ui_gametype", "3", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(38, "ui_joinGametype", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(39, "ui_netGametype", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(40, "ui_netGametypeName", "", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(41, "ui_newScriptMenu", "", CVAR_ROM),
-    UI_CVAR_ENTRY(42, "ui_newScriptMenuIndex", "-1", CVAR_ROM),
-    UI_CVAR_ENTRY(43, "ui_scriptMenu", "", CVAR_ROM),
-    UI_CVAR_ENTRY(44, "ui_scriptMenuIndex", "-1", CVAR_ROM),
-    UI_CVAR_ENTRY(45, "ui_scriptMenuAllowResponse", "1", CVAR_ROM),
-    UI_CVAR_ENTRY(46, "ui_waitingScriptMenu", "", CVAR_ROM),
-    UI_CVAR_ENTRY(47, "ui_waitingScriptMenuIndex", "-1", CVAR_ROM),
-    UI_CVAR_ENTRY(48, "ui_waitingScriptMenuNoMouse", "0", CVAR_ROM),
-    UI_CVAR_ENTRY(49, "ui_mapIndex", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(50, "ui_currentMap", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(51, "ui_currentNetMap", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(52, "ui_browserMaster", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(53, "ui_browserGameType", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(54, "ui_browserSortKey", "4", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(55, "ui_browserShowFull", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(56, "ui_browserShowEmpty", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(57, "ui_browserShowPassword", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(58, "ui_browserShowNoPassword", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(59, "ui_browserShowPure", "1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(60, "ui_browserShowDedicated", "0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(61, "ui_browserShowJeeps", "-1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(62, "ui_browserShowTanks", "-1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(63, "ui_browserMod", "-1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(64, "ui_browserFriendlyfire", "-1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(65, "ui_browserKillcam", "-1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(66, "ui_browserShowPunkBuster", "-1", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(67, "ui_serverStatusTimeOut", "7000", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(68, "ui_cmd", "", CVAR_NONE),
-    UI_CVAR_ENTRY(69, "ui_isSpectator", "1", CVAR_NONE),
-    UI_CVAR_ENTRY(70, "cg_hudAlpha", "1.0", CVAR_ARCHIVE),
-    UI_CVAR_ENTRY(71, "cl_languagewarnings", "0", CVAR_NONE),
-    UI_CVAR_ENTRY(72, "cl_languagewarningsaserrors", "0", CVAR_NONE)
-};
+cvarTable_t ui_cvarTable[UI_MAX_CVARS] = {UI_CVAR_ENTRY(0, "g_arenasFile", "", CVAR_ROM | CVAR_INIT),
+                                          UI_CVAR_ENTRY(1, "g_allowvote", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(2, "g_allowVoteMapRestart", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(3, "g_allowVoteMapRotate", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(4, "g_allowVoteTypeMap", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(5, "g_allowVoteMap", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(6, "g_allowVoteGameType", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(7, "g_allowVoteKick", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(8, "g_allowVoteClientKick", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(9, "g_allowVoteTempBanUser", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(10, "g_allowVoteTempBanClient", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(11, "cg_brass", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(12, "cg_marks", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(13, "server1", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(14, "server2", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(15, "server3", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(16, "server4", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(17, "server5", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(18, "server6", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(19, "server7", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(20, "server8", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(21, "server9", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(22, "server10", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(23, "server11", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(24, "server12", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(25, "server13", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(26, "server14", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(27, "server15", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(28, "server16", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(29, "ui_dedicated", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(30, "ui_smallFont", "0.25", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(31, "ui_bigFont", "0.4", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(32, "ui_extraBigFont", "0.55", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(33, "ui_cdkeychecked", "0", CVAR_ROM),
+                                          UI_CVAR_ENTRY(34, "cg_selectedPlayer", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(35, "ui_netSource", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(36, "ui_menuFiles", "ui_mp/menus.txt", CVAR_NONE),
+                                          UI_CVAR_ENTRY(37, "ui_gametype", "3", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(38, "ui_joinGametype", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(39, "ui_netGametype", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(40, "ui_netGametypeName", "", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(41, "ui_newScriptMenu", "", CVAR_ROM),
+                                          UI_CVAR_ENTRY(42, "ui_newScriptMenuIndex", "-1", CVAR_ROM),
+                                          UI_CVAR_ENTRY(43, "ui_scriptMenu", "", CVAR_ROM),
+                                          UI_CVAR_ENTRY(44, "ui_scriptMenuIndex", "-1", CVAR_ROM),
+                                          UI_CVAR_ENTRY(45, "ui_scriptMenuAllowResponse", "1", CVAR_ROM),
+                                          UI_CVAR_ENTRY(46, "ui_waitingScriptMenu", "", CVAR_ROM),
+                                          UI_CVAR_ENTRY(47, "ui_waitingScriptMenuIndex", "-1", CVAR_ROM),
+                                          UI_CVAR_ENTRY(48, "ui_waitingScriptMenuNoMouse", "0", CVAR_ROM),
+                                          UI_CVAR_ENTRY(49, "ui_mapIndex", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(50, "ui_currentMap", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(51, "ui_currentNetMap", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(52, "ui_browserMaster", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(53, "ui_browserGameType", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(54, "ui_browserSortKey", "4", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(55, "ui_browserShowFull", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(56, "ui_browserShowEmpty", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(57, "ui_browserShowPassword", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(58, "ui_browserShowNoPassword", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(59, "ui_browserShowPure", "1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(60, "ui_browserShowDedicated", "0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(61, "ui_browserShowJeeps", "-1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(62, "ui_browserShowTanks", "-1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(63, "ui_browserMod", "-1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(64, "ui_browserFriendlyfire", "-1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(65, "ui_browserKillcam", "-1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(66, "ui_browserShowPunkBuster", "-1", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(67, "ui_serverStatusTimeOut", "7000", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(68, "ui_cmd", "", CVAR_NONE),
+                                          UI_CVAR_ENTRY(69, "ui_isSpectator", "1", CVAR_NONE),
+                                          UI_CVAR_ENTRY(70, "cg_hudAlpha", "1.0", CVAR_ARCHIVE),
+                                          UI_CVAR_ENTRY(71, "cl_languagewarnings", "0", CVAR_NONE),
+                                          UI_CVAR_ENTRY(72, "cl_languagewarningsaserrors", "0", CVAR_NONE)};
 
 // Source: uo_ui_mp_x86.dll data 0x400402a8; value 73.
 int32_t ui_cvarCount = UI_MAX_CVARS;
@@ -554,8 +542,7 @@ void ui_compat_reset_module_load_state(void)
     for (index = 0; index < UI_DOWNLOAD_ESTIMATE_SAMPLES; ++index)
         ui_downloadEstimates[index] = 60;
     for (index = 0; index < UI_MAX_CVARS; ++index)
-        memset(ui_cvarTable[index].vmCvar, 0,
-               sizeof(*ui_cvarTable[index].vmCvar));
+        memset(ui_cvarTable[index].vmCvar, 0, sizeof(*ui_cvarTable[index].vmCvar));
     ui_cvarCount = UI_MAX_CVARS;
     sharedRandSeed = UINT32_C(0x89abcdef);
 

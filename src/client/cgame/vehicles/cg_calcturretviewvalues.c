@@ -41,7 +41,8 @@ void CG_CalcTurretViewValues(void)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_CalcTurretViewValues: invalid view-lock "
+                  "\x15"
+                  "CG_CalcTurretViewValues: invalid view-lock "
                   "entity %i",
                   entityNum);
         return;
@@ -54,8 +55,7 @@ void CG_CalcTurretViewValues(void)
     }
 
     DObjSkelMat tagPlayerMatrix;
-    if (!CG_DObjGetWorldTagMatrix(dobj, "tag_player", cent,
-                                         &tagPlayerMatrix)) {
+    if (!CG_DObjGetWorldTagMatrix(dobj, "tag_player", cent, &tagPlayerMatrix)) {
         Com_Error(ERR_FATAL, cg_turretMissingTagPlayerError);
     }
 
@@ -63,24 +63,15 @@ void CG_CalcTurretViewValues(void)
 
     /* 0x300415e6..0x3004163f: interpolate the four paired current/next turret
      * angle scalars with the snapshot interpolation fraction. */
-    float baseYaw = LerpAngle(cent->currentState.iconBaseYaw,
-                              cent->nextState.leanf,
-                              cg_frameInterpolation);
-    float currentBodyPitch = CG_FloatFromBits(
-        (uint32_t)turret->currentState.vehicleBodyPitchPacked);
-    float nextBodyPitch = CG_FloatFromBits(
-        (uint32_t)turret->nextState.vehicleBodyPitchPacked);
-    float bodyPitch = LerpAngle(currentBodyPitch, nextBodyPitch,
-                                cg_frameInterpolation);
-    float secondaryYaw = LerpAngle(turret->currentState.vehicleSecondaryBaseYaw,
-                                   turret->nextState.vehicleSecondaryBaseYaw,
-                                   cg_frameInterpolation);
-    float currentBodyRoll = CG_FloatFromBits(
-        (uint32_t)turret->currentState.vehicleBodyRollPacked);
-    float nextBodyRoll = CG_FloatFromBits(
-        (uint32_t)turret->nextState.vehicleBodyRollPacked);
-    float bodyRoll = LerpAngle(currentBodyRoll, nextBodyRoll,
-                               cg_frameInterpolation);
+    float baseYaw = LerpAngle(cent->currentState.iconBaseYaw, cent->nextState.leanf, cg_frameInterpolation);
+    float currentBodyPitch = CG_FloatFromBits((uint32_t)turret->currentState.vehicleBodyPitchPacked);
+    float nextBodyPitch = CG_FloatFromBits((uint32_t)turret->nextState.vehicleBodyPitchPacked);
+    float bodyPitch = LerpAngle(currentBodyPitch, nextBodyPitch, cg_frameInterpolation);
+    float secondaryYaw =
+        LerpAngle(turret->currentState.vehicleSecondaryBaseYaw, turret->nextState.vehicleSecondaryBaseYaw, cg_frameInterpolation);
+    float currentBodyRoll = CG_FloatFromBits((uint32_t)turret->currentState.vehicleBodyRollPacked);
+    float nextBodyRoll = CG_FloatFromBits((uint32_t)turret->nextState.vehicleBodyRollPacked);
+    float bodyRoll = LerpAngle(currentBodyRoll, nextBodyRoll, cg_frameInterpolation);
 
     /* The machine updates pitch and yaw only. Each component is a symmetric clamp
      * of the signed refdef/entity delta into [lowerAdds[axis], limits[axis]]:
@@ -90,17 +81,14 @@ void CG_CalcTurretViewValues(void)
      * read the else-arm as `lowerAdds[axis] > 0.0f`, but the bytes reload the SAME
      * delta (0x30041685 fld [esp+0x10]) and compare it against lowerAdds -- no 0.0f
      * constant is loaded. */
-    float limits[2] = { baseYaw, bodyPitch };
-    float lowerAdds[2] = { secondaryYaw, bodyRoll };
+    float limits[2] = {baseYaw, bodyPitch};
+    float lowerAdds[2] = {secondaryYaw, bodyRoll};
     for (int axis = 0; axis < 2; ++axis) {
-        float delta = AngleSubtract(cg_refdefViewAngles[axis],
-                                    cent->lerpAngles[axis]);
+        float delta = AngleSubtract(cg_refdefViewAngles[axis], cent->lerpAngles[axis]);
         if (delta > limits[axis]) {
-            cg_refdefViewAngles[axis] =
-                cent->lerpAngles[axis] + limits[axis];
+            cg_refdefViewAngles[axis] = cent->lerpAngles[axis] + limits[axis];
         } else if (delta < lowerAdds[axis]) {
-            cg_refdefViewAngles[axis] =
-                cent->lerpAngles[axis] + lowerAdds[axis];
+            cg_refdefViewAngles[axis] = cent->lerpAngles[axis] + lowerAdds[axis];
         }
     }
 
@@ -115,12 +103,9 @@ void CG_CalcTurretViewValues(void)
      * product rounds to float, FSTP DWORD) before the FSUB, so it is a float
      * temp -- the (float) int cast is faithful (FILD; FSTP DWORD; FLD DWORD). */
     for (int axis = 0; axis < 3; ++axis) {
-        float deltaInteger = (float)coduo_int32_from_bits(
-            (uint32_t)cg_predictedPlayerState.deltaAngles[axis]);
-        float deltaScale = (float)((long double)deltaInteger *
-                                   (long double)CG_SHORT_TO_ANGLE_SCALE);
-        adjustedAngles[axis] = (float)(
-            (long double)cg_refdefViewAngles[axis] - (long double)deltaScale);
+        float deltaInteger = (float)coduo_int32_from_bits((uint32_t)cg_predictedPlayerState.deltaAngles[axis]);
+        float deltaScale = (float)((long double)deltaInteger * (long double)CG_SHORT_TO_ANGLE_SCALE);
+        adjustedAngles[axis] = (float)((long double)cg_refdefViewAngles[axis] - (long double)deltaScale);
     }
     /* Stage 2 (0x30041729/0x3004173d/0x30041752): here the DLL DOES call
      * AngleSubtract (= a - b then AngleNormalize180Accurate). */
@@ -132,10 +117,7 @@ void CG_CalcTurretViewValues(void)
     playerState_t swayState;
     memcpy(&swayState, &cg_predictedPlayerState, sizeof(swayState));
     swayState.currentWeapon = BG_GetWeaponIndexForName("thompson_MP");
-    BG_CalculateWeaponPosition_Sway(&swayState,
-                                    cg_turretViewSwayPreviousViewAngles,
-                                    cg_turretViewSwayOffset,
-                                    cg_turretViewSwayViewAngles,
+    BG_CalculateWeaponPosition_Sway(&swayState, cg_turretViewSwayPreviousViewAngles, cg_turretViewSwayOffset, cg_turretViewSwayViewAngles,
                                     CG_TURRET_SWAY_SCALE, cg_frametime);
 
     int32_t phase = coduo_int32_from_bits(cg_time) % CG_TURRET_OSCILLATION_PERIOD;
@@ -143,22 +125,18 @@ void CG_CalcTurretViewValues(void)
         phase = CG_TURRET_OSCILLATION_PERIOD - phase;
     }
     float phaseInteger = (float)phase;
-    float phaseScale = (float)((long double)phaseInteger /
-                               (long double)(float)CG_TURRET_OSCILLATION_HALF_PERIOD);
+    float phaseScale = (float)((long double)phaseInteger / (long double)(float)CG_TURRET_OSCILLATION_HALF_PERIOD);
 
-    if (!CG_DObjGetWorldTagMatrix(dobj, "tag_player", cent,
-                                         &tagPlayerMatrix)) {
+    if (!CG_DObjGetWorldTagMatrix(dobj, "tag_player", cent, &tagPlayerMatrix)) {
         return;
     }
 
     cg_refdef.vieworg[0] = tagPlayerMatrix.origin[0];
     cg_refdef.vieworg[1] = tagPlayerMatrix.origin[1];
-    cg_refdef.vieworg[2] =
-        tagPlayerMatrix.origin[2] - cg_predictedPlayerState.viewHeightCurrent;
+    cg_refdef.vieworg[2] = tagPlayerMatrix.origin[2] - cg_predictedPlayerState.viewHeightCurrent;
 
-    vec3_t displacement = { 0.0f, 0.0f, 0.0f };
-    if ((cg_snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 &&
-        cent->currentState.hudTagMask == 0) {
+    vec3_t displacement = {0.0f, 0.0f, 0.0f};
+    if ((cg_snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 && cent->currentState.hudTagMask == 0) {
         float kick = phaseScale * CG_TURRET_FORWARD_KICK_SCALE;
         displacement[0] = kick * tagPlayerMatrix.axis[0][0];
         displacement[1] = kick * tagPlayerMatrix.axis[0][1];
@@ -179,28 +157,18 @@ void CG_CalcTurretViewValues(void)
     cg_refdef.vieworg[1] += displacement[1];
     cg_refdef.vieworg[2] += displacement[2];
 
-    if ((cg_snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 &&
-        cent->currentState.hudTagMask == 0) {
+    if ((cg_snap->ps.entityStateFlags & CG_TURRET_SWAY_FLAG) != 0 && cent->currentState.hudTagMask == 0) {
         const weaponInfo_t *weapon = bg_weaponInfos[cent->currentState.weapon];
         /* The signed-random ((float)rand/32768)*2-1 is kept in st(0) and multiplied by
          * the jitter directly (0x300419c2..0x300419d0 pitch, 0x300419fa..0x30041a08 yaw):
          * the binary never rounds it to a float slot, so it must not be a float local.
          * The (float)rand cast is real (FILD;FSTP DWORD;FLD DWORD @0x300419aa..be). */
         float pitchRandomInteger = (float)coduo_crt_rand();
-        long double pitchRandom =
-            ((long double)pitchRandomInteger /
-             (long double)CG_RANDOM_SIGNED_DENOMINATOR) * 2.0L - 1.0L;
-        cg_refdefViewAngles[0] = (float)(
-            pitchRandom * (long double)weapon->vertViewJitter +
-            (long double)cg_refdefViewAngles[0]);
+        long double pitchRandom = ((long double)pitchRandomInteger / (long double)CG_RANDOM_SIGNED_DENOMINATOR) * 2.0L - 1.0L;
+        cg_refdefViewAngles[0] = (float)(pitchRandom * (long double)weapon->vertViewJitter + (long double)cg_refdefViewAngles[0]);
 
         float yawRandomInteger = (float)coduo_crt_rand();
-        long double yawRandom =
-            ((long double)yawRandomInteger /
-             (long double)CG_RANDOM_SIGNED_DENOMINATOR) * 2.0L - 1.0L;
-        cg_refdefViewAngles[1] = (float)(
-            yawRandom * (long double)weapon->horizViewJitter +
-            (long double)cg_refdefViewAngles[1]);
+        long double yawRandom = ((long double)yawRandomInteger / (long double)CG_RANDOM_SIGNED_DENOMINATOR) * 2.0L - 1.0L;
+        cg_refdefViewAngles[1] = (float)(yawRandom * (long double)weapon->horizViewJitter + (long double)cg_refdefViewAngles[1]);
     }
-
 }

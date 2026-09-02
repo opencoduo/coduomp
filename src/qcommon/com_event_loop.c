@@ -40,8 +40,7 @@ void Com_RunAndTimeServerPacket(const netadr_t *from, msg_t *message)
     SV_PacketEvent(*from, message);
 
     if (com_speeds->integer != 0) {
-        const uint32_t elapsed =
-            COM_EVENT_MILLISECONDS() - startTime;
+        const uint32_t elapsed = COM_EVENT_MILLISECONDS() - startTime;
 
         if (com_speeds->integer == 3) {
             Com_Printf("SV_PacketEvent time: %i\n", (int32_t)elapsed);
@@ -97,9 +96,7 @@ int32_t Com_EventLoop(void)
 
         case SE_CONSOLE:
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            if (event.payload == NULL || event.payloadLength <= 0 ||
-                memchr(event.payload, '\0',
-                       (size_t)event.payloadLength) == NULL) {
+            if (event.payload == NULL || event.payloadLength <= 0 || memchr(event.payload, '\0', (size_t)event.payloadLength) == NULL) {
                 if (event.payload != NULL) {
                     COM_EVENT_FREE_PAYLOAD(event.payload);
                 }
@@ -113,8 +110,7 @@ int32_t Com_EventLoop(void)
 
         case SE_PACKET: {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            if (event.payload == NULL ||
-                event.payloadLength < (int32_t)sizeof(netadr_t)) {
+            if (event.payload == NULL || event.payloadLength < (int32_t)sizeof(netadr_t)) {
                 if (event.payload != NULL) {
                     COM_EVENT_FREE_PAYLOAD(event.payload);
                 }
@@ -122,9 +118,7 @@ int32_t Com_EventLoop(void)
                 continue;
             }
 
-            const uint32_t packetLength =
-                (uint32_t)(event.payloadLength -
-                           (int32_t)sizeof(netadr_t));
+            const uint32_t packetLength = (uint32_t)(event.payloadLength - (int32_t)sizeof(netadr_t));
             memcpy(&from, event.payload, sizeof(from));
             if (packetLength > (uint32_t)message.maxsize) {
                 COM_EVENT_FREE_PAYLOAD(event.payload);
@@ -132,9 +126,7 @@ int32_t Com_EventLoop(void)
                 continue;
             }
 
-            memcpy(message.data,
-                   (const uint8_t *)event.payload + sizeof(netadr_t),
-                   (size_t)packetLength);
+            memcpy(message.data, (const uint8_t *)event.payload + sizeof(netadr_t), (size_t)packetLength);
             message.cursize = (int32_t)packetLength;
             COM_EVENT_FREE_PAYLOAD(event.payload);
 
@@ -148,7 +140,8 @@ int32_t Com_EventLoop(void)
 
         default:
             Com_Error(ERR_FATAL,
-                      "\x15" "Com_EventLoop: bad event type %i",
+                      "\x15"
+                      "Com_EventLoop: bad event type %i",
                       event.type);
             continue;
         }

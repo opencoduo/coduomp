@@ -34,18 +34,12 @@ enum {
     SERVER_FRAME_MSEC_BASE = 1000,
     SERVER_FRAME_TIME_WRAP_LIMIT = 0x70000000,
     SERVER_FRAME_COUNTER_LIMIT = INT32_MAX - 1,
-    SERVER_FRAME_CACHED_ENTITY_LIMIT =
-        SERVER_FRAME_COUNTER_LIMIT - SERVER_CACHED_SNAPSHOT_ENTITY_COUNT,
-    SERVER_FRAME_CACHED_CLIENT_LIMIT =
-        SERVER_FRAME_COUNTER_LIMIT - SERVER_CACHED_SNAPSHOT_CLIENT_COUNT,
-    SERVER_FRAME_ARCHIVED_FRAME_LIMIT =
-        SERVER_FRAME_COUNTER_LIMIT - SERVER_ARCHIVED_SNAPSHOT_FRAME_COUNT,
-    SERVER_FRAME_ARCHIVED_BUFFER_LIMIT =
-        SERVER_FRAME_COUNTER_LIMIT - SERVER_ARCHIVED_SNAPSHOT_BUFFER_SIZE,
-    SERVER_FRAME_CACHED_FRAME_LIMIT =
-        SERVER_FRAME_COUNTER_LIMIT - SERVER_CACHED_SNAPSHOT_FRAME_COUNT,
-    SERVER_FRAME_SERVERINFO_FLAGS =
-        CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
+    SERVER_FRAME_CACHED_ENTITY_LIMIT = SERVER_FRAME_COUNTER_LIMIT - SERVER_CACHED_SNAPSHOT_ENTITY_COUNT,
+    SERVER_FRAME_CACHED_CLIENT_LIMIT = SERVER_FRAME_COUNTER_LIMIT - SERVER_CACHED_SNAPSHOT_CLIENT_COUNT,
+    SERVER_FRAME_ARCHIVED_FRAME_LIMIT = SERVER_FRAME_COUNTER_LIMIT - SERVER_ARCHIVED_SNAPSHOT_FRAME_COUNT,
+    SERVER_FRAME_ARCHIVED_BUFFER_LIMIT = SERVER_FRAME_COUNTER_LIMIT - SERVER_ARCHIVED_SNAPSHOT_BUFFER_SIZE,
+    SERVER_FRAME_CACHED_FRAME_LIMIT = SERVER_FRAME_COUNTER_LIMIT - SERVER_CACHED_SNAPSHOT_FRAME_COUNT,
+    SERVER_FRAME_SERVERINFO_FLAGS = CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
     SERVER_FRAME_SYSTEMINFO_FLAGS = CVAR_SYSTEMINFO,
     SERVER_FRAME_SCRIPT_CONFIGSTRING_FLAGS = CVAR_SCRIPT_MAKE_SERVERINFO
 };
@@ -91,8 +85,7 @@ int32_t sv_timeResidual;
 
 void SV_RunFrame(void)
 {
-    (void)VM_Call(sv_gameVM, GAME_UPDATE_CVARS,
-                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(sv_gameVM, GAME_UPDATE_CVARS, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     dobj_skelCacheKey = (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
     if (dobj_skelCacheKey == 0) {
@@ -100,8 +93,7 @@ void SV_RunFrame(void)
     }
 
     sv_frameRunning = qtrue;
-    (void)VM_Call(sv_gameVM, GAME_RUN_FRAME,
-                  svs.time, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(sv_gameVM, GAME_RUN_FRAME, svs.time, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     sv_frameRunning = qfalse;
     Hunk_ClearTempMemory();
 }
@@ -145,11 +137,8 @@ void SV_RunBotFrame(void)
 
     sv_frameRunning = qtrue;
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
-        if (client->state != CS_FREE &&
-            client->netchan.remoteAddress.type == NA_BAD) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
+        if (client->state != CS_FREE && client->netchan.remoteAddress.type == NA_BAD) {
             SV_BotUserMove(client);
         }
     }
@@ -180,37 +169,29 @@ void SV_Frame(int32_t msec)
     }
 
     const char *restartReason = NULL;
-    if (svs.realTime > SERVER_FRAME_TIME_WRAP_LIMIT ||
-        svs.time > SERVER_FRAME_TIME_WRAP_LIMIT) {
+    if (svs.realTime > SERVER_FRAME_TIME_WRAP_LIMIT || svs.time > SERVER_FRAME_TIME_WRAP_LIMIT) {
         restartReason = "EXE_SERVERRESTARTTIMEWRAP";
-    } else if (svs.nextEntityStateSnapshot >=
-               SERVER_FRAME_COUNTER_LIMIT - svs.numEntityStateSnapshots) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "numSnapshotEntities";
-    } else if (svs.nextCachedSnapshotEntities >=
-               SERVER_FRAME_CACHED_ENTITY_LIMIT) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "nextCachedSnapshotEntities";
-    } else if (svs.nextCachedSnapshotClients >=
-               SERVER_FRAME_CACHED_CLIENT_LIMIT) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "nextCachedSnapshotClients";
-    } else if (svs.nextArchivedSnapshotFrames >=
-               SERVER_FRAME_ARCHIVED_FRAME_LIMIT) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "nextArchivedSnapshotFrames";
-    } else if (svs.nextArchivedSnapshotBuffer >=
-               SERVER_FRAME_ARCHIVED_BUFFER_LIMIT) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "nextArchivedSnapshotBuffer";
-    } else if (svs.nextCachedSnapshotFrames >=
-               SERVER_FRAME_CACHED_FRAME_LIMIT) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "nextCachedSnapshotFrames";
-    } else if (svs.nextClientSnapshot >=
-               SERVER_FRAME_COUNTER_LIMIT - svs.numClientSnapshots) {
-        restartReason =
-            "EXE_SERVERRESTARTMISC\x15" "numSnapshotClients";
+    } else if (svs.nextEntityStateSnapshot >= SERVER_FRAME_COUNTER_LIMIT - svs.numEntityStateSnapshots) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "numSnapshotEntities";
+    } else if (svs.nextCachedSnapshotEntities >= SERVER_FRAME_CACHED_ENTITY_LIMIT) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "nextCachedSnapshotEntities";
+    } else if (svs.nextCachedSnapshotClients >= SERVER_FRAME_CACHED_CLIENT_LIMIT) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "nextCachedSnapshotClients";
+    } else if (svs.nextArchivedSnapshotFrames >= SERVER_FRAME_ARCHIVED_FRAME_LIMIT) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "nextArchivedSnapshotFrames";
+    } else if (svs.nextArchivedSnapshotBuffer >= SERVER_FRAME_ARCHIVED_BUFFER_LIMIT) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "nextArchivedSnapshotBuffer";
+    } else if (svs.nextCachedSnapshotFrames >= SERVER_FRAME_CACHED_FRAME_LIMIT) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "nextCachedSnapshotFrames";
+    } else if (svs.nextClientSnapshot >= SERVER_FRAME_COUNTER_LIMIT - svs.numClientSnapshots) {
+        restartReason = "EXE_SERVERRESTARTMISC\x15"
+                        "numSnapshotClients";
     }
 
     if (restartReason != NULL) {
@@ -223,22 +204,15 @@ void SV_Frame(int32_t msec)
 
     XAnimSetUser(XANIM_USER_SERVER);
     if ((cvar_modifiedFlags & SERVER_FRAME_SERVERINFO_FLAGS) != 0) {
-        SV_SetConfigstring(
-            CS_SERVERINFO,
-            Cvar_InfoString(SERVER_FRAME_SERVERINFO_FLAGS));
+        SV_SetConfigstring(CS_SERVERINFO, Cvar_InfoString(SERVER_FRAME_SERVERINFO_FLAGS));
         cvar_modifiedFlags &= ~SERVER_FRAME_SERVERINFO_FLAGS;
     }
     if ((cvar_modifiedFlags & SERVER_FRAME_SYSTEMINFO_FLAGS) != 0) {
-        SV_SetConfigstring(
-            CS_SYSTEMINFO,
-            Cvar_InfoString_Big(SERVER_FRAME_SYSTEMINFO_FLAGS));
+        SV_SetConfigstring(CS_SYSTEMINFO, Cvar_InfoString_Big(SERVER_FRAME_SYSTEMINFO_FLAGS));
         cvar_modifiedFlags &= ~SERVER_FRAME_SYSTEMINFO_FLAGS;
     }
-    if ((cvar_modifiedFlags &
-         SERVER_FRAME_SCRIPT_CONFIGSTRING_FLAGS) != 0) {
-        Cvar_SetConfigstringValues(
-            CS_CONFIGVALUE_NAMES, CS_CONFIGVALUE_COUNT,
-            SERVER_FRAME_SCRIPT_CONFIGSTRING_FLAGS);
+    if ((cvar_modifiedFlags & SERVER_FRAME_SCRIPT_CONFIGSTRING_FLAGS) != 0) {
+        Cvar_SetConfigstringValues(CS_CONFIGVALUE_NAMES, CS_CONFIGVALUE_COUNT, SERVER_FRAME_SCRIPT_CONFIGSTRING_FLAGS);
         cvar_modifiedFlags &= ~SERVER_FRAME_SCRIPT_CONFIGSTRING_FLAGS;
     }
 

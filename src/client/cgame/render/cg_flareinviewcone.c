@@ -46,15 +46,13 @@
  * grows toward -1 as distance grows, i.e. a cone that narrows with range).
  */
 #define CG_FLARE_INV_MAX_DIST 0.00392156886f   /* 1/255, 0x3007be24 */
-#define CG_FLARE_CONE_SLOPE   0.057f           /* 0x3007c024, 0x3d6978d5 */
-#define CG_FLARE_CONE_BASE    (-0.939999998f)  /* 0x3007c020 */
+#define CG_FLARE_CONE_SLOPE 0.057f           /* 0x3007c024, 0x3d6978d5 */
+#define CG_FLARE_CONE_BASE (-0.939999998f)  /* 0x3007c020 */
 
 /* Max flare range in world units (FCOMP against 0x3007bd64 == 255.0f). */
 #define CG_FLARE_MAX_DIST 255.0f
 
-qboolean CG_FlareInViewCone(const centity_t *entity /* ECX */,
-                            const playerState_t *ps /* EDI */,
-                            int32_t atTime /* EAX */)
+qboolean CG_FlareInViewCone(const centity_t *entity /* ECX */, const playerState_t *ps /* EDI */, int32_t atTime /* EAX */)
 {
     vec3_t origin;
 
@@ -68,8 +66,7 @@ qboolean CG_FlareInViewCone(const centity_t *entity /* ECX */,
     /* 0x3001e534/0x3001e546: (view->origin[2] + view->eyeHeight) is rounded to a
      * float slot and reloaded at 0x3001e562 before the origin[2] subtraction
      * (Class 1) -- an explicit float temp forces that intermediate rounding. */
-    float eyePointZ = (float)((long double)ps->psOrigin[2] +
-                              (long double)ps->viewHeightCurrent);
+    float eyePointZ = (float)((long double)ps->psOrigin[2] + (long double)ps->viewHeightCurrent);
     dir[0] = (float)((long double)ps->psOrigin[0] - (long double)origin[0]);
     dir[1] = (float)((long double)ps->psOrigin[1] - (long double)origin[1]);
     dir[2] = (float)((long double)eyePointZ - (long double)origin[2]);
@@ -92,13 +89,11 @@ qboolean CG_FlareInViewCone(const centity_t *entity /* ECX */,
      * FSINCOS produces cos on top of the stack (ST0) and sin in ST1; the stores
      * (FSTP [cos_slot]; FSTP [sin_slot]) confirm cos-first / sin-second.
      */
-    float yawRadians = (float)((long double)ps->viewAngles[1] *
-                               (long double)CG_DEG2RAD);
+    float yawRadians = (float)((long double)ps->viewAngles[1] * (long double)CG_DEG2RAD);
     float s1;
     float c1;
     coduo_x87_sincosf(yawRadians, &s1, &c1);
-    float pitchRadians = (float)((long double)ps->viewAngles[0] *
-                                 (long double)CG_DEG2RAD);
+    float pitchRadians = (float)((long double)ps->viewAngles[0] * (long double)CG_DEG2RAD);
     float s0;
     float c0;
     coduo_x87_sincosf(pitchRadians, &s0, &c0);
@@ -112,18 +107,14 @@ qboolean CG_FlareInViewCone(const centity_t *entity /* ECX */,
      * (-s0)*dir[2] + (c0*s1)*dir[1] + (c0*c1)*dir[0]. */
     /* 0x3001e61a..0x3001e636: one unbroken FMUL/FADDP chain with a single trailing
      * FSTP -- the dot product rounds once, not once per term (Class 2). */
-    float dot = (float)(
-        (long double)forward2 * (long double)dir[2] +
-        (long double)forward1 * (long double)dir[1] +
-        (long double)forward0 * (long double)dir[0]);
+    float dot = (float)((long double)forward2 * (long double)dir[2] + (long double)forward1 * (long double)dir[1] +
+                        (long double)forward0 * (long double)dir[0]);
 
     /* Distance-scaled cone bound; a flare passes when dot <= threshold (the
      * direction toward the eye is sufficiently anti-parallel to view forward,
      * i.e. the effect is ahead of the eye within the cone). */
-    float threshold = (float)(
-        (long double)CG_FLARE_CONE_BASE -
-        ((long double)dist * (long double)CG_FLARE_INV_MAX_DIST) *
-            (long double)CG_FLARE_CONE_SLOPE);
+    float threshold = (float)((long double)CG_FLARE_CONE_BASE -
+                              ((long double)dist * (long double)CG_FLARE_INV_MAX_DIST) * (long double)CG_FLARE_CONE_SLOPE);
 
     /* TEST AH,0x41/JNZ accepts less, equal, and unordered; only ordered greater
      * reaches the false return. `!(>)` preserves that unordered edge. */

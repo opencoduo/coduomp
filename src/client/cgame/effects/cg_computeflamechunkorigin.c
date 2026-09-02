@@ -37,7 +37,9 @@
 /* trap(0xa5, entityNum) -> DObj context handle; trap(0xa0, self, 0) -> bone-matrix
  * table base (stride 0x40 per bone). cgame_syscall is declared in globals.h. */
 
-enum { CG_FLAME_CHUNK_STATIC_MODE_LIMIT = 2 }; /* +0x2c < 2 selects the vertical-drift term */
+enum {
+    CG_FLAME_CHUNK_STATIC_MODE_LIMIT = 2
+}; /* +0x2c < 2 selects the vertical-drift term */
 
 void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t out)
 {
@@ -48,16 +50,9 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
      * (cg_flameTime is FILD'd as an int; the subtrahends are doubles. The 0.001
      * scale is FMUL float ptr [0x3007bd94] = 0x3a83126f, the FLOAT 0.001f, not
      * the double 0.001.) */
-    float driftRadius = (float)(
-        (long double)f->expansionRate * (long double)-1.5f);
-    float elapsedDrift = (float)(
-        ((long double)cg_flameTime -
-         (long double)f->driftStartTime) *
-        (long double)0.001f);
-    float elapsedSpawn = (float)(
-        ((long double)cg_flameTime -
-         (long double)f->spawnTime) *
-        (long double)0.001f);
+    float driftRadius = (float)((long double)f->expansionRate * (long double)-1.5f);
+    float elapsedDrift = (float)(((long double)cg_flameTime - (long double)f->driftStartTime) * (long double)0.001f);
+    float elapsedSpawn = (float)(((long double)cg_flameTime - (long double)f->spawnTime) * (long double)0.001f);
 
     if (f->boneHandle != 0) {
         /* ------- 0x300259e4..0x30025b39: bone-attached chunk -------
@@ -68,8 +63,7 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
         if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
             return;
         }
-        centity_t *entity =
-            cg_entities + entityNum;
+        centity_t *entity = cg_entities + entityNum;
 
         /* 0x300259ef: skip the whole transform if the entity has no DObj model
          * (cg_entities[entityNum].currentValid == 0 -> the pool value at base+0x1e8). */
@@ -86,20 +80,16 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
         /* 0x30025a1a..0x30025a2c: calculate this DObj bone hierarchy.
          * ABI: self in ESI, boneIndex (boneHandle-1) in EDI, and
          * &cg_entities[entityNum] as the owning-entity stack arg. */
-        const int32_t boneIndex = coduo_int32_from_bits(
-            (uint32_t)f->boneHandle - 1u);
-        int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_DOBJ_NUM_BONES, self));
+        const int32_t boneIndex = coduo_int32_from_bits((uint32_t)f->boneHandle - 1u);
+        int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_NUM_BONES, self));
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if ((uint32_t)boneIndex >= (uint32_t)boneCount) {
             return;
         }
-        CG_DObjCalcBone((void *)self, boneIndex,
-                       (centity_t *)entity);
+        CG_DObjCalcBone((void *)self, boneIndex, (centity_t *)entity);
 
         /* 0x30025a31: boneTable = trap(CG_DOBJ_GET_BONE_MATRICES, self, 0). */
-        DObjSkelMat *boneTable = (DObjSkelMat *)(intptr_t)
-            cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, self, 0);
+        DObjSkelMat *boneTable = (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, self, 0);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (boneTable == NULL) {
             return;
@@ -131,35 +121,17 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
          *   translation = {world[12],world[13],world[14]}
          * (The initial dword MOVs of the translation into out[] are dead — every
          * component is overwritten by the accumulated FSTP below.) */
-        out[0] = (float)((long double)world.axis[0][0] *
-                         (long double)f->localPos[0] +
-                         (long double)world.origin[0]);
-        out[1] = (float)((long double)world.axis[0][1] *
-                         (long double)f->localPos[0] +
-                         (long double)world.origin[1]);
-        out[2] = (float)((long double)world.axis[0][2] *
-                         (long double)f->localPos[0] +
-                         (long double)world.origin[2]);
+        out[0] = (float)((long double)world.axis[0][0] * (long double)f->localPos[0] + (long double)world.origin[0]);
+        out[1] = (float)((long double)world.axis[0][1] * (long double)f->localPos[0] + (long double)world.origin[1]);
+        out[2] = (float)((long double)world.axis[0][2] * (long double)f->localPos[0] + (long double)world.origin[2]);
 
-        out[0] = (float)((long double)world.axis[1][0] *
-                         (long double)f->localPos[1] +
-                         (long double)out[0]);
-        out[1] = (float)((long double)world.axis[1][1] *
-                         (long double)f->localPos[1] +
-                         (long double)out[1]);
-        out[2] = (float)((long double)world.axis[1][2] *
-                         (long double)f->localPos[1] +
-                         (long double)out[2]);
+        out[0] = (float)((long double)world.axis[1][0] * (long double)f->localPos[1] + (long double)out[0]);
+        out[1] = (float)((long double)world.axis[1][1] * (long double)f->localPos[1] + (long double)out[1]);
+        out[2] = (float)((long double)world.axis[1][2] * (long double)f->localPos[1] + (long double)out[2]);
 
-        out[0] = (float)((long double)world.axis[2][0] *
-                         (long double)f->localPos[2] +
-                         (long double)out[0]);
-        out[1] = (float)((long double)world.axis[2][1] *
-                         (long double)f->localPos[2] +
-                         (long double)out[1]);
-        out[2] = (float)((long double)world.axis[2][2] *
-                         (long double)f->localPos[2] +
-                         (long double)out[2]);
+        out[0] = (float)((long double)world.axis[2][0] * (long double)f->localPos[2] + (long double)out[0]);
+        out[1] = (float)((long double)world.axis[2][1] * (long double)f->localPos[2] + (long double)out[1]);
+        out[2] = (float)((long double)world.axis[2][2] * (long double)f->localPos[2] + (long double)out[2]);
         return;
     }
 
@@ -168,28 +140,17 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
      * vertical turbulence term on out[2]. */
 
     /* 0x30025b3a..0x30025b7d: out = position + elapsedDrift * field_94 * dir. */
-    out[0] = (float)(
-        (long double)elapsedDrift * (long double)f->driftSpeed *
-            (long double)f->driftDir[0] +
-        (long double)f->localPos[0]);
-    out[1] = (float)(
-        (long double)elapsedDrift * (long double)f->driftSpeed *
-            (long double)f->driftDir[1] +
-        (long double)f->localPos[1]);
+    out[0] = (float)((long double)elapsedDrift * (long double)f->driftSpeed * (long double)f->driftDir[0] + (long double)f->localPos[0]);
+    out[1] = (float)((long double)elapsedDrift * (long double)f->driftSpeed * (long double)f->driftDir[1] + (long double)f->localPos[1]);
     long double outZWide =
-        (long double)elapsedDrift * (long double)f->driftSpeed *
-            (long double)f->driftDir[2] +
-        (long double)f->localPos[2];
+        (long double)elapsedDrift * (long double)f->driftSpeed * (long double)f->driftDir[2] + (long double)f->localPos[2];
     float outZBase = (float)outZWide; /* 0x30025b79 FST retained; 0x30025b7d FSTP */
     out[2] = outZBase;
 
     /* 0x30025b80..0x30025b98: sizeBias = (1.0f - field_e4*(1/290.0f)) * 0.35f.
      * [0x3007c298] = 0x3b61fc78 = 0.0034482758f (== 1/290). The old literal
      * 0.003448276f rounds to 0x3b61fc79 — one ULP high, a different float. */
-    float sizeBias = (float)(
-        ((long double)1.0f -
-         (long double)f->radius * (long double)0.0034482758f) *
-        (long double)0.35f);
+    float sizeBias = (float)(((long double)1.0f - (long double)f->radius * (long double)0.0034482758f) * (long double)0.35f);
 
     /* 0x30025b9c..0x30025c0c: w = 0.65f * (field_94*0.0011111111f)^2 + sizeBias,
      * clamped to [0.0f, 1.0f]. The pow term is recomputed on the in-range branch
@@ -200,19 +161,14 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
      * with NO float store, so w is long double and the pow call is inlined
      * a double pow base/return would each add a rounding the DLL does not
      * perform, so powl widens the base OPERAND and keeps the result 80-bit). */
-    long double w =
-        0.65f *
-            powl((long double)f->driftSpeed * 0.0011111111f, 2.0L) +
-        sizeBias;
-    if (w < 0.0f) {                 /* 0x30025bbf FCOMP 0.0f, JP-clamp low */
+    long double w = 0.65f * powl((long double)f->driftSpeed * 0.0011111111f, 2.0L) + sizeBias;
+    if (w < 0.0f) { /* 0x30025bbf FCOMP 0.0f, JP-clamp low */
         w = 0.0f;
     } else {
         /* The retail path repeats the complete pow/scale/bias chain at
          * 0x30025bd6 before the upper clamp instead of reusing its first value. */
-        w = 0.65f *
-                powl((long double)f->driftSpeed * 0.0011111111f, 2.0L) +
-            sizeBias;
-        if (w > 1.0f) {             /* 0x30025bf7 FCOM 1.0f, JNZ-clamp high */
+        w = 0.65f * powl((long double)f->driftSpeed * 0.0011111111f, 2.0L) + sizeBias;
+        if (w > 1.0f) { /* 0x30025bf7 FCOM 1.0f, JNZ-clamp high */
             w = 1.0f;
         }
     }
@@ -226,12 +182,8 @@ void CG_ComputeFlameChunkOrigin(flameChunk_t *f, int32_t cg_flameTime, vec3_t ou
      * FSTP to out[2], so it is written as one expression (float termA/termB
      * temporaries would round where the DLL does not). */
     float modeScale = (f->kind < CG_FLAME_CHUNK_STATIC_MODE_LIMIT) ? 1.0f : 0.0f;
-    out[2] = (float)(
-        (long double)outZBase -
-        ((long double)modeScale * ((long double)1.0f - w) *
-             (long double)elapsedDrift * (long double)elapsedSpawn *
-             (long double)driftRadius +
-         (long double)elapsedDrift * (long double)elapsedSpawn *
-             (long double)f->expansionRate) *
-            (long double)f->soundAmpRate);
+    out[2] = (float)((long double)outZBase - ((long double)modeScale * ((long double)1.0f - w) * (long double)elapsedDrift *
+                                                  (long double)elapsedSpawn * (long double)driftRadius +
+                                              (long double)elapsedDrift * (long double)elapsedSpawn * (long double)f->expansionRate) *
+                                                 (long double)f->soundAmpRate);
 }

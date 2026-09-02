@@ -31,14 +31,14 @@
  * its normal callee-saved ebx convention; pushing here would overlap GCC's
  * outgoing syscall-argument area.
  */
-#define TrapCall(...)                                                         \
-    __extension__({                                                           \
-        game_syscall_t gameSyscall = g_syscall;                                \
-        intptr_t result;                                                   \
-        TRAP_SAVE_EBX();                                                   \
-        result = gameSyscall(__VA_ARGS__);                                  \
-        TRAP_RESTORE_EBX();                                                \
-        result;                                                            \
+#define TrapCall(...) \
+    __extension__({ \
+        game_syscall_t gameSyscall = g_syscall; \
+        intptr_t result; \
+        TRAP_SAVE_EBX(); \
+        result = gameSyscall(__VA_ARGS__); \
+        TRAP_RESTORE_EBX(); \
+        result; \
     })
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained syscall ABI veneer. */
@@ -101,100 +101,77 @@ void trap_Error_Localized(const char *message)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x194c4, 294c4_trap_Trace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 840d8_trap_Trace.c passes syscall 37 and seven arguments in stack order. */
-void trap_Trace(trace_t *trace, const float *start, const float *mins,
-                const float *maxs, const float *end, int passEntityNum,
+void trap_Trace(trace_t *trace, const float *start, const float *mins, const float *maxs, const float *end, int passEntityNum,
                 int contentMask)
 {
-    TrapCall(SYSCALL_TRACE, trace, start, mins, maxs, end,
-                  passEntityNum, contentMask);
+    TrapCall(SYSCALL_TRACE, trace, start, mins, maxs, end, passEntityNum, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x19464, 29464_trap_TraceCapsule.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84130_trap_TraceCapsule.c passes syscall 38 and seven arguments in stack order. */
-void trap_TraceCapsule(trace_t *trace, const float *start, const float *mins,
-                       const float *maxs, const float *end, int passEntityNum,
+void trap_TraceCapsule(trace_t *trace, const float *start, const float *mins, const float *maxs, const float *end, int passEntityNum,
                        int contentMask)
 {
-    TrapCall(SYSCALL_TRACE_CAPSULE, trace, start, mins, maxs, end,
-                  passEntityNum, contentMask);
+    TrapCall(SYSCALL_TRACE_CAPSULE, trace, start, mins, maxs, end, passEntityNum, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x16fe4, 26fe4_trap_SightTrace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84188_trap_SightTrace.c passes syscall 39 and eight arguments in stack order. */
-void trap_SightTrace(int32_t *traceResult, const float *start, const float *mins,
-                     const float *maxs, const float *end, int passEntityNum,
+void trap_SightTrace(int32_t *traceResult, const float *start, const float *mins, const float *maxs, const float *end, int passEntityNum,
                      int passOwnerNum, int contentMask)
 {
-    TrapCall(SYSCALL_SIGHT_TRACE, traceResult, start, mins, maxs, end,
-             passEntityNum, passOwnerNum, contentMask);
+    TrapCall(SYSCALL_SIGHT_TRACE, traceResult, start, mins, maxs, end, passEntityNum, passOwnerNum, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x741e7, 841e7_trap_SightTraceCapsule.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 40 and eight arguments checked against decompiler and objdump. */
-void trap_SightTraceCapsule(int32_t *traceResult, const float *start, const float *mins,
-                            const float *maxs, const float *end,
+void trap_SightTraceCapsule(int32_t *traceResult, const float *start, const float *mins, const float *maxs, const float *end,
                             int passEntityNum, int passOwnerNum, int contentMask)
 {
-    TrapCall(SYSCALL_SIGHT_TRACE_CAPSULE, traceResult, start, mins, maxs, end,
-             passEntityNum, passOwnerNum, contentMask);
+    TrapCall(SYSCALL_SIGHT_TRACE_CAPSULE, traceResult, start, mins, maxs, end, passEntityNum, passOwnerNum, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74297, 84297_trap_CM_BoxTrace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 42 and trace/start/end/mins/maxs/model/brushMask order checked. */
-void trap_CM_BoxTrace(trace_t *trace, const float *start, const float *end,
-                      const float *mins, const float *maxs, int model,
-                      int brushMask)
+void trap_CM_BoxTrace(trace_t *trace, const float *start, const float *end, const float *mins, const float *maxs, int model, int brushMask)
 {
-    TrapCall(SYSCALL_CM_BOX_TRACE, trace, start, end, mins, maxs, model,
-                  brushMask);
+    TrapCall(SYSCALL_CM_BOX_TRACE, trace, start, end, mins, maxs, model, brushMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x742ef, 842ef_trap_CM_CapsuleTrace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 43 and trace/start/end/mins/maxs/model/brushMask order checked. */
-void trap_CM_CapsuleTrace(trace_t *trace, const float *start, const float *end,
-                          const float *mins, const float *maxs, int model,
+void trap_CM_CapsuleTrace(trace_t *trace, const float *start, const float *end, const float *mins, const float *maxs, int model,
                           int brushMask)
 {
-    TrapCall(SYSCALL_CM_CAPSULE_TRACE, trace, start, end, mins, maxs,
-                  model, brushMask);
+    TrapCall(SYSCALL_CM_CAPSULE_TRACE, trace, start, end, mins, maxs, model, brushMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74347, 84347_trap_CM_BoxSightTrace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 44, six argument slots, and eax return preservation checked. */
-int trap_CM_BoxSightTrace(const float *start, const float *end,
-                          const float *mins, const float *maxs, int model,
-                          int brushMask)
+int trap_CM_BoxSightTrace(const float *start, const float *end, const float *mins, const float *maxs, int model, int brushMask)
 {
-    return (int)TrapCall(SYSCALL_CM_BOX_SIGHT_TRACE, start, end, mins,
-                              maxs, model, brushMask);
+    return (int)TrapCall(SYSCALL_CM_BOX_SIGHT_TRACE, start, end, mins, maxs, model, brushMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74398, 84398_trap_CM_CapsuleSightTrace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 45, six argument slots, and eax return preservation checked. */
-int trap_CM_CapsuleSightTrace(const float *start, const float *end,
-                              const float *mins, const float *maxs, int model,
-                              int brushMask)
+int trap_CM_CapsuleSightTrace(const float *start, const float *end, const float *mins, const float *maxs, int model, int brushMask)
 {
-    return (int)TrapCall(SYSCALL_CM_CAPSULE_SIGHT_TRACE, start, end,
-                              mins, maxs, model, brushMask);
+    return (int)TrapCall(SYSCALL_CM_CAPSULE_SIGHT_TRACE, start, end, mins, maxs, model, brushMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x16d44, 26d44_trap_LocationalTrace.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 843e9_trap_LocationalTrace.c passes syscall 46 and six arguments in stack order. */
-void trap_LocationalTrace(trace_t *trace, const float *start, const float *end,
-                          int passEntityNum, int contentMask,
-                          const void *priorityMap)
+void trap_LocationalTrace(trace_t *trace, const float *start, const float *end, int passEntityNum, int contentMask, const void *priorityMap)
 {
-    TrapCall(SYSCALL_LOCATIONAL_TRACE, trace, start, end,
-                  passEntityNum, contentMask, priorityMap);
+    TrapCall(SYSCALL_LOCATIONAL_TRACE, trace, start, end, passEntityNum, contentMask, priorityMap);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x177a4, 277a4_trap_PointContents.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8443a_trap_PointContents.c passes syscall 47, three arguments, and preserves eax return. */
 int trap_PointContents(const float *point, int passEntityNum, int contentMask)
 {
-    return (int)TrapCall(SYSCALL_POINT_CONTENTS, point, passEntityNum,
-                              contentMask);
+    return (int)TrapCall(SYSCALL_POINT_CONTENTS, point, passEntityNum, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -234,21 +211,16 @@ qboolean trap_AreasConnected(int area1, int area2)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x173e4, 273e4_trap_EntitiesInBox.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 845db_trap_EntitiesInBox.c passes syscall 55, five arguments, and preserves eax return. */
-int trap_EntitiesInBox(const float *mins, const float *maxs, int *entityList,
-                       int maxcount, int contentMask)
+int trap_EntitiesInBox(const float *mins, const float *maxs, int *entityList, int maxcount, int contentMask)
 {
-    return (int)TrapCall(SYSCALL_ENTITIES_IN_BOX, mins, maxs,
-                              entityList, maxcount, contentMask);
+    return (int)TrapCall(SYSCALL_ENTITIES_IN_BOX, mins, maxs, entityList, maxcount, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x16894, 26894_trap_SightTraceToEntity.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84246_trap_SightTraceToEntity.c passes syscall 41, six arguments, and preserves eax return. */
-int trap_SightTraceToEntity(const float *start, const float *mins,
-                            const float *maxs, const float *end, int entityNum,
-                            int contentMask)
+int trap_SightTraceToEntity(const float *start, const float *mins, const float *maxs, const float *end, int entityNum, int contentMask)
 {
-    return (int)TrapCall(SYSCALL_SIGHT_TRACE_TO_ENTITY, start, mins,
-                         maxs, end, entityNum, contentMask);
+    return (int)TrapCall(SYSCALL_SIGHT_TRACE_TO_ENTITY, start, mins, maxs, end, entityNum, contentMask);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -260,11 +232,9 @@ qboolean trap_EntityContact(const float *mins, const float *maxs, gentity_t *ent
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x18434, 28434_trap_EntityContactCapsule.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84661_trap_EntityContactCapsule.c passes syscall 63, three arguments, and preserves eax return. */
-qboolean trap_EntityContactCapsule(const float *mins, const float *maxs,
-                                   gentity_t *ent)
+qboolean trap_EntityContactCapsule(const float *mins, const float *maxs, gentity_t *ent)
 {
-    return (qboolean)TrapCall(SYSCALL_ENTITY_CONTACT_CAPSULE, mins,
-                                   maxs, ent);
+    return (qboolean)TrapCall(SYSCALL_ENTITY_CONTACT_CAPSULE, mins, maxs, ent);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -283,19 +253,16 @@ void trap_UnlinkEntity(gentity_t *ent)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x16be4, 26be4_trap_DObjCreate.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84aed_trap_DObjCreate.c passes syscall 81, model array, zero-extended uint16 count/gameId, tree, and entity number. */
-void trap_DObjCreate(DObjModel *models, uint16_t modelCount, XAnimTree *tree,
-                     int entityNum, uint16_t gameId)
+void trap_DObjCreate(DObjModel *models, uint16_t modelCount, XAnimTree *tree, int entityNum, uint16_t gameId)
 {
-    TrapCall(SYSCALL_DOBJ_CREATE, models, (unsigned int)modelCount, tree,
-             entityNum, (unsigned int)gameId);
+    TrapCall(SYSCALL_DOBJ_CREATE, models, (unsigned int)modelCount, tree, entityNum, (unsigned int)gameId);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x174e4, 274e4_trap_DObjExists.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84b7c_trap_DObjExists.c passes syscall 82, entity number from ent->s.number, and preserves eax return. */
 qboolean trap_DObjExists(gentity_t *ent)
 {
-    return (qboolean)TrapCall(SYSCALL_DOBJ_EXISTS,
-                                   game_compat_dobj_entity_number(ent));
+    return (qboolean)TrapCall(SYSCALL_DOBJ_EXISTS, game_compat_dobj_entity_number(ent));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -309,24 +276,21 @@ void trap_SafeDObjFree(int entityNum, qboolean freeAll)
 /* VERIFIED_DECOMPILER(0x755ee, 855ee_trap_DObjNumBones.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 120, entity number from ent->s.number, and eax return preservation checked against decompiler and objdump. */
 int trap_DObjNumBones(gentity_t *ent)
 {
-    return (int)TrapCall(SYSCALL_DOBJ_NUM_BONES,
-                              game_compat_dobj_entity_number(ent));
+    return (int)TrapCall(SYSCALL_DOBJ_NUM_BONES, game_compat_dobj_entity_number(ent));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x19774, 29774_trap_DObjGetBoneIndex.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8561e_trap_DObjGetBoneIndex.c passes syscall 121, entity number, tagName, and preserves eax return. */
 int trap_DObjGetBoneIndex(gentity_t *ent, const char *tagName)
 {
-    return (int)TrapCall(SYSCALL_DOBJ_GET_BONE_INDEX,
-                              game_compat_dobj_entity_number(ent), tagName);
+    return (int)TrapCall(SYSCALL_DOBJ_GET_BONE_INDEX, game_compat_dobj_entity_number(ent), tagName);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x18584, 28584_trap_DObjGetMatrixArray.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 85655_trap_DObjGetMatrixArray.c passes syscall 122, entity number, and preserves eax pointer return. */
 float *trap_DObjGetMatrixArray(gentity_t *ent)
 {
-    return (float *)TrapCall(
-        SYSCALL_DOBJ_GET_MATRIX_ARRAY, game_compat_dobj_entity_number(ent));
+    return (float *)TrapCall(SYSCALL_DOBJ_GET_MATRIX_ARRAY, game_compat_dobj_entity_number(ent));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -340,25 +304,21 @@ void trap_DObjDumpInfo(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x178d4, 278d4_trap_DObjCreateSkelForBone.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 853bc_trap_DObjCreateSkelForBone.c passes syscall 110, entity number, boneIndex, and preserves eax return. */
 qboolean trap_DObjCreateSkelForBone(gentity_t *ent, int boneIndex)
 {
-    return (qboolean)TrapCall(SYSCALL_DOBJ_CREATE_SKEL_FOR_BONE,
-                                   game_compat_dobj_entity_number(ent), boneIndex);
+    return (qboolean)TrapCall(SYSCALL_DOBJ_CREATE_SKEL_FOR_BONE, game_compat_dobj_entity_number(ent), boneIndex);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x16784, 26784_trap_DObjCreateSkelForBones.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 853f3_trap_DObjCreateSkelForBones.c passes syscall 111, entity number, partBits, and preserves eax return. */
 qboolean trap_DObjCreateSkelForBones(gentity_t *ent, uint32_t *partBits)
 {
-    return (qboolean)TrapCall(SYSCALL_DOBJ_CREATE_SKEL_FOR_BONES,
-                                   game_compat_dobj_entity_number(ent), partBits);
+    return (qboolean)TrapCall(SYSCALL_DOBJ_CREATE_SKEL_FOR_BONES, game_compat_dobj_entity_number(ent), partBits);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x18204, 28204_trap_DObjUpdateServerTime.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8542a_trap_DObjUpdateServerTime.c passes syscall 112, entity number, PASSFLOAT(serverTime), notify, and preserves eax return. */
 int trap_DObjUpdateServerTime(gentity_t *ent, float serverTime, qboolean notify)
 {
-    return (int)TrapCall(SYSCALL_DOBJ_UPDATE_SERVER_TIME,
-                         game_compat_dobj_entity_number(ent),
-                         game_compat_trap_pass_float(serverTime),
+    return (int)TrapCall(SYSCALL_DOBJ_UPDATE_SERVER_TIME, game_compat_dobj_entity_number(ent), game_compat_trap_pass_float(serverTime),
                          (int)notify);
 }
 
@@ -373,17 +333,14 @@ void trap_DObjDisplayAnim(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x17a24, 27a24_trap_DObjInitServerTime.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 85472_trap_DObjInitServerTime.c passes syscall 113, entity number, and PASSFLOAT(serverTime). */
 void trap_DObjInitServerTime(gentity_t *ent, float serverTime)
 {
-    TrapCall(SYSCALL_DOBJ_INIT_SERVER_TIME, game_compat_dobj_entity_number(ent),
-                  game_compat_trap_pass_float(serverTime));
+    TrapCall(SYSCALL_DOBJ_INIT_SERVER_TIME, game_compat_dobj_entity_number(ent), game_compat_trap_pass_float(serverTime));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x19794, 29794_trap_DObjGetHierarchyBits.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 854b1_trap_DObjGetHierarchyBits.c passes syscall 114, entity number, boneIndex, and partBits. */
-void trap_DObjGetHierarchyBits(gentity_t *ent, int boneIndex,
-                               uint32_t *partBits)
+void trap_DObjGetHierarchyBits(gentity_t *ent, int boneIndex, uint32_t *partBits)
 {
-    TrapCall(SYSCALL_DOBJ_GET_HIERARCHY_BITS, game_compat_dobj_entity_number(ent),
-                  boneIndex, partBits);
+    TrapCall(SYSCALL_DOBJ_GET_HIERARCHY_BITS, game_compat_dobj_entity_number(ent), boneIndex, partBits);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -404,44 +361,35 @@ void trap_DObjCalcSkel(gentity_t *ent, uint32_t *partBits)
 /* VERIFIED_DECOMPILER(0x184a4, 284a4_trap_DObjGetRotTransArray.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 857ce_trap_DObjGetRotTransArray.c passes syscall 129, entity number, and preserves eax pointer return. */
 DObjAnimMat *trap_DObjGetRotTransArray(gentity_t *ent)
 {
-    return (DObjAnimMat *)TrapCall(
-        SYSCALL_DOBJ_GET_ROT_TRANS_ARRAY, game_compat_dobj_entity_number(ent));
+    return (DObjAnimMat *)TrapCall(SYSCALL_DOBJ_GET_ROT_TRANS_ARRAY, game_compat_dobj_entity_number(ent));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x19324, 29324_trap_DObjSetRotTransIndex.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 857fe_trap_DObjSetRotTransIndex.c passes syscall 130, entity number, partBits, boneIndex, and preserves eax return. */
-qboolean trap_DObjSetRotTransIndex(gentity_t *ent, uint32_t *partBits,
-                                   int boneIndex)
+qboolean trap_DObjSetRotTransIndex(gentity_t *ent, uint32_t *partBits, int boneIndex)
 {
-    return (qboolean)TrapCall(SYSCALL_DOBJ_SET_ROT_TRANS_INDEX,
-                                   game_compat_dobj_entity_number(ent), partBits,
-                                   boneIndex);
+    return (qboolean)TrapCall(SYSCALL_DOBJ_SET_ROT_TRANS_INDEX, game_compat_dobj_entity_number(ent), partBits, boneIndex);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x19294, 29294_trap_DObjSetControlRotTransIndex.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8583c_trap_DObjSetControlRotTransIndex.c passes syscall 131, entity number, partBits, boneIndex, and preserves eax return. */
-qboolean trap_DObjSetControlRotTransIndex(gentity_t *ent, uint32_t *partBits,
-                                          int boneIndex)
+qboolean trap_DObjSetControlRotTransIndex(gentity_t *ent, uint32_t *partBits, int boneIndex)
 {
-    return (qboolean)TrapCall(SYSCALL_DOBJ_SET_CONTROL_ROT_TRANS_INDEX,
-                                   game_compat_dobj_entity_number(ent), partBits,
-                                   boneIndex);
+    return (qboolean)TrapCall(SYSCALL_DOBJ_SET_CONTROL_ROT_TRANS_INDEX, game_compat_dobj_entity_number(ent), partBits, boneIndex);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x16b54, 26b54_trap_DObjGetBounds.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8587a_trap_DObjGetBounds.c passes syscall 132, entity number, mins, and maxs. */
 void trap_DObjGetBounds(gentity_t *ent, vec3_t mins, vec3_t maxs)
 {
-    TrapCall(SYSCALL_DOBJ_GET_BOUNDS, game_compat_dobj_entity_number(ent), mins,
-                  maxs);
+    TrapCall(SYSCALL_DOBJ_GET_BOUNDS, game_compat_dobj_entity_number(ent), mins, maxs);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x758ef, 858ef_trap_DObjGetTree.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 134, entity number from ent->s.number, and eax pointer return preservation checked against decompiler and objdump. */
 XAnimTree *trap_DObjGetTree(gentity_t *ent)
 {
-    return (XAnimTree *)TrapCall(SYSCALL_DOBJ_GET_TREE,
-                                 game_compat_dobj_entity_number(ent));
+    return (XAnimTree *)TrapCall(SYSCALL_DOBJ_GET_TREE, game_compat_dobj_entity_number(ent));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -455,8 +403,7 @@ qboolean trap_XModelExists(const char *modelName)
 /* VERIFIED_DECOMPILER(0x18714, 28714_trap_XModelGet.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84abf_trap_XModelGet.c passes syscall 80, modelName, and preserves eax pointer return. */
 XModel *trap_XModelGet(const char *modelName)
 {
-    return (XModel *)TrapCall(SYSCALL_XMODEL_GET,
-                                                      modelName);
+    return (XModel *)TrapCall(SYSCALL_XMODEL_GET, modelName);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -470,8 +417,7 @@ int trap_XModelNumBones(XModel *model)
 /* VERIFIED_DECOMPILER(0x194f4, 294f4_trap_XModelGetBoneNames.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 857a0_trap_XModelGetBoneNames.c passes syscall 128, model, and preserves eax pointer return. */
 const uint16_t *trap_XModelGetBoneNames(XModel *model)
 {
-    return (const uint16_t *)TrapCall(
-        SYSCALL_XMODEL_GET_BONE_NAMES, model);
+    return (const uint16_t *)TrapCall(SYSCALL_XMODEL_GET_BONE_NAMES, model);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -492,25 +438,21 @@ int trap_XAnimGetAnimTreeSize(XAnim *anims)
 /* VERIFIED_DECOMPILER(0x74f35, 84f35_trap_XAnimHasTime.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 95, packed anim high/low uint16 arguments, and eax/qboolean return preservation checked against decompiler and objdump. */
 qboolean trap_XAnimHasTime(uint32_t anim)
 {
-    return (qboolean)TrapCall(SYSCALL_XANIM_HAS_TIME,
-                                   game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
+    return (qboolean)TrapCall(SYSCALL_XANIM_HAS_TIME, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x29554, 29554_trap_XAnimIsPrimitive.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84f6c_trap_XAnimIsPrimitive.c passes syscall 96, packed anim high/low uint16 arguments, and preserves eax return. */
 qboolean trap_XAnimIsPrimitive(uint32_t anim)
 {
-    return (qboolean)TrapCall(SYSCALL_XANIM_IS_PRIMITIVE,
-                                   game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
+    return (qboolean)TrapCall(SYSCALL_XANIM_IS_PRIMITIVE, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x285f4, 285f4_trap_XAnimGetAnimName.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 858b8_trap_XAnimGetAnimName.c passes syscall 133, packed anim high/low uint16 arguments, and preserves eax pointer return. */
 const char *trap_XAnimGetAnimName(uint32_t anim)
 {
-    return (const char *)TrapCall(
-        SYSCALL_XANIM_GET_ANIM_NAME, game_compat_xanim_tree_index(anim),
-        game_compat_xanim_index(anim));
+    return (const char *)TrapCall(SYSCALL_XANIM_GET_ANIM_NAME, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -524,78 +466,66 @@ int trap_XAnimGetLength(XAnim *anims, uint16_t animIndex)
 /* VERIFIED_DECOMPILER(0x29244, 29244_trap_XAnimGetLengthSeconds.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84fe0_trap_XAnimGetLengthSeconds.c passes syscall 98, packed anim high/low uint16 arguments, and converts eax float bits through FUN_000838b7. */
 float trap_XAnimGetLengthSeconds(uint32_t anim)
 {
-    return game_compat_trap_return_float(TrapCall(SYSCALL_XANIM_GET_LENGTH_SECONDS,
-                                         game_compat_xanim_tree_index(anim),
-                                         game_compat_xanim_index(anim)));
+    return game_compat_trap_return_float(
+        TrapCall(SYSCALL_XANIM_GET_LENGTH_SECONDS, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim)));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x26ec4, 26ec4_trap_XAnimGetRelDelta.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 851c0_trap_XAnimGetRelDelta.c passes syscall 103, packed anim high/low uint16 arguments, rotation/move pointers, and PASSFLOAT start/end times. */
-void trap_XAnimGetRelDelta(uint32_t anim, float *rotationDelta,
-                           float *moveDelta, float startTime, float endTime)
+void trap_XAnimGetRelDelta(uint32_t anim, float *rotationDelta, float *moveDelta, float startTime, float endTime)
 {
-    TrapCall(SYSCALL_XANIM_GET_REL_DELTA, game_compat_xanim_tree_index(anim),
-                  game_compat_xanim_index(anim), rotationDelta, moveDelta,
-                  game_compat_trap_pass_float(startTime), game_compat_trap_pass_float(endTime));
+    TrapCall(SYSCALL_XANIM_GET_REL_DELTA, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim), rotationDelta, moveDelta,
+             game_compat_trap_pass_float(startTime), game_compat_trap_pass_float(endTime));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x75227, 85227_trap_XAnimGetAbsDelta.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 104, packed anim high/low uint16 arguments, rotation/move pointers, and PASSFLOAT time checked against decompiler and objdump. */
-void trap_XAnimGetAbsDelta(uint32_t anim, float *rotationDelta,
-                           float *moveDelta, float time)
+void trap_XAnimGetAbsDelta(uint32_t anim, float *rotationDelta, float *moveDelta, float time)
 {
-    TrapCall(SYSCALL_XANIM_GET_ABS_DELTA, game_compat_xanim_tree_index(anim),
-                  game_compat_xanim_index(anim), rotationDelta, moveDelta,
-                  game_compat_trap_pass_float(time));
+    TrapCall(SYSCALL_XANIM_GET_ABS_DELTA, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim), rotationDelta, moveDelta,
+             game_compat_trap_pass_float(time));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x285d4, 285d4_trap_XAnimIsLooped.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8527b_trap_XAnimIsLooped.c passes syscall 105, packed anim high/low uint16 arguments, and preserves eax return. */
 qboolean trap_XAnimIsLooped(uint32_t anim)
 {
-    return (qboolean)TrapCall(SYSCALL_XANIM_IS_LOOPED,
-                                   game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
+    return (qboolean)TrapCall(SYSCALL_XANIM_IS_LOOPED, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x27e84, 27e84_trap_XAnimGetWeight.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 85342_trap_XAnimGetWeight.c passes syscall 108, tree pointer, zero-extended uint16 anim index, and converts eax float bits through FUN_000838b7. */
 float trap_XAnimGetWeight(XAnimTree *tree, uint32_t anim)
 {
-    return game_compat_trap_return_float(TrapCall(SYSCALL_XANIM_GET_WEIGHT, tree,
-                                         game_compat_xanim_index(anim)));
+    return game_compat_trap_return_float(TrapCall(SYSCALL_XANIM_GET_WEIGHT, tree, game_compat_xanim_index(anim)));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x29234, 29234_trap_XAnimGetTime.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 852f8_trap_XAnimGetTime.c passes syscall 107, tree pointer, zero-extended uint16 anim index, and converts eax float bits through FUN_000838b7. */
 float trap_XAnimGetTime(XAnimTree *tree, uint32_t anim)
 {
-    return game_compat_trap_return_float(TrapCall(SYSCALL_XANIM_GET_TIME, tree,
-                                         game_compat_xanim_index(anim)));
+    return game_compat_trap_return_float(TrapCall(SYSCALL_XANIM_GET_TIME, tree, game_compat_xanim_index(anim)));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28b44, 28b44_trap_XAnimNotetrackExists.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 852b2_trap_XAnimNotetrackExists.c passes syscall 106, packed anim high/low uint16 arguments, zero-extended uint16 notetrack, and preserves eax return. */
 qboolean trap_XAnimNotetrackExists(uint32_t anim, uint16_t notetrack)
 {
-    return (qboolean)TrapCall(SYSCALL_XANIM_NOTETRACK_EXISTS,
-                                   game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim),
-                                   notetrack);
+    return (qboolean)TrapCall(SYSCALL_XANIM_NOTETRACK_EXISTS, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim), notetrack);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x756b5, 856b5_trap_XAnimHasFinished.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 124, tree pointer, zero-extended uint16 anim index, and eax/qboolean return preservation checked against decompiler and objdump. */
 qboolean trap_XAnimHasFinished(XAnimTree *tree, uint32_t anim)
 {
-    return (qboolean)TrapCall(SYSCALL_XANIM_HAS_FINISHED, tree,
-                                   game_compat_xanim_index(anim));
+    return (qboolean)TrapCall(SYSCALL_XANIM_HAS_FINISHED, tree, game_compat_xanim_index(anim));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28674, 28674_trap_XAnimGetNumChildren.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 856eb_trap_XAnimGetNumChildren.c passes syscall 125, packed anim high/low uint16 arguments, and preserves eax return. */
 int trap_XAnimGetNumChildren(uint32_t anim)
 {
-    return (int)TrapCall(SYSCALL_XANIM_GET_NUM_CHILDREN,
-                              game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
+    return (int)TrapCall(SYSCALL_XANIM_GET_NUM_CHILDREN, game_compat_xanim_tree_index(anim), game_compat_xanim_index(anim));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -603,9 +533,7 @@ int trap_XAnimGetNumChildren(uint32_t anim)
 uint32_t *trap_XAnimGetChildAt(uint32_t *out, uint32_t anim, int childIndex)
 {
     const uint16_t treeIndex = game_compat_xanim_tree_index(anim);
-    const uint16_t child = (uint16_t)TrapCall(
-        SYSCALL_XANIM_GET_CHILD_AT, treeIndex, game_compat_xanim_index(anim),
-        childIndex);
+    const uint16_t child = (uint16_t)TrapCall(SYSCALL_XANIM_GET_CHILD_AT, treeIndex, game_compat_xanim_index(anim), childIndex);
 
     *out = ((uint32_t)treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | child;
     return out;
@@ -657,83 +585,65 @@ uint32_t *trap_XAnimGetRoot(uint32_t *out, XAnimTree *tree)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74c1d, 84c1d_trap_XAnimClearTreeGoalWeights.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 86, tree, zero-extended uint16 anim index, and PASSFLOAT blendTime checked against decompiler and objdump. */
-void trap_XAnimClearTreeGoalWeights(XAnimTree *tree, uint32_t anim,
-                                    float blendTime)
+void trap_XAnimClearTreeGoalWeights(XAnimTree *tree, uint32_t anim, float blendTime)
 {
-    TrapCall(SYSCALL_XANIM_CLEAR_TREE_GOAL_WEIGHTS, tree,
-                  game_compat_xanim_index(anim), game_compat_trap_pass_float(blendTime));
+    TrapCall(SYSCALL_XANIM_CLEAR_TREE_GOAL_WEIGHTS, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(blendTime));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x286d4, 286d4_trap_XAnimClearGoalWeight.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84c62_trap_XAnimClearGoalWeight.c passes syscall 87, tree, zero-extended uint16 anim index, and PASSFLOAT blendTime. */
 void trap_XAnimClearGoalWeight(XAnimTree *tree, uint32_t anim, float blendTime)
 {
-    TrapCall(SYSCALL_XANIM_CLEAR_GOAL_WEIGHT, tree, game_compat_xanim_index(anim),
-                  game_compat_trap_pass_float(blendTime));
+    TrapCall(SYSCALL_XANIM_CLEAR_GOAL_WEIGHT, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(blendTime));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x27294, 27294_trap_XAnimClearTreeGoalWeightsStrict.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84ca7_trap_XAnimClearTreeGoalWeightsStrict.c passes syscall 88, tree, zero-extended uint16 anim index, and PASSFLOAT blendTime. */
-void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t anim,
-                                          float blendTime)
+void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t anim, float blendTime)
 {
-    TrapCall(SYSCALL_XANIM_CLEAR_TREE_GOAL_WEIGHTS_STRICT, tree,
-                  game_compat_xanim_index(anim), game_compat_trap_pass_float(blendTime));
+    TrapCall(SYSCALL_XANIM_CLEAR_TREE_GOAL_WEIGHTS_STRICT, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(blendTime));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74cec, 84cec_trap_XAnimSetCompleteGoalWeightKnob.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 89, tree, zero-extended uint16 anim/notify, PASSFLOAT weight/blendTime/rate, and restart order checked against decompiler and objdump. */
-void trap_XAnimSetCompleteGoalWeightKnob(XAnimTree *tree, uint32_t anim,
-                                         float weight, float blendTime,
-                                         float rate, uint16_t notifyName,
+void trap_XAnimSetCompleteGoalWeightKnob(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
                                          qboolean restart)
 {
-    TrapCall(SYSCALL_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB, tree,
-                  game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
-                  game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName,
-                  (int)restart);
+    TrapCall(SYSCALL_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
+             game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName, (int)restart);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x26ca4, 26ca4_trap_XAnimSetCompleteGoalWeightKnobAll.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84d6f_trap_XAnimSetCompleteGoalWeightKnobAll.c passes syscall 90, tree, zero-extended uint16 anim/knob/notify, PASSFLOAT weight/blendTime/rate, and restart order. */
-void trap_XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, uint32_t anim,
-                                            uint32_t knob, float weight,
-                                            float blendTime, float rate,
-                                            uint16_t notifyName,
-                                            qboolean restart)
+void trap_XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, uint32_t anim, uint32_t knob, float weight, float blendTime, float rate,
+                                            uint16_t notifyName, qboolean restart)
 {
-    TrapCall(SYSCALL_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL, tree,
-                  game_compat_xanim_index(anim), (unsigned int)(uint16_t)knob,
-                  game_compat_trap_pass_float(weight), game_compat_trap_pass_float(blendTime),
-                  game_compat_trap_pass_float(rate), notifyName, (int)restart);
+    TrapCall(SYSCALL_XANIM_SET_COMPLETE_GOAL_WEIGHT_KNOB_ALL, tree, game_compat_xanim_index(anim), (unsigned int)(uint16_t)knob,
+             game_compat_trap_pass_float(weight), game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName,
+             (int)restart);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28224, 28224_trap_XAnimSetAnimRate.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84dfa_trap_XAnimSetAnimRate.c passes syscall 91, tree, zero-extended uint16 anim index, and PASSFLOAT rate. */
 void trap_XAnimSetAnimRate(XAnimTree *tree, uint32_t anim, float rate)
 {
-    TrapCall(SYSCALL_XANIM_SET_ANIM_RATE, tree, game_compat_xanim_index(anim),
-                  game_compat_trap_pass_float(rate));
+    TrapCall(SYSCALL_XANIM_SET_ANIM_RATE, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(rate));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x295b4, 295b4_trap_XAnimSetTime.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84e3f_trap_XAnimSetTime.c passes syscall 92, tree, zero-extended uint16 anim index, and PASSFLOAT time. */
 void trap_XAnimSetTime(XAnimTree *tree, uint32_t anim, float time)
 {
-    TrapCall(SYSCALL_XANIM_SET_TIME, tree, game_compat_xanim_index(anim),
-                  game_compat_trap_pass_float(time));
+    TrapCall(SYSCALL_XANIM_SET_TIME, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(time));
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74e84, 84e84_trap_XAnimSetGoalWeightKnob.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - syscall 93, tree, zero-extended uint16 anim/notify, PASSFLOAT weight/blendTime/rate, and restart order checked against decompiler and objdump. */
-void trap_XAnimSetGoalWeightKnob(XAnimTree *tree, uint32_t anim, float weight,
-                                 float blendTime, float rate,
-                                 uint16_t notifyName, qboolean restart)
+void trap_XAnimSetGoalWeightKnob(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
+                                 qboolean restart)
 {
-    TrapCall(SYSCALL_XANIM_SET_GOAL_WEIGHT_KNOB, tree,
-                  game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
-                  game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName,
-                  (int)restart);
+    TrapCall(SYSCALL_XANIM_SET_GOAL_WEIGHT_KNOB, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
+             game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName, (int)restart);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -745,46 +655,35 @@ void trap_XAnimClearTree(XAnimTree *tree)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x268c4, 268c4_trap_XAnimSetCompleteGoalWeight.c, VERIFY-SYSCALL-VENEERS-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8502b_trap_XAnimSetCompleteGoalWeight.c passes syscall 99, tree, zero-extended uint16 anim/notify, PASSFLOAT weight/blendTime/rate, and restart order. */
-void trap_XAnimSetCompleteGoalWeight(XAnimTree *tree, uint32_t anim,
-                                     float weight,
-                                     float blendTime, float rate,
-                                     uint16_t notifyName, qboolean restart)
+void trap_XAnimSetCompleteGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
+                                     qboolean restart)
 {
-    TrapCall(SYSCALL_XANIM_SET_COMPLETE_GOAL_WEIGHT, tree,
-                  game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
-                  game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName,
-                  (int)restart);
+    TrapCall(SYSCALL_XANIM_SET_COMPLETE_GOAL_WEIGHT, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
+             game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName, (int)restart);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x295d4, 295d4_trap_XAnimSetGoalWeight.c, VERIFY-SYSCALL-VENEERS-CVARCONFIG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 850ae_trap_XAnimSetGoalWeight.c passes syscall 100, tree, zero-extended uint16 anim/notify, PASSFLOAT weight/blendTime/rate, and restart order. */
-void trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight,
-                             float blendTime, float rate, uint16_t notifyName,
+void trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
                              qboolean restart)
 {
-    TrapCall(SYSCALL_XANIM_SET_GOAL_WEIGHT, tree, game_compat_xanim_index(anim),
-                  game_compat_trap_pass_float(weight), game_compat_trap_pass_float(blendTime),
-                  game_compat_trap_pass_float(rate), notifyName, (int)restart);
+    TrapCall(SYSCALL_XANIM_SET_GOAL_WEIGHT, tree, game_compat_xanim_index(anim), game_compat_trap_pass_float(weight),
+             game_compat_trap_pass_float(blendTime), game_compat_trap_pass_float(rate), notifyName, (int)restart);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28e74, 28e74_trap_XAnimCalcAbsDelta.c, VERIFY-SYSCALL-VENEERS-CVARCONFIG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 85131_trap_XAnimCalcAbsDelta.c passes syscall 101, tree, zero-extended uint16 anim, rotationDelta, and moveDelta. */
-void trap_XAnimCalcAbsDelta(XAnimTree *tree, uint32_t anim,
-                            float *rotationDelta,
-                            float *moveDelta)
+void trap_XAnimCalcAbsDelta(XAnimTree *tree, uint32_t anim, float *rotationDelta, float *moveDelta)
 {
-    TrapCall(SYSCALL_XANIM_CALC_ABS_DELTA, tree, game_compat_xanim_index(anim),
-                  rotationDelta, moveDelta);
+    TrapCall(SYSCALL_XANIM_CALC_ABS_DELTA, tree, game_compat_xanim_index(anim), rotationDelta, moveDelta);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x75175, 85175_trap_XAnimCalcDelta.c, VERIFY-SYSCALL-VENEERS-CVARCONFIG-2026-06-17): DATAFLOW_VERIFIED - syscall 102, tree, zero-extended uint16 anim, rotationDelta, moveDelta, and fifth argument order checked against decompiler and objdump. */
 /* Native64 support: the fifth syscall slot is consumed by the recovered engine as an int32 selector, not a host pointer. */
-void trap_XAnimCalcDelta(XAnimTree *tree, uint32_t anim, float *rotationDelta,
-                         float *moveDelta, int weightSelector)
+void trap_XAnimCalcDelta(XAnimTree *tree, uint32_t anim, float *rotationDelta, float *moveDelta, int weightSelector)
 {
-    TrapCall(SYSCALL_XANIM_CALC_DELTA, tree, game_compat_xanim_index(anim),
-                  rotationDelta, moveDelta, weightSelector);
+    TrapCall(SYSCALL_XANIM_CALC_DELTA, tree, game_compat_xanim_index(anim), rotationDelta, moveDelta, weightSelector);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -805,8 +704,7 @@ void trap_XAnimSaveAnimTree(XAnimTree *tree)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28a84, 28a84_trap_Cvar_Register.c, VERIFY-SYSCALL-VENEERS-CVARCONFIG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 83cd2_trap_Cvar_Register.c passes syscall 4, cvar, name, value, and flags. */
-void trap_Cvar_Register(vmCvar_t *cvar, const char *name, const char *value,
-                        int flags)
+void trap_Cvar_Register(vmCvar_t *cvar, const char *name, const char *value, int flags)
 {
     TrapCall(SYSCALL_CVAR_REGISTER, cvar, name, value, flags);
 }
@@ -860,8 +758,7 @@ void trap_GetConfigstring(int index, char *buffer, int bufferLength)
 /* VERIFIED_DECOMPILER(0x28184, 28184_trap_GetConfigstringConst.c, VERIFY-SYSCALL-VENEERS-CVARCONFIG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 83f7a_trap_GetConfigstringConst.c passes syscall 30 and returns the engine pointer in eax. */
 const char *trap_GetConfigstringConst(int index)
 {
-    return (const char *)TrapCall(
-        SYSCALL_GET_CONFIGSTRING_CONST, index);
+    return (const char *)TrapCall(SYSCALL_GET_CONFIGSTRING_CONST, index);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -894,12 +791,9 @@ void trap_GetUsercmd(int clientNum, usercmd_t *command)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x27764, 27764_trap_GetArchivedClientInfo.c, VERIFY-SYSCALL-VENEERS-CVARCONFIG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 849c4_trap_GetArchivedClientInfo.c passes syscall 70, clientNum, archiveTime, archivedClientInfo, and archive metadata, returning eax. */
-int trap_GetArchivedClientInfo(int clientNum, int32_t *archiveTime,
-                               playerState_t *playerState,
-                               clientState_t *meta)
+int trap_GetArchivedClientInfo(int clientNum, int32_t *archiveTime, playerState_t *playerState, clientState_t *meta)
 {
-    return (int)TrapCall(SYSCALL_GET_ARCHIVED_CLIENT_INFO, clientNum,
-                         archiveTime, playerState, meta);
+    return (int)TrapCall(SYSCALL_GET_ARCHIVED_CLIENT_INFO, clientNum, archiveTime, playerState, meta);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1001,11 +895,9 @@ void trap_FS_Rename(const char *from, const char *to)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28504, 28504_trap_FS_GetFileList.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 83c2c_trap_FS_GetFileList.c passes syscall 59, path, extension, listBuffer, bufferSize, and preserves eax return. */
-int trap_FS_GetFileList(const char *path, const char *extension,
-                        char *listBuffer, int bufferSize)
+int trap_FS_GetFileList(const char *path, const char *extension, char *listBuffer, int bufferSize)
 {
-    return (int)TrapCall(SYSCALL_FS_GET_FILE_LIST, path, extension,
-                              listBuffer, bufferSize);
+    return (int)TrapCall(SYSCALL_FS_GET_FILE_LIST, path, extension, listBuffer, bufferSize);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1017,20 +909,16 @@ int trap_MapExists(const char *mapName)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x288a4, 288a4_trap_AddDebugString.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84707_trap_AddDebugString.c passes syscall 71, origin, color, PASSFLOAT(scale), text. */
-void trap_AddDebugString(const float *origin, const float *color, float scale,
-                         const char *text)
+void trap_AddDebugString(const float *origin, const float *color, float scale, const char *text)
 {
-    TrapCall(SYSCALL_ADD_DEBUG_STRING, origin, color,
-                  game_compat_trap_pass_float(scale), text);
+    TrapCall(SYSCALL_ADD_DEBUG_STRING, origin, color, game_compat_trap_pass_float(scale), text);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x28b54, 28b54_trap_AddDebugLine.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 84754_trap_AddDebugLine.c passes syscall 72, start, end, color, depthTest, duration. */
-void trap_AddDebugLine(const float *start, const float *end,
-                       const float *color, int depthTest, int duration)
+void trap_AddDebugLine(const float *start, const float *end, const float *color, int depthTest, int duration)
 {
-    TrapCall(SYSCALL_ADD_DEBUG_LINE, start, end, color, depthTest,
-                  duration);
+    TrapCall(SYSCALL_ADD_DEBUG_LINE, start, end, color, depthTest, duration);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1044,16 +932,14 @@ int trap_SurfaceTypeFromName(const char *name)
 /* VERIFIED_DECOMPILER(0x29204, 29204_trap_SurfaceTypeToName.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 848e7_trap_SurfaceTypeToName.c passes syscall 68, surfaceType, and preserves eax pointer return. */
 const char *trap_SurfaceTypeToName(int surfaceType)
 {
-    return (const char *)TrapCall(
-        SYSCALL_SURFACE_TYPE_TO_NAME, surfaceType);
+    return (const char *)TrapCall(SYSCALL_SURFACE_TYPE_TO_NAME, surfaceType);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x74828, 84828_trap_Com_SoundAliasString.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - syscall 64, name argument, and eax pointer return preservation checked. */
 const char *trap_Com_SoundAliasString(const char *name)
 {
-    return (const char *)TrapCall(
-        SYSCALL_COM_SOUND_ALIAS_STRING, name);
+    return (const char *)TrapCall(SYSCALL_COM_SOUND_ALIAS_STRING, name);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1088,8 +974,7 @@ void trap_Argv(int arg, char *buffer, int bufferLength)
 /* VERIFIED_DECOMPILER(0x27184, 27184_trap_GetEntityToken.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 846d2_trap_GetEntityToken.c passes syscall 58, buffer, bufferSize, and preserves eax return. */
 qboolean trap_GetEntityToken(char *buffer, int bufferSize)
 {
-    return (qboolean)TrapCall(SYSCALL_GET_ENTITY_TOKEN, buffer,
-                                   bufferSize);
+    return (qboolean)TrapCall(SYSCALL_GET_ENTITY_TOKEN, buffer, bufferSize);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1122,12 +1007,9 @@ void trap_GetServerinfo(char *buffer, int bufferSize)
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x27514, 27514_trap_LocateGameData.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 83e20_trap_LocateGameData.c passes syscall 24, gEnts, numGEntities, sizeofGEntity, the first client player-state pointer, and sizeofClient. */
-void trap_LocateGameData(gentity_t *gEnts, int numGEntities,
-                         int sizeofGEntity, playerState_t *clients,
-                         int sizeofClient)
+void trap_LocateGameData(gentity_t *gEnts, int numGEntities, int sizeofGEntity, playerState_t *clients, int sizeofClient)
 {
-    TrapCall(SYSCALL_LOCATE_GAME_DATA, gEnts, numGEntities,
-                  sizeofGEntity, clients, sizeofClient);
+    TrapCall(SYSCALL_LOCATE_GAME_DATA, gEnts, numGEntities, sizeofGEntity, clients, sizeofClient);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1148,8 +1030,7 @@ void trap_FreeClientScriptPers(void)
 /* VERIFIED_DECOMPILER(0x27c34, 27c34_trap_GetWeaponInfoMemory.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 8597d_trap_GetWeaponInfoMemory.c passes syscall 137, bytes, alreadyLoaded, and preserves eax pointer return. */
 weaponInfo_t **trap_GetWeaponInfoMemory(int bytes, int *alreadyLoaded)
 {
-    return (weaponInfo_t **)TrapCall(
-        SYSCALL_GET_WEAPON_INFO_MEMORY, bytes, alreadyLoaded);
+    return (weaponInfo_t **)TrapCall(SYSCALL_GET_WEAPON_INFO_MEMORY, bytes, alreadyLoaded);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
@@ -1184,16 +1065,14 @@ void *trap_Hunk_AllocLowInternal(size_t size)
 /* VERIFIED_DECOMPILER(0x28374, 28374_trap_Hunk_AllocAlignInternal.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 83a4f_trap_Hunk_AllocAlignInternal.c passes syscall 14, size, alignment, and preserves eax pointer return. */
 void *trap_Hunk_AllocAlignInternal(size_t size, int alignment)
 {
-    return (void *)TrapCall(SYSCALL_HUNK_ALLOC_ALIGN, size,
-                                            alignment);
+    return (void *)TrapCall(SYSCALL_HUNK_ALLOC_ALIGN, size, alignment);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */
 /* VERIFIED_DECOMPILER(0x27d34, 27d34_trap_Hunk_AllocLowAlignInternal.c, VERIFY-SYSCALL-VENEERS-FSDEBUG-2026-06-17): DATAFLOW_VERIFIED - PLT thunk checked; body 83a84_trap_Hunk_AllocLowAlignInternal.c passes syscall 15, size, alignment, and preserves eax pointer return. */
 void *trap_Hunk_AllocLowAlignInternal(size_t size, int alignment)
 {
-    return (void *)TrapCall(SYSCALL_HUNK_ALLOC_LOW_ALIGN,
-                                            size, alignment);
+    return (void *)TrapCall(SYSCALL_HUNK_ALLOC_LOW_ALIGN, size, alignment);
 }
 
 /* Original trap veneer; host callback adaptation is documented above. */

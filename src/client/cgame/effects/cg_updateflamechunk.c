@@ -28,8 +28,8 @@
 #include "client/cgame/client_recovered.h"
 
 // .rdata float pool @0x3007bce0: 1.0f/2.0f/0.5f/0.0f at bce0/bce4/bce8/bcec.
-#define CG_FLAME_ONE   1.0f   /* 0x3007bce0 */
-#define CG_FLAME_ZERO  0.0f   /* 0x3007bcec */
+#define CG_FLAME_ONE 1.0f   /* 0x3007bce0 */
+#define CG_FLAME_ZERO 0.0f   /* 0x3007bcec */
 
 // Drift-timer floor: once the accumulated timer is nonzero it is held at no
 // less than 30.0 (.rdata 0x3007becc == 30.0f, immediate 0x41f00000 == 30.0f).
@@ -80,8 +80,7 @@ void CG_UpdateFlameChunk(flameChunk_t *f /* EAX */, float dt /* stack */)
     // KEEPS the unrounded value in st0. Both compares (30023c77 vs 0.0, 30023c80 vs
     // 30.0) then run on that unrounded st0, not on what landed in memory -- hence
     // the long double live value plus an explicit (float) cast at the store.
-    long double newDrift =
-        (long double)dt + (long double)f->driftSpeed;
+    long double newDrift = (long double)dt + (long double)f->driftSpeed;
     f->driftSpeed = (float)newDrift;
     if (newDrift != CG_FLAME_ZERO && newDrift < CG_FLAME_TIMER_MIN) {
         f->driftSpeed = CG_FLAME_TIMER_MIN;
@@ -101,15 +100,10 @@ void CG_UpdateFlameChunk(flameChunk_t *f /* EAX */, float dt /* stack */)
         // The FMULP product stays in ST0 (no intermediate float store), so this
         // must be a single expression. (+0x5c holds float bits here; the FSTP
         // writes a single into the dword.)
-        f->startSpeedBits = (uint32_t)CG_FloatBits((float)(
-            ((long double)CG_FLAME_TARGET_BASE -
-             (long double)phaseSel * (long double)f->smokeDensityRate) *
-            ((long double)f->soundAmpRate *
-                 (long double)CG_FLAME_SCALE_GAIN +
-             (long double)CG_FLAME_SCALE_BIAS) +
-            ((long double)CG_FLAME_ONE -
-             (long double)f->driftSpeed *
-                 (long double)CG_FLAME_TIMER_INV900)));
+        f->startSpeedBits = (uint32_t)CG_FloatBits(
+            (float)(((long double)CG_FLAME_TARGET_BASE - (long double)phaseSel * (long double)f->smokeDensityRate) *
+                        ((long double)f->soundAmpRate * (long double)CG_FLAME_SCALE_GAIN + (long double)CG_FLAME_SCALE_BIAS) +
+                    ((long double)CG_FLAME_ONE - (long double)f->driftSpeed * (long double)CG_FLAME_TIMER_INV900)));
     }
 
     // 30023cef..30023d06: clamp the size target to 290.0. FCOMP 290.0; TEST AH,0x41;
@@ -132,14 +126,11 @@ void CG_UpdateFlameChunk(flameChunk_t *f /* EAX */, float dt /* stack */)
     //   The difference is never stored (FILD/FSUB feed FCOMPP directly), so it
     //   stays at register precision — a double local would insert a rounding
     //   the DLL does not perform.
-    long double elapsed =
-        (long double)coduo_int32_from_bits(cg_flameTime) -
-        (long double)f->spawnTime;
+    long double elapsed = (long double)coduo_int32_from_bits(cg_flameTime) - (long double)f->spawnTime;
 
     if ((double)f->birthTime > elapsed) {
         // 30023d28..30023d35: still delayed — fast path rate = startSpeedBits / 1666.
-        f->sizeRate = CG_FloatFromBits(f->startSpeedBits) *
-                      CG_FLAME_RATE_INV1666;
+        f->sizeRate = CG_FloatFromBits(f->startSpeedBits) * CG_FLAME_RATE_INV1666;
         return;
     }
 

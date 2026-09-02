@@ -9,12 +9,8 @@
 extern "C" {
 #endif
 
-qboolean CM_TraceWorkIntersectsBounds(const traceWork_t *traceWork,
-                                      const vec3_t mins,
-                                      const vec3_t maxs);
-qboolean CM_TraceLineSkipsBox(const vec3_t start, const vec3_t end,
-                              const vec3_t mins, const vec3_t maxs,
-                              float fraction);
+qboolean CM_TraceWorkIntersectsBounds(const traceWork_t *traceWork, const vec3_t mins, const vec3_t maxs);
+qboolean CM_TraceLineSkipsBox(const vec3_t start, const vec3_t end, const vec3_t mins, const vec3_t maxs, float fraction);
 
 #ifdef __cplusplus
 }

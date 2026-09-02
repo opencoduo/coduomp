@@ -54,16 +54,14 @@
 
 #define SINCOS_HIGH_EXPONENT_MASK 0x7ff00000u
 #define SINCOS_HIGH_MANTISSA_MASK 0x000fffffu
-#define SINCOS_CONTROL_WORD       0x027fu /* ds:0x200a1778 -- PC = 53-bit */
+#define SINCOS_CONTROL_WORD 0x027fu /* ds:0x200a1778 -- PC = 53-bit */
 
 #if !EMULATE_X87
 /* TBYTE ds:0x200a177a — pi * 2^62, built from the stock bytes so it is exact. */
 static const union {
     unsigned char raw[sizeof(long double)];
     long double value;
-} kSinCosReduction = {
-    { 0x35, 0xc2, 0x68, 0x21, 0xa2, 0xda, 0x0f, 0xc9, 0x3e, 0x40 }
-};
+} kSinCosReduction = {{0x35, 0xc2, 0x68, 0x21, 0xa2, 0xda, 0x0f, 0xc9, 0x3e, 0x40}};
 
 static uint32_t SinCosHighDword(double value)
 {

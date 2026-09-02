@@ -9,12 +9,8 @@
 extern "C" {
 #endif
 
-void CM_TraceThroughPatch(
-    traceWork_t *traceWork,
-    const collisionTerrainPatch_t *terrainPatch);
-qboolean CM_SightTraceThroughPatch(
-    const traceWork_t *traceWork,
-    const collisionTerrainPatch_t *terrainPatch);
+void CM_TraceThroughPatch(traceWork_t *traceWork, const collisionTerrainPatch_t *terrainPatch);
+qboolean CM_SightTraceThroughPatch(const traceWork_t *traceWork, const collisionTerrainPatch_t *terrainPatch);
 
 #ifdef __cplusplus
 }

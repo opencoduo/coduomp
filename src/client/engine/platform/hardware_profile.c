@@ -15,8 +15,7 @@ qboolean coduomp_is_apple_silicon(void)
     int arm64Capable = 0;
     size_t valueSize = sizeof(arm64Capable);
 
-    if (sysctlbyname("hw.optional.arm64", &arm64Capable, &valueSize,
-                     NULL, 0) == 0) {
+    if (sysctlbyname("hw.optional.arm64", &arm64Capable, &valueSize, NULL, 0) == 0) {
         return arm64Capable != 0 ? qtrue : qfalse;
     }
 #if defined(__aarch64__) || defined(__arm64__)

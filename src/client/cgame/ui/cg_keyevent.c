@@ -53,9 +53,8 @@ qboolean CG_KeyEvent(int32_t key, qboolean down)
         if (cg_scoreboardScrollPos > 0) {
             /* 0x300327cc is a target dword SUB. Windows/i386 MSVC preserves
              * modulo-2^32 arithmetic even when the signed result wraps. */
-            cg_scoreboardScrollPos = coduo_int32_from_bits(
-                (uint32_t)cg_scoreboardScrollPos -
-                (uint32_t)cg_scoreboardScrollStep_vmCvar.integer);
+            cg_scoreboardScrollPos =
+                coduo_int32_from_bits((uint32_t)cg_scoreboardScrollPos - (uint32_t)cg_scoreboardScrollStep_vmCvar.integer);
             /* 0x300327d7: JNS -> clamp a negative result up to the top line. */
             if (cg_scoreboardScrollPos < 0) {
                 cg_scoreboardScrollPos = 0;

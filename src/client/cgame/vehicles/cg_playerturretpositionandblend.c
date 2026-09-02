@@ -58,17 +58,14 @@ _Static_assert(offsetof(centity_t, currentState.number) == 0x00, "player.current
 _Static_assert(offsetof(centity_t, currentState.vehicleEntityNum) == 0x74, "player.currentState.vehicleEntityNum +0x74");
 _Static_assert(offsetof(centity_t, currentState.clientNum) == 0x94, "player.currentState.clientNum +0x94");
 _Static_assert(offsetof(centity_t, currentState.weapon) == 0xcc, "vehicle.currentState.weapon +0xcc");
-_Static_assert(offsetof(centity_t, currentValid) == 0x1e8,
-               "vehicle.currentValid +0x1e8");
+_Static_assert(offsetof(centity_t, currentValid) == 0x1e8, "vehicle.currentValid +0x1e8");
 _Static_assert(offsetof(centity_t, lerpOrigin) == 0x208, "player/vehicle.lerpOrigin +0x208");
 _Static_assert(offsetof(centity_t, lerpAngles) == 0x214, "player/vehicle.lerpAngles +0x214");
 _Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "animState.infoValid +0x00");
 #if UINTPTR_MAX == 0xFFFFFFFFu
 _Static_assert(offsetof(clientInfo_t, legsAnimWord) == 0x390, "animState.legsAnimWord +0x390");
-_Static_assert(offsetof(clientInfo_t, legsAnimEntryWord) == 0x394,
-               "animState.legsAnimEntryWord +0x394");
-_Static_assert(offsetof(clientInfo_t, animTree) == 0x4c4,
-               "animState.animTree +0x4c4");
+_Static_assert(offsetof(clientInfo_t, legsAnimEntryWord) == 0x394, "animState.legsAnimEntryWord +0x394");
+_Static_assert(offsetof(clientInfo_t, animTree) == 0x4c4, "animState.animTree +0x4c4");
 #endif
 /* weaponInfo_t carries pointer fields (name/gunModel/...), so its offsets only match
  * the target ABI at 32-bit pointer width; guard these to be a no-op on the host. */
@@ -78,12 +75,16 @@ _Static_assert(offsetof(weaponInfo_t, animHorRotateInc) == 0x48c, "weaponInfo_t.
 
 /* Vehicle-owner gate: the manning vehicle must be a non-client entity (>= 0x40) and
  * not the 10-bit "none" sentinel. Proven at 0x30033b7e/0x30033b87. */
-enum { CG_TURRET_FIRST_VEHICLE_ENTITYNUM = MAX_CLIENTS_IN_SNAPSHOT };
+enum {
+    CG_TURRET_FIRST_VEHICLE_ENTITYNUM = MAX_CLIENTS_IN_SNAPSHOT
+};
 
 /* cg_debuganim_vmCvar.integer (0x3052efec) exact verbosity at which the blended
  * barrel angles are NOT written back (a debug freeze). Proven at 0x30034323
  * (CMP,0x5; JZ skip). */
-enum { CG_ANIMDEBUG_FREEZE_TURRET = 5 };
+enum {
+    CG_ANIMDEBUG_FREEZE_TURRET = 5
+};
 
 /* World content mask CG_Trace is issued with at 0x30034392
  * (MOV EAX,0x2810011). Same value the flame damage trace uses. */
@@ -110,8 +111,7 @@ enum { CG_ANIMDEBUG_FREEZE_TURRET = 5 };
  * i.e. the reciprocal of the frame-scaled magnitude, or 0 when the magnitude is 0.
  * The two float inputs stay separate so their subtraction remains an unrounded
  * x87 value just as it does in the original clusters. */
-static CG_TURRET_COMPAT_ALWAYS_INLINE float
-cgame_compat_turret_blend_step(float sample, float reference)
+static CG_TURRET_COMPAT_ALWAYS_INLINE float cgame_compat_turret_blend_step(float sample, float reference)
 {
     long double delta = (long double)sample - (long double)reference;
     long double magnitude = __builtin_fabsl(delta);
@@ -124,18 +124,18 @@ cgame_compat_turret_blend_step(float sample, float reference)
 
 void CG_PlayerTurretPositionAndBlend(centity_t *player)
 {
-    int32_t              vehicleEntityNum;
+    int32_t vehicleEntityNum;
     clientInfo_t *animState;
     const bg_static_animation_t *legsAnimEntry;
-    centity_t      *vehicle;      /* the turret vehicle centity */
-    struct DObj_s       *turretSelf;   /* DObj pointer: trap(0xa5, vehicle->currentState.number) */
-    DObjSkelMat         *weaponMatrix; /* "tag_weapon" world skeleton matrix */
-    weaponInfo_t          *weapInfo;     /* bg_weaponInfos[vehicle->currentState.weapon] */
-    XAnimTree           *animTree;     /* animState->animTree (self for XAnim traps) */
-    uint16_t             turretFlags;  /* animState->legsAnimWord & 0xfdff */
-    uint16_t             treeHandle;   /* Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle) */
+    centity_t *vehicle;      /* the turret vehicle centity */
+    struct DObj_s *turretSelf;   /* DObj pointer: trap(0xa5, vehicle->currentState.number) */
+    DObjSkelMat *weaponMatrix; /* "tag_weapon" world skeleton matrix */
+    weaponInfo_t *weapInfo;     /* bg_weaponInfos[vehicle->currentState.weapon] */
+    XAnimTree *animTree;     /* animState->animTree (self for XAnim traps) */
+    uint16_t turretFlags;  /* animState->legsAnimWord & 0xfdff */
+    uint16_t treeHandle;   /* Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle) */
 
-    float   weaponYaw;       /* vectosignedyaw(weaponMatrix forward) — tag_weapon yaw */
+    float weaponYaw;       /* vectosignedyaw(weaponMatrix forward) — tag_weapon yaw */
     /* aimTransform is one contiguous 4-row frame matrix at [ESP+0x80] (slot 0x7c):
      *   rows[0..2] = AnglesToAxisNegRight(vehicle->lerpAngles)  (the aim basis)
      *   rows[3]    = vehicle->lerpOrigin (dword copies at 0x30033cab/cbf/ccd);
@@ -146,13 +146,12 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
      * translation row in the writeback (0x3004a9bf FADD [rhs+0x24]), so the two must
      * share one 0x30-byte object. */
     matrix43_t aimTransform;
-    float   aimAlongUp;      /* dot(player-vehicle lerpOrigin delta, rows[2]) */
+    float aimAlongUp;      /* dot(player-vehicle lerpOrigin delta, rows[2]) */
 
     vehicleEntityNum = player->currentState.vehicleEntityNum;
 
     /* Gate 1: the vehicle owner must be a real (non-client, non-sentinel) entity. */
-    if (vehicleEntityNum < CG_TURRET_FIRST_VEHICLE_ENTITYNUM ||
-        vehicleEntityNum == ENTITYNUM_NONE) {
+    if (vehicleEntityNum < CG_TURRET_FIRST_VEHICLE_ENTITYNUM || vehicleEntityNum == ENTITYNUM_NONE) {
         return;
     }
 
@@ -160,7 +159,8 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
     const int32_t clientNum = player->currentState.clientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_PlayerTurretPositionAndBlend: "
+                  "\x15"
+                  "CG_PlayerTurretPositionAndBlend: "
                   "invalid client number %i",
                   clientNum);
         return;
@@ -176,8 +176,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
     if (animState->legsAnimWord == 0) {
         return;
     }
-    legsAnimEntry =
-        cgame_compat_anim_entry_from_word(animState->legsAnimEntryWord);
+    legsAnimEntry = cgame_compat_anim_entry_from_word(animState->legsAnimEntryWord);
     if (legsAnimEntry == NULL) {
         return;
     }
@@ -194,15 +193,13 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
     }
 
     /* self = trap(0xa5, vehicle->currentState.number) — the DObj handle for tag resolution. */
-    turretSelf = (struct DObj_s *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
+    turretSelf = (struct DObj_s *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, vehicle->currentState.number);
     if (turretSelf == NULL) {
         return;
     }
 
     /* Resolve the "tag_weapon" bone/world matrix on the vehicle DObj. */
-    weaponMatrix = CG_DObjGetEntityBoneMatrix(turretSelf, "tag_weapon",
-                                              (centity_t *)vehicle);
+    weaponMatrix = CG_DObjGetEntityBoneMatrix(turretSelf, "tag_weapon", (centity_t *)vehicle);
     if (weaponMatrix == NULL) {
         /* WARNING: aborting player positioning on turret since 'tag_weapon' does not
          * exist (0x30079a28). Early return. */
@@ -213,29 +210,25 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     {
         const int32_t weaponIndex = vehicle->currentState.weapon;
-        if (weaponIndex <= 0 || weaponIndex > bg_numWeapons ||
-            (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
+        if (weaponIndex <= 0 || weaponIndex > bg_numWeapons || (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
             bg_weaponInfos[weaponIndex] == NULL) {
-            Com_Printf(
-                "WARNING: CG_PlayerTurretPositionAndBlend: "
-                "invalid weapon index %i\n",
-                weaponIndex);
+            Com_Printf("WARNING: CG_PlayerTurretPositionAndBlend: "
+                       "invalid weapon index %i\n",
+                       weaponIndex);
             return;
         }
         weapInfo = bg_weaponInfos[weaponIndex];
     }
 
     /* Convert the MP anim-tree object to its engine index (only AX is kept). */
-    treeHandle =
-        (uint16_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle);
+    treeHandle = (uint16_t)Scr_GetAnimsIndex(bgs.animationTable.animTreeHandle);
 
     /* Runtime tree used by every XAnim trap in the walk. */
     animTree = animState->animTree;
 
     /* Masked animation word forwarded as trap_XAnimSetGoalWeight's `flags` arg:
      * ANIM_TOGGLEBIT is cleared by AND 0xfdff at 0x30033c6c. */
-    turretFlags = (uint16_t)(animState->legsAnimWord &
-                             (uint16_t)~ANIM_TOGGLEBIT);
+    turretFlags = (uint16_t)(animState->legsAnimWord & (uint16_t)~ANIM_TOGGLEBIT);
 
     /* weaponYaw = yaw of the tag_weapon forward vector (matrix[0],matrix[1]). */
     weaponYaw = vectosignedyaw(weaponMatrix->axis[0]);
@@ -265,12 +258,9 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
          * (FLD/FSUB @0x30033cb9..0x30033ceb) and feed the dot product from
          * registers, with a single FSTP @0x30033d11 — they are NOT rounded to
          * float slots, so no float temporaries here. */
-        long double dx = (long double)player->lerpOrigin[0]
-                       - (long double)vehicle->lerpOrigin[0];
-        long double dy = (long double)player->lerpOrigin[1]
-                       - (long double)vehicle->lerpOrigin[1];
-        long double dz = (long double)player->lerpOrigin[2]
-                       - (long double)vehicle->lerpOrigin[2];
+        long double dx = (long double)player->lerpOrigin[0] - (long double)vehicle->lerpOrigin[0];
+        long double dy = (long double)player->lerpOrigin[1] - (long double)vehicle->lerpOrigin[1];
+        long double dz = (long double)player->lerpOrigin[2] - (long double)vehicle->lerpOrigin[2];
         long double dot = dz * (long double)aimTransform.axis[2][2];
         dot = dot + dy * (long double)aimTransform.axis[2][1];
         dot = dot + dx * (long double)aimTransform.axis[2][0];
@@ -304,38 +294,35 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
      * forwards their raw dword payloads, matching the machine's PUSHes.
      */
     {
-        int32_t  rootNodePacked;    /* (treeHandle<<16)|turretFlags — walk root */
-        int32_t  rootChildCount;    /* trap_XAnimGetNumChildren(rootNodePacked) */
-        int32_t  childIndex;        /* loop counter over root's children */
-        int32_t  childPacked;       /* current child node handle (packed) */
-        int32_t  childCount;        /* trap_XAnimGetNumChildren(childPacked) */
-        int32_t  levelIndex;        /* integer bracket index within the child */
-        int32_t  grandChild0;       /* bracketing grandchild (packed) */
-        int32_t  grandChild1;       /* adjacent grandchild for the fractional split */
-        float    targetAlongUp;     /* s_10: aimAlongUp - weaponMatrix->translationZ */
+        int32_t rootNodePacked;    /* (treeHandle<<16)|turretFlags — walk root */
+        int32_t rootChildCount;    /* trap_XAnimGetNumChildren(rootNodePacked) */
+        int32_t childIndex;        /* loop counter over root's children */
+        int32_t childPacked;       /* current child node handle (packed) */
+        int32_t childCount;        /* trap_XAnimGetNumChildren(childPacked) */
+        int32_t levelIndex;        /* integer bracket index within the child */
+        int32_t grandChild0;       /* bracketing grandchild (packed) */
+        int32_t grandChild1;       /* adjacent grandchild for the fractional split */
+        float targetAlongUp;     /* s_10: aimAlongUp - weaponMatrix->translationZ */
         long double bracketPos;     /* unspilled x87 bracket position within the child */
-        float    frac;              /* fractional remainder bracketPos - levelIndex */
-        float    matchedAlongUp;    /* s_20: along-up value of the last bracketing child */
-        float    matchedFrac;       /* s_28: `frac` carried from the last bracketing child.
+        float frac;              /* fractional remainder bracketPos - levelIndex */
+        float matchedAlongUp;    /* s_20: along-up value of the last bracketing child */
+        float matchedFrac;       /* s_28: `frac` carried from the last bracketing child.
                                      * The machine stores frac's raw float bits here (FSUB'd
                                      * as a float downstream in the H/I refinement), NOT an
                                      * integer child index. */
-        int32_t  matchedLevelIndex; /* s_34: levelIndex of the bracketing child */
-        float    moveDelta[3];      /* s_44: trap 0x9d movement output (Z tests aim) */
-        float    rotationDelta[3];  /* s_5c: trap 0x9d rotation vec2 in a 3-float slot */
-        float    nodeSample;        /* trap_XAnimGetWeight bone-value sample */
-        float    blendStep;         /* per-node rate-limited blend result */
+        int32_t matchedLevelIndex; /* s_34: levelIndex of the bracketing child */
+        float moveDelta[3];      /* s_44: trap 0x9d movement output (Z tests aim) */
+        float rotationDelta[3];  /* s_5c: trap 0x9d rotation vec2 in a 3-float slot */
+        float nodeSample;        /* trap_XAnimGetWeight bone-value sample */
+        float blendStep;         /* per-node rate-limited blend result */
 
         /* rootNodePacked = high:treeHandle, low:turretFlags (one packed dword). */
-        rootNodePacked = coduo_int32_from_bits(
-            ((uint32_t)treeHandle << SCR_ANIM_TREE_INDEX_SHIFT) |
-            (uint32_t)turretFlags);
+        rootNodePacked = coduo_int32_from_bits(((uint32_t)treeHandle << SCR_ANIM_TREE_INDEX_SHIFT) | (uint32_t)turretFlags);
 
         /* targetAlongUp = aimAlongUp - weaponMatrix row-3 Z (FLD s_40 / FSUB
          * [weaponMatrix+0x38]). The machine stores the pure dot to s_40 first,
          * then subtracts the matrix Z once and spills this target as binary32. */
-        targetAlongUp = (float)((long double)aimAlongUp -
-                                (long double)weaponMatrix->origin[2]);
+        targetAlongUp = (float)((long double)aimAlongUp - (long double)weaponMatrix->origin[2]);
 
         /* Reset the root node, then count its children. */
         trap_XAnimClearTreeGoalWeightsStrict(animTree, rootNodePacked, 0.0f);
@@ -344,15 +331,13 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
         /* Loop-carried bookkeeping seeded to zero (the zero stores at
          * 0x30033d3f..0x30033d50: matchedAlongUp, matchedFrac, matchedLevelIndex,
          * and the grandChild1 word slot). */
-        matchedAlongUp    = 0.0f;
-        matchedFrac       = 0.0f;
+        matchedAlongUp = 0.0f;
+        matchedFrac = 0.0f;
         matchedLevelIndex = 0;
-        grandChild1       = 0;
+        grandChild1 = 0;
 
         if (rootChildCount == 0) {
-            Com_Error(1, "\x15Player anim '%s' has no children",
-                               trap_XAnimGetAnimName(
-                                   (uint32_t)rootNodePacked));
+            Com_Error(1, "\x15Player anim '%s' has no children", trap_XAnimGetAnimName((uint32_t)rootNodePacked));
         }
 
         childIndex = 0;
@@ -361,14 +346,11 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
             childPacked = trap_XAnimGetChildAt((uint32_t)rootNodePacked, childIndex);
 
             /* Reset the child transform to identity (weights 1,1,1). */
-            trap_XAnimSetGoalWeight(animTree, childPacked,
-                                    1.0f, 1.0f, 1.0f, 0, qfalse);
+            trap_XAnimSetGoalWeight(animTree, childPacked, 1.0f, 1.0f, 1.0f, 0, qfalse);
 
             childCount = trap_XAnimGetNumChildren((uint32_t)childPacked);
             if (childCount == 0) {
-                Com_Error(1, "\x15Player anim '%s' has no children",
-                                   trap_XAnimGetAnimName(
-                                       (uint32_t)childPacked));
+                Com_Error(1, "\x15Player anim '%s' has no children", trap_XAnimGetAnimName((uint32_t)childPacked));
             }
 
             /* bracketPos = childCount*0.5 - weaponYaw/animHorRotateInc, clamped to
@@ -376,16 +358,13 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              * childCount; FMUL 0.5 (0x3007bce8); FLD weaponYaw; FDIV
              * [weapInfo+0x48c]; FSUBP ST(1),ST0 (bytes de e9: ST1 <- ST1 - ST0) —
              * the half-count is the MINUEND. */
-            bracketPos = (long double)childCount * 0.5f
-                       - ((long double)weaponYaw /
-                          (long double)weapInfo->animHorRotateInc);
+            bracketPos = (long double)childCount * 0.5f - ((long double)weaponYaw / (long double)weapInfo->animHorRotateInc);
             /* 0x30033de7..0x30033dfc clamps only ordered-negative values;
              * ordered zero and unordered values stay on the original ST0 path. */
             if (bracketPos < 0.0L) {
                 bracketPos = 0.0L;
             } else {
-                int32_t lastChild =
-                    coduo_int32_from_bits((uint32_t)childCount - 1u);
+                int32_t lastChild = coduo_int32_from_bits((uint32_t)childCount - 1u);
                 float lastChildAsFloat = (float)lastChild;
                 if (bracketPos >= (long double)lastChildAsFloat) {
                     bracketPos = (long double)lastChildAsFloat;
@@ -399,22 +378,16 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
 
             /* Weight the bracketing grandchild by (1 - frac). */
             grandChild0 = trap_XAnimGetChildAt((uint32_t)childPacked, levelIndex);
-            trap_XAnimSetGoalWeight(animTree, grandChild0,
-                                    1.0f - frac, 1.0f, 1.0f, 0, qfalse);
+            trap_XAnimSetGoalWeight(animTree, grandChild0, 1.0f - frac, 1.0f, 1.0f, 0, qfalse);
 
             /* When frac != 0, weight the adjacent grandchild by frac. */
             if (frac != 0.0f) {
-                grandChild1 = trap_XAnimGetChildAt(
-                    (uint32_t)childPacked,
-                    coduo_int32_from_bits((uint32_t)levelIndex + 1u));
-                trap_XAnimSetGoalWeight(animTree, grandChild1,
-                                        frac, 1.0f, 1.0f, 0, qfalse);
+                grandChild1 = trap_XAnimGetChildAt((uint32_t)childPacked, coduo_int32_from_bits((uint32_t)levelIndex + 1u));
+                trap_XAnimSetGoalWeight(animTree, grandChild1, frac, 1.0f, 1.0f, 0, qfalse);
             }
 
             /* Sample this child's absolute XAnim rotation/movement delta. */
-            (void)cgame_syscall(CG_XANIM_CALC_ABS_DELTA, (intptr_t)animTree,
-                                (uint16_t)childPacked,
-                                rotationDelta, moveDelta);
+            (void)cgame_syscall(CG_XANIM_CALC_ABS_DELTA, (intptr_t)animTree, (uint16_t)childPacked, rotationDelta, moveDelta);
 
             /* If the child's along-up (movement Z) is still below the target,
              * record it as the current bracket and advance; else it brackets.
@@ -429,8 +402,8 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              * JZ exit — the record-and-continue leg fires on C0, i.e. on
              * less-than OR unordered; `!(a >= b)` preserves the NaN behavior. */
             if (!(moveDelta[2] >= targetAlongUp)) {
-                matchedFrac       = frac;
-                matchedAlongUp    = moveDelta[2];
+                matchedFrac = frac;
+                matchedAlongUp = moveDelta[2];
                 matchedLevelIndex = levelIndex;
                 childIndex = coduo_int32_from_bits((uint32_t)childIndex + 1u);
                 if (childIndex < rootChildCount) {
@@ -471,8 +444,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
          *   trap_XAnimSetGoalWeight(dObj, grandChild0, w0=1.0f-frac, w1=step, w2=1.0f) */
         nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)grandChild0);
         blendStep = cgame_compat_turret_blend_step(nodeSample, 1.0f - frac);
-        trap_XAnimSetGoalWeight(animTree, grandChild0,
-                                1.0f - frac, blendStep, 1.0f, 0, qfalse);
+        trap_XAnimSetGoalWeight(animTree, grandChild0, 1.0f - frac, blendStep, 1.0f, 0, qfalse);
 
         /* Cluster E (0x30033f8d..0x30033fef): only when frac is non-zero (FUCOMPP
          * frac vs 0.0 at 0x30033f7d(FLD s_14)..0x30033f8b, jnp skips) — i.e. the
@@ -484,8 +456,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
         if (frac != 0.0f) {
             nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)grandChild1);
             blendStep = cgame_compat_turret_blend_step(nodeSample, frac);
-            trap_XAnimSetGoalWeight(animTree, grandChild1,
-                                    frac, blendStep, 1.0f, 0, qfalse);
+            trap_XAnimSetGoalWeight(animTree, grandChild1, frac, blendStep, 1.0f, 0, qfalse);
         }
 
         /* Branch (0x30033ff2..0x30034002): interior childIndex → clusters F..I;
@@ -494,14 +465,13 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
             int32_t child2;      /* trap_XAnimGetChildAt(rootNodePacked, childIndex-1) — EDI */
             int32_t grandChildH; /* trap_XAnimGetChildAt(child2, matchedLevelIndex) — EBX */
             int32_t grandChildI; /* trap_XAnimGetChildAt(child2, matchedLevelIndex+1) — EDI */
-            float   factor;      /* along-up interpolation factor between brackets */
+            float factor;      /* along-up interpolation factor between brackets */
 
             /* factor = (targetAlongUp - matchedAlongUp) / (moveDelta[2] - matchedAlongUp)
              * (0x30034008..0x3003401d). moveDelta[2] is the last bracketing child's
              * along-up sample. */
-            factor = (float)(
-                ((long double)targetAlongUp - (long double)matchedAlongUp) /
-                ((long double)moveDelta[2] - (long double)matchedAlongUp));
+            factor = (float)(((long double)targetAlongUp - (long double)matchedAlongUp) /
+                             ((long double)moveDelta[2] - (long double)matchedAlongUp));
 
             /* Cluster F (0x30034008..0x3003407b): re-weight the last child node by
              * `factor`, blended by its per-frame step.
@@ -510,8 +480,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              *   trap_XAnimSetGoalWeight(dObj, childPacked, w0=factor, w1=step, w2=1.0f) */
             nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)childPacked);
             blendStep = cgame_compat_turret_blend_step(nodeSample, factor);
-            trap_XAnimSetGoalWeight(animTree, childPacked,
-                                    factor, blendStep, 1.0f, 0, qfalse);
+            trap_XAnimSetGoalWeight(animTree, childPacked, factor, blendStep, 1.0f, 0, qfalse);
 
             /* Cluster G (0x3003407c..0x300340f6): child2 = the (childIndex-1)'th
              * child of the ROOT node; re-weight it by (1.0f - factor).
@@ -519,13 +488,10 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              *   sample = trap_XAnimGetWeight(child2)
              *   step   = CG_TurretBlendStep(sample - (1.0f - factor))
              *   trap_XAnimSetGoalWeight(dObj, child2, w0=1.0f-factor, w1=step, w2=1.0f) */
-            child2 = trap_XAnimGetChildAt(
-                (uint32_t)rootNodePacked,
-                coduo_int32_from_bits((uint32_t)childIndex - 1u));
+            child2 = trap_XAnimGetChildAt((uint32_t)rootNodePacked, coduo_int32_from_bits((uint32_t)childIndex - 1u));
             nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)child2);
             blendStep = cgame_compat_turret_blend_step(nodeSample, 1.0f - factor);
-            trap_XAnimSetGoalWeight(animTree, child2,
-                                    1.0f - factor, blendStep, 1.0f, 0, qfalse);
+            trap_XAnimSetGoalWeight(animTree, child2, 1.0f - factor, blendStep, 1.0f, 0, qfalse);
 
             /* Cluster H (0x300340f7..0x3003416e): grandChildH = the
              * matchedLevelIndex'th child of child2; re-weight it by
@@ -535,12 +501,9 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              *   step        = CG_TurretBlendStep(sample - (1.0f - matchedFrac))
              *   trap_XAnimSetGoalWeight(dObj, grandChildH, w0=1.0f-matchedFrac, w1=step, w2=1.0f) */
             grandChildH = trap_XAnimGetChildAt((uint32_t)child2, matchedLevelIndex);
-            nodeSample  = trap_XAnimGetWeight(animTree, (uint16_t)grandChildH);
-            blendStep = cgame_compat_turret_blend_step(
-                nodeSample, 1.0f - matchedFrac);
-            trap_XAnimSetGoalWeight(animTree, grandChildH,
-                                    1.0f - matchedFrac, blendStep,
-                                    1.0f, 0, qfalse);
+            nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)grandChildH);
+            blendStep = cgame_compat_turret_blend_step(nodeSample, 1.0f - matchedFrac);
+            trap_XAnimSetGoalWeight(animTree, grandChildH, 1.0f - matchedFrac, blendStep, 1.0f, 0, qfalse);
 
             /* Cluster I (0x30034189..0x300341eb, merges into the trap_XAnimSetGoalWeight tail at
              * 0x30034275): only when matchedFrac != 0.0f (FUCOMPP matchedFrac vs 0.0
@@ -552,14 +515,10 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              *   step        = CG_TurretBlendStep(sample - matchedFrac)
              *   trap_XAnimSetGoalWeight(dObj, grandChildI, w0=matchedFrac, w1=step, w2=1.0f) */
             if (matchedFrac != 0.0f) {
-                grandChildI = trap_XAnimGetChildAt(
-                    (uint32_t)child2,
-                    coduo_int32_from_bits((uint32_t)matchedLevelIndex + 1u));
-                nodeSample  = trap_XAnimGetWeight(animTree, (uint16_t)grandChildI);
+                grandChildI = trap_XAnimGetChildAt((uint32_t)child2, coduo_int32_from_bits((uint32_t)matchedLevelIndex + 1u));
+                nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)grandChildI);
                 blendStep = cgame_compat_turret_blend_step(nodeSample, matchedFrac);
-                trap_XAnimSetGoalWeight(animTree, grandChildI,
-                                        matchedFrac, blendStep,
-                                        1.0f, 0, qfalse);
+                trap_XAnimSetGoalWeight(animTree, grandChildI, matchedFrac, blendStep, 1.0f, 0, qfalse);
             }
         } else {
             /*
@@ -570,8 +529,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
              *   sample = trap_XAnimGetWeight(childPacked)
              *   step   = CG_TurretBlendStep(sample - 1.0f)
              *   trap_XAnimSetGoalWeight(dObj, childPacked, w0=1.0f, w1=step, w2=1.0f) */
-            if (CG_DObjGetEntityBoneMatrix(turretSelf, "tag_aim",
-                                           (centity_t *)vehicle) == NULL) {
+            if (CG_DObjGetEntityBoneMatrix(turretSelf, "tag_aim", (centity_t *)vehicle) == NULL) {
                 Com_Printf("WARNING: aborting player positioning on turret since "
                            "'tag_aim' does not exist\n");
                 return;
@@ -579,8 +537,7 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
 
             nodeSample = trap_XAnimGetWeight(animTree, (uint16_t)childPacked);
             blendStep = cgame_compat_turret_blend_step(nodeSample, 1.0f);
-            trap_XAnimSetGoalWeight(animTree, childPacked,
-                                    1.0f, blendStep, 1.0f, 0, qfalse);
+            trap_XAnimSetGoalWeight(animTree, childPacked, 1.0f, blendStep, 1.0f, 0, qfalse);
         }
 
         /*
@@ -591,21 +548,19 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
          * the blended barrel angles/origin back into the player centity.
          */
         {
-            float   rootMoveDelta[3]; /* s_44 out-buffer (0x9d arg4): RotatePoint2D'd
+            float rootMoveDelta[3]; /* s_44 out-buffer (0x9d arg4): RotatePoint2D'd
                                        * to a position, then + tag_weapon translation */
-            float   rootRotationDelta[3]; /* s_5c out-buffer (0x9d arg3): its
+            float rootRotationDelta[3]; /* s_5c out-buffer (0x9d arg3): its
                                             * leading vec2 is fed to RotationToYaw */
             matrix43_t barrelAxis; /* s_dc: YawToAxis basis + barrelOrigin */
             matrix43_t composedAxis; /* s_ac: MatrixMultiply43(barrelAxis, aimTransform) */
-            float   barrelYaw;
-            vec3_t  traceStart;    /* s_70: composed translation row (barrel origin) */
-            vec3_t  traceEnd;      /* s_64: (T0, T1, vehicle->lerpOrigin[2]) */
+            float barrelYaw;
+            vec3_t traceStart;    /* s_70: composed translation row (barrel origin) */
+            vec3_t traceEnd;      /* s_64: (T0, T1, vehicle->lerpOrigin[2]) */
             trace_t traceOut;   /* s_dc trace out-buffer */
 
             /* Read the root node's absolute rotation/movement delta. */
-            (void)cgame_syscall(CG_XANIM_CALC_ABS_DELTA, (intptr_t)animTree,
-                                (uint16_t)rootNodePacked,
-                                rootRotationDelta, rootMoveDelta);
+            (void)cgame_syscall(CG_XANIM_CALC_ABS_DELTA, (intptr_t)animTree, (uint16_t)rootNodePacked, rootRotationDelta, rootMoveDelta);
 
             /* Rotate the s_44 buffer's XY by weaponYaw, then offset by the tag_weapon
              * world translation → the barrel world origin XY. The Z of the barrel
@@ -645,12 +600,10 @@ void CG_PlayerTurretPositionAndBlend(centity_t *player)
             traceStart[0] = composedAxis.origin[0];
             traceStart[1] = composedAxis.origin[1];
             traceStart[2] = composedAxis.origin[2];
-            traceEnd[0]   = composedAxis.origin[0];
-            traceEnd[1]   = composedAxis.origin[1];
-            traceEnd[2]   = vehicle->lerpOrigin[2];
-            CG_Trace((int32_t)CG_TURRET_TRACE_CONTENTMASK, traceStart, 0,
-                               &traceOut, traceEnd, 0,
-                               player->currentState.number);
+            traceEnd[0] = composedAxis.origin[0];
+            traceEnd[1] = composedAxis.origin[1];
+            traceEnd[2] = vehicle->lerpOrigin[2];
+            CG_Trace((int32_t)CG_TURRET_TRACE_CONTENTMASK, traceStart, 0, &traceOut, traceEnd, 0, player->currentState.number);
             if (traceOut.fraction < 1.0f) {
                 /* MOV EAX,[traceOut+0xc]; MOV [player+0x210],EAX — a raw dword copy
                  * of traceOut.endpos[2] (the clipped endpoint Z) into lerpOrigin[2]. */

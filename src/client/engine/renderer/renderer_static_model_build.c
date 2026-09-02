@@ -16,23 +16,19 @@ enum {
  * R_SetupDObjToStaticModel. The Windows body proves both optimization gates,
  * the first DObj model as owner, and the single allocation containing the
  * variable LOD-pointer array followed by the copied registration name. */
-renderer_registered_static_model_t *R_SetupDObjToStaticModel(
-    const char *name, const DObj *obj)
+renderer_registered_static_model_t *R_SetupDObjToStaticModel(const char *name, const DObj *obj)
 {
     XModel *model = NULL;
     int32_t lodCount = 0;
 
-    if (r_optimizeBackend->integer != 0 &&
-        r_optimizeXModels->integer != 0) {
+    if (r_optimizeBackend->integer != 0 && r_optimizeXModels->integer != 0) {
         model = obj->models[0];
         lodCount = model->info->lodCount;
     }
 
     const size_t nameBytes = strlen(name) + 1U;
-    renderer_registered_static_model_t *staticModel = ri.Hunk_Alloc(
-        sizeof(*staticModel) +
-        (size_t)lodCount * sizeof(staticModel->lods[0]) +
-        nameBytes);
+    renderer_registered_static_model_t *staticModel =
+        ri.Hunk_Alloc(sizeof(*staticModel) + (size_t)lodCount * sizeof(staticModel->lods[0]) + nameBytes);
     char *nameStorage = (char *)&staticModel->lods[lodCount];
 
     staticModel->name = nameStorage;
@@ -48,14 +44,11 @@ renderer_registered_static_model_t *R_SetupDObjToStaticModel(
  * R_FinishDObjToStaticModel. Windows proves surface discovery, shader-based
  * grouping, packed geometry allocation, DObj base-pose selection, index
  * rebasing, texture-sheet remapping, and backend optimizer priority. */
-void R_FinishDObjToStaticModel(
-    renderer_registered_static_model_t *staticModel, const DObj *obj)
+void R_FinishDObjToStaticModel(renderer_registered_static_model_t *staticModel, const DObj *obj)
 {
     int32_t lodIndices[DOBJ_MAX_MODELS] = {0};
 
-    for (int32_t lodIndex = 0;
-         lodIndex < staticModel->model->info->lodCount;
-         ++lodIndex) {
+    for (int32_t lodIndex = 0; lodIndex < staticModel->model->info->lodCount; ++lodIndex) {
         dobj_surface_ref_t surfaceRefs[R_STATIC_MODEL_MAX_SOURCE_SURFACES];
         uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
         shader_t *sourceShaders[R_STATIC_MODEL_MAX_SOURCE_SURFACES];
@@ -66,30 +59,20 @@ void R_FinishDObjToStaticModel(
         int32_t groupCount = 0;
 
         lodIndices[0] = lodIndex;
-        const int32_t sourceSurfaceCount =
-            DObjGetNumSurfaces(obj, lodIndices);
+        const int32_t sourceSurfaceCount = DObjGetNumSurfaces(obj, lodIndices);
         if (sourceSurfaceCount > R_STATIC_MODEL_MAX_SOURCE_SURFACES) {
-            ri.Error(
-                ERR_DROP,
-                "\x15model '%s' has %i surfaces, which is more than %i\n",
-                staticModel->name, sourceSurfaceCount,
-                R_STATIC_MODEL_MAX_SOURCE_SURFACES);
+            ri.Error(ERR_DROP, "\x15model '%s' has %i surfaces, which is more than %i\n", staticModel->name, sourceSurfaceCount,
+                     R_STATIC_MODEL_MAX_SOURCE_SURFACES);
         }
 
         DObjGetSurfaces(obj, surfaceRefs, partBits, lodIndices);
 
-        for (int32_t refIndex = 0;
-             refIndex < sourceSurfaceCount; ++refIndex) {
+        for (int32_t refIndex = 0; refIndex < sourceSurfaceCount; ++refIndex) {
             const dobj_surface_ref_t *ref = &surfaceRefs[refIndex];
-            XSurface *sourceSurface = DObjGetSurface(
-                obj, ref->modelIndex, ref->surfaceIndex, lodIndices);
-            const char *surfaceName = DObjGetSurfaceName(
-                obj, (uint8_t)ref->modelIndex, ref->surfaceIndex,
-                lodIndices);
-            shader_t *sourceShader = R_FindShader(
-                va("skins/%s", surfaceName),
-                R_STATIC_MODEL_LIGHTMAP_MODE, qtrue,
-                R_STATIC_MODEL_SHADER_USAGE);
+            XSurface *sourceSurface = DObjGetSurface(obj, ref->modelIndex, ref->surfaceIndex, lodIndices);
+            const char *surfaceName = DObjGetSurfaceName(obj, (uint8_t)ref->modelIndex, ref->surfaceIndex, lodIndices);
+            shader_t *sourceShader =
+                R_FindShader(va("skins/%s", surfaceName), R_STATIC_MODEL_LIGHTMAP_MODE, qtrue, R_STATIC_MODEL_SHADER_USAGE);
             shader_t *effectiveShader = sourceShader;
 
             sourceShaders[refIndex] = sourceShader;
@@ -104,8 +87,7 @@ void R_FinishDObjToStaticModel(
              */
             effectiveShaders[groupCount] = effectiveShader;
 
-            const int32_t sourceIndexCount =
-                sourceSurface->triangleCount * 3;
+            const int32_t sourceIndexCount = sourceSurface->triangleCount * 3;
             const int32_t sourceVertexCount = sourceSurface->vertexCount;
             int32_t groupIndex;
 
@@ -131,45 +113,33 @@ void R_FinishDObjToStaticModel(
             }
         }
 
-        renderer_static_model_lod_t *lod = ri.Hunk_Alloc(
-            sizeof(*lod) +
-            (size_t)groupCount * sizeof(lod->surfaces[0]));
+        renderer_static_model_lod_t *lod = ri.Hunk_Alloc(sizeof(*lod) + (size_t)groupCount * sizeof(lod->surfaces[0]));
         lod->surfaceCount = groupCount;
 
-        for (int32_t groupIndex = 0;
-             groupIndex < groupCount; ++groupIndex) {
-            renderer_static_model_surface_t *surface =
-                &lod->surfaces[groupIndex];
+        for (int32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex) {
+            renderer_static_model_surface_t *surface = &lod->surfaces[groupIndex];
             const int32_t indexCount = indexCounts[groupIndex];
             const int32_t vertexCount = vertexCounts[groupIndex];
 
             surface->surfaceType = R_SURFACE_STATIC_MODEL;
             surface->storageSource = tr.defaultStorageMode;
             surface->shader = effectiveShaders[groupIndex];
-            surface->cachedShader =
-                R_CacheableStaticModelShader(surface->shader);
+            surface->cachedShader = R_CacheableStaticModelShader(surface->shader);
             surface->indexCount = (uint16_t)indexCount;
             surface->vertexCount = (uint16_t)vertexCount;
 
-            if ((int32_t)surface->indexCount != indexCount ||
-                (int32_t)surface->vertexCount != vertexCount) {
-                ri.Error(
-                    ERR_DROP,
-                    "\x15model %s surface %s has more than 65,535 vertices "
-                    "or more than 21,845 triangles",
-                    staticModel->name, sourceShaders[groupIndex]->name);
+            if ((int32_t)surface->indexCount != indexCount || (int32_t)surface->vertexCount != vertexCount) {
+                ri.Error(ERR_DROP,
+                         "\x15model %s surface %s has more than 65,535 vertices "
+                         "or more than 21,845 triangles",
+                         staticModel->name, sourceShaders[groupIndex]->name);
             }
 
-            const size_t texCoordBytes =
-                (size_t)surface->vertexCount * sizeof(surface->texCoords[0]);
-            const size_t normalBytes =
-                (size_t)surface->vertexCount * sizeof(surface->normals[0]);
-            const size_t vertexBytes =
-                (size_t)surface->vertexCount * sizeof(surface->vertices[0]);
-            const size_t indexBytes =
-                (size_t)surface->indexCount * sizeof(surface->indices[0]);
-            uint8_t *geometry = ri.Hunk_Alloc(
-                texCoordBytes + normalBytes + vertexBytes + indexBytes);
+            const size_t texCoordBytes = (size_t)surface->vertexCount * sizeof(surface->texCoords[0]);
+            const size_t normalBytes = (size_t)surface->vertexCount * sizeof(surface->normals[0]);
+            const size_t vertexBytes = (size_t)surface->vertexCount * sizeof(surface->vertices[0]);
+            const size_t indexBytes = (size_t)surface->indexCount * sizeof(surface->indices[0]);
+            uint8_t *geometry = ri.Hunk_Alloc(texCoordBytes + normalBytes + vertexBytes + indexBytes);
 
             surface->texCoords = (vec2_t *)geometry;
             geometry += texCoordBytes;
@@ -183,15 +153,11 @@ void R_FinishDObjToStaticModel(
             vertexCounts[groupIndex] = 0;
         }
 
-        for (int32_t refIndex = 0;
-             refIndex < sourceSurfaceCount; ++refIndex) {
+        for (int32_t refIndex = 0; refIndex < sourceSurfaceCount; ++refIndex) {
             const dobj_surface_ref_t *ref = &surfaceRefs[refIndex];
-            renderer_static_model_surface_t *surface =
-                &lod->surfaces[surfaceGroups[refIndex]];
-            XSurface *sourceSurface = DObjGetSurface(
-                obj, ref->modelIndex, ref->surfaceIndex, lodIndices);
-            const int32_t sourceIndexCount =
-                sourceSurface->triangleCount * 3;
+            renderer_static_model_surface_t *surface = &lod->surfaces[surfaceGroups[refIndex]];
+            XSurface *sourceSurface = DObjGetSurface(obj, ref->modelIndex, ref->surfaceIndex, lodIndices);
+            const int32_t sourceIndexCount = sourceSurface->triangleCount * 3;
             const int32_t sourceVertexCount = sourceSurface->vertexCount;
             const int32_t baseIndex = indexCounts[surfaceGroups[refIndex]];
             const int32_t baseVertex = vertexCounts[surfaceGroups[refIndex]];
@@ -199,46 +165,32 @@ void R_FinishDObjToStaticModel(
             vec2_t *destinationTexCoords = surface->texCoords + baseVertex;
             vec3_t *destinationNormals = surface->normals + baseVertex;
             vec3_t *destinationVertices = surface->vertices + baseVertex;
-            const DObjSkelMat *basePose =
-                &obj->evaluationStorage
-                     ->partSpans[obj->modelPartBaseIndices[ref->modelIndex]]
-                     .basePose;
+            const DObjSkelMat *basePose = &obj->evaluationStorage->partSpans[obj->modelPartBaseIndices[ref->modelIndex]].basePose;
 
-            memcpy(destinationIndices, sourceSurface->triangles,
-                   (size_t)sourceIndexCount * sizeof(destinationIndices[0]));
-            XSurfaceGetVerts(sourceSurface, basePose,
-                             destinationVertices, destinationTexCoords,
-                             destinationNormals);
+            memcpy(destinationIndices, sourceSurface->triangles, (size_t)sourceIndexCount * sizeof(destinationIndices[0]));
+            XSurfaceGetVerts(sourceSurface, basePose, destinationVertices, destinationTexCoords, destinationNormals);
 
             if (baseVertex != 0) {
-                for (int32_t sourceIndex = 0;
-                     sourceIndex < sourceIndexCount; ++sourceIndex) {
-                    destinationIndices[sourceIndex] = (uint16_t)(
-                        destinationIndices[sourceIndex] + baseVertex);
+                for (int32_t sourceIndex = 0; sourceIndex < sourceIndexCount; ++sourceIndex) {
+                    destinationIndices[sourceIndex] = (uint16_t)(destinationIndices[sourceIndex] + baseVertex);
                 }
             }
 
-            if ((sourceShaders[refIndex]->flags &
-                 SHADER_FLAG_REMAPPED) != 0) {
-                R_RemapTextureCoordinatesForSheet(
-                    sourceShaders[refIndex], sourceVertexCount,
-                    destinationTexCoords);
+            if ((sourceShaders[refIndex]->flags & SHADER_FLAG_REMAPPED) != 0) {
+                R_RemapTextureCoordinatesForSheet(sourceShaders[refIndex], sourceVertexCount, destinationTexCoords);
             }
 
             indexCounts[surfaceGroups[refIndex]] += sourceIndexCount;
             vertexCounts[surfaceGroups[refIndex]] += sourceVertexCount;
         }
 
-        for (int32_t groupIndex = 0;
-             groupIndex < groupCount; ++groupIndex) {
-            renderer_static_model_surface_t *surface =
-                &lod->surfaces[groupIndex];
+        for (int32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex) {
+            renderer_static_model_surface_t *surface = &lod->surfaces[groupIndex];
 
             if (glConfig.vertexBufferObjectAvailable) {
                 if (!R_OptimizeSModelSurfARB(surface))
                     R_OptimizeSModelSurfGeneric(surface);
-            } else if (glConfig.vertexArrayRangeMode !=
-                       R_VERTEX_ARRAY_RANGE_NONE) {
+            } else if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
                 R_OptimizeSModelSurfNV(surface);
             } else if (glConfig.vertexArrayObjectATIAvailable) {
                 if (!R_OptimizeSModelSurfATI(surface))

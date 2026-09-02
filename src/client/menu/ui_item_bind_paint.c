@@ -65,35 +65,34 @@ void Com_Printf(const char *format, ...);
 
 void Item_Bind_Paint(itemDef_t *item)
 {
-    vec4_t      color;
-    int32_t     maxPaintChars = 0;   /* drawText glyph limit (EBP in the body) */
+    vec4_t color;
+    int32_t maxPaintChars = 0;   /* drawText glyph limit (EBP in the body) */
     const char *bindingText;
-    menuDef_t  *parent = item->parent; /* 0x30056e21, before diagnostic callbacks */
+    menuDef_t *parent = item->parent; /* 0x30056e21, before diagnostic callbacks */
 
     /* 0x30056e1d..0x30056e44: accept only the bind-compatible item types; anything
      * else prints the ui_shared type-error diagnostic and still falls through to the
      * draw (the machine code does not early-return). */
     switch (item->typeValidated) {
-        case ITEM_TYPE_TEXT:
-        case ITEM_TYPE_EDITFIELD:
-        case ITEM_TYPE_NUMERICFIELD:
-        case ITEM_TYPE_SLIDER:
-        case ITEM_TYPE_YESNO:
-        case ITEM_TYPE_BIND:
-        case ITEM_TYPE_UPREDITFIELD:
+    case ITEM_TYPE_TEXT:
+    case ITEM_TYPE_EDITFIELD:
+    case ITEM_TYPE_NUMERICFIELD:
+    case ITEM_TYPE_SLIDER:
+    case ITEM_TYPE_YESNO:
+    case ITEM_TYPE_BIND:
+    case ITEM_TYPE_UPREDITFIELD:
             /* 0x30056e46: invalid types branch around this read. */
-            if (item->typeData != NULL) {
-                maxPaintChars =
-                    ((editFieldDef_t *)item->typeData)->maxPaintChars;
-            }
-            break;
-        default:
+        if (item->typeData != NULL) {
+            maxPaintChars = ((editFieldDef_t *)item->typeData)->maxPaintChars;
+        }
+        break;
+    default:
             /* 0x30056ea5: Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_..."). */
-            Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_EDITFIELD, "
-                       "ITEM_TYPE_NUMERICFIELD, ITEM_TYPE_UPREDITFIELD, "
-                       "ITEM_TYPE_YESNO, ITEM_TYPE_BIND, ITEM_TYPE_SLIDER, "
-                       "or ITEM_TYPE_TEXT\n");
-            break;
+        Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_EDITFIELD, "
+                   "ITEM_TYPE_NUMERICFIELD, ITEM_TYPE_UPREDITFIELD, "
+                   "ITEM_TYPE_YESNO, ITEM_TYPE_BIND, ITEM_TYPE_SLIDER, "
+                   "or ITEM_TYPE_TEXT\n");
+        break;
     }
 
     /* 0x30056e53: force the linked cvar to exist/refresh before drawing. */
@@ -109,9 +108,9 @@ void Item_Bind_Paint(itemDef_t *item)
     /* 0x30056e6b / 0x30056f3d: focused bind items pulse their value-text color;
      * unfocused ones use the item's static foreColor. */
     if (item->window.flags & WINDOW_HASFOCUS) {
-        vec4_t     from;                    /* the "from" color for the lerp */
-        int32_t    phase;
-        float      t;
+        vec4_t from;                    /* the "from" color for the lerp */
+        int32_t phase;
+        float t;
 
         if (g_bindItem == item) {
             /* 0x30056e83: this item is the one currently capturing a key press —
@@ -132,8 +131,7 @@ void Item_Bind_Paint(itemDef_t *item)
         /* 0x30056ef4..0x30056f2a: phase = DC->realTime / 75 (signed magic div,
          * truncated to int), t = (sin(phase) + 1.0) * 0.5. */
         phase = display->realTime / 75;
-        t = (float)((coduo_x87_sinl((long double)phase) + 1.0f) *
-                    0.5f);
+        t = (float)((coduo_x87_sinl((long double)phase) + 1.0f) * 0.5f);
 
         /* 0x30056f33: LerpColor(out=color, to=parent->focusColor, from, t). */
         LerpColor(color, parent->focusColor, from, t);
@@ -151,16 +149,13 @@ void Item_Bind_Paint(itemDef_t *item)
         bindingText = client_ui_compat_binding_from_name(item->cvar, qfalse);
 
         /* 0x30056f79: x = textRect.x + textRect.w + 8.0 (8.0f @ 0x3007be08). */
-        float x = (float)((long double)item->textRect.w +
-                          (long double)item->textRect.x + 8.0f);
+        float x = (float)((long double)item->textRect.w + (long double)item->textRect.x + 8.0f);
         int32_t textStyle = item->textStyle;
         int32_t font = item->font;
         float y = item->textRect.y;
         float textScale = item->textscale;
         display = DC; /* 0x30056fb8: reload after both formatting callbacks. */
-        display->drawText(x, y, font, textScale, color,
-                          bindingText,
-                          0, maxPaintChars, textStyle);
+        display->drawText(x, y, font, textScale, color, bindingText, 0, maxPaintChars, textStyle);
     } else {
         /* 0x30056fce: no label — draw the "FIXME" placeholder (0x3007b540) at the
          * text-rect origin. Preserved verbatim from the original source. */
@@ -169,7 +164,6 @@ void Item_Bind_Paint(itemDef_t *item)
         float y = item->textRect.y;
         float textScale = item->textscale;
         float x = item->textRect.x;
-        display->drawText(x, y, font, textScale, color, "FIXME",
-                          0, maxPaintChars, textStyle);
+        display->drawText(x, y, font, textScale, color, "FIXME", 0, maxPaintChars, textStyle);
     }
 }

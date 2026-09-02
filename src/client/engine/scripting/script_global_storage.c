@@ -43,8 +43,7 @@ script_source_file_record_t *script_sourceFiles;
  * Original initialized-data value: no serialized source-file set is active.
  * ShutdownOpcodeLookup restores this sentinel after freeing saved sources.
  */
-int32_t script_savedSourceFileCount =
-    SCRIPT_SAVED_SOURCE_FILE_COUNT_NONE;
+int32_t script_savedSourceFileCount = SCRIPT_SAVED_SOURCE_FILE_COUNT_NONE;
 script_saved_source_file_t *script_savedSourceFiles;
 uint8_t *script_codeRelocationStart;
 uint8_t *script_codeRelocationEnd;
@@ -73,8 +72,7 @@ char *script_animParseState; /* original 0x009d5fb8 */
 uint32_t script_animTreeChecksum; /* original 0x0389fe44 */
 int32_t script_animTreeCounts[SCRIPT_ANIM_SLOT_COUNT];
 XAnim *script_animTrees[SCRIPT_ANIM_SLOT_COUNT][SCRIPT_ANIM_TREE_SLOT_COUNT];
-uint16_t script_animTreeHandles[SCRIPT_ANIM_SLOT_COUNT]
-                               [SCRIPT_ANIM_TREE_SLOT_COUNT];
+uint16_t script_animTreeHandles[SCRIPT_ANIM_SLOT_COUNT][SCRIPT_ANIM_TREE_SLOT_COUNT];
 int32_t script_animCommentDepth;
 uint16_t script_animTreeRoot;
 const char *script_sourcePos;
@@ -87,10 +85,8 @@ int32_t script_callStackDepth;
 uint8_t *script_callStackCodepos[32];
 int32_t script_runtimeDeveloperFlag;
 uint8_t script_forceErrorReport;
-script_vm_callback_slot_t
-    script_importCallbacks[SCRIPT_IMPORT_CALLBACK_COUNT];
-script_vm_callback_slot_t
-    script_exportCallbacks[SCRIPT_EXPORT_CALLBACK_COUNT];
+script_vm_callback_slot_t script_importCallbacks[SCRIPT_IMPORT_CALLBACK_COUNT];
+script_vm_callback_slot_t script_exportCallbacks[SCRIPT_EXPORT_CALLBACK_COUNT];
 script_variable_node_t script_variableNodes[SCRIPT_VARIABLE_NODE_COUNT];
 Variable script_variableIndirections[SCRIPT_VARIABLE_NODE_COUNT];
 uint16_t script_entityTypeClassMapRoot;
@@ -110,25 +106,8 @@ const char *script_errorMessage;
 const char *script_errorSource;
 int32_t script_errorParameterIndex;
 const char *script_variableTypeNames[] = {
-    "undefined",
-    "string",
-    "localized string",
-    "vector",
-    "float",
-    "int",
-    "codepos",
-    "object",
-    "key/value",
-    "function",
-    "stack",
-    "animation",
-    "thread",
-    "entity",
-    "struct",
-    "array",
-    "dead thread",
-    "dead entity",
-    "dead object",
+    "undefined", "string",    "localized string", "vector", "float",  "int",   "codepos",     "object",      "key/value",   "function",
+    "stack",     "animation", "thread",           "entity", "struct", "array", "dead thread", "dead entity", "dead object",
 };
 VariableValue *script_valueStackTop;
 VariableValue *script_valueStackLimit;

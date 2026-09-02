@@ -51,8 +51,7 @@ void XAnimSetTime(XAnimTree *tree, uint32_t animIndex, float time)
     }
 
     volatile XAnimEntry *entry = &tree->sourceTree->entries[animIndex];
-    XAnimState *state =
-        &xanim_pool[handle].states[xanim_activePoolPayloadSlot];
+    XAnimState *state = &xanim_pool[handle].states[xanim_activePoolPayloadSlot];
 
     (void)entry;
     state->time = time;
@@ -63,10 +62,8 @@ void XAnimSetTime(XAnimTree *tree, uint32_t animIndex, float time)
 
 void XAnimCopyTimes(XAnimInfo *source, XAnimInfo *dest)
 {
-    XAnimState *sourceState =
-        &source->states[xanim_activePoolPayloadSlot];
-    XAnimState *destState =
-        &dest->states[xanim_activePoolPayloadSlot];
+    XAnimState *sourceState = &source->states[xanim_activePoolPayloadSlot];
+    XAnimState *destState = &dest->states[xanim_activePoolPayloadSlot];
 
     destState->time = sourceState->time;
     destState->cycleCount = sourceState->cycleCount;
@@ -91,20 +88,14 @@ float XAnimGetTime(XAnimTree *tree, uint32_t animIndex)
 {
     uint16_t handle = tree->poolNodeHandles[animIndex];
 
-    return handle != 0
-        ? xanim_pool[handle].states[xanim_activePoolPayloadSlot].time
-        : 0.0f;
+    return handle != 0 ? xanim_pool[handle].states[xanim_activePoolPayloadSlot].time : 0.0f;
 }
 
 float XAnimGetWeight(XAnimTree *tree, uint32_t animIndex)
 {
     uint16_t handle = tree->poolNodeHandles[animIndex];
 
-    return handle != 0
-        ? xanim_pool[handle]
-              .states[xanim_activePoolPayloadSlot]
-              .currentWeight
-        : 0.0f;
+    return handle != 0 ? xanim_pool[handle].states[xanim_activePoolPayloadSlot].currentWeight : 0.0f;
 }
 
 qboolean XAnimHasFinished(XAnimTree *tree, uint32_t animIndex)
@@ -115,8 +106,7 @@ qboolean XAnimHasFinished(XAnimTree *tree, uint32_t animIndex)
         return qtrue;
     }
 
-    XAnimState *state =
-        &xanim_pool[handle].states[xanim_activePoolPayloadSlot];
+    XAnimState *state = &xanim_pool[handle].states[xanim_activePoolPayloadSlot];
     if (state->time < state->oldTime || state->time == 1.0f) {
         return qtrue;
     }
@@ -124,16 +114,13 @@ qboolean XAnimHasFinished(XAnimTree *tree, uint32_t animIndex)
     return state->oldCycleCount < state->cycleCount;
 }
 
-qboolean XAnimHasEffectiveParentWeight(XAnimTree *tree,
-                                       uint32_t animIndex)
+qboolean XAnimHasEffectiveParentWeight(XAnimTree *tree, uint32_t animIndex)
 {
     while (animIndex != 0) {
         animIndex = tree->sourceTree->entries[animIndex].parentIndex;
 
         uint16_t handle = tree->poolNodeHandles[animIndex];
-        if (xanim_pool[handle]
-                .states[xanim_activePoolPayloadSlot]
-                .currentWeight == 0.0f) {
+        if (xanim_pool[handle].states[xanim_activePoolPayloadSlot].currentWeight == 0.0f) {
             return qfalse;
         }
     }
@@ -141,15 +128,11 @@ qboolean XAnimHasEffectiveParentWeight(XAnimTree *tree,
     return qtrue;
 }
 
-qboolean XAnimHasEffectiveChildWeight(XAnimTree *tree,
-                                      uint32_t animIndex)
+qboolean XAnimHasEffectiveChildWeight(XAnimTree *tree, uint32_t animIndex)
 {
     uint16_t handle = tree->poolNodeHandles[animIndex];
 
-    if (handle == 0 ||
-        xanim_pool[handle]
-                .states[xanim_activePoolPayloadSlot]
-                .currentWeight == 0.0f) {
+    if (handle == 0 || xanim_pool[handle].states[xanim_activePoolPayloadSlot].currentWeight == 0.0f) {
         return qfalse;
     }
 
@@ -159,9 +142,7 @@ qboolean XAnimHasEffectiveChildWeight(XAnimTree *tree,
     }
 
     for (int32_t child = 0; child < entry->childCount; ++child) {
-        if (XAnimHasEffectiveChildWeight(
-                tree, entry->payload.parent.firstChildIndex +
-                          (uint32_t)child)) {
+        if (XAnimHasEffectiveChildWeight(tree, entry->payload.parent.firstChildIndex + (uint32_t)child)) {
             return qtrue;
         }
     }
@@ -171,8 +152,7 @@ qboolean XAnimHasEffectiveChildWeight(XAnimTree *tree,
 
 qboolean XAnimHasEffectiveWeight(XAnimTree *tree, uint32_t animIndex)
 {
-    return XAnimHasEffectiveParentWeight(tree, animIndex) &&
-           XAnimHasEffectiveChildWeight(tree, animIndex);
+    return XAnimHasEffectiveParentWeight(tree, animIndex) && XAnimHasEffectiveChildWeight(tree, animIndex);
 }
 
 /*
@@ -203,15 +183,12 @@ void XAnimUpdateOldServerTime(uint32_t animIndex)
     primary->cycleCount = secondary->oldCycleCount;
     primary->targetWeight = secondary->targetWeight;
     primary->rateScale = secondary->rateScale;
-    primary->weightBlendTimeRemaining =
-        secondary->weightBlendTimeRemaining;
+    primary->weightBlendTimeRemaining = secondary->weightBlendTimeRemaining;
     primary->currentWeight = secondary->currentWeight;
 
-    XAnimEntry *entry =
-        &xanim_currentTree->sourceTree->entries[animIndex];
+    XAnimEntry *entry = &xanim_currentTree->sourceTree->entries[animIndex];
     for (int32_t child = 0; child < entry->childCount; ++child) {
-        XAnimUpdateOldServerTime(
-            entry->payload.parent.firstChildIndex + child);
+        XAnimUpdateOldServerTime(entry->payload.parent.firstChildIndex + child);
     }
 }
 
@@ -242,21 +219,17 @@ qboolean XAnimUpdateOldServerTimeNoWeight(uint32_t animIndex)
     secondary->weightBlendTimeRemaining = 0.0f;
     secondary->currentWeight = secondary->targetWeight;
 
-    XAnimEntry *entry =
-        &xanim_currentTree->sourceTree->entries[animIndex];
+    XAnimEntry *entry = &xanim_currentTree->sourceTree->entries[animIndex];
     qboolean hasLiveChild = qfalse;
 
     for (int32_t child = 0; child < entry->childCount; ++child) {
-        if (XAnimUpdateOldServerTimeNoWeight(
-                entry->payload.parent.firstChildIndex + child)) {
+        if (XAnimUpdateOldServerTimeNoWeight(entry->payload.parent.firstChildIndex + child)) {
             hasLiveChild = qtrue;
         }
     }
 
-    if (hasLiveChild || secondary->currentWeight != 0.0f ||
-        secondary->targetWeight != 0.0f ||
-        node->states[XANIM_USER_CLIENT].currentWeight != 0.0f ||
-        node->states[XANIM_USER_CLIENT].targetWeight != 0.0f) {
+    if (hasLiveChild || secondary->currentWeight != 0.0f || secondary->targetWeight != 0.0f ||
+        node->states[XANIM_USER_CLIENT].currentWeight != 0.0f || node->states[XANIM_USER_CLIENT].targetWeight != 0.0f) {
         return qtrue;
     }
 

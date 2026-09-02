@@ -24,8 +24,7 @@ qboolean FS_Initialized(void)
 #if defined(WINDOWS_BEHAVIOR)
 qboolean FS_UseSearchPath(const searchpath_t *searchpath)
 {
-    if (filesystem_compat_server_scope_allows_searchpath(searchpath) ==
-        qfalse) {
+    if (filesystem_compat_server_scope_allows_searchpath(searchpath) == qfalse) {
         return qfalse;
     }
     if (searchpath->localized == qfalse)
@@ -37,12 +36,10 @@ qboolean FS_UseSearchPath(const searchpath_t *searchpath)
 #else
 qboolean FS_UseSearchPath(const searchpath_t *searchpath)
 {
-    if (filesystem_compat_server_scope_allows_searchpath(searchpath) ==
-        qfalse) {
+    if (filesystem_compat_server_scope_allows_searchpath(searchpath) == qfalse) {
         return qfalse;
     }
-    if (searchpath->localized == qfalse ||
-        fs_ignoreLocalized->integer == 0) {
+    if (searchpath->localized == qfalse || fs_ignoreLocalized->integer == 0) {
         return qtrue;
     }
     return qfalse;
@@ -53,11 +50,8 @@ qboolean FS_UseSearchPath(const searchpath_t *searchpath)
  * Name and signature: exact same-module Mac symbol FS_LanguageHasAssets. */
 qboolean FS_LanguageHasAssets(int32_t language)
 {
-    for (const searchpath_t *searchpath = fs_searchpaths;
-         searchpath != NULL; searchpath = searchpath->next) {
-        if (filesystem_compat_server_scope_allows_searchpath(searchpath) !=
-                qfalse &&
-            searchpath->localized != qfalse &&
+    for (const searchpath_t *searchpath = fs_searchpaths; searchpath != NULL; searchpath = searchpath->next) {
+        if (filesystem_compat_server_scope_allows_searchpath(searchpath) != qfalse && searchpath->localized != qfalse &&
             searchpath->language == language) {
             return qtrue;
         }
@@ -127,8 +121,7 @@ void FS_AddSearchPath(searchpath_t *searchpath)
     }
 
     searchpath_t *insertAfter = fs_searchpaths;
-    while (insertAfter->next != NULL &&
-           insertAfter->next->localized == qfalse) {
+    while (insertAfter->next != NULL && insertAfter->next->localized == qfalse) {
         insertAfter = insertAfter->next;
     }
     searchpath->next = insertAfter->next;
@@ -144,19 +137,15 @@ void FS_ClearDataForFiles(const void *rangeStart, const void *rangeEnd)
     const uintptr_t startAddress = (uintptr_t)rangeStart;
     const uintptr_t endAddress = (uintptr_t)rangeEnd;
 
-    for (searchpath_t *search = fs_lookupSearchpaths;
-         search != NULL; search = search->next) {
+    for (searchpath_t *search = fs_lookupSearchpaths; search != NULL; search = search->next) {
         pack_t *const pack = search->pack;
         if (pack == NULL)
             continue;
 
         for (int32_t hash = 0; hash < pack->hashSize; ++hash) {
-            for (fileInPack_t *file = pack->hashTable[hash];
-                 file != NULL; file = file->next) {
-                const uintptr_t payloadAddress =
-                    (uintptr_t)file->data.data.generic;
-                if (payloadAddress < startAddress ||
-                    payloadAddress >= endAddress) {
+            for (fileInPack_t *file = pack->hashTable[hash]; file != NULL; file = file->next) {
+                const uintptr_t payloadAddress = (uintptr_t)file->data.data.generic;
+                if (payloadAddress < startAddress || payloadAddress >= endAddress) {
                     continue;
                 }
                 if (file->data.freeData != NULL) {
@@ -168,15 +157,11 @@ void FS_ClearDataForFiles(const void *rangeStart, const void *rangeEnd)
         }
     }
 
-    for (fs_dir_file_list_t *list = fs_lookupDirFileLists;
-         list != NULL; list = list->next) {
+    for (fs_dir_file_list_t *list = fs_lookupDirFileLists; list != NULL; list = list->next) {
         for (int32_t hash = 0; hash < list->hashSize; ++hash) {
-            for (fs_dir_file_t *file = list->hashTable[hash];
-                 file != NULL; file = file->next) {
-                const uintptr_t payloadAddress =
-                    (uintptr_t)file->data.data.generic;
-                if (payloadAddress < startAddress ||
-                    payloadAddress >= endAddress) {
+            for (fs_dir_file_t *file = list->hashTable[hash]; file != NULL; file = file->next) {
+                const uintptr_t payloadAddress = (uintptr_t)file->data.data.generic;
+                if (payloadAddress < startAddress || payloadAddress >= endAddress) {
                     continue;
                 }
                 if (file->data.freeData != NULL) {
@@ -232,8 +217,7 @@ void FS_ShutdownServerPakNames(void)
  * FS_ShutdownServerReferencedPaks. */
 void FS_ShutdownServerReferencedPaks(void)
 {
-    for (int32_t index = 0;
-         index < fs_numServerReferencedPaks; ++index) {
+    for (int32_t index = 0; index < fs_numServerReferencedPaks; ++index) {
         if (fs_serverReferencedPakNames[index] != NULL)
             Z_FreeInternal(fs_serverReferencedPakNames[index]);
         fs_serverReferencedPakNames[index] = NULL;

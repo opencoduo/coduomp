@@ -28,8 +28,7 @@ define_t *pc_globalDefines;
 
 /* NOT_FROM_ORIGINAL_SOURCE: isolate the proved token payload ABI.  Windows
  * stores binary64; Linux stores an x87 TBYTE in the same logical field. */
-static void coduo_pc_store_synthetic_float_from_i32(token_t *token,
-                                                     int32_t value)
+static void coduo_pc_store_synthetic_float_from_i32(token_t *token, int32_t value)
 {
 #if defined(WINDOWS_BEHAVIOR)
     token->floatValue = (double)value;
@@ -38,17 +37,14 @@ static void coduo_pc_store_synthetic_float_from_i32(token_t *token,
     coduo_pc_store_token_float80(token->floatValue, x87f_load_i32(value));
 #else
     const long double extendedValue = (long double)value;
-    const size_t copySize = sizeof(extendedValue) < PC_X87_EXTENDED_TBYTE_SIZE
-                                ? sizeof(extendedValue)
-                                : PC_X87_EXTENDED_TBYTE_SIZE;
+    const size_t copySize = sizeof(extendedValue) < PC_X87_EXTENDED_TBYTE_SIZE ? sizeof(extendedValue) : PC_X87_EXTENDED_TBYTE_SIZE;
     memset(token->floatValue, 0, sizeof(token->floatValue));
     memcpy(token->floatValue, &extendedValue, copySize);
 #endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: binary64-input companion for $evalfloat. */
-static void coduo_pc_store_synthetic_float_from_f64(token_t *token,
-                                                     double value)
+static void coduo_pc_store_synthetic_float_from_f64(token_t *token, double value)
 {
 #if defined(WINDOWS_BEHAVIOR)
     token->floatValue = value;
@@ -57,9 +53,7 @@ static void coduo_pc_store_synthetic_float_from_f64(token_t *token,
     coduo_pc_store_token_float80(token->floatValue, x87f_load_f64(value));
 #else
     const long double extendedValue = (long double)value;
-    const size_t copySize = sizeof(extendedValue) < PC_X87_EXTENDED_TBYTE_SIZE
-                                ? sizeof(extendedValue)
-                                : PC_X87_EXTENDED_TBYTE_SIZE;
+    const size_t copySize = sizeof(extendedValue) < PC_X87_EXTENDED_TBYTE_SIZE ? sizeof(extendedValue) : PC_X87_EXTENDED_TBYTE_SIZE;
     memset(token->floatValue, 0, sizeof(token->floatValue));
     memcpy(token->floatValue, &extendedValue, copySize);
 #endif
@@ -106,8 +100,7 @@ qboolean PC_ReadLine(source_t *source, token_t *token)
  * Name: exact same-module Mac symbol PC_WhiteSpaceBeforeToken. */
 qboolean PC_WhiteSpaceBeforeToken(const token_t *token)
 {
-    return token->whitespaceEnd - token->whitespaceStart > 0 ? qtrue
-                                                              : qfalse;
+    return token->whitespaceEnd - token->whitespaceStart > 0 ? qtrue : qfalse;
 }
 
 /* Source: CoDUOMP.exe 0x00443e40..0x00443e54.
@@ -181,13 +174,11 @@ qboolean PC_Directive_define(source_t *source)
 
     if (token.type != PC_TOKEN_TYPE_NAME) {
         PC_UnreadSourceToken(source, &token);
-        SourceError(source, "expected name after #define, found %s",
-                    token.string);
+        SourceError(source, "expected name after #define, found %s", token.string);
         return qfalse;
     }
 
-    define_t *existing =
-        PC_FindHashedDefine(source->defineHash, token.string);
+    define_t *existing = PC_FindHashedDefine(source->defineHash, token.string);
     if (existing != NULL) {
         if ((existing->flags & PC_DEFINE_FLAG_BUILTIN) != 0) {
             SourceError(source, "can't redefine %s", token.string);
@@ -215,9 +206,7 @@ qboolean PC_Directive_define(source_t *source)
     if (PC_ReadLine(source, &token) == qfalse)
         return qtrue;
 
-    const qboolean hasFormalParms =
-        PC_WhiteSpaceBeforeToken(&token) == qfalse &&
-        strcmp(token.string, "(") == 0 ? qtrue : qfalse;
+    const qboolean hasFormalParms = PC_WhiteSpaceBeforeToken(&token) == qfalse && strcmp(token.string, "(") == 0 ? qtrue : qfalse;
     if (hasFormalParms != qfalse) {
         token_t *lastParm = NULL;
         if (PC_CheckTokenString(source, ")") == qfalse) {
@@ -245,8 +234,7 @@ qboolean PC_Directive_define(source_t *source)
                 ++define->numParms;
 
                 if (PC_ReadLine(source, &token) == qfalse) {
-                    SourceError(source,
-                                "define parameters not terminated");
+                    SourceError(source, "define parameters not terminated");
                     return qfalse;
                 }
                 if (strcmp(token.string, ")") == 0)
@@ -267,8 +255,7 @@ qboolean PC_Directive_define(source_t *source)
     token_t *lastToken = NULL;
     do {
         token_t *copy = PC_CopyToken(&token);
-        if (copy->type == PC_TOKEN_TYPE_NAME &&
-            strcmp(copy->string, define->name) == 0) {
+        if (copy->type == PC_TOKEN_TYPE_NAME && strcmp(copy->string, define->name) == 0) {
             SourceError(source, "recursive define (removed recursion)");
         } else {
             PC_ClearTokenWhiteSpace(copy);
@@ -281,9 +268,7 @@ qboolean PC_Directive_define(source_t *source)
         }
     } while (PC_ReadLine(source, &token) != qfalse);
 
-    if (lastToken == NULL ||
-        (strcmp(define->tokens->string, "##") != 0 &&
-         strcmp(lastToken->string, "##") != 0)) {
+    if (lastToken == NULL || (strcmp(define->tokens->string, "##") != 0 && strcmp(lastToken->string, "##") != 0)) {
         return qtrue;
     }
 
@@ -298,19 +283,16 @@ define_t *PC_DefineFromString(const char *string)
 {
     PC_InitTokenHeap();
 
-    script_t *script =
-        LoadScriptMemory(string, strlen(string), "*extern");
+    script_t *script = LoadScriptMemory(string, strlen(string), "*extern");
 
     source_t source;
     memset(&source, 0, sizeof(source));
     strncpy(source.filename, "*extern", sizeof(source.filename));
     source.scriptStack = script;
 #if defined(WINDOWS_BEHAVIOR)
-    source.defineHash = GetClearedMemory(
-        PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source.defineHash));
+    source.defineHash = GetClearedMemory(PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source.defineHash));
 #else
-    source.defineHash = Com_ZoneDebugAllocClear(
-        PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source.defineHash));
+    source.defineHash = Com_ZoneDebugAllocClear(PC_DEFINE_HASH_BUCKET_COUNT * sizeof(*source.defineHash));
 #endif
 
     const qboolean parsed = PC_Directive_define(&source);
@@ -322,8 +304,7 @@ define_t *PC_DefineFromString(const char *string)
     }
 
     define_t *define = NULL;
-    for (int32_t bucket = 0; bucket < PC_DEFINE_HASH_BUCKET_COUNT;
-         ++bucket) {
+    for (int32_t bucket = 0; bucket < PC_DEFINE_HASH_BUCKET_COUNT; ++bucket) {
         if (source.defineHash[bucket] != NULL) {
             define = source.defineHash[bucket];
             break;
@@ -332,8 +313,7 @@ define_t *PC_DefineFromString(const char *string)
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (parsed == qfalse) {
-        for (int32_t bucket = 0; bucket < PC_DEFINE_HASH_BUCKET_COUNT;
-             ++bucket) {
+        for (int32_t bucket = 0; bucket < PC_DEFINE_HASH_BUCKET_COUNT; ++bucket) {
             while (source.defineHash[bucket] != NULL) {
                 define_t *const failedDefine = source.defineHash[bucket];
                 source.defineHash[bucket] = failedDefine->hashNext;
@@ -418,8 +398,7 @@ void PC_RemoveAllGlobalDefines(void)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00444750_00444834.mcode.
  * Name: exact same-module Mac symbol PC_CopyDefine. The source parameter is
  * present in the original API but is not read by the PE implementation. */
-define_t *PC_CopyDefine(source_t *source,
-                           const define_t *define)
+define_t *PC_CopyDefine(source_t *source, const define_t *define)
 {
     (void)source;
 
@@ -441,8 +420,7 @@ define_t *PC_CopyDefine(source_t *source,
     copy->tokens = NULL;
 
     token_t *lastToken = NULL;
-    for (const token_t *token = define->tokens;
-         token != NULL; token = token->next) {
+    for (const token_t *token = define->tokens; token != NULL; token = token->next) {
         token_t *tokenCopy = PC_CopyToken(token);
         tokenCopy->next = NULL;
         if (lastToken == NULL)
@@ -454,8 +432,7 @@ define_t *PC_CopyDefine(source_t *source,
 
     copy->parms = NULL;
     token_t *lastParm = NULL;
-    for (const token_t *parm = define->parms;
-         parm != NULL; parm = parm->next) {
+    for (const token_t *parm = define->parms; parm != NULL; parm = parm->next) {
         token_t *parmCopy = PC_CopyToken(parm);
         parmCopy->next = NULL;
         if (lastParm == NULL)
@@ -473,8 +450,7 @@ define_t *PC_CopyDefine(source_t *source,
  * Name: exact same-module Mac symbol PC_AddGlobalDefinesToSource. */
 void PC_AddGlobalDefinesToSource(source_t *source)
 {
-    for (define_t *define = pc_globalDefines; define != NULL;
-         define = define->next) {
+    for (define_t *define = pc_globalDefines; define != NULL; define = define->next) {
         define_t *copy = PC_CopyDefine(source, define);
         PC_AddDefineToHash(copy, source->defineHash);
     }
@@ -493,19 +469,13 @@ qboolean PC_Directive_if_def(source_t *source, int32_t type)
 
     if (token.type != PC_TOKEN_TYPE_NAME) {
         PC_UnreadSourceToken(source, &token);
-        SourceError(source, "expected name after #ifdef, found %s",
-                    token.string);
+        SourceError(source, "expected name after #ifdef, found %s", token.string);
         return qfalse;
     }
 
-    const qboolean undefined =
-        PC_FindHashedDefine(source->defineHash, token.string) == NULL
-            ? qtrue
-            : qfalse;
-    const qboolean isIfdef =
-        type == PC_INDENT_TYPE_IFDEF ? qtrue : qfalse;
-    PC_PushIndent(source, type,
-                  undefined == isIfdef ? qtrue : qfalse);
+    const qboolean undefined = PC_FindHashedDefine(source->defineHash, token.string) == NULL ? qtrue : qfalse;
+    const qboolean isIfdef = type == PC_INDENT_TYPE_IFDEF ? qtrue : qfalse;
+    PC_PushIndent(source, type, undefined == isIfdef ? qtrue : qfalse);
     return qtrue;
 }
 
@@ -545,8 +515,7 @@ qboolean PC_Directive_else(source_t *source)
         return qfalse;
     }
 
-    PC_PushIndent(source, PC_INDENT_TYPE_ELSE,
-                  skip == qfalse ? qtrue : qfalse);
+    PC_PushIndent(source, PC_INDENT_TYPE_ELSE, skip == qfalse ? qtrue : qfalse);
     return qtrue;
 }
 
@@ -584,8 +553,7 @@ qboolean PC_Directive_elif(source_t *source)
     if (PC_Evaluate(source, &value, NULL, qtrue) == qfalse)
         return qfalse;
 
-    PC_PushIndent(source, PC_INDENT_TYPE_ELIF,
-                  value == 0 ? qtrue : qfalse);
+    PC_PushIndent(source, PC_INDENT_TYPE_ELIF, value == 0 ? qtrue : qfalse);
     return qtrue;
 }
 
@@ -598,8 +566,7 @@ qboolean PC_Directive_if(source_t *source)
     if (PC_Evaluate(source, &value, NULL, qtrue) == qfalse)
         return qfalse;
 
-    PC_PushIndent(source, PC_INDENT_TYPE_IF,
-                  value == 0 ? qtrue : qfalse);
+    PC_PushIndent(source, PC_INDENT_TYPE_IF, value == 0 ? qtrue : qfalse);
     return qtrue;
 }
 
@@ -667,12 +634,9 @@ qboolean PC_Directive_eval(source_t *source)
         return qfalse;
 
     token_t token;
-    const int32_t magnitude = value == INT32_MIN
-                                  ? INT32_MIN
-                                  : (value < 0 ? -value : value);
+    const int32_t magnitude = value == INT32_MIN ? INT32_MIN : (value < 0 ? -value : value);
 #if defined(WINDOWS_BEHAVIOR)
-    coduo_crt_snprintf(token.string, sizeof(token.string), "%d",
-                         magnitude);
+    coduo_crt_snprintf(token.string, sizeof(token.string), "%d", magnitude);
 #else
     sprintf(token.string, "%d", magnitude);
 #endif
@@ -704,8 +668,7 @@ qboolean PC_Directive_evalfloat(source_t *source)
 
     token_t token;
 #if defined(WINDOWS_BEHAVIOR)
-    coduo_crt_snprintf(token.string, sizeof(token.string), "%1.2f",
-                         fabs(value));
+    coduo_crt_snprintf(token.string, sizeof(token.string), "%1.2f", fabs(value));
 #else
     sprintf(token.string, "%1.2f", fabs(value));
 #endif
@@ -733,40 +696,23 @@ typedef struct pc_directive_entry_s {
 } pc_directive_entry_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(pc_directive_entry_t) == 0x04,
-               "original parser directive-entry alignment changed");
-_Static_assert(offsetof(pc_directive_entry_t, directiveName) == 0x00,
-               "original parser directive-entry name moved");
-_Static_assert(sizeof(((pc_directive_entry_t *)0)->directiveName) == 0x04,
-               "original parser directive-entry name extent changed");
-_Static_assert(offsetof(pc_directive_entry_t, handler) == 0x04,
-               "original parser directive-entry handler moved");
-_Static_assert(sizeof(((pc_directive_entry_t *)0)->handler) == 0x04,
-               "original parser directive-entry handler extent changed");
-_Static_assert(sizeof(pc_directive_entry_t) == 0x08,
-               "original parser directive-entry size changed");
+_Static_assert(_Alignof(pc_directive_entry_t) == 0x04, "original parser directive-entry alignment changed");
+_Static_assert(offsetof(pc_directive_entry_t, directiveName) == 0x00, "original parser directive-entry name moved");
+_Static_assert(sizeof(((pc_directive_entry_t *)0)->directiveName) == 0x04, "original parser directive-entry name extent changed");
+_Static_assert(offsetof(pc_directive_entry_t, handler) == 0x04, "original parser directive-entry handler moved");
+_Static_assert(sizeof(((pc_directive_entry_t *)0)->handler) == 0x04, "original parser directive-entry handler extent changed");
+_Static_assert(sizeof(pc_directive_entry_t) == 0x08, "original parser directive-entry size changed");
 #endif
 
 /* Source: CoDUOMP.exe initialized table 0x005c5298..0x005c5310.
  * PE_RELOCATION_VALUES_VERIFIED: all fourteen name/handler pairs and the
  * null terminator match the original pointer values and function entries. */
 static const pc_directive_entry_t pc_directives[] = {
-    {"if", PC_Directive_if},
-    {"ifdef", PC_Directive_ifdef},
-    {"ifndef", PC_Directive_ifndef},
-    {"elif", PC_Directive_elif},
-    {"else", PC_Directive_else},
-    {"endif", PC_Directive_endif},
-    {"include", PC_Directive_include},
-    {"define", PC_Directive_define},
-    {"undef", PC_Directive_undef},
-    {"line", PC_Directive_line},
-    {"error", PC_Directive_error},
-    {"pragma", PC_Directive_pragma},
-    {"eval", PC_Directive_eval},
-    {"evalfloat", PC_Directive_evalfloat},
-    {NULL, NULL}
-};
+    {"if", PC_Directive_if},           {"ifdef", PC_Directive_ifdef},         {"ifndef", PC_Directive_ifndef},
+    {"elif", PC_Directive_elif},       {"else", PC_Directive_else},           {"endif", PC_Directive_endif},
+    {"include", PC_Directive_include}, {"define", PC_Directive_define},       {"undef", PC_Directive_undef},
+    {"line", PC_Directive_line},       {"error", PC_Directive_error},         {"pragma", PC_Directive_pragma},
+    {"eval", PC_Directive_eval},       {"evalfloat", PC_Directive_evalfloat}, {NULL, NULL}};
 
 /* Source: CoDUOMP.exe 0x00445e80..0x00445fc0.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00445e80_00445fc1.mcode.
@@ -786,8 +732,7 @@ qboolean PC_ReadDirective(source_t *source)
     }
 
     if (token.type == PC_TOKEN_TYPE_NAME) {
-        for (const pc_directive_entry_t *directive = pc_directives;
-             directive->directiveName != NULL; ++directive) {
+        for (const pc_directive_entry_t *directive = pc_directives; directive->directiveName != NULL; ++directive) {
             if (strcmp(directive->directiveName, token.string) == 0)
                 return directive->handler(source);
         }
@@ -807,12 +752,9 @@ qboolean PC_DollarDirective_evalint(source_t *source)
         return qfalse;
 
     token_t token;
-    const int32_t magnitude = value == INT32_MIN
-                                  ? INT32_MIN
-                                  : (value < 0 ? -value : value);
+    const int32_t magnitude = value == INT32_MIN ? INT32_MIN : (value < 0 ? -value : value);
 #if defined(WINDOWS_BEHAVIOR)
-    coduo_crt_snprintf(token.string, sizeof(token.string), "%d",
-                         magnitude);
+    coduo_crt_snprintf(token.string, sizeof(token.string), "%d", magnitude);
 #else
     sprintf(token.string, "%d", magnitude);
 #endif
@@ -843,8 +785,7 @@ qboolean PC_DollarDirective_evalfloat(source_t *source)
 
     token_t token;
 #if defined(WINDOWS_BEHAVIOR)
-    coduo_crt_snprintf(token.string, sizeof(token.string), "%1.2f",
-                         fabs(value));
+    coduo_crt_snprintf(token.string, sizeof(token.string), "%1.2f", fabs(value));
 #else
     sprintf(token.string, "%1.2f", fabs(value));
 #endif
@@ -867,10 +808,7 @@ qboolean PC_DollarDirective_evalfloat(source_t *source)
  * PE_RELOCATION_VALUES_VERIFIED: both name/handler pairs and the null
  * terminator match the original pointer values and function entries. */
 static const pc_directive_entry_t pc_dollarDirectives[] = {
-    {"evalint", PC_DollarDirective_evalint},
-    {"evalfloat", PC_DollarDirective_evalfloat},
-    {NULL, NULL}
-};
+    {"evalint", PC_DollarDirective_evalint}, {"evalfloat", PC_DollarDirective_evalfloat}, {NULL, NULL}};
 
 /* Source: CoDUOMP.exe 0x00446200..0x0044635c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00446200_0044635d.mcode.
@@ -890,8 +828,7 @@ qboolean PC_ReadDollarDirective(source_t *source)
     }
 
     if (token.type == PC_TOKEN_TYPE_NAME) {
-        for (const pc_directive_entry_t *directive = pc_dollarDirectives;
-             directive->directiveName != NULL; ++directive) {
+        for (const pc_directive_entry_t *directive = pc_dollarDirectives; directive->directiveName != NULL; ++directive) {
             if (strcmp(directive->directiveName, token.string) == 0)
                 return directive->handler(source);
         }

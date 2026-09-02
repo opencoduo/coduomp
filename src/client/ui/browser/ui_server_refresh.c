@@ -65,9 +65,7 @@ void UI_DoServerRefresh(void)
     }
 
     if (trap_LAN_UpdateDirtyPings(ui_netSource)) {
-        ui_serverRefreshTime =
-            ui_displayContextStorage.context.realTime +
-            UI_SERVER_REFRESH_RETRY_MILLISECONDS;
+        ui_serverRefreshTime = ui_displayContextStorage.context.realTime + UI_SERVER_REFRESH_RETRY_MILLISECONDS;
         UI_BuildServerDisplayList(UI_SERVER_REBUILD_INCREMENTAL);
         return;
     }

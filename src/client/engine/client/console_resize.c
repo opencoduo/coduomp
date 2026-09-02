@@ -23,8 +23,7 @@ void Con_CheckResize(void)
 
     if (videoWidth < CON_MINIMUM_VIDEO_WIDTH)
         videoWidth = CON_MINIMUM_VIDEO_WIDTH;
-    newLineWidth = videoWidth / CON_GLYPH_WIDTH -
-                   CON_HORIZONTAL_MARGIN_GLYPHS;
+    newLineWidth = videoWidth / CON_GLYPH_WIDTH - CON_HORIZONTAL_MARGIN_GLYPHS;
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (newLineWidth > CON_TEXT_CELL_COUNT)
         newLineWidth = CON_TEXT_CELL_COUNT;
@@ -41,10 +40,8 @@ void Con_CheckResize(void)
         const int32_t oldLineWidth = con.lineWidth;
         const int32_t oldTotalLines = con.totalLines;
         const int32_t newTotalLines = CON_TEXT_CELL_COUNT / newLineWidth;
-        const int32_t copyLineCount =
-            oldTotalLines < newTotalLines ? oldTotalLines : newTotalLines;
-        const int32_t copyColumnCount =
-            oldLineWidth < newLineWidth ? oldLineWidth : newLineWidth;
+        const int32_t copyLineCount = oldTotalLines < newTotalLines ? oldTotalLines : newTotalLines;
+        const int32_t copyColumnCount = oldLineWidth < newLineWidth ? oldLineWidth : newLineWidth;
 
         con.lineWidth = newLineWidth;
         con.totalLines = newTotalLines;
@@ -52,17 +49,12 @@ void Con_CheckResize(void)
         for (int32_t cell = 0; cell < CON_TEXT_CELL_COUNT; ++cell)
             con.text[cell] = CON_EMPTY_TEXT_CELL;
 
-        for (int32_t lineOffset = 0; lineOffset < copyLineCount;
-             ++lineOffset) {
-            const int32_t sourceLine =
-                (con.currentLine - lineOffset + oldTotalLines) %
-                oldTotalLines;
-            const int32_t destinationLine =
-                newTotalLines - lineOffset - 1;
+        for (int32_t lineOffset = 0; lineOffset < copyLineCount; ++lineOffset) {
+            const int32_t sourceLine = (con.currentLine - lineOffset + oldTotalLines) % oldTotalLines;
+            const int32_t destinationLine = newTotalLines - lineOffset - 1;
 
             for (int32_t column = 0; column < copyColumnCount; ++column) {
-                con.text[destinationLine * newLineWidth + column] =
-                    oldText[sourceLine * oldLineWidth + column];
+                con.text[destinationLine * newLineWidth + column] = oldText[sourceLine * oldLineWidth + column];
             }
         }
 

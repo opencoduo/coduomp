@@ -32,11 +32,9 @@
 // expressed as explicit pointer parameters; no calling-convention attribute is
 // added because the syntax-only build target does not require one.
 
-_Static_assert(offsetof(cgAlignedDrawItem, height) == 0x0c,
-               "cgAlignedDrawItem.height at +0x0c");
+_Static_assert(offsetof(cgAlignedDrawItem, height) == 0x0c, "cgAlignedDrawItem.height at +0x0c");
 
-long double CG_HudElemY(const hudElem_t *node,
-                                  const cgAlignedDrawItem *item)
+long double CG_HudElemY(const hudElem_t *node, const cgAlignedDrawItem *item)
 {
     /*
      * 0x30029b03..0x30029b0d: duration = node->moveTime (signed, [EAX+0x58]),
@@ -61,8 +59,7 @@ long double CG_HudElemY(const hudElem_t *node,
          * SUB, [0x304831b0] - [EAX+0x54]). If elapsed >= duration the window has
          * fully elapsed (signed JGE at 0x30029b1a): use the settled value.
          */
-        elapsed = coduo_int32_from_bits((uint32_t)cg_time -
-                                   (uint32_t)node->moveStartTime);
+        elapsed = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)node->moveStartTime);
         if (elapsed < duration) {
             interpolating = qtrue;
         }
@@ -83,10 +80,8 @@ long double CG_HudElemY(const hudElem_t *node,
          * prev is re-added with FIADD [ESP+0xc] (integer add of prevValue[1]).
          */
         int32_t prev = node->moveFromY;
-        int32_t delta = coduo_int32_from_bits((uint32_t)node->y -
-                                        (uint32_t)prev);
-        int32_t numer = coduo_int32_from_bits((uint32_t)delta *
-                                        (uint32_t)elapsed);
+        int32_t delta = coduo_int32_from_bits((uint32_t)node->y - (uint32_t)prev);
+        int32_t numer = coduo_int32_from_bits((uint32_t)delta * (uint32_t)elapsed);
         /* 0x30029b3f FIADD [ESP+0xc]: prev is added as an INTEGER straight into
          * the 80-bit chain -- it is never converted to float, so no (float)prev
          * cast here (that would round). numer/duration reach the chain via bare
@@ -112,8 +107,7 @@ long double CG_HudElemY(const hudElem_t *node,
     switch (node->alignY) {
     case HUDELEM_ALIGN_CENTER:
         /* 0x30029b5e: FLD item->height; FMUL 0.5f; FSUBP -> value - height*0.5 */
-        value = value -
-                (long double)item->height * (long double)0.5f;
+        value = value - (long double)item->height * (long double)0.5f;
         break;
     case HUDELEM_ALIGN_END:
         /* 0x30029b57: FSUB item->height -> value - height */

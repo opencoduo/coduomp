@@ -48,13 +48,8 @@ void CG_PlayFx(centity_t *self, const vec_t *dir)
     uint32_t handle = cg_effectDefs[fxId];
 
     if (dir != NULL) {
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits(handle),
-                      (intptr_t)self->lerpOrigin,
-                      (intptr_t)dir);
+        cgame_syscall(CG_PLAY_EFFECT_ORIENTED, coduo_int32_from_bits(handle), (intptr_t)self->lerpOrigin, (intptr_t)dir);
     } else {
-        cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                      coduo_int32_from_bits(handle),
-                      (intptr_t)self->lerpOrigin);
+        cgame_syscall(CG_PLAY_EFFECT_ORIGIN, coduo_int32_from_bits(handle), (intptr_t)self->lerpOrigin);
     }
 }

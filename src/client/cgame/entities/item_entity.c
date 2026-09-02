@@ -76,9 +76,9 @@ enum {
 
 void CG_Item(centity_t *cent /* EBX */)
 {
-    itemInfo_t  *itemInfo;
+    itemInfo_t *itemInfo;
     gitem_t *item;
-    refEntity_t  re;
+    refEntity_t re;
     struct DObj_s *dobj;
 
     /* 0x3001e698: out-of-range item index is a client render diagnostic; execution
@@ -95,7 +95,7 @@ void CG_Item(centity_t *cent /* EBX */)
      * cg_items (0x304531a0, itemInfo_t, stride 0x24): ESI = &cg_items[idx].
      * bg_itemlist (0x300827a0, gitem_t, stride 0x30): ECX = &bg_itemlist[idx]. */
     itemInfo = &cg_items[cent->currentState.itemIndex];
-    item     = &bg_itemlist[cent->currentState.itemIndex];
+    item = &bg_itemlist[cent->currentState.itemIndex];
 
     /* 0x3001e6cc/0x3001e6e3: TEST EAX,EAX on cg_items[idx][+0x00] = itemInfo->registered.
      * If not registered yet, register the item's visuals and return this frame (no draw). */
@@ -108,17 +108,14 @@ void CG_Item(centity_t *cent /* EBX */)
      * is a data error (the XModel failed to load); report it and continue. This is a
      * SECOND, distinct null-check on +0x04, not the +0x00 registered flag above. */
     if (itemInfo->modelHandle == 0)
-        Com_ErrorMessage("No XModel loaded for item index %i (%s)",
-                         cent->currentState.itemIndex, item->pickupName);
+        Com_ErrorMessage("No XModel loaded for item index %i (%s)", cent->currentState.itemIndex, item->pickupName);
 
     /* 0x3001e727: (re)bind the entity's DObj weapon anim tree. First stack arg is
      * cent->currentState.eType, second is itemInfo->modelHandle; entityNum is passed in ESI. */
-    CG_RefreshEntityDObjAnimTree(cent->currentState.number, cent->currentState.eType,
-                                 itemInfo->modelHandle);
+    CG_RefreshEntityDObjAnimTree(cent->currentState.number, cent->currentState.eType, itemInfo->modelHandle);
 
     /* 0x3001e736: handle = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number). */
-    dobj = (struct DObj_s *)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, cent->currentState.number);
+    dobj = (struct DObj_s *)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number);
     /* 0x3001e749: TEST ESI,ESI; JZ -> no DObj skeleton, nothing to draw. */
     if (dobj == NULL)
         return;
@@ -157,8 +154,8 @@ void CG_Item(centity_t *cent /* EBX */)
 
     /* 0x3001e7bd/0x3001e7c4/0x3001e7cb: DObj handle, owning centity, and reType. */
     re.dobj = dobj;
-    re.owner      = cent;
-    re.reType     = RT_MODEL;
+    re.owner = cent;
+    re.reType = RT_MODEL;
 
     /* 0x3001e7cf: trap_R_AddRefEntityToScene(&re). */
     trap_R_AddRefEntityToScene(&re);

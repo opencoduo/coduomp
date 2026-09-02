@@ -26,14 +26,10 @@ static float noiseValues[COM_NOISE_TABLE_SIZE];
  * forms prove the t/z/y/x permutation nesting and a 255 mask at every access. */
 static float GetNoiseValue(int32_t x, int32_t y, int32_t z, int32_t t)
 {
-    const int32_t tHash =
-        noisePermutation[t & COM_NOISE_TABLE_MASK];
-    const int32_t zHash =
-        noisePermutation[(z + tHash) & COM_NOISE_TABLE_MASK];
-    const int32_t yHash =
-        noisePermutation[(y + zHash) & COM_NOISE_TABLE_MASK];
-    const int32_t valueIndex =
-        noisePermutation[(x + yHash) & COM_NOISE_TABLE_MASK];
+    const int32_t tHash = noisePermutation[t & COM_NOISE_TABLE_MASK];
+    const int32_t zHash = noisePermutation[(z + tHash) & COM_NOISE_TABLE_MASK];
+    const int32_t yHash = noisePermutation[(y + zHash) & COM_NOISE_TABLE_MASK];
+    const int32_t valueIndex = noisePermutation[(x + yHash) & COM_NOISE_TABLE_MASK];
 
     return noiseValues[valueIndex];
 }
@@ -50,16 +46,12 @@ void Com_NoiseInit(void)
 
     srand(COM_NOISE_RANDOM_SEED);
     for (int32_t index = 0; index < COM_NOISE_TABLE_SIZE; ++index) {
-        noiseValues[index] =
-            (float)coduo_crt_rand() * randomScale * 2.0f - 1.0f;
+        noiseValues[index] = (float)coduo_crt_rand() * randomScale * 2.0f - 1.0f;
 
         /* This is rand * 256 / (RAND_MAX + 1), followed by the table mask.
          * The Windows and Mac compilers both reduce it to the proven
          * shift-by-7 result for the 15-bit MSVC random value. */
-        noisePermutation[index] =
-            (coduo_crt_rand() * COM_NOISE_TABLE_SIZE /
-             (COM_NOISE_CRT_RANDOM_MAX + 1)) &
-            COM_NOISE_TABLE_MASK;
+        noisePermutation[index] = (coduo_crt_rand() * COM_NOISE_TABLE_SIZE / (COM_NOISE_CRT_RANDOM_MAX + 1)) & COM_NOISE_TABLE_MASK;
     }
 }
 
@@ -86,40 +78,24 @@ float Com_NoiseGet4f(float x, float y, float z, float t)
 
     for (int32_t tCorner = 0; tCorner < 2; ++tCorner) {
         const int32_t latticeT = tBase + tCorner;
-        const float noise000 =
-            GetNoiseValue(xBase, yBase, zBase, latticeT);
-        const float noise100 =
-            GetNoiseValue(xBase + 1, yBase, zBase, latticeT);
-        const float noise010 =
-            GetNoiseValue(xBase, yBase + 1, zBase, latticeT);
-        const float noise110 =
-            GetNoiseValue(xBase + 1, yBase + 1, zBase, latticeT);
-        const float noise001 =
-            GetNoiseValue(xBase, yBase, zBase + 1, latticeT);
-        const float noise101 =
-            GetNoiseValue(xBase + 1, yBase, zBase + 1, latticeT);
-        const float noise011 =
-            GetNoiseValue(xBase, yBase + 1, zBase + 1, latticeT);
-        const float noise111 =
-            GetNoiseValue(xBase + 1, yBase + 1, zBase + 1, latticeT);
+        const float noise000 = GetNoiseValue(xBase, yBase, zBase, latticeT);
+        const float noise100 = GetNoiseValue(xBase + 1, yBase, zBase, latticeT);
+        const float noise010 = GetNoiseValue(xBase, yBase + 1, zBase, latticeT);
+        const float noise110 = GetNoiseValue(xBase + 1, yBase + 1, zBase, latticeT);
+        const float noise001 = GetNoiseValue(xBase, yBase, zBase + 1, latticeT);
+        const float noise101 = GetNoiseValue(xBase + 1, yBase, zBase + 1, latticeT);
+        const float noise011 = GetNoiseValue(xBase, yBase + 1, zBase + 1, latticeT);
+        const float noise111 = GetNoiseValue(xBase + 1, yBase + 1, zBase + 1, latticeT);
 
-        const float zLowerY0 =
-            noise000 * inverseX + noise100 * xFraction;
-        const float zLowerY1 =
-            noise010 * inverseX + noise110 * xFraction;
-        const float zUpperY0 =
-            noise001 * inverseX + noise101 * xFraction;
-        const float zUpperY1 =
-            noise011 * inverseX + noise111 * xFraction;
-        const float zLower =
-            zLowerY0 * inverseY + zLowerY1 * yFraction;
-        const float zUpper =
-            zUpperY0 * inverseY + zUpperY1 * yFraction;
+        const float zLowerY0 = noise000 * inverseX + noise100 * xFraction;
+        const float zLowerY1 = noise010 * inverseX + noise110 * xFraction;
+        const float zUpperY0 = noise001 * inverseX + noise101 * xFraction;
+        const float zUpperY1 = noise011 * inverseX + noise111 * xFraction;
+        const float zLower = zLowerY0 * inverseY + zLowerY1 * yFraction;
+        const float zUpper = zUpperY0 * inverseY + zUpperY1 * yFraction;
 
-        timeValues[tCorner] =
-            zLower * inverseZ + zUpper * zFraction;
+        timeValues[tCorner] = zLower * inverseZ + zUpper * zFraction;
     }
 
-    return timeValues[0] * (1.0f - tFraction) +
-           timeValues[1] * tFraction;
+    return timeValues[0] * (1.0f - tFraction) + timeValues[1] * tFraction;
 }

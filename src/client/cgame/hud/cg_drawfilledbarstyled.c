@@ -45,17 +45,9 @@
 void CG_DrawFilledBarStyled(float x, float y, float width, float height, float frac)
 {
     // Fill color (passed to CG_FilledBar in ECX; selected by flag CG_FILLEDBAR_FILLCOLOR).
-    vec4_t fillColor   = { 0.5f, 0.5f, 0.5f, 0.3f };
+    vec4_t fillColor = {0.5f, 0.5f, 0.5f, 0.3f};
     // Background/border color (stack arg, copied first inside CG_FilledBar).
-    vec4_t borderColor = { 1.0f, 1.0f, 1.0f, 0.3f };
+    vec4_t borderColor = {1.0f, 1.0f, 1.0f, 0.3f};
 
-    CG_FilledBar(CG_FILLEDBAR_FILLCOLOR | CG_FILLEDBAR_NO_ALPHA_FADE,
-                 fillColor,
-                 NULL,
-                 x,
-                 y,
-                 width,
-                 height,
-                 borderColor,
-                 frac);
+    CG_FilledBar(CG_FILLEDBAR_FILLCOLOR | CG_FILLEDBAR_NO_ALPHA_FADE, fillColor, NULL, x, y, width, height, borderColor, frac);
 }

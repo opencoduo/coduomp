@@ -35,22 +35,17 @@ void VectorAngleMultiply(vec2_t vector, float angleDegrees)
     float rotatedX;
 
 #if EMULATE_X87
-    radians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(angleDegrees), x87f_load_f32(0.017453292f)));
+    radians = x87f_store_f32(x87f_mul(x87f_load_f32(angleDegrees), x87f_load_f32(0.017453292f)));
     BG_SinCos(radians, &sine, &cosine);
-    rotatedX = x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(cosine)),
-        x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(sine))));
-    vector[1] = x87f_store_f32(x87f_add(
-        x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(sine)),
-        x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(cosine))));
+    rotatedX = x87f_store_f32(
+        x87f_sub(x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(cosine)), x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(sine))));
+    vector[1] = x87f_store_f32(
+        x87f_add(x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(sine)), x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(cosine))));
 #else
     radians = (float)((long double)angleDegrees * 0.017453292f);
     BG_SinCos(radians, &sine, &cosine);
-    rotatedX = (float)((long double)vector[0] * cosine -
-                       (long double)vector[1] * sine);
-    vector[1] = (float)((long double)vector[0] * sine +
-                        (long double)vector[1] * cosine);
+    rotatedX = (float)((long double)vector[0] * cosine - (long double)vector[1] * sine);
+    vector[1] = (float)((long double)vector[0] * sine + (long double)vector[1] * cosine);
 #endif
     memcpy(&vector[0], &rotatedX, sizeof(vector[0]));
 }
@@ -63,24 +58,17 @@ void VectorAngleMultiply(vec2_t vector, float angleDegrees)
     float rotatedX;
 
 #if EMULATE_X87
-    radians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(angleDegrees),
-        x87f_load_f64(0.017453292519943295)));
+    radians = x87f_store_f32(x87f_mul(x87f_load_f32(angleDegrees), x87f_load_f64(0.017453292519943295)));
     BG_SinCos(radians, &sine, &cosine);
-    rotatedX = x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(cosine)),
-        x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(sine))));
-    vector[1] = x87f_store_f32(x87f_add(
-        x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(cosine)),
-        x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(sine))));
+    rotatedX = x87f_store_f32(
+        x87f_sub(x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(cosine)), x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(sine))));
+    vector[1] = x87f_store_f32(
+        x87f_add(x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(cosine)), x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(sine))));
 #else
-    radians = (float)((long double)angleDegrees *
-                      0.017453292519943295);
+    radians = (float)((long double)angleDegrees * 0.017453292519943295);
     BG_SinCos(radians, &sine, &cosine);
-    rotatedX = (float)((long double)vector[0] * cosine -
-                       (long double)vector[1] * sine);
-    vector[1] = (float)((long double)vector[1] * cosine +
-                        (long double)vector[0] * sine);
+    rotatedX = (float)((long double)vector[0] * cosine - (long double)vector[1] * sine);
+    vector[1] = (float)((long double)vector[1] * cosine + (long double)vector[0] * sine);
 #endif
     memcpy(&vector[0], &rotatedX, sizeof(vector[0]));
 }

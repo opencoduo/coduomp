@@ -15,12 +15,9 @@ enum {
     R_COMMAND_BUFFER_USABLE_BYTES = 262136
 };
 
-static const float rendererBytesToMebibytes =
-    0.00000095367431640625f; /* 0x35800000, 1 / 1048576 */
-static const float rendererAngleToU16 =
-    182.04444885253906f; /* 0x43360b61, 65536 / 360 */
-static const float rendererU16ToAngle =
-    0.0054931640625f; /* 0x3bb40000, 360 / 65536 */
+static const float rendererBytesToMebibytes = 0.00000095367431640625f; /* 0x35800000, 1 / 1048576 */
+static const float rendererAngleToU16 = 182.04444885253906f; /* 0x43360b61, 65536 / 360 */
+static const float rendererU16ToAngle = 0.0054931640625f; /* 0x3bb40000, 360 / 65536 */
 
 /* Source: CoDUOMP.exe 0x004f0030..0x004f0071.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f0030_004f0072.mcode.
@@ -28,20 +25,19 @@ static const float rendererU16ToAngle =
  * bytes of the 256 KiB allocation remain reserved for stream termination. */
 void *R_GetCommandBuffer(int32_t byteCount)
 {
-    const uint32_t newCommandUsed =
-        (uint32_t)rendererBackendData->commandUsed + (uint32_t)byteCount;
+    const uint32_t newCommandUsed = (uint32_t)rendererBackendData->commandUsed + (uint32_t)byteCount;
 
     if (newCommandUsed > R_COMMAND_BUFFER_USABLE_BYTES) {
         if ((uint32_t)byteCount > R_COMMAND_BUFFER_USABLE_BYTES) {
             ri.Error(ERR_FATAL,
-                     "\x15" "R_GetCommandBuffer: bad size %i",
+                     "\x15"
+                     "R_GetCommandBuffer: bad size %i",
                      byteCount);
         }
         return NULL;
     }
 
-    void *const command =
-        &rendererBackendData->commandBuffer[rendererBackendData->commandUsed];
+    void *const command = &rendererBackendData->commandBuffer[rendererBackendData->commandUsed];
     rendererBackendData->commandUsed = (int32_t)newCommandUsed;
     return command;
 }
@@ -52,8 +48,7 @@ void *R_GetCommandBuffer(int32_t byteCount)
  * export slot 29. A NULL input selects the all-white color. */
 void RE_SetColor(const float *rgba)
 {
-    setColorCommand_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    setColorCommand_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
 
@@ -63,9 +58,7 @@ void RE_SetColor(const float *rgba)
         rgba = colorWhite;
 
     for (int32_t component = 0; component < 4; ++component) {
-        command->color.components[component] =
-            coduo_fp_to_u8_extended(
-                (long double)rgba[component] * 255.0f);
+        command->color.components[component] = coduo_fp_to_u8_extended((long double)rgba[component] * 255.0f);
     }
 }
 
@@ -73,20 +66,15 @@ void RE_SetColor(const float *rgba)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f0180_004f021e.mcode.
  * Name and signature: exact same-module Mac symbol RE_StretchPic and renderer
  * export slot 30. */
-void RE_StretchPic(float x, float y, float width, float height,
-                   float s1, float t1, float s2, float t2,
-                   int32_t shaderHandle)
+void RE_StretchPic(float x, float y, float width, float height, float s1, float t1, float s2, float t2, int32_t shaderHandle)
 {
-    stretchPicCommand_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    stretchPicCommand_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
 
     command->commandId = RC_STRETCH_PIC;
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetShaderByHandle: out of range hShader '%d'\n",
-                  shaderHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
         command->shader = tr.defaultShader;
     } else {
         command->shader = tr.shaders[shaderHandle];
@@ -107,22 +95,16 @@ void RE_StretchPic(float x, float y, float width, float height,
  * coduomp/mcode/CoDUOMP/FUN_004f0220_004f031b.mcode.
  * Name and signature: exact same-module Mac symbol RE_StretchPicGradient and
  * renderer export slot 31. */
-void RE_StretchPicGradient(float x, float y, float width, float height,
-                           float s1, float t1, float s2, float t2,
-                           int32_t shaderHandle,
-                           const float *gradientColor,
-                           int32_t gradientType)
+void RE_StretchPicGradient(float x, float y, float width, float height, float s1, float t1, float s2, float t2, int32_t shaderHandle,
+                           const float *gradientColor, int32_t gradientType)
 {
-    stretch_pic_gradient_command_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    stretch_pic_gradient_command_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
 
     command->commandId = RC_STRETCH_PIC_GRADIENT;
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetShaderByHandle: out of range hShader '%d'\n",
-                  shaderHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
         command->shader = tr.defaultShader;
     } else {
         command->shader = tr.shaders[shaderHandle];
@@ -140,9 +122,7 @@ void RE_StretchPicGradient(float x, float y, float width, float height,
     if (gradientColor == NULL)
         gradientColor = colorWhite;
     for (int32_t component = 0; component < 4; ++component) {
-        command->gradientColor.components[component] =
-            coduo_fp_to_u8_extended(
-                (long double)gradientColor[component] * 255.0f);
+        command->gradientColor.components[component] = coduo_fp_to_u8_extended((long double)gradientColor[component] * 255.0f);
     }
     command->gradientType = gradientType;
 }
@@ -154,20 +134,16 @@ void RE_StretchPicGradient(float x, float y, float width, float height,
  * renderer export slot 32. The retained scaled angle passes through the
  * original _ftol2 low dword and uint16 mask before conversion back to
  * degrees. */
-void RE_StretchPicRotate(float x, float y, float width, float height,
-                         float s1, float t1, float s2, float t2,
-                         float angleDegrees, int32_t shaderHandle)
+void RE_StretchPicRotate(float x, float y, float width, float height, float s1, float t1, float s2, float t2, float angleDegrees,
+                         int32_t shaderHandle)
 {
-    stretch_pic_rotate_command_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    stretch_pic_rotate_command_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
 
     command->commandId = RC_STRETCH_PIC_ROTATE;
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetShaderByHandle: out of range hShader '%d'\n",
-                  shaderHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
         command->shader = tr.defaultShader;
     } else {
         command->shader = tr.shaders[shaderHandle];
@@ -181,12 +157,10 @@ void RE_StretchPicRotate(float x, float y, float width, float height,
     command->t1 = t1;
     command->s2 = s2;
     command->t2 = t2;
-    const long double rawAngle =
-        (long double)angleDegrees * rendererAngleToU16;
+    const long double rawAngle = (long double)angleDegrees * rendererAngleToU16;
     const uint32_t angleBits = coduo_fp_to_u32_extended(rawAngle);
     const float angleUnits = (float)(angleBits & UINT16_MAX);
-    command->angleDegrees = (float)(
-        (long double)angleUnits * rendererU16ToAngle);
+    command->angleDegrees = (float)((long double)angleUnits * rendererU16ToAngle);
 }
 
 /* Source: CoDUOMP.exe 0x004f0400..0x004f04cf.
@@ -194,19 +168,15 @@ void RE_StretchPicRotate(float x, float y, float width, float height,
  * coduomp/mcode/CoDUOMP/FUN_004f0400_004f04d0.mcode.
  * Name and signature: exact same-module Mac symbol RE_DrawQuadPic and
  * renderer export slot 33. */
-void RE_DrawQuadPic(const vec2_t positions[4], const vec2_t texCoords[4],
-                    int32_t shaderHandle)
+void RE_DrawQuadPic(const vec2_t positions[4], const vec2_t texCoords[4], int32_t shaderHandle)
 {
-    draw_quad_pic_command_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    draw_quad_pic_command_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
 
     command->commandId = RC_DRAW_QUAD_PIC;
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetShaderByHandle: out of range hShader '%d'\n",
-                  shaderHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
         command->shader = tr.defaultShader;
     } else {
         command->shader = tr.shaders[shaderHandle];
@@ -235,13 +205,9 @@ void R_PerformanceCounters(void)
         statistics->drawnIndexCount = backEnd.pc.drawnIndexCount;
         statistics->vertexCount = backEnd.pc.vertexCount;
         statistics->drawCallCount = backEnd.pc.drawCallCount;
-        R_SumOfUsedImages(&statistics->imageMemory,
-                          &statistics->lightmapMemory,
-                          &statistics->textureMemory);
+        R_SumOfUsedImages(&statistics->imageMemory, &statistics->lightmapMemory, &statistics->textureMemory);
         statistics->entityCount = rendererSceneFrameState.entityCount;
-        statistics->overdrawRatio =
-            backEnd.pc.overdrawSum /
-            (float)(glConfig.vidWidth * glConfig.vidHeight);
+        statistics->overdrawRatio = backEnd.pc.overdrawSum / (float)(glConfig.vidWidth * glConfig.vidHeight);
     }
 
     switch (r_speeds->integer) {
@@ -251,35 +217,20 @@ void R_PerformanceCounters(void)
         int32_t textureMemory;
         R_SumOfUsedImages(&imageMemory, &lightmapMemory, &textureMemory);
 
-        ri.Printf(
-            R_PRINT_ALL,
-            "%i/%i shaders/surfs %i leafs %i verts %i/%i tris "
-            "%.2f/%.2f/%.2f MB %.2f dc\n",
-            backEnd.pc.shaderCount,
-            backEnd.pc.surfaceCount,
-            tr.pc.leafCount,
-            backEnd.pc.vertexCount,
-            backEnd.pc.indexCount / 3,
-            backEnd.pc.drawnIndexCount / 3,
-            (double)((float)imageMemory * rendererBytesToMebibytes),
-            (double)((float)(imageMemory - lightmapMemory) *
-                     rendererBytesToMebibytes),
-            (double)((float)textureMemory * rendererBytesToMebibytes),
-            (double)(backEnd.pc.overdrawSum /
-                     (float)(glConfig.vidWidth * glConfig.vidHeight)));
+        ri.Printf(R_PRINT_ALL,
+                  "%i/%i shaders/surfs %i leafs %i verts %i/%i tris "
+                  "%.2f/%.2f/%.2f MB %.2f dc\n",
+                  backEnd.pc.shaderCount, backEnd.pc.surfaceCount, tr.pc.leafCount, backEnd.pc.vertexCount, backEnd.pc.indexCount / 3,
+                  backEnd.pc.drawnIndexCount / 3, (double)((float)imageMemory * rendererBytesToMebibytes),
+                  (double)((float)(imageMemory - lightmapMemory) * rendererBytesToMebibytes),
+                  (double)((float)textureMemory * rendererBytesToMebibytes),
+                  (double)(backEnd.pc.overdrawSum / (float)(glConfig.vidWidth * glConfig.vidHeight)));
         break;
     }
 
     case 2:
-        ri.Printf(
-            R_PRINT_ALL,
-            "(patch) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
-            tr.pc.patchSphereCullIn,
-            tr.pc.patchSphereCullClip,
-            tr.pc.patchSphereCullOut,
-            tr.pc.patchBoxCullIn,
-            tr.pc.patchBoxCullClip,
-            tr.pc.patchBoxCullOut);
+        ri.Printf(R_PRINT_ALL, "(patch) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n", tr.pc.patchSphereCullIn,
+                  tr.pc.patchSphereCullClip, tr.pc.patchSphereCullOut, tr.pc.patchBoxCullIn, tr.pc.patchBoxCullClip, tr.pc.patchBoxCullOut);
         break;
 
     case 3:
@@ -288,19 +239,13 @@ void R_PerformanceCounters(void)
 
     case 4:
         if (backEnd.pc.dlightVertexCount != 0) {
-            ri.Printf(R_PRINT_ALL,
-                      "dlight srf:%i  culled:%i  verts:%i  tris:%i\n",
-                      tr.pc.dlightSurfaceCount,
-                      tr.pc.dlightSurfaceCullCount,
-                      backEnd.pc.dlightVertexCount,
-                      backEnd.pc.dlightIndexCount / 3);
+            ri.Printf(R_PRINT_ALL, "dlight srf:%i  culled:%i  verts:%i  tris:%i\n", tr.pc.dlightSurfaceCount, tr.pc.dlightSurfaceCullCount,
+                      backEnd.pc.dlightVertexCount, backEnd.pc.dlightIndexCount / 3);
         }
         break;
 
     case 6:
-        ri.Printf(R_PRINT_ALL, "flare adds:%i tests:%i renders:%i\n",
-                  backEnd.pc.flareAddCount,
-                  backEnd.pc.flareTestCount,
+        ri.Printf(R_PRINT_ALL, "flare adds:%i tests:%i renders:%i\n", backEnd.pc.flareAddCount, backEnd.pc.flareTestCount,
                   backEnd.pc.flareRenderCount);
         break;
 
@@ -318,9 +263,7 @@ void R_PerformanceCounters(void)
 void R_IssueRenderCommands(qboolean runPerformanceCounters)
 {
     const int32_t endCommand = RC_END_OF_LIST;
-    memcpy(&rendererBackendData
-                ->commandBuffer[rendererBackendData->commandUsed],
-           &endCommand, sizeof(endCommand));
+    memcpy(&rendererBackendData->commandBuffer[rendererBackendData->commandUsed], &endCommand, sizeof(endCommand));
     rendererBackendData->commandUsed = 0;
 
     if (runPerformanceCounters != qfalse)
@@ -341,9 +284,7 @@ void R_SyncRenderThread(void)
         return;
 
     const int32_t endCommand = RC_END_OF_LIST;
-    memcpy(&rendererBackendData
-                ->commandBuffer[rendererBackendData->commandUsed],
-           &endCommand, sizeof(endCommand));
+    memcpy(&rendererBackendData->commandBuffer[rendererBackendData->commandUsed], &endCommand, sizeof(endCommand));
     rendererBackendData->commandUsed = 0;
 
     if (r_skipBackEnd->integer == 0) {
@@ -368,17 +309,12 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
 
     if (r_measureOverdraw->integer != 0) {
         if (glConfig.stencilBits < 4) {
-            ri.Printf(
-                R_PRINT_ALL,
-                "Warning: not enough stencil bits to measure overdraw: %d\n",
-                glConfig.stencilBits);
+            ri.Printf(R_PRINT_ALL, "Warning: not enough stencil bits to measure overdraw: %d\n", glConfig.stencilBits);
             ri.Cvar_Set("r_measureOverdraw", "0");
             r_measureOverdraw->modified = qfalse;
         } else if (cg_shadows->integer == 2) {
-            ri.Printf(
-                R_PRINT_ALL,
-                "Warning: stencil shadows and overdraw measurement are "
-                "mutually exclusive\n");
+            ri.Printf(R_PRINT_ALL, "Warning: stencil shadows and overdraw measurement are "
+                                   "mutually exclusive\n");
             ri.Cvar_Set("r_measureOverdraw", "0");
             r_measureOverdraw->modified = qfalse;
         } else {
@@ -406,62 +342,45 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
     if (qglPNTrianglesiATI != NULL) {
         if (r_ati_truform_tess->modified != qfalse) {
             r_ati_truform_tess->modified = qfalse;
-            if ((float)glConfig.maxPNTrianglesTessellationLevel <
-                r_ati_truform_tess->value) {
-                ri.Cvar_Set(
-                    "r_ati_truform_tess",
-                    va("%i", glConfig.maxPNTrianglesTessellationLevel));
+            if ((float)glConfig.maxPNTrianglesTessellationLevel < r_ati_truform_tess->value) {
+                ri.Cvar_Set("r_ati_truform_tess", va("%i", glConfig.maxPNTrianglesTessellationLevel));
             }
-            qglPNTrianglesiATI(
-                GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI,
-                r_ati_truform_tess->integer);
+            qglPNTrianglesiATI(GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI, r_ati_truform_tess->integer);
         }
 
         if (r_ati_truform_pointmode->modified != qfalse) {
             r_ati_truform_pointmode->modified = qfalse;
             if (Q_stricmp(r_ati_truform_pointmode->string, "LINEAR") == 0) {
-                glConfig.pnTrianglesPointMode =
-                    GL_PN_TRIANGLES_POINT_MODE_LINEAR_ATI;
-            } else if (Q_stricmp(
-                           r_ati_truform_pointmode->string, "CUBIC") == 0) {
-                glConfig.pnTrianglesPointMode =
-                    GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI;
+                glConfig.pnTrianglesPointMode = GL_PN_TRIANGLES_POINT_MODE_LINEAR_ATI;
+            } else if (Q_stricmp(r_ati_truform_pointmode->string, "CUBIC") == 0) {
+                glConfig.pnTrianglesPointMode = GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI;
             } else {
                 /* The original applies CUBIC for this frame even though it
                  * corrects the cvar to LINEAR for the next update. At
                  * 0x004f06c4 the current-frame mode is published before the
                  * cvar callback. */
-                glConfig.pnTrianglesPointMode =
-                    GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI;
+                glConfig.pnTrianglesPointMode = GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI;
                 ri.Cvar_Set("r_ati_truform_pointmode", "LINEAR");
             }
-            qglPNTrianglesiATI(GL_PN_TRIANGLES_POINT_MODE_ATI,
-                               glConfig.pnTrianglesPointMode);
+            qglPNTrianglesiATI(GL_PN_TRIANGLES_POINT_MODE_ATI, glConfig.pnTrianglesPointMode);
         }
 
         if (r_ati_truform_normalmode->modified != qfalse) {
             r_ati_truform_normalmode->modified = qfalse;
             if (Q_stricmp(r_ati_truform_normalmode->string, "LINEAR") == 0) {
-                glConfig.pnTrianglesNormalMode =
-                    GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI;
-            } else if (Q_stricmp(
-                           r_ati_truform_normalmode->string,
-                           "QUADRATIC") == 0) {
-                glConfig.pnTrianglesNormalMode =
-                    GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATI;
+                glConfig.pnTrianglesNormalMode = GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI;
+            } else if (Q_stricmp(r_ati_truform_normalmode->string, "QUADRATIC") == 0) {
+                glConfig.pnTrianglesNormalMode = GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATI;
             } else {
                 /* 0x004f074c publishes the fallback before Cvar_Set. */
-                glConfig.pnTrianglesNormalMode =
-                    GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI;
+                glConfig.pnTrianglesNormalMode = GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI;
                 ri.Cvar_Set("r_ati_truform_normalmode", "LINEAR");
             }
-            qglPNTrianglesiATI(GL_PN_TRIANGLES_NORMAL_MODE_ATI,
-                               glConfig.pnTrianglesNormalMode);
+            qglPNTrianglesiATI(GL_PN_TRIANGLES_NORMAL_MODE_ATI, glConfig.pnTrianglesNormalMode);
         }
     }
 
-    if (glConfig.fogDistanceAvailable != qfalse &&
-        r_nv_fogdist_mode->modified != qfalse) {
+    if (glConfig.fogDistanceAvailable != qfalse && r_nv_fogdist_mode->modified != qfalse) {
         r_nv_fogdist_mode->modified = qfalse;
         R_SetNVFogMode();
     }
@@ -472,8 +391,7 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
         R_SetColorMappings();
     }
 
-    if (glConfig.vertexBufferObjectAvailable != qfalse &&
-        r_vbo_paranoia->integer != 0) {
+    if (glConfig.vertexBufferObjectAvailable != qfalse && r_vbo_paranoia->integer != 0) {
         R_IncrementalRefreshOptimizedWorldSurfaces_ARB();
         R_IncrementalRefreshStaticModels_ARB(R_VBO_REFRESH_ALL);
         R_IncrementalRefreshXModels_ARB(R_VBO_REFRESH_ALL);
@@ -483,14 +401,10 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
         R_SyncRenderThread();
         const uint32_t error = qglGetError();
         if (error != GL_NO_ERROR) {
-            ri.Error(
-                ERR_FATAL,
-                "\x15RE_BeginFrame() - glGetError() failed (0x%x)!\n",
-                error);
+            ri.Error(ERR_FATAL, "\x15RE_BeginFrame() - glGetError() failed (0x%x)!\n", error);
         }
     }
-    drawBufferCommand_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    drawBufferCommand_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
     command->commandId = RC_DRAW_BUFFER;
@@ -505,24 +419,15 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
             return;
         }
 
-        ri.Error(
-            ERR_FATAL,
-            "\x15RE_BeginFrame: Stereo is enabled, but stereoFrame was %i",
-            stereoFrame);
+        ri.Error(ERR_FATAL, "\x15RE_BeginFrame: Stereo is enabled, but stereoFrame was %i", stereoFrame);
         return;
     }
 
     if (stereoFrame != STEREO_CENTER) {
-        ri.Error(
-            ERR_FATAL,
-            "\x15RE_BeginFrame: Stereo is disabled, but stereoFrame was %i",
-            stereoFrame);
+        ri.Error(ERR_FATAL, "\x15RE_BeginFrame: Stereo is disabled, but stereoFrame was %i", stereoFrame);
     }
 
-    command->buffer =
-        Q_stricmp(r_drawBuffer->string, "GL_FRONT") == 0
-            ? GL_FRONT
-            : GL_BACK;
+    command->buffer = Q_stricmp(r_drawBuffer->string, "GL_FRONT") == 0 ? GL_FRONT : GL_BACK;
 }
 
 /* Source: CoDUOMP.exe 0x004f08b0..0x004f0987.
@@ -535,9 +440,7 @@ void RE_EndFrame(int32_t *frontEndMsec, int32_t *backEndMsec)
     if (tr.registered == qfalse)
         return;
 
-    swapBuffersCommand_t *const command =
-        (swapBuffersCommand_t *)&rendererBackendData
-            ->commandBuffer[rendererBackendData->commandUsed];
+    swapBuffersCommand_t *const command = (swapBuffersCommand_t *)&rendererBackendData->commandBuffer[rendererBackendData->commandUsed];
     command->commandId = RC_SWAP_BUFFERS;
     rendererBackendData->commandUsed += (int32_t)sizeof(*command);
 
@@ -559,8 +462,7 @@ void RE_EndFrame(int32_t *frontEndMsec, int32_t *backEndMsec)
  * Name: exact same-module Mac symbol RE_SaveScreen. */
 void RE_SaveScreen(void)
 {
-    save_screen_command_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    save_screen_command_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command != NULL)
         command->commandId = RC_SAVE_SCREEN;
 }
@@ -575,8 +477,7 @@ void RE_BlendSavedScreen(int32_t duration)
     if (duration <= 0)
         return;
 
-    blend_saved_screen_command_t *const command =
-        R_GetCommandBuffer((int32_t)sizeof(*command));
+    blend_saved_screen_command_t *const command = R_GetCommandBuffer((int32_t)sizeof(*command));
     if (command == NULL)
         return;
 

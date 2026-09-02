@@ -15,8 +15,7 @@ enum {
     FX_ARCHIVE_ASSET_NAME_CAPACITY = MAX_QPATH
 };
 
-_Static_assert(FX_ARCHIVE_ASSET_NAME_CAPACITY <= UINT8_MAX + 1,
-               "FX archive asset names must fit the one-byte length field");
+_Static_assert(FX_ARCHIVE_ASSET_NAME_CAPACITY <= UINT8_MAX + 1, "FX archive asset names must fit the one-byte length field");
 
 /* Source: CoDUOMP.exe 0x0049fcc0..0x0049fce5. */
 void CFxArchive_Init(fx_archive_t *archive)
@@ -33,8 +32,7 @@ void CFxArchive_Init(fx_archive_t *archive)
 }
 
 /* Source: CoDUOMP.exe 0x0049fcf0..0x0049fd22. */
-void CFxArchive_InitRead(fx_archive_t *archive, uint8_t *buffer,
-                         int32_t capacity)
+void CFxArchive_InitRead(fx_archive_t *archive, uint8_t *buffer, int32_t capacity)
 {
     archive->buffer = buffer;
     archive->capacity = capacity;
@@ -49,8 +47,7 @@ void CFxArchive_InitRead(fx_archive_t *archive, uint8_t *buffer,
 }
 
 /* Source: CoDUOMP.exe 0x0049fd30..0x0049fd56. */
-void CFxArchive_InitWrite(fx_archive_t *archive, uint8_t *buffer,
-                          int32_t capacity)
+void CFxArchive_InitWrite(fx_archive_t *archive, uint8_t *buffer, int32_t capacity)
 {
     archive->buffer = buffer;
     archive->capacity = capacity;
@@ -92,12 +89,14 @@ void CFxArchive_WriteShort(fx_archive_t *archive, int16_t value)
 }
 
 /* Source: CoDUOMP.exe 0x0049fd60..0x0049fd64. */
-void CFxArchive_SetModel(fx_archive_t *archive, int32_t index,
-                         DObj *model)
+void CFxArchive_SetModel(fx_archive_t *archive, int32_t index, DObj *model)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if ((uint32_t)index >= (uint32_t)FX_ARCHIVE_MODEL_CAPACITY) {
-        Com_Error(ERR_DROP, "\x15" "Loading FX system state: invalid model reference %i\n", index);
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Loading FX system state: invalid model reference %i\n",
+                  index);
         return;
     }
     archive->references[index].model = model;
@@ -110,7 +109,10 @@ DObj *CFxArchive_ReadModel(fx_archive_t *archive)
     int16_t index = CFxArchive_ReadShort(archive);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if ((uint32_t)(int32_t)index >= (uint32_t)FX_ARCHIVE_MODEL_CAPACITY) {
-        Com_Error(ERR_DROP, "\x15" "Loading FX system state: invalid model reference %i\n", index);
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Loading FX system state: invalid model reference %i\n",
+                  index);
         return NULL;
     }
     return archive->references[index].model;
@@ -125,8 +127,7 @@ DObj *CFxArchive_ReadModel(fx_archive_t *archive)
 void CFxArchive_WriteModel(fx_archive_t *archive, const DObj *model)
 {
     uint16_t encodedReference = (uint16_t)(uintptr_t)model;
-    CFxArchive_WriteData(archive, &encodedReference,
-                         sizeof(encodedReference));
+    CFxArchive_WriteData(archive, &encodedReference, sizeof(encodedReference));
 }
 
 /* Source: CoDUOMP.exe 0x0049fd90..0x0049fdf7.
@@ -140,7 +141,10 @@ int32_t CFxArchive_ReadShader(fx_archive_t *archive)
     }
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length >= sizeof(name)) {
-        Com_Error(ERR_DROP, "\x15" "Loading FX system state: invalid shader name length %i\n", length);
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Loading FX system state: invalid shader name length %i\n",
+                  length);
         return 0;
     }
 
@@ -160,7 +164,10 @@ DObj *CFxArchive_ReadEffectID(fx_archive_t *archive)
     }
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length >= sizeof(name)) {
-        Com_Error(ERR_DROP, "\x15" "Loading FX system state: invalid effect name length %i\n", length);
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Loading FX system state: invalid effect name length %i\n",
+                  length);
         return NULL;
     }
 
@@ -181,7 +188,8 @@ void CFxArchive_WriteShader(fx_archive_t *archive, int32_t shader)
     const size_t length = strlen(name);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length >= FX_ARCHIVE_ASSET_NAME_CAPACITY) {
-        Com_Error(ERR_DROP, "\x15" "Saving FX system state: shader name exceeds archive capacity\n");
+        Com_Error(ERR_DROP, "\x15"
+                            "Saving FX system state: shader name exceeds archive capacity\n");
         return;
     }
     CFxArchive_WriteByte(archive, (uint8_t)length);
@@ -193,20 +201,16 @@ void CFxArchive_WriteShader(fx_archive_t *archive, int32_t shader)
 /* Source: CoDUOMP.exe 0x004a0020..0x004a006e.
  * Name: same-module Mac symbol CFxArchive::WriteEffectID.  Registered effect
  * ids point at the effect payload immediately following its 64-byte name. */
-void CFxArchive_WriteEffectID(fx_archive_t *archive,
-                              const DObj *effectId)
+void CFxArchive_WriteEffectID(fx_archive_t *archive, const DObj *effectId)
 {
     const char *name = "";
     if (effectId != NULL) {
         /* 0x004a002a..0x004a0036 tests the enclosing registration address
          * after subtracting the DObj member offset. Test the one address that
          * produces NULL before applying the valid container conversion. */
-        if ((uintptr_t)(const void *)effectId !=
-            offsetof(fx_model_registration_t, dobj)) {
+        if ((uintptr_t)(const void *)effectId != offsetof(fx_model_registration_t, dobj)) {
             const fx_model_registration_t *registration =
-                (const fx_model_registration_t *)(
-                    (const uint8_t *)effectId -
-                    offsetof(fx_model_registration_t, dobj));
+                (const fx_model_registration_t *)((const uint8_t *)effectId - offsetof(fx_model_registration_t, dobj));
             name = registration->name;
         }
     }
@@ -214,7 +218,8 @@ void CFxArchive_WriteEffectID(fx_archive_t *archive,
     const size_t length = strlen(name);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length >= FX_ARCHIVE_ASSET_NAME_CAPACITY) {
-        Com_Error(ERR_DROP, "\x15" "Saving FX system state: effect name exceeds archive capacity\n");
+        Com_Error(ERR_DROP, "\x15"
+                            "Saving FX system state: effect name exceeds archive capacity\n");
         return;
     }
     CFxArchive_WriteByte(archive, (uint8_t)length);
@@ -225,8 +230,7 @@ void CFxArchive_WriteEffectID(fx_archive_t *archive,
 
 /* Source: CoDUOMP.exe 0x004a0290..0x004a02a8.
  * Name: same-module Mac symbol CFxArchive::ArchiveData. */
-void CFxArchive_ArchiveData(fx_archive_t *archive, void *data,
-                            int32_t length)
+void CFxArchive_ArchiveData(fx_archive_t *archive, void *data, int32_t length)
 {
     if (archive->loading != 0) {
         CFxArchive_ReadData(archive, data, length);
@@ -298,8 +302,7 @@ void CFxArchive_ArchiveShader(fx_archive_t *archive, int32_t *shader)
 
 /* Source: CoDUOMP.exe 0x004a0320..0x004a0335.
  * Name: same-module Mac symbol CFxArchive::ArchiveEffectID. */
-void CFxArchive_ArchiveEffectID(fx_archive_t *archive,
-                                DObj **effectId)
+void CFxArchive_ArchiveEffectID(fx_archive_t *archive, DObj **effectId)
 {
     if (archive->loading != 0) {
         *effectId = CFxArchive_ReadEffectID(archive);
@@ -312,15 +315,17 @@ void CFxArchive_ArchiveEffectID(fx_archive_t *archive,
  * Name: same-module Mac symbol CFxArchive::ReadData.  Each control byte stores
  * a 1..64 count in its low six bits.  The high two bits select a literal run
  * or a zero run preceded by one, two, or four literal bytes. */
-void CFxArchive_ReadData(fx_archive_t *archive, void *destination,
-                         int32_t length)
+void CFxArchive_ReadData(fx_archive_t *archive, void *destination, int32_t length)
 {
     uint8_t *output = destination;
     int32_t remaining = length;
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (length <= 0) {
-        Com_Error(ERR_DROP, "\x15" "Loading FX system state: invalid read length %i\n", length);
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Loading FX system state: invalid read length %i\n",
+                  length);
         return;
     }
 
@@ -330,8 +335,7 @@ void CFxArchive_ReadData(fx_archive_t *archive, void *destination,
             --archive->literalBytesRemaining;
             --remaining;
             if (archive->cursor >= archive->capacity) {
-                Com_Error(ERR_DROP,
-                          "\x15Loading FX system state: read past the end of the buffer\n");
+                Com_Error(ERR_DROP, "\x15Loading FX system state: read past the end of the buffer\n");
             }
             *output++ = archive->buffer[archive->cursor];
             ++archive->cursor;
@@ -350,8 +354,7 @@ void CFxArchive_ReadData(fx_archive_t *archive, void *destination,
         }
 
         if (archive->cursor >= archive->capacity) {
-            Com_Error(ERR_DROP,
-                      "\x15Loading FX system state: read past the end of the buffer\n");
+            Com_Error(ERR_DROP, "\x15Loading FX system state: read past the end of the buffer\n");
         }
         uint8_t control = archive->buffer[archive->cursor];
         ++archive->cursor;
@@ -383,8 +386,7 @@ void CFxArchive_ReadData(fx_archive_t *archive, void *destination,
  * streaming inverse of CFxArchive_ReadData.  It extends the current control
  * byte in place and, when a literal run ends in two zeros and receives a
  * third, rewrites that tail as a one-literal/three-zero run. */
-void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
-                          int32_t length)
+void CFxArchive_WriteData(fx_archive_t *archive, const void *source, int32_t length)
 {
     const uint8_t *input = source;
     int32_t remaining = length;
@@ -392,16 +394,21 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (length <= 0) {
-        Com_Error(ERR_DROP, "\x15" "Saving FX system state: invalid write length %i\n", length);
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Saving FX system state: invalid write length %i\n",
+                  length);
         return;
     }
 
     archive->uncompressedBytes += length;
 
     if (archive->runControlOffset == archive->cursor) {
-        if (archive->cursor < 0 || archive->capacity < archive->cursor ||
-            archive->capacity - archive->cursor < 2) {
-            Com_Error(ERR_DROP, "\x15" "Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n", archive->capacity, length);
+        if (archive->cursor < 0 || archive->capacity < archive->cursor || archive->capacity - archive->cursor < 2) {
+            Com_Error(ERR_DROP,
+                      "\x15"
+                      "Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n",
+                      archive->capacity, length);
             return;
         }
         archive->buffer[archive->runControlOffset] = FX_ARCHIVE_RUN_LITERAL;
@@ -410,11 +417,9 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
         --remaining;
     }
 
-    if (archive->cursor < 0 || archive->capacity < archive->cursor ||
-        remaining > archive->capacity - archive->cursor) {
-        Com_Error(ERR_DROP,
-                  "\x15Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n",
-                  archive->capacity, remaining);
+    if (archive->cursor < 0 || archive->capacity < archive->cursor || remaining > archive->capacity - archive->cursor) {
+        Com_Error(ERR_DROP, "\x15Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n", archive->capacity,
+                  remaining);
         return;
     }
 
@@ -424,8 +429,7 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
 
         if (type != FX_ARCHIVE_RUN_LITERAL) {
             while (inputIndex < remaining && input[inputIndex] == 0 &&
-                   (*control & FX_ARCHIVE_RUN_COUNT_MASK) !=
-                       FX_ARCHIVE_RUN_COUNT_MASK) {
+                   (*control & FX_ARCHIVE_RUN_COUNT_MASK) != FX_ARCHIVE_RUN_COUNT_MASK) {
                 ++*control;
                 ++inputIndex;
             }
@@ -434,9 +438,11 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
             }
 
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-            if (archive->capacity < archive->cursor ||
-                archive->capacity - archive->cursor < 2) {
-                Com_Error(ERR_DROP, "\x15" "Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n", archive->capacity, remaining - inputIndex);
+            if (archive->capacity < archive->cursor || archive->capacity - archive->cursor < 2) {
+                Com_Error(ERR_DROP,
+                          "\x15"
+                          "Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n",
+                          archive->capacity, remaining - inputIndex);
                 return;
             }
             archive->runControlOffset = archive->cursor;
@@ -447,8 +453,7 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
             continue;
         }
 
-        uint8_t literalCountMinusOne =
-            *control & FX_ARCHIVE_RUN_COUNT_MASK;
+        uint8_t literalCountMinusOne = *control & FX_ARCHIVE_RUN_COUNT_MASK;
         if (literalCountMinusOne == 0 && input[inputIndex] == 0) {
             *control = FX_ARCHIVE_RUN_ZERO_AFTER_1_LITERAL;
             ++inputIndex;
@@ -466,9 +471,11 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
         }
         if (literalCountMinusOne == FX_ARCHIVE_RUN_COUNT_MASK) {
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-            if (archive->capacity < archive->cursor ||
-                archive->capacity - archive->cursor < 2) {
-                Com_Error(ERR_DROP, "\x15" "Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n", archive->capacity, remaining - inputIndex);
+            if (archive->capacity < archive->cursor || archive->capacity - archive->cursor < 2) {
+                Com_Error(ERR_DROP,
+                          "\x15"
+                          "Saving FX system state: out of memory (%i bytes exceeded on writing %i byte(s))\n",
+                          archive->capacity, remaining - inputIndex);
                 return;
             }
             archive->runControlOffset = archive->cursor;
@@ -479,12 +486,10 @@ void CFxArchive_WriteData(fx_archive_t *archive, const void *source,
             continue;
         }
 
-        if (literalCountMinusOne > 5 && input[inputIndex] == 0 &&
-            archive->buffer[archive->cursor - 2] == 0 &&
+        if (literalCountMinusOne > 5 && input[inputIndex] == 0 && archive->buffer[archive->cursor - 2] == 0 &&
             archive->buffer[archive->cursor - 1] == 0) {
             *control = (uint8_t)(*control - 3U);
-            archive->buffer[archive->cursor - 2] =
-                archive->buffer[archive->cursor - 3];
+            archive->buffer[archive->cursor - 2] = archive->buffer[archive->cursor - 3];
             archive->buffer[archive->cursor - 3] = 2;
             archive->runControlOffset = archive->cursor - 3;
             --archive->cursor;

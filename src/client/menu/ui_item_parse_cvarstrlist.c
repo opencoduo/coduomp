@@ -17,8 +17,7 @@ void Com_Printf(const char *format, ...);
 /* NOT_FROM_ORIGINAL_SOURCE: retail menu data hard-codes the Windows Miles
  * provider list. Replace it with only the adapters this native build can
  * actually open. */
-static void coduomp_ui_append_native_sound_provider(
-    multiDef_t *multi, const char *name)
+static void coduomp_ui_append_native_sound_provider(multiDef_t *multi, const char *name)
 {
     if (multi->count >= MAX_MULTI_CVARS)
         return;
@@ -27,17 +26,13 @@ static void coduomp_ui_append_native_sound_provider(
     ++multi->count;
 }
 
-static void coduomp_ui_replace_native_sound_providers(
-    itemDef_t *item, multiDef_t *multi)
+static void coduomp_ui_replace_native_sound_providers(itemDef_t *item, multiDef_t *multi)
 {
-    if (item->cvar == NULL ||
-        strcmp(item->cvar, "ui_mss_3d_provider") != 0)
+    if (item->cvar == NULL || strcmp(item->cvar, "ui_mss_3d_provider") != 0)
         return;
     multi->count = 0;
-    coduomp_ui_append_native_sound_provider(
-        multi, CODUOMP_MINIAUDIO_3D_PROVIDER_NAME);
-    coduomp_ui_append_native_sound_provider(
-        multi, CODUOMP_OPENAL_3D_PROVIDER_NAME);
+    coduomp_ui_append_native_sound_provider(multi, CODUOMP_MINIAUDIO_3D_PROVIDER_NAME);
+    coduomp_ui_append_native_sound_provider(multi, CODUOMP_OPENAL_3D_PROVIDER_NAME);
 }
 #endif
 
@@ -54,8 +49,7 @@ qboolean ItemParse_cvarStrList(itemDef_t *item, int handle)
 
     multi->count = 0;
     multi->strDef = 1;
-    if (!trap_PC_ReadToken(handle, &token) ||
-        token.string[0] != '{')
+    if (!trap_PC_ReadToken(handle, &token) || token.string[0] != '{')
         return qfalse;
 
     qboolean valueToken = qfalse;

@@ -34,8 +34,7 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
     //   0x30034ec1 EAX = ps->eventIndex; 0x30034ecd ESI = EAX - 4 (MAX_PS_EVENTS);
     //   0x30034ed0 CMP ESI,EAX / JGE exit is the signed loop-entry test i < eventIndex;
     //   0x30034f41 INC ESI / 0x30034f42 CMP / JL is the signed loop-continue test.
-    int32_t i = coduo_int32_from_bits(
-        (uint32_t)ps->eventIndex - (uint32_t)MAX_PS_EVENTS);
+    int32_t i = coduo_int32_from_bits((uint32_t)ps->eventIndex - (uint32_t)MAX_PS_EVENTS);
     while (i < ps->eventIndex) {
         int32_t event;
 
@@ -44,23 +43,20 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
         if (i < ops->eventIndex) {
             // 0x30034edf EAX = ops->eventIndex - MAX_PS_EVENTS; CMP ESI,EAX / JLE skip:
             // events older than the old state's ring window are dropped.
-            int32_t oldestRetained = coduo_int32_from_bits(
-                (uint32_t)ops->eventIndex - (uint32_t)MAX_PS_EVENTS);
+            int32_t oldestRetained = coduo_int32_from_bits((uint32_t)ops->eventIndex - (uint32_t)MAX_PS_EVENTS);
             if (i <= oldestRetained) {
                 goto next_event;
             }
             // 0x30034ef2/0x30034ef5 compare the two rings at (i & 3); JZ skip:
             // an unchanged slot is not a new event.
-            int32_t compareRing =
-                (int32_t)((uint32_t)i & (MAX_PS_EVENTS - 1u));
+            int32_t compareRing = (int32_t)((uint32_t)i & (MAX_PS_EVENTS - 1u));
             if (ps->events[compareRing] == ops->events[compareRing]) {
                 goto next_event;
             }
         }
 
         // 0x30034eff EDI = ps->events[i & 3]; 0x30034f06 EDX = ps->eventParms[i & 3].
-        int32_t ring =
-            (int32_t)((uint32_t)i & (MAX_PS_EVENTS - 1u));
+        int32_t ring = (int32_t)((uint32_t)i & (MAX_PS_EVENTS - 1u));
         event = ps->events[ring];
 
         // 0x30034f16 store eventParm into the predicted-event entity's
@@ -75,10 +71,9 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
         cg_predictedEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;
 
         // 0x30034f2d..0x30034f36 cg_predictedEventSequence++;
-        cg_predictedEventSequence = coduo_int32_from_bits(
-            (uint32_t)cg_predictedEventSequence + 1u);
+        cg_predictedEventSequence = coduo_int32_from_bits((uint32_t)cg_predictedEventSequence + 1u);
 
-next_event:
+    next_event:
         /* INC ESI and INC EAX are target dword operations; retain their
          * modulo-2^32 behavior rather than invoking signed-overflow UB. */
         i = coduo_int32_from_bits((uint32_t)i + 1u);

@@ -103,12 +103,11 @@ flameChunk_t *CG_SpawnFlameChunk(flameChunk_t *parent)
         listHead->listPrev = node;                     /* 0x300256b3 */
     }
     node->listPrev = 0;                                /* 0x300256b6 */
-    const int32_t nextActiveCount = coduo_int32_from_bits(
-        (uint32_t)cg_numActiveFlameChunks + 1u);        /* 0x300256b9/bf */
-    node->listNext = listHead;                         /* 0x300256c0 MOV [EAX+0xc],EDX */
-    cg_flameChunkList = node;                           /* 0x300256c3 */
-    node->parent = parent;                             /* 0x300256c8 MOV [EAX+0x8],ESI */
-    cg_numActiveFlameChunks = nextActiveCount;         /* 0x300256cb */
+    const int32_t nextActiveCount = coduo_int32_from_bits((uint32_t)cg_numActiveFlameChunks + 1u); /* 0x300256b9/bf */
+    node->listNext = listHead; /* 0x300256c0 MOV [EAX+0xc],EDX */
+    cg_flameChunkList = node; /* 0x300256c3 */
+    node->parent = parent; /* 0x300256c8 MOV [EAX+0x8],ESI */
+    cg_numActiveFlameChunks = nextActiveCount; /* 0x300256cb */
 
-    return node;                                        /* EAX = node */
+    return node; /* EAX = node */
 }

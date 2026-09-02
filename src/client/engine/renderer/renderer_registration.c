@@ -57,7 +57,5 @@ void RE_BeginRegistration(glconfig_t *config)
     RE_ClearFlares();
     RE_ClearScene();
     tr.registered = qtrue;
-    RE_StretchPic(0.0f, 0.0f, 0.0f, 0.0f,
-                  0.0f, 0.0f, 1.0f, 1.0f,
-                  R_DEFAULT_SHADER_HANDLE);
+    RE_StretchPic(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, R_DEFAULT_SHADER_HANDLE);
 }

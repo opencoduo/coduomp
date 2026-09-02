@@ -136,8 +136,7 @@ void hurt_touch(gentity_t *ent, gentity_t *other, int traceMode)
     (void)traceMode;
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (game_compat_trigger_hurt_toucher_active(other) == 0 ||
-        ent->dynaSinkEndTime > level.time) {
+    if (game_compat_trigger_hurt_toucher_active(other) == 0 || ent->dynaSinkEndTime > level.time) {
         return;
     }
 
@@ -159,8 +158,7 @@ void hurt_touch(gentity_t *ent, gentity_t *other, int traceMode)
         damageFlags = DAMAGE_NO_PROTECTION;
     }
 
-    G_Damage(other, ent, ent, NULL, NULL, ent->damage, damageFlags,
-             MOD_TRIGGER_HURT, 0);
+    G_Damage(other, ent, ent, NULL, NULL, ent->damage, damageFlags, MOD_TRIGGER_HURT, 0);
 
     if ((ent->spawnflags & TRIGGER_HURT_SPAWNFLAG_ONCE) != 0) {
         ent->touch = NULL;
@@ -207,8 +205,7 @@ void hurt_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
         /* 0x7695f..0x76978: fild level.time joins the 80-bit chain directly;
          * the only rounding is the final store to the end-time slot. */
         *game_compat_trigger_hurt_end_time(ent) =
-            *game_compat_trigger_hurt_duration_seconds(ent) * TRIGGER_HURT_DURATION_SCALE +
-            level.time;
+            *game_compat_trigger_hurt_duration_seconds(ent) * TRIGGER_HURT_DURATION_SCALE + level.time;
     }
 }
 
@@ -265,18 +262,15 @@ void SP_trigger_once(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x76aca, 86aca_Respond_trigger_damage.c, VERIFY-NEXT-007-TRIGGER-DAMAGE-2026-06-17): DATAFLOW_VERIFIED - spawnflags MOD filters at +0x188, return values, and all pistol/rifle/explosive/splash/melee/world branches match current decompiler output. */
 int Respond_trigger_damage(gentity_t *trigger, int mod)
 {
-    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_PISTOL) != 0 &&
-        mod == MOD_PISTOL_BULLET) {
+    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_PISTOL) != 0 && mod == MOD_PISTOL_BULLET) {
         return 0;
     }
 
-    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_RIFLE) != 0 &&
-        mod == MOD_RIFLE_BULLET) {
+    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_RIFLE) != 0 && mod == MOD_RIFLE_BULLET) {
         return 0;
     }
 
-    if ((trigger->spawnflags &
-         TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_GRENADE_PROJECTILE_ARTILLERY) != 0) {
+    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_GRENADE_PROJECTILE_ARTILLERY) != 0) {
         switch (mod) {
         case MOD_GRENADE:
         case MOD_GRENADE_SPLASH:
@@ -322,8 +316,7 @@ int Respond_trigger_damage(gentity_t *trigger, int mod)
         }
     }
 
-    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_MELEE) != 0 &&
-        mod == MOD_MELEE) {
+    if ((trigger->spawnflags & TRIGGER_DAMAGE_SPAWNFLAG_IGNORE_MELEE) != 0 && mod == MOD_MELEE) {
         return 0;
     }
 
@@ -350,20 +343,17 @@ int Respond_trigger_damage(gentity_t *trigger, int mod)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x76c2f, 86c2f_Activate_trigger_damage.c, VERIFY-NEXT-007-TRIGGER-DAMAGE-2026-06-17): DATAFLOW_VERIFIED - trigger/client team gates, nextthink/Think_GeneralLink gate, min/threshold checks, G_Trigger argument order, wait/random scheduling, free-delay path, and health sentinel store match current decompiler output. */
-void Activate_trigger_damage(gentity_t *trigger, gentity_t *activator,
-                             int damage, int mod)
+void Activate_trigger_damage(gentity_t *trigger, gentity_t *activator, int damage, int mod)
 {
     int triggerTeam = game_compat_trigger_damage_trigger_team(trigger);
     int activatorTeam = game_compat_trigger_damage_team(activator, triggerTeam);
 
     if (((triggerTeam == activatorTeam || triggerTeam == 0 || activatorTeam == 0) &&
          (trigger->nextthink == 0 || trigger->think == Think_GeneralLink) &&
-         (game_compat_trigger_damage_min_damage(trigger) < 1 ||
-          game_compat_trigger_damage_min_damage(trigger) <= damage) &&
+         (game_compat_trigger_damage_min_damage(trigger) < 1 || game_compat_trigger_damage_min_damage(trigger) <= damage) &&
          Respond_trigger_damage(trigger, mod) != 0 &&
          (game_compat_trigger_damage_health_threshold(trigger) == 0 ||
-          game_compat_trigger_damage_health_threshold(trigger) <=
-              TRIGGER_DAMAGE_HEALTH_SENTINEL - trigger->health))) {
+          game_compat_trigger_damage_health_threshold(trigger) <= TRIGGER_DAMAGE_HEALTH_SENTINEL - trigger->health))) {
         trigger->triggerActivator = activator;
 
         if (mod != -1) {
@@ -378,21 +368,14 @@ void Activate_trigger_damage(gentity_t *trigger, gentity_t *activator,
                  * 1000.0f(float const) kept 80-bit, fistp-direct truncate. */
 #if EMULATE_X87
                 trigger->nextthink =
-                    level.time +
-                    x87f_store_i32_trunc(x87f_mul(
-                        x87f_add(
-                            x87f_mul(x87f_load_f64(
-                                         coduo_server_rand_signed_unit()),
-                                     x87f_load_f32(trigger->itemRandom)),
-                            x87f_load_f32(trigger->itemWait)),
-                        x87f_load_f32(1000.0f)));
+                    level.time + x87f_store_i32_trunc(x87f_mul(
+                                     x87f_add(x87f_mul(x87f_load_f64(coduo_server_rand_signed_unit()), x87f_load_f32(trigger->itemRandom)),
+                                              x87f_load_f32(trigger->itemWait)),
+                                     x87f_load_f32(1000.0f)));
 #else
-                trigger->nextthink =
-                    level.time +
-                    (int32_t)(((long double)trigger->itemWait +
-                               (long double)coduo_server_rand_signed_unit() *
-                                   (long double)trigger->itemRandom) *
-                              1000.0L);
+                trigger->nextthink = level.time + (int32_t)(((long double)trigger->itemWait + (long double)coduo_server_rand_signed_unit() *
+                                                                                                  (long double)trigger->itemRandom) *
+                                                            1000.0L);
 #endif
             } else {
                 trigger->touch = NULL;
@@ -414,8 +397,7 @@ void Use_trigger_damage(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
     (void)activator;
 
-    Activate_trigger_damage(ent, other, game_compat_trigger_damage_health_threshold(ent) + 1,
-                            -1);
+    Activate_trigger_damage(ent, other, game_compat_trigger_damage_health_threshold(ent) + 1, -1);
 }
 
 /* ------------------------------------------------------------------ */
@@ -423,9 +405,7 @@ void Use_trigger_damage(gentity_t *ent, gentity_t *other, gentity_t *activator)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x76eb7, 86eb7_Pain_trigger_damage.c, VERIFY-NEXT-007-TRIGGER-DAMAGE-2026-06-17): DATAFLOW_VERIFIED - pain wrapper argument order and zero-threshold health sentinel restore match current decompiler output. */
-void Pain_trigger_damage(gentity_t *ent, gentity_t *attacker, int damage,
-                         const float *point, int mod, const float *dir,
-                         int hitLocation)
+void Pain_trigger_damage(gentity_t *ent, gentity_t *attacker, int damage, const float *point, int mod, const float *dir, int hitLocation)
 {
     (void)point;
     (void)dir;
@@ -443,9 +423,8 @@ void Pain_trigger_damage(gentity_t *ent, gentity_t *attacker, int damage,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x76f08, 86f08_Die_trigger_damage.c, VERIFY-NEXT-007-TRIGGER-DAMAGE-2026-06-17): DATAFLOW_VERIFIED - death wrapper uses attacker/damage/mod and zero-threshold health sentinel restore exactly as current decompiler output. */
-void Die_trigger_damage(gentity_t *ent, gentity_t *inflictor,
-                        gentity_t *attacker, int damage, int mod, int weapon,
-                        const float *dir, int hitLocation)
+void Die_trigger_damage(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int weapon, const float *dir,
+                        int hitLocation)
 {
     (void)inflictor;
     (void)weapon;
@@ -502,9 +481,8 @@ void SP_trigger_damage(gentity_t *ent)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_trigger_damage_scan(gentity_t *activator, const float *start,
-                                const float *end, int damage, int mod,
-                                qboolean requireGrenadeTouchFlag)
+static void game_compat_trigger_damage_scan(gentity_t *activator, const float *start, const float *end, int damage, int mod,
+                                            qboolean requireGrenadeTouchFlag)
 {
     vec3_t mins;
     vec3_t maxs;
@@ -521,9 +499,7 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
 
     AddPointToBounds(end, mins, maxs);
 
-    entityCount = trap_EntitiesInBox(mins, maxs, entityList,
-                                     TRIGGER_DAMAGE_SCAN_MAX_ENTITIES,
-                                     CONTENTS_TRIGGER_DAMAGE);
+    entityCount = trap_EntitiesInBox(mins, maxs, entityList, TRIGGER_DAMAGE_SCAN_MAX_ENTITIES, CONTENTS_TRIGGER_DAMAGE);
 
     for (i = 0; i < entityCount; i++) {
         gentity_t *trigger = &g_entities[entityList[i]];
@@ -532,14 +508,11 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
             continue;
         }
 
-        if (requireGrenadeTouchFlag &&
-            (game_compat_trigger_damage_grenade_touch_flags(trigger) &
-             TRIGGER_DAMAGE_GRENADE_TOUCH_FLAG) == 0) {
+        if (requireGrenadeTouchFlag && (game_compat_trigger_damage_grenade_touch_flags(trigger) & TRIGGER_DAMAGE_GRENADE_TOUCH_FLAG) == 0) {
             continue;
         }
 
-        if (trap_SightTraceToEntity(start, vec3_origin, vec3_origin, end,
-                                    trigger->s.number, (int32_t)MASK_ALL) == 0) {
+        if (trap_SightTraceToEntity(start, vec3_origin, vec3_origin, end, trigger->s.number, (int32_t)MASK_ALL) == 0) {
             continue;
         }
 
@@ -559,8 +532,7 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x77130, 87130_G_CheckHitTriggerDamage.c, VERIFY-TRIGGER-DAMAGE-REMAINING-2026-06-17): DATAFLOW_VERIFIED - helper-extracted scan matches current decompiler: bounds setup, 0x400000 contents query, trigger_damage classname gate, sight trace args, notify args, Activate_trigger_damage args, and zero-threshold health reset. */
-void G_CheckHitTriggerDamage(gentity_t *activator, const float *start,
-                             const float *end, int damage, int mod)
+void G_CheckHitTriggerDamage(gentity_t *activator, const float *start, const float *end, int damage, int mod)
 {
     game_compat_trigger_damage_scan(activator, start, end, damage, mod, qfalse);
 }
@@ -570,8 +542,7 @@ void G_CheckHitTriggerDamage(gentity_t *activator, const float *start,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x773bf, 873bf_G_GrenadeTouchTriggerDamage.c, VERIFY-TRIGGER-DAMAGE-REMAINING-2026-06-17): DATAFLOW_VERIFIED - helper-extracted scan matches current decompiler, including grenade touch 0x8000 flag gate before sight trace and the same notify/activate/health-reset side effects. */
-void G_GrenadeTouchTriggerDamage(gentity_t *grenade, const float *grenadePos,
-                                  const float *explosionPos, int damage, int mod)
+void G_GrenadeTouchTriggerDamage(gentity_t *grenade, const float *grenadePos, const float *explosionPos, int damage, int mod)
 {
     game_compat_trigger_damage_scan(grenade, grenadePos, explosionPos, damage, mod, qtrue);
 }
@@ -585,8 +556,7 @@ void explosive_indicator_think(gentity_t *ent)
 {
     gentity_t *owner = &g_entities[ent->passEntityNum];
 
-    if (owner->linked == 0 ||
-        game_compat_trigger_damage_classname(owner) != scr_const_trigger_objective_info) {
+    if (owner->linked == 0 || game_compat_trigger_damage_classname(owner) != scr_const_trigger_objective_info) {
         ent->think = G_FreeEntity;
     }
 
@@ -668,8 +638,7 @@ void SP_trigger_mount_no_brush(gentity_t *ent, qboolean largeTrigger)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7780f, 8780f_G_CheckPointInsideTriggerMount.c, VERIFY-TRIGGER-DAMAGE-REMAINING-2026-06-17): DATAFLOW_VERIFIED - point +/-0.1 bounds, 0x405c0008 query, trigger_mount classname scan, nullable large-trigger hint store, and 0/1 returns match current decompiler output. */
-int G_CheckPointInsideTriggerMount(gentity_t *ent, const float *point,
-                                   int *mountHintData)
+int G_CheckPointInsideTriggerMount(gentity_t *ent, const float *point, int *mountHintData)
 {
     vec3_t mins;
     vec3_t maxs;
@@ -685,9 +654,7 @@ int G_CheckPointInsideTriggerMount(gentity_t *ent, const float *point,
     maxs[1] = point[1] + TRIGGER_MOUNT_POINT_EPSILON;
     maxs[2] = point[2] + TRIGGER_MOUNT_POINT_EPSILON;
 
-    entityCount = trap_EntitiesInBox(mins, maxs, entityList,
-                                     TRIGGER_DAMAGE_SCAN_MAX_ENTITIES,
-                                     MASK_TRIGGER);
+    entityCount = trap_EntitiesInBox(mins, maxs, entityList, TRIGGER_DAMAGE_SCAN_MAX_ENTITIES, MASK_TRIGGER);
 
     for (int i = 0; i < entityCount; i++) {
         gentity_t *trigger = &g_entities[entityList[i]];
@@ -697,8 +664,7 @@ int G_CheckPointInsideTriggerMount(gentity_t *ent, const float *point,
         }
 
         if (mountHintData != NULL) {
-            *mountHintData =
-                (trigger->spawnflags & TRIGGER_MOUNT_SPAWNFLAG_LARGE) != 0;
+            *mountHintData = (trigger->spawnflags & TRIGGER_MOUNT_SPAWNFLAG_LARGE) != 0;
         }
 
         return 1;

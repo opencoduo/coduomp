@@ -33,10 +33,8 @@ int32_t coduo_crt_atoi(const char *string)
 int32_t coduo_crt_stricmp(const char *left, const char *right)
 {
     for (;;) {
-        const uint8_t leftCharacter =
-            (uint8_t)coduo_crt_tolower((uint8_t)*left++);
-        const uint8_t rightCharacter =
-            (uint8_t)coduo_crt_tolower((uint8_t)*right++);
+        const uint8_t leftCharacter = (uint8_t)coduo_crt_tolower((uint8_t)*left++);
+        const uint8_t rightCharacter = (uint8_t)coduo_crt_tolower((uint8_t)*right++);
 
         if (leftCharacter != rightCharacter || leftCharacter == 0) {
             return (int32_t)leftCharacter - (int32_t)rightCharacter;
@@ -45,14 +43,11 @@ int32_t coduo_crt_stricmp(const char *left, const char *right)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: deterministic bounded MSVC comparison. */
-int32_t coduo_crt_strnicmp(const char *left, const char *right,
-                           size_t count)
+int32_t coduo_crt_strnicmp(const char *left, const char *right, size_t count)
 {
     while (count != 0) {
-        const uint8_t leftCharacter =
-            (uint8_t)coduo_crt_tolower((uint8_t)*left++);
-        const uint8_t rightCharacter =
-            (uint8_t)coduo_crt_tolower((uint8_t)*right++);
+        const uint8_t leftCharacter = (uint8_t)coduo_crt_tolower((uint8_t)*left++);
+        const uint8_t rightCharacter = (uint8_t)coduo_crt_tolower((uint8_t)*right++);
 
         --count;
         if (leftCharacter != rightCharacter || leftCharacter == 0) {
@@ -83,22 +78,19 @@ char *coduo_crt_strupr(char *text)
 /* NOT_FROM_ORIGINAL_SOURCE: MSVC C-locale byte classification boundary. */
 int32_t coduo_crt_isalpha(int32_t character)
 {
-    return (character >= 'A' && character <= 'Z') ||
-           (character >= 'a' && character <= 'z');
+    return (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z');
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: MSVC C-locale byte classification boundary. */
 int32_t coduo_crt_isalnum(int32_t character)
 {
-    return coduo_crt_isalpha(character) != 0 ||
-           (character >= '0' && character <= '9');
+    return coduo_crt_isalpha(character) != 0 || (character >= '0' && character <= '9');
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: MSVC C-locale byte classification boundary. */
 int32_t coduo_crt_isspace(int32_t character)
 {
-    return character == ' ' ||
-           (character >= '\t' && character <= '\r');
+    return character == ' ' || (character >= '\t' && character <= '\r');
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: MSVC C-locale byte-folding boundary. */

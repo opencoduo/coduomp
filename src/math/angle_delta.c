@@ -21,11 +21,9 @@
 float AngleDelta(float first, float second)
 {
 #if EMULATE_X87
-    const float difference = x87f_store_f32(
-        x87f_sub(x87f_load_f32(first), x87f_load_f32(second)));
+    const float difference = x87f_store_f32(x87f_sub(x87f_load_f32(first), x87f_load_f32(second)));
 #else
-    const float difference =
-        (float)((long double)first - (long double)second);
+    const float difference = (float)((long double)first - (long double)second);
 #endif
     return AngleNormalize180(difference);
 }

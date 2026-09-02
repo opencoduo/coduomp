@@ -17,10 +17,8 @@ void XAnimLoadFile(const char *animName, xanim_asset_alloc_fn alloc);
 void ReadQuat(const int16_t packed[3], xanim_int16_vec4_t *out);
 void ReadQuat2(const int16_t packed[1], xanim_int16_vec2_t *out);
 
-const uint8_t *ReadNoteTracks(const char *animName, const uint8_t *cursor,
-                              size_t remaining, XAnimParts *record,
+const uint8_t *ReadNoteTracks(const char *animName, const uint8_t *cursor, size_t remaining, XAnimParts *record,
                               xanim_asset_alloc_fn alloc);
-uint16_t XAnimSetModel(XAnimEntry *entry,
-                       XModel **models, int32_t modelCount);
+uint16_t XAnimSetModel(XAnimEntry *entry, XModel **models, int32_t modelCount);
 
 #endif

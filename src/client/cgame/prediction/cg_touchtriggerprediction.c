@@ -41,12 +41,9 @@
 #include "client/cgame/globals.h"
 
 // Offsets this function proves against the machine code (i386, 4-byte pointers):
-_Static_assert(offsetof(centity_t, currentState.eType) == 0x04,
-               "centity_t.eType at +0x04 (CMP [EDI+4],3)");
-_Static_assert(offsetof(centity_t, currentState.itemIndex) == 0x8c,
-               "centity_t.itemIndex at +0x8c (MOV EDI,[EDI+0x8c])");
-_Static_assert(offsetof(centity_t, currentState.solid) == 0xa0,
-               "centity_t.solid at +0xa0 (CMP [EDI+0xa0],0xffffff)");
+_Static_assert(offsetof(centity_t, currentState.eType) == 0x04, "centity_t.eType at +0x04 (CMP [EDI+4],3)");
+_Static_assert(offsetof(centity_t, currentState.itemIndex) == 0x8c, "centity_t.itemIndex at +0x8c (MOV EDI,[EDI+0x8c])");
+_Static_assert(offsetof(centity_t, currentState.solid) == 0xa0, "centity_t.solid at +0xa0 (CMP [EDI+0xa0],0xffffff)");
 
 void CG_TouchTriggerPrediction(void)
 {
@@ -97,13 +94,7 @@ void CG_TouchTriggerPrediction(void)
         // pushed twice), &out, id; so on the callee side the argument order after the
         // trap id is (out, view, view, argA, argB, handle, -1).
         trace_t out;
-        cgame_syscall(CG_CM_BOX_TRACE,
-                      (intptr_t)&out,
-                      (intptr_t)cg_predictedPlayerState.psOrigin,
-                      (intptr_t)cg_predictedPlayerState.psOrigin,
-                      (intptr_t)cg_pmove.mins,
-                      (intptr_t)cg_pmove.maxs,
-                      inlineModel,
-                      -1);
+        cgame_syscall(CG_CM_BOX_TRACE, (intptr_t)&out, (intptr_t)cg_predictedPlayerState.psOrigin,
+                      (intptr_t)cg_predictedPlayerState.psOrigin, (intptr_t)cg_pmove.mins, (intptr_t)cg_pmove.maxs, inlineModel, -1);
     }
 }

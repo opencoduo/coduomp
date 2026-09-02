@@ -68,18 +68,15 @@ void CG_CheckEvents(centity_t *cent)
     // ring-counter period (256) so the (previousEvent, eventSequence] span is valid.
     // 0x3002393e ADD ECX,0xffffff00 == previousEvent - 0x100.
     if (eventSequence < cent->previousEvent) {
-        cent->previousEvent = coduo_int32_from_bits(
-            (uint32_t)cent->previousEvent - 256u);
+        cent->previousEvent = coduo_int32_from_bits((uint32_t)cent->previousEvent - 256u);
     }
 
     // 0x3002394a EDI = previousEvent; 0x30023952 ECX = eventSequence - previousEvent;
     // 0x30023954 CMP ECX,0x4 / 0x30023957 JLE: never replay more than MAX_ENTITY_EVENTS
     // events — clamp previousEvent to eventSequence - MAX_ENTITY_EVENTS.
     // 0x30023959 LEA EDX,[EAX-0x4] == eventSequence - 4.
-    if (coduo_int32_from_bits(eventSequenceBits -
-                         (uint32_t)cent->previousEvent) > MAX_ENTITY_EVENTS) {
-        cent->previousEvent = coduo_int32_from_bits(
-            eventSequenceBits - (uint32_t)MAX_ENTITY_EVENTS);
+    if (coduo_int32_from_bits(eventSequenceBits - (uint32_t)cent->previousEvent) > MAX_ENTITY_EVENTS) {
+        cent->previousEvent = coduo_int32_from_bits(eventSequenceBits - (uint32_t)MAX_ENTITY_EVENTS);
     }
 
     // 0x30023962 CMP [ESI+0x1f0],EAX / 0x30023968 JGE done: nothing new to fire.

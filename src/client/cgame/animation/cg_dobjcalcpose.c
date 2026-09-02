@@ -52,8 +52,7 @@
 //   30022073 CALL [0x30085e9c]
 //   30022079 ADD ESP,0x18                          clean prep(0xc) + flush(0xc) args
 //   3002207c RET
-void CG_DObjCalcPose(centity_t *owner, struct DObj_s *obj,
-                     uint32_t *partBits)
+void CG_DObjCalcPose(centity_t *owner, struct DObj_s *obj, uint32_t *partBits)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (obj == NULL || partBits == NULL) {
@@ -61,8 +60,7 @@ void CG_DObjCalcPose(centity_t *owner, struct DObj_s *obj,
     }
 
     // 30022042: an already-current skeleton returns nonzero.
-    if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONES, (intptr_t)obj,
-                      (intptr_t)partBits) != 0) {
+    if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONES, (intptr_t)obj, (intptr_t)partBits) != 0) {
         return;
     }
 

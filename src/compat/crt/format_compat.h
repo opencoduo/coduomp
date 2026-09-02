@@ -8,10 +8,8 @@
 extern "C" {
 #endif
 
-int coduo_crt_vsnprintf(char *destination, size_t count,
-                        const char *format, va_list arguments);
-int coduo_crt_snprintf(char *destination, size_t count,
-                       const char *format, ...);
+int coduo_crt_vsnprintf(char *destination, size_t count, const char *format, va_list arguments);
+int coduo_crt_snprintf(char *destination, size_t count, const char *format, ...);
 
 #ifdef __cplusplus
 }

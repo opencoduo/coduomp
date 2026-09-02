@@ -44,8 +44,7 @@ void PB_DispatchClientConsoleCommand(const char *text);
 void PB_DispatchServerConsoleCommand(const char *text);
 #else
 int32_t Cvar_VariableIntegerValue(const char *name);
-void PB_CallServerSbGlobal(int32_t command, int32_t clientNum,
-                           uint32_t length, const char *text);
+void PB_CallServerSbGlobal(int32_t command, int32_t clientNum, uint32_t length, const char *text);
 #endif
 
 #include "q_command_services.h"
@@ -73,8 +72,7 @@ void Cbuf_AddText(const char *text)
 {
     const size_t textLength = strlen(text);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize ||
-        textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
+    if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize || textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         Com_Printf("Cbuf_AddText: overflow\n");
         return;
     }
@@ -87,8 +85,7 @@ void Cbuf_InsertText(const char *text)
 {
     const size_t textLength = strlen(text);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize ||
-        textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
+    if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize || textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         Com_Printf("Cbuf_InsertText overflowed\n");
         return;
     }
@@ -98,9 +95,7 @@ void Cbuf_InsertText(const char *text)
     /* Both authoritative i386 bodies copy overlapping bytes backwards and
      * skip the move when cursize is negative.  A size_t memmove expression
      * would not preserve that corrupt-state behavior on native64. */
-    for (int32_t index = cmd_text.cursize - 1;
-         index >= 0;
-         --index) {
+    for (int32_t index = cmd_text.cursize - 1; index >= 0; --index) {
         cmd_text.data[insertLength + index] = cmd_text.data[index];
     }
 
@@ -131,7 +126,8 @@ void Cbuf_ExecuteText(cbufExec_t executionMode, const char *text)
     default:
         /* The leading control byte is present at CoDUOMP.exe 0x00596410 and
          * coduo_lnxded 0x080dcb00. */
-        Com_Error(ERR_FATAL, "\x15" "Cbuf_ExecuteText: bad exec_when");
+        Com_Error(ERR_FATAL, "\x15"
+                             "Cbuf_ExecuteText: bad exec_when");
     }
 }
 
@@ -147,16 +143,13 @@ void Cbuf_Execute(void)
 
         int32_t quoteCount = 0;
         int32_t commandLength;
-        for (commandLength = 0;
-             commandLength < cmd_text.cursize;
-             ++commandLength) {
+        for (commandLength = 0; commandLength < cmd_text.cursize; ++commandLength) {
             const char character = cmd_text.data[commandLength];
             if (character == '"') {
                 ++quoteCount;
             }
 
-            if ((((quoteCount & 1) == 0) && character == ';') ||
-                character == '\n' || character == '\r') {
+            if ((((quoteCount & 1) == 0) && character == ';') || character == '\n' || character == '\r') {
                 break;
             }
         }
@@ -173,8 +166,7 @@ void Cbuf_Execute(void)
         } else {
             ++commandLength;
             cmd_text.cursize -= commandLength;
-            memmove(cmd_text.data, cmd_text.data + commandLength,
-                    (size_t)(uint32_t)cmd_text.cursize);
+            memmove(cmd_text.data, cmd_text.data + commandLength, (size_t)(uint32_t)cmd_text.cursize);
         }
 
         Cmd_ExecuteString(command);
@@ -202,14 +194,10 @@ void Cmd_Exec_f(void)
     }
 
     Com_Printf("execing %s\n", Cmd_Argv(1));
-    const cvar_t *const consoleLockout =
-        Cvar_FindVar("sv_console_lockout");
+    const cvar_t *const consoleLockout = Cvar_FindVar("sv_console_lockout");
     if (consoleLockout != NULL && consoleLockout->integer != 0) {
-        const int32_t checksum =
-            (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
-        Cbuf_InsertText(
-            va("say Server exec: %s, size: %i, checksum: %i",
-               filename, fileLength, checksum));
+        const int32_t checksum = (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
+        Cbuf_InsertText(va("say Server exec: %s, size: %i, checksum: %i", filename, fileLength, checksum));
     }
 
     Cbuf_InsertText((const char *)fileBuffer);
@@ -237,11 +225,8 @@ void Cmd_Exec_f(void)
 
     Com_Printf("execing %s\n", Cmd_Argv(1));
     if (Cvar_VariableIntegerValue("sv_console_lockout") != 0) {
-        const int32_t checksum =
-            (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
-        Cbuf_InsertText(
-            va("say Server exec: %s, size: %i, checksum: %i",
-               filename, fileLength, checksum));
+        const int32_t checksum = (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
+        Cbuf_InsertText(va("say Server exec: %s, size: %i, checksum: %i", filename, fileLength, checksum));
     }
 
     Cbuf_InsertText((const char *)fileBuffer);
@@ -255,8 +240,7 @@ void Cmd_ShowChecksum_f(void)
     void *fileBuffer;
 
     if (Cmd_Argc() != 2) {
-        Com_Printf(
-            "showchecksum <filename> : prints size and checksum of a file\n");
+        Com_Printf("showchecksum <filename> : prints size and checksum of a file\n");
         return;
     }
 
@@ -269,29 +253,23 @@ void Cmd_ShowChecksum_f(void)
         return;
     }
 
-    const int32_t checksum =
-        (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
-    Com_Printf("ShowChecksum: %s, size: %i, checksum: %i",
-               filename, fileLength, checksum);
+    const int32_t checksum = (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
+    Com_Printf("ShowChecksum: %s, size: %i, checksum: %i", filename, fileLength, checksum);
     FS_FreeFile(fileBuffer);
 }
 
 void Cmd_Vstr_f(void)
 {
     if (Cmd_Argc() == 2) {
-        Cbuf_InsertText(
-            va("%s\n", Cvar_VariableString(Cmd_Argv(1))));
+        Cbuf_InsertText(va("%s\n", Cvar_VariableString(Cmd_Argv(1))));
     } else {
-        Com_Printf(
-            "vstr <variablename> : execute a variable command\n");
+        Com_Printf("vstr <variablename> : execute a variable command\n");
     }
 }
 
 void Cmd_Echo_f(void)
 {
-    for (int32_t argumentIndex = 1;
-         argumentIndex < Cmd_Argc();
-         ++argumentIndex) {
+    for (int32_t argumentIndex = 1; argumentIndex < Cmd_Argc(); ++argumentIndex) {
         Com_Printf("%s ", Cmd_Argv(argumentIndex));
     }
     Com_Printf("\n");
@@ -310,8 +288,7 @@ const char *Cmd_Argv(int32_t argumentIndex)
     return "";
 }
 
-void Cmd_ArgvBuffer(int32_t argumentIndex, char *buffer,
-                    int32_t bufferLength)
+void Cmd_ArgvBuffer(int32_t argumentIndex, char *buffer, int32_t bufferLength)
 {
     Q_strncpyz(buffer, Cmd_Argv(argumentIndex), bufferLength);
 }
@@ -321,9 +298,7 @@ char *Cmd_Args(int32_t firstArgument)
     cmd_args[0] = '\0';
 
     size_t requiredCapacity = 1;
-    for (int32_t argumentIndex = firstArgument;
-         argumentIndex < cmd_argc;
-         ++argumentIndex) {
+    for (int32_t argumentIndex = firstArgument; argumentIndex < cmd_argc; ++argumentIndex) {
         const size_t argumentLength = strlen(cmd_argv[argumentIndex]);
 
         /* NOT_FROM_ORIGINAL_SOURCE: preflight the complete argument string,
@@ -343,9 +318,7 @@ char *Cmd_Args(int32_t firstArgument)
     }
 
     char *output = cmd_args;
-    for (int32_t argumentIndex = firstArgument;
-         argumentIndex < cmd_argc;
-         ++argumentIndex) {
+    for (int32_t argumentIndex = firstArgument; argumentIndex < cmd_argc; ++argumentIndex) {
         const size_t argumentLength = strlen(cmd_argv[argumentIndex]);
         memcpy(output, cmd_argv[argumentIndex], argumentLength);
         output += argumentLength;
@@ -371,8 +344,7 @@ void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
     }
 
     size_t textLength = 0;
-    while (textLength < CMD_TOKEN_BUFFER_CAPACITY &&
-           text[textLength] != '\0') {
+    while (textLength < CMD_TOKEN_BUFFER_CAPACITY && text[textLength] != '\0') {
         ++textLength;
     }
     /* NOT_FROM_ORIGINAL_SOURCE: tokenization requires the complete input and
@@ -414,8 +386,7 @@ void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
                 break;
             }
 
-            while (*text != '\0' &&
-                   (text[0] != '*' || text[1] != '/')) {
+            while (*text != '\0' && (text[0] != '*' || text[1] != '/')) {
                 ++text;
             }
             if (*text == '\0') {
@@ -444,9 +415,7 @@ void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
                 ++text;
             }
         } else {
-            while ((int8_t)*text > (int8_t)' ' &&
-                   *text != '"' &&
-                   (text[0] != '/' || text[1] != '/') &&
+            while ((int8_t)*text > (int8_t)' ' && *text != '"' && (text[0] != '/' || text[1] != '/') &&
                    (text[0] != '/' || text[1] != '*')) {
                 *token++ = *text++;
             }
@@ -470,9 +439,7 @@ void Cmd_TokenizeString(const char *text)
 #if defined(WINDOWS_BEHAVIOR)
 void Cmd_AddCommand(const char *name, xcommand_t function)
 {
-    for (cmd_function_t *command = cmd_functions;
-         command != NULL;
-         command = command->next) {
+    for (cmd_function_t *command = cmd_functions; command != NULL; command = command->next) {
         if (strcmp(name, command->name) == 0) {
             if (function != NULL) {
                 Com_Printf("Cmd_AddCommand: %s already defined\n", name);
@@ -530,9 +497,7 @@ void Cmd_Shutdown(void)
 #else
 void Cmd_AddCommand(const char *name, xcommand_t function)
 {
-    for (cmd_function_t *command = cmd_functions;
-         command != NULL;
-         command = command->next) {
+    for (cmd_function_t *command = cmd_functions; command != NULL; command = command->next) {
         if (strcmp(name, command->name) == 0) {
             if (function != NULL) {
                 Com_Printf("Cmd_AddCommand: %s already defined\n", name);
@@ -541,8 +506,7 @@ void Cmd_AddCommand(const char *name, xcommand_t function)
         }
     }
 
-    cmd_function_t *command =
-        Z_MallocInternal(sizeof(*command));
+    cmd_function_t *command = Z_MallocInternal(sizeof(*command));
     command->name = CopyStringInternal(name);
     command->function = function;
     command->next = cmd_functions;
@@ -580,9 +544,7 @@ void Cmd_Shutdown(void)
 
 void Cmd_CommandCompletion(name_completion_callback_t callback)
 {
-    for (cmd_function_t *command = cmd_functions;
-         command != NULL;
-         command = command->next) {
+    for (cmd_function_t *command = cmd_functions; command != NULL; command = command->next) {
         callback(command->name);
     }
 }
@@ -628,16 +590,13 @@ void Cmd_ExecuteString(const char *text)
     if (Cvar_Command() != qfalse) {
         return;
     }
-    if (cl_running != NULL && cl_running->integer != 0 &&
-        CL_GameCommand() != qfalse) {
+    if (cl_running != NULL && cl_running->integer != 0 && CL_GameCommand() != qfalse) {
         return;
     }
-    if (sv_running != NULL && sv_running->integer != 0 &&
-        SV_GameCommand() != qfalse) {
+    if (sv_running != NULL && sv_running->integer != 0 && SV_GameCommand() != qfalse) {
         return;
     }
-    if (cl_running != NULL && cl_running->integer != 0 &&
-        UI_GameCommand() != qfalse) {
+    if (cl_running != NULL && cl_running->integer != 0 && UI_GameCommand() != qfalse) {
         return;
     }
 
@@ -670,10 +629,7 @@ void Cmd_ExecuteString(const char *text)
 
     if (Q_strncmp(text, "pb_", 3) == 0) {
         if (Q_strncmp(text + 3, "sv_", 3) == 0) {
-            PB_CallServerSbGlobal(Q_COMMAND_PB_CONSOLE_OPCODE,
-                                  Q_COMMAND_PB_CONSOLE_CLIENT_NUM,
-                                  (uint32_t)strlen(text) + UINT32_C(1),
-                                  text);
+            PB_CallServerSbGlobal(Q_COMMAND_PB_CONSOLE_OPCODE, Q_COMMAND_PB_CONSOLE_CLIENT_NUM, (uint32_t)strlen(text) + UINT32_C(1), text);
         }
         return;
     }
@@ -681,16 +637,13 @@ void Cmd_ExecuteString(const char *text)
     if (Cvar_Command() != qfalse) {
         return;
     }
-    if (cl_running != NULL && cl_running->integer != 0 &&
-        CL_GameCommand() != qfalse) {
+    if (cl_running != NULL && cl_running->integer != 0 && CL_GameCommand() != qfalse) {
         return;
     }
-    if (sv_running != NULL && sv_running->integer != 0 &&
-        SV_GameCommand() != qfalse) {
+    if (sv_running != NULL && sv_running->integer != 0 && SV_GameCommand() != qfalse) {
         return;
     }
-    if (cl_running != NULL && cl_running->integer != 0 &&
-        UI_GameCommand() != qfalse) {
+    if (cl_running != NULL && cl_running->integer != 0 && UI_GameCommand() != qfalse) {
         return;
     }
 
@@ -703,11 +656,8 @@ void Cmd_List_f(void)
     const char *filter = Cmd_Argc() > 1 ? Cmd_Argv(1) : NULL;
     int32_t commandCount = 0;
 
-    for (cmd_function_t *command = cmd_functions;
-         command != NULL;
-         command = command->next) {
-        if (filter == NULL ||
-            Com_Filter(filter, command->name, qfalse) != qfalse) {
+    for (cmd_function_t *command = cmd_functions; command != NULL; command = command->next) {
+        if (filter == NULL || Com_Filter(filter, command->name, qfalse) != qfalse) {
             Com_Printf("%s\n", command->name);
             ++commandCount;
         }

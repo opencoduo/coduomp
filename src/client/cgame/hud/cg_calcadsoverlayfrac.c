@@ -83,8 +83,7 @@ qboolean CG_CalcAdsOverlayFrac(float *outFrac)
         }
 
         /* FLD 1.0; FSUB frac; FSUBR adsFraction: num = adsFraction - (1.0 - frac). */
-        num = (long double)adsFraction -
-              (1.0L - (long double)frac);
+        num = (long double)adsFraction - (1.0L - (long double)frac);
 
         /* FST [ECX]: store the raw numerator first (no pop). */
         *outFrac = num;
@@ -96,9 +95,7 @@ qboolean CG_CalcAdsOverlayFrac(float *outFrac)
              * then reads the divisor from the branch selected by the earlier
              * cg_adsZoomingIn load. */
             weaponInfo_t *divisionWi = cg_currentWeaponInfo;
-            float divisor = zoomingIn
-                ? divisionWi->adsZoomInFrac
-                : divisionWi->adsZoomOutFrac;
+            float divisor = zoomingIn ? divisionWi->adsZoomInFrac : divisionWi->adsZoomOutFrac;
             *outFrac = (float)(num / (long double)divisor);
         }
     }

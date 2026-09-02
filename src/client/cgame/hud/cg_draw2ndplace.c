@@ -57,8 +57,7 @@
 //   30031c2f CALL [0x30085e9c]       cgame_syscall(...)
 //   30031c35 ADD  ESP,0x30 ; 30031c38 ADD ESP,0x10 ; RET
 
-void CG_Draw2ndPlace(rectDef_t *obj,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
+void CG_Draw2ndPlace(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     /* -9999 (0xffffd8f1) is the "score unset" sentinel; when set, nothing is emitted. */
     if (cg_hudStat6Value == CG_SCORE_VALUE_UNSET)
@@ -66,10 +65,5 @@ void CG_Draw2ndPlace(rectDef_t *obj,
 
     const char *statString = va("%2i", cg_hudStat6Value);
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits(obj->x), CG_FloatBits(obj->y),
-                  arg0, arg1, arg2,
-                  (intptr_t)statString,
-                  0, 0,
-                  arg3);
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(obj->x), CG_FloatBits(obj->y), arg0, arg1, arg2, (intptr_t)statString, 0, 0, arg3);
 }

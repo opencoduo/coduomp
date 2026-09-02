@@ -77,17 +77,15 @@
  * CG_DrawSingleHudElem was
  * reconstructed), so offsets past +0x10 only match the 32-bit target ABI; guard
  * those against 4-byte pointer width. */
-_Static_assert(offsetof(cgAlignedDrawItem, x)      == 0x00, "item.x @ +0x00");
-_Static_assert(offsetof(cgAlignedDrawItem, y)      == 0x04, "item.y @ +0x04");
+_Static_assert(offsetof(cgAlignedDrawItem, x) == 0x00, "item.x @ +0x00");
+_Static_assert(offsetof(cgAlignedDrawItem, y) == 0x04, "item.y @ +0x04");
 _Static_assert(offsetof(cgAlignedDrawItem, height) == 0x0c, "item.height @ +0x0c");
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
 _Static_assert(offsetof(cgAlignedDrawItem, font) == 0x20, "item.font @ +0x20");
 _Static_assert(offsetof(cgAlignedDrawItem, fontScale) == 0x24, "item.fontScale @ +0x24");
-_Static_assert(offsetof(cgAlignedDrawItem, fontHeight) == 0x28,
-               "item.fontHeight @ +0x28");
-_Static_assert(offsetof(cgAlignedDrawItem, fontWidth) == 0x2c,
-               "item.fontWidth @ +0x2c");
-_Static_assert(offsetof(cgAlignedDrawItem, color)  == 0x30, "item.color @ +0x30");
+_Static_assert(offsetof(cgAlignedDrawItem, fontHeight) == 0x28, "item.fontHeight @ +0x28");
+_Static_assert(offsetof(cgAlignedDrawItem, fontWidth) == 0x2c, "item.fontWidth @ +0x2c");
+_Static_assert(offsetof(cgAlignedDrawItem, color) == 0x30, "item.color @ +0x30");
 #endif
 _Static_assert(offsetof(hudElem_t, alignY) == 0x18, "hudElem.alignY @ +0x18");
 
@@ -100,8 +98,7 @@ _Static_assert(offsetof(hudElem_t, alignY) == 0x18, "hudElem.alignY @ +0x18");
  * not perform. The decl is local to this file (no header prototype, no callers
  * in the tree), so the retype is contained here. */
 // Source RVA: 0x30029f30
-long double CG_HudElemAlignY(const hudElem_t *elem,
-                             const cgAlignedDrawItem *item, float fontHeight)
+long double CG_HudElemAlignY(const hudElem_t *elem, const cgAlignedDrawItem *item, float fontHeight)
 {
     float half;
     float zero;
@@ -116,20 +113,16 @@ long double CG_HudElemAlignY(const hudElem_t *elem,
     case HUDELEM_ALIGN_START:
         return (long double)item->y;
     case HUDELEM_ALIGN_CENTER:
-        return ((long double)item->height - (long double)fontHeight) *
-                   (long double)half +
-               (long double)item->y;
+        return ((long double)item->height - (long double)fontHeight) * (long double)half + (long double)item->y;
     case HUDELEM_ALIGN_END:
-        return (long double)item->height + (long double)item->y -
-               (long double)fontHeight;
+        return (long double)item->height + (long double)item->y - (long double)fontHeight;
     default:
         return (long double)zero;
     }
 }
 
 // Source RVA: 0x30029f70
-void CG_DrawHudElemString(cgAlignedDrawItem *item, hudElem_t *elem,
-                          const char *string)
+void CG_DrawHudElemString(cgAlignedDrawItem *item, hudElem_t *elem, const char *string)
 {
     /* 0.5f and 0.0f rdata constants read as floats from their shared bit patterns. */
     float half;
@@ -147,18 +140,17 @@ void CG_DrawHudElemString(cgAlignedDrawItem *item, hudElem_t *elem,
         coord = (long double)item->y;             /* 0x30029fab FLD, no store */
         break;
     case HUDELEM_ALIGN_CENTER:                     /* alignMode == 1 */
-        coord = ((long double)item->height - (long double)item->fontHeight) *
-                (long double)half + (long double)item->y;   /* 0x30029f9a..fa6 */
+        coord =
+            ((long double)item->height - (long double)item->fontHeight) * (long double)half + (long double)item->y; /* 0x30029f9a..fa6 */
         break;
-    case HUDELEM_ALIGN_END:                        /* alignMode == 2 */
-        coord = (long double)item->height + (long double)item->y -
-                (long double)item->fontHeight;                   /* 0x30029f8f..f95 */
+    case HUDELEM_ALIGN_END: /* alignMode == 2 */
+        coord = (long double)item->height + (long double)item->y - (long double)item->fontHeight; /* 0x30029f8f..f95 */
         break;
     default:
-        coord = (long double)zero;                 /* 0x30029f87 FLD, no store */
+        coord = (long double)zero; /* 0x30029f87 FLD, no store */
         break;
     }
-    coord += (long double)item->fontHeight;             /* shared FADD [EAX+0x28] at merge */
+    coord += (long double)item->fontHeight; /* shared FADD [EAX+0x28] at merge */
 
     /* forward the coordinate through a syscall dword as its 32-bit float bits.
      * The FSTP at 0x30029fbd is the single round-to-float of the whole chain. */
@@ -166,14 +158,6 @@ void CG_DrawHudElemString(cgAlignedDrawItem *item, hudElem_t *elem,
     int32_t coordBits;
     memcpy(&coordBits, &coordRounded, sizeof(coordBits));
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  item->xBits,
-                  coordBits,
-                  item->font,
-                  item->fontScaleBits,
-                  (intptr_t)&item->color[0],
-                  (intptr_t)string,
-                  item->fontWidthBits,
-                  0,
-                  3);
+    cgame_syscall(CG_R_TEXT_PAINT, item->xBits, coordBits, item->font, item->fontScaleBits, (intptr_t)&item->color[0], (intptr_t)string,
+                  item->fontWidthBits, 0, 3);
 }

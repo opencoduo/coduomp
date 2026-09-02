@@ -29,34 +29,28 @@ void Com_Error(errorParm_t code, const char *format, ...);
 void Com_Printf(const char *format, ...);
 
 /* NOT_FROM_ORIGINAL_SOURCE: fixed-width journal/native-event adapter. */
-static sysEvent_t coduo_event_from_journal_record(
-    const coduo_journal_event_record_t *record)
+static sysEvent_t coduo_event_from_journal_record(const coduo_journal_event_record_t *record)
 {
-    sysEvent_t event = {
-        .time = record->time,
-        .type = (sysEventType_t)record->type,
-        .value = record->value,
-        .value2 = record->value2,
-        .payloadLength = record->payloadLength,
-        .payload = NULL
-    };
+    sysEvent_t event = {.time = record->time,
+                        .type = (sysEventType_t)record->type,
+                        .value = record->value,
+                        .value2 = record->value2,
+                        .payloadLength = record->payloadLength,
+                        .payload = NULL};
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     return event;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: native-event/fixed-width journal adapter. */
-static coduo_journal_event_record_t coduo_event_to_journal_record(
-    const sysEvent_t *event)
+static coduo_journal_event_record_t coduo_event_to_journal_record(const sysEvent_t *event)
 {
-    const coduo_journal_event_record_t record = {
-        .time = event->time,
-        .type = (int32_t)event->type,
-        .value = event->value,
-        .value2 = event->value2,
-        .payloadLength = event->payloadLength,
-        .payloadAddress = (uint32_t)(uintptr_t)event->payload
-    };
+    const coduo_journal_event_record_t record = {.time = event->time,
+                                                 .type = (int32_t)event->type,
+                                                 .value = event->value,
+                                                 .value2 = event->value2,
+                                                 .payloadLength = event->payloadLength,
+                                                 .payloadAddress = (uint32_t)(uintptr_t)event->payload};
 
     return record;
 }
@@ -74,33 +68,25 @@ sysEvent_t Com_GetRealEvent(void)
     if (com_journal->integer == COM_JOURNAL_MODE_REPLAY) {
         coduo_journal_event_record_t record;
 
-        if (FS_Read(&record, COM_JOURNAL_RECORD_BYTES,
-                    com_journalFile) != COM_JOURNAL_RECORD_BYTES) {
+        if (FS_Read(&record, COM_JOURNAL_RECORD_BYTES, com_journalFile) != COM_JOURNAL_RECORD_BYTES) {
             Com_Error(ERR_FATAL, "EXE_ERR_JOURNAL_FILE_READ");
         }
         event = coduo_event_from_journal_record(&record);
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (event.type < SE_NONE || event.type > SE_PACKET ||
-            event.payloadLength < 0 ||
-            event.payloadLength > COM_JOURNAL_MAX_PAYLOAD_BYTES ||
-            (event.type == SE_CONSOLE && event.payloadLength == 0) ||
-            (event.type == SE_PACKET &&
-             event.payloadLength < (int32_t)sizeof(netadr_t)) ||
-            (event.type != SE_CONSOLE && event.type != SE_PACKET &&
-             event.payloadLength != 0)) {
+        if (event.type < SE_NONE || event.type > SE_PACKET || event.payloadLength < 0 ||
+            event.payloadLength > COM_JOURNAL_MAX_PAYLOAD_BYTES || (event.type == SE_CONSOLE && event.payloadLength == 0) ||
+            (event.type == SE_PACKET && event.payloadLength < (int32_t)sizeof(netadr_t)) ||
+            (event.type != SE_CONSOLE && event.type != SE_PACKET && event.payloadLength != 0)) {
             Com_Error(ERR_FATAL, "EXE_ERR_JOURNAL_FILE_READ");
         }
 
         if (event.payloadLength != 0) {
-            event.payload = Z_MallocInternal(
-                (size_t)(uint32_t)event.payloadLength);
-            if (FS_Read(event.payload, event.payloadLength,
-                        com_journalFile) != event.payloadLength) {
+            event.payload = Z_MallocInternal((size_t)(uint32_t)event.payloadLength);
+            if (FS_Read(event.payload, event.payloadLength, com_journalFile) != event.payloadLength) {
                 Com_Error(ERR_FATAL, "EXE_ERR_JOURNAL_FILE_READ");
             }
-            if (event.type == SE_CONSOLE &&
-                ((const char *)event.payload)[event.payloadLength - 1] != '\0') {
+            if (event.type == SE_CONSOLE && ((const char *)event.payload)[event.payloadLength - 1] != '\0') {
                 Com_Error(ERR_FATAL, "EXE_ERR_JOURNAL_FILE_READ");
             }
         }
@@ -109,16 +95,12 @@ sysEvent_t Com_GetRealEvent(void)
 
     event = Sys_GetEvent();
     if (com_journal->integer == COM_JOURNAL_MODE_RECORD) {
-        const coduo_journal_event_record_t record =
-            coduo_event_to_journal_record(&event);
+        const coduo_journal_event_record_t record = coduo_event_to_journal_record(&event);
 
-        if (FS_Write(&record, COM_JOURNAL_RECORD_BYTES,
-                     com_journalFile) != COM_JOURNAL_RECORD_BYTES) {
+        if (FS_Write(&record, COM_JOURNAL_RECORD_BYTES, com_journalFile) != COM_JOURNAL_RECORD_BYTES) {
             Com_Error(ERR_FATAL, "EXE_ERR_JOURNAL_FILE_WRITE");
         }
-        if (event.payloadLength != 0 &&
-            FS_Write(event.payload, event.payloadLength,
-                     com_journalFile) != event.payloadLength) {
+        if (event.payloadLength != 0 && FS_Write(event.payload, event.payloadLength, com_journalFile) != event.payloadLength) {
             Com_Error(ERR_FATAL, "EXE_ERR_JOURNAL_FILE_WRITE");
         }
     }
@@ -141,8 +123,7 @@ void Com_ClearPushEventsForStartup(void)
 /* CoDUOMP.exe 0x0043a960; coduo_lnxded 0x08070d36. */
 void Com_PushEvent(const sysEvent_t *event)
 {
-    sysEvent_t *const slot =
-        &com_pushEvents[com_pushEventHead & COM_PUSH_EVENT_QUEUE_MASK];
+    sysEvent_t *const slot = &com_pushEvents[com_pushEventHead & COM_PUSH_EVENT_QUEUE_MASK];
 
     if (com_pushEventHead - com_pushEventTail >= SYS_EVENT_QUEUE_COUNT) {
         if (com_pushEventOverflowed == qfalse) {
@@ -169,8 +150,7 @@ void Com_PushEvent(const sysEvent_t *event)
 void Com_InitPushEvent(void)
 {
     while (com_pushEventTail < com_pushEventHead) {
-        const sysEvent_t event =
-            com_pushEvents[com_pushEventTail & COM_PUSH_EVENT_QUEUE_MASK];
+        const sysEvent_t event = com_pushEvents[com_pushEventTail & COM_PUSH_EVENT_QUEUE_MASK];
 
         ++com_pushEventTail;
         if (event.payload != NULL) {

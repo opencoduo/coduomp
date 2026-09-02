@@ -33,7 +33,7 @@
 /* fx-directory listing limits (proven from the machine code). */
 enum {
     CG_IMPACT_FX_DIR_LISTBUF = 0x10000, /* PUSH 0x10000: FS_GetFileList buffer size */
-    CG_IMPACT_MAX_CSV_FILES  = 0x1000   /* CMP ESI,0x1000 / JBE: file count is capped here */
+    CG_IMPACT_MAX_CSV_FILES = 0x1000   /* CMP ESI,0x1000 / JBE: file count is capped here */
 };
 
 void CG_RegisterImpactEffects(void)
@@ -52,37 +52,26 @@ void CG_RegisterImpactEffects(void)
      * ESP+0x70), paired with the effect-type name strings at ESP+0x2c..0x80
      * (final-loop ESP+0x18). The final registration loop walks these in order. */
     const char *const effectTypeNames[CG_IMPACT_EFFECT_TYPES] = {
-        "bullet_pistol_normal",  "bullet_pistol_reflect", "bullet_rifle_normal",
-        "bullet_rifle_reflect",  "bullet_smg_normal",     "bullet_smg_reflect",
-        "bullet_lmg_normal",     "bullet_lmg_reflect",    "bullet_hmg_normal",
-        "bullet_hmg_reflect",    "bullet_umg_normal",     "bullet_umg_reflect",
-        "grenade_explode",       "smoke_grenade_explode", "rocket_explode",
-        "molotov_explode_normal","artillery_explode",     "mortar_explode",
-        "tank_explode",          "b17_explode",           "grenade_bounce",
-        "molotov_explode_reflect"
-    };
+        "bullet_pistol_normal",   "bullet_pistol_reflect",  "bullet_rifle_normal", "bullet_rifle_reflect",  "bullet_smg_normal",
+        "bullet_smg_reflect",     "bullet_lmg_normal",      "bullet_lmg_reflect",  "bullet_hmg_normal",     "bullet_hmg_reflect",
+        "bullet_umg_normal",      "bullet_umg_reflect",     "grenade_explode",     "smoke_grenade_explode", "rocket_explode",
+        "molotov_explode_normal", "artillery_explode",      "mortar_explode",      "tank_explode",          "b17_explode",
+        "grenade_bounce",         "molotov_explode_reflect"};
     /* The machine code constructs these row-base pointers directly in the
      * stack frame; it does not keep a static row-number lookup table. */
     qhandle_t *const effectHandleRows[CG_IMPACT_EFFECT_TYPES] = {
-        cg_impactEffects[1],  cg_impactEffects[7],  cg_impactEffects[2],
-        cg_impactEffects[8],  cg_impactEffects[0],  cg_impactEffects[6],
-        cg_impactEffects[3],  cg_impactEffects[9],  cg_impactEffects[4],
-        cg_impactEffects[10], cg_impactEffects[5],  cg_impactEffects[11],
-        cg_impactEffects[13], cg_impactEffects[14], cg_impactEffects[15],
-        cg_impactEffects[16], cg_impactEffects[17], cg_impactEffects[18],
-        cg_impactEffects[19], cg_impactEffects[20], cg_impactEffects[12],
-        cg_impactEffects[21]
-    };
+        cg_impactEffects[1],  cg_impactEffects[7],  cg_impactEffects[2],  cg_impactEffects[8],  cg_impactEffects[0],  cg_impactEffects[6],
+        cg_impactEffects[3],  cg_impactEffects[9],  cg_impactEffects[4],  cg_impactEffects[10], cg_impactEffects[5],  cg_impactEffects[11],
+        cg_impactEffects[13], cg_impactEffects[14], cg_impactEffects[15], cg_impactEffects[16], cg_impactEffects[17], cg_impactEffects[18],
+        cg_impactEffects[19], cg_impactEffects[20], cg_impactEffects[12], cg_impactEffects[21]};
 
     int numFiles;
     int i;
     int missing;
 
     /* trap(0x13, "fx", "csv", fileList, 0x10000) -> file count. */
-    numFiles = (int32_t)cgame_syscall(CG_FS_GETFILELIST, (intptr_t)"fx",
-                             (intptr_t)"csv",
-                             (intptr_t)fileList,
-                             (int32_t)CG_IMPACT_FX_DIR_LISTBUF);
+    numFiles =
+        (int32_t)cgame_syscall(CG_FS_GETFILELIST, (intptr_t)"fx", (intptr_t)"csv", (intptr_t)fileList, (int32_t)CG_IMPACT_FX_DIR_LISTBUF);
 
     if (numFiles == 0) {
         Com_ErrorMessage("No CSV files in the fx directory to identify impact effects\n");
@@ -103,8 +92,7 @@ void CG_RegisterImpactEffects(void)
     }
 
     /* Sort the file names case-insensitively so parse order is deterministic. */
-    coduo_crt_qsort(fileNames, (size_t)numFiles, sizeof(fileNames[0]),
-                        SortStringPtrsCaseInsensitive);
+    coduo_crt_qsort(fileNames, (size_t)numFiles, sizeof(fileNames[0]), SortStringPtrsCaseInsensitive);
 
     /* Zero the per-effect-type surface tables (STOSD.REP, 0x2100 dwords == the whole
      * effectDef_t[22][24] == 0x8400 bytes). */
@@ -121,16 +109,13 @@ void CG_RegisterImpactEffects(void)
 
         /* trap(0xf, "fx/<name>", &f, FS_READ) -> length (negative on failure). */
         path = va("fx/%s", fileNames[i]);
-        length = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)path,
-                                        (intptr_t)&f, FS_READ);
+        length = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)path, (intptr_t)&f, FS_READ);
         if (length < 0) {
             continue; /* JL 0x3001e319: skip to next file */
         }
 
         /* Allocate length+1 bytes, read the file, close it, NUL-terminate. */
-        text = (char *)(intptr_t)cgame_syscall(
-            CG_Z_MALLOC_INTERNAL,
-            coduo_int32_from_bits((uint32_t)length + 1u));
+        text = (char *)(intptr_t)cgame_syscall(CG_Z_MALLOC_INTERNAL, coduo_int32_from_bits((uint32_t)length + 1u));
         cgame_syscall(CG_FS_READ, (intptr_t)text, length, (int32_t)f);
         cgame_syscall(CG_FS_FCLOSE_FILE, (int32_t)f);
         text[length] = '\0';
@@ -138,14 +123,13 @@ void CG_RegisterImpactEffects(void)
         /* Parse the CSV against the 22 effect-type names into defTables. */
         Com_BeginParseSession(path);
         com_parseSession->csv = 1; /* MOV [EDX+0x40c],1: enable comma-separated mode */
-        parseError = CG_ParseImpactEffects(path, text, CG_IMPACT_EFFECT_TYPES,
-                                           effectTypeNames, &defTables[0][0]);
+        parseError = CG_ParseImpactEffects(path, text, CG_IMPACT_EFFECT_TYPES, effectTypeNames, &defTables[0][0]);
         /* Inlined Com_EndParseSession (0x3001e2c4-e2f4): pop the parse session. */
         if (com_numParseSessions == 0) {
-            Com_Error(ERR_FATAL, "\x15" "Com_EndParseSession: session underflow");
+            Com_Error(ERR_FATAL, "\x15"
+                                 "Com_EndParseSession: session underflow");
         }
-        com_numParseSessions = coduo_int32_from_bits(
-            (uint32_t)com_numParseSessions - 1u);
+        com_numParseSessions = coduo_int32_from_bits((uint32_t)com_numParseSessions - 1u);
         com_parseSession = &com_parseSessions[com_numParseSessions];
 
         cgame_syscall(CG_Z_FREE_INTERNAL, (intptr_t)text); /* free the file text */
@@ -162,13 +146,10 @@ void CG_RegisterImpactEffects(void)
      * one effectDef_t[24] row per iteration.) */
     missing = 0;
     for (i = 0; i < CG_IMPACT_EFFECT_TYPES; i++) {
-        missing += CG_RegisterEffectDefSurfaces(defTables[i],
-                                                effectTypeNames[i],
-                                                effectHandleRows[i]);
+        missing += CG_RegisterEffectDefSurfaces(defTables[i], effectTypeNames[i], effectHandleRows[i]);
     }
 
     if (missing != 0) {
-        Com_ErrorMessage("%i missing entries in effect CSV files (see console for details)",
-                         missing);
+        Com_ErrorMessage("%i missing entries in effect CSV files (see console for details)", missing);
     }
 }

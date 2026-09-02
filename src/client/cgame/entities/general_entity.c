@@ -69,7 +69,8 @@ void CG_General(centity_t *cent /* EBX */)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)modelIndex >= (uint32_t)CS_MODELS_COUNT) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_General: invalid model index %i",
+                  "\x15"
+                  "CG_General: invalid model index %i",
                   modelIndex);
         return;
     }

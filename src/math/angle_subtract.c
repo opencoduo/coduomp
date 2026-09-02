@@ -31,23 +31,18 @@ float LerpAngle(float from, float to, float fraction)
     float target = to;
 
 #if EMULATE_X87
-    x87f difference =
-        x87f_sub(x87f_load_f32(to), x87f_load_f32(from));
+    x87f difference = x87f_sub(x87f_load_f32(to), x87f_load_f32(from));
     if (x87f_lt(x87f_load_f32(180.0f), difference)) {
-        target = x87f_store_f32(
-            x87f_sub(x87f_load_f32(to), x87f_load_f32(360.0f)));
+        target = x87f_store_f32(x87f_sub(x87f_load_f32(to), x87f_load_f32(360.0f)));
     }
 
     difference = x87f_sub(x87f_load_f32(target), x87f_load_f32(from));
     if (x87f_lt(difference, x87f_load_f32(-180.0f))) {
-        target = x87f_store_f32(
-            x87f_add(x87f_load_f32(target), x87f_load_f32(360.0f)));
+        target = x87f_store_f32(x87f_add(x87f_load_f32(target), x87f_load_f32(360.0f)));
     }
 
     difference = x87f_sub(x87f_load_f32(target), x87f_load_f32(from));
-    return x87f_store_f32(x87f_add(
-        x87f_mul(difference, x87f_load_f32(fraction)),
-        x87f_load_f32(from)));
+    return x87f_store_f32(x87f_add(x87f_mul(difference, x87f_load_f32(fraction)), x87f_load_f32(from)));
 #else
     long double difference = (long double)to - (long double)from;
 

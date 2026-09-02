@@ -74,8 +74,7 @@ long double CG_FlameGetSizeRate(flameChunk_t *f /* ESI */)
         // (into A). powl keeps both the base and the result 80-bit as the bytes
         // require; a double `pow` would round each. (The powl polynomial still
         // differs from _CIpow -- a pre-existing transcendental relaxation.)
-        long double cubed =
-            powl((long double)f->driftSpeed * CG_FLAME_INPUT_SCALE, 3.0L);
+        long double cubed = powl((long double)f->driftSpeed * CG_FLAME_INPUT_SCALE, 3.0L);
 
         // 30023bbd: FADD ST0,ST0 => 2 * cubed.
         long double doubled = cubed + cubed;
@@ -84,8 +83,7 @@ long double CG_FlameGetSizeRate(flameChunk_t *f /* ESI */)
         // (f->ownerInfoIndex == cg_snap->ps.psClientNum) ? 1 : 0. After SUB,
         // NEG sets CF when the difference is nonzero; SBB self produces -CF and
         // INC therefore leaves 1 only for equality.
-        int32_t clientMatches =
-            (f->ownerInfoIndex == cg_snap->ps.psClientNum) ? 1 : 0;
+        int32_t clientMatches = (f->ownerInfoIndex == cg_snap->ps.psClientNum) ? 1 : 0;
 
         // 30023bd7..30023be7: A = doubled + (clientMatches * 0.0f + 0.8f).
         // The FILD'd flag is multiplied by the 0.0f coefficient (so it never
@@ -94,26 +92,20 @@ long double CG_FlameGetSizeRate(flameChunk_t *f /* ESI */)
         // intervening store, and nothing narrows the term before the FADDP at
         // 30023be7 -- so neither the (float) nor the (double) cast belongs here.
         // The only rounding on this path is the FSTP double at 30023be9.
-        A = (double)(doubled +
-            ((long double)clientMatches *
-                 (long double)CG_FLAME_CLIENT_FLAG_COEF +
-             (long double)CG_FLAME_RATE_BIAS));
+        A = (double)(doubled + ((long double)clientMatches * (long double)CG_FLAME_CLIENT_FLAG_COEF + (long double)CG_FLAME_RATE_BIAS));
     }
 
     // 30023bed..30023bf8: B = startSpeedBits / (endTime - spawnTime).
     // startSpeedBits (+0x5c) holds float bits here and is promoted to the x87
     // stack as a float; endTime (+0x50) and spawnTime (+0x48) are doubles.
-    long double lifeSpan =
-        (long double)f->endTime - (long double)f->spawnTime;
-    double B = (double)(
-        (long double)CG_FloatFromBits(f->startSpeedBits) / lifeSpan);
+    long double lifeSpan = (long double)f->endTime - (long double)f->spawnTime;
+    double B = (double)((long double)CG_FloatFromBits(f->startSpeedBits) / lifeSpan);
 
     // 30023bfc..30023c02: C = 1.0f - scaleClamped. The difference is never
     // stored: FLD 1.0f / FSUB m32 feeds the pow helper's ST(1) directly, so it
     // must stay at register precision (a float local would insert a rounding
     // the DLL does not perform). powl below keeps C 80-bit into the call.
-    long double C =
-        (long double)CG_FLAME_RATE_SCALE_MAX - (long double)scaleClamped;
+    long double C = (long double)CG_FLAME_RATE_SCALE_MAX - (long double)scaleClamped;
 
     // 30023c05..30023c1e: result = pow(C, 2.0) * B + B / A.
     // pow(C,2.0): C raw in ST(1), 2.0 (0x3007bde8) in ST(0); _CIpow leaves the
@@ -121,6 +113,5 @@ long double CG_FlameGetSizeRate(flameChunk_t *f /* ESI */)
     // it back unrounded (no store in the tail). powl keeps the base, the result
     // and the return all 80-bit; the return type is long double so no rounding
     // is inserted at `return`. (powl != _CIpow polynomial -- relaxation.)
-    return powl(C, 2.0L) * (long double)B +
-           (long double)B / (long double)A;
+    return powl(C, 2.0L) * (long double)B + (long double)B / (long double)A;
 }

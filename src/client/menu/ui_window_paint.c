@@ -32,30 +32,26 @@ void GradientBar_Paint(const rectDef_t *rect, const vec4_t color)
 
     context->setColor(color);
     context = DC;
-    context->drawHandlePic(rect->x, rect->y, rect->w, rect->h,
-                           context->gradientBar);
+    context->drawHandlePic(rect->x, rect->y, rect->w, rect->h, context->gradientBar);
     context = DC;
     context->setColor(NULL);
 }
 
-void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
-                  float fadeClamp, float fadeCycle)
+void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount, float fadeClamp, float fadeCycle)
 {
     rectDef_t rect = window->rect;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    vec4_t teamColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+    vec4_t teamColor = {0.0f, 0.0f, 0.0f, 0.0f};
 
     if (debugMode != 0) {
         teamColor[0] = 1.0f;
         teamColor[1] = 1.0f;
         teamColor[2] = 1.0f;
         teamColor[3] = 1.0f;
-        DC->drawRect(window->rect.x, window->rect.y,
-                     window->rect.w, window->rect.h, 1.0f, teamColor);
+        DC->drawRect(window->rect.x, window->rect.y, window->rect.w, window->rect.h, 1.0f, teamColor);
     }
 
-    if (window->style == WINDOW_STYLE_EMPTY &&
-        window->border == WINDOW_BORDER_NONE) {
+    if (window->style == WINDOW_STYLE_EMPTY && window->border == WINDOW_BORDER_NONE) {
         return;
     }
     if (window->border != WINDOW_BORDER_NONE) {
@@ -71,14 +67,11 @@ void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
 
     case WINDOW_STYLE_FILLED:
         if (window->background != 0) {
-            if (((uint32_t)window->flags &
-                 (WINDOW_FADINGOUT | WINDOW_FADINGIN)) != 0u &&
-                DC->realTime > window->nextTime) {
+            if (((uint32_t)window->flags & (WINDOW_FADINGOUT | WINDOW_FADINGIN)) != 0u && DC->realTime > window->nextTime) {
                 int32_t cycleMs = coduo_fp_to_i32_extended(fadeCycle);
                 int32_t realTime = DC->realTime;
 
-                window->nextTime = coduo_int32_from_bits(
-                    (uint32_t)realTime + (uint32_t)cycleMs);
+                window->nextTime = coduo_int32_from_bits((uint32_t)realTime + (uint32_t)cycleMs);
                 if (((uint32_t)window->flags & WINDOW_FADINGOUT) != 0u) {
                     /* Both originals store the rounded binary32 alpha but
                      * compare the retained PC=53 result. */
@@ -86,12 +79,10 @@ void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
 
                     window->backColor[3] = (float)newAlpha;
                     if (newAlpha <= 0.0) {
-                        window->flags &=
-                            ~(int32_t)(WINDOW_FADINGOUT | WINDOW_VISIBLE);
+                        window->flags &= ~(int32_t)(WINDOW_FADINGOUT | WINDOW_VISIBLE);
                     }
                 } else {
-                    double newAlpha =
-                        (double)window->backColor[3] + fadeInAmount;
+                    double newAlpha = (double)window->backColor[3] + fadeInAmount;
 
                     window->backColor[3] = (float)newAlpha;
                     if (newAlpha >= fadeClamp) {
@@ -101,12 +92,10 @@ void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
                 }
             }
             DC->setColor(window->backColor);
-            DC->drawHandlePic(rect.x, rect.y, rect.w, rect.h,
-                              window->background);
+            DC->drawHandlePic(rect.x, rect.y, rect.w, rect.h, window->background);
             DC->setColor(NULL);
         } else {
-            DC->fillRect(rect.x, rect.y, rect.w, rect.h,
-                         window->backColor);
+            DC->fillRect(rect.x, rect.y, rect.w, rect.h, window->backColor);
         }
         break;
 
@@ -126,16 +115,14 @@ void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
 
     case WINDOW_STYLE_CINEMATIC:
         if (window->cinematic == UI_CINEMATIC_UNINITIALIZED) {
-            window->cinematic = DC->playCinematic(
-                window->cinematicName, rect.x, rect.y, rect.w, rect.h);
+            window->cinematic = DC->playCinematic(window->cinematicName, rect.x, rect.y, rect.w, rect.h);
             if (window->cinematic == UI_CINEMATIC_UNINITIALIZED) {
                 window->cinematic = UI_CINEMATIC_FAILED;
             }
         }
         if (window->cinematic >= 0) {
             DC->runCinematicFrame(window->cinematic);
-            DC->drawCinematic(window->cinematic,
-                              rect.x, rect.y, rect.w, rect.h);
+            DC->drawCinematic(window->cinematic, rect.x, rect.y, rect.w, rect.h);
         }
         break;
 
@@ -148,8 +135,7 @@ void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
         if (((uint32_t)window->flags & WINDOW_FORECOLORSET) != 0u) {
             DC->setColor(window->foreColor);
         }
-        DC->drawHandlePic(rect.x, rect.y, rect.w, rect.h,
-                          window->background);
+        DC->drawHandlePic(rect.x, rect.y, rect.w, rect.h, window->background);
         DC->setColor(NULL);
         break;
 
@@ -169,29 +155,21 @@ void Window_Paint(windowDef_t *window, float fadeAmount, float fadeInAmount,
                 teamColor[2] = 1.0f;
             }
             teamColor[3] = 1.0f;
-            DC->drawRect(window->rect.x, window->rect.y,
-                         window->rect.w, window->rect.h,
-                         window->borderSize, teamColor);
+            DC->drawRect(window->rect.x, window->rect.y, window->rect.w, window->rect.h, window->borderSize, teamColor);
         } else {
-            DC->drawRect(window->rect.x, window->rect.y,
-                         window->rect.w, window->rect.h,
-                         window->borderSize, window->borderColor);
+            DC->drawRect(window->rect.x, window->rect.y, window->rect.w, window->rect.h, window->borderSize, window->borderColor);
         }
         return;
 
     case WINDOW_BORDER_HORIZONTAL:
         DC->setColor(window->borderColor);
-        DC->drawTopBottom(window->rect.x, window->rect.y,
-                          window->rect.w, window->rect.h,
-                          window->borderSize);
+        DC->drawTopBottom(window->rect.x, window->rect.y, window->rect.w, window->rect.h, window->borderSize);
         DC->setColor(NULL);
         return;
 
     case WINDOW_BORDER_VERTICAL:
         DC->setColor(window->borderColor);
-        DC->drawSides(window->rect.x, window->rect.y,
-                      window->rect.w, window->rect.h,
-                      window->borderSize);
+        DC->drawSides(window->rect.x, window->rect.y, window->rect.w, window->rect.h, window->borderSize);
         DC->setColor(NULL);
         return;
 
@@ -242,8 +220,7 @@ void Menu_Paint(menuDef_t *menu, qboolean forcePaint)
         display->drawHandlePic(0.0f, 0.0f, 640.0f, 480.0f, background);
     }
 
-    Window_Paint(&menu->window, menu->fadeAmount, menu->fadeInAmount,
-                 menu->fadeClamp, (float)menu->fadeCycle);
+    Window_Paint(&menu->window, menu->fadeAmount, menu->fadeInAmount, menu->fadeClamp, (float)menu->fadeCycle);
     for (index = 0; index < menu->itemCount; ++index) {
         Item_Paint(menu->items[index]);
     }
@@ -256,8 +233,6 @@ void Menu_Paint(menuDef_t *menu, qboolean forcePaint)
         color[2] = 1.0f;
         color[3] = 1.0f;
         display = DC;
-        display->drawRect(menu->window.rect.x, menu->window.rect.y,
-                          menu->window.rect.w, menu->window.rect.h,
-                          1.0f, color);
+        display->drawRect(menu->window.rect.x, menu->window.rect.y, menu->window.rect.w, menu->window.rect.h, 1.0f, color);
     }
 }

@@ -7,10 +7,7 @@
 
 #include "client/cgame/client_recovered.h"
 
-qboolean CG_DObjGetWorldBoneBoundsWireframe(struct DObj_s *dobj,
-                                             centity_t *cent,
-                                             const char *tagName,
-                                             vec3_t points[24])
+qboolean CG_DObjGetWorldBoneBoundsWireframe(struct DObj_s *dobj, centity_t *cent, const char *tagName, vec3_t points[24])
 {
     if (!CG_DObjGetBoneBoundsWireframe(dobj, tagName, points))
         return qfalse;
@@ -40,12 +37,9 @@ qboolean CG_DObjGetWorldBoneBoundsWireframe(struct DObj_s *dobj,
         const long double y = points[i][1];
         const long double z = points[i][2];
 
-        const long double outX =
-            ((z * up[0] + x * forward[0]) + y * negRightX) + originX;
-        const long double outY =
-            ((x * forward[1] + z * up[1]) + y * negRightY) + originY;
-        const long double outZ =
-            ((x * forward[2] + z * up[2]) + y * negRightZ) + originZ;
+        const long double outX = ((z * up[0] + x * forward[0]) + y * negRightX) + originX;
+        const long double outY = ((x * forward[1] + z * up[1]) + y * negRightY) + originY;
+        const long double outZ = ((x * forward[2] + z * up[2]) + y * negRightZ) + originZ;
 
         /* The unrolled body rounds Z to a stack m32 first and publishes its raw
          * dword, then stores X and Y from the two remaining x87 results. */

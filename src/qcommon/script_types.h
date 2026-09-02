@@ -35,8 +35,7 @@ typedef enum script_variable_type_e {
     SCRIPT_VAR_COUNT = 19
 } script_variable_type_t;
 
-typedef char script_variable_type_size[
-    sizeof(script_variable_type_t) == sizeof(uint32_t) ? 1 : -1];
+typedef char script_variable_type_size[sizeof(script_variable_type_t) == sizeof(uint32_t) ? 1 : -1];
 
 /* Engine/game script callback-table indices.  CoDUOMP.exe and coduo_lnxded
  * each publish the same 102 import slots, and the Windows and Linux game
@@ -182,12 +181,9 @@ typedef void (*script_function_callback_t)(void);
 typedef void (*script_method_callback_t)(uint32_t scriptObject);
 typedef void *(*script_anim_tree_alloc_t)(size_t size);
 typedef void (*script_source_io_fn_t)(void *buffer, int32_t byteCount);
-typedef script_function_callback_t (*script_get_function_callback_t)(
-    const char **name, int32_t *developerOnly);
-typedef script_method_callback_t (*script_get_method_callback_t)(
-    const char **name, int32_t *developerOnly);
-typedef void (*script_object_field_callback_t)(
-    int32_t classNum, int32_t objectNum, int32_t fieldIndex);
+typedef script_function_callback_t (*script_get_function_callback_t)(const char **name, int32_t *developerOnly);
+typedef script_method_callback_t (*script_get_method_callback_t)(const char **name, int32_t *developerOnly);
+typedef void (*script_object_field_callback_t)(int32_t classNum, int32_t objectNum, int32_t fieldIndex);
 typedef void *(*script_load_read_callback_t)(uint32_t size);
 
 /* One pointer-sized script callback-table cell.  The import ID or export ID,
@@ -267,10 +263,8 @@ typedef union script_vm_callback_slot_u {
     void (*void_from_u16_cstring_u16)(uint16_t, const char *, uint16_t);
     void (*void_from_classmap_u32)(script_class_map_entry_t *, uint32_t);
     void (*void_from_cstring_voidp)(const char *, const void *);
-    void (*void_from_cstring_cstring_voidp)(
-        const char *, const char *, void *);
-    void (*void_from_cstring_cstring_animref)(
-        const char *, const char *, scr_anim_t *);
+    void (*void_from_cstring_cstring_voidp)(const char *, const char *, void *);
+    void (*void_from_cstring_cstring_animref)(const char *, const char *, scr_anim_t *);
     void (*void_from_voidp_voidp_voidp)(void *, void *, void *);
     void (*void_from_voidp_u16)(uint16_t *, uint16_t);
     void (*void_from_voidp_int)(void *, int);
@@ -283,13 +277,10 @@ typedef union script_vm_callback_slot_u {
 } script_vm_callback_slot_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char script_class_map_entry_size[
-    sizeof(script_class_map_entry_t) == 0x08 ? 1 : -1];
-typedef char script_class_map_entry_name_offset[
-    offsetof(script_class_map_entry_t, name) == 0x04 ? 1 : -1];
+typedef char script_class_map_entry_size[sizeof(script_class_map_entry_t) == 0x08 ? 1 : -1];
+typedef char script_class_map_entry_name_offset[offsetof(script_class_map_entry_t, name) == 0x04 ? 1 : -1];
 #endif
-typedef char script_vm_callback_slot_size[
-    sizeof(script_vm_callback_slot_t) == sizeof(script_callback_fn_t) ? 1 : -1];
+typedef char script_vm_callback_slot_size[sizeof(script_vm_callback_slot_t) == sizeof(script_callback_fn_t) ? 1 : -1];
 
 #if defined(__cplusplus)
 #define SCRIPT_TYPES_ALIGNOF(type_) alignof(type_)
@@ -305,10 +296,8 @@ typedef char script_vm_callback_slot_size[
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char script_class_map_entry_alignment[
-    SCRIPT_TYPES_ALIGNOF(script_class_map_entry_t) == 0x04 ? 1 : -1];
-typedef char script_vm_callback_slot_alignment[
-    SCRIPT_TYPES_ALIGNOF(script_vm_callback_slot_t) == 0x04 ? 1 : -1];
+typedef char script_class_map_entry_alignment[SCRIPT_TYPES_ALIGNOF(script_class_map_entry_t) == 0x04 ? 1 : -1];
+typedef char script_vm_callback_slot_alignment[SCRIPT_TYPES_ALIGNOF(script_vm_callback_slot_t) == 0x04 ? 1 : -1];
 #endif
 
 #undef SCRIPT_TYPES_ALIGNOF

@@ -6,7 +6,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-enum { HUNK_MARK_UNSET = 0 };
+enum {
+    HUNK_MARK_UNSET = 0
+};
 
 void Com_Printf(const char *format, ...);
 void XModelClearData(void *rangeStart, void *rangeEnd);
@@ -59,8 +61,7 @@ void Hunk_SetHighTempMark(void)
 /* CoDUOMP.exe 0x00435b70; coduo_lnxded 0x0806c276. */
 qboolean Hunk_CheckHighMark(const void *pointer)
 {
-    const uint8_t *const highMarkAddress =
-        hunk_data + hunk.totalSize - hunk.highMark;
+    const uint8_t *const highMarkAddress = hunk_data + hunk.totalSize - hunk.highMark;
     return (uintptr_t)pointer >= (uintptr_t)highMarkAddress;
 }
 

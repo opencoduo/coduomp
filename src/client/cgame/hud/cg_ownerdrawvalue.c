@@ -26,7 +26,8 @@ float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15" "CG_OwnerDrawValue: invalid client number %i",
+                      "\x15"
+                      "CG_OwnerDrawValue: invalid client number %i",
                       clientNum);
             return 0.0f;
         }
@@ -44,17 +45,12 @@ float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
         if (ownerDraw == CG_ODV_AMMO) {
             int32_t index = wi->ammoIndex;
             int32_t value = cg_snap->ps.ammo[index];
-            return colorRangeType == COLOR_RANGE_RELATIVE
-                ? (float)((long double)value /
-                          (long double)bg_ammoTypeMax[index])
-                : (float)value;
+            return colorRangeType == COLOR_RANGE_RELATIVE ? (float)((long double)value / (long double)bg_ammoTypeMax[index]) : (float)value;
         } else {
             int32_t index = wi->clipIndex;
             int32_t value = cg_snap->ps.clips[index];
-            return colorRangeType == COLOR_RANGE_RELATIVE
-                ? (float)((long double)value /
-                          (long double)bg_ammoClipSizes[index])
-                : (float)value;
+            return colorRangeType == COLOR_RANGE_RELATIVE ? (float)((long double)value / (long double)bg_ammoClipSizes[index])
+                                                          : (float)value;
         }
     }
 
@@ -62,7 +58,8 @@ float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15" "CG_OwnerDrawValue: invalid client number %i",
+                      "\x15"
+                      "CG_OwnerDrawValue: invalid client number %i",
                       clientNum);
             return 0.0f;
         }
@@ -80,11 +77,8 @@ float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType)
         if (cg_currentSelectedPlayer_vmCvar.integer < 0 || cg_currentSelectedPlayer_vmCvar.integer >= cg_hudEmitCount) {
             cg_currentSelectedPlayer_vmCvar.integer = 0;
         }
-        int32_t selectedClient = cgame_compat_read_target_i32_index(
-            cg_hudEmitClientTable,
-            cg_currentSelectedPlayer_vmCvar.integer);
-        clientInfo_t *state = cgame_compat_unchecked_clientinfo(
-            &bgs.clientinfo[0], selectedClient);
+        int32_t selectedClient = cgame_compat_read_target_i32_index(cg_hudEmitClientTable, cg_currentSelectedPlayer_vmCvar.integer);
+        clientInfo_t *state = cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], selectedClient);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (state->infoValid != 0) {
             return (float)state->health;

@@ -31,22 +31,11 @@
 
 void CG_DrawPic(float x, float y, float width, float height, qhandle_t hShader)
 {
-    float scaledHeight = (float)((long double)cgs_screenYScale *
-                                 (long double)height);
-    float scaledX = (float)((long double)cgs_screenXScale *
-                            (long double)x);
-    float scaledY = (float)((long double)cgs_screenYScale *
-                            (long double)y);
-    float scaledWidth = (float)((long double)cgs_screenXScale *
-                                (long double)width);
+    float scaledHeight = (float)((long double)cgs_screenYScale * (long double)height);
+    float scaledX = (float)((long double)cgs_screenXScale * (long double)x);
+    float scaledY = (float)((long double)cgs_screenYScale * (long double)y);
+    float scaledWidth = (float)((long double)cgs_screenXScale * (long double)width);
 
-    trap_R_DrawStretchPic(CG_FloatBits(scaledX),
-                          CG_FloatBits(scaledY),
-                          CG_FloatBits(scaledWidth),
-                          CG_FloatBits(scaledHeight),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(1.0f),
-                          CG_FloatBits(1.0f),
-                          hShader);
+    trap_R_DrawStretchPic(CG_FloatBits(scaledX), CG_FloatBits(scaledY), CG_FloatBits(scaledWidth), CG_FloatBits(scaledHeight),
+                          CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), hShader);
 }

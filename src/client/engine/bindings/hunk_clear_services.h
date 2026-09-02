@@ -8,12 +8,11 @@ void SV_ShutdownGameProgs(void);
 void VM_Clear(void);
 
 #define HUNK_CLEAR_TO_START_PRE_SERVER() \
-    do {                                 \
-        CL_ShutdownCGame();              \
-        CL_ShutdownUI();                 \
+    do { \
+        CL_ShutdownCGame(); \
+        CL_ShutdownUI(); \
     } while (0)
 
-#define HUNK_CLEAR_TO_START_POST_SERVER() \
-    CIN_CloseAllVideos()
+#define HUNK_CLEAR_TO_START_POST_SERVER() CIN_CloseAllVideos()
 
 #endif

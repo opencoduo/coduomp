@@ -28,13 +28,10 @@ enum {
     CG_FIRE_LOOP_TAIL_MS = 51
 };
 
-void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
-                   entityState_t *model, int32_t event,
-                   int32_t muzzleTagIndex)
+void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent, entityState_t *model, int32_t event, int32_t muzzleTagIndex)
 {
     int32_t weaponIndex = (int32_t)(packedWeapon & ~(uint32_t)CG_FIRE_DRAW_TAG_MODEL);
-    qboolean drawTagModel =
-        (packedWeapon & CG_FIRE_DRAW_TAG_MODEL) ? qtrue : qfalse;
+    qboolean drawTagModel = (packedWeapon & CG_FIRE_DRAW_TAG_MODEL) ? qtrue : qfalse;
     cgWeaponInfo_t *weaponVisual;
     weaponInfo_t *weapon;
     qboolean localViewEffect = qfalse;
@@ -50,26 +47,21 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
         if (weaponIndex == 0) {
             return;
         }
-        if (weaponIndex > bg_numWeapons ||
-            (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS) {
+        if (weaponIndex > bg_numWeapons || (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS) {
             Com_ErrorMessage("CG_FireWeapon: ent->weapon > BG_GetNumWeapons()");
             return;
         }
     } else {
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        if (weaponIndex > bg_numWeapons ||
-            (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
-            bg_weaponInfos[weaponIndex] == NULL) {
-            Com_Printf("WARNING: CG_FireWeapon: invalid weapon override %i\n",
-                       weaponIndex);
+        if (weaponIndex > bg_numWeapons || (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS || bg_weaponInfos[weaponIndex] == NULL) {
+            Com_Printf("WARNING: CG_FireWeapon: invalid weapon override %i\n", weaponIndex);
             return;
         }
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if (bg_weaponInfos[weaponIndex] == NULL) {
-        Com_Printf("WARNING: CG_FireWeapon: unregistered weapon index %i\n",
-                   weaponIndex);
+        Com_Printf("WARNING: CG_FireWeapon: unregistered weapon index %i\n", weaponIndex);
         return;
     }
 
@@ -86,10 +78,8 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     cent->weaponEffectActive = qtrue;
 
     /* Local first-person fire applies random weapon view kick/recoil. */
-    if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
-        (int32_t)model->numberBits == cg_snap->ps.psClientNum) {
-        BG_WeaponFireRecoil(&cg_predictedPlayerState, cg_weaponRecoilAngles,
-                            cg_viewKickVel);
+    if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 && (int32_t)model->numberBits == cg_snap->ps.psClientNum) {
+        BG_WeaponFireRecoil(&cg_predictedPlayerState, cg_weaponRecoilAngles, cg_viewKickVel);
     }
 
     /* 0x30047e08..0x30047f0d: choose the DObj context and muzzle tag. Turrets use
@@ -100,19 +90,14 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
      * weaponEffectActive latch and emits their view/world muzzle effect. */
     if (model->eType == ET_TURRET) {
         muzzleTag = cg_muzzleTagNames[muzzleTagIndex];
-        localViewEffect =
-            (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits)
-            ? qtrue : qfalse;
+        localViewEffect = (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits) ? qtrue : qfalse;
     } else {
         centity_t *effectEntity = NULL;
 
-        if ((int32_t)model->numberBits < MAX_CLIENTS_IN_SNAPSHOT &&
-            (model->eFlags & EF_IN_VEHICLE) != 0 &&
+        if ((int32_t)model->numberBits < MAX_CLIENTS_IN_SNAPSHOT && (model->eFlags & EF_IN_VEHICLE) != 0 &&
             (((model->poseType & CG_TURRET_MUZZLE_POSE_MASK) != CG_TURRET_MUZZLE_POSE) ||
              ((model->poseType & CG_TURRET_SEAT_MASK) != CG_TURRET_SEAT_GUNNER))) {
-            localViewEffect =
-                (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits)
-                ? qtrue : qfalse;
+            localViewEffect = (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits) ? qtrue : qfalse;
             effectEntity = &cg_entities[model->vehicleEntityNum];
             if (effectEntity->currentValid == 0) {
                 effectEntity = NULL;
@@ -122,8 +107,7 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
             effectEntity = (centity_t *)model;
             if (cg_snap->ps.viewLockedEntityNum == (int32_t)model->numberBits) {
                 localViewEffect =
-                    ((cg_entities[cg_snap->ps.psClientNum].currentState.stateFilter & 7) ==
-                     CG_LOCAL_VIEW_WEAPON_MODE) ? qtrue : qfalse;
+                    ((cg_entities[cg_snap->ps.psClientNum].currentState.stateFilter & 7) == CG_LOCAL_VIEW_WEAPON_MODE) ? qtrue : qfalse;
             }
         } else {
             /* 0x30047e88..0x30047f0d: ordinary player weapons skip the
@@ -151,15 +135,13 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
     }
 
     if (playMuzzleEffect) {
-        CG_PlayFxOnWeaponTag(localViewEffect, weaponIndex, effectModel,
-                            cent->lerpOrigin, muzzleTag, drawTagModel);
+        CG_PlayFxOnWeaponTag(localViewEffect, weaponIndex, effectModel, cent->lerpOrigin, muzzleTag, drawTagModel);
     }
 
     /* A looping fire sound arms the centity timer for weapon fireTime plus the
      * fixed 51ms tail. */
     if (weaponVisual->loopFireSound != 0) {
-        cent->flashSoundLifetime = coduo_int32_from_bits(
-            (uint32_t)weapon->fireTime + (uint32_t)CG_FIRE_LOOP_TAIL_MS);
+        cent->flashSoundLifetime = coduo_int32_from_bits((uint32_t)weapon->fireTime + (uint32_t)CG_FIRE_LOOP_TAIL_MS);
     }
 
     {
@@ -173,19 +155,14 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
         }
 
         if (sound != 0) {
-            if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
-                (int32_t)model->numberBits == cg_snap->ps.psClientNum) {
+            if ((cg_snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 && (int32_t)model->numberBits == cg_snap->ps.psClientNum) {
                 if (weaponVisual->viewDObjSelf != 0) {
-                    haveTagOrigin = CG_DObjGetSpecialTagWorldMatrix(
-                        weaponVisual->viewDObjSelf,
-                        "tag_flash", &tagMatrix);
+                    haveTagOrigin = CG_DObjGetSpecialTagWorldMatrix(weaponVisual->viewDObjSelf, "tag_flash", &tagMatrix);
                 }
             } else {
-                void *self = (void *)(intptr_t)cgame_syscall(
-                    CG_DOBJ_GET_HANDLE, model->numberBits);
+                void *self = (void *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, model->numberBits);
                 if (self != NULL) {
-                    haveTagOrigin = CG_DObjGetWorldTagMatrix(
-                        self, "tag_flash", cent, &tagMatrix);
+                    haveTagOrigin = CG_DObjGetWorldTagMatrix(self, "tag_flash", cent, &tagMatrix);
                 }
             }
 
@@ -194,12 +171,10 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
                 soundOrigin[1] = tagMatrix.origin[1];
                 soundOrigin[2] = tagMatrix.origin[2];
             } else {
-                BG_EvaluateTrajectory(&model->pos, (int32_t)cg_time,
-                                      soundOrigin);
+                BG_EvaluateTrajectory(&model->pos, (int32_t)cg_time, soundOrigin);
             }
 
-            (void)CG_PlaySoundAliasByName((int32_t)model->numberBits,
-                                           soundOrigin, sound);
+            (void)CG_PlaySoundAliasByName((int32_t)model->numberBits, soundOrigin, sound);
         }
     }
 

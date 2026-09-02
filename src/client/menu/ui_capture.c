@@ -8,8 +8,7 @@
 #include <stdint.h>
 
 void Com_Printf(const char *format, ...);
-qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key,
-                                qboolean force);
+qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force);
 int32_t Item_Slider_OverSlider(itemDef_t *item, float x, float y);
 qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key);
 qboolean Item_YesNo_HandleKey(itemDef_t *item, int32_t key);
@@ -52,15 +51,12 @@ void Scroll_ListBox_AutoFunc(void *captureDataValue)
     if (context->realTime > info->nextScrollTime) {
         Item_ListBox_HandleKey(info->item, info->scrollKey, qfalse);
         context = DC;
-        info->nextScrollTime = coduo_int32_from_bits(
-            (uint32_t)context->realTime + (uint32_t)info->adjustValue);
+        info->nextScrollTime = coduo_int32_from_bits((uint32_t)context->realTime + (uint32_t)info->adjustValue);
     }
     if (context->realTime > info->nextAdjustTime) {
-        info->nextAdjustTime = coduo_int32_from_bits(
-            (uint32_t)context->realTime + CAPTURE_SCROLL_ADJUST_DELAY);
+        info->nextAdjustTime = coduo_int32_from_bits((uint32_t)context->realTime + CAPTURE_SCROLL_ADJUST_DELAY);
         if (info->adjustValue > CAPTURE_SCROLL_MINIMUM_DELAY) {
-            info->adjustValue = coduo_int32_from_bits(
-                (uint32_t)info->adjustValue - CAPTURE_SCROLL_DELAY_STEP);
+            info->adjustValue = coduo_int32_from_bits((uint32_t)info->adjustValue - CAPTURE_SCROLL_DELAY_STEP);
         }
     }
 }
@@ -95,10 +91,8 @@ void Scroll_ListBox_ThumbFunc(void *captureDataValue)
         trackExtent = item->window.rect.w - CAPTURE_SCROLL_DOUBLE_THUMB - 2.0f;
         maximum = Item_ListBox_MaxScroll(item);
         context = DC;
-        position = coduo_fp_to_i32_extended(
-            ((((double)context->cursorx - trackOrigin) -
-              CAPTURE_SCROLL_HALF_THUMB) * (double)maximum) /
-            ((double)trackExtent - SCROLLBAR_SIZE));
+        position = coduo_fp_to_i32_extended(((((double)context->cursorx - trackOrigin) - CAPTURE_SCROLL_HALF_THUMB) * (double)maximum) /
+                                            ((double)trackExtent - SCROLLBAR_SIZE));
         if (position < 0) {
             position = 0;
         } else if (position > maximum) {
@@ -113,14 +107,11 @@ void Scroll_ListBox_ThumbFunc(void *captureDataValue)
         context = DC;
         if ((double)context->cursory != (double)info->yStart) {
             trackOrigin = item->window.rect.y + CAPTURE_SCROLL_TRACK_INSET;
-            trackExtent = item->window.rect.h - CAPTURE_SCROLL_DOUBLE_THUMB -
-                          2.0f;
+            trackExtent = item->window.rect.h - CAPTURE_SCROLL_DOUBLE_THUMB - 2.0f;
             maximum = Item_ListBox_MaxScroll(item);
             context = DC;
-            position = coduo_fp_to_i32_extended(
-                ((((double)context->cursory - trackOrigin) -
-                  CAPTURE_SCROLL_HALF_THUMB) * (double)maximum) /
-                ((double)trackExtent - SCROLLBAR_SIZE));
+            position = coduo_fp_to_i32_extended(((((double)context->cursory - trackOrigin) - CAPTURE_SCROLL_HALF_THUMB) * (double)maximum) /
+                                                ((double)trackExtent - SCROLLBAR_SIZE));
             if (position < 0) {
                 position = 0;
             } else if (position > maximum) {
@@ -134,15 +125,12 @@ void Scroll_ListBox_ThumbFunc(void *captureDataValue)
     if (context->realTime > info->nextScrollTime) {
         Item_ListBox_HandleKey(info->item, info->scrollKey, qfalse);
         context = DC;
-        info->nextScrollTime = coduo_int32_from_bits(
-            (uint32_t)context->realTime + (uint32_t)info->adjustValue);
+        info->nextScrollTime = coduo_int32_from_bits((uint32_t)context->realTime + (uint32_t)info->adjustValue);
     }
     if (context->realTime > info->nextAdjustTime) {
-        info->nextAdjustTime = coduo_int32_from_bits(
-            (uint32_t)context->realTime + CAPTURE_SCROLL_ADJUST_DELAY);
+        info->nextAdjustTime = coduo_int32_from_bits((uint32_t)context->realTime + CAPTURE_SCROLL_ADJUST_DELAY);
         if (info->adjustValue > CAPTURE_SCROLL_MINIMUM_DELAY) {
-            info->adjustValue = coduo_int32_from_bits(
-                (uint32_t)info->adjustValue - CAPTURE_SCROLL_DELAY_STEP);
+            info->adjustValue = coduo_int32_from_bits((uint32_t)info->adjustValue - CAPTURE_SCROLL_DELAY_STEP);
         }
     }
 }
@@ -177,9 +165,7 @@ void Scroll_Slider_ThumbFunc(void *captureDataValue)
             cursor = upper;
         }
     }
-    value = (double)edit->minVal +
-            ((cursor - origin) * (double)(1.0f / 96.0f)) *
-            ((double)edit->maxVal - edit->minVal);
+    value = (double)edit->minVal + ((cursor - origin) * (double)(1.0f / 96.0f)) * ((double)edit->maxVal - edit->minVal);
     context->setCVar(item->cvar, va("%f", value));
 }
 
@@ -190,16 +176,13 @@ void Item_StartCapture(itemDef_t *item, int32_t key)
 
     if (item->type == ITEM_TYPE_LISTBOX) {
         context = DC;
-        region = Item_ListBox_OverLB(item, (float)context->cursorx,
-                                     (float)context->cursory);
+        region = Item_ListBox_OverLB(item, (float)context->cursorx, (float)context->cursory);
         if ((region & (WINDOW_LB_LEFTARROW | WINDOW_LB_RIGHTARROW)) != 0) {
             context = DC;
-            ui_scrollInfo.nextScrollTime = coduo_int32_from_bits(
-                (uint32_t)context->realTime + CAPTURE_SCROLL_INITIAL_DELAY);
+            ui_scrollInfo.nextScrollTime = coduo_int32_from_bits((uint32_t)context->realTime + CAPTURE_SCROLL_INITIAL_DELAY);
             ui_scrollInfo.item = item;
             captureItem = item;
-            ui_scrollInfo.nextAdjustTime = coduo_int32_from_bits(
-                (uint32_t)context->realTime + CAPTURE_SCROLL_ADJUST_DELAY);
+            ui_scrollInfo.nextAdjustTime = coduo_int32_from_bits((uint32_t)context->realTime + CAPTURE_SCROLL_ADJUST_DELAY);
             ui_scrollInfo.adjustValue = CAPTURE_SCROLL_INITIAL_DELAY;
             ui_scrollInfo.scrollKey = key;
             ui_scrollInfo.scrollDir = (region >> 11) & 1;
@@ -216,8 +199,7 @@ void Item_StartCapture(itemDef_t *item, int32_t key)
             return;
         }
         context = DC;
-        region = Item_Slider_OverSlider(item, (float)context->cursorx,
-                                        (float)context->cursory);
+        region = Item_Slider_OverSlider(item, (float)context->cursorx, (float)context->cursory);
         if ((region & WINDOW_LB_THUMB) == 0) {
             return;
         }

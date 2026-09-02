@@ -44,15 +44,13 @@ void CG_UpdateScreenFade(void)
     /* 0x3001abac..bc: signed ms remaining = endTime - cg_time; JG => still active. */
     int32_t endTime = cg_screenFade.endTime;
     int32_t now = cg_time;
-    int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)endTime - (uint32_t)now);
+    int32_t remaining = coduo_int32_from_bits((uint32_t)endTime - (uint32_t)now);
 
     if (remaining > 0) {
         /* 0x3001ac17..ac1a: frac = (float)remaining * rate. long double: the FILD/FMUL
          * result is never stored -- frac stays in ST1 (80-bit) across all four
          * component lerps below; a float local would insert a rounding the DLL lacks. */
-        long double frac =
-            (long double)remaining * (long double)cg_screenFade.rate;
+        long double frac = (long double)remaining * (long double)cg_screenFade.rate;
         /* 0x3001ac20..ac26: t = 1.0f - frac (1.0f from 0x3007bce0); also kept
          * unstored in ST0 across the loop. */
         long double t = (long double)1.0f - frac;
@@ -61,18 +59,10 @@ void CG_UpdateScreenFade(void)
          * x87 keeps t in ST0 and frac in ST1 across all four components; each
          * block computes fromColor[i]*t (FMUL ST1) plus color[i]*frac (FMUL ST3). */
         vec4_t out;
-        out[0] = (float)(
-            (long double)cg_screenFade.fromColor[0] * t
-            + (long double)cg_screenFade.color[0] * frac);
-        out[1] = (float)(
-            (long double)cg_screenFade.fromColor[1] * t
-            + (long double)cg_screenFade.color[1] * frac);
-        out[2] = (float)(
-            (long double)cg_screenFade.fromColor[2] * t
-            + (long double)cg_screenFade.color[2] * frac);
-        out[3] = (float)(
-            (long double)cg_screenFade.fromColor[3] * t
-            + (long double)cg_screenFade.color[3] * frac);
+        out[0] = (float)((long double)cg_screenFade.fromColor[0] * t + (long double)cg_screenFade.color[0] * frac);
+        out[1] = (float)((long double)cg_screenFade.fromColor[1] * t + (long double)cg_screenFade.color[1] * frac);
+        out[2] = (float)((long double)cg_screenFade.fromColor[2] * t + (long double)cg_screenFade.color[2] * frac);
+        out[3] = (float)((long double)cg_screenFade.fromColor[3] * t + (long double)cg_screenFade.color[3] * frac);
 
         /* 0x3001ac84..ac95: FLD 0.0 / FLD out[3] / FUCOMPP; equal => JNP => exit.
          * Skip the draw entirely when the composed alpha is zero. */

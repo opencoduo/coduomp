@@ -14,10 +14,7 @@ void UI_GetFontInfo(void)
 
     Com_Printf("Font Info\n");
     Com_Printf("=========\n");
-    for (character = UI_FONT_INFO_FIRST_GLYPH;
-         character < UI_FONT_INFO_FIRST_GLYPH + UI_FONT_INFO_GLYPH_COUNT;
-         ++character) {
-        Com_Printf("Glyph handle %i: %i\n", character,
-                   ui_displayContextStorage.context.textFont.glyphs[character].glyph);
+    for (character = UI_FONT_INFO_FIRST_GLYPH; character < UI_FONT_INFO_FIRST_GLYPH + UI_FONT_INFO_GLYPH_COUNT; ++character) {
+        Com_Printf("Glyph handle %i: %i\n", character, ui_displayContextStorage.context.textFont.glyphs[character].glyph);
     }
 }

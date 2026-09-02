@@ -41,7 +41,9 @@
 
 /* CMD_BACKUP is the id-Tech usercmd ring size (128). The oldest cmd still buffered
  * is `currentCmdNumber - CMD_BACKUP + 1`; the code subtracts 0x7f == CMD_BACKUP-1. */
-enum { CMD_BACKUP = 128 };
+enum {
+    CMD_BACKUP = 128
+};
 
 /* cg.time blink mask: the net icon is shown only while this bit of the game clock is
  * clear, producing the ~2 Hz flash. (TEST AH,0x2 == cg.time & 0x200.) */
@@ -49,34 +51,30 @@ enum { CMD_BACKUP = 128 };
 
 /* Text metrics/draw constants proven from the .rdata immediates in this function. */
 enum {
-    CG_DISCONNECT_TEXT_STYLE  = 3,   /* trap-54 final mode word (PUSH 3) */
-    CG_DISCONNECT_ICON_FLAG   = 5,   /* CG_RegisterMaterial NoMip/type flag */
+    CG_DISCONNECT_TEXT_STYLE = 3,   /* trap-54 final mode word (PUSH 3) */
+    CG_DISCONNECT_ICON_FLAG = 5,   /* CG_RegisterMaterial NoMip/type flag */
 };
-#define CG_VIRTUAL_SCREEN_WIDTH   640.0f   /* MOV ECX,0x280 == 640 */
-#define CG_DISCONNECT_TEXT_SCALE  (1.0f / 3.0f) /* 0x3eaaaaab */
-#define CG_DISCONNECT_TEXT_Y      100.0f   /* 0x42c80000 */
-#define CG_DISCONNECT_ICON_X      296.0f   /* 0x43940000 */
-#define CG_DISCONNECT_ICON_Y      416.0f   /* 0x43d00000 */
-#define CG_DISCONNECT_ICON_W      48.0f    /* 0x42400000 */
-#define CG_DISCONNECT_ICON_H      48.0f    /* 0x42400000 */
+#define CG_VIRTUAL_SCREEN_WIDTH 640.0f   /* MOV ECX,0x280 == 640 */
+#define CG_DISCONNECT_TEXT_SCALE (1.0f / 3.0f) /* 0x3eaaaaab */
+#define CG_DISCONNECT_TEXT_Y 100.0f   /* 0x42c80000 */
+#define CG_DISCONNECT_ICON_X 296.0f   /* 0x43940000 */
+#define CG_DISCONNECT_ICON_Y 416.0f   /* 0x43d00000 */
+#define CG_DISCONNECT_ICON_W 48.0f    /* 0x42400000 */
+#define CG_DISCONNECT_ICON_H 48.0f    /* 0x42400000 */
 
 void CG_DrawDisconnect(void)
 {
     /* 0x30018a95..0x30018ab4: white RGBA at the local frame's +0x10..+0x1c.
      * 0x30018b69 later takes this exact local's address for CG_R_TEXT_PAINT. */
-    vec4_t textColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    vec4_t textColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
     /* 0x30018a93..0x30018ab5: EAX = trap_GetCurrentCmdNumber(). */
-    int32_t currentCmdNumber = coduo_int32_from_bits(
-        (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
+    int32_t currentCmdNumber = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
 
     /* 0x30018abb..0x30018ac6: fetch the oldest still-buffered usercmd into `cmd`.
      * The buffer's first dword is the cmd's commandTime. */
     usercmd_t cmd;
-    cgame_syscall(CG_GET_USER_CMD,
-                  coduo_int32_from_bits(
-                      (uint32_t)currentCmdNumber - (uint32_t)(CMD_BACKUP - 1)),
-                  (intptr_t)&cmd);
+    cgame_syscall(CG_GET_USER_CMD, coduo_int32_from_bits((uint32_t)currentCmdNumber - (uint32_t)(CMD_BACKUP - 1)), (intptr_t)&cmd);
     int32_t cmdServerTime = cmd.commandTime; /* [ESP+0x30] = &cmd.commandTime */
 
     /* 0x30018acc..0x30018aea: draw only when the oldest buffered cmd is newer than the
@@ -90,17 +88,12 @@ void CG_DrawDisconnect(void)
 
     /* 0x30018af1..0x30018b00: localized "connection interrupted" label. domain=EAX,
      * reference=ECX per CG_SafeTranslateString_Internal's register ABI. */
-    char *text = CG_SafeTranslateString_Internal(cg_localizationContext,
-                                    cg_connectionInterruptedLocalizationKey);
+    char *text = CG_SafeTranslateString_Internal(cg_localizationContext, cg_connectionInterruptedLocalizationKey);
 
     /* 0x30018b02..0x30018b34: measure the label. trap 52 returns the rendered pixel
      * width in EAX for (text, 0, 1/3f, 0). */
-    int32_t textWidthRaw = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_R_TEXT_WIDTH,
-        (intptr_t)text,
-        0,
-        CG_FloatBits(CG_DISCONNECT_TEXT_SCALE),
-        0));
+    int32_t textWidthRaw =
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, 0, CG_FloatBits(CG_DISCONNECT_TEXT_SCALE), 0));
 
     /* 0x30018b38..0x30018b60: feed the integer width through _ftol2 (FILD width;
      * truncation is therefore an identity for every int32_t input) and
@@ -114,16 +107,9 @@ void CG_DrawDisconnect(void)
     /* 0x30018b48..0x30018b7d: draw the centered label at y=100 with scale 1/3.
      * Args mirror the trap-54 text/draw shape:
      *   (xFloat, yFloat, 0, scale, &scratch, text, 0, 0, style). */
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits((float)x),          /* FILD x; FSTP -> float bits */
-                  CG_FloatBits(CG_DISCONNECT_TEXT_Y),
-                  0,
-                  CG_FloatBits(CG_DISCONNECT_TEXT_SCALE),
-                  (intptr_t)&textColor[0],
-                  (intptr_t)text,
-                  0,
-                  0,
-                  CG_DISCONNECT_TEXT_STYLE);
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits((float)x),          /* FILD x; FSTP -> float bits */
+                  CG_FloatBits(CG_DISCONNECT_TEXT_Y), 0, CG_FloatBits(CG_DISCONNECT_TEXT_SCALE), (intptr_t)&textColor[0], (intptr_t)text, 0,
+                  0, CG_DISCONNECT_TEXT_STYLE);
 
     /* 0x30018b83..0x30018b8f: blink — hide the icon while cg.time bit 0x200 is set. */
     if (cg_time & CG_DISCONNECT_BLINK_MASK) {         /* JNZ 0x30018bba */
@@ -131,8 +117,6 @@ void CG_DrawDisconnect(void)
     }
 
     /* 0x30018b91..0x30018bb7: register and draw the connection-lost net icon. */
-    qhandle_t icon = CG_RegisterMaterial(cg_connectionInterruptedIconPath,
-                                              CG_DISCONNECT_ICON_FLAG);
-    CG_DrawPic(CG_DISCONNECT_ICON_X, CG_DISCONNECT_ICON_Y,
-               CG_DISCONNECT_ICON_W, CG_DISCONNECT_ICON_H, icon);
+    qhandle_t icon = CG_RegisterMaterial(cg_connectionInterruptedIconPath, CG_DISCONNECT_ICON_FLAG);
+    CG_DrawPic(CG_DISCONNECT_ICON_X, CG_DISCONNECT_ICON_Y, CG_DISCONNECT_ICON_W, CG_DISCONNECT_ICON_H, icon);
 }

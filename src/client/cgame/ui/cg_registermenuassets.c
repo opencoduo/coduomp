@@ -40,63 +40,45 @@ void CG_RegisterMenuAssets(void)
     /* 0x3002dcf0..0x3002dd08: gradient bar */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.gradientBar =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiGradientBarMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiGradientBarMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002dd0d..0x3002dd23: scrollbar */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.scrollBar =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiScrollBarMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiScrollBarMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002dd28..0x3002dd3e: scrollbar down arrow */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.scrollBarArrowDown =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiScrollDownArrowMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiScrollDownArrowMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002dd43..0x3002dd5c: scrollbar up arrow (ADD ESP,0x40 batch cleanup) */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.scrollBarArrowUp =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiScrollUpArrowMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiScrollUpArrowMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002dd61..0x3002dd77: scrollbar left arrow */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.scrollBarArrowLeft =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiScrollLeftArrowMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiScrollLeftArrowMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002dd7c..0x3002dd92: scrollbar right arrow */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.scrollBarArrowRight =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiScrollRightArrowMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiScrollRightArrowMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002dd97..0x3002ddad: scrollbar thumb */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.scrollBarThumb =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiScrollThumbMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiScrollThumbMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002ddb2..0x3002ddcb: slider bar (ADD ESP,0x40 batch cleanup) */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.sliderBar =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiSliderTrackMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiSliderTrackMaterialPath, R_IMAGE_TRACK_UI));
 
     /* 0x3002ddd0..0x3002dde7: slider thumb (ADD ESP,0x10 cleanup, then RET) */
     CG_DrawInformation(qfalse);
     g_uiDCInstance.sliderThumb =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_R_REGISTERSHADER, cg_uiSliderThumbMaterialPath,
-            R_IMAGE_TRACK_UI));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, cg_uiSliderThumbMaterialPath, R_IMAGE_TRACK_UI));
 }

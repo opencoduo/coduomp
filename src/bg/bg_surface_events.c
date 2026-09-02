@@ -38,8 +38,7 @@ int32_t PM_GroundSurfaceType(void)
         return 0;
     }
 
-    surfaceType = (int32_t)((surfaceFlags >> SURFACE_TYPE_SHIFT) &
-                            SURFACE_TYPE_MASK);
+    surfaceType = (int32_t)((surfaceFlags >> SURFACE_TYPE_SHIFT) & SURFACE_TYPE_MASK);
     if (pm != NULL && pm->waterlevel != 0) {
         return SURFACE_TYPE_WATER;
     }
@@ -74,8 +73,7 @@ int32_t PM_FootstepForSurface(uint32_t playerStateFlags)
     if ((playerStateFlags & PMF_SPRINTING) != 0) {
         return surfaceType + EV_JUMP_DEFAULT;
     }
-    if ((playerStateFlags & PMF_WALKING) != 0 ||
-        pm->ps->leanFraction != 0.0f) {
+    if ((playerStateFlags & PMF_WALKING) != 0 || pm->ps->leanFraction != 0.0f) {
         return surfaceType + EV_FOOTSTEP_WALK_DEFAULT;
     }
     return surfaceType + EV_FOOTSTEP_RUN_DEFAULT;

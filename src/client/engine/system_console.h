@@ -27,12 +27,9 @@ void WIN_EnableAltTab(void);
 void AppActivate(qboolean active, qboolean minimized);
 
 #if defined(_WIN32)
-LRESULT CALLBACK ConWndProc(HWND window, UINT message,
-                            WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK InputLineWndProc(HWND window, UINT message,
-                                  WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK MainWndProc(HWND window, UINT message,
-                             WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK ConWndProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK InputLineWndProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK MainWndProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
 #endif
 
 #endif

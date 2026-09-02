@@ -17,13 +17,10 @@ enum {
 /* NOT_FROM_ORIGINAL_SOURCE: map a non-negative compatibility-domain sample
  * without overflowing when the requested signed interval spans INT32_MIN to
  * INT32_MAX. The public range functions require maximum > minimum. */
-static int32_t coduo_random_map_range(int32_t sample, int32_t minimum,
-                                      int32_t maximum)
+static int32_t coduo_random_map_range(int32_t sample, int32_t minimum, int32_t maximum)
 {
-    const uint32_t span =
-        (uint32_t)((int64_t)maximum - (int64_t)minimum);
-    const int64_t result =
-        (int64_t)minimum + (int64_t)((uint32_t)sample % span);
+    const uint32_t span = (uint32_t)((int64_t)maximum - (int64_t)minimum);
+    const int64_t result = (int64_t)minimum + (int64_t)((uint32_t)sample % span);
 
     return (int32_t)result;
 }

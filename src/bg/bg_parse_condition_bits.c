@@ -48,8 +48,7 @@
 // (Q_stricmpn(s1, s2, limit): EAX=limit, EDX=s1=token, ECX=s2=literal; ==0 == match.)
 #define BG_STRICMP_LIMIT 99999   /* 0x1869f — the universal Q_stricmp compare cap */
 
-void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
-                           int condIndex, bg_condition_bits_t *result)
+void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable, int condIndex, bg_condition_bits_t *result)
 {
     char keyBuffer[64];         // [ESP+0x20]: accumulated space-joined condition key
     /* The original fallback bit store indexes from [ESP+0x10] without bounding
@@ -58,7 +57,7 @@ void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
      * scratch at +0x1c.  Model that four-dword window explicitly so weapon
      * indexes 64..127 retain the original x86 side effects without indexing
      * into an unrelated native-width pointer in the host compiler's frame. */
-    int32_t localWords[4] = { 0, 0, 0, 0 };
+    int32_t localWords[4] = {0, 0, 0, 0};
     qboolean endOfClause = qfalse;// EBP: a terminator (empty token or trailing ',') seen
     com_parse_session_t *session = com_parseSession; /* 0x3000193e: EDI snapshot */
 
@@ -171,8 +170,7 @@ void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
         if (keyBuffer[0] == '\0') {                                      // strlen==0
             if (endOfClause != qfalse) {                                 // 0x30001b5f
                 BG_AnimParseError("BG_ParseConditionBits: unexpected end of condition"); // 0x30001b68
-            } else if (token != NULL &&
-                       Q_stricmpn(token, "MINUS", BG_STRICMP_LIMIT) == 0) { // 0x30001b7b
+            } else if (token != NULL && Q_stricmpn(token, "MINUS", BG_STRICMP_LIMIT) == 0) { // 0x30001b7b
                 localWords[2] = 1;                                       // 0x30001b8b
                 continue;                                                // JMP 0x30001952
             } else {
@@ -188,13 +186,11 @@ void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
         } else {
             // The binary forms this per-condition table pointer here, after every
             // token/error callback above, rather than snapshotting it at entry.
-            bg_indexed_string_t *valueNames =
-                &bgAnimConditionAliases[(uint32_t)condIndex * 16u];
+            bg_indexed_string_t *valueNames = &bgAnimConditionAliases[(uint32_t)condIndex * 16u];
             int valueIndex = BG_IndexForString(keyBuffer, valueNames, qtrue); // 0x30001be8
             if (valueIndex >= 0) {                                       // 0x30001bf2 (JL)
                 // masks from the parallel per-condition value table
-                bg_condition_bits_t *bv =
-                    &bgAnimConditionAliasBits[condIndex * 16 + valueIndex]; // 0x30001bf4..bfd
+                bg_condition_bits_t *bv = &bgAnimConditionAliasBits[condIndex * 16 + valueIndex]; // 0x30001bf4..bfd
                 localWords[0] = bv->bits[0];                             // 0x30001c00
                 localWords[1] = bv->bits[1];                             // 0x30001c06
             } else {
@@ -203,8 +199,7 @@ void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
                 // reaches localWords[2]/[3] for valid weapon indexes >= 64.
                 int bitIndex = BG_IndexForString(keyBuffer, stringTable, qfalse); // 0x30001c1f
                 // localWords[bitIndex>>5] |= (1u << (bitIndex & 31)) (0x30001c26..c40)
-                localWords[bitIndex >> 5] |=
-                    (int32_t)(1u << (bitIndex & 31));
+                localWords[bitIndex >> 5] |= (int32_t)(1u << (bitIndex & 31));
             }
             session = com_parseSession;                                  // 0x30001c4a
         }
@@ -222,8 +217,7 @@ void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
         keyBuffer[0] = '\0';                                            // 0x30001c73 reset key
 
         // A MINUS immediately following the value inverts the NEXT clause.
-        if (token != NULL &&
-            Q_stricmpn(token, "MINUS", BG_STRICMP_LIMIT) == 0)          // 0x30001c7e "MINUS"
+        if (token != NULL && Q_stricmpn(token, "MINUS", BG_STRICMP_LIMIT) == 0)          // 0x30001c7e "MINUS"
             localWords[2] = 1;                                          // 0x30001c8e
 
     loop_tail:

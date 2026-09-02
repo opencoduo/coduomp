@@ -28,7 +28,6 @@ void UI_MouseEvent(int32_t deltaX, int32_t deltaY)
     }
 
     if (Menu_Count() > 0) {
-        Display_MouseMove(NULL, ui_displayContextStorage.context.cursorx,
-                          ui_displayContextStorage.context.cursory);
+        Display_MouseMove(NULL, ui_displayContextStorage.context.cursorx, ui_displayContextStorage.context.cursory);
     }
 }

@@ -16,8 +16,7 @@ enum {
 
 /* NOT_FROM_ORIGINAL_SOURCE: byte-swap factoring for the compatibility sorter.
  * The retail CRT inlines this loop at each swap site. */
-static void coduo_qsort_compat_swap_bytes(uint8_t *left, uint8_t *right,
-                                          size_t width)
+static void coduo_qsort_compat_swap_bytes(uint8_t *left, uint8_t *right, size_t width)
 {
     while (width-- != 0) {
         const uint8_t temporary = *left;
@@ -31,22 +30,19 @@ static void coduo_qsort_compat_swap_bytes(uint8_t *left, uint8_t *right,
  * CoDUOMP.exe RVA 0x16d520, uo_cgame_mp_x86.dll RVA 0x5b9d0,
  * uo_ui_mp_x86.dll RVA 0x1e670, and uo_game_mp_x86.dll RVA 0x59a10.
  * It selects the first maximum on comparator ties. */
-static void coduo_qsort_compat_shortsort(
-    uint8_t *base, ptrdiff_t low, ptrdiff_t high, size_t width,
-    int (*compare)(const void *, const void *))
+static void coduo_qsort_compat_shortsort(uint8_t *base, ptrdiff_t low, ptrdiff_t high, size_t width,
+                                         int (*compare)(const void *, const void *))
 {
     while (high > low) {
         ptrdiff_t maximum = low;
 
         for (ptrdiff_t current = low + 1; current <= high; ++current) {
-            if (compare(base + (size_t)current * width,
-                        base + (size_t)maximum * width) > 0) {
+            if (compare(base + (size_t)current * width, base + (size_t)maximum * width) > 0) {
                 maximum = current;
             }
         }
 
-        coduo_qsort_compat_swap_bytes(base + (size_t)maximum * width,
-                                      base + (size_t)high * width, width);
+        coduo_qsort_compat_swap_bytes(base + (size_t)maximum * width, base + (size_t)high * width, width);
         --high;
     }
 }
@@ -59,8 +55,7 @@ static void coduo_qsort_compat_shortsort(
  * smaller-partition-first stack order match the retail instructions. Indexes
  * avoid forming the before-base pointer that the original 32-bit routine
  * temporarily represents arithmetically. */
-void coduo_crt_qsort(void *base, size_t count, size_t width,
-                     int (*compare)(const void *, const void *))
+void coduo_crt_qsort(void *base, size_t count, size_t width, int (*compare)(const void *, const void *))
 {
     ptrdiff_t lowStack[CODUO_QSORT_STACK_DEPTH];
     ptrdiff_t highStack[CODUO_QSORT_STACK_DEPTH];
@@ -96,23 +91,14 @@ void coduo_crt_qsort(void *base, size_t count, size_t width,
             ptrdiff_t lowCursor;
             ptrdiff_t highCursor;
 
-            if (compare(bytes + (size_t)low * width,
-                        bytes + (size_t)middle * width) > 0) {
-                coduo_qsort_compat_swap_bytes(
-                    bytes + (size_t)low * width,
-                    bytes + (size_t)middle * width, width);
+            if (compare(bytes + (size_t)low * width, bytes + (size_t)middle * width) > 0) {
+                coduo_qsort_compat_swap_bytes(bytes + (size_t)low * width, bytes + (size_t)middle * width, width);
             }
-            if (compare(bytes + (size_t)low * width,
-                        bytes + (size_t)high * width) > 0) {
-                coduo_qsort_compat_swap_bytes(bytes + (size_t)low * width,
-                                              bytes + (size_t)high * width,
-                                              width);
+            if (compare(bytes + (size_t)low * width, bytes + (size_t)high * width) > 0) {
+                coduo_qsort_compat_swap_bytes(bytes + (size_t)low * width, bytes + (size_t)high * width, width);
             }
-            if (compare(bytes + (size_t)middle * width,
-                        bytes + (size_t)high * width) > 0) {
-                coduo_qsort_compat_swap_bytes(
-                    bytes + (size_t)middle * width,
-                    bytes + (size_t)high * width, width);
+            if (compare(bytes + (size_t)middle * width, bytes + (size_t)high * width) > 0) {
+                coduo_qsort_compat_swap_bytes(bytes + (size_t)middle * width, bytes + (size_t)high * width, width);
             }
 
             lowCursor = low;
@@ -121,31 +107,23 @@ void coduo_crt_qsort(void *base, size_t count, size_t width,
                 if (middle > lowCursor) {
                     do {
                         ++lowCursor;
-                    } while (lowCursor < middle &&
-                             compare(bytes + (size_t)lowCursor * width,
-                                     bytes + (size_t)middle * width) <= 0);
+                    } while (lowCursor < middle && compare(bytes + (size_t)lowCursor * width, bytes + (size_t)middle * width) <= 0);
                 }
                 if (middle <= lowCursor) {
                     do {
                         ++lowCursor;
-                    } while (lowCursor <= high &&
-                             compare(bytes + (size_t)lowCursor * width,
-                                     bytes + (size_t)middle * width) <= 0);
+                    } while (lowCursor <= high && compare(bytes + (size_t)lowCursor * width, bytes + (size_t)middle * width) <= 0);
                 }
 
                 do {
                     --highCursor;
-                } while (highCursor > middle &&
-                         compare(bytes + (size_t)highCursor * width,
-                                 bytes + (size_t)middle * width) > 0);
+                } while (highCursor > middle && compare(bytes + (size_t)highCursor * width, bytes + (size_t)middle * width) > 0);
 
                 if (lowCursor > highCursor)
                     break;
 
                 if (lowCursor != highCursor) {
-                    coduo_qsort_compat_swap_bytes(
-                        bytes + (size_t)lowCursor * width,
-                        bytes + (size_t)highCursor * width, width);
+                    coduo_qsort_compat_swap_bytes(bytes + (size_t)lowCursor * width, bytes + (size_t)highCursor * width, width);
                 }
                 if (middle == highCursor)
                     middle = lowCursor;
@@ -155,16 +133,12 @@ void coduo_crt_qsort(void *base, size_t count, size_t width,
             if (middle < highCursor) {
                 do {
                     --highCursor;
-                } while (highCursor > middle &&
-                         compare(bytes + (size_t)highCursor * width,
-                                 bytes + (size_t)middle * width) == 0);
+                } while (highCursor > middle && compare(bytes + (size_t)highCursor * width, bytes + (size_t)middle * width) == 0);
             }
             if (middle >= highCursor) {
                 do {
                     --highCursor;
-                } while (highCursor > originalLow &&
-                         compare(bytes + (size_t)highCursor * width,
-                                 bytes + (size_t)middle * width) == 0);
+                } while (highCursor > originalLow && compare(bytes + (size_t)highCursor * width, bytes + (size_t)middle * width) == 0);
             }
 
             if (highCursor - originalLow >= originalHigh - lowCursor) {
@@ -203,8 +177,7 @@ void coduo_crt_qsort(void *base, size_t count, size_t width,
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared server-code dispatch. Client-only callers
  * use coduo_crt_qsort directly and therefore have no host-qsort path. */
-void coduo_qsort(void *base, size_t count, size_t width,
-                 int (*compare)(const void *, const void *))
+void coduo_qsort(void *base, size_t count, size_t width, int (*compare)(const void *, const void *))
 {
 #if defined(WINDOWS_BEHAVIOR)
     coduo_crt_qsort(base, count, width, compare);

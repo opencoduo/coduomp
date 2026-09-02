@@ -60,24 +60,21 @@ void Com_Printf(const char *format, ...);
 
 const char *SV_GetMapBaseName(const char *mapName)
 {
-    if (Q_stricmpn(mapName, "mp", 2) == 0 &&
-        (mapName[2] == '/' || mapName[2] == '\\')) {
+    if (Q_stricmpn(mapName, "mp", 2) == 0 && (mapName[2] == '/' || mapName[2] == '\\')) {
         mapName += 3;
     }
 
     size_t length = strlen(mapName);
     const size_t extensionLength = sizeof(".bsp") - 1u;
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (length >= extensionLength &&
-        strcmp(mapName + length - extensionLength, ".bsp") == 0) {
+    if (length >= extensionLength && strcmp(mapName + length - extensionLength, ".bsp") == 0) {
         length -= extensionLength;
     }
 
     char stripped[SERVER_MAP_NAME_BUFFER_SIZE];
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length >= sizeof(stripped)) {
-        Com_Printf("SV_GetMapBaseName: map name exceeds %i characters\n",
-                   (int32_t)sizeof(stripped) - 1);
+        Com_Printf("SV_GetMapBaseName: map name exceeds %i characters\n", (int32_t)sizeof(stripped) - 1);
         return NULL;
     }
     memcpy(stripped, mapName, length);
@@ -111,8 +108,7 @@ void SV_Map_f(void)
     const size_t argumentLength = strlen(argument);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (argumentLength >= sizeof(mapName)) {
-        Com_Printf("SV_Map_f: map name exceeds %i characters\n",
-                   (int32_t)sizeof(mapName) - 1);
+        Com_Printf("SV_Map_f: map name exceeds %i characters\n", (int32_t)sizeof(mapName) - 1);
         return;
     }
     memcpy(mapName, argument, argumentLength + 1u);
@@ -128,25 +124,19 @@ void SV_Map_f(void)
         return;
     }
 
-    const qboolean devmap =
-        Q_stricmp(Cmd_Argv(0), "devmap") == 0 ? qtrue : qfalse;
+    const qboolean devmap = Q_stricmp(Cmd_Argv(0), "devmap") == 0 ? qtrue : qfalse;
     if (sv_running->integer != 0 && com_timescale->value <= 0.0f) {
         Cvar_SetValue("timescale", 1.0f);
     }
 
-    if (Cmd_Argc() < 3 ||
-        (Cmd_Argv(2) != NULL &&
-         Q_stricmp(Cmd_Argv(2), "noautoexec") != 0)) {
+    if (Cmd_Argc() < 3 || (Cmd_Argv(2) != NULL && Q_stricmp(Cmd_Argv(2), "noautoexec") != 0)) {
         char gametype[16];
-        Q_strncpyz(gametype, Cvar_VariableString("g_gametype"),
-                   sizeof(gametype));
+        Q_strncpyz(gametype, Cvar_VariableString("g_gametype"), sizeof(gametype));
         Q_strlwr(gametype);
-        Cbuf_ExecuteText(EXEC_NOW,
-                         va("exec %s_%s.cfg\n", cleanMapName, gametype));
+        Cbuf_ExecuteText(EXEC_NOW, va("exec %s_%s.cfg\n", cleanMapName, gametype));
     }
 
-    if (sv_running->integer != 0 &&
-        Q_stricmp(cleanMapName, sv_mapname->string) == 0) {
+    if (sv_running->integer != 0 && Q_stricmp(cleanMapName, sv_mapname->string) == 0) {
         SV_MapRestart_f();
     } else {
         char spawnMapName[SERVER_MAP_NAME_BUFFER_SIZE];
@@ -171,19 +161,13 @@ void SV_MapRestart_f(void)
     (void)Cvar_Get("g_gametype", "dm", CVAR_SERVERINFO | CVAR_LATCH);
     /* The Linux instruction at 0x0808838a passes command 18.  The former
      * recovered GAME_CONSOLE_COMMAND spelling was a transcription error. */
-    const qboolean restartGate =
-        VM_Call(sv_gameVM, GAME_GET_MATCH_STATE,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0
-            ? qtrue
-            : qfalse;
+    const qboolean restartGate = VM_Call(sv_gameVM, GAME_GET_MATCH_STATE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0 ? qtrue : qfalse;
 
     if (restartGate == qfalse) {
-        if (Q_stricmp(sv_gametypeNormalizeBuffer,
-                      g_gametype->string) != 0) {
+        if (Q_stricmp(sv_gametypeNormalizeBuffer, g_gametype->string) != 0) {
             char mapName[SERVER_MAP_NAME_BUFFER_SIZE];
             Com_Printf("g_gametype variable change -- restarting.\n");
-            Q_strncpyz(mapName, Cvar_VariableString("mapname"),
-                       sizeof(mapName));
+            Q_strncpyz(mapName, Cvar_VariableString("mapname"), sizeof(mapName));
             SV_SpawnServer(mapName);
             return;
         }
@@ -191,8 +175,7 @@ void SV_MapRestart_f(void)
         if (sv_maxclients->modified != qfalse) {
             char mapName[SERVER_MAP_NAME_BUFFER_SIZE];
             Com_Printf("sv_maxclients variable change -- restarting.\n");
-            Q_strncpyz(mapName, Cvar_VariableString("mapname"),
-                       sizeof(mapName));
+            Q_strncpyz(mapName, Cvar_VariableString("mapname"), sizeof(mapName));
             SV_SpawnServer(mapName);
             return;
         }
@@ -211,8 +194,7 @@ void SV_MapRestart_f(void)
     SV_InitArchivedSnapshot();
     svs.snapFlagServerBit ^= SERVER_SNAPSHOT_RESTART_FLAG;
 
-    sv_serverId = ((sv_serverId + 1) & SERVER_ID_LOW_MASK) +
-                  (sv_serverId & SERVER_ID_HIGH_MASK);
+    sv_serverId = ((sv_serverId + 1) & SERVER_ID_LOW_MASK) + (sv_serverId & SERVER_ID_HIGH_MASK);
     Cvar_Set("sv_serverid", va("%i", sv_serverId));
     sv.serverId = com_frameTime;
     sv.state = SS_LOADING;
@@ -222,32 +204,24 @@ void SV_MapRestart_f(void)
     XAnimSetUser(XANIM_USER_SERVER);
     SV_RestartGameProgs(restartGate);
 
-    for (int32_t frame = 0;
-         frame < SERVER_RESTART_WARMUP_FRAMES;
-         ++frame) {
+    for (int32_t frame = 0; frame < SERVER_RESTART_WARMUP_FRAMES; ++frame) {
         svs.realTime += SERVER_RESTART_WARMUP_MSEC;
         svs.time += SERVER_RESTART_WARMUP_MSEC;
         SV_RunFrame();
     }
 
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state < CS_CONNECTED) {
             continue;
         }
 
-        SV_AddServerCommand(client, qtrue,
-                            restartGate != qfalse ? "n" : "B");
-        const char *const reject = (const char *)VM_Call(
-            sv_gameVM, GAME_CLIENT_CONNECT,
-            clientNum, client->scriptId,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        SV_AddServerCommand(client, qtrue, restartGate != qfalse ? "n" : "B");
+        const char *const reject =
+            (const char *)VM_Call(sv_gameVM, GAME_CLIENT_CONNECT, clientNum, client->scriptId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         if (reject != NULL) {
             SV_DropClient(client, reject);
-            Com_Printf("SV_MapRestart_f: dropped client %i - denied!\n",
-                       clientNum);
+            Com_Printf("SV_MapRestart_f: dropped client %i - denied!\n", clientNum);
         } else if (client->state == CS_ACTIVE) {
             SV_ClientEnterWorld(client, &client->lastUsercmd);
         }
@@ -279,10 +253,8 @@ void SV_MapRotate_f(void)
     qboolean execSeen = qfalse;
 
     Com_Printf("map_rotate...\n\n");
-    Com_Printf("\"sv_mapRotation\" is:\"%s\"\n\n",
-               sv_mapRotation->string);
-    Com_Printf("\"sv_mapRotationCurrent\" is:\"%s\"\n\n",
-               sv_mapRotationCurrent->string);
+    Com_Printf("\"sv_mapRotation\" is:\"%s\"\n\n", sv_mapRotation->string);
+    Com_Printf("\"sv_mapRotationCurrent\" is:\"%s\"\n\n", sv_mapRotationCurrent->string);
 
     if (sv_mapRotationCurrent->string[0] == '\0') {
         Cvar_Set("sv_mapRotationCurrent", sv_mapRotation->string);
@@ -296,8 +268,7 @@ void SV_MapRotate_f(void)
 
     for (;;) {
         if (token == NULL) {
-            Com_Printf(
-                "No map specified in sv_mapRotation - forcing map_restart.\n");
+            Com_Printf("No map specified in sv_mapRotation - forcing map_restart.\n");
             SV_MapRestart_f();
             return;
         }
@@ -305,9 +276,8 @@ void SV_MapRotate_f(void)
         if (Q_stricmp(token, "exec") == 0) {
             token = SV_GetMapRotationToken();
             if (token == NULL) {
-                Com_Printf(
-                    "No value specified after 'exec' keyword in "
-                    "sv_mapRotation - forcing map_restart.\n");
+                Com_Printf("No value specified after 'exec' keyword in "
+                           "sv_mapRotation - forcing map_restart.\n");
                 SV_MapRestart_f();
                 return;
             }
@@ -317,65 +287,52 @@ void SV_MapRotate_f(void)
         } else if (Q_stricmp(token, "allow_jeeps") == 0) {
             token = SV_GetMapRotationToken();
             if (token == NULL) {
-                Com_Printf(
-                    "No value specified after 'allow_jeeps' keyword in "
-                    "sv_mapRotation - forcing map_restart.\n");
+                Com_Printf("No value specified after 'allow_jeeps' keyword in "
+                           "sv_mapRotation - forcing map_restart.\n");
                 SV_MapRestart_f();
                 return;
             }
             Com_Printf("Setting scr_allow_jeeps: %s.\n", token);
-            if (sv_running->integer != 0 &&
-                Q_stricmp(scr_allow_jeeps->string, token) != 0) {
-                (void)VM_Call(sv_gameVM, GAME_SET_MATCH_STATE,
-                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            if (sv_running->integer != 0 && Q_stricmp(scr_allow_jeeps->string, token) != 0) {
+                (void)VM_Call(sv_gameVM, GAME_SET_MATCH_STATE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
             Cvar_Set("scr_allow_jeeps", token);
         } else if (Q_stricmp(token, "allow_tanks") == 0) {
             token = SV_GetMapRotationToken();
             if (token == NULL) {
-                Com_Printf(
-                    "No value specified after 'allow_tanks' keyword in "
-                    "sv_mapRotation - forcing map_restart.\n");
+                Com_Printf("No value specified after 'allow_tanks' keyword in "
+                           "sv_mapRotation - forcing map_restart.\n");
                 SV_MapRestart_f();
                 return;
             }
             Com_Printf("Setting scr_allow_tanks: %s.\n", token);
-            if (sv_running->integer != 0 &&
-                Q_stricmp(scr_allow_tanks->string, token) != 0) {
-                (void)VM_Call(sv_gameVM, GAME_SET_MATCH_STATE,
-                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            if (sv_running->integer != 0 && Q_stricmp(scr_allow_tanks->string, token) != 0) {
+                (void)VM_Call(sv_gameVM, GAME_SET_MATCH_STATE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
             Cvar_Set("scr_allow_tanks", token);
         } else if (Q_stricmp(token, "gametype") == 0) {
             token = SV_GetMapRotationToken();
             if (token == NULL) {
-                Com_Printf(
-                    "No gametype specified after 'gametype' keyword in "
-                    "sv_mapRotation - forcing map_restart.\n");
+                Com_Printf("No gametype specified after 'gametype' keyword in "
+                           "sv_mapRotation - forcing map_restart.\n");
                 SV_MapRestart_f();
                 return;
             }
             Com_Printf("Setting g_gametype: %s.\n", token);
-            if (sv_running->integer != 0 &&
-                Q_stricmp(g_gametype->string, token) != 0) {
-                (void)VM_Call(sv_gameVM, GAME_SET_MATCH_STATE,
-                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            if (sv_running->integer != 0 && Q_stricmp(g_gametype->string, token) != 0) {
+                (void)VM_Call(sv_gameVM, GAME_SET_MATCH_STATE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             }
             Cvar_Set("g_gametype", token);
         } else if (Q_stricmp(token, "map") == 0) {
             token = SV_GetMapRotationToken();
             if (token == NULL) {
-                Com_Printf(
-                    "No map specified after 'map' keyword in "
-                    "sv_mapRotation - forcing map_restart.\n");
+                Com_Printf("No map specified after 'map' keyword in "
+                           "sv_mapRotation - forcing map_restart.\n");
                 SV_MapRestart_f();
                 return;
             }
             Com_Printf("Setting map: %s.\n", token);
-            Cbuf_ExecuteText(
-                EXEC_NOW,
-                execSeen != qfalse ? va("map %s noautoexec\n", token)
-                                   : va("map %s\n", token));
+            Cbuf_ExecuteText(EXEC_NOW, execSeen != qfalse ? va("map %s noautoexec\n", token) : va("map %s\n", token));
             return;
         } else {
             Com_Printf("Unknown keyword '%s' in sv_mapRotation.\n", token);

@@ -12,11 +12,9 @@ void UI_StopServerRefresh(void)
     }
 
     ui_serverRefreshActive = qfalse;
-    Com_Printf("%d servers listed in browser with %d players.\n",
-               ui_displayServerCount, ui_numPlayers);
+    Com_Printf("%d servers listed in browser with %d players.\n", ui_displayServerCount, ui_numPlayers);
 
-    filteredServerCount =
-        trap_LAN_GetServerCount(ui_netSource) - ui_displayServerCount;
+    filteredServerCount = trap_LAN_GetServerCount(ui_netSource) - ui_displayServerCount;
     if (filteredServerCount > 0) {
         Com_Printf("%d servers not listed (filtered out by game browser "
                    "settings)\n",

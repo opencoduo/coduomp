@@ -24,9 +24,11 @@ extern displayContextDef_t *DC;
  */
 
 #define ITEM_ORBIT_STEP_RADIANS 0.05235987901687622f
-enum { ITEM_SHADER_NAME_CAPACITY = 1024 };
+enum {
+    ITEM_SHADER_NAME_CAPACITY = 1024
+};
 
-static const vec4_t itemPaintDebugColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+static const vec4_t itemPaintDebugColor = {0.0f, 1.0f, 0.0f, 1.0f};
 
 void Item_Paint(itemDef_t *item)
 {
@@ -49,27 +51,20 @@ void Item_Paint(itemDef_t *item)
         int32_t realTime = display->realTime;
 
         if (realTime > item->window.nextTime) {
-        float halfWidth = item->window.rectClient.w * 0.5f;
-        float halfHeight = item->window.rectClient.h * 0.5f;
-        float x = item->window.rectClient.x + halfWidth -
-                  item->window.rectEffects.x;
-        float y = item->window.rectClient.y + halfHeight -
-                  item->window.rectEffects.y;
-        float cosine;
-        float sine;
+            float halfWidth = item->window.rectClient.w * 0.5f;
+            float halfHeight = item->window.rectClient.h * 0.5f;
+            float x = item->window.rectClient.x + halfWidth - item->window.rectEffects.x;
+            float y = item->window.rectClient.y + halfHeight - item->window.rectEffects.y;
+            float cosine;
+            float sine;
 
-        item->window.nextTime = coduo_int32_from_bits(
-            (uint32_t)realTime + (uint32_t)item->window.offsetTime);
+            item->window.nextTime = coduo_int32_from_bits((uint32_t)realTime + (uint32_t)item->window.offsetTime);
         /* 0x30058303: one FSINCOS, followed by the cosine store and then the
          * sine store. The adapter is explicit hardware x87 on Intel. */
-        coduo_x87_sincosf(ITEM_ORBIT_STEP_RADIANS, &sine, &cosine);
-        item->window.rectClient.x = (float)(
-            (long double)cosine * x - (long double)sine * y +
-            item->window.rectEffects.x - halfWidth);
-        item->window.rectClient.y = (float)(
-            (long double)cosine * y + (long double)sine * x +
-            item->window.rectEffects.y - halfHeight);
-        Item_UpdatePosition(item);
+            coduo_x87_sincosf(ITEM_ORBIT_STEP_RADIANS, &sine, &cosine);
+            item->window.rectClient.x = (float)((long double)cosine * x - (long double)sine * y + item->window.rectEffects.x - halfWidth);
+            item->window.rectClient.y = (float)((long double)cosine * y + (long double)sine * x + item->window.rectEffects.y - halfHeight);
+            Item_UpdatePosition(item);
         }
     }
 
@@ -87,96 +82,86 @@ void Item_Paint(itemDef_t *item)
         int32_t realTime = display->realTime;
 
         if (realTime > item->window.nextTime) {
-        int32_t finished = 0;
+            int32_t finished = 0;
 
-        item->window.nextTime = coduo_int32_from_bits(
-            (uint32_t)realTime + (uint32_t)item->window.offsetTime);
+            item->window.nextTime = coduo_int32_from_bits((uint32_t)realTime + (uint32_t)item->window.offsetTime);
 
-        if (item->window.rectClient.x == item->window.rectEffects.x) {
-            finished++;
-        } else if (item->window.rectClient.x < item->window.rectEffects.x) {
-            long double v = (long double)item->window.rectClient.x +
-                            item->window.rectEffects2.x;
-            item->window.rectClient.x = (float)v;
-            if (v > item->window.rectEffects.x) {
-                item->window.rectClient.x = item->window.rectEffects.x;
+            if (item->window.rectClient.x == item->window.rectEffects.x) {
                 finished++;
+            } else if (item->window.rectClient.x < item->window.rectEffects.x) {
+                long double v = (long double)item->window.rectClient.x + item->window.rectEffects2.x;
+                item->window.rectClient.x = (float)v;
+                if (v > item->window.rectEffects.x) {
+                    item->window.rectClient.x = item->window.rectEffects.x;
+                    finished++;
+                }
+            } else {
+                long double v = (long double)item->window.rectClient.x - item->window.rectEffects2.x;
+                item->window.rectClient.x = (float)v;
+                if (v < item->window.rectEffects.x) {
+                    item->window.rectClient.x = item->window.rectEffects.x;
+                    finished++;
+                }
             }
-        } else {
-            long double v = (long double)item->window.rectClient.x -
-                            item->window.rectEffects2.x;
-            item->window.rectClient.x = (float)v;
-            if (v < item->window.rectEffects.x) {
-                item->window.rectClient.x = item->window.rectEffects.x;
-                finished++;
-            }
-        }
 
-        if (item->window.rectClient.y == item->window.rectEffects.y) {
-            finished++;
-        } else if (item->window.rectClient.y < item->window.rectEffects.y) {
-            long double v = (long double)item->window.rectClient.y +
-                            item->window.rectEffects2.y;
-            item->window.rectClient.y = (float)v;
-            if (v > item->window.rectEffects.y) {
-                item->window.rectClient.y = item->window.rectEffects.y;
+            if (item->window.rectClient.y == item->window.rectEffects.y) {
                 finished++;
+            } else if (item->window.rectClient.y < item->window.rectEffects.y) {
+                long double v = (long double)item->window.rectClient.y + item->window.rectEffects2.y;
+                item->window.rectClient.y = (float)v;
+                if (v > item->window.rectEffects.y) {
+                    item->window.rectClient.y = item->window.rectEffects.y;
+                    finished++;
+                }
+            } else {
+                long double v = (long double)item->window.rectClient.y - item->window.rectEffects2.y;
+                item->window.rectClient.y = (float)v;
+                if (v < item->window.rectEffects.y) {
+                    item->window.rectClient.y = item->window.rectEffects.y;
+                    finished++;
+                }
             }
-        } else {
-            long double v = (long double)item->window.rectClient.y -
-                            item->window.rectEffects2.y;
-            item->window.rectClient.y = (float)v;
-            if (v < item->window.rectEffects.y) {
-                item->window.rectClient.y = item->window.rectEffects.y;
-                finished++;
-            }
-        }
 
-        if (item->window.rectClient.w == item->window.rectEffects.w) {
-            finished++;
-        } else if (item->window.rectClient.w < item->window.rectEffects.w) {
-            long double v = (long double)item->window.rectClient.w +
-                            item->window.rectEffects2.w;
-            item->window.rectClient.w = (float)v;
-            if (v > item->window.rectEffects.w) {
-                item->window.rectClient.w = item->window.rectEffects.w;
+            if (item->window.rectClient.w == item->window.rectEffects.w) {
                 finished++;
+            } else if (item->window.rectClient.w < item->window.rectEffects.w) {
+                long double v = (long double)item->window.rectClient.w + item->window.rectEffects2.w;
+                item->window.rectClient.w = (float)v;
+                if (v > item->window.rectEffects.w) {
+                    item->window.rectClient.w = item->window.rectEffects.w;
+                    finished++;
+                }
+            } else {
+                long double v = (long double)item->window.rectClient.w - item->window.rectEffects2.w;
+                item->window.rectClient.w = (float)v;
+                if (v < item->window.rectEffects.w) {
+                    item->window.rectClient.w = item->window.rectEffects.w;
+                    finished++;
+                }
             }
-        } else {
-            long double v = (long double)item->window.rectClient.w -
-                            item->window.rectEffects2.w;
-            item->window.rectClient.w = (float)v;
-            if (v < item->window.rectEffects.w) {
-                item->window.rectClient.w = item->window.rectEffects.w;
-                finished++;
-            }
-        }
 
-        if (item->window.rectClient.h == item->window.rectEffects.h) {
-            finished++;
-        } else if (item->window.rectClient.h < item->window.rectEffects.h) {
-            long double v = (long double)item->window.rectClient.h +
-                            item->window.rectEffects2.h;
-            item->window.rectClient.h = (float)v;
-            if (v > item->window.rectEffects.h) {
-                item->window.rectClient.h = item->window.rectEffects.h;
+            if (item->window.rectClient.h == item->window.rectEffects.h) {
                 finished++;
+            } else if (item->window.rectClient.h < item->window.rectEffects.h) {
+                long double v = (long double)item->window.rectClient.h + item->window.rectEffects2.h;
+                item->window.rectClient.h = (float)v;
+                if (v > item->window.rectEffects.h) {
+                    item->window.rectClient.h = item->window.rectEffects.h;
+                    finished++;
+                }
+            } else {
+                long double v = (long double)item->window.rectClient.h - item->window.rectEffects2.h;
+                item->window.rectClient.h = (float)v;
+                if (v < item->window.rectEffects.h) {
+                    item->window.rectClient.h = item->window.rectEffects.h;
+                    finished++;
+                }
             }
-        } else {
-            long double v = (long double)item->window.rectClient.h -
-                            item->window.rectEffects2.h;
-            item->window.rectClient.h = (float)v;
-            if (v < item->window.rectEffects.h) {
-                item->window.rectClient.h = item->window.rectEffects.h;
-                finished++;
-            }
-        }
 
-        Item_UpdatePosition(item);
-        if (finished == 4) {
-            item->window.flags = (int32_t)(
-                (uint32_t)item->window.flags & ~WINDOW_INTRANSITION);
-        }
+            Item_UpdatePosition(item);
+            if (finished == 4) {
+                item->window.flags = (int32_t)((uint32_t)item->window.flags & ~WINDOW_INTRANSITION);
+            }
         }
     }
 
@@ -192,11 +177,9 @@ void Item_Paint(itemDef_t *item)
             ownerDrawVisible = display->ownerDrawVisible;
             if (ownerDrawVisible != NULL) {
                 if (ownerDrawVisible(ownerDrawFlags) != 0) {
-                    item->window.flags = (int32_t)(
-                        (uint32_t)item->window.flags | WINDOW_VISIBLE);
+                    item->window.flags = (int32_t)((uint32_t)item->window.flags | WINDOW_VISIBLE);
                 } else {
-                    item->window.flags = (int32_t)(
-                        (uint32_t)item->window.flags & ~WINDOW_VISIBLE);
+                    item->window.flags = (int32_t)((uint32_t)item->window.flags & ~WINDOW_VISIBLE);
                 }
             }
         }
@@ -204,8 +187,7 @@ void Item_Paint(itemDef_t *item)
 
     /* 0x30058504..0x30058525: show/hide cvar rules can suppress painting;
      * ordinary hidden items stop here as well. */
-    if (((uint8_t)item->cvarFlags & (uint8_t)ITEM_CVAR_SHOW_MASK) != 0 &&
-        Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW) == qfalse) {
+    if (((uint8_t)item->cvarFlags & (uint8_t)ITEM_CVAR_SHOW_MASK) != 0 && Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW) == qfalse) {
         return;
     }
     if (((uint32_t)item->window.flags & WINDOW_VISIBLE) == 0) {
@@ -223,8 +205,7 @@ void Item_Paint(itemDef_t *item)
         display->getCVarString(cvar, shaderName, ITEM_SHADER_NAME_CAPACITY);
         loadMode = item->loadMode;
         display = DC;
-        item->window.background =
-            display->registerShaderNoMip(shaderName, loadMode);
+        item->window.background = display->registerShaderNoMip(shaderName, loadMode);
     }
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the isolated adapter is
@@ -233,17 +214,12 @@ void Item_Paint(itemDef_t *item)
      * animation and visibility state above has settled. */
     compatPaintOffset = client_ui_compat_begin_item_paint(item);
 
-    Window_Paint(&item->window,
-                 parent->fadeAmount,
-                 parent->fadeInAmount,
-                 parent->fadeClamp,
-                 (float)parent->fadeCycle);
+    Window_Paint(&item->window, parent->fadeAmount, parent->fadeInAmount, parent->fadeClamp, (float)parent->fadeCycle);
 
     if (debugMode != 0) {
         rectDef_t *rect = Item_CorrectedTextRect(item);
 
-        DC->drawRect(rect->x, rect->y, rect->w, rect->h,
-                       1.0f, itemPaintDebugColor);
+        DC->drawRect(rect->x, rect->y, rect->w, rect->h, 1.0f, itemPaintDebugColor);
     }
 
     /* Style 6 is window-only; it deliberately bypasses type-specific content. */

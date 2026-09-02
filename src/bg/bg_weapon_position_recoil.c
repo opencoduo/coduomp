@@ -51,8 +51,7 @@
 /* The spring simulation is advanced in fixed 0.005 s (5 ms) substeps. */
 #define WEAPON_IDLE_SWAY_SUBSTEP 0.005
 
-void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state,
-                                          vec3_t angles)
+void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state, vec3_t angles)
 {
     playerState_t *ps = state->ps;               /* 0x30015764: EAX = [EDX] */
 
@@ -89,33 +88,18 @@ void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state,
      * its ADS value by adsFraction:  c = (ads - hip) * adsFraction + hip.
      * (FLD ads; FSUB hip; FMUL ST1(adsFraction); FADD hip; FSTP slot.) */
 #if EMULATE_X87
-#define BG_RECOIL_LERP(hip, ads)                                         \
-    x87f_store_f32(x87f_add(                                            \
-        x87f_mul(x87f_sub(x87f_load_f32(ads), x87f_load_f32(hip)),     \
-                 x87f_load_f32(adsFraction)),                           \
-        x87f_load_f32(hip)))
-    float springAccel = BG_RECOIL_LERP(
-        weaponInfo->recoilReturnHip, weaponInfo->recoilReturnAds);
-    float velLimit = BG_RECOIL_LERP(
-        weaponInfo->recoilVelocityHip, weaponInfo->recoilVelocityAds);
-    float dampCoef = BG_RECOIL_LERP(
-        weaponInfo->recoilDampingHip, weaponInfo->recoilDampingAds);
-    float dampAccel = BG_RECOIL_LERP(
-        weaponInfo->recoilFrictionHip, weaponInfo->recoilFrictionAds);
+#define BG_RECOIL_LERP(hip, ads) \
+    x87f_store_f32(x87f_add(x87f_mul(x87f_sub(x87f_load_f32(ads), x87f_load_f32(hip)), x87f_load_f32(adsFraction)), x87f_load_f32(hip)))
+    float springAccel = BG_RECOIL_LERP(weaponInfo->recoilReturnHip, weaponInfo->recoilReturnAds);
+    float velLimit = BG_RECOIL_LERP(weaponInfo->recoilVelocityHip, weaponInfo->recoilVelocityAds);
+    float dampCoef = BG_RECOIL_LERP(weaponInfo->recoilDampingHip, weaponInfo->recoilDampingAds);
+    float dampAccel = BG_RECOIL_LERP(weaponInfo->recoilFrictionHip, weaponInfo->recoilFrictionAds);
 #undef BG_RECOIL_LERP
 #else
-    float springAccel =
-        (weaponInfo->recoilReturnAds - weaponInfo->recoilReturnHip) *
-            adsFraction + weaponInfo->recoilReturnHip;
-    float velLimit =
-        (weaponInfo->recoilVelocityAds - weaponInfo->recoilVelocityHip) *
-            adsFraction + weaponInfo->recoilVelocityHip;
-    float dampCoef =
-        (weaponInfo->recoilDampingAds - weaponInfo->recoilDampingHip) *
-            adsFraction + weaponInfo->recoilDampingHip;
-    float dampAccel =
-        (weaponInfo->recoilFrictionAds - weaponInfo->recoilFrictionHip) *
-            adsFraction + weaponInfo->recoilFrictionHip;
+    float springAccel = (weaponInfo->recoilReturnAds - weaponInfo->recoilReturnHip) * adsFraction + weaponInfo->recoilReturnHip;
+    float velLimit = (weaponInfo->recoilVelocityAds - weaponInfo->recoilVelocityHip) * adsFraction + weaponInfo->recoilVelocityHip;
+    float dampCoef = (weaponInfo->recoilDampingAds - weaponInfo->recoilDampingHip) * adsFraction + weaponInfo->recoilDampingHip;
+    float dampAccel = (weaponInfo->recoilFrictionAds - weaponInfo->recoilFrictionHip) * adsFraction + weaponInfo->recoilFrictionHip;
 #endif
 
     /* 0x3001581c: discard the retained adsFraction (FSTP ST0). */
@@ -135,9 +119,7 @@ void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state,
             if (remaining > WEAPON_IDLE_SWAY_SUBSTEP /* double @0x3007c048 */) {
                 dt = 0.005f;                    /* imm 0x3ba3d70a */
 #if EMULATE_X87
-                remaining = x87f_store_f32(x87f_sub(
-                    x87f_load_f32(remaining),
-                    x87f_load_f64(WEAPON_IDLE_SWAY_SUBSTEP)));
+                remaining = x87f_store_f32(x87f_sub(x87f_load_f32(remaining), x87f_load_f64(WEAPON_IDLE_SWAY_SUBSTEP)));
 #else
                 remaining -= WEAPON_IDLE_SWAY_SUBSTEP;
 #endif
@@ -149,15 +131,13 @@ void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state,
             /* 0x30015889..0x3001589b: axis 0 (pitch) spring step. posLimit is the
              * per-axis limit gunMaxPitch; the four blended coefficients are
              * shared by both axes. */
-            qboolean settled0 = BG_CalculateWeaponPosition_GunRecoil_SingleAngle(&state->recoilPitch, &state->recoilPitchVelocity,
-                                                    dt, weaponInfo->gunMaxPitch,
-                                                    springAccel, velLimit, dampCoef, dampAccel);
+            qboolean settled0 = BG_CalculateWeaponPosition_GunRecoil_SingleAngle(
+                &state->recoilPitch, &state->recoilPitchVelocity, dt, weaponInfo->gunMaxPitch, springAccel, velLimit, dampCoef, dampAccel);
 
             /* 0x300158a0..0x300158c2: axis 1 (yaw) spring step, posLimit
              * gunMaxYaw. */
-            qboolean settled1 = BG_CalculateWeaponPosition_GunRecoil_SingleAngle(&state->recoilYaw, &state->recoilYawVelocity,
-                                                    dt, weaponInfo->gunMaxYaw,
-                                                    springAccel, velLimit, dampCoef, dampAccel);
+            qboolean settled1 = BG_CalculateWeaponPosition_GunRecoil_SingleAngle(
+                &state->recoilYaw, &state->recoilYawVelocity, dt, weaponInfo->gunMaxYaw, springAccel, velLimit, dampCoef, dampAccel);
 
             /* 0x300158ca..0x300158d4: stop as soon as BOTH springs report settled. */
             if (settled1 && settled0) {
@@ -178,12 +158,9 @@ void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state,
     angles[1] = state->recoilYaw + angles[1];
     angles[2] = state->recoilRoll + angles[2];
 #elif EMULATE_X87
-    angles[0] = x87f_store_f32(x87f_add(
-        x87f_load_f32(angles[0]), x87f_load_f32(state->recoilPitch)));
-    angles[1] = x87f_store_f32(x87f_add(
-        x87f_load_f32(angles[1]), x87f_load_f32(state->recoilYaw)));
-    angles[2] = x87f_store_f32(x87f_add(
-        x87f_load_f32(angles[2]), x87f_load_f32(state->recoilRoll)));
+    angles[0] = x87f_store_f32(x87f_add(x87f_load_f32(angles[0]), x87f_load_f32(state->recoilPitch)));
+    angles[1] = x87f_store_f32(x87f_add(x87f_load_f32(angles[1]), x87f_load_f32(state->recoilYaw)));
+    angles[2] = x87f_store_f32(x87f_add(x87f_load_f32(angles[2]), x87f_load_f32(state->recoilRoll)));
 #else
     angles[0] += state->recoilPitch;
     angles[1] += state->recoilYaw;

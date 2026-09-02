@@ -14,7 +14,9 @@ enum {
 // Exact same-module PPC symbol: UI_SelectCurrentMap.
 void UI_SelectCurrentMap(void)
 {
-    enum { UI_MAP_NAME_COMPARE_LIMIT = 99999 };
+    enum {
+        UI_MAP_NAME_COMPARE_LIMIT = 99999
+    };
     uiClientState_t state;
     char serverInfo[UI_SERVERINFO_BUFFER_SIZE];
     char mapName[UI_SERVERINFO_BUFFER_SIZE];
@@ -28,8 +30,7 @@ void UI_SelectCurrentMap(void)
     }
 
     serverInfo[0] = '\0';
-    if (!trap_GetConfigString(UI_SERVERINFO_CONFIG_STRING, serverInfo,
-                              (int32_t)sizeof(serverInfo))) {
+    if (!trap_GetConfigString(UI_SERVERINFO_CONFIG_STRING, serverInfo, (int32_t)sizeof(serverInfo))) {
         return;
     }
 
@@ -41,9 +42,7 @@ void UI_SelectCurrentMap(void)
         if (!map->active) {
             continue;
         }
-        if (map->displayName != NULL &&
-            Q_stricmpn(map->displayName, mapName,
-                       UI_MAP_NAME_COMPARE_LIMIT) == 0) {
+        if (map->displayName != NULL && Q_stricmpn(map->displayName, mapName, UI_MAP_NAME_COMPARE_LIMIT) == 0) {
             Menu_SetFeederSelection(NULL, NULL, UI_MAP_FEEDER, activeIndex);
             return;
         }

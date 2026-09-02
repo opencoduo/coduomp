@@ -69,8 +69,7 @@
 
 /* NOT_FROM_ORIGINAL_SOURCE: applies the one-string localization contract used
  * by all three follow hints. Invalid mounted text remains visible literally. */
-static const char *cgame_compat_format_follow_hint(
-    const char *format, const char *keyString)
+static const char *cgame_compat_format_follow_hint(const char *format, const char *keyString)
 {
     if (client_compat_validate_format_signature(format, "s") == qfalse) {
         Com_Printf("WARNING: rejected invalid spectator-follow format\n");
@@ -84,7 +83,7 @@ void CG_DrawSpectatorFollowHints(void)
     /* The cvar dword is read at 0x3001bd53 before the four color stores and the
      * captured value is tested afterward. */
     int32_t descriptiveTextEnabled = cg_descriptiveText_vmCvar.integer;
-    float followHintColorWhite[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float followHintColorWhite[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     if (!descriptiveTextEnabled) {
         return;
@@ -111,14 +110,11 @@ void CG_DrawSpectatorFollowHints(void)
         if (UI_KeysStringForBinding("+attack", (char **)&keyStr) == 0) {
             keyStr = "+attack"; // unbound: show the raw command token
         }
-        translatedLabel = CG_SafeTranslateString_Internal(
-            "cgame", "CGAME_FOLLOWNEXTPLAYER");
+        translatedLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_FOLLOWNEXTPLAYER");
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         text = cgame_compat_format_follow_hint(translatedLabel, keyStr);
-        trap_R_Text_Paint(CG_FloatBits(240.0f), CG_FloatBits(416.0f), 0,
-                          CG_FloatBits(0.20833333f),
-                          (intptr_t)followHintColorWhite, (intptr_t)text,
-                          0, 0, FOLLOW_HINT_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(240.0f), CG_FloatBits(416.0f), 0, CG_FloatBits(0.20833333f), (intptr_t)followHintColorWhite,
+                          (intptr_t)text, 0, 0, FOLLOW_HINT_TEXT_STYLE);
 
         // Line B: "Previous Player" bound to "+melee" (0x30076aa8, loaded at
         // 0x3001be0b/0x3001be19). A prior pass used the ADJACENT .rdata string
@@ -126,13 +122,10 @@ void CG_DrawSpectatorFollowHints(void)
         if (UI_KeysStringForBinding("+melee", (char **)&keyStr) == 0) {
             keyStr = "+melee"; // unbound: show the raw command token
         }
-        translatedLabel = CG_SafeTranslateString_Internal(
-            "cgame", "CGAME_FOLLOWPREVIOUSPLAYER");
+        translatedLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_FOLLOWPREVIOUSPLAYER");
         text = cgame_compat_format_follow_hint(translatedLabel, keyStr);
-        trap_R_Text_Paint(CG_FloatBits(240.0f), CG_FloatBits(426.0f), 0,
-                          CG_FloatBits(0.20833333f),
-                          (intptr_t)followHintColorWhite, (intptr_t)text,
-                          0, 0, FOLLOW_HINT_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(240.0f), CG_FloatBits(426.0f), 0, CG_FloatBits(0.20833333f), (intptr_t)followHintColorWhite,
+                          (intptr_t)text, 0, 0, FOLLOW_HINT_TEXT_STYLE);
 
         stopLineY = 436.0f;
     }
@@ -144,16 +137,12 @@ void CG_DrawSpectatorFollowHints(void)
 
         // Line C: "Stop Following" — its key is whichever of "toggle cl_run" or
         // "+speed" is currently bound; if neither is bound, the line is skipped.
-        if (UI_KeysStringForBinding("toggle cl_run", (char **)&keyStr) == 0 &&
-            UI_KeysStringForBinding("+speed", (char **)&keyStr) == 0) {
+        if (UI_KeysStringForBinding("toggle cl_run", (char **)&keyStr) == 0 && UI_KeysStringForBinding("+speed", (char **)&keyStr) == 0) {
             return;
         }
-        translatedLabel =
-            CG_SafeTranslateString_Internal("cgame", "CGAME_FOLLOWSTOP");
+        translatedLabel = CG_SafeTranslateString_Internal("cgame", "CGAME_FOLLOWSTOP");
         text = cgame_compat_format_follow_hint(translatedLabel, keyStr);
-        trap_R_Text_Paint(CG_FloatBits(240.0f), CG_FloatBits(stopLineY), 0,
-                          CG_FloatBits(0.20833333f),
-                          (intptr_t)followHintColorWhite, (intptr_t)text,
-                          0, 0, FOLLOW_HINT_TEXT_STYLE);
+        trap_R_Text_Paint(CG_FloatBits(240.0f), CG_FloatBits(stopLineY), 0, CG_FloatBits(0.20833333f), (intptr_t)followHintColorWhite,
+                          (intptr_t)text, 0, 0, FOLLOW_HINT_TEXT_STYLE);
     }
 }

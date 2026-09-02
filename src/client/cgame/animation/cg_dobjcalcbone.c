@@ -32,27 +32,23 @@
 // is documented above. cgame_syscall is the engine VM trap entry (var-arg fn
 // pointer at 0x30085e9c); the trailing local-buffer address is a real pointer the
 // fetch traps write through.
-void CG_DObjCalcBone(struct DObj_s *self, int32_t boneIndex,
-                     centity_t *part)
+void CG_DObjCalcBone(struct DObj_s *self, int32_t boneIndex, centity_t *part)
 {
     uint32_t partBits[4]; /* SUB ESP,0x10; exact DObj part-bitset width. */
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_DOBJ_NUM_BONES, (intptr_t)self));
+    int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_NUM_BONES, (intptr_t)self));
     if ((uint32_t)boneIndex >= (uint32_t)boneCount) {
         return;
     }
 
     // 0x30022085: an already-current skeleton returns nonzero and needs no work.
-    if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONE,
-                      (intptr_t)self, boneIndex) != 0) {
+    if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONE, (intptr_t)self, boneIndex) != 0) {
         return;
     }
 
     // 0x3002209d: expand the requested bone to its required hierarchy bits.
-    cgame_syscall(CG_DOBJ_GET_HIERARCHY_BITS, (intptr_t)self, boneIndex,
-                  (intptr_t)partBits);
+    cgame_syscall(CG_DOBJ_GET_HIERARCHY_BITS, (intptr_t)self, boneIndex, (intptr_t)partBits);
 
     // 0x300220ae: calculate animation for the selected hierarchy.
     cgame_syscall(CG_DOBJ_CALC_ANIM, (intptr_t)self, (intptr_t)partBits);

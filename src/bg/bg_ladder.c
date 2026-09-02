@@ -47,17 +47,13 @@ void PM_CheckLadderMove(void)
     pmove_t *move = pm;
     playerState_t *ps = move->ps;
 
-    if (ps->pmTime != 0 &&
-        (ps->playerStateFlags & PMF_LADDER_TIMER_BLOCK_MASK) != 0) {
+    if (ps->pmTime != 0 && (ps->playerStateFlags & PMF_LADDER_TIMER_BLOCK_MASK) != 0) {
         return;
     }
 
     const float traceDistance = pml.walking != 0 ? 8.0f : 30.0f;
-    const qboolean wasOnLadder =
-        (ps->playerStateFlags & PMF_LADDER) != 0 ? qtrue : qfalse;
-    const qboolean ladderWithoutGround =
-        wasOnLadder != qfalse && ps->groundEntityNum == ENTITYNUM_NONE
-            ? qtrue : qfalse;
+    const qboolean wasOnLadder = (ps->playerStateFlags & PMF_LADDER) != 0 ? qtrue : qfalse;
+    const qboolean ladderWithoutGround = wasOnLadder != qfalse && ps->groundEntityNum == ENTITYNUM_NONE ? qtrue : qfalse;
     vec3_t probeDirection;
 
     if (ladderWithoutGround != qfalse) {
@@ -91,9 +87,7 @@ void PM_CheckLadderMove(void)
         return;
     }
 
-    const int32_t sinceLastJump = coduo_int32_from_bits(
-        (uint32_t)move->command.commandTime -
-        (uint32_t)ps->lastJumpCommandTime);
+    const int32_t sinceLastJump = coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)ps->lastJumpCommandTime);
     if (sinceLastJump < pm_ladderJumpTime) {
         return;
     }
@@ -113,29 +107,21 @@ void PM_CheckLadderMove(void)
     vec3_t end;
 #if EMULATE_X87
     for (int32_t lane = 0; lane < 3; ++lane) {
-        end[lane] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(probeDirection[lane]),
-                     x87f_load_f32(traceDistance)),
-            x87f_load_f32(move->ps->psOrigin[lane])));
+        end[lane] = x87f_store_f32(
+            x87f_add(x87f_mul(x87f_load_f32(probeDirection[lane]), x87f_load_f32(traceDistance)), x87f_load_f32(move->ps->psOrigin[lane])));
     }
 #else
     for (int32_t lane = 0; lane < 3; ++lane) {
-        end[lane] = (float)(
-            (long double)probeDirection[lane] *
-                (long double)traceDistance +
-            (long double)move->ps->psOrigin[lane]);
+        end[lane] = (float)((long double)probeDirection[lane] * (long double)traceDistance + (long double)move->ps->psOrigin[lane]);
     }
 #endif
 
     trace_t trace;
     ps = move->ps;
-    PM_trace(&trace, ps->psOrigin, probeMins, probeMaxs, end,
-             ps->psClientNum, move->traceMask);
+    PM_trace(&trace, ps->psOrigin, probeMins, probeMaxs, end, ps->psClientNum, move->traceMask);
 
     move = pm;
-    if (trace.fraction < 1.0f &&
-        (trace.surfaceFlags & SURF_LADDER) != 0 &&
-        (pml.walking == 0 || move->command.forwardmove > 0)) {
+    if (trace.fraction < 1.0f && (trace.surfaceFlags & SURF_LADDER) != 0 && (pml.walking == 0 || move->command.forwardmove > 0)) {
         move->ps->ladderNormal[0] = trace.normal[0];
         move->ps->ladderNormal[1] = trace.normal[1];
         move->ps->ladderNormal[2] = trace.normal[2];
@@ -156,24 +142,17 @@ void PM_CheckLadderMove(void)
 
 #if EMULATE_X87
         for (int32_t lane = 0; lane < 3; ++lane) {
-            end[lane] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(probeDirection[lane]),
-                         x87f_load_f32(traceDistance)),
-                x87f_load_f32(ps->psOrigin[lane])));
+            end[lane] = x87f_store_f32(
+                x87f_add(x87f_mul(x87f_load_f32(probeDirection[lane]), x87f_load_f32(traceDistance)), x87f_load_f32(ps->psOrigin[lane])));
         }
 #else
         for (int32_t lane = 0; lane < 3; ++lane) {
-            end[lane] = (float)(
-                (long double)probeDirection[lane] *
-                    (long double)traceDistance +
-                (long double)ps->psOrigin[lane]);
+            end[lane] = (float)((long double)probeDirection[lane] * (long double)traceDistance + (long double)ps->psOrigin[lane]);
         }
 #endif
 
-        PM_trace(&trace, ps->psOrigin, probeMins, probeMaxs, end,
-                 ps->psClientNum, move->traceMask);
-        if (trace.fraction < 1.0f &&
-            (trace.surfaceFlags & SURF_LADDER) != 0) {
+        PM_trace(&trace, ps->psOrigin, probeMins, probeMaxs, end, ps->psClientNum, move->traceMask);
+        if (trace.fraction < 1.0f && (trace.surfaceFlags & SURF_LADDER) != 0) {
             pm->ps->playerStateFlags |= PMF_LADDER;
             return;
         }
@@ -194,15 +173,11 @@ void PM_LadderMove(void)
 
     float climbScale;
 #if EMULATE_X87
-    climbScale = x87f_store_f32(x87f_mul(
-        x87f_add(x87f_load_f32(pml.forward[2]),
-                 x87f_load_f32(PM_LADDER_VIEW_PITCH_OFFSET)),
-        x87f_load_f32(PM_LADDER_VIEW_PITCH_SCALE)));
+    climbScale = x87f_store_f32(x87f_mul(x87f_add(x87f_load_f32(pml.forward[2]), x87f_load_f32(PM_LADDER_VIEW_PITCH_OFFSET)),
+                                         x87f_load_f32(PM_LADDER_VIEW_PITCH_SCALE)));
 #else
-    climbScale = (float)(
-        ((long double)pml.forward[2] +
-         (long double)PM_LADDER_VIEW_PITCH_OFFSET) *
-        (long double)PM_LADDER_VIEW_PITCH_SCALE);
+    climbScale =
+        (float)(((long double)pml.forward[2] + (long double)PM_LADDER_VIEW_PITCH_OFFSET) * (long double)PM_LADDER_VIEW_PITCH_SCALE);
 #endif
     if (climbScale > 1.0f) {
         climbScale = 1.0f;
@@ -225,28 +200,21 @@ void PM_LadderMove(void)
 #if defined(WINDOWS_BEHAVIOR)
         const float forwardMove = (float)pm->command.forwardmove;
 #if EMULATE_X87
-        wishVelocity[2] = x87f_store_f32(x87f_mul(
-            x87f_mul(x87f_mul(x87f_load_f32(forwardMove),
-                              x87f_load_f32(commandScale)),
-                     x87f_load_f32(climbScale)),
-            x87f_load_f32(pm_ladderScale)));
+        wishVelocity[2] =
+            x87f_store_f32(x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(forwardMove), x87f_load_f32(commandScale)), x87f_load_f32(climbScale)),
+                                    x87f_load_f32(pm_ladderScale)));
 #else
-        wishVelocity[2] = (float)(
-            (long double)forwardMove * (long double)commandScale *
-            (long double)climbScale * (long double)pm_ladderScale);
+        wishVelocity[2] =
+            (float)((long double)forwardMove * (long double)commandScale * (long double)climbScale * (long double)pm_ladderScale);
 #endif
 #else
 #if EMULATE_X87
-        wishVelocity[2] = x87f_store_f32(x87f_mul(
-            x87f_mul(x87f_mul(x87f_load_f32(pm_ladderScale),
-                              x87f_load_f32(climbScale)),
-                     x87f_load_f32(commandScale)),
-            x87f_load_i32(pm->command.forwardmove)));
+        wishVelocity[2] = x87f_store_f32(
+            x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(pm_ladderScale), x87f_load_f32(climbScale)), x87f_load_f32(commandScale)),
+                     x87f_load_i32(pm->command.forwardmove)));
 #else
-        wishVelocity[2] = (float)(
-            (long double)pm_ladderScale * (long double)climbScale *
-            (long double)commandScale *
-            (long double)pm->command.forwardmove);
+        wishVelocity[2] = (float)((long double)pm_ladderScale * (long double)climbScale * (long double)commandScale *
+                                  (long double)pm->command.forwardmove);
 #endif
 #endif
     }
@@ -255,45 +223,31 @@ void PM_LadderMove(void)
 #if defined(WINDOWS_BEHAVIOR)
         const float rightMove = (float)pm->command.rightmove;
 #if EMULATE_X87
-        const float sideSpeed = x87f_store_f32(x87f_mul(
-            x87f_mul(x87f_load_f32(rightMove),
-                     x87f_load_f32(commandScale)),
-            x87f_load_f32(PM_LADDER_STRAFE_SCALE)));
+        const float sideSpeed = x87f_store_f32(
+            x87f_mul(x87f_mul(x87f_load_f32(rightMove), x87f_load_f32(commandScale)), x87f_load_f32(PM_LADDER_STRAFE_SCALE)));
 #else
-        const float sideSpeed = (float)(
-            (long double)rightMove * (long double)commandScale *
-            (long double)PM_LADDER_STRAFE_SCALE);
+        const float sideSpeed = (float)((long double)rightMove * (long double)commandScale * (long double)PM_LADDER_STRAFE_SCALE);
 #endif
         for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-            wishVelocity[lane] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(sideSpeed),
-                         x87f_load_f32(pml.right[lane])),
-                x87f_load_f32(wishVelocity[lane])));
+            wishVelocity[lane] = x87f_store_f32(
+                x87f_add(x87f_mul(x87f_load_f32(sideSpeed), x87f_load_f32(pml.right[lane])), x87f_load_f32(wishVelocity[lane])));
 #else
-            wishVelocity[lane] = (float)(
-                (long double)sideSpeed * (long double)pml.right[lane] +
-                (long double)wishVelocity[lane]);
+            wishVelocity[lane] = (float)((long double)sideSpeed * (long double)pml.right[lane] + (long double)wishVelocity[lane]);
 #endif
         }
 #else
         for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-            wishVelocity[lane] = x87f_store_f32(x87f_add(
-                x87f_load_f32(wishVelocity[lane]),
-                x87f_mul(
-                    x87f_mul(
-                        x87f_mul(x87f_load_f32(commandScale),
-                                 x87f_load_f32(PM_LADDER_STRAFE_SCALE)),
-                        x87f_load_i32(pm->command.rightmove)),
-                    x87f_load_f32(pml.right[lane]))));
+            wishVelocity[lane] =
+                x87f_store_f32(x87f_add(x87f_load_f32(wishVelocity[lane]),
+                                        x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(commandScale), x87f_load_f32(PM_LADDER_STRAFE_SCALE)),
+                                                          x87f_load_i32(pm->command.rightmove)),
+                                                 x87f_load_f32(pml.right[lane]))));
 #else
-            wishVelocity[lane] = (float)(
-                (long double)wishVelocity[lane] +
-                (long double)commandScale *
-                    (long double)PM_LADDER_STRAFE_SCALE *
-                    (long double)pm->command.rightmove *
-                    (long double)pml.right[lane]);
+            wishVelocity[lane] =
+                (float)((long double)wishVelocity[lane] + (long double)commandScale * (long double)PM_LADDER_STRAFE_SCALE *
+                                                              (long double)pm->command.rightmove * (long double)pml.right[lane]);
 #endif
         }
 #endif
@@ -307,40 +261,31 @@ void PM_LadderMove(void)
         playerState_t *ps = pm->ps;
 #if EMULATE_X87
 #if defined(WINDOWS_BEHAVIOR)
-        const x87f gravityStep = x87f_mul(
-            x87f_load_f32((float)ps->gravity),
-            x87f_load_f32(pml.frametime));
+        const x87f gravityStep = x87f_mul(x87f_load_f32((float)ps->gravity), x87f_load_f32(pml.frametime));
 #else
-        const x87f gravityStep = x87f_mul(
-            x87f_load_i32(ps->gravity), x87f_load_f32(pml.frametime));
+        const x87f gravityStep = x87f_mul(x87f_load_i32(ps->gravity), x87f_load_f32(pml.frametime));
 #endif
 #else
 #if defined(WINDOWS_BEHAVIOR)
-        const long double gravityStep =
-            (long double)(float)ps->gravity * (long double)pml.frametime;
+        const long double gravityStep = (long double)(float)ps->gravity * (long double)pml.frametime;
 #else
-        const long double gravityStep =
-            (long double)ps->gravity * (long double)pml.frametime;
+        const long double gravityStep = (long double)ps->gravity * (long double)pml.frametime;
 #endif
 #endif
         if (ps->velocity[2] > 0.0f) {
 #if EMULATE_X87
-            ps->velocity[2] = x87f_store_f32(x87f_sub(
-                x87f_load_f32(ps->velocity[2]), gravityStep));
+            ps->velocity[2] = x87f_store_f32(x87f_sub(x87f_load_f32(ps->velocity[2]), gravityStep));
 #else
-            ps->velocity[2] = (float)(
-                (long double)ps->velocity[2] - gravityStep);
+            ps->velocity[2] = (float)((long double)ps->velocity[2] - gravityStep);
 #endif
             if (ps->velocity[2] < 0.0f) {
                 ps->velocity[2] = 0.0f;
             }
         } else {
 #if EMULATE_X87
-            ps->velocity[2] = x87f_store_f32(x87f_add(
-                x87f_load_f32(ps->velocity[2]), gravityStep));
+            ps->velocity[2] = x87f_store_f32(x87f_add(x87f_load_f32(ps->velocity[2]), gravityStep));
 #else
-            ps->velocity[2] = (float)(
-                (long double)ps->velocity[2] + gravityStep);
+            ps->velocity[2] = (float)((long double)ps->velocity[2] + gravityStep);
 #endif
             if (ps->velocity[2] > 0.0f) {
                 ps->velocity[2] = 0.0f;
@@ -352,66 +297,46 @@ void PM_LadderMove(void)
         vec2_t ladderRight = {pml.right[0], pml.right[1]};
         (void)VectorNormalize2D(ladderRight);
 #if EMULATE_X87
-        float sideSpeed = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(ladderRight[0]),
-                     x87f_load_f32(pm->ps->velocity[0])),
-            x87f_mul(x87f_load_f32(ladderRight[1]),
-                     x87f_load_f32(pm->ps->velocity[1]))));
+        float sideSpeed = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(ladderRight[0]), x87f_load_f32(pm->ps->velocity[0])),
+                                                  x87f_mul(x87f_load_f32(ladderRight[1]), x87f_load_f32(pm->ps->velocity[1]))));
 #else
-        float sideSpeed = (float)(
-            (long double)ladderRight[0] *
-                (long double)pm->ps->velocity[0] +
-            (long double)ladderRight[1] *
-                (long double)pm->ps->velocity[1]);
+        float sideSpeed = (float)((long double)ladderRight[0] * (long double)pm->ps->velocity[0] +
+                                  (long double)ladderRight[1] * (long double)pm->ps->velocity[1]);
 #endif
 
         if (sideSpeed != 0.0f || isnan(sideSpeed)) {
             for (int32_t lane = 0; lane < 2; ++lane) {
 #if EMULATE_X87
                 pm->ps->velocity[lane] = x87f_store_f32(x87f_add(
-                    x87f_load_f32(pm->ps->velocity[lane]),
-                    x87f_mul(x87f_neg(x87f_load_f32(sideSpeed)),
-                             x87f_load_f32(ladderRight[lane]))));
+                    x87f_load_f32(pm->ps->velocity[lane]), x87f_mul(x87f_neg(x87f_load_f32(sideSpeed)), x87f_load_f32(ladderRight[lane]))));
 #else
-                pm->ps->velocity[lane] = (float)(
-                    (long double)pm->ps->velocity[lane] -
-                    (long double)sideSpeed *
-                        (long double)ladderRight[lane]);
+                pm->ps->velocity[lane] =
+                    (float)((long double)pm->ps->velocity[lane] - (long double)sideSpeed * (long double)ladderRight[lane]);
 #endif
             }
 
 #if EMULATE_X87
-            float sideDrop = x87f_store_f32(x87f_mul(
-                x87f_mul(x87f_load_f32(sideSpeed),
-                         x87f_load_f32(pml.frametime)),
-                x87f_load_f32(pm_ladderfriction)));
+            float sideDrop = x87f_store_f32(
+                x87f_mul(x87f_mul(x87f_load_f32(sideSpeed), x87f_load_f32(pml.frametime)), x87f_load_f32(pm_ladderfriction)));
 #else
-            float sideDrop = (float)(
-                (long double)sideSpeed * (long double)pml.frametime *
-                (long double)pm_ladderfriction);
+            float sideDrop = (float)((long double)sideSpeed * (long double)pml.frametime * (long double)pm_ladderfriction);
 #endif
             if (fabsf(sideDrop) < fabsf(sideSpeed)) {
                 if (fabsf(sideDrop) < PM_LADDER_MIN_LATERAL_STEP) {
                     sideDrop = (float)PM_FloatSign(sideDrop);
                 }
 #if EMULATE_X87
-                sideSpeed = x87f_store_f32(x87f_sub(
-                    x87f_load_f32(sideSpeed), x87f_load_f32(sideDrop)));
+                sideSpeed = x87f_store_f32(x87f_sub(x87f_load_f32(sideSpeed), x87f_load_f32(sideDrop)));
 #else
-                sideSpeed = (float)((long double)sideSpeed -
-                                    (long double)sideDrop);
+                sideSpeed = (float)((long double)sideSpeed - (long double)sideDrop);
 #endif
                 for (int32_t lane = 0; lane < 2; ++lane) {
 #if EMULATE_X87
-                    pm->ps->velocity[lane] = x87f_store_f32(x87f_add(
-                        x87f_load_f32(pm->ps->velocity[lane]),
-                        x87f_mul(x87f_load_f32(ladderRight[lane]),
-                                 x87f_load_f32(sideSpeed))));
+                    pm->ps->velocity[lane] = x87f_store_f32(x87f_add(x87f_load_f32(pm->ps->velocity[lane]),
+                                                                     x87f_mul(x87f_load_f32(ladderRight[lane]), x87f_load_f32(sideSpeed))));
 #else
-                    pm->ps->velocity[lane] = (float)(
-                        (long double)pm->ps->velocity[lane] +
-                        (long double)ladderRight[lane] *
-                            (long double)sideSpeed);
+                    pm->ps->velocity[lane] =
+                        (float)((long double)pm->ps->velocity[lane] + (long double)ladderRight[lane] * (long double)sideSpeed);
 #endif
                 }
             }
@@ -420,46 +345,32 @@ void PM_LadderMove(void)
 
     if (pml.walking == 0) {
 #if EMULATE_X87
-        const float normalSpeed = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(pm->ps->ladderNormal[0]),
-                     x87f_load_f32(pm->ps->velocity[0])),
-            x87f_mul(x87f_load_f32(pm->ps->ladderNormal[1]),
-                     x87f_load_f32(pm->ps->velocity[1]))));
+        const float normalSpeed =
+            x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pm->ps->ladderNormal[0]), x87f_load_f32(pm->ps->velocity[0])),
+                                    x87f_mul(x87f_load_f32(pm->ps->ladderNormal[1]), x87f_load_f32(pm->ps->velocity[1]))));
 #else
-        const float normalSpeed = (float)(
-            (long double)pm->ps->ladderNormal[0] *
-                (long double)pm->ps->velocity[0] +
-            (long double)pm->ps->ladderNormal[1] *
-                (long double)pm->ps->velocity[1]);
+        const float normalSpeed = (float)((long double)pm->ps->ladderNormal[0] * (long double)pm->ps->velocity[0] +
+                                          (long double)pm->ps->ladderNormal[1] * (long double)pm->ps->velocity[1]);
 #endif
         for (int32_t lane = 0; lane < 2; ++lane) {
 #if EMULATE_X87
-            pm->ps->velocity[lane] = x87f_store_f32(x87f_add(
-                x87f_load_f32(pm->ps->velocity[lane]),
-                x87f_mul(x87f_neg(x87f_load_f32(normalSpeed)),
-                         x87f_load_f32(pm->ps->ladderNormal[lane]))));
+            pm->ps->velocity[lane] =
+                x87f_store_f32(x87f_add(x87f_load_f32(pm->ps->velocity[lane]),
+                                        x87f_mul(x87f_neg(x87f_load_f32(normalSpeed)), x87f_load_f32(pm->ps->ladderNormal[lane]))));
 #else
-            pm->ps->velocity[lane] = (float)(
-                (long double)pm->ps->velocity[lane] -
-                (long double)normalSpeed *
-                    (long double)pm->ps->ladderNormal[lane]);
+            pm->ps->velocity[lane] =
+                (float)((long double)pm->ps->velocity[lane] - (long double)normalSpeed * (long double)pm->ps->ladderNormal[lane]);
 #endif
         }
 
-        const float attachForce = wishVelocity[2] > 0.0f
-                                      ? PM_LADDER_AIR_ATTACH_UPWARD
-                                      : PM_LADDER_AIR_ATTACH_OTHER;
+        const float attachForce = wishVelocity[2] > 0.0f ? PM_LADDER_AIR_ATTACH_UPWARD : PM_LADDER_AIR_ATTACH_OTHER;
         for (int32_t lane = 0; lane < 2; ++lane) {
 #if EMULATE_X87
             pm->ps->velocity[lane] = x87f_store_f32(x87f_add(
-                x87f_load_f32(pm->ps->velocity[lane]),
-                x87f_mul(x87f_load_f32(pm->ps->ladderNormal[lane]),
-                         x87f_load_f32(attachForce))));
+                x87f_load_f32(pm->ps->velocity[lane]), x87f_mul(x87f_load_f32(pm->ps->ladderNormal[lane]), x87f_load_f32(attachForce))));
 #else
-            pm->ps->velocity[lane] = (float)(
-                (long double)pm->ps->velocity[lane] +
-                (long double)pm->ps->ladderNormal[lane] *
-                    (long double)attachForce);
+            pm->ps->velocity[lane] =
+                (float)((long double)pm->ps->velocity[lane] + (long double)pm->ps->ladderNormal[lane] * (long double)attachForce);
 #endif
         }
     }
@@ -467,24 +378,18 @@ void PM_LadderMove(void)
     PM_StepSlideMove(qfalse);
 
 #if EMULATE_X87
-    const float ladderYaw = x87f_store_f32(x87f_add(
-        x87f_load_f32(vectoyaw(pm->ps->ladderNormal)),
-        x87f_load_f32(PM_LADDER_YAW_OFFSET)));
+    const float ladderYaw = x87f_store_f32(x87f_add(x87f_load_f32(vectoyaw(pm->ps->ladderNormal)), x87f_load_f32(PM_LADDER_YAW_OFFSET)));
 #else
-    const float ladderYaw = (float)(
-        (long double)vectoyaw(pm->ps->ladderNormal) +
-        (long double)PM_LADDER_YAW_OFFSET);
+    const float ladderYaw = (float)((long double)vectoyaw(pm->ps->ladderNormal) + (long double)PM_LADDER_YAW_OFFSET);
 #endif
     const float yawDelta = AngleDelta(ladderYaw, pm->ps->viewAngles[1]);
-    int32_t movementDir =
-        coduo_fp_to_i32_extended((long double)yawDelta);
+    int32_t movementDir = coduo_fp_to_i32_extended((long double)yawDelta);
     int32_t magnitude = movementDir;
     if (magnitude < 0) {
         magnitude = coduo_int32_from_bits(0u - (uint32_t)magnitude);
     }
     if (magnitude > PM_LADDER_MOVEMENT_DIR_LIMIT) {
-        movementDir = movementDir > 0 ? PM_LADDER_MOVEMENT_DIR_LIMIT
-                                      : -PM_LADDER_MOVEMENT_DIR_LIMIT;
+        movementDir = movementDir > 0 ? PM_LADDER_MOVEMENT_DIR_LIMIT : -PM_LADDER_MOVEMENT_DIR_LIMIT;
     }
     pm->ps->movementDir = (int8_t)movementDir;
 }

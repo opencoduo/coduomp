@@ -108,9 +108,7 @@ qboolean Color_Parse(char **handle, vec4_t destination)
 
 qboolean Rect_Parse(char **handle, rectDef_t *destination)
 {
-    return Float_Parse(handle, &destination->x) &&
-           Float_Parse(handle, &destination->y) &&
-           Float_Parse(handle, &destination->w) &&
+    return Float_Parse(handle, &destination->x) && Float_Parse(handle, &destination->y) && Float_Parse(handle, &destination->w) &&
            Float_Parse(handle, &destination->h);
 }
 
@@ -144,12 +142,11 @@ have_token:
         }
         if (DC->getCVarValue("cl_languagewarnings") != 0.0L) {
             if (DC->getCVarValue("cl_languagewarningsaserrors") != 0.0L) {
-                Com_Error(ERR_LOCALIZATION,
-                          "Could not translate menu string reference %s",
-                          token);
+                Com_Error(ERR_LOCALIZATION, "Could not translate menu string reference %s", token);
             } else {
                 Com_Printf("^3WARNING: Could not translate menu string "
-                           "reference %s\n", token);
+                           "reference %s\n",
+                           token);
             }
         }
     }
@@ -171,8 +168,7 @@ qboolean PC_Float_Parse(int32_t sourceHandle, float *destination)
         negative = qtrue;
     }
     if (token.type != PC_TOKEN_TYPE_NUMBER) {
-        PC_SourceError(sourceHandle, "expected float but found %s\n",
-                       token.string);
+        PC_SourceError(sourceHandle, "expected float but found %s\n", token.string);
         return qfalse;
     }
 
@@ -198,8 +194,7 @@ qboolean PC_Int_Parse(int32_t sourceHandle, int32_t *destination)
         negative = qtrue;
     }
     if (token.type != PC_TOKEN_TYPE_NUMBER) {
-        PC_SourceError(sourceHandle, "expected integer but found %s\n",
-                       token.string);
+        PC_SourceError(sourceHandle, "expected integer but found %s\n", token.string);
         return qfalse;
     }
 
@@ -227,10 +222,8 @@ qboolean PC_Color_Parse(int32_t sourceHandle, vec4_t destination)
 
 qboolean PC_Rect_Parse(int32_t sourceHandle, rectDef_t *destination)
 {
-    return PC_Float_Parse(sourceHandle, &destination->x) &&
-           PC_Float_Parse(sourceHandle, &destination->y) &&
-           PC_Float_Parse(sourceHandle, &destination->w) &&
-           PC_Float_Parse(sourceHandle, &destination->h);
+    return PC_Float_Parse(sourceHandle, &destination->x) && PC_Float_Parse(sourceHandle, &destination->y) &&
+           PC_Float_Parse(sourceHandle, &destination->w) && PC_Float_Parse(sourceHandle, &destination->h);
 }
 
 qboolean PC_String_Parse(int32_t sourceHandle, const char **destination)
@@ -249,12 +242,11 @@ qboolean PC_String_Parse(int32_t sourceHandle, const char **destination)
             result = translated;
         } else if (DC->getCVarValue("cl_languagewarnings") != 0.0L) {
             if (DC->getCVarValue("cl_languagewarningsaserrors") != 0.0L) {
-                Com_Error(ERR_LOCALIZATION,
-                          "Could not translate menu string reference %s",
-                          token.string);
+                Com_Error(ERR_LOCALIZATION, "Could not translate menu string reference %s", token.string);
             } else {
                 Com_Printf("^3WARNING: Could not translate menu string "
-                           "reference %s\n", token.string);
+                           "reference %s\n",
+                           token.string);
             }
         }
     }
@@ -280,8 +272,7 @@ qboolean PC_Script_Parse(int32_t sourceHandle, const char **destination)
 
     /* Retail clears the complete 1024-byte stack accumulator. */
     memset(script, 0, sizeof(script));
-    if (!trap_PC_ReadToken(sourceHandle, &token) ||
-        Q_stricmpn(token.string, "{", PC_SCRIPT_COMPARE_LIMIT) != 0) {
+    if (!trap_PC_ReadToken(sourceHandle, &token) || Q_stricmpn(token.string, "{", PC_SCRIPT_COMPARE_LIMIT) != 0) {
         return qfalse;
     }
 
@@ -310,14 +301,12 @@ void PC_SourceWarning(int32_t sourceHandle, const char *format, ...)
 
     va_start(arguments, format);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    (void)vsnprintf(pc_sourceWarningMessage,
-                    sizeof(pc_sourceWarningMessage), format, arguments);
+    (void)vsnprintf(pc_sourceWarningMessage, sizeof(pc_sourceWarningMessage), format, arguments);
     va_end(arguments);
 
     filename[0] = '\0';
     trap_PC_SourceFileAndLine(sourceHandle, filename, &line);
-    Com_Printf("^3WARNING: %s, line %d: %s\n",
-               filename, line, pc_sourceWarningMessage);
+    Com_Printf("^3WARNING: %s, line %d: %s\n", filename, line, pc_sourceWarningMessage);
 }
 
 void PC_SourceError(int32_t sourceHandle, const char *format, ...)
@@ -328,12 +317,10 @@ void PC_SourceError(int32_t sourceHandle, const char *format, ...)
 
     va_start(arguments, format);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    (void)vsnprintf(pc_sourceErrorMessage, sizeof(pc_sourceErrorMessage),
-                    format, arguments);
+    (void)vsnprintf(pc_sourceErrorMessage, sizeof(pc_sourceErrorMessage), format, arguments);
     va_end(arguments);
 
     filename[0] = '\0';
     trap_PC_SourceFileAndLine(sourceHandle, filename, &line);
-    Com_Printf("^1Menu load error: %s, line %d: %s\n",
-               filename, line, pc_sourceErrorMessage);
+    Com_Printf("^1Menu load error: %s, line %d: %s\n", filename, line, pc_sourceErrorMessage);
 }

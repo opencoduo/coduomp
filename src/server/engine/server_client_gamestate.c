@@ -41,14 +41,12 @@ void Com_DPrintf(const char *format, ...);
  * explicit even though the backing baseline storage is normalized above. */
 void SV_SendClientGameState(client_t *client)
 {
-    while (client->state != CS_FREE &&
-           client->netchan.unsentFragments != qfalse) {
+    while (client->state != CS_FREE && client->netchan.unsentFragments != qfalse) {
         SV_Netchan_TransmitNextFragment(&client->netchan);
     }
 
     Com_DPrintf("SV_SendClientGameState() for %s\n", client->name);
-    Com_DPrintf("Going from CS_CONNECTED to CS_PRIMED for %s\n",
-                client->name);
+    Com_DPrintf("Going from CS_CONNECTED to CS_PRIMED for %s\n", client->name);
 
     client->state = CS_PRIMED;
     client->pureAuthState = SERVER_CLIENT_PURE_STATE_PENDING;
@@ -63,28 +61,21 @@ void SV_SendClientGameState(client_t *client)
     MSG_WriteByte(&message, SERVER_SVC_GAMESTATE);
     MSG_WriteLong(&message, client->reliableSequence);
 
-    for (int32_t configstringNum = 0;
-         configstringNum < MAX_CONFIGSTRINGS;
-         ++configstringNum) {
+    for (int32_t configstringNum = 0; configstringNum < MAX_CONFIGSTRINGS; ++configstringNum) {
         if (sv_configstrings[configstringNum][0] != '\0') {
             MSG_WriteByte(&message, SERVER_SVC_CONFIGSTRING);
             MSG_WriteShort(&message, configstringNum);
-            MSG_WriteBigString(&message,
-                               sv_configstrings[configstringNum]);
+            MSG_WriteBigString(&message, sv_configstrings[configstringNum]);
         }
     }
 
     entityState_t nullEntityState;
     memset(&nullEntityState, 0, sizeof(nullEntityState));
-    for (int32_t entityNum = 0;
-         entityNum < MAX_GENTITIES;
-         ++entityNum) {
-        entityState_t *const baseline =
-            &sv_entities[entityNum].baseline.state;
+    for (int32_t entityNum = 0; entityNum < MAX_GENTITIES; ++entityNum) {
+        entityState_t *const baseline = &sv_entities[entityNum].baseline.state;
         if (baseline->number != 0) {
             MSG_WriteByte(&message, SERVER_SVC_BASELINE);
-            MSG_WriteDeltaEntity(&message, &nullEntityState,
-                                 baseline, qtrue);
+            MSG_WriteDeltaEntity(&message, &nullEntityState, baseline, qtrue);
         }
     }
 
@@ -94,13 +85,10 @@ void SV_SendClientGameState(client_t *client)
     MSG_WriteLong(&message, sv.gamestateChecksumFeed);
     MSG_WriteByte(&message, SERVER_SVC_EOF);
 
-    Com_DPrintf("Sending %i bytes in gamestate to client: %i\n",
-                message.cursize, clientNum);
+    Com_DPrintf("Sending %i bytes in gamestate to client: %i\n", message.cursize, clientNum);
     SV_SendMessageToClient(&message, client);
 
-    if (com_timescale->integer == 0 &&
-        client->state != CS_FREE &&
-        client->netchan.unsentFragments != qfalse) {
+    if (com_timescale->integer == 0 && client->state != CS_FREE && client->netchan.unsentFragments != qfalse) {
         SV_Netchan_TransmitNextFragment(&client->netchan);
     }
 }
@@ -111,8 +99,7 @@ void SV_ClientEnterWorld(client_t *client, const usercmd_t *command)
 {
     const int32_t clientNum = (int32_t)(client - svs.clients);
 
-    Com_DPrintf("Going from CS_PRIMED to CS_ACTIVE for %s\n",
-                client->name);
+    Com_DPrintf("Going from CS_PRIMED to CS_ACTIVE for %s\n", client->name);
     client->state = CS_ACTIVE;
 
     sharedEntity_t *const gentity = SV_GentityNum(clientNum);
@@ -122,6 +109,5 @@ void SV_ClientEnterWorld(client_t *client, const usercmd_t *command)
     client->nextSnapshotTime = svs.realTime;
     client->lastUsercmd = *command;
 
-    (void)VM_Call(sv_gameVM, GAME_CLIENT_BEGIN,
-                  clientNum, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(sv_gameVM, GAME_CLIENT_BEGIN, clientNum, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }

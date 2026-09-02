@@ -20,19 +20,15 @@ void UI_LoadMods(void)
     int32_t fileIndex;
 
     /* strncpy(dst, src, 0x3f) + dst[0x3f] = 0: 63 characters survive. */
-    Q_strncpyz(basegame, UI_Cvar_VariableString("fs_basegame"),
-               UI_BASEGAME_COPY_SIZE + 1);
+    Q_strncpyz(basegame, UI_Cvar_VariableString("fs_basegame"), UI_BASEGAME_COPY_SIZE + 1);
     ui_modCount = 0;
     fileCount = trap_FS_GetFileList("$modlist", "", list, sizeof(list));
 
-    for (fileIndex = 0;
-         fileIndex < fileCount && ui_modCount < UI_MAX_MODS;
-         ++fileIndex) {
+    for (fileIndex = 0; fileIndex < fileCount && ui_modCount < UI_MAX_MODS; ++fileIndex) {
         char *directory = cursor;
         char *description = directory + strlen(directory) + 1;
 
-        if (strcmp(directory, "main") != 0 &&
-            strcmp(directory, basegame) != 0) {
+        if (strcmp(directory, "main") != 0 && strcmp(directory, basegame) != 0) {
             ui_mods[ui_modCount].directory = String_Alloc(directory);
             ui_mods[ui_modCount].description = String_Alloc(description);
             ++ui_modCount;

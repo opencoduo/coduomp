@@ -18,9 +18,7 @@ long double CM_LittleFloat(float value);
  * reconstruction. coduo_engine_digest_curve_collide remains in the engine's
  * collision-build support source. */
 void coduo_engine_collision_digest_bytes_external(const void *data, size_t length, uint64_t *accum);
-void coduo_engine_digest_curve_collide(const void *curveCollide, uint64_t *accum,
-                                       int32_t *planeCountOut,
-                                       int32_t *facetCountOut);
+void coduo_engine_digest_curve_collide(const void *curveCollide, uint64_t *accum, int32_t *planeCountOut, int32_t *facetCountOut);
 #endif
 
 #endif

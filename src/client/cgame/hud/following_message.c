@@ -102,12 +102,12 @@
 /* Fixed CG_R_TEXT_PAINT draw parameters, proven from the pushed immediates. */
 enum {
     CG_FOLLOW_STYLE = 0, /* style slot (0 here; 4 in CG_DrawSpectatorMessage)      */
-    CG_FOLLOW_MODE  = 3, /* trailing PUSH 3 (int) mode                             */
+    CG_FOLLOW_MODE = 3, /* trailing PUSH 3 (int) mode                             */
 };
 #define CG_FOLLOW_SCREEN_WIDTH 640          /* 0x280; integer centering width       */
-#define CG_FOLLOW_HALF         0.5f         /* 0x3007bce8; center = (w - width)*0.5f */
-#define CG_FOLLOW_Y            404.0f       /* 0x43ca0000; fixed y coordinate        */
-#define CG_FOLLOW_SCALE        (1.0f / 3.0f)/* 0x3eaaaaab; measure + draw scale      */
+#define CG_FOLLOW_HALF 0.5f         /* 0x3007bce8; center = (w - width)*0.5f */
+#define CG_FOLLOW_Y 404.0f       /* 0x43ca0000; fixed y coordinate        */
+#define CG_FOLLOW_SCALE (1.0f / 3.0f)/* 0x3eaaaaab; measure + draw scale      */
 
 /*
  * The follow-banner format ("CGAME_FOLLOWING" localize token, a literal 0x15
@@ -117,7 +117,7 @@ enum {
  * literals are single-use to this function, so they stay file-local.
  */
 static const char CG_FOLLOW_FORMAT[] = "CGAME_FOLLOWING\x15: %s";
-static const char CG_FOLLOW_KEY[]    = "spectator follow string";
+static const char CG_FOLLOW_KEY[] = "spectator follow string";
 
 qboolean CG_DrawFollowingMessage(void)
 {
@@ -141,7 +141,8 @@ qboolean CG_DrawFollowingMessage(void)
         const int32_t clientNum = snap->ps.psClientNum;
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15" "CG_DrawFollowingMessage: "
+                      "\x15"
+                      "CG_DrawFollowingMessage: "
                       "invalid client number %i",
                       clientNum);
             return qfalse;
@@ -151,34 +152,21 @@ qboolean CG_DrawFollowingMessage(void)
     }
 
     /* Localize "following <name>" through the config-string localize service. */
-    text = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
-                                                 (intptr_t)va(CG_FOLLOW_FORMAT, name),
-                                                 (intptr_t)CG_FOLLOW_KEY);
+    text = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE, (intptr_t)va(CG_FOLLOW_FORMAT, name), (intptr_t)CG_FOLLOW_KEY);
 
     /* Measure the localized banner at the draw scale (trap 52). */
-    width = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_R_TEXT_WIDTH, (intptr_t)text, CG_FOLLOW_STYLE,
-        CG_FloatBits(CG_FOLLOW_SCALE), 0));
+    width =
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, CG_FOLLOW_STYLE, CG_FloatBits(CG_FOLLOW_SCALE), 0));
 
     /* Center horizontally: SUB wraps in a dword before FILD, then the x87 value
      * is multiplied by the binary32 0.5 constant and stored as binary32. */
     {
-        int32_t centeredWidth = coduo_int32_from_bits(
-            (uint32_t)CG_FOLLOW_SCREEN_WIDTH - (uint32_t)width);
-        x = (float)((long double)centeredWidth *
-                    (long double)CG_FOLLOW_HALF);
+        int32_t centeredWidth = coduo_int32_from_bits((uint32_t)CG_FOLLOW_SCREEN_WIDTH - (uint32_t)width);
+        x = (float)((long double)centeredWidth * (long double)CG_FOLLOW_HALF);
     }
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits(x),
-                  CG_FloatBits(CG_FOLLOW_Y),
-                  CG_FOLLOW_STYLE,
-                  CG_FloatBits(CG_FOLLOW_SCALE),
-                  (intptr_t)color,
-                  (intptr_t)text,
-                  0,
-                  0,
-                  CG_FOLLOW_MODE);
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(x), CG_FloatBits(CG_FOLLOW_Y), CG_FOLLOW_STYLE, CG_FloatBits(CG_FOLLOW_SCALE),
+                  (intptr_t)color, (intptr_t)text, 0, 0, CG_FOLLOW_MODE);
 
     return qtrue;
 }

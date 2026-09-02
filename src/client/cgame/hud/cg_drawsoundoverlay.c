@@ -74,13 +74,13 @@ enum {
     CG_SNDINFO_MAX_CHANNELS = 64, /* PUSH 0x40: record capacity              */
     CG_SNDINFO_CVAR_SIZE = 0x400  /* PUSH 0x400: cvar string buffer size     */
 };
-#define CG_SNDINFO_HEADER_X   2.0f   /* header line x                 */
-#define CG_SNDINFO_HEADER_Y  82.0f   /* header line y                 */
-#define CG_SNDINFO_LINE_X     2.0f   /* per-channel line x            */
-#define CG_SNDINFO_LINE_Y0   98.0f   /* first per-channel line y (0x42c40000) */
+#define CG_SNDINFO_HEADER_X 2.0f   /* header line x                 */
+#define CG_SNDINFO_HEADER_Y 82.0f   /* header line y                 */
+#define CG_SNDINFO_LINE_X 2.0f   /* per-channel line x            */
+#define CG_SNDINFO_LINE_Y0 98.0f   /* first per-channel line y (0x42c40000) */
 #define CG_SNDINFO_LINE_STEP 16.0f   /* line pitch (0x3007bf00)       */
-#define CG_SNDINFO_TEXT_W     8.0f   /* text width / char size        */
-#define CG_SNDINFO_TEXT_H    16.0f   /* text height                   */
+#define CG_SNDINFO_TEXT_W 8.0f   /* text width / char size        */
+#define CG_SNDINFO_TEXT_H 16.0f   /* text height                   */
 
 void CG_DrawSoundOverlay(void)
 {
@@ -90,11 +90,8 @@ void CG_DrawSoundOverlay(void)
     /* Query the sound system: fills `channels` + `cpuValue`, returns active count.
      * The query selector is the overlay's own enable dword (forwarded verbatim). */
     int32_t overlayType = cg_drawSoundOverlay_vmCvar.integer;
-    int32_t count = (int32_t)cgame_syscall(CG_MSS_GET_SOUND_OVERLAY,
-                                  overlayType,
-                                  (intptr_t)channels,
-                                  CG_SNDINFO_MAX_CHANNELS,
-                                  (intptr_t)&cpuValue);
+    int32_t count =
+        (int32_t)cgame_syscall(CG_MSS_GET_SOUND_OVERLAY, overlayType, (intptr_t)channels, CG_SNDINFO_MAX_CHANNELS, (intptr_t)&cpuValue);
     if (count <= 0) {
         return;
     }
@@ -105,29 +102,21 @@ void CG_DrawSoundOverlay(void)
     char khzStr[CG_SNDINFO_CVAR_SIZE];
     char stereoStr[CG_SNDINFO_CVAR_SIZE];
 
-    trap_Cvar_VariableStringBuffer(mss_3dProviderCvarName, provider,
-                                   CG_SNDINFO_CVAR_SIZE);
-    trap_Cvar_VariableStringBuffer(mss_bitsCvarName, bitsStr,
-                                   CG_SNDINFO_CVAR_SIZE);
+    trap_Cvar_VariableStringBuffer(mss_3dProviderCvarName, provider, CG_SNDINFO_CVAR_SIZE);
+    trap_Cvar_VariableStringBuffer(mss_bitsCvarName, bitsStr, CG_SNDINFO_CVAR_SIZE);
     int32_t bits = coduo_crt_atoi(bitsStr);
-    trap_Cvar_VariableStringBuffer(mss_khzCvarName, khzStr,
-                                   CG_SNDINFO_CVAR_SIZE);
+    trap_Cvar_VariableStringBuffer(mss_khzCvarName, khzStr, CG_SNDINFO_CVAR_SIZE);
     int32_t khz = coduo_crt_atoi(khzStr);
-    trap_Cvar_VariableStringBuffer(mss_stereoCvarName, stereoStr,
-                                   CG_SNDINFO_CVAR_SIZE);
+    trap_Cvar_VariableStringBuffer(mss_stereoCvarName, stereoStr, CG_SNDINFO_CVAR_SIZE);
     int32_t stereo = coduo_crt_atoi(stereoStr);
     qboolean stereoEnabled = stereo != 0;
     /* 0x3001ada0 loads cpuValue between TEST stereo and SETNZ. */
     int32_t cpuForHeader = cpuValue;
     int32_t chan = stereoEnabled + 1;
 
-    const char *headerText = va(cg_soundDebugHeaderFormat,
-                                cpuForHeader, provider, bits, khz, chan);
-    CG_EmitTrap54DrawScaled(1, 0,
-                            cg_colorWhite,
-                            CG_SNDINFO_HEADER_X, CG_SNDINFO_HEADER_Y,
-                            (void *)headerText,
-                            CG_SNDINFO_TEXT_W, CG_SNDINFO_TEXT_H, 0);
+    const char *headerText = va(cg_soundDebugHeaderFormat, cpuForHeader, provider, bits, khz, chan);
+    CG_EmitTrap54DrawScaled(1, 0, cg_colorWhite, CG_SNDINFO_HEADER_X, CG_SNDINFO_HEADER_Y, (void *)headerText, CG_SNDINFO_TEXT_W,
+                            CG_SNDINFO_TEXT_H, 0);
 
     /* One line per channel, y stepping by 16.0. */
     int32_t i = 0;
@@ -148,9 +137,7 @@ void CG_DrawSoundOverlay(void)
             double pitchScale = (double)ch->pitchScale;
             double relativeVolume = (double)ch->relativeVolume;
             double logicalVolume = (double)ch->logicalVolume;
-            lineText = va(cg_soundChannelDebugFormat, i, soundFile,
-                          logicalVolume, relativeVolume, pitchScale,
-                          basePlaybackRate);
+            lineText = va(cg_soundChannelDebugFormat, i, soundFile, logicalVolume, relativeVolume, pitchScale, basePlaybackRate);
         }
 
         /* Inlined CG_EmitTrap54DrawScaled(1, 0, &white, x=2, y, text, 8, 16, 0),
@@ -167,8 +154,7 @@ void CG_DrawSoundOverlay(void)
          *               height/48 = 16/48 constant-folded);
          * each argument rounded once at its FSTP (0x3001aeaa..0x3001aec9). */
         {
-            long double invX =
-                (long double)1.0f / (long double)cgs_screenXScale;
+            long double invX = (long double)1.0f / (long double)cgs_screenXScale;
 
             /* The inlined helper still initializes its unused local-white
              * fallback before selecting the nonnull shared white pointer. */
@@ -180,16 +166,11 @@ void CG_DrawSoundOverlay(void)
 
             float invXf = (float)invX;                     /* FST 0x3001ae70 */
             long double xArgRaw = invX + invX;
-            long double invYRaw =
-                (long double)1.0f / (long double)cgs_screenYScale;
+            long double invYRaw = (long double)1.0f / (long double)cgs_screenYScale;
             float invYf = (float)invYRaw;                  /* FSTP 0x3001ae82 */
-            long double sumArgRaw =
-                ((long double)y + (long double)12.8f) *
-                (long double)invYf;
-            long double widthArgRaw =
-                (long double)invXf * (long double)8.0f;
-            long double scaleArgRaw =
-                (long double)invYf * (long double)(1.0f / 3.0f);
+            long double sumArgRaw = ((long double)y + (long double)12.8f) * (long double)invYf;
+            long double widthArgRaw = (long double)invXf * (long double)8.0f;
+            long double scaleArgRaw = (long double)invYf * (long double)(1.0f / 3.0f);
 
             /* 0x3001aeaa..0x3001aec9: FXCH makes the outgoing binary32 stores
              * occur in width, scale, y-sum, x order. */
@@ -198,23 +179,15 @@ void CG_DrawSoundOverlay(void)
             float sumArg = (float)sumArgRaw;
             float xArg = (float)xArgRaw;
 
-            cgame_syscall(CG_R_TEXT_PAINT,
-                          CG_FloatBits(xArg),
-                          CG_FloatBits(sumArg),
-                          5,                               /* style (PUSH 5) */
-                          CG_FloatBits(scaleArg),
-                          (intptr_t)&cg_colorWhite,
-                          (intptr_t)lineText,
-                          CG_FloatBits(widthArg),
-                          0,
-                          3);                              /* mode (PUSH 3)  */
+            cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(xArg), CG_FloatBits(sumArg), 5, /* style (PUSH 5) */
+                          CG_FloatBits(scaleArg), (intptr_t)&cg_colorWhite, (intptr_t)lineText, CG_FloatBits(widthArg), 0,
+                          3); /* mode (PUSH 3)  */
             (void)localWhite;
         }
 
         /* The next y remains live in ST0 through the index/pointer increments and
          * loop comparison, and is rounded only immediately before the back edge. */
-        long double nextYRaw =
-            (long double)y + (long double)CG_SNDINFO_LINE_STEP;
+        long double nextYRaw = (long double)y + (long double)CG_SNDINFO_LINE_STEP;
         i = coduo_int32_from_bits((uint32_t)i + 1u);
         ++ch;
         qboolean anotherChannel = i < count;

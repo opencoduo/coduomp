@@ -38,8 +38,7 @@ extern cvar_t *sv_onlyVisibleClients;
 void Com_Printf(const char *format, ...);
 void Com_DPrintf(const char *format, ...);
 qboolean Sys_IsLANAddress(netadr_t address);
-static const char sv_authorizeServerName[] =
-    "coduoauthorize.activision.com";
+static const char sv_authorizeServerName[] = "coduoauthorize.activision.com";
 
 #ifndef CODUO_DISABLE_SERVER_AUTH
 #define CODUO_DISABLE_SERVER_AUTH 0
@@ -78,8 +77,7 @@ void SV_GetChallenge(netadr_t from)
 
     for (slot = 0; slot < MAX_CHALLENGES; ++slot) {
         challenge = &svs.challenges[slot];
-        if (challenge->connected == qfalse &&
-            NET_CompareAdr(from, challenge->address) != qfalse) {
+        if (challenge->connected == qfalse && NET_CompareAdr(from, challenge->address) != qfalse) {
             break;
         }
         if (challenge->slotTimestamp < oldestTime) {
@@ -90,13 +88,10 @@ void SV_GetChallenge(netadr_t from)
 
     if (slot == MAX_CHALLENGES) {
         challenge = &svs.challenges[oldestSlot];
-        const uint32_t randomHigh =
-            (uint32_t)coduo_server_rand() << 16;
-        const uint32_t randomLow =
-            (uint32_t)coduo_server_rand();
+        const uint32_t randomHigh = (uint32_t)coduo_server_rand() << 16;
+        const uint32_t randomLow = (uint32_t)coduo_server_rand();
 
-        challenge->challengeNumber = coduo_int32_from_bits(
-            randomHigh ^ randomLow ^ (uint32_t)svs.time);
+        challenge->challengeNumber = coduo_int32_from_bits(randomHigh ^ randomLow ^ (uint32_t)svs.time);
         challenge->address = from;
         challenge->authorizeStartTime = svs.realTime;
         challenge->firstPingMsec = 0;
@@ -109,66 +104,46 @@ void SV_GetChallenge(netadr_t from)
 #if CODUO_DISABLE_SERVER_AUTH
     challenge->pingStartTime = svs.realTime;
     if (sv_onlyVisibleClients->integer != 0) {
-        NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i %i",
-                           challenge->challengeNumber,
-                           sv_onlyVisibleClients->integer);
+        NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i %i", challenge->challengeNumber, sv_onlyVisibleClients->integer);
     } else {
-        NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i",
-                           challenge->challengeNumber);
+        NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i", challenge->challengeNumber);
     }
     return;
 #endif
 
-    if (net_lanauthorize->integer == 0 &&
-        Sys_IsLANAddress(from) != qfalse) {
+    if (net_lanauthorize->integer == 0 && Sys_IsLANAddress(from) != qfalse) {
         challenge->pingStartTime = svs.realTime;
         if (sv_onlyVisibleClients->integer != 0) {
-            NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i %i",
-                               challenge->challengeNumber,
-                               sv_onlyVisibleClients->integer);
+            NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i %i", challenge->challengeNumber, sv_onlyVisibleClients->integer);
         } else {
-            NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i",
-                               challenge->challengeNumber);
+            NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i", challenge->challengeNumber);
         }
         return;
     }
 
-    if (svs.authorizeServerAddress.ip[0] == 0 &&
-        svs.authorizeServerAddress.type != NA_BOT) {
+    if (svs.authorizeServerAddress.ip[0] == 0 && svs.authorizeServerAddress.type != NA_BOT) {
         Com_Printf("Resolving %s\n", sv_authorizeServerName);
-        if (NET_StringToAdr(sv_authorizeServerName,
-                            &svs.authorizeServerAddress) == qfalse) {
+        if (NET_StringToAdr(sv_authorizeServerName, &svs.authorizeServerAddress) == qfalse) {
             Com_Printf("Couldn't resolve address\n");
             return;
         }
-        svs.authorizeServerAddress.port =
-            (uint16_t)BigShort((int16_t)SERVER_AUTHORIZE_PORT);
-        Com_Printf("%s resolved to %i.%i.%i.%i:%i\n",
-                   sv_authorizeServerName,
-                   svs.authorizeServerAddress.ip[0],
-                   svs.authorizeServerAddress.ip[1],
-                   svs.authorizeServerAddress.ip[2],
-                   svs.authorizeServerAddress.ip[3],
-                   (uint16_t)BigShort(
-                       (int16_t)svs.authorizeServerAddress.port));
+        svs.authorizeServerAddress.port = (uint16_t)BigShort((int16_t)SERVER_AUTHORIZE_PORT);
+        Com_Printf("%s resolved to %i.%i.%i.%i:%i\n", sv_authorizeServerName, svs.authorizeServerAddress.ip[0],
+                   svs.authorizeServerAddress.ip[1], svs.authorizeServerAddress.ip[2], svs.authorizeServerAddress.ip[3],
+                   (uint16_t)BigShort((int16_t)svs.authorizeServerAddress.port));
     }
 
-    if (svs.realTime - challenge->authorizeStartTime >
-        SERVER_AUTHORIZE_TIMEOUT_MSEC) {
+    if (svs.realTime - challenge->authorizeStartTime > SERVER_AUTHORIZE_TIMEOUT_MSEC) {
         challenge->pingStartTime = svs.realTime;
         if (NET_CompareAdr(from, *SV_MasterAddress()) == qfalse) {
             /* Linux 0x08089b39 calls Com_DPrintf at 0x08070297; the former
              * recovered Com_Printf spelling was a transcription error. */
             Com_DPrintf("authorize server timed out\n");
             if (sv_onlyVisibleClients->integer != 0) {
-                NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                                   "challengeResponse %i %i",
-                                   challenge->challengeNumber,
+                NET_OutOfBandPrint(NS_SERVER, challenge->address, "challengeResponse %i %i", challenge->challengeNumber,
                                    sv_onlyVisibleClients->integer);
             } else {
-                NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                                   "challengeResponse %i",
-                                   challenge->challengeNumber);
+                NET_OutOfBandPrint(NS_SERVER, challenge->address, "challengeResponse %i", challenge->challengeNumber);
             }
             return;
         }
@@ -190,8 +165,7 @@ void SV_AuthorizeRequest(netadr_t from, int32_t challenge)
     }
 
     fsGame[0] = '\0';
-    cvar_t *const fsGameCvar =
-        Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
+    cvar_t *const fsGameCvar = Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
     if (fsGameCvar != NULL && fsGameCvar->string[0] != '\0') {
         const size_t fsGameLength = strlen(fsGameCvar->string);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -203,13 +177,9 @@ void SV_AuthorizeRequest(netadr_t from, int32_t challenge)
     }
 
     Com_DPrintf("sending getIpAuthorize for %s\n", NET_AdrToString(from));
-    cvar_t *const allowAnonymous =
-        Cvar_Get("sv_allowAnonymous", "0", CVAR_SERVERINFO);
-    NET_OutOfBandPrint(NS_SERVER, svs.authorizeServerAddress,
-                       "getIpAuthorize %i %i.%i.%i.%i %s %i",
-                       challenge,
-                       from.ip[0], from.ip[1], from.ip[2], from.ip[3],
-                       fsGame, allowAnonymous->integer);
+    cvar_t *const allowAnonymous = Cvar_Get("sv_allowAnonymous", "0", CVAR_SERVERINFO);
+    NET_OutOfBandPrint(NS_SERVER, svs.authorizeServerAddress, "getIpAuthorize %i %i.%i.%i.%i %s %i", challenge, from.ip[0], from.ip[1],
+                       from.ip[2], from.ip[3], fsGame, allowAnonymous->integer);
 #endif
 }
 
@@ -225,11 +195,8 @@ void SV_AuthorizeIpPacket(netadr_t from)
 
     const int32_t challengeNumber = atoi(Cmd_Argv(1));
     int32_t challengeIndex;
-    for (challengeIndex = 0;
-         challengeIndex < MAX_CHALLENGES;
-         ++challengeIndex) {
-        if (svs.challenges[challengeIndex].challengeNumber ==
-            challengeNumber) {
+    for (challengeIndex = 0; challengeIndex < MAX_CHALLENGES; ++challengeIndex) {
+        if (svs.challenges[challengeIndex].challengeNumber == challengeNumber) {
             break;
         }
     }
@@ -243,17 +210,13 @@ void SV_AuthorizeIpPacket(netadr_t from)
 
     const char *const response = Cmd_Argv(2);
     const char *const reason = Cmd_Argv(3);
-    Q_strncpyz(challenge->authGuidString, Cmd_Argv(5),
-               sizeof(challenge->authGuidString));
+    Q_strncpyz(challenge->authGuidString, Cmd_Argv(5), sizeof(challenge->authGuidString));
 
     if (Q_stricmp(response, "demo") == 0) {
         if (Cvar_VariableValue("fs_restrict") != 0.0f) {
-            NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                               "challengeResponse %i",
-                               challenge->challengeNumber);
+            NET_OutOfBandPrint(NS_SERVER, challenge->address, "challengeResponse %i", challenge->challengeNumber);
         } else {
-            NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                               "error\nEXE_ERR_NOT_A_DEMO_SERVER");
+            NET_OutOfBandPrint(NS_SERVER, challenge->address, "error\nEXE_ERR_NOT_A_DEMO_SERVER");
             memset(challenge, 0, sizeof(*challenge));
         }
         return;
@@ -262,36 +225,28 @@ void SV_AuthorizeIpPacket(netadr_t from)
     if (Q_stricmp(response, "accept") == 0) {
         challenge->numericGuid = atoi(Cmd_Argv(4));
         if (SV_AuthorizeGuidOnBanList(challenge->numericGuid) != qfalse) {
-            Com_Printf(
-                "rejected connection from permanently banned GUID %i\n",
-                challenge->numericGuid);
-            NET_OutOfBandPrint(
-                NS_SERVER, challenge->address,
-                "error\n\x15" "You are permanently banned from this server");
+            Com_Printf("rejected connection from permanently banned GUID %i\n", challenge->numericGuid);
+            NET_OutOfBandPrint(NS_SERVER, challenge->address,
+                               "error\n\x15"
+                               "You are permanently banned from this server");
             memset(challenge, 0, sizeof(*challenge));
             return;
         }
         if (SV_AuthorizeGuidRecentlySeen(challenge->numericGuid) != qfalse) {
-            Com_Printf(
-                "rejected connection from temporarily banned GUID %i\n",
-                challenge->numericGuid);
-            NET_OutOfBandPrint(
-                NS_SERVER, challenge->address,
-                "error\n\x15" "You are temporarily banned from this server");
+            Com_Printf("rejected connection from temporarily banned GUID %i\n", challenge->numericGuid);
+            NET_OutOfBandPrint(NS_SERVER, challenge->address,
+                               "error\n\x15"
+                               "You are temporarily banned from this server");
             memset(challenge, 0, sizeof(*challenge));
             return;
         }
 
         if (challenge->connected == qfalse) {
             if (sv_onlyVisibleClients->integer != 0) {
-                NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                                   "challengeResponse %i %i",
-                                   challenge->challengeNumber,
+                NET_OutOfBandPrint(NS_SERVER, challenge->address, "challengeResponse %i %i", challenge->challengeNumber,
                                    sv_onlyVisibleClients->integer);
             } else {
-                NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                                   "challengeResponse %i",
-                                   challenge->challengeNumber);
+                NET_OutOfBandPrint(NS_SERVER, challenge->address, "challengeResponse %i", challenge->challengeNumber);
             }
         }
         return;
@@ -299,30 +254,24 @@ void SV_AuthorizeIpPacket(netadr_t from)
 
     if (Q_stricmp(response, "deny") == 0) {
         if (reason == NULL || reason[0] == '\0') {
-            NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                               "error\nEXE_ERR_CDKEY_IN_USE");
-        } else if (Q_stricmp(reason, "CLIENT_UNKNOWN_TO_AUTH") == 0 ||
-                   Q_stricmp(reason, "BAD_CDKEY") == 0) {
+            NET_OutOfBandPrint(NS_SERVER, challenge->address, "error\nEXE_ERR_CDKEY_IN_USE");
+        } else if (Q_stricmp(reason, "CLIENT_UNKNOWN_TO_AUTH") == 0 || Q_stricmp(reason, "BAD_CDKEY") == 0) {
             NET_OutOfBandPrint(NS_SERVER, challenge->address, "needcdkey");
         } else if (Q_stricmp(reason, "INVALID_CDKEY") == 0) {
-            NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                               "error\nEXE_ERR_CDKEY_IN_USE");
+            NET_OutOfBandPrint(NS_SERVER, challenge->address, "error\nEXE_ERR_CDKEY_IN_USE");
         } else {
-            NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                               "error\nEXE_ERR_BAD_CDKEY");
+            NET_OutOfBandPrint(NS_SERVER, challenge->address, "error\nEXE_ERR_BAD_CDKEY");
         }
         memset(challenge, 0, sizeof(*challenge));
         return;
     }
 
     if (reason == NULL || reason[0] == '\0') {
-        NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                           "error\nEXE_ERR_BAD_CDKEY");
+        NET_OutOfBandPrint(NS_SERVER, challenge->address, "error\nEXE_ERR_BAD_CDKEY");
     } else {
         /* NOT_FROM_ORIGINAL_SOURCE: keep the authorization reason as data in a
          * literal conversion; the common packet sink enforces full capacity. */
-        NET_OutOfBandPrint(NS_SERVER, challenge->address,
-                           "error\n%s", reason);
+        NET_OutOfBandPrint(NS_SERVER, challenge->address, "error\n%s", reason);
     }
     memset(challenge, 0, sizeof(*challenge));
 }
@@ -333,18 +282,11 @@ qboolean SV_AuthorizeGuidRecentlySeen(int32_t guid)
         return qfalse;
     }
 
-    for (int32_t slot = 0;
-         slot < SERVER_AUTHORIZE_GUID_CACHE_ENTRY_COUNT;
-         ++slot) {
-        const serverAuthorizeGuidCacheEntry_t *const entry =
-            &svs.authorizeGuidCache[slot];
+    for (int32_t slot = 0; slot < SERVER_AUTHORIZE_GUID_CACHE_ENTRY_COUNT; ++slot) {
+        const serverAuthorizeGuidCacheEntry_t *const entry = &svs.authorizeGuidCache[slot];
         if (entry->numericGuid == guid) {
-            const long double age =
-                (long double)(svs.time - entry->cacheTime);
-            const long double duration =
-                (long double)sv_kickBanTime->value *
-                (long double)(float)
-                    SERVER_AUTHORIZE_MILLISECONDS_PER_SECOND;
+            const long double age = (long double)(svs.time - entry->cacheTime);
+            const long double duration = (long double)sv_kickBanTime->value * (long double)(float)SERVER_AUTHORIZE_MILLISECONDS_PER_SECOND;
 
             /* Both originals retain the operands on x87 and accept equality
              * and unordered results along with age less than duration. */
@@ -386,14 +328,11 @@ int32_t SV_AuthorizeGuidCacheSelectSlot(void)
 {
     int32_t oldestSlot = 0;
 
-    for (int32_t slot = 0;
-         slot < SERVER_AUTHORIZE_GUID_CACHE_ENTRY_COUNT;
-         ++slot) {
+    for (int32_t slot = 0; slot < SERVER_AUTHORIZE_GUID_CACHE_ENTRY_COUNT; ++slot) {
         if (svs.authorizeGuidCache[slot].numericGuid == 0) {
             return slot;
         }
-        if (svs.authorizeGuidCache[slot].cacheTime <
-            svs.authorizeGuidCache[oldestSlot].cacheTime) {
+        if (svs.authorizeGuidCache[slot].cacheTime < svs.authorizeGuidCache[oldestSlot].cacheTime) {
             oldestSlot = slot;
         }
     }
@@ -410,13 +349,11 @@ void SV_AuthorizeGuidCacheStore(int32_t guid)
 void SV_BanClient(client_t *client)
 {
     if (client->netchan.remoteAddress.type == NA_LOOPBACK) {
-        SV_SendServerCommand(NULL, qfalse,
-                             "e \"EXE_CANNOTKICKHOSTPLAYER\"");
+        SV_SendServerCommand(NULL, qfalse, "e \"EXE_CANNOTKICKHOSTPLAYER\"");
         return;
     }
 
-    if (client->guid == 0 ||
-        SV_AuthorizeGuidOnBanList(client->guid) != qfalse) {
+    if (client->guid == 0 || SV_AuthorizeGuidOnBanList(client->guid) != qfalse) {
         return;
     }
 
@@ -463,16 +400,12 @@ void SV_UnbanClient(const char *name)
         }
 
         const qboolean removeLine =
-            SV_BAN_STRNICMP(scan, cleanName, cleanNameLength) == 0 &&
-            (scan[cleanNameLength] == '\r' ||
-             scan[cleanNameLength] == '\n');
+            SV_BAN_STRNICMP(scan, cleanName, cleanNameLength) == 0 && (scan[cleanNameLength] == '\r' || scan[cleanNameLength] == '\n');
 
         Com_SkipRestOfLine(&scan);
         if (removeLine != qfalse) {
             ++removedCount;
-            memmove(lineStart, scan,
-                    (size_t)(fileLength -
-                             (int32_t)(scan - fileText)) + 1);
+            memmove(lineStart, scan, (size_t)(fileLength - (int32_t)(scan - fileText)) + 1);
             fileLength -= (int32_t)(scan - lineStart);
             scan = lineStart;
         }
@@ -484,8 +417,7 @@ void SV_UnbanClient(const char *name)
     if (removedCount == 0) {
         Com_Printf("no banned user has name %s\n", cleanName);
     } else {
-        Com_Printf("unbanned %i user(s) named %s\n",
-                   removedCount, cleanName);
+        Com_Printf("unbanned %i user(s) named %s\n", removedCount, cleanName);
     }
 }
 

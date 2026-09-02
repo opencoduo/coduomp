@@ -26,8 +26,9 @@ enum {
 gitem_t *BG_FindItemForWeapon(int32_t weapon)
 {
     if (weapon < 0 || weapon > bg_numWeapons) {
-        BG_WEAPON_ERROR(
-            "\x15" "BG_FindItemForWeapon: weapon out of range %i", weapon);
+        BG_WEAPON_ERROR("\x15"
+                        "BG_FindItemForWeapon: weapon out of range %i",
+                        weapon);
     }
 
     return &bg_itemlist[weapon];
@@ -37,9 +38,7 @@ gitem_t *BG_FindItem(const char *pickupName)
 {
     weaponInfo_t **const weaponInfos = bg_weaponInfos;
 
-    for (int32_t itemIndex = BG_FIRST_ITEM_INDEX;
-         itemIndex < BG_ITEM_COUNT;
-         ++itemIndex) {
+    for (int32_t itemIndex = BG_FIRST_ITEM_INDEX; itemIndex < BG_ITEM_COUNT; ++itemIndex) {
         gitem_t *const item = &bg_itemlist[itemIndex];
 
         if (itemIndex <= bg_numWeapons) {
@@ -51,8 +50,7 @@ gitem_t *BG_FindItem(const char *pickupName)
             continue;
         }
 
-        if (Q_stricmp(item->pickupName, pickupName) == 0 ||
-            Q_stricmp(item->classname, pickupName) == 0) {
+        if (Q_stricmp(item->pickupName, pickupName) == 0 || Q_stricmp(item->classname, pickupName) == 0) {
             return item;
         }
     }

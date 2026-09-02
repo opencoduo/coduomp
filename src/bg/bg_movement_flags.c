@@ -56,8 +56,7 @@ void PM_UpdatePlayerWalkingFlag(void)
 void PM_UpdatePlayerSprintingFlag(void)
 {
     playerState_t *const ps = pm->ps;
-    const qboolean wasSprinting =
-        (ps->playerStateFlags & PMF_SPRINTING) != 0 ? qtrue : qfalse;
+    const qboolean wasSprinting = (ps->playerStateFlags & PMF_SPRINTING) != 0 ? qtrue : qfalse;
     const uint8_t buttons = pm->command.buttons;
     uint32_t flags;
 
@@ -80,8 +79,7 @@ void PM_UpdatePlayerSprintingFlag(void)
     if ((flags & (PMF_PRONE | PMF_DUCKED | PMF_ADS)) != 0) {
         return;
     }
-    if (wasSprinting == qfalse &&
-        ps->groundEntityNum == ENTITYNUM_NONE) {
+    if (wasSprinting == qfalse && ps->groundEntityNum == ENTITYNUM_NONE) {
         return;
     }
     if (pm->command.forwardmove == 0 && pm->command.rightmove == 0) {
@@ -95,10 +93,8 @@ void PM_UpdatePlayerSprintingFlag(void)
     }
 
     if (pml.weaponInfo->weaponType == WEAPTYPE_GRENADE) {
-        if (pml.weaponInfo->specialTimeEnabled != 0 &&
-            ps->grenadeTimeLeft < pml.weaponInfo->specialTimeThreshold &&
-            ps->grenadeTimeLeft != 0 &&
-            Com_BitCheck(ps->weaponBits, ps->currentWeapon) != 0) {
+        if (pml.weaponInfo->specialTimeEnabled != 0 && ps->grenadeTimeLeft < pml.weaponInfo->specialTimeThreshold &&
+            ps->grenadeTimeLeft != 0 && Com_BitCheck(ps->weaponBits, ps->currentWeapon) != 0) {
             return;
         }
         if ((buttons & PM_BUTTON_FIRE) != 0) {

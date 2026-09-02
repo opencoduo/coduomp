@@ -8,8 +8,7 @@
 #if defined(WINDOWS_BEHAVIOR)
 #define BG_TRAJECTORY_ERROR(format, value) G_Error((format), (value))
 #else
-#define BG_TRAJECTORY_ERROR(format, value) \
-    Com_Error(ERR_DROP, (format), (value))
+#define BG_TRAJECTORY_ERROR(format, value) Com_Error(ERR_DROP, (format), (value))
 #endif
 
 #endif

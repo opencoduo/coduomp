@@ -30,8 +30,7 @@ void PitchToQuaternion(float degrees, vec4_t quaternion)
     float halfRadians;
 
 #if EMULATE_X87
-    halfRadians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(degrees), x87f_load_f32(0.008726646f)));
+    halfRadians = x87f_store_f32(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(0.008726646f)));
 #else
     halfRadians = (float)((long double)degrees * 0.008726646f);
 #endif
@@ -45,8 +44,7 @@ void YawToQuaternion(float degrees, vec4_t quaternion)
     float halfRadians;
 
 #if EMULATE_X87
-    halfRadians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(degrees), x87f_load_f32(0.008726646f)));
+    halfRadians = x87f_store_f32(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(0.008726646f)));
 #else
     halfRadians = (float)((long double)degrees * 0.008726646f);
 #endif
@@ -60,8 +58,7 @@ void RollToQuaternion(float degrees, vec4_t quaternion)
     float halfRadians;
 
 #if EMULATE_X87
-    halfRadians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(degrees), x87f_load_f32(0.008726646f)));
+    halfRadians = x87f_store_f32(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(0.008726646f)));
 #else
     halfRadians = (float)((long double)degrees * 0.008726646f);
 #endif
@@ -75,12 +72,9 @@ void PitchToQuaternion(float degrees, vec4_t quaternion)
     float halfRadians;
 
 #if EMULATE_X87
-    halfRadians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(degrees),
-        x87f_load_f64(0.008726646259971648)));
+    halfRadians = x87f_store_f32(x87f_mul(x87f_load_f32(degrees), x87f_load_f64(0.008726646259971648)));
 #else
-    halfRadians = (float)((long double)degrees *
-                          0.008726646259971648);
+    halfRadians = (float)((long double)degrees * 0.008726646259971648);
 #endif
     quaternion[0] = 0.0f;
     quaternion[2] = 0.0f;
@@ -92,12 +86,9 @@ void YawToQuaternion(float degrees, vec4_t quaternion)
     float halfRadians;
 
 #if EMULATE_X87
-    halfRadians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(degrees),
-        x87f_load_f64(0.008726646259971648)));
+    halfRadians = x87f_store_f32(x87f_mul(x87f_load_f32(degrees), x87f_load_f64(0.008726646259971648)));
 #else
-    halfRadians = (float)((long double)degrees *
-                          0.008726646259971648);
+    halfRadians = (float)((long double)degrees * 0.008726646259971648);
 #endif
     quaternion[0] = 0.0f;
     quaternion[1] = 0.0f;
@@ -109,12 +100,9 @@ void RollToQuaternion(float degrees, vec4_t quaternion)
     float halfRadians;
 
 #if EMULATE_X87
-    halfRadians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(degrees),
-        x87f_load_f64(0.008726646259971648)));
+    halfRadians = x87f_store_f32(x87f_mul(x87f_load_f32(degrees), x87f_load_f64(0.008726646259971648)));
 #else
-    halfRadians = (float)((long double)degrees *
-                          0.008726646259971648);
+    halfRadians = (float)((long double)degrees * 0.008726646259971648);
 #endif
     quaternion[1] = 0.0f;
     quaternion[2] = 0.0f;

@@ -19,8 +19,7 @@ void SV_VerifyPaks_f(client_t *client);
 void SV_ResetPureClient_f(client_t *client);
 void SV_UserinfoChanged(client_t *client);
 void SV_UpdateUserinfo_f(client_t *client);
-void SV_ExecuteClientCommand(client_t *client, const char *text,
-                             qboolean clientOK);
+void SV_ExecuteClientCommand(client_t *client, const char *text, qboolean clientOK);
 qboolean SV_ClientCommand(client_t *client, msg_t *message);
 void SV_ClientThink(client_t *client, const usercmd_t *command);
 void SV_UserMove(client_t *client, msg_t *message, qboolean delta);

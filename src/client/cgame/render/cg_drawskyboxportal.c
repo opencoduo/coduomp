@@ -66,8 +66,7 @@ void CG_DrawSkyBoxPortal(void)
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
-            Com_ErrorMessage(
-                "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog state\n");
+            Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog state\n");
         }
         fogState = coduo_crt_atoi(token);
 
@@ -78,22 +77,19 @@ void CG_DrawSkyBoxPortal(void)
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
-                Com_ErrorMessage(
-                    "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[0]\n");
+                Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[0]\n");
             }
             fogParam[0] = (float)atof(token);
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
-                Com_ErrorMessage(
-                    "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[1]\n");
+                Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[1]\n");
             }
             fogParam[1] = (float)atof(token);
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
-                Com_ErrorMessage(
-                    "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[2]\n");
+                Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[2]\n");
             }
             fogParam[2] = (float)atof(token);
 
@@ -102,9 +98,8 @@ void CG_DrawSkyBoxPortal(void)
             token = Com_ParseOnLine(&parse);
             fogInt1 = (token != NULL && token[0] != '\0') ? coduo_crt_atoi(token) : 0;
 
-            trap_R_SetFog(CG_SKYBOX_FOG_MODE, fogInt0, fogInt1,
-                      CG_FloatBits(fogParam[0]), CG_FloatBits(fogParam[1]),
-                      CG_FloatBits(fogParam[2]), CG_FloatBits(1.1f));
+            trap_R_SetFog(CG_SKYBOX_FOG_MODE, fogInt0, fogInt1, CG_FloatBits(fogParam[0]), CG_FloatBits(fogParam[1]),
+                          CG_FloatBits(fogParam[2]), CG_FloatBits(1.1f));
             cg_skyboxFogConfigured = qtrue;
         } else if (!cg_skyboxFogConfigured) {
             trap_R_SetFog(CG_SKYBOX_FOG_MODE, 0, 0, 0, 0, 0, 0);
@@ -112,17 +107,11 @@ void CG_DrawSkyBoxPortal(void)
         }
 
         cg_refdef.fov_x = (float)cgame_compat_expand_horizontal_fov(
-            (long double)CG_CalcFov(),
-            coduo_int32_from_bits((uint32_t)cg_refdef.width),
-            coduo_int32_from_bits((uint32_t)cg_refdef.height));
-        long double tangent = coduo_x87_tanl(
-            (long double)cg_refdef.fov_x *
-            (long double)DEG_TO_HALF_RAD);
-        cg_refdef.fov_y = (float)(coduo_x87_atan2l(
-            (long double)coduo_int32_from_bits((uint32_t)cg_refdef.height),
-            (long double)coduo_int32_from_bits((uint32_t)cg_refdef.width) /
-                tangent) *
-            (long double)HALF_RAD_TO_DEG);
+            (long double)CG_CalcFov(), coduo_int32_from_bits((uint32_t)cg_refdef.width), coduo_int32_from_bits((uint32_t)cg_refdef.height));
+        long double tangent = coduo_x87_tanl((long double)cg_refdef.fov_x * (long double)DEG_TO_HALF_RAD);
+        cg_refdef.fov_y = (float)(coduo_x87_atan2l((long double)coduo_int32_from_bits((uint32_t)cg_refdef.height),
+                                                   (long double)coduo_int32_from_bits((uint32_t)cg_refdef.width) / tangent) *
+                                  (long double)HALF_RAD_TO_DEG);
         cg_refdef.rdflags |= RDF_SKYBOX_PORTAL | RDF_SKYBOX_PORTAL_ACTIVE;
     } else {
         cg_refdef.rdflags &= ~(uint32_t)RDF_SKYBOX_PORTAL_ACTIVE;

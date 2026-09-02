@@ -21,8 +21,7 @@
  * displacements are normalized. Their embedded legacy _vsnprintf bodies are
  * likewise instruction-identical. Both Linux bodies call vsnprintf@plt and
  * then perform the same forced final-byte store and return forwarding. */
-int32_t Com_sprintf(char *destination, size_t destinationSize,
-                    const char *format, ...)
+int32_t Com_sprintf(char *destination, size_t destinationSize, const char *format, ...)
 {
     int32_t result;
     va_list arguments;

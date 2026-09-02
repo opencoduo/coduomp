@@ -12,8 +12,7 @@ extern displayContextDef_t *DC;
 
 void Com_Printf(const char *format, ...);
 
-void Menu_SetFeederSelection(menuDef_t *menu, const char *menuName,
-                             int32_t feeder, int32_t index)
+void Menu_SetFeederSelection(menuDef_t *menu, const char *menuName, int32_t feeder, int32_t index)
 {
     if (menu == NULL) {
         menu = menuName == NULL ? Menu_GetFocused() : Menus_FindByName(menuName);

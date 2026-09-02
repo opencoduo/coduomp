@@ -10,8 +10,7 @@ void Com_Printf(const char *format, ...);
 /* NOT_FROM_ORIGINAL_SOURCE: mounted menu scripts provide the format used by
  * both cgame and UI navigation. Invalid templates are logged and treated as
  * literal menu names rather than consuming nonexistent variadic arguments. */
-static const char *client_menu_compat_format_game_type(
-    const char *format, const char *gameType)
+static const char *client_menu_compat_format_game_type(const char *format, const char *gameType)
 {
     if (client_compat_validate_format_signature(format, "s") == qfalse) {
         Com_Printf("WARNING: rejected invalid game-type menu format\n");
@@ -69,8 +68,7 @@ void Script_OpenForGameType(itemDef_t *item, char **arguments)
     DC->getCVarString(item->cvar, gameType, sizeof(gameType));
     /* NOT_FROM_ORIGINAL_SOURCE: apply the mounted-menu one-string formatting
      * contract before resolving the menu name. */
-    menu = Menus_FindByName(
-        client_menu_compat_format_game_type(format, gameType));
+    menu = Menus_FindByName(client_menu_compat_format_game_type(format, gameType));
     if (menu != NULL) {
         Menus_Open(menu);
     }
@@ -90,8 +88,7 @@ void Script_CloseForGameType(itemDef_t *item, char **arguments)
         return;
     }
     DC->getCVarString(item->cvar, gameType, sizeof(gameType));
-    menu = Menus_FindByName(
-        client_menu_compat_format_game_type(format, gameType));
+    menu = Menus_FindByName(client_menu_compat_format_game_type(format, gameType));
     if (menu != NULL) {
         Menus_Close(menu);
     }
@@ -106,9 +103,7 @@ void Script_ConditionalOpen(itemDef_t *item, char **arguments)
     menuDef_t *menu;
 
     (void)item;
-    if (!String_Parse(arguments, &cvarName) ||
-        !String_Parse(arguments, &menuIfNonzero) ||
-        !String_Parse(arguments, &menuIfZero)) {
+    if (!String_Parse(arguments, &cvarName) || !String_Parse(arguments, &menuIfNonzero) || !String_Parse(arguments, &menuIfZero)) {
         return;
     }
 

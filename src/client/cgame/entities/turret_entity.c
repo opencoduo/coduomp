@@ -91,7 +91,8 @@ void CG_AddCEntity_ET11(centity_t *cent /* EBX */)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)modelIndex >= (uint32_t)CS_MODELS_COUNT) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_AddCEntity_ET11: invalid model index %i",
+                  "\x15"
+                  "CG_AddCEntity_ET11: invalid model index %i",
                   modelIndex);
         return;
     }
@@ -132,8 +133,7 @@ void CG_AddCEntity_ET11(centity_t *cent /* EBX */)
     uint32_t xBits;
     memcpy(&xBits, &cent->lerpOrigin[0], sizeof(xBits));
     memcpy(&re.oldorigin[0], &xBits, sizeof(xBits));
-    re.lightingOrigin[2] = (float)(
-        (long double)re.origin[2] + (long double)CG_ET11_LIGHTING_Z_OFFSET);
+    re.lightingOrigin[2] = (float)((long double)re.origin[2] + (long double)CG_ET11_LIGHTING_Z_OFFSET);
     re.renderfx = RF_LIGHTING_ORIGIN;
 
     /* 0x3001ed4c/0x3001ed52/0x3001ed66: axis = AnglesToAxisNegRight(re.axis,

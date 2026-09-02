@@ -85,8 +85,7 @@
  * calledVotes, so the limit never takes effect and players can call unlimited votes. */
 #define CALLVOTE_MAX_CALLED 3
 #define CALLVOTE_MAPNAME_BUFFER_SIZE 256
-#define CALLVOTE_MAPNAME_CVAR_FLAGS \
-    (CVAR_SERVERINFO | CVAR_ROM)
+#define CALLVOTE_MAPNAME_CVAR_FLAGS (CVAR_SERVERINFO | CVAR_ROM)
 #define ACTIVATE_SCRIPT_SYSTEM 1
 #define ACTIVATE_MOUNT_BLOCK_FLAG 0x6000u
 #define SCOREBOARD_MAX_CLIENTS 64
@@ -109,19 +108,13 @@ static char concatArgsBuffer[MAX_STRING_CHARS];
 /* NOT_FROM_ORIGINAL_SOURCE: helper for repeated localized status commands. */
 static void game_compat_command_send_localized_status(gentity_t *ent, const char *localized)
 {
-    trap_SendServerCommand(
-        (uint32_t)(int)(ent - g_entities),
-        COMMAND_SEND_UNRELIABLE,
-        va("e \"%s\"", localized));
+    trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, va("e \"%s\"", localized));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for direct binary literal status commands. */
 static void game_compat_command_send_literal_status(gentity_t *ent, const char *message)
 {
-    trap_SendServerCommand(
-        (uint32_t)(int)(ent - g_entities),
-        COMMAND_SEND_UNRELIABLE,
-        message);
+    trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, message);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -131,13 +124,8 @@ static qboolean game_compat_command_vote_arg_is_yes(const char arg[VOTE_ARG_BUFF
 }
 
 static const char *gameCommandMessages[] = {
-    "GAME_GC_HOLDYOURPOSITION",
-    "GAME_GC_HOLDTHISPOSITION",
-    "GAME_GC_COMEHERE",
-    "GAME_GC_COVERME",
-    "GAME_GC_GUARDLOCATION",
-    "GAME_GC_SEARCHDESTROY",
-    "GAME_GC_REPORT",
+    "GAME_GC_HOLDYOURPOSITION", "GAME_GC_HOLDTHISPOSITION", "GAME_GC_COMEHERE", "GAME_GC_COVERME",
+    "GAME_GC_GUARDLOCATION",    "GAME_GC_SEARCHDESTROY",    "GAME_GC_REPORT",
 };
 
 /* VERIFIED_DECOMPILER(0x49f58, 59f58_DeathmatchScoreboardMessage.c, VERIFY-CLIENT-COMMANDS-CHEATS-FOG-2026-06-17): DATAFLOW_VERIFIED - scoreboard count clamp, ping fallback, entry formatting, 1024-byte payload cap, team scores, and reliable send checked. */
@@ -159,15 +147,10 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
     for (index = 0; index < count; index++) {
         int clientNum = scoreboardLevel->sortedClients[index];
         gclient_t *client = &level.clients[clientNum];
-        int ping = client->connectedState == SCOREBOARD_CLIENT_CONNECTING
-                       ? -1
-                       : trap_GetClientPing(clientNum);
+        int ping = client->connectedState == SCOREBOARD_CLIENT_CONNECTING ? -1 : trap_GetClientPing(clientNum);
         size_t entryLength;
 
-        Com_sprintf(entry, MAX_STRING_CHARS,
-                    " %i %i %i %i %i",
-                    clientNum, client->score, ping, client->deaths,
-                    client->statusIcon);
+        Com_sprintf(entry, MAX_STRING_CHARS, " %i %i %i %i %i", clientNum, client->score, ping, client->deaths, client->statusIcon);
 
         entryLength = strlen(entry);
         if ((int)(entryLength + (size_t)length) > SCOREBOARD_MESSAGE_LIMIT) {
@@ -178,12 +161,8 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
         length += (int)entryLength;
     }
 
-    trap_SendServerCommand(
-        (uint32_t)(int)(ent - g_entities),
-        COMMAND_SEND_RELIABLE,
-        va("b %i %i %i%s",
-           index, scoreboardLevel->teamScoreAxis, scoreboardLevel->teamScoreAllies,
-           message));
+    trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_RELIABLE,
+                           va("b %i %i %i%s", index, scoreboardLevel->teamScoreAxis, scoreboardLevel->teamScoreAllies, message));
 }
 
 /* VERIFIED_DECOMPILER(0x4a172, 5a172_Cmd_Score_f.c, VERIFY-WAVE3-CLIENT-COMMANDS-STANCE-TEAM-2026-06-17): DATAFLOW_VERIFIED - single DeathmatchScoreboardMessage call and void return checked. */
@@ -196,18 +175,12 @@ void Cmd_Score_f(gentity_t *ent)
 qboolean CheatsOk(gentity_t *ent)
 {
     if (g_cheats.integer == 0) {
-        trap_SendServerCommand(
-            (uint32_t)(int)(ent - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_CHEATSNOTENABLED\""));
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, va("e \"GAME_CHEATSNOTENABLED\""));
         return 0;
     }
 
     if (ent->health < 1) {
-        trap_SendServerCommand(
-            (uint32_t)(int)(ent - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_MUSTBEALIVECOMMAND\""));
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, va("e \"GAME_MUSTBEALIVECOMMAND\""));
         return 0;
     }
 
@@ -264,8 +237,7 @@ void SanitizeString(const char *input, char *output)
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             input++;
             output++;
-            *destination =
-                (char)tolower(coduo_ctype_signed_byte_arg((int)value));
+            *destination = (char)tolower(coduo_ctype_signed_byte_arg((int)value));
         }
     }
 
@@ -282,8 +254,7 @@ int ClientNumberFromString(gentity_t *to, const char *text)
 
         SanitizeString(text, cleanInput);
         client = level.clients;
-        for (int clientNum = 0; clientNum < level.maxclients;
-             clientNum++, client++) {
+        for (int clientNum = 0; clientNum < level.maxclients; clientNum++, client++) {
             if (client->connectedState != CON_CONNECTED) {
                 continue;
             }
@@ -294,27 +265,27 @@ int ClientNumberFromString(gentity_t *to, const char *text)
             }
         }
 
-        trap_SendServerCommand(
-            (uint32_t)(int)(to - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_USERNOTONSERVER\x15" "%s\"", text));
+        trap_SendServerCommand((uint32_t)(int)(to - g_entities), COMMAND_SEND_UNRELIABLE,
+                               va("e \"GAME_USERNOTONSERVER\x15"
+                                  "%s\"",
+                                  text));
         return -1;
     }
 
     int clientNum = atoi(text);
     if (clientNum < 0 || clientNum >= level.maxclients) {
-        trap_SendServerCommand(
-            (uint32_t)(int)(to - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_BADCLIENTSLOT\x15" " %i\"", clientNum));
+        trap_SendServerCommand((uint32_t)(int)(to - g_entities), COMMAND_SEND_UNRELIABLE,
+                               va("e \"GAME_BADCLIENTSLOT\x15"
+                                  " %i\"",
+                                  clientNum));
         return -1;
     }
 
     if (level.clients[clientNum].connectedState != CON_CONNECTED) {
-        trap_SendServerCommand(
-            (uint32_t)(int)(to - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_CLIENTNOTACTIVE\x15" "%i\"", clientNum));
+        trap_SendServerCommand((uint32_t)(int)(to - g_entities), COMMAND_SEND_UNRELIABLE,
+                               va("e \"GAME_CLIENTNOTACTIVE\x15"
+                                  "%i\"",
+                                  clientNum));
         return -1;
     }
 
@@ -331,9 +302,7 @@ void G_setfog(const char *fog)
     level.fogOpaqueDist = FLT_MAX;
     level.fogOpaqueDistSq = FLT_MAX;
 
-    if (sscanf(fog, "%f %f %f %f %f %f %f",
-               &values[0], &values[1], &values[2], &values[3], &values[4],
-               &values[5], &values[6]) == 7 &&
+    if (sscanf(fog, "%f %f %f %f %f %f %f", &values[0], &values[1], &values[2], &values[3], &values[4], &values[5], &values[6]) == 7 &&
         values[2] >= 1.0f) {
         level.fogOpaqueDist = (values[1] - values[0]) + values[0];
         level.fogOpaqueDistSq = level.fogOpaqueDist * level.fogOpaqueDist;
@@ -353,16 +322,14 @@ static void game_compat_command_take_weapon_ammo(gclient_t *client, int weapon, 
     int clipIndex;
     int32_t negativeAmmo;
 
-    client->ps.ammo[ammoIndex] = coduo_int32_from_bits(
-        (uint32_t)client->ps.ammo[ammoIndex] - (uint32_t)amount);
+    client->ps.ammo[ammoIndex] = coduo_int32_from_bits((uint32_t)client->ps.ammo[ammoIndex] - (uint32_t)amount);
     if (client->ps.ammo[BG_AmmoForWeapon(weapon)] >= 0) {
         return;
     }
 
     clipIndex = BG_ClipForWeapon(weapon);
     negativeAmmo = client->ps.ammo[BG_AmmoForWeapon(weapon)];
-    client->ps.clips[clipIndex] = coduo_int32_from_bits(
-        (uint32_t)client->ps.clips[clipIndex] + (uint32_t)negativeAmmo);
+    client->ps.clips[clipIndex] = coduo_int32_from_bits((uint32_t)client->ps.clips[clipIndex] + (uint32_t)negativeAmmo);
     client->ps.ammo[BG_AmmoForWeapon(weapon)] = 0;
 
     if (client->ps.clips[BG_ClipForWeapon(weapon)] < 0) {
@@ -399,10 +366,7 @@ static void game_compat_command_take_all_weapons(gentity_t *ent)
 
     if (client->ps.currentWeapon != 0) {
         client->ps.currentWeapon = 0;
-        trap_SendServerCommand(
-            (uint32_t)(int)(ent - g_entities),
-            COMMAND_SEND_RELIABLE,
-            "a 0");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_RELIABLE, "a 0");
     }
 }
 
@@ -469,8 +433,7 @@ void Cmd_Give_f(gentity_t *ent)
         if (amount == 0) {
             ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
         } else {
-            ent->health = coduo_int32_from_bits(
-                (uint32_t)ent->health + (uint32_t)amount);
+            ent->health = coduo_int32_from_bits((uint32_t)ent->health + (uint32_t)amount);
         }
 
         if (!all) {
@@ -538,8 +501,7 @@ void Cmd_Take_f(gentity_t *ent)
         if (amount == 0) {
             ent->health = 1;
         } else {
-            ent->health = coduo_int32_from_bits(
-                (uint32_t)ent->health - (uint32_t)amount);
+            ent->health = coduo_int32_from_bits((uint32_t)ent->health - (uint32_t)amount);
             if (ent->health < 1) {
                 ent->health = 1;
             }
@@ -717,8 +679,7 @@ void StopFollowing(gentity_t *ent)
         end[axis] = end[axis] + up[axis] * STOPFOLLOW_UP_OFFSET;
     }
 
-    trap_TraceCapsule(&trace, origin, mins, maxs, end, ENTITYNUM_NONE,
-                      STOPFOLLOW_TRACE_MASK);
+    trap_TraceCapsule(&trace, origin, mins, maxs, end, ENTITYNUM_NONE, STOPFOLLOW_TRACE_MASK);
 
     origin[0] = trace.endpos[0];
     origin[1] = trace.endpos[1];
@@ -754,8 +715,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int direction)
         G_Error("Cmd_FollowCycle_f: bad dir %i", direction);
     }
 
-    if (ent->client->sessionState != SESS_STATE_SPECTATOR ||
-        ent->client->followClient >= 0) {
+    if (ent->client->sessionState != SESS_STATE_SPECTATOR || ent->client->followClient >= 0) {
         return 0;
     }
 
@@ -774,8 +734,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int direction)
             clientNum = level.maxclients - 1;
         }
 
-        if (trap_GetArchivedClientInfo(clientNum, &ent->client->archiveTime,
-                                       &archivedPlayerState, &archiveMeta) &&
+        if (trap_GetArchivedClientInfo(clientNum, &ent->client->archiveTime, &archivedPlayerState, &archiveMeta) &&
             G_ClientCanSpectateTeam(ent->client, archiveMeta.team)) {
             ent->client->archiveClient = clientNum;
             ent->client->sessionState = SESS_STATE_SPECTATOR;
@@ -798,16 +757,13 @@ qboolean Cmd_Killcam_f(gentity_t *ent)
     if (seconds < 1) {
         seconds = DEFAULT_KILLCAM_SECONDS;
     }
-    archiveMsec = coduo_int32_from_bits(
-        (uint32_t)seconds * (uint32_t)KILLCAM_MS_PER_SECOND);
+    archiveMsec = coduo_int32_from_bits((uint32_t)seconds * (uint32_t)KILLCAM_MS_PER_SECOND);
 
     ent->client->followClient = ent->s.clientNum;
     ent->client->archiveClient = ent->s.clientNum;
     ent->client->archiveTime = archiveMsec;
     ent->client->sessionState = SESS_STATE_SPECTATOR;
-    trap_SendServerCommand((uint32_t)ent->s.clientNum,
-                           COMMAND_SEND_UNRELIABLE,
-                           va("C %i", archiveMsec));
+    trap_SendServerCommand((uint32_t)ent->s.clientNum, COMMAND_SEND_UNRELIABLE, va("C %i", archiveMsec));
     return 1;
 }
 
@@ -859,29 +815,20 @@ gentity_t *Team_GetLocation(gentity_t *ent)
     origin[1] = ent->currentOrigin[1];
     origin[2] = ent->currentOrigin[2];
 
-    for (gentity_t *location = level.targetLocationHead; location != NULL;
-         location = location->targetLocationNext) {
+    for (gentity_t *location = level.targetLocationHead; location != NULL; location = location->targetLocationNext) {
         /* The binary keeps each axis delta in the x87 stack (recomputing it
          * for both factors) and rounds only the final sum (0x75d20..0x75d6f);
          * float delta temporaries would add roundings it does not perform. */
-        float distanceSquared = (float)(
-            ((long double)origin[0] -
-             (long double)location->currentOrigin[0]) *
-                ((long double)origin[0] -
-                 (long double)location->currentOrigin[0]) +
-            ((long double)origin[1] -
-             (long double)location->currentOrigin[1]) *
-                ((long double)origin[1] -
-                 (long double)location->currentOrigin[1]) +
-            ((long double)origin[2] -
-             (long double)location->currentOrigin[2]) *
-                ((long double)origin[2] -
-                 (long double)location->currentOrigin[2]));
+        float distanceSquared = (float)(((long double)origin[0] - (long double)location->currentOrigin[0]) *
+                                            ((long double)origin[0] - (long double)location->currentOrigin[0]) +
+                                        ((long double)origin[1] - (long double)location->currentOrigin[1]) *
+                                            ((long double)origin[1] - (long double)location->currentOrigin[1]) +
+                                        ((long double)origin[2] - (long double)location->currentOrigin[2]) *
+                                            ((long double)origin[2] - (long double)location->currentOrigin[2]));
 
         /* 0x75d72..0x75d81 rejects only ordered greater-than; unordered
          * values continue to the PVS call. */
-        if (!(distanceSquared > bestDistanceSquared) &&
-            trap_InPVS(origin, location->currentOrigin) != qfalse) {
+        if (!(distanceSquared > bestDistanceSquared) && trap_InPVS(origin, location->currentOrigin) != qfalse) {
             bestDistanceSquared = distanceSquared;
             bestLocation = location;
         }
@@ -902,8 +849,7 @@ int Team_GetLocationMsg(gentity_t *ent, char *buffer, int bufferSize)
 
     color = &location->itemCount;
     if (*color == 0) {
-        const char *locationName =
-            SL_ConvertToString(location->targetLocationMessage);
+        const char *locationName = SL_ConvertToString(location->targetLocationMessage);
 
         Com_sprintf(buffer, bufferSize, "\x14%s\x15", locationName);
     } else {
@@ -917,10 +863,7 @@ int Team_GetLocationMsg(gentity_t *ent, char *buffer, int bufferSize)
         }
 
         locationName = SL_ConvertToString(location->targetLocationMessage);
-        Com_sprintf(buffer, bufferSize, "\x15%c%c\x14%s\x15^7",
-                    SAY_COLOR_ESCAPE,
-                    *color + TARGET_LOCATION_COLOR_BASE,
-                    locationName);
+        Com_sprintf(buffer, bufferSize, "\x15%c%c\x14%s\x15^7", SAY_COLOR_ESCAPE, *color + TARGET_LOCATION_COLOR_BASE, locationName);
     }
 
     return 1;
@@ -949,49 +892,31 @@ void TeamplayInfoMessage(gentity_t *ent)
         start[0] = muzzle.origin[0];
         start[1] = muzzle.origin[1];
         start[2] = muzzle.origin[2];
-        end[0] = (float)((long double)muzzle.forward[0] *
-                             TEAM_STATUS_TRACE_DISTANCE +
-                         (long double)muzzle.origin[0]);
-        end[1] = (float)((long double)muzzle.forward[1] *
-                             TEAM_STATUS_TRACE_DISTANCE +
-                         (long double)muzzle.origin[1]);
-        end[2] = (float)((long double)muzzle.forward[2] *
-                             TEAM_STATUS_TRACE_DISTANCE +
-                         (long double)muzzle.origin[2]);
+        end[0] = (float)((long double)muzzle.forward[0] * TEAM_STATUS_TRACE_DISTANCE + (long double)muzzle.origin[0]);
+        end[1] = (float)((long double)muzzle.forward[1] * TEAM_STATUS_TRACE_DISTANCE + (long double)muzzle.origin[1]);
+        end[2] = (float)((long double)muzzle.forward[2] * TEAM_STATUS_TRACE_DISTANCE + (long double)muzzle.origin[2]);
     } else {
         vec3_t forward;
 
         AngleVectors(client->ps.viewAngles, forward, NULL, NULL);
         CalcMuzzlePoint(ent, start);
         if (client->ps.viewHeightCurrent < TEAM_STATUS_MIN_VIEWHEIGHT) {
-            start[2] = (float)(
-                ((long double)TEAM_STATUS_MIN_VIEWHEIGHT -
-                 (long double)client->ps.viewHeightCurrent) +
-                (long double)start[2]);
+            start[2] =
+                (float)(((long double)TEAM_STATUS_MIN_VIEWHEIGHT - (long double)client->ps.viewHeightCurrent) + (long double)start[2]);
         }
 
-        end[0] = (float)((long double)forward[0] *
-                             TEAM_STATUS_TRACE_DISTANCE +
-                         (long double)start[0]);
-        end[1] = (float)((long double)forward[1] *
-                             TEAM_STATUS_TRACE_DISTANCE +
-                         (long double)start[1]);
-        end[2] = (float)((long double)forward[2] *
-                             TEAM_STATUS_TRACE_DISTANCE +
-                         (long double)start[2]);
+        end[0] = (float)((long double)forward[0] * TEAM_STATUS_TRACE_DISTANCE + (long double)start[0]);
+        end[1] = (float)((long double)forward[1] * TEAM_STATUS_TRACE_DISTANCE + (long double)start[1]);
+        end[2] = (float)((long double)forward[2] * TEAM_STATUS_TRACE_DISTANCE + (long double)start[2]);
     }
 
-    trap_Trace(&trace, start, vec3_origin, vec3_origin, end,
-               client->ps.psClientNum, TEAM_STATUS_TRACE_MASK);
+    trap_Trace(&trace, start, vec3_origin, vec3_origin, end, client->ps.psClientNum, TEAM_STATUS_TRACE_MASK);
 
     targetNum = (uint16_t)trace.entityNum;
     if (targetNum < TEAM_STATUS_MAX_TARGETS) {
         gentity_t *target = &g_entities[(int)targetNum];
 
-        if (target->client != NULL &&
-            (G_IsPlaying(ent) == 0 ||
-             (uint16_t)target->teamName ==
-                 (uint16_t)ent->teamName)) {
+        if (target->client != NULL && (G_IsPlaying(ent) == 0 || (uint16_t)target->teamName == (uint16_t)ent->teamName)) {
             targetLocation = target->health;
         } else {
             targetNum = UINT32_MAX;
@@ -1011,8 +936,7 @@ void CheckTeamStatus(void)
 {
     level_locals_t *lvl = &level;
 
-    if (coduo_int32_from_bits((uint32_t)lvl->time -
-                                    (uint32_t)lvl->teamStatusTime) <= 0) {
+    if (coduo_int32_from_bits((uint32_t)lvl->time - (uint32_t)lvl->teamStatusTime) <= 0) {
         return;
     }
 
@@ -1020,8 +944,7 @@ void CheckTeamStatus(void)
     for (int clientNum = 0; clientNum < g_maxclients.integer; clientNum++) {
         gentity_t *ent = &g_entities[clientNum];
 
-        if (ent->linked != 0 &&
-            (ent->client->ps.playerStateFlags & PSF_FOLLOWING) == 0) {
+        if (ent->linked != 0 && (ent->client->ps.playerStateFlags & PSF_FOLLOWING) == 0) {
             TeamplayInfoMessage(ent);
         }
     }
@@ -1030,13 +953,11 @@ void CheckTeamStatus(void)
 }
 
 /* VERIFIED_DECOMPILER(0x4b80b, 5b80b_FUN_0005b80b.c, VERIFY-CLIENT-COMMANDS-CHAT-TEAM-2026-06-17): DATAFLOW_VERIFIED - recipient eligibility, team/squad filters, dead-chat gate, command selection, prefix/color/message send arguments, and unreliable send checked. */
-void G_SayTo(gentity_t *ent, gentity_t *other, int mode, char color,
-             const char *prefix, const char *message)
+void G_SayTo(gentity_t *ent, gentity_t *other, int mode, char color, const char *prefix, const char *message)
 {
     const char *command;
 
-    if (other == NULL || other->linked == 0 || other->client == NULL ||
-        other->client->connectedState != CON_CONNECTED) {
+    if (other == NULL || other->linked == 0 || other->client == NULL || other->client->connectedState != CON_CONNECTED) {
         return;
     }
 
@@ -1048,18 +969,13 @@ void G_SayTo(gentity_t *ent, gentity_t *other, int mode, char color,
         return;
     }
 
-    if (g_deadChat.integer == 0 &&
-        G_IsPlaying(ent) == 0 &&
-        G_IsPlaying(other) != 0) {
+    if (g_deadChat.integer == 0 && G_IsPlaying(ent) == 0 && G_IsPlaying(other) != 0) {
         return;
     }
 
     command = mode == SAY_MODE_TEAM ? SAY_COMMAND_TEAM : SAY_COMMAND_ALL;
-    trap_SendServerCommand(
-        (uint32_t)(int)(other - g_entities),
-        COMMAND_SEND_UNRELIABLE,
-        va("%s \"\x15%s%c%c%s\"",
-           command, prefix, SAY_COLOR_ESCAPE, color, message));
+    trap_SendServerCommand((uint32_t)(int)(other - g_entities), COMMAND_SEND_UNRELIABLE,
+                           va("%s \"\x15%s%c%c%s\"", command, prefix, SAY_COLOR_ESCAPE, color, message));
 }
 
 /* VERIFIED_DECOMPILER(0x4b949, 5b949_G_Say.c, VERIFY-CLIENT-COMMANDS-CHAT-TEAM-2026-06-17): DATAFLOW_VERIFIED - mode fallback, clean name, team/dead prefixes, log formats, location prefixes, text copy, dedicated print, fanout, and target send checked. */
@@ -1075,13 +991,9 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *message)
     const char *squadName;
     char color;
 
-    if (mode == SAY_MODE_TEAM &&
-        ent->client->sessionTeam != TEAM_AXIS &&
-        ent->client->sessionTeam != TEAM_ALLIES) {
+    if (mode == SAY_MODE_TEAM && ent->client->sessionTeam != TEAM_AXIS && ent->client->sessionTeam != TEAM_ALLIES) {
         mode = SAY_MODE_ALL;
-    } else if (mode == SAY_MODE_SQUAD &&
-               ent->client->sessionSquad != SESS_SQUAD_ALPHA &&
-               ent->client->sessionSquad != SESS_SQUAD_BRAVO) {
+    } else if (mode == SAY_MODE_SQUAD && ent->client->sessionSquad != SESS_SQUAD_ALPHA && ent->client->sessionSquad != SESS_SQUAD_BRAVO) {
         mode = SAY_MODE_TEAM;
     }
 
@@ -1097,82 +1009,56 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *message)
     }
 
     if (ent->client->sessionTeam == TEAM_SPECTATOR) {
-        Com_sprintf(namePrefix, SAY_NAME_BUFFER_SIZE,
-                    "\x15(\x14GAME_SPECTATOR\x15)");
+        Com_sprintf(namePrefix, SAY_NAME_BUFFER_SIZE, "\x15(\x14GAME_SPECTATOR\x15)");
     } else if (ent->client->sessionState == SESS_STATE_PLAYING) {
-        Com_sprintf(namePrefix, SAY_NAME_BUFFER_SIZE,
-                    "\x15%s", teamColor);
+        Com_sprintf(namePrefix, SAY_NAME_BUFFER_SIZE, "\x15%s", teamColor);
     } else {
-        Com_sprintf(namePrefix, SAY_NAME_BUFFER_SIZE,
-                    "\x15%s(\x14GAME_DEAD\x15)", teamColor);
+        Com_sprintf(namePrefix, SAY_NAME_BUFFER_SIZE, "\x15%s(\x14GAME_DEAD\x15)", teamColor);
     }
 
     if (mode == SAY_MODE_TEAM) {
         int senderGuid;
 
-        teamName = ent->client->sessionTeam == TEAM_AXIS
-                       ? "GAME_AXIS"
-                       : "GAME_ALLIES";
+        teamName = ent->client->sessionTeam == TEAM_AXIS ? "GAME_AXIS" : "GAME_ALLIES";
         senderGuid = trap_GetGuid((uint32_t)ent->s.number);
-        G_LogPrintf("sayteam;%d;%d;%s;%s\n",
-                    senderGuid, ent->s.number, cleanName, message);
+        G_LogPrintf("sayteam;%d;%d;%s;%s\n", senderGuid, ent->s.number, cleanName, message);
 
         if (Team_GetLocationMsg(ent, location, SAY_LOCATION_BUFFER_SIZE) == 0) {
-            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                        "%s(\x14%s\x15)%s%s: ",
-                        namePrefix, teamName, cleanName, SAY_COLOR_RESET);
+            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s(\x14%s\x15)%s%s: ", namePrefix, teamName, cleanName, SAY_COLOR_RESET);
         } else {
-            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                        "%s(\x14%s\x15)%s%s (\x14%s\x15): ",
-                        namePrefix, teamName, cleanName, SAY_COLOR_RESET,
-                        location);
+            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s(\x14%s\x15)%s%s (\x14%s\x15): ", namePrefix, teamName, cleanName,
+                        SAY_COLOR_RESET, location);
         }
         color = SAY_COLOR_TEAM;
     } else if (mode == SAY_MODE_TELL) {
-        if (target == NULL || target->client == NULL ||
-            target->client->sessionTeam != ent->client->sessionTeam ||
+        if (target == NULL || target->client == NULL || target->client->sessionTeam != ent->client->sessionTeam ||
             Team_GetLocationMsg(ent, location, SAY_LOCATION_BUFFER_SIZE) == 0) {
-            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                        "%s[%s]%s: ",
-                        namePrefix, cleanName, SAY_COLOR_RESET);
+            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s[%s]%s: ", namePrefix, cleanName, SAY_COLOR_RESET);
         } else {
-            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                        "%s[%s]%s (%s): ",
-                        namePrefix, cleanName, SAY_COLOR_RESET, location);
+            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s[%s]%s (%s): ", namePrefix, cleanName, SAY_COLOR_RESET, location);
         }
         color = SAY_COLOR_TELL;
     } else if (mode == SAY_MODE_SQUAD) {
         int senderGuid;
 
-        teamName = ent->client->sessionTeam == TEAM_AXIS
-                       ? "GAME_AXIS"
-                       : "GAME_ALLIES";
-        squadName = ent->client->sessionSquad == SESS_SQUAD_ALPHA
-                        ? "PATCH_1_5_SQUADALPHA"
-                        : "PATCH_1_5_SQUADBRAVO";
+        teamName = ent->client->sessionTeam == TEAM_AXIS ? "GAME_AXIS" : "GAME_ALLIES";
+        squadName = ent->client->sessionSquad == SESS_SQUAD_ALPHA ? "PATCH_1_5_SQUADALPHA" : "PATCH_1_5_SQUADBRAVO";
         senderGuid = trap_GetGuid((uint32_t)ent->s.number);
-        G_LogPrintf("saysquad;%d;%d;%s;%s\n",
-                    senderGuid, ent->s.number, cleanName, message);
+        G_LogPrintf("saysquad;%d;%d;%s;%s\n", senderGuid, ent->s.number, cleanName, message);
 
         if (Team_GetLocationMsg(ent, location, SAY_LOCATION_BUFFER_SIZE) == 0) {
-            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                        "%s(\x14%s\x15 \x14%s\x15)%s%s: ",
-                        namePrefix, teamName, squadName, cleanName,
-                        SAY_COLOR_RESET);
+            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s(\x14%s\x15 \x14%s\x15)%s%s: ", namePrefix, teamName, squadName,
+                        cleanName, SAY_COLOR_RESET);
         } else {
-            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                        "%s(\x14%s\x15 \x14%s\x15)%s%s (\x14%s\x15): ",
-                        namePrefix, teamName, squadName, cleanName,
-                        SAY_COLOR_RESET, location);
+            Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s(\x14%s\x15 \x14%s\x15)%s%s (\x14%s\x15): ", namePrefix, teamName,
+                        squadName, cleanName, SAY_COLOR_RESET, location);
         }
         color = SAY_COLOR_TEAM;
     } else {
         int senderGuid = trap_GetGuid((uint32_t)ent->s.number);
 
-        G_LogPrintf("say;%d;%d;%s;%s\n",
-                    senderGuid, ent->s.number, cleanName, message);
-        Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE,
-                    "%s%s%s: ", namePrefix, cleanName, SAY_COLOR_RESET);
+        G_LogPrintf("say;%d;%d;%s;%s\n", senderGuid, ent->s.number, cleanName, message);
+        Com_sprintf(messagePrefix, SAY_PREFIX_BUFFER_SIZE, "%s%s%s: ", namePrefix, cleanName, SAY_COLOR_RESET);
         color = SAY_COLOR_ALL;
     }
 
@@ -1184,8 +1070,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *message)
         }
 
         for (int clientNum = 0; clientNum < level.maxclients; clientNum++) {
-            G_SayTo(ent, &g_entities[clientNum], mode, color,
-                    messagePrefix, text);
+            G_SayTo(ent, &g_entities[clientNum], mode, color, messagePrefix, text);
         }
     } else {
         G_SayTo(ent, target, mode, color, messagePrefix, text);
@@ -1218,14 +1103,12 @@ void Cmd_Voice_f(gentity_t *ent)
 }
 
 /* VERIFIED_DECOMPILER(0x4c2da, 5c2da_FUN_0005c2da.c, VERIFY-CLIENT-COMMANDS-CHAT-TEAM-2026-06-17): DATAFLOW_VERIFIED - recipient eligibility, team filter, command/color selection, voice number, sender number, rounded origin, and unreliable send checked. */
-void G_VoiceTo(gentity_t *ent, gentity_t *other, int mode, const char *voice,
-               int voiceNumber)
+void G_VoiceTo(gentity_t *ent, gentity_t *other, int mode, const char *voice, int voiceNumber)
 {
     const char *command;
     char color;
 
-    if (other == NULL || other->linked == 0 || other->client == NULL ||
-        other->client->connectedState != CON_CONNECTED) {
+    if (other == NULL || other->linked == 0 || other->client == NULL || other->client->connectedState != CON_CONNECTED) {
         return;
     }
 
@@ -1244,14 +1127,11 @@ void G_VoiceTo(gentity_t *ent, gentity_t *other, int mode, const char *voice,
         color = SAY_COLOR_VOICE_ALL;
     }
 
-    trap_SendServerCommand(
-        (uint32_t)(int)(other - g_entities),
-        COMMAND_SEND_UNRELIABLE,
-        va("%s %d %d %d %s %i %i %i",
-           command, voiceNumber, ent->s.number, color, voice,
-           game_compat_int32_from_float_trunc(ent->currentOrigin[0]),
-           game_compat_int32_from_float_trunc(ent->currentOrigin[1]),
-           game_compat_int32_from_float_trunc(ent->currentOrigin[2])));
+    trap_SendServerCommand((uint32_t)(int)(other - g_entities), COMMAND_SEND_UNRELIABLE,
+                           va("%s %d %d %d %s %i %i %i", command, voiceNumber, ent->s.number, color, voice,
+                              game_compat_int32_from_float_trunc(ent->currentOrigin[0]),
+                              game_compat_int32_from_float_trunc(ent->currentOrigin[1]),
+                              game_compat_int32_from_float_trunc(ent->currentOrigin[2])));
 }
 
 /* VERIFIED_DECOMPILER(0x4c431, 5c431_G_Voice.c, VERIFY-CLIENT-COMMANDS-FULL-AUDIT-2026-07-01): DATAFLOW_VERIFIED - empty original voice broadcast stub checked. */
@@ -1295,10 +1175,7 @@ void Cmd_Tell_f(gentity_t *ent)
 
     targetGuid = trap_GetGuid((uint32_t)target->s.number);
     senderGuid = trap_GetGuid((uint32_t)ent->s.number);
-    G_LogPrintf("tell;%d;%d;%s;%d;%d;%s;%s\n",
-                senderGuid, ent->s.number, senderName,
-                targetGuid, target->s.number, targetName,
-                message);
+    G_LogPrintf("tell;%d;%d;%s;%d;%d;%s;%s\n", senderGuid, ent->s.number, senderName, targetGuid, target->s.number, targetName, message);
 
     G_Say(ent, target, TELL_MODE, message);
     G_Say(ent, ent, TELL_MODE, message);
@@ -1321,10 +1198,8 @@ void Cmd_GameCommand_f(gentity_t *ent)
     trap_Argv(2, arg, MAX_STRING_CHARS);
     commandIndex = atoi(arg);
 
-    if (clientNum < 0 || clientNum >= level.maxclients ||
-        commandIndex < 0 ||
-        commandIndex >= (int)(sizeof(gameCommandMessages) /
-                              sizeof(gameCommandMessages[0]))) {
+    if (clientNum < 0 || clientNum >= level.maxclients || commandIndex < 0 ||
+        commandIndex >= (int)(sizeof(gameCommandMessages) / sizeof(gameCommandMessages[0]))) {
         return;
     }
 
@@ -1340,10 +1215,7 @@ void Cmd_GameCommand_f(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x4c56e, 5c56e_Cmd_Where_f.c, VERIFY-WAVE3-CLIENT-COMMANDS-STANCE-TEAM-2026-06-17): DATAFLOW_VERIFIED - currentOrigin vtos formatting and unreliable SendServerCommand target checked. */
 void Cmd_Where_f(gentity_t *ent)
 {
-    trap_SendServerCommand(
-        (uint32_t)(int)(ent - g_entities),
-        COMMAND_SEND_UNRELIABLE,
-        va("e \"\x15%s\n\"", vtos(ent->currentOrigin)));
+    trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, va("e \"\x15%s\n\"", vtos(ent->currentOrigin)));
 }
 
 /* VERIFIED_DECOMPILER(0x4dea0, 5dea0_Cmd_SetViewpos_f.c, VERIFY-CLIENT-COMMANDS-REMAINING-2026-06-17): DATAFLOW_VERIFIED - cheat/argc gates, argv parsing, zeroed pitch/roll, yaw store, TeleportPlayer arguments, and command errors checked. */
@@ -1354,18 +1226,13 @@ void Cmd_SetViewpos_f(gentity_t *ent)
     vec3_t angles = {0.0f, 0.0f, 0.0f};
 
     if (g_cheats.integer == 0) {
-        trap_SendServerCommand(
-            (uint32_t)(int)(ent - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_CHEATSNOTENABLED\""));
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, va("e \"GAME_CHEATSNOTENABLED\""));
         return;
     }
 
     if (trap_Argc() != 5) {
-        trap_SendServerCommand(
-            (uint32_t)(int)(ent - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            va("e \"GAME_USAGE\x15: setviewpos x y z yaw\""));
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                               va("e \"GAME_USAGE\x15: setviewpos x y z yaw\""));
         return;
     }
 
@@ -1392,8 +1259,7 @@ void Cmd_EntityCount_f(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x4ed9b, 5ed9b_Cmd_NextVehSlot_f.c, VERIFY-CLIENT-COMMANDS-REMAINING-2026-06-17): DATAFLOW_VERIFIED - vehicle-occupant flag, positive-health gate, G_VEH_CycleSlot(ent, 0), and void return checked. */
 void Cmd_NextVehSlot_f(gentity_t *ent)
 {
-    if ((ent->s.eFlags & ENTITY_FLAG_VEHICLE_OCCUPANT) != 0 &&
-        ent->health > 0) {
+    if ((ent->s.eFlags & ENTITY_FLAG_VEHICLE_OCCUPANT) != 0 && ent->health > 0) {
         G_VEH_CycleSlot(ent, 0);
     }
 }
@@ -1401,8 +1267,7 @@ void Cmd_NextVehSlot_f(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x4ede1, 5ede1_Cmd_PrevVehSlot_f.c, VERIFY-CLIENT-COMMANDS-REMAINING-2026-06-17): DATAFLOW_VERIFIED - vehicle-occupant flag, positive-health gate, G_VEH_CycleSlot(ent, 1), and void return checked. */
 void Cmd_PrevVehSlot_f(gentity_t *ent)
 {
-    if ((ent->s.eFlags & ENTITY_FLAG_VEHICLE_OCCUPANT) != 0 &&
-        ent->health > 0) {
+    if ((ent->s.eFlags & ENTITY_FLAG_VEHICLE_OCCUPANT) != 0 && ent->health > 0) {
         G_VEH_CycleSlot(ent, 1);
     }
 }
@@ -1451,12 +1316,8 @@ void Cmd_MenuResponse_f(gentity_t *ent)
 
         trap_Argv(2, menu, MAX_STRING_CHARS);
         menuIndex = atoi(menu);
-        if (menuIndex >= 0 &&
-            menuIndex < MENU_RESPONSE_CONFIGSTRING_COUNT) {
-            trap_GetConfigstring(
-                menuIndex + MENU_RESPONSE_CONFIGSTRING_BASE,
-                menu,
-                MAX_STRING_CHARS);
+        if (menuIndex >= 0 && menuIndex < MENU_RESPONSE_CONFIGSTRING_COUNT) {
+            trap_GetConfigstring(menuIndex + MENU_RESPONSE_CONFIGSTRING_BASE, menu, MAX_STRING_CHARS);
         }
 
         trap_Argv(3, response, MAX_STRING_CHARS);
@@ -1489,9 +1350,7 @@ static void game_compat_command_handle_complaint_vote(gentity_t *ent, char arg[V
     }
 
     if (targetClient->complaintDisabled != 0) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_RELIABLE,
-                               "m -3");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_RELIABLE, "m -3");
         return;
     }
 
@@ -1501,32 +1360,20 @@ static void game_compat_command_handle_complaint_vote(gentity_t *ent, char arg[V
     if (game_compat_command_vote_arg_is_yes(arg)) {
         int warningsLeft;
 
-        targetClient->complaintCount = coduo_int32_from_bits(
-            (uint32_t)targetClient->complaintCount + UINT32_C(1));
-        warningsLeft = coduo_int32_from_bits(
-            (uint32_t)g_complaintlimit.integer -
-            (uint32_t)targetClient->complaintCount);
+        targetClient->complaintCount = coduo_int32_from_bits((uint32_t)targetClient->complaintCount + UINT32_C(1));
+        warningsLeft = coduo_int32_from_bits((uint32_t)g_complaintlimit.integer - (uint32_t)targetClient->complaintCount);
         if (warningsLeft < 1 && targetClient->complaintDisabled == 0) {
-            trap_DropClient((int)(targetClient - level.clients),
-                            "GAME_KICKEDFROMCOMPLAINTS");
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_RELIABLE,
-                                   "m -1");
+            trap_DropClient((int)(targetClient - level.clients), "GAME_KICKEDFROMCOMPLAINTS");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_RELIABLE, "m -1");
         } else {
-            trap_SendServerCommand(
-                (uint32_t)targetClient->ps.psClientNum,
-                COMMAND_SEND_UNRELIABLE,
-                va("e \"\x15^1\x14GAME_WARNING\x15^7: "
-                   "\x14GAME_COMPLAINTFILEDAGAINST\x15%d\"",
-                   warningsLeft));
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_RELIABLE,
-                                   "m -1");
+            trap_SendServerCommand((uint32_t)targetClient->ps.psClientNum, COMMAND_SEND_UNRELIABLE,
+                                   va("e \"\x15^1\x14GAME_WARNING\x15^7: "
+                                      "\x14GAME_COMPLAINTFILEDAGAINST\x15%d\"",
+                                      warningsLeft));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_RELIABLE, "m -1");
         }
     } else {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_RELIABLE,
-                               "m -2");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_RELIABLE, "m -2");
     }
 }
 
@@ -1539,25 +1386,21 @@ static qboolean game_compat_command_callvote_arg_hits_stock_binary_reject(const 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for friendlyfire vote argument whitelist. */
 static qboolean game_compat_command_callvote_arg_is_friendlyfire_value(const char *value)
 {
-    return Q_stricmp(value, "0") == 0 || Q_stricmp(value, "1") == 0 ||
-           Q_stricmp(value, "2") == 0 || Q_stricmp(value, "3") == 0;
+    return Q_stricmp(value, "0") == 0 || Q_stricmp(value, "1") == 0 || Q_stricmp(value, "2") == 0 || Q_stricmp(value, "3") == 0;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for kick/temp-ban target resolution. */
-static int game_compat_command_callvote_client_from_arg(const char *command,
-                                            const char *arg,
-                                            char cleanName[CALLVOTE_CLIENT_NAME_BUFFER_SIZE])
+static int game_compat_command_callvote_client_from_arg(const char *command, const char *arg,
+                                                        char cleanName[CALLVOTE_CLIENT_NAME_BUFFER_SIZE])
 {
     int clientNum = SCOREBOARD_MAX_CLIENTS;
 
-    if (Q_stricmp(command, "kick") == 0 ||
-        Q_stricmp(command, "tempBanUser") == 0) {
+    if (Q_stricmp(command, "kick") == 0 || Q_stricmp(command, "tempBanUser") == 0) {
         int index;
 
         for (index = 0; index < SCOREBOARD_MAX_CLIENTS; index++) {
             if (level.clients[index].connectedState == CON_CONNECTED) {
-                Q_strncpyz(cleanName, level.clients[index].userInfoName,
-                           CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
+                Q_strncpyz(cleanName, level.clients[index].userInfoName, CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
                 Q_CleanStr(cleanName);
                 if (Q_stricmp(cleanName, arg) == 0) {
                     clientNum = index;
@@ -1566,13 +1409,11 @@ static int game_compat_command_callvote_client_from_arg(const char *command,
         }
     } else {
         clientNum = atoi(arg);
-        if ((clientNum == 0 && Q_stricmp(arg, "0") != 0) || clientNum < 0 ||
-            clientNum >= SCOREBOARD_MAX_CLIENTS ||
+        if ((clientNum == 0 && Q_stricmp(arg, "0") != 0) || clientNum < 0 || clientNum >= SCOREBOARD_MAX_CLIENTS ||
             level.clients[clientNum].connectedState != CON_CONNECTED) {
             clientNum = SCOREBOARD_MAX_CLIENTS;
         } else {
-            Q_strncpyz(cleanName, level.clients[clientNum].userInfoName,
-                       CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
+            Q_strncpyz(cleanName, level.clients[clientNum].userInfoName, CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
             Q_CleanStr(cleanName);
         }
     }
@@ -1581,8 +1422,7 @@ static int game_compat_command_callvote_client_from_arg(const char *command,
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for callvote command allow-cvar dispatch. */
-static qboolean game_compat_command_callvote_allowed_cvar(const char *command,
-                                              int *allowVote)
+static qboolean game_compat_command_callvote_allowed_cvar(const char *command, int *allowVote)
 {
     if (Q_stricmp(command, "map_restart") == 0) {
         *allowVote = g_allowVoteMapRestart.integer;
@@ -1659,14 +1499,12 @@ void Cmd_CallVote_f(gentity_t *ent)
 
     if (!game_compat_command_callvote_allowed_cvar(command, &allowVote)) {
         game_compat_command_send_literal_status(ent, "e \"GAME_INVALIDVOTESTRING\"");
-        trap_SendServerCommand(
-            (uint32_t)(int)(ent - g_entities),
-            COMMAND_SEND_UNRELIABLE,
-            "e \"GAME_VOTECOMMANDSARE\x15 map_restart, map_rotate, map "
-            "<mapname>, g_gametype <typename>, typemap <typename> <mapname>, "
-            "kick <player>, clientkick <clientnum>, tempBanUser <player>, "
-            "tempBanClient <clientNum>, drawfriend <value>, killcam <value>, "
-            "friendlyfire <value>\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                               "e \"GAME_VOTECOMMANDSARE\x15 map_restart, map_rotate, map "
+                               "<mapname>, g_gametype <typename>, typemap <typename> <mapname>, "
+                               "kick <player>, clientkick <clientnum>, tempBanUser <player>, "
+                               "tempBanClient <clientNum>, drawfriend <value>, killcam <value>, "
+                               "friendlyfire <value>\"");
         return;
     }
 
@@ -1695,14 +1533,13 @@ void Cmd_CallVote_f(gentity_t *ent)
 
         trap_Argv(3, mapName, CALLVOTE_MAPNAME_BUFFER_SIZE);
         if (trap_MapExists(mapName) == 0) {
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_UNRELIABLE,
-                                   "e \"\x15" "the server doesn't have that map\"");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   "e \"\x15"
+                                   "the server doesn't have that map\"");
             return;
         }
 
-        trap_Cvar_Register(&mapnameCvar, "mapname", emptyString,
-                           CALLVOTE_MAPNAME_CVAR_FLAGS);
+        trap_Cvar_Register(&mapnameCvar, "mapname", emptyString, CALLVOTE_MAPNAME_CVAR_FLAGS);
         if (Q_stricmp(mapName, mapnameCvar.string) == 0) {
             mapName[0] = '\0';
         }
@@ -1713,29 +1550,21 @@ void Cmd_CallVote_f(gentity_t *ent)
         }
 
         if (mapName[0] == '\0') {
-            Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                        "g_gametype %s; map_restart", arg);
-            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                        "GAME_VOTE_GAMETYPE\x14%s",
+            Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "g_gametype %s; map_restart", arg);
+            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_GAMETYPE\x14%s",
                         Scr_GetGameTypeNameForScript(arg));
         } else {
             if (arg[0] == '\0') {
-                Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                            "map %s", mapName);
+                Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "map %s", mapName);
             } else {
-                Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                            "g_gametype %s; map %s", arg, mapName);
+                Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "g_gametype %s; map %s", arg, mapName);
             }
 
             if (arg[0] == '\0') {
-                Com_sprintf(lvl->voteDisplayString,
-                            sizeof(lvl->voteDisplayString),
-                            "GAME_VOTE_MAP\x15%s", mapName);
+                Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_MAP\x15%s", mapName);
             } else {
-                Com_sprintf(lvl->voteDisplayString,
-                            sizeof(lvl->voteDisplayString),
-                            "GAME_VOTE_GAMETYPE\x14%s\x15 - \x14GAME_VOTE_MAP\x15%s",
-                            Scr_GetGameTypeNameForScript(arg), mapName);
+                Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
+                            "GAME_VOTE_GAMETYPE\x14%s\x15 - \x14GAME_VOTE_MAP\x15%s", Scr_GetGameTypeNameForScript(arg), mapName);
             }
         }
     } else if (Q_stricmp(command, "g_gametype") == 0) {
@@ -1743,36 +1572,26 @@ void Cmd_CallVote_f(gentity_t *ent)
             game_compat_command_send_literal_status(ent, "e \"GAME_INVALIDGAMETYPE\"");
             return;
         }
-        Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                    "%s %s; map_restart", command, arg);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "GAME_VOTE_GAMETYPE\x14%s",
-                    Scr_GetGameTypeNameForScript(arg));
+        Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "%s %s; map_restart", command, arg);
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_GAMETYPE\x14%s", Scr_GetGameTypeNameForScript(arg));
     } else if (Q_stricmp(command, "map_restart") == 0) {
         Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "%s", command);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "GAME_VOTE_MAPRESTART");
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_MAPRESTART");
     } else if (Q_stricmp(command, "map_rotate") == 0) {
         Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "%s", command);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "GAME_VOTE_NEXTMAP");
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_NEXTMAP");
     } else if (Q_stricmp(command, "map") == 0) {
         if (trap_MapExists(arg) == 0) {
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_UNRELIABLE,
-                                   "e \"\x15" "the server doesn't have that map\"");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   "e \"\x15"
+                                   "the server doesn't have that map\"");
             return;
         }
-        Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                    "%s %s", command, arg);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "GAME_VOTE_MAP\x15%s", arg);
-    } else if (Q_stricmp(command, "kick") == 0 ||
-               Q_stricmp(command, "clientkick") == 0 ||
-               Q_stricmp(command, "tempBanUser") == 0 ||
+        Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "%s %s", command, arg);
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_MAP\x15%s", arg);
+    } else if (Q_stricmp(command, "kick") == 0 || Q_stricmp(command, "clientkick") == 0 || Q_stricmp(command, "tempBanUser") == 0 ||
                Q_stricmp(command, "tempBanClient") == 0) {
-        int clientNum =
-            game_compat_command_callvote_client_from_arg(command, arg, cleanName);
+        int clientNum = game_compat_command_callvote_client_from_arg(command, arg, cleanName);
         const char *kickCommand;
 
         if (clientNum == SCOREBOARD_MAX_CLIENTS) {
@@ -1780,104 +1599,70 @@ void Cmd_CallVote_f(gentity_t *ent)
             return;
         }
 
-        kickCommand = (command[0] == 't' || command[0] == 'T')
-                          ? "tempBanClient"
-                          : "clientkick";
-        Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                    "%s \"%d\"", kickCommand, clientNum);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "GAME_VOTE_KICK\x15(%i)%s",
-                    clientNum, level.clients[clientNum].userInfoName);
+        kickCommand = (command[0] == 't' || command[0] == 'T') ? "tempBanClient" : "clientkick";
+        Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "%s \"%d\"", kickCommand, clientNum);
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "GAME_VOTE_KICK\x15(%i)%s", clientNum,
+                    level.clients[clientNum].userInfoName);
     } else if (Q_stricmp(command, "drawfriend") == 0) {
         if (game_compat_command_callvote_arg_hits_stock_binary_reject(arg)) {
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_UNRELIABLE,
-                                   va("e \"PATCH_1_5_VOTE_ARG_NOTVALID\x15%s\"",
-                                      arg));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_VOTE_ARG_NOTVALID\x15%s\"", arg));
             return;
         }
 
-        trap_Cvar_VariableStringBuffer("scr_drawfriend", currentValue,
-                                       CALLVOTE_CVAR_BUFFER_SIZE);
+        trap_Cvar_VariableStringBuffer("scr_drawfriend", currentValue, CALLVOTE_CVAR_BUFFER_SIZE);
         if (Q_stricmp(arg, currentValue) == 0) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                "e \"PATCH_1_5_DRAWFRIEND_NOCHANGE\"");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_DRAWFRIEND_NOCHANGE\"");
             return;
         }
 
-        Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                    "setdrawfriend %s", arg);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "PATCH_1_5_VOTE_DRAWFRIEND\x14%s",
+        Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "setdrawfriend %s", arg);
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "PATCH_1_5_VOTE_DRAWFRIEND\x14%s",
                     arg[0] == '1' ? "MENU_ON" : "MENU_OFF");
     } else if (Q_stricmp(command, "killcam") == 0) {
-        trap_Cvar_VariableStringBuffer("scr_killcam", currentValue,
-                                       CALLVOTE_CVAR_BUFFER_SIZE);
+        trap_Cvar_VariableStringBuffer("scr_killcam", currentValue, CALLVOTE_CVAR_BUFFER_SIZE);
         if (game_compat_command_callvote_arg_hits_stock_binary_reject(arg)) {
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_UNRELIABLE,
-                                   va("e \"PATCH_1_5_VOTE_ARG_NOTVALID\x15%s\"",
-                                      arg));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_VOTE_ARG_NOTVALID\x15%s\"", arg));
             return;
         }
 
         if (Q_stricmp(arg, currentValue) == 0) {
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_UNRELIABLE,
-                                   "e \"PATCH_1_5_KILLCAM_NOCHANGE\"");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_KILLCAM_NOCHANGE\"");
             return;
         }
 
-        Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                    "setkillcam %s", arg);
-        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                    "PATCH_1_5_VOTE_KILLCAM\x14%s",
+        Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "setkillcam %s", arg);
+        Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "PATCH_1_5_VOTE_KILLCAM\x14%s",
                     arg[0] == '1' ? "MENU_ON" : "MENU_OFF");
     } else if (Q_stricmp(command, "friendlyfire") == 0) {
-        trap_Cvar_VariableStringBuffer("scr_friendlyfire", currentValue,
-                                       CALLVOTE_CVAR_BUFFER_SIZE);
+        trap_Cvar_VariableStringBuffer("scr_friendlyfire", currentValue, CALLVOTE_CVAR_BUFFER_SIZE);
         if (Q_stricmp(arg, currentValue) == 0) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                "e \"PATCH_1_5_FRIENDLYFIRE_NOCHANGE\"");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_FRIENDLYFIRE_NOCHANGE\"");
             return;
         }
 
         if (!game_compat_command_callvote_arg_is_friendlyfire_value(arg)) {
-            trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                                   COMMAND_SEND_UNRELIABLE,
-                                   va("e \"PATCH_1_5_VOTE_ARG_NOTVALID\x15%s\"",
-                                      arg));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_VOTE_ARG_NOTVALID\x15%s\"", arg));
             return;
         }
 
         if (Q_stricmp(arg, "0") == 0) {
-            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                        "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_OFF");
+            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_OFF");
         } else if (Q_stricmp(arg, "1") == 0) {
-            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                        "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_ON");
+            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_ON");
         } else if (Q_stricmp(arg, "2") == 0) {
-            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                        "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_REFLECT");
+            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_REFLECT");
         } else {
-            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString),
-                        "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_SHARED");
+            Com_sprintf(lvl->voteDisplayString, sizeof(lvl->voteDisplayString), "PATCH_1_5_VOTE_FRIENDLYFIRE\x14MENU_SHARED");
         }
 
-        Com_sprintf(lvl->voteString, sizeof(lvl->voteString),
-                    "setfriendlyfire %s", arg);
+        Com_sprintf(lvl->voteString, sizeof(lvl->voteString), "setfriendlyfire %s", arg);
     }
 
-    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS,
-                           COMMAND_SEND_UNRELIABLE,
-                           va("e \"GAME_CALLEDAVOTE\x15%s\"",
-                              client->userInfoName));
-    lvl->voteTime = coduo_int32_from_bits(
-        (uint32_t)trap_Milliseconds() + CALLVOTE_DURATION_MS);
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, COMMAND_SEND_UNRELIABLE, va("e \"GAME_CALLEDAVOTE\x15%s\"", client->userInfoName));
+    lvl->voteTime = coduo_int32_from_bits((uint32_t)trap_Milliseconds() + CALLVOTE_DURATION_MS);
     lvl->voteYes = 1;
     lvl->voteNo = 0;
     for (index = 0; index < lvl->maxclients; index++) {
@@ -1885,10 +1670,8 @@ void Cmd_CallVote_f(gentity_t *ent)
         voteClient->ps.entityStateFlags &= ~PS_FLAG_VOTE_CAST;
     }
     client->ps.entityStateFlags |= PS_FLAG_VOTE_CAST;
-    trap_SetConfigstring(CS_VOTE_TIME,
-                         va("%i", CALLVOTE_DURATION_MS));
-    trap_SetConfigstring(CS_VOTE_STRING,
-                         lvl->voteDisplayString);
+    trap_SetConfigstring(CS_VOTE_TIME, va("%i", CALLVOTE_DURATION_MS));
+    trap_SetConfigstring(CS_VOTE_STRING, lvl->voteDisplayString);
     trap_SetConfigstring(CS_VOTE_YES, va("%i", lvl->voteYes));
     trap_SetConfigstring(CS_VOTE_NO, va("%i", lvl->voteNo));
 }
@@ -1898,16 +1681,12 @@ void Cmd_Vote_f(gentity_t *ent)
 {
     char arg[VOTE_ARG_BUFFER_SIZE];
     gclient_t *client = ent->client;
-    const int32_t complaintTimeRemaining = coduo_int32_from_bits(
-        (uint32_t)client->pendingComplaintTime - (uint32_t)level.time);
+    const int32_t complaintTimeRemaining = coduo_int32_from_bits((uint32_t)client->pendingComplaintTime - (uint32_t)level.time);
 
     /* NOT_FROM_ORIGINAL_SOURCE: require a complete pending complaint state and
      * a modulo-32-bit remaining interval inside the producer's fixed window. */
-    if ((uint32_t)client->pendingComplaintClient <
-            (uint32_t)level.maxclients &&
-        complaintTimeRemaining > 0 &&
-        (uint32_t)complaintTimeRemaining <=
-            (uint32_t)GAME_COMPLAINT_WINDOW_MSEC) {
+    if ((uint32_t)client->pendingComplaintClient < (uint32_t)level.maxclients && complaintTimeRemaining > 0 &&
+        (uint32_t)complaintTimeRemaining <= (uint32_t)GAME_COMPLAINT_WINDOW_MSEC) {
         game_compat_command_handle_complaint_vote(ent, arg);
         return;
     }
@@ -1915,39 +1694,29 @@ void Cmd_Vote_f(gentity_t *ent)
     game_compat_command_clear_pending_complaint(client);
 
     if (level.voteTime == 0) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"GAME_NOVOTEINPROGRESS\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"GAME_NOVOTEINPROGRESS\"");
         return;
     }
 
     if ((client->ps.entityStateFlags & PS_FLAG_VOTE_CAST) != 0) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"GAME_VOTEALREADYCAST\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"GAME_VOTEALREADYCAST\"");
         return;
     }
 
     if (client->sessionTeam == TEAM_SPECTATOR) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"GAME_NOSPECTATORVOTE\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"GAME_NOSPECTATORVOTE\"");
         return;
     }
 
-    trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                           COMMAND_SEND_UNRELIABLE,
-                           "e \"GAME_VOTECAST\"");
+    trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"GAME_VOTECAST\"");
     client->ps.entityStateFlags |= PS_FLAG_VOTE_CAST;
 
     trap_Argv(1, arg, VOTE_ARG_BUFFER_SIZE);
     if (game_compat_command_vote_arg_is_yes(arg)) {
-        level.voteYes = coduo_int32_from_bits(
-            (uint32_t)level.voteYes + UINT32_C(1));
+        level.voteYes = coduo_int32_from_bits((uint32_t)level.voteYes + UINT32_C(1));
         trap_SetConfigstring(CS_VOTE_YES, va("%i", level.voteYes));
     } else {
-        level.voteNo = coduo_int32_from_bits(
-            (uint32_t)level.voteNo + UINT32_C(1));
+        level.voteNo = coduo_int32_from_bits((uint32_t)level.voteNo + UINT32_C(1));
         trap_SetConfigstring(CS_VOTE_NO, va("%i", level.voteNo));
     }
 }
@@ -1991,8 +1760,7 @@ qboolean Cmd_Activate_f(gentity_t *ent)
         return result;
     }
 
-    if (classname == scr_const_func_door ||
-        classname == scr_const_func_door_rotating) {
+    if (classname == scr_const_func_door || classname == scr_const_func_door_rotating) {
         G_TryDoor(target, ent, ent);
     } else if (classname == scr_const_trigger_use) {
         Scr_AddEntity(ent);
@@ -2017,8 +1785,7 @@ qboolean Cmd_Activate_f(gentity_t *ent)
             return 0;
         }
         target->use(target, ent, ent);
-    } else if (classname == scr_const_misc_flak &&
-               target->activeState == 0) {
+    } else if (classname == scr_const_misc_flak && target->activeState == 0) {
         if (infront(target, ent) == 0) {
             gclient_t *activationClient = &level.clients[ent->s.clientNum];
 
@@ -2026,8 +1793,7 @@ qboolean Cmd_Activate_f(gentity_t *ent)
                 target->activeState = 1;
                 ent->activeState = 1;
                 target->passEntityNum = ent->s.number;
-                memcpy(target->scriptMoverAngleTarget, target->currentAngles,
-                       sizeof(target->currentAngles));
+                memcpy(target->scriptMoverAngleTarget, target->currentAngles, sizeof(target->currentAngles));
             } else {
                 result = 0;
             }
@@ -2042,10 +1808,8 @@ qboolean Cmd_Activate_f(gentity_t *ent)
         } else {
             target->use(target, ent, ent);
         }
-    } else if (classname == scr_const_team_WOLF_checkpoint &&
-               target->itemCount != client->sessionTeam) {
-        target->health = coduo_int32_from_bits(
-            (uint32_t)target->health + UINT32_C(1));
+    } else if (classname == scr_const_team_WOLF_checkpoint && target->itemCount != client->sessionTeam) {
+        target->health = coduo_int32_from_bits((uint32_t)target->health + UINT32_C(1));
     }
 
     return result;
@@ -2060,103 +1824,75 @@ void Cmd_MatchTimeout_f(gentity_t *ent)
     char cleanName[CALLVOTE_CLIENT_NAME_BUFFER_SIZE];
 
     if (g_timeoutsAllowed.integer < 1 || g_timeoutLength.integer < 1) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEOUT_NOTENABLED\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEOUT_NOTENABLED\"");
         return;
     }
 
-    if (client->sessionState != SESS_STATE_PLAYING ||
-        client->sessionTeam == TEAM_SPECTATOR) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEOUT_MUSTBEPLAYING\"");
+    if (client->sessionState != SESS_STATE_PLAYING || client->sessionTeam == TEAM_SPECTATOR) {
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEOUT_MUSTBEPLAYING\"");
         return;
     }
 
-    if (lvl->matchTimeoutDuration != 0 ||
-        lvl->matchTimeoutRecoveryEndTime != 0) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEOUT_ALREADYINPROGRESS\"");
+    if (lvl->matchTimeoutDuration != 0 || lvl->matchTimeoutRecoveryEndTime != 0) {
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEOUT_ALREADYINPROGRESS\"");
         return;
     }
 
     if (client->sessionTeam == TEAM_ALLIES) {
         teamName = "GAME_ALLIES";
         if (g_timeoutsAllowed.integer <= lvl->timeoutUsedAllies) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                va("e \"PATCH_1_5_TIMEOUT_MAXCALLED\x14%s\"", teamName));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_TIMEOUT_MAXCALLED\x14%s\"", teamName));
             return;
         }
         if (lvl->timeoutCache1 < 1) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                va("e \"PATCH_1_5_TIMEOUT_MAXTIMEUSED\x14%s\"", teamName));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_TIMEOUT_MAXTIMEUSED\x14%s\"", teamName));
             return;
         }
 
-        lvl->timeoutUsedAllies = coduo_int32_from_bits(
-            (uint32_t)lvl->timeoutUsedAllies + UINT32_C(1));
+        lvl->timeoutUsedAllies = coduo_int32_from_bits((uint32_t)lvl->timeoutUsedAllies + UINT32_C(1));
         lvl->matchTimeoutTeam = TEAM_ALLIES;
-        Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage),
-                    "PATCH_1_5_TIMEOUT_CALLED\x14%s\x15", teamName);
+        Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage), "PATCH_1_5_TIMEOUT_CALLED\x14%s\x15", teamName);
         lvl->matchTimeoutDuration = lvl->timeoutCache1;
         if (g_timeoutLength.integer < lvl->timeoutCache1) {
             lvl->matchTimeoutDuration = g_timeoutLength.integer;
         }
     } else {
         if (client->sessionTeam != TEAM_AXIS) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                "e \"PATCH_1_5_TIMEOUT_INVALIDGAMETYPE\"");
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEOUT_INVALIDGAMETYPE\"");
             return;
         }
 
         teamName = "GAME_AXIS";
         if (g_timeoutsAllowed.integer <= lvl->timeoutUsedAxis) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                va("e \"PATCH_1_5_TIMEOUT_MAXCALLED\x14%s\"", teamName));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_TIMEOUT_MAXCALLED\x14%s\"", teamName));
             return;
         }
         if (lvl->timeoutCache2 < 1) {
-            trap_SendServerCommand(
-                (uint32_t)(int)(ent - g_entities),
-                COMMAND_SEND_UNRELIABLE,
-                va("e \"PATCH_1_5_TIMEOUT_MAXTIMEUSED\x14%s\"", teamName));
+            trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE,
+                                   va("e \"PATCH_1_5_TIMEOUT_MAXTIMEUSED\x14%s\"", teamName));
             return;
         }
 
-        lvl->timeoutUsedAxis = coduo_int32_from_bits(
-            (uint32_t)lvl->timeoutUsedAxis + UINT32_C(1));
+        lvl->timeoutUsedAxis = coduo_int32_from_bits((uint32_t)lvl->timeoutUsedAxis + UINT32_C(1));
         lvl->matchTimeoutTeam = TEAM_AXIS;
-        Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage),
-                    "PATCH_1_5_TIMEOUT_CALLED\x14%s\x15", teamName);
+        Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage), "PATCH_1_5_TIMEOUT_CALLED\x14%s\x15", teamName);
         lvl->matchTimeoutDuration = lvl->timeoutCache2;
         if (g_timeoutLength.integer < lvl->timeoutCache2) {
             lvl->matchTimeoutDuration = g_timeoutLength.integer;
         }
     }
 
-    Q_strncpyz(cleanName, client->userInfoName,
-               CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
+    Q_strncpyz(cleanName, client->userInfoName, CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
     Q_CleanStr(cleanName);
     trap_Cvar_Set("timescale", "0");
     lvl->matchTimeoutStartTime = trap_Milliseconds();
-    trap_SetConfigstring(CS_TIMEOUT_TIME,
-                         va("%i", lvl->matchTimeoutDuration));
-    trap_SetConfigstring(CS_TIMEOUT_STRING,
-                         lvl->timeoutMessage);
-    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS,
-                           COMMAND_SEND_UNRELIABLE,
-                           va("e \"PATCH_1_5_TIMEOUT_CALLED_PLAYERNAME\x15%s\"",
-                              cleanName));
+    trap_SetConfigstring(CS_TIMEOUT_TIME, va("%i", lvl->matchTimeoutDuration));
+    trap_SetConfigstring(CS_TIMEOUT_STRING, lvl->timeoutMessage);
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, COMMAND_SEND_UNRELIABLE,
+                           va("e \"PATCH_1_5_TIMEOUT_CALLED_PLAYERNAME\x15%s\"", cleanName));
 }
 
 /* VERIFIED_DECOMPILER(0x4e99c, 5e99c_Cmd_MatchTimein_f.c, VERIFY-CLIENT-COMMANDS-REMAINING-2026-06-17): DATAFLOW_VERIFIED - timeout presence/play/team gates, ending message, binary timeoutCache1 decrement behavior, recovery timer, configstrings, and broadcast checked. */
@@ -2168,68 +1904,47 @@ void Cmd_MatchTimein_f(gentity_t *ent)
     int now;
 
     if (g_timeoutsAllowed.integer < 1) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEOUT_NOTENABLED\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEOUT_NOTENABLED\"");
         return;
     }
 
     if (lvl->matchTimeoutDuration == 0) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEOUT_NONEINPROGRESS\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEOUT_NONEINPROGRESS\"");
         return;
     }
 
-    if (client->sessionState != SESS_STATE_PLAYING ||
-        client->sessionTeam == TEAM_SPECTATOR) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEIN_MUSTBEPLAYING\"");
+    if (client->sessionState != SESS_STATE_PLAYING || client->sessionTeam == TEAM_SPECTATOR) {
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEIN_MUSTBEPLAYING\"");
         return;
     }
 
     if (client->sessionTeam != lvl->matchTimeoutTeam) {
-        trap_SendServerCommand((uint32_t)(int)(ent - g_entities),
-                               COMMAND_SEND_UNRELIABLE,
-                               "e \"PATCH_1_5_TIMEIN_WRONGTEAM\"");
+        trap_SendServerCommand((uint32_t)(int)(ent - g_entities), COMMAND_SEND_UNRELIABLE, "e \"PATCH_1_5_TIMEIN_WRONGTEAM\"");
         return;
     }
 
-    Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage),
-                "PATCH_1_5_TIMEOUT_ENDING\x15");
-    Q_strncpyz(cleanName, client->userInfoName,
-               CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
+    Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage), "PATCH_1_5_TIMEOUT_ENDING\x15");
+    Q_strncpyz(cleanName, client->userInfoName, CALLVOTE_CLIENT_NAME_BUFFER_SIZE);
     Q_CleanStr(cleanName);
     now = trap_Milliseconds();
     if (lvl->matchTimeoutTeam == TEAM_ALLIES) {
-        int elapsed = coduo_int32_from_bits(
-            (uint32_t)now - (uint32_t)lvl->matchTimeoutStartTime);
+        int elapsed = coduo_int32_from_bits((uint32_t)now - (uint32_t)lvl->matchTimeoutStartTime);
 
-        lvl->timeoutCache1 = coduo_int32_from_bits(
-            (uint32_t)lvl->timeoutCache1 - (uint32_t)elapsed);
+        lvl->timeoutCache1 = coduo_int32_from_bits((uint32_t)lvl->timeoutCache1 - (uint32_t)elapsed);
     } else {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        int elapsed = coduo_int32_from_bits(
-            (uint32_t)now - (uint32_t)lvl->matchTimeoutStartTime);
+        int elapsed = coduo_int32_from_bits((uint32_t)now - (uint32_t)lvl->matchTimeoutStartTime);
 
-        lvl->timeoutCache2 = coduo_int32_from_bits(
-            (uint32_t)lvl->timeoutCache2 - (uint32_t)elapsed);
+        lvl->timeoutCache2 = coduo_int32_from_bits((uint32_t)lvl->timeoutCache2 - (uint32_t)elapsed);
     }
 
     lvl->matchTimeoutDuration = 0;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    lvl->matchTimeoutRecoveryEndTime = coduo_int32_from_bits(
-        (uint32_t)g_timeoutRecovery.integer +
-        (uint32_t)trap_Milliseconds());
-    trap_SetConfigstring(CS_TIMEOUT_TIME,
-                         va("%i", g_timeoutRecovery.integer));
-    trap_SetConfigstring(CS_TIMEOUT_STRING,
-                         lvl->timeoutMessage);
-    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS,
-                           COMMAND_SEND_UNRELIABLE,
-                           va("e \"PATCH_1_5_TIMEIN_CALLED_PLAYERNAME\x15%s\"",
-                              cleanName));
+    lvl->matchTimeoutRecoveryEndTime = coduo_int32_from_bits((uint32_t)g_timeoutRecovery.integer + (uint32_t)trap_Milliseconds());
+    trap_SetConfigstring(CS_TIMEOUT_TIME, va("%i", g_timeoutRecovery.integer));
+    trap_SetConfigstring(CS_TIMEOUT_STRING, lvl->timeoutMessage);
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, COMMAND_SEND_UNRELIABLE,
+                           va("e \"PATCH_1_5_TIMEIN_CALLED_PLAYERNAME\x15%s\"", cleanName));
 }
 
 /* "unknown command" format string at ELF 0x0a0f740 */

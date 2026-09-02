@@ -13,9 +13,7 @@
  * signed byte comparison is intentional: an empty argument or any argument
  * containing a byte whose signed value is at most ASCII space is quoted.
  */
-int32_t Com_AddToString(const char *source, char *destination,
-                        int32_t offset, int32_t limit,
-                        qboolean addQuotes)
+int32_t Com_AddToString(const char *source, char *destination, int32_t offset, int32_t limit, qboolean addQuotes)
 {
     qboolean needsQuotes = qfalse;
 
@@ -43,9 +41,7 @@ int32_t Com_AddToString(const char *source, char *destination,
         destination[offset++] = '"';
     }
 
-    for (const char *cursor = source;
-         *cursor != '\0' && offset < limit;
-         ++cursor) {
+    for (const char *cursor = source; *cursor != '\0' && offset < limit; ++cursor) {
         destination[offset++] = *cursor;
     }
 

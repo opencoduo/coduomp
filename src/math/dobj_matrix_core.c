@@ -25,8 +25,7 @@ void DObjQuatToMatrix43(const vec4_t quat, DObjSkelMat *matrix)
     float q0Sq = quat[0] * quat[0];
     float q1Sq = quat[1] * quat[1];
     float q2Sq = quat[2] * quat[2];
-    float lengthSq =
-        ((quat[3] * quat[3] + q2Sq) + q1Sq) + q0Sq;
+    float lengthSq = ((quat[3] * quat[3] + q2Sq) + q1Sq) + q0Sq;
 
     if (lengthSq != 0.0f) {
         float scale = 2.0f / lengthSq;
@@ -70,68 +69,37 @@ void DObjQuatToMatrix43(const vec4_t quat, DObjSkelMat *matrix)
     }
 }
 
-void DObjMatrixTransformVector43InPlace(
-    vec3_t point, const DObjSkelMat *matrix)
+void DObjMatrixTransformVector43InPlace(vec3_t point, const DObjSkelMat *matrix)
 {
     float x = point[0];
     float y = point[1];
     float z = point[2];
 
-    float outX =
-        ((z * matrix->axis[2][0] + y * matrix->axis[1][0]) +
-         x * matrix->axis[0][0]) +
-        matrix->origin[0];
-    float outY =
-        ((z * matrix->axis[2][1] + y * matrix->axis[1][1]) +
-         x * matrix->axis[0][1]) +
-        matrix->origin[1];
-    float outZ =
-        ((z * matrix->axis[2][2] + y * matrix->axis[1][2]) +
-         x * matrix->axis[0][2]) +
-        matrix->origin[2];
+    float outX = ((z * matrix->axis[2][0] + y * matrix->axis[1][0]) + x * matrix->axis[0][0]) + matrix->origin[0];
+    float outY = ((z * matrix->axis[2][1] + y * matrix->axis[1][1]) + x * matrix->axis[0][1]) + matrix->origin[1];
+    float outZ = ((z * matrix->axis[2][2] + y * matrix->axis[1][2]) + x * matrix->axis[0][2]) + matrix->origin[2];
 
     point[2] = outZ;
     point[0] = outX;
     point[1] = outY;
 }
 
-void DObjMatrixTransformVector43(const vec3_t point,
-                                 const DObjSkelMat *matrix,
-                                 vec3_t out)
+void DObjMatrixTransformVector43(const vec3_t point, const DObjSkelMat *matrix, vec3_t out)
 {
-    out[0] = ((point[2] * matrix->axis[2][0] +
-               point[1] * matrix->axis[1][0]) +
-              point[0] * matrix->axis[0][0]) +
-             matrix->origin[0];
-    out[1] = ((point[0] * matrix->axis[0][1] +
-               point[2] * matrix->axis[2][1]) +
-              point[1] * matrix->axis[1][1]) +
-             matrix->origin[1];
-    out[2] = ((point[0] * matrix->axis[0][2] +
-               point[2] * matrix->axis[2][2]) +
-              point[1] * matrix->axis[1][2]) +
-             matrix->origin[2];
+    out[0] = ((point[2] * matrix->axis[2][0] + point[1] * matrix->axis[1][0]) + point[0] * matrix->axis[0][0]) + matrix->origin[0];
+    out[1] = ((point[0] * matrix->axis[0][1] + point[2] * matrix->axis[2][1]) + point[1] * matrix->axis[1][1]) + matrix->origin[1];
+    out[2] = ((point[0] * matrix->axis[0][2] + point[2] * matrix->axis[2][2]) + point[1] * matrix->axis[1][2]) + matrix->origin[2];
 }
 
-void DObjMatrixInverseTransformVector43(
-    const vec3_t point, const DObjSkelMat *matrix, vec3_t out)
+void DObjMatrixInverseTransformVector43(const vec3_t point, const DObjSkelMat *matrix, vec3_t out)
 {
-    const long double x =
-        (long double)point[0] - (long double)matrix->origin[0];
-    const long double y =
-        (long double)point[1] - (long double)matrix->origin[1];
-    const long double z =
-        (long double)point[2] - (long double)matrix->origin[2];
+    const long double x = (long double)point[0] - (long double)matrix->origin[0];
+    const long double y = (long double)point[1] - (long double)matrix->origin[1];
+    const long double z = (long double)point[2] - (long double)matrix->origin[2];
 
-    out[0] = (float)((z * (long double)matrix->axis[0][2] +
-                       y * (long double)matrix->axis[0][1]) +
-                      x * (long double)matrix->axis[0][0]);
-    out[1] = (float)((z * (long double)matrix->axis[1][2] +
-                       y * (long double)matrix->axis[1][1]) +
-                      x * (long double)matrix->axis[1][0]);
-    out[2] = (float)((z * (long double)matrix->axis[2][2] +
-                       y * (long double)matrix->axis[2][1]) +
-                      x * (long double)matrix->axis[2][0]);
+    out[0] = (float)((z * (long double)matrix->axis[0][2] + y * (long double)matrix->axis[0][1]) + x * (long double)matrix->axis[0][0]);
+    out[1] = (float)((z * (long double)matrix->axis[1][2] + y * (long double)matrix->axis[1][1]) + x * (long double)matrix->axis[1][0]);
+    out[2] = (float)((z * (long double)matrix->axis[2][2] + y * (long double)matrix->axis[2][1]) + x * (long double)matrix->axis[2][0]);
 }
 
 void DObjQuatMultiplyIntoFirst(vec4_t quat, const vec4_t rhs)
@@ -145,15 +113,11 @@ void DObjQuatMultiplyIntoFirst(vec4_t quat, const vec4_t rhs)
     float quatY = quat[1];
     float quatZ = quat[2];
 
-    float outX = ((quatX * rhsW + quatW * rhsX) + quatZ * rhsY) -
-                 quatY * rhsZ;
-    float outY = ((quatY * rhsW - quatZ * rhsX) + quatW * rhsY) +
-                 quatX * rhsZ;
-    float outZ = ((quatZ * rhsW + quatY * rhsX) - quatX * rhsY) +
-                 quatW * rhsZ;
+    float outX = ((quatX * rhsW + quatW * rhsX) + quatZ * rhsY) - quatY * rhsZ;
+    float outY = ((quatY * rhsW - quatZ * rhsX) + quatW * rhsY) + quatX * rhsZ;
+    float outZ = ((quatZ * rhsW + quatY * rhsX) - quatX * rhsY) + quatW * rhsZ;
 
-    quat[3] = ((quatW * rhsW - quatX * rhsX) - quatY * rhsY) -
-              quatZ * rhsZ;
+    quat[3] = ((quatW * rhsW - quatX * rhsX) - quatY * rhsY) - quatZ * rhsZ;
     quat[0] = outX;
     quat[1] = outY;
     quat[2] = outZ;
@@ -182,38 +146,22 @@ void DObjQuatMultiplyIntoSecond(const vec4_t lhs, vec4_t quat)
 
 #else
 
-void DObjMatrixTransformVector43(const vec3_t in,
-                                 const DObjSkelMat *matrix,
-                                 vec3_t out)
+void DObjMatrixTransformVector43(const vec3_t in, const DObjSkelMat *matrix, vec3_t out)
 {
-    out[0] = in[0] * matrix->axis[0][0] +
-             in[1] * matrix->axis[1][0] +
-             in[2] * matrix->axis[2][0] + matrix->origin[0];
-    out[1] = in[0] * matrix->axis[0][1] +
-             in[1] * matrix->axis[1][1] +
-             in[2] * matrix->axis[2][1] + matrix->origin[1];
-    out[2] = in[0] * matrix->axis[0][2] +
-             in[1] * matrix->axis[1][2] +
-             in[2] * matrix->axis[2][2] + matrix->origin[2];
+    out[0] = in[0] * matrix->axis[0][0] + in[1] * matrix->axis[1][0] + in[2] * matrix->axis[2][0] + matrix->origin[0];
+    out[1] = in[0] * matrix->axis[0][1] + in[1] * matrix->axis[1][1] + in[2] * matrix->axis[2][1] + matrix->origin[1];
+    out[2] = in[0] * matrix->axis[0][2] + in[1] * matrix->axis[1][2] + in[2] * matrix->axis[2][2] + matrix->origin[2];
 }
 
-void DObjMatrixInverseTransformVector43(const vec3_t in,
-                                        const DObjSkelMat *matrix,
-                                        vec3_t out)
+void DObjMatrixInverseTransformVector43(const vec3_t in, const DObjSkelMat *matrix, vec3_t out)
 {
     float translated0 = in[0] - matrix->origin[0];
     float translated1 = in[1] - matrix->origin[1];
     float translated2 = in[2] - matrix->origin[2];
 
-    out[0] = translated0 * matrix->axis[0][0] +
-             translated1 * matrix->axis[0][1] +
-             translated2 * matrix->axis[0][2];
-    out[1] = translated0 * matrix->axis[1][0] +
-             translated1 * matrix->axis[1][1] +
-             translated2 * matrix->axis[1][2];
-    out[2] = translated0 * matrix->axis[2][0] +
-             translated1 * matrix->axis[2][1] +
-             translated2 * matrix->axis[2][2];
+    out[0] = translated0 * matrix->axis[0][0] + translated1 * matrix->axis[0][1] + translated2 * matrix->axis[0][2];
+    out[1] = translated0 * matrix->axis[1][0] + translated1 * matrix->axis[1][1] + translated2 * matrix->axis[1][2];
+    out[2] = translated0 * matrix->axis[2][0] + translated1 * matrix->axis[2][1] + translated2 * matrix->axis[2][2];
 }
 
 void DObjQuatToMatrix43(const vec4_t quat, DObjSkelMat *matrix)
@@ -265,21 +213,15 @@ void DObjQuatToMatrix43(const vec4_t quat, DObjSkelMat *matrix)
     }
 }
 
-void DObjMatrixTransformVector43InPlace(
-    vec3_t point, const DObjSkelMat *matrix)
+void DObjMatrixTransformVector43InPlace(vec3_t point, const DObjSkelMat *matrix)
 {
     float x = point[0];
     float y = point[1];
     float z = point[2];
-    float outX =
-        x * matrix->axis[0][0] + y * matrix->axis[1][0] +
-        z * matrix->axis[2][0] + matrix->origin[0];
-    float outY =
-        x * matrix->axis[0][1] + y * matrix->axis[1][1] +
-        z * matrix->axis[2][1] + matrix->origin[1];
+    float outX = x * matrix->axis[0][0] + y * matrix->axis[1][0] + z * matrix->axis[2][0] + matrix->origin[0];
+    float outY = x * matrix->axis[0][1] + y * matrix->axis[1][1] + z * matrix->axis[2][1] + matrix->origin[1];
 
-    point[2] = x * matrix->axis[0][2] + y * matrix->axis[1][2] +
-               z * matrix->axis[2][2] + matrix->origin[2];
+    point[2] = x * matrix->axis[0][2] + y * matrix->axis[1][2] + z * matrix->axis[2][2] + matrix->origin[2];
     point[0] = outX;
     point[1] = outY;
 }
@@ -295,15 +237,11 @@ void DObjQuatMultiplyIntoFirst(vec4_t quat, const vec4_t rhs)
     float quatY = quat[1];
     float quatZ = quat[2];
 
-    float outX = ((quatX * rhsW + quatW * rhsX) + quatZ * rhsY) -
-                 quatY * rhsZ;
-    float outY = ((quatY * rhsW - quatZ * rhsX) + quatW * rhsY) +
-                 quatX * rhsZ;
-    float outZ = ((quatZ * rhsW + quatY * rhsX) - quatX * rhsY) +
-                 quatW * rhsZ;
+    float outX = ((quatX * rhsW + quatW * rhsX) + quatZ * rhsY) - quatY * rhsZ;
+    float outY = ((quatY * rhsW - quatZ * rhsX) + quatW * rhsY) + quatX * rhsZ;
+    float outZ = ((quatZ * rhsW + quatY * rhsX) - quatX * rhsY) + quatW * rhsZ;
 
-    quat[3] = ((quatW * rhsW - quatX * rhsX) - quatY * rhsY) -
-              quatZ * rhsZ;
+    quat[3] = ((quatW * rhsW - quatX * rhsX) - quatY * rhsY) - quatZ * rhsZ;
     quat[0] = outX;
     quat[1] = outY;
     quat[2] = outZ;

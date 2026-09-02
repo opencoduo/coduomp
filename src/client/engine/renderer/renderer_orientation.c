@@ -11,12 +11,8 @@
 /* Source data: CoDUOMP.exe 0x005ce918..0x005ce958. The only PE reference is
  * R_RotateForViewer at 0x004e4163. This is the fixed id-renderer coordinate
  * conversion multiplied onto the camera model-view matrix. */
-static const float rendererFlipMatrix[16] = {
-     0.0f,  0.0f, -1.0f, 0.0f,
-    -1.0f,  0.0f,  0.0f, 0.0f,
-     0.0f,  1.0f,  0.0f, 0.0f,
-     0.0f,  0.0f,  0.0f, 1.0f
-};
+static const float rendererFlipMatrix[16] = {0.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+                                             0.0f, 1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 0.0f, 1.0f};
 
 /* 0x005b9b44 = float32 bits 0x3a83126f. The value is the uniform-axis-scale
  * tolerance used to select GL_RESCALE_NORMAL_EXT instead of GL_NORMALIZE. */
@@ -34,13 +30,10 @@ static const float rendererHalfPi = 1.5707963705062866f;
  * the decimal literals preserve the original float32 values on every host. */
 static const float rendererPortalPlaneTolerance = 64.0f;
 static const float rendererMillisecondsPerSecond = 1000.0f;
-static const float rendererPortalOscillationRate =
-    0.003000000026077032f; /* cycles argument per renderer millisecond */
+static const float rendererPortalOscillationRate = 0.003000000026077032f; /* cycles argument per renderer millisecond */
 static const float rendererPortalOscillationAmplitude = 4.0f;
-static const float rendererPortalPlaneEpsilon =
-    0.0010000000474974513f; /* 0x005b9b44 */
-static const float rendererPortalInitialDistanceSquared =
-    100000000.0f; /* 0x4cbebc20 */
+static const float rendererPortalPlaneEpsilon = 0.0010000000474974513f; /* 0x005b9b44 */
+static const float rendererPortalInitialDistanceSquared = 100000000.0f; /* 0x4cbebc20 */
 
 enum renderer_portal_clip_flag_e {
     R_PORTAL_CLIP_X_POSITIVE = 0x01,
@@ -59,18 +52,14 @@ enum renderer_portal_clip_flag_e {
  * The body keeps all three origin deltas live in x87 across the view-origin
  * dot products, compensates the stored results by the retained axis lengths,
  * and chooses the fixed-function OpenGL normal correction. */
-void R_RotateForModelEntity(trRefEntity_t *entity,
-                            const viewParms_t *viewParms,
-                            orientationr_t *orientation)
+void R_RotateForModelEntity(trRefEntity_t *entity, const viewParms_t *viewParms, orientationr_t *orientation)
 {
     float entityMatrix[16];
     float axisLengths[3];
     long double viewDelta[3];
 
-    memcpy(orientation->origin, entity->e.origin,
-           sizeof(orientation->origin));
-    memcpy(orientation->axis, entity->e.axis,
-           sizeof(orientation->axis));
+    memcpy(orientation->origin, entity->e.origin, sizeof(orientation->origin));
+    memcpy(orientation->axis, entity->e.axis, sizeof(orientation->axis));
 
     entityMatrix[0] = orientation->axis[0][0];
     entityMatrix[1] = orientation->axis[0][1];
@@ -89,28 +78,18 @@ void R_RotateForModelEntity(trRefEntity_t *entity,
     entityMatrix[14] = orientation->origin[2];
     entityMatrix[15] = 1.0f;
 
-    myGlMultMatrix(entityMatrix, viewParms->world.modelMatrix,
-                   orientation->modelMatrix);
+    myGlMultMatrix(entityMatrix, viewParms->world.modelMatrix, orientation->modelMatrix);
 
-    viewDelta[0] = (long double)viewParms->orientation.origin[0] -
-                   orientation->origin[0];
-    viewDelta[1] = (long double)viewParms->orientation.origin[1] -
-                   orientation->origin[1];
-    viewDelta[2] = (long double)viewParms->orientation.origin[2] -
-                   orientation->origin[2];
+    viewDelta[0] = (long double)viewParms->orientation.origin[0] - orientation->origin[0];
+    viewDelta[1] = (long double)viewParms->orientation.origin[1] - orientation->origin[1];
+    viewDelta[2] = (long double)viewParms->orientation.origin[2] - orientation->origin[2];
 
-    orientation->viewOrigin[0] = (float)(
-        (viewDelta[0] * orientation->axis[0][0] +
-         viewDelta[2] * orientation->axis[0][2]) +
-        viewDelta[1] * orientation->axis[0][1]);
-    orientation->viewOrigin[1] = (float)(
-        (viewDelta[1] * orientation->axis[1][1] +
-         viewDelta[0] * orientation->axis[1][0]) +
-        viewDelta[2] * orientation->axis[1][2]);
-    orientation->viewOrigin[2] = (float)(
-        (viewDelta[2] * orientation->axis[2][2] +
-         viewDelta[1] * orientation->axis[2][1]) +
-        viewDelta[0] * orientation->axis[2][0]);
+    orientation->viewOrigin[0] =
+        (float)((viewDelta[0] * orientation->axis[0][0] + viewDelta[2] * orientation->axis[0][2]) + viewDelta[1] * orientation->axis[0][1]);
+    orientation->viewOrigin[1] =
+        (float)((viewDelta[1] * orientation->axis[1][1] + viewDelta[0] * orientation->axis[1][0]) + viewDelta[2] * orientation->axis[1][2]);
+    orientation->viewOrigin[2] =
+        (float)((viewDelta[2] * orientation->axis[2][2] + viewDelta[1] * orientation->axis[2][1]) + viewDelta[0] * orientation->axis[2][0]);
 
     entity->normalizationTarget = 0;
     if (entity->e.nonNormalizedAxes == 0.0f)
@@ -118,19 +97,16 @@ void R_RotateForModelEntity(trRefEntity_t *entity,
 
     for (int32_t axisIndex = 0; axisIndex < 3; ++axisIndex) {
         const vec3_t *axis = &entity->e.axis[axisIndex];
-        const long double axisLengthRaw = sqrtl(
-            ((long double)(*axis)[2] * (long double)(*axis)[2] +
-             (long double)(*axis)[1] * (long double)(*axis)[1]) +
-            (long double)(*axis)[0] * (long double)(*axis)[0]);
+        const long double axisLengthRaw =
+            sqrtl(((long double)(*axis)[2] * (long double)(*axis)[2] + (long double)(*axis)[1] * (long double)(*axis)[1]) +
+                  (long double)(*axis)[0] * (long double)(*axis)[0]);
 
         /* 0x004e3fc6 stores the length for the later uniform-scale checks,
          * while the zero test and view-origin division use the retained x87
          * square root. */
         axisLengths[axisIndex] = (float)axisLengthRaw;
         if (axisLengthRaw != 0.0L) {
-            orientation->viewOrigin[axisIndex] = (float)(
-                (long double)orientation->viewOrigin[axisIndex] /
-                axisLengthRaw);
+            orientation->viewOrigin[axisIndex] = (float)((long double)orientation->viewOrigin[axisIndex] / axisLengthRaw);
         }
     }
 
@@ -138,10 +114,8 @@ void R_RotateForModelEntity(trRefEntity_t *entity,
     if (glConfig.rescaleNormalAvailable == qfalse)
         return;
 
-    if (fabsf(axisLengths[2] - axisLengths[0]) <
-            rendererUniformScaleTolerance &&
-        fabsf(axisLengths[2] - axisLengths[1]) <
-            rendererUniformScaleTolerance) {
+    if (fabsf(axisLengths[2] - axisLengths[0]) < rendererUniformScaleTolerance &&
+        fabsf(axisLengths[2] - axisLengths[1]) < rendererUniformScaleTolerance) {
         entity->normalizationTarget = GL_RESCALE_NORMAL_EXT;
     }
 }
@@ -151,12 +125,9 @@ void R_RotateForModelEntity(trRefEntity_t *entity,
  * Name: same-module Mac symbol R_RotateForEntity. Types 0..2 use the model
  * transform; all other render kinds inherit the already-built world
  * orientation at viewParms +0x7c. */
-void R_RotateForEntity(trRefEntity_t *entity,
-                       const viewParms_t *viewParms,
-                       orientationr_t *orientation)
+void R_RotateForEntity(trRefEntity_t *entity, const viewParms_t *viewParms, orientationr_t *orientation)
 {
-    if (entity->e.reType >= RT_BRUSH_MODEL &&
-        entity->e.reType <= RT_STATIC_MODEL) {
+    if (entity->e.reType >= RT_BRUSH_MODEL && entity->e.reType <= RT_STATIC_MODEL) {
         R_RotateForModelEntity(entity, viewParms, orientation);
     } else {
         *orientation = viewParms->world;
@@ -176,8 +147,7 @@ void R_RotateForViewer(void)
     float viewerMatrix[16];
 
     memset(orientation, 0, sizeof(*orientation));
-    memcpy(orientation->viewOrigin, viewer->origin,
-           sizeof(orientation->viewOrigin));
+    memcpy(orientation->viewOrigin, viewer->origin, sizeof(orientation->viewOrigin));
 
     orientation->axis[0][0] = 1.0f;
     orientation->axis[1][1] = 1.0f;
@@ -195,22 +165,18 @@ void R_RotateForViewer(void)
     viewerMatrix[9] = viewer->axis[1][2];
     viewerMatrix[10] = viewer->axis[2][2];
     viewerMatrix[11] = 0.0f;
-    viewerMatrix[12] = (float)(-
-        (((long double)viewer->axis[0][2] * viewer->origin[2] +
-          (long double)viewer->axis[0][1] * viewer->origin[1]) +
-         (long double)viewer->axis[0][0] * viewer->origin[0]));
-    viewerMatrix[13] = (float)(-
-        (((long double)viewer->axis[1][2] * viewer->origin[2] +
-          (long double)viewer->axis[1][1] * viewer->origin[1]) +
-         (long double)viewer->axis[1][0] * viewer->origin[0]));
-    viewerMatrix[14] = (float)(-
-        (((long double)viewer->axis[2][2] * viewer->origin[2] +
-          (long double)viewer->axis[2][1] * viewer->origin[1]) +
-         (long double)viewer->axis[2][0] * viewer->origin[0]));
+    viewerMatrix[12] =
+        (float)(-(((long double)viewer->axis[0][2] * viewer->origin[2] + (long double)viewer->axis[0][1] * viewer->origin[1]) +
+                  (long double)viewer->axis[0][0] * viewer->origin[0]));
+    viewerMatrix[13] =
+        (float)(-(((long double)viewer->axis[1][2] * viewer->origin[2] + (long double)viewer->axis[1][1] * viewer->origin[1]) +
+                  (long double)viewer->axis[1][0] * viewer->origin[0]));
+    viewerMatrix[14] =
+        (float)(-(((long double)viewer->axis[2][2] * viewer->origin[2] + (long double)viewer->axis[2][1] * viewer->origin[1]) +
+                  (long double)viewer->axis[2][0] * viewer->origin[0]));
     viewerMatrix[15] = 1.0f;
 
-    myGlMultMatrix(viewerMatrix, rendererFlipMatrix,
-                   orientation->modelMatrix);
+    myGlMultMatrix(viewerMatrix, rendererFlipMatrix, orientation->modelMatrix);
     tr.viewParms.world = *orientation;
 }
 
@@ -238,13 +204,9 @@ void R_SetupProjection(void)
     SetFarClip();
 
     zNear = r_znear->value;
-    yMax = coduo_x87_tanl(
-        (long double)tr.refdef.fov_y *
-        (long double)rendererDegreesToHalfRadians);
+    yMax = coduo_x87_tanl((long double)tr.refdef.fov_y * (long double)rendererDegreesToHalfRadians);
     yMin = -yMax;
-    xMax = coduo_x87_tanl(
-        (long double)tr.refdef.fov_x *
-        (long double)rendererDegreesToHalfRadians);
+    xMax = coduo_x87_tanl((long double)tr.refdef.fov_x * (long double)rendererDegreesToHalfRadians);
     xMin = -xMax;
     width = xMax - xMin;
     height = (float)(yMax - yMin);
@@ -271,8 +233,7 @@ void R_SetupProjection(void)
     projection[9] = (float)((yMin + yMax) * yScale);
     projection[14] = -2.0f * zNear;
 
-    memcpy(depthHackProjection, projection,
-           sizeof(tr.viewParms.projectionMatrix));
+    memcpy(depthHackProjection, projection, sizeof(tr.viewParms.projectionMatrix));
     depthHackProjection[14] = -2.0f * r_znear_depthhack->value;
 }
 
@@ -289,63 +250,41 @@ void R_SetupFrustum(void)
 {
     orientationr_t *viewer = &tr.viewParms.orientation;
     renderer_frustum_plane_t *frustum = tr.viewParms.frustum;
-    const float horizontalHalfAngle = (float)(
-        ((long double)tr.viewParms.fovX / 180.0L) *
-        (long double)rendererHalfPi);
+    const float horizontalHalfAngle = (float)(((long double)tr.viewParms.fovX / 180.0L) * (long double)rendererHalfPi);
     float horizontalSin;
     float horizontalCos;
 
-    coduo_x87_sincosf(horizontalHalfAngle,
-                          &horizontalSin, &horizontalCos);
+    coduo_x87_sincosf(horizontalHalfAngle, &horizontalSin, &horizontalCos);
 
     for (int32_t component = 0; component < 3; ++component) {
-        frustum[0].normal[component] =
-            viewer->axis[0][component] * horizontalSin;
-        frustum[0].normal[component] = (float)(
-            (long double)viewer->axis[1][component] * horizontalCos +
-            frustum[0].normal[component]);
+        frustum[0].normal[component] = viewer->axis[0][component] * horizontalSin;
+        frustum[0].normal[component] = (float)((long double)viewer->axis[1][component] * horizontalCos + frustum[0].normal[component]);
 
-        frustum[1].normal[component] =
-            viewer->axis[0][component] * horizontalSin;
-        frustum[1].normal[component] = (float)(
-            (long double)viewer->axis[1][component] * -horizontalCos +
-            frustum[1].normal[component]);
+        frustum[1].normal[component] = viewer->axis[0][component] * horizontalSin;
+        frustum[1].normal[component] = (float)((long double)viewer->axis[1][component] * -horizontalCos + frustum[1].normal[component]);
     }
 
-    const float verticalHalfAngle = (float)(
-        ((long double)tr.viewParms.fovY / 180.0L) *
-        (long double)rendererHalfPi);
+    const float verticalHalfAngle = (float)(((long double)tr.viewParms.fovY / 180.0L) * (long double)rendererHalfPi);
     float verticalSin;
     float verticalCos;
 
-    coduo_x87_sincosf(verticalHalfAngle,
-                          &verticalSin, &verticalCos);
+    coduo_x87_sincosf(verticalHalfAngle, &verticalSin, &verticalCos);
 
     for (int32_t component = 0; component < 3; ++component) {
-        frustum[2].normal[component] =
-            viewer->axis[0][component] * verticalSin;
-        frustum[2].normal[component] = (float)(
-            (long double)viewer->axis[2][component] * verticalCos +
-            frustum[2].normal[component]);
+        frustum[2].normal[component] = viewer->axis[0][component] * verticalSin;
+        frustum[2].normal[component] = (float)((long double)viewer->axis[2][component] * verticalCos + frustum[2].normal[component]);
 
-        frustum[3].normal[component] =
-            viewer->axis[0][component] * verticalSin;
-        frustum[3].normal[component] = (float)(
-            (long double)viewer->axis[2][component] * -verticalCos +
-            frustum[3].normal[component]);
+        frustum[3].normal[component] = viewer->axis[0][component] * verticalSin;
+        frustum[3].normal[component] = (float)((long double)viewer->axis[2][component] * -verticalCos + frustum[3].normal[component]);
     }
 
-    for (int32_t planeIndex = 0;
-         planeIndex < R_FRUSTUM_PLANE_COUNT;
-         ++planeIndex) {
+    for (int32_t planeIndex = 0; planeIndex < R_FRUSTUM_PLANE_COUNT; ++planeIndex) {
         renderer_frustum_plane_t *plane = &frustum[planeIndex];
         uint8_t signBits = 0;
 
         plane->type = R_PLANE_NON_AXIAL;
-        plane->distance = (float)(
-            ((long double)viewer->origin[2] * plane->normal[2] +
-             (long double)viewer->origin[1] * plane->normal[1]) +
-            (long double)viewer->origin[0] * plane->normal[0]);
+        plane->distance = (float)(((long double)viewer->origin[2] * plane->normal[2] + (long double)viewer->origin[1] * plane->normal[1]) +
+                                  (long double)viewer->origin[0] * plane->normal[0]);
 
         if (plane->normal[0] < 0.0f)
             signBits |= 1;
@@ -362,53 +301,31 @@ void R_SetupFrustum(void)
  * Name: same-module Mac symbol R_MirrorPoint. The Windows ESI/ECX/EAX/EDX
  * inputs prove point/surface/camera/output roles. The point is converted to
  * surface-local coordinates and then rebuilt in the camera orientation. */
-void R_MirrorPoint(const vec3_t point,
-                   const orientationr_t *surface,
-                   const orientationr_t *camera,
-                   vec3_t mirroredPoint)
+void R_MirrorPoint(const vec3_t point, const orientationr_t *surface, const orientationr_t *camera, vec3_t mirroredPoint)
 {
-    const long double localX =
-        (long double)point[0] - surface->origin[0];
-    const long double localY =
-        (long double)point[1] - surface->origin[1];
-    const long double localZ =
-        (long double)point[2] - surface->origin[2];
-    const long double surface0 =
-        localZ * surface->axis[0][2] +
-        localY * surface->axis[0][1] +
-        localX * surface->axis[0][0];
+    const long double localX = (long double)point[0] - surface->origin[0];
+    const long double localY = (long double)point[1] - surface->origin[1];
+    const long double localZ = (long double)point[2] - surface->origin[2];
+    const long double surface0 = localZ * surface->axis[0][2] + localY * surface->axis[0][1] + localX * surface->axis[0][0];
 
     long double xTerm = surface0 * camera->axis[0][0];
     float yTerm = (float)(surface0 * camera->axis[0][1]);
     float zTerm = (float)(surface0 * camera->axis[0][2]);
 
-    const long double surface1 =
-        localZ * surface->axis[1][2] +
-        localY * surface->axis[1][1] +
-        localX * surface->axis[1][0];
+    const long double surface1 = localZ * surface->axis[1][2] + localY * surface->axis[1][1] + localX * surface->axis[1][0];
     const float storedSurface1 = (float)surface1;
-    float storedX = (float)(
-        xTerm + surface1 * camera->axis[1][0]);
-    yTerm = (float)(
-        (long double)storedSurface1 * camera->axis[1][1] + yTerm);
-    zTerm = (float)(
-        (long double)storedSurface1 * camera->axis[1][2] + zTerm);
+    float storedX = (float)(xTerm + surface1 * camera->axis[1][0]);
+    yTerm = (float)((long double)storedSurface1 * camera->axis[1][1] + yTerm);
+    zTerm = (float)((long double)storedSurface1 * camera->axis[1][2] + zTerm);
 
-    const long double surface2 =
-        localZ * surface->axis[2][2] +
-        localY * surface->axis[2][1] +
-        localX * surface->axis[2][0];
+    const long double surface2 = localZ * surface->axis[2][2] + localY * surface->axis[2][1] + localX * surface->axis[2][0];
     xTerm = surface2 * camera->axis[2][0] + storedX;
-    float storedY = (float)(
-        surface2 * camera->axis[2][1] + yTerm);
-    float storedZ = (float)(
-        surface2 * camera->axis[2][2] + zTerm);
+    float storedY = (float)(surface2 * camera->axis[2][1] + yTerm);
+    float storedZ = (float)(surface2 * camera->axis[2][2] + zTerm);
 
     mirroredPoint[0] = (float)(xTerm + camera->origin[0]);
-    mirroredPoint[1] = (float)(
-        (long double)storedY + camera->origin[1]);
-    mirroredPoint[2] = (float)(
-        (long double)storedZ + camera->origin[2]);
+    mirroredPoint[1] = (float)((long double)storedY + camera->origin[1]);
+    mirroredPoint[2] = (float)((long double)storedZ + camera->origin[2]);
 }
 
 /* Source: CoDUOMP.exe 0x004e49a0..0x004e4a43.
@@ -416,10 +333,7 @@ void R_MirrorPoint(const vec3_t point,
  * Name: same-module Mac symbol R_MirrorVector. Unlike R_MirrorPoint, vectors
  * have no origin translation; only their surface-local axis weights are
  * rebuilt against the camera axes. */
-void R_MirrorVector(const vec3_t vector,
-                    const orientationr_t *surface,
-                    const orientationr_t *camera,
-                    vec3_t mirroredVector)
+void R_MirrorVector(const vec3_t vector, const orientationr_t *surface, const orientationr_t *camera, vec3_t mirroredVector)
 {
     mirroredVector[0] = 0.0f;
     mirroredVector[1] = 0.0f;
@@ -428,25 +342,17 @@ void R_MirrorVector(const vec3_t vector,
     for (int32_t axisIndex = 0; axisIndex < 3; ++axisIndex) {
         /* 0x004e49b4..0x004e4a3f retains each complete surface-axis dot in
          * x87 across the three camera-axis products. */
-        const long double axisWeight =
-            ((long double)vector[2] *
-                 (long double)surface->axis[axisIndex][2] +
-             (long double)vector[1] *
-                 (long double)surface->axis[axisIndex][1]) +
-            (long double)vector[0] *
-                (long double)surface->axis[axisIndex][0];
+        const long double axisWeight = ((long double)vector[2] * (long double)surface->axis[axisIndex][2] +
+                                        (long double)vector[1] * (long double)surface->axis[axisIndex][1]) +
+                                       (long double)vector[0] * (long double)surface->axis[axisIndex][0];
 
         for (int32_t coordinate = 0; coordinate < 3; ++coordinate) {
-            const long double contribution =
-                axisWeight *
-                (long double)camera->axis[axisIndex][coordinate];
+            const long double contribution = axisWeight * (long double)camera->axis[axisIndex][coordinate];
 
             if (axisIndex == 0) {
                 mirroredVector[coordinate] = (float)contribution;
             } else {
-                mirroredVector[coordinate] = (float)(
-                    contribution +
-                    (long double)mirroredVector[coordinate]);
+                mirroredVector[coordinate] = (float)(contribution + (long double)mirroredVector[coordinate]);
             }
         }
     }
@@ -459,11 +365,10 @@ void R_MirrorVector(const vec3_t vector,
  * position array. Computed paths copy only normal/distance, exactly matching
  * the PE's four-dword copy; the fallback initializes the complete classified
  * plane and uses the X-normal default. */
-void R_PlaneForSurface(const renderer_surface_t *surface,
-                       renderer_frustum_plane_t *plane)
+void R_PlaneForSurface(const renderer_surface_t *surface, renderer_frustum_plane_t *plane)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    plane_t computedPlane = { .equation = {0.0f, 0.0f, 0.0f, 0.0f} };
+    plane_t computedPlane = {.equation = {0.0f, 0.0f, 0.0f, 0.0f}};
 
     if (surface == NULL) {
         memset(plane, 0, sizeof(*plane));
@@ -472,29 +377,21 @@ void R_PlaneForSurface(const renderer_surface_t *surface,
     }
 
     if (surface->surfaceType >= R_SURFACE_INDEXED_POSITION_FIRST) {
-        const renderer_world_mesh_surface_t *indexedSurface =
-            (const renderer_world_mesh_surface_t *)surface;
+        const renderer_world_mesh_surface_t *indexedSurface = (const renderer_world_mesh_surface_t *)surface;
         const uint16_t baseIndex = indexedSurface->indices[0];
         const vec3_t *point0 = &indexedSurface->positions[0];
-        const vec3_t *point1 = &indexedSurface->positions[
-            indexedSurface->indices[1] - baseIndex];
-        const vec3_t *point2 = &indexedSurface->positions[
-            indexedSurface->indices[2] - baseIndex];
+        const vec3_t *point1 = &indexedSurface->positions[indexedSurface->indices[1] - baseIndex];
+        const vec3_t *point2 = &indexedSurface->positions[indexedSurface->indices[2] - baseIndex];
 
-        (void)PlaneFromPoints(computedPlane.equation,
-                              *point0, *point1, *point2);
+        (void)PlaneFromPoints(computedPlane.equation, *point0, *point1, *point2);
         memcpy(plane, &computedPlane, sizeof(computedPlane));
         return;
     }
 
     if (surface->surfaceType == R_SURFACE_POLY) {
-        const srfPoly_t *polySurface =
-            (const srfPoly_t *)surface;
+        const srfPoly_t *polySurface = (const srfPoly_t *)surface;
 
-        (void)PlaneFromPoints(computedPlane.equation,
-                              polySurface->verts[0].xyz,
-                              polySurface->verts[1].xyz,
-                              polySurface->verts[2].xyz);
+        (void)PlaneFromPoints(computedPlane.equation, polySurface->verts[0].xyz, polySurface->verts[1].xyz, polySurface->verts[2].xyz);
         memcpy(plane, &computedPlane, sizeof(computedPlane));
         return;
     }
@@ -511,10 +408,7 @@ void R_PlaneForSurface(const renderer_surface_t *surface,
  * and either a mirror camera or a separately positioned portal camera. Dot,
  * cross-product, translated-origin, and rotating-portal graphs retain their
  * x87 intermediates through the explicit float stores. */
-qboolean R_GetPortalOrientations(int32_t entityNumber,
-                                 const drawSurf_t *drawSurf,
-                                 orientationr_t *surface,
-                                 orientationr_t *camera,
+qboolean R_GetPortalOrientations(int32_t entityNumber, const drawSurf_t *drawSurf, orientationr_t *surface, orientationr_t *camera,
                                  vec3_t pvsOrigin, qboolean *mirror)
 {
     renderer_frustum_plane_t originalPlane;
@@ -530,71 +424,49 @@ qboolean R_GetPortalOrientations(int32_t entityNumber,
         R_RotateForEntity(entity, &tr.viewParms, &tr.orientation);
         R_LocalNormalToWorld(originalPlane.normal, transformedPlane.components.normal);
 
-        transformedPlane.components.distance = (float)(
-            (((long double)tr.orientation.origin[2] *
-                  transformedPlane.components.normal[2] +
-              (long double)tr.orientation.origin[1] *
-                  transformedPlane.components.normal[1]) +
-             (long double)tr.orientation.origin[0] *
-                 transformedPlane.components.normal[0]) +
-            originalPlane.distance);
-        originalPlane.distance = (float)(
-            (((long double)tr.orientation.origin[2] *
-                  originalPlane.normal[2] +
-              (long double)tr.orientation.origin[1] *
-                  originalPlane.normal[1]) +
-             (long double)tr.orientation.origin[0] *
-                 originalPlane.normal[0]) +
-            originalPlane.distance);
+        transformedPlane.components.distance = (float)((((long double)tr.orientation.origin[2] * transformedPlane.components.normal[2] +
+                                                         (long double)tr.orientation.origin[1] * transformedPlane.components.normal[1]) +
+                                                        (long double)tr.orientation.origin[0] * transformedPlane.components.normal[0]) +
+                                                       originalPlane.distance);
+        originalPlane.distance = (float)((((long double)tr.orientation.origin[2] * originalPlane.normal[2] +
+                                           (long double)tr.orientation.origin[1] * originalPlane.normal[1]) +
+                                          (long double)tr.orientation.origin[0] * originalPlane.normal[0]) +
+                                         originalPlane.distance);
     } else {
-        memcpy(transformedPlane.components.normal, originalPlane.normal,
-               sizeof(transformedPlane.components.normal));
+        memcpy(transformedPlane.components.normal, originalPlane.normal, sizeof(transformedPlane.components.normal));
         transformedPlane.components.distance = originalPlane.distance;
     }
 
-    memcpy(surface->axis[0], transformedPlane.components.normal,
-           sizeof(surface->axis[0]));
+    memcpy(surface->axis[0], transformedPlane.components.normal, sizeof(surface->axis[0]));
     PerpendicularVector(surface->axis[1], surface->axis[0]);
-    surface->axis[2][0] = (float)(
-        (long double)surface->axis[0][1] * surface->axis[1][2] -
-        (long double)surface->axis[1][1] * surface->axis[0][2]);
-    surface->axis[2][1] = (float)(
-        (long double)surface->axis[0][2] * surface->axis[1][0] -
-        (long double)surface->axis[0][0] * surface->axis[1][2]);
-    surface->axis[2][2] = (float)(
-        (long double)surface->axis[1][1] * surface->axis[0][0] -
-        (long double)surface->axis[0][1] * surface->axis[1][0]);
+    surface->axis[2][0] =
+        (float)((long double)surface->axis[0][1] * surface->axis[1][2] - (long double)surface->axis[1][1] * surface->axis[0][2]);
+    surface->axis[2][1] =
+        (float)((long double)surface->axis[0][2] * surface->axis[1][0] - (long double)surface->axis[0][0] * surface->axis[1][2]);
+    surface->axis[2][2] =
+        (float)((long double)surface->axis[1][1] * surface->axis[0][0] - (long double)surface->axis[0][1] * surface->axis[1][0]);
 
-    for (int32_t portalIndex = 0;
-         portalIndex < tr.refdef.num_entities;
-         ++portalIndex) {
+    for (int32_t portalIndex = 0; portalIndex < tr.refdef.num_entities; ++portalIndex) {
         const trRefEntity_t *portal = &tr.refdef.entities[portalIndex];
         float planeSeparation;
 
         if (portal->e.reType != RT_PORTALSURFACE)
             continue;
 
-        planeSeparation = (float)(
-            ((long double)originalPlane.normal[2] * portal->e.origin[2] +
-             (long double)originalPlane.normal[0] * portal->e.origin[0]) +
-            (long double)originalPlane.normal[1] * portal->e.origin[1] -
-            originalPlane.distance);
-        if (planeSeparation > rendererPortalPlaneTolerance ||
-            planeSeparation < -rendererPortalPlaneTolerance) {
+        planeSeparation = (float)(((long double)originalPlane.normal[2] * portal->e.origin[2] +
+                                   (long double)originalPlane.normal[0] * portal->e.origin[0]) +
+                                  (long double)originalPlane.normal[1] * portal->e.origin[1] - originalPlane.distance);
+        if (planeSeparation > rendererPortalPlaneTolerance || planeSeparation < -rendererPortalPlaneTolerance) {
             continue;
         }
 
         memcpy(pvsOrigin, portal->e.oldorigin, sizeof(vec3_t));
 
-        if (portal->e.origin[0] == portal->e.oldorigin[0] &&
-            portal->e.origin[1] == portal->e.oldorigin[1] &&
+        if (portal->e.origin[0] == portal->e.oldorigin[0] && portal->e.origin[1] == portal->e.oldorigin[1] &&
             portal->e.origin[2] == portal->e.oldorigin[2]) {
-            surface->origin[0] =
-                transformedPlane.components.distance * transformedPlane.components.normal[0];
-            surface->origin[1] =
-                transformedPlane.components.distance * transformedPlane.components.normal[1];
-            surface->origin[2] =
-                transformedPlane.components.distance * transformedPlane.components.normal[2];
+            surface->origin[0] = transformedPlane.components.distance * transformedPlane.components.normal[0];
+            surface->origin[1] = transformedPlane.components.distance * transformedPlane.components.normal[1];
+            surface->origin[2] = transformedPlane.components.distance * transformedPlane.components.normal[2];
             memcpy(camera->origin, surface->origin, sizeof(camera->origin));
 
             camera->axis[0][0] = -surface->axis[0][0];
@@ -607,21 +479,14 @@ qboolean R_GetPortalOrientations(int32_t entityNumber,
             return qtrue;
         }
 
-        planeSeparation = (float)(
-            ((long double)transformedPlane.components.normal[2] * portal->e.origin[2] +
-             (long double)transformedPlane.components.normal[1] * portal->e.origin[1]) +
-            (long double)transformedPlane.components.normal[0] * portal->e.origin[0] -
-            transformedPlane.components.distance);
+        planeSeparation =
+            (float)(((long double)transformedPlane.components.normal[2] * portal->e.origin[2] +
+                     (long double)transformedPlane.components.normal[1] * portal->e.origin[1]) +
+                    (long double)transformedPlane.components.normal[0] * portal->e.origin[0] - transformedPlane.components.distance);
         planeSeparation = -planeSeparation;
-        surface->origin[0] = (float)(
-            (long double)planeSeparation * surface->axis[0][0] +
-            portal->e.origin[0]);
-        surface->origin[1] = (float)(
-            (long double)planeSeparation * surface->axis[0][1] +
-            portal->e.origin[1]);
-        surface->origin[2] = (float)(
-            (long double)planeSeparation * surface->axis[0][2] +
-            portal->e.origin[2]);
+        surface->origin[0] = (float)((long double)planeSeparation * surface->axis[0][0] + portal->e.origin[0]);
+        surface->origin[1] = (float)((long double)planeSeparation * surface->axis[0][1] + portal->e.origin[1]);
+        surface->origin[2] = (float)((long double)planeSeparation * surface->axis[0][2] + portal->e.origin[2]);
 
         memcpy(camera->origin, portal->e.oldorigin, sizeof(camera->origin));
         memcpy(camera->axis, portal->e.axis, sizeof(camera->axis));
@@ -640,48 +505,32 @@ qboolean R_GetPortalOrientations(int32_t entityNumber,
             if (portal->e.frame != 0) {
                 const float frameAsFloat = (float)portal->e.frame;
 
-                rotationDegrees = (float)(
-                    ((long double)timeAsFloat /
-                     rendererMillisecondsPerSecond) *
-                    frameAsFloat);
+                rotationDegrees = (float)(((long double)timeAsFloat / rendererMillisecondsPerSecond) * frameAsFloat);
             } else {
-                const float oscillation = (float)coduo_x87_sinl(
-                    (long double)timeAsFloat *
-                    rendererPortalOscillationRate);
+                const float oscillation = (float)coduo_x87_sinl((long double)timeAsFloat * rendererPortalOscillationRate);
 
-                rotationDegrees = (float)(
-                    (long double)oscillation *
-                        rendererPortalOscillationAmplitude +
-                    portal->e.rotation);
+                rotationDegrees = (float)((long double)oscillation * rendererPortalOscillationAmplitude + portal->e.rotation);
             }
 
             memcpy(originalAxis, camera->axis[1], sizeof(originalAxis));
-            RotatePointAroundVector(camera->axis[1], camera->axis[0],
-                                    originalAxis, rotationDegrees);
-            camera->axis[2][0] = (float)(
-                (long double)camera->axis[0][1] * camera->axis[1][2] -
-                (long double)camera->axis[1][1] * camera->axis[0][2]);
-            camera->axis[2][1] = (float)(
-                (long double)camera->axis[0][2] * camera->axis[1][0] -
-                (long double)camera->axis[0][0] * camera->axis[1][2]);
-            camera->axis[2][2] = (float)(
-                (long double)camera->axis[1][1] * camera->axis[0][0] -
-                (long double)camera->axis[0][1] * camera->axis[1][0]);
+            RotatePointAroundVector(camera->axis[1], camera->axis[0], originalAxis, rotationDegrees);
+            camera->axis[2][0] =
+                (float)((long double)camera->axis[0][1] * camera->axis[1][2] - (long double)camera->axis[1][1] * camera->axis[0][2]);
+            camera->axis[2][1] =
+                (float)((long double)camera->axis[0][2] * camera->axis[1][0] - (long double)camera->axis[0][0] * camera->axis[1][2]);
+            camera->axis[2][2] =
+                (float)((long double)camera->axis[1][1] * camera->axis[0][0] - (long double)camera->axis[0][1] * camera->axis[1][0]);
         } else if (portal->e.rotation != 0.0f) {
             vec3_t originalAxis;
 
             memcpy(originalAxis, camera->axis[1], sizeof(originalAxis));
-            RotatePointAroundVector(camera->axis[1], camera->axis[0],
-                                    originalAxis, portal->e.rotation);
-            camera->axis[2][0] = (float)(
-                (long double)camera->axis[0][1] * camera->axis[1][2] -
-                (long double)camera->axis[1][1] * camera->axis[0][2]);
-            camera->axis[2][1] = (float)(
-                (long double)camera->axis[0][2] * camera->axis[1][0] -
-                (long double)camera->axis[0][0] * camera->axis[1][2]);
-            camera->axis[2][2] = (float)(
-                (long double)camera->axis[1][1] * camera->axis[0][0] -
-                (long double)camera->axis[0][1] * camera->axis[1][0]);
+            RotatePointAroundVector(camera->axis[1], camera->axis[0], originalAxis, portal->e.rotation);
+            camera->axis[2][0] =
+                (float)((long double)camera->axis[0][1] * camera->axis[1][2] - (long double)camera->axis[1][1] * camera->axis[0][2]);
+            camera->axis[2][1] =
+                (float)((long double)camera->axis[0][2] * camera->axis[1][0] - (long double)camera->axis[0][0] * camera->axis[1][2]);
+            camera->axis[2][2] =
+                (float)((long double)camera->axis[1][1] * camera->axis[0][0] - (long double)camera->axis[0][1] * camera->axis[1][0]);
         }
 
         *mirror = qfalse;
@@ -702,17 +551,11 @@ void R_SetPlaneSidesDPVS(renderer_dpvs_plane_t *plane)
     plane->distance -= rendererPortalPlaneEpsilon;
     memcpy(normalBits, plane->normal, sizeof(normalBits));
     plane->sideOffsets[0] =
-        normalBits[0] != 0U && (normalBits[0] & 0x80000000U) == 0U
-            ? R_DPVS_SIDE_X_POSITIVE_OFFSET
-            : R_DPVS_SIDE_X_NEGATIVE_OFFSET;
+        normalBits[0] != 0U && (normalBits[0] & 0x80000000U) == 0U ? R_DPVS_SIDE_X_POSITIVE_OFFSET : R_DPVS_SIDE_X_NEGATIVE_OFFSET;
     plane->sideOffsets[1] =
-        normalBits[1] != 0U && (normalBits[1] & 0x80000000U) == 0U
-            ? R_DPVS_SIDE_Y_POSITIVE_OFFSET
-            : R_DPVS_SIDE_Y_NEGATIVE_OFFSET;
+        normalBits[1] != 0U && (normalBits[1] & 0x80000000U) == 0U ? R_DPVS_SIDE_Y_POSITIVE_OFFSET : R_DPVS_SIDE_Y_NEGATIVE_OFFSET;
     plane->sideOffsets[2] =
-        normalBits[2] != 0U && (normalBits[2] & 0x80000000U) == 0U
-            ? R_DPVS_SIDE_Z_POSITIVE_OFFSET
-            : R_DPVS_SIDE_Z_NEGATIVE_OFFSET;
+        normalBits[2] != 0U && (normalBits[2] & 0x80000000U) == 0U ? R_DPVS_SIDE_Z_POSITIVE_OFFSET : R_DPVS_SIDE_Z_NEGATIVE_OFFSET;
 }
 
 /* Source: CoDUOMP.exe 0x004e51d0..0x004e5476.
@@ -725,13 +568,10 @@ void R_SetPlaneSidesDPVS(renderer_dpvs_plane_t *plane)
 qboolean SurfIsOffscreen(const drawSurf_t *drawSurf)
 {
     const uint32_t sort = drawSurf->sort;
-    const int32_t shaderIndex =
-        (int32_t)((sort >> R_SORT_SHADER_SHIFT) & R_SORT_SHADER_MASK);
+    const int32_t shaderIndex = (int32_t)((sort >> R_SORT_SHADER_SHIFT) & R_SORT_SHADER_MASK);
     const renderer_static_vertex_memory_source_t storageMode =
-        (renderer_static_vertex_memory_source_t)(
-            (sort >> R_SORT_STORAGE_SHIFT) & R_SORT_STORAGE_MASK);
-    int32_t entityNumber =
-        (int32_t)((sort >> R_SORT_ENTITY_SHIFT) & R_SORT_ENTITY_MASK);
+        (renderer_static_vertex_memory_source_t)((sort >> R_SORT_STORAGE_SHIFT) & R_SORT_STORAGE_MASK);
+    int32_t entityNumber = (int32_t)((sort >> R_SORT_ENTITY_SHIFT) & R_SORT_ENTITY_MASK);
     shader_t *shader = tr.sortedShaders[shaderIndex];
     uint32_t pointAnd = UINT32_MAX;
     float minimumDistanceSquared = rendererPortalInitialDistanceSquared;
@@ -759,17 +599,13 @@ qboolean SurfIsOffscreen(const drawSurf_t *drawSurf)
     if (tess.vertexCount <= 0)
         return qtrue;
 
-    for (int32_t vertexIndex = 0;
-         vertexIndex < tess.vertexCount;
-         ++vertexIndex) {
-        const float *position =
-            &tess.xyz[vertexIndex * tess.vertexComponentCount];
+    for (int32_t vertexIndex = 0; vertexIndex < tess.vertexCount; ++vertexIndex) {
+        const float *position = &tess.xyz[vertexIndex * tess.vertexComponentCount];
         vec4_t eye;
         vec4_t clip;
         uint32_t pointFlags = 0;
 
-        R_TransformModelToClip(position, tr.orientation.modelMatrix,
-                               tr.viewParms.projectionMatrix, eye, clip);
+        R_TransformModelToClip(position, tr.orientation.modelMatrix, tr.viewParms.projectionMatrix, eye, clip);
 
         if (clip[0] >= clip[3])
             pointFlags = R_PORTAL_CLIP_X_POSITIVE;
@@ -793,41 +629,26 @@ qboolean SurfIsOffscreen(const drawSurf_t *drawSurf)
         return qtrue;
 
     {
-        int32_t visibleTriangleCount =
-            tess.indexCount / R_TRIANGLE_INDEX_COUNT;
+        int32_t visibleTriangleCount = tess.indexCount / R_TRIANGLE_INDEX_COUNT;
 
-        for (int32_t indexOffset = 0;
-             indexOffset < tess.indexCount;
-             indexOffset += R_TRIANGLE_INDEX_COUNT) {
+        for (int32_t indexOffset = 0; indexOffset < tess.indexCount; indexOffset += R_TRIANGLE_INDEX_COUNT) {
             const uint16_t vertexIndex = tess.indexes[indexOffset];
-            const float *position =
-                &tess.xyz[(int32_t)vertexIndex *
-                          tess.vertexComponentCount];
+            const float *position = &tess.xyz[(int32_t)vertexIndex * tess.vertexComponentCount];
             long double viewDirection[3];
             long double distanceSquared;
             long double facing;
 
-            viewDirection[0] =
-                (long double)position[0] -
-                tr.viewParms.orientation.origin[0];
-            viewDirection[1] =
-                (long double)position[1] -
-                tr.viewParms.orientation.origin[1];
-            viewDirection[2] =
-                (long double)position[2] -
-                tr.viewParms.orientation.origin[2];
+            viewDirection[0] = (long double)position[0] - tr.viewParms.orientation.origin[0];
+            viewDirection[1] = (long double)position[1] - tr.viewParms.orientation.origin[1];
+            viewDirection[2] = (long double)position[2] - tr.viewParms.orientation.origin[2];
 
             distanceSquared =
-                (viewDirection[2] * viewDirection[2] +
-                 viewDirection[1] * viewDirection[1]) +
-                viewDirection[0] * viewDirection[0];
+                (viewDirection[2] * viewDirection[2] + viewDirection[1] * viewDirection[1]) + viewDirection[0] * viewDirection[0];
             if (distanceSquared < minimumDistanceSquared)
                 minimumDistanceSquared = (float)distanceSquared;
 
-            facing =
-                (viewDirection[2] * tess.stageNormals[vertexIndex][2] +
-                 viewDirection[1] * tess.stageNormals[vertexIndex][1]) +
-                viewDirection[0] * tess.stageNormals[vertexIndex][0];
+            facing = (viewDirection[2] * tess.stageNormals[vertexIndex][2] + viewDirection[1] * tess.stageNormals[vertexIndex][1]) +
+                     viewDirection[0] * tess.stageNormals[vertexIndex][0];
             if (facing >= 0.0f)
                 --visibleTriangleCount;
         }
@@ -839,11 +660,7 @@ qboolean SurfIsOffscreen(const drawSurf_t *drawSurf)
     if (IsMirror(entityNumber, drawSurf))
         return qfalse;
 
-    return (long double)minimumDistanceSquared >
-               (long double)tess.shader->portalRange *
-                   tess.shader->portalRange
-               ? qtrue
-               : qfalse;
+    return (long double)minimumDistanceSquared > (long double)tess.shader->portalRange * tess.shader->portalRange ? qtrue : qfalse;
 }
 
 /* Source: CoDUOMP.exe 0x004e5480..0x004e5635.
@@ -852,8 +669,7 @@ qboolean SurfIsOffscreen(const drawSurf_t *drawSurf)
  * view is copied twice so the derived portal view can be rendered and the
  * original front-end state restored exactly afterward. The portal-plane dot
  * narrows only at the destination float store. */
-qboolean R_MirrorViewBySurface(const drawSurf_t *drawSurf,
-                               int32_t entityNumber)
+qboolean R_MirrorViewBySurface(const drawSurf_t *drawSurf, int32_t entityNumber)
 {
     viewParms_t oldViewParms;
     viewParms_t newViewParms;
@@ -861,8 +677,7 @@ qboolean R_MirrorViewBySurface(const drawSurf_t *drawSurf,
     orientationr_t camera;
 
     if (tr.viewParms.isPortal != qfalse) {
-        ri.Printf(R_PRINT_DEVELOPER,
-                  "WARNING: recursive mirror/portal found\n");
+        ri.Printf(R_PRINT_DEVELOPER, "WARNING: recursive mirror/portal found\n");
         return qfalse;
     }
     if (r_noportals->integer != 0 || r_fastsky->integer != 0)
@@ -874,33 +689,23 @@ qboolean R_MirrorViewBySurface(const drawSurf_t *drawSurf,
     newViewParms = tr.viewParms;
     newViewParms.isPortal = qtrue;
 
-    if (!R_GetPortalOrientations(entityNumber, drawSurf, &surface, &camera,
-                                 newViewParms.pvsOrigin,
-                                 &newViewParms.isMirror)) {
+    if (!R_GetPortalOrientations(entityNumber, drawSurf, &surface, &camera, newViewParms.pvsOrigin, &newViewParms.isMirror)) {
         return qfalse;
     }
 
-    R_MirrorPoint(oldViewParms.orientation.origin, &surface, &camera,
-                  newViewParms.orientation.origin);
+    R_MirrorPoint(oldViewParms.orientation.origin, &surface, &camera, newViewParms.orientation.origin);
 
     newViewParms.portalPlane.normal[0] = -camera.axis[0][0];
     newViewParms.portalPlane.normal[1] = -camera.axis[0][1];
     newViewParms.portalPlane.normal[2] = -camera.axis[0][2];
-    newViewParms.portalPlane.distance = (float)(
-        ((long double)camera.origin[2] *
-             newViewParms.portalPlane.normal[2] +
-         (long double)camera.origin[1] *
-             newViewParms.portalPlane.normal[1]) +
-        (long double)camera.origin[0] *
-            newViewParms.portalPlane.normal[0]);
+    newViewParms.portalPlane.distance = (float)(((long double)camera.origin[2] * newViewParms.portalPlane.normal[2] +
+                                                 (long double)camera.origin[1] * newViewParms.portalPlane.normal[1]) +
+                                                (long double)camera.origin[0] * newViewParms.portalPlane.normal[0]);
     R_SetPlaneSidesDPVS(&newViewParms.portalPlane);
 
-    R_MirrorVector(oldViewParms.orientation.axis[0], &surface, &camera,
-                   newViewParms.orientation.axis[0]);
-    R_MirrorVector(oldViewParms.orientation.axis[1], &surface, &camera,
-                   newViewParms.orientation.axis[1]);
-    R_MirrorVector(oldViewParms.orientation.axis[2], &surface, &camera,
-                   newViewParms.orientation.axis[2]);
+    R_MirrorVector(oldViewParms.orientation.axis[0], &surface, &camera, newViewParms.orientation.axis[0]);
+    R_MirrorVector(oldViewParms.orientation.axis[1], &surface, &camera, newViewParms.orientation.axis[1]);
+    R_MirrorVector(oldViewParms.orientation.axis[2], &surface, &camera, newViewParms.orientation.axis[2]);
 
     R_RenderView(&newViewParms);
     tr.viewParms = oldViewParms;
@@ -928,34 +733,25 @@ qboolean IsMirror(int32_t entityNumber, const drawSurf_t *drawSurf)
         tr.currentEntity = entity;
         R_RotateForEntity(entity, &tr.viewParms, &tr.orientation);
 
-        plane.distance = (float)(
-            ((long double)tr.orientation.origin[2] * plane.normal[2] +
-             (long double)tr.orientation.origin[1] * plane.normal[1]) +
-            (long double)tr.orientation.origin[0] * plane.normal[0] +
-            plane.distance);
+        plane.distance =
+            (float)(((long double)tr.orientation.origin[2] * plane.normal[2] + (long double)tr.orientation.origin[1] * plane.normal[1]) +
+                    (long double)tr.orientation.origin[0] * plane.normal[0] + plane.distance);
     }
 
-    for (int32_t portalIndex = 0;
-         portalIndex < tr.refdef.num_entities;
-         ++portalIndex) {
+    for (int32_t portalIndex = 0; portalIndex < tr.refdef.num_entities; ++portalIndex) {
         const trRefEntity_t *portal = &tr.refdef.entities[portalIndex];
         long double planeSeparation;
 
         if (portal->e.reType != RT_PORTALSURFACE)
             continue;
 
-        planeSeparation =
-            ((long double)plane.normal[2] * portal->e.origin[2] +
-             (long double)plane.normal[0] * portal->e.origin[0]) +
-            (long double)plane.normal[1] * portal->e.origin[1] -
-            plane.distance;
-        if (planeSeparation > rendererPortalPlaneTolerance ||
-            planeSeparation < -rendererPortalPlaneTolerance)
+        planeSeparation = ((long double)plane.normal[2] * portal->e.origin[2] + (long double)plane.normal[0] * portal->e.origin[0]) +
+                          (long double)plane.normal[1] * portal->e.origin[1] - plane.distance;
+        if (planeSeparation > rendererPortalPlaneTolerance || planeSeparation < -rendererPortalPlaneTolerance)
             continue;
 
-        return portal->e.origin[0] == portal->e.oldorigin[0] &&
-               portal->e.origin[1] == portal->e.oldorigin[1] &&
-               portal->e.origin[2] == portal->e.oldorigin[2]
+        return portal->e.origin[0] == portal->e.oldorigin[0] && portal->e.origin[1] == portal->e.oldorigin[1] &&
+                       portal->e.origin[2] == portal->e.oldorigin[2]
                    ? qtrue
                    : qfalse;
     }

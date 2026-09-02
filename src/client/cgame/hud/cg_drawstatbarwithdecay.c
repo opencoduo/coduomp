@@ -47,16 +47,11 @@
  * a float literal in natural source form (bit pattern 0x3a9d4952) rather than the
  * mechanical g_const_float_0_0012000001 symbol. */
 
-_Static_assert(offsetof(snapshot_t, ps.stats[STAT_HEALTH]) == 0x128,
-               "snapshot health at +0x128");
-_Static_assert(offsetof(playerState_t, stats[STAT_MAX_HEALTH]) == 0x124,
-               "playerState maxHealth at +0x124");
-_Static_assert(offsetof(playerState_t, psClientNum) == 0xd4,
-               "playerState client number at +0xd4");
+_Static_assert(offsetof(snapshot_t, ps.stats[STAT_HEALTH]) == 0x128, "snapshot health at +0x128");
+_Static_assert(offsetof(playerState_t, stats[STAT_MAX_HEALTH]) == 0x124, "playerState maxHealth at +0x124");
+_Static_assert(offsetof(playerState_t, psClientNum) == 0xd4, "playerState client number at +0xd4");
 
-void CG_DrawStatBarWithDecay(float *color /* ESI */,
-                             const rectDef_t *rect /* EDI */,
-                             int32_t hShader)
+void CG_DrawStatBarWithDecay(float *color /* ESI */, const rectDef_t *rect /* EDI */, int32_t hShader)
 {
     /* 0x3002f9d4 loads cg_snap into EBX. The health load at 0x3002f9da occurs
      * before 0x3002f9e0 adds 0x0c and turns EBX into the playerState base. */
@@ -71,7 +66,7 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
      * This function references only bce0 (1.0), bce8 (0.5) and bcec (0.0); 2.0f
      * at bce4 is NOT read anywhere in 0x3002f9d0..0x3002fc9e. */
     const float zero = 0.0f;      /* 0x3007bcec */
-    const float one  = 1.0f;      /* 0x3007bce0 / 0x3f800000 */
+    const float one = 1.0f;      /* 0x3007bce0 / 0x3f800000 */
     const float half = 0.5f;      /* 0x3007bce8 */
     const float decayRatePerMs = 0.0012000001f; /* 0x3007bea4 */
 
@@ -87,7 +82,7 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
      * 0x3002fa80 both consume it unrounded, and the unused path discards it with
      * FSTP ST0 at 0x3002fb3a), so it is long double, not float. */
     long double barWidthFrac; /* surviving x87 ST(0): the width multiplier of segment 1 */
-    int   drawFirst;       /* whether the first (live) segment is painted */
+    int drawFirst;       /* whether the first (live) segment is painted */
 
     // 0x3002f9da..0x3002fa11: compute frac = health/maxHealth, but only if both are
     // nonzero; the quotient is then clamped into [0.0, 1.0].
@@ -100,8 +95,7 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
          * float before the divide (no FSTP DWORD). (long double)health keeps the
          * dividend exact and the implicit conversion keeps the divisor exact; a
          * (float) cast on either would round it under -std=c11. */
-        long double quotient =
-            (long double)health / ps->stats[STAT_MAX_HEALTH]; /* FILD/FIDIV */
+        long double quotient = (long double)health / ps->stats[STAT_MAX_HEALTH]; /* FILD/FIDIV */
         frac = (float)quotient;      /* 0x3002fa02 FST [ESP+8] */
         /* TEST AH,0x05; JP accepts ordered >= and unordered. The integer
          * numerator/divisor guards make unordered unreachable in normal state,
@@ -143,9 +137,7 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
         // 0x3002fa3c..0x3002fa6f: build the four scaled coordinates of segment 1.
         float x = cgs_screenXScale * rect->x;      /* [ESP+0x18] */
         float y = cgs_screenYScale * rect->y;      /* [ESP+0x14] */
-        scaledFillW = (float)(
-            (long double)frac * (long double)rect->w *
-            (long double)cgs_screenXScale); /* [ESP+0x10] */
+        scaledFillW = (float)((long double)frac * (long double)rect->w * (long double)cgs_screenXScale); /* [ESP+0x10] */
         float h = cgs_screenYScale * rect->h;      /* [ESP+0x0c] */
 
         // 0x3002fa73 FCOM 0.5f (0x3007bce8); TEST AH,0x41; JNZ 0x3002faf2 -> the
@@ -198,9 +190,7 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
         } else if (cg_statBarHoldTimer != 0) {
             // 0x3002fb7a/0x3002fb83: hold the trailing value while the timer runs;
             // decrement by cg.frametime (ms) and floor at 0.
-            int32_t held = coduo_int32_from_bits(
-                (uint32_t)cg_statBarHoldTimer -
-                (uint32_t)cg_frametime); /* SUB [0x304831ac] */
+            int32_t held = coduo_int32_from_bits((uint32_t)cg_statBarHoldTimer - (uint32_t)cg_frametime); /* SUB [0x304831ac] */
             cg_statBarHoldTimer = held;
             if (held < 0) {                                /* JNS: keep when >= 0 */
                 cg_statBarHoldTimer = 0;                   /* 0x3002fb90 */
@@ -214,10 +204,8 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
             // UNROUNDED 80-bit chain, so the compare runs on `display` as long double.
             /* 0x3002fb9c FILD cg_frametime; FMUL decayRatePerMs -- cg_frametime is
              * FILD'd straight into the multiply (no FSTP DWORD), so no (float) cast. */
-            long double display =
-                (long double)cg_statBarDisplayFrac -
-                (long double)coduo_int32_from_bits((uint32_t)cg_frametime) *
-                    (long double)decayRatePerMs; /* FILD;FMUL;FSUBR */
+            long double display = (long double)cg_statBarDisplayFrac - (long double)coduo_int32_from_bits((uint32_t)cg_frametime) *
+                                                                           (long double)decayRatePerMs; /* FILD;FMUL;FSUBR */
             cg_statBarDisplayFrac = (float)display;        /* 0x3002fbae FST (no pop) */
             if (display <= frac) {                         /* FCOMP [ESP+8]; !(display>frac) */
                 cg_statBarDisplayFrac = frac;                 /* 0x3002fbbf */
@@ -231,34 +219,31 @@ void CG_DrawStatBarWithDecay(float *color /* ESI */,
     if (cg_statBarDisplayFrac > frac) {
         float display = cg_statBarDisplayFrac;
         // 0x3002fc01..0x3002fc52: coordinates of the trailing segment.
-        float trailX = (float)(
-            ((long double)frac * (long double)rect->w +
-             (long double)rect->x) *
-            (long double)cgs_screenXScale);                                   /* [ESP+0x20] */
-        float trailY = cgs_screenYScale * rect->y;                             /* [ESP+0x1c] */
+        float trailX =
+            (float)(((long double)frac * (long double)rect->w + (long double)rect->x) * (long double)cgs_screenXScale); /* [ESP+0x20] */
+        float trailY = cgs_screenYScale * rect->y; /* [ESP+0x1c] */
         /* 0x3002fc2c executes after two pushes, so [esp+0x10] aliases the
          * original live-frac slot [esp+0x08], not scaledFillW [esp+0x10]. */
-        float trailW = (float)(
-            ((long double)display - (long double)frac) *
-            (long double)rect->w * (long double)cgs_screenXScale);             /* [ESP+0x18] */
-        float trailH = cgs_screenYScale * rect->h;                             /* [ESP+0x14] */
+        float trailW =
+            (float)(((long double)display - (long double)frac) * (long double)rect->w * (long double)cgs_screenXScale); /* [ESP+0x18] */
+        float trailH = cgs_screenYScale * rect->h; /* [ESP+0x14] */
 
         // 0x3002fc46: force the trailing bar RGB to red (1,0,0), retaining
         // the caller's alpha; EAX=0 from XOR sets color[1],color[2].
-        color[0] = 1.0f;    /* MOV [ESI],0x3f800000 */
-        color[1] = 0.0f;    /* MOV [ESI+4],EAX(=0) */
-        color[2] = 0.0f;    /* MOV [ESI+8],EAX(=0) */
+        color[0] = 1.0f; /* MOV [ESI],0x3f800000 */
+        color[1] = 0.0f; /* MOV [ESI+4],EAX(=0) */
+        color[2] = 0.0f; /* MOV [ESI+8],EAX(=0) */
 
         trap_R_SetColor(color);
-        trap_R_DrawStretchPic(CG_FloatBits(trailX),                    /* arg1 x */
-                              CG_FloatBits(trailY),                    /* arg2 y */
-                              CG_FloatBits(trailW),                    /* arg3 w */
-                              CG_FloatBits(trailH),                    /* arg4 h */
-                              CG_FloatBits(frac),                      /* arg5 s1 = live frac */
-                              CG_FloatBits(0.0f),                      /* arg6 t1 */
-                              CG_FloatBits(display),                   /* arg7 s2 = trailing frac */
-                              CG_FloatBits(1.0f),                      /* arg8 t2 */
-                              hShader);                                /* arg9 */
+        trap_R_DrawStretchPic(CG_FloatBits(trailX), /* arg1 x */
+                              CG_FloatBits(trailY), /* arg2 y */
+                              CG_FloatBits(trailW), /* arg3 w */
+                              CG_FloatBits(trailH), /* arg4 h */
+                              CG_FloatBits(frac), /* arg5 s1 = live frac */
+                              CG_FloatBits(0.0f), /* arg6 t1 */
+                              CG_FloatBits(display), /* arg7 s2 = trailing frac */
+                              CG_FloatBits(1.0f), /* arg8 t2 */
+                              hShader); /* arg9 */
     }
 
     // 0x3002fc8b: reset the 2D draw color to opaque white (trap_R_SetColor(NULL)).

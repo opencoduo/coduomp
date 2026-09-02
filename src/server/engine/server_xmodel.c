@@ -31,12 +31,12 @@ void Com_Error(errorParm_t code, const char *format, ...);
 XModel *SV_XModelGet(const char *name)
 {
     if (Q_stricmpn(name, "xmodel", SERVER_XMODEL_PREFIX_LENGTH) != 0 ||
-        (name[SERVER_XMODEL_PREFIX_LENGTH] != '/' &&
-         name[SERVER_XMODEL_PREFIX_LENGTH] != '\\')) {
-        Com_Error(ERR_DROP, "\x15" "bad model name '%s'", name);
+        (name[SERVER_XMODEL_PREFIX_LENGTH] != '/' && name[SERVER_XMODEL_PREFIX_LENGTH] != '\\')) {
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "bad model name '%s'",
+                  name);
     }
 
-    return XModelPrecache(name + SERVER_XMODEL_PREFIX_LENGTH + 1,
-                          XMODEL_LOAD_PARTS_ONLY,
-                          Hunk_AllocXModelPrecache, NULL);
+    return XModelPrecache(name + SERVER_XMODEL_PREFIX_LENGTH + 1, XMODEL_LOAD_PARTS_ONLY, Hunk_AllocXModelPrecache, NULL);
 }

@@ -8,21 +8,20 @@
 void CG_Tcmd_f(void) /* 0x30017210 */
 {
     int32_t target = cg_crosshairEntNum;
-    int32_t expiry =
-        coduo_int32_from_bits((uint32_t)cg_crosshairEntTime + 1000u);
-    if ((int32_t)cg_time > expiry) target = -1;
-    else if (target == 0) return;
+    int32_t expiry = coduo_int32_from_bits((uint32_t)cg_crosshairEntTime + 1000u);
+    if ((int32_t)cg_time > expiry)
+        target = -1;
+    else if (target == 0)
+        return;
 
     char orderText[4];
     trap_Argv(1, orderText, sizeof(orderText));
-    cgame_syscall(CG_SEND_CONSOLE_COMMAND,
-        (intptr_t)va("gc %i %i", target, coduo_crt_atoi(orderText)));
+    cgame_syscall(CG_SEND_CONSOLE_COMMAND, (intptr_t)va("gc %i %i", target, coduo_crt_atoi(orderText)));
 }
 
 void CG_ScoresDown_f(void) /* 0x30017330 */
 {
-    int32_t refreshDeadline = coduo_int32_from_bits(
-        (uint32_t)cgs_scoreboardTime + 2000u);
+    int32_t refreshDeadline = coduo_int32_from_bits((uint32_t)cgs_scoreboardTime + 2000u);
     if (refreshDeadline < coduo_int32_from_bits(cg_time)) {
         cgs_scoreboardTime = coduo_int32_from_bits(cg_time);
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"score");
@@ -60,9 +59,9 @@ void CG_ShellShock_Save_f(void) /* 0x300175f0 */
 void CG_TellTarget_f(void) /* 0x30017660 */
 {
     int32_t currentTime = coduo_int32_from_bits(cg_time);
-    int32_t expiry = coduo_int32_from_bits(
-        (uint32_t)cg_crosshairEntTime + 1000u);
-    if (currentTime > expiry || cg_crosshairEntNum == -1) return;
+    int32_t expiry = coduo_int32_from_bits((uint32_t)cg_crosshairEntTime + 1000u);
+    if (currentTime > expiry || cg_crosshairEntNum == -1)
+        return;
     char args[128];
     char command[128];
     cgame_syscall(CG_ARGS, (intptr_t)args, sizeof(args));
@@ -72,15 +71,14 @@ void CG_TellTarget_f(void) /* 0x30017660 */
 
 void CG_TeamVoiceChat_f(void) /* 0x30017820 */
 {
-    if (trap_Argc() != 2) return;
+    if (trap_Argc() != 2)
+        return;
     snapshot_t *snap = cg_snap;
-    if (snap != NULL && snap->ps.pmType != PM_TYPE_INTERMISSION &&
-        (snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
+    if (snap != NULL && snap->ps.pmType != PM_TYPE_INTERMISSION && (snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
         Com_PrintMessage("%s\n", CG_SafeTranslateString_Internal("cgame", "CGAME_NOSPECTATORVOICECHAT"));
         return;
     }
     char token[64];
     trap_Argv(1, token, sizeof(token));
-    cgame_syscall(CG_SEND_CONSOLE_COMMAND,
-                  (intptr_t)va("cmd vsay_team %s\n", token));
+    cgame_syscall(CG_SEND_CONSOLE_COMMAND, (intptr_t)va("cmd vsay_team %s\n", token));
 }

@@ -66,8 +66,7 @@ void Script_SetFocus(itemDef_t *item, char **arguments)
     }
     menu = item->parent;
     target = Menu_FindItemByName(menu, name);
-    if (target == NULL ||
-        (target->window.flags & (WINDOW_HASFOCUS | WINDOW_DECORATION)) != 0) {
+    if (target == NULL || (target->window.flags & (WINDOW_HASFOCUS | WINDOW_DECORATION)) != 0) {
         return;
     }
 
@@ -91,20 +90,16 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 
     /* Both originals snapshot the default sound before even testing item. */
     focusSound = DC->itemFocusSound;
-    if (item == NULL ||
-        (item->window.flags & (WINDOW_HASFOCUS | WINDOW_DECORATION)) != 0 ||
-        (item->window.flags & WINDOW_VISIBLE) == 0) {
+    if (item == NULL || (item->window.flags & (WINDOW_HASFOCUS | WINDOW_DECORATION)) != 0 || (item->window.flags & WINDOW_VISIBLE) == 0) {
         return qfalse;
     }
 
     /* This parent read precedes both cvar callbacks in the original bodies. */
     menu = item->parent;
-    if ((item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 &&
-        !Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE)) {
+    if ((item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 && !Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE)) {
         return qfalse;
     }
-    if ((item->cvarFlags & ITEM_CVAR_SHOW_MASK) != 0 &&
-        !Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW)) {
+    if ((item->cvarFlags & ITEM_CVAR_SHOW_MASK) != 0 && !Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW)) {
         return qfalse;
     }
 
@@ -166,9 +161,7 @@ itemDef_t *Menu_GetItemUnderCursor(menuDef_t *menu, float x, float y)
         itemDef_t *item = menu->items[index];
 
         /* Positive ordered comparisons preserve the paired x87 NaN rejection. */
-        if (item != NULL && x >= item->window.rect.x &&
-            x <= item->window.rect.x + item->window.rect.w &&
-            y >= item->window.rect.y &&
+        if (item != NULL && x >= item->window.rect.x && x <= item->window.rect.x + item->window.rect.w && y >= item->window.rect.y &&
             y <= item->window.rect.y + item->window.rect.h) {
             return item;
         }
@@ -202,12 +195,10 @@ void Item_MouseEnter(itemDef_t *item, float x, float y)
     memcpy(&textBox, &item->textRect, sizeof(textBox));
     textBox.y = textBox.y - textBox.h;
 
-    if ((item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 &&
-        !Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE)) {
+    if ((item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 && !Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE)) {
         return;
     }
-    if ((item->cvarFlags & ITEM_CVAR_SHOW_MASK) != 0 &&
-        !Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW)) {
+    if ((item->cvarFlags & ITEM_CVAR_SHOW_MASK) != 0 && !Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW)) {
         return;
     }
 
@@ -216,26 +207,22 @@ void Item_MouseEnter(itemDef_t *item, float x, float y)
     if (Rect_ContainsPoint(&textBox, x, y)) {
         if ((flags & WINDOW_MOUSEOVERTEXT) == 0) {
             Item_RunScript(item, item->mouseEnterText);
-            item->window.flags = (int32_t)(
-                (uint32_t)item->window.flags | WINDOW_MOUSEOVERTEXT);
+            item->window.flags = (int32_t)((uint32_t)item->window.flags | WINDOW_MOUSEOVERTEXT);
         }
         if ((item->window.flags & WINDOW_MOUSEOVER) == 0) {
             Item_RunScript(item, item->mouseEnter);
-            item->window.flags = (int32_t)(
-                (uint32_t)item->window.flags | WINDOW_MOUSEOVER);
+            item->window.flags = (int32_t)((uint32_t)item->window.flags | WINDOW_MOUSEOVER);
         }
         return;
     }
 
     if ((flags & WINDOW_MOUSEOVERTEXT) != 0) {
         Item_RunScript(item, item->mouseExitText);
-        item->window.flags = (int32_t)(
-            (uint32_t)item->window.flags & ~WINDOW_MOUSEOVERTEXT);
+        item->window.flags = (int32_t)((uint32_t)item->window.flags & ~WINDOW_MOUSEOVERTEXT);
     }
     if ((item->window.flags & WINDOW_MOUSEOVER) == 0) {
         Item_RunScript(item, item->mouseEnter);
-        item->window.flags = (int32_t)(
-            (uint32_t)item->window.flags | WINDOW_MOUSEOVER);
+        item->window.flags = (int32_t)((uint32_t)item->window.flags | WINDOW_MOUSEOVER);
     }
     if (item->type == ITEM_TYPE_LISTBOX) {
         Item_ListBox_MouseEnter(item, x, y);
@@ -261,9 +248,7 @@ qboolean Menu_HandleMouseMove(menuDef_t *menu, float x, float y)
     qboolean action = qfalse;
     int32_t pass;
 
-    if (menu == NULL ||
-        (menu->window.flags & WINDOW_MOUSE_ACTIVE) == 0 ||
-        captureItem != NULL || g_waitingForKey || g_editingField) {
+    if (menu == NULL || (menu->window.flags & WINDOW_MOUSE_ACTIVE) == 0 || captureItem != NULL || g_waitingForKey || g_editingField) {
         return qfalse;
     }
 
@@ -277,16 +262,14 @@ qboolean Menu_HandleMouseMove(menuDef_t *menu, float x, float y)
             if ((item->window.flags & WINDOW_MOUSE_ACTIVE) == 0) {
                 continue;
             }
-            if ((item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 &&
-                !Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE)) {
+            if ((item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 && !Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE)) {
                 continue;
             }
 
             /* Each cvar callback can replace the menu slot. Both binaries
              * therefore re-read it before the next gate and after that gate. */
             item = menu->items[indexBits];
-            if ((item->cvarFlags & ITEM_CVAR_SHOW_MASK) != 0 &&
-                !Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW)) {
+            if ((item->cvarFlags & ITEM_CVAR_SHOW_MASK) != 0 && !Item_EnableShowViaCvar(item, ITEM_CVAR_SHOW)) {
                 continue;
             }
             item = menu->items[indexBits];
@@ -299,12 +282,10 @@ qboolean Menu_HandleMouseMove(menuDef_t *menu, float x, float y)
                 if (pass != 1) {
                     continue;
                 }
-                if (item->type == ITEM_TYPE_TEXT && item->text != NULL &&
-                    !Rect_ContainsPoint(Item_CorrectedTextRect(item), x, y)) {
+                if (item->type == ITEM_TYPE_TEXT && item->text != NULL && !Rect_ContainsPoint(Item_CorrectedTextRect(item), x, y)) {
                     continue;
                 }
-                if ((item->window.flags & WINDOW_VISIBLE) == 0 ||
-                    (item->window.flags & WINDOW_FADINGOUT) != 0) {
+                if ((item->window.flags & WINDOW_VISIBLE) == 0 || (item->window.flags & WINDOW_FADINGOUT) != 0) {
                     continue;
                 }
                 Item_MouseEnter(item, x, y);
@@ -330,8 +311,7 @@ qboolean Menu_HandleMouseMove(menuDef_t *menu, float x, float y)
     if (action) {
         return qtrue;
     }
-    if (focusItem != NULL &&
-        !Rect_ContainsPoint(&focusItem->window.rect, x, y)) {
+    if (focusItem != NULL && !Rect_ContainsPoint(&focusItem->window.rect, x, y)) {
         Menu_ClearFocus(menu);
     }
     return qfalse;
@@ -343,8 +323,7 @@ itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu)
     qboolean wrapped = qfalse;
 
     if (menu->cursorItem < 0) {
-        menu->cursorItem = coduo_int32_from_bits(
-            (uint32_t)menu->itemCount - 1u);
+        menu->cursorItem = coduo_int32_from_bits((uint32_t)menu->itemCount - 1u);
         wrapped = qtrue;
     }
     if (menu->cursorItem <= -1) {
@@ -358,11 +337,9 @@ itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu)
         int32_t cursorY;
         int32_t cursorX;
 
-        menu->cursorItem = coduo_int32_from_bits(
-            (uint32_t)menu->cursorItem - 1u);
+        menu->cursorItem = coduo_int32_from_bits((uint32_t)menu->cursorItem - 1u);
         if (menu->cursorItem < 0 && !wrapped) {
-            menu->cursorItem = coduo_int32_from_bits(
-                (uint32_t)menu->itemCount - 1u);
+            menu->cursorItem = coduo_int32_from_bits((uint32_t)menu->itemCount - 1u);
             wrapped = qtrue;
         }
         if (menu->cursorItem < 0) {
@@ -407,8 +384,7 @@ itemDef_t *Menu_SetNextCursorItem(menuDef_t *menu)
         int32_t cursorY;
         int32_t cursorX;
 
-        menu->cursorItem = coduo_int32_from_bits(
-            (uint32_t)menu->cursorItem + 1u);
+        menu->cursorItem = coduo_int32_from_bits((uint32_t)menu->cursorItem + 1u);
         if (menu->cursorItem >= menu->itemCount) {
             if (wrapped) {
                 if (original == -1) {

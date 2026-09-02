@@ -47,497 +47,423 @@ typedef enum vehicle_turret_activity_slot_e {
 /* ------------------------------------------------------------------ */
 
 /* Vehicle collision parameters */
-#define VEH_COLLISION_SPEED_THRESHOLD  200.0f
-#define VEH_COLLISION_MAX_SPEED        400.0f
-#define VEH_COLLISION_KNOCKBACK_BASE   150.0f
-#define VEH_COLLISION_KNOCKBACK_MULT   1.3f
-#define VEH_COLLISION_VERTICAL_BASE    200.0f
-#define VEH_COLLISION_VERTICAL_SCALE   100.0f
-#define VEH_COLLISION_SOUND_Z_SCALE    1500.0f
-#define VEH_COLLISION_DAMAGE_COOLDOWN  500
-#define VEH_PARSE_ERROR_UNKNOWN_TYPE \
-    COM_ERROR_MARKER "Unknown vehicle type [s]\n"
+#define VEH_COLLISION_SPEED_THRESHOLD 200.0f
+#define VEH_COLLISION_MAX_SPEED 400.0f
+#define VEH_COLLISION_KNOCKBACK_BASE 150.0f
+#define VEH_COLLISION_KNOCKBACK_MULT 1.3f
+#define VEH_COLLISION_VERTICAL_BASE 200.0f
+#define VEH_COLLISION_VERTICAL_SCALE 100.0f
+#define VEH_COLLISION_SOUND_Z_SCALE 1500.0f
+#define VEH_COLLISION_DAMAGE_COOLDOWN 500
+#define VEH_PARSE_ERROR_UNKNOWN_TYPE COM_ERROR_MARKER "Unknown vehicle type [s]\n"
 #define VEH_PARSE_ERROR_BAD_FIELD_TYPE COM_ERROR_MARKER "Bad vehicle field type %i\n"
-#define VEH_SCRIPT_ENTITY_ERROR_TYPE   "entity %i is not a script_vehicle\n"
-#define VEH_SCRIPT_ENTITY_ERROR_STATE  "entity %i doesn't have a script_vehicle\n"
-#define VEH_SCRIPT_ENTITY_ERROR_RANGE  "i is not a valid entity number\n"
-#define VEH_SCRIPT_ENTITY_ERROR_TAG \
-    COM_ERROR_MARKER "Script vehicle [%s] needs [%s]\n"
+#define VEH_SCRIPT_ENTITY_ERROR_TYPE "entity %i is not a script_vehicle\n"
+#define VEH_SCRIPT_ENTITY_ERROR_STATE "entity %i doesn't have a script_vehicle\n"
+#define VEH_SCRIPT_ENTITY_ERROR_RANGE "i is not a valid entity number\n"
+#define VEH_SCRIPT_ENTITY_ERROR_TAG COM_ERROR_MARKER "Script vehicle [%s] needs [%s]\n"
 #define VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED "vehicle '%s' not precached"
-#define VEH_PHYSICS_CLIENT_COUNT       64
-#define VEH_PHYSICS_NEARBY_RADIUS_SQ   1048576.0f
-#define VEH_GROUND_SIDE_CLAMP_SPEED    20.0f
-#define VEH_GROUND_FRICTION_SCALE      0.05f
-#define VEH_GROUND_STEER_MIN_FORWARD   100.0f
-#define VEH_GROUND_STEER_MIN_SIDE      1.0f
-#define VEH_GROUND_STEER_MAX_STEP      5.0f
-#define VEH_APPROACH_FRAME_SECONDS     0.05f
-#define VEH_APPROACH_EPSILON           0.001f /* original float32 0x3a83126f */
-#define VEH_ENTITY_SVFLAGS             4u
-#define VEH_ENTITY_CONTENTS            0x2080
-#define VEH_ENTITY_SPAWNFLAG_TRIGGER   1u
-#define VEH_ENTITY_SPAWNFLAG_CONTENTS  0x200000u
-#define VEH_ENTITY_CLIPMASK            0x201
-#define VEH_ENTITY_FLAG_LINKED         0x20000u
-#define VEH_ENTITY_THINK_INTERVAL_MS   50
-#define VEH_ENTITY_DEFAULT_ANIM_VALUE  127
-#define VEH_COLLMAP_SCRIPT_CONTENTS    0xa00000u
-#define VEH_COLLMAP_BASE_CONTENTS      0x800000u
-#define VEH_SCRIPTED_INPUT_CLAMP       30.0f
-#define VEH_INPUT_SCALE_MAX            1.0f
-#define VEH_THROTTLE_SCALE_MULTIPLIER  2.0f
-#define VEH_PHYSICS_FRAME_SECONDS      0.05f
-#define VEH_DEFAULT_SPEED_SCALE        0.8f
-#define VEH_REVERSE_SPEED_SCALE        0.5f
-#define VEH_IDLE_BRAKE_STEP            10.0f
-#define VEH_4WHEEL_LATERAL_SCALE       0.75f
-#define VEH_4WHEEL_LATERAL_DIVISOR     80.0f
-#define VEH_4WHEEL_LATERAL_SPEED       400.0f
-#define VEH_4WHEEL_STEER_ANGLE         60.0f
-#define VEH_4WHEEL_STEER_CENTER        10.0f
-#define VEH_4WHEEL_STEER_DAMP_RANGE    60.0f
-#define VEH_4WHEEL_MIN_SPEED           10.0f
-#define VEH_4WHEEL_RATE_STEP_SCALE     4.0f
-#define VEH_ROLL_ACCEL_SCALE           4.0f
-#define VEH_ROLL_ACCEL_MAX_STEP        3.0f
-#define VEH_ROLL_ACCEL_CLAMP           16.0f
-#define VEH_ROLL_ACCEL_SNAP            0.5f
-#define VEH_STEERING_ROLL_SPEED        40.0f
-#define VEH_DRIVER_BUTTON_STRAFE       (1u << 5)
-#define VEH_UNSTICK_VECTOR_COUNT       26
-#define VEH_GROUND_PROBE_STEP          0.25f
-#define VEH_GROUND_PROBE_FALLBACK      0.25f
-#define VEH_GROUND_TRACE_DOWN_STEP     1.0f
-#define VEH_GROUND_NORMAL_MIN_Z        0.7f
-#define VEH_GROUND_MAX_IMPACT_DOT      10.0f
-#define VEH_SLIDE_GRAVITY_STEP         40.0f
-#define VEH_SLIDE_MAX_BUMPS            4
-#define VEH_SLIDE_MAX_CLIP_PLANES      5
-#define VEH_SLIDE_OVERCLIP             1.01f
-#define VEH_SLIDE_CLIP_EPSILON         0.1f
-#define VEH_SLIDE_RECOLLIDE_DOT        0.99f
-#define VEH_STEP_TOUCH_COUNT           4
+#define VEH_PHYSICS_CLIENT_COUNT 64
+#define VEH_PHYSICS_NEARBY_RADIUS_SQ 1048576.0f
+#define VEH_GROUND_SIDE_CLAMP_SPEED 20.0f
+#define VEH_GROUND_FRICTION_SCALE 0.05f
+#define VEH_GROUND_STEER_MIN_FORWARD 100.0f
+#define VEH_GROUND_STEER_MIN_SIDE 1.0f
+#define VEH_GROUND_STEER_MAX_STEP 5.0f
+#define VEH_APPROACH_FRAME_SECONDS 0.05f
+#define VEH_APPROACH_EPSILON 0.001f /* original float32 0x3a83126f */
+#define VEH_ENTITY_SVFLAGS 4u
+#define VEH_ENTITY_CONTENTS 0x2080
+#define VEH_ENTITY_SPAWNFLAG_TRIGGER 1u
+#define VEH_ENTITY_SPAWNFLAG_CONTENTS 0x200000u
+#define VEH_ENTITY_CLIPMASK 0x201
+#define VEH_ENTITY_FLAG_LINKED 0x20000u
+#define VEH_ENTITY_THINK_INTERVAL_MS 50
+#define VEH_ENTITY_DEFAULT_ANIM_VALUE 127
+#define VEH_COLLMAP_SCRIPT_CONTENTS 0xa00000u
+#define VEH_COLLMAP_BASE_CONTENTS 0x800000u
+#define VEH_SCRIPTED_INPUT_CLAMP 30.0f
+#define VEH_INPUT_SCALE_MAX 1.0f
+#define VEH_THROTTLE_SCALE_MULTIPLIER 2.0f
+#define VEH_PHYSICS_FRAME_SECONDS 0.05f
+#define VEH_DEFAULT_SPEED_SCALE 0.8f
+#define VEH_REVERSE_SPEED_SCALE 0.5f
+#define VEH_IDLE_BRAKE_STEP 10.0f
+#define VEH_4WHEEL_LATERAL_SCALE 0.75f
+#define VEH_4WHEEL_LATERAL_DIVISOR 80.0f
+#define VEH_4WHEEL_LATERAL_SPEED 400.0f
+#define VEH_4WHEEL_STEER_ANGLE 60.0f
+#define VEH_4WHEEL_STEER_CENTER 10.0f
+#define VEH_4WHEEL_STEER_DAMP_RANGE 60.0f
+#define VEH_4WHEEL_MIN_SPEED 10.0f
+#define VEH_4WHEEL_RATE_STEP_SCALE 4.0f
+#define VEH_ROLL_ACCEL_SCALE 4.0f
+#define VEH_ROLL_ACCEL_MAX_STEP 3.0f
+#define VEH_ROLL_ACCEL_CLAMP 16.0f
+#define VEH_ROLL_ACCEL_SNAP 0.5f
+#define VEH_STEERING_ROLL_SPEED 40.0f
+#define VEH_DRIVER_BUTTON_STRAFE (1u << 5)
+#define VEH_UNSTICK_VECTOR_COUNT 26
+#define VEH_GROUND_PROBE_STEP 0.25f
+#define VEH_GROUND_PROBE_FALLBACK 0.25f
+#define VEH_GROUND_TRACE_DOWN_STEP 1.0f
+#define VEH_GROUND_NORMAL_MIN_Z 0.7f
+#define VEH_GROUND_MAX_IMPACT_DOT 10.0f
+#define VEH_SLIDE_GRAVITY_STEP 40.0f
+#define VEH_SLIDE_MAX_BUMPS 4
+#define VEH_SLIDE_MAX_CLIP_PLANES 5
+#define VEH_SLIDE_OVERCLIP 1.01f
+#define VEH_SLIDE_CLIP_EPSILON 0.1f
+#define VEH_SLIDE_RECOLLIDE_DOT 0.99f
+#define VEH_STEP_TOUCH_COUNT 4
 #define VEH_SUSPENSION_WHEEL_COUNT_4WHEEL 4
-#define VEH_SUSPENSION_WHEEL_COUNT_TANK   6
-#define VEH_SUSPENSION_TRACE_UP        100.0f
-#define VEH_SUSPENSION_TRACE_DOWN      256.0f
-#define VEH_SUSPENSION_TRACE_MASK      0x211
-#define VEH_SUSPENSION_TRACE_MASK_ALT  0x10211
-#define VEH_SUSPENSION_ANGLE_RATE      6.0f
-#define VEH_SUSPENSION_ANGLE_CLAMP     60.0f
-#define VEH_SUSPENSION_ANGULAR_SCALE   20.0f
-#define VEH_COLLISION_MODE_ALT_TRACE   2u
-#define VEH_TURRET_STATE_INACTIVE      0
-#define VEH_TURRET_STATE_WINDDOWN      1
-#define VEH_TURRET_STATE_ACTIVE        2
-#define VEH_CLIENT_FIRE_BUTTON         1u
-#define VEH_CLIENT_ALT_FIRE_BUTTON     (1u << 5)
+#define VEH_SUSPENSION_WHEEL_COUNT_TANK 6
+#define VEH_SUSPENSION_TRACE_UP 100.0f
+#define VEH_SUSPENSION_TRACE_DOWN 256.0f
+#define VEH_SUSPENSION_TRACE_MASK 0x211
+#define VEH_SUSPENSION_TRACE_MASK_ALT 0x10211
+#define VEH_SUSPENSION_ANGLE_RATE 6.0f
+#define VEH_SUSPENSION_ANGLE_CLAMP 60.0f
+#define VEH_SUSPENSION_ANGULAR_SCALE 20.0f
+#define VEH_COLLISION_MODE_ALT_TRACE 2u
+#define VEH_TURRET_STATE_INACTIVE 0
+#define VEH_TURRET_STATE_WINDDOWN 1
+#define VEH_TURRET_STATE_ACTIVE 2
+#define VEH_CLIENT_FIRE_BUTTON 1u
+#define VEH_CLIENT_ALT_FIRE_BUTTON (1u << 5)
 #define VEH_CLIENT_GUNNER_OVERHEAT_FLAG 0x00800000u
-#define VEH_FIRE_TIME_THINK_STEP_MS    50
-#define VEH_ALT_TRACE_TARGET_DISTANCE  10240.0f
-#define VEH_ALT_TRACE_CONTENTS_CLEAR   0x02000000u
-#define VEH_ALT_TRACE_LOCATIONAL_MASK  0x2091
+#define VEH_FIRE_TIME_THINK_STEP_MS 50
+#define VEH_ALT_TRACE_TARGET_DISTANCE 10240.0f
+#define VEH_ALT_TRACE_CONTENTS_CLEAR 0x02000000u
+#define VEH_ALT_TRACE_LOCATIONAL_MASK 0x2091
 #define VEH_TEXTURE_SCROLL_SPEED_SCALE 176.0f
-#define VEH_TURRET_STALL_DELTA         2.0f
-#define VEH_TURRET_NOTIFY_EPSILON      1.0f
-#define VEH_MOTION_ANIM_FRAME_SECONDS  0.05f
-#define VEH_MOTION_ANIM_PHASE_STEP     36.0f
-#define VEH_MOTION_ANIM_CENTER         127.0f
-#define VEH_MOTION_ANIM_SCALE          (127.0f / 30.0f)
-#define VEH_PI                         3.1415927f /* original float32 0x40490fdb */
-#define VEH_PATH_DEBUG_SEGMENT_DOT     0.9999f /* original float32 0x3f7ff972 */
-#define VEH_PATH_DEBUG_MAX_ITERS       50000
-#define VEH_PATH_DEBUG_BOX_HALF_SIZE   4.0f
-#define VEH_MAX_PATH_NODES             3000
-#define VEH_PATH_NODE_MAX_COUNT_ERROR \
-    COM_ERROR_MARKER "Hit max vehicle path node count [%d]\n"
-#define VEH_PATH_NODE_NO_NAME_ERROR \
-    COM_ERROR_MARKER "Vehicle path node( %f, %f, %f ) found with no name\n"
-#define VEH_PATH_NODE_NEGATIVE_SPEED_ERROR \
-    COM_ERROR_MARKER "Vehicle path node at( %f, %f, %f ) has negative speed\n"
-#define VEH_NOT_VEHICLE_NODE_ERROR     "Not a vehicle node"
-#define VEH_NODE_KEY_NOT_STRING_ERROR  "key is not internally a string"
-#define VEH_NODE_MULTIPLE_MATCH_ERROR  "GetVehicleNode used with more than one node"
-#define VEH_PASSENGER_SLOT_COUNT       7
-#define VEH_PASSENGER_SLOT_DRIVER      1
-#define VEH_PASSENGER_SLOT_GUNNER      2
+#define VEH_TURRET_STALL_DELTA 2.0f
+#define VEH_TURRET_NOTIFY_EPSILON 1.0f
+#define VEH_MOTION_ANIM_FRAME_SECONDS 0.05f
+#define VEH_MOTION_ANIM_PHASE_STEP 36.0f
+#define VEH_MOTION_ANIM_CENTER 127.0f
+#define VEH_MOTION_ANIM_SCALE (127.0f / 30.0f)
+#define VEH_PI 3.1415927f /* original float32 0x40490fdb */
+#define VEH_PATH_DEBUG_SEGMENT_DOT 0.9999f /* original float32 0x3f7ff972 */
+#define VEH_PATH_DEBUG_MAX_ITERS 50000
+#define VEH_PATH_DEBUG_BOX_HALF_SIZE 4.0f
+#define VEH_MAX_PATH_NODES 3000
+#define VEH_PATH_NODE_MAX_COUNT_ERROR COM_ERROR_MARKER "Hit max vehicle path node count [%d]\n"
+#define VEH_PATH_NODE_NO_NAME_ERROR COM_ERROR_MARKER "Vehicle path node( %f, %f, %f ) found with no name\n"
+#define VEH_PATH_NODE_NEGATIVE_SPEED_ERROR COM_ERROR_MARKER "Vehicle path node at( %f, %f, %f ) has negative speed\n"
+#define VEH_NOT_VEHICLE_NODE_ERROR "Not a vehicle node"
+#define VEH_NODE_KEY_NOT_STRING_ERROR "key is not internally a string"
+#define VEH_NODE_MULTIPLE_MATCH_ERROR "GetVehicleNode used with more than one node"
+#define VEH_PASSENGER_SLOT_COUNT 7
+#define VEH_PASSENGER_SLOT_DRIVER 1
+#define VEH_PASSENGER_SLOT_GUNNER 2
 #define VEH_PASSENGER_EXTRA_SLOT_FIRST 3
-#define VEH_PASSENGER_SLOT_LAST        (VEH_PASSENGER_SLOT_COUNT - 1)
-#define VEH_PASSENGER_SLOT_WRAP        VEH_PASSENGER_SLOT_COUNT
-#define VEH_PATH_ANGLE_SMOOTH_PITCH    6.0f
-#define VEH_PATH_ANGLE_SMOOTH_YAW      4.0f
-#define VEH_PATH_SPEED_MODE_NONE       0
-#define VEH_PATH_SPEED_MODE_SCRIPT     1
-#define VEH_PATH_SPEED_MODE_PATH       2
-#define VEH_PATH_INVALID_POSITION_ERROR \
-    COM_ERROR_MARKER "VEH_AttachBoneIndexForPosition: unknown position\n"
-#define VEH_MAX_SCR_VEHICLES          64
-#define VEH_VEHICLE_FILE_MAGIC        "VEHICLEFILE"
-#define VEH_VEHICLE_FILE_FOLDER       "vehicles"
-#define VEH_VEHICLE_FILE_EXTENSION    ""
-#define VEH_VEHICLE_FILE_LIST_SIZE    4096
-#define VEH_VEHICLE_FILE_BUFFER_SIZE  8192
-#define VEH_VEHICLE_PARSE_CUSTOM_MAX  9
-#define VEH_VEHICLE_MAX_FILES_ERROR \
-    COM_ERROR_MARKER "Max vehicle files allowed is %i, found %i.\n"
+#define VEH_PASSENGER_SLOT_LAST (VEH_PASSENGER_SLOT_COUNT - 1)
+#define VEH_PASSENGER_SLOT_WRAP VEH_PASSENGER_SLOT_COUNT
+#define VEH_PATH_ANGLE_SMOOTH_PITCH 6.0f
+#define VEH_PATH_ANGLE_SMOOTH_YAW 4.0f
+#define VEH_PATH_SPEED_MODE_NONE 0
+#define VEH_PATH_SPEED_MODE_SCRIPT 1
+#define VEH_PATH_SPEED_MODE_PATH 2
+#define VEH_PATH_INVALID_POSITION_ERROR COM_ERROR_MARKER "VEH_AttachBoneIndexForPosition: unknown position\n"
+#define VEH_MAX_SCR_VEHICLES 64
+#define VEH_VEHICLE_FILE_MAGIC "VEHICLEFILE"
+#define VEH_VEHICLE_FILE_FOLDER "vehicles"
+#define VEH_VEHICLE_FILE_EXTENSION ""
+#define VEH_VEHICLE_FILE_LIST_SIZE 4096
+#define VEH_VEHICLE_FILE_BUFFER_SIZE 8192
+#define VEH_VEHICLE_PARSE_CUSTOM_MAX 9
+#define VEH_VEHICLE_MAX_FILES_ERROR COM_ERROR_MARKER "Max vehicle files allowed is %i, found %i.\n"
 #define VEH_VEHICLE_LOAD_ERROR COM_ERROR_MARKER "Could not load vehicle file [%s]\n"
 #define VEH_VEHICLE_MAGIC_ERROR COM_ERROR_MARKER "File [%s] is not a vehicle file\n"
 #define VEH_VEHICLE_SIZE_ERROR COM_ERROR_MARKER "Vehicle file [%s] is to big\n"
 #define VEH_VEHICLE_VALID_ERROR COM_ERROR_MARKER "Vehicle file [%s] is not valid\n"
-#define VEH_VEHICLE_PATH_FORMAT       "%s/%s"
+#define VEH_VEHICLE_PATH_FORMAT "%s/%s"
 #define VEH_VEHICLE_INLINE_STRING_SIZE 64
-#define VEH_VEHICLE_HIT_PERSON_SOUND  "vehicle_hit_person"
+#define VEH_VEHICLE_HIT_PERSON_SOUND "vehicle_hit_person"
 #define VEH_VEHICLE_MAX_COUNT_ERROR COM_ERROR_MARKER "Hit max vehicle count [%d]\n"
-#define VEH_VEHICLE_INFO_LOOKUP_ERROR \
-    COM_ERROR_MARKER "Can't find info for script vehicle [%s]\n"
-#define VEH_LINK_ALREADY_USING_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Player is already using a vehicle\n"
-#define VEH_LINK_ALREADY_OWNER_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Player already has an owner\n"
-#define VEH_LINK_NOT_OWNER_COMMAND    "e \"GMI_GAME_VEHICLE_NOT_OWNER\""
-#define VEH_LINK_FULL_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Vehicle is full, should not be usable\n"
-#define VEH_LINK_ATTACH_BONE_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Attach bone not found in vehicle (%s)\n"
-#define VEH_LINK_DRIVER_BONE_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Trying to use vehicle without a bone [tag_player]\n"
-#define VEH_LINK_GUNNER_BONE_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Trying to use vehicle without a bone [tag_secondary_gun]\n"
-#define VEH_LINK_BODY_BONE_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Trying to use vehicle without a bone [tag_body]\n"
-#define VEH_LINK_CANNOT_LINK_ERROR \
-    COM_ERROR_MARKER "VEH_LinkPlayer: Cannot link to vehicle bone [%s]\n"
-#define VEH_UNLINK_NOT_USING_ERROR \
-    COM_ERROR_MARKER "VEH_UnlinkPlayer: Player is not using a vehicle\n"
-#define VEH_UNLINK_NO_OWNER_WARNING \
-    COM_ERROR_MARKER "VEH_UnlinkPlayer: Player doesn't have an owner\n"
+#define VEH_VEHICLE_INFO_LOOKUP_ERROR COM_ERROR_MARKER "Can't find info for script vehicle [%s]\n"
+#define VEH_LINK_ALREADY_USING_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Player is already using a vehicle\n"
+#define VEH_LINK_ALREADY_OWNER_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Player already has an owner\n"
+#define VEH_LINK_NOT_OWNER_COMMAND "e \"GMI_GAME_VEHICLE_NOT_OWNER\""
+#define VEH_LINK_FULL_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Vehicle is full, should not be usable\n"
+#define VEH_LINK_ATTACH_BONE_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Attach bone not found in vehicle (%s)\n"
+#define VEH_LINK_DRIVER_BONE_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Trying to use vehicle without a bone [tag_player]\n"
+#define VEH_LINK_GUNNER_BONE_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Trying to use vehicle without a bone [tag_secondary_gun]\n"
+#define VEH_LINK_BODY_BONE_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Trying to use vehicle without a bone [tag_body]\n"
+#define VEH_LINK_CANNOT_LINK_ERROR COM_ERROR_MARKER "VEH_LinkPlayer: Cannot link to vehicle bone [%s]\n"
+#define VEH_UNLINK_NOT_USING_ERROR COM_ERROR_MARKER "VEH_UnlinkPlayer: Player is not using a vehicle\n"
+#define VEH_UNLINK_NO_OWNER_WARNING COM_ERROR_MARKER "VEH_UnlinkPlayer: Player doesn't have an owner\n"
 #define VEH_UNLINK_EXIT_DELAY_COMMAND "e \"GMI_GAME_VEHICLE_EXIT_DELAY\""
-#define VEH_UNLINK_BLOCKED_COMMAND    "e \"GMI_GAME_VEHICLE_UNLINK_BLOCKED\""
-#define VEH_CLIENT_COMMAND_RUN        "v cl_run 1"
-#define VEH_CLIENT_COMMAND_STANCE     "v cl_stance 0"
+#define VEH_UNLINK_BLOCKED_COMMAND "e \"GMI_GAME_VEHICLE_UNLINK_BLOCKED\""
+#define VEH_CLIENT_COMMAND_RUN "v cl_run 1"
+#define VEH_CLIENT_COMMAND_STANCE "v cl_stance 0"
 #define VEH_CLIENT_STANCE_FLAG_GUNNER 0x00800000u
-#define VEH_VEHICLE_S_FLAG_DRIVER     0x00100000u
-#define VEH_LINK_RETRY_DELAY_MS       250
-#define VEH_LINK_TANK_RETRY_DELAY_MS  1500
-#define VEH_EXIT_DELAY_MS             1500
-#define VEH_EXIT_ROLL_DELAY_MS        3000
-#define VEH_EXIT_ANIM_GRACE_MS        750
-#define VEH_PLAYER_REENTER_DELAY_MS   2000
-#define VEH_EXIT_VERTICAL_BOOST       200.0f
-#define VEH_USABLE_SCRIPT_CONTENTS    0x00200000u
-#define VEH_USABLE_MAX_SPEED          100.0f
-#define VEH_INFO_SPEED_SCALE          17.6f
-#define VEH_INFO_HALF_SCALE           0.5f
-#define VEH_INFO_SOUND_ALIAS_COUNT    7
+#define VEH_VEHICLE_S_FLAG_DRIVER 0x00100000u
+#define VEH_LINK_RETRY_DELAY_MS 250
+#define VEH_LINK_TANK_RETRY_DELAY_MS 1500
+#define VEH_EXIT_DELAY_MS 1500
+#define VEH_EXIT_ROLL_DELAY_MS 3000
+#define VEH_EXIT_ANIM_GRACE_MS 750
+#define VEH_PLAYER_REENTER_DELAY_MS 2000
+#define VEH_EXIT_VERTICAL_BOOST 200.0f
+#define VEH_USABLE_SCRIPT_CONTENTS 0x00200000u
+#define VEH_USABLE_MAX_SPEED 100.0f
+#define VEH_INFO_SPEED_SCALE 17.6f
+#define VEH_INFO_HALF_SCALE 0.5f
+#define VEH_INFO_SOUND_ALIAS_COUNT 7
 #define VEH_PLAYER_BLEND_TAG_FAIL_WARNING "WARNING: aborting player positioning on turret since '%s' does not exist\n"
-#define VEH_PLAYER_BLEND_ANIM_CHILD_ERROR \
-    COM_ERROR_MARKER "Player anim '%s' has no children"
+#define VEH_PLAYER_BLEND_ANIM_CHILD_ERROR COM_ERROR_MARKER "Player anim '%s' has no children"
 #define VEH_PLAYER_BLEND_LEAN_YAW_LIMIT 45.0f
-#define VEH_PLAYER_BLEND_RATE_SCALE      10.0f
-#define VEH_OWNER_ICON_SVFLAG_LINKED     0x00000800u
-#define VEH_OWNER_ICON_DELAY_MS          100
-#define VEH_OWNER_ICON_TIME_SCALE        1000.0f
-#define VEH_SOUND_THINK_INTERVAL_MS    50
+#define VEH_PLAYER_BLEND_RATE_SCALE 10.0f
+#define VEH_OWNER_ICON_SVFLAG_LINKED 0x00000800u
+#define VEH_OWNER_ICON_DELAY_MS 100
+#define VEH_OWNER_ICON_TIME_SCALE 1000.0f
+#define VEH_SOUND_THINK_INTERVAL_MS 50
 #define VEH_RUN_SOUND_MIN_ANGULAR_SPEED 0.1 /* double: fabs compare loads QWORD 0.1 @0x876fa */
-#define VEH_TAG_FLASH_COUNT            4
-#define VEH_WHEEL_TAG_COUNT            6
-#define VEH_PASSENGER_TAG_COUNT        4
-#define VEH_POPOUT_DISABLED_ERROR \
-    COM_ERROR_MARKER "G_VehiclePopOut: Popout disabled\n"
-#define VEH_POPOUT_BONE_ERROR \
-    COM_ERROR_MARKER "G_VehiclePopOut: Trying to use vehicle without a bone [%s]\n"
-#define VEH_POPOUT_LINK_ERROR \
-    COM_ERROR_MARKER "G_VehiclePopOut: Cannot link to vehicle bone [%s]\n"
-#define VEH_TAG_POPOUT                 "tag_popout"
-#define VEH_TAG_PLAYER                 "tag_player"
-#define VEH_NONPVS_TANK_ENTITY_NONE    ENTITYNUM_NONE
-#define VEH_NONPVS_TANK_ENCODE_MIN     -1022
-#define VEH_NONPVS_TANK_ENCODE_MAX     1024
+#define VEH_TAG_FLASH_COUNT 4
+#define VEH_WHEEL_TAG_COUNT 6
+#define VEH_PASSENGER_TAG_COUNT 4
+#define VEH_POPOUT_DISABLED_ERROR COM_ERROR_MARKER "G_VehiclePopOut: Popout disabled\n"
+#define VEH_POPOUT_BONE_ERROR COM_ERROR_MARKER "G_VehiclePopOut: Trying to use vehicle without a bone [%s]\n"
+#define VEH_POPOUT_LINK_ERROR COM_ERROR_MARKER "G_VehiclePopOut: Cannot link to vehicle bone [%s]\n"
+#define VEH_TAG_POPOUT "tag_popout"
+#define VEH_TAG_PLAYER "tag_player"
+#define VEH_NONPVS_TANK_ENTITY_NONE ENTITYNUM_NONE
+#define VEH_NONPVS_TANK_ENCODE_MIN -1022
+#define VEH_NONPVS_TANK_ENCODE_MAX 1024
 #define VEH_NONPVS_TANK_ORIGIN_LIMIT_POS 1024.0f
 #define VEH_NONPVS_TANK_ORIGIN_LIMIT_NEG -1022.0f
-#define VEH_NONPVS_TANK_YAW_SCALE      0x1.6c16c2p-1f /* float32 0x3f360b61 */
-#define VEH_NONPVS_TANK_COORD_BIAS     255u
-#define VEH_NONPVS_TANK_COORD_MASK     0x1ffu
-#define VEH_NONPVS_TANK_INDEX_MASK     0x3fu
-#define VEH_DAMAGE_SCALE_PERCENT       0.01f
-#define VEH_DAMAGE_SCALE_RADIUS_BLEND  0.7f
+#define VEH_NONPVS_TANK_YAW_SCALE 0x1.6c16c2p-1f /* float32 0x3f360b61 */
+#define VEH_NONPVS_TANK_COORD_BIAS 255u
+#define VEH_NONPVS_TANK_COORD_MASK 0x1ffu
+#define VEH_NONPVS_TANK_INDEX_MASK 0x3fu
+#define VEH_DAMAGE_SCALE_PERCENT 0.01f
+#define VEH_DAMAGE_SCALE_RADIUS_BLEND 0.7f
 #define VEH_DAMAGE_SCALE_GRENADE_HEIGHT 10.0f
 #define VEH_DAMAGE_SCALE_GRENADE_RADIUS_MULT 0.8f
 #define VEH_DAMAGE_SCALE_ANGLE_RADIANS 0.3490658503988659 /* 20 degrees; original double64 0x3fd657184ae74487 */
-#define VEH_PUSH_AWAY_STEP             4.0f
-#define VEH_PUSH_AWAY_PLAYER_RADIUS    32.0f
-#define VEH_BOUNDS_EXPANSION_SCALE     1.2f
-#define VEH_BOUNDS_MINS_PAD_XY        -50.0f
-#define VEH_BOUNDS_MINS_PAD_Z           0.0f
-#define VEH_BOUNDS_MAXS_PAD_XY         50.0f
-#define VEH_BOUNDS_MAXS_PAD_Z          20.0f
-#define VEH_CHECK_PUSH_MAX_CLIENTS     64
-#define VEH_CYCLE_SLOT_RETRY_MS        250
+#define VEH_PUSH_AWAY_STEP 4.0f
+#define VEH_PUSH_AWAY_PLAYER_RADIUS 32.0f
+#define VEH_BOUNDS_EXPANSION_SCALE 1.2f
+#define VEH_BOUNDS_MINS_PAD_XY -50.0f
+#define VEH_BOUNDS_MINS_PAD_Z 0.0f
+#define VEH_BOUNDS_MAXS_PAD_XY 50.0f
+#define VEH_BOUNDS_MAXS_PAD_Z 20.0f
+#define VEH_CHECK_PUSH_MAX_CLIENTS 64
+#define VEH_CYCLE_SLOT_RETRY_MS 250
 #define VEH_CYCLE_SLOT_COMMAND_REPEAT_MS 500
 #define VEH_CYCLE_SLOT_RELINK_DELAY_MS 1500
 #define VEH_CLIENT_COMMAND_DELAY_IGNORE "e \"GMI_GAME_VEHICLE_DELAY_IGNORE\""
-#define VEH_DIE_PASSENGER_DAMAGE_BOOST  10
-#define VEH_DIE_PASSENGER_DAMAGE        5
-#define VEH_DIE_PASSENGER_Z_RAISE       32.0f
-#define VEH_COLLMAP_ENTITY_TYPE         14
-#define VEH_PATH_ALREADY_USED_ERROR     "Vehicle is invalid on path after it's been used"
-#define VEH_PATH_NOT_ATTACHED_ERROR     "Can't start path on a vehicle that hasn't been attached"
-#define VEH_WAIT_SPEED_NEGATIVE_ERROR   "Cannot have a negative wait speed on a vehicle"
-#define VEH_SET_SPEED_NEGATIVE_ERROR    "Cannot set negative speed on vehicle"
+#define VEH_DIE_PASSENGER_DAMAGE_BOOST 10
+#define VEH_DIE_PASSENGER_DAMAGE 5
+#define VEH_DIE_PASSENGER_Z_RAISE 32.0f
+#define VEH_COLLMAP_ENTITY_TYPE 14
+#define VEH_PATH_ALREADY_USED_ERROR "Vehicle is invalid on path after it's been used"
+#define VEH_PATH_NOT_ATTACHED_ERROR "Can't start path on a vehicle that hasn't been attached"
+#define VEH_WAIT_SPEED_NEGATIVE_ERROR "Cannot have a negative wait speed on a vehicle"
+#define VEH_SET_SPEED_NEGATIVE_ERROR "Cannot set negative speed on vehicle"
 #define VEH_SET_ACCELERATION_NEGATIVE_ERROR "Cannot set negative acceleration on vehicle"
-#define VEH_JOLT_SPEED_FRACTION_ERROR   "Speed fraction must be between [0,1]"
+#define VEH_JOLT_SPEED_FRACTION_ERROR "Speed fraction must be between [0,1]"
 #define VEH_JOLT_DECELERATION_NEGATIVE_ERROR "Deceleration can't be negative"
-#define VEH_WAIT_SPEED_SCALE            17.6f
-#define VEH_COLLISION_MODE_USED         2u
-#define VEH_PATH_ACTIVE_MODE            1u
-#define VEH_FREE_ENTITY_TYPE            13
-#define VEH_WHEEL_SURFACE_DEFAULT       "none"
+#define VEH_WAIT_SPEED_SCALE 17.6f
+#define VEH_COLLISION_MODE_USED 2u
+#define VEH_PATH_ACTIVE_MODE 1u
+#define VEH_FREE_ENTITY_TYPE 13
+#define VEH_WHEEL_SURFACE_DEFAULT "none"
 #define VEH_WHEEL_SURFACE_NO_WHEELS_ERROR "Vehicle type [%s] has no wheels\n"
 #define VEH_WHEEL_SURFACE_VALID_NAMES_ERROR \
     "Valid wheel names are: [front_left, front_right, back_left, back_right, middle_left, middle_right]\n"
 #define VEH_WHEEL_SURFACE_NO_MIDDLE_ERROR "Vehicle has no middle wheels\n"
-#define VEH_ALREADY_IN_USE_ERROR       "Vehicle is already in use"
-#define VEH_TURRET_HEALTH_ERROR       "Vehicle must have health to control the turret"
-#define VEH_TURRET_NO_WEAPON_ERROR    "No weapon specified for [%s]\n"
-#define VEH_TURRET_WEAPON_TYPE_ERROR  "Vehicles only support bullet and projectile weapons\n"
-#define VEH_TURRET_NO_BARREL_ERROR    "No tag_barrel for [%s]\n"
-#define VEH_GUNNER_NO_BARREL_ERROR    "No tag_secondary_gun for [%s]\n"
-#define VEH_TURRET_NO_FLASH_WARNING   "WARNING: No %s for [%s]\n"
-#define VEH_PLAYER_VEHICLE_NO_TAG_ERROR \
-    COM_ERROR_MARKER "Player vehicle has no %s\n"
-#define VEH_PLAYER_VEHICLE_NO_BARREL_ERROR \
-    COM_ERROR_MARKER "Player vehicle has no tag_barrel\n"
+#define VEH_ALREADY_IN_USE_ERROR "Vehicle is already in use"
+#define VEH_TURRET_HEALTH_ERROR "Vehicle must have health to control the turret"
+#define VEH_TURRET_NO_WEAPON_ERROR "No weapon specified for [%s]\n"
+#define VEH_TURRET_WEAPON_TYPE_ERROR "Vehicles only support bullet and projectile weapons\n"
+#define VEH_TURRET_NO_BARREL_ERROR "No tag_barrel for [%s]\n"
+#define VEH_GUNNER_NO_BARREL_ERROR "No tag_secondary_gun for [%s]\n"
+#define VEH_TURRET_NO_FLASH_WARNING "WARNING: No %s for [%s]\n"
+#define VEH_PLAYER_VEHICLE_NO_TAG_ERROR COM_ERROR_MARKER "Player vehicle has no %s\n"
+#define VEH_PLAYER_VEHICLE_NO_BARREL_ERROR COM_ERROR_MARKER "Player vehicle has no tag_barrel\n"
 #define VEH_PLAYER_CONTROLLED_VEHICLE_ERROR "Must be called on a player controlled vehicle"
-#define VEH_TURRET_AIM_PITCH_CLAMP    5.0f
-#define VEH_TURRET_AIM_YAW_CLAMP      2.0f
+#define VEH_TURRET_AIM_PITCH_CLAMP 5.0f
+#define VEH_TURRET_AIM_YAW_CLAMP 2.0f
 #define VEH_TURRET_SCRIPTED_INPUT_SCALE 0.75f
-#define VEH_EVENT_MISS_FLAG           0x80u
+#define VEH_EVENT_MISS_FLAG 0x80u
 #define VEH_CLIENT_SESSION_STATE_SPECTATOR 3
 #define VEH_DISMOUNT_TRACE_MASK_CLEAR 0x02000000u
 #define VEH_DISMOUNT_TRACE_MASK_GROUND 0x00810011u
 #define VEH_DISMOUNT_TRACE_MASK_DETACH 0x02810011u
-#define VEH_DISMOUNT_LOS_Z_RAISE      30.0f
-#define VEH_DISMOUNT_BASE_Z_RAISE     4.0f
-#define VEH_DISMOUNT_SEARCH_MIN      -80.0f
-#define VEH_DISMOUNT_SEARCH_MAX       80.0f
-#define VEH_DISMOUNT_SEARCH_STEP      20.0f
-#define VEH_DISMOUNT_Z_RETRY_STEP     32.0f
-#define VEH_DISMOUNT_FALLBACK_STEP    4.0f
+#define VEH_DISMOUNT_LOS_Z_RAISE 30.0f
+#define VEH_DISMOUNT_BASE_Z_RAISE 4.0f
+#define VEH_DISMOUNT_SEARCH_MIN -80.0f
+#define VEH_DISMOUNT_SEARCH_MAX 80.0f
+#define VEH_DISMOUNT_SEARCH_STEP 20.0f
+#define VEH_DISMOUNT_Z_RETRY_STEP 32.0f
+#define VEH_DISMOUNT_FALLBACK_STEP 4.0f
 #define VEH_DISMOUNT_FALLBACK_RETRIES 8
-#define VEH_DISMOUNT_DYNAMIC_RETRIES  4
-#define VEH_DISMOUNT_GROUND_DROP      256.0f
-#define VEH_DISMOUNT_MIN_DIR_LENGTH   0.00001f /* original float32 0x3727c5ac */
-#define VEH_DISMOUNT_SIDE_PAD         60.0f
-#define VEH_DISMOUNT_FORWARD_PAD      100.0f
-#define VEH_DISMOUNT_FALLBACK_Z_PAD   48.0f
-#define VEH_SOLID_SWEEP_COUNT         6
-#define VEH_SOLID_TRACE_MINS_XY      -24.0f
-#define VEH_SOLID_TRACE_MIN_Z        -1.0f
-#define VEH_SOLID_TRACE_MAX_XY        24.0f
-#define VEH_SOLID_TRACE_MAX_Z         10.0f
-#define VEH_SOLID_STANDOFF            24.0f
-#define VEH_SOLID_INITIAL_PAD         48.0f
-#define VEH_SOLID_INITIAL_Z_PAD       16.0f
-#define VEH_SOLID_MAX_SLIDE_BUMPS     4
-#define VEH_SOLID_GROUND_MIN_Z        0.7f
-#define VEH_SOLID_MIN_FALL_SPEED     -20.0f
+#define VEH_DISMOUNT_DYNAMIC_RETRIES 4
+#define VEH_DISMOUNT_GROUND_DROP 256.0f
+#define VEH_DISMOUNT_MIN_DIR_LENGTH 0.00001f /* original float32 0x3727c5ac */
+#define VEH_DISMOUNT_SIDE_PAD 60.0f
+#define VEH_DISMOUNT_FORWARD_PAD 100.0f
+#define VEH_DISMOUNT_FALLBACK_Z_PAD 48.0f
+#define VEH_SOLID_SWEEP_COUNT 6
+#define VEH_SOLID_TRACE_MINS_XY -24.0f
+#define VEH_SOLID_TRACE_MIN_Z -1.0f
+#define VEH_SOLID_TRACE_MAX_XY 24.0f
+#define VEH_SOLID_TRACE_MAX_Z 10.0f
+#define VEH_SOLID_STANDOFF 24.0f
+#define VEH_SOLID_INITIAL_PAD 48.0f
+#define VEH_SOLID_INITIAL_Z_PAD 16.0f
+#define VEH_SOLID_MAX_SLIDE_BUMPS 4
+#define VEH_SOLID_GROUND_MIN_Z 0.7f
+#define VEH_SOLID_MIN_FALL_SPEED -20.0f
 #define VEH_SOLID_SCRIPT_PUSH_TIME_MS 150
-#define VEH_SOLID_SCRIPT_PUSH_SPEED   700.0f
-#define VEH_SOLID_MIN_SCRIPT_SCALE    0.2f
-#define VEH_SOLID_MAX_SCRIPT_SCALE    0.6f
-#define VEH_SOLID_MAX_OTHER_SCALE     0.5f
-#define VEH_SOLID_INPUT_SPEED_BASE    400.0f
-#define VEH_SOLID_INPUT_SPEED_AXIS    300.0f
-#define VEH_SOLID_SPEED_SCALE_DENOM   0.75f
-#define VEH_SOLID_IMPULSE_BASE        100.0f
-#define VEH_SOLID_IMPULSE_MIN_SPEED   0.5f
-#define VEH_SOLID_DEFLECT_MIN_SPEED   10.0f
-#define VEH_SOLID_BOUNCE_MIN_SPEED    120.0f
-#define VEH_SOLID_BOUNCE_MAX_SPEED    160.0f
-#define VEH_SOLID_BOUNCE_MIN_PUSH     40.0f
-#define VEH_SOLID_BOUNCE_SCALE        0.85f
-#define VEH_SOLID_BOUNCE_SPEED        150.0f
+#define VEH_SOLID_SCRIPT_PUSH_SPEED 700.0f
+#define VEH_SOLID_MIN_SCRIPT_SCALE 0.2f
+#define VEH_SOLID_MAX_SCRIPT_SCALE 0.6f
+#define VEH_SOLID_MAX_OTHER_SCALE 0.5f
+#define VEH_SOLID_INPUT_SPEED_BASE 400.0f
+#define VEH_SOLID_INPUT_SPEED_AXIS 300.0f
+#define VEH_SOLID_SPEED_SCALE_DENOM 0.75f
+#define VEH_SOLID_IMPULSE_BASE 100.0f
+#define VEH_SOLID_IMPULSE_MIN_SPEED 0.5f
+#define VEH_SOLID_DEFLECT_MIN_SPEED 10.0f
+#define VEH_SOLID_BOUNCE_MIN_SPEED 120.0f
+#define VEH_SOLID_BOUNCE_MAX_SPEED 160.0f
+#define VEH_SOLID_BOUNCE_MIN_PUSH 40.0f
+#define VEH_SOLID_BOUNCE_SCALE 0.85f
+#define VEH_SOLID_BOUNCE_SPEED 150.0f
 #define VEH_SOLID_SECOND_PASS_SPEED_DIVISOR 4.0f
-#define VEH_SOLID_NOTIFY_RECENT_MS    200
-#define VEH_SOLID_NOTIFY_COOLDOWN_MS  1000
+#define VEH_SOLID_NOTIFY_RECENT_MS 200
+#define VEH_SOLID_NOTIFY_COOLDOWN_MS 1000
 #define VEH_SOLID_STUCK_DAMAGE_DELAY_MS 7000
 #define VEH_SOLID_STUCK_DAMAGE_GRACE_MS 8000
-#define VEH_SOLID_STUCK_DAMAGE        999999
+#define VEH_SOLID_STUCK_DAMAGE 999999
 #define VEH_COLLISION_CACHE_DISTANCE_RESET 99999.0f
-#define VEH_SOLID_SOUND_Z_SCALE       2500.0f
-#define VEH_SOLID_TRACE_CONTENTS      0x00800000u
-#define VEH_SOLID_BODY_CONTENTS       CONTENTS_BODY
-#define VEH_SOLID_INITIAL_CONTENTS    0x02800000u
-#define VEH_SOLID_IGNORED_BODY_MASK   CONTENTS_BODY
+#define VEH_SOLID_SOUND_Z_SCALE 2500.0f
+#define VEH_SOLID_TRACE_CONTENTS 0x00800000u
+#define VEH_SOLID_BODY_CONTENTS CONTENTS_BODY
+#define VEH_SOLID_INITIAL_CONTENTS 0x02800000u
+#define VEH_SOLID_IGNORED_BODY_MASK CONTENTS_BODY
 #define VEH_STRESS_FORWARD_TIME_SCALE 0x1.eb3ca4p-13f /* float32 0x39759e52 */
-#define VEH_STRESS_RIGHT_TIME_SCALE   0x1.364a14p-9f  /* float32 0x3b1b250a */
-#define VEH_STRESS_INPUT_SCALE        127.0f
-#define VEH_SPEED_BLEND_RATE          4.0f
+#define VEH_STRESS_RIGHT_TIME_SCALE 0x1.364a14p-9f  /* float32 0x3b1b250a */
+#define VEH_STRESS_INPUT_SCALE 127.0f
+#define VEH_SPEED_BLEND_RATE 4.0f
 
 /* Vehicle info table */
 vehicleInfo_t g_vehicleInfoTable[VEH_MAX_SCR_VEHICLES];
 int16_t g_vehicleInfoCount;
 vehicle_state_t vehClientPhysicsRecords[VEH_PHYSICS_CLIENT_COUNT];
 const float vehUnstickOffsets[VEH_UNSTICK_VECTOR_COUNT * 3] = {
-    0.0f, 0.0f, 1.0f,
-    -1.0f, 0.0f, 1.0f,
-    0.0f, -1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,
-    -1.0f, 0.0f, 0.0f,
-    0.0f, -1.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, -1.0f,
-    -1.0f, 0.0f, -1.0f,
-    0.0f, -1.0f, -1.0f,
-    1.0f, 0.0f, -1.0f,
-    0.0f, 1.0f, -1.0f,
-    -1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, -1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f,
-    -1.0f, -1.0f, -1.0f,
-    1.0f, -1.0f, -1.0f,
-    1.0f, 1.0f, -1.0f,
-    -1.0f, 1.0f, -1.0f
-};
-const float vehCheckSolidOffsets[VEH_SOLID_SWEEP_COUNT][3] = {
-    {1.2f, -1.0f, 0.0f},
-    {1.3f, 0.0f, 0.0f},
-    {1.2f, 1.0f, 0.0f},
-    {-1.25f, 1.0f, 0.0f},
-    {-1.35f, 0.0f, 0.0f},
-    {-1.25f, -1.0f, 0.0f}
-};
+    0.0f, 0.0f,  1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,  -1.0f, 1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,  -1.0f, 0.0f, 0.0f, 0.0f,  -1.0f,
+    0.0f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,  -1.0f, -1.0f, 0.0f,  -1.0f, 0.0f, -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+    1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
+    1.0f, 1.0f,  0.0f,  -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f, 1.0f, -1.0f};
+const float vehCheckSolidOffsets[VEH_SOLID_SWEEP_COUNT][3] = {{1.2f, -1.0f, 0.0f},  {1.3f, 0.0f, 0.0f},   {1.2f, 1.0f, 0.0f},
+                                                              {-1.25f, 1.0f, 0.0f}, {-1.35f, 0.0f, 0.0f}, {-1.25f, -1.0f, 0.0f}};
 
 int16_t vehPathNodeCount;
 vehicle_path_node_t vehPathNodes[VEH_MAX_PATH_NODES];
 int vehPathDebugDrawing;
 
-#define VEHICLE_PARSE_FIELD(key, member, fieldType) \
-    { key, (int32_t)offsetof(vehicleInfo_t, member), fieldType }
+#define VEHICLE_PARSE_FIELD(key, member, fieldType) {key, (int32_t)offsetof(vehicleInfo_t, member), fieldType}
 
 static const parseField_t vehicleParseFields[] = {
-        VEHICLE_PARSE_FIELD("type", type, VEH_PARSE_FIELD_TYPE_VEHICLE),
-        VEHICLE_PARSE_FIELD("steerWheels", steerWheels, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("texureScroll", textureScroll, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("quadBarrel", primaryDualFlash, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("bulletDamage", bulletDamageEnabled, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("grenadeDamage", grenadeDamageEnabled, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("projectileDamage", explosiveDamageEnabled, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("texureScrollScale", textureScrollScale, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("maxSpeed", maxSpeed, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("accel", acceleration, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("rotRate", steeringLimit, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("rotAccel", steeringRate, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("collisionDamage", collisionDamageScale, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("collisionSpeed", pathSpeed, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("suspensionTravel", suspensionTravel, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("maxBodyPitch", forwardInputScale, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("maxBodyRoll", verticalInputScale, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("hasGunner", gunnerSeatEnabled, PARSE_FIELD_BOOL),
-        VEHICLE_PARSE_FIELD("numPassengers", extraPassengerCount, PARSE_FIELD_INT),
-        VEHICLE_PARSE_FIELD("turretWeapon", turretWeapon, PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("turretAltWeapon", turretAltWeapon, PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("turretHorizSpanLeft", primaryYawLimitPos, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretHorizSpanRight", primaryYawLimitNeg, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretVertSpanUp", primaryPitchLimitNeg, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretVertSpanDown", primaryPitchLimitPos, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretRotRate", primaryTurnRate, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretGunnerWeapon", turretGunnerWeapon, PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("turretGunnerHorizSpanLeft", gunnerYawLimitPos, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretGunnerHorizSpanRight", gunnerYawLimitNeg, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretGunnerVertSpanUp", gunnerPitchLimitNeg, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretGunnerVertSpanDown", gunnerPitchLimitPos, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("turretGunnerRotRate", gunnerTurnRate, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("lowIdleSnd", soundNames[0], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("highIdleSnd", soundNames[1], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("lowEngineSnd", soundNames[2], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("highEngineSnd", soundNames[3], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("turretSpinSnd", soundNames[4], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("turretStopSnd", soundNames[5], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("impactSnd", soundNames[6], PARSE_FIELD_STRING_ALLOC),
-        VEHICLE_PARSE_FIELD("engineSndSpeed", pathSpeedDenom, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("dmgScaleFront", damageScaleFront, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("dmgScaleSide", damageScaleSide, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("dmgScaleBehind", damageScaleRear, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("dmgScaleUnder", damageScaleTop, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("dmgScaleBullet", damageScaleBullet, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("minsX", collisionBoundsSource[0], PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("minsY", collisionBoundsSource[1], PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("minsZ", collisionBoundsSource[2], PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("maxsX", collisionBoundsSource[3], PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("maxsY", collisionBoundsSource[4], PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("maxsZ", collisionBoundsSource[5], PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("accelFwdRollDegrees", rollInputScale, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("accelSideRollDegrees", steeringRollScale, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("accelSpringTension", rollLimit, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("stepsize", stepSize, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("collisionFrontDist", dismountForwardOffset, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("collisionBackDist", dismountBackOffset, PARSE_FIELD_FLOAT),
-        VEHICLE_PARSE_FIELD("useHintString", hintString, PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("type", type, VEH_PARSE_FIELD_TYPE_VEHICLE),
+    VEHICLE_PARSE_FIELD("steerWheels", steerWheels, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("texureScroll", textureScroll, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("quadBarrel", primaryDualFlash, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("bulletDamage", bulletDamageEnabled, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("grenadeDamage", grenadeDamageEnabled, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("projectileDamage", explosiveDamageEnabled, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("texureScrollScale", textureScrollScale, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("maxSpeed", maxSpeed, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("accel", acceleration, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("rotRate", steeringLimit, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("rotAccel", steeringRate, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("collisionDamage", collisionDamageScale, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("collisionSpeed", pathSpeed, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("suspensionTravel", suspensionTravel, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("maxBodyPitch", forwardInputScale, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("maxBodyRoll", verticalInputScale, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("hasGunner", gunnerSeatEnabled, PARSE_FIELD_BOOL),
+    VEHICLE_PARSE_FIELD("numPassengers", extraPassengerCount, PARSE_FIELD_INT),
+    VEHICLE_PARSE_FIELD("turretWeapon", turretWeapon, PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("turretAltWeapon", turretAltWeapon, PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("turretHorizSpanLeft", primaryYawLimitPos, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretHorizSpanRight", primaryYawLimitNeg, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretVertSpanUp", primaryPitchLimitNeg, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretVertSpanDown", primaryPitchLimitPos, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretRotRate", primaryTurnRate, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretGunnerWeapon", turretGunnerWeapon, PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("turretGunnerHorizSpanLeft", gunnerYawLimitPos, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretGunnerHorizSpanRight", gunnerYawLimitNeg, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretGunnerVertSpanUp", gunnerPitchLimitNeg, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretGunnerVertSpanDown", gunnerPitchLimitPos, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("turretGunnerRotRate", gunnerTurnRate, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("lowIdleSnd", soundNames[0], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("highIdleSnd", soundNames[1], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("lowEngineSnd", soundNames[2], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("highEngineSnd", soundNames[3], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("turretSpinSnd", soundNames[4], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("turretStopSnd", soundNames[5], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("impactSnd", soundNames[6], PARSE_FIELD_STRING_ALLOC),
+    VEHICLE_PARSE_FIELD("engineSndSpeed", pathSpeedDenom, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("dmgScaleFront", damageScaleFront, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("dmgScaleSide", damageScaleSide, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("dmgScaleBehind", damageScaleRear, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("dmgScaleUnder", damageScaleTop, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("dmgScaleBullet", damageScaleBullet, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("minsX", collisionBoundsSource[0], PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("minsY", collisionBoundsSource[1], PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("minsZ", collisionBoundsSource[2], PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("maxsX", collisionBoundsSource[3], PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("maxsY", collisionBoundsSource[4], PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("maxsZ", collisionBoundsSource[5], PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("accelFwdRollDegrees", rollInputScale, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("accelSideRollDegrees", steeringRollScale, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("accelSpringTension", rollLimit, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("stepsize", stepSize, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("collisionFrontDist", dismountForwardOffset, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("collisionBackDist", dismountBackOffset, PARSE_FIELD_FLOAT),
+    VEHICLE_PARSE_FIELD("useHintString", hintString, PARSE_FIELD_STRING_ALLOC),
 };
 
-typedef char vehicle_parse_field_count_check[
-    (sizeof(vehicleParseFields) / sizeof(vehicleParseFields[0]) ==
-     58)
-        ? 1
-        : -1];
+typedef char vehicle_parse_field_count_check[(sizeof(vehicleParseFields) / sizeof(vehicleParseFields[0]) == 58) ? 1 : -1];
 
 const uint16_t s_numVehicleFields = 58;
 const float kVehSafetyBuffer = 25.0f;
 
 #undef VEHICLE_PARSE_FIELD
 void G_VehFreePathPos(vehicle_path_position_t *pathPosition);
-void G_VehSetUpPathPos(vehicle_path_position_t *pathPosition,
-                       int16_t nodeIndex);
-void G_VehSetSwitchNode(vehicle_path_position_t *pathPosition,
-                        int16_t fromNodeIndex, int16_t toNodeIndex);
-qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
-                                          const float *origin,
-                                          const float *mins,
-                                          const float *maxs,
-                                          float *outOrigin,
-                                          int passEntityNum);
+void G_VehSetUpPathPos(vehicle_path_position_t *pathPosition, int16_t nodeIndex);
+void G_VehSetSwitchNode(vehicle_path_position_t *pathPosition, int16_t fromNodeIndex, int16_t toNodeIndex);
+qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt, const float *origin, const float *mins, const float *maxs, float *outOrigin,
+                                   int passEntityNum);
 int vehClientThinkRecursing;
 
 void VEH_Strcpy(char *dest, const char *src);
-qboolean VEH_ParseSpecificField(void *vehicleInfoBase, const char *value,
-                                int fieldType);
+qboolean VEH_ParseSpecificField(void *vehicleInfoBase, const char *value, int fieldType);
 gentity_t *VEH_GetEntity(int entNum);
 void VEH_SetupCollmap(gentity_t *ent);
-int VEH_FindNextPassengerSlot(const vehicle_state_t *vehicleState,
-                              int currentSlot, qboolean reverse);
-int VEH_GetPassengerTagBoneIndex(const vehicle_state_t *vehicleState,
-                                 uint32_t passengerSlot);
+int VEH_FindNextPassengerSlot(const vehicle_state_t *vehicleState, int currentSlot, qboolean reverse);
+int VEH_GetPassengerTagBoneIndex(const vehicle_state_t *vehicleState, uint32_t passengerSlot);
 int VEH_FindVehicleInfoIndex(const char *name);
-void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState,
-                    int16_t vehicleInfoIndex);
-void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState,
-                   int16_t vehicleInfoIndex);
+void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState, int16_t vehicleInfoIndex);
+void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState, int16_t vehicleInfoIndex);
 void Scr_Vehicle_Init(gentity_t *ent);
 void Scr_Vehicle_Think(gentity_t *ent);
 void Scr_Vehicle_Touch(gentity_t *self, gentity_t *other, int traceMode);
-void Scr_Vehicle_Use(gentity_t *self, gentity_t *other,
-                     gentity_t *activator);
+void Scr_Vehicle_Use(gentity_t *self, gentity_t *other, gentity_t *activator);
 int G_GetTankIndex(int entNum);
-void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector,
-                             float scale, float speedScale,
-                             float acceleration);
+void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector, float scale, float speedScale, float acceleration);
 void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass);
 void VEH_Backup(gentity_t *ent);
 void VEH_UpdatePath(gentity_t *ent);
 void VEH_UpdateAim(gentity_t *ent);
 void VEH_UpdateGunnerAim(gentity_t *ent);
 void VEH_UpdateBody(gentity_t *ent);
-void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
-                                 vec3_t linearAccel,
-                                 vec3_t angularAccel);
+void VEH_CalcAccel(gentity_t *ent, const int8_t input[3], vec3_t linearAccel, vec3_t angularAccel);
 void VEH_UpdateClient(gentity_t *ent);
 #if !EMULATE_X87 && !defined(__x86_64__)
 static int game_compat_veh_round_to_int(float value);
@@ -585,78 +511,50 @@ void CMD_VEH_GetAltOverheating(uint32_t scriptObject);
 void CMD_VEH_GetGunnerOverheating(uint32_t scriptObject);
 void CMD_VEH_GetDismountSpot(uint32_t scriptObject);
 
-static const char *const vehicleTypeNames[VEHICLE_TYPE_COUNT] = {
-    "** unknown **",
-    "4 wheel",
-    "tank",
-    "plane",
-    "boat",
-    "artillery"
-};
+static const char *const vehicleTypeNames[VEHICLE_TYPE_COUNT] = {"** unknown **", "4 wheel", "tank", "plane", "boat", "artillery"};
 
-static const char *const vehicleWheelTagNames[VEH_WHEEL_TAG_COUNT] = {
-    "tag_wheel_front_left",
-    "tag_wheel_front_right",
-    "tag_wheel_back_left",
-    "tag_wheel_back_right",
-    "tag_wheel_middle_left",
-    "tag_wheel_middle_right"
-};
+static const char *const vehicleWheelTagNames[VEH_WHEEL_TAG_COUNT] = {"tag_wheel_front_left",  "tag_wheel_front_right",
+                                                                      "tag_wheel_back_left",   "tag_wheel_back_right",
+                                                                      "tag_wheel_middle_left", "tag_wheel_middle_right"};
 
-static const script_method_t scriptVehicleMethods[] = {
-    { "attachpath", CMD_VEH_AttachPath },
-    { "startpath", CMD_VEH_StartPath },
-    { "setswitchnode", CMD_VEH_SetSwitchNode },
-    { "setwaitnode", CMD_VEH_SetWaitNode },
-    { "setwaitspeed", CMD_VEH_SetWaitSpeed },
-    { "setspeed", CMD_VEH_SetSpeed },
-    { "resumespeed", CMD_VEH_ResumeSpeed },
-    { "joltbody", CMD_VEH_JoltBody },
-    { "freevehicle", CMD_VEH_FreeVehicle },
-    { "getwheelsurface", CMD_VEH_GetWheelSurface },
-    { "getspeedmph", CMD_VEH_GetSpeedMPH },
-    { "getvehicleowner", CMD_VEH_GetVehicleOwner },
-    { "startenginesound", CMD_VEH_StartEngineSound },
-    { "stopenginesound", CMD_VEH_StopEngineSound },
-    { "makevehicleusable", CMD_VEH_MakeVehicleUsable },
-    { "makevehicleunusable", CMD_VEH_MakeVehicleUnusable },
-    { "addvehicletocompass", CMD_VEH_AddVehicleToCompass },
-    { "removevehiclefromcompass", CMD_VEH_RemoveVehicleFromCompass },
-    { "setturrettargetvec", CMD_VEH_SetTurretTargetVec },
-    { "setturrettargetent", CMD_VEH_SetTurretTargetEnt },
-    { "clearturrettarget", CMD_VEH_ClearTurretTarget },
-    { "fireturret", CMD_VEH_FireTurret },
-    { "firealtturret", CMD_VEH_FireAltTurret },
-    { "firegunner", CMD_VEH_FireGunner },
-    { "isturretready", CMD_VEH_IsTurretReady },
-    { "get_fire_time", CMD_VEH_GetFireTime },
-    { "getaltheat", CMD_VEH_GetAltHeat },
-    { "getgunnerheat", CMD_VEH_GetGunnerHeat },
-    { "getaltoverheating", CMD_VEH_GetAltOverheating },
-    { "getgunneroverheating", CMD_VEH_GetGunnerOverheating },
-    { "getdismountspot", CMD_VEH_GetDismountSpot }
-};
+static const script_method_t scriptVehicleMethods[] = {{"attachpath", CMD_VEH_AttachPath},
+                                                       {"startpath", CMD_VEH_StartPath},
+                                                       {"setswitchnode", CMD_VEH_SetSwitchNode},
+                                                       {"setwaitnode", CMD_VEH_SetWaitNode},
+                                                       {"setwaitspeed", CMD_VEH_SetWaitSpeed},
+                                                       {"setspeed", CMD_VEH_SetSpeed},
+                                                       {"resumespeed", CMD_VEH_ResumeSpeed},
+                                                       {"joltbody", CMD_VEH_JoltBody},
+                                                       {"freevehicle", CMD_VEH_FreeVehicle},
+                                                       {"getwheelsurface", CMD_VEH_GetWheelSurface},
+                                                       {"getspeedmph", CMD_VEH_GetSpeedMPH},
+                                                       {"getvehicleowner", CMD_VEH_GetVehicleOwner},
+                                                       {"startenginesound", CMD_VEH_StartEngineSound},
+                                                       {"stopenginesound", CMD_VEH_StopEngineSound},
+                                                       {"makevehicleusable", CMD_VEH_MakeVehicleUsable},
+                                                       {"makevehicleunusable", CMD_VEH_MakeVehicleUnusable},
+                                                       {"addvehicletocompass", CMD_VEH_AddVehicleToCompass},
+                                                       {"removevehiclefromcompass", CMD_VEH_RemoveVehicleFromCompass},
+                                                       {"setturrettargetvec", CMD_VEH_SetTurretTargetVec},
+                                                       {"setturrettargetent", CMD_VEH_SetTurretTargetEnt},
+                                                       {"clearturrettarget", CMD_VEH_ClearTurretTarget},
+                                                       {"fireturret", CMD_VEH_FireTurret},
+                                                       {"firealtturret", CMD_VEH_FireAltTurret},
+                                                       {"firegunner", CMD_VEH_FireGunner},
+                                                       {"isturretready", CMD_VEH_IsTurretReady},
+                                                       {"get_fire_time", CMD_VEH_GetFireTime},
+                                                       {"getaltheat", CMD_VEH_GetAltHeat},
+                                                       {"getgunnerheat", CMD_VEH_GetGunnerHeat},
+                                                       {"getaltoverheating", CMD_VEH_GetAltOverheating},
+                                                       {"getgunneroverheating", CMD_VEH_GetGunnerOverheating},
+                                                       {"getdismountspot", CMD_VEH_GetDismountSpot}};
 
-static const char *const vehiclePrimaryFlashTagNames[VEH_TAG_FLASH_COUNT] = {
-    "tag_flash",
-    "tag_flash_11",
-    "tag_flash_2",
-    "tag_flash_22"
-};
+static const char *const vehiclePrimaryFlashTagNames[VEH_TAG_FLASH_COUNT] = {"tag_flash", "tag_flash_11", "tag_flash_2", "tag_flash_22"};
 
-static const char *const vehicleAltFireTagNames[VEH_TAG_FLASH_COUNT] = {
-    "tag_altfire",
-    "tag_altfire_11",
-    "tag_altfire_2",
-    "tag_altfire_22"
-};
+static const char *const vehicleAltFireTagNames[VEH_TAG_FLASH_COUNT] = {"tag_altfire", "tag_altfire_11", "tag_altfire_2", "tag_altfire_22"};
 
-static const char *const vehicleSecondaryFlashTagNames[VEH_TAG_FLASH_COUNT] = {
-    "tag_secondary_flash",
-    "tag_secondary_flash_11",
-    "tag_secondary_flash_2",
-    "tag_secondary_flash_22"
-};
+static const char *const vehicleSecondaryFlashTagNames[VEH_TAG_FLASH_COUNT] = {"tag_secondary_flash", "tag_secondary_flash_11",
+                                                                               "tag_secondary_flash_2", "tag_secondary_flash_22"};
 
 static trace_t vehLastGroundTrace;  /* DAT_001035e0 */
 static qboolean vehGroundTraceHit;          /* DAT_00103610 */
@@ -668,42 +566,27 @@ static vec3_t vehDebugPathSegmentStart;             /* DAT_00146624 */
 static vec3_t vehDebugPathSegmentEnd;               /* DAT_00146630 */
 static vec3_t vehDebugPathSegmentDir;               /* DAT_0014663c */
 
-static const vehicle_node_spawn_field_t vehicleNodeSpawnFields[] = {
-    {"targetname", offsetof(vehicle_path_node_t, targetname), 5},
-    {"target", offsetof(vehicle_path_node_t, target), 5},
-    {"origin", offsetof(vehicle_path_node_t, origin), 6},
-    {"angles", offsetof(vehicle_path_node_t, angles), 6},
-    {"speed", offsetof(vehicle_path_node_t, speed), 3},
-    {"lookahead", offsetof(vehicle_path_node_t, lookAhead), 3},
-    {0, 0, 0}
-};
+static const vehicle_node_spawn_field_t vehicleNodeSpawnFields[] = {{"targetname", offsetof(vehicle_path_node_t, targetname), 5},
+                                                                    {"target", offsetof(vehicle_path_node_t, target), 5},
+                                                                    {"origin", offsetof(vehicle_path_node_t, origin), 6},
+                                                                    {"angles", offsetof(vehicle_path_node_t, angles), 6},
+                                                                    {"speed", offsetof(vehicle_path_node_t, speed), 3},
+                                                                    {"lookahead", offsetof(vehicle_path_node_t, lookAhead), 3},
+                                                                    {0, 0, 0}};
 
-GAME_STATIC_ASSERT(vehicle_path_node_size,
-                 sizeof(vehicle_path_node_t) == 0x40u);
-GAME_STATIC_ASSERT(vehicle_path_node_origin_offset,
-                 offsetof(vehicle_path_node_t, origin) == 0x14);
-GAME_STATIC_ASSERT(vehicle_path_node_angles_offset,
-                 offsetof(vehicle_path_node_t, angles) == 0x2c);
-GAME_STATIC_ASSERT(vehicle_path_node_use_node_angles_offset,
-                 offsetof(vehicle_path_node_t, useNodeAngles) == 0x08);
-GAME_STATIC_ASSERT(vehicle_path_node_speed_offset,
-                 offsetof(vehicle_path_node_t, speed) == 0x0c);
-GAME_STATIC_ASSERT(vehicle_path_node_look_ahead_offset,
-                 offsetof(vehicle_path_node_t, lookAhead) == 0x10);
-GAME_STATIC_ASSERT(vehicle_path_node_next_offset,
-                 offsetof(vehicle_path_node_t, nextNodeIndex) == 0x3c);
-GAME_STATIC_ASSERT(vehicle_path_node_previous_offset,
-                 offsetof(vehicle_path_node_t, previousNodeIndex) == 0x3e);
-GAME_STATIC_ASSERT(vehicle_path_position_current_angles_offset,
-                 offsetof(vehicle_path_position_t, currentAngles) == 0x20);
-GAME_STATIC_ASSERT(vehicle_path_position_look_ahead_origin_offset,
-                 offsetof(vehicle_path_position_t, lookAheadOrigin) == 0x2c);
-GAME_STATIC_ASSERT(vehicle_path_position_target_node_offset,
-                 offsetof(vehicle_path_position_t, targetNode) == 0x38);
-GAME_STATIC_ASSERT(vehicle_path_position_cached_node_offset,
-                 offsetof(vehicle_path_position_t, cachedNode) == 0x78);
-GAME_STATIC_ASSERT(vehicle_path_position_size,
-                 sizeof(vehicle_path_position_t) == 0xb8);
+GAME_STATIC_ASSERT(vehicle_path_node_size, sizeof(vehicle_path_node_t) == 0x40u);
+GAME_STATIC_ASSERT(vehicle_path_node_origin_offset, offsetof(vehicle_path_node_t, origin) == 0x14);
+GAME_STATIC_ASSERT(vehicle_path_node_angles_offset, offsetof(vehicle_path_node_t, angles) == 0x2c);
+GAME_STATIC_ASSERT(vehicle_path_node_use_node_angles_offset, offsetof(vehicle_path_node_t, useNodeAngles) == 0x08);
+GAME_STATIC_ASSERT(vehicle_path_node_speed_offset, offsetof(vehicle_path_node_t, speed) == 0x0c);
+GAME_STATIC_ASSERT(vehicle_path_node_look_ahead_offset, offsetof(vehicle_path_node_t, lookAhead) == 0x10);
+GAME_STATIC_ASSERT(vehicle_path_node_next_offset, offsetof(vehicle_path_node_t, nextNodeIndex) == 0x3c);
+GAME_STATIC_ASSERT(vehicle_path_node_previous_offset, offsetof(vehicle_path_node_t, previousNodeIndex) == 0x3e);
+GAME_STATIC_ASSERT(vehicle_path_position_current_angles_offset, offsetof(vehicle_path_position_t, currentAngles) == 0x20);
+GAME_STATIC_ASSERT(vehicle_path_position_look_ahead_origin_offset, offsetof(vehicle_path_position_t, lookAheadOrigin) == 0x2c);
+GAME_STATIC_ASSERT(vehicle_path_position_target_node_offset, offsetof(vehicle_path_position_t, targetNode) == 0x38);
+GAME_STATIC_ASSERT(vehicle_path_position_cached_node_offset, offsetof(vehicle_path_position_t, cachedNode) == 0x78);
+GAME_STATIC_ASSERT(vehicle_path_position_size, sizeof(vehicle_path_position_t) == 0xb8);
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
 static const vehicleInfo_t *game_compat_veh_get_vehicle_info(int index)
 {
@@ -735,38 +618,28 @@ static qboolean game_compat_veh_vector3_is_non_zero(const vec3_t value)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_project_velocity_to_local_axis(const vehicle_state_t *vehicleState,
-                                           axis_t axis,
-                                           vec3_t localVelocity)
+static void game_compat_veh_project_velocity_to_local_axis(const vehicle_state_t *vehicleState, axis_t axis, vec3_t localVelocity)
 {
     for (int axisIndex = 0; axisIndex < 3; axisIndex++) {
 #if EMULATE_X87
-        localVelocity[axisIndex] = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(axis[axisIndex][0]),
-                              x87f_load_f32(vehicleState->velocity[0])),
-                     x87f_mul(x87f_load_f32(axis[axisIndex][1]),
-                              x87f_load_f32(vehicleState->velocity[1]))),
-            x87f_mul(x87f_load_f32(axis[axisIndex][2]),
-                     x87f_load_f32(vehicleState->velocity[2]))));
-#else
         localVelocity[axisIndex] =
-            axis[axisIndex][0] * vehicleState->velocity[0] +
-            axis[axisIndex][1] * vehicleState->velocity[1] +
-            axis[axisIndex][2] * vehicleState->velocity[2];
+            x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(axis[axisIndex][0]), x87f_load_f32(vehicleState->velocity[0])),
+                                             x87f_mul(x87f_load_f32(axis[axisIndex][1]), x87f_load_f32(vehicleState->velocity[1]))),
+                                    x87f_mul(x87f_load_f32(axis[axisIndex][2]), x87f_load_f32(vehicleState->velocity[2]))));
+#else
+        localVelocity[axisIndex] = axis[axisIndex][0] * vehicleState->velocity[0] + axis[axisIndex][1] * vehicleState->velocity[1] +
+                                   axis[axisIndex][2] * vehicleState->velocity[2];
 #endif
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_add_scaled_axis(vec3_t velocity, axis_t axis,
-                              int axisIndex, float scale)
+static void game_compat_veh_add_scaled_axis(vec3_t velocity, axis_t axis, int axisIndex, float scale)
 {
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        velocity[i] = x87f_store_f32(x87f_add(
-            x87f_load_f32(velocity[i]),
-            x87f_mul(x87f_load_f32(axis[axisIndex][i]),
-                     x87f_load_f32(scale))));
+        velocity[i] =
+            x87f_store_f32(x87f_add(x87f_load_f32(velocity[i]), x87f_mul(x87f_load_f32(axis[axisIndex][i]), x87f_load_f32(scale))));
     }
 #else
     velocity[0] += axis[axisIndex][0] * scale;
@@ -784,8 +657,7 @@ static qboolean game_compat_veh_float_changed(float current, float desired)
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
 static qboolean game_compat_veh_vector_changed(const vec3_t current, const vec3_t desired)
 {
-    return game_compat_veh_float_changed(current[0], desired[0]) ||
-           game_compat_veh_float_changed(current[1], desired[1]) ||
+    return game_compat_veh_float_changed(current[0], desired[0]) || game_compat_veh_float_changed(current[1], desired[1]) ||
            game_compat_veh_float_changed(current[2], desired[2]);
 }
 
@@ -841,9 +713,7 @@ static void game_compat_veh_set_entity_passenger_bits(gentity_t *ent, uint32_t v
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void __attribute__((unused))
-game_compat_veh_register_weapon_if_present(const char *vehicleName,
-                                           const char weaponName[0x040])
+static void __attribute__((unused)) game_compat_veh_register_weapon_if_present(const char *vehicleName, const char weaponName[0x040])
 {
     int weaponIndex;
 
@@ -895,14 +765,11 @@ static float game_compat_veh_length3(const vec3_t value)
 {
 #if EMULATE_X87
     return (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(value[0]), x87f_load_f32(value[0])),
-                 x87f_mul(x87f_load_f32(value[1]), x87f_load_f32(value[1]))),
+        x87f_add(x87f_mul(x87f_load_f32(value[0]), x87f_load_f32(value[0])), x87f_mul(x87f_load_f32(value[1]), x87f_load_f32(value[1]))),
         x87f_mul(x87f_load_f32(value[2]), x87f_load_f32(value[2])))));
 #else
-    return (float)CoduoLibm_Sqrt((double)(
-        (long double)value[0] * (long double)value[0] +
-        (long double)value[1] * (long double)value[1] +
-        (long double)value[2] * (long double)value[2]));
+    return (float)CoduoLibm_Sqrt((double)((long double)value[0] * (long double)value[0] + (long double)value[1] * (long double)value[1] +
+                                          (long double)value[2] * (long double)value[2]));
 #endif
 }
 
@@ -941,14 +808,10 @@ static float game_compat_veh_approach_float_step(float current, float target, fl
  * unrounded 80-bit factor and round the pass-through arm stepwise (see the
  * cascades at 0x7dca9/0x7dfa8/0x7e20d/0x7e9a4), which this helper cannot
  * reproduce. Kept for reference. */
-static float __attribute__((unused))
-VEH_SpeedScaledFactor(float speed, float maxSpeed,
-                                   float baseFactor, float rangeFactor)
+static float __attribute__((unused)) VEH_SpeedScaledFactor(float speed, float maxSpeed, float baseFactor, float rangeFactor)
 {
     if (speed < maxSpeed) {
-        return game_compat_veh_clamp_float((1.0f - speed / maxSpeed) * rangeFactor +
-                              baseFactor,
-                              0.0f, 1.0f);
+        return game_compat_veh_clamp_float((1.0f - speed / maxSpeed) * rangeFactor + baseFactor, 0.0f, 1.0f);
     }
 
     return baseFactor;
@@ -976,15 +839,13 @@ static void game_compat_veh_set_compass_visible(vehicle_state_t *vehicleState, i
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_set_engine_sound_active(vehicle_state_t *vehicleState,
-                                     int32_t value)
+static void game_compat_veh_set_engine_sound_active(vehicle_state_t *vehicleState, int32_t value)
 {
     vehicleState->suspensionEnabled = value;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_set_turret_target_active(vehicle_state_t *vehicleState,
-                                      int32_t value)
+static void game_compat_veh_set_turret_target_active(vehicle_state_t *vehicleState, int32_t value)
 {
     game_compat_veh_set_float_slot_int_bits(&vehicleState->viewState[6], value);
 }
@@ -996,8 +857,7 @@ static int32_t game_compat_veh_turret_muzzle_back_active(const vehicle_state_t *
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_set_turret_muzzle_back_active(vehicle_state_t *vehicleState,
-                                          int32_t value)
+static void game_compat_veh_set_turret_muzzle_back_active(vehicle_state_t *vehicleState, int32_t value)
 {
     game_compat_veh_set_float_slot_int_bits(&vehicleState->viewState[1], value);
 }
@@ -1015,9 +875,7 @@ static float game_compat_veh_dismount_side_offset(const vehicleInfo_t *vehicleIn
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static int32_t game_compat_veh_turret_activity_state(
-    const vehicle_state_t *vehicleState,
-    vehicle_turret_activity_slot_t slot)
+static int32_t game_compat_veh_turret_activity_state(const vehicle_state_t *vehicleState, vehicle_turret_activity_slot_t slot)
 {
     if (slot == VEH_TURRET_ACTIVITY_PRIMARY) {
         return game_compat_veh_float_slot_int_bits(&vehicleState->turretYaw);
@@ -1027,10 +885,7 @@ static int32_t game_compat_veh_turret_activity_state(
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_set_turret_activity_state(
-    vehicle_state_t *vehicleState,
-    vehicle_turret_activity_slot_t slot,
-    int32_t value)
+static void game_compat_veh_set_turret_activity_state(vehicle_state_t *vehicleState, vehicle_turret_activity_slot_t slot, int32_t value)
 {
     if (slot == VEH_TURRET_ACTIVITY_PRIMARY) {
         game_compat_veh_set_float_slot_int_bits(&vehicleState->turretYaw, value);
@@ -1084,18 +939,15 @@ static void game_compat_veh_set_entity_usable_byte(gentity_t *ent, uint8_t usabl
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static int32_t game_compat_veh_wheel_surface_at(const vehicle_state_t *vehicleState,
-                                  uint32_t wheelIndex)
+static int32_t game_compat_veh_wheel_surface_at(const vehicle_state_t *vehicleState, uint32_t wheelIndex)
 {
     return game_compat_veh_float_slot_int_bits(&vehicleState->wheelMaterial[wheelIndex]);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_set_wheel_surface_at(vehicle_state_t *vehicleState,
-                                  uint32_t wheelIndex, int32_t surfaceType)
+static void game_compat_veh_set_wheel_surface_at(vehicle_state_t *vehicleState, uint32_t wheelIndex, int32_t surfaceType)
 {
-    game_compat_veh_set_float_slot_int_bits(&vehicleState->wheelMaterial[wheelIndex],
-                            surfaceType);
+    game_compat_veh_set_float_slot_int_bits(&vehicleState->wheelMaterial[wheelIndex], surfaceType);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
@@ -1114,16 +966,14 @@ static float game_compat_veh_non_pvs_tank_delta_scale(int delta)
         /* single float/float divide: x87 forms the 80-bit quotient and rounds
          * once at the float return store, where SSE divides in 32 bits -> shim */
 #if EMULATE_X87
-        return x87f_store_f32(x87f_div(x87f_load_f32(VEH_NONPVS_TANK_ORIGIN_LIMIT_POS),
-                                       x87f_load_f32((float)delta)));
+        return x87f_store_f32(x87f_div(x87f_load_f32(VEH_NONPVS_TANK_ORIGIN_LIMIT_POS), x87f_load_f32((float)delta)));
 #else
         return VEH_NONPVS_TANK_ORIGIN_LIMIT_POS / (float)delta;
 #endif
     }
     if (delta < VEH_NONPVS_TANK_ENCODE_MIN) {
 #if EMULATE_X87
-        return x87f_store_f32(x87f_div(x87f_load_f32(VEH_NONPVS_TANK_ORIGIN_LIMIT_NEG),
-                                       x87f_load_f32((float)delta)));
+        return x87f_store_f32(x87f_div(x87f_load_f32(VEH_NONPVS_TANK_ORIGIN_LIMIT_NEG), x87f_load_f32((float)delta)));
 #else
         return VEH_NONPVS_TANK_ORIGIN_LIMIT_NEG / (float)delta;
 #endif
@@ -1154,8 +1004,7 @@ static uint32_t game_compat_veh_pack_non_pvs_tank_coord(int value)
         biased = value + 5;
     }
 
-    return (uint32_t)(((biased >> 2) + (int)VEH_NONPVS_TANK_COORD_BIAS) &
-                      (int)VEH_NONPVS_TANK_COORD_MASK);
+    return (uint32_t)(((biased >> 2) + (int)VEH_NONPVS_TANK_COORD_BIAS) & (int)VEH_NONPVS_TANK_COORD_MASK);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
@@ -1203,12 +1052,13 @@ static uint32_t game_compat_veh_player_blend_anim(const clientInfo_t *clientInfo
      * this packed tree/index value: Linux 0x90602/0x90b8e/0x90f0a/0x9129c,
      * Windows 0x2004c9b5/0x2004cc70/0x2004ce29/0x2004cfd1, and Mac
      * 0x59248/0x594d8/0x59688/0x5983c. */
-    return ((animTreeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | (game_compat_bg_anim_slot_animation_word_from_slot(&clientInfo->legsYawAngle) & 0xffffu)) & ~ANIM_TOGGLEBIT;
+    return ((animTreeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
+            (game_compat_bg_anim_slot_animation_word_from_slot(&clientInfo->legsYawAngle) & 0xffffu)) &
+           ~ANIM_TOGGLEBIT;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static qboolean game_compat_veh_player_blend_anim_slot_enabled(
-    const clientInfo_t *clientInfo)
+static qboolean game_compat_veh_player_blend_anim_slot_enabled(const clientInfo_t *clientInfo)
 {
     const uint32_t animSlotWord = game_compat_bg_anim_slot_animation_word_from_slot(&clientInfo->legsYawAngle);
     const uint32_t animSlotAnimationReference = game_compat_bg_anim_slot_animation_reference_from_slot(&clientInfo->legsYawAngle);
@@ -1217,22 +1067,19 @@ static qboolean game_compat_veh_player_blend_anim_slot_enabled(
         return qfalse;
     }
 
-    return (game_compat_bg_static_animation_flags_from_reference(bgAnimStaticTable,
-                                                 animSlotAnimationReference) &
-            BG_ANIM_ENTRY_TURRET) != 0;
+    return (game_compat_bg_static_animation_flags_from_reference(bgAnimStaticTable, animSlotAnimationReference) & BG_ANIM_ENTRY_TURRET) !=
+           0;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
 /* targetWeight is long double so caller expressions (e.g. 1.0f - leanWeight)
  * reach the weight-delta subtraction unrounded, as in the inline original
  * (0x908b5: fsub feeds fsubp with no intermediate float store). */
-static float game_compat_veh_player_blend_goal_time(XAnimTree *animTree, uint32_t anim,
-                                     long double targetWeight)
+static float game_compat_veh_player_blend_goal_time(XAnimTree *animTree, uint32_t anim, long double targetWeight)
 {
     /* 0x908c3/0x908c5: fabs result is stored to a float slot BEFORE the
      * rate-scale multiply, which is a second rounded store. */
-    const float weightDelta =
-        fabsf((float)(trap_XAnimGetWeight(animTree, anim) - targetWeight));
+    const float weightDelta = fabsf((float)(trap_XAnimGetWeight(animTree, anim) - targetWeight));
     const float delta = weightDelta * VEH_PLAYER_BLEND_RATE_SCALE;
 
     if (delta > 0.0f) {
@@ -1243,23 +1090,19 @@ static float game_compat_veh_player_blend_goal_time(XAnimTree *animTree, uint32_
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_player_blend_set_weight(XAnimTree *animTree, uint32_t anim,
-                                     long double targetWeight)
+static void game_compat_veh_player_blend_set_weight(XAnimTree *animTree, uint32_t anim, long double targetWeight)
 {
-    trap_XAnimSetGoalWeight(
-        animTree, anim, (float)targetWeight,
-        game_compat_veh_player_blend_goal_time(animTree, anim, targetWeight), 1.0f, 0, 0);
+    trap_XAnimSetGoalWeight(animTree, anim, (float)targetWeight, game_compat_veh_player_blend_goal_time(animTree, anim, targetWeight), 1.0f,
+                            0, 0);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_player_blend_get_middle_child(uint32_t parentAnim,
-                                          uint32_t *outChild)
+static void game_compat_veh_player_blend_get_middle_child(uint32_t parentAnim, uint32_t *outChild)
 {
     const int childCount = trap_XAnimGetNumChildren(parentAnim);
 
     if (childCount == 0) {
-        Com_Error(1, VEH_PLAYER_BLEND_ANIM_CHILD_ERROR,
-                  trap_XAnimGetAnimName(parentAnim));
+        Com_Error(1, VEH_PLAYER_BLEND_ANIM_CHILD_ERROR, trap_XAnimGetAnimName(parentAnim));
     }
 
     trap_XAnimGetChildAt(outChild, parentAnim, childCount / 2);
@@ -1285,17 +1128,14 @@ static uint32_t game_compat_veh_player_blend_last_child(uint32_t parentAnim)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_player_blend_resolve_anims(uint32_t rootAnim,
-                                        uint32_t *topAnim,
-                                        uint32_t *centerAnim)
+static void game_compat_veh_player_blend_resolve_anims(uint32_t rootAnim, uint32_t *topAnim, uint32_t *centerAnim)
 {
     game_compat_veh_player_blend_get_middle_child(rootAnim, topAnim);
     game_compat_veh_player_blend_get_middle_child(*topAnim, centerAnim);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_player_blend_set_centered(XAnimTree *animTree, uint32_t rootAnim,
-                                       uint32_t topAnim, uint32_t centerAnim)
+static void game_compat_veh_player_blend_set_centered(XAnimTree *animTree, uint32_t rootAnim, uint32_t topAnim, uint32_t centerAnim)
 {
     trap_XAnimSetGoalWeight(animTree, centerAnim, 1.0f, 1.0f, 1.0f, 0, 0);
     trap_XAnimClearTreeGoalWeightsStrict(animTree, rootAnim, 0.0f);
@@ -1305,8 +1145,7 @@ static void game_compat_veh_player_blend_set_centered(XAnimTree *animTree, uint3
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_player_blend_update_anims(gentity_t *player, gentity_t *vehicleEnt,
-                                       clientInfo_t *clientInfo)
+static void game_compat_veh_player_blend_update_anims(gentity_t *player, gentity_t *vehicleEnt, clientInfo_t *clientInfo)
 {
     const int vehiclePosition = player->client->ps.vehiclePosition;
     const int vehicleAnimType = vehicleEnt->s.vehicleType;
@@ -1318,37 +1157,26 @@ static void game_compat_veh_player_blend_update_anims(gentity_t *player, gentity
     trap_XAnimClearTreeGoalWeightsStrict(animTree, rootAnim, 0.0f);
     game_compat_veh_player_blend_resolve_anims(rootAnim, &topAnim, &centerAnim);
 
-    if ((vehiclePosition == 1 || vehiclePosition == 3) &&
-        vehicleAnimType == 1) {
+    if ((vehiclePosition == 1 || vehiclePosition == 3) && vehicleAnimType == 1) {
         uint32_t leanAnim;
         float leanWeight;
-        const float vehicleLeanYaw =
-            vehicleEnt->s.clientInfoLeanFraction;
+        const float vehicleLeanYaw = vehicleEnt->s.clientInfoLeanFraction;
 
         if (vehicleLeanYaw > 0.0f) {
             /* single float/float divide -> shim; fabsf is an exact sign clear */
 #if EMULATE_X87
             leanWeight = game_compat_veh_clamp_float(
-                x87f_store_f32(x87f_div(x87f_load_f32(vehicleLeanYaw),
-                                        x87f_load_f32(VEH_PLAYER_BLEND_LEAN_YAW_LIMIT))),
-                0.0f, 1.0f);
+                x87f_store_f32(x87f_div(x87f_load_f32(vehicleLeanYaw), x87f_load_f32(VEH_PLAYER_BLEND_LEAN_YAW_LIMIT))), 0.0f, 1.0f);
 #else
-            leanWeight =
-                game_compat_veh_clamp_float(vehicleLeanYaw / VEH_PLAYER_BLEND_LEAN_YAW_LIMIT,
-                               0.0f, 1.0f);
+            leanWeight = game_compat_veh_clamp_float(vehicleLeanYaw / VEH_PLAYER_BLEND_LEAN_YAW_LIMIT, 0.0f, 1.0f);
 #endif
             leanAnim = game_compat_veh_player_blend_last_child(topAnim);
         } else if (vehicleLeanYaw < 0.0f) {
 #if EMULATE_X87
             leanWeight = game_compat_veh_clamp_float(
-                x87f_store_f32(x87f_div(x87f_load_f32(fabsf(vehicleLeanYaw)),
-                                        x87f_load_f32(VEH_PLAYER_BLEND_LEAN_YAW_LIMIT))),
-                0.0f, 1.0f);
+                x87f_store_f32(x87f_div(x87f_load_f32(fabsf(vehicleLeanYaw)), x87f_load_f32(VEH_PLAYER_BLEND_LEAN_YAW_LIMIT))), 0.0f, 1.0f);
 #else
-            leanWeight =
-                game_compat_veh_clamp_float(fabsf(vehicleLeanYaw) /
-                                   VEH_PLAYER_BLEND_LEAN_YAW_LIMIT,
-                               0.0f, 1.0f);
+            leanWeight = game_compat_veh_clamp_float(fabsf(vehicleLeanYaw) / VEH_PLAYER_BLEND_LEAN_YAW_LIMIT, 0.0f, 1.0f);
 #endif
             leanAnim = game_compat_veh_player_blend_first_child(topAnim);
         } else {
@@ -1363,16 +1191,13 @@ static void game_compat_veh_player_blend_update_anims(gentity_t *player, gentity
         }
         trap_XAnimSetGoalWeight(animTree, topAnim, 1.0f, 1.0f, 1.0f, 0, 0);
         game_compat_veh_player_blend_set_weight(animTree, topAnim, 1.0f);
-    } else if ((vehiclePosition == 2 && vehicleAnimType == 1) ||
-               vehicleAnimType == 5 ||
-               (vehicleAnimType == 2 && vehiclePosition == 2)) {
+    } else if ((vehiclePosition == 2 && vehicleAnimType == 1) || vehicleAnimType == 5 || (vehicleAnimType == 2 && vehiclePosition == 2)) {
         game_compat_veh_player_blend_set_centered(animTree, rootAnim, topAnim, centerAnim);
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_path_node_copy_angles(const vehicle_path_node_t *node,
-                                   vec3_t outAngles)
+static void game_compat_veh_path_node_copy_angles(const vehicle_path_node_t *node, vec3_t outAngles)
 {
     outAngles[0] = node->angles[0];
     outAngles[1] = node->angles[1];
@@ -1396,14 +1221,11 @@ static float game_compat_veh_path_position_speed_at_node(const vehicle_path_posi
         return node->speed;
     }
 
-    return node->speed +
-           (game_compat_veh_path_node_at(node->nextNodeIndex)->speed - node->speed) *
-           position->fraction;
+    return node->speed + (game_compat_veh_path_node_at(node->nextNodeIndex)->speed - node->speed) * position->fraction;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static float game_compat_veh_path_position_look_ahead_at_node(
-    const vehicle_path_position_t *position)
+static float game_compat_veh_path_position_look_ahead_at_node(const vehicle_path_position_t *position)
 {
     const vehicle_path_node_t *node = game_compat_veh_path_node_at(position->nodeIndex);
 
@@ -1411,14 +1233,11 @@ static float game_compat_veh_path_position_look_ahead_at_node(
         return node->lookAhead;
     }
 
-    return node->lookAhead +
-           (game_compat_veh_path_node_at(node->nextNodeIndex)->lookAhead - node->lookAhead) *
-           position->fraction;
+    return node->lookAhead + (game_compat_veh_path_node_at(node->nextNodeIndex)->lookAhead - node->lookAhead) * position->fraction;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static float game_compat_veh_path_position_curve_fraction(
-    const vehicle_path_position_t *position)
+static float game_compat_veh_path_position_curve_fraction(const vehicle_path_position_t *position)
 {
     const vehicle_path_node_t *node = game_compat_veh_path_node_at(position->nodeIndex);
 
@@ -1426,16 +1245,13 @@ static float game_compat_veh_path_position_curve_fraction(
         return node->useNodeAngles != 0 ? 1.0f : 0.0f;
     }
 
-    if (node->useNodeAngles != 0 &&
-        game_compat_veh_path_node_at(node->nextNodeIndex)->useNodeAngles != 0) {
+    if (node->useNodeAngles != 0 && game_compat_veh_path_node_at(node->nextNodeIndex)->useNodeAngles != 0) {
         return 1.0f;
     }
-    if (node->useNodeAngles == 0 &&
-        game_compat_veh_path_node_at(node->nextNodeIndex)->useNodeAngles != 0) {
+    if (node->useNodeAngles == 0 && game_compat_veh_path_node_at(node->nextNodeIndex)->useNodeAngles != 0) {
         return position->fraction;
     }
-    if (node->useNodeAngles != 0 &&
-        game_compat_veh_path_node_at(node->nextNodeIndex)->useNodeAngles == 0) {
+    if (node->useNodeAngles != 0 && game_compat_veh_path_node_at(node->nextNodeIndex)->useNodeAngles == 0) {
         return 1.0f - position->fraction;
     }
 
@@ -1443,8 +1259,7 @@ static float game_compat_veh_path_position_curve_fraction(
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_path_lerp_angles(const vec3_t from, const vec3_t to,
-                               float fraction, vec3_t outAngles)
+static void game_compat_veh_path_lerp_angles(const vec3_t from, const vec3_t to, float fraction, vec3_t outAngles)
 {
     for (int axis = 0; axis < 3; axis++) {
         outAngles[axis] = LerpAngle(from[axis], to[axis], fraction);
@@ -1452,23 +1267,19 @@ static void game_compat_veh_path_lerp_angles(const vec3_t from, const vec3_t to,
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_advance_turret_state(vehicle_state_t *vehicleState,
-                                   vehicle_turret_activity_slot_t slot)
+static void game_compat_veh_advance_turret_state(vehicle_state_t *vehicleState, vehicle_turret_activity_slot_t slot)
 {
     const int state = game_compat_veh_turret_activity_state(vehicleState, slot);
 
     if (state == VEH_TURRET_STATE_ACTIVE) {
-        game_compat_veh_set_turret_activity_state(vehicleState, slot,
-                                   VEH_TURRET_STATE_WINDDOWN);
+        game_compat_veh_set_turret_activity_state(vehicleState, slot, VEH_TURRET_STATE_WINDDOWN);
     } else if (state == VEH_TURRET_STATE_WINDDOWN) {
-        game_compat_veh_set_turret_activity_state(vehicleState, slot,
-                                   VEH_TURRET_STATE_INACTIVE);
+        game_compat_veh_set_turret_activity_state(vehicleState, slot, VEH_TURRET_STATE_INACTIVE);
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static float game_compat_veh_clamp_float_symmetric(float value, float negativeLimit,
-                                     float positiveLimit)
+static float game_compat_veh_clamp_float_symmetric(float value, float negativeLimit, float positiveLimit)
 {
     if (value < -negativeLimit) {
         return -negativeLimit;
@@ -1480,8 +1291,7 @@ static float game_compat_veh_clamp_float_symmetric(float value, float negativeLi
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_build_passenger_aim_angles(const gentity_t *passenger,
-                                        vec3_t outAngles)
+static void game_compat_veh_build_passenger_aim_angles(const gentity_t *passenger, vec3_t outAngles)
 {
     outAngles[0] = passenger->client->ps.viewAngles[0];
     outAngles[1] = passenger->client->ps.viewAngles[1];
@@ -1489,21 +1299,15 @@ static void game_compat_veh_build_passenger_aim_angles(const gentity_t *passenge
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_build_vehicle_local_angles(const vehicle_state_t *vehicleState,
-                                        vec3_t outAngles)
+static void game_compat_veh_build_vehicle_local_angles(const vehicle_state_t *vehicleState, vec3_t outAngles)
 {
-    outAngles[0] = vehicleState->viewClampTargetAngles[0] +
-                   vehicleState->externalVelocity[0];
-    outAngles[1] = vehicleState->viewClampTargetAngles[1] +
-                   vehicleState->externalVelocity[1];
-    outAngles[2] = vehicleState->viewClampTargetAngles[2] +
-                   vehicleState->externalVelocity[2];
+    outAngles[0] = vehicleState->viewClampTargetAngles[0] + vehicleState->externalVelocity[0];
+    outAngles[1] = vehicleState->viewClampTargetAngles[1] + vehicleState->externalVelocity[1];
+    outAngles[2] = vehicleState->viewClampTargetAngles[2] + vehicleState->externalVelocity[2];
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_aim_angles_in_vehicle_space(const vec3_t passengerAngles,
-                                        const vec3_t vehicleAngles,
-                                        vec3_t outAngles)
+static void game_compat_veh_aim_angles_in_vehicle_space(const vec3_t passengerAngles, const vec3_t vehicleAngles, vec3_t outAngles)
 {
     axis_t passengerAxis;
     axis_t vehicleAxis;
@@ -1513,31 +1317,23 @@ static void game_compat_veh_aim_angles_in_vehicle_space(const vec3_t passengerAn
     AnglesToAxis(passengerAngles, passengerAxis);
     AnglesToAxis(vehicleAngles, vehicleAxis);
     /* C99 multidimensional-array qualifier bridges for read-only math input. */
-    MatrixTranspose((const vec_t (*)[3])vehicleAxis, inverseVehicleAxis);
+    MatrixTranspose((const vec_t(*)[3])vehicleAxis, inverseVehicleAxis);
     MatrixMultiply(passengerAxis, inverseVehicleAxis, localAxis);
-    AxisToAngles((const vec_t (*)[3])localAxis, outAngles);
+    AxisToAngles((const vec_t(*)[3])localAxis, outAngles);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_update_turret_activity(vehicle_state_t *vehicleState,
-                                     vehicle_turret_activity_slot_t slot,
-                                     float pitchDelta,
-                                     float yawDelta,
-                                     float desiredPitch,
-                                     float clampedPitch,
-                                     float desiredYaw)
+static void game_compat_veh_update_turret_activity(vehicle_state_t *vehicleState, vehicle_turret_activity_slot_t slot, float pitchDelta,
+                                                   float yawDelta, float desiredPitch, float clampedPitch, float desiredYaw)
 {
-    vec3_t desiredAngles = { desiredPitch, 0.0f, 0.0f };
-    const vec3_t clampedAngles = { clampedPitch, 0.0f, 0.0f };
+    vec3_t desiredAngles = {desiredPitch, 0.0f, 0.0f};
+    const vec3_t clampedAngles = {clampedPitch, 0.0f, 0.0f};
 
     AnglesSubtract(desiredAngles, clampedAngles, desiredAngles);
 
-    if ((pitchDelta >= VEH_TURRET_STALL_DELTA &&
-         desiredAngles[0] == 0.0f && !isnan(desiredAngles[0])) ||
-        (yawDelta >= VEH_TURRET_STALL_DELTA &&
-         desiredYaw == 0.0f && !isnan(desiredYaw))) {
-        game_compat_veh_set_turret_activity_state(vehicleState, slot,
-                                   VEH_TURRET_STATE_ACTIVE);
+    if ((pitchDelta >= VEH_TURRET_STALL_DELTA && desiredAngles[0] == 0.0f && !isnan(desiredAngles[0])) ||
+        (yawDelta >= VEH_TURRET_STALL_DELTA && desiredYaw == 0.0f && !isnan(desiredYaw))) {
+        game_compat_veh_set_turret_activity_state(vehicleState, slot, VEH_TURRET_STATE_ACTIVE);
     } else {
         game_compat_veh_advance_turret_state(vehicleState, slot);
     }
@@ -1546,9 +1342,10 @@ static void game_compat_veh_update_turret_activity(vehicle_state_t *vehicleState
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
 static
 #if !EMULATE_X87 && defined(__x86_64__)
-__attribute__((always_inline)) inline
+    __attribute__((always_inline)) inline
 #endif
-int game_compat_veh_motion_byte_from_axis(float value)
+    int
+    game_compat_veh_motion_byte_from_axis(float value)
 {
     /* 0x86864..0x8693c (both VEH_UpdateBody expansions): the original
      * multiplies by 127 and divides by 30 as separate operations (never the
@@ -1560,11 +1357,8 @@ int game_compat_veh_motion_byte_from_axis(float value)
 #if EMULATE_X87
     /* value*127/30 + 127 stays in x87 width across the 0/255 compares (per
      * 0x86864..0x8693c) and is rounded to double only for floor(). */
-    x87f x = x87f_add(
-        x87f_div(x87f_mul(x87f_load_f32(value),
-                          x87f_load_f32(VEH_MOTION_ANIM_CENTER)),
-                 x87f_load_f32(30.0f)),
-        x87f_load_f32(VEH_MOTION_ANIM_CENTER));
+    x87f x = x87f_add(x87f_div(x87f_mul(x87f_load_f32(value), x87f_load_f32(VEH_MOTION_ANIM_CENTER)), x87f_load_f32(30.0f)),
+                      x87f_load_f32(VEH_MOTION_ANIM_CENTER));
     if (x87f_lt(x87f_load_f32(0.0f), x)) {
         if (x87f_lt(x, x87f_load_f32(255.0f))) {
             scaled = x87f_store_f64(x);
@@ -1575,12 +1369,9 @@ int game_compat_veh_motion_byte_from_axis(float value)
         scaled = 0.0;
     }
 #else
-    if (value * VEH_MOTION_ANIM_CENTER / 30.0f + VEH_MOTION_ANIM_CENTER >
-        0.0f) {
-        if (255.0f >
-            value * VEH_MOTION_ANIM_CENTER / 30.0f + VEH_MOTION_ANIM_CENTER) {
-            scaled = value * VEH_MOTION_ANIM_CENTER / 30.0f +
-                     VEH_MOTION_ANIM_CENTER;
+    if (value * VEH_MOTION_ANIM_CENTER / 30.0f + VEH_MOTION_ANIM_CENTER > 0.0f) {
+        if (255.0f > value * VEH_MOTION_ANIM_CENTER / 30.0f + VEH_MOTION_ANIM_CENTER) {
+            scaled = value * VEH_MOTION_ANIM_CENTER / 30.0f + VEH_MOTION_ANIM_CENTER;
         } else {
             scaled = 255.0;
         }
@@ -1624,14 +1415,10 @@ static void VEH_UpdateSounds(gentity_t *ent)
     if (vehicleState->soundBlendEntityNums[0] != ENTITYNUM_NONE) {
         soundBlend = &g_entities[vehicleState->soundBlendEntityNums[0]];
         if (notAlive || vehicleState->suspensionEnabled == 0 ||
-            vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] ==
-                ENTITYNUM_NONE ||
-            ent->vehiclePrimaryDisabled != 0) {
+            vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] == ENTITYNUM_NONE || ent->vehiclePrimaryDisabled != 0) {
             G_SetSoundBlend(soundBlend, 0, 0, 0);
         } else {
-            G_SetSoundBlend(soundBlend,
-                            vehicleInfo->idleBlendSound0,
-                            vehicleInfo->idleBlendSound1,
+            G_SetSoundBlend(soundBlend, vehicleInfo->idleBlendSound0, vehicleInfo->idleBlendSound1,
                             vehicleState->idleSoundBlendRepeatDelay);
         }
     }
@@ -1639,68 +1426,47 @@ static void VEH_UpdateSounds(gentity_t *ent)
     if (vehicleState->soundBlendEntityNums[1] != ENTITYNUM_NONE) {
         soundBlend = &g_entities[vehicleState->soundBlendEntityNums[1]];
         if (notAlive || vehicleState->suspensionEnabled == 0 ||
-            (vehicleState->soundBlendEntityNums[0] != ENTITYNUM_NONE &&
-             vehicleState->runSoundBlendRepeatDelay == 0.0f) ||
-            (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] ==
-                 ENTITYNUM_NONE &&
-             fabsf(vehicleState->angularVelocity[0]) <
-                 VEH_RUN_SOUND_MIN_ANGULAR_SPEED)) {
+            (vehicleState->soundBlendEntityNums[0] != ENTITYNUM_NONE && vehicleState->runSoundBlendRepeatDelay == 0.0f) ||
+            (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] == ENTITYNUM_NONE &&
+             fabsf(vehicleState->angularVelocity[0]) < VEH_RUN_SOUND_MIN_ANGULAR_SPEED)) {
             G_SetSoundBlend(soundBlend, 0, 0, 0);
         } else {
-            G_SetSoundBlend(soundBlend,
-                            vehicleInfo->runBlendSound0,
-                            vehicleInfo->runBlendSound1,
-                            vehicleState->runSoundBlendRepeatDelay);
+            G_SetSoundBlend(soundBlend, vehicleInfo->runBlendSound0, vehicleInfo->runBlendSound1, vehicleState->runSoundBlendRepeatDelay);
         }
     }
 
     if (notAlive) {
         ent->s.clientSound = 0;
-    } else if (game_compat_veh_turret_activity_state(vehicleState,
-                                       VEH_TURRET_ACTIVITY_PRIMARY) ==
-                   VEH_TURRET_STATE_ACTIVE &&
+    } else if (game_compat_veh_turret_activity_state(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY) == VEH_TURRET_STATE_ACTIVE &&
                vehicleInfo->primaryActiveSound != 0) {
         ent->s.clientSound = vehicleInfo->primaryActiveSound;
-    } else if (game_compat_veh_turret_activity_state(vehicleState,
-                                       VEH_TURRET_ACTIVITY_PRIMARY) ==
-                   VEH_TURRET_STATE_WINDDOWN &&
+    } else if (game_compat_veh_turret_activity_state(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY) == VEH_TURRET_STATE_WINDDOWN &&
                vehicleInfo->primaryStopSound != 0) {
         G_PlaySoundAlias(ent, vehicleInfo->primaryStopSound);
     }
 
-    if (vehicleState->soundBlendEntityNums[2] != ENTITYNUM_NONE &&
-        vehicleInfo->turretAltWeapon[0] != '\0') {
-        (void)BG_GetInfoForWeapon(
-            BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) & 0xff);
+    if (vehicleState->soundBlendEntityNums[2] != ENTITYNUM_NONE && vehicleInfo->turretAltWeapon[0] != '\0') {
+        (void)BG_GetInfoForWeapon(BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) & 0xff);
         soundBlend = &g_entities[vehicleState->soundBlendEntityNums[2]];
         G_SetSoundBlend(soundBlend, 0, 0, 0);
         if (!notAlive && vehicleState->altWeaponSoundTime > 0) {
-            G_SetSoundBlend(soundBlend,
-                            vehicleState->altWeaponFireSound,
-                            vehicleState->altWeaponFireSound, 0.0f);
+            G_SetSoundBlend(soundBlend, vehicleState->altWeaponFireSound, vehicleState->altWeaponFireSound, 0.0f);
             vehicleState->altWeaponSoundTime -= VEH_SOUND_THINK_INTERVAL_MS;
-            if (vehicleState->altWeaponSoundTime < 1 &&
-                vehicleState->altWeaponStopSound != 0) {
+            if (vehicleState->altWeaponSoundTime < 1 && vehicleState->altWeaponStopSound != 0) {
                 G_PlaySoundAlias(ent, vehicleState->altWeaponStopSound);
             }
         }
     }
 
-    if (vehicleState->soundBlendEntityNums[3] != ENTITYNUM_NONE &&
-        vehicleInfo->turretGunnerWeapon[0] != '\0') {
-        (void)BG_GetInfoForWeapon(
-            BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff);
+    if (vehicleState->soundBlendEntityNums[3] != ENTITYNUM_NONE && vehicleInfo->turretGunnerWeapon[0] != '\0') {
+        (void)BG_GetInfoForWeapon(BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff);
         soundBlend = &g_entities[vehicleState->soundBlendEntityNums[3]];
         G_SetSoundBlend(soundBlend, 0, 0, 0);
         if (!notAlive && vehicleState->gunnerWeaponSoundTime > 0) {
-            G_SetSoundBlend(soundBlend,
-                            vehicleState->gunnerWeaponFireSound,
-                            vehicleState->gunnerWeaponFireSound, 0.0f);
+            G_SetSoundBlend(soundBlend, vehicleState->gunnerWeaponFireSound, vehicleState->gunnerWeaponFireSound, 0.0f);
             vehicleState->gunnerWeaponSoundTime -= VEH_SOUND_THINK_INTERVAL_MS;
-            if (vehicleState->gunnerWeaponSoundTime < 1 &&
-                vehicleState->gunnerWeaponStopSound != 0) {
-                G_PlaySoundAlias(ent,
-                                 vehicleState->gunnerWeaponStopSound);
+            if (vehicleState->gunnerWeaponSoundTime < 1 && vehicleState->gunnerWeaponStopSound != 0) {
+                G_PlaySoundAlias(ent, vehicleState->gunnerWeaponStopSound);
             }
         }
     }
@@ -1711,8 +1477,7 @@ static void VEH_UpdateSounds(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x8998d, 9998d_FUN_0009998d.c, VERIFY-VEHICLE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot,
-                    qboolean cycleSlotPass)
+void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot, qboolean cycleSlotPass)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)vehicleEnt->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
@@ -1739,45 +1504,35 @@ void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot,
     }
 
     if (vehicleOwner != NULL && vehicleOwner->client != NULL &&
-        vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] ==
-            ENTITYNUM_NONE &&
-        vehicleOwner != player) {
-        trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0,
-                               va(VEH_LINK_NOT_OWNER_COMMAND));
+        vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] == ENTITYNUM_NONE && vehicleOwner != player) {
+        trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0, va(VEH_LINK_NOT_OWNER_COMMAND));
         return;
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if ((player->s.groundEntityNum == ENTITYNUM_NONE &&
-         client->ps.velocity[2] < -80.0f) ||
+    if ((player->s.groundEntityNum == ENTITYNUM_NONE && client->ps.velocity[2] < -80.0f) ||
         client->vehicleControlTime > level.time - VEH_LINK_RETRY_DELAY_MS) {
         return;
     }
 
-    if (vehicleInfo->type == VEHICLE_TYPE_TANK &&
-        client->vehicleExitState == 0) {
+    if (vehicleInfo->type == VEHICLE_TYPE_TANK && client->vehicleExitState == 0) {
         client->vehicleControlTime = level.time;
     } else {
         client->vehicleControlTime = level.time + VEH_LINK_TANK_RETRY_DELAY_MS;
     }
 
-    if (requestedSlot != 0 &&
-        vehicleState->passengerEntityNums[requestedSlot] !=
-            ENTITYNUM_NONE) {
+    if (requestedSlot != 0 && vehicleState->passengerEntityNums[requestedSlot] != ENTITYNUM_NONE) {
         requestedSlot = 0;
     }
 
-    passengerSlot = requestedSlot != 0 ?
-        requestedSlot : VEH_FindNextPassengerSlot(vehicleState, 0, qfalse);
+    passengerSlot = requestedSlot != 0 ? requestedSlot : VEH_FindNextPassengerSlot(vehicleState, 0, qfalse);
     if (passengerSlot == 0) {
         Com_Error(1, VEH_LINK_FULL_ERROR);
     }
 
-    attachBoneIndex = VEH_GetPassengerTagBoneIndex(vehicleState,
-                                                   (uint32_t)passengerSlot);
+    attachBoneIndex = VEH_GetPassengerTagBoneIndex(vehicleState, (uint32_t)passengerSlot);
     if (attachBoneIndex < 0) {
-        Com_Error(1, VEH_LINK_ATTACH_BONE_ERROR,
-                  BG_GetVehiclePosTag(passengerSlot));
+        Com_Error(1, VEH_LINK_ATTACH_BONE_ERROR, BG_GetVehiclePosTag(passengerSlot));
     }
 
     G_DObjGetWorldBoneIndexMatrix(vehicleEnt, attachBoneIndex, &attachMatrix);
@@ -1786,21 +1541,17 @@ void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot,
         if (vehicleState->driverTagIndex < 0) {
             Com_Error(1, VEH_LINK_DRIVER_BONE_ERROR);
         }
-        G_DObjGetWorldBoneIndexMatrix(vehicleEnt, vehicleState->driverTagIndex,
-                                      &viewMatrix);
+        G_DObjGetWorldBoneIndexMatrix(vehicleEnt, vehicleState->driverTagIndex, &viewMatrix);
     } else if (passengerSlot == VEH_PASSENGER_SLOT_GUNNER) {
         if (vehicleState->gunnerTurretTagIndex < 0) {
             Com_Error(1, VEH_LINK_GUNNER_BONE_ERROR);
         }
-        G_DObjGetWorldBoneIndexMatrix(
-            vehicleEnt, vehicleState->gunnerTurretTagIndex,
-            &viewMatrix);
+        G_DObjGetWorldBoneIndexMatrix(vehicleEnt, vehicleState->gunnerTurretTagIndex, &viewMatrix);
     } else {
         if (vehicleState->bodyTagIndex < 0) {
             Com_Error(1, VEH_LINK_BODY_BONE_ERROR);
         }
-        G_DObjGetWorldBoneIndexMatrix(vehicleEnt, vehicleState->bodyTagIndex,
-                                      &viewMatrix);
+        G_DObjGetWorldBoneIndexMatrix(vehicleEnt, vehicleState->bodyTagIndex, &viewMatrix);
     }
 
     Axis4ToAngles(&viewMatrix, viewAngles);
@@ -1808,12 +1559,9 @@ void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot,
     SetClientOrigin(player, attachMatrix.origin);
     SetClientViewAngle(player, viewAngles);
 
-    if (!G_EntLinkToWithOffset(
-            player, vehicleEnt, BG_GetVehiclePosTag(passengerSlot),
-            BG_GetVehiclePosOffset(vehicleInfo->type, requestedSlot),
-            vec3_origin)) {
-        Com_Error(1, VEH_LINK_CANNOT_LINK_ERROR,
-                  BG_GetVehiclePosTag(passengerSlot));
+    if (!G_EntLinkToWithOffset(player, vehicleEnt, BG_GetVehiclePosTag(passengerSlot),
+                               BG_GetVehiclePosOffset(vehicleInfo->type, requestedSlot), vec3_origin)) {
+        Com_Error(1, VEH_LINK_CANNOT_LINK_ERROR, BG_GetVehiclePosTag(passengerSlot));
     }
 
     if (vehicleState->gunnerEntityNum == player->s.number) {
@@ -1822,9 +1570,8 @@ void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot,
     }
 
     vehicleState->passengerEntityNums[passengerSlot] = player->s.number;
-    game_compat_veh_set_entity_passenger_bits(
-        vehicleEnt,
-        game_compat_veh_entity_passenger_bits(vehicleEnt) | (1u << (passengerSlot & 0x1f)));
+    game_compat_veh_set_entity_passenger_bits(vehicleEnt,
+                                              game_compat_veh_entity_passenger_bits(vehicleEnt) | (1u << (passengerSlot & 0x1f)));
 
     if (passengerSlot == VEH_PASSENGER_SLOT_DRIVER) {
         game_compat_veh_set_entity_collision_mode(vehicleEnt, VEH_COLLISION_MODE_ALT_TRACE);
@@ -1834,8 +1581,7 @@ void VEH_LinkPlayer(gentity_t *vehicleEnt, gentity_t *player, int requestedSlot,
     }
 
     player->passEntityNum = vehicleEnt->s.number;
-    client->ps.entityStateFlags |=
-        EF_IN_VEHICLE | EF_VEHICLE_ACTIVE;
+    client->ps.entityStateFlags |= EF_IN_VEHICLE | EF_VEHICLE_ACTIVE;
     client->ps.entityStateFlags &= ~EF_VEHICLE_POPOUT;
     client->ps.viewLockedEntityNum = vehicleEnt->s.number;
     client->ps.playerStateFlags &= ~PMF_ADS;
@@ -1883,30 +1629,22 @@ qboolean VEH_UnlinkPlayer(gentity_t *player, int keepVehicle)
     vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (vehicleEnt->health >= 1 && keepVehicle != 0 &&
-        client->vehicleControlTime > level.time - VEH_EXIT_DELAY_MS &&
-        client->vehicleExitState <= 1 &&
-        vehicleInfo->type == VEHICLE_TYPE_TANK) {
-        trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0,
-                               va(VEH_UNLINK_EXIT_DELAY_COMMAND));
+    if (vehicleEnt->health >= 1 && keepVehicle != 0 && client->vehicleControlTime > level.time - VEH_EXIT_DELAY_MS &&
+        client->vehicleExitState <= 1 && vehicleInfo->type == VEHICLE_TYPE_TANK) {
+        trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0, va(VEH_UNLINK_EXIT_DELAY_COMMAND));
         return qfalse;
     }
 
     if (keepVehicle != 0 &&
-        !VEH_FindValidDismountSpot(vehicleEnt, client->ps.psOrigin, player->mins,
-                                   player->maxs, dismountOrigin,
-                                   player->s.number)) {
-        trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0,
-                               va(VEH_UNLINK_BLOCKED_COMMAND));
+        !VEH_FindValidDismountSpot(vehicleEnt, client->ps.psOrigin, player->mins, player->maxs, dismountOrigin, player->s.number)) {
+        trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0, va(VEH_UNLINK_BLOCKED_COMMAND));
         return qfalse;
     }
 
     G_EntUnlink(player);
     vehicleState->passengerEntityNums[client->ps.vehiclePosition] = ENTITYNUM_NONE;
-    game_compat_veh_set_entity_passenger_bits(
-        vehicleEnt,
-        game_compat_veh_entity_passenger_bits(vehicleEnt) &
-            ~(1u << (((uint8_t)client->ps.vehiclePosition) & 0x1f)));
+    game_compat_veh_set_entity_passenger_bits(vehicleEnt, game_compat_veh_entity_passenger_bits(vehicleEnt) &
+                                                              ~(1u << (((uint8_t)client->ps.vehiclePosition) & 0x1f)));
 
     if (client->ps.vehiclePosition == VEH_PASSENGER_SLOT_DRIVER) {
         vehicleEnt->s.eFlags &= ~VEH_VEHICLE_S_FLAG_DRIVER;
@@ -1914,29 +1652,22 @@ qboolean VEH_UnlinkPlayer(gentity_t *player, int keepVehicle)
         vehicleEnt->s.vehicleEntityNum = ENTITYNUM_NONE;
         vehicleEnt->s.headIcon = 0;
 
-        if (vehicleEnt->vehiclePrimaryDisabled == 0 &&
-            vehicleInfo->type == VEHICLE_TYPE_TANK) {
-            vehicleState->scriptedDriverEndTime =
-                level.time + VEH_EXIT_ROLL_DELAY_MS;
-            if (vehicleState->animLeftSource == 0 ||
-                level.time - VEH_EXIT_ANIM_GRACE_MS <=
-                    vehicleState->animLeftTime) {
+        if (vehicleEnt->vehiclePrimaryDisabled == 0 && vehicleInfo->type == VEHICLE_TYPE_TANK) {
+            vehicleState->scriptedDriverEndTime = level.time + VEH_EXIT_ROLL_DELAY_MS;
+            if (vehicleState->animLeftSource == 0 || level.time - VEH_EXIT_ANIM_GRACE_MS <= vehicleState->animLeftTime) {
                 vehicleState->animLeftTarget = 0;
             } else {
                 vehicleState->animLeftTarget = vehicleState->animLeftSource;
             }
 
-            if (vehicleState->animRightSource == 0 ||
-                level.time - VEH_EXIT_ANIM_GRACE_MS <=
-                    vehicleState->animRightTime) {
+            if (vehicleState->animRightSource == 0 || level.time - VEH_EXIT_ANIM_GRACE_MS <= vehicleState->animRightTime) {
                 vehicleState->animRightTarget = 0;
             } else {
                 vehicleState->animRightTarget = vehicleState->animRightSource;
             }
         }
     } else if (client->ps.vehiclePosition == VEH_PASSENGER_SLOT_GUNNER) {
-        if (vehicleState->soundBlendEntityNums[2] != ENTITYNUM_NONE &&
-            vehicleState->altWeaponSoundTime > 0) {
+        if (vehicleState->soundBlendEntityNums[2] != ENTITYNUM_NONE && vehicleState->altWeaponSoundTime > 0) {
             vehicleState->altWeaponSoundTime = 10;
         }
         client->ps.playerStateFlags &= ~VEH_CLIENT_STANCE_FLAG_GUNNER;
@@ -1960,8 +1691,7 @@ qboolean VEH_UnlinkPlayer(gentity_t *player, int keepVehicle)
 
     if (keepVehicle != 0) {
         SetClientOrigin(player, dismountOrigin);
-        if (level.time <
-            vehicleState->scriptedDriverEndTime) {
+        if (level.time < vehicleState->scriptedDriverEndTime) {
             client->ps.velocity[2] = VEH_EXIT_VERTICAL_BOOST;
             client->ps.velocity[0] = 0.0f;
             client->ps.velocity[1] = 0.0f;
@@ -1991,12 +1721,9 @@ void G_ParseScrVehicleInfo(void)
     int fileCount;
 
     g_vehicleInfoCount = 0;
-    fileCount = trap_FS_GetFileList(VEH_VEHICLE_FILE_FOLDER,
-                                    VEH_VEHICLE_FILE_EXTENSION, fileList,
-                                    VEH_VEHICLE_FILE_LIST_SIZE);
+    fileCount = trap_FS_GetFileList(VEH_VEHICLE_FILE_FOLDER, VEH_VEHICLE_FILE_EXTENSION, fileList, VEH_VEHICLE_FILE_LIST_SIZE);
     if (fileCount > VEH_MAX_SCR_VEHICLES) {
-        Com_Error(1, VEH_VEHICLE_MAX_FILES_ERROR, VEH_MAX_SCR_VEHICLES,
-                  fileCount);
+        Com_Error(1, VEH_VEHICLE_MAX_FILES_ERROR, VEH_MAX_SCR_VEHICLES, fileCount);
     }
 
     cursor = fileList;
@@ -2013,14 +1740,11 @@ void G_ParseScrVehicleInfo(void)
         const size_t fileNameLength = strlen(vehicleFiles[fileIndex]);
         /* NOT_FROM_ORIGINAL_SOURCE: require the complete mounted-file path and
          * NUL to fit; the same proof covers the persistent vehicle name. */
-        if (folderLength >= sizeof(path) ||
-            fileNameLength > sizeof(path) - folderLength - 2) {
-            Com_Error(ERR_DROP,
-                      COM_ERROR_MARKER "Vehicle file path is too long");
+        if (folderLength >= sizeof(path) || fileNameLength > sizeof(path) - folderLength - 2) {
+            Com_Error(ERR_DROP, COM_ERROR_MARKER "Vehicle file path is too long");
             continue;
         }
-        Com_sprintf(path, sizeof(path), VEH_VEHICLE_PATH_FORMAT,
-                    VEH_VEHICLE_FILE_FOLDER, vehicleFiles[fileIndex]);
+        Com_sprintf(path, sizeof(path), VEH_VEHICLE_PATH_FORMAT, VEH_VEHICLE_FILE_FOLDER, vehicleFiles[fileIndex]);
         fileLength = trap_FS_FOpenFile(path, &handle, FS_READ);
         if (fileLength < 1) {
             Com_Error(1, VEH_VEHICLE_LOAD_ERROR, path);
@@ -2062,20 +1786,15 @@ void G_ParseScrVehicleInfo(void)
 
             /* NOT_FROM_ORIGINAL_SOURCE: the path gate proves this name fits;
              * keep the destination operation independently bounded. */
-            Q_strncpyz(vehicleInfo->name, vehicleFiles[fileIndex],
-                       sizeof(vehicleInfo->name));
-            if (ParseConfigStringToStruct(
-                    vehicleInfo, vehicleParseFields,
-                    s_numVehicleFields, vehicleText,
-                    VEH_VEHICLE_PARSE_CUSTOM_MAX, VEH_ParseSpecificField,
-                    VEH_Strcpy) != 0) {
+            Q_strncpyz(vehicleInfo->name, vehicleFiles[fileIndex], sizeof(vehicleInfo->name));
+            if (ParseConfigStringToStruct(vehicleInfo, vehicleParseFields, s_numVehicleFields, vehicleText, VEH_VEHICLE_PARSE_CUSTOM_MAX,
+                                          VEH_ParseSpecificField, VEH_Strcpy) != 0) {
                 g_vehicleInfoCount++;
             }
         }
     }
 
-    for (int vehicleIndex = 0; vehicleIndex < g_vehicleInfoCount;
-         vehicleIndex++) {
+    for (int vehicleIndex = 0; vehicleIndex < g_vehicleInfoCount; vehicleIndex++) {
         vehicleInfo_t *vehicleInfo = &g_vehicleInfoTable[vehicleIndex];
 
         vehicleInfo->acceleration *= VEH_INFO_SPEED_SCALE;
@@ -2087,26 +1806,21 @@ void G_ParseScrVehicleInfo(void)
             float *collisionBounds = vehicleInfo->collisionMins;
 
             for (int axis = 0; axis < 6; axis++) {
-                collisionBounds[axis] =
-                    vehicleInfo->collisionBoundsSource[axis] *
-                    VEH_INFO_HALF_SCALE;
+                collisionBounds[axis] = vehicleInfo->collisionBoundsSource[axis] * VEH_INFO_HALF_SCALE;
             }
         }
 
-        for (int soundIndex = 0; soundIndex < VEH_INFO_SOUND_ALIAS_COUNT;
-             soundIndex++) {
+        for (int soundIndex = 0; soundIndex < VEH_INFO_SOUND_ALIAS_COUNT; soundIndex++) {
             const char *soundName = vehicleInfo->soundNames[soundIndex];
 
             if (soundName[0] == '\0') {
                 ((uint8_t *)(void *)&vehicleInfo->idleBlendSound0)[soundIndex] = 0;
             } else {
-                ((uint8_t *)(void *)&vehicleInfo->idleBlendSound0)[soundIndex] =
-                    G_SoundAliasIndex(soundName);
+                ((uint8_t *)(void *)&vehicleInfo->idleBlendSound0)[soundIndex] = G_SoundAliasIndex(soundName);
             }
         }
 
-        vehicleInfo->hitPersonSound =
-            G_SoundAliasIndex(VEH_VEHICLE_HIT_PERSON_SOUND);
+        vehicleInfo->hitPersonSound = G_SoundAliasIndex(VEH_VEHICLE_HIT_PERSON_SOUND);
     }
 }
 
@@ -2185,8 +1899,7 @@ void G_SpawnVehicle(gentity_t *ent, const char *vehicleName, int skipCollmap)
 
     vehicleInfoIndex = VEH_FindVehicleInfoIndex(vehicleName);
     if (vehicleInfoIndex < 0) {
-        Com_Error(1, VEH_VEHICLE_INFO_LOOKUP_ERROR,
-                  SL_ConvertToString(ent->targetname));
+        Com_Error(1, VEH_VEHICLE_INFO_LOOKUP_ERROR, SL_ConvertToString(ent->targetname));
     }
 
     ent->s.vehicleSlot = vehicleSlot;
@@ -2213,8 +1926,7 @@ void G_FreeVehicle(gentity_t *ent)
 
     for (int index = 0; index < 4; index++) {
         if (vehicleState->soundBlendEntityNums[index] != ENTITYNUM_NONE) {
-            G_FreeEntity(
-                &g_entities[vehicleState->soundBlendEntityNums[index]]);
+            G_FreeEntity(&g_entities[vehicleState->soundBlendEntityNums[index]]);
         }
     }
 
@@ -2256,10 +1968,8 @@ void G_FreeVehicleRefs(gentity_t *ent)
         }
 
         for (int soundIndex = 0; soundIndex < 4; soundIndex++) {
-            if (vehicleState->soundBlendEntityNums[soundIndex] ==
-                ent->s.number) {
-                vehicleState->soundBlendEntityNums[soundIndex] =
-                    ENTITYNUM_NONE;
+            if (vehicleState->soundBlendEntityNums[soundIndex] == ent->s.number) {
+                vehicleState->soundBlendEntityNums[soundIndex] = ENTITYNUM_NONE;
             }
         }
 
@@ -2279,11 +1989,9 @@ void G_VehicleClientThink(void)
     vehClientThinkRecursing = 1;
     for (int index = 0; index < VEH_MAX_SCR_VEHICLES; index++) {
         if (game_compat_veh_scr_vehicle_slot_in_use(index)) {
-            gentity_t *ent =
-                &g_entities[game_compat_veh_scr_vehicle_state_at(index)->entityNum];
+            gentity_t *ent = &g_entities[game_compat_veh_scr_vehicle_state_at(index)->entityNum];
 
-            if (game_compat_veh_entity_collision_mode(ent) ==
-                VEH_COLLISION_MODE_ALT_TRACE) {
+            if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_ALT_TRACE) {
                 G_RunThink(ent);
             }
         }
@@ -2300,51 +2008,39 @@ void G_UpdateVehicleTags(gentity_t *ent)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    vehicleState->driverTagIndex =
-        trap_DObjGetBoneIndex(ent, BG_GetVehiclePosTag(1));
+    vehicleState->driverTagIndex = trap_DObjGetBoneIndex(ent, BG_GetVehiclePosTag(1));
     vehicleState->detachTagIndex = trap_DObjGetBoneIndex(ent, "tag_detach");
     vehicleState->popoutTagIndex = trap_DObjGetBoneIndex(ent, "tag_popout");
     vehicleState->bodyTagIndex = trap_DObjGetBoneIndex(ent, "tag_body");
     vehicleState->primaryBaseTagIndex = trap_DObjGetBoneIndex(ent, "tag_turret");
     vehicleState->primaryTurretTagIndex = trap_DObjGetBoneIndex(ent, "tag_barrel");
-    vehicleState->primaryAltTurretTagIndex =
-        trap_DObjGetBoneIndex(ent, "tag_coaxel");
-    vehicleState->gunnerTagIndex =
-        trap_DObjGetBoneIndex(ent, BG_GetVehiclePosTag(2));
-    vehicleState->gunnerTurretTagIndex =
-        trap_DObjGetBoneIndex(ent, "tag_secondary_gun");
-    vehicleState->secondaryBaseTagIndex =
-        trap_DObjGetBoneIndex(ent, "tag_secondary_base");
+    vehicleState->primaryAltTurretTagIndex = trap_DObjGetBoneIndex(ent, "tag_coaxel");
+    vehicleState->gunnerTagIndex = trap_DObjGetBoneIndex(ent, BG_GetVehiclePosTag(2));
+    vehicleState->gunnerTurretTagIndex = trap_DObjGetBoneIndex(ent, "tag_secondary_gun");
+    vehicleState->secondaryBaseTagIndex = trap_DObjGetBoneIndex(ent, "tag_secondary_base");
     vehicleState->chasecamTagIndex = trap_DObjGetBoneIndex(ent, "tag_chasecam");
-    vehicleState->aimDownBarrelTagIndex =
-        trap_DObjGetBoneIndex(ent, "tag_aimdownbarrel");
+    vehicleState->aimDownBarrelTagIndex = trap_DObjGetBoneIndex(ent, "tag_aimdownbarrel");
 
     for (int index = 0; index < VEH_TAG_FLASH_COUNT; index++) {
-        vehicleState->primaryFlashTagIndices[index] =
-            trap_DObjGetBoneIndex(ent, vehiclePrimaryFlashTagNames[index]);
+        vehicleState->primaryFlashTagIndices[index] = trap_DObjGetBoneIndex(ent, vehiclePrimaryFlashTagNames[index]);
     }
 
     for (int index = 0; index < VEH_TAG_FLASH_COUNT; index++) {
-        vehicleState->altFireTagIndices[index] =
-            trap_DObjGetBoneIndex(ent, vehicleAltFireTagNames[index]);
+        vehicleState->altFireTagIndices[index] = trap_DObjGetBoneIndex(ent, vehicleAltFireTagNames[index]);
     }
 
     for (int index = 0; index < VEH_TAG_FLASH_COUNT; index++) {
-        vehicleState->secondaryFlashTagIndices[index] =
-            trap_DObjGetBoneIndex(ent, vehicleSecondaryFlashTagNames[index]);
+        vehicleState->secondaryFlashTagIndices[index] = trap_DObjGetBoneIndex(ent, vehicleSecondaryFlashTagNames[index]);
     }
 
     for (int index = 0; index < VEH_WHEEL_TAG_COUNT; index++) {
-        vehicleState->wheelTagIndices[index] =
-            trap_DObjGetBoneIndex(ent, vehicleWheelTagNames[index]);
+        vehicleState->wheelTagIndices[index] = trap_DObjGetBoneIndex(ent, vehicleWheelTagNames[index]);
     }
 
     for (int index = 0; index < VEH_PASSENGER_TAG_COUNT; index++) {
-        const char *tagName = index == 0 ? "tag_passenger" :
-            va("tag_passenger%i", index + 1);
+        const char *tagName = index == 0 ? "tag_passenger" : va("tag_passenger%i", index + 1);
 
-        vehicleState->passengerTagIndices[index] =
-            trap_DObjGetBoneIndex(ent, tagName);
+        vehicleState->passengerTagIndices[index] = trap_DObjGetBoneIndex(ent, tagName);
     }
 }
 
@@ -2456,12 +2152,10 @@ qboolean G_IsVehicleUsable(gentity_t *vehicle, gentity_t *player)
         return qfalse;
     }
 
-    for (int slot = VEH_PASSENGER_SLOT_DRIVER;
-         slot < VEH_PASSENGER_SLOT_COUNT; slot++) {
+    for (int slot = VEH_PASSENGER_SLOT_DRIVER; slot < VEH_PASSENGER_SLOT_COUNT; slot++) {
         const int occupantNum = vehicleState->passengerEntityNums[slot];
 
-        if (occupantNum != ENTITYNUM_NONE &&
-            OnSameTeam(&g_entities[occupantNum], player) == 0) {
+        if (occupantNum != ENTITYNUM_NONE && OnSameTeam(&g_entities[occupantNum], player) == 0) {
             return qfalse;
         }
     }
@@ -2503,13 +2197,11 @@ gentity_t *G_IsVehicleUnusable(gentity_t *player)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x8bf6d, 9bf6d_G_GetNonPVSTankInfo.c, VERIFY-VEHICLE-REFS-2026-06-17): DATAFLOW_VERIFIED */
-int G_GetNonPVSTankInfo(gentity_t *viewer, const float *origin,
-                        int previousEntNum)
+int G_GetNonPVSTankInfo(gentity_t *viewer, const float *origin, int previousEntNum)
 {
     static const float half = 0.5f;
     static const float yawScale = VEH_NONPVS_TANK_YAW_SCALE;
-    const int firstEntNum =
-        previousEntNum == VEH_NONPVS_TANK_ENTITY_NONE ? 0 : previousEntNum + 1;
+    const int firstEntNum = previousEntNum == VEH_NONPVS_TANK_ENTITY_NONE ? 0 : previousEntNum + 1;
 
     for (int scan = 0; scan < level.num_entities; scan++) {
         const int entNum = (firstEntNum + scan) % level.num_entities;
@@ -2538,10 +2230,8 @@ int G_GetNonPVSTankInfo(gentity_t *viewer, const float *origin,
         }
 
         vehicleState = (vehicle_state_t *)tank->vehicle;
-        driverEntNum =
-            vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER];
-        if (driverEntNum == ENTITYNUM_NONE ||
-            driverEntNum == viewer->s.number) {
+        driverEntNum = vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER];
+        if (driverEntNum == ENTITYNUM_NONE || driverEntNum == viewer->s.number) {
             continue;
         }
 
@@ -2555,17 +2245,11 @@ int G_GetNonPVSTankInfo(gentity_t *viewer, const float *origin,
         diffX = tank->currentOrigin[0] - origin[0];
         diffY = tank->currentOrigin[1] - origin[1];
 #if EMULATE_X87
-        deltaX = x87f_store_i32_trunc(
-            x87f_add(x87f_load_f32(diffX), x87f_load_f32(half)));
-        deltaY = x87f_store_i32_trunc(
-            x87f_add(x87f_load_f32(diffY), x87f_load_f32(half)));
+        deltaX = x87f_store_i32_trunc(x87f_add(x87f_load_f32(diffX), x87f_load_f32(half)));
+        deltaY = x87f_store_i32_trunc(x87f_add(x87f_load_f32(diffY), x87f_load_f32(half)));
 #elif defined(__x86_64__)
-        deltaX = CODUO_X87_TRUNCATE_I32_FIRST(
-            &conversionControl,
-            (long double)diffX + (long double)half);
-        deltaY = CODUO_X87_TRUNCATE_I32_NEXT(
-            &conversionControl,
-            (long double)diffY + (long double)half);
+        deltaX = CODUO_X87_TRUNCATE_I32_FIRST(&conversionControl, (long double)diffX + (long double)half);
+        deltaY = CODUO_X87_TRUNCATE_I32_NEXT(&conversionControl, (long double)diffY + (long double)half);
 #else
         deltaX = (int)(diffX + half);
         deltaY = (int)(diffY + half);
@@ -2577,23 +2261,17 @@ int G_GetNonPVSTankInfo(gentity_t *viewer, const float *origin,
             /* 0x8c19b/0x8c1bb: fild * scale feeds fistp directly. */
             if (xScale < yScale) {
 #if EMULATE_X87
-                deltaY = x87f_store_i32_trunc(
-                    x87f_mul(x87f_load_i32(deltaY), x87f_load_f32(xScale)));
+                deltaY = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(deltaY), x87f_load_f32(xScale)));
 #elif defined(__x86_64__)
-                deltaY = CODUO_X87_TRUNCATE_I32_NEXT(
-                    &conversionControl,
-                    (long double)deltaY * (long double)xScale);
+                deltaY = CODUO_X87_TRUNCATE_I32_NEXT(&conversionControl, (long double)deltaY * (long double)xScale);
 #else
                 deltaY = (int)(deltaY * xScale);
 #endif
             } else if (yScale < xScale) {
 #if EMULATE_X87
-                deltaX = x87f_store_i32_trunc(
-                    x87f_mul(x87f_load_i32(deltaX), x87f_load_f32(yScale)));
+                deltaX = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(deltaX), x87f_load_f32(yScale)));
 #elif defined(__x86_64__)
-                deltaX = CODUO_X87_TRUNCATE_I32_NEXT(
-                    &conversionControl,
-                    (long double)deltaX * (long double)yScale);
+                deltaX = CODUO_X87_TRUNCATE_I32_NEXT(&conversionControl, (long double)deltaX * (long double)yScale);
 #else
                 deltaX = (int)(deltaX * yScale);
 #endif
@@ -2604,23 +2282,15 @@ int G_GetNonPVSTankInfo(gentity_t *viewer, const float *origin,
         deltaY = game_compat_veh_clamp_non_pvs_tank_delta(deltaY);
         /* 0x8c289: the yaw product feeds fistp directly (no float store). */
 #if EMULATE_X87
-        yaw = (uint32_t)x87f_store_i32_trunc(x87f_mul(
-            x87f_load_f32(tank->currentAngles[1]),
-            x87f_load_f32(yawScale)));
+        yaw = (uint32_t)x87f_store_i32_trunc(x87f_mul(x87f_load_f32(tank->currentAngles[1]), x87f_load_f32(yawScale)));
 #elif defined(__x86_64__)
-        yaw = (uint32_t)CODUO_X87_TRUNCATE_I32_NEXT(
-            &conversionControl,
-            (long double)tank->currentAngles[1] *
-            (long double)yawScale);
+        yaw = (uint32_t)CODUO_X87_TRUNCATE_I32_NEXT(&conversionControl, (long double)tank->currentAngles[1] * (long double)yawScale);
 #else
-        yaw = (uint32_t)(int)(tank->currentAngles[1] *
-                              yawScale);
+        yaw = (uint32_t)(int)(tank->currentAngles[1] * yawScale);
 #endif
 
-        return (yaw << 24) |
-               (game_compat_veh_pack_non_pvs_tank_coord(deltaY) << 15) |
-               (game_compat_veh_pack_non_pvs_tank_coord(deltaX) << 6) |
-               ((uint32_t)tankIndex & VEH_NONPVS_TANK_INDEX_MASK);
+        return (yaw << 24) | (game_compat_veh_pack_non_pvs_tank_coord(deltaY) << 15) |
+               (game_compat_veh_pack_non_pvs_tank_coord(deltaX) << 6) | ((uint32_t)tankIndex & VEH_NONPVS_TANK_INDEX_MASK);
     }
 
     return 0;
@@ -2636,8 +2306,7 @@ void VEH_Strcpy(char *dest, const char *src)
     /* NOT_FROM_ORIGINAL_SOURCE: every vehicle string destination is a fixed
      * inline field; require the complete authored value and NUL to fit. */
     if (strlen(src) >= VEH_VEHICLE_INLINE_STRING_SIZE) {
-        Com_Error(ERR_DROP,
-                  COM_ERROR_MARKER "Vehicle string value is too long");
+        Com_Error(ERR_DROP, COM_ERROR_MARKER "Vehicle string value is too long");
         return;
     }
     Q_strncpyz(dest, src, VEH_VEHICLE_INLINE_STRING_SIZE);
@@ -2650,7 +2319,7 @@ void VEH_Strcpy(char *dest, const char *src)
 /* VERIFIED_DECOMPILER(0x7bfd2, 8bfd2_FUN_0008bfd2.c, VERIFY-VEHICLE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void VEH_DebugLine(const float *start, const float *end, float red, float green, float blue)
 {
-    const vec4_t color = { red, green, blue, 1.0f };
+    const vec4_t color = {red, green, blue, 1.0f};
 
     G_DebugLine(start, end, color, 1, 0);
 }
@@ -2662,23 +2331,17 @@ void VEH_DebugLine(const float *start, const float *end, float red, float green,
 /* VERIFIED_DECOMPILER(0x7c02c, 8c02c_FUN_0008c02c.c, VERIFY-VEHICLE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void VEH_DebugBox(const float *origin, float size, float red, float green, float blue)
 {
-    const vec4_t color = { red, green, blue, 1.0f };
+    const vec4_t color = {red, green, blue, 1.0f};
     vec3_t maxs;
     vec3_t mins;
 
-    maxs[0] =
-        (float)((long double)origin[0] + (long double)size * 0.5L);
-    maxs[1] =
-        (float)((long double)origin[1] + (long double)size * 0.5L);
-    maxs[2] =
-        (float)((long double)origin[2] + (long double)size * 0.5L);
+    maxs[0] = (float)((long double)origin[0] + (long double)size * 0.5L);
+    maxs[1] = (float)((long double)origin[1] + (long double)size * 0.5L);
+    maxs[2] = (float)((long double)origin[2] + (long double)size * 0.5L);
 
-    mins[0] =
-        (float)((long double)origin[0] - (long double)size * 0.5L);
-    mins[1] =
-        (float)((long double)origin[1] - (long double)size * 0.5L);
-    mins[2] =
-        (float)((long double)origin[2] - (long double)size * 0.5L);
+    mins[0] = (float)((long double)origin[0] - (long double)size * 0.5L);
+    mins[1] = (float)((long double)origin[1] - (long double)size * 0.5L);
+    mins[2] = (float)((long double)origin[2] - (long double)size * 0.5L);
 
     G_DebugBox(maxs, mins, color, 1, 0);
 }
@@ -2688,10 +2351,9 @@ void VEH_DebugBox(const float *origin, float size, float red, float green, float
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7c110, 8c110_FUN_0008c110.c, VERIFY-VEHICLE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void VEH_DebugCircleVertical(const float *origin, float radius, float height,
-                             float red, float green, float blue)
+void VEH_DebugCircleVertical(const float *origin, float radius, float height, float red, float green, float blue)
 {
-    const vec4_t color = { red, green, blue, 1.0f };
+    const vec4_t color = {red, green, blue, 1.0f};
     vec3_t top;
 
     top[0] = origin[0];
@@ -2707,8 +2369,7 @@ void VEH_DebugCircleVertical(const float *origin, float radius, float height,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7c1ca, 8c1ca_VEH_ParseSpecificField.c, VERIFY-VEHICLE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-qboolean VEH_ParseSpecificField(void *vehicleInfoBase, const char *value,
-                                int fieldType)
+qboolean VEH_ParseSpecificField(void *vehicleInfoBase, const char *value, int fieldType)
 {
     vehicleInfo_t *vehicleInfo = vehicleInfoBase;
 
@@ -2717,9 +2378,7 @@ qboolean VEH_ParseSpecificField(void *vehicleInfoBase, const char *value,
         return 0;
     }
 
-    for (vehicle_type_t type = VEHICLE_TYPE_UNKNOWN;
-         type < VEHICLE_TYPE_COUNT;
-         type = (vehicle_type_t)(type + 1)) {
+    for (vehicle_type_t type = VEHICLE_TYPE_UNKNOWN; type < VEHICLE_TYPE_COUNT; type = (vehicle_type_t)(type + 1)) {
         if (strcasecmp(value, vehicleTypeNames[type]) == 0) {
             vehicleInfo->type = (int16_t)type;
             return 1;
@@ -2766,52 +2425,28 @@ void Scr_Vehicle_Controller(gentity_t *ent, uint32_t *partBits)
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     const vec3_t bodyAngles = {
-        ((float)game_compat_veh_float_slot_int_bits(&ent->s.loopedFxForward[0]) -
-         VEH_MOTION_ANIM_CENTER) *
-            30.0f / VEH_MOTION_ANIM_CENTER,
+        ((float)game_compat_veh_float_slot_int_bits(&ent->s.loopedFxForward[0]) - VEH_MOTION_ANIM_CENTER) * 30.0f / VEH_MOTION_ANIM_CENTER,
         0.0f,
-        ((float)game_compat_veh_float_slot_int_bits(&ent->s.loopedFxForward[2]) -
-         VEH_MOTION_ANIM_CENTER) *
-            30.0f / VEH_MOTION_ANIM_CENTER
-    };
-    const vec3_t primaryBaseAngles = {
-        0.0f,
-        game_compat_veh_entity_primary_yaw(ent),
-        0.0f
-    };
-    const vec3_t primaryBarrelAngles = {
-        ent->s.vehicleTurret.primaryPitch,
-        0.0f,
-        0.0f
-    };
-    const vec3_t gunnerBaseAngles = {
-        0.0f,
-        game_compat_veh_entity_gunner_yaw_base(ent),
-        0.0f
-    };
-    const vec3_t gunnerBarrelAngles = {
-        ent->s.vehicleTurret.gunnerPitch,
-        0.0f,
-        0.0f
-    };
+        ((float)game_compat_veh_float_slot_int_bits(&ent->s.loopedFxForward[2]) - VEH_MOTION_ANIM_CENTER) * 30.0f / VEH_MOTION_ANIM_CENTER};
+    const vec3_t primaryBaseAngles = {0.0f, game_compat_veh_entity_primary_yaw(ent), 0.0f};
+    const vec3_t primaryBarrelAngles = {ent->s.vehicleTurret.primaryPitch, 0.0f, 0.0f};
+    const vec3_t gunnerBaseAngles = {0.0f, game_compat_veh_entity_gunner_yaw_base(ent), 0.0f};
+    const vec3_t gunnerBarrelAngles = {ent->s.vehicleTurret.gunnerPitch, 0.0f, 0.0f};
     int boneIndex;
 
     boneIndex = vehicleState->bodyTagIndex;
     if (boneIndex >= 0) {
-        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin,
-                                bodyAngles);
+        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin, bodyAngles);
     }
 
     boneIndex = vehicleState->primaryBaseTagIndex;
     if (boneIndex >= 0) {
-        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin,
-                                primaryBaseAngles);
+        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin, primaryBaseAngles);
     }
 
     boneIndex = vehicleState->primaryTurretTagIndex;
     if (boneIndex >= 0) {
-        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin,
-                                primaryBarrelAngles);
+        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin, primaryBarrelAngles);
     }
 
     if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL) {
@@ -2821,14 +2456,12 @@ void Scr_Vehicle_Controller(gentity_t *ent, uint32_t *partBits)
     }
 
     if (boneIndex >= 0) {
-        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin,
-                                gunnerBaseAngles);
+        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin, gunnerBaseAngles);
     }
 
     boneIndex = vehicleState->gunnerTurretTagIndex;
     if (boneIndex >= 0) {
-        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin,
-                                gunnerBarrelAngles);
+        G_DObjSetLocalBoneIndex(ent, partBits, boneIndex, vec3_origin, gunnerBarrelAngles);
     }
 }
 
@@ -2887,8 +2520,7 @@ void VEH_GetWheelOrigin(gentity_t *ent, int wheelIndex, vec3_t origin)
     const DObjSkelMat *tagMatrix = G_DObjGetLocalTagMatrix(ent, tagName);
 
     if (tagMatrix == NULL) {
-        Com_Error(1, VEH_SCRIPT_ENTITY_ERROR_TAG,
-                  SL_ConvertToString(ent->targetname), tagName);
+        Com_Error(1, VEH_SCRIPT_ENTITY_ERROR_TAG, SL_ConvertToString(ent->targetname), tagName);
     }
 
     origin[0] = tagMatrix->origin[0];
@@ -2932,13 +2564,10 @@ float VEH_LerpValue(float target, float current, float speed)
 {
     const float delta = target - current;
 #if EMULATE_X87
-    const float step = x87f_store_f32(x87f_mul(
-        x87f_mul(x87f_load_f32(speed), x87f_load_f32(delta)),
-        x87f_load_f32(VEH_APPROACH_FRAME_SECONDS)));
-#else
     const float step =
-        (float)((long double)speed * (long double)delta *
-                (long double)VEH_APPROACH_FRAME_SECONDS);
+        x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(speed), x87f_load_f32(delta)), x87f_load_f32(VEH_APPROACH_FRAME_SECONDS)));
+#else
+    const float step = (float)((long double)speed * (long double)delta * (long double)VEH_APPROACH_FRAME_SECONDS);
 #endif
 
     if (!(fabsf(delta) > VEH_APPROACH_EPSILON)) {
@@ -3023,15 +2652,12 @@ float VEH_LerpAngle(float target, float current, float speed)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7c762, 8c762_FUN_0008c762.c, VERIFY-VEHICLE-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void VEH_SetPosition(gentity_t *ent, const vec3_t origin,
-                        const vec3_t angles, const vec3_t velocity)
+void VEH_SetPosition(gentity_t *ent, const vec3_t origin, const vec3_t angles, const vec3_t velocity)
 {
     (void)velocity;
 
-    if (game_compat_veh_vector_changed(ent->currentOrigin, origin) ||
-        game_compat_veh_vector_changed(ent->s.pos.trBase, origin) ||
-        game_compat_veh_vector_changed(ent->currentAngles, angles) ||
-        game_compat_veh_vector_changed(ent->s.apos.trBase, angles)) {
+    if (game_compat_veh_vector_changed(ent->currentOrigin, origin) || game_compat_veh_vector_changed(ent->s.pos.trBase, origin) ||
+        game_compat_veh_vector_changed(ent->currentAngles, angles) || game_compat_veh_vector_changed(ent->s.apos.trBase, angles)) {
         G_SetOrigin(ent, origin);
         G_SetAngle(ent, angles);
         ent->s.pos.trType = TR_INTERPOLATE;
@@ -3052,9 +2678,7 @@ void Scr_Vehicle_Init(gentity_t *ent)
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-            VEH_COLLISION_MODE_ALT_TRACE &&
-        vehClientThinkRecursing == 0) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_ALT_TRACE && vehClientThinkRecursing == 0) {
         ent->nextthink = level.time;
         return;
     }
@@ -3062,8 +2686,7 @@ void Scr_Vehicle_Init(gentity_t *ent)
     for (int wheel = 0; wheel < VEH_WHEEL_TAG_COUNT; wheel++) {
         DObjSkelMat wheelMatrix;
 
-        if (G_DObjGetWorldTagMatrix(ent, vehicleWheelTagNames[wheel],
-                                    &wheelMatrix) != 0) {
+        if (G_DObjGetWorldTagMatrix(ent, vehicleWheelTagNames[wheel], &wheelMatrix) != 0) {
             vehicleState->wheelGroundZ[wheel] = wheelMatrix.origin[2];
         }
     }
@@ -3071,27 +2694,20 @@ void Scr_Vehicle_Init(gentity_t *ent)
     if (vehicleState->primaryFlashTagIndices[0] >= 0) {
         DObjSkelMat flashMatrix;
 
-        G_DObjGetWorldBoneIndexMatrix(ent,
-                                      vehicleState->primaryFlashTagIndices[0],
-                                      &flashMatrix);
+        G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryFlashTagIndices[0], &flashMatrix);
         if (vehicleState->primaryTurretTagIndex >= 0) {
             DObjSkelMat turretMatrix;
 
-            G_DObjGetWorldBoneIndexMatrix(
-                ent, vehicleState->primaryTurretTagIndex,
-                &turretMatrix);
-            vehicleState->viewState[0] =
-                VectorDistance(turretMatrix.origin, flashMatrix.origin);
+            G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryTurretTagIndex, &turretMatrix);
+            vehicleState->viewState[0] = VectorDistance(turretMatrix.origin, flashMatrix.origin);
         }
     }
 
-    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL ||
-        vehicleInfo->type == VEHICLE_TYPE_TANK) {
+    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL || vehicleInfo->type == VEHICLE_TYPE_TANK) {
         VEH_UpdateSuspension(ent, qfalse);
     }
 
-    VEH_SetPosition(ent, vehicleState->origin,
-                       vehicleState->viewClampTargetAngles, vec3_origin);
+    VEH_SetPosition(ent, vehicleState->origin, vehicleState->viewClampTargetAngles, vec3_origin);
 
     vehicleState->previousOrigin[0] = vehicleState->origin[0];
     vehicleState->previousOrigin[1] = vehicleState->origin[1];
@@ -3114,12 +2730,9 @@ void Scr_Vehicle_Think(gentity_t *ent)
 {
     static const float millisecondsPerSecond = 1000.0f;
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-            VEH_COLLISION_MODE_ALT_TRACE &&
-        vehClientThinkRecursing == 0) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_ALT_TRACE && vehClientThinkRecursing == 0) {
         ent->nextthink = level.time;
         return;
     }
@@ -3130,19 +2743,16 @@ void Scr_Vehicle_Think(gentity_t *ent)
     for (int slot = 1; slot < VEH_PASSENGER_SLOT_COUNT; slot++) {
         const int passengerNum = vehicleState->passengerEntityNums[slot];
 
-        if (passengerNum != ENTITYNUM_NONE &&
-            g_entities[passengerNum].health < 1) {
+        if (passengerNum != ENTITYNUM_NONE && g_entities[passengerNum].health < 1) {
             VEH_UnlinkPlayer(&g_entities[passengerNum], qfalse);
         }
     }
 
     for (int pass = 1; pass <= 2; pass++) {
         if (vehicleInfo->type != VEHICLE_TYPE_ARTILLERY) {
-            if (game_compat_veh_entity_collision_mode(ent) ==
-                VEH_COLLISION_MODE_ALT_TRACE) {
+            if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_ALT_TRACE) {
                 VEH_UpdateClient(ent);
-            } else if (game_compat_veh_entity_collision_mode(ent) ==
-                       1u) {
+            } else if (game_compat_veh_entity_collision_mode(ent) == 1u) {
                 VEH_UpdatePath(ent);
             } else {
                 VEH_UpdateClient(ent);
@@ -3154,22 +2764,18 @@ void Scr_Vehicle_Think(gentity_t *ent)
         }
 
         if (VEH_VerifyPosition(ent, pass)) {
-            memcpy(&vehicleState->previousPhysicsState, &vehicleState->origin,
-                   sizeof(vehicleState->previousPhysicsState));
+            memcpy(&vehicleState->previousPhysicsState, &vehicleState->origin, sizeof(vehicleState->previousPhysicsState));
             break;
         }
 
-        memcpy(&vehicleState->previousPhysicsState, &vehicleState->origin,
-               sizeof(vehicleState->previousPhysicsState));
+        memcpy(&vehicleState->previousPhysicsState, &vehicleState->origin, sizeof(vehicleState->previousPhysicsState));
     }
 
     if (vehicleState->lastSolidTime < level.time - 1000) {
         vehicleState->lastStableTime = level.time;
     }
 
-    VEH_SetPosition(ent, vehicleState->origin,
-                       vehicleState->viewClampTargetAngles,
-                       vehicleState->velocity);
+    VEH_SetPosition(ent, vehicleState->origin, vehicleState->viewClampTargetAngles, vehicleState->velocity);
     G_DoTouchTriggers(ent, ent->currentOrigin);
 
     if (g_vehicleDebug.integer != 0) {
@@ -3177,14 +2783,12 @@ void Scr_Vehicle_Think(gentity_t *ent)
     }
 
     game_compat_veh_set_turret_muzzle_back_active(vehicleState, 0);
-    if (vehicleState->altHeat >= 1.0f &&
-        vehicleState->altOverheating == 0) {
+    if (vehicleState->altHeat >= 1.0f && vehicleState->altOverheating == 0) {
         vehicleState->altOverheating = 1;
         if (vehicleInfo->type != VEHICLE_TYPE_4_WHEEL) {
             G_AddEvent(ent, EV_OVERHEATING, 0);
         }
-    } else if (vehicleState->altOverheating != 0 &&
-               vehicleState->altHeat <= 0.5f) {
+    } else if (vehicleState->altOverheating != 0 && vehicleState->altHeat <= 0.5f) {
         vehicleState->altOverheating = 0;
     }
 
@@ -3198,9 +2802,7 @@ void Scr_Vehicle_Think(gentity_t *ent)
         }
     } else {
         const weaponInfo_t *weaponInfo =
-            (const weaponInfo_t *)BG_GetInfoForWeapon(
-                BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) &
-                0xff);
+            (const weaponInfo_t *)BG_GetInfoForWeapon(BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) & 0xff);
 
         if (vehicleState->altHeat > 0.0f) {
             vehicleState->altHeat -= weaponInfo->turretHeatDecay;
@@ -3209,8 +2811,7 @@ void Scr_Vehicle_Think(gentity_t *ent)
         }
     }
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_ALT_TRACE) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_ALT_TRACE) {
         VEH_UpdateWeapon(ent);
     }
 
@@ -3228,23 +2829,17 @@ void Scr_Vehicle_Think(gentity_t *ent)
      */
     /* 0x8cc1a: the product feeds fistp directly (no float store). */
 #if EMULATE_X87
-    ent->s.time2 = x87f_store_i32_trunc(x87f_mul(
-        x87f_load_f32(vehicleInfo->suspensionTravel),
-        x87f_load_f32(millisecondsPerSecond)));
+    ent->s.time2 = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(vehicleInfo->suspensionTravel), x87f_load_f32(millisecondsPerSecond)));
 #elif defined(__x86_64__)
-    ent->s.time2 = CODUO_X87_TRUNCATE_I32(
-        (long double)vehicleInfo->suspensionTravel *
-        (long double)millisecondsPerSecond);
+    ent->s.time2 = CODUO_X87_TRUNCATE_I32((long double)vehicleInfo->suspensionTravel * (long double)millisecondsPerSecond);
 #else
-    ent->s.time2 =
-        (int)(vehicleInfo->suspensionTravel * millisecondsPerSecond);
+    ent->s.time2 = (int)(vehicleInfo->suspensionTravel * millisecondsPerSecond);
 #endif
     if (g_vehicleTrafficStressTest.integer < 0) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         const int stressCount = game_compat_veh_abs_int(g_vehicleTrafficStressTest.integer);
 
-        if (vehicleState->slotIndex < stressCount &&
-            vehicleInfo->gunnerSeatEnabled != 0) {
+        if (vehicleState->slotIndex < stressCount && vehicleInfo->gunnerSeatEnabled != 0) {
             G_VEH_FireGunner((uint32_t)ent->s.number, qtrue);
         }
     }
@@ -3263,8 +2858,7 @@ static void game_compat_veh_reset_think_turret_target(vehicle_state_t *vehicleSt
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_copy_bone_matrix_origin(
-    const DObjSkelMat *matrix, vec3_t origin)
+static void game_compat_veh_copy_bone_matrix_origin(const DObjSkelMat *matrix, vec3_t origin)
 {
     origin[0] = matrix->origin[0];
     origin[1] = matrix->origin[1];
@@ -3282,8 +2876,7 @@ void VEH_UpdateWeapon(gentity_t *ent)
     static uint16_t turretAltFireString;
 
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     gentity_t *passenger;
     gclient_t *passengerClient;
     vec3_t forward;
@@ -3293,13 +2886,11 @@ void VEH_UpdateWeapon(gentity_t *ent)
 
     game_compat_veh_reset_think_turret_target(vehicleState);
 
-    if (ent->passEntityNum == ENTITYNUM_NONE ||
-        vehicleInfo->turretWeapon[0] == '\0') {
+    if (ent->passEntityNum == ENTITYNUM_NONE || vehicleInfo->turretWeapon[0] == '\0') {
         return;
     }
 
-    ent->s.weapon =
-        BG_GetWeaponIndexForName(vehicleInfo->turretWeapon) & 0xff;
+    ent->s.weapon = BG_GetWeaponIndexForName(vehicleInfo->turretWeapon) & 0xff;
     if (ent->s.weapon == 0 || ent->vehiclePrimaryDisabled != 0) {
         return;
     }
@@ -3314,11 +2905,9 @@ void VEH_UpdateWeapon(gentity_t *ent)
     }
 
     if (vehicleState->primaryFireTime < 1) {
-        if ((passengerClient->command.buttons &
-             VEH_CLIENT_FIRE_BUTTON) != 0) {
+        if ((passengerClient->command.buttons & VEH_CLIENT_FIRE_BUTTON) != 0) {
             if (turretFireString == 0) {
-                turretFireString =
-                    game_compat_veh_script_notify_string("turret_fire");
+                turretFireString = game_compat_veh_script_notify_string("turret_fire");
             }
             Scr_Notify(ent, turretFireString, 0);
         }
@@ -3327,12 +2916,9 @@ void VEH_UpdateWeapon(gentity_t *ent)
     }
 
     vehicleState->altFireTime -= VEH_FIRE_TIME_THINK_STEP_MS;
-    if (vehicleState->altFireTime < 1 &&
-        (passengerClient->command.buttons &
-         VEH_CLIENT_ALT_FIRE_BUTTON) != 0) {
+    if (vehicleState->altFireTime < 1 && (passengerClient->command.buttons & VEH_CLIENT_ALT_FIRE_BUTTON) != 0) {
         if (turretAltFireString == 0) {
-            turretAltFireString =
-                game_compat_veh_script_notify_string("turret_alt_fire");
+            turretAltFireString = game_compat_veh_script_notify_string("turret_alt_fire");
         }
         Scr_Notify(ent, turretAltFireString, 0);
     }
@@ -3340,8 +2926,7 @@ void VEH_UpdateWeapon(gentity_t *ent)
     game_compat_veh_set_turret_target_active(vehicleState, 1);
 
     if (vehicleState->primaryFlashTagIndices[0] < 0) {
-        Com_Error(1, VEH_PLAYER_VEHICLE_NO_TAG_ERROR,
-                  vehiclePrimaryFlashTagNames[0]);
+        Com_Error(1, VEH_PLAYER_VEHICLE_NO_TAG_ERROR, vehiclePrimaryFlashTagNames[0]);
     }
     if (vehicleState->primaryTurretTagIndex < 0) {
         Com_Error(1, VEH_PLAYER_VEHICLE_NO_BARREL_ERROR);
@@ -3349,10 +2934,8 @@ void VEH_UpdateWeapon(gentity_t *ent)
 
     DObjSkelMat flashMatrix;
     DObjSkelMat turretMatrix;
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->primaryFlashTagIndices[0], &flashMatrix);
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->primaryTurretTagIndex, &turretMatrix);
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryFlashTagIndices[0], &flashMatrix);
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryTurretTagIndex, &turretMatrix);
 
     AngleVectors(passengerClient->ps.viewAngles, forward, NULL, NULL);
     if (passengerClient->ps.adsFraction == 0.0f) {
@@ -3361,8 +2944,7 @@ void VEH_UpdateWeapon(gentity_t *ent)
         } else {
             DObjSkelMat cameraMatrix;
 
-            G_DObjGetWorldBoneIndexMatrix(
-                ent, vehicleState->chasecamTagIndex, &cameraMatrix);
+            G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->chasecamTagIndex, &cameraMatrix);
             game_compat_veh_copy_bone_matrix_origin(&cameraMatrix, muzzle);
         }
     } else if (vehicleState->aimDownBarrelTagIndex < 0) {
@@ -3370,8 +2952,7 @@ void VEH_UpdateWeapon(gentity_t *ent)
     } else {
         DObjSkelMat aimMatrix;
 
-        G_DObjGetWorldBoneIndexMatrix(
-            ent, vehicleState->aimDownBarrelTagIndex, &aimMatrix);
+        G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->aimDownBarrelTagIndex, &aimMatrix);
         game_compat_veh_copy_bone_matrix_origin(&aimMatrix, muzzle);
     }
 
@@ -3383,13 +2964,10 @@ void VEH_UpdateWeapon(gentity_t *ent)
     vehicleState->motionControl[1] = target[1];
     vehicleState->motionControl[2] = target[2];
 
-    trap_Trace(&trace, turretMatrix.origin, NULL, NULL, flashMatrix.origin,
-               ent->s.number,
+    trap_Trace(&trace, turretMatrix.origin, NULL, NULL, flashMatrix.origin, ent->s.number,
                ent->clipmask & (int32_t)~VEH_ALT_TRACE_CONTENTS_CLEAR);
     if (trace.fraction == 1.0f) {
-        trap_LocationalTrace(&trace, muzzle, target, ent->passEntityNum,
-                             VEH_ALT_TRACE_LOCATIONAL_MASK,
-                             bulletPriorityMap);
+        trap_LocationalTrace(&trace, muzzle, target, ent->passEntityNum, VEH_ALT_TRACE_LOCATIONAL_MASK, bulletPriorityMap);
         if (trace.fraction < 1.0f) {
             vehicleState->motionControl[0] = trace.endpos[0];
             vehicleState->motionControl[1] = trace.endpos[1];
@@ -3410,27 +2988,22 @@ void VEH_UpdateGunnerWeapon(gentity_t *ent)
     static uint16_t turretGunnerFireString;
 
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
     game_compat_veh_reset_think_turret_target(vehicleState);
 
-    if (vehicleState->gunnerHeat >= 1.0f &&
-        vehicleState->gunnerOverheating == 0) {
+    if (vehicleState->gunnerHeat >= 1.0f && vehicleState->gunnerOverheating == 0) {
         vehicleState->gunnerOverheating = 1;
         ent->s.turretOverheatState = 1;
         G_AddEvent(ent, EV_OVERHEATING, 0);
-    } else if (vehicleState->gunnerOverheating != 0 &&
-               vehicleState->gunnerHeat <= 0.5f) {
+    } else if (vehicleState->gunnerOverheating != 0 && vehicleState->gunnerHeat <= 0.5f) {
         vehicleState->gunnerOverheating = 0;
         ent->s.turretOverheatState = 0;
     }
 
     if (vehicleInfo->turretGunnerWeapon[0] != '\0') {
         const weaponInfo_t *weaponInfo =
-            (const weaponInfo_t *)BG_GetInfoForWeapon(
-                BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) &
-                0xff);
+            (const weaponInfo_t *)BG_GetInfoForWeapon(BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff);
 
         if (vehicleState->gunnerHeat > 0.0f) {
             vehicleState->gunnerHeat -= weaponInfo->turretHeatDecay;
@@ -3439,31 +3012,23 @@ void VEH_UpdateGunnerWeapon(gentity_t *ent)
         }
     }
 
-    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER] !=
-        ENTITYNUM_NONE) {
-        gentity_t *gunner = &g_entities[
-            vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER]];
+    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER] != ENTITYNUM_NONE) {
+        gentity_t *gunner = &g_entities[vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER]];
         gclient_t *gunnerClient = gunner->client;
 
         if (vehicleState->gunnerOverheating == 0) {
-            gunnerClient->ps.playerStateFlags &=
-                ~VEH_CLIENT_GUNNER_OVERHEAT_FLAG;
+            gunnerClient->ps.playerStateFlags &= ~VEH_CLIENT_GUNNER_OVERHEAT_FLAG;
         } else {
-            gunnerClient->ps.playerStateFlags |=
-                VEH_CLIENT_GUNNER_OVERHEAT_FLAG;
+            gunnerClient->ps.playerStateFlags |= VEH_CLIENT_GUNNER_OVERHEAT_FLAG;
             Scr_Notify(ent, scr_const_overheating, 0);
         }
 
-        if ((gunnerClient->ps.entityStateFlags & EF_VEHICLE_POPOUT) == 0 &&
-            gunner->health > 0 &&
+        if ((gunnerClient->ps.entityStateFlags & EF_VEHICLE_POPOUT) == 0 && gunner->health > 0 &&
             gunnerClient->connectedState == CON_CONNECTED) {
             vehicleState->gunnerFireTime -= VEH_FIRE_TIME_THINK_STEP_MS;
-            if (vehicleState->gunnerFireTime < 1 &&
-                (gunnerClient->command.buttons &
-                 VEH_CLIENT_FIRE_BUTTON) != 0) {
+            if (vehicleState->gunnerFireTime < 1 && (gunnerClient->command.buttons & VEH_CLIENT_FIRE_BUTTON) != 0) {
                 if (turretGunnerFireString == 0) {
-                    turretGunnerFireString =
-                        game_compat_veh_script_notify_string("turret_gunner_fire");
+                    turretGunnerFireString = game_compat_veh_script_notify_string("turret_gunner_fire");
                 }
                 Scr_Notify(ent, turretGunnerFireString, 0);
             }
@@ -3479,16 +3044,13 @@ void VEH_UpdateGunnerWeapon(gentity_t *ent)
 void VEH_UpdateSteering(gentity_t *ent)
 {
     const vehicle_state_t *vehicleState = (const vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
     if (vehicleInfo->steerWheels == 0) {
         ent->s.clientInfoLeanFraction = 0.0f;
     } else {
-        game_compat_veh_set_float_slot_int_bits(
-            &ent->s.clientInfoLeanFraction,
-            game_compat_veh_float_slot_int_bits(&vehicleState->steerAngle) ^
-                (int32_t)0x80000000u);
+        game_compat_veh_set_float_slot_int_bits(&ent->s.clientInfoLeanFraction,
+                                                game_compat_veh_float_slot_int_bits(&vehicleState->steerAngle) ^ (int32_t)0x80000000u);
     }
 }
 
@@ -3500,8 +3062,7 @@ void VEH_UpdateSteering(gentity_t *ent)
 void VEH_UpdateShaderTime(gentity_t *ent)
 {
     const vehicle_state_t *vehicleState = (const vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     float scrollSpeed;
     float scrollScale;
     float scrollStep;
@@ -3517,9 +3078,7 @@ void VEH_UpdateShaderTime(gentity_t *ent)
         scrollSpeed = vehicleState->acceleration[1];
     }
 
-    scrollScale = g_vehicleTexScrollScale.value > 0.0f ?
-        g_vehicleTexScrollScale.value :
-        vehicleInfo->textureScrollScale;
+    scrollScale = g_vehicleTexScrollScale.value > 0.0f ? g_vehicleTexScrollScale.value : vehicleInfo->textureScrollScale;
     /* Stock 0x86b3c..0x86c4b (float DWORD constants, stepwise stores): each
      * scroll-step stage is its own float store, so the leading divide is the
      * only width-sensitive one (80-bit quotient rounded once at the store, vs
@@ -3529,12 +3088,10 @@ void VEH_UpdateShaderTime(gentity_t *ent)
      * to int; our -mfpmath=387 build spills it (deviating), so force the 80-bit
      * product with a long double multiply (1000 is exact) and truncate it. */
 #if EMULATE_X87
-    scrollStep = x87f_store_f32(x87f_div(x87f_load_f32(scrollSpeed),
-                                         x87f_load_f32(VEH_TEXTURE_SCROLL_SPEED_SCALE)));
+    scrollStep = x87f_store_f32(x87f_div(x87f_load_f32(scrollSpeed), x87f_load_f32(VEH_TEXTURE_SCROLL_SPEED_SCALE)));
     scrollStep *= VEH_PHYSICS_FRAME_SECONDS;
     scrollStep *= scrollScale;
-    ent->s.time += x87f_store_i32_trunc(
-        x87f_mul(x87f_load_f32(scrollStep), x87f_load_f32(1000.0f)));
+    ent->s.time += x87f_store_i32_trunc(x87f_mul(x87f_load_f32(scrollStep), x87f_load_f32(1000.0f)));
 #else
     scrollStep = scrollSpeed / VEH_TEXTURE_SCROLL_SPEED_SCALE;
     scrollStep *= VEH_PHYSICS_FRAME_SECONDS;
@@ -3548,8 +3105,7 @@ void VEH_UpdateShaderTime(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7c935, 8c935_FUN_0008c935.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; callback setup, entity-state fields, precache checks, and RegisterItem calls checked. */
-void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState,
-                    int16_t vehicleInfoIndex)
+void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState, int16_t vehicleInfoIndex)
 {
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleInfoIndex);
     level_locals_t *lvl = &level;
@@ -3577,8 +3133,7 @@ void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState,
     ent->s.clientSound = 0;
 
     if (vehicleInfo->turretWeapon[0] != '\0') {
-        ent->s.weapon =
-            BG_GetWeaponIndexForName(vehicleInfo->turretWeapon) & 0xff;
+        ent->s.weapon = BG_GetWeaponIndexForName(vehicleInfo->turretWeapon) & 0xff;
     }
 
     ent->s.clientInfoLeanFraction = 0.0f;
@@ -3586,10 +3141,8 @@ void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState,
     game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[2], 0);
     game_compat_veh_set_entity_gunner_yaw_base(ent, 0.0f);
     game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[0], 0);
-    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[0],
-                            VEH_ENTITY_DEFAULT_ANIM_VALUE);
-    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[2],
-                            VEH_ENTITY_DEFAULT_ANIM_VALUE);
+    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[0], VEH_ENTITY_DEFAULT_ANIM_VALUE);
+    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[2], VEH_ENTITY_DEFAULT_ANIM_VALUE);
     ent->s.vehicleTurret.gunnerPitch = 0.0f;
     ent->s.vehicleTurret.primaryYaw = 0.0f;
     ent->s.vehicleTurret.primaryPitch = 0.0f;
@@ -3608,34 +3161,22 @@ void VEH_InitEntity(gentity_t *ent, vehicle_state_t *vehicleState,
 
     if (lvl->spawning == 0) {
         if (!IsItemRegistered(ent->s.weapon)) {
-            Scr_Error(va(VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED,
-                         vehicleInfo->name));
+            Scr_Error(va(VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED, vehicleInfo->name));
         }
-        if (!IsItemRegistered(BG_GetWeaponIndexForName(
-                                  vehicleInfo->turretAltWeapon) &
-                              0xff)) {
-            Scr_Error(va(VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED,
-                         vehicleInfo->name));
+        if (!IsItemRegistered(BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) & 0xff)) {
+            Scr_Error(va(VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED, vehicleInfo->name));
         }
-        if (!IsItemRegistered(BG_GetWeaponIndexForName(
-                                  vehicleInfo->turretGunnerWeapon) &
-                              0xff)) {
-            Scr_Error(va(VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED,
-                         vehicleInfo->name));
+        if (!IsItemRegistered(BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff)) {
+            Scr_Error(va(VEH_SCRIPT_ENTITY_ERROR_NOT_PRECACHED, vehicleInfo->name));
         }
     }
 
     RegisterItem(ent->s.weapon, qtrue);
     if (vehicleInfo->turretAltWeapon[0] != '\0') {
-        RegisterItem(BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) &
-                         0xff,
-                     qtrue);
+        RegisterItem(BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) & 0xff, qtrue);
     }
     if (vehicleInfo->turretGunnerWeapon[0] != '\0') {
-        RegisterItem(BG_GetWeaponIndexForName(
-                         vehicleInfo->turretGunnerWeapon) &
-                         0xff,
-                     qtrue);
+        RegisterItem(BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff, qtrue);
     }
 }
 
@@ -3648,24 +3189,16 @@ void VEH_InitPhysics(gentity_t *ent)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    memcpy(vehicleState->origin, ent->currentOrigin,
-           sizeof(vehicleState->origin));
-    memcpy(vehicleState->previousOrigin, ent->currentOrigin,
-           sizeof(vehicleState->previousOrigin));
-    memcpy(vehicleState->viewClampTargetAngles, ent->currentAngles,
-           sizeof(vehicleState->viewClampTargetAngles));
-    memcpy(vehicleState->previousAngles, ent->currentAngles,
-           sizeof(vehicleState->previousAngles));
+    memcpy(vehicleState->origin, ent->currentOrigin, sizeof(vehicleState->origin));
+    memcpy(vehicleState->previousOrigin, ent->currentOrigin, sizeof(vehicleState->previousOrigin));
+    memcpy(vehicleState->viewClampTargetAngles, ent->currentAngles, sizeof(vehicleState->viewClampTargetAngles));
+    memcpy(vehicleState->previousAngles, ent->currentAngles, sizeof(vehicleState->previousAngles));
 
     memset(vehicleState->velocity, 0, sizeof(vehicleState->velocity));
-    memset(vehicleState->angularVelocity, 0,
-           sizeof(vehicleState->angularVelocity));
-    memset(vehicleState->acceleration, 0,
-           sizeof(vehicleState->acceleration));
-    memset(vehicleState->angularAcceleration, 0,
-           sizeof(vehicleState->angularAcceleration));
-    memset(vehicleState->externalVelocity, 0,
-           sizeof(vehicleState->externalVelocity));
+    memset(vehicleState->angularVelocity, 0, sizeof(vehicleState->angularVelocity));
+    memset(vehicleState->acceleration, 0, sizeof(vehicleState->acceleration));
+    memset(vehicleState->angularAcceleration, 0, sizeof(vehicleState->angularAcceleration));
+    memset(vehicleState->externalVelocity, 0, sizeof(vehicleState->externalVelocity));
 
     for (int index = 0; index < 6; index++) {
         vehicleState->wheelVerticalVelocity[index] = 0.0f;
@@ -3673,8 +3206,7 @@ void VEH_InitPhysics(gentity_t *ent)
         vehicleState->wheelMaterial[index] = 0.0f;
     }
 
-    memcpy(&vehicleState->previousPhysicsState, &vehicleState->origin,
-           sizeof(vehicleState->previousPhysicsState));
+    memcpy(&vehicleState->previousPhysicsState, &vehicleState->origin, sizeof(vehicleState->previousPhysicsState));
 }
 
 /* ------------------------------------------------------------------ */
@@ -3682,20 +3214,13 @@ void VEH_InitPhysics(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x8ccad, 9ccad_Scr_Vehicle_DamageScale.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; MOD set, axis dominance, grenade override, directional scale blend, and bullet multiplier checked. */
-float Scr_Vehicle_DamageScale(gentity_t *vehicle, gentity_t *attacker,
-                              gentity_t *inflictor, const float *point,
-                              int mod)
+float Scr_Vehicle_DamageScale(gentity_t *vehicle, gentity_t *attacker, gentity_t *inflictor, const float *point, int mod)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)vehicle->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
-    const float damageDirectionCosine =
-        (float)CoduoLibm_Cos(VEH_DAMAGE_SCALE_ANGLE_RADIANS);
+    const float damageDirectionCosine = (float)CoduoLibm_Cos(VEH_DAMAGE_SCALE_ANGLE_RADIANS);
     axis_t axis;
-    vec3_t delta = {
-        point[0] - vehicleState->origin[0],
-        point[1] - vehicleState->origin[1],
-        0.0f
-    };
+    vec3_t delta = {point[0] - vehicleState->origin[0], point[1] - vehicleState->origin[1], 0.0f};
     float bulletScale = 1.0f;
     float dominantDot = 0.0f;
     int dominantAxis = -1;
@@ -3710,10 +3235,7 @@ float Scr_Vehicle_DamageScale(gentity_t *vehicle, gentity_t *attacker,
     VectorNormalize(delta);
 
     for (int axisIndex = 0; axisIndex < 2; axisIndex++) {
-        const float dot =
-            delta[0] * axis[axisIndex][0] +
-            delta[1] * axis[axisIndex][1] +
-            delta[2] * axis[axisIndex][2];
+        const float dot = delta[0] * axis[axisIndex][0] + delta[1] * axis[axisIndex][1] + delta[2] * axis[axisIndex][2];
 
         if (dominantAxis < 0 || fabsf(dominantDot) < fabsf(dot)) {
             dominantAxis = axisIndex;
@@ -3721,32 +3243,24 @@ float Scr_Vehicle_DamageScale(gentity_t *vehicle, gentity_t *attacker,
         }
     }
 
-    if (mod == MOD_GRENADE_SPLASH ||
-        mod == MOD_PROJECTILE_SPLASH ||
-        mod == MOD_MORTAR_SPLASH ||
-        mod == MOD_DYNAMITE_SPLASH ||
+    if (mod == MOD_GRENADE_SPLASH || mod == MOD_PROJECTILE_SPLASH || mod == MOD_MORTAR_SPLASH || mod == MOD_DYNAMITE_SPLASH ||
         mod == MOD_ARTILLERY_SPLASH) {
         float directScale = 1.0f;
         float blendScale = 1.0f;
 
         if (mod == MOD_GRENADE_SPLASH) {
             float weaponScale = 1.0f;
-            const float radius =
-                vehicle->maxs[1] * VEH_DAMAGE_SCALE_GRENADE_RADIUS_MULT;
-            const float distanceSq =
-                VectorDistanceSquared(point, vehicleState->origin);
+            const float radius = vehicle->maxs[1] * VEH_DAMAGE_SCALE_GRENADE_RADIUS_MULT;
+            const float distanceSq = VectorDistanceSquared(point, vehicleState->origin);
 
             /* 0x8cfdb-0x8cfff: machine checks only inflictor != NULL, then
              * NULL-checks the returned weapon-info pointer (weapon 0 is
              * looked up too; there is no weapon != 0 pre-check). */
             if (inflictor != NULL) {
-                const weaponInfo_t *weaponInfo =
-                    (const weaponInfo_t *)BG_GetInfoForWeapon(
-                        inflictor->s.weapon);
+                const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(inflictor->s.weapon);
 
                 if (weaponInfo != NULL) {
-                    const float configuredScale =
-                        weaponInfo->grenadeSplashVehicleDamageScale;
+                    const float configuredScale = weaponInfo->grenadeSplashVehicleDamageScale;
 
                     if (configuredScale > 0.0f) {
                         weaponScale = configuredScale;
@@ -3754,65 +3268,45 @@ float Scr_Vehicle_DamageScale(gentity_t *vehicle, gentity_t *attacker,
                 }
             }
 
-            if (!(vehicleState->origin[2] + vehicle->maxs[2] * 0.5f >
-                  point[2] - VEH_DAMAGE_SCALE_GRENADE_HEIGHT)) {
+            if (!(vehicleState->origin[2] + vehicle->maxs[2] * 0.5f > point[2] - VEH_DAMAGE_SCALE_GRENADE_HEIGHT)) {
                 return bulletScale * weaponScale;
             }
             if (!(radius * radius > distanceSq)) {
                 return bulletScale * weaponScale;
             }
 
-            return bulletScale * VEH_DAMAGE_SCALE_PERCENT *
-                   vehicleInfo->damageScaleTop *
-                   weaponScale;
+            return bulletScale * VEH_DAMAGE_SCALE_PERCENT * vehicleInfo->damageScaleTop * weaponScale;
         }
 
         if (dominantAxis == 0) {
-            directScale =
-                (dominantDot < 0.0f ?
-                    vehicleInfo->damageScaleRear :
-                    vehicleInfo->damageScaleFront) *
-                VEH_DAMAGE_SCALE_PERCENT;
-            blendScale =
-                vehicleInfo->damageScaleSide * VEH_DAMAGE_SCALE_PERCENT;
+            directScale = (dominantDot < 0.0f ? vehicleInfo->damageScaleRear : vehicleInfo->damageScaleFront) * VEH_DAMAGE_SCALE_PERCENT;
+            blendScale = vehicleInfo->damageScaleSide * VEH_DAMAGE_SCALE_PERCENT;
         } else if (dominantAxis == 1) {
-            const long double forwardDot =
-                (long double)delta[0] * (long double)axis[0][0] +
-                (long double)delta[1] * (long double)axis[0][1] +
-                (long double)delta[2] * (long double)axis[0][2];
+            const long double forwardDot = (long double)delta[0] * (long double)axis[0][0] +
+                                           (long double)delta[1] * (long double)axis[0][1] +
+                                           (long double)delta[2] * (long double)axis[0][2];
 
-            directScale =
-                vehicleInfo->damageScaleSide * VEH_DAMAGE_SCALE_PERCENT;
-            blendScale =
-                (forwardDot < 0.0L ?
-                    vehicleInfo->damageScaleRear :
-                    vehicleInfo->damageScaleFront) *
-                VEH_DAMAGE_SCALE_PERCENT;
+            directScale = vehicleInfo->damageScaleSide * VEH_DAMAGE_SCALE_PERCENT;
+            blendScale = (forwardDot < 0.0L ? vehicleInfo->damageScaleRear : vehicleInfo->damageScaleFront) * VEH_DAMAGE_SCALE_PERCENT;
         }
 
-        return ((1.0f - fabsf(dominantDot)) * blendScale +
-                directScale * fabsf(dominantDot)) *
-               bulletScale * VEH_DAMAGE_SCALE_RADIUS_BLEND;
+        return ((1.0f - fabsf(dominantDot)) * blendScale + directScale * fabsf(dominantDot)) * bulletScale * VEH_DAMAGE_SCALE_RADIUS_BLEND;
     }
 
     if (dominantAxis == 0) {
         if (dominantDot < 0.0f) {
             if (-dominantDot < damageDirectionCosine) {
-                return bulletScale * VEH_DAMAGE_SCALE_PERCENT *
-                       vehicleInfo->damageScaleSide;
+                return bulletScale * VEH_DAMAGE_SCALE_PERCENT * vehicleInfo->damageScaleSide;
             }
 
-            return bulletScale * VEH_DAMAGE_SCALE_PERCENT *
-                   vehicleInfo->damageScaleRear;
+            return bulletScale * VEH_DAMAGE_SCALE_PERCENT * vehicleInfo->damageScaleRear;
         }
 
-        return bulletScale * VEH_DAMAGE_SCALE_PERCENT *
-               vehicleInfo->damageScaleFront;
+        return bulletScale * VEH_DAMAGE_SCALE_PERCENT * vehicleInfo->damageScaleFront;
     }
 
     if (dominantAxis == 1) {
-        return bulletScale * VEH_DAMAGE_SCALE_PERCENT *
-               vehicleInfo->damageScaleSide;
+        return bulletScale * VEH_DAMAGE_SCALE_PERCENT * vehicleInfo->damageScaleSide;
     }
 
     return 0.0f;
@@ -3823,8 +3317,7 @@ float Scr_Vehicle_DamageScale(gentity_t *vehicle, gentity_t *attacker,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7cebf, 8cebf_FUN_0008cebf.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; vehicle-state initialization, sound blend spawning/linking, weapon sound aliases, and final position set checked. */
-void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState,
-                   int16_t vehicleInfoIndex)
+void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState, int16_t vehicleInfoIndex)
 {
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleInfoIndex);
     const weaponInfo_t *weaponInfo;
@@ -3867,7 +3360,8 @@ void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState,
     }
     vehicleState->idleSoundBlendRepeatDelay = 0.0f;
     vehicleState->runSoundBlendRepeatDelay = 0.0f;
-    vehicleState->primaryAimSightTraceResult = 0; /* +0x37c..+0x37f, size 0x04; VEH_UpdateAim uses it as trap_SightTrace output in the dormant turret_on_vistarget path. */
+    vehicleState->primaryAimSightTraceResult =
+        0; /* +0x37c..+0x37f, size 0x04; VEH_UpdateAim uses it as trap_SightTrace output in the dormant turret_on_vistarget path. */
     vehicleState->collisionSweepFraction = 1.0f;
     vehicleState->cachedCollisionEntityNum = ENTITYNUM_NONE;
     vehicleState->cachedCollisionDistance = VEH_COLLISION_CACHE_DISTANCE_RESET;
@@ -3888,10 +3382,8 @@ void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState,
         vehicleState->soundBlendEntityNums[1] = soundBlend->s.number;
     }
 
-    vehicleState->soundBlendEntityNums[2] =
-        game_compat_veh_spawn_linked_sound_blend(ent)->s.number;
-    vehicleState->soundBlendEntityNums[3] =
-        game_compat_veh_spawn_linked_sound_blend(ent)->s.number;
+    vehicleState->soundBlendEntityNums[2] = game_compat_veh_spawn_linked_sound_blend(ent)->s.number;
+    vehicleState->soundBlendEntityNums[3] = game_compat_veh_spawn_linked_sound_blend(ent)->s.number;
 
     if (vehicleInfo->turretAltWeapon[0] != '\0') {
         weaponIndex = BG_GetWeaponIndexForName(vehicleInfo->turretAltWeapon) & 0xff;
@@ -3909,8 +3401,7 @@ void VEH_InitVehicle(gentity_t *ent, vehicle_state_t *vehicleState,
     }
 
     if (vehicleInfo->turretGunnerWeapon[0] != '\0') {
-        weaponIndex =
-            BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff;
+        weaponIndex = BG_GetWeaponIndexForName(vehicleInfo->turretGunnerWeapon) & 0xff;
         weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(weaponIndex);
 
         soundName = weaponInfo->loopFireSound;
@@ -3942,8 +3433,7 @@ void VEH_SetupCollmap(gentity_t *ent)
     }
 
     if (collmapNode->s.itemIndex == 0) {
-        Com_Printf("WARNING: Cannot use empty vehicle collmap for [%s]\n",
-                   G_ModelName(ent->modelIndex));
+        Com_Printf("WARNING: Cannot use empty vehicle collmap for [%s]\n", G_ModelName(ent->modelIndex));
         return;
     }
 
@@ -3958,9 +3448,7 @@ void VEH_SetupCollmap(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7d492, 8d492_FUN_0008d492.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; input clamp, axis projection, 2D normalization, signed acceleration clamps, and scripted speed stores checked. */
-void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector,
-                             float inputScale, float maxSpeedScale,
-                             float acceleration)
+void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector, float inputScale, float maxSpeedScale, float acceleration)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
@@ -3973,29 +3461,24 @@ void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector,
     /* inputVector . axis-row dot: 3-mul/2-add chain kept 80-bit until the field
      * store -> shim (left-assoc (m0+m1)+m2). */
 #if EMULATE_X87
-    vehicleState->localAccel.components.forward = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(inputVector[0]), x87f_load_f32(axis[0][0])),
-                 x87f_mul(x87f_load_f32(inputVector[1]), x87f_load_f32(axis[0][1]))),
-        x87f_mul(x87f_load_f32(inputVector[2]), x87f_load_f32(axis[0][2]))));
-#else
     vehicleState->localAccel.components.forward =
-        inputVector[0] * axis[0][0] +
-        inputVector[1] * axis[0][1] +
-        inputVector[2] * axis[0][2];
+        x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(inputVector[0]), x87f_load_f32(axis[0][0])),
+                                         x87f_mul(x87f_load_f32(inputVector[1]), x87f_load_f32(axis[0][1]))),
+                                x87f_mul(x87f_load_f32(inputVector[2]), x87f_load_f32(axis[0][2]))));
+#else
+    vehicleState->localAccel.components.forward = inputVector[0] * axis[0][0] + inputVector[1] * axis[0][1] + inputVector[2] * axis[0][2];
 #endif
     /* 0x7d57e..0x7d5a8: the projection multiplies axis row 1, and
      * the negation is a sign-bit flip on the stored float (negate commutes with
      * round-to-nearest, so -store_f32(dot) matches). */
 #if EMULATE_X87
-    vehicleState->localAccel.components.vertical = -x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(inputVector[0]), x87f_load_f32(axis[1][0])),
-                 x87f_mul(x87f_load_f32(inputVector[1]), x87f_load_f32(axis[1][1]))),
-        x87f_mul(x87f_load_f32(inputVector[2]), x87f_load_f32(axis[1][2]))));
+    vehicleState->localAccel.components.vertical =
+        -x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(inputVector[0]), x87f_load_f32(axis[1][0])),
+                                          x87f_mul(x87f_load_f32(inputVector[1]), x87f_load_f32(axis[1][1]))),
+                                 x87f_mul(x87f_load_f32(inputVector[2]), x87f_load_f32(axis[1][2]))));
 #else
     vehicleState->localAccel.components.vertical =
-        -(inputVector[0] * axis[1][0] +
-          inputVector[1] * axis[1][1] +
-          inputVector[2] * axis[1][2]);
+        -(inputVector[0] * axis[1][0] + inputVector[1] * axis[1][1] + inputVector[2] * axis[1][2]);
 #endif
 
     vehicleState->throttleScale = clampedScale * VEH_THROTTLE_SCALE_MULTIPLIER;
@@ -4007,28 +3490,18 @@ void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector,
      * ClampAbs float arg -> shim ((a*b)*c). */
 #if EMULATE_X87
     vehicleState->localAccel.components.forward = game_compat_veh_clamp_abs(
-        x87f_store_f32(x87f_mul(
-            x87f_mul(x87f_load_f32(vehicleInfo->forwardInputScale),
-                     x87f_load_f32(clampedScale)),
-            x87f_load_f32(vehicleState->localAccel.components.forward))),
+        x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(vehicleInfo->forwardInputScale), x87f_load_f32(clampedScale)),
+                                x87f_load_f32(vehicleState->localAccel.components.forward))),
         VEH_SCRIPTED_INPUT_CLAMP);
     vehicleState->localAccel.components.vertical = game_compat_veh_clamp_abs(
-        x87f_store_f32(x87f_mul(
-            x87f_mul(x87f_load_f32(vehicleInfo->verticalInputScale),
-                     x87f_load_f32(clampedScale)),
-            x87f_load_f32(vehicleState->localAccel.components.vertical))),
+        x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(vehicleInfo->verticalInputScale), x87f_load_f32(clampedScale)),
+                                x87f_load_f32(vehicleState->localAccel.components.vertical))),
         VEH_SCRIPTED_INPUT_CLAMP);
 #else
-    vehicleState->localAccel.components.forward =
-        game_compat_veh_clamp_abs(
-            vehicleInfo->forwardInputScale * clampedScale *
-                vehicleState->localAccel.components.forward,
-            VEH_SCRIPTED_INPUT_CLAMP);
-    vehicleState->localAccel.components.vertical =
-        game_compat_veh_clamp_abs(
-            vehicleInfo->verticalInputScale * clampedScale *
-                vehicleState->localAccel.components.vertical,
-            VEH_SCRIPTED_INPUT_CLAMP);
+    vehicleState->localAccel.components.forward = game_compat_veh_clamp_abs(
+        vehicleInfo->forwardInputScale * clampedScale * vehicleState->localAccel.components.forward, VEH_SCRIPTED_INPUT_CLAMP);
+    vehicleState->localAccel.components.vertical = game_compat_veh_clamp_abs(
+        vehicleInfo->verticalInputScale * clampedScale * vehicleState->localAccel.components.vertical, VEH_SCRIPTED_INPUT_CLAMP);
 #endif
 
     /* 0x7d6e5: fld DWORD [ent+0x1f0] - the slot's float BITS are loaded
@@ -4044,10 +3517,8 @@ void VEH_UpdateScriptedInput(gentity_t *ent, const vec3_t inputVector,
 /* VERIFIED_DECOMPILER(0x8d3bc, 9d3bc_Scr_Vehicle_PushAway.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; push direction, distance cutoff, position test loop, trajectory base, and client origin stores checked. */
 qboolean Scr_Vehicle_PushAway(gentity_t *player, gentity_t *vehicle)
 {
-    const vehicle_state_t *vehicleState =
-        (const vehicle_state_t *)vehicle->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicle_state_t *vehicleState = (const vehicle_state_t *)vehicle->vehicle;
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     vec3_t direction;
     vec3_t pushedOrigin;
 
@@ -4060,9 +3531,8 @@ qboolean Scr_Vehicle_PushAway(gentity_t *player, gentity_t *vehicle)
      * mins delta: (mins_p - mins_v) + direction[2] is sub+add kept 80-bit until
      * the store -> shim. */
 #if EMULATE_X87
-    direction[2] = x87f_store_f32(x87f_add(
-        x87f_sub(x87f_load_f32(player->mins[2]), x87f_load_f32(vehicle->mins[2])),
-        x87f_load_f32(direction[2])));
+    direction[2] =
+        x87f_store_f32(x87f_add(x87f_sub(x87f_load_f32(player->mins[2]), x87f_load_f32(vehicle->mins[2])), x87f_load_f32(direction[2])));
 #else
     direction[2] = (player->mins[2] - vehicle->mins[2]) + direction[2];
 #endif
@@ -4082,20 +3552,15 @@ qboolean Scr_Vehicle_PushAway(gentity_t *player, gentity_t *vehicle)
          * bind the distance to a float first (matches stock: no spill), and
          * emulate the compare at 80-bit width. */
         {
-            const float pushDistance =
-                VectorDistance(pushedOrigin, vehicle->currentOrigin);
+            const float pushDistance = VectorDistance(pushedOrigin, vehicle->currentOrigin);
 #if EMULATE_X87
-            if (!x87f_lt(
-                    x87f_load_f32(pushDistance),
-                    x87f_add(x87f_add(x87f_load_f32(VEH_PUSH_AWAY_PLAYER_RADIUS),
-                                      x87f_load_f32(vehicleInfo->collisionMaxs[0])),
-                             x87f_load_f32(kVehSafetyBuffer)))) {
+            if (!x87f_lt(x87f_load_f32(pushDistance),
+                         x87f_add(x87f_add(x87f_load_f32(VEH_PUSH_AWAY_PLAYER_RADIUS), x87f_load_f32(vehicleInfo->collisionMaxs[0])),
+                                  x87f_load_f32(kVehSafetyBuffer)))) {
                 return qfalse;
             }
 #else
-            if (!(VEH_PUSH_AWAY_PLAYER_RADIUS +
-                      vehicleInfo->collisionMaxs[0] + kVehSafetyBuffer >
-                  pushDistance)) {
+            if (!(VEH_PUSH_AWAY_PLAYER_RADIUS + vehicleInfo->collisionMaxs[0] + kVehSafetyBuffer > pushDistance)) {
                 return qfalse;
             }
 #endif
@@ -4104,10 +3569,8 @@ qboolean Scr_Vehicle_PushAway(gentity_t *player, gentity_t *vehicle)
         /* pushedOrigin += direction*STEP: mul then add-into, 80-bit, one store */
 #if EMULATE_X87
         for (int i = 0; i < 3; i++) {
-            pushedOrigin[i] = x87f_store_f32(x87f_add(
-                x87f_load_f32(pushedOrigin[i]),
-                x87f_mul(x87f_load_f32(direction[i]),
-                         x87f_load_f32(VEH_PUSH_AWAY_STEP))));
+            pushedOrigin[i] = x87f_store_f32(
+                x87f_add(x87f_load_f32(pushedOrigin[i]), x87f_mul(x87f_load_f32(direction[i]), x87f_load_f32(VEH_PUSH_AWAY_STEP))));
         }
 #else
         pushedOrigin[0] += direction[0] * VEH_PUSH_AWAY_STEP;
@@ -4155,45 +3618,31 @@ void Scr_Vehicle_Touch(gentity_t *self, gentity_t *other, int traceMode)
 /* VERIFIED_DECOMPILER(0x8d5a6, 9d5a6_VEH_GetMinsMaxs.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; collision bounds expansion and min/max padding constants checked. */
 void VEH_GetMinsMaxs(gentity_t *ent, float *mins, float *maxs)
 {
-    const vehicle_state_t *vehicleState =
-        (const vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicle_state_t *vehicleState = (const vehicle_state_t *)ent->vehicle;
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     const float *padding;
 
     /* 0x8d5e9..0x8d77d: the scaled bounds are stored first, then the pad
      * vector (tv(-50,-50,0) / tv(50,50,20)) is added in a second rounded
      * store per component - including the mins[2] + 0.0f add. */
-    mins[0] = vehicleInfo->collisionBoundsSource[0] *
-              VEH_BOUNDS_EXPANSION_SCALE;
-    mins[1] = vehicleInfo->collisionBoundsSource[1] *
-              VEH_BOUNDS_EXPANSION_SCALE;
-    mins[2] = vehicleInfo->collisionBoundsSource[2] *
-              VEH_BOUNDS_EXPANSION_SCALE;
-    padding = tv(VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_XY,
-                 VEH_BOUNDS_MINS_PAD_Z);
+    mins[0] = vehicleInfo->collisionBoundsSource[0] * VEH_BOUNDS_EXPANSION_SCALE;
+    mins[1] = vehicleInfo->collisionBoundsSource[1] * VEH_BOUNDS_EXPANSION_SCALE;
+    mins[2] = vehicleInfo->collisionBoundsSource[2] * VEH_BOUNDS_EXPANSION_SCALE;
+    padding = tv(VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_Z);
     mins[0] = mins[0] + padding[0];
-    padding = tv(VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_XY,
-                 VEH_BOUNDS_MINS_PAD_Z);
+    padding = tv(VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_Z);
     mins[1] = mins[1] + padding[1];
-    padding = tv(VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_XY,
-                 VEH_BOUNDS_MINS_PAD_Z);
+    padding = tv(VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_XY, VEH_BOUNDS_MINS_PAD_Z);
     mins[2] = mins[2] + padding[2];
 
-    maxs[0] = vehicleInfo->collisionBoundsSource[3] *
-              VEH_BOUNDS_EXPANSION_SCALE;
-    maxs[1] = vehicleInfo->collisionBoundsSource[4] *
-              VEH_BOUNDS_EXPANSION_SCALE;
-    maxs[2] = vehicleInfo->collisionBoundsSource[5] *
-              VEH_BOUNDS_EXPANSION_SCALE;
-    padding = tv(VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_XY,
-                 VEH_BOUNDS_MAXS_PAD_Z);
+    maxs[0] = vehicleInfo->collisionBoundsSource[3] * VEH_BOUNDS_EXPANSION_SCALE;
+    maxs[1] = vehicleInfo->collisionBoundsSource[4] * VEH_BOUNDS_EXPANSION_SCALE;
+    maxs[2] = vehicleInfo->collisionBoundsSource[5] * VEH_BOUNDS_EXPANSION_SCALE;
+    padding = tv(VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_Z);
     maxs[0] = maxs[0] + padding[0];
-    padding = tv(VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_XY,
-                 VEH_BOUNDS_MAXS_PAD_Z);
+    padding = tv(VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_Z);
     maxs[1] = maxs[1] + padding[1];
-    padding = tv(VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_XY,
-                 VEH_BOUNDS_MAXS_PAD_Z);
+    padding = tv(VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_XY, VEH_BOUNDS_MAXS_PAD_Z);
     maxs[2] = maxs[2] + padding[2];
 }
 
@@ -4204,10 +3653,8 @@ void VEH_GetMinsMaxs(gentity_t *ent, float *mins, float *maxs)
 /* VERIFIED_DECOMPILER(0x8d787, 9d787_VEH_CheckPushClients.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; entity box, pass-entity skip, client filter, trace arguments, and touch condition checked. */
 void VEH_CheckPushClients(gentity_t *vehicle)
 {
-    const vehicle_state_t *vehicleState =
-        (const vehicle_state_t *)vehicle->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicle_state_t *vehicleState = (const vehicle_state_t *)vehicle->vehicle;
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     vec3_t mins;
     vec3_t maxs;
     int entityNums[VEH_CHECK_PUSH_MAX_CLIENTS];
@@ -4226,9 +3673,7 @@ void VEH_CheckPushClients(gentity_t *vehicle)
         maxs[axis] = maxs[axis] + kVehSafetyBuffer;
     }
 
-    entityCount = trap_EntitiesInBox(mins, maxs, entityNums,
-                                     VEH_CHECK_PUSH_MAX_CLIENTS,
-                                     CONTENTS_BODY);
+    entityCount = trap_EntitiesInBox(mins, maxs, entityNums, VEH_CHECK_PUSH_MAX_CLIENTS, CONTENTS_BODY);
     for (int index = 0; index < entityCount; index++) {
         trace_t trace;
         gentity_t *clientEnt;
@@ -4242,11 +3687,9 @@ void VEH_CheckPushClients(gentity_t *vehicle)
             continue;
         }
 
-        trap_Trace(&trace, clientEnt->currentOrigin, clientEnt->mins,
-                   clientEnt->maxs, clientEnt->currentOrigin,
-                   clientEnt->s.number, clientEnt->clipmask);
-        if ((trace.startsolid != 0 || trace.allsolid != 0) &&
-            trace.entityNum == vehicle->s.number) {
+        trap_Trace(&trace, clientEnt->currentOrigin, clientEnt->mins, clientEnt->maxs, clientEnt->currentOrigin, clientEnt->s.number,
+                   clientEnt->clipmask);
+        if ((trace.startsolid != 0 || trace.allsolid != 0) && trace.entityNum == vehicle->s.number) {
             Scr_Vehicle_Touch(vehicle, clientEnt, 1);
         }
     }
@@ -4272,18 +3715,14 @@ void G_VEH_CycleSlot(gentity_t *player, int previous)
         return;
     }
 
-    if (game_compat_veh_get_vehicle_info(vehicleState->typeIndex)->type ==
-            VEHICLE_TYPE_TANK &&
-        client->vehicleExitState == 0) {
+    if (game_compat_veh_get_vehicle_info(vehicleState->typeIndex)->type == VEHICLE_TYPE_TANK && client->vehicleExitState == 0) {
         client->vehicleControlTime = 0;
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (client->vehicleControlTime > level.time - VEH_CYCLE_SLOT_RETRY_MS) {
-        if (client->vehicleDelayIgnoreTime <
-            level.time - VEH_CYCLE_SLOT_COMMAND_REPEAT_MS) {
-            trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0,
-                                   va(VEH_CLIENT_COMMAND_DELAY_IGNORE));
+        if (client->vehicleDelayIgnoreTime < level.time - VEH_CYCLE_SLOT_COMMAND_REPEAT_MS) {
+            trap_SendServerCommand((uint32_t)(int)(player - g_entities), 0, va(VEH_CLIENT_COMMAND_DELAY_IGNORE));
             client->vehicleDelayIgnoreTime = level.time;
         }
         return;
@@ -4295,8 +3734,7 @@ void G_VEH_CycleSlot(gentity_t *player, int previous)
     client->vehicleExitState = exitState + 1;
     VEH_UnlinkPlayer(player, 0);
 
-    nextSlot = VEH_FindNextPassengerSlot(vehicleState, currentSlot,
-                                         previous != 0);
+    nextSlot = VEH_FindNextPassengerSlot(vehicleState, currentSlot, previous != 0);
     client->vehicleControlTime = 0;
     VEH_LinkPlayer(vehicle, player, nextSlot, qtrue);
     client->vehicleControlTime = level.time + VEH_CYCLE_SLOT_RELINK_DELAY_MS;
@@ -4330,9 +3768,8 @@ void Scr_Vehicle_Use(gentity_t *self, gentity_t *other, gentity_t *activator)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x8dccb, 9dccb_Scr_Vehicle_Die.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; passenger damage/eject loop, keep-vehicle flag, origin raise, and projectile/grenade impulse checked. */
-void Scr_Vehicle_Die(gentity_t *ent, gentity_t *inflictor,
-                     gentity_t *attacker, int damage, int mod, int weapon,
-                     const float *dir, int hitLocation)
+void Scr_Vehicle_Die(gentity_t *ent, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int weapon, const float *dir,
+                     int hitLocation)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
@@ -4360,28 +3797,21 @@ void Scr_Vehicle_Die(gentity_t *ent, gentity_t *inflictor,
 
         oldHealth = passenger->health;
         passenger->health += VEH_DIE_PASSENGER_DAMAGE_BOOST;
-        G_Damage(passenger, attacker, attacker, vec3_origin,
-                 passenger->client->ps.psOrigin, VEH_DIE_PASSENGER_DAMAGE, 0,
-                 MOD_EXPLOSIVE, 0);
-        keepVehicle =
-            passenger->health == oldHealth + VEH_DIE_PASSENGER_DAMAGE_BOOST;
+        G_Damage(passenger, attacker, attacker, vec3_origin, passenger->client->ps.psOrigin, VEH_DIE_PASSENGER_DAMAGE, 0, MOD_EXPLOSIVE, 0);
+        keepVehicle = passenger->health == oldHealth + VEH_DIE_PASSENGER_DAMAGE_BOOST;
         passenger->health = oldHealth;
         VEH_UnlinkPlayer(passenger, keepVehicle);
 
         raisedOrigin[0] = passenger->currentOrigin[0];
         raisedOrigin[1] = passenger->currentOrigin[1];
-        raisedOrigin[2] =
-            passenger->currentOrigin[2] + VEH_DIE_PASSENGER_Z_RAISE;
+        raisedOrigin[2] = passenger->currentOrigin[2] + VEH_DIE_PASSENGER_Z_RAISE;
         G_SetOrigin(passenger, raisedOrigin);
     }
 
     if (attacker != NULL && attacker->s.weapon != 0) {
-        const weaponInfo_t *weaponInfo =
-            (const weaponInfo_t *)BG_GetInfoForWeapon(
-                attacker->s.weapon);
+        const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(attacker->s.weapon);
 
-        if (weaponInfo->weaponType == WEAPTYPE_PROJECTILE ||
-            weaponInfo->weaponType == WEAPTYPE_GRENADE) {
+        if (weaponInfo->weaponType == WEAPTYPE_PROJECTILE || weaponInfo->weaponType == WEAPTYPE_GRENADE) {
             VEH_UpdateScriptedInput(ent, dir, 1.0f, 0.0f, 0.0f);
         }
     }
@@ -4424,9 +3854,7 @@ void SP_script_vehicle_collmap(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x8df6e, 9df6e_ScriptVehicle_GetMethod.c, VERIFY-VEHICLE-SETUP-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED; 31-entry scan, canonical name store, callback return, and null miss return checked. */
 script_method_callback_t ScriptVehicle_GetMethod(const char **name)
 {
-    for (uint32_t index = 0;
-         index < sizeof(scriptVehicleMethods) / sizeof(scriptVehicleMethods[0]);
-         index++) {
+    for (uint32_t index = 0; index < sizeof(scriptVehicleMethods) / sizeof(scriptVehicleMethods[0]); index++) {
         if (strcmp(*name, scriptVehicleMethods[index].name) == 0) {
             *name = scriptVehicleMethods[index].name;
             return scriptVehicleMethods[index].callback;
@@ -4448,8 +3876,7 @@ void CMD_VEH_AttachPath(uint32_t scriptObject)
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     int16_t nodeIndex = GScr_GetVehicleNodeIndex(0);
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
@@ -4457,40 +3884,33 @@ void CMD_VEH_AttachPath(uint32_t scriptObject)
 
     for (int axis = 0; axis < 3; axis++) {
         vehicleState->origin[axis] = game_compat_veh_path_cursor(vehicleState)->origin[axis];
-        vehicleState->viewClampTargetAngles[axis] =
-            game_compat_veh_path_cursor(vehicleState)->currentAngles[axis];
+        vehicleState->viewClampTargetAngles[axis] = game_compat_veh_path_cursor(vehicleState)->currentAngles[axis];
     }
 
-    VEH_SetPosition(ent, vehicleState->origin,
-                       vehicleState->viewClampTargetAngles, vec3_origin);
+    VEH_SetPosition(ent, vehicleState->origin, vehicleState->viewClampTargetAngles, vec3_origin);
 
     for (int axis = 0; axis < 3; axis++) {
         vehicleState->previousOrigin[axis] = vehicleState->origin[axis];
-        vehicleState->previousAngles[axis] =
-            vehicleState->viewClampTargetAngles[axis];
+        vehicleState->previousAngles[axis] = vehicleState->viewClampTargetAngles[axis];
     }
 
     for (int wheel = 0; wheel < VEH_WHEEL_TAG_COUNT; wheel++) {
         DObjSkelMat tagMatrix;
 
-        if (G_DObjGetWorldTagMatrix(ent, vehicleWheelTagNames[wheel],
-                                    &tagMatrix) != 0) {
+        if (G_DObjGetWorldTagMatrix(ent, vehicleWheelTagNames[wheel], &tagMatrix) != 0) {
             vehicleState->wheelGroundZ[wheel] = tagMatrix.origin[2];
         }
     }
 
-    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL ||
-        vehicleInfo->type == VEHICLE_TYPE_TANK) {
+    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL || vehicleInfo->type == VEHICLE_TYPE_TANK) {
         VEH_UpdateSuspension(ent, qfalse);
     }
 
-    VEH_SetPosition(ent, vehicleState->origin,
-                       vehicleState->viewClampTargetAngles, vec3_origin);
+    VEH_SetPosition(ent, vehicleState->origin, vehicleState->viewClampTargetAngles, vec3_origin);
 
     for (int axis = 0; axis < 3; axis++) {
         vehicleState->previousOrigin[axis] = vehicleState->origin[axis];
-        vehicleState->previousAngles[axis] =
-            vehicleState->viewClampTargetAngles[axis];
+        vehicleState->previousAngles[axis] = vehicleState->viewClampTargetAngles[axis];
     }
 }
 
@@ -4504,8 +3924,7 @@ void CMD_VEH_StartPath(uint32_t scriptObject)
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
@@ -4528,13 +3947,11 @@ void CMD_VEH_SetSwitchNode(uint32_t scriptObject)
     int16_t fromNodeIndex = GScr_GetVehicleNodeIndex(0);
     int16_t toNodeIndex = GScr_GetVehicleNodeIndex(1);
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
-    G_VehSetSwitchNode(game_compat_veh_path_cursor(vehicleState), fromNodeIndex,
-                       toNodeIndex);
+    G_VehSetSwitchNode(game_compat_veh_path_cursor(vehicleState), fromNodeIndex, toNodeIndex);
 }
 
 /* ------------------------------------------------------------------ */
@@ -4547,8 +3964,7 @@ void CMD_VEH_SetWaitNode(uint32_t scriptObject)
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
@@ -4565,8 +3981,7 @@ void CMD_VEH_SetWaitSpeed(uint32_t scriptObject)
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
@@ -4586,8 +4001,7 @@ void CMD_VEH_SetSpeed(uint32_t scriptObject)
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
@@ -4613,8 +4027,7 @@ void CMD_VEH_ResumeSpeed(uint32_t scriptObject)
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
-    if (game_compat_veh_entity_collision_mode(ent) ==
-        VEH_COLLISION_MODE_USED) {
+    if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_USED) {
         Scr_Error(va(VEH_PATH_ALREADY_USED_ERROR));
     }
 
@@ -4662,8 +4075,7 @@ void CMD_VEH_JoltBody(uint32_t scriptObject)
     }
     VectorNormalize(inputVector);
 
-    VEH_UpdateScriptedInput(ent, inputVector, inputScale, speedFraction,
-                            deceleration);
+    VEH_UpdateScriptedInput(ent, inputVector, inputScale, speedFraction, deceleration);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
@@ -4703,8 +4115,7 @@ void CMD_VEH_FreeVehicle(uint32_t scriptObject)
 
     G_FreeVehicle(ent);
     ent->s.eType = VEH_FREE_ENTITY_TYPE;
-    Scr_SetString(game_compat_veh_entity_model_classname_slot(ent),
-                  scr_const_script_vehicle_corpse);
+    Scr_SetString(game_compat_veh_entity_model_classname_slot(ent), scr_const_script_vehicle_corpse);
     Scr_Notify(ent, scr_const_death, 0);
     Scr_FreeEntityNum(ent->s.number, 0);
 }
@@ -4723,14 +4134,12 @@ void CMD_VEH_GetWheelSurface(uint32_t scriptObject)
     uint32_t wheelIndex;
     int32_t surfaceType;
 
-    if (vehicleInfo->type != VEHICLE_TYPE_TANK &&
-        vehicleInfo->type != VEHICLE_TYPE_4_WHEEL) {
+    if (vehicleInfo->type != VEHICLE_TYPE_TANK && vehicleInfo->type != VEHICLE_TYPE_4_WHEEL) {
         Scr_Error(va(VEH_WHEEL_SURFACE_NO_WHEELS_ERROR, vehicleInfo->name));
     }
 
     wheelIndex = game_compat_veh_wheel_index_for_const_string(wheelName);
-    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL &&
-        wheelIndex >= VEH_SUSPENSION_WHEEL_COUNT_4WHEEL) {
+    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL && wheelIndex >= VEH_SUSPENSION_WHEEL_COUNT_4WHEEL) {
         Scr_ParamError(0, VEH_WHEEL_SURFACE_NO_MIDDLE_ERROR);
     }
 
@@ -4892,8 +4301,7 @@ void CMD_VEH_SetTurretTargetEnt(uint32_t scriptObject)
     game_compat_veh_check_turret_control_health(ent);
     targetEnt = Scr_GetEntity(0);
     game_compat_veh_set_turret_target_active(vehicleState, 1);
-    vehicleState->gunnerEntityNum =
-        targetEnt != NULL ? targetEnt->s.number : ENTITYNUM_NONE;
+    vehicleState->gunnerEntityNum = targetEnt != NULL ? targetEnt->s.number : ENTITYNUM_NONE;
     Scr_GetVector(1, offset);
     vehicleState->motionControl[0] = 0.0f;
     vehicleState->motionControl[1] = 0.0f;
@@ -4922,15 +4330,13 @@ void CMD_VEH_ClearTurretTarget(uint32_t scriptObject)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static const weaponInfo_t *game_compat_veh_set_turret_weapon(gentity_t *ent,
-                                               const char weaponName[0x040])
+static const weaponInfo_t *game_compat_veh_set_turret_weapon(gentity_t *ent, const char weaponName[0x040])
 {
     const int weaponIndex = BG_GetWeaponIndexForName(weaponName) & 0xff;
 
     ent->s.weapon = weaponIndex;
     if (ent->s.weapon == 0) {
-        Scr_Error(va(VEH_TURRET_NO_WEAPON_ERROR,
-                     SL_ConvertToString(ent->targetname)));
+        Scr_Error(va(VEH_TURRET_NO_WEAPON_ERROR, SL_ConvertToString(ent->targetname)));
     }
 
     return (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
@@ -4941,8 +4347,7 @@ static void game_compat_veh_check_turret_weapon_type(const weaponInfo_t *weaponI
 {
     const int weaponType = weaponInfo->weaponType;
 
-    if (weaponType != WEAPTYPE_BULLET &&
-        weaponType != WEAPTYPE_PROJECTILE) {
+    if (weaponType != WEAPTYPE_BULLET && weaponType != WEAPTYPE_PROJECTILE) {
         Scr_Error(va(VEH_TURRET_WEAPON_TYPE_ERROR));
     }
 }
@@ -4951,18 +4356,13 @@ static void game_compat_veh_check_turret_weapon_type(const weaponInfo_t *weaponI
 static void game_compat_veh_check_turret_barrel_bone(gentity_t *ent, int boneIndex)
 {
     if (boneIndex < 0) {
-        Scr_Error(va(VEH_TURRET_NO_BARREL_ERROR,
-                     SL_ConvertToString(ent->targetname)));
+        Scr_Error(va(VEH_TURRET_NO_BARREL_ERROR, SL_ConvertToString(ent->targetname)));
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_build_turret_muzzle(gentity_t *ent,
-                                  vehicle_state_t *vehicleState,
-                                  const weaponInfo_t *weaponInfo,
-                                  const char *tagName,
-                                  qboolean allowTargetCorrection,
-                                  weapon_muzzle_t *muzzle)
+static void game_compat_veh_build_turret_muzzle(gentity_t *ent, vehicle_state_t *vehicleState, const weaponInfo_t *weaponInfo,
+                                                const char *tagName, qboolean allowTargetCorrection, weapon_muzzle_t *muzzle)
 {
     DObjSkelMat tagMatrix = {0};
     vec3_t forward;
@@ -4973,8 +4373,7 @@ static void game_compat_veh_build_turret_muzzle(gentity_t *ent,
     if (G_DObjGetWorldTagMatrix(ent, tagName, &tagMatrix) == 0) {
         /* NOT_FROM_ORIGINAL_SOURCE: forward the completed warning as data
          * through a literal conversion. */
-        G_Printf("%s", va(VEH_TURRET_NO_FLASH_WARNING, tagName,
-                          SL_ConvertToString(ent->targetname)));
+        G_Printf("%s", va(VEH_TURRET_NO_FLASH_WARNING, tagName, SL_ConvertToString(ent->targetname)));
     }
 
     forward[0] = tagMatrix.axis[0][0];
@@ -4990,10 +4389,8 @@ static void game_compat_veh_build_turret_muzzle(gentity_t *ent,
         vectoangles(tagMatrix.axis[0], tagAngles);
         vectoangles(forward, targetAngles);
         AnglesSubtract(tagAngles, targetAngles, deltaAngles);
-        deltaAngles[0] = game_compat_veh_clamp_abs(deltaAngles[0],
-                                      VEH_TURRET_AIM_PITCH_CLAMP);
-        deltaAngles[1] = game_compat_veh_clamp_abs(deltaAngles[1],
-                                      VEH_TURRET_AIM_YAW_CLAMP);
+        deltaAngles[0] = game_compat_veh_clamp_abs(deltaAngles[0], VEH_TURRET_AIM_PITCH_CLAMP);
+        deltaAngles[1] = game_compat_veh_clamp_abs(deltaAngles[1], VEH_TURRET_AIM_YAW_CLAMP);
         deltaAngles[2] = 0.0f;
         AnglesSubtract(tagAngles, deltaAngles, tagAngles);
         AngleVectors(tagAngles, forward, NULL, NULL);
@@ -5020,9 +4417,8 @@ static void game_compat_veh_build_turret_muzzle(gentity_t *ent,
          * one store per component -> shim. */
 #if EMULATE_X87
         for (int i = 0; i < 3; i++) {
-            muzzle->origin[i] = x87f_store_f32(x87f_sub(
-                x87f_load_f32(tagMatrix.origin[i]),
-                x87f_mul(x87f_load_f32(back), x87f_load_f32(forward[i]))));
+            muzzle->origin[i] =
+                x87f_store_f32(x87f_sub(x87f_load_f32(tagMatrix.origin[i]), x87f_mul(x87f_load_f32(back), x87f_load_f32(forward[i]))));
         }
 #else
         muzzle->origin[0] = tagMatrix.origin[0] - back * forward[0];
@@ -5031,16 +4427,15 @@ static void game_compat_veh_build_turret_muzzle(gentity_t *ent,
 #endif
     }
 
-    muzzle->extraVector[0] = 0.0f;      /* +0x30..+0x33, size 0x04; generated 6a8b0/6aaa9 keep this as the muzzle packet's extra vector. */
-    muzzle->extraVector[1] = 0.0f;      /* +0x34..+0x37, size 0x04; generated 6a8b0/6aaa9 keep this as the muzzle packet's extra vector. */
-    muzzle->extraVector[2] = 0.0f;      /* +0x38..+0x3b, size 0x04; generated 6a8b0/6aaa9 keep this as the muzzle packet's extra vector. */
+    muzzle->extraVector[0] = 0.0f; /* +0x30..+0x33, size 0x04; generated 6a8b0/6aaa9 keep this as the muzzle packet's extra vector. */
+    muzzle->extraVector[1] = 0.0f; /* +0x34..+0x37, size 0x04; generated 6a8b0/6aaa9 keep this as the muzzle packet's extra vector. */
+    muzzle->extraVector[2] = 0.0f; /* +0x38..+0x3b, size 0x04; generated 6a8b0/6aaa9 keep this as the muzzle packet's extra vector. */
     muzzle->weaponInfo = weaponInfo;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static qboolean game_compat_veh_fire_turret_muzzle(gentity_t *ent, gentity_t *attacker,
-                                     const weaponInfo_t *weaponInfo,
-                                     weapon_muzzle_t *muzzle)
+static qboolean game_compat_veh_fire_turret_muzzle(gentity_t *ent, gentity_t *attacker, const weaponInfo_t *weaponInfo,
+                                                   weapon_muzzle_t *muzzle)
 {
     const int weaponType = weaponInfo->weaponType;
 
@@ -5048,19 +4443,15 @@ static qboolean game_compat_veh_fire_turret_muzzle(gentity_t *ent, gentity_t *at
         /* Draw spread from the selected server domain, then apply the original
          * max-spread and hip-spread arithmetic. */
 #if EMULATE_X87
-        const float spread = x87f_store_f32(x87f_add(
-            x87f_load_f32(weaponInfo->hipSpreadStandMin),
-            x87f_mul(x87f_load_f64(coduo_server_rand_unit()),
-                     x87f_load_f32(weaponInfo->maxSpread))));
-#else
         const float spread =
-            (float)((long double)weaponInfo->hipSpreadStandMin +
-                    (long double)coduo_server_rand_unit() *
-                        (long double)weaponInfo->maxSpread);
+            x87f_store_f32(x87f_add(x87f_load_f32(weaponInfo->hipSpreadStandMin),
+                                    x87f_mul(x87f_load_f64(coduo_server_rand_unit()), x87f_load_f32(weaponInfo->maxSpread))));
+#else
+        const float spread = (float)((long double)weaponInfo->hipSpreadStandMin +
+                                     (long double)coduo_server_rand_unit() * (long double)weaponInfo->maxSpread);
 #endif
 
-        return Bullet_Fire(attacker, spread, weaponInfo->flameDamage, muzzle,
-                           ent);
+        return Bullet_Fire(attacker, spread, weaponInfo->flameDamage, muzzle, ent);
     }
 
     Weapon_Artillery_Fire(ent, 0.0f, muzzle);
@@ -5068,9 +4459,7 @@ static qboolean game_compat_veh_fire_turret_muzzle(gentity_t *ent, gentity_t *at
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void game_compat_veh_add_turret_fire_event(gentity_t *ent,
-                                   const weaponInfo_t *weaponInfo,
-                                   int event, qboolean bulletHit)
+static void game_compat_veh_add_turret_fire_event(gentity_t *ent, const weaponInfo_t *weaponInfo, int event, qboolean bulletHit)
 {
     const int weaponType = weaponInfo->weaponType;
 
@@ -5099,67 +4488,46 @@ void CMD_VEH_FireTurret(uint32_t scriptObject)
     qboolean bulletHit = qfalse;
 
     game_compat_veh_check_turret_control_health(ent);
-    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] ==
-        ENTITYNUM_NONE) {
+    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] == ENTITYNUM_NONE) {
         return;
     }
 
-    const weaponInfo_t *weaponInfo =
-        game_compat_veh_set_turret_weapon(ent, vehicleInfo->turretWeapon);
+    const weaponInfo_t *weaponInfo = game_compat_veh_set_turret_weapon(ent, vehicleInfo->turretWeapon);
 
     game_compat_veh_check_turret_weapon_type(weaponInfo);
-    game_compat_veh_check_turret_barrel_bone(
-        ent, vehicleState->primaryTurretTagIndex);
+    game_compat_veh_check_turret_barrel_bone(ent, vehicleState->primaryTurretTagIndex);
 
     DObjSkelMat barrelMatrix;
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->primaryTurretTagIndex, &barrelMatrix);
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryTurretTagIndex, &barrelMatrix);
 
-    const int primaryPassenger =
-        vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER];
+    const int primaryPassenger = vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER];
     gentity_t *attacker = &g_entities[primaryPassenger];
     const qboolean dualFlash = vehicleInfo->primaryDualFlash != 0;
-    const int flashStart =
-        dualFlash ?
-            vehicleState->primaryFlashSelector * 2 :
-            0;
+    const int flashStart = dualFlash ? vehicleState->primaryFlashSelector * 2 : 0;
     const int flashCount = dualFlash ? 2 : 1;
     const int fireEvent =
-        !dualFlash ? EV_FIRE_WEAPON :
-            (vehicleState->primaryFlashSelector == 0 ?
-                 EV_FIRE_QUADBARREL_1 :
-                 EV_FIRE_QUADBARREL_2);
+        !dualFlash ? EV_FIRE_WEAPON : (vehicleState->primaryFlashSelector == 0 ? EV_FIRE_QUADBARREL_1 : EV_FIRE_QUADBARREL_2);
 
     for (int flash = 0; flash < flashCount; flash++) {
         weapon_muzzle_t muzzle;
         const qboolean allowTargetCorrection =
-            ent->passEntityNum != ENTITYNUM_NONE && flashCount == 1 &&
-            game_compat_veh_turret_muzzle_back_active(vehicleState) == 0;
+            ent->passEntityNum != ENTITYNUM_NONE && flashCount == 1 && game_compat_veh_turret_muzzle_back_active(vehicleState) == 0;
 
-        game_compat_veh_build_turret_muzzle(
-            ent, vehicleState, weaponInfo,
-            vehiclePrimaryFlashTagNames[flashStart + flash],
-            allowTargetCorrection, &muzzle);
+        game_compat_veh_build_turret_muzzle(ent, vehicleState, weaponInfo, vehiclePrimaryFlashTagNames[flashStart + flash],
+                                            allowTargetCorrection, &muzzle);
         bulletHit = game_compat_veh_fire_turret_muzzle(ent, attacker, weaponInfo, &muzzle);
     }
 
     game_compat_veh_add_turret_fire_event(ent, weaponInfo, fireEvent, bulletHit);
 
     {
-        const vec3_t scriptedInput = {
-            -barrelMatrix.axis[0][0],
-            -barrelMatrix.axis[0][1],
-            -barrelMatrix.axis[0][2]
-        };
+        const vec3_t scriptedInput = {-barrelMatrix.axis[0][0], -barrelMatrix.axis[0][1], -barrelMatrix.axis[0][2]};
 
-        VEH_UpdateScriptedInput(ent, scriptedInput,
-                                VEH_TURRET_SCRIPTED_INPUT_SCALE, 0.0f,
-                                0.0f);
+        VEH_UpdateScriptedInput(ent, scriptedInput, VEH_TURRET_SCRIPTED_INPUT_SCALE, 0.0f, 0.0f);
     }
 
     vehicleState->primaryFireTime = weaponInfo->fireTime;
-    vehicleState->primaryFlashSelector =
-        vehicleState->primaryFlashSelector == 0;
+    vehicleState->primaryFlashSelector = vehicleState->primaryFlashSelector == 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -5172,51 +4540,41 @@ void CMD_VEH_FireAltTurret(uint32_t scriptObject)
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
-    const int primaryPassenger =
-        vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER];
+    const int primaryPassenger = vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER];
     qboolean bulletHit = qfalse;
 
     game_compat_veh_check_turret_control_health(ent);
-    if (vehicleState->altOverheating != 0 ||
-        primaryPassenger == ENTITYNUM_NONE) {
+    if (vehicleState->altOverheating != 0 || primaryPassenger == ENTITYNUM_NONE) {
         return;
     }
 
-    const weaponInfo_t *weaponInfo =
-        game_compat_veh_set_turret_weapon(ent, vehicleInfo->turretAltWeapon);
+    const weaponInfo_t *weaponInfo = game_compat_veh_set_turret_weapon(ent, vehicleInfo->turretAltWeapon);
 
     game_compat_veh_check_turret_weapon_type(weaponInfo);
-    game_compat_veh_check_turret_barrel_bone(
-        ent, vehicleState->primaryAltTurretTagIndex);
+    game_compat_veh_check_turret_barrel_bone(ent, vehicleState->primaryAltTurretTagIndex);
 
     DObjSkelMat barrelMatrix;
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->primaryAltTurretTagIndex, &barrelMatrix);
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryAltTurretTagIndex, &barrelMatrix);
     (void)barrelMatrix;
 
     gentity_t *attacker = &g_entities[primaryPassenger];
-    if (attacker->client != NULL &&
-        attacker->client->sessionState == VEH_CLIENT_SESSION_STATE_SPECTATOR) {
+    if (attacker->client != NULL && attacker->client->sessionState == VEH_CLIENT_SESSION_STATE_SPECTATOR) {
         return;
     }
 
     for (int flash = 0; flash < 1; flash++) {
         weapon_muzzle_t muzzle;
         const qboolean allowTargetCorrection =
-            ent->passEntityNum != ENTITYNUM_NONE &&
-            game_compat_veh_turret_muzzle_back_active(vehicleState) == 0;
+            ent->passEntityNum != ENTITYNUM_NONE && game_compat_veh_turret_muzzle_back_active(vehicleState) == 0;
 
-        game_compat_veh_build_turret_muzzle(ent, vehicleState, weaponInfo,
-                              vehicleAltFireTagNames[flash],
-                              allowTargetCorrection, &muzzle);
+        game_compat_veh_build_turret_muzzle(ent, vehicleState, weaponInfo, vehicleAltFireTagNames[flash], allowTargetCorrection, &muzzle);
         bulletHit = game_compat_veh_fire_turret_muzzle(ent, attacker, weaponInfo, &muzzle);
         if (weaponInfo->weaponType == WEAPTYPE_BULLET) {
             vehicleState->altHeat += weaponInfo->turretHeatPerShot;
         }
     }
 
-    game_compat_veh_add_turret_fire_event(ent, weaponInfo, EV_FIRE_WEAPONB,
-                           bulletHit);
+    game_compat_veh_add_turret_fire_event(ent, weaponInfo, EV_FIRE_WEAPONB, bulletHit);
     vehicleState->altFireTime = weaponInfo->fireTime;
     vehicleState->altWeaponSoundTime = 200;
 }
@@ -5238,40 +4596,30 @@ void G_VEH_FireGunner(uint32_t scriptObject, qboolean ignoreReady)
     }
 
     if (!ignoreReady &&
-        (vehicleState->gunnerOverheating != 0 ||
-         vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER] ==
-             ENTITYNUM_NONE)) {
+        (vehicleState->gunnerOverheating != 0 || vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER] == ENTITYNUM_NONE)) {
         return;
     }
 
-    const weaponInfo_t *weaponInfo =
-        game_compat_veh_set_turret_weapon(ent, vehicleInfo->turretGunnerWeapon);
+    const weaponInfo_t *weaponInfo = game_compat_veh_set_turret_weapon(ent, vehicleInfo->turretGunnerWeapon);
 
     game_compat_veh_check_turret_weapon_type(weaponInfo);
     if (vehicleState->gunnerTurretTagIndex < 0) {
-        Scr_Error(va(VEH_GUNNER_NO_BARREL_ERROR,
-                     SL_ConvertToString(ent->targetname)));
+        Scr_Error(va(VEH_GUNNER_NO_BARREL_ERROR, SL_ConvertToString(ent->targetname)));
     }
 
     DObjSkelMat barrelMatrix;
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->gunnerTurretTagIndex, &barrelMatrix);
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->gunnerTurretTagIndex, &barrelMatrix);
     (void)barrelMatrix;
 
-    gentity_t *attacker = ignoreReady ? &g_entities[0] :
-        &g_entities[
-            vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER]];
-    if (!ignoreReady && attacker->client != NULL &&
-        attacker->client->sessionState == VEH_CLIENT_SESSION_STATE_SPECTATOR) {
+    gentity_t *attacker = ignoreReady ? &g_entities[0] : &g_entities[vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER]];
+    if (!ignoreReady && attacker->client != NULL && attacker->client->sessionState == VEH_CLIENT_SESSION_STATE_SPECTATOR) {
         return;
     }
 
     for (int flash = 0; flash < 1; flash++) {
         weapon_muzzle_t muzzle;
 
-        game_compat_veh_build_turret_muzzle(ent, vehicleState, weaponInfo,
-                              vehicleSecondaryFlashTagNames[flash],
-                              qfalse, &muzzle);
+        game_compat_veh_build_turret_muzzle(ent, vehicleState, weaponInfo, vehicleSecondaryFlashTagNames[flash], qfalse, &muzzle);
         bulletHit = game_compat_veh_fire_turret_muzzle(ent, attacker, weaponInfo, &muzzle);
         if (weaponInfo->weaponType == WEAPTYPE_BULLET) {
             vehicleState->gunnerHeat += weaponInfo->turretHeatPerShot;
@@ -5296,8 +4644,7 @@ void CMD_VEH_FireGunner(uint32_t scriptObject)
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
 static void game_compat_veh_check_player_controlled_vehicle(const gentity_t *ent)
 {
-    if (game_compat_veh_entity_collision_mode(ent) !=
-        VEH_COLLISION_MODE_ALT_TRACE) {
+    if (game_compat_veh_entity_collision_mode(ent) != VEH_COLLISION_MODE_ALT_TRACE) {
         Scr_Error(va(VEH_PLAYER_CONTROLLED_VEHICLE_ERROR));
     }
 }
@@ -5390,16 +4737,11 @@ void CMD_VEH_GetGunnerOverheating(uint32_t scriptObject)
 void CMD_VEH_GetDismountSpot(uint32_t scriptObject)
 {
     gentity_t *ent = VEH_GetEntity((int)scriptObject);
-    vec3_t dismountMins = { -15.0f, -15.0f, 15.0f };
-    vec3_t dismountMaxs = { 15.0f, 15.0f, 70.0f };
-    vec3_t dismountOrigin = {
-        ent->currentOrigin[0],
-        ent->currentOrigin[1],
-        ent->currentOrigin[2]
-    };
+    vec3_t dismountMins = {-15.0f, -15.0f, 15.0f};
+    vec3_t dismountMaxs = {15.0f, 15.0f, 70.0f};
+    vec3_t dismountOrigin = {ent->currentOrigin[0], ent->currentOrigin[1], ent->currentOrigin[2]};
 
-    if (VEH_FindValidDismountSpot(ent, ent->currentOrigin, dismountMins,
-                                  dismountMaxs, dismountOrigin, 0)) {
+    if (VEH_FindValidDismountSpot(ent, ent->currentOrigin, dismountMins, dismountMaxs, dismountOrigin, 0)) {
         Scr_AddVector(dismountOrigin);
     } else {
         Scr_AddVector(ent->currentOrigin);
@@ -5421,8 +4763,7 @@ qboolean G_PlayerVehiclePositionAndBlend(gentity_t *player)
     int vehicleType;
     DObjSkelMat tagMatrix;
 
-    if (player->s.vehicleEntityNum < VEH_PHYSICS_CLIENT_COUNT ||
-        player->s.vehicleEntityNum == ENTITYNUM_NONE) {
+    if (player->s.vehicleEntityNum < VEH_PHYSICS_CLIENT_COUNT || player->s.vehicleEntityNum == ENTITYNUM_NONE) {
         return qfalse;
     }
 
@@ -5480,8 +4821,7 @@ void script_vehicle_owner_enable(gentity_t *ent)
 {
     gentity_t *owner = ent->vehicleOwner;
 
-    if (owner != NULL && owner->client != NULL &&
-        (ent->svFlags & VEH_OWNER_ICON_SVFLAG_LINKED) == 0) {
+    if (owner != NULL && owner->client != NULL && (ent->svFlags & VEH_OWNER_ICON_SVFLAG_LINKED) == 0) {
         ent->s.pos.trBase[0] = ent->currentOrigin[0];
         ent->s.pos.trBase[1] = ent->currentOrigin[1];
         ent->s.pos.trBase[2] = ent->currentOrigin[2];
@@ -5495,14 +4835,9 @@ void script_vehicle_owner_enable(gentity_t *ent)
          * float store, and the sum feeds fistp directly. */
 #if EMULATE_X87
         ent->s.time = x87f_store_i32_trunc(x87f_add(
-            x87f_mul(x87f_load_f32(ent->ownerIconDelaySeconds),
-                     x87f_load_f32(VEH_OWNER_ICON_TIME_SCALE)),
-            x87f_load_i32(level.time)));
+            x87f_mul(x87f_load_f32(ent->ownerIconDelaySeconds), x87f_load_f32(VEH_OWNER_ICON_TIME_SCALE)), x87f_load_i32(level.time)));
 #else
-        ent->s.time =
-            (int)((long double)ent->ownerIconDelaySeconds *
-                      (long double)VEH_OWNER_ICON_TIME_SCALE +
-                  (long double)level.time);
+        ent->s.time = (int)((long double)ent->ownerIconDelaySeconds * (long double)VEH_OWNER_ICON_TIME_SCALE + (long double)level.time);
 #endif
         /*
          * Owner-icon entities write enemyScanRadius as a float at gentity_t+0x0d8,
@@ -5532,25 +4867,18 @@ void SP_script_vehicle_owner_icon(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x8d1ca, 9d1ca_Scr_Vehicle_Pain.c, VERIFY-VEHICLE-PHYSICS-MOVE-2026-06-17): DATAFLOW_VERIFIED */
-void Scr_Vehicle_Pain(gentity_t *ent, gentity_t *attacker, int damage,
-                      const float *point, int mod, const float *dir,
-                      int hitLocation)
+void Scr_Vehicle_Pain(gentity_t *ent, gentity_t *attacker, int damage, const float *point, int mod, const float *dir, int hitLocation)
 {
     const weaponInfo_t *weaponInfo = NULL;
 
     (void)hitLocation;
 
-    if (mod != MOD_COLLISION && attacker != NULL &&
-        attacker->s.weapon != 0) {
-        weaponInfo =
-            (const weaponInfo_t *)BG_GetInfoForWeapon(
-                attacker->s.weapon);
+    if (mod != MOD_COLLISION && attacker != NULL && attacker->s.weapon != 0) {
+        weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(attacker->s.weapon);
     }
 
     if ((weaponInfo != NULL &&
-         (damage > 200 ||
-          weaponInfo->weaponType == WEAPTYPE_PROJECTILE ||
-          weaponInfo->weaponType == WEAPTYPE_GRENADE)) ||
+         (damage > 200 || weaponInfo->weaponType == WEAPTYPE_PROJECTILE || weaponInfo->weaponType == WEAPTYPE_GRENADE)) ||
         mod == MOD_EXPLOSIVE) {
         VEH_UpdateScriptedInput(ent, dir, 1.0f, 0.0f, 0.0f);
     }
@@ -5559,8 +4887,7 @@ void Scr_Vehicle_Pain(gentity_t *ent, gentity_t *attacker, int damage,
         gentity_t *feedbackEnt = &g_entities[ent->s.vehicleEntityNum];
         gclient_t *client = feedbackEnt->client;
 
-        if (client != NULL &&
-            client->connectedState == CON_CONNECTED) {
+        if (client != NULL && client->connectedState == CON_CONNECTED) {
             client->damageTaken += damage;
             if (attacker == ent) {
                 client->damageFrom[0] = point[0];
@@ -5582,9 +4909,7 @@ void Scr_Vehicle_Pain(gentity_t *ent, gentity_t *attacker, int damage,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7d709, 8d709_FUN_0008d709.c, VERIFY-VEHICLE-PHYSICS-MOVE-2026-06-17): DATAFLOW_VERIFIED */
-void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
-                                 vec3_t linearAccel,
-                                 vec3_t angularAccel)
+void VEH_CalcAccel(gentity_t *ent, const int8_t input[3], vec3_t linearAccel, vec3_t angularAccel)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
@@ -5598,8 +4923,7 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
     /* 0x7d776..0x7d7c4: stock enters the scripted arm only through an
      * ordered-above x87 branch.  A NaN throttle therefore takes the default
      * arm rather than satisfying the logical complement of <=. */
-    if (vehicleState->throttleScale > 0.0f &&
-        vehicleState->scriptedInputEndTime > level.time) {
+    if (vehicleState->throttleScale > 0.0f && vehicleState->scriptedInputEndTime > level.time) {
         maxSpeed = vehicleState->scriptedMaxSpeed;
         accelLimit = vehicleState->scriptedAcceleration;
     } else {
@@ -5613,34 +4937,23 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
     }
 
     if (input[0] < 0) {
-        desiredLocalVelocity[0] =
-            vehicleState->angularVelocity[0] -
-            accelLimit * VEH_PHYSICS_FRAME_SECONDS;
+        desiredLocalVelocity[0] = vehicleState->angularVelocity[0] - accelLimit * VEH_PHYSICS_FRAME_SECONDS;
         if (desiredLocalVelocity[0] < -maxSpeed * VEH_REVERSE_SPEED_SCALE) {
             desiredLocalVelocity[0] = -maxSpeed * VEH_REVERSE_SPEED_SCALE;
         }
     } else if (input[0] > 0) {
-        desiredLocalVelocity[0] =
-            vehicleState->angularVelocity[0] +
-            accelLimit * VEH_PHYSICS_FRAME_SECONDS;
-    } else if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL &&
-               game_compat_veh_float_is_non_zero_or_nan(vehicleState->angularVelocity[0])) {
-        desiredLocalVelocity[0] =
-            game_compat_veh_approach_float_step(vehicleState->angularVelocity[0],
-                                  0.0f, VEH_IDLE_BRAKE_STEP);
+        desiredLocalVelocity[0] = vehicleState->angularVelocity[0] + accelLimit * VEH_PHYSICS_FRAME_SECONDS;
+    } else if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL && game_compat_veh_float_is_non_zero_or_nan(vehicleState->angularVelocity[0])) {
+        desiredLocalVelocity[0] = game_compat_veh_approach_float_step(vehicleState->angularVelocity[0], 0.0f, VEH_IDLE_BRAKE_STEP);
     } else {
         desiredLocalVelocity[0] = 0.0f;
     }
 
-    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL &&
-        fabsf(vehicleState->angularVelocity[0]) < VEH_4WHEEL_LATERAL_SPEED) {
+    if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL && fabsf(vehicleState->angularVelocity[0]) < VEH_4WHEEL_LATERAL_SPEED) {
         /* 0x7d9af..0x7d9e3: the 80-bit multiply chain runs in this order. */
-        desiredLocalVelocity[1] =
-            (1.0f - fabsf(vehicleState->angularVelocity[0]) /
-             VEH_4WHEEL_LATERAL_SPEED) *
-            fabsf(desiredLocalVelocity[0]) *
-            VEH_4WHEEL_LATERAL_SCALE *
-            vehicleState->acceleration[1] / VEH_4WHEEL_LATERAL_DIVISOR;
+        desiredLocalVelocity[1] = (1.0f - fabsf(vehicleState->angularVelocity[0]) / VEH_4WHEEL_LATERAL_SPEED) *
+                                  fabsf(desiredLocalVelocity[0]) * VEH_4WHEEL_LATERAL_SCALE * vehicleState->acceleration[1] /
+                                  VEH_4WHEEL_LATERAL_DIVISOR;
     } else {
         desiredLocalVelocity[1] = 0.0f;
     }
@@ -5664,9 +4977,7 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
     }
 
     for (int axis = 0; axis < 3; axis++) {
-        linearAccel[axis] =
-            (desiredLocalVelocity[axis] - vehicleState->angularVelocity[axis]) /
-            VEH_PHYSICS_FRAME_SECONDS;
+        linearAccel[axis] = (desiredLocalVelocity[axis] - vehicleState->angularVelocity[axis]) / VEH_PHYSICS_FRAME_SECONDS;
     }
 
     speed = game_compat_veh_length3(linearAccel);
@@ -5691,34 +5002,20 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
 
         if (input[2] < 1) {
             if (input[1] < 0) {
-                targetYawRate = vehicleState->acceleration[1] +
-                                vehicleInfo->steeringRate *
-                                VEH_PHYSICS_FRAME_SECONDS;
+                targetYawRate = vehicleState->acceleration[1] + vehicleInfo->steeringRate * VEH_PHYSICS_FRAME_SECONDS;
             } else if (input[1] > 0) {
-                targetYawRate = vehicleState->acceleration[1] -
-                                vehicleInfo->steeringRate *
-                                VEH_PHYSICS_FRAME_SECONDS;
+                targetYawRate = vehicleState->acceleration[1] - vehicleInfo->steeringRate * VEH_PHYSICS_FRAME_SECONDS;
             } else {
                 targetYawRate = 0.0f;
             }
 
-            targetYawRate = game_compat_veh_clamp_abs(targetYawRate,
-                                         vehicleInfo->steeringLimit);
-            angularAccel[1] =
-                (targetYawRate - vehicleState->acceleration[1]) /
-                VEH_PHYSICS_FRAME_SECONDS;
-            angularAccel[1] =
-                game_compat_veh_clamp_abs(angularAccel[1], vehicleInfo->steeringRate);
+            targetYawRate = game_compat_veh_clamp_abs(targetYawRate, vehicleInfo->steeringLimit);
+            angularAccel[1] = (targetYawRate - vehicleState->acceleration[1]) / VEH_PHYSICS_FRAME_SECONDS;
+            angularAccel[1] = game_compat_veh_clamp_abs(angularAccel[1], vehicleInfo->steeringRate);
         } else {
-            targetYawRate =
-                AngleSubtract(driverClient->ps.viewAngles[1],
-                              vehicleState->previousAngles[1]) /
-                VEH_PHYSICS_FRAME_SECONDS;
-            targetYawRate = game_compat_veh_clamp_abs(targetYawRate,
-                                         vehicleInfo->steeringLimit);
-            angularAccel[1] =
-                (targetYawRate - vehicleState->acceleration[1]) /
-                VEH_PHYSICS_FRAME_SECONDS;
+            targetYawRate = AngleSubtract(driverClient->ps.viewAngles[1], vehicleState->previousAngles[1]) / VEH_PHYSICS_FRAME_SECONDS;
+            targetYawRate = game_compat_veh_clamp_abs(targetYawRate, vehicleInfo->steeringLimit);
+            angularAccel[1] = (targetYawRate - vehicleState->acceleration[1]) / VEH_PHYSICS_FRAME_SECONDS;
         }
     } else {
         float turnRate;
@@ -5737,23 +5034,22 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
          * rounds STEPWISE (one float store per operation). */
         {
             const float speedLen3 = game_compat_veh_length3(vehicleState->velocity);
-            const long double speedFactor =
-                1.0f - speedLen3 / vehicleInfo->maxSpeed;
+            const long double speedFactor = 1.0f - speedLen3 / vehicleInfo->maxSpeed;
 
             if (speedFactor > 0.0f) {
                 const long double scaledFactor = speedFactor * 0.9f + 0.1f;
 
                 if (scaledFactor < 0.0f) {
-                    turnRate = 0.0f;                    /* 0x7df22 */
+                    turnRate = 0.0f; /* 0x7df22 */
                 } else if (scaledFactor > 1.0f) {
-                    turnRate = 1.0f;                    /* 0x7df14 */
+                    turnRate = 1.0f; /* 0x7df14 */
                 } else {
-                    float steppedFactor = (float)speedFactor;   /* 0x7ded6 */
-                    steppedFactor = 0.9f * steppedFactor;       /* 0x7dee8 */
-                    turnRate = 0.1f + steppedFactor;            /* 0x7defe */
+                    float steppedFactor = (float)speedFactor; /* 0x7ded6 */
+                    steppedFactor = 0.9f * steppedFactor; /* 0x7dee8 */
+                    turnRate = 0.1f + steppedFactor; /* 0x7defe */
                 }
             } else {
-                turnRate = 0.1f;                        /* 0x7df06 */
+                turnRate = 0.1f; /* 0x7df06 */
             }
         }
 
@@ -5762,56 +5058,51 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
              * angle as a fourth rounded store; the clamped leaves are the
              * compile-time folded products. */
             const float speedLen3 = game_compat_veh_length3(vehicleState->velocity);
-            const long double steerFactor =
-                1.0f - speedLen3 / vehicleInfo->maxSpeed;
+            const long double steerFactor = 1.0f - speedLen3 / vehicleInfo->maxSpeed;
 
             if (steerFactor > 0.0f) {
                 const long double scaledFactor = steerFactor * 0.95f + 0.05f;
 
                 if (scaledFactor < 0.0f) {
-                    targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE * 0.0f;  /* -0.0f @0x7e1dd */
+                    targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE * 0.0f; /* -0.0f @0x7e1dd */
                 } else if (scaledFactor > 1.0f) {
-                    targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE;         /* 0x7e1cf */
+                    targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE; /* 0x7e1cf */
                 } else {
-                    float steppedFactor = (float)steerFactor;           /* 0x7e17d */
-                    steppedFactor = 0.95f * steppedFactor;              /* 0x7e191 */
-                    steppedFactor = 0.05f + steppedFactor;              /* 0x7e1a5 */
-                    targetSteerAngle =
-                        -VEH_4WHEEL_STEER_ANGLE * steppedFactor;        /* 0x7e1b9 */
+                    float steppedFactor = (float)steerFactor; /* 0x7e17d */
+                    steppedFactor = 0.95f * steppedFactor; /* 0x7e191 */
+                    steppedFactor = 0.05f + steppedFactor; /* 0x7e1a5 */
+                    targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE * steppedFactor; /* 0x7e1b9 */
                 }
             } else {
-                targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE * 0.05f;     /* 0x7e1c1 */
+                targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE * 0.05f; /* 0x7e1c1 */
             }
         } else if (input[1] > 0) {
             /* 0x7e20d..0x7e4af: positive-steer mirror of the cascade. */
             const float speedLen3 = game_compat_veh_length3(vehicleState->velocity);
-            const long double steerFactor =
-                1.0f - speedLen3 / vehicleInfo->maxSpeed;
+            const long double steerFactor = 1.0f - speedLen3 / vehicleInfo->maxSpeed;
 
             if (steerFactor > 0.0f) {
                 const long double scaledFactor = steerFactor * 0.95f + 0.05f;
 
                 if (scaledFactor < 0.0f) {
-                    targetSteerAngle = VEH_4WHEEL_STEER_ANGLE * 0.0f;   /* 0x7e49d */
+                    targetSteerAngle = VEH_4WHEEL_STEER_ANGLE * 0.0f; /* 0x7e49d */
                 } else if (scaledFactor > 1.0f) {
-                    targetSteerAngle = VEH_4WHEEL_STEER_ANGLE;          /* 0x7e48f */
+                    targetSteerAngle = VEH_4WHEEL_STEER_ANGLE; /* 0x7e48f */
                 } else {
-                    float steppedFactor = (float)steerFactor;           /* 0x7e43d */
-                    steppedFactor = 0.95f * steppedFactor;              /* 0x7e451 */
-                    steppedFactor = 0.05f + steppedFactor;              /* 0x7e465 */
-                    targetSteerAngle =
-                        VEH_4WHEEL_STEER_ANGLE * steppedFactor;         /* 0x7e479 */
+                    float steppedFactor = (float)steerFactor; /* 0x7e43d */
+                    steppedFactor = 0.95f * steppedFactor; /* 0x7e451 */
+                    steppedFactor = 0.05f + steppedFactor; /* 0x7e465 */
+                    targetSteerAngle = VEH_4WHEEL_STEER_ANGLE * steppedFactor; /* 0x7e479 */
                 }
             } else {
-                targetSteerAngle = VEH_4WHEEL_STEER_ANGLE * 0.05f;      /* 0x7e481 */
+                targetSteerAngle = VEH_4WHEEL_STEER_ANGLE * 0.05f; /* 0x7e481 */
             }
         } else {
             targetSteerAngle = 0.0f;
         }
 
         if (driverClient == NULL || input[2] < 1) {
-            if (driverClient != NULL &&
-                (driverClient->currentButtons & VEH_DRIVER_BUTTON_STRAFE) != 0) {
+            if (driverClient != NULL && (driverClient->currentButtons & VEH_DRIVER_BUTTON_STRAFE) != 0) {
                 turnRate = 2.0f;
                 if (input[1] < 0) {
                     targetSteerAngle = -VEH_4WHEEL_STEER_ANGLE;
@@ -5829,30 +5120,22 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
                 targetSteerAngle = VEH_4WHEEL_STEER_ANGLE;
             }
 
-            targetSteerAngle =
-                AngleSubtract(driverClient->ps.viewAngles[1] - targetSteerAngle,
-                              vehicleState->previousAngles[1]);
-            targetSteerAngle = game_compat_veh_clamp_abs(targetSteerAngle,
-                                            VEH_4WHEEL_STEER_ANGLE);
+            targetSteerAngle = AngleSubtract(driverClient->ps.viewAngles[1] - targetSteerAngle, vehicleState->previousAngles[1]);
+            targetSteerAngle = game_compat_veh_clamp_abs(targetSteerAngle, VEH_4WHEEL_STEER_ANGLE);
 
             if (input[0] < 0) {
                 /* 0x7e5bf..0x7e675: the steer-delta chain is compared
                  * unrounded against DOUBLE 10.0/60.0/1.0; the scaled accel
                  * rounds to double, then to float. */
-                const double steerDelta =
-                    fabs((double)(vehicleState->steerAngle -
-                                  targetSteerAngle));
+                const double steerDelta = fabs((double)(vehicleState->steerAngle - targetSteerAngle));
                 if (steerDelta > VEH_4WHEEL_STEER_CENTER) {
                     const double accel0 = linearAccel[0];
                     double scaledAccel;
 
-                    if ((steerDelta - VEH_4WHEEL_STEER_CENTER) /
-                            VEH_4WHEEL_STEER_DAMP_RANGE < 1.0) {
-                        scaledAccel =
-                            (1.0 - (steerDelta - VEH_4WHEEL_STEER_CENTER) /
-                             VEH_4WHEEL_STEER_DAMP_RANGE) * accel0;
+                    if ((steerDelta - VEH_4WHEEL_STEER_CENTER) / VEH_4WHEEL_STEER_DAMP_RANGE < 1.0) {
+                        scaledAccel = (1.0 - (steerDelta - VEH_4WHEEL_STEER_CENTER) / VEH_4WHEEL_STEER_DAMP_RANGE) * accel0;
                     } else {
-                        scaledAccel = 0.0 * accel0;     /* 0x7e655 */
+                        scaledAccel = 0.0 * accel0; /* 0x7e655 */
                     }
                     linearAccel[0] = (float)scaledAccel;
                 }
@@ -5862,30 +5145,19 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
         }
 
         steerAngle = vehicleState->steerAngle;
-        if ((targetSteerAngle < 0.0f && steerAngle > 0.0f) ||
-            (targetSteerAngle > 0.0f && steerAngle < 0.0f)) {
+        if ((targetSteerAngle < 0.0f && steerAngle > 0.0f) || (targetSteerAngle > 0.0f && steerAngle < 0.0f)) {
             turnRate += turnRate;
         }
 
-        steerAngle = game_compat_veh_approach_float_step(steerAngle, targetSteerAngle,
-                                           turnRate *
-                                           VEH_4WHEEL_RATE_STEP_SCALE);
+        steerAngle = game_compat_veh_approach_float_step(steerAngle, targetSteerAngle, turnRate * VEH_4WHEEL_RATE_STEP_SCALE);
         vehicleState->steerAngle = steerAngle;
 
         AnglesToAxis(vehicleState->viewClampTargetAngles, axis);
-        MatrixTransformVector(linearAccel,
-                              (const vec_t (*)[3])axis,
-                              worldAccel);
+        MatrixTransformVector(linearAccel, (const vec_t(*)[3])axis, worldAccel);
 
-        predictedVelocity[0] =
-            vehicleState->velocity[0] +
-            worldAccel[0] * VEH_PHYSICS_FRAME_SECONDS;
-        predictedVelocity[1] =
-            vehicleState->velocity[1] +
-            worldAccel[1] * VEH_PHYSICS_FRAME_SECONDS;
-        predictedVelocity[2] =
-            vehicleState->velocity[2] +
-            worldAccel[2] * VEH_PHYSICS_FRAME_SECONDS;
+        predictedVelocity[0] = vehicleState->velocity[0] + worldAccel[0] * VEH_PHYSICS_FRAME_SECONDS;
+        predictedVelocity[1] = vehicleState->velocity[1] + worldAccel[1] * VEH_PHYSICS_FRAME_SECONDS;
+        predictedVelocity[2] = vehicleState->velocity[2] + worldAccel[2] * VEH_PHYSICS_FRAME_SECONDS;
 
         if (game_compat_veh_length3(predictedVelocity) < VEH_4WHEEL_MIN_SPEED) {
             predictedVelocity[0] = 0.0f;
@@ -5895,9 +5167,7 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
 
         for (int row = 0; row < 3; row++) {
             predictedLocalVelocity[row] =
-                axis[row][0] * predictedVelocity[0] +
-                axis[row][1] * predictedVelocity[1] +
-                axis[row][2] * predictedVelocity[2];
+                axis[row][0] * predictedVelocity[0] + axis[row][1] * predictedVelocity[1] + axis[row][2] * predictedVelocity[2];
         }
 
         /* 0x7e977..0x7ea7d: |pred[0]|/wheelBase is rounded to DOUBLE; the
@@ -5905,18 +5175,14 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
          * (values differ from 0.7f/0.3f) and no 0..1 clamp at this site;
          * the product rounds to double, then to float. */
         {
-            const double steerQuotient =
-                fabs((double)predictedLocalVelocity[0]) /
-                vehicleState->wheelBaseLength;
+            const double steerQuotient = fabs((double)predictedLocalVelocity[0]) / vehicleState->wheelBaseLength;
             double scaledQuotient;
 
             speed = game_compat_veh_length3(vehicleState->velocity);
             if (1.0 - speed / vehicleInfo->maxSpeed > 0.0) {
-                scaledQuotient =
-                    ((1.0 - speed / vehicleInfo->maxSpeed) * 0.7 + 0.3) *
-                    steerQuotient;
+                scaledQuotient = ((1.0 - speed / vehicleInfo->maxSpeed) * 0.7 + 0.3) * steerQuotient;
             } else {
-                scaledQuotient = 0.3 * steerQuotient;   /* 0x7ea63 */
+                scaledQuotient = 0.3 * steerQuotient; /* 0x7ea63 */
             }
             steeringScale = (float)scaledQuotient;
         }
@@ -5937,18 +5203,14 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
             targetYawRate = vehicleInfo->steeringLimit * steeringScale;
         }
 
-        if (game_compat_veh_wheel_surface_at(vehicleState, 0) == 0 &&
-            game_compat_veh_wheel_surface_at(vehicleState, 1) == 0 &&
-            game_compat_veh_wheel_surface_at(vehicleState, 2) == 0 &&
-            game_compat_veh_wheel_surface_at(vehicleState, 3) == 0) {
+        if (game_compat_veh_wheel_surface_at(vehicleState, 0) == 0 && game_compat_veh_wheel_surface_at(vehicleState, 1) == 0 &&
+            game_compat_veh_wheel_surface_at(vehicleState, 2) == 0 && game_compat_veh_wheel_surface_at(vehicleState, 3) == 0) {
             yawRateScale = 0.0f;
         } else if (game_compat_veh_float_is_non_zero_or_nan(game_compat_veh_length3(predictedVelocity))) {
             const float velocitySpeed = game_compat_veh_length3(vehicleState->velocity);
 
-            if (fabsf(predictedLocalVelocity[0] / velocitySpeed) * 2.0f <
-                2.0f) {
-                yawRateScale =
-                    fabsf(predictedLocalVelocity[0] / velocitySpeed) * 2.0f;
+            if (fabsf(predictedLocalVelocity[0] / velocitySpeed) * 2.0f < 2.0f) {
+                yawRateScale = fabsf(predictedLocalVelocity[0] / velocitySpeed) * 2.0f;
             } else {
                 yawRateScale = 2.0f;
             }
@@ -5956,14 +5218,11 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
             yawRateScale = 2.0f;
         }
 
-        if (fabsf(targetYawRate - vehicleState->acceleration[1]) <
-            VEH_4WHEEL_STEER_CENTER) {
+        if (fabsf(targetYawRate - vehicleState->acceleration[1]) < VEH_4WHEEL_STEER_CENTER) {
             yawRateScale = 1.0f;
         }
 
-        angularAccel[1] =
-            ((targetYawRate - vehicleState->acceleration[1]) * yawRateScale) /
-            VEH_PHYSICS_FRAME_SECONDS;
+        angularAccel[1] = ((targetYawRate - vehicleState->acceleration[1]) * yawRateScale) / VEH_PHYSICS_FRAME_SECONDS;
         /* 0x7ed84..0x7ee0f: the clamp limit expression stays 80-bit in the
          * compares; only the clamped leaf stores round. */
         if (angularAccel[1] < -vehicleInfo->steeringRate * yawRateScale) {
@@ -5973,14 +5232,10 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
         }
     }
 
-    angularAccel[0] =
-        (0.0f - vehicleState->acceleration[0]) / VEH_PHYSICS_FRAME_SECONDS;
-    angularAccel[0] = game_compat_veh_clamp_abs(angularAccel[0],
-                                   vehicleInfo->steeringRate);
-    angularAccel[2] =
-        (0.0f - vehicleState->acceleration[2]) / VEH_PHYSICS_FRAME_SECONDS;
-    angularAccel[2] = game_compat_veh_clamp_abs(angularAccel[2],
-                                   vehicleInfo->steeringRate);
+    angularAccel[0] = (0.0f - vehicleState->acceleration[0]) / VEH_PHYSICS_FRAME_SECONDS;
+    angularAccel[0] = game_compat_veh_clamp_abs(angularAccel[0], vehicleInfo->steeringRate);
+    angularAccel[2] = (0.0f - vehicleState->acceleration[2]) / VEH_PHYSICS_FRAME_SECONDS;
+    angularAccel[2] = game_compat_veh_clamp_abs(angularAccel[2], vehicleInfo->steeringRate);
 
     {
         float rollTarget;
@@ -6015,7 +5270,7 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
                 rollFraction = rollFraction * rollScale;
                 rolled = rollFraction / 2.0;
             } else {
-                rolled = -1.0 * rollScale;              /* 0x7f2ed */
+                rolled = -1.0 * rollScale; /* 0x7f2ed */
                 rolled = rolled / 2.0;
             }
             rollTarget = (float)rolled;
@@ -6031,8 +5286,7 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
             double rolled;
 
             if (fabs((double)input[0]) < 100.0) {
-                rolled = fabs((double)input[0]) / 100.0 * rollScale / 2.0 +
-                         currentRoll;
+                rolled = fabs((double)input[0]) / 100.0 * rollScale / 2.0 + currentRoll;
             } else {
                 rolled = rollScale / 2.0 + currentRoll;
             }
@@ -6044,10 +5298,9 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
             double rolled;
 
             if (fabs((double)input[0]) < 100.0) {
-                rolled = -(fabs((double)input[0]) / 100.0) * rollScale / 2.0 +
-                         currentRoll;
+                rolled = -(fabs((double)input[0]) / 100.0) * rollScale / 2.0 + currentRoll;
             } else {
-                rolled = -1.0 * rollScale / 2.0 + currentRoll;  /* 0x7f476 */
+                rolled = -1.0 * rollScale / 2.0 + currentRoll; /* 0x7f476 */
             }
             rollTarget = (float)rolled;
         }
@@ -6055,32 +5308,20 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
         rollAccelTarget = (rollTarget - rollAngle) * VEH_ROLL_ACCEL_SCALE;
         /* 0x7f4d6..0x7f50b: the pow argument is the quotient rounded to
          * DOUBLE with its sign masked, and the call is double pow(). */
-        rollAccelBlend =
-            game_compat_veh_clamp_float(0.2f +
-                           pow(fabs((double)(rollAngle /
-                                             vehicleInfo->rollLimit)),
-                               2.0f),
-                           0.0f, 1.0f);
+        rollAccelBlend = game_compat_veh_clamp_float(0.2f + pow(fabs((double)(rollAngle / vehicleInfo->rollLimit)), 2.0f), 0.0f, 1.0f);
         /* 0x7f571..0x7f59f: blend*target is stored to a float slot before
          * the second term is accumulated. */
         rollAccel = rollAccelBlend * rollAccelTarget;
-        rollAccel =
-            (rollAccelTarget +
-             vehicleState->angularAcceleration[0]) *
-            (1.0f - rollAccelBlend) + rollAccel;
+        rollAccel = (rollAccelTarget + vehicleState->angularAcceleration[0]) * (1.0f - rollAccelBlend) + rollAccel;
 
-        if (fabsf(rollAccel) < VEH_ROLL_ACCEL_SNAP &&
-            rollAngle < VEH_ROLL_ACCEL_SNAP) {
+        if (fabsf(rollAccel) < VEH_ROLL_ACCEL_SNAP && rollAngle < VEH_ROLL_ACCEL_SNAP) {
             rollAccel = 0.0f;
         }
 
-        rollAccel =
-            game_compat_veh_approach_float_step(vehicleState->angularAcceleration[0],
-                                  rollAccel, VEH_ROLL_ACCEL_MAX_STEP);
+        rollAccel = game_compat_veh_approach_float_step(vehicleState->angularAcceleration[0], rollAccel, VEH_ROLL_ACCEL_MAX_STEP);
         rollAccel = game_compat_veh_clamp_abs(rollAccel, VEH_ROLL_ACCEL_CLAMP);
         vehicleState->angularAcceleration[0] = rollAccel;
-        vehicleState->externalVelocity[0] =
-            rollAngle + rollAccel * VEH_PHYSICS_FRAME_SECONDS;
+        vehicleState->externalVelocity[0] = rollAngle + rollAccel * VEH_PHYSICS_FRAME_SECONDS;
     }
 
     {
@@ -6090,17 +5331,13 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
 
         if (vehicleState->acceleration[1] > 0.0f) {
             steeringRollTarget = vehicleInfo->steeringRollScale;
-            if (vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED <
-                1.0f) {
-                steeringRollTarget *=
-                    vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED;
+            if (vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED < 1.0f) {
+                steeringRollTarget *= vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED;
             }
         } else if (vehicleState->acceleration[1] < 0.0f) {
             steeringRollTarget = -vehicleInfo->steeringRollScale;
-            if (-vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED <
-                1.0f) {
-                steeringRollTarget *=
-                    -vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED;
+            if (-vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED < 1.0f) {
+                steeringRollTarget *= -vehicleState->acceleration[1] / VEH_STEERING_ROLL_SPEED;
             }
         } else {
             steeringRollTarget = 0.0f;
@@ -6112,30 +5349,19 @@ void VEH_CalcAccel(gentity_t *ent, const int8_t input[3],
             steeringRollTarget = 0.0f;
         }
 
-        steeringRollAccelTarget =
-            (steeringRollTarget -
-             vehicleState->externalVelocity[2]) *
-            VEH_ROLL_ACCEL_SCALE;
+        steeringRollAccelTarget = (steeringRollTarget - vehicleState->externalVelocity[2]) * VEH_ROLL_ACCEL_SCALE;
 
         /* 0x7f842..0x7f908: clamped-delta approach; the step expression
          * (steeringLimit * frame) stays 80-bit inside compares and sums. */
-        if (steeringRollAccelTarget - steeringRollVelocity <
-                -vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS) {
-            steeringRollVelocity = steeringRollVelocity +
-                -vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS;
-        } else if (steeringRollAccelTarget - steeringRollVelocity >
-                   vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS) {
-            steeringRollVelocity =
-                vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS +
-                steeringRollVelocity;
+        if (steeringRollAccelTarget - steeringRollVelocity < -vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS) {
+            steeringRollVelocity = steeringRollVelocity + -vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS;
+        } else if (steeringRollAccelTarget - steeringRollVelocity > vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS) {
+            steeringRollVelocity = vehicleInfo->steeringLimit * VEH_PHYSICS_FRAME_SECONDS + steeringRollVelocity;
         } else {
-            steeringRollVelocity =
-                (steeringRollAccelTarget - steeringRollVelocity) +
-                steeringRollVelocity;
+            steeringRollVelocity = (steeringRollAccelTarget - steeringRollVelocity) + steeringRollVelocity;
         }
         vehicleState->angularAcceleration[2] = steeringRollVelocity;
-        vehicleState->externalVelocity[2] +=
-            steeringRollVelocity * VEH_PHYSICS_FRAME_SECONDS;
+        vehicleState->externalVelocity[2] += steeringRollVelocity * VEH_PHYSICS_FRAME_SECONDS;
     }
 }
 
@@ -6148,7 +5374,7 @@ void VEH_UpdateClient(gentity_t *ent)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
-    int8_t input[3] = { 0, 0, 0 };
+    int8_t input[3] = {0, 0, 0};
 
     if (ent->health >= 1) {
         if (ent->passEntityNum == ENTITYNUM_NONE) {
@@ -6157,60 +5383,36 @@ void VEH_UpdateClient(gentity_t *ent)
                 input[1] = (int8_t)vehicleState->animRightTarget;
             } else {
                 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                const int stressCount =
-                    game_compat_veh_abs_int(g_vehicleTrafficStressTest.integer);
+                const int stressCount = game_compat_veh_abs_int(g_vehicleTrafficStressTest.integer);
 
                 if (vehicleState->slotIndex < stressCount) {
-                    static const float forwardTimeScale =
-                        VEH_STRESS_FORWARD_TIME_SCALE;
-                    static const float rightTimeScale =
-                        VEH_STRESS_RIGHT_TIME_SCALE;
-                    static const float inputScale =
-                        VEH_STRESS_INPUT_SCALE;
+                    static const float forwardTimeScale = VEH_STRESS_FORWARD_TIME_SCALE;
+                    static const float rightTimeScale = VEH_STRESS_RIGHT_TIME_SCALE;
+                    static const float inputScale = VEH_STRESS_INPUT_SCALE;
                     /* 0x8803c..0x880d9: level.time feeds fmul via fild with
                      * no float store; the argument rounds to DOUBLE for
                      * CoduoLibm_Sin()/CoduoLibm_Cos(), and each scaled result
                      * feeds fistp WORD directly. */
 #if EMULATE_X87
-                    const double forwardPhase = x87f_store_f64(x87f_mul(
-                        x87f_load_i32(level.time),
-                        x87f_load_f32(forwardTimeScale)));
-                    const double rightPhase = x87f_store_f64(x87f_mul(
-                        x87f_load_i32(level.time),
-                        x87f_load_f32(rightTimeScale)));
+                    const double forwardPhase = x87f_store_f64(x87f_mul(x87f_load_i32(level.time), x87f_load_f32(forwardTimeScale)));
+                    const double rightPhase = x87f_store_f64(x87f_mul(x87f_load_i32(level.time), x87f_load_f32(rightTimeScale)));
                     input[0] = (int8_t)(int16_t)x87f_store_i32_trunc(
-                        x87f_mul(x87f_load_f64(CoduoLibm_Sin(forwardPhase)),
-                                 x87f_load_f32(inputScale)));
+                        x87f_mul(x87f_load_f64(CoduoLibm_Sin(forwardPhase)), x87f_load_f32(inputScale)));
                     input[1] = (int8_t)(int16_t)x87f_store_i32_trunc(
-                        x87f_mul(x87f_load_f64(CoduoLibm_Cos(rightPhase)),
-                                 x87f_load_f32(inputScale)));
+                        x87f_mul(x87f_load_f64(CoduoLibm_Cos(rightPhase)), x87f_load_f32(inputScale)));
 #elif defined(__x86_64__)
                     {
-                        const double forwardPhase = (double)(
-                            (long double)level.time *
-                            (long double)forwardTimeScale);
-                        const double rightPhase = (double)(
-                            (long double)level.time *
-                            (long double)rightTimeScale);
+                        const double forwardPhase = (double)((long double)level.time * (long double)forwardTimeScale);
+                        const double rightPhase = (double)((long double)level.time * (long double)rightTimeScale);
 
-                        input[0] = (int8_t)CODUO_X87_TRUNCATE_I16(
-                            (long double)CoduoLibm_Sin(forwardPhase) *
-                            (long double)inputScale);
-                        input[1] = (int8_t)CODUO_X87_TRUNCATE_I16(
-                            (long double)CoduoLibm_Cos(rightPhase) *
-                            (long double)inputScale);
+                        input[0] = (int8_t)CODUO_X87_TRUNCATE_I16((long double)CoduoLibm_Sin(forwardPhase) * (long double)inputScale);
+                        input[1] = (int8_t)CODUO_X87_TRUNCATE_I16((long double)CoduoLibm_Cos(rightPhase) * (long double)inputScale);
                     }
 #else
-                    input[0] = (int8_t)(int16_t)(
-                        CoduoLibm_Sin((double)(
-                            (long double)level.time *
-                            (long double)forwardTimeScale)) *
-                        inputScale);
-                    input[1] = (int8_t)(int16_t)(
-                        CoduoLibm_Cos((double)(
-                            (long double)level.time *
-                            (long double)rightTimeScale)) *
-                        inputScale);
+                    input[0] =
+                        (int8_t)(int16_t)(CoduoLibm_Sin((double)((long double)level.time * (long double)forwardTimeScale)) * inputScale);
+                    input[1] =
+                        (int8_t)(int16_t)(CoduoLibm_Cos((double)((long double)level.time * (long double)rightTimeScale)) * inputScale);
 #endif
                 }
             }
@@ -6218,16 +5420,13 @@ void VEH_UpdateClient(gentity_t *ent)
             gentity_t *driver = &g_entities[ent->passEntityNum];
             gclient_t *driverClient = driver->client;
 
-            if (driverClient != NULL &&
-                driverClient->driverUnlinkRequested != 0 &&
-                VEH_UnlinkPlayer(driver, qtrue)) {
+            if (driverClient != NULL && driverClient->driverUnlinkRequested != 0 && VEH_UnlinkPlayer(driver, qtrue)) {
                 driverClient->driverUnlinkRequested = 0;
                 return;
             }
 
             driverClient->ps.entityStateFlags |= EF_VEHICLE_ACTIVE;
-            if (ent->vehiclePrimaryDisabled == 0 &&
-                vehicleState->scriptedInputEndTime < level.time &&
+            if (ent->vehiclePrimaryDisabled == 0 && vehicleState->scriptedInputEndTime < level.time &&
                 (driverClient->ps.entityStateFlags & EF_VEHICLE_POPOUT) == 0) {
                 input[0] = (int8_t)driverClient->command.forwardmove;
                 input[1] = (int8_t)driverClient->command.rightmove;
@@ -6239,16 +5438,13 @@ void VEH_UpdateClient(gentity_t *ent)
                 vehicleState->animLeftSource = input[0];
                 vehicleState->animRightSource = 0;
 
-                if (vehicleInfo->type == VEHICLE_TYPE_TANK &&
-                    vehicleInfo->primaryYawLimitPos == 0.0f &&
-                    vehicleInfo->primaryYawLimitNeg == 0.0f &&
-                    game_compat_veh_float_is_non_zero_or_nan(driverClient->ps.adsFraction)) {
+                if (vehicleInfo->type == VEHICLE_TYPE_TANK && vehicleInfo->primaryYawLimitPos == 0.0f &&
+                    vehicleInfo->primaryYawLimitNeg == 0.0f && game_compat_veh_float_is_non_zero_or_nan(driverClient->ps.adsFraction)) {
                     input[2] = 127;
                 }
 
                 if (vehicleInfo->type == VEHICLE_TYPE_TANK || input[2] > 0) {
-                    driverClient->ps.entityStateFlags &=
-                        ~EF_VEHICLE_ACTIVE;
+                    driverClient->ps.entityStateFlags &= ~EF_VEHICLE_ACTIVE;
                 }
 
                 if (vehicleInfo->type == VEHICLE_TYPE_TANK && input[0] < 0) {
@@ -6258,8 +5454,7 @@ void VEH_UpdateClient(gentity_t *ent)
         }
     }
 
-    if (input[0] != 0 || input[1] != 0 || input[2] != 0 ||
-        !VEH_PhysicsNotRequired(ent, qtrue)) {
+    if (input[0] != 0 || input[1] != 0 || input[2] != 0 || !VEH_PhysicsNotRequired(ent, qtrue)) {
         vec3_t linearAccel;
         vec3_t angularAccel;
         matrix43_t axis;
@@ -6269,23 +5464,18 @@ void VEH_UpdateClient(gentity_t *ent)
 
         if (vehGroundTraceWalkable) {
             for (int axisIndex = 0; axisIndex < 3; axisIndex++) {
-                vehicleState->acceleration[axisIndex] +=
-                    angularAccel[axisIndex] * VEH_PHYSICS_FRAME_SECONDS;
+                vehicleState->acceleration[axisIndex] += angularAccel[axisIndex] * VEH_PHYSICS_FRAME_SECONDS;
             }
         }
 
         vehicleState->viewClampTargetAngles[1] =
-            AngleNormalize180(vehicleState->previousAngles[1] +
-                              vehicleState->acceleration[1] *
-                                  VEH_PHYSICS_FRAME_SECONDS);
+            AngleNormalize180(vehicleState->previousAngles[1] + vehicleState->acceleration[1] * VEH_PHYSICS_FRAME_SECONDS);
         vehicleState->viewClampTargetAngles[0] = 0.0f;
         vehicleState->viewClampTargetAngles[2] = 0.0f;
 
         if (vehicleInfo->type == VEHICLE_TYPE_TANK) {
-            game_compat_veh_set_entity_primary_yaw(
-                ent,
-                game_compat_veh_entity_primary_yaw(ent) -
-                    vehicleState->acceleration[1] * VEH_PHYSICS_FRAME_SECONDS);
+            game_compat_veh_set_entity_primary_yaw(ent, game_compat_veh_entity_primary_yaw(ent) -
+                                                            vehicleState->acceleration[1] * VEH_PHYSICS_FRAME_SECONDS);
         }
 
         AnglesToAxis(vehicleState->viewClampTargetAngles, axis.axis);
@@ -6296,20 +5486,16 @@ void VEH_UpdateClient(gentity_t *ent)
         if (vehGroundTraceWalkable) {
             vec3_t worldAccel;
 
-            MatrixTransformVector(linearAccel,
-                                  (const vec_t (*)[3])axis.axis,
-                                  worldAccel);
+            MatrixTransformVector(linearAccel, (const vec_t(*)[3])axis.axis, worldAccel);
             for (int axisIndex = 0; axisIndex < 3; axisIndex++) {
-                vehicleState->velocity[axisIndex] +=
-                    worldAccel[axisIndex] * VEH_PHYSICS_FRAME_SECONDS;
+                vehicleState->velocity[axisIndex] += worldAccel[axisIndex] * VEH_PHYSICS_FRAME_SECONDS;
             }
             VEH_GroundFriction(ent);
         }
 
         if (game_compat_veh_float_is_non_zero_or_nan(vehicleState->velocity[0]) ||
             game_compat_veh_float_is_non_zero_or_nan(vehicleState->velocity[1]) ||
-            game_compat_veh_float_is_non_zero_or_nan(vehicleState->velocity[2]) ||
-            !vehGroundTraceWalkable) {
+            game_compat_veh_float_is_non_zero_or_nan(vehicleState->velocity[2]) || !vehGroundTraceWalkable) {
             VEH_GroundTrace(ent);
             if (vehGroundTraceWalkable) {
                 VEH_GroundMove(ent);
@@ -6318,11 +5504,9 @@ void VEH_UpdateClient(gentity_t *ent)
             }
         }
 
-        MatrixTransposeTransformVector43(vehicleState->velocity, &axis,
-                                         vehicleState->angularVelocity);
+        MatrixTransposeTransformVector43(vehicleState->velocity, &axis, vehicleState->angularVelocity);
 
-        if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL ||
-            vehicleInfo->type == VEHICLE_TYPE_TANK) {
+        if (vehicleInfo->type == VEHICLE_TYPE_4_WHEEL || vehicleInfo->type == VEHICLE_TYPE_TANK) {
             VEH_UpdateSuspension(ent, qtrue);
         }
     }
@@ -6333,11 +5517,8 @@ void VEH_UpdateClient(gentity_t *ent)
         /* 0x88383..0x88492: the max/clamp cascade compares the unrounded
          * 80-bit quotients (clamp boundary is DOUBLE 1.0); the selected
          * quotient rounds to double, then to float. */
-        const long double forwardFraction =
-            fabsf(vehicleState->angularVelocity[0]) / vehicleInfo->maxSpeed;
-        const long double steerFraction =
-            fabsf(vehicleState->acceleration[1]) /
-            (vehicleInfo->steeringLimit + vehicleInfo->steeringLimit);
+        const long double forwardFraction = fabsf(vehicleState->angularVelocity[0]) / vehicleInfo->maxSpeed;
+        const long double steerFraction = fabsf(vehicleState->acceleration[1]) / (vehicleInfo->steeringLimit + vehicleInfo->steeringLimit);
         float clampedSpeedFraction;
 
         if (forwardFraction > steerFraction) {
@@ -6355,19 +5536,13 @@ void VEH_UpdateClient(gentity_t *ent)
         }
 
         vehicleState->idleSoundBlendRepeatDelay =
-            VEH_LerpValue(1.0f - clampedSpeedFraction,
-                                    vehicleState->idleSoundBlendRepeatDelay,
-                                    VEH_SPEED_BLEND_RATE);
+            VEH_LerpValue(1.0f - clampedSpeedFraction, vehicleState->idleSoundBlendRepeatDelay, VEH_SPEED_BLEND_RATE);
         vehicleState->runSoundBlendRepeatDelay =
-            VEH_LerpValue(clampedSpeedFraction,
-                                    vehicleState->runSoundBlendRepeatDelay,
-                                    VEH_SPEED_BLEND_RATE);
+            VEH_LerpValue(clampedSpeedFraction, vehicleState->runSoundBlendRepeatDelay, VEH_SPEED_BLEND_RATE);
     }
 
     if (g_vehicleDebug.integer != 0) {
-        VEH_DebugCircleVertical(vehicleState->origin, vehicleInfo->collisionMaxs[0],
-                                vehicleInfo->collisionMaxs[2], 1.0f, 1.0f,
-                                0.0f);
+        VEH_DebugCircleVertical(vehicleState->origin, vehicleInfo->collisionMaxs[0], vehicleInfo->collisionMaxs[2], 1.0f, 1.0f, 0.0f);
     }
 }
 
@@ -6383,8 +5558,7 @@ void VEH_ClipVelocity(const vec3_t in, const vec3_t normal, vec3_t out)
     /* 0x7f945..0x7f998 reaches the ground-plane shortcut only after two
      * ordered-above-or-equal branches.  Writing the other arm as `< || <`
      * incorrectly selects the shortcut when either comparison is unordered. */
-    if (!(normal[2] >= VEH_GROUND_NORMAL_MIN_Z &&
-          in[0] * in[0] + in[1] * in[1] >= in[2] * in[2])) {
+    if (!(normal[2] >= VEH_GROUND_NORMAL_MIN_Z && in[0] * in[0] + in[1] * in[1] >= in[2] * in[2])) {
         backoff = in[0] * normal[0] + in[1] * normal[1] + in[2] * normal[2];
         if (backoff < 0.0f) {
             backoff *= VEH_SLIDE_OVERCLIP;
@@ -6420,15 +5594,12 @@ qboolean VEH_CorrectAllSolid(gentity_t *ent, trace_t *trace)
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     vec3_t probe;
 
-    for (int offsetIndex = 0; offsetIndex < VEH_UNSTICK_VECTOR_COUNT;
-         offsetIndex++) {
+    for (int offsetIndex = 0; offsetIndex < VEH_UNSTICK_VECTOR_COUNT; offsetIndex++) {
         probe[0] = vehicleState->origin[0] + vehUnstickOffsets[offsetIndex * 3 + 0];
         probe[1] = vehicleState->origin[1] + vehUnstickOffsets[offsetIndex * 3 + 1];
         probe[2] = vehicleState->origin[2] + vehUnstickOffsets[offsetIndex * 3 + 2];
 
-        trap_Trace(trace, probe, vehicleInfo->collisionMins,
-                   vehicleInfo->collisionMaxs, probe, ent->s.number,
-                   ent->clipmask);
+        trap_Trace(trace, probe, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, probe, ent->s.number, ent->clipmask);
         if (trace->startsolid == 0) {
             break;
         }
@@ -6446,9 +5617,7 @@ qboolean VEH_CorrectAllSolid(gentity_t *ent, trace_t *trace)
     probe[1] = vehicleState->origin[1];
     probe[2] = vehicleState->origin[2] - VEH_GROUND_TRACE_DOWN_STEP;
 
-    trap_Trace(trace, vehicleState->origin, vehicleInfo->collisionMins,
-               vehicleInfo->collisionMaxs, probe, ent->s.number,
-               ent->clipmask);
+    trap_Trace(trace, vehicleState->origin, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, probe, ent->s.number, ent->clipmask);
     memcpy(&vehLastGroundTrace, trace, sizeof(trace_t));
 
     vehicleState->origin[0] = trace->endpos[0];
@@ -6482,26 +5651,22 @@ void VEH_GroundTrace(gentity_t *ent)
         end[2] = vehicleState->origin[2] - VEH_GROUND_PROBE_FALLBACK;
     }
 
-    trap_Trace(&trace, start, vehicleInfo->collisionMins,
-               vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
+    trap_Trace(&trace, start, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
     memcpy(&vehLastGroundTrace, &trace, sizeof(trace_t));
 
     vehGroundTraceHit = qfalse;
     vehGroundTraceWalkable = qfalse;
 
     /* 0x7fdca: machine reads trace+0x2e (allsolid), not +0x2f (startsolid). */
-    if ((trace.allsolid == 0 || VEH_CorrectAllSolid(ent, &trace)) &&
-        trace.fraction != 1.0f) {
+    if ((trace.allsolid == 0 || VEH_CorrectAllSolid(ent, &trace)) && trace.fraction != 1.0f) {
         qboolean acceptableImpact = qtrue;
 
         /* 0x7fe02..0x7fe42 performs the dot rejection only after an
          * ordered velocity-z > 0 branch.  Unordered velocity or dot values
          * therefore remain acceptable. */
-        if (vehicleState->velocity[2] > 0.0f &&
-            vehicleState->velocity[0] * trace.normal[0] +
-                vehicleState->velocity[1] * trace.normal[1] +
-                vehicleState->velocity[2] * trace.normal[2] >
-                    VEH_GROUND_MAX_IMPACT_DOT) {
+        if (vehicleState->velocity[2] > 0.0f && vehicleState->velocity[0] * trace.normal[0] + vehicleState->velocity[1] * trace.normal[1] +
+                                                        vehicleState->velocity[2] * trace.normal[2] >
+                                                    VEH_GROUND_MAX_IMPACT_DOT) {
             acceptableImpact = qfalse;
         }
 
@@ -6523,13 +5688,12 @@ void VEH_GroundTrace(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x8036e, 9036e_VEH_SlideMove.c, VERIFY-VEHICLE-PHYSICS-MOVE-2026-06-17): DATAFLOW_VERIFIED */
-qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
-                       int maxTouchEnts)
+qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts, int maxTouchEnts)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     float timeLeft = VEH_PHYSICS_FRAME_SECONDS;
-    vec3_t endVelocity = { 0.0f, 0.0f, 0.0f };
+    vec3_t endVelocity = {0.0f, 0.0f, 0.0f};
     float planes[VEH_SLIDE_MAX_CLIP_PLANES][3];
     int numPlanes = 0;
     int touchCount = 0;
@@ -6540,12 +5704,10 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         endVelocity[1] = vehicleState->velocity[1];
         endVelocity[2] = vehicleState->velocity[2] - VEH_SLIDE_GRAVITY_STEP;
 
-        vehicleState->velocity[2] =
-            (vehicleState->velocity[2] + endVelocity[2]) * 0.5f;
+        vehicleState->velocity[2] = (vehicleState->velocity[2] + endVelocity[2]) * 0.5f;
 
         if (vehGroundTraceHit) {
-            VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal,
-                             vehicleState->velocity);
+            VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal, vehicleState->velocity);
         }
     }
 
@@ -6571,9 +5733,7 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         end[1] = vehicleState->origin[1] + vehicleState->velocity[1] * timeLeft;
         end[2] = vehicleState->origin[2] + vehicleState->velocity[2] * timeLeft;
 
-        trap_Trace(&trace, vehicleState->origin, vehicleInfo->collisionMins,
-                   vehicleInfo->collisionMaxs, end, ent->s.number,
-                   ent->clipmask);
+        trap_Trace(&trace, vehicleState->origin, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
 
         if (trace.startsolid != 0) {
             vehicleState->velocity[2] = 0.0f;
@@ -6590,8 +5750,7 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
             break;
         }
 
-        if (touchEnts != NULL && trace.entityNum != ENTITYNUM_WORLD &&
-            touchCount < maxTouchEnts) {
+        if (touchEnts != NULL && trace.entityNum != ENTITYNUM_WORLD && touchCount < maxTouchEnts) {
             touchEnts[touchCount] = trace.entityNum;
             touchCount++;
         }
@@ -6605,9 +5764,7 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         int planeIndex;
         for (planeIndex = 0; planeIndex < numPlanes; planeIndex++) {
             const float dot =
-                trace.normal[0] * planes[planeIndex][0] +
-                trace.normal[1] * planes[planeIndex][1] +
-                trace.normal[2] * planes[planeIndex][2];
+                trace.normal[0] * planes[planeIndex][0] + trace.normal[1] * planes[planeIndex][1] + trace.normal[2] * planes[planeIndex][2];
 
             if (dot > VEH_SLIDE_RECOLLIDE_DOT) {
                 vehicleState->velocity[0] += trace.normal[0];
@@ -6629,81 +5786,65 @@ qboolean VEH_SlideMove(gentity_t *ent, qboolean gravity, int *touchEnts,
         for (planeIndex = 0; planeIndex < numPlanes; planeIndex++) {
             vec3_t newVelocity;
             vec3_t clippedEndVelocity;
-            const float into =
-                vehicleState->velocity[0] * planes[planeIndex][0] +
-                vehicleState->velocity[1] * planes[planeIndex][1] +
-                vehicleState->velocity[2] * planes[planeIndex][2];
+            const float into = vehicleState->velocity[0] * planes[planeIndex][0] + vehicleState->velocity[1] * planes[planeIndex][1] +
+                               vehicleState->velocity[2] * planes[planeIndex][2];
 
             if (into >= VEH_SLIDE_CLIP_EPSILON) {
                 continue;
             }
 
-            VEH_ClipVelocity(vehicleState->velocity, planes[planeIndex],
-                             newVelocity);
-            VEH_ClipVelocity(endVelocity, planes[planeIndex],
-                             clippedEndVelocity);
+            VEH_ClipVelocity(vehicleState->velocity, planes[planeIndex], newVelocity);
+            VEH_ClipVelocity(endVelocity, planes[planeIndex], clippedEndVelocity);
 
             for (int otherPlane = 0; otherPlane < numPlanes; otherPlane++) {
                 if (otherPlane == planeIndex) {
                     continue;
                 }
 
-                if (newVelocity[0] * planes[otherPlane][0] +
-                    newVelocity[1] * planes[otherPlane][1] +
-                    newVelocity[2] * planes[otherPlane][2] >=
-                        VEH_SLIDE_CLIP_EPSILON) {
+                if (newVelocity[0] * planes[otherPlane][0] + newVelocity[1] * planes[otherPlane][1] +
+                        newVelocity[2] * planes[otherPlane][2] >=
+                    VEH_SLIDE_CLIP_EPSILON) {
                     continue;
                 }
 
                 VEH_ClipVelocity(newVelocity, planes[otherPlane], newVelocity);
-                VEH_ClipVelocity(clippedEndVelocity, planes[otherPlane],
-                                 clippedEndVelocity);
+                VEH_ClipVelocity(clippedEndVelocity, planes[otherPlane], clippedEndVelocity);
 
                 /* 0x80a48..0x80a68 skips this arm only through an ordered
                  * dot >= 0 branch; an unordered dot enters the crease path. */
-                if (!(newVelocity[0] * planes[planeIndex][0] +
-                      newVelocity[1] * planes[planeIndex][1] +
-                      newVelocity[2] * planes[planeIndex][2] >= 0.0f)) {
+                if (!(newVelocity[0] * planes[planeIndex][0] + newVelocity[1] * planes[planeIndex][1] +
+                          newVelocity[2] * planes[planeIndex][2] >=
+                      0.0f)) {
                     vec3_t crease;
                     float projection;
 
-                    CrossProduct(planes[planeIndex], planes[otherPlane],
-                                 crease);
+                    CrossProduct(planes[planeIndex], planes[otherPlane], crease);
                     VectorNormalize(crease);
 
-                    projection =
-                        crease[0] * vehicleState->velocity[0] +
-                        crease[1] * vehicleState->velocity[1] +
-                        crease[2] * vehicleState->velocity[2];
+                    projection = crease[0] * vehicleState->velocity[0] + crease[1] * vehicleState->velocity[1] +
+                                 crease[2] * vehicleState->velocity[2];
                     newVelocity[0] = crease[0] * projection;
                     newVelocity[1] = crease[1] * projection;
                     newVelocity[2] = crease[2] * projection;
 
-                    CrossProduct(planes[planeIndex], planes[otherPlane],
-                                 crease);
+                    CrossProduct(planes[planeIndex], planes[otherPlane], crease);
                     VectorNormalize(crease);
 
-                    projection =
-                        crease[0] * endVelocity[0] +
-                        crease[1] * endVelocity[1] +
-                        crease[2] * endVelocity[2];
+                    projection = crease[0] * endVelocity[0] + crease[1] * endVelocity[1] + crease[2] * endVelocity[2];
                     clippedEndVelocity[0] = crease[0] * projection;
                     clippedEndVelocity[1] = crease[1] * projection;
                     clippedEndVelocity[2] = crease[2] * projection;
 
-                    for (int thirdPlane = 0; thirdPlane < numPlanes;
-                         thirdPlane++) {
-                        if (thirdPlane == planeIndex ||
-                            thirdPlane == otherPlane) {
+                    for (int thirdPlane = 0; thirdPlane < numPlanes; thirdPlane++) {
+                        if (thirdPlane == planeIndex || thirdPlane == otherPlane) {
                             continue;
                         }
 
                         /* 0x80c71..0x80c8d clears velocity unless an
                          * ordered dot >= epsilon branch succeeds. */
-                        if (!(newVelocity[0] * planes[thirdPlane][0] +
-                              newVelocity[1] * planes[thirdPlane][1] +
-                              newVelocity[2] * planes[thirdPlane][2] >=
-                                  VEH_SLIDE_CLIP_EPSILON)) {
+                        if (!(newVelocity[0] * planes[thirdPlane][0] + newVelocity[1] * planes[thirdPlane][1] +
+                                  newVelocity[2] * planes[thirdPlane][2] >=
+                              VEH_SLIDE_CLIP_EPSILON)) {
                             game_compat_veh_clear_vehicle_velocity(vehicleState);
                             return qtrue;
                         }
@@ -6761,17 +5902,13 @@ void VEH_StepSlideMove(gentity_t *ent, qboolean gravity)
     end[0] = oldOrigin[0];
     end[1] = oldOrigin[1];
     end[2] = oldOrigin[2] - vehicleInfo->stepSize;
-    trap_Trace(&trace, oldOrigin, vehicleInfo->collisionMins,
-               vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
+    trap_Trace(&trace, oldOrigin, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
 
-    if (vehicleState->velocity[2] > 0.0f &&
-        (trace.fraction == 1.0f || trace.normal[2] < VEH_GROUND_NORMAL_MIN_Z)) {
+    if (vehicleState->velocity[2] > 0.0f && (trace.fraction == 1.0f || trace.normal[2] < VEH_GROUND_NORMAL_MIN_Z)) {
         return;
     }
 
-    for (int index = 0;
-         index < VEH_STEP_TOUCH_COUNT && touchEnts[index] != ENTITYNUM_NONE;
-         index++) {
+    for (int index = 0; index < VEH_STEP_TOUCH_COUNT && touchEnts[index] != ENTITYNUM_NONE; index++) {
         gentity_t *touchEnt = &g_entities[touchEnts[index]];
 
         if (touchEnt->s.eType == ET_VEHICLE) {
@@ -6787,8 +5924,7 @@ void VEH_StepSlideMove(gentity_t *ent, qboolean gravity)
     end[0] = oldOrigin[0];
     end[1] = oldOrigin[1];
     end[2] = oldOrigin[2] + vehicleInfo->stepSize;
-    trap_Trace(&trace, oldOrigin, vehicleInfo->collisionMins,
-               vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
+    trap_Trace(&trace, oldOrigin, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
 
     if (trace.startsolid != 0) {
         return;
@@ -6808,8 +5944,7 @@ void VEH_StepSlideMove(gentity_t *ent, qboolean gravity)
     /* 0x810b7: the 80-bit chain groups (oldOrigin - endpos) first, then
      * adds the current origin. */
     end[2] = (oldOrigin[2] - trace.endpos[2]) + vehicleState->origin[2];
-    trap_Trace(&trace, vehicleState->origin, vehicleInfo->collisionMins,
-               vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
+    trap_Trace(&trace, vehicleState->origin, vehicleInfo->collisionMins, vehicleInfo->collisionMaxs, end, ent->s.number, ent->clipmask);
 
     if (trace.startsolid == 0) {
         vehicleState->origin[0] = trace.endpos[0];
@@ -6818,8 +5953,7 @@ void VEH_StepSlideMove(gentity_t *ent, qboolean gravity)
     }
 
     if (trace.fraction < 1.0f) {
-        VEH_ClipVelocity(vehicleState->velocity, trace.normal,
-                         vehicleState->velocity);
+        VEH_ClipVelocity(vehicleState->velocity, trace.normal, vehicleState->velocity);
     }
 }
 
@@ -6838,12 +5972,11 @@ void VEH_GroundMove(gentity_t *ent)
     originalVelocity[1] = vehicleState->velocity[1];
     originalVelocity[2] = vehicleState->velocity[2];
 
-    VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal,
-                     vehicleState->velocity);
+    VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal, vehicleState->velocity);
 
-    if (vehicleState->velocity[0] * originalVelocity[0] +
-        vehicleState->velocity[1] * originalVelocity[1] +
-        vehicleState->velocity[2] * originalVelocity[2] > 0.0f) {
+    if (vehicleState->velocity[0] * originalVelocity[0] + vehicleState->velocity[1] * originalVelocity[1] +
+            vehicleState->velocity[2] * originalVelocity[2] >
+        0.0f) {
         VectorNormalize(vehicleState->velocity);
         vehicleState->velocity[0] *= speed;
         vehicleState->velocity[1] *= speed;
@@ -6866,8 +5999,7 @@ void VEH_AirMove(gentity_t *ent)
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
 
     if (vehGroundTraceHit) {
-        VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal,
-                         vehicleState->velocity);
+        VEH_ClipVelocity(vehicleState->velocity, vehLastGroundTrace.normal, vehicleState->velocity);
     }
 
     VEH_StepSlideMove(ent, qtrue);
@@ -6882,10 +6014,7 @@ void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
-    const int wheelCount =
-        vehicleInfo->type == VEHICLE_TYPE_4_WHEEL ?
-        VEH_SUSPENSION_WHEEL_COUNT_4WHEEL :
-        VEH_SUSPENSION_WHEEL_COUNT_TANK;
+    const int wheelCount = vehicleInfo->type == VEHICLE_TYPE_4_WHEEL ? VEH_SUSPENSION_WHEEL_COUNT_4WHEEL : VEH_SUSPENSION_WHEEL_COUNT_TANK;
     matrix43_t axis;
     float wheelPoints[VEH_SUSPENSION_WHEEL_COUNT_TANK][3];
     vec3_t traceStart;
@@ -6930,13 +6059,10 @@ void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass)
             VEH_DebugLine(traceStart, traceEnd, 0.0f, 0.0f, 1.0f);
         }
 
-        if (game_compat_veh_entity_collision_mode(ent) ==
-            VEH_COLLISION_MODE_ALT_TRACE) {
-            trap_Trace(&trace, traceStart, NULL, NULL, traceEnd, ent->s.number,
-                       VEH_SUSPENSION_TRACE_MASK_ALT);
+        if (game_compat_veh_entity_collision_mode(ent) == VEH_COLLISION_MODE_ALT_TRACE) {
+            trap_Trace(&trace, traceStart, NULL, NULL, traceEnd, ent->s.number, VEH_SUSPENSION_TRACE_MASK_ALT);
         } else {
-            trap_Trace(&trace, traceStart, NULL, NULL, traceEnd, ent->s.number,
-                       VEH_SUSPENSION_TRACE_MASK);
+            trap_Trace(&trace, traceStart, NULL, NULL, traceEnd, ent->s.number, VEH_SUSPENSION_TRACE_MASK);
         }
 
         if (trace.fraction < 1.0f) {
@@ -6945,9 +6071,7 @@ void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass)
             wheelPoints[wheelIndex][2] = trace.endpos[2];
             game_compat_veh_set_wheel_surface_at(
                 vehicleState, (uint32_t)wheelIndex,
-                (int32_t)((trace.surfaceFlags &
-                           (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
-                          SURFACE_TYPE_SHIFT));
+                (int32_t)((trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT));
         } else {
             wheelPoints[wheelIndex][0] = traceEnd[0];
             wheelPoints[wheelIndex][1] = traceEnd[1];
@@ -7001,25 +6125,20 @@ void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass)
     VectorNormalize(lengthAxis);
 
     CrossProduct(sideAxis, lengthAxis, groundNormal);
-    planeDistance = wheelPoints[0][0] * groundNormal[0] +
-                    wheelPoints[0][1] * groundNormal[1] +
-                    wheelPoints[0][2] * groundNormal[2];
+    planeDistance = wheelPoints[0][0] * groundNormal[0] + wheelPoints[0][1] * groundNormal[1] + wheelPoints[0][2] * groundNormal[2];
 
     for (int wheelIndex = 1; wheelIndex < wheelCount; wheelIndex++) {
         /* 0x819ba..0x81ab7: the dot product stays in the 80-bit chain up to
          * the subtraction (never rounded on its own), and the update path
          * recomputes the full chain minus suspensionTravel. */
-        const float wheelDistance =
-            (wheelPoints[wheelIndex][0] * groundNormal[0] +
-             wheelPoints[wheelIndex][1] * groundNormal[1] +
-             wheelPoints[wheelIndex][2] * groundNormal[2]) - planeDistance;
+        const float wheelDistance = (wheelPoints[wheelIndex][0] * groundNormal[0] + wheelPoints[wheelIndex][1] * groundNormal[1] +
+                                     wheelPoints[wheelIndex][2] * groundNormal[2]) -
+                                    planeDistance;
 
         if (vehicleInfo->suspensionTravel < wheelDistance) {
-            planeDistance =
-                (wheelPoints[wheelIndex][0] * groundNormal[0] +
-                 wheelPoints[wheelIndex][1] * groundNormal[1] +
-                 wheelPoints[wheelIndex][2] * groundNormal[2]) -
-                vehicleInfo->suspensionTravel;
+            planeDistance = (wheelPoints[wheelIndex][0] * groundNormal[0] + wheelPoints[wheelIndex][1] * groundNormal[1] +
+                             wheelPoints[wheelIndex][2] * groundNormal[2]) -
+                            vehicleInfo->suspensionTravel;
         }
     }
 
@@ -7027,35 +6146,20 @@ void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass)
     VectorNormalize(projectedAxis);
     CrossProduct(projectedAxis, groundNormal, axis.axis[0]);
     VectorNormalize(axis.axis[0]);
-    AxisToAngles((const vec_t (*)[3])axis.axis, targetAngles);
+    AxisToAngles((const vec_t(*)[3])axis.axis, targetAngles);
 
-    vehicleState->viewClampTargetAngles[0] =
-        VEH_LerpAngle(targetAngles[0],
-                                vehicleState->previousAngles[0],
-                                VEH_SUSPENSION_ANGLE_RATE);
-    vehicleState->viewClampTargetAngles[2] =
-        VEH_LerpAngle(targetAngles[2],
-                                vehicleState->previousAngles[2],
-                                VEH_SUSPENSION_ANGLE_RATE);
+    vehicleState->viewClampTargetAngles[0] = VEH_LerpAngle(targetAngles[0], vehicleState->previousAngles[0], VEH_SUSPENSION_ANGLE_RATE);
+    vehicleState->viewClampTargetAngles[2] = VEH_LerpAngle(targetAngles[2], vehicleState->previousAngles[2], VEH_SUSPENSION_ANGLE_RATE);
 
-    vehicleState->viewClampTargetAngles[0] =
-        game_compat_veh_clamp_abs(vehicleState->viewClampTargetAngles[0],
-                     VEH_SUSPENSION_ANGLE_CLAMP);
-    vehicleState->viewClampTargetAngles[2] =
-        game_compat_veh_clamp_abs(vehicleState->viewClampTargetAngles[2],
-                     VEH_SUSPENSION_ANGLE_CLAMP);
+    vehicleState->viewClampTargetAngles[0] = game_compat_veh_clamp_abs(vehicleState->viewClampTargetAngles[0], VEH_SUSPENSION_ANGLE_CLAMP);
+    vehicleState->viewClampTargetAngles[2] = game_compat_veh_clamp_abs(vehicleState->viewClampTargetAngles[2], VEH_SUSPENSION_ANGLE_CLAMP);
 
-    if (game_compat_veh_entity_collision_mode(ent) !=
-        VEH_COLLISION_MODE_ALT_TRACE) {
+    if (game_compat_veh_entity_collision_mode(ent) != VEH_COLLISION_MODE_ALT_TRACE) {
         vehicleState->origin[2] =
-            -((vehicleState->origin[0] * groundNormal[0] +
-               vehicleState->origin[1] * groundNormal[1]) -
-              planeDistance) / groundNormal[2];
+            -((vehicleState->origin[0] * groundNormal[0] + vehicleState->origin[1] * groundNormal[1]) - planeDistance) / groundNormal[2];
     }
 
-    AnglesSubtract(vehicleState->viewClampTargetAngles,
-                   vehicleState->previousAngles,
-                   vehicleState->acceleration);
+    AnglesSubtract(vehicleState->viewClampTargetAngles, vehicleState->previousAngles, vehicleState->acceleration);
     vehicleState->acceleration[0] *= VEH_SUSPENSION_ANGULAR_SCALE;
     vehicleState->acceleration[1] *= VEH_SUSPENSION_ANGULAR_SCALE;
     vehicleState->acceleration[2] *= VEH_SUSPENSION_ANGULAR_SCALE;
@@ -7063,15 +6167,12 @@ void VEH_UpdateSuspension(gentity_t *ent, qboolean livePhysicsPass)
     if (g_vehicleDebug.integer != 0) {
         float projected[VEH_SUSPENSION_WHEEL_COUNT_4WHEEL][3];
 
-        for (int wheelIndex = 0;
-             wheelIndex < VEH_SUSPENSION_WHEEL_COUNT_4WHEEL;
-             wheelIndex++) {
+        for (int wheelIndex = 0; wheelIndex < VEH_SUSPENSION_WHEEL_COUNT_4WHEEL; wheelIndex++) {
             projected[wheelIndex][0] = wheelPoints[wheelIndex][0];
             projected[wheelIndex][1] = wheelPoints[wheelIndex][1];
             projected[wheelIndex][2] =
-                -((projected[wheelIndex][0] * groundNormal[0] +
-                   projected[wheelIndex][1] * groundNormal[1]) -
-                  planeDistance) / groundNormal[2];
+                -((projected[wheelIndex][0] * groundNormal[0] + projected[wheelIndex][1] * groundNormal[1]) - planeDistance) /
+                groundNormal[2];
         }
 
         VEH_DebugLine(projected[0], projected[1], 1.0f, 1.0f, 0.0f);
@@ -7104,17 +6205,13 @@ void VEH_GroundFriction(gentity_t *ent)
     }
 
     VectorNormalize2(vehicleState->velocity, normalizedVelocity);
-    vehicleState->velocity[0] += -sideSpeed * VEH_GROUND_FRICTION_SCALE *
-                                 normalizedVelocity[0];
-    vehicleState->velocity[1] += -sideSpeed * VEH_GROUND_FRICTION_SCALE *
-                                 normalizedVelocity[1];
-    vehicleState->velocity[2] += -sideSpeed * VEH_GROUND_FRICTION_SCALE *
-                                 normalizedVelocity[2];
+    vehicleState->velocity[0] += -sideSpeed * VEH_GROUND_FRICTION_SCALE * normalizedVelocity[0];
+    vehicleState->velocity[1] += -sideSpeed * VEH_GROUND_FRICTION_SCALE * normalizedVelocity[1];
+    vehicleState->velocity[2] += -sideSpeed * VEH_GROUND_FRICTION_SCALE * normalizedVelocity[2];
 
     game_compat_veh_project_velocity_to_local_axis(vehicleState, axis, localVelocity);
 
-    if (vehicleInfo->type == VEHICLE_TYPE_TANK &&
-        fabsf(localVelocity[1]) > VEH_GROUND_SIDE_CLAMP_SPEED &&
+    if (vehicleInfo->type == VEHICLE_TYPE_TANK && fabsf(localVelocity[1]) > VEH_GROUND_SIDE_CLAMP_SPEED &&
         fabsf(localVelocity[0]) < fabsf(localVelocity[1])) {
         vehicleState->velocity[0] = 0.0f;
         vehicleState->velocity[1] = 0.0f;
@@ -7122,17 +6219,14 @@ void VEH_GroundFriction(gentity_t *ent)
 
         game_compat_veh_add_scaled_axis(vehicleState->velocity, axis, 0, localVelocity[0]);
         if (localVelocity[1] > 0.0f) {
-            game_compat_veh_add_scaled_axis(vehicleState->velocity, axis, 1,
-                              VEH_GROUND_SIDE_CLAMP_SPEED);
+            game_compat_veh_add_scaled_axis(vehicleState->velocity, axis, 1, VEH_GROUND_SIDE_CLAMP_SPEED);
         } else {
-            game_compat_veh_add_scaled_axis(vehicleState->velocity, axis, 1,
-                              -VEH_GROUND_SIDE_CLAMP_SPEED);
+            game_compat_veh_add_scaled_axis(vehicleState->velocity, axis, 1, -VEH_GROUND_SIDE_CLAMP_SPEED);
         }
         game_compat_veh_add_scaled_axis(vehicleState->velocity, axis, 2, localVelocity[2]);
     }
 
-    if (localVelocity[0] > VEH_GROUND_STEER_MIN_FORWARD &&
-        localVelocity[1] > VEH_GROUND_STEER_MIN_SIDE) {
+    if (localVelocity[0] > VEH_GROUND_STEER_MIN_FORWARD && localVelocity[1] > VEH_GROUND_STEER_MIN_SIDE) {
         /* 0x80266: the dot product is rounded to double for CoduoLibm_Sqrt(), not to
          * float for sqrtf(). */
         const float speed = game_compat_veh_length3(vehicleState->velocity);
@@ -7173,8 +6267,7 @@ qboolean VEH_PhysicsNotRequired(gentity_t *ent, qboolean checkNearbyClients)
 {
     const vehicle_state_t *vehicleState = (const vehicle_state_t *)ent->vehicle;
 
-    if (game_compat_veh_vector3_is_non_zero(vehicleState->acceleration) ||
-        game_compat_veh_vector3_is_non_zero(vehicleState->velocity) ||
+    if (game_compat_veh_vector3_is_non_zero(vehicleState->acceleration) || game_compat_veh_vector3_is_non_zero(vehicleState->velocity) ||
         game_compat_veh_vector3_is_non_zero(vehicleState->externalVelocity) ||
         game_compat_veh_vector3_is_non_zero(vehicleState->angularAcceleration) ||
         game_compat_veh_vector3_is_non_zero(vehicleState->angularVelocity)) {
@@ -7190,8 +6283,7 @@ qboolean VEH_PhysicsNotRequired(gentity_t *ent, qboolean checkNearbyClients)
         const int entityNum = clientPhysics->entityNum;
 
         if (entityNum != ENTITYNUM_NONE &&
-            VectorDistanceSquared(game_compat_veh_physics_client_origin(clientPhysics),
-                                  vehicleState->origin) <
+            VectorDistanceSquared(game_compat_veh_physics_client_origin(clientPhysics), vehicleState->origin) <
                 VEH_PHYSICS_NEARBY_RADIUS_SQ &&
             !VEH_PhysicsNotRequired(&g_entities[entityNum], qfalse)) {
             return qfalse;
@@ -7217,10 +6309,8 @@ void VEH_Backup(gentity_t *ent)
     vehicleState->previousAngles[1] = ent->currentAngles[1];
     vehicleState->previousAngles[2] = ent->currentAngles[2];
 
-    memcpy(&vehPhysicsSnapshotPrefix, vehicleState,
-           sizeof(vehPhysicsSnapshotPrefix));
-    memcpy(&vehPhysicsSnapshotState, &vehicleState->origin,
-           sizeof(vehPhysicsSnapshotState));
+    memcpy(&vehPhysicsSnapshotPrefix, vehicleState, sizeof(vehPhysicsSnapshotPrefix));
+    memcpy(&vehPhysicsSnapshotState, &vehicleState->origin, sizeof(vehPhysicsSnapshotState));
 }
 
 /* ------------------------------------------------------------------ */
@@ -7247,16 +6337,14 @@ void VEH_PlayerDamage(gentity_t *player, gentity_t *vehicle, int damage)
 
     /* Get vehicle info from vehicle entity */
     if (vehicle->vehicle != NULL) {
-        const vehicle_state_t *vehicleState =
-            (const vehicle_state_t *)vehicle->vehicle;
+        const vehicle_state_t *vehicleState = (const vehicle_state_t *)vehicle->vehicle;
         vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     }
 
     /* Determine MOD based on vehicle type */
     if (vehicleInfo == NULL) {
         /* Stock fallback uses MOD_SUICIDE when vehicle info is unavailable. */
-        G_Damage(player, vehicle, vehicle, vec3_origin, player->currentOrigin,
-                 damage, 0, MOD_SUICIDE, 0);
+        G_Damage(player, vehicle, vehicle, vec3_origin, player->currentOrigin, damage, 0, MOD_SUICIDE, 0);
         return;
     }
 
@@ -7274,8 +6362,7 @@ void VEH_PlayerDamage(gentity_t *player, gentity_t *vehicle, int damage)
     }
 
     /* Apply damage to player */
-    G_Damage(player, vehicle, attacker, vec3_origin, player->currentOrigin,
-             damage, 0, mod, 0);
+    G_Damage(player, vehicle, attacker, vec3_origin, player->currentOrigin, damage, 0, mod, 0);
 }
 
 /* ------------------------------------------------------------------ */
@@ -7298,8 +6385,7 @@ void VEH_PlayerCollision(gentity_t *vehicle, gentity_t *player)
 {
     gclient_t *client = player->client;
     const vehicle_state_t *vehicleState = (const vehicle_state_t *)vehicle->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        &g_vehicleInfoTable[vehicleState->typeIndex];
+    const vehicleInfo_t *vehicleInfo = &g_vehicleInfoTable[vehicleState->typeIndex];
     vec3_t vehicleVelocity;
     float vehicleSpeed;
     vec3_t direction;
@@ -7344,17 +6430,14 @@ void VEH_PlayerCollision(gentity_t *vehicle, gentity_t *player)
     /* Calculate speed factor (0.0 to 1.0) */
     knockbackMagnitude = game_compat_veh_length3(knockback);
     if (knockbackMagnitude < VEH_COLLISION_MAX_SPEED) {
-        speedFactor = game_compat_veh_length3(knockback) /
-                      VEH_COLLISION_MAX_SPEED;
+        speedFactor = game_compat_veh_length3(knockback) / VEH_COLLISION_MAX_SPEED;
     } else {
         speedFactor = 1.0f;
     }
     impactSpeedFactor = speedFactor;
 
     /* Calculate damage impulse based on whether vehicle is moving toward player */
-    if (knockback[0] * vehicleState->velocity[0] +
-            knockback[1] * vehicleState->velocity[1] +
-            knockback[2] * vehicleState->velocity[2] >
+    if (knockback[0] * vehicleState->velocity[0] + knockback[1] * vehicleState->velocity[1] + knockback[2] * vehicleState->velocity[2] >
         0.01f) {
         damageImpulse = impactSpeedFactor * VEH_COLLISION_KNOCKBACK_BASE;
     } else {
@@ -7388,60 +6471,41 @@ void VEH_PlayerCollision(gentity_t *vehicle, gentity_t *player)
     knockbackMagnitude = game_compat_veh_length3(knockback);
     if (totalSpeed > knockbackMagnitude * VEH_COLLISION_KNOCKBACK_MULT) {
         VectorNormalize(client->ps.velocity);
-        client->ps.velocity[0] *=
-            game_compat_veh_length3(knockback) *
-            VEH_COLLISION_KNOCKBACK_MULT;
-        client->ps.velocity[1] *=
-            game_compat_veh_length3(knockback) *
-            VEH_COLLISION_KNOCKBACK_MULT;
-        client->ps.velocity[2] *=
-            game_compat_veh_length3(knockback) *
-            VEH_COLLISION_KNOCKBACK_MULT;
+        client->ps.velocity[0] *= game_compat_veh_length3(knockback) * VEH_COLLISION_KNOCKBACK_MULT;
+        client->ps.velocity[1] *= game_compat_veh_length3(knockback) * VEH_COLLISION_KNOCKBACK_MULT;
+        client->ps.velocity[2] *= game_compat_veh_length3(knockback) * VEH_COLLISION_KNOCKBACK_MULT;
     }
 
     /* Set vertical boost based on applied knockback speed */
     knockbackMagnitude = game_compat_veh_length3(knockback);
     if (knockbackMagnitude < VEH_COLLISION_MAX_SPEED) {
-        verticalSpeedFactor =
-            (double)((long double)game_compat_veh_length3(knockback) /
-                     (long double)VEH_COLLISION_MAX_SPEED);
+        verticalSpeedFactor = (double)((long double)game_compat_veh_length3(knockback) / (long double)VEH_COLLISION_MAX_SPEED);
     } else {
         verticalSpeedFactor = 1.0;
     }
-    client->ps.velocity[2] =
-        VEH_COLLISION_VERTICAL_BASE +
-        VEH_COLLISION_VERTICAL_SCALE * pow(verticalSpeedFactor, 2.0);
+    client->ps.velocity[2] = VEH_COLLISION_VERTICAL_BASE + VEH_COLLISION_VERTICAL_SCALE * pow(verticalSpeedFactor, 2.0);
 
     collisionVehicle = vehicle;
-    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] !=
-        ENTITYNUM_NONE) {
-        collisionVehicle =
-            &g_entities[vehicleState->passengerEntityNums
-                             [VEH_PASSENGER_SLOT_DRIVER]];
+    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] != ENTITYNUM_NONE) {
+        collisionVehicle = &g_entities[vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER]];
     }
     if (collisionVehicle->client == NULL) {
         collisionVehicle = vehicle;
     }
 
     /* Check if enough time has passed for collision damage */
-    if (client->lastCollisionDamageTime <
-        level.time - VEH_COLLISION_DAMAGE_COOLDOWN) {
+    if (client->lastCollisionDamageTime < level.time - VEH_COLLISION_DAMAGE_COOLDOWN) {
         vec3_t soundOrigin;
 
         VectorNormalize(knockback);
 
         /* Apply damage */
 #if EMULATE_X87
-        VEH_PlayerDamage(
-            player, vehicle,
-            x87f_store_i32_trunc(x87f_load_f32(damageImpulse)));
+        VEH_PlayerDamage(player, vehicle, x87f_store_i32_trunc(x87f_load_f32(damageImpulse)));
 #elif defined(__x86_64__)
-        VEH_PlayerDamage(
-            player, vehicle,
-            CODUO_X87_TRUNCATE_I32((long double)damageImpulse));
+        VEH_PlayerDamage(player, vehicle, CODUO_X87_TRUNCATE_I32((long double)damageImpulse));
 #else
-        VEH_PlayerDamage(player, vehicle,
-                         game_compat_veh_round_to_int(damageImpulse));
+        VEH_PlayerDamage(player, vehicle, game_compat_veh_round_to_int(damageImpulse));
 #endif
 
         /* The original Linux body at VEH_PlayerCollision+0x52d tests bit 1
@@ -7457,15 +6521,12 @@ void VEH_PlayerCollision(gentity_t *vehicle, gentity_t *player)
             soundOffset[0] = 0.0f;
             soundOffset[1] = 0.0f;
             soundOffset[2] = 0.0f;
-            soundOffset[2] +=
-                (1.0f - impactSpeedFactor) * VEH_COLLISION_SOUND_Z_SCALE;
+            soundOffset[2] += (1.0f - impactSpeedFactor) * VEH_COLLISION_SOUND_Z_SCALE;
             soundOrigin[0] = player->currentOrigin[0] + soundOffset[0];
             soundOrigin[1] = player->currentOrigin[1] + soundOffset[1];
             soundOrigin[2] = player->currentOrigin[2] + soundOffset[2];
 
-            soundEnt =
-                G_PlaySoundAliasAtPoint(soundOrigin,
-                                        vehicleInfo->hitPersonSound);
+            soundEnt = G_PlaySoundAliasAtPoint(soundOrigin, vehicleInfo->hitPersonSound);
             soundEnt->svFlags |= SVF_LOOPED_FX;
         }
 
@@ -7480,9 +6541,7 @@ static long double game_compat_veh_dot3(const vec3_t a, const vec3_t b)
     /* long double return: the original keeps these dot products on the
      * 80-bit x87 stack (never rounded to float) through every consuming
      * compare and multiply; mirrors the engine DotProduct idiom. */
-    return ((long double)a[0] * (long double)b[0]) +
-           ((long double)a[1] * (long double)b[1]) +
-           ((long double)a[2] * (long double)b[2]);
+    return ((long double)a[0] * (long double)b[0]) + ((long double)a[1] * (long double)b[1]) + ((long double)a[2] * (long double)b[2]);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
@@ -7501,19 +6560,10 @@ static void game_compat_veh_copy3(vec3_t out, const vec3_t in)
 qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)ent->vehicle;
-    const vehicleInfo_t *vehicleInfo =
-        game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
+    const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     const float dismountSideOffset = game_compat_veh_dismount_side_offset(vehicleInfo);
-    const vec3_t traceMins = {
-        VEH_SOLID_TRACE_MINS_XY,
-        VEH_SOLID_TRACE_MINS_XY,
-        VEH_SOLID_TRACE_MIN_Z
-    };
-    const vec3_t traceMaxs = {
-        VEH_SOLID_TRACE_MAX_XY,
-        VEH_SOLID_TRACE_MAX_XY,
-        VEH_SOLID_TRACE_MAX_Z
-    };
+    const vec3_t traceMins = {VEH_SOLID_TRACE_MINS_XY, VEH_SOLID_TRACE_MINS_XY, VEH_SOLID_TRACE_MIN_Z};
+    const vec3_t traceMaxs = {VEH_SOLID_TRACE_MAX_XY, VEH_SOLID_TRACE_MAX_XY, VEH_SOLID_TRACE_MAX_Z};
     trace_t trace;
     trace_t bestTrace;
     vec3_t initialMins;
@@ -7532,20 +6582,13 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
         return qtrue;
     }
 
-    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] ==
-            ENTITYNUM_NONE &&
-        vehicleState->viewClampTargetAngles[0] ==
-            vehicleState->previousPhysicsState.viewClampTargetAngles[0] &&
-        vehicleState->viewClampTargetAngles[1] ==
-            vehicleState->previousPhysicsState.viewClampTargetAngles[1] &&
-        vehicleState->viewClampTargetAngles[2] ==
-            vehicleState->previousPhysicsState.viewClampTargetAngles[2] &&
-        vehicleState->origin[0] ==
-            vehicleState->previousPhysicsState.origin[0] &&
-        vehicleState->origin[1] ==
-            vehicleState->previousPhysicsState.origin[1] &&
-        vehicleState->origin[2] ==
-            vehicleState->previousPhysicsState.origin[2]) {
+    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] == ENTITYNUM_NONE &&
+        vehicleState->viewClampTargetAngles[0] == vehicleState->previousPhysicsState.viewClampTargetAngles[0] &&
+        vehicleState->viewClampTargetAngles[1] == vehicleState->previousPhysicsState.viewClampTargetAngles[1] &&
+        vehicleState->viewClampTargetAngles[2] == vehicleState->previousPhysicsState.viewClampTargetAngles[2] &&
+        vehicleState->origin[0] == vehicleState->previousPhysicsState.origin[0] &&
+        vehicleState->origin[1] == vehicleState->previousPhysicsState.origin[1] &&
+        vehicleState->origin[2] == vehicleState->previousPhysicsState.origin[2]) {
         return qtrue;
     }
 
@@ -7566,9 +6609,7 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
     initialOrigin[0] = ent->currentOrigin[0];
     initialOrigin[1] = ent->currentOrigin[1];
     initialOrigin[2] = ent->currentOrigin[2] + VEH_SOLID_STANDOFF;
-    trap_Trace(&trace, initialOrigin, initialMins, initialMaxs,
-               initialOrigin, ent->s.number,
-               ent->clipmask | VEH_SOLID_INITIAL_CONTENTS);
+    trap_Trace(&trace, initialOrigin, initialMins, initialMaxs, initialOrigin, ent->s.number, ent->clipmask | VEH_SOLID_INITIAL_CONTENTS);
     if (trace.fraction == 1.0f && trace.startsolid == 0) {
         return qtrue;
     }
@@ -7595,12 +6636,9 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
         sweepDelta[1] += (vehicleInfo->stepSize + 2.0f) * axis[2][1];
         sweepDelta[2] += (vehicleInfo->stepSize + 2.0f) * axis[2][2];
 
-        offset[0] = (dismountSideOffset - VEH_SOLID_STANDOFF) *
-                    vehCheckSolidOffsets[sweep][0];
-        offset[1] = (dismountSideOffset - VEH_SOLID_STANDOFF) *
-                    vehCheckSolidOffsets[sweep][1];
-        offset[2] = (dismountSideOffset - VEH_SOLID_STANDOFF) *
-                    vehCheckSolidOffsets[sweep][2];
+        offset[0] = (dismountSideOffset - VEH_SOLID_STANDOFF) * vehCheckSolidOffsets[sweep][0];
+        offset[1] = (dismountSideOffset - VEH_SOLID_STANDOFF) * vehCheckSolidOffsets[sweep][1];
+        offset[2] = (dismountSideOffset - VEH_SOLID_STANDOFF) * vehCheckSolidOffsets[sweep][2];
 
         if (vehCheckSolidOffsets[sweep][0] > 0.0f) {
             offset[0] = vehicleInfo->dismountForwardOffset;
@@ -7626,8 +6664,7 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             vec3_t end;
             int traceMask;
 
-            if (sweepFraction >= 1.0f ||
-                bump >= VEH_SOLID_MAX_SLIDE_BUMPS) {
+            if (sweepFraction >= 1.0f || bump >= VEH_SOLID_MAX_SLIDE_BUMPS) {
                 break;
             }
             bump++;
@@ -7635,44 +6672,32 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             end[0] = start[0] + (1.0f - sweepFraction) * sweepDelta[0];
             end[1] = start[1] + (1.0f - sweepFraction) * sweepDelta[1];
             end[2] = start[2] + (1.0f - sweepFraction) * sweepDelta[2];
-            traceMask =
-                (int)((ent->clipmask | VEH_SOLID_BODY_CONTENTS) &
-                      ~ignoredContents) |
-                (int)VEH_SOLID_TRACE_CONTENTS;
-            trap_Trace(&trace, start, traceMins, traceMaxs, end,
-                       ent->s.number, traceMask);
+            traceMask = (int)((ent->clipmask | VEH_SOLID_BODY_CONTENTS) & ~ignoredContents) | (int)VEH_SOLID_TRACE_CONTENTS;
+            trap_Trace(&trace, start, traceMins, traceMaxs, end, ent->s.number, traceMask);
 
-            if (trace.fraction < 1.0f &&
-                trace.entityNum < (uint16_t)level.maxclients) {
+            if (trace.fraction < 1.0f && trace.entityNum < (uint16_t)level.maxclients) {
                 VEH_PlayerCollision(ent, &g_entities[trace.entityNum]);
                 ignoredContents = VEH_SOLID_IGNORED_BODY_MASK;
                 continue;
             }
 
-            if (trace.fraction < 1.0f &&
-                trace.entityNum != ENTITYNUM_WORLD &&
-                game_compat_veh_entity_model_classname(&g_entities[trace.entityNum]) ==
-                    scr_const_script_model) {
+            if (trace.fraction < 1.0f && trace.entityNum != ENTITYNUM_WORLD &&
+                game_compat_veh_entity_model_classname(&g_entities[trace.entityNum]) == scr_const_script_model) {
                 vec3_t inputDir;
 
                 VectorNormalize2(vehicleState->velocity, inputDir);
                 inputDir[0] = -inputDir[0];
                 inputDir[1] = -inputDir[1];
                 inputDir[2] = -inputDir[2];
-                VEH_UpdateScriptedInput(ent, inputDir, 1.0f, 0.0f,
-                                         VEH_SOLID_SCRIPT_PUSH_SPEED);
-                vehicleState->scriptedInputEndTime =
-                    level.time + VEH_SOLID_SCRIPT_PUSH_TIME_MS;
+                VEH_UpdateScriptedInput(ent, inputDir, 1.0f, 0.0f, VEH_SOLID_SCRIPT_PUSH_SPEED);
+                vehicleState->scriptedInputEndTime = level.time + VEH_SOLID_SCRIPT_PUSH_TIME_MS;
                 game_compat_veh_clear_vehicle_velocity(vehicleState);
                 Scr_AddEntity(ent);
-                Scr_Notify(&g_entities[trace.entityNum],
-                           scr_const_trigger, 1);
+                Scr_Notify(&g_entities[trace.entityNum], scr_const_trigger, 1);
                 return qtrue;
             }
 
-            if (trace.entityNum == ENTITYNUM_WORLD &&
-                trace.fraction < 1.0f &&
-                vehicleState->velocity[2] > VEH_SOLID_MIN_FALL_SPEED &&
+            if (trace.entityNum == ENTITYNUM_WORLD && trace.fraction < 1.0f && vehicleState->velocity[2] > VEH_SOLID_MIN_FALL_SPEED &&
                 trace.normal[2] >= VEH_SOLID_GROUND_MIN_Z) {
                 sweepFraction += (1.0f - sweepFraction) * trace.fraction;
                 start[0] = trace.endpos[0] + trace.normal[0];
@@ -7686,14 +6711,11 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
                 break;
             }
 
-            if ((uint32_t)trace.entityNum ==
-                (uint32_t)vehicleState->cachedCollisionEntityNum) {
+            if ((uint32_t)trace.entityNum == (uint32_t)vehicleState->cachedCollisionEntityNum) {
                 gentity_t *cachedEnt = &g_entities[trace.entityNum];
-                vec3_t cachedDelta = {
-                    cachedEnt->currentOrigin[0] - vehicleState->origin[0],
-                    cachedEnt->currentOrigin[1] - vehicleState->origin[1],
-                    cachedEnt->currentOrigin[2] - vehicleState->origin[2]
-                };
+                vec3_t cachedDelta = {cachedEnt->currentOrigin[0] - vehicleState->origin[0],
+                                      cachedEnt->currentOrigin[1] - vehicleState->origin[1],
+                                      cachedEnt->currentOrigin[2] - vehicleState->origin[2]};
 
                 if (game_compat_veh_dot3(cachedDelta, vehicleState->velocity) <= 0.0f) {
                     movingAwayFromCachedEnt = qtrue;
@@ -7717,7 +6739,7 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
         gentity_t *hitEnt = NULL;
         vehicle_state_t *hitState = NULL;
         const vehicleInfo_t *hitInfo = NULL;
-        vec3_t velocityDir = { 0.0f, 0.0f, 0.0f };
+        vec3_t velocityDir = {0.0f, 0.0f, 0.0f};
         float impactSpeedScale;
         float impactFromNormal = 0.0f;
         vec3_t hitDirection;
@@ -7728,13 +6750,10 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
         vehicleState->collisionSweepFraction = bestSweepFraction;
         if (trace.entityNum != ENTITYNUM_WORLD) {
             vehicleState->cachedCollisionEntityNum = trace.entityNum;
-            vehicleState->cachedCollisionDistance =
-                VectorDistance(vehicleState->origin,
-                               g_entities[trace.entityNum].currentOrigin);
+            vehicleState->cachedCollisionDistance = VectorDistance(vehicleState->origin, g_entities[trace.entityNum].currentOrigin);
         }
 
-        memcpy(&vehicleState->origin, &vehicleState->previousPhysicsState,
-               sizeof(vehicleState->previousPhysicsState));
+        memcpy(&vehicleState->origin, &vehicleState->previousPhysicsState, sizeof(vehicleState->previousPhysicsState));
         vehicleState->lastSolidTime = level.time;
         vehicleState->collisionNormal[0] = trace.normal[0];
         vehicleState->collisionNormal[1] = trace.normal[1];
@@ -7746,9 +6765,7 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
         if (game_compat_veh_float_is_non_zero_or_nan(impactSpeedScale)) {
             /* 0x83582..0x83598: maxSpeed * 0.75 stays in the 80-bit divisor
              * chain; only the quotient is rounded. */
-            float speedFraction =
-                impactSpeedScale /
-                (vehicleInfo->maxSpeed * VEH_SOLID_SPEED_SCALE_DENOM);
+            float speedFraction = impactSpeedScale / (vehicleInfo->maxSpeed * VEH_SOLID_SPEED_SCALE_DENOM);
 
             speedFraction = game_compat_veh_clamp_float(speedFraction, 0.0f, 1.0f);
             VectorNormalize2(vehicleState->velocity, velocityDir);
@@ -7757,8 +6774,7 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
              * the sign test is on the dot itself (dot >= 0 yields the
              * speedFraction * 0.0f product). */
             if (game_compat_veh_dot3(velocityDir, trace.normal) < 0.0f) {
-                impactFromNormal =
-                    -game_compat_veh_dot3(velocityDir, trace.normal) * speedFraction;
+                impactFromNormal = -game_compat_veh_dot3(velocityDir, trace.normal) * speedFraction;
             } else {
                 impactFromNormal = speedFraction * 0.0f;
             }
@@ -7773,18 +6789,12 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
 
         if (vehicleState->throttleScale <= 0.0f) {
             float inputScale =
-                game_compat_veh_clamp_float(collisionInputScale * 4.0f,
-                               VEH_SOLID_MIN_SCRIPT_SCALE,
-                               VEH_SOLID_MAX_SCRIPT_SCALE);
+                game_compat_veh_clamp_float(collisionInputScale * 4.0f, VEH_SOLID_MIN_SCRIPT_SCALE, VEH_SOLID_MAX_SCRIPT_SCALE);
             /* 0x83728..0x8375f: fabsl keeps the dot in the 80-bit chain
              * (fabs on the register, no float store before the multiply). */
-            float inputSpeed =
-                VEH_SOLID_INPUT_SPEED_BASE -
-                fabsl(game_compat_veh_dot3(velocityDir, axis[0])) *
-                    VEH_SOLID_INPUT_SPEED_AXIS;
+            float inputSpeed = VEH_SOLID_INPUT_SPEED_BASE - fabsl(game_compat_veh_dot3(velocityDir, axis[0])) * VEH_SOLID_INPUT_SPEED_AXIS;
 
-            VEH_UpdateScriptedInput(ent, trace.normal, inputScale, 0.0f,
-                                     inputSpeed);
+            VEH_UpdateScriptedInput(ent, trace.normal, inputScale, 0.0f, inputSpeed);
         }
 
         if (trace.entityNum != ENTITYNUM_NONE) {
@@ -7795,21 +6805,17 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             }
         }
 
-        if (hitEnt != NULL &&
-            game_compat_veh_entity_model_classname(hitEnt) == scr_const_script_vehicle) {
+        if (hitEnt != NULL && game_compat_veh_entity_model_classname(hitEnt) == scr_const_script_vehicle) {
             hitDirection[0] = hitEnt->currentOrigin[0] - vehicleState->origin[0];
             hitDirection[1] = hitEnt->currentOrigin[1] - vehicleState->origin[1];
             hitDirection[2] = hitEnt->currentOrigin[2] - vehicleState->origin[2];
 
             if (hitState->throttleScale == 0.0f) {
                 float otherInputScale =
-                    game_compat_veh_clamp_float(collisionInputScale * 2.0f,
-                                   VEH_SOLID_MIN_SCRIPT_SCALE,
-                                   VEH_SOLID_MAX_OTHER_SCALE);
+                    game_compat_veh_clamp_float(collisionInputScale * 2.0f, VEH_SOLID_MIN_SCRIPT_SCALE, VEH_SOLID_MAX_OTHER_SCALE);
 
                 VectorNormalize(hitDirection);
-                VEH_UpdateScriptedInput(hitEnt, hitDirection, otherInputScale,
-                                         0.0f, VEH_SOLID_SCRIPT_PUSH_SPEED);
+                VEH_UpdateScriptedInput(hitEnt, hitDirection, otherInputScale, 0.0f, VEH_SOLID_SCRIPT_PUSH_SPEED);
             } else {
                 VectorNormalize(hitDirection);
             }
@@ -7829,44 +6835,29 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
                 hitSpeed = game_compat_veh_length3(hitState->velocity);
                 vehicleSpeed = game_compat_veh_length3(vehicleState->velocity);
 
-                if (vehicleSpeed / vehicleInfo->maxSpeed <
-                    VEH_SOLID_IMPULSE_MIN_SPEED) {
-                    applyImpulse =
-                        VEH_SOLID_IMPULSE_MIN_SPEED * goalBase > hitSpeed;
+                if (vehicleSpeed / vehicleInfo->maxSpeed < VEH_SOLID_IMPULSE_MIN_SPEED) {
+                    applyImpulse = VEH_SOLID_IMPULSE_MIN_SPEED * goalBase > hitSpeed;
                 } else if (vehicleSpeed / vehicleInfo->maxSpeed > 1.0f) {
                     applyImpulse = goalBase > hitSpeed;
                 } else {
-                    applyImpulse = vehicleSpeed / vehicleInfo->maxSpeed *
-                                       goalBase >
-                                   hitSpeed;
+                    applyImpulse = vehicleSpeed / vehicleInfo->maxSpeed * goalBase > hitSpeed;
                 }
 
                 if (applyImpulse) {
-                    hitDirection[0] =
-                        hitEnt->currentOrigin[0] - vehicleState->origin[0];
-                    hitDirection[1] =
-                        hitEnt->currentOrigin[1] - vehicleState->origin[1];
-                    hitDirection[2] =
-                        hitEnt->currentOrigin[2] - vehicleState->origin[2];
+                    hitDirection[0] = hitEnt->currentOrigin[0] - vehicleState->origin[0];
+                    hitDirection[1] = hitEnt->currentOrigin[1] - vehicleState->origin[1];
+                    hitDirection[2] = hitEnt->currentOrigin[2] - vehicleState->origin[2];
                     VectorNormalize(hitDirection);
 
                     for (int component = 0; component < 3; component++) {
-                        if (vehicleSpeed / vehicleInfo->maxSpeed <
-                            VEH_SOLID_IMPULSE_MIN_SPEED) {
+                        if (vehicleSpeed / vehicleInfo->maxSpeed < VEH_SOLID_IMPULSE_MIN_SPEED) {
                             hitState->velocity[component] =
-                                VEH_SOLID_IMPULSE_MIN_SPEED * goalBase *
-                                    hitDirection[component] +
-                                hitState->velocity[component];
-                        } else if (vehicleSpeed / vehicleInfo->maxSpeed >
-                                   1.0f) {
-                            hitState->velocity[component] =
-                                hitDirection[component] * goalBase +
-                                hitState->velocity[component];
+                                VEH_SOLID_IMPULSE_MIN_SPEED * goalBase * hitDirection[component] + hitState->velocity[component];
+                        } else if (vehicleSpeed / vehicleInfo->maxSpeed > 1.0f) {
+                            hitState->velocity[component] = hitDirection[component] * goalBase + hitState->velocity[component];
                         } else {
                             hitState->velocity[component] =
-                                vehicleSpeed / vehicleInfo->maxSpeed *
-                                    goalBase * hitDirection[component] +
-                                hitState->velocity[component];
+                                vehicleSpeed / vehicleInfo->maxSpeed * goalBase * hitDirection[component] + hitState->velocity[component];
                         }
                     }
 
@@ -7874,47 +6865,34 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
                     hitSpeed = game_compat_veh_length3(hitState->velocity);
                     if (hitSpeed > hitInfo->maxSpeed) {
                         VectorNormalize(hitState->velocity);
-                        hitState->velocity[0] =
-                            hitState->velocity[0] * hitInfo->maxSpeed;
-                        hitState->velocity[1] =
-                            hitState->velocity[1] * hitInfo->maxSpeed;
-                        hitState->velocity[2] =
-                            hitState->velocity[2] * hitInfo->maxSpeed;
+                        hitState->velocity[0] = hitState->velocity[0] * hitInfo->maxSpeed;
+                        hitState->velocity[1] = hitState->velocity[1] * hitInfo->maxSpeed;
+                        hitState->velocity[2] = hitState->velocity[2] * hitInfo->maxSpeed;
                     }
                 }
             }
 
             if (game_compat_veh_dot3(hitDirection, vehicleState->velocity) >= 0.0f) {
                 if (hitInfo->maxSpeed <= vehicleInfo->maxSpeed) {
-                    vec3_t velocityDelta = {
-                        hitState->velocity[0] - vehicleState->velocity[0],
-                        hitState->velocity[1] - vehicleState->velocity[1],
-                        hitState->velocity[2] - vehicleState->velocity[2]
-                    };
+                    vec3_t velocityDelta = {hitState->velocity[0] - vehicleState->velocity[0],
+                                            hitState->velocity[1] - vehicleState->velocity[1],
+                                            hitState->velocity[2] - vehicleState->velocity[2]};
                     /* 0x84483..0x848c4: the clamped reduction is never
                      * stored -- each component's chain recomputes it in
                      * 80-bit registers (maxSpeed / 2.0f, negated, times the
                      * direction) and rounds once on the velocity store. */
-                    const float deltaSpeed =
-                        game_compat_veh_length3(velocityDelta);
+                    const float deltaSpeed = game_compat_veh_length3(velocityDelta);
 
-                    if (game_compat_veh_dot3(vehicleState->velocity, hitDirection) >
-                        0.0f) {
+                    if (game_compat_veh_dot3(vehicleState->velocity, hitDirection) > 0.0f) {
                         for (int component = 0; component < 3; component++) {
                             if (deltaSpeed < 0.0f) {
+                                vehicleState->velocity[component] = -0.0f * hitDirection[component] + vehicleState->velocity[component];
+                            } else if (deltaSpeed > vehicleInfo->maxSpeed / 2.0f) {
                                 vehicleState->velocity[component] =
-                                    -0.0f * hitDirection[component] +
-                                    vehicleState->velocity[component];
-                            } else if (deltaSpeed >
-                                       vehicleInfo->maxSpeed / 2.0f) {
-                                vehicleState->velocity[component] =
-                                    -(vehicleInfo->maxSpeed / 2.0f) *
-                                        hitDirection[component] +
-                                    vehicleState->velocity[component];
+                                    -(vehicleInfo->maxSpeed / 2.0f) * hitDirection[component] + vehicleState->velocity[component];
                             } else {
                                 vehicleState->velocity[component] =
-                                    -deltaSpeed * hitDirection[component] +
-                                    vehicleState->velocity[component];
+                                    -deltaSpeed * hitDirection[component] + vehicleState->velocity[component];
                             }
                         }
                         reducedByVehicleImpulse = qtrue;
@@ -7955,10 +6933,8 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
         {
             const double steeringScale = vehicleInfo->steeringRate / 70.0f;
             const double spinFactor = spinScale;
-            const float spinSpeed =
-                game_compat_veh_length3(vehicleState->velocity);
-            const double accelMagnitude =
-                fabsf(vehicleState->acceleration[1]);
+            const float spinSpeed = game_compat_veh_length3(vehicleState->velocity);
+            const double accelMagnitude = fabsf(vehicleState->acceleration[1]);
             double spinProduct;
 
             if (spinSpeed * 0.5f + accelMagnitude < 0.0) {
@@ -7966,31 +6942,20 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             } else if (spinSpeed * 0.5f + accelMagnitude > 80.0) {
                 spinProduct = 80.0 * steeringScale * spinFactor;
             } else {
-                spinProduct = (spinSpeed * 0.5f + accelMagnitude) *
-                              steeringScale * spinFactor;
+                spinProduct = (spinSpeed * 0.5f + accelMagnitude) * steeringScale * spinFactor;
             }
             spinScale = spinProduct;
         }
         if (game_compat_veh_float_is_non_zero_or_nan(spinScale)) {
             /* 0x84de2..0x84e2d: the corner dot, both fabs, and the doubling
              * stay on the x87 stack; one rounding at the store. */
-            vehicleState->acceleration[1] =
-                (1.0f -
-                 fabsl(fabsl(game_compat_veh_dot3(cornerDir, trace.normal)) - 0.5) *
-                     2.0f) *
-                spinScale;
+            vehicleState->acceleration[1] = (1.0f - fabsl(fabsl(game_compat_veh_dot3(cornerDir, trace.normal)) - 0.5) * 2.0f) * spinScale;
         }
 
-        if (!reducedByVehicleImpulse &&
-            (hitEnt == NULL || hitEnt->client == NULL) &&
-            (hitEnt == NULL || hitInfo == NULL ||
-             hitInfo->maxSpeed < vehicleInfo->maxSpeed)) {
+        if (!reducedByVehicleImpulse && (hitEnt == NULL || hitEnt->client == NULL) &&
+            (hitEnt == NULL || hitInfo == NULL || hitInfo->maxSpeed < vehicleInfo->maxSpeed)) {
             vec3_t bounceDir;
-            vec3_t horizontalVelocity = {
-                vehicleState->velocity[0],
-                vehicleState->velocity[1],
-                0.0f
-            };
+            vec3_t horizontalVelocity = {vehicleState->velocity[0], vehicleState->velocity[1], 0.0f};
             /* 0x84ec0..0x84f51: sqrt of the double-rounded dot; the floor
              * test is !(len > 10) so an unordered compare also floors. */
             float bounceSpeed = game_compat_veh_length3(horizontalVelocity);
@@ -8009,32 +6974,22 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             }
 
             if (game_compat_veh_dot3(bounceDir, vehicleState->velocity) < 0.0f) {
-                VEH_ClipVelocity(vehicleState->velocity, bounceDir,
-                                 vehicleState->velocity);
+                VEH_ClipVelocity(vehicleState->velocity, bounceDir, vehicleState->velocity);
                 /* 0x8508c..0x8528a: the push term is never stored -- each
                  * component's chain keeps it in 80-bit registers and rounds
                  * once on the velocity store. */
                 for (int component = 0; component < 3; component++) {
-                    if (bounceSpeed / vehicleInfo->maxSpeed *
-                            VEH_SOLID_BOUNCE_SPEED * VEH_SOLID_BOUNCE_SCALE >
-                        VEH_SOLID_BOUNCE_MIN_PUSH) {
+                    if (bounceSpeed / vehicleInfo->maxSpeed * VEH_SOLID_BOUNCE_SPEED * VEH_SOLID_BOUNCE_SCALE > VEH_SOLID_BOUNCE_MIN_PUSH) {
                         vehicleState->velocity[component] =
-                            bounceSpeed / vehicleInfo->maxSpeed *
-                                VEH_SOLID_BOUNCE_SPEED *
-                                VEH_SOLID_BOUNCE_SCALE *
-                                bounceDir[component] +
+                            bounceSpeed / vehicleInfo->maxSpeed * VEH_SOLID_BOUNCE_SPEED * VEH_SOLID_BOUNCE_SCALE * bounceDir[component] +
                             vehicleState->velocity[component];
                     } else {
                         vehicleState->velocity[component] =
-                            VEH_SOLID_BOUNCE_MIN_PUSH *
-                                bounceDir[component] +
-                            vehicleState->velocity[component];
+                            VEH_SOLID_BOUNCE_MIN_PUSH * bounceDir[component] + vehicleState->velocity[component];
                     }
                 }
             } else {
-                const float clampedSpeed =
-                    game_compat_veh_clamp_float(bounceSpeed, VEH_SOLID_BOUNCE_MIN_SPEED,
-                                   VEH_SOLID_BOUNCE_MAX_SPEED);
+                const float clampedSpeed = game_compat_veh_clamp_float(bounceSpeed, VEH_SOLID_BOUNCE_MIN_SPEED, VEH_SOLID_BOUNCE_MAX_SPEED);
 
                 vehicleState->velocity[0] = bounceDir[0] * clampedSpeed;
                 vehicleState->velocity[1] = bounceDir[1] * clampedSpeed;
@@ -8042,35 +6997,26 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             }
         }
 
-        vehicleState->scriptedInputEndTime =
-            level.time + VEH_SOLID_SCRIPT_PUSH_TIME_MS;
+        vehicleState->scriptedInputEndTime = level.time + VEH_SOLID_SCRIPT_PUSH_TIME_MS;
 
         /* 0x85462..0x856a2: the maxSpeed * doorAltSpeed product is never
          * rounded to a float slot -- it stays in the 80-bit chain both in
          * the over-speed compare and in each component scale. */
         {
-            const float solidSpeed =
-                game_compat_veh_length3(vehicleState->velocity);
+            const float solidSpeed = game_compat_veh_length3(vehicleState->velocity);
             qboolean overMaxSpeed;
 
             if (game_compat_veh_float_is_non_zero_or_nan(ent->doorAltSpeed)) {
-                overMaxSpeed = solidSpeed >
-                               vehicleInfo->maxSpeed * ent->doorAltSpeed;
+                overMaxSpeed = solidSpeed > vehicleInfo->maxSpeed * ent->doorAltSpeed;
             } else {
                 overMaxSpeed = solidSpeed > vehicleInfo->maxSpeed;
             }
             if (overMaxSpeed) {
                 VectorNormalize(vehicleState->velocity);
                 if (game_compat_veh_float_is_non_zero_or_nan(ent->doorAltSpeed)) {
-                    vehicleState->velocity[0] =
-                        vehicleInfo->maxSpeed * ent->doorAltSpeed *
-                        vehicleState->velocity[0];
-                    vehicleState->velocity[1] =
-                        vehicleInfo->maxSpeed * ent->doorAltSpeed *
-                        vehicleState->velocity[1];
-                    vehicleState->velocity[2] =
-                        vehicleInfo->maxSpeed * ent->doorAltSpeed *
-                        vehicleState->velocity[2];
+                    vehicleState->velocity[0] = vehicleInfo->maxSpeed * ent->doorAltSpeed * vehicleState->velocity[0];
+                    vehicleState->velocity[1] = vehicleInfo->maxSpeed * ent->doorAltSpeed * vehicleState->velocity[1];
+                    vehicleState->velocity[2] = vehicleInfo->maxSpeed * ent->doorAltSpeed * vehicleState->velocity[2];
                 } else {
                     vehicleState->velocity[0] *= vehicleInfo->maxSpeed;
                     vehicleState->velocity[1] *= vehicleInfo->maxSpeed;
@@ -8079,53 +7025,35 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             }
         }
 
-        if (g_vehicleEnableCollisionDamage.integer != 0 &&
-            impactFromNormal > 0.5f) {
+        if (g_vehicleEnableCollisionDamage.integer != 0 && impactFromNormal > 0.5f) {
             static const float half = 0.5f;
             /* 0x856ea..0x85721: fistp consumes the 80-bit chain directly;
              * no float rounding before the int truncation. */
 #if EMULATE_X87
-            const x87f halfOffset = x87f_sub(
-                x87f_load_f32(collisionInputScale), x87f_load_f32(half));
-            const int damage = x87f_store_i32_trunc(x87f_mul(
-                x87f_add(halfOffset, halfOffset),
-                x87f_load_f32(vehicleInfo->collisionDamageScale)));
-#elif defined(__x86_64__)
-            register long double halfOffset =
-                (long double)collisionInputScale - (long double)half;
-            const int damage = CODUO_X87_TRUNCATE_I32(
-                (halfOffset + halfOffset) *
-                (long double)vehicleInfo->collisionDamageScale);
-#else
+            const x87f halfOffset = x87f_sub(x87f_load_f32(collisionInputScale), x87f_load_f32(half));
             const int damage =
-                (int)(((collisionInputScale - half) +
-                       (collisionInputScale - half)) *
-                      vehicleInfo->collisionDamageScale);
+                x87f_store_i32_trunc(x87f_mul(x87f_add(halfOffset, halfOffset), x87f_load_f32(vehicleInfo->collisionDamageScale)));
+#elif defined(__x86_64__)
+            register long double halfOffset = (long double)collisionInputScale - (long double)half;
+            const int damage = CODUO_X87_TRUNCATE_I32((halfOffset + halfOffset) * (long double)vehicleInfo->collisionDamageScale);
+#else
+            const int damage = (int)(((collisionInputScale - half) + (collisionInputScale - half)) * vehicleInfo->collisionDamageScale);
 #endif
 
-            G_Damage(ent, ent, ent, trace.normal, trace.endpos, damage, 0,
-                     MOD_COLLISION, 2);
+            G_Damage(ent, ent, ent, trace.normal, trace.endpos, damage, 0, MOD_COLLISION, 2);
         }
 
-        if (vehicleState->lastStableTime <
-            level.time - VEH_SOLID_STUCK_DAMAGE_DELAY_MS) {
-            G_Damage(ent, ent, ent, trace.normal, trace.endpos,
-                     VEH_SOLID_STUCK_DAMAGE, 0, MOD_COLLISION, 2);
-            vehicleState->lastStableTime =
-                level.time + VEH_SOLID_STUCK_DAMAGE_GRACE_MS;
+        if (vehicleState->lastStableTime < level.time - VEH_SOLID_STUCK_DAMAGE_DELAY_MS) {
+            G_Damage(ent, ent, ent, trace.normal, trace.endpos, VEH_SOLID_STUCK_DAMAGE, 0, MOD_COLLISION, 2);
+            vehicleState->lastStableTime = level.time + VEH_SOLID_STUCK_DAMAGE_GRACE_MS;
         }
 
-        if (vehicleState->lastStableTime >
-                level.time - VEH_SOLID_NOTIFY_RECENT_MS &&
-            vehicleState->collisionNotifyTime <
-                level.time - VEH_SOLID_NOTIFY_COOLDOWN_MS &&
-            collisionInputScale > 0.25f &&
+        if (vehicleState->lastStableTime > level.time - VEH_SOLID_NOTIFY_RECENT_MS &&
+            vehicleState->collisionNotifyTime < level.time - VEH_SOLID_NOTIFY_COOLDOWN_MS && collisionInputScale > 0.25f &&
             game_compat_veh_float_is_non_zero_or_nan(game_compat_veh_length3(trace.normal))) {
-            vec3_t notifyPoint = {
-                trace.endpos[0] - VEH_SOLID_STANDOFF * trace.normal[0],
-                trace.endpos[1] - VEH_SOLID_STANDOFF * trace.normal[1],
-                trace.endpos[2] - VEH_SOLID_STANDOFF * trace.normal[2]
-            };
+            vec3_t notifyPoint = {trace.endpos[0] - VEH_SOLID_STANDOFF * trace.normal[0],
+                                  trace.endpos[1] - VEH_SOLID_STANDOFF * trace.normal[1],
+                                  trace.endpos[2] - VEH_SOLID_STANDOFF * trace.normal[2]};
 
             Scr_AddVector(trace.normal);
             Scr_AddVector(notifyPoint);
@@ -8133,11 +7061,8 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             vehicleState->collisionNotifyTime = level.time;
         }
 
-        if (vehicleState->lastStableTime >
-                level.time - VEH_SOLID_NOTIFY_RECENT_MS &&
-            vehicleState->collisionSoundTime <
-                level.time - VEH_SOLID_NOTIFY_COOLDOWN_MS &&
-            vehicleInfo->collisionSound != 0) {
+        if (vehicleState->lastStableTime > level.time - VEH_SOLID_NOTIFY_RECENT_MS &&
+            vehicleState->collisionSoundTime < level.time - VEH_SOLID_NOTIFY_COOLDOWN_MS && vehicleInfo->collisionSound != 0) {
             /* 0x8599d..0x85a09: the offset vector is built in its own float
              * slots (so the z term rounds once there) and then added to the
              * endpos per component. */
@@ -8147,44 +7072,31 @@ qboolean VEH_VerifyPosition(gentity_t *ent, int passNumber)
             soundOffset[0] = 0.0f;
             soundOffset[1] = 0.0f;
             soundOffset[2] = 0.0f;
-            soundOffset[2] +=
-                (1.0f - collisionInputScale) * VEH_SOLID_SOUND_Z_SCALE;
+            soundOffset[2] += (1.0f - collisionInputScale) * VEH_SOLID_SOUND_Z_SCALE;
             soundOrigin[0] = trace.endpos[0] + soundOffset[0];
             soundOrigin[1] = trace.endpos[1] + soundOffset[1];
             soundOrigin[2] = trace.endpos[2] + soundOffset[2];
-            gentity_t *soundEnt =
-                G_PlaySoundAliasAtPoint(soundOrigin,
-                                        vehicleInfo->collisionSound);
+            gentity_t *soundEnt = G_PlaySoundAliasAtPoint(soundOrigin, vehicleInfo->collisionSound);
 
             soundEnt->svFlags |= SVF_LOOPED_FX;
             vehicleState->collisionSoundTime = level.time;
         }
 
         if (passNumber > 1) {
-            vec3_t away = {
-                vehicleState->origin[0] - trace.endpos[0],
-                vehicleState->origin[1] - trace.endpos[1],
-                vehicleState->origin[2] - trace.endpos[2]
-            };
+            vec3_t away = {vehicleState->origin[0] - trace.endpos[0], vehicleState->origin[1] - trace.endpos[1],
+                           vehicleState->origin[2] - trace.endpos[2]};
 
             VectorNormalize(away);
-            vehicleState->velocity[0] =
-                away[0] * (vehicleInfo->maxSpeed /
-                           VEH_SOLID_SECOND_PASS_SPEED_DIVISOR);
-            vehicleState->velocity[1] =
-                away[1] * (vehicleInfo->maxSpeed /
-                           VEH_SOLID_SECOND_PASS_SPEED_DIVISOR);
-            vehicleState->velocity[2] =
-                away[2] * (vehicleInfo->maxSpeed /
-                           VEH_SOLID_SECOND_PASS_SPEED_DIVISOR);
+            vehicleState->velocity[0] = away[0] * (vehicleInfo->maxSpeed / VEH_SOLID_SECOND_PASS_SPEED_DIVISOR);
+            vehicleState->velocity[1] = away[1] * (vehicleInfo->maxSpeed / VEH_SOLID_SECOND_PASS_SPEED_DIVISOR);
+            vehicleState->velocity[2] = away[2] * (vehicleInfo->maxSpeed / VEH_SOLID_SECOND_PASS_SPEED_DIVISOR);
         }
 
         return qfalse;
     }
 
     vehicleState->collisionSweepFraction = closestSweepFraction;
-    if (!movingAwayFromCachedEnt &&
-        vehicleState->cachedCollisionEntityNum != ENTITYNUM_NONE) {
+    if (!movingAwayFromCachedEnt && vehicleState->cachedCollisionEntityNum != ENTITYNUM_NONE) {
         vehicleState->cachedCollisionEntityNum = ENTITYNUM_NONE;
         vehicleState->cachedCollisionDistance = VEH_COLLISION_CACHE_DISTANCE_RESET;
     }
@@ -8213,86 +7125,63 @@ void VEH_UpdateAim(gentity_t *ent)
     float clampedYaw;
     DObjSkelMat boneMatrix;
 
-    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] !=
-        ENTITYNUM_NONE) {
-        passenger = &g_entities[
-            vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER]];
+    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] != ENTITYNUM_NONE) {
+        passenger = &g_entities[vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER]];
     }
 
-    if (vehicleInfo->primaryTurnRate == 0.0f &&
-        vehicleInfo->primaryActiveSound != 0) {
+    if (vehicleInfo->primaryTurnRate == 0.0f && vehicleInfo->primaryActiveSound != 0) {
         if (g_vehicleHorns.integer != 0) {
-            if (passenger == NULL ||
-                (passenger->client->currentButtons & VEH_CLIENT_FIRE_BUTTON) == 0 ||
+            if (passenger == NULL || (passenger->client->currentButtons & VEH_CLIENT_FIRE_BUTTON) == 0 ||
                 vehicleState->altOverheating != 0) {
-                game_compat_veh_advance_turret_state(vehicleState,
-                                       VEH_TURRET_ACTIVITY_PRIMARY);
+                game_compat_veh_advance_turret_state(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY);
             } else {
-                game_compat_veh_set_turret_activity_state(vehicleState,
-                                           VEH_TURRET_ACTIVITY_PRIMARY,
-                                           VEH_TURRET_STATE_ACTIVE);
+                game_compat_veh_set_turret_activity_state(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY, VEH_TURRET_STATE_ACTIVE);
                 vehicleState->altHeat += 0.04f;
             }
         }
         return;
     }
 
-    if (ent->vehiclePrimaryDisabled != 0 ||
-        vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] ==
-            ENTITYNUM_NONE ||
-        ent->health <= 0 ||
-        vehicleInfo->primaryTurnRate == 0.0f) {
+    if (ent->vehiclePrimaryDisabled != 0 || vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_DRIVER] == ENTITYNUM_NONE ||
+        ent->health <= 0 || vehicleInfo->primaryTurnRate == 0.0f) {
         game_compat_veh_advance_turret_state(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY);
         return;
     }
 
-    if (vehicleState->primaryTurretTagIndex < 0 ||
-        passenger == NULL) {
+    if (vehicleState->primaryTurretTagIndex < 0 || passenger == NULL) {
         return;
     }
 
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->primaryTurretTagIndex, &boneMatrix);
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->primaryTurretTagIndex, &boneMatrix);
 
     game_compat_veh_build_vehicle_local_angles(vehicleState, vehicleAngles);
     game_compat_veh_build_passenger_aim_angles(passenger, passengerAngles);
     game_compat_veh_aim_angles_in_vehicle_space(passengerAngles, vehicleAngles, localAimAngles);
 
-    currentAngles[0] =
-        ent->s.vehicleTurret.primaryPitch;
+    currentAngles[0] = ent->s.vehicleTurret.primaryPitch;
     currentAngles[1] = game_compat_veh_entity_primary_yaw(ent);
     currentAngles[2] = 0.0f;
     AnglesSubtract(localAimAngles, currentAngles, angleDelta);
     angleDelta[0] = fabsf(angleDelta[0]);
     angleDelta[1] = fabsf(angleDelta[1]);
 
-    desiredPitch = VEH_TrackAngle(localAimAngles[0], currentAngles[0],
-                                  vehicleInfo->primaryTurnRate);
-    desiredYaw = VEH_TrackAngle(localAimAngles[1], currentAngles[1],
-                                vehicleInfo->primaryTurnRate);
+    desiredPitch = VEH_TrackAngle(localAimAngles[0], currentAngles[0], vehicleInfo->primaryTurnRate);
+    desiredYaw = VEH_TrackAngle(localAimAngles[1], currentAngles[1], vehicleInfo->primaryTurnRate);
 
-    clampedPitch = game_compat_veh_clamp_float_symmetric(
-        desiredPitch,
-        vehicleInfo->primaryPitchLimitNeg,
-        vehicleInfo->primaryPitchLimitPos);
+    clampedPitch =
+        game_compat_veh_clamp_float_symmetric(desiredPitch, vehicleInfo->primaryPitchLimitNeg, vehicleInfo->primaryPitchLimitPos);
     if (game_compat_veh_float_is_non_zero_or_nan(ent->vehiclePrimaryYawClamp)) {
-        clampedYaw = game_compat_veh_clamp_abs(desiredYaw,
-                                  fabsf(ent->vehiclePrimaryYawClamp));
+        clampedYaw = game_compat_veh_clamp_abs(desiredYaw, fabsf(ent->vehiclePrimaryYawClamp));
     } else {
-        clampedYaw = game_compat_veh_clamp_float_symmetric(
-            desiredYaw,
-            vehicleInfo->primaryYawLimitNeg,
-            vehicleInfo->primaryYawLimitPos);
+        clampedYaw = game_compat_veh_clamp_float_symmetric(desiredYaw, vehicleInfo->primaryYawLimitNeg, vehicleInfo->primaryYawLimitPos);
     }
 
     ent->s.vehicleTurret.primaryPitch = clampedPitch;
     game_compat_veh_set_entity_primary_yaw(ent, clampedYaw);
-    game_compat_veh_update_turret_activity(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY,
-                             angleDelta[0], angleDelta[1], desiredPitch,
-                             clampedPitch, desiredYaw);
+    game_compat_veh_update_turret_activity(vehicleState, VEH_TURRET_ACTIVITY_PRIMARY, angleDelta[0], angleDelta[1], desiredPitch,
+                                           clampedPitch, desiredYaw);
 
-    if (angleDelta[0] < VEH_TURRET_NOTIFY_EPSILON &&
-        angleDelta[1] < VEH_TURRET_NOTIFY_EPSILON) {
+    if (angleDelta[0] < VEH_TURRET_NOTIFY_EPSILON && angleDelta[1] < VEH_TURRET_NOTIFY_EPSILON) {
         Scr_Notify(ent, scr_const_turret_on_target, 0);
     }
 }
@@ -8318,9 +7207,7 @@ void VEH_UpdateGunnerAim(gentity_t *ent)
     float clampedYaw;
     DObjSkelMat boneMatrix;
 
-    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER] ==
-            ENTITYNUM_NONE ||
-        ent->health < 1) {
+    if (vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER] == ENTITYNUM_NONE || ent->health < 1) {
         game_compat_veh_advance_turret_state(vehicleState, VEH_TURRET_ACTIVITY_GUNNER);
         return;
     }
@@ -8329,41 +7216,30 @@ void VEH_UpdateGunnerAim(gentity_t *ent)
         return;
     }
 
-    gunner = &g_entities[
-        vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER]];
-    G_DObjGetWorldBoneIndexMatrix(
-        ent, vehicleState->gunnerTurretTagIndex, &boneMatrix);
+    gunner = &g_entities[vehicleState->passengerEntityNums[VEH_PASSENGER_SLOT_GUNNER]];
+    G_DObjGetWorldBoneIndexMatrix(ent, vehicleState->gunnerTurretTagIndex, &boneMatrix);
 
     game_compat_veh_build_vehicle_local_angles(vehicleState, vehicleAngles);
     game_compat_veh_build_passenger_aim_angles(gunner, passengerAngles);
     game_compat_veh_aim_angles_in_vehicle_space(passengerAngles, vehicleAngles, localAimAngles);
 
     currentAngles[0] = ent->s.vehicleTurret.gunnerPitch;
-    currentAngles[1] = game_compat_veh_entity_gunner_yaw_base(ent) +
-                       game_compat_veh_entity_primary_yaw(ent);
+    currentAngles[1] = game_compat_veh_entity_gunner_yaw_base(ent) + game_compat_veh_entity_primary_yaw(ent);
     currentAngles[2] = 0.0f;
     AnglesSubtract(localAimAngles, currentAngles, angleDelta);
     angleDelta[0] = fabsf(angleDelta[0]);
     angleDelta[1] = fabsf(angleDelta[1]);
 
-    desiredPitch = VEH_TrackAngle(localAimAngles[0], currentAngles[0],
-                                  vehicleInfo->gunnerTurnRate);
-    desiredYaw = VEH_TrackAngle(localAimAngles[1], currentAngles[1],
-                                vehicleInfo->gunnerTurnRate);
+    desiredPitch = VEH_TrackAngle(localAimAngles[0], currentAngles[0], vehicleInfo->gunnerTurnRate);
+    desiredYaw = VEH_TrackAngle(localAimAngles[1], currentAngles[1], vehicleInfo->gunnerTurnRate);
 
-    clampedPitch = game_compat_veh_clamp_float_symmetric(
-        desiredPitch,
-        vehicleInfo->gunnerPitchLimitNeg,
-        vehicleInfo->gunnerPitchLimitPos);
-    clampedYaw = game_compat_veh_clamp_float_symmetric(
-        desiredYaw, vehicleInfo->gunnerYawLimitNeg,
-        vehicleInfo->gunnerYawLimitPos);
+    clampedPitch = game_compat_veh_clamp_float_symmetric(desiredPitch, vehicleInfo->gunnerPitchLimitNeg, vehicleInfo->gunnerPitchLimitPos);
+    clampedYaw = game_compat_veh_clamp_float_symmetric(desiredYaw, vehicleInfo->gunnerYawLimitNeg, vehicleInfo->gunnerYawLimitPos);
 
     ent->s.vehicleTurret.gunnerPitch = clampedPitch;
     game_compat_veh_set_entity_gunner_yaw_base(ent, clampedYaw - game_compat_veh_entity_primary_yaw(ent));
-    game_compat_veh_update_turret_activity(vehicleState, VEH_TURRET_ACTIVITY_GUNNER,
-                             angleDelta[0], angleDelta[1], desiredPitch,
-                             clampedPitch, desiredYaw);
+    game_compat_veh_update_turret_activity(vehicleState, VEH_TURRET_ACTIVITY_GUNNER, angleDelta[0], angleDelta[1], desiredPitch,
+                                           clampedPitch, desiredYaw);
 }
 
 /* ------------------------------------------------------------------ */
@@ -8383,13 +7259,9 @@ void VEH_UpdateBody(gentity_t *ent)
          * (0x400921fb54442d18) and double 180, rounded to double at the
          * call, and the sin result is rounded to float before the
          * multiply. */
-        const float throttleRatio = vehicleState->throttleScale /
-                                    vehicleState->throttleScalePrevious;
+        const float throttleRatio = vehicleState->throttleScale / vehicleState->throttleScalePrevious;
         const float phase =
-            (float)CoduoLibm_Sin((double)(
-                (long double)vehicleState->brakeScale *
-                3.141592653589793L / 180.0L)) *
-            throttleRatio;
+            (float)CoduoLibm_Sin((double)((long double)vehicleState->brakeScale * 3.141592653589793L / 180.0L)) * throttleRatio;
 
         forward = phase * vehicleState->localAccel.components.forward;
         vertical = phase * vehicleState->localAccel.components.vertical;
@@ -8404,10 +7276,8 @@ void VEH_UpdateBody(gentity_t *ent)
     forward += vehicleState->externalVelocity[0];
     vertical += vehicleState->externalVelocity[2];
 
-    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[0],
-                            game_compat_veh_motion_byte_from_axis(forward));
-    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[2],
-                            game_compat_veh_motion_byte_from_axis(vertical));
+    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[0], game_compat_veh_motion_byte_from_axis(forward));
+    game_compat_veh_set_float_slot_int_bits(&ent->s.loopedFxForward[2], game_compat_veh_motion_byte_from_axis(vertical));
 }
 
 /* ------------------------------------------------------------------ */
@@ -8415,15 +7285,10 @@ void VEH_UpdateBody(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x95b90, a5b90_FUN_000a5b90.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-void VP_DebugPathSegment(const vec3_t start, const vec3_t end,
-                         qboolean flushSegment)
+void VP_DebugPathSegment(const vec3_t start, const vec3_t end, qboolean flushSegment)
 {
     static const vec4_t color = {1.0f, 0.0f, 0.0f, 1.0f};
-    vec3_t direction = {
-        end[0] - start[0],
-        end[1] - start[1],
-        end[2] - start[2]
-    };
+    vec3_t direction = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
 
     VectorNormalize(direction);
 
@@ -8439,19 +7304,13 @@ void VP_DebugPathSegment(const vec3_t start, const vec3_t end,
      * fucompp (no float spill in the ref build).  The branch at
      * 0x95c8d flushes only for ordered dot < K, so unordered values coalesce. */
 #if EMULATE_X87
-    if (!x87f_lt(
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(direction[0]),
-                                       x87f_load_f32(vehDebugPathSegmentDir[0])),
-                              x87f_mul(x87f_load_f32(direction[1]),
-                                       x87f_load_f32(vehDebugPathSegmentDir[1]))),
-                     x87f_mul(x87f_load_f32(direction[2]),
-                              x87f_load_f32(vehDebugPathSegmentDir[2]))),
-            x87f_load_f32(VEH_PATH_DEBUG_SEGMENT_DOT)) &&
+    if (!x87f_lt(x87f_add(x87f_add(x87f_mul(x87f_load_f32(direction[0]), x87f_load_f32(vehDebugPathSegmentDir[0])),
+                                   x87f_mul(x87f_load_f32(direction[1]), x87f_load_f32(vehDebugPathSegmentDir[1]))),
+                          x87f_mul(x87f_load_f32(direction[2]), x87f_load_f32(vehDebugPathSegmentDir[2]))),
+                 x87f_load_f32(VEH_PATH_DEBUG_SEGMENT_DOT)) &&
         !flushSegment) {
 #else
-    if (!(direction[0] * vehDebugPathSegmentDir[0] +
-              direction[1] * vehDebugPathSegmentDir[1] +
-              direction[2] * vehDebugPathSegmentDir[2] <
+    if (!(direction[0] * vehDebugPathSegmentDir[0] + direction[1] * vehDebugPathSegmentDir[1] + direction[2] * vehDebugPathSegmentDir[2] <
           VEH_PATH_DEBUG_SEGMENT_DOT) &&
         !flushSegment) {
 #endif
@@ -8470,8 +7329,7 @@ void VP_DebugPathSegment(const vec3_t start, const vec3_t end,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x95d7e, a5d7e_FUN_000a5d7e.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-void VP_ParseDynamicVehicleNodeField(const char *key, const char *value,
-                                     const vehicle_path_node_t *node)
+void VP_ParseDynamicVehicleNodeField(const char *key, const char *value, const vehicle_path_node_t *node)
 {
     int fieldType;
     uint16_t fieldName = Scr_FindField(key, &fieldType);
@@ -8494,8 +7352,7 @@ void VP_ParseDynamicVehicleNodeField(const char *key, const char *value,
         Scr_AddInt(atoi(value));
     }
 
-    Scr_SetDynamicEntityField(node->scriptObjectId,
-                              SCRIPT_OBJECT_VEHICLE_NODE, fieldName);
+    Scr_SetDynamicEntityField(node->scriptObjectId, SCRIPT_OBJECT_VEHICLE_NODE, fieldName);
 }
 
 /* ------------------------------------------------------------------ */
@@ -8503,8 +7360,7 @@ void VP_ParseDynamicVehicleNodeField(const char *key, const char *value,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x95e32, a5e32_FUN_000a5e32.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-void VP_ParseVehicleNodeField(const char *key, const char *value,
-                              vehicle_path_node_t *node)
+void VP_ParseVehicleNodeField(const char *key, const char *value, vehicle_path_node_t *node)
 {
     const vehicle_node_spawn_field_t *field;
     uint8_t *base;
@@ -8644,9 +7500,7 @@ int VP_GetNodeIndex(uint16_t targetname, const vec3_t origin)
             return index;
         }
 
-        if (node->origin[0] == origin[0] &&
-            node->origin[1] == origin[1] &&
-            node->origin[2] == origin[2]) {
+        if (node->origin[0] == origin[0] && node->origin[1] == origin[1] && node->origin[2] == origin[2]) {
             return index;
         }
     }
@@ -8681,8 +7535,7 @@ float VP_GetNodeSpeed(int16_t nodeIndex)
                 previousSpeed = previousNode->speed;
                 break;
             }
-            if (previousNode->previousNodeIndex < 0 ||
-                previousNode->previousNodeIndex == nodeIndex) {
+            if (previousNode->previousNodeIndex < 0 || previousNode->previousNodeIndex == nodeIndex) {
                 break;
             }
             previousNode = game_compat_veh_path_node_at(previousNode->previousNodeIndex);
@@ -8695,8 +7548,7 @@ float VP_GetNodeSpeed(int16_t nodeIndex)
             nextSpeed = nextNode->speed;
             break;
         }
-        if (nextNode->nextNodeIndex < 0 ||
-            nextNode->nextNodeIndex == nodeIndex) {
+        if (nextNode->nextNodeIndex < 0 || nextNode->nextNodeIndex == nodeIndex) {
             break;
         }
         nextDistance += nextNode->segmentLength;
@@ -8724,12 +7576,9 @@ float VP_GetNodeSpeed(int16_t nodeIndex)
         /* distanceSum is a single add stored to a float (native); the divide and
          * the (next-prev)*fraction+prev blend are width-sensitive -> shim. */
 #if EMULATE_X87
-        fraction = x87f_store_f32(x87f_div(x87f_load_f32(previousDistance),
-                                           x87f_load_f32(distanceSum)));
-        return x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(nextSpeed), x87f_load_f32(previousSpeed)),
-                     x87f_load_f32(fraction)),
-            x87f_load_f32(previousSpeed)));
+        fraction = x87f_store_f32(x87f_div(x87f_load_f32(previousDistance), x87f_load_f32(distanceSum)));
+        return x87f_store_f32(x87f_add(x87f_mul(x87f_sub(x87f_load_f32(nextSpeed), x87f_load_f32(previousSpeed)), x87f_load_f32(fraction)),
+                                       x87f_load_f32(previousSpeed)));
 #else
         fraction = previousDistance / distanceSum;
         return (nextSpeed - previousSpeed) * fraction + previousSpeed;
@@ -8764,8 +7613,7 @@ float VP_GetNodeLookAhead(int16_t nodeIndex)
                 previousLookAhead = previousNode->lookAhead;
                 break;
             }
-            if (previousNode->previousNodeIndex < 0 ||
-                previousNode->previousNodeIndex == nodeIndex) {
+            if (previousNode->previousNodeIndex < 0 || previousNode->previousNodeIndex == nodeIndex) {
                 break;
             }
             previousNode = game_compat_veh_path_node_at(previousNode->previousNodeIndex);
@@ -8778,8 +7626,7 @@ float VP_GetNodeLookAhead(int16_t nodeIndex)
             nextLookAhead = nextNode->lookAhead;
             break;
         }
-        if (nextNode->nextNodeIndex < 0 ||
-            nextNode->nextNodeIndex == nodeIndex) {
+        if (nextNode->nextNodeIndex < 0 || nextNode->nextNodeIndex == nodeIndex) {
             break;
         }
         nextDistance += nextNode->segmentLength;
@@ -8807,17 +7654,13 @@ float VP_GetNodeLookAhead(int16_t nodeIndex)
         /* same shape as VP_GetNodeSpeed: native add + guard, shim the divide and
          * the (next-prev)*fraction+prev blend. */
 #if EMULATE_X87
-        fraction = x87f_store_f32(x87f_div(x87f_load_f32(previousDistance),
-                                           x87f_load_f32(distanceSum)));
-        return x87f_store_f32(x87f_add(
-            x87f_mul(x87f_sub(x87f_load_f32(nextLookAhead),
-                              x87f_load_f32(previousLookAhead)),
-                     x87f_load_f32(fraction)),
-            x87f_load_f32(previousLookAhead)));
+        fraction = x87f_store_f32(x87f_div(x87f_load_f32(previousDistance), x87f_load_f32(distanceSum)));
+        return x87f_store_f32(
+            x87f_add(x87f_mul(x87f_sub(x87f_load_f32(nextLookAhead), x87f_load_f32(previousLookAhead)), x87f_load_f32(fraction)),
+                     x87f_load_f32(previousLookAhead)));
 #else
         fraction = previousDistance / distanceSum;
-        return (nextLookAhead - previousLookAhead) * fraction +
-               previousLookAhead;
+        return (nextLookAhead - previousLookAhead) * fraction + previousLookAhead;
 #endif
     }
 }
@@ -8834,8 +7677,8 @@ void VP_GetNodeAngles(int16_t nodeIndex, vec3_t outAngles)
     const vehicle_path_node_t *nextNode;
     float previousDistance = 0.0f;
     float nextDistance = 0.0f;
-    vec3_t previousAngles = { 0.0f, 0.0f, 0.0f };
-    vec3_t nextAngles = { 0.0f, 0.0f, 0.0f };
+    vec3_t previousAngles = {0.0f, 0.0f, 0.0f};
+    vec3_t nextAngles = {0.0f, 0.0f, 0.0f};
 
     if (game_compat_veh_path_node_has_angles(node)) {
         game_compat_veh_path_node_copy_angles(node, outAngles);
@@ -8876,8 +7719,7 @@ void VP_GetNodeAngles(int16_t nodeIndex, vec3_t outAngles)
         }
     }
 
-    if (game_compat_veh_path_vector_is_zero(previousAngles) &&
-        game_compat_veh_path_vector_is_zero(nextAngles)) {
+    if (game_compat_veh_path_vector_is_zero(previousAngles) && game_compat_veh_path_vector_is_zero(nextAngles)) {
         game_compat_veh_path_clear_vector(outAngles);
         return;
     }
@@ -8904,14 +7746,10 @@ void VP_GetNodeAngles(int16_t nodeIndex, vec3_t outAngles)
 
         /* single divide stored to the game_compat_veh_path_lerp_angles float arg -> shim */
 #if EMULATE_X87
-        game_compat_veh_path_lerp_angles(
-            previousAngles, nextAngles,
-            x87f_store_f32(x87f_div(x87f_load_f32(previousDistance),
-                                    x87f_load_f32(distanceSum))),
-            outAngles);
-#else
         game_compat_veh_path_lerp_angles(previousAngles, nextAngles,
-                           previousDistance / distanceSum, outAngles);
+                                         x87f_store_f32(x87f_div(x87f_load_f32(previousDistance), x87f_load_f32(distanceSum))), outAngles);
+#else
+        game_compat_veh_path_lerp_angles(previousAngles, nextAngles, previousDistance / distanceSum, outAngles);
 #endif
     }
 }
@@ -8943,8 +7781,7 @@ float VP_GetPathPositionCurveFraction(const vehicle_path_position_t *position)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x96e9a, a6e9a_FUN_000a6e9a.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-void VP_GetPathPositionAngles(const vehicle_path_position_t *position,
-                              vec3_t outAngles)
+void VP_GetPathPositionAngles(const vehicle_path_position_t *position, vec3_t outAngles)
 {
     const vehicle_path_node_t *node = game_compat_veh_path_node_at(position->nodeIndex);
 
@@ -8955,8 +7792,7 @@ void VP_GetPathPositionAngles(const vehicle_path_position_t *position,
         return;
     }
 
-    const vehicle_path_node_t *nextNode =
-        game_compat_veh_path_node_at(node->nextNodeIndex);
+    const vehicle_path_node_t *nextNode = game_compat_veh_path_node_at(node->nextNodeIndex);
     if (node->useNodeAngles == 0 && nextNode->useNodeAngles == 0) {
         return;
     }
@@ -8979,9 +7815,7 @@ void VP_GetPathPositionAngles(const vehicle_path_position_t *position,
     }
 
     for (int axis = 0; axis < 3; axis++) {
-        outAngles[axis] =
-            AngleNormalize180(LerpAngle(startAngles[axis], endAngles[axis],
-                                        position->fraction));
+        outAngles[axis] = AngleNormalize180(LerpAngle(startAngles[axis], endAngles[axis], position->fraction));
     }
 }
 
@@ -8990,8 +7824,7 @@ void VP_GetPathPositionAngles(const vehicle_path_position_t *position,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x9707e, a707e_FUN_000a707e.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-void VP_CalcPathPosition(const vehicle_path_position_t *position,
-                         vec3_t outOrigin)
+void VP_CalcPathPosition(const vehicle_path_position_t *position, vec3_t outOrigin)
 {
     const vehicle_path_node_t *node = game_compat_veh_path_node_at(position->nodeIndex);
     /* 0x970ac..0x970c4: lookAhead*speed is spilled to its own float slot
@@ -9001,13 +7834,10 @@ void VP_CalcPathPosition(const vehicle_path_position_t *position,
      * fraction*segmentLength + lookAheadDistance is mul+add kept 80-bit until the
      * store (reading the stored lookAheadDistance) -> shim. */
 #if EMULATE_X87
-    float distance = x87f_store_f32(x87f_add(
-        x87f_mul(x87f_load_f32(position->fraction),
-                 x87f_load_f32(node->segmentLength)),
-        x87f_load_f32(lookAheadDistance)));
+    float distance = x87f_store_f32(
+        x87f_add(x87f_mul(x87f_load_f32(position->fraction), x87f_load_f32(node->segmentLength)), x87f_load_f32(lookAheadDistance)));
 #else
-    float distance =
-        position->fraction * node->segmentLength + lookAheadDistance;
+    float distance = position->fraction * node->segmentLength + lookAheadDistance;
 #endif
 
     for (int16_t count = 0; count < vehPathNodeCount; count++) {
@@ -9027,10 +7857,8 @@ void VP_CalcPathPosition(const vehicle_path_position_t *position,
     /* origin[i] + direction[i]*distance: mul then add, 80-bit, one store */
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        outOrigin[i] = x87f_store_f32(x87f_add(
-            x87f_load_f32(node->origin[i]),
-            x87f_mul(x87f_load_f32(node->direction[i]),
-                     x87f_load_f32(distance))));
+        outOrigin[i] =
+            x87f_store_f32(x87f_add(x87f_load_f32(node->origin[i]), x87f_mul(x87f_load_f32(node->direction[i]), x87f_load_f32(distance))));
     }
 #else
     outOrigin[0] = node->origin[0] + node->direction[0] * distance;
@@ -9044,9 +7872,7 @@ void VP_CalcPathPosition(const vehicle_path_position_t *position,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x97194, a7194_FUN_000a7194.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-qboolean VP_ProjectPathPosition(vehicle_path_position_t *position,
-                                const vec3_t projectDirection,
-                                int stopNodeIndex)
+qboolean VP_ProjectPathPosition(vehicle_path_position_t *position, const vec3_t projectDirection, int stopNodeIndex)
 {
     int16_t nodeIndex = position->nodeIndex;
     const vehicle_path_node_t *node = game_compat_veh_path_node_at(nodeIndex);
@@ -9080,33 +7906,21 @@ qboolean VP_ProjectPathPosition(vehicle_path_position_t *position,
         /* deltas are single subs stored to floats (native); each dot is a
          * 3-mul/2-add chain kept 80-bit until its store -> shim. */
 #if EMULATE_X87
-        enterDistance = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(enterDelta[0]),
-                              x87f_load_f32(projectDirection[0])),
-                     x87f_mul(x87f_load_f32(enterDelta[1]),
-                              x87f_load_f32(projectDirection[1]))),
-            x87f_mul(x87f_load_f32(enterDelta[2]),
-                     x87f_load_f32(projectDirection[2]))));
+        enterDistance = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(enterDelta[0]), x87f_load_f32(projectDirection[0])),
+                                                         x87f_mul(x87f_load_f32(enterDelta[1]), x87f_load_f32(projectDirection[1]))),
+                                                x87f_mul(x87f_load_f32(enterDelta[2]), x87f_load_f32(projectDirection[2]))));
 #else
-        enterDistance = enterDelta[0] * projectDirection[0] +
-                        enterDelta[1] * projectDirection[1] +
-                        enterDelta[2] * projectDirection[2];
+        enterDistance = enterDelta[0] * projectDirection[0] + enterDelta[1] * projectDirection[1] + enterDelta[2] * projectDirection[2];
 #endif
         exitDelta[0] = nextNode->origin[0] - position->origin[0];
         exitDelta[1] = nextNode->origin[1] - position->origin[1];
         exitDelta[2] = nextNode->origin[2] - position->origin[2];
 #if EMULATE_X87
-        exitDistance = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(exitDelta[0]),
-                              x87f_load_f32(projectDirection[0])),
-                     x87f_mul(x87f_load_f32(exitDelta[1]),
-                              x87f_load_f32(projectDirection[1]))),
-            x87f_mul(x87f_load_f32(exitDelta[2]),
-                     x87f_load_f32(projectDirection[2]))));
+        exitDistance = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(exitDelta[0]), x87f_load_f32(projectDirection[0])),
+                                                        x87f_mul(x87f_load_f32(exitDelta[1]), x87f_load_f32(projectDirection[1]))),
+                                               x87f_mul(x87f_load_f32(exitDelta[2]), x87f_load_f32(projectDirection[2]))));
 #else
-        exitDistance = exitDelta[0] * projectDirection[0] +
-                       exitDelta[1] * projectDirection[1] +
-                       exitDelta[2] * projectDirection[2];
+        exitDistance = exitDelta[0] * projectDirection[0] + exitDelta[1] * projectDirection[1] + exitDelta[2] * projectDirection[2];
 #endif
 
         if (enterDistance == 0.0f && exitDistance == 0.0f) {
@@ -9121,10 +7935,8 @@ qboolean VP_ProjectPathPosition(vehicle_path_position_t *position,
             /* enterDistance / (enterDistance + exitDistance): the sum is an
              * inline 80-bit add, then divide, stored to fraction -> shim. */
 #if EMULATE_X87
-            fraction = x87f_store_f32(x87f_div(
-                x87f_load_f32(enterDistance),
-                x87f_add(x87f_load_f32(enterDistance),
-                         x87f_load_f32(exitDistance))));
+            fraction =
+                x87f_store_f32(x87f_div(x87f_load_f32(enterDistance), x87f_add(x87f_load_f32(enterDistance), x87f_load_f32(exitDistance))));
 #else
             fraction = enterDistance / (enterDistance + exitDistance);
 #endif
@@ -9150,8 +7962,7 @@ qboolean VP_ProjectPathPosition(vehicle_path_position_t *position,
 /* VERIFIED_DECOMPILER(0x973e0, a73e0_FUN_000a73e0.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
 void VP_UpdatePathPositionTargetNode(vehicle_path_position_t *position)
 {
-    const int16_t nodeIndex =
-        VP_GetNodeIndex(position->targetNode.targetname, NULL);
+    const int16_t nodeIndex = VP_GetNodeIndex(position->targetNode.targetname, NULL);
 
     if (nodeIndex >= 0) {
         VP_CopyNode(&position->targetNode, game_compat_veh_path_node_at(nodeIndex));
@@ -9161,8 +7972,7 @@ void VP_UpdatePathPositionTargetNode(vehicle_path_position_t *position)
 /* VERIFIED_DECOMPILER(0x9743e, a743e_FUN_000a743e.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
 void VP_UpdatePathPositionCachedNode(vehicle_path_position_t *position)
 {
-    const int16_t nodeIndex =
-        VP_GetNodeIndex(position->targetNode.targetname, NULL);
+    const int16_t nodeIndex = VP_GetNodeIndex(position->targetNode.targetname, NULL);
 
     if (nodeIndex >= 0) {
         VP_CopyNode(&position->cachedNode, game_compat_veh_path_node_at(nodeIndex));
@@ -9176,8 +7986,8 @@ void VP_UpdatePathPositionCachedNode(vehicle_path_position_t *position)
 /* VERIFIED_DECOMPILER(0x9749c, a749c_FUN_000a749c.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
 static void VP_DrawVehiclePathPosition(vehicle_path_position_t *position)
 {
-    static const vec4_t currentColor = { 0.0f, 1.0f, 0.0f, 1.0f };
-    static const vec4_t linkColor = { 0.0f, 0.0f, 1.0f, 1.0f };
+    static const vec4_t currentColor = {0.0f, 1.0f, 0.0f, 1.0f};
+    static const vec4_t linkColor = {0.0f, 0.0f, 1.0f, 1.0f};
     vehicle_path_position_t previous;
     vehicle_path_position_t current;
     int lastNodeIndex = -1;
@@ -9263,8 +8073,7 @@ void G_FreeVehiclePaths(void)
     for (int16_t index = 0; index < vehPathNodeCount; index++) {
         vehicle_path_node_t *node = game_compat_veh_path_node_at(index);
 
-        Scr_FreeEntityNum(node->scriptObjectId,
-                          SCRIPT_OBJECT_VEHICLE_NODE);
+        Scr_FreeEntityNum(node->scriptObjectId, SCRIPT_OBJECT_VEHICLE_NODE);
         Scr_SetString(&node->targetname, 0);
         Scr_SetString(&node->target, 0);
     }
@@ -9276,8 +8085,7 @@ void G_FreeVehiclePaths(void)
 void G_FreeVehiclePathsScriptInfo(void)
 {
     for (int16_t index = 0; index < vehPathNodeCount; index++) {
-        Scr_FreeEntityNum(game_compat_veh_path_node_at(index)->scriptObjectId,
-                          SCRIPT_OBJECT_VEHICLE_NODE);
+        Scr_FreeEntityNum(game_compat_veh_path_node_at(index)->scriptObjectId, SCRIPT_OBJECT_VEHICLE_NODE);
     }
 }
 
@@ -9295,8 +8103,7 @@ void G_SetupVehiclePaths(void)
             node->nextNodeIndex = (int16_t)VP_GetNodeIndex(node->target, NULL);
         }
 
-        for (int16_t otherIndex = 0; otherIndex < vehPathNodeCount;
-             otherIndex++) {
+        for (int16_t otherIndex = 0; otherIndex < vehPathNodeCount; otherIndex++) {
             const vehicle_path_node_t *otherNode = game_compat_veh_path_node_at(otherIndex);
 
             if (index != otherIndex && node->targetname == otherNode->target) {
@@ -9317,8 +8124,7 @@ void G_SetupVehiclePaths(void)
         vehicle_path_node_t *node = game_compat_veh_path_node_at(index);
 
         if (node->nextNodeIndex >= 0) {
-            const vehicle_path_node_t *nextNode =
-                game_compat_veh_path_node_at(node->nextNodeIndex);
+            const vehicle_path_node_t *nextNode = game_compat_veh_path_node_at(node->nextNodeIndex);
 
             node->direction[0] = nextNode->origin[0] - node->origin[0];
             node->direction[1] = nextNode->origin[1] - node->origin[1];
@@ -9337,8 +8143,7 @@ void G_SetupVehiclePaths(void)
         node->speed = VP_GetNodeSpeed(index);
         node->lookAhead = VP_GetNodeLookAhead(index);
         if (node->speed < 0.0f) {
-            Com_Error(1, VEH_PATH_NODE_NEGATIVE_SPEED_ERROR,
-                      node->origin[0], node->origin[1], node->origin[2]);
+            Com_Error(1, VEH_PATH_NODE_NEGATIVE_SPEED_ERROR, node->origin[0], node->origin[1], node->origin[2]);
         }
 
         if (node->useNodeAngles != 0) {
@@ -9379,8 +8184,7 @@ void G_DrawVehiclePaths(void)
     for (int16_t index = 0; index < vehPathNodeCount; index++) {
         vehicle_path_position_t position;
 
-        if (strcmp(SL_ConvertToString(game_compat_veh_path_node_at(index)->targetname),
-                   pathName) != 0) {
+        if (strcmp(SL_ConvertToString(game_compat_veh_path_node_at(index)->targetname), pathName) != 0) {
             continue;
         }
 
@@ -9437,8 +8241,7 @@ void G_VehSetUpPathPos(vehicle_path_position_t *position, int16_t nodeIndex)
     position->curveFraction = node->useNodeAngles != 0 ? 1.0f : 0.0f;
     memcpy(position->origin, node->origin, sizeof(position->origin));
     memcpy(position->currentAngles, node->angles, sizeof(position->currentAngles));
-    memcpy(position->lookAheadOrigin, node->origin,
-           sizeof(position->lookAheadOrigin));
+    memcpy(position->lookAheadOrigin, node->origin, sizeof(position->lookAheadOrigin));
     VP_InitNode(&position->targetNode, -1);
     VP_InitNode(&position->cachedNode, -1);
 }
@@ -9464,22 +8267,15 @@ int G_VehUpdatePathPos(vehicle_path_position_t *position, int16_t lastNodeIndex)
 
         if (VectorNormalize(pathDelta) > 0.0f) {
             vectoangles(pathDelta, position->currentAngles);
-            position->currentAngles[0] =
-                AngleNormalize180(position->currentAngles[0]);
-            position->currentAngles[1] =
-                AngleNormalize180(position->currentAngles[1]);
-            position->currentAngles[2] =
-                AngleNormalize180(position->currentAngles[2]);
+            position->currentAngles[0] = AngleNormalize180(position->currentAngles[0]);
+            position->currentAngles[1] = AngleNormalize180(position->currentAngles[1]);
+            position->currentAngles[2] = AngleNormalize180(position->currentAngles[2]);
 
-            position->origin[0] +=
-                position->speed * VEH_PHYSICS_FRAME_SECONDS * pathDelta[0];
-            position->origin[1] +=
-                position->speed * VEH_PHYSICS_FRAME_SECONDS * pathDelta[1];
-            position->origin[2] +=
-                position->speed * VEH_PHYSICS_FRAME_SECONDS * pathDelta[2];
+            position->origin[0] += position->speed * VEH_PHYSICS_FRAME_SECONDS * pathDelta[0];
+            position->origin[1] += position->speed * VEH_PHYSICS_FRAME_SECONDS * pathDelta[1];
+            position->origin[2] += position->speed * VEH_PHYSICS_FRAME_SECONDS * pathDelta[2];
 
-            reachedLastNode =
-                VP_ProjectPathPosition(position, pathDelta, lastNodeIndex);
+            reachedLastNode = VP_ProjectPathPosition(position, pathDelta, lastNodeIndex);
             VP_GetPathPositionAngles(position, position->currentAngles);
         } else {
             position->reachedEnd = 1;
@@ -9491,8 +8287,7 @@ int G_VehUpdatePathPos(vehicle_path_position_t *position, int16_t lastNodeIndex)
 }
 
 /* VERIFIED_DECOMPILER(0x98154, a8154_G_VehSetSwitchNode.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-void G_VehSetSwitchNode(vehicle_path_position_t *position,
-                        int16_t fromNodeIndex, int16_t toNodeIndex)
+void G_VehSetSwitchNode(vehicle_path_position_t *position, int16_t fromNodeIndex, int16_t toNodeIndex)
 {
     VP_InitNode(&position->targetNode, -1);
     VP_InitNode(&position->cachedNode, -1);
@@ -9504,14 +8299,10 @@ void G_VehSetSwitchNode(vehicle_path_position_t *position,
         VP_CopyNode(fromNode, &position->targetNode);
         VP_CopyNode(fromNode, &position->cachedNode);
         position->targetNode.nextNodeIndex = toNodeIndex;
-        position->targetNode.direction[0] =
-            toNode->origin[0] - fromNode->origin[0];
-        position->targetNode.direction[1] =
-            toNode->origin[1] - fromNode->origin[1];
-        position->targetNode.direction[2] =
-            toNode->origin[2] - fromNode->origin[2];
-        position->targetNode.segmentLength =
-            VectorNormalize(position->targetNode.direction);
+        position->targetNode.direction[0] = toNode->origin[0] - fromNode->origin[0];
+        position->targetNode.direction[1] = toNode->origin[1] - fromNode->origin[1];
+        position->targetNode.direction[2] = toNode->origin[2] - fromNode->origin[2];
+        position->targetNode.segmentLength = VectorNormalize(position->targetNode.direction);
     }
 }
 
@@ -9536,8 +8327,7 @@ void SP_info_vehicle_node(qboolean useNodeAngles)
     node->useNodeAngles = useNodeAngles;
 
     if (node->targetname == 0) {
-        Com_Error(1, VEH_PATH_NODE_NO_NAME_ERROR, node->origin[0],
-                  node->origin[1], node->origin[2]);
+        Com_Error(1, VEH_PATH_NODE_NO_NAME_ERROR, node->origin[0], node->origin[1], node->origin[2]);
     }
 
     if (node->speed >= 0.0f) {
@@ -9555,8 +8345,7 @@ int16_t GScr_GetVehicleNodeIndex(uint32_t paramIndex)
     int classnum;
     uint32_t objectNum = Scr_GetEntityNum(paramIndex, &classnum);
 
-    if (classnum == SCRIPT_OBJECT_VEHICLE_NODE &&
-        objectNum < (uint32_t)vehPathNodeCount) {
+    if (classnum == SCRIPT_OBJECT_VEHICLE_NODE && objectNum < (uint32_t)vehPathNodeCount) {
         return (int16_t)objectNum;
     }
 
@@ -9571,11 +8360,9 @@ int16_t GScr_GetVehicleNodeIndex(uint32_t paramIndex)
 /* VERIFIED_DECOMPILER(0x983d4, a83d4_GScr_AddFieldsForVehicleNode.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
 void GScr_AddFieldsForVehicleNode(void)
 {
-    const uint16_t classnum =
-        g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].classnum;
+    const uint16_t classnum = g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].classnum;
 
-    for (uint16_t index = 0; vehicleNodeSpawnFields[index].name != 0;
-         index++) {
+    for (uint16_t index = 0; vehicleNodeSpawnFields[index].name != 0; index++) {
         const vehicle_node_spawn_field_t *field = &vehicleNodeSpawnFields[index];
 
         switch (field->type) {
@@ -9604,8 +8391,7 @@ void GScr_GetVehicleNodeField(int entityNum, int fieldIndex)
 {
     const vehicle_node_spawn_field_t *field = &vehicleNodeSpawnFields[fieldIndex];
 
-    Scr_GetGenericField(game_compat_veh_path_node_at(entityNum), field->type,
-                        field->offset);
+    Scr_GetGenericField(game_compat_veh_path_node_at(entityNum), field->type, field->offset);
 }
 
 /* ------------------------------------------------------------------ */
@@ -9617,9 +8403,7 @@ void GScr_GetVehicleNode(void)
 {
     uint16_t value = Scr_GetConstString(0);
     const char *fieldName = Scr_GetString(1);
-    int fieldIndex = (int16_t)Scr_GetOffset(
-        g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].classnum,
-        fieldName);
+    int fieldIndex = (int16_t)Scr_GetOffset(g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].classnum, fieldName);
     vehicle_path_node_t *match = NULL;
 
     if (fieldIndex < 0) {
@@ -9632,9 +8416,7 @@ void GScr_GetVehicleNode(void)
 
     for (int16_t index = 0; index < vehPathNodeCount; index++) {
         vehicle_path_node_t *node = game_compat_veh_path_node_at(index);
-        uint16_t fieldValue =
-            *(uint16_t *)(void *)&((uint8_t *)(void *)node)
-                [vehicleNodeSpawnFields[fieldIndex].offset];
+        uint16_t fieldValue = *(uint16_t *)(void *)&((uint8_t *)(void *)node)[vehicleNodeSpawnFields[fieldIndex].offset];
 
         if (fieldValue == 0 || fieldValue != value) {
             continue;
@@ -9647,8 +8429,7 @@ void GScr_GetVehicleNode(void)
     }
 
     if (match != NULL) {
-        Scr_AddEntityNum(match->scriptObjectId,
-                         SCRIPT_OBJECT_VEHICLE_NODE);
+        Scr_AddEntityNum(match->scriptObjectId, SCRIPT_OBJECT_VEHICLE_NODE);
     }
 }
 
@@ -9661,9 +8442,7 @@ void GScr_GetVehicleNodeArray(void)
 {
     uint16_t value = Scr_GetConstString(0);
     const char *fieldName = Scr_GetString(1);
-    int fieldIndex = (int16_t)Scr_GetOffset(
-        g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].classnum,
-        fieldName);
+    int fieldIndex = (int16_t)Scr_GetOffset(g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].classnum, fieldName);
 
     if (fieldIndex < 0) {
         return;
@@ -9676,13 +8455,10 @@ void GScr_GetVehicleNodeArray(void)
     Scr_MakeArray();
     for (int16_t index = 0; index < vehPathNodeCount; index++) {
         vehicle_path_node_t *node = game_compat_veh_path_node_at(index);
-        uint16_t fieldValue =
-            *(uint16_t *)(void *)&((uint8_t *)(void *)node)
-                [vehicleNodeSpawnFields[fieldIndex].offset];
+        uint16_t fieldValue = *(uint16_t *)(void *)&((uint8_t *)(void *)node)[vehicleNodeSpawnFields[fieldIndex].offset];
 
         if (fieldValue != 0 && fieldValue == value) {
-            Scr_AddEntityNum(node->scriptObjectId,
-                             SCRIPT_OBJECT_VEHICLE_NODE);
+            Scr_AddEntityNum(node->scriptObjectId, SCRIPT_OBJECT_VEHICLE_NODE);
             Scr_AddArray();
         }
     }
@@ -9697,8 +8473,7 @@ void GScr_GetAllVehicleNodes(void)
 {
     Scr_MakeArray();
     for (int16_t index = 0; index < vehPathNodeCount; index++) {
-        Scr_AddEntityNum(game_compat_veh_path_node_at(index)->scriptObjectId,
-                         SCRIPT_OBJECT_VEHICLE_NODE);
+        Scr_AddEntityNum(game_compat_veh_path_node_at(index)->scriptObjectId, SCRIPT_OBJECT_VEHICLE_NODE);
         Scr_AddArray();
     }
 }
@@ -9724,14 +8499,12 @@ void VEH_UpdatePath(gentity_t *ent)
         return;
     }
 
-    if (game_compat_veh_path_speed_mode(vehicleState) ==
-        VEH_PATH_SPEED_MODE_NONE) {
+    if (game_compat_veh_path_speed_mode(vehicleState) == VEH_PATH_SPEED_MODE_NONE) {
         game_compat_veh_set_entity_current_speed(ent, cursor->speed);
     } else {
         float targetSpeed;
 
-        if (game_compat_veh_path_speed_mode(vehicleState) ==
-            VEH_PATH_SPEED_MODE_PATH) {
+        if (game_compat_veh_path_speed_mode(vehicleState) == VEH_PATH_SPEED_MODE_PATH) {
             targetSpeed = cursor->speed;
         } else {
             targetSpeed = vehicleState->viewState[3];
@@ -9746,41 +8519,30 @@ void VEH_UpdatePath(gentity_t *ent)
              * 80-bit until the stored float arg -> shim. */
 #if EMULATE_X87
             game_compat_veh_set_entity_current_speed(
-                ent,
-                x87f_store_f32(x87f_add(
-                    x87f_mul(x87f_load_f32(vehicleState->viewState[4]),
-                             x87f_load_f32(VEH_PHYSICS_FRAME_SECONDS)),
-                    x87f_load_f32(game_compat_veh_entity_current_speed(ent)))));
+                ent, x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(vehicleState->viewState[4]), x87f_load_f32(VEH_PHYSICS_FRAME_SECONDS)),
+                                             x87f_load_f32(game_compat_veh_entity_current_speed(ent)))));
 #else
-            game_compat_veh_set_entity_current_speed(
-                ent,
-                vehicleState->viewState[4] * VEH_PHYSICS_FRAME_SECONDS +
-                    game_compat_veh_entity_current_speed(ent));
+            game_compat_veh_set_entity_current_speed(ent, vehicleState->viewState[4] * VEH_PHYSICS_FRAME_SECONDS +
+                                                              game_compat_veh_entity_current_speed(ent));
 #endif
             if (game_compat_veh_entity_current_speed(ent) > targetSpeed) {
                 game_compat_veh_set_entity_current_speed(ent, targetSpeed);
             }
         } else {
 #if EMULATE_X87
-            game_compat_veh_set_entity_current_speed(
-                ent,
-                x87f_store_f32(x87f_sub(
-                    x87f_load_f32(game_compat_veh_entity_current_speed(ent)),
-                    x87f_mul(x87f_load_f32(vehicleState->viewState[4]),
-                             x87f_load_f32(VEH_PHYSICS_FRAME_SECONDS)))));
+            game_compat_veh_set_entity_current_speed(ent, x87f_store_f32(x87f_sub(x87f_load_f32(game_compat_veh_entity_current_speed(ent)),
+                                                                                  x87f_mul(x87f_load_f32(vehicleState->viewState[4]),
+                                                                                           x87f_load_f32(VEH_PHYSICS_FRAME_SECONDS)))));
 #else
-            game_compat_veh_set_entity_current_speed(
-                ent,
-                game_compat_veh_entity_current_speed(ent) -
-                    vehicleState->viewState[4] * VEH_PHYSICS_FRAME_SECONDS);
+            game_compat_veh_set_entity_current_speed(ent, game_compat_veh_entity_current_speed(ent) -
+                                                              vehicleState->viewState[4] * VEH_PHYSICS_FRAME_SECONDS);
 #endif
             if (targetSpeed > game_compat_veh_entity_current_speed(ent)) {
                 game_compat_veh_set_entity_current_speed(ent, targetSpeed);
             }
         }
 
-        if (game_compat_veh_path_speed_mode(vehicleState) ==
-                VEH_PATH_SPEED_MODE_PATH &&
+        if (game_compat_veh_path_speed_mode(vehicleState) == VEH_PATH_SPEED_MODE_PATH &&
             game_compat_veh_entity_current_speed(ent) == targetSpeed) {
             game_compat_veh_set_path_speed_mode(vehicleState, VEH_PATH_SPEED_MODE_NONE);
         }
@@ -9789,13 +8551,11 @@ void VEH_UpdatePath(gentity_t *ent)
     if (cursor->speed > 0.0f) {
         /* speed/cursor->speed divide then add-into, 80-bit, one store -> shim */
 #if EMULATE_X87
-        *cursorFraction = x87f_store_f32(x87f_add(
-            x87f_load_f32(*cursorFraction),
-            x87f_div(x87f_load_f32(game_compat_veh_entity_current_speed(ent)),
-                     x87f_load_f32(cursor->speed))));
+        *cursorFraction =
+            x87f_store_f32(x87f_add(x87f_load_f32(*cursorFraction),
+                                    x87f_div(x87f_load_f32(game_compat_veh_entity_current_speed(ent)), x87f_load_f32(cursor->speed))));
 #else
-        *cursorFraction +=
-            game_compat_veh_entity_current_speed(ent) / cursor->speed;
+        *cursorFraction += game_compat_veh_entity_current_speed(ent) / cursor->speed;
 #endif
     }
 
@@ -9814,28 +8574,17 @@ void VEH_UpdatePath(gentity_t *ent)
     }
 
     for (int axis = 0; axis < 3; axis++) {
-        vehicleState->origin[axis] =
-            cursor->origin[axis] +
-            (nextPosition.origin[axis] - cursor->origin[axis]) *
-                *cursorFraction;
+        vehicleState->origin[axis] = cursor->origin[axis] + (nextPosition.origin[axis] - cursor->origin[axis]) * *cursorFraction;
         vehicleState->viewClampTargetAngles[axis] =
-            LerpAngle(cursor->currentAngles[axis],
-                      nextPosition.currentAngles[axis],
-                      *cursorFraction);
+            LerpAngle(cursor->currentAngles[axis], nextPosition.currentAngles[axis], *cursorFraction);
     }
 
     vehicleState->viewClampTargetAngles[0] =
-        VEH_LerpAngle(vehicleState->viewClampTargetAngles[0],
-                                vehicleState->previousAngles[0],
-                                VEH_PATH_ANGLE_SMOOTH_PITCH);
+        VEH_LerpAngle(vehicleState->viewClampTargetAngles[0], vehicleState->previousAngles[0], VEH_PATH_ANGLE_SMOOTH_PITCH);
     vehicleState->viewClampTargetAngles[1] =
-        VEH_LerpAngle(vehicleState->viewClampTargetAngles[1],
-                                vehicleState->previousAngles[1],
-                                VEH_PATH_ANGLE_SMOOTH_YAW);
+        VEH_LerpAngle(vehicleState->viewClampTargetAngles[1], vehicleState->previousAngles[1], VEH_PATH_ANGLE_SMOOTH_YAW);
     vehicleState->viewClampTargetAngles[2] =
-        VEH_LerpAngle(vehicleState->viewClampTargetAngles[2],
-                                vehicleState->previousAngles[2],
-                                VEH_PATH_ANGLE_SMOOTH_PITCH);
+        VEH_LerpAngle(vehicleState->viewClampTargetAngles[2], vehicleState->previousAngles[2], VEH_PATH_ANGLE_SMOOTH_PITCH);
 
     if (g_vehicleDebug.integer != 0) {
         VEH_DebugBox(cursor->lookAheadOrigin, 8.0f, 0.0f, 1.0f, 1.0f);
@@ -9845,8 +8594,7 @@ void VEH_UpdatePath(gentity_t *ent)
      * then scaled in place; the multiplier is the exact float constant
      * 20.0f (0x41a00000), not the folded 1.0f/0.05f quotient. */
     for (int axis = 0; axis < 3; axis++) {
-        vehicleState->velocity[axis] =
-            vehicleState->origin[axis] - vehicleState->previousOrigin[axis];
+        vehicleState->velocity[axis] = vehicleState->origin[axis] - vehicleState->previousOrigin[axis];
     }
     for (int axis = 0; axis < 3; axis++) {
         vehicleState->velocity[axis] *= 20.0f;
@@ -9856,9 +8604,7 @@ void VEH_UpdatePath(gentity_t *ent)
     }
 
     vehicleState->angularVelocity[0] = game_compat_veh_entity_current_speed(ent);
-    AnglesSubtract(vehicleState->viewClampTargetAngles,
-                   vehicleState->previousAngles,
-                   vehicleState->acceleration);
+    AnglesSubtract(vehicleState->viewClampTargetAngles, vehicleState->previousAngles, vehicleState->acceleration);
 
     /* 0x88a5f..0x88a92: multiplier is the exact float constant 20.0f
      * (0x41a00000), not the folded 1.0f/0.05f quotient. */
@@ -9876,12 +8622,10 @@ void VEH_UpdatePath(gentity_t *ent)
     {
         /* single divide stored to a float -> shim */
 #if EMULATE_X87
-        float speedFraction = x87f_store_f32(x87f_div(
-            x87f_load_f32(game_compat_veh_entity_current_speed(ent)),
-            x87f_load_f32(vehicleInfo->pathSpeedDenom)));
-#else
         float speedFraction =
-            game_compat_veh_entity_current_speed(ent) / vehicleInfo->pathSpeedDenom;
+            x87f_store_f32(x87f_div(x87f_load_f32(game_compat_veh_entity_current_speed(ent)), x87f_load_f32(vehicleInfo->pathSpeedDenom)));
+#else
+        float speedFraction = game_compat_veh_entity_current_speed(ent) / vehicleInfo->pathSpeedDenom;
 #endif
 
         speedFraction = game_compat_veh_clamp_float(speedFraction, 0.0f, 1.0f);
@@ -9893,10 +8637,8 @@ void VEH_UpdatePath(gentity_t *ent)
         const float threshold = vehicleState->waitNodeSpeedThreshold;
         const float currentSpeed = game_compat_veh_entity_current_speed(ent);
 
-        if ((previousSpeed <= threshold && threshold <= currentSpeed) ||
-            (currentSpeed <= threshold && threshold <= previousSpeed)) {
-            Scr_Notify(ent, scr_const_reached_wait_node_threshold,
-                       0);
+        if ((previousSpeed <= threshold && threshold <= currentSpeed) || (currentSpeed <= threshold && threshold <= previousSpeed)) {
+            Scr_Notify(ent, scr_const_reached_wait_node_threshold, 0);
         }
     }
 }
@@ -9906,8 +8648,7 @@ void VEH_UpdatePath(gentity_t *ent)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x88c78, 98c78_FUN_00098c78.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-int VEH_FindNextPassengerSlot(const vehicle_state_t *vehicleState,
-                              int currentSlot, qboolean reverse)
+int VEH_FindNextPassengerSlot(const vehicle_state_t *vehicleState, int currentSlot, qboolean reverse)
 {
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
     const int step = reverse ? -1 : 1;
@@ -9932,12 +8673,9 @@ int VEH_FindNextPassengerSlot(const vehicle_state_t *vehicleState,
             continue;
         }
 
-        if ((slot == VEH_PASSENGER_SLOT_GUNNER &&
-             vehicleInfo->gunnerSeatEnabled == 0) ||
-            (slot > VEH_PASSENGER_SLOT_GUNNER &&
-             slot <= VEH_PASSENGER_SLOT_LAST &&
-             vehicleInfo->extraPassengerCount <=
-                 slot - VEH_PASSENGER_EXTRA_SLOT_FIRST) ||
+        if ((slot == VEH_PASSENGER_SLOT_GUNNER && vehicleInfo->gunnerSeatEnabled == 0) ||
+            (slot > VEH_PASSENGER_SLOT_GUNNER && slot <= VEH_PASSENGER_SLOT_LAST &&
+             vehicleInfo->extraPassengerCount <= slot - VEH_PASSENGER_EXTRA_SLOT_FIRST) ||
             vehicleState->passengerEntityNums[slot] != ENTITYNUM_NONE) {
             slot += step;
             continue;
@@ -9952,8 +8690,7 @@ int VEH_FindNextPassengerSlot(const vehicle_state_t *vehicleState,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x88d5c, 98d5c_FUN_00098d5c.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-int VEH_GetPassengerTagBoneIndex(const vehicle_state_t *vehicleState,
-                                 uint32_t passengerSlot)
+int VEH_GetPassengerTagBoneIndex(const vehicle_state_t *vehicleState, uint32_t passengerSlot)
 {
     if (passengerSlot == VEH_PASSENGER_SLOT_DRIVER) {
         return vehicleState->driverTagIndex;
@@ -9963,10 +8700,8 @@ int VEH_GetPassengerTagBoneIndex(const vehicle_state_t *vehicleState,
         return vehicleState->gunnerTagIndex;
     }
 
-    if (passengerSlot > VEH_PASSENGER_SLOT_GUNNER &&
-        passengerSlot < VEH_PASSENGER_SLOT_COUNT) {
-        return vehicleState
-            ->passengerTagIndices[passengerSlot - VEH_PASSENGER_EXTRA_SLOT_FIRST];
+    if (passengerSlot > VEH_PASSENGER_SLOT_GUNNER && passengerSlot < VEH_PASSENGER_SLOT_COUNT) {
+        return vehicleState->passengerTagIndices[passengerSlot - VEH_PASSENGER_EXTRA_SLOT_FIRST];
     }
 
     Com_Error(1, VEH_PATH_INVALID_POSITION_ERROR);
@@ -9978,11 +8713,7 @@ int VEH_GetPassengerTagBoneIndex(const vehicle_state_t *vehicleState,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x88dee, 98dee_VEH_FindValidDismountSpot.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
-qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
-                                   const float *origin,
-                                   const float *mins,
-                                   const float *maxs,
-                                   float *outOrigin,
+qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt, const float *origin, const float *mins, const float *maxs, float *outOrigin,
                                    int passEntityNum)
 {
     vehicle_state_t *vehicleState = (vehicle_state_t *)vehicleEnt->vehicle;
@@ -10020,46 +8751,35 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
         /* right/forward . direction dots: 3-mul/2-add chains kept 80-bit until
          * the store -> shim. */
 #if EMULATE_X87
-        localRight = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(right[0]), x87f_load_f32(direction[0])),
-                     x87f_mul(x87f_load_f32(right[1]), x87f_load_f32(direction[1]))),
-            x87f_mul(x87f_load_f32(right[2]), x87f_load_f32(direction[2]))));
-        localForward = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(forward[0]), x87f_load_f32(direction[0])),
-                     x87f_mul(x87f_load_f32(forward[1]), x87f_load_f32(direction[1]))),
-            x87f_mul(x87f_load_f32(forward[2]), x87f_load_f32(direction[2]))));
+        localRight = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(right[0]), x87f_load_f32(direction[0])),
+                                                      x87f_mul(x87f_load_f32(right[1]), x87f_load_f32(direction[1]))),
+                                             x87f_mul(x87f_load_f32(right[2]), x87f_load_f32(direction[2]))));
+        localForward = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(forward[0]), x87f_load_f32(direction[0])),
+                                                        x87f_mul(x87f_load_f32(forward[1]), x87f_load_f32(direction[1]))),
+                                               x87f_mul(x87f_load_f32(forward[2]), x87f_load_f32(direction[2]))));
         /* SideOffset + maxs[1] + PAD: 2-add chain kept 80-bit, one store -> shim */
-        rightLimit = x87f_store_f32(x87f_add(
-            x87f_add(x87f_load_f32(game_compat_veh_dismount_side_offset(vehicleInfo)),
-                     x87f_load_f32(maxs[1])),
-            x87f_load_f32(VEH_DISMOUNT_SIDE_PAD)));
-#else
-        localRight = right[0] * direction[0] + right[1] * direction[1] +
-                     right[2] * direction[2];
-        localForward = forward[0] * direction[0] +
-                       forward[1] * direction[1] +
-                       forward[2] * direction[2];
         rightLimit =
-            game_compat_veh_dismount_side_offset(vehicleInfo) + maxs[1] +
-            VEH_DISMOUNT_SIDE_PAD;
+            x87f_store_f32(x87f_add(x87f_add(x87f_load_f32(game_compat_veh_dismount_side_offset(vehicleInfo)), x87f_load_f32(maxs[1])),
+                                    x87f_load_f32(VEH_DISMOUNT_SIDE_PAD)));
+#else
+        localRight = right[0] * direction[0] + right[1] * direction[1] + right[2] * direction[2];
+        localForward = forward[0] * direction[0] + forward[1] * direction[1] + forward[2] * direction[2];
+        rightLimit = game_compat_veh_dismount_side_offset(vehicleInfo) + maxs[1] + VEH_DISMOUNT_SIDE_PAD;
 #endif
         /* 0x89009..0x8905a: maxs[0] + max(fwd,back) is rounded to its own
          * float slot before the pad is added (pad + sum order). */
         /* 0x88fef..0x89034 is an ordered-greater branch, not fmaxf:
          * unordered inputs select the forward offset. */
-        const float longitudinalOffset =
-            vehicleInfo->dismountBackOffset >
-                    vehicleInfo->dismountForwardOffset
-                ? vehicleInfo->dismountBackOffset
-                : vehicleInfo->dismountForwardOffset;
+        const float longitudinalOffset = vehicleInfo->dismountBackOffset > vehicleInfo->dismountForwardOffset
+                                             ? vehicleInfo->dismountBackOffset
+                                             : vehicleInfo->dismountForwardOffset;
         forwardLimit = maxs[0] + longitudinalOffset;
         forwardLimit = VEH_DISMOUNT_FORWARD_PAD + forwardLimit;
 
         if (fabsf(localForward) < fabsf(localRight)) {
             /* single divide (fabsf is exact) -> shim; *= scale is single mul (native) */
 #if EMULATE_X87
-            const float scale = x87f_store_f32(x87f_div(
-                x87f_load_f32(rightLimit), x87f_load_f32(fabsf(localRight))));
+            const float scale = x87f_store_f32(x87f_div(x87f_load_f32(rightLimit), x87f_load_f32(fabsf(localRight))));
 #else
             const float scale = rightLimit / fabsf(localRight);
 #endif
@@ -10075,8 +8795,7 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
             }
         } else {
 #if EMULATE_X87
-            const float scale = x87f_store_f32(x87f_div(
-                x87f_load_f32(forwardLimit), x87f_load_f32(fabsf(localForward))));
+            const float scale = x87f_store_f32(x87f_div(x87f_load_f32(forwardLimit), x87f_load_f32(fabsf(localForward))));
 #else
             const float scale = forwardLimit / fabsf(localForward);
 #endif
@@ -10086,8 +8805,7 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
         }
 
         rightOffset = game_compat_veh_clamp_float(localRight, -rightLimit, rightLimit);
-        forwardOffset =
-            game_compat_veh_clamp_float(localForward, -forwardLimit, forwardLimit);
+        forwardOffset = game_compat_veh_clamp_float(localForward, -forwardLimit, forwardLimit);
         memset(&trace, 0, sizeof(trace_t));
 
         for (attempt = 0; attempt < VEH_DISMOUNT_DYNAMIC_RETRIES; attempt++) {
@@ -10108,16 +8826,12 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
              * mul then add-into, 80-bit, one store per accumulate -> shim. */
 #if EMULATE_X87
             for (int i = 0; i < 3; i++) {
-                outOrigin[i] = x87f_store_f32(x87f_add(
-                    x87f_load_f32(outOrigin[i]),
-                    x87f_mul(x87f_load_f32(forward[i]),
-                             x87f_load_f32(forwardOffset))));
+                outOrigin[i] = x87f_store_f32(
+                    x87f_add(x87f_load_f32(outOrigin[i]), x87f_mul(x87f_load_f32(forward[i]), x87f_load_f32(forwardOffset))));
             }
             for (int i = 0; i < 3; i++) {
-                outOrigin[i] = x87f_store_f32(x87f_add(
-                    x87f_load_f32(outOrigin[i]),
-                    x87f_mul(x87f_load_f32(right[i]),
-                             x87f_load_f32(rightOffset))));
+                outOrigin[i] =
+                    x87f_store_f32(x87f_add(x87f_load_f32(outOrigin[i]), x87f_mul(x87f_load_f32(right[i]), x87f_load_f32(rightOffset))));
             }
 #else
             outOrigin[0] += forward[0] * forwardOffset;
@@ -10132,33 +8846,16 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
             base[1] = outOrigin[1];
             base[2] = outOrigin[2];
 
-            for (xOffset = VEH_DISMOUNT_SEARCH_MIN;
-                 xOffset < VEH_DISMOUNT_SEARCH_MAX;
-                 xOffset += VEH_DISMOUNT_SEARCH_STEP) {
-                for (yOffset = VEH_DISMOUNT_SEARCH_MIN;
-                     yOffset < VEH_DISMOUNT_SEARCH_MAX;
-                     yOffset += VEH_DISMOUNT_SEARCH_STEP) {
+            for (xOffset = VEH_DISMOUNT_SEARCH_MIN; xOffset < VEH_DISMOUNT_SEARCH_MAX; xOffset += VEH_DISMOUNT_SEARCH_STEP) {
+                for (yOffset = VEH_DISMOUNT_SEARCH_MIN; yOffset < VEH_DISMOUNT_SEARCH_MAX; yOffset += VEH_DISMOUNT_SEARCH_STEP) {
                     for (int zAttempt = 0; zAttempt < 2; zAttempt++) {
-                        trap_TraceCapsule(&trace, outOrigin, mins, maxs,
-                                          outOrigin, passEntityNum,
-                                          VEH_DISMOUNT_TRACE_MASK_CLEAR);
-                        if (trace.fraction == 1.0f &&
-                            trace.startsolid == 0) {
-                            vec3_t ground = {
-                                outOrigin[0],
-                                outOrigin[1],
-                                outOrigin[2] - VEH_DISMOUNT_GROUND_DROP
-                            };
+                        trap_TraceCapsule(&trace, outOrigin, mins, maxs, outOrigin, passEntityNum, VEH_DISMOUNT_TRACE_MASK_CLEAR);
+                        if (trace.fraction == 1.0f && trace.startsolid == 0) {
+                            vec3_t ground = {outOrigin[0], outOrigin[1], outOrigin[2] - VEH_DISMOUNT_GROUND_DROP};
 
-                            trap_TraceCapsule(
-                                &trace, outOrigin, mins, maxs, ground,
-                                ENTITYNUM_NONE,
-                                VEH_DISMOUNT_TRACE_MASK_GROUND);
-                            if (trace.startsolid == 0 &&
-                                trace.allsolid == 0 &&
-                                trace.fraction < 1.0f) {
-                                gentity_t *passenger =
-                                    &g_entities[passEntityNum];
+                            trap_TraceCapsule(&trace, outOrigin, mins, maxs, ground, ENTITYNUM_NONE, VEH_DISMOUNT_TRACE_MASK_GROUND);
+                            if (trace.startsolid == 0 && trace.allsolid == 0 && trace.fraction < 1.0f) {
+                                gentity_t *passenger = &g_entities[passEntityNum];
                                 gclient_t *client = passenger->client;
                                 vec3_t losMins;
                                 vec3_t losMaxs;
@@ -10170,27 +8867,18 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
                                 losMins[2] = client->ps.playerMins[2];
                                 losMaxs[0] = client->ps.playerMaxs[0];
                                 losMaxs[1] = client->ps.playerMaxs[1];
-                                losMaxs[2] =
-                                    client->ps.playerMaxs[2] -
-                                    VEH_DISMOUNT_LOS_Z_RAISE;
+                                losMaxs[2] = client->ps.playerMaxs[2] - VEH_DISMOUNT_LOS_Z_RAISE;
                                 losEnd[0] = outOrigin[0];
                                 losEnd[1] = outOrigin[1];
-                                losEnd[2] =
-                                    outOrigin[2] +
-                                    VEH_DISMOUNT_LOS_Z_RAISE;
+                                losEnd[2] = outOrigin[2] + VEH_DISMOUNT_LOS_Z_RAISE;
                                 losStart[0] = vehicleState->origin[0];
                                 losStart[1] = vehicleState->origin[1];
-                                losStart[2] =
-                                    vehicleState->origin[2] +
-                                    VEH_DISMOUNT_LOS_Z_RAISE;
+                                losStart[2] = vehicleState->origin[2] + VEH_DISMOUNT_LOS_Z_RAISE;
 
-                                trap_Trace(&trace, losStart, losMins, losMaxs,
-                                           losEnd, passenger->passEntityNum,
+                                trap_Trace(&trace, losStart, losMins, losMaxs, losEnd, passenger->passEntityNum,
                                            VEH_DISMOUNT_TRACE_MASK_GROUND);
                                 if (trace.startsolid == 0 &&
-                                    (trace.fraction == 1.0f ||
-                                     trace.entityNum ==
-                                         (uint16_t)vehicleEnt->s.number)) {
+                                    (trace.fraction == 1.0f || trace.entityNum == (uint16_t)vehicleEnt->s.number)) {
                                     return qtrue;
                                 }
                             }
@@ -10220,29 +8908,20 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
         outOrigin[0] = vehicleEnt->currentOrigin[0];
         outOrigin[1] = vehicleEnt->currentOrigin[1];
         /* 0x8984b..0x8985d: grouped as (collisionMaxs[2] + pad) + origin. */
-        outOrigin[2] =
-            vehicleInfo->collisionMaxs[2] +
-            VEH_DISMOUNT_FALLBACK_Z_PAD +
-            vehicleEnt->currentOrigin[2];
+        outOrigin[2] = vehicleInfo->collisionMaxs[2] + VEH_DISMOUNT_FALLBACK_Z_PAD + vehicleEnt->currentOrigin[2];
     } else {
         DObjSkelMat detachMatrix;
 
-        G_DObjGetWorldBoneIndexMatrix(
-            vehicleEnt, vehicleState->detachTagIndex, &detachMatrix);
+        G_DObjGetWorldBoneIndexMatrix(vehicleEnt, vehicleState->detachTagIndex, &detachMatrix);
         outOrigin[0] = detachMatrix.origin[0];
         outOrigin[1] = detachMatrix.origin[1];
         outOrigin[2] = detachMatrix.origin[2];
     }
 
-    trap_TraceCapsule(&trace, outOrigin, mins, maxs, outOrigin, passEntityNum,
-                      VEH_DISMOUNT_TRACE_MASK_DETACH);
-    for (int retry = 1;
-         (trace.fraction < 1.0f || trace.startsolid != 0) &&
-         retry < VEH_DISMOUNT_FALLBACK_RETRIES;
-         retry++) {
+    trap_TraceCapsule(&trace, outOrigin, mins, maxs, outOrigin, passEntityNum, VEH_DISMOUNT_TRACE_MASK_DETACH);
+    for (int retry = 1; (trace.fraction < 1.0f || trace.startsolid != 0) && retry < VEH_DISMOUNT_FALLBACK_RETRIES; retry++) {
         outOrigin[2] += VEH_DISMOUNT_FALLBACK_STEP;
-        trap_TraceCapsule(&trace, outOrigin, mins, maxs, outOrigin,
-                          passEntityNum, VEH_DISMOUNT_TRACE_MASK_DETACH);
+        trap_TraceCapsule(&trace, outOrigin, mins, maxs, outOrigin, passEntityNum, VEH_DISMOUNT_TRACE_MASK_DETACH);
     }
 
     /* 0x898ed..0x8997e returns success when the retry condition stopped
@@ -10258,8 +8937,7 @@ qboolean VEH_FindValidDismountSpot(gentity_t *vehicleEnt,
 /* VERIFIED_DECOMPILER(0x8b893, 9b893_G_IsVehicleImmune.c, VERIFY-VEHICLE-PATH-TAIL-2026-06-17): DATAFLOW_VERIFIED */
 qboolean G_IsVehicleImmune(gentity_t *vehicle, int meansOfDeath)
 {
-    const vehicle_state_t *vehicleState =
-        (const vehicle_state_t *)vehicle->vehicle;
+    const vehicle_state_t *vehicleState = (const vehicle_state_t *)vehicle->vehicle;
     const vehicleInfo_t *vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
     switch (meansOfDeath) {
@@ -10300,8 +8978,7 @@ static qboolean game_compat_veh_player_is_linked_vehicle_occupant(const gentity_
         return qfalse;
     }
 
-    if ((player->client->ps.entityStateFlags & EF_IN_VEHICLE) == 0 ||
-        (player->client->ps.entityStateFlags & EF_VEHICLE_POPOUT) != 0) {
+    if ((player->client->ps.entityStateFlags & EF_IN_VEHICLE) == 0 || (player->client->ps.entityStateFlags & EF_VEHICLE_POPOUT) != 0) {
         return qfalse;
     }
 
@@ -10313,11 +8990,9 @@ static qboolean game_compat_veh_player_is_linked_vehicle_occupant(const gentity_
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static const vehicle_state_t *game_compat_veh_player_linked_vehicle_state(
-    const gentity_t *player)
+static const vehicle_state_t *game_compat_veh_player_linked_vehicle_state(const gentity_t *player)
 {
-    return (const vehicle_state_t *)
-        g_entities[player->passEntityNum].vehicle;
+    return (const vehicle_state_t *)g_entities[player->passEntityNum].vehicle;
 }
 
 /* ------------------------------------------------------------------ */
@@ -10337,8 +9012,7 @@ int G_IsVehicleOccupantInvulnerable(gentity_t *player)
     vehicleState = game_compat_veh_player_linked_vehicle_state(player);
     vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
 
-    return vehicleInfo->type == VEHICLE_TYPE_TANK &&
-           player->client->ps.vehiclePosition == VEH_PASSENGER_SLOT_DRIVER;
+    return vehicleInfo->type == VEHICLE_TYPE_TANK && player->client->ps.vehiclePosition == VEH_PASSENGER_SLOT_DRIVER;
 }
 
 /* ------------------------------------------------------------------ */
@@ -10385,14 +9059,12 @@ void G_VehiclePopOut(gentity_t *player)
 
     Com_Error(1, VEH_POPOUT_DISABLED_ERROR);
 
-    if ((client->ps.entityStateFlags & EF_IN_VEHICLE) == 0 ||
-        player->passEntityNum == ENTITYNUM_NONE) {
+    if ((client->ps.entityStateFlags & EF_IN_VEHICLE) == 0 || player->passEntityNum == ENTITYNUM_NONE) {
         return;
     }
 
     vehicleEnt = &g_entities[player->passEntityNum];
-    if (vehicleEnt->passEntityNum == ENTITYNUM_NONE ||
-        (vehicleEnt->scriptContents & VEH_USABLE_SCRIPT_CONTENTS) != 0) {
+    if (vehicleEnt->passEntityNum == ENTITYNUM_NONE || (vehicleEnt->scriptContents & VEH_USABLE_SCRIPT_CONTENTS) != 0) {
         return;
     }
 
@@ -10415,8 +9087,7 @@ void G_VehiclePopOut(gentity_t *player)
     G_DObjGetWorldBoneIndexMatrix(vehicleEnt, boneIndex, &boneMatrix);
     SetClientOrigin(player, boneMatrix.origin);
 
-    if (!G_EntLinkToWithOffset(player, vehicleEnt, tagName, vec3_origin,
-                               vec3_origin)) {
+    if (!G_EntLinkToWithOffset(player, vehicleEnt, tagName, vec3_origin, vec3_origin)) {
         Com_Error(1, VEH_POPOUT_LINK_ERROR, tagName);
     }
 }
@@ -10431,16 +9102,13 @@ static qboolean game_compat_veh_tank_state_is_active(const vehicle_state_t *vehi
     }
 
     vehicleInfo = game_compat_veh_get_vehicle_info(vehicleState->typeIndex);
-    return vehicleInfo->type == VEHICLE_TYPE_TANK &&
-           game_compat_veh_float_slot_int_bits(&vehicleState->turretRoll) != 0;
+    return vehicleInfo->type == VEHICLE_TYPE_TANK && game_compat_veh_float_slot_int_bits(&vehicleState->turretRoll) != 0;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
 static qboolean game_compat_veh_tank_entity_is_valid(const gentity_t *ent)
 {
-    return ent->vehicle != NULL &&
-           ent->health >= 1 &&
-           ent->passEntityNum == ENTITYNUM_NONE;
+    return ent->vehicle != NULL && ent->health >= 1 && ent->passEntityNum == ENTITYNUM_NONE;
 }
 
 /* ------------------------------------------------------------------ */

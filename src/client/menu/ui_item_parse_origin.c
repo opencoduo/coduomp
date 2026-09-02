@@ -53,10 +53,8 @@ qboolean ItemParse_origin(itemDef_t *item, int handle)
      * DWORD). Keep each integer exact through the x87 addition and round only
      * once at the final float store; ordinary float += would permit the integer
      * conversion to round to binary32 before the add on non-x87 hosts. */
-    item->window.rectClient.x = (float)(
-        (long double)x + (long double)item->window.rectClient.x);
-    item->window.rectClient.y = (float)(
-        (long double)y + (long double)item->window.rectClient.y);
+    item->window.rectClient.x = (float)((long double)x + (long double)item->window.rectClient.x);
+    item->window.rectClient.y = (float)((long double)y + (long double)item->window.rectClient.y);
 
     return qtrue;
 }

@@ -74,8 +74,7 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
     /* 3. Optionally fold the latest usercmd's angles into the predicted state. */
     if (grabAngles) {
         usercmd_t cmd;
-        int32_t cmdNumber = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
+        int32_t cmdNumber = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
         cgame_syscall(CG_GET_USER_CMD, cmdNumber, &cmd);
         /* ctx = CG_TraceCapsule (0x30035390), the capsule-trace callback. */
         PM_UpdateViewAngles(out, &cmd, CG_TraceCapsule);
@@ -88,10 +87,8 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
 
     /* The machine forms both operands as 32-bit integer differences and FILDs them
      * (signed): numerator (cg.time - snap.serverTime), denominator (next - snap). */
-    int32_t sinceSnap = coduo_int32_from_bits(
-        cg_time - (uint32_t)snap->serverTime);
-    int32_t snapSpan = coduo_int32_from_bits(
-        (uint32_t)next->serverTime - (uint32_t)snap->serverTime);
+    int32_t sinceSnap = coduo_int32_from_bits(cg_time - (uint32_t)snap->serverTime);
+    int32_t snapSpan = coduo_int32_from_bits((uint32_t)next->serverTime - (uint32_t)snap->serverTime);
     float t = (float)((long double)sinceSnap / (long double)snapSpan);
 
     /* bobCycle: wrap the next value up by 256 when it is below the current one,
@@ -101,18 +98,14 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
         if (nextBob < snap->ps.bobCycle) {
             nextBob = coduo_int32_from_bits((uint32_t)nextBob + 256u);
         }
-        int32_t bobDelta = coduo_int32_from_bits(
-            (uint32_t)nextBob - (uint32_t)snap->ps.bobCycle);
-        int32_t bobStep = coduo_fp_to_i32_extended(
-            (long double)bobDelta * (long double)t);
-        out->bobCycle = coduo_int32_from_bits(
-            (uint32_t)snap->ps.bobCycle + (uint32_t)bobStep);
+        int32_t bobDelta = coduo_int32_from_bits((uint32_t)nextBob - (uint32_t)snap->ps.bobCycle);
+        int32_t bobStep = coduo_fp_to_i32_extended((long double)bobDelta * (long double)t);
+        out->bobCycle = coduo_int32_from_bits((uint32_t)snap->ps.bobCycle + (uint32_t)bobStep);
     }
 
     /* Interpolate ps.aimSpreadScale into its predicted-player-state field. */
     cg_predictedPlayerState.aimSpreadScale =
-        (float)(((long double)next->ps.aimSpreadScale -
-                 (long double)snap->ps.aimSpreadScale) * (long double)t +
+        (float)(((long double)next->ps.aimSpreadScale - (long double)snap->ps.aimSpreadScale) * (long double)t +
                 (long double)snap->ps.aimSpreadScale);
 
     /* origin[3], velocity[3], and (only when not grabbing angles) viewangles[3]
@@ -122,38 +115,30 @@ void CG_InterpolatePlayerState(qboolean grabAngles)
      *   velocity -> predictedPlayerState.velocity (0x304831e4) */
     for (int32_t i = 0; i < 3; i++) {
         cg_predictedPlayerState.psOrigin[i] =
-            (float)(((long double)next->ps.psOrigin[i] -
-                     (long double)snap->ps.psOrigin[i]) * (long double)t +
+            (float)(((long double)next->ps.psOrigin[i] - (long double)snap->ps.psOrigin[i]) * (long double)t +
                     (long double)snap->ps.psOrigin[i]);
 
         /* 0x300355d4..0x300355ff: the view-angle call is interleaved between
          * this component's origin and velocity stores. */
         if (!grabAngles) {
-            cg_predictedPlayerState.viewAngles[i] =
-                LerpAngle(snap->ps.viewAngles[i], next->ps.viewAngles[i], t);
+            cg_predictedPlayerState.viewAngles[i] = LerpAngle(snap->ps.viewAngles[i], next->ps.viewAngles[i], t);
         }
 
-        out->velocity[i] =
-            (float)(((long double)next->ps.velocity[i] -
-                     (long double)snap->ps.velocity[i]) * (long double)t +
-                    (long double)snap->ps.velocity[i]);
+        out->velocity[i] = (float)(((long double)next->ps.velocity[i] - (long double)snap->ps.velocity[i]) * (long double)t +
+                                   (long double)snap->ps.velocity[i]);
     }
 
     /* viewHeightCurrent -> cg_predictedPlayerState.viewHeightCurrent (0x304832bc). */
     cg_predictedPlayerState.viewHeightCurrent =
-        (float)(((long double)next->ps.viewHeightCurrent -
-                 (long double)snap->ps.viewHeightCurrent) * (long double)t +
+        (float)(((long double)next->ps.viewHeightCurrent - (long double)snap->ps.viewHeightCurrent) * (long double)t +
                 (long double)snap->ps.viewHeightCurrent);
 
     /* leanFraction -> shared interpolated global at 0x30483208. */
     cg_predictedPlayerState.leanFraction =
-        (float)(((long double)next->ps.leanFraction -
-                 (long double)snap->ps.leanFraction) * (long double)t +
+        (float)(((long double)next->ps.leanFraction - (long double)snap->ps.leanFraction) * (long double)t +
                 (long double)snap->ps.leanFraction);
 
     /* adsFraction -> cg_predictedPlayerState.adsFraction (0x304832a4). */
-    cg_predictedPlayerState.adsFraction =
-        (float)(((long double)next->ps.adsFraction -
-                 (long double)snap->ps.adsFraction) * (long double)t +
-                (long double)snap->ps.adsFraction);
+    cg_predictedPlayerState.adsFraction = (float)(((long double)next->ps.adsFraction - (long double)snap->ps.adsFraction) * (long double)t +
+                                                  (long double)snap->ps.adsFraction);
 }

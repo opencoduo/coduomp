@@ -25,8 +25,7 @@ enum {
     CM_PATCH_PLANE_GRID_SIZE = 129,
     CM_PATCH_FACET_BORDER_PLANE_LIMIT = 26,
     /* CM_AddFacetBevels always appends the surface plane after the bevels. */
-    CM_PATCH_FACET_BEVEL_BORDER_LIMIT =
-        CM_PATCH_FACET_BORDER_PLANE_LIMIT - 1,
+    CM_PATCH_FACET_BEVEL_BORDER_LIMIT = CM_PATCH_FACET_BORDER_PLANE_LIMIT - 1,
     CM_PATCH_MAX_FACETS = 1024,
 
     CM_TRIANGLE_SOUP_VECTOR_COMPONENT_COUNT = 3,
@@ -62,8 +61,7 @@ typedef struct cGrid_s {
     vec3_t points[CM_PATCH_POINT_GRID_SIZE][CM_PATCH_POINT_GRID_SIZE];
 } cGrid_t;
 
-typedef int32_t patchPlaneGrid_t[CM_PATCH_PLANE_GRID_SIZE]
-                                [CM_PATCH_PLANE_GRID_SIZE][2];
+typedef int32_t patchPlaneGrid_t[CM_PATCH_PLANE_GRID_SIZE][CM_PATCH_PLANE_GRID_SIZE][2];
 
 typedef struct patchCollide_s {
     int32_t numPlanes;
@@ -168,8 +166,7 @@ typedef struct dshader_s {
 } dshader_t;
 
 typedef struct cmLeafQueryWork_s cmLeafQueryWork_t;
-typedef void (*cmLeafQueryStoreFn_t)(cmLeafQueryWork_t *work,
-                                     int32_t nodeNum);
+typedef void (*cmLeafQueryStoreFn_t)(cmLeafQueryWork_t *work, int32_t nodeNum);
 
 /* Generic callback-driven BSP query record.  items stores either leaf indices
  * or collisionBrush_t pointers, matching the original weakly typed carrier. */
@@ -185,21 +182,17 @@ struct cmLeafQueryWork_s {
 };
 
 #if defined(__cplusplus)
-#define COLLISION_MAP_STATIC_ASSERT(expression, message) \
-    static_assert((expression), message)
+#define COLLISION_MAP_STATIC_ASSERT(expression, message) static_assert((expression), message)
 #define COLLISION_MAP_ALIGNOF(type) alignof(type)
 #else
-#define COLLISION_MAP_STATIC_ASSERT(expression, message) \
-    _Static_assert((expression), message)
+#define COLLISION_MAP_STATIC_ASSERT(expression, message) _Static_assert((expression), message)
 #define COLLISION_MAP_ALIGNOF(type) _Alignof(type)
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-#define COLLISION_MAP_ASSERT_FIELD(type, field, offset)                    \
-    COLLISION_MAP_STATIC_ASSERT(offsetof(type, field) == (offset),         \
-                                #type "." #field " moved")
-#define COLLISION_MAP_ASSERT_SIZE(type, size)                              \
-    COLLISION_MAP_STATIC_ASSERT(sizeof(type) == (size), #type " size changed")
+#define COLLISION_MAP_ASSERT_FIELD(type, field, offset) \
+    COLLISION_MAP_STATIC_ASSERT(offsetof(type, field) == (offset), #type "." #field " moved")
+#define COLLISION_MAP_ASSERT_SIZE(type, size) COLLISION_MAP_STATIC_ASSERT(sizeof(type) == (size), #type " size changed")
 
 COLLISION_MAP_ASSERT_SIZE(patchPlane_t, 0x14);
 COLLISION_MAP_ASSERT_FIELD(patchPlane_t, signbits, 0x10);

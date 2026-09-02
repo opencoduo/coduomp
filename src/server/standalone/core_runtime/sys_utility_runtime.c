@@ -7,8 +7,7 @@
 #include "core_runtime_private.h"
 
 #define SYS_BYTE_SWAP_32(value) \
-    ((((value) & 0x000000ffU) << 24) | (((value) & 0x0000ff00U) << 8) | \
-     (((value) & 0x00ff0000U) >> 8) | (((value) & 0xff000000U) >> 24))
+    ((((value) & 0x000000ffU) << 24) | (((value) & 0x0000ff00U) << 8) | (((value) & 0x00ff0000U) >> 8) | (((value) & 0xff000000U) >> 24))
 
 #define SYS_HAS_X87_INLINE_ASM CODUO_ENGINE_HAS_X87_INLINE_ASM
 
@@ -27,8 +26,7 @@ enum {
     SYS_ZIP_EOCD_SIGNATURE_SIZE = 4,
     SYS_ZIP_EOCD_SCAN_MAX_BACKTRACK = 65535,
     SYS_ZIP_EOCD_SCAN_CHUNK_SIZE = 1024,
-    SYS_ZIP_EOCD_SCAN_BUFFER_SIZE =
-        SYS_ZIP_EOCD_SCAN_CHUNK_SIZE + SYS_ZIP_EOCD_SIGNATURE_SIZE,
+    SYS_ZIP_EOCD_SCAN_BUFFER_SIZE = SYS_ZIP_EOCD_SCAN_CHUNK_SIZE + SYS_ZIP_EOCD_SIGNATURE_SIZE,
     SYS_ZIP_EOCD_NOT_FOUND = 0,
     SYS_ZIP_EOCD_SIGNATURE_BYTE_0 = 'P',
     SYS_ZIP_EOCD_SIGNATURE_BYTE_1 = 'K',
@@ -56,44 +54,32 @@ void FUN_080cb276(void)
 void Sys_SnapVector(vec3_t vector)
 {
 #if SYS_HAS_X87_INLINE_ASM
-    __asm__ __volatile__("fnstcw %0"
-                         : "=m"(sys_snapVectorSavedFpuControlWord)
+    __asm__ __volatile__("fnstcw %0" : "=m"(sys_snapVectorSavedFpuControlWord) : : "memory");
+    __asm__ __volatile__("fldcw %0" : : "m"(sys_snapVectorFpuControlWord) : "memory");
+
+    __asm__ __volatile__("flds %0\n\t"
+                         "fistpl %0\n\t"
+                         "fildl %0\n\t"
+                         "fstps %0"
+                         : "+m"(vector[0])
                          :
                          : "memory");
-    __asm__ __volatile__("fldcw %0"
+    __asm__ __volatile__("flds %0\n\t"
+                         "fistpl %0\n\t"
+                         "fildl %0\n\t"
+                         "fstps %0"
+                         : "+m"(vector[1])
                          :
-                         : "m"(sys_snapVectorFpuControlWord)
+                         : "memory");
+    __asm__ __volatile__("flds %0\n\t"
+                         "fistpl %0\n\t"
+                         "fildl %0\n\t"
+                         "fstps %0"
+                         : "+m"(vector[2])
+                         :
                          : "memory");
 
-    __asm__ __volatile__(
-        "flds %0\n\t"
-        "fistpl %0\n\t"
-        "fildl %0\n\t"
-        "fstps %0"
-        : "+m"(vector[0])
-        :
-        : "memory");
-    __asm__ __volatile__(
-        "flds %0\n\t"
-        "fistpl %0\n\t"
-        "fildl %0\n\t"
-        "fstps %0"
-        : "+m"(vector[1])
-        :
-        : "memory");
-    __asm__ __volatile__(
-        "flds %0\n\t"
-        "fistpl %0\n\t"
-        "fildl %0\n\t"
-        "fstps %0"
-        : "+m"(vector[2])
-        :
-        : "memory");
-
-    __asm__ __volatile__("fldcw %0"
-                         :
-                         : "m"(sys_snapVectorSavedFpuControlWord)
-                         : "memory");
+    __asm__ __volatile__("fldcw %0" : : "m"(sys_snapVectorSavedFpuControlWord) : "memory");
 #elif defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT)
     vector[0] = (float)(int32_t)rintf(vector[0]);
     vector[1] = (float)(int32_t)rintf(vector[1]);
@@ -106,44 +92,32 @@ void Sys_SnapVector(vec3_t vector)
 void Sys_SnapVectorWithControlWord(vec3_t vector, uint16_t controlWord)
 {
 #if SYS_HAS_X87_INLINE_ASM
-    __asm__ __volatile__("fnstcw %0"
-                         : "=m"(sys_snapVectorSavedFpuControlWord)
+    __asm__ __volatile__("fnstcw %0" : "=m"(sys_snapVectorSavedFpuControlWord) : : "memory");
+    __asm__ __volatile__("fldcw %0" : : "m"(controlWord) : "memory");
+
+    __asm__ __volatile__("flds %0\n\t"
+                         "fistpl %0\n\t"
+                         "fildl %0\n\t"
+                         "fstps %0"
+                         : "+m"(vector[0])
                          :
                          : "memory");
-    __asm__ __volatile__("fldcw %0"
+    __asm__ __volatile__("flds %0\n\t"
+                         "fistpl %0\n\t"
+                         "fildl %0\n\t"
+                         "fstps %0"
+                         : "+m"(vector[1])
                          :
-                         : "m"(controlWord)
+                         : "memory");
+    __asm__ __volatile__("flds %0\n\t"
+                         "fistpl %0\n\t"
+                         "fildl %0\n\t"
+                         "fstps %0"
+                         : "+m"(vector[2])
+                         :
                          : "memory");
 
-    __asm__ __volatile__(
-        "flds %0\n\t"
-        "fistpl %0\n\t"
-        "fildl %0\n\t"
-        "fstps %0"
-        : "+m"(vector[0])
-        :
-        : "memory");
-    __asm__ __volatile__(
-        "flds %0\n\t"
-        "fistpl %0\n\t"
-        "fildl %0\n\t"
-        "fstps %0"
-        : "+m"(vector[1])
-        :
-        : "memory");
-    __asm__ __volatile__(
-        "flds %0\n\t"
-        "fistpl %0\n\t"
-        "fildl %0\n\t"
-        "fstps %0"
-        : "+m"(vector[2])
-        :
-        : "memory");
-
-    __asm__ __volatile__("fldcw %0"
-                         :
-                         : "m"(sys_snapVectorSavedFpuControlWord)
-                         : "memory");
+    __asm__ __volatile__("fldcw %0" : : "m"(sys_snapVectorSavedFpuControlWord) : "memory");
 #elif defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT)
     (void)controlWord;
     vector[0] = (float)(int32_t)rintf(vector[0]);
@@ -198,8 +172,7 @@ int32_t Sys_ReadLittleShort(FILE *file, uint32_t *value)
     uint16_t rawValue;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (fread(&rawValue, SYS_SHORT_READ_SIZE, SYS_FREAD_ELEMENT_COUNT, file) !=
-        SYS_FREAD_ELEMENT_COUNT) {
+    if (fread(&rawValue, SYS_SHORT_READ_SIZE, SYS_FREAD_ELEMENT_COUNT, file) != SYS_FREAD_ELEMENT_COUNT) {
         return SYS_FILE_HELPER_ERROR;
     }
     *value = (uint32_t)rawValue;
@@ -212,8 +185,7 @@ int32_t Sys_ReadLittleLong(FILE *file, uint32_t *value)
     int32_t rawValue;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (fread(&rawValue, SYS_LONG_READ_SIZE, SYS_FREAD_ELEMENT_COUNT, file) !=
-        SYS_FREAD_ELEMENT_COUNT) {
+    if (fread(&rawValue, SYS_LONG_READ_SIZE, SYS_FREAD_ELEMENT_COUNT, file) != SYS_FREAD_ELEMENT_COUNT) {
         return SYS_FILE_HELPER_ERROR;
     }
     *value = (uint32_t)Sys_LongNoSwap(rawValue);
@@ -235,8 +207,7 @@ int32_t Sys_ZipStringCompareNoCase(const char *left, const char *right)
         }
 
         if (leftChar == '\0') {
-            return rightChar == '\0' ? SYS_CASE_COMPARE_EQUAL
-                                     : SYS_CASE_COMPARE_LEFT_LESS;
+            return rightChar == '\0' ? SYS_CASE_COMPARE_EQUAL : SYS_CASE_COMPARE_LEFT_LESS;
         }
         if (rightChar == '\0') {
             return SYS_CASE_COMPARE_LEFT_GREATER;
@@ -250,8 +221,7 @@ int32_t Sys_ZipStringCompareNoCase(const char *left, const char *right)
     }
 }
 
-int32_t Sys_ZipStringCompare(const char *left, const char *right,
-                             int32_t compareMode)
+int32_t Sys_ZipStringCompare(const char *left, const char *right, int32_t compareMode)
 {
     if (compareMode == SYS_COMPARE_CASE_DEFAULT) {
         compareMode = SYS_COMPARE_CASE_SENSITIVE;
@@ -288,9 +258,7 @@ int32_t Sys_FindZipEndOfCentralDirectory(FILE *file)
         return SYS_ZIP_EOCD_NOT_FOUND;
     }
 
-    for (uint32_t backtrack = SYS_ZIP_EOCD_SIGNATURE_SIZE;
-         backtrack < maxBacktrack &&
-         eocdOffset == SYS_ZIP_EOCD_NOT_FOUND;) {
+    for (uint32_t backtrack = SYS_ZIP_EOCD_SIGNATURE_SIZE; backtrack < maxBacktrack && eocdOffset == SYS_ZIP_EOCD_NOT_FOUND;) {
         if (maxBacktrack < backtrack + SYS_ZIP_EOCD_SCAN_CHUNK_SIZE) {
             backtrack = maxBacktrack;
         } else {
@@ -304,20 +272,15 @@ int32_t Sys_FindZipEndOfCentralDirectory(FILE *file)
         }
 
         if (fseek(file, (long)(int32_t)chunkOffset, SEEK_SET) != 0 ||
-            fread(buffer, chunkLength, SYS_FREAD_ELEMENT_COUNT, file) !=
-                SYS_FREAD_ELEMENT_COUNT) {
+            fread(buffer, chunkLength, SYS_FREAD_ELEMENT_COUNT, file) != SYS_FREAD_ELEMENT_COUNT) {
             break;
         }
 
-        for (int32_t scanOffset = (int32_t)chunkLength -
-                                  (SYS_ZIP_EOCD_SIGNATURE_SIZE - 1);
-             scanOffset >= 1; --scanOffset) {
+        for (int32_t scanOffset = (int32_t)chunkLength - (SYS_ZIP_EOCD_SIGNATURE_SIZE - 1); scanOffset >= 1; --scanOffset) {
             int32_t signatureOffset = scanOffset - 1;
 
-            if (buffer[signatureOffset] == SYS_ZIP_EOCD_SIGNATURE_BYTE_0 &&
-                buffer[scanOffset] == SYS_ZIP_EOCD_SIGNATURE_BYTE_1 &&
-                buffer[scanOffset + 1] == SYS_ZIP_EOCD_SIGNATURE_BYTE_2 &&
-                buffer[scanOffset + 2] == SYS_ZIP_EOCD_SIGNATURE_BYTE_3) {
+            if (buffer[signatureOffset] == SYS_ZIP_EOCD_SIGNATURE_BYTE_0 && buffer[scanOffset] == SYS_ZIP_EOCD_SIGNATURE_BYTE_1 &&
+                buffer[scanOffset + 1] == SYS_ZIP_EOCD_SIGNATURE_BYTE_2 && buffer[scanOffset + 2] == SYS_ZIP_EOCD_SIGNATURE_BYTE_3) {
                 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 eocdOffset = chunkOffset + (uint32_t)signatureOffset;
                 break;

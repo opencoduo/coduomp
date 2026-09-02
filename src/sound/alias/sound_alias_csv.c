@@ -10,9 +10,7 @@ enum {
 /* CoDUOMP.exe 0x00437220..0x004375c1 and coduo_lnxded
  * 0x0806d851..0x0806dae7; canonical name confirmed by the supporting Mac
  * engine symbol. */
-int32_t
-Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
-                       int32_t count, qboolean defaultLoadspec)
+int32_t Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName, int32_t count, qboolean defaultLoadspec)
 {
     void *fileBuffer;
     char *parseCursor;
@@ -53,19 +51,14 @@ Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
             hasFileColumn = qfalse;
 
             do {
-                columnMap[columnCount] =
-                    SND_ALIAS_FIELD_UNKNOWN;
+                columnMap[columnCount] = SND_ALIAS_FIELD_UNKNOWN;
 
-                for (column = SND_ALIAS_FIELD_NAME;
-                     column < SND_ALIAS_FIELD_COUNT;
-                     column++) {
-                    if (Q_stricmp(soundAliasFieldNames[column],
-                                  token) == 0) {
+                for (column = SND_ALIAS_FIELD_NAME; column < SND_ALIAS_FIELD_COUNT; column++) {
+                    if (Q_stricmp(soundAliasFieldNames[column], token) == 0) {
                         columnMap[columnCount] = column;
                         if (column == SND_ALIAS_FIELD_NAME) {
                             hasNameColumn = qtrue;
-                        } else if (column ==
-                                   SND_ALIAS_FIELD_FILE) {
+                        } else if (column == SND_ALIAS_FIELD_FILE) {
                             hasFileColumn = qtrue;
                         }
                         break;
@@ -73,8 +66,7 @@ Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
                 }
 
                 columnCount++;
-                if (columnCount == SOUND_ALIAS_MAX_CSV_COLUMNS ||
-                    parseCursor == NULL || parseCursor[0] == '\n') {
+                if (columnCount == SOUND_ALIAS_MAX_CSV_COLUMNS || parseCursor == NULL || parseCursor[0] == '\n') {
                     break;
                 }
 
@@ -83,8 +75,9 @@ Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
 
             if (!hasNameColumn || !hasFileColumn) {
                 Com_Error(ERR_DROP,
-                          "\x15" "Sound alias file %s: missing 'name' "
-                                 "and/or 'file' columns\n",
+                          "\x15"
+                          "Sound alias file %s: missing 'name' "
+                          "and/or 'file' columns\n",
                           com_soundAliasCurrentFile);
             }
 
@@ -98,9 +91,7 @@ Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
         column = 0;
         while (1) {
             if (token[0] != '\0') {
-                Com_LoadSoundAliasField(sourceName, token,
-                                          columnMap[column], seenColumns,
-                                          &parseNode);
+                Com_LoadSoundAliasField(sourceName, token, columnMap[column], seenColumns, &parseNode);
             }
 
             column++;
@@ -111,11 +102,11 @@ Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
             token = Com_ParseOnLine(&parseCursor);
         }
 
-        if (seenColumns[SND_ALIAS_FIELD_NAME] == 0 ||
-            seenColumns[SND_ALIAS_FIELD_FILE] == 0) {
+        if (seenColumns[SND_ALIAS_FIELD_NAME] == 0 || seenColumns[SND_ALIAS_FIELD_FILE] == 0) {
             Com_Error(ERR_DROP,
-                      "\x15" "Sound alias file %s: alias entry missing name "
-                             "and/or file\n",
+                      "\x15"
+                      "Sound alias file %s: alias entry missing name "
+                      "and/or file\n",
                       com_soundAliasCurrentFile);
         }
 
@@ -132,9 +123,7 @@ Com_LoadSoundAliasFile(const char *csvPath, const char *sourceName,
 /* CoDUOMP.exe 0x004375d0..0x00437777 and coduo_lnxded
  * 0x0806dae7..0x0806dcf2; canonical name confirmed by the supporting Mac
  * engine symbol. */
-snd_alias_parse_node_t *
-Com_SortTempSoundAliases_r(snd_alias_parse_node_t *head,
-                            int32_t *count)
+snd_alias_parse_node_t *Com_SortTempSoundAliases_r(snd_alias_parse_node_t *head, int32_t *count)
 {
     int32_t leftCount;
     int32_t rightCount;
@@ -168,20 +157,17 @@ Com_SortTempSoundAliases_r(snd_alias_parse_node_t *head,
 
     while (1) {
         while (leftCount != 0 && rightCount != 0) {
-            compare = Q_stricmp(leftSorted->aliasName,
-                                rightSorted->aliasName);
+            compare = Q_stricmp(leftSorted->aliasName, rightSorted->aliasName);
             if (compare == 0) {
                 compare = leftSorted->sequence - rightSorted->sequence;
                 if (compare == 0) {
-                    sourceCompare =
-                        Q_stricmp(leftSorted->sourceFile,
-                                  rightSorted->sourceFile);
+                    sourceCompare = Q_stricmp(leftSorted->sourceFile, rightSorted->sourceFile);
                     if (sourceCompare == 0) {
                         Com_Error(ERR_DROP,
-                                  "\x15" "sound alias file %s: duplicate "
-                                         "alias '%s'\n",
-                                  leftSorted->sourceFile,
-                                  leftSorted->aliasName);
+                                  "\x15"
+                                  "sound alias file %s: duplicate "
+                                  "alias '%s'\n",
+                                  leftSorted->sourceFile, leftSorted->aliasName);
                         compare = 0;
                     } else if (sourceCompare < 0) {
                         leftSorted = leftSorted->next;

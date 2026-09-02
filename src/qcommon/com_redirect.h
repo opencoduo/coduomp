@@ -13,8 +13,7 @@ extern char *com_redirectBuffer;
 extern int32_t com_redirectBufferSize;
 extern com_redirect_flush_t com_redirectFlush;
 
-void Com_BeginRedirect(char *buffer, int32_t bufferSize,
-                       com_redirect_flush_t flush);
+void Com_BeginRedirect(char *buffer, int32_t bufferSize, com_redirect_flush_t flush);
 void Com_EndRedirect(void);
 
 #ifdef __cplusplus

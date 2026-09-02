@@ -26,23 +26,18 @@ static void coduomp_script_notify_mark_dead_thread(uint16_t thread)
      * 0x00483dfb) before setting DEAD_THREAD, not the full 0x1f type mask;
      * identical final state but match the instruction. */
     script_variableNodes[thread].packedTypeIndex &= 0xfffffff0u;
-    script_variableNodes[thread].packedTypeIndex |=
-        SCRIPT_VAR_DEAD_THREAD;
+    script_variableNodes[thread].packedTypeIndex |= SCRIPT_VAR_DEAD_THREAD;
 }
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(VariableStackBuffer, pos) == 4,
-               "i386 notify-frame pos offset changed");
-_Static_assert(offsetof(VariableStackBuffer, size) == 8,
-               "i386 notify-frame size offset changed");
-_Static_assert(offsetof(VariableStackBuffer, entries) == 12,
-               "i386 notify-frame header size changed");
+_Static_assert(offsetof(VariableStackBuffer, pos) == 4, "i386 notify-frame pos offset changed");
+_Static_assert(offsetof(VariableStackBuffer, size) == 8, "i386 notify-frame size offset changed");
+_Static_assert(offsetof(VariableStackBuffer, entries) == 12, "i386 notify-frame header size changed");
 #endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed access to the packed native notify-frame
  * value entries used by the recovered save/free paths. */
-static void coduomp_script_notify_read_frame_value(
-    const VariableStackBufferEntry *frameValue, VariableValue *value)
+static void coduomp_script_notify_read_frame_value(const VariableStackBufferEntry *frameValue, VariableValue *value)
 {
     value->type = (script_variable_type_t)frameValue->type;
     value->payload = frameValue->payload;
@@ -50,8 +45,7 @@ static void coduomp_script_notify_read_frame_value(
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed write access to the packed native
  * notify-frame entries. */
-static void coduomp_script_notify_write_frame_value(
-    VariableStackBufferEntry *frameValue, const VariableValue *value)
+static void coduomp_script_notify_write_frame_value(VariableStackBufferEntry *frameValue, const VariableValue *value)
 {
     frameValue->type = (uint8_t)value->type;
     frameValue->payload = value->payload;
@@ -59,9 +53,8 @@ static void coduomp_script_notify_write_frame_value(
 
 /* NOT_FROM_ORIGINAL_SOURCE: source factoring for the repeated removal of a
  * waiter and its now-empty notify containers in 0x0048df00. */
-static void coduomp_script_notify_remove_from_notify_bucket(
-    uint16_t objectHandle, uint16_t waitRoot, uint16_t notifyBucket,
-    uint16_t notifyName, uint16_t waitThread)
+static void coduomp_script_notify_remove_from_notify_bucket(uint16_t objectHandle, uint16_t waitRoot, uint16_t notifyBucket,
+                                                            uint16_t notifyName, uint16_t waitThread)
 {
     RemoveObjectVariable(notifyBucket, waitThread);
     if (GetArraySize(notifyBucket) != 0) {
@@ -69,44 +62,34 @@ static void coduomp_script_notify_remove_from_notify_bucket(
     }
     RemoveVariable(waitRoot, notifyName);
     if (GetArraySize(waitRoot) == 0) {
-        RemoveVariable(objectHandle,
-                                   SCRIPT_NOTIFY_WAIT_KEY);
+        RemoveVariable(objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source factoring for the repeated pause-bucket
  * cleanup in 0x0048df00. */
-static void coduomp_script_notify_remove_from_pause_bucket(
-                                               uint16_t parentHandle,
-                                               uint16_t pauseBucket,
-                                               uint16_t waitThread)
+static void coduomp_script_notify_remove_from_pause_bucket(uint16_t parentHandle, uint16_t pauseBucket, uint16_t waitThread)
 {
     RemoveObjectVariable(pauseBucket, waitThread);
     if (GetArraySize(pauseBucket) == 0) {
-        RemoveObjectVariable(script_pauseArrayHandle,
-                                         parentHandle);
+        RemoveObjectVariable(script_pauseArrayHandle, parentHandle);
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: comparison portion factored from the notify
  * dispatcher's waittillmatch path. */
-static qboolean coduomp_script_notify_frame_matches_args(
-                                              VariableStackBuffer *frame,
-                                              const VariableValue *argTop,
-                                              qboolean *appendArgs)
+static qboolean coduomp_script_notify_frame_matches_args(VariableStackBuffer *frame, const VariableValue *argTop, qboolean *appendArgs)
 {
     uint8_t *codePos = frame->pos;
 
     if (codePos[-1] != 'N') {
-        *appendArgs =
-            argTop->type != SCRIPT_VAR_CODEPOS ? qtrue : qfalse;
+        *appendArgs = argTop->type != SCRIPT_VAR_CODEPOS ? qtrue : qfalse;
         return qtrue;
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     int32_t remaining = (int8_t)codePos[0];
-    const VariableStackBufferEntry *frameValue =
-        frame->entries + (frame->size - remaining);
+    const VariableStackBufferEntry *frameValue = frame->entries + (frame->size - remaining);
     const VariableValue *arg = argTop;
 
     while (remaining != 0) {
@@ -130,10 +113,7 @@ static qboolean coduomp_script_notify_frame_matches_args(
         AddRefToValueOfType(notifyValue.type, notifyValue.u);
 
         if (CheckEquality(&savedValue, &notifyValue) == qfalse) {
-            RuntimeError(
-                frame->pos,
-                (int32_t)(int8_t)codePos[0] - remaining + 2,
-                script_errorMessage, script_errorSource);
+            RuntimeError(frame->pos, (int32_t)(int8_t)codePos[0] - remaining + 2, script_errorMessage, script_errorSource);
             script_errorMessage = NULL;
             script_errorSource = NULL;
             return qfalse;
@@ -151,39 +131,33 @@ static qboolean coduomp_script_notify_frame_matches_args(
 
 /* NOT_FROM_ORIGINAL_SOURCE: frame-resize and append sequence factored from
  * the notify dispatcher's argument append path. */
-static VariableStackBuffer *coduomp_script_notify_append_args_to_frame(
-    VariableStackBuffer *frame, VariableValue *stackBase,
-    VariableValue *argTop)
+static VariableStackBuffer *coduomp_script_notify_append_args_to_frame(VariableStackBuffer *frame, VariableValue *stackBase,
+                                                                       VariableValue *argTop)
 {
     uint16_t oldCount = frame->size;
     size_t appendCount = (size_t)(argTop - stackBase);
     uint16_t newCount = (uint16_t)(oldCount + appendCount);
-    size_t oldSize = offsetof(VariableStackBuffer, entries) +
-                     (size_t)oldCount * sizeof(frame->entries[0]);
-    size_t newSize = offsetof(VariableStackBuffer, entries) +
-                     (size_t)newCount * sizeof(frame->entries[0]);
+    size_t oldSize = offsetof(VariableStackBuffer, entries) + (size_t)oldCount * sizeof(frame->entries[0]);
+    size_t newSize = offsetof(VariableStackBuffer, entries) + (size_t)newCount * sizeof(frame->entries[0]);
 
     if (MT_Realloc(oldSize, newSize) == qfalse) {
 #if defined(WINDOWS_BEHAVIOR)
         VariableStackBuffer *newFrame = MT_Alloc(newSize);
 #else
-        VariableStackBuffer *newFrame =
-            MT_Alloc(newSize, SCRIPT_NOTIFY_MT_TAG);
+        VariableStackBuffer *newFrame = MT_Alloc(newSize, SCRIPT_NOTIFY_MT_TAG);
 #endif
 
         newFrame->time = frame->time;
         newFrame->pos = frame->pos;
         newFrame->localId = frame->localId;
-        memcpy(newFrame->entries, frame->entries,
-               (size_t)oldCount * sizeof(frame->entries[0]));
+        memcpy(newFrame->entries, frame->entries, (size_t)oldCount * sizeof(frame->entries[0]));
         MT_Free(frame, oldSize);
         frame = newFrame;
     }
 
     frame->size = newCount;
     VariableStackBufferEntry *frameValue = frame->entries + oldCount;
-    for (VariableValue *value = stackBase + 1; value <= argTop;
-         ++value) {
+    for (VariableValue *value = stackBase + 1; value <= argTop; ++value) {
         AddRefToValueOfType(value->type, value->u);
         coduomp_script_notify_write_frame_value(frameValue, value);
         ++frameValue;
@@ -197,61 +171,42 @@ void KillThread(uint16_t objectHandle)
 {
     AddRefToObject(objectHandle);
     ClearObjectInternal(objectHandle);
-    RemoveRefToObject(
-        GetSelf(objectHandle));
-    uint16_t parentHandle =
-        GetSelf(objectHandle);
+    RemoveRefToObject(GetSelf(objectHandle));
+    uint16_t parentHandle = GetSelf(objectHandle);
 
-    uint16_t pauseSlot = FindObjectVariable(
-        script_pauseArrayHandle, objectHandle);
+    uint16_t pauseSlot = FindObjectVariable(script_pauseArrayHandle, objectHandle);
     if (pauseSlot != 0) {
-        uint16_t pauseBucket =
-            FindObject(pauseSlot);
+        uint16_t pauseBucket = FindObject(pauseSlot);
 
         for (;;) {
-            uint16_t child =
-                FindNextSibling(pauseBucket);
+            uint16_t child = FindNextSibling(pauseBucket);
             if (child == 0) {
                 break;
             }
 
-            uint16_t waitingThread = (uint16_t)
-                GetVariableName(child);
-            uint16_t waitingSlot =
-                FindObjectVariable(pauseBucket,
-                                               waitingThread);
-            uint16_t waitObject = (uint16_t)
-                GetVariableValueAddress(waitingSlot)->payload;
+            uint16_t waitingThread = (uint16_t)GetVariableName(child);
+            uint16_t waitingSlot = FindObjectVariable(pauseBucket, waitingThread);
+            uint16_t waitObject = (uint16_t)GetVariableValueAddress(waitingSlot)->payload;
 
             VM_CancelNotify(waitObject, waitingThread);
             coduomp_script_notify_mark_dead_thread(waitingThread);
-            RemoveObjectVariable(pauseBucket,
-                                             waitingThread);
+            RemoveObjectVariable(pauseBucket, waitingThread);
             RemoveRefToObject(objectHandle);
         }
 
-        RemoveObjectVariable(script_pauseArrayHandle,
-                                         objectHandle);
+        RemoveObjectVariable(script_pauseArrayHandle, objectHandle);
     }
 
     if (GetVariableName(objectHandle) != 0) {
-        uint16_t parentPauseSlot =
-            FindObjectVariable(script_pauseArrayHandle,
-                                           parentHandle);
-        uint16_t parentPauseBucket =
-            FindObject(parentPauseSlot);
-        uint16_t waitingSlot =
-            FindObjectVariable(parentPauseBucket,
-                                           objectHandle);
-        uint16_t waitObject = (uint16_t)
-            GetVariableValueAddress(waitingSlot)->payload;
+        uint16_t parentPauseSlot = FindObjectVariable(script_pauseArrayHandle, parentHandle);
+        uint16_t parentPauseBucket = FindObject(parentPauseSlot);
+        uint16_t waitingSlot = FindObjectVariable(parentPauseBucket, objectHandle);
+        uint16_t waitObject = (uint16_t)GetVariableValueAddress(waitingSlot)->payload;
 
         VM_CancelNotify(waitObject, objectHandle);
-        RemoveObjectVariable(parentPauseBucket,
-                                         objectHandle);
+        RemoveObjectVariable(parentPauseBucket, objectHandle);
         if (GetArraySize(parentPauseBucket) == 0) {
-            RemoveObjectVariable(script_pauseArrayHandle,
-                                             parentHandle);
+            RemoveObjectVariable(script_pauseArrayHandle, parentHandle);
         }
     }
 
@@ -261,20 +216,14 @@ void KillThread(uint16_t objectHandle)
 
 /* Source: CoDUOMP.exe 0x0048d990..0x0048da46.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0048d990_0048da47.mcode. */
-void VM_ArchiveStack(int32_t valueCount, script_codepos_t codePos,
-                                  uint16_t threadHandle,
-                                  uint16_t objectHandle,
-                                  VariableValue *valueBeforeArgs,
-                                  uint32_t resumeTimeKey)
+void VM_ArchiveStack(int32_t valueCount, script_codepos_t codePos, uint16_t threadHandle, uint16_t objectHandle,
+                     VariableValue *valueBeforeArgs, uint32_t resumeTimeKey)
 {
-    size_t frameSize = offsetof(VariableStackBuffer, entries) +
-                       (size_t)valueCount *
-                           sizeof(VariableStackBufferEntry);
+    size_t frameSize = offsetof(VariableStackBuffer, entries) + (size_t)valueCount * sizeof(VariableStackBufferEntry);
 #if defined(WINDOWS_BEHAVIOR)
     VariableStackBuffer *frame = MT_Alloc(frameSize);
 #else
-    VariableStackBuffer *frame =
-        MT_Alloc(frameSize, SCRIPT_NOTIFY_MT_TAG);
+    VariableStackBuffer *frame = MT_Alloc(frameSize, SCRIPT_NOTIFY_MT_TAG);
 #endif
 
     AddRefToObject(objectHandle);
@@ -300,13 +249,9 @@ void VM_ArchiveStack(int32_t valueCount, script_codepos_t codePos,
     }
     script_callStackDepth = callStackDepth;
 
-    uint16_t stackIndirection =
-        GetVariableIndexInternal(
-            objectHandle, SCRIPT_NOTIFY_STACK_KEY);
-    uint16_t stackSlot =
-        script_variableIndirections[stackIndirection].valueIndex;
-    script_variable_node_t *stackNode =
-        &script_variableNodes[stackSlot];
+    uint16_t stackIndirection = GetVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_STACK_KEY);
+    uint16_t stackSlot = script_variableIndirections[stackIndirection].valueIndex;
+    script_variable_node_t *stackNode = &script_variableNodes[stackSlot];
     stackNode->payload.valuePayload = (uintptr_t)frame;
     stackNode->packedTypeIndex |= SCRIPT_VAR_STACK;
 }
@@ -331,8 +276,7 @@ void Scr_ShutdownSystem(uint8_t unused)
 {
     (void)unused;
 
-    for (uint16_t child = FindNextSibling(script_timeArrayHandle);
-         child != 0; child = FindNextSibling(child)) {
+    for (uint16_t child = FindNextSibling(script_timeArrayHandle); child != 0; child = FindNextSibling(child)) {
         VM_TerminateTime(FindObject(child));
     }
 
@@ -344,8 +288,7 @@ void Scr_ShutdownSystem(uint8_t unused)
 
         uint16_t pauseBucket = FindObject(pauseSlot);
         uint16_t waiterSlot = FindNextSibling(pauseBucket);
-        uint16_t objectHandle =
-            (uint16_t)GetVariableValueAddress(waiterSlot)->payload;
+        uint16_t objectHandle = (uint16_t)GetVariableValueAddress(waiterSlot)->payload;
 
         AddRefToObject(objectHandle);
         ScriptNotify_StopAllWaiters(objectHandle);
@@ -372,8 +315,7 @@ void Scr_ShutdownSystem(uint8_t unused)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0048da50_0048dc4f.mcode.
  * Name and signature: exact same-module Mac symbol
  * VM_TerminateStackInternal(unsigned short, VariableStackBuffer const *). */
-void VM_TerminateStackInternal(uint16_t objectHandle,
-                               VariableStackBuffer *frame)
+void VM_TerminateStackInternal(uint16_t objectHandle, VariableStackBuffer *frame)
 {
     RemoveVariable(objectHandle, SCRIPT_NOTIFY_STACK_KEY);
     RemoveRefToObject(objectHandle);
@@ -381,8 +323,7 @@ void VM_TerminateStackInternal(uint16_t objectHandle,
     RemoveRefToObject(frame->localId);
 
     uint16_t remaining = frame->size;
-    const VariableStackBufferEntry *frameValue =
-        frame->entries + remaining;
+    const VariableStackBufferEntry *frameValue = frame->entries + remaining;
 
     while (remaining != 0) {
         VariableValue value;
@@ -397,18 +338,14 @@ void VM_TerminateStackInternal(uint16_t objectHandle,
             --frameValue;
             coduomp_script_notify_read_frame_value(frameValue, &objectValue);
             --remaining;
-            KillThread(
-                (uint16_t)objectValue.payload);
-            RemoveRefToObject(
-                (uint16_t)objectValue.payload);
+            KillThread((uint16_t)objectValue.payload);
+            RemoveRefToObject((uint16_t)objectValue.payload);
         } else {
             RemoveRefToValue(&value);
         }
     }
 
-    MT_Free(frame,
-            offsetof(VariableStackBuffer, entries) +
-                (size_t)frame->size * sizeof(frame->entries[0]));
+    MT_Free(frame, offsetof(VariableStackBuffer, entries) + (size_t)frame->size * sizeof(frame->entries[0]));
 }
 
 /* Source: CoDUOMP.exe 0x0048dc70..0x0048dcb7.
@@ -417,14 +354,11 @@ void VM_TerminateStackInternal(uint16_t objectHandle,
  * VM_TerminateStack(unsigned short). */
 void VM_TerminateStack(uint16_t objectHandle)
 {
-    uint16_t stackIndirection = FindVariableIndexInternal(
-        objectHandle, SCRIPT_NOTIFY_STACK_KEY);
-    uint16_t stackSlot =
-        script_variableIndirections[stackIndirection].valueIndex;
+    uint16_t stackIndirection = FindVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_STACK_KEY);
+    uint16_t stackSlot = script_variableIndirections[stackIndirection].valueIndex;
 
     if (stackSlot != 0) {
-        VariableStackBuffer *frame = (VariableStackBuffer *)
-            script_variableNodes[stackSlot].payload.valuePayload;
+        VariableStackBuffer *frame = (VariableStackBuffer *)script_variableNodes[stackSlot].payload.valuePayload;
         VM_TerminateStackInternal(objectHandle, frame);
         return;
     }
@@ -439,31 +373,23 @@ void VM_TerminateStack(uint16_t objectHandle)
  * VM_CancelNotify(unsigned short, unsigned short). */
 void VM_CancelNotify(uint16_t objectHandle, uint16_t waitThread)
 {
-    uint16_t notifyName = (uint16_t)(
-        script_variableNodes[waitThread].packedTypeIndex >> 8);
+    uint16_t notifyName = (uint16_t)(script_variableNodes[waitThread].packedTypeIndex >> 8);
 
     ClearThreadNotifyName(waitThread);
 
-    uint16_t waitIndirection = FindVariableIndexInternal(
-        objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
-    uint16_t waitSlot =
-        script_variableIndirections[waitIndirection].valueIndex;
-    uint16_t waitRoot = (uint16_t)
-        script_variableNodes[waitSlot].payload.valuePayload;
+    uint16_t waitIndirection = FindVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
+    uint16_t waitSlot = script_variableIndirections[waitIndirection].valueIndex;
+    uint16_t waitRoot = (uint16_t)script_variableNodes[waitSlot].payload.valuePayload;
 
-    uint16_t notifyIndirection =
-        FindVariableIndexInternal(waitRoot, notifyName);
-    uint16_t notifySlot =
-        script_variableIndirections[notifyIndirection].valueIndex;
-    uint16_t notifyBucket = (uint16_t)
-        script_variableNodes[notifySlot].payload.valuePayload;
+    uint16_t notifyIndirection = FindVariableIndexInternal(waitRoot, notifyName);
+    uint16_t notifySlot = script_variableIndirections[notifyIndirection].valueIndex;
+    uint16_t notifyBucket = (uint16_t)script_variableNodes[notifySlot].payload.valuePayload;
 
     RemoveObjectVariable(notifyBucket, waitThread);
     if (GetArraySize(notifyBucket) == 0) {
         RemoveVariable(waitRoot, notifyName);
         if (GetArraySize(waitRoot) == 0) {
-            RemoveVariable(objectHandle,
-                                       SCRIPT_NOTIFY_WAIT_KEY);
+            RemoveVariable(objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
         }
     }
 }
@@ -474,45 +400,30 @@ void VM_CancelNotify(uint16_t objectHandle, uint16_t waitThread)
  * VM_Terminate(unsigned short). */
 void VM_Terminate(uint16_t objectHandle)
 {
-    uint16_t stackIndirection = FindVariableIndexInternal(
-        objectHandle, SCRIPT_NOTIFY_STACK_KEY);
-    uint16_t stackSlot =
-        script_variableIndirections[stackIndirection].valueIndex;
+    uint16_t stackIndirection = FindVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_STACK_KEY);
+    uint16_t stackSlot = script_variableIndirections[stackIndirection].valueIndex;
     if (stackSlot == 0) {
         return;
     }
 
-    VariableStackBuffer *frame = (VariableStackBuffer *)
-        script_variableNodes[stackSlot].payload.valuePayload;
-    uint16_t ownerHandle = script_variableNodes[objectHandle]
-                               .payload.halves.parentHandle;
+    VariableStackBuffer *frame = (VariableStackBuffer *)script_variableNodes[stackSlot].payload.valuePayload;
+    uint16_t ownerHandle = script_variableNodes[objectHandle].payload.halves.parentHandle;
 
-    uint16_t pauseOwnerIndirection = FindVariableIndexInternal(
-        script_pauseArrayHandle,
-        SCRIPT_NOTIFY_OBJECT_NAME_BASE + ownerHandle);
-    uint16_t pauseOwnerSlot =
-        script_variableIndirections[pauseOwnerIndirection].valueIndex;
+    uint16_t pauseOwnerIndirection = FindVariableIndexInternal(script_pauseArrayHandle, SCRIPT_NOTIFY_OBJECT_NAME_BASE + ownerHandle);
+    uint16_t pauseOwnerSlot = script_variableIndirections[pauseOwnerIndirection].valueIndex;
     if (pauseOwnerSlot != 0) {
-        uint16_t pauseOwnerBucket = (uint16_t)
-            script_variableNodes[pauseOwnerSlot].payload.valuePayload;
-        uint16_t pauseThreadIndirection = FindVariableIndexInternal(
-            pauseOwnerBucket,
-            SCRIPT_NOTIFY_OBJECT_NAME_BASE + objectHandle);
-        uint16_t pauseThreadSlot =
-            script_variableIndirections[pauseThreadIndirection].valueIndex;
+        uint16_t pauseOwnerBucket = (uint16_t)script_variableNodes[pauseOwnerSlot].payload.valuePayload;
+        uint16_t pauseThreadIndirection = FindVariableIndexInternal(pauseOwnerBucket, SCRIPT_NOTIFY_OBJECT_NAME_BASE + objectHandle);
+        uint16_t pauseThreadSlot = script_variableIndirections[pauseThreadIndirection].valueIndex;
 
         if (pauseThreadSlot != 0) {
-            uint16_t waitObject = (uint16_t)
-                script_variableNodes[pauseThreadSlot]
-                    .payload.valuePayload;
+            uint16_t waitObject = (uint16_t)script_variableNodes[pauseThreadSlot].payload.valuePayload;
 
             VM_CancelNotify(waitObject, objectHandle);
             AddRefToObject(objectHandle);
-            RemoveObjectVariable(pauseOwnerBucket,
-                                             objectHandle);
+            RemoveObjectVariable(pauseOwnerBucket, objectHandle);
             if (GetArraySize(pauseOwnerBucket) == 0) {
-                RemoveObjectVariable(
-                    script_pauseArrayHandle, ownerHandle);
+                RemoveObjectVariable(script_pauseArrayHandle, ownerHandle);
             }
             VM_TerminateStackInternal(objectHandle, frame);
             return;
@@ -520,70 +431,51 @@ void VM_Terminate(uint16_t objectHandle)
     }
 
     uint32_t resumeTimeKey = frame->time;
-    uint16_t timeIndirection = FindVariableIndexInternal(
-        script_timeArrayHandle, resumeTimeKey);
-    uint16_t timeSlot =
-        script_variableIndirections[timeIndirection].valueIndex;
-    uint16_t timeBucket = (uint16_t)
-        script_variableNodes[timeSlot].payload.valuePayload;
+    uint16_t timeIndirection = FindVariableIndexInternal(script_timeArrayHandle, resumeTimeKey);
+    uint16_t timeSlot = script_variableIndirections[timeIndirection].valueIndex;
+    uint16_t timeBucket = (uint16_t)script_variableNodes[timeSlot].payload.valuePayload;
 
     AddRefToObject(objectHandle);
     RemoveObjectVariable(timeBucket, objectHandle);
-    if (GetArraySize(timeBucket) == 0 &&
-        resumeTimeKey != script_currentTimeKey) {
-        RemoveVariable(script_timeArrayHandle,
-                                   resumeTimeKey);
+    if (GetArraySize(timeBucket) == 0 && resumeTimeKey != script_currentTimeKey) {
+        RemoveVariable(script_timeArrayHandle, resumeTimeKey);
     }
     VM_TerminateStackInternal(objectHandle, frame);
 }
 
 /* Source: CoDUOMP.exe 0x0048df00..0x0048e36d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0048df00_0048e36e.mcode. */
-void VM_Notify(uint16_t objectHandle, uint16_t notifyName,
-               VariableValue *argTop)
+void VM_Notify(uint16_t objectHandle, uint16_t notifyName, VariableValue *argTop)
 {
-    uint16_t waitIndirection = FindVariableIndexInternal(
-        objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
-    uint16_t waitSlot =
-        script_variableIndirections[waitIndirection].valueIndex;
+    uint16_t waitIndirection = FindVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
+    uint16_t waitSlot = script_variableIndirections[waitIndirection].valueIndex;
     if (waitSlot == 0) {
         return;
     }
-    uint16_t waitRoot = (uint16_t)
-        script_variableNodes[waitSlot].payload.valuePayload;
+    uint16_t waitRoot = (uint16_t)script_variableNodes[waitSlot].payload.valuePayload;
 
-    uint16_t notifyIndirection =
-        FindVariableIndexInternal(waitRoot, notifyName);
-    uint16_t notifySlot =
-        script_variableIndirections[notifyIndirection].valueIndex;
+    uint16_t notifyIndirection = FindVariableIndexInternal(waitRoot, notifyName);
+    uint16_t notifySlot = script_variableIndirections[notifyIndirection].valueIndex;
     if (notifySlot == 0) {
         return;
     }
-    uint16_t notifyBucket = (uint16_t)
-        script_variableNodes[notifySlot].payload.valuePayload;
+    uint16_t notifyBucket = (uint16_t)script_variableNodes[notifySlot].payload.valuePayload;
     AddRefToObject(notifyBucket);
 
     uint16_t child = FindNextSibling(notifyBucket);
     while (child != 0) {
-        uint16_t waitThread = (uint16_t)(
-            script_variableNodes[child].packedTypeIndex >> 8);
-        uint16_t parentHandle = script_variableNodes[waitThread]
-                                    .payload.halves.parentHandle;
+        uint16_t waitThread = (uint16_t)(script_variableNodes[child].packedTypeIndex >> 8);
+        uint16_t parentHandle = script_variableNodes[waitThread].payload.halves.parentHandle;
 
-        uint16_t pauseSlot = FindObjectVariable(
-            script_pauseArrayHandle, parentHandle);
+        uint16_t pauseSlot = FindObjectVariable(script_pauseArrayHandle, parentHandle);
         uint16_t pauseBucket = FindObject(pauseSlot);
 
-        uint16_t stackSlot = FindVariable(
-            waitThread, SCRIPT_NOTIFY_STACK_KEY);
+        uint16_t stackSlot = FindVariable(waitThread, SCRIPT_NOTIFY_STACK_KEY);
         if (stackSlot == 0) {
             ClearThreadNotifyName(waitThread);
             AddRefToObject(waitThread);
-            coduomp_script_notify_remove_from_notify_bucket(
-                objectHandle, waitRoot, notifyBucket, notifyName,
-                waitThread);
-            coduomp_script_notify_remove_from_pause_bucket(
-                parentHandle, pauseBucket, waitThread);
+            coduomp_script_notify_remove_from_notify_bucket(objectHandle, waitRoot, notifyBucket, notifyName, waitThread);
+            coduomp_script_notify_remove_from_pause_bucket(parentHandle, pauseBucket, waitThread);
             AddRefToObject(parentHandle);
             KillThread(waitThread);
             RemoveRefToObject(waitThread);
@@ -593,39 +485,30 @@ void VM_Notify(uint16_t objectHandle, uint16_t notifyName,
             continue;
         }
 
-        script_variable_node_t *stackNode =
-            &script_variableNodes[stackSlot];
-        VariableStackBuffer *frame = (VariableStackBuffer *)
-            stackNode->payload.valuePayload;
+        script_variable_node_t *stackNode = &script_variableNodes[stackSlot];
+        VariableStackBuffer *frame = (VariableStackBuffer *)stackNode->payload.valuePayload;
         qboolean appendArgs;
-        if (coduomp_script_notify_frame_matches_args(frame, argTop,
-                                                     &appendArgs) ==
-            qfalse) {
+        if (coduomp_script_notify_frame_matches_args(frame, argTop, &appendArgs) == qfalse) {
             child = FindNextSibling(child);
             continue;
         }
 
         ClearThreadNotifyName(waitThread);
-        coduomp_script_notify_remove_from_notify_bucket(
-            objectHandle, waitRoot, notifyBucket, notifyName,
-            waitThread);
+        coduomp_script_notify_remove_from_notify_bucket(objectHandle, waitRoot, notifyBucket, notifyName, waitThread);
 
         frame->time = script_currentTimeKey;
-        uint16_t timeSlot = GetVariable(
-            script_timeArrayHandle, script_currentTimeKey);
+        uint16_t timeSlot = GetVariable(script_timeArrayHandle, script_currentTimeKey);
         uint16_t timeBucket = GetArray(timeSlot);
         (void)GetObjectVariable(timeBucket, waitThread);
 
-        coduomp_script_notify_remove_from_pause_bucket(
-            parentHandle, pauseBucket, waitThread);
+        coduomp_script_notify_remove_from_pause_bucket(parentHandle, pauseBucket, waitThread);
 
         if (appendArgs != qfalse) {
             VariableValue *stackBase = argTop;
             while (stackBase->type != SCRIPT_VAR_CODEPOS) {
                 --stackBase;
             }
-            frame = coduomp_script_notify_append_args_to_frame(
-                frame, stackBase, argTop);
+            frame = coduomp_script_notify_append_args_to_frame(frame, stackBase, argTop);
             stackNode->payload.valuePayload = (uintptr_t)frame;
         }
 
@@ -640,42 +523,31 @@ void VM_Notify(uint16_t objectHandle, uint16_t notifyName,
 void ScriptNotify_StopAllWaiters(uint16_t objectHandle)
 {
     for (;;) {
-        uint16_t waitIndirection = FindVariableIndexInternal(
-            objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
-        uint16_t waitSlot =
-            script_variableIndirections[waitIndirection].valueIndex;
+        uint16_t waitIndirection = FindVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_WAIT_KEY);
+        uint16_t waitSlot = script_variableIndirections[waitIndirection].valueIndex;
         if (waitSlot == 0) {
             return;
         }
 
-        uint16_t waitRoot = (uint16_t)
-            script_variableNodes[waitSlot].payload.valuePayload;
+        uint16_t waitRoot = (uint16_t)script_variableNodes[waitSlot].payload.valuePayload;
         uint16_t notifySlot = FindNextSibling(waitRoot);
         if (notifySlot == 0) {
             return;
         }
 
-        uint16_t notifyBucket = (uint16_t)
-            script_variableNodes[notifySlot].payload.valuePayload;
-        uint16_t waiterSlot =
-            FindNextSibling(notifyBucket);
+        uint16_t notifyBucket = (uint16_t)script_variableNodes[notifySlot].payload.valuePayload;
+        uint16_t waiterSlot = FindNextSibling(notifyBucket);
         if (waiterSlot == 0) {
             return;
         }
 
-        uint16_t waitingThread = (uint16_t)
-            GetVariableName(waiterSlot);
+        uint16_t waitingThread = (uint16_t)GetVariableName(waiterSlot);
         AddRefToObject(waitingThread);
 
-        uint16_t stackIndirection = FindVariableIndexInternal(
-            waitingThread, SCRIPT_NOTIFY_STACK_KEY);
-        uint16_t stackSlot =
-            script_variableIndirections[stackIndirection].valueIndex;
+        uint16_t stackIndirection = FindVariableIndexInternal(waitingThread, SCRIPT_NOTIFY_STACK_KEY);
+        uint16_t stackSlot = script_variableIndirections[stackIndirection].valueIndex;
         if (stackSlot != 0) {
-            VariableStackBuffer *frame =
-                (VariableStackBuffer *)
-                    script_variableNodes[stackSlot]
-                        .payload.valuePayload;
+            VariableStackBuffer *frame = (VariableStackBuffer *)script_variableNodes[stackSlot].payload.valuePayload;
             VM_TerminateStackInternal(waitingThread, frame);
         } else {
             KillThread(waitingThread);
@@ -696,20 +568,14 @@ void VM_TerminateTime(uint16_t threadList)
             break;
         }
 
-        uint16_t thread = (uint16_t)
-            GetVariableName(child);
+        uint16_t thread = (uint16_t)GetVariableName(child);
         AddRefToObject(thread);
         RemoveObjectVariable(threadList, thread);
 
-        uint16_t stackIndirection = FindVariableIndexInternal(
-            thread, SCRIPT_NOTIFY_STACK_KEY);
-        uint16_t stackSlot =
-            script_variableIndirections[stackIndirection].valueIndex;
+        uint16_t stackIndirection = FindVariableIndexInternal(thread, SCRIPT_NOTIFY_STACK_KEY);
+        uint16_t stackSlot = script_variableIndirections[stackIndirection].valueIndex;
         if (stackSlot != 0) {
-            VariableStackBuffer *frame =
-                (VariableStackBuffer *)
-                    script_variableNodes[stackSlot]
-                        .payload.valuePayload;
+            VariableStackBuffer *frame = (VariableStackBuffer *)script_variableNodes[stackSlot].payload.valuePayload;
             VM_TerminateStackInternal(thread, frame);
         } else {
             KillThread(thread);
@@ -733,20 +599,14 @@ void VM_Resume(uint16_t threadList)
             break;
         }
 
-        uint16_t objectHandle = (uint16_t)
-            GetVariableName(child);
+        uint16_t objectHandle = (uint16_t)GetVariableName(child);
         RemoveObjectVariable(threadList, objectHandle);
 
-        uint16_t stackIndirection = FindVariableIndexInternal(
-            objectHandle, SCRIPT_NOTIFY_STACK_KEY);
-        uint16_t stackSlot =
-            script_variableIndirections[stackIndirection].valueIndex;
-        VariableStackBuffer *frame =
-            (VariableStackBuffer *)
-                script_variableNodes[stackSlot].payload.valuePayload;
+        uint16_t stackIndirection = FindVariableIndexInternal(objectHandle, SCRIPT_NOTIFY_STACK_KEY);
+        uint16_t stackSlot = script_variableIndirections[stackIndirection].valueIndex;
+        VariableStackBuffer *frame = (VariableStackBuffer *)script_variableNodes[stackSlot].payload.valuePayload;
 
-        RemoveVariable(objectHandle,
-                                   SCRIPT_NOTIFY_STACK_KEY);
+        RemoveVariable(objectHandle, SCRIPT_NOTIFY_STACK_KEY);
 
         uint16_t savedValueCount = frame->size;
         uint16_t valueCount = savedValueCount;
@@ -762,8 +622,7 @@ void VM_Resume(uint16_t threadList)
             ++frameValue;
 
             if (stackTop->type == SCRIPT_VAR_CODEPOS) {
-                script_callStackCodepos[script_callStackDepth] =
-                    (uint8_t *)stackTop->payload;
+                script_callStackCodepos[script_callStackDepth] = (uint8_t *)stackTop->payload;
                 ++script_callStackDepth;
             }
         }
@@ -771,9 +630,7 @@ void VM_Resume(uint16_t threadList)
         script_callStackCodepos[script_callStackDepth] = codePos;
         ++script_callStackDepth;
 
-        MT_Free(frame,
-                offsetof(VariableStackBuffer, entries) +
-                    (size_t)savedValueCount * sizeof(frame->entries[0]));
+        MT_Free(frame, offsetof(VariableStackBuffer, entries) + (size_t)savedValueCount * sizeof(frame->entries[0]));
 
         /* The original reads the thread node's parentHandle field (+2,
          * 0xaa6b6a) and type-checks THAT node (MOVZX word[thread*12+2] then
@@ -802,9 +659,7 @@ void VM_Resume(uint16_t threadList)
                 stackTop -= 2;
             }
         } else {
-            uint16_t result = VM_Execute(
-                stackTop, codePos, threadHandle, objectHandle,
-                &script_valueStack[0]);
+            uint16_t result = VM_Execute(stackTop, codePos, threadHandle, objectHandle, &script_valueStack[0]);
             RemoveRefToObject(result);
             RemoveRefToValue(&script_valueStack[1]);
         }

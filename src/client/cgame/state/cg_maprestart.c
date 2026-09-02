@@ -133,9 +133,7 @@ void CG_MapRestart(qboolean restart)
     if (cg_snap->ps.currentWeapon > 0) {
         int weapon = cg_snap->ps.currentWeapon;
         /* IMUL EAX,0x1c4; MOV EAX,[EAX+0x30413580] -> cg_weaponInfos[weapon].viewDObjSelf. */
-        intptr_t animTree = cgame_syscall(
-            CG_DOBJ_GET_TREE,
-            (intptr_t)cg_weaponInfos[weapon].viewDObjSelf);
+        intptr_t animTree = cgame_syscall(CG_DOBJ_GET_TREE, (intptr_t)cg_weaponInfos[weapon].viewDObjSelf);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (animTree != 0) {
             CG_StopAllWeaponAnims(cg_snap->ps.currentWeapon, animTree);
@@ -145,5 +143,5 @@ void CG_MapRestart(qboolean restart)
     /* Tail call: the compiler unwinds the frame, writes the id 0xf8 into the
      * outgoing argument slot ([ESP+4]) and JMPs into *cgame_syscall so the trap's
      * return becomes this function's return. Modeled as the equivalent tail call. */
-    cgame_syscall(CG_SYNC_TIMES);                 /* MOV [ESP+4],0xf8; JMP *cgame_syscall */
+    cgame_syscall(CG_SYNC_TIMES); /* MOV [ESP+4],0xf8; JMP *cgame_syscall */
 }

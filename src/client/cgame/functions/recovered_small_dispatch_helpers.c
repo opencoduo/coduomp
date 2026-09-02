@@ -24,8 +24,7 @@ cgVoiceChatTable_t *CG_VoiceChatListForClient(int32_t clientNum) /* 0x30039fc0 *
 {
     /* The leaf itself performs the target dword IMUL lookup with no check;
      * callers own the client-number domain. */
-    const clientInfo_t *state =
-        cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], clientNum);
+    const clientInfo_t *state = cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], clientNum);
     if (state->infoValid == 0 || state->team == 1) {
         return &cg_voiceChatTables[0];
     }

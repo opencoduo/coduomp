@@ -60,12 +60,9 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-void CG_ShellShockCalcVibrate(int32_t duration,
-                              const shellshock_t *params,
-                              int32_t elapsed)
+void CG_ShellShockCalcVibrate(int32_t duration, const shellshock_t *params, int32_t elapsed)
 {
-    int32_t remaining = coduo_int32_from_bits((uint32_t)duration -
-                                         (uint32_t)elapsed);
+    int32_t remaining = coduo_int32_from_bits((uint32_t)duration - (uint32_t)elapsed);
 
     if (remaining <= 0) {
         /* Not active this frame: no blur displacement. */
@@ -79,8 +76,8 @@ void CG_ShellShockCalcVibrate(int32_t duration,
      * smoothstep chain straight from st0, so frac stays long double. */
     int32_t divisor = params->blurDivisor;
     long double frac = (remaining < divisor)
-                     ? remaining / (long double)divisor  /* FILD rem / FIDIV divisor (0x3003c66f): both exact, no float store */
-                     : 1.0f;
+                           ? remaining / (long double)divisor /* FILD rem / FIDIV divisor (0x3003c66f): both exact, no float store */
+                           : 1.0f;
 
     /* smoothstep(frac) * scale — the displacement magnitude this frame.
      * Chain order per 0x3003c677..0x3003c688: FADD ST,ST (frac+frac),
@@ -90,20 +87,18 @@ void CG_ShellShockCalcVibrate(int32_t duration,
     /* Phase advances with elapsed time; split into integer row + fractional weight.
      * iphase = floor(phase) via subtracting ~0.5 in double precision then rounding
      * to nearest (x87 default rounding), matching FLD double 0x3007bdb8 / FISTP. */
-    float phase = (long double)elapsed * params->blurRate;  /* FILD elapsed (0x3003c68e), exact; one round at the phase FSTP (0x3003c695) */
+    float phase = (long double)elapsed * params->blurRate; /* FILD elapsed (0x3003c68e), exact; one round at the phase FSTP (0x3003c695) */
     /* long double form: the FSUB result goes straight from the x87 stack into
      * FISTP (0x3003c6ab) with no double store — same idiom as
      * Script_BiasedRoundToInt (0x3003b4b0). w likewise stays in st (0x3003c6b6,
      * no store) all the way through both cubics. */
-    const long double biasedPhase =
-        (long double)phase - (long double)(double)0.4999999990686774;
+    const long double biasedPhase = (long double)phase - (long double)(double)0.4999999990686774;
     int32_t iphase = coduo_x87_fistp_i32(biasedPhase);
-    long double w = phase - iphase;  /* FILD iphase (0x3003c6b2), exact; result never stored (rides st into both cubics) */
+    long double w = phase - iphase; /* FILD iphase (0x3003c6b2), exact; result never stored (rides st into both cubics) */
 
     /* Table row index: 61*duration jitters the base row per shellshock length. */
-    int32_t index = (int32_t)(((uint32_t)duration * 61u +
-                               (uint32_t)iphase) & 127u);
-    const float (*row)[2] = &cg_shellshockRandomTable[index];
+    int32_t index = (int32_t)(((uint32_t)duration * 61u + (uint32_t)iphase) & 127u);
+    const float(*row)[2] = &cg_shellshockRandomTable[index];
 
     /* Two independent cubics over the four-pair window. Keep the original
      * A/B/C/D dependency graph in this function: the DLL has no helper call and

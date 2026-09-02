@@ -39,25 +39,20 @@ enum {
 /* Repeated inline ANGLE2SHORT/SHORT2ANGLE and wrapping delta-angle sequences. */
 #if EMULATE_X87
 #define PM_ANGLE_TO_SHORT(angle_) \
-    ((uint16_t)((uint32_t)x87f_store_i32_trunc(x87f_mul(                 \
-        x87f_load_f32((angle_)),                                        \
-        x87f_load_f32(PM_ANGLE2SHORT_SCALE))) & UINT32_C(0x0000ffff)))
+    ((uint16_t)((uint32_t)x87f_store_i32_trunc(x87f_mul(x87f_load_f32((angle_)), x87f_load_f32(PM_ANGLE2SHORT_SCALE))) & \
+                UINT32_C(0x0000ffff)))
 #else
 #define PM_ANGLE_TO_SHORT(angle_) \
-    ((uint16_t)((uint32_t)coduo_fp_to_i32_extended(                         \
-        (long double)(angle_) * (long double)PM_ANGLE2SHORT_SCALE) & 0xffffu))
+    ((uint16_t)((uint32_t)coduo_fp_to_i32_extended((long double)(angle_) * (long double)PM_ANGLE2SHORT_SCALE) & 0xffffu))
 #endif
-#define PM_SHORT_TO_ANGLE(angle_) \
-    ((float)(uint16_t)(angle_) * PM_SHORT2ANGLE_SCALE)
-#define PM_ADD_DELTA_ANGLE(ps_, axis_, angle_) do {                         \
-    (ps_)->deltaAngles[(axis_)] =                                           \
-        coduo_int32_from_bits((uint32_t)(ps_)->deltaAngles[(axis_)] +            \
-                         (uint32_t)PM_ANGLE_TO_SHORT(angle_));               \
-} while (0)
+#define PM_SHORT_TO_ANGLE(angle_) ((float)(uint16_t)(angle_) * PM_SHORT2ANGLE_SCALE)
+#define PM_ADD_DELTA_ANGLE(ps_, axis_, angle_) \
+    do { \
+        (ps_)->deltaAngles[(axis_)] = coduo_int32_from_bits((uint32_t)(ps_)->deltaAngles[(axis_)] + (uint32_t)PM_ANGLE_TO_SHORT(angle_)); \
+    } while (0)
 
 #if defined(WINDOWS_BEHAVIOR)
-void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
-                         pm_trace_fn_t traceFunc)
+void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd, pm_trace_fn_t traceFunc)
 {
     float previousYaw;
     float commandYaw;
@@ -72,17 +67,12 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
 
     if (ps->pmType >= PM_TYPE_DEAD) {
         if (ps->stats[STAT_DEAD_YAW] == PM_DEATH_YAW_UNSET) {
-            int16_t packed = (int16_t)((uint16_t)ps->deltaAngles[1] +
-                                       (uint16_t)cmd->angles[1]);
+            int16_t packed = (int16_t)((uint16_t)ps->deltaAngles[1] + (uint16_t)cmd->angles[1]);
 #if EMULATE_X87
             const float packedFloat = x87f_store_f32(x87f_load_i32(packed));
-            ps->stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(x87f_mul(
-                x87f_load_f32(packedFloat),
-                x87f_load_f32(PM_SHORT2ANGLE_SCALE)));
+            ps->stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(packedFloat), x87f_load_f32(PM_SHORT2ANGLE_SCALE)));
 #else
-            ps->stats[STAT_DEAD_YAW] = coduo_fp_to_i32_extended(
-                (long double)(float)packed *
-                (long double)PM_SHORT2ANGLE_SCALE);
+            ps->stats[STAT_DEAD_YAW] = coduo_fp_to_i32_extended((long double)(float)packed * (long double)PM_SHORT2ANGLE_SCALE);
 #endif
         }
         PM_UpdateLean(ps, cmd, traceFunc);
@@ -91,19 +81,15 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
 
     previousYaw = ps->viewAngles[1];
     for (int axis = 0; axis < 3; ++axis) {
-        int16_t packed = (int16_t)((uint16_t)ps->deltaAngles[axis] +
-                                   (uint16_t)cmd->angles[axis]);
+        int16_t packed = (int16_t)((uint16_t)ps->deltaAngles[axis] + (uint16_t)cmd->angles[axis]);
 
         if (axis == 0) {
-            int32_t limit = (ps->entityStateFlags & EF_IN_VEHICLE) != 0
-                                ? PM_VEHICLE_PITCH_CLAMP : PM_PITCH_CLAMP;
+            int32_t limit = (ps->entityStateFlags & EF_IN_VEHICLE) != 0 ? PM_VEHICLE_PITCH_CLAMP : PM_PITCH_CLAMP;
             if ((int32_t)packed > limit) {
-                ps->deltaAngles[0] = coduo_int32_from_bits(
-                    (uint32_t)limit - (uint32_t)cmd->angles[0]);
+                ps->deltaAngles[0] = coduo_int32_from_bits((uint32_t)limit - (uint32_t)cmd->angles[0]);
                 packed = (int16_t)limit;
             } else if ((int32_t)packed < -limit) {
-                ps->deltaAngles[0] = coduo_int32_from_bits(
-                    0u - (uint32_t)limit - (uint32_t)cmd->angles[0]);
+                ps->deltaAngles[0] = coduo_int32_from_bits(0u - (uint32_t)limit - (uint32_t)cmd->angles[0]);
                 packed = (int16_t)-limit;
             }
         }
@@ -114,9 +100,7 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
     if ((ps->entityStateFlags & EF_IN_VEHICLE) != 0) {
         pmove_t *move = pm;
         if (move != NULL &&
-            (move->viewClampMaxDeltas[0] != 0.0f ||
-             move->viewClampMaxDeltas[1] != 0.0f ||
-             move->viewClampMaxDeltas[2] != 0.0f)) {
+            (move->viewClampMaxDeltas[0] != 0.0f || move->viewClampMaxDeltas[1] != 0.0f || move->viewClampMaxDeltas[2] != 0.0f)) {
             for (int axis = 0; axis < 3; ++axis) {
                 float limit = move->viewClampMaxDeltas[axis];
                 float delta;
@@ -125,26 +109,21 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
                 if (fabsf(limit) < 1.0f) {
                     continue;
                 }
-                delta = AngleNormalize180(
-                    move->viewClampTargetAngles[axis] - ps->viewAngles[axis]);
+                delta = AngleNormalize180(move->viewClampTargetAngles[axis] - ps->viewAngles[axis]);
                 if (fabsf(delta) > fabsf(limit)) {
                     float excess;
                     if (delta > limit) {
                         excess = delta - limit;
-                        ps->viewAngles[axis] = AngleNormalize360Accurate(
-                            move->viewClampTargetAngles[axis] - limit);
+                        ps->viewAngles[axis] = AngleNormalize360Accurate(move->viewClampTargetAngles[axis] - limit);
                     } else {
                         excess = delta + limit;
-                        ps->viewAngles[axis] = AngleNormalize360Accurate(
-                            move->viewClampTargetAngles[axis] + limit);
+                        ps->viewAngles[axis] = AngleNormalize360Accurate(move->viewClampTargetAngles[axis] + limit);
                     }
                     PM_ADD_DELTA_ANGLE(ps, axis, excess);
                 }
             }
         }
-    } else if ((ps->playerStateFlags & PMF_LADDER) != 0 &&
-               ps->groundEntityNum == ENTITYNUM_NONE &&
-               bg_ladder_yawcap.integer != 0) {
+    } else if ((ps->playerStateFlags & PMF_LADDER) != 0 && ps->groundEntityNum == ENTITYNUM_NONE && bg_ladder_yawcap.integer != 0) {
         float target = vectoyaw(ps->ladderNormal) + 180.0f;
         float limit = (float)bg_ladder_yawcap.integer;
         float delta = AngleNormalize180(target - ps->viewAngles[1]);
@@ -163,15 +142,13 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
 
     if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 ||
         ((ps->playerStateFlags & PMF_PRONE) == 0 &&
-         ((ps->playerStateFlags & PMF_ADS) == 0 ||
-          BG_PM_WEAPON_INFO(ps->currentWeapon)->weaponClass != WEAPCLASS_LMG))) {
+         ((ps->playerStateFlags & PMF_ADS) == 0 || BG_PM_WEAPON_INFO(ps->currentWeapon)->weaponClass != WEAPCLASS_LMG))) {
         goto update_lean;
     }
 
     if (bg_debugProneCheck.integer != 0) {
         /* 0x3000cc53..0x3000cd9f: debug line and prone-yaw arc. */
-        vec3_t start = { ps->psOrigin[0], ps->psOrigin[1],
-                         ps->psOrigin[2] + (float)ps->proneViewHeight };
+        vec3_t start = {ps->psOrigin[0], ps->psOrigin[1], ps->psOrigin[2] + (float)ps->proneViewHeight};
         vec3_t end;
         float pitch = ps->viewAngles[0] * PM_DEGREES_TO_RADIANS;
         float yaw = ps->viewAngles[1] * PM_DEGREES_TO_RADIANS;
@@ -185,17 +162,11 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
          * and preserves the same paired-output interface on other hosts. */
         coduo_x87_sincosf(yaw, &sinYaw, &cosYaw);
         coduo_x87_sincosf(pitch, &sinPitch, &cosPitch);
-        end[0] = (float)((long double)start[0] +
-                         (long double)cosPitch * (long double)cosYaw * 18.0L);
-        end[1] = (float)((long double)start[1] +
-                         (long double)cosPitch * (long double)sinYaw * 18.0L);
-        end[2] = (float)((long double)start[2] -
-                         (long double)sinPitch * 18.0L);
+        end[0] = (float)((long double)start[0] + (long double)cosPitch * (long double)cosYaw * 18.0L);
+        end[1] = (float)((long double)start[1] + (long double)cosPitch * (long double)sinYaw * 18.0L);
+        end[2] = (float)((long double)start[2] - (long double)sinPitch * 18.0L);
         bg_compat_pmove_debug_line(start, end);
-        bg_compat_pmove_debug_arc(
-            start,
-            ps->proneDirection - bg_prone_yawcap.value,
-            ps->proneDirection + bg_prone_yawcap.value);
+        bg_compat_pmove_debug_arc(start, ps->proneDirection - bg_prone_yawcap.value, ps->proneDirection + bg_prone_yawcap.value);
     }
 
     yawDelta = AngleNormalize180(ps->proneDirection - ps->viewAngles[1]);
@@ -205,14 +176,11 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
     }
 
     if ((ps->playerStateFlags & PMF_PRONE) != 0 &&
-        !(BG_PM_WEAPON_INFO(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG &&
-          (ps->playerStateFlags & PMF_ADS) != 0)) {
+        !(BG_PM_WEAPON_INFO(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG && (ps->playerStateFlags & PMF_ADS) != 0)) {
         float moveThreshold = yawLimit - 5.0f;
         qboolean needsTraverse = fabsf(yawDelta) > moveThreshold;
 
-        if (!needsTraverse &&
-            (cmd->forwardmove != 0 || cmd->rightmove != 0) &&
-            yawDelta != 0.0f) {
+        if (!needsTraverse && (cmd->forwardmove != 0 || cmd->rightmove != 0) && yawDelta != 0.0f) {
             needsTraverse = qtrue;
         }
 
@@ -233,12 +201,10 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
                 qboolean candidateValid = qfalse;
 
                 for (;;) {
-                    uint16_t remainingShort = (uint16_t)(
-                        (uint32_t)coduo_fp_to_i32_extended(
-                            ((long double)ps->proneDirection -
-                             (long double)candidate) *
-                            (long double)PM_ANGLE2SHORT_SCALE) &
-                        0xffffu);
+                    uint16_t remainingShort =
+                        (uint16_t)((uint32_t)coduo_fp_to_i32_extended(((long double)ps->proneDirection - (long double)candidate) *
+                                                                      (long double)PM_ANGLE2SHORT_SCALE) &
+                                   0xffffu);
                     float remaining = PM_SHORT_TO_ANGLE(remainingShort);
                     float step;
 
@@ -272,21 +238,14 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
             /* 0x3000cfb6..0x3000d052: the candidate must pass both prone
              * validity checks, in this exact order. */
             qboolean candidateFits =
-                BG_CheckProneValid(
-                    ps->psClientNum, ps->psOrigin, ps->playerMaxs[0],
-                    30.0f, ps->viewAngles[1], NULL, NULL, NULL,
+                BG_CheckProneValid(ps->psClientNum, ps->psOrigin, ps->playerMaxs[0], 30.0f, ps->viewAngles[1], NULL, NULL, NULL,
                     /* 0x3000cfed PUSH 0x1: skipInitialTrace */
-                    qtrue, ps->groundEntityNum != ENTITYNUM_NONE, NULL,
-                    traceFunc, NULL, qfalse, 45.0f, qfalse, NULL) != 0;
+                                   qtrue, ps->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL, qfalse, 45.0f, qfalse, NULL) != 0;
             if (candidateFits) {
                 candidateFits =
-                    BG_CheckProne(
-                        ps->psClientNum, ps->psOrigin, ps->playerMaxs[0],
-                        30.0f, candidate, NULL, NULL, NULL,
+                    BG_CheckProne(ps->psClientNum, ps->psOrigin, ps->playerMaxs[0], 30.0f, candidate, NULL, NULL, NULL,
                         /* 0x3000d037 PUSH 0x1: skipInitialTrace */
-                        qtrue,
-                        ps->groundEntityNum != ENTITYNUM_NONE, NULL,
-                        traceFunc, NULL, qfalse, 45.0f, NULL) != 0;
+                                  qtrue, ps->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL, qfalse, 45.0f, NULL) != 0;
             }
 
             if (candidateFits) {
@@ -294,27 +253,22 @@ void PM_UpdateViewAngles(playerState_t *ps, const usercmd_t *cmd,
             } else {
                 proneBlocked = qtrue;
             }
-candidate_search_done:
-            ;
+        candidate_search_done:;
         }
     }
 
     correction = AngleNormalize180(ps->proneDirection - ps->viewAngles[1]);
 
-    if (correction != 0.0f &&
-        (ps->playerStateFlags & PMF_PRONE) != 0 &&
+    if (correction != 0.0f && (ps->playerStateFlags & PMF_PRONE) != 0 &&
         BG_PM_WEAPON_INFO(ps->currentWeapon)->weaponClass != WEAPCLASS_LMG) {
         float candidateYaw = ps->proneDirection;
         qboolean maySearch = qtrue;
 
         for (;;) {
-            qboolean bodyFits = BG_CheckProneValid(
-                ps->psClientNum, ps->psOrigin, ps->playerMaxs[0], 30.0f,
-                candidateYaw, NULL, NULL, NULL,
+            qboolean bodyFits =
+                BG_CheckProneValid(ps->psClientNum, ps->psOrigin, ps->playerMaxs[0], 30.0f, candidateYaw, NULL, NULL, NULL,
                 /* 0x3000d10b PUSH 0x1: skipInitialTrace */
-                qtrue,
-                ps->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL,
-                qfalse, 45.0f, qfalse, NULL) != 0;
+                                   qtrue, ps->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL, qfalse, 45.0f, qfalse, NULL) != 0;
 
             if (bodyFits && BG_CheckProneTurned(ps, candidateYaw, traceFunc) != 0) {
                 ps->proneDirection = candidateYaw;
@@ -337,8 +291,7 @@ candidate_search_done:
             /* 0x3000d1c8..0x3000d1e7: the remaining delta is recomputed into the
              * SAME slot the next iteration's stop test and the candidate advance
              * read — correction is refreshed every failing iteration. */
-            correction = AngleNormalize180(
-                ps->proneDirection - ps->viewAngles[1]);
+            correction = AngleNormalize180(ps->proneDirection - ps->viewAngles[1]);
             if (!bodyFits) {
                 /* 0x3000d1f3..0x3000d20c: advances by the recomputed delta. */
                 candidateYaw = AngleNormalize360Accurate(candidateYaw + correction);
@@ -367,11 +320,8 @@ candidate_search_done:
         /* 0x3000d2f7..0x3000d308 skips only for > 1 or unordered; equality
          * remains on the softening path. */
         if (fabsf(previousCorrection) <= 1.0f) {
-            float commandCorrection = AngleNormalize180(
-                commandYaw - ps->viewAngles[1]);
-            if ((long double)commandCorrection *
-                    (long double)previousCorrection >
-                0.0L) {
+            float commandCorrection = AngleNormalize180(commandYaw - ps->viewAngles[1]);
+            if ((long double)commandCorrection * (long double)previousCorrection > 0.0L) {
                 float softened = previousCorrection * 0.98000002f;
                 ps->viewAngles[1] = AngleNormalize360Accurate(ps->viewAngles[1] + softened);
                 /* 0x3000d339..0x3000d37c: the 0.98 product overwrites the
@@ -383,8 +333,7 @@ candidate_search_done:
     }
 
     {
-        float pitchDelta = AngleNormalize180(
-            ps->proneTorsoPitch - ps->viewAngles[0]);
+        float pitchDelta = AngleNormalize180(ps->proneTorsoPitch - ps->viewAngles[0]);
         if (pitchDelta > 45.0f) {
             float excess = pitchDelta - 45.0f;
             PM_ADD_DELTA_ANGLE(ps, 0, excess);
@@ -397,8 +346,7 @@ candidate_search_done:
     }
 
 update_lean:
-    if (ps->pmType != PM_TYPE_UFO && ps->pmType != PM_TYPE_NOCLIP &&
-        ps->pmType != PM_TYPE_SPECTATOR) {
+    if (ps->pmType != PM_TYPE_UFO && ps->pmType != PM_TYPE_NOCLIP && ps->pmType != PM_TYPE_SPECTATOR) {
         PM_UpdateLean(ps, cmd, traceFunc);
     }
 }
@@ -410,9 +358,7 @@ update_lean:
  * validation sites; the wrapper forwards to BG_CheckProneValid with the same
  * fixed final option that the Windows body sometimes passes directly.
  */
-void PM_UpdateViewAngles(playerState_t *client,
-                         const usercmd_t *command,
-                         pm_trace_fn_t traceFunc)
+void PM_UpdateViewAngles(playerState_t *client, const usercmd_t *command, pm_trace_fn_t traceFunc)
 {
     float oldYaw;
     float commandYaw;
@@ -422,18 +368,12 @@ void PM_UpdateViewAngles(playerState_t *client,
     }
 
     if (client->pmType >= PM_TYPE_DEAD) {
-        int16_t yawShort = (int16_t)((uint16_t)client->deltaAngles[1] +
-                                     (uint16_t)command->angles[1]);
+        int16_t yawShort = (int16_t)((uint16_t)client->deltaAngles[1] + (uint16_t)command->angles[1]);
         if (client->stats[STAT_DEAD_YAW] == 999) {
 #if EMULATE_X87
-            client->stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(x87f_mul(
-                x87f_load_i32(yawShort),
-                x87f_load_f32(PM_SHORT2ANGLE_SCALE)));
+            client->stats[STAT_DEAD_YAW] = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(yawShort), x87f_load_f32(PM_SHORT2ANGLE_SCALE)));
 #else
-            client->stats[STAT_DEAD_YAW] =
-                coduo_fp_to_i32_extended(
-                    (long double)yawShort *
-                    (long double)PM_SHORT2ANGLE_SCALE);
+            client->stats[STAT_DEAD_YAW] = coduo_fp_to_i32_extended((long double)yawShort * (long double)PM_SHORT2ANGLE_SCALE);
 #endif
         }
         PM_UpdateLean(client, command, traceFunc);
@@ -442,32 +382,26 @@ void PM_UpdateViewAngles(playerState_t *client,
 
     oldYaw = client->viewAngles[1];
     for (int axis = 0; axis < 3; axis++) {
-        int16_t angleShort = (int16_t)((uint16_t)client->deltaAngles[axis] +
-                                       (uint16_t)command->angles[axis]);
+        int16_t angleShort = (int16_t)((uint16_t)client->deltaAngles[axis] + (uint16_t)command->angles[axis]);
         if (axis == 0) {
             int pitchCap = PM_PITCH_CLAMP;
             if ((client->entityStateFlags & EF_IN_VEHICLE) != 0) {
                 pitchCap = PM_VEHICLE_PITCH_CLAMP;
             }
             if (pitchCap < angleShort) {
-                client->deltaAngles[0] = coduo_int32_from_bits(
-                    (uint32_t)pitchCap - (uint32_t)command->angles[0]);
+                client->deltaAngles[0] = coduo_int32_from_bits((uint32_t)pitchCap - (uint32_t)command->angles[0]);
                 angleShort = (int16_t)pitchCap;
             } else if ((int)angleShort < -pitchCap) {
-                client->deltaAngles[0] = coduo_int32_from_bits(
-                    0u - (uint32_t)command->angles[0] - (uint32_t)pitchCap);
+                client->deltaAngles[0] = coduo_int32_from_bits(0u - (uint32_t)command->angles[0] - (uint32_t)pitchCap);
                 angleShort = (int16_t)-pitchCap;
             }
         }
-        client->viewAngles[axis] =
-            (float)angleShort * PM_SHORT2ANGLE_SCALE;
+        client->viewAngles[axis] = (float)angleShort * PM_SHORT2ANGLE_SCALE;
     }
     commandYaw = client->viewAngles[1];
 
     if ((client->entityStateFlags & EF_IN_VEHICLE) == 0) {
-        if ((client->playerStateFlags & PMF_LADDER) != 0 &&
-            client->groundEntityNum == ENTITYNUM_NONE &&
-            bg_ladder_yawcap.integer != 0) {
+        if ((client->playerStateFlags & PMF_LADDER) != 0 && client->groundEntityNum == ENTITYNUM_NONE && bg_ladder_yawcap.integer != 0) {
             const float *ladderNormal = client->ladderNormal;
             float ladderYaw = vectoyaw(ladderNormal) + 180.0f;
             float delta = AngleDelta(ladderYaw, client->viewAngles[1]);
@@ -476,29 +410,20 @@ void PM_UpdateViewAngles(playerState_t *client,
              * exact (fild), never rounded to float; the negated bound is an
              * integer negation. */
             if ((long double)bg_ladder_yawcap.integer < delta ||
-                delta < (long double)coduo_int32_from_bits(
-                            0u - (uint32_t)bg_ladder_yawcap.integer)) {
+                delta < (long double)coduo_int32_from_bits(0u - (uint32_t)bg_ladder_yawcap.integer)) {
 #if EMULATE_X87
                 if ((long double)bg_ladder_yawcap.integer < delta) {
-                    delta = x87f_store_f32(x87f_sub(
-                        x87f_load_f32(delta),
-                        x87f_load_i32(bg_ladder_yawcap.integer)));
+                    delta = x87f_store_f32(x87f_sub(x87f_load_f32(delta), x87f_load_i32(bg_ladder_yawcap.integer)));
                 } else {
-                    delta = x87f_store_f32(x87f_add(
-                        x87f_load_f32(delta),
-                        x87f_load_i32(bg_ladder_yawcap.integer)));
+                    delta = x87f_store_f32(x87f_add(x87f_load_f32(delta), x87f_load_i32(bg_ladder_yawcap.integer)));
                 }
                 PM_ADD_DELTA_ANGLE(client, 1, delta);
                 if (delta > 0.0f) {
                     client->viewAngles[1] = AngleNormalize360Accurate(
-                        x87f_store_f32(x87f_sub(
-                            x87f_load_f32(ladderYaw),
-                            x87f_load_i32(bg_ladder_yawcap.integer))));
+                        x87f_store_f32(x87f_sub(x87f_load_f32(ladderYaw), x87f_load_i32(bg_ladder_yawcap.integer))));
                 } else {
                     client->viewAngles[1] = AngleNormalize360Accurate(
-                        x87f_store_f32(x87f_add(
-                            x87f_load_f32(ladderYaw),
-                            x87f_load_i32(bg_ladder_yawcap.integer))));
+                        x87f_store_f32(x87f_add(x87f_load_f32(ladderYaw), x87f_load_i32(bg_ladder_yawcap.integer))));
                 }
 #else
                 if ((long double)bg_ladder_yawcap.integer < delta) {
@@ -508,29 +433,19 @@ void PM_UpdateViewAngles(playerState_t *client,
                 }
                 PM_ADD_DELTA_ANGLE(client, 1, delta);
                 if (delta > 0.0f) {
-                    client->viewAngles[1] =
-                        AngleNormalize360Accurate(
-                            ladderYaw - (long double)bg_ladder_yawcap.integer);
+                    client->viewAngles[1] = AngleNormalize360Accurate(ladderYaw - (long double)bg_ladder_yawcap.integer);
                 } else {
-                    client->viewAngles[1] =
-                        AngleNormalize360Accurate(
-                            ladderYaw + (long double)bg_ladder_yawcap.integer);
+                    client->viewAngles[1] = AngleNormalize360Accurate(ladderYaw + (long double)bg_ladder_yawcap.integer);
                 }
 #endif
             }
         }
-    } else if (pm != NULL &&
-               (pm->viewClampMaxDeltas[0] != 0.0f ||
-                isnan(pm->viewClampMaxDeltas[0]) ||
-                pm->viewClampMaxDeltas[1] != 0.0f ||
-                isnan(pm->viewClampMaxDeltas[1]) ||
-                pm->viewClampMaxDeltas[2] != 0.0f ||
-                isnan(pm->viewClampMaxDeltas[2]))) {
+    } else if (pm != NULL && (pm->viewClampMaxDeltas[0] != 0.0f || isnan(pm->viewClampMaxDeltas[0]) || pm->viewClampMaxDeltas[1] != 0.0f ||
+                              isnan(pm->viewClampMaxDeltas[1]) || pm->viewClampMaxDeltas[2] != 0.0f || isnan(pm->viewClampMaxDeltas[2]))) {
         for (int axis = 0; axis < 3; axis++) {
             float maxDelta = pm->viewClampMaxDeltas[axis];
             if (fabsf(maxDelta) >= 1.0f) {
-                float delta = AngleDelta(pm->viewClampTargetAngles[axis],
-                                         client->viewAngles[axis]);
+                float delta = AngleDelta(pm->viewClampTargetAngles[axis], client->viewAngles[axis]);
                 if (fabsf(maxDelta) < fabsf(delta)) {
                     if (maxDelta < delta) {
                         delta -= maxDelta;
@@ -539,13 +454,9 @@ void PM_UpdateViewAngles(playerState_t *client,
                     }
                     PM_ADD_DELTA_ANGLE(client, axis, delta);
                     if (delta > 0.0f) {
-                        client->viewAngles[axis] =
-                            AngleNormalize360Accurate(
-                                pm->viewClampTargetAngles[axis] - maxDelta);
+                        client->viewAngles[axis] = AngleNormalize360Accurate(pm->viewClampTargetAngles[axis] - maxDelta);
                     } else {
-                        client->viewAngles[axis] =
-                            AngleNormalize360Accurate(
-                                pm->viewClampTargetAngles[axis] + maxDelta);
+                        client->viewAngles[axis] = AngleNormalize360Accurate(pm->viewClampTargetAngles[axis] + maxDelta);
                     }
                 }
             }
@@ -555,8 +466,7 @@ void PM_UpdateViewAngles(playerState_t *client,
     if ((client->entityStateFlags & EF_RESTRICTED_MASK) == 0 &&
         ((client->playerStateFlags & PMF_PRONE) != 0 ||
          ((client->playerStateFlags & PMF_ADS) != 0 &&
-          ((const weaponInfo_t *)BG_GetInfoForWeapon(client->currentWeapon))->weaponClass ==
-          WEAPCLASS_LMG))) {
+          ((const weaponInfo_t *)BG_GetInfoForWeapon(client->currentWeapon))->weaponClass == WEAPCLASS_LMG))) {
         int blocked = 0;
         float yawDelta;
         float yawCap;
@@ -573,9 +483,7 @@ void PM_UpdateViewAngles(playerState_t *client,
             /* 0x2b72b: in-place add, the viewheight integer entering exact
              * via fild. */
 #if EMULATE_X87
-            start[2] = x87f_store_f32(x87f_add(
-                x87f_load_f32(start[2]),
-                x87f_load_i32(client->proneViewHeight)));
+            start[2] = x87f_store_f32(x87f_add(x87f_load_f32(start[2]), x87f_load_i32(client->proneViewHeight)));
 #else
             start[2] += (long double)client->proneViewHeight;
 #endif
@@ -583,9 +491,7 @@ void PM_UpdateViewAngles(playerState_t *client,
             /* 0x2b763: machine computes the scaled forward term first. */
 #if EMULATE_X87
             for (int i = 0; i < 3; i++) {
-                end[i] = x87f_store_f32(x87f_add(
-                    x87f_mul(x87f_load_f32(forward[i]), x87f_load_f32(18.0f)),
-                    x87f_load_f32(start[i])));
+                end[i] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(forward[i]), x87f_load_f32(18.0f)), x87f_load_f32(start[i])));
             }
 #else
             end[0] = forward[0] * 18.0f + start[0];
@@ -593,10 +499,8 @@ void PM_UpdateViewAngles(playerState_t *client,
             end[2] = forward[2] * 18.0f + start[2];
 #endif
             bg_compat_pmove_debug_line(start, end);
-            bg_compat_pmove_debug_arc(
-                start,
-                client->proneDirection - bg_prone_yawcap.value,
-                client->proneDirection + bg_prone_yawcap.value);
+            bg_compat_pmove_debug_arc(start, client->proneDirection - bg_prone_yawcap.value,
+                                      client->proneDirection + bg_prone_yawcap.value);
         }
 
         yawDelta = AngleDelta(client->proneDirection, client->viewAngles[1]);
@@ -607,12 +511,9 @@ void PM_UpdateViewAngles(playerState_t *client,
         }
 
         if ((client->playerStateFlags & PMF_PRONE) != 0 &&
-            (weaponInfo->weaponClass != WEAPCLASS_LMG ||
-             (client->playerStateFlags & PMF_ADS) == 0) &&
-            (yawDelta > yawCap - 5.0f ||
-             yawDelta < -(yawCap - 5.0f) ||
-             ((command->forwardmove != 0 || command->rightmove != 0) &&
-              (yawDelta != 0.0f || isnan(yawDelta))))) {
+            (weaponInfo->weaponClass != WEAPCLASS_LMG || (client->playerStateFlags & PMF_ADS) == 0) &&
+            (yawDelta > yawCap - 5.0f || yawDelta < -(yawCap - 5.0f) ||
+             ((command->forwardmove != 0 || command->rightmove != 0) && (yawDelta != 0.0f || isnan(yawDelta))))) {
             float targetYaw;
             int keepTrying = 1;
             int proneOK;
@@ -620,26 +521,22 @@ void PM_UpdateViewAngles(playerState_t *client,
             /* frametime * 55.0f full width (0x68018 stock: fmulp; fcomip),
              * non-power-of-two -> emulate the compare. */
 #if EMULATE_X87
-            if (x87f_lt(x87f_abs(x87f_load_f32(yawDelta)),
-                        x87f_mul(x87f_load_f32(pml.frametime),
-                                 x87f_load_f32(55.0f)))) {
+            if (x87f_lt(x87f_abs(x87f_load_f32(yawDelta)), x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(55.0f)))) {
 #else
             if (fabsf(yawDelta) < pml.frametime * 55.0f) {
 #endif
                 targetYaw = client->viewAngles[1];
             } else if (yawDelta > 0.0f) {
 #if EMULATE_X87
-                targetYaw = x87f_store_f32(x87f_sub(
-                    x87f_load_f32(client->proneDirection),
-                    x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(55.0f))));
+                targetYaw = x87f_store_f32(
+                    x87f_sub(x87f_load_f32(client->proneDirection), x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(55.0f))));
 #else
                 targetYaw = client->proneDirection - pml.frametime * 55.0f;
 #endif
             } else {
 #if EMULATE_X87
-                targetYaw = x87f_store_f32(x87f_add(
-                    x87f_load_f32(client->proneDirection),
-                    x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(55.0f))));
+                targetYaw = x87f_store_f32(
+                    x87f_add(x87f_load_f32(client->proneDirection), x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(55.0f))));
 #else
                 targetYaw = client->proneDirection + pml.frametime * 55.0f;
 #endif
@@ -661,18 +558,11 @@ void PM_UpdateViewAngles(playerState_t *client,
                 targetYaw = AngleNormalize360Accurate(targetYaw + yawDelta);
             }
 
-            proneOK = BG_CheckProne(client->psClientNum, client->psOrigin,
-                                    client->playerMaxs[0], 30.0f,
-                                    client->viewAngles[1], NULL, NULL, NULL, 1,
-                                    client->groundEntityNum != ENTITYNUM_NONE,
-                                    NULL, traceFunc, NULL, 0, 45.0f, NULL);
+            proneOK = BG_CheckProne(client->psClientNum, client->psOrigin, client->playerMaxs[0], 30.0f, client->viewAngles[1], NULL, NULL,
+                                    NULL, 1, client->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL, 0, 45.0f, NULL);
             if (proneOK != 0) {
-                proneOK = BG_CheckProne(client->psClientNum, client->psOrigin,
-                                        client->playerMaxs[0], 30.0f,
-                                        targetYaw, NULL, NULL, NULL, 1,
-                                        client->groundEntityNum !=
-                                        ENTITYNUM_NONE, NULL, traceFunc,
-                                        NULL, 0, 45.0f, NULL);
+                proneOK = BG_CheckProne(client->psClientNum, client->psOrigin, client->playerMaxs[0], 30.0f, targetYaw, NULL, NULL, NULL, 1,
+                                        client->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL, 0, 45.0f, NULL);
                 if (proneOK != 0) {
                     client->proneDirection = targetYaw;
                 }
@@ -682,26 +572,20 @@ void PM_UpdateViewAngles(playerState_t *client,
             }
         }
 
-prone_yaw_adjust_done:
+    prone_yaw_adjust_done:
         yawDelta = AngleDelta(client->proneDirection, client->viewAngles[1]);
-        if ((yawDelta != 0.0f || isnan(yawDelta)) &&
-            (client->playerStateFlags & PMF_PRONE) != 0) {
+        if ((yawDelta != 0.0f || isnan(yawDelta)) && (client->playerStateFlags & PMF_PRONE) != 0) {
             weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(client->currentWeapon);
             if (weaponInfo->weaponClass != WEAPCLASS_LMG) {
                 float targetYaw = client->proneDirection;
                 int keepTrying = 1;
                 while (1) {
-                    int proneOK = BG_CheckProne(
-                        client->psClientNum, client->psOrigin,
-                        client->playerMaxs[0], 30.0f, targetYaw,
-                        NULL, NULL, NULL, 1,
-                        client->groundEntityNum != ENTITYNUM_NONE,
-                        NULL, traceFunc, NULL, 0, 45.0f, NULL);
+                    int proneOK = BG_CheckProne(client->psClientNum, client->psOrigin, client->playerMaxs[0], 30.0f, targetYaw, NULL, NULL,
+                                                NULL, 1, client->groundEntityNum != ENTITYNUM_NONE, NULL, traceFunc, NULL, 0, 45.0f, NULL);
                     int yawOK = 1;
 
                     if (proneOK != 0) {
-                        yawOK = BG_CheckProneTurned(client, targetYaw,
-                                                     traceFunc);
+                        yawOK = BG_CheckProneTurned(client, targetYaw, traceFunc);
                     }
                     if (proneOK != 0 && yawOK != 0) {
                         break;
@@ -719,21 +603,17 @@ prone_yaw_adjust_done:
                     }
                     blocked = 1;
                     PM_ADD_DELTA_ANGLE(client, 1, yawDelta);
-                    client->viewAngles[1] =
-                        AngleNormalize360Accurate(client->viewAngles[1] +
-                                                  yawDelta);
-                    yawDelta = AngleDelta(client->proneDirection,
-                                          client->viewAngles[1]);
+                    client->viewAngles[1] = AngleNormalize360Accurate(client->viewAngles[1] + yawDelta);
+                    yawDelta = AngleDelta(client->proneDirection, client->viewAngles[1]);
                     if (proneOK == 0) {
-                        targetYaw =
-                            AngleNormalize360Accurate(targetYaw + yawDelta);
+                        targetYaw = AngleNormalize360Accurate(targetYaw + yawDelta);
                     }
                 }
                 client->proneDirection = targetYaw;
             }
         }
 
-prone_view_clamp_done:
+    prone_view_clamp_done:
         if (yawCap < yawDelta || yawDelta < -yawCap) {
             if (yawCap < yawDelta) {
                 yawDelta -= yawCap;
@@ -742,11 +622,9 @@ prone_view_clamp_done:
             }
             PM_ADD_DELTA_ANGLE(client, 1, yawDelta);
             if (yawDelta > 0.0f) {
-                client->viewAngles[1] =
-                    AngleNormalize360Accurate(client->proneDirection - yawCap);
+                client->viewAngles[1] = AngleNormalize360Accurate(client->proneDirection - yawCap);
             } else {
-                client->viewAngles[1] =
-                    AngleNormalize360Accurate(client->proneDirection + yawCap);
+                client->viewAngles[1] = AngleNormalize360Accurate(client->proneDirection + yawCap);
             }
         }
 
@@ -756,15 +634,12 @@ prone_view_clamp_done:
             client->playerStateFlags |= PMF_PRONE_BLOCKED;
             oldYawDelta = AngleDelta(oldYaw, client->viewAngles[1]);
             if (fabsf(oldYawDelta) <= 1.0f) {
-                float commandYawDelta = AngleDelta(commandYaw,
-                                                   client->viewAngles[1]);
+                float commandYawDelta = AngleDelta(commandYaw, client->viewAngles[1]);
                 /* NO shim: sign test — rounding never flips the sign of the
                  * product, so `> 0.0f` is width-independent (rule 7). */
                 if (oldYawDelta * commandYawDelta > 0.0f) {
                     oldYawDelta *= 0.98f;
-                    client->viewAngles[1] =
-                        AngleNormalize360Accurate(client->viewAngles[1] +
-                                                  oldYawDelta);
+                    client->viewAngles[1] = AngleNormalize360Accurate(client->viewAngles[1] + oldYawDelta);
                     PM_ADD_DELTA_ANGLE(client, 1, oldYawDelta);
                 }
             }
@@ -779,18 +654,14 @@ prone_view_clamp_done:
             }
             PM_ADD_DELTA_ANGLE(client, 0, yawDelta);
             if (yawDelta > 0.0f) {
-                client->viewAngles[0] =
-                    AngleNormalize180Accurate(client->proneTorsoPitch - 45.0f);
+                client->viewAngles[0] = AngleNormalize180Accurate(client->proneTorsoPitch - 45.0f);
             } else {
-                client->viewAngles[0] =
-                    AngleNormalize180Accurate(client->proneTorsoPitch + 45.0f);
+                client->viewAngles[0] = AngleNormalize180Accurate(client->proneTorsoPitch + 45.0f);
             }
         }
     }
 
-    if (client->pmType != PM_TYPE_UFO &&
-        client->pmType != PM_TYPE_NOCLIP &&
-        client->pmType != PM_TYPE_SPECTATOR) {
+    if (client->pmType != PM_TYPE_UFO && client->pmType != PM_TYPE_NOCLIP && client->pmType != PM_TYPE_SPECTATOR) {
         PM_UpdateLean(client, command, traceFunc);
     }
 }

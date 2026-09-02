@@ -13,15 +13,12 @@
  */
 const char *CG_TranslateMessage(const char *src, const char *keyOrFormat)
 {
-    const char *text = (const char *)(intptr_t)cgame_syscall(
-        CG_SE_LOCALIZE_MESSAGE, (intptr_t)src,
-        (intptr_t)keyOrFormat);
+    const char *text = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE, (intptr_t)src, (intptr_t)keyOrFormat);
     const char *open = NULL;
     const char *close = NULL;
 
     for (const char *p = text; *p != '\0'; ++p) {
-        if (p[1] == '\0' || p[2] == '\0' || p[3] == '\0' ||
-            p[4] == '\0') {
+        if (p[1] == '\0' || p[2] == '\0' || p[3] == '\0' || p[4] == '\0') {
             break;
         }
         if (p[0] == '[' && p[1] == '{') {
@@ -79,9 +76,7 @@ const char *CG_TranslateMessage(const char *src, const char *keyOrFormat)
         /* 0x3002d9c9..0x3002d9db forms this size in one target dword and uses a
          * signed JL against 1024. The rebuilt text keeps '[' and ']' while
          * dropping only "{command}". */
-        resultLength = coduo_int32_from_bits(
-            (uint32_t)prefixLength + 1u + (uint32_t)keyLength + 1u +
-            (uint32_t)tailLength);
+        resultLength = coduo_int32_from_bits((uint32_t)prefixLength + 1u + (uint32_t)keyLength + 1u + (uint32_t)tailLength);
         if (resultLength >= (int32_t)sizeof(cg_translateMessageBuffers[0])) {
             Com_Printf("String too long to add key binding: %s\n", text);
             return text;

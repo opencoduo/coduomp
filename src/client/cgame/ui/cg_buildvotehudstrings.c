@@ -88,9 +88,7 @@ void CG_BuildVoteHudStrings(void)
          * adding the current engine milliseconds. (Unlike the timeout builder,
          * there is no separate "active" store here — the voteModified flag at
          * 0x30447cac is set by the dispatcher, not by this batch builder.) */
-        cg_voteTime = coduo_int32_from_bits(
-            (uint32_t)cg_voteTime +
-            (uint32_t)cgame_syscall(CG_MILLISECONDS));
+        cg_voteTime = coduo_int32_from_bits((uint32_t)cg_voteTime + (uint32_t)cgame_syscall(CG_MILLISECONDS));
     }
 
     /* Vote-yes / vote-no tallies, each Q_atoi of its config string. */
@@ -101,9 +99,7 @@ void CG_BuildVoteHudStrings(void)
      * bytes, then force the final byte of the 256-byte buffer to NUL. */
     {
         char *formatted = (char *)(intptr_t)cgame_syscall(
-            CG_SE_LOCALIZE_MESSAGE,
-            &cg_gameState.stringData[cg_gameState.stringOffsets[CS_VOTE_STRING]],
-            "vote string");
+            CG_SE_LOCALIZE_MESSAGE, &cg_gameState.stringData[cg_gameState.stringOffsets[CS_VOTE_STRING]], "vote string");
         strncpy(cg_voteString, formatted, sizeof(cg_voteString) - 1);
     }
 

@@ -21,14 +21,10 @@ typedef struct orientation_s {
     axis_t axis;
 } orientation_t;
 
-typedef char q_orientation_origin_offset[
-    offsetof(orientation_t, origin) == 0x00 ? 1 : -1];
-typedef char q_orientation_origin_extent[
-    sizeof(((orientation_t *)0)->origin) == 0x0c ? 1 : -1];
-typedef char q_orientation_axis_offset[
-    offsetof(orientation_t, axis) == 0x0c ? 1 : -1];
-typedef char q_orientation_axis_extent[
-    sizeof(((orientation_t *)0)->axis) == 0x24 ? 1 : -1];
+typedef char q_orientation_origin_offset[offsetof(orientation_t, origin) == 0x00 ? 1 : -1];
+typedef char q_orientation_origin_extent[sizeof(((orientation_t *)0)->origin) == 0x0c ? 1 : -1];
+typedef char q_orientation_axis_offset[offsetof(orientation_t, axis) == 0x0c ? 1 : -1];
+typedef char q_orientation_axis_extent[sizeof(((orientation_t *)0)->axis) == 0x24 ? 1 : -1];
 typedef char q_orientation_size[sizeof(orientation_t) == 0x30 ? 1 : -1];
 
 #endif

@@ -65,8 +65,7 @@ void CG_PoissonDiskSample(vec2_t out, const vec2_t ref, float minDist)
          * Single expression: the DLL rounds only the (float)rand() cast and the
          * final product (one FSTP at 0x3003b559); the /32768, *2, -1 chain stays
          * in st0. */
-        angle = (((float)coduo_crt_rand() / 32768.0f) * 2.0f - 1.0f)
-                * 3.1415927410125732f; /* +PI at 0x3007bd88 */
+        angle = (((float)coduo_crt_rand() / 32768.0f) * 2.0f - 1.0f) * 3.1415927410125732f; /* +PI at 0x3007bd88 */
 
         /* FSINCOS(angle): cos into cosA, sin into sinA (both from one instruction;
          * ST0=cos, ST1=sin). (0x3003b55f..0x3003b56f) */

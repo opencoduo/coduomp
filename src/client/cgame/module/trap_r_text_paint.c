@@ -36,9 +36,8 @@
  * syscall-id table was recovered), so the id keeps its honest CG_R_TEXT_PAINT name and
  * the wrapper is named trap_R_Text_Paint by its proven trap id.
  */
-int32_t trap_R_Text_Paint(intptr_t a0, intptr_t a1, intptr_t a2,
-                         intptr_t a3, intptr_t a4, intptr_t a5,
-                         intptr_t a6, intptr_t a7, intptr_t a8)
+int32_t trap_R_Text_Paint(intptr_t a0, intptr_t a1, intptr_t a2, intptr_t a3, intptr_t a4, intptr_t a5, intptr_t a6, intptr_t a7,
+                          intptr_t a8)
 {
     return (int32_t)cgame_syscall(CG_R_TEXT_PAINT, a0, a1, a2, a3, a4, a5, a6, a7, a8);
 }

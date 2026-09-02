@@ -37,8 +37,7 @@ void CG_ScrollScoreboardDown(void)
 
     /* 0x30037e6e ADD and 0x30037e7a DEC are modulo-2^32 dword
      * operations; their results are interpreted as signed only by CMP/JLE. */
-    newPos = coduo_int32_from_bits((uint32_t)cg_scoreboardScrollPos +
-                              (uint32_t)cg_scoreboardScrollStep_vmCvar.integer);
+    newPos = coduo_int32_from_bits((uint32_t)cg_scoreboardScrollPos + (uint32_t)cg_scoreboardScrollStep_vmCvar.integer);
     limit = coduo_int32_from_bits((uint32_t)cg_scoreboardNumClients - 1u);
 
     cg_scoreboardScrollPos = newPos;

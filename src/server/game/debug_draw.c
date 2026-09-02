@@ -20,22 +20,10 @@
 #define DEBUG_PI 3.141592653589793 /* original double 0x400921fb54442d18 */
 #define DEBUG_DEGREES_PER_HALF_CIRCLE 180.0 /* original double 0x4066800000000000 */
 
-void trap_AddDebugLine(const float *start, const float *end, const float *color,
-                              int depthTest, int duration);
+void trap_AddDebugLine(const float *start, const float *end, const float *color, int depthTest, int duration);
 
 static const int debugBoxEdges[12][2] = {
-    {0, 1},
-    {0, 2},
-    {0, 4},
-    {1, 3},
-    {1, 5},
-    {2, 3},
-    {2, 6},
-    {3, 7},
-    {4, 5},
-    {4, 6},
-    {5, 7},
-    {6, 7},
+    {0, 1}, {0, 2}, {0, 4}, {1, 3}, {1, 5}, {2, 3}, {2, 6}, {3, 7}, {4, 5}, {4, 6}, {5, 7}, {6, 7},
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: local extraction of G_DebugCircle view-origin setup. */
@@ -50,16 +38,14 @@ static void game_compat_debug_view_origin(vec3_t origin)
 
 /* VERIFIED_DECOMPILER(0x51258, 61258_G_DebugLine.c, VERIFY-DEBUG-DRAW-PACKET-2026-06-17): DATAFLOW_VERIFIED - trap_AddDebugLine wrapper forwards all five arguments in order. */
 /* 0x51258 G_DebugLine */
-void G_DebugLine(const float *start, const float *end, const float *color, int depthTest,
-                 int duration)
+void G_DebugLine(const float *start, const float *end, const float *color, int depthTest, int duration)
 {
     trap_AddDebugLine(start, end, color, depthTest, duration);
 }
 
 /* VERIFIED_DECOMPILER(0x51297, 61297_G_DebugBox.c, VERIFY-DEBUG-DRAW-PACKET-2026-06-17): DATAFLOW_VERIFIED - eight corner stores, mins/maxs bit selection, 12 edge-table lookups, and G_DebugLine arguments checked. */
 /* 0x51297 G_DebugBox */
-void G_DebugBox(const float *mins, const float *maxs, const float *color, int depthTest,
-                int duration)
+void G_DebugBox(const float *mins, const float *maxs, const float *color, int depthTest, int duration)
 {
     vec3_t corners[8];
 
@@ -70,8 +56,7 @@ void G_DebugBox(const float *mins, const float *maxs, const float *color, int de
     }
 
     for (int edge = 0; edge < 12; edge++) {
-        G_DebugLine(corners[debugBoxEdges[edge][0]], corners[debugBoxEdges[edge][1]],
-                    color, depthTest, duration);
+        G_DebugLine(corners[debugBoxEdges[edge][0]], corners[debugBoxEdges[edge][1]], color, depthTest, duration);
     }
 }
 
@@ -94,8 +79,7 @@ static void DebugSinCos(float radians, float *sineOut, float *cosineOut)
 
 /* VERIFIED_DECOMPILER(0x51465, 61465_G_DebugCircleEx.c, VERIFY-DEBUG-DRAW-PACKET-2026-06-17): DATAFLOW_VERIFIED - normal basis setup, 16-point sin/cos loop, radius scaling, point stores, and closed line loop checked. */
 /* 0x51465 G_DebugCircleEx */
-void G_DebugCircleEx(const float *center, float radius, const float *normal,
-                     const float *color, int depthTest, int duration)
+void G_DebugCircleEx(const float *center, float radius, const float *normal, const float *color, int depthTest, int duration)
 {
     vec3_t normalizedNormal;
     vec3_t tangent;
@@ -111,12 +95,9 @@ void G_DebugCircleEx(const float *center, float radius, const float *normal,
         float cosine;
         /* 0x514e3: fild(index) * STEP_RADIANS(QWORD double), one float store. */
 #if EMULATE_X87
-        float radians = x87f_store_f32(x87f_mul(
-            x87f_load_i32(index),
-            x87f_load_f64(DEBUG_CIRCLE_STEP_RADIANS)));
+        float radians = x87f_store_f32(x87f_mul(x87f_load_i32(index), x87f_load_f64(DEBUG_CIRCLE_STEP_RADIANS)));
 #else
-        float radians = (float)((long double)index *
-                                (long double)DEBUG_CIRCLE_STEP_RADIANS);
+        float radians = (float)((long double)index * (long double)DEBUG_CIRCLE_STEP_RADIANS);
 #endif
 
         DebugSinCos(radians, &sine, &cosine);
@@ -128,12 +109,10 @@ void G_DebugCircleEx(const float *center, float radius, const float *normal,
          * second rounding (two VectorMA passes) -> MA shims. */
 #if EMULATE_X87
         for (int c = 0; c < 3; c++) {
-            points[index][c] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(bitangent[c]), x87f_load_f32(sine)),
-                x87f_load_f32(center[c])));
-            points[index][c] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(tangent[c]), x87f_load_f32(cosine)),
-                x87f_load_f32(points[index][c])));
+            points[index][c] =
+                x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(bitangent[c]), x87f_load_f32(sine)), x87f_load_f32(center[c])));
+            points[index][c] =
+                x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(tangent[c]), x87f_load_f32(cosine)), x87f_load_f32(points[index][c])));
         }
 #else
         points[index][0] = center[0] + bitangent[0] * sine;
@@ -152,8 +131,7 @@ void G_DebugCircleEx(const float *center, float radius, const float *normal,
 
 /* VERIFIED_DECOMPILER(0x5139d, 6139d_G_DebugCircle.c, VERIFY-DEBUG-DRAW-PACKET-2026-06-17): DATAFLOW_VERIFIED - view-origin normal path, up-normal branch, level/client offsets, and G_DebugCircleEx argument order checked. */
 /* 0x5139d G_DebugCircle */
-void G_DebugCircle(const float *center, float radius, const float *color, int depthTest,
-                   qboolean useUpNormal, int duration)
+void G_DebugCircle(const float *center, float radius, const float *color, int depthTest, qboolean useUpNormal, int duration)
 {
     vec3_t normal;
 
@@ -175,16 +153,13 @@ void G_DebugCircle(const float *center, float radius, const float *color, int de
 
 /* VERIFIED_DECOMPILER(0x51725, 61725_G_DebugArc.c, VERIFY-DEBUG-DRAW-PACKET-2026-06-17): DATAFLOW_VERIFIED - step calculation, negative-range adjustment, radian conversion constants, 16 point stores, and 15 segment draw loop checked. */
 /* 0x51725 G_DebugArc */
-void G_DebugArc(const float *center, float radius, float startAngle, float endAngle,
-                const float *color, int depthTest, int duration)
+void G_DebugArc(const float *center, float radius, float startAngle, float endAngle, const float *color, int depthTest, int duration)
 {
     vec3_t points[DEBUG_CIRCLE_SEGMENTS];
     /* 0x5173a: (endAngle - startAngle) / 15.0f kept 80-bit, one store -> shim;
      * startAngle -= 360.0f is a single sub (native). */
 #if EMULATE_X87
-    float step = x87f_store_f32(x87f_div(
-        x87f_sub(x87f_load_f32(endAngle), x87f_load_f32(startAngle)),
-        x87f_load_f32(15.0f)));
+    float step = x87f_store_f32(x87f_div(x87f_sub(x87f_load_f32(endAngle), x87f_load_f32(startAngle)), x87f_load_f32(15.0f)));
 #else
     float step = (endAngle - startAngle) / 15.0f;
 #endif
@@ -192,9 +167,7 @@ void G_DebugArc(const float *center, float radius, float startAngle, float endAn
     if (step < 0.0f) {
         startAngle -= 360.0f;
 #if EMULATE_X87
-        step = x87f_store_f32(x87f_div(
-            x87f_sub(x87f_load_f32(endAngle), x87f_load_f32(startAngle)),
-            x87f_load_f32(15.0f)));
+        step = x87f_store_f32(x87f_div(x87f_sub(x87f_load_f32(endAngle), x87f_load_f32(startAngle)), x87f_load_f32(15.0f)));
 #else
         step = (endAngle - startAngle) / 15.0f;
 #endif
@@ -207,27 +180,18 @@ void G_DebugArc(const float *center, float radius, float startAngle, float endAn
          * / DEGREES(QWORD double) kept 80-bit, one float store. */
 #if EMULATE_X87
         float radians = x87f_store_f32(x87f_div(
-            x87f_mul(
-                x87f_add(x87f_mul(x87f_load_i32(index), x87f_load_f32(step)),
-                         x87f_load_f32(startAngle)),
-                x87f_load_f64(DEBUG_PI)),
+            x87f_mul(x87f_add(x87f_mul(x87f_load_i32(index), x87f_load_f32(step)), x87f_load_f32(startAngle)), x87f_load_f64(DEBUG_PI)),
             x87f_load_f64(DEBUG_DEGREES_PER_HALF_CIRCLE)));
 #else
-        float radians = (float)((((long double)index * (long double)step +
-                                  (long double)startAngle) *
-                                 (long double)DEBUG_PI) /
+        float radians = (float)((((long double)index * (long double)step + (long double)startAngle) * (long double)DEBUG_PI) /
                                 (long double)DEBUG_DEGREES_PER_HALF_CIRCLE);
 #endif
 
         DebugSinCos(radians, &sine, &cosine);
         /* center[k] + trig*radius MA, one store -> shim. */
 #if EMULATE_X87
-        points[index][0] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(cosine), x87f_load_f32(radius)),
-            x87f_load_f32(center[0])));
-        points[index][1] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(sine), x87f_load_f32(radius)),
-            x87f_load_f32(center[1])));
+        points[index][0] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(cosine), x87f_load_f32(radius)), x87f_load_f32(center[0])));
+        points[index][1] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(sine), x87f_load_f32(radius)), x87f_load_f32(center[1])));
 #else
         points[index][0] = center[0] + cosine * radius;
         points[index][1] = center[1] + sine * radius;

@@ -9,8 +9,7 @@
 
 const char *trap_SE_TranslateReference(const char *reference)
 {
-    return (const char *)cgame_syscall(CG_SE_TRANSLATE_REFERENCE,
-                                       (intptr_t)reference);
+    return (const char *)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
 }
 
 void trap_R_ClearScene(void)
@@ -25,15 +24,12 @@ void trap_R_RenderScene(const refdef_t *refdef)
 
 void trap_R_ModelBounds(int32_t model, vec3_t mins, vec3_t maxs)
 {
-    (void)cgame_syscall(CG_R_MODEL_BOUNDS, model,
-                        (intptr_t)mins, (intptr_t)maxs);
+    (void)cgame_syscall(CG_R_MODEL_BOUNDS, model, (intptr_t)mins, (intptr_t)maxs);
 }
 
-void trap_Key_GetBindingBuf(int32_t keynum, char *buffer,
-                            int32_t bufferSize)
+void trap_Key_GetBindingBuf(int32_t keynum, char *buffer, int32_t bufferSize)
 {
-    (void)cgame_syscall(CG_KEY_GET_BINDING_BUF, keynum,
-                        (intptr_t)buffer, bufferSize);
+    (void)cgame_syscall(CG_KEY_GET_BINDING_BUF, keynum, (intptr_t)buffer, bufferSize);
 }
 
 void trap_Key_SetBinding(int32_t keynum, const char *binding)
@@ -41,11 +37,9 @@ void trap_Key_SetBinding(int32_t keynum, const char *binding)
     (void)cgame_syscall(CG_KEY_SET_BINDING, keynum, (intptr_t)binding);
 }
 
-void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
-                                int32_t bufferSize)
+void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer, int32_t bufferSize)
 {
-    (void)cgame_syscall(CG_KEY_KEYNUM_TO_STRING_BUF, keynum,
-                        (intptr_t)buffer, bufferSize);
+    (void)cgame_syscall(CG_KEY_KEYNUM_TO_STRING_BUF, keynum, (intptr_t)buffer, bufferSize);
 }
 
 /* Exact Mac cgame symbols at 0x1004d720, 0x1004d6c0, 0x1004d660, and
@@ -63,13 +57,10 @@ void trap_PC_FreeSource(int32_t sourceHandle)
 
 qboolean trap_PC_ReadToken(int32_t sourceHandle, pc_token_t *token)
 {
-    return (qboolean)cgame_syscall(CG_PC_READ_TOKEN, sourceHandle,
-                                   (intptr_t)token);
+    return (qboolean)cgame_syscall(CG_PC_READ_TOKEN, sourceHandle, (intptr_t)token);
 }
 
-void trap_PC_SourceFileAndLine(int32_t sourceHandle, char *filename,
-                               int32_t *line)
+void trap_PC_SourceFileAndLine(int32_t sourceHandle, char *filename, int32_t *line)
 {
-    (void)cgame_syscall(CG_PC_SOURCE_FILE_AND_LINE, sourceHandle,
-                        (intptr_t)filename, (intptr_t)line);
+    (void)cgame_syscall(CG_PC_SOURCE_FILE_AND_LINE, sourceHandle, (intptr_t)filename, (intptr_t)line);
 }

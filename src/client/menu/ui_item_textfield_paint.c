@@ -46,7 +46,8 @@ void Item_TextField_Paint(itemDef_t *item)
     }
 
     editField = (editFieldDef_t *)item->typeData;
-    if (editField == NULL) return;
+    if (editField == NULL)
+        return;
 
     Item_Text_Paint(item);
     buffer[0] = '\0';
@@ -72,8 +73,7 @@ void Item_TextField_Paint(itemDef_t *item)
         }
         display = DC;
         pulseStep = display->realTime / UI_TEXTFIELD_PULSE_PERIOD;
-        fraction = (float)((coduo_x87_sinl((long double)pulseStep) + 1.0f) *
-                           0.5f);
+        fraction = (float)((coduo_x87_sinl((long double)pulseStep) + 1.0f) * 0.5f);
         LerpColor(color, parent->focusColor, dimmed, fraction);
     } else {
         color[0] = item->window.foreColor[0];
@@ -95,32 +95,20 @@ void Item_TextField_Paint(itemDef_t *item)
         int32_t cursorColumn;
 
         display = DC;
-        cursorCharacter = display->getOverstrikeMode()
-            ? UI_TEXTFIELD_OVERSTRIKE_CURSOR
-            : UI_TEXTFIELD_INSERT_CURSOR;
-        valueX = (float)((long double)item->textRect.w +
-                         (long double)item->textRect.x +
-                         (long double)labelGap);
+        cursorCharacter = display->getOverstrikeMode() ? UI_TEXTFIELD_OVERSTRIKE_CURSOR : UI_TEXTFIELD_INSERT_CURSOR;
+        valueX = (float)((long double)item->textRect.w + (long double)item->textRect.x + (long double)labelGap);
         paintOffset = editField->paintOffset;
-        cursorColumn = coduo_int32_from_bits((uint32_t)item->cursorPos -
-                                        (uint32_t)paintOffset);
+        cursorColumn = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)paintOffset);
 
         display = DC;
-        display->drawTextWithCursor(
-            valueX, item->textRect.y, item->font, item->textscale,
-            color, buffer + paintOffset,
-            cursorColumn, cursorCharacter,
-            editField->maxPaintChars, item->textStyle);
+        display->drawTextWithCursor(valueX, item->textRect.y, item->font, item->textscale, color, buffer + paintOffset, cursorColumn,
+                                    cursorCharacter, editField->maxPaintChars, item->textStyle);
     } else {
-        float valueX = (float)((long double)item->textRect.w +
-                               (long double)item->textRect.x +
-                               (long double)labelGap);
+        float valueX = (float)((long double)item->textRect.w + (long double)item->textRect.x + (long double)labelGap);
         int32_t paintOffset = editField->paintOffset;
 
         display = DC;
-        display->drawText(
-            valueX, item->textRect.y, item->font, item->textscale,
-            color, buffer + paintOffset,
-            0, editField->maxPaintChars, item->textStyle);
+        display->drawText(valueX, item->textRect.y, item->font, item->textscale, color, buffer + paintOffset, 0, editField->maxPaintChars,
+                          item->textStyle);
     }
 }

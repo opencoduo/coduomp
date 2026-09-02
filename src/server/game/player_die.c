@@ -41,8 +41,8 @@
  * RECOVERED(UO-GAME-UNK-0208): This function has complex vehicle kill
  * resolution logic for collision kills and vehicle/turret weapon attribution.
  */
-void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
-                int damage, int mod, int weapon, const float *dir, int hitLocation)
+void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int weapon, const float *dir,
+                int hitLocation)
 {
     gclient_t *client = self->client;
     int i;
@@ -52,9 +52,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
     /* Check if player is in a valid state to die */
     if (client->ps.pmType < PM_TYPE_DEAD) {
         /* Resolve turret/vehicle attackers to their controlling player. */
-        if ((attacker->s.eType == ET_TURRET ||
-             attacker->s.eType == ET_VEHICLE) &&
-            attacker->passEntityNum != ENTITYNUM_NONE) {
+        if ((attacker->s.eType == ET_TURRET || attacker->s.eType == ET_VEHICLE) && attacker->passEntityNum != ENTITYNUM_NONE) {
             attacker = &g_entities[attacker->passEntityNum];
         }
 
@@ -67,8 +65,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
 
         if (weapon != 0 && attacker->client != NULL) {
             if ((attacker->client->ps.entityStateFlags & PLAYER_DIE_TURRET_PS_FLAGS) != 0) {
-                gentity_t *turret =
-                    &g_entities[attacker->s.vehicleEntityNum];
+                gentity_t *turret = &g_entities[attacker->s.vehicleEntityNum];
 
                 if (turret->s.eType == ET_TURRET) {
                     weapon = turret->s.weapon;
@@ -99,8 +96,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
         }
 
         /* Play death animation */
-        BG_AnimScriptEvent(&self->client->ps, ANIM_EVENT_DEATH,
-                           qfalse, qtrue);
+        BG_AnimScriptEvent(&self->client->ps, ANIM_EVENT_DEATH, qfalse, qtrue);
 
         /* Add death event */
         G_AddEvent(self, EV_DEATH, 0);
@@ -111,9 +107,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
         /* Update score for spectators watching this player */
         for (i = 0; i < level.maxclients; i++) {
             gclient_t *otherClient = &level.clients[i];
-            if (otherClient->connectedState == 2 &&
-                otherClient->sessionState == 2 &&
-                otherClient->archiveClient == self->s.number) {
+            if (otherClient->connectedState == 2 && otherClient->sessionState == 2 && otherClient->archiveClient == self->s.number) {
                 Cmd_Score_f(&g_entities[i]);
             }
         }

@@ -35,8 +35,7 @@ static uint32_t Sys_RawMilliseconds(void)
     struct timespec now;
 
     (void)clock_gettime(CLOCK_MONOTONIC, &now);
-    return (uint32_t)((uint64_t)now.tv_sec * UINT64_C(1000) +
-                      (uint64_t)now.tv_nsec / UINT64_C(1000000));
+    return (uint32_t)((uint64_t)now.tv_sec * UINT64_C(1000) + (uint64_t)now.tv_nsec / UINT64_C(1000000));
 #endif
 }
 
@@ -61,13 +60,8 @@ uint32_t Sys_Milliseconds(void)
 char *Sys_DateTimeStamp(void)
 {
 #if defined(_WIN32)
-    (void)GetDateFormatA(
-        LOCALE_SYSTEM_DEFAULT, 0, NULL, "yyyyMMdd-",
-        sysDateTimeStamp, SYS_DATE_BUFFER_BYTES);
-    (void)GetTimeFormatA(
-        LOCALE_SYSTEM_DEFAULT, 0, NULL, "HHmmss",
-        &sysDateTimeStamp[SYS_TIME_BUFFER_OFFSET],
-        SYS_TIME_BUFFER_BYTES);
+    (void)GetDateFormatA(LOCALE_SYSTEM_DEFAULT, 0, NULL, "yyyyMMdd-", sysDateTimeStamp, SYS_DATE_BUFFER_BYTES);
+    (void)GetTimeFormatA(LOCALE_SYSTEM_DEFAULT, 0, NULL, "HHmmss", &sysDateTimeStamp[SYS_TIME_BUFFER_OFFSET], SYS_TIME_BUFFER_BYTES);
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: native libc replacement for the two Win32
      * locale-formatting calls. The explicit formats preserve the boundary
@@ -79,12 +73,8 @@ char *Sys_DateTimeStamp(void)
         sysDateTimeStamp[0] = '\0';
         return sysDateTimeStamp;
     }
-    (void)strftime(
-        sysDateTimeStamp, SYS_DATE_BUFFER_BYTES,
-        "%Y%m%d-", &localTime);
-    (void)strftime(
-        &sysDateTimeStamp[SYS_TIME_BUFFER_OFFSET],
-        SYS_TIME_BUFFER_BYTES, "%H%M%S", &localTime);
+    (void)strftime(sysDateTimeStamp, SYS_DATE_BUFFER_BYTES, "%Y%m%d-", &localTime);
+    (void)strftime(&sysDateTimeStamp[SYS_TIME_BUFFER_OFFSET], SYS_TIME_BUFFER_BYTES, "%H%M%S", &localTime);
 #endif
     return sysDateTimeStamp;
 }
@@ -99,8 +89,7 @@ int32_t Sys_RoundFloatToInt(float value)
 {
     const double rounded = rint((double)value);
 
-    if (!(rounded >= (double)INT32_MIN &&
-          rounded <= (double)INT32_MAX)) {
+    if (!(rounded >= (double)INT32_MIN && rounded <= (double)INT32_MAX)) {
         return INT32_MIN;
     }
     return (int32_t)rounded;
@@ -117,7 +106,6 @@ void Sys_SnapVector(vec3_t vector)
         /* FISTP first produces the target signed dword (including INT32_MIN
          * for masked invalid conversions), then FILD/FSTP converts that
          * integer back to a float. */
-        vector[component] =
-            (float)Sys_RoundFloatToInt(vector[component]);
+        vector[component] = (float)Sys_RoundFloatToInt(vector[component]);
     }
 }

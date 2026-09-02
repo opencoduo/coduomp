@@ -9,9 +9,7 @@
 extern "C" {
 #endif
 
-int32_t Com_AddToString(const char *source, char *destination,
-                        int32_t offset, int32_t limit,
-                        qboolean addQuotes);
+int32_t Com_AddToString(const char *source, char *destination, int32_t offset, int32_t limit, qboolean addQuotes);
 
 #ifdef __cplusplus
 }

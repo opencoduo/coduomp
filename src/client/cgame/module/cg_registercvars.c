@@ -56,8 +56,7 @@ void CG_RegisterCvars(void)
     // walk with stride 0x10.
     for (int32_t i = 0; i < CG_CVAR_TABLE_COUNT; ++i) {
         const cvarTable_t *entry = &cg_cvarTable[i];
-        trap_Cvar_Register(entry->vmCvar, entry->cvarName,
-                           entry->defaultString, entry->cvarFlags);
+        trap_Cvar_Register(entry->vmCvar, entry->cvarName, entry->defaultString, entry->cvarFlags);
     }
     cgame_compat_register_presentation_cvars();
 

@@ -50,12 +50,9 @@ void cgame_compat_reset_presentation_state(void)
  * the recovered retail cvar-table shape or its original objects. */
 void cgame_compat_register_presentation_cvars(void)
 {
-    trap_Cvar_Register(&cgameCompatAspectMode, "r_aspectMode", "0",
-                       CVAR_ARCHIVE | CVAR_LATCH);
-    trap_Cvar_Register(&cgameCompatWideHudElems, "cg_wideHudElems", "1",
-                       CVAR_ARCHIVE);
-    trap_Cvar_Register(&cgameCompatDrawFpsMode, "cg_drawFPSMode", "1",
-                       CVAR_ARCHIVE);
+    trap_Cvar_Register(&cgameCompatAspectMode, "r_aspectMode", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    trap_Cvar_Register(&cgameCompatWideHudElems, "cg_wideHudElems", "1", CVAR_ARCHIVE);
+    trap_Cvar_Register(&cgameCompatDrawFpsMode, "cg_drawFPSMode", "1", CVAR_ARCHIVE);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: refreshes the compatibility mirror alongside the
@@ -71,9 +68,7 @@ void cgame_compat_update_presentation_cvars(void)
  * recovered FPS renderer does not own or register compatibility cvar storage. */
 qboolean cgame_compat_uses_simple_fps_display(void)
 {
-    return cgameCompatDrawFpsMode.integer == CG_COMPAT_FPS_DISPLAY_SIMPLE
-               ? qtrue
-               : qfalse;
+    return cgameCompatDrawFpsMode.integer == CG_COMPAT_FPS_DISPLAY_SIMPLE ? qtrue : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared policy gate for view-rectangle and FOV
@@ -102,16 +97,12 @@ void cgame_compat_tile_clear(void)
  * scales. */
 void cgame_compat_configure_screen_scales(void)
 {
-    const float stockXScale = (float)(
-        (long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
-    const float stockYScale = (float)(
-        (long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
+    const float stockXScale = (float)((long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
+    const float stockYScale = (float)((long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
 
     cgs_screenYScale = stockYScale;
-    if (cgame_compat_uses_classic_aspect() == qfalse &&
-        cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
-        (int64_t)cgs_glconfig.vidWidth * 3 >
-            (int64_t)cgs_glconfig.vidHeight * 4) {
+    if (cgame_compat_uses_classic_aspect() == qfalse && cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
+        (int64_t)cgs_glconfig.vidWidth * 3 > (int64_t)cgs_glconfig.vidHeight * 4) {
         cgs_screenXScale = stockYScale;
     } else {
         cgs_screenXScale = stockXScale;
@@ -128,10 +119,8 @@ float cgame_compat_begin_open_menu_canvas(void)
 {
     const float previousXScale = cgs_screenXScale;
 
-    if (cgame_compat_uses_classic_aspect() == qfalse &&
-        cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
-        (int64_t)cgs_glconfig.vidWidth * 3 >
-            (int64_t)cgs_glconfig.vidHeight * 4) {
+    if (cgame_compat_uses_classic_aspect() == qfalse && cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
+        (int64_t)cgs_glconfig.vidWidth * 3 > (int64_t)cgs_glconfig.vidHeight * 4) {
         cgs_screenXScale = cgs_screenYScale;
     }
 
@@ -150,16 +139,12 @@ void cgame_compat_end_open_menu_canvas(float previousXScale)
  * complete HUD-item adapters. */
 static float cgame_compat_virtual_side_width(void)
 {
-    if (cgame_compat_uses_classic_aspect() != qfalse ||
-        cgs_glconfig.vidWidth <= 0 || cgs_glconfig.vidHeight <= 0 ||
-        (int64_t)cgs_glconfig.vidWidth * 3 <=
-            (int64_t)cgs_glconfig.vidHeight * 4) {
+    if (cgame_compat_uses_classic_aspect() != qfalse || cgs_glconfig.vidWidth <= 0 || cgs_glconfig.vidHeight <= 0 ||
+        (int64_t)cgs_glconfig.vidWidth * 3 <= (int64_t)cgs_glconfig.vidHeight * 4) {
         return 0.0f;
     }
 
-    return ((float)cgs_glconfig.vidWidth /
-                ((float)cgs_glconfig.vidHeight / 480.0f) -
-            640.0f) * 0.5f;
+    return ((float)cgs_glconfig.vidWidth / ((float)cgs_glconfig.vidHeight / 480.0f) - 640.0f) * 0.5f;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: one constant translation per composition.  A
@@ -205,15 +190,15 @@ static const struct {
     const char *menuName;
     cgameCompatHudAnchor_t anchor;
 } cgameCompatHudMenuAnchors[] = {
-    { "Compass",    CGAME_COMPAT_HUD_ANCHOR_LEFT },
-    { "stance",     CGAME_COMPAT_HUD_ANCHOR_LEFT },
-    { "weaponinfo", CGAME_COMPAT_HUD_ANCHOR_RIGHT },
-    { "Health",     CGAME_COMPAT_HUD_ANCHOR_RIGHT },
+    {"Compass", CGAME_COMPAT_HUD_ANCHOR_LEFT},
+    {"stance", CGAME_COMPAT_HUD_ANCHOR_LEFT},
+    {"weaponinfo", CGAME_COMPAT_HUD_ANCHOR_RIGHT},
+    {"Health", CGAME_COMPAT_HUD_ANCHOR_RIGHT},
     /* The vehicle menus author the rotating vehicle preview and seat status
      * at the stance position (left) and the health/limiter bars at the right
      * edge in one declared menu, so their items anchor independently. */
-    { "tankstatus", CGAME_COMPAT_HUD_ANCHOR_SPLIT },
-    { "jeepstatus", CGAME_COMPAT_HUD_ANCHOR_SPLIT },
+    {"tankstatus", CGAME_COMPAT_HUD_ANCHOR_SPLIT},
+    {"jeepstatus", CGAME_COMPAT_HUD_ANCHOR_SPLIT},
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: snap one authored horizontal span to a constant
@@ -241,22 +226,14 @@ float cgame_compat_begin_passive_hud_menu(menuDef_t *menu)
     cgameCompatPassiveHudMenuSplit = qfalse;
 
     if (menu != NULL && menu->window.name != NULL) {
-        for (size_t index = 0;
-             index < sizeof(cgameCompatHudMenuAnchors) /
-                         sizeof(cgameCompatHudMenuAnchors[0]);
-             ++index) {
-            if (Q_stricmpn(menu->window.name,
-                           cgameCompatHudMenuAnchors[index].menuName,
-                           CGAME_COMPAT_MENU_NAME_COMPARE_LIMIT) == 0) {
-                if (cgameCompatHudMenuAnchors[index].anchor ==
-                    CGAME_COMPAT_HUD_ANCHOR_SPLIT) {
+        for (size_t index = 0; index < sizeof(cgameCompatHudMenuAnchors) / sizeof(cgameCompatHudMenuAnchors[0]); ++index) {
+            if (Q_stricmpn(menu->window.name, cgameCompatHudMenuAnchors[index].menuName, CGAME_COMPAT_MENU_NAME_COMPARE_LIMIT) == 0) {
+                if (cgameCompatHudMenuAnchors[index].anchor == CGAME_COMPAT_HUD_ANCHOR_SPLIT) {
                     /* The menu window itself is a container; each child item
                      * receives its own span-snapped offset at paint time. */
                     cgameCompatPassiveHudMenuSplit = qtrue;
                 } else {
-                    cgameCompatPassiveHudMenuOffset =
-                        cgame_compat_hud_anchor_offset(
-                            cgameCompatHudMenuAnchors[index].anchor);
+                    cgameCompatPassiveHudMenuOffset = cgame_compat_hud_anchor_offset(cgameCompatHudMenuAnchors[index].anchor);
                 }
                 break;
             }
@@ -283,9 +260,7 @@ float client_ui_compat_begin_item_paint(itemDef_t *item)
 
     if (cgameCompatPassiveHudMenuSplit != qfalse) {
         const float left = item->window.rect.x;
-        const float right = item->window.rect.w >= 0.0f
-                                ? left + item->window.rect.w
-                                : left;
+        const float right = item->window.rect.w >= 0.0f ? left + item->window.rect.w : left;
 
         offset = cgame_compat_span_snap_offset(left, right);
     }
@@ -320,8 +295,7 @@ enum {
     CGAME_COMPAT_HUD_RIGHT_BAND_MIN = 480
 };
 
-void cgame_compat_project_server_hud_item(
-    cgAlignedDrawItem *item, const hudElem_t *elem)
+void cgame_compat_project_server_hud_item(cgAlignedDrawItem *item, const hudElem_t *elem)
 {
     float anchor;
 
@@ -330,8 +304,7 @@ void cgame_compat_project_server_hud_item(
      * animated extents.  (An earlier scoreboard-showing gate here made every
      * persistent snapped element jump when the scoreboard opened; the span
      * classifier made animated meters jump as they drained.) */
-    if (item == NULL || elem == NULL ||
-        cgameCompatWideHudElems.integer == 0) {
+    if (item == NULL || elem == NULL || cgameCompatWideHudElems.integer == 0) {
         return;
     }
 
@@ -339,8 +312,7 @@ void cgame_compat_project_server_hud_item(
      * 0..640 descriptor intact here so the shader boundary adapter below can
      * widen the complete effect. Treating x=0 as an ordinary left HUD anchor
      * would shift the 640-wide effect without expanding its right edge. */
-    if (elem->type == HE_TYPE_SHADER &&
-        item->x == 0.0f && item->width == 640.0f) {
+    if (elem->type == HE_TYPE_SHADER && item->x == 0.0f && item->width == 640.0f) {
         return;
     }
 
@@ -356,11 +328,9 @@ void cgame_compat_project_server_hud_item(
     }
 
     if (anchor <= (float)CGAME_COMPAT_HUD_LEFT_BAND_MAX) {
-        item->x += cgame_compat_hud_anchor_offset(
-            CGAME_COMPAT_HUD_ANCHOR_LEFT);
+        item->x += cgame_compat_hud_anchor_offset(CGAME_COMPAT_HUD_ANCHOR_LEFT);
     } else if (anchor >= (float)CGAME_COMPAT_HUD_RIGHT_BAND_MIN) {
-        item->x += cgame_compat_hud_anchor_offset(
-            CGAME_COMPAT_HUD_ANCHOR_RIGHT);
+        item->x += cgame_compat_hud_anchor_offset(CGAME_COMPAT_HUD_ANCHOR_RIGHT);
     }
 }
 
@@ -395,15 +365,11 @@ static float cgame_compat_physical_overlay_input_x(float x)
 
 /* NOT_FROM_ORIGINAL_SOURCE: physical-pixel stretch-pic submission for weapon
  * reticles and full-screen optical overlays. */
-void cgame_compat_draw_physical_stretch_pic(
-    float x, float y, float width, float height,
-    float s1, float t1, float s2, float t2, int32_t shaderHandle)
+void cgame_compat_draw_physical_stretch_pic(float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+                                            int32_t shaderHandle)
 {
-    trap_R_DrawStretchPic(
-        CG_FloatBits(cgame_compat_physical_overlay_input_x(x)),
-        CG_FloatBits(y), CG_FloatBits(width), CG_FloatBits(height),
-        CG_FloatBits(s1), CG_FloatBits(t1),
-        CG_FloatBits(s2), CG_FloatBits(t2), shaderHandle);
+    trap_R_DrawStretchPic(CG_FloatBits(cgame_compat_physical_overlay_input_x(x)), CG_FloatBits(y), CG_FloatBits(width),
+                          CG_FloatBits(height), CG_FloatBits(s1), CG_FloatBits(t1), CG_FloatBits(s2), CG_FloatBits(t2), shaderHandle);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: fill a complete gameplay effect over the native
@@ -412,10 +378,8 @@ void cgame_compat_draw_physical_stretch_pic(
 void cgame_compat_fill_native_screen_effect(const float color[4])
 {
     trap_R_SetColor(color);
-    cgame_compat_draw_physical_stretch_pic(
-        0.0f, 0.0f,
-        (float)cgs_glconfig.vidWidth, (float)cgs_glconfig.vidHeight,
-        0.0f, 0.0f, 0.0f, 1.0f, cgs_media_whiteShader);
+    cgame_compat_draw_physical_stretch_pic(0.0f, 0.0f, (float)cgs_glconfig.vidWidth, (float)cgs_glconfig.vidHeight, 0.0f, 0.0f, 0.0f, 1.0f,
+                                           cgs_media_whiteShader);
     trap_R_SetColor(NULL);
 }
 
@@ -423,17 +387,14 @@ void cgame_compat_fill_native_screen_effect(const float color[4])
  * only when that object explicitly spans the entire stock 640-wide canvas.
  * This object-boundary rule supports mod killcam and screen-effect shaders
  * without classifying or moving their individual draw primitives. */
-void cgame_compat_expand_native_server_hud_shader(
-    const cgAlignedDrawItem *item, const hudElem_t *elem,
-    float *drawX, float *drawWidth)
+void cgame_compat_expand_native_server_hud_shader(const cgAlignedDrawItem *item, const hudElem_t *elem, float *drawX, float *drawWidth)
 {
     const float sideWidth = cgame_compat_virtual_side_width();
 
     /* No scoreboard-showing gate here either: a full-canvas shader must not
      * change width when the stock scoreboard opens (same transient-state rule
      * as the span snap above). */
-    if (item == NULL || elem == NULL || drawX == NULL || drawWidth == NULL ||
-        elem->type != HE_TYPE_SHADER || sideWidth <= 0.0f ||
+    if (item == NULL || elem == NULL || drawX == NULL || drawWidth == NULL || elem->type != HE_TYPE_SHADER || sideWidth <= 0.0f ||
         *drawX != 0.0f || *drawWidth != 640.0f) {
         return;
     }
@@ -448,22 +409,18 @@ void cgame_compat_expand_native_server_hud_shader(
  * world view. Alpha follows the recovered ADS-overlay transition. */
 void cgame_compat_draw_optical_letterbox(float alpha)
 {
-    const float sideWidth =
-        cgame_compat_virtual_side_width() * cgs_screenYScale;
-    vec4_t black = { 0.0f, 0.0f, 0.0f, alpha };
-    vec4_t white = { 1.0f, 1.0f, 1.0f, alpha };
+    const float sideWidth = cgame_compat_virtual_side_width() * cgs_screenYScale;
+    vec4_t black = {0.0f, 0.0f, 0.0f, alpha};
+    vec4_t white = {1.0f, 1.0f, 1.0f, alpha};
 
     if (sideWidth <= 0.0f)
         return;
 
     trap_R_SetColor(black);
-    cgame_compat_draw_physical_stretch_pic(
-        0.0f, 0.0f, sideWidth, (float)cgs_glconfig.vidHeight,
-        0.0f, 0.0f, 0.0f, 0.0f, cgs_media_whiteShader);
-    cgame_compat_draw_physical_stretch_pic(
-        (float)cgs_glconfig.vidWidth - sideWidth, 0.0f,
-        sideWidth, (float)cgs_glconfig.vidHeight,
-        0.0f, 0.0f, 0.0f, 0.0f, cgs_media_whiteShader);
+    cgame_compat_draw_physical_stretch_pic(0.0f, 0.0f, sideWidth, (float)cgs_glconfig.vidHeight, 0.0f, 0.0f, 0.0f, 0.0f,
+                                           cgs_media_whiteShader);
+    cgame_compat_draw_physical_stretch_pic((float)cgs_glconfig.vidWidth - sideWidth, 0.0f, sideWidth, (float)cgs_glconfig.vidHeight, 0.0f,
+                                           0.0f, 0.0f, 0.0f, cgs_media_whiteShader);
     trap_R_SetColor(white);
 }
 
@@ -476,8 +433,7 @@ void cgame_compat_draw_optical_letterbox(float alpha)
  * endpoint. */
 long double cgame_compat_optical_canvas_right(long double stockViewRight)
 {
-    const float sideWidth =
-        cgame_compat_virtual_side_width() * cgs_screenYScale;
+    const float sideWidth = cgame_compat_virtual_side_width() * cgs_screenYScale;
 
     if (sideWidth <= 0.0f)
         return stockViewRight;
@@ -489,12 +445,10 @@ long double cgame_compat_optical_canvas_right(long double stockViewRight)
  * centered 4:3 canvas. The stock center, scale, draw order, and degenerate
  * edge-mask texture coordinates are preserved; only pixels in the native
  * side extensions are discarded. */
-void cgame_compat_draw_letterboxed_optical_pic(
-    float x, float y, float width, float height,
-    float s1, float t1, float s2, float t2, int32_t shaderHandle)
+void cgame_compat_draw_letterboxed_optical_pic(float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+                                               int32_t shaderHandle)
 {
-    const float sideWidth =
-        cgame_compat_virtual_side_width() * cgs_screenYScale;
+    const float sideWidth = cgame_compat_virtual_side_width() * cgs_screenYScale;
     const float safeLeft = sideWidth;
     const float safeRight = (float)cgs_glconfig.vidWidth - sideWidth;
     const float originalLeft = x;
@@ -505,8 +459,7 @@ void cgame_compat_draw_letterboxed_optical_pic(
     float clippedRight;
 
     if (sideWidth <= 0.0f) {
-        cgame_compat_draw_physical_stretch_pic(
-            x, y, width, height, s1, t1, s2, t2, shaderHandle);
+        cgame_compat_draw_physical_stretch_pic(x, y, width, height, s1, t1, s2, t2, shaderHandle);
         return;
     }
 
@@ -515,28 +468,18 @@ void cgame_compat_draw_letterboxed_optical_pic(
     if (clippedRight <= clippedLeft || width <= 0.0f)
         return;
 
-    s1 = originalS1 + (originalS2 - originalS1) *
-                           ((clippedLeft - originalLeft) / width);
-    s2 = originalS1 + (originalS2 - originalS1) *
-                           ((clippedRight - originalLeft) / width);
-    cgame_compat_draw_physical_stretch_pic(
-        clippedLeft, y, clippedRight - clippedLeft, height,
-        s1, t1, s2, t2, shaderHandle);
+    s1 = originalS1 + (originalS2 - originalS1) * ((clippedLeft - originalLeft) / width);
+    s2 = originalS1 + (originalS2 - originalS1) * ((clippedRight - originalLeft) / width);
+    cgame_compat_draw_physical_stretch_pic(clippedLeft, y, clippedRight - clippedLeft, height, s1, t1, s2, t2, shaderHandle);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: physical-pixel rotated-quad submission for the
  * four ordinary crosshair side pieces. */
-void cgame_compat_draw_physical_quad_pic(
-    float x, float y, float width, float height,
-    float s1, float t1, float s2, float t2,
-    float angleDegrees, int32_t shaderHandle)
+void cgame_compat_draw_physical_quad_pic(float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+                                         float angleDegrees, int32_t shaderHandle)
 {
-    trap_R_DrawQuadPic(
-        CG_FloatBits(cgame_compat_physical_overlay_input_x(x)),
-        CG_FloatBits(y), CG_FloatBits(width), CG_FloatBits(height),
-        CG_FloatBits(s1), CG_FloatBits(t1),
-        CG_FloatBits(s2), CG_FloatBits(t2),
-        CG_FloatBits(angleDegrees), shaderHandle);
+    trap_R_DrawQuadPic(CG_FloatBits(cgame_compat_physical_overlay_input_x(x)), CG_FloatBits(y), CG_FloatBits(width), CG_FloatBits(height),
+                       CG_FloatBits(s1), CG_FloatBits(t1), CG_FloatBits(s2), CG_FloatBits(t2), CG_FloatBits(angleDegrees), shaderHandle);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: converts a 4:3-authored horizontal FOV to Hor+
@@ -556,8 +499,7 @@ long double cgame_compat_spread_fov_x(void)
     long double halfAngle;
     long double tangent;
 
-    if (cgame_compat_uses_classic_aspect() != qfalse ||
-        cg_refdef.width <= 0 || cg_refdef.height <= 0) {
+    if (cgame_compat_uses_classic_aspect() != qfalse || cg_refdef.width <= 0 || cg_refdef.height <= 0) {
         return cg_refdef.fov_x;
     }
 
@@ -567,22 +509,17 @@ long double cgame_compat_spread_fov_x(void)
 
     halfAngle = (long double)cg_refdef.fov_x * (long double)DEG_TO_HALF_RAD;
     tangent = coduo_x87_tanl(halfAngle);
-    return coduo_x87_atan2l(
-               tangent * classicAspect / aspect, 1.0L) *
-           (long double)HALF_RAD_TO_DEG;
+    return coduo_x87_atan2l(tangent * classicAspect / aspect, 1.0L) * (long double)HALF_RAD_TO_DEG;
 }
 
-long double cgame_compat_expand_horizontal_fov(long double baseFov,
-                                               int32_t width,
-                                               int32_t height)
+long double cgame_compat_expand_horizontal_fov(long double baseFov, int32_t width, int32_t height)
 {
     const long double classicAspect = 4.0L / 3.0L;
     long double aspect;
     long double halfAngle;
     long double tangent;
 
-    if (cgame_compat_uses_classic_aspect() != qfalse ||
-        width <= 0 || height <= 0) {
+    if (cgame_compat_uses_classic_aspect() != qfalse || width <= 0 || height <= 0) {
         return baseFov;
     }
 
@@ -592,7 +529,5 @@ long double cgame_compat_expand_horizontal_fov(long double baseFov,
 
     halfAngle = baseFov * (long double)DEG_TO_HALF_RAD;
     tangent = coduo_x87_tanl(halfAngle);
-    return coduo_x87_atan2l(
-               tangent * aspect / classicAspect, 1.0L) *
-           (long double)HALF_RAD_TO_DEG;
+    return coduo_x87_atan2l(tangent * aspect / classicAspect, 1.0L) * (long double)HALF_RAD_TO_DEG;
 }

@@ -41,14 +41,11 @@ static void game_compat_fire_weapon_vector_subtract(const float *a, const float 
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local vector helper factored from recovered fire-weapon bodies. */
-static void game_compat_fire_weapon_vector_ma(const float *start, float scale, const float *dir,
-                                float *out)
+static void game_compat_fire_weapon_vector_ma(const float *start, float scale, const float *dir, float *out)
 {
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        out[i] = x87f_store_f32(x87f_add(
-            x87f_load_f32(start[i]),
-            x87f_mul(x87f_load_f32(dir[i]), x87f_load_f32(scale))));
+        out[i] = x87f_store_f32(x87f_add(x87f_load_f32(start[i]), x87f_mul(x87f_load_f32(dir[i]), x87f_load_f32(scale))));
     }
 #else
     out[0] = start[0] + dir[0] * scale;
@@ -61,10 +58,9 @@ static void game_compat_fire_weapon_vector_ma(const float *start, float scale, c
 static float game_compat_fire_weapon_dot_product(const float *a, const float *b)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(a[0]), x87f_load_f32(b[0])),
-                 x87f_mul(x87f_load_f32(a[1]), x87f_load_f32(b[1]))),
-        x87f_mul(x87f_load_f32(a[2]), x87f_load_f32(b[2]))));
+    return x87f_store_f32(
+        x87f_add(x87f_add(x87f_mul(x87f_load_f32(a[0]), x87f_load_f32(b[0])), x87f_mul(x87f_load_f32(a[1]), x87f_load_f32(b[1]))),
+                 x87f_mul(x87f_load_f32(a[2]), x87f_load_f32(b[2]))));
 #else
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 #endif
@@ -73,17 +69,14 @@ static float game_compat_fire_weapon_dot_product(const float *a, const float *b)
 /* NOT_FROM_ORIGINAL_SOURCE: local predicate factored from recovered tracer checks. */
 static qboolean game_compat_fire_weapon_is_tracer_ammo_type(int ammoType)
 {
-    return ammoType == WEAPON_AMMO_TYPE_LMG ||
-           ammoType == WEAPON_AMMO_TYPE_HMG ||
-           ammoType == WEAPON_AMMO_TYPE_UMG;
+    return ammoType == WEAPON_AMMO_TYPE_LMG || ammoType == WEAPON_AMMO_TYPE_HMG || ammoType == WEAPON_AMMO_TYPE_UMG;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper factored from recovered tracer spawn checks. */
 static float game_compat_fire_weapon_tracer_chance(gentity_t *source)
 {
     float chance = g_tracerChance.value;
-    const weaponInfo_t *weaponInfo =
-        (const weaponInfo_t *)BG_GetInfoForWeapon(source->s.weapon);
+    const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(source->s.weapon);
 
     if (weaponInfo != NULL && game_compat_fire_weapon_is_tracer_ammo_type(weaponInfo->ammoType)) {
         chance = g_tracerChanceLMG.value;
@@ -92,8 +85,7 @@ static float game_compat_fire_weapon_tracer_chance(gentity_t *source)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper factored from recovered tracer spawn code. */
-static void game_compat_fire_weapon_spawn_tracer(const float *start, const float *end,
-                                   const weaponInfo_t *weaponInfo)
+static void game_compat_fire_weapon_spawn_tracer(const float *start, const float *end, const weaponInfo_t *weaponInfo)
 {
     gentity_t *event = G_TempEntity(start, EV_BULLET_TRACER);
 
@@ -102,8 +94,7 @@ static void game_compat_fire_weapon_spawn_tracer(const float *start, const float
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper factored from recovered projectile spread code. */
-static void game_compat_fire_weapon_spread_direction(const weapon_muzzle_t *muzzle, float spread,
-                                       float *dir)
+static void game_compat_fire_weapon_spread_direction(const weapon_muzzle_t *muzzle, float spread, float *dir)
 {
     float x;
     float y;
@@ -115,13 +106,10 @@ static void game_compat_fire_weapon_spread_direction(const weapon_muzzle_t *muzz
     /* spread*PI/180 in x87 width, then rounded to the double `tan` arg. (tan
      * itself is a libm transcendental — a separate faithfulness concern; the
      * arg is what this shim keeps exact.) */
-    radians = x87f_store_f64(x87f_div(
-        x87f_mul(x87f_load_f32(spread),
-                 x87f_load_f64(WEAPON_SPREAD_PI)),
-        x87f_load_f64(WEAPON_SPREAD_DEGREES)));
+    radians =
+        x87f_store_f64(x87f_div(x87f_mul(x87f_load_f32(spread), x87f_load_f64(WEAPON_SPREAD_PI)), x87f_load_f64(WEAPON_SPREAD_DEGREES)));
 #else
-    radians = (double)(((long double)spread * (long double)WEAPON_SPREAD_PI) /
-                       (long double)WEAPON_SPREAD_DEGREES);
+    radians = (double)(((long double)spread * (long double)WEAPON_SPREAD_PI) / (long double)WEAPON_SPREAD_DEGREES);
 #endif
     tangent = (float)tan(radians);
     radius = tangent * WEAPON_PROJECTILE_SPREAD_DISTANCE;
@@ -141,14 +129,10 @@ static void game_compat_fire_weapon_spread_direction(const weapon_muzzle_t *muzz
     dir[2] = muzzle->forward[2] * WEAPON_PROJECTILE_SPREAD_DISTANCE;
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        dir[i] = x87f_store_f32(x87f_add(
-            x87f_load_f32(dir[i]),
-            x87f_mul(x87f_load_f32(muzzle->right[i]), x87f_load_f32(x))));
+        dir[i] = x87f_store_f32(x87f_add(x87f_load_f32(dir[i]), x87f_mul(x87f_load_f32(muzzle->right[i]), x87f_load_f32(x))));
     }
     for (int i = 0; i < 3; i++) {
-        dir[i] = x87f_store_f32(x87f_add(
-            x87f_load_f32(dir[i]),
-            x87f_mul(x87f_load_f32(muzzle->up[i]), x87f_load_f32(y))));
+        dir[i] = x87f_store_f32(x87f_add(x87f_load_f32(dir[i]), x87f_mul(x87f_load_f32(muzzle->up[i]), x87f_load_f32(y))));
     }
 #else
     dir[0] += muzzle->right[0] * x;
@@ -162,18 +146,15 @@ static void game_compat_fire_weapon_spread_direction(const weapon_muzzle_t *muzz
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper factored from recovered projectile velocity code. */
-static void game_compat_fire_weapon_add_projectile_inherited_velocity(gentity_t *projectile,
-                                                      gentity_t *shooter,
-                                                      const float *dir)
+static void game_compat_fire_weapon_add_projectile_inherited_velocity(gentity_t *projectile, gentity_t *shooter, const float *dir)
 {
     float push;
 
     push = game_compat_fire_weapon_dot_product(shooter->client->ps.velocity, dir);
 #if EMULATE_X87
     for (int i = 0; i < 3; i++) {
-        projectile->s.pos.trDelta[i] = x87f_store_f32(x87f_add(
-            x87f_load_f32(projectile->s.pos.trDelta[i]),
-            x87f_mul(x87f_load_f32(dir[i]), x87f_load_f32(push))));
+        projectile->s.pos.trDelta[i] =
+            x87f_store_f32(x87f_add(x87f_load_f32(projectile->s.pos.trDelta[i]), x87f_mul(x87f_load_f32(dir[i]), x87f_load_f32(push))));
     }
 #else
     projectile->s.pos.trDelta[0] += dir[0] * push;
@@ -213,8 +194,7 @@ void Weapon_Melee(gentity_t *ent, const float *muzzlePoints)
     gentity_t *hitEnt;
 
     game_compat_fire_weapon_vector_ma(&muzzlePoints[9], 64.0f, muzzlePoints, end);
-    trap_LocationalTrace(&trace, &muzzlePoints[9], end, ent->s.number,
-                         MASK_BULLETTRACE, bulletPriorityMap);
+    trap_LocationalTrace(&trace, &muzzlePoints[9], end, ent->s.number, MASK_BULLETTRACE, bulletPriorityMap);
 
     damage = ((const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon))->meleeDamage;
     G_CheckHitTriggerDamage(ent, &muzzlePoints[9], trace.endpos, damage, MOD_MELEE);
@@ -224,18 +204,15 @@ void Weapon_Melee(gentity_t *ent, const float *muzzlePoints)
     }
 
     hitEnt = &g_entities[trace.entityNum];
-    event = G_TempEntity(trace.endpos,
-                         hitEnt->client == NULL ? EV_MELEE_MISS : EV_MELEE_HIT);
+    event = G_TempEntity(trace.endpos, hitEnt->client == NULL ? EV_MELEE_MISS : EV_MELEE_HIT);
     event->s.vehicleEntityNum = trace.entityNum;
     event->s.tempEffectId = DirToByte(trace.normal);
     event->s.weapon = ent->s.weapon;
 
     if (trace.entityNum != ENTITYNUM_WORLD && game_compat_gentity_can_take_damage(hitEnt)) {
-        int meleeDamage = coduo_int32_from_bits(
-            (uint32_t)coduo_server_randrange(0, 5) + (uint32_t)damage);
+        int meleeDamage = coduo_int32_from_bits((uint32_t)coduo_server_randrange(0, 5) + (uint32_t)damage);
 
-        G_Damage(hitEnt, ent, ent, muzzlePoints, trace.endpos,
-                 meleeDamage, 0, MOD_MELEE, trace.partGroup);
+        G_Damage(hitEnt, ent, ent, muzzlePoints, trace.endpos, meleeDamage, 0, MOD_MELEE, trace.partGroup);
     }
 }
 
@@ -260,8 +237,7 @@ void SnapVectorTowards(float *point, const float *towards)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7a7f8, 8a7f8_Damage_Falloff.c, VERIFY-FIRE-WEAPON-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-float Damage_Falloff(float distance, float maxDamage, float minDamagePercent,
-                     int minRange, int maxRange)
+float Damage_Falloff(float distance, float maxDamage, float minDamagePercent, int minRange, int maxRange)
 {
     float damage = maxDamage;
 
@@ -272,41 +248,28 @@ float Damage_Falloff(float distance, float maxDamage, float minDamagePercent,
     if ((long double)minRange < (long double)distance) {
         if ((long double)maxRange < (long double)distance) {
 #if EMULATE_X87
-            damage = x87f_store_f32(x87f_mul(
-                x87f_mul(x87f_load_f32(minDamagePercent), x87f_load_f32(0.01f)),
-                x87f_load_f32(maxDamage)));
+            damage = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(minDamagePercent), x87f_load_f32(0.01f)), x87f_load_f32(maxDamage)));
 #else
             damage = minDamagePercent * 0.01f * maxDamage;
 #endif
         } else {
-            int32_t rangeSpan = coduo_int32_from_bits(
-                (uint32_t)maxRange - (uint32_t)minRange);
+            int32_t rangeSpan = coduo_int32_from_bits((uint32_t)maxRange - (uint32_t)minRange);
 #if EMULATE_X87
             /* ranges enter via fild (load_i32), not float-rounded (0x7a810/
              * 0x7a843); fraction stored to float; tail groups as
              * ((...)*0.01)*maxDamage. */
             float fraction = x87f_store_f32(x87f_sub(
-                x87f_load_f32(1.0f),
-                x87f_div(x87f_sub(x87f_load_f32(distance),
-                                  x87f_load_i32(minRange)),
-                         x87f_load_i32(rangeSpan))));
+                x87f_load_f32(1.0f), x87f_div(x87f_sub(x87f_load_f32(distance), x87f_load_i32(minRange)), x87f_load_i32(rangeSpan))));
             damage = x87f_store_f32(x87f_mul(
-                x87f_mul(x87f_add(x87f_mul(x87f_sub(x87f_load_f32(100.0f),
-                                                    x87f_load_f32(minDamagePercent)),
-                                           x87f_load_f32(fraction)),
+                x87f_mul(x87f_add(x87f_mul(x87f_sub(x87f_load_f32(100.0f), x87f_load_f32(minDamagePercent)), x87f_load_f32(fraction)),
                                   x87f_load_f32(minDamagePercent)),
                          x87f_load_f32(0.01f)),
                 x87f_load_f32(maxDamage)));
 #else
-            float fraction = (float)(1.0L -
-                ((long double)distance - (long double)minRange) /
-                (long double)rangeSpan);
-            damage = (float)((((long double)100.0f -
-                                (long double)minDamagePercent) *
-                               (long double)fraction +
-                               (long double)minDamagePercent) *
-                              (long double)0.01f *
-                              (long double)maxDamage);
+            float fraction = (float)(1.0L - ((long double)distance - (long double)minRange) / (long double)rangeSpan);
+            damage =
+                (float)((((long double)100.0f - (long double)minDamagePercent) * (long double)fraction + (long double)minDamagePercent) *
+                        (long double)0.01f * (long double)maxDamage);
 #endif
         }
     }
@@ -322,14 +285,12 @@ float Damage_Falloff(float distance, float maxDamage, float minDamagePercent,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7a8af, 8a8af_Bullet_Fire.c, VERIFY-FIRE-WEAPON-PACKET-2026-06-17): DATAFLOW_VERIFIED - qboolean return preserves the Bullet_Fire_Extended EAX consumed by original vehicle/turret callers. */
-qboolean Bullet_Fire(gentity_t *ent, float spread, int damage,
-                     weapon_muzzle_t *muzzle, gentity_t *attacker)
+qboolean Bullet_Fire(gentity_t *ent, float spread, int damage, weapon_muzzle_t *muzzle, gentity_t *attacker)
 {
     vec3_t end;
 
     BG_Bullet_Endpos(spread, end, muzzle->forward);
-    return Bullet_Fire_Extended(attacker, ent, muzzle->origin, end, damage, 0,
-                                muzzle, attacker);
+    return Bullet_Fire_Extended(attacker, ent, muzzle->origin, end, damage, 0, muzzle, attacker);
 }
 
 /* ------------------------------------------------------------------ */
@@ -337,8 +298,7 @@ qboolean Bullet_Fire(gentity_t *ent, float spread, int damage,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7a920, 8a920_Bullet_Fire_Extended.c, VERIFY-FIRE-WEAPON-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *start,
-                              const float *end, int damage, int recursionDepth,
+qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *start, const float *end, int damage, int recursionDepth,
                               weapon_muzzle_t *muzzle, gentity_t *source)
 {
     const weaponInfo_t *weaponInfo;
@@ -366,8 +326,7 @@ qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *sta
         damageFlags = DAMAGE_FLAG_RICOCHET;
     }
 
-    trap_LocationalTrace(&trace, start, end, hitEnt->s.number,
-                         MASK_BULLETTRACE,
+    trap_LocationalTrace(&trace, start, end, hitEnt->s.number, MASK_BULLETTRACE,
                          weaponInfo->ricochet == 0 ? bulletPriorityMap : riflePriorityMap);
 
     if ((g_debugBullets.integer & 1) != 0) {
@@ -400,64 +359,46 @@ qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *sta
         game_compat_fire_weapon_vector_subtract(end, start, dir);
         VectorNormalize(dir);
 #if EMULATE_X87
-        reflectionScale = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(dir[0]),
-                                       x87f_load_f32(trace.normal[0])),
-                              x87f_mul(x87f_load_f32(dir[1]),
-                                       x87f_load_f32(trace.normal[1]))),
-                     x87f_mul(x87f_load_f32(dir[2]),
-                              x87f_load_f32(trace.normal[2]))),
-            x87f_load_f32(-2.0f)));
+        reflectionScale = x87f_store_f32(x87f_mul(x87f_add(x87f_add(x87f_mul(x87f_load_f32(dir[0]), x87f_load_f32(trace.normal[0])),
+                                                                    x87f_mul(x87f_load_f32(dir[1]), x87f_load_f32(trace.normal[1]))),
+                                                           x87f_mul(x87f_load_f32(dir[2]), x87f_load_f32(trace.normal[2]))),
+                                                  x87f_load_f32(-2.0f)));
         for (int i = 0; i < 3; i++) {
-            reflected[i] = x87f_store_f32(x87f_add(
-                x87f_load_f32(dir[i]),
-                x87f_mul(x87f_load_f32(trace.normal[i]),
-                         x87f_load_f32(reflectionScale))));
+            reflected[i] =
+                x87f_store_f32(x87f_add(x87f_load_f32(dir[i]), x87f_mul(x87f_load_f32(trace.normal[i]), x87f_load_f32(reflectionScale))));
         }
 #else
-        reflectionScale =
-            (float)(((long double)dir[0] * (long double)trace.normal[0] +
-                     (long double)dir[1] * (long double)trace.normal[1] +
-                     (long double)dir[2] * (long double)trace.normal[2]) *
-                    (long double)-2.0f);
+        reflectionScale = (float)(((long double)dir[0] * (long double)trace.normal[0] + (long double)dir[1] * (long double)trace.normal[1] +
+                                   (long double)dir[2] * (long double)trace.normal[2]) *
+                                  (long double)-2.0f);
         reflected[0] = dir[0] + trace.normal[0] * reflectionScale;
         reflected[1] = dir[1] + trace.normal[1] * reflectionScale;
         reflected[2] = dir[2] + trace.normal[2] * reflectionScale;
 #endif
 
-        if ((trace.surfaceFlags & SURF_SKY) == 0 &&
-            traceEnt->client == NULL) {
+        if ((trace.surfaceFlags & SURF_SKY) == 0 && traceEnt->client == NULL) {
             if (hitEnt == attacker || trace.partName != 0) {
                 gentity_t *event = G_TempEntity(trace.endpos, EV_BULLET_HIT);
 
                 event->s.tempEffectId = DirToByte(trace.normal);
                 event->s.hintStringIndex = DirToByte(reflected);
-                event->s.surfType =
-                    (trace.surfaceFlags &
-                     (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
-                    SURFACE_TYPE_SHIFT;
+                event->s.surfType = (trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT;
                 event->s.weapon = weaponInfo->weaponIndex;
                 event->s.vehicleEntityNum = source->s.number;
-                if (attacker != NULL && attacker->client != NULL &&
-                    (attacker->s.eFlags & EF_IN_VEHICLE) != 0) {
-                    event->s.surfaceImpact.followClient =
-                        coduo_int32_from_bits((uint32_t)attacker->passEntityNum +
-                                              UINT32_C(1));
-                    event->s.surfaceImpact.weaponAnim =
-                        attacker->s.vehicleAnimState;
+                if (attacker != NULL && attacker->client != NULL && (attacker->s.eFlags & EF_IN_VEHICLE) != 0) {
+                    event->s.surfaceImpact.followClient = coduo_int32_from_bits((uint32_t)attacker->passEntityNum + UINT32_C(1));
+                    event->s.surfaceImpact.weaponAnim = attacker->s.vehicleAnimState;
                 }
                 hit = qtrue;
             }
         } else if (hitEnt == attacker || traceEnt->client != NULL) {
-            if (coduo_server_rand_unit() <
-                game_compat_fire_weapon_tracer_chance(source)) {
+            if (coduo_server_rand_unit() < game_compat_fire_weapon_tracer_chance(source)) {
                 game_compat_fire_weapon_spawn_tracer(start, trace.endpos, weaponInfo);
             }
             hit = qtrue;
         }
     } else if (hitEnt == attacker) {
-        if (coduo_server_rand_unit() <
-            game_compat_fire_weapon_tracer_chance(source)) {
+        if (coduo_server_rand_unit() < game_compat_fire_weapon_tracer_chance(source)) {
             game_compat_fire_weapon_spawn_tracer(start, end, weaponInfo);
         }
         hit = qtrue;
@@ -472,14 +413,9 @@ qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *sta
         VectorNormalize(waterDir);
         normalDot = -game_compat_fire_weapon_dot_product(waterDir, trace.normal);
 #if EMULATE_X87
-        step = normalDot >= 0.125f
-                   ? x87f_store_f32(x87f_div(x87f_load_f32(0.25f),
-                                             x87f_load_f32(normalDot)))
-                   : 0.0f;
+        step = normalDot >= 0.125f ? x87f_store_f32(x87f_div(x87f_load_f32(0.25f), x87f_load_f32(normalDot))) : 0.0f;
         for (int i = 0; i < 3; i++) {
-            start[i] = x87f_store_f32(x87f_add(
-                x87f_load_f32(trace.endpos[i]),
-                x87f_mul(x87f_load_f32(waterDir[i]), x87f_load_f32(step))));
+            start[i] = x87f_store_f32(x87f_add(x87f_load_f32(trace.endpos[i]), x87f_mul(x87f_load_f32(waterDir[i]), x87f_load_f32(step))));
         }
 #else
         step = normalDot >= 0.125f ? 0.25f / normalDot : 0.0f;
@@ -488,12 +424,8 @@ qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *sta
         start[2] = trace.endpos[2] + waterDir[2] * step;
 #endif
 
-        hit = (qboolean)(hit | Bullet_Fire_Extended(hitEnt, attacker, start, end,
-                                                    damage,
-                                                    coduo_int32_from_bits(
-                                                        (uint32_t)recursionDepth +
-                                                        UINT32_C(1)),
-                                                    muzzle, source));
+        hit = (qboolean)(hit | Bullet_Fire_Extended(hitEnt, attacker, start, end, damage,
+                                                    coduo_int32_from_bits((uint32_t)recursionDepth + UINT32_C(1)), muzzle, source));
         return hit;
     }
 
@@ -501,41 +433,29 @@ qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *sta
         return hit;
     }
 
-    damage = game_compat_int32_from_float_trunc(
-        Damage_Falloff(VectorDistance(start, trace.endpos),
-                       (float)damage,
-                       (float)weaponInfo->damageFalloffMinDamagePercent,
-                       weaponInfo->damageFalloffMinRange,
-                       weaponInfo->damageFalloffMaxRange));
+    damage = game_compat_int32_from_float_trunc(Damage_Falloff(VectorDistance(start, trace.endpos), (float)damage,
+                                                               (float)weaponInfo->damageFalloffMinDamagePercent,
+                                                               weaponInfo->damageFalloffMinRange, weaponInfo->damageFalloffMaxRange));
     /* 0x7b125: bare fild of damage, no float32 rounding of the int. */
     if (damage <= 0.0f) {
         return hit;
     }
 
     damageInflictor = source != NULL ? source : attacker;
-    if (damageInflictor == attacker && attacker != NULL && attacker->client != NULL &&
-        (attacker->s.eFlags & EF_IN_VEHICLE) != 0 &&
+    if (damageInflictor == attacker && attacker != NULL && attacker->client != NULL && (attacker->s.eFlags & EF_IN_VEHICLE) != 0 &&
         attacker->client->ps.vehiclePosition != 3) {
         damageInflictor = &g_entities[attacker->passEntityNum];
     }
 
-    G_Damage(traceEnt, damageInflictor, attacker, muzzle->forward, trace.endpos, damage,
-             damageFlags, meansOfDeath, trace.partGroup);
+    G_Damage(traceEnt, damageInflictor, attacker, muzzle->forward, trace.endpos, damage, damageFlags, meansOfDeath, trace.partGroup);
 
     /* NO shim on damage*0.5: 0.5 is a power of two so (long double)damage*0.5
      * is exact (damage/2) in both 64-bit and 80-bit, and the (int32_t) cast
      * truncates that exact value identically (rule 6). */
-    if (traceEnt->client != NULL &&
-        (damageFlags & DAMAGE_FLAG_RICOCHET) != 0 &&
-        (long double)damage * (long double)0.5f > 0.0L) {
-        hit = (qboolean)(hit | Bullet_Fire_Extended(traceEnt, attacker, trace.endpos, end,
-                                                    (int32_t)((long double)damage *
-                                                              (long double)0.5f),
-                                                    coduo_int32_from_bits(
-                                                        (uint32_t)recursionDepth +
-                                                        UINT32_C(1)),
-                                                    muzzle,
-                                                    source));
+    if (traceEnt->client != NULL && (damageFlags & DAMAGE_FLAG_RICOCHET) != 0 && (long double)damage * (long double)0.5f > 0.0L) {
+        hit =
+            (qboolean)(hit | Bullet_Fire_Extended(traceEnt, attacker, trace.endpos, end, (int32_t)((long double)damage * (long double)0.5f),
+                                                  coduo_int32_from_bits((uint32_t)recursionDepth + UINT32_C(1)), muzzle, source));
     }
 
     return hit;
@@ -546,8 +466,7 @@ qboolean Bullet_Fire_Extended(gentity_t *hitEnt, gentity_t *attacker, float *sta
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7b2c4, 8b2c4_weapon_grenadelauncher_fire.c, VERIFY-FIRE-WEAPON-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
-gentity_t *weapon_grenadelauncher_fire(gentity_t *ent, int weapon,
-                                       weapon_muzzle_t *muzzle)
+gentity_t *weapon_grenadelauncher_fire(gentity_t *ent, int weapon, weapon_muzzle_t *muzzle)
 {
     const weaponInfo_t *weaponInfo = muzzle->weaponInfo;
     vec3_t dir;
@@ -573,8 +492,7 @@ gentity_t *weapon_grenadelauncher_fire(gentity_t *ent, int weapon,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7b3da, 8b3da_Weapon_RocketLauncher_Fire.c, VERIFY-FIRE-WEAPON-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
-void Weapon_RocketLauncher_Fire(gentity_t *ent, float spread,
-                                weapon_muzzle_t *muzzle)
+void Weapon_RocketLauncher_Fire(gentity_t *ent, float spread, weapon_muzzle_t *muzzle)
 {
     vec3_t dir;
     vec3_t start;
@@ -598,8 +516,7 @@ void Weapon_RocketLauncher_Fire(gentity_t *ent, float spread,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7b594, 8b594_Weapon_Artillery_Fire.c, VERIFY-FIRE-WEAPON-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
-void Weapon_Artillery_Fire(gentity_t *ent, float spread,
-                           weapon_muzzle_t *muzzle)
+void Weapon_Artillery_Fire(gentity_t *ent, float spread, weapon_muzzle_t *muzzle)
 {
     vec3_t dir;
     vec3_t start;
@@ -622,18 +539,15 @@ void Weapon_Artillery_Fire(gentity_t *ent, float spread,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x7b758, 8b758_Weapon_ArtilleryStrike_Fire.c, VERIFY-FIRE-WEAPON-REMAINING-2026-06-17): DATAFLOW_VERIFIED */
-void Weapon_ArtilleryStrike_Fire(gentity_t *ent, float spread,
-                                 weapon_muzzle_t *muzzle)
+void Weapon_ArtilleryStrike_Fire(gentity_t *ent, float spread, weapon_muzzle_t *muzzle)
 {
     trace_t trace;
     vec3_t end;
 
     BG_Bullet_Endpos(spread, end, muzzle->forward);
-    trap_LocationalTrace(&trace, muzzle->origin, end, ent->s.number,
-                         MASK_BULLETTRACE, bulletPriorityMap);
+    trap_LocationalTrace(&trace, muzzle->origin, end, ent->s.number, MASK_BULLETTRACE, bulletPriorityMap);
 
-    if (!(trace.fraction < 1.0f) ||
-        (trace.surfaceFlags & SURF_SKY) != 0) {
+    if (!(trace.fraction < 1.0f) || (trace.surfaceFlags & SURF_SKY) != 0) {
         int weapon = BG_GetWeaponForInfo(muzzle->weaponInfo);
         Add_Ammo(ent, weapon, 1, qfalse);
         return;
@@ -642,8 +556,7 @@ void Weapon_ArtilleryStrike_Fire(gentity_t *ent, float spread,
     end[0] = trace.endpos[0];
     end[1] = trace.endpos[1];
     end[2] = trace.endpos[2];
-    fire_artillery_barrage(ent, end,
-                           BG_GetWeaponForInfo(muzzle->weaponInfo));
+    fire_artillery_barrage(ent, end, BG_GetWeaponForInfo(muzzle->weaponInfo));
 }
 
 /* ------------------------------------------------------------------ */
@@ -676,8 +589,8 @@ int LogAccuracyHit(gentity_t *target, gentity_t *attacker)
 void CalcMuzzlePoint(gentity_t *ent, float *muzzlePoint)
 {
     gclient_t *client = ent->client;
-    const vec3_t traceMins = { -8.0f, -8.0f, -8.0f };
-    const vec3_t traceMaxs = { 8.0f, 8.0f, 8.0f };
+    const vec3_t traceMins = {-8.0f, -8.0f, -8.0f};
+    const vec3_t traceMaxs = {8.0f, 8.0f, 8.0f};
 
     muzzlePoint[0] = client->ps.psOrigin[0];
     muzzlePoint[1] = client->ps.psOrigin[1];
@@ -690,22 +603,19 @@ void CalcMuzzlePoint(gentity_t *ent, float *muzzlePoint)
     }
 
     if ((client->ps.entityStateFlags & EF_FORCED_STANCE_MASK) == 0) {
-        const weaponInfo_t *weaponInfo =
-            (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
+        const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon);
         float bobCycle;
         float speed;
 
-        if (weaponInfo->weaponClass == WEAPCLASS_LMG &&
-            (client->ps.playerStateFlags & PMF_ADS) != 0) {
-            vec3_t angles = { 0.0f, client->ps.proneDirection, 0.0f };
+        if (weaponInfo->weaponClass == WEAPCLASS_LMG && (client->ps.playerStateFlags & PMF_ADS) != 0) {
+            vec3_t angles = {0.0f, client->ps.proneDirection, 0.0f};
             vec3_t forward;
             vec3_t end;
             trace_t trace;
 
             AngleVectors(angles, forward, NULL, NULL);
             game_compat_fire_weapon_vector_ma(muzzlePoint, 19.0f, forward, end);
-            trap_Trace(&trace, muzzlePoint, traceMins, traceMaxs, end, ent->s.number,
-                       MASK_GRENADE_TRACE);
+            trap_Trace(&trace, muzzlePoint, traceMins, traceMaxs, end, ent->s.number, MASK_GRENADE_TRACE);
             if (trace.startsolid == 0) {
                 game_compat_fire_weapon_vector_copy(trace.endpos, muzzlePoint);
             }
@@ -714,19 +624,16 @@ void CalcMuzzlePoint(gentity_t *ent, float *muzzlePoint)
         bobCycle = BG_GetBobCycle(&client->ps);
         speed = BG_GetSpeed(&client->ps, level.time);
 
-        muzzlePoint[2] += BG_GetVerticalBobFactor(&client->ps, bobCycle, speed,
-                                                  bg_bobMax.value);
+        muzzlePoint[2] += BG_GetVerticalBobFactor(&client->ps, bobCycle, speed, bg_bobMax.value);
         {
             vec3_t right;
-            float bob = BG_GetHorizontalBobFactor(&client->ps, bobCycle, speed,
-                                                  bg_bobMax.value);
+            float bob = BG_GetHorizontalBobFactor(&client->ps, bobCycle, speed, bg_bobMax.value);
 
             AngleVectors(client->ps.viewAngles, NULL, right, NULL);
 #if EMULATE_X87
             for (int i = 0; i < 3; i++) {
-                muzzlePoint[i] = x87f_store_f32(x87f_add(
-                    x87f_load_f32(muzzlePoint[i]),
-                    x87f_mul(x87f_load_f32(right[i]), x87f_load_f32(bob))));
+                muzzlePoint[i] =
+                    x87f_store_f32(x87f_add(x87f_load_f32(muzzlePoint[i]), x87f_mul(x87f_load_f32(right[i]), x87f_load_f32(bob))));
             }
 #else
             muzzlePoint[0] += right[0] * bob;
@@ -741,9 +648,7 @@ void CalcMuzzlePoint(gentity_t *ent, float *muzzlePoint)
          * float spill) — the psOrigin[2]+8.0 add stays 80-bit, so emulate it.
          * The store body is a single add stored to float (native-identical). */
 #if EMULATE_X87
-        if (x87f_lt(x87f_load_f32(muzzlePoint[2]),
-                    x87f_add(x87f_load_f32(client->ps.psOrigin[2]),
-                             x87f_load_f32(8.0f)))) {
+        if (x87f_lt(x87f_load_f32(muzzlePoint[2]), x87f_add(x87f_load_f32(client->ps.psOrigin[2]), x87f_load_f32(8.0f)))) {
 #else
         if (muzzlePoint[2] < client->ps.psOrigin[2] + 8.0f) {
 #endif
@@ -798,10 +703,8 @@ void FireWeapon(gentity_t *ent)
     int weapon;
 
     /* Check if weapon can be fired. */
-    if (((ent->client->ps.entityStateFlags & EF_RESTRICTED_MASK) == 0) ||
-        (ent->activeState == 0) ||
-        (BG_AllowPlayerWeaponAtVehiclePos(ent->client->ps.vehicleType,
-                                          ent->client->ps.vehiclePosition) != 0)) {
+    if (((ent->client->ps.entityStateFlags & EF_RESTRICTED_MASK) == 0) || (ent->activeState == 0) ||
+        (BG_AllowPlayerWeaponAtVehiclePos(ent->client->ps.vehicleType, ent->client->ps.vehiclePosition) != 0)) {
 
         /* Get weapon info */
         weapon = ent->s.weapon;
@@ -815,18 +718,14 @@ void FireWeapon(gentity_t *ent)
         adsFraction = ent->client->damageAlphaFraction;
 
         /* Calculate spread */
-        minSpread = BG_GetMinSpreadForWeapon(&ent->client->ps, ent->s.weapon,
-                                             level.time,
-                                             ent->client->ps.adsFraction == 1.0f);
+        minSpread = BG_GetMinSpreadForWeapon(&ent->client->ps, ent->s.weapon, level.time, ent->client->ps.adsFraction == 1.0f);
 
         maxSpread = wInfo->maxSpread;
 
         /* Interpolate spread based on ADS fraction */
 #if EMULATE_X87
         spread = x87f_store_f32(x87f_add(
-            x87f_load_f32(minSpread),
-            x87f_mul(x87f_sub(x87f_load_f32(maxSpread), x87f_load_f32(minSpread)),
-                     x87f_load_f32(adsFraction))));
+            x87f_load_f32(minSpread), x87f_mul(x87f_sub(x87f_load_f32(maxSpread), x87f_load_f32(minSpread)), x87f_load_f32(adsFraction))));
 #else
         spread = minSpread + (maxSpread - minSpread) * adsFraction;
 #endif
@@ -836,18 +735,15 @@ void FireWeapon(gentity_t *ent)
 
         /* Dispatch to appropriate firing function */
         if (weaponType == WEAPTYPE_BULLET) {
-            Bullet_Fire(ent, spread, wInfo->flameDamage,
-                       &muzzlePoints, ent);
+            Bullet_Fire(ent, spread, wInfo->flameDamage, &muzzlePoints, ent);
         } else if (weaponType == WEAPTYPE_GRENADE) {
-            weapon_grenadelauncher_fire(ent, ent->s.weapon,
-                                        &muzzlePoints);
+            weapon_grenadelauncher_fire(ent, ent->s.weapon, &muzzlePoints);
         } else if (weaponType == WEAPTYPE_PROJECTILE) {
             Weapon_RocketLauncher_Fire(ent, spread, &muzzlePoints);
         } else if (weaponType == WEAPTYPE_SPOTTER) {
             Weapon_ArtilleryStrike_Fire(ent, spread, &muzzlePoints);
         } else if (weaponType != WEAPTYPE_GAS) {
-            G_Error("Unknown weapon type %i for %s\n", weaponType,
-                   wInfo->pickupName);
+            G_Error("Unknown weapon type %i for %s\n", weaponType, wInfo->pickupName);
         }
     }
 }
@@ -872,13 +768,11 @@ void FireWeaponMelee(gentity_t *ent)
     gclient_t *client = ent->client;
     float muzzlePoints[12];
 
-    if (((client->ps.entityStateFlags & EF_RESTRICTED_MASK) == 0) ||
-        (ent->activeState == 0)) {
+    if (((client->ps.entityStateFlags & EF_RESTRICTED_MASK) == 0) || (ent->activeState == 0)) {
 
         (void)BG_GetInfoForWeapon(ent->s.weapon);
 
-        AngleVectors(client->ps.viewAngles, muzzlePoints, &muzzlePoints[3],
-                     &muzzlePoints[6]);
+        AngleVectors(client->ps.viewAngles, muzzlePoints, &muzzlePoints[3], &muzzlePoints[6]);
         CalcMuzzlePoint(ent, &muzzlePoints[9]);
         Weapon_Melee(ent, muzzlePoints);
     }

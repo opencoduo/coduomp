@@ -14,8 +14,7 @@ qboolean coduo_compat_path_is_safe_relative(const char *path)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: virtual paths crossing into host filesystem
      * calls must remain relative and below their selected engine root. */
-    if (path == NULL || path[0] == '\0' ||
-        coduo_compat_is_path_separator(path[0]) != qfalse) {
+    if (path == NULL || path[0] == '\0' || coduo_compat_is_path_separator(path[0]) != qfalse) {
         return qfalse;
     }
 
@@ -24,8 +23,7 @@ qboolean coduo_compat_path_is_safe_relative(const char *path)
         const char character = *cursor;
         if (character == ':')
             return qfalse;
-        if (character != '\0' &&
-            coduo_compat_is_path_separator(character) == qfalse) {
+        if (character != '\0' && coduo_compat_is_path_separator(character) == qfalse) {
             continue;
         }
 
@@ -35,8 +33,7 @@ qboolean coduo_compat_path_is_safe_relative(const char *path)
                 return qtrue;
             return qfalse;
         }
-        if ((componentLength == 1 && component[0] == '.') ||
-            (componentLength == 2 && component[0] == '.' && component[1] == '.')) {
+        if ((componentLength == 1 && component[0] == '.') || (componentLength == 2 && component[0] == '.' && component[1] == '.')) {
             return qfalse;
         }
 
@@ -58,9 +55,7 @@ qboolean coduo_compat_path_is_pk3(const char *path)
         return qfalse;
 
     const char *const extension = path + pathLength - 4;
-    return extension[0] == '.' &&
-                   (extension[1] == 'p' || extension[1] == 'P') &&
-                   (extension[2] == 'k' || extension[2] == 'K') &&
+    return extension[0] == '.' && (extension[1] == 'p' || extension[1] == 'P') && (extension[2] == 'k' || extension[2] == 'K') &&
                    extension[3] == '3'
                ? qtrue
                : qfalse;

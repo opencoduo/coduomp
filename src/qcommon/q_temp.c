@@ -56,11 +56,9 @@ char *va(const char *format, ...)
 
     va_start(arguments, format);
 #if defined(WINDOWS_BEHAVIOR) && defined(_WIN32)
-    length = _vsnprintf(q_vaTempBuffer, sizeof(q_vaTempBuffer),
-                        format, arguments);
+    length = _vsnprintf(q_vaTempBuffer, sizeof(q_vaTempBuffer), format, arguments);
 #else
-    length = vsnprintf(q_vaTempBuffer, sizeof(q_vaTempBuffer),
-                       format, arguments);
+    length = vsnprintf(q_vaTempBuffer, sizeof(q_vaTempBuffer), format, arguments);
 #endif
     va_end(arguments);
 
@@ -74,19 +72,18 @@ char *va(const char *format, ...)
 
     q_vaTempBuffer[Q_VA_LAST_INDEX] = '\0';
     if (length < 0 || length >= MAX_VA_STRING) {
-        Q_TEMP_ERROR("\x15" "Attempted to overrun string in call to va()\n");
+        Q_TEMP_ERROR("\x15"
+                     "Attempted to overrun string in call to va()\n");
     }
 
     offset = q_vaStringOffset;
-    if (coduo_int32_from_bits((uint32_t)offset + (uint32_t)length) >=
-        Q_VA_LAST_INDEX) {
+    if (coduo_int32_from_bits((uint32_t)offset + (uint32_t)length) >= Q_VA_LAST_INDEX) {
         offset = 0;
     }
 
     result = &q_vaStringBuffer[offset];
     memcpy(result, q_vaTempBuffer, (size_t)((uint32_t)length + 1u));
-    q_vaStringOffset = coduo_int32_from_bits(
-        (uint32_t)offset + (uint32_t)length + 1u);
+    q_vaStringOffset = coduo_int32_from_bits((uint32_t)offset + (uint32_t)length + 1u);
     return result;
 }
 
@@ -94,8 +91,7 @@ float *tv(float x, float y, float z)
 {
     vec3_t *result = &q_tempVectors[q_tempVectorIndex];
 
-    q_tempVectorIndex = coduo_int32_from_bits(
-        ((uint32_t)q_tempVectorIndex + 1u) & Q_TEMP_VECTOR_INDEX_MASK);
+    q_tempVectorIndex = coduo_int32_from_bits(((uint32_t)q_tempVectorIndex + 1u) & Q_TEMP_VECTOR_INDEX_MASK);
     (*result)[0] = x;
     (*result)[1] = y;
     (*result)[2] = z;

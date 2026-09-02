@@ -18,8 +18,7 @@ void R_BeginDelayedImageGroup(const char *modelName)
         return;
     }
 
-    if (r_highLodDist->integer != 0 &&
-        tr.ignorePrecacheErrorCount == 0) {
+    if (r_highLodDist->integer != 0 && tr.ignorePrecacheErrorCount == 0) {
         ri.Error(ERR_DROP, "\x15model '%s' not precached\n", modelName);
     }
 }
@@ -65,8 +64,7 @@ void R_EndDelayedImageGroup(void)
  * shader lookup arguments, remapped/defaulted shader handling, and final model
  * fields. The distinct 0x0043d360/0x0043d370 callbacks both select
  * 32-byte-aligned high-hunk allocation in this executable. */
-void R_LoadXModel(model_t *model, const char *name,
-                  int32_t shaderUsage)
+void R_LoadXModel(model_t *model, const char *name, int32_t shaderUsage)
 {
     static const char shaderPrefix[] = "skins/";
     int32_t totalSurfaceCount = 0;
@@ -74,32 +72,23 @@ void R_LoadXModel(model_t *model, const char *name,
 
     R_BeginDelayedImageGroup(name);
 
-    XModel *xmodel = XModelPrecache(
-        name, XMODEL_LOAD_SURFACES_PREPROCESSED,
-        Hunk_AllocXModelPrecache, Hunk_AllocXModelPrecacheMesh);
+    XModel *xmodel = XModelPrecache(name, XMODEL_LOAD_SURFACES_PREPROCESSED, Hunk_AllocXModelPrecache, Hunk_AllocXModelPrecacheMesh);
     int32_t lodCount = XModelGetNumLods(xmodel);
 
     for (int32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex) {
-        totalSurfaceCount +=
-            XModelGetSurfaces(xmodel, &surfaces, lodIndex);
+        totalSurfaceCount += XModelGetSurfaces(xmodel, &surfaces, lodIndex);
     }
 
-    size_t lodPointerBytes =
-        (size_t)lodCount * sizeof(model->shaderHandles[0]);
-    size_t surfaceHandleBytes =
-        (size_t)totalSurfaceCount * sizeof(uint16_t);
-    uint16_t **shaderHandles =
-        Hunk_AllocInternal(lodPointerBytes + surfaceHandleBytes);
-    uint16_t *surfaceHandle =
-        (uint16_t *)((uint8_t *)shaderHandles + lodPointerBytes);
+    size_t lodPointerBytes = (size_t)lodCount * sizeof(model->shaderHandles[0]);
+    size_t surfaceHandleBytes = (size_t)totalSurfaceCount * sizeof(uint16_t);
+    uint16_t **shaderHandles = Hunk_AllocInternal(lodPointerBytes + surfaceHandleBytes);
+    uint16_t *surfaceHandle = (uint16_t *)((uint8_t *)shaderHandles + lodPointerBytes);
 
     for (int32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex) {
-        int32_t surfaceCount =
-            XModelGetSurfaces(xmodel, &surfaces, lodIndex);
+        int32_t surfaceCount = XModelGetSurfaces(xmodel, &surfaces, lodIndex);
         shaderHandles[lodIndex] = surfaceHandle;
 
-        for (int32_t surfaceIndex = 0;
-             surfaceIndex < surfaceCount; ++surfaceIndex) {
+        for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
             char shaderName[MAX_QPATH];
             shader_t *shader;
             const char *surfaceName = XModelGetSurfaceName(xmodel, surfaceIndex, lodIndex);
@@ -113,27 +102,18 @@ void R_LoadXModel(model_t *model, const char *name,
                 return;
             }
             memcpy(shaderName, shaderPrefix, sizeof(shaderPrefix) - 1);
-            memcpy(shaderName + sizeof(shaderPrefix) - 1,
-                   surfaceName, surfaceNameLength + 1);
+            memcpy(shaderName + sizeof(shaderPrefix) - 1, surfaceName, surfaceNameLength + 1);
 
-            R_SetImageGroupTriCount(
-                XSurfaceGetNumTris(surfaces[surfaceIndex]));
-            R_SetImageGroupTileMode(
-                XSurfaceTileMode(surfaces[surfaceIndex]));
+            R_SetImageGroupTriCount(XSurfaceGetNumTris(surfaces[surfaceIndex]));
+            R_SetImageGroupTileMode(XSurfaceTileMode(surfaces[surfaceIndex]));
 
             shader = R_FindShader(shaderName, -1, qtrue, shaderUsage);
             if ((shader->flags & SHADER_FLAG_REMAPPED) != 0) {
-                ri.Printf(
-                    R_PRINT_WARNING,
-                    "WARNING: model '%s' not precached, bad texturing will result on some surfaces\n",
-                    name);
+                ri.Printf(R_PRINT_WARNING, "WARNING: model '%s' not precached, bad texturing will result on some surfaces\n", name);
                 shader = shader->remappedShader;
             }
 
-            *surfaceHandle =
-                (shader->flags & SHADER_FLAG_DEFAULTED) == 0
-                    ? (uint16_t)shader->index
-                    : 0;
+            *surfaceHandle = (shader->flags & SHADER_FLAG_DEFAULTED) == 0 ? (uint16_t)shader->index : 0;
             ++surfaceHandle;
         }
     }

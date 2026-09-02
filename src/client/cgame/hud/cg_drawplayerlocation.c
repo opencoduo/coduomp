@@ -84,14 +84,14 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
  * it is produced by a single x87 FADD (float precision throughout), so it is
  * reconstructed as `float` and passed as raw bits.
  */
-void CG_DrawPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
-                           intptr_t arg2, intptr_t arg3)
+void CG_DrawPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     const int32_t clientNum = cg_snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_DrawPlayerLocation: invalid client number %i",
+                  "\x15"
+                  "CG_DrawPlayerLocation: invalid client number %i",
                   clientNum);
         return;
     }
@@ -108,14 +108,5 @@ void CG_DrawPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
     /* the sum is forwarded through a plain 32-bit syscall slot as its bit pattern */
     memcpy(&sumBits, &sum, sizeof(sumBits));
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits(obj->x),
-                  sumBits,
-                  arg0,
-                  arg1,
-                  arg2,
-                  (intptr_t)hint,
-                  0,
-                  0,
-                  arg3);
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(obj->x), sumBits, arg0, arg1, arg2, (intptr_t)hint, 0, 0, arg3);
 }

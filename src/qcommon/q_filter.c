@@ -48,14 +48,11 @@ static int coduo_filter_toupper(int value)
  * and ':' to '/', and truncates both inputs at MAX_QPATH - 1.
  */
 
-const char *Com_StringContains(const char *haystack, const char *needle,
-                               qboolean caseSensitive)
+const char *Com_StringContains(const char *haystack, const char *needle, qboolean caseSensitive)
 {
-    const int32_t maximumOffset =
-        (int32_t)strlen(haystack) - (int32_t)strlen(needle);
+    const int32_t maximumOffset = (int32_t)strlen(haystack) - (int32_t)strlen(needle);
 
-    for (int32_t offset = 0; offset <= maximumOffset;
-         ++offset, ++haystack) {
+    for (int32_t offset = 0; offset <= maximumOffset; ++offset, ++haystack) {
         int32_t index;
 
         for (index = 0; needle[index] != '\0'; ++index) {
@@ -63,8 +60,7 @@ const char *Com_StringContains(const char *haystack, const char *needle,
                 if (haystack[index] != needle[index]) {
                     break;
                 }
-            } else if (coduo_filter_toupper(haystack[index]) !=
-                       coduo_filter_toupper(needle[index])) {
+            } else if (coduo_filter_toupper(haystack[index]) != coduo_filter_toupper(needle[index])) {
                 break;
             }
         }
@@ -76,8 +72,7 @@ const char *Com_StringContains(const char *haystack, const char *needle,
     return NULL;
 }
 
-qboolean Com_Filter(const char *filter, const char *name,
-                    qboolean caseSensitive)
+qboolean Com_Filter(const char *filter, const char *name, qboolean caseSensitive)
 {
     char chunk[COM_FILTER_CHUNK_SIZE];
 
@@ -100,8 +95,7 @@ qboolean Com_Filter(const char *filter, const char *name,
             chunk[chunkLength] = '\0';
 
             if (chunk[0] != '\0') {
-                const char *match =
-                    Com_StringContains(name, chunk, caseSensitive);
+                const char *match = Com_StringContains(name, chunk, caseSensitive);
 
                 if (match == NULL) {
                     return qfalse;
@@ -130,26 +124,17 @@ qboolean Com_Filter(const char *filter, const char *name,
             qboolean matched = qfalse;
 
             ++filter;
-            while (*filter != '\0' && matched == qfalse &&
-                   (*filter != ']' || filter[1] == ']')) {
-                if (filter[1] == '-' && filter[2] != '\0' &&
-                    (filter[2] != ']' || filter[3] == ']')) {
+            while (*filter != '\0' && matched == qfalse && (*filter != ']' || filter[1] == ']')) {
+                if (filter[1] == '-' && filter[2] != '\0' && (filter[2] != ']' || filter[3] == ']')) {
                     if (caseSensitive != qfalse) {
-                        const int32_t nameCharacter =
-                            (int32_t)(int8_t)(uint8_t)*name;
-                        if ((int32_t)(int8_t)(uint8_t)*filter <=
-                                nameCharacter &&
-                            nameCharacter <=
-                                (int32_t)(int8_t)(uint8_t)filter[2]) {
+                        const int32_t nameCharacter = (int32_t)(int8_t)(uint8_t)*name;
+                        if ((int32_t)(int8_t)(uint8_t)*filter <= nameCharacter && nameCharacter <= (int32_t)(int8_t)(uint8_t)filter[2]) {
                             matched = qtrue;
                         }
                     } else {
-                        const int32_t nameCharacter =
-                            coduo_filter_toupper(*name);
+                        const int32_t nameCharacter = coduo_filter_toupper(*name);
 
-                        if (coduo_filter_toupper(*filter) <= nameCharacter &&
-                            nameCharacter <=
-                                coduo_filter_toupper(filter[2])) {
+                        if (coduo_filter_toupper(*filter) <= nameCharacter && nameCharacter <= coduo_filter_toupper(filter[2])) {
                             matched = qtrue;
                         }
                     }
@@ -159,8 +144,7 @@ qboolean Com_Filter(const char *filter, const char *name,
                         if (*filter == *name) {
                             matched = qtrue;
                         }
-                    } else if (coduo_filter_toupper(*filter) ==
-                               coduo_filter_toupper(*name)) {
+                    } else if (coduo_filter_toupper(*filter) == coduo_filter_toupper(*name)) {
                         matched = qtrue;
                     }
                     ++filter;
@@ -171,8 +155,7 @@ qboolean Com_Filter(const char *filter, const char *name,
                 return qfalse;
             }
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            while (*filter != '\0' &&
-                   (*filter != ']' || filter[1] == ']')) {
+            while (*filter != '\0' && (*filter != ']' || filter[1] == ']')) {
                 ++filter;
             }
             if (*filter == '\0') {
@@ -187,8 +170,7 @@ qboolean Com_Filter(const char *filter, const char *name,
             if (*filter != *name) {
                 return qfalse;
             }
-        } else if (coduo_filter_toupper(*filter) !=
-                   coduo_filter_toupper(*name)) {
+        } else if (coduo_filter_toupper(*filter) != coduo_filter_toupper(*name)) {
             return qfalse;
         }
 
@@ -197,28 +179,19 @@ qboolean Com_Filter(const char *filter, const char *name,
     }
 }
 
-qboolean Com_FilterPath(const char *filter, const char *name,
-                        qboolean caseSensitive)
+qboolean Com_FilterPath(const char *filter, const char *name, qboolean caseSensitive)
 {
     char normalizedFilter[MAX_QPATH];
     char normalizedName[MAX_QPATH];
     int32_t index;
 
-    for (index = 0;
-         index < MAX_QPATH - 1 && filter[index] != '\0';
-         ++index) {
-        normalizedFilter[index] =
-            (filter[index] == '\\' || filter[index] == ':')
-                ? '/'
-                : filter[index];
+    for (index = 0; index < MAX_QPATH - 1 && filter[index] != '\0'; ++index) {
+        normalizedFilter[index] = (filter[index] == '\\' || filter[index] == ':') ? '/' : filter[index];
     }
     normalizedFilter[index] = '\0';
 
-    for (index = 0;
-         index < MAX_QPATH - 1 && name[index] != '\0';
-         ++index) {
-        normalizedName[index] =
-            (name[index] == '\\' || name[index] == ':') ? '/' : name[index];
+    for (index = 0; index < MAX_QPATH - 1 && name[index] != '\0'; ++index) {
+        normalizedName[index] = (name[index] == '\\' || name[index] == ':') ? '/' : name[index];
     }
     normalizedName[index] = '\0';
 

@@ -22,11 +22,8 @@ enum {
 // Source: uo_ui_mp_x86.dll 0x4000abf0..0x4000afce
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4000abf0_4000afce.mcode
 // Exact same-module PPC symbol: UI_OwnerDraw.
-void UI_OwnerDraw(float x, float y, float width, float height,
-                  float textX, float textY, int32_t ownerDraw,
-                  int32_t ownerDrawFlags, int32_t alignment, float special,
-                  int32_t font, float textScale, vec4_t color,
-                  qhandle_t background, int32_t textStyle)
+void UI_OwnerDraw(float x, float y, float width, float height, float textX, float textY, int32_t ownerDraw, int32_t ownerDrawFlags,
+                  int32_t alignment, float special, int32_t font, float textScale, vec4_t color, qhandle_t background, int32_t textStyle)
 {
     rectDef_t rect = {x + textX, y + textY, width, height};
 

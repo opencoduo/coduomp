@@ -11,8 +11,7 @@
 
 /* The Windows helpers multiply by the exact 255.0f constant and pass the x87
  * value through MSVC's integer conversion helper before storing AL. */
-#define RB_COLOR_BYTE(component_) \
-    ((uint8_t)(int32_t)((component_) * 255.0f))
+#define RB_COLOR_BYTE(component_) ((uint8_t)(int32_t)((component_) * 255.0f))
 
 /* Source: CoDUOMP.exe 0x004e7910..0x004e7af3.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e7910_004e7af4.mcode.
@@ -22,9 +21,7 @@
 void RB_BeginImmediateMode(void)
 {
     if (rendererDebugState.immediateVertices == NULL) {
-        const size_t allocationSize =
-            (size_t)rendererDebugState.immediateVertexCapacity *
-            sizeof(*rendererDebugState.immediateVertices);
+        const size_t allocationSize = (size_t)rendererDebugState.immediateVertexCapacity * sizeof(*rendererDebugState.immediateVertices);
 
         rendererDebugState.immediateVertices = malloc(allocationSize);
         if (rendererDebugState.immediateVertices == NULL) {
@@ -45,20 +42,15 @@ void RB_BeginImmediateMode(void)
 
     RB_SelectStorage(R_STATIC_VERTEX_MEMORY_HUNK);
     RB_EndMultitexture();
-    GL_ClientState(GLS_CLIENT_TEXCOORD0_ARRAY |
-                   GLS_CLIENT_COLOR_ARRAY |
-                   GLS_CLIENT_VERTEX_ARRAY);
+    GL_ClientState(GLS_CLIENT_TEXCOORD0_ARRAY | GLS_CLIENT_COLOR_ARRAY | GLS_CLIENT_VERTEX_ARRAY);
     R_FogOff();
 
-    qglTexCoordPointer(2, GL_FLOAT,
-                       (int32_t)sizeof(*rendererDebugState.immediateVertices),
+    qglTexCoordPointer(2, GL_FLOAT, (int32_t)sizeof(*rendererDebugState.immediateVertices),
                        rendererDebugState.immediateVertices[0].texCoord);
-    qglColorPointer(4, GL_UNSIGNED_BYTE,
-                    (int32_t)sizeof(*rendererDebugState.immediateVertices),
+    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(*rendererDebugState.immediateVertices),
                     rendererDebugState.immediateVertices[0].color);
     qglNormal3f(0.0f, 0.0f, 1.0f);
-    qglVertexPointer(RB_IMMEDIATE_VERTEX_COMPONENTS, GL_FLOAT,
-                     (int32_t)sizeof(*rendererDebugState.immediateVertices),
+    qglVertexPointer(RB_IMMEDIATE_VERTEX_COMPONENTS, GL_FLOAT, (int32_t)sizeof(*rendererDebugState.immediateVertices),
                      rendererDebugState.immediateVertices[0].xyz);
     rendererDebugState.immediateModeActive = qtrue;
 }
@@ -84,8 +76,7 @@ void RB_glBegin(uint32_t mode)
  * gap; exact same-module Mac symbol RB_glEnd. */
 void RB_glEnd(void)
 {
-    qglDrawArrays(rendererDebugState.immediatePrimitiveMode, 0,
-                  rendererDebugState.immediateVertexCount);
+    qglDrawArrays(rendererDebugState.immediatePrimitiveMode, 0, rendererDebugState.immediateVertexCount);
     rendererDebugState.immediateVertexCount = 0;
     rendererDebugState.immediatePrimitiveMode = 0;
 }
@@ -97,14 +88,11 @@ void RB_glVertex3f(float x, float y, float z)
 {
     rb_immediate_vertex_t *vertex;
 
-    if (rendererDebugState.immediateVertexCount >=
-        rendererDebugState.immediateVertexCapacity)
+    if (rendererDebugState.immediateVertexCount >= rendererDebugState.immediateVertexCapacity)
         return;
 
-    vertex = &rendererDebugState
-                  .immediateVertices[rendererDebugState.immediateVertexCount];
-    memcpy(vertex->color, rendererDebugState.immediateColor,
-           sizeof(vertex->color));
+    vertex = &rendererDebugState.immediateVertices[rendererDebugState.immediateVertexCount];
+    memcpy(vertex->color, rendererDebugState.immediateColor, sizeof(vertex->color));
     vertex->texCoord[0] = rendererDebugState.immediateTexCoord[0];
     vertex->texCoord[1] = rendererDebugState.immediateTexCoord[1];
     vertex->xyz[0] = x;

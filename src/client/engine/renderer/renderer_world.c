@@ -19,14 +19,10 @@ mnode_t *R_PointInLeaf(const vec3_t point)
     node = tr.world->nodes;
     while (node->contents == R_WORLD_NODE_NO_CELL) {
         const cplane_t *plane = node->data.node.plane;
-        const long double distance =
-            (((long double)point[2] * plane->normal[2] +
-              (long double)point[1] * plane->normal[1]) +
-             (long double)point[0] * plane->normal[0]) -
-            (long double)plane->dist;
-        node = distance > 0.0f
-                   ? node->data.node.children[0]
-                   : node->data.node.children[1];
+        const long double distance = (((long double)point[2] * plane->normal[2] + (long double)point[1] * plane->normal[1]) +
+                                      (long double)point[0] * plane->normal[0]) -
+                                     (long double)plane->dist;
+        node = distance > 0.0f ? node->data.node.children[0] : node->data.node.children[1];
     }
     return node;
 }

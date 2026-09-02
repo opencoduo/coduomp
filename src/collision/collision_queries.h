@@ -25,8 +25,7 @@ int32_t CM_LeafCluster(int32_t leafNum);
 int32_t CM_LeafArea(int32_t leafNum);
 
 void CM_InitBoxHull(void);
-int32_t CM_TempBoxModel(const vec3_t mins, const vec3_t maxs,
-                        int32_t contents, qboolean capsule);
+int32_t CM_TempBoxModel(const vec3_t mins, const vec3_t maxs, int32_t contents, qboolean capsule);
 int32_t CM_TempBoxModelContents(void);
 void CM_ModelBounds(int32_t modelHandle, vec3_t mins, vec3_t maxs);
 

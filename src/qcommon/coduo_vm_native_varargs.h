@@ -27,8 +27,7 @@ typedef struct coduo_native_vararg_layout_s {
     size_t argumentCount;
 } coduo_native_vararg_layout_t;
 
-#define CODUO_NATIVE_VARARG_TYPE_AT(layout, slot) \
-    ((coduo_native_vararg_type_t)((layout).argumentTypes[(slot)]))
+#define CODUO_NATIVE_VARARG_TYPE_AT(layout, slot) ((coduo_native_vararg_type_t)((layout).argumentTypes[(slot)]))
 
 #define CODUO_VM_NATIVE_GAME_SYSCALL_LAYOUTS(X) \
     X(SYSCALL_PRINTF, "p") \

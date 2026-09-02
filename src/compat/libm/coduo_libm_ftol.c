@@ -29,7 +29,7 @@
 #include <string.h>
 
 #define FTOL_CARRY_THRESHOLD 0x80000001u
-#define FTOL_SIGN_MASK       0x80000000u
+#define FTOL_SIGN_MASK 0x80000000u
 
 static uint32_t CoduoLibm_Float32Bits(float value)
 {
@@ -55,8 +55,7 @@ int64_t CoduoLibm_FloatToInt64(double value)
     rounded = (int64_t)extF80_to_i64(x, softfloat_round_near_even, false);
 
     /* fild QWORD then fsubp: residual r = x - n, then stored as float32. */
-    residualBits = CoduoLibm_Float32Bits(
-        x87f_store_f32(x87f_sub(x, x87f_load_f64((double)rounded))));
+    residualBits = CoduoLibm_Float32Bits(x87f_store_f32(x87f_sub(x, x87f_load_f64((double)rounded))));
 #else
     long double x = (long double)value;
 
@@ -72,8 +71,7 @@ int64_t CoduoLibm_FloatToInt64(double value)
     /* 0x20069cab: when the low dword is zero and the high dword carries no
      * magnitude bits, n is either 0 or the x87 indefinite value; both are
      * returned unmodified. */
-    if ((uint32_t)rounded == 0u &&
-        ((uint32_t)((uint64_t)rounded >> 32) & ~FTOL_SIGN_MASK) == 0u) {
+    if ((uint32_t)rounded == 0u && ((uint32_t)((uint64_t)rounded >> 32) & ~FTOL_SIGN_MASK) == 0u) {
         return rounded;
     }
 

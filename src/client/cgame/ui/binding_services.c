@@ -29,8 +29,7 @@ void client_ui_compat_controls_set_config(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: cgame renders only the original binding table. */
-const char *client_ui_compat_binding_from_name(const char *command,
-                                               qboolean firstKeyOnly)
+const char *client_ui_compat_binding_from_name(const char *command, qboolean firstKeyOnly)
 {
     return BindingFromName(command, firstKeyOnly);
 }

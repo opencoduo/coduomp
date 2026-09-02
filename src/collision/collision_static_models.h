@@ -15,10 +15,7 @@ extern worldSectorAreaLink_t *cm_staticModels;
 
 void *CM_Hunk_AllocXModelMesh(size_t size);
 void *CM_Hunk_AllocXModel(size_t size);
-void CM_CreateStaticModel(worldSectorAreaLink_t *areaLink,
-                          const char *modelName,
-                          const vec3_t origin,
-                          const vec3_t angles,
+void CM_CreateStaticModel(worldSectorAreaLink_t *areaLink, const char *modelName, const vec3_t origin, const vec3_t angles,
                           const vec3_t scale);
 void CM_LoadStaticModels(void);
 

@@ -30,8 +30,7 @@
 
 #include "bg_animation.h"
 
-void BG_PlayerAnimation(const entityState_t *renderEntity,
-                        clientInfo_t *self)
+void BG_PlayerAnimation(const entityState_t *renderEntity, clientInfo_t *self)
 {
     /*
      * 0x3000586a: CALL 0x30004550 with EDI=self (0x30005868 MOV EDI,EBX) and
@@ -56,10 +55,8 @@ void BG_PlayerAnimation(const entityState_t *renderEntity,
      * ([EBX+0x4c4]); each emitter address is loaded via LEA (self+0x380, then
      * self+0x3b0) into ESI and the time/id pushed as the stack arg.
      */
-    BG_PlayerAnimation_VerifyAnim(
-        self->animTree, (bg_anim_slot_t *)&self->legsYawAngle);
-    BG_PlayerAnimation_VerifyAnim(
-        self->animTree, (bg_anim_slot_t *)&self->torsoYawAngle);
+    BG_PlayerAnimation_VerifyAnim(self->animTree, (bg_anim_slot_t *)&self->legsYawAngle);
+    BG_PlayerAnimation_VerifyAnim(self->animTree, (bg_anim_slot_t *)&self->torsoYawAngle);
 
     /*
      * 0x30005895..0x300058c0: if the left-hand state is active and no meaningful
@@ -73,8 +70,7 @@ void BG_PlayerAnimation(const entityState_t *renderEntity,
      *   0x300058ae MOV [EBX+0x400],0        ; gunHandLeft = 0
      *   0x300058b8 MOV [EBX+0x404],1        ; dobjNeedsUpdate  = 1
     */
-    if (self->gunHandLeft != 0 &&
-        (self->torsoAnimWord & ~ANIM_TOGGLEBIT) == 0u) {
+    if (self->gunHandLeft != 0 && (self->torsoAnimWord & ~ANIM_TOGGLEBIT) == 0u) {
         self->gunHandLeft = 0;
         self->dobjNeedsUpdate = 1;
     }
@@ -89,8 +85,6 @@ void BG_PlayerAnimation(const entityState_t *renderEntity,
      *   0x300058c2 MOV EAX,[EBP+0xd0] / PUSH EAX ; emitterParam0
      *   0x300058d8 MOV ECX,[EBP+0xd4] / PUSH ECX ; emitterParam1
      */
-    BG_RunLerpFrameRate(self, (bg_anim_slot_t *)&self->legsYawAngle,
-                       renderEntity->legsAnimWord, renderEntity);
-    BG_RunLerpFrameRate(self, (bg_anim_slot_t *)&self->torsoYawAngle,
-                       renderEntity->torsoAnimWord, renderEntity);
+    BG_RunLerpFrameRate(self, (bg_anim_slot_t *)&self->legsYawAngle, renderEntity->legsAnimWord, renderEntity);
+    BG_RunLerpFrameRate(self, (bg_anim_slot_t *)&self->torsoYawAngle, renderEntity->torsoAnimWord, renderEntity);
 }

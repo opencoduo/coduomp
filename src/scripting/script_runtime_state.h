@@ -27,17 +27,10 @@ extern int32_t script_loopWatchdogWarningFlag;
 
 void ScriptRuntime_ResetValueRuntime(void);
 qboolean ScriptRuntime_PruneGameVariableArray(uint16_t handle);
-void ScriptRuntime_SetObjectFieldValue(int32_t classNum,
-                                       int32_t objectNum,
-                                       int32_t fieldIndex,
-                                       VariableValue *value);
-void ScriptRuntime_GetObjectFieldValue(int32_t classNum,
-                                       int32_t objectNum,
-                                       int32_t fieldIndex,
-                                       VariableValue *value);
+void ScriptRuntime_SetObjectFieldValue(int32_t classNum, int32_t objectNum, int32_t fieldIndex, VariableValue *value);
+void ScriptRuntime_GetObjectFieldValue(int32_t classNum, int32_t objectNum, int32_t fieldIndex, VariableValue *value);
 
-void Scr_Init(int32_t debugReport, int32_t developerScript,
-              int32_t developer);
+void Scr_Init(int32_t debugReport, int32_t developerScript, int32_t developer);
 void Scr_Shutdown(void);
 void Scr_Abort(void);
 void Scr_SetLoading(int32_t enabled);

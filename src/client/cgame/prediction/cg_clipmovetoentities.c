@@ -23,10 +23,8 @@
 
 /* Local per-entity scratch used to build the two vec3 buffers the trace trap consumes
  * and to receive its 48-byte trace_t before it is folded into *out. */
-void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
-                          const vec3_t maxs, const vec3_t end,
-                          int32_t excludeId, int32_t flagsMask,
-                          int32_t useVariant, trace_t *out)
+void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t excludeId, int32_t flagsMask,
+                           int32_t useVariant, trace_t *out)
 {
     int32_t i;
 
@@ -44,8 +42,8 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
             continue;
 
         int32_t emitHandle;             /* EDI: handle returned by the setup trap */
-        vec3_t  angles;                 /* [entry-0x60]: transformed-model angles */
-        vec3_t  origin;                 /* [entry-0x54]: transformed-model origin */
+        vec3_t angles;                 /* [entry-0x60]: transformed-model angles */
+        vec3_t origin;                 /* [entry-0x54]: transformed-model origin */
 
         if (cent->currentState.solid == SOLID_BMODEL) {
             /* Inline-brush path: resolve the entity's inline collision model and
@@ -57,10 +55,8 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
              * trajectory in EBX, atTime in EAX); modeled here as a normal call.
              * The apos trajectory is evaluated into emitBuf0, the pos trajectory
              * into origin, both at cg_latestSnapshotTime. */
-            BG_EvaluateTrajectory(&cent->currentState.apos,
-                                  cg_latestSnapshotTime, angles);
-            BG_EvaluateTrajectory(&cent->currentState.pos,
-                                  cg_latestSnapshotTime, origin);
+            BG_EvaluateTrajectory(&cent->currentState.apos, cg_latestSnapshotTime, angles);
+            BG_EvaluateTrajectory(&cent->currentState.pos, cg_latestSnapshotTime, origin);
         } else {
             /* Decode the packed entityState.solid bounds. */
             uint32_t encodedSolid = cent->currentState.solid;
@@ -73,9 +69,9 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
             int32_t c0 = (int32_t)(encodedSolid & 0xffu);
             int32_t c1 = (int32_t)((encodedSolid >> 8) & 0xffu) - 1;
             int32_t c2 = (int32_t)((encodedSolid >> 16) & 0xffu) - 0x20;
-            float   fc0 = (float)c0;
-            float   fc1 = (float)c1;
-            float   fc2 = (float)c2;
+            float fc0 = (float)c0;
+            float fc1 = (float)c1;
+            float fc2 = (float)c2;
 
             /* Two adjacent vec3 buffers built by the x87 sequence at 0x30035172..
              * 0x300351b1 (traced FST/FSTP by ST-stack order and store offset):
@@ -101,19 +97,15 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
              * on eType==1; JNZ keeps the preloaded 1, the eType==1 fall-through
              * loads 0x2000000). Also AND-tested against the flags mask; a zero
              * result skips the whole entry. */
-            int32_t contentFlag = (cent->currentState.eType == ET_PLAYER)
-                                      ? (int32_t)CONTENTS_BODY
-                                      : (int32_t)CONTENTS_SOLID;
+            int32_t contentFlag = (cent->currentState.eType == ET_PLAYER) ? (int32_t)CONTENTS_BODY : (int32_t)CONTENTS_SOLID;
             if ((flagsMask & contentFlag) == 0)
                 continue;
 
             /* eFlags bit 0x10 selects a temporary capsule rather than a box. */
             if (cent->currentState.eFlags & EF_CAPSULE)
-                emitHandle = (int32_t)cgame_syscall(CG_CM_TEMP_CAPSULE_MODEL, (intptr_t)mins,
-                                           (intptr_t)maxs, contentFlag);
+                emitHandle = (int32_t)cgame_syscall(CG_CM_TEMP_CAPSULE_MODEL, (intptr_t)mins, (intptr_t)maxs, contentFlag);
             else
-                emitHandle = (int32_t)cgame_syscall(CG_CM_TEMP_BOX_MODEL, (intptr_t)mins,
-                                           (intptr_t)maxs, contentFlag);
+                emitHandle = (int32_t)cgame_syscall(CG_CM_TEMP_BOX_MODEL, (intptr_t)mins, (intptr_t)maxs, contentFlag);
 
             /* Encoded box/capsule solids have no rotation; their transformed-trace
              * origin is the centity's interpolated origin at +0x208. */
@@ -132,10 +124,8 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
          * handle, contents mask, origin, and angles. */
         trace_t local;
         int32_t emitId = (useVariant != 0) ? CG_CM_TRANSFORMED_CAPSULE_TRACE : CG_CM_TRANSFORMED_BOX_TRACE;
-        cgame_syscall(emitId, (intptr_t)&local, (intptr_t)start,
-                      (intptr_t)end, (intptr_t)mins, (intptr_t)maxs,
-                      emitHandle, flagsMask, (intptr_t)origin,
-                      (intptr_t)angles);
+        cgame_syscall(emitId, (intptr_t)&local, (intptr_t)start, (intptr_t)end, (intptr_t)mins, (intptr_t)maxs, emitHandle, flagsMask,
+                      (intptr_t)origin, (intptr_t)angles);
 
         /* Fold the local result into the caller's running-best buffer *out.
          * Replace *out with the local result when the local trace registered a hit

@@ -41,9 +41,9 @@
 //   0x3007bf0c = 0x423c7edd = 47.12389f (15*PI)
 //   0x3007bf10 = 18.0f   0x3007bf14 = 0x41c90fdb = 25.132742f (8*PI)
 //   0x3007bf18 = 0x3ada740e = 0.0016666667f (1/600)
-#define CG_SHAKE_PI         3.14159274f  // 0x3007bd88
-#define CG_SHAKE_RAND_NORM  3.0517578125e-05f  // 0x3007bec0 == 1/32768
-#define CG_SHAKE_ORG_SCALE  0.8f         // 0x3007bdf0
+#define CG_SHAKE_PI 3.14159274f  // 0x3007bd88
+#define CG_SHAKE_RAND_NORM 3.0517578125e-05f  // 0x3007bec0 == 1/32768
+#define CG_SHAKE_ORG_SCALE 0.8f         // 0x3007bdf0
 
 void CG_CalcViewShake(void)
 {

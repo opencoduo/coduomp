@@ -28,8 +28,7 @@
 /* cg_shakeSource_t layout is asserted where it is consumed
  * (FUN_3001b390_3001b414.c); not repeated here. */
 
-void CG_AddCameraShake(const vec3_t origin, float amplitude,
-                       int32_t duration, float radius)
+void CG_AddCameraShake(const vec3_t origin, float amplitude, int32_t duration, float radius)
 {
     /* 3001b420 FLD [ESP+4] (amplitude) ; 3001b427 FCOMP 0.0f (.rdata 0x3007bcec)
      * 3001b42f TEST AH,0x41 / 3001b432 JNP 0x3001b53f: continue only when
@@ -89,8 +88,8 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
     int slot = -1;
     int i;
     for (i = 0; i < 4; i++) {
-        int32_t startMsec = cg_shakeSources[i].startMsec;   /* MOV EAX,[ECX] */
-        if (startMsec > now) {                              /* CMP EAX,EDI / JG */
+        int32_t startMsec = cg_shakeSources[i].startMsec; /* MOV EAX,[ECX] */
+        if (startMsec > now) { /* CMP EAX,EDI / JG */
             slot = i;
             break;
         }
@@ -117,8 +116,8 @@ void CG_AddCameraShake(const vec3_t origin, float amplitude,
          * scaledAmplitude is strictly below the running minimum; if none is, the
          * loop counter stays 4 (CMP EDX,4 / JZ 0x3001b53d) and the new shake is
          * dropped without touching the table. */
-        int minIndex = 4;   /* EDX still 4 from the search loop */
-        float minAmplitude = src.scaledAmplitude;   /* FLD [ESP+0x24] */
+        int minIndex = 4; /* EDX still 4 from the search loop */
+        float minAmplitude = src.scaledAmplitude; /* FLD [ESP+0x24] */
 
         /* FLD slot0.scaledAmplitude / FCOMP threshold; TEST AH,5 / JP skip.
          * AH bit0 = C0 (ST0 < mem). JP not taken (fall through) => C0 set =>

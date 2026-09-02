@@ -91,13 +91,10 @@
 // BG_StringHashValue hashes.
 static const char *const BG_WEAPON_CONDITION_NONE = "none";
 
-typedef char bg_indexed_string_name_offset_check[
-    (offsetof(bg_indexed_string_t, name) == 0x00) ? 1 : -1];
+typedef char bg_indexed_string_name_offset_check[(offsetof(bg_indexed_string_t, name) == 0x00) ? 1 : -1];
 #if defined(__i386__) || (defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4)
-typedef char bg_indexed_string_hash_offset_check[
-    (offsetof(bg_indexed_string_t, hash) == 0x04) ? 1 : -1];
-typedef char bg_indexed_string_size_check[
-    (sizeof(bg_indexed_string_t) == 8) ? 1 : -1];
+typedef char bg_indexed_string_hash_offset_check[(offsetof(bg_indexed_string_t, hash) == 0x04) ? 1 : -1];
+typedef char bg_indexed_string_size_check[(sizeof(bg_indexed_string_t) == 8) ? 1 : -1];
 #endif
 
 void BG_InitWeaponStrings(void)
@@ -117,7 +114,6 @@ void BG_InitWeaponStrings(void)
     // condition preserves the live reload without duplicating the hash body.
     for (weapon = 1; weapon <= bg_numWeapons; ++weapon) {
         weaponStrings[weapon].name = bg_weaponInfos[weapon]->pickupName;
-        weaponStrings[weapon].hash =
-            BG_StringHashValue(weaponStrings[weapon].name);
+        weaponStrings[weapon].hash = BG_StringHashValue(weaponStrings[weapon].name);
     }
 }

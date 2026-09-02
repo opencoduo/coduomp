@@ -24,8 +24,7 @@ extern vm_t *sv_gameVM;
 
 void Com_Printf(const char *format, ...);
 
-static const char sv_masterServerName[] =
-    "coduomaster.activision.com";
+static const char sv_masterServerName[] = "coduomaster.activision.com";
 
 /* This cache is separate from the remote-console and authorization addresses
  * stored in serverStatic_t: CoDUOMP.exe 0x009cd930 and coduo_lnxded
@@ -64,40 +63,31 @@ netadr_t *SV_MasterAddress(void)
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (strstr(":", sv_masterServerName) == NULL) {
-        sv_masterAddress.port =
-            (uint16_t)BigShort((int16_t)SERVER_MASTER_PORT);
+        sv_masterAddress.port = (uint16_t)BigShort((int16_t)SERVER_MASTER_PORT);
     }
 
-    Com_Printf(
-        "coduomaster.activision.com resolved to %i.%i.%i.%i:%i\n",
-        sv_masterAddress.ip[0], sv_masterAddress.ip[1],
-        sv_masterAddress.ip[2], sv_masterAddress.ip[3],
-        BigShort((int16_t)sv_masterAddress.port));
+    Com_Printf("coduomaster.activision.com resolved to %i.%i.%i.%i:%i\n", sv_masterAddress.ip[0], sv_masterAddress.ip[1],
+               sv_masterAddress.ip[2], sv_masterAddress.ip[3], BigShort((int16_t)sv_masterAddress.port));
     return &sv_masterAddress;
 }
 
 void SV_MasterHeartbeat(const char *heartbeat)
 {
-    if (dedicated == NULL ||
-        dedicated->integer != SERVER_MASTER_DEDICATED_MODE) {
+    if (dedicated == NULL || dedicated->integer != SERVER_MASTER_DEDICATED_MODE) {
         return;
     }
 
     if (svs.realTime >= svs.nextHeartbeatTime) {
-        svs.nextHeartbeatTime =
-            svs.realTime + SERVER_MASTER_HEARTBEAT_INTERVAL_MSEC;
+        svs.nextHeartbeatTime = svs.realTime + SERVER_MASTER_HEARTBEAT_INTERVAL_MSEC;
         netadr_t *const address = SV_MasterAddress();
         if (address->type != NA_BOT) {
-            Com_Printf(
-                "Sending heartbeat to coduomaster.activision.com\n");
-            NET_OutOfBandPrint(NS_SERVER, *address, "heartbeat %s\n",
-                               heartbeat);
+            Com_Printf("Sending heartbeat to coduomaster.activision.com\n");
+            NET_OutOfBandPrint(NS_SERVER, *address, "heartbeat %s\n", heartbeat);
         }
     }
 
     if (svs.realTime >= svs.nextStatusResponseTime) {
-        svs.nextStatusResponseTime =
-            svs.realTime + SERVER_MASTER_STATUS_INTERVAL_MSEC;
+        svs.nextStatusResponseTime = svs.realTime + SERVER_MASTER_STATUS_INTERVAL_MSEC;
         netadr_t *const address = SV_MasterAddress();
         if (address->type != NA_BOT) {
             SVC_Status(*address);
@@ -107,15 +97,13 @@ void SV_MasterHeartbeat(const char *heartbeat)
 
 void SV_MasterGameCompleteStatus(void)
 {
-    if (dedicated == NULL ||
-        dedicated->integer != SERVER_MASTER_DEDICATED_MODE) {
+    if (dedicated == NULL || dedicated->integer != SERVER_MASTER_DEDICATED_MODE) {
         return;
     }
 
     netadr_t *const address = SV_MasterAddress();
     if (address->type != NA_BOT) {
-        Com_Printf(
-            "Sending gameCompleteStatus to coduomaster.activision.com\n");
+        Com_Printf("Sending gameCompleteStatus to coduomaster.activision.com\n");
         SVC_GameCompleteStatus(*address);
     }
 }
@@ -133,7 +121,5 @@ int32_t SV_GetClientScore(client_t *client)
     }
 
     const int32_t clientNum = (int32_t)(client - svs.clients);
-    return (int32_t)VM_Call(
-        sv_gameVM, GAME_GET_CLIENT_SCORE,
-        clientNum, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return (int32_t)VM_Call(sv_gameVM, GAME_GET_CLIENT_SCORE, clientNum, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }

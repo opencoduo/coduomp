@@ -2,7 +2,7 @@
 
 _Alignas(16)
 /* Source: uo_ui_mp_x86.dll 0x40063560..0x4016355f. */
-unsigned char memoryPool[UI_MEMORY_POOL_CAPACITY];
+    unsigned char memoryPool[UI_MEMORY_POOL_CAPACITY];
 
 /* Source: uo_ui_mp_x86.dll 0x40061560..0x4006355f. */
 stringDef_t *strHandle[UI_STRING_HASH_SIZE];

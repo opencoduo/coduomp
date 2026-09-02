@@ -11,8 +11,7 @@ int32_t UI_ServersQsortCompare(const void *left, const void *right)
     int32_t server1 = *(const int32_t *)left;
     int32_t server2 = *(const int32_t *)right;
 
-    return trap_LAN_CompareServers(ui_netSource, ui_serverSortKey,
-                                   ui_serverSortDirection, server1, server2);
+    return trap_LAN_CompareServers(ui_netSource, ui_serverSortKey, ui_serverSortDirection, server1, server2);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4000b6f0..0x4000b71c
@@ -25,8 +24,5 @@ void UI_ServersSort(int32_t column, qboolean force)
     }
 
     ui_serverSortKey = column;
-    coduo_crt_qsort(ui_displayServers,
-                        (size_t)ui_displayServerCount,
-                        sizeof(ui_displayServers[0]),
-                        UI_ServersQsortCompare);
+    coduo_crt_qsort(ui_displayServers, (size_t)ui_displayServerCount, sizeof(ui_displayServers[0]), UI_ServersQsortCompare);
 }

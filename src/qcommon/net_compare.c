@@ -22,8 +22,7 @@ void Com_Printf(const char *format, ...);
  * The type, port, unsupported-type, boolean-wrapper, and local-address paths
  * otherwise agree.
  */
-int32_t NET_CompareBaseAdrSigned(const netadr_t *left,
-                                 const netadr_t *right)
+int32_t NET_CompareBaseAdrSigned(const netadr_t *left, const netadr_t *right)
 {
     if (left->type != right->type) {
         return left->type - right->type;
@@ -76,8 +75,7 @@ qboolean NET_CompareBaseAdr(netadr_t left, netadr_t right)
     return NET_CompareBaseAdrSigned(&left, &right) == 0 ? qtrue : qfalse;
 }
 
-int32_t NET_CompareAdrSigned(const netadr_t *left,
-                             const netadr_t *right)
+int32_t NET_CompareAdrSigned(const netadr_t *left, const netadr_t *right)
 {
     if (left->type != right->type) {
         return left->type - right->type;
@@ -135,7 +133,5 @@ qboolean NET_CompareAdr(netadr_t left, netadr_t right)
 
 qboolean NET_IsLocalAddress(netadr_t address)
 {
-    return address.type == NA_LOOPBACK || address.type == NA_BAD
-               ? qtrue
-               : qfalse;
+    return address.type == NA_LOOPBACK || address.type == NA_BAD ? qtrue : qfalse;
 }

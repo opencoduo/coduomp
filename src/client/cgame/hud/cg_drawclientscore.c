@@ -20,14 +20,14 @@
  * The caller cleans 0x14 bytes and consumes the float result from ST0.
  */
 
-#define CG_SB_ROW_X_START             129.0f
-#define CG_SB_ROW_HEIGHT               12.0f
-#define CG_SB_ROW_BOTTOM_LIMIT        432.0f
-#define CG_SB_ROW_TEXT_Y_OFFSET        10.5f
-#define CG_SB_ROW_TEXT_SCALE            0.22f
-#define CG_SB_ROW_ICON_SIZE            13.0f
-#define CG_SB_ROW_LOCAL_ALPHA_SCALE     0.2f
-#define CG_SB_ROW_ALT_ALPHA_SCALE       0.15f
+#define CG_SB_ROW_X_START 129.0f
+#define CG_SB_ROW_HEIGHT 12.0f
+#define CG_SB_ROW_BOTTOM_LIMIT 432.0f
+#define CG_SB_ROW_TEXT_Y_OFFSET 10.5f
+#define CG_SB_ROW_TEXT_SCALE 0.22f
+#define CG_SB_ROW_ICON_SIZE 13.0f
+#define CG_SB_ROW_LOCAL_ALPHA_SCALE 0.2f
+#define CG_SB_ROW_ALT_ALPHA_SCALE 0.15f
 
 enum {
     CG_SB_ROW_SHADER_SORT = 5,
@@ -37,15 +37,14 @@ enum {
 /* The selector lane begins one dword before cg_scoreboardColumns and is read at
  * 0x300375b0 once per 0x10-byte column. */
 typedef enum cgScoreboardRowValueSelect_e {
-    CG_SB_ROW_VALUE_NAME        = 0,
-    CG_SB_ROW_VALUE_SCORE       = 1,
-    CG_SB_ROW_VALUE_DEATHS      = 2,
-    CG_SB_ROW_VALUE_PING        = 3,
+    CG_SB_ROW_VALUE_NAME = 0,
+    CG_SB_ROW_VALUE_SCORE = 1,
+    CG_SB_ROW_VALUE_DEATHS = 2,
+    CG_SB_ROW_VALUE_PING = 3,
     CG_SB_ROW_VALUE_STATUS_ICON = 4
 } cgScoreboardRowValueSelect_t;
 
-float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
-                         float boardWidth, int alternateShade, int *counter)
+float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry, float boardWidth, int alternateShade, int *counter)
 {
     /* 0x30037420..0x30037440: once overflow is latched, or while this line is
      * above the scroll position, leave y unchanged. Skipped scroll lines still
@@ -63,8 +62,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
      * The sum stays UNROUNDED in st0 for the limit test: FST [ESP+0xc]
      * (0x3003744b, no pop) stores the float copy, FCOMP 432.0 (0x3003744f)
      * compares the 80-bit value. */
-    long double nextYSum =
-        (long double)y + (long double)CG_SB_ROW_HEIGHT;
+    long double nextYSum = (long double)y + (long double)CG_SB_ROW_HEIGHT;
     float nextY = (float)nextYSum;
     if (nextYSum > CG_SB_ROW_BOTTOM_LIMIT) {
         cg_scoreboardOverflowed = qtrue;
@@ -93,19 +91,12 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
     }
 
     if (backgroundShaderName != (const char *)0) {
-        vec4_t backgroundColor = {
-            color[0], color[1], color[2],
-            (float)((long double)color[3] *
-                    (long double)backgroundAlphaScale)
-        };
+        vec4_t backgroundColor = {color[0], color[1], color[2], (float)((long double)color[3] * (long double)backgroundAlphaScale)};
 
         CG_DrawInformation(0);
-        qhandle_t shader = coduo_int32_from_bits(
-            (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
-                                    (intptr_t)backgroundShaderName,
-                                    CG_SB_ROW_SHADER_SORT));
-        cgame_syscall(CG_R_SETCOLOR,
-                      (intptr_t)backgroundColor);
+        qhandle_t shader =
+            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)backgroundShaderName, CG_SB_ROW_SHADER_SORT));
+        cgame_syscall(CG_R_SETCOLOR, (intptr_t)backgroundColor);
         CG_DrawPic(CG_SB_ROW_X_START, y, boardWidth, CG_SB_ROW_HEIGHT, shader);
     }
 
@@ -118,8 +109,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
     float xCursor = CG_SB_ROW_X_START;
     for (int32_t i = 0; i < CG_SCOREBOARD_COLUMN_COUNT; ++i) {
         const cgScoreboardColumn_t *column = CG_SCOREBOARD_COLUMN(i);
-        cgScoreboardRowValueSelect_t valueSelect =
-            (cgScoreboardRowValueSelect_t)CG_SCOREBOARD_VALUE_SELECT(i);
+        cgScoreboardRowValueSelect_t valueSelect = (cgScoreboardRowValueSelect_t)CG_SCOREBOARD_VALUE_SELECT(i);
 
         if (valueSelect == CG_SB_ROW_VALUE_STATUS_ICON) {
             /* 0x300375bc..0x3003763e: an icon occupies a 13x13 box. Measured
@@ -127,17 +117,12 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
             if (entry->statusIcon != 0) {
                 float iconOffset =
                     (column->mode == CG_SB_COLUMN_MODE_MEASURED)
-                        ? (float)((long double)boardWidth *
-                                      (long double)column->widthFraction -
-                                  (long double)CG_SB_ROW_ICON_SIZE)
+                        ? (float)((long double)boardWidth * (long double)column->widthFraction - (long double)CG_SB_ROW_ICON_SIZE)
                         : 0.0f; /* 0x300375cd..0x300375da: one FSTP */
-                vec4_t iconColor = { 1.0f, 1.0f, 1.0f, color[3] };
+                vec4_t iconColor = {1.0f, 1.0f, 1.0f, color[3]};
 
-                cgame_syscall(CG_R_SETCOLOR,
-                              (intptr_t)iconColor);
-                CG_DrawPic((float)((long double)xCursor +
-                                   (long double)iconOffset), y,
-                           CG_SB_ROW_ICON_SIZE, CG_SB_ROW_ICON_SIZE,
+                cgame_syscall(CG_R_SETCOLOR, (intptr_t)iconColor);
+                CG_DrawPic((float)((long double)xCursor + (long double)iconOffset), y, CG_SB_ROW_ICON_SIZE, CG_SB_ROW_ICON_SIZE,
                            entry->statusIcon);
             }
         } else {
@@ -179,36 +164,23 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
                  * finds a fitting prefix. */
                 int32_t charLimit = 0;
                 int32_t textWidth = coduo_int32_from_bits(
-                    (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH,
-                                           (intptr_t)text,
-                                           0,
-                                           CG_FloatBits(CG_SB_ROW_TEXT_SCALE),
-                                           charLimit));
+                    (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, 0, CG_FloatBits(CG_SB_ROW_TEXT_SCALE), charLimit));
 
                 /* 0x300376c5/0x3003770e: the fit tests compare the UNROUNDED
                  * boardWidth*widthFraction product (FMUL; FCOMPP) against the
                  * FILD'd width -- 0x300376be FILD feeds the compare with no
                  * intervening FSTP DWORD, so the width is NOT cast to float. */
-                if ((long double)boardWidth *
-                        (long double)column->widthFraction <
-                    (long double)textWidth) {
+                if ((long double)boardWidth * (long double)column->widthFraction < (long double)textWidth) {
                     charLimit = coduo_int32_from_bits((uint32_t)strlen(text));
                     /* The stock loop has no explicit zero bound. Its fixed
                      * scoreboard columns are all wider than one glyph, so the
                      * producer/table domain guarantees a fitting nonnegative
                      * prefix before DEC could cross zero. */
                     do {
-                        charLimit = coduo_int32_from_bits(
-                            (uint32_t)charLimit - 1u);
+                        charLimit = coduo_int32_from_bits((uint32_t)charLimit - 1u);
                         textWidth = coduo_int32_from_bits(
-                            (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH,
-                                                   (intptr_t)text,
-                                                   0,
-                                                   CG_FloatBits(CG_SB_ROW_TEXT_SCALE),
-                                                   charLimit));
-                    } while ((long double)boardWidth *
-                                 (long double)column->widthFraction <
-                             (long double)textWidth);
+                            (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, 0, CG_FloatBits(CG_SB_ROW_TEXT_SCALE), charLimit));
+                    } while ((long double)boardWidth * (long double)column->widthFraction < (long double)textWidth);
                 }
 
                 /* 0x30037741..0x3003774f: the measured offset stays UNROUNDED
@@ -217,40 +189,23 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
                 long double textOffset = 0.0f;
                 if (column->mode == CG_SB_COLUMN_MODE_MEASURED) {
                     textWidth = coduo_int32_from_bits(
-                        (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH,
-                                               (intptr_t)text,
-                                               0,
-                                               CG_FloatBits(CG_SB_ROW_TEXT_SCALE),
-                                               charLimit));
-                    textOffset =
-                        (long double)boardWidth *
-                            (long double)column->widthFraction -
-                        (long double)textWidth; /* 0x3003774f FISUB: int, no float cast */
+                        (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, 0, CG_FloatBits(CG_SB_ROW_TEXT_SCALE), charLimit));
+                    textOffset = (long double)boardWidth * (long double)column->widthFraction -
+                                 (long double)textWidth; /* 0x3003774f FISUB: int, no float cast */
                 }
 
                 /* 0x3003775e..0x300377c7: white RGB with the section alpha,
                  * drawn at y+10.5 using the fitting character limit. */
-                vec4_t textColor = { 1.0f, 1.0f, 1.0f, color[3] };
-                cgame_syscall(CG_R_TEXT_PAINT,
-                              CG_FloatBits((float)((long double)xCursor +
-                                                  textOffset)),
-                              CG_FloatBits((float)((long double)y +
-                                  (long double)CG_SB_ROW_TEXT_Y_OFFSET)),
-                              0,
-                              CG_FloatBits(CG_SB_ROW_TEXT_SCALE),
-                              (intptr_t)textColor,
-                              (intptr_t)text,
-                              0,
-                              charLimit,
-                              CG_SB_ROW_TRAP54_MODE);
+                vec4_t textColor = {1.0f, 1.0f, 1.0f, color[3]};
+                cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits((float)((long double)xCursor + textOffset)),
+                              CG_FloatBits((float)((long double)y + (long double)CG_SB_ROW_TEXT_Y_OFFSET)), 0,
+                              CG_FloatBits(CG_SB_ROW_TEXT_SCALE), (intptr_t)textColor, (intptr_t)text, 0, charLimit, CG_SB_ROW_TRAP54_MODE);
             }
         }
 
         /* 0x300377d0..0x300377e7: FLD boardWidth; FMUL [EBP]; FADD xCursor;
          * FSTP xCursor -- the product is never rounded separately. */
-        xCursor = (float)((long double)xCursor +
-                          (long double)boardWidth *
-                              (long double)column->widthFraction);
+        xCursor = (float)((long double)xCursor + (long double)boardWidth * (long double)column->widthFraction);
     }
 
     return nextY;

@@ -157,10 +157,8 @@ enum playerStateFlags_e {
     PSF_PLAYER_ENTITY_MASK = PSF_FOLLOWING | PSF_ACTIVE_PLAYER,
     PMF_WEAPON_DISABLED = 0x00400000u,
 
-    PMF_LADDER_TIMER_BLOCK_MASK =
-        PMF_LAND_STUN | PMF_NO_GROUNDFRICTION,
-    PMF_ALL_TIMES =
-        PMF_LAND_STUN | PMF_NO_GROUNDFRICTION | PMF_WALLJUMP
+    PMF_LADDER_TIMER_BLOCK_MASK = PMF_LAND_STUN | PMF_NO_GROUNDFRICTION,
+    PMF_ALL_TIMES = PMF_LAND_STUN | PMF_NO_GROUNDFRICTION | PMF_WALLJUMP
 };
 
 /* Complete pointer-free player-state network/VM record. CoDUOMP.exe and
@@ -276,43 +274,25 @@ typedef struct playerState_s {
     int32_t deltaTime;                   /* +0x4500 */
 } playerState_t;
 
-#define PLAYER_STATE_LAYOUT_ASSERT(name_, expression_) \
-    typedef char name_[(expression_) ? 1 : -1]
+#define PLAYER_STATE_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
 
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_objective_size,
-                           sizeof(objective_t) == 0x1c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_color_size,
-                           sizeof(hudelem_color_t) == 0x04);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_align_size,
-                           sizeof(hudElemAlign_t) == 0x04);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_size,
-                           sizeof(hudElem_t) == 0x7c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_align_x_offset,
-                           offsetof(hudElem_t, alignX) == 0x14);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_align_y_offset,
-                           offsetof(hudElem_t, alignY) == 0x18);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_color_offset,
-                           offsetof(hudElem_t, color) == 0x1c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_timer_offset,
-                           offsetof(hudElem_t, timerValue) == 0x5c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_sort_offset,
-                           offsetof(hudElem_t, sortKey) == 0x6c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_event_parms_offset,
-                           offsetof(playerState_t, eventParms) == 0x09c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_stats_offset,
-                           offsetof(playerState_t, stats) == 0x11c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_weapon_slots_offset,
-                           offsetof(playerState_t, weaponSlots) == 0x544);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_objectives_offset,
-                           offsetof(playerState_t, objectives) == 0x638);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_current_offset,
-                           offsetof(playerState_t, hudCurrent) == 0x7f8);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_archival_offset,
-                           offsetof(playerState_t, hudArchival) == 0x267c);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_delta_time_offset,
-                           offsetof(playerState_t, deltaTime) == 0x4500);
-PLAYER_STATE_LAYOUT_ASSERT(q_player_state_size,
-                           sizeof(playerState_t) == 0x4504);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_objective_size, sizeof(objective_t) == 0x1c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_color_size, sizeof(hudelem_color_t) == 0x04);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_align_size, sizeof(hudElemAlign_t) == 0x04);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_size, sizeof(hudElem_t) == 0x7c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_align_x_offset, offsetof(hudElem_t, alignX) == 0x14);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_align_y_offset, offsetof(hudElem_t, alignY) == 0x18);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_color_offset, offsetof(hudElem_t, color) == 0x1c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_timer_offset, offsetof(hudElem_t, timerValue) == 0x5c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_sort_offset, offsetof(hudElem_t, sortKey) == 0x6c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_event_parms_offset, offsetof(playerState_t, eventParms) == 0x09c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_stats_offset, offsetof(playerState_t, stats) == 0x11c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_weapon_slots_offset, offsetof(playerState_t, weaponSlots) == 0x544);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_objectives_offset, offsetof(playerState_t, objectives) == 0x638);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_current_offset, offsetof(playerState_t, hudCurrent) == 0x7f8);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_hud_archival_offset, offsetof(playerState_t, hudArchival) == 0x267c);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_delta_time_offset, offsetof(playerState_t, deltaTime) == 0x4500);
+PLAYER_STATE_LAYOUT_ASSERT(q_player_state_size, sizeof(playerState_t) == 0x4504);
 
 #undef PLAYER_STATE_LAYOUT_ASSERT
 

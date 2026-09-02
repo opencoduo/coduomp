@@ -8,9 +8,7 @@ void CL_Shutdown(void)
 {
 }
 
-void CL_MouseEvent(int32_t value,
-                   int32_t value2,
-                   int32_t time)
+void CL_MouseEvent(int32_t value, int32_t value2, int32_t time)
 {
     (void)value;
     (void)value2;
@@ -28,8 +26,7 @@ void CL_Frame(int32_t rawMsec, int32_t scaledMsec)
     (void)scaledMsec;
 }
 
-void CL_PacketEvent(netadr_t from, msg_t *msg,
-                    int32_t time)
+void CL_PacketEvent(netadr_t from, msg_t *msg, int32_t time)
 {
     (void)from;
     (void)msg;
@@ -66,9 +63,7 @@ qboolean CL_GameCommand(void)
     return qfalse;
 }
 
-void CL_KeyEvent(int32_t value,
-                 int32_t value2,
-                 int32_t time)
+void CL_KeyEvent(int32_t value, int32_t value2, int32_t time)
 {
     (void)value;
     (void)value2;
@@ -85,8 +80,7 @@ void CL_ForwardCommandToServer(const char *text)
     (void)text;
 }
 
-void CL_ConsolePrint(int32_t channel, const char *message,
-                     int32_t arg2, int32_t arg3)
+void CL_ConsolePrint(int32_t channel, const char *message, int32_t arg2, int32_t arg3)
 {
     (void)channel;
     (void)message;
@@ -98,9 +92,7 @@ void FUN_080851cd(void)
 {
 }
 
-void CL_JoystickEvent(int32_t value,
-                      int32_t value2,
-                      int32_t time)
+void CL_JoystickEvent(int32_t value, int32_t value2, int32_t time)
 {
     (void)value;
     (void)value2;

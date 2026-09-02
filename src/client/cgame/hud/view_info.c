@@ -101,14 +101,9 @@ void CG_DrawViewInfoOverlay(void)
      * returns nonzero on success.
      * The two global vec3 addresses (view origin + forward direction, adjacent in
      * memory) are forwarded as pointers; the three buffers are output text lines. */
-    if (coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_GET_VIEW_INFO,
-            (intptr_t)cg_refdef.vieworg,
-            (intptr_t)cg_refdef.viewaxis[0],
-            (intptr_t)materialName,
-            (intptr_t)surfaceFlags,
-            (intptr_t)contents,
-            (intptr_t)sizeof(surfaceFlags))) != 0) {
+    if (coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_VIEW_INFO, (intptr_t)cg_refdef.vieworg, (intptr_t)cg_refdef.viewaxis[0],
+                                                      (intptr_t)materialName, (intptr_t)surfaceFlags, (intptr_t)contents,
+                                                      (intptr_t)sizeof(surfaceFlags))) != 0) {
         /* Draw the three filled lines as stacked HUD text elements. position is
          * the 8.0f dword forwarded opaquely; yBase steps 240 -> 256 -> 272; flags
          * is the 1.0f dword. */

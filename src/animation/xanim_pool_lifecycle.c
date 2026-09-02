@@ -27,10 +27,8 @@ void XAnimInit(void)
     XAnimInfo *sentinel;
 
     for (int32_t index = 0; index < XANIM_POOL_NODE_COUNT; ++index) {
-        xanim_pool[index].freePrev = (uint16_t)(
-            (index + XANIM_POOL_NODE_COUNT - 1) % XANIM_POOL_NODE_COUNT);
-        xanim_pool[index].freeNext =
-            (uint16_t)((index + 1) % XANIM_POOL_NODE_COUNT);
+        xanim_pool[index].freePrev = (uint16_t)((index + XANIM_POOL_NODE_COUNT - 1) % XANIM_POOL_NODE_COUNT);
+        xanim_pool[index].freeNext = (uint16_t)((index + 1) % XANIM_POOL_NODE_COUNT);
     }
 
     sentinel = &xanim_pool[XANIM_POOL_SENTINEL_INDEX];
@@ -43,9 +41,7 @@ void XAnimInit(void)
     sentinel->states[XANIM_USER_SERVER].cycleCount = 0;
     sentinel->states[XANIM_USER_SERVER].oldCycleCount = 0;
 
-    xanim_endNotifyHandle =
-        SL_GetString_("end", XANIM_END_NOTIFY_STRING_USER,
-                     XANIM_END_NOTIFY_STRING_TYPE);
+    xanim_endNotifyHandle = SL_GetString_("end", XANIM_END_NOTIFY_STRING_USER, XANIM_END_NOTIFY_STRING_TYPE);
     xanim_poolUsedCount = XANIM_POOL_RESERVED_NODE_COUNT;
     xanim_poolHighWaterCount = XANIM_POOL_RESERVED_NODE_COUNT;
 }

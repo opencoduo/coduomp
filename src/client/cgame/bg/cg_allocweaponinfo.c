@@ -65,16 +65,14 @@ static char *cgame_compat_copy_weapon_field_string(const char *src)
     return dst;
 }
 
-weaponInfo_t *CG_AllocWeaponInfo(int32_t fieldCount, int32_t index,
-                               const parseField_t *fields)
+weaponInfo_t *CG_AllocWeaponInfo(int32_t fieldCount, int32_t index, const parseField_t *fields)
 {
     weaponInfo_t *weaponInfo;
 
     /* 0x3000fe03: cgame_syscall(206, 0x4bc). The original i386 weaponInfo_t is
      * exactly 0x4bc bytes.  sizeof preserves that request on i386 and reserves
      * the pointer-expanded native record on 64-bit hosts. */
-    weaponInfo = (weaponInfo_t *)(intptr_t)cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN,
-                                                       sizeof(*weaponInfo));
+    weaponInfo = (weaponInfo_t *)(intptr_t)cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN, sizeof(*weaponInfo));
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     bg_weaponInfos[index] = weaponInfo;
@@ -84,8 +82,7 @@ weaponInfo_t *CG_AllocWeaponInfo(int32_t fieldCount, int32_t index,
     if (g_str_empty[0] == '\0') {
         weaponInfo->pickupName = cg_emptyString;
     } else {
-        weaponInfo->pickupName =
-            cgame_compat_copy_weapon_field_string(g_str_empty);
+        weaponInfo->pickupName = cgame_compat_copy_weapon_field_string(g_str_empty);
     }
 
     /* 0x3000fe62: TEST EDI,EDI / JLE — signed count guard (skip when <= 0). */
@@ -98,13 +95,11 @@ weaponInfo_t *CG_AllocWeaponInfo(int32_t fieldCount, int32_t index,
             if (field->type == PARSE_FIELD_STRING_ALLOC) {
                 /* 0x3000fe79: EDI = field->offset + weaponInfo (pointer into the
                  * weaponInfo_t at this string field). */
-                const char **slot =
-                    (const char **)((char *)weaponInfo + field->offset);
+                const char **slot = (const char **)((char *)weaponInfo + field->offset);
                 if (g_str_empty[0] == '\0') {
                     *slot = cg_emptyString;
                 } else {
-                    *slot =
-                        cgame_compat_copy_weapon_field_string(g_str_empty);
+                    *slot = cgame_compat_copy_weapon_field_string(g_str_empty);
                 }
             }
             /* 0x3000fec0: ADD EBP,0xc — next descriptor; DEC count; JNZ. */

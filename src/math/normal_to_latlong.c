@@ -36,18 +36,11 @@ void NormalToLatLong(const vec3_t normal, uint8_t encoded[2])
     }
 
 #if EMULATE_X87
-    const x87f longitude = x87f_mul(
-        x87f_div(x87f_mul(
-                     x87f_load_f64(atan2((double)normal[1],
-                                         (double)normal[0])),
-                     x87f_load_f64(degrees)),
-                 x87f_load_f64(pi)),
-        x87f_load_f64(byteScale));
-    const x87f latitude = x87f_mul(
-        x87f_div(x87f_mul(x87f_load_f64(acos((double)normal[2])),
-                          x87f_load_f64(degrees)),
-                 x87f_load_f64(pi)),
-        x87f_load_f64(byteScale));
+    const x87f longitude =
+        x87f_mul(x87f_div(x87f_mul(x87f_load_f64(atan2((double)normal[1], (double)normal[0])), x87f_load_f64(degrees)), x87f_load_f64(pi)),
+                 x87f_load_f64(byteScale));
+    const x87f latitude = x87f_mul(x87f_div(x87f_mul(x87f_load_f64(acos((double)normal[2])), x87f_load_f64(degrees)), x87f_load_f64(pi)),
+                                   x87f_load_f64(byteScale));
 
     /* Finite results are confined to [-127.5, 127.5].  For NaN, the Windows
      * FISTP-qword helper and Linux FISTP-word instruction both leave a zero
@@ -56,11 +49,8 @@ void NormalToLatLong(const vec3_t normal, uint8_t encoded[2])
     encoded[0] = (uint8_t)x87f_store_i32_trunc(latitude);
 #else
     const long double longitude =
-        (long double)atan2((double)normal[1], (double)normal[0]) *
-        (long double)degrees / (long double)pi * (long double)byteScale;
-    const long double latitude =
-        (long double)acos((double)normal[2]) *
-        (long double)degrees / (long double)pi * (long double)byteScale;
+        (long double)atan2((double)normal[1], (double)normal[0]) * (long double)degrees / (long double)pi * (long double)byteScale;
+    const long double latitude = (long double)acos((double)normal[2]) * (long double)degrees / (long double)pi * (long double)byteScale;
     encoded[1] = coduo_fp_to_u8_extended(longitude);
     encoded[0] = coduo_fp_to_u8_extended(latitude);
 #endif

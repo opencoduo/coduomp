@@ -53,9 +53,7 @@ model_t *R_GetModelByHandle(int32_t modelHandle)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (modelHandle < 0 || modelHandle >= tr.modelCount) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetModelByHandle: out of range hModel '%d'\n",
-                  modelHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetModelByHandle: out of range hModel '%d'\n", modelHandle);
         return tr.models[0];
     }
     return tr.models[modelHandle];
@@ -83,8 +81,7 @@ int32_t RE_GetShaderFromModel(int32_t modelHandle, int32_t surfaceIndex)
         surfaceIndex = 0;
 
     model_t *model = tr.models[modelHandle];
-    if (model == NULL || model->bmodel == NULL ||
-        model->bmodel->firstSurface == NULL) {
+    if (model == NULL || model->bmodel == NULL || model->bmodel->firstSurface == NULL) {
         return 0;
     }
 
@@ -100,17 +97,13 @@ int32_t RE_GetShaderFromModel(int32_t modelHandle, int32_t surfaceIndex)
 
         while (image != NULL) {
             if (strcmp(shader->name, image->imgName) == 0) {
-                mipRawImage =
-                    (image->flags & IMAGE_FLAG_MIPMAP) != 0
-                        ? qtrue
-                        : qfalse;
+                mipRawImage = (image->flags & IMAGE_FLAG_MIPMAP) != 0 ? qtrue : qfalse;
                 break;
             }
             image = image->hashNext;
         }
 
-        shader = R_FindShader(shader->name, -1, mipRawImage,
-                              R_MODEL_SHADER_USAGE);
+        shader = R_FindShader(shader->name, -1, mipRawImage, R_MODEL_SHADER_USAGE);
         shader->stages[0]->rgbGen = CGEN_LIGHTING_DIFFUSE;
         shader->stages[0]->stateBits = GLS_LIGHTING | GLS_DEPTHMASK_TRUE;
     }
@@ -159,9 +152,7 @@ int32_t RE_RegisterModel(const char *name, int32_t loadMode)
 
     model = R_AllocModel();
     if (model == NULL) {
-        ri.Printf(R_PRINT_WARNING,
-                  "RE_RegisterModel: R_AllocModel() failed for '%s'\n",
-                  normalizedName);
+        ri.Printf(R_PRINT_WARNING, "RE_RegisterModel: R_AllocModel() failed for '%s'\n", normalizedName);
         return 0;
     }
 
@@ -169,10 +160,8 @@ int32_t RE_RegisterModel(const char *name, int32_t loadMode)
     R_SyncRenderThread();
     model->numLods = 0;
 
-    if (coduo_crt_strnicmp(normalizedName, xmodelPrefix,
-                             sizeof(xmodelPrefix) - 1) == 0) {
-        R_LoadXModel(model, normalizedName + sizeof(xmodelPrefix) - 1,
-                     loadMode);
+    if (coduo_crt_strnicmp(normalizedName, xmodelPrefix, sizeof(xmodelPrefix) - 1) == 0) {
+        R_LoadXModel(model, normalizedName + sizeof(xmodelPrefix) - 1, loadMode);
         return model->index;
     }
 

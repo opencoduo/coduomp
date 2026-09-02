@@ -66,9 +66,7 @@ int32_t Item_Multi_FindCvarByValue(itemDef_t *item)
 
     for (index = 0; index < multi->count; ++index) {
         if (multi->strDef != 0) {
-            if (multi->cvarStr[index] != NULL &&
-                Q_stricmpn(multi->cvarStr[index], cvarBuffer,
-                           UI_MULTI_COMPARE_LIMIT) == 0) {
+            if (multi->cvarStr[index] != NULL && Q_stricmpn(multi->cvarStr[index], cvarBuffer, UI_MULTI_COMPARE_LIMIT) == 0) {
                 return index;
             }
         } else if (multi->cvarValue[index] == cvarValue) {
@@ -102,9 +100,7 @@ const char *Item_Multi_Setting(itemDef_t *item)
 
     for (index = 0; index < multi->count; ++index) {
         if (multi->strDef != 0) {
-            if (multi->cvarStr[index] != NULL &&
-                Q_stricmpn(multi->cvarStr[index], cvarBuffer,
-                           UI_MULTI_COMPARE_LIMIT) == 0) {
+            if (multi->cvarStr[index] != NULL && Q_stricmpn(multi->cvarStr[index], cvarBuffer, UI_MULTI_COMPARE_LIMIT) == 0) {
                 return multi->cvarList[index];
             }
         } else if (multi->cvarValue[index] == cvarValue) {
@@ -129,18 +125,12 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int32_t key)
         return qfalse;
     }
 
-    if (!((float)DC->cursorx >= item->window.rect.x &&
-          (float)DC->cursorx <=
-              item->window.rect.x + item->window.rect.w &&
-          (float)DC->cursory >= item->window.rect.y &&
-          (float)DC->cursory <=
-              item->window.rect.y + item->window.rect.h) ||
-        (item->window.flags & WINDOW_HASFOCUS) == 0 ||
-        item->cvar == NULL) {
+    if (!((float)DC->cursorx >= item->window.rect.x && (float)DC->cursorx <= item->window.rect.x + item->window.rect.w &&
+          (float)DC->cursory >= item->window.rect.y && (float)DC->cursory <= item->window.rect.y + item->window.rect.h) ||
+        (item->window.flags & WINDOW_HASFOCUS) == 0 || item->cvar == NULL) {
         return qfalse;
     }
-    if (key != K_MOUSE1 && key != K_ENTER &&
-        key != K_MOUSE2 && key != K_MOUSE3) {
+    if (key != K_MOUSE1 && key != K_ENTER && key != K_MOUSE2 && key != K_MOUSE3) {
         return qfalse;
     }
 
@@ -162,8 +152,7 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int32_t key)
         DC->setCVar(item->cvar, multi->cvarStr[current]);
     } else {
         const float value = multi->cvarValue[current];
-        const int32_t integerValue =
-            coduo_fp_to_i32_extended((long double)value);
+        const int32_t integerValue = coduo_fp_to_i32_extended((long double)value);
 
         if ((long double)integerValue == (long double)value) {
             DC->setCVar(item->cvar, va("%i", integerValue));
@@ -179,8 +168,7 @@ void Item_Multi_Paint(itemDef_t *item)
     vec4_t color;
     const char *setting;
     float x;
-    const uint32_t focusBits =
-        (uint32_t)item->window.flags & WINDOW_HASFOCUS;
+    const uint32_t focusBits = (uint32_t)item->window.flags & WINDOW_HASFOCUS;
     menuDef_t *parent = item->parent;
     displayContextDef_t *display;
 
@@ -195,8 +183,7 @@ void Item_Multi_Paint(itemDef_t *item)
         }
         display = DC;
         pulseStep = display->realTime / UI_MULTI_PULSE_PERIOD;
-        fraction = (float)((coduo_x87_sinl((long double)pulseStep) + 1.0L) *
-                           0.5L);
+        fraction = (float)((coduo_x87_sinl((long double)pulseStep) + 1.0L) * 0.5L);
         LerpColor(color, parent->focusColor, dimmed, fraction);
     } else {
         color[0] = item->window.foreColor[0];
@@ -212,12 +199,10 @@ void Item_Multi_Paint(itemDef_t *item)
     }
     if (item->text != NULL) {
         Item_Text_Paint(item);
-        x = (float)((long double)item->textRect.w +
-                    (long double)item->textRect.x + UI_MULTI_VALUE_GAP);
+        x = (float)((long double)item->textRect.w + (long double)item->textRect.x + UI_MULTI_VALUE_GAP);
     } else {
         x = item->textRect.x;
     }
     display = DC;
-    display->drawText(x, item->textRect.y, item->font, item->textscale,
-                      color, setting, 0, 0, item->textStyle);
+    display->drawText(x, item->textRect.y, item->font, item->textscale, color, setting, 0, 0, item->textStyle);
 }

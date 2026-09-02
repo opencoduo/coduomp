@@ -38,23 +38,18 @@ void PM_ViewHeightAdjust(void)
     int32_t percent = 0;
 
     if (target == 0 || ps->viewHeightCurrent == 0.0f) {
-        ps->viewHeightCurrent =
-            (ps->pmType == PM_TYPE_SPECTATOR) ? 0.0f : (float)target;
+        ps->viewHeightCurrent = (ps->pmType == PM_TYPE_SPECTATOR) ? 0.0f : (float)target;
         return;
     }
 
-    if ((long double)ps->viewHeightCurrent == (long double)target &&
-        ps->viewHeightLerpTime == 0) {
+    if ((long double)ps->viewHeightCurrent == (long double)target && ps->viewHeightLerpTime == 0) {
         return;
     }
 
-    if (target != ps->proneViewHeight &&
-        target != ps->crouchViewHeight &&
-        target != ps->standViewHeight) {
+    if (target != ps->proneViewHeight && target != ps->crouchViewHeight && target != ps->standViewHeight) {
         ps->viewHeightLerpTime = 0;
         ps = move->ps; /* 0x3000aaf8 reload after clearing the lerp timer. */
-        qboolean moveUp =
-            ((long double)target > (long double)ps->viewHeightCurrent);
+        qboolean moveUp = ((long double)target > (long double)ps->viewHeightCurrent);
         /* The target/current comparison is issued before this load. step stays
          * live in st0 through the branch-specific FADD/FSUBR. */
         long double step = (long double)pml.frametime * 180.0f;
@@ -82,13 +77,10 @@ void PM_ViewHeightAdjust(void)
         int32_t lerpStartTime = ps->viewHeightLerpTime;
         int32_t lerpTarget = ps->viewHeightLerpTarget;
         int32_t lerpDown = ps->viewHeightLerpDown;
-        int32_t duration = PM_GetViewHeightLerpTime(
-            ps, lerpTarget, lerpDown);
+        int32_t duration = PM_GetViewHeightLerpTime(ps, lerpTarget, lerpDown);
 
-        int32_t elapsed = coduo_int32_from_bits(
-            (uint32_t)move->command.commandTime - (uint32_t)lerpStartTime);
-        int32_t scaledElapsed = coduo_int32_from_bits(
-            (uint32_t)elapsed * (uint32_t)VIEWHEIGHT_PERCENT_MAX);
+        int32_t elapsed = coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)lerpStartTime);
+        int32_t scaledElapsed = coduo_int32_from_bits((uint32_t)elapsed * (uint32_t)VIEWHEIGHT_PERCENT_MAX);
         percent = scaledElapsed / duration;
         if (percent < 0) {
             percent = 0;
@@ -111,23 +103,19 @@ void PM_ViewHeightAdjust(void)
             if (lerpTarget == ps->proneViewHeight) {
                 table = pmViewHeightLerpProne;
             } else if (lerpTarget == ps->crouchViewHeight) {
-                table = lerpDown
-                      ? pmViewHeightLerpCrouchedRising
-                      : pmViewHeightLerpCrouchedFalling;
+                table = lerpDown ? pmViewHeightLerpCrouchedRising : pmViewHeightLerpCrouchedFalling;
             } else {
                 table = pmViewHeightLerpStanding;
             }
 
-            long double height =
-                PM_ViewHeightTableLerp(percent, table, &originAdjust);
+            long double height = PM_ViewHeightTableLerp(percent, table, &originAdjust);
             playerState_t *heightPs = move->ps;
             heightPs->viewHeightCurrent = (float)height;
             ps = move->ps;
             /* FABS is on the 80-bit diff and FCOMP is against (double)0.05f
              * (0x3007c240 == 0.05f widened, so the value is 0.05f); fabsl keeps the
              * diff unrounded to match the inline FABS at 0x3000ac65. */
-            long double adjustmentDelta =
-                (long double)ps->viewHeightLerpPosAdj - originAdjust;
+            long double adjustmentDelta = (long double)ps->viewHeightLerpPosAdj - originAdjust;
             if (fabsl(adjustmentDelta) > 0.05f) {
                 vec3_t savedVelocity;
                 vec3_t direction;
@@ -137,8 +125,7 @@ void PM_ViewHeightAdjust(void)
                 float speedRounded;
 
                 savedVelocity[0] = ps->velocity[0];
-                long double speed =
-                    (long double)originAdjust - ps->viewHeightLerpPosAdj;
+                long double speed = (long double)originAdjust - ps->viewHeightLerpPosAdj;
                 savedVelocity[1] = ps->velocity[1];
                 savedVelocity[2] = ps->velocity[2];
                 if (ps->groundEntityNum == ENTITYNUM_NONE) {
@@ -150,14 +137,11 @@ void PM_ViewHeightAdjust(void)
                 direction[2] = 0.0f;
                 speedRounded = (float)speed;   /* FSTP float [ESP+0x18] */
                 VectorNormalize(direction);
-                ps->velocity[0] =
-                    (float)((long double)direction[0] * speedRounded);
+                ps->velocity[0] = (float)((long double)direction[0] * speedRounded);
                 playerState_t *velocityYPs = move->ps;
-                velocityYPs->velocity[1] =
-                    (float)((long double)direction[1] * speedRounded);
+                velocityYPs->velocity[1] = (float)((long double)direction[1] * speedRounded);
                 playerState_t *velocityZPs = move->ps;
-                velocityZPs->velocity[2] =
-                    (float)((long double)direction[2] * speedRounded);
+                velocityZPs->velocity[2] = (float)((long double)direction[2] * speedRounded);
                 PM_StepSlideMove(1);
                 move = pm; /* 0x3000ad04 callback-boundary reload. */
                 playerState_t *restoreXPs = move->ps;
@@ -191,8 +175,7 @@ void PM_ViewHeightAdjust(void)
         }
 
         ps->viewHeightLerpDown ^= 1;
-        percent = coduo_int32_from_bits((uint32_t)VIEWHEIGHT_PERCENT_MAX -
-                                   (uint32_t)percent);
+        percent = coduo_int32_from_bits((uint32_t)VIEWHEIGHT_PERCENT_MAX - (uint32_t)percent);
         ps = move->ps;
         if (ps->viewHeightLerpDown != 0) {
             int32_t currentLerpTarget = ps->viewHeightLerpTarget;
@@ -230,21 +213,17 @@ void PM_ViewHeightAdjust(void)
             ps = move->ps; /* 0x3000ae2c reload before duration selection. */
             int32_t reversedLerpDown = ps->viewHeightLerpDown;
             int32_t reversedLerpTarget = ps->viewHeightLerpTarget;
-            int32_t duration = PM_GetViewHeightLerpTime(
-                ps, reversedLerpTarget, reversedLerpDown);
+            int32_t duration = PM_GetViewHeightLerpTime(ps, reversedLerpTarget, reversedLerpDown);
             long double reversedElapsed = (long double)duration * percent;
             reversedElapsed *= 0.01f;
             int32_t elapsed = coduo_fp_to_i32_extended(reversedElapsed);
 
-            ps->viewHeightLerpTime = coduo_int32_from_bits(
-                (uint32_t)move->command.commandTime - (uint32_t)elapsed);
+            ps->viewHeightLerpTime = coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)elapsed);
             ps = move->ps;
             if (ps->viewHeightLerpTarget == ps->proneViewHeight) {
                 table = pmViewHeightLerpProne;
             } else if (ps->viewHeightLerpTarget == ps->crouchViewHeight) {
-                table = ps->viewHeightLerpDown
-                      ? pmViewHeightLerpCrouchedRising
-                      : pmViewHeightLerpCrouchedFalling;
+                table = ps->viewHeightLerpDown ? pmViewHeightLerpCrouchedRising : pmViewHeightLerpCrouchedFalling;
             } else {
                 table = pmViewHeightLerpStanding;
             }
@@ -275,8 +254,7 @@ void PM_ViewHeightAdjust(void)
             ps->viewHeightLerpTarget = ps->proneViewHeight;
         }
     } else if (target == ps->crouchViewHeight) {
-        ps->viewHeightLerpDown =
-            ((long double)target < (long double)ps->viewHeightCurrent) ? 1 : 0;
+        ps->viewHeightLerpDown = ((long double)target < (long double)ps->viewHeightCurrent) ? 1 : 0;
         ps = move->ps;
         ps->viewHeightLerpTarget = ps->crouchViewHeight;
     } else if (target == ps->standViewHeight) {
@@ -307,23 +285,19 @@ void PM_ViewHeightAdjust(void)
     targetHeight = pm->ps->viewHeightTarget;
     currentHeight = pm->ps->viewHeightCurrent;
 
-    if (pm->ps->viewHeightTarget == 0 ||
-        pm->ps->viewHeightCurrent == 0.0f) {
+    if (pm->ps->viewHeightTarget == 0 || pm->ps->viewHeightCurrent == 0.0f) {
         if (pm->ps->pmType == PM_TYPE_SPECTATOR) {
             pm->ps->viewHeightCurrent = 0.0f;
         } else {
-            pm->ps->viewHeightCurrent =
-                (float)pm->ps->viewHeightTarget;
+            pm->ps->viewHeightCurrent = (float)pm->ps->viewHeightTarget;
         }
         return;
     }
 
-    if (currentHeight != (float)targetHeight || isnan(currentHeight) ||
-        isnan((float)targetHeight) || pm->ps->viewHeightLerpTime != 0) {
+    if (currentHeight != (float)targetHeight || isnan(currentHeight) || isnan((float)targetHeight) || pm->ps->viewHeightLerpTime != 0) {
         qboolean isKnownStance = qfalse;
 
-        if (targetHeight == pm->ps->proneViewHeight ||
-            targetHeight == pm->ps->crouchViewHeight ||
+        if (targetHeight == pm->ps->proneViewHeight || targetHeight == pm->ps->crouchViewHeight ||
             targetHeight == pm->ps->standViewHeight) {
             isKnownStance = qtrue;
         }
@@ -333,14 +307,9 @@ void PM_ViewHeightAdjust(void)
                 int32_t elapsed;
                 int32_t scaledElapsed;
 
-                lerpTime = PM_GetViewHeightLerpTime(
-                    pm->ps, pm->ps->viewHeightLerpTarget,
-                    pm->ps->viewHeightLerpDown);
-                elapsed = coduo_int32_from_bits(
-                    (uint32_t)pm->command.commandTime -
-                    (uint32_t)pm->ps->viewHeightLerpTime);
-                scaledElapsed = coduo_int32_from_bits(
-                    (uint32_t)elapsed * UINT32_C(100));
+                lerpTime = PM_GetViewHeightLerpTime(pm->ps, pm->ps->viewHeightLerpTarget, pm->ps->viewHeightLerpDown);
+                elapsed = coduo_int32_from_bits((uint32_t)pm->command.commandTime - (uint32_t)pm->ps->viewHeightLerpTime);
+                scaledElapsed = coduo_int32_from_bits((uint32_t)elapsed * UINT32_C(100));
                 percent = scaledElapsed / lerpTime;
                 if (percent < 0) {
                     percent = 0;
@@ -349,44 +318,26 @@ void PM_ViewHeightAdjust(void)
                 }
 
                 if (percent == VIEWHEIGHT_PERCENT_MAX) {
-                    pm->ps->viewHeightCurrent =
-                        (float)pm->ps->viewHeightLerpTarget;
+                    pm->ps->viewHeightCurrent = (float)pm->ps->viewHeightLerpTarget;
                     pm->ps->viewHeightLerpTime = 0;
                     pm->ps->viewHeightLerpPosAdj = 0.0f;
                 } else {
-                    if (pm->ps->viewHeightLerpTarget ==
-                        pm->ps->proneViewHeight) {
-                        pm->ps->viewHeightCurrent =
-                            (float)PM_ViewHeightTableLerp(
-                                percent, pmViewHeightLerpProne,
-                                &originAdjust);
-                    } else if (pm->ps->viewHeightLerpTarget ==
-                               pm->ps->crouchViewHeight) {
+                    if (pm->ps->viewHeightLerpTarget == pm->ps->proneViewHeight) {
+                        pm->ps->viewHeightCurrent = (float)PM_ViewHeightTableLerp(percent, pmViewHeightLerpProne, &originAdjust);
+                    } else if (pm->ps->viewHeightLerpTarget == pm->ps->crouchViewHeight) {
                         if (pm->ps->viewHeightLerpDown == 0) {
                             pm->ps->viewHeightCurrent =
-                                (float)PM_ViewHeightTableLerp(
-                                    percent,
-                                    pmViewHeightLerpCrouchedFalling,
-                                    &originAdjust);
+                                (float)PM_ViewHeightTableLerp(percent, pmViewHeightLerpCrouchedFalling, &originAdjust);
                         } else {
                             pm->ps->viewHeightCurrent =
-                                (float)PM_ViewHeightTableLerp(
-                                    percent,
-                                    pmViewHeightLerpCrouchedRising,
-                                    &originAdjust);
+                                (float)PM_ViewHeightTableLerp(percent, pmViewHeightLerpCrouchedRising, &originAdjust);
                         }
                     } else {
-                        pm->ps->viewHeightCurrent =
-                            (float)PM_ViewHeightTableLerp(
-                                percent, pmViewHeightLerpStanding,
-                                &originAdjust);
+                        pm->ps->viewHeightCurrent = (float)PM_ViewHeightTableLerp(percent, pmViewHeightLerpStanding, &originAdjust);
                     }
 
-                    originAdjustDelta =
-                        originAdjust - pm->ps->viewHeightLerpPosAdj;
-                    if (fabsl((long double)pm->ps->viewHeightLerpPosAdj -
-                              (long double)originAdjust) >
-                        (long double)0.05) {
+                    originAdjustDelta = originAdjust - pm->ps->viewHeightLerpPosAdj;
+                    if (fabsl((long double)pm->ps->viewHeightLerpPosAdj - (long double)originAdjust) > (long double)0.05) {
                         vec3_t savedVelocity;
                         vec3_t movementDirection;
 
@@ -398,9 +349,7 @@ void PM_ViewHeightAdjust(void)
                             originAdjustDelta *= 0.5f;
                         }
 #if EMULATE_X87
-                        originAdjustDelta = x87f_store_f32(x87f_div(
-                            x87f_load_f32(originAdjustDelta),
-                            x87f_load_f32(pml.frametime)));
+                        originAdjustDelta = x87f_store_f32(x87f_div(x87f_load_f32(originAdjustDelta), x87f_load_f32(pml.frametime)));
 #else
                         originAdjustDelta /= pml.frametime;
 #endif
@@ -410,12 +359,9 @@ void PM_ViewHeightAdjust(void)
                         movementDirection[2] = 0.0f;
                         VectorNormalize(movementDirection);
 
-                        pm->ps->velocity[0] =
-                            movementDirection[0] * originAdjustDelta;
-                        pm->ps->velocity[1] =
-                            movementDirection[1] * originAdjustDelta;
-                        pm->ps->velocity[2] =
-                            movementDirection[2] * originAdjustDelta;
+                        pm->ps->velocity[0] = movementDirection[0] * originAdjustDelta;
+                        pm->ps->velocity[1] = movementDirection[1] * originAdjustDelta;
+                        pm->ps->velocity[2] = movementDirection[2] * originAdjustDelta;
                         PM_StepSlideMove(1);
 
                         pm->ps->velocity[0] = savedVelocity[0];
@@ -427,122 +373,76 @@ void PM_ViewHeightAdjust(void)
             }
 
             if (pm->ps->viewHeightLerpTime == 0) {
-                if (pm->ps->viewHeightCurrent != (float)targetHeight ||
-                    isnan(pm->ps->viewHeightCurrent) ||
-                    isnan((float)targetHeight)) {
-                    pm->ps->viewHeightLerpTime =
-                        pm->command.commandTime;
+                if (pm->ps->viewHeightCurrent != (float)targetHeight || isnan(pm->ps->viewHeightCurrent) || isnan((float)targetHeight)) {
+                    pm->ps->viewHeightLerpTime = pm->command.commandTime;
 
                     if (targetHeight == pm->ps->proneViewHeight) {
                         pm->ps->viewHeightLerpDown = 1;
-                        if ((float)pm->ps->crouchViewHeight <
-                            pm->ps->viewHeightCurrent) {
-                            pm->ps->viewHeightLerpTarget =
-                                pm->ps->crouchViewHeight;
+                        if ((float)pm->ps->crouchViewHeight < pm->ps->viewHeightCurrent) {
+                            pm->ps->viewHeightLerpTarget = pm->ps->crouchViewHeight;
                         } else {
-                            pm->ps->viewHeightLerpTarget =
-                                pm->ps->proneViewHeight;
+                            pm->ps->viewHeightLerpTarget = pm->ps->proneViewHeight;
                         }
-                    } else if (targetHeight ==
-                               pm->ps->crouchViewHeight) {
-                        if ((float)targetHeight <
-                            pm->ps->viewHeightCurrent) {
+                    } else if (targetHeight == pm->ps->crouchViewHeight) {
+                        if ((float)targetHeight < pm->ps->viewHeightCurrent) {
                             pm->ps->viewHeightLerpDown = 1;
                         } else {
                             pm->ps->viewHeightLerpDown = 0;
                         }
-                        pm->ps->viewHeightLerpTarget =
-                            pm->ps->crouchViewHeight;
-                    } else if (targetHeight ==
-                               pm->ps->standViewHeight) {
+                        pm->ps->viewHeightLerpTarget = pm->ps->crouchViewHeight;
+                    } else if (targetHeight == pm->ps->standViewHeight) {
                         pm->ps->viewHeightLerpDown = 0;
-                        if (pm->ps->viewHeightCurrent <
-                            (float)pm->ps->crouchViewHeight) {
-                            pm->ps->viewHeightLerpTarget =
-                                pm->ps->crouchViewHeight;
+                        if (pm->ps->viewHeightCurrent < (float)pm->ps->crouchViewHeight) {
+                            pm->ps->viewHeightLerpTarget = pm->ps->crouchViewHeight;
                         } else {
-                            pm->ps->viewHeightLerpTarget =
-                                pm->ps->standViewHeight;
+                            pm->ps->viewHeightLerpTarget = pm->ps->standViewHeight;
                         }
                     }
                 }
             } else if (targetHeight != pm->ps->viewHeightLerpTarget &&
-                       ((targetHeight < pm->ps->viewHeightLerpTarget &&
-                         pm->ps->viewHeightLerpDown == 0) ||
-                        (pm->ps->viewHeightLerpTarget < targetHeight &&
-                         pm->ps->viewHeightLerpDown != 0))) {
+                       ((targetHeight < pm->ps->viewHeightLerpTarget && pm->ps->viewHeightLerpDown == 0) ||
+                        (pm->ps->viewHeightLerpTarget < targetHeight && pm->ps->viewHeightLerpDown != 0))) {
                 int32_t elapsed;
 
-                percent = coduo_int32_from_bits(
-                    (uint32_t)VIEWHEIGHT_PERCENT_MAX -
-                    (uint32_t)percent);
+                percent = coduo_int32_from_bits((uint32_t)VIEWHEIGHT_PERCENT_MAX - (uint32_t)percent);
                 pm->ps->viewHeightLerpDown ^= 1;
 
                 if (pm->ps->viewHeightLerpDown == 0) {
-                    if (pm->ps->viewHeightLerpTarget ==
-                        pm->ps->proneViewHeight) {
-                        pm->ps->viewHeightLerpTarget =
-                            pm->ps->crouchViewHeight;
-                    } else if (pm->ps->viewHeightLerpTarget ==
-                               pm->ps->crouchViewHeight) {
-                        pm->ps->viewHeightLerpTarget =
-                            pm->ps->standViewHeight;
+                    if (pm->ps->viewHeightLerpTarget == pm->ps->proneViewHeight) {
+                        pm->ps->viewHeightLerpTarget = pm->ps->crouchViewHeight;
+                    } else if (pm->ps->viewHeightLerpTarget == pm->ps->crouchViewHeight) {
+                        pm->ps->viewHeightLerpTarget = pm->ps->standViewHeight;
                     }
-                } else if (pm->ps->viewHeightLerpTarget ==
-                           pm->ps->standViewHeight) {
-                    pm->ps->viewHeightLerpTarget =
-                        pm->ps->crouchViewHeight;
-                } else if (pm->ps->viewHeightLerpTarget ==
-                           pm->ps->crouchViewHeight) {
-                    pm->ps->viewHeightLerpTarget =
-                        pm->ps->proneViewHeight;
+                } else if (pm->ps->viewHeightLerpTarget == pm->ps->standViewHeight) {
+                    pm->ps->viewHeightLerpTarget = pm->ps->crouchViewHeight;
+                } else if (pm->ps->viewHeightLerpTarget == pm->ps->crouchViewHeight) {
+                    pm->ps->viewHeightLerpTarget = pm->ps->proneViewHeight;
                 }
 
                 if (percent == VIEWHEIGHT_PERCENT_MAX) {
-                    pm->ps->viewHeightCurrent =
-                        (float)pm->ps->viewHeightLerpTarget;
+                    pm->ps->viewHeightCurrent = (float)pm->ps->viewHeightLerpTarget;
                     pm->ps->viewHeightLerpTime = 0;
                     pm->ps->viewHeightLerpPosAdj = 0.0f;
                 } else {
-                    lerpTime = PM_GetViewHeightLerpTime(
-                        pm->ps, pm->ps->viewHeightLerpTarget,
-                        pm->ps->viewHeightLerpDown);
+                    lerpTime = PM_GetViewHeightLerpTime(pm->ps, pm->ps->viewHeightLerpTarget, pm->ps->viewHeightLerpDown);
 #if EMULATE_X87
-                    elapsed = x87f_store_i32_trunc(x87f_mul(
-                        x87f_mul(x87f_load_i32(percent),
-                                 x87f_load_f32(0.01f)),
-                        x87f_load_i32(lerpTime)));
+                    elapsed =
+                        x87f_store_i32_trunc(x87f_mul(x87f_mul(x87f_load_i32(percent), x87f_load_f32(0.01f)), x87f_load_i32(lerpTime)));
 #else
-                    elapsed = coduo_fp_to_i32_extended(
-                        (long double)percent * (long double)0.01f *
-                        (long double)lerpTime);
+                    elapsed = coduo_fp_to_i32_extended((long double)percent * (long double)0.01f * (long double)lerpTime);
 #endif
-                    pm->ps->viewHeightLerpTime = coduo_int32_from_bits(
-                        (uint32_t)pm->command.commandTime -
-                        (uint32_t)elapsed);
+                    pm->ps->viewHeightLerpTime = coduo_int32_from_bits((uint32_t)pm->command.commandTime - (uint32_t)elapsed);
 
-                    if (pm->ps->viewHeightLerpTarget ==
-                        pm->ps->proneViewHeight) {
-                        (void)PM_ViewHeightTableLerp(
-                            percent, pmViewHeightLerpProne,
-                            &originAdjust);
-                    } else if (pm->ps->viewHeightLerpTarget ==
-                               pm->ps->crouchViewHeight) {
+                    if (pm->ps->viewHeightLerpTarget == pm->ps->proneViewHeight) {
+                        (void)PM_ViewHeightTableLerp(percent, pmViewHeightLerpProne, &originAdjust);
+                    } else if (pm->ps->viewHeightLerpTarget == pm->ps->crouchViewHeight) {
                         if (pm->ps->viewHeightLerpDown == 0) {
-                            (void)PM_ViewHeightTableLerp(
-                                percent,
-                                pmViewHeightLerpCrouchedFalling,
-                                &originAdjust);
+                            (void)PM_ViewHeightTableLerp(percent, pmViewHeightLerpCrouchedFalling, &originAdjust);
                         } else {
-                            (void)PM_ViewHeightTableLerp(
-                                percent,
-                                pmViewHeightLerpCrouchedRising,
-                                &originAdjust);
+                            (void)PM_ViewHeightTableLerp(percent, pmViewHeightLerpCrouchedRising, &originAdjust);
                         }
                     } else {
-                        (void)PM_ViewHeightTableLerp(
-                            percent, pmViewHeightLerpStanding,
-                            &originAdjust);
+                        (void)PM_ViewHeightTableLerp(percent, pmViewHeightLerpStanding, &originAdjust);
                     }
                     pm->ps->viewHeightLerpPosAdj = originAdjust;
                 }
@@ -551,28 +451,22 @@ void PM_ViewHeightAdjust(void)
             pm->ps->viewHeightLerpTime = 0;
             if (currentHeight < (float)targetHeight) {
 #if EMULATE_X87
-                pm->ps->viewHeightCurrent = x87f_store_f32(x87f_add(
-                    x87f_load_f32(pm->ps->viewHeightCurrent),
-                    x87f_mul(x87f_load_f32(pml.frametime),
-                             x87f_load_f32(180.0f))));
+                pm->ps->viewHeightCurrent = x87f_store_f32(
+                    x87f_add(x87f_load_f32(pm->ps->viewHeightCurrent), x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(180.0f))));
 #else
                 pm->ps->viewHeightCurrent += pml.frametime * 180.0f;
 #endif
-                if ((float)targetHeight <=
-                    pm->ps->viewHeightCurrent) {
+                if ((float)targetHeight <= pm->ps->viewHeightCurrent) {
                     pm->ps->viewHeightCurrent = (float)targetHeight;
                 }
             } else {
 #if EMULATE_X87
-                pm->ps->viewHeightCurrent = x87f_store_f32(x87f_sub(
-                    x87f_load_f32(pm->ps->viewHeightCurrent),
-                    x87f_mul(x87f_load_f32(pml.frametime),
-                             x87f_load_f32(180.0f))));
+                pm->ps->viewHeightCurrent = x87f_store_f32(
+                    x87f_sub(x87f_load_f32(pm->ps->viewHeightCurrent), x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(180.0f))));
 #else
                 pm->ps->viewHeightCurrent -= pml.frametime * 180.0f;
 #endif
-                if (pm->ps->viewHeightCurrent <=
-                    (float)targetHeight) {
+                if (pm->ps->viewHeightCurrent <= (float)targetHeight) {
                     pm->ps->viewHeightCurrent = (float)targetHeight;
                 }
             }

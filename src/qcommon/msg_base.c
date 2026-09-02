@@ -57,8 +57,7 @@ void MSG_BeginReading(msg_t *message)
 void MSG_WriteBits(msg_t *message, int32_t value, int32_t bitCount)
 {
     uint32_t valueBits = (uint32_t)value;
-    const int32_t remainingBytes = (int32_t)(
-        (uint32_t)message->maxsize - (uint32_t)message->cursize);
+    const int32_t remainingBytes = (int32_t)((uint32_t)message->maxsize - (uint32_t)message->cursize);
 
     if (remainingBytes < MSG_WRITE_BITS_REQUIRED_SPACE) {
         message->overflowed = qtrue;
@@ -75,14 +74,12 @@ void MSG_WriteBits(msg_t *message, int32_t value, int32_t bitCount)
         }
 
         if ((valueBits & UINT32_C(1)) != 0) {
-            message->data[message->bit >> 3] |=
-                (uint8_t)(UINT32_C(1) << bitInByte);
+            message->data[message->bit >> 3] |= (uint8_t)(UINT32_C(1) << bitInByte);
         }
         ++message->bit;
         /* Both i386 bodies use SAR. Preserve its sign fill without depending
          * on implementation-defined right shift of a negative C value. */
-        valueBits = (valueBits >> 1U) |
-                    (valueBits & UINT32_C(0x80000000));
+        valueBits = (valueBits >> 1U) | (valueBits & UINT32_C(0x80000000));
         --bitCount;
     }
 }
@@ -117,8 +114,7 @@ void MSG_WriteBit1(msg_t *message)
         message->data[message->cursize] = 0;
         ++message->cursize;
     }
-    message->data[message->bit >> 3] |=
-        (uint8_t)(UINT32_C(1) << bitInByte);
+    message->data[message->bit >> 3] |= (uint8_t)(UINT32_C(1) << bitInByte);
     ++message->bit;
 }
 
@@ -133,8 +129,7 @@ int32_t MSG_ReadBits(msg_t *message, int32_t bitCount)
             /* NOT_FROM_ORIGINAL_SOURCE: crossing the declared message extent
              * publishes the established overflow cursor and no fabricated
              * bits. */
-            if (message->readcount < 0 ||
-                message->readcount >= message->cursize) {
+            if (message->readcount < 0 || message->readcount >= message->cursize) {
                 message->readcount = message->cursize + 1;
                 return 0;
             }
@@ -142,14 +137,11 @@ int32_t MSG_ReadBits(msg_t *message, int32_t bitCount)
             ++message->readcount;
         }
 
-        if (message->bit < 0 ||
-            (message->bit >> 3) >= message->cursize) {
+        if (message->bit < 0 || (message->bit >> 3) >= message->cursize) {
             message->readcount = message->cursize + 1;
             return 0;
         }
-        valueBits |=
-            (uint32_t)((message->data[message->bit >> 3] >> bitInByte) & 1)
-            << ((uint32_t)outputBit & MSG_WORD_BIT_INDEX_MASK);
+        valueBits |= (uint32_t)((message->data[message->bit >> 3] >> bitInByte) & 1) << ((uint32_t)outputBit & MSG_WORD_BIT_INDEX_MASK);
         ++message->bit;
     }
 
@@ -164,8 +156,7 @@ int32_t MSG_ReadBit(msg_t *message)
     if (bitInByte == 0) {
         /* NOT_FROM_ORIGINAL_SOURCE: an unavailable source byte publishes the
          * established overflow cursor used by callers. */
-        if (message->readcount < 0 ||
-            message->readcount >= message->cursize) {
+        if (message->readcount < 0 || message->readcount >= message->cursize) {
             message->readcount = message->cursize + 1;
             return 0;
         }
@@ -173,8 +164,7 @@ int32_t MSG_ReadBit(msg_t *message)
         ++message->readcount;
     }
 
-    if (message->bit < 0 ||
-        (message->bit >> 3) >= message->cursize) {
+    if (message->bit < 0 || (message->bit >> 3) >= message->cursize) {
         message->readcount = message->cursize + 1;
         return 0;
     }
@@ -195,9 +185,7 @@ void MSG_WriteByte(msg_t *message, int32_t value)
 void MSG_WriteData(msg_t *message, const void *data, int32_t length)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (length < 0 || message->cursize < 0 ||
-        message->cursize > message->maxsize ||
-        length > message->maxsize - message->cursize) {
+    if (length < 0 || message->cursize < 0 || message->cursize > message->maxsize || length > message->maxsize - message->cursize) {
         message->overflowed = qtrue;
         return;
     }
@@ -301,11 +289,9 @@ void MSG_WriteAngle(msg_t *message, float angle)
     }
 
 #if EMULATE_X87
-    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(
-        x87f_load_f32(angle), x87f_load_f32(MSG_ANGLE_TO_BYTE_SCALE)));
+    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(MSG_ANGLE_TO_BYTE_SCALE)));
 #else
-    packed = coduo_fp_to_i32_extended(
-        (long double)angle * (long double)MSG_ANGLE_TO_BYTE_SCALE);
+    packed = coduo_fp_to_i32_extended((long double)angle * (long double)MSG_ANGLE_TO_BYTE_SCALE);
 #endif
     message->data[message->cursize++] = (uint8_t)packed;
 }
@@ -317,12 +303,9 @@ void MSG_WriteAngle(msg_t *message, float angle)
     /* coduo_lnxded 0x080807cb evaluates angle * 256 / 360 before the normal
      * MSG_WriteByte capacity decision and truncates directly to a dword. */
 #if EMULATE_X87
-    packed = x87f_store_i32_trunc(x87f_div(
-        x87f_mul(x87f_load_f32(angle), x87f_load_f32(256.0f)),
-        x87f_load_f32(360.0f)));
+    packed = x87f_store_i32_trunc(x87f_div(x87f_mul(x87f_load_f32(angle), x87f_load_f32(256.0f)), x87f_load_f32(360.0f)));
 #else
-    packed = coduo_fp_to_i32_extended(
-        ((long double)angle * 256.0L) / 360.0L);
+    packed = coduo_fp_to_i32_extended(((long double)angle * 256.0L) / 360.0L);
 #endif
     MSG_WriteByte(message, packed & MSG_BYTE_MASK);
 }
@@ -342,11 +325,9 @@ void MSG_WriteAngle16(msg_t *message, float angle)
     }
 
 #if EMULATE_X87
-    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(
-        x87f_load_f32(angle), x87f_load_f32(MSG_ANGLE_TO_SHORT_SCALE)));
+    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(MSG_ANGLE_TO_SHORT_SCALE)));
 #else
-    packed = coduo_fp_to_i32_extended(
-        (long double)angle * (long double)MSG_ANGLE_TO_SHORT_SCALE);
+    packed = coduo_fp_to_i32_extended((long double)angle * (long double)MSG_ANGLE_TO_SHORT_SCALE);
 #endif
     message->data[message->cursize] = (uint8_t)packed;
     message->data[message->cursize + 1] = (uint8_t)((uint32_t)packed >> 8U);
@@ -360,11 +341,9 @@ void MSG_WriteAngle16(msg_t *message, float angle)
     /* coduo_lnxded 0x08080815 computes and truncates first, then delegates
      * the capacity decision to MSG_WriteShort. */
 #if EMULATE_X87
-    packed = x87f_store_i32_trunc(x87f_mul(
-        x87f_load_f32(angle), x87f_load_f32(MSG_ANGLE_TO_SHORT_SCALE)));
+    packed = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(MSG_ANGLE_TO_SHORT_SCALE)));
 #else
-    packed = coduo_fp_to_i32_extended(
-        (long double)angle * (long double)MSG_ANGLE_TO_SHORT_SCALE);
+    packed = coduo_fp_to_i32_extended((long double)angle * (long double)MSG_ANGLE_TO_SHORT_SCALE);
 #endif
     MSG_WriteShort(message, packed & MSG_SHORT_MASK);
 }
@@ -387,9 +366,7 @@ int32_t MSG_ReadShort(msg_t *message)
         return MSG_READ_OVERFLOW_VALUE;
     }
 
-    stored = (uint16_t)message->data[message->readcount] |
-             (uint16_t)((uint16_t)message->data[message->readcount + 1]
-                        << 8U);
+    stored = (uint16_t)message->data[message->readcount] | (uint16_t)((uint16_t)message->data[message->readcount + 1] << 8U);
     message->readcount = end;
     return (int16_t)stored;
 }
@@ -403,10 +380,8 @@ int32_t MSG_ReadLong(msg_t *message)
         return MSG_READ_OVERFLOW_VALUE;
     }
 
-    stored = (uint32_t)message->data[message->readcount] |
-             ((uint32_t)message->data[message->readcount + 1] << 8U) |
-             ((uint32_t)message->data[message->readcount + 2] << 16U) |
-             ((uint32_t)message->data[message->readcount + 3] << 24U);
+    stored = (uint32_t)message->data[message->readcount] | ((uint32_t)message->data[message->readcount + 1] << 8U) |
+             ((uint32_t)message->data[message->readcount + 2] << 16U) | ((uint32_t)message->data[message->readcount + 3] << 24U);
     message->readcount = end;
     return (int32_t)stored;
 }
@@ -424,8 +399,7 @@ char *MSG_ReadString(msg_t *message)
         /* NOT_FROM_ORIGINAL_SOURCE: retain the bounded result prefix while
          * consuming the complete wire string through its terminator. */
         if (length < MAX_STRING_CHARS - 1) {
-            msg_readString[length++] =
-                (char)Q_CleanCharacter((uint8_t)character);
+            msg_readString[length++] = (char)Q_CleanCharacter((uint8_t)character);
         }
     }
 
@@ -449,8 +423,7 @@ char *MSG_ReadBigString(msg_t *message)
         /* NOT_FROM_ORIGINAL_SOURCE: preserve the bounded sanitized prefix
          * while consuming through the wire NUL. */
         if (length < BIG_INFO_STRING - 1) {
-            msg_readBigString[length++] =
-                (char)Q_CleanCharacter((uint8_t)character);
+            msg_readBigString[length++] = (char)Q_CleanCharacter((uint8_t)character);
         }
     }
 
@@ -465,8 +438,7 @@ char *MSG_ReadStringLine(msg_t *message)
     while (message->readcount < message->cursize) {
         int32_t character = MSG_ReadByte(message);
 
-        if (character == MSG_READ_OVERFLOW_VALUE || character == '\0' ||
-            character == '\n') {
+        if (character == MSG_READ_OVERFLOW_VALUE || character == '\0' || character == '\n') {
             break;
         }
         if (character == '%') {
@@ -475,8 +447,7 @@ char *MSG_ReadStringLine(msg_t *message)
         /* NOT_FROM_ORIGINAL_SOURCE: retain the bounded line prefix while
          * consuming through newline or NUL. */
         if (length < MAX_STRING_CHARS - 1) {
-            msg_readStringLine[length++] =
-                (char)Q_CleanCharacter((uint8_t)character);
+            msg_readStringLine[length++] = (char)Q_CleanCharacter((uint8_t)character);
         }
     }
 
@@ -500,8 +471,7 @@ void MSG_ReadData(msg_t *message, void *data, int32_t length)
         return;
     }
 
-    const int32_t end = (int32_t)(
-        (uint32_t)message->readcount + (uint32_t)length);
+    const int32_t end = (int32_t)((uint32_t)message->readcount + (uint32_t)length);
     const size_t originalLength = (size_t)(uint32_t)length;
     if (end > message->cursize) {
         memset(data, 0xff, originalLength);

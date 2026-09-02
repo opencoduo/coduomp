@@ -14,8 +14,7 @@ enum {
     SERVER_COMMAND_OVERFLOW_BACKLOG = MAX_RELIABLE_COMMANDS + 1,
     SERVER_COMMAND_FORMAT_BUFFER_SIZE = 32768,
     SERVER_EXPANDED_NEWLINES_SIZE = 1024,
-    SERVER_EXPANDED_NEWLINES_STOP_INDEX =
-        SERVER_EXPANDED_NEWLINES_SIZE - 3
+    SERVER_EXPANDED_NEWLINES_STOP_INDEX = SERVER_EXPANDED_NEWLINES_SIZE - 3
 };
 
 extern serverStatic_t svs;
@@ -42,8 +41,7 @@ char *SV_ExpandNewlines(const char *input)
 {
     int32_t outputIndex = 0;
 
-    while (*input != '\0' &&
-           outputIndex < SERVER_EXPANDED_NEWLINES_STOP_INDEX) {
+    while (*input != '\0' && outputIndex < SERVER_EXPANDED_NEWLINES_STOP_INDEX) {
         if (*input == '\n') {
             sv_expandedNewlines[outputIndex++] = '\\';
             sv_expandedNewlines[outputIndex] = 'n';
@@ -63,8 +61,7 @@ char *SV_ExpandNewlines(const char *input)
 
 qboolean SV_IsFirstTokenEqual(const char *left, const char *right)
 {
-    while (*right != '\0' && *left != '\0' &&
-           *right != ' ' && *left != ' ') {
+    while (*right != '\0' && *left != '\0' && *right != ' ' && *left != ' ') {
         if (*right != *left) {
             return qfalse;
         }
@@ -78,18 +75,13 @@ qboolean SV_IsFirstTokenEqual(const char *left, const char *right)
     return (*left == '\0' || *left == ' ') ? qtrue : qfalse;
 }
 
-int32_t SV_CanReplaceServerCommand(client_t *client,
-                                   const char *command)
+int32_t SV_CanReplaceServerCommand(client_t *client, const char *command)
 {
-    for (int32_t sequence = client->reliableSent + 1;
-         sequence <= client->reliableSequence;
-         ++sequence) {
-        serverReliableCommand_t *const pending =
-            &client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK];
+    for (int32_t sequence = client->reliableSent + 1; sequence <= client->reliableSequence; ++sequence) {
+        serverReliableCommand_t *const pending = &client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK];
         const signed char commandType = (signed char)command[0];
 
-        if (pending->reliable == qfalse ||
-            commandType != (signed char)pending->commandText[0] ||
+        if (pending->reliable == qfalse || commandType != (signed char)pending->commandText[0] ||
             (commandType >= 'x' && commandType <= 'z')) {
             continue;
         }
@@ -109,8 +101,7 @@ int32_t SV_CanReplaceServerCommand(client_t *client,
             return sequence;
         case 'd':
         case 'v':
-            if (SV_IsFirstTokenEqual(pending->commandText + 2,
-                                     command + 2)) {
+            if (SV_IsFirstTokenEqual(pending->commandText + 2, command + 2)) {
                 return sequence;
             }
             break;
@@ -126,19 +117,13 @@ void SV_CullIgnorableServerCommands(client_t *client)
 {
     int32_t compactSequence = client->reliableSent + 1;
 
-    for (int32_t readSequence = compactSequence;
-         readSequence <= client->reliableSequence;
-         ++readSequence) {
-        serverReliableCommand_t *const source =
-            &client->reliableCommands[
-                readSequence & SERVER_COMMAND_RING_MASK];
+    for (int32_t readSequence = compactSequence; readSequence <= client->reliableSequence; ++readSequence) {
+        serverReliableCommand_t *const source = &client->reliableCommands[readSequence & SERVER_COMMAND_RING_MASK];
         if (source->reliable == qfalse) {
             continue;
         }
 
-        serverReliableCommand_t *const destination =
-            &client->reliableCommands[
-                compactSequence & SERVER_COMMAND_RING_MASK];
+        serverReliableCommand_t *const destination = &client->reliableCommands[compactSequence & SERVER_COMMAND_RING_MASK];
         if (destination != source) {
             *destination = *source;
         }
@@ -148,16 +133,13 @@ void SV_CullIgnorableServerCommands(client_t *client)
     client->reliableSequence = compactSequence - 1;
 }
 
-void SV_AddServerCommand(client_t *client, qboolean reliable,
-                         const char *command)
+void SV_AddServerCommand(client_t *client, qboolean reliable, const char *command)
 {
     if (client->isTestClient != qfalse) {
         return;
     }
 
-    if (client->reliableSequence - client->reliableAcknowledge >=
-            SERVER_COMMAND_UNRELIABLE_BACKLOG_LIMIT ||
-        client->state != CS_ACTIVE) {
+    if (client->reliableSequence - client->reliableAcknowledge >= SERVER_COMMAND_UNRELIABLE_BACKLOG_LIMIT || client->state != CS_ACTIVE) {
         SV_CullIgnorableServerCommands(client);
         if (reliable == qfalse) {
             return;
@@ -169,64 +151,45 @@ void SV_AddServerCommand(client_t *client, qboolean reliable,
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         ++client->reliableSequence;
     } else {
-        for (int32_t nextSequence = sequence + 1;
-             nextSequence <= client->reliableSequence;
-             ++sequence, ++nextSequence) {
-            client->reliableCommands[
-                sequence & SERVER_COMMAND_RING_MASK] =
-                client->reliableCommands[
-                    nextSequence & SERVER_COMMAND_RING_MASK];
+        for (int32_t nextSequence = sequence + 1; nextSequence <= client->reliableSequence; ++sequence, ++nextSequence) {
+            client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK] =
+                client->reliableCommands[nextSequence & SERVER_COMMAND_RING_MASK];
         }
     }
 
-    if (client->reliableSequence - client->reliableAcknowledge ==
-        SERVER_COMMAND_OVERFLOW_BACKLOG) {
+    if (client->reliableSequence - client->reliableAcknowledge == SERVER_COMMAND_OVERFLOW_BACKLOG) {
         Com_Printf("===== pending server commands =====\n");
-        for (sequence = client->reliableAcknowledge + 1;
-             sequence <= client->reliableSequence;
-             ++sequence) {
-            const serverReliableCommand_t *const pending =
-                &client->reliableCommands[
-                    sequence & SERVER_COMMAND_RING_MASK];
-            Com_Printf("cmd %5d: %8d: %s\n", sequence,
-                       pending->enqueueTime, pending->commandText);
+        for (sequence = client->reliableAcknowledge + 1; sequence <= client->reliableSequence; ++sequence) {
+            const serverReliableCommand_t *const pending = &client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK];
+            Com_Printf("cmd %5d: %8d: %s\n", sequence, pending->enqueueTime, pending->commandText);
         }
-        Com_Printf("cmd %5d: %8d: %s\n", sequence,
-                   svs.realTime, command);
-        NET_OutOfBandPrint(NS_SERVER, client->netchan.remoteAddress,
-                           "disconnect");
-        if (client->state != CS_ZOMBIE &&
-            client->deferredDropReason == NULL) {
+        Com_Printf("cmd %5d: %8d: %s\n", sequence, svs.realTime, command);
+        NET_OutOfBandPrint(NS_SERVER, client->netchan.remoteAddress, "disconnect");
+        if (client->state != CS_ZOMBIE && client->deferredDropReason == NULL) {
             client->deferredDropReason = "EXE_SERVERCOMMANDOVERFLOW";
         }
         reliable = qtrue;
         command = "w \"EXE_SERVERCOMMANDOVERFLOW\"";
     }
 
-    serverReliableCommand_t *const destination =
-        &client->reliableCommands[
-            client->reliableSequence & SERVER_COMMAND_RING_MASK];
-    MSG_WriteReliableCommandToBuffer(command, destination->commandText,
-                                     sizeof(destination->commandText));
+    serverReliableCommand_t *const destination = &client->reliableCommands[client->reliableSequence & SERVER_COMMAND_RING_MASK];
+    MSG_WriteReliableCommandToBuffer(command, destination->commandText, sizeof(destination->commandText));
     destination->enqueueTime = svs.realTime;
     destination->reliable = reliable;
 }
 
-void SV_SendServerCommand(client_t *client, qboolean reliable,
-                          const char *format, ...)
+void SV_SendServerCommand(client_t *client, qboolean reliable, const char *format, ...)
 {
     char command[SERVER_COMMAND_FORMAT_BUFFER_SIZE];
     va_list arguments;
 
     va_start(arguments, format);
-    const int32_t commandLength =
-        vsnprintf(command, sizeof(command), format, arguments);
+    const int32_t commandLength = vsnprintf(command, sizeof(command), format, arguments);
     va_end(arguments);
 
     /* NOT_FROM_ORIGINAL_SOURCE: queue only a complete formatted reliable
      * command; truncation would change its protocol meaning. */
-    if (commandLength < 0 ||
-        (size_t)commandLength >= sizeof(command)) {
+    if (commandLength < 0 || (size_t)commandLength >= sizeof(command)) {
         Com_Printf("SV_SendServerCommand: formatted command too large\n");
         return;
     }
@@ -236,14 +199,11 @@ void SV_SendServerCommand(client_t *client, qboolean reliable,
         return;
     }
 
-    if (dedicated->integer != 0 &&
-        strncmp(command, "print", 5) == 0) {
+    if (dedicated->integer != 0 && strncmp(command, "print", 5) == 0) {
         Com_Printf("broadcast: %s\n", SV_ExpandNewlines(command));
     }
 
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         client_t *const broadcastClient = &svs.clients[clientNum];
         if (broadcastClient->state >= CS_PRIMED) {
             SV_AddServerCommand(broadcastClient, reliable, command);
@@ -251,34 +211,25 @@ void SV_SendServerCommand(client_t *client, qboolean reliable,
     }
 }
 
-void SV_UpdateServerCommandsToClient(client_t *client,
-                                     msg_t *message)
+void SV_UpdateServerCommandsToClient(client_t *client, msg_t *message)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    for (int32_t sequence = client->reliableAcknowledge + 1;
-         sequence <= client->reliableSequence;
-         ++sequence) {
+    for (int32_t sequence = client->reliableAcknowledge + 1; sequence <= client->reliableSequence; ++sequence) {
         MSG_WriteByte(message, SERVER_SVC_SERVER_COMMAND);
         MSG_WriteLong(message, sequence);
-        MSG_WriteString(
-            message,
-            client->reliableCommands[
-                sequence & SERVER_COMMAND_RING_MASK].commandText);
+        MSG_WriteString(message, client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK].commandText);
     }
 
     client->reliableSent = client->reliableSequence;
 }
 
-void SV_UpdateServerCommandsToClient_PreventOverflow(
-    client_t *client, msg_t *message, int32_t maxBytes)
+void SV_UpdateServerCommandsToClient_PreventOverflow(client_t *client, msg_t *message, int32_t maxBytes)
 {
     int32_t sequence = client->reliableAcknowledge + 1;
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     while (sequence <= client->reliableSequence) {
-        const char *const command =
-            client->reliableCommands[
-                sequence & SERVER_COMMAND_RING_MASK].commandText;
+        const char *const command = client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK].commandText;
         const int32_t commandBytes = (int32_t)strlen(command) + 6;
 
         if (message->cursize + commandBytes >= maxBytes) {
@@ -299,18 +250,11 @@ void SV_UpdateServerCommandsToClient_PreventOverflow(
 
 void SV_PrintServerCommandsForClient(client_t *client)
 {
-    Com_Printf(
-        "-- Unacknowledged Server Commands for client %i:%s --\n",
-        (int32_t)(client - svs.clients), client->name);
+    Com_Printf("-- Unacknowledged Server Commands for client %i:%s --\n", (int32_t)(client - svs.clients), client->name);
 
-    for (int32_t sequence = client->reliableAcknowledge + 1;
-         sequence <= client->reliableSequence;
-         ++sequence) {
-        const serverReliableCommand_t *const command =
-            &client->reliableCommands[
-                sequence & SERVER_COMMAND_RING_MASK];
-        Com_Printf("cmd %5d: %8d: %s\n", sequence,
-                   command->enqueueTime, command->commandText);
+    for (int32_t sequence = client->reliableAcknowledge + 1; sequence <= client->reliableSequence; ++sequence) {
+        const serverReliableCommand_t *const command = &client->reliableCommands[sequence & SERVER_COMMAND_RING_MASK];
+        Com_Printf("cmd %5d: %8d: %s\n", sequence, command->enqueueTime, command->commandText);
     }
 
     Com_Printf("----------");

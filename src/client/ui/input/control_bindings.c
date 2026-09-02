@@ -15,9 +15,7 @@ enum {
 
 /* NOT_FROM_ORIGINAL_SOURCE: the native UI adds one configurable console row
  * outside the retail 55-row g_bindings table owned by src/client/menu. */
-bind_t ui_compat_consoleBinding = {
-    "toggleconsole", { -1, -1, -1 }, -1, -1
-};
+bind_t ui_compat_consoleBinding = {"toggleconsole", {-1, -1, -1}, -1, -1};
 
 static char ui_compat_consoleBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
 static char ui_compat_consoleSecondBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
@@ -25,9 +23,7 @@ static char ui_compat_consoleSecondBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
 /* NOT_FROM_ORIGINAL_SOURCE: recognize the one UI-only compatibility row. */
 static qboolean ui_compat_is_console_binding(const char *command)
 {
-    return command != NULL &&
-           Q_stricmp(command, ui_compat_consoleBinding.command) == 0
-               ? qtrue : qfalse;
+    return command != NULL && Q_stricmp(command, ui_compat_consoleBinding.command) == 0 ? qtrue : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: restore module load state for the shared retail
@@ -63,11 +59,9 @@ void ui_compat_controls_get_config(void)
 void client_ui_compat_controls_set_config(void)
 {
     if (ui_compat_consoleBinding.bind1 != UI_KEY_UNBOUND) {
-        DC->setBinding(ui_compat_consoleBinding.bind1,
-                       ui_compat_consoleBinding.command);
+        DC->setBinding(ui_compat_consoleBinding.bind1, ui_compat_consoleBinding.command);
         if (ui_compat_consoleBinding.bind2 != UI_KEY_UNBOUND) {
-            DC->setBinding(ui_compat_consoleBinding.bind2,
-                           ui_compat_consoleBinding.command);
+            DC->setBinding(ui_compat_consoleBinding.bind2, ui_compat_consoleBinding.command);
         }
     }
     Controls_SetConfig();
@@ -107,40 +101,27 @@ void client_ui_compat_remove_key_from_extra_bindings(int32_t key)
 
 /* NOT_FROM_ORIGINAL_SOURCE: render the optional console row using the same UI
  * presentation as BindingFromName while leaving the original function stock. */
-const char *client_ui_compat_binding_from_name(const char *command,
-                                               qboolean firstKeyOnly)
+const char *client_ui_compat_binding_from_name(const char *command, qboolean firstKeyOnly)
 {
     bind_t *binding;
 
     if (ui_compat_is_console_binding(command) != qfalse) {
         binding = &ui_compat_consoleBinding;
         if (binding->bind1 == UI_KEY_UNBOUND) {
-            coduo_client_crt_strcpy(
-                ui_compat_consoleBindingText,
-                DC->getLocalizedString("KEY_UNBOUND"));
+            coduo_client_crt_strcpy(ui_compat_consoleBindingText, DC->getLocalizedString("KEY_UNBOUND"));
             return ui_compat_consoleBindingText;
         }
 
-        DC->keynumToStringBuf(binding->bind1,
-                              ui_compat_consoleBindingText,
-                              UI_COMPAT_KEY_NAME_SIZE);
-        coduo_client_crt_strcpy(
-            ui_compat_consoleBindingText,
-            DC->getLocalizedString(ui_compat_consoleBindingText));
+        DC->keynumToStringBuf(binding->bind1, ui_compat_consoleBindingText, UI_COMPAT_KEY_NAME_SIZE);
+        coduo_client_crt_strcpy(ui_compat_consoleBindingText, DC->getLocalizedString(ui_compat_consoleBindingText));
         if (binding->bind2 == UI_KEY_UNBOUND || firstKeyOnly != qfalse) {
             return ui_compat_consoleBindingText;
         }
 
-        DC->keynumToStringBuf(binding->bind2,
-                              ui_compat_consoleSecondBindingText,
-                              UI_COMPAT_KEY_NAME_SIZE);
-        coduo_client_crt_strcpy(
-            ui_compat_consoleSecondBindingText,
-            DC->getLocalizedString(ui_compat_consoleSecondBindingText));
-        strcat(ui_compat_consoleBindingText,
-               va(" %s ", DC->getLocalizedString("KEY_OR")));
-        strcat(ui_compat_consoleBindingText,
-               ui_compat_consoleSecondBindingText);
+        DC->keynumToStringBuf(binding->bind2, ui_compat_consoleSecondBindingText, UI_COMPAT_KEY_NAME_SIZE);
+        coduo_client_crt_strcpy(ui_compat_consoleSecondBindingText, DC->getLocalizedString(ui_compat_consoleSecondBindingText));
+        strcat(ui_compat_consoleBindingText, va(" %s ", DC->getLocalizedString("KEY_OR")));
+        strcat(ui_compat_consoleBindingText, ui_compat_consoleSecondBindingText);
         return ui_compat_consoleBindingText;
     }
     return BindingFromName(command, firstKeyOnly);
@@ -150,12 +131,9 @@ const char *client_ui_compat_binding_from_name(const char *command,
  * the optional console-binding row is capturing it. */
 void client_ui_compat_bind_capture_started(itemDef_t *item)
 {
-    const qboolean isConsoleBinding =
-        item != NULL &&
-        ui_compat_is_console_binding(item->cvar) != qfalse;
+    const qboolean isConsoleBinding = item != NULL && ui_compat_is_console_binding(item->cvar) != qfalse;
 
-    trap_Cvar_Set(UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR,
-                  isConsoleBinding != qfalse ? "1" : "0");
+    trap_Cvar_Set(UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR, isConsoleBinding != qfalse ? "1" : "0");
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: stop the engine-side console-key forwarding after
@@ -170,13 +148,10 @@ void client_ui_compat_bind_capture_finished(void)
  * original console-key rejection. */
 qboolean client_ui_compat_bind_key_is_ignored(itemDef_t *item, int32_t key)
 {
-    const qboolean isConsoleBinding =
-        item != NULL &&
-        ui_compat_is_console_binding(item->cvar) != qfalse;
+    const qboolean isConsoleBinding = item != NULL && ui_compat_is_console_binding(item->cvar) != qfalse;
 
     if (isConsoleBinding != qfalse) {
-        return key >= UI_KEY_MOUSE1 && key <= UI_KEY_MWHEELUP
-                   ? qtrue : qfalse;
+        return key >= UI_KEY_MOUSE1 && key <= UI_KEY_MWHEELUP ? qtrue : qfalse;
     }
     return key == UI_KEY_CONSOLE ? qtrue : qfalse;
 }

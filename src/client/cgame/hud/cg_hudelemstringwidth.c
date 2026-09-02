@@ -50,8 +50,7 @@ float CG_HudElemStringWidth(const char *text, const cgAlignedDrawItem *item)
 {
     if (item->fontWidth != 0.0f) {
         /* FUCOMPP against 0.0f; JNP-taken == equal path is the else below. */
-        int32_t length = coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_SE_PRINT_STRLEN, (intptr_t)text));
+        int32_t length = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_SE_PRINT_STRLEN, (intptr_t)text));
         /* 0x30029750 FILD feeds 0x30029757 FMUL directly with NO intermediate float
          * store, so length enters the product exact; an explicit (float) cast would
          * round it first under -fexcess-precision=standard (Class 4). The product's
@@ -65,11 +64,6 @@ float CG_HudElemStringWidth(const char *text, const cgAlignedDrawItem *item)
      * float->int conversion happens in the machine code). Reinterpret its bits. */
     int32_t base_bits;
     memcpy(&base_bits, &item->fontScale, sizeof base_bits);
-    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_R_TEXT_WIDTH,
-        (intptr_t)text,
-        item->font,
-        base_bits,
-        0));
+    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)text, item->font, base_bits, 0));
     return (float)width;
 }

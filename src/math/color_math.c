@@ -31,16 +31,14 @@ enum {
 static uint32_t coduo_color_ftol2_low_u32(x87f value)
 {
 #if EMULATE_X87_BACKEND == EMU_X87_SOFTFLOAT
-    const int64_t nearest =
-        extF80_to_i64(value, softfloat_round_near_even, false);
+    const int64_t nearest = extF80_to_i64(value, softfloat_round_near_even, false);
 
     /* `_ftol2` first executes a nearest-mode signed-qword FISTP.  A masked
      * invalid conversion yields INT64_MIN, whose low dword is zero. */
     if (nearest == INT64_MIN) {
         return 0;
     }
-    return (uint32_t)(uint64_t)
-        extF80_to_i64(value, softfloat_round_minMag, false);
+    return (uint32_t)(uint64_t)extF80_to_i64(value, softfloat_round_minMag, false);
 #else
     return (uint32_t)coduo_fp_to_i32_extended((long double)value);
 #endif
@@ -70,54 +68,36 @@ uint32_t ColorBytes3(float red, float green, float blue)
 {
 #if EMULATE_X87
     const x87f scale = x87f_load_f32((float)COLOR_BYTE_SCALE);
-    const uint32_t redByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(red), scale));
-    const uint32_t greenByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(green), scale));
-    const uint32_t blueByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(blue), scale));
+    const uint32_t redByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(red), scale));
+    const uint32_t greenByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(green), scale));
+    const uint32_t blueByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(blue), scale));
 #else
     const double scale = (double)(float)COLOR_BYTE_SCALE;
-    const uint32_t redByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)red * scale));
-    const uint32_t greenByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)green * scale));
-    const uint32_t blueByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)blue * scale));
+    const uint32_t redByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)red * scale));
+    const uint32_t greenByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)green * scale));
+    const uint32_t blueByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)blue * scale));
 #endif
 
-    return redByte | (greenByte << COLOR_GREEN_SHIFT) |
-           (blueByte << COLOR_BLUE_SHIFT) |
-           (UINT32_C(255) << COLOR_ALPHA_SHIFT);
+    return redByte | (greenByte << COLOR_GREEN_SHIFT) | (blueByte << COLOR_BLUE_SHIFT) | (UINT32_C(255) << COLOR_ALPHA_SHIFT);
 }
 
 uint32_t ColorBytes4(float red, float green, float blue, float alpha)
 {
 #if EMULATE_X87
     const x87f scale = x87f_load_f32((float)COLOR_BYTE_SCALE);
-    const uint32_t redByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(red), scale));
-    const uint32_t greenByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(green), scale));
-    const uint32_t blueByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(blue), scale));
-    const uint32_t alphaByte = (uint8_t)coduo_color_ftol2_low_u32(
-        x87f_mul(x87f_load_f32(alpha), scale));
+    const uint32_t redByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(red), scale));
+    const uint32_t greenByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(green), scale));
+    const uint32_t blueByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(blue), scale));
+    const uint32_t alphaByte = (uint8_t)coduo_color_ftol2_low_u32(x87f_mul(x87f_load_f32(alpha), scale));
 #else
     const double scale = (double)(float)COLOR_BYTE_SCALE;
-    const uint32_t redByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)red * scale));
-    const uint32_t greenByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)green * scale));
-    const uint32_t blueByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)blue * scale));
-    const uint32_t alphaByte =
-        (uint8_t)coduo_fp_to_i32_extended((long double)((double)alpha * scale));
+    const uint32_t redByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)red * scale));
+    const uint32_t greenByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)green * scale));
+    const uint32_t blueByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)blue * scale));
+    const uint32_t alphaByte = (uint8_t)coduo_fp_to_i32_extended((long double)((double)alpha * scale));
 #endif
 
-    return redByte | (greenByte << COLOR_GREEN_SHIFT) |
-           (blueByte << COLOR_BLUE_SHIFT) |
-           (alphaByte << COLOR_ALPHA_SHIFT);
+    return redByte | (greenByte << COLOR_GREEN_SHIFT) | (blueByte << COLOR_BLUE_SHIFT) | (alphaByte << COLOR_ALPHA_SHIFT);
 }
 #else
 #if EMULATE_X87
@@ -126,16 +106,13 @@ uint32_t ColorBytes4(float red, float green, float blue, float alpha)
  * conversion; the general x87 emulator otherwise converts to signed dword. */
 static int16_t coduo_color_fistp_i16(x87f value)
 {
-    const x87f minimumExclusive =
-        x87f_load_i32(COLOR_FISTP_I16_MINIMUM_EXCLUSIVE);
-    const x87f maximumExclusive =
-        x87f_load_i32(COLOR_FISTP_I16_MAXIMUM_EXCLUSIVE);
+    const x87f minimumExclusive = x87f_load_i32(COLOR_FISTP_I16_MINIMUM_EXCLUSIVE);
+    const x87f maximumExclusive = x87f_load_i32(COLOR_FISTP_I16_MAXIMUM_EXCLUSIVE);
 
     /* RECONSTRUCTION_FIX: the former engine/game emulation converted to i32
      * and merely cast to int16_t.  The original FISTP m16 instead produces
      * signed-word integer-indefinite for every out-of-range result. */
-    if (!x87f_lt(minimumExclusive, value) ||
-        !x87f_lt(value, maximumExclusive)) {
+    if (!x87f_lt(minimumExclusive, value) || !x87f_lt(value, maximumExclusive)) {
 #if EMULATE_X87_BACKEND == EMU_X87_SOFTFLOAT
         softfloat_raiseFlags(softfloat_flag_invalid);
 #endif
@@ -154,23 +131,16 @@ uint32_t ColorBytes3(float red, float green, float blue)
 #if EMULATE_X87
     const x87f scale = x87f_load_f32((float)COLOR_BYTE_SCALE);
 
-    redByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(red), scale));
-    greenByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(green), scale));
-    blueByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(blue), scale));
-#elif (defined(__i386__) || defined(__x86_64__)) && \
-      (defined(__GNUC__) || defined(__clang__))
+    redByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(red), scale));
+    greenByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(green), scale));
+    blueByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(blue), scale));
+#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
     static const float scale = (float)COLOR_BYTE_SCALE;
     coduo_x87_truncation_control_t control;
 
-    redByte = (uint8_t)CODUO_X87_TRUNCATE_I16_FIRST(
-        &control, (long double)red * (long double)scale);
-    greenByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(
-        &control, (long double)green * (long double)scale);
-    blueByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(
-        &control, (long double)blue * (long double)scale);
+    redByte = (uint8_t)CODUO_X87_TRUNCATE_I16_FIRST(&control, (long double)red * (long double)scale);
+    greenByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(&control, (long double)green * (long double)scale);
+    blueByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(&control, (long double)blue * (long double)scale);
 #else
     /* This branch is available only when the caller deliberately disables
      * x87 emulation on a non-x86 host; ordinary supported builds do not use it. */
@@ -179,9 +149,7 @@ uint32_t ColorBytes3(float red, float green, float blue)
     blueByte = (uint8_t)(int16_t)(blue * (float)COLOR_BYTE_SCALE);
 #endif
 
-    return redByte | (greenByte << COLOR_GREEN_SHIFT) |
-           (blueByte << COLOR_BLUE_SHIFT) |
-           (UINT32_C(255) << COLOR_ALPHA_SHIFT);
+    return redByte | (greenByte << COLOR_GREEN_SHIFT) | (blueByte << COLOR_BLUE_SHIFT) | (UINT32_C(255) << COLOR_ALPHA_SHIFT);
 }
 
 uint32_t ColorBytes4(float red, float green, float blue, float alpha)
@@ -194,27 +162,18 @@ uint32_t ColorBytes4(float red, float green, float blue, float alpha)
 #if EMULATE_X87
     const x87f scale = x87f_load_f32((float)COLOR_BYTE_SCALE);
 
-    redByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(red), scale));
-    greenByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(green), scale));
-    blueByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(blue), scale));
-    alphaByte = (uint8_t)coduo_color_fistp_i16(
-        x87f_mul(x87f_load_f32(alpha), scale));
-#elif (defined(__i386__) || defined(__x86_64__)) && \
-      (defined(__GNUC__) || defined(__clang__))
+    redByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(red), scale));
+    greenByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(green), scale));
+    blueByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(blue), scale));
+    alphaByte = (uint8_t)coduo_color_fistp_i16(x87f_mul(x87f_load_f32(alpha), scale));
+#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
     static const float scale = (float)COLOR_BYTE_SCALE;
     coduo_x87_truncation_control_t control;
 
-    redByte = (uint8_t)CODUO_X87_TRUNCATE_I16_FIRST(
-        &control, (long double)red * (long double)scale);
-    greenByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(
-        &control, (long double)green * (long double)scale);
-    blueByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(
-        &control, (long double)blue * (long double)scale);
-    alphaByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(
-        &control, (long double)alpha * (long double)scale);
+    redByte = (uint8_t)CODUO_X87_TRUNCATE_I16_FIRST(&control, (long double)red * (long double)scale);
+    greenByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(&control, (long double)green * (long double)scale);
+    blueByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(&control, (long double)blue * (long double)scale);
+    alphaByte = (uint8_t)CODUO_X87_TRUNCATE_I16_NEXT(&control, (long double)alpha * (long double)scale);
 #else
     redByte = (uint8_t)(int16_t)(red * (float)COLOR_BYTE_SCALE);
     greenByte = (uint8_t)(int16_t)(green * (float)COLOR_BYTE_SCALE);
@@ -222,9 +181,7 @@ uint32_t ColorBytes4(float red, float green, float blue, float alpha)
     alphaByte = (uint8_t)(int16_t)(alpha * (float)COLOR_BYTE_SCALE);
 #endif
 
-    return redByte | (greenByte << COLOR_GREEN_SHIFT) |
-           (blueByte << COLOR_BLUE_SHIFT) |
-           (alphaByte << COLOR_ALPHA_SHIFT);
+    return redByte | (greenByte << COLOR_GREEN_SHIFT) | (blueByte << COLOR_BLUE_SHIFT) | (alphaByte << COLOR_ALPHA_SHIFT);
 }
 #endif
 
@@ -266,12 +223,9 @@ float NormalizeColor(const vec3_t input, vec3_t output)
         output[0] = 0.0f;
     } else {
 #if EMULATE_X87
-        output[0] = x87f_store_f32(x87f_div(
-            x87f_load_f32(input[0]), x87f_load_f32(maximum)));
-        output[1] = x87f_store_f32(x87f_div(
-            x87f_load_f32(input[1]), x87f_load_f32(maximum)));
-        output[2] = x87f_store_f32(x87f_div(
-            x87f_load_f32(input[2]), x87f_load_f32(maximum)));
+        output[0] = x87f_store_f32(x87f_div(x87f_load_f32(input[0]), x87f_load_f32(maximum)));
+        output[1] = x87f_store_f32(x87f_div(x87f_load_f32(input[1]), x87f_load_f32(maximum)));
+        output[2] = x87f_store_f32(x87f_div(x87f_load_f32(input[2]), x87f_load_f32(maximum)));
 #else
         output[0] = (float)((long double)input[0] / (long double)maximum);
         output[1] = (float)((long double)input[1] / (long double)maximum);
@@ -324,14 +278,10 @@ float ColorNormalize(const vec3_t input, vec3_t output)
 
 #if EMULATE_X87
     {
-        const float scale = x87f_store_f32(x87f_div(
-            x87f_load_f32(1.0f), x87f_load_f32(maximum)));
-        output[0] = x87f_store_f32(x87f_mul(
-            x87f_load_f32(input[0]), x87f_load_f32(scale)));
-        output[1] = x87f_store_f32(x87f_mul(
-            x87f_load_f32(input[1]), x87f_load_f32(scale)));
-        output[2] = x87f_store_f32(x87f_mul(
-            x87f_load_f32(input[2]), x87f_load_f32(scale)));
+        const float scale = x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_load_f32(maximum)));
+        output[0] = x87f_store_f32(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(scale)));
+        output[1] = x87f_store_f32(x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(scale)));
+        output[2] = x87f_store_f32(x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(scale)));
     }
 #else
     {

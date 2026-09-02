@@ -23,8 +23,7 @@ char *com_redirectBuffer;
 int32_t com_redirectBufferSize;
 com_redirect_flush_t com_redirectFlush;
 
-void Com_BeginRedirect(char *buffer, int32_t bufferSize,
-                       com_redirect_flush_t flush)
+void Com_BeginRedirect(char *buffer, int32_t bufferSize, com_redirect_flush_t flush)
 {
     if (buffer == NULL || bufferSize == 0 || flush == NULL) {
         return;

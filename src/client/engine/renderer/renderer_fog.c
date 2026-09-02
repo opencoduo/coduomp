@@ -85,8 +85,7 @@ void R_FogOff(void)
  * Name: same-module Mac symbol R_FogOn. */
 void R_FogOn(void)
 {
-    if (backEnd.projection2D != qfalse ||
-        (glState.glStateBits & GLS_FOG) != 0 || r_fog->integer == 0) {
+    if (backEnd.projection2D != qfalse || (glState.glStateBits & GLS_FOG) != 0 || r_fog->integer == 0) {
         return;
     }
 
@@ -123,8 +122,7 @@ void RB_SetIteratorFog(void)
         return;
     }
 
-    if (rendererFogCount != 0 &&
-        (backEnd.refdef.rdflags & RDF_SKYBOX_PORTAL) != 0) {
+    if (rendererFogCount != 0 && (backEnd.refdef.rdflags & RDF_SKYBOX_PORTAL) != 0) {
         fog = &rendererFogs[R_FOG_PORTAL_VIEW];
         if (fog->registered != qfalse)
             R_Fog(fog);
@@ -163,8 +161,7 @@ void R_SetFogColor(void)
 }
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-void R_SetFog(int32_t fogIndex, int32_t fogStart, int32_t fogEnd,
-              float red, float green, float blue, float density)
+void R_SetFog(int32_t fogIndex, int32_t fogStart, int32_t fogEnd, float red, float green, float blue, float density)
 {
     renderer_fog_t *fog;
 
@@ -201,13 +198,10 @@ void R_SetFog(int32_t fogIndex, int32_t fogStart, int32_t fogEnd,
 
     if (fogStart == R_FOG_RESET_SLOT) {
         if (rendererFogs[R_FOG_WORLD_VIEW].registered != qfalse) {
-            rendererFogs[R_FOG_TRANSITION_FROM] =
-                rendererFogs[R_FOG_WORLD_VIEW];
+            rendererFogs[R_FOG_TRANSITION_FROM] = rendererFogs[R_FOG_WORLD_VIEW];
         }
-        memset(&rendererFogs[R_FOG_RESET_SLOT], 0,
-               sizeof(rendererFogs[R_FOG_RESET_SLOT]));
-        memset(&rendererFogs[R_FOG_TRANSITION_TO], 0,
-               sizeof(rendererFogs[R_FOG_TRANSITION_TO]));
+        memset(&rendererFogs[R_FOG_RESET_SLOT], 0, sizeof(rendererFogs[R_FOG_RESET_SLOT]));
+        memset(&rendererFogs[R_FOG_TRANSITION_TO], 0, sizeof(rendererFogs[R_FOG_TRANSITION_TO]));
         rendererCurrentFogIndex = 0;
         return;
     }
@@ -218,8 +212,7 @@ void R_SetFog(int32_t fogIndex, int32_t fogStart, int32_t fogEnd,
 
     rendererCurrentFogIndex = fogStart;
     if (rendererFogs[R_FOG_WORLD_VIEW].registered != qfalse) {
-        rendererFogs[R_FOG_TRANSITION_FROM] =
-            rendererFogs[R_FOG_WORLD_VIEW];
+        rendererFogs[R_FOG_TRANSITION_FROM] = rendererFogs[R_FOG_WORLD_VIEW];
     } else {
         rendererFogs[R_FOG_TRANSITION_FROM] = *fog;
     }
@@ -231,10 +224,8 @@ void R_SetFog(int32_t fogIndex, int32_t fogStart, int32_t fogEnd,
         rendererFogs[R_FOG_TRANSITION_TO].startTime = 0;
         rendererFogs[R_FOG_TRANSITION_TO].finishTime = 0;
     } else {
-        rendererFogs[R_FOG_TRANSITION_TO].startTime =
-            tr.refdef.time;
-        rendererFogs[R_FOG_TRANSITION_TO].finishTime =
-            tr.refdef.time + fogEnd;
+        rendererFogs[R_FOG_TRANSITION_TO].startTime = tr.refdef.time;
+        rendererFogs[R_FOG_TRANSITION_TO].finishTime = tr.refdef.time + fogEnd;
     }
 }
 
@@ -246,9 +237,8 @@ int32_t RE_SaveFogState(void *buffer, uint32_t bufferSize)
     renderer_fog_saved_state_t *state = buffer;
 
     if (bufferSize < sizeof(*state)) {
-        ri.Error(ERR_DROP,
-                 "couldn't save fog settings (%i bytes available, %i bytes needed)\n",
-                 (int32_t)bufferSize, (int32_t)sizeof(*state));
+        ri.Error(ERR_DROP, "couldn't save fog settings (%i bytes available, %i bytes needed)\n", (int32_t)bufferSize,
+                 (int32_t)sizeof(*state));
     }
 
     memcpy(state->fogs, rendererFogs, sizeof(state->fogs));
@@ -264,8 +254,7 @@ int32_t RE_RestoreFogState(const void *buffer, uint32_t bufferSize)
     const renderer_fog_saved_state_t *state = buffer;
 
     if (bufferSize < sizeof(*state)) {
-        ri.Error(ERR_DROP,
-                 "couldn't restore fog settings (savegame is probably corrupt or an old version)\n");
+        ri.Error(ERR_DROP, "couldn't restore fog settings (savegame is probably corrupt or an old version)\n");
     }
 
     memcpy(rendererFogs, state->fogs, sizeof(state->fogs));
@@ -287,67 +276,52 @@ void R_SetFrameFog(void)
     const int32_t currentTime = tr.refdef.time;
 
     if (r_speeds->integer == 5 && to->registered == qfalse) {
-        ri.Printf(R_PRINT_ALL, "no fog - calc zFar: %0.1f\n",
-                  tr.viewParms.zFar);
+        ri.Printf(R_PRINT_ALL, "no fog - calc zFar: %0.1f\n", tr.viewParms.zFar);
         return;
     }
 
     if (to->finishTime == 0 || to->finishTime < currentTime) {
         *current = *to;
         current->dirty = qfalse;
-    } else if ((from->mode == GL_EXP && to->mode == GL_LINEAR) ||
-               (from->mode == GL_LINEAR && to->mode == GL_EXP)) {
+    } else if ((from->mode == GL_EXP && to->mode == GL_LINEAR) || (from->mode == GL_LINEAR && to->mode == GL_EXP)) {
         *current = *to;
         to->finishTime = 0;
         current->dirty = qtrue;
     } else {
-        int32_t transitionDuration =
-            to->finishTime - to->startTime;
-        const int32_t transitionElapsed =
-            currentTime - to->startTime;
+        int32_t transitionDuration = to->finishTime - to->startTime;
+        const int32_t transitionElapsed = currentTime - to->startTime;
         float transitionFraction;
 
         if (transitionDuration <= 0)
             transitionDuration = 1;
 
-        transitionFraction =
-            (float)transitionElapsed / (float)transitionDuration;
+        transitionFraction = (float)transitionElapsed / (float)transitionDuration;
         if (transitionFraction > 1.0f)
             transitionFraction = 1.0f;
 
         current->mode = to->mode;
         current->registered = qtrue;
 
-        current->start = from->start +
-            (to->start - from->start) * transitionFraction;
-        current->end = from->end +
-            (to->end - from->end) * transitionFraction;
-        current->density = from->density +
-            (to->density - from->density) * transitionFraction;
-        current->color[0] = from->color[0] +
-            (to->color[0] - from->color[0]) * transitionFraction;
-        current->color[1] = from->color[1] +
-            (to->color[1] - from->color[1]) * transitionFraction;
-        current->color[2] = from->color[2] +
-            (to->color[2] - from->color[2]) * transitionFraction;
+        current->start = from->start + (to->start - from->start) * transitionFraction;
+        current->end = from->end + (to->end - from->end) * transitionFraction;
+        current->density = from->density + (to->density - from->density) * transitionFraction;
+        current->color[0] = from->color[0] + (to->color[0] - from->color[0]) * transitionFraction;
+        current->color[1] = from->color[1] + (to->color[1] - from->color[1]) * transitionFraction;
+        current->color[2] = from->color[2] + (to->color[2] - from->color[2]) * transitionFraction;
 
-        current->clearScreen =
-            (to->clearScreen != qfalse || from->clearScreen != qfalse);
+        current->clearScreen = (to->clearScreen != qfalse || from->clearScreen != qfalse);
         current->dirty = qtrue;
     }
 
-    if (current->mode == GL_LINEAR &&
-        current->end < tr.viewParms.zFar) {
+    if (current->mode == GL_LINEAR && current->end < tr.viewParms.zFar) {
         tr.viewParms.zFar = current->end;
     }
 
     if (r_speeds->integer == 5) {
-        const char *format = current->mode == GL_LINEAR
-            ? "farclip fog - den: %0.1f  calc zFar: %0.1f  fog zfar: %0.1f\n"
-            : "density fog - den: %0.6f  calc zFar: %0.1f  fog zFar: %0.1f\n";
+        const char *format = current->mode == GL_LINEAR ? "farclip fog - den: %0.1f  calc zFar: %0.1f  fog zfar: %0.1f\n"
+                                                        : "density fog - den: %0.6f  calc zFar: %0.1f  fog zFar: %0.1f\n";
 
-        ri.Printf(R_PRINT_ALL, format, current->density,
-                  tr.viewParms.zFar, current->end);
+        ri.Printf(R_PRINT_ALL, format, current->density, tr.viewParms.zFar, current->end);
     }
 }
 
@@ -367,8 +341,7 @@ void SetFarClip(void)
         tr.viewParms.zFar = r_zfar->value;
         R_SetFrameFog();
         if (r_speeds->integer == 5) {
-            ri.Printf(R_PRINT_ALL, "farclip at: %f\n",
-                      tr.viewParms.zFar);
+            ri.Printf(R_PRINT_ALL, "farclip at: %f\n", tr.viewParms.zFar);
         }
         return;
     }

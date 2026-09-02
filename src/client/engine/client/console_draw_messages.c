@@ -29,9 +29,7 @@ typedef enum con_draw_message_mode_e {
  * Name: exact same-module Mac symbol Con_DrawStringOnHUD. The original carries
  * encodedText and encodedCount in EBX/EDI; the maintained signature makes all
  * inputs explicit. */
-void Con_DrawStringOnHUD(const uint16_t *encodedText,
-                         int32_t encodedCount, int32_t x, int32_t y,
-                         float alpha, qboolean centered)
+void Con_DrawStringOnHUD(const uint16_t *encodedText, int32_t encodedCount, int32_t x, int32_t y, float alpha, qboolean centered)
 {
     vec4_t color = {1.0f, 1.0f, 1.0f, alpha};
     int32_t fontHandle = 0;
@@ -40,31 +38,22 @@ void Con_DrawStringOnHUD(const uint16_t *encodedText,
     if (centered != qfalse) {
         fontHandle = CON_HUD_CENTERED_FONT;
         scale = 0.3333333432674408f;
-        x -= rendererExports.TextConsoleWidth(
-                 encodedText, fontHandle, scale, 0.0f, encodedCount) /
-             2;
+        x -= rendererExports.TextConsoleWidth(encodedText, fontHandle, scale, 0.0f, encodedCount) / 2;
     }
 
-    rendererExports.TextConsolePaint(
-        (float)x, (float)(y + CON_HUD_TEXT_BASELINE_OFFSET),
-        fontHandle, scale, color, encodedText, 0.0f, encodedCount,
-        CON_HUD_TEXT_STYLE);
+    rendererExports.TextConsolePaint((float)x, (float)(y + CON_HUD_TEXT_BASELINE_OFFSET), fontHandle, scale, color, encodedText, 0.0f,
+                                     encodedCount, CON_HUD_TEXT_STYLE);
 }
 
 /* Source: CoDUOMP.exe 0x0040a830..0x0040aaae.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0040a830_0040aaaf.mcode.
  * Name: exact same-module Mac symbol Con_DrawMessageWindowBottomUp. The Win32
  * function receives window in ESI; the maintained signature is portable. */
-void Con_DrawMessageWindowBottomUp(console_message_window_t *window,
-                                   int32_t x, int32_t y, float alpha,
-                                   qboolean centered)
+void Con_DrawMessageWindowBottomUp(console_message_window_t *window, int32_t x, int32_t y, float alpha, qboolean centered)
 {
-    const int32_t lineHeight = centered != qfalse
-        ? CON_HUD_CENTERED_LINE_HEIGHT
-        : CON_HUD_LINE_HEIGHT;
+    const int32_t lineHeight = centered != qfalse ? CON_HUD_CENTERED_LINE_HEIGHT : CON_HUD_LINE_HEIGHT;
     const int32_t firstLine = window->activeLineIndex;
-    const int32_t pastLastLine =
-        window->activeLineIndex + window->lineCapacity;
+    const int32_t pastLastLine = window->activeLineIndex + window->lineCapacity;
 
     for (int32_t line = firstLine; line < pastLastLine; ++line) {
         const int32_t slot = line % window->lineCapacity;
@@ -77,12 +66,9 @@ void Con_DrawMessageWindowBottomUp(console_message_window_t *window,
             continue;
         }
 
-        const int32_t elapsed = (int32_t)(
-            Sys_Milliseconds() - (uint32_t)startTime);
+        const int32_t elapsed = (int32_t)(Sys_Milliseconds() - (uint32_t)startTime);
         if (elapsed < window->scrollTime) {
-            const float displacement =
-                (1.0f - (float)elapsed / (float)window->scrollTime) *
-                (float)lineHeight;
+            const float displacement = (1.0f - (float)elapsed / (float)window->scrollTime) * (float)lineHeight;
             y += FastRound(displacement);
         }
     }
@@ -94,37 +80,27 @@ void Con_DrawMessageWindowBottomUp(console_message_window_t *window,
 
         if (startTime == 0)
             continue;
-        if ((int32_t)(
-                Sys_Milliseconds() -
-                (uint32_t)window->lineEndTimes[slot]) >= 0) {
+        if ((int32_t)(Sys_Milliseconds() - (uint32_t)window->lineEndTimes[slot]) >= 0) {
             window->lineStartTimes[slot] = 0;
             continue;
         }
 
-        const int32_t elapsed = (int32_t)(
-            Sys_Milliseconds() - (uint32_t)startTime);
+        const int32_t elapsed = (int32_t)(Sys_Milliseconds() - (uint32_t)startTime);
         if (elapsed < window->fadeInTime) {
-            lineAlpha =
-                (float)elapsed * alpha / (float)window->fadeInTime;
+            lineAlpha = (float)elapsed * alpha / (float)window->fadeInTime;
         } else {
-            const int32_t remaining = (int32_t)(
-                (uint32_t)window->lineEndTimes[slot] -
-                Sys_Milliseconds());
+            const int32_t remaining = (int32_t)((uint32_t)window->lineEndTimes[slot] - Sys_Milliseconds());
             if (remaining < window->fadeOutTime) {
-                lineAlpha =
-                    (float)remaining * alpha /
-                    (float)window->fadeOutTime;
+                lineAlpha = (float)remaining * alpha / (float)window->fadeOutTime;
             } else {
                 lineAlpha = alpha;
             }
         }
 
         const int32_t consoleLine = window->lineIndices[slot];
-        const uint16_t *encodedText =
-            &con.text[(consoleLine % con.totalLines) * con.lineWidth];
+        const uint16_t *encodedText = &con.text[(consoleLine % con.totalLines) * con.lineWidth];
         y -= lineHeight;
-        Con_DrawStringOnHUD(encodedText, con.lineWidth, x, y,
-                            lineAlpha, centered);
+        Con_DrawStringOnHUD(encodedText, con.lineWidth, x, y, lineAlpha, centered);
     }
 }
 
@@ -133,35 +109,24 @@ void Con_DrawMessageWindowBottomUp(console_message_window_t *window,
  * Name: exact same-module Mac symbol Con_DrawMessageWindow. The original uses
  * EAX/EDX/ECX for drawMode/window/y; the maintained signature makes the
  * boundary explicit. */
-void Con_DrawMessageWindow(console_message_window_t *window,
-                           int32_t x, int32_t y, float alpha,
-                           int32_t drawMode)
+void Con_DrawMessageWindow(console_message_window_t *window, int32_t x, int32_t y, float alpha, int32_t drawMode)
 {
-    if (cl.snap.ps.pmType != PM_TYPE_INTERMISSION &&
-        (cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME)) != 0) {
+    if (cl.snap.ps.pmType != PM_TYPE_INTERMISSION && (cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME)) != 0) {
         return;
     }
 
-    if (drawMode == CON_DRAW_MESSAGE_BOTTOM_UP ||
-        drawMode == CON_DRAW_MESSAGE_BOTTOM_UP_CENTERED) {
-        Con_DrawMessageWindowBottomUp(
-            window, x, y, alpha,
-            drawMode == CON_DRAW_MESSAGE_BOTTOM_UP_CENTERED);
+    if (drawMode == CON_DRAW_MESSAGE_BOTTOM_UP || drawMode == CON_DRAW_MESSAGE_BOTTOM_UP_CENTERED) {
+        Con_DrawMessageWindowBottomUp(window, x, y, alpha, drawMode == CON_DRAW_MESSAGE_BOTTOM_UP_CENTERED);
         return;
     }
-    if (drawMode != CON_DRAW_MESSAGE_TOP_DOWN &&
-        drawMode != CON_DRAW_MESSAGE_REVERSED) {
+    if (drawMode != CON_DRAW_MESSAGE_TOP_DOWN && drawMode != CON_DRAW_MESSAGE_REVERSED) {
         return;
     }
 
-    const qboolean reversed =
-        drawMode == CON_DRAW_MESSAGE_REVERSED ? qtrue : qfalse;
+    const qboolean reversed = drawMode == CON_DRAW_MESSAGE_REVERSED ? qtrue : qfalse;
     const int32_t firstLine = window->activeLineIndex;
-    const int32_t pastLastLine =
-        window->activeLineIndex + window->lineCapacity;
-    int32_t drawY = reversed != qfalse
-        ? y - CON_HUD_LINE_HEIGHT
-        : y;
+    const int32_t pastLastLine = window->activeLineIndex + window->lineCapacity;
+    int32_t drawY = reversed != qfalse ? y - CON_HUD_LINE_HEIGHT : y;
     int32_t groupedLineCountdown = 0;
     int32_t groupedLineBaseY = drawY;
 
@@ -176,19 +141,12 @@ void Con_DrawMessageWindow(console_message_window_t *window,
             continue;
         }
 
-        if ((int32_t)(
-                Sys_Milliseconds() -
-                (uint32_t)window->lineEndTimes[slot]) > 0) {
-            const int32_t remaining = (int32_t)(
-                (uint32_t)window->lineEndTimes[slot] +
-                (uint32_t)window->scrollTime -
-                Sys_Milliseconds());
+        if ((int32_t)(Sys_Milliseconds() - (uint32_t)window->lineEndTimes[slot]) > 0) {
+            const int32_t remaining = (int32_t)((uint32_t)window->lineEndTimes[slot] + (uint32_t)window->scrollTime - Sys_Milliseconds());
             if (remaining <= 0)
                 continue;
 
-            const float displacement =
-                (float)remaining / (float)window->scrollTime *
-                (float)CON_HUD_LINE_HEIGHT;
+            const float displacement = (float)remaining / (float)window->scrollTime * (float)CON_HUD_LINE_HEIGHT;
             if (reversed != qfalse)
                 drawY -= FastRound(displacement);
             else
@@ -197,50 +155,40 @@ void Con_DrawMessageWindow(console_message_window_t *window,
         }
 
         float lineAlpha = alpha;
-        const int32_t elapsed = (int32_t)(
-            Sys_Milliseconds() - (uint32_t)startTime);
+        const int32_t elapsed = (int32_t)(Sys_Milliseconds() - (uint32_t)startTime);
         if (elapsed < window->fadeInTime) {
-            lineAlpha =
-                (float)elapsed / (float)window->fadeInTime * alpha;
+            lineAlpha = (float)elapsed / (float)window->fadeInTime * alpha;
         } else {
-            const int32_t remaining = (int32_t)(
-                (uint32_t)window->lineEndTimes[slot] -
-                Sys_Milliseconds());
+            const int32_t remaining = (int32_t)((uint32_t)window->lineEndTimes[slot] - Sys_Milliseconds());
             if (remaining < window->fadeOutTime) {
-                lineAlpha =
-                    (float)remaining / (float)window->fadeOutTime * alpha;
+                lineAlpha = (float)remaining / (float)window->fadeOutTime * alpha;
             }
         }
 
         const int32_t consoleLine = window->lineIndices[slot];
-        const uint16_t *encodedText =
-            &con.text[(consoleLine % con.totalLines) * con.lineWidth];
+        const uint16_t *encodedText = &con.text[(consoleLine % con.totalLines) * con.lineWidth];
 
         if (reversed != qfalse) {
             if (groupedLineCountdown != 0) {
                 drawY += 2 * CON_HUD_LINE_HEIGHT;
             } else {
                 int32_t matchingLineCount = 0;
-                for (int32_t nextLine = line + 1;
-                     nextLine < pastLastLine; ++nextLine) {
-                    const int32_t nextSlot =
-                        nextLine % window->lineCapacity;
+                for (int32_t nextLine = line + 1; nextLine < pastLastLine; ++nextLine) {
+                    const int32_t nextSlot = nextLine % window->lineCapacity;
                     if (window->lineStartTimes[nextSlot] != startTime)
                         break;
                     ++matchingLineCount;
                 }
 
                 if (matchingLineCount != 0) {
-                    drawY -=
-                        matchingLineCount * CON_HUD_LINE_HEIGHT;
+                    drawY -= matchingLineCount * CON_HUD_LINE_HEIGHT;
                     groupedLineBaseY = drawY;
                     groupedLineCountdown = matchingLineCount + 1;
                 }
             }
         }
 
-        Con_DrawStringOnHUD(encodedText, con.lineWidth, x, drawY,
-                            lineAlpha, qfalse);
+        Con_DrawStringOnHUD(encodedText, con.lineWidth, x, drawY, lineAlpha, qfalse);
 
         if (reversed != qfalse) {
             if (groupedLineCountdown != 0) {
@@ -283,34 +231,27 @@ void Con_DrawSay(int32_t y)
         localizationKey = "EXE_SAY";
 
     prompt = va("%s:", SEH_SafeTranslateString(localizationKey));
-    rendererExports.TextPaint(
-        (float)promptX, (float)(y + CON_CHAT_PROMPT_Y_OFFSET),
-        0, 0.3333333432674408f, color, prompt, 0.0f, 0,
-        CON_CHAT_PROMPT_TEXT_STYLE);
+    rendererExports.TextPaint((float)promptX, (float)(y + CON_CHAT_PROMPT_Y_OFFSET), 0, 0.3333333432674408f, color, prompt, 0.0f, 0,
+                              CON_CHAT_PROMPT_TEXT_STYLE);
 
-    promptWidth = rendererExports.TextWidth(
-        prompt, 0, 0.3333333432674408f, 0.0f, 0);
+    promptWidth = rendererExports.TextWidth(prompt, 0, 0.3333333432674408f, 0.0f, 0);
     Field_Draw(&chatField, promptWidth + promptX, y);
 }
 
 /* Source: CoDUOMP.exe 0x0040aee0..0x0040aefb.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0040aee0_0040aefc.mcode.
  * Name and signature: exact same-module Mac symbol Con_DrawNotify. */
-void Con_DrawNotify(int32_t x, int32_t y, float alpha,
-                    int32_t drawMode)
+void Con_DrawNotify(int32_t x, int32_t y, float alpha, int32_t drawMode)
 {
-    Con_DrawMessageWindow(
-        &con_gameMessageWindow, x, y, alpha, drawMode);
+    Con_DrawMessageWindow(&con_gameMessageWindow, x, y, alpha, drawMode);
 }
 
 /* Source: CoDUOMP.exe 0x0040af00..0x0040af1b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0040af00_0040af1c.mcode.
  * Name and signature: exact same-module Mac symbol Con_DrawBoldMessages. */
-void Con_DrawBoldMessages(int32_t x, int32_t y, float alpha,
-                          int32_t drawMode)
+void Con_DrawBoldMessages(int32_t x, int32_t y, float alpha, int32_t drawMode)
 {
-    Con_DrawMessageWindow(
-        &con_boldGameMessageWindow, x, y, alpha, drawMode);
+    Con_DrawMessageWindow(&con_boldGameMessageWindow, x, y, alpha, drawMode);
 }
 
 /* Source: CoDUOMP.exe 0x0040af20..0x0040af73.
@@ -328,17 +269,13 @@ void Con_DrawMiniConsole(int32_t x, int32_t y, float alpha)
     }
 
     con_miniConsoleWindow.lineCapacity = con_miniconLines->integer;
-    Con_DrawMessageWindow(
-        &con_miniConsoleWindow, x, y, alpha,
-        CON_DRAW_MESSAGE_DEFAULT_MODE);
+    Con_DrawMessageWindow(&con_miniConsoleWindow, x, y, alpha, CON_DRAW_MESSAGE_DEFAULT_MODE);
 }
 
 /* Source: CoDUOMP.exe 0x0040af80..0x0040af9b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0040af80_0040af9c.mcode.
  * Name and signature: exact same-module Mac symbol Con_DrawSubtitles. */
-void Con_DrawSubtitles(int32_t x, int32_t y, float alpha,
-                       int32_t drawMode)
+void Con_DrawSubtitles(int32_t x, int32_t y, float alpha, int32_t drawMode)
 {
-    Con_DrawMessageWindow(
-        &con_subtitleWindow, x, y, alpha, drawMode);
+    Con_DrawMessageWindow(&con_subtitleWindow, x, y, alpha, drawMode);
 }

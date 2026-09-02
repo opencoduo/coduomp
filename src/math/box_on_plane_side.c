@@ -34,34 +34,25 @@ void Com_Error(errorParm_t code, const char *format, ...);
  */
 #if EMULATE_X87
 typedef x87f box_plane_distance_t;
-#define BOX_FRONT_DOT(cx, cy, cz)                                            \
-    x87f_add(                                                               \
-        x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]),                  \
-                          x87f_load_f32(cx)),                               \
-                 x87f_mul(x87f_load_f32(plane->normal[1]),                  \
-                          x87f_load_f32(cy))),                              \
-        x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(cz)))
-#define BOX_BACK_DOT(cx, cy, cz)                                             \
-    x87f_add(                                                               \
-        x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(cz)),       \
-        x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]),                  \
-                          x87f_load_f32(cx)),                               \
-                 x87f_mul(x87f_load_f32(plane->normal[1]),                  \
-                          x87f_load_f32(cy))))
+#define BOX_FRONT_DOT(cx, cy, cz) \
+    x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]), x87f_load_f32(cx)), \
+                      x87f_mul(x87f_load_f32(plane->normal[1]), x87f_load_f32(cy))), \
+             x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(cz)))
+#define BOX_BACK_DOT(cx, cy, cz) \
+    x87f_add(x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(cz)), \
+             x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]), x87f_load_f32(cx)), \
+                      x87f_mul(x87f_load_f32(plane->normal[1]), x87f_load_f32(cy))))
 #else
 typedef long double box_plane_distance_t;
-#define BOX_FRONT_DOT(cx, cy, cz)                                            \
-    (((long double)plane->normal[0] * (long double)(cx) +                   \
-      (long double)plane->normal[1] * (long double)(cy)) +                  \
+#define BOX_FRONT_DOT(cx, cy, cz) \
+    (((long double)plane->normal[0] * (long double)(cx) + (long double)plane->normal[1] * (long double)(cy)) + \
      (long double)plane->normal[2] * (long double)(cz))
-#define BOX_BACK_DOT(cx, cy, cz)                                             \
-    ((long double)plane->normal[2] * (long double)(cz) +                    \
-     ((long double)plane->normal[0] * (long double)(cx) +                   \
-      (long double)plane->normal[1] * (long double)(cy)))
+#define BOX_BACK_DOT(cx, cy, cz) \
+    ((long double)plane->normal[2] * (long double)(cz) + \
+     ((long double)plane->normal[0] * (long double)(cx) + (long double)plane->normal[1] * (long double)(cy)))
 #endif
 
-int32_t BoxOnPlaneSide(const vec3_t mins, const vec3_t maxs,
-                       const cplane_t *plane)
+int32_t BoxOnPlaneSide(const vec3_t mins, const vec3_t maxs, const cplane_t *plane)
 {
     box_plane_distance_t frontDistance;
     box_plane_distance_t backDistance;
@@ -78,8 +69,8 @@ int32_t BoxOnPlaneSide(const vec3_t mins, const vec3_t maxs,
         /* NOT_FROM_ORIGINAL_SOURCE: portable equivalent of the x86 INT3. */
         raise(SIGTRAP);
 #endif
-        Com_Error(ERR_DROP,
-                  "\x15" "BoxOnPlaneSide: invalid signbits for plane");
+        Com_Error(ERR_DROP, "\x15"
+                            "BoxOnPlaneSide: invalid signbits for plane");
 #if defined(_MSC_VER)
         __debugbreak();
         __assume(0);
@@ -92,8 +83,7 @@ int32_t BoxOnPlaneSide(const vec3_t mins, const vec3_t maxs,
 #endif
 #else
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        return *(volatile const int32_t *)(uintptr_t)
-            BOX_PLANE_INVALID_READ_ADDRESS;
+        return *(volatile const int32_t *)(uintptr_t)BOX_PLANE_INVALID_READ_ADDRESS;
 #endif
     }
 

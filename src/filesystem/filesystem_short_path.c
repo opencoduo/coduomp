@@ -11,17 +11,14 @@ char *FS_ShortOSFilePath(const char *qpath)
     if (coduo_compat_path_is_safe_relative(qpath) == qfalse)
         return NULL;
 
-    for (searchpath_t *search = fs_searchpaths;
-         search != NULL;
-         search = search->next) {
+    for (searchpath_t *search = fs_searchpaths; search != NULL; search = search->next) {
         if (FS_UseSearchPath(search) == qfalse || search->dir == NULL)
             continue;
 
         directory_t *const directory = search->dir;
         char osPath[MAX_OSPATH];
         FS_BuildOSPath(directory->path, directory->gamedir, qpath, osPath);
-        FILE *const file = filesystem_compat_fopen_read(
-            directory->path, osPath);
+        FILE *const file = filesystem_compat_fopen_read(directory->path, osPath);
         if (file == NULL)
             continue;
 

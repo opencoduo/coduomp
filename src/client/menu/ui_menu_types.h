@@ -346,7 +346,9 @@ typedef struct itemDef_s {
  * dispatchers call the handler stored at +0x04.  These retain the inherited
  * Quake III type and member spellings instead of the UI reconstruction's
  * duplicate *KeywordDef names. */
-enum { KEYWORDHASH_SIZE = 512 };
+enum {
+    KEYWORDHASH_SIZE = 512
+};
 
 typedef struct keywordHash_s {
     char *keyword;
@@ -360,112 +362,64 @@ typedef struct menuKeywordHash_s {
     struct menuKeywordHash_s *next;
 } menuKeywordHash_t;
 
-typedef char ui_column_info_size[
-    sizeof(columnInfo_t) == 0x0c ? 1 : -1];
-typedef char ui_list_box_element_style_offset[
-    offsetof(listBoxDef_t, elementStyle) == 0x18 ? 1 : -1];
-typedef char ui_list_box_columns_offset[
-    offsetof(listBoxDef_t, columnInfo) == 0x20 ? 1 : -1];
-typedef char ui_edit_field_paint_offset_offset[
-    offsetof(editFieldDef_t, paintOffset) == 0x1c ? 1 : -1];
-typedef char ui_color_range_size[
-    sizeof(colorRangeDef_t) == 0x1c ? 1 : -1];
-typedef char ui_color_range_low_offset[
-    offsetof(colorRangeDef_t, low) == 0x14 ? 1 : -1];
-typedef char ui_model_def_size[
-    sizeof(modelDef_t) == 0x40 ? 1 : -1];
+typedef char ui_column_info_size[sizeof(columnInfo_t) == 0x0c ? 1 : -1];
+typedef char ui_list_box_element_style_offset[offsetof(listBoxDef_t, elementStyle) == 0x18 ? 1 : -1];
+typedef char ui_list_box_columns_offset[offsetof(listBoxDef_t, columnInfo) == 0x20 ? 1 : -1];
+typedef char ui_edit_field_paint_offset_offset[offsetof(editFieldDef_t, paintOffset) == 0x1c ? 1 : -1];
+typedef char ui_color_range_size[sizeof(colorRangeDef_t) == 0x1c ? 1 : -1];
+typedef char ui_color_range_low_offset[offsetof(colorRangeDef_t, low) == 0x14 ? 1 : -1];
+typedef char ui_model_def_size[sizeof(modelDef_t) == 0x40 ? 1 : -1];
 
 typedef char ui_rect_def_size[sizeof(rectDef_t) == 0x10 ? 1 : -1];
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char ui_command_def_handler_offset[
-    offsetof(commandDef_t, handler) == 0x04 ? 1 : -1];
-typedef char ui_command_def_size[
-    sizeof(commandDef_t) == 0x08 ? 1 : -1];
-typedef char ui_bind_first_key_offset[
-    offsetof(bind_t, bind1) == 0x10 ? 1 : -1];
-typedef char ui_bind_second_key_offset[
-    offsetof(bind_t, bind2) == 0x14 ? 1 : -1];
-typedef char ui_bind_size[
-    sizeof(bind_t) == 0x18 ? 1 : -1];
-typedef char ui_string_def_string_offset[
-    offsetof(stringDef_t, str) == 0x04 ? 1 : -1];
-typedef char ui_string_def_size[
-    sizeof(stringDef_t) == 0x08 ? 1 : -1];
+typedef char ui_command_def_handler_offset[offsetof(commandDef_t, handler) == 0x04 ? 1 : -1];
+typedef char ui_command_def_size[sizeof(commandDef_t) == 0x08 ? 1 : -1];
+typedef char ui_bind_first_key_offset[offsetof(bind_t, bind1) == 0x10 ? 1 : -1];
+typedef char ui_bind_second_key_offset[offsetof(bind_t, bind2) == 0x14 ? 1 : -1];
+typedef char ui_bind_size[sizeof(bind_t) == 0x18 ? 1 : -1];
+typedef char ui_string_def_string_offset[offsetof(stringDef_t, str) == 0x04 ? 1 : -1];
+typedef char ui_string_def_size[sizeof(stringDef_t) == 0x08 ? 1 : -1];
 
-typedef char ui_keyword_hash_func_offset[
-    offsetof(keywordHash_t, func) == 0x04 ? 1 : -1];
-typedef char ui_keyword_hash_next_offset[
-    offsetof(keywordHash_t, next) == 0x08 ? 1 : -1];
-typedef char ui_keyword_hash_size[
-    sizeof(keywordHash_t) == 0x0c ? 1 : -1];
-typedef char ui_menu_keyword_hash_func_offset[
-    offsetof(menuKeywordHash_t, func) == 0x04 ? 1 : -1];
-typedef char ui_menu_keyword_hash_next_offset[
-    offsetof(menuKeywordHash_t, next) == 0x08 ? 1 : -1];
-typedef char ui_menu_keyword_hash_size[
-    sizeof(menuKeywordHash_t) == 0x0c ? 1 : -1];
+typedef char ui_keyword_hash_func_offset[offsetof(keywordHash_t, func) == 0x04 ? 1 : -1];
+typedef char ui_keyword_hash_next_offset[offsetof(keywordHash_t, next) == 0x08 ? 1 : -1];
+typedef char ui_keyword_hash_size[sizeof(keywordHash_t) == 0x0c ? 1 : -1];
+typedef char ui_menu_keyword_hash_func_offset[offsetof(menuKeywordHash_t, func) == 0x04 ? 1 : -1];
+typedef char ui_menu_keyword_hash_next_offset[offsetof(menuKeywordHash_t, next) == 0x08 ? 1 : -1];
+typedef char ui_menu_keyword_hash_size[sizeof(menuKeywordHash_t) == 0x0c ? 1 : -1];
 
-typedef char ui_window_def_name_offset[
-    offsetof(windowDef_t, name) == 0x20 ? 1 : -1];
-typedef char ui_window_def_group_offset[
-    offsetof(windowDef_t, group) == 0x28 ? 1 : -1];
-typedef char ui_window_def_cinematic_name_offset[
-    offsetof(windowDef_t, cinematicName) == 0x2c ? 1 : -1];
-typedef char ui_window_def_cinematic_offset[
-    offsetof(windowDef_t, cinematic) == 0x30 ? 1 : -1];
-typedef char ui_window_def_border_size_offset[
-    offsetof(windowDef_t, borderSize) == 0x44 ? 1 : -1];
-typedef char ui_window_def_flags_offset[
-    offsetof(windowDef_t, flags) == 0x48 ? 1 : -1];
-typedef char ui_window_def_fore_color_offset[
-    offsetof(windowDef_t, foreColor) == 0x74 ? 1 : -1];
-typedef char ui_window_def_background_offset[
-    offsetof(windowDef_t, background) == 0xb4 ? 1 : -1];
+typedef char ui_window_def_name_offset[offsetof(windowDef_t, name) == 0x20 ? 1 : -1];
+typedef char ui_window_def_group_offset[offsetof(windowDef_t, group) == 0x28 ? 1 : -1];
+typedef char ui_window_def_cinematic_name_offset[offsetof(windowDef_t, cinematicName) == 0x2c ? 1 : -1];
+typedef char ui_window_def_cinematic_offset[offsetof(windowDef_t, cinematic) == 0x30 ? 1 : -1];
+typedef char ui_window_def_border_size_offset[offsetof(windowDef_t, borderSize) == 0x44 ? 1 : -1];
+typedef char ui_window_def_flags_offset[offsetof(windowDef_t, flags) == 0x48 ? 1 : -1];
+typedef char ui_window_def_fore_color_offset[offsetof(windowDef_t, foreColor) == 0x74 ? 1 : -1];
+typedef char ui_window_def_background_offset[offsetof(windowDef_t, background) == 0xb4 ? 1 : -1];
 typedef char ui_window_def_size[sizeof(windowDef_t) == 0xb8 ? 1 : -1];
 
-typedef char ui_menu_def_font_offset[
-    offsetof(menuDef_t, font) == 0xb8 ? 1 : -1];
-typedef char ui_menu_def_cursor_item_offset[
-    offsetof(menuDef_t, cursorItem) == 0xc8 ? 1 : -1];
-typedef char ui_menu_def_fade_cycle_offset[
-    offsetof(menuDef_t, fadeCycle) == 0xcc ? 1 : -1];
-typedef char ui_menu_def_on_key_offset[
-    offsetof(menuDef_t, onKey) == 0xe8 ? 1 : -1];
-typedef char ui_menu_def_load_mode_offset[
-    offsetof(menuDef_t, loadMode) == 0x4ec ? 1 : -1];
-typedef char ui_menu_def_items_offset[
-    offsetof(menuDef_t, items) == 0x510 ? 1 : -1];
+typedef char ui_menu_def_font_offset[offsetof(menuDef_t, font) == 0xb8 ? 1 : -1];
+typedef char ui_menu_def_cursor_item_offset[offsetof(menuDef_t, cursorItem) == 0xc8 ? 1 : -1];
+typedef char ui_menu_def_fade_cycle_offset[offsetof(menuDef_t, fadeCycle) == 0xcc ? 1 : -1];
+typedef char ui_menu_def_on_key_offset[offsetof(menuDef_t, onKey) == 0xe8 ? 1 : -1];
+typedef char ui_menu_def_load_mode_offset[offsetof(menuDef_t, loadMode) == 0x4ec ? 1 : -1];
+typedef char ui_menu_def_items_offset[offsetof(menuDef_t, items) == 0x510 ? 1 : -1];
 typedef char ui_menu_def_size[sizeof(menuDef_t) == 0x810 ? 1 : -1];
 
-typedef char ui_list_box_double_click_offset[
-    offsetof(listBoxDef_t, doubleClick) == 0xe0 ? 1 : -1];
-typedef char ui_list_box_notselectable_offset[
-    offsetof(listBoxDef_t, notselectable) == 0xe4 ? 1 : -1];
-typedef char ui_list_box_size[
-    sizeof(listBoxDef_t) == 0xe8 ? 1 : -1];
-typedef char ui_scroll_info_item_offset[
-    offsetof(scrollInfo_t, item) == 0x18 ? 1 : -1];
-typedef char ui_scroll_info_size[
-    sizeof(scrollInfo_t) == 0x20 ? 1 : -1];
-typedef char ui_multi_def_string_offset[
-    offsetof(multiDef_t, cvarStr) == 0x80 ? 1 : -1];
-typedef char ui_multi_def_value_offset[
-    offsetof(multiDef_t, cvarValue) == 0x100 ? 1 : -1];
-typedef char ui_multi_def_size[
-    sizeof(multiDef_t) == 0x188 ? 1 : -1];
-typedef char ui_item_def_type_offset[
-    offsetof(itemDef_t, type) == 0xc8 ? 1 : -1];
-typedef char ui_item_def_text_offset[
-    offsetof(itemDef_t, text) == 0xec ? 1 : -1];
-typedef char ui_item_def_color_ranges_offset[
-    offsetof(itemDef_t, colorRanges) == 0x130 ? 1 : -1];
-typedef char ui_item_def_type_data_offset[
-    offsetof(itemDef_t, typeData) == 0x254 ? 1 : -1];
-typedef char ui_item_def_load_mode_offset[
-    offsetof(itemDef_t, loadMode) == 0x258 ? 1 : -1];
-typedef char ui_item_def_size[
-    sizeof(itemDef_t) == 0x25c ? 1 : -1];
+typedef char ui_list_box_double_click_offset[offsetof(listBoxDef_t, doubleClick) == 0xe0 ? 1 : -1];
+typedef char ui_list_box_notselectable_offset[offsetof(listBoxDef_t, notselectable) == 0xe4 ? 1 : -1];
+typedef char ui_list_box_size[sizeof(listBoxDef_t) == 0xe8 ? 1 : -1];
+typedef char ui_scroll_info_item_offset[offsetof(scrollInfo_t, item) == 0x18 ? 1 : -1];
+typedef char ui_scroll_info_size[sizeof(scrollInfo_t) == 0x20 ? 1 : -1];
+typedef char ui_multi_def_string_offset[offsetof(multiDef_t, cvarStr) == 0x80 ? 1 : -1];
+typedef char ui_multi_def_value_offset[offsetof(multiDef_t, cvarValue) == 0x100 ? 1 : -1];
+typedef char ui_multi_def_size[sizeof(multiDef_t) == 0x188 ? 1 : -1];
+typedef char ui_item_def_type_offset[offsetof(itemDef_t, type) == 0xc8 ? 1 : -1];
+typedef char ui_item_def_text_offset[offsetof(itemDef_t, text) == 0xec ? 1 : -1];
+typedef char ui_item_def_color_ranges_offset[offsetof(itemDef_t, colorRanges) == 0x130 ? 1 : -1];
+typedef char ui_item_def_type_data_offset[offsetof(itemDef_t, typeData) == 0x254 ? 1 : -1];
+typedef char ui_item_def_load_mode_offset[offsetof(itemDef_t, loadMode) == 0x258 ? 1 : -1];
+typedef char ui_item_def_size[sizeof(itemDef_t) == 0x25c ? 1 : -1];
 #endif
 
 #endif

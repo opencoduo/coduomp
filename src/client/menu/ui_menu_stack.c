@@ -35,9 +35,7 @@ extern displayContextDef_t *DC;
 
 void Menu_RunCloseScript(menuDef_t *menu)
 {
-    if (menu != NULL &&
-        (menu->window.flags & WINDOW_VISIBLE) != 0 &&
-        menu->onClose != NULL) {
+    if (menu != NULL && (menu->window.flags & WINDOW_VISIBLE) != 0 && menu->onClose != NULL) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         itemDef_t item = {0};
 
@@ -51,8 +49,7 @@ qboolean Menus_RemoveFromStack(menuDef_t *menu)
     const uint32_t lastIndexBits = (uint32_t)openMenuCount - 1u;
     uint32_t indexBits = lastIndexBits;
 
-    while (coduo_int32_from_bits(indexBits) >= 0 &&
-           menuStack[indexBits] != menu) {
+    while (coduo_int32_from_bits(indexBits) >= 0 && menuStack[indexBits] != menu) {
         indexBits -= 1u;
     }
     if (coduo_int32_from_bits(indexBits) < 0) {
@@ -60,8 +57,7 @@ qboolean Menus_RemoveFromStack(menuDef_t *menu)
     }
 
     openMenuCount = coduo_int32_from_bits(lastIndexBits);
-    while (coduo_int32_from_bits(indexBits) <
-           coduo_int32_from_bits(lastIndexBits)) {
+    while (coduo_int32_from_bits(indexBits) < coduo_int32_from_bits(lastIndexBits)) {
         menuStack[indexBits] = menuStack[indexBits + 1u];
         indexBits += 1u;
     }
@@ -75,15 +71,13 @@ void Menus_AddToStack(menuDef_t *menu)
     uint32_t indexBits = countBits - 1u;
 
     if (coduo_int32_from_bits(indexBits) >= 0) {
-        while (coduo_int32_from_bits(indexBits) >= 0 &&
-               menuStack[indexBits] != menu) {
+        while (coduo_int32_from_bits(indexBits) >= 0 && menuStack[indexBits] != menu) {
             indexBits -= 1u;
         }
         if (coduo_int32_from_bits(indexBits) >= 0) {
             appendIndexBits = countBits - 1u;
             openMenuCount = coduo_int32_from_bits(appendIndexBits);
-            while (coduo_int32_from_bits(indexBits) <
-                   coduo_int32_from_bits(appendIndexBits)) {
+            while (coduo_int32_from_bits(indexBits) < coduo_int32_from_bits(appendIndexBits)) {
                 menuStack[indexBits] = menuStack[indexBits + 1u];
                 indexBits += 1u;
             }
@@ -91,7 +85,8 @@ void Menus_AddToStack(menuDef_t *menu)
     }
 
     if (appendIndexBits == MAX_OPEN_MENUS) {
-        Com_Error(ERR_DROP, "\x15" "Too many menus opened");
+        Com_Error(ERR_DROP, "\x15"
+                            "Too many menus opened");
         appendIndexBits = (uint32_t)openMenuCount;
     }
     menuStack[appendIndexBits] = menu;
@@ -106,9 +101,7 @@ void Menus_Close(menuDef_t *menu)
 
     /* Menus_Close contains the same close-script source operation as
      * Menu_RunCloseScript, inlined in both authoritative PE32 bodies. */
-    if (menu != NULL &&
-        (menu->window.flags & WINDOW_VISIBLE) != 0 &&
-        menu->onClose != NULL) {
+    if (menu != NULL && (menu->window.flags & WINDOW_VISIBLE) != 0 && menu->onClose != NULL) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         itemDef_t item = {0};
 
@@ -129,18 +122,15 @@ void Menus_Close(menuDef_t *menu)
         if (coduo_int32_from_bits(indexBits) >= 0) {
             openMenusRemainingBits = lastIndexBits;
             openMenuCount = coduo_int32_from_bits(lastIndexBits);
-            while (coduo_int32_from_bits(indexBits) <
-                   coduo_int32_from_bits(lastIndexBits)) {
+            while (coduo_int32_from_bits(indexBits) < coduo_int32_from_bits(lastIndexBits)) {
                 menuStack[indexBits] = menuStack[indexBits + 1u];
                 indexBits += 1u;
             }
         }
     }
 
-    if ((menu->window.flags & WINDOW_HASFOCUS) != 0 &&
-        openMenusRemainingBits != 0u) {
-        menuStack[openMenusRemainingBits - 1u]->window.flags |=
-            WINDOW_HASFOCUS;
+    if ((menu->window.flags & WINDOW_HASFOCUS) != 0 && openMenusRemainingBits != 0u) {
+        menuStack[openMenusRemainingBits - 1u]->window.flags |= WINDOW_HASFOCUS;
     }
     menu->window.flags &= ~(WINDOW_VISIBLE | WINDOW_HASFOCUS);
 }
@@ -166,8 +156,7 @@ void Menus_CloseAll(void)
 
 void Window_CloseCinematic(windowDef_t *window)
 {
-    if (window->style == WINDOW_STYLE_CINEMATIC &&
-        window->cinematic >= 0) {
+    if (window->style == WINDOW_STYLE_CINEMATIC && window->cinematic >= 0) {
         int32_t cinematic = window->cinematic;
         displayContextDef_t *display = DC;
 

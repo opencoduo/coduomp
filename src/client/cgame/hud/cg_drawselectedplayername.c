@@ -77,8 +77,7 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
  * CG_SELECTEDPLAYER_NAME and CG_VOICE_NAME here, and the macOS owner-draw jump
  * table routes both ids to CG_DrawSelectedPlayerName, establishing the exact name.
  */
-void CG_DrawSelectedPlayerName(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
-                               intptr_t arg2, intptr_t arg3)
+void CG_DrawSelectedPlayerName(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     int32_t idx = cg_currentSelectedPlayer_vmCvar.integer;
 
@@ -89,10 +88,8 @@ void CG_DrawSelectedPlayerName(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
         cg_currentSelectedPlayer_vmCvar.integer = 0;
     }
 
-    int32_t clientNum = cgame_compat_read_target_i32_index(
-        cg_hudEmitClientTable, idx);
-    clientInfo_t *state = cgame_compat_unchecked_clientinfo(
-        &bgs.clientinfo[0], clientNum);
+    int32_t clientNum = cgame_compat_read_target_i32_index(cg_hudEmitClientTable, idx);
+    clientInfo_t *state = cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], clientNum);
 
     /* No valid per-client state at this table slot -> emit nothing. */
     if (state->infoValid == 0)
@@ -117,14 +114,5 @@ void CG_DrawSelectedPlayerName(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
      * pointer is handed through a 32-bit syscall slot, so it is laundered to int. */
     const char *name = state->name;
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  xBits,
-                  sumBits,
-                  arg0,
-                  arg1,
-                  arg2,
-                  (intptr_t)name,
-                  0,
-                  0,
-                  arg3);
+    cgame_syscall(CG_R_TEXT_PAINT, xBits, sumBits, arg0, arg1, arg2, (intptr_t)name, 0, 0, arg3);
 }

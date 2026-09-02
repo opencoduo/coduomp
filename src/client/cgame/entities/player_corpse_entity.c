@@ -99,8 +99,7 @@ _Static_assert(offsetof(centity_t, lerpAngles) == 0x214, "lerpAngles +0x214");
 #endif
 _Static_assert(offsetof(entityState_t, number) == 0x00, "number +0x00");
 _Static_assert(offsetof(entityState_t, eFlags) == 0x08, "eFlags +0x08");
-_Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8,
-               "fTorsoHeight +0xe8");
+_Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8, "fTorsoHeight +0xe8");
 
 /* cg_corpseInfo (0x3044cb00, 0x4d0-stride table indexed by
  * entity number - 0x40) is declared in client_recovered.h; storage in globals.c.
@@ -125,7 +124,7 @@ _Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8,
  * model-info flag bits. Values are the .rdata float literals at 0x3007bdc4 (12.0),
  * 0x3007be04 (20.0), 0x3007bdd0 (32.0). Exact source meaning of the flag bits is
  * unproven; named by their proven role in this selector. */
-#define CG_CORPSE_FLAG_LIGHTOFS_LOW  ((uint32_t)0x40) /* -> +12.0f lighting-origin Z */
+#define CG_CORPSE_FLAG_LIGHTOFS_LOW ((uint32_t)0x40) /* -> +12.0f lighting-origin Z */
 #define CG_CORPSE_FLAG_LIGHTOFS_HIGH ((uint32_t)0x20) /* -> +20.0f lighting-origin Z */
 
 void CG_AddPlayerCorpseEntity(centity_t *cent)
@@ -140,11 +139,11 @@ void CG_AddPlayerCorpseEntity(centity_t *cent)
     int32_t modelPartIndex = coduo_int32_from_bits(modelPartIndexBits);
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    uint32_t corpseIndex =
-        modelPartIndexBits - (uint32_t)PLAYER_CLONE_ENTITYNUM_BASE;
+    uint32_t corpseIndex = modelPartIndexBits - (uint32_t)PLAYER_CLONE_ENTITYNUM_BASE;
     if (corpseIndex >= (uint32_t)PLAYER_CLONE_COUNT) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_AddPlayerCorpseEntity: "
+                  "\x15"
+                  "CG_AddPlayerCorpseEntity: "
                   "invalid player clone entity %i",
                   modelPartIndex);
         return;
@@ -154,13 +153,11 @@ void CG_AddPlayerCorpseEntity(centity_t *cent)
     /* First DObj handle query; its result and the two sub-objects drive the
      * model-part state (re)bind. trap(0xa5, modelPartIndex) -> handle. */
     intptr_t dobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, modelPartIndex);
-    CG_BuildCorpseDObjModels(corpseInfo, dobjHandle,
-                             modelInfo, cent->corpseTagState);
+    CG_BuildCorpseDObjModels(corpseInfo, dobjHandle, modelInfo, cent->corpseTagState);
 
     /* Re-query the DObj handle for the render entity; a zero handle means the
      * corpse has no live skeleton this frame, so draw nothing. */
-    intptr_t renderDobjHandle =
-        cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelInfo->numberBits);
+    intptr_t renderDobjHandle = cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)modelInfo->numberBits);
     if (renderDobjHandle == 0)
         return;
 
@@ -206,14 +203,11 @@ void CG_AddPlayerCorpseEntity(centity_t *cent)
      * 0x300347c6 20.0f [0x3007be04] / 0x300347ce 32.0f [0x3007bdd0]); the single
      * FSTP at 0x300347d8. A `lightZ +=` accumulator would round at every step. */
     if (flags & CG_CORPSE_FLAG_LIGHTOFS_LOW)
-        re.lightingOrigin[2] = (float)(
-            (long double)originZ + (long double)modelInfo->fTorsoHeight + 12.0L);
+        re.lightingOrigin[2] = (float)((long double)originZ + (long double)modelInfo->fTorsoHeight + 12.0L);
     else if (flags & CG_CORPSE_FLAG_LIGHTOFS_HIGH)
-        re.lightingOrigin[2] = (float)(
-            (long double)originZ + (long double)modelInfo->fTorsoHeight + 20.0L);
+        re.lightingOrigin[2] = (float)((long double)originZ + (long double)modelInfo->fTorsoHeight + 20.0L);
     else
-        re.lightingOrigin[2] = (float)(
-            (long double)originZ + (long double)modelInfo->fTorsoHeight + 32.0L);
+        re.lightingOrigin[2] = (float)((long double)originZ + (long double)modelInfo->fTorsoHeight + 32.0L);
 
     re.oldorigin[0] = originX;
     re.oldorigin[1] = originY;

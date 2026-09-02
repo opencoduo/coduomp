@@ -52,13 +52,10 @@ void Com_ParseCommandLine(char *commandLine)
 /* CoDUOMP.exe 0x0043a3c0; coduo_lnxded 0x08070717. */
 qboolean Com_SafeMode(void)
 {
-    for (int32_t lineIndex = 0;
-         lineIndex < com_numConsoleLines;
-         ++lineIndex) {
+    for (int32_t lineIndex = 0; lineIndex < com_numConsoleLines; ++lineIndex) {
         Cmd_TokenizeString(com_consoleLines[lineIndex]);
         const char *const command = Cmd_Argv(0);
-        if (Q_stricmp(command, "safe") == 0 ||
-            Q_stricmp(command, "cvar_restart") == 0) {
+        if (Q_stricmp(command, "safe") == 0 || Q_stricmp(command, "cvar_restart") == 0) {
             com_consoleLines[lineIndex][0] = '\0';
             return qtrue;
         }
@@ -76,9 +73,7 @@ void Com_SetSafeMode(void)
 /* CoDUOMP.exe 0x0043a470; coduo_lnxded 0x080707bc. */
 void Com_StartupVariable(const char *name)
 {
-    for (int32_t lineIndex = 0;
-         lineIndex < com_numConsoleLines;
-         ++lineIndex) {
+    for (int32_t lineIndex = 0; lineIndex < com_numConsoleLines; ++lineIndex) {
         Cmd_TokenizeString(com_consoleLines[lineIndex]);
         if (strcmp(Cmd_Argv(0), "set") != 0) {
             continue;
@@ -99,9 +94,7 @@ qboolean Com_AddStartupCommands(void)
 {
     qboolean addedCommand = qfalse;
 
-    for (int32_t lineIndex = 0;
-         lineIndex < com_numConsoleLines;
-         ++lineIndex) {
+    for (int32_t lineIndex = 0; lineIndex < com_numConsoleLines; ++lineIndex) {
         const char *const line = com_consoleLines[lineIndex];
         if (line == NULL || line[0] == '\0') {
             continue;
@@ -137,8 +130,7 @@ void Com_InitJournaling(void)
     } else if (com_journal->integer == COM_JOURNAL_REPLAY_MODE) {
         Com_Printf("Replaying journaled events\n");
         (void)FS_FOpenFileRead("journal.dat", &com_journalFile, qtrue);
-        (void)FS_FOpenFileRead(
-            "journaldata.dat", &com_journalDataFile, qtrue);
+        (void)FS_FOpenFileRead("journaldata.dat", &com_journalDataFile, qtrue);
     }
 
     if (com_journalFile == 0 || com_journalDataFile == 0) {

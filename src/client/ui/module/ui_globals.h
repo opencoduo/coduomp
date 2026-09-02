@@ -29,10 +29,11 @@ enum {
 
 /* NOT_FROM_ORIGINAL_SOURCE: transient handshake allowing the engine to send
  * its normally-reserved console key to this module during that row's capture. */
-#define UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR \
-    "ui_coduomp_consoleBindCapture"
+#define UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR "ui_coduomp_consoleBindCapture"
 
-enum { UI_MAX_MOVIES = 256 };
+enum {
+    UI_MAX_MOVIES = 256
+};
 
 enum {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -45,166 +46,91 @@ extern char *ui_arenaInfos[UI_MAX_ARENA_INFOS];
 /* The common rectDef_t/windowDef_t/menuDef_t record family is shared by both
  * client DLLs through ui_menu_types.h. */
 
-_Static_assert(offsetof(windowDef_t, name) == 0x20,
-               "original windowDef_t name offset is 32 bytes");
+_Static_assert(offsetof(windowDef_t, name) == 0x20, "original windowDef_t name offset is 32 bytes");
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(windowDef_t, group) == 0x28,
-               "original windowDef_t group offset is 40 bytes");
-_Static_assert(offsetof(windowDef_t, cinematicName) == 0x2c,
-               "original windowDef_t cinematic-name offset is 44 bytes");
-_Static_assert(offsetof(windowDef_t, cinematic) == 0x30,
-               "original windowDef_t cinematic offset is 48 bytes");
-_Static_assert(offsetof(windowDef_t, style) == 0x34,
-               "original windowDef_t style offset is 52 bytes");
-_Static_assert(offsetof(windowDef_t, border) == 0x38,
-               "original windowDef_t border offset is 56 bytes");
-_Static_assert(offsetof(windowDef_t, ownerDraw) == 0x3c,
-               "original windowDef_t owner-draw offset is 60 bytes");
-_Static_assert(offsetof(windowDef_t, ownerDrawFlags) == 0x40,
-               "original windowDef_t owner-draw flags offset is 64 bytes");
-_Static_assert(offsetof(windowDef_t, borderSize) == 0x44,
-               "original windowDef_t border-size offset is 68 bytes");
-_Static_assert(offsetof(windowDef_t, flags) == 0x48,
-               "original windowDef_t flags offset is 72 bytes");
-_Static_assert(offsetof(windowDef_t, nextTime) == 0x70,
-               "original windowDef_t next-time offset is 112 bytes");
-_Static_assert(offsetof(windowDef_t, rectEffects) == 0x4c,
-               "original windowDef_t target rectangle offset is 76 bytes");
-_Static_assert(offsetof(windowDef_t, rectEffects2) == 0x5c,
-               "original windowDef_t transition-step rectangle offset is 92 bytes");
-_Static_assert(offsetof(windowDef_t, offsetTime) == 0x6c,
-               "original windowDef_t effect interval offset is 108 bytes");
-_Static_assert(offsetof(windowDef_t, foreColor) == 0x74,
-               "original windowDef_t foreground-color offset is 116 bytes");
-_Static_assert(offsetof(windowDef_t, backColor) == 0x84,
-               "original windowDef_t background-color offset is 132 bytes");
-_Static_assert(offsetof(windowDef_t, borderColor) == 0x94,
-               "original windowDef_t border-color offset is 148 bytes");
-_Static_assert(offsetof(windowDef_t, outlineColor) == 0xa4,
-               "original windowDef_t outline-color offset is 164 bytes");
-_Static_assert(offsetof(windowDef_t, background) == 0xb4,
-               "original windowDef_t background handle offset is 180 bytes");
-_Static_assert(sizeof(windowDef_t) == 184,
-               "original windowDef_t size is 184 bytes");
+_Static_assert(offsetof(windowDef_t, group) == 0x28, "original windowDef_t group offset is 40 bytes");
+_Static_assert(offsetof(windowDef_t, cinematicName) == 0x2c, "original windowDef_t cinematic-name offset is 44 bytes");
+_Static_assert(offsetof(windowDef_t, cinematic) == 0x30, "original windowDef_t cinematic offset is 48 bytes");
+_Static_assert(offsetof(windowDef_t, style) == 0x34, "original windowDef_t style offset is 52 bytes");
+_Static_assert(offsetof(windowDef_t, border) == 0x38, "original windowDef_t border offset is 56 bytes");
+_Static_assert(offsetof(windowDef_t, ownerDraw) == 0x3c, "original windowDef_t owner-draw offset is 60 bytes");
+_Static_assert(offsetof(windowDef_t, ownerDrawFlags) == 0x40, "original windowDef_t owner-draw flags offset is 64 bytes");
+_Static_assert(offsetof(windowDef_t, borderSize) == 0x44, "original windowDef_t border-size offset is 68 bytes");
+_Static_assert(offsetof(windowDef_t, flags) == 0x48, "original windowDef_t flags offset is 72 bytes");
+_Static_assert(offsetof(windowDef_t, nextTime) == 0x70, "original windowDef_t next-time offset is 112 bytes");
+_Static_assert(offsetof(windowDef_t, rectEffects) == 0x4c, "original windowDef_t target rectangle offset is 76 bytes");
+_Static_assert(offsetof(windowDef_t, rectEffects2) == 0x5c, "original windowDef_t transition-step rectangle offset is 92 bytes");
+_Static_assert(offsetof(windowDef_t, offsetTime) == 0x6c, "original windowDef_t effect interval offset is 108 bytes");
+_Static_assert(offsetof(windowDef_t, foreColor) == 0x74, "original windowDef_t foreground-color offset is 116 bytes");
+_Static_assert(offsetof(windowDef_t, backColor) == 0x84, "original windowDef_t background-color offset is 132 bytes");
+_Static_assert(offsetof(windowDef_t, borderColor) == 0x94, "original windowDef_t border-color offset is 148 bytes");
+_Static_assert(offsetof(windowDef_t, outlineColor) == 0xa4, "original windowDef_t outline-color offset is 164 bytes");
+_Static_assert(offsetof(windowDef_t, background) == 0xb4, "original windowDef_t background handle offset is 180 bytes");
+_Static_assert(sizeof(windowDef_t) == 184, "original windowDef_t size is 184 bytes");
 #endif
 
 /* The complete item/type-data and capture-state families are shared with
  * cgame through ui_menu_types.h and ui_menu_globals.h. */
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(itemDef_t, textRect) == 0xb8,
-               "original itemDef_t text rectangle offset is 184 bytes");
-_Static_assert(offsetof(itemDef_t, textRect.w) == 0xc0,
-               "original itemDef_t text rectangle width offset is 192 bytes");
-_Static_assert(offsetof(itemDef_t, textRect.h) == 0xc4,
-               "original itemDef_t text rectangle height offset is 196 bytes");
-_Static_assert(offsetof(itemDef_t, type) == 0xc8,
-               "original itemDef_t type offset is 200 bytes");
-_Static_assert(offsetof(itemDef_t, typeValidated) == 0xcc,
-               "original itemDef_t validated-type offset is 204 bytes");
-_Static_assert(offsetof(itemDef_t, alignment) == 0xd0,
-               "original itemDef_t owner-draw alignment offset is 208 bytes");
-_Static_assert(offsetof(itemDef_t, font) == 0xd4,
-               "original itemDef_t font offset is 212 bytes");
-_Static_assert(offsetof(itemDef_t, textalignment) == 0xd8,
-               "original itemDef_t text-alignment offset is 216 bytes");
-_Static_assert(offsetof(itemDef_t, textalignx) == 0xdc,
-               "original itemDef_t text-alignment X offset is 220 bytes");
-_Static_assert(offsetof(itemDef_t, textaligny) == 0xe0,
-               "original itemDef_t text-alignment Y offset is 224 bytes");
-_Static_assert(offsetof(itemDef_t, textscale) == 0xe4,
-               "original itemDef_t text-scale offset is 228 bytes");
-_Static_assert(offsetof(itemDef_t, textStyle) == 0xe8,
-               "original itemDef_t text-style offset is 232 bytes");
-_Static_assert(offsetof(itemDef_t, text) == 0xec,
-               "original itemDef_t text offset is 236 bytes");
-_Static_assert(offsetof(itemDef_t, parent) == 0xf0,
-               "original itemDef_t parent offset is 240 bytes");
-_Static_assert(offsetof(itemDef_t, asset) == 0xf4,
-               "original itemDef_t asset handle offset is 244 bytes");
-_Static_assert(offsetof(itemDef_t, mouseEnterText) == 0xf8,
-               "original itemDef_t mouse-enter-text script offset is 248 bytes");
-_Static_assert(offsetof(itemDef_t, mouseExitText) == 0xfc,
-               "original itemDef_t mouse-exit-text script offset is 252 bytes");
-_Static_assert(offsetof(itemDef_t, mouseEnter) == 0x100,
-               "original itemDef_t mouse-enter script offset is 256 bytes");
-_Static_assert(offsetof(itemDef_t, mouseExit) == 0x104,
-               "original itemDef_t mouse-exit script offset is 260 bytes");
-_Static_assert(offsetof(itemDef_t, action) == 0x108,
-               "original itemDef_t action script offset is 264 bytes");
-_Static_assert(offsetof(itemDef_t, accept) == 0x10c,
-               "original itemDef_t accept script offset is 268 bytes");
-_Static_assert(offsetof(itemDef_t, onFocus) == 0x110,
-               "original itemDef_t focus script offset is 272 bytes");
-_Static_assert(offsetof(itemDef_t, leaveFocus) == 0x114,
-               "original itemDef_t leave-focus script offset is 276 bytes");
-_Static_assert(offsetof(itemDef_t, cvar) == 0x118,
-               "original itemDef_t cvar offset is 280 bytes");
-_Static_assert(offsetof(itemDef_t, cvarTest) == 0x11c,
-               "original itemDef_t cvar-test offset is 284 bytes");
-_Static_assert(offsetof(itemDef_t, enableCvar) == 0x120,
-               "original itemDef_t enable-cvar script offset is 288 bytes");
-_Static_assert(offsetof(itemDef_t, cvarFlags) == 0x124,
-               "original itemDef_t cvar flags offset is 292 bytes");
-_Static_assert(offsetof(itemDef_t, focusSound) == 0x128,
-               "original itemDef_t focus-sound offset is 296 bytes");
-_Static_assert(offsetof(itemDef_t, numColors) == 0x12c,
-               "original itemDef_t color-range count offset is 300 bytes");
-_Static_assert(offsetof(itemDef_t, colorRanges) == 0x130,
-               "original itemDef_t color-range array offset is 304 bytes");
-_Static_assert(offsetof(itemDef_t, colorRangeType) == 0x248,
-               "original itemDef_t color-range type offset is 584 bytes");
-_Static_assert(offsetof(itemDef_t, special) == 0x24c,
-               "original itemDef_t feeder/special offset is 588 bytes");
-_Static_assert(offsetof(itemDef_t, cursorPos) == 0x250,
-               "original itemDef_t cursor offset is 592 bytes");
-_Static_assert(offsetof(itemDef_t, typeData) == 0x254,
-               "original itemDef_t type-data offset is 596 bytes");
-_Static_assert(offsetof(itemDef_t, loadMode) == 0x258,
-               "original itemDef_t load-mode offset is 600 bytes");
-_Static_assert(sizeof(itemDef_t) == 604,
-               "original itemDef_t size is 604 bytes");
+_Static_assert(offsetof(itemDef_t, textRect) == 0xb8, "original itemDef_t text rectangle offset is 184 bytes");
+_Static_assert(offsetof(itemDef_t, textRect.w) == 0xc0, "original itemDef_t text rectangle width offset is 192 bytes");
+_Static_assert(offsetof(itemDef_t, textRect.h) == 0xc4, "original itemDef_t text rectangle height offset is 196 bytes");
+_Static_assert(offsetof(itemDef_t, type) == 0xc8, "original itemDef_t type offset is 200 bytes");
+_Static_assert(offsetof(itemDef_t, typeValidated) == 0xcc, "original itemDef_t validated-type offset is 204 bytes");
+_Static_assert(offsetof(itemDef_t, alignment) == 0xd0, "original itemDef_t owner-draw alignment offset is 208 bytes");
+_Static_assert(offsetof(itemDef_t, font) == 0xd4, "original itemDef_t font offset is 212 bytes");
+_Static_assert(offsetof(itemDef_t, textalignment) == 0xd8, "original itemDef_t text-alignment offset is 216 bytes");
+_Static_assert(offsetof(itemDef_t, textalignx) == 0xdc, "original itemDef_t text-alignment X offset is 220 bytes");
+_Static_assert(offsetof(itemDef_t, textaligny) == 0xe0, "original itemDef_t text-alignment Y offset is 224 bytes");
+_Static_assert(offsetof(itemDef_t, textscale) == 0xe4, "original itemDef_t text-scale offset is 228 bytes");
+_Static_assert(offsetof(itemDef_t, textStyle) == 0xe8, "original itemDef_t text-style offset is 232 bytes");
+_Static_assert(offsetof(itemDef_t, text) == 0xec, "original itemDef_t text offset is 236 bytes");
+_Static_assert(offsetof(itemDef_t, parent) == 0xf0, "original itemDef_t parent offset is 240 bytes");
+_Static_assert(offsetof(itemDef_t, asset) == 0xf4, "original itemDef_t asset handle offset is 244 bytes");
+_Static_assert(offsetof(itemDef_t, mouseEnterText) == 0xf8, "original itemDef_t mouse-enter-text script offset is 248 bytes");
+_Static_assert(offsetof(itemDef_t, mouseExitText) == 0xfc, "original itemDef_t mouse-exit-text script offset is 252 bytes");
+_Static_assert(offsetof(itemDef_t, mouseEnter) == 0x100, "original itemDef_t mouse-enter script offset is 256 bytes");
+_Static_assert(offsetof(itemDef_t, mouseExit) == 0x104, "original itemDef_t mouse-exit script offset is 260 bytes");
+_Static_assert(offsetof(itemDef_t, action) == 0x108, "original itemDef_t action script offset is 264 bytes");
+_Static_assert(offsetof(itemDef_t, accept) == 0x10c, "original itemDef_t accept script offset is 268 bytes");
+_Static_assert(offsetof(itemDef_t, onFocus) == 0x110, "original itemDef_t focus script offset is 272 bytes");
+_Static_assert(offsetof(itemDef_t, leaveFocus) == 0x114, "original itemDef_t leave-focus script offset is 276 bytes");
+_Static_assert(offsetof(itemDef_t, cvar) == 0x118, "original itemDef_t cvar offset is 280 bytes");
+_Static_assert(offsetof(itemDef_t, cvarTest) == 0x11c, "original itemDef_t cvar-test offset is 284 bytes");
+_Static_assert(offsetof(itemDef_t, enableCvar) == 0x120, "original itemDef_t enable-cvar script offset is 288 bytes");
+_Static_assert(offsetof(itemDef_t, cvarFlags) == 0x124, "original itemDef_t cvar flags offset is 292 bytes");
+_Static_assert(offsetof(itemDef_t, focusSound) == 0x128, "original itemDef_t focus-sound offset is 296 bytes");
+_Static_assert(offsetof(itemDef_t, numColors) == 0x12c, "original itemDef_t color-range count offset is 300 bytes");
+_Static_assert(offsetof(itemDef_t, colorRanges) == 0x130, "original itemDef_t color-range array offset is 304 bytes");
+_Static_assert(offsetof(itemDef_t, colorRangeType) == 0x248, "original itemDef_t color-range type offset is 584 bytes");
+_Static_assert(offsetof(itemDef_t, special) == 0x24c, "original itemDef_t feeder/special offset is 588 bytes");
+_Static_assert(offsetof(itemDef_t, cursorPos) == 0x250, "original itemDef_t cursor offset is 592 bytes");
+_Static_assert(offsetof(itemDef_t, typeData) == 0x254, "original itemDef_t type-data offset is 596 bytes");
+_Static_assert(offsetof(itemDef_t, loadMode) == 0x258, "original itemDef_t load-mode offset is 600 bytes");
+_Static_assert(sizeof(itemDef_t) == 604, "original itemDef_t size is 604 bytes");
 #endif
 
-_Static_assert(offsetof(menuDef_t, window.rect) == 0x00,
-               "original menuDef_t rectangle offset is 0");
-_Static_assert(offsetof(menuDef_t, window.name) == 0x20,
-               "original menuDef_t name offset is 32 bytes");
+_Static_assert(offsetof(menuDef_t, window.rect) == 0x00, "original menuDef_t rectangle offset is 0");
+_Static_assert(offsetof(menuDef_t, window.name) == 0x20, "original menuDef_t name offset is 32 bytes");
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(menuDef_t, font) == 0xb8,
-               "original menuDef_t font offset is 184 bytes");
-_Static_assert(offsetof(menuDef_t, fullScreen) == 0xbc,
-               "original menuDef_t fullscreen offset is 188 bytes");
-_Static_assert(offsetof(menuDef_t, cursorItem) == 0xc8,
-               "original menuDef_t cursor-item offset is 200 bytes");
-_Static_assert(offsetof(menuDef_t, itemCount) == 0xc0,
-               "original menuDef_t item-count offset is 192 bytes");
-_Static_assert(offsetof(menuDef_t, fontIndex) == 0xc4,
-               "original menuDef_t font-index offset is 196 bytes");
-_Static_assert(offsetof(menuDef_t, fadeCycle) == 0xcc,
-               "original menuDef_t fade-cycle offset is 204 bytes");
-_Static_assert(offsetof(menuDef_t, onOpen) == 0xdc,
-               "original menuDef_t onOpen offset is 220 bytes");
-_Static_assert(offsetof(menuDef_t, onClose) == 0xe0,
-               "original menuDef_t onClose offset is 224 bytes");
-_Static_assert(offsetof(menuDef_t, onESC) == 0xe4,
-               "original menuDef_t onESC offset is 228 bytes");
-_Static_assert(offsetof(menuDef_t, onKey) == 0xe8,
-               "original menuDef_t key-script array offset is 232 bytes");
-_Static_assert(offsetof(menuDef_t, onKey[255]) == 0x4e4,
-               "original menuDef_t any-key script offset is 1252 bytes");
-_Static_assert(offsetof(menuDef_t, soundName) == 0x4e8,
-               "original menuDef_t sound-loop offset is 1256 bytes");
-_Static_assert(offsetof(menuDef_t, loadMode) == 0x4ec,
-               "original menuDef_t load-mode offset is 1260 bytes");
-_Static_assert(offsetof(menuDef_t, focusColor) == 0x4f0,
-               "original menuDef_t focus-color offset is 1264 bytes");
-_Static_assert(offsetof(menuDef_t, disableColor) == 0x500,
-               "original menuDef_t disable-color offset is 1280 bytes");
-_Static_assert(offsetof(menuDef_t, items) == 0x510,
-               "original menuDef_t item-pointer array offset is 1296 bytes");
-_Static_assert(sizeof(menuDef_t) == 2064,
-               "original menuDef_t stride is 2064 bytes");
+_Static_assert(offsetof(menuDef_t, font) == 0xb8, "original menuDef_t font offset is 184 bytes");
+_Static_assert(offsetof(menuDef_t, fullScreen) == 0xbc, "original menuDef_t fullscreen offset is 188 bytes");
+_Static_assert(offsetof(menuDef_t, cursorItem) == 0xc8, "original menuDef_t cursor-item offset is 200 bytes");
+_Static_assert(offsetof(menuDef_t, itemCount) == 0xc0, "original menuDef_t item-count offset is 192 bytes");
+_Static_assert(offsetof(menuDef_t, fontIndex) == 0xc4, "original menuDef_t font-index offset is 196 bytes");
+_Static_assert(offsetof(menuDef_t, fadeCycle) == 0xcc, "original menuDef_t fade-cycle offset is 204 bytes");
+_Static_assert(offsetof(menuDef_t, onOpen) == 0xdc, "original menuDef_t onOpen offset is 220 bytes");
+_Static_assert(offsetof(menuDef_t, onClose) == 0xe0, "original menuDef_t onClose offset is 224 bytes");
+_Static_assert(offsetof(menuDef_t, onESC) == 0xe4, "original menuDef_t onESC offset is 228 bytes");
+_Static_assert(offsetof(menuDef_t, onKey) == 0xe8, "original menuDef_t key-script array offset is 232 bytes");
+_Static_assert(offsetof(menuDef_t, onKey[255]) == 0x4e4, "original menuDef_t any-key script offset is 1252 bytes");
+_Static_assert(offsetof(menuDef_t, soundName) == 0x4e8, "original menuDef_t sound-loop offset is 1256 bytes");
+_Static_assert(offsetof(menuDef_t, loadMode) == 0x4ec, "original menuDef_t load-mode offset is 1260 bytes");
+_Static_assert(offsetof(menuDef_t, focusColor) == 0x4f0, "original menuDef_t focus-color offset is 1264 bytes");
+_Static_assert(offsetof(menuDef_t, disableColor) == 0x500, "original menuDef_t disable-color offset is 1280 bytes");
+_Static_assert(offsetof(menuDef_t, items) == 0x510, "original menuDef_t item-pointer array offset is 1296 bytes");
+_Static_assert(sizeof(menuDef_t) == 2064, "original menuDef_t stride is 2064 bytes");
 #endif
 
 typedef struct {
@@ -238,26 +164,16 @@ typedef struct {
 } uiMapInfo_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(uiGameTypeInfo_t) == 8,
-               "original uiGameTypeInfo_t stride is 8 bytes");
-_Static_assert(sizeof(uiTeamInfo_t) == 16,
-               "original uiTeamInfo_t stride is 16 bytes");
-_Static_assert(sizeof(uiMapInfo_t) == 164,
-               "original uiMapInfo_t stride is 164 bytes");
-_Static_assert(offsetof(uiMapInfo_t, imageName) == 0x08,
-               "original map image-name offset is 8 bytes");
-_Static_assert(offsetof(uiMapInfo_t, opponentName) == 0x0c,
-               "original map opponent-name offset is 12 bytes");
-_Static_assert(offsetof(uiMapInfo_t, teamMembers) == 0x10,
-               "original map team-members offset is 16 bytes");
-_Static_assert(offsetof(uiMapInfo_t, typeBits) == 0x14,
-               "original map gametype-bit offset is 20 bytes");
-_Static_assert(offsetof(uiMapInfo_t, cinematic) == 0x18,
-               "original map cinematic offset is 24 bytes");
-_Static_assert(offsetof(uiMapInfo_t, imageShader) == 0x9c,
-               "original map image shader offset is 156 bytes");
-_Static_assert(offsetof(uiMapInfo_t, active) == 0xa0,
-               "original map active flag offset is 160 bytes");
+_Static_assert(sizeof(uiGameTypeInfo_t) == 8, "original uiGameTypeInfo_t stride is 8 bytes");
+_Static_assert(sizeof(uiTeamInfo_t) == 16, "original uiTeamInfo_t stride is 16 bytes");
+_Static_assert(sizeof(uiMapInfo_t) == 164, "original uiMapInfo_t stride is 164 bytes");
+_Static_assert(offsetof(uiMapInfo_t, imageName) == 0x08, "original map image-name offset is 8 bytes");
+_Static_assert(offsetof(uiMapInfo_t, opponentName) == 0x0c, "original map opponent-name offset is 12 bytes");
+_Static_assert(offsetof(uiMapInfo_t, teamMembers) == 0x10, "original map team-members offset is 16 bytes");
+_Static_assert(offsetof(uiMapInfo_t, typeBits) == 0x14, "original map gametype-bit offset is 20 bytes");
+_Static_assert(offsetof(uiMapInfo_t, cinematic) == 0x18, "original map cinematic offset is 24 bytes");
+_Static_assert(offsetof(uiMapInfo_t, imageShader) == 0x9c, "original map image shader offset is 156 bytes");
+_Static_assert(offsetof(uiMapInfo_t, active) == 0xa0, "original map active flag offset is 160 bytes");
 #endif
 
 extern int32_t ui_gameTypeCount;
@@ -287,7 +203,9 @@ typedef struct uiServerFilter_s {
     const char *gameName;
 } uiServerFilter_t;
 
-enum { UI_SERVER_FILTER_COUNT = 1 };
+enum {
+    UI_SERVER_FILTER_COUNT = 1
+};
 
 extern const uiServerFilter_t ui_serverFilters[UI_SERVER_FILTER_COUNT];
 extern const char *const ui_handicapLabels[22];
@@ -309,22 +227,18 @@ extern int32_t ui_activeFont;
  */
 typedef struct uiDisplayContextStorage_s {
     displayContextDef_t context;
-    int32_t newHighScoreTime;                    /* +0x1e3e0 */
-    int32_t newBestTime;                         /* +0x1e3e4 */
-    int32_t showPostGameTime;                    /* +0x1e3e8 */
-    qboolean newHighScore;                       /* +0x1e3ec */
-    qboolean demoAvailable;                      /* +0x1e3f0 */
-    qboolean soundHighScore;                     /* +0x1e3f4 */
+    int32_t newHighScoreTime; /* +0x1e3e0 */
+    int32_t newBestTime; /* +0x1e3e4 */
+    int32_t showPostGameTime; /* +0x1e3e8 */
+    qboolean newHighScore; /* +0x1e3ec */
+    qboolean demoAvailable; /* +0x1e3f0 */
+    qboolean soundHighScore; /* +0x1e3f4 */
 } uiDisplayContextStorage_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(uiDisplayContextStorage_t) == 0x1e3f8,
-               "original UI display-context storage size is 123896 bytes");
-_Static_assert(offsetof(uiDisplayContextStorage_t, newHighScoreTime) ==
-                   0x1e3e0,
-               "original UI high-score deadline offset is 123872 bytes");
-_Static_assert(offsetof(uiDisplayContextStorage_t, soundHighScore) == 0x1e3f4,
-               "original UI high-score sound flag offset is 123892 bytes");
+_Static_assert(sizeof(uiDisplayContextStorage_t) == 0x1e3f8, "original UI display-context storage size is 123896 bytes");
+_Static_assert(offsetof(uiDisplayContextStorage_t, newHighScoreTime) == 0x1e3e0, "original UI high-score deadline offset is 123872 bytes");
+_Static_assert(offsetof(uiDisplayContextStorage_t, soundHighScore) == 0x1e3f4, "original UI high-score sound flag offset is 123892 bytes");
 #endif
 
 extern uiDisplayContextStorage_t ui_displayContextStorage;
@@ -369,8 +283,7 @@ enum {
     UI_SERVER_STATUS_PLAYER_NUMBER_SIZE = 5
 };
 
-_Static_assert(MAX_CLIENTS > 0 && MAX_CLIENTS <= 9999,
-               "server-status player numbers require at most four digits");
+_Static_assert(MAX_CLIENTS > 0 && MAX_CLIENTS <= 9999, "server-status player numbers require at most four digits");
 
 typedef struct {
     const char *column[4];
@@ -394,28 +307,18 @@ typedef struct {
 } uiPendingServerStatus_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(uiServerStatusLine_t) == 16,
-               "uiServerStatusLine_t target layout");
-_Static_assert(offsetof(uiServerStatusInfo_t, lines) == 0x40,
-               "uiServerStatusInfo_t lines target offset");
-_Static_assert(offsetof(uiServerStatusInfo_t, text) == 0x840,
-               "uiServerStatusInfo_t text target offset");
-_Static_assert(offsetof(uiServerStatusInfo_t, numberText) == 0xc40,
-               "uiServerStatusInfo_t numberText target offset");
+_Static_assert(sizeof(uiServerStatusLine_t) == 16, "uiServerStatusLine_t target layout");
+_Static_assert(offsetof(uiServerStatusInfo_t, lines) == 0x40, "uiServerStatusInfo_t lines target offset");
+_Static_assert(offsetof(uiServerStatusInfo_t, text) == 0x840, "uiServerStatusInfo_t text target offset");
+_Static_assert(offsetof(uiServerStatusInfo_t, numberText) == 0xc40, "uiServerStatusInfo_t numberText target offset");
 _Static_assert(offsetof(uiServerStatusInfo_t, numLines) ==
-                   offsetof(uiServerStatusInfo_t, numberText) +
-                       sizeof(((uiServerStatusInfo_t *)0)->numberText),
+                   offsetof(uiServerStatusInfo_t, numberText) + sizeof(((uiServerStatusInfo_t *)0)->numberText),
                "uiServerStatusInfo_t number storage precedes line count");
-_Static_assert(sizeof(uiServerStatusInfo_t) ==
-                   offsetof(uiServerStatusInfo_t, numLines) +
-                       sizeof(((uiServerStatusInfo_t *)0)->numLines),
+_Static_assert(sizeof(uiServerStatusInfo_t) == offsetof(uiServerStatusInfo_t, numLines) + sizeof(((uiServerStatusInfo_t *)0)->numLines),
                "uiServerStatusInfo_t line count terminates the record");
-_Static_assert(sizeof(uiPendingServerStatus_t) == 140,
-               "uiPendingServerStatus_t target size");
-_Static_assert(offsetof(uiPendingServerStatus_t, serverNum) == 0x84,
-               "uiPendingServerStatus_t server-number target offset");
-_Static_assert(offsetof(uiPendingServerStatus_t, active) == 0x88,
-               "uiPendingServerStatus_t active target offset");
+_Static_assert(sizeof(uiPendingServerStatus_t) == 140, "uiPendingServerStatus_t target size");
+_Static_assert(offsetof(uiPendingServerStatus_t, serverNum) == 0x84, "uiPendingServerStatus_t server-number target offset");
+_Static_assert(offsetof(uiPendingServerStatus_t, active) == 0x88, "uiPendingServerStatus_t active target offset");
 #endif
 
 extern int32_t ui_playerCount;
@@ -437,23 +340,17 @@ typedef union {
     char findPlayerName[MAX_STRING_CHARS];
     struct {
         unsigned char overlapPrefix[960];
-        char serverAddresses[UI_MAX_FOUND_PLAYER_SERVERS]
-                            [UI_FOUND_PLAYER_SERVER_TEXT_SIZE];
+        char serverAddresses[UI_MAX_FOUND_PLAYER_SERVERS][UI_FOUND_PLAYER_SERVER_TEXT_SIZE];
     } addressView;
 } uiFindPlayerStorage_t;
 
-_Static_assert(offsetof(uiFindPlayerStorage_t,
-                        addressView.serverAddresses) == 960,
-               "retail find-player/address overlap offset");
-_Static_assert(sizeof(uiFindPlayerStorage_t) == 1984,
-               "retail find-player overlap carrier size");
+_Static_assert(offsetof(uiFindPlayerStorage_t, addressView.serverAddresses) == 960, "retail find-player/address overlap offset");
+_Static_assert(sizeof(uiFindPlayerStorage_t) == 1984, "retail find-player overlap carrier size");
 
 extern uiFindPlayerStorage_t ui_findPlayerStorage;
 #define ui_findPlayerName ui_findPlayerStorage.findPlayerName
-#define ui_foundPlayerServerAddresses \
-    ui_findPlayerStorage.addressView.serverAddresses
-extern char ui_foundPlayerServerNames[UI_MAX_FOUND_PLAYER_SERVERS]
-                                     [UI_FOUND_PLAYER_SERVER_TEXT_SIZE];
+#define ui_foundPlayerServerAddresses ui_findPlayerStorage.addressView.serverAddresses
+extern char ui_foundPlayerServerNames[UI_MAX_FOUND_PLAYER_SERVERS][UI_FOUND_PLAYER_SERVER_TEXT_SIZE];
 extern qhandle_t ui_serverHardwareShaders[UI_SERVER_HARDWARE_SHADER_COUNT];
 extern qhandle_t ui_punkbusterShader;
 extern int32_t ui_cachedServerInfoColumn;
@@ -461,8 +358,7 @@ extern int32_t ui_cachedServerInfoTime;
 extern char ui_cachedServerInfo[MAX_STRING_CHARS];
 extern char ui_serverClientText[32];
 extern int32_t ui_findPlayerServerIndex;
-extern uiPendingServerStatus_t
-    ui_pendingServerStatus[UI_MAX_FOUND_PLAYER_SERVERS];
+extern uiPendingServerStatus_t ui_pendingServerStatus[UI_MAX_FOUND_PLAYER_SERVERS];
 extern int32_t ui_findPlayerCompletedCount;
 extern int32_t ui_findPlayerRequestCount;
 extern int32_t ui_teamLeader;

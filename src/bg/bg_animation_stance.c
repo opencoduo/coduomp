@@ -16,20 +16,16 @@
  * optimized realization of the same source contract, not a different API.
  * Supporting Mac cgame/game retain both names with matching 0x3c bodies.
  */
-qboolean BG_IsCrouchingAnim(const clientInfo_t *clientInfo,
-                            uint32_t animationIndex)
+qboolean BG_IsCrouchingAnim(const clientInfo_t *clientInfo, uint32_t animationIndex)
 {
-    bg_static_animation_t *animation = BG_GetAnimationForIndex(
-        clientInfo->clientNum, animationIndex & ~ANIM_TOGGLEBIT);
+    bg_static_animation_t *animation = BG_GetAnimationForIndex(clientInfo->clientNum, animationIndex & ~ANIM_TOGGLEBIT);
 
     return (animation->stateFlagsLowByte & BG_ANIM_CROUCH_STATE_MASK) != 0;
 }
 
-qboolean BG_IsProneAnim(const clientInfo_t *clientInfo,
-                        uint32_t animationIndex)
+qboolean BG_IsProneAnim(const clientInfo_t *clientInfo, uint32_t animationIndex)
 {
-    bg_static_animation_t *animation = BG_GetAnimationForIndex(
-        clientInfo->clientNum, animationIndex & ~ANIM_TOGGLEBIT);
+    bg_static_animation_t *animation = BG_GetAnimationForIndex(clientInfo->clientNum, animationIndex & ~ANIM_TOGGLEBIT);
 
     return (animation->stateFlags & BG_ANIM_PRONE_STATE_MASK) != 0;
 }

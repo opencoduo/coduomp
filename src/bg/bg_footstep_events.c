@@ -21,8 +21,7 @@
  * load/multiply/subtract/store chain when an x87-compatible host is emulated.
  */
 
-void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle,
-                      int32_t shouldMake)
+void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle, int32_t shouldMake)
 {
     uint8_t oldBob = (uint8_t)oldBobCycle;
     uint8_t newBob = (uint8_t)newBobCycle;
@@ -33,8 +32,7 @@ void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle,
 
     if (pm->waterlevel == 0) {
         if (pm->ps->groundEntityNum == ENTITYNUM_NONE) {
-            if (shouldMake != 0 &&
-                (pm->ps->playerStateFlags & PMF_LADDER) != 0) {
+            if (shouldMake != 0 && (pm->ps->playerStateFlags & PMF_LADDER) != 0) {
                 vec3_t mins;
                 vec3_t maxs;
                 vec3_t end;
@@ -53,27 +51,18 @@ void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle,
 
 #if EMULATE_X87
                 for (int32_t lane = 0; lane < 3; ++lane) {
-                    end[lane] = x87f_store_f32(x87f_sub(
-                        x87f_load_f32(pm->ps->psOrigin[lane]),
-                        x87f_mul(x87f_load_f32(pm->ps->ladderNormal[lane]),
-                                 x87f_load_f32(31.0f))));
+                    end[lane] = x87f_store_f32(x87f_sub(x87f_load_f32(pm->ps->psOrigin[lane]),
+                                                        x87f_mul(x87f_load_f32(pm->ps->ladderNormal[lane]), x87f_load_f32(31.0f))));
                 }
 #else
-                end[0] = pm->ps->psOrigin[0] -
-                         pm->ps->ladderNormal[0] * 31.0f;
-                end[1] = pm->ps->psOrigin[1] -
-                         pm->ps->ladderNormal[1] * 31.0f;
-                end[2] = pm->ps->psOrigin[2] -
-                         pm->ps->ladderNormal[2] * 31.0f;
+                end[0] = pm->ps->psOrigin[0] - pm->ps->ladderNormal[0] * 31.0f;
+                end[1] = pm->ps->psOrigin[1] - pm->ps->ladderNormal[1] * 31.0f;
+                end[2] = pm->ps->psOrigin[2] - pm->ps->ladderNormal[2] * 31.0f;
 #endif
 
-                PM_trace(&trace, pm->ps->psOrigin, mins, maxs, end,
-                         pm->ps->psClientNum,
-                         (int32_t)((uint32_t)pm->traceMask &
-                                   ~PM_FOOTSTEP_TRACE_MASK_CLEAR));
-                surfaceType =
-                    ((uint32_t)trace.surfaceFlags >> SURFACE_TYPE_SHIFT) &
-                    SURFACE_TYPE_MASK;
+                PM_trace(&trace, pm->ps->psOrigin, mins, maxs, end, pm->ps->psClientNum,
+                         (int32_t)((uint32_t)pm->traceMask & ~PM_FOOTSTEP_TRACE_MASK_CLEAR));
+                surfaceType = ((uint32_t)trace.surfaceFlags >> SURFACE_TYPE_SHIFT) & SURFACE_TYPE_MASK;
                 if (trace.fraction == 1.0f || surfaceType == 0) {
                     surfaceType = PM_FOOTSTEP_DEFAULT_SURFACE;
                 }
@@ -88,9 +77,7 @@ void PM_FootstepEvent(int32_t oldBobCycle, int32_t newBobCycle,
     if (pm->waterlevel == 1 || pm->waterlevel == 2) {
         if ((pm->ps->playerStateFlags & PMF_PRONE) != 0) {
             PM_AddEvent(EV_FOOTSTEP_PRONE_WATER);
-        } else if ((pm->ps->playerStateFlags & PMF_WALKING) != 0 ||
-                   pm->ps->leanFraction != 0.0f ||
-                   isnan(pm->ps->leanFraction)) {
+        } else if ((pm->ps->playerStateFlags & PMF_WALKING) != 0 || pm->ps->leanFraction != 0.0f || isnan(pm->ps->leanFraction)) {
             PM_AddEvent(EV_FOOTSTEP_WALK_WATER);
         } else if ((pm->ps->playerStateFlags & PMF_SPRINTING) != 0) {
             PM_AddEvent(EV_JUMP_WATER);

@@ -41,16 +41,13 @@
 void CG_ParseServerinfo(void)
 {
     /* 0x30038382/0x30038389: config string 0 = serverinfo. */
-    const char *info =
-        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_SERVERINFO]];
+    const char *info = &cg_gameState.stringData[cg_gameState.stringOffsets[CS_SERVERINFO]];
 
     /* 0x30038394..0x300383ab */
-    Q_strncpyz(cgs_hostname, Info_ValueForKey(info, sv_hostnameInfoKey),
-               sizeof(cgs_hostname));
+    Q_strncpyz(cgs_hostname, Info_ValueForKey(info, sv_hostnameInfoKey), sizeof(cgs_hostname));
 
     /* 0x300383ae..0x300383c4 */
-    Q_strncpyz(cgs_gametype, Info_ValueForKey(info, g_gametypeInfoKey),
-               sizeof(cgs_gametype));
+    Q_strncpyz(cgs_gametype, Info_ValueForKey(info, g_gametypeInfoKey), sizeof(cgs_gametype));
 
     /* 0x300383c7..0x300383e1: only force the cvar on first parse. */
     if (cgs_localServer == 0) {
@@ -61,6 +58,5 @@ void CG_ParseServerinfo(void)
     cgs_maxclients = coduo_crt_atoi(Info_ValueForKey(info, sv_maxClientsInfoKey));
 
     /* 0x300383f6..0x3003841c */
-    Com_sprintf(cgs_mapname, sizeof(cgs_mapname), mpMapBspPathFormat,
-               Info_ValueForKey(info, mapNameInfoKey));
+    Com_sprintf(cgs_mapname, sizeof(cgs_mapname), mpMapBspPathFormat, Info_ValueForKey(info, mapNameInfoKey));
 }

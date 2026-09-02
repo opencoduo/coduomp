@@ -25,10 +25,10 @@ void FS_ShutdownServerReferencedPaks(void);
 _Noreturn void Sys_Quit(void);
 
 #define COM_QUIT_TARGET_CLEANUP() \
-    do {                          \
-        Com_CleanupSkeletons();   \
+    do { \
+        Com_CleanupSkeletons(); \
         Sys_DestroySplashWindow(); \
-        CL_Shutdown();            \
+        CL_Shutdown(); \
     } while (0)
 
 #endif

@@ -73,78 +73,64 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
 
         /* Clear each server-set load cvar that is currently flagged as set. */
         if (cl_serverloadmap.string[0] != 0) {                /* 0x3003dba6 MOV AL,[..0030] */
-            cgame_syscall(CG_CVAR_SET,
-                          (intptr_t)"cl_serverloadmap",
-                          (intptr_t)"");          /* 0x3003dbb9..0x3003dbc5 */
+            cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadmap", (intptr_t)""); /* 0x3003dbb9..0x3003dbc5 */
         }
-        if (cl_serverloadgametype.string[0] != 0) {           /* 0x3003dbce MOV AL,[..8970] */
-            cgame_syscall(CG_CVAR_SET,
-                          (intptr_t)"cl_serverloadgametype",
-                          (intptr_t)"");          /* 0x3003dbd7..0x3003dbe3 */
+        if (cl_serverloadgametype.string[0] != 0) { /* 0x3003dbce MOV AL,[..8970] */
+            cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadgametype", (intptr_t)""); /* 0x3003dbd7..0x3003dbe3 */
         }
-        if (cl_serverloadwaiting.integer != 0) {            /* 0x3003dbec MOV EAX,[..346c] */
-            cgame_syscall(CG_CVAR_SET,
-                          (intptr_t)"cl_serverloadwaiting",
-                          (intptr_t)"0");         /* 0x3003dbf5..0x3003dc01 */
+        if (cl_serverloadwaiting.integer != 0) { /* 0x3003dbec MOV EAX,[..346c] */
+            cgame_syscall(CG_CVAR_SET, (intptr_t)"cl_serverloadwaiting", (intptr_t)"0"); /* 0x3003dbf5..0x3003dc01 */
         }
 
         /* Resolve the map name from config string 0 (CS_SERVERINFO):
          *   info = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]
          *   mapName = Info_ValueForKey(info, "mapname")   (ECX=info, EBX=key). */
         {
-            const char *serverInfo =
-                &cg_gameState.stringData[cg_gameState.stringOffsets[0]]; /* 0x3003dc0a..0x3003dc12 */
-            mapName = Info_ValueForKey(serverInfo, "mapname");         /* 0x3003dc1d CALL Info_ValueForKey */
+            const char *serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]]; /* 0x3003dc0a..0x3003dc12 */
+            mapName = Info_ValueForKey(serverInfo, "mapname"); /* 0x3003dc1d CALL Info_ValueForKey */
 
             levelShotShader = 0;
-            if (mapName != NULL && mapName[0] != '\0') {   /* 0x3003dc22..0x3003dc29 */
-                const char *shaderName =
-                    va("levelshots/%s.tga", mapName);      /* 0x3003dc2c..0x3003dc31 CALL va */
-                CG_DrawInformation(0);                  /* 0x3003dc3a CALL (loading pump, result unused) */
+            if (mapName != NULL && mapName[0] != '\0') { /* 0x3003dc22..0x3003dc29 */
+                const char *shaderName = va("levelshots/%s.tga", mapName); /* 0x3003dc2c..0x3003dc31 CALL va */
+                CG_DrawInformation(0); /* 0x3003dc3a CALL (loading pump, result unused) */
                 /* trap(0x59, name, 2) -> shader handle (CG_R_RegisterShader). */
-                levelShotShader =
-                    (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER,
-                                  (intptr_t)shaderName, 2);   /* 0x3003dc3f..0x3003dc44 */
+                levelShotShader = (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)shaderName, 2); /* 0x3003dc3f..0x3003dc44 */
             }
-            if (levelShotShader == 0) {                    /* 0x3003dc4f TEST ESI,ESI / else path */
-                CG_DrawInformation(0);                  /* 0x3003dc55 CALL (loading pump) */
+            if (levelShotShader == 0) { /* 0x3003dc4f TEST ESI,ESI / else path */
+                CG_DrawInformation(0); /* 0x3003dc55 CALL (loading pump) */
                 levelShotShader =
-                    (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER,
-                                  (intptr_t)"menu/art/unknownmap", 2); /* 0x3003dc5c..0x3003dc63 */
+                    (qhandle_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"menu/art/unknownmap", 2); /* 0x3003dc5c..0x3003dc63 */
             }
         }
 
         /* Reset the 2D draw color to white (R_SetColor(NULL)). */
-        cgame_syscall(CG_R_SETCOLOR, 0);                   /* 0x3003dc70..0x3003dc72 */
+        cgame_syscall(CG_R_SETCOLOR, 0); /* 0x3003dc70..0x3003dc72 */
 
         /* Draw the levelshot full-screen. Coords are virtual->real scaled:
          *   x = screenXScale * 0,   y = screenYScale * 0,
          *   w = screenXScale * 640, h = screenYScale * 480,   s/t = (0,0)-(1,1).
          * The stretch-pic args carry the float bit patterns as 32-bit words. */
         {
-            float x = cgs_screenXScale * 0.0f;             /* 0x3003dcbd FMUL 0.0 (0x3007bcec) */
-            float y = cgs_screenYScale * 0.0f;             /* 0x3003dcad FMUL 0.0 (0x3007bcec) */
-            float w = cgs_screenXScale * 640.0f;           /* 0x3003dc9d FMUL 640.0 (0x3007bf34) */
-            float h = cgs_screenYScale * 480.0f;           /* 0x3003dc78 FMUL 480.0 (0x3007c148) */
+            float x = cgs_screenXScale * 0.0f; /* 0x3003dcbd FMUL 0.0 (0x3007bcec) */
+            float y = cgs_screenYScale * 0.0f; /* 0x3003dcad FMUL 0.0 (0x3007bcec) */
+            float w = cgs_screenXScale * 640.0f; /* 0x3003dc9d FMUL 640.0 (0x3007bf34) */
+            float h = cgs_screenYScale * 480.0f; /* 0x3003dc78 FMUL 480.0 (0x3007c148) */
             uint32_t xb, yb, wb, hb, one, zero;
             float f1 = 1.0f, f0 = 0.0f;
             memcpy(&xb, &x, 4);
             memcpy(&yb, &y, 4);
             memcpy(&wb, &w, 4);
             memcpy(&hb, &h, 4);
-            memcpy(&one, &f1, 4);                /* PUSH 0x3f800000 (1.0) x2 */
-            memcpy(&zero, &f0, 4);               /* PUSH 0 (0.0) x2 */
-            trap_R_DrawStretchPic((int32_t)xb, (int32_t)yb, (int32_t)wb, (int32_t)hb,
-                                  (int32_t)zero, (int32_t)zero,   /* s1, t1 = 0,0 */
-                                  (int32_t)one,  (int32_t)one,    /* s2, t2 = 1,1 */
-                                  levelShotShader);        /* 0x3003dccc CALL trap_R_DrawStretchPic */
+            memcpy(&one, &f1, 4); /* PUSH 0x3f800000 (1.0) x2 */
+            memcpy(&zero, &f0, 4); /* PUSH 0 (0.0) x2 */
+            trap_R_DrawStretchPic((int32_t)xb, (int32_t)yb, (int32_t)wb, (int32_t)hb, (int32_t)zero, (int32_t)zero, /* s1, t1 = 0,0 */
+                                  (int32_t)one, (int32_t)one, /* s2, t2 = 1,1 */
+                                  levelShotShader); /* 0x3003dccc CALL trap_R_DrawStretchPic */
         }
 
         /* Progress fraction: read "com_expectedhunkusage" and atoi it as the total. */
-        cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
-                      (intptr_t)"com_expectedhunkusage",
-                      (intptr_t)hunkUsageStr,
-                      (int32_t)sizeof(hunkUsageStr));      /* 0x3003dcd1..0x3003dcdf (0x40 = 64) */
+        cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)"com_expectedhunkusage", (intptr_t)hunkUsageStr,
+                      (int32_t)sizeof(hunkUsageStr)); /* 0x3003dcd1..0x3003dcdf (0x40 = 64) */
         {
             int32_t expectedHunkUsage = coduo_crt_atoi(hunkUsageStr); /* 0x3003dcea CALL Q_atoi (thunk 0x3005b6ce) */
 
@@ -155,14 +141,12 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
              * fidelity: loadFraction is always reassigned before it is read. */
             loadFraction = 0.8f;
 
-            if (expectedHunkUsage > 0) {                   /* 0x3003dcf2 TEST + 0x3003dd1a JLE */
+            if (expectedHunkUsage > 0) { /* 0x3003dcf2 TEST + 0x3003dd1a JLE */
                 int32_t currentHunkUsage = (int32_t)cgame_syscall(CG_HUNK_USED); /* 0x3003dd1c trap(0x3f) */
-                long double loadFractionWide =
-                    (long double)currentHunkUsage /
-                    (long double)expectedHunkUsage;
-                loadFraction = (float)loadFractionWide;    /* 0x3003dd33 FST */
-                if (loadFractionWide > 1.0L) {             /* 0x3003dd36 FCOMP 1.0 */
-                    loadFraction = 1.0f;                   /* 0x3003dd43 store 0x3f800000 */
+                long double loadFractionWide = (long double)currentHunkUsage / (long double)expectedHunkUsage;
+                loadFraction = (float)loadFractionWide; /* 0x3003dd33 FST */
+                if (loadFractionWide > 1.0L) { /* 0x3003dd36 FCOMP 1.0 */
+                    loadFraction = 1.0f; /* 0x3003dd43 store 0x3f800000 */
                 }
                 /* Draw the fixed-rect filled loading bar. */
                 CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, loadFraction); /* 0x3003dd62 */
@@ -170,13 +154,12 @@ qhandle_t CG_RegisterMaterial(const char *name, int param)
         }
 
         /* Force an out-of-frame present so the load screen animates. */
-        cgame_syscall(CG_UPDATE_SCREEN);                   /* 0x3003dd6a trap(0x19) */
+        cgame_syscall(CG_UPDATE_SCREEN); /* 0x3003dd6a trap(0x19) */
 
         cg_updateScreenActive = cg_updateScreenActive - 1; /* 0x3003dd72..0x3003dd7b DEC */
     }
 
     /* Register the material and return its handle (this is the whole payload). */
-    return (qhandle_t)cgame_syscall(CG_REGISTER_MATERIAL,
-                                    (intptr_t)name,
-                                    (int32_t)param);       /* 0x3003dd80..0x3003dd8a trap(0x30,name,param) */
+    return (qhandle_t)cgame_syscall(CG_REGISTER_MATERIAL, (intptr_t)name,
+                                    (int32_t)param); /* 0x3003dd80..0x3003dd8a trap(0x30,name,param) */
 }

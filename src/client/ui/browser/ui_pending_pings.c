@@ -13,7 +13,5 @@ void UI_UpdatePendingPings(void)
 {
     trap_LAN_ResetPings(ui_netSource);
     ui_serverRefreshActive = qtrue;
-    ui_serverRefreshTime =
-        ui_displayContextStorage.context.realTime +
-        UI_PENDING_PING_RETRY_MILLISECONDS;
+    ui_serverRefreshTime = ui_displayContextStorage.context.realTime + UI_PENDING_PING_RETRY_MILLISECONDS;
 }

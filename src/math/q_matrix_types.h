@@ -36,58 +36,38 @@ typedef struct DObjAnimMat_s {
     vec3_t translation;
 } DObjAnimMat;
 
-typedef char q_matrix43_axis_offset[
-    offsetof(matrix43_t, axis) == 0x00 ? 1 : -1];
-typedef char q_matrix43_axis_extent[
-    sizeof(((matrix43_t *)0)->axis) == 0x24 ? 1 : -1];
-typedef char q_matrix43_origin_offset[
-    offsetof(matrix43_t, origin) == 0x24 ? 1 : -1];
-typedef char q_matrix43_origin_extent[
-    sizeof(((matrix43_t *)0)->origin) == 0x0c ? 1 : -1];
+typedef char q_matrix43_axis_offset[offsetof(matrix43_t, axis) == 0x00 ? 1 : -1];
+typedef char q_matrix43_axis_extent[sizeof(((matrix43_t *)0)->axis) == 0x24 ? 1 : -1];
+typedef char q_matrix43_origin_offset[offsetof(matrix43_t, origin) == 0x24 ? 1 : -1];
+typedef char q_matrix43_origin_extent[sizeof(((matrix43_t *)0)->origin) == 0x0c ? 1 : -1];
 typedef char q_matrix43_size[sizeof(matrix43_t) == 0x30 ? 1 : -1];
 struct q_matrix43_alignment_probe_s {
     unsigned char byte;
     matrix43_t value;
 };
-typedef char q_matrix43_alignment[
-    offsetof(struct q_matrix43_alignment_probe_s, value) == 0x04 ? 1 : -1];
+typedef char q_matrix43_alignment[offsetof(struct q_matrix43_alignment_probe_s, value) == 0x04 ? 1 : -1];
 
-typedef char q_dobj_skel_matrix_axis_offset[
-    offsetof(DObjSkelMat, axis) == 0x00 ? 1 : -1];
-typedef char q_dobj_skel_matrix_axis_extent[
-    sizeof(((DObjSkelMat *)0)->axis) == 0x30 ? 1 : -1];
-typedef char q_dobj_skel_matrix_origin_offset[
-    offsetof(DObjSkelMat, origin) == 0x30 ? 1 : -1];
-typedef char q_dobj_skel_matrix_origin_extent[
-    sizeof(((DObjSkelMat *)0)->origin) == 0x10 ? 1 : -1];
-typedef char q_dobj_skel_matrix_size[
-    sizeof(DObjSkelMat) == 0x40 ? 1 : -1];
+typedef char q_dobj_skel_matrix_axis_offset[offsetof(DObjSkelMat, axis) == 0x00 ? 1 : -1];
+typedef char q_dobj_skel_matrix_axis_extent[sizeof(((DObjSkelMat *)0)->axis) == 0x30 ? 1 : -1];
+typedef char q_dobj_skel_matrix_origin_offset[offsetof(DObjSkelMat, origin) == 0x30 ? 1 : -1];
+typedef char q_dobj_skel_matrix_origin_extent[sizeof(((DObjSkelMat *)0)->origin) == 0x10 ? 1 : -1];
+typedef char q_dobj_skel_matrix_size[sizeof(DObjSkelMat) == 0x40 ? 1 : -1];
 struct q_dobj_skel_matrix_alignment_probe_s {
     unsigned char byte;
     DObjSkelMat value;
 };
-typedef char q_dobj_skel_matrix_alignment[
-    offsetof(struct q_dobj_skel_matrix_alignment_probe_s, value) == 0x04
-        ? 1 : -1];
+typedef char q_dobj_skel_matrix_alignment[offsetof(struct q_dobj_skel_matrix_alignment_probe_s, value) == 0x04 ? 1 : -1];
 
-typedef char q_dobj_anim_matrix_quat_offset[
-    offsetof(DObjAnimMat, quat) == 0x00 ? 1 : -1];
-typedef char q_dobj_anim_matrix_quat_extent[
-    sizeof(((DObjAnimMat *)0)->quat) == 0x10 ? 1 : -1];
-typedef char q_dobj_anim_matrix_accumulated_weight_offset[
-    offsetof(DObjAnimMat, accumulatedWeight) == 0x10 ? 1 : -1];
-typedef char q_dobj_anim_matrix_translation_offset[
-    offsetof(DObjAnimMat, translation) == 0x14 ? 1 : -1];
-typedef char q_dobj_anim_matrix_translation_extent[
-    sizeof(((DObjAnimMat *)0)->translation) == 0x0c ? 1 : -1];
-typedef char q_dobj_anim_matrix_size[
-    sizeof(DObjAnimMat) == 0x20 ? 1 : -1];
+typedef char q_dobj_anim_matrix_quat_offset[offsetof(DObjAnimMat, quat) == 0x00 ? 1 : -1];
+typedef char q_dobj_anim_matrix_quat_extent[sizeof(((DObjAnimMat *)0)->quat) == 0x10 ? 1 : -1];
+typedef char q_dobj_anim_matrix_accumulated_weight_offset[offsetof(DObjAnimMat, accumulatedWeight) == 0x10 ? 1 : -1];
+typedef char q_dobj_anim_matrix_translation_offset[offsetof(DObjAnimMat, translation) == 0x14 ? 1 : -1];
+typedef char q_dobj_anim_matrix_translation_extent[sizeof(((DObjAnimMat *)0)->translation) == 0x0c ? 1 : -1];
+typedef char q_dobj_anim_matrix_size[sizeof(DObjAnimMat) == 0x20 ? 1 : -1];
 struct q_dobj_anim_matrix_alignment_probe_s {
     unsigned char byte;
     DObjAnimMat value;
 };
-typedef char q_dobj_anim_matrix_alignment[
-    offsetof(struct q_dobj_anim_matrix_alignment_probe_s, value) == 0x04
-        ? 1 : -1];
+typedef char q_dobj_anim_matrix_alignment[offsetof(struct q_dobj_anim_matrix_alignment_probe_s, value) == 0x04 ? 1 : -1];
 
 #endif

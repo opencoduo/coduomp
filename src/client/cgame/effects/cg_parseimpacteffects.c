@@ -26,9 +26,7 @@ enum {
     CG_SURFACE_TYPE_VEHICLE = 23
 };
 
-char *CG_ParseImpactEffects(const char *path, char *text,
-                            int32_t effectTypeCount,
-                            const char *const *effectTypeNames,
+char *CG_ParseImpactEffects(const char *path, char *text, int32_t effectTypeCount, const char *const *effectTypeNames,
                             effectDef_t *defTables)
 {
     for (;;) {
@@ -55,24 +53,20 @@ char *CG_ParseImpactEffects(const char *path, char *text,
             }
         }
         if (effectType == effectTypeCount) {
-            return (char *)va("unknown effect type '%s' in first column of file '%s'",
-                              effectTypeToken, path);
+            return (char *)va("unknown effect type '%s' in first column of file '%s'", effectTypeToken, path);
         }
 
         surfaceToken = Com_ParseExt(&text, qfalse);
         if (surfaceToken[0] == '\0') {
-            return (char *)va("missing surface type in second column of file '%s'",
-                              path);
+            return (char *)va("missing surface type in second column of file '%s'", path);
         }
 
-        surfaceType = (int32_t)cgame_syscall(CG_SURFACE_TYPE_FROM_NAME,
-                                    (intptr_t)surfaceToken);
+        surfaceType = (int32_t)cgame_syscall(CG_SURFACE_TYPE_FROM_NAME, (intptr_t)surfaceToken);
         if (surfaceType < 0) {
             /* The engine surface lookup excludes the special vehicle slot; the
              * original parser supplies its terminal table index explicitly. */
             if (memcmp(surfaceToken, "vehicle", sizeof("vehicle")) != 0) {
-                return (char *)va("unknown surface type '%s' in second column of file '%s'",
-                                  surfaceToken, path);
+                return (char *)va("unknown surface type '%s' in second column of file '%s'", surfaceToken, path);
             }
             surfaceType = CG_SURFACE_TYPE_VEHICLE;
         }
@@ -82,9 +76,8 @@ char *CG_ParseImpactEffects(const char *path, char *text,
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (strlen(definitionToken) >= CG_IMPACT_EFFECT_NAME_CAPACITY) {
-            return (char *)va(
-                "effect filename '%s' in third column of file '%s' is longer than %i characters",
-                definitionToken, path, CG_IMPACT_EFFECT_NAME_CAPACITY - 1);
+            return (char *)va("effect filename '%s' in third column of file '%s' is longer than %i characters", definitionToken, path,
+                              CG_IMPACT_EFFECT_NAME_CAPACITY - 1);
         }
         strcpy(definition->name, definitionToken);
 
@@ -92,7 +85,7 @@ char *CG_ParseImpactEffects(const char *path, char *text,
             definition->name[1] = 1;
         }
 
-next_line:
+    next_line:
         if (text == NULL) {
             continue;
         }
@@ -101,8 +94,7 @@ next_line:
         }
         if (*text == '\n') {
             text++;
-            com_parseSession->line = coduo_int32_from_bits(
-                (uint32_t)com_parseSession->line + 1u);
+            com_parseSession->line = coduo_int32_from_bits((uint32_t)com_parseSession->line + 1u);
         }
     }
 }

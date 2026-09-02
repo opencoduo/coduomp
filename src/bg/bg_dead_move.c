@@ -31,23 +31,16 @@ void PM_DeadMove(void)
 
     playerState_t *ps = pm->ps;
 #if EMULATE_X87
-    x87f reducedSpeed = x87f_sub(
-        x87f_sqrt(x87f_add(
-            x87f_add(
-                x87f_mul(x87f_load_f32(ps->velocity[0]),
-                         x87f_load_f32(ps->velocity[0])),
-                x87f_mul(x87f_load_f32(ps->velocity[1]),
-                         x87f_load_f32(ps->velocity[1]))),
-            x87f_mul(x87f_load_f32(ps->velocity[2]),
-                     x87f_load_f32(ps->velocity[2])))),
-        x87f_load_f32(PM_DEAD_MOVE_SPEED_DROP));
+    x87f reducedSpeed = x87f_sub(x87f_sqrt(x87f_add(x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]), x87f_load_f32(ps->velocity[0])),
+                                                             x87f_mul(x87f_load_f32(ps->velocity[1]), x87f_load_f32(ps->velocity[1]))),
+                                                    x87f_mul(x87f_load_f32(ps->velocity[2]), x87f_load_f32(ps->velocity[2])))),
+                                 x87f_load_f32(PM_DEAD_MOVE_SPEED_DROP));
     const float storedSpeed = x87f_store_f32(reducedSpeed);
     if (x87f_le_signaling(reducedSpeed, x87f_load_f32(0.0f))) {
 #else
-    const long double reducedSpeed = sqrtl(
-        ((long double)ps->velocity[0] * (long double)ps->velocity[0] +
-         (long double)ps->velocity[1] * (long double)ps->velocity[1]) +
-        (long double)ps->velocity[2] * (long double)ps->velocity[2]) -
+    const long double reducedSpeed =
+        sqrtl(((long double)ps->velocity[0] * (long double)ps->velocity[0] + (long double)ps->velocity[1] * (long double)ps->velocity[1]) +
+              (long double)ps->velocity[2] * (long double)ps->velocity[2]) -
         (long double)PM_DEAD_MOVE_SPEED_DROP;
     const float storedSpeed = (float)reducedSpeed;
     if (reducedSpeed <= 0.0L) {
@@ -60,19 +53,13 @@ void PM_DeadMove(void)
 
     (void)VectorNormalize(ps->velocity);
 #if EMULATE_X87
-    pm->ps->velocity[0] = x87f_store_f32(x87f_mul(
-        x87f_load_f32(storedSpeed), x87f_load_f32(pm->ps->velocity[0])));
-    pm->ps->velocity[1] = x87f_store_f32(x87f_mul(
-        x87f_load_f32(storedSpeed), x87f_load_f32(pm->ps->velocity[1])));
-    pm->ps->velocity[2] = x87f_store_f32(x87f_mul(
-        x87f_load_f32(storedSpeed), x87f_load_f32(pm->ps->velocity[2])));
+    pm->ps->velocity[0] = x87f_store_f32(x87f_mul(x87f_load_f32(storedSpeed), x87f_load_f32(pm->ps->velocity[0])));
+    pm->ps->velocity[1] = x87f_store_f32(x87f_mul(x87f_load_f32(storedSpeed), x87f_load_f32(pm->ps->velocity[1])));
+    pm->ps->velocity[2] = x87f_store_f32(x87f_mul(x87f_load_f32(storedSpeed), x87f_load_f32(pm->ps->velocity[2])));
 #else
-    pm->ps->velocity[0] = (float)(
-        (long double)storedSpeed * (long double)pm->ps->velocity[0]);
-    pm->ps->velocity[1] = (float)(
-        (long double)storedSpeed * (long double)pm->ps->velocity[1]);
-    pm->ps->velocity[2] = (float)(
-        (long double)storedSpeed * (long double)pm->ps->velocity[2]);
+    pm->ps->velocity[0] = (float)((long double)storedSpeed * (long double)pm->ps->velocity[0]);
+    pm->ps->velocity[1] = (float)((long double)storedSpeed * (long double)pm->ps->velocity[1]);
+    pm->ps->velocity[2] = (float)((long double)storedSpeed * (long double)pm->ps->velocity[2]);
 #endif
 }
 #else
@@ -84,26 +71,17 @@ void PM_DeadMove(void)
 
     playerState_t *const ps = pm->ps;
 #if EMULATE_X87
-    const double squaredSpeed = x87f_store_f64(x87f_add(
-        x87f_add(
-            x87f_mul(x87f_load_f32(ps->velocity[0]),
-                     x87f_load_f32(ps->velocity[0])),
-            x87f_mul(x87f_load_f32(ps->velocity[1]),
-                     x87f_load_f32(ps->velocity[1]))),
-        x87f_mul(x87f_load_f32(ps->velocity[2]),
-                 x87f_load_f32(ps->velocity[2]))));
-    float speed = x87f_store_f32(
-        x87f_load_f64(CoduoLibm_SqrtGlibc(squaredSpeed)));
-    speed = x87f_store_f32(x87f_sub(
-        x87f_load_f32(speed), x87f_load_f32(PM_DEAD_MOVE_SPEED_DROP)));
+    const double squaredSpeed = x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]), x87f_load_f32(ps->velocity[0])),
+                                                                 x87f_mul(x87f_load_f32(ps->velocity[1]), x87f_load_f32(ps->velocity[1]))),
+                                                        x87f_mul(x87f_load_f32(ps->velocity[2]), x87f_load_f32(ps->velocity[2]))));
+    float speed = x87f_store_f32(x87f_load_f64(CoduoLibm_SqrtGlibc(squaredSpeed)));
+    speed = x87f_store_f32(x87f_sub(x87f_load_f32(speed), x87f_load_f32(PM_DEAD_MOVE_SPEED_DROP)));
 #else
     const long double squaredSpeed =
-        ((long double)ps->velocity[0] * (long double)ps->velocity[0] +
-         (long double)ps->velocity[1] * (long double)ps->velocity[1]) +
+        ((long double)ps->velocity[0] * (long double)ps->velocity[0] + (long double)ps->velocity[1] * (long double)ps->velocity[1]) +
         (long double)ps->velocity[2] * (long double)ps->velocity[2];
     float speed = (float)CoduoLibm_SqrtGlibc((double)squaredSpeed);
-    speed = (float)((long double)speed -
-                    (long double)PM_DEAD_MOVE_SPEED_DROP);
+    speed = (float)((long double)speed - (long double)PM_DEAD_MOVE_SPEED_DROP);
 #endif
 
     if (speed <= 0.0f) {
@@ -115,19 +93,13 @@ void PM_DeadMove(void)
 
     (void)VectorNormalize(ps->velocity);
 #if EMULATE_X87
-    pm->ps->velocity[0] = x87f_store_f32(x87f_mul(
-        x87f_load_f32(pm->ps->velocity[0]), x87f_load_f32(speed)));
-    pm->ps->velocity[1] = x87f_store_f32(x87f_mul(
-        x87f_load_f32(pm->ps->velocity[1]), x87f_load_f32(speed)));
-    pm->ps->velocity[2] = x87f_store_f32(x87f_mul(
-        x87f_load_f32(pm->ps->velocity[2]), x87f_load_f32(speed)));
+    pm->ps->velocity[0] = x87f_store_f32(x87f_mul(x87f_load_f32(pm->ps->velocity[0]), x87f_load_f32(speed)));
+    pm->ps->velocity[1] = x87f_store_f32(x87f_mul(x87f_load_f32(pm->ps->velocity[1]), x87f_load_f32(speed)));
+    pm->ps->velocity[2] = x87f_store_f32(x87f_mul(x87f_load_f32(pm->ps->velocity[2]), x87f_load_f32(speed)));
 #else
-    pm->ps->velocity[0] = (float)(
-        (long double)pm->ps->velocity[0] * (long double)speed);
-    pm->ps->velocity[1] = (float)(
-        (long double)pm->ps->velocity[1] * (long double)speed);
-    pm->ps->velocity[2] = (float)(
-        (long double)pm->ps->velocity[2] * (long double)speed);
+    pm->ps->velocity[0] = (float)((long double)pm->ps->velocity[0] * (long double)speed);
+    pm->ps->velocity[1] = (float)((long double)pm->ps->velocity[1] * (long double)speed);
+    pm->ps->velocity[2] = (float)((long double)pm->ps->velocity[2] * (long double)speed);
 #endif
 }
 #endif

@@ -64,19 +64,15 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
         context = DC;
         cursorY = context->cursory;
         cursorX = context->cursorx;
-        if (!Rect_ContainsPoint(&item->window.rect,
-                                (float)cursorX, (float)cursorY) ||
-            (item->window.flags & WINDOW_HASFOCUS) == 0) {
+        if (!Rect_ContainsPoint(&item->window.rect, (float)cursorX, (float)cursorY) || (item->window.flags & WINDOW_HASFOCUS) == 0) {
             return qfalse;
         }
     }
 
     client_ui_compat_sync_server_list_selection(item);
     maxScroll = Item_ListBox_MaxScroll(item);
-    page = coduo_fp_to_i32_extended(
-        (item->window.flags & WINDOW_HORIZONTAL)
-            ? (long double)item->window.rect.w / listBox->elementWidth
-            : (long double)item->window.rect.h / listBox->elementHeight);
+    page = coduo_fp_to_i32_extended((item->window.flags & WINDOW_HORIZONTAL) ? (long double)item->window.rect.w / listBox->elementWidth
+                                                                             : (long double)item->window.rect.h / listBox->elementHeight);
 
     /* 0x30053527..0x3005368e: direction keys are orientation-specific. */
     if ((item->window.flags & WINDOW_HORIZONTAL) != 0) {
@@ -84,42 +80,36 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
         case K_LEFTARROW:
         case K_KP_LEFTARROW:
             if (listBox->notselectable) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos - 1u);
-                if (listBox->startPos < 0) listBox->startPos = 0;
+                listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos - 1u);
+                if (listBox->startPos < 0)
+                    listBox->startPos = 0;
                 return qtrue;
             }
-            listBox->cursorPos = coduo_int32_from_bits(
-                (uint32_t)listBox->cursorPos - 1u);
-            if (listBox->cursorPos < 0) listBox->cursorPos = 0;
+            listBox->cursorPos = coduo_int32_from_bits((uint32_t)listBox->cursorPos - 1u);
+            if (listBox->cursorPos < 0)
+                listBox->cursorPos = 0;
             if (listBox->cursorPos < listBox->startPos)
                 listBox->startPos = listBox->cursorPos;
-            if (listBox->cursorPos >= coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos + (uint32_t)page)) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)listBox->cursorPos - (uint32_t)page + 1u);
+            if (listBox->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+                listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->cursorPos - (uint32_t)page + 1u);
             }
             goto publish_horizontal;
 
         case K_RIGHTARROW:
         case K_KP_RIGHTARROW:
             if (listBox->notselectable) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos + 1u);
+                listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos + 1u);
                 if (listBox->startPos >= count)
                     listBox->startPos = coduo_int32_from_bits((uint32_t)count - 1u);
                 return qtrue;
             }
-            listBox->cursorPos = coduo_int32_from_bits(
-                (uint32_t)listBox->cursorPos + 1u);
+            listBox->cursorPos = coduo_int32_from_bits((uint32_t)listBox->cursorPos + 1u);
             if (listBox->cursorPos < listBox->startPos)
                 listBox->startPos = listBox->cursorPos;
             if (listBox->cursorPos >= count)
                 listBox->cursorPos = coduo_int32_from_bits((uint32_t)count - 1u);
-            if (listBox->cursorPos >= coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos + (uint32_t)page)) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)listBox->cursorPos - (uint32_t)page + 1u);
+            if (listBox->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+                listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->cursorPos - (uint32_t)page + 1u);
             }
             goto publish_horizontal;
 
@@ -132,19 +122,18 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
         case K_KP_UPARROW:
         case K_MWHEELUP:
             if (listBox->notselectable) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos - 1u);
-                if (listBox->startPos < 0) listBox->startPos = 0;
+                listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos - 1u);
+                if (listBox->startPos < 0)
+                    listBox->startPos = 0;
                 return qtrue;
             }
             item->cursorPos = coduo_int32_from_bits((uint32_t)item->cursorPos - 1u);
-            if (item->cursorPos < 0) item->cursorPos = 0;
+            if (item->cursorPos < 0)
+                item->cursorPos = 0;
             if (item->cursorPos < listBox->startPos)
                 listBox->startPos = item->cursorPos;
-            if (item->cursorPos >= coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos + (uint32_t)page)) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)item->cursorPos - (uint32_t)page + 1u);
+            if (item->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+                listBox->startPos = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)page + 1u);
             }
             goto publish_vertical;
 
@@ -152,9 +141,9 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
         case K_KP_DOWNARROW:
         case K_MWHEELDOWN:
             if (listBox->notselectable) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos + 1u);
-                if (listBox->startPos > maxScroll) listBox->startPos = maxScroll;
+                listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos + 1u);
+                if (listBox->startPos > maxScroll)
+                    listBox->startPos = maxScroll;
                 return qtrue;
             }
             item->cursorPos = coduo_int32_from_bits((uint32_t)item->cursorPos + 1u);
@@ -162,10 +151,8 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
                 listBox->startPos = item->cursorPos;
             if (item->cursorPos >= count)
                 item->cursorPos = coduo_int32_from_bits((uint32_t)count - 1u);
-            if (item->cursorPos >= coduo_int32_from_bits(
-                    (uint32_t)listBox->startPos + (uint32_t)page)) {
-                listBox->startPos = coduo_int32_from_bits(
-                    (uint32_t)item->cursorPos - (uint32_t)page + 1u);
+            if (item->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+                listBox->startPos = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)page + 1u);
             }
             goto publish_vertical;
 
@@ -179,27 +166,27 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
     case K_MOUSE1:
     case K_MOUSE2:
         if (item->window.flags & WINDOW_LB_LEFTARROW) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)listBox->startPos - 1u);
-            if (listBox->startPos < 0) listBox->startPos = 0;
+            listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos - 1u);
+            if (listBox->startPos < 0)
+                listBox->startPos = 0;
             return qtrue;
         }
         if (item->window.flags & WINDOW_LB_RIGHTARROW) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)listBox->startPos + 1u);
-            if (listBox->startPos > maxScroll) listBox->startPos = maxScroll;
+            listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos + 1u);
+            if (listBox->startPos > maxScroll)
+                listBox->startPos = maxScroll;
             return qtrue;
         }
         if (item->window.flags & WINDOW_LB_PGUP) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)listBox->startPos - (uint32_t)page);
-            if (listBox->startPos < 0) listBox->startPos = 0;
+            listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos - (uint32_t)page);
+            if (listBox->startPos < 0)
+                listBox->startPos = 0;
             return qtrue;
         }
         if (item->window.flags & WINDOW_LB_PGDN) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)listBox->startPos + (uint32_t)page);
-            if (listBox->startPos > maxScroll) listBox->startPos = maxScroll;
+            listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page);
+            if (listBox->startPos > maxScroll)
+                listBox->startPos = maxScroll;
             return qtrue;
         }
         if (item->window.flags & WINDOW_LB_THUMB) {
@@ -215,8 +202,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
                 context = DC;
             }
         }
-        lastListBoxClickTime = coduo_int32_from_bits(
-            (uint32_t)context->realTime + LISTBOX_DOUBLE_CLICK_DELAY);
+        lastListBoxClickTime = coduo_int32_from_bits((uint32_t)context->realTime + LISTBOX_DOUBLE_CLICK_DELAY);
 
         if (item->cursorPos == listBox->cursorPos) {
             return qtrue;
@@ -235,41 +221,36 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
     case K_PGUP:
     case K_KP_PGUP:
         if (listBox->notselectable) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)listBox->startPos - (uint32_t)page);
-            if (listBox->startPos < 0) listBox->startPos = 0;
+            listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos - (uint32_t)page);
+            if (listBox->startPos < 0)
+                listBox->startPos = 0;
             return qtrue;
         }
-        item->cursorPos = coduo_int32_from_bits(
-            (uint32_t)item->cursorPos - (uint32_t)page);
-        if (item->cursorPos < 0) item->cursorPos = 0;
+        item->cursorPos = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)page);
+        if (item->cursorPos < 0)
+            item->cursorPos = 0;
         if (item->cursorPos < listBox->startPos)
             listBox->startPos = item->cursorPos;
-        if (item->cursorPos >= coduo_int32_from_bits(
-                (uint32_t)listBox->startPos + (uint32_t)page)) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)item->cursorPos - (uint32_t)page + 1u);
+        if (item->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+            listBox->startPos = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)page + 1u);
         }
         goto publish_vertical;
 
     case K_PGDN:
     case K_KP_PGDN:
         if (listBox->notselectable) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)listBox->startPos + (uint32_t)page);
-            if (listBox->startPos > maxScroll) listBox->startPos = maxScroll;
+            listBox->startPos = coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page);
+            if (listBox->startPos > maxScroll)
+                listBox->startPos = maxScroll;
             return qtrue;
         }
-        item->cursorPos = coduo_int32_from_bits(
-            (uint32_t)item->cursorPos + (uint32_t)page);
+        item->cursorPos = coduo_int32_from_bits((uint32_t)item->cursorPos + (uint32_t)page);
         if (item->cursorPos < listBox->startPos)
             listBox->startPos = item->cursorPos;
         if (item->cursorPos >= count)
             item->cursorPos = coduo_int32_from_bits((uint32_t)count - 1u);
-        if (item->cursorPos >= coduo_int32_from_bits(
-                (uint32_t)listBox->startPos + (uint32_t)page)) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)item->cursorPos - (uint32_t)page + 1u);
+        if (item->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+            listBox->startPos = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)page + 1u);
         }
         goto publish_vertical;
 
@@ -296,10 +277,8 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean force)
         }
         item->cursorPos = coduo_int32_from_bits((uint32_t)count - 1u);
         listBox->cursorPos = item->cursorPos;
-        if (item->cursorPos >= coduo_int32_from_bits(
-                (uint32_t)listBox->startPos + (uint32_t)page)) {
-            listBox->startPos = coduo_int32_from_bits(
-                (uint32_t)item->cursorPos - (uint32_t)page + 1u);
+        if (item->cursorPos >= coduo_int32_from_bits((uint32_t)listBox->startPos + (uint32_t)page)) {
+            listBox->startPos = coduo_int32_from_bits((uint32_t)item->cursorPos - (uint32_t)page + 1u);
         }
         goto publish_vertical;
 

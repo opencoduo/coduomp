@@ -6,8 +6,7 @@
 /* The original cgame PmoveSingle body inlines its trap_SnapVector boundary as
  * cgame syscall 102. Keep the canonical shared-source spelling while retaining
  * that exact direct call in this module. */
-#define trap_SnapVector(vector) \
-    ((void)cgame_syscall(CG_PM_NOTIFY_VELOCITY, (vector)))
+#define trap_SnapVector(vector) ((void)cgame_syscall(CG_PM_NOTIFY_VELOCITY, (vector)))
 
 /* The common BG source uses one role name for the module-owned prone-debug
  * cvar.  The cgame binary's original registration keeps its cg_ spelling. */
@@ -36,19 +35,14 @@ static inline int32_t bg_compat_pmove_weapon_debug_target_none(void)
  * its syscall boundary while game calls its G_Debug* wrappers.  Keep that
  * module boundary local and inline it into the shared original body.
  */
-static inline void bg_compat_pmove_debug_line(const vec3_t start,
-                                              const vec3_t end)
+static inline void bg_compat_pmove_debug_line(const vec3_t start, const vec3_t end)
 {
-    cgame_syscall(CG_ADD_DEBUG_LINE, (intptr_t)start, (intptr_t)end,
-                  (intptr_t)&cg_colorWhite, qtrue, qtrue);
+    cgame_syscall(CG_ADD_DEBUG_LINE, (intptr_t)start, (intptr_t)end, (intptr_t)&cg_colorWhite, qtrue, qtrue);
 }
 
-static inline void bg_compat_pmove_debug_arc(const vec3_t center,
-                                             float startAngle,
-                                             float endAngle)
+static inline void bg_compat_pmove_debug_arc(const vec3_t center, float startAngle, float endAngle)
 {
-    CG_DebugCircleEx(center, qtrue, 16.0f, startAngle, endAngle,
-                     cg_colorWhite, qtrue);
+    CG_DebugCircleEx(center, qtrue, 16.0f, startAngle, endAngle, cg_colorWhite, qtrue);
 }
 
 #endif

@@ -24,40 +24,22 @@
 void VectorRotate(const vec3_t input, const axis_t matrix, vec3_t output)
 {
 #if EMULATE_X87
-    output[0] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(input[1]),
-                          x87f_load_f32(matrix[0][1])),
-                 x87f_mul(x87f_load_f32(input[2]),
-                          x87f_load_f32(matrix[0][2]))),
-        x87f_mul(x87f_load_f32(input[0]),
-                 x87f_load_f32(matrix[0][0]))));
-    output[1] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(input[0]),
-                          x87f_load_f32(matrix[1][0])),
-                 x87f_mul(x87f_load_f32(input[1]),
-                          x87f_load_f32(matrix[1][1]))),
-        x87f_mul(x87f_load_f32(input[2]),
-                 x87f_load_f32(matrix[1][2]))));
-    output[2] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(input[0]),
-                          x87f_load_f32(matrix[2][0])),
-                 x87f_mul(x87f_load_f32(input[1]),
-                          x87f_load_f32(matrix[2][1]))),
-        x87f_mul(x87f_load_f32(input[2]),
-                 x87f_load_f32(matrix[2][2]))));
+    output[0] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[0][1])),
+                                                 x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[0][2]))),
+                                        x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[0][0]))));
+    output[1] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[1][0])),
+                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[1][1]))),
+                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[1][2]))));
+    output[2] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[2][0])),
+                                                 x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[2][1]))),
+                                        x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[2][2]))));
 #else
-    output[0] = (float)(
-        ((long double)input[1] * matrix[0][1] +
-         (long double)input[2] * matrix[0][2]) +
-        (long double)input[0] * matrix[0][0]);
-    output[1] = (float)(
-        ((long double)input[0] * matrix[1][0] +
-         (long double)input[1] * matrix[1][1]) +
-        (long double)input[2] * matrix[1][2]);
-    output[2] = (float)(
-        ((long double)input[0] * matrix[2][0] +
-         (long double)input[1] * matrix[2][1]) +
-        (long double)input[2] * matrix[2][2]);
+    output[0] =
+        (float)(((long double)input[1] * matrix[0][1] + (long double)input[2] * matrix[0][2]) + (long double)input[0] * matrix[0][0]);
+    output[1] =
+        (float)(((long double)input[0] * matrix[1][0] + (long double)input[1] * matrix[1][1]) + (long double)input[2] * matrix[1][2]);
+    output[2] =
+        (float)(((long double)input[0] * matrix[2][0] + (long double)input[1] * matrix[2][1]) + (long double)input[2] * matrix[2][2]);
 #endif
 }
 #else
@@ -65,18 +47,12 @@ void VectorRotate(const vec3_t input, const axis_t matrix, vec3_t output)
 {
     for (int32_t row = 0; row < 3; ++row) {
 #if EMULATE_X87
-        output[row] = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(input[0]),
-                              x87f_load_f32(matrix[row][0])),
-                     x87f_mul(x87f_load_f32(input[1]),
-                              x87f_load_f32(matrix[row][1]))),
-            x87f_mul(x87f_load_f32(input[2]),
-                     x87f_load_f32(matrix[row][2]))));
+        output[row] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(matrix[row][0])),
+                                                       x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(matrix[row][1]))),
+                                              x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(matrix[row][2]))));
 #else
-        output[row] = (float)(
-            ((long double)input[0] * matrix[row][0] +
-             (long double)input[1] * matrix[row][1]) +
-            (long double)input[2] * matrix[row][2]);
+        output[row] = (float)(((long double)input[0] * matrix[row][0] + (long double)input[1] * matrix[row][1]) +
+                              (long double)input[2] * matrix[row][2]);
 #endif
     }
 }
@@ -96,17 +72,14 @@ void VectorRotate(const vec3_t input, const axis_t matrix, vec3_t output)
  * EMULATE_X87 remains independent in both bodies.
  */
 #if defined(WINDOWS_BEHAVIOR)
-void RotatePointAroundVector(vec3_t output, const vec3_t direction,
-                             const vec3_t point, float degrees)
+void RotatePointAroundVector(vec3_t output, const vec3_t direction, const vec3_t point, float degrees)
 {
     vec3_t right;
     vec3_t up;
     vec3_t forward;
     axis_t basis;
     axis_t inverse;
-    axis_t zRotation = {{0.0f, 0.0f, 0.0f},
-                        {0.0f, 0.0f, 0.0f},
-                        {0.0f, 0.0f, 0.0f}};
+    axis_t zRotation = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
     axis_t temporary;
     axis_t rotation;
     float radians;
@@ -138,13 +111,9 @@ void RotatePointAroundVector(vec3_t output, const vec3_t direction,
     inverse[2][2] = basis[2][2];
 
 #if EMULATE_X87
-    radians = x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(degrees),
-                 x87f_load_f32(3.1415927410125732f)),
-        x87f_load_f32(180.0f)));
+    radians = x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(3.1415927410125732f)), x87f_load_f32(180.0f)));
 #else
-    radians = (float)(((long double)degrees * 3.1415927410125732f) /
-                      180.0f);
+    radians = (float)(((long double)degrees * 3.1415927410125732f) / 180.0f);
 #endif
     coduo_x87_sincosf(radians, &sine, &cosine);
     zRotation[0][0] = cosine;
@@ -161,54 +130,33 @@ void RotatePointAroundVector(vec3_t output, const vec3_t direction,
     MatrixMultiply(temporary, inverse, rotation);
 
 #if EMULATE_X87
-    output[0] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(rotation[0][2]),
-                          x87f_load_f32(point[2])),
-                 x87f_mul(x87f_load_f32(rotation[0][1]),
-                          x87f_load_f32(point[1]))),
-        x87f_mul(x87f_load_f32(rotation[0][0]),
-                 x87f_load_f32(point[0]))));
-    output[1] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(rotation[1][1]),
-                          x87f_load_f32(point[1])),
-                 x87f_mul(x87f_load_f32(rotation[1][0]),
-                          x87f_load_f32(point[0]))),
-        x87f_mul(x87f_load_f32(rotation[1][2]),
-                 x87f_load_f32(point[2]))));
-    output[2] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(rotation[2][1]),
-                          x87f_load_f32(point[1])),
-                 x87f_mul(x87f_load_f32(rotation[2][0]),
-                          x87f_load_f32(point[0]))),
-        x87f_mul(x87f_load_f32(rotation[2][2]),
-                 x87f_load_f32(point[2]))));
+    output[0] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(rotation[0][2]), x87f_load_f32(point[2])),
+                                                 x87f_mul(x87f_load_f32(rotation[0][1]), x87f_load_f32(point[1]))),
+                                        x87f_mul(x87f_load_f32(rotation[0][0]), x87f_load_f32(point[0]))));
+    output[1] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(rotation[1][1]), x87f_load_f32(point[1])),
+                                                 x87f_mul(x87f_load_f32(rotation[1][0]), x87f_load_f32(point[0]))),
+                                        x87f_mul(x87f_load_f32(rotation[1][2]), x87f_load_f32(point[2]))));
+    output[2] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(rotation[2][1]), x87f_load_f32(point[1])),
+                                                 x87f_mul(x87f_load_f32(rotation[2][0]), x87f_load_f32(point[0]))),
+                                        x87f_mul(x87f_load_f32(rotation[2][2]), x87f_load_f32(point[2]))));
 #else
-    output[0] = (float)(
-        ((long double)rotation[0][2] * point[2] +
-         (long double)rotation[0][1] * point[1]) +
-        (long double)rotation[0][0] * point[0]);
-    output[1] = (float)(
-        ((long double)rotation[1][1] * point[1] +
-         (long double)rotation[1][0] * point[0]) +
-        (long double)rotation[1][2] * point[2]);
-    output[2] = (float)(
-        ((long double)rotation[2][1] * point[1] +
-         (long double)rotation[2][0] * point[0]) +
-        (long double)rotation[2][2] * point[2]);
+    output[0] =
+        (float)(((long double)rotation[0][2] * point[2] + (long double)rotation[0][1] * point[1]) + (long double)rotation[0][0] * point[0]);
+    output[1] =
+        (float)(((long double)rotation[1][1] * point[1] + (long double)rotation[1][0] * point[0]) + (long double)rotation[1][2] * point[2]);
+    output[2] =
+        (float)(((long double)rotation[2][1] * point[1] + (long double)rotation[2][0] * point[0]) + (long double)rotation[2][2] * point[2]);
 #endif
 }
 #else
-void RotatePointAroundVector(vec3_t output, const vec3_t direction,
-                             const vec3_t point, float degrees)
+void RotatePointAroundVector(vec3_t output, const vec3_t direction, const vec3_t point, float degrees)
 {
     vec3_t right;
     vec3_t up;
     vec3_t forward;
     axis_t basis;
     axis_t inverse;
-    axis_t zRotation = {{0.0f, 0.0f, 0.0f},
-                        {0.0f, 0.0f, 0.0f},
-                        {0.0f, 0.0f, 0.0f}};
+    axis_t zRotation = {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
     axis_t temporary;
     axis_t rotation;
     float radians;
@@ -241,13 +189,9 @@ void RotatePointAroundVector(vec3_t output, const vec3_t direction,
     inverse[2][2] = basis[2][2];
 
 #if EMULATE_X87
-    radians = x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(degrees),
-                 x87f_load_f64(3.141592653589793)),
-        x87f_load_f64(180.0)));
+    radians = x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(degrees), x87f_load_f64(3.141592653589793)), x87f_load_f64(180.0)));
 #else
-    radians = (float)(((long double)degrees * 3.141592653589793) /
-                      180.0);
+    radians = (float)(((long double)degrees * 3.141592653589793) / 180.0);
 #endif
     coduo_x87_sincosf(radians, &sine, &cosine);
     zRotation[0][0] = cosine;
@@ -260,7 +204,7 @@ void RotatePointAroundVector(vec3_t output, const vec3_t direction,
 
     MatrixMultiply(basis, zRotation, temporary);
     MatrixMultiply(temporary, inverse, rotation);
-    VectorRotate(point, (const float (*)[3])rotation, output);
+    VectorRotate(point, (const float(*)[3])rotation, output);
 }
 #endif
 

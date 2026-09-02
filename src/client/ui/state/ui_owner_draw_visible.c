@@ -10,10 +10,8 @@ enum {
     UI_SHOW_FFA = 0x0100,
     UI_SHOW_NOTFFA = 0x0200,
     UI_SHOW_NOTFAVORITESERVERS = 0x1000,
-    UI_SHOW_HANDLED_FLAGS = UI_SHOW_LEADER | UI_SHOW_NOTLEADER |
-        UI_SHOW_FAVORITESERVERS | UI_SHOW_NEWHIGHSCORE |
-        UI_SHOW_DEMOAVAILABLE | UI_SHOW_NEWBESTTIME | UI_SHOW_FFA |
-        UI_SHOW_NOTFFA | UI_SHOW_NOTFAVORITESERVERS,
+    UI_SHOW_HANDLED_FLAGS = UI_SHOW_LEADER | UI_SHOW_NOTLEADER | UI_SHOW_FAVORITESERVERS | UI_SHOW_NEWHIGHSCORE | UI_SHOW_DEMOAVAILABLE |
+                            UI_SHOW_NEWBESTTIME | UI_SHOW_FFA | UI_SHOW_NOTFFA | UI_SHOW_NOTFAVORITESERVERS,
     UI_GAMETYPE_COMPARE_LIMIT = 99999
 };
 
@@ -28,37 +26,29 @@ qboolean UI_OwnerDrawVisible(int32_t ownerDrawFlags)
     ownerDrawFlags &= UI_SHOW_HANDLED_FLAGS;
     while (ownerDrawFlags != 0) {
         if ((ownerDrawFlags & UI_SHOW_FFA) != 0) {
-            if (Q_stricmpn("dm", UI_Cvar_VariableString("g_gametype"),
-                           UI_GAMETYPE_COMPARE_LIMIT) != 0) {
+            if (Q_stricmpn("dm", UI_Cvar_VariableString("g_gametype"), UI_GAMETYPE_COMPARE_LIMIT) != 0) {
                 visible = qfalse;
             }
             ownerDrawFlags &= ~UI_SHOW_FFA;
         }
         if ((ownerDrawFlags & UI_SHOW_NOTFFA) != 0) {
-            if (Q_stricmpn("dm", UI_Cvar_VariableString("g_gametype"),
-                           UI_GAMETYPE_COMPARE_LIMIT) == 0) {
+            if (Q_stricmpn("dm", UI_Cvar_VariableString("g_gametype"), UI_GAMETYPE_COMPARE_LIMIT) == 0) {
                 visible = qfalse;
             }
             ownerDrawFlags &= ~UI_SHOW_NOTFFA;
         }
         if ((ownerDrawFlags & UI_SHOW_LEADER) != 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            if (ui_teamLeader == 0 ||
-                (cg_selectedPlayerCvar.integer >= 0 &&
-                 cg_selectedPlayerCvar.integer < ui_teamPlayerCount &&
-                 ui_playerNumbers[cg_selectedPlayerCvar.integer] ==
-                     ui_myClientNum)) {
+            if (ui_teamLeader == 0 || (cg_selectedPlayerCvar.integer >= 0 && cg_selectedPlayerCvar.integer < ui_teamPlayerCount &&
+                                       ui_playerNumbers[cg_selectedPlayerCvar.integer] == ui_myClientNum)) {
                 visible = qfalse;
             }
             ownerDrawFlags &= ~UI_SHOW_LEADER;
         }
         if ((ownerDrawFlags & UI_SHOW_NOTLEADER) != 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            if (ui_teamLeader != 0 &&
-                (cg_selectedPlayerCvar.integer < 0 ||
-                 cg_selectedPlayerCvar.integer >= ui_teamPlayerCount ||
-                 ui_playerNumbers[cg_selectedPlayerCvar.integer] !=
-                     ui_myClientNum)) {
+            if (ui_teamLeader != 0 && (cg_selectedPlayerCvar.integer < 0 || cg_selectedPlayerCvar.integer >= ui_teamPlayerCount ||
+                                       ui_playerNumbers[cg_selectedPlayerCvar.integer] != ui_myClientNum)) {
                 visible = qfalse;
             }
             ownerDrawFlags &= ~UI_SHOW_NOTLEADER;
@@ -76,19 +66,16 @@ qboolean UI_OwnerDrawVisible(int32_t ownerDrawFlags)
             ownerDrawFlags &= ~UI_SHOW_NOTFAVORITESERVERS;
         }
         if ((ownerDrawFlags & UI_SHOW_NEWHIGHSCORE) != 0) {
-            if (ui_displayContextStorage.newHighScoreTime <
-                ui_displayContextStorage.context.realTime) {
+            if (ui_displayContextStorage.newHighScoreTime < ui_displayContextStorage.context.realTime) {
                 visible = qfalse;
-            } else if (ui_displayContextStorage.soundHighScore &&
-                       trap_Cvar_VariableValue("sv_killserver") == 0.0f) {
+            } else if (ui_displayContextStorage.soundHighScore && trap_Cvar_VariableValue("sv_killserver") == 0.0f) {
                 trap_MSS_PlayLocalSoundAlias(ui_newHighScoreSound);
                 ui_displayContextStorage.soundHighScore = qfalse;
             }
             ownerDrawFlags &= ~UI_SHOW_NEWHIGHSCORE;
         }
         if ((ownerDrawFlags & UI_SHOW_NEWBESTTIME) != 0) {
-            if (ui_displayContextStorage.newBestTime <
-                ui_displayContextStorage.context.realTime) {
+            if (ui_displayContextStorage.newBestTime < ui_displayContextStorage.context.realTime) {
                 visible = qfalse;
             }
             ownerDrawFlags &= ~UI_SHOW_NEWBESTTIME;

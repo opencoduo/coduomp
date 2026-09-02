@@ -57,8 +57,7 @@ char *CG_CopyString(const char *src, char **out)
     /* 0x3000fdb0..fdb5: cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN_EXPLICIT, len+1, 1); the trap id is
      * 0xd0 (208). Args pushed 1, then len+1, then 0xd0; ADD ESP,0xc cleans three
      * dwords (cdecl). */
-    char *buf = (char *)(intptr_t)cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN_EXPLICIT,
-                                                (int32_t)allocLen, 1);
+    char *buf = (char *)(intptr_t)cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN_EXPLICIT, (int32_t)allocLen, 1);
 
     /* 0x3000fdc0..fdcc: strcpy(buf, src), copying the terminating NUL too.
      * The machine code keeps ESI = buf - src and stores through ESI+ECX (ECX walks

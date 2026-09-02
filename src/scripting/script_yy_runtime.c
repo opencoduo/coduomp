@@ -68,12 +68,10 @@ void yyrestart(FILE *inputFile);
 void yy_load_buffer_state(void);
 void yy_init_buffer(script_yy_buffer_t *buffer, FILE *inputFile);
 void yy_flush_buffer(script_yy_buffer_t *buffer);
-script_yy_buffer_t *yy_create_buffer(FILE *inputFile,
-                                               int32_t size);
+script_yy_buffer_t *yy_create_buffer(FILE *inputFile, int32_t size);
 void yy_switch_to_buffer(script_yy_buffer_t *buffer);
 script_yy_buffer_t *yy_scan_buffer(char *base, uint32_t size);
-script_yy_buffer_t *yy_scan_bytes(const char *bytes,
-                                            int32_t length);
+script_yy_buffer_t *yy_scan_bytes(const char *bytes, int32_t length);
 int32_t yy_get_next_buffer(void);
 int32_t yy_get_previous_state(void);
 int32_t yy_try_NUL_trans(int32_t state);
@@ -83,26 +81,16 @@ int32_t yywrap(void);
  * scanner action switch, whose machine code returns these token constants
  * directly rather than indexing a data table. */
 static const int32_t script_yyTokenByAction[] = {
-    [0x09] = 0x105, [0x0a] = 0x106, [0x0b] = 0x107, [0x0c] = 0x108,
-    [0x0d] = 0x109, [0x0e] = 0x10a, [0x0f] = 0x10b, [0x10] = 0x10c,
-    [0x11] = 0x10d, [0x12] = 0x10e, [0x13] = 0x10f, [0x14] = 0x110,
-    [0x15] = 0x111, [0x16] = 0x112, [0x17] = 0x113, [0x18] = 0x114,
-    [0x19] = 0x115, [0x1a] = 0x116, [0x1b] = 0x117, [0x1c] = 0x118,
-    [0x1d] = 0x119, [0x1e] = 0x11a, [0x1f] = 0x11b, [0x20] = 0x11c,
-    [0x21] = 0x11d, [0x22] = 0x11e, [0x25] = 0x122, [0x26] = 0x121,
-    [0x27] = 0x127, [0x28] = 0x123, [0x29] = 0x126, [0x2a] = 0x124,
-    [0x2b] = 0x125, [0x2c] = 0x128, [0x2d] = 0x129, [0x2e] = 0x12a,
-    [0x2f] = 0x12b, [0x30] = 0x12c, [0x31] = 0x12d, [0x32] = 0x12e,
-    [0x33] = 0x12f, [0x34] = 0x130, [0x35] = 0x131, [0x36] = 0x132,
-    [0x37] = 0x133, [0x38] = 0x134, [0x39] = 0x135, [0x3a] = 0x136,
-    [0x3b] = 0x137, [0x3c] = 0x138, [0x3d] = 0x139, [0x3e] = 0x13a,
-    [0x3f] = 0x13b, [0x40] = 0x13c, [0x41] = 0x13d, [0x42] = 0x13e,
-    [0x43] = 0x13f, [0x44] = 0x140, [0x45] = 0x141, [0x46] = 0x142,
-    [0x47] = 0x143, [0x48] = 0x144, [0x49] = 0x145, [0x4a] = 0x146,
-    [0x4b] = 0x147, [0x4c] = 0x149, [0x4d] = 0x14a, [0x4e] = 0x14b,
-    [0x4f] = 0x14c, [0x50] = 0x14d, [0x51] = 0x14e, [0x52] = 0x14f,
-    [0x53] = 0x150, [0x54] = 0x151, [0x55] = 0x152, [0x56] = 0x153,
-    [0x57] = 0x154, [0x58] = 0x155, [0x59] = 0x156,
+    [0x09] = 0x105, [0x0a] = 0x106, [0x0b] = 0x107, [0x0c] = 0x108, [0x0d] = 0x109, [0x0e] = 0x10a, [0x0f] = 0x10b, [0x10] = 0x10c,
+    [0x11] = 0x10d, [0x12] = 0x10e, [0x13] = 0x10f, [0x14] = 0x110, [0x15] = 0x111, [0x16] = 0x112, [0x17] = 0x113, [0x18] = 0x114,
+    [0x19] = 0x115, [0x1a] = 0x116, [0x1b] = 0x117, [0x1c] = 0x118, [0x1d] = 0x119, [0x1e] = 0x11a, [0x1f] = 0x11b, [0x20] = 0x11c,
+    [0x21] = 0x11d, [0x22] = 0x11e, [0x25] = 0x122, [0x26] = 0x121, [0x27] = 0x127, [0x28] = 0x123, [0x29] = 0x126, [0x2a] = 0x124,
+    [0x2b] = 0x125, [0x2c] = 0x128, [0x2d] = 0x129, [0x2e] = 0x12a, [0x2f] = 0x12b, [0x30] = 0x12c, [0x31] = 0x12d, [0x32] = 0x12e,
+    [0x33] = 0x12f, [0x34] = 0x130, [0x35] = 0x131, [0x36] = 0x132, [0x37] = 0x133, [0x38] = 0x134, [0x39] = 0x135, [0x3a] = 0x136,
+    [0x3b] = 0x137, [0x3c] = 0x138, [0x3d] = 0x139, [0x3e] = 0x13a, [0x3f] = 0x13b, [0x40] = 0x13c, [0x41] = 0x13d, [0x42] = 0x13e,
+    [0x43] = 0x13f, [0x44] = 0x140, [0x45] = 0x141, [0x46] = 0x142, [0x47] = 0x143, [0x48] = 0x144, [0x49] = 0x145, [0x4a] = 0x146,
+    [0x4b] = 0x147, [0x4c] = 0x149, [0x4d] = 0x14a, [0x4e] = 0x14b, [0x4f] = 0x14c, [0x50] = 0x14d, [0x51] = 0x14e, [0x52] = 0x14f,
+    [0x53] = 0x150, [0x54] = 0x151, [0x55] = 0x152, [0x56] = 0x153, [0x57] = 0x154, [0x58] = 0x155, [0x59] = 0x156,
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared spelling for generated scanner position updates. */
@@ -132,9 +120,7 @@ int32_t yylex(void)
             script_yyOutputFile = stdout;
         }
         if (script_yyCurrentBuffer == NULL) {
-            script_yyCurrentBuffer =
-                yy_create_buffer(script_yyInputFile,
-                                     SCRIPT_YY_CREATE_BUFFER_SIZE);
+            script_yyCurrentBuffer = yy_create_buffer(script_yyInputFile, SCRIPT_YY_CREATE_BUFFER_SIZE);
         }
         yy_load_buffer_state();
     }
@@ -183,142 +169,134 @@ dispatch_action:
     }
 
     switch (action) {
-        case 0:
-            *yyCp = (char)script_yyHoldChar;
-            yyCp = script_yyLastAcceptingCpos;
-            state = script_yyLastAcceptingState;
-            action = script_yyAccept[state];
-            script_yyText = yyBp;
-            script_yyLength = (int32_t)(yyCp - yyBp);
-            script_yyHoldChar = (uint8_t)*yyCp;
-            *yyCp = '\0';
-            script_yyCBufferPosition = yyCp;
-            goto dispatch_action;
+    case 0:
+        *yyCp = (char)script_yyHoldChar;
+        yyCp = script_yyLastAcceptingCpos;
+        state = script_yyLastAcceptingState;
+        action = script_yyAccept[state];
+        script_yyText = yyBp;
+        script_yyLength = (int32_t)(yyCp - yyBp);
+        script_yyHoldChar = (uint8_t)*yyCp;
+        *yyCp = '\0';
+        script_yyCBufferPosition = yyCp;
+        goto dispatch_action;
 
-        case 1:
-        case 3:
-        case 4:
-        case 5:
-            goto restart_scan;
+    case 1:
+    case 3:
+    case 4:
+    case 5:
+        goto restart_scan;
 
-        case 2:
-            script_yyStart = 3;
-            goto restart_scan;
+    case 2:
+        script_yyStart = 3;
+        goto restart_scan;
 
-        case 6:
-            script_yyStart = 5;
-            goto restart_scan;
+    case 6:
+        script_yyStart = 5;
+        goto restart_scan;
 
-        case 7:
-            StringValue(script_yyText + 1, script_yyLength - 2);
-            return SCRIPT_YY_ESCAPED_STRING_TOKEN;
+    case 7:
+        StringValue(script_yyText + 1, script_yyLength - 2);
+        return SCRIPT_YY_ESCAPED_STRING_TOKEN;
 
-        case 8:
-            StringValue(script_yyText + 2, script_yyLength - 3);
-            return SCRIPT_YY_HASH_STRING_TOKEN;
+    case 8:
+        StringValue(script_yyText + 2, script_yyLength - 3);
+        return SCRIPT_YY_HASH_STRING_TOKEN;
 
-        case 0x23:
-            IntegerValue(script_yyText);
-            return SCRIPT_YY_INT_TOKEN;
+    case 0x23:
+        IntegerValue(script_yyText);
+        return SCRIPT_YY_INT_TOKEN;
 
-        case 0x24:
-            FloatValue(script_yyText);
-            return SCRIPT_YY_FLOAT_TOKEN;
+    case 0x24:
+        FloatValue(script_yyText);
+        return SCRIPT_YY_FLOAT_TOKEN;
 
-        case 0x5a:
-            TextValue(script_yyText, script_yyLength);
-            return SCRIPT_YY_IDENTIFIER_TOKEN;
+    case 0x5a:
+        TextValue(script_yyText, script_yyLength);
+        return SCRIPT_YY_IDENTIFIER_TOKEN;
 
-        case 0x5b:
-            TextValue(script_yyText, script_yyLength);
-            return SCRIPT_YY_ANIMTREE_IDENTIFIER_TOKEN;
+    case 0x5b:
+        TextValue(script_yyText, script_yyLength);
+        return SCRIPT_YY_ANIMTREE_IDENTIFIER_TOKEN;
 
-        case 0x5c:
-            CompileError(script_yyPreviousSourcePos, "bad token '%s'",
-                                  script_yyText);
-            return SCRIPT_YY_BAD_SYNTAX_TOKEN;
+    case 0x5c:
+        CompileError(script_yyPreviousSourcePos, "bad token '%s'", script_yyText);
+        return SCRIPT_YY_BAD_SYNTAX_TOKEN;
 
-        case 0x5d:
-            fwrite(script_yyText, (size_t)script_yyLength, 1,
-                   script_yyOutputFile);
-            goto restart_scan;
+    case 0x5d:
+        fwrite(script_yyText, (size_t)script_yyLength, 1, script_yyOutputFile);
+        goto restart_scan;
 
-        case 0x5e: {
-            int32_t numberToMove = (int32_t)(yyCp - script_yyText) - 1;
+    case 0x5e: {
+        int32_t numberToMove = (int32_t)(yyCp - script_yyText) - 1;
 
-            *yyCp = (char)script_yyHoldChar;
-            if (script_yyCurrentBuffer->bufferStatus == SCRIPT_YY_BUFFER_NEW) {
-                script_yyNChars = script_yyCurrentBuffer->nChars;
-                script_yyCurrentBuffer->inputFile = script_yyInputFile;
-                script_yyCurrentBuffer->bufferStatus = SCRIPT_YY_BUFFER_NORMAL;
-            }
-
-            if (script_yyCBufferPosition <=
-                script_yyCurrentBuffer->chBuf + script_yyNChars) {
-                script_yyCBufferPosition = script_yyText + numberToMove;
-                state = yy_get_previous_state();
-                int32_t nextState = yy_try_NUL_trans(state);
-                yyBp = script_yyText;
-                if (nextState == 0) {
-                    yyCp = script_yyCBufferPosition;
-                    goto accept_action;
-                }
-                script_yyCBufferPosition++;
-                yyCp = script_yyCBufferPosition;
-                state = nextState;
-                goto scan_state;
-            }
-
-            switch (yy_get_next_buffer()) {
-            case SCRIPT_YY_EOB_ACT_END_OF_FILE:
-                script_yyDidBufferSwitchOnEof = qfalse;
-                if (yywrap() != 0) {
-                    script_yyCBufferPosition = script_yyText;
-                    action = ((script_yyStart - 1) / 2) + 0x5f;
-                    goto dispatch_action;
-                }
-                if (script_yyDidBufferSwitchOnEof == qfalse) {
-                    yyrestart(script_yyInputFile);
-                }
-                goto restart_scan;
-
-            case SCRIPT_YY_EOB_ACT_CONTINUE_SCAN:
-                script_yyCBufferPosition = script_yyText + numberToMove;
-                state = yy_get_previous_state();
-                yyCp = script_yyCBufferPosition;
-                yyBp = script_yyText;
-                goto scan_state;
-
-            case SCRIPT_YY_EOB_ACT_LAST_MATCH:
-                script_yyCBufferPosition =
-                    script_yyCurrentBuffer->chBuf +
-                    script_yyNChars;
-                state = yy_get_previous_state();
-                yyCp = script_yyCBufferPosition;
-                yyBp = script_yyText;
-                goto accept_action;
-
-            default:
-                goto restart_scan;
-            }
+        *yyCp = (char)script_yyHoldChar;
+        if (script_yyCurrentBuffer->bufferStatus == SCRIPT_YY_BUFFER_NEW) {
+            script_yyNChars = script_yyCurrentBuffer->nChars;
+            script_yyCurrentBuffer->inputFile = script_yyInputFile;
+            script_yyCurrentBuffer->bufferStatus = SCRIPT_YY_BUFFER_NORMAL;
         }
 
-        case 0x5f:
-        case 0x60:
-        case 0x61:
-            return 0;
+        if (script_yyCBufferPosition <= script_yyCurrentBuffer->chBuf + script_yyNChars) {
+            script_yyCBufferPosition = script_yyText + numberToMove;
+            state = yy_get_previous_state();
+            int32_t nextState = yy_try_NUL_trans(state);
+            yyBp = script_yyText;
+            if (nextState == 0) {
+                yyCp = script_yyCBufferPosition;
+                goto accept_action;
+            }
+            script_yyCBufferPosition++;
+            yyCp = script_yyCBufferPosition;
+            state = nextState;
+            goto scan_state;
+        }
+
+        switch (yy_get_next_buffer()) {
+        case SCRIPT_YY_EOB_ACT_END_OF_FILE:
+            script_yyDidBufferSwitchOnEof = qfalse;
+            if (yywrap() != 0) {
+                script_yyCBufferPosition = script_yyText;
+                action = ((script_yyStart - 1) / 2) + 0x5f;
+                goto dispatch_action;
+            }
+            if (script_yyDidBufferSwitchOnEof == qfalse) {
+                yyrestart(script_yyInputFile);
+            }
+            goto restart_scan;
+
+        case SCRIPT_YY_EOB_ACT_CONTINUE_SCAN:
+            script_yyCBufferPosition = script_yyText + numberToMove;
+            state = yy_get_previous_state();
+            yyCp = script_yyCBufferPosition;
+            yyBp = script_yyText;
+            goto scan_state;
+
+        case SCRIPT_YY_EOB_ACT_LAST_MATCH:
+            script_yyCBufferPosition = script_yyCurrentBuffer->chBuf + script_yyNChars;
+            state = yy_get_previous_state();
+            yyCp = script_yyCBufferPosition;
+            yyBp = script_yyText;
+            goto accept_action;
 
         default:
-            if (action >= 0 &&
-                action < (int32_t)(sizeof(script_yyTokenByAction) /
-                                   sizeof(script_yyTokenByAction[0])) &&
-                script_yyTokenByAction[action] != 0) {
-                return script_yyTokenByAction[action];
-            }
-            yy_fatal_error(
-                "fatal flex scanner internal error--no action found");
             goto restart_scan;
         }
+    }
+
+    case 0x5f:
+    case 0x60:
+    case 0x61:
+        return 0;
+
+    default:
+        if (action >= 0 && action < (int32_t)(sizeof(script_yyTokenByAction) / sizeof(script_yyTokenByAction[0])) &&
+            script_yyTokenByAction[action] != 0) {
+            return script_yyTokenByAction[action];
+        }
+        yy_fatal_error("fatal flex scanner internal error--no action found");
+        goto restart_scan;
+    }
 }
 
 int32_t yy_get_next_buffer(void)
@@ -327,20 +305,15 @@ int32_t yy_get_next_buffer(void)
     char *dest = buffer->chBuf;
     char *source = script_yyText;
 
-    if (script_yyNChars + buffer->chBuf + 1 <
-        script_yyCBufferPosition) {
-        yy_fatal_error(
-            "fatal flex scanner internal error--end of buffer missed");
+    if (script_yyNChars + buffer->chBuf + 1 < script_yyCBufferPosition) {
+        yy_fatal_error("fatal flex scanner internal error--end of buffer missed");
     }
 
     if (buffer->fillBuffer == qfalse) {
-        return script_yyCBufferPosition - script_yyText == 1
-                   ? SCRIPT_YY_EOB_ACT_END_OF_FILE
-                   : SCRIPT_YY_EOB_ACT_LAST_MATCH;
+        return script_yyCBufferPosition - script_yyText == 1 ? SCRIPT_YY_EOB_ACT_END_OF_FILE : SCRIPT_YY_EOB_ACT_LAST_MATCH;
     }
 
-    int32_t numberToMove =
-        (int32_t)(script_yyCBufferPosition - script_yyText) - 1;
+    int32_t numberToMove = (int32_t)(script_yyCBufferPosition - script_yyText) - 1;
     for (int32_t index = 0; index < numberToMove; ++index) {
         dest[index] = source[index];
     }
@@ -351,8 +324,7 @@ int32_t yy_get_next_buffer(void)
     } else {
         int32_t available = buffer->bufSize - numberToMove;
         while (--available < 1) {
-            ptrdiff_t cbufOffset =
-                script_yyCBufferPosition - buffer->chBuf;
+            ptrdiff_t cbufOffset = script_yyCBufferPosition - buffer->chBuf;
 
             if (buffer->isOurBuffer == qfalse) {
                 buffer->chBuf = NULL;
@@ -363,16 +335,12 @@ int32_t yy_get_next_buffer(void)
                     buffer->bufSize *= 2;
                 }
 
-                uint32_t allocationSize =
-                    (uint32_t)buffer->bufSize +
-                    SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT;
-                buffer->chBuf = yy_flex_realloc(
-                    buffer->chBuf, (size_t)allocationSize);
+                uint32_t allocationSize = (uint32_t)buffer->bufSize + SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT;
+                buffer->chBuf = yy_flex_realloc(buffer->chBuf, (size_t)allocationSize);
             }
 
             if (buffer->chBuf == NULL) {
-                yy_fatal_error(
-                    "fatal error - scanner input buffer overflow");
+                yy_fatal_error("fatal error - scanner input buffer overflow");
             }
 
             script_yyCBufferPosition = buffer->chBuf + cbufOffset;
@@ -429,11 +397,8 @@ int32_t yy_get_previous_state(void)
 {
     int32_t state = script_yyStart;
 
-    for (char *cursor = script_yyText; cursor < script_yyCBufferPosition;
-         ++cursor) {
-        uint8_t yyChar = *cursor == '\0'
-                             ? SCRIPT_YY_NUL_TRANSITION_CHAR
-                             : (uint8_t)script_yyEc[(uint8_t)*cursor];
+    for (char *cursor = script_yyText; cursor < script_yyCBufferPosition; ++cursor) {
+        uint8_t yyChar = *cursor == '\0' ? SCRIPT_YY_NUL_TRANSITION_CHAR : (uint8_t)script_yyEc[(uint8_t)*cursor];
 
         if (script_yyAccept[state] != 0) {
             script_yyLastAcceptingState = state;
@@ -476,9 +441,7 @@ int32_t yy_try_NUL_trans(int32_t state)
 void yyrestart(FILE *inputFile)
 {
     if (script_yyCurrentBuffer == NULL) {
-        script_yyCurrentBuffer =
-            yy_create_buffer(script_yyInputFile,
-                                 SCRIPT_YY_CREATE_BUFFER_SIZE);
+        script_yyCurrentBuffer = yy_create_buffer(script_yyInputFile, SCRIPT_YY_CREATE_BUFFER_SIZE);
     }
 
     yy_init_buffer(script_yyCurrentBuffer, inputFile);
@@ -523,8 +486,7 @@ script_yy_buffer_t *yy_create_buffer(FILE *inputFile, int32_t size)
     }
 
     buffer->bufSize = size;
-    uint32_t allocationSize =
-        (uint32_t)size + SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT;
+    uint32_t allocationSize = (uint32_t)size + SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT;
     buffer->chBuf = yy_flex_alloc((size_t)allocationSize);
     if (buffer->chBuf == NULL) {
         yy_fatal_error("out of dynamic memory in yy_create_buffer()");
@@ -563,8 +525,7 @@ void yy_init_buffer(script_yy_buffer_t *buffer, FILE *inputFile)
     yy_flush_buffer(buffer);
     buffer->inputFile = inputFile;
     buffer->fillBuffer = qtrue;
-    buffer->isInteractive =
-        inputFile == NULL ? qfalse : (isatty(fileno(inputFile)) > 0);
+    buffer->isInteractive = inputFile == NULL ? qfalse : (isatty(fileno(inputFile)) > 0);
 }
 
 void yy_flush_buffer(script_yy_buffer_t *buffer)
@@ -589,8 +550,7 @@ void yy_flush_buffer(script_yy_buffer_t *buffer)
  * Name: generated Flex function yy_scan_buffer. */
 script_yy_buffer_t *yy_scan_buffer(char *base, uint32_t size)
 {
-    if (size < SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT ||
-        base[size - 2] != '\0' || base[size - 1] != '\0') {
+    if (size < SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT || base[size - 2] != '\0' || base[size - 1] != '\0') {
         return NULL;
     }
 
@@ -635,8 +595,7 @@ script_yy_buffer_t *yy_scan_bytes(const char *bytes, int32_t length)
         yy_fatal_error("bad buffer in yy_scan_bytes()");
     }
 
-    uint32_t allocationSize =
-        (uint32_t)length + SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT;
+    uint32_t allocationSize = (uint32_t)length + SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT;
     char *buffer = yy_flex_alloc((size_t)allocationSize);
     if (buffer == NULL) {
         yy_fatal_error("out of dynamic memory in yy_scan_bytes()");
@@ -648,9 +607,7 @@ script_yy_buffer_t *yy_scan_bytes(const char *bytes, int32_t length)
     buffer[length] = '\0';
     buffer[length + 1] = '\0';
 
-    script_yy_buffer_t *state =
-        yy_scan_buffer(buffer, (uint32_t)length +
-                                   SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT);
+    script_yy_buffer_t *state = yy_scan_buffer(buffer, (uint32_t)length + SCRIPT_YY_BUFFER_TRAILING_NUL_COUNT);
     if (state == NULL) {
         yy_fatal_error("bad buffer in yy_scan_bytes()");
     }
@@ -691,8 +648,7 @@ void yy_flex_free(void *ptr)
 int32_t yyerror(void)
 {
     if (script_yychar == SCRIPT_YY_EOF_TOKEN) {
-        CompileError(script_yyPreviousSourcePos,
-                     "unexpected end of file found");
+        CompileError(script_yyPreviousSourcePos, "unexpected end of file found");
     } else if (script_yychar != SCRIPT_YY_BAD_SYNTAX_TOKEN) {
         CompileError(script_yyPreviousSourcePos, "bad syntax");
     }

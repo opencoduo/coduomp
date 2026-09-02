@@ -9,15 +9,11 @@
 /* NOT_FROM_ORIGINAL_SOURCE: names of the statically linked native adapters
  * exposed through the retail sound-provider cvar and options-menu control. */
 #if defined(__APPLE__) || defined(__linux__)
-#define CODUOMP_OPENAL_3D_PROVIDER_NAME \
-    "OpenAL Fast 2D Positional Audio"
-#define CODUOMP_MINIAUDIO_3D_PROVIDER_NAME \
-    "Miniaudio Fast 2D Positional Audio"
+#define CODUOMP_OPENAL_3D_PROVIDER_NAME "OpenAL Fast 2D Positional Audio"
+#define CODUOMP_MINIAUDIO_3D_PROVIDER_NAME "Miniaudio Fast 2D Positional Audio"
 #else
-#define CODUOMP_OPENAL_3D_PROVIDER_NAME \
-    "Miles Fast 2D Positional Audio"
-#define CODUOMP_MINIAUDIO_3D_PROVIDER_NAME \
-    "Miles Fast 2D Positional Audio"
+#define CODUOMP_OPENAL_3D_PROVIDER_NAME "Miles Fast 2D Positional Audio"
+#define CODUOMP_MINIAUDIO_3D_PROVIDER_NAME "Miles Fast 2D Positional Audio"
 #endif
 
 #if defined(__APPLE__) || defined(__linux__)
@@ -175,62 +171,34 @@ typedef struct snd_alias_parse_node_s {
 } snd_alias_parse_node_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-#define SOUND_TYPE_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_file_data_offset,
-                         offsetof(snd_alias_sound_file_t, data) == 0x04);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_file_initial_data_offset,
-                         offsetof(snd_alias_sound_file_t, initialData) == 0x20);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_file_extent,
-                         sizeof(snd_alias_sound_file_t) == 0x24);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_subtitle_offset,
-                         offsetof(snd_alias_t, subtitle) == 0x08);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_sound_file_info_offset,
-                         offsetof(snd_alias_t, soundFileInfo) == 0x0c);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_pick_sequence_offset,
-                         offsetof(snd_alias_t, pickSequence) == 0x10);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_distance_min_offset,
-                         offsetof(snd_alias_t, distanceMin) == 0x24);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_channel_offset,
-                         offsetof(snd_alias_t, channel) == 0x2c);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_type_offset,
-                         offsetof(snd_alias_t, type) == 0x30);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_streamed_file_offset,
-                         offsetof(snd_alias_t, streamedFileExists) == 0x37);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_selection_weight_offset,
-                         offsetof(snd_alias_t, selectionWeight) == 0x3c);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_lod_min_offset,
-                         offsetof(snd_alias_t, lodMin) == 0x40);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_lod_max_offset,
-                         offsetof(snd_alias_t, lodMax) == 0x44);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_hash_next_offset,
-                         offsetof(snd_alias_t, hashNext) == 0x48);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_extent,
-                         sizeof(snd_alias_t) == 0x4c);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_alias_name_offset,
-                         offsetof(snd_alias_parse_node_t, aliasName) == 0x0040);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_subtitle_offset,
-                         offsetof(snd_alias_parse_node_t, subtitle) == 0x0080);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_sequence_offset,
-                         offsetof(snd_alias_parse_node_t, sequence) == 0x1080);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_sound_file_offset,
-                         offsetof(snd_alias_parse_node_t, soundFile) == 0x1084);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_permanent_file_offset,
-                         offsetof(snd_alias_parse_node_t, permanentSoundFile) == 0x10c4);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_loop_offset,
-                         offsetof(snd_alias_parse_node_t, loop) == 0x10e8);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_slave_percentage_offset,
-                         offsetof(snd_alias_parse_node_t, slavePercentage) == 0x10ec);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_load_spec_offset,
-                         offsetof(snd_alias_parse_node_t, matchesLoadSpecification) == 0x10f4);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_lod_min_offset,
-                         offsetof(snd_alias_parse_node_t, lodMin) == 0x10f8);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_duplicate_offset,
-                         offsetof(snd_alias_parse_node_t, duplicateFileNode) == 0x1100);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_next_offset,
-                         offsetof(snd_alias_parse_node_t, next) == 0x1104);
-SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_extent,
-                         sizeof(snd_alias_parse_node_t) == 0x1108);
+#define SOUND_TYPE_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_file_data_offset, offsetof(snd_alias_sound_file_t, data) == 0x04);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_file_initial_data_offset, offsetof(snd_alias_sound_file_t, initialData) == 0x20);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_file_extent, sizeof(snd_alias_sound_file_t) == 0x24);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_subtitle_offset, offsetof(snd_alias_t, subtitle) == 0x08);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_sound_file_info_offset, offsetof(snd_alias_t, soundFileInfo) == 0x0c);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_pick_sequence_offset, offsetof(snd_alias_t, pickSequence) == 0x10);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_distance_min_offset, offsetof(snd_alias_t, distanceMin) == 0x24);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_channel_offset, offsetof(snd_alias_t, channel) == 0x2c);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_type_offset, offsetof(snd_alias_t, type) == 0x30);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_streamed_file_offset, offsetof(snd_alias_t, streamedFileExists) == 0x37);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_selection_weight_offset, offsetof(snd_alias_t, selectionWeight) == 0x3c);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_lod_min_offset, offsetof(snd_alias_t, lodMin) == 0x40);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_lod_max_offset, offsetof(snd_alias_t, lodMax) == 0x44);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_hash_next_offset, offsetof(snd_alias_t, hashNext) == 0x48);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_extent, sizeof(snd_alias_t) == 0x4c);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_alias_name_offset, offsetof(snd_alias_parse_node_t, aliasName) == 0x0040);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_subtitle_offset, offsetof(snd_alias_parse_node_t, subtitle) == 0x0080);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_sequence_offset, offsetof(snd_alias_parse_node_t, sequence) == 0x1080);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_sound_file_offset, offsetof(snd_alias_parse_node_t, soundFile) == 0x1084);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_permanent_file_offset, offsetof(snd_alias_parse_node_t, permanentSoundFile) == 0x10c4);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_loop_offset, offsetof(snd_alias_parse_node_t, loop) == 0x10e8);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_slave_percentage_offset, offsetof(snd_alias_parse_node_t, slavePercentage) == 0x10ec);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_load_spec_offset, offsetof(snd_alias_parse_node_t, matchesLoadSpecification) == 0x10f4);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_lod_min_offset, offsetof(snd_alias_parse_node_t, lodMin) == 0x10f8);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_duplicate_offset, offsetof(snd_alias_parse_node_t, duplicateFileNode) == 0x1100);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_next_offset, offsetof(snd_alias_parse_node_t, next) == 0x1104);
+SOUND_TYPE_LAYOUT_ASSERT(q_sound_alias_parse_extent, sizeof(snd_alias_parse_node_t) == 0x1108);
 #undef SOUND_TYPE_LAYOUT_ASSERT
 #endif
 
@@ -247,18 +215,12 @@ typedef struct mss_sound_overlay_s {
 } mss_sound_overlay_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char q_mss_overlay_sound_file_offset[
-    offsetof(mss_sound_overlay_t, soundFile) == 0x00 ? 1 : -1];
-typedef char q_mss_overlay_logical_volume_offset[
-    offsetof(mss_sound_overlay_t, logicalVolume) == 0x04 ? 1 : -1];
-typedef char q_mss_overlay_relative_volume_offset[
-    offsetof(mss_sound_overlay_t, relativeVolume) == 0x08 ? 1 : -1];
-typedef char q_mss_overlay_playback_rate_offset[
-    offsetof(mss_sound_overlay_t, basePlaybackRate) == 0x0c ? 1 : -1];
-typedef char q_mss_overlay_pitch_scale_offset[
-    offsetof(mss_sound_overlay_t, pitchScale) == 0x10 ? 1 : -1];
-typedef char q_mss_overlay_size[
-    sizeof(mss_sound_overlay_t) == 0x14 ? 1 : -1];
+typedef char q_mss_overlay_sound_file_offset[offsetof(mss_sound_overlay_t, soundFile) == 0x00 ? 1 : -1];
+typedef char q_mss_overlay_logical_volume_offset[offsetof(mss_sound_overlay_t, logicalVolume) == 0x04 ? 1 : -1];
+typedef char q_mss_overlay_relative_volume_offset[offsetof(mss_sound_overlay_t, relativeVolume) == 0x08 ? 1 : -1];
+typedef char q_mss_overlay_playback_rate_offset[offsetof(mss_sound_overlay_t, basePlaybackRate) == 0x0c ? 1 : -1];
+typedef char q_mss_overlay_pitch_scale_offset[offsetof(mss_sound_overlay_t, pitchScale) == 0x10 ? 1 : -1];
+typedef char q_mss_overlay_size[sizeof(mss_sound_overlay_t) == 0x14 ? 1 : -1];
 #endif
 
 #endif

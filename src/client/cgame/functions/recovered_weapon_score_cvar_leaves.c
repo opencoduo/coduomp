@@ -6,15 +6,13 @@
 
 void CG_SizeUp_f(void) /* 0x30017270 */
 {
-    int32_t value =
-        coduo_int32_from_bits((uint32_t)cg_viewSizeCvar.integer + 10u);
+    int32_t value = coduo_int32_from_bits((uint32_t)cg_viewSizeCvar.integer + 10u);
     trap_Cvar_Set("cg_viewsize", va("%i", value));
 }
 
 void CG_SizeDown_f(void) /* 0x300172a0 */
 {
-    int32_t value =
-        coduo_int32_from_bits((uint32_t)cg_viewSizeCvar.integer - 10u);
+    int32_t value = coduo_int32_from_bits((uint32_t)cg_viewSizeCvar.integer - 10u);
     trap_Cvar_Set("cg_viewsize", va("%i", value));
 }
 
@@ -22,9 +20,7 @@ void CG_SizeDown_f(void) /* 0x300172a0 */
 int32_t AmmoPlusClip(const playerState_t *ps, int32_t weapon)
 {
     const weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
-    return coduo_int32_from_bits(
-        (uint32_t)ps->clips[weaponInfo->clipIndex] +
-        (uint32_t)ps->ammo[weaponInfo->ammoIndex]);
+    return coduo_int32_from_bits((uint32_t)ps->clips[weaponInfo->clipIndex] + (uint32_t)ps->ammo[weaponInfo->ammoIndex]);
 }
 
 void CG_ScoresUp_f(void) /* 0x30017310: release of the +scores command */

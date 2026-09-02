@@ -19,21 +19,16 @@ void keyConcatArgs(void)
 {
     const int32_t argumentCount = Cmd_Argc();
 
-    for (int32_t argumentIndex = 1;
-         argumentIndex < argumentCount; ++argumentIndex) {
+    for (int32_t argumentIndex = 1; argumentIndex < argumentCount; ++argumentIndex) {
         const char *argument = Cmd_Argv(argumentIndex);
-        const qboolean quoteArgument =
-            strchr(argument, ' ') != NULL ? qtrue : qfalse;
+        const qboolean quoteArgument = strchr(argument, ' ') != NULL ? qtrue : qfalse;
 
         Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer), " ");
         if (quoteArgument != qfalse)
-            Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer),
-                     "\"");
-        Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer),
-                 argument);
+            Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer), "\"");
+        Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer), argument);
         if (quoteArgument != qfalse)
-            Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer),
-                     "\"");
+            Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer), "\"");
     }
 }
 
@@ -49,8 +44,7 @@ void ConcatRemaining(const char *source, const char *separator)
         return;
     }
 
-    Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer),
-             remaining + strlen(separator));
+    Q_strcat(con_inputField.buffer, sizeof(con_inputField.buffer), remaining + strlen(separator));
 }
 
 /* Source: CoDUOMP.exe 0x0040e0b0..0x0040e355.
@@ -65,18 +59,14 @@ void CompleteCommand(void)
     if (coduo_crt_strnicmp(command, "pb_", 3) == 0) {
         char punkBusterCommand[CON_INPUT_BUFFER_SIZE];
 
-        Q_strncpyz(punkBusterCommand, command,
-                   (int32_t)sizeof(punkBusterCommand));
+        Q_strncpyz(punkBusterCommand, command, (int32_t)sizeof(punkBusterCommand));
         if (coduo_crt_strnicmp(punkBusterCommand, "pb_sv_", 6) == 0) {
-            PbServerCompleteCommand(punkBusterCommand,
-                                    CON_INPUT_BUFFER_SIZE - 1);
+            PbServerCompleteCommand(punkBusterCommand, CON_INPUT_BUFFER_SIZE - 1);
         } else {
-            PbClientCompleteCommand(punkBusterCommand,
-                                    CON_INPUT_BUFFER_SIZE - 1);
+            PbClientCompleteCommand(punkBusterCommand, CON_INPUT_BUFFER_SIZE - 1);
         }
 
-        Com_sprintf(con_inputField.buffer, CON_INPUT_BUFFER_SIZE,
-                    "\\%s", punkBusterCommand);
+        Com_sprintf(con_inputField.buffer, CON_INPUT_BUFFER_SIZE, "\\%s", punkBusterCommand);
         con_inputField.cursor = (int32_t)strlen(con_inputField.buffer);
         Field_AdjustScroll(&con_inputField);
         return;
@@ -98,8 +88,7 @@ void CompleteCommand(void)
         return;
 
     const console_input_field_t originalField = con_inputField;
-    Com_sprintf(con_inputField.buffer, CON_INPUT_BUFFER_SIZE,
-                "\\%s", completionShortestMatch);
+    Com_sprintf(con_inputField.buffer, CON_INPUT_BUFFER_SIZE, "\\%s", completionShortestMatch);
 
     if (completionMatchCount == 1) {
         if (Cmd_Argc() == 1) {
@@ -133,18 +122,14 @@ void FindMatches(const char *candidate)
 
     ++completionMatchCount;
     if (completionMatchCount == 1) {
-        strncpy(completionShortestMatch, candidate,
-                CON_COMPLETION_MATCH_SIZE - 1);
+        strncpy(completionShortestMatch, candidate, CON_COMPLETION_MATCH_SIZE - 1);
         completionShortestMatch[CON_COMPLETION_MATCH_SIZE - 1] = '\0';
         return;
     }
 
     int32_t commonLength = 0;
-    while (candidate[commonLength] != '\0' &&
-           coduo_crt_tolower(
-               (int32_t)(signed char)completionShortestMatch[commonLength]) ==
-               coduo_crt_tolower(
-                   (int32_t)(signed char)candidate[commonLength])) {
+    while (candidate[commonLength] != '\0' && coduo_crt_tolower((int32_t)(signed char)completionShortestMatch[commonLength]) ==
+                                                  coduo_crt_tolower((int32_t)(signed char)candidate[commonLength])) {
         ++commonLength;
     }
     completionShortestMatch[commonLength] = '\0';
@@ -156,8 +141,7 @@ void FindMatches(const char *candidate)
  * Name and signature: exact same-module Mac symbol PrintMatches. */
 void PrintMatches(const char *candidate)
 {
-    const int32_t prefixLength =
-        (int32_t)strlen(completionShortestMatch);
+    const int32_t prefixLength = (int32_t)strlen(completionShortestMatch);
 
     if (Q_stricmpn(completionShortestMatch, candidate, prefixLength) == 0)
         Com_Printf("    %s\n", candidate);
@@ -169,12 +153,10 @@ void PrintMatches(const char *candidate)
  * Name and signature: exact same-module Mac symbol PrintCvarMatches. */
 void PrintCvarMatches(const char *candidate)
 {
-    const int32_t prefixLength =
-        (int32_t)strlen(completionShortestMatch);
+    const int32_t prefixLength = (int32_t)strlen(completionShortestMatch);
 
     if (Q_stricmpn(completionShortestMatch, candidate, prefixLength) == 0) {
         cvar_t *cvar = Cvar_FindVar(candidate);
-        Com_Printf("    ^7%s = ^5%s^0\n", candidate,
-                   cvar != NULL ? cvar->string : "");
+        Com_Printf("    ^7%s = ^5%s^0\n", candidate, cvar != NULL ? cvar->string : "");
     }
 }

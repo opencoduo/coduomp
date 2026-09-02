@@ -47,21 +47,15 @@
  * files; they can move into subsystem headers when that source is reorganized. */
 typedef struct cgAlignedDrawItem cgAlignedDrawItem;
 
-float CG_HudElemStringWidth(const char *text,
-                            const cgAlignedDrawItem *item);
+float CG_HudElemStringWidth(const char *text, const cgAlignedDrawItem *item);
 /* The two lerp leaves return raw ST0 values. long double is the project's
  * register-carrier convention; their dispatchers consume the value before any
  * float store (FADD at 0x30029a06; FCOM at 0x30029a5a). */
-long double CG_HudElemShaderWidth(const hudElem_t *elem,
-                                  const cgAlignedDrawItem *item);
-long double CG_HudElemShaderHeight(const hudElem_t *elem,
-                                   const cgAlignedDrawItem *item);
-long double CG_HudElemShaderDimension(int32_t value,
-                                      const cgAlignedDrawItem *item);
-long double CG_HudElemWidth(const hudElem_t *elem,
-                            const cgAlignedDrawItem *item);
-long double CG_HudElemHeight(const hudElem_t *elem,
-                             const cgAlignedDrawItem *item);
+long double CG_HudElemShaderWidth(const hudElem_t *elem, const cgAlignedDrawItem *item);
+long double CG_HudElemShaderHeight(const hudElem_t *elem, const cgAlignedDrawItem *item);
+long double CG_HudElemShaderDimension(int32_t value, const cgAlignedDrawItem *item);
+long double CG_HudElemWidth(const hudElem_t *elem, const cgAlignedDrawItem *item);
+long double CG_HudElemHeight(const hudElem_t *elem, const cgAlignedDrawItem *item);
 void CG_PoissonDiskSample(vec2_t out, const vec2_t ref, float minDist);
 void CG_AddLightningBeam(const centity_t *src);
 void CG_Player(centity_t *cent);
@@ -110,7 +104,9 @@ void CG_GetEntityOriginAxis(int32_t index, vec3_t outOrigin, axis_t outAxis);
  * q_shared_types.h because the UI module uses the same layout.
  */
 
-enum { CG_CVAR_TABLE_COUNT = 184 }; /* MOV EDI,0xb8 loop count in both walkers */
+enum {
+    CG_CVAR_TABLE_COUNT = 184
+}; /* MOV EDI,0xb8 loop count in both walkers */
 
 /*
  * cg_cvarTable — 0x300851f0 .data, the cgame startup cvar-registration table:
@@ -149,8 +145,7 @@ extern const cvarTable_t cg_cvarTable[CG_CVAR_TABLE_COUNT];
  * guess is REJECTED (no give/item logic; this is the anim condition parser).
  * Source: uo_cgame_mp_x86.dll 0x30001920..0x30001cc7.
  */
-void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
-                           int condIndex, bg_condition_bits_t *result);
+void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable, int condIndex, bg_condition_bits_t *result);
 
 /*
  * CG_SafeTranslateString_Internal (0x3002d6e0) — resolve the localized text for the string
@@ -194,20 +189,14 @@ cg_scriptExportTable_t *Scr_FarHook(const cg_scriptImportTable_t *imports);
  * return NULL or do nothing; their signatures and semantic names are supplied
  * by the same cgame Mac/server script-export interface.
  */
-scr_function_callback_t CGAME_ABI_CDECL Scr_GetFunction(
-    const char **name, int32_t *developerOnly);
-scr_method_callback_t CGAME_ABI_CDECL Scr_GetMethod(
-    const char **name, int32_t *developerOnly);
-void CGAME_ABI_CDECL Scr_SetObjectField(
-    int32_t classNum, int32_t objectNum, int32_t fieldIndex);
-void CGAME_ABI_CDECL Scr_GetObjectField(
-    int32_t classNum, int32_t objectNum, int32_t fieldIndex);
+scr_function_callback_t CGAME_ABI_CDECL Scr_GetFunction(const char **name, int32_t *developerOnly);
+scr_method_callback_t CGAME_ABI_CDECL Scr_GetMethod(const char **name, int32_t *developerOnly);
+void CGAME_ABI_CDECL Scr_SetObjectField(int32_t classNum, int32_t objectNum, int32_t fieldIndex);
+void CGAME_ABI_CDECL Scr_GetObjectField(int32_t classNum, int32_t objectNum, int32_t fieldIndex);
 void *CGAME_ABI_CDECL Scr_LoadRead(uint32_t size);
-qboolean CG_OwnerDrawHandleKey(int32_t ownerDraw, int32_t flags,
-                               float *special, int32_t key);
+qboolean CG_OwnerDrawHandleKey(int32_t ownerDraw, int32_t flags, float *special, int32_t key);
 int32_t CG_FeederCount(float feederID);
-const char *CG_FeederItemText(float feederID, int32_t index,
-                              int32_t column, int32_t *handleOut);
+const char *CG_FeederItemText(float feederID, int32_t index, int32_t column, int32_t *handleOut);
 int32_t CG_FeederItemImage(float feederID, int32_t index);
 void CG_FlameSmokeParticle(void);
 void CG_FeederSelection(float feederID, int32_t index);
@@ -310,22 +299,22 @@ void CG_AddToTeamChat(const char *str);
  * template through byte 0x147. Provisional field names are based on proven roles
  * (exact CoD source symbol unproven). */
 typedef struct cgVoiceChatMsg_s {
-    int32_t     clientNum;        /* +0x0: speaking client's number (compared to
+    int32_t clientNum;        /* +0x0: speaking client's number (compared to
                                    *       cg_snap->ps.psClientNum, else used to index
                                    *       cg_entities[]). */
     const char *soundName;        /* +0x4: sound alias to play (CG_PlaySoundAliasByName). */
-    int32_t     icon;             /* +0x8: head-icon shader handle to display for the
+    int32_t icon;             /* +0x8: head-icon shader handle to display for the
                                    *       speaker (compared to cgs_voiceChatIcon). */
-    int32_t     voiceOnly;        /* +0xc: when nonzero, suppress the printed/team-chat
+    int32_t voiceOnly;        /* +0xc: when nonzero, suppress the printed/team-chat
                                    *       text (voice-only message). */
-    char        token[150]; /* +0x10: the raw voice-chat token, Q_strncpyz'd in
+    char token[150]; /* +0x10: the raw voice-chat token, Q_strncpyz'd in
                                    *       (cap 0x95) by CG_VoiceChat (0x3003a250) with a
                                    *       forced NUL at +0xa5. An intermediate field
                                    *       CG_PlayVoiceChat does not read; superseded the
                                    *       former abiGap_010[] filler. */
-    char        text[150]; /* +0xa6: the chat text line; passed to
+    char text[150]; /* +0xa6: the chat text line; passed to
                                    *       CG_AddToTeamChat and printed as ": %s\n". */
-    vec3_t      spriteOrigin;     /* +0x13c: three dwords copied into
+    vec3_t spriteOrigin;     /* +0x13c: three dwords copied into
                                    *       cg_entities[clientNum].lerpOrigin
                                    *       (+0x208..+0x210) for a remote speaker. */
 } cgVoiceChatMsg_t;
@@ -343,7 +332,9 @@ _Static_assert(sizeof(cgVoiceChatMsg_t) == 0x148, "cgVoiceChatMsg size 0x148");
 
 /* 0x303b3420 — first entry of the 32-element buffered voice-chat array.
  * CG_VoiceChat assembles entry zero and CG_PlayVoiceChat consumes it. */
-enum { CG_VOICE_CHAT_BUFFER_COUNT = 32 };
+enum {
+    CG_VOICE_CHAT_BUFFER_COUNT = 32
+};
 extern cgVoiceChatMsg_t cg_voiceChatBuffer[CG_VOICE_CHAT_BUFFER_COUNT];
 #define cgVoiceChatScratch (cg_voiceChatBuffer[0])
 
@@ -456,8 +447,7 @@ void CG_DebugBox(const vec3_t mins, const vec3_t maxs, const float color[4], int
  * color, param, flag arrive on the stack. Modeled as leading register params,
  * as with CG_DebugBox.
  */
-void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius,
-                    const float color[4], int param, int flag);
+void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius, const float color[4], int param, int flag);
 /*
  * CG_DebugCircleEx (0x3001db70) — draw a debug circle/arc around `center` as a
  * 16-point sin/cos ring of the given `radius`, swept from `startAngle` to
@@ -472,9 +462,7 @@ void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius,
  * trap arg); radius/startAngle/endAngle/color/param arrive on the stack. Modeled
  * as leading register parameters, as with CG_DebugBox.
  */
-void CG_DebugCircleEx(const vec3_t center, int flag, float radius,
-                      float startAngle, float endAngle,
-                      const float color[4], int param);
+void CG_DebugCircleEx(const vec3_t center, int flag, float radius, float startAngle, float endAngle, const float color[4], int param);
 char *CG_SafeTranslateString_Internal(const char *domain, const char *reference);
 const char *CG_SafeTranslateString(const char *reference);
 /*
@@ -506,8 +494,7 @@ void CG_FreeRegisteredHandlesHigh(void);
  * animTree in EBX, activeAnimIndex the single cdecl stack arg. The macOS/PPC body
  * named CG_StartWeaponAnim has the same 0x1c4 record stride, 1..21 loop, active
  * index comparison, animRates[] loads, and paired trap_XAnimSetGoalWeight calls. */
-void CG_StartWeaponAnim(int32_t weaponIndex, intptr_t animTree,
-                        int32_t activeAnimIndex);
+void CG_StartWeaponAnim(int32_t weaponIndex, intptr_t animTree, int32_t activeAnimIndex);
 /* CG_StopAllWeaponAnims (0x30042a30) — the fixed-IDLE variant of
  * CG_StartWeaponAnim. The macOS/PPC body carrying this exact symbol has the same
  * 0x1c4 record stride, loop, animRates[] loads, and hardcoded index-1 compare.
@@ -616,14 +603,16 @@ void CG_RegisterCvars(void);
 /* CG_Init (0x3002df30) — top-level cgame connection/map initializer. The original
  * i386 call carries serverMessageNum in EDX and the other two arguments on the
  * stack; portable recovered C models the semantic ordered signature below. */
-void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
-             int32_t clientNum);
+void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence, int32_t clientNum);
 /* Caller-observed initialization helpers. CG_RegisterSounds is identified by its
  * sound-alias/media registration body and same-module PPC name. The config-string
  * helper parses/registers the initial config-string asset/client ranges; its exact
  * original spelling remains unproven until 0x30038830 is reconstructed. */
 void CG_RegisterSounds(void);
-enum { CG_MAX_VOICE_CHATS = 64, CG_VOICE_CHAT_TEXT = 64 };
+enum {
+    CG_MAX_VOICE_CHATS = 64,
+    CG_VOICE_CHAT_TEXT = 64
+};
 typedef enum cgVoiceChatGender_e {
     CG_VOICE_GENDER_MALE = 0,
     CG_VOICE_GENDER_FEMALE = 1,
@@ -644,13 +633,10 @@ typedef struct cgVoiceChatTable_s {
 } cgVoiceChatTable_t;
 extern cgVoiceChatTable_t cg_voiceChatTables[CG_VOICE_CHAT_TABLE_COUNT];
 #if UINTPTR_MAX == 0xFFFFFFFFu
-_Static_assert(sizeof(cgVoiceChatEntry_t) == 0x1244,
-               "voice chat entry stride 0x1244");
-_Static_assert(sizeof(cgVoiceChatTable_t) == 0x49148,
-               "voice chat table stride 0x49148");
+_Static_assert(sizeof(cgVoiceChatEntry_t) == 0x1244, "voice chat entry stride 0x1244");
+_Static_assert(sizeof(cgVoiceChatTable_t) == 0x49148, "voice chat table stride 0x49148");
 #endif
-qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
-                            int32_t maxVoiceChats);
+qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table, int32_t maxVoiceChats);
 void CG_RegisterConfigStringAssets(void);
 void CG_BuildVoteHudStrings(void);
 void CG_BuildTimeoutHudStrings(void);
@@ -813,8 +799,7 @@ void CG_SetConfigValues(void);
  * build carries soundPosition in ECX, aliasName in EAX, and entityNum on the
  * stack. It also dispatches the alias subtitle when playback returns a duration.
  * Reconstructed in src/sound/cg_playsoundaliasbyname.c. */
-int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
-                            const char *aliasName);
+int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const char *aliasName);
 
 /*
  * CG_PlayClientSoundAliasByName (0x3002ca30) — convenience wrapper that plays `sound`
@@ -842,9 +827,7 @@ void CG_PlayClientSoundAliasByName(const char *sound);
 void CG_PlayEntitySoundAliasByName(int clientNum, const char *soundName);
 const char *trap_Com_SoundAliasString(const char *name);
 snd_alias_t *trap_Com_PickSoundAlias(const char *name, const vec3_t origin);
-int32_t trap_MSS_PlaySoundAlias(snd_alias_t *alias, int32_t entityNum,
-                                const void *soundPosition,
-                                int32_t timeShift);
+int32_t trap_MSS_PlaySoundAlias(snd_alias_t *alias, int32_t entityNum, const void *soundPosition, int32_t timeShift);
 
 /*
  * CG_LocalSound (0x3003ab70) — console command handler that plays a numbered
@@ -1091,8 +1074,7 @@ void Com_ErrorMessage(const char *format, ...);
  * cg_fadeOverlayActive = 1, and returns qtrue. Role name; the mechanical size-guess
  * ItemParse_forecolor is rejected — this parses no menu item and writes no color.
  */
-qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
-                              int32_t duration);
+qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime, int32_t duration);
 
 /*
  * _vsnprintf (0x3005c1d5) — CRT-style bounded vsnprintf: formats `format`/`args`
@@ -1171,8 +1153,7 @@ void trap_Cvar_Set(const char *name, const char *value);
  */
 static inline void trap_Cvar_SetValue(vmCvar_t *cvar, const char *value)
 {
-    cgame_syscall(CG_CVAR_SET_VALUE, (intptr_t)cvar,
-                  (intptr_t)value);
+    cgame_syscall(CG_CVAR_SET_VALUE, (intptr_t)cvar, (intptr_t)value);
 }
 
 /*
@@ -1182,11 +1163,9 @@ static inline void trap_Cvar_SetValue(vmCvar_t *cvar, const char *value)
  * matching server proto is trap_Cvar_Register(void *cvar, const char *, const char
  * *, int). Defined inline so it lowers to the raw trap call.
  */
-static inline void trap_Cvar_Register(vmCvar_t *vmCvar, const char *name,
-                                      const char *defaultValue, int32_t flags)
+static inline void trap_Cvar_Register(vmCvar_t *vmCvar, const char *name, const char *defaultValue, int32_t flags)
 {
-    cgame_syscall(CG_CVAR_REGISTER, (intptr_t)vmCvar,
-                  (intptr_t)name, (intptr_t)defaultValue, flags);
+    cgame_syscall(CG_CVAR_REGISTER, (intptr_t)vmCvar, (intptr_t)name, (intptr_t)defaultValue, flags);
 }
 
 /*
@@ -1195,11 +1174,9 @@ static inline void trap_Cvar_Register(vmCvar_t *vmCvar, const char *name,
  * CG_RegisterCvars (0x3002b1a0) reads "sv_running" into a 0x400 buffer. The matching
  * server proto is trap_Cvar_VariableStringBuffer(const char *, char *, int).
  */
-static inline void trap_Cvar_VariableStringBuffer(const char *name, char *buffer,
-                                                  int32_t size)
+static inline void trap_Cvar_VariableStringBuffer(const char *name, char *buffer, int32_t size)
 {
-    cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)name,
-                  (intptr_t)buffer, size);
+    cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)name, (intptr_t)buffer, size);
 }
 
 /*
@@ -1265,7 +1242,7 @@ static inline int32_t trap_Argc(void)
  * full-dword compare of leFlags against 32); == selects the mode-A width/length
  * pair (cg_tracerwidthlmg_vmCvar.value/cg_tracerlengthlmg_vmCvar.value), != selects the mode-B pair.
  * Exact original LEF_* symbol unresolved; named by proven role. */
-#define LEF_TRACER_MODE_A  ((uint32_t)0x20)
+#define LEF_TRACER_MODE_A ((uint32_t)0x20)
 
 /*
  * localEntity_t.leFlags bit tested by CG_AddScaleFade (0x3002ac20): `TEST [le+0xc],0x1`
@@ -1288,8 +1265,8 @@ static inline int32_t trap_Argc(void)
  * by role until its handler is reconstructed. Exact Quake3 enum name for case 1
  * (LE_MARK/LE_SCALE_FADE/...) not bound absolutely. */
 enum {
-    LE_FADE_RGB      = 0,  /* leType handled by CG_AddFadeRGB: fade a colored refEntity */
-    LE_SCALE_FADE    = 1,  /* leType handled by CG_AddScaleFade (0x3002ac20): fade + growing radius */
+    LE_FADE_RGB = 0,  /* leType handled by CG_AddFadeRGB: fade a colored refEntity */
+    LE_SCALE_FADE = 1,  /* leType handled by CG_AddScaleFade (0x3002ac20): fade + growing radius */
     LE_MOVING_TRACER = 2   /* leType handled by CG_AddMovingTracer (0x3002ab00) */
 };
 
@@ -1315,13 +1292,13 @@ enum {
 typedef struct localEntity_s {
     struct localEntity_s *prev;       /* +0x00 */
     struct localEntity_s *next;       /* +0x04 */
-    int32_t      leType;              /* +0x08: LE_* discriminant */
-    uint32_t     leFlags;             /* +0x0c: bit 0 tested by 0x3002ac20; == LEF_TRACER_MODE_A by CG_AddMovingTracer */
-    int32_t      endTime;             /* +0x10: cg.time at which the entity expires */
-    float        lifeRate;            /* +0x14: 1/(endTime-startTime) fade rate */
+    int32_t leType;              /* +0x08: LE_* discriminant */
+    uint32_t leFlags;             /* +0x0c: bit 0 tested by 0x3002ac20; == LEF_TRACER_MODE_A by CG_AddMovingTracer */
+    int32_t endTime;             /* +0x10: cg.time at which the entity expires */
+    float lifeRate;            /* +0x14: 1/(endTime-startTime) fade rate */
     trajectory_t pos;                 /* +0x18: position trajectory (trDelta at +0x30 = velocity/dir) */
-    vec4_t       color;               /* +0x3c: RGBA color multipliers in [0,1] */
-    float        radius;              /* +0x4c: base radius; CG_AddScaleFade uses it as the
+    vec4_t color;               /* +0x3c: RGBA color multipliers in [0,1] */
+    float radius;              /* +0x4c: base radius; CG_AddScaleFade uses it as the
                                        *        view-distance cull threshold and the refEntity.radius base */
     refEntity_t refEntity;            /* +0x50: render entity submitted to the scene */
 } localEntity_t;
@@ -1329,13 +1306,13 @@ typedef struct localEntity_s {
 /* localEntity_t has pointer fields (prev/next) before the asserted offsets, so the
  * layout guards are only meaningful at the target's 4-byte pointer width. */
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-_Static_assert(offsetof(localEntity_t, leType)  == 0x08, "localEntity_t.leType offset");
+_Static_assert(offsetof(localEntity_t, leType) == 0x08, "localEntity_t.leType offset");
 _Static_assert(offsetof(localEntity_t, leFlags) == 0x0c, "localEntity_t.leFlags offset");
 _Static_assert(offsetof(localEntity_t, endTime) == 0x10, "localEntity_t.endTime offset");
-_Static_assert(offsetof(localEntity_t, pos)     == 0x18, "localEntity_t.pos (trajectory) offset");
+_Static_assert(offsetof(localEntity_t, pos) == 0x18, "localEntity_t.pos (trajectory) offset");
 _Static_assert(offsetof(localEntity_t, pos.trDelta) == 0x30, "localEntity_t.pos.trDelta offset");
-_Static_assert(offsetof(localEntity_t, color)   == 0x3c, "localEntity_t.color offset");
-_Static_assert(offsetof(localEntity_t, radius)  == 0x4c, "localEntity_t.radius offset");
+_Static_assert(offsetof(localEntity_t, color) == 0x3c, "localEntity_t.color offset");
+_Static_assert(offsetof(localEntity_t, radius) == 0x4c, "localEntity_t.radius offset");
 _Static_assert(offsetof(localEntity_t, refEntity) == 0x50, "localEntity_t.refEntity offset");
 #endif
 
@@ -1380,11 +1357,7 @@ static inline void trap_R_AddRefEntityToScene(const refEntity_t *re)
  * 0xc7. The original i386 entry receives four stack arguments plus origin and
  * timeShift in EDX/ECX, and forwards all six to cgame_syscall. Reconstructed at
  * src/client/cgame/module/trap_mss_playblendedsoundaliases.c; declared here for reuse. */
-void trap_MSS_PlayBlendedSoundAliases(snd_alias_t *alias0,
-                                      snd_alias_t *alias1,
-                                      float blend,
-                                      int32_t entityNum,
-                                      const vec3_t origin,
+void trap_MSS_PlayBlendedSoundAliases(snd_alias_t *alias0, snd_alias_t *alias1, float blend, int32_t entityNum, const vec3_t origin,
                                       int32_t timeShift);
 
 /*
@@ -1412,8 +1385,7 @@ const char *trap_XAnimGetAnimName(uint32_t packed);
  * trap_R_AddLightToScene — cgame trap-0x42 wrapper adding one dynamic light to the
  * current scene (org, intensity, r, g, b). Reconstructed at
  * src/client/cgame/module/trap_r_addlighttoscene.c; declared here for reuse. */
-void trap_R_AddLightToScene(const vec3_t org, float intensity,
-                            float r, float g, float b);
+void trap_R_AddLightToScene(const vec3_t org, float intensity, float r, float g, float b);
 
 /*
  * CG_AddHeadIconSprite (0x30032910, provisional-by-role) — build and submit one
@@ -1429,8 +1401,7 @@ void trap_R_AddLightToScene(const vec3_t org, float intensity,
  * name "CG_VoiceChat" is rejected (size match; the body is a pure render-entity
  * emitter with no voice-chat work). See the function .c for the per-instruction
  * derivation; exact CoD symbol unproven, name is role-derived. */
-void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle,
-                          int32_t iconScale, int32_t attenuateByDistance);
+void CG_AddHeadIconSprite(centity_t *entity, int32_t sfxOrShaderHandle, int32_t iconScale, int32_t attenuateByDistance);
 
 /*
  * CG_AddHeadIcon (0x30032ac0) — per-frame dispatcher that picks and submits at most
@@ -1567,8 +1538,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t mu
  * caller-cleaned. Role name from the caller + behavior; exact CoD symbol unproven. The
  * .mcode's size-matched `G_RunItem` guess is REJECTED (this is a cgame tracer builder,
  * not a server item think). */
-void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
-                          int32_t weaponInfoIndex, int32_t weaponIndex);
+void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin, int32_t weaponInfoIndex, int32_t weaponIndex);
 
 /* CG_SpawnTracerLine (0x30048260) — RECONSTRUCTED in
  * src/client/cgame/weapons/cg_spawntracerline.c. Spawns a moving LINE tracer as a
@@ -1620,8 +1590,7 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle);
  * unproven. The .mcode's size-matched "BG_AnimScriptStateChange" guess is REJECTED —
  * this is cgame tracer/muzzle-flash rendering (rand chance, tag muzzle point, tracer
  * local-entities), not a BG anim-script state machine. */
-void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
-                    int32_t surfaceType, const char *tagName);
+void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex, int32_t surfaceType, const char *tagName);
 
 /*
  * Muzzle-tag name pointer slots (.data at 0x30085eec/0x30085efc/0x30085f00). Each holds
@@ -1643,8 +1612,7 @@ void CG_SpawnTracer(vec3_t impactOrigin, int32_t entityNum, int32_t weaponIndex,
  * "CG_BulletHitEvent: unknown vehicle position\n" (0x3007a7f4, printed at 0x30049013);
  * the .mcode size-guess "RegisterItem" is REJECTED. Plain cdecl caller-cleaned ABI
  * (both call sites push 8 dwords and ADD ESP,0x20). */
-void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
-                       vec3_t effectDir2, int32_t weaponIndex, int32_t surfaceType,
+void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1, vec3_t effectDir2, int32_t weaponIndex, int32_t surfaceType,
                        int32_t linkedEntitySlotPlus1, int32_t vehicleMountPos);
 
 /*
@@ -1666,21 +1634,17 @@ void CG_AddLocalEntities(void);
  * which raises the CG_ERROR "CG_FreeLocalEntity: not active" if that entity is
  * not linked. Maintains cg_numLocalEntities. */
 localEntity_t *CG_AllocLocalEntity(void);
-void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader,
-                             int32_t radius, int32_t duration);
-void CG_DrawRotatedQuadPic(const vec4_t color, float x, float y,
-                               float width, float height,
-                               int32_t rotation, int32_t pivot);
-void CG_Trap54DrawStyle4(const vec4_t color, int32_t x, float y,
-                         const char *string);
-void CG_Trap54DrawStyle5(const vec4_t color, int32_t x, float y,
-                         const char *string);
-int32_t CG_PlayGearRattleSound(int32_t entityNum, qboolean sprinting,
-                               qboolean running);
+void CG_SpawnScaleFadeSprite(const vec3_t origin, qhandle_t shader, int32_t radius, int32_t duration);
+void CG_DrawRotatedQuadPic(const vec4_t color, float x, float y, float width, float height, int32_t rotation, int32_t pivot);
+void CG_Trap54DrawStyle4(const vec4_t color, int32_t x, float y, const char *string);
+void CG_Trap54DrawStyle5(const vec4_t color, int32_t x, float y, const char *string);
+int32_t CG_PlayGearRattleSound(int32_t entityNum, qboolean sprinting, qboolean running);
 /* Register-ABI thunk at 0x300435c0: map a weapon index in EAX into the dedicated
  * view-weapon DObj handle band by adding the same 1024 bias used by the adjacent
  * weapon registration/release code. */
-enum { CG_VIEW_WEAPON_DOBJ_HANDLE_BASE = 1024 };
+enum {
+    CG_VIEW_WEAPON_DOBJ_HANDLE_BASE = 1024
+};
 int32_t CG_WeaponDObjHandle(int32_t weaponIndex);
 
 /*
@@ -1719,8 +1683,7 @@ void CG_InitLocalEntities(void);
  * Pmove match) and the body proves a local-entity/refEntity rail-core builder,
  * not a player-move frame. Exact original CoD symbol unproven.
  */
-void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
-                             const vec3_t colorRGB);
+void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end, const vec3_t colorRGB);
 
 /* CG_RailTrail (0x30043190) -- build a rail-core trail between start/end using a
  * palette selected by colorIndex. Simple palette values emit one segment; value 5
@@ -1783,8 +1746,8 @@ void CG_VoiceChat_f(void);
  * Proven from CG_VoiceChat's own body: MOV [EDI]/[EDI+4]/[EDI+8] read the three
  * origin floats at +0x0/+0x4/+0x8. */
 typedef struct cgVoiceChatMessage_s {
-    vec3_t   origin;   /* +0x0: argv[3], argv[6], argv[7] as floats */
-    int32_t  color;    /* +0xc: argv[5] as int; the '^'+%c color char in the chat line */
+    vec3_t origin;   /* +0x0: argv[3], argv[6], argv[7] as floats */
+    int32_t color;    /* +0xc: argv[5] as int; the '^'+%c color char in the chat line */
 } cgVoiceChatMessage_t;
 
 /*
@@ -1809,8 +1772,8 @@ typedef struct cgVoiceChatMessage_s {
  * after '^' via the format's second %c; RTCW CG_VoiceChatLocal lineage), and
  * voiceChatString (the sound-alias token, picked + copied into msg.token).
  * The .mcode size-match name "PlayerCmd_ClonePlayer" is REJECTED. */
-void CG_VoiceChat(cgVoiceChatMessage_t *msg, int32_t mode, int32_t voiceOnly,
-                  int32_t clientNum, int32_t color, const char *voiceChatString);
+void CG_VoiceChat(cgVoiceChatMessage_t *msg, int32_t mode, int32_t voiceOnly, int32_t clientNum, int32_t color,
+                  const char *voiceChatString);
 
 /*
  * CG_ParseVoiceChat (0x3003a410) — client handler for a server-sent voice-chat
@@ -1835,8 +1798,7 @@ void CG_ParseVoiceChat(int32_t mode);
  */
 static inline XAnimTree *trap_XAnimCreateTree(XAnim *animTree)
 {
-    return (XAnimTree *)(intptr_t)cgame_syscall(
-        CG_XANIM_CREATE_TREE, (intptr_t)animTree);
+    return (XAnimTree *)(intptr_t)cgame_syscall(CG_XANIM_CREATE_TREE, (intptr_t)animTree);
 }
 
 /*
@@ -1848,11 +1810,9 @@ static inline XAnimTree *trap_XAnimCreateTree(XAnim *animTree)
  * proven); see CG_DOBJ_GET_CLIENT_NOTIFY_LIST above. Defined inline so it lowers to the raw
  * trap call.
  */
-static inline int32_t trap_XAnimGetNotetracks(
-    xanim_deferred_notify_t **outList)
+static inline int32_t trap_XAnimGetNotetracks(xanim_deferred_notify_t **outList)
 {
-    return (int32_t)cgame_syscall(CG_DOBJ_GET_CLIENT_NOTIFY_LIST,
-                                  (intptr_t)outList);
+    return (int32_t)cgame_syscall(CG_DOBJ_GET_CLIENT_NOTIFY_LIST, (intptr_t)outList);
 }
 
 /*
@@ -1931,8 +1891,7 @@ static inline XAnim *Scr_FindAnimTree(const char *treeName)
     return cg_scriptImports.findAnimTree(treeName);
 }
 
-static inline void Scr_FindAnim(const char *treeName, const char *animName,
-                                scr_anim_t *outAnim)
+static inline void Scr_FindAnim(const char *treeName, const char *animName, scr_anim_t *outAnim)
 {
     cg_scriptImports.findAnim(treeName, animName, outAnim);
 }
@@ -1954,18 +1913,15 @@ static inline uint32_t Scr_GetAnimsIndex(XAnim *anims)
  * the argument vector themselves (e.g. CG_DrawPlayerWeaponName 0x3002ec10). Full
  * body in src/client/cgame/module/trap_r_text_paint.c.
  */
-int32_t trap_R_Text_Paint(intptr_t a0, intptr_t a1, intptr_t a2,
-                          intptr_t a3, intptr_t a4, intptr_t a5,
-                          intptr_t a6, intptr_t a7, intptr_t a8);
+int32_t trap_R_Text_Paint(intptr_t a0, intptr_t a1, intptr_t a2, intptr_t a3, intptr_t a4, intptr_t a5, intptr_t a6, intptr_t a7,
+                          intptr_t a8);
 /*
  * trap_R_Text_PaintWithCursor (0x3003de90) — recovered ten-word wrapper for
  * cgame syscall 55. Its cursor-character word is sign-extended from byte width,
  * exactly as the original MOVSX at 0x3003deba.
  */
-int32_t trap_R_Text_PaintWithCursor(
-    intptr_t xBits, intptr_t yBits, intptr_t font, intptr_t scaleBits,
-    intptr_t color, intptr_t text, intptr_t cursorPos, intptr_t cursorChar,
-    intptr_t limit, intptr_t textStyle);
+int32_t trap_R_Text_PaintWithCursor(intptr_t xBits, intptr_t yBits, intptr_t font, intptr_t scaleBits, intptr_t color, intptr_t text,
+                                    intptr_t cursorPos, intptr_t cursorChar, intptr_t limit, intptr_t textStyle);
 
 /*
  * CG_DrawSpectatorFollowHints (0x3001bd50) — draw the spectator "follow" key-hint
@@ -1993,8 +1949,7 @@ void CG_DrawSpectatorFollowHints(void);
  * measurement (see CG_R_TEXT_WIDTH). Provisional caller-observed ABI; superseded by the
  * wrapper's own .mcode reconstruction. Source: uo_cgame_mp_x86.dll 0x3003dde0.
  */
-int32_t trap_R_Text_Width(const char *text, int32_t font,
-                          int32_t scaleBits, int32_t limit);
+int32_t trap_R_Text_Width(const char *text, int32_t font, int32_t scaleBits, int32_t limit);
 
 /*
  * trap_R_Text_Height (0x3003de10) — thin 2-argument cdecl wrapper that forwards its two
@@ -2008,8 +1963,7 @@ int32_t trap_R_Text_Height(int32_t a0, int32_t a1);
 
 /* trap_R_SetFog (0x3003e040) — reconstructed seven-dword forwarding wrapper for
  * cgame syscall 68. CG_ParseFog passes the renderer fog payload through it. */
-int32_t trap_R_SetFog(int32_t a1, int32_t a2, int32_t a3, int32_t a4,
-                  int32_t a5, int32_t a6, int32_t a7);
+int32_t trap_R_SetFog(int32_t a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7);
 
 /*
  * CG_TranslateMessage (0x3002d850) — localize text via syscall 57, then replace the first
@@ -2062,8 +2016,7 @@ void trap_MSS_FadeAllSounds(float targetVolume, int32_t durationMsec);
  * at spaces via the CG_SE_READ_CHAR_FROM_STRING glyph iterator), and counts cg_centerPrintLines.
  * The register-passed priority argument is an i386 ABI detail (declared here as a
  * normal parameter). Source: 0x30019050..0x3001918c. */
-void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
-                            int32_t priority);
+void CG_PriorityCenterPrint(const char *str, float y, float charWidth, int32_t priority);
 
 /*
  * CG_DrawCenterString (0x300191b0) — paint the queued center-screen HUD message.
@@ -2125,8 +2078,7 @@ void CG_DrawAreaTeamChat(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t 
  * "BG_GetAnimScriptEvent" guess is REJECTED (no anim-script lookup; it is a centered
  * 2D text draw). Exact source name unresolved; named by proven role.
  */
-void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord,
-                         intptr_t arg0, intptr_t arg1, intptr_t arg2);
+void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord, intptr_t arg0, intptr_t arg1, intptr_t arg2);
 /*
  * CG_DrawPlayerBarHealthTitle (0x3002fca0) — fourth family member. Reads bits(obj->x) and
  * bits(obj->y) (both raw dwords, not floats here), runs CG_SafeTranslateString_Internal("cgame",
@@ -2136,9 +2088,7 @@ void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord,
  * The .mcode size-matched "Cmd_Where_f" guess is rejected (this is not a console
  * command handler).
  */
-void CG_DrawPlayerBarHealthTitle(rectDef_t *obj,
-                                 intptr_t arg0, intptr_t arg1,
-                                 intptr_t arg2, intptr_t arg3);
+void CG_DrawPlayerBarHealthTitle(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_Draw1stPlace (0x30031b60) — fifth family member, structurally the
  * twin of CG_DrawPlayerBarHealthTitle: object in ESI, four cdecl stack words follow,
@@ -2151,9 +2101,7 @@ void CG_DrawPlayerBarHealthTitle(rectDef_t *obj,
  * quaternion math, no floating point at all). Object arrives in ESI; four cdecl
  * stack words follow.
  */
-void CG_Draw1stPlace(rectDef_t *obj,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2,
-                     intptr_t arg3);
+void CG_Draw1stPlace(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_HudEmitIconOrValue (0x30030f10) — iterator-driven CG_R_TEXT_PAINT HUD emit family
  * member that draws ONE per-client HUD element into a rect. It advances/clamps the
@@ -2168,9 +2116,8 @@ void CG_Draw1stPlace(rectDef_t *obj,
  * size-match guess "script_func_precacheheadicon" is rejected — it precaches
  * nothing). Full body in src/hud/cg_hudemiticonorvalue.c.
  */
-void CG_HudEmitIconOrValue(qhandle_t hIcon, const rectDef_t *rect,
-                           int32_t drawParamA, int32_t drawParamB,
-                           const vec4_t drawColor, int32_t drawParamD);
+void CG_HudEmitIconOrValue(qhandle_t hIcon, const rectDef_t *rect, int32_t drawParamA, int32_t drawParamB, const vec4_t drawColor,
+                           int32_t drawParamD);
 /*
  * CG_HudEmitDigits (0x30031300) — HUD number element of the CG_R_TEXT_PAINT emit family.
  * Draws one per-client integer into `rect` either as a single icon shader stretched
@@ -2187,8 +2134,7 @@ void CG_HudEmitIconOrValue(qhandle_t hIcon, const rectDef_t *rect,
  * is REJECTED (no player-state interpolation; it issues 2D HUD draw traps). Full body in
  * src/client/cgame/hud/cg_hudemitdigits.c.
  */
-void CG_HudEmitDigits(qhandle_t hIcon, const vec4_t color,
-                      const rectDef_t *rect, float charScale);
+void CG_HudEmitDigits(qhandle_t hIcon, const vec4_t color, const rectDef_t *rect, float charScale);
 /*
  * CG_DrawFieldWidth (0x30017aa0) — measure the width of a fixed-width numeric
  * HUD field: clamp `value` to what fits in `width` digits (width itself clamped to
@@ -2218,8 +2164,7 @@ int CG_DrawFieldWidth(int width, int value, int charWidth);
  * anchored by the same-module Mac CG_DrawField symbol. Full body in
  * src/client/cgame/hud/cg_drawfield.c.
  */
-int CG_DrawField(int width, int x, int y, int value,
-                 int charWidth, int charHeight, int drawGlyphs, int justify);
+int CG_DrawField(int width, int x, int y, int value, int charWidth, int charHeight, int drawGlyphs, int justify);
 /*
  * The -9999 "unset/invalid" sentinel of the parsed integer config value that
  * CG_Draw1stPlace and the score painters test. Proven by CMP EAX,0xffffd8f1 at
@@ -2227,7 +2172,9 @@ int CG_DrawField(int width, int x, int y, int value,
  * (and the identical gate at 0x30031526). Exact source name of the enclosing
  * subsystem unresolved; named by its proven sentinel role.
  */
-enum { CG_SCORE_VALUE_UNSET = -9999 };
+enum {
+    CG_SCORE_VALUE_UNSET = -9999
+};
 /*
  * CG_Draw2ndPlace (0x30031bd0) — fifth family member, same 10-slot CG_R_TEXT_PAINT
  * shape as CG_DrawPlayerBarHealthTitle: reads bits(obj->x) and bits(obj->y) (both raw dwords),
@@ -2240,8 +2187,7 @@ enum { CG_SCORE_VALUE_UNSET = -9999 };
  * The .mcode size-matched "PitchToQuaternion" guess is REJECTED (no quaternion math,
  * no x87 here; it is a trap-54 emitter).
  */
-void CG_Draw2ndPlace(rectDef_t *obj,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
+void CG_Draw2ndPlace(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_DrawPlayerLocation (0x30031280) — local-player member of the CG_R_TEXT_PAINT emitter
  * family. It fetches the local player's per-client anim/player state
@@ -2252,8 +2198,7 @@ void CG_Draw2ndPlace(rectDef_t *obj,
  * words follow. The .mcode size-matched "PM_WaterEvents" guess is rejected (this
  * makes a single trap-54 call and no pmove/water bookkeeping).
  */
-void CG_DrawPlayerLocation(rectDef_t *obj,
-                           intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
+void CG_DrawPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_EmitLocalTeamBackground (0x300316b0) — local-player member of the same HUD emit
  * family as CG_DrawPlayerLocation. It fetches the local player's per-client anim/player
@@ -2281,9 +2226,7 @@ void CG_EmitLocalTeamBackground(rectDef_t *rect, const vec4_t color);
  * trap-54 call, no XAnim work). Retail UO and the macOS owner-draw jump table
  * establish the exact name.
  */
-void CG_DrawSelectedPlayerName(rectDef_t *obj,
-                               intptr_t arg0, intptr_t arg1,
-                               intptr_t arg2, intptr_t arg3);
+void CG_DrawSelectedPlayerName(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_DrawSelectedPlayerLocation (0x300311f0) — exact sibling of CG_DrawSelectedPlayerName
  * (0x30031020): shares the HUD emit cursor/table preamble
@@ -2298,9 +2241,7 @@ void CG_DrawSelectedPlayerName(rectDef_t *obj,
  * call, no entity linking). Retail UO and the macOS owner-draw jump table
  * establish the exact name.
  */
-void CG_DrawSelectedPlayerLocation(rectDef_t *obj,
-                                   intptr_t arg0, intptr_t arg1,
-                                   intptr_t arg2, intptr_t arg3);
+void CG_DrawSelectedPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_DrawRedScore (0x30031510) / CG_DrawBlueScore (0x300315e0) — the two score
  * display members of the CG_R_TEXT_PAINT emitter family. Retail UO assigns their
@@ -2318,10 +2259,8 @@ void CG_DrawSelectedPlayerLocation(rectDef_t *obj,
  * Script_Orbit) are REJECTED — neither parses menus nor does camera math; both are trap-54
  * score emitters.
  */
-void CG_DrawRedScore(rectDef_t *obj,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
-void CG_DrawBlueScore(rectDef_t *obj,
-                      intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
+void CG_DrawRedScore(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
+void CG_DrawBlueScore(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_DrawGameType (0x30031c50) — member of the CG_R_TEXT_PAINT emitter family that
  * forwards the parsed serverinfo gametype string. Reads bits(obj->x) (raw dword) and the
@@ -2338,8 +2277,7 @@ void CG_DrawBlueScore(rectDef_t *obj,
  * adjacent fixed-string accessor at 0x30031c40 as CG_GameTypeString.
  */
 const char *CG_GameTypeString(void);
-void CG_DrawGameType(rectDef_t *obj,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
+void CG_DrawGameType(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
 /*
  * CG_ConfigStringHint (0x300310b0) — PROVISIONAL caller-observed decl (caller-observed
  * ABI only; superseded by this callee's own .mcode reconstruction). A config-string
@@ -2516,9 +2454,8 @@ void CG_ProcessSnapshots(void);
 /* CG_DrawActiveFrame (0x30042160) — vmMain command 4 frame driver. The first
  * four source arguments are stack-passed by vmMain; demoPlayback arrives in EDX
  * and drawFrame in ECX under the DLL's mixed register ABI. */
-void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
-                        qboolean demoPlayback, int32_t lockedViewFace,
-                        int32_t lockedViewSize, qboolean drawFrame);
+void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPlayback, int32_t lockedViewFace, int32_t lockedViewSize,
+                        qboolean drawFrame);
 
 void CGAME_ABI_CDECL dllEntry(cgame_syscall_t systemCall);
 void CG_OffsetThirdPersonView(void);
@@ -2540,42 +2477,31 @@ float cgame_compat_begin_open_menu_canvas(void);
 void cgame_compat_end_open_menu_canvas(float previousXScale);
 float cgame_compat_begin_passive_hud_menu(struct menuDef_s *menu);
 void cgame_compat_end_passive_hud_menu(void);
-void cgame_compat_project_server_hud_item(
-    cgAlignedDrawItem *item, const struct hudElem_s *elem);
+void cgame_compat_project_server_hud_item(cgAlignedDrawItem *item, const struct hudElem_s *elem);
 float cgame_compat_left_hud_virtual_offset(void);
 qboolean cgame_compat_uses_classic_aspect(void);
 void cgame_compat_tile_clear(void);
-void cgame_compat_draw_physical_stretch_pic(
-    float x, float y, float width, float height,
-    float s1, float t1, float s2, float t2, int32_t shaderHandle);
+void cgame_compat_draw_physical_stretch_pic(float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+                                            int32_t shaderHandle);
 void cgame_compat_fill_native_screen_effect(const float color[4]);
-void cgame_compat_expand_native_server_hud_shader(
-    const cgAlignedDrawItem *item, const struct hudElem_s *elem,
-    float *drawX, float *drawWidth);
+void cgame_compat_expand_native_server_hud_shader(const cgAlignedDrawItem *item, const struct hudElem_s *elem, float *drawX,
+                                                  float *drawWidth);
 void cgame_compat_draw_optical_letterbox(float alpha);
 long double cgame_compat_optical_canvas_right(long double stockViewRight);
-void cgame_compat_draw_letterboxed_optical_pic(
-    float x, float y, float width, float height,
-    float s1, float t1, float s2, float t2, int32_t shaderHandle);
-void cgame_compat_draw_physical_quad_pic(
-    float x, float y, float width, float height,
-    float s1, float t1, float s2, float t2,
-    float angleDegrees, int32_t shaderHandle);
+void cgame_compat_draw_letterboxed_optical_pic(float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+                                               int32_t shaderHandle);
+void cgame_compat_draw_physical_quad_pic(float x, float y, float width, float height, float s1, float t1, float s2, float t2,
+                                         float angleDegrees, int32_t shaderHandle);
 long double cgame_compat_spread_fov_x(void);
-long double cgame_compat_expand_horizontal_fov(long double baseFov,
-                                               int32_t width,
-                                               int32_t height);
+long double cgame_compat_expand_horizontal_fov(long double baseFov, int32_t width, int32_t height);
 void CG_BuildLockedViewRefdef(void);
 qboolean CG_CalcViewProjection(void);
 void CG_CalcTurretViewValues(void);
 void CG_OffsetFirstPersonView(void);
 qboolean CG_CalcViewValues(void);
 
-intptr_t CGAME_ABI_CDECL vmMain(
-    int32_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2,
-    intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6,
-    intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10,
-    intptr_t arg11);
+intptr_t CGAME_ABI_CDECL vmMain(int32_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5,
+                                intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11);
 /*
  * trap_R_DrawStretchPic (0x3003e0f0) — cgame trap id 73, the 2D stretch-pic draw.
  * Forwards its nine 32-bit stack slots (x, y, w, h, s1, t1, s2, t2 as float bit
@@ -2584,15 +2510,7 @@ intptr_t CGAME_ABI_CDECL vmMain(
  * so the wrapper's bit-exact forwarding through the variadic trap is preserved
  * (typing the coordinates as float would force a double promotion the machine code
  * does not do). Service proven by the CG_DrawPic call site (0x3001caa0). */
-int32_t trap_R_DrawStretchPic(int32_t x,
-                              int32_t y,
-                              int32_t w,
-                              int32_t h,
-                              int32_t s1,
-                              int32_t t1,
-                              int32_t s2,
-                              int32_t t2,
-                              int32_t hShader);
+int32_t trap_R_DrawStretchPic(int32_t x, int32_t y, int32_t w, int32_t h, int32_t s1, int32_t t1, int32_t s2, int32_t t2, int32_t hShader);
 
 /* NOT_FROM_ORIGINAL_SOURCE: defined float bit-copy adapters for the recovered
  * host build. They preserve the raw dword transfers used by the i386 VM/trap
@@ -2626,15 +2544,11 @@ static CG_RECOVERY_ALWAYS_INLINE float CG_FloatFromBits(uint32_t bits)
  * out-of-range path undefined in C; -O0 does not change that language rule.
  * Native rows deliberately use their host sizeof so widened pointer fields
  * remain valid on 64-bit builds. */
-static CG_RECOVERY_ALWAYS_INLINE clientInfo_t *
-cgame_compat_unchecked_clientinfo(clientInfo_t *base, int32_t client)
+static CG_RECOVERY_ALWAYS_INLINE clientInfo_t *cgame_compat_unchecked_clientinfo(clientInfo_t *base, int32_t client)
 {
-    const uint32_t offsetBits =
-        (uint32_t)client * (uint32_t)sizeof(clientInfo_t);
-    const intptr_t displacement =
-        (intptr_t)coduo_int32_from_bits(offsetBits);
-    const uintptr_t address =
-        (uintptr_t)(void *)base + (uintptr_t)displacement;
+    const uint32_t offsetBits = (uint32_t)client * (uint32_t)sizeof(clientInfo_t);
+    const intptr_t displacement = (intptr_t)coduo_int32_from_bits(offsetBits);
+    const uintptr_t address = (uintptr_t)(void *)base + (uintptr_t)displacement;
     return (clientInfo_t *)address;
 }
 
@@ -2644,13 +2558,11 @@ cgame_compat_unchecked_clientinfo(clientInfo_t *base, int32_t client)
  * signed displacement before native address addition preserves negative/corrupt
  * inputs too, while the integer-address boundary prevents the host compiler from
  * assuming the index is within the declared C array. */
-static CG_RECOVERY_ALWAYS_INLINE int32_t
-cgame_compat_read_target_i32_index(const int32_t *base, int32_t index)
+static CG_RECOVERY_ALWAYS_INLINE int32_t cgame_compat_read_target_i32_index(const int32_t *base, int32_t index)
 {
     uint32_t offsetBits = (uint32_t)index * 4u;
     intptr_t displacement = (intptr_t)coduo_int32_from_bits(offsetBits);
-    uintptr_t address = (uintptr_t)(const void *)base +
-                        (uintptr_t)displacement;
+    uintptr_t address = (uintptr_t)(const void *)base + (uintptr_t)displacement;
     int32_t value;
     memcpy(&value, (const void *)address, sizeof(value));
     return value;
@@ -2675,8 +2587,7 @@ cgame_compat_read_target_i32_index(const int32_t *base, int32_t index)
 static inline int32_t CG_RoundToNearest(float coord)
 {
     /* FLD float coord; FADD double eps; FISTP dword -> round-to-nearest int. */
-    long double sum =
-        (long double)coord + (long double)(double)CG_FTOL_EPSILON;
+    long double sum = (long double)coord + (long double)(double)CG_FTOL_EPSILON;
     return coduo_x87_fistp_i32(sum);
 }
 
@@ -2702,9 +2613,7 @@ void CG_DrawPic(float x, float y, float width, float height, qhandle_t hShader);
  * parameter. The size-matched `.mcode` guess `PM_GetSlowdownFriction` is rejected:
  * this issues the 2D stretch-pic draw trap and reads cgs.screenXScale/screenYScale,
  * touching no playerState or friction state. */
-void CG_DrawStretchPic(float x, float y, float width, float height,
-                       float s1, float t1, float s2, float t2,
-                       qhandle_t hShader);
+void CG_DrawStretchPic(float x, float y, float width, float height, float s1, float t1, float s2, float t2, qhandle_t hShader);
 
 /*
  * CG_DrawTeamBackground (0x30017dd0) — draw a solid team-colored 2D background bar.
@@ -2718,8 +2627,7 @@ void CG_DrawStretchPic(float x, float y, float width, float height,
  * the hudColorBar shader + trap-72/73 draw behavior; the .mcode size guess
  * "CG_InitVote" is rejected. Full reconstruction in
  * src/hud/cg_drawteambackground.c. */
-void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float height,
-                          float alpha);
+void CG_DrawTeamBackground(int32_t team, float x, float y, float width, float height, float alpha);
 
 /*
  * CG_EmitTrap54Draw (0x3001cf10) — emit one fixed-shape 2D HUD draw through cgame
@@ -2800,8 +2708,7 @@ void CG_FillRect(float x, float y, float width, float height, const float *color
  * rect[4] in EDI, shader handle on the stack. The .mcode header's size-matched
  * `StopFollowing` name is rejected (this is a 2D draw, not a server player routine).
  */
-void CG_DrawStatBarWithDecay(float *color, const rectDef_t *rect,
-                             int32_t hShader);
+void CG_DrawStatBarWithDecay(float *color, const rectDef_t *rect, int32_t hShader);
 
 /*
  * CG_DrawFlashDamage (0x3001a8e0) — draw the red full-screen "took damage" flash
@@ -2876,29 +2783,35 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY);
  * exporter owner labels near 0x3005d8xx were only first-toucher guesses.
  */
 void CG_Draw2D(void);
-void CG_TileClear(void);             /* 0x3001d160: repaint the four letterbox edges outside the cropped 3D view (src/client/cgame/hud/cg_tileclear.c) */
-void CG_UpdateScreenFade(void);      /* 0x3001ab90: cg_time-driven full-screen fade update */
+void CG_TileClear(
+    void); /* 0x3001d160: repaint the four letterbox edges outside the cropped 3D view (src/client/cgame/hud/cg_tileclear.c) */
+void CG_UpdateScreenFade(void); /* 0x3001ab90: cg_time-driven full-screen fade update */
 void CG_DrawScreenFadeOverlay(void); /* 0x3001a7c0: cg_time-driven fade overlay, always run before return on any non-suppressed frame */
-void CG_DrawDamageDirectionIndicators(void);  /* 0x3001a980: draw the fading damage-direction arrow ring (src/client/cgame/hud/cg_drawdamagedirectionindicators.c). Supersedes the provisional caller-observed name CG_DrawScreenBlend: the body proves damage arrows, not a color-vector screen blend. */
-qboolean CG_DrawIntermission(void);  /* 0x3001bd20: forces the scoreboard on for the intermission screen — cgame_syscall(CG_MAP_RESTART_RESET_RENDERER), latches cg_scoreboardShowTime=cg_time, sets cg_scoreboardShowing=qtrue, then TAIL-CALLs CG_DrawScoreboard (its qboolean is this function's return). src/client/cgame/hud/cg_drawintermission.c */
-void CG_DrawSpectatorHud(void);      /* 0x3001a610: spectator-mode HUD block */
-void CG_DrawTeamInfo(void);          /* 0x30018770: draw the team-chat scroll ring (up to cg_chatHeight_vmCvar.integer lines of teamChatMsgs[], each with a dim hudColorBar background bar and the ^N-colored text, fading out over the cg_chatTime_vmCvar.integer window). src/client/cgame/hud/cg_drawteaminfo.c. Supersedes the size-guess names Reached_BinaryMover and the caller-observed CG_DrawWarmup. */
-void CG_DrawCrosshair(void);         /* 0x30019cf0: crosshair and weapon-reticle renderer */
-void CG_DrawVote(void);              /* 0x3001b7d0: complaint/vote HUD */
-void CG_VoiceMenuTimeout(void);      /* 0x3001ab00: close voiceMenu after 2500 ms */
-void CG_DrawHudElems(void);          /* 0x3002a4a0: gather+draw active hudElem_t list (calls CG_GetSortedHudElems) */
-void CG_DrawWeaponSelect(void);      /* 0x30046bb0: animated weapon-selection carousel */
+void CG_DrawDamageDirectionIndicators(
+    void); /* 0x3001a980: draw the fading damage-direction arrow ring (src/client/cgame/hud/cg_drawdamagedirectionindicators.c). Supersedes the provisional caller-observed name CG_DrawScreenBlend: the body proves damage arrows, not a color-vector screen blend. */
+qboolean CG_DrawIntermission(
+    void); /* 0x3001bd20: forces the scoreboard on for the intermission screen — cgame_syscall(CG_MAP_RESTART_RESET_RENDERER), latches cg_scoreboardShowTime=cg_time, sets cg_scoreboardShowing=qtrue, then TAIL-CALLs CG_DrawScoreboard (its qboolean is this function's return). src/client/cgame/hud/cg_drawintermission.c */
+void CG_DrawSpectatorHud(void); /* 0x3001a610: spectator-mode HUD block */
+void CG_DrawTeamInfo(
+    void); /* 0x30018770: draw the team-chat scroll ring (up to cg_chatHeight_vmCvar.integer lines of teamChatMsgs[], each with a dim hudColorBar background bar and the ^N-colored text, fading out over the cg_chatTime_vmCvar.integer window). src/client/cgame/hud/cg_drawteaminfo.c. Supersedes the size-guess names Reached_BinaryMover and the caller-observed CG_DrawWarmup. */
+void CG_DrawCrosshair(void); /* 0x30019cf0: crosshair and weapon-reticle renderer */
+void CG_DrawVote(void); /* 0x3001b7d0: complaint/vote HUD */
+void CG_VoiceMenuTimeout(void); /* 0x3001ab00: close voiceMenu after 2500 ms */
+void CG_DrawHudElems(void); /* 0x3002a4a0: gather+draw active hudElem_t list (calls CG_GetSortedHudElems) */
+void CG_DrawWeaponSelect(void); /* 0x30046bb0: animated weapon-selection carousel */
 void CG_DrawWeaponSelectKeyHint(const vec4_t color, int32_t slot, float x, float y);
 void CG_DrawWeaponIcon3D(void);
-void CG_DrawCrosshairNames(void); /* 0x3001a610: reconstructed — draws the faded, health-tinted name of the player under the crosshair (was mis-guessed CG_DrawPlayerWeaponNameBack); src/client/cgame/hud/cg_drawcrosshairnames.c */
-void CG_DrawMatchTimeout(void);      /* 0x3001bbd0: reconstructed — draws the screen-centered match-timeout/"CGAME_PAUSED" overlay (was mis-guessed CG_DrawWeaponSelect) */
-void CG_DrawLagometer(void);         /* 0x30018bc0: frame/snapshot lag graphs + disconnect warning */
-void CG_DrawSlidingFadeElement(void);   /* 0x3001af10: sliding fade HUD element (trap 0x1a) */
-void CG_DrawScoreboardFadeElement(void);/* 0x3001afd0: fixed (320,150) fade HUD element */
-void CG_DrawDebugFadeElement(void);     /* 0x3001b070: (2,4) debug fade HUD element */
-void CG_DrawFixedFadeElement(void);     /* 0x3001b0f0: (135,425) fixed fade HUD element */
-void CG_DrawTimerHud(void);          /* 0x3001b170: trap(6)-timer HUD block */
-void CG_DrawInfoScreens(void);       /* 0x3001b360: per-frame developer info-overlay
+void CG_DrawCrosshairNames(
+    void); /* 0x3001a610: reconstructed — draws the faded, health-tinted name of the player under the crosshair (was mis-guessed CG_DrawPlayerWeaponNameBack); src/client/cgame/hud/cg_drawcrosshairnames.c */
+void CG_DrawMatchTimeout(
+    void); /* 0x3001bbd0: reconstructed — draws the screen-centered match-timeout/"CGAME_PAUSED" overlay (was mis-guessed CG_DrawWeaponSelect) */
+void CG_DrawLagometer(void); /* 0x30018bc0: frame/snapshot lag graphs + disconnect warning */
+void CG_DrawSlidingFadeElement(void); /* 0x3001af10: sliding fade HUD element (trap 0x1a) */
+void CG_DrawScoreboardFadeElement(void); /* 0x3001afd0: fixed (320,150) fade HUD element */
+void CG_DrawDebugFadeElement(void); /* 0x3001b070: (2,4) debug fade HUD element */
+void CG_DrawFixedFadeElement(void); /* 0x3001b0f0: (135,425) fixed fade HUD element */
+void CG_DrawTimerHud(void); /* 0x3001b170: trap(6)-timer HUD block */
+void CG_DrawInfoScreens(void); /* 0x3001b360: per-frame developer info-overlay
                                       * dispatcher. Reads three cvar integer enable-flags
                                       * in priority order and tail-jumps to the first
                                       * enabled overlay (A=0x3001acc0, B=0x30017e90
@@ -2911,7 +2824,7 @@ void CG_DrawInfoScreens(void);       /* 0x3001b360: per-frame developer info-ove
 /* Provisional callee decls for CG_DrawInfoScreens's tail-jump targets. arity/types
  * caller-observed as zero-arg void (each is entered by JMP with no arg setup) — verify
  * when each is reconstructed from its own .mcode. */
-void CG_DrawSoundOverlay(void);         /* 0x3001acc0: overlay-A — the Miles Sound System
+void CG_DrawSoundOverlay(void); /* 0x3001acc0: overlay-A — the Miles Sound System
                                       * channel debug overlay (trap 222 query + per-channel
                                       * 2D text). Reconstructed in FUN_3001acc0_3001af0e.c;
                                       * supersedes the provisional CG_DrawInfoOverlayA and
@@ -2921,17 +2834,16 @@ void CG_DrawSoundOverlay(void);         /* 0x3001acc0: overlay-A — the Miles S
  * by CG_DrawSoundOverlay for the header and each channel line. modeFlag!=0 -> mode 3;
  * adjustFlag==0 -> CG_AdjustFrom640 rescale of x/width/y by the screen scales;
  * color NULL -> local white {1,1,1,1}. */
-void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
-                             float x, float y, void *handle,
-                             float width, float height, int32_t extra);
+void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color, float x, float y, void *handle, float width, float height,
+                             int32_t extra);
 void CG_DrawScriptVmDebugOverlay(void); /* 0x30017e90: overlay-B, script-VM debug
                                          * ("threads: %d" / "vars: %d") */
-void CG_DrawViewInfoOverlay(void);   /* 0x3001b2b0: overlay-C, draws info text elements
+void CG_DrawViewInfoOverlay(void); /* 0x3001b2b0: overlay-C, draws info text elements
                                       * via CG_Trap54DrawElement */
-void CG_DrawWeaponStance(void);      /* 0x30018730: weapon/stance HUD indicator */
-void CG_DrawSpawnOverlay(void);      /* 0x300191b0: just-spawned large overlay frame */
-void CG_ResetScreenFadeA(void);      /* 0x3001bd50: 1.0f color-vector fade reset A */
-void CG_ResetScreenFadeB(void);      /* 0x3001bee0: 1.0f color-vector fade reset B, reads cg_snap */
+void CG_DrawWeaponStance(void); /* 0x30018730: weapon/stance HUD indicator */
+void CG_DrawSpawnOverlay(void); /* 0x300191b0: just-spawned large overlay frame */
+void CG_ResetScreenFadeA(void); /* 0x3001bd50: 1.0f color-vector fade reset A */
+void CG_ResetScreenFadeB(void); /* 0x3001bee0: 1.0f color-vector fade reset B, reads cg_snap */
 
 /*
  * CG_TileClearBox (0x3001d0d0) — draw one axis-aligned 2D stretch-pic segment
@@ -2948,11 +2860,7 @@ void CG_ResetScreenFadeB(void);      /* 0x3001bee0: 1.0f color-vector fade reset
  * both superseded (this issues the 2D draw trap and touches no playerState). Note:
  * the shader dword lands in the trap's t2 positional slot and a float in its hShader
  * slot — an anomaly to reconcile in a trap-73 re-audit, not in these bytes. */
-int32_t CG_TileClearBox(int32_t hShader,
-                        int32_t arg0,
-                        int32_t arg1,
-                        int32_t arg2,
-                        int32_t arg3);
+int32_t CG_TileClearBox(int32_t hShader, int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3);
 
 /*
  * CG_FilledBar flag bits (in EBX at the CG_FilledBar call boundary). All bits are
@@ -2965,7 +2873,7 @@ enum {
      * (a VERTICAL bar: FillRect height = height*frac); if clear, along the width
      * (a HORIZONTAL bar: FillRect width = width*frac). Proven at 0x3001c74a
      * (TEST BL,0x4). */
-    CG_FILLEDBAR_VERTICAL      = 0x04,
+    CG_FILLEDBAR_VERTICAL = 0x04,
     /* If set, CG_FilledBar skips the cg_hudAlpha_vmCvar.value multiply applied to the bar
      * colors' alpha. Proven at 0x3001c639 (TEST BL,0x8; JNZ skips the fade block).
      * (The scale is the global HUD fade factor, not a fixed 0.5x.) */
@@ -2975,26 +2883,26 @@ enum {
      * float[4] instead of the stack border color. Proven at 0x3001c5ef (AND EAX,0x10),
      * the ECX!=NULL guard at 0x3001c61a, and the background FillRect gated at
      * 0x3001c6c9. */
-    CG_FILLEDBAR_FILLCOLOR     = 0x10,
+    CG_FILLEDBAR_FILLCOLOR = 0x10,
     /* Anchor the filled span at the far (bottom/right) end: the filled origin is
      * offset by (1-frac)*length before drawing. Proven at 0x3001c74f / 0x3001c7c9
      * (TEST BL,0x1). */
-    CG_FILLEDBAR_ANCHOR_END    = 0x01,
+    CG_FILLEDBAR_ANCHOR_END = 0x01,
     /* Anchor the filled span centered: origin offset by (1-frac)*length*0.5. Proven
      * at 0x3001c764 / 0x3001c7de (TEST BL,0x2). Lower priority than ANCHOR_END. */
     CG_FILLEDBAR_ANCHOR_CENTER = 0x02,
     /* When the background fill is drawn (FILLCOLOR set), inset the fill rect's top
      * and bottom by 3 virtual pixels (y+=3, height-=6) instead of the default 1px
      * all-around inset. Proven at 0x3001c6f3 (TEST BL,0x20). */
-    CG_FILLEDBAR_INSET_VERT    = 0x20,
+    CG_FILLEDBAR_INSET_VERT = 0x20,
     /* When the background fill is drawn (FILLCOLOR set), skip the fill-rect inset
      * entirely. Proven at 0x3001c6ee (TEST BL,0x40; JNZ skips both inset paths). */
-    CG_FILLEDBAR_NO_INSET      = 0x40,
+    CG_FILLEDBAR_NO_INSET = 0x40,
     /* Draw the filled span in a frac-blended color: color = lerp(borderColor, color3,
      * frac), component-wise, instead of the plain border color. Requires the color3
      * (EDX) pointer. Proven at 0x3001c66a (AND ESI,0x100) and the blend at
      * 0x3001c674..0x3001c6c5. */
-    CG_FILLEDBAR_BLEND_COLOR3  = 0x100
+    CG_FILLEDBAR_BLEND_COLOR3 = 0x100
 };
 
 /*
@@ -3016,14 +2924,7 @@ enum {
  * The .mcode's size-matched "CG_CalcMuzzlePoint" guess is rejected: this function
  * draws a 2D bar via CG_FillRect, it computes no muzzle point.
  */
-void CG_FilledBar(int flags,
-                  const float *fillColor,
-                  float *color3,
-                  float x,
-                  float y,
-                  float width,
-                  float height,
-                  const float *borderColor,
+void CG_FilledBar(int flags, const float *fillColor, float *color3, float x, float y, float width, float height, const float *borderColor,
                   float frac);
 
 /*
@@ -3068,8 +2969,7 @@ void CG_DrawSides(float x, float y, float width, float height, float size);
  * .mcode's size-matched "AnglesSubtract" guess is rejected (this function draws a
  * bordered rect, it does not subtract angles).
  */
-void CG_DrawRect(float x, float y, float width, float height, float size,
-                 const float *color);
+void CG_DrawRect(float x, float y, float width, float height, float size, const float *color);
 
 /*
  * CG_DrawStretchPicColor (0x30032050) — draw shader `hShader` as a 2D stretch-pic
@@ -3084,29 +2984,18 @@ void CG_DrawRect(float x, float y, float width, float height, float size,
  * "BG_GetHorizontalBobFactor" guess is rejected (this draws; it is not a bob-factor
  * float helper). Role name from behavior; exact CoD symbol unproven (alternative
  * candidate cgame_mp!Script_SetColor not adopted). */
-void CG_DrawStretchPicColor(const rectDef_t *rect, qhandle_t hShader,
-                            const float *color);
+void CG_DrawStretchPicColor(const rectDef_t *rect, qhandle_t hShader, const float *color);
 
-int32_t trap_R_DrawQuadPic(int32_t arg0,
-                              int32_t arg1,
-                              int32_t arg2,
-                              int32_t arg3,
-                              int32_t arg4,
-                              int32_t arg5,
-                              int32_t arg6,
-                              int32_t arg7,
-                              int32_t arg8,
-                              int32_t arg9);
+int32_t trap_R_DrawQuadPic(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7,
+                           int32_t arg8, int32_t arg9);
 /* Wrapper for cgame trap id 0x8d. Arguments arg1, arg2 and arg6 are forwarded as
  * 16-bit zero-extended values (the machine code reads them with MOVZX word);
  * the remaining arguments are forwarded as full 32-bit dwords. */
 /* Exact same-module wrapper for cgame trap 0x8b (0x3003e780). */
-void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t animIndex,
-                                          float blendTime);
+void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t animIndex, float blendTime);
 
-int32_t trap_XAnimSetCompleteGoalWeightKnobAll(
-    XAnimTree *tree, uint32_t anim, uint32_t knob, float weight,
-    float blendTime, float rate, uint16_t notifyName, qboolean restart);
+int32_t trap_XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, uint32_t anim, uint32_t knob, float weight, float blendTime, float rate,
+                                               uint16_t notifyName, qboolean restart);
 
 /* Wrapper for cgame trap id 0x8f (0x3003e890). Forwards
  * (0x8f, arg0, (uint16_t)arg1, arg2, arg3, arg4, (uint16_t)arg5, arg6); the
@@ -3116,9 +3005,8 @@ int32_t trap_XAnimSetCompleteGoalWeightKnobAll(
  * adjacent trap 0x90 wrapper); the same XAnim goal-weight trap
  * (CG_XANIM_SET_GOAL_WEIGHT) is also emitted directly by CG_StartWeaponAnim (0x30042ac0).
  * Reconstructed at src/client/cgame/module/trap_xanimsetgoalweight.c. */
-int32_t trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight,
-                                float blendTime, float rate,
-                                uint16_t notifyName, qboolean restart);
+int32_t trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
+                                qboolean restart);
 
 /* Wrapper for cgame trap id 0x90 (0x3003e8e0). Forwards
  * (0x90, arg0, (uint16_t)arg1, arg2, arg3, arg4, (uint16_t)arg5, arg6); the
@@ -3126,9 +3014,8 @@ int32_t trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight,
  * wrapper before forwarding, so the C interface takes full int32 args and the
  * narrowing is a body-level cast. Reconstructed at
  * src/client/cgame/module/trap_xanimsetcompletegoalweight.c. */
-void trap_XAnimSetCompleteGoalWeight(XAnimTree *tree, uint32_t anim,
-                                     float weight, float blendTime, float rate,
-                                     uint16_t notifyName, qboolean restart);
+void trap_XAnimSetCompleteGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
+                                     qboolean restart);
 
 /* Wrapper for cgame trap id 0x95 (0x3003e9d0). Fastcall-style: arg1 arrives in
  * ECX, arg2 is a single caller-cleaned 16-bit stack arg (MOVZX word before the
@@ -3218,8 +3105,7 @@ void CG_WeaponInfoSetString(char *dest, const char *value);
  * original symbol is unproven (no cgame symbol table recovered).
  * Nonstandard convention: fieldCount in EAX, index in ECX, fields on the stack.
  */
-weaponInfo_t *CG_AllocWeaponInfo(int32_t fieldCount, int32_t index,
-                               const parseField_t *fields);
+weaponInfo_t *CG_AllocWeaponInfo(int32_t fieldCount, int32_t index, const parseField_t *fields);
 
 /*
  * CG_CopyString (0x3000fd90) — duplicate a NUL-terminated string into an
@@ -3525,28 +3411,27 @@ int CG_ShellShockLoad(const char *name);
  * not decoded here — only the fields a reconstructed consumer proves are named; the
  * remaining bytes stay reserved. */
 typedef struct shellshock_s {
-    int32_t blurDivisor;        /* +0x00: screen-blur ramp divisor */
-    float   blurRate;           /* +0x04: screen-blur phase rate */
-    float   blurScale;          /* +0x08: screen-blur displacement scale */
-    int32_t screenBlendFadeTime;/* +0x0c: screen-blend fade time, ms */
-    int32_t screenBlendTime;    /* +0x10: screen-blend hold time, ms */
-    qboolean soundEnabled;      /* +0x14: nonzero => apply sound/reverb effects */
-    int32_t soundFadeInTime;    /* +0x18: sound fade-in time, ms */
-    int32_t soundFadeOutTime;   /* +0x1c: sound fade-out time, ms */
-    float   soundWetLevel;      /* +0x20: room/reverb wet level */
-    char    soundRoomType[16];  /* +0x24: room-type name */
-    float   soundVolume[SND_ALIAS_CHANNEL_COUNT]; /* +0x34..+0x5b */
-    int32_t soundModEndDelay;   /* +0x5c: modifier end delay, ms */
-    int32_t soundLoopFadeTime;  /* +0x60: loop crossfade time, ms */
-    int32_t soundLoopEndDelay;  /* +0x64: loop end delay, ms */
-    qboolean mouseEnabled;      /* +0x68: cg_shock_mouse != 0 */
-    int32_t mouseFadeTime;      /* +0x6c: mouse attenuation fade time, ms */
-    float   mouseSensitivityScale; /* +0x70 */
-    float   mouseMaxPitchSpeed; /* +0x74 */
-    float   mouseMaxYawSpeed;   /* +0x78 */
+    int32_t blurDivisor; /* +0x00: screen-blur ramp divisor */
+    float blurRate; /* +0x04: screen-blur phase rate */
+    float blurScale; /* +0x08: screen-blur displacement scale */
+    int32_t screenBlendFadeTime; /* +0x0c: screen-blend fade time, ms */
+    int32_t screenBlendTime; /* +0x10: screen-blend hold time, ms */
+    qboolean soundEnabled; /* +0x14: nonzero => apply sound/reverb effects */
+    int32_t soundFadeInTime; /* +0x18: sound fade-in time, ms */
+    int32_t soundFadeOutTime; /* +0x1c: sound fade-out time, ms */
+    float soundWetLevel; /* +0x20: room/reverb wet level */
+    char soundRoomType[16]; /* +0x24: room-type name */
+    float soundVolume[SND_ALIAS_CHANNEL_COUNT]; /* +0x34..+0x5b */
+    int32_t soundModEndDelay; /* +0x5c: modifier end delay, ms */
+    int32_t soundLoopFadeTime; /* +0x60: loop crossfade time, ms */
+    int32_t soundLoopEndDelay; /* +0x64: loop end delay, ms */
+    qboolean mouseEnabled; /* +0x68: cg_shock_mouse != 0 */
+    int32_t mouseFadeTime; /* +0x6c: mouse attenuation fade time, ms */
+    float mouseSensitivityScale; /* +0x70 */
+    float mouseMaxPitchSpeed; /* +0x74 */
+    float mouseMaxYawSpeed; /* +0x78 */
 } shellshock_t;
-_Static_assert(sizeof(shellshock_t) == 0x7c,
-               "shellshock_t is 124 bytes (0x30448624 .. 0x304486a0)");
+_Static_assert(sizeof(shellshock_t) == 0x7c, "shellshock_t is 124 bytes (0x30448624 .. 0x304486a0)");
 _Static_assert(offsetof(shellshock_t, mouseEnabled) == 0x68, "shellshock_t.mouseEnabled @ +0x68");
 _Static_assert(offsetof(shellshock_t, mouseFadeTime) == 0x6c, "shellshock_t.mouseFadeTime @ +0x6c");
 _Static_assert(offsetof(shellshock_t, mouseSensitivityScale) == 0x70, "shellshock_t.mouseSensitivityScale @ +0x70");
@@ -3624,8 +3509,7 @@ void CG_EndShellShockMouse(void);
  * CG_UpdateShellShockMouse (0x3003c530) — advance the shellshock mouse
  * sensitivity envelope and submit maximum pitch/yaw speeds to trap 246. The
  * same-module PPC symbol bank supplies the exact source name. */
-void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime,
-                              int32_t endTime);
+void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime, int32_t endTime);
 
 /*
  * CG_UpdateShellShockSound (0x3003c230) — advance the shellshock sound/reverb
@@ -3637,17 +3521,14 @@ void CG_UpdateShellShockMouse(shellshock_t *params, int32_t startTime,
  * by proven role (the sibling of CG_UpdateShellShockMouse/…ScreenBlur);
  * exact source symbol unproven. Register-in-EAX ABI recorded here; expressed as a
  * normal call. Superseded by its own .mcode reconstruction. */
-void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
-                              int32_t duration);
+void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed, int32_t duration);
 
 /*
  * CG_ShellShockCalcVibrate (0x3003c630) — advance the shellshock screen-blur
  * displacement pair cg_shellshockScreenBlurX/Y (0x3048bff0/0x3048bff4) for the current
  * frame. ABI proven at its sole call site 0x3003c778: EAX=duration, EDX=params,
  * [ESP+0x18]=elapsed. */
-void CG_ShellShockCalcVibrate(int32_t duration,
-                              const shellshock_t *params,
-                              int32_t elapsed);
+void CG_ShellShockCalcVibrate(int32_t duration, const shellshock_t *params, int32_t elapsed);
 
 /*
  * CG_UpdateShellShock (0x3003c750) — per-frame driver for the whole cgame shellshock
@@ -3842,21 +3723,17 @@ void CG_EntityPreEvent(centity_t *cent, int32_t event, int32_t eventParm);
  * Register/stack ABI (0x30023796/0x300237a2/...): a flags word (carrying bit 0x80) in
  * EAX, and (cent, model, event, mode) as four caller-cleaned stack args pushed
  * cent,model,event,mode right-to-left (so mode is pushed first). Provisional role name. */
-void CG_FireWeapon(uint32_t flags, centity_t *cent,
-                   entityState_t *model, int32_t event, int32_t mode);
-void CG_PlayFxOnWeaponTag(qboolean selectViewDObj, int32_t weaponIndex,
-                          int32_t model, const vec3_t effectOrigin,
-                          const char *tagName, int32_t drawTagModel);
-void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex,
-                              const char *tagName);
+void CG_FireWeapon(uint32_t flags, centity_t *cent, entityState_t *model, int32_t event, int32_t mode);
+void CG_PlayFxOnWeaponTag(qboolean selectViewDObj, int32_t weaponIndex, int32_t model, const vec3_t effectOrigin, const char *tagName,
+                          int32_t drawTagModel);
+void CG_FakeTrajectoryEffects(int32_t entityNum, int32_t weaponIndex, const char *tagName);
 
 /* CG_ModelEventFireWeapon (0x30049060) -- the weapon-fire / tracer spawn for the model
  * event. Register ABI (0x30023786): event id in EAX, model->poseType (+0x88) in ECX,
  * model->weapon (+0xcc) in EDI, &cent->lerpOrigin (+0x208) in EBX, and
  * model->vehicleEntityNum (+0x74) as one caller-cleaned stack arg. Provisional role
  * name. */
-void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex,
-                             vec3_t lerpOrigin, int32_t vehicleEntityNum);
+void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex, vec3_t lerpOrigin, int32_t vehicleEntityNum);
 
 /* CG_BulletHitEvent (0x30048e60) -- bullet/tracer trail spawner between two
  * byte-dir vectors. Eight caller-cleaned stack args (0x20 cleanup), pushed
@@ -3914,10 +3791,10 @@ typedef struct effectDef_s {
  * at a fixed world origin on a throttle. Defined in globals.c and zero-initialized
  * in the DLL. CG_FxTest writes it; CG_UpdatePeriodicEffect consumes it.
  */
-extern char         cg_periodicEffectName[MAX_QPATH];/* 0x3048b004: name -> CG_FX_REGISTER_EFFECT */
-extern vec3_t      cg_periodicEffectOrigin;   /* 0x3048b044: origin -> CG_PLAY_EFFECT_ORIGIN */
-extern int32_t     cg_periodicEffectLastTime; /* 0x3048b050: cg.time of last emit */
-extern int32_t     cg_periodicEffectInterval; /* 0x3048b054: min ms between emits (>=1 gate) */
+extern char cg_periodicEffectName[MAX_QPATH]; /* 0x3048b004: name -> CG_FX_REGISTER_EFFECT */
+extern vec3_t cg_periodicEffectOrigin; /* 0x3048b044: origin -> CG_PLAY_EFFECT_ORIGIN */
+extern int32_t cg_periodicEffectLastTime; /* 0x3048b050: cg.time of last emit */
+extern int32_t cg_periodicEffectInterval; /* 0x3048b054: min ms between emits (>=1 gate) */
 
 /*
  * CG_UpdatePeriodicEffect (0x30042110) — throttled periodic effect emitter. If the
@@ -3947,9 +3824,7 @@ void CG_UpdatePeriodicEffect(void);
  * the returns across all effect types. The size-matched .mcode name
  * `script_func_isplayer` is REJECTED (no script/player behavior; this is a
  * per-surface effect-registration loop). */
-int32_t CG_RegisterEffectDefSurfaces(const effectDef_t *defs,
-                                     const char *effectTypeName,
-                                     qhandle_t *handles);
+int32_t CG_RegisterEffectDefSurfaces(const effectDef_t *defs, const char *effectTypeName, qhandle_t *handles);
 
 /* CG_IMPACT_EFFECT_TYPES (22) and CG_IMPACT_SURFACE_TYPES (24) — the dimensions of
  * the shared cg_impactEffects[22][24] handle table — are defined in globals.h
@@ -3980,8 +3855,7 @@ int32_t compare_impact_files(const void *a, const void *b);
  * caller-observed decl; superseded by its own .mcode reconstruction. The EAX
  * register-passed `text` argument is expressed here as the first parameter; its
  * register mapping is documented in the caller's .c file. */
-char *CG_ParseImpactEffects(const char *path, char *text, int32_t effectTypeCount,
-                            const char *const *effectTypeNames,
+char *CG_ParseImpactEffects(const char *path, char *text, int32_t effectTypeCount, const char *const *effectTypeNames,
                             effectDef_t *defTables);
 
 /*
@@ -4048,7 +3922,7 @@ char *Q_strstr(const char *haystack, const char *needle);
  *      bg_indexed_string table at 0x30082118, or -1 when not in an events block.
  */
 extern bg_anim_move_type_t bgAnimParseCurrentAnimGroup; /* 0x3008c4b8 */
-extern bg_anim_event_t bgAnimParseCurrentEvent;         /* 0x3008bf34 */
+extern bg_anim_event_t bgAnimParseCurrentEvent; /* 0x3008bf34 */
 
 /*
  * Animation-script command discriminants used by BG_ParseCommands (0x30001e90) when
@@ -4065,8 +3939,7 @@ extern bg_anim_event_t bgAnimParseCurrentEvent;         /* 0x3008bf34 */
  * bg_anim_script_t and bg_static_animation_t are provided by the shared BG
  * animation-type boundary.
  */
-void BG_ParseCommands(char **text_pp, bg_anim_script_t *script,
-                      bg_static_animation_t *animations);
+void BG_ParseCommands(char **text_pp, bg_anim_script_t *script, bg_static_animation_t *animations);
 
 /*
  * BG_ParseConditions (0x30001cd0) — reconstructed; see FUN_30001cd0_30001e84.c.
@@ -4183,56 +4056,31 @@ void CG_UIDisplayContextInit(void);
 /* itemDef_t has pointer fields before these offsets, so the layout is only
  * ABI-exact at 32-bit pointer width (the target DLL); guard the asserts. */
 #if UINTPTR_MAX == 0xFFFFFFFFu
-_Static_assert(offsetof(itemDef_t, window.background) == 0xb4,
-               "itemDef_t.window.background must sit at +0xb4");
-_Static_assert(offsetof(itemDef_t, textRect) == 0xb8,
-               "itemDef_t.textRect must sit at +0xb8");
-_Static_assert(offsetof(itemDef_t, type) == 0xc8,
-               "itemDef_t.type must sit at +0xc8");
-_Static_assert(offsetof(itemDef_t, typeValidated) == 0xcc,
-               "itemDef_t.typeValidated must sit at +0xcc");
-_Static_assert(offsetof(itemDef_t, alignment) == 0xd0,
-               "itemDef_t.alignment must sit at +0xd0");
-_Static_assert(offsetof(itemDef_t, font) == 0xd4,
-               "itemDef_t.font must sit at +0xd4");
-_Static_assert(offsetof(itemDef_t, textStyle) == 0xe8,
-               "itemDef_t.textStyle must sit at +0xe8");
-_Static_assert(offsetof(itemDef_t, text) == 0xec,
-               "itemDef_t.text must sit at +0xec");
-_Static_assert(offsetof(itemDef_t, parent) == 0xf0,
-               "itemDef_t.parent must sit at +0xf0");
-_Static_assert(offsetof(itemDef_t, mouseEnterText) == 0xf8,
-               "itemDef_t.mouseEnterText must sit at +0xf8");
-_Static_assert(offsetof(itemDef_t, mouseExitText) == 0xfc,
-               "itemDef_t.mouseExitText must sit at +0xfc");
-_Static_assert(offsetof(itemDef_t, mouseEnter) == 0x100,
-               "itemDef_t.mouseEnter must sit at +0x100");
-_Static_assert(offsetof(itemDef_t, mouseExit) == 0x104,
-               "itemDef_t.mouseExit must sit at +0x104");
-_Static_assert(offsetof(itemDef_t, action) == 0x108,
-               "itemDef_t.action must sit at +0x108");
-_Static_assert(offsetof(itemDef_t, accept) == 0x10c,
-               "itemDef_t.accept must sit at +0x10c");
-_Static_assert(offsetof(itemDef_t, onFocus) == 0x110,
-               "itemDef_t.onFocus must sit at +0x110");
-_Static_assert(offsetof(itemDef_t, leaveFocus) == 0x114,
-               "itemDef_t.leaveFocus must sit at +0x114");
-_Static_assert(offsetof(itemDef_t, cvar) == 0x118,
-               "itemDef_t.cvar must sit at +0x118");
-_Static_assert(offsetof(itemDef_t, cvarFlags) == 0x124,
-               "itemDef_t.cvarFlags must sit at +0x124");
-_Static_assert(offsetof(itemDef_t, focusSound) == 0x128,
-               "itemDef_t.focusSound must sit at +0x128");
-_Static_assert(offsetof(itemDef_t, numColors) == 0x12c,
-               "itemDef_t.numColors must sit at +0x12c");
-_Static_assert(offsetof(itemDef_t, colorRanges) == 0x130,
-               "itemDef_t.colorRanges must sit at +0x130");
-_Static_assert(offsetof(itemDef_t, colorRangeType) == 0x248,
-               "itemDef_t.colorRangeType must sit at +0x248");
-_Static_assert(offsetof(itemDef_t, special) == 0x24c,
-               "itemDef_t.special must sit at +0x24c");
-_Static_assert(offsetof(itemDef_t, loadMode) == 0x258,
-               "itemDef_t.loadMode must sit at +0x258");
+_Static_assert(offsetof(itemDef_t, window.background) == 0xb4, "itemDef_t.window.background must sit at +0xb4");
+_Static_assert(offsetof(itemDef_t, textRect) == 0xb8, "itemDef_t.textRect must sit at +0xb8");
+_Static_assert(offsetof(itemDef_t, type) == 0xc8, "itemDef_t.type must sit at +0xc8");
+_Static_assert(offsetof(itemDef_t, typeValidated) == 0xcc, "itemDef_t.typeValidated must sit at +0xcc");
+_Static_assert(offsetof(itemDef_t, alignment) == 0xd0, "itemDef_t.alignment must sit at +0xd0");
+_Static_assert(offsetof(itemDef_t, font) == 0xd4, "itemDef_t.font must sit at +0xd4");
+_Static_assert(offsetof(itemDef_t, textStyle) == 0xe8, "itemDef_t.textStyle must sit at +0xe8");
+_Static_assert(offsetof(itemDef_t, text) == 0xec, "itemDef_t.text must sit at +0xec");
+_Static_assert(offsetof(itemDef_t, parent) == 0xf0, "itemDef_t.parent must sit at +0xf0");
+_Static_assert(offsetof(itemDef_t, mouseEnterText) == 0xf8, "itemDef_t.mouseEnterText must sit at +0xf8");
+_Static_assert(offsetof(itemDef_t, mouseExitText) == 0xfc, "itemDef_t.mouseExitText must sit at +0xfc");
+_Static_assert(offsetof(itemDef_t, mouseEnter) == 0x100, "itemDef_t.mouseEnter must sit at +0x100");
+_Static_assert(offsetof(itemDef_t, mouseExit) == 0x104, "itemDef_t.mouseExit must sit at +0x104");
+_Static_assert(offsetof(itemDef_t, action) == 0x108, "itemDef_t.action must sit at +0x108");
+_Static_assert(offsetof(itemDef_t, accept) == 0x10c, "itemDef_t.accept must sit at +0x10c");
+_Static_assert(offsetof(itemDef_t, onFocus) == 0x110, "itemDef_t.onFocus must sit at +0x110");
+_Static_assert(offsetof(itemDef_t, leaveFocus) == 0x114, "itemDef_t.leaveFocus must sit at +0x114");
+_Static_assert(offsetof(itemDef_t, cvar) == 0x118, "itemDef_t.cvar must sit at +0x118");
+_Static_assert(offsetof(itemDef_t, cvarFlags) == 0x124, "itemDef_t.cvarFlags must sit at +0x124");
+_Static_assert(offsetof(itemDef_t, focusSound) == 0x128, "itemDef_t.focusSound must sit at +0x128");
+_Static_assert(offsetof(itemDef_t, numColors) == 0x12c, "itemDef_t.numColors must sit at +0x12c");
+_Static_assert(offsetof(itemDef_t, colorRanges) == 0x130, "itemDef_t.colorRanges must sit at +0x130");
+_Static_assert(offsetof(itemDef_t, colorRangeType) == 0x248, "itemDef_t.colorRangeType must sit at +0x248");
+_Static_assert(offsetof(itemDef_t, special) == 0x24c, "itemDef_t.special must sit at +0x24c");
+_Static_assert(offsetof(itemDef_t, loadMode) == 0x258, "itemDef_t.loadMode must sit at +0x258");
 #endif
 
 /* The complete Item_Multi_* runtime is shared by ui_runtime.h. */
@@ -4364,8 +4212,7 @@ void CG_DoControllers(centity_t *part, uint32_t *partBits);
  * The exact name comes from the Mac cgame symbol and the operation sequence
  * matches the server's G_DObjCalcBone.
  */
-void CG_DObjCalcBone(DObj *self, int32_t boneIndex,
-                     centity_t *part);
+void CG_DObjCalcBone(DObj *self, int32_t boneIndex, centity_t *part);
 
 /*
  * CG_DObjCalcPose (0x30022040) — renderer callback exported under this exact Mac
@@ -4373,8 +4220,7 @@ void CG_DObjCalcBone(DObj *self, int32_t boneIndex,
  * if CreateSkelForBones reports work remains it calculates animation, runs the
  * owning entity's controllers, and calculates the skeleton.
  */
-void CG_DObjCalcPose(centity_t *owner, DObj *obj,
-                     uint32_t *partBits);
+void CG_DObjCalcPose(centity_t *owner, DObj *obj, uint32_t *partBits);
 
 /*
  * CG_DObjGetWorldTagMatrix (0x3001fdf0, provisional-by-role) — build the
@@ -4412,8 +4258,7 @@ void CG_DObjCalcPose(centity_t *owner, DObj *obj,
  * is the tag-name argument. Signature widened and callers updated. Other
  * arity/types verified at each call site.
  */
-qboolean CG_DObjGetWorldTagMatrix(DObj *self, const char *tagName,
-                                  centity_t *entity, DObjSkelMat *out);
+qboolean CG_DObjGetWorldTagMatrix(DObj *self, const char *tagName, centity_t *entity, DObjSkelMat *out);
 
 /*
  * CG_DObjGetEntityBoneMatrix (0x3001fda0, provisional-by-role) — the lighter
@@ -4428,9 +4273,7 @@ qboolean CG_DObjGetWorldTagMatrix(DObj *self, const char *tagName,
  * `part` (the owning entity record) the sole stack arg; modeled as ordered
  * parameters, no calling-convention attribute (syntax-only build).
  */
-DObjSkelMat *CG_DObjGetEntityBoneMatrix(DObj *self,
-                                        const char *tagName,
-                                        centity_t *part);
+DObjSkelMat *CG_DObjGetEntityBoneMatrix(DObj *self, const char *tagName, centity_t *part);
 
 /* crt_ftol_round (0x3006be3c) — MERGED: this MSVC CRT `_ftol2` helper is declared
  * once, canonically, as `Q_rint` above (see that decl for the true truncation
@@ -4513,9 +4356,7 @@ const char *CG_GetVehicleViewPosOriginTag(int32_t viewMode);
  * name "PM_BeginReloadLoop" is rejected (no pmove/reload work). See the function's
  * .c for the full per-instruction derivation.
  */
-qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
-                                         const char *tagName,
-                                         DObjSkelMat *out);
+qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self, const char *tagName, DObjSkelMat *out);
 
 /* cg_corpseInfo (0x3044cb00) — per-corpse client animation/info table,
  * stride 0x4d0 (clientInfo_t), indexed by (corpse entity number - 0x40). Three
@@ -4589,9 +4430,7 @@ qhandle_t CG_RegisterModel(const char *name, int category);
  * The mechanical size-guess "G_FreeVehicle" is REJECTED: the machine code registers
  * models, wraps them into DObj objects, and issues the DObj model-set traps; it does
  * not free a vehicle. Provisional decl; superseded by this file's own reconstruction. */
-void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle,
-                              entityState_t *renderEntity,
-                              uint8_t *generationOut);
+void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entityState_t *renderEntity, uint8_t *generationOut);
 
 /*
  * Player-animation update passes and lerp-frame helpers. All are reconstructed
@@ -4657,11 +4496,8 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle,
  * Both return false if name resolution or marking fails. Their i386 register ABI
  * carries self/tagName/angles in EDI/EAX/EBX; partBits is a stack pointer, not an
  * integer rot/trans index. */
-qboolean CG_DObjSetLocalTag(DObj *self, const char *tagName,
-                            const uint32_t partBits[4], const vec3_t angles,
-                            const vec3_t origin);
-qboolean CG_DObjSetControlTagAngles(DObj *self, const char *tagName,
-                              const uint32_t partBits[4], const vec3_t angles);
+qboolean CG_DObjSetLocalTag(DObj *self, const char *tagName, const uint32_t partBits[4], const vec3_t angles, const vec3_t origin);
+qboolean CG_DObjSetControlTagAngles(DObj *self, const char *tagName, const uint32_t partBits[4], const vec3_t angles);
 
 /*
  * CG_DObjCalcBoneGeneric (0x300220e0) — the entity-index form of
@@ -4746,10 +4582,8 @@ _Static_assert(offsetof(playerState_t, currentWeapon) == 0xd8, "playerState curr
 _Static_assert(offsetof(playerState_t, weaponState) == 0xdc, "playerState weaponState @ +0xdc");
 _Static_assert(offsetof(playerState_t, damageEvent) == 0x10c, "playerState damageEvent @ +0x10c");
 _Static_assert(offsetof(playerState_t, damageCount) == 0x118, "playerState damageCount @ +0x118");
-_Static_assert(offsetof(playerState_t, stats[STAT_HEALTH]) == 0x11c,
-               "playerState health @ +0x11c");
-_Static_assert(offsetof(playerState_t, stats[STAT_MAX_HEALTH]) == 0x124,
-               "playerState maxHealth @ +0x124");
+_Static_assert(offsetof(playerState_t, stats[STAT_HEALTH]) == 0x11c, "playerState health @ +0x11c");
+_Static_assert(offsetof(playerState_t, stats[STAT_MAX_HEALTH]) == 0x124, "playerState maxHealth @ +0x124");
 _Static_assert(offsetof(playerState_t, ammo) == 0x134, "playerState ammo @ +0x134");
 _Static_assert(offsetof(playerState_t, clips) == 0x334, "playerState clips @ +0x334");
 _Static_assert(offsetof(playerState_t, weaponRechamberBits) == 0x54c, "playerState weaponRechamberBits @ +0x54c");
@@ -4757,8 +4591,7 @@ _Static_assert(offsetof(playerState_t, deltaAngles) == 0x4c, "playerState deltaA
 _Static_assert(offsetof(playerState_t, groundEntityNum) == 0x58, "playerState groundEntityNum @ +0x58");
 _Static_assert(offsetof(playerState_t, viewModelIndex) == 0xe4, "playerState viewModelIndex @ +0xe4");
 _Static_assert(offsetof(playerState_t, viewAngles) == 0xe8, "playerState viewAngles @ +0xe8");
-_Static_assert(offsetof(playerState_t, stats[STAT_DEAD_YAW]) == 0x120,
-               "playerState deathYaw @ +0x120");
+_Static_assert(offsetof(playerState_t, stats[STAT_DEAD_YAW]) == 0x120, "playerState deathYaw @ +0x120");
 _Static_assert(offsetof(playerState_t, playerMaxs) == 0x568, "playerState playerMaxs @ +0x568");
 _Static_assert(offsetof(playerState_t, proneViewHeight) == 0x574, "playerState proneViewHeight @ +0x574");
 _Static_assert(offsetof(playerState_t, proneDirection) == 0x5a4, "playerState proneDirection @ +0x5a4");
@@ -4954,8 +4787,7 @@ extern bg_indexed_string_t bgAnimConditionTypeStrings[];
  * Storage in globals.c; supersedes the mechanical g_data_cmd_veh_freevehicle_*
  * 0x3053a040/0x3053a044 fragments.
  */
-extern bg_indexed_string_t
-    weaponStrings[MAX_WEAPONS];
+extern bg_indexed_string_t weaponStrings[MAX_WEAPONS];
 
 /*
  * BG_InitWeaponStrings (0x30001500) — clear and repopulate
@@ -4973,8 +4805,7 @@ extern bgs_t bgs;
  * word; wider builds use a table-relative offset so the fixed 0x30-byte
  * legs/torso slot geometry does not truncate a host pointer.
  */
-static inline bg_static_animation_t *
-cgame_compat_anim_entry_from_word(uint32_t animationWord)
+static inline bg_static_animation_t *cgame_compat_anim_entry_from_word(uint32_t animationWord)
 {
     if (animationWord == 0) {
         return NULL;
@@ -4983,8 +4814,7 @@ cgame_compat_anim_entry_from_word(uint32_t animationWord)
 #if UINTPTR_MAX == UINT32_MAX
     return (bg_static_animation_t *)(uintptr_t)animationWord;
 #else
-    return (bg_static_animation_t *)(void *)
-        ((uint8_t *)&bgs.animationTable + animationWord);
+    return (bg_static_animation_t *)(void *)((uint8_t *)&bgs.animationTable + animationWord);
 #endif
 }
 
@@ -4992,8 +4822,7 @@ cgame_compat_anim_entry_from_word(uint32_t animationWord)
  * NOT_FROM_ORIGINAL_SOURCE: native compatibility setter paired with
  * cgame_compat_anim_entry_from_word.
  */
-static inline uint32_t
-cgame_compat_anim_entry_to_word(const bg_static_animation_t *animation)
+static inline uint32_t cgame_compat_anim_entry_to_word(const bg_static_animation_t *animation)
 {
     if (animation == NULL) {
         return 0;
@@ -5002,8 +4831,7 @@ cgame_compat_anim_entry_to_word(const bg_static_animation_t *animation)
 #if UINTPTR_MAX == UINT32_MAX
     return (uint32_t)(uintptr_t)animation;
 #else
-    return (uint32_t)((const uint8_t *)animation -
-                      (const uint8_t *)&bgs.animationTable);
+    return (uint32_t)((const uint8_t *)animation - (const uint8_t *)&bgs.animationTable);
 #endif
 }
 
@@ -5050,8 +4878,7 @@ cgame_compat_anim_entry_to_word(const bg_static_animation_t *animation)
 /* Shared animation playback, command execution, event selection, and accessors are declared by bg_animation.h. */
 
 /* Cgame-owned services installed in the shared displayContextDef_t record. */
-void trap_R_RegisterFont(const char *name, int32_t pointSize,
-                         fontInfo_t *font, intptr_t loadMode);
+void trap_R_RegisterFont(const char *name, int32_t pointSize, fontInfo_t *font, intptr_t loadMode);
 int32_t trap_R_RegisterShaderNoMip(const char *name, int32_t loadMode);
 int32_t CG_OwnerDrawWidth(int32_t ownerDraw, int32_t font, float scale);
 int32_t CG_PlayCinematic(const char *name, float x, float y, float w, float h);
@@ -5062,63 +4889,37 @@ const char *trap_SE_TranslateReference(const char *reference);
 void trap_R_ClearScene(void);
 void trap_R_RenderScene(const refdef_t *refdef);
 void trap_R_ModelBounds(int32_t model, vec3_t mins, vec3_t maxs);
-void trap_Key_GetBindingBuf(int32_t keynum, char *buffer,
-                            int32_t bufferSize);
+void trap_Key_GetBindingBuf(int32_t keynum, char *buffer, int32_t bufferSize);
 void trap_Key_SetBinding(int32_t keynum, const char *binding);
-void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
-                                int32_t bufferSize);
+void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer, int32_t bufferSize);
 
 /*
  * NOT_FROM_ORIGINAL_SOURCE: semantic-float/native-register-ABI adapters for
  * original opaque-dword renderer trap wrappers on non-i386 hosts.
  */
-void OpenCoDUO_UI_DrawTextAdapter(float x, float y, int32_t font,
-                                  float scale, const vec4_t color,
-                                  const char *text, float fixedAdvance,
+void OpenCoDUO_UI_DrawTextAdapter(float x, float y, int32_t font, float scale, const vec4_t color, const char *text, float fixedAdvance,
                                   int32_t limit, int32_t textStyle);
-void OpenCoDUO_UI_DrawStretchPicAdapter(
-    float x, float y, float w, float h,
-    float s1, float t1, float s2, float t2, qhandle_t shaderHandle);
-int32_t OpenCoDUO_UI_TextWidthAdapter(const char *text, int32_t font,
-                                      float scale, int32_t limit);
+void OpenCoDUO_UI_DrawStretchPicAdapter(float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t shaderHandle);
+int32_t OpenCoDUO_UI_TextWidthAdapter(const char *text, int32_t font, float scale, int32_t limit);
 int32_t OpenCoDUO_UI_TextHeightAdapter(int32_t font, float scale);
-void OpenCoDUO_UI_DrawTextWithCursorAdapter(
-    float x, float y, int32_t font, float scale, const vec4_t color,
-    const char *text, int32_t cursorPos, int8_t cursorChar,
-    int32_t limit, int32_t textStyle);
+void OpenCoDUO_UI_DrawTextWithCursorAdapter(float x, float y, int32_t font, float scale, const vec4_t color, const char *text,
+                                            int32_t cursorPos, int8_t cursorChar, int32_t limit, int32_t textStyle);
 
-void CG_OwnerDraw(float x, float y, float w, float h,
-                  float textX, float textY,
-                  int32_t ownerDraw, int32_t ownerDrawFlags,
-                  int32_t alignment, float special,
-                  int32_t font, float textScale,
-                  vec4_t color, int32_t background,
-                  int32_t textStyle);
+void CG_OwnerDraw(float x, float y, float w, float h, float textX, float textY, int32_t ownerDraw, int32_t ownerDrawFlags,
+                  int32_t alignment, float special, int32_t font, float textScale, vec4_t color, int32_t background, int32_t textStyle);
 float CG_OwnerDrawValue(int32_t ownerDraw, int32_t colorRangeType);
 void CG_Fade_f(void);
-void CG_DrawPlayerAmmoValue(int32_t viewMode, const rectDef_t *rect,
-                            int32_t font, int32_t scaleBits,
-                            const vec4_t color, int32_t textStyle);
-void CG_DrawPlayerAmmoBackdrop(int32_t wantVehicleView, const rectDef_t *rect,
-                               const float *color, qhandle_t hShader);
-void CG_DrawPlayerStance(const rectDef_t *iconRect, const float *colorVec,
-                         int32_t textArgA, int32_t textArgB, int32_t textArgC);
-void CG_DrawCursorhint(rectDef_t *hintRect,
-                       int32_t fontContext, int32_t scaleBits,
-                       const vec4_t color, int32_t textStyle);
-void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj,
-                             int32_t regWord, int32_t arg0, int32_t arg1);
-void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect,
-                                 int32_t metricA, int32_t metricB,
-                                 qhandle_t hShader);
-void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
-                                 const float *color);
-void CG_DrawHudSlidePicColor(const rectDef_t *rect, qhandle_t hShader,
-                             const float *color);
-void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader,
-                     const float *color);
-void CG_DrawTankBody(const rectDef_t *rect, int32_t stateFilter,
-                     int32_t hShader, const float *color);
+void CG_DrawPlayerAmmoValue(int32_t viewMode, const rectDef_t *rect, int32_t font, int32_t scaleBits, const vec4_t color,
+                            int32_t textStyle);
+void CG_DrawPlayerAmmoBackdrop(int32_t wantVehicleView, const rectDef_t *rect, const float *color, qhandle_t hShader);
+void CG_DrawPlayerStance(const rectDef_t *iconRect, const float *colorVec, int32_t textArgA, int32_t textArgB, int32_t textArgC);
+void CG_DrawCursorhint(rectDef_t *hintRect, int32_t fontContext, int32_t scaleBits, const vec4_t color, int32_t textStyle);
+void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj, int32_t regWord, int32_t arg0, int32_t arg1);
+void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect, int32_t metricA, int32_t metricB, qhandle_t hShader);
+void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect, const float *color);
+void CG_DrawHudSlidePicColor(const rectDef_t *rect, qhandle_t hShader, const float *color);
+void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader, const float *color);
+void CG_DrawTankBody(const rectDef_t *rect, int32_t stateFilter, int32_t hShader, const float *color);
 
 
 /* The complete common displayContextDef_t record and callback ABI live in
@@ -5211,8 +5012,7 @@ void CG_CalcVehicleViewPos(void);
  * (cgame_mp CG_DObjSetLocalTagInternal); the .mcode's size-matched "G_FreeEntity"
  * guess is rejected (the body is an angles->quaternion tag write, not entity free).
  */
-void CG_DObjSetLocalTagInternal(void *self, int rotTransIndex,
-                                const vec3_t angles, const vec3_t origin);
+void CG_DObjSetLocalTagInternal(void *self, int rotTransIndex, const vec3_t angles, const vec3_t origin);
 
 /*
  * VectorNormalize (0x30049700) — shared Quake3/CoD 3D in-place vector normalize
@@ -5253,8 +5053,7 @@ float VectorNormalize(vec3_t v);
  * detail. Signature matches server_name_bank.txt (common_math.c:
  * int PlaneFromPoints(float *plane, const float *a, const float *b, const float *c)).
  */
-int32_t PlaneFromPoints(vec4_t plane, const vec3_t a, const vec3_t b,
-                        const vec3_t c);
+int32_t PlaneFromPoints(vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c);
 
 /*
  * Reconstructed pmove/BG step callees invoked by PmoveSingle (0x3000e050) and other
@@ -5276,9 +5075,7 @@ int32_t PlaneFromPoints(vec4_t plane, const vec3_t a, const vec3_t b,
  * forwardDir=EDI, reference=ECX, out=EBX, `RET` with no immediate. See
  * src/animation/constrainvectortowardforward.c for the full instruction provenance.
  */
-void ConstrainVectorTowardForward(const vec3_t forwardDir,
-                                  const vec3_t reference,
-                                  vec3_t out);
+void ConstrainVectorTowardForward(const vec3_t forwardDir, const vec3_t reference, vec3_t out);
 
 /*
  * VectorNormalize2 (0x30049920) — shared Quake3/CoD 3D vector normalize that
@@ -5387,7 +5184,9 @@ void VectorNormalizeFast(vec3_t v);
  * source order; no calling-convention attribute is added because the syntax-only
  * build does not require one.
  */
-enum { CG_FADE_TIME = 100 };   /* ms over which the fade alpha ramps 1.0 -> 0.0 */
+enum {
+    CG_FADE_TIME = 100
+}; /* ms over which the fade alpha ramps 1.0 -> 0.0 */
 vec_t *CG_FadeColor(int32_t startMsec, int32_t totalMsec);
 
 /*
@@ -5421,10 +5220,9 @@ void CG_DrawScoreboardBody(float fadeAlpha);
  * the team/list drawers consume alpha.
  */
 typedef struct cgScoreboardDrawCtx_s {
-    vec4_t color;                    /* +0x00: shared scoreboard RGBA */
+    vec4_t color; /* +0x00: shared scoreboard RGBA */
 } cgScoreboardDrawCtx_t;
-_Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
-               "cgScoreboardDrawCtx_t is one vec4");
+_Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10, "cgScoreboardDrawCtx_t is one vec4");
 
 /*
  * CG_DrawScoreboardTeamHeader (0x30037090) — draw one scoreboard team-section
@@ -5445,8 +5243,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
  * cgame scoreboard drawer. Name provisional by proven role; exact CoD symbol
  * unproven from the allowed inputs.
  */
-float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
-                                  float boardWidth, float bannerHeight, int team,
+float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y, float boardWidth, float bannerHeight, int team,
                                   int *lineCounter);
 
 /* cgScore_t (the collected scoreboard row, stride 0x18) is defined in globals.h
@@ -5474,8 +5271,7 @@ void CG_DrawScoreboard_GetTeamColor(int team, vec3_t colorOut);
  * proven by the scoreboard call graph and corroborated by the same-module PPC
  * bank. Reconstructed in FUN_30037420_300377fd.c.
  */
-float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
-                         float boardWidth, int alternateShade, int *counter);
+float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry, float boardWidth, int alternateShade, int *counter);
 
 /*
  * CG_DrawScoreboard_ScoresList (0x30037810) — draws every collected scoreboard
@@ -5483,9 +5279,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
  * once per section by CG_DrawScoreboardBody (0x30037b50). See the function file
  * for the full evidence trace.
  */
-float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
-                                   float y, int team, float rowScale,
-                                   int *rowCounter);
+float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx, float y, int team, float rowScale, int *rowCounter);
 
 /*
  * CG_DrawScoreboard_ListColumnHeaders (0x30036d60) — draws the scoreboard's
@@ -5497,8 +5291,7 @@ float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
  * draw-color pointer arrives in EBX (modeled as a trailing int32 word, forwarded
  * verbatim to the trap-54 text draws). Float x87 return.
  */
-float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale,
-                                          const vec4_t color);
+float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale, const vec4_t color);
 
 /*
  * CG_DrawObjectiveInfo (0x30036900) — draw the scoreboard's localized,
@@ -5509,8 +5302,7 @@ float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale,
  * the sole caller); caller cleans 8 bytes. Name proven by behavior and scoreboard
  * call graph. Reconstructed in FUN_30036900_30036d5e.c.
  */
-float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
-                                     float y);
+float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx, float y);
 
 /*
  * CG_DrawScoreboard_ScrollIndicators (0x300378b0) — reconstructed. When the
@@ -5537,8 +5329,7 @@ float CG_DrawObjectiveInfo(const cgScoreboardDrawCtx_t *drawCtx,
  * build, mirroring the sibling CG_DrawScoreboard_ListColumnHeaders EBX-colorPtr
  * convention.
  */
-void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY,
-                                        int lineCount, int visibleLineCount);
+void CG_DrawScoreboard_ScrollIndicators(const vec_t *color, float topY, int lineCount, int visibleLineCount);
 
 /*
  * CG_DrawScoreboard (0x30037d90) — top-level multiplayer scoreboard draw. Returns
@@ -5620,10 +5411,8 @@ qboolean CG_KeyEvent(int32_t key, qboolean down);
  * caller stores their results to item->x/item->y (+0x00/+0x04). Compiler
  * register-argument helpers (EAX = node, ESI = item; no stack args, plain RET).
  */
-long double CG_HudElemX(const hudElem_t *node,
-                        const cgAlignedDrawItem *item);
-long double CG_HudElemY(const hudElem_t *node,
-                        const cgAlignedDrawItem *item);
+long double CG_HudElemX(const hudElem_t *node, const cgAlignedDrawItem *item);
+long double CG_HudElemY(const hudElem_t *node, const cgAlignedDrawItem *item);
 
 /*
  * hudElemType_t and hudElem_t (the single HUD element descriptor, +0x00 type,
@@ -5714,14 +5503,14 @@ struct centity_s {
      * then evaluated/dispatched at transition). Both views span +0xf4..+0x1e7. */
     union {
         entityState_t corpseModelInfo; /* +0xf4: corpse/DObj entity-state view */
-        entityState_t nextState;       /* +0xf4: incoming snapshot state */
+        entityState_t nextState; /* +0xf4: incoming snapshot state */
     };
-    qboolean currentValid;    /* +0x1e8: current snapshot state is valid. CG_ResetEntity
+    qboolean currentValid; /* +0x1e8: current snapshot state is valid. CG_ResetEntity
                                * copies nextState to currentState and writes 1 here; snapshot
                                * teardown paths write 0. DObj/tag consumers test this flag
                                * before asking the engine for the entity's DObj handle. */
     qboolean weaponEffectActive; /* +0x1ec: ordinary weapon-fire effect latch */
-    int32_t previousEvent;    /* +0x1f0: highest event sequence CG_CheckEvents (0x300238e0)
+    int32_t previousEvent; /* +0x1f0: highest event sequence CG_CheckEvents (0x300238e0)
                                * has already dispatched for this entity. Doubles as a
                                * one-shot "fired" flag for pure ET_EVENTS entities (set to 1
                                * so the event plays exactly once). Client centity_t
@@ -5738,7 +5527,7 @@ struct centity_s {
                                * tag_origin effect only when this is 0, then sets it to 1
                                * after a successful CG_RESOLVE_TAG. Provisional field name
                                * (exact centity_t source name unproven). */
-    int32_t miscTime;         /* +0x1fc: a per-entity client-time (ms) timestamp. The vehicle
+    int32_t miscTime; /* +0x1fc: a per-entity client-time (ms) timestamp. The vehicle
                                * render handler CG_AddCEntity_Vehicle (0x30021660) derives the
                                * DObj model's shaderTime (age in seconds) as
                                * (cg.time - miscTime) * 0.001f. CG_Vehicle_DoControllers
@@ -5746,7 +5535,7 @@ struct centity_s {
                                * otherwise it lerps currentState.time to nextState.time in
                                * seconds and converts the result back to integer milliseconds.
                                * Provisional field name (exact centity_t source name unproven). */
-    int32_t gasFireTime;      /* +0x200: cg.time of the latest gas-weapon fire */
+    int32_t gasFireTime; /* +0x200: cg.time of the latest gas-weapon fire */
     int32_t flashSoundLifetime; /* +0x204: remaining lifetime (ms) of this entity's
                                * muzzle-flash sound emission. CG_WeaponUpdateLoopingSound
                                * (0x300490b0) decrements it by cg_frametime each frame
@@ -5756,9 +5545,9 @@ struct centity_s {
                                * (cgWeaponInfo.flashTailSound, +0x12c) plays once. A value
                                * <= 0 on entry skips the whole emitter. Provisional field
                                * name (exact centity_t source name unproven). */
-    vec3_t  lerpOrigin;       /* +0x208: canonical centity_t interpolated origin. */
-    vec3_t  lerpAngles;       /* +0x214: canonical centity_t interpolated angles. */
-    vec3_t  smoothedWeaponAngles; /* +0x220: view-weapon angles smoothed across frames.
+    vec3_t lerpOrigin; /* +0x208: canonical centity_t interpolated origin. */
+    vec3_t lerpAngles; /* +0x214: canonical centity_t interpolated angles. */
+    vec3_t smoothedWeaponAngles; /* +0x220: view-weapon angles smoothed across frames.
                                * The refEntity builder at 0x3001e380 seeds this from
                                * lerpOrigin on first use (sentinel 0.5 per component)
                                * and zeroes it when the EF flag is clear. Provisional name. */
@@ -5768,12 +5557,12 @@ struct centity_s {
                                * it by loopedFxInterval (+0x6c) until it is within one interval
                                * of cg.time, returning without playing when the interval has not
                                * yet elapsed. Provisional field name. */
-    int32_t voiceChatIcon;    /* +0x230: registered head-icon shader handle shown while
+    int32_t voiceChatIcon; /* +0x230: registered head-icon shader handle shown while
                                * this client is voice-chatting. Written by CG_PlayVoiceChat
                                * (0x30039ff0) from cgs_voiceChatIcon (the "headiconVoiceChat"
                                * shader handle at 0x3044b6cc). Provisional field name; role
                                * proven by the writer, exact centity_t source name unproven. */
-    int32_t voiceChatTime;    /* +0x234: cg.time deadline until which voiceChatIcon is shown.
+    int32_t voiceChatTime; /* +0x234: cg.time deadline until which voiceChatIcon is shown.
                                * CG_PlayVoiceChat sets it to cg.time + duration, or
                                * cg.time + 2*duration when the icon is the default voice-chat
                                * icon. Provisional field name. */
@@ -5781,7 +5570,7 @@ struct centity_s {
                                * collision participation flag. The predictor sets it
                                * around Pmove for the contacted ET_VEHICLE entity and
                                * clears it immediately afterward. */
-    vec3_t  vehicleWheelLastOrigin[6]; /* +0x23c..+0x283: one persistent world-space
+    vec3_t vehicleWheelLastOrigin[6]; /* +0x23c..+0x283: one persistent world-space
                                * contact origin per vehicle wheel. The six-wheel
                                * DObj pass at 0x30020540 advances this pointer by
                                * 0x0c with the wheel-tag table, initializes an all-zero
@@ -5799,8 +5588,7 @@ _Static_assert(sizeof(struct centity_s) == 0x288, "centity_t stride 0x288");
 _Static_assert(offsetof(struct centity_s, currentState.eType) == 0x4, "centity eType +0x4");
 _Static_assert(offsetof(struct centity_s, currentState.eFlags) == 0x8, "centity eFlags +0x8");
 _Static_assert(offsetof(struct centity_s, currentState.pos) == 0x0c, "centity currentState.pos +0x0c");
-_Static_assert(offsetof(struct centity_s, currentState.origin) == 0x18,
-               "centity currentState.origin +0x18");
+_Static_assert(offsetof(struct centity_s, currentState.origin) == 0x18, "centity currentState.origin +0x18");
 _Static_assert(offsetof(struct centity_s, currentState.apos) == 0x30, "centity apos +0x30");
 _Static_assert(offsetof(struct centity_s, currentState.time) == 0x54, "centity time +0x54");
 _Static_assert(offsetof(struct centity_s, currentState.iconFadeEndTime) == 0x54, "centity iconFadeEndTime +0x54");
@@ -5808,8 +5596,7 @@ _Static_assert(offsetof(struct centity_s, currentState.origin2) == 0x5c, "centit
 _Static_assert(offsetof(struct centity_s, currentState.angles2) == 0x68, "centity angles2 +0x68");
 _Static_assert(offsetof(struct centity_s, currentState.iconBaseYaw) == 0xd8, "centity iconBaseYaw +0xd8");
 _Static_assert(offsetof(struct centity_s, currentState.leanf) == 0xd8, "centity leanf +0xd8");
-_Static_assert(offsetof(struct centity_s, currentValid) == 0x1e8,
-               "centity currentValid +0x1e8");
+_Static_assert(offsetof(struct centity_s, currentValid) == 0x1e8, "centity currentValid +0x1e8");
 _Static_assert(offsetof(struct centity_s, weaponEffectActive) == 0x1ec, "centity weaponEffectActive +0x1ec");
 _Static_assert(offsetof(struct centity_s, currentState.vehicleEntityNum) == 0x74, "centity vehicleEntityNum +0x74");
 _Static_assert(offsetof(struct centity_s, currentState.compassBlipIndex) == 0x78, "centity compassBlipIndex +0x78");
@@ -5828,8 +5615,7 @@ _Static_assert(offsetof(struct centity_s, currentState.scale) == 0xdc, "centity 
 _Static_assert(offsetof(struct centity_s, previousEvent) == 0x1f0, "centity previousEvent +0x1f0");
 _Static_assert(offsetof(struct centity_s, currentState.hudTagMask) == 0xe4, "centity hudTagMask +0xe4");
 _Static_assert(offsetof(struct centity_s, currentState.animMovetype) == 0xe4, "centity animMovetype +0xe4");
-_Static_assert(offsetof(struct centity_s, currentState.turretOverheatState) == 0xe4,
-               "centity turretOverheatState +0xe4");
+_Static_assert(offsetof(struct centity_s, currentState.turretOverheatState) == 0xe4, "centity turretOverheatState +0xe4");
 _Static_assert(offsetof(struct centity_s, lerpOrigin) == 0x208, "centity lerpOrigin +0x208");
 _Static_assert(offsetof(struct centity_s, lerpAngles) == 0x214, "centity lerpAngles +0x214");
 _Static_assert(offsetof(struct centity_s, smoothedWeaponAngles) == 0x220, "centity smoothedWeaponAngles +0x220");
@@ -5879,14 +5665,13 @@ void CG_CheckPreEvents(centity_t *cent);
  * roles proven only as raw dword copies out of the centity by this function; exact
  * CoD source names adopted from the corroborating clientInfo_t layout. */
 typedef struct cgLerpAngleBlock_s {
-    float   leanAmount;    /* +0x00 (record +0x3e0): from currentState +0x6c */
-    float   leanFraction;  /* +0x04 (record +0x3e4): from currentState +0xd8 */
-    float   viewPitch;     /* +0x08 (record +0x3e8): lerpAngles[0] (+0x214) */
-    float   viewYaw;       /* +0x0c (record +0x3ec): currentState +0x218 */
-    float   viewRoll;      /* +0x10 (record +0x3f0): currentState +0x21c */
+    float leanAmount; /* +0x00 (record +0x3e0): from currentState +0x6c */
+    float leanFraction; /* +0x04 (record +0x3e4): from currentState +0xd8 */
+    float viewPitch; /* +0x08 (record +0x3e8): lerpAngles[0] (+0x214) */
+    float viewYaw; /* +0x0c (record +0x3ec): currentState +0x218 */
+    float viewRoll; /* +0x10 (record +0x3f0): currentState +0x21c */
 } cgLerpAngleBlock_t;
-_Static_assert(offsetof(cgLerpAngleBlock_t, viewRoll) == 0x10,
-               "cgLerpAngleBlock_t viewRoll +0x10");
+_Static_assert(offsetof(cgLerpAngleBlock_t, viewRoll) == 0x10, "cgLerpAngleBlock_t viewRoll +0x10");
 
 /* Base of cg_entities[] indexed by CG_CalcEntityLerpPositions for the eType-9
  * (ET_SOUND_BLEND) proxy copy: element stride 0x288 (centity_t), base
@@ -5952,9 +5737,7 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */);
  * gated 2D rotated-pic draw). The Mac body has the same entity-lerp, angle,
  * color, and rotated-picture sequence, resolving the source name.
  */
-void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
-                               int32_t hShader,
-                             const float *color, int32_t bitIndex);
+void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter, int32_t hShader, const float *color, int32_t bitIndex);
 
 /*
  * CG_DrawTurretTagQuad (0x3001ccf0, role name) — RECONSTRUCTED; see
@@ -5971,9 +5754,7 @@ void CG_DrawTankPositionStatus(const rectDef_t *rect, int32_t stateFilter,
  * five stack args). Both known callers (0x3001aae0 in FUN_3001a980_3001aafe and
  * 0x30031f55 in the turret-tag drawer 0x30031e20) match this ABI; the name is a
  * role name from the turret-tag caller, not a proven CoD symbol. */
-void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
-                          const float *shaderParams, float angleDegrees,
-                          int32_t hShader);
+void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y, const float *shaderParams, float angleDegrees, int32_t hShader);
 
 /*
  * CG_DrawTankBarrel (0x30031e20) — the world-tag member of the
@@ -5992,17 +5773,10 @@ void CG_DrawTurretTagQuad(float *cornerOffsets, float x, float y,
  * "Item_ValidateTypeData" is REJECTED (no item/type validation; this is a vehicle
  * turret HUD-tag draw). The Mac DObj/world-tag/rotated-quad sequence resolves the
  * source name. */
-void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
-                       int32_t hShader,
-                               const float *color);
+void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter, int32_t hShader, const float *color);
 
-qboolean CG_DObjGetBoneBoundsWireframe(DObj *self,
-                                       const char *tagName,
-                                       vec3_t out[24]);
-qboolean CG_DObjGetWorldBoneBoundsWireframe(DObj *dobj,
-                                             centity_t *cent,
-                                             const char *tagName,
-                                             vec3_t points[24]);
+qboolean CG_DObjGetBoneBoundsWireframe(DObj *self, const char *tagName, vec3_t out[24]);
+qboolean CG_DObjGetWorldBoneBoundsWireframe(DObj *dobj, centity_t *cent, const char *tagName, vec3_t points[24]);
 
 /*
  * CG_SetupWeaponLightingOrigin (0x3001e380) — fills refEntity.lightingOrigin from the
@@ -6034,8 +5808,7 @@ void CG_SetupWeaponLightingOrigin(centity_t *ent, refEntity_t *re);
  * (no cross product / normalize / dot), not plane geometry. */
 /* entityNum arrives in ESI (register); eType/animTreeParam are the two caller-cleaned
  * stack args. Returns the entity's DObj handle (0 on the no-handle early-outs). */
-intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType,
-                                      int32_t animTreeParam);
+intptr_t CG_RefreshEntityDObjAnimTree(int32_t entityNum, int32_t eType, int32_t animTreeParam);
 
 /*
  * CG_General (0x3001e430) — the eType-0 handler of the CG_AddCEntity dispatch
@@ -6091,15 +5864,11 @@ extern centity_t cg_entities[MAX_GENTITIES];
 #else
 #define CGENTITY_COMPAT_ALWAYS_INLINE inline
 #endif
-static CGENTITY_COMPAT_ALWAYS_INLINE centity_t *
-cgame_compat_unchecked_cgentity(int32_t index)
+static CGENTITY_COMPAT_ALWAYS_INLINE centity_t *cgame_compat_unchecked_cgentity(int32_t index)
 {
-    const uint32_t offsetBits =
-        (uint32_t)index * (uint32_t)sizeof(cg_entities[0]);
-    const intptr_t displacement =
-        (intptr_t)coduo_int32_from_bits(offsetBits);
-    const uintptr_t address =
-        (uintptr_t)(void *)&cg_entities[0] + (uintptr_t)displacement;
+    const uint32_t offsetBits = (uint32_t)index * (uint32_t)sizeof(cg_entities[0]);
+    const intptr_t displacement = (intptr_t)coduo_int32_from_bits(offsetBits);
+    const uintptr_t address = (uintptr_t)(void *)&cg_entities[0] + (uintptr_t)displacement;
     return (centity_t *)address;
 }
 #undef CGENTITY_COMPAT_ALWAYS_INLINE
@@ -6135,18 +5904,18 @@ void CG_DrawRotatedPic(float x, float y, float w, float h, float angle, int32_t 
  * is REJECTED: each is a pure size match ("matched size") contradicted by the
  * dispatch role. Register-arg convention noted per handler where the dispatcher
  * proves it. */
-void CG_AddCEntity_General(centity_t *cent);       /* eType 0; EAX=cent (0x3001e430) */
-void CG_AddCEntity_Player(centity_t *cent);        /* eType 1; ECX=cent (0x300343e0) */
-void CG_AddCEntity_PlayerCorpse(centity_t *cent);  /* eType 2; stack arg (0x300346c0) */
-void CG_AddCEntity_Item(centity_t *cent);          /* eType 3; EAX=cent (0x3001e680) */
-void CG_AddCEntity_Missile(centity_t *cent);       /* eType 4; EAX=cent (0x3001edb0) */
-void CG_Portal(centity_t *cent);                   /* eType 6; ESI=cent (0x3001f470) */
-void CG_ScriptMover(centity_t *cent);              /* eType 8; stack arg (0x3001f260) */
-void CG_AddCEntity_SoundBlend(centity_t *cent);    /* eType 9; EAX=cent (0x30021860) */
-void CG_AddCEntity_LoopedFx(centity_t *cent);      /* eType 10; EAX=cent (0x30021a30) */
-void CG_AddCEntity_Turret(centity_t *cent);        /* eType 11; EAX=cent (0x3001eca0) */
-void CG_AddCEntity_Vehicle(centity_t *cent);       /* eType 12,13; EAX=cent (0x30021660) */
-void CG_VehicleOwnerIcon(centity_t *cent);         /* eType 15; ESI=cent (0x30021540) */
+void CG_AddCEntity_General(centity_t *cent); /* eType 0; EAX=cent (0x3001e430) */
+void CG_AddCEntity_Player(centity_t *cent); /* eType 1; ECX=cent (0x300343e0) */
+void CG_AddCEntity_PlayerCorpse(centity_t *cent); /* eType 2; stack arg (0x300346c0) */
+void CG_AddCEntity_Item(centity_t *cent); /* eType 3; EAX=cent (0x3001e680) */
+void CG_AddCEntity_Missile(centity_t *cent); /* eType 4; EAX=cent (0x3001edb0) */
+void CG_Portal(centity_t *cent); /* eType 6; ESI=cent (0x3001f470) */
+void CG_ScriptMover(centity_t *cent); /* eType 8; stack arg (0x3001f260) */
+void CG_AddCEntity_SoundBlend(centity_t *cent); /* eType 9; EAX=cent (0x30021860) */
+void CG_AddCEntity_LoopedFx(centity_t *cent); /* eType 10; EAX=cent (0x30021a30) */
+void CG_AddCEntity_Turret(centity_t *cent); /* eType 11; EAX=cent (0x3001eca0) */
+void CG_AddCEntity_Vehicle(centity_t *cent); /* eType 12,13; EAX=cent (0x30021660) */
+void CG_VehicleOwnerIcon(centity_t *cent); /* eType 15; ESI=cent (0x30021540) */
 
 /*
  * CG_AddHudHeadIconSprite (0x300213c0, provisional role name) — build one rotating
@@ -6166,8 +5935,7 @@ void CG_VehicleOwnerIcon(centity_t *cent);         /* eType 15; ESI=cent (0x3002
  * (trap_R_AddRefEntityToScene) through *0x30085e9c. Caller-observed ABI only;
  * superseded by its own .mcode reconstruction (FUN_300213c0_30021531). The .mcode
  * size-guess name is rejected — this draws a HUD sprite, it is no weapon/PM step. */
-void CG_AddHudHeadIconSprite(centity_t *cent, qhandle_t material, int32_t yaw,
-                             int32_t drawFlag, int32_t secondaryAngle, float alphaScale);
+void CG_AddHudHeadIconSprite(centity_t *cent, qhandle_t material, int32_t yaw, int32_t drawFlag, int32_t secondaryAngle, float alphaScale);
 
 /*
  * CG_CalcEntityLerpOrigin (0x3001e7f0, provisional role name) — the per-entity
@@ -6256,8 +6024,7 @@ void CG_UpdateHudSpinAngle(void);
  * traps and reads no player command/ground state. Provisional role name (no cgame
  * symbol table recovered).
  */
-void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader,
-                        const float *color);
+void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader, const float *color);
 
 /*
  * CG_CreateMG42WeaponAnimTree (0x3001e960) — build the "MG42" weapon XAnim tree
@@ -6291,9 +6058,8 @@ intptr_t CG_CreateMG42WeaponAnimTree(centity_t *slot);
  * flame-chunk spawner (alloc + "Out of flame chunks" + bone-tag trajectory), not a
  * spectator end-of-frame routine.
  */
-void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos,
-                              const char *boneName, int32_t durationMsec,
-                              float startSpeed, int32_t count);
+void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *boneName, int32_t durationMsec, float startSpeed,
+                              int32_t count);
 
 /*
  * flameChunk_t (0x150 / 336 bytes) — one node of the client flame-chunk pool
@@ -6315,28 +6081,28 @@ enum {
     FLAME_CHUNK_LIST_ACTIVE = 1
 };
 typedef struct flameChunk_s {
-    struct flameChunk_s *next;      /* +0x00: free/active list forward link */
-    struct flameChunk_s *prev;      /* +0x04: free/active list back link */
-    struct flameChunk_s *parent;    /* +0x08: child chain root (freed first) */
-    struct flameChunk_s *listNext;  /* +0x0c: secondary list forward link */
-    struct flameChunk_s *listPrev;  /* +0x10: secondary list back link */
-    uint32_t ownerSentinel;         /* +0x14: owner/instance sentinel. CG_AddFlameSpriteToScene
+    struct flameChunk_s *next; /* +0x00: free/active list forward link */
+    struct flameChunk_s *prev; /* +0x04: free/active list back link */
+    struct flameChunk_s *parent; /* +0x08: child chain root (freed first) */
+    struct flameChunk_s *listNext; /* +0x0c: secondary list forward link */
+    struct flameChunk_s *listPrev; /* +0x10: secondary list back link */
+    uint32_t ownerSentinel; /* +0x14: owner/instance sentinel. CG_AddFlameSpriteToScene
                                      * (0x300268e0) treats -1 (0xffffffff) as "unset/no owner":
                                      * for a kind==2 chunk it skips the rand-gated damage-trace
                                      * block unless ownerSentinel == -1 (CMP [f+0x14],-1). Exact name
                                      * unresolved. */
-    uint32_t emitScatterIndex;      /* +0x18: rand()-scattered emit index (Q_rint of a
+    uint32_t emitScatterIndex; /* +0x18: rand()-scattered emit index (Q_rint of a
                                      * randomized value); seeded by CG_EmitPlayerFlameChunks
                                      * and CG_MoveFlameChunk. Exact name unresolved. */
-    uint32_t unresolvedField_1c;    /* +0x1c: written/reset but never read by any recovered
+    uint32_t unresolvedField_1c; /* +0x1c: written/reset but never read by any recovered
                                      * client consumer. This is not an abiGap because the store
                                      * is real; the field's semantic role remains unknowable. */
-    uint32_t liveFlag;              /* +0x20: set to 1 by CG_SpawnFlameChunk (spawned/live flag; exact name unresolved) */
-    uint32_t listMarker;            /* +0x24: secondary-list membership marker */
-    uint32_t emitArgFlag;           /* +0x28: emit `arg4` flag stamped at emit by
+    uint32_t liveFlag; /* +0x20: set to 1 by CG_SpawnFlameChunk (spawned/live flag; exact name unresolved) */
+    uint32_t listMarker; /* +0x24: secondary-list membership marker */
+    uint32_t emitArgFlag; /* +0x28: emit `arg4` flag stamped at emit by
                                      * CG_EmitPlayerFlameChunks (0x3002496c / 0x30025295);
                                      * exact source name unresolved. */
-    int32_t  kind;                  /* +0x2c: per-chunk mode/kind. CG_UpdateFlamethrowerSounds
+    int32_t kind; /* +0x2c: per-chunk mode/kind. CG_UpdateFlamethrowerSounds
                                      * (0x30029210) skips a chunk's sound update when
                                      * kind == 2, and takes the sound-envelope
                                      * decay branch when kind == 3; exact source
@@ -6349,14 +6115,14 @@ typedef struct flameChunk_s {
                                      * path, all others use the solid-white fire color.
                                      * So the tested values are {1,2,3,5}; provisional
                                      * flame-chunk-kind enum. */
-    uint32_t overrideMaterial;      /* +0x30: zeroed at spawn. CG_AddFlameSpriteToScene
+    uint32_t overrideMaterial; /* +0x30: zeroed at spawn. CG_AddFlameSpriteToScene
                                      * (0x300268e0), on the argFlag==1 (world) sprite path,
                                      * reads it as an OPTIONAL render-material override
                                      * (MOV EBP,[f+0x30]; if nonzero it is passed straight
                                      * to trap_R_AddPolyToScene as the poly shader, else the
                                      * fire-material table cg_flameFireMaterials[i] is used).
                                      * Provisional role name unresolved (an int32 qhandle_t). */
-    int32_t  ownerInfoIndex;        /* +0x34: flame-info/sound index (the "owner" or
+    int32_t ownerInfoIndex; /* +0x34: flame-info/sound index (the "owner" or
                                      * per-limb index into cg_flameInfo[] (stride 0xb8)
                                      * and the stride-12 flame-sound-loop table). Used
                                      * as an array index throughout CG_UpdateFlamethrowerSounds
@@ -6365,7 +6131,7 @@ typedef struct flameChunk_s {
      * ones CG_MergeFlameChunks (0x300257e0) copies from the trailing chunk (f2) into
      * the leading chunk (f1) when it fuses two consecutive flame chunks; the exact
      * source names are unresolved, so they carry their offsets. Gaps stay reserved. */
-    int32_t  ownerClientNum;        /* +0x38: a second copy of ownerInfoIndex stamped at spawn by
+    int32_t ownerClientNum; /* +0x38: a second copy of ownerInfoIndex stamped at spawn by
                                      * CG_SpawnFlameChunkOnBone (0x30023d50: MOV [EBX+0x38],EAX
                                      * where EAX=ownerInfoIndex). CG_AddFlameSpriteToScene
                                      * (0x300268e0) uses it as the OWNER CLIENT NUMBER: it is
@@ -6375,36 +6141,36 @@ typedef struct flameChunk_s {
                                      * first-person view-relative billboard-basis path). So
                                      * +0x34/+0x38 are the flame's owner-entity/limb index.
                                      * Exact source name unresolved. */
-    int32_t  centFlags;             /* +0x3c: cent[+0xcc] copied at emit by
+    int32_t centFlags; /* +0x3c: cent[+0xcc] copied at emit by
                                      * CG_EmitPlayerFlameChunks (0x30025108 / 0x30025416);
                                      * exact source name unresolved. */
-    int32_t  boneHandle;            /* +0x40: DObj bone/tag handle+1 that this chunk is attached
+    int32_t boneHandle; /* +0x40: DObj bone/tag handle+1 that this chunk is attached
                                      * to (0 = free chunk, not bone-attached). CG_SpawnFlameChunkOnBone
                                      * stores CG_DObjGetBoneIndex(...)+1 here; CG_ComputeFlameChunkOrigin
                                      * (0x30025990) uses boneHandle-1 to index the engine bone-matrix
                                      * table. Provisional name; exact source name unresolved. */
-    uint8_t  padding044[4]; /* ABI_AUDITED_PADDING: aligns the following double at +0x48. */
-    double   spawnTime;             /* +0x48: chunk spawn timestamp (double, flame-clock units);
+    uint8_t padding044[4]; /* ABI_AUDITED_PADDING: aligns the following double at +0x48. */
+    double spawnTime; /* +0x48: chunk spawn timestamp (double, flame-clock units);
                                      * elapsed-since-spawn = (cg_flameTime - spawnTime)*0.001 in
                                      * CG_ComputeFlameChunkOrigin. Merged from f2. */
-    double   endTime;               /* +0x50: chunk end/expire timestamp (double). Merged from f2. */
-    float    startSpeed;            /* +0x58: the spawn `startSpeed` argument (a float), copied at
+    double endTime; /* +0x50: chunk end/expire timestamp (double). Merged from f2. */
+    float startSpeed; /* +0x58: the spawn `startSpeed` argument (a float), copied at
                                      * spawn by CG_SpawnFlameChunkOnBone (0x30023dbf) into +0x58,
                                      * +0x5c and +0xe4 from the same source dword. Retyped from the
                                      * mechanical reserved gap; exact source name unresolved. */
-    uint32_t startSpeedBits;        /* +0x5c: merged from f2. Also written at spawn by
+    uint32_t startSpeedBits; /* +0x5c: merged from f2. Also written at spawn by
                                      * CG_SpawnFlameChunkOnBone (0x30023dc8) with the raw 32-bit
                                      * bits of the `startSpeed` float (same dword as +0x58/+0xe4);
                                      * kept uint32_t because CG_UpdateFlamethrowerSounds (0x30029210)
                                      * reads it as an int gate (compared == 1). Dual role: holds
                                      * float bits but is consumed as an int gate. */
-    float    smokeDensityRate;      /* +0x60: smoke-density / opacity rate (single). Merged from
+    float smokeDensityRate; /* +0x60: smoke-density / opacity rate (single). Merged from
                                      * f2. CG_AddFlameSpriteToScene (0x300268e0), on the smoke
                                      * path (kind==5), reads it (FLD [f+0x60]) and multiplies
                                      * by 0.007147 (~1/140) into the smoke sprite's alpha/size
                                      * curve. Retyped from the merge-placeholder uint32_t to float;
                                      * provisional role name unresolved. */
-    float    sizeRate;              /* +0x64: per-chunk size/expansion rate cache
+    float sizeRate; /* +0x64: per-chunk size/expansion rate cache
                                      * (single). CG_FlameDropDrip (0x30027ad0)
                                      * and CG_FireFlameChunks (0x30027d10) store
                                      * CG_FlameGetSizeRate(chunk) (optionally scaled)
@@ -6412,62 +6178,62 @@ typedef struct flameChunk_s {
                                      * startSpeedBits * alpha * 0.00060024 into it.
                                      * Retyped from the mechanical uint32_t placeholder
                                      * to float; exact source name unresolved. */
-    double   spawnTimeCopy;         /* +0x68: chunk timestamp (double); stamped with
+    double spawnTimeCopy; /* +0x68: chunk timestamp (double); stamped with
                                      * (double)cg_flameTime at spawn and chunkEndTime at emit.
                                      * Merged from f2. Exact source name unresolved. */
-    vec3_t    localPos;           /* +0x70/74/78: chunk local position (bone-relative when
+    vec3_t localPos; /* +0x70/74/78: chunk local position (bone-relative when
                                      * attached; world otherwise). Read as singles by the
                                      * per-frame position update CG_ComputeFlameChunkOrigin
                                      * (0x30025990: FLD/FMUL [EBX+0x70..78]); merged from f2. */
     uint32_t padding07C; /* ABI_AUDITED_PADDING: aligns driftStartTime at +0x80. */
-    double   driftStartTime;        /* +0x80: chunk drift-start timestamp (double, flame-clock units).
+    double driftStartTime; /* +0x80: chunk drift-start timestamp (double, flame-clock units).
                                      * The free-chunk extrapolation in CG_ComputeFlameChunkOrigin
                                      * (0x30025990) uses elapsed = (cg_flameTime - driftStartTime)*0.001.
                                      * Merged from f2. */
-    vec3_t    driftDir;           /* +0x88/8c/90: drift/velocity direction (a vec3).
+    vec3_t driftDir; /* +0x88/8c/90: drift/velocity direction (a vec3).
                                      * CG_ComputeFlameChunkOrigin (0x30025990) multiplies it by
                                      * elapsed*driftSpeed to extrapolate the free (no-bone) chunk.
                                      * Merged from f2. */
-    float    driftSpeed;            /* +0x94: chunk drift speed (single). Scales the free-chunk
+    float driftSpeed; /* +0x94: chunk drift speed (single). Scales the free-chunk
                                      * extrapolation and drives the (speed*0.001111)^2 size term
                                      * in CG_ComputeFlameChunkOrigin (0x30025990). Merged from f2. */
-    float    radiusBaseA;           /* +0x98: sprite radius/size base A (single). Merged from f2.
+    float radiusBaseA; /* +0x98: sprite radius/size base A (single). Merged from f2.
                                      * CG_AddFlameSpriteToScene (0x300268e0) selects it when the
                                      * caller's world/first-person flag arg == 1 (FLD [f+0x98]),
                                      * rounds it via Q_rint, and uses it as the half-extent of the
                                      * flame billboard quad. Provisional name unresolved. */
-    float    radiusBaseB;           /* +0x9c: sprite radius/size base B (single). Merged from f2.
+    float radiusBaseB; /* +0x9c: sprite radius/size base B (single). Merged from f2.
                                      * The alternate half-extent CG_AddFlameSpriteToScene picks
                                      * when the flag arg != 1 (FLD [f+0x9c]). Provisional. */
-    int32_t  deadFlag;              /* +0xa0: dead/inactive flag. CG_AddFlameChunks
+    int32_t deadFlag; /* +0xa0: dead/inactive flag. CG_AddFlameChunks
                                      * (0x300272b0) skips the per-chunk render/merge
                                      * body when deadFlag != 0. */
-    int32_t  birthTime;             /* +0xa4: chunk birth/emit time (ms), read via
+    int32_t birthTime; /* +0xa4: chunk birth/emit time (ms), read via
                                      * FILD as an int and compared against the
                                      * per-flame reference time in CG_AddFlameChunks. */
-    float    expansionRate;         /* +0xa8: chunk expansion/radius rate (single). Read via FLD
+    float expansionRate; /* +0xa8: chunk expansion/radius rate (single). Read via FLD
                                      * by CG_ComputeFlameChunkOrigin (0x30025990): scaled by -1.5
                                      * for the drift term and multiplied into the free-chunk z
                                      * turbulence. Merged from f2. */
-    vec3_t    axisDir;            /* +0xac/b0/b4: direction/basis row (a vec3), read by
+    vec3_t axisDir; /* +0xac/b0/b4: direction/basis row (a vec3), read by
                                      * CG_AddFlameChunks for the chunk-axis dot; written at
                                      * emit by CG_EmitPlayerFlameChunks (0x30024ce8) as a
                                      * copy of the drift dir (driftDir). */
-    float    soundAmpRate;          /* +0xb8: per-chunk sound-amplitude rate; used as a
+    float soundAmpRate; /* +0xb8: per-chunk sound-amplitude rate; used as a
                                      * float multiplier when CG_UpdateFlamethrowerSounds
                                      * (0x30029210) accumulates the flame-sound-loop
                                      * envelope for this chunk's index. Exact source
                                      * name unresolved. */
-    float    alpha;                 /* +0xbc: initialized to 1.0f at emit by
+    float alpha; /* +0xbc: initialized to 1.0f at emit by
                                      * CG_EmitPlayerFlameChunks (0x30024da8 / 0x30025476);
                                      * exact source name unresolved. */
-    vec3_t    posCopy;            /* +0xc0/c4/c8: chunk position copy (a vec3); the emitter
+    vec3_t posCopy; /* +0xc0/c4/c8: chunk position copy (a vec3); the emitter
                                      * (0x30024d83 / 0x300253f6) stamps the accum0 position
                                      * triple here as well as into localPos. */
-    uint8_t  padding0CC[4]; /* ABI_AUDITED_PADDING: aligns endTimeCopy at +0xd0. */
-    double   endTimeCopy;           /* +0xd0: a chunk timestamp (double); the emitter stamps
+    uint8_t padding0CC[4]; /* ABI_AUDITED_PADDING: aligns endTimeCopy at +0xd0. */
+    double endTimeCopy; /* +0xd0: a chunk timestamp (double); the emitter stamps
                                      * chunkEndTime here (0x30024d89 / 0x300253f0). */
-    vec3_t    worldPos;           /* +0xd8/dc/e0: chunk world position (a vec3). Merged from f2.
+    vec3_t worldPos; /* +0xd8/dc/e0: chunk world position (a vec3). Merged from f2.
                                      * CG_AddFlameSpriteToScene (0x300268e0) reads it as
                                      * the sprite CENTER world position: it subtracts
                                      * cg_refdef.vieworg and VectorNormalize()s the difference to
@@ -6475,58 +6241,58 @@ typedef struct flameChunk_s {
                                      * on exit stores the triple into cg_flameLastSpritePos
                                      * (0x300ab738/73c/740).
                                      * Retyped from the mechanical merge-placeholder uint32_t. */
-    float    radius;                /* +0xe4: chunk radius / expansion magnitude (single).
+    float radius; /* +0xe4: chunk radius / expansion magnitude (single).
                                      * CG_MergeFlameChunks (0x300257e0) uses it as the merge
                                      * discriminant (f2 copied into f1 only when
                                      * f2.radius > f1.radius). CG_AddFlameSpriteToScene
                                      * (0x300268e0) passes it as arg1 to CG_FlameDamage
                                      * (0x300265c0) and halves it (radius*0.5) as a size term. */
-    float    lifeFraction;          /* +0xe8: chunk life/fade fraction (single, ~[0,1]). Merged
+    float lifeFraction; /* +0xe8: chunk life/fade fraction (single, ~[0,1]). Merged
                                      * from f2. CG_AddFlameChunks (0x300272b0) derives it from the
                                      * chunk's elapsed-vs-lifetime ratio and passes it (and a curve
                                      * of it) to CG_AddFlameSpriteToScene (0x300268e0), which
                                      * compares it against 0.9f for the flicker/damage-trace gate
                                      * and against other thresholds for the color envelope.
                                      * Retyped from the merge-placeholder uint32_t to float. */
-    uint8_t  padding0EC[4]; /* ABI_AUDITED_PADDING: aligns endTimeCopy2 at +0xf0. */
-    double   endTimeCopy2;          /* +0xf0: a chunk timestamp (double); the emitter stamps
+    uint8_t padding0EC[4]; /* ABI_AUDITED_PADDING: aligns endTimeCopy2 at +0xf0. */
+    double endTimeCopy2; /* +0xf0: a chunk timestamp (double); the emitter stamps
                                      * chunkEndTime here (0x30025181 / 0x300254a4). */
-    double   endTimeCopy3;          /* +0xf8: merged from f2 (double); the emitter stamps
+    double endTimeCopy3; /* +0xf8: merged from f2 (double); the emitter stamps
                                      * chunkEndTime here too (0x30025187 / 0x300254aa). */
-    vec3_t    emitBasis;          /* +0x100/104/108: emit basis-2 row (a vec3); the emitter stamps
+    vec3_t emitBasis; /* +0x100/104/108: emit basis-2 row (a vec3); the emitter stamps
                                      * the accum2 direction triple here (0x30025156). */
-    vec3_t    emitOrigin;         /* +0x10c/110/114: emit origin (a vec3); the emitter stamps the
+    vec3_t emitOrigin; /* +0x10c/110/114: emit origin (a vec3); the emitter stamps the
                                      * emitOrigin triple here (0x30025195 / 0x300254ba). */
-    vec3_t    centerOffset;       /* +0x118/11c/120: sprite center world-offset (a vec3). Zeroed at
+    vec3_t centerOffset; /* +0x118/11c/120: sprite center world-offset (a vec3). Zeroed at
                                      * spawn. CG_AddFlameSpriteToScene (0x300268e0) reads it
                                      * as an additional offset applied to the
                                      * sprite center: when all three are 0 the offset block is
                                      * skipped (the common case); otherwise centerOffset[2] (via
                                      * fabs()*20.0) biases the center z. Retyped from the mechanical
                                      * zeroed-at-spawn uint32_t; provisional role name unresolved. */
-    int32_t  damageFrameStamp;      /* +0x124: per-chunk "damage-frame processed" stamp
+    int32_t damageFrameStamp; /* +0x124: per-chunk "damage-frame processed" stamp
                                      * (cg_flameTime). CG_MoveFlameChunk (0x30025da0)
                                      * gates the once-per-chunk flame-damage-source spawn on
                                      * damageFrameStamp == 0 and, after handling it, stamps
                                      * damageFrameStamp = cg_flameTime so it does not re-run. Retyped
                                      * from the mechanical reserved gap; exact source name
                                      * unresolved. */
-    int32_t  emitCounter;           /* +0x128: emit counter (cgFlameInfo emitCounter) stamped at emit by
+    int32_t emitCounter; /* +0x128: emit counter (cgFlameInfo emitCounter) stamped at emit by
                                      * CG_EmitPlayerFlameChunks (0x30024990 / 0x300252ae);
                                      * exact source name unresolved. */
-    uint8_t  padding12C[4]; /* ABI_AUDITED_PADDING: aligns lifeStartTime at +0x130. */
-    double   lifeStartTime;         /* +0x130: min-time/lifetime (double); f2's value
+    uint8_t padding12C[4]; /* ABI_AUDITED_PADDING: aligns lifeStartTime at +0x130. */
+    double lifeStartTime; /* +0x130: min-time/lifetime (double); f2's value
                                      * overrides f1's only when f2==0 and f1!=0. Stamped at spawn
                                      * by CG_SpawnFlameChunkOnBone (0x30023fa9) with (double)cg_flameTime. */
-    double   lifeRate;              /* +0x138: chunk life-rate (double). CG_SpawnFlameChunkOnBone
+    double lifeRate; /* +0x138: chunk life-rate (double). CG_SpawnFlameChunkOnBone
                                      * (0x30023fa3) stores (2*count) / (endTime - spawnTime) here —
                                      * the reciprocal of the chunk's lifetime span scaled by the
                                      * spawn `count`. Retyped from the mechanical reserved gap; exact
                                      * source name unresolved. */
-    double   lifeStartTime2;        /* +0x140: min-time/lifetime (double); same
+    double lifeStartTime2; /* +0x140: min-time/lifetime (double); same
                                      * zero-override rule as lifeStartTime */
-    float    spawnScale;            /* +0x148: initialized to 1.0f at spawn (scale/alpha; exact name unresolved) */
-    uint8_t  padding14C[4]; /* ABI_AUDITED_PADDING: tail-aligns the 0x150-byte record. */
+    float spawnScale; /* +0x148: initialized to 1.0f at spawn (scale/alpha; exact name unresolved) */
+    uint8_t padding14C[4]; /* ABI_AUDITED_PADDING: tail-aligns the 0x150-byte record. */
 } flameChunk_t;
 /* The link fields are 4-byte pointers only at the 32-bit target; the layout guards
  * below are meaningful there and are compiled only when pointers are 4 bytes (the
@@ -6539,8 +6305,7 @@ _Static_assert(offsetof(flameChunk_t, prev) == 0x04, "prev @ +0x04");
 _Static_assert(offsetof(flameChunk_t, parent) == 0x08, "parent @ +0x08");
 _Static_assert(offsetof(flameChunk_t, listNext) == 0x0c, "listNext @ +0x0c");
 _Static_assert(offsetof(flameChunk_t, listPrev) == 0x10, "listPrev @ +0x10");
-_Static_assert(offsetof(flameChunk_t, unresolvedField_1c) == 0x1c,
-               "unresolvedField_1c @ +0x1c");
+_Static_assert(offsetof(flameChunk_t, unresolvedField_1c) == 0x1c, "unresolvedField_1c @ +0x1c");
 _Static_assert(offsetof(flameChunk_t, liveFlag) == 0x20, "liveFlag @ +0x20");
 _Static_assert(offsetof(flameChunk_t, listMarker) == 0x24, "listMarker @ +0x24");
 _Static_assert(offsetof(flameChunk_t, kind) == 0x2c, "kind @ +0x2c");
@@ -6724,8 +6489,7 @@ void CG_InitFlameChunks(void);
 /* CG_FlameDamage (0x300265c0, reconstructed FUN_300265c0_300268d7): traces from
  * a flame chunk's world position toward nearby entities and applies flame damage/marks.
  * Signature proven from its own reconstructed body. */
-void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum,
-                             float radiusBase, const flameChunk_t *chunk);
+void CG_FlameDamage(const vec3_t flamePos, int32_t ownerClientNum, float radiusBase, const flameChunk_t *chunk);
 
 /* CG_AddFlameChunks (0x300272b0, reconstructed FUN_300272b0_3002783f): per-owner-chunk
  * frame update — advances/merges the chunk's children and submits their sprites via
@@ -6736,8 +6500,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk);
  * build one camera-facing flame/smoke billboard quad for a flameChunk_t and submit it via
  * trap_R_AddPolyToScene (CG_R_ADDPOLYTOSCENE=0x40). Reconstructed from the dense x87
  * body; the call shape is also proven from CG_AddFlameChunks at 0x30027819. */
-void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
-                        float alpha, int32_t finalFrame);
+void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction, float alpha, int32_t finalFrame);
 
 /* CG_SpawnFlameChunkOnBone (0x30023d50) is already declared above (near line 13583) with a
  * better-evidenced signature: void CG_SpawnFlameChunkOnBone(centity_t*, const vec3_t,
@@ -6757,83 +6520,83 @@ void CG_AddFlameToScene(flameChunk_t *chunk, float animationFraction,
  * field_34 (a per-owner/per-limb index).
  */
 typedef struct cgFlameInfo_s {
-    int32_t  clientFrame;        /* +0x00: cg.clientFrame stamp of the last emitter
+    int32_t clientFrame; /* +0x00: cg.clientFrame stamp of the last emitter
                                   * update. Current/recent checks compare it against
                                   * cg_clientFrame-1; CG_EmitPlayerFlameChunks writes
                                   * the current frame here on exit (0x30025550). */
-    vec3_t    prevDir;            /* +0x04/+0x08/+0x0c: the emitter's previous-frame aim
+    vec3_t prevDir; /* +0x04/+0x08/+0x0c: the emitter's previous-frame aim
                                      * direction (a vec3). CG_EmitPlayerFlameChunks
                                      * (0x30024050) reads it at 0x30024131/0x30024177 as the
                                      * angle-delta base (originDir - prevDir) for the emit
                                      * rate limiter, again at 0x300245c3 as the AngleVectors#2
                                      * input, and writes the current dir back on exit
                                      * (0x300254f3). Provisional name; exact source unresolved. */
-    vec3_t    prevEmitOrigin;     /* +0x10/+0x14/+0x18: the emitter's previous-frame
+    vec3_t prevEmitOrigin; /* +0x10/+0x14/+0x18: the emitter's previous-frame
                                      * emit origin (a vec3). Read at 0x300243a5 as the vDir
                                      * spawn-delta base (emitOrigin - prevEmitOrigin) and at
                                      * 0x300245fc as the rowEmit lerp base; written from the
                                      * current emitOrigin on exit (0x30025508). Provisional
                                      * name; exact source unresolved. */
-    vec3_t    prevSpawnVelA;      /* +0x1c/+0x20/+0x24: previous-frame spawn velocity vec3
+    vec3_t prevSpawnVelA; /* +0x1c/+0x20/+0x24: previous-frame spawn velocity vec3
                                      * (a copy of vDir). Written on exit (0x3002551d) but not
                                      * read by this function. Provisional name. */
-    vec3_t    prevSpawnVel;       /* +0x28/+0x2c/+0x30: previous-frame spawn velocity vec3
+    vec3_t prevSpawnVel; /* +0x28/+0x2c/+0x30: previous-frame spawn velocity vec3
                                      * (the second copy of vDir). Read at 0x3002460f as the
                                      * accum1 lerp base (angInfo2 reuse) and written from the
                                      * current vDir on exit (0x30025523). Provisional name;
                                      * exact source unresolved. */
-    vec3_t    emitDir;            /* +0x34/+0x38/+0x3c: the emitter's previous-frame
+    vec3_t emitDir; /* +0x34/+0x38/+0x3c: the emitter's previous-frame
                                      * spawn direction (a vec3). CG_EmitPlayerFlameChunks
                                      * (0x30024050) reads it at 0x30024216.. as the accum2
                                      * lerp base (infoDir2) and writes the current dir back
                                      * on exit. Provisional name; exact source unresolved. */
-    flameChunk_t *ownerChunk;       /* +0x40: the flame chunk that "owns" this info.
+    flameChunk_t *ownerChunk; /* +0x40: the flame chunk that "owns" this info.
                                      * CG_MoveFlameChunk (0x30025da0) loads it via
                                      * [idx*0xb8 + 0x300ab790], null-checks it, and reads its
                                      * emitBasis[3] and emitOrigin[3]. Retyped from the mechanical int32
                                      * placeholder to flameChunk_t*; exact source name unresolved. */
-    int32_t  lastUpdateTime;        /* +0x44: last emitter update stamp (set to the
+    int32_t lastUpdateTime; /* +0x44: last emitter update stamp (set to the
                                      * flame-time flameTime/EBP at 0x3002957f). */
-    uint8_t  emitterState48[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
-    int32_t  emitSeedGate;          /* +0x4c: emit-index seed threshold (flame-clock units).
+    uint8_t emitterState48[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
+    int32_t emitSeedGate; /* +0x4c: emit-index seed threshold (flame-clock units).
                                      * CG_EmitPlayerFlameChunks (0x30024050) compares it
                                      * against the per-iteration radius seed (0x30024c28/35)
                                      * to gate the rand-scattered emit-index block and stores
                                      * the seed back here (0x30024c76). Provisional name;
                                      * exact source unresolved. */
-    uint8_t  emitterState50[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
-    int32_t  lastEmitTime;          /* +0x54: last-emit timestamp (flame-clock ms).
+    uint8_t emitterState50[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame-emitter state. */
+    int32_t lastEmitTime; /* +0x54: last-emit timestamp (flame-clock ms).
                                      * CG_EmitPlayerFlameChunks gates a non-owner emitter
                                      * on lastEmitTime >= cg_flameTime - 150 (0x3002431b);
                                      * CG_UpdateFlamethrowerSounds also touches +0x54. Provisional
                                      * name; exact source unresolved. */
-    int32_t  emitAccumTime;         /* +0x58: accumulated emit time (ms). CG_EmitPlayerFlameChunks
+    int32_t emitAccumTime; /* +0x58: accumulated emit time (ms). CG_EmitPlayerFlameChunks
                                      * (0x30024050) adds cg_frametime to it each non-terminal
                                      * emit (0x30024562) and resets it to 0 on the terminal
                                      * path (0x30025222). Provisional name; exact source
                                      * unresolved. */
-    int32_t  soundPathFlag;         /* +0x5c: nonzero (== 1) gates the primary vs
+    int32_t soundPathFlag; /* +0x5c: nonzero (== 1) gates the primary vs
                                      * secondary sound-envelope path. CG_EmitPlayerFlameChunks
                                      * compares it against arg3 and stamps arg3 into it. */
-    int32_t  activeFlag;            /* +0x60: nonzero flag; the final decay loop skips
+    int32_t activeFlag; /* +0x60: nonzero flag; the final decay loop skips
                                      * an element whose activeFlag is 0. CG_EmitPlayerFlameChunks
                                      * also writes arg3 here on exit (0x300254ec). */
-    int32_t  soundActiveFlag;       /* +0x64: nonzero => this info's sound is already
+    int32_t soundActiveFlag; /* +0x64: nonzero => this info's sound is already
                                      * active; CG_UpdateFlamethrowerSounds skips the chunk. */
-    uint8_t  soundState68[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame sound state. */
-    int32_t  activeUntil;          /* +0x6c: cg_flameTime through which this owner's
+    uint8_t soundState68[4]; /* ABI_AUDITED_OPAQUE: unconsumed flame sound state. */
+    int32_t activeUntil; /* +0x6c: cg_flameTime through which this owner's
                                     * flame can apply damage. */
-    uint8_t  ownerRuntimeState[28]; /* ABI_AUDITED_OPAQUE: per-owner flame runtime state. */
-    int32_t  emitRandSeed;          /* +0x8c: per-emit random seed. CG_EmitPlayerFlameChunks
+    uint8_t ownerRuntimeState[28]; /* ABI_AUDITED_OPAQUE: per-owner flame runtime state. */
+    int32_t emitRandSeed; /* +0x8c: per-emit random seed. CG_EmitPlayerFlameChunks
                                      * (0x30024050) stores the per-iteration rand() radius
                                      * seed (EBX) here at 0x30024c20; the retry sub-loop
                                      * bumps it. Provisional name; exact source unresolved. */
-    int32_t  emitCounter;           /* +0x90: monotonic emit counter. CG_EmitPlayerFlameChunks
+    int32_t emitCounter; /* +0x90: monotonic emit counter. CG_EmitPlayerFlameChunks
                                      * (0x30024050) copies it into chunk->emitCounter at each
                                      * chunk spawn (0x30024990) and increments it on the
                                      * terminal path (0x30025251). Provisional name; exact
                                      * source unresolved. */
-    vec3_t    lastFlamePos;       /* +0x94/+0x98/+0x9c: the world position of the flame
+    vec3_t lastFlamePos; /* +0x94/+0x98/+0x9c: the world position of the flame
                                      * chunk that last updated this owner's flame-damage source.
                                      * CG_MoveFlameChunk (0x30025da0) reads it
                                      * (VectorDistance vs the chunk world origin, gated < 32.0f)
@@ -6841,14 +6604,14 @@ typedef struct cgFlameInfo_s {
                                      * source is latched. Was three mechanical g_data_* dwords
                                      * (0x300ab7e4/e8/ec). Provisional name; exact source
                                      * unresolved. */
-    int32_t  lastFlameStamp;        /* +0xa0: cg_flameTime at which lastFlamePos was recorded.
+    int32_t lastFlameStamp; /* +0xa0: cg_flameTime at which lastFlamePos was recorded.
                                      * CG_MoveFlameChunk gates the source-update window
                                      * on it (compared against cg_flameTime and cg_flameTime-6000).
                                      * Was mechanical g_data_* dword 0x300ab7f0. Provisional. */
-    uint32_t damageActive;         /* +0xa4: nonzero while the client is burning */
-    int32_t  lastPainTime;         /* +0xa8: cg_time of last pain notification */
-    int32_t  painCounter;          /* +0xac: caller-supplied pain event id */
-    double   lastFlameTime;         /* +0xb0: last emit's flame-clock time as a double.
+    uint32_t damageActive; /* +0xa4: nonzero while the client is burning */
+    int32_t lastPainTime; /* +0xa8: cg_time of last pain notification */
+    int32_t painCounter; /* +0xac: caller-supplied pain event id */
+    double lastFlameTime; /* +0xb0: last emit's flame-clock time as a double.
                                      * CG_EmitPlayerFlameChunks stores (double)cg_flameTime
                                      * here at the end of each loop iteration (0x300250ee).
                                      * Provisional name; exact source unresolved. */
@@ -6972,18 +6735,15 @@ void CG_TouchTriggerPrediction(void);
  * inline-model contents from cg_solidEntities[], excluding passEntityNum, then
  * apply contentMask. Name confirmed by the same-module Mac symbol bank.
  */
-int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum,
-                         int32_t contentMask);
+int32_t CG_PointContents(const vec3_t point, int32_t passEntityNum, int32_t contentMask);
 
 /*
  * CG_ClipMoveToEntities (0x300350d0) — reconstructed in
  * functions/FUN_300350d0_3003530e.c. Clip a movement trace against the entities
  * in cg_solidEntities[], using inline brush models or temporary box/capsule models.
  * Name confirmed by the same-module Mac symbol bank. */
-void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
-                          const vec3_t maxs, const vec3_t end,
-                          int32_t excludeId, int32_t flagsMask,
-                          int32_t useVariant, trace_t *out);
+void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t excludeId, int32_t flagsMask,
+                           int32_t useVariant, trace_t *out);
 
 /*
  * CG_Trace (0x30035310) — thin cgame wrapper that runs a trace/
@@ -6999,8 +6759,7 @@ void CG_ClipMoveToEntities(const vec3_t start, const vec3_t mins,
  * unconfirmed, and the .mcode-assigned "G_UpdateHudElemsToClients" is REJECTED
  * (that is a server G_* name; this is client cgame collision code).
  */
-void CG_Trace(int32_t contentMask, const vec3_t end, const vec3_t maxs,
-              trace_t *out, const vec3_t start, const vec3_t mins,
+void CG_Trace(int32_t contentMask, const vec3_t end, const vec3_t maxs, trace_t *out, const vec3_t start, const vec3_t mins,
               int32_t passEntityNum);
 
 /*
@@ -7037,9 +6796,8 @@ void CG_ScanForCrosshairEntity(void);
  * client cgame collision code that calls through cgame_syscall and the solid-entity
  * helper CG_ClipMoveToEntities).
  */
-void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
-                        const vec3_t maxs, const vec3_t end,
-                        int32_t passEntityNum, int32_t contentMask);
+void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
+                     int32_t contentMask);
 
 /*
  * CG_FlamethrowerTrace (0x30025cd0) — reconstructed in
@@ -7073,9 +6831,7 @@ void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
  * is REJECTED (no per-slot weapon write — this issues collision-trace traps and
  * copies a 48-byte trace result). Provisional; exact server ABI not fully proven.
  */
-void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
-                          const vec3_t mins, trace_t *out,
-                          const vec3_t start, const vec3_t end,
+void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs, const vec3_t mins, trace_t *out, const vec3_t start, const vec3_t end,
                           int32_t entityNum);
 
 
@@ -7086,12 +6842,12 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
  * with FLAME_SURF_KIND_MASK and rejects three specific surface kinds before allowing
  * a new flame-damage source to spawn). Exact SURF_* source names unresolved; named by
  * their masked values. */
-#define FLAME_SURF_KIND_MASK   0x01f00000u
-#define FLAME_SURF_KIND_1300   0x01300000u
-#define FLAME_SURF_KIND_1400   0x01400000u
-#define FLAME_SURF_KIND_0C00   0x00c00000u
+#define FLAME_SURF_KIND_MASK 0x01f00000u
+#define FLAME_SURF_KIND_1300 0x01300000u
+#define FLAME_SURF_KIND_1400 0x01400000u
+#define FLAME_SURF_KIND_0C00 0x00c00000u
 /* CG_FlamethrowerTrace contentMask used by CG_MoveFlameChunk's damage probe. */
-#define FLAME_DAMAGE_TRACE_CONTENTMASK  0x02810011u
+#define FLAME_DAMAGE_TRACE_CONTENTMASK 0x02810011u
 
 /*
  * PM_trace (0x30008280) — pmove collision trace wrapper. Runs the pmove trace
@@ -7166,13 +6922,13 @@ void CG_FlamethrowerTrace(int32_t contentMask, const vec3_t maxs,
  * radius/amplitude are role-derived (exact original member names not proved).
  */
 typedef struct cg_shakeSource_s {
-    int32_t startMsec;       /* +0x00: cg_time when this shake began */
-    float   amplitude;       /* +0x04: base shake magnitude */
-    float   duration;        /* +0x08: total lifetime in ms */
-    float   radius;          /* +0x0c: spatial falloff radius (distance divisor) */
-    vec3_t  origin;          /* +0x10: world position of the shake source */
-    float   scaledAmplitude; /* +0x1c: OUT — amplitude scaled by time*distance falloff */
-    float   timeFalloff;     /* +0x20: OUT — the time-only falloff factor */
+    int32_t startMsec; /* +0x00: cg_time when this shake began */
+    float amplitude; /* +0x04: base shake magnitude */
+    float duration; /* +0x08: total lifetime in ms */
+    float radius; /* +0x0c: spatial falloff radius (distance divisor) */
+    vec3_t origin; /* +0x10: world position of the shake source */
+    float scaledAmplitude; /* +0x1c: OUT — amplitude scaled by time*distance falloff */
+    float timeFalloff; /* +0x20: OUT — the time-only falloff factor */
 } cg_shakeSource_t;
 
 /*
@@ -7219,8 +6975,7 @@ extern cg_shakeSource_t cg_shakeSources[4];
  * `origin` is read-only here (only *origin, origin[1], origin[2] are loaded);
  * kept as vec3_t (decays to float*). Provisional caller-observed ABI; the arg
  * types are re-derived from this function's own machine code. */
-void CG_AddCameraShake(const vec3_t origin, float amplitude,
-                       int32_t duration, float radius);
+void CG_AddCameraShake(const vec3_t origin, float amplitude, int32_t duration, float radius);
 
 /*
  * CG_CalcViewShake (0x3001b550) — apply the aggregate camera shake to the view for
@@ -7260,9 +7015,8 @@ void CG_CalcViewShake(void);
  * is pure vec3 trajectory-delta math with no string/key handling. Provenance:
  * Source uo_cgame_mp_x86.dll 0x3001f5c0..0x3001f6ef.
  */
-void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EAX */,
-                               int32_t fromTime, int32_t toTime, vec3_t out /* ESI */,
-                               vec3_t angleDelta);
+void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EAX */, int32_t fromTime, int32_t toTime,
+                               vec3_t out /* ESI */, vec3_t angleDelta);
 
 
 /*
@@ -7285,9 +7039,7 @@ void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EA
  * Left under the provisional name here to avoid rewriting the already-accepted
  * 0x30005d70 C artifact; adopt BG_PlayerTouchesItem when that file is revisited.
  */
-qboolean CG_TrajectoryPointInBounds(const centity_t *entity,
-                                    const playerState_t *ps,
-                                    int32_t atTime);
+qboolean CG_TrajectoryPointInBounds(const centity_t *entity, const playerState_t *ps, int32_t atTime);
 
 /*
  * BG_CanItemBeGrabbed (0x30005e00) - decide whether the item entity `es` can be
@@ -7349,37 +7101,37 @@ void CG_TouchItem(centity_t *cent);
  */
 typedef struct cgAlignedDrawItem {
     union {
-        float   x;                    /* +0x00: horizontal draw coordinate */
-        int32_t xBits;                /* +0x00: syscall/raw-dword view */
+        float x; /* +0x00: horizontal draw coordinate */
+        int32_t xBits; /* +0x00: syscall/raw-dword view */
     };
-    float   y;                        /* +0x04 */
-    float   width;                    /* +0x08 */
-    float   height;                   /* +0x0c */
-    char   *label;                    /* +0x10 translated label string */
+    float y; /* +0x04 */
+    float width; /* +0x08 */
+    float height; /* +0x0c */
+    char *label; /* +0x10 translated label string */
     union {
-        float   labelWidth;           /* +0x14 advances x before content */
-        int32_t labelWidthBits;       /* +0x14 raw-dword clear view */
+        float labelWidth; /* +0x14 advances x before content */
+        int32_t labelWidthBits; /* +0x14 raw-dword clear view */
     };
-    char   *text;                     /* +0x18 translated/formatted content */
+    char *text; /* +0x18 translated/formatted content */
     union {
-        float   textWidth;            /* +0x1c measured content width */
-        int32_t textWidthBits;        /* +0x1c raw-dword clear view */
+        float textWidth; /* +0x1c measured content width */
+        int32_t textWidthBits; /* +0x1c raw-dword clear view */
     };
-    int32_t font;                     /* +0x20: renderer font selector */
+    int32_t font; /* +0x20: renderer font selector */
     union {
-        float   fontScale;            /* +0x24 */
-        int32_t fontScaleBits;        /* +0x24: syscall view */
+        float fontScale; /* +0x24 */
+        int32_t fontScaleBits; /* +0x24: syscall view */
     };
-    float   fontHeight;               /* +0x28 */
+    float fontHeight; /* +0x28 */
     union {
-        float   fontWidth;            /* +0x2c */
-        int32_t fontWidthBits;        /* +0x2c: syscall view */
+        float fontWidth; /* +0x2c */
+        int32_t fontWidthBits; /* +0x2c: syscall view */
     };
     /* +0x30: RGBA draw color. CG_GetHudElemInfo (0x30029c00) FSTPs four
      * floats into +0x30/+0x34/+0x38/+0x3c; CG_DrawHudElemShader forwards
      * &color[0] to trap_R_SetColor (a vec4 color arg) and reads color[2] (+0x38)
      * as a raw dword. Fills the item to its proven 0x40-byte frame. */
-    vec4_t  color;                    /* +0x30..+0x3f */
+    vec4_t color; /* +0x30..+0x3f */
 } cgAlignedDrawItem;
 /* Contains char* fields (label/text), so the 0x40 size only holds at 32-bit
  * pointer width (the target ABI); guard the size assert like the offset ones. */
@@ -7388,8 +7140,7 @@ _Static_assert(sizeof(cgAlignedDrawItem) == 0x40, "cgAlignedDrawItem is 0x40 byt
 #endif
 /* CG_DrawHudElemString (0x30029f70) uses hudElem_t.alignY (+0x18) to place a
  * prepared 2D draw item before emitting it through CG_R_TEXT_PAINT. */
-void CG_DrawHudElemString(cgAlignedDrawItem *item, hudElem_t *elem,
-                          const char *string);
+void CG_DrawHudElemString(cgAlignedDrawItem *item, hudElem_t *elem, const char *string);
 
 /*
  * CG_DrawHudElemShader (0x3002a1d0) — SHADER-type HUD element renderer. Builds a
@@ -7426,8 +7177,7 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, struct hudElem_s *elem);
  * (ADD ESP,0xc). The Mac body shares the four timer/string-formatting callees,
  * resolving the source name. Source: 0x30029c00..0x30029efa.
  */
-void CG_GetHudElemInfo(cgAlignedDrawItem *item, struct hudElem_s *elem,
-                             char *scratch, int32_t scratchLen);
+void CG_GetHudElemInfo(cgAlignedDrawItem *item, struct hudElem_s *elem, char *scratch, int32_t scratchLen);
 
 /*
  * CG_DrawSingleHudElem (0x3002a310) — draw one HUD element. See the C artifact for the
@@ -7539,10 +7289,8 @@ markPoly_t *CG_AllocMark(void);
  * a player-unlink routine (that guess matched by byte size only, which the naming
  * rules forbid).
  */
-void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
-                   float orientation, float red, float green, float blue,
-                   float alpha, qboolean alphaFade, float radius,
-                   qboolean temporary, int32_t markLifeTime);
+void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir, float orientation, float red, float green, float blue,
+                   float alpha, qboolean alphaFade, float radius, qboolean temporary, int32_t markLifeTime);
 
 /*
  * rand (0x3005b879) - the statically-linked MSVC CRT pseudo-random generator,
@@ -7566,10 +7314,7 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
  * ABI note: the alias-table base is passed in EBX (an implicit register
  * parameter set by the caller at 0x3003a292/0x3003a2a2); the four stack
  * arguments are __cdecl (caller cleans 0x10 bytes). */
-qboolean CG_PickSoundAlias(cgVoiceChatTable_t *table,
-                           const char *name,
-                           const char **outSoundName,
-                           qhandle_t *outIcon,
+qboolean CG_PickSoundAlias(cgVoiceChatTable_t *table, const char *name, const char **outSoundName, qhandle_t *outIcon,
                            const char **outText);
 
 /*
@@ -7701,9 +7446,7 @@ qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent);
  * centity weapon, builds its DObj/refEntity, handles flash/flame effects, and submits
  * it. The two CG_Player callers pass (ps=NULL, cent, qtrue, 0.0f); CG_AddViewWeapon
  * passes the predicted ps/entity and its -19.0f mounted pullback when active. */
-void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
-                        centity_t *cent, qboolean viewWeapon,
-                        float viewOriginOffset);
+void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent, qboolean viewWeapon, float viewOriginOffset);
 void CG_WeaponUpdateLoopingSound(centity_t *cent);
 
 /* CG_EmitPlayerFlameChunks (0x30024050) — emits flamethrower flame chunks for a player
@@ -7721,8 +7464,7 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent);
  * cg_flameInfo (0x300ab750, stride 0xb8) by cent[0] (the emitter owner clientNum).
  * Partial reconstruction in progress at
  * src/client/cgame/effects/cg_emitplayerflamechunks.c (region-split; loop body deferred). */
-void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin,
-                              float spread, int32_t a3, int32_t a4);
+void CG_EmitPlayerFlameChunks(vec3_t viewAngles, centity_t *cent, vec3_t flashOrigin, float spread, int32_t a3, int32_t a4);
 
 
 #endif /* CLIENT_RECOVERED_H */

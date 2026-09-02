@@ -28,52 +28,30 @@ typedef struct renderer_video_mode_s {
  * All thirteen Windows records use square pixels.
  * PE_RELOCATION_VALUES_VERIFIED: all thirteen description pointers match. */
 static const renderer_video_mode_t rendererVideoModes[R_VIDEO_MODE_COUNT] = {
-    { "Mode  0: 320x240",          320,  240, 1.0f },
-    { "Mode  1: 400x300",          400,  300, 1.0f },
-    { "Mode  2: 512x384",          512,  384, 1.0f },
-    { "Mode  3: 640x480",          640,  480, 1.0f },
-    { "Mode  4: 800x600",          800,  600, 1.0f },
-    { "Mode  5: 960x720",          960,  720, 1.0f },
-    { "Mode  6: 1024x768",        1024,  768, 1.0f },
-    { "Mode  7: 1152x864",        1152,  864, 1.0f },
-    { "Mode  8: 1280x1024",       1280, 1024, 1.0f },
-    { "Mode  9: 1600x1200",       1600, 1200, 1.0f },
-    { "Mode 10: 2048x1536",       2048, 1536, 1.0f },
-    { "Mode 11: 856x480 (wide)",   856,  480, 1.0f },
-    { "Mode 12: 1920x1200 (wide)", 1920, 1200, 1.0f }
-};
+    {"Mode  0: 320x240", 320, 240, 1.0f},           {"Mode  1: 400x300", 400, 300, 1.0f},     {"Mode  2: 512x384", 512, 384, 1.0f},
+    {"Mode  3: 640x480", 640, 480, 1.0f},           {"Mode  4: 800x600", 800, 600, 1.0f},     {"Mode  5: 960x720", 960, 720, 1.0f},
+    {"Mode  6: 1024x768", 1024, 768, 1.0f},         {"Mode  7: 1152x864", 1152, 864, 1.0f},   {"Mode  8: 1280x1024", 1280, 1024, 1.0f},
+    {"Mode  9: 1600x1200", 1600, 1200, 1.0f},       {"Mode 10: 2048x1536", 2048, 1536, 1.0f}, {"Mode 11: 856x480 (wide)", 856, 480, 1.0f},
+    {"Mode 12: 1920x1200 (wide)", 1920, 1200, 1.0f}};
 
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: modern square-pixel display modes
  * appended after the original stable 0..12 mode-number range. */
 static const renderer_video_mode_t coduompModernVideoModes[] = {
-    { "Mode 13: 1280x720 (wide)",   1280,  720, 1.0f },
-    { "Mode 14: 1280x800 (wide)",   1280,  800, 1.0f },
-    { "Mode 15: 1366x768 (wide)",   1366,  768, 1.0f },
-    { "Mode 16: 1440x900 (wide)",   1440,  900, 1.0f },
-    { "Mode 17: 1600x900 (wide)",   1600,  900, 1.0f },
-    { "Mode 18: 1680x1050 (wide)",  1680, 1050, 1.0f },
-    { "Mode 19: 1920x1080 (wide)",  1920, 1080, 1.0f },
-    { "Mode 20: 2560x1440 (wide)",  2560, 1440, 1.0f },
-    { "Mode 21: 2560x1600 (wide)",  2560, 1600, 1.0f },
-    { "Mode 22: 2880x1800 (wide)",  2880, 1800, 1.0f },
-    { "Mode 23: 3024x1964 (wide)",  3024, 1964, 1.0f },
-    { "Mode 24: 3456x2234 (wide)",  3456, 2234, 1.0f },
-    { "Mode 25: 3840x2160 (wide)",  3840, 2160, 1.0f }
-};
+    {"Mode 13: 1280x720 (wide)", 1280, 720, 1.0f},   {"Mode 14: 1280x800 (wide)", 1280, 800, 1.0f},
+    {"Mode 15: 1366x768 (wide)", 1366, 768, 1.0f},   {"Mode 16: 1440x900 (wide)", 1440, 900, 1.0f},
+    {"Mode 17: 1600x900 (wide)", 1600, 900, 1.0f},   {"Mode 18: 1680x1050 (wide)", 1680, 1050, 1.0f},
+    {"Mode 19: 1920x1080 (wide)", 1920, 1080, 1.0f}, {"Mode 20: 2560x1440 (wide)", 2560, 1440, 1.0f},
+    {"Mode 21: 2560x1600 (wide)", 2560, 1600, 1.0f}, {"Mode 22: 2880x1800 (wide)", 2880, 1800, 1.0f},
+    {"Mode 23: 3024x1964 (wide)", 3024, 1964, 1.0f}, {"Mode 24: 3456x2234 (wide)", 3456, 2234, 1.0f},
+    {"Mode 25: 3840x2160 (wide)", 3840, 2160, 1.0f}};
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_video_mode_t) == 4,
-               "i386 renderer video-mode alignment changed");
-_Static_assert(offsetof(renderer_video_mode_t, description) == 0x00,
-               "i386 renderer video-mode description moved");
-_Static_assert(offsetof(renderer_video_mode_t, width) == 0x04,
-               "i386 renderer video-mode width moved");
-_Static_assert(offsetof(renderer_video_mode_t, height) == 0x08,
-               "i386 renderer video-mode height moved");
-_Static_assert(offsetof(renderer_video_mode_t, pixelAspect) == 0x0c,
-               "i386 renderer video-mode pixel aspect moved");
-_Static_assert(sizeof(renderer_video_mode_t) == 0x10,
-               "i386 renderer video-mode record size changed");
+_Static_assert(_Alignof(renderer_video_mode_t) == 4, "i386 renderer video-mode alignment changed");
+_Static_assert(offsetof(renderer_video_mode_t, description) == 0x00, "i386 renderer video-mode description moved");
+_Static_assert(offsetof(renderer_video_mode_t, width) == 0x04, "i386 renderer video-mode width moved");
+_Static_assert(offsetof(renderer_video_mode_t, height) == 0x08, "i386 renderer video-mode height moved");
+_Static_assert(offsetof(renderer_video_mode_t, pixelAspect) == 0x0c, "i386 renderer video-mode pixel aspect moved");
+_Static_assert(sizeof(renderer_video_mode_t) == 0x10, "i386 renderer video-mode record size changed");
 #endif
 
 /* Source: CoDUOMP.exe 0x004c12a0..0x004c1392.
@@ -82,28 +60,21 @@ _Static_assert(sizeof(renderer_video_mode_t) == 0x10,
  * three warning paths independently proved by its five Windows call sites.
  * MSVC carries cvar/integral in ESI/EAX and the two float bounds on the stack;
  * the maintained source restores the ordinary source calling convention. */
-void AssertCvarRange(cvar_t *cvar, float minimum, float maximum,
-                     qboolean integral)
+void AssertCvarRange(cvar_t *cvar, float minimum, float maximum, qboolean integral)
 {
     if (integral != qfalse && (int32_t)cvar->value != cvar->integer) {
-        ri.Printf(R_PRINT_WARNING,
-                  "WARNING: cvar '%s' must be integral (%f)\n",
-                  cvar->name, cvar->value);
+        ri.Printf(R_PRINT_WARNING, "WARNING: cvar '%s' must be integral (%f)\n", cvar->name, cvar->value);
         ri.Cvar_Set(cvar->name, va("%d", cvar->integer));
     }
 
     if (cvar->value < minimum) {
-        ri.Printf(R_PRINT_WARNING,
-                  "WARNING: cvar '%s' out of range (%f < %f)\n",
-                  cvar->name, cvar->value, minimum);
+        ri.Printf(R_PRINT_WARNING, "WARNING: cvar '%s' out of range (%f < %f)\n", cvar->name, cvar->value, minimum);
         ri.Cvar_Set(cvar->name, va("%f", minimum));
         return;
     }
 
     if (cvar->value > maximum) {
-        ri.Printf(R_PRINT_WARNING,
-                  "WARNING: cvar '%s' out of range (%f > %f)\n",
-                  cvar->name, cvar->value, maximum);
+        ri.Printf(R_PRINT_WARNING, "WARNING: cvar '%s' out of range (%f > %f)\n", cvar->name, cvar->value, maximum);
         ri.Cvar_Set(cvar->name, va("%f", maximum));
     }
 }
@@ -113,9 +84,7 @@ void GL_SetupVBO(void)
 {
     tr.vboInterleaved = (r_vbo_interleave->integer != 0);
     tr.vboStreamDraw = (r_vbo_stream_draw->integer != 0);
-    tr.vboUsage =
-        (r_vbo_smc_static_draw != NULL) ? GL_STATIC_DRAW_ARB
-                                        : GL_DYNAMIC_DRAW_ARB;
+    tr.vboUsage = (r_vbo_smc_static_draw != NULL) ? GL_STATIC_DRAW_ARB : GL_DYNAMIC_DRAW_ARB;
 }
 
 /* Source: CoDUOMP.exe 0x004c13f0..0x004c1541.
@@ -131,8 +100,7 @@ void InitOpenGL(void)
         GLimp_Init();
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        Q_strncpyz(rendererString, glConfig.rendererString,
-                   (int32_t)sizeof(rendererString));
+        Q_strncpyz(rendererString, glConfig.rendererString, (int32_t)sizeof(rendererString));
         Q_strlwr(rendererString);
 
         qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize);
@@ -198,9 +166,7 @@ void GL_CheckErrors(const char *location)
         break;
     }
 
-    ri.Error(ERR_FATAL,
-             "\x15GL_CheckErrors: %s (location = %s)",
-             errorString, location);
+    ri.Error(ERR_FATAL, "\x15GL_CheckErrors: %s (location = %s)", errorString, location);
 }
 
 /* Source: CoDUOMP.exe 0x004c1730..0x004c179f.
@@ -208,16 +174,12 @@ void GL_CheckErrors(const char *location)
  * Name and signature: exact same-module Mac symbol R_GetModeInfo. The Mac body
  * independently confirms all four arguments, the custom-mode cvar fields, the
  * 16-byte table stride, and width / (height * pixelAspect) calculation. */
-qboolean R_GetModeInfo(int32_t *width, int32_t *height,
-                       float *windowAspect, int32_t mode)
+qboolean R_GetModeInfo(int32_t *width, int32_t *height, float *windowAspect, int32_t mode)
 {
     const renderer_video_mode_t *videoMode;
-    const int32_t modernModeCount =
-        (int32_t)(sizeof(coduompModernVideoModes) /
-                  sizeof(coduompModernVideoModes[0]));
+    const int32_t modernModeCount = (int32_t)(sizeof(coduompModernVideoModes) / sizeof(coduompModernVideoModes[0]));
 
-    if (mode < R_CUSTOM_VIDEO_MODE ||
-        mode >= R_VIDEO_MODE_COUNT + modernModeCount) {
+    if (mode < R_CUSTOM_VIDEO_MODE || mode >= R_VIDEO_MODE_COUNT + modernModeCount) {
         return qfalse;
     }
 
@@ -233,26 +195,20 @@ qboolean R_GetModeInfo(int32_t *width, int32_t *height,
     } else {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve all stock
          * indices while accepting appended modern display modes. */
-        videoMode =
-            &coduompModernVideoModes[mode - R_VIDEO_MODE_COUNT];
+        videoMode = &coduompModernVideoModes[mode - R_VIDEO_MODE_COUNT];
     }
     *width = videoMode->width;
     *height = videoMode->height;
-    *windowAspect = (float)videoMode->width /
-                    ((float)videoMode->height * videoMode->pixelAspect);
+    *windowAspect = (float)videoMode->width / ((float)videoMode->height * videoMode->pixelAspect);
     return qtrue;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: publishes one bit per stable renderer mode so the
  * separately linked compatibility UI can omit presets that the primary
  * display does not report. */
-void coduomp_renderer_publish_available_video_modes_compat(
-    coduomp_display_mode_available_callback_t modeAvailable)
+void coduomp_renderer_publish_available_video_modes_compat(coduomp_display_mode_available_callback_t modeAvailable)
 {
-    const int32_t modeCount =
-        R_VIDEO_MODE_COUNT +
-        (int32_t)(sizeof(coduompModernVideoModes) /
-                  sizeof(coduompModernVideoModes[0]));
+    const int32_t modeCount = R_VIDEO_MODE_COUNT + (int32_t)(sizeof(coduompModernVideoModes) / sizeof(coduompModernVideoModes[0]));
     uint32_t availableModes = 0;
 
     for (int32_t mode = 0; mode < modeCount; ++mode) {
@@ -260,8 +216,7 @@ void coduomp_renderer_publish_available_video_modes_compat(
         int32_t height;
         float aspect;
 
-        if (R_GetModeInfo(&width, &height, &aspect, mode) != qfalse &&
-            modeAvailable(width, height) != qfalse) {
+        if (R_GetModeInfo(&width, &height, &aspect, mode) != qfalse && modeAvailable(width, height) != qfalse) {
             availableModes |= UINT32_C(1) << mode;
         }
     }
@@ -279,16 +234,11 @@ void R_ModeList_f(void)
     int32_t mode;
 
     ri.Printf(R_PRINT_ALL, "\n");
-    ri.Printf(R_PRINT_ALL, "Maximum display, automatic (r_mode %d)\n",
-              R_CURRENT_DISPLAY_VIDEO_MODE);
+    ri.Printf(R_PRINT_ALL, "Maximum display, automatic (r_mode %d)\n", R_CURRENT_DISPLAY_VIDEO_MODE);
     for (mode = 0; mode < R_VIDEO_MODE_COUNT; ++mode)
         ri.Printf(R_PRINT_ALL, "%s\n", rendererVideoModes[mode].description);
-    for (mode = 0;
-         mode < (int32_t)(sizeof(coduompModernVideoModes) /
-                          sizeof(coduompModernVideoModes[0]));
-         ++mode) {
-        ri.Printf(R_PRINT_ALL, "%s\n",
-                  coduompModernVideoModes[mode].description);
+    for (mode = 0; mode < (int32_t)(sizeof(coduompModernVideoModes) / sizeof(coduompModernVideoModes[0])); ++mode) {
+        ri.Printf(R_PRINT_ALL, "%s\n", coduompModernVideoModes[mode].description);
     }
     ri.Printf(R_PRINT_ALL, "\n");
 }
@@ -302,8 +252,7 @@ void R_SetNVFogMode(void)
 {
     const char *mode = r_nv_fogdist_mode->string;
 
-    if (mode != NULL &&
-        Q_stricmp(mode, "GL_EYE_PLANE_ABSOLUTE_NV") == 0) {
+    if (mode != NULL && Q_stricmp(mode, "GL_EYE_PLANE_ABSOLUTE_NV") == 0) {
         glConfig.NVFogMode = GL_EYE_PLANE_ABSOLUTE_NV;
     } else if (mode != NULL && Q_stricmp(mode, "GL_EYE_PLANE") == 0) {
         glConfig.NVFogMode = GL_EYE_PLANE;
@@ -320,18 +269,10 @@ void R_SetNVFogMode(void)
 /* Original fixed-function defaults at 0x00590ec8..0x00590f07. The four
  * independent 16-byte blocks are passed directly to the corresponding OpenGL
  * material/light-model calls by GL_SetDefaultState. */
-static const vec4_t defaultMaterialAmbientAndDiffuse = {
-    1.0f, 1.0f, 1.0f, 1.0f
-};
-static const vec4_t defaultMaterialSpecular = {
-    0.0f, 0.0f, 0.0f, 1.0f
-};
-static const vec4_t defaultMaterialEmission = {
-    0.0f, 0.0f, 0.0f, 1.0f
-};
-static const vec4_t defaultLightModelAmbient = {
-    0.0f, 0.0f, 0.0f, 1.0f
-};
+static const vec4_t defaultMaterialAmbientAndDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
+static const vec4_t defaultMaterialSpecular = {0.0f, 0.0f, 0.0f, 1.0f};
+static const vec4_t defaultMaterialEmission = {0.0f, 0.0f, 0.0f, 1.0f};
+static const vec4_t defaultLightModelAmbient = {0.0f, 0.0f, 0.0f, 1.0f};
 
 /* Source: CoDUOMP.exe 0x004c3250..0x004c3650.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c3250_004c3650.mcode.
@@ -349,8 +290,7 @@ void GL_SetDefaultState(void)
     qglColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     if (qglActiveTextureARB != NULL) {
-        for (textureUnit = 1; textureUnit < glConfig.maxActiveTextures;
-             ++textureUnit) {
+        for (textureUnit = 1; textureUnit < glConfig.maxActiveTextures; ++textureUnit) {
             GL_SelectTexture(textureUnit);
             GL_TextureMode(r_textureMode->string);
             GL_TexEnv(GL_MODULATE);
@@ -376,8 +316,7 @@ void GL_SetDefaultState(void)
     qglLightModelfv(GL_LIGHT_MODEL_AMBIENT, defaultLightModelAmbient);
     qglLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 0.0f);
     qglLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 0.0f);
-    qglMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
-                  defaultMaterialAmbientAndDiffuse);
+    qglMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, defaultMaterialAmbientAndDiffuse);
     qglMaterialfv(GL_FRONT, GL_SPECULAR, defaultMaterialSpecular);
     qglMaterialf(GL_FRONT, GL_SHININESS, 0.0f);
     qglMaterialfv(GL_FRONT, GL_EMISSION, defaultMaterialEmission);
@@ -396,20 +335,15 @@ void GL_SetDefaultState(void)
     qglDisable(GL_BLEND);
 
     if (qglPNTrianglesiATI != NULL) {
-        qglGetIntegerv(GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI,
-                       &glConfig.maxPNTrianglesTessellationLevel);
-        if ((float)glConfig.maxPNTrianglesTessellationLevel <
-            r_ati_truform_tess->value) {
-            ri.Cvar_Set("r_ati_truform_tess",
-                        va("%d", glConfig.maxPNTrianglesTessellationLevel));
+        qglGetIntegerv(GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI, &glConfig.maxPNTrianglesTessellationLevel);
+        if ((float)glConfig.maxPNTrianglesTessellationLevel < r_ati_truform_tess->value) {
+            ri.Cvar_Set("r_ati_truform_tess", va("%d", glConfig.maxPNTrianglesTessellationLevel));
         }
-        qglPNTrianglesiATI(GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI,
-                           r_ati_truform_tess->integer);
+        qglPNTrianglesiATI(GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI, r_ati_truform_tess->integer);
     }
 
     if (glConfig.textureFilterAnisotropicAvailable) {
-        qglGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT,
-                     &glConfig.maxTextureFilterAnisotropy);
+        qglGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy);
     }
 
     glState.fogMode = GL_EXP;
@@ -443,12 +377,8 @@ void GL_SetDefaultState(void)
 void GfxInfo_f(void)
 {
     /* Conditional string pairs constructed in the original stack frame. */
-    const char *const enabledNames[2] = {
-        "disabled", "enabled"
-    };
-    const char *const windowModeNames[3] = {
-        "windowed", "fullscreen", "borderless"
-    };
+    const char *const enabledNames[2] = {"disabled", "enabled"};
+    const char *const windowModeNames[3] = {"windowed", "fullscreen", "borderless"};
     cvar_t *cpuString;
 
     cpuString = ri.Cvar_Get("sys_cpustring", "", CVAR_NONE);
@@ -456,25 +386,18 @@ void GfxInfo_f(void)
     ri.Printf(R_PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendorString);
     ri.Printf(R_PRINT_ALL, "GL_RENDERER: %s\n", glConfig.rendererString);
     ri.Printf(R_PRINT_ALL, "GL_VERSION: %s\n", glConfig.versionString);
-    ri.Printf(R_PRINT_ALL, "GL_EXTENSIONS: %s\n",
-              glConfig.extensionsString);
-    ri.Printf(R_PRINT_ALL, "WGL_EXTENSIONS: %s\n",
-              glConfig.wglExtensionsString);
-    ri.Printf(R_PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n",
-              glConfig.maxTextureSize);
-    ri.Printf(R_PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n",
-              glConfig.maxActiveTextures);
-    ri.Printf(R_PRINT_ALL,
-              "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n",
-              glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits);
+    ri.Printf(R_PRINT_ALL, "GL_EXTENSIONS: %s\n", glConfig.extensionsString);
+    ri.Printf(R_PRINT_ALL, "WGL_EXTENSIONS: %s\n", glConfig.wglExtensionsString);
+    ri.Printf(R_PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize);
+    ri.Printf(R_PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures);
+    ri.Printf(R_PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits,
+              glConfig.stencilBits);
 
     int32_t windowMode = r_fullscreen->integer;
     if (windowMode < 0 || windowMode > 2)
         windowMode = 0;
 
-    ri.Printf(R_PRINT_ALL, "MODE: %d, %d x %d %s hz:",
-              r_mode->integer, glConfig.vidWidth, glConfig.vidHeight,
-              windowModeNames[windowMode]);
+    ri.Printf(R_PRINT_ALL, "MODE: %d, %d x %d %s hz:", r_mode->integer, glConfig.vidWidth, glConfig.vidHeight, windowModeNames[windowMode]);
     if (glConfig.displayFrequency != 0)
         ri.Printf(R_PRINT_ALL, "%d\n", glConfig.displayFrequency);
     else
@@ -483,17 +406,11 @@ void GfxInfo_f(void)
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): name the selected gamma
      * provider rather than reporting every non-native policy as software. */
     if (glConfig.deviceSupportsGamma != qfalse) {
-        ri.Printf(R_PRINT_ALL,
-                  "GAMMA: hardware w/ %d overbright bits\n",
-                  tr.overbrightBits);
+        ri.Printf(R_PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits);
     } else if (coduomp_output_gamma_software_active_compat() != qfalse) {
-        ri.Printf(R_PRINT_ALL,
-                  "GAMMA: full-frame software w/ %d overbright bits\n",
-                  tr.overbrightBits);
+        ri.Printf(R_PRINT_ALL, "GAMMA: full-frame software w/ %d overbright bits\n", tr.overbrightBits);
     } else if (coduomp_gamma_texture_fallback_enabled_compat() != qfalse) {
-        ri.Printf(R_PRINT_ALL,
-                  "GAMMA: texture fallback w/ %d overbright bits\n",
-                  tr.overbrightBits);
+        ri.Printf(R_PRINT_ALL, "GAMMA: texture fallback w/ %d overbright bits\n", tr.overbrightBits);
     } else {
         ri.Printf(R_PRINT_ALL, "GAMMA: disabled\n");
     }
@@ -510,10 +427,7 @@ void GfxInfo_f(void)
          * automatic-mode adaptation implemented in R_DrawElements. */
         ri.Printf(R_PRINT_ALL, "single glDrawElements\n");
 #else
-        ri.Printf(R_PRINT_ALL,
-                  qglLockArraysEXT != NULL
-                      ? "single glDrawElements\n"
-                      : "multiple glArrayElement\n");
+        ri.Printf(R_PRINT_ALL, qglLockArraysEXT != NULL ? "single glDrawElements\n" : "multiple glArrayElement\n");
 #endif
         break;
     case R_PRIMITIVES_ARRAY_ELEMENTS:
@@ -523,8 +437,7 @@ void GfxInfo_f(void)
         ri.Printf(R_PRINT_ALL, "single glDrawElements\n");
         break;
     case R_PRIMITIVES_IMMEDIATE:
-        ri.Printf(R_PRINT_ALL,
-                  "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n");
+        ri.Printf(R_PRINT_ALL, "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n");
         break;
     }
 
@@ -532,29 +445,20 @@ void GfxInfo_f(void)
     ri.Printf(R_PRINT_ALL, "picmip: %d\n", r_picmip->integer);
     ri.Printf(R_PRINT_ALL, "picmip2: %d\n", r_picmip2->integer);
     ri.Printf(R_PRINT_ALL, "texture bits: %d\n", r_texturebits->integer);
-    ri.Printf(R_PRINT_ALL, "multitexture: %s\n",
-              enabledNames[qglActiveTextureARB != NULL]);
-    ri.Printf(R_PRINT_ALL, "compiled vertex arrays: %s\n",
-              enabledNames[qglLockArraysEXT != NULL]);
-    ri.Printf(R_PRINT_ALL, "texenv add: %s\n",
-              enabledNames[glConfig.textureEnvAddAvailable != 0]);
-    ri.Printf(R_PRINT_ALL, "ATI truform: %s\n",
-              enabledNames[qglPNTrianglesiATI != NULL]);
+    ri.Printf(R_PRINT_ALL, "multitexture: %s\n", enabledNames[qglActiveTextureARB != NULL]);
+    ri.Printf(R_PRINT_ALL, "compiled vertex arrays: %s\n", enabledNames[qglLockArraysEXT != NULL]);
+    ri.Printf(R_PRINT_ALL, "texenv add: %s\n", enabledNames[glConfig.textureEnvAddAvailable != 0]);
+    ri.Printf(R_PRINT_ALL, "ATI truform: %s\n", enabledNames[qglPNTrianglesiATI != NULL]);
 
     if (qglPNTrianglesiATI != NULL) {
-        ri.Printf(R_PRINT_ALL, "Truform Tess: %d\n",
-                  r_ati_truform_tess->integer);
-        ri.Printf(R_PRINT_ALL, "Truform Point Mode: %s\n",
-                  r_ati_truform_pointmode->string);
-        ri.Printf(R_PRINT_ALL, "Truform Normal Mode: %s\n",
-                  r_ati_truform_normalmode->string);
+        ri.Printf(R_PRINT_ALL, "Truform Tess: %d\n", r_ati_truform_tess->integer);
+        ri.Printf(R_PRINT_ALL, "Truform Point Mode: %s\n", r_ati_truform_pointmode->string);
+        ri.Printf(R_PRINT_ALL, "Truform Normal Mode: %s\n", r_ati_truform_normalmode->string);
     }
 
-    ri.Printf(R_PRINT_ALL, "NV distance fog: %s\n",
-              enabledNames[glConfig.fogDistanceAvailable != 0]);
+    ri.Printf(R_PRINT_ALL, "NV distance fog: %s\n", enabledNames[glConfig.fogDistanceAvailable != 0]);
     if (glConfig.fogDistanceAvailable) {
-        ri.Printf(R_PRINT_ALL, "Fog Mode: %s\n",
-                  r_nv_fogdist_mode->string);
+        ri.Printf(R_PRINT_ALL, "Fog Mode: %s\n", r_nv_fogdist_mode->string);
     }
 
     if (r_finish->integer != 0)

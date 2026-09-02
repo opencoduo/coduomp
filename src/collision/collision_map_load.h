@@ -57,21 +57,16 @@ extern cvar_t *cm_playerCurveClip;                  /* CoDUOMP 0x04957f20 */
 void CMod_LoadShaders(const lump_t *lump);
 void CMod_LoadNodes(const lump_t *lump);
 void CMod_LoadSubmodels(const lump_t *lump);
-void CMod_LoadBrushes(const lump_t *brushLump,
-                      const lump_t *brushSideLump);
+void CMod_LoadBrushes(const lump_t *brushLump, const lump_t *brushSideLump);
 void CMod_LoadLeafs(const lump_t *lump);
 void CMod_LoadPlanes(const lump_t *lump);
 void CMod_LoadLeafBrushes(const lump_t *lump);
 void CMod_LoadLeafSurfaces(const lump_t *lump);
-void CMod_LoadLeafCurvesAndTerrain(const lump_t *patchLump,
-                                   const lump_t *vertexLump,
-                                   const lump_t *indexLump);
+void CMod_LoadLeafCurvesAndTerrain(const lump_t *patchLump, const lump_t *vertexLump, const lump_t *indexLump);
 void CMod_LoadEntityString(const lump_t *lump);
 void CMod_LoadVisibility(const lump_t *lump);
-void CM_LoadMap(const char *mapName, qboolean clientLoad,
-                int32_t *checksum);
-void CM_SaveLump(int32_t lumpIndex, const void *replacementData,
-                 int32_t replacementLength, int32_t *checksum);
+void CM_LoadMap(const char *mapName, qboolean clientLoad, int32_t *checksum);
+void CM_SaveLump(int32_t lumpIndex, const void *replacementData, int32_t replacementLength, int32_t *checksum);
 int32_t CM_LoadMapLump(int32_t lumpIndex, void **buffer);
 void CM_FreeMapLump(void *buffer);
 

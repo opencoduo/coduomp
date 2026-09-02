@@ -67,8 +67,7 @@ void FX_SetWind(const vec2_t angles, float strength)
 void ClampVec(const vec3_t color, uint8_t colorBytes[3])
 {
     for (int32_t component = 0; component < 3; ++component) {
-        int32_t value = coduo_fp_to_i32_extended(
-            (long double)color[component] * 255.0L);
+        int32_t value = coduo_fp_to_i32_extended((long double)color[component] * 255.0L);
         if (value < 0) {
             value = 0;
         } else if (value > 255) {
@@ -88,16 +87,12 @@ static const vec4_t fxBoltAxisColorZ = {0.0f, 0.0f, 1.0f, 1.0f};
  * FX_GetBoneOrientation(SFxBoltInfo const *, orientation_t *). Windows VM
  * commands 13 and 12 respectively obtain the entity frame and force the
  * requested client's DObj bone transform current before it is read. */
-qboolean FX_GetBoneOrientation(const sfx_bolt_info_t *boltInfo,
-                               orientation_t *orientation)
+qboolean FX_GetBoneOrientation(const sfx_bolt_info_t *boltInfo, orientation_t *orientation)
 {
     orientation_t entityOrientation;
 
-    (void)VM_Call(coduo_cgameVm, CGVM_GET_ENTITY_ORIGIN_AXIS,
-                  boltInfo->entityNum,
-                  (intptr_t)entityOrientation.origin,
-                  (intptr_t)entityOrientation.axis,
-                  0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(coduo_cgameVm, CGVM_GET_ENTITY_ORIGIN_AXIS, boltInfo->entityNum, (intptr_t)entityOrientation.origin,
+                  (intptr_t)entityOrientation.axis, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     if (boltInfo->boneIndex < 0) {
         *orientation = entityOrientation;
@@ -112,47 +107,33 @@ qboolean FX_GetBoneOrientation(const sfx_bolt_info_t *boltInfo,
         return qfalse;
     }
 
-    (void)VM_Call(coduo_cgameVm, CGVM_DOBJ_CALC_BONE_GENERIC,
-                  boltInfo->entityNum, boltInfo->boneIndex,
-                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(coduo_cgameVm, CGVM_DOBJ_CALC_BONE_GENERIC, boltInfo->entityNum, boltInfo->boneIndex, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-    const int32_t matrixIndex =
-        (int32_t)obj->modelPartBaseIndices[0] + boltInfo->boneIndex;
-    const DObjSkelMat *boneMatrix =
-        &obj->evaluationStorage->partSpans[matrixIndex].basePose;
+    const int32_t matrixIndex = (int32_t)obj->modelPartBaseIndices[0] + boltInfo->boneIndex;
+    const DObjSkelMat *boneMatrix = &obj->evaluationStorage->partSpans[matrixIndex].basePose;
 
     /* 0x004af624..0x004af72e: the x87 schedule accumulates each axis result
      * in 2,1,0 term order. Each float product is exact in double and the sum
      * needs at most 50 significand bits, preserving the final float store. */
     for (int row = 0; row < 3; ++row) {
         for (int component = 0; component < 3; ++component) {
-            orientation->axis[row][component] = (float)(
-                (double)entityOrientation.axis[2][component] *
-                    boneMatrix->axis[row][2] +
-                (double)entityOrientation.axis[1][component] *
-                    boneMatrix->axis[row][1] +
-                (double)entityOrientation.axis[0][component] *
-                    boneMatrix->axis[row][0]);
+            orientation->axis[row][component] = (float)((double)entityOrientation.axis[2][component] * boneMatrix->axis[row][2] +
+                                                        (double)entityOrientation.axis[1][component] * boneMatrix->axis[row][1] +
+                                                        (double)entityOrientation.axis[0][component] * boneMatrix->axis[row][0]);
         }
     }
 
     /* 0x004af731..0x004af79a uses the observed 0,2,1 product order, then adds
      * the entity origin, before the float store. */
     for (int component = 0; component < 3; ++component) {
-        orientation->origin[component] = (float)(
-            ((double)entityOrientation.axis[0][component] *
-                 boneMatrix->origin[0] +
-             (double)entityOrientation.axis[2][component] *
-                 boneMatrix->origin[2]) +
-            (double)entityOrientation.axis[1][component] *
-                boneMatrix->origin[1] +
-            entityOrientation.origin[component]);
+        orientation->origin[component] =
+            (float)(((double)entityOrientation.axis[0][component] * boneMatrix->origin[0] +
+                     (double)entityOrientation.axis[2][component] * boneMatrix->origin[2]) +
+                    (double)entityOrientation.axis[1][component] * boneMatrix->origin[1] + entityOrientation.origin[component]);
     }
 
     if (fx_debugBolt->integer != 0) {
-        const vec4_t *axisColors[3] = {
-            &fxBoltAxisColorX, &fxBoltAxisColorY, &fxBoltAxisColorZ
-        };
+        const vec4_t *axisColors[3] = {&fxBoltAxisColorX, &fxBoltAxisColorY, &fxBoltAxisColorZ};
 
         for (int axisIndex = 0; axisIndex < 3; ++axisIndex) {
             /* 0x004af7a8, 0x004af7f2, and 0x004af838 reload and convert the
@@ -160,12 +141,9 @@ qboolean FX_GetBoneOrientation(const sfx_bolt_info_t *boltInfo,
             const float axisLength = (float)fx_debugBolt->integer;
             vec3_t end;
             for (int component = 0; component < 3; ++component) {
-                end[component] =
-                    orientation->origin[component] +
-                    axisLength * orientation->axis[axisIndex][component];
+                end[component] = orientation->origin[component] + axisLength * orientation->axis[axisIndex][component];
             }
-            CL_AddDebugLine(orientation->origin, end,
-                            *axisColors[axisIndex], qtrue, 0, qfalse);
+            CL_AddDebugLine(orientation->origin, end, *axisColors[axisIndex], qtrue, 0, qfalse);
         }
     }
 

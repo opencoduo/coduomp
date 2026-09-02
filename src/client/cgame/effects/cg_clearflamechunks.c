@@ -63,8 +63,7 @@ void CG_ClearFlameChunks(void)
      * (both are cleared wholesale by REP STOSD in the machine code). sizeof is
      * 0x150 on i386 and naturally includes widened list pointers on 64-bit. */
     memset(chunks, 0, (size_t)FLAME_CHUNK_COUNT * sizeof(*chunks));
-    memset(cg_flameInfo, 0,
-           (size_t)FLAME_INFO_COUNT * sizeof(*cg_flameInfo));
+    memset(cg_flameInfo, 0, (size_t)FLAME_INFO_COUNT * sizeof(*cg_flameInfo));
 
     /* Free list starts at the first node; both other list heads start empty. */
     cg_freeFlameChunks = chunks;

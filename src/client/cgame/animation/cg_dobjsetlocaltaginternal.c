@@ -28,19 +28,16 @@
 #include <stdint.h>
 #include <string.h>
 
-void CG_DObjSetLocalTagInternal(void *self, int rotTransIndex,
-                                const vec3_t angles, const vec3_t origin)
+void CG_DObjSetLocalTagInternal(void *self, int rotTransIndex, const vec3_t angles, const vec3_t origin)
 {
     /* trap CG_DOBJ_GET_ROT_TRANS_ARRAY (0xa1): fetch the entity's rot/trans matrix
      * array, then select this slot (SHL EDI,0x5 == index * sizeof(DObjAnimMat)). */
-    DObjAnimMat *base = (DObjAnimMat *)(intptr_t)
-        cgame_syscall(CG_DOBJ_GET_ROT_TRANS_ARRAY, (intptr_t)self);
+    DObjAnimMat *base = (DObjAnimMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_ROT_TRANS_ARRAY, (intptr_t)self);
     /* SHL EDI,5 is a target-width modulo-2^32 byte offset.  Apply that
      * resolved offset to the native engine pointer so a 64-bit base is not
      * truncated and the original null-base-plus-offset behavior is retained. */
     uint32_t matrixOffset = (uint32_t)rotTransIndex << 5;
-    DObjAnimMat *mat =
-        (DObjAnimMat *)((uintptr_t)base + (uintptr_t)matrixOffset);
+    DObjAnimMat *mat = (DObjAnimMat *)((uintptr_t)base + (uintptr_t)matrixOffset);
 
     if (angles != NULL) {
         /* Build three per-axis unit quaternions from the half-angle-scaled angles.

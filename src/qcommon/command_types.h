@@ -32,16 +32,11 @@ typedef void (*com_redirect_flush_t)(char *buffer);
 #define COMMAND_TYPES_ALIGNOF _Alignof
 #define COMMAND_TYPES_STATIC_ASSERT _Static_assert
 #endif
-COMMAND_TYPES_STATIC_ASSERT(COMMAND_TYPES_ALIGNOF(cbuf_t) == 4,
-               "i386 command-buffer alignment changed");
-COMMAND_TYPES_STATIC_ASSERT(offsetof(cbuf_t, data) == 0x00,
-               "i386 command-buffer data pointer moved");
-COMMAND_TYPES_STATIC_ASSERT(offsetof(cbuf_t, maxsize) == 0x04,
-               "i386 command-buffer maximum size moved");
-COMMAND_TYPES_STATIC_ASSERT(offsetof(cbuf_t, cursize) == 0x08,
-               "i386 command-buffer current size moved");
-COMMAND_TYPES_STATIC_ASSERT(sizeof(cbuf_t) == 0x0c,
-               "i386 command-buffer size changed");
+COMMAND_TYPES_STATIC_ASSERT(COMMAND_TYPES_ALIGNOF(cbuf_t) == 4, "i386 command-buffer alignment changed");
+COMMAND_TYPES_STATIC_ASSERT(offsetof(cbuf_t, data) == 0x00, "i386 command-buffer data pointer moved");
+COMMAND_TYPES_STATIC_ASSERT(offsetof(cbuf_t, maxsize) == 0x04, "i386 command-buffer maximum size moved");
+COMMAND_TYPES_STATIC_ASSERT(offsetof(cbuf_t, cursize) == 0x08, "i386 command-buffer current size moved");
+COMMAND_TYPES_STATIC_ASSERT(sizeof(cbuf_t) == 0x0c, "i386 command-buffer size changed");
 #undef COMMAND_TYPES_STATIC_ASSERT
 #undef COMMAND_TYPES_ALIGNOF
 #endif

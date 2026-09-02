@@ -11,12 +11,9 @@ enum {
 // Source: uo_ui_mp_x86.dll 0x4000f7d0..0x4000f80b
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4000f7d0_4000f80b.mcode
 // Exact same-module PPC symbol: UI_PlayCinematic.
-int32_t UI_PlayCinematic(const char *name, float x, float y, float width,
-                         float height)
+int32_t UI_PlayCinematic(const char *name, float x, float y, float width, float height)
 {
-    return trap_CIN_PlayCinematic(name, (int32_t)x, (int32_t)y,
-                                  (int32_t)width, (int32_t)height,
-                                  UI_CINEMATIC_PLAY_FLAGS);
+    return trap_CIN_PlayCinematic(name, (int32_t)x, (int32_t)y, (int32_t)width, (int32_t)height, UI_CINEMATIC_PLAY_FLAGS);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4000f810..0x4000f890
@@ -58,11 +55,9 @@ void UI_StopCinematic(int32_t handle)
 // Source: uo_ui_mp_x86.dll 0x4000f890..0x4000f8d4
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4000f890_4000f8d4.mcode
 // Exact same-module PPC symbol: UI_DrawCinematic.
-void UI_DrawCinematic(int32_t handle, float x, float y, float width,
-                      float height)
+void UI_DrawCinematic(int32_t handle, float x, float y, float width, float height)
 {
-    trap_CIN_SetExtents(handle, (int32_t)x, (int32_t)y, (int32_t)width,
-                        (int32_t)height);
+    trap_CIN_SetExtents(handle, (int32_t)x, (int32_t)y, (int32_t)width, (int32_t)height);
     trap_CIN_DrawCinematic(handle);
 }
 

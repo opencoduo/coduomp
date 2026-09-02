@@ -3,8 +3,7 @@
 // Source: uo_ui_mp_x86.dll 0x40009aa0..0x40009b43
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_40009aa0_40009b43.mcode
 // Exact same-module PPC symbol: UI_DrawGameType.
-void UI_DrawGameType(const rectDef_t *rect, int32_t font, float scale,
-                     const vec4_t color, int32_t textStyle)
+void UI_DrawGameType(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle)
 {
     const char *displayName = "All";
 
@@ -20,6 +19,5 @@ void UI_DrawGameType(const rectDef_t *rect, int32_t font, float scale,
     if (displayName[0] == '\0') {
         displayName = "All";
     }
-    trap_R_Text_Paint(rect->x, rect->y, font, scale, color,
-                      displayName, 0, 0, textStyle);
+    trap_R_Text_Paint(rect->x, rect->y, font, scale, color, displayName, 0, 0, textStyle);
 }

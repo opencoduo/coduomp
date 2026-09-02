@@ -17,8 +17,7 @@ enum {
     FIELD_CHAR_PASTE = 22
 };
 
-static const float fieldFontScale =
-    0.02083333395421505f; /* 0x3caaaaab, approximately 1/48 */
+static const float fieldFontScale = 0.02083333395421505f; /* 0x3caaaaab, approximately 1/48 */
 static const float fieldVirtualWidth = 640.0f;  /* 0x44200000 */
 static const float fieldVirtualHeight = 480.0f; /* 0x43f00000 */
 
@@ -40,8 +39,7 @@ void Field_Draw(console_input_field_t *field, int32_t x, int32_t y)
 {
     char visibleText[MAX_STRING_CHARS];
     const vec4_t color = {1.0f, 1.0f, 1.0f, 1.0f};
-    const int32_t copyExtent =
-        CON_INPUT_BUFFER_SIZE - field->scroll;
+    const int32_t copyExtent = CON_INPUT_BUFFER_SIZE - field->scroll;
     float drawX = (float)x;
     float drawY = (float)y + field->charHeight;
     float scale = field->charHeight * fieldFontScale;
@@ -50,15 +48,12 @@ void Field_Draw(console_input_field_t *field, int32_t x, int32_t y)
     int32_t textStyle;
     uint8_t cursorCharacter;
 
-    strncpy(visibleText, &field->buffer[field->scroll],
-            (size_t)(uint32_t)(copyExtent - 1));
+    strncpy(visibleText, &field->buffer[field->scroll], (size_t)(uint32_t)(copyExtent - 1));
     visibleText[copyExtent - 1] = '\0';
 
     if (field->fixedSize != qfalse) {
-        const float horizontalScale =
-            fieldVirtualWidth / (float)cls.rendererConfig.vidWidth;
-        const float verticalScale =
-            fieldVirtualHeight / (float)cls.rendererConfig.vidHeight;
+        const float horizontalScale = fieldVirtualWidth / (float)cls.rendererConfig.vidWidth;
+        const float verticalScale = fieldVirtualHeight / (float)cls.rendererConfig.vidHeight;
 
         drawX *= horizontalScale;
         drawY *= verticalScale;
@@ -66,23 +61,18 @@ void Field_Draw(console_input_field_t *field, int32_t x, int32_t y)
         fixedAdvance *= horizontalScale;
         fontHandle = FIELD_FIXED_FONT_HANDLE;
         textStyle = FIELD_FIXED_TEXT_STYLE;
-        cursorCharacter = key_overstrikeMode != qfalse
-            ? FIELD_FIXED_OVERSTRIKE_CURSOR
-            : FIELD_FIXED_INSERT_CURSOR;
+        cursorCharacter = key_overstrikeMode != qfalse ? FIELD_FIXED_OVERSTRIKE_CURSOR : FIELD_FIXED_INSERT_CURSOR;
     } else {
         fontHandle = 0;
         textStyle = FIELD_VARIABLE_TEXT_STYLE;
-        cursorCharacter =
-            key_overstrikeMode != qfalse ? (uint8_t)'_' : (uint8_t)'|';
+        cursorCharacter = key_overstrikeMode != qfalse ? (uint8_t)'_' : (uint8_t)'|';
     }
 
     if (field->widthInChars == 0)
         field->widthInChars = FIELD_DEFAULT_VISIBLE_CHARS;
 
-    rendererExports.TextPaintWithCursor(
-        drawX, drawY, fontHandle, scale, color, visibleText,
-        field->cursor - field->scroll, cursorCharacter, fixedAdvance,
-        field->widthInChars, textStyle);
+    rendererExports.TextPaintWithCursor(drawX, drawY, fontHandle, scale, color, visibleText, field->cursor - field->scroll, cursorCharacter,
+                                        fixedAdvance, field->widthInChars, textStyle);
 }
 
 /* Source: CoDUOMP.exe 0x0040da40..0x0040da8f.
@@ -110,26 +100,21 @@ void Field_KeyDownEvent(console_input_field_t *field, int32_t key)
 {
     const int32_t length = (int32_t)strlen(field->buffer);
 
-    if ((key == K_INS || key == K_KP_INS) &&
-        keyStates[K_SHIFT].down != qfalse) {
+    if ((key == K_INS || key == K_KP_INS) && keyStates[K_SHIFT].down != qfalse) {
         Field_Paste(field);
     } else if (key == K_DEL) {
         if (field->cursor < length) {
-            memmove(&field->buffer[field->cursor],
-                    &field->buffer[field->cursor + 1],
-                    (size_t)(length - field->cursor));
+            memmove(&field->buffer[field->cursor], &field->buffer[field->cursor + 1], (size_t)(length - field->cursor));
         }
     } else if (key == K_RIGHTARROW) {
         if (field->cursor < length)
             ++field->cursor;
 
         if (keyStates[K_CTRL].down != qfalse) {
-            while (field->cursor < length && coduo_crt_isspace(
-                       (int32_t)(signed char)field->buffer[field->cursor])) {
+            while (field->cursor < length && coduo_crt_isspace((int32_t)(signed char)field->buffer[field->cursor])) {
                 ++field->cursor;
             }
-            while (field->cursor < length && !coduo_crt_isspace(
-                       (int32_t)(signed char)field->buffer[field->cursor])) {
+            while (field->cursor < length && !coduo_crt_isspace((int32_t)(signed char)field->buffer[field->cursor])) {
                 ++field->cursor;
             }
         }
@@ -138,25 +123,19 @@ void Field_KeyDownEvent(console_input_field_t *field, int32_t key)
             --field->cursor;
 
         if (keyStates[K_CTRL].down != qfalse) {
-            while (field->cursor > 0 && coduo_crt_isspace(
-                       (int32_t)(signed char)field->buffer[field->cursor - 1])) {
+            while (field->cursor > 0 && coduo_crt_isspace((int32_t)(signed char)field->buffer[field->cursor - 1])) {
                 --field->cursor;
             }
-            while (field->cursor > 0 && !coduo_crt_isspace(
-                       (int32_t)(signed char)field->buffer[field->cursor - 1])) {
+            while (field->cursor > 0 && !coduo_crt_isspace((int32_t)(signed char)field->buffer[field->cursor - 1])) {
                 --field->cursor;
             }
         }
 
         if (field->cursor < field->scroll)
             field->scroll = field->cursor;
-    } else if (key == K_HOME ||
-               (coduo_crt_tolower(key) == 'a' &&
-                keyStates[K_CTRL].down != qfalse)) {
+    } else if (key == K_HOME || (coduo_crt_tolower(key) == 'a' && keyStates[K_CTRL].down != qfalse)) {
         field->cursor = 0;
-    } else if (key == K_END ||
-               (coduo_crt_tolower(key) == 'e' &&
-                keyStates[K_CTRL].down != qfalse)) {
+    } else if (key == K_END || (coduo_crt_tolower(key) == 'e' && keyStates[K_CTRL].down != qfalse)) {
         field->cursor = length;
     } else if (key == K_INS) {
         key_overstrikeMode = key_overstrikeMode == qfalse ? qtrue : qfalse;
@@ -177,8 +156,7 @@ void Field_AdjustScroll(console_input_field_t *field)
     int32_t fontHandle = 0;
 
     if (field->fixedSize != qfalse) {
-        const float horizontalScale =
-            fieldVirtualWidth / (float)cls.rendererConfig.vidWidth;
+        const float horizontalScale = fieldVirtualWidth / (float)cls.rendererConfig.vidWidth;
 
         scale *= fieldVirtualHeight / (float)cls.rendererConfig.vidHeight;
         fixedAdvance *= horizontalScale;
@@ -186,8 +164,7 @@ void Field_AdjustScroll(console_input_field_t *field)
         fontHandle = 5;
     }
 
-    if ((float)rendererExports.TextWidth(field->buffer, fontHandle, scale,
-                                          fixedAdvance, 0) < availableWidth) {
+    if ((float)rendererExports.TextWidth(field->buffer, fontHandle, scale, fixedAdvance, 0) < availableWidth) {
         field->scroll = 0;
         field->widthInChars = SEH_PrintStrlen(field->buffer);
         return;
@@ -195,19 +172,14 @@ void Field_AdjustScroll(console_input_field_t *field)
 
     if (availableWidth > 0.0f) {
         while (field->scroll > 0 &&
-               (float)rendererExports.TextWidth(
-                   &field->buffer[field->scroll - 1], fontHandle, scale,
-                   fixedAdvance, 0) < availableWidth) {
+               (float)rendererExports.TextWidth(&field->buffer[field->scroll - 1], fontHandle, scale, fixedAdvance, 0) < availableWidth) {
             --field->scroll;
         }
     }
 
     for (;;) {
-        int32_t visibleWidth =
-            rendererExports.TextWidth(&field->buffer[field->scroll],
-                                      fontHandle, scale, fixedAdvance, 0) -
-            rendererExports.TextWidth(&field->buffer[field->cursor],
-                                      fontHandle, scale, fixedAdvance, 0);
+        int32_t visibleWidth = rendererExports.TextWidth(&field->buffer[field->scroll], fontHandle, scale, fixedAdvance, 0) -
+                               rendererExports.TextWidth(&field->buffer[field->cursor], fontHandle, scale, fixedAdvance, 0);
 
         if (visibleWidth < 0) {
             if (field->scroll == 0) {
@@ -222,16 +194,13 @@ void Field_AdjustScroll(console_input_field_t *field)
         if (visibleWidth < 0 || (float)visibleWidth >= availableWidth)
             continue;
 
-        const int32_t remainingLength =
-            (int32_t)strlen(&field->buffer[field->scroll]);
+        const int32_t remainingLength = (int32_t)strlen(&field->buffer[field->scroll]);
         field->widthInChars = field->cursor - field->scroll;
 
         if (availableWidth > 0.0f) {
             while (field->widthInChars < remainingLength &&
-                   (float)rendererExports.TextWidth(
-                       &field->buffer[field->scroll], fontHandle, scale,
-                       fixedAdvance, field->widthInChars + 1) <
-                       availableWidth) {
+                   (float)rendererExports.TextWidth(&field->buffer[field->scroll], fontHandle, scale, fixedAdvance,
+                                                    field->widthInChars + 1) < availableWidth) {
                 ++field->widthInChars;
             }
         }
@@ -263,9 +232,7 @@ void Field_CharEvent(console_input_field_t *field, int32_t character)
 
     if (character == FIELD_CHAR_BACKSPACE) {
         if (field->cursor > 0) {
-            memmove(&field->buffer[field->cursor - 1],
-                    &field->buffer[field->cursor],
-                    (size_t)(length - field->cursor + 1));
+            memmove(&field->buffer[field->cursor - 1], &field->buffer[field->cursor], (size_t)(length - field->cursor + 1));
             --field->cursor;
         }
         Field_AdjustScroll(field);
@@ -294,9 +261,7 @@ void Field_CharEvent(console_input_field_t *field, int32_t character)
     } else {
         if (length == CON_INPUT_BUFFER_SIZE - 1)
             return;
-        memmove(&field->buffer[field->cursor + 1],
-                &field->buffer[field->cursor],
-                (size_t)(length - field->cursor + 1));
+        memmove(&field->buffer[field->cursor + 1], &field->buffer[field->cursor], (size_t)(length - field->cursor + 1));
         field->buffer[field->cursor] = (char)character;
     }
 

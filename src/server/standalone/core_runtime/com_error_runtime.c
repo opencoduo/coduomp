@@ -48,16 +48,13 @@ void Com_ErrorCleanup(void)
     } else if (com_recoverableErrorCode == ERR_END_GAME) {
         Com_Shutdown("EXE_ENDOFGAME");
         com_errorEntered = qfalse;
-    } else if (com_recoverableErrorCode == ERR_DROP ||
-               com_recoverableErrorCode == ERR_DISCONNECT) {
-        Com_Printf("********************\nERROR: %s\n********************\n",
-                   com_errorMessage);
+    } else if (com_recoverableErrorCode == ERR_DROP || com_recoverableErrorCode == ERR_DISCONNECT) {
+        Com_Printf("********************\nERROR: %s\n********************\n", com_errorMessage);
         Com_Shutdown(com_errorMessage);
         com_errorEntered = qfalse;
 
         cvar_t *rVcCompile = Cvar_Get("r_vc_compile", "0", 0);
-        if (com_recoverableErrorCode == ERR_DROP &&
-            rVcCompile->integer == COM_WEAPON_INFO_CLIENT_STATE) {
+        if (com_recoverableErrorCode == ERR_DROP && rVcCompile->integer == COM_WEAPON_INFO_CLIENT_STATE) {
             Com_Quit_f();
         }
     } else if (com_recoverableErrorCode == ERR_NEED_CD) {
@@ -90,19 +87,16 @@ void Com_Error(errorParm_t code, const char *format, ...)
     (void)vsnprintf(com_errorMessage, sizeof(com_errorMessage), format, args);
     va_end(args);
 
-    (void)snprintf(shutdownMessage, sizeof(shutdownMessage), "%s",
-                   com_errorMessage);
+    (void)snprintf(shutdownMessage, sizeof(shutdownMessage), "%s", com_errorMessage);
 
-    if (code == ERR_SCRIPT ||
-        code == ERR_LOCALIZATION) {
+    if (code == ERR_SCRIPT || code == ERR_LOCALIZATION) {
         code = ERR_DROP;
     }
 
     com_errorEntered = qtrue;
     FS_PureServerSetLoadedPaks("", "");
 
-    if (code != ERR_DISCONNECT && code != ERR_NEED_CD &&
-        code != ERR_END_GAME) {
+    if (code != ERR_DISCONNECT && code != ERR_NEED_CD && code != ERR_END_GAME) {
         Com_SetErrorMessage(com_errorMessage);
     }
 
@@ -118,10 +112,8 @@ void Com_Error(errorParm_t code, const char *format, ...)
         Cbuf_Init();
     }
 
-    FreeWeaponInfoMemory(COM_WEAPON_INFO_SERVER_STATE,
-                         COM_ERROR_KEEP_WEAPON_MEMORY);
-    FreeWeaponInfoMemory(COM_WEAPON_INFO_CLIENT_STATE,
-                         COM_ERROR_KEEP_WEAPON_MEMORY);
+    FreeWeaponInfoMemory(COM_WEAPON_INFO_SERVER_STATE, COM_ERROR_KEEP_WEAPON_MEMORY);
+    FreeWeaponInfoMemory(COM_WEAPON_INFO_CLIENT_STATE, COM_ERROR_KEEP_WEAPON_MEMORY);
 
     int32_t now = Sys_Milliseconds();
     if (now - com_lastErrorTime < COM_ERROR_BURST_WINDOW_MSEC) {
@@ -134,12 +126,9 @@ void Com_Error(errorParm_t code, const char *format, ...)
     }
     com_lastErrorTime = now;
 
-    if (code != ERR_SERVER_DISCONNECT && code != ERR_END_GAME &&
-        code != ERR_DROP && code != ERR_DISCONNECT &&
-        code != ERR_NEED_CD) {
+    if (code != ERR_SERVER_DISCONNECT && code != ERR_END_GAME && code != ERR_DROP && code != ERR_DISCONNECT && code != ERR_NEED_CD) {
         CL_Shutdown();
-        SV_Shutdown(va("EXE_SERVER_FATAL_CRASHED\x15 \x14%s",
-                       shutdownMessage));
+        SV_Shutdown(va("EXE_SERVER_FATAL_CRASHED\x15 \x14%s", shutdownMessage));
         Hunk_Clear();
         Com_Close();
         Sys_Error("%s", com_errorMessage);

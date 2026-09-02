@@ -9,6 +9,5 @@
  * engine-owned snd_alias_t, not an integer handle. */
 snd_alias_t *trap_Com_PickSoundAlias(const char *name, const vec3_t origin)
 {
-    return (snd_alias_t *)(uintptr_t)cgame_syscall(
-        CG_COM_PICK_SOUND_ALIAS, (intptr_t)name, (intptr_t)origin);
+    return (snd_alias_t *)(uintptr_t)cgame_syscall(CG_COM_PICK_SOUND_ALIAS, (intptr_t)name, (intptr_t)origin);
 }

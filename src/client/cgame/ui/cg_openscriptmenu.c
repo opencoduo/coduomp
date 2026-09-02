@@ -77,8 +77,7 @@ void CG_OpenScriptMenu(void)
     // 0x3003a5e9..0x3003a5f4 / 0x3003a7d6: range gate [0, 32).
     if (index < 0 || index >= CS_SCRIPTMENUS_COUNT) {
         Com_Printf(g_str_scriptMenuBadIndexFmt, index);
-        cgame_syscall(CG_SEND_CONSOLE_COMMAND,
-                      (intptr_t)va(g_str_cmd_mr_bad_fmt, index));
+        cgame_syscall(CG_SEND_CONSOLE_COMMAND, (intptr_t)va(g_str_cmd_mr_bad_fmt, index));
         return;
     }
 
@@ -93,8 +92,7 @@ void CG_OpenScriptMenu(void)
     // 0x3003a628..0x3003a664: empty config string == menu not loaded on this client.
     if (menuName[0] == '\0') {
         Com_Printf(g_str_scriptMenuNotLoadedFmt, index);
-        cgame_syscall(CG_SEND_CONSOLE_COMMAND,
-                      (intptr_t)va(g_str_cmd_mr_bad_fmt, index));
+        cgame_syscall(CG_SEND_CONSOLE_COMMAND, (intptr_t)va(g_str_cmd_mr_bad_fmt, index));
         return;
     }
 
@@ -107,33 +105,27 @@ void CG_OpenScriptMenu(void)
     }
 
     // 0x3003a6a0..0x3003a6c7: publish the requested menu into the "new" cvar pair.
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenu,
-                  (intptr_t)menuName);
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenuIndex,
-                  (intptr_t)va("%i", index));
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenu, (intptr_t)menuName);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenuIndex, (intptr_t)va("%i", index));
 
     // 0x3003a6ca..0x3003a6e7: if the popup menu is already open, we are done.
     {
-        const char *popupName = noMouse ? g_str_UIMENU_SCRIPT_POPUP_NO_MOUSE
-                                        : g_str_UIMENU_SCRIPT_POPUP;
+        const char *popupName = noMouse ? g_str_UIMENU_SCRIPT_POPUP_NO_MOUSE : g_str_UIMENU_SCRIPT_POPUP;
         if (cgame_syscall(CG_UI_IS_MENU_OPEN, (intptr_t)popupName) != 0) {
             return;
         }
     }
 
     // 0x3003a6ed..0x3003a70e: menu not open yet — clear the "new" cvar pair.
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenu,
-                  (intptr_t)g_str_empty);
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenuIndex,
-                  (intptr_t)g_str_minus_one);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenu, (intptr_t)g_str_empty);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_newScriptMenuIndex, (intptr_t)g_str_minus_one);
 
     // 0x3003a711..0x3003a77b: reconcile any already-pending "waiting" menu.
     {
         char waitingMenu[MAX_STRING_CHARS];
 
-        cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
-                      (intptr_t)g_str_ui_waitingScriptMenu,
-                      (intptr_t)waitingMenu, (int32_t)sizeof(waitingMenu));
+        cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)g_str_ui_waitingScriptMenu, (intptr_t)waitingMenu,
+                      (int32_t)sizeof(waitingMenu));
 
         if (waitingMenu[0] != '\0') {
             // A different menu is already pending -> release it with a "noop"; the
@@ -145,21 +137,15 @@ void CG_OpenScriptMenu(void)
             {
                 char waitingIndex[MAX_STRING_CHARS];
 
-                cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
-                              (intptr_t)g_str_ui_waitingScriptMenuIndex,
-                              (intptr_t)waitingIndex,
+                cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)g_str_ui_waitingScriptMenuIndex, (intptr_t)waitingIndex,
                               (int32_t)sizeof(waitingIndex));
-                cgame_syscall(CG_SEND_CONSOLE_COMMAND,
-                              (intptr_t)va(g_str_cmd_mr_noop_fmt, waitingIndex));
+                cgame_syscall(CG_SEND_CONSOLE_COMMAND, (intptr_t)va(g_str_cmd_mr_noop_fmt, waitingIndex));
             }
         }
     }
 
     // 0x3003a77d..0x3003a7bd: latch this request as the new pending menu.
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_waitingScriptMenu,
-                  (intptr_t)menuName);
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_waitingScriptMenuIndex,
-                  (intptr_t)va("%i", index));
-    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_waitingScriptMenuNoMouse,
-                  (intptr_t)va("%i", noMouse));
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_waitingScriptMenu, (intptr_t)menuName);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_waitingScriptMenuIndex, (intptr_t)va("%i", index));
+    cgame_syscall(CG_CVAR_SET, (intptr_t)g_str_ui_waitingScriptMenuNoMouse, (intptr_t)va("%i", noMouse));
 }

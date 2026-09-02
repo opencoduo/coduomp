@@ -73,42 +73,34 @@ struct operator_s {
 #undef PC_EVAL_ALIGNAS_EIGHT
 
 #if UINTPTR_MAX == UINT32_MAX
-#define PC_ASSERT_I386_EVAL_FIELD(type, member, offset, extent)                \
-    _Static_assert(offsetof(type, member) == (offset),                        \
-                   "i386 evaluator field " #type "." #member " moved");      \
-    _Static_assert(sizeof(((type *)0)->member) == (extent),                   \
-                   "i386 evaluator field " #type "." #member                \
-                   " extent changed")
+#define PC_ASSERT_I386_EVAL_FIELD(type, member, offset, extent) \
+    _Static_assert(offsetof(type, member) == (offset), "i386 evaluator field " #type "." #member " moved"); \
+    _Static_assert(sizeof(((type *)0)->member) == (extent), "i386 evaluator field " #type "." #member " extent " \
+                                                            "changed")
 #if defined(WINDOWS_BEHAVIOR)
-_Static_assert(_Alignof(value_t) == 0x08,
-               "original Windows evaluator-value alignment changed");
+_Static_assert(_Alignof(value_t) == 0x08, "original Windows evaluator-value alignment changed");
 PC_ASSERT_I386_EVAL_FIELD(value_t, intValue, 0x00, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(value_t, floatValue, 0x08, 0x08);
 PC_ASSERT_I386_EVAL_FIELD(value_t, parentheses, 0x10, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(value_t, prev, 0x14, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(value_t, next, 0x18, 0x04);
-_Static_assert(sizeof(value_t) == 0x20,
-               "original Windows evaluator value stride is 0x20");
+_Static_assert(sizeof(value_t) == 0x20, "original Windows evaluator value stride is 0x20");
 #else
-_Static_assert(_Alignof(value_t) == 0x04,
-               "original Linux evaluator-value alignment changed");
+_Static_assert(_Alignof(value_t) == 0x04, "original Linux evaluator-value alignment changed");
 PC_ASSERT_I386_EVAL_FIELD(value_t, intValue, 0x00, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(value_t, floatValue, 0x04, 0x08);
 PC_ASSERT_I386_EVAL_FIELD(value_t, parentheses, 0x0c, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(value_t, prev, 0x10, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(value_t, next, 0x14, 0x04);
-_Static_assert(sizeof(value_t) == 0x18,
-               "original Linux evaluator value stride is 0x18");
+_Static_assert(sizeof(value_t) == 0x18, "original Linux evaluator value stride is 0x18");
 #endif
-_Static_assert(_Alignof(operator_t) == 0x04,
-               "original evaluator-operator alignment changed");
+_Static_assert(_Alignof(operator_t) == 0x04, "original evaluator-operator alignment changed");
 PC_ASSERT_I386_EVAL_FIELD(operator_t, operator, 0x00, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(operator_t, priority, 0x04, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(operator_t, parentheses, 0x08, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(operator_t, prev, 0x0c, 0x04);
 PC_ASSERT_I386_EVAL_FIELD(operator_t, next, 0x10, 0x04);
-_Static_assert(sizeof(operator_t) == 0x14,
-               "original evaluator operator stride is 0x14");
+_Static_assert(sizeof(operator_t) == 0x14, "original evaluator operator stride is 0x14");
 #undef PC_ASSERT_I386_EVAL_FIELD
 #endif
 
@@ -164,10 +156,7 @@ int32_t PC_OperatorPriority(int32_t operatorSubtype)
  * The Linux body at 0x0807a7db..0x0807b789 retains the same evaluator and
  * differs only at the proved local-row layout and token-float load boundary.
  * Name: exact same-module Mac symbol PC_EvaluateTokens. */
-qboolean PC_EvaluateTokens(source_t *source,
-                           token_t *tokens,
-                           int32_t *intValue, double *floatValue,
-                           qboolean integerEval)
+qboolean PC_EvaluateTokens(source_t *source, token_t *tokens, int32_t *intValue, double *floatValue, qboolean integerEval)
 {
     value_t values[PC_EVAL_MAX_VALUES];
     operator_t operators[PC_EVAL_MAX_OPERATORS];
@@ -190,8 +179,7 @@ qboolean PC_EvaluateTokens(source_t *source,
     if (floatValue != NULL)
         *floatValue = 0.0;
 
-    for (token_t *token = tokens; token != NULL;
-         token = token->next) {
+    for (token_t *token = tokens; token != NULL; token = token->next) {
         if (token->type == PC_TOKEN_TYPE_NAME) {
             if (hasValue != qfalse || negative != qfalse) {
                 SourceError(source, "syntax error in #if/#elif");
@@ -200,8 +188,7 @@ qboolean PC_EvaluateTokens(source_t *source,
             }
 
             if (strcmp(token->string, "defined") != 0) {
-                SourceError(source, "undefined name %s in #if/#elif",
-                            token->string);
+                SourceError(source, "undefined name %s in #if/#elif", token->string);
                 parseError = qtrue;
                 break;
             }
@@ -233,10 +220,7 @@ qboolean PC_EvaluateTokens(source_t *source,
 
             value_t *value = &values[valueCount++];
             memset(value, 0, sizeof(*value));
-            value->intValue =
-                PC_FindHashedDefine(source->defineHash, token->string) != NULL
-                    ? 1
-                    : 0;
+            value->intValue = PC_FindHashedDefine(source->defineHash, token->string) != NULL ? 1 : 0;
             value->floatValue = value->intValue != 0 ? 1.0 : 0.0;
             value->parentheses = parentheses;
             value->prev = lastValue;
@@ -249,8 +233,7 @@ qboolean PC_EvaluateTokens(source_t *source,
             if (parenthesized != qfalse) {
                 token = token->next;
                 if (token == NULL || strcmp(token->string, ")") != 0) {
-                    SourceError(source,
-                                "defined without ) in #if/#elif");
+                    SourceError(source, "defined without ) in #if/#elif");
                     parseError = qtrue;
                     break;
                 }
@@ -279,15 +262,12 @@ qboolean PC_EvaluateTokens(source_t *source,
 #if defined(WINDOWS_BEHAVIOR)
             value->floatValue = token->floatValue;
 #elif EMULATE_X87
-            value->floatValue = x87f_store_f64(
-                coduo_pc_load_token_float80(token->floatValue));
+            value->floatValue = x87f_store_f64(coduo_pc_load_token_float80(token->floatValue));
 #else
             {
                 long double extendedValue = 0.0L;
                 const size_t copySize =
-                    sizeof(extendedValue) < PC_X87_EXTENDED_TBYTE_SIZE
-                        ? sizeof(extendedValue)
-                        : PC_X87_EXTENDED_TBYTE_SIZE;
+                    sizeof(extendedValue) < PC_X87_EXTENDED_TBYTE_SIZE ? sizeof(extendedValue) : PC_X87_EXTENDED_TBYTE_SIZE;
                 memcpy(&extendedValue, token->floatValue, copySize);
                 value->floatValue = (double)extendedValue;
             }
@@ -334,17 +314,11 @@ qboolean PC_EvaluateTokens(source_t *source,
             continue;
         }
 
-        if (integerEval == qfalse &&
-            (token->subtype == PC_OPERATOR_BITWISE_NOT ||
-             token->subtype == PC_OPERATOR_MODULO ||
-             token->subtype == PC_OPERATOR_SHIFT_RIGHT ||
-             token->subtype == PC_OPERATOR_SHIFT_LEFT ||
-             token->subtype == PC_OPERATOR_BITWISE_AND ||
-             token->subtype == PC_OPERATOR_BITWISE_OR ||
-             token->subtype == PC_OPERATOR_BITWISE_XOR)) {
-            SourceError(source,
-                        "illigal operator %s on floating point operands\n",
-                        token->string);
+        if (integerEval == qfalse && (token->subtype == PC_OPERATOR_BITWISE_NOT || token->subtype == PC_OPERATOR_MODULO ||
+                                      token->subtype == PC_OPERATOR_SHIFT_RIGHT || token->subtype == PC_OPERATOR_SHIFT_LEFT ||
+                                      token->subtype == PC_OPERATOR_BITWISE_AND || token->subtype == PC_OPERATOR_BITWISE_OR ||
+                                      token->subtype == PC_OPERATOR_BITWISE_XOR)) {
+            SourceError(source, "illigal operator %s on floating point operands\n", token->string);
             parseError = qtrue;
             break;
         }
@@ -383,28 +357,23 @@ qboolean PC_EvaluateTokens(source_t *source,
                     negative = qtrue;
                     continue;
                 }
-                SourceError(source,
-                            "operator %s after operator in #if/#elif",
-                            token->string);
+                SourceError(source, "operator %s after operator in #if/#elif", token->string);
                 parseError = qtrue;
                 break;
             }
-        } else if (token->subtype == PC_OPERATOR_INCREMENT ||
-                   token->subtype == PC_OPERATOR_DECREMENT) {
+        } else if (token->subtype == PC_OPERATOR_INCREMENT || token->subtype == PC_OPERATOR_DECREMENT) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             SourceError(source, "++ or -- used in #if/#elif");
             parseError = qtrue;
             break;
-        } else if (token->subtype == PC_OPERATOR_BITWISE_NOT ||
-                   token->subtype == PC_OPERATOR_LOGICAL_NOT) {
+        } else if (token->subtype == PC_OPERATOR_BITWISE_NOT || token->subtype == PC_OPERATOR_LOGICAL_NOT) {
             if (hasValue != qfalse) {
                 SourceError(source, "! or ~ after value in #if/#elif");
                 parseError = qtrue;
                 break;
             }
         } else {
-            SourceError(source, "invalid operator %s in #if/#elif",
-                        token->string);
+            SourceError(source, "invalid operator %s in #if/#elif", token->string);
             parseError = qtrue;
             break;
         }
@@ -417,7 +386,7 @@ qboolean PC_EvaluateTokens(source_t *source,
 
         operator_t *op = &operators[operatorCount++];
         memset(op, 0, sizeof(*op));
-        op->operator = token->subtype;
+        op->operator= token->subtype;
         op->priority = PC_OperatorPriority(token->subtype);
         op->parentheses = parentheses;
         op->prev = lastOperator;
@@ -443,12 +412,9 @@ qboolean PC_EvaluateTokens(source_t *source,
         value_t *value = firstValue;
         operator_t *op = firstOperator;
 
-        while (op->next != NULL &&
-               (op->next->parentheses > op->parentheses ||
-                (op->next->parentheses == op->parentheses &&
-                 op->next->priority > op->priority))) {
-            if (op->operator != PC_OPERATOR_LOGICAL_NOT &&
-                op->operator != PC_OPERATOR_BITWISE_NOT)
+        while (op->next != NULL && (op->next->parentheses > op->parentheses ||
+                                    (op->next->parentheses == op->parentheses && op->next->priority > op->priority))) {
+            if (op->operator!= PC_OPERATOR_LOGICAL_NOT && op->operator!= PC_OPERATOR_BITWISE_NOT)
                 value = value->next;
             op = op->next;
             if (value == NULL)
@@ -462,8 +428,7 @@ qboolean PC_EvaluateTokens(source_t *source,
         }
 
         value_t *rhs = value->next;
-        if (rhs == NULL && op->operator != PC_OPERATOR_LOGICAL_NOT &&
-            op->operator != PC_OPERATOR_BITWISE_NOT) {
+        if (rhs == NULL && op->operator!= PC_OPERATOR_LOGICAL_NOT && op->operator!= PC_OPERATOR_BITWISE_NOT) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             SourceError(source, "mising values in #if/#elif");
             parseError = qtrue;
@@ -471,54 +436,37 @@ qboolean PC_EvaluateTokens(source_t *source,
         }
         switch (op->operator) {
         case PC_OPERATOR_LOGICAL_AND:
-            value->intValue =
-                value->intValue != 0 && rhs->intValue != 0 ? 1 : 0;
-            value->floatValue =
-                value->floatValue != 0.0 && rhs->floatValue != 0.0
-                    ? 1.0
-                    : 0.0;
+            value->intValue = value->intValue != 0 && rhs->intValue != 0 ? 1 : 0;
+            value->floatValue = value->floatValue != 0.0 && rhs->floatValue != 0.0 ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_LOGICAL_OR:
-            value->intValue =
-                value->intValue != 0 || rhs->intValue != 0 ? 1 : 0;
-            value->floatValue =
-                value->floatValue != 0.0 || rhs->floatValue != 0.0
-                    ? 1.0
-                    : 0.0;
+            value->intValue = value->intValue != 0 || rhs->intValue != 0 ? 1 : 0;
+            value->floatValue = value->floatValue != 0.0 || rhs->floatValue != 0.0 ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_GREATER_OR_EQUAL:
             value->intValue = value->intValue >= rhs->intValue ? 1 : 0;
-            value->floatValue =
-                value->floatValue >= rhs->floatValue ? 1.0 : 0.0;
+            value->floatValue = value->floatValue >= rhs->floatValue ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_LESS_OR_EQUAL:
             value->intValue = value->intValue <= rhs->intValue ? 1 : 0;
-            value->floatValue =
-                value->floatValue <= rhs->floatValue ? 1.0 : 0.0;
+            value->floatValue = value->floatValue <= rhs->floatValue ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_EQUAL:
             value->intValue = value->intValue == rhs->intValue ? 1 : 0;
-            value->floatValue =
-                value->floatValue == rhs->floatValue ? 1.0 : 0.0;
+            value->floatValue = value->floatValue == rhs->floatValue ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_NOT_EQUAL:
             value->intValue = value->intValue != rhs->intValue ? 1 : 0;
-            value->floatValue =
-                value->floatValue != rhs->floatValue ? 1.0 : 0.0;
+            value->floatValue = value->floatValue != rhs->floatValue ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_SHIFT_RIGHT:
-            value->intValue = coduo_int32_from_bits(coduo_int32_sar_bits(
-                coduo_int32_bits(value->intValue),
-                (uint32_t)rhs->intValue & 31u));
+            value->intValue = coduo_int32_from_bits(coduo_int32_sar_bits(coduo_int32_bits(value->intValue), (uint32_t)rhs->intValue & 31u));
             break;
         case PC_OPERATOR_SHIFT_LEFT:
-            value->intValue = coduo_int32_from_bits(
-                coduo_int32_bits(value->intValue) <<
-                ((uint32_t)rhs->intValue & 31u));
+            value->intValue = coduo_int32_from_bits(coduo_int32_bits(value->intValue) << ((uint32_t)rhs->intValue & 31u));
             break;
         case PC_OPERATOR_MULTIPLY:
-            value->intValue = (int32_t)(
-                (uint32_t)value->intValue * (uint32_t)rhs->intValue);
+            value->intValue = (int32_t)((uint32_t)value->intValue * (uint32_t)rhs->intValue);
             value->floatValue *= rhs->floatValue;
             break;
         case PC_OPERATOR_DIVIDE:
@@ -527,8 +475,7 @@ qboolean PC_EvaluateTokens(source_t *source,
                 parseError = qtrue;
                 break;
             }
-            if (value->intValue == INT32_MIN &&
-                rhs->intValue == -1) {
+            if (value->intValue == INT32_MIN && rhs->intValue == -1) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 SourceError(source, "integer divide overflow in #if/#elif\n");
                 parseError = qtrue;
@@ -543,8 +490,7 @@ qboolean PC_EvaluateTokens(source_t *source,
                 parseError = qtrue;
                 break;
             }
-            if (value->intValue == INT32_MIN &&
-                rhs->intValue == -1) {
+            if (value->intValue == INT32_MIN && rhs->intValue == -1) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 SourceError(source, "integer divide overflow in #if/#elif\n");
                 parseError = qtrue;
@@ -553,13 +499,11 @@ qboolean PC_EvaluateTokens(source_t *source,
             value->intValue %= rhs->intValue;
             break;
         case PC_OPERATOR_ADD:
-            value->intValue = (int32_t)(
-                (uint32_t)value->intValue + (uint32_t)rhs->intValue);
+            value->intValue = (int32_t)((uint32_t)value->intValue + (uint32_t)rhs->intValue);
             value->floatValue += rhs->floatValue;
             break;
         case PC_OPERATOR_SUBTRACT:
-            value->intValue = (int32_t)(
-                (uint32_t)value->intValue - (uint32_t)rhs->intValue);
+            value->intValue = (int32_t)((uint32_t)value->intValue - (uint32_t)rhs->intValue);
             value->floatValue -= rhs->floatValue;
             break;
         case PC_OPERATOR_BITWISE_AND:
@@ -580,13 +524,11 @@ qboolean PC_EvaluateTokens(source_t *source,
             break;
         case PC_OPERATOR_GREATER:
             value->intValue = value->intValue > rhs->intValue ? 1 : 0;
-            value->floatValue =
-                value->floatValue > rhs->floatValue ? 1.0 : 0.0;
+            value->floatValue = value->floatValue > rhs->floatValue ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_LESS:
             value->intValue = value->intValue < rhs->intValue ? 1 : 0;
-            value->floatValue =
-                value->floatValue < rhs->floatValue ? 1.0 : 0.0;
+            value->floatValue = value->floatValue < rhs->floatValue ? 1.0 : 0.0;
             break;
         case PC_OPERATOR_TERNARY_COLON:
             if (ternaryActive == qfalse) {
@@ -619,10 +561,8 @@ qboolean PC_EvaluateTokens(source_t *source,
         if (parseError != qfalse)
             break;
 
-        if (op->operator != PC_OPERATOR_LOGICAL_NOT &&
-            op->operator != PC_OPERATOR_BITWISE_NOT) {
-            value_t *removeValue =
-                op->operator == PC_OPERATOR_TERNARY_QUESTION ? value : rhs;
+        if (op->operator!= PC_OPERATOR_LOGICAL_NOT && op->operator!= PC_OPERATOR_BITWISE_NOT) {
+            value_t *removeValue = op->operator== PC_OPERATOR_TERNARY_QUESTION ? value : rhs;
             if (removeValue->prev == NULL)
                 firstValue = removeValue->next;
             else
@@ -663,8 +603,7 @@ qboolean PC_EvaluateTokens(source_t *source,
 /* Source: CoDUOMP.exe 0x00445570..0x004457bb.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00445570_004457bc.mcode.
  * Name: exact same-module Mac symbol PC_Evaluate. */
-qboolean PC_Evaluate(source_t *source, int32_t *intValue,
-                     double *floatValue, qboolean integerEval)
+qboolean PC_Evaluate(source_t *source, int32_t *intValue, double *floatValue, qboolean integerEval)
 {
     token_t token;
     token_t *firstToken = NULL;
@@ -703,19 +642,15 @@ qboolean PC_Evaluate(source_t *source, int32_t *intValue,
                     lastToken->next = copy;
                 lastToken = copy;
             } else {
-                define_t *define =
-                    PC_FindHashedDefine(source->defineHash, token.string);
+                define_t *define = PC_FindHashedDefine(source->defineHash, token.string);
                 if (define == NULL) {
-                    SourceError(source, "can't evaluate %s, not defined",
-                                token.string);
+                    SourceError(source, "can't evaluate %s, not defined", token.string);
                     goto cleanup;
                 }
-                if (PC_ExpandDefineIntoSource(source, &token, define) ==
-                    qfalse)
+                if (PC_ExpandDefineIntoSource(source, &token, define) == qfalse)
                     goto cleanup;
             }
-        } else if (token.type == PC_TOKEN_TYPE_NUMBER ||
-                   token.type == PC_TOKEN_TYPE_PUNCTUATION) {
+        } else if (token.type == PC_TOKEN_TYPE_NUMBER || token.type == PC_TOKEN_TYPE_PUNCTUATION) {
             token_t *copy = PC_CopyToken(&token);
             copy->next = NULL;
             if (lastToken == NULL)
@@ -729,8 +664,7 @@ qboolean PC_Evaluate(source_t *source, int32_t *intValue,
         }
     } while (PC_ReadLine(source, &token) != qfalse);
 
-    if (PC_EvaluateTokens(source, firstToken, intValue, floatValue,
-                          integerEval) == qfalse)
+    if (PC_EvaluateTokens(source, firstToken, intValue, floatValue, integerEval) == qfalse)
         goto cleanup;
     evaluated = qtrue;
 
@@ -743,8 +677,7 @@ cleanup:
 /* Source: CoDUOMP.exe 0x004457c0..0x00445a57.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004457c0_00445a58.mcode.
  * Name: exact same-module Mac symbol PC_DollarEvaluate. */
-qboolean PC_DollarEvaluate(source_t *source, int32_t *intValue,
-                           double *floatValue, qboolean integerEval)
+qboolean PC_DollarEvaluate(source_t *source, int32_t *intValue, double *floatValue, qboolean integerEval)
 {
     token_t token;
     token_t *firstToken = NULL;
@@ -785,16 +718,12 @@ qboolean PC_DollarEvaluate(source_t *source, int32_t *intValue,
                         lastToken->next = copy;
                     lastToken = copy;
                 } else {
-                    define_t *define = PC_FindHashedDefine(
-                        source->defineHash, token.string);
+                    define_t *define = PC_FindHashedDefine(source->defineHash, token.string);
                     if (define == NULL) {
-                        SourceError(source,
-                                    "can't evaluate %s, not defined",
-                                    token.string);
+                        SourceError(source, "can't evaluate %s, not defined", token.string);
                         goto cleanup;
                     }
-                    if (PC_ExpandDefineIntoSource(source, &token, define) ==
-                        qfalse)
+                    if (PC_ExpandDefineIntoSource(source, &token, define) == qfalse)
                         goto cleanup;
                 }
             } else {
@@ -808,8 +737,7 @@ qboolean PC_DollarEvaluate(source_t *source, int32_t *intValue,
                 lastToken = copy;
             }
         } else {
-            if (token.type != PC_TOKEN_TYPE_NUMBER &&
-                token.type != PC_TOKEN_TYPE_PUNCTUATION) {
+            if (token.type != PC_TOKEN_TYPE_NUMBER && token.type != PC_TOKEN_TYPE_PUNCTUATION) {
                 SourceError(source, "can't evaluate %s", token.string);
                 goto cleanup;
             }
@@ -838,8 +766,7 @@ qboolean PC_DollarEvaluate(source_t *source, int32_t *intValue,
         goto cleanup;
     }
 
-    if (PC_EvaluateTokens(source, firstToken, intValue, floatValue,
-                          integerEval) == qfalse)
+    if (PC_EvaluateTokens(source, firstToken, intValue, floatValue, integerEval) == qfalse)
         goto cleanup;
     evaluated = qtrue;
 

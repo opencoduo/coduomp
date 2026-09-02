@@ -54,23 +54,19 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
         slot = BG_GetStackSlotForWeapon(ps, currentWeapon, WEAPSLOT_NONE);
         if (slot == WEAPSLOT_NONE) {
             int32_t weapon = currentWeapon;
-            int32_t wrapDelta = coduo_int32_from_bits(
-                (uint32_t)bg_numWeapons + (uint32_t)step - 1u);
+            int32_t wrapDelta = coduo_int32_from_bits((uint32_t)bg_numWeapons + (uint32_t)step - 1u);
 
             for (;;) {
                 /* 0x30047a90..0x30047aa2: signed IDIV by bg_numWeapons, then
                  * convert the zero-based remainder back to a 1-based weapon index. */
-                int32_t dividend = coduo_int32_from_bits(
-                    (uint32_t)wrapDelta + (uint32_t)weapon);
-                weapon = coduo_int32_from_bits(
-                    (uint32_t)(dividend % bg_numWeapons) + 1u);
+                int32_t dividend = coduo_int32_from_bits((uint32_t)wrapDelta + (uint32_t)weapon);
+                weapon = coduo_int32_from_bits((uint32_t)(dividend % bg_numWeapons) + 1u);
                 if (weapon == stopWeapon) {
                     break;
                 }
 
                 uint32_t heldMask = 1u << ((uint32_t)weapon & 0x1f);
-                int32_t heldWord =
-                    coduo_int32_sar((uint32_t)weapon, 5);
+                int32_t heldWord = coduo_int32_sar((uint32_t)weapon, 5);
                 if ((cg_predictedPlayerState.weaponBits[heldWord] & heldMask) == 0) {
                     continue;
                 }
@@ -96,17 +92,14 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
                 if (BG_IsPlayerWeaponInSlot(ps, weapon, 1) != WEAPSLOT_NONE) {
                     continue;
                 }
-                if (BG_GetStackSlotForWeapon(ps, weapon, WEAPSLOT_NONE) !=
-                    WEAPSLOT_NONE) {
+                if (BG_GetStackSlotForWeapon(ps, weapon, WEAPSLOT_NONE) != WEAPSLOT_NONE) {
                     continue;
                 }
 
                 if (requireAmmo != 0) {
                     weaponInfo = bg_weaponInfos[weapon];
-                    if ((uint32_t)cg_predictedPlayerState.clips[
-                            weaponInfo->clipIndex] +
-                            (uint32_t)cg_predictedPlayerState.ammo[
-                                weaponInfo->ammoIndex] ==
+                    if ((uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
+                            (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex] ==
                         0u) {
                         continue;
                     }
@@ -115,7 +108,7 @@ void CG_CycleWeap(int32_t forward, int32_t requireAmmo)
                 CG_SelectWeaponIndex(weapon, cg_weaponSelect_vmCvar.integer);
                 return;
 
-next_weapon:
+            next_weapon:
                 continue;
             }
 
@@ -131,12 +124,8 @@ next_weapon:
      * compiler emits (slot + step + 6) % 7 + 1; slots are 1..7 and the stop slot is
      * the wrap point, so the current slot itself is not reconsidered. */
     {
-        int32_t slotDividend = coduo_int32_from_bits(
-            (uint32_t)slot + (uint32_t)step +
-            (uint32_t)(WEAPSLOT_COUNT - 2));
-        slot = coduo_int32_from_bits(
-            (uint32_t)(slotDividend % (WEAPSLOT_COUNT - 1)) +
-            (uint32_t)WEAPSLOT_PRIMARY_FIRST);
+        int32_t slotDividend = coduo_int32_from_bits((uint32_t)slot + (uint32_t)step + (uint32_t)(WEAPSLOT_COUNT - 2));
+        slot = coduo_int32_from_bits((uint32_t)(slotDividend % (WEAPSLOT_COUNT - 1)) + (uint32_t)WEAPSLOT_PRIMARY_FIRST);
     }
     while (slot != stopSlot) {
         int8_t slotWeaponByte = cg_predictedPlayerState.weaponSlots[slot];
@@ -147,24 +136,17 @@ next_weapon:
             }
 
             weaponInfo_t *weaponInfo = bg_weaponInfos[(int32_t)(int8_t)slotWeaponByte];
-            if ((uint32_t)cg_predictedPlayerState.clips[
-                    weaponInfo->clipIndex] +
-                    (uint32_t)cg_predictedPlayerState.ammo[
-                        weaponInfo->ammoIndex] !=
+            if ((uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
+                    (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex] !=
                 0u) {
-                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot],
-                                     cg_weaponSelect_vmCvar.integer);
+                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot], cg_weaponSelect_vmCvar.integer);
                 return;
             }
         }
 
         {
-            int32_t slotDividend = coduo_int32_from_bits(
-                (uint32_t)slot + (uint32_t)step +
-                (uint32_t)(WEAPSLOT_COUNT - 2));
-            slot = coduo_int32_from_bits(
-                (uint32_t)(slotDividend % (WEAPSLOT_COUNT - 1)) +
-                (uint32_t)WEAPSLOT_PRIMARY_FIRST);
+            int32_t slotDividend = coduo_int32_from_bits((uint32_t)slot + (uint32_t)step + (uint32_t)(WEAPSLOT_COUNT - 2));
+            slot = coduo_int32_from_bits((uint32_t)(slotDividend % (WEAPSLOT_COUNT - 1)) + (uint32_t)WEAPSLOT_PRIMARY_FIRST);
         }
     }
 
@@ -175,9 +157,7 @@ next_weapon:
 
 reconcile_current_weapon:
     currentWeapon = cg_weaponSelect_vmCvar.integer;
-    if ((cg_predictedPlayerState.weaponBits[
-             coduo_int32_sar((uint32_t)currentWeapon, 5)] &
-         (1u << ((uint32_t)currentWeapon & 0x1f))) != 0) {
+    if ((cg_predictedPlayerState.weaponBits[coduo_int32_sar((uint32_t)currentWeapon, 5)] & (1u << ((uint32_t)currentWeapon & 0x1f))) != 0) {
         return;
     }
 

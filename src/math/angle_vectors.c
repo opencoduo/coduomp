@@ -39,8 +39,7 @@ void YawVectors(float yaw, vec3_t forward, vec3_t right)
     float cosine;
 
 #if EMULATE_X87
-    radians = x87f_store_f32(x87f_mul(x87f_load_f32(yaw),
-                                      x87f_load_f32(0.017453292f)));
+    radians = x87f_store_f32(x87f_mul(x87f_load_f32(yaw), x87f_load_f32(0.017453292f)));
 #else
     radians = (float)((long double)yaw * 0.017453292f);
 #endif
@@ -69,8 +68,7 @@ void YawVectors(float yaw, vec3_t forward, vec3_t right)
     float cosine;
 
 #if EMULATE_X87
-    radians = x87f_store_f32(x87f_mul(
-        x87f_load_f32(yaw), x87f_load_f64(0.017453292519943295)));
+    radians = x87f_store_f32(x87f_mul(x87f_load_f32(yaw), x87f_load_f64(0.017453292519943295)));
 #else
     radians = (float)((long double)yaw * 0.017453292519943295);
 #endif
@@ -142,8 +140,7 @@ static const volatile float qmath_compat_angle_vectors_negative_one = -1.0f;
  */
 
 #if defined(WINDOWS_BEHAVIOR)
-void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
-                  vec3_t up)
+void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
     float sy;
     float cy;
@@ -152,16 +149,14 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
     float angle;
 
 #if EMULATE_X87
-    angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[1]),
-                                    x87f_load_f32(0.017453292f)));
+    angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[1]), x87f_load_f32(0.017453292f)));
 #else
     angle = (float)((long double)angles[1] * 0.017453292f);
 #endif
     coduo_x87_sincosf(angle, &sy, &cy);
 
 #if EMULATE_X87
-    angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[0]),
-                                    x87f_load_f32(0.017453292f)));
+    angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[0]), x87f_load_f32(0.017453292f)));
 #else
     angle = (float)((long double)angles[0] * 0.017453292f);
 #endif
@@ -169,10 +164,8 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
 
     if (forward != NULL) {
 #if EMULATE_X87
-        forward[0] = x87f_store_f32(
-            x87f_mul(x87f_load_f32(cp), x87f_load_f32(cy)));
-        forward[1] = x87f_store_f32(
-            x87f_mul(x87f_load_f32(cp), x87f_load_f32(sy)));
+        forward[0] = x87f_store_f32(x87f_mul(x87f_load_f32(cp), x87f_load_f32(cy)));
+        forward[1] = x87f_store_f32(x87f_mul(x87f_load_f32(cp), x87f_load_f32(sy)));
         forward[2] = x87f_store_f32(x87f_neg(x87f_load_f32(sp)));
 #else
         forward[0] = (float)((long double)cp * cy);
@@ -186,8 +179,7 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
         float cr;
 
 #if EMULATE_X87
-        angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[2]),
-                                        x87f_load_f32(0.017453292f)));
+        angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[2]), x87f_load_f32(0.017453292f)));
 #else
         angle = (float)((long double)angles[2] * 0.017453292f);
 #endif
@@ -195,59 +187,43 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
 
         if (right != NULL) {
 #if EMULATE_X87
-            const float srSp = x87f_store_f32(
-                x87f_mul(x87f_load_f32(sr), x87f_load_f32(sp)));
+            const float srSp = x87f_store_f32(x87f_mul(x87f_load_f32(sr), x87f_load_f32(sp)));
 
-            right[0] = x87f_store_f32(x87f_sub(
-                x87f_mul(x87f_load_f32(cr), x87f_load_f32(sy)),
-                x87f_mul(x87f_load_f32(srSp), x87f_load_f32(cy))));
-            right[1] = x87f_store_f32(x87f_sub(
-                x87f_mul(x87f_mul(x87f_load_f32(cr),
-                                  x87f_load_f32(cy)),
-                         x87f_load_f32(-1.0f)),
-                x87f_mul(x87f_load_f32(srSp), x87f_load_f32(sy))));
-            right[2] = x87f_store_f32(x87f_mul(
-                x87f_mul(x87f_load_f32(sr), x87f_load_f32(cp)),
-                x87f_load_f32(-1.0f)));
+            right[0] =
+                x87f_store_f32(x87f_sub(x87f_mul(x87f_load_f32(cr), x87f_load_f32(sy)), x87f_mul(x87f_load_f32(srSp), x87f_load_f32(cy))));
+            right[1] = x87f_store_f32(x87f_sub(x87f_mul(x87f_mul(x87f_load_f32(cr), x87f_load_f32(cy)), x87f_load_f32(-1.0f)),
+                                               x87f_mul(x87f_load_f32(srSp), x87f_load_f32(sy))));
+            right[2] = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(sr), x87f_load_f32(cp)), x87f_load_f32(-1.0f)));
 #else
             const float srSp = (float)((long double)sr * sp);
 
-            right[0] = (float)((long double)cr * sy -
-                               (long double)srSp * cy);
-            right[1] = (float)((long double)cr * cy * -1.0f -
-                               (long double)srSp * sy);
+            right[0] = (float)((long double)cr * sy - (long double)srSp * cy);
+            right[1] = (float)((long double)cr * cy * -1.0f - (long double)srSp * sy);
             right[2] = (float)((long double)sr * cp * -1.0f);
 #endif
         }
 
         if (up != NULL) {
 #if EMULATE_X87
-            const float crSp = x87f_store_f32(
-                x87f_mul(x87f_load_f32(cr), x87f_load_f32(sp)));
+            const float crSp = x87f_store_f32(x87f_mul(x87f_load_f32(cr), x87f_load_f32(sp)));
 
-            up[0] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(crSp), x87f_load_f32(cy)),
-                x87f_mul(x87f_load_f32(sr), x87f_load_f32(sy))));
-            up[1] = x87f_store_f32(x87f_sub(
-                x87f_mul(x87f_load_f32(crSp), x87f_load_f32(sy)),
-                x87f_mul(x87f_load_f32(sr), x87f_load_f32(cy))));
-            up[2] = x87f_store_f32(
-                x87f_mul(x87f_load_f32(cr), x87f_load_f32(cp)));
+            up[0] =
+                x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(crSp), x87f_load_f32(cy)), x87f_mul(x87f_load_f32(sr), x87f_load_f32(sy))));
+            up[1] =
+                x87f_store_f32(x87f_sub(x87f_mul(x87f_load_f32(crSp), x87f_load_f32(sy)), x87f_mul(x87f_load_f32(sr), x87f_load_f32(cy))));
+            up[2] = x87f_store_f32(x87f_mul(x87f_load_f32(cr), x87f_load_f32(cp)));
 #else
             const float crSp = (float)((long double)cr * sp);
 
-            up[0] = (float)((long double)crSp * cy +
-                            (long double)sr * sy);
-            up[1] = (float)((long double)crSp * sy -
-                            (long double)sr * cy);
+            up[0] = (float)((long double)crSp * cy + (long double)sr * sy);
+            up[1] = (float)((long double)crSp * sy - (long double)sr * cy);
             up[2] = (float)((long double)cr * cp);
 #endif
         }
     }
 }
 #else
-void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
-                  vec3_t up)
+void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
     float sy;
     float cy;
@@ -256,16 +232,14 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
     float angle;
 
 #if EMULATE_X87
-    angle = x87f_store_f32(x87f_mul(
-        x87f_load_f32(angles[1]), x87f_load_f64(0.017453292519943295)));
+    angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[1]), x87f_load_f64(0.017453292519943295)));
 #else
     angle = (float)((long double)angles[1] * 0.017453292519943295);
 #endif
     coduo_x87_sincosf(angle, &sy, &cy);
 
 #if EMULATE_X87
-    angle = x87f_store_f32(x87f_mul(
-        x87f_load_f32(angles[0]), x87f_load_f64(0.017453292519943295)));
+    angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[0]), x87f_load_f64(0.017453292519943295)));
 #else
     angle = (float)((long double)angles[0] * 0.017453292519943295);
 #endif
@@ -273,10 +247,8 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
 
     if (forward != NULL) {
 #if EMULATE_X87
-        forward[0] = x87f_store_f32(
-            x87f_mul(x87f_load_f32(cp), x87f_load_f32(cy)));
-        forward[1] = x87f_store_f32(
-            x87f_mul(x87f_load_f32(cp), x87f_load_f32(sy)));
+        forward[0] = x87f_store_f32(x87f_mul(x87f_load_f32(cp), x87f_load_f32(cy)));
+        forward[1] = x87f_store_f32(x87f_mul(x87f_load_f32(cp), x87f_load_f32(sy)));
         forward[2] = x87f_store_f32(x87f_neg(x87f_load_f32(sp)));
 #else
         forward[0] = (float)((long double)cp * cy);
@@ -290,9 +262,7 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
         float cr;
 
 #if EMULATE_X87
-        angle = x87f_store_f32(x87f_mul(
-            x87f_load_f32(angles[2]),
-            x87f_load_f64(0.017453292519943295)));
+        angle = x87f_store_f32(x87f_mul(x87f_load_f32(angles[2]), x87f_load_f64(0.017453292519943295)));
 #else
         angle = (float)((long double)angles[2] * 0.017453292519943295);
 #endif
@@ -300,52 +270,30 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right,
 
         if (right != NULL) {
 #if EMULATE_X87
-            right[0] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(-1.0f),
-                                           x87f_load_f32(sr)),
-                                  x87f_load_f32(sp)),
-                         x87f_load_f32(cy)),
-                x87f_mul(x87f_mul(x87f_load_f32(-1.0f),
-                                  x87f_load_f32(cr)),
-                         x87f_neg(x87f_load_f32(sy)))));
-            right[1] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(-1.0f),
-                                           x87f_load_f32(sr)),
-                                  x87f_load_f32(sp)),
-                         x87f_load_f32(sy)),
-                x87f_mul(x87f_mul(x87f_load_f32(-1.0f),
-                                  x87f_load_f32(cr)),
-                         x87f_load_f32(cy))));
-            right[2] = x87f_store_f32(x87f_mul(
-                x87f_mul(x87f_load_f32(-1.0f), x87f_load_f32(sr)),
-                x87f_load_f32(cp)));
+            right[0] = x87f_store_f32(
+                x87f_add(x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(-1.0f), x87f_load_f32(sr)), x87f_load_f32(sp)), x87f_load_f32(cy)),
+                         x87f_mul(x87f_mul(x87f_load_f32(-1.0f), x87f_load_f32(cr)), x87f_neg(x87f_load_f32(sy)))));
+            right[1] = x87f_store_f32(
+                x87f_add(x87f_mul(x87f_mul(x87f_mul(x87f_load_f32(-1.0f), x87f_load_f32(sr)), x87f_load_f32(sp)), x87f_load_f32(sy)),
+                         x87f_mul(x87f_mul(x87f_load_f32(-1.0f), x87f_load_f32(cr)), x87f_load_f32(cy))));
+            right[2] = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(-1.0f), x87f_load_f32(sr)), x87f_load_f32(cp)));
 #else
-            right[0] = qmath_compat_angle_vectors_negative_one * sr * sp * cy +
-                       qmath_compat_angle_vectors_negative_one * cr * -sy;
-            right[1] = qmath_compat_angle_vectors_negative_one * sr * sp * sy +
-                       qmath_compat_angle_vectors_negative_one * cr * cy;
+            right[0] = qmath_compat_angle_vectors_negative_one * sr * sp * cy + qmath_compat_angle_vectors_negative_one * cr * -sy;
+            right[1] = qmath_compat_angle_vectors_negative_one * sr * sp * sy + qmath_compat_angle_vectors_negative_one * cr * cy;
             right[2] = qmath_compat_angle_vectors_negative_one * sr * cp;
 #endif
         }
 
         if (up != NULL) {
 #if EMULATE_X87
-            up[0] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_mul(x87f_load_f32(cr), x87f_load_f32(sp)),
-                         x87f_load_f32(cy)),
-                x87f_mul(x87f_load_f32(sr), x87f_load_f32(sy))));
-            up[1] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_mul(x87f_load_f32(cr), x87f_load_f32(sp)),
-                         x87f_load_f32(sy)),
-                x87f_mul(x87f_neg(x87f_load_f32(sr)),
-                         x87f_load_f32(cy))));
-            up[2] = x87f_store_f32(
-                x87f_mul(x87f_load_f32(cr), x87f_load_f32(cp)));
+            up[0] = x87f_store_f32(x87f_add(x87f_mul(x87f_mul(x87f_load_f32(cr), x87f_load_f32(sp)), x87f_load_f32(cy)),
+                                            x87f_mul(x87f_load_f32(sr), x87f_load_f32(sy))));
+            up[1] = x87f_store_f32(x87f_add(x87f_mul(x87f_mul(x87f_load_f32(cr), x87f_load_f32(sp)), x87f_load_f32(sy)),
+                                            x87f_mul(x87f_neg(x87f_load_f32(sr)), x87f_load_f32(cy))));
+            up[2] = x87f_store_f32(x87f_mul(x87f_load_f32(cr), x87f_load_f32(cp)));
 #else
-            up[0] = (float)((long double)cr * sp * cy +
-                            (long double)sr * sy);
-            up[1] = (float)((long double)cr * sp * sy +
-                            (long double)-sr * cy);
+            up[0] = (float)((long double)cr * sp * cy + (long double)sr * sy);
+            up[1] = (float)((long double)cr * sp * sy + (long double)-sr * cy);
             up[2] = (float)((long double)cr * cp);
 #endif
         }

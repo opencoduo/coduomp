@@ -42,15 +42,19 @@
 // 0x30077c7c = "assetGlobalDef", 0x30077c74 = "menudef" (per globals.mcode). The
 // fallback source name 0x30077c8c = "ui_mp/testhud.menu".
 static const char kAssetGlobalDefKeyword[] = "assetGlobalDef"; // 0x30077c7c
-static const char kMenuDefKeyword[]        = "menudef";        // 0x30077c74
-static const char kFallbackMenuFile[]      = "ui_mp/testhud.menu"; // 0x30077c8c
+static const char kMenuDefKeyword[] = "menudef";        // 0x30077c74
+static const char kFallbackMenuFile[] = "ui_mp/testhud.menu"; // 0x30077c8c
 
 // Q_stricmpn(99999, ...) degenerates to an unbounded case-insensitive compare
 // (the caller idiom for Q_stricmp). EAX = 0x1869f at 0x3002d177 / 0x3002d19f.
-enum { STRICMP_NO_LIMIT = 99999 };
+enum {
+    STRICMP_NO_LIMIT = 99999
+};
 
 // Byte compared against token.string[0] at 0x3002d170 to detect the closing brace.
-enum { CLOSE_BRACE = '}' };
+enum {
+    CLOSE_BRACE = '}'
+};
 
 void CG_ParseMenu(int32_t loadMode, const char *filename)
 {

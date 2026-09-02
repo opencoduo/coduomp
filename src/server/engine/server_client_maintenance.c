@@ -39,9 +39,7 @@ void Com_DPrintf(const char *format, ...);
 void SV_CalcPings(void)
 {
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
         if (client->state != CS_ACTIVE || client->gentity == NULL) {
             client->ping = SERVER_MAX_PING;
             continue;
@@ -49,15 +47,11 @@ void SV_CalcPings(void)
 
         int32_t pingTotal = 0;
         int32_t pingSamples = 0;
-        for (int32_t frameIndex = 0;
-             frameIndex < SERVER_CLIENT_SNAPSHOT_FRAME_COUNT;
-             ++frameIndex) {
-            const clientSnapshot_t *const frame =
-                &client->snapshotFrames[frameIndex];
+        for (int32_t frameIndex = 0; frameIndex < SERVER_CLIENT_SNAPSHOT_FRAME_COUNT; ++frameIndex) {
+            const clientSnapshot_t *const frame = &client->snapshotFrames[frameIndex];
             if (frame->messageAcknowledgedTime > 0) {
                 ++pingSamples;
-                pingTotal += frame->messageAcknowledgedTime -
-                             frame->messageSentTime;
+                pingTotal += frame->messageAcknowledgedTime - frame->messageSentTime;
             }
         }
 
@@ -76,30 +70,21 @@ void SV_CalcPings(void)
  * Name and source structure: exact same-module Mac symbol SV_CheckTimeouts. */
 void SV_CheckTimeouts(void)
 {
-    const int32_t timeoutLimit =
-        svs.realTime -
-        sv_timeout->integer * SERVER_TIMEOUT_SECONDS_TO_MSEC;
-    const int32_t zombieLimit =
-        svs.realTime -
-        sv_zombietime->integer * SERVER_TIMEOUT_SECONDS_TO_MSEC;
+    const int32_t timeoutLimit = svs.realTime - sv_timeout->integer * SERVER_TIMEOUT_SECONDS_TO_MSEC;
+    const int32_t zombieLimit = svs.realTime - sv_zombietime->integer * SERVER_TIMEOUT_SECONDS_TO_MSEC;
 
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
         if (client->lastPacketTime > svs.realTime)
             client->lastPacketTime = svs.realTime;
 
         if (client->isTestClient != qfalse)
             continue;
 
-        if (client->state == CS_ZOMBIE &&
-            client->lastPacketTime < zombieLimit) {
-            Com_DPrintf("Going from CS_ZOMBIE to CS_FREE for %s\n",
-                        client->name);
+        if (client->state == CS_ZOMBIE && client->lastPacketTime < zombieLimit) {
+            Com_DPrintf("Going from CS_ZOMBIE to CS_FREE for %s\n", client->name);
             client->state = CS_FREE;
-        } else if (client->state >= CS_CONNECTED &&
-                   client->lastPacketTime < timeoutLimit) {
+        } else if (client->state >= CS_CONNECTED && client->lastPacketTime < timeoutLimit) {
             ++client->timeoutCount;
             if (client->timeoutCount > SERVER_TIMEOUT_DROP_SCANS) {
                 SV_DropClient(client, "EXE_TIMEDOUT");
@@ -121,9 +106,7 @@ qboolean SV_CheckPaused(void)
 
     int32_t connectedClients = 0;
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
         if (client->state >= CS_CONNECTED)
             ++connectedClients;
     }

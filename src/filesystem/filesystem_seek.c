@@ -31,8 +31,7 @@ int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin)
         if (offset == 0 && origin == FS_SEEK_ORIGIN_CURRENT)
             return 0;
 
-        const int32_t currentPosition =
-            filesystem_compat_archive_tell(fileHandle);
+        const int32_t currentPosition = filesystem_compat_archive_tell(fileHandle);
         int32_t fileLength = 0;
 
         int64_t targetPosition;
@@ -53,8 +52,7 @@ int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin)
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate the resolved archive position in
          * the nonnegative signed domain before any rewind changes state. */
-        if (currentPosition < 0 || targetPosition < 0 ||
-            targetPosition > INT32_MAX) {
+        if (currentPosition < 0 || targetPosition < 0 || targetPosition > INT32_MAX) {
             Com_Printf("FS_Seek: invalid archive target position\n");
             return -1;
         }
@@ -63,8 +61,7 @@ int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin)
             if (offset < 0) {
                 if (filesystem_compat_archive_rewind(fileHandle) != 0)
                     return -1;
-                offset = (int32_t)((uint32_t)offset +
-                                   (uint32_t)currentPosition);
+                offset = (int32_t)((uint32_t)offset + (uint32_t)currentPosition);
             }
         } else if (origin == FS_SEEK_ORIGIN_END) {
             /* NOT_FROM_ORIGINAL_SOURCE: derive the target from the single
@@ -81,8 +78,7 @@ int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin)
                 if (filesystem_compat_archive_rewind(fileHandle) != 0)
                     return -1;
             } else {
-                offset = (int32_t)((uint32_t)offset -
-                                   (uint32_t)currentPosition);
+                offset = (int32_t)((uint32_t)offset - (uint32_t)currentPosition);
             }
         }
 
@@ -94,8 +90,7 @@ int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin)
             } else {
                 requestedBytes = FS_ZIP_SEEK_BUFFER_SIZE;
             }
-            const int32_t bytesRead =
-                FS_Read(discard, requestedBytes, handle);
+            const int32_t bytesRead = FS_Read(discard, requestedBytes, handle);
 
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             if (bytesRead != requestedBytes)

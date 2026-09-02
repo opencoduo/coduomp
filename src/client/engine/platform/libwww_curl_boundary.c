@@ -96,8 +96,7 @@ static HTBool coduomp_libwww_ensure_curl_initialized(void)
  * into one packet and can associate a repeated redirect with the next target.
  */
 
-void HTProfile_newNoCacheClient(
-    const char *applicationName, const char *applicationVersion)
+void HTProfile_newNoCacheClient(const char *applicationName, const char *applicationVersion)
 {
     (void)applicationName;
     (void)applicationVersion;
@@ -126,9 +125,7 @@ void HTTrace_setCallback(HTPrintCallback *callback)
     libwwwTraceCallback = callback;
 }
 
-HTBool HTNet_addAfter(
-    HTNetAfter *callback, const char *urlTemplate, void *parameter,
-    int32_t status, HTFilterOrder order)
+HTBool HTNet_addAfter(HTNetAfter *callback, const char *urlTemplate, void *parameter, int32_t status, HTFilterOrder order)
 {
     (void)urlTemplate;
     (void)order;
@@ -174,17 +171,14 @@ char *HTParse(const char *address, const char *base, int32_t wanted)
     if (wanted == HT_PARSE_ACCESS) {
         if (schemeEnd == NULL)
             return Libwww_CopyRange("", 0);
-        return Libwww_CopyRange(
-            address, (size_t)(schemeEnd - address));
+        return Libwww_CopyRange(address, (size_t)(schemeEnd - address));
     }
 
     authority = schemeEnd != NULL ? schemeEnd + 3 : address;
     path = strchr(authority, '/');
     if (wanted == HT_PARSE_HOST) {
-        const char *authorityEnd =
-            path != NULL ? path : address + strlen(address);
-        return Libwww_CopyRange(
-            authority, (size_t)(authorityEnd - authority));
+        const char *authorityEnd = path != NULL ? path : address + strlen(address);
+        return Libwww_CopyRange(authority, (size_t)(authorityEnd - authority));
     }
 
     if ((wanted & HT_PARSE_PATH) != 0) {
@@ -221,12 +215,8 @@ char *HTUnEscape(char *text)
         return NULL;
 
     while (*source != '\0') {
-        if (source[0] == '%' &&
-            Libwww_HexDigit((uint8_t)source[1]) >= 0 &&
-            Libwww_HexDigit((uint8_t)source[2]) >= 0) {
-            *destination++ = (char)(
-                Libwww_HexDigit((uint8_t)source[1]) * 16 +
-                Libwww_HexDigit((uint8_t)source[2]));
+        if (source[0] == '%' && Libwww_HexDigit((uint8_t)source[1]) >= 0 && Libwww_HexDigit((uint8_t)source[2]) >= 0) {
+            *destination++ = (char)(Libwww_HexDigit((uint8_t)source[1]) * 16 + Libwww_HexDigit((uint8_t)source[2]));
             source += 3;
         } else {
             *destination++ = *source++;
@@ -281,13 +271,11 @@ void HTMemory_free(void *memory)
     free(memory);
 }
 
-HTBool HTLoadToFile(
-    const char *url, HTRequest *request, const char *localFileName)
+HTBool HTLoadToFile(const char *url, HTRequest *request, const char *localFileName)
 {
     if (url == NULL || request == NULL || localFileName == NULL)
         return HT_FALSE;
-    if (HTSACopy(&request->url, url) == HT_FALSE ||
-        HTSACopy(&request->targetPath, localFileName) == HT_FALSE) {
+    if (HTSACopy(&request->url, url) == HT_FALSE || HTSACopy(&request->targetPath, localFileName) == HT_FALSE) {
         return HT_FALSE;
     }
     return Libwww_BeginTransfer(request) == HT_OK ? HT_TRUE : HT_FALSE;
@@ -312,17 +300,13 @@ void HTEventList_init(HTRequest *request)
     libwwwStopRequested = HT_FALSE;
 }
 
-static size_t Libwww_WriteFile(
-    char *data, size_t elementSize, size_t elementCount, void *userData)
+static size_t Libwww_WriteFile(char *data, size_t elementSize, size_t elementCount, void *userData)
 {
-    return fwrite(
-               data, elementSize, elementCount, (FILE *)userData) *
-           elementSize;
+    return fwrite(data, elementSize, elementCount, (FILE *)userData) * elementSize;
 }
 
-static int Libwww_ReportProgress(
-    void *clientData, curl_off_t downloadTotal, curl_off_t downloadNow,
-    curl_off_t uploadTotal, curl_off_t uploadNow)
+static int Libwww_ReportProgress(void *clientData, curl_off_t downloadTotal, curl_off_t downloadNow, curl_off_t uploadTotal,
+                                 curl_off_t uploadNow)
 {
     HTRequest *request = clientData;
 
@@ -332,8 +316,7 @@ static int Libwww_ReportProgress(
     request->bytesRead = (long)downloadNow;
     request->net.bytesRead = request->bytesRead;
     if (libwwwProgressCallback != NULL) {
-        (void)libwwwProgressCallback(
-            request, 8, 0, NULL, NULL, NULL);
+        (void)libwwwProgressCallback(request, 8, 0, NULL, NULL, NULL);
     }
     return libwwwStopRequested != HT_FALSE ? 1 : 0;
 }
@@ -343,10 +326,8 @@ static void Libwww_CloseTransfer(HTRequest *request)
     if (request == NULL)
         return;
 
-    if (request->multiHandle != NULL &&
-        request->easyHandle != NULL) {
-        (void)curl_multi_remove_handle(
-            request->multiHandle, request->easyHandle);
+    if (request->multiHandle != NULL && request->easyHandle != NULL) {
+        (void)curl_multi_remove_handle(request->multiHandle, request->easyHandle);
     }
     if (request->easyHandle != NULL) {
         curl_easy_cleanup(request->easyHandle);
@@ -386,9 +367,7 @@ static HTBool coduomp_libwww_finalize_output_file(HTRequest *request)
     if (flushResult == 0 && streamError == 0 && closeResult == 0)
         return HT_TRUE;
 
-    coduomp_libwww_print(
-        "HTTP download output failed: %s\n",
-        savedError != 0 ? strerror(savedError) : "stream write failure");
+    coduomp_libwww_print("HTTP download output failed: %s\n", savedError != 0 ? strerror(savedError) : "stream write failure");
     return HT_FALSE;
 }
 
@@ -397,30 +376,24 @@ static int32_t Libwww_BeginTransfer(HTRequest *request)
     int32_t failureStatus = -(int32_t)CURLE_FAILED_INIT;
     CURLMcode multiResult;
 
-#define CODUOMP_LIBWWW_SETOPT(option_, value_)                                      \
-    do {                                                                             \
-        const CURLcode optionResult_ = curl_easy_setopt(                             \
-            request->easyHandle, (option_), (value_));                               \
-        if (optionResult_ != CURLE_OK) {                                              \
-            coduomp_libwww_print(                                                     \
-                "HTTP download setup failed for %s: %s\n",                         \
-                #option_, curl_easy_strerror(optionResult_));                         \
-            failureStatus = -(int32_t)optionResult_;                                 \
-            goto setup_failed;                                                       \
-        }                                                                            \
+#define CODUOMP_LIBWWW_SETOPT(option_, value_) \
+    do { \
+        const CURLcode optionResult_ = curl_easy_setopt(request->easyHandle, (option_), (value_)); \
+        if (optionResult_ != CURLE_OK) { \
+            coduomp_libwww_print("HTTP download setup failed for %s: %s\n", #option_, curl_easy_strerror(optionResult_)); \
+            failureStatus = -(int32_t)optionResult_; \
+            goto setup_failed; \
+        } \
     } while (0)
 
-    if (request == NULL ||
-        coduomp_libwww_ensure_curl_initialized() == HT_FALSE) {
+    if (request == NULL || coduomp_libwww_ensure_curl_initialized() == HT_FALSE) {
         return failureStatus;
     }
 
     request->easyHandle = curl_easy_init();
     request->multiHandle = curl_multi_init();
-    if (request->easyHandle == NULL ||
-        request->multiHandle == NULL) {
-        coduomp_libwww_print(
-            "HTTP download setup failed: libcurl initialization failure\n");
+    if (request->easyHandle == NULL || request->multiHandle == NULL) {
+        coduomp_libwww_print("HTTP download setup failed: libcurl initialization failure\n");
         Libwww_CloseTransfer(request);
         return -(int32_t)CURLE_FAILED_INIT;
     }
@@ -429,9 +402,7 @@ static int32_t Libwww_BeginTransfer(HTRequest *request)
     if (request->outputFile == NULL) {
         const int openError = errno;
 
-        coduomp_libwww_print(
-            "HTTP download setup failed: %s\n",
-            openError != 0 ? strerror(openError) : "file open failure");
+        coduomp_libwww_print("HTTP download setup failed: %s\n", openError != 0 ? strerror(openError) : "file open failure");
         Libwww_CloseTransfer(request);
         return -(int32_t)CURLE_WRITE_ERROR;
     }
@@ -451,10 +422,8 @@ static int32_t Libwww_BeginTransfer(HTRequest *request)
     CODUOMP_LIBWWW_SETOPT(CURLOPT_USERAGENT, "ID_DOWNLOAD/1.0");
     CODUOMP_LIBWWW_SETOPT(CURLOPT_NOSIGNAL, 1L);
     if (libwwwTimeoutMilliseconds > 0) {
-        const long inactivitySeconds = (long)(
-            ((int64_t)libwwwTimeoutMilliseconds +
-             LIBWWW_MILLISECONDS_PER_SECOND - 1) /
-            LIBWWW_MILLISECONDS_PER_SECOND);
+        const long inactivitySeconds =
+            (long)(((int64_t)libwwwTimeoutMilliseconds + LIBWWW_MILLISECONDS_PER_SECOND - 1) / LIBWWW_MILLISECONDS_PER_SECOND);
 
         /* HTHost_setEventTimeout configures libwww's per-socket event timer,
          * which its event manager refreshes whenever activity occurs. A curl
@@ -462,28 +431,18 @@ static int32_t Libwww_BeginTransfer(HTRequest *request)
          * active download merely because the file takes more than 30 seconds.
          * Bound connection establishment separately and use curl's low-speed
          * timer as the maintained inactivity-timeout approximation. */
-        CODUOMP_LIBWWW_SETOPT(
-            CURLOPT_CONNECTTIMEOUT_MS,
-            (long)libwwwTimeoutMilliseconds);
-        CODUOMP_LIBWWW_SETOPT(
-            CURLOPT_LOW_SPEED_LIMIT,
-            (long)LIBWWW_MINIMUM_ACTIVITY_BYTES_PER_SECOND);
-        CODUOMP_LIBWWW_SETOPT(
-            CURLOPT_LOW_SPEED_TIME, inactivitySeconds);
+        CODUOMP_LIBWWW_SETOPT(CURLOPT_CONNECTTIMEOUT_MS, (long)libwwwTimeoutMilliseconds);
+        CODUOMP_LIBWWW_SETOPT(CURLOPT_LOW_SPEED_LIMIT, (long)LIBWWW_MINIMUM_ACTIVITY_BYTES_PER_SECOND);
+        CODUOMP_LIBWWW_SETOPT(CURLOPT_LOW_SPEED_TIME, inactivitySeconds);
     }
     if (request->userName != NULL) {
         CODUOMP_LIBWWW_SETOPT(CURLOPT_USERNAME, request->userName);
-        CODUOMP_LIBWWW_SETOPT(
-            CURLOPT_PASSWORD,
-            request->password != NULL ? request->password : "");
+        CODUOMP_LIBWWW_SETOPT(CURLOPT_PASSWORD, request->password != NULL ? request->password : "");
     }
 
-    multiResult = curl_multi_add_handle(
-        request->multiHandle, request->easyHandle);
+    multiResult = curl_multi_add_handle(request->multiHandle, request->easyHandle);
     if (multiResult != CURLM_OK) {
-        coduomp_libwww_print(
-            "HTTP download setup failed: %s\n",
-            curl_multi_strerror(multiResult));
+        coduomp_libwww_print("HTTP download setup failed: %s\n", curl_multi_strerror(multiResult));
         goto setup_failed;
     }
     return HT_OK;
@@ -497,15 +456,12 @@ setup_failed:
 
 static void Libwww_FinishTransfer(HTRequest *request, int32_t status)
 {
-    if (status >= 0 &&
-        coduomp_libwww_finalize_output_file(request) == HT_FALSE) {
+    if (status >= 0 && coduomp_libwww_finalize_output_file(request) == HT_FALSE) {
         status = -(int32_t)CURLE_WRITE_ERROR;
     }
     Libwww_CloseTransfer(request);
-    if (libwwwAfterCallback != NULL &&
-        (libwwwAfterStatus == HT_ALL || libwwwAfterStatus == status)) {
-        (void)libwwwAfterCallback(
-            request, NULL, libwwwAfterParameter, status);
+    if (libwwwAfterCallback != NULL && (libwwwAfterStatus == HT_ALL || libwwwAfterStatus == status)) {
+        (void)libwwwAfterCallback(request, NULL, libwwwAfterParameter, status);
     }
     libwwwEventRequest = NULL;
 }
@@ -522,24 +478,18 @@ int32_t HTEventList_pump(void)
         return 0;
 
     if (request->multiHandle == NULL) {
-        Libwww_FinishTransfer(
-            request, -(int32_t)CURLE_FAILED_INIT);
+        Libwww_FinishTransfer(request, -(int32_t)CURLE_FAILED_INIT);
         return 0;
     }
 
-    multiResult = curl_multi_perform(
-        request->multiHandle, &runningHandles);
+    multiResult = curl_multi_perform(request->multiHandle, &runningHandles);
     if (multiResult != CURLM_OK) {
-        coduomp_libwww_print(
-            "HTTP download event failure: %s\n",
-            curl_multi_strerror(multiResult));
-        Libwww_FinishTransfer(
-            request, -(int32_t)CURLE_RECV_ERROR);
+        coduomp_libwww_print("HTTP download event failure: %s\n", curl_multi_strerror(multiResult));
+        Libwww_FinishTransfer(request, -(int32_t)CURLE_RECV_ERROR);
         return 0;
     }
 
-    while ((message = curl_multi_info_read(
-                request->multiHandle, &messageCount)) != NULL) {
+    while ((message = curl_multi_info_read(request->multiHandle, &messageCount)) != NULL) {
         if (message->msg != CURLMSG_DONE)
             continue;
 
@@ -547,26 +497,16 @@ int32_t HTEventList_pump(void)
 
         if (message->data.result == CURLE_OK) {
             long responseCode = 0;
-            const CURLcode infoResult = curl_easy_getinfo(
-                request->easyHandle,
-                CURLINFO_RESPONSE_CODE, &responseCode);
+            const CURLcode infoResult = curl_easy_getinfo(request->easyHandle, CURLINFO_RESPONSE_CODE, &responseCode);
 
-            status = infoResult == CURLE_OK &&
-                     responseCode >= 200 && responseCode < 300
-                         ? HT_LOADED
-                         : -(int32_t)CURLE_HTTP_RETURNED_ERROR;
+            status = infoResult == CURLE_OK && responseCode >= 200 && responseCode < 300 ? HT_LOADED : -(int32_t)CURLE_HTTP_RETURNED_ERROR;
             if (status < 0) {
-                coduomp_libwww_print(
-                    "HTTP download failed: response status %ld\n",
-                    responseCode);
+                coduomp_libwww_print("HTTP download failed: response status %ld\n", responseCode);
             }
         } else {
             status = -(int32_t)message->data.result;
-            coduomp_libwww_print(
-                "HTTP download failed: %s\n",
-                request->errorBuffer[0] != '\0'
-                    ? request->errorBuffer
-                    : curl_easy_strerror(message->data.result));
+            coduomp_libwww_print("HTTP download failed: %s\n",
+                                 request->errorBuffer[0] != '\0' ? request->errorBuffer : curl_easy_strerror(message->data.result));
         }
         Libwww_FinishTransfer(request, status);
         return 0;
@@ -575,8 +515,7 @@ int32_t HTEventList_pump(void)
     if (runningHandles != 0)
         return 1;
 
-    Libwww_FinishTransfer(
-        request, -(int32_t)CURLE_RECV_ERROR);
+    Libwww_FinishTransfer(request, -(int32_t)CURLE_RECV_ERROR);
     return 0;
 }
 

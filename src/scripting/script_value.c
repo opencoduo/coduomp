@@ -25,17 +25,14 @@ enum {
     SCRIPT_SINGLE_CHAR_STRING_SIZE = 2
 };
 
-static const float script_floatEqualityEpsilon =
-    9.9999999747524270788e-07f; /* 0x358637bd, approximately 1e-6 */
+static const float script_floatEqualityEpsilon = 9.9999999747524270788e-07f; /* 0x358637bd, approximately 1e-6 */
 
 /* Source: CoDUOMP.exe 0x00490e70..0x00490f24.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00490e70_00490f25.mcode. */
 uint16_t VM_ConcatenateStrings(const VariableValue values[2])
 {
-    const char *left =
-        SL_ConvertToString((uint16_t)values[0].payload);
-    const char *right =
-        SL_ConvertToString((uint16_t)values[1].payload);
+    const char *left = SL_ConvertToString((uint16_t)values[0].payload);
+    const char *right = SL_ConvertToString((uint16_t)values[1].payload);
     size_t leftLength = strlen(left);
     size_t rightLength = strlen(right);
     size_t combinedLength = leftLength + rightLength + 1;
@@ -44,8 +41,7 @@ uint16_t VM_ConcatenateStrings(const VariableValue values[2])
     memcpy(combined, left, leftLength);
     memcpy(combined + leftLength, right, rightLength + 1);
 
-    return SL_GetStringOfLen(combined, 0, combinedLength,
-                                    SCRIPT_STRING_RUNTIME_TYPE);
+    return SL_GetStringOfLen(combined, 0, combinedLength, SCRIPT_STRING_RUNTIME_TYPE);
 }
 
 /* Source: CoDUOMP.exe 0x00484b90..0x00484c35.
@@ -56,11 +52,7 @@ void GetSizeValue(VariableValue *value)
         uint16_t object = (uint16_t)value->payload;
 
         value->type = SCRIPT_VAR_INT;
-        value->payload =
-            GetVarType(object) == SCRIPT_VAR_ARRAY
-                ? script_variableNodes[object]
-                      .payload.halves.parentHandle
-                : 1;
+        value->payload = GetVarType(object) == SCRIPT_VAR_ARRAY ? script_variableNodes[object].payload.halves.parentHandle : 1;
         RemoveRefToObject(object);
         return;
     }
@@ -74,8 +66,7 @@ void GetSizeValue(VariableValue *value)
         return;
     }
 
-    Scr_Error(va("size cannot be applied to %s",
-                 script_variableTypeNames[value->type]));
+    Scr_Error(va("size cannot be applied to %s", script_variableTypeNames[value->type]));
 }
 
 /* Source: CoDUOMP.exe 0x00484da0..0x00484e60.
@@ -86,51 +77,39 @@ uint16_t CastFieldObject(VariableValue *value)
         uint16_t object = (uint16_t)value->payload;
 
         if (IsFieldObject(object) != qfalse) {
-            VariableValue objectValue = {
-                .payload = object,
-                .type = SCRIPT_VAR_OBJECT
-            };
+            VariableValue objectValue = {.payload = object, .type = SCRIPT_VAR_OBJECT};
 
-            SetVariableValue(script_tempValueHandle,
-                                    &objectValue);
+            SetVariableValue(script_tempValueHandle, &objectValue);
             return object;
         }
 
-        Scr_Error(va("%s is not an object",
-                     script_variableTypeNames[
-                         GetVarType(object)]));
+        Scr_Error(va("%s is not an object", script_variableTypeNames[GetVarType(object)]));
     }
 
-    Scr_Error(va("%s is not an object",
-                 script_variableTypeNames[value->type]));
+    Scr_Error(va("%s is not an object", script_variableTypeNames[value->type]));
     return 0;
 }
 
 /* Source: CoDUOMP.exe 0x004853c0..0x00485624.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004853c0_00485625.mcode. */
-void EvalArray(VariableValue *index,
-                               VariableValue *container)
+void EvalArray(VariableValue *index, VariableValue *container)
 {
     if (container->type == SCRIPT_VAR_STRING) {
         if (index->type != SCRIPT_VAR_INT) {
-            Scr_Error(va("%s is not a string index",
-                         script_variableTypeNames[index->type]));
+            Scr_Error(va("%s is not a string index", script_variableTypeNames[index->type]));
             return;
         }
 
         int32_t stringIndex = (int32_t)index->payload;
         uint16_t stringHandle = (uint16_t)container->payload;
         const char *string = SL_ConvertToString(stringHandle);
-        if (stringIndex >= 0 &&
-            (size_t)stringIndex < strlen(string)) {
+        if (stringIndex >= 0 && (size_t)stringIndex < strlen(string)) {
             char singleChar[SCRIPT_SINGLE_CHAR_STRING_SIZE];
 
             singleChar[0] = string[stringIndex];
             singleChar[1] = '\0';
             index->type = SCRIPT_VAR_STRING;
-            index->payload = SL_GetStringOfLen(
-                singleChar, 0, sizeof(singleChar),
-                SCRIPT_STRING_RUNTIME_TYPE);
+            index->payload = SL_GetStringOfLen(singleChar, 0, sizeof(singleChar), SCRIPT_STRING_RUNTIME_TYPE);
             SL_RemoveRefToString(stringHandle);
             return;
         }
@@ -141,15 +120,13 @@ void EvalArray(VariableValue *index,
 
     if (container->type == SCRIPT_VAR_VECTOR) {
         if (index->type != SCRIPT_VAR_INT) {
-            Scr_Error(va("%s is not a vector index",
-                         script_variableTypeNames[index->type]));
+            Scr_Error(va("%s is not a vector index", script_variableTypeNames[index->type]));
             return;
         }
 
         uint32_t component = (uint32_t)index->payload;
         if (component < SCRIPT_VECTOR_COMPONENT_COUNT) {
-            const float *vector =
-                (const float *)container->payload;
+            const float *vector = (const float *)container->payload;
 
             index->payload = 0;
             memcpy(&index->payload, &vector[component], sizeof(float));
@@ -158,24 +135,20 @@ void EvalArray(VariableValue *index,
             return;
         }
 
-        Scr_Error(va("vector index %d out of range",
-                     (int32_t)index->payload));
+        Scr_Error(va("vector index %d out of range", (int32_t)index->payload));
         return;
     }
 
     if (container->type != SCRIPT_VAR_OBJECT) {
         script_errorParameterIndex = 1;
-        Scr_Error(va("%s is not an array, string, or vector",
-                     script_variableTypeNames[container->type]));
+        Scr_Error(va("%s is not an array, string, or vector", script_variableTypeNames[container->type]));
         return;
     }
 
     uint16_t array = (uint16_t)container->payload;
     if (GetVarType(array) != SCRIPT_VAR_ARRAY) {
         script_errorParameterIndex = 1;
-        Scr_Error(va("%s is not an array",
-                     script_variableTypeNames[
-                         GetVarType(array)]));
+        Scr_Error(va("%s is not an array", script_variableTypeNames[GetVarType(array)]));
         return;
     }
 
@@ -194,8 +167,7 @@ void EvalArray(VariableValue *index,
         }
         child = FindArrayVariable(array, intIndex);
     } else {
-        Scr_Error(va("%s is not an array index",
-                     script_variableTypeNames[index->type]));
+        Scr_Error(va("%s is not an array index", script_variableTypeNames[index->type]));
         return;
     }
 
@@ -225,10 +197,8 @@ uint16_t FindArrayVariableByValue(uint16_t handle, VariableValue values[2])
     while (type == SCRIPT_VAR_KEY_VALUE) {
         VariableValue *resolved = &values[1];
 
-        ScriptRuntime_GetObjectFieldValue(
-            (int32_t)GetVariableName(handle),
-            node->payload.halves.valueOrRefCount,
-            node->payload.halves.parentHandle, resolved);
+        ScriptRuntime_GetObjectFieldValue((int32_t)GetVariableName(handle), node->payload.halves.valueOrRefCount,
+                                          node->payload.halves.parentHandle, resolved);
         type = resolved->type;
         payload = resolved->payload;
         RemoveRefToValue(resolved);
@@ -236,18 +206,15 @@ uint16_t FindArrayVariableByValue(uint16_t handle, VariableValue values[2])
 
     if (type != SCRIPT_VAR_OBJECT) {
         script_errorParameterIndex = 1;
-        Scr_Error(va("%s is not an array",
-                     script_variableTypeNames[type]));
+        Scr_Error(va("%s is not an array", script_variableTypeNames[type]));
         return 0;
     }
 
     uint16_t array = (uint16_t)payload;
-    script_variable_type_t objectType =
-        GetVarType(array);
+    script_variable_type_t objectType = GetVarType(array);
     if (objectType != SCRIPT_VAR_ARRAY) {
         script_errorParameterIndex = 1;
-        Scr_Error(va("%s is not an array",
-                     script_variableTypeNames[objectType]));
+        Scr_Error(va("%s is not an array", script_variableTypeNames[objectType]));
         return 0;
     }
 
@@ -269,8 +236,7 @@ uint16_t FindArrayVariableByValue(uint16_t handle, VariableValue values[2])
             return child;
         }
     } else {
-        Scr_Error(va("%s is not an array index",
-                     script_variableTypeNames[values[0].type]));
+        Scr_Error(va("%s is not an array index", script_variableTypeNames[values[0].type]));
         return 0;
     }
 
@@ -292,8 +258,7 @@ void CastVector2(VariableValue values[3])
             script_errorParameterIndex = index;
             ScriptRuntime_RaiseError();
         } else {
-            memcpy(&vector[2 - index], &values[index].payload,
-                   sizeof(vector[0]));
+            memcpy(&vector[2 - index], &values[index].payload, sizeof(vector[0]));
         }
     }
 
@@ -320,13 +285,10 @@ void ClearVector(VariableValue values[3])
 
 /* Source: CoDUOMP.exe 0x00488ab0..0x00488b4d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00488ab0_00488b4e.mcode. */
-void UnmatchingTypesError(VariableValue *left,
-                                        VariableValue *right)
+void UnmatchingTypesError(VariableValue *left, VariableValue *right)
 {
-    script_errorMessage =
-        va("pair has unmatching types '%s' and '%s'",
-           script_variableTypeNames[script_coerceLeftType],
-           script_variableTypeNames[script_coerceRightType]);
+    script_errorMessage = va("pair has unmatching types '%s' and '%s'", script_variableTypeNames[script_coerceLeftType],
+                             script_variableTypeNames[script_coerceRightType]);
     RemoveRefToValue(left);
     left->type = SCRIPT_VAR_UNDEFINED;
     RemoveRefToValue(right);
@@ -335,8 +297,7 @@ void UnmatchingTypesError(VariableValue *left,
 
 /* Source: CoDUOMP.exe 0x00488b90..0x00488cca.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00488b90_00488ccb.mcode. */
-qboolean CastWeakerPair(VariableValue *left,
-                                     VariableValue *right)
+qboolean CastWeakerPair(VariableValue *left, VariableValue *right)
 {
     script_coerceLeftType = left->type;
     script_coerceRightType = right->type;
@@ -356,8 +317,7 @@ qboolean CastWeakerPair(VariableValue *left,
                 return qtrue;
             }
             if (script_coerceRightType == SCRIPT_VAR_VECTOR) {
-                const float *vector =
-                    (const float *)right->payload;
+                const float *vector = (const float *)right->payload;
 
                 right->type = SCRIPT_VAR_STRING;
                 right->payload = SL_GetStringForVector(vector);
@@ -366,8 +326,7 @@ qboolean CastWeakerPair(VariableValue *left,
             }
             if (script_coerceRightType == SCRIPT_VAR_INT) {
                 right->type = SCRIPT_VAR_STRING;
-                right->payload = SL_GetStringForInt(
-                    (int32_t)(uint32_t)right->payload);
+                right->payload = SL_GetStringForInt((int32_t)(uint32_t)right->payload);
                 return qtrue;
             }
         } else if (script_coerceLeftType != SCRIPT_VAR_FLOAT) {
@@ -394,8 +353,7 @@ qboolean CastWeakerPair(VariableValue *left,
                 return qtrue;
             }
             if (script_coerceLeftType == SCRIPT_VAR_VECTOR) {
-                const float *vector =
-                    (const float *)left->payload;
+                const float *vector = (const float *)left->payload;
 
                 left->type = SCRIPT_VAR_STRING;
                 left->payload = SL_GetStringForVector(vector);
@@ -404,8 +362,7 @@ qboolean CastWeakerPair(VariableValue *left,
             }
             if (script_coerceLeftType == SCRIPT_VAR_INT) {
                 left->type = SCRIPT_VAR_STRING;
-                left->payload = SL_GetStringForInt(
-                    (int32_t)(uint32_t)left->payload);
+                left->payload = SL_GetStringForInt((int32_t)(uint32_t)left->payload);
                 return qtrue;
             }
         } else if (script_coerceRightType != SCRIPT_VAR_FLOAT) {
@@ -438,8 +395,7 @@ qboolean CastWeakerPairValues(VariableValue values[2])
 
 /* Source: CoDUOMP.exe 0x00488ce0..0x00488e38.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00488ce0_00488e39.mcode. */
-qboolean CheckEquality(VariableValue *left,
-                                  VariableValue *right)
+qboolean CheckEquality(VariableValue *left, VariableValue *right)
 {
     if (CastWeakerPair(left, right) == qfalse) {
         return qfalse;
@@ -467,11 +423,7 @@ qboolean CheckEquality(VariableValue *left,
         const float *leftVector = (const float *)left->payload;
         const float *rightVector = (const float *)right->payload;
         qboolean equal =
-            leftVector[0] == rightVector[0] &&
-                    leftVector[1] == rightVector[1] &&
-                    leftVector[2] == rightVector[2]
-                ? qtrue
-                : qfalse;
+            leftVector[0] == rightVector[0] && leftVector[1] == rightVector[1] && leftVector[2] == rightVector[2] ? qtrue : qfalse;
 
         left->type = SCRIPT_VAR_INT;
         RemoveRefToVector((const float *)left->payload);
@@ -494,16 +446,12 @@ qboolean CheckEquality(VariableValue *left,
         memcpy(&difference, &differenceBits, sizeof(difference));
 
         left->type = SCRIPT_VAR_INT;
-        left->payload =
-            difference < script_floatEqualityEpsilon ? qtrue : qfalse;
+        left->payload = difference < script_floatEqualityEpsilon ? qtrue : qfalse;
         return qtrue;
     }
 
     case SCRIPT_VAR_INT:
-        left->payload =
-            (uint32_t)left->payload == (uint32_t)right->payload
-                ? qtrue
-                : qfalse;
+        left->payload = (uint32_t)left->payload == (uint32_t)right->payload ? qtrue : qfalse;
         return qtrue;
 
     case SCRIPT_VAR_OBJECT: {
@@ -519,10 +467,7 @@ qboolean CheckEquality(VariableValue *left,
 
     case SCRIPT_VAR_ANIMATION:
         left->type = SCRIPT_VAR_INT;
-        left->payload =
-            (uint32_t)left->payload == (uint32_t)right->payload
-                ? qtrue
-                : qfalse;
+        left->payload = (uint32_t)left->payload == (uint32_t)right->payload ? qtrue : qfalse;
         return qtrue;
 
     default:
@@ -566,12 +511,8 @@ qboolean CastBool(VariableValue *value)
         const char *text = SL_ConvertToString(string);
 
         value->payload = atoi(text) != 0 ? qtrue : qfalse;
-        if (value->payload == qfalse &&
-            ScriptRuntime_StringStartsWithZeroLiteral(
-                SL_ConvertToString(string)) == qfalse) {
-            script_errorMessage =
-                va("cannot cast \"%s\" to bool",
-                   SL_ConvertToString(string));
+        if (value->payload == qfalse && ScriptRuntime_StringStartsWithZeroLiteral(SL_ConvertToString(string)) == qfalse) {
+            script_errorMessage = va("cannot cast \"%s\" to bool", SL_ConvertToString(string));
             SL_RemoveRefToString(string);
             value->type = SCRIPT_VAR_UNDEFINED;
             return qfalse;
@@ -582,9 +523,7 @@ qboolean CastBool(VariableValue *value)
         return qtrue;
     }
 
-    script_errorMessage =
-        va("cannot cast %s to bool",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to bool", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -603,8 +542,7 @@ qboolean CastInt(VariableValue *value)
 
         memcpy(&floatValue, &value->payload, sizeof(floatValue));
         value->type = SCRIPT_VAR_INT;
-        value->payload = coduo_fp_to_u32_extended(
-            (long double)floatValue);
+        value->payload = coduo_fp_to_u32_extended((long double)floatValue);
         return qtrue;
     }
 
@@ -614,12 +552,8 @@ qboolean CastInt(VariableValue *value)
         int32_t intValue = atoi(text);
 
         value->payload = (uint32_t)intValue;
-        if (intValue == 0 &&
-            ScriptRuntime_StringStartsWithZeroLiteral(
-                SL_ConvertToString(string)) == qfalse) {
-            script_errorMessage =
-                va("cannot cast \"%s\" to int",
-                   SL_ConvertToString(string));
+        if (intValue == 0 && ScriptRuntime_StringStartsWithZeroLiteral(SL_ConvertToString(string)) == qfalse) {
+            script_errorMessage = va("cannot cast \"%s\" to int", SL_ConvertToString(string));
             SL_RemoveRefToString(string);
             value->type = SCRIPT_VAR_UNDEFINED;
             return qfalse;
@@ -630,9 +564,7 @@ qboolean CastInt(VariableValue *value)
         return qtrue;
     }
 
-    script_errorMessage =
-        va("cannot cast %s to int",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to int", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -666,12 +598,8 @@ qboolean CastFloat(VariableValue *value)
         float floatValue = (float)parsedValue;
 
         memcpy(&value->payload, &floatValue, sizeof(floatValue));
-        if (parsedValue == 0.0 &&
-            ScriptRuntime_StringStartsWithZeroLiteral(
-                SL_ConvertToString(string)) == qfalse) {
-            script_errorMessage =
-                va("cannot cast \"%s\" to float",
-                   SL_ConvertToString(string));
+        if (parsedValue == 0.0 && ScriptRuntime_StringStartsWithZeroLiteral(SL_ConvertToString(string)) == qfalse) {
+            script_errorMessage = va("cannot cast \"%s\" to float", SL_ConvertToString(string));
             SL_RemoveRefToString(string);
             value->type = SCRIPT_VAR_UNDEFINED;
             return qfalse;
@@ -682,9 +610,7 @@ qboolean CastFloat(VariableValue *value)
         return qtrue;
     }
 
-    script_errorMessage =
-        va("cannot cast %s to float",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to float", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -709,16 +635,11 @@ qboolean CastFloat(VariableValue *value)
 
     if (value->type == SCRIPT_VAR_STRING) {
         uint16_t string = (uint16_t)value->payload;
-        float floatValue =
-            (float)atof(SL_ConvertToString(string));
+        float floatValue = (float)atof(SL_ConvertToString(string));
 
         memcpy(&value->payload, &floatValue, sizeof(floatValue));
-        if (floatValue == 0.0f &&
-            ScriptRuntime_StringStartsWithZeroLiteral(
-                SL_ConvertToString(string)) == qfalse) {
-            script_errorMessage =
-                va("cannot cast \"%s\" to float",
-                   SL_ConvertToString(string));
+        if (floatValue == 0.0f && ScriptRuntime_StringStartsWithZeroLiteral(SL_ConvertToString(string)) == qfalse) {
+            script_errorMessage = va("cannot cast \"%s\" to float", SL_ConvertToString(string));
             SL_RemoveRefToString(string);
             value->type = SCRIPT_VAR_UNDEFINED;
             return qfalse;
@@ -729,9 +650,7 @@ qboolean CastFloat(VariableValue *value)
         return qtrue;
     }
 
-    script_errorMessage =
-        va("cannot cast %s to float",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to float", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -747,8 +666,7 @@ qboolean CastString(VariableValue *value)
         return qtrue;
     case SCRIPT_VAR_INT:
         value->type = SCRIPT_VAR_STRING;
-        value->payload =
-            SL_GetStringForInt((int32_t)(uint32_t)value->payload);
+        value->payload = SL_GetStringForInt((int32_t)(uint32_t)value->payload);
         return qtrue;
     case SCRIPT_VAR_FLOAT: {
         float floatValue;
@@ -767,9 +685,7 @@ qboolean CastString(VariableValue *value)
         return qtrue;
     }
     default:
-        script_errorMessage =
-            va("cannot cast %s to string",
-               script_variableTypeNames[value->type]);
+        script_errorMessage = va("cannot cast %s to string", script_variableTypeNames[value->type]);
         RemoveRefToValue(value);
         value->type = SCRIPT_VAR_UNDEFINED;
         return qfalse;
@@ -786,9 +702,7 @@ qboolean CastIString(VariableValue *value)
     if (value->type == SCRIPT_VAR_LOCALIZED_STRING)
         return qtrue;
 
-    script_errorMessage =
-        va("cannot cast %s to istring",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to istring", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -802,9 +716,7 @@ qboolean CastVector(VariableValue *value)
     if (value->type == SCRIPT_VAR_VECTOR)
         return qtrue;
 
-    script_errorMessage =
-        va("cannot cast %s to vector",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to vector", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -819,9 +731,7 @@ qboolean CastPointer(VariableValue *value)
     if (value->type == SCRIPT_VAR_OBJECT)
         return qtrue;
 
-    script_errorMessage =
-        va("cannot cast %s to object",
-           script_variableTypeNames[value->type]);
+    script_errorMessage = va("cannot cast %s to object", script_variableTypeNames[value->type]);
     RemoveRefToValue(value);
     value->type = SCRIPT_VAR_UNDEFINED;
     return qfalse;
@@ -903,8 +813,7 @@ void IncInParam(void)
     ++script_valueStackDepth;
     if (script_valueStackTop > script_valueStackLimit) {
 #if defined(WINDOWS_BEHAVIOR)
-        Com_Error(ERR_DROP,
-                  "\x15Internal script stack overflow");
+        Com_Error(ERR_DROP, "\x15Internal script stack overflow");
 #else
         Com_Error(ERR_DROP, "Internal script stack overflow");
 #endif
@@ -1052,9 +961,7 @@ void Scr_AddArray(void)
     --script_valueStackDepth;
 
     uint16_t array = (uint16_t)script_valueStackTop->payload;
-    uint16_t child = GetArrayVariable(
-        array,
-        script_variableNodes[array].payload.halves.parentHandle);
+    uint16_t child = GetArrayVariable(array, script_variableNodes[array].payload.halves.parentHandle);
     SetNewVariableValue(child, &script_valueStackTop[1]);
 }
 
@@ -1149,8 +1056,7 @@ const char *Scr_GetDebugString(uint32_t index)
         scr_anim_t animRef;
 
         memcpy(&animRef, &value->payload, sizeof(animRef));
-        debugString = XAnimGetAnimName(
-            Scr_GetAnims(animRef.treeIndex), animRef.animIndex);
+        debugString = XAnimGetAnimName(Scr_GetAnims(animRef.treeIndex), animRef.animIndex);
     }
 
     return debugString;
@@ -1192,8 +1098,7 @@ const char *Scr_GetDebugString(uint32_t index)
         scr_anim_t animRef;
 
         memcpy(&animRef, &value->payload, sizeof(animRef));
-        debugString = XAnimGetAnimName(
-            Scr_GetAnims(animRef.treeIndex), animRef.animIndex);
+        debugString = XAnimGetAnimName(Scr_GetAnims(animRef.treeIndex), animRef.animIndex);
     }
 
     return debugString;
@@ -1214,22 +1119,16 @@ scr_anim_t Scr_GetAnim(uint32_t index, XAnimTree *runtimeTree)
                 return animRef;
             }
 
-            XAnim *animTree =
-                script_animTrees[xanim_activePoolPayloadSlot]
-                                [animRef.treeIndex];
+            XAnim *animTree = script_animTrees[xanim_activePoolPayloadSlot][animRef.treeIndex];
             if (animTree == runtimeTree->sourceTree) {
                 return animRef;
             }
 
-            script_errorMessage =
-                va("anim '%s' in animtree '%s' does not belong to the "
-                   "entity's animtree '%s'",
-                   XAnimGetAnimName(animTree, animRef.animIndex),
-                   animTree->name, runtimeTree->sourceTree->name);
+            script_errorMessage = va("anim '%s' in animtree '%s' does not belong to the "
+                                     "entity's animtree '%s'",
+                                     XAnimGetAnimName(animTree, animRef.animIndex), animTree->name, runtimeTree->sourceTree->name);
         } else {
-            script_errorMessage =
-                va("cannot cast %s to anim",
-                   script_variableTypeNames[value->type]);
+            script_errorMessage = va("cannot cast %s to anim", script_variableTypeNames[value->type]);
         }
 
         RemoveRefToValue(value);
@@ -1253,15 +1152,12 @@ XAnim *Scr_GetAnimTree(uint32_t index)
         VariableValue *value = &script_valueStackTop[-(int32_t)index];
         if (value->type == SCRIPT_VAR_INT) {
             uint32_t treeIndex = (uint32_t)value->payload;
-            if (treeIndex <= (uint32_t)script_animTreeCounts[slot] &&
-                script_animTrees[slot][treeIndex] != NULL) {
+            if (treeIndex <= (uint32_t)script_animTreeCounts[slot] && script_animTrees[slot][treeIndex] != NULL) {
                 return script_animTrees[slot][treeIndex];
             }
             script_errorMessage = "bad anim tree";
         } else {
-            script_errorMessage =
-                va("cannot cast %s to animtree",
-                   script_variableTypeNames[value->type]);
+            script_errorMessage = va("cannot cast %s to animtree", script_variableTypeNames[value->type]);
         }
 
         RemoveRefToValue(value);
@@ -1285,16 +1181,12 @@ script_anim_tree_ref_t Scr_GetAnimTree(uint32_t index)
         VariableValue *value = &script_valueStackTop[-(int32_t)index];
         if (value->type == SCRIPT_VAR_INT) {
             uint32_t treeIndex = (uint32_t)value->payload;
-            if (treeIndex <= (uint32_t)script_animTreeCounts[slot] &&
-                script_animTrees[slot][treeIndex] != NULL) {
-                return (script_anim_tree_ref_t){
-                    script_animTrees[slot][treeIndex]};
+            if (treeIndex <= (uint32_t)script_animTreeCounts[slot] && script_animTrees[slot][treeIndex] != NULL) {
+                return (script_anim_tree_ref_t){script_animTrees[slot][treeIndex]};
             }
             script_errorMessage = "bad anim tree";
         } else {
-            script_errorMessage =
-                va("cannot cast %s to animtree",
-                   script_variableTypeNames[value->type]);
+            script_errorMessage = va("cannot cast %s to animtree", script_variableTypeNames[value->type]);
         }
 
         RemoveRefToValue(value);
@@ -1328,9 +1220,7 @@ XAnim *Scr_GetAnims(uint32_t treeIndex)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (treeIndex >= SCRIPT_ANIM_TREE_SLOT_COUNT) {
-        Com_Error(ERR_DROP,
-                  "\x15Scr_GetAnims: animation tree index %u out of range",
-                  treeIndex);
+        Com_Error(ERR_DROP, "\x15Scr_GetAnims: animation tree index %u out of range", treeIndex);
         return NULL;
     }
 
@@ -1349,19 +1239,16 @@ void Scr_SetTime(uint32_t time)
 
     do {
         VM_SetTime();
-        script_currentTimeKey =
-            (script_currentTimeKey + 1U) & SCRIPT_TIME_MASK;
+        script_currentTimeKey = (script_currentTimeKey + 1U) & SCRIPT_TIME_MASK;
     } while (script_currentTimeKey != time);
 }
 
 /* Source: CoDUOMP.exe 0x00490d20..0x00490d5a.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00490d20_00490d5b.mcode. */
-void Scr_SetDynamicEntityField(int32_t entityNum, int32_t classNum,
-                               uint16_t fieldName)
+void Scr_SetDynamicEntityField(int32_t entityNum, int32_t classNum, uint16_t fieldName)
 {
     uint16_t entity = Scr_GetEntityId(entityNum, classNum);
-    uint16_t field =
-        GetVariableField(entity, fieldName);
+    uint16_t field = GetVariableField(entity, fieldName);
 
     SetVariableFieldValue(field, script_valueStackTop);
     --script_valueStackTop;
@@ -1462,8 +1349,7 @@ uint32_t Scr_GetFunc(uint32_t index)
         if (value->type == SCRIPT_VAR_FUNCTION) {
             const uint8_t *codePos = (const uint8_t *)value->payload;
 
-            return (uint32_t)((uintptr_t)codePos -
-                              (uintptr_t)script_codeBase);
+            return (uint32_t)((uintptr_t)codePos - (uintptr_t)script_codeBase);
         }
 
         script_errorMessage = "not a function";
@@ -1493,18 +1379,14 @@ Scr_GetEntityNum(uint32_t index, int32_t *classNum)
         if (CastPointer(value) != qfalse) {
             uint16_t object = (uint16_t)value->payload;
             script_variable_node_t *node = &script_variableNodes[object];
-            script_variable_type_t objectType =
-                (script_variable_type_t)(node->packedTypeIndex &
-                                         SCRIPT_VARIABLE_TYPE_MASK);
+            script_variable_type_t objectType = (script_variable_type_t)(node->packedTypeIndex & SCRIPT_VARIABLE_TYPE_MASK);
 
             if (objectType == SCRIPT_VAR_ENTITY) {
                 *classNum = (int32_t)(node->packedTypeIndex >> 8);
                 return node->payload.halves.parentHandle;
             }
 
-            script_errorMessage =
-                va("cannot cast %s to entity",
-                   script_variableTypeNames[objectType]);
+            script_errorMessage = va("cannot cast %s to entity", script_variableTypeNames[objectType]);
         }
 
         script_errorParameterIndex = (int32_t)index + 1;

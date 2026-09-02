@@ -72,13 +72,13 @@
 
 
 typedef enum sysCpuClass_e {
-    CPUID_GENERIC           = 0x00,
-    CPUID_AXP               = 0x10,
+    CPUID_GENERIC = 0x00,
+    CPUID_AXP = 0x10,
     CPUID_INTEL_UNSUPPORTED = 0x20,
-    CPUID_INTEL_PENTIUM     = 0x21,
-    CPUID_INTEL_MMX         = 0x22,
-    CPUID_INTEL_KATMAI      = 0x23,
-    CPUID_AMD_3DNOW         = 0x30
+    CPUID_INTEL_PENTIUM = 0x21,
+    CPUID_INTEL_MMX = 0x22,
+    CPUID_INTEL_KATMAI = 0x23,
+    CPUID_AMD_3DNOW = 0x30
 } sysCpuClass_t;
 
 typedef uint8_t byte;
@@ -109,7 +109,9 @@ extern "C" {
  * clock in several unrelated subsystems, so its initialization state is not
  * owned by the FX stat-monitor path that first established these globals. */
 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-enum { SYS_PROCESS_LOCK_NAME_CAPACITY = MAX_OSPATH + 2 };
+enum {
+    SYS_PROCESS_LOCK_NAME_CAPACITY = MAX_OSPATH + 2
+};
 
 extern qboolean sysMillisecondsInitialized; /* original 0x0389fddc */
 extern uint32_t sysMillisecondsBase;         /* original 0x0489bc3c */
@@ -191,8 +193,7 @@ void Key_SetBinding(int32_t key, const char *binding);
 const char *Key_GetBinding(int32_t key);
 int32_t PbMaxKeys(void);
 void Key_GetBindingBuf(int32_t key, char *buffer, int32_t bufferSize);
-void Key_KeynumToStringBuf(int32_t key, char *buffer,
-                           int32_t bufferSize);
+void Key_KeynumToStringBuf(int32_t key, char *buffer, int32_t bufferSize);
 int32_t Key_GetKey(const char *binding);
 void Key_Unbind_f(void);
 void Key_Unbindall_f(void);
@@ -218,42 +219,29 @@ void Com_ErrorCleanup(void);
 void Com_Restart(void);
 void Com_SetErrorMessage(const char *message);
 void Com_CleanupSkeletons(void);
-void *Com_GetWeaponInfoMemory(int32_t byteCount,
-                              int32_t *previousOwner,
-                              int32_t callerOwner);
-void Com_FreeWeaponInfoMemory(int32_t callerOwner,
-                              qboolean preserveAllocation);
-void StatMon_Warning(int32_t entryIndex, int32_t durationMsec,
-                     const char *shaderName);
+void *Com_GetWeaponInfoMemory(int32_t byteCount, int32_t *previousOwner, int32_t callerOwner);
+void Com_FreeWeaponInfoMemory(int32_t callerOwner, qboolean preserveAllocation);
+void StatMon_Warning(int32_t entryIndex, int32_t durationMsec, const char *shaderName);
 void StatMon_GetStatsArray(statmon_entry_t **entries, int32_t *entryCount);
 void StatMon_Reset(void);
 void Sys_LoadingKeepAlive(void);
 void VM_Clear(void);
-void Sys_ListFilteredFiles(const char *directory, const char *subdirectory,
-                           const char *filter, char **list,
-                           int32_t *numFiles);
-char **Sys_ListFiles(const char *directory, const char *extension,
-                     const char *filter, int32_t *numFiles,
-                     qboolean wantDirectories);
+void Sys_ListFilteredFiles(const char *directory, const char *subdirectory, const char *filter, char **list, int32_t *numFiles);
+char **Sys_ListFiles(const char *directory, const char *extension, const char *filter, int32_t *numFiles, qboolean wantDirectories);
 int32_t FS_ReadFile(const char *path, void **buffer);
 void FS_ResetFiles(void);
 int32_t FS_FOpenFileWrite(const char *path);
 qboolean FS_FileExists(const char *path);
-char **FS_ListFiles(const char *path, const char *extension,
-                    int32_t *fileCount);
-int32_t FS_FOpenFileRead(const char *path, int32_t *handle,
-                         qboolean uniqueFile);
-int32_t FS_FOpenFileRead_Internal(const char *path, int32_t *handle,
-                                  qboolean uniqueFile, qboolean quiet);
+char **FS_ListFiles(const char *path, const char *extension, int32_t *fileCount);
+int32_t FS_FOpenFileRead(const char *path, int32_t *handle, qboolean uniqueFile);
+int32_t FS_FOpenFileRead_Internal(const char *path, int32_t *handle, qboolean uniqueFile, qboolean quiet);
 int32_t FS_SV_FOpenFileRead(const char *path, int32_t *handle);
 int32_t FS_SV_FOpenFileWrite(const char *path);
 qboolean FS_SV_FileExists(const char *path);
 void FS_SV_Rename(const char *from, const char *to);
-qboolean FS_idPak(const char *path, const char *mainGame,
-                  const char *baseGame);
+qboolean FS_idPak(const char *path, const char *mainGame, const char *baseGame);
 qboolean FS_serverPak(const char *pakName);
-qboolean FS_ComparePaks(char *neededPaks, int32_t neededPaksSize,
-                        qboolean includeAlternateNames);
+qboolean FS_ComparePaks(char *neededPaks, int32_t neededPaksSize, qboolean includeAlternateNames);
 const char *FS_ShiftStr(const char *text, int32_t shift);
 int32_t FS_FileIsInPAK(const char *path, int32_t *checksumOut);
 qboolean CL_WWWBadChecksum(const char *pakName);
@@ -272,16 +260,13 @@ void SEH_InitLanguage(void);
 int32_t SEH_UpdateCurrentLanguage(int32_t languageIndex);
 qboolean SEH_VerifyLanguageSelection(int32_t languageIndex);
 char *FS_ShortOSFilePath(const char *filename);
-int32_t FS_FOpenFileByMode(const char *filename, int32_t *handle,
-                           fsMode_t mode);
-int32_t FS_GetFileList(const char *path, const char *extension,
-                       char *listBuffer, int32_t bufferSize);
+int32_t FS_FOpenFileByMode(const char *filename, int32_t *handle, fsMode_t mode);
+int32_t FS_GetFileList(const char *path, const char *extension, char *listBuffer, int32_t bufferSize);
 void Cvar_CommandCompletion(name_completion_callback_t callback);
 int32_t FS_Read(void *buffer, int32_t byteCount, int32_t handle);
 int32_t FS_Write(const void *buffer, int32_t byteCount, int32_t handle);
 void FS_Rename(const char *from, const char *to);
-void FS_WriteFile(const char *filename, const void *buffer,
-                  int32_t byteCount);
+void FS_WriteFile(const char *filename, const void *buffer, int32_t byteCount);
 void FS_FCloseFile(int32_t handle);
 int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin);
 int32_t FS_FTell(int32_t handle);
@@ -289,9 +274,7 @@ void FS_Flush(int32_t handle);
 void FS_Printf(int32_t fileHandle, const char *format, ...);
 void MSS_EndRawSamples(void);
 int32_t MSS_RawSamplesTime(void);
-void MSS_RawSamples(int32_t sampleFrameCount, int32_t sampleRate,
-                    int32_t sampleWidthBytes, int32_t channelCount,
-                    const void *sampleData);
+void MSS_RawSamples(int32_t sampleFrameCount, int32_t sampleRate, int32_t sampleWidthBytes, int32_t channelCount, const void *sampleData);
 enum {
     MSS_STOP_ALL_SOUNDS = 0,
     MSS_STOP_PRESERVE_ROOM_EFFECTS = 1 << 0,
@@ -302,28 +285,19 @@ enum {
 void MSS_StopSounds(uint32_t flags);
 void MSS_FadeAllSounds(float targetVolume, int32_t durationMsec);
 void FS_FreeFile(void *buffer);
-char **FS_ListFilteredFiles(const char *path, const char *extension,
-                            const char *filter, int32_t *fileCount);
+char **FS_ListFilteredFiles(const char *path, const char *extension, const char *filter, int32_t *fileCount);
 void FS_FreeFileList(char **files);
-void CM_SaveLump(int32_t lumpIndex, const void *buffer,
-                 int32_t size, int32_t *checksum);
+void CM_SaveLump(int32_t lumpIndex, const void *buffer, int32_t size, int32_t *checksum);
 surfaceType_t Com_SurfaceTypeFromName(const char *name);
 const char *Com_SurfaceTypeToName(int32_t surfaceType);
-const char *SEH_LocalizeTextMessage(const char *input,
-                                    const char *messageType,
-                                    msgLocErrType_t errorType);
-qboolean SEH_GetLocalizedTokenReference(const char *reference,
-                                        char *output,
-                                        const char *messageType,
-                                        msgLocErrType_t errorType);
+const char *SEH_LocalizeTextMessage(const char *input, const char *messageType, msgLocErrType_t errorType);
+qboolean SEH_GetLocalizedTokenReference(const char *reference, char *output, const char *messageType, msgLocErrType_t errorType);
 const char *SEH_SafeTranslateString(const char *reference);
 int32_t SEH_GetCurrentLanguage(void);
 const char *SEH_GetLanguageName(int32_t languageIndex);
-qboolean SEH_GetLanguageIndexForName(const char *name,
-                                     int32_t *languageIndex);
+qboolean SEH_GetLanguageIndexForName(const char *name, int32_t *languageIndex);
 int32_t SEH_PrintStrlen(const char *text);
-int32_t SEH_ReadCharFromString(
-    const char **text, qboolean *isTrailingPunctuation);
+int32_t SEH_ReadCharFromString(const char **text, qboolean *isTrailingPunctuation);
 qboolean Language_IsAsian(void);
 qboolean Language_UsesSpaces(void);
 void Com_NoiseInit(void);
@@ -335,111 +309,61 @@ void Sys_FreeFileList(char **list);
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(cvar_t) == 4,
-               "i386 cvar alignment changed");
-_Static_assert(offsetof(cvar_t, name) == 0x00,
-               "i386 cvar name moved");
-_Static_assert(offsetof(cvar_t, string) == 0x04,
-               "i386 cvar string moved");
-_Static_assert(offsetof(cvar_t, resetString) == 0x08,
-               "i386 cvar reset string moved");
-_Static_assert(offsetof(cvar_t, latchedString) == 0x0c,
-               "i386 cvar latched string moved");
-_Static_assert(offsetof(cvar_t, flags) == 0x10,
-               "i386 cvar flags moved");
-_Static_assert(offsetof(cvar_t, modified) == 0x14,
-               "i386 cvar modified flag moved");
-_Static_assert(offsetof(cvar_t, modificationCount) == 0x18,
-               "i386 cvar modification count moved");
-_Static_assert(offsetof(cvar_t, value) == 0x1c,
-               "i386 cvar float value moved");
-_Static_assert(offsetof(cvar_t, integer) == 0x20,
-               "i386 cvar integer value moved");
-_Static_assert(offsetof(cvar_t, next) == 0x24,
-               "i386 cvar sorted link moved");
-_Static_assert(offsetof(cvar_t, hashNext) == 0x28,
-               "i386 cvar hash link moved");
-_Static_assert(sizeof(cvar_t) == 0x2c,
-               "i386 cvar size changed");
-_Static_assert(_Alignof(cmd_function_t) == 4,
-               "i386 command-node alignment changed");
-_Static_assert(offsetof(cmd_function_t, next) == 0x00,
-               "i386 command-node next link moved");
-_Static_assert(offsetof(cmd_function_t, name) == 0x04,
-               "i386 command-node name moved");
-_Static_assert(offsetof(cmd_function_t, function) == 0x08,
-               "i386 command-node callback moved");
-_Static_assert(sizeof(cmd_function_t) == 0x0c,
-               "i386 command-node size changed");
-_Static_assert(_Alignof(qtime_t) == 4,
-               "i386 real-time record alignment changed");
-_Static_assert(offsetof(qtime_t, tm_sec) == 0x00,
-               "i386 real-time seconds moved");
-_Static_assert(offsetof(qtime_t, tm_min) == 0x04,
-               "i386 real-time minutes moved");
-_Static_assert(offsetof(qtime_t, tm_hour) == 0x08,
-               "i386 real-time hours moved");
-_Static_assert(offsetof(qtime_t, tm_mday) == 0x0c,
-               "i386 real-time month day moved");
-_Static_assert(offsetof(qtime_t, tm_mon) == 0x10,
-               "i386 real-time month moved");
-_Static_assert(offsetof(qtime_t, tm_year) == 0x14,
-               "i386 real-time year moved");
-_Static_assert(offsetof(qtime_t, tm_wday) == 0x18,
-               "i386 real-time week day moved");
-_Static_assert(offsetof(qtime_t, tm_yday) == 0x1c,
-               "i386 real-time year day moved");
-_Static_assert(offsetof(qtime_t, tm_isdst) == 0x20,
-               "i386 real-time daylight-saving flag moved");
-_Static_assert(sizeof(qtime_t) == 0x24,
-               "i386 real-time record size changed");
-_Static_assert(_Alignof(msg_t) == 4,
-               "i386 message cursor alignment changed");
-_Static_assert(offsetof(msg_t, overflowed) == 0x00,
-               "i386 message overflow flag moved");
-_Static_assert(offsetof(msg_t, data) == 0x04,
-               "i386 message data pointer moved");
-_Static_assert(offsetof(msg_t, maxsize) == 0x08,
-               "i386 message capacity moved");
-_Static_assert(offsetof(msg_t, cursize) == 0x0c,
-               "i386 message write cursor moved");
-_Static_assert(offsetof(msg_t, readcount) == 0x10,
-               "i386 message read cursor moved");
-_Static_assert(offsetof(msg_t, bit) == 0x14,
-               "i386 message bit cursor moved");
-_Static_assert(sizeof(msg_t) == 0x18,
-               "i386 message cursor size changed");
-_Static_assert(_Alignof(usercmd_t) == 4,
-               "i386 usercmd alignment changed");
-_Static_assert(offsetof(usercmd_t, commandTime) == 0x00,
-               "i386 usercmd command time moved");
-_Static_assert(offsetof(usercmd_t, buttons) == 0x04,
-               "i386 usercmd buttons moved");
-_Static_assert(offsetof(usercmd_t, wbuttons) == 0x05,
-               "i386 usercmd wbuttons moved");
-_Static_assert(offsetof(usercmd_t, weapon) == 0x06,
-               "i386 usercmd weapon moved");
-_Static_assert(offsetof(usercmd_t, angles) == 0x08,
-               "i386 usercmd angles moved");
-_Static_assert(sizeof(((usercmd_t *)0)->angles) == 0x0c,
-               "i386 usercmd angle extent changed");
-_Static_assert(offsetof(usercmd_t, forwardmove) == 0x14,
-               "i386 usercmd forward move moved");
-_Static_assert(offsetof(usercmd_t, rightmove) == 0x15,
-               "i386 usercmd right move moved");
-_Static_assert(offsetof(usercmd_t, upmove) == 0x16,
-               "i386 usercmd up move moved");
-_Static_assert(sizeof(usercmd_t) == 0x18,
-               "i386 usercmd size changed");
-#define CODUOMP_ASSERT_PLAYER_STATE_OFFSET(member_, offset_)                  \
-    _Static_assert(offsetof(playerState_t, member_) == (offset_),             \
-                   "i386 player-state " #member_ " moved")
-#define CODUOMP_ASSERT_PLAYER_STATE_EXTENT(member_, extent_)                  \
-    _Static_assert(sizeof(((playerState_t *)0)->member_) == (extent_),        \
-                   "i386 player-state " #member_ " extent changed")
+_Static_assert(_Alignof(cvar_t) == 4, "i386 cvar alignment changed");
+_Static_assert(offsetof(cvar_t, name) == 0x00, "i386 cvar name moved");
+_Static_assert(offsetof(cvar_t, string) == 0x04, "i386 cvar string moved");
+_Static_assert(offsetof(cvar_t, resetString) == 0x08, "i386 cvar reset string moved");
+_Static_assert(offsetof(cvar_t, latchedString) == 0x0c, "i386 cvar latched string moved");
+_Static_assert(offsetof(cvar_t, flags) == 0x10, "i386 cvar flags moved");
+_Static_assert(offsetof(cvar_t, modified) == 0x14, "i386 cvar modified flag moved");
+_Static_assert(offsetof(cvar_t, modificationCount) == 0x18, "i386 cvar modification count moved");
+_Static_assert(offsetof(cvar_t, value) == 0x1c, "i386 cvar float value moved");
+_Static_assert(offsetof(cvar_t, integer) == 0x20, "i386 cvar integer value moved");
+_Static_assert(offsetof(cvar_t, next) == 0x24, "i386 cvar sorted link moved");
+_Static_assert(offsetof(cvar_t, hashNext) == 0x28, "i386 cvar hash link moved");
+_Static_assert(sizeof(cvar_t) == 0x2c, "i386 cvar size changed");
+_Static_assert(_Alignof(cmd_function_t) == 4, "i386 command-node alignment changed");
+_Static_assert(offsetof(cmd_function_t, next) == 0x00, "i386 command-node next link moved");
+_Static_assert(offsetof(cmd_function_t, name) == 0x04, "i386 command-node name moved");
+_Static_assert(offsetof(cmd_function_t, function) == 0x08, "i386 command-node callback moved");
+_Static_assert(sizeof(cmd_function_t) == 0x0c, "i386 command-node size changed");
+_Static_assert(_Alignof(qtime_t) == 4, "i386 real-time record alignment changed");
+_Static_assert(offsetof(qtime_t, tm_sec) == 0x00, "i386 real-time seconds moved");
+_Static_assert(offsetof(qtime_t, tm_min) == 0x04, "i386 real-time minutes moved");
+_Static_assert(offsetof(qtime_t, tm_hour) == 0x08, "i386 real-time hours moved");
+_Static_assert(offsetof(qtime_t, tm_mday) == 0x0c, "i386 real-time month day moved");
+_Static_assert(offsetof(qtime_t, tm_mon) == 0x10, "i386 real-time month moved");
+_Static_assert(offsetof(qtime_t, tm_year) == 0x14, "i386 real-time year moved");
+_Static_assert(offsetof(qtime_t, tm_wday) == 0x18, "i386 real-time week day moved");
+_Static_assert(offsetof(qtime_t, tm_yday) == 0x1c, "i386 real-time year day moved");
+_Static_assert(offsetof(qtime_t, tm_isdst) == 0x20, "i386 real-time daylight-saving flag moved");
+_Static_assert(sizeof(qtime_t) == 0x24, "i386 real-time record size changed");
+_Static_assert(_Alignof(msg_t) == 4, "i386 message cursor alignment changed");
+_Static_assert(offsetof(msg_t, overflowed) == 0x00, "i386 message overflow flag moved");
+_Static_assert(offsetof(msg_t, data) == 0x04, "i386 message data pointer moved");
+_Static_assert(offsetof(msg_t, maxsize) == 0x08, "i386 message capacity moved");
+_Static_assert(offsetof(msg_t, cursize) == 0x0c, "i386 message write cursor moved");
+_Static_assert(offsetof(msg_t, readcount) == 0x10, "i386 message read cursor moved");
+_Static_assert(offsetof(msg_t, bit) == 0x14, "i386 message bit cursor moved");
+_Static_assert(sizeof(msg_t) == 0x18, "i386 message cursor size changed");
+_Static_assert(_Alignof(usercmd_t) == 4, "i386 usercmd alignment changed");
+_Static_assert(offsetof(usercmd_t, commandTime) == 0x00, "i386 usercmd command time moved");
+_Static_assert(offsetof(usercmd_t, buttons) == 0x04, "i386 usercmd buttons moved");
+_Static_assert(offsetof(usercmd_t, wbuttons) == 0x05, "i386 usercmd wbuttons moved");
+_Static_assert(offsetof(usercmd_t, weapon) == 0x06, "i386 usercmd weapon moved");
+_Static_assert(offsetof(usercmd_t, angles) == 0x08, "i386 usercmd angles moved");
+_Static_assert(sizeof(((usercmd_t *)0)->angles) == 0x0c, "i386 usercmd angle extent changed");
+_Static_assert(offsetof(usercmd_t, forwardmove) == 0x14, "i386 usercmd forward move moved");
+_Static_assert(offsetof(usercmd_t, rightmove) == 0x15, "i386 usercmd right move moved");
+_Static_assert(offsetof(usercmd_t, upmove) == 0x16, "i386 usercmd up move moved");
+_Static_assert(sizeof(usercmd_t) == 0x18, "i386 usercmd size changed");
+#define CODUOMP_ASSERT_PLAYER_STATE_OFFSET(member_, offset_) \
+    _Static_assert(offsetof(playerState_t, member_) == (offset_), "i386 player-state " #member_ " moved")
+#define CODUOMP_ASSERT_PLAYER_STATE_EXTENT(member_, extent_) \
+    _Static_assert(sizeof(((playerState_t *)0)->member_) == (extent_), "i386 player-state " #member_ " extent " \
+                                                                       "changed")
 
-_Static_assert(_Alignof(playerState_t) == 4,
-               "i386 player-state alignment changed");
+_Static_assert(_Alignof(playerState_t) == 4, "i386 player-state alignment changed");
 CODUOMP_ASSERT_PLAYER_STATE_OFFSET(commandTime, 0x000);
 CODUOMP_ASSERT_PLAYER_STATE_OFFSET(pmType, 0x004);
 CODUOMP_ASSERT_PLAYER_STATE_OFFSET(bobCycle, 0x008);
@@ -574,208 +498,109 @@ CODUOMP_ASSERT_PLAYER_STATE_EXTENT(hudCurrent, 0x1e84);
 CODUOMP_ASSERT_PLAYER_STATE_OFFSET(hudArchival, 0x267c);
 CODUOMP_ASSERT_PLAYER_STATE_EXTENT(hudArchival, 0x1e84);
 CODUOMP_ASSERT_PLAYER_STATE_OFFSET(deltaTime, 0x4500);
-_Static_assert(sizeof(playerState_t) == 0x4504,
-               "i386 player-state snapshot size changed");
+_Static_assert(sizeof(playerState_t) == 0x4504, "i386 player-state snapshot size changed");
 
 #undef CODUOMP_ASSERT_PLAYER_STATE_EXTENT
 #undef CODUOMP_ASSERT_PLAYER_STATE_OFFSET
 
-_Static_assert(_Alignof(objective_t) == 4,
-               "i386 player-state objective alignment changed");
-_Static_assert(offsetof(objective_t, state) == 0x00,
-               "i386 player-state objective state moved");
-_Static_assert(offsetof(objective_t, origin) == 0x04,
-               "i386 player-state objective origin moved");
-_Static_assert(sizeof(((objective_t *)0)->origin) == 0x0c,
-               "i386 player-state objective origin extent changed");
-_Static_assert(offsetof(objective_t, entityNum) == 0x10,
-               "i386 player-state objective entity moved");
-_Static_assert(offsetof(objective_t, teamNum) == 0x14,
-               "i386 player-state objective team moved");
-_Static_assert(offsetof(objective_t, icon) == 0x18,
-               "i386 player-state objective icon moved");
-_Static_assert(sizeof(objective_t) == 0x1c,
-               "i386 player-state objective size changed");
-_Static_assert(_Alignof(entityState_t) == 4,
-               "i386 entity-state alignment changed");
-_Static_assert(offsetof(entityState_t, number) == 0x00,
-               "i386 entity-state number moved");
-_Static_assert(offsetof(entityState_t, eType) == 0x04,
-               "i386 entity-state type moved");
-_Static_assert(offsetof(entityState_t, eFlags) == 0x08,
-               "i386 entity-state flags moved");
-_Static_assert(offsetof(entityState_t, pos) == 0x0c,
-               "i386 entity-state position trajectory moved");
-_Static_assert(offsetof(entityState_t, apos) == 0x30,
-               "i386 entity-state angular trajectory moved");
-_Static_assert(offsetof(entityState_t, time) == 0x54,
-               "i386 entity-state time moved");
-_Static_assert(offsetof(entityState_t, time2) == 0x58,
-               "i386 entity-state secondary time moved");
-_Static_assert(offsetof(entityState_t, origin2) == 0x5c,
-               "i386 entity-state secondary origin moved");
-_Static_assert(sizeof(((entityState_t *)0)->origin2) == 0x0c,
-               "i386 entity-state secondary origin extent changed");
-_Static_assert(offsetof(entityState_t, angles2) == 0x68,
-               "i386 entity-state secondary angles moved");
-_Static_assert(sizeof(((entityState_t *)0)->angles2) == 0x0c,
-               "i386 entity-state secondary angle extent changed");
-_Static_assert(offsetof(entityState_t, otherEntityNum) == 0x74,
-               "i386 entity-state other entity moved");
-_Static_assert(offsetof(entityState_t, attackerEntityNum) == 0x78,
-               "i386 entity-state attacker moved");
-_Static_assert(offsetof(entityState_t, groundEntityNum) == 0x7c,
-               "i386 entity-state ground entity moved");
-_Static_assert(offsetof(entityState_t, constantLight) == 0x80,
-               "i386 entity-state constant light moved");
-_Static_assert(offsetof(entityState_t, loopSound) == 0x84,
-               "i386 entity-state loop sound moved");
-_Static_assert(offsetof(entityState_t, surfType) == 0x88,
-               "i386 entity-state surface type moved");
-_Static_assert(offsetof(entityState_t, index) == 0x8c,
-               "i386 entity-state index moved");
-_Static_assert(offsetof(entityState_t, xmodel) == 0x90,
-               "i386 entity-state model moved");
-_Static_assert(offsetof(entityState_t, clientNum) == 0x94,
-               "i386 entity-state client number moved");
-_Static_assert(offsetof(entityState_t, iHeadIcon) == 0x98,
-               "i386 entity-state head icon moved");
-_Static_assert(offsetof(entityState_t, iHeadIconTeam) == 0x9c,
-               "i386 entity-state head-icon team moved");
-_Static_assert(offsetof(entityState_t, solid) == 0xa0,
-               "i386 entity-state solid encoding moved");
-_Static_assert(offsetof(entityState_t, eventParm) == 0xa4,
-               "i386 entity-state event parameter moved");
-_Static_assert(offsetof(entityState_t, eventSequence) == 0xa8,
-               "i386 entity-state event sequence moved");
-_Static_assert(offsetof(entityState_t, events) == 0xac,
-               "i386 entity-state events moved");
-_Static_assert(sizeof(((entityState_t *)0)->events) == 0x10,
-               "i386 entity-state event extent changed");
-_Static_assert(offsetof(entityState_t, eventParms) == 0xbc,
-               "i386 entity-state event parameters moved");
-_Static_assert(sizeof(((entityState_t *)0)->eventParms) == 0x10,
-               "i386 entity-state event-parameter extent changed");
-_Static_assert(offsetof(entityState_t, weapon) == 0xcc,
-               "i386 entity-state weapon moved");
-_Static_assert(offsetof(entityState_t, legsAnim) == 0xd0,
-               "i386 entity-state legs animation moved");
-_Static_assert(offsetof(entityState_t, torsoAnim) == 0xd4,
-               "i386 entity-state torso animation moved");
-_Static_assert(offsetof(entityState_t, leanf) == 0xd8,
-               "i386 entity-state lean moved");
-_Static_assert(offsetof(entityState_t, scale) == 0xdc,
-               "i386 entity-state scale moved");
-_Static_assert(offsetof(entityState_t, dmgFlags) == 0xe0,
-               "i386 entity-state damage flags moved");
-_Static_assert(offsetof(entityState_t, animMovetype) == 0xe4,
-               "i386 entity-state animation move type moved");
-_Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8,
-               "i386 entity-state torso height moved");
-_Static_assert(offsetof(entityState_t, fTorsoPitch) == 0xec,
-               "i386 entity-state torso pitch moved");
-_Static_assert(offsetof(entityState_t, fWaistPitch) == 0xf0,
-               "i386 entity-state waist pitch moved");
-_Static_assert(sizeof(entityState_t) == 0xf4,
-               "i386 entity-state snapshot size changed");
-_Static_assert(_Alignof(archivedEntity_t) == 4,
-               "i386 archived entity alignment changed");
-_Static_assert(offsetof(archivedEntity_t, state) == 0x00,
-               "i386 archived entity state moved");
-_Static_assert(offsetof(archivedEntity_t, svFlags) == 0xf4,
-               "i386 archived entity flags moved");
-_Static_assert(offsetof(archivedEntity_t, singleClient) == 0xf8,
-               "i386 archived entity client selector moved");
-_Static_assert(offsetof(archivedEntity_t, absmin) == 0xfc,
-               "i386 archived entity minimum bounds moved");
-_Static_assert(sizeof(((archivedEntity_t *)0)->absmin) == 0x0c,
-               "i386 archived entity minimum bounds extent changed");
-_Static_assert(offsetof(archivedEntity_t, absmax) == 0x108,
-               "i386 archived entity maximum bounds moved");
-_Static_assert(sizeof(((archivedEntity_t *)0)->absmax) == 0x0c,
-               "i386 archived entity maximum bounds extent changed");
-_Static_assert(sizeof(archivedEntity_t) == 0x114,
-               "i386 archived entity size changed");
-_Static_assert(_Alignof(hudElem_t) == 4,
-               "i386 HUD-element alignment changed");
-_Static_assert(_Alignof(hudelem_color_t) == 4,
-               "i386 HUD color alignment changed");
-_Static_assert(offsetof(hudelem_color_t, rgba) == 0x00,
-               "i386 HUD packed color moved");
-_Static_assert(offsetof(hudelem_color_t, components.red) == 0x00,
-               "i386 HUD red color lane moved");
-_Static_assert(offsetof(hudelem_color_t, components.green) == 0x01,
-               "i386 HUD green color lane moved");
-_Static_assert(offsetof(hudelem_color_t, components.blue) == 0x02,
-               "i386 HUD blue color lane moved");
-_Static_assert(offsetof(hudelem_color_t, components.alpha) == 0x03,
-               "i386 HUD alpha color lane moved");
-_Static_assert(sizeof(hudelem_color_t) == 0x04,
-               "i386 HUD packed color size changed");
-_Static_assert(offsetof(hudElem_t, type) == 0x00,
-               "i386 HUD-element type moved");
-_Static_assert(offsetof(hudElem_t, x) == 0x04,
-               "i386 HUD-element x coordinate moved");
-_Static_assert(offsetof(hudElem_t, y) == 0x08,
-               "i386 HUD-element y coordinate moved");
-_Static_assert(offsetof(hudElem_t, fontScale) == 0x0c,
-               "i386 HUD-element font scale moved");
-_Static_assert(offsetof(hudElem_t, font) == 0x10,
-               "i386 HUD-element font moved");
-_Static_assert(offsetof(hudElem_t, alignX) == 0x14,
-               "i386 HUD-element x alignment moved");
-_Static_assert(offsetof(hudElem_t, alignY) == 0x18,
-               "i386 HUD-element y alignment moved");
-_Static_assert(offsetof(hudElem_t, color) == 0x1c,
-               "i386 HUD-element color moved");
-_Static_assert(offsetof(hudElem_t, fromColor) == 0x20,
-               "i386 HUD-element source color moved");
-_Static_assert(offsetof(hudElem_t, fadeStartTime) == 0x24,
-               "i386 HUD-element fade start moved");
-_Static_assert(offsetof(hudElem_t, fadeTime) == 0x28,
-               "i386 HUD-element fade duration moved");
-_Static_assert(offsetof(hudElem_t, label) == 0x2c,
-               "i386 HUD-element label moved");
-_Static_assert(offsetof(hudElem_t, width) == 0x30,
-               "i386 HUD-element width moved");
-_Static_assert(offsetof(hudElem_t, height) == 0x34,
-               "i386 HUD-element height moved");
-_Static_assert(offsetof(hudElem_t, materialIndex) == 0x38,
-               "i386 HUD-element material moved");
-_Static_assert(offsetof(hudElem_t, scaleFromWidth) == 0x3c,
-               "i386 HUD-element source width moved");
-_Static_assert(offsetof(hudElem_t, scaleFromHeight) == 0x40,
-               "i386 HUD-element source height moved");
-_Static_assert(offsetof(hudElem_t, scaleStartTime) == 0x44,
-               "i386 HUD-element scale start moved");
-_Static_assert(offsetof(hudElem_t, scaleTime) == 0x48,
-               "i386 HUD-element scale duration moved");
-_Static_assert(offsetof(hudElem_t, moveFromX) == 0x4c,
-               "i386 HUD-element source x moved");
-_Static_assert(offsetof(hudElem_t, moveFromY) == 0x50,
-               "i386 HUD-element source y moved");
-_Static_assert(offsetof(hudElem_t, moveStartTime) == 0x54,
-               "i386 HUD-element move start moved");
-_Static_assert(offsetof(hudElem_t, moveTime) == 0x58,
-               "i386 HUD-element move duration moved");
-_Static_assert(offsetof(hudElem_t, timerValue) == 0x5c,
-               "i386 HUD-element timer value moved");
-_Static_assert(offsetof(hudElem_t, rotationPeriodMs) == 0x60,
-               "i386 HUD-element rotation period moved");
-_Static_assert(offsetof(hudElem_t, value) == 0x64,
-               "i386 HUD-element numeric value moved");
-_Static_assert(offsetof(hudElem_t, text) == 0x68,
-               "i386 HUD-element text moved");
-_Static_assert(offsetof(hudElem_t, sortKey) == 0x6c,
-               "i386 HUD-element sort key moved");
-_Static_assert(offsetof(hudElem_t, shaderRightTexcoord) == 0x70,
-               "i386 HUD-element right texture coordinate moved");
-_Static_assert(offsetof(hudElem_t, shaderBottomTexcoord) == 0x74,
-               "i386 HUD-element bottom texture coordinate moved");
-_Static_assert(offsetof(hudElem_t, unused78) == 0x78,
-               "i386 HUD-element unused trailing dword moved");
-_Static_assert(sizeof(hudElem_t) == 0x7c,
-               "i386 HUD-element snapshot size changed");
+_Static_assert(_Alignof(objective_t) == 4, "i386 player-state objective alignment changed");
+_Static_assert(offsetof(objective_t, state) == 0x00, "i386 player-state objective state moved");
+_Static_assert(offsetof(objective_t, origin) == 0x04, "i386 player-state objective origin moved");
+_Static_assert(sizeof(((objective_t *)0)->origin) == 0x0c, "i386 player-state objective origin extent changed");
+_Static_assert(offsetof(objective_t, entityNum) == 0x10, "i386 player-state objective entity moved");
+_Static_assert(offsetof(objective_t, teamNum) == 0x14, "i386 player-state objective team moved");
+_Static_assert(offsetof(objective_t, icon) == 0x18, "i386 player-state objective icon moved");
+_Static_assert(sizeof(objective_t) == 0x1c, "i386 player-state objective size changed");
+_Static_assert(_Alignof(entityState_t) == 4, "i386 entity-state alignment changed");
+_Static_assert(offsetof(entityState_t, number) == 0x00, "i386 entity-state number moved");
+_Static_assert(offsetof(entityState_t, eType) == 0x04, "i386 entity-state type moved");
+_Static_assert(offsetof(entityState_t, eFlags) == 0x08, "i386 entity-state flags moved");
+_Static_assert(offsetof(entityState_t, pos) == 0x0c, "i386 entity-state position trajectory moved");
+_Static_assert(offsetof(entityState_t, apos) == 0x30, "i386 entity-state angular trajectory moved");
+_Static_assert(offsetof(entityState_t, time) == 0x54, "i386 entity-state time moved");
+_Static_assert(offsetof(entityState_t, time2) == 0x58, "i386 entity-state secondary time moved");
+_Static_assert(offsetof(entityState_t, origin2) == 0x5c, "i386 entity-state secondary origin moved");
+_Static_assert(sizeof(((entityState_t *)0)->origin2) == 0x0c, "i386 entity-state secondary origin extent changed");
+_Static_assert(offsetof(entityState_t, angles2) == 0x68, "i386 entity-state secondary angles moved");
+_Static_assert(sizeof(((entityState_t *)0)->angles2) == 0x0c, "i386 entity-state secondary angle extent changed");
+_Static_assert(offsetof(entityState_t, otherEntityNum) == 0x74, "i386 entity-state other entity moved");
+_Static_assert(offsetof(entityState_t, attackerEntityNum) == 0x78, "i386 entity-state attacker moved");
+_Static_assert(offsetof(entityState_t, groundEntityNum) == 0x7c, "i386 entity-state ground entity moved");
+_Static_assert(offsetof(entityState_t, constantLight) == 0x80, "i386 entity-state constant light moved");
+_Static_assert(offsetof(entityState_t, loopSound) == 0x84, "i386 entity-state loop sound moved");
+_Static_assert(offsetof(entityState_t, surfType) == 0x88, "i386 entity-state surface type moved");
+_Static_assert(offsetof(entityState_t, index) == 0x8c, "i386 entity-state index moved");
+_Static_assert(offsetof(entityState_t, xmodel) == 0x90, "i386 entity-state model moved");
+_Static_assert(offsetof(entityState_t, clientNum) == 0x94, "i386 entity-state client number moved");
+_Static_assert(offsetof(entityState_t, iHeadIcon) == 0x98, "i386 entity-state head icon moved");
+_Static_assert(offsetof(entityState_t, iHeadIconTeam) == 0x9c, "i386 entity-state head-icon team moved");
+_Static_assert(offsetof(entityState_t, solid) == 0xa0, "i386 entity-state solid encoding moved");
+_Static_assert(offsetof(entityState_t, eventParm) == 0xa4, "i386 entity-state event parameter moved");
+_Static_assert(offsetof(entityState_t, eventSequence) == 0xa8, "i386 entity-state event sequence moved");
+_Static_assert(offsetof(entityState_t, events) == 0xac, "i386 entity-state events moved");
+_Static_assert(sizeof(((entityState_t *)0)->events) == 0x10, "i386 entity-state event extent changed");
+_Static_assert(offsetof(entityState_t, eventParms) == 0xbc, "i386 entity-state event parameters moved");
+_Static_assert(sizeof(((entityState_t *)0)->eventParms) == 0x10, "i386 entity-state event-parameter extent changed");
+_Static_assert(offsetof(entityState_t, weapon) == 0xcc, "i386 entity-state weapon moved");
+_Static_assert(offsetof(entityState_t, legsAnim) == 0xd0, "i386 entity-state legs animation moved");
+_Static_assert(offsetof(entityState_t, torsoAnim) == 0xd4, "i386 entity-state torso animation moved");
+_Static_assert(offsetof(entityState_t, leanf) == 0xd8, "i386 entity-state lean moved");
+_Static_assert(offsetof(entityState_t, scale) == 0xdc, "i386 entity-state scale moved");
+_Static_assert(offsetof(entityState_t, dmgFlags) == 0xe0, "i386 entity-state damage flags moved");
+_Static_assert(offsetof(entityState_t, animMovetype) == 0xe4, "i386 entity-state animation move type moved");
+_Static_assert(offsetof(entityState_t, fTorsoHeight) == 0xe8, "i386 entity-state torso height moved");
+_Static_assert(offsetof(entityState_t, fTorsoPitch) == 0xec, "i386 entity-state torso pitch moved");
+_Static_assert(offsetof(entityState_t, fWaistPitch) == 0xf0, "i386 entity-state waist pitch moved");
+_Static_assert(sizeof(entityState_t) == 0xf4, "i386 entity-state snapshot size changed");
+_Static_assert(_Alignof(archivedEntity_t) == 4, "i386 archived entity alignment changed");
+_Static_assert(offsetof(archivedEntity_t, state) == 0x00, "i386 archived entity state moved");
+_Static_assert(offsetof(archivedEntity_t, svFlags) == 0xf4, "i386 archived entity flags moved");
+_Static_assert(offsetof(archivedEntity_t, singleClient) == 0xf8, "i386 archived entity client selector moved");
+_Static_assert(offsetof(archivedEntity_t, absmin) == 0xfc, "i386 archived entity minimum bounds moved");
+_Static_assert(sizeof(((archivedEntity_t *)0)->absmin) == 0x0c, "i386 archived entity minimum bounds extent changed");
+_Static_assert(offsetof(archivedEntity_t, absmax) == 0x108, "i386 archived entity maximum bounds moved");
+_Static_assert(sizeof(((archivedEntity_t *)0)->absmax) == 0x0c, "i386 archived entity maximum bounds extent changed");
+_Static_assert(sizeof(archivedEntity_t) == 0x114, "i386 archived entity size changed");
+_Static_assert(_Alignof(hudElem_t) == 4, "i386 HUD-element alignment changed");
+_Static_assert(_Alignof(hudelem_color_t) == 4, "i386 HUD color alignment changed");
+_Static_assert(offsetof(hudelem_color_t, rgba) == 0x00, "i386 HUD packed color moved");
+_Static_assert(offsetof(hudelem_color_t, components.red) == 0x00, "i386 HUD red color lane moved");
+_Static_assert(offsetof(hudelem_color_t, components.green) == 0x01, "i386 HUD green color lane moved");
+_Static_assert(offsetof(hudelem_color_t, components.blue) == 0x02, "i386 HUD blue color lane moved");
+_Static_assert(offsetof(hudelem_color_t, components.alpha) == 0x03, "i386 HUD alpha color lane moved");
+_Static_assert(sizeof(hudelem_color_t) == 0x04, "i386 HUD packed color size changed");
+_Static_assert(offsetof(hudElem_t, type) == 0x00, "i386 HUD-element type moved");
+_Static_assert(offsetof(hudElem_t, x) == 0x04, "i386 HUD-element x coordinate moved");
+_Static_assert(offsetof(hudElem_t, y) == 0x08, "i386 HUD-element y coordinate moved");
+_Static_assert(offsetof(hudElem_t, fontScale) == 0x0c, "i386 HUD-element font scale moved");
+_Static_assert(offsetof(hudElem_t, font) == 0x10, "i386 HUD-element font moved");
+_Static_assert(offsetof(hudElem_t, alignX) == 0x14, "i386 HUD-element x alignment moved");
+_Static_assert(offsetof(hudElem_t, alignY) == 0x18, "i386 HUD-element y alignment moved");
+_Static_assert(offsetof(hudElem_t, color) == 0x1c, "i386 HUD-element color moved");
+_Static_assert(offsetof(hudElem_t, fromColor) == 0x20, "i386 HUD-element source color moved");
+_Static_assert(offsetof(hudElem_t, fadeStartTime) == 0x24, "i386 HUD-element fade start moved");
+_Static_assert(offsetof(hudElem_t, fadeTime) == 0x28, "i386 HUD-element fade duration moved");
+_Static_assert(offsetof(hudElem_t, label) == 0x2c, "i386 HUD-element label moved");
+_Static_assert(offsetof(hudElem_t, width) == 0x30, "i386 HUD-element width moved");
+_Static_assert(offsetof(hudElem_t, height) == 0x34, "i386 HUD-element height moved");
+_Static_assert(offsetof(hudElem_t, materialIndex) == 0x38, "i386 HUD-element material moved");
+_Static_assert(offsetof(hudElem_t, scaleFromWidth) == 0x3c, "i386 HUD-element source width moved");
+_Static_assert(offsetof(hudElem_t, scaleFromHeight) == 0x40, "i386 HUD-element source height moved");
+_Static_assert(offsetof(hudElem_t, scaleStartTime) == 0x44, "i386 HUD-element scale start moved");
+_Static_assert(offsetof(hudElem_t, scaleTime) == 0x48, "i386 HUD-element scale duration moved");
+_Static_assert(offsetof(hudElem_t, moveFromX) == 0x4c, "i386 HUD-element source x moved");
+_Static_assert(offsetof(hudElem_t, moveFromY) == 0x50, "i386 HUD-element source y moved");
+_Static_assert(offsetof(hudElem_t, moveStartTime) == 0x54, "i386 HUD-element move start moved");
+_Static_assert(offsetof(hudElem_t, moveTime) == 0x58, "i386 HUD-element move duration moved");
+_Static_assert(offsetof(hudElem_t, timerValue) == 0x5c, "i386 HUD-element timer value moved");
+_Static_assert(offsetof(hudElem_t, rotationPeriodMs) == 0x60, "i386 HUD-element rotation period moved");
+_Static_assert(offsetof(hudElem_t, value) == 0x64, "i386 HUD-element numeric value moved");
+_Static_assert(offsetof(hudElem_t, text) == 0x68, "i386 HUD-element text moved");
+_Static_assert(offsetof(hudElem_t, sortKey) == 0x6c, "i386 HUD-element sort key moved");
+_Static_assert(offsetof(hudElem_t, shaderRightTexcoord) == 0x70, "i386 HUD-element right texture coordinate moved");
+_Static_assert(offsetof(hudElem_t, shaderBottomTexcoord) == 0x74, "i386 HUD-element bottom texture coordinate moved");
+_Static_assert(offsetof(hudElem_t, unused78) == 0x78, "i386 HUD-element unused trailing dword moved");
+_Static_assert(sizeof(hudElem_t) == 0x7c, "i386 HUD-element snapshot size changed");
 #endif
 
 #endif

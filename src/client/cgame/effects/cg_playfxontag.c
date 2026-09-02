@@ -82,21 +82,13 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
     }
 
-    int32_t stringOffset = cgame_compat_read_target_i32_index(
-        cg_gameState.stringOffsets, cfgIndex);
-    cfg = (const char *)(
-        (uintptr_t)(const void *)cg_gameState.stringData +
-        (uintptr_t)(intptr_t)stringOffset);
+    int32_t stringOffset = cgame_compat_read_target_i32_index(cg_gameState.stringOffsets, cfgIndex);
+    cfg = (const char *)((uintptr_t)(const void *)cg_gameState.stringData + (uintptr_t)(intptr_t)stringOffset);
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    if (cfg[0] == '\0' || cfg[1] == '\0' ||
-        (unsigned char)cfg[0] < (unsigned char)'0' ||
-        (unsigned char)cfg[0] > (unsigned char)'9' ||
-        (unsigned char)cfg[1] < (unsigned char)'0' ||
-        (unsigned char)cfg[1] > (unsigned char)'9') {
-        Com_Printf(
-            "WARNING: CG_PlayFxOnTag: invalid effect config string %i\n",
-            cfgIndex);
+    if (cfg[0] == '\0' || cfg[1] == '\0' || (unsigned char)cfg[0] < (unsigned char)'0' || (unsigned char)cfg[0] > (unsigned char)'9' ||
+        (unsigned char)cfg[1] < (unsigned char)'0' || (unsigned char)cfg[1] > (unsigned char)'9') {
+        Com_Printf("WARNING: CG_PlayFxOnTag: invalid effect config string %i\n", cfgIndex);
         return;
     }
 
@@ -104,9 +96,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
     d1 = (signed char)cfg[1] - '0';
     id = d1 + d0 * 10;
     if (id < 1 || id >= CS_EFFECTS_COUNT) {
-        Com_Printf(
-            "WARNING: CG_PlayFxOnTag: invalid effect id %i in config string %i\n",
-            id, cfgIndex);
+        Com_Printf("WARNING: CG_PlayFxOnTag: invalid effect id %i in config string %i\n", id, cfgIndex);
         return;
     }
     handle = cg_effectDefs[id];
@@ -115,8 +105,7 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
     boltInfo.entityNum = self->currentState.number;
 
     /* Resolve the named tag on the owning object; negative means "no such tag". */
-    boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_RESOLVE_TAG, self->currentState.number, (intptr_t)tagName));
+    boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_RESOLVE_TAG, self->currentState.number, (intptr_t)tagName));
     if (boltInfo.boneIndex < 0) {
         return;
     }
@@ -124,9 +113,5 @@ void CG_PlayFxOnTag(centity_t *self, int fxId)
     /* Play the tag-bound effect at the spawner's origin. The trailing by-address
      * argument is the 8-byte { entityNum, boneIndex } record at [ESP+8]; the
      * engine consumes both words. */
-    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                  coduo_int32_from_bits(handle),
-                  (intptr_t)self->lerpOrigin,
-                  0,
-                  (intptr_t)&boltInfo);
+    cgame_syscall(CG_PLAY_EFFECT_ON_TAG, coduo_int32_from_bits(handle), (intptr_t)self->lerpOrigin, 0, (intptr_t)&boltInfo);
 }

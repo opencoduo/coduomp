@@ -71,8 +71,7 @@
 void CG_EndShellShockSound(void)
 {
     /* Restore all ten sound channels and reset the room environment. */
-    cgame_syscall(CG_MSS_FADE_SELECT_SOUNDS,
-                  (intptr_t)cg_soundChannelFullVolumes, 0);
+    cgame_syscall(CG_MSS_FADE_SELECT_SOUNDS, (intptr_t)cg_soundChannelFullVolumes, 0);
     cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS, (intptr_t)cg_genericShellshockAliasName, 0, 0);
 
     /* Only if a shellshock sound was still scheduled/active: register and play
@@ -82,8 +81,7 @@ void CG_EndShellShockSound(void)
          * CALL (0x3003c147) in the machine code; trap 196 does not read the global,
          * so the observable order is preserved either way. */
         cg_shellshockSoundEndTime = 0;
-        snd_alias_t *alias = trap_Com_PickSoundAlias(
-            cg_shellshockEndAbortAliasName, vec3_origin);
+        snd_alias_t *alias = trap_Com_PickSoundAlias(cg_shellshockEndAbortAliasName, vec3_origin);
         (void)trap_MSS_PlaySoundAlias(alias, 1023, vec3_origin, 0);
     }
 }

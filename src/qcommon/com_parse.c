@@ -50,25 +50,15 @@ void Com_Printf(const char *format, ...);
  *       rest-of-line buffer 0x40041840, token cursors 0x40041c40/0x40041c44.
  * The operator tables contain the same fourteen strings in the order below,
  * followed by a terminating NULL pointer. */
-static const char *const com_parseOperators[] = {
-    "+=", "-=", "*=", "/=", "&=", "|=", "++", "--",
-    "&&", "||", "<=", ">=", "==", "!=", NULL
-};
+static const char *const com_parseOperators[] = {"+=", "-=", "*=", "/=", "&=", "|=", "++", "--", "&&", "||", "<=", ">=", "==", "!=", NULL};
 
 /* Each binary initializes only session zero with line 1, space delimiting
  * enabled, negative-number parsing enabled, and saved-line 1. Sessions 1..15
  * are initially zero; Com_BeginParseSession establishes only line, ungetToken,
  * spaceDelimited, csv, and name for a nested session. */
 #define COM_PARSE_STATE_INITIALIZER \
-    { \
-        .line = COM_PARSE_INITIAL_LINE, \
-        .spaceDelimited = qtrue, \
-        .parseNegativeNumbers = qtrue, \
-        .savedLine = COM_PARSE_INITIAL_LINE \
-    }
-com_parse_session_t com_parseSessions[MAX_PARSE_SESSIONS] = {
-    COM_PARSE_STATE_INITIALIZER
-};
+    {.line = COM_PARSE_INITIAL_LINE, .spaceDelimited = qtrue, .parseNegativeNumbers = qtrue, .savedLine = COM_PARSE_INITIAL_LINE}
+com_parse_session_t com_parseSessions[MAX_PARSE_SESSIONS] = {COM_PARSE_STATE_INITIALIZER};
 #undef COM_PARSE_STATE_INITIALIZER
 /* PE_RELOCATION_VALUES_VERIFIED: original 0x005ca2d8 contains 0x005c5d18,
  * the address of com_parseSessions[0]. */
@@ -81,8 +71,7 @@ static char com_parseRestOfLineBuffer[MAX_TOKEN_CHARS];
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the token buffer's
  * repeated 1023-byte append guard. */
-static void qcommon_compat_append_parse_token_character(int32_t *length,
-                                                         char character)
+static void qcommon_compat_append_parse_token_character(int32_t *length, char character)
 {
     if (*length < COM_PARSE_TOKEN_LAST_INDEX)
         com_parseSession->token[(*length)++] = character;
@@ -101,18 +90,15 @@ static qboolean qcommon_compat_is_parse_digit(char character)
 static qboolean qcommon_compat_is_parse_alpha(char character)
 {
     const int32_t signedCharacter = (int8_t)character;
-    return (signedCharacter >= 'a' && signedCharacter <= 'z') ||
-           (signedCharacter >= 'A' && signedCharacter <= 'Z');
+    return (signedCharacter >= 'a' && signedCharacter <= 'z') || (signedCharacter >= 'A' && signedCharacter <= 'Z');
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level spelling of the parser's repeated
  * identifier continuation test. */
 static qboolean qcommon_compat_is_parse_name_character(char character)
 {
-    return qcommon_compat_is_parse_alpha(character) ||
-           qcommon_compat_is_parse_digit(character) ||
-           character == '_' || character == '/' || character == '\\' ||
-           character == ':' || character == '.';
+    return qcommon_compat_is_parse_alpha(character) || qcommon_compat_is_parse_digit(character) || character == '_' || character == '/' ||
+           character == '\\' || character == ':' || character == '.';
 }
 
 /* Source: CoDUOMP.exe 0x0044e550..0x0044e5c5.
@@ -121,16 +107,15 @@ static qboolean qcommon_compat_is_parse_name_character(char character)
 void Com_BeginParseSession(const char *name)
 {
     if (com_numParseSessions == MAX_PARSE_SESSIONS - 1)
-        COM_PARSE_ERROR(0,
-                        "\x15" "Com_BeginParseSession: session overflow");
+        COM_PARSE_ERROR(0, "\x15"
+                           "Com_BeginParseSession: session overflow");
 
     com_parseSession = &com_parseSessions[++com_numParseSessions];
     com_parseSession->line = COM_PARSE_INITIAL_LINE;
     com_parseSession->ungetToken = qfalse;
     com_parseSession->spaceDelimited = qtrue;
     com_parseSession->csv = qfalse;
-    Q_strncpyz(com_parseSession->name, name,
-               (int32_t)sizeof(com_parseSession->name));
+    Q_strncpyz(com_parseSession->name, name, (int32_t)sizeof(com_parseSession->name));
 }
 
 /* Source: CoDUOMP.exe 0x0044e5d0..0x0044e602.
@@ -139,8 +124,8 @@ void Com_BeginParseSession(const char *name)
 void Com_EndParseSession(void)
 {
     if (com_numParseSessions == 0)
-        COM_PARSE_ERROR(0,
-                        "\x15" "Com_EndParseSession: session underflow");
+        COM_PARSE_ERROR(0, "\x15"
+                           "Com_EndParseSession: session underflow");
 
     com_parseSession = &com_parseSessions[--com_numParseSessions];
 }
@@ -195,7 +180,9 @@ void Com_ScriptError(const char *format, ...)
      * fixed destination. */
     (void)vsnprintf(message, sizeof(message), format, arguments);
     va_end(arguments);
-    COM_PARSE_ERROR(ERR_DROP, "\x15" "File %s, line %i: %s",
+    COM_PARSE_ERROR(ERR_DROP,
+                    "\x15"
+                    "File %s, line %i: %s",
                     com_parseSession->name, com_parseSession->line, message);
 }
 
@@ -213,8 +200,7 @@ void Com_ScriptWarning(const char *format, ...)
      * fixed destination. */
     (void)vsnprintf(message, sizeof(message), format, arguments);
     va_end(arguments);
-    COM_PARSE_PRINT("File %s, line %i: %s", com_parseSession->name,
-                    com_parseSession->line, message);
+    COM_PARSE_PRINT("File %s, line %i: %s", com_parseSession->name, com_parseSession->line, message);
 }
 
 /* Source: CoDUOMP.exe 0x0044e750..0x0044e79e.
@@ -293,8 +279,7 @@ int32_t Com_Compress(char *data)
             while (*scan != '\0' && *scan != '\n')
                 ++scan;
         } else if (scan[0] == '/' && scan[1] == '*') {
-            while (*scan != '\0' &&
-                   (scan[0] != '*' || scan[1] != '/')) {
+            while (*scan != '\0' && (scan[0] != '*' || scan[1] != '/')) {
                 if (*scan == '\n') {
                     *output++ = '\n';
                     ++length;
@@ -363,8 +348,7 @@ static char *Com_ParseCSV(char **data, qboolean allowLineBreaks)
                     qcommon_compat_append_parse_token_character(&tokenLength, '"');
                     text += 2;
                 } else {
-                    qcommon_compat_append_parse_token_character(&tokenLength,
-                                                         *text++);
+                    qcommon_compat_append_parse_token_character(&tokenLength, *text++);
                 }
             }
         } else {
@@ -395,7 +379,8 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
     char character;
 
     if (data == NULL)
-        COM_PARSE_ERROR(0, "\x15" "Com_ParseExt: NULL data_p");
+        COM_PARSE_ERROR(0, "\x15"
+                           "Com_ParseExt: NULL data_p");
 
     text = *data;
     com_parseSession->token[0] = '\0';
@@ -425,8 +410,7 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
         }
 
         if (character == '/' && text[1] == '*') {
-            while (*text != '\0' &&
-                   (*text != '*' || text[1] != '/')) {
+            while (*text != '\0' && (*text != '*' || text[1] != '/')) {
                 if (*text == '\n')
                     ++com_parseSession->line;
                 ++text;
@@ -472,8 +456,7 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
         }
 
         if (qcommon_compat_is_parse_digit(character) ||
-            (com_parseSession->parseNegativeNumbers != qfalse &&
-             character == '-' && qcommon_compat_is_parse_digit(text[1])) ||
+            (com_parseSession->parseNegativeNumbers != qfalse && character == '-' && qcommon_compat_is_parse_digit(text[1])) ||
             (character == '.' && qcommon_compat_is_parse_digit(text[1]))) {
             do {
                 qcommon_compat_append_parse_token_character(&tokenLength, character);
@@ -484,16 +467,14 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
                 qcommon_compat_append_parse_token_character(&tokenLength, character);
                 character = *++text;
                 if (character == '-' || character == '+') {
-                    qcommon_compat_append_parse_token_character(&tokenLength,
-                                                         character);
+                    qcommon_compat_append_parse_token_character(&tokenLength, character);
                     character = *++text;
                 }
                 /* NOT_FROM_ORIGINAL_SOURCE: a malformed exponent prefix may
                  * end at NUL; keep the partial token and ordinary EOF cursor. */
                 if (character != '\0') {
                     do {
-                        qcommon_compat_append_parse_token_character(&tokenLength,
-                                                             character);
+                        qcommon_compat_append_parse_token_character(&tokenLength, character);
                         character = *++text;
                     } while (qcommon_compat_is_parse_digit(character));
                 }
@@ -501,8 +482,7 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
             goto finish_token;
         }
 
-        if (qcommon_compat_is_parse_alpha(character) || character == '_' ||
-            character == '/' || character == '\\') {
+        if (qcommon_compat_is_parse_alpha(character) || character == '_' || character == '/' || character == '\\') {
             do {
                 qcommon_compat_append_parse_token_character(&tokenLength, character);
                 character = *++text;
@@ -510,8 +490,7 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
             goto finish_token;
         }
 
-        for (const char *const *operator = com_parseOperators;
-             *operator != NULL; ++operator) {
+        for (const char *const *operator= com_parseOperators; *operator!= NULL; ++operator) {
             const size_t operatorLength = strlen(*operator);
             if (strncmp(text, *operator, operatorLength) == 0) {
                 memcpy(com_parseSession->token, *operator, operatorLength);
@@ -524,7 +503,7 @@ char *Com_ParseExt(char **data, qboolean allowLineBreaks)
         com_parseSession->token[0] = *text++;
         tokenLength = 1;
 
-finish_token:
+    finish_token:
         if (tokenLength == MAX_TOKEN_CHARS)
             tokenLength = 0;
         com_parseSession->token[tokenLength] = '\0';
@@ -644,10 +623,8 @@ char *Com_ParseRestOfLine(char **data)
             break;
 
         if (com_parseRestOfLineBuffer[0] != '\0')
-            Q_strcat(com_parseRestOfLineBuffer,
-                     sizeof(com_parseRestOfLineBuffer), " ");
-        Q_strcat(com_parseRestOfLineBuffer,
-                 sizeof(com_parseRestOfLineBuffer), token);
+            Q_strcat(com_parseRestOfLineBuffer, sizeof(com_parseRestOfLineBuffer), " ");
+        Q_strcat(com_parseRestOfLineBuffer, sizeof(com_parseRestOfLineBuffer), token);
     }
 
     return com_parseRestOfLineBuffer;
@@ -710,8 +687,7 @@ void Com_Parse2DMatrix(char **data, int32_t y, int32_t x, float *matrix)
 
 /* Source: CoDUOMP.exe 0x0044f220..0x0044f2c9, recovered from an executable
  * gap. Name and signature: same-family Com_Parse3DMatrix. */
-void Com_Parse3DMatrix(char **data, int32_t z, int32_t y, int32_t x,
-                       float *matrix)
+void Com_Parse3DMatrix(char **data, int32_t z, int32_t y, int32_t x, float *matrix)
 {
     Com_MatchToken(data, "(", qfalse);
     for (int32_t plane = 0; plane < z; ++plane)
@@ -720,47 +696,26 @@ void Com_Parse3DMatrix(char **data, int32_t z, int32_t y, int32_t x,
 }
 
 #if UINTPTR_MAX == UINT32_MAX
-#define COM_PARSE_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_alignment,
-                        __alignof__(com_parse_session_t) == 4);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_token_offset,
-                        offsetof(com_parse_session_t, token) == 0x000);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_token_extent,
-                        sizeof(((com_parse_session_t *)0)->token) == 0x400);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_line_offset,
-                        offsetof(com_parse_session_t, line) == 0x400);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_unget_offset,
-                        offsetof(com_parse_session_t, ungetToken) == 0x404);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_delimiter_offset,
-                        offsetof(com_parse_session_t, spaceDelimited) == 0x408);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_csv_offset,
-                        offsetof(com_parse_session_t, csv) == 0x40c);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_negative_offset,
-                        offsetof(com_parse_session_t, parseNegativeNumbers) == 0x410);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_saved_line_offset,
-                        offsetof(com_parse_session_t, savedLine) == 0x414);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_saved_parse_offset,
-                        offsetof(com_parse_session_t, savedParse) == 0x418);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_name_offset,
-                        offsetof(com_parse_session_t, name) == 0x41c);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_name_extent,
-                        sizeof(((com_parse_session_t *)0)->name) == 0x40);
-COM_PARSE_LAYOUT_ASSERT(com_parse_session_size,
-                        sizeof(com_parse_session_t) == 0x45c);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_alignment,
-                        __alignof__(com_parse_mark_t) == 4);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_line_offset,
-                        offsetof(com_parse_mark_t, line) == 0x00);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_parse_offset,
-                        offsetof(com_parse_mark_t, parse) == 0x04);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_unget_offset,
-                        offsetof(com_parse_mark_t, ungetToken) == 0x08);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_saved_line_offset,
-                        offsetof(com_parse_mark_t, savedLine) == 0x0c);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_saved_parse_offset,
-                        offsetof(com_parse_mark_t, savedParse) == 0x10);
-COM_PARSE_LAYOUT_ASSERT(com_parse_mark_size,
-                        sizeof(com_parse_mark_t) == 0x14);
+#define COM_PARSE_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_alignment, __alignof__(com_parse_session_t) == 4);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_token_offset, offsetof(com_parse_session_t, token) == 0x000);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_token_extent, sizeof(((com_parse_session_t *)0)->token) == 0x400);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_line_offset, offsetof(com_parse_session_t, line) == 0x400);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_unget_offset, offsetof(com_parse_session_t, ungetToken) == 0x404);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_delimiter_offset, offsetof(com_parse_session_t, spaceDelimited) == 0x408);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_csv_offset, offsetof(com_parse_session_t, csv) == 0x40c);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_negative_offset, offsetof(com_parse_session_t, parseNegativeNumbers) == 0x410);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_saved_line_offset, offsetof(com_parse_session_t, savedLine) == 0x414);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_saved_parse_offset, offsetof(com_parse_session_t, savedParse) == 0x418);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_name_offset, offsetof(com_parse_session_t, name) == 0x41c);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_name_extent, sizeof(((com_parse_session_t *)0)->name) == 0x40);
+COM_PARSE_LAYOUT_ASSERT(com_parse_session_size, sizeof(com_parse_session_t) == 0x45c);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_alignment, __alignof__(com_parse_mark_t) == 4);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_line_offset, offsetof(com_parse_mark_t, line) == 0x00);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_parse_offset, offsetof(com_parse_mark_t, parse) == 0x04);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_unget_offset, offsetof(com_parse_mark_t, ungetToken) == 0x08);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_saved_line_offset, offsetof(com_parse_mark_t, savedLine) == 0x0c);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_saved_parse_offset, offsetof(com_parse_mark_t, savedParse) == 0x10);
+COM_PARSE_LAYOUT_ASSERT(com_parse_mark_size, sizeof(com_parse_mark_t) == 0x14);
 #undef COM_PARSE_LAYOUT_ASSERT
 #endif

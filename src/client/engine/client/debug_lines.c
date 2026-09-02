@@ -13,9 +13,7 @@ enum {
  * Name and argument roles: same-module Mac symbol/call graph
  * CL_AddDebugString. The Windows optimizer carries origin and color in EBX
  * and EDI; scale, text, and fromServer remain stack arguments. */
-void CL_AddDebugString(const vec3_t origin, const vec4_t color,
-                       float scale, const char *text,
-                       qboolean fromServer)
+void CL_AddDebugString(const vec3_t origin, const vec4_t color, float scale, const char *text, qboolean fromServer)
 {
     if (cls.rendererStarted == qfalse) {
         return;
@@ -27,16 +25,12 @@ void CL_AddDebugString(const vec3_t origin, const vec4_t color,
     }
 
     if (cls.debugStrings == NULL) {
-        cls.debugStrings = Z_MallocInternal(
-            CLIENT_DEBUG_STRING_LIMIT * sizeof(cls.debugStrings[0]));
-        cls.debugStringFromServer = Z_MallocInternal(
-            (size_t)cls.debugStringCapacity *
-            sizeof(cls.debugStringFromServer[0]));
+        cls.debugStrings = Z_MallocInternal(CLIENT_DEBUG_STRING_LIMIT * sizeof(cls.debugStrings[0]));
+        cls.debugStringFromServer = Z_MallocInternal((size_t)cls.debugStringCapacity * sizeof(cls.debugStringFromServer[0]));
         cls.debugStringCount = 0;
     }
 
-    client_debug_string_t *debugString =
-        &cls.debugStrings[cls.debugStringCount];
+    client_debug_string_t *debugString = &cls.debugStrings[cls.debugStringCount];
     for (int component = 0; component < 3; ++component) {
         debugString->origin[component] = origin[component];
     }
@@ -45,8 +39,7 @@ void CL_AddDebugString(const vec3_t origin, const vec4_t color,
     }
     debugString->scale = scale;
     Q_strncpyz(debugString->text, text, sizeof(debugString->text));
-    cls.debugStringFromServer[cls.debugStringCount] =
-        (uint8_t)fromServer;
+    cls.debugStringFromServer[cls.debugStringCount] = (uint8_t)fromServer;
     ++cls.debugStringCount;
 }
 
@@ -108,9 +101,7 @@ void CL_ShutdownDebugData(void)
  * optimizer carries start/end/color in EBX/EDI/ESI and the final three
  * arguments on the stack; this source signature restores the ordinary C
  * boundary. */
-void CL_AddDebugLine(const vec3_t start, const vec3_t end,
-                     const vec4_t color, qboolean depthTest,
-                     int32_t duration, qboolean fromServer)
+void CL_AddDebugLine(const vec3_t start, const vec3_t end, const vec4_t color, qboolean depthTest, int32_t duration, qboolean fromServer)
 {
     if (cls.rendererStarted == qfalse) {
         return;
@@ -122,14 +113,9 @@ void CL_AddDebugLine(const vec3_t start, const vec3_t end,
     }
 
     if (cls.debugLines == NULL) {
-        cls.debugLines = Z_MallocInternal(
-            CLIENT_DEBUG_LINE_LIMIT * sizeof(cls.debugLines[0]));
-        cls.debugLineFromServer = Z_MallocInternal(
-            (size_t)cls.debugLineCapacity *
-            sizeof(cls.debugLineFromServer[0]));
-        cls.debugLineDurations = Z_MallocInternal(
-            (size_t)cls.debugLineCapacity *
-            sizeof(cls.debugLineDurations[0]));
+        cls.debugLines = Z_MallocInternal(CLIENT_DEBUG_LINE_LIMIT * sizeof(cls.debugLines[0]));
+        cls.debugLineFromServer = Z_MallocInternal((size_t)cls.debugLineCapacity * sizeof(cls.debugLineFromServer[0]));
+        cls.debugLineDurations = Z_MallocInternal((size_t)cls.debugLineCapacity * sizeof(cls.debugLineDurations[0]));
         cls.debugLineCount = 0;
     }
 
@@ -160,27 +146,22 @@ void CL_FlushDebugData(qboolean fromServer)
     if (cls.debugStrings != NULL) {
         int32_t index = 0;
         while (index < cls.debugStringCount) {
-            if (cls.debugStringFromServer[index] !=
-                (uint8_t)fromServer) {
+            if (cls.debugStringFromServer[index] != (uint8_t)fromServer) {
                 ++index;
                 continue;
             }
 
             --cls.debugStringCount;
-            cls.debugStringFromServer[index] =
-                cls.debugStringFromServer[cls.debugStringCount];
-            cls.debugStrings[index] =
-                cls.debugStrings[cls.debugStringCount];
+            cls.debugStringFromServer[index] = cls.debugStringFromServer[cls.debugStringCount];
+            cls.debugStrings[index] = cls.debugStrings[cls.debugStringCount];
         }
-        RE_LocateDebugStrings(cls.debugStrings,
-                              cls.debugStringCount);
+        RE_LocateDebugStrings(cls.debugStrings, cls.debugStringCount);
     }
 
     if (cls.debugLines != NULL) {
         int32_t index = 0;
         while (index < cls.debugLineCount) {
-            if (cls.debugLineFromServer[index] !=
-                (uint8_t)fromServer) {
+            if (cls.debugLineFromServer[index] != (uint8_t)fromServer) {
                 ++index;
                 continue;
             }
@@ -192,12 +173,9 @@ void CL_FlushDebugData(qboolean fromServer)
             }
 
             --cls.debugLineCount;
-            cls.debugLineFromServer[index] =
-                cls.debugLineFromServer[cls.debugLineCount];
-            cls.debugLineDurations[index] =
-                cls.debugLineDurations[cls.debugLineCount];
-            cls.debugLines[index] =
-                cls.debugLines[cls.debugLineCount];
+            cls.debugLineFromServer[index] = cls.debugLineFromServer[cls.debugLineCount];
+            cls.debugLineDurations[index] = cls.debugLineDurations[cls.debugLineCount];
+            cls.debugLines[index] = cls.debugLines[cls.debugLineCount];
         }
         RE_LocateDebugLines(cls.debugLines, cls.debugLineCount);
     }

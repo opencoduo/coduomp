@@ -24,8 +24,7 @@ void UI_LoadArenas(void)
 
     ui_arenaInfoCount = 0;
     ui_mapCount = 0;
-    fileCount = trap_FS_GetFileList("mp", ".arena", ui_arenaFileList,
-                                    sizeof(ui_arenaFileList));
+    fileCount = trap_FS_GetFileList("mp", ".arena", ui_arenaFileList, sizeof(ui_arenaFileList));
     filename = ui_arenaFileList;
     while (fileCount > 0) {
         char path[UI_ARENA_PATH_SIZE];
@@ -51,9 +50,7 @@ void UI_LoadArenas(void)
         trap_Print("^3WARNING: not anough memory in pool to load all arenas\n");
     }
 
-    for (arenaIndex = 0;
-         arenaIndex < ui_arenaInfoCount && ui_mapCount < UI_MAX_MAPS;
-         arenaIndex++) {
+    for (arenaIndex = 0; arenaIndex < ui_arenaInfoCount && ui_mapCount < UI_MAX_MAPS; arenaIndex++) {
         const char *info = ui_arenaInfos[arenaIndex];
         uiMapInfo_t *map = &ui_maps[ui_mapCount];
         const char *gameTypes;
@@ -79,15 +76,10 @@ void UI_LoadArenas(void)
                 if (token == NULL || *token == '\0') {
                     break;
                 }
-                for (gameTypeIndex = 0; gameTypeIndex < ui_gameTypeCount;
-                     gameTypeIndex++) {
+                for (gameTypeIndex = 0; gameTypeIndex < ui_gameTypeCount; gameTypeIndex++) {
                     if (ui_gameTypes[gameTypeIndex].gameType != NULL &&
-                        Q_stricmpn(token,
-                                  ui_gameTypes[gameTypeIndex].gameType,
-                                  UI_ARENA_TYPE_COMPARE_LIMIT) == 0) {
-                        map->typeBits = coduo_int32_from_bits(
-                            (uint32_t)map->typeBits |
-                            (1u << ((uint32_t)gameTypeIndex & 31u)));
+                        Q_stricmpn(token, ui_gameTypes[gameTypeIndex].gameType, UI_ARENA_TYPE_COMPARE_LIMIT) == 0) {
+                        map->typeBits = coduo_int32_from_bits((uint32_t)map->typeBits | (1u << ((uint32_t)gameTypeIndex & 31u)));
                     }
                 }
             }

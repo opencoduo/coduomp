@@ -20,24 +20,22 @@ void QGL_EnableErrorChecking(qboolean enable)
     rendererGlErrorCheckingEnabled = enable;
     if (enable != qfalse) {
 #define QGL_GL_ENTRY(type_, name_) \
-        if (qgl##name_ != NULL) \
-            qgl##name_ = GL_Checked##name_;
+    if (qgl##name_ != NULL) \
+        qgl##name_ = GL_Checked##name_;
 #include "qgl_gl_entries.h"
 #undef QGL_GL_ENTRY
 
 #define QGL_WGL_ENTRY(type_, name_) \
-        if (qwgl##name_ != NULL) \
-            qwgl##name_ = WGL_Checked##name_;
+    if (qwgl##name_ != NULL) \
+        qwgl##name_ = WGL_Checked##name_;
 #include "qgl_wgl_entries.h"
 #undef QGL_WGL_ENTRY
     } else {
-#define QGL_GL_ENTRY(type_, name_) \
-        qgl##name_ = rendererGl##name_##Driver;
+#define QGL_GL_ENTRY(type_, name_) qgl##name_ = rendererGl##name_##Driver;
 #include "qgl_gl_entries.h"
 #undef QGL_GL_ENTRY
 
-#define QGL_WGL_ENTRY(type_, name_) \
-        qwgl##name_ = rendererWgl##name_##Driver;
+#define QGL_WGL_ENTRY(type_, name_) qwgl##name_ = rendererWgl##name_##Driver;
 #include "qgl_wgl_entries.h"
 #undef QGL_WGL_ENTRY
     }

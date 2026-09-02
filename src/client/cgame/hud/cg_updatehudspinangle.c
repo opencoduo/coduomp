@@ -44,26 +44,24 @@
  */
 
 /* .rdata float constants used by this function (dumped at the exact addresses). */
-#define ANGLE2SHORT   (182.04445f)      /* 0x3007bd60 = 65536/360 */
-#define SHORT2ANGLE   (0.0054931641f)   /* 0x3007bd5c = 360/65536 */
+#define ANGLE2SHORT (182.04445f)      /* 0x3007bd60 = 65536/360 */
+#define SHORT2ANGLE (0.0054931641f)   /* 0x3007bd5c = 360/65536 */
 #define HUDSPIN_MAX_DELTA_MS (500.0f)   /* 0x3007beec: snap if elapsed > 500 ms */
-#define MS_PER_SEC           (0.001f)   /* 0x3007bd94: ms -> seconds */
-#define ANGLE_HALF           (180.0f)   /* 0x3007bd50 */
-#define ANGLE_FULL           (360.0f)   /* 0x3007bd54 */
-#define SETTLE_DELTA         (0.25)     /* 0x3007be30 (double): settle if |delta| < 0.25 */
-#define SETTLE_VEL           (1.0)      /* 0x3007bcf8 (double): ... and |vel| < 1.0 */
-#define MS_PER_SEC_INV       (1000.0f)  /* 0x3007be88: seconds -> ms (== step_ms) */
-#define SPRING_DAMP          (2.0f)     /* FADD ST0,ST0 doubles the vel*sec term */
-#define OVERSHOOT_DAMP       (3.5f)     /* 0x3007bef8: extra damping when vel and delta share sign */
-#define HUDSPIN_VEL_MAX      (30000.0f) /* 0x3007bef4 / +0x46ea6000 */
-#define HUDSPIN_VEL_MIN      (-30000.0f)/* 0x3007bef0 / +0xc6ea6000 */
+#define MS_PER_SEC (0.001f)   /* 0x3007bd94: ms -> seconds */
+#define ANGLE_HALF (180.0f)   /* 0x3007bd50 */
+#define ANGLE_FULL (360.0f)   /* 0x3007bd54 */
+#define SETTLE_DELTA (0.25)     /* 0x3007be30 (double): settle if |delta| < 0.25 */
+#define SETTLE_VEL (1.0)      /* 0x3007bcf8 (double): ... and |vel| < 1.0 */
+#define MS_PER_SEC_INV (1000.0f)  /* 0x3007be88: seconds -> ms (== step_ms) */
+#define SPRING_DAMP (2.0f)     /* FADD ST0,ST0 doubles the vel*sec term */
+#define OVERSHOOT_DAMP (3.5f)     /* 0x3007bef8: extra damping when vel and delta share sign */
+#define HUDSPIN_VEL_MAX (30000.0f) /* 0x3007bef4 / +0x46ea6000 */
+#define HUDSPIN_VEL_MIN (-30000.0f)/* 0x3007bef0 / +0xc6ea6000 */
 
 void CG_UpdateHudSpinAngle(void)
 {
     /* 0x3001d3a3..0x3001d3e3: target = BAMS-fold of (cg_refdefViewAngles[1] - baseTime). */
-    long double targetRaw =
-        ((long double)cg_refdefViewAngles[1] - (long double)cg_hudSpinBaseTime) *
-        (long double)ANGLE2SHORT;
+    long double targetRaw = ((long double)cg_refdefViewAngles[1] - (long double)cg_hudSpinBaseTime) * (long double)ANGLE2SHORT;
     int32_t targetInteger = coduo_fp_to_i32_extended(targetRaw);
     int32_t now = coduo_int32_from_bits(cg_time); /* 0x3001d3bb MOV ECX,[cg_time] */
     uint32_t targetPacked = (uint32_t)targetInteger & 0xffffu;
@@ -71,8 +69,7 @@ void CG_UpdateHudSpinAngle(void)
     int32_t prev = cg_hudSpinPrevTime;       /* 0x3001d3ce MOV EAX,[prevTime] */
     qboolean clockAppearsBackwards = prev > now;
     float targetPackedFloat = (float)targetPackedCarrier;
-    float target = (float)((long double)targetPackedFloat *
-                           (long double)SHORT2ANGLE);
+    float target = (float)((long double)targetPackedFloat * (long double)SHORT2ANGLE);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     /* 0x3001d3d3/0x3001d3e7: if the signed clock appears to run backwards, snap. */
@@ -125,8 +122,7 @@ void CG_UpdateHudSpinAngle(void)
 
         /* 0x3001d46e..0x3001d494: settle test. If the element is essentially at rest
          * (|delta| < 0.25 AND |vel| < 1.0), snap the angle to the target and stop. */
-        if (fabsl((long double)delta) < (long double)SETTLE_DELTA &&
-            fabsl((long double)cg_hudSpinVel) < (long double)SETTLE_VEL) {
+        if (fabsl((long double)delta) < (long double)SETTLE_DELTA && fabsl((long double)cg_hudSpinVel) < (long double)SETTLE_VEL) {
             /* 0x3001d694: vel := 0; angle := target (EBP held the entry `target`). */
             cg_hudSpinVel = 0.0f;
             cg_hudSpinAngle = target;
@@ -135,14 +131,10 @@ void CG_UpdateHudSpinAngle(void)
 
         /* 0x3001d49a..0x3001d4ef: advance the angle by vel*stepSec + delta, folded to
          * (-180, 180]; this becomes the new working delta. */
-        long double foldedRaw =
-            (((long double)cg_hudSpinVel * (long double)stepSec) +
-             (long double)delta) * (long double)ANGLE2SHORT;
-        uint32_t foldedPacked =
-            (uint32_t)coduo_fp_to_i32_extended(foldedRaw) & 0xffffu;
+        long double foldedRaw = (((long double)cg_hudSpinVel * (long double)stepSec) + (long double)delta) * (long double)ANGLE2SHORT;
+        uint32_t foldedPacked = (uint32_t)coduo_fp_to_i32_extended(foldedRaw) & 0xffffu;
         float foldedPackedFloat = (float)(int32_t)foldedPacked;
-        float foldedDelta =
-            (float)((long double)foldedPackedFloat * (long double)SHORT2ANGLE);
+        float foldedDelta = (float)((long double)foldedPackedFloat * (long double)SHORT2ANGLE);
         if (foldedDelta > ANGLE_HALF) {
             foldedDelta -= ANGLE_FULL;       /* 0x3001d4e3..0x3001d4ed */
         }
@@ -152,22 +144,16 @@ void CG_UpdateHudSpinAngle(void)
          * symmetric spring damping vel *= (1 - 2*stepSec). */
         if (foldedDelta > 0.0f) {
             /* 0x3001d50a..0x3001d51a: still ahead of target -> decelerate. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel -
-                (long double)stepSec * (long double)MS_PER_SEC_INV);
+            cg_hudSpinVel = (float)((long double)cg_hudSpinVel - (long double)stepSec * (long double)MS_PER_SEC_INV);
         } else if (foldedDelta < 0.0f) {
             /* 0x3001d51c/0x3001d52d..0x3001d537: behind target -> accelerate. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel +
-                (long double)stepSec * (long double)MS_PER_SEC_INV);
+            cg_hudSpinVel = (float)((long double)cg_hudSpinVel + (long double)stepSec * (long double)MS_PER_SEC_INV);
         }
         /* else foldedDelta == 0: 0x3001d52b JP skips the +/- adjustment. */
 
         /* 0x3001d543..0x3001d555: vel -= 2 * (vel * stepSec)  ==  vel*(1 - 2*stepSec). */
-        cg_hudSpinVel = (float)(
-            (long double)cg_hudSpinVel -
-            (long double)SPRING_DAMP *
-                ((long double)cg_hudSpinVel * (long double)stepSec));
+        cg_hudSpinVel =
+            (float)((long double)cg_hudSpinVel - (long double)SPRING_DAMP * ((long double)cg_hudSpinVel * (long double)stepSec));
 
         /* 0x3001d55b..0x3001d613: overshoot/zero-crossing handling, keyed on the signs
          * of vel and delta (both compared against 0). */
@@ -175,28 +161,22 @@ void CG_UpdateHudSpinAngle(void)
             /* 0x3001d57a..0x3001d595: if vel and delta share the (+) sign, apply extra
              * damping vel *= (1 - 3.5*stepSec). */
             if (foldedDelta > 0.0f) {
-                cg_hudSpinVel = (float)(
-                    (long double)cg_hudSpinVel -
-                    (long double)OVERSHOOT_DAMP *
-                        ((long double)cg_hudSpinVel * (long double)stepSec));
+                cg_hudSpinVel =
+                    (float)((long double)cg_hudSpinVel - (long double)OVERSHOOT_DAMP * ((long double)cg_hudSpinVel * (long double)stepSec));
             }
             /* 0x3001d59b..0x3001d5c4: nudge vel down by stepSec; clamp to 0 on cross. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel - (long double)stepSec);
+            cg_hudSpinVel = (float)((long double)cg_hudSpinVel - (long double)stepSec);
             if (cg_hudSpinVel < 0.0f) {
                 cg_hudSpinVel = 0.0f;
             }
         } else {
             /* 0x3001d5c9..0x3001d5e4: if vel and delta share the (-) sign, extra damping. */
             if (foldedDelta < 0.0f) {
-                cg_hudSpinVel = (float)(
-                    (long double)cg_hudSpinVel -
-                    (long double)OVERSHOOT_DAMP *
-                        ((long double)cg_hudSpinVel * (long double)stepSec));
+                cg_hudSpinVel =
+                    (float)((long double)cg_hudSpinVel - (long double)OVERSHOOT_DAMP * ((long double)cg_hudSpinVel * (long double)stepSec));
             }
             /* 0x3001d5ea..0x3001d613: nudge vel up by stepSec; clamp to 0 on cross. */
-            cg_hudSpinVel = (float)(
-                (long double)cg_hudSpinVel + (long double)stepSec);
+            cg_hudSpinVel = (float)((long double)cg_hudSpinVel + (long double)stepSec);
             if (cg_hudSpinVel > 0.0f) {
                 cg_hudSpinVel = 0.0f;
             }
@@ -215,12 +195,9 @@ void CG_UpdateHudSpinAngle(void)
 finish:
     /* 0x3001d659..0x3001d68a: no store separates FADD/FMUL from Q_rint. */
     {
-        long double finalRaw =
-            ((long double)delta + (long double)target) * (long double)ANGLE2SHORT;
-        uint32_t finalPacked =
-            (uint32_t)coduo_fp_to_i32_extended(finalRaw) & 0xffffu;
+        long double finalRaw = ((long double)delta + (long double)target) * (long double)ANGLE2SHORT;
+        uint32_t finalPacked = (uint32_t)coduo_fp_to_i32_extended(finalRaw) & 0xffffu;
         float finalPackedFloat = (float)(int32_t)finalPacked;
-        cg_hudSpinAngle =
-            (float)((long double)finalPackedFloat * (long double)SHORT2ANGLE);
+        cg_hudSpinAngle = (float)((long double)finalPackedFloat * (long double)SHORT2ANGLE);
     }
 }
