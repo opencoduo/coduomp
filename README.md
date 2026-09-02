@@ -1,7 +1,12 @@
-# coduomp
+<p align="center">
+  <img src="assets/coduomp-icon-master.png" alt="Blue star logo" width="280">
+</p>
 
-Reconstructed source for Call of Duty: United Offensive
-multiplayer client and dedicated-server components.
+<h1 align="center">Open CoD:UO</h1>
+
+<p align="center">
+  Reconstructed source for the <em>Call of Duty: United Offensive</em> multiplayer client and dedicated-server components.
+</p>
 
 This repository contains source and public build dependencies only. It does
 not contain game data, binaries, private binary-analysis records, generated
