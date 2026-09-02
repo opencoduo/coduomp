@@ -51,31 +51,42 @@ void EmitGetFunction(scr_ast_node_t *nameNode, uint32_t sourcePos)
 /* Source: CoDUOMP.exe 0x0047b470..0x0047b496.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b470_0047b497.mcode.
  * Name: exact same-module Mac symbol EmitArrayVariable. */
-void EmitArrayVariable(scr_ast_node_t *objectNode, scr_ast_node_t *indexNode, uint32_t objectSourcePos, uint32_t indexSourcePos)
+void EmitArrayVariable(
+    scr_ast_node_t *objectNode, scr_ast_node_t *indexNode,
+    uint32_t objectSourcePos, uint32_t indexSourcePos)
 {
     EmitExpression(indexNode);
     EmitPrimitiveExpression(objectNode);
-    EmitEvalArray(objectSourcePos, indexSourcePos);
+    EmitEvalArray(
+        objectSourcePos, indexSourcePos);
 }
 
 /* Source: CoDUOMP.exe 0x0047b4a0..0x0047b4c9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b4a0_0047b4ca.mcode.
  * Name: exact same-module Mac symbol EmitArrayVariableRef. */
-void EmitArrayVariableRef(scr_ast_node_t *objectNode, scr_ast_node_t *indexNode, uint32_t objectSourcePos, uint32_t indexSourcePos)
+void EmitArrayVariableRef(
+    scr_ast_node_t *objectNode, scr_ast_node_t *indexNode,
+    uint32_t objectSourcePos, uint32_t indexSourcePos)
 {
     EmitExpression(indexNode);
-    EmitArrayExpressionRef(objectNode, objectSourcePos);
-    EmitEvalArrayRef(objectSourcePos, indexSourcePos);
+    EmitArrayExpressionRef(
+        objectNode, objectSourcePos);
+    EmitEvalArrayRef(
+        objectSourcePos, indexSourcePos);
 }
 
 /* Source: CoDUOMP.exe 0x0047b4d0..0x0047b4f9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b4d0_0047b4fa.mcode.
  * Name: exact same-module Mac symbol EmitClearArrayVariable. */
-void EmitClearArrayVariable(scr_ast_node_t *objectNode, scr_ast_node_t *indexNode, uint32_t objectSourcePos, uint32_t indexSourcePos)
+void EmitClearArrayVariable(
+    scr_ast_node_t *objectNode, scr_ast_node_t *indexNode,
+    uint32_t objectSourcePos, uint32_t indexSourcePos)
 {
     EmitExpression(indexNode);
-    EmitArrayExpressionRef(objectNode, objectSourcePos);
-    EmitClearArray(objectSourcePos, indexSourcePos);
+    EmitArrayExpressionRef(
+        objectNode, objectSourcePos);
+    EmitClearArray(
+        objectSourcePos, indexSourcePos);
 }
 
 /* Source: CoDUOMP.exe 0x0047b500..0x0047b55d.
@@ -83,19 +94,26 @@ void EmitClearArrayVariable(scr_ast_node_t *objectNode, scr_ast_node_t *indexNod
 void EmitVariableExpression(scr_ast_node_t *node)
 {
     if (node->kind == SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF) {
-        EmitArrayVariable(node->payload.objectIndexObjectRef.objectNode, node->payload.objectIndexObjectRef.indexNode,
-                          node->payload.objectIndexObjectRef.objectSourcePos, node->payload.objectIndexObjectRef.indexSourcePos);
+        EmitArrayVariable(
+            node->payload.objectIndexObjectRef.objectNode,
+            node->payload.objectIndexObjectRef.indexNode,
+            node->payload.objectIndexObjectRef.objectSourcePos,
+            node->payload.objectIndexObjectRef.indexSourcePos);
         return;
     }
 
     if (node->kind == SCR_AST_KIND_STRING_REF) {
-        EmitLocalVariable(SCR_AST_STRING_HANDLE(node->payload.stringRef.stringHandle));
+        EmitLocalVariable(
+            SCR_AST_STRING_HANDLE(node->payload.stringRef.stringHandle));
         return;
     }
 
     if (node->kind == SCR_AST_KIND_OBJECT_STRING_REF) {
-        EmitFieldVariable(node->payload.objectStringRef.objectNode, SCR_AST_STRING_HANDLE(node->payload.objectStringRef.stringHandle),
-                          node->payload.objectStringRef.sourcePos);
+        EmitFieldVariable(
+            node->payload.objectStringRef.objectNode,
+            SCR_AST_STRING_HANDLE(
+                node->payload.objectStringRef.stringHandle),
+            node->payload.objectStringRef.sourcePos);
     }
 }
 
@@ -105,7 +123,8 @@ int32_t EmitExpressionList(scr_ast_list_t *list)
 {
     int32_t count = 0;
 
-    for (scr_ast_list_item_t *item = list->head; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = list->head; item != NULL;
+         item = item->next) {
         EmitExpression(item->entry->node);
         count++;
     }
@@ -134,7 +153,8 @@ void AddExpressionListOpcodePos(scr_ast_list_t *list)
         return;
     }
 
-    for (scr_ast_list_item_t *item = list->head; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = list->head; item != NULL;
+         item = item->next) {
         AddOpcodePos(item->entry->sourcePos);
     }
 }
@@ -149,7 +169,8 @@ uint16_t AddFilePrecache(uint16_t filename, uint32_t sourcePos)
     script_pendingScriptLoadCursor->sourcePos = sourcePos;
     ++script_pendingScriptLoadCursor;
 
-    const uint16_t scriptSlot = GetVariable(script_loadScriptHandleRoot, filename);
+    const uint16_t scriptSlot = GetVariable(
+        script_loadScriptHandleRoot, filename);
     return GetObject(scriptSlot);
 }
 
@@ -160,9 +181,12 @@ uint16_t AddFilePrecache(uint16_t filename, uint32_t sourcePos)
 void EmitFunction(scr_ast_node_t *node, uint32_t sourcePos)
 {
     if (script_codegenMode == SCRIPT_CODEGEN_MODE_RELEASE_STRINGS) {
-        CompileRemoveRefToString(SCR_AST_STRING_HANDLE(node->payload.functionRef.nameHandle));
+        CompileRemoveRefToString(
+            SCR_AST_STRING_HANDLE(node->payload.functionRef.nameHandle));
         if (node->kind == SCR_AST_KIND_SCRIPT_FUNCTION_REF) {
-            CompileRemoveRefToString(SCR_AST_STRING_HANDLE(node->payload.scriptFunctionRef.nameHandle));
+            CompileRemoveRefToString(
+                SCR_AST_STRING_HANDLE(
+                    node->payload.scriptFunctionRef.nameHandle));
             --script_pendingScriptLoadCount;
         }
         return;
@@ -170,31 +194,45 @@ void EmitFunction(scr_ast_node_t *node, uint32_t sourcePos)
 
     uint16_t functionObject = 0;
     if (node->kind == SCR_AST_KIND_FUNCTION_REF) {
-        const uint16_t functionName = SCR_AST_STRING_HANDLE(node->payload.functionRef.nameHandle);
-        const uint16_t functionHandle = FindVariable(script_currentFunctionRoot, functionName);
-        CompileTransferRefToString(functionName, SCRIPT_STRING_USAGE_FUNCTION);
+        const uint16_t functionName =
+            SCR_AST_STRING_HANDLE(node->payload.functionRef.nameHandle);
+        const uint16_t functionHandle = FindVariable(
+            script_currentFunctionRoot, functionName);
+        CompileTransferRefToString(functionName,
+                                   SCRIPT_STRING_USAGE_FUNCTION);
         if (functionHandle == 0) {
             CompileError(sourcePos, "unknown function");
             return;
         }
         functionObject = FindObject(functionHandle);
     } else if (node->kind == SCR_AST_KIND_SCRIPT_FUNCTION_REF) {
-        const uint16_t scriptFilename = SCR_AST_STRING_HANDLE(node->payload.scriptFunctionRef.filenameHandle);
-        const uint16_t functionName = SCR_AST_STRING_HANDLE(node->payload.scriptFunctionRef.nameHandle);
-        const uint16_t canonicalFilename = Scr_CreateCanonicalFilename(SL_ConvertToString(scriptFilename));
+        const uint16_t scriptFilename =
+            SCR_AST_STRING_HANDLE(
+                node->payload.scriptFunctionRef.filenameHandle);
+        const uint16_t functionName =
+            SCR_AST_STRING_HANDLE(
+                node->payload.scriptFunctionRef.nameHandle);
+        const uint16_t canonicalFilename = Scr_CreateCanonicalFilename(
+            SL_ConvertToString(scriptFilename));
 
         CompileRemoveRefToString(scriptFilename);
-        const uint16_t loadedScript = FindVariable(script_loadScriptCodeRoot, canonicalFilename);
-        const uint16_t scriptRoot = AddFilePrecache(canonicalFilename, sourcePos);
+        const uint16_t loadedScript = FindVariable(
+            script_loadScriptCodeRoot, canonicalFilename);
+        const uint16_t scriptRoot =
+            AddFilePrecache(canonicalFilename, sourcePos);
         CompileRemoveRefToString(canonicalFilename);
 
         uint16_t functionHandle;
         if (loadedScript == 0) {
-            functionHandle = GetVariable(scriptRoot, functionName);
-            CompileTransferRefToString(functionName, SCRIPT_STRING_USAGE_FUNCTION);
+            functionHandle = GetVariable(scriptRoot,
+                                                      functionName);
+            CompileTransferRefToString(functionName,
+                                       SCRIPT_STRING_USAGE_FUNCTION);
         } else {
-            functionHandle = FindVariable(scriptRoot, functionName);
-            CompileTransferRefToString(functionName, SCRIPT_STRING_USAGE_FUNCTION);
+            functionHandle = FindVariable(scriptRoot,
+                                                       functionName);
+            CompileTransferRefToString(functionName,
+                                       SCRIPT_STRING_USAGE_FUNCTION);
             if (functionHandle == 0) {
                 CompileError(sourcePos, "unknown function");
                 return;
@@ -208,8 +246,11 @@ void EmitFunction(scr_ast_node_t *node, uint32_t sourcePos)
             return;
         }
         if (functionValue.type == SCRIPT_VAR_INT) {
-            if (script_codegenMode != SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS) {
-                CompileError(sourcePos, "normal script cannot reference /# ... #/ comment");
+            if (script_codegenMode !=
+                SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS) {
+                CompileError(
+                    sourcePos,
+                    "normal script cannot reference /# ... #/ comment");
             }
             coduomp_script_emit_value_payload(functionValue.payload);
             return;
@@ -221,7 +262,8 @@ void EmitFunction(scr_ast_node_t *node, uint32_t sourcePos)
     if (script_codegenMode == SCRIPT_CODEGEN_MODE_RELEASE_STRINGS)
         return;
 
-    const uint16_t countSlot = GetVariable(functionObject, SCRIPT_FUNCTION_REFERENCE_COUNT_CHILD);
+    const uint16_t countSlot = GetVariable(
+        functionObject, SCRIPT_FUNCTION_REFERENCE_COUNT_CHILD);
     VariableValue countValue;
     GetVariableValue(countSlot, &countValue);
     if (countValue.type == SCRIPT_VAR_UNDEFINED) {
@@ -229,11 +271,17 @@ void EmitFunction(scr_ast_node_t *node, uint32_t sourcePos)
         countValue.type = SCRIPT_VAR_INT;
     }
 
-    const uint16_t referenceSlot = GetVariable(functionObject, (uint32_t)countValue.payload + SCRIPT_FUNCTION_REFERENCE_FIRST_CHILD);
-    VariableValue referenceValue = {.payload = (uintptr_t)script_codeEmitCursor, .type = SCRIPT_VAR_CODEPOS};
+    const uint16_t referenceSlot = GetVariable(
+        functionObject,
+        (uint32_t)countValue.payload + SCRIPT_FUNCTION_REFERENCE_FIRST_CHILD);
+    VariableValue referenceValue = {
+        .payload = (uintptr_t)script_codeEmitCursor,
+        .type = SCRIPT_VAR_CODEPOS
+    };
     if (script_codegenMode == SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS) {
         referenceValue.type = SCRIPT_VAR_INT;
-        referenceValue.payload += (uintptr_t)(script_codeRelocationEnd - script_codeRelocationStart);
+        referenceValue.payload += (uintptr_t)(
+            script_codeRelocationEnd - script_codeRelocationStart);
     }
     SetNewVariableValue(referenceSlot, &referenceValue);
 
@@ -244,12 +292,17 @@ void EmitFunction(scr_ast_node_t *node, uint32_t sourcePos)
 
 /* Source: CoDUOMP.exe 0x0047b980..0x0047b9d8.
  * Name/signature: exact same-module Mac symbol EmitPostScriptFunction. */
-void EmitPostScriptFunction(scr_ast_node_t *functionNode, int32_t argumentCount, qboolean hasMethodContext, uint32_t sourcePos)
+void EmitPostScriptFunction(scr_ast_node_t *functionNode,
+                            int32_t argumentCount,
+                            qboolean hasMethodContext,
+                            uint32_t sourcePos)
 {
     if (hasMethodContext == qfalse) {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION, -1 - argumentCount, 3);
+        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION,
+                              -1 - argumentCount, 3);
     } else {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION_STATEMENT, -2 - argumentCount, 3);
+        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION_STATEMENT,
+                              -2 - argumentCount, 3);
     }
     EmitFunction(functionNode, sourcePos);
     EmitInteger(argumentCount);
@@ -258,14 +311,20 @@ void EmitPostScriptFunction(scr_ast_node_t *functionNode, int32_t argumentCount,
 /* Source: CoDUOMP.exe 0x0047b9e0..0x0047ba50.
  * Name/signature: exact same-module Mac symbol
  * EmitPostScriptFunctionPointer. */
-void EmitPostScriptFunctionPointer(scr_ast_node_t *functionExpression, int32_t argumentCount, qboolean hasMethodContext,
-                                   uint32_t callSourcePos, uint32_t functionSourcePos)
+void EmitPostScriptFunctionPointer(scr_ast_node_t *functionExpression,
+                                   int32_t argumentCount,
+                                   qboolean hasMethodContext,
+                                   uint32_t callSourcePos,
+                                   uint32_t functionSourcePos)
 {
     EmitExpression(functionExpression);
     if (hasMethodContext == qfalse) {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION_POINTER, -2 - argumentCount, 3);
+        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION_POINTER,
+                              -2 - argumentCount, 3);
     } else {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_FUNCTION_POINTER_STATEMENT, -3 - argumentCount, 3);
+        EmitOpcode(
+            SCRIPT_OPCODE_SCRIPT_FUNCTION_POINTER_STATEMENT,
+            -3 - argumentCount, 3);
     }
     AddOpcodePos(functionSourcePos);
     AddOpcodePos(callSourcePos);
@@ -278,12 +337,19 @@ void EmitPostScriptFunctionPointer(scr_ast_node_t *functionExpression, int32_t a
  * here rather than adding another local. Windows performs the equivalent
  * update inline at 0x0047ba50..0x0047bb7c; Linux passes mode 2 to EmitOpcode.
  * The former client recovery's mode 0 was a transcription error. */
-void EmitPostScriptThread(scr_ast_node_t *functionNode, int32_t argumentCount, qboolean hasMethodContext, uint32_t sourcePos)
+void EmitPostScriptThread(scr_ast_node_t *functionNode,
+                          int32_t argumentCount,
+                          qboolean hasMethodContext,
+                          uint32_t sourcePos)
 {
     if (hasMethodContext == qfalse) {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD, 1 - argumentCount, SCRIPT_THREAD_LOCAL_DEPTH_STACK);
+        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD,
+                   1 - argumentCount,
+                   SCRIPT_THREAD_LOCAL_DEPTH_STACK);
     } else {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD_STATEMENT, -argumentCount, SCRIPT_THREAD_LOCAL_DEPTH_STACK);
+        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD_STATEMENT,
+                   -argumentCount,
+                   SCRIPT_THREAD_LOCAL_DEPTH_STACK);
     }
     EmitFunction(functionNode, sourcePos);
     EmitInteger(argumentCount);
@@ -291,13 +357,20 @@ void EmitPostScriptThread(scr_ast_node_t *functionNode, int32_t argumentCount, q
 
 /* Source: CoDUOMP.exe 0x0047bb80..0x0047bcb7.
  * Name/signature: exact same-module Mac symbol EmitPostScriptThreadPointer. */
-void EmitPostScriptThreadPointer(scr_ast_node_t *functionExpression, int32_t argumentCount, qboolean hasMethodContext, uint32_t sourcePos)
+void EmitPostScriptThreadPointer(scr_ast_node_t *functionExpression,
+                                 int32_t argumentCount,
+                                 qboolean hasMethodContext,
+                                 uint32_t sourcePos)
 {
     EmitExpression(functionExpression);
     if (hasMethodContext == qfalse) {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD_POINTER, -argumentCount, SCRIPT_THREAD_LOCAL_DEPTH_STACK);
+        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD_POINTER,
+                   -argumentCount,
+                   SCRIPT_THREAD_LOCAL_DEPTH_STACK);
     } else {
-        EmitOpcode(SCRIPT_OPCODE_SCRIPT_THREAD_POINTER_STATEMENT, -1 - argumentCount, SCRIPT_THREAD_LOCAL_DEPTH_STACK);
+        EmitOpcode(
+            SCRIPT_OPCODE_SCRIPT_THREAD_POINTER_STATEMENT,
+            -1 - argumentCount, SCRIPT_THREAD_LOCAL_DEPTH_STACK);
     }
     AddOpcodePos(sourcePos);
     EmitInteger(argumentCount);
@@ -307,26 +380,40 @@ void EmitPostScriptThreadPointer(scr_ast_node_t *functionExpression, int32_t arg
  * gap at 0x0047bcb7. Name/signature: exact same-module Mac symbol
  * EmitPostScriptFunctionCall. The Windows compiler also inlines this dispatch
  * into EmitPostFunctionCall. */
-void EmitPostScriptFunctionCall(scr_ast_node_t *callee, int32_t argumentCount, qboolean hasMethodContext, uint32_t callSourcePos)
+void EmitPostScriptFunctionCall(scr_ast_node_t *callee,
+                                int32_t argumentCount,
+                                qboolean hasMethodContext,
+                                uint32_t callSourcePos)
 {
     if (callee->kind == SCR_AST_KIND_SCRIPT_FUNCTION_NAME) {
-        EmitPostScriptFunction(callee->payload.namedCall.functionNode, argumentCount, hasMethodContext, callSourcePos);
+        EmitPostScriptFunction(callee->payload.namedCall.functionNode,
+                               argumentCount, hasMethodContext,
+                               callSourcePos);
     } else if (callee->kind == SCR_AST_KIND_FUNCTION_POINTER_CALL) {
-        EmitPostScriptFunctionPointer(callee->payload.pointerCall.functionExpression, argumentCount, hasMethodContext, callSourcePos,
-                                      callee->payload.pointerCall.sourcePos);
+        EmitPostScriptFunctionPointer(
+            callee->payload.pointerCall.functionExpression,
+            argumentCount, hasMethodContext, callSourcePos,
+            callee->payload.pointerCall.sourcePos);
     }
 }
 
 /* Source: CoDUOMP.exe 0x0047bd00..0x0047bd53.
  * Name/signature: exact same-module Mac symbol EmitPostScriptThreadCall. */
-void EmitPostScriptThreadCall(scr_ast_node_t *callee, int32_t argumentCount, qboolean hasMethodContext, uint32_t callSourcePos,
+void EmitPostScriptThreadCall(scr_ast_node_t *callee,
+                              int32_t argumentCount,
+                              qboolean hasMethodContext,
+                              uint32_t callSourcePos,
                               uint32_t functionSourcePos)
 {
     if (callee->kind == SCR_AST_KIND_SCRIPT_FUNCTION_NAME) {
-        EmitPostScriptThread(callee->payload.namedCall.functionNode, argumentCount, hasMethodContext, functionSourcePos);
+        EmitPostScriptThread(callee->payload.namedCall.functionNode,
+                             argumentCount, hasMethodContext,
+                             functionSourcePos);
     } else if (callee->kind == SCR_AST_KIND_FUNCTION_POINTER_CALL) {
-        EmitPostScriptThreadPointer(callee->payload.pointerCall.functionExpression, argumentCount, hasMethodContext,
-                                    callee->payload.pointerCall.sourcePos);
+        EmitPostScriptThreadPointer(
+            callee->payload.pointerCall.functionExpression,
+            argumentCount, hasMethodContext,
+            callee->payload.pointerCall.sourcePos);
     }
     AddOpcodePos(callSourcePos);
 }
@@ -343,12 +430,18 @@ void EmitPreFunctionCall(scr_ast_node_t *call)
 
 /* Source: CoDUOMP.exe 0x0047bd80..0x0047bde9.
  * Name/signature: exact same-module Mac symbol EmitPostFunctionCall. */
-void EmitPostFunctionCall(scr_ast_node_t *call, int32_t argumentCount, qboolean hasMethodContext)
+void EmitPostFunctionCall(scr_ast_node_t *call,
+                          int32_t argumentCount,
+                          qboolean hasMethodContext)
 {
     if (call->kind == SCR_AST_KIND_FUNCTION_CALL) {
-        EmitPostScriptFunctionCall(call->payload.call.callee, argumentCount, hasMethodContext, call->payload.call.callSourcePos);
+        EmitPostScriptFunctionCall(call->payload.call.callee,
+                                   argumentCount, hasMethodContext,
+                                   call->payload.call.callSourcePos);
     } else if (call->kind == SCR_AST_KIND_METHOD_CALL) {
-        EmitPostScriptThreadCall(call->payload.call.callee, argumentCount, hasMethodContext, call->payload.call.callSourcePos,
+        EmitPostScriptThreadCall(call->payload.call.callee,
+                                 argumentCount, hasMethodContext,
+                                 call->payload.call.callSourcePos,
                                  call->payload.call.methodSourcePos);
     }
 }
@@ -368,8 +461,10 @@ uint16_t GetBuiltin(scr_ast_node_t *call)
     if (functionNode->kind != SCR_AST_KIND_FUNCTION_REF)
         return 0;
 
-    const uint16_t name = SCR_AST_STRING_HANDLE(functionNode->payload.functionRef.nameHandle);
-    const uint16_t functionHandle = FindVariable(script_currentFunctionRoot, name);
+    const uint16_t name = SCR_AST_STRING_HANDLE(
+        functionNode->payload.functionRef.nameHandle);
+    const uint16_t functionHandle = FindVariable(
+        script_currentFunctionRoot, name);
     return functionHandle == 0 ? name : 0;
 }
 
@@ -377,13 +472,15 @@ uint16_t GetBuiltin(scr_ast_node_t *call)
  * Name/signature: exact same-module Mac symbol EmitCall(sval_u, sval_u, bool).
  * The Windows compiler inlines GetBuiltin, the bytecode operand emitters, and
  * the pre/post script-call dispatchers recovered above. */
-void EmitCall(scr_ast_node_t *call, scr_ast_list_t *arguments, qboolean isStatement)
+void EmitCall(scr_ast_node_t *call, scr_ast_list_t *arguments,
+              qboolean isStatement)
 {
     const uint16_t builtinName = GetBuiltin(call);
     if (builtinName != 0) {
         const char *builtinNameText = SL_ConvertToString(builtinName);
         int32_t developerCommand = 0;
-        script_function_callback_t builtinFunction = Scr_GetFunction(&builtinNameText, &developerCommand);
+        script_function_callback_t builtinFunction =
+            Scr_GetFunction(&builtinNameText, &developerCommand);
         const uint32_t sourcePos = call->payload.call.callSourcePos;
         const uint32_t savedChecksum = script_codeChecksum;
         uint8_t *savedTempPos = TempMalloc(0);
@@ -393,15 +490,18 @@ void EmitCall(scr_ast_node_t *call, scr_ast_list_t *arguments, qboolean isStatem
                 developerCommand = 0;
             } else {
                 if (isStatement == qfalse) {
-                    CompileError(sourcePos, "developer command can only be used as a statement "
-                                            "if not in a /# ... #/ comment");
+                    CompileError(
+                        sourcePos,
+                        "developer command can only be used as a statement "
+                        "if not in a /# ... #/ comment");
                 }
 
                 if (script_runtimeDeveloperScriptFlag == qfalse) {
                     script_codegenMode = SCRIPT_CODEGEN_MODE_RELEASE_STRINGS;
                 } else {
                     if (script_codeNeedsDeferredCheck == qfalse) {
-                        EmitOpcode(SCRIPT_OPCODE_DEVELOPER_COMMAND, 0, 0);
+                        EmitOpcode(
+                            SCRIPT_OPCODE_DEVELOPER_COMMAND, 0, 0);
                         /* Windows EmitCall at 0x0047bf48..0x0047bf5c and
                          * EmitDeveloperStatementList at
                          * 0x0047f0a5..0x0047f0ae both snapshot the code-emission
@@ -409,24 +509,30 @@ void EmitCall(scr_ast_node_t *call, scr_ast_list_t *arguments, qboolean isStatem
                          * bound this store to the developer-buffer base. */
                         script_codeRelocationStart = script_codeEmitCursor;
                     }
-                    script_codegenMode = SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS;
+                    script_codegenMode =
+                        SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS;
                 }
             }
         }
 
-        const int32_t argumentCount = EmitExpressionList(arguments);
+        const int32_t argumentCount =
+            EmitExpressionList(arguments);
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (argumentCount >= SCRIPT_CALL_ARGUMENT_LIMIT) {
             CompileRemoveRefToString(builtinName);
-            CompileError(sourcePos, "parameter count exceeds 256");
+            CompileError(sourcePos,
+                                  "parameter count exceeds 256");
         }
 
         if (builtinFunction == NULL) {
-            CompileError(sourcePos, "unknown (builtin) function '%s'", builtinNameText);
+            CompileError(
+                sourcePos, "unknown (builtin) function '%s'",
+                builtinNameText);
             CompileRemoveRefToString(builtinName);
         } else {
             CompileRemoveRefToString(builtinName);
-            EmitOpcode(SCRIPT_OPCODE_BUILTIN_FUNCTION, 1 - argumentCount, 1);
+            EmitOpcode(SCRIPT_OPCODE_BUILTIN_FUNCTION,
+                                  1 - argumentCount, 1);
             EmitByte((uint8_t)argumentCount);
             EmitBuiltinFunction(builtinFunction);
             AddOpcodePos(sourcePos);
@@ -463,13 +569,16 @@ void EmitCall(scr_ast_node_t *call, scr_ast_list_t *arguments, qboolean isStatem
  * Name/signature: exact same-module Mac symbol EmitMethod.
  * The first AST value is the receiver expression; the second is the same
  * function-call descriptor consumed by GetBuiltin and EmitPostFunctionCall. */
-void EmitMethod(scr_ast_node_t *object, scr_ast_node_t *call, scr_ast_list_t *arguments, uint32_t objectSourcePos, qboolean isStatement)
+void EmitMethod(scr_ast_node_t *object, scr_ast_node_t *call,
+                scr_ast_list_t *arguments, uint32_t objectSourcePos,
+                qboolean isStatement)
 {
     const uint16_t builtinName = GetBuiltin(call);
     if (builtinName != 0) {
         const char *builtinNameText = SL_ConvertToString(builtinName);
         int32_t developerCommand = 0;
-        script_method_callback_t builtinMethod = Scr_GetMethod(&builtinNameText, &developerCommand);
+        script_method_callback_t builtinMethod =
+            Scr_GetMethod(&builtinNameText, &developerCommand);
         const uint32_t sourcePos = call->payload.call.callSourcePos;
         const uint32_t savedChecksum = script_codeChecksum;
         uint8_t *savedTempPos = TempMalloc(0);
@@ -479,38 +588,47 @@ void EmitMethod(scr_ast_node_t *object, scr_ast_node_t *call, scr_ast_list_t *ar
                 developerCommand = 0;
             } else {
                 if (isStatement == qfalse) {
-                    CompileError(sourcePos, "developer command can only be used as a statement "
-                                            "if not in a /# ... #/ comment");
+                    CompileError(
+                        sourcePos,
+                        "developer command can only be used as a statement "
+                        "if not in a /# ... #/ comment");
                 }
 
                 if (script_runtimeDeveloperScriptFlag == qfalse) {
                     script_codegenMode = SCRIPT_CODEGEN_MODE_RELEASE_STRINGS;
                 } else {
                     if (script_codeNeedsDeferredCheck == qfalse) {
-                        EmitOpcode(SCRIPT_OPCODE_DEVELOPER_COMMAND, 0, 0);
+                        EmitOpcode(
+                            SCRIPT_OPCODE_DEVELOPER_COMMAND, 0, 0);
                         /* Same relocation-start snapshot as the builtin
                          * function path above. */
                         script_codeRelocationStart = script_codeEmitCursor;
                     }
-                    script_codegenMode = SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS;
+                    script_codegenMode =
+                        SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS;
                 }
             }
         }
 
-        const int32_t argumentCount = EmitExpressionList(arguments);
+        const int32_t argumentCount =
+            EmitExpressionList(arguments);
         EmitPrimitiveExpression(object);
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (argumentCount >= SCRIPT_CALL_ARGUMENT_LIMIT) {
             CompileRemoveRefToString(builtinName);
-            CompileError(sourcePos, "parameter count exceeds 256");
+            CompileError(sourcePos,
+                                  "parameter count exceeds 256");
         }
 
         if (builtinMethod == NULL) {
-            CompileError(sourcePos, "unknown (builtin) method '%s'", builtinNameText);
+            CompileError(
+                sourcePos, "unknown (builtin) method '%s'",
+                builtinNameText);
             CompileRemoveRefToString(builtinName);
         } else {
             CompileRemoveRefToString(builtinName);
-            EmitOpcode(SCRIPT_OPCODE_BUILTIN_METHOD, -argumentCount, 1);
+            EmitOpcode(SCRIPT_OPCODE_BUILTIN_METHOD,
+                                  -argumentCount, 1);
             EmitByte((uint8_t)argumentCount);
             EmitBuiltinMethod(builtinMethod);
             AddOpcodePos(sourcePos);
@@ -553,37 +671,60 @@ void EmitMethod(scr_ast_node_t *object, scr_ast_node_t *call, scr_ast_list_t *ar
  * at key 2; child 0 holds the count and child 1 holds the definition. */
 void AdjustFunctionAddresses(void)
 {
-    for (uint16_t functionSlot = FindNextSibling(script_currentFunctionRoot); functionSlot != 0;
+    for (uint16_t functionSlot =
+             FindNextSibling(script_currentFunctionRoot);
+         functionSlot != 0;
          functionSlot = FindNextSibling(functionSlot)) {
-        const uint16_t functionObject = FindObject(functionSlot);
-        const uint16_t definitionSlot = FindVariable(functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
-        VariableValue definitionValue = {.payload = 0, .type = SCRIPT_VAR_UNDEFINED};
+        const uint16_t functionObject =
+            FindObject(functionSlot);
+        const uint16_t definitionSlot = FindVariable(
+            functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
+        VariableValue definitionValue = {
+            .payload = 0,
+            .type = SCRIPT_VAR_UNDEFINED
+        };
 
         if (definitionSlot != 0) {
             GetVariableValue(definitionSlot, &definitionValue);
         }
 
-        const uint16_t referenceCountSlot = FindVariable(functionObject, SCRIPT_FUNCTION_REFERENCE_COUNT_CHILD);
+        const uint16_t referenceCountSlot = FindVariable(
+            functionObject, SCRIPT_FUNCTION_REFERENCE_COUNT_CHILD);
         if (referenceCountSlot != 0) {
             VariableValue referenceCountValue;
-            GetVariableValue(referenceCountSlot, &referenceCountValue);
-            const int32_t referenceCount = (int32_t)(uint32_t)referenceCountValue.payload;
+            GetVariableValue(referenceCountSlot,
+                                     &referenceCountValue);
+            const int32_t referenceCount =
+                (int32_t)(uint32_t)referenceCountValue.payload;
 
-            for (int32_t referenceIndex = 0; referenceIndex < referenceCount; ++referenceIndex) {
-                const uint16_t referenceSlot =
-                    FindVariable(functionObject, (uint32_t)referenceIndex + SCRIPT_FUNCTION_REFERENCE_FIRST_CHILD);
-                VariableValue *referenceValue = GetVariableValueAddress(referenceSlot);
+            for (int32_t referenceIndex = 0;
+                 referenceIndex < referenceCount;
+                 ++referenceIndex) {
+                const uint16_t referenceSlot = FindVariable(
+                    functionObject,
+                    (uint32_t)referenceIndex +
+                        SCRIPT_FUNCTION_REFERENCE_FIRST_CHILD);
+                VariableValue *referenceValue =
+                    GetVariableValueAddress(referenceSlot);
 
-                if (definitionValue.type == SCRIPT_VAR_INT && GetVarType(referenceSlot) == SCRIPT_VAR_CODEPOS) {
-                    CompileError2((uint8_t *)referenceValue->payload, "normal script cannot reference /# ... #/ comment");
+                if (definitionValue.type == SCRIPT_VAR_INT &&
+                    GetVarType(referenceSlot) ==
+                        SCRIPT_VAR_CODEPOS) {
+                    CompileError2(
+                        (uint8_t *)referenceValue->payload,
+                        "normal script cannot reference /# ... #/ comment");
                 } else if (definitionSlot == 0) {
-                    CompileError2((uint8_t *)referenceValue->payload, "unknown function");
+                    CompileError2(
+                        (uint8_t *)referenceValue->payload,
+                        "unknown function");
                 } else {
                     /* The original stores one i386 payload dword. Native
                      * bytecode emits host-width code-position operands, so
                      * patch the same logical operand without assuming its
                      * alignment. */
-                    memcpy((void *)referenceValue->payload, &definitionValue.payload, sizeof(definitionValue.payload));
+                    memcpy((void *)referenceValue->payload,
+                           &definitionValue.payload,
+                           sizeof(definitionValue.payload));
                 }
             }
         }
@@ -600,13 +741,17 @@ void AdjustFunctionAddresses(void)
  * SpecifyThreadPosition(unsigned short, sval_u). */
 void SpecifyThreadPosition(uint16_t functionObject, uint32_t sourcePos)
 {
-    const uint16_t definitionSlot = GetVariable(functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
+    const uint16_t definitionSlot = GetVariable(
+        functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
     if (GetVarType(definitionSlot) != SCRIPT_VAR_UNDEFINED) {
         CompileError(sourcePos, "function already defined");
         return;
     }
 
-    const VariableValue definitionValue = {.payload = 0, .type = SCRIPT_VAR_CODEPOS};
+    const VariableValue definitionValue = {
+        .payload = 0,
+        .type = SCRIPT_VAR_CODEPOS
+    };
     SetNewVariableValue(definitionSlot, &definitionValue);
 }
 
@@ -614,19 +759,24 @@ void SpecifyThreadPosition(uint16_t functionObject, uint32_t sourcePos)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047c5a0_0047c606.mcode.
  * Name/signature: exact same-module Mac symbol
  * SpecifyDeveloperThreadPosition(unsigned short, sval_u). */
-void SpecifyDeveloperThreadPosition(uint16_t functionObject, uint32_t sourcePos)
+void SpecifyDeveloperThreadPosition(uint16_t functionObject,
+                                    uint32_t sourcePos)
 {
     if (script_runtimeDeveloperScriptFlag == qfalse) {
         return;
     }
 
-    const uint16_t definitionSlot = GetVariable(functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
+    const uint16_t definitionSlot = GetVariable(
+        functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
     if (GetVarType(definitionSlot) != SCRIPT_VAR_UNDEFINED) {
         CompileError(sourcePos, "function already defined");
         return;
     }
 
-    const VariableValue definitionValue = {.payload = 0, .type = SCRIPT_VAR_INT};
+    const VariableValue definitionValue = {
+        .payload = 0,
+        .type = SCRIPT_VAR_INT
+    };
     SetNewVariableValue(definitionSlot, &definitionValue);
 }
 
@@ -637,20 +787,27 @@ void SetThreadPosition(uint16_t functionObject, uint32_t sourcePos)
 {
     (void)sourcePos;
 
-    const uint16_t definitionSlot = FindVariable(functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
-    GetVariableValueAddress(definitionSlot)->payload = (uintptr_t)TempMalloc(0);
+    const uint16_t definitionSlot = FindVariable(
+        functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
+    GetVariableValueAddress(definitionSlot)->payload =
+        (uintptr_t)TempMalloc(0);
 }
 
 /* Source: CoDUOMP.exe 0x0047c660..0x0047c6b3.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047c660_0047c6b3.mcode.
  * Name/signature: exact same-module Mac symbol
  * SetDeveloperThreadPosition(unsigned short, sval_u). */
-void SetDeveloperThreadPosition(uint16_t functionObject, uint32_t sourcePos)
+void SetDeveloperThreadPosition(uint16_t functionObject,
+                                uint32_t sourcePos)
 {
     (void)sourcePos;
 
-    const uint16_t definitionSlot = FindVariable(functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
-    GetVariableValueAddress(definitionSlot)->payload = (uintptr_t)(TempMalloc(0) + (script_codeRelocationEnd - script_codeRelocationStart));
+    const uint16_t definitionSlot = FindVariable(
+        functionObject, SCRIPT_FUNCTION_DEFINITION_CHILD);
+    GetVariableValueAddress(definitionSlot)->payload =
+        (uintptr_t)(TempMalloc(0) +
+                    (script_codeRelocationEnd -
+                     script_codeRelocationStart));
 }
 
 /* Source: CoDUOMP.exe 0x0047a7c0..0x0047a846.
@@ -669,10 +826,14 @@ void EmitSize(scr_ast_node_t *node, uint32_t sourcePos)
 void EmitCallExpression(scr_ast_node_t *node, qboolean emitDropTop)
 {
     if (node->kind == SCR_AST_KIND_FUNCTION_CALL_VALUE) {
-        EmitCall(node->payload.functionCallValue.callee, node->payload.functionCallValue.args, emitDropTop);
+        EmitCall(node->payload.functionCallValue.callee,
+                 node->payload.functionCallValue.args, emitDropTop);
     } else if (node->kind == SCR_AST_KIND_METHOD_CALL_VALUE) {
-        EmitMethod(node->payload.methodCallValue.objectNode, node->payload.methodCallValue.callee, node->payload.methodCallValue.args,
-                   node->payload.methodCallValue.methodSourcePos, emitDropTop);
+        EmitMethod(node->payload.methodCallValue.objectNode,
+                   node->payload.methodCallValue.callee,
+                   node->payload.methodCallValue.args,
+                   node->payload.methodCallValue.methodSourcePos,
+                   emitDropTop);
     }
 }
 
@@ -681,11 +842,16 @@ void EmitCallExpression(scr_ast_node_t *node, qboolean emitDropTop)
 void EmitCallExpressionRef(scr_ast_node_t *node)
 {
     if (node->kind == SCR_AST_KIND_FUNCTION_CALL_VALUE) {
-        EmitCallRef(node->payload.functionCallValue.callee, node->payload.functionCallValue.args,
-                    node->payload.functionCallValue.callSourcePos);
+        EmitCallRef(
+            node->payload.functionCallValue.callee,
+            node->payload.functionCallValue.args,
+            node->payload.functionCallValue.callSourcePos);
     } else if (node->kind == SCR_AST_KIND_METHOD_CALL_VALUE) {
-        EmitMethodRef(node->payload.methodCallValue.objectNode, node->payload.methodCallValue.callee, node->payload.methodCallValue.args,
-                      node->payload.methodCallValue.methodSourcePos);
+        EmitMethodRef(
+            node->payload.methodCallValue.objectNode,
+            node->payload.methodCallValue.callee,
+            node->payload.methodCallValue.args,
+            node->payload.methodCallValue.methodSourcePos);
     }
 }
 
@@ -694,23 +860,30 @@ void EmitCallExpressionRef(scr_ast_node_t *node)
 void EmitCallExpressionFieldObject(scr_ast_node_t *node)
 {
     if (node->kind == SCR_AST_KIND_FUNCTION_CALL_VALUE) {
-        EmitCall(node->payload.functionCallValue.callee, node->payload.functionCallValue.args, qfalse);
-        EmitCastFieldObject(node->payload.functionCallValue.callSourcePos);
+        EmitCall(node->payload.functionCallValue.callee,
+                 node->payload.functionCallValue.args, qfalse);
+        EmitCastFieldObject(
+            node->payload.functionCallValue.callSourcePos);
     } else if (node->kind == SCR_AST_KIND_METHOD_CALL_VALUE) {
-        EmitMethod(node->payload.methodCallValue.objectNode, node->payload.methodCallValue.callee, node->payload.methodCallValue.args,
+        EmitMethod(node->payload.methodCallValue.objectNode,
+                   node->payload.methodCallValue.callee,
+                   node->payload.methodCallValue.args,
                    node->payload.methodCallValue.methodSourcePos, qfalse);
-        EmitCastFieldObject(node->payload.methodCallValue.objectSourcePos);
+        EmitCastFieldObject(
+            node->payload.methodCallValue.objectSourcePos);
     }
 }
 
 /* Source: CoDUOMP.exe 0x0047c800..0x0047c889.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047c800_0047c889.mcode. */
-void EmitArrayExpressionListRef(scr_ast_list_t *list, uint32_t sourcePos)
+void EmitArrayExpressionListRef(scr_ast_list_t *list,
+                                uint32_t sourcePos)
 {
     scr_ast_list_item_t *item = GetSingleParameter(list);
 
     if (item != NULL) {
-        EmitArrayPrimitiveExpressionRef(item->entry->node, item->entry->sourcePos);
+        EmitArrayPrimitiveExpressionRef(item->entry->node,
+                                        item->entry->sourcePos);
         return;
     }
 
@@ -731,12 +904,14 @@ void EmitArrayExpressionListRef(scr_ast_list_t *list, uint32_t sourcePos)
  * EmitPrimitiveExpressionFieldObject; Linux 0x0809f30a calls its wrapper at
  * 0x0809faa6. The former Linux recovery's direct inner-dispatch call was a
  * transcription error. */
-void EmitExpressionListFieldObject(scr_ast_list_t *list, uint32_t sourcePos)
+void EmitExpressionListFieldObject(scr_ast_list_t *list,
+                                   uint32_t sourcePos)
 {
     scr_ast_list_item_t *item = GetSingleParameter(list);
 
     if (item != NULL) {
-        EmitPrimitiveExpressionFieldObject(item->entry->node, item->entry->sourcePos);
+        EmitPrimitiveExpressionFieldObject(item->entry->node,
+                                           item->entry->sourcePos);
         return;
     }
 
@@ -746,7 +921,8 @@ void EmitExpressionListFieldObject(scr_ast_list_t *list, uint32_t sourcePos)
 
 /* Source: CoDUOMP.exe 0x0047c7a0..0x0047c7fb.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047c7a0_0047c7fb.mcode. */
-void EmitPrimitiveExpressionList(scr_ast_list_t *list, uint32_t sourcePos)
+void EmitPrimitiveExpressionList(scr_ast_list_t *list,
+                                 uint32_t sourcePos)
 {
     int32_t count = EmitExpressionList(list);
 
@@ -760,7 +936,8 @@ void EmitPrimitiveExpressionList(scr_ast_list_t *list, uint32_t sourcePos)
         return;
     }
 
-    CompileError(sourcePos, "expression list must have 1 or 3 parameters");
+    CompileError(sourcePos,
+                          "expression list must have 1 or 3 parameters");
 }
 
 /* Source: CoDUOMP.exe 0x0047c8f0..0x0047ca00.
@@ -778,19 +955,25 @@ void EmitPrimitiveExpression(scr_ast_node_t *node)
         EmitGetInteger(-(int32_t)node->payload.literal.value);
         break;
     case SCR_AST_KIND_NEGATED_FLOAT_LITERAL:
-        coduomp_script_emit_get_float_bits(node->payload.literal.value ^ SCRIPT_FLOAT_SIGN_BIT);
+        coduomp_script_emit_get_float_bits(
+            node->payload.literal.value ^ SCRIPT_FLOAT_SIGN_BIT);
         break;
     case SCR_AST_KIND_STRING:
-        EmitGetString(SCR_AST_STRING_HANDLE(node->payload.sourceString.stringHandle));
+        EmitGetString(
+            SCR_AST_STRING_HANDLE(
+                node->payload.sourceString.stringHandle));
         break;
     case SCR_AST_KIND_ISTRING:
-        EmitGetIString(SCR_AST_STRING_HANDLE(node->payload.sourceString.stringHandle));
+        EmitGetIString(
+            SCR_AST_STRING_HANDLE(
+                node->payload.sourceString.stringHandle));
         break;
     case SCR_AST_KIND_REFERENCE_EXPRESSION:
         EmitVariableExpression(node->payload.child.node);
         break;
     case SCR_AST_KIND_SCRIPT_FUNCTION_NAME:
-        EmitGetFunction(node->payload.sourceChild.node, node->payload.sourceChild.sourcePos);
+        EmitGetFunction(node->payload.sourceChild.node,
+                        node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_CALL_VALUE:
         EmitCallExpression(node->payload.child.node, qfalse);
@@ -811,16 +994,21 @@ void EmitPrimitiveExpression(scr_ast_node_t *node)
         EmitGame();
         break;
     case SCR_AST_KIND_EXPRESSION_LIST:
-        EmitPrimitiveExpressionList(node->payload.expressionList.list, node->payload.expressionList.sourcePos);
+        EmitPrimitiveExpressionList(node->payload.expressionList.list,
+                                    node->payload.expressionList.sourcePos);
         break;
     case SCR_AST_KIND_SIZE:
-        EmitSize(node->payload.sourceChild.node, node->payload.sourceChild.sourcePos);
+        EmitSize(node->payload.sourceChild.node,
+                 node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_EMPTY_ARRAY:
         EmitEmptyArray();
         break;
     case SCR_AST_KIND_ANIMATION:
-        EmitAnimation(SCR_AST_STRING_HANDLE(node->payload.sourceString.stringHandle), node->payload.sourceString.sourcePos);
+        EmitAnimation(
+            SCR_AST_STRING_HANDLE(
+                node->payload.sourceString.stringHandle),
+            node->payload.sourceString.sourcePos);
         break;
     case SCR_AST_KIND_FALSE:
         EmitFalse();
@@ -829,7 +1017,8 @@ void EmitPrimitiveExpression(scr_ast_node_t *node)
         EmitTrue();
         break;
     case SCR_AST_KIND_ANIMTREE:
-        EmitAnimTree(node->payload.sourceOnlyStatement.sourcePos);
+        EmitAnimTree(
+            node->payload.sourceOnlyStatement.sourcePos);
         break;
     default:
         break;
@@ -838,7 +1027,10 @@ void EmitPrimitiveExpression(scr_ast_node_t *node)
 
 /* Source: CoDUOMP.exe 0x0047caa0..0x0047cb90.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047caa0_0047cb90.mcode. */
-void EmitBoolOrExpression(scr_ast_node_t *leftNode, uint32_t leftSourcePos, scr_ast_node_t *rightNode, uint32_t rightSourcePos)
+void EmitBoolOrExpression(scr_ast_node_t *leftNode,
+                          uint32_t leftSourcePos,
+                          scr_ast_node_t *rightNode,
+                          uint32_t rightSourcePos)
 {
     EmitExpression(leftNode);
     EmitOpcode(SCRIPT_OPCODE_BOOL_OR, -1, 0);
@@ -850,13 +1042,17 @@ void EmitBoolOrExpression(scr_ast_node_t *leftNode, uint32_t leftSourcePos, scr_
     EmitCastBool(rightSourcePos);
 
     char *end = (char *)TempMalloc(0);
-    const int32_t offset = (int32_t)(end - patch) - (int32_t)sizeof(offset);
+    const int32_t offset =
+        (int32_t)(end - patch) - (int32_t)sizeof(offset);
     memcpy(patch, &offset, sizeof(offset));
 }
 
 /* Source: CoDUOMP.exe 0x0047cb90..0x0047cc80.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047cb90_0047cc80.mcode. */
-void EmitBoolAndExpression(scr_ast_node_t *leftNode, uint32_t leftSourcePos, scr_ast_node_t *rightNode, uint32_t rightSourcePos)
+void EmitBoolAndExpression(scr_ast_node_t *leftNode,
+                           uint32_t leftSourcePos,
+                           scr_ast_node_t *rightNode,
+                           uint32_t rightSourcePos)
 {
     EmitExpression(leftNode);
     EmitOpcode(SCRIPT_OPCODE_BOOL_AND, -1, 0);
@@ -868,13 +1064,16 @@ void EmitBoolAndExpression(scr_ast_node_t *leftNode, uint32_t leftSourcePos, scr
     EmitCastBool(rightSourcePos);
 
     char *end = (char *)TempMalloc(0);
-    const int32_t offset = (int32_t)(end - patch) - (int32_t)sizeof(offset);
+    const int32_t offset =
+        (int32_t)(end - patch) - (int32_t)sizeof(offset);
     memcpy(patch, &offset, sizeof(offset));
 }
 
 /* Source: CoDUOMP.exe 0x0047cc80..0x0047cd1d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047cc80_0047cd1d.mcode. */
-void EmitBinaryOperatorExpression(scr_ast_node_t *leftNode, scr_ast_node_t *rightNode, uint8_t opcode, uint32_t sourcePos)
+void EmitBinaryOperatorExpression(scr_ast_node_t *leftNode,
+                                  scr_ast_node_t *rightNode, uint8_t opcode,
+                                  uint32_t sourcePos)
 {
     EmitExpression(leftNode);
     EmitExpression(rightNode);
@@ -884,7 +1083,10 @@ void EmitBinaryOperatorExpression(scr_ast_node_t *leftNode, scr_ast_node_t *righ
 
 /* Source: CoDUOMP.exe 0x0047cd20..0x0047cdd9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047cd20_0047cdd9.mcode. */
-void EmitBinaryEqualsOperatorExpression(scr_ast_node_t *refNode, scr_ast_node_t *valueNode, uint8_t opcode, uint32_t sourcePos)
+void EmitBinaryEqualsOperatorExpression(scr_ast_node_t *refNode,
+                                        scr_ast_node_t *valueNode,
+                                        uint8_t opcode,
+                                        uint32_t sourcePos)
 {
     script_codeOwnsStrings = qtrue;
     EmitVariableExpression(refNode);
@@ -905,40 +1107,55 @@ void EmitExpression(scr_ast_node_t *node)
         EmitPrimitiveExpression(node->payload.child.node);
         break;
     case SCR_AST_KIND_BOOL_OR:
-        EmitBoolOrExpression(node->payload.shortCircuit.left, node->payload.shortCircuit.leftSourcePos, node->payload.shortCircuit.right,
-                             node->payload.shortCircuit.rightSourcePos);
+        EmitBoolOrExpression(
+            node->payload.shortCircuit.left,
+            node->payload.shortCircuit.leftSourcePos,
+            node->payload.shortCircuit.right,
+            node->payload.shortCircuit.rightSourcePos);
         break;
     case SCR_AST_KIND_BOOL_AND:
-        EmitBoolAndExpression(node->payload.shortCircuit.left, node->payload.shortCircuit.leftSourcePos, node->payload.shortCircuit.right,
-                              node->payload.shortCircuit.rightSourcePos);
+        EmitBoolAndExpression(
+            node->payload.shortCircuit.left,
+            node->payload.shortCircuit.leftSourcePos,
+            node->payload.shortCircuit.right,
+            node->payload.shortCircuit.rightSourcePos);
         break;
     case SCR_AST_KIND_BINARY_OPERATOR:
-        EmitBinaryOperatorExpression(node->payload.binaryOperator.left, node->payload.binaryOperator.right,
-                                     (uint8_t)node->payload.binaryOperator.opcode, node->payload.binaryOperator.sourcePos);
+        EmitBinaryOperatorExpression(
+            node->payload.binaryOperator.left,
+            node->payload.binaryOperator.right,
+            (uint8_t)node->payload.binaryOperator.opcode,
+            node->payload.binaryOperator.sourcePos);
         break;
     case SCR_AST_KIND_CAST_BOOL:
         EmitExpression(node->payload.sourceChild.node);
-        EmitCastBool(node->payload.sourceChild.sourcePos);
+        EmitCastBool(
+            node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_CAST_INT:
         EmitExpression(node->payload.sourceChild.node);
-        EmitCastInt(node->payload.sourceChild.sourcePos);
+        EmitCastInt(
+            node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_CAST_FLOAT:
         EmitExpression(node->payload.sourceChild.node);
-        EmitCastFloat(node->payload.sourceChild.sourcePos);
+        EmitCastFloat(
+            node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_CAST_STRING:
         EmitExpression(node->payload.sourceChild.node);
-        EmitCastString(node->payload.sourceChild.sourcePos);
+        EmitCastString(
+            node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_BOOL_NOT:
         EmitExpression(node->payload.sourceChild.node);
-        EmitBoolNot(node->payload.sourceChild.sourcePos);
+        EmitBoolNot(
+            node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_BOOL_COMPLEMENT:
         EmitExpression(node->payload.sourceChild.node);
-        EmitBoolComplement(node->payload.sourceChild.sourcePos);
+        EmitBoolComplement(
+            node->payload.sourceChild.sourcePos);
         break;
     default:
         break;
@@ -950,19 +1167,26 @@ void EmitExpression(scr_ast_node_t *node)
 void EmitVariableExpressionRef(scr_ast_node_t *node)
 {
     if (node->kind == SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF) {
-        EmitArrayVariableRef(node->payload.objectIndexObjectRef.objectNode, node->payload.objectIndexObjectRef.indexNode,
-                             node->payload.objectIndexObjectRef.objectSourcePos, node->payload.objectIndexObjectRef.indexSourcePos);
+        EmitArrayVariableRef(
+            node->payload.objectIndexObjectRef.objectNode,
+            node->payload.objectIndexObjectRef.indexNode,
+            node->payload.objectIndexObjectRef.objectSourcePos,
+            node->payload.objectIndexObjectRef.indexSourcePos);
         return;
     }
 
     if (node->kind == SCR_AST_KIND_STRING_REF) {
-        EmitLocalVariableRef(SCR_AST_STRING_HANDLE(node->payload.stringRef.stringHandle));
+        EmitLocalVariableRef(
+            SCR_AST_STRING_HANDLE(node->payload.stringRef.stringHandle));
         return;
     }
 
     if (node->kind == SCR_AST_KIND_OBJECT_STRING_REF) {
-        EmitFieldVariableRef(node->payload.objectStringRef.objectNode, SCR_AST_STRING_HANDLE(node->payload.objectStringRef.stringHandle),
-                             node->payload.objectStringRef.sourcePos);
+        EmitFieldVariableRef(
+            node->payload.objectStringRef.objectNode,
+            SCR_AST_STRING_HANDLE(
+                node->payload.objectStringRef.stringHandle),
+            node->payload.objectStringRef.sourcePos);
     }
 }
 
@@ -976,7 +1200,8 @@ void EmitArrayExpressionRef(scr_ast_node_t *node, uint32_t sourcePos)
     }
 
     if (node->kind == SCR_AST_KIND_REFERENCE_EXPRESSION) {
-        EmitVariableExpressionRef(node->payload.child.node);
+        EmitVariableExpressionRef(
+            node->payload.child.node);
         return;
     }
 
@@ -986,7 +1211,8 @@ void EmitArrayExpressionRef(scr_ast_node_t *node, uint32_t sourcePos)
     }
 
     if (node->kind == SCR_AST_KIND_EXPRESSION_LIST) {
-        EmitArrayExpressionListRef(node->payload.expressionList.list, sourcePos);
+        EmitArrayExpressionListRef(
+            node->payload.expressionList.list, sourcePos);
         return;
     }
 
@@ -1001,7 +1227,8 @@ void EmitExpressionFieldObject(scr_ast_node_t *node, uint32_t sourcePos)
     switch (node->kind) {
     case SCR_AST_KIND_REFERENCE_EXPRESSION:
         EmitVariableExpression(node->payload.child.node);
-        EmitCastFieldObject(node->payload.sourceChild.sourcePos);
+        EmitCastFieldObject(
+            node->payload.sourceChild.sourcePos);
         break;
     case SCR_AST_KIND_CALL_VALUE:
         EmitCallExpressionFieldObject(node->payload.child.node);
@@ -1016,7 +1243,8 @@ void EmitExpressionFieldObject(scr_ast_node_t *node, uint32_t sourcePos)
         EmitGameRef();
         break;
     case SCR_AST_KIND_EXPRESSION_LIST:
-        EmitExpressionListFieldObject(node->payload.expressionList.list, sourcePos);
+        EmitExpressionListFieldObject(node->payload.expressionList.list,
+                                      sourcePos);
         break;
     default:
         CompileError(sourcePos, "not an object");
@@ -1027,10 +1255,12 @@ void EmitExpressionFieldObject(scr_ast_node_t *node, uint32_t sourcePos)
 
 /* Source: CoDUOMP.exe 0x0047d050..0x0047d086.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d050_0047d086.mcode. */
-void EmitArrayPrimitiveExpressionRef(scr_ast_node_t *node, uint32_t sourcePos)
+void EmitArrayPrimitiveExpressionRef(scr_ast_node_t *node,
+                                     uint32_t sourcePos)
 {
     if (node->kind == SCR_AST_KIND_PRIMITIVE_EXPRESSION) {
-        EmitArrayExpressionRef(node->payload.sourceChild.node, node->payload.sourceChild.sourcePos);
+        EmitArrayExpressionRef(node->payload.sourceChild.node,
+                               node->payload.sourceChild.sourcePos);
         return;
     }
 
@@ -1040,10 +1270,12 @@ void EmitArrayPrimitiveExpressionRef(scr_ast_node_t *node, uint32_t sourcePos)
 
 /* Source: CoDUOMP.exe 0x0047d150..0x0047d186.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d150_0047d186.mcode. */
-void EmitPrimitiveExpressionFieldObject(scr_ast_node_t *node, uint32_t sourcePos)
+void EmitPrimitiveExpressionFieldObject(scr_ast_node_t *node,
+                                        uint32_t sourcePos)
 {
     if (node->kind == SCR_AST_KIND_PRIMITIVE_EXPRESSION) {
-        EmitExpressionFieldObject(node->payload.sourceChild.node, node->payload.sourceChild.sourcePos);
+        EmitExpressionFieldObject(node->payload.sourceChild.node,
+                                  node->payload.sourceChild.sourcePos);
         return;
     }
 
@@ -1057,7 +1289,8 @@ void ConnectBreakStatements(void)
 {
     char *current = (char *)TempMalloc(0);
 
-    for (script_code_offset_patch_t *patch = script_breakPatchList; patch != NULL; patch = patch->next) {
+    for (script_code_offset_patch_t *patch = script_breakPatchList;
+         patch != NULL; patch = patch->next) {
         const int32_t offset = (int32_t)(current - patch->patch);
         memcpy(patch->patch, &offset, sizeof(offset));
     }
@@ -1070,7 +1303,8 @@ void ConnectContinueStatements(void)
     EmitNOP();
     char *current = (char *)TempMalloc(0);
 
-    for (script_code_offset_patch_t *patch = script_continuePatchList; patch != NULL; patch = patch->next) {
+    for (script_code_offset_patch_t *patch = script_continuePatchList;
+         patch != NULL; patch = patch->next) {
         const int32_t offset = (int32_t)(current - patch->patch);
         memcpy(patch->patch, &offset, sizeof(offset));
     }
@@ -1082,15 +1316,23 @@ void EmitClearVariableExpression(scr_ast_node_t *node)
 {
     switch (node->kind) {
     case SCR_AST_KIND_STRING_REF:
-        EmitClearLocalVariable(SCR_AST_STRING_HANDLE(node->payload.stringRef.stringHandle));
+        EmitClearLocalVariable(
+            SCR_AST_STRING_HANDLE(node->payload.stringRef.stringHandle));
         break;
     case SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF:
-        EmitClearArrayVariable(node->payload.objectIndexObjectRef.objectNode, node->payload.objectIndexObjectRef.indexNode,
-                               node->payload.objectIndexObjectRef.objectSourcePos, node->payload.objectIndexObjectRef.indexSourcePos);
+        EmitClearArrayVariable(
+            node->payload.objectIndexObjectRef.objectNode,
+            node->payload.objectIndexObjectRef.indexNode,
+            node->payload.objectIndexObjectRef.objectSourcePos,
+            node->payload.objectIndexObjectRef.indexSourcePos);
         break;
     case SCR_AST_KIND_OBJECT_STRING_REF:
-        EmitClearFieldVariable(node->payload.objectStringRef.objectNode, SCR_AST_STRING_HANDLE(node->payload.objectStringRef.stringHandle),
-                               node->payload.objectStringRef.sourcePos, node->payload.objectStringRef.opcodeSourcePos);
+        EmitClearFieldVariable(
+            node->payload.objectStringRef.objectNode,
+            SCR_AST_STRING_HANDLE(
+                node->payload.objectStringRef.stringHandle),
+            node->payload.objectStringRef.sourcePos,
+            node->payload.objectStringRef.opcodeSourcePos);
         break;
     default:
         break;
@@ -1117,7 +1359,9 @@ qboolean IsUndefinedExpression(scr_ast_node_t *node)
 
 /* Source: CoDUOMP.exe 0x0047d2c0..0x0047d302.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d2c0_0047d302.mcode. */
-void EmitAssignmentStatement(scr_ast_node_t *refNode, scr_ast_node_t *valueNode, uint32_t sourcePos)
+void EmitAssignmentStatement(scr_ast_node_t *refNode,
+                             scr_ast_node_t *valueNode,
+                             uint32_t sourcePos)
 {
     if (IsUndefinedExpression(valueNode) == qfalse) {
         EmitExpression(valueNode);

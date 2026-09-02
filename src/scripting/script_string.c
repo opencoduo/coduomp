@@ -64,25 +64,30 @@ static int32_t coduomp_script_string_int32_from_bits(uint32_t bits)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level spelling of the original word INC. */
-static void coduomp_script_string_increment_ref(script_string_entry_t *entry)
+static void coduomp_script_string_increment_ref(
+    script_string_entry_t *entry)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if ((uint16_t)entry->refCount == SCRIPT_REFERENCE_COUNT_MAX) {
-        Com_Error(ERR_DROP, "\x15"
-                            "script string reference count overflow");
+        Com_Error(ERR_DROP, "\x15" "script string reference count overflow");
     }
-    entry->refCount = coduomp_script_string_ref_from_bits((uint16_t)((uint16_t)entry->refCount + 1u));
+    entry->refCount = coduomp_script_string_ref_from_bits(
+        (uint16_t)((uint16_t)entry->refCount + 1u));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level spelling of the original word DEC. */
-static void coduomp_script_string_decrement_ref(script_string_entry_t *entry)
+static void coduomp_script_string_decrement_ref(
+    script_string_entry_t *entry)
 {
-    entry->refCount = coduomp_script_string_ref_from_bits((uint16_t)((uint16_t)entry->refCount - 1u));
+    entry->refCount = coduomp_script_string_ref_from_bits(
+        (uint16_t)((uint16_t)entry->refCount - 1u));
 }
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(script_string_entry_t) == 0x04 && _Alignof(script_string_entry_t) == 0x02 &&
-                   offsetof(script_string_entry_t, byteCount) == 0x02 && offsetof(script_string_entry_t, flags) == 0x03 &&
+_Static_assert(sizeof(script_string_entry_t) == 0x04 &&
+                   _Alignof(script_string_entry_t) == 0x02 &&
+                   offsetof(script_string_entry_t, byteCount) == 0x02 &&
+                   offsetof(script_string_entry_t, flags) == 0x03 &&
                    offsetof(script_string_entry_t, text) == 0x04,
                "original i386 script-string entry layout changed");
 #endif
@@ -93,7 +98,9 @@ _Static_assert(sizeof(script_string_entry_t) == 0x04 && _Alignof(script_string_e
  * is the header of the string-pool entry selected by the 16-bit arena handle. */
 static script_string_entry_t *GetRefStringByHandle(uint16_t string)
 {
-    return (script_string_entry_t *)(script_stringPoolBase + (size_t)string * SCRIPT_STRING_HANDLE_UNIT_SIZE);
+    return (script_string_entry_t *)(
+        script_stringPoolBase +
+        (size_t)string * SCRIPT_STRING_HANDLE_UNIT_SIZE);
 }
 
 /* Source: CoDUOMP.exe 0x00482280..0x00482283.
@@ -101,7 +108,9 @@ static script_string_entry_t *GetRefStringByHandle(uint16_t string)
  * the fixed text-member displacement used by SL_ConvertToString. */
 static const script_string_entry_t *GetRefStringByText(const char *text)
 {
-    return (const script_string_entry_t *)((const uint8_t *)(const void *)text - offsetof(script_string_entry_t, text));
+    return (const script_string_entry_t *)(
+        (const uint8_t *)(const void *)text -
+        offsetof(script_string_entry_t, text));
 }
 
 /* Source: CoDUOMP.exe 0x004822b0..0x004822c2.
@@ -109,37 +118,53 @@ static const script_string_entry_t *GetRefStringByText(const char *text)
  * Name and argument: exact same-module Mac symbol SL_ConvertFromString. */
 uint16_t SL_ConvertFromString(const char *text)
 {
-    const script_string_entry_t *entry = GetRefStringByText(text);
-    uint32_t byteOffsetBits = (uint32_t)((uintptr_t)(const void *)entry - (uintptr_t)(const void *)script_stringPoolBase);
-    int32_t byteOffset = coduomp_script_string_int32_from_bits(byteOffsetBits);
+    const script_string_entry_t *entry =
+        GetRefStringByText(text);
+    uint32_t byteOffsetBits =
+        (uint32_t)((uintptr_t)(const void *)entry -
+                   (uintptr_t)(const void *)script_stringPoolBase);
+    int32_t byteOffset =
+        coduomp_script_string_int32_from_bits(byteOffsetBits);
 
     return (uint16_t)(byteOffset / SCRIPT_STRING_HANDLE_UNIT_SIZE);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local predicate for the repeated string-entry
  * size and byte comparison in the original lookup and intern functions. */
-static qboolean coduomp_script_string_entry_matches(const script_string_hash_slot_t *slot, const char *text, size_t size)
+static qboolean coduomp_script_string_entry_matches(
+    const script_string_hash_slot_t *slot, const char *text, size_t size)
 {
-    const script_string_entry_t *entry = GetRefStringByHandle(slot->stringHandle);
+    const script_string_entry_t *entry =
+        GetRefStringByHandle(slot->stringHandle);
 
     /* NOT_FROM_ORIGINAL_SOURCE: callers establish that size fits the entry's
      * one-byte length field before this complete comparison. */
-    return entry->byteCount == (uint8_t)size && memcmp(entry->text, text, size) == 0 ? qtrue : qfalse;
+    return entry->byteCount == (uint8_t)size &&
+                   memcmp(entry->text, text, size) == 0
+               ? qtrue
+               : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the hash-chain head
  * rotation emitted inline by the original compiler. */
-static void coduomp_script_string_move_slot_to_hash_head(uint16_t hash, uint16_t previousSlot, uint16_t matchSlot)
+static void coduomp_script_string_move_slot_to_hash_head(
+    uint16_t hash, uint16_t previousSlot, uint16_t matchSlot)
 {
     script_string_hash_slot_t *head = &script_stringHashSlots[hash];
-    script_string_hash_slot_t *previous = &script_stringHashSlots[previousSlot];
-    script_string_hash_slot_t *match = &script_stringHashSlots[matchSlot];
+    script_string_hash_slot_t *previous =
+        &script_stringHashSlots[previousSlot];
+    script_string_hash_slot_t *match =
+        &script_stringHashSlots[matchSlot];
 
     previous->linkAndFlags =
-        (uint16_t)((match->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) | (previous->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
+        (uint16_t)((match->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) |
+                   (previous->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
     match->linkAndFlags =
-        (uint16_t)((head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) | (match->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
-    head->linkAndFlags = (uint16_t)(matchSlot | (head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
+        (uint16_t)((head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) |
+                   (match->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
+    head->linkAndFlags =
+        (uint16_t)(matchSlot |
+                   (head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
 
     uint16_t movedHandle = match->stringHandle;
     match->stringHandle = head->stringHandle;
@@ -153,24 +178,32 @@ static uint16_t coduomp_script_string_pop_free_hash_slot(void)
     uint16_t freeSlot = script_stringHashSlots[0].linkAndFlags;
     if (freeSlot == 0) {
         Scr_DumpScriptThreads();
-        Com_Error(1, "\x15"
-                     "exceeded maximum number of script strings\n");
+        Com_Error(1,
+                  "\x15" "exceeded maximum number of script strings\n");
     }
 
-    script_stringHashSlots[0].linkAndFlags = script_stringHashSlots[freeSlot].linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
-    script_stringHashSlots[script_stringHashSlots[0].linkAndFlags].stringHandle = 0;
+    script_stringHashSlots[0].linkAndFlags =
+        script_stringHashSlots[freeSlot].linkAndFlags &
+        SCRIPT_STRING_HASH_LINK_MASK;
+    script_stringHashSlots[script_stringHashSlots[0].linkAndFlags]
+        .stringHandle = 0;
     return freeSlot;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: factors insertion of a collision node after an
  * occupied hash head; the original function emits these assignments inline. */
-static void coduomp_script_string_insert_into_occupied_head(uint16_t hash, uint16_t freeSlot)
+static void coduomp_script_string_insert_into_occupied_head(
+    uint16_t hash, uint16_t freeSlot)
 {
     script_string_hash_slot_t *head = &script_stringHashSlots[hash];
     script_string_hash_slot_t *slot = &script_stringHashSlots[freeSlot];
 
-    slot->linkAndFlags = (uint16_t)((head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) | SCRIPT_STRING_HASH_CHAINED);
-    head->linkAndFlags = (uint16_t)((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) | freeSlot);
+    slot->linkAndFlags =
+        (uint16_t)((head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) |
+                   SCRIPT_STRING_HASH_CHAINED);
+    head->linkAndFlags =
+        (uint16_t)((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) |
+                   freeSlot);
     slot->stringHandle = head->stringHandle;
 }
 
@@ -178,28 +211,42 @@ static void coduomp_script_string_insert_into_occupied_head(uint16_t hash, uint1
  * doubly represented free-slot chain. */
 static void coduomp_script_string_unlink_free_slot(uint16_t slot)
 {
-    uint16_t next = script_stringHashSlots[slot].linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
+    uint16_t next = script_stringHashSlots[slot].linkAndFlags &
+                    SCRIPT_STRING_HASH_LINK_MASK;
     uint16_t previous = script_stringHashSlots[slot].stringHandle;
 
     script_stringHashSlots[previous].linkAndFlags =
-        (uint16_t)(next | (script_stringHashSlots[previous].linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
+        (uint16_t)(next |
+                   (script_stringHashSlots[previous].linkAndFlags &
+                    SCRIPT_STRING_HASH_FLAGS_MASK));
     script_stringHashSlots[next].stringHandle = previous;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of collision-head
  * insertion when the hash-numbered slot already belongs to another chain. */
-static void coduomp_script_string_insert_into_linked_hash(uint16_t hash, uint16_t freeSlot)
+static void coduomp_script_string_insert_into_linked_hash(
+    uint16_t hash, uint16_t freeSlot)
 {
-    uint16_t previousSlot = script_stringHashSlots[hash].linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
-    while ((script_stringHashSlots[previousSlot].linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) != hash) {
-        previousSlot = script_stringHashSlots[previousSlot].linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
+    uint16_t previousSlot =
+        script_stringHashSlots[hash].linkAndFlags &
+        SCRIPT_STRING_HASH_LINK_MASK;
+    while ((script_stringHashSlots[previousSlot].linkAndFlags &
+            SCRIPT_STRING_HASH_LINK_MASK) != hash) {
+        previousSlot =
+            script_stringHashSlots[previousSlot].linkAndFlags &
+            SCRIPT_STRING_HASH_LINK_MASK;
     }
 
     script_stringHashSlots[previousSlot].linkAndFlags =
-        (uint16_t)((script_stringHashSlots[previousSlot].linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) | freeSlot);
+        (uint16_t)((script_stringHashSlots[previousSlot].linkAndFlags &
+                    SCRIPT_STRING_HASH_FLAGS_MASK) |
+                   freeSlot);
     script_stringHashSlots[freeSlot].linkAndFlags =
-        (uint16_t)((script_stringHashSlots[hash].linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) | SCRIPT_STRING_HASH_CHAINED);
-    script_stringHashSlots[freeSlot].stringHandle = script_stringHashSlots[hash].stringHandle;
+        (uint16_t)((script_stringHashSlots[hash].linkAndFlags &
+                    SCRIPT_STRING_HASH_LINK_MASK) |
+                   SCRIPT_STRING_HASH_CHAINED);
+    script_stringHashSlots[freeSlot].stringHandle =
+        script_stringHashSlots[hash].stringHandle;
 }
 
 /* Source: CoDUOMP.exe 0x004822d0..0x0048230b.
@@ -212,7 +259,8 @@ uint16_t GetHashCode(const char *text, size_t size)
     if (targetSize < SCRIPT_STRING_HASH_SHORT_TEXT_LIMIT) {
         hash = 0;
         for (uint32_t index = 0; index < targetSize; ++index) {
-            hash = hash * SCRIPT_STRING_HASH_MULTIPLIER + (int8_t)(uint8_t)text[index];
+            hash = hash * SCRIPT_STRING_HASH_MULTIPLIER +
+                   (int8_t)(uint8_t)text[index];
         }
     } else {
         hash = targetSize >> 2;
@@ -235,7 +283,8 @@ uint16_t SL_FindStringOfLen(const char *text, size_t size)
     uint16_t hash = GetHashCode(text, size);
     script_string_hash_slot_t *head = &script_stringHashSlots[hash];
 
-    if ((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) != SCRIPT_STRING_HASH_OCCUPIED) {
+    if ((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) !=
+        SCRIPT_STRING_HASH_OCCUPIED) {
         return 0;
     }
     if (coduomp_script_string_entry_matches(head, text, size) != qfalse) {
@@ -246,12 +295,15 @@ uint16_t SL_FindStringOfLen(const char *text, size_t size)
     uint16_t currentSlot = head->linkAndFlags;
     for (;;) {
         currentSlot &= SCRIPT_STRING_HASH_LINK_MASK;
-        script_string_hash_slot_t *current = &script_stringHashSlots[currentSlot];
+        script_string_hash_slot_t *current =
+            &script_stringHashSlots[currentSlot];
         if (current == head) {
             return 0;
         }
-        if (coduomp_script_string_entry_matches(current, text, size) != qfalse) {
-            coduomp_script_string_move_slot_to_hash_head(hash, previousSlot, currentSlot);
+        if (coduomp_script_string_entry_matches(current, text, size) !=
+            qfalse) {
+            coduomp_script_string_move_slot_to_hash_head(
+                hash, previousSlot, currentSlot);
             return head->stringHandle;
         }
 
@@ -283,23 +335,23 @@ uint16_t SL_FindLowercaseString(const char *text)
      * representable script-string entry domain established above. */
     char lowercase[SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT];
 
-    for (int32_t index = coduomp_script_string_int32_from_bits(size - 1u); index >= 0; --index) {
-        lowercase[index] = (char)tolower(coduo_ctype_signed_byte_arg(text[index]));
+    for (int32_t index = coduomp_script_string_int32_from_bits(size - 1u);
+         index >= 0; --index) {
+        lowercase[index] =
+            (char)tolower(coduo_ctype_signed_byte_arg(text[index]));
     }
     return SL_FindStringOfLen(lowercase, size);
 }
 
 /* Source: CoDUOMP.exe 0x00482570..0x004828a7.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00482570_004828a8.mcode. */
-uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size, int32_t type)
+uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size,
+                           int32_t type)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: reject sizes that the entry's one-byte length
      * field cannot represent before hash matching or publication. */
     if (size > SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "script string exceeds maximum length of %i bytes",
-                  SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT - 1);
+        Com_Error(ERR_DROP, "\x15" "script string exceeds maximum length of %i bytes", SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT - 1);
         return 0;
     }
 
@@ -307,9 +359,11 @@ uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size, int32_t 
     uint16_t hash = GetHashCode(text, size);
     script_string_hash_slot_t *head = &script_stringHashSlots[hash];
 
-    if ((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) == SCRIPT_STRING_HASH_OCCUPIED) {
+    if ((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) ==
+        SCRIPT_STRING_HASH_OCCUPIED) {
         if (coduomp_script_string_entry_matches(head, text, size) != qfalse) {
-            script_string_entry_t *entry = GetRefStringByHandle(head->stringHandle);
+            script_string_entry_t *entry =
+                GetRefStringByHandle(head->stringHandle);
             if ((entry->flags & user) == 0) {
                 entry->flags |= user;
                 coduomp_script_string_increment_ref(entry);
@@ -321,13 +375,17 @@ uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size, int32_t 
         uint16_t currentSlot = head->linkAndFlags;
         for (;;) {
             currentSlot &= SCRIPT_STRING_HASH_LINK_MASK;
-            script_string_hash_slot_t *current = &script_stringHashSlots[currentSlot];
+            script_string_hash_slot_t *current =
+                &script_stringHashSlots[currentSlot];
             if (current == head) {
                 break;
             }
-            if (coduomp_script_string_entry_matches(current, text, size) != qfalse) {
-                coduomp_script_string_move_slot_to_hash_head(hash, previousSlot, currentSlot);
-                script_string_entry_t *entry = GetRefStringByHandle(head->stringHandle);
+            if (coduomp_script_string_entry_matches(current, text, size) !=
+                qfalse) {
+                coduomp_script_string_move_slot_to_hash_head(
+                    hash, previousSlot, currentSlot);
+                script_string_entry_t *entry =
+                    GetRefStringByHandle(head->stringHandle);
                 if ((entry->flags & user) == 0) {
                     entry->flags |= user;
                     coduomp_script_string_increment_ref(entry);
@@ -339,24 +397,28 @@ uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size, int32_t 
             currentSlot = current->linkAndFlags;
         }
 
-        coduomp_script_string_insert_into_occupied_head(hash, coduomp_script_string_pop_free_hash_slot());
+        coduomp_script_string_insert_into_occupied_head(
+            hash, coduomp_script_string_pop_free_hash_slot());
     } else {
         if ((head->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) == 0) {
             coduomp_script_string_unlink_free_slot(hash);
         } else {
-            coduomp_script_string_insert_into_linked_hash(hash, coduomp_script_string_pop_free_hash_slot());
+            coduomp_script_string_insert_into_linked_hash(
+                hash, coduomp_script_string_pop_free_hash_slot());
         }
         head->linkAndFlags = hash | SCRIPT_STRING_HASH_OCCUPIED;
     }
 
-    uint32_t allocationSize = (uint32_t)size + (uint32_t)sizeof(script_string_entry_t);
+    uint32_t allocationSize =
+        (uint32_t)size + (uint32_t)sizeof(script_string_entry_t);
 #if defined(WINDOWS_BEHAVIOR)
     (void)type;
     head->stringHandle = MT_AllocIndex(allocationSize);
 #else
     head->stringHandle = MT_AllocIndex(allocationSize, type);
 #endif
-    script_string_entry_t *entry = GetRefStringByHandle(head->stringHandle);
+    script_string_entry_t *entry =
+        GetRefStringByHandle(head->stringHandle);
     memcpy(entry->text, text, size);
     entry->flags = user;
     entry->refCount = 0;
@@ -371,24 +433,24 @@ uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size, int32_t 
 #if defined(WINDOWS_BEHAVIOR)
 uint16_t SL_GetString_(const char *text, int32_t user, int32_t type)
 {
-    return SL_GetStringOfLen(text, (uint8_t)user, (uint32_t)strlen(text) + 1u, type);
+    return SL_GetStringOfLen(
+        text, (uint8_t)user, (uint32_t)strlen(text) + 1u, type);
 }
 #else
 uint16_t SL_GetString_(const char *text, uint8_t user, int32_t type)
 {
-    return SL_GetStringOfLen(text, user, (uint32_t)strlen(text) + 1u, type);
+    return SL_GetStringOfLen(
+        text, user, (uint32_t)strlen(text) + 1u, type);
 }
 #endif
 
 /* Source: CoDUOMP.exe 0x00482910..0x00482977.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00482910_00482978.mcode. */
-uint16_t SL_GetLowercaseStringOfLen(const char *text, uint8_t user, size_t size, int32_t type)
+uint16_t SL_GetLowercaseStringOfLen(const char *text, uint8_t user,
+                                    size_t size, int32_t type)
 {
     if (size > SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "script string exceeds maximum length of %i bytes",
-                  SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT - 1);
+        Com_Error(ERR_DROP, "\x15" "script string exceeds maximum length of %i bytes", SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT - 1);
         return 0;
     }
 
@@ -397,8 +459,11 @@ uint16_t SL_GetLowercaseStringOfLen(const char *text, uint8_t user, size_t size,
      * representable script-string entry domain established above. */
     char lowercase[SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT];
 
-    for (int32_t index = coduomp_script_string_int32_from_bits(targetSize - 1u); index >= 0; --index) {
-        lowercase[index] = (char)tolower(coduo_ctype_signed_byte_arg(text[index]));
+    for (int32_t index =
+             coduomp_script_string_int32_from_bits(targetSize - 1u);
+         index >= 0; --index) {
+        lowercase[index] =
+            (char)tolower(coduo_ctype_signed_byte_arg(text[index]));
     }
     return SL_GetStringOfLen(lowercase, user, targetSize, type);
 }
@@ -406,14 +471,18 @@ uint16_t SL_GetLowercaseStringOfLen(const char *text, uint8_t user, size_t size,
 /* Windows source: CoDUOMP.exe 0x00482980..0x004829a5.
  * Linux source: coduo_lnxded 0x080a4e42..0x080a4e7e. */
 #if defined(WINDOWS_BEHAVIOR)
-uint16_t SL_GetLowercaseString_(const char *text, int32_t user, int32_t type)
+uint16_t SL_GetLowercaseString_(const char *text, int32_t user,
+                               int32_t type)
 {
-    return SL_GetLowercaseStringOfLen(text, (uint8_t)user, (uint32_t)strlen(text) + 1u, type);
+    return SL_GetLowercaseStringOfLen(
+        text, (uint8_t)user, (uint32_t)strlen(text) + 1u, type);
 }
 #else
-uint16_t SL_GetLowercaseString_(const char *text, uint8_t user, int32_t type)
+uint16_t SL_GetLowercaseString_(const char *text, uint8_t user,
+                               int32_t type)
 {
-    return SL_GetLowercaseStringOfLen(text, user, (uint32_t)strlen(text) + 1u, type);
+    return SL_GetLowercaseStringOfLen(
+        text, user, (uint32_t)strlen(text) + 1u, type);
 }
 #endif
 
@@ -451,7 +520,8 @@ const char *SL_ConvertToString(uint16_t string)
  * Name: exact same-module Mac symbol SL_AddRefToString. */
 void SL_AddRefToString(uint16_t string)
 {
-    coduomp_script_string_increment_ref(GetRefStringByHandle(string));
+    coduomp_script_string_increment_ref(
+        GetRefStringByHandle(string));
 }
 
 /* Source: CoDUOMP.exe 0x004829e0..0x004829fc.
@@ -489,7 +559,8 @@ void SL_RemoveRefToString(uint16_t string)
     script_string_entry_t *entry = GetRefStringByHandle(string);
 
     if (entry->refCount == 0) {
-        SL_FreeString(string, entry->text, (uint32_t)strlen(entry->text) + 1u);
+        SL_FreeString(string, entry->text,
+                      (uint32_t)strlen(entry->text) + 1u);
         return;
     }
     coduomp_script_string_decrement_ref(entry);
@@ -516,15 +587,22 @@ void SL_FreeString(uint16_t string, const char *text, uint32_t size)
     script_string_hash_slot_t *head = &script_stringHashSlots[hash];
     script_string_hash_slot_t *freeSlot = head;
 
-    MT_FreeIndex(string, (uint32_t)size + (uint32_t)sizeof(script_string_entry_t));
+    MT_FreeIndex(
+        string, (uint32_t)size +
+                    (uint32_t)sizeof(script_string_entry_t));
 
-    uint16_t replacementSlot = head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
-    script_string_hash_slot_t *replacement = &script_stringHashSlots[replacementSlot];
+    uint16_t replacementSlot =
+        head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
+    script_string_hash_slot_t *replacement =
+        &script_stringHashSlots[replacementSlot];
     uint16_t freeSlotIndex = hash;
 
     if (head->stringHandle == string) {
         if (replacement != head) {
-            head->linkAndFlags = (uint16_t)((replacement->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) | SCRIPT_STRING_HASH_OCCUPIED);
+            head->linkAndFlags =
+                (uint16_t)((replacement->linkAndFlags &
+                            SCRIPT_STRING_HASH_LINK_MASK) |
+                           SCRIPT_STRING_HASH_OCCUPIED);
             head->stringHandle = replacement->stringHandle;
             script_stringFreedHashSlot = head;
             freeSlot = replacement;
@@ -534,13 +612,16 @@ void SL_FreeString(uint16_t string, const char *text, uint32_t size)
         uint16_t previousSlot = hash;
         while (replacement->stringHandle != string) {
             previousSlot = replacementSlot;
-            replacementSlot = replacement->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
+            replacementSlot =
+                replacement->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
             replacement = &script_stringHashSlots[replacementSlot];
         }
 
         script_stringHashSlots[previousSlot].linkAndFlags =
-            (uint16_t)((replacement->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK) |
-                       (script_stringHashSlots[previousSlot].linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK));
+            (uint16_t)((replacement->linkAndFlags &
+                        SCRIPT_STRING_HASH_LINK_MASK) |
+                       (script_stringHashSlots[previousSlot].linkAndFlags &
+                        SCRIPT_STRING_HASH_FLAGS_MASK));
         freeSlot = replacement;
         freeSlotIndex = replacementSlot;
     }
@@ -571,12 +652,15 @@ void SL_ShutdownSystem(uint8_t usage)
 {
     for (uint16_t slot = 1; slot < SCRIPT_STRING_HASH_SLOT_COUNT; ++slot) {
         for (;;) {
-            script_string_hash_slot_t *hashSlot = &script_stringHashSlots[slot];
-            if ((hashSlot->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) == 0) {
+            script_string_hash_slot_t *hashSlot =
+                &script_stringHashSlots[slot];
+            if ((hashSlot->linkAndFlags & SCRIPT_STRING_HASH_FLAGS_MASK) ==
+                0) {
                 break;
             }
 
-            script_string_entry_t *entry = GetRefStringByHandle(hashSlot->stringHandle);
+            script_string_entry_t *entry =
+                GetRefStringByHandle(hashSlot->stringHandle);
             if ((entry->flags & usage) == 0) {
                 break;
             }
@@ -593,7 +677,8 @@ void SL_ShutdownSystem(uint8_t usage)
 
 /* Source: CoDUOMP.exe 0x00482e00..0x00482e66.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00482e00_00482e67.mcode. */
-void CreateCanonicalFilename(char *dest, const char *source, int32_t maxLength)
+void CreateCanonicalFilename(char *dest, const char *source,
+                             int32_t maxLength)
 {
     const char *const originalSource = source;
     const int32_t originalMaxLength = maxLength;
@@ -613,8 +698,7 @@ void CreateCanonicalFilename(char *dest, const char *source, int32_t maxLength)
             if (maxLength == 0) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 Com_Error(1,
-                          "\x15"
-                          "Filename '%s' exceeds maximum length of %d",
+                          "\x15" "Filename '%s' exceeds maximum length of %d",
                           originalSource, originalMaxLength);
             }
             if (ch == '\\') {
@@ -640,8 +724,10 @@ uint16_t Scr_CreateCanonicalFilename(const char *filename)
 {
     char canonical[MAX_STRING_CHARS];
 
-    CreateCanonicalFilename(canonical, filename, MAX_STRING_CHARS);
-    return SL_GetString_(canonical, 0, SCRIPT_STRING_CANONICAL_FILENAME_TYPE);
+    CreateCanonicalFilename(
+        canonical, filename, MAX_STRING_CHARS);
+    return SL_GetString_(canonical, 0,
+                         SCRIPT_STRING_CANONICAL_FILENAME_TYPE);
 }
 
 /* Windows source: CoDUOMP.exe 0x004828e0..0x0048290c.
@@ -663,12 +749,14 @@ uint16_t SL_GetString(const char *text, uint8_t user)
 #if defined(WINDOWS_BEHAVIOR)
 uint16_t SL_GetLowercaseString(const char *text, int32_t user)
 {
-    return SL_GetLowercaseString_(text, user, SCRIPT_STRING_DEFAULT_TYPE);
+    return SL_GetLowercaseString_(text, user,
+                                  SCRIPT_STRING_DEFAULT_TYPE);
 }
 #else
 uint16_t SL_GetLowercaseString(const char *text, uint8_t user)
 {
-    return SL_GetLowercaseString_(text, user, SCRIPT_STRING_DEFAULT_TYPE);
+    return SL_GetLowercaseString_(text, user,
+                                  SCRIPT_STRING_DEFAULT_TYPE);
 }
 #endif
 
@@ -707,7 +795,8 @@ uint16_t SL_GetStringForVector(const float *vector)
 
     /* NOT_FROM_ORIGINAL_SOURCE: the fixed destination covers the textual form
      * of three finite float components; formatting remains bounded. */
-    Com_sprintf(text, sizeof(text), "(%.2f, %.2f, %.2f)", (double)vector[0], (double)vector[1], (double)vector[2]);
+    Com_sprintf(text, sizeof(text), "(%.2f, %.2f, %.2f)",
+                (double)vector[0], (double)vector[1], (double)vector[2]);
     return SL_GetString_(text, 0, SCRIPT_STRING_RUNTIME_TYPE);
 }
 
@@ -716,7 +805,9 @@ uint16_t SL_GetStringForVector(const float *vector)
 void SL_BeginLoadScripts(void)
 {
     Hunk_SetHighTempMark();
-    script_stringCanonicalMap = SCRIPT_HUNK_ALLOC(SCRIPT_STRING_TEMP_HASH_ENTRY_COUNT * sizeof(script_stringCanonicalMap[0]));
+    script_stringCanonicalMap =
+        SCRIPT_HUNK_ALLOC(SCRIPT_STRING_TEMP_HASH_ENTRY_COUNT *
+                          sizeof(script_stringCanonicalMap[0]));
     script_stringCanonicalCount = 0;
 }
 

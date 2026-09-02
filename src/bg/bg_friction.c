@@ -47,35 +47,26 @@
 /* Friction tuning constants used by this step. Natural float forms of the
  * .rdata single-precision literals the machine code loads (raw hex kept for
  * traceability). Exact original source names are unresolved; named by role. */
-enum {
-    PM_STOPSPEED_MS = 100
-};            /* speed floor for the "control" value */
-#define PM_STOPSPEED 100.0f          /* 0x300715ec */
-#define PM_FRICTION 5.5f            /* 0x3007161c: base ground-friction coefficient */
-#define PM_LAND_STUN_FRICTION \
-    0.3f         /* 0x3007bea0: reduced coefficient when
+enum { PM_STOPSPEED_MS = 100 };            /* speed floor for the "control" value */
+#define PM_STOPSPEED       100.0f          /* 0x300715ec */
+#define PM_FRICTION        5.5f            /* 0x3007161c: base ground-friction coefficient */
+#define PM_LAND_STUN_FRICTION 0.3f         /* 0x3007bea0: reduced coefficient when
                                             * PMF_LAND_STUN (0x100) is set */
 #define PM_SPECTATORFRICTION 5.0f          /* 0x3007bde0: extra drag for PM_TYPE_SPECTATOR */
 
 /* Recently-jumped window: friction is boosted while ps->pmTime is within this
  * window (and PMF_WALLJUMP is set); past it the flag is dropped. */
-enum {
-    PM_JUMP_FRICTION_WINDOW_MS = 1800
-};  /* compared as [EDX+0x10] > 0x708 */
+enum { PM_JUMP_FRICTION_WINDOW_MS = 1800 };  /* compared as [EDX+0x10] > 0x708 */
 
 /* waterlevel values above this (2/3 == waist/head submerged) skip ground friction
  * entirely (MOV AL,[ESI+0xf1]; CMP AL,1; JA). The byte is pm->waterlevel. */
-enum {
-    PM_FRICTION_WATERLEVEL_MAX = 1
-};
+enum { PM_FRICTION_WATERLEVEL_MAX = 1 };
 
 #define PM_JUMP_FRICTION_SCALE_MAX 2.5f
 #define PM_JUMP_FRICTION_SCALE_SLOPE 0.00088235294f
 #define PM_JUMP_FRICTION_SCALE_BASE 1.0f
 #define PM_JUMP_FRICTION_TIME_SCALE 0.00058823527f
-enum {
-    PM_JUMP_FRICTION_SCALE_SATURATE_MS = 1700
-};
+enum { PM_JUMP_FRICTION_SCALE_SATURATE_MS = 1700 };
 
 /* The two source-level helpers are retained as adjacent identical bodies in
  * both Windows DLLs (cgame 0x30008410/0x30008440, game
@@ -89,7 +80,9 @@ long double PM_GetSlowdownFriction(void)
     if (time >= PM_JUMP_FRICTION_SCALE_SATURATE_MS) {
         return PM_JUMP_FRICTION_SCALE_MAX;
     }
-    return (long double)time * (long double)PM_JUMP_FRICTION_SCALE_SLOPE + (long double)PM_JUMP_FRICTION_SCALE_BASE;
+    return (long double)time *
+               (long double)PM_JUMP_FRICTION_SCALE_SLOPE +
+           (long double)PM_JUMP_FRICTION_SCALE_BASE;
 }
 
 long double PM_GetJumpFactor(void)
@@ -99,7 +92,9 @@ long double PM_GetJumpFactor(void)
     if (time >= PM_JUMP_FRICTION_SCALE_SATURATE_MS) {
         return PM_JUMP_FRICTION_SCALE_MAX;
     }
-    return (long double)time * (long double)PM_JUMP_FRICTION_SCALE_SLOPE + (long double)PM_JUMP_FRICTION_SCALE_BASE;
+    return (long double)time *
+               (long double)PM_JUMP_FRICTION_SCALE_SLOPE +
+           (long double)PM_JUMP_FRICTION_SCALE_BASE;
 }
 #else
 long double PM_GetSlowdownFriction(void)
@@ -110,12 +105,17 @@ long double PM_GetSlowdownFriction(void)
         return PM_JUMP_FRICTION_SCALE_MAX;
     }
 #if EMULATE_X87
-    value = x87f_store_f32(
-        x87f_add(x87f_mul(x87f_mul(x87f_load_i32(pm->ps->pmTime), x87f_load_f32(1.5f)), x87f_load_f32(PM_JUMP_FRICTION_TIME_SCALE)),
-                 x87f_load_f32(PM_JUMP_FRICTION_SCALE_BASE)));
+    value = x87f_store_f32(x87f_add(
+        x87f_mul(
+            x87f_mul(x87f_load_i32(pm->ps->pmTime),
+                     x87f_load_f32(1.5f)),
+            x87f_load_f32(PM_JUMP_FRICTION_TIME_SCALE)),
+        x87f_load_f32(PM_JUMP_FRICTION_SCALE_BASE)));
 #else
-    value =
-        (float)((long double)pm->ps->pmTime * 1.5L * (long double)PM_JUMP_FRICTION_TIME_SCALE + (long double)PM_JUMP_FRICTION_SCALE_BASE);
+    value = (float)(
+        (long double)pm->ps->pmTime * 1.5L *
+            (long double)PM_JUMP_FRICTION_TIME_SCALE +
+        (long double)PM_JUMP_FRICTION_SCALE_BASE);
 #endif
     return value;
 }
@@ -128,12 +128,17 @@ long double PM_GetJumpFactor(void)
         return PM_JUMP_FRICTION_SCALE_MAX;
     }
 #if EMULATE_X87
-    value = x87f_store_f32(
-        x87f_add(x87f_mul(x87f_mul(x87f_load_i32(pm->ps->pmTime), x87f_load_f32(1.5f)), x87f_load_f32(PM_JUMP_FRICTION_TIME_SCALE)),
-                 x87f_load_f32(PM_JUMP_FRICTION_SCALE_BASE)));
+    value = x87f_store_f32(x87f_add(
+        x87f_mul(
+            x87f_mul(x87f_load_i32(pm->ps->pmTime),
+                     x87f_load_f32(1.5f)),
+            x87f_load_f32(PM_JUMP_FRICTION_TIME_SCALE)),
+        x87f_load_f32(PM_JUMP_FRICTION_SCALE_BASE)));
 #else
-    value =
-        (float)((long double)pm->ps->pmTime * 1.5L * (long double)PM_JUMP_FRICTION_TIME_SCALE + (long double)PM_JUMP_FRICTION_SCALE_BASE);
+    value = (float)(
+        (long double)pm->ps->pmTime * 1.5L *
+            (long double)PM_JUMP_FRICTION_TIME_SCALE +
+        (long double)PM_JUMP_FRICTION_SCALE_BASE);
 #endif
     return value;
 }
@@ -142,13 +147,13 @@ long double PM_GetJumpFactor(void)
 #if defined(WINDOWS_BEHAVIOR)
 void PM_Friction(void)
 {
-    pmove_t *move = pm;                 /* ESI = [0x30539850] */
-    playerState_t *ps = move->ps;                     /* EDX = [ESI] */
+    pmove_t   *move = pm;                 /* ESI = [0x30539850] */
+    playerState_t  *ps = move->ps;                     /* EDX = [ESI] */
     /* pml.walking on-ground gate (0x305395ac). Only READ here (compared != 0);
      * loaded once into ECX at entry (0x30008470). Resolved to pml.walking (see
      * globals.h) — the pmove locals flag that the player is on a walkable ground
      * plane this frame. */
-    int32_t walking = pml.walking;
+    int32_t            walking = pml.walking;
 
     /* speed = length of {vx, vy, vc}, where vc is velocity[2] normally, but is
      * substituted by 0.0f while pml.walking is set (0x30008490..0x30008494 FSTP
@@ -164,8 +169,10 @@ void PM_Friction(void)
      * the FCOMP below tests the unrounded chain still in ST0. A long-double
      * carrier keeps that value register-wide; the target x87 control word still
      * supplies the retail arithmetic precision, with a separate float copy. */
-    long double speedRaw =
-        coduo_x87_sqrtl((long double)vc * (long double)vc + (long double)vy * (long double)vy + (long double)vx * (long double)vx);
+    long double speedRaw = coduo_x87_sqrtl(
+        (long double)vc * (long double)vc +
+        (long double)vy * (long double)vy +
+        (long double)vx * (long double)vx);
     float speed = (float)speedRaw;                            /* FST float [ESP+8] */
 
     /* if (speed < 1.0f) { VectorClear(velocity); return; }  (0x300084b6 FCOMP
@@ -187,9 +194,10 @@ void PM_Friction(void)
      * rounding would be spurious. */
     long double drop = 0.0f;
 
-    qboolean skipGroundFriction = ((uint8_t)move->waterlevel > PM_FRICTION_WATERLEVEL_MAX) || /* CMP AL,1; JA */
-                                  (walking == 0) ||                                     /* CMP ECX,EBX; JZ */
-                                  ((pml.groundTrace.surfaceFlags & SURF_SLICK) != 0) /* TEST [..],0x2; JNZ */
+    qboolean skipGroundFriction =
+        ((uint8_t)move->waterlevel > PM_FRICTION_WATERLEVEL_MAX) || /* CMP AL,1; JA */
+        (walking == 0) ||                                     /* CMP ECX,EBX; JZ */
+        ((pml.groundTrace.surfaceFlags & SURF_SLICK) != 0) /* TEST [..],0x2; JNZ */
         ;
 
     if (!skipGroundFriction) {
@@ -206,7 +214,8 @@ void PM_Friction(void)
             /* Select the friction coefficient by playerState flags. */
             if (flags & PMF_LAND_STUN) {            /* TEST CH,0x1; JZ */
                 /* reduced-traction friction */
-                drop = (long double)control * (long double)PM_LAND_STUN_FRICTION;   /* FMUL 0.3f */
+                drop = (long double)control *
+                       (long double)PM_LAND_STUN_FRICTION;   /* FMUL 0.3f */
             } else if (flags & PMF_WALLJUMP) {        /* TEST CH,0x20; JZ */
                 if (ps->pmTime > PM_JUMP_FRICTION_WINDOW_MS) { /* CMP [EDX+0x10],0x708; JG */
                     /* Recently-jumped window has elapsed: drop the jumped flag and
@@ -232,13 +241,15 @@ void PM_Friction(void)
      * speed. Only applied when waterlevel != 0 (0x3000855a CMP AL,BL; JZ). */
     uint8_t waterlevel = move->waterlevel;                     /* MOV AL,[ESI+0xf1] */
     if (waterlevel != 0) {
-        drop += (long double)(int32_t)waterlevel * (long double)pml.frametime * (long double)speed;
+        drop += (long double)(int32_t)waterlevel *
+                (long double)pml.frametime * (long double)speed;
     }
 
     /* Spectator movement gets extra friction: drop += pml.frametime*speed*5.0. */
     playerState_t *spectatorPs = move->ps;                     /* 0x3000857b reload [ESI] */
     if (spectatorPs->pmType == PM_TYPE_SPECTATOR) {          /* CMP [EAX+0x4],4; JNZ */
-        drop += (long double)pml.frametime * (long double)speed * (long double)PM_SPECTATORFRICTION;
+        drop += (long double)pml.frametime * (long double)speed *
+                (long double)PM_SPECTATORFRICTION;
     }
 
     /* newspeed = speed - drop; if (newspeed < 0) newspeed = 0; (0x30008595 FSUBR
@@ -273,14 +284,21 @@ void PM_Friction(void)
     /* Linux stores the squared sum as binary64 for the glibc sqrt call and
      * stores the returned speed as binary32 before the threshold comparison. */
 #if EMULATE_X87
-    speed = (float)CoduoLibm_SqrtGlibc(
-        x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]), x87f_load_f32(ps->velocity[0])),
-                                         x87f_mul(x87f_load_f32(ps->velocity[1]), x87f_load_f32(ps->velocity[1]))),
-                                x87f_mul(x87f_load_f32(verticalVelocity), x87f_load_f32(verticalVelocity)))));
+    speed = (float)CoduoLibm_SqrtGlibc(x87f_store_f64(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]),
+                          x87f_load_f32(ps->velocity[0])),
+                 x87f_mul(x87f_load_f32(ps->velocity[1]),
+                          x87f_load_f32(ps->velocity[1]))),
+        x87f_mul(x87f_load_f32(verticalVelocity),
+                 x87f_load_f32(verticalVelocity)))));
 #else
-    speed = (float)CoduoLibm_SqrtGlibc((double)(((long double)ps->velocity[0] * (long double)ps->velocity[0] +
-                                                 (long double)ps->velocity[1] * (long double)ps->velocity[1]) +
-                                                (long double)verticalVelocity * (long double)verticalVelocity));
+    speed = (float)CoduoLibm_SqrtGlibc((double)(
+        ((long double)ps->velocity[0] *
+             (long double)ps->velocity[0] +
+         (long double)ps->velocity[1] *
+             (long double)ps->velocity[1]) +
+        (long double)verticalVelocity *
+            (long double)verticalVelocity));
 #endif
 
     if (speed < 1.0f) {
@@ -290,7 +308,9 @@ void PM_Friction(void)
         return;
     }
 
-    if (pm->waterlevel <= PM_FRICTION_WATERLEVEL_MAX && pml.walking != 0 && (pml.groundTrace.surfaceFlags & SURF_SLICK) == 0 &&
+    if (pm->waterlevel <= PM_FRICTION_WATERLEVEL_MAX &&
+        pml.walking != 0 &&
+        (pml.groundTrace.surfaceFlags & SURF_SLICK) == 0 &&
         (ps->playerStateFlags & PMF_NO_GROUNDFRICTION) == 0) {
         float control = speed;
         float multiplier;
@@ -302,16 +322,22 @@ void PM_Friction(void)
 
         if ((ps->playerStateFlags & PMF_LAND_STUN) != 0) {
 #if EMULATE_X87
-            multiplier = x87f_store_f32(x87f_mul(x87f_load_f32(control), x87f_load_f32(PM_LAND_STUN_FRICTION)));
+            multiplier = x87f_store_f32(x87f_mul(
+                x87f_load_f32(control),
+                x87f_load_f32(PM_LAND_STUN_FRICTION)));
 #else
-            multiplier = (float)((long double)control * (long double)PM_LAND_STUN_FRICTION);
+            multiplier = (float)((long double)control *
+                                 (long double)PM_LAND_STUN_FRICTION);
 #endif
         } else if ((ps->playerStateFlags & PMF_WALLJUMP) != 0) {
             if (ps->pmTime <= PM_JUMP_FRICTION_WINDOW_MS) {
 #if EMULATE_X87
-                multiplier = x87f_store_f32(x87f_mul(x87f_load_f32(control), x87f_load_f32((float)PM_GetSlowdownFriction())));
+                multiplier = x87f_store_f32(x87f_mul(
+                    x87f_load_f32(control),
+                    x87f_load_f32((float)PM_GetSlowdownFriction())));
 #else
-                multiplier = (float)((long double)control * PM_GetSlowdownFriction());
+                multiplier = (float)(
+                    (long double)control * PM_GetSlowdownFriction());
 #endif
             } else {
                 ps->playerStateFlags &= ~(uint32_t)PMF_WALLJUMP;
@@ -322,27 +348,46 @@ void PM_Friction(void)
         /* The Linux body stores the ground-friction contribution in `drop`
          * after the complete multiply chain. */
 #if EMULATE_X87
-        drop = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(multiplier), x87f_load_f32(PM_FRICTION)), x87f_load_f32(pml.frametime)));
+        drop = x87f_store_f32(x87f_mul(
+            x87f_mul(x87f_load_f32(multiplier),
+                     x87f_load_f32(PM_FRICTION)),
+            x87f_load_f32(pml.frametime)));
 #else
-        drop = (float)((long double)multiplier * (long double)PM_FRICTION * (long double)pml.frametime);
+        drop = (float)((long double)multiplier *
+                       (long double)PM_FRICTION *
+                       (long double)pml.frametime);
 #endif
     }
 
     if (pm->waterlevel != 0) {
 #if EMULATE_X87
-        drop = x87f_store_f32(x87f_add(x87f_load_f32(drop), x87f_mul(x87f_mul(x87f_load_i32((int32_t)pm->waterlevel), x87f_load_f32(speed)),
-                                                                     x87f_load_f32(pml.frametime))));
+        drop = x87f_store_f32(x87f_add(
+            x87f_load_f32(drop),
+            x87f_mul(
+                x87f_mul(x87f_load_i32((int32_t)pm->waterlevel),
+                         x87f_load_f32(speed)),
+                x87f_load_f32(pml.frametime))));
 #else
-        drop = (float)((long double)drop + (long double)(int32_t)pm->waterlevel * (long double)speed * (long double)pml.frametime);
+        drop = (float)((long double)drop +
+                       (long double)(int32_t)pm->waterlevel *
+                           (long double)speed *
+                           (long double)pml.frametime);
 #endif
     }
 
     if (ps->pmType == PM_TYPE_SPECTATOR) {
 #if EMULATE_X87
-        drop = x87f_store_f32(x87f_add(x87f_load_f32(drop), x87f_mul(x87f_mul(x87f_load_f32(speed), x87f_load_f32(PM_SPECTATORFRICTION)),
-                                                                     x87f_load_f32(pml.frametime))));
+        drop = x87f_store_f32(x87f_add(
+            x87f_load_f32(drop),
+            x87f_mul(
+                x87f_mul(x87f_load_f32(speed),
+                         x87f_load_f32(PM_SPECTATORFRICTION)),
+                x87f_load_f32(pml.frametime))));
 #else
-        drop = (float)((long double)drop + (long double)speed * (long double)PM_SPECTATORFRICTION * (long double)pml.frametime);
+        drop = (float)((long double)drop +
+                       (long double)speed *
+                           (long double)PM_SPECTATORFRICTION *
+                           (long double)pml.frametime);
 #endif
     }
 
@@ -351,16 +396,21 @@ void PM_Friction(void)
         newSpeed = 0.0f;
     }
 #if EMULATE_X87
-    newSpeed = x87f_store_f32(x87f_div(x87f_load_f32(newSpeed), x87f_load_f32(speed)));
+    newSpeed = x87f_store_f32(
+        x87f_div(x87f_load_f32(newSpeed), x87f_load_f32(speed)));
 #else
     newSpeed = (float)((long double)newSpeed / (long double)speed);
 #endif
 
     for (lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-        ps->velocity[lane] = x87f_store_f32(x87f_mul(x87f_load_f32(ps->velocity[lane]), x87f_load_f32(newSpeed)));
+        ps->velocity[lane] = x87f_store_f32(x87f_mul(
+            x87f_load_f32(ps->velocity[lane]),
+            x87f_load_f32(newSpeed)));
 #else
-        ps->velocity[lane] = (float)((long double)ps->velocity[lane] * (long double)newSpeed);
+        ps->velocity[lane] = (float)(
+            (long double)ps->velocity[lane] *
+            (long double)newSpeed);
 #endif
     }
 }

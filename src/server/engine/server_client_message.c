@@ -125,9 +125,12 @@ void SV_DropClient(client_t *client, const char *dropReason)
     client->state = CS_ZOMBIE;
 
     if (client->gentity == NULL) {
-        for (int32_t challengeNum = 0; challengeNum < MAX_CHALLENGES; ++challengeNum) {
+        for (int32_t challengeNum = 0;
+             challengeNum < MAX_CHALLENGES;
+             ++challengeNum) {
             challenge_t *const challenge = &svs.challenges[challengeNum];
-            if (NET_CompareAdr(client->netchan.remoteAddress, challenge->address) != qfalse) {
+            if (NET_CompareAdr(client->netchan.remoteAddress,
+                               challenge->address) != qfalse) {
                 challenge->connected = qfalse;
                 break;
             }
@@ -137,7 +140,9 @@ void SV_DropClient(client_t *client, const char *dropReason)
     server_compat_emit_drop_messages(client, name, dropReason);
 
     int32_t connectedClientNum;
-    for (connectedClientNum = 0; connectedClientNum < sv_maxclients->integer && svs.clients[connectedClientNum].state < CS_CONNECTED;
+    for (connectedClientNum = 0;
+         connectedClientNum < sv_maxclients->integer &&
+             svs.clients[connectedClientNum].state < CS_CONNECTED;
          ++connectedClientNum) {
     }
     if (connectedClientNum == sv_maxclients->integer) {
@@ -161,10 +166,13 @@ void SV_VerifyPaks_f(client_t *client)
     int32_t expectedChecksumB = 0;
     int32_t clientChecksums[SERVER_MAX_PURE_CHECKSUMS];
     int32_t loadedChecksums[SERVER_MAX_PURE_CHECKSUMS];
-    qboolean valid = FS_FileIsInPAK(FS_ShiftStr("wqaeicogaoraz:80fnn", -2), &expectedChecksumA) == SERVER_FS_PAK_FOUND;
+    qboolean valid =
+        FS_FileIsInPAK(FS_ShiftStr("wqaeicogaoraz:80fnn", -2),
+                       &expectedChecksumA) == SERVER_FS_PAK_FOUND;
 
     if (valid != qfalse) {
-        valid = FS_FileIsInPAK(FS_ShiftStr("ztdzndrud}=;3iqq", -5), &expectedChecksumB) == SERVER_FS_PAK_FOUND;
+        valid = FS_FileIsInPAK(FS_ShiftStr("ztdzndrud}=;3iqq", -5),
+                               &expectedChecksumB) == SERVER_FS_PAK_FOUND;
     }
 
     int32_t argumentCount = Cmd_Argc();
@@ -174,13 +182,15 @@ void SV_VerifyPaks_f(client_t *client)
         } else {
             int32_t argumentIndex = 1;
             const char *argument = Cmd_Argv(argumentIndex++);
-            if (argument == NULL || argument[0] == '@' || atoi(argument) != expectedChecksumA) {
+            if (argument == NULL || argument[0] == '@' ||
+                atoi(argument) != expectedChecksumA) {
                 valid = qfalse;
             }
 
             if (valid != qfalse) {
                 argument = Cmd_Argv(argumentIndex++);
-                if (argument == NULL || argument[0] == '@' || atoi(argument) != expectedChecksumB) {
+                if (argument == NULL || argument[0] == '@' ||
+                    atoi(argument) != expectedChecksumB) {
                     valid = qfalse;
                 }
             }
@@ -194,13 +204,20 @@ void SV_VerifyPaks_f(client_t *client)
 
             int32_t clientChecksumCount = 0;
             while (valid != qfalse && argumentIndex < argumentCount) {
-                clientChecksums[clientChecksumCount++] = atoi(Cmd_Argv(argumentIndex++));
+                clientChecksums[clientChecksumCount++] =
+                    atoi(Cmd_Argv(argumentIndex++));
             }
 
             const int32_t checksumCount = clientChecksumCount - 1;
-            for (int32_t checksumIndex = 0; valid != qfalse && checksumIndex < checksumCount; ++checksumIndex) {
-                for (int32_t comparisonIndex = 0; comparisonIndex < checksumCount; ++comparisonIndex) {
-                    if (checksumIndex != comparisonIndex && clientChecksums[checksumIndex] == clientChecksums[comparisonIndex]) {
+            for (int32_t checksumIndex = 0;
+                 valid != qfalse && checksumIndex < checksumCount;
+                 ++checksumIndex) {
+                for (int32_t comparisonIndex = 0;
+                     comparisonIndex < checksumCount;
+                     ++comparisonIndex) {
+                    if (checksumIndex != comparisonIndex &&
+                        clientChecksums[checksumIndex] ==
+                            clientChecksums[comparisonIndex]) {
                         valid = qfalse;
                         break;
                     }
@@ -214,14 +231,21 @@ void SV_VerifyPaks_f(client_t *client)
                     loadedChecksumCount = SERVER_MAX_PURE_CHECKSUMS;
                 }
 
-                for (int32_t checksumIndex = 0; checksumIndex < loadedChecksumCount; ++checksumIndex) {
-                    loadedChecksums[checksumIndex] = atoi(Cmd_Argv(checksumIndex));
+                for (int32_t checksumIndex = 0;
+                     checksumIndex < loadedChecksumCount;
+                     ++checksumIndex) {
+                    loadedChecksums[checksumIndex] =
+                        atoi(Cmd_Argv(checksumIndex));
                 }
 
-                for (int32_t checksumIndex = 0; valid != qfalse && checksumIndex < checksumCount; ++checksumIndex) {
+                for (int32_t checksumIndex = 0;
+                     valid != qfalse && checksumIndex < checksumCount;
+                     ++checksumIndex) {
                     int32_t loadedIndex;
                     for (loadedIndex = 0;
-                         loadedIndex < loadedChecksumCount && clientChecksums[checksumIndex] != loadedChecksums[loadedIndex];
+                         loadedIndex < loadedChecksumCount &&
+                             clientChecksums[checksumIndex] !=
+                                 loadedChecksums[loadedIndex];
                          ++loadedIndex) {
                     }
                     if (loadedIndex >= loadedChecksumCount) {
@@ -232,17 +256,22 @@ void SV_VerifyPaks_f(client_t *client)
 
             if (valid != qfalse) {
                 int32_t checksum = sv.gamestateChecksumFeed;
-                for (int32_t checksumIndex = 0; checksumIndex < checksumCount; ++checksumIndex) {
+                for (int32_t checksumIndex = 0;
+                     checksumIndex < checksumCount;
+                     ++checksumIndex) {
                     checksum ^= clientChecksums[checksumIndex];
                 }
-                if ((checksum ^ checksumCount) != clientChecksums[checksumCount]) {
+                if ((checksum ^ checksumCount) !=
+                    clientChecksums[checksumCount]) {
                     valid = qfalse;
                 }
             }
         }
     }
 
-    client->pureAuthState = valid != qfalse ? SERVER_CLIENT_PURE_STATE_VALID : SERVER_CLIENT_PURE_STATE_INVALID;
+    client->pureAuthState = valid != qfalse
+                                ? SERVER_CLIENT_PURE_STATE_VALID
+                                : SERVER_CLIENT_PURE_STATE_INVALID;
 }
 
 void SV_ResetPureClient_f(client_t *client)
@@ -258,7 +287,8 @@ void SV_UserinfoChanged(client_t *client)
     /* coduo_lnxded 0x0808d306 calls the full Sys_IsLANAddress body at
      * 0x080ca1bc. The former NET_IsLocalAddress spelling was a transcription
      * error, not a Linux behavior difference. */
-    if (Sys_IsLANAddress(client->netchan.remoteAddress) != qfalse && dedicated->integer != SERVER_DEDICATED_SERVER) {
+    if (Sys_IsLANAddress(client->netchan.remoteAddress) != qfalse &&
+        dedicated->integer != SERVER_DEDICATED_SERVER) {
         client->rate = SERVER_RATE_LOCAL;
     } else {
         value = Info_ValueForKey(client->userinfo, "rate");
@@ -277,7 +307,9 @@ void SV_UserinfoChanged(client_t *client)
     value = Info_ValueForKey(client->userinfo, "handicap");
     if (value[0] != '\0') {
         const int32_t handicap = atoi(value);
-        if (handicap < SERVER_HANDICAP_MINIMUM || handicap > SERVER_HANDICAP_MAXIMUM || strlen(value) > SERVER_HANDICAP_TEXT_MAX_LENGTH) {
+        if (handicap < SERVER_HANDICAP_MINIMUM ||
+            handicap > SERVER_HANDICAP_MAXIMUM ||
+            strlen(value) > SERVER_HANDICAP_TEXT_MAX_LENGTH) {
             Info_SetValueForKey(client->userinfo, "handicap", "100");
         }
     }
@@ -311,25 +343,31 @@ void SV_UpdateUserinfo_f(client_t *client)
     (void)VM_Call(sv_gameVM, GAME_CLIENT_USERINFO_CHANGED, clientNum);
 }
 
-static const sv_client_command_handler_t sv_clientCommandHandlers[] = {{"userinfo", SV_UpdateUserinfo_f},
-                                                                       {"disconnect", SV_Disconnect_f},
-                                                                       {"cp", SV_VerifyPaks_f},
-                                                                       {"vdr", SV_ResetPureClient_f},
-                                                                       {"download", SV_BeginDownload_f},
-                                                                       {"nextdl", SV_NextDownload_f},
-                                                                       {"stopdl", SV_StopDownload_f},
-                                                                       {"donedl", SV_DoneDownload_f},
-                                                                       {"retransdl", SV_RetransmitDownload_f},
-                                                                       {"wwwdl", SV_WWWDownload_f},
-                                                                       {NULL, NULL}};
+static const sv_client_command_handler_t sv_clientCommandHandlers[] = {
+    {"userinfo", SV_UpdateUserinfo_f},
+    {"disconnect", SV_Disconnect_f},
+    {"cp", SV_VerifyPaks_f},
+    {"vdr", SV_ResetPureClient_f},
+    {"download", SV_BeginDownload_f},
+    {"nextdl", SV_NextDownload_f},
+    {"stopdl", SV_StopDownload_f},
+    {"donedl", SV_DoneDownload_f},
+    {"retransdl", SV_RetransmitDownload_f},
+    {"wwwdl", SV_WWWDownload_f},
+    {NULL, NULL}
+};
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(sv_client_command_handler_t) == 4, "i386 client-command handler alignment changed");
-_Static_assert(sizeof(sv_client_command_handler_t) == 0x08, "original client-command handler stride");
-_Static_assert(sizeof(sv_clientCommandHandlers) == 0x58, "original client-command handler table extent");
+_Static_assert(_Alignof(sv_client_command_handler_t) == 4,
+               "i386 client-command handler alignment changed");
+_Static_assert(sizeof(sv_client_command_handler_t) == 0x08,
+               "original client-command handler stride");
+_Static_assert(sizeof(sv_clientCommandHandlers) == 0x58,
+               "original client-command handler table extent");
 #endif
 
-void SV_ExecuteClientCommand(client_t *client, const char *text, qboolean clientOK)
+void SV_ExecuteClientCommand(client_t *client, const char *text,
+                             qboolean clientOK)
 {
     XAnimSetUser(XANIM_USER_SERVER);
     Cmd_TokenizeString(text);
@@ -343,7 +381,8 @@ void SV_ExecuteClientCommand(client_t *client, const char *text, qboolean client
         ++handler;
     }
 
-    if (clientOK != qfalse && handler->commandName == NULL && sv.state == SS_GAME) {
+    if (clientOK != qfalse && handler->commandName == NULL &&
+        sv.state == SS_GAME) {
         const int32_t clientNum = (int32_t)(client - svs.clients);
         (void)VM_Call(sv_gameVM, GAME_CLIENT_COMMAND, clientNum);
     }
@@ -364,30 +403,38 @@ qboolean SV_ClientCommand(client_t *client, msg_t *message)
 
     if (sequence > client->lastClientCommand + 1) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        Com_Printf("Client %s lost %i clientCommands\n", client->name, sequence - client->lastClientCommand + 1);
+        Com_Printf("Client %s lost %i clientCommands\n", client->name,
+                   sequence - client->lastClientCommand + 1);
         SV_DropClient(client, "EXE_LOSTRELIABLECOMMANDS");
         return qfalse;
     }
 
     qboolean floodProtect = qtrue;
-    if (Q_strncmp("team ", command, 5) == 0 || Q_strncmp("score ", command, 6) == 0 || Q_strncmp("mr ", command, 3) == 0) {
+    if (Q_strncmp("team ", command, 5) == 0 ||
+        Q_strncmp("score ", command, 6) == 0 ||
+        Q_strncmp("mr ", command, 3) == 0) {
         floodProtect = qfalse;
     }
 
     qboolean clientOK = qtrue;
-    if (cl_running->integer == 0 && client->state > CS_PRIMED && sv_floodProtect->integer != 0 && svs.realTime < client->nextReliableTime &&
+    if (cl_running->integer == 0 && client->state > CS_PRIMED &&
+        sv_floodProtect->integer != 0 &&
+        svs.realTime < client->nextReliableTime &&
         floodProtect != qfalse) {
         clientOK = qfalse;
-        Com_DPrintf("client text ignored for %s: %s\n", client->name, Cmd_Argv(0));
+        Com_DPrintf("client text ignored for %s: %s\n",
+                    client->name, Cmd_Argv(0));
     }
 
     if (floodProtect != qfalse) {
-        client->nextReliableTime = svs.realTime + SERVER_CLIENT_COMMAND_FLOOD_DELAY_MSEC;
+        client->nextReliableTime =
+            svs.realTime + SERVER_CLIENT_COMMAND_FLOOD_DELAY_MSEC;
     }
 
     SV_ExecuteClientCommand(client, command, clientOK);
     client->lastClientCommand = sequence;
-    Com_sprintf(client->lastClientCommandString, sizeof(client->lastClientCommandString), "%s", command);
+    Com_sprintf(client->lastClientCommandString,
+                sizeof(client->lastClientCommandString), "%s", command);
     return qtrue;
 }
 
@@ -407,9 +454,12 @@ void SV_UserMove(client_t *client, msg_t *message, qboolean delta)
     usercmd_t nullCommand;
     usercmd_t commands[MAX_PACKET_USERCMDS];
 
-    client->deltaMessage = delta != qfalse ? client->messageAcknowledge : SERVER_DELTA_MESSAGE_NONE;
+    client->deltaMessage = delta != qfalse
+        ? client->messageAcknowledge
+        : SERVER_DELTA_MESSAGE_NONE;
 
-    if (client->reliableSequence - client->reliableAcknowledge >= MAX_RELIABLE_COMMANDS) {
+    if (client->reliableSequence - client->reliableAcknowledge >=
+        MAX_RELIABLE_COMMANDS) {
         return;
     }
 
@@ -423,9 +473,13 @@ void SV_UserMove(client_t *client, msg_t *message, qboolean delta)
         return;
     }
 
-    uint32_t key = (uint32_t)client->messageAcknowledge ^ (uint32_t)sv.gamestateChecksumFeed;
-    key ^= Com_HashKey(client->reliableCommands[client->reliableAcknowledge & (MAX_RELIABLE_COMMANDS - 1)].commandText,
-                       SERVER_RELIABLE_COMMAND_HASH_LENGTH);
+    uint32_t key = (uint32_t)client->messageAcknowledge ^
+                   (uint32_t)sv.gamestateChecksumFeed;
+    key ^= Com_HashKey(
+        client->reliableCommands[
+            client->reliableAcknowledge &
+            (MAX_RELIABLE_COMMANDS - 1)].commandText,
+        SERVER_RELIABLE_COMMAND_HASH_LENGTH);
 
     const int32_t clientNum = (int32_t)(client - svs.clients);
     playerState_t *const gameClient = SV_GameClientNum(clientNum);
@@ -434,7 +488,8 @@ void SV_UserMove(client_t *client, msg_t *message, qboolean delta)
     const usercmd_t *from = &nullCommand;
     for (int32_t index = 0; index < commandCount; ++index) {
         MSG_ReadDeltaUsercmdKey(message, key, from, &commands[index]);
-        if (VM_Call(sv_gameVM, GAME_IS_VALID_WEAPON, commands[index].weapon) == 0) {
+        if (VM_Call(sv_gameVM, GAME_IS_VALID_WEAPON,
+                    commands[index].weapon) == 0) {
             commands[index].weapon = (uint8_t)gameClient->currentWeapon;
         }
         from = &commands[index];
@@ -447,14 +502,18 @@ void SV_UserMove(client_t *client, msg_t *message, qboolean delta)
         return;
     }
 
-    client->snapshotFrames[client->messageAcknowledge & (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)].messageAcknowledgedTime = svs.realTime;
+    client->snapshotFrames[
+        client->messageAcknowledge &
+        (SERVER_CLIENT_SNAPSHOT_FRAME_COUNT - 1)].messageAcknowledgedTime =
+            svs.realTime;
 
     if (client->state == CS_PRIMED) {
         XAnimSetUser(XANIM_USER_SERVER);
         SV_ClientEnterWorld(client, commands);
     }
 
-    if (sv_pure->integer != 0 && client->pureAuthState == SERVER_CLIENT_PURE_STATE_PENDING) {
+    if (sv_pure->integer != 0 &&
+        client->pureAuthState == SERVER_CLIENT_PURE_STATE_PENDING) {
         SV_DropClient(client, "EXE_CANNOTVALIDATEPURECLIENT");
         return;
     }
@@ -464,9 +523,11 @@ void SV_UserMove(client_t *client, msg_t *message, qboolean delta)
         return;
     }
 
-    const int32_t newestCommandTime = commands[commandCount - 1].commandTime;
+    const int32_t newestCommandTime =
+        commands[commandCount - 1].commandTime;
     for (int32_t index = 0; index < commandCount; ++index) {
-        if (commands[index].commandTime <= newestCommandTime && commands[index].commandTime > client->lastUsercmd.commandTime) {
+        if (commands[index].commandTime <= newestCommandTime &&
+            commands[index].commandTime > client->lastUsercmd.commandTime) {
             SV_ClientThink(client, &commands[index]);
         }
     }
@@ -477,8 +538,10 @@ void SV_ExecuteClientMessage(client_t *client, msg_t *message)
     uint8_t decodedData[MAX_MSGLEN];
     msg_t decoded;
     MSG_Init(&decoded, decodedData, sizeof(decodedData));
-    const int32_t decodedSize = MSG_ReadBitsCompress(message->data + message->readcount, decodedData, message->cursize - message->readcount,
-                                                     (int32_t)sizeof(decodedData));
+    const int32_t decodedSize = MSG_ReadBitsCompress(
+        message->data + message->readcount, decodedData,
+        message->cursize - message->readcount,
+        (int32_t)sizeof(decodedData));
     /* NOT_FROM_ORIGINAL_SOURCE: a failed transform may leave partial output;
      * do not publish or parse it as client commands. */
     if (decodedSize == HUFFMAN_TRANSFORM_ERROR) {
@@ -486,8 +549,10 @@ void SV_ExecuteClientMessage(client_t *client, msg_t *message)
     }
     decoded.cursize = decodedSize;
 
-    if (client->serverId != sv_serverId && client->download.fileName[0] == '\0') {
-        if (((uint32_t)client->serverId ^ (uint32_t)sv_serverId) & SERVER_ID_HIGH_MASK) {
+    if (client->serverId != sv_serverId &&
+        client->download.fileName[0] == '\0') {
+        if (((uint32_t)client->serverId ^ (uint32_t)sv_serverId) &
+            SERVER_ID_HIGH_MASK) {
             if (client->messageAcknowledge <= client->gamestateMessageNum) {
                 return;
             }
@@ -505,15 +570,19 @@ void SV_ExecuteClientMessage(client_t *client, msg_t *message)
         return;
     }
 
-    serverClientMessageCommand_t command = (serverClientMessageCommand_t)MSG_ReadBits(&decoded, SERVER_CLC_COMMAND_BITS);
-    while (command != SERVER_CLC_EOF && command == SERVER_CLC_CLIENT_COMMAND) {
+    serverClientMessageCommand_t command =
+        (serverClientMessageCommand_t)MSG_ReadBits(
+            &decoded, SERVER_CLC_COMMAND_BITS);
+    while (command != SERVER_CLC_EOF &&
+           command == SERVER_CLC_CLIENT_COMMAND) {
         if (SV_ClientCommand(client, &decoded) == qfalse) {
             return;
         }
         if (client->state == CS_ZOMBIE) {
             return;
         }
-        command = (serverClientMessageCommand_t)MSG_ReadBits(&decoded, SERVER_CLC_COMMAND_BITS);
+        command = (serverClientMessageCommand_t)MSG_ReadBits(
+            &decoded, SERVER_CLC_COMMAND_BITS);
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: a command selector is valid only when its
@@ -523,7 +592,8 @@ void SV_ExecuteClientMessage(client_t *client, msg_t *message)
         return;
     }
 
-    if (sv_pure->integer != 0 && client->pureAuthState == SERVER_CLIENT_PURE_STATE_INVALID) {
+    if (sv_pure->integer != 0 &&
+        client->pureAuthState == SERVER_CLIENT_PURE_STATE_INVALID) {
         client->nextSnapshotTime = SERVER_NEXT_SNAPSHOT_IMMEDIATE;
         client->state = CS_ACTIVE;
         SV_SendClientSnapshot(client);
@@ -536,7 +606,8 @@ void SV_ExecuteClientMessage(client_t *client, msg_t *message)
         SV_UserMove(client, &decoded, qfalse);
     } else if (command != SERVER_CLC_EOF) {
         const int32_t clientNum = (int32_t)(client - svs.clients);
-        Com_Printf("WARNING: bad command byte %i for client %i\n", command, clientNum);
+        Com_Printf("WARNING: bad command byte %i for client %i\n",
+                   command, clientNum);
     }
 }
 
@@ -544,7 +615,9 @@ int32_t SV_AddTestClient(void)
 {
     int32_t clientNum;
     client_t *client = svs.clients;
-    for (clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
+    for (clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum, ++client) {
         if (client->state == CS_FREE) {
             break;
         }
@@ -569,8 +642,12 @@ int32_t SV_AddTestClient(void)
     SV_DirectConnect(address);
 
     client = svs.clients;
-    for (clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
-        if (client->state != CS_FREE && NET_CompareBaseAdr(client->netchan.remoteAddress, address) != qfalse) {
+    for (clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum, ++client) {
+        if (client->state != CS_FREE &&
+            NET_CompareBaseAdr(client->netchan.remoteAddress,
+                               address) != qfalse) {
             break;
         }
     }

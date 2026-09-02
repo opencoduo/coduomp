@@ -81,7 +81,8 @@ _Static_assert(offsetof(rectDef_t, h) == 0x0c, "obj->h +0x0c");
  * CG_GetTranslatedLocationString (0x300310b0) adds the CS_LOCATIONS base,
  * resolves the config string, and applies the string-editor translation policy.
  */
-void CG_DrawSelectedPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
+void CG_DrawSelectedPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
+                                   intptr_t arg2, intptr_t arg3)
 {
     int32_t idx = cg_currentSelectedPlayer_vmCvar.integer;
 
@@ -92,8 +93,10 @@ void CG_DrawSelectedPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
         cg_currentSelectedPlayer_vmCvar.integer = 0;
     }
 
-    int32_t clientNum = cgame_compat_read_target_i32_index(cg_hudEmitClientTable, idx);
-    clientInfo_t *state = cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], clientNum);
+    int32_t clientNum = cgame_compat_read_target_i32_index(
+        cg_hudEmitClientTable, idx);
+    clientInfo_t *state = cgame_compat_unchecked_clientinfo(
+        &bgs.clientinfo[0], clientNum);
 
     /* No valid per-client state at this table slot -> emit nothing. */
     if (state->infoValid == 0)
@@ -107,5 +110,14 @@ void CG_DrawSelectedPlayerLocation(rectDef_t *obj, intptr_t arg0, intptr_t arg1,
      * pattern (single-precision throughout: one x87 FADD). */
     memcpy(&sumBits, &sum, sizeof(sumBits));
 
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(obj->x), sumBits, arg0, arg1, arg2, (intptr_t)hint, 0, 0, arg3);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(obj->x),
+                  sumBits,
+                  arg0,
+                  arg1,
+                  arg2,
+                  (intptr_t)hint,
+                  0,
+                  0,
+                  arg3);
 }

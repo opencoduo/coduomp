@@ -26,8 +26,7 @@ void FS_FreeFile(void *buffer)
     filesystem_compat_check_started();
 
     if (buffer == NULL)
-        Com_Error(ERR_FATAL, "\x15"
-                             "FS_FreeFile( NULL )");
+        Com_Error(ERR_FATAL, "\x15" "FS_FreeFile( NULL )");
 
     --fs_loadStack;
     Hunk_FreeTempMemory(buffer);

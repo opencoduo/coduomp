@@ -45,7 +45,8 @@ float trap_XAnimGetWeight(XAnimTree *tree, uint16_t animIndex)
 {
     /* EAX from the syscall is reinterpreted bit-for-bit as a float (the FLD reads
      * the same dword slot the int result was just stored into). */
-    int32_t resultBits = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_XANIM_GET_WEIGHT, (intptr_t)tree, animIndex));
+    int32_t resultBits = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_XANIM_GET_WEIGHT, (intptr_t)tree, animIndex));
     float result;
 
     memcpy(&result, &resultBits, sizeof(result));

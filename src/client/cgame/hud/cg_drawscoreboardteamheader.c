@@ -62,23 +62,19 @@
  */
 
 /* .rdata float constants (dumped by address; not inferred from neighbors). */
-#define CG_SB_BANNER_HEIGHT 24.0f  /* [0x3007bdd4]: banner line height (Y advance) */
-#define CG_SB_BOTTOM_LIMIT 432.0f  /* [0x3007bdc0]: visible-area bottom Y limit */
-#define CG_SB_NAME_Y_OFFSET 18.0f  /* [0x3007bf10]: team-name baseline below Y */
-#define CG_SB_ZERO 0.0f  /* [0x3007bcec]: 0.0f (non-measured x offset) */
-#define CG_SB_BANNER_X 129.0f  /* 0x43010000: banner-bar / totals left X */
-#define CG_SB_NAME_X 133.0f  /* 0x43050000: team-name draw X */
-#define CG_SB_TEXT_SCALE 0.32f  /* 0x3ea3d70a: text scale for name/totals draws */
+#define CG_SB_BANNER_HEIGHT      24.0f  /* [0x3007bdd4]: banner line height (Y advance) */
+#define CG_SB_BOTTOM_LIMIT      432.0f  /* [0x3007bdc0]: visible-area bottom Y limit */
+#define CG_SB_NAME_Y_OFFSET      18.0f  /* [0x3007bf10]: team-name baseline below Y */
+#define CG_SB_ZERO                0.0f  /* [0x3007bcec]: 0.0f (non-measured x offset) */
+#define CG_SB_BANNER_X          129.0f  /* 0x43010000: banner-bar / totals left X */
+#define CG_SB_NAME_X            133.0f  /* 0x43050000: team-name draw X */
+#define CG_SB_TEXT_SCALE         0.32f  /* 0x3ea3d70a: text scale for name/totals draws */
 
 /* Fixed trailing mode word in the CG_R_TEXT_PAINT draw vector (PUSH 0x3). */
-enum {
-    CG_SB_TRAP54_MODE = 3
-};
+enum { CG_SB_TRAP54_MODE = 3 };
 
 /* Shader-registration mode passed to CG_R_REGISTERSHADER for the banner bar. */
-enum {
-    CG_SB_BANNER_SHADER_MODE = 5
-};
+enum { CG_SB_BANNER_SHADER_MODE = 5 };
 
 /*
  * Per-column value-source selector read at cg_scoreboardColumns[i].valueSelect
@@ -90,7 +86,7 @@ enum {
  */
 enum {
     CG_SB_VALSEL_TEAMSCORE = 1, /* draw cg_scoreboardTeamScores[team] (score column) */
-    CG_SB_VALSEL_TEAMPING = 3  /* draw cg_scoreboardTeamPings[team]  (ping column) */
+    CG_SB_VALSEL_TEAMPING  = 3  /* draw cg_scoreboardTeamPings[team]  (ping column) */
 };
 
 /*
@@ -99,20 +95,21 @@ enum {
  * localizer consumes. Dumped at their .rdata addresses.
  */
 #define CG_SB_FMT_PLAYERS_SINGULAR "CGAME_SB_PLAYER\x15%i"   /* 0x30079cf8 */
-#define CG_SB_FMT_PLAYERS_PLURAL "CGAME_SB_PLAYERS\x15%i"  /* 0x30079ce4 */
-#define CG_SB_KEY_BANNER_TEXT "scoreboard banner text"  /* 0x30079d0c */
-#define CG_SB_FMT_INT "%i"                        /* 0x300769e0 */
+#define CG_SB_FMT_PLAYERS_PLURAL   "CGAME_SB_PLAYERS\x15%i"  /* 0x30079ce4 */
+#define CG_SB_KEY_BANNER_TEXT      "scoreboard banner text"  /* 0x30079d0c */
+#define CG_SB_FMT_INT              "%i"                        /* 0x300769e0 */
 
 /* Section selector encoded as `team - 0` / DEC EAX chain (0x30037171): the caller
  * passes team in EBX; team 0 => "None"/spectator-band banner, 1 => Axis, 2 =>
  * Allies, others => the default (spectators). Named provisionally by role. */
 enum {
-    CG_SB_SECTION_NONE = 0,
-    CG_SB_SECTION_AXIS = 1,
+    CG_SB_SECTION_NONE   = 0,
+    CG_SB_SECTION_AXIS   = 1,
     CG_SB_SECTION_ALLIES = 2
 };
 
-float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y, float boardWidth, float bannerHeight, int team,
+float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
+                                  float boardWidth, float bannerHeight, int team,
                                   int *lineCounter)
 {
     /* 0x300370a2: if the scoreboard has already overflowed the visible area this
@@ -131,7 +128,8 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
 
     /* 0x300370d2: banner bottom = Y + 24; if it has flowed past the bottom limit,
      * latch the overflow flag and stop. (FCOMP 432.0; TEST AH,0x41 => st0<=432.) */
-    long double bannerBottomWide = (long double)y + (long double)CG_SB_BANNER_HEIGHT;
+    long double bannerBottomWide =
+        (long double)y + (long double)CG_SB_BANNER_HEIGHT;
     float bannerBottom = (float)bannerBottomWide; /* 0x300370df FST retained */
     if (bannerBottomWide > (long double)CG_SB_BOTTOM_LIMIT) {
         cg_scoreboardOverflowed = 1;                /* 0x300370f0 MOV [..],1 */
@@ -149,10 +147,13 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
      * indexed by team. va("...\x15%i", count) formats the count, then CG_SE_LOCALIZE_MESSAGE
      * localizes it under the "scoreboard banner text" key. */
     int32_t teamCount = cg_scoreboardTeamCount[team];
-    const char *countFmt = (teamCount == 1) ? CG_SB_FMT_PLAYERS_SINGULAR : CG_SB_FMT_PLAYERS_PLURAL;
+    const char *countFmt = (teamCount == 1) ? CG_SB_FMT_PLAYERS_SINGULAR
+                                            : CG_SB_FMT_PLAYERS_PLURAL;
     const char *countText = va(countFmt, teamCount);
     const char *bannerText =
-        (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE, (intptr_t)countText, (intptr_t)CG_SB_KEY_BANNER_TEXT);
+        (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
+                                              (intptr_t)countText,
+                                              (intptr_t)CG_SB_KEY_BANNER_TEXT);
 
     /* The single color vector passed to every 2D draw starts as
      * {1,1,1,alpha}. The RGB stores are at 0x3003712d..0x30037144 and the
@@ -179,29 +180,41 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
     if (team == CG_SB_SECTION_NONE) {
         /* 0x3003723f: spectator/none banner — read only the banner-icon cvar; the
          * team name is the localized banner text itself. */
-        trap_Cvar_VariableStringBuffer(cg_scoreboardNoneBannerCvarName, iconCvarValue, sizeof(iconCvarValue));
+        trap_Cvar_VariableStringBuffer(cg_scoreboardNoneBannerCvarName, iconCvarValue,
+                                       sizeof(iconCvarValue));
         teamName = bannerText;   /* EDI retained from the banner localize */
     } else if (team == CG_SB_SECTION_ALLIES) {
         /* 0x30037200: Allies. Read banner-icon cvar and the team-name cvar, then
          * localize the team name. */
-        trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesBannerCvarName, iconCvarValue, sizeof(iconCvarValue));
-        trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesTeamNameCvarName, nameCvarValue, sizeof(nameCvarValue));
-        const char *localized = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE, (intptr_t)nameCvarValue,
-                                                                      (intptr_t)cg_scoreboardTeamNameLocalizationContext);
+        trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesBannerCvarName, iconCvarValue,
+                                       sizeof(iconCvarValue));
+        trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesTeamNameCvarName, nameCvarValue,
+                                       sizeof(nameCvarValue));
+        const char *localized =
+            (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
+                                                  (intptr_t)nameCvarValue,
+                                                  (intptr_t)cg_scoreboardTeamNameLocalizationContext);
         teamName = va(cg_scoreboardTeamNameFormat, localized, bannerText);
     } else if (team == CG_SB_SECTION_AXIS) {
         /* 0x300371c4: Axis. Same shape as Allies with the Axis cvars. */
-        trap_Cvar_VariableStringBuffer(cg_scoreboardAxisBannerCvarName, iconCvarValue, sizeof(iconCvarValue));
-        trap_Cvar_VariableStringBuffer(cg_scoreboardAxisTeamNameCvarName, nameCvarValue, sizeof(nameCvarValue));
-        const char *localized = (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE, (intptr_t)nameCvarValue,
-                                                                      (intptr_t)cg_scoreboardTeamNameLocalizationContext);
+        trap_Cvar_VariableStringBuffer(cg_scoreboardAxisBannerCvarName, iconCvarValue,
+                                       sizeof(iconCvarValue));
+        trap_Cvar_VariableStringBuffer(cg_scoreboardAxisTeamNameCvarName, nameCvarValue,
+                                       sizeof(nameCvarValue));
+        const char *localized =
+            (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
+                                                  (intptr_t)nameCvarValue,
+                                                  (intptr_t)cg_scoreboardTeamNameLocalizationContext);
         teamName = va(cg_scoreboardTeamNameFormat, localized, bannerText);
     } else {
         /* 0x30037184: default (spectators). Read the CGAME_SPECTATORS-band cvar,
          * localize CGAME_SPECTATORS as the section name. */
-        trap_Cvar_VariableStringBuffer(cg_scoreboardSpectatorsBannerCvarName, iconCvarValue, sizeof(iconCvarValue));
-        const char *localized = (const char *)(intptr_t)cgame_syscall(
-            CG_SE_LOCALIZE_MESSAGE, (intptr_t)cg_scoreboardSpectatorsLocalizationKey, (intptr_t)cg_scoreboardTeamNameLocalizationContext);
+        trap_Cvar_VariableStringBuffer(cg_scoreboardSpectatorsBannerCvarName, iconCvarValue,
+                                       sizeof(iconCvarValue));
+        const char *localized =
+            (const char *)(intptr_t)cgame_syscall(CG_SE_LOCALIZE_MESSAGE,
+                                                  (intptr_t)cg_scoreboardSpectatorsLocalizationKey,
+                                                  (intptr_t)cg_scoreboardTeamNameLocalizationContext);
         teamName = va(cg_scoreboardTeamNameFormat, localized, bannerText);
     }
 
@@ -212,7 +225,10 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
      * (CG_R_REGISTERSHADER, mode 5) and set it as the current 2D draw color source
      * (CG_R_SETCOLOR forwards the {1,1,1,alpha} color). */
     qhandle_t bannerShader =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)iconCvarValue, CG_SB_BANNER_SHADER_MODE));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)iconCvarValue,
+            CG_SB_BANNER_SHADER_MODE));
     cgame_syscall(CG_R_SETCOLOR, (intptr_t)sectionColor);
 
     /* 0x30037279..0x30037297: draw the banner bar (CG_DrawPic). The registered
@@ -225,9 +241,18 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
 
     /* 0x300372a6..0x300372f3: draw the team-name text (CG_R_TEXT_PAINT) at x=133,
      * y = arg1 + 18, scale 0.32, using the section color and the localized name. */
-    float nameY = (float)((long double)y + (long double)CG_SB_NAME_Y_OFFSET);
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(CG_SB_NAME_X), CG_FloatBits(nameY), 0, CG_FloatBits(CG_SB_TEXT_SCALE),
-                  (intptr_t)sectionColor, (intptr_t)teamName, 0, 0, CG_SB_TRAP54_MODE);
+    float nameY = (float)(
+        (long double)y + (long double)CG_SB_NAME_Y_OFFSET);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(CG_SB_NAME_X),
+                  CG_FloatBits(nameY),
+                  0,
+                  CG_FloatBits(CG_SB_TEXT_SCALE),
+                  (intptr_t)sectionColor,
+                  (intptr_t)teamName,
+                  0,
+                  0,
+                  CG_SB_TRAP54_MODE);
 
     /* 0x300372fc: only the AXIS and ALLIES sections draw the per-team totals row.
      * Every other section returns the banner Y advance now. */
@@ -245,9 +270,12 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
              * and 3 draw a per-team aggregate; all others skip. */
             int32_t valueSelect = CG_SCOREBOARD_VALUE_SELECT(i);
 
-            if (valueSelect == CG_SB_VALSEL_TEAMSCORE || valueSelect == CG_SB_VALSEL_TEAMPING) {
+            if (valueSelect == CG_SB_VALSEL_TEAMSCORE ||
+                valueSelect == CG_SB_VALSEL_TEAMPING) {
                 /* 0x3003732d/0x30037336: choose the per-team value array. */
-                int32_t value = (valueSelect == CG_SB_VALSEL_TEAMSCORE) ? cg_scoreboardTeamScores[team] : cg_scoreboardTeamPings[team];
+                int32_t value = (valueSelect == CG_SB_VALSEL_TEAMSCORE)
+                                    ? cg_scoreboardTeamScores[team]
+                                    : cg_scoreboardTeamPings[team];
 
                 /* 0x3003733d: format the integer value (va("%i", value)). */
                 const char *valueText = va(CG_SB_FMT_INT, value);
@@ -266,9 +294,16 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
                      * 0x30037383 FISUB dword (int)width => right-aligned in-cell x.
                      * FISUB is an INTEGER subtract, so textWidth stays exact in 80-bit
                      * (no (float) cast, which would round it first). */
-                    int32_t textWidth = coduo_int32_from_bits(
-                        (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)valueText, 0, CG_FloatBits(CG_SB_TEXT_SCALE), 0));
-                    xInCell = (long double)boardWidth * (long double)col->widthFraction - (long double)textWidth;
+                    int32_t textWidth =
+                        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH,
+                                      (intptr_t)valueText,
+                                      0,
+                                      CG_FloatBits(CG_SB_TEXT_SCALE),
+                                      0));
+                    xInCell =
+                        (long double)boardWidth *
+                            (long double)col->widthFraction -
+                        (long double)textWidth;
                 } else {
                     /* 0x3003738c FLD [0x3007bcec] = 0.0f. */
                     xInCell = CG_SB_ZERO;
@@ -281,14 +316,25 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
                  * 10-slot vector: (54, bits(drawX), bits(nameY), 0, bits(0.32f),
                  * sectionColor, valueText, 0, 0, 3). The Y reuses the value stored
                  * at the totals row baseline (MOV EAX,[ESP+0x34] = bits(nameY)). */
-                cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(drawX), CG_FloatBits(nameY), 0, CG_FloatBits(CG_SB_TEXT_SCALE),
-                              (intptr_t)sectionColor, (intptr_t)valueText, 0, 0, CG_SB_TRAP54_MODE);
+                cgame_syscall(CG_R_TEXT_PAINT,
+                              CG_FloatBits(drawX),
+                              CG_FloatBits(nameY),
+                              0,
+                              CG_FloatBits(CG_SB_TEXT_SCALE),
+                              (intptr_t)sectionColor,
+                              (intptr_t)valueText,
+                              0,
+                              0,
+                              CG_SB_TRAP54_MODE);
             }
 
             /* 0x300373dd: advance the running cursor by this column's width
              * (FLD boardWidth; FMUL col->widthFraction via the pre-incremented
              * base-0x10 displacement == the current entry). */
-            xCursor = (float)((long double)boardWidth * (long double)col->widthFraction + (long double)xCursor);
+            xCursor = (float)(
+                (long double)boardWidth *
+                    (long double)col->widthFraction +
+                (long double)xCursor);
         }
     }
 

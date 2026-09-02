@@ -43,11 +43,15 @@ static renderer_flare_t *rendererActiveFlares;
 static renderer_flare_t *rendererFreeFlares;
 static float rendererSunFlareVisibility;
 
-typedef void(RENDERER_GL_API_CALL *coduomp_gl_gen_queries_t)(int32_t count, uint32_t *queries);
-typedef void(RENDERER_GL_API_CALL *coduomp_gl_delete_queries_t)(int32_t count, const uint32_t *queries);
-typedef void(RENDERER_GL_API_CALL *coduomp_gl_begin_query_t)(uint32_t target, uint32_t query);
-typedef void(RENDERER_GL_API_CALL *coduomp_gl_end_query_t)(uint32_t target);
-typedef void(RENDERER_GL_API_CALL *coduomp_gl_get_query_object_t)(uint32_t query, uint32_t parameter, uint32_t *value);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_gen_queries_t)(
+    int32_t count, uint32_t *queries);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_delete_queries_t)(
+    int32_t count, const uint32_t *queries);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_begin_query_t)(
+    uint32_t target, uint32_t query);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_end_query_t)(uint32_t target);
+typedef void (RENDERER_GL_API_CALL *coduomp_gl_get_query_object_t)(
+    uint32_t query, uint32_t parameter, uint32_t *value);
 
 typedef struct coduomp_flare_query_state_s {
     uint32_t query[2];
@@ -62,7 +66,8 @@ typedef struct coduomp_flare_query_state_s {
 
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: asynchronous query state is kept
  * beside, never inside, the exact 0x4c retail flare records. */
-static coduomp_flare_query_state_t coduompFlareQueries[R_MAX_FLARES];
+static coduomp_flare_query_state_t
+    coduompFlareQueries[R_MAX_FLARES];
 static coduomp_gl_gen_queries_t coduompGlGenQueries;
 static coduomp_gl_delete_queries_t coduompGlDeleteQueries;
 static coduomp_gl_begin_query_t coduompGlBeginQuery;
@@ -76,40 +81,67 @@ static qboolean coduompFlareQueryApiChecked;
 static qboolean coduomp_flare_query_load_api(void)
 {
     if (coduompFlareQueryApiChecked != qfalse) {
-        return coduompGlGenQueries != NULL && coduompGlDeleteQueries != NULL && coduompGlBeginQuery != NULL && coduompGlEndQuery != NULL &&
+        return coduompGlGenQueries != NULL &&
+               coduompGlDeleteQueries != NULL &&
+               coduompGlBeginQuery != NULL &&
+               coduompGlEndQuery != NULL &&
                coduompGlGetQueryObject != NULL;
     }
 
     coduompFlareQueryApiChecked = qtrue;
-    coduompGlGenQueries = (coduomp_gl_gen_queries_t)qwglGetProcAddress("glGenQueries");
-    coduompGlDeleteQueries = (coduomp_gl_delete_queries_t)qwglGetProcAddress("glDeleteQueries");
-    coduompGlBeginQuery = (coduomp_gl_begin_query_t)qwglGetProcAddress("glBeginQuery");
-    coduompGlEndQuery = (coduomp_gl_end_query_t)qwglGetProcAddress("glEndQuery");
-    coduompGlGetQueryObject = (coduomp_gl_get_query_object_t)qwglGetProcAddress("glGetQueryObjectuiv");
+    coduompGlGenQueries =
+        (coduomp_gl_gen_queries_t)qwglGetProcAddress("glGenQueries");
+    coduompGlDeleteQueries =
+        (coduomp_gl_delete_queries_t)qwglGetProcAddress("glDeleteQueries");
+    coduompGlBeginQuery =
+        (coduomp_gl_begin_query_t)qwglGetProcAddress("glBeginQuery");
+    coduompGlEndQuery =
+        (coduomp_gl_end_query_t)qwglGetProcAddress("glEndQuery");
+    coduompGlGetQueryObject =
+        (coduomp_gl_get_query_object_t)
+            qwglGetProcAddress("glGetQueryObjectuiv");
 
-    if (coduompGlGenQueries == NULL || coduompGlDeleteQueries == NULL || coduompGlBeginQuery == NULL || coduompGlEndQuery == NULL ||
+    if (coduompGlGenQueries == NULL ||
+        coduompGlDeleteQueries == NULL ||
+        coduompGlBeginQuery == NULL ||
+        coduompGlEndQuery == NULL ||
         coduompGlGetQueryObject == NULL) {
-        coduompGlGenQueries = (coduomp_gl_gen_queries_t)qwglGetProcAddress("glGenQueriesARB");
-        coduompGlDeleteQueries = (coduomp_gl_delete_queries_t)qwglGetProcAddress("glDeleteQueriesARB");
-        coduompGlBeginQuery = (coduomp_gl_begin_query_t)qwglGetProcAddress("glBeginQueryARB");
-        coduompGlEndQuery = (coduomp_gl_end_query_t)qwglGetProcAddress("glEndQueryARB");
-        coduompGlGetQueryObject = (coduomp_gl_get_query_object_t)qwglGetProcAddress("glGetQueryObjectuivARB");
+        coduompGlGenQueries =
+            (coduomp_gl_gen_queries_t)
+                qwglGetProcAddress("glGenQueriesARB");
+        coduompGlDeleteQueries =
+            (coduomp_gl_delete_queries_t)
+                qwglGetProcAddress("glDeleteQueriesARB");
+        coduompGlBeginQuery =
+            (coduomp_gl_begin_query_t)
+                qwglGetProcAddress("glBeginQueryARB");
+        coduompGlEndQuery =
+            (coduomp_gl_end_query_t)
+                qwglGetProcAddress("glEndQueryARB");
+        coduompGlGetQueryObject =
+            (coduomp_gl_get_query_object_t)
+                qwglGetProcAddress("glGetQueryObjectuivARB");
     }
 
-    if (coduompGlGenQueries == NULL || coduompGlDeleteQueries == NULL || coduompGlBeginQuery == NULL || coduompGlEndQuery == NULL ||
+    if (coduompGlGenQueries == NULL ||
+        coduompGlDeleteQueries == NULL ||
+        coduompGlBeginQuery == NULL ||
+        coduompGlEndQuery == NULL ||
         coduompGlGetQueryObject == NULL) {
         coduompGlGenQueries = NULL;
         coduompGlDeleteQueries = NULL;
         coduompGlBeginQuery = NULL;
         coduompGlEndQuery = NULL;
         coduompGlGetQueryObject = NULL;
-        ri.Printf(R_PRINT_WARNING, "Occlusion queries unavailable; using flare depth readback\n");
+        ri.Printf(R_PRINT_WARNING,
+                  "Occlusion queries unavailable; using flare depth readback\n");
         return qfalse;
     }
 
     for (int32_t index = 0; index < R_MAX_FLARES; ++index)
         coduompGlGenQueries(2, coduompFlareQueries[index].query);
-    ri.Printf(R_PRINT_ALL, "Using asynchronous occlusion queries for flare visibility\n");
+    ri.Printf(R_PRINT_ALL,
+              "Using asynchronous occlusion queries for flare visibility\n");
     return qtrue;
 }
 
@@ -119,8 +151,10 @@ void coduomp_flare_query_shutdown(void)
 {
     if (coduompGlDeleteQueries != NULL) {
         for (int32_t index = 0; index < R_MAX_FLARES; ++index) {
-            if (coduompFlareQueries[index].query[0] != 0 || coduompFlareQueries[index].query[1] != 0) {
-                coduompGlDeleteQueries(2, coduompFlareQueries[index].query);
+            if (coduompFlareQueries[index].query[0] != 0 ||
+                coduompFlareQueries[index].query[1] != 0) {
+                coduompGlDeleteQueries(
+                    2, coduompFlareQueries[index].query);
             }
         }
     }
@@ -139,7 +173,8 @@ static void coduomp_flare_query_reset(void)
 {
     if (coduompGlDeleteQueries != NULL) {
         for (int32_t index = 0; index < R_MAX_FLARES; ++index) {
-            coduompGlDeleteQueries(2, coduompFlareQueries[index].query);
+            coduompGlDeleteQueries(
+                2, coduompFlareQueries[index].query);
         }
     }
     memset(coduompFlareQueries, 0, sizeof(coduompFlareQueries));
@@ -155,7 +190,8 @@ static void coduomp_flare_query_reset(void)
  * not lost while its first asynchronous result is still in flight; the
  * retail fade-in limits that provisional contribution until the query
  * corrects it. */
-static void coduomp_flare_query_reset_slot(renderer_flare_t *flare, qboolean active)
+static void coduomp_flare_query_reset_slot(renderer_flare_t *flare,
+                                            qboolean active)
 {
     const ptrdiff_t index = flare - rendererFlarePool;
     coduomp_flare_query_state_t *queryState;
@@ -163,7 +199,8 @@ static void coduomp_flare_query_reset_slot(renderer_flare_t *flare, qboolean act
     if (index < 0 || index >= R_MAX_FLARES)
         return;
     queryState = &coduompFlareQueries[index];
-    if (coduompGlDeleteQueries != NULL && (queryState->query[0] != 0 || queryState->query[1] != 0)) {
+    if (coduompGlDeleteQueries != NULL &&
+        (queryState->query[0] != 0 || queryState->query[1] != 0)) {
         coduompGlDeleteQueries(2, queryState->query);
     }
     memset(queryState, 0, sizeof(*queryState));
@@ -173,42 +210,78 @@ static void coduomp_flare_query_reset_slot(renderer_flare_t *flare, qboolean act
 }
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_flare_t) == 0x4, "renderer_flare_t original alignment");
-_Static_assert(offsetof(renderer_flare_t, next) == 0x00, "renderer_flare_t next offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->next) == 0x04, "renderer_flare_t next extent");
-_Static_assert(offsetof(renderer_flare_t, addedFrame) == 0x04, "renderer_flare_t addedFrame offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->addedFrame) == 0x04, "renderer_flare_t addedFrame extent");
-_Static_assert(offsetof(renderer_flare_t, portalView) == 0x08, "renderer_flare_t portalView offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->portalView) == 0x04, "renderer_flare_t portalView extent");
-_Static_assert(offsetof(renderer_flare_t, frameSceneNum) == 0x0c, "renderer_flare_t frameSceneNum offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->frameSceneNum) == 0x04, "renderer_flare_t frameSceneNum extent");
-_Static_assert(offsetof(renderer_flare_t, fadeInMsec) == 0x10, "renderer_flare_t fadeInMsec offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->fadeInMsec) == 0x04, "renderer_flare_t fadeInMsec extent");
-_Static_assert(offsetof(renderer_flare_t, fadeOutMsec) == 0x14, "renderer_flare_t fadeOutMsec offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->fadeOutMsec) == 0x04, "renderer_flare_t fadeOutMsec extent");
-_Static_assert(offsetof(renderer_flare_t, shader) == 0x18, "renderer_flare_t shader offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->shader) == 0x04, "renderer_flare_t shader extent");
-_Static_assert(offsetof(renderer_flare_t, active) == 0x1c, "renderer_flare_t active offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->active) == 0x04, "renderer_flare_t active extent");
-_Static_assert(offsetof(renderer_flare_t, fadeTime) == 0x20, "renderer_flare_t fadeTime offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->fadeTime) == 0x04, "renderer_flare_t fadeTime extent");
-_Static_assert(offsetof(renderer_flare_t, drawIntensity) == 0x24, "renderer_flare_t drawIntensity offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->drawIntensity) == 0x04, "renderer_flare_t drawIntensity extent");
-_Static_assert(offsetof(renderer_flare_t, windowX) == 0x28, "renderer_flare_t windowX offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->windowX) == 0x04, "renderer_flare_t windowX extent");
-_Static_assert(offsetof(renderer_flare_t, windowY) == 0x2c, "renderer_flare_t windowY offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->windowY) == 0x04, "renderer_flare_t windowY extent");
-_Static_assert(offsetof(renderer_flare_t, eyeZ) == 0x30, "renderer_flare_t eyeZ offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->eyeZ) == 0x04, "renderer_flare_t eyeZ extent");
-_Static_assert(offsetof(renderer_flare_t, color) == 0x34, "renderer_flare_t color offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->color) == 0x0c, "renderer_flare_t color extent");
-_Static_assert(offsetof(renderer_flare_t, size) == 0x40, "renderer_flare_t size offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->size) == 0x04, "renderer_flare_t size extent");
-_Static_assert(offsetof(renderer_flare_t, screenRadius) == 0x44, "renderer_flare_t screenRadius offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->screenRadius) == 0x04, "renderer_flare_t screenRadius extent");
-_Static_assert(offsetof(renderer_flare_t, id) == 0x48, "renderer_flare_t id offset");
-_Static_assert(sizeof(((renderer_flare_t *)0)->id) == 0x04, "renderer_flare_t id extent");
-_Static_assert(sizeof(renderer_flare_t) == 0x4c, "renderer_flare_t original size");
+_Static_assert(_Alignof(renderer_flare_t) == 0x4,
+               "renderer_flare_t original alignment");
+_Static_assert(offsetof(renderer_flare_t, next) == 0x00,
+               "renderer_flare_t next offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->next) == 0x04,
+               "renderer_flare_t next extent");
+_Static_assert(offsetof(renderer_flare_t, addedFrame) == 0x04,
+               "renderer_flare_t addedFrame offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->addedFrame) == 0x04,
+               "renderer_flare_t addedFrame extent");
+_Static_assert(offsetof(renderer_flare_t, portalView) == 0x08,
+               "renderer_flare_t portalView offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->portalView) == 0x04,
+               "renderer_flare_t portalView extent");
+_Static_assert(offsetof(renderer_flare_t, frameSceneNum) == 0x0c,
+               "renderer_flare_t frameSceneNum offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->frameSceneNum) == 0x04,
+               "renderer_flare_t frameSceneNum extent");
+_Static_assert(offsetof(renderer_flare_t, fadeInMsec) == 0x10,
+               "renderer_flare_t fadeInMsec offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->fadeInMsec) == 0x04,
+               "renderer_flare_t fadeInMsec extent");
+_Static_assert(offsetof(renderer_flare_t, fadeOutMsec) == 0x14,
+               "renderer_flare_t fadeOutMsec offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->fadeOutMsec) == 0x04,
+               "renderer_flare_t fadeOutMsec extent");
+_Static_assert(offsetof(renderer_flare_t, shader) == 0x18,
+               "renderer_flare_t shader offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->shader) == 0x04,
+               "renderer_flare_t shader extent");
+_Static_assert(offsetof(renderer_flare_t, active) == 0x1c,
+               "renderer_flare_t active offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->active) == 0x04,
+               "renderer_flare_t active extent");
+_Static_assert(offsetof(renderer_flare_t, fadeTime) == 0x20,
+               "renderer_flare_t fadeTime offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->fadeTime) == 0x04,
+               "renderer_flare_t fadeTime extent");
+_Static_assert(offsetof(renderer_flare_t, drawIntensity) == 0x24,
+               "renderer_flare_t drawIntensity offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->drawIntensity) == 0x04,
+               "renderer_flare_t drawIntensity extent");
+_Static_assert(offsetof(renderer_flare_t, windowX) == 0x28,
+               "renderer_flare_t windowX offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->windowX) == 0x04,
+               "renderer_flare_t windowX extent");
+_Static_assert(offsetof(renderer_flare_t, windowY) == 0x2c,
+               "renderer_flare_t windowY offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->windowY) == 0x04,
+               "renderer_flare_t windowY extent");
+_Static_assert(offsetof(renderer_flare_t, eyeZ) == 0x30,
+               "renderer_flare_t eyeZ offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->eyeZ) == 0x04,
+               "renderer_flare_t eyeZ extent");
+_Static_assert(offsetof(renderer_flare_t, color) == 0x34,
+               "renderer_flare_t color offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->color) == 0x0c,
+               "renderer_flare_t color extent");
+_Static_assert(offsetof(renderer_flare_t, size) == 0x40,
+               "renderer_flare_t size offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->size) == 0x04,
+               "renderer_flare_t size extent");
+_Static_assert(offsetof(renderer_flare_t, screenRadius) == 0x44,
+               "renderer_flare_t screenRadius offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->screenRadius) == 0x04,
+               "renderer_flare_t screenRadius extent");
+_Static_assert(offsetof(renderer_flare_t, id) == 0x48,
+               "renderer_flare_t id offset");
+_Static_assert(sizeof(((renderer_flare_t *)0)->id) == 0x04,
+               "renderer_flare_t id extent");
+_Static_assert(sizeof(renderer_flare_t) == 0x4c,
+               "renderer_flare_t original size");
 #endif
 
 /* Source: CoDUOMP.exe 0x004eed90..0x004eedd9.
@@ -225,7 +298,9 @@ void RE_ClearFlares(void)
     R_ClearSun();
 
     renderer_flare_t *previous = NULL;
-    for (int32_t flareIndex = 0; flareIndex < R_MAX_FLARES; ++flareIndex) {
+    for (int32_t flareIndex = 0;
+         flareIndex < R_MAX_FLARES;
+         ++flareIndex) {
         rendererFlarePool[flareIndex].next = previous;
         previous = &rendererFlarePool[flareIndex];
     }
@@ -239,10 +314,16 @@ void RE_ClearFlares(void)
  * number. New records are clipped before allocation; existing records remain
  * linked while their visibility fades. The depthOffset path uses the exact
  * -12.0f displacement constant at 0x005b9da0. */
-void RB_AddFlare(const renderer_flare_source_t *source, const vec3_t direction)
+void RB_AddFlare(const renderer_flare_source_t *source,
+                 const vec3_t direction)
 {
     vec4_t eye;
-    vec4_t sourcePosition = {source->origin[0], source->origin[1], source->origin[2], source->depthOffset};
+    vec4_t sourcePosition = {
+        source->origin[0],
+        source->origin[1],
+        source->origin[2],
+        source->depthOffset
+    };
     vec4_t clip;
     vec4_t normalized;
     vec4_t window;
@@ -250,17 +331,28 @@ void RB_AddFlare(const renderer_flare_source_t *source, const vec3_t direction)
 
     ++backEnd.pc.flareAddCount;
 
-    for (flare = rendererActiveFlares; flare != NULL; flare = flare->next) {
-        if (flare->id == source->id && flare->frameSceneNum == backEnd.viewParms.frameSceneNum &&
+    for (flare = rendererActiveFlares;
+         flare != NULL;
+         flare = flare->next) {
+        if (flare->id == source->id &&
+            flare->frameSceneNum == backEnd.viewParms.frameSceneNum &&
             flare->portalView == backEnd.viewParms.isPortal) {
             break;
         }
     }
 
     if (source->depthOffset != 0.0f) {
-        vec3_t offsetDirection = {source->origin[0] - source->depthOffset * backEnd.viewParms.orientation.origin[0],
-                                  source->origin[1] - source->depthOffset * backEnd.viewParms.orientation.origin[1],
-                                  source->origin[2] - source->depthOffset * backEnd.viewParms.orientation.origin[2]};
+        vec3_t offsetDirection = {
+            source->origin[0] -
+                source->depthOffset *
+                    backEnd.viewParms.orientation.origin[0],
+            source->origin[1] -
+                source->depthOffset *
+                    backEnd.viewParms.orientation.origin[1],
+            source->origin[2] -
+                source->depthOffset *
+                    backEnd.viewParms.orientation.origin[2]
+        };
         VectorNormalizeFast(offsetDirection);
 
         const float displacement = source->depthOffset * -12.0f;
@@ -269,17 +361,21 @@ void RB_AddFlare(const renderer_flare_source_t *source, const vec3_t direction)
         sourcePosition[2] += displacement * offsetDirection[2];
     }
 
-    R_TransformHomogenousModelToClip(sourcePosition, backEnd.orientation.modelMatrix, backEnd.viewParms.projectionMatrix, eye, clip);
+    R_TransformHomogenousModelToClip(
+        sourcePosition, backEnd.orientation.modelMatrix,
+        backEnd.viewParms.projectionMatrix, eye, clip);
 
     if (flare == NULL && source->screenRadius == 0) {
         for (int32_t component = 0; component < 3; ++component) {
-            if (clip[component] >= clip[3] || clip[component] <= -clip[3]) {
+            if (clip[component] >= clip[3] ||
+                clip[component] <= -clip[3]) {
                 return;
             }
         }
     }
 
-    R_TransformClipToWindow(clip, &backEnd.viewParms, normalized, window);
+    R_TransformClipToWindow(clip, &backEnd.viewParms,
+                            normalized, window);
 
     if (flare == NULL) {
         /* 0x004eef4b..0x004eef62 stores the integer conversion to radius but
@@ -287,8 +383,12 @@ void RB_AddFlare(const renderer_flare_source_t *source, const vec3_t direction)
         const long double radiusRaw = (long double)source->screenRadius;
         const float radius = (float)radiusRaw;
 
-        if ((long double)window[0] + radiusRaw < 0.0L || window[0] - radius >= (float)backEnd.viewParms.viewportWidth ||
-            window[1] + radius < 0.0f || window[1] - radius >= (float)backEnd.viewParms.viewportHeight) {
+        if ((long double)window[0] + radiusRaw < 0.0L ||
+            window[0] - radius >=
+                (float)backEnd.viewParms.viewportWidth ||
+            window[1] + radius < 0.0f ||
+            window[1] - radius >=
+                (float)backEnd.viewParms.viewportHeight) {
             return;
         }
 
@@ -323,19 +423,31 @@ void RB_AddFlare(const renderer_flare_source_t *source, const vec3_t direction)
     flare->screenRadius = source->screenRadius;
 
     if (direction != NULL) {
-        vec3_t viewDirection = {backEnd.viewParms.orientation.origin[0] - source->origin[0],
-                                backEnd.viewParms.orientation.origin[1] - source->origin[1],
-                                backEnd.viewParms.orientation.origin[2] - source->origin[2]};
+        vec3_t viewDirection = {
+            backEnd.viewParms.orientation.origin[0] -
+                source->origin[0],
+            backEnd.viewParms.orientation.origin[1] -
+                source->origin[1],
+            backEnd.viewParms.orientation.origin[2] -
+                source->origin[2]
+        };
         VectorNormalizeFast(viewDirection);
 
-        const float facing = viewDirection[0] * direction[0] + viewDirection[1] * direction[1] + viewDirection[2] * direction[2];
+        const float facing =
+            viewDirection[0] * direction[0] +
+            viewDirection[1] * direction[1] +
+            viewDirection[2] * direction[2];
         flare->color[0] *= facing;
         flare->color[1] *= facing;
         flare->color[2] *= facing;
     }
 
-    flare->windowX = coduo_fp_to_i32_extended((long double)window[0]) + backEnd.viewParms.viewportX;
-    flare->windowY = coduo_fp_to_i32_extended((long double)window[1]) + backEnd.viewParms.viewportY;
+    flare->windowX =
+        coduo_fp_to_i32_extended((long double)window[0]) +
+        backEnd.viewParms.viewportX;
+    flare->windowY =
+        coduo_fp_to_i32_extended((long double)window[1]) +
+        backEnd.viewParms.viewportY;
     if (source->depthOffset != 0.0f)
         flare->eyeZ = (clip[2] / clip[3] + 1.0f) * 0.5f;
     else
@@ -356,17 +468,22 @@ void RB_AddDlightFlares(void)
     if (r_flares->integer < 2)
         return;
 
-    renderer_flare_source_t source = {.id = R_DLIGHT_FLARE_FIRST_ID,
-                                      .shader = tr.flareShader,
-                                      .color = {0.0f, 0.0f, 0.0f, 1.0f},
-                                      .size = r_flareSize->value,
-                                      .screenRadius = 0,
-                                      .fadeInMsec = FastRound(r_flareFadeIn->value * 1000.0f),
-                                      .fadeOutMsec = FastRound(r_flareFadeOut->value * 1000.0f),
-                                      .active = qtrue};
+    renderer_flare_source_t source = {
+        .id = R_DLIGHT_FLARE_FIRST_ID,
+        .shader = tr.flareShader,
+        .color = { 0.0f, 0.0f, 0.0f, 1.0f },
+        .size = r_flareSize->value,
+        .screenRadius = 0,
+        .fadeInMsec = FastRound(r_flareFadeIn->value * 1000.0f),
+        .fadeOutMsec = FastRound(r_flareFadeOut->value * 1000.0f),
+        .active = qtrue
+    };
 
-    for (int32_t lightIndex = 0; lightIndex < backEnd.refdef.num_dlights; ++lightIndex, ++source.id) {
-        const renderer_light_t *light = &backEnd.refdef.dlights[lightIndex];
+    for (int32_t lightIndex = 0;
+         lightIndex < backEnd.refdef.num_dlights;
+         ++lightIndex, ++source.id) {
+        const renderer_light_t *light =
+            &backEnd.refdef.dlights[lightIndex];
 
         source.origin[0] = light->position[0];
         source.origin[1] = light->position[1];
@@ -391,22 +508,32 @@ void RB_AddCoronaFlares(void)
         R_FLARES_DLIGHTS_AND_CORONAS = 3
     };
 
-    if ((r_flares->integer != R_FLARES_CORONAS_ONLY && r_flares->integer != R_FLARES_DLIGHTS_AND_CORONAS) || tr.world == NULL) {
+    if ((r_flares->integer != R_FLARES_CORONAS_ONLY &&
+         r_flares->integer != R_FLARES_DLIGHTS_AND_CORONAS) ||
+        tr.world == NULL) {
         return;
     }
 
-    renderer_flare_source_t source = {.depthOffset = 1.0f,
-                                      .color = {0.0f, 0.0f, 0.0f, 1.0f},
-                                      .screenRadius = 0,
-                                      .fadeInMsec = FastRound(r_flareFadeIn->value * 1000.0f),
-                                      .fadeOutMsec = FastRound(r_flareFadeOut->value * 1000.0f),
-                                      .active = qtrue};
+    renderer_flare_source_t source = {
+        .depthOffset = 1.0f,
+        .color = { 0.0f, 0.0f, 0.0f, 1.0f },
+        .screenRadius = 0,
+        .fadeInMsec = FastRound(r_flareFadeIn->value * 1000.0f),
+        .fadeOutMsec = FastRound(r_flareFadeOut->value * 1000.0f),
+        .active = qtrue
+    };
 
-    for (int32_t coronaIndex = 0; coronaIndex < backEnd.refdef.coronaCount; ++coronaIndex) {
-        const renderer_corona_t *corona = &backEnd.refdef.coronas[coronaIndex];
+    for (int32_t coronaIndex = 0;
+         coronaIndex < backEnd.refdef.coronaCount;
+         ++coronaIndex) {
+        const renderer_corona_t *corona =
+            &backEnd.refdef.coronas[coronaIndex];
 
         source.id = corona->id;
-        source.shader = (corona->flags & R_CORONA_FLAG_SPOT_LIGHT_SHADER) != 0 ? tr.spotLightShader : tr.flareShader;
+        source.shader =
+            (corona->flags & R_CORONA_FLAG_SPOT_LIGHT_SHADER) != 0
+                ? tr.spotLightShader
+                : tr.flareShader;
         source.origin[0] = corona->origin[0];
         source.origin[1] = corona->origin[1];
         source.origin[2] = corona->origin[2];
@@ -423,14 +550,18 @@ void RB_AddCoronaFlares(void)
  * The last completed fraction remains the target while both slots are still
  * in flight, which turns the retail synchronous readback into a short
  * pipeline without changing its fade behavior. */
-static qboolean coduomp_test_flare_occlusion_query(renderer_flare_t *flare, int32_t sampleX, int32_t sampleY, int32_t sampleWidth,
-                                                   int32_t sampleHeight, int32_t sampleArea, float *targetVisibility)
+static qboolean coduomp_test_flare_occlusion_query(
+    renderer_flare_t *flare, int32_t sampleX, int32_t sampleY,
+    int32_t sampleWidth, int32_t sampleHeight, int32_t sampleArea,
+    float *targetVisibility)
 {
     const ptrdiff_t flareIndex = flare - rendererFlarePool;
     coduomp_flare_query_state_t *queryState;
     int32_t submitSlot = -1;
 
-    if (r_flareOcclusionQuery == NULL || r_flareOcclusionQuery->integer == 0 || flareIndex < 0 || flareIndex >= R_MAX_FLARES ||
+    if (r_flareOcclusionQuery == NULL ||
+        r_flareOcclusionQuery->integer == 0 ||
+        flareIndex < 0 || flareIndex >= R_MAX_FLARES ||
         coduomp_flare_query_load_api() == qfalse) {
         return qfalse;
     }
@@ -441,18 +572,26 @@ static qboolean coduomp_test_flare_occlusion_query(renderer_flare_t *flare, int3
 
         if (queryState->pending[slot] == qfalse)
             continue;
-        coduompGlGetQueryObject(queryState->query[slot], GL_QUERY_RESULT_AVAILABLE, &available);
+        coduompGlGetQueryObject(
+            queryState->query[slot], GL_QUERY_RESULT_AVAILABLE, &available);
         if (available != 0) {
             uint32_t samplesPassed = 0;
             float visibility;
 
-            coduompGlGetQueryObject(queryState->query[slot], GL_QUERY_RESULT, &samplesPassed);
+            coduompGlGetQueryObject(
+                queryState->query[slot], GL_QUERY_RESULT, &samplesPassed);
             queryState->pending[slot] = qfalse;
-            visibility = queryState->sampleArea[slot] > 0 ? (float)samplesPassed / (float)queryState->sampleArea[slot] : 0.0f;
+            visibility =
+                queryState->sampleArea[slot] > 0
+                    ? (float)samplesPassed /
+                          (float)queryState->sampleArea[slot]
+                    : 0.0f;
             if (visibility > 1.0f)
                 visibility = 1.0f;
-            if (queryState->sequence[slot] >= queryState->completedSequence) {
-                queryState->completedSequence = queryState->sequence[slot];
+            if (queryState->sequence[slot] >=
+                queryState->completedSequence) {
+                queryState->completedSequence =
+                    queryState->sequence[slot];
                 queryState->visibility = visibility;
             }
         }
@@ -480,13 +619,15 @@ static qboolean coduomp_test_flare_occlusion_query(renderer_flare_t *flare, int3
     qglMatrixMode(GL_PROJECTION);
     qglPushMatrix();
     qglLoadIdentity();
-    qglOrtho(0.0, (double)glConfig.vidWidth, 0.0, (double)glConfig.vidHeight, -1.0, 1.0);
+    qglOrtho(0.0, (double)glConfig.vidWidth,
+             0.0, (double)glConfig.vidHeight, -1.0, 1.0);
     qglMatrixMode(GL_MODELVIEW);
     qglPushMatrix();
     qglLoadIdentity();
 
     qglColorMask(qfalse, qfalse, qfalse, qfalse);
-    coduompGlBeginQuery(GL_SAMPLES_PASSED, queryState->query[submitSlot]);
+    coduompGlBeginQuery(
+        GL_SAMPLES_PASSED, queryState->query[submitSlot]);
     qglBegin(GL_QUADS);
     {
         const float left = (float)sampleX;
@@ -528,15 +669,23 @@ static void RB_TestFlare(renderer_flare_t *flare)
         R_FLARE_DEPTH_SAMPLE_LIMIT = 65
     };
 
-    float depthSamples[R_FLARE_DEPTH_SAMPLE_LIMIT * R_FLARE_DEPTH_SAMPLE_LIMIT];
-    float targetVisibility = (flare->active & 1) != 0 ? 1.0f : 0.0f;
+    float depthSamples[R_FLARE_DEPTH_SAMPLE_LIMIT *
+                       R_FLARE_DEPTH_SAMPLE_LIMIT];
+    float targetVisibility =
+        (flare->active & 1) != 0 ? 1.0f : 0.0f;
 
     ++backEnd.pc.flareTestCount;
 
-    if (flare->windowX + flare->screenRadius < backEnd.viewParms.viewportX ||
-        flare->windowX - flare->screenRadius >= backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth ||
-        flare->windowY + flare->screenRadius < backEnd.viewParms.viewportY ||
-        flare->windowY - flare->screenRadius >= backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight) {
+    if (flare->windowX + flare->screenRadius <
+            backEnd.viewParms.viewportX ||
+        flare->windowX - flare->screenRadius >=
+            backEnd.viewParms.viewportX +
+                backEnd.viewParms.viewportWidth ||
+        flare->windowY + flare->screenRadius <
+            backEnd.viewParms.viewportY ||
+        flare->windowY - flare->screenRadius >=
+            backEnd.viewParms.viewportY +
+                backEnd.viewParms.viewportHeight) {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): viewport origins
          * matter for centered classic presentation and reduced viewsize. */
         targetVisibility = (flare->active & 1) != 0 ? 1.0f : 0.0f;
@@ -559,39 +708,54 @@ static void RB_TestFlare(renderer_flare_t *flare)
         if (sampleX < backEnd.viewParms.viewportX) {
             sampleWidth -= backEnd.viewParms.viewportX - sampleX;
             sampleX = backEnd.viewParms.viewportX;
-        } else if (sampleWidth > backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth - sampleX) {
-            sampleWidth = backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth - sampleX;
+        } else if (sampleWidth >
+                   backEnd.viewParms.viewportX +
+                       backEnd.viewParms.viewportWidth - sampleX) {
+            sampleWidth =
+                backEnd.viewParms.viewportX +
+                backEnd.viewParms.viewportWidth - sampleX;
         }
 
         if (sampleY < backEnd.viewParms.viewportY) {
             sampleHeight -= backEnd.viewParms.viewportY - sampleY;
             sampleY = backEnd.viewParms.viewportY;
-        } else if (sampleHeight > backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight - sampleY) {
-            sampleHeight = backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight - sampleY;
+        } else if (sampleHeight >
+                   backEnd.viewParms.viewportY +
+                       backEnd.viewParms.viewportHeight - sampleY) {
+            sampleHeight =
+                backEnd.viewParms.viewportY +
+                backEnd.viewParms.viewportHeight - sampleY;
         }
 
-        if (coduomp_test_flare_occlusion_query(flare, sampleX, sampleY, sampleWidth, sampleHeight, sampleArea, &targetVisibility) ==
-            qfalse) {
+        if (coduomp_test_flare_occlusion_query(
+                flare, sampleX, sampleY, sampleWidth, sampleHeight,
+                sampleArea, &targetVisibility) == qfalse) {
             glState.finishCalled = qfalse;
             if (sampleWidth > 0 && sampleHeight > 0) {
                 const int32_t readPixelCount = sampleWidth * sampleHeight;
 
-                qglReadPixels(sampleX, sampleY, sampleWidth, sampleHeight, GL_DEPTH_COMPONENT, GL_FLOAT, depthSamples);
-                for (int32_t sampleIndex = 0; sampleIndex < readPixelCount; ++sampleIndex) {
+                qglReadPixels(sampleX, sampleY, sampleWidth, sampleHeight,
+                              GL_DEPTH_COMPONENT, GL_FLOAT, depthSamples);
+                for (int32_t sampleIndex = 0;
+                     sampleIndex < readPixelCount;
+                     ++sampleIndex) {
                     if (flare->eyeZ <= depthSamples[sampleIndex])
                         ++visiblePixelCount;
                 }
             }
 
-            targetVisibility = (float)visiblePixelCount / (float)sampleArea;
+            targetVisibility =
+                (float)visiblePixelCount / (float)sampleArea;
         }
     }
 
     if (flare->id == -1)
         rendererSunFlareVisibility = targetVisibility;
 
-    flare->drawIntensity = R_UpdateOverTime(flare->drawIntensity, targetVisibility, flare->fadeInMsec, flare->fadeOutMsec,
-                                            backEnd.refdef.time - flare->fadeTime);
+    flare->drawIntensity = R_UpdateOverTime(
+        flare->drawIntensity, targetVisibility,
+        flare->fadeInMsec, flare->fadeOutMsec,
+        backEnd.refdef.time - flare->fadeTime);
     flare->fadeTime = backEnd.refdef.time;
 }
 
@@ -603,19 +767,28 @@ static void RB_RenderFlare(renderer_flare_t *flare)
 {
     /* Exact 0x005b9cf4 float; semantically 1.0f / 640.0f. */
     const float viewportScale = 0.0015625000232830644f;
-    const float halfSize = (float)((long double)flare->size * (long double)viewportScale * (long double)backEnd.viewParms.viewportWidth);
-    const long double redRaw = (long double)tr.identityLight * (long double)flare->color[0];
-    const float green = (float)((long double)tr.identityLight * (long double)flare->color[1]);
-    const float blue = (float)((long double)tr.identityLight * (long double)flare->color[2]);
+    const float halfSize = (float)(
+        (long double)flare->size * (long double)viewportScale *
+        (long double)backEnd.viewParms.viewportWidth);
+    const long double redRaw =
+        (long double)tr.identityLight * (long double)flare->color[0];
+    const float green = (float)(
+        (long double)tr.identityLight * (long double)flare->color[1]);
+    const float blue = (float)(
+        (long double)tr.identityLight * (long double)flare->color[2]);
     uint8_t colorBytes[4];
     uint32_t packedColor;
 
     ++backEnd.pc.flareRenderCount;
 
-    colorBytes[0] = coduo_fp_to_u8_extended(redRaw * 255.0L);
-    colorBytes[1] = coduo_fp_to_u8_extended((long double)green * 255.0L);
-    colorBytes[2] = coduo_fp_to_u8_extended((long double)blue * 255.0L);
-    colorBytes[3] = coduo_fp_to_u8_extended((long double)flare->drawIntensity * 255.0L);
+    colorBytes[0] = coduo_fp_to_u8_extended(
+        redRaw * 255.0L);
+    colorBytes[1] = coduo_fp_to_u8_extended(
+        (long double)green * 255.0L);
+    colorBytes[2] = coduo_fp_to_u8_extended(
+        (long double)blue * 255.0L);
+    colorBytes[3] = coduo_fp_to_u8_extended(
+        (long double)flare->drawIntensity * 255.0L);
     memcpy(&packedColor, colorBytes, sizeof(packedColor));
 
     backEnd.currentEntity = &tr.worldEntity;
@@ -629,18 +802,31 @@ static void RB_RenderFlare(renderer_flare_t *flare)
     const float bottom = (float)flare->windowY - halfSize;
     const float top = (float)flare->windowY + halfSize;
     const float depth = r_znear->value;
-    const vec2_t texCoords[4] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}};
-    const vec2_t positions[4] = {{left, bottom}, {left, top}, {right, top}, {right, bottom}};
+    const vec2_t texCoords[4] = {
+        { 0.0f, 0.0f },
+        { 0.0f, 1.0f },
+        { 1.0f, 1.0f },
+        { 1.0f, 0.0f }
+    };
+    const vec2_t positions[4] = {
+        { left, bottom },
+        { left, top },
+        { right, top },
+        { right, bottom }
+    };
 
     for (int32_t vertexOffset = 0; vertexOffset < 4; ++vertexOffset) {
         const int32_t vertexIndex = firstVertex + vertexOffset;
-        float *position = &tess.xyz[vertexIndex * tess.vertexComponentCount];
+        float *position =
+            &tess.xyz[vertexIndex * tess.vertexComponentCount];
 
         position[0] = positions[vertexOffset][0];
         position[1] = positions[vertexOffset][1];
         position[2] = depth;
-        tess.texCoords[0][vertexIndex][0] = texCoords[vertexOffset][0];
-        tess.texCoords[0][vertexIndex][1] = texCoords[vertexOffset][1];
+        tess.texCoords[0][vertexIndex][0] =
+            texCoords[vertexOffset][0];
+        tess.texCoords[0][vertexIndex][1] =
+            texCoords[vertexOffset][1];
         tess.vertexColors[vertexIndex] = packedColor;
     }
 
@@ -690,7 +876,9 @@ void RB_RenderFlares(void)
             flare->eyeZ = 2.0f;
         }
 
-        if (flare->frameSceneNum == backEnd.viewParms.frameSceneNum && flare->portalView == backEnd.viewParms.isPortal) {
+        if (flare->frameSceneNum ==
+                backEnd.viewParms.frameSceneNum &&
+            flare->portalView == backEnd.viewParms.isPortal) {
             RB_TestFlare(flare);
             if (flare->drawIntensity == 0.0f) {
                 *link = flare->next;
@@ -704,8 +892,11 @@ void RB_RenderFlares(void)
         link = &flare->next;
     }
 
-    RB_CalcSunBlind(rendererSunFlareVisibility, &blindFraction, &glareFraction);
-    if (renderAnyFlares == qfalse && blindFraction <= 0.0f && glareFraction <= 0.0f) {
+    RB_CalcSunBlind(rendererSunFlareVisibility,
+                    &blindFraction, &glareFraction);
+    if (renderAnyFlares == qfalse &&
+        blindFraction <= 0.0f &&
+        glareFraction <= 0.0f) {
         return;
     }
 
@@ -716,28 +907,51 @@ void RB_RenderFlares(void)
     qglMatrixMode(GL_PROJECTION);
     qglPushMatrix();
     qglLoadIdentity();
-    qglOrtho((double)backEnd.viewParms.viewportX, (double)(backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth),
-             (double)backEnd.viewParms.viewportY, (double)(backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight), -99999.0,
-             99999.0);
+    qglOrtho((double)backEnd.viewParms.viewportX,
+             (double)(backEnd.viewParms.viewportX +
+                      backEnd.viewParms.viewportWidth),
+             (double)backEnd.viewParms.viewportY,
+             (double)(backEnd.viewParms.viewportY +
+                      backEnd.viewParms.viewportHeight),
+             -99999.0, 99999.0);
 
     if (blindFraction != 0.0f || glareFraction != 0.0f) {
         RB_BeginImmediateMode();
         GL_Bind(tr.whiteImage);
-        GL_State(GLS_DEPTHTEST_DISABLE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
-        RB_glColor4f(glareFraction, glareFraction, glareFraction, blindFraction);
+        GL_State(GLS_DEPTHTEST_DISABLE |
+                 GLS_SRCBLEND_ONE |
+                 GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+        RB_glColor4f(glareFraction, glareFraction, glareFraction,
+                     blindFraction);
         RB_glBegin(GL_QUADS);
-        RB_glVertex3f((float)backEnd.viewParms.viewportX, (float)backEnd.viewParms.viewportY, 0.0f);
-        RB_glVertex3f((float)backEnd.viewParms.viewportX, (float)(backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight), 0.0f);
-        RB_glVertex3f((float)(backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth),
-                      (float)(backEnd.viewParms.viewportY + backEnd.viewParms.viewportHeight), 0.0f);
-        RB_glVertex3f((float)(backEnd.viewParms.viewportX + backEnd.viewParms.viewportWidth), (float)backEnd.viewParms.viewportY, 0.0f);
+        RB_glVertex3f((float)backEnd.viewParms.viewportX,
+                      (float)backEnd.viewParms.viewportY, 0.0f);
+        RB_glVertex3f(
+            (float)backEnd.viewParms.viewportX,
+            (float)(backEnd.viewParms.viewportY +
+                    backEnd.viewParms.viewportHeight),
+            0.0f);
+        RB_glVertex3f(
+            (float)(backEnd.viewParms.viewportX +
+                    backEnd.viewParms.viewportWidth),
+            (float)(backEnd.viewParms.viewportY +
+                    backEnd.viewParms.viewportHeight),
+            0.0f);
+        RB_glVertex3f(
+            (float)(backEnd.viewParms.viewportX +
+                    backEnd.viewParms.viewportWidth),
+            (float)backEnd.viewParms.viewportY, 0.0f);
         RB_glEnd();
         RB_EndImmediateMode();
     }
 
     if (renderAnyFlares != qfalse) {
-        for (renderer_flare_t *flare = rendererActiveFlares; flare != NULL; flare = flare->next) {
-            if (flare->frameSceneNum == backEnd.viewParms.frameSceneNum && flare->portalView == backEnd.viewParms.isPortal &&
+        for (renderer_flare_t *flare = rendererActiveFlares;
+             flare != NULL;
+             flare = flare->next) {
+            if (flare->frameSceneNum ==
+                    backEnd.viewParms.frameSceneNum &&
+                flare->portalView == backEnd.viewParms.isPortal &&
                 flare->drawIntensity != 0.0f) {
                 RB_RenderFlare(flare);
             }

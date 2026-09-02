@@ -8,9 +8,7 @@
 
 #include "client/cgame/client_recovered.h"
 
-enum {
-    CG_MILLISECONDS_PER_SECOND = 1000
-};
+enum { CG_MILLISECONDS_PER_SECOND = 1000 };
 static const float CG_FADE_BYTE_SCALE = 1.0f / 255.0f;
 
 void CG_Fade_f(void)
@@ -33,10 +31,13 @@ void CG_Fade_f(void)
     trap_Argv(5, g_textScratchBuffer, MAX_STRING_CHARS);
     seconds = coduo_crt_atoi(g_textScratchBuffer);
 
-    cg_fovFade.startValue = (float)((long double)alpha * (long double)CG_FADE_BYTE_SCALE);
-    cg_fovFade.durationMs = (int32_t)((uint32_t)seconds * (uint32_t)CG_MILLISECONDS_PER_SECOND);
+    cg_fovFade.startValue = (float)(
+        (long double)alpha * (long double)CG_FADE_BYTE_SCALE);
+    cg_fovFade.durationMs =
+        (int32_t)((uint32_t)seconds * (uint32_t)CG_MILLISECONDS_PER_SECOND);
     cg_fovFade.startTime = coduo_int32_from_bits(cg_time);
-    int32_t endTime = coduo_int32_from_bits((uint32_t)cg_fovFade.startTime + (uint32_t)cg_fovFade.durationMs);
+    int32_t endTime = coduo_int32_from_bits(
+        (uint32_t)cg_fovFade.startTime + (uint32_t)cg_fovFade.durationMs);
     if (endTime <= cg_fovFade.startTime) {
         cg_fovFade.currentValue = cg_fovFade.startValue;
     }

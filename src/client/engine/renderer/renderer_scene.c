@@ -17,13 +17,19 @@ enum {
     R_VISIBLE_MODEL_STATMON_DURATION_MSEC = 3000
 };
 
-static const float rendererTimeToSeconds = 0.0010000000474974513f; /* 0x3a83126f */
-static const float rendererDynamicLightIntensityScale = 0.03125f; /* 0x3d000000, 1 / 32 */
-static const float rendererDynamicLightConstantAttenuation = 0.0010000000474974513f; /* 0x3a83126f */
-static const float rendererHalfDegreesToRadians = 0.0087266461923718452f; /* 0x3c0efa35, pi / 360 */
-static const double rendererLodReferenceHalfFovRadians = 0.6981317400932312; /* 0x3fe6571860000000, 40 degrees */
+static const float rendererTimeToSeconds =
+    0.0010000000474974513f; /* 0x3a83126f */
+static const float rendererDynamicLightIntensityScale =
+    0.03125f; /* 0x3d000000, 1 / 32 */
+static const float rendererDynamicLightConstantAttenuation =
+    0.0010000000474974513f; /* 0x3a83126f */
+static const float rendererHalfDegreesToRadians =
+    0.0087266461923718452f; /* 0x3c0efa35, pi / 360 */
+static const double rendererLodReferenceHalfFovRadians =
+    0.6981317400932312; /* 0x3fe6571860000000, 40 degrees */
 
-static const char rendererVisibleModelWarningShader[] = "gfx/2d/warning@models.jpg";
+static const char rendererVisibleModelWarningShader[] =
+    "gfx/2d/warning@models.jpg";
 
 /* Original 0x027937d0. The stock RE_AddRefEntityToScene path emits the text
  * warning at most once for a given renderer viewCount. */
@@ -51,17 +57,22 @@ void R_ToggleSmpFrame(void)
  * frame. */
 void RE_ClearScene(void)
 {
-    rendererSceneFrameState.firstDlight = rendererSceneFrameState.dlightCount;
-    rendererSceneFrameState.firstCorona = rendererSceneFrameState.coronaCount;
-    rendererSceneFrameState.firstEntity = rendererSceneFrameState.entityCount;
-    rendererSceneFrameState.firstPoly = rendererSceneFrameState.polyCount;
+    rendererSceneFrameState.firstDlight =
+        rendererSceneFrameState.dlightCount;
+    rendererSceneFrameState.firstCorona =
+        rendererSceneFrameState.coronaCount;
+    rendererSceneFrameState.firstEntity =
+        rendererSceneFrameState.entityCount;
+    rendererSceneFrameState.firstPoly =
+        rendererSceneFrameState.polyCount;
 }
 
 /* Source: CoDUOMP.exe 0x004e5db0..0x004e5e46.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e5db0_004e5e47.mcode.
  * Name and signature: exact same-module Mac symbol RE_AddPolyToScene and the
  * renderer export table. */
-void RE_AddPolyToScene(int32_t shaderHandle, int32_t vertexCount, const polyVert_t *vertices)
+void RE_AddPolyToScene(int32_t shaderHandle, int32_t vertexCount,
+                       const polyVert_t *vertices)
 {
     srfPoly_t *poly;
     int32_t nextVertexCount;
@@ -73,8 +84,10 @@ void RE_AddPolyToScene(int32_t shaderHandle, int32_t vertexCount, const polyVert
         shaderHandle = tr.defaultShader->index;
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    if (vertexCount < 0 || rendererSceneFrameState.polyVertexCount < 0 || rendererMaxPolyVerts < rendererSceneFrameState.polyVertexCount ||
-        vertexCount > rendererMaxPolyVerts - rendererSceneFrameState.polyVertexCount ||
+    if (vertexCount < 0 || rendererSceneFrameState.polyVertexCount < 0 ||
+        rendererMaxPolyVerts < rendererSceneFrameState.polyVertexCount ||
+        vertexCount > rendererMaxPolyVerts -
+                          rendererSceneFrameState.polyVertexCount ||
         rendererSceneFrameState.polyCount >= rendererMaxPolys) {
         return;
     }
@@ -84,8 +97,11 @@ void RE_AddPolyToScene(int32_t shaderHandle, int32_t vertexCount, const polyVert
     poly->surfaceType = R_SURFACE_POLY;
     poly->hShader = shaderHandle;
     poly->numVerts = vertexCount;
-    poly->verts = &rendererBackendData->polyVertices[rendererSceneFrameState.polyVertexCount];
-    memcpy(poly->verts, vertices, (size_t)vertexCount * sizeof(*vertices));
+    poly->verts =
+        &rendererBackendData
+             ->polyVertices[rendererSceneFrameState.polyVertexCount];
+    memcpy(poly->verts, vertices,
+           (size_t)vertexCount * sizeof(*vertices));
 
     ++rendererSceneFrameState.polyCount;
     rendererSceneFrameState.polyVertexCount = nextVertexCount;
@@ -95,7 +111,8 @@ void RE_AddPolyToScene(int32_t shaderHandle, int32_t vertexCount, const polyVert
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e5e50_004e5f7c.mcode.
  * Name and signature: exact same-module Mac symbol RE_AddPolysToScene and
  * renderer export-table position 20. */
-void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount, const polyVert_t *vertices, int32_t polyCount)
+void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount,
+                        const polyVert_t *vertices, int32_t polyCount)
 {
     int32_t nextVertexCount;
     int32_t polyIndex;
@@ -104,7 +121,8 @@ void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount, const polyVer
         return;
 
     if (shaderHandle == 0) {
-        ri.Printf(R_PRINT_WARNING, "WARNING: RE_AddPolysToScene: NULL poly shader\n");
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: RE_AddPolysToScene: NULL poly shader\n");
         return;
     }
 
@@ -112,20 +130,27 @@ void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount, const polyVer
     for (polyIndex = 0; polyIndex < polyCount; ++polyIndex) {
         srfPoly_t *poly;
 
-        if (vertexCount < 0 || rendererSceneFrameState.polyVertexCount < 0 ||
+        if (vertexCount < 0 ||
+            rendererSceneFrameState.polyVertexCount < 0 ||
             rendererMaxPolyVerts < rendererSceneFrameState.polyVertexCount ||
-            vertexCount > rendererMaxPolyVerts - rendererSceneFrameState.polyVertexCount ||
+            vertexCount > rendererMaxPolyVerts -
+                              rendererSceneFrameState.polyVertexCount ||
             rendererSceneFrameState.polyCount >= rendererMaxPolys) {
             break;
         }
-        nextVertexCount = rendererSceneFrameState.polyVertexCount + vertexCount;
+        nextVertexCount =
+            rendererSceneFrameState.polyVertexCount + vertexCount;
 
-        poly = &rendererBackendData->polys[rendererSceneFrameState.polyCount];
+        poly =
+            &rendererBackendData->polys[rendererSceneFrameState.polyCount];
         poly->surfaceType = R_SURFACE_POLY;
         poly->hShader = shaderHandle;
         poly->numVerts = vertexCount;
-        poly->verts = &rendererBackendData->polyVertices[rendererSceneFrameState.polyVertexCount];
-        memcpy(poly->verts, vertices, (size_t)vertexCount * sizeof(*vertices));
+        poly->verts =
+            &rendererBackendData
+                 ->polyVertices[rendererSceneFrameState.polyVertexCount];
+        memcpy(poly->verts, vertices,
+               (size_t)vertexCount * sizeof(*vertices));
 
         ++rendererSceneFrameState.polyCount;
         rendererSceneFrameState.polyVertexCount = nextVertexCount;
@@ -138,17 +163,22 @@ void RE_AddPolysToScene(int32_t shaderHandle, int32_t vertexCount, const polyVer
  * Name and signature: exact same-module Mac symbol RE_AddLightToScene and the
  * renderer export table. Fields not written by the Windows body deliberately
  * retain their previous frame-storage bytes. */
-void RE_AddLightToScene(const vec3_t origin, float radius, float red, float green, float blue)
+void RE_AddLightToScene(const vec3_t origin, float radius,
+                        float red, float green, float blue)
 {
     renderer_light_t *light;
     long double intensity;
 
-    if (tr.registered == qfalse || rendererSceneFrameState.dlightCount >= R_MAX_DLIGHTS || radius <= 0.0f) {
+    if (tr.registered == qfalse ||
+        rendererSceneFrameState.dlightCount >= R_MAX_DLIGHTS ||
+        radius <= 0.0f) {
         return;
     }
 
-    light = &rendererBackendData->dlights[rendererSceneFrameState.dlightCount++];
-    intensity = (long double)radius * radius * rendererDynamicLightIntensityScale;
+    light =
+        &rendererBackendData->dlights[rendererSceneFrameState.dlightCount++];
+    intensity =
+        (long double)radius * radius * rendererDynamicLightIntensityScale;
 
     light->type = R_LIGHT_TYPE_POINT;
     light->color[0] = red;
@@ -159,9 +189,12 @@ void RE_AddLightToScene(const vec3_t origin, float radius, float red, float gree
     light->ambient[1] = 0.0f;
     light->ambient[2] = 0.0f;
     light->ambient[3] = 1.0f;
-    light->diffuse[0] = (float)((long double)tr.identityLight * intensity * red);
-    light->diffuse[1] = (float)((long double)tr.identityLight * intensity * green);
-    light->diffuse[2] = (float)((long double)tr.identityLight * intensity * blue);
+    light->diffuse[0] = (float)(
+        (long double)tr.identityLight * intensity * red);
+    light->diffuse[1] = (float)(
+        (long double)tr.identityLight * intensity * green);
+    light->diffuse[2] = (float)(
+        (long double)tr.identityLight * intensity * blue);
     light->diffuse[3] = 1.0f;
     light->specular[0] = 0.0f;
     light->specular[1] = 0.0f;
@@ -171,7 +204,8 @@ void RE_AddLightToScene(const vec3_t origin, float radius, float red, float gree
     light->position[1] = origin[1];
     light->position[2] = origin[2];
     light->position[3] = 1.0f;
-    light->constantAttenuation = rendererDynamicLightConstantAttenuation;
+    light->constantAttenuation =
+        rendererDynamicLightConstantAttenuation;
     light->linearAttenuation = 0.0f;
     light->quadraticAttenuation = 1.0f;
     light->spotExponent = 0.0f;
@@ -183,11 +217,14 @@ void RE_AddLightToScene(const vec3_t origin, float radius, float red, float gree
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e62c0_004e6356.mcode.
  * Name and signature: exact same-module Mac symbol RE_AddCoronaToScene and
  * renderer export-table position 23. */
-void RE_AddCoronaToScene(const vec3_t origin, float red, float green, float blue, float scale, int32_t id, int32_t flags)
+void RE_AddCoronaToScene(const vec3_t origin, float red, float green,
+                         float blue, float scale, int32_t id,
+                         int32_t flags)
 {
     renderer_corona_t *corona;
 
-    if (tr.registered == qfalse || rendererSceneFrameState.coronaCount >= R_MAX_CORONAS) {
+    if (tr.registered == qfalse ||
+        rendererSceneFrameState.coronaCount >= R_MAX_CORONAS) {
         return;
     }
 
@@ -199,7 +236,8 @@ void RE_AddCoronaToScene(const vec3_t origin, float red, float green, float blue
         return;
     }
 
-    corona = &rendererBackendData->coronas[rendererSceneFrameState.coronaCount++];
+    corona =
+        &rendererBackendData->coronas[rendererSceneFrameState.coronaCount++];
     corona->origin[0] = origin[0];
     corona->origin[1] = origin[1];
     corona->origin[2] = origin[2];
@@ -237,30 +275,46 @@ void RE_RenderScene(const refdef_t *refdef)
         return;
 
     startTime = ri.Milliseconds();
-    if (tr.world == NULL && (refdef->rdflags & RDF_NOWORLDMODEL) == 0) {
+    if (tr.world == NULL &&
+        (refdef->rdflags & RDF_NOWORLDMODEL) == 0) {
         ri.Error(ERR_DROP, "\x15R_RenderScene: NULL worldmodel");
     }
 
     memcpy(&tr.refdef, refdef, sizeof(*refdef));
     if ((refdef->rdflags & RDF_SKYBOX_PORTAL) != 0)
         rendererFogCount = 1;
-    rendererSkyboxPortalActive = (refdef->rdflags & RDF_SKYBOX_PORTAL_ACTIVE) != 0;
+    rendererSkyboxPortalActive =
+        (refdef->rdflags & RDF_SKYBOX_PORTAL_ACTIVE) != 0;
 
-    tr.refdef.floatTime = (float)((double)tr.refdef.time * (double)rendererTimeToSeconds);
+    tr.refdef.floatTime =
+        (float)((double)tr.refdef.time * (double)rendererTimeToSeconds);
 
-    tr.refdef.num_entities = rendererSceneFrameState.entityCount - rendererSceneFrameState.firstEntity;
-    tr.refdef.entities = &rendererBackendData->sceneEntities[rendererSceneFrameState.firstEntity];
+    tr.refdef.num_entities =
+        rendererSceneFrameState.entityCount -
+        rendererSceneFrameState.firstEntity;
+    tr.refdef.entities =
+        &rendererBackendData
+             ->sceneEntities[rendererSceneFrameState.firstEntity];
 
-    sceneDlightCount = rendererSceneFrameState.dlightCount - rendererSceneFrameState.firstDlight;
+    sceneDlightCount =
+        rendererSceneFrameState.dlightCount -
+        rendererSceneFrameState.firstDlight;
     tr.refdef.num_dlights = sceneDlightCount;
     tr.refdef.entityDlightCount = sceneDlightCount;
-    tr.refdef.dlights = &rendererBackendData->dlights[rendererSceneFrameState.firstDlight];
+    tr.refdef.dlights =
+        &rendererBackendData->dlights[rendererSceneFrameState.firstDlight];
 
-    tr.refdef.coronaCount = rendererSceneFrameState.coronaCount - rendererSceneFrameState.firstCorona;
-    tr.refdef.coronas = &rendererBackendData->coronas[rendererSceneFrameState.firstCorona];
+    tr.refdef.coronaCount =
+        rendererSceneFrameState.coronaCount -
+        rendererSceneFrameState.firstCorona;
+    tr.refdef.coronas =
+        &rendererBackendData->coronas[rendererSceneFrameState.firstCorona];
 
-    tr.refdef.numPolys = rendererSceneFrameState.polyCount - rendererSceneFrameState.firstPoly;
-    tr.refdef.polys = &rendererBackendData->polys[rendererSceneFrameState.firstPoly];
+    tr.refdef.numPolys =
+        rendererSceneFrameState.polyCount -
+        rendererSceneFrameState.firstPoly;
+    tr.refdef.polys =
+        &rendererBackendData->polys[rendererSceneFrameState.firstPoly];
 
     tr.refdef.numDrawSurfs = rendererSceneFrameState.drawSurfCount;
     tr.refdef.drawSurfs = rendererBackendData->drawSurfs;
@@ -277,7 +331,8 @@ void RE_RenderScene(const refdef_t *refdef)
 
     memset(&viewParms, 0, sizeof(viewParms));
     viewParms.viewportX = tr.refdef.x;
-    viewParms.viewportY = glConfig.vidHeight - refdef->height - refdef->y;
+    viewParms.viewportY =
+        glConfig.vidHeight - refdef->height - refdef->y;
     viewParms.viewportWidth = refdef->width;
     viewParms.viewportHeight = refdef->height;
     viewParms.fovX = refdef->fov_x;
@@ -294,20 +349,28 @@ void RE_RenderScene(const refdef_t *refdef)
     minimumFov = refdef->fov_x;
     if (!(refdef->fov_x <= refdef->fov_y))
         minimumFov = refdef->fov_y;
-    lodRatio = tan((double)minimumFov * (double)rendererHalfDegreesToRadians) / tan(rendererLodReferenceHalfFovRadians);
+    lodRatio =
+        tan((double)minimumFov * (double)rendererHalfDegreesToRadians) /
+        tan(rendererLodReferenceHalfFovRadians);
     viewParms.lodScale = (float)(lodRatio * (double)lodScale);
     viewParms.lodBias = (float)(lodRatio * (double)lodBias);
 
-    memcpy(viewParms.orientation.origin, refdef->vieworg, sizeof(viewParms.orientation.origin));
-    memcpy(viewParms.orientation.axis, refdef->viewaxis, sizeof(viewParms.orientation.axis));
-    memcpy(viewParms.pvsOrigin, refdef->vieworg, sizeof(viewParms.pvsOrigin));
+    memcpy(viewParms.orientation.origin, refdef->vieworg,
+           sizeof(viewParms.orientation.origin));
+    memcpy(viewParms.orientation.axis, refdef->viewaxis,
+           sizeof(viewParms.orientation.axis));
+    memcpy(viewParms.pvsOrigin, refdef->vieworg,
+           sizeof(viewParms.pvsOrigin));
 
     R_RenderView(&viewParms);
 
     rendererSceneFrameState.drawSurfCount = tr.refdef.numDrawSurfs;
-    rendererSceneFrameState.firstEntity = rendererSceneFrameState.entityCount;
-    rendererSceneFrameState.firstDlight = rendererSceneFrameState.dlightCount;
-    rendererSceneFrameState.firstPoly = rendererSceneFrameState.polyCount;
+    rendererSceneFrameState.firstEntity =
+        rendererSceneFrameState.entityCount;
+    rendererSceneFrameState.firstDlight =
+        rendererSceneFrameState.dlightCount;
+    rendererSceneFrameState.firstPoly =
+        rendererSceneFrameState.polyCount;
     tr.frontEndMsec += ri.Milliseconds() - startTime;
 }
 
@@ -323,19 +386,28 @@ int32_t R_FurthestReplaceableRefEntity(void)
     int32_t furthestEntity = -1;
     int32_t entityIndex;
 
-    for (entityIndex = rendererSceneFrameState.firstEntity; entityIndex < rendererSceneFrameState.entityCount; ++entityIndex) {
-        const trRefEntity_t *sceneEntity = &rendererBackendData->sceneEntities[entityIndex];
+    for (entityIndex = rendererSceneFrameState.firstEntity;
+         entityIndex < rendererSceneFrameState.entityCount;
+         ++entityIndex) {
+        const trRefEntity_t *sceneEntity =
+            &rendererBackendData->sceneEntities[entityIndex];
         vec3_t difference;
         float distance;
 
-        if (sceneEntity->e.reType == RT_BRUSH_MODEL || sceneEntity->e.reType == RT_MODEL) {
+        if (sceneEntity->e.reType == RT_BRUSH_MODEL ||
+            sceneEntity->e.reType == RT_MODEL) {
             continue;
         }
 
-        difference[0] = tr.refdef.vieworg[0] - sceneEntity->e.origin[0];
-        difference[1] = tr.refdef.vieworg[1] - sceneEntity->e.origin[1];
-        difference[2] = tr.refdef.vieworg[2] - sceneEntity->e.origin[2];
-        distance = sqrtf(difference[2] * difference[2] + difference[1] * difference[1] + difference[0] * difference[0]);
+        difference[0] =
+            tr.refdef.vieworg[0] - sceneEntity->e.origin[0];
+        difference[1] =
+            tr.refdef.vieworg[1] - sceneEntity->e.origin[1];
+        difference[2] =
+            tr.refdef.vieworg[2] - sceneEntity->e.origin[2];
+        distance = sqrtf(difference[2] * difference[2] +
+                         difference[1] * difference[1] +
+                         difference[0] * difference[0]);
 
         if (distance > furthestDistance) {
             furthestDistance = distance;
@@ -351,9 +423,12 @@ int32_t R_FurthestReplaceableRefEntity(void)
  * Name: exact same-module Mac symbol R_SetSceneRefEntity. The 39-dword copy is
  * exactly one original refEntity_t; the four following stores prove the
  * renderer-owned lighting, cull, and static-lighting initialization. */
-void R_SetSceneRefEntity(int32_t entityIndex, const refEntity_t *entity, renderer_static_model_t *staticLighting)
+void R_SetSceneRefEntity(
+    int32_t entityIndex, const refEntity_t *entity,
+    renderer_static_model_t *staticLighting)
 {
-    trRefEntity_t *sceneEntity = &rendererBackendData->sceneEntities[entityIndex];
+    trRefEntity_t *sceneEntity =
+        &rendererBackendData->sceneEntities[entityIndex];
 
     memcpy(&sceneEntity->e, entity, sizeof(sceneEntity->e));
     sceneEntity->lightingCalculated = 0;
@@ -371,18 +446,25 @@ void R_SetSceneRefEntity(int32_t entityIndex, const refEntity_t *entity, rendere
  * pointer, not the previously inferred scene number: Windows stores it at
  * trRefEntity_t +0x2b0, and static-model callers pass the owning lighting
  * record while FX callers pass NULL. */
-void RE_AddRefEntityToScene(const refEntity_t *entity, renderer_static_model_t *staticLighting)
+void RE_AddRefEntityToScene(
+    const refEntity_t *entity,
+    renderer_static_model_t *staticLighting)
 {
     int32_t entityIndex;
 
     if (tr.registered == qfalse)
         return;
 
-    if (com_statmon->integer != 0 && rendererSceneFrameState.entityCount >= R_REPLACEABLE_ENTITY_WARNING_THRESHOLD) {
-        StatMon_Warning(R_VISIBLE_MODEL_STATMON_ENTRY, R_VISIBLE_MODEL_STATMON_DURATION_MSEC, rendererVisibleModelWarningShader);
+    if (com_statmon->integer != 0 &&
+        rendererSceneFrameState.entityCount >=
+            R_REPLACEABLE_ENTITY_WARNING_THRESHOLD) {
+        StatMon_Warning(R_VISIBLE_MODEL_STATMON_ENTRY,
+                        R_VISIBLE_MODEL_STATMON_DURATION_MSEC,
+                        rendererVisibleModelWarningShader);
     }
 
-    if (rendererSceneFrameState.entityCount >= R_MAX_ACTIVE_SCENE_ENTITIES) {
+    if (rendererSceneFrameState.entityCount >=
+        R_MAX_ACTIVE_SCENE_ENTITIES) {
         /* INTENTIONAL_OVERRIDE (NOT_FROM_ORIGINAL_SOURCE): dense custom maps
          * can exceed the retail scene-entity cap every view and flood the
          * console. Keep the original replacement/drop behavior below while
@@ -396,8 +478,11 @@ void RE_AddRefEntityToScene(const refEntity_t *entity, renderer_static_model_t *
         return;
     }
 
-    if (entity->reType < RT_BRUSH_MODEL || entity->reType >= RT_MAX_REF_ENTITY_TYPE) {
-        ri.Error(ERR_DROP, "\x15RE_AddRefEntityToScene: bad reType %i", entity->reType);
+    if (entity->reType < RT_BRUSH_MODEL ||
+        entity->reType >= RT_MAX_REF_ENTITY_TYPE) {
+        ri.Error(ERR_DROP,
+                 "\x15RE_AddRefEntityToScene: bad reType %i",
+                 entity->reType);
     }
 
     entityIndex = rendererSceneFrameState.entityCount;

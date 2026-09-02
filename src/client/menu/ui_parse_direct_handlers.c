@@ -19,45 +19,21 @@
 void Com_Printf(const char *format, ...);
 
 #define PARSE_ITEM_STRING(fn, field) \
-    qboolean fn(itemDef_t *item, int handle) \
-    { \
-        return PC_String_Parse(handle, &item->field) != 0; \
-    }
+    qboolean fn(itemDef_t *item, int handle) { return PC_String_Parse(handle, &item->field) != 0; }
 #define PARSE_ITEM_SCRIPT(fn, field) \
-    qboolean fn(itemDef_t *item, int handle) \
-    { \
-        return PC_Script_Parse(handle, &item->field) != 0; \
-    }
+    qboolean fn(itemDef_t *item, int handle) { return PC_Script_Parse(handle, &item->field) != 0; }
 #define PARSE_ITEM_INT(fn, field) \
-    qboolean fn(itemDef_t *item, int handle) \
-    { \
-        return PC_Int_Parse(handle, &item->field) != 0; \
-    }
+    qboolean fn(itemDef_t *item, int handle) { return PC_Int_Parse(handle, &item->field) != 0; }
 #define PARSE_ITEM_FLOAT(fn, field) \
-    qboolean fn(itemDef_t *item, int handle) \
-    { \
-        return PC_Float_Parse(handle, &item->field) != 0; \
-    }
+    qboolean fn(itemDef_t *item, int handle) { return PC_Float_Parse(handle, &item->field) != 0; }
 #define PARSE_MENU_STRING(fn, field) \
-    qboolean fn(menuDef_t *menu, int handle) \
-    { \
-        return PC_String_Parse(handle, &menu->field) != 0; \
-    }
+    qboolean fn(menuDef_t *menu, int handle) { return PC_String_Parse(handle, &menu->field) != 0; }
 #define PARSE_MENU_SCRIPT(fn, field) \
-    qboolean fn(menuDef_t *menu, int handle) \
-    { \
-        return PC_Script_Parse(handle, &menu->field) != 0; \
-    }
+    qboolean fn(menuDef_t *menu, int handle) { return PC_Script_Parse(handle, &menu->field) != 0; }
 #define PARSE_MENU_INT(fn, field) \
-    qboolean fn(menuDef_t *menu, int handle) \
-    { \
-        return PC_Int_Parse(handle, &menu->field) != 0; \
-    }
+    qboolean fn(menuDef_t *menu, int handle) { return PC_Int_Parse(handle, &menu->field) != 0; }
 #define PARSE_MENU_FLOAT(fn, field) \
-    qboolean fn(menuDef_t *menu, int handle) \
-    { \
-        return PC_Float_Parse(handle, &menu->field) != 0; \
-    }
+    qboolean fn(menuDef_t *menu, int handle) { return PC_Float_Parse(handle, &menu->field) != 0; }
 
 // Source RVA: 0x30058ef0
 PARSE_ITEM_STRING(ItemParse_name, window.name)
@@ -117,8 +93,7 @@ qboolean ItemParse_focusSound(itemDef_t *item, int handle)
     const char *soundName;
     displayContextDef_t *display;
 
-    if (!PC_String_Parse(handle, &name))
-        return qfalse;
+    if (!PC_String_Parse(handle, &name)) return qfalse;
     soundName = name;
     display = DC;
     item->focusSound = display->registerAsset(soundName);
@@ -131,8 +106,7 @@ qboolean ItemParse_asset_model(itemDef_t *item, int handle)
     const char *name;
 
     Item_ValidateTypeData(item, handle);
-    if (!PC_String_Parse(handle, &name))
-        return qfalse;
+    if (!PC_String_Parse(handle, &name)) return qfalse;
     if (item->asset == 0) {
         int32_t loadMode = item->loadMode;
         const char *modelName = name;
@@ -148,8 +122,7 @@ qboolean ItemParse_asset_shader(itemDef_t *item, int handle)
 {
     const char *name;
 
-    if (!PC_String_Parse(handle, &name))
-        return qfalse;
+    if (!PC_String_Parse(handle, &name)) return qfalse;
     {
         int32_t loadMode = item->loadMode;
         const char *shaderName = name;
@@ -163,26 +136,25 @@ qboolean ItemParse_asset_shader(itemDef_t *item, int handle)
 // Source RVA: 0x30059370
 qboolean ItemParse_rect(itemDef_t *item, int handle)
 {
-    return PC_Float_Parse(handle, &item->window.rectClient.x) && PC_Float_Parse(handle, &item->window.rectClient.y) &&
-           PC_Float_Parse(handle, &item->window.rectClient.w) && PC_Float_Parse(handle, &item->window.rectClient.h);
+    return PC_Float_Parse(handle, &item->window.rectClient.x) &&
+           PC_Float_Parse(handle, &item->window.rectClient.y) &&
+           PC_Float_Parse(handle, &item->window.rectClient.w) &&
+           PC_Float_Parse(handle, &item->window.rectClient.h);
 }
 
 // Source RVA: 0x30059780
 qboolean ItemParse_visible(itemDef_t *item, int handle)
 {
     int visible;
-    if (!PC_Int_Parse(handle, &visible))
-        return qfalse;
-    if (visible)
-        item->window.flags |= WINDOW_VISIBLE;
+    if (!PC_Int_Parse(handle, &visible)) return qfalse;
+    if (visible) item->window.flags |= WINDOW_VISIBLE;
     return qtrue;
 }
 
 // Source RVA: 0x300597b0
 qboolean ItemParse_ownerdraw(itemDef_t *item, int handle)
 {
-    if (!PC_Int_Parse(handle, &item->window.ownerDraw))
-        return qfalse;
+    if (!PC_Int_Parse(handle, &item->window.ownerDraw)) return qfalse;
     item->type = ITEM_TYPE_OWNERDRAW;
     return qtrue;
 }
@@ -191,13 +163,13 @@ qboolean ItemParse_ownerdraw(itemDef_t *item, int handle)
     qboolean fn(itemDef_t *item, int handle) \
     { \
         Item_ValidateTypeData(item, handle); \
-        if (item->typeValidated != ITEM_TYPE_MODEL && item->typeValidated != ITEM_TYPE_MENUMODEL) { \
+        if (item->typeValidated != ITEM_TYPE_MODEL && \
+            item->typeValidated != ITEM_TYPE_MENUMODEL) { \
             Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_MODEL, or ITEM_TYPE_MENUMODEL\n"); \
             return qfalse; \
         } \
         modelDef_t *model = (modelDef_t *)item->typeData; \
-        if (model == NULL) \
-            return qfalse; \
+        if (model == NULL) return qfalse; \
         return parse(handle, &model->field) != 0; \
     }
 
@@ -205,14 +177,15 @@ qboolean ItemParse_ownerdraw(itemDef_t *item, int handle)
 qboolean ItemParse_model_origin(itemDef_t *item, int handle)
 {
     Item_ValidateTypeData(item, handle);
-    if (item->typeValidated != ITEM_TYPE_MODEL && item->typeValidated != ITEM_TYPE_MENUMODEL) {
+    if (item->typeValidated != ITEM_TYPE_MODEL &&
+        item->typeValidated != ITEM_TYPE_MENUMODEL) {
         Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_MODEL, or ITEM_TYPE_MENUMODEL\n");
         return qfalse;
     }
     modelDef_t *model = (modelDef_t *)item->typeData;
-    if (model == NULL)
-        return qfalse;
-    return PC_Float_Parse(handle, &model->origin[0]) && PC_Float_Parse(handle, &model->origin[1]) &&
+    if (model == NULL) return qfalse;
+    return PC_Float_Parse(handle, &model->origin[0]) &&
+           PC_Float_Parse(handle, &model->origin[1]) &&
            PC_Float_Parse(handle, &model->origin[2]);
 }
 
@@ -236,18 +209,15 @@ qboolean ItemParse_notselectable(itemDef_t *item, int handle)
         return qfalse;
     }
     listBoxDef_t *list = (listBoxDef_t *)item->typeData;
-    if (list == NULL)
-        return qfalse;
-    if (item->type == ITEM_TYPE_LISTBOX)
-        list->notselectable = qtrue;
+    if (list == NULL) return qfalse;
+    if (item->type == ITEM_TYPE_LISTBOX) list->notselectable = qtrue;
     return qtrue;
 }
 
 // Source RVA: 0x30059500
 qboolean ItemParse_type(itemDef_t *item, int handle)
 {
-    if (!PC_Int_Parse(handle, &item->type))
-        return qfalse;
+    if (!PC_Int_Parse(handle, &item->type)) return qfalse;
     Item_ValidateTypeData(item, handle);
     return qtrue;
 }
@@ -261,8 +231,7 @@ qboolean ItemParse_type(itemDef_t *item, int handle)
             return qfalse; \
         } \
         listBoxDef_t *list = (listBoxDef_t *)item->typeData; \
-        if (list == NULL) \
-            return qfalse; \
+        if (list == NULL) return qfalse; \
         return parse(handle, &list->field) != 0; \
     }
 
@@ -277,8 +246,7 @@ qboolean ItemParse_elementheight(itemDef_t *item, int handle)
         return qfalse;
     }
     listBoxDef_t *list = (listBoxDef_t *)item->typeData;
-    if (list == NULL)
-        return qfalse;
+    if (list == NULL) return qfalse;
     return PC_Float_Parse(handle, &list->elementHeight) != 0;
 }
 #undef PARSE_LISTBOX_FIELD
@@ -293,8 +261,7 @@ qboolean ItemParse_elementheight(itemDef_t *item, int handle)
 qboolean ItemParse_elementtype(itemDef_t *item, int handle)
 {
     Item_ValidateTypeData(item, handle);
-    if (item->typeData == NULL)
-        return qfalse;
+    if (item->typeData == NULL) return qfalse;
     if (item->typeValidated != ITEM_TYPE_LISTBOX) {
         Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_LISTBOX\n");
         return qfalse;
@@ -308,11 +275,9 @@ qboolean ItemParse_maxChars(itemDef_t *item, int handle)
 {
     int value;
     Item_ValidateTypeData(item, handle);
-    if (item->typeData == NULL || !PC_Int_Parse(handle, &value))
-        return qfalse;
+    if (item->typeData == NULL || !PC_Int_Parse(handle, &value)) return qfalse;
     editFieldDef_t *edit = (editFieldDef_t *)Item_GetEditFieldDef(item);
-    if (edit == NULL)
-        return qfalse;
+    if (edit == NULL) return qfalse;
     edit->maxChars = value;
     return qtrue;
 }
@@ -322,10 +287,8 @@ qboolean ItemParse_maxCharsGotoNext(itemDef_t *item, int handle)
 {
     Item_ValidateTypeData(item, handle);
     editFieldDef_t *edit = (editFieldDef_t *)item->typeData;
-    if (edit == NULL)
-        return qfalse;
-    if (Item_GetEditFieldDef(item) == NULL)
-        return qfalse;
+    if (edit == NULL) return qfalse;
+    if (Item_GetEditFieldDef(item) == NULL) return qfalse;
     edit->maxCharsGotoNext = qtrue;
     return qtrue;
 }
@@ -335,11 +298,9 @@ qboolean ItemParse_maxPaintChars(itemDef_t *item, int handle)
 {
     int value;
     Item_ValidateTypeData(item, handle);
-    if (item->typeData == NULL || !PC_Int_Parse(handle, &value))
-        return qfalse;
+    if (item->typeData == NULL || !PC_Int_Parse(handle, &value)) return qfalse;
     editFieldDef_t *edit = (editFieldDef_t *)Item_GetEditFieldDef(item);
-    if (edit == NULL)
-        return qfalse;
+    if (edit == NULL) return qfalse;
     edit->maxPaintChars = value;
     return qtrue;
 }
@@ -348,8 +309,7 @@ qboolean ItemParse_maxPaintChars(itemDef_t *item, int handle)
 qboolean ItemParse_doubleClick(itemDef_t *item, int handle)
 {
     Item_ValidateTypeData(item, handle);
-    if (item->typeData == NULL)
-        return qfalse;
+    if (item->typeData == NULL) return qfalse;
     if (item->typeValidated != ITEM_TYPE_LISTBOX) {
         Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_LISTBOX\n");
         return qfalse;
@@ -362,8 +322,7 @@ qboolean ItemParse_doubleClick(itemDef_t *item, int handle)
 qboolean ItemParse_cvar(itemDef_t *item, int handle)
 {
     Item_ValidateTypeData(item, handle);
-    if (!PC_String_Parse(handle, &item->cvar))
-        return qfalse;
+    if (!PC_String_Parse(handle, &item->cvar)) return qfalse;
     if (item->typeData != NULL) {
         /* 0x30059c15-3b: INLINE typeValidated check with NO print. Item_GetEditFieldDef
          * is reached only for an edit-field-family type (or the fall-through TEXT/0);
@@ -373,8 +332,10 @@ qboolean ItemParse_cvar(itemDef_t *item, int handle)
          * cvar. The binary also does not null-check the result (0x30059c44 uses it
          * directly), since a valid type with typeData != NULL always returns typeData. */
         int32_t tv = item->typeValidated;
-        if (tv == ITEM_TYPE_TEXT || tv == ITEM_TYPE_EDITFIELD || tv == ITEM_TYPE_NUMERICFIELD || tv == ITEM_TYPE_SLIDER ||
-            tv == ITEM_TYPE_YESNO || tv == ITEM_TYPE_BIND || tv == ITEM_TYPE_UPREDITFIELD) {
+        if (tv == ITEM_TYPE_TEXT || tv == ITEM_TYPE_EDITFIELD ||
+            tv == ITEM_TYPE_NUMERICFIELD || tv == ITEM_TYPE_SLIDER ||
+            tv == ITEM_TYPE_YESNO || tv == ITEM_TYPE_BIND ||
+            tv == ITEM_TYPE_UPREDITFIELD) {
             editFieldDef_t *edit = (editFieldDef_t *)Item_GetEditFieldDef(item);
             edit->minVal = -1.0f;
             edit->maxVal = -1.0f;
@@ -388,32 +349,25 @@ qboolean ItemParse_cvar(itemDef_t *item, int handle)
 qboolean ItemParse_cvarFloat(itemDef_t *item, int handle)
 {
     Item_ValidateTypeData(item, handle);
-    if (item->typeData == NULL)
-        return qfalse;
+    if (item->typeData == NULL) return qfalse;
     editFieldDef_t *edit = (editFieldDef_t *)Item_GetEditFieldDef(item);
-    if (edit == NULL)
-        return qfalse;
-    return PC_String_Parse(handle, &item->cvar) && PC_Float_Parse(handle, &edit->defVal) && PC_Float_Parse(handle, &edit->minVal) &&
+    if (edit == NULL) return qfalse;
+    return PC_String_Parse(handle, &item->cvar) &&
+           PC_Float_Parse(handle, &edit->defVal) &&
+           PC_Float_Parse(handle, &edit->minVal) &&
            PC_Float_Parse(handle, &edit->maxVal);
 }
 
 // Source RVA: 0x3005a1a0
-qboolean ItemParse_addColorRangeRel(itemDef_t *item, int handle)
-{
-    return ParseColorRange(handle, 1, item);
-}
+qboolean ItemParse_addColorRangeRel(itemDef_t *item, int handle) { return ParseColorRange(handle, 1, item); }
 // Source RVA: 0x3005a1c0
-qboolean ItemParse_addColorRange(itemDef_t *item, int handle)
-{
-    return ParseColorRange(handle, 0, item);
-}
+qboolean ItemParse_addColorRange(itemDef_t *item, int handle) { return ParseColorRange(handle, 0, item); }
 
 // Source RVA: 0x3005a1e0
 qboolean ItemParse_ownerdrawFlag(itemDef_t *item, int handle)
 {
     int flag;
-    if (!PC_Int_Parse(handle, &flag))
-        return qfalse;
+    if (!PC_Int_Parse(handle, &flag)) return qfalse;
     item->window.ownerDrawFlags |= flag;
     return qtrue;
 }
@@ -421,8 +375,7 @@ qboolean ItemParse_ownerdrawFlag(itemDef_t *item, int handle)
 // Source RVA: 0x3005a210
 qboolean ItemParse_enableCvar(itemDef_t *item, int handle)
 {
-    if (!PC_Script_Parse(handle, &item->enableCvar))
-        return qfalse;
+    if (!PC_Script_Parse(handle, &item->enableCvar)) return qfalse;
     item->cvarFlags = ITEM_CVAR_ENABLE;
     return qtrue;
 }
@@ -430,8 +383,7 @@ qboolean ItemParse_enableCvar(itemDef_t *item, int handle)
 // Source RVA: 0x3005a240
 qboolean ItemParse_disableCvar(itemDef_t *item, int handle)
 {
-    if (!PC_Script_Parse(handle, &item->enableCvar))
-        return qfalse;
+    if (!PC_Script_Parse(handle, &item->enableCvar)) return qfalse;
     item->cvarFlags = ITEM_CVAR_DISABLE;
     return qtrue;
 }
@@ -439,8 +391,7 @@ qboolean ItemParse_disableCvar(itemDef_t *item, int handle)
 // Source RVA: 0x3005a280
 qboolean ItemParse_showCvar(itemDef_t *item, int handle)
 {
-    if (!PC_Script_Parse(handle, &item->enableCvar))
-        return qfalse;
+    if (!PC_Script_Parse(handle, &item->enableCvar)) return qfalse;
     item->cvarFlags = ITEM_CVAR_SHOW;
     return qtrue;
 }
@@ -448,8 +399,7 @@ qboolean ItemParse_showCvar(itemDef_t *item, int handle)
 // Source RVA: 0x3005a2c0
 qboolean ItemParse_hideCvar(itemDef_t *item, int handle)
 {
-    if (!PC_Script_Parse(handle, &item->enableCvar))
-        return qfalse;
+    if (!PC_Script_Parse(handle, &item->enableCvar)) return qfalse;
     item->cvarFlags = ITEM_CVAR_HIDE;
     return qtrue;
 }
@@ -461,8 +411,7 @@ qboolean ItemParse_backcolor(itemDef_t *item, int handle)
 
     for (int component = 0; component < 4; ++component) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x300598e2..e6 copies the parsed scalar with a raw dword MOV. */
         memcpy(&color[component], &value, sizeof(value));
     }
@@ -475,18 +424,14 @@ qboolean ItemParse_bordercolor(itemDef_t *item, int handle)
 
     for (int component = 0; component < 4; ++component) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x30059992..96 copies the parsed scalar with a raw dword MOV. */
         memcpy(&color[component], &value, sizeof(value));
     }
     return qtrue;
 }
 // Source RVA: 0x300599c0
-qboolean ItemParse_outlinecolor(itemDef_t *item, int handle)
-{
-    return PC_Color_Parse(handle, item->window.outlineColor) != 0;
-}
+qboolean ItemParse_outlinecolor(itemDef_t *item, int handle) { return PC_Color_Parse(handle, item->window.outlineColor) != 0; }
 
 // Source RVA: 0x30059910
 qboolean ItemParse_forecolor(itemDef_t *item, int handle)
@@ -495,8 +440,7 @@ qboolean ItemParse_forecolor(itemDef_t *item, int handle)
 
     for (int i = 0; i < 4; ++i) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x3005992f..33 copies the local with a raw dword MOV before the flag. */
         memcpy(&color[i], &value, sizeof(value));
         item->window.flags |= WINDOW_FORECOLORSET;
@@ -508,8 +452,7 @@ qboolean ItemParse_forecolor(itemDef_t *item, int handle)
 qboolean ItemParse_background(itemDef_t *item, int handle)
 {
     const char *name;
-    if (!PC_String_Parse(handle, &name))
-        return qfalse;
+    if (!PC_String_Parse(handle, &name)) return qfalse;
     const int32_t loadMode = item->loadMode;                 /* 0x300599fa */
     displayContextDef_t *context = DC;                     /* 0x30059a04 */
     item->window.background = context->registerShaderNoMip(name, loadMode);
@@ -517,33 +460,13 @@ qboolean ItemParse_background(itemDef_t *item, int handle)
 }
 
 // Source RVA: 0x30059430
-qboolean ItemParse_decoration(itemDef_t *item, int handle)
-{
-    (void)handle;
-    item->window.flags |= WINDOW_DECORATION;
-    return qtrue;
-}
+qboolean ItemParse_decoration(itemDef_t *item, int handle) { (void)handle; item->window.flags |= WINDOW_DECORATION; return qtrue; }
 // Source RVA: 0x300594a0
-qboolean ItemParse_wrapped(itemDef_t *item, int handle)
-{
-    (void)handle;
-    item->window.flags |= WINDOW_WRAPPED;
-    return qtrue;
-}
+qboolean ItemParse_wrapped(itemDef_t *item, int handle) { (void)handle; item->window.flags |= WINDOW_WRAPPED; return qtrue; }
 // Source RVA: 0x300594c0
-qboolean ItemParse_autowrapped(itemDef_t *item, int handle)
-{
-    (void)handle;
-    item->window.flags |= WINDOW_AUTOWRAPPED;
-    return qtrue;
-}
+qboolean ItemParse_autowrapped(itemDef_t *item, int handle) { (void)handle; item->window.flags |= WINDOW_AUTOWRAPPED; return qtrue; }
 // Source RVA: 0x300594e0
-qboolean ItemParse_horizontalscroll(itemDef_t *item, int handle)
-{
-    (void)handle;
-    item->window.flags |= WINDOW_HORIZONTAL;
-    return qtrue;
-}
+qboolean ItemParse_horizontalscroll(itemDef_t *item, int handle) { (void)handle; item->window.flags |= WINDOW_HORIZONTAL; return qtrue; }
 
 // Source RVA: 0x3005a550
 PARSE_MENU_STRING(MenuParse_name, window.name)
@@ -585,8 +508,7 @@ qboolean MenuParse_backcolor(menuDef_t *menu, int handle)
 
     for (int component = 0; component < 4; ++component) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x3005a711..0x3005a715: copy the parsed scalar as one raw dword. */
         memcpy(&color[component], &value, sizeof(value));
     }
@@ -599,8 +521,7 @@ qboolean MenuParse_bordercolor(menuDef_t *menu, int handle)
 
     for (int component = 0; component < 4; ++component) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x3005a7c1..0x3005a7c5: copy the parsed scalar as one raw dword. */
         memcpy(&color[component], &value, sizeof(value));
     }
@@ -613,8 +534,7 @@ qboolean MenuParse_focuscolor(menuDef_t *menu, int handle)
 
     for (int component = 0; component < 4; ++component) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x3005a811..0x3005a815: copy the parsed scalar as one raw dword. */
         memcpy(&color[component], &value, sizeof(value));
     }
@@ -627,18 +547,14 @@ qboolean MenuParse_disablecolor(menuDef_t *menu, int handle)
 
     for (int component = 0; component < 4; ++component) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x3005a861..0x3005a865: copy the parsed scalar as one raw dword. */
         memcpy(&color[component], &value, sizeof(value));
     }
     return qtrue;
 }
 // Source RVA: 0x3005a890
-qboolean MenuParse_outlinecolor(menuDef_t *menu, int handle)
-{
-    return PC_Color_Parse(handle, menu->window.outlineColor) != 0;
-}
+qboolean MenuParse_outlinecolor(menuDef_t *menu, int handle) { return PC_Color_Parse(handle, menu->window.outlineColor) != 0; }
 
 // Source RVA: 0x3005a740
 qboolean MenuParse_forecolor(menuDef_t *menu, int handle)
@@ -647,8 +563,7 @@ qboolean MenuParse_forecolor(menuDef_t *menu, int handle)
 
     for (int i = 0; i < 4; ++i) {
         float value;
-        if (!PC_Float_Parse(handle, &value))
-            return qfalse;
+        if (!PC_Float_Parse(handle, &value)) return qfalse;
         /* 0x3005a75f..0x3005a763: the flag store follows this raw dword copy. */
         memcpy(&color[i], &value, sizeof(value));
         menu->window.flags |= WINDOW_FORECOLORSET;
@@ -660,8 +575,7 @@ qboolean MenuParse_forecolor(menuDef_t *menu, int handle)
 qboolean MenuParse_background(menuDef_t *menu, int handle)
 {
     const char *name;
-    if (!PC_String_Parse(handle, &name))
-        return qfalse;
+    if (!PC_String_Parse(handle, &name)) return qfalse;
     const int32_t loadMode = menu->loadMode;                 /* 0x3005a8ca */
     displayContextDef_t *context = DC;                     /* 0x3005a8d4 */
     menu->window.background = context->registerShaderNoMip(name, loadMode);
@@ -671,16 +585,17 @@ qboolean MenuParse_background(menuDef_t *menu, int handle)
 // Source RVA: 0x3005a590
 qboolean MenuParse_rect(menuDef_t *menu, int handle)
 {
-    return PC_Float_Parse(handle, &menu->window.rect.x) && PC_Float_Parse(handle, &menu->window.rect.y) &&
-           PC_Float_Parse(handle, &menu->window.rect.w) && PC_Float_Parse(handle, &menu->window.rect.h);
+    return PC_Float_Parse(handle, &menu->window.rect.x) &&
+           PC_Float_Parse(handle, &menu->window.rect.y) &&
+           PC_Float_Parse(handle, &menu->window.rect.w) &&
+           PC_Float_Parse(handle, &menu->window.rect.h);
 }
 
 // Source RVA: 0x3005a910
 qboolean MenuParse_ownerdrawFlag(menuDef_t *menu, int handle)
 {
     int flag;
-    if (!PC_Int_Parse(handle, &flag))
-        return qfalse;
+    if (!PC_Int_Parse(handle, &flag)) return qfalse;
     menu->window.ownerDrawFlags |= flag;
     return qtrue;
 }
@@ -689,8 +604,7 @@ qboolean MenuParse_ownerdrawFlag(menuDef_t *menu, int handle)
 qboolean MenuParse_execKey(menuDef_t *menu, int handle)
 {
     char key;
-    if (!PC_Char_Parse(handle, &key))
-        return qfalse;
+    if (!PC_Char_Parse(handle, &key)) return qfalse;
     return PC_Script_Parse(handle, &menu->onKey[(unsigned char)key]) != 0;
 }
 
@@ -698,13 +612,13 @@ qboolean MenuParse_execKey(menuDef_t *menu, int handle)
 qboolean MenuParse_execKeyInt(menuDef_t *menu, int handle)
 {
     int key;
-    if (!PC_Int_Parse(handle, &key))
-        return qfalse;
+    if (!PC_Int_Parse(handle, &key)) return qfalse;
 
     /* NOT_FROM_ORIGINAL_SOURCE: a parsed key must name an onKey element
      * before its destination pointer is formed. */
     if (key < 0 || key >= MAX_KEYS) {
-        PC_SourceError(handle, "execKeyInt key %d is outside 0..%d\n", key, MAX_KEYS - 1);
+        PC_SourceError(handle, "execKeyInt key %d is outside 0..%d\n",
+                       key, MAX_KEYS - 1);
         return qfalse;
     }
 
@@ -712,19 +626,9 @@ qboolean MenuParse_execKeyInt(menuDef_t *menu, int handle)
 }
 
 // Source RVA: 0x3005a960
-qboolean MenuParse_popup(menuDef_t *menu, int handle)
-{
-    (void)handle;
-    menu->window.flags |= WINDOW_MODAL;
-    return qtrue;
-}
+qboolean MenuParse_popup(menuDef_t *menu, int handle) { (void)handle; menu->window.flags |= WINDOW_MODAL; return qtrue; }
 // Source RVA: 0x3005a980
-qboolean MenuParse_outOfBoundsClick(menuDef_t *menu, int handle)
-{
-    (void)handle;
-    menu->window.flags |= WINDOW_OOB_CLICK;
-    return qtrue;
-}
+qboolean MenuParse_outOfBoundsClick(menuDef_t *menu, int handle) { (void)handle; menu->window.flags |= WINDOW_OOB_CLICK; return qtrue; }
 
 #undef PARSE_ITEM_STRING
 #undef PARSE_ITEM_SCRIPT

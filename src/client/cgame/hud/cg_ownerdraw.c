@@ -57,8 +57,13 @@ enum cgOwnerDrawId {
     CG_PLAYER_AMMO_BACKDROP_VEHICLE = 106
 };
 
-void CG_OwnerDraw(float x, float y, float w, float h, float textX, float textY, int32_t ownerDraw, int32_t ownerDrawFlags,
-                  int32_t alignment, float special, int32_t font, float textScale, vec4_t color, int32_t background, int32_t textStyle)
+void CG_OwnerDraw(float x, float y, float w, float h,
+                  float textX, float textY,
+                  int32_t ownerDraw, int32_t ownerDrawFlags,
+                  int32_t alignment, float special,
+                  int32_t font, float textScale,
+                  vec4_t color, int32_t background,
+                  int32_t textStyle)
 {
     (void)textX;
     (void)textY;
@@ -94,49 +99,62 @@ void CG_OwnerDraw(float x, float y, float w, float h, float textX, float textY, 
         return;
     case CG_SELECTEDPLAYER_NAME:
     case CG_VOICE_NAME:
-        CG_DrawSelectedPlayerName(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawSelectedPlayerName(&rect, font, scaleBits,
+                                  (intptr_t)color, textStyle);
         return;
     case CG_SELECTEDPLAYER_LOCATION:
-        CG_DrawSelectedPlayerLocation(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawSelectedPlayerLocation(&rect, font, scaleBits,
+                                      (intptr_t)color, textStyle);
         return;
     case CG_PLAYER_STANCE:
         CG_DrawPlayerStance(&rect, color, font, scaleBits, textStyle);
         return;
     case CG_BLUE_SCORE:
-        CG_DrawBlueScore(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawBlueScore(&rect, font, scaleBits,
+                         (intptr_t)color, textStyle);
         return;
     case CG_RED_SCORE:
-        CG_DrawRedScore(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawRedScore(&rect, font, scaleBits,
+                        (intptr_t)color, textStyle);
         return;
     case CG_PLAYER_LOCATION:
-        CG_DrawPlayerLocation(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawPlayerLocation(&rect, font, scaleBits,
+                              (intptr_t)color, textStyle);
         return;
     case CG_OD_TEAM_BACKGROUND:
         CG_EmitLocalTeamBackground(&rect, color);
         return;
     case CG_OD_GAMETYPE:
-        CG_DrawGameType(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawGameType(&rect, font, scaleBits,
+                        (intptr_t)color, textStyle);
         return;
     case CG_OD_ICON_OR_VALUE:
-        CG_HudEmitIconOrValue(background, &rect, font, scaleBits, color, textStyle);
+        CG_HudEmitIconOrValue(background, &rect, font,
+                              scaleBits, color, textStyle);
         return;
     case CG_AREA_SYSTEMCHAT:
-        CG_DrawAreaSystemChat(&rect, font, scaleBits, (intptr_t)color);
+        CG_DrawAreaSystemChat(&rect, font, scaleBits,
+                              (intptr_t)color);
         return;
     case CG_AREA_TEAMCHAT:
-        CG_DrawAreaTeamChat(&rect, font, scaleBits, (intptr_t)color);
+        CG_DrawAreaTeamChat(&rect, font, scaleBits,
+                            (intptr_t)color);
         return;
     case CG_AREA_CHAT:
-        CG_DrawAreaChat(&rect, font, scaleBits, (intptr_t)color);
+        CG_DrawAreaChat(&rect, font, scaleBits,
+                        (intptr_t)color);
         return;
     case CG_OD_OBITUARY:
-        CG_DrawObituaryLine(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawObituaryLine(&rect, font, scaleBits,
+                            (intptr_t)color, textStyle);
         return;
     case CG_1STPLACE:
-        CG_Draw1stPlace(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_Draw1stPlace(&rect, font, scaleBits,
+                        (intptr_t)color, textStyle);
         return;
     case CG_2NDPLACE:
-        CG_Draw2ndPlace(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_Draw2ndPlace(&rect, font, scaleBits,
+                        (intptr_t)color, textStyle);
         return;
     case CG_OD_USABLE_HINT:
         CG_DrawCursorhint(&rect, font, scaleBits, color, textStyle);
@@ -150,7 +168,8 @@ void CG_OwnerDraw(float x, float y, float w, float h, float textX, float textY, 
     case CG_OD_SELECTED_WEAPON_BACKGROUND:
         /* 0x30032441 reloads color into EAX and 0x30032447 forms &rect in
          * ESI for CG_DrawPlayerWeaponNameBack. */
-        CG_DrawPlayerWeaponNameBack(color, &rect, font, scaleBits, background);
+        CG_DrawPlayerWeaponNameBack(color, &rect,
+                                    font, scaleBits, background);
         return;
     case CG_PLAYER_WEAPON_MODE_ICON:
         CG_DrawPlayerWeaponModeIcon(0, &rect, color);
@@ -171,7 +190,8 @@ void CG_OwnerDraw(float x, float y, float w, float h, float textX, float textY, 
         CG_DrawStatBarWithDecay(color, &rect, background);
         return;
     case CG_PLAYER_BAR_HEALTH_TITLE:
-        CG_DrawPlayerBarHealthTitle(&rect, font, scaleBits, (intptr_t)color, textStyle);
+        CG_DrawPlayerBarHealthTitle(&rect, font, scaleBits,
+                                    (intptr_t)color, textStyle);
         return;
     case CG_OD_STRETCH_PIC:
         CG_DrawStretchPicColor(&rect, background, color);

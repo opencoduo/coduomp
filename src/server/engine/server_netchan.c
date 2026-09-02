@@ -48,32 +48,43 @@ void Com_Printf(const char *format, ...);
  * unavailable presentation edge to a no-op.
  */
 
-void SV_Netchan_Encode(client_t *client, uint8_t *data, int32_t length)
+void SV_Netchan_Encode(client_t *client, uint8_t *data,
+                       int32_t length)
 {
-    uint8_t key = (uint8_t)client->netchan.outgoingSequence ^ (uint8_t)client->challenge;
+    uint8_t key = (uint8_t)client->netchan.outgoingSequence ^
+                  (uint8_t)client->challenge;
     int32_t commandIndex = 0;
 
     for (int32_t byteIndex = 0; byteIndex < length; ++byteIndex) {
         if (client->lastClientCommandString[commandIndex] == '\0')
             commandIndex = 0;
 
-        key ^= (uint8_t)((uint8_t)client->lastClientCommandString[commandIndex] << (byteIndex & 1));
+        key ^= (uint8_t)(
+            (uint8_t)client->lastClientCommandString[commandIndex]
+            << (byteIndex & 1));
         ++commandIndex;
         data[byteIndex] ^= key;
     }
 }
 
-void SV_Netchan_Decode(client_t *client, uint8_t *data, int32_t length)
+void SV_Netchan_Decode(client_t *client, uint8_t *data,
+                       int32_t length)
 {
-    const char *const command = client->reliableCommands[client->reliableAcknowledge & (MAX_RELIABLE_COMMANDS - 1)].commandText;
-    uint8_t key = (uint8_t)client->challenge ^ (uint8_t)client->serverId ^ (uint8_t)client->messageAcknowledge;
+    const char *const command =
+        client->reliableCommands[
+            client->reliableAcknowledge &
+            (MAX_RELIABLE_COMMANDS - 1)].commandText;
+    uint8_t key = (uint8_t)client->challenge ^
+                  (uint8_t)client->serverId ^
+                  (uint8_t)client->messageAcknowledge;
     int32_t commandIndex = 0;
 
     for (int32_t byteIndex = 0; byteIndex < length; ++byteIndex) {
         if (command[commandIndex] == '\0')
             commandIndex = 0;
 
-        key ^= (uint8_t)((uint8_t)command[commandIndex] << (byteIndex & 1));
+        key ^= (uint8_t)((uint8_t)command[commandIndex]
+                         << (byteIndex & 1));
         ++commandIndex;
         data[byteIndex] ^= key;
     }
@@ -84,9 +95,11 @@ void SV_Netchan_TransmitNextFragment(netchan_t *channel)
     Netchan_TransmitNextFragment(channel);
 }
 
-void SV_Netchan_Transmit(client_t *client, uint8_t *data, int32_t length)
+void SV_Netchan_Transmit(client_t *client, uint8_t *data,
+                         int32_t length)
 {
-    SV_Netchan_Encode(client, data + SV_NETCHAN_HEADER_BYTES, length - SV_NETCHAN_HEADER_BYTES);
+    SV_Netchan_Encode(client, data + SV_NETCHAN_HEADER_BYTES,
+                      length - SV_NETCHAN_HEADER_BYTES);
     Netchan_Transmit(&client->netchan, length, data);
 }
 
@@ -98,7 +111,8 @@ void SV_Netchan_AddOOBProfilePacket(int32_t length)
     }
 }
 
-void SV_Netchan_SendOOBPacket(int32_t length, const void *data, netadr_t address)
+void SV_Netchan_SendOOBPacket(int32_t length, const void *data,
+                              netadr_t address)
 {
     int32_t marker;
 
@@ -108,11 +122,13 @@ void SV_Netchan_SendOOBPacket(int32_t length, const void *data, netadr_t address
         return;
     }
     if (length < (int32_t)sizeof(marker)) {
-        Com_Printf("SV_Netchan_SendOOBPacket used to send non-OOB packet.\n");
+        Com_Printf(
+            "SV_Netchan_SendOOBPacket used to send non-OOB packet.\n");
     } else {
         memcpy(&marker, data, sizeof(marker));
         if (marker != SV_NETCHAN_CONNECTIONLESS_MARKER) {
-            Com_Printf("SV_Netchan_SendOOBPacket used to send non-OOB packet.\n");
+            Com_Printf(
+                "SV_Netchan_SendOOBPacket used to send non-OOB packet.\n");
         }
     }
 
@@ -132,7 +148,9 @@ void SV_Netchan_UpdateProfileStats(void)
         NetProf_UpdateStatistics(&svs.netProfile->receive);
     }
 
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state != CS_FREE && client->netchan.profile != NULL) {
             NetProf_UpdateStatistics(&client->netchan.profile->send);
@@ -196,7 +214,9 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
         drawY += SV_PROFILE_LINE_HEIGHT;
     }
 
-    Com_sprintf(line, sizeof(line), "                    | Sent To                | Recieved From          | Total Source Traffic   |");
+    Com_sprintf(
+        line, sizeof(line),
+        "                    | Sent To                | Recieved From          | Total Source Traffic   |");
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
     } else {
@@ -204,7 +224,9 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
         SV_NETCHAN_PROFILE_DRAW(line, drawY);
     }
 
-    Com_sprintf(line, sizeof(line), "              Source|   bps|  max|  min|frag%%|   bps|  max|  min|frag%%|   bps|  max|  min|frag%%|");
+    Com_sprintf(
+        line, sizeof(line),
+        "              Source|   bps|  max|  min|frag%%|   bps|  max|  min|frag%%|   bps|  max|  min|frag%%|");
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
     } else {
@@ -234,7 +256,9 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
         }
     }
 
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         const client_t *const client = &svs.clients[clientNum];
         const netProfileInfo_t *const profile = client->netchan.profile;
         if (client->state == CS_FREE || profile == NULL) {
@@ -261,19 +285,36 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
         }
     }
 
-    const int32_t totalSamples = totalSendSamples + totalReceiveSamples;
-    const int32_t totalFragments = totalSendFragments + totalReceiveFragments;
+    const int32_t totalSamples =
+        totalSendSamples + totalReceiveSamples;
+    const int32_t totalFragments =
+        totalSendFragments + totalReceiveFragments;
     const int32_t totalFragmentPercent =
-        totalSamples > 0 && totalFragments > 0 ? totalFragments * SV_PROFILE_PERCENT_SCALE / totalSamples : 0;
-    const int32_t combinedMin = totalSendMin < totalReceiveMin ? totalSendMin : totalReceiveMin;
-    const int32_t combinedMax = totalSendMax > totalReceiveMax ? totalSendMax : totalReceiveMax;
-    const int32_t sendFragmentPercent = totalSendSamples != 0 ? totalSendFragments * SV_PROFILE_PERCENT_SCALE / totalSendSamples : 0;
+        totalSamples > 0 && totalFragments > 0
+            ? totalFragments * SV_PROFILE_PERCENT_SCALE / totalSamples
+            : 0;
+    const int32_t combinedMin =
+        totalSendMin < totalReceiveMin ? totalSendMin : totalReceiveMin;
+    const int32_t combinedMax =
+        totalSendMax > totalReceiveMax ? totalSendMax : totalReceiveMax;
+    const int32_t sendFragmentPercent =
+        totalSendSamples != 0
+            ? totalSendFragments * SV_PROFILE_PERCENT_SCALE /
+                  totalSendSamples
+            : 0;
     const int32_t receiveFragmentPercent =
-        totalReceiveSamples != 0 ? totalReceiveFragments * SV_PROFILE_PERCENT_SCALE / totalReceiveSamples : 0;
+        totalReceiveSamples != 0
+            ? totalReceiveFragments * SV_PROFILE_PERCENT_SCALE /
+                  totalReceiveSamples
+            : 0;
 
-    Com_sprintf(line, sizeof(line), "              Totals:%6i|%5i|%5i| %3i%%|%6i|%5i|%5i| %3i%%|%6i|%5i|%5i| %3i%%|", totalSendBps,
-                totalSendMax, totalSendMin, sendFragmentPercent, totalReceiveBps, totalReceiveMax, totalReceiveMin, receiveFragmentPercent,
-                totalSendBps + totalReceiveBps, combinedMax, combinedMin, totalFragmentPercent);
+    Com_sprintf(
+        line, sizeof(line),
+        "              Totals:%6i|%5i|%5i| %3i%%|%6i|%5i|%5i| %3i%%|%6i|%5i|%5i| %3i%%|",
+        totalSendBps, totalSendMax, totalSendMin, sendFragmentPercent,
+        totalReceiveBps, totalReceiveMax, totalReceiveMin,
+        receiveFragmentPercent, totalSendBps + totalReceiveBps,
+        combinedMax, combinedMin, totalFragmentPercent);
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
     } else {
@@ -282,19 +323,39 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
     }
 
     if (svs.netProfile == NULL) {
-        Com_sprintf(line, sizeof(line), "  OutOfBand Messages:     0|    0|    0|   - |     0|    0|    0|   - |     0|    0|    0|   - |");
+        Com_sprintf(
+            line, sizeof(line),
+            "  OutOfBand Messages:     0|    0|    0|   - |     0|    0|    0|   - |     0|    0|    0|   - |");
     } else {
         const netProfileInfo_t *const profile = svs.netProfile;
-        const int32_t sampleCount = profile->send.sampleCount + profile->receive.sampleCount;
-        const int32_t fragmentCount = profile->send.fragmentSampleCount + profile->receive.fragmentSampleCount;
-        const int32_t fragmentPercent = sampleCount > 0 && fragmentCount > 0 ? fragmentCount * SV_PROFILE_PERCENT_SCALE / sampleCount : 0;
-        const int32_t minBytes = profile->send.minBytes < profile->receive.minBytes ? profile->send.minBytes : profile->receive.minBytes;
-        const int32_t maxBytes = profile->send.maxBytes > profile->receive.maxBytes ? profile->send.maxBytes : profile->receive.maxBytes;
+        const int32_t sampleCount =
+            profile->send.sampleCount + profile->receive.sampleCount;
+        const int32_t fragmentCount =
+            profile->send.fragmentSampleCount +
+            profile->receive.fragmentSampleCount;
+        const int32_t fragmentPercent =
+            sampleCount > 0 && fragmentCount > 0
+                ? fragmentCount * SV_PROFILE_PERCENT_SCALE / sampleCount
+                : 0;
+        const int32_t minBytes =
+            profile->send.minBytes < profile->receive.minBytes
+                ? profile->send.minBytes
+                : profile->receive.minBytes;
+        const int32_t maxBytes =
+            profile->send.maxBytes > profile->receive.maxBytes
+                ? profile->send.maxBytes
+                : profile->receive.maxBytes;
 
-        Com_sprintf(line, sizeof(line), "  OutOfBand Messages: %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%|",
-                    profile->send.bytesPerSecond, profile->send.maxBytes, profile->send.minBytes, profile->send.fragmentPercent,
-                    profile->receive.bytesPerSecond, profile->receive.maxBytes, profile->receive.minBytes, profile->receive.fragmentPercent,
-                    profile->send.bytesPerSecond + profile->receive.bytesPerSecond, maxBytes, minBytes, fragmentPercent);
+        Com_sprintf(
+            line, sizeof(line),
+            "  OutOfBand Messages: %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%|",
+            profile->send.bytesPerSecond, profile->send.maxBytes,
+            profile->send.minBytes, profile->send.fragmentPercent,
+            profile->receive.bytesPerSecond, profile->receive.maxBytes,
+            profile->receive.minBytes, profile->receive.fragmentPercent,
+            profile->send.bytesPerSecond +
+                profile->receive.bytesPerSecond,
+            maxBytes, minBytes, fragmentPercent);
     }
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
@@ -303,7 +364,9 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
         SV_NETCHAN_PROFILE_DRAW(line, drawY);
     }
 
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         const client_t *const client = &svs.clients[clientNum];
         if (client->state == CS_FREE) {
             continue;
@@ -314,23 +377,41 @@ void SV_Netchan_PrintProfileStats(qboolean printHeader)
 
         const netProfileInfo_t *const profile = client->netchan.profile;
         if (profile == NULL) {
-            Com_sprintf(line, sizeof(line), "#%2i-%16s:     0|    0|    0|   0%%|     0|    0|    0|   0%%|     0|    0|    0|   0%%|",
-                        clientNum, clientName);
+            Com_sprintf(
+                line, sizeof(line),
+                "#%2i-%16s:     0|    0|    0|   0%%|     0|    0|    0|   0%%|     0|    0|    0|   0%%|",
+                clientNum, clientName);
         } else {
-            const int32_t sampleCount = profile->send.sampleCount + profile->receive.sampleCount;
-            const int32_t fragmentCount = profile->send.fragmentSampleCount + profile->receive.fragmentSampleCount;
+            const int32_t sampleCount =
+                profile->send.sampleCount + profile->receive.sampleCount;
+            const int32_t fragmentCount =
+                profile->send.fragmentSampleCount +
+                profile->receive.fragmentSampleCount;
             const int32_t fragmentPercent =
-                sampleCount > 0 && fragmentCount > 0 ? fragmentCount * SV_PROFILE_PERCENT_SCALE / sampleCount : 0;
+                sampleCount > 0 && fragmentCount > 0
+                    ? fragmentCount * SV_PROFILE_PERCENT_SCALE / sampleCount
+                    : 0;
             const int32_t minBytes =
-                profile->send.minBytes < profile->receive.minBytes ? profile->send.minBytes : profile->receive.minBytes;
+                profile->send.minBytes < profile->receive.minBytes
+                    ? profile->send.minBytes
+                    : profile->receive.minBytes;
             const int32_t maxBytes =
-                profile->send.maxBytes > profile->receive.maxBytes ? profile->send.maxBytes : profile->receive.maxBytes;
+                profile->send.maxBytes > profile->receive.maxBytes
+                    ? profile->send.maxBytes
+                    : profile->receive.maxBytes;
 
-            Com_sprintf(line, sizeof(line), "#%2i-%16s: %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%|", clientNum, clientName,
-                        profile->send.bytesPerSecond, profile->send.maxBytes, profile->send.minBytes, profile->send.fragmentPercent,
-                        profile->receive.bytesPerSecond, profile->receive.maxBytes, profile->receive.minBytes,
-                        profile->receive.fragmentPercent, profile->send.bytesPerSecond + profile->receive.bytesPerSecond, maxBytes,
-                        minBytes, fragmentPercent);
+            Com_sprintf(
+                line, sizeof(line),
+                "#%2i-%16s: %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%| %5i|%5i|%5i| %3i%%|",
+                clientNum, clientName, profile->send.bytesPerSecond,
+                profile->send.maxBytes, profile->send.minBytes,
+                profile->send.fragmentPercent,
+                profile->receive.bytesPerSecond,
+                profile->receive.maxBytes, profile->receive.minBytes,
+                profile->receive.fragmentPercent,
+                profile->send.bytesPerSecond +
+                    profile->receive.bytesPerSecond,
+                maxBytes, minBytes, fragmentPercent);
         }
 
         if (printHeader != qfalse) {

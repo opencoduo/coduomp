@@ -56,8 +56,10 @@
 static const char CG_UNLOCALIZED_PREFIX[] = "^1UNLOCALIZED(^7";
 static const char CG_UNLOCALIZED_SUFFIX[] = "^1)^7";
 
-_Static_assert(sizeof(cg_translatedLocationString) >= sizeof(CG_UNLOCALIZED_PREFIX) + sizeof(CG_UNLOCALIZED_SUFFIX) - 1,
-               "translated location buffer must hold its decoration and terminator");
+_Static_assert(
+    sizeof(cg_translatedLocationString) >=
+        sizeof(CG_UNLOCALIZED_PREFIX) + sizeof(CG_UNLOCALIZED_SUFFIX) - 1,
+    "translated location buffer must hold its decoration and terminator");
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
 static qboolean cgame_compat_locationTruncationReported = qfalse;
@@ -68,7 +70,8 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
 
     /* 0x300310b1..0x300310be: cfgIndex = locationIndex + 53; the JS/CMP guard
      * treats it as signed and errors when < 0 or >= MAX_CONFIGSTRINGS. */
-    int32_t cfgIndex = coduo_int32_from_bits((uint32_t)locationIndex + (uint32_t)CS_LOCATIONS);
+    int32_t cfgIndex = coduo_int32_from_bits(
+        (uint32_t)locationIndex + (uint32_t)CS_LOCATIONS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS) {
         /* 0x300310c0..0x300310cb: Com_ErrorMessage("CG_ConfigString: bad index: %i",
          * cfgIndex). The lookup below still proceeds unbounded, exactly as in
@@ -91,7 +94,9 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
      * translation (nonzero), return it directly (JNZ 0x300311df -> POP ESI; RET,
      * EAX unchanged). */
     {
-        const char *translated = (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, (intptr_t)raw);
+        const char *translated =
+            (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE,
+                                                  (intptr_t)raw);
         if (translated != (const char *)0) {
             return translated;
         }
@@ -107,8 +112,9 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
             copyLength = sizeof(cg_translatedLocationString) - 1;
             if (cgame_compat_locationTruncationReported == qfalse) {
                 cgame_compat_locationTruncationReported = qtrue;
-                Com_Printf("^3WARNING: map location string truncated to fit "
-                           "the client display buffer\n");
+                Com_Printf(
+                    "^3WARNING: map location string truncated to fit "
+                    "the client display buffer\n");
             }
         }
         memcpy(cg_translatedLocationString, raw, copyLength);
@@ -138,7 +144,9 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
     {
         const size_t prefixLength = sizeof(CG_UNLOCALIZED_PREFIX) - 1;
         const size_t suffixLength = sizeof(CG_UNLOCALIZED_SUFFIX) - 1;
-        const size_t rawCapacity = sizeof(cg_translatedLocationString) - prefixLength - suffixLength - 1;
+        const size_t rawCapacity =
+            sizeof(cg_translatedLocationString) - prefixLength -
+            suffixLength - 1;
         const size_t rawLength = strlen(raw);
         size_t copyLength = rawLength;
         char *output = cg_translatedLocationString;
@@ -147,8 +155,9 @@ const char *CG_GetTranslatedLocationString(int32_t locationIndex)
             copyLength = rawCapacity;
             if (cgame_compat_locationTruncationReported == qfalse) {
                 cgame_compat_locationTruncationReported = qtrue;
-                Com_Printf("^3WARNING: map location string truncated to fit "
-                           "the client display buffer\n");
+                Com_Printf(
+                    "^3WARNING: map location string truncated to fit "
+                    "the client display buffer\n");
             }
         }
 

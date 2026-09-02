@@ -44,14 +44,14 @@
  *   6 -> "tag_passenger4"
  */
 enum {
-    RIDER_TAG_UNUSED = 0,
-    RIDER_TAG_PLAYER = 1,
+    RIDER_TAG_UNUSED           = 0,
+    RIDER_TAG_PLAYER           = 1,
     RIDER_TAG_SECONDARY_PLAYER = 2,
-    RIDER_TAG_PASSENGER = 3,
-    RIDER_TAG_PASSENGER2 = 4,
-    RIDER_TAG_PASSENGER3 = 5,
-    RIDER_TAG_PASSENGER4 = 6,
-    RIDER_TAG_COUNT = 7
+    RIDER_TAG_PASSENGER        = 3,
+    RIDER_TAG_PASSENGER2       = 4,
+    RIDER_TAG_PASSENGER3       = 5,
+    RIDER_TAG_PASSENGER4       = 6,
+    RIDER_TAG_COUNT            = 7
 };
 
 const char *CG_GetRiderTagName(int index)

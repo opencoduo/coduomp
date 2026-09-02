@@ -26,7 +26,8 @@ enum {
 
 void Com_ResetSkeletonCache(void)
 {
-    dobj_skelCacheKey = (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
+    dobj_skelCacheKey =
+        (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
     if (dobj_skelCacheKey == 0) {
         dobj_skelCacheKey = COM_FIRST_SKELETON_CACHE_KEY;
     }

@@ -42,22 +42,29 @@ void SCR_DrawDemoRecording(void)
         SCR_DEMO_FONT = 5,
         SCR_DEMO_TEXT_STYLE = 0
     };
-    static const float textScale = 0.3333333432674408f; /* 0x3eaaaaab, semantically 1/3 */
+    static const float textScale =
+        0.3333333432674408f; /* 0x3eaaaaab, semantically 1/3 */
     char text[SCR_DEMO_TEXT_CAPACITY];
     vec4_t color;
 
     if (clc.demoRecording == qfalse)
         return;
 
-    const int32_t kilobytes = FS_FTell(clc.demoFile) / SCR_DEMO_BYTES_PER_KILOBYTE;
+    const int32_t kilobytes =
+        FS_FTell(clc.demoFile) / SCR_DEMO_BYTES_PER_KILOBYTE;
     if (Cvar_FindVar("cg_showdemoname")->integer == 1) {
-        (void)coduo_crt_snprintf(text, sizeof(text), "RECORDING %s: %ik", clc.demoName, kilobytes);
+        (void)coduo_crt_snprintf(
+            text, sizeof(text), "RECORDING %s: %ik", clc.demoName,
+            kilobytes);
     } else {
-        (void)coduo_crt_snprintf(text, sizeof(text), "RECORDING: %ik", kilobytes);
+        (void)coduo_crt_snprintf(
+            text, sizeof(text), "RECORDING: %ik", kilobytes);
     }
 
     CL_LookupColor('7', color);
-    rendererExports.TextPaint(5.0f, 479.0f, SCR_DEMO_FONT, textScale, color, text, 8.0f, 0, SCR_DEMO_TEXT_STYLE);
+    rendererExports.TextPaint(
+        5.0f, 479.0f, SCR_DEMO_FONT, textScale, color, text,
+        8.0f, 0, SCR_DEMO_TEXT_STYLE);
 }
 
 /* Source: CoDUOMP.exe 0x0040fa10..0x0040fa61.
@@ -113,7 +120,8 @@ void CL_DemoFilename(int32_t number, char *fileName)
     const int32_t tens = number / CL_DEMO_NUMBER_BASE;
     const int32_t ones = number - tens * CL_DEMO_NUMBER_BASE;
 
-    Com_sprintf(fileName, CL_DEMO_FILENAME_CAPACITY, "demo%i%i%i%i", thousands, hundreds, tens, ones);
+    Com_sprintf(fileName, CL_DEMO_FILENAME_CAPACITY, "demo%i%i%i%i",
+                thousands, hundreds, tens, ones);
 }
 
 /* Source: CoDUOMP.exe 0x0040fb80..0x0040ffa6.
@@ -143,13 +151,16 @@ void CL_Record_f(void)
     }
 
     if (Cmd_Argc() == 2) {
-        Q_strncpyz(cl_demoBaseName, Cmd_Argv(1), sizeof(cl_demoBaseName));
-        Com_sprintf(path, sizeof(path), "demos/%s.dm_%d", cl_demoBaseName, CL_DEMO_PROTOCOL_VERSION);
+        Q_strncpyz(cl_demoBaseName, Cmd_Argv(1),
+                   sizeof(cl_demoBaseName));
+        Com_sprintf(path, sizeof(path), "demos/%s.dm_%d",
+                    cl_demoBaseName, CL_DEMO_PROTOCOL_VERSION);
     } else {
         int32_t number = 0;
         do {
             CL_DemoFilename(number, cl_demoBaseName);
-            Com_sprintf(path, sizeof(path), "demos/%s.dm_%d", cl_demoBaseName, CL_DEMO_PROTOCOL_VERSION);
+            Com_sprintf(path, sizeof(path), "demos/%s.dm_%d",
+                        cl_demoBaseName, CL_DEMO_PROTOCOL_VERSION);
             if (FS_FileExists(path) == qfalse)
                 break;
             ++number;
@@ -210,7 +221,10 @@ void CL_Record_f(void)
 
     memcpy(compressedData, messageData, sizeof(int32_t));
     const int32_t compressedSize =
-        MSG_WriteBitsCompress(messageData + sizeof(int32_t), compressedData + sizeof(int32_t), message.cursize - (int32_t)sizeof(int32_t)) +
+        MSG_WriteBitsCompress(
+            messageData + sizeof(int32_t),
+            compressedData + sizeof(int32_t),
+            message.cursize - (int32_t)sizeof(int32_t)) +
         (int32_t)sizeof(int32_t);
 
     const int32_t sequence = clc.serverMessageSequence;
@@ -227,11 +241,15 @@ void CL_Record_f(void)
 void CL_DemoCompleted(void)
 {
     if (cl_timedemo != NULL && cl_timedemo->integer != 0) {
-        const int32_t elapsedMilliseconds = (int32_t)(Sys_Milliseconds() - clc.timeDemoStartTime);
+        const int32_t elapsedMilliseconds =
+            (int32_t)(Sys_Milliseconds() - clc.timeDemoStartTime);
         if (elapsedMilliseconds > 0) {
             const double seconds = (double)elapsedMilliseconds * 0.001;
-            const double framesPerSecond = (double)clc.timeDemoFrameCount * 1000.0 / (double)elapsedMilliseconds;
-            Com_Printf("%i frames, %3.1f seconds: %3.1f fps\n", clc.timeDemoFrameCount, seconds, framesPerSecond);
+            const double framesPerSecond =
+                (double)clc.timeDemoFrameCount * 1000.0 /
+                (double)elapsedMilliseconds;
+            Com_Printf("%i frames, %3.1f seconds: %3.1f fps\n",
+                       clc.timeDemoFrameCount, seconds, framesPerSecond);
         }
     }
 
@@ -253,14 +271,17 @@ void CL_ReadDemoMessage(void)
     msg_t message;
     int32_t sequence;
 
-    if (clc.demoFile == 0 || FS_Read(&sequence, sizeof(sequence), clc.demoFile) != (int32_t)sizeof(sequence)) {
+    if (clc.demoFile == 0 ||
+        FS_Read(&sequence, sizeof(sequence), clc.demoFile) !=
+            (int32_t)sizeof(sequence)) {
         CL_DemoCompleted();
         return;
     }
 
     clc.serverMessageSequence = sequence;
     MSG_Init(&message, messageData, sizeof(messageData));
-    if (FS_Read(&message.cursize, sizeof(message.cursize), clc.demoFile) != (int32_t)sizeof(message.cursize) ||
+    if (FS_Read(&message.cursize, sizeof(message.cursize), clc.demoFile) !=
+            (int32_t)sizeof(message.cursize) ||
         message.cursize == CL_DEMO_STREAM_END) {
         CL_DemoCompleted();
         return;
@@ -268,14 +289,12 @@ void CL_ReadDemoMessage(void)
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (message.cursize < 0 || message.cursize > message.maxsize) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "CL_ReadDemoMessage: invalid demo message length %i",
-                  message.cursize);
+        Com_Error(ERR_DROP, "\x15" "CL_ReadDemoMessage: invalid demo message length %i", message.cursize);
         return;
     }
 
-    if (FS_Read(message.data, message.cursize, clc.demoFile) != message.cursize) {
+    if (FS_Read(message.data, message.cursize, clc.demoFile) !=
+        message.cursize) {
         Com_Printf("Demo file was truncated.\n");
         CL_DemoCompleted();
         return;
@@ -284,7 +303,8 @@ void CL_ReadDemoMessage(void)
     clc.lastPacketTime = cls.realTime;
     message.bit = 0;
     clc.reliableAcknowledge = MSG_ReadLong(&message);
-    if (clc.reliableAcknowledge < clc.reliableSequence - CODUO_RELIABLE_COMMAND_COUNT) {
+    if (clc.reliableAcknowledge <
+        clc.reliableSequence - CODUO_RELIABLE_COMMAND_COUNT) {
         clc.reliableAcknowledge = clc.reliableSequence;
         return;
     }
@@ -317,15 +337,19 @@ void CL_PlayDemo_f(void)
     char extension[CL_DEMO_EXTENSION_CAPACITY];
     char path[CL_DEMO_FILENAME_CAPACITY];
 
-    Com_sprintf(extension, sizeof(extension), ".dm_%d", CL_DEMO_PROTOCOL_VERSION);
+    Com_sprintf(extension, sizeof(extension), ".dm_%d",
+                CL_DEMO_PROTOCOL_VERSION);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     const size_t demoNameLength = strlen(demoName);
     const size_t extensionLength = strlen(extension);
-    if (demoNameLength >= extensionLength && Q_stricmp(demoName + demoNameLength - extensionLength, extension) == 0) {
+    if (demoNameLength >= extensionLength &&
+        Q_stricmp(demoName + demoNameLength - extensionLength,
+                  extension) == 0) {
         Com_sprintf(path, sizeof(path), "demos/%s", demoName);
     } else {
-        Com_sprintf(path, sizeof(path), "demos/%s.dm_%d", demoName, CL_DEMO_PROTOCOL_VERSION);
+        Com_sprintf(path, sizeof(path), "demos/%s.dm_%d",
+                    demoName, CL_DEMO_PROTOCOL_VERSION);
     }
 
     (void)FS_FOpenFileRead(path, &clc.demoFile, qtrue);
@@ -341,7 +365,8 @@ void CL_PlayDemo_f(void)
     cls.state = CA_CONNECTED;
     Q_strncpyz(cls.serverName, demoName, sizeof(cls.serverName));
 
-    while (cls.state >= CA_CONNECTED && cls.state < CA_PRIMED) {
+    while (cls.state >= CA_CONNECTED &&
+           cls.state < CA_PRIMED) {
         CL_ReadDemoMessage();
     }
 
@@ -365,7 +390,8 @@ void CL_NextDemo(void)
     char command[CL_DEMO_COMMAND_CAPACITY];
     const cvar_t *const nextDemo = Cvar_FindVar("nextdemo");
 
-    Q_strncpyz(command, nextDemo != NULL ? nextDemo->string : "", sizeof(command));
+    Q_strncpyz(command, nextDemo != NULL ? nextDemo->string : "",
+               sizeof(command));
     Com_DPrintf("CL_NextDemo: %s\n", command);
     if (command[0] == '\0')
         return;

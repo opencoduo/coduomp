@@ -111,7 +111,8 @@ qboolean PM_CheckJump(void)
 
     /* 0x30008d10 SUB ECX,[EAX+0x68] / CMP ECX,0x1f4 / JL: need >= 500 ms since the
      * ground-leave was recorded. */
-    int32_t timeSinceGroundLeave = coduo_int32_from_bits((uint32_t)move->command.commandTime - (uint32_t)ps->lastJumpCommandTime);
+    int32_t timeSinceGroundLeave = coduo_int32_from_bits(
+        (uint32_t)move->command.commandTime - (uint32_t)ps->lastJumpCommandTime);
     if (timeSinceGroundLeave < PM_CHECKJUMP_GROUND_DELAY) {
         return qfalse;
     }
@@ -132,7 +133,8 @@ qboolean PM_CheckJump(void)
     /* 0x30008d39 TEST DL,0x20 / JZ: when the QUALIFY flag is set, a mounted/spread
      * weapon (weaponClass == WEAPCLASS_LMG) blocks jumping. */
     if ((flags & PMF_ADS) != 0) {
-        if (BG_GetInfoForWeapon(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG) {
+        if (BG_GetInfoForWeapon(ps->currentWeapon)->weaponClass ==
+            WEAPCLASS_LMG) {
             return qfalse;
         }
     }
@@ -158,7 +160,8 @@ qboolean PM_CheckJump(void)
     if ((jumpPs->playerStateFlags & PMF_LADDER) != 0) {
 
         /* 0x30008d88 FLD [EAX+0x28] / FMUL 0.75 / FSTP: damp the vertical launch. */
-        jumpPs->velocity[2] = (float)((long double)jumpPs->velocity[2] * PM_CHECKJUMP_VELZ_SCALE);
+        jumpPs->velocity[2] = (float)((long double)jumpPs->velocity[2]
+                                      * PM_CHECKJUMP_VELZ_SCALE);
 
         /* 0x30008d92..0x30008dba: horizontal forward direction, flattened and unit
          * normalized (the length is discarded). */
@@ -176,32 +179,52 @@ qboolean PM_CheckJump(void)
 #if defined(WINDOWS_BEHAVIOR)
 #if EMULATE_X87
         {
-            const x87f rawDot = x87f_add(x87f_add(x87f_mul(x87f_load_f32(pml.forward[0]), x87f_load_f32(surfacePs->ladderNormal[0])),
-                                                  x87f_mul(x87f_load_f32(pml.forward[2]), x87f_load_f32(surfacePs->ladderNormal[2]))),
-                                         x87f_mul(x87f_load_f32(pml.forward[1]), x87f_load_f32(surfacePs->ladderNormal[1])));
-            movingIntoSurface = x87f_lt(rawDot, x87f_load_f32(0.0f)) ? qtrue : qfalse;
+            const x87f rawDot = x87f_add(
+                x87f_add(
+                    x87f_mul(x87f_load_f32(pml.forward[0]),
+                             x87f_load_f32(surfacePs->ladderNormal[0])),
+                    x87f_mul(x87f_load_f32(pml.forward[2]),
+                             x87f_load_f32(surfacePs->ladderNormal[2]))),
+                x87f_mul(x87f_load_f32(pml.forward[1]),
+                         x87f_load_f32(surfacePs->ladderNormal[1])));
+            movingIntoSurface =
+                x87f_lt(rawDot, x87f_load_f32(0.0f)) ? qtrue : qfalse;
         }
 #else
         {
-            const long double rawDot = ((long double)pml.forward[0] * (long double)surfacePs->ladderNormal[0] +
-                                        (long double)pml.forward[2] * (long double)surfacePs->ladderNormal[2]) +
-                                       (long double)pml.forward[1] * (long double)surfacePs->ladderNormal[1];
+            const long double rawDot =
+                ((long double)pml.forward[0] *
+                     (long double)surfacePs->ladderNormal[0] +
+                 (long double)pml.forward[2] *
+                     (long double)surfacePs->ladderNormal[2]) +
+                (long double)pml.forward[1] *
+                    (long double)surfacePs->ladderNormal[1];
             movingIntoSurface = rawDot < 0.0L ? qtrue : qfalse;
         }
 #endif
 #else
 #if EMULATE_X87
         {
-            const x87f rawDot = x87f_add(x87f_add(x87f_mul(x87f_load_f32(pml.forward[0]), x87f_load_f32(surfacePs->ladderNormal[0])),
-                                                  x87f_mul(x87f_load_f32(pml.forward[1]), x87f_load_f32(surfacePs->ladderNormal[1]))),
-                                         x87f_mul(x87f_load_f32(pml.forward[2]), x87f_load_f32(surfacePs->ladderNormal[2])));
-            movingIntoSurface = x87f_lt(rawDot, x87f_load_f32(0.0f)) ? qtrue : qfalse;
+            const x87f rawDot = x87f_add(
+                x87f_add(
+                    x87f_mul(x87f_load_f32(pml.forward[0]),
+                             x87f_load_f32(surfacePs->ladderNormal[0])),
+                    x87f_mul(x87f_load_f32(pml.forward[1]),
+                             x87f_load_f32(surfacePs->ladderNormal[1]))),
+                x87f_mul(x87f_load_f32(pml.forward[2]),
+                         x87f_load_f32(surfacePs->ladderNormal[2])));
+            movingIntoSurface =
+                x87f_lt(rawDot, x87f_load_f32(0.0f)) ? qtrue : qfalse;
         }
 #else
         {
-            const long double rawDot = ((long double)pml.forward[0] * (long double)surfacePs->ladderNormal[0] +
-                                        (long double)pml.forward[1] * (long double)surfacePs->ladderNormal[1]) +
-                                       (long double)pml.forward[2] * (long double)surfacePs->ladderNormal[2];
+            const long double rawDot =
+                ((long double)pml.forward[0] *
+                     (long double)surfacePs->ladderNormal[0] +
+                 (long double)pml.forward[1] *
+                     (long double)surfacePs->ladderNormal[1]) +
+                (long double)pml.forward[2] *
+                    (long double)surfacePs->ladderNormal[2];
             movingIntoSurface = rawDot < 0.0L ? qtrue : qfalse;
         }
 #endif
@@ -219,47 +242,79 @@ qboolean PM_CheckJump(void)
 #if defined(WINDOWS_BEHAVIOR)
 #if EMULATE_X87
             {
-                const x87f nDot = x87f_add(x87f_add(x87f_mul(x87f_load_f32(forward[0]), x87f_load_f32(surfacePs->ladderNormal[0])),
-                                                    x87f_mul(x87f_load_f32(forward[2]), x87f_load_f32(surfacePs->ladderNormal[2]))),
-                                           x87f_mul(x87f_load_f32(forward[1]), x87f_load_f32(surfacePs->ladderNormal[1])));
-                const x87f redirect = x87f_mul(x87f_load_f32(PM_CHECKJUMP_REFLECT_SCALE), nDot);
+                const x87f nDot = x87f_add(
+                    x87f_add(
+                        x87f_mul(x87f_load_f32(forward[0]),
+                                 x87f_load_f32(surfacePs->ladderNormal[0])),
+                        x87f_mul(x87f_load_f32(forward[2]),
+                                 x87f_load_f32(surfacePs->ladderNormal[2]))),
+                    x87f_mul(x87f_load_f32(forward[1]),
+                             x87f_load_f32(surfacePs->ladderNormal[1])));
+                const x87f redirect = x87f_mul(
+                    x87f_load_f32(PM_CHECKJUMP_REFLECT_SCALE), nDot);
                 for (int32_t lane = 0; lane < 3; ++lane) {
-                    reflected[lane] = x87f_store_f32(
-                        x87f_add(x87f_load_f32(forward[lane]), x87f_mul(redirect, x87f_load_f32(surfacePs->ladderNormal[lane]))));
+                    reflected[lane] = x87f_store_f32(x87f_add(
+                        x87f_load_f32(forward[lane]),
+                        x87f_mul(redirect, x87f_load_f32(
+                            surfacePs->ladderNormal[lane]))));
                 }
             }
 #else
             {
-                const long double nDot = ((long double)forward[0] * (long double)surfacePs->ladderNormal[0] +
-                                          (long double)forward[2] * (long double)surfacePs->ladderNormal[2]) +
-                                         (long double)forward[1] * (long double)surfacePs->ladderNormal[1];
-                const long double redirect = (long double)PM_CHECKJUMP_REFLECT_SCALE * nDot;
+                const long double nDot =
+                    ((long double)forward[0] *
+                         (long double)surfacePs->ladderNormal[0] +
+                     (long double)forward[2] *
+                         (long double)surfacePs->ladderNormal[2]) +
+                    (long double)forward[1] *
+                        (long double)surfacePs->ladderNormal[1];
+                const long double redirect =
+                    (long double)PM_CHECKJUMP_REFLECT_SCALE * nDot;
                 for (int32_t lane = 0; lane < 3; ++lane) {
-                    reflected[lane] = (float)((long double)forward[lane] + redirect * (long double)surfacePs->ladderNormal[lane]);
+                    reflected[lane] = (float)(
+                        (long double)forward[lane] +
+                        redirect *
+                            (long double)surfacePs->ladderNormal[lane]);
                 }
             }
 #endif
 #else
 #if EMULATE_X87
             {
-                const float nDot =
-                    x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(forward[0]), x87f_load_f32(surfacePs->ladderNormal[0])),
-                                                     x87f_mul(x87f_load_f32(forward[1]), x87f_load_f32(surfacePs->ladderNormal[1]))),
-                                            x87f_mul(x87f_load_f32(forward[2]), x87f_load_f32(surfacePs->ladderNormal[2]))));
+                const float nDot = x87f_store_f32(x87f_add(
+                    x87f_add(
+                        x87f_mul(x87f_load_f32(forward[0]),
+                                 x87f_load_f32(surfacePs->ladderNormal[0])),
+                        x87f_mul(x87f_load_f32(forward[1]),
+                                 x87f_load_f32(surfacePs->ladderNormal[1]))),
+                    x87f_mul(x87f_load_f32(forward[2]),
+                             x87f_load_f32(surfacePs->ladderNormal[2]))));
                 for (int32_t lane = 0; lane < 3; ++lane) {
                     reflected[lane] = x87f_store_f32(x87f_add(
-                        x87f_load_f32(forward[lane]), x87f_mul(x87f_mul(x87f_load_f32(nDot), x87f_load_f32(PM_CHECKJUMP_REFLECT_SCALE)),
-                                                               x87f_load_f32(surfacePs->ladderNormal[lane]))));
+                        x87f_load_f32(forward[lane]),
+                        x87f_mul(
+                            x87f_mul(x87f_load_f32(nDot),
+                                     x87f_load_f32(
+                                         PM_CHECKJUMP_REFLECT_SCALE)),
+                            x87f_load_f32(
+                                surfacePs->ladderNormal[lane]))));
                 }
             }
 #else
             {
-                const float nDot = (float)(((long double)forward[0] * (long double)surfacePs->ladderNormal[0] +
-                                            (long double)forward[1] * (long double)surfacePs->ladderNormal[1]) +
-                                           (long double)forward[2] * (long double)surfacePs->ladderNormal[2]);
+                const float nDot = (float)(
+                    ((long double)forward[0] *
+                         (long double)surfacePs->ladderNormal[0] +
+                     (long double)forward[1] *
+                         (long double)surfacePs->ladderNormal[1]) +
+                    (long double)forward[2] *
+                        (long double)surfacePs->ladderNormal[2]);
                 for (int32_t lane = 0; lane < 3; ++lane) {
-                    reflected[lane] = (float)((long double)forward[lane] + (long double)nDot * (long double)PM_CHECKJUMP_REFLECT_SCALE *
-                                                                               (long double)surfacePs->ladderNormal[lane]);
+                    reflected[lane] = (float)(
+                        (long double)forward[lane] +
+                        (long double)nDot *
+                            (long double)PM_CHECKJUMP_REFLECT_SCALE *
+                            (long double)surfacePs->ladderNormal[lane]);
                 }
             }
 #endif
@@ -292,7 +347,8 @@ qboolean PM_CheckJump(void)
 
     /* 0x30008e70..0x30008ea2: aimSpreadScale += 64, clamped up to 255. */
     playerState_t *spreadPs = move->ps; /* 0x30008e70 reload after both event calls. */
-    spreadPs->aimSpreadScale = (float)((long double)spreadPs->aimSpreadScale + PM_CHECKJUMP_SPREAD_ADD);
+    spreadPs->aimSpreadScale = (float)((long double)spreadPs->aimSpreadScale
+                                       + PM_CHECKJUMP_SPREAD_ADD);
     playerState_t *spreadClampPs = move->ps; /* 0x30008e84 independent reload. */
     if (spreadClampPs->aimSpreadScale > PM_CHECKJUMP_SPREAD_MAX) {
         spreadClampPs->aimSpreadScale = PM_CHECKJUMP_SPREAD_MAX;
@@ -300,7 +356,11 @@ qboolean PM_CheckJump(void)
 
     /* The Windows optimizer inlines this complete event helper at
      * 0x30008ea3/0x20008c53; Linux retains the call at RVA 0x000247f7. */
-    BG_AnimScriptEvent(move->ps, move->command.forwardmove < 0 ? ANIM_EVENT_JUMP_BACK : ANIM_EVENT_JUMP, qfalse, qtrue);
+    BG_AnimScriptEvent(
+        move->ps,
+        move->command.forwardmove < 0 ? ANIM_EVENT_JUMP_BACK :
+                                        ANIM_EVENT_JUMP,
+        qfalse, qtrue);
 
     /* 0x30008f15 MOV EAX,1 / RET: the player jumped. */
     return qtrue;
@@ -310,18 +370,28 @@ qboolean PM_CheckJump(void)
  * (anim), so its member offsets only hold at the 32-bit target ABI — guard those checks
  * to no-op on 64-bit. playerState_t has
  * no leading pointer, so its asserts hold unconditionally. */
-#define BG_JUMP_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
+#define BG_JUMP_LAYOUT_ASSERT(name_, expression_) \
+    typedef char name_[(expression_) ? 1 : -1]
 
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-BG_JUMP_LAYOUT_ASSERT(bg_jump_pmove_current_command_time_offset, offsetof(pmove_t, command.commandTime) == 0x04);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_pmove_forward_move_offset, offsetof(pmove_t, command.forwardmove) == 0x18);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_pmove_up_move_offset, offsetof(pmove_t, command.upmove) == 0x1a);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_pmove_current_command_time_offset,
+                      offsetof(pmove_t, command.commandTime) == 0x04);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_pmove_forward_move_offset,
+                      offsetof(pmove_t, command.forwardmove) == 0x18);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_pmove_up_move_offset,
+                      offsetof(pmove_t, command.upmove) == 0x1a);
 #endif
-BG_JUMP_LAYOUT_ASSERT(bg_jump_last_command_time_offset, offsetof(playerState_t, lastJumpCommandTime) == 0x68);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_view_height_target_offset, offsetof(playerState_t, viewHeightTarget) == 0xf4);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_prone_view_height_offset, offsetof(playerState_t, proneViewHeight) == 0x574);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_crouch_view_height_offset, offsetof(playerState_t, crouchViewHeight) == 0x578);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_ladder_normal_offset, offsetof(playerState_t, ladderNormal) == 0x5c);
-BG_JUMP_LAYOUT_ASSERT(bg_jump_aim_spread_scale_offset, offsetof(playerState_t, aimSpreadScale) == 0x628);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_last_command_time_offset,
+                      offsetof(playerState_t, lastJumpCommandTime) == 0x68);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_view_height_target_offset,
+                      offsetof(playerState_t, viewHeightTarget) == 0xf4);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_prone_view_height_offset,
+                      offsetof(playerState_t, proneViewHeight) == 0x574);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_crouch_view_height_offset,
+                      offsetof(playerState_t, crouchViewHeight) == 0x578);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_ladder_normal_offset,
+                      offsetof(playerState_t, ladderNormal) == 0x5c);
+BG_JUMP_LAYOUT_ASSERT(bg_jump_aim_spread_scale_offset,
+                      offsetof(playerState_t, aimSpreadScale) == 0x628);
 
 #undef BG_JUMP_LAYOUT_ASSERT

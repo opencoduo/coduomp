@@ -5,9 +5,12 @@
 // Source: uo_ui_mp_x86.dll 0x400085a0..0x40008698
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_400085a0_40008698.mcode
 // Dispatch table: uo_ui_mp_x86.dll 0x40008698..0x400086dc.
-UI_EXPORT intptr_t UI_ABI_CDECL vmMain(int32_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4,
-                                       intptr_t arg5, intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10,
-                                       intptr_t arg11)
+UI_EXPORT intptr_t UI_ABI_CDECL vmMain(
+    int32_t command, intptr_t arg0, intptr_t arg1,
+    intptr_t arg2, intptr_t arg3, intptr_t arg4,
+    intptr_t arg5, intptr_t arg6, intptr_t arg7,
+    intptr_t arg8, intptr_t arg9, intptr_t arg10,
+    intptr_t arg11)
 {
     (void)arg2;
     (void)arg3;
@@ -66,7 +69,8 @@ UI_EXPORT intptr_t UI_ABI_CDECL vmMain(int32_t command, intptr_t arg0, intptr_t 
     case UIVM_GET_FONT:
         /* The DLL FILDs arg1 straight into the FMUL by 0.01f (0x40008675);
          * an explicit (float) cast would round the integer first. */
-        return (intptr_t)Text_GetFont((int32_t)arg0, (int32_t)arg1 * 0.01f);
+        return (intptr_t)Text_GetFont((int32_t)arg0,
+                                     (int32_t)arg1 * 0.01f);
     }
 
     return -1;

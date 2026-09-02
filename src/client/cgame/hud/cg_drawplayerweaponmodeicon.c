@@ -40,7 +40,8 @@
  * (startMsec, totalMsec) in (EDX, ECX); the calling C compiler model reuses the
  * declared source-order parameters. */
 
-void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect, const float *color)
+void CG_DrawPlayerWeaponModeIcon(int mode, const rectDef_t *rect,
+                                 const float *color)
 {
     /* 0x3002eec0 MOV EAX,[0x30483248]: cg.predictedPlayerState.entityStateFlags. */
     uint32_t flags = cg_predictedPlayerState.entityStateFlags;

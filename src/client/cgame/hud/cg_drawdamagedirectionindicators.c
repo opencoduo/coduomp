@@ -112,7 +112,8 @@ void CG_DrawDamageDirectionIndicators(void)
      * also the original's: both -h values, both +h values, both top values, then
      * both bottom values. */
     float cornerOffsets[8];
-    long double hRaw = (long double)cg_hudDamageIconWidth_vmCvar.value * 0.5L;
+    long double hRaw =
+        (long double)cg_hudDamageIconWidth_vmCvar.value * 0.5L;
     float negativeH = (float)-hRaw;
     cornerOffsets[6] = negativeH;
     cornerOffsets[0] = negativeH;
@@ -124,7 +125,9 @@ void CG_DrawDamageDirectionIndicators(void)
     cornerOffsets[3] = yTop;
     cornerOffsets[1] = yTop;
 
-    long double yBottomRaw = (long double)cg_hudDamageIconHeight_vmCvar.value + (long double)cg_hudDamageIconOffset_vmCvar.value;
+    long double yBottomRaw =
+        (long double)cg_hudDamageIconHeight_vmCvar.value
+        + (long double)cg_hudDamageIconOffset_vmCvar.value;
     float yBottom = (float)yBottomRaw;
     cornerOffsets[7] = yBottom;
     cornerOffsets[5] = yBottom;
@@ -139,7 +142,8 @@ void CG_DrawDamageDirectionIndicators(void)
         int32_t now = cg_time;
         int32_t serverTime = ind->serverTime;
         int32_t duration = ind->duration;
-        int32_t elapsed = coduo_int32_from_bits((uint32_t)now - (uint32_t)serverTime);
+        int32_t elapsed = coduo_int32_from_bits(
+            (uint32_t)now - (uint32_t)serverTime);
 
         /* Signed lifetime window: skip freshly-cleared (elapsed <= 0) and expired
          * (elapsed >= duration) slots. */
@@ -148,7 +152,9 @@ void CG_DrawDamageDirectionIndicators(void)
         }
 
         /* Rotate the icon by the attacker direction relative to the current view. */
-        float yaw = (float)((long double)vectoyaw(cg_refdef.viewaxis[0]) - (long double)ind->yaw);
+        float yaw = (float)(
+            (long double)vectoyaw(cg_refdef.viewaxis[0])
+            - (long double)ind->yaw);
 
         /* alpha = 2 - 2*elapsed/duration, held at a max of 1.0 (full for the first
          * half of the lifetime, then linear fade to 0). 0x3001aa8d FILD elapsed /
@@ -157,7 +163,9 @@ void CG_DrawDamageDirectionIndicators(void)
          * alpha bit-identical here, since the clamp target equals the round
          * boundary; the raw value is kept live for the original unordered-aware
          * max comparison.) */
-        long double alphaWide = 2.0L - ((long double)elapsed + (long double)elapsed) / (long double)duration;
+        long double alphaWide =
+            2.0L - ((long double)elapsed + (long double)elapsed) /
+                       (long double)duration;
         float alpha;
         if (alphaWide > 1.0L) {
             alpha = 1.0f;
@@ -168,6 +176,7 @@ void CG_DrawDamageDirectionIndicators(void)
 
         cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
         qhandle_t shader = cg_hitDirectionShader;
-        CG_DrawTurretTagQuad(cornerOffsets, sx, sy, cg_damageDirShaderParams, yaw, shader);
+        CG_DrawTurretTagQuad(cornerOffsets, sx, sy, cg_damageDirShaderParams,
+                             yaw, shader);
     }
 }

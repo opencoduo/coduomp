@@ -16,7 +16,8 @@ void UI_KeyEvent(int32_t key, qboolean down)
         if (trap_Cvar_VariableValue("cl_bypassMouseInput") != 0.0f) {
             ui_bypassMouseInput = qtrue;
         }
-        if (key == K_ESCAPE && down && !Menus_AnyFullScreenVisible()) {
+        if (key == K_ESCAPE && down &&
+            !Menus_AnyFullScreenVisible()) {
             Menus_CloseAll();
             return;
         }

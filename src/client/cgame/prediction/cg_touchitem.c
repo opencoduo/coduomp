@@ -34,10 +34,14 @@
 #include "client/cgame/globals.h"
 
 // Offsets this function proves against the machine code (i386, 4-byte pointers):
-_Static_assert(offsetof(centity_t, currentState.eFlags) == 0x08, "currentState.eFlags at +0x08 (OR [EDI+0x8],0x80)");
-_Static_assert(offsetof(centity_t, currentState.itemIndex) == 0x8c, "currentState.modelindex at +0x8c (MOV EAX,[EDI+0x8c])");
-_Static_assert(offsetof(centity_t, currentState.clientNum) == 0x94, "currentState.otherEntityNum at +0x94");
-_Static_assert(offsetof(centity_t, miscTime) == 0x1fc, "centity miscTime at +0x1fc (MOV [EDI+0x1fc],ECX)");
+_Static_assert(offsetof(centity_t, currentState.eFlags) == 0x08,
+               "currentState.eFlags at +0x08 (OR [EDI+0x8],0x80)");
+_Static_assert(offsetof(centity_t, currentState.itemIndex) == 0x8c,
+               "currentState.modelindex at +0x8c (MOV EAX,[EDI+0x8c])");
+_Static_assert(offsetof(centity_t, currentState.clientNum) == 0x94,
+               "currentState.otherEntityNum at +0x94");
+_Static_assert(offsetof(centity_t, miscTime) == 0x1fc,
+               "centity miscTime at +0x1fc (MOV [EDI+0x1fc],ECX)");
 
 // The predicted player state is the typed object based at the fixed cgame address
 // 0x304831c4 (declared in globals.h as cg_predictedPlayerState). The machine code forms
@@ -62,7 +66,9 @@ void CG_TouchItem(centity_t *cent)
     // origin is inside this item's pickup box at cg.time. atTime = cg_time
     // arrives in EAX; the entity in ECX; the reference base (&cg.predictedPlayerState)
     // in ESI. Bail if the player is not touching the item.
-    if (!CG_TrajectoryPointInBounds(cent, &cg_predictedPlayerState, coduo_int32_from_bits(cg_time))) {
+    if (!CG_TrajectoryPointInBounds(
+            cent, &cg_predictedPlayerState,
+            coduo_int32_from_bits(cg_time))) {
         return;
     }
 
@@ -73,7 +79,8 @@ void CG_TouchItem(centity_t *cent)
 
     // 300356b2..300356c5: BG_CanItemBeGrabbed(item, ps, canTake=1); bail if the
     // player cannot currently hold this item.
-    if (!BG_CanItemBeGrabbed(&cent->currentState, &cg_predictedPlayerState, 1)) {
+    if (!BG_CanItemBeGrabbed(&cent->currentState,
+                             &cg_predictedPlayerState, 1)) {
         return;
     }
 
@@ -92,7 +99,10 @@ void CG_TouchItem(centity_t *cent)
     //   eventIndex++;
     // Note the machine code re-reads eventIndex for the parm store; the mask is
     // recomputed each time but the value is unchanged until the final INC.
-    cg_predictedPlayerState.events[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] = EV_ITEM_PICKUP;
-    cg_predictedPlayerState.eventParms[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] = (int32_t)(uint32_t)(uint8_t)modelindex;
-    cg_predictedPlayerState.eventIndex = coduo_int32_from_bits((uint32_t)cg_predictedPlayerState.eventIndex + 1u);
+    cg_predictedPlayerState.events[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
+        EV_ITEM_PICKUP;
+    cg_predictedPlayerState.eventParms[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
+        (int32_t)(uint32_t)(uint8_t)modelindex;
+    cg_predictedPlayerState.eventIndex = coduo_int32_from_bits(
+        (uint32_t)cg_predictedPlayerState.eventIndex + 1u);
 }

@@ -72,7 +72,8 @@ void CG_DrawInformation(qboolean force)
     serverInfo = &cg_gameState.stringData[cg_gameState.stringOffsets[0]];
 
     if (force != qfalse) {
-        trap_Cvar_VariableStringBuffer("cl_serverloadmap", mapBuffer, LOADING_MAP_BUFFER_SIZE);
+        trap_Cvar_VariableStringBuffer("cl_serverloadmap", mapBuffer,
+                                       LOADING_MAP_BUFFER_SIZE);
         mapName = mapBuffer;
     } else {
         mapName = Info_ValueForKey(serverInfo, "mapname");
@@ -82,16 +83,20 @@ void CG_DrawInformation(qboolean force)
         const char *levelshotName = va("levelshots/%s.tga", mapName);
 
         CG_DrawInformation(qfalse);
-        levelshotShader =
-            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)levelshotName, LEVELSHOT_SHADER_SORT));
+        levelshotShader = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)levelshotName,
+            LEVELSHOT_SHADER_SORT));
     } else {
         levelshotShader = 0;
     }
 
     if (levelshotShader == 0) {
         CG_DrawInformation(qfalse);
-        levelshotShader =
-            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"menu/art/unknownmap", LEVELSHOT_SHADER_SORT));
+        levelshotShader = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_REGISTERSHADER,
+            (intptr_t)"menu/art/unknownmap",
+            LEVELSHOT_SHADER_SORT));
     }
 
     if (force != qfalse) {
@@ -104,9 +109,15 @@ void CG_DrawInformation(qboolean force)
         trap_R_SetColor(NULL);
     }
 
-    trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * 0.0f), CG_FloatBits(cgs_screenYScale * 0.0f),
-                          CG_FloatBits(cgs_screenXScale * 640.0f), CG_FloatBits(cgs_screenYScale * 480.0f), CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), levelshotShader);
+    trap_R_DrawStretchPic(CG_FloatBits(cgs_screenXScale * 0.0f),
+                          CG_FloatBits(cgs_screenYScale * 0.0f),
+                          CG_FloatBits(cgs_screenXScale * 640.0f),
+                          CG_FloatBits(cgs_screenYScale * 480.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(1.0f),
+                          CG_FloatBits(1.0f),
+                          levelshotShader);
 
     if (force != qfalse) {
         const char *gametypeToken;
@@ -119,32 +130,63 @@ void CG_DrawInformation(qboolean force)
         float textX;
         int32_t dotPhase;
 
-        gametypeToken = (const char *)(intptr_t)cgame_syscall(CG_UI_GET_GAMETYPE_DISPLAY_NAME, (intptr_t)cl_serverloadgametype.string);
+        gametypeToken = (const char *)(intptr_t)cgame_syscall(
+            CG_UI_GET_GAMETYPE_DISPLAY_NAME,
+            (intptr_t)cl_serverloadgametype.string);
         gametypeText = CG_SafeTranslateString_Internal("cgame", gametypeToken);
-        textWidth =
-            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)gametypeText, 0, CG_FloatBits(LOADING_TEXT_SCALE), 0));
+        textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_TEXT_WIDTH,
+            (intptr_t)gametypeText,
+            0,
+            CG_FloatBits(LOADING_TEXT_SCALE),
+            0));
         /* 0x3002a7b1 FILD [textWidth]; 0x3002a7bb FSUBR 640.0f -- textWidth is
          * FILDed straight into the subtract with no float store, so it stays exact
          * in 80-bit; no (float) cast (cf. the waiting-text site below, which does
          * round). */
-        textX = (float)(((long double)LOADING_TEXT_CENTER_X - (long double)textWidth) * (long double)0.5f);
-        trap_R_Text_Paint(CG_FloatBits(textX), CG_FloatBits(LOADING_GAMETYPE_Y), 0, CG_FloatBits(LOADING_TEXT_SCALE), (intptr_t)textColor,
-                          (intptr_t)gametypeText, 0, 0, LOADING_TEXT_DRAW_MODE);
+        textX = (float)(
+            ((long double)LOADING_TEXT_CENTER_X - (long double)textWidth) *
+            (long double)0.5f);
+        trap_R_Text_Paint(CG_FloatBits(textX),
+                  CG_FloatBits(LOADING_GAMETYPE_Y),
+                  0,
+                  CG_FloatBits(LOADING_TEXT_SCALE),
+                  (intptr_t)textColor,
+                  (intptr_t)gametypeText,
+                  0,
+                  0,
+                  LOADING_TEXT_DRAW_MODE);
 
-        mapText = (const char *)(intptr_t)cgame_syscall(CG_UI_GET_MAP_DISPLAY_NAME, (intptr_t)cl_serverloadmap.string);
-        textWidth =
-            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)mapText, 0, CG_FloatBits(LOADING_TEXT_SCALE), 0));
+        mapText = (const char *)(intptr_t)cgame_syscall(
+            CG_UI_GET_MAP_DISPLAY_NAME,
+            (intptr_t)cl_serverloadmap.string);
+        textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_TEXT_WIDTH,
+            (intptr_t)mapText,
+            0,
+            CG_FloatBits(LOADING_TEXT_SCALE),
+            0));
         /* 0x3002a817 FILD [textWidth]; 0x3002a821 FSUBR 640.0f -- direct FILD, no
          * float store; textWidth stays exact in 80-bit. No (float) cast. */
-        textX = (float)(((long double)LOADING_TEXT_CENTER_X - (long double)textWidth) * (long double)0.5f);
-        trap_R_Text_Paint(CG_FloatBits(textX), CG_FloatBits(LOADING_MAP_Y), 0, CG_FloatBits(LOADING_TEXT_SCALE), (intptr_t)textColor,
-                          (intptr_t)mapText, 0, 0, LOADING_TEXT_DRAW_MODE);
+        textX = (float)(
+            ((long double)LOADING_TEXT_CENTER_X - (long double)textWidth) *
+            (long double)0.5f);
+        trap_R_Text_Paint(CG_FloatBits(textX),
+                  CG_FloatBits(LOADING_MAP_Y),
+                  0,
+                  CG_FloatBits(LOADING_TEXT_SCALE),
+                  (intptr_t)textColor,
+                  (intptr_t)mapText,
+                  0,
+                  0,
+                  LOADING_TEXT_DRAW_MODE);
 
         /* 0x3002a85a: imul 0x057619F1 (= ceil(2^36/750)); sar edx,4 -> divide by
          * 750, not 1000 (the /1000 magic would be 0x10624DD3). The "..." animation
          * advances every 750 ms. A prior pass used /1000. */
         {
-            int32_t milliseconds = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MILLISECONDS));
+            int32_t milliseconds = coduo_int32_from_bits(
+                (uint32_t)cgame_syscall(CG_MILLISECONDS));
             dotPhase = (int32_t)((uint32_t)(milliseconds / 750) & 3u);
         }
         switch (dotPhase) {
@@ -162,9 +204,14 @@ void CG_DrawInformation(qboolean force)
             break;
         }
 
-        waitingText = CG_SafeTranslateString_Internal("cgame", "CGAME_WAITINGFORSERVERLOAD");
-        textWidth =
-            coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)waitingText, 0, CG_FloatBits(LOADING_TEXT_SCALE), 0));
+        waitingText = CG_SafeTranslateString_Internal("cgame",
+                                         "CGAME_WAITINGFORSERVERLOAD");
+        textWidth = coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_TEXT_WIDTH,
+            (intptr_t)waitingText,
+            0,
+            CG_FloatBits(LOADING_TEXT_SCALE),
+            0));
         waitingDisplay = va("%s%s", waitingText, dots);
         /* 0x3002a8c3 FILD [textWidth]; 0x3002a8ce FSTP DWORD [same slot] -- unlike
          * the two sites above, this one ROUNDS textWidth to float and stores it back
@@ -172,16 +219,27 @@ void CG_DrawInformation(qboolean force)
          * Do NOT drop it to match the siblings. */
         {
             float widthRounded = (float)textWidth;
-            textX = (float)(((long double)LOADING_TEXT_CENTER_X - (long double)widthRounded) * (long double)0.5f);
+            textX = (float)(
+                ((long double)LOADING_TEXT_CENTER_X -
+                 (long double)widthRounded) * (long double)0.5f);
         }
-        trap_R_Text_Paint(CG_FloatBits(textX), CG_FloatBits(LOADING_WAITING_Y), 0, CG_FloatBits(LOADING_TEXT_SCALE), (intptr_t)textColor,
-                          (intptr_t)waitingDisplay, 0, 0, LOADING_TEXT_DRAW_MODE);
+        trap_R_Text_Paint(CG_FloatBits(textX),
+                  CG_FloatBits(LOADING_WAITING_Y),
+                  0,
+                  CG_FloatBits(LOADING_TEXT_SCALE),
+                  (intptr_t)textColor,
+                  (intptr_t)waitingDisplay,
+                  0,
+                  0,
+                  LOADING_TEXT_DRAW_MODE);
     } else {
         char hunkUsageString[LOADING_HUNK_BUFFER_SIZE];
         int32_t expectedHunkUsage;
         vec4_t progressColor = {0.8f, 0.8f, 0.8f, 0.8f};
 
-        trap_Cvar_VariableStringBuffer("com_expectedhunkusage", hunkUsageString, LOADING_HUNK_BUFFER_SIZE);
+        trap_Cvar_VariableStringBuffer("com_expectedhunkusage",
+                                       hunkUsageString,
+                                       LOADING_HUNK_BUFFER_SIZE);
         expectedHunkUsage = coduo_crt_atoi(hunkUsageString);
         (void)progressColor;
 
@@ -192,16 +250,21 @@ void CG_DrawInformation(qboolean force)
              * copy while the 80-bit st(0) stays live), and 0x3002a977 FCOMP 1.0f
              * then compares the UNROUNDED value. Keeping the chain in a long double
              * preserves both the single rounding and the unrounded compare. */
-            long double progressRaw = (long double)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_HUNK_USED)) / expectedHunkUsage;
+            long double progressRaw =
+                (long double)coduo_int32_from_bits(
+                    (uint32_t)cgame_syscall(CG_HUNK_USED)) /
+                expectedHunkUsage;
             float progress = (float)progressRaw; /* 0x3002a973 FST DWORD [0x8] */
 
             if (progressRaw > 1.0f) {
                 progress = 1.0f;                 /* 0x3002a984 MOV [0x8],0x3f800000 */
             }
-            CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f, progress);
+            CG_DrawFilledBarStyled(200.0f, 468.0f, 240.0f, 10.0f,
+                                   progress);
         }
     }
 
     cgame_syscall(CG_UPDATE_SCREEN);
-    cg_updateScreenActive = coduo_int32_from_bits((uint32_t)cg_updateScreenActive - 1u);
+    cg_updateScreenActive = coduo_int32_from_bits(
+        (uint32_t)cg_updateScreenActive - 1u);
 }

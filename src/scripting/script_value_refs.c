@@ -35,7 +35,8 @@ float *AllocVector(void)
 #else
 float *AllocVector(void)
 {
-    script_vector_storage_t *storage = MT_Alloc(sizeof(*storage), SCRIPT_VECTOR_ALLOC_TAG);
+    script_vector_storage_t *storage =
+        MT_Alloc(sizeof(*storage), SCRIPT_VECTOR_ALLOC_TAG);
 
     storage->refCount = 0;
     return storage->value;
@@ -57,14 +58,16 @@ float *AllocVectorCopy(const vec3_t value)
  * 0x080a6cbd..0x080a6cf6. */
 void AddRefToVector(const float *vector)
 {
-    if ((uintptr_t)vector - (uintptr_t)script_vectorLocalPoolBase >= script_vectorLocalPoolByteCount) {
-        script_vector_storage_t *storage = SCRIPT_VECTOR_STORAGE_FROM_VALUE(vector);
+    if ((uintptr_t)vector - (uintptr_t)script_vectorLocalPoolBase >=
+        script_vectorLocalPoolByteCount) {
+        script_vector_storage_t *storage =
+            SCRIPT_VECTOR_STORAGE_FROM_VALUE(vector);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if ((uint16_t)storage->refCount == SCRIPT_REFERENCE_COUNT_MAX) {
-            Com_Error(ERR_DROP, "\x15"
-                                "script vector reference count overflow");
+            Com_Error(ERR_DROP, "\x15" "script vector reference count overflow");
         }
-        storage->refCount = coduomp_script_vector_ref_from_bits((uint16_t)((uint16_t)storage->refCount + 1u));
+        storage->refCount = coduomp_script_vector_ref_from_bits(
+            (uint16_t)((uint16_t)storage->refCount + 1u));
     }
 }
 
@@ -74,13 +77,16 @@ void RemoveRefToVector(const float *vector)
 {
     uintptr_t vectorPayload = (uintptr_t)vector;
 
-    if (vectorPayload - (uintptr_t)script_vectorLocalPoolBase < script_vectorLocalPoolByteCount) {
+    if (vectorPayload - (uintptr_t)script_vectorLocalPoolBase <
+        script_vectorLocalPoolByteCount) {
         return;
     }
 
-    script_vector_storage_t *storage = SCRIPT_VECTOR_STORAGE_FROM_PAYLOAD(vectorPayload);
+    script_vector_storage_t *storage =
+        SCRIPT_VECTOR_STORAGE_FROM_PAYLOAD(vectorPayload);
     if (storage->refCount != 0) {
-        storage->refCount = coduomp_script_vector_ref_from_bits((uint16_t)((uint16_t)storage->refCount - 1u));
+        storage->refCount = coduomp_script_vector_ref_from_bits(
+            (uint16_t)((uint16_t)storage->refCount - 1u));
         return;
     }
 

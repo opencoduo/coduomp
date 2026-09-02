@@ -74,7 +74,8 @@ void CG_PredictPlayerState(void)
     CG_PredictPlayerState_Internal();
 
     /* cent = &cg_entities[index]  (IMUL index,0x288 ; ADD base ; 0x30036079..0x30036090) */
-    cent = cgame_compat_unchecked_cgentity(cg_predictedPlayerState.psClientNum);
+    cent = cgame_compat_unchecked_cgentity(
+        cg_predictedPlayerState.psClientNum);
 
     /* Copy the requested view origin into the slot's lerpOrigin vec3.
      * Store order in the machine code: +0x208 = x (0x304831d8), +0x210 = z
@@ -86,7 +87,8 @@ void CG_PredictPlayerState(void)
     /* Evaluate the slot's angle trajectory at cg.time into lerpAngles.
      * Register ABI: result=&lerpAngles (ECX), tr=&cent->currentState.apos (EBX),
      * atTime=cg_time (EAX). */
-    BG_EvaluateTrajectory(&cent->currentState.apos, coduo_int32_from_bits(cg_time), cent->lerpAngles);
+    BG_EvaluateTrajectory(&cent->currentState.apos,
+                          coduo_int32_from_bits(cg_time), cent->lerpAngles);
 
     /* Only continue for the active local player's first-person view. */
     if ((cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
@@ -96,7 +98,8 @@ void CG_PredictPlayerState(void)
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if (cg_currentWeaponInfo == NULL) {
-        Com_Printf("WARNING: CG_PredictPlayerState: no registered current weapon\n");
+        Com_Printf(
+            "WARNING: CG_PredictPlayerState: no registered current weapon\n");
         cg_adsViewErrorLatched = 0;
         return;
     }
@@ -121,21 +124,29 @@ void CG_PredictPlayerState(void)
 
     /* Random aim-error magnitude in [adsViewErrorMin, adsViewErrorMax].
      * Pushed as (adsViewErrorMax, adsViewErrorMin) -> flrand(min, max). */
-    magnitude = flrand(cg_currentWeaponInfo->adsViewErrorMin, cg_currentWeaponInfo->adsViewErrorMax);
+    magnitude = flrand(cg_currentWeaponInfo->adsViewErrorMin,
+                       cg_currentWeaponInfo->adsViewErrorMax);
 
     /* Random phase over one full circle: rand() (0..32767) scaled by 1/32768,
      * then by 2*pi. (FMUL [0x3007bec0] = 0x38000000 = 3.0517578e-05f (1/32768);
      * FMUL [0x3007be44] = 0x40c90fdb = 6.2831855f.) */
     int32_t randomPhase = coduo_crt_rand();
-    phase = (float)((long double)randomPhase * (long double)3.0517578e-05f * (long double)6.2831855f);
+    phase = (float)(
+        (long double)randomPhase *
+        (long double)3.0517578e-05f *
+        (long double)6.2831855f);
 
     /* FSINCOS: st(0)=cos(phase), st(1)=sin(phase). */
     coduo_x87_sincosf(phase, &sinPhase, &cosPhase);
 
     /* Advance the x/y accumulators, wrapping each back into [0,360) with AngleMod.
      * x uses sin, y uses cos (proven by the FSTP store order after FSINCOS). */
-    float nextErrorX = (float)((long double)sinPhase * (long double)magnitude + (long double)cg_adsViewErrorAngles[0]);
+    float nextErrorX = (float)(
+        (long double)sinPhase * (long double)magnitude +
+        (long double)cg_adsViewErrorAngles[0]);
     cg_adsViewErrorAngles[0] = AngleNormalize360(nextErrorX);
-    float nextErrorY = (float)((long double)cosPhase * (long double)magnitude + (long double)cg_adsViewErrorAngles[1]);
+    float nextErrorY = (float)(
+        (long double)cosPhase * (long double)magnitude +
+        (long double)cg_adsViewErrorAngles[1]);
     cg_adsViewErrorAngles[1] = AngleNormalize360(nextErrorY);
 }

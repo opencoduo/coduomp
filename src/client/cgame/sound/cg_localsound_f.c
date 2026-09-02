@@ -48,7 +48,8 @@ void CG_LocalSound_f(void)
     int argc = trap_Argc();
     if (argc != 2) {
         /* PUSH EAX (argc) / PUSH fmt / CALL Com_PrintMessage / ADD ESP,8 / RET */
-        Com_PrintMessage("ERROR: CG_LocalSound called with %i args (should be 2)\n", argc);
+        Com_PrintMessage("ERROR: CG_LocalSound called with %i args (should be 2)\n",
+                         argc);
         return;
     }
 
@@ -65,7 +66,9 @@ void CG_LocalSound_f(void)
     if (soundIndex <= 0 || soundIndex > CS_SOUNDS_COUNT) {
         /* PUSH 0x100 / PUSH EAX (soundIndex) / PUSH fmt / CALL Com_PrintMessage
          * / ADD ESP,0xc / RET  (cdecl: fmt, soundIndex, 256) */
-        Com_PrintMessage("ERROR: CG_LocalSound called with index %i (should be in range[1,%i])\n", soundIndex, CS_SOUNDS_COUNT);
+        Com_PrintMessage(
+            "ERROR: CG_LocalSound called with index %i (should be in range[1,%i])\n",
+            soundIndex, CS_SOUNDS_COUNT);
         return;
     }
 
@@ -77,5 +80,6 @@ void CG_LocalSound_f(void)
     /* MOV EDX,[cg_snap] ; LEA ECX,[EDX+0x20] ; MOV EDX,[EDX+0xe0] ; PUSH EDX
      * ; CALL CG_PlaySoundAliasByName (0x3002ca80) ; ADD ESP,8 ; RET
      * ECX(this) = &cg_snap->ps.psOrigin, EAX = soundName, stack = clientNum. */
-    CG_PlaySoundAliasByName(cg_snap->ps.psClientNum, &cg_snap->ps.psOrigin, soundName);
+    CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
+                            &cg_snap->ps.psOrigin, soundName);
 }

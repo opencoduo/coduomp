@@ -23,7 +23,8 @@ void trap_Print(const char *message)
 // Exact same-module PPC symbol: trap_GetLanguagename.
 const char *trap_GetLanguagename(int32_t languageIndex)
 {
-    return (const char *)ui_syscall(UI_GET_LANGUAGE_NAME, (intptr_t)languageIndex);
+    return (const char *)ui_syscall(UI_GET_LANGUAGE_NAME,
+                                    (intptr_t)languageIndex);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d270..0x4001d27d
@@ -31,7 +32,8 @@ const char *trap_GetLanguagename(int32_t languageIndex)
 // Exact same-module PPC symbol: trap_VerifyLanguageSelection.
 int32_t trap_VerifyLanguageSelection(int32_t languageIndex)
 {
-    return (int32_t)ui_syscall(UI_VERIFY_LANGUAGE_SELECTION, (intptr_t)languageIndex);
+    return (int32_t)ui_syscall(UI_VERIFY_LANGUAGE_SELECTION,
+                               (intptr_t)languageIndex);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d280..0x4001d28c
@@ -44,9 +46,11 @@ int32_t trap_Milliseconds(void)
 
 // Source: uo_ui_mp_x86.dll 0x4001d290..0x4001d2a4
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4001d290_4001d2a4.mcode
-void trap_Cvar_Register(vmCvar_t *vmCvar, const char *name, const char *defaultValue, int32_t flags)
+void trap_Cvar_Register(vmCvar_t *vmCvar, const char *name,
+                        const char *defaultValue, int32_t flags)
 {
-    ui_syscall(UI_CVAR_REGISTER, (intptr_t)vmCvar, (intptr_t)name, (intptr_t)defaultValue, (intptr_t)flags);
+    ui_syscall(UI_CVAR_REGISTER, (intptr_t)vmCvar, (intptr_t)name,
+               (intptr_t)defaultValue, (intptr_t)flags);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d2b0..0x4001d2bd
@@ -76,9 +80,11 @@ float trap_Cvar_VariableValue(const char *name)
 
 // Source: uo_ui_mp_x86.dll 0x4001d300..0x4001d31b
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4001d300_4001d31b.mcode
-void trap_Cvar_VariableStringBuffer(const char *name, char *buffer, int32_t bufferSize)
+void trap_Cvar_VariableStringBuffer(const char *name, char *buffer,
+                                    int32_t bufferSize)
 {
-    ui_syscall(UI_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)name, (intptr_t)buffer, (intptr_t)bufferSize);
+    ui_syscall(UI_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)name,
+               (intptr_t)buffer, (intptr_t)bufferSize);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d320..0x4001d338
@@ -100,14 +106,16 @@ void trap_Cmd_ExecuteText(cbufExec_t execWhen, const char *text)
 // command 0x11.
 int32_t trap_FS_FOpenFile(const char *filename, int32_t *handle, fsMode_t mode)
 {
-    return (int32_t)ui_syscall(UI_FS_FOPEN_FILE, (intptr_t)filename, (intptr_t)handle, (intptr_t)mode);
+    return (int32_t)ui_syscall(UI_FS_FOPEN_FILE, (intptr_t)filename,
+                               (intptr_t)handle, (intptr_t)mode);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d3c0..0x4001d3cf,
 // command 0x12.
 void trap_FS_Read(void *buffer, int32_t length, int32_t handle)
 {
-    ui_syscall(UI_FS_READ, (intptr_t)buffer, (intptr_t)length, (intptr_t)handle);
+    ui_syscall(UI_FS_READ, (intptr_t)buffer, (intptr_t)length,
+               (intptr_t)handle);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d3f0..0x4001d3fd,
@@ -119,9 +127,12 @@ void trap_FS_FCloseFile(int32_t handle)
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d400..0x4001d414,
 // command 0x16.
-int32_t trap_FS_GetFileList(const char *path, const char *extension, char *buffer, int32_t bufferSize)
+int32_t trap_FS_GetFileList(const char *path, const char *extension,
+                            char *buffer, int32_t bufferSize)
 {
-    return (int32_t)ui_syscall(UI_FS_GET_FILE_LIST, (intptr_t)path, (intptr_t)extension, (intptr_t)buffer, (intptr_t)bufferSize);
+    return (int32_t)ui_syscall(UI_FS_GET_FILE_LIST, (intptr_t)path,
+                               (intptr_t)extension, (intptr_t)buffer,
+                               (intptr_t)bufferSize);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d5c0..0x4001d5d6,
@@ -129,7 +140,8 @@ int32_t trap_FS_GetFileList(const char *path, const char *extension, char *buffe
 // trap_R_RegisterShaderNoMip.
 qhandle_t trap_R_RegisterShaderNoMip(const char *name, int32_t loadMode)
 {
-    return (qhandle_t)ui_syscall(UI_R_REGISTER_SHADER_NO_MIP, (intptr_t)name, (intptr_t)loadMode);
+    return (qhandle_t)ui_syscall(UI_R_REGISTER_SHADER_NO_MIP,
+                                 (intptr_t)name, (intptr_t)loadMode);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d7a0..0x4001d7b1,
@@ -141,25 +153,37 @@ const char *trap_S_RegisterSound(const char *name)
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d450..0x4001d470,
 // command 0x42.
-void trap_R_RegisterFont(const char *name, int32_t pointSize, fontInfo_t *fontStorage, intptr_t context)
+void trap_R_RegisterFont(const char *name, int32_t pointSize,
+                         fontInfo_t *fontStorage,
+                         intptr_t context)
 {
-    ui_syscall(UI_R_REGISTER_FONT, (intptr_t)name, (intptr_t)pointSize, (intptr_t)fontStorage, context);
+    ui_syscall(UI_R_REGISTER_FONT, (intptr_t)name, (intptr_t)pointSize,
+               (intptr_t)fontStorage, context);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d470..0x4001d496,
 // command 0x43. The scale travels as its raw 32-bit float word.
-int32_t trap_R_Text_Width(const char *text, int32_t font, float scale, int32_t limit)
+int32_t trap_R_Text_Width(const char *text, int32_t font, float scale,
+                          int32_t limit)
 {
-    return (int32_t)ui_syscall(UI_R_TEXT_WIDTH, (intptr_t)text, (intptr_t)font, (intptr_t)PASSFLOAT(scale), (intptr_t)limit);
+    return (int32_t)ui_syscall(UI_R_TEXT_WIDTH, (intptr_t)text,
+                               (intptr_t)font, (intptr_t)PASSFLOAT(scale),
+                               (intptr_t)limit);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d4c0..0x4001d519,
 // command 0x45. Float arguments are transported as raw 32-bit words.
-void trap_R_Text_Paint(float x, float y, int32_t font, float scale, const vec4_t color, const char *text, float fixedAdvance, int32_t limit,
+void trap_R_Text_Paint(float x, float y, int32_t font, float scale,
+                       const vec4_t color, const char *text,
+                       float fixedAdvance, int32_t limit,
                        int32_t textStyle)
 {
-    ui_syscall(UI_R_TEXT_PAINT, (intptr_t)PASSFLOAT(x), (intptr_t)PASSFLOAT(y), (intptr_t)font, (intptr_t)PASSFLOAT(scale), (intptr_t)color,
-               (intptr_t)text, (intptr_t)PASSFLOAT(fixedAdvance), (intptr_t)limit, (intptr_t)textStyle);
+    ui_syscall(UI_R_TEXT_PAINT, (intptr_t)PASSFLOAT(x),
+               (intptr_t)PASSFLOAT(y), (intptr_t)font,
+               (intptr_t)PASSFLOAT(scale), (intptr_t)color,
+               (intptr_t)text, (intptr_t)PASSFLOAT(fixedAdvance),
+               (intptr_t)limit,
+               (intptr_t)textStyle);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d8e0..0x4001d8ed,
@@ -178,16 +202,20 @@ void trap_GetGlconfig(glconfig_t *config)
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d900..0x4001d90f,
 // command 0x35. Exact same-module PPC symbol: trap_GetConfigString.
-qboolean trap_GetConfigString(int32_t index, char *buffer, int32_t bufferSize)
+qboolean trap_GetConfigString(int32_t index, char *buffer,
+                              int32_t bufferSize)
 {
-    return (qboolean)ui_syscall(UI_GET_CONFIG_STRING, (intptr_t)index, (intptr_t)buffer, (intptr_t)bufferSize);
+    return (qboolean)ui_syscall(UI_GET_CONFIG_STRING, (intptr_t)index,
+                                (intptr_t)buffer, (intptr_t)bufferSize);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d910..0x4001d91f,
 // command 0x36. Exact same-module PPC symbol: trap_GetClientName.
-qboolean trap_GetClientName(int32_t clientNum, char *buffer, int32_t bufferSize)
+qboolean trap_GetClientName(int32_t clientNum, char *buffer,
+                            int32_t bufferSize)
 {
-    return (qboolean)ui_syscall(UI_GET_CLIENT_NAME, (intptr_t)clientNum, (intptr_t)buffer, (intptr_t)bufferSize);
+    return (qboolean)ui_syscall(UI_GET_CLIENT_NAME, (intptr_t)clientNum,
+                                (intptr_t)buffer, (intptr_t)bufferSize);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d7c0..0x4001d7d1,
@@ -199,18 +227,23 @@ void trap_MSS_PlayLocalSoundAlias(const char *aliasName)
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d9e0..0x4001d9f9,
 // command 0x64. Exact same-module PPC symbol: trap_LAN_CompareServers.
-int32_t trap_LAN_CompareServers(int32_t source, int32_t sortKey, int32_t sortDirection, int32_t server1, int32_t server2)
+int32_t trap_LAN_CompareServers(int32_t source, int32_t sortKey,
+                                int32_t sortDirection, int32_t server1,
+                                int32_t server2)
 {
-    return (int32_t)ui_syscall(UI_LAN_COMPARE_SERVERS, (intptr_t)source, (intptr_t)sortKey, (intptr_t)sortDirection, (intptr_t)server1,
-                               (intptr_t)server2);
+    return (int32_t)ui_syscall(UI_LAN_COMPARE_SERVERS, (intptr_t)source,
+                               (intptr_t)sortKey, (intptr_t)sortDirection,
+                               (intptr_t)server1, (intptr_t)server2);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001db90..0x4001dbae,
 // command 0x5a.
-int32_t trap_CIN_PlayCinematic(const char *name, int32_t x, int32_t y, int32_t width, int32_t height, int32_t flags)
+int32_t trap_CIN_PlayCinematic(const char *name, int32_t x, int32_t y,
+                               int32_t width, int32_t height, int32_t flags)
 {
-    return (int32_t)ui_syscall(UI_CIN_PLAY_CINEMATIC, (intptr_t)name, (intptr_t)x, (intptr_t)y, (intptr_t)width, (intptr_t)height,
-                               (intptr_t)flags);
+    return (int32_t)ui_syscall(UI_CIN_PLAY_CINEMATIC, (intptr_t)name,
+                               (intptr_t)x, (intptr_t)y, (intptr_t)width,
+                               (intptr_t)height, (intptr_t)flags);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001dbb0..0x4001dbbd
@@ -237,9 +270,11 @@ void trap_CIN_DrawCinematic(int32_t handle)
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001dbe0..0x4001dbf9,
 // command 0x5e.
-void trap_CIN_SetExtents(int32_t handle, int32_t x, int32_t y, int32_t width, int32_t height)
+void trap_CIN_SetExtents(int32_t handle, int32_t x, int32_t y,
+                         int32_t width, int32_t height)
 {
-    ui_syscall(UI_CIN_SET_EXTENTS, (intptr_t)handle, (intptr_t)x, (intptr_t)y, (intptr_t)width, (intptr_t)height);
+    ui_syscall(UI_CIN_SET_EXTENTS, (intptr_t)handle, (intptr_t)x,
+               (intptr_t)y, (intptr_t)width, (intptr_t)height);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d6e0..0x4001d6ed,
@@ -251,11 +286,16 @@ void trap_R_SetColor(const vec4_t rgba)
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d6f0..0x4001d769,
 // command 0x22. The adapter transports all floats as raw 32-bit words.
-void trap_R_DrawStretchPic(float x, float y, float width, float height, float s0, float t0, float s1, float t1, qhandle_t shader)
+void trap_R_DrawStretchPic(float x, float y, float width, float height,
+                           float s0, float t0, float s1, float t1,
+                           qhandle_t shader)
 {
-    ui_syscall(UI_R_DRAW_STRETCH_PIC, (intptr_t)PASSFLOAT(x), (intptr_t)PASSFLOAT(y), (intptr_t)PASSFLOAT(width),
-               (intptr_t)PASSFLOAT(height), (intptr_t)PASSFLOAT(s0), (intptr_t)PASSFLOAT(t0), (intptr_t)PASSFLOAT(s1),
-               (intptr_t)PASSFLOAT(t1), (intptr_t)shader);
+    ui_syscall(UI_R_DRAW_STRETCH_PIC,
+               (intptr_t)PASSFLOAT(x), (intptr_t)PASSFLOAT(y),
+               (intptr_t)PASSFLOAT(width), (intptr_t)PASSFLOAT(height),
+               (intptr_t)PASSFLOAT(s0), (intptr_t)PASSFLOAT(t0),
+               (intptr_t)PASSFLOAT(s1), (intptr_t)PASSFLOAT(t1),
+               (intptr_t)shader);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d790..0x4001d79a,
@@ -270,14 +310,18 @@ void trap_UpdateScreen(void)
 // Exact same-module PPC symbol: trap_SE_TranslateReference.
 const char *trap_SE_TranslateReference(const char *reference)
 {
-    return (const char *)ui_syscall(UI_SE_TRANSLATE_REFERENCE, (intptr_t)reference);
+    return (const char *)ui_syscall(UI_SE_TRANSLATE_REFERENCE,
+                                    (intptr_t)reference);
 }
 
 // Engine syscall adapter: uo_ui_mp_x86.dll 0x4001d5a0..0x4001d5b6,
 // command 0x48. Exact same-module PPC symbol: trap_SE_LocalizeMessage.
-const char *trap_SE_LocalizeMessage(const char *message, const char *context)
+const char *trap_SE_LocalizeMessage(const char *message,
+                                    const char *context)
 {
-    return (const char *)ui_syscall(UI_SE_LOCALIZE_MESSAGE, (intptr_t)message, (intptr_t)context);
+    return (const char *)ui_syscall(UI_SE_LOCALIZE_MESSAGE,
+                                    (intptr_t)message,
+                                    (intptr_t)context);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001db40..0x4001db4d
@@ -301,15 +345,18 @@ void trap_PC_FreeSource(int32_t handle)
 // Exact same-module PPC symbol: trap_PC_ReadToken.
 qboolean trap_PC_ReadToken(int32_t handle, pc_token_t *token)
 {
-    return (qboolean)ui_syscall(UI_PC_READ_TOKEN, (intptr_t)handle, (intptr_t)token);
+    return (qboolean)ui_syscall(UI_PC_READ_TOKEN, (intptr_t)handle,
+                                (intptr_t)token);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001db70..0x4001db7f
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4001db70_4001db7f.mcode
 // Exact same-module PPC symbol: trap_PC_SourceFileAndLine.
-void trap_PC_SourceFileAndLine(int32_t handle, char *filename, int32_t *line)
+void trap_PC_SourceFileAndLine(int32_t handle, char *filename,
+                              int32_t *line)
 {
-    ui_syscall(UI_PC_SOURCE_FILE_AND_LINE, (intptr_t)handle, (intptr_t)filename, (intptr_t)line);
+    ui_syscall(UI_PC_SOURCE_FILE_AND_LINE, (intptr_t)handle,
+               (intptr_t)filename, (intptr_t)line);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d9b0..0x4001d9bd
@@ -317,7 +364,8 @@ void trap_PC_SourceFileAndLine(int32_t handle, char *filename, int32_t *line)
 // Same-module PPC symbol: trap_LAN_UpdateDirtyPings.
 qboolean trap_LAN_UpdateDirtyPings(int32_t source)
 {
-    return (qboolean)ui_syscall(UI_LAN_UPDATE_DIRTY_PINGS, (intptr_t)source);
+    return (qboolean)ui_syscall(UI_LAN_UPDATE_DIRTY_PINGS,
+                                (intptr_t)source);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d9c0..0x4001d9cd
@@ -331,29 +379,37 @@ int32_t trap_LAN_GetServerCount(int32_t source)
 // Source: uo_ui_mp_x86.dll 0x4001da90..0x4001da9f
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4001da90_4001da9f.mcode
 // Exact same-module PPC symbol: trap_LAN_ServerStatus.
-qboolean trap_LAN_ServerStatus(const char *address, char *status, int32_t statusSize)
+qboolean trap_LAN_ServerStatus(const char *address, char *status,
+                               int32_t statusSize)
 {
-    return (qboolean)ui_syscall(UI_LAN_SERVER_STATUS, (intptr_t)address, (intptr_t)status, (intptr_t)statusSize);
+    return (qboolean)ui_syscall(UI_LAN_SERVER_STATUS, (intptr_t)address,
+                                (intptr_t)status, (intptr_t)statusSize);
 }
 
 // NOT_FROM_ORIGINAL_SOURCE: typed adapter for the direct command-82 call sites.
-void ui_compat_lan_get_server_info(int32_t source, int32_t server, char *buffer, int32_t bufferSize)
+void ui_compat_lan_get_server_info(int32_t source, int32_t server,
+                                   char *buffer, int32_t bufferSize)
 {
-    ui_syscall(UI_LAN_GET_SERVER_INFO, (intptr_t)source, (intptr_t)server, (intptr_t)buffer, (intptr_t)bufferSize);
+    ui_syscall(UI_LAN_GET_SERVER_INFO, (intptr_t)source, (intptr_t)server,
+               (intptr_t)buffer, (intptr_t)bufferSize);
 }
 
 // NOT_FROM_ORIGINAL_SOURCE: typed adapter for the direct command-81 call sites.
-void ui_compat_lan_get_server_address(int32_t source, int32_t server, char *buffer, int32_t bufferSize)
+void ui_compat_lan_get_server_address(int32_t source, int32_t server,
+                                      char *buffer, int32_t bufferSize)
 {
-    ui_syscall(UI_LAN_GET_SERVER_ADDRESS_STRING, (intptr_t)source, (intptr_t)server, (intptr_t)buffer, (intptr_t)bufferSize);
+    ui_syscall(UI_LAN_GET_SERVER_ADDRESS_STRING, (intptr_t)source,
+               (intptr_t)server, (intptr_t)buffer, (intptr_t)bufferSize);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001da40..0x4001da4f
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4001da40_4001da4f.mcode
 // Exact same-module PPC symbol: trap_LAN_AddServer.
-int32_t trap_LAN_AddServer(int32_t source, const char *name, const char *address)
+int32_t trap_LAN_AddServer(int32_t source, const char *name,
+                           const char *address)
 {
-    return (int32_t)ui_syscall(UI_LAN_ADD_SERVER, (intptr_t)source, (intptr_t)name, (intptr_t)address);
+    return (int32_t)ui_syscall(UI_LAN_ADD_SERVER, (intptr_t)source,
+                               (intptr_t)name, (intptr_t)address);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d9d0..0x4001d9dd
@@ -361,7 +417,8 @@ int32_t trap_LAN_AddServer(int32_t source, const char *name, const char *address
 // Same-module PPC symbol: trap_LAN_WaitServerResponse.
 qboolean trap_LAN_WaitServerResponse(int32_t source)
 {
-    return (qboolean)ui_syscall(UI_LAN_WAIT_SERVER_RESPONSE, (intptr_t)source);
+    return (qboolean)ui_syscall(UI_LAN_WAIT_SERVER_RESPONSE,
+                                (intptr_t)source);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d8a0..0x4001d8aa
@@ -399,9 +456,11 @@ void trap_LAN_ResetPings(int32_t source)
 // Source: uo_ui_mp_x86.dll 0x4001dac0..0x4001dacf
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4001dac0_4001dacf.mcode
 // Same-module PPC symbol: trap_LAN_MarkServerDirty.
-void trap_LAN_MarkServerDirty(int32_t source, int32_t server, qboolean dirty)
+void trap_LAN_MarkServerDirty(int32_t source, int32_t server,
+                              qboolean dirty)
 {
-    ui_syscall(UI_LAN_MARK_SERVER_DIRTY, (intptr_t)source, (intptr_t)server, (intptr_t)dirty);
+    ui_syscall(UI_LAN_MARK_SERVER_DIRTY, (intptr_t)source,
+               (intptr_t)server, (intptr_t)dirty);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001da60..0x4001da6e
@@ -409,7 +468,8 @@ void trap_LAN_MarkServerDirty(int32_t source, int32_t server, qboolean dirty)
 // Exact same-module PPC symbol: trap_LAN_GetServerPing.
 int32_t trap_LAN_GetServerPing(int32_t source, int32_t server)
 {
-    return (int32_t)ui_syscall(UI_LAN_GET_SERVER_PING, (intptr_t)source, (intptr_t)server);
+    return (int32_t)ui_syscall(UI_LAN_GET_SERVER_PING, (intptr_t)source,
+                               (intptr_t)server);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001da80..0x4001da8e
@@ -417,7 +477,8 @@ int32_t trap_LAN_GetServerPing(int32_t source, int32_t server)
 // Exact same-module PPC symbol: trap_LAN_ServerIsDirty.
 qboolean trap_LAN_ServerIsDirty(int32_t source, int32_t server)
 {
-    return (qboolean)ui_syscall(UI_LAN_SERVER_IS_DIRTY, (intptr_t)source, (intptr_t)server);
+    return (qboolean)ui_syscall(UI_LAN_SERVER_IS_DIRTY,
+                                (intptr_t)source, (intptr_t)server);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001db80..0x4001db8d
@@ -442,5 +503,6 @@ void trap_LAN_SaveCachedServers(void)
 // index, buffer, buffer-size argument order; PPC supplies the trap_Argv name.
 void trap_Argv(int32_t index, char *buffer, int32_t bufferSize)
 {
-    ui_syscall(UI_ARGV, (intptr_t)index, (intptr_t)buffer, (intptr_t)bufferSize);
+    ui_syscall(UI_ARGV, (intptr_t)index, (intptr_t)buffer,
+               (intptr_t)bufferSize);
 }

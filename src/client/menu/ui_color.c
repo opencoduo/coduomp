@@ -6,13 +6,17 @@
  * keeps the interpolated x87 value live while storing the binary32 result and
  * performing the [0,1] clamp comparisons.
  */
-void LerpColor(vec4_t output, const vec4_t from, const vec4_t to, float fraction)
+void LerpColor(vec4_t output, const vec4_t from, const vec4_t to,
+               float fraction)
 {
     int32_t component;
 
     for (component = 0; component < 4; ++component) {
         long double value =
-            (long double)from[component] + (long double)fraction * ((long double)to[component] - (long double)from[component]);
+            (long double)from[component] +
+            (long double)fraction *
+                ((long double)to[component] -
+                 (long double)from[component]);
 
         output[component] = (float)value;
         if (value < 0.0L) {

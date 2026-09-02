@@ -19,7 +19,8 @@ void XModelSurfsFree(fileData_t *fileData)
 
 void XModelPartsFree(fileData_t *fileData)
 {
-    XModelPartNameTable *table = fileData->data.xmodelParts->partNameTableSlot->partNameTable;
+    XModelPartNameTable *table =
+        fileData->data.xmodelParts->partNameTableSlot->partNameTable;
 
     for (int32_t partIndex = 0; partIndex < table->count; ++partIndex) {
         SL_RemoveRefToString(table->handles[partIndex]);
@@ -37,7 +38,9 @@ void XModelFree(fileData_t *fileData)
             continue;
         }
 
-        for (int32_t surfaceIndex = 0; surfaceIndex < lod->surfaceCount; ++surfaceIndex) {
+        for (int32_t surfaceIndex = 0;
+             surfaceIndex < lod->surfaceCount;
+             ++surfaceIndex) {
             SL_RemoveRefToString(lod->surfaceNameTable[surfaceIndex]);
         }
         lod->surfaceNameTable = NULL;

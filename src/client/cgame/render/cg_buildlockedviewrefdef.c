@@ -59,7 +59,10 @@ void CG_BuildLockedViewRefdef(void)
     // 0x30040375..0x30040381 + 0x30040396: fov angle = atan2(size, cg_lockedViewSize)
     //   * (360/pi). The FILDs push (double)size then (double)cg_lockedViewSize;
     //   FPATAN computes atan2(ST1, ST0) = atan2(size, cg_lockedViewSize).
-    long double fovDeg = coduo_x87_atan2l((long double)viewSize, (long double)cg_lockedViewSize) * (long double)RAD_TO_DEG_TIMES_TWO;
+    long double fovDeg =
+        coduo_x87_atan2l((long double)viewSize,
+                                (long double)cg_lockedViewSize) *
+        (long double)RAD_TO_DEG_TIMES_TWO;
 
     // 0x30040387..0x3004038c: cg.refdef width = height = size+2 (square).
     cg_refdef.width = (uint32_t)viewSize;

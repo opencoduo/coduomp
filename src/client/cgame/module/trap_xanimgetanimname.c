@@ -56,8 +56,10 @@ const char *trap_XAnimGetAnimName(uint32_t packed)
      * (MOVZX EAX, word). Both are handed to the trap as 32-bit args in that
      * order after the id.
      */
-    int32_t treeHandle = (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT);
-    int32_t animIndex = (int32_t)(packed & 0xffffu);
+    int32_t treeHandle =
+        (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT);
+    int32_t animIndex  = (int32_t)(packed & 0xffffu);
 
-    return (const char *)(intptr_t)cgame_syscall(CG_XANIM_GET_ANIM_NAME, treeHandle, animIndex);
+    return (const char *)(intptr_t)cgame_syscall(CG_XANIM_GET_ANIM_NAME,
+                                                 treeHandle, animIndex);
 }

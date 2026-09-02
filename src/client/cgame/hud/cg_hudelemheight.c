@@ -28,7 +28,8 @@
  * animated height in ST0.
  */
 
-long double CG_HudElemHeight(const hudElem_t *elem, const cgAlignedDrawItem *item)
+long double CG_HudElemHeight(const hudElem_t *elem,
+                                   const cgAlignedDrawItem *item)
 {
     /* long double: in the animated case `value` receives CG_HudElemShaderHeight's
      * raw st(0) return, and the clamp at 0x30029a5a FCOMs it against

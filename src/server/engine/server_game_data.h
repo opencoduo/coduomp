@@ -18,7 +18,8 @@ extern playerState_t *sv_gameClients;
 extern int32_t sv_gameClientSize;
 extern svEntity_t sv_entities[MAX_GENTITIES];
 
-void SV_LocateGameData(sharedEntity_t *gentities, int32_t numGentities, int32_t sizeofGentity, playerState_t *clients,
+void SV_LocateGameData(sharedEntity_t *gentities, int32_t numGentities,
+                       int32_t sizeofGentity, playerState_t *clients,
                        int32_t sizeofGameClient);
 int32_t SV_NumForGentity(const sharedEntity_t *gentity);
 sharedEntity_t *SV_GentityNum(int32_t entityNum);

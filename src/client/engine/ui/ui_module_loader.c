@@ -46,16 +46,20 @@ void vm_compat_no_free_slot(void)
 /* NOT_FROM_ORIGINAL_SOURCE: adapts the shared VM lifecycle to the client
  * loader. Native cgame/UI modules consume vectors, while the native game
  * module retains its variadic game_syscall_t contract. */
-void *vm_compat_load_library(const char *moduleName, char *loadedPath, vmMain_t *entryPoint, vmDllSyscall_t variadicSyscall,
+void *vm_compat_load_library(const char *moduleName, char *loadedPath,
+                             vmMain_t *entryPoint,
+                             vmDllSyscall_t variadicSyscall,
                              vmSystemCall_t vectorSyscall)
 {
 #if UINTPTR_MAX == UINT32_MAX
     (void)vectorSyscall;
-    return Sys_LoadDll(moduleName, loadedPath, entryPoint, variadicSyscall);
+    return Sys_LoadDll(moduleName, loadedPath, entryPoint,
+                       variadicSyscall);
 #else
     coduo_module_syscall_t moduleSyscall = vectorSyscall;
     if (strcmp(moduleName, "game") == 0) {
-        _Static_assert(sizeof(moduleSyscall) == sizeof(variadicSyscall), "native VM syscall pointer size mismatch");
+        _Static_assert(sizeof(moduleSyscall) == sizeof(variadicSyscall),
+                       "native VM syscall pointer size mismatch");
         memcpy(&moduleSyscall, &variadicSyscall, sizeof(moduleSyscall));
     }
     return Sys_LoadDll(moduleName, loadedPath, entryPoint, moduleSyscall);
@@ -65,7 +69,8 @@ void *vm_compat_load_library(const char *moduleName, char *loadedPath, vmMain_t 
 /* NOT_FROM_ORIGINAL_SOURCE: retains the client's localized DLL-load fatal. */
 void vm_compat_load_failure(void)
 {
-    Com_Error(ERR_FATAL, "%s\n", Sys_LocalizeString("WIN_UNABLE_LOAD_DLL_BODY"));
+    Com_Error(ERR_FATAL, "%s\n",
+              Sys_LocalizeString("WIN_UNABLE_LOAD_DLL_BODY"));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: client VM_Free ignores an already-empty handle
@@ -107,12 +112,16 @@ void CL_InitUI(void)
         Com_Error(ERR_FATAL, "VM_Create on UI failed");
     }
 
-    apiVersion = VM_Call(coduo_uiVm, UIVM_GET_API_VERSION, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    apiVersion = VM_Call(coduo_uiVm, UIVM_GET_API_VERSION,
+                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (apiVersion != UIVM_API_VERSION) {
-        Com_Error(ERR_FATAL, "User Interface is version %d, expected %d", (int32_t)apiVersion, UIVM_API_VERSION);
+        Com_Error(ERR_FATAL,
+                  "User Interface is version %d, expected %d",
+                  (int32_t)apiVersion, UIVM_API_VERSION);
     }
 
-    (void)VM_Call(coduo_uiVm, UIVM_INIT, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(coduo_uiVm, UIVM_INIT,
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* Source: CoDUOMP.exe 0x0041c370..0x0041c38d.
@@ -123,7 +132,8 @@ int32_t UI_usesUniqueCDKey(void)
     if (coduo_uiVm == NULL) {
         return 0;
     }
-    return VM_Call(coduo_uiVm, UIVM_USES_UNIQUE_CD_KEY, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) == 1;
+    return VM_Call(coduo_uiVm, UIVM_USES_UNIQUE_CD_KEY,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) == 1;
 }
 
 /* Source: CoDUOMP.exe 0x0041c390..0x0041c3a8.
@@ -134,7 +144,8 @@ int32_t UI_checkKeyExec(int32_t key)
     if (coduo_uiVm == NULL) {
         return 0;
     }
-    return (int32_t)VM_Call(coduo_uiVm, UIVM_CHECK_EXEC_KEY, key, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return (int32_t)VM_Call(coduo_uiVm, UIVM_CHECK_EXEC_KEY,
+                            key, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* Source: CoDUOMP.exe 0x0041c3b0..0x0041c3cc.
@@ -145,5 +156,8 @@ qboolean UI_GameCommand(void)
     if (coduo_uiVm == NULL)
         return qfalse;
 
-    return (qboolean)VM_Call(coduo_uiVm, UIVM_CONSOLE_COMMAND, cls.realtime, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return (qboolean)VM_Call(
+        coduo_uiVm, UIVM_CONSOLE_COMMAND,
+        cls.realtime, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0);
 }

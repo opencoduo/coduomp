@@ -25,9 +25,12 @@ void SetViewportAndScissor(void)
     qglMatrixMode(GL_PROJECTION);
     qglLoadMatrixf(backEnd.viewParms.projectionMatrix);
     qglMatrixMode(GL_MODELVIEW);
-    qglViewport(backEnd.viewParms.viewportX, backEnd.viewParms.viewportY, backEnd.viewParms.viewportWidth,
+    qglViewport(backEnd.viewParms.viewportX, backEnd.viewParms.viewportY,
+                backEnd.viewParms.viewportWidth,
                 backEnd.viewParms.viewportHeight);
-    qglScissor(backEnd.viewParms.viewportX, backEnd.viewParms.viewportY, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight);
+    qglScissor(backEnd.viewParms.viewportX, backEnd.viewParms.viewportY,
+               backEnd.viewParms.viewportWidth,
+               backEnd.viewParms.viewportHeight);
 }
 
 /* Source: CoDUOMP.exe 0x004be640..0x004be8ea.
@@ -59,7 +62,9 @@ void RB_BeginDrawingView(void)
      * (rendererFogCount == 0 OR RDF_SKYBOX_PORTAL). A prior pass had
      * (rendererFogCount != 0 && portal). */
     if (cg_shadows->integer == 2 ||
-        (r_measureOverdraw->integer != 0 && (rendererFogCount == 0 || (refdefFlags & RDF_SKYBOX_PORTAL) != 0))) {
+        (r_measureOverdraw->integer != 0 &&
+         (rendererFogCount == 0 ||
+          (refdefFlags & RDF_SKYBOX_PORTAL) != 0))) {
         clearBits = GL_STENCIL_BUFFER_BIT;
     }
 
@@ -72,23 +77,34 @@ void RB_BeginDrawingView(void)
          * independently derived portal-active marker at 0x04884da8. */
         if (rendererFogCount != 0) {
             if ((refdefFlags & RDF_SKYBOX_PORTAL) != 0) {
-                if (r_fastsky->integer == 0 && (refdefFlags & RDF_NOWORLDMODEL) == 0) {
+                if (r_fastsky->integer == 0 &&
+                    (refdefFlags & RDF_NOWORLDMODEL) == 0) {
                     if (portalFog->registered && portalFog->clearScreen) {
-                        qglClearColor(portalFog->color[0], portalFog->color[1], portalFog->color[2], portalFog->color[3]);
+                        qglClearColor(portalFog->color[0],
+                                      portalFog->color[1],
+                                      portalFog->color[2],
+                                      portalFog->color[3]);
                         clearBits |= GL_COLOR_BUFFER_BIT;
                     }
                 } else {
                     clearBits |= GL_COLOR_BUFFER_BIT;
                     if (portalFog->registered) {
-                        qglClearColor(portalFog->color[0], portalFog->color[1], portalFog->color[2], portalFog->color[3]);
-                    } else if (rendererCurrentFogIndex > 0 && worldFog->registered) {
-                        qglClearColor(worldFog->color[0], worldFog->color[1], worldFog->color[2], worldFog->color[3]);
+                        qglClearColor(portalFog->color[0],
+                                      portalFog->color[1],
+                                      portalFog->color[2],
+                                      portalFog->color[3]);
+                    } else if (rendererCurrentFogIndex > 0 &&
+                               worldFog->registered) {
+                        qglClearColor(worldFog->color[0], worldFog->color[1],
+                                      worldFog->color[2], worldFog->color[3]);
                     } else {
                         const float clearColor = tr.identityLight * 0.5f;
-                        qglClearColor(clearColor, clearColor, clearColor, 1.0f);
+                        qglClearColor(clearColor, clearColor, clearColor,
+                                      1.0f);
                     }
                 }
-            } else if (rendererCurrentFogIndex > 0 && worldFog->registered) {
+            } else if (rendererCurrentFogIndex > 0 &&
+                       worldFog->registered) {
                 if ((refdefFlags & RDF_DRAW_SKYBOX) != 0) {
                     /* 0x004be7ef CMP worldFog->mode,GL_LINEAR(0x2601); the COLOR-bit OR
                      * at 0x4be806 runs on the fall-through, i.e. mode == GL_LINEAR. A
@@ -100,7 +116,8 @@ void RB_BeginDrawingView(void)
                 }
 
                 if ((clearBits & GL_COLOR_BUFFER_BIT) != 0) {
-                    qglClearColor(worldFog->color[0], worldFog->color[1], worldFog->color[2], worldFog->color[3]);
+                    qglClearColor(worldFog->color[0], worldFog->color[1],
+                                  worldFog->color[2], worldFog->color[3]);
                 }
             }
         } else if ((refdefFlags & RDF_NOWORLDMODEL) != 0) {
@@ -108,13 +125,15 @@ void RB_BeginDrawingView(void)
         } else if (r_fastsky->integer != 0) {
             clearBits |= GL_COLOR_BUFFER_BIT;
             if (worldFog->registered) {
-                qglClearColor(worldFog->color[0], worldFog->color[1], worldFog->color[2], worldFog->color[3]);
+                qglClearColor(worldFog->color[0], worldFog->color[1],
+                              worldFog->color[2], worldFog->color[3]);
             } else {
                 const float clearColor = tr.identityLight * 0.5f;
                 qglClearColor(clearColor, clearColor, clearColor, 1.0f);
             }
         } else if (worldFog->registered && worldFog->clearScreen) {
-            qglClearColor(worldFog->color[0], worldFog->color[1], worldFog->color[2], worldFog->color[3]);
+            qglClearColor(worldFog->color[0], worldFog->color[1],
+                          worldFog->color[2], worldFog->color[3]);
             clearBits |= GL_COLOR_BUFFER_BIT;
         }
     }

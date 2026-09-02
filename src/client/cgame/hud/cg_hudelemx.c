@@ -46,9 +46,11 @@
 // cgAlignedDrawItem whose +0x08 field is width and whose +0x00 field receives
 // this result. The HUDELEM_ALIGN_* enum is shared in player_state_types.h.
 
-_Static_assert(offsetof(cgAlignedDrawItem, width) == 0x08, "cgAlignedDrawItem.width at +0x08");
+_Static_assert(offsetof(cgAlignedDrawItem, width) == 0x08,
+               "cgAlignedDrawItem.width at +0x08");
 
-long double CG_HudElemX(const hudElem_t *node, const cgAlignedDrawItem *item)
+long double CG_HudElemX(const hudElem_t *node,
+                                  const cgAlignedDrawItem *item)
 {
     /*
      * 0x30029a93..0x30029a9d: duration = node->moveTime (signed, [EAX+0x58]),
@@ -74,7 +76,8 @@ long double CG_HudElemX(const hudElem_t *node, const cgAlignedDrawItem *item)
          * SUB, [0x304831b0] - [EAX+0x54]). If elapsed >= duration the window has
          * fully elapsed (signed JGE at 0x30029aaa): use the settled value.
          */
-        elapsed = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)node->moveStartTime);
+        elapsed = coduo_int32_from_bits((uint32_t)cg_time -
+                                   (uint32_t)node->moveStartTime);
         if (elapsed < duration) {
             interpolating = qtrue;
         }
@@ -96,9 +99,13 @@ long double CG_HudElemX(const hudElem_t *node, const cgAlignedDrawItem *item)
          * multiply/FIADD with no FSTP DWORD, so the implicit conversions stay exact
          * (an explicit cast would round under -std=c11). */
         int32_t prev = node->moveFromX;
-        int32_t delta = coduo_int32_from_bits((uint32_t)node->x - (uint32_t)prev);
-        int32_t numer = coduo_int32_from_bits((uint32_t)delta * (uint32_t)elapsed);
-        value = (long double)prev + (long double)numer * ((long double)1.0f / (long double)duration);
+        int32_t delta = coduo_int32_from_bits((uint32_t)node->x -
+                                        (uint32_t)prev);
+        int32_t numer = coduo_int32_from_bits((uint32_t)delta *
+                                        (uint32_t)elapsed);
+        value = (long double)prev +
+                (long double)numer *
+                    ((long double)1.0f / (long double)duration);
     } else {
         /*
          * 0x30029ad5: settled -> value = node->x (FILD [EAX+0x4], no FSTP -> the
@@ -119,7 +126,8 @@ long double CG_HudElemX(const hudElem_t *node, const cgAlignedDrawItem *item)
     switch (node->alignX) {
     case HUDELEM_ALIGN_CENTER:
         /* 0x30029aee: FLD item->width; FMUL 0.5f; FSUBP -> value - width*0.5 */
-        value = value - (long double)item->width * (long double)0.5f;
+        value = value -
+                (long double)item->width * (long double)0.5f;
         break;
     case HUDELEM_ALIGN_END:
         /* 0x30029ae7: FSUB item->width -> value - width */

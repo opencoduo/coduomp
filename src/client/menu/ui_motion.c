@@ -42,7 +42,9 @@ static int32_t ui_motion_abs_i32(int32_t value)
     return value < 0 ? -value : value;
 }
 
-void Menu_TransitionItemByName(menuDef_t *menu, const char *name, rectDef_t rectFrom, rectDef_t rectTo, int32_t time, float amount)
+void Menu_TransitionItemByName(menuDef_t *menu, const char *name,
+                               rectDef_t rectFrom, rectDef_t rectTo,
+                               int32_t time, float amount)
 {
     const int32_t count = Menu_ItemsMatchingGroup(menu, name);
     int32_t index;
@@ -75,13 +77,17 @@ void Menu_TransitionItemByName(menuDef_t *menu, const char *name, rectDef_t rect
 
         /* Conversion and store are interleaved by lane in both binaries. */
         delta = ui_motion_delta_to_i32(rectTo.x, rectFrom.x);
-        window->rectEffects2.x = (float)((double)ui_motion_abs_i32(delta) * velocityScale);
+        window->rectEffects2.x =
+            (float)((double)ui_motion_abs_i32(delta) * velocityScale);
         delta = ui_motion_delta_to_i32(rectTo.y, rectFrom.y);
-        window->rectEffects2.y = (float)((double)ui_motion_abs_i32(delta) * velocityScale);
+        window->rectEffects2.y =
+            (float)((double)ui_motion_abs_i32(delta) * velocityScale);
         delta = ui_motion_delta_to_i32(rectTo.w, rectFrom.w);
-        window->rectEffects2.w = (float)((double)ui_motion_abs_i32(delta) * velocityScale);
+        window->rectEffects2.w =
+            (float)((double)ui_motion_abs_i32(delta) * velocityScale);
         delta = ui_motion_delta_to_i32(rectTo.h, rectFrom.h);
-        window->rectEffects2.h = (float)((double)ui_motion_abs_i32(delta) * velocityScale);
+        window->rectEffects2.h =
+            (float)((double)ui_motion_abs_i32(delta) * velocityScale);
 
         parent = item->parent;
         if (parent == NULL) {
@@ -100,7 +106,8 @@ void Menu_TransitionItemByName(menuDef_t *menu, const char *name, rectDef_t rect
         }
         if (window->border != 0) {
             itemX = (double)savedParentX + (double)window->borderSize;
-            itemY = (float)((double)savedParentY + (double)window->borderSize);
+            itemY = (float)((double)savedParentY +
+                            (double)window->borderSize);
         } else {
             itemX = parentX;
             itemY = savedParentY;
@@ -109,7 +116,8 @@ void Menu_TransitionItemByName(menuDef_t *menu, const char *name, rectDef_t rect
         window->rect.w = window->rectClient.w;
         window->rect.h = window->rectClient.h;
         window->rect.x = (float)(itemX + (double)window->rectClient.x);
-        window->rect.y = (float)((double)itemY + (double)window->rectClient.y);
+        window->rect.y = (float)((double)itemY +
+                                 (double)window->rectClient.y);
         item->textRect.w = 0.0f;
         item->textRect.h = 0.0f;
     }
@@ -123,14 +131,20 @@ void Script_Transition(itemDef_t *item, char **arguments)
     int32_t time;
     float amount;
 
-    if (!String_Parse(arguments, &name) || !Rect_Parse(arguments, &rectFrom) || !Rect_Parse(arguments, &rectTo) ||
-        !Int_Parse(arguments, &time) || !Float_Parse(arguments, &amount)) {
+    if (!String_Parse(arguments, &name) ||
+        !Rect_Parse(arguments, &rectFrom) ||
+        !Rect_Parse(arguments, &rectTo) ||
+        !Int_Parse(arguments, &time) ||
+        !Float_Parse(arguments, &amount)) {
         return;
     }
-    Menu_TransitionItemByName(item->parent, name, rectFrom, rectTo, time, amount);
+    Menu_TransitionItemByName(item->parent, name, rectFrom, rectTo,
+                              time, amount);
 }
 
-void Menu_OrbitItemByName(menuDef_t *menu, const char *name, float startX, float startY, float centerX, float centerY, int32_t time)
+void Menu_OrbitItemByName(menuDef_t *menu, const char *name,
+                          float startX, float startY, float centerX,
+                          float centerY, int32_t time)
 {
     const int32_t count = Menu_ItemsMatchingGroup(menu, name);
     int32_t index;
@@ -176,7 +190,8 @@ void Menu_OrbitItemByName(menuDef_t *menu, const char *name, float startX, float
         }
         if (window->border != 0) {
             itemX = (double)savedParentX + (double)window->borderSize;
-            itemY = (float)((double)savedParentY + (double)window->borderSize);
+            itemY = (float)((double)savedParentY +
+                            (double)window->borderSize);
         } else {
             itemX = parentX;
             itemY = savedParentY;
@@ -202,9 +217,14 @@ void Script_Orbit(itemDef_t *item, char **arguments)
 
     /* Direct stack tracing of both exact PE32 bodies proves this token order.
      * Cgame's former startY/startX local spelling was reversed. */
-    if (!String_Parse(arguments, &name) || !Float_Parse(arguments, &startX) || !Float_Parse(arguments, &startY) ||
-        !Float_Parse(arguments, &centerX) || !Float_Parse(arguments, &centerY) || !Int_Parse(arguments, &time)) {
+    if (!String_Parse(arguments, &name) ||
+        !Float_Parse(arguments, &startX) ||
+        !Float_Parse(arguments, &startY) ||
+        !Float_Parse(arguments, &centerX) ||
+        !Float_Parse(arguments, &centerY) ||
+        !Int_Parse(arguments, &time)) {
         return;
     }
-    Menu_OrbitItemByName(item->parent, name, startX, startY, centerX, centerY, time);
+    Menu_OrbitItemByName(item->parent, name, startX, startY,
+                         centerX, centerY, time);
 }

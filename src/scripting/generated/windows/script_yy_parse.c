@@ -30,7 +30,8 @@ enum {
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00490f30_00490f4b.mcode.
  * Name: exact same-module Mac symbol __yy_memcpy. The generated parser uses
  * this overlap-agnostic forward byte copy only while growing its stacks. */
-static void __yy_memcpy(void *destination, const void *source, int32_t byteCount)
+static void __yy_memcpy(void *destination, const void *source,
+                        int32_t byteCount)
 {
     uint8_t *write = destination;
     const uint8_t *read = source;
@@ -56,11 +57,14 @@ static qboolean ScriptYyTableIndexIsValid(int32_t tableIndex)
 /* NOT_FROM_ORIGINAL_SOURCE: names the generated yycheck table probe. */
 static qboolean ScriptYyCheckMatches(int32_t tableIndex, int32_t value)
 {
-    return ScriptYyTableIndexIsValid(tableIndex) != qfalse && script_yycheck[tableIndex] == value;
+    return ScriptYyTableIndexIsValid(tableIndex) != qfalse &&
+           script_yycheck[tableIndex] == value;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: names the generated state/value stack push. */
-static void ScriptYyPushValue(int16_t state, sval_u value, uint32_t sourcePos)
+static void ScriptYyPushValue(int16_t state,
+                              sval_u value,
+                              uint32_t sourcePos)
 {
     script_yyssp++;
     *script_yyssp = state;
@@ -245,8 +249,10 @@ static void ScriptYyRunReduction(int32_t rule)
     switch (rule) {
     case 1:
         script_parseRootValue.source.value =
-            (uintptr_t)coduomp_script_ast_new_script_root(script_yyval.source.value, script_yyvsp[0].source.value);
-        script_parseRoot = (scr_ast_node_t *)script_parseRootValue.source.value;
+            (uintptr_t)coduomp_script_ast_new_script_root(
+                script_yyval.source.value, script_yyvsp[0].source.value);
+        script_parseRoot =
+            (scr_ast_node_t *)script_parseRootValue.source.value;
         break;
     case 2:
         node_pos(&local_10, script_yyval.source.sourcePos);
@@ -256,128 +262,110 @@ static void ScriptYyRunReduction(int32_t rule)
         node_pos(&local_14, script_yyvsp[-1].source.sourcePos);
         node_pos(&local_18, script_yyvsp[0].source.sourcePos);
         node_pos(&local_1c, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node5(SCR_AST_KIND_BOOL_OR, script_yyval.source.value, local_1c.source.value,
-                                                     script_yyvsp[0].source.value, local_18.source.value, local_14.source.value);
+        script_yyval.source.value = (uintptr_t)node5(SCR_AST_KIND_BOOL_OR, script_yyval.source.value, local_1c.source.value, script_yyvsp[0].source.value, local_18.source.value, local_14.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 4:
         node_pos(&local_20, script_yyvsp[-1].source.sourcePos);
         node_pos(&local_24, script_yyvsp[0].source.sourcePos);
         node_pos(&local_28, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node5(SCR_AST_KIND_BOOL_AND, script_yyval.source.value, local_28.source.value,
-                                                     script_yyvsp[0].source.value, local_24.source.value, local_20.source.value);
+        script_yyval.source.value = (uintptr_t)node5(SCR_AST_KIND_BOOL_AND, script_yyval.source.value, local_28.source.value, script_yyvsp[0].source.value, local_24.source.value, local_20.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 5:
         node_pos(&local_2c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_30, 0x3d);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_30.source.value, local_2c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_30.source.value, local_2c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 6:
         node_pos(&local_34, script_yyvsp[-1].source.sourcePos);
         node1_(&local_38, 0x3e);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_38.source.value, local_34.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_38.source.value, local_34.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 7:
         node_pos(&local_3c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_40, 0x3f);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_40.source.value, local_3c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_40.source.value, local_3c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 8:
         node_pos(&local_44, script_yyvsp[-1].source.sourcePos);
         node1_(&local_48, 0x40);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_48.source.value, local_44.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_48.source.value, local_44.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 9:
         node_pos(&local_4c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_50, 0x41);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_50.source.value, local_4c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_50.source.value, local_4c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 10:
         node_pos(&local_54, script_yyvsp[-1].source.sourcePos);
         node1_(&local_58, 0x42);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_58.source.value, local_54.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_58.source.value, local_54.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0xb:
         node_pos(&local_5c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_60, 0x43);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_60.source.value, local_5c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_60.source.value, local_5c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0xc:
         node_pos(&local_64, script_yyvsp[-1].source.sourcePos);
         node1_(&local_68, 0x44);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_68.source.value, local_64.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_68.source.value, local_64.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0xd:
         node_pos(&local_6c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_70, 0x45);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_70.source.value, local_6c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_70.source.value, local_6c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0xe:
         node_pos(&local_74, script_yyvsp[-1].source.sourcePos);
         node1_(&local_78, 0x46);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_78.source.value, local_74.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_78.source.value, local_74.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0xf:
         node_pos(&local_7c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_80, 0x47);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_80.source.value, local_7c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_80.source.value, local_7c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0x10:
         node_pos(&local_84, script_yyvsp[-1].source.sourcePos);
         node1_(&local_88, 0x48);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_88.source.value, local_84.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_88.source.value, local_84.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0x11:
         node_pos(&local_8c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_90, 0x49);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_90.source.value, local_8c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_90.source.value, local_8c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0x12:
         node_pos(&local_94, script_yyvsp[-1].source.sourcePos);
         node1_(&local_98, 0x4a);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_98.source.value, local_94.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_98.source.value, local_94.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0x13:
         node_pos(&local_9c, script_yyvsp[-1].source.sourcePos);
         node1_(&local_a0, 0x4b);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_a0.source.value, local_9c.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_a0.source.value, local_9c.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0x14:
         node_pos(&local_a4, script_yyvsp[-1].source.sourcePos);
         node1_(&local_a8, 0x4c);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value,
-                                                     local_a8.source.value, local_a4.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_BINARY_OPERATOR, script_yyval.source.value, script_yyvsp[0].source.value, local_a8.source.value, local_a4.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         break;
     case 0x15:
@@ -412,8 +400,7 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x1f:
         node_pos(&local_c4, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_SCRIPT_FUNCTION_REF, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_c4.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_SCRIPT_FUNCTION_REF, script_yyval.source.value, script_yyvsp[0].source.value, local_c4.source.value);
         script_pendingScriptLoadCount++;
         break;
     case 0x20:
@@ -422,8 +409,7 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x21:
         node_pos(&local_cc, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_SCRIPT_FUNCTION_REF, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_cc.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_SCRIPT_FUNCTION_REF, script_yyval.source.value, script_yyvsp[0].source.value, local_cc.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-1].source.sourcePos;
         script_pendingScriptLoadCount++;
         break;
@@ -437,8 +423,7 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x24:
         node_pos(&local_d8, script_yyvsp[-2].source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node2(SCR_AST_KIND_FUNCTION_POINTER_CALL, script_yyvsp[-2].source.value, local_d8.source.value);
+        script_yyval.source.value = (uintptr_t)node2(SCR_AST_KIND_FUNCTION_POINTER_CALL, script_yyvsp[-2].source.value, local_d8.source.value);
         break;
     case 0x25:
         node_pos(&local_dc, script_yyval.source.sourcePos);
@@ -447,22 +432,18 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x26:
         node_pos(&local_e0, script_yyvsp[0].source.sourcePos);
         node_pos(&local_e4, script_yyval.source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node3(SCR_AST_KIND_METHOD_CALL, script_yyvsp[0].source.value, local_e4.source.value, local_e0.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_METHOD_CALL, script_yyvsp[0].source.value, local_e4.source.value, local_e0.source.value);
         script_yyval.source.sourcePos = script_yyvsp[0].source.sourcePos;
         break;
     case 0x27:
         node_pos(&local_e8, script_yyvsp[-2].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_FUNCTION_CALL_VALUE, script_yyval.source.value,
-                                                     script_yyvsp[-1].source.value, local_e8.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_FUNCTION_CALL_VALUE, script_yyval.source.value, script_yyvsp[-1].source.value, local_e8.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-2].source.sourcePos;
         break;
     case 0x28:
         node_pos(&local_ec, script_yyvsp[-2].source.sourcePos);
         node_pos(&local_f0, script_yyval.source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node5(SCR_AST_KIND_METHOD_CALL_VALUE, script_yyval.source.value, script_yyvsp[-3].source.value,
-                             script_yyvsp[-1].source.value, local_f0.source.value, local_ec.source.value);
+        script_yyval.source.value = (uintptr_t)node5(SCR_AST_KIND_METHOD_CALL_VALUE, script_yyval.source.value, script_yyvsp[-3].source.value, script_yyvsp[-1].source.value, local_f0.source.value, local_ec.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-2].source.sourcePos;
         break;
     case 0x29:
@@ -479,13 +460,11 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x2c:
         node_pos(&local_100, script_yyval.source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node2(SCR_AST_KIND_NEGATED_INTEGER_LITERAL, script_yyvsp[0].source.value, local_100.source.value);
+        script_yyval.source.value = (uintptr_t)node2(SCR_AST_KIND_NEGATED_INTEGER_LITERAL, script_yyvsp[0].source.value, local_100.source.value);
         break;
     case 0x2d:
         node_pos(&local_104, script_yyval.source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node2(SCR_AST_KIND_NEGATED_FLOAT_LITERAL, script_yyvsp[0].source.value, local_104.source.value);
+        script_yyval.source.value = (uintptr_t)node2(SCR_AST_KIND_NEGATED_FLOAT_LITERAL, script_yyvsp[0].source.value, local_104.source.value);
         break;
     case 0x2e:
         node_pos(&local_108, script_yyval.source.sourcePos);
@@ -553,15 +532,13 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x3e:
         node_pos(&local_140, script_yyvsp[0].source.sourcePos);
         node_pos(&local_144, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_OBJECT_STRING_REF, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_144.source.value, local_140.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_OBJECT_STRING_REF, script_yyval.source.value, script_yyvsp[0].source.value, local_144.source.value, local_140.source.value);
         script_yyval.source.sourcePos = script_yyvsp[0].source.sourcePos;
         break;
     case 0x3f:
         node_pos(&local_148, script_yyvsp[-1].source.sourcePos);
         node_pos(&local_14c, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF, script_yyval.source.value,
-                                                     script_yyvsp[-1].source.value, local_14c.source.value, local_148.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF, script_yyval.source.value, script_yyvsp[-1].source.value, local_14c.source.value, local_148.source.value);
         script_yyval.source.sourcePos = script_yyvsp[-2].source.sourcePos;
         break;
     case 0x40:
@@ -573,13 +550,11 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x42:
         node_pos(&local_154, script_yyvsp[-1].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_154.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_154.source.value);
         break;
     case 0x43:
         node_pos(&local_158, script_yyval.source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node2(SCR_AST_KIND_RETURN_VALUE_STATEMENT, script_yyvsp[0].source.value, local_158.source.value);
+        script_yyval.source.value = (uintptr_t)node2(SCR_AST_KIND_RETURN_VALUE_STATEMENT, script_yyvsp[0].source.value, local_158.source.value);
         break;
     case 0x44:
         node_pos(&local_15c, script_yyval.source.sourcePos);
@@ -588,8 +563,7 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x45:
         node_pos(&local_160, script_yyval.source.sourcePos);
         node_pos(&local_164, script_yyvsp[0].source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node3(SCR_AST_KIND_WAIT_STATEMENT, script_yyvsp[0].source.value, local_164.source.value, local_160.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_WAIT_STATEMENT, script_yyvsp[0].source.value, local_164.source.value, local_160.source.value);
         break;
     case 0x46:
         node_pos(&local_168, script_yyval.source.sourcePos);
@@ -602,86 +576,72 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x48:
         node_pos(&local_170, script_yyvsp[-1].source.sourcePos);
         node1_(&local_174, 0x3d);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_174.source.value, local_170.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_174.source.value, local_170.source.value);
         break;
     case 0x49:
         node_pos(&local_178, script_yyvsp[-1].source.sourcePos);
         node1_(&local_17c, 0x3e);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_17c.source.value, local_178.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_17c.source.value, local_178.source.value);
         break;
     case 0x4a:
         node_pos(&local_180, script_yyvsp[-1].source.sourcePos);
         node1_(&local_184, 0x3f);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_184.source.value, local_180.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_184.source.value, local_180.source.value);
         break;
     case 0x4b:
         node_pos(&local_188, script_yyvsp[-1].source.sourcePos);
         node1_(&local_18c, 0x46);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_18c.source.value, local_188.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_18c.source.value, local_188.source.value);
         break;
     case 0x4c:
         node_pos(&local_190, script_yyvsp[-1].source.sourcePos);
         node1_(&local_194, 0x47);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_194.source.value, local_190.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_194.source.value, local_190.source.value);
         break;
     case 0x4d:
         node_pos(&local_198, script_yyvsp[-1].source.sourcePos);
         node1_(&local_19c, 0x48);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_19c.source.value, local_198.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_19c.source.value, local_198.source.value);
         break;
     case 0x4e:
         node_pos(&local_1a0, script_yyvsp[-1].source.sourcePos);
         node1_(&local_1a4, 0x49);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_1a4.source.value, local_1a0.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_1a4.source.value, local_1a0.source.value);
         break;
     case 0x4f:
         node_pos(&local_1a8, script_yyvsp[-1].source.sourcePos);
         node1_(&local_1ac, 0x4a);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_1ac.source.value, local_1a8.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_1ac.source.value, local_1a8.source.value);
         break;
     case 0x50:
         node_pos(&local_1b0, script_yyvsp[-1].source.sourcePos);
         node1_(&local_1b4, 0x4b);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_1b4.source.value, local_1b0.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_1b4.source.value, local_1b0.source.value);
         break;
     case 0x51:
         node_pos(&local_1b8, script_yyvsp[-1].source.sourcePos);
         node1_(&local_1bc, 0x4c);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[0].source.value, local_1bc.source.value, local_1b8.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.source.value, script_yyvsp[0].source.value, local_1bc.source.value, local_1b8.source.value);
         break;
     case 0x52:
         node_pos(&local_1c0, script_yyvsp[-3].source.sourcePos);
         node_pos(&local_1c4, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_WAITTILL_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[-1].source.value, local_1c4.source.value, local_1c0.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_WAITTILL_STATEMENT, script_yyval.source.value, script_yyvsp[-1].source.value, local_1c4.source.value, local_1c0.source.value);
         break;
     case 0x53:
         node_pos(&local_1c8, script_yyvsp[-3].source.sourcePos);
         node_pos(&local_1cc, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_WAITTILLMATCH_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[-1].source.value, local_1cc.source.value, local_1c8.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_WAITTILLMATCH_STATEMENT, script_yyval.source.value, script_yyvsp[-1].source.value, local_1cc.source.value, local_1c8.source.value);
         break;
     case 0x54:
         node_pos(&local_1d0, script_yyvsp[-3].source.sourcePos);
         node_pos(&local_1d4, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_NOTIFY_STATEMENT, script_yyval.source.value,
-                                                     script_yyvsp[-1].source.value, local_1d4.source.value, local_1d0.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_NOTIFY_STATEMENT, script_yyval.source.value, script_yyvsp[-1].source.value, local_1d4.source.value, local_1d0.source.value);
         break;
     case 0x55:
         node_pos(&local_1d8, script_yyvsp[-1].source.sourcePos);
         node_pos(&local_1dc, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_ENDON_STATEMENT, script_yyval.source.value, script_yyvsp[-1].source.value,
-                                                     local_1dc.source.value, local_1d8.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_ENDON_STATEMENT, script_yyval.source.value, script_yyvsp[-1].source.value, local_1dc.source.value, local_1d8.source.value);
         break;
     case 0x56:
         node_pos(&local_1e0, script_yyval.source.sourcePos);
@@ -694,8 +654,7 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x58:
         node_pos(&local_1e8, script_yyvsp[-3].source.sourcePos);
         node_pos(&local_1ec, script_yyvsp[-1].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_DO_WHILE_STATEMENT, script_yyvsp[-4].source.value,
-                                                     script_yyvsp[-1].source.value, local_1ec.source.value, local_1e8.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_DO_WHILE_STATEMENT, script_yyvsp[-4].source.value, script_yyvsp[-1].source.value, local_1ec.source.value, local_1e8.source.value);
         break;
     case 0x59:
         script_yyval.source.value = (uintptr_t)node0(0);
@@ -706,36 +665,29 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x5d:
         node_pos(&local_1f4, script_yyvsp[-2].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_IF_STATEMENT, script_yyvsp[-2].source.value, script_yyvsp[0].source.value,
-                                                     local_1f4.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_IF_STATEMENT, script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_1f4.source.value);
         break;
     case 0x5e:
         node_pos(&local_1f8, script_yyvsp[-4].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_IF_ELSE_STATEMENT, script_yyvsp[-4].source.value,
-                                                     script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_1f8.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_IF_ELSE_STATEMENT, script_yyvsp[-4].source.value, script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_1f8.source.value);
         break;
     case 0x5f:
         node_pos(&local_1fc, script_yyval.source.sourcePos);
         node_pos(&local_200, script_yyvsp[-2].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_WHILE_STATEMENT, script_yyvsp[-2].source.value,
-                                                     script_yyvsp[0].source.value, local_200.source.value, local_1fc.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_WHILE_STATEMENT, script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_200.source.value, local_1fc.source.value);
         break;
     case 0x60:
         node_pos(&local_204, script_yyval.source.sourcePos);
         node_pos(&local_208, script_yyvsp[-4].source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node6(SCR_AST_KIND_FOR_STATEMENT, script_yyvsp[-5].source.value, script_yyvsp[-4].source.value,
-                             script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_208.source.value, local_204.source.value);
+        script_yyval.source.value = (uintptr_t)node6(SCR_AST_KIND_FOR_STATEMENT, script_yyvsp[-5].source.value, script_yyvsp[-4].source.value, script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_208.source.value, local_204.source.value);
         break;
     case 0x61:
         node_pos(&local_20c, script_yyvsp[-2].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_SWITCH_STATEMENT, script_yyvsp[-2].source.value,
-                                                     script_yyvsp[0].source.value, local_20c.source.value);
+        script_yyval.source.value = (uintptr_t)node3(SCR_AST_KIND_SWITCH_STATEMENT, script_yyvsp[-2].source.value, script_yyvsp[0].source.value, local_20c.source.value);
         break;
     case 0x62:
         node_pos(&local_210, script_yyval.source.sourcePos);
-        script_yyval.source.value =
-            (uintptr_t)node2(SCR_AST_KIND_DEVELOPER_STATEMENT_BLOCK, script_yyvsp[-1].source.value, local_210.source.value);
+        script_yyval.source.value = (uintptr_t)node2(SCR_AST_KIND_DEVELOPER_STATEMENT_BLOCK, script_yyvsp[-1].source.value, local_210.source.value);
         break;
     case 99:
         script_yyval.source.value = (uintptr_t)node0(0);
@@ -749,8 +701,7 @@ static void ScriptYyRunReduction(int32_t rule)
         script_yyval.source.value = (uintptr_t)node1(SCR_AST_KIND_DEFAULT_STATEMENT, local_218.source.value);
         break;
     case 0x67:
-        script_yyval.source.value =
-            (uintptr_t)append_node((scr_ast_list_t *)script_yyval.source.value, (void *)script_yyvsp[0].source.value);
+        script_yyval.source.value = (uintptr_t)append_node((scr_ast_list_t *)script_yyval.source.value, (void *)script_yyvsp[0].source.value);
         break;
     case 0x68:
         local_21c.source.value = (uintptr_t)node0(0);
@@ -759,8 +710,7 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x69:
         node_pos(&local_224, script_yyvsp[0].source.sourcePos);
         local_220.source.value = (uintptr_t)node2_(script_yyvsp[0].source.value, local_224.source.value);
-        script_yyval.source.value =
-            (uintptr_t)prepend_node((void *)local_220.source.value, (scr_ast_list_item_t **)script_yyval.source.value);
+        script_yyval.source.value = (uintptr_t)prepend_node((void *)local_220.source.value, (scr_ast_list_item_t **)script_yyval.source.value);
         break;
     case 0x6a:
         local_228.source.value = (uintptr_t)node0(0);
@@ -814,8 +764,7 @@ static void ScriptYyRunReduction(int32_t rule)
     case 0x73:
         node_pos(&local_284, script_yyvsp[0].source.sourcePos);
         local_280.source.value = (uintptr_t)node2_(script_yyvsp[0].source.value, local_284.source.value);
-        script_yyval.source.value =
-            (uintptr_t)prepend_node((void *)local_280.source.value, (scr_ast_list_item_t **)script_yyval.source.value);
+        script_yyval.source.value = (uintptr_t)prepend_node((void *)local_280.source.value, (scr_ast_list_item_t **)script_yyval.source.value);
         break;
     case 0x74:
         local_288.source.value = (uintptr_t)node0(0);
@@ -825,13 +774,11 @@ static void ScriptYyRunReduction(int32_t rule)
         break;
     case 0x75:
         node_pos(&local_294, script_yyval.source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_FUNCTION_DEFINITION, script_yyval.source.value,
-                                                     script_yyvsp[-4].source.value, script_yyvsp[-1].source.value, local_294.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_FUNCTION_DEFINITION, script_yyval.source.value, script_yyvsp[-4].source.value, script_yyvsp[-1].source.value, local_294.source.value);
         break;
     case 0x76:
         node_pos(&local_298, script_yyvsp[-7].source.sourcePos);
-        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_DEVELOPER_FUNCTION_DEFINITION, script_yyvsp[-7].source.value,
-                                                     script_yyvsp[-5].source.value, script_yyvsp[-2].source.value, local_298.source.value);
+        script_yyval.source.value = (uintptr_t)node4(SCR_AST_KIND_DEVELOPER_FUNCTION_DEFINITION, script_yyvsp[-7].source.value, script_yyvsp[-5].source.value, script_yyvsp[-2].source.value, local_298.source.value);
         break;
     case 0x77:
         node_pos(&local_29c, script_yyvsp[-2].source.sourcePos);
@@ -850,8 +797,7 @@ static void ScriptYyRunReduction(int32_t rule)
         script_yyval.source.value = (uintptr_t)node0(0);
         break;
     case 0x7b:
-        script_yyval.source.value =
-            (uintptr_t)append_node((scr_ast_list_t *)script_yyval.source.value, (void *)script_yyvsp[-1].source.value);
+        script_yyval.source.value = (uintptr_t)append_node((scr_ast_list_t *)script_yyval.source.value, (void *)script_yyvsp[-1].source.value);
         break;
     case 0x7c:
         local_2ac.source.value = (uintptr_t)node0(0);
@@ -875,28 +821,32 @@ int32_t yyparse(void)
     script_yyvsp = valueStackBase;
     stateStackBase[0] = SCRIPT_YY_INITIAL_STATE;
 
-#define SCRIPT_YY_ENSURE_PUSHABLE() \
-    do { \
-        if (script_yyssp >= &stateStackBase[stackCapacity - 1]) { \
-            if (stackCapacity >= SCRIPT_YYSTACK_MAX_COUNT) { \
-                yyerror(); \
-                return SCRIPT_YY_PARSE_OVERFLOW; \
-            } \
-            int32_t used = (int32_t)(script_yyssp - stateStackBase) + 1; \
-            int32_t newCapacity = stackCapacity * 2; \
-            if (newCapacity > SCRIPT_YYSTACK_MAX_COUNT) { \
-                newCapacity = SCRIPT_YYSTACK_MAX_COUNT; \
-            } \
-            int16_t *newStateStack = CODUOMP_ALLOCA((size_t)newCapacity * sizeof(*newStateStack)); \
-            sval_u *newValueStack = CODUOMP_ALLOCA((size_t)newCapacity * sizeof(*newValueStack)); \
-            __yy_memcpy(newStateStack, stateStackBase, used *(int32_t)sizeof(*newStateStack)); \
-            __yy_memcpy(newValueStack, valueStackBase, used *(int32_t)sizeof(*newValueStack)); \
-            stateStackBase = newStateStack; \
-            valueStackBase = newValueStack; \
-            stackCapacity = newCapacity; \
-            script_yyssp = stateStackBase + used - 1; \
-            script_yyvsp = valueStackBase + used - 1; \
-        } \
+#define SCRIPT_YY_ENSURE_PUSHABLE()                                      \
+    do {                                                                  \
+        if (script_yyssp >= &stateStackBase[stackCapacity - 1]) {          \
+            if (stackCapacity >= SCRIPT_YYSTACK_MAX_COUNT) {              \
+                yyerror();                                                  \
+                return SCRIPT_YY_PARSE_OVERFLOW;                          \
+            }                                                             \
+            int32_t used = (int32_t)(script_yyssp - stateStackBase) + 1;   \
+            int32_t newCapacity = stackCapacity * 2;                      \
+            if (newCapacity > SCRIPT_YYSTACK_MAX_COUNT) {                 \
+                newCapacity = SCRIPT_YYSTACK_MAX_COUNT;                   \
+            }                                                             \
+            int16_t *newStateStack = CODUOMP_ALLOCA(                      \
+                (size_t)newCapacity * sizeof(*newStateStack));            \
+            sval_u *newValueStack = CODUOMP_ALLOCA(             \
+                (size_t)newCapacity * sizeof(*newValueStack));            \
+            __yy_memcpy(newStateStack, stateStackBase,                    \
+                        used * (int32_t)sizeof(*newStateStack));            \
+            __yy_memcpy(newValueStack, valueStackBase,                    \
+                        used * (int32_t)sizeof(*newValueStack));            \
+            stateStackBase = newStateStack;                               \
+            valueStackBase = newValueStack;                               \
+            stackCapacity = newCapacity;                                  \
+            script_yyssp = stateStackBase + used - 1;                     \
+            script_yyvsp = valueStackBase + used - 1;                     \
+        }                                                                 \
     } while (0)
 
     for (;;) {
@@ -927,7 +877,8 @@ int32_t yyparse(void)
 
                     SCRIPT_YY_ENSURE_PUSHABLE();
                     state = action;
-                    ScriptYyPushValue((int16_t)state, script_yylval, script_yylval.source.sourcePos);
+                    ScriptYyPushValue((int16_t)state, script_yylval,
+                                      script_yylval.source.sourcePos);
                     script_yychar = SCRIPT_YY_EMPTY_LOOKAHEAD;
                     if (errorStatus > 0) {
                         errorStatus--;
@@ -962,13 +913,17 @@ int32_t yyparse(void)
 
         errorStatus = 3;
         for (;;) {
-            int32_t errorIndex = script_yypact[*script_yyssp] + SCRIPT_YY_ERROR_TRANSLATED_TOKEN;
-            if (ScriptYyCheckMatches(errorIndex, SCRIPT_YY_ERROR_TRANSLATED_TOKEN) != qfalse) {
+            int32_t errorIndex =
+                script_yypact[*script_yyssp] +
+                SCRIPT_YY_ERROR_TRANSLATED_TOKEN;
+            if (ScriptYyCheckMatches(
+                    errorIndex, SCRIPT_YY_ERROR_TRANSLATED_TOKEN) != qfalse) {
                 int32_t errorState = script_yytable[errorIndex];
                 if (errorState > 0) {
                     SCRIPT_YY_ENSURE_PUSHABLE();
                     state = errorState;
-                    ScriptYyPushValue((int16_t)state, script_yylval, script_yylval.source.sourcePos);
+                    ScriptYyPushValue((int16_t)state, script_yylval,
+                                      script_yylval.source.sourcePos);
                     break;
                 }
             }
@@ -981,28 +936,29 @@ int32_t yyparse(void)
         }
         continue;
 
-    reduce: {
-        int32_t rule = action;
-        int32_t ruleLength = script_yyr2[rule];
-        script_yyval = script_yyvsp[1 - ruleLength];
-        ScriptYyRunReduction(rule);
+reduce: {
+            int32_t rule = action;
+            int32_t ruleLength = script_yyr2[rule];
+            script_yyval = script_yyvsp[1 - ruleLength];
+            ScriptYyRunReduction(rule);
 
-        script_yyssp -= ruleLength;
-        script_yyvsp -= ruleLength;
+            script_yyssp -= ruleLength;
+            script_yyvsp -= ruleLength;
 
-        int32_t lhs = script_yyr1[rule];
-        int32_t nonterminal = lhs - SCRIPT_YY_FIRST_NONTERMINAL;
-        state = *script_yyssp;
-        int32_t gotoIndex = script_yypgoto[nonterminal] + state;
-        if (ScriptYyCheckMatches(gotoIndex, state) != qfalse) {
-            state = script_yytable[gotoIndex];
-        } else {
-            state = script_yydefgoto[nonterminal];
+            int32_t lhs = script_yyr1[rule];
+            int32_t nonterminal = lhs - SCRIPT_YY_FIRST_NONTERMINAL;
+            state = *script_yyssp;
+            int32_t gotoIndex = script_yypgoto[nonterminal] + state;
+            if (ScriptYyCheckMatches(gotoIndex, state) != qfalse) {
+                state = script_yytable[gotoIndex];
+            } else {
+                state = script_yydefgoto[nonterminal];
+            }
+
+            SCRIPT_YY_ENSURE_PUSHABLE();
+            ScriptYyPushValue((int16_t)state, script_yyval,
+                              script_yyval.source.sourcePos);
         }
-
-        SCRIPT_YY_ENSURE_PUSHABLE();
-        ScriptYyPushValue((int16_t)state, script_yyval, script_yyval.source.sourcePos);
-    }
     }
 
 #undef SCRIPT_YY_ENSURE_PUSHABLE

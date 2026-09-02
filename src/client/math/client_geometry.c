@@ -12,7 +12,8 @@
  *   PointBoxDistSqExceeds   0x3004ca90 / 0x40004aa0
  */
 
-void NormalFromPoints(const vec3_t point0, const vec3_t point1, vec3_t normal, const vec3_t point2)
+void NormalFromPoints(const vec3_t point0, const vec3_t point1,
+                      vec3_t normal, const vec3_t point2)
 {
     vec3_t edge1;
     vec3_t edge2;
@@ -25,13 +26,17 @@ void NormalFromPoints(const vec3_t point0, const vec3_t point1, vec3_t normal, c
     edge2[1] = point0[1] - point2[1];
     edge2[2] = point0[2] - point2[2];
     (void)VectorNormalize(edge2);
-    normal[0] = (float)((long double)edge2[2] * edge1[1] - (long double)edge2[1] * edge1[2]);
-    normal[1] = (float)((long double)edge2[0] * edge1[2] - (long double)edge2[2] * edge1[0]);
-    normal[2] = (float)((long double)edge2[1] * edge1[0] - (long double)edge2[0] * edge1[1]);
+    normal[0] = (float)((long double)edge2[2] * edge1[1] -
+                        (long double)edge2[1] * edge1[2]);
+    normal[1] = (float)((long double)edge2[0] * edge1[2] -
+                        (long double)edge2[2] * edge1[0]);
+    normal[2] = (float)((long double)edge2[1] * edge1[0] -
+                        (long double)edge2[0] * edge1[1]);
     (void)VectorNormalize(normal);
 }
 
-void ProjectPointOnLine(vec3_t output, const vec3_t start, const vec3_t point, const vec3_t end)
+void ProjectPointOnLine(vec3_t output, const vec3_t start,
+                        const vec3_t point, const vec3_t end)
 {
     vec3_t pointOffset;
     vec3_t direction;
@@ -54,7 +59,9 @@ void AnglesToAxisNegRight(axis_t output, const vec3_t angles)
     output[1][2] = 0.0f - right[2];
 }
 
-qboolean PointBoxDistSqExceeds(const vec3_t point, const vec3_t corner0, const vec3_t corner1, float maximumDistanceSq)
+qboolean PointBoxDistSqExceeds(const vec3_t point, const vec3_t corner0,
+                               const vec3_t corner1,
+                               float maximumDistanceSq)
 {
     vec3_t delta0;
     vec3_t delta1;
@@ -68,7 +75,8 @@ qboolean PointBoxDistSqExceeds(const vec3_t point, const vec3_t corner0, const v
     delta1[2] = corner1[2] - point[2];
 
     for (int32_t axis = 0; axis < 3; ++axis) {
-        const long double product = (long double)delta1[axis] * delta0[axis];
+        const long double product =
+            (long double)delta1[axis] * delta0[axis];
 
         /* The original x87 parity branch enters for positive or unordered. */
         if (!(product <= 0.0f)) {

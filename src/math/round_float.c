@@ -35,9 +35,11 @@ float RoundFloat(float value, int32_t decimals)
     double fraction;
 
 #if EMULATE_X87
-    scaled = x87f_store_f64(x87f_mul(x87f_load_f64(pow(10.0, exponent)), x87f_load_f32(value)));
+    scaled = x87f_store_f64(x87f_mul(
+        x87f_load_f64(pow(10.0, exponent)), x87f_load_f32(value)));
 #else
-    scaled = (double)((long double)pow(10.0, exponent) * (long double)value);
+    scaled = (double)((long double)pow(10.0, exponent) *
+                      (long double)value);
 #endif
     fraction = modf(scaled, &whole);
 
@@ -48,8 +50,10 @@ float RoundFloat(float value, int32_t decimals)
     }
 
 #if EMULATE_X87
-    return x87f_store_f32(x87f_mul(x87f_load_f64(pow(0.1, exponent)), x87f_load_f64(whole)));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_f64(pow(0.1, exponent)), x87f_load_f64(whole)));
 #else
-    return (float)((long double)pow(0.1, exponent) * (long double)whole);
+    return (float)((long double)pow(0.1, exponent) *
+                   (long double)whole);
 #endif
 }

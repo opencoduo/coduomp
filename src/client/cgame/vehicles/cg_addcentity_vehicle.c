@@ -41,9 +41,7 @@
 /* Config-string base added to cent->currentState.iHeadIcon before the CG_ConfigString lookup
  * that yields the head-icon shader name (ADD ECX,0x25 at 0x30021812). Same +37 base
  * used by CG_AddHeadIcon (0x30032ac0) and the sibling builder at 0x300217ef. */
-enum {
-    CG_HEADICON_CONFIGSTRING_BASE = 37
-};
+enum { CG_HEADICON_CONFIGSTRING_BASE = 37 };
 
 /* Vertical lift (world units) applied to the DObj model's lighting origin: the entity
  * origin plus 32 units in Z. 0x3007bdd0 == 32.0f. */
@@ -54,9 +52,7 @@ enum {
 #define CG_MS_TO_SECONDS 0.001f
 
 /* Fixed yaw passed to the vehicle head-icon sprite (PUSH 0x64 at 0x30021833). */
-enum {
-    CG_VEHICLE_HEADICON_YAW = 100
-};
+enum { CG_VEHICLE_HEADICON_YAW = 100 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: rate-limit the two warnings added by the bounded
  * vehicle head-icon compatibility path. A hostile snapshot can otherwise make
@@ -74,8 +70,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)modelIndex >= (uint32_t)CS_MODELS_COUNT) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_AddCEntity_Vehicle: invalid model index %i",
+                  "\x15" "CG_AddCEntity_Vehicle: invalid model index %i",
                   modelIndex);
         return;
     }
@@ -87,7 +82,8 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* 0x3002169e..0x300216b3: handle = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number).
      * A zero handle means no DObj skeleton -> nothing to render, and no head icon. */
     entityNum = cent->currentState.number;
-    struct DObj_s *dobj = (struct DObj_s *)cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
+    struct DObj_s *dobj = (struct DObj_s *)cgame_syscall(
+        CG_DOBJ_GET_HANDLE, entityNum);
     if (dobj == NULL)
         return;
 
@@ -119,7 +115,9 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
      * Instead of CG_General's CG_SetupWeaponLightingOrigin call, the vehicle path fills
      * the lighting origin inline: X/Y from lerpOrigin, Z = lerpOrigin[2] + 32. */
     uint32_t currentTime = cg_time;
-    long double lightingZ = (long double)cent->lerpOrigin[2] + (long double)CG_VEHICLE_LIGHTING_ORIGIN_ZLIFT;
+    long double lightingZ =
+        (long double)cent->lerpOrigin[2] +
+        (long double)CG_VEHICLE_LIGHTING_ORIGIN_ZLIFT;
     int32_t miscTime = cent->miscTime;
     memcpy(&re.lightingOrigin[0], &cent->lerpOrigin[0], sizeof(re.lightingOrigin[0]));
     memcpy(&re.lightingOrigin[1], &cent->lerpOrigin[1], sizeof(re.lightingOrigin[1]));
@@ -132,10 +130,10 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     re.shaderTime = (float)((long double)ageMs * (long double)CG_MS_TO_SECONDS);
 
     /* DObj handle, owning centity, render kind, and flags (0x30021746..0x30021763). */
-    re.renderfx = (int32_t)(RF_DOBJ_MODEL | RF_LIGHTING_ORIGIN); /* 0x2080 */
+    re.renderfx    = (int32_t)(RF_DOBJ_MODEL | RF_LIGHTING_ORIGIN); /* 0x2080 */
     re.dobj = dobj;                                                   /* re+0x90 = ESI */
-    re.owner = cent;                                           /* re+0x94 = EBX */
-    re.reType = RT_MODEL;                                       /* re+0x00 = 1 */
+    re.owner       = cent;                                           /* re+0x94 = EBX */
+    re.reType      = RT_MODEL;                                       /* re+0x00 = 1 */
 
     /* 0x3002176b: trap_R_AddRefEntityToScene(&re) (LEA EAX,&re; PUSH; PUSH 0x3d; call). */
     trap_R_AddRefEntityToScene(&re);
@@ -156,13 +154,15 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
 
     /* When the local player is spectating in first person and following an entity, and
      * the followed entity IS this vehicle centity, suppress the icon (you are it). */
-    if ((cg_snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 && cg_snap->ps.viewLockedEntityNum == cent->currentState.number)
+    if ((cg_snap->ps.entityStateFlags & EF_IN_VEHICLE) != 0 &&
+        cg_snap->ps.viewLockedEntityNum == cent->currentState.number)
         return;
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)vehicleClient >= (uint32_t)MAX_CLIENTS) {
         if (cgame_compat_reported_invalid_vehicle_occupant == qfalse) {
-            Com_Printf("WARNING: rejected invalid vehicle occupant %i\n", vehicleClient);
+            Com_Printf("WARNING: rejected invalid vehicle occupant %i\n",
+                       vehicleClient);
             cgame_compat_reported_invalid_vehicle_occupant = qtrue;
         }
         return;
@@ -184,7 +184,8 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)driverClientNum >= (uint32_t)MAX_CLIENTS) {
         if (cgame_compat_reported_invalid_vehicle_driver == qfalse) {
-            Com_Printf("WARNING: rejected invalid vehicle driver %i\n", driverClientNum);
+            Com_Printf("WARNING: rejected invalid vehicle driver %i\n",
+                       driverClientNum);
             cgame_compat_reported_invalid_vehicle_driver = qtrue;
         }
         return;
@@ -198,8 +199,7 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)localClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_AddCEntity_Vehicle: "
+                  "\x15" "CG_AddCEntity_Vehicle: "
                   "invalid local client number %i",
                   localClientNum);
         return;
@@ -225,7 +225,9 @@ void CG_AddCEntity_Vehicle(centity_t *cent /* EBX */)
 
     /* Resolve and register the icon shader; draw it over the vehicle if valid.
      * (0x30021812..0x3002183c) */
-    int32_t iconConfigStringIndex = coduo_int32_from_bits((uint32_t)headIconCsIndex + (uint32_t)CG_HEADICON_CONFIGSTRING_BASE);
+    int32_t iconConfigStringIndex = coduo_int32_from_bits(
+        (uint32_t)headIconCsIndex +
+        (uint32_t)CG_HEADICON_CONFIGSTRING_BASE);
     const char *iconName = CG_ConfigString(iconConfigStringIndex);
     qhandle_t material = CG_RegisterMaterial(iconName, 5);
     if (material != 0) {

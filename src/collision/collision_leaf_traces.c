@@ -32,10 +32,14 @@ extern cvar_t *cm_noCurves;
  * source keeps those already-shared boundaries explicit without changing the
  * data flow.
  */
-void CM_TestInLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
+void CM_TestInLeaf(traceWork_t *traceWork,
+                   const collisionLeaf_t *leaf)
 {
-    for (int32_t leafBrushIndex = 0; leafBrushIndex < (int32_t)leaf->numLeafBrushes; ++leafBrushIndex) {
-        const int32_t brushIndex = cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
+    for (int32_t leafBrushIndex = 0;
+         leafBrushIndex < (int32_t)leaf->numLeafBrushes;
+         ++leafBrushIndex) {
+        const int32_t brushIndex =
+            cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
         collisionBrush_t *const brush = &cm_brushes[brushIndex];
 
         if (brush->checkcount == cm_checkcount) {
@@ -57,9 +61,13 @@ void CM_TestInLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
         return;
     }
 
-    for (int32_t leafSurfaceIndex = 0; leafSurfaceIndex < (int32_t)leaf->numLeafTerrainPatches; ++leafSurfaceIndex) {
-        const int32_t terrainPatchIndex = cm_leafsurfaces[leaf->firstLeafTerrainPatch + leafSurfaceIndex];
-        collisionTerrainPatch_t *const terrainPatch = &cm_terrainPatches[terrainPatchIndex];
+    for (int32_t leafSurfaceIndex = 0;
+         leafSurfaceIndex < (int32_t)leaf->numLeafTerrainPatches;
+         ++leafSurfaceIndex) {
+        const int32_t terrainPatchIndex =
+            cm_leafsurfaces[leaf->firstLeafTerrainPatch + leafSurfaceIndex];
+        collisionTerrainPatch_t *const terrainPatch =
+            &cm_terrainPatches[terrainPatchIndex];
 
         if (terrainPatch->checkcount == cm_checkcount) {
             continue;
@@ -72,9 +80,11 @@ void CM_TestInLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
 
         qboolean hit;
         if (terrainPatch->curveCollide != NULL) {
-            hit = CM_PositionTestInPatchCollide(traceWork, terrainPatch->curveCollide);
+            hit = CM_PositionTestInPatchCollide(
+                traceWork, terrainPatch->curveCollide);
         } else {
-            hit = CM_PositionTestInTerrainCollide(traceWork, terrainPatch->terrainCollide);
+            hit = CM_PositionTestInTerrainCollide(
+                traceWork, terrainPatch->terrainCollide);
         }
 
         if (hit != qfalse) {
@@ -86,10 +96,14 @@ void CM_TestInLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
     }
 }
 
-void CM_TraceThroughLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
+void CM_TraceThroughLeaf(traceWork_t *traceWork,
+                         const collisionLeaf_t *leaf)
 {
-    for (int32_t leafBrushIndex = 0; leafBrushIndex < (int32_t)leaf->numLeafBrushes; ++leafBrushIndex) {
-        const int32_t brushIndex = cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
+    for (int32_t leafBrushIndex = 0;
+         leafBrushIndex < (int32_t)leaf->numLeafBrushes;
+         ++leafBrushIndex) {
+        const int32_t brushIndex =
+            cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
         collisionBrush_t *const brush = &cm_brushes[brushIndex];
 
         if (brush->checkcount == cm_checkcount) {
@@ -111,9 +125,13 @@ void CM_TraceThroughLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
         return;
     }
 
-    for (int32_t leafSurfaceIndex = 0; leafSurfaceIndex < (int32_t)leaf->numLeafTerrainPatches; ++leafSurfaceIndex) {
-        const int32_t terrainPatchIndex = cm_leafsurfaces[leaf->firstLeafTerrainPatch + leafSurfaceIndex];
-        collisionTerrainPatch_t *const terrainPatch = &cm_terrainPatches[terrainPatchIndex];
+    for (int32_t leafSurfaceIndex = 0;
+         leafSurfaceIndex < (int32_t)leaf->numLeafTerrainPatches;
+         ++leafSurfaceIndex) {
+        const int32_t terrainPatchIndex =
+            cm_leafsurfaces[leaf->firstLeafTerrainPatch + leafSurfaceIndex];
+        collisionTerrainPatch_t *const terrainPatch =
+            &cm_terrainPatches[terrainPatchIndex];
 
         if (terrainPatch->checkcount == cm_checkcount) {
             continue;
@@ -131,10 +149,14 @@ void CM_TraceThroughLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf)
     }
 }
 
-int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork, const collisionLeaf_t *leaf)
+int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork,
+                                 const collisionLeaf_t *leaf)
 {
-    for (int32_t leafBrushIndex = 0; leafBrushIndex < (int32_t)leaf->numLeafBrushes; ++leafBrushIndex) {
-        const int32_t brushIndex = cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
+    for (int32_t leafBrushIndex = 0;
+         leafBrushIndex < (int32_t)leaf->numLeafBrushes;
+         ++leafBrushIndex) {
+        const int32_t brushIndex =
+            cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
         collisionBrush_t *const brush = &cm_brushes[brushIndex];
 
         if (brush->checkcount == cm_checkcount) {
@@ -146,7 +168,8 @@ int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork, const collisionLe
             continue;
         }
 
-        const int32_t sightHit = CM_SightTraceThroughBrush(traceWork, brush);
+        const int32_t sightHit =
+            CM_SightTraceThroughBrush(traceWork, brush);
         if (sightHit != 0) {
             return sightHit;
         }
@@ -156,9 +179,13 @@ int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork, const collisionLe
         return 0;
     }
 
-    for (int32_t leafSurfaceIndex = 0; leafSurfaceIndex < (int32_t)leaf->numLeafTerrainPatches; ++leafSurfaceIndex) {
-        const int32_t terrainPatchIndex = cm_leafsurfaces[leaf->firstLeafTerrainPatch + leafSurfaceIndex];
-        collisionTerrainPatch_t *const terrainPatch = &cm_terrainPatches[terrainPatchIndex];
+    for (int32_t leafSurfaceIndex = 0;
+         leafSurfaceIndex < (int32_t)leaf->numLeafTerrainPatches;
+         ++leafSurfaceIndex) {
+        const int32_t terrainPatchIndex =
+            cm_leafsurfaces[leaf->firstLeafTerrainPatch + leafSurfaceIndex];
+        collisionTerrainPatch_t *const terrainPatch =
+            &cm_terrainPatches[terrainPatchIndex];
 
         if (terrainPatch->checkcount == cm_checkcount) {
             continue;
@@ -170,7 +197,8 @@ int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork, const collisionLe
         }
 
         if (CM_SightTraceThroughPatch(traceWork, terrainPatch) == qfalse) {
-            return cm_numBrushes + (int32_t)(terrainPatch - cm_terrainPatches) + 1;
+            return cm_numBrushes +
+                   (int32_t)(terrainPatch - cm_terrainPatches) + 1;
         }
     }
 

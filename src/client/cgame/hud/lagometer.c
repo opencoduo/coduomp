@@ -47,7 +47,8 @@ void CG_DrawLagometer(void)
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve the
          * recovered graph as one fixed-size composition while translating its
          * stock right-side anchor to the native widescreen edge. */
-        const float lagometerX = LAGOMETER_X + cgame_compat_right_hud_virtual_offset();
+        const float lagometerX =
+            LAGOMETER_X + cgame_compat_right_hud_virtual_offset();
         float ax;
         float ay;
         float aw;
@@ -60,14 +61,20 @@ void CG_DrawLagometer(void)
 
         trap_R_SetColor(NULL);
         qhandle_t lagometerShader = cgs_lagometerShader;
-        CG_DrawPic(lagometerX, LAGOMETER_Y, LAGOMETER_WIDTH, LAGOMETER_HEIGHT, lagometerShader);
+        CG_DrawPic(lagometerX, LAGOMETER_Y,
+                   LAGOMETER_WIDTH, LAGOMETER_HEIGHT,
+                   lagometerShader);
 
         /* 0x30018c08..0x30018c4c read the four screen scales only after the
          * set-color and background-picture calls have returned. */
-        ax = (float)((long double)cgs_screenXScale * (long double)lagometerX);
-        ay = (float)((long double)cgs_screenYScale * (long double)LAGOMETER_Y);
-        aw = (float)((long double)cgs_screenXScale * (long double)LAGOMETER_WIDTH);
-        ah = (float)((long double)cgs_screenYScale * (long double)LAGOMETER_HEIGHT);
+        ax = (float)((long double)cgs_screenXScale *
+                     (long double)lagometerX);
+        ay = (float)((long double)cgs_screenYScale *
+                     (long double)LAGOMETER_Y);
+        aw = (float)((long double)cgs_screenXScale *
+                     (long double)LAGOMETER_WIDTH);
+        ah = (float)((long double)cgs_screenYScale *
+                     (long double)LAGOMETER_HEIGHT);
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail draws one
          * ring entry per physical pixel.  Modern high-density drawables can
          * make this 48-unit box wider than the 128-entry ring, which wraps the
@@ -88,11 +95,14 @@ void CG_DrawLagometer(void)
          * RELOADED at 0x30018c66 for vscale, but `mid` at 0x30018c5e adds ay to the
          * UNROUNDED ah*(1/3) still in st0. rangeRaw carries that 80-bit value. */
         {
-            long double rangeRaw = (long double)ah * (long double)LAGOMETER_FRAME_RANGE_RECIP;
+            long double rangeRaw =
+                (long double)ah *
+                (long double)LAGOMETER_FRAME_RANGE_RECIP;
             range = (float)rangeRaw;               /* 0x30018c5a FST  [ESP+0xc]  */
             mid = (float)((long double)ay + rangeRaw); /* 0x30018c5e FADD [ESP+0x20] */
         }
-        vscale = (float)((long double)range * (long double)LAGOMETER_FRAME_SCALE_RECIP); /* 0x30018c66 reload */
+        vscale = (float)((long double)range *
+                         (long double)LAGOMETER_FRAME_SCALE_RECIP); /* 0x30018c66 reload */
 
         int32_t a = 0;
         for (;;) {
@@ -102,40 +112,57 @@ void CG_DrawLagometer(void)
             if (!(aFloat < renderedSampleLimit)) {
                 break;
             }
-            uint32_t indexBits = (uint32_t)cg_lagometerFrameCount - (uint32_t)a - 1u;
+            uint32_t indexBits = (uint32_t)cg_lagometerFrameCount -
+                                 (uint32_t)a - 1u;
             int32_t index = (int32_t)(indexBits & (uint32_t)(LAG_SAMPLES - 1));
-            long double valueRaw = (long double)cg_lagometerFrameSamples[index] * (long double)vscale;
+            long double valueRaw =
+                (long double)cg_lagometerFrameSamples[index] *
+                (long double)vscale;
             float value = (float)valueRaw;
 
             if (valueRaw > 0.0L) {
                 if (currentColorState != LAG_COLOR_STATE_FRAME_POSITIVE) {
                     currentColorState = LAG_COLOR_STATE_FRAME_POSITIVE;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_YELLOW, (intptr_t)&color[0]);
+                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_YELLOW,
+                                  (intptr_t)&color[0]);
                     trap_R_SetColor(color);
                 }
                 if (value > range) {
                     value = range;
                 }
-                const long double sampleOffset = (long double)aFloat * (long double)renderedSampleStep;
-                float drawX = (float)((long double)ax + (long double)aw - sampleOffset);
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
+                float drawX = (float)((long double)ax + (long double)aw -
+                                      sampleOffset);
                 float drawY = (float)((long double)mid - (long double)value);
-                trap_R_DrawStretchPic(CG_FloatBits(drawX), CG_FloatBits(drawY), CG_FloatBits(renderedColumnWidth), CG_FloatBits(value),
-                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                trap_R_DrawStretchPic(CG_FloatBits(drawX),
+                                      CG_FloatBits(drawY),
+                                      CG_FloatBits(renderedColumnWidth),
+                                      CG_FloatBits(value),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       cgs_media_whiteShader);
             } else if (value < 0.0f) {
                 value = -value;
                 if (currentColorState != LAG_COLOR_STATE_FRAME_NEGATIVE) {
                     currentColorState = LAG_COLOR_STATE_FRAME_NEGATIVE;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_BLUE, (intptr_t)&color[0]);
+                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_BLUE,
+                                  (intptr_t)&color[0]);
                     trap_R_SetColor(color);
                 }
                 if (value > range) {
                     value = range;
                 }
-                const long double sampleOffset = (long double)aFloat * (long double)renderedSampleStep;
-                float drawX = (float)((long double)ax + (long double)aw - sampleOffset);
-                trap_R_DrawStretchPic(CG_FloatBits(drawX), CG_FloatBits(mid), CG_FloatBits(renderedColumnWidth), CG_FloatBits(value),
-                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
+                float drawX = (float)((long double)ax + (long double)aw -
+                                      sampleOffset);
+                trap_R_DrawStretchPic(CG_FloatBits(drawX),
+                                      CG_FloatBits(mid),
+                                      CG_FloatBits(renderedColumnWidth),
+                                      CG_FloatBits(value),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       cgs_media_whiteShader);
             }
             a = coduo_int32_from_bits((uint32_t)a + 1u);
@@ -145,9 +172,12 @@ void CG_DrawLagometer(void)
          * reload is absent: vscale's FMUL at 0x30018dda multiplies the UNROUNDED
          * ah*0.5f still in st0. `range` itself is the rounded copy. */
         {
-            long double rangeRaw = (long double)ah * (long double)LAGOMETER_SNAPSHOT_RANGE_FACTOR;
+            long double rangeRaw =
+                (long double)ah *
+                (long double)LAGOMETER_SNAPSHOT_RANGE_FACTOR;
             range = (float)rangeRaw;                            /* 0x30018dd6 FST */
-            vscale = (float)(rangeRaw * (long double)LAGOMETER_SNAPSHOT_SCALE_RECIP);   /* 0x30018dda FMUL */
+            vscale = (float)(rangeRaw *
+                (long double)LAGOMETER_SNAPSHOT_SCALE_RECIP);   /* 0x30018dda FMUL */
         }
         a = 0;
         for (;;) {
@@ -155,54 +185,76 @@ void CG_DrawLagometer(void)
             if (!(aFloat < renderedSampleLimit)) {
                 break;
             }
-            uint32_t indexBits = (uint32_t)cg_lagometer.snapshotCount - (uint32_t)a - 1u;
+            uint32_t indexBits = (uint32_t)cg_lagometer.snapshotCount -
+                                 (uint32_t)a - 1u;
             int32_t index = (int32_t)(indexBits & (uint32_t)(LAG_SAMPLES - 1));
-            long double valueRaw = (long double)cg_lagometer.snapshotSamples[index];
+            long double valueRaw =
+                (long double)cg_lagometer.snapshotSamples[index];
             float value = (float)valueRaw;
 
             if (valueRaw > 0.0L) {
-                int32_t wantedColorState = ((cg_lagometer.snapshotFlags[index].bytes[0] & LAG_SNAPSHOT_DELAYED) != 0)
-                                               ? LAG_COLOR_STATE_SNAPSHOT_DELAYED
-                                               : LAG_COLOR_STATE_SNAPSHOT_GOOD;
+                int32_t wantedColorState =
+                    ((cg_lagometer.snapshotFlags[index].bytes[0] &
+                      LAG_SNAPSHOT_DELAYED) != 0)
+                        ? LAG_COLOR_STATE_SNAPSHOT_DELAYED
+                        : LAG_COLOR_STATE_SNAPSHOT_GOOD;
                 if (currentColorState != wantedColorState) {
                     currentColorState = wantedColorState;
                     cgame_syscall(CG_CL_LOOKUP_COLOR,
-                                  wantedColorState == LAG_COLOR_STATE_SNAPSHOT_DELAYED ? LAG_COLOR_YELLOW : LAG_COLOR_GREEN,
+                                  wantedColorState == LAG_COLOR_STATE_SNAPSHOT_DELAYED
+                                      ? LAG_COLOR_YELLOW : LAG_COLOR_GREEN,
                                   (intptr_t)&color[0]);
                     trap_R_SetColor(color);
                 }
                 /* 0x30018e7f FMUL then 0x30018e83 FCOM vs range: the clamp compares
                  * the UNROUNDED product; the only FST of value is at 0x30018e9a,
                  * AFTER the clamp has selected between the product and range. */
-                long double drawnHeightRaw = (long double)value * (long double)vscale;
+                long double drawnHeightRaw =
+                    (long double)value * (long double)vscale;
                 if (drawnHeightRaw > (long double)range) {
                     drawnHeightRaw = (long double)range;
                 }
                 float drawnHeight = (float)drawnHeightRaw;
-                float drawY = (float)((long double)ah + (long double)ay - drawnHeightRaw);
-                const long double sampleOffset = (long double)aFloat * (long double)renderedSampleStep;
-                float drawX = (float)((long double)ax + (long double)aw - sampleOffset);
-                trap_R_DrawStretchPic(CG_FloatBits(drawX), CG_FloatBits(drawY), CG_FloatBits(renderedColumnWidth),
-                                      CG_FloatBits(drawnHeight), CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                                      CG_FloatBits(0.0f), cgs_media_whiteShader);
+                float drawY = (float)((long double)ah + (long double)ay -
+                                      drawnHeightRaw);
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
+                float drawX = (float)((long double)ax + (long double)aw -
+                                      sampleOffset);
+                trap_R_DrawStretchPic(CG_FloatBits(drawX),
+                                      CG_FloatBits(drawY),
+                                      CG_FloatBits(renderedColumnWidth),
+                                      CG_FloatBits(drawnHeight),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                      cgs_media_whiteShader);
             } else if (value < 0.0f) {
                 if (currentColorState != LAG_COLOR_STATE_SNAPSHOT_DROPPED) {
                     currentColorState = LAG_COLOR_STATE_SNAPSHOT_DROPPED;
-                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_RED, (intptr_t)&color[0]);
+                    cgame_syscall(CG_CL_LOOKUP_COLOR, LAG_COLOR_RED,
+                                  (intptr_t)&color[0]);
                     trap_R_SetColor(color);
                 }
-                float drawY = (float)((long double)ah + (long double)ay - (long double)range);
-                const long double sampleOffset = (long double)aFloat * (long double)renderedSampleStep;
-                float drawX = (float)((long double)ax + (long double)aw - sampleOffset);
-                trap_R_DrawStretchPic(CG_FloatBits(drawX), CG_FloatBits(drawY), CG_FloatBits(renderedColumnWidth), CG_FloatBits(range),
-                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                float drawY = (float)((long double)ah + (long double)ay -
+                                      (long double)range);
+                const long double sampleOffset =
+                    (long double)aFloat * (long double)renderedSampleStep;
+                float drawX = (float)((long double)ax + (long double)aw -
+                                      sampleOffset);
+                trap_R_DrawStretchPic(CG_FloatBits(drawX),
+                                      CG_FloatBits(drawY),
+                                      CG_FloatBits(renderedColumnWidth),
+                                      CG_FloatBits(range),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                                      CG_FloatBits(0.0f), CG_FloatBits(0.0f),
                                       cgs_media_whiteShader);
             }
             a = coduo_int32_from_bits((uint32_t)a + 1u);
         }
 
         trap_R_SetColor(NULL);
-        if (cg_nopredict_vmCvar.integer != qfalse || g_synchronousClients_vmCvar.integer != qfalse) {
+        if (cg_nopredict_vmCvar.integer != qfalse ||
+            g_synchronousClients_vmCvar.integer != qfalse) {
             /* 0x30018ffc converts ay first while staging the reverse-order
              * call arguments, then converts ax at 0x3001901e. */
             float labelY = (float)coduo_fp_to_i32_extended((long double)ay);

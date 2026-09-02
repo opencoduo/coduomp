@@ -48,7 +48,9 @@ static void coduo_pc_free_token_list(token_t **tokens)
 /* Source: CoDUOMP.exe 0x00442cd0..0x00443020.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00442cd0_00443021.mcode.
  * Name: exact same-module Mac symbol PC_ReadDefineParms. */
-qboolean PC_ReadDefineParms(source_t *source, const define_t *define, token_t **actualParms, int32_t maxParms)
+qboolean PC_ReadDefineParms(source_t *source, const define_t *define,
+                            token_t **actualParms,
+                            int32_t maxParms)
 {
     token_t token;
     if (PC_ReadSourceToken(source, &token) == qfalse) {
@@ -76,11 +78,13 @@ qboolean PC_ReadDefineParms(source_t *source, const define_t *define, token_t **
 
     while (done == qfalse) {
         if (parmIndex >= maxParms) {
-            SourceError(source, "define %s with too many parms", define->name);
+            SourceError(source, "define %s with too many parms",
+                        define->name);
             goto failure;
         }
         if (parmIndex >= define->numParms) {
-            SourceWarning(source, "define %s has too many parms", define->name);
+            SourceWarning(source, "define %s has too many parms",
+                          define->name);
             goto failure;
         }
 
@@ -130,7 +134,8 @@ qboolean PC_ReadDefineParms(source_t *source, const define_t *define, token_t **
 
 failure:
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    for (int32_t cleanupIndex = 0; cleanupIndex < define->numParms; ++cleanupIndex) {
+    for (int32_t cleanupIndex = 0; cleanupIndex < define->numParms;
+         ++cleanupIndex) {
         coduo_pc_free_token_list(&actualParms[cleanupIndex]);
     }
     return qfalse;
@@ -139,7 +144,8 @@ failure:
 /* Source: CoDUOMP.exe 0x00443030..0x004430d7.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00443030_004430d8.mcode.
  * Name: exact same-module Mac symbol PC_StringizeTokens. */
-qboolean PC_StringizeTokens(token_t *tokens, token_t *token)
+qboolean PC_StringizeTokens(token_t *tokens,
+                            token_t *token)
 {
     token->type = PC_TOKEN_TYPE_STRING;
     token->whitespaceStart = NULL;
@@ -149,7 +155,8 @@ qboolean PC_StringizeTokens(token_t *tokens, token_t *token)
 
     /* NOT_FROM_ORIGINAL_SOURCE: every token, both quotes, and the final NUL
      * must fit before publishing the stringized expansion. */
-    for (token_t *scan = tokens; scan != NULL; scan = scan->next) {
+    for (token_t *scan = tokens; scan != NULL;
+         scan = scan->next) {
         const size_t destinationLength = strlen(token->string);
         const size_t sourceLength = strlen(scan->string);
         if (sourceLength > MAX_TOKEN_CHARS - 1u - destinationLength) {
@@ -168,26 +175,34 @@ qboolean PC_StringizeTokens(token_t *tokens, token_t *token)
 /* Source: CoDUOMP.exe 0x004430e0..0x00443174.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004430e0_00443175.mcode.
  * Name: exact same-module Mac symbol PC_MergeTokens. */
-qboolean PC_MergeTokens(token_t *token, const token_t *next)
+qboolean PC_MergeTokens(token_t *token,
+                        const token_t *next)
 {
-    if (token->type == PC_TOKEN_TYPE_NAME && (next->type == PC_TOKEN_TYPE_NAME || next->type == PC_TOKEN_TYPE_NUMBER)) {
+    if (token->type == PC_TOKEN_TYPE_NAME &&
+        (next->type == PC_TOKEN_TYPE_NAME ||
+         next->type == PC_TOKEN_TYPE_NUMBER)) {
         const size_t tokenLength = strlen(token->string);
         const size_t nextLength = strlen(next->string);
         /* NOT_FROM_ORIGINAL_SOURCE: both complete tokens and the final NUL
          * must fit before changing the destination token. */
-        if (tokenLength >= MAX_TOKEN_CHARS || nextLength >= MAX_TOKEN_CHARS || nextLength > MAX_TOKEN_CHARS - 1u - tokenLength) {
+        if (tokenLength >= MAX_TOKEN_CHARS ||
+            nextLength >= MAX_TOKEN_CHARS ||
+            nextLength > MAX_TOKEN_CHARS - 1u - tokenLength) {
             return qfalse;
         }
         strcat(token->string, next->string);
         return qtrue;
     }
 
-    if (next->type == PC_TOKEN_TYPE_STRING && token->type == PC_TOKEN_TYPE_STRING) {
+    if (next->type == PC_TOKEN_TYPE_STRING &&
+        token->type == PC_TOKEN_TYPE_STRING) {
         const size_t tokenLength = strlen(token->string);
         const size_t nextLength = strlen(next->string);
         /* NOT_FROM_ORIGINAL_SOURCE: both quoted tokens must form one complete
          * terminated token before either input is changed. */
-        if (tokenLength == 0 || nextLength == 0 || tokenLength >= MAX_TOKEN_CHARS || nextLength >= MAX_TOKEN_CHARS ||
+        if (tokenLength == 0 || nextLength == 0 ||
+            tokenLength >= MAX_TOKEN_CHARS ||
+            nextLength >= MAX_TOKEN_CHARS ||
             nextLength - 1u > MAX_TOKEN_CHARS - tokenLength) {
             return qfalse;
         }
@@ -211,7 +226,8 @@ void PC_PrintDefineHashTable(define_t **defineHash)
 #else
         Com_LogPrintf("%4d:", bucket);
 #endif
-        for (define_t *define = defineHash[bucket]; define != NULL; define = define->hashNext) {
+        for (define_t *define = defineHash[bucket]; define != NULL;
+             define = define->hashNext) {
 #if defined(WINDOWS_BEHAVIOR)
             Log_Write(" %s", define->name);
 #else
@@ -259,10 +275,12 @@ void PC_AddDefineToHash(define_t *define, define_t **defineHash)
 /* Source: CoDUOMP.exe 0x00443230..0x00443299.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00443230_0044329a.mcode.
  * Name: exact same-module Mac symbol PC_FindHashedDefine. */
-define_t *PC_FindHashedDefine(define_t **defineHash, const char *name)
+define_t *PC_FindHashedDefine(define_t **defineHash,
+                                 const char *name)
 {
     const uint32_t bucket = PC_NameHash(name);
-    for (define_t *define = defineHash[bucket]; define != NULL; define = define->hashNext) {
+    for (define_t *define = defineHash[bucket]; define != NULL;
+         define = define->hashNext) {
         if (strcmp(define->name, name) == 0)
             return define;
     }
@@ -275,7 +293,8 @@ define_t *PC_FindHashedDefine(define_t **defineHash, const char *name)
  * Role name: the botlib PC_FindDefine list lookup. */
 define_t *PC_FindDefine(define_t *defines, const char *name)
 {
-    for (define_t *define = defines; define != NULL; define = define->next) {
+    for (define_t *define = defines; define != NULL;
+         define = define->next) {
         if (strcmp(define->name, name) == 0)
             return define;
     }
@@ -288,7 +307,8 @@ define_t *PC_FindDefine(define_t *defines, const char *name)
 int32_t PC_FindDefineParm(const define_t *define, const char *name)
 {
     int32_t parmIndex = 0;
-    for (token_t *parm = define->parms; parm != NULL; parm = parm->next, ++parmIndex) {
+    for (token_t *parm = define->parms; parm != NULL;
+         parm = parm->next, ++parmIndex) {
         if (strcmp(parm->string, name) == 0)
             return parmIndex;
     }
@@ -327,11 +347,13 @@ void PC_AddBuiltinDefines(source_t *source)
     const struct pc_builtin_define_s {
         const char *defineName;
         enum pc_builtin_define_e builtinKind;
-    } builtins[] = {{"__LINE__", PC_BUILTIN_LINE},
-                    {"__FILE__", PC_BUILTIN_FILE},
-                    {"__DATE__", PC_BUILTIN_DATE},
-                    {"__TIME__", PC_BUILTIN_TIME},
-                    {NULL, PC_BUILTIN_NONE}};
+    } builtins[] = {
+        {"__LINE__", PC_BUILTIN_LINE},
+        {"__FILE__", PC_BUILTIN_FILE},
+        {"__DATE__", PC_BUILTIN_DATE},
+        {"__TIME__", PC_BUILTIN_TIME},
+        {NULL, PC_BUILTIN_NONE}
+    };
 
     for (int32_t index = 0; builtins[index].defineName != NULL; ++index) {
         const size_t nameLength = strlen(builtins[index].defineName);
@@ -354,14 +376,19 @@ void PC_AddBuiltinDefines(source_t *source)
 /* Source: CoDUOMP.exe 0x00443550..0x0044373e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00443550_0044373f.mcode.
  * Name: exact same-module Mac symbol PC_ExpandBuiltinDefine. */
-qboolean PC_ExpandBuiltinDefine(source_t *source, const token_t *token, const define_t *define, token_t **firstToken, token_t **lastToken)
+qboolean PC_ExpandBuiltinDefine(source_t *source,
+                                const token_t *token,
+                                const define_t *define,
+                                token_t **firstToken,
+                                token_t **lastToken)
 {
     token_t *expanded = PC_CopyToken(token);
 
     switch (define->builtin) {
     case PC_BUILTIN_LINE:
 #if defined(WINDOWS_BEHAVIOR)
-        coduo_crt_snprintf(expanded->string, sizeof(expanded->string), "%d", token->line);
+        coduo_crt_snprintf(expanded->string, sizeof(expanded->string),
+                             "%d", token->line);
 #else
         sprintf(expanded->string, "%d", token->line);
 #endif
@@ -369,11 +396,13 @@ qboolean PC_ExpandBuiltinDefine(source_t *source, const token_t *token, const de
 #if defined(WINDOWS_BEHAVIOR)
         expanded->floatValue = (double)token->line;
 #elif EMULATE_X87
-        coduo_pc_store_token_float80(expanded->floatValue, x87f_load_i32(token->line));
+        coduo_pc_store_token_float80(
+            expanded->floatValue, x87f_load_i32(token->line));
 #else
         {
             const long double lineValue = (long double)token->line;
-            memcpy(expanded->floatValue, &lineValue, PC_X87_EXTENDED_TBYTE_SIZE);
+            memcpy(expanded->floatValue, &lineValue,
+                   PC_X87_EXTENDED_TBYTE_SIZE);
         }
 #endif
         expanded->type = PC_TOKEN_TYPE_NUMBER;
@@ -395,8 +424,12 @@ qboolean PC_ExpandBuiltinDefine(source_t *source, const token_t *token, const de
         const char *timeString = ctime(&rawTime);
 
         strcpy(expanded->string, "\"");
-        strncat(expanded->string, timeString + PC_CTIME_DATE_MONTH_DAY_OFFSET, PC_CTIME_DATE_MONTH_DAY_LENGTH);
-        strncat(expanded->string + PC_CTIME_DATE_MONTH_DAY_LENGTH, timeString + PC_CTIME_DATE_YEAR_OFFSET, PC_CTIME_DATE_YEAR_LENGTH);
+        strncat(expanded->string,
+                timeString + PC_CTIME_DATE_MONTH_DAY_OFFSET,
+                PC_CTIME_DATE_MONTH_DAY_LENGTH);
+        strncat(expanded->string + PC_CTIME_DATE_MONTH_DAY_LENGTH,
+                timeString + PC_CTIME_DATE_YEAR_OFFSET,
+                PC_CTIME_DATE_YEAR_LENGTH);
         strcat(expanded->string, "\"");
         /* NOT_FROM_ORIGINAL_SOURCE: the C runtime retains ownership of the
          * static ctime result; there is intentionally no release here. */
@@ -412,7 +445,8 @@ qboolean PC_ExpandBuiltinDefine(source_t *source, const token_t *token, const de
         const char *timeString = ctime(&rawTime);
 
         strcpy(expanded->string, "\"");
-        strncat(expanded->string, timeString + PC_CTIME_TIME_OFFSET, PC_CTIME_TIME_LENGTH);
+        strncat(expanded->string, timeString + PC_CTIME_TIME_OFFSET,
+                PC_CTIME_TIME_LENGTH);
         strcat(expanded->string, "\"");
         /* NOT_FROM_ORIGINAL_SOURCE: the C runtime retains ownership of the
          * static ctime result; there is intentionally no release here. */
@@ -435,21 +469,29 @@ qboolean PC_ExpandBuiltinDefine(source_t *source, const token_t *token, const de
 /* Source: CoDUOMP.exe 0x00443750..0x00443a9a.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00443750_00443a9b.mcode.
  * Name: exact same-module Mac symbol PC_ExpandDefine. */
-qboolean PC_ExpandDefine(source_t *source, const token_t *token, const define_t *define, token_t **firstToken, token_t **lastToken)
+qboolean PC_ExpandDefine(source_t *source,
+                         const token_t *token,
+                         const define_t *define,
+                         token_t **firstToken,
+                         token_t **lastToken)
 {
     if (define->builtin != 0) {
-        return PC_ExpandBuiltinDefine(source, token, define, firstToken, lastToken);
+        return PC_ExpandBuiltinDefine(source, token, define, firstToken,
+                                      lastToken);
     }
 
     token_t *actualParms[PC_DEFINE_MAX_PARMS];
-    if (define->numParms != 0 && PC_ReadDefineParms(source, define, actualParms, PC_DEFINE_MAX_PARMS) == qfalse) {
+    if (define->numParms != 0 &&
+        PC_ReadDefineParms(source, define, actualParms,
+                           PC_DEFINE_MAX_PARMS) == qfalse) {
         return qfalse;
     }
 
     token_t *first = NULL;
     token_t *last = NULL;
 
-    for (const token_t *scan = define->tokens; scan != NULL; scan = scan->next) {
+    for (const token_t *scan = define->tokens; scan != NULL;
+         scan = scan->next) {
         int32_t parmIndex = PC_DEFINE_PARAMETER_NOT_FOUND;
         if (scan->type == PC_TOKEN_TYPE_NAME)
             parmIndex = PC_FindDefineParm(define, scan->string);
@@ -461,13 +503,16 @@ qboolean PC_ExpandDefine(source_t *source, const token_t *token, const define_t 
                 if (next != NULL)
                     parmIndex = PC_FindDefineParm(define, next->string);
                 if (parmIndex < 0) {
-                    SourceWarning(source, "stringizing operator without define parameter");
+                    SourceWarning(
+                        source,
+                        "stringizing operator without define parameter");
                     continue;
                 }
 
                 scan = next;
                 token_t stringized;
-                if (PC_StringizeTokens(actualParms[parmIndex], &stringized) == qfalse) {
+                if (PC_StringizeTokens(actualParms[parmIndex],
+                                       &stringized) == qfalse) {
                     SourceError(source, "can't stringize tokens");
                     goto failure;
                 }
@@ -485,7 +530,8 @@ qboolean PC_ExpandDefine(source_t *source, const token_t *token, const define_t 
             continue;
         }
 
-        for (token_t *parmToken = actualParms[parmIndex]; parmToken != NULL; parmToken = parmToken->next) {
+        for (token_t *parmToken = actualParms[parmIndex];
+             parmToken != NULL; parmToken = parmToken->next) {
             copy = PC_CopyToken(parmToken);
             copy->next = NULL;
             if (last == NULL)
@@ -499,7 +545,9 @@ qboolean PC_ExpandDefine(source_t *source, const token_t *token, const define_t 
     token_t *mergeToken = first;
     while (mergeToken != NULL) {
         token_t *hashHash = mergeToken->next;
-        if (hashHash == NULL || hashHash->string[0] != '#' || hashHash->string[1] != '#') {
+        if (hashHash == NULL ||
+            hashHash->string[0] != '#' ||
+            hashHash->string[1] != '#') {
             mergeToken = hashHash;
             continue;
         }
@@ -511,7 +559,8 @@ qboolean PC_ExpandDefine(source_t *source, const token_t *token, const define_t 
         }
 
         if (PC_MergeTokens(mergeToken, right) == qfalse) {
-            SourceError(source, "can't merge %s with %s", mergeToken->string, right->string);
+            SourceError(source, "can't merge %s with %s",
+                        mergeToken->string, right->string);
             goto failure;
         }
 
@@ -546,11 +595,14 @@ failure:
 /* Source: CoDUOMP.exe 0x00443aa0..0x00443aef.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00443aa0_00443af0.mcode.
  * Name: exact same-module Mac symbol PC_ExpandDefineIntoSource. */
-qboolean PC_ExpandDefineIntoSource(source_t *source, const token_t *token, const define_t *define)
+qboolean PC_ExpandDefineIntoSource(source_t *source,
+                                   const token_t *token,
+                                   const define_t *define)
 {
     token_t *firstToken;
     token_t *lastToken;
-    if (PC_ExpandDefine(source, token, define, &firstToken, &lastToken) == qfalse) {
+    if (PC_ExpandDefine(source, token, define, &firstToken, &lastToken) ==
+        qfalse) {
         return qfalse;
     }
     if (firstToken == NULL || lastToken == NULL)
@@ -570,7 +622,8 @@ void PC_ConvertPath(char *path)
 {
     char *cursor = path;
     while (*cursor != '\0') {
-        if ((*cursor == '\\' || *cursor == '/') && (cursor[1] == '\\' || cursor[1] == '/')) {
+        if ((*cursor == '\\' || *cursor == '/') &&
+            (cursor[1] == '\\' || cursor[1] == '/')) {
             memmove(cursor, cursor + 1, strlen(cursor));
         } else {
             ++cursor;
@@ -598,7 +651,8 @@ qboolean PC_Directive_include(source_t *source)
         return qtrue;
 
     token_t token;
-    if (PC_ReadSourceToken(source, &token) == qfalse || token.linesCrossed > 0) {
+    if (PC_ReadSourceToken(source, &token) == qfalse ||
+        token.linesCrossed > 0) {
         SourceError(source, "#include without file name");
         return qfalse;
     }
@@ -615,7 +669,8 @@ qboolean PC_Directive_include(source_t *source)
             const size_t nameLength = strlen(token.string);
             /* NOT_FROM_ORIGINAL_SOURCE: the complete base path, include name,
              * and NUL must fit; never substitute a truncated include path. */
-            if (baseLength >= sizeof(includeName) || nameLength > sizeof(includeName) - 1u - baseLength) {
+            if (baseLength >= sizeof(includeName) ||
+                nameLength > sizeof(includeName) - 1u - baseLength) {
                 SourceError(source, "include path is too long");
                 return qfalse;
             }
@@ -624,7 +679,8 @@ qboolean PC_Directive_include(source_t *source)
             script = LoadScriptFile(includeName);
         }
     } else {
-        if (token.type != PC_TOKEN_TYPE_PUNCTUATION || token.string[0] != '<') {
+        if (token.type != PC_TOKEN_TYPE_PUNCTUATION ||
+            token.string[0] != '<') {
             SourceError(source, "#include without file name");
             return qfalse;
         }
@@ -640,7 +696,8 @@ qboolean PC_Directive_include(source_t *source)
                 PC_UnreadSourceToken(source, &token);
                 break;
             }
-            if (token.type == PC_TOKEN_TYPE_PUNCTUATION && token.string[0] == '>')
+            if (token.type == PC_TOKEN_TYPE_PUNCTUATION &&
+                token.string[0] == '>')
                 break;
 
             const size_t tokenLength = strlen(token.string);
@@ -657,7 +714,8 @@ qboolean PC_Directive_include(source_t *source)
         if (token.string[0] != '>')
             SourceWarning(source, "#include missing trailing >");
         if (includeName[0] == '\0') {
-            SourceError(source, "#include without file name between < >");
+            SourceError(source,
+                        "#include without file name between < >");
             return qfalse;
         }
 

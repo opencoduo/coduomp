@@ -56,7 +56,8 @@ int32_t UI_ParseInfos(char *buffer, int32_t maxInfos, char **infos)
             Info_SetValueForKey(info, key, value);
         }
 
-        allocationSize = strlen(info) + strlen(va("%d", UI_INFO_MAX_NUMBER_RESERVE)) + 6;
+        allocationSize = strlen(info) +
+                         strlen(va("%d", UI_INFO_MAX_NUMBER_RESERVE)) + 6;
         allocation = UI_Alloc(allocationSize);
         infos[count] = allocation;
         if (allocation == NULL) {

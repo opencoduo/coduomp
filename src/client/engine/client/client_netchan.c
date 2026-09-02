@@ -18,15 +18,21 @@ enum {
  * CL_Netchan_Encode. */
 void CL_Netchan_Encode(uint8_t *data, int32_t length)
 {
-    const char *const command = clc.serverCommands[clc.serverCommandSequence & (CODUO_RELIABLE_COMMAND_COUNT - 1)];
-    uint8_t key = (uint8_t)cl.serverId ^ (uint8_t)clc.challenge ^ (uint8_t)clc.serverMessageSequence;
+    const char *const command =
+        clc.serverCommands[
+            clc.serverCommandSequence &
+            (CODUO_RELIABLE_COMMAND_COUNT - 1)];
+    uint8_t key = (uint8_t)cl.serverId ^
+                  (uint8_t)clc.challenge ^
+                  (uint8_t)clc.serverMessageSequence;
     int32_t commandIndex = 0;
 
     for (int32_t byteIndex = 0; byteIndex < length; ++byteIndex) {
         if (command[commandIndex] == '\0')
             commandIndex = 0;
 
-        key ^= (uint8_t)((uint8_t)command[commandIndex] << (byteIndex & 1));
+        key ^= (uint8_t)(
+            (uint8_t)command[commandIndex] << (byteIndex & 1));
         ++commandIndex;
         data[byteIndex] ^= key;
     }
@@ -38,15 +44,20 @@ void CL_Netchan_Encode(uint8_t *data, int32_t length)
  * CL_Netchan_Decode. */
 void CL_Netchan_Decode(uint8_t *data, int32_t length)
 {
-    const char *const command = clc.reliableCommands[clc.reliableAcknowledge & (CODUO_RELIABLE_COMMAND_COUNT - 1)];
-    uint8_t key = (uint8_t)clc.challenge ^ (uint8_t)clc.serverMessageSequence;
+    const char *const command =
+        clc.reliableCommands[
+            clc.reliableAcknowledge &
+            (CODUO_RELIABLE_COMMAND_COUNT - 1)];
+    uint8_t key = (uint8_t)clc.challenge ^
+                  (uint8_t)clc.serverMessageSequence;
     int32_t commandIndex = 0;
 
     for (int32_t byteIndex = 0; byteIndex < length; ++byteIndex) {
         if (command[commandIndex] == '\0')
             commandIndex = 0;
 
-        key ^= (uint8_t)((uint8_t)command[commandIndex] << (byteIndex & 1));
+        key ^= (uint8_t)(
+            (uint8_t)command[commandIndex] << (byteIndex & 1));
         ++commandIndex;
         data[byteIndex] ^= key;
     }
@@ -67,9 +78,11 @@ void CL_Netchan_TransmitNextFragment(netchan_t *channel)
  * coduomp/mcode/CoDUOMP/FUN_004174d0_004174ed.mcode.
  * Name and argument order: exact same-module Mac symbol
  * CL_Netchan_Transmit. */
-void CL_Netchan_Transmit(netchan_t *channel, uint8_t *data, int32_t length)
+void CL_Netchan_Transmit(netchan_t *channel, uint8_t *data,
+                         int32_t length)
 {
-    CL_Netchan_Encode(data + CL_NETCHAN_ENCODE_START, length - CL_NETCHAN_ENCODE_START);
+    CL_Netchan_Encode(data + CL_NETCHAN_ENCODE_START,
+                      length - CL_NETCHAN_ENCODE_START);
     Netchan_Transmit(channel, length, data);
 }
 
@@ -109,8 +122,9 @@ void CL_Netchan_UpdateProfileStats(void)
  * network-profile line renderer which was inlined throughout the print body. */
 static void CL_Netchan_DrawProfileString(int32_t y, const char *text)
 {
-    CL_DrawString(CL_NET_PROFILE_DRAW_X, y, text, CL_NET_PROFILE_DRAW_MODE, CL_NET_PROFILE_CHAR_WIDTH, CL_NET_PROFILE_CHAR_HEIGHT,
-                  CL_NET_PROFILE_TEXT_STYLE);
+    CL_DrawString(CL_NET_PROFILE_DRAW_X, y, text,
+                  CL_NET_PROFILE_DRAW_MODE, CL_NET_PROFILE_CHAR_WIDTH,
+                  CL_NET_PROFILE_CHAR_HEIGHT, CL_NET_PROFILE_TEXT_STYLE);
 }
 
 /* Source: CoDUOMP.exe 0x00417610..0x00417b98.
@@ -125,7 +139,8 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
     int32_t y = CL_NET_PROFILE_DRAW_START_Y;
     int32_t sentBytesPerSecond = 0;
     int32_t receivedBytesPerSecond = 0;
-    netProfileInfo_t *const netchanProfile = clc.netchan.profile;
+    netProfileInfo_t *const netchanProfile =
+        clc.netchan.profile;
     netProfileInfo_t *const oobProfile = clc.netProfile;
 
     CL_Netchan_UpdateProfileStats();
@@ -148,7 +163,9 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
         y += 10;
     }
 
-    Com_sprintf(line, sizeof(line), "      Source    bps   max   min frag%%");
+    Com_sprintf(
+        line, sizeof(line),
+        "      Source    bps   max   min frag%%");
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
     } else {
@@ -157,12 +174,20 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
     }
 
     if (oobProfile != NULL) {
-        sentBytesPerSecond = oobProfile->send.bytesPerSecond;
-        receivedBytesPerSecond = oobProfile->receive.bytesPerSecond;
-        Com_sprintf(line, sizeof(line), "    OOB Sent: %5i %5i %5i    -", oobProfile->send.bytesPerSecond, oobProfile->send.maxBytes,
-                    oobProfile->send.minBytes);
+        sentBytesPerSecond =
+            oobProfile->send.bytesPerSecond;
+        receivedBytesPerSecond =
+            oobProfile->receive.bytesPerSecond;
+        Com_sprintf(
+            line, sizeof(line),
+            "    OOB Sent: %5i %5i %5i    -",
+            oobProfile->send.bytesPerSecond,
+            oobProfile->send.maxBytes,
+            oobProfile->send.minBytes);
     } else {
-        Com_sprintf(line, sizeof(line), "    OOB Sent:     0     0     0    -");
+        Com_sprintf(
+            line, sizeof(line),
+            "    OOB Sent:     0     0     0    -");
     }
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
@@ -172,10 +197,16 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
     }
 
     if (oobProfile != NULL) {
-        Com_sprintf(line, sizeof(line), "OOB Recieved: %5i %5i %5i    -", oobProfile->receive.bytesPerSecond, oobProfile->receive.maxBytes,
-                    oobProfile->receive.minBytes);
+        Com_sprintf(
+            line, sizeof(line),
+            "OOB Recieved: %5i %5i %5i    -",
+            oobProfile->receive.bytesPerSecond,
+            oobProfile->receive.maxBytes,
+            oobProfile->receive.minBytes);
     } else {
-        Com_sprintf(line, sizeof(line), "OOB Recieved:     0     0     0    -");
+        Com_sprintf(
+            line, sizeof(line),
+            "OOB Recieved:     0     0     0    -");
     }
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
@@ -185,12 +216,21 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
     }
 
     if (netchanProfile != NULL) {
-        sentBytesPerSecond += netchanProfile->send.bytesPerSecond;
-        receivedBytesPerSecond += netchanProfile->receive.bytesPerSecond;
-        Com_sprintf(line, sizeof(line), "        Sent: %5i %5i %5i  %3i%%", netchanProfile->send.bytesPerSecond,
-                    netchanProfile->send.maxBytes, netchanProfile->send.minBytes, netchanProfile->send.fragmentPercent);
+        sentBytesPerSecond +=
+            netchanProfile->send.bytesPerSecond;
+        receivedBytesPerSecond +=
+            netchanProfile->receive.bytesPerSecond;
+        Com_sprintf(
+            line, sizeof(line),
+            "        Sent: %5i %5i %5i  %3i%%",
+            netchanProfile->send.bytesPerSecond,
+            netchanProfile->send.maxBytes,
+            netchanProfile->send.minBytes,
+            netchanProfile->send.fragmentPercent);
     } else {
-        Com_sprintf(line, sizeof(line), "        Sent:     0     0     0    0%%");
+        Com_sprintf(
+            line, sizeof(line),
+            "        Sent:     0     0     0    0%%");
     }
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
@@ -200,10 +240,17 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
     }
 
     if (netchanProfile != NULL) {
-        Com_sprintf(line, sizeof(line), "    Recieved: %5i %5i %5i  %3i%%", netchanProfile->receive.bytesPerSecond,
-                    netchanProfile->receive.maxBytes, netchanProfile->receive.minBytes, netchanProfile->receive.fragmentPercent);
+        Com_sprintf(
+            line, sizeof(line),
+            "    Recieved: %5i %5i %5i  %3i%%",
+            netchanProfile->receive.bytesPerSecond,
+            netchanProfile->receive.maxBytes,
+            netchanProfile->receive.minBytes,
+            netchanProfile->receive.fragmentPercent);
     } else {
-        Com_sprintf(line, sizeof(line), "    Recieved:     0     0     0    0%%");
+        Com_sprintf(
+            line, sizeof(line),
+            "    Recieved:     0     0     0    0%%");
     }
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
@@ -212,7 +259,9 @@ void CL_Netchan_PrintProfileStats(qboolean printHeader)
         CL_Netchan_DrawProfileString(y, line);
     }
 
-    Com_sprintf(line, sizeof(line), "       Total: %5i", sentBytesPerSecond + receivedBytesPerSecond);
+    Com_sprintf(
+        line, sizeof(line), "       Total: %5i",
+        sentBytesPerSecond + receivedBytesPerSecond);
     if (printHeader != qfalse) {
         Com_Printf("%s\n", line);
     } else {

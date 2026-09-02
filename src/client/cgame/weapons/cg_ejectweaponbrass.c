@@ -108,14 +108,18 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId)
     /* Resolve the eject tag on the firing object; for the local player's own
      * first-person view, eject from the view-weapon DObj (weaponModel + 0x400). */
     snapshot = cg_snap; /* 0x30047c45/0x30047cab: one snapshot-pointer load */
-    if ((snapshot->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 && self->number == snapshot->ps.psClientNum) {
-        objId = coduo_int32_from_bits((uint32_t)weaponIndex + (uint32_t)CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
+    if ((snapshot->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0
+        && self->number == snapshot->ps.psClientNum) {
+        objId = coduo_int32_from_bits(
+            (uint32_t)weaponIndex +
+            (uint32_t)CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
     } else {
         objId = self->number;
     }
 
     boltInfo.entityNum = objId;
-    tagIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_RESOLVE_TAG, objId, (intptr_t)cg_brassEjectTagName));
+    tagIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_RESOLVE_TAG, objId, (intptr_t)cg_brassEjectTagName));
     boltInfo.boneIndex = tagIndex;
     if (tagIndex < 0) {
         return;
@@ -126,5 +130,9 @@ void CG_EjectWeaponBrass(entityState_t *self, int eventId)
      * not retain its pre-syscall value across that call. The origin is the shared
      * brass-effect origin global at 0x301698c0 (the effect is tag-relative),
      * dir is NULL, and &boltInfo is the trailing SFxBoltInfo record. */
-    cgame_syscall(CG_PLAY_EFFECT_ON_TAG, coduo_int32_from_bits(*effectHandleSlot), (intptr_t)cg_brassEffectOrigin, 0, (intptr_t)&boltInfo);
+    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
+                  coduo_int32_from_bits(*effectHandleSlot),
+                  (intptr_t)cg_brassEffectOrigin,
+                  0,
+                        (intptr_t)&boltInfo);
 }

@@ -52,14 +52,17 @@ void CG_DrawExpiringIconGrid(void)
 {
     /* now = (int32_t)cgame_syscall(CG_MILLISECONDS): engine milliseconds. Single dword pushed,
      * left on the stack and folded into the later combined ADD ESP,0x10 cleanup. */
-    int32_t now = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MILLISECONDS));
+    int32_t now = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_MILLISECONDS));
 
     /* CG_GET_EXPIRING_ICON_LIST fills two adjacent stack locals: the list base pointer and the
      * element count. Both &locals are pushed (arg order &count,&list high-to-low),
      * id last; caller cleans them with the same ADD ESP,0x10. */
     const statmon_entry_t *list;
     int32_t count;
-    cgame_syscall(CG_GET_EXPIRING_ICON_LIST, (intptr_t)&list, (intptr_t)&count);
+    cgame_syscall(CG_GET_EXPIRING_ICON_LIST,
+                  (intptr_t)&list,
+                  (intptr_t)&count);
 
     /* Grid cursor in virtual 640x480 space (MOV [esp+8]=2.0f, [esp+0xc]=200.0f). */
     float x = 2.0f;
@@ -90,8 +93,15 @@ void CG_DrawExpiringIconGrid(void)
             screenXValue *= (long double)x;
             float screenX = (float)screenXValue;
 
-            trap_R_DrawStretchPic(CG_FloatBits(screenX), CG_FloatBits(screenY), CG_FloatBits(width), CG_FloatBits(height),
-                                  CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), shaderHandle);
+            trap_R_DrawStretchPic(CG_FloatBits(screenX),
+                                  CG_FloatBits(screenY),
+                                  CG_FloatBits(width),
+                                  CG_FloatBits(height),
+                                  CG_FloatBits(0.0f),
+                                  CG_FloatBits(0.0f),
+                                  CG_FloatBits(1.0f),
+                                  CG_FloatBits(1.0f),
+                                  shaderHandle);
         }
 
         /* Advance the grid cursor for every element (drawn or skipped):

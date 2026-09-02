@@ -62,9 +62,7 @@
  */
 
 /* Valid range of the bytedirs[] direction index (signed compare: 0 <= idx < 162). */
-enum {
-    BYTEDIRS_INDEX_COUNT = NUMVERTEXNORMALS /* 162, 0xa2 */
-};
+enum { BYTEDIRS_INDEX_COUNT = NUMVERTEXNORMALS /* 162, 0xa2 */ };
 
 void CG_Portal(centity_t *cent /* ESI */)
 {
@@ -78,7 +76,8 @@ void CG_Portal(centity_t *cent /* ESI */)
 
     /* 0x3001f481: the z origin dword is fetched before the stack entity is
      * cleared and remains live in EDX until the store at 0x3001f4c1. */
-    memcpy(&originZBits, &cent->lerpOrigin[2], sizeof(originZBits));
+    memcpy(&originZBits, &cent->lerpOrigin[2],
+                     sizeof(originZBits));
 
     /* 0x3001f476..0x3001f49b: aligned frame + REP STOSD zero of 0x9c bytes. */
     memset(&re, 0, sizeof(re));
@@ -86,21 +85,29 @@ void CG_Portal(centity_t *cent /* ESI */)
     /* 0x3001f49d..0x3001f4d0: reproduce the interleaved raw-dword load/store
      * graph. No component travels through an FP register, so NaN payloads and
      * signed-zero bits copy verbatim. */
-    memcpy(&originXBits, &cent->lerpOrigin[0], sizeof(originXBits));
-    memcpy(&originYBits, &cent->lerpOrigin[1], sizeof(originYBits));
+    memcpy(&originXBits, &cent->lerpOrigin[0],
+                     sizeof(originXBits));
+    memcpy(&originYBits, &cent->lerpOrigin[1],
+                     sizeof(originYBits));
     memcpy(&re.origin[0], &originXBits, sizeof(originXBits));
-    memcpy(&oldOriginXBits, &cent->currentState.effectEndOrigin[0], sizeof(oldOriginXBits));
-    memcpy(&re.oldorigin[0], &oldOriginXBits, sizeof(oldOriginXBits));
+    memcpy(&oldOriginXBits, &cent->currentState.effectEndOrigin[0],
+                     sizeof(oldOriginXBits));
+    memcpy(&re.oldorigin[0], &oldOriginXBits,
+                     sizeof(oldOriginXBits));
 
     /* 0x3001f4b4 reads eventParm before publishing origin.y and the remaining
      * endpoint components. The original compare interprets the dword as signed. */
     int32_t dirIndex = coduo_int32_from_bits(cent->currentState.eventParm);
     memcpy(&re.origin[1], &originYBits, sizeof(originYBits));
-    memcpy(&oldOriginYBits, &cent->currentState.effectEndOrigin[1], sizeof(oldOriginYBits));
+    memcpy(&oldOriginYBits, &cent->currentState.effectEndOrigin[1],
+                     sizeof(oldOriginYBits));
     memcpy(&re.origin[2], &originZBits, sizeof(originZBits));
-    memcpy(&oldOriginZBits, &cent->currentState.effectEndOrigin[2], sizeof(oldOriginZBits));
-    memcpy(&re.oldorigin[1], &oldOriginYBits, sizeof(oldOriginYBits));
-    memcpy(&re.oldorigin[2], &oldOriginZBits, sizeof(oldOriginZBits));
+    memcpy(&oldOriginZBits, &cent->currentState.effectEndOrigin[2],
+                     sizeof(oldOriginZBits));
+    memcpy(&re.oldorigin[1], &oldOriginYBits,
+                     sizeof(oldOriginYBits));
+    memcpy(&re.oldorigin[2], &oldOriginZBits,
+                     sizeof(oldOriginZBits));
 
     /* 0x3001f4b4..0x3001f50f: axis[0] (forward) = the byte-encoded direction.
      * The index is compared as a signed int against 0 and 162. */
@@ -139,12 +146,15 @@ void CG_Portal(centity_t *cent /* ESI */)
     /* 0x3001f563..0x3001f5a1: axis[2] = CrossProduct(axis[0], axis[1]) (up), the
      * standard determinant expansion. Each FLD/FMUL pair and FSUBP remains in
      * x87 extended precision until that component's float FSTP. */
-    re.axis[2][0] =
-        (float)((long double)re.axis[0][1] * (long double)re.axis[1][2] - (long double)re.axis[0][2] * (long double)re.axis[1][1]);
-    re.axis[2][1] =
-        (float)((long double)re.axis[0][2] * (long double)re.axis[1][0] - (long double)re.axis[0][0] * (long double)re.axis[1][2]);
-    re.axis[2][2] =
-        (float)((long double)re.axis[0][0] * (long double)re.axis[1][1] - (long double)re.axis[0][1] * (long double)re.axis[1][0]);
+    re.axis[2][0] = (float)(
+        (long double)re.axis[0][1] * (long double)re.axis[1][2] -
+        (long double)re.axis[0][2] * (long double)re.axis[1][1]);
+    re.axis[2][1] = (float)(
+        (long double)re.axis[0][2] * (long double)re.axis[1][0] -
+        (long double)re.axis[0][0] * (long double)re.axis[1][2]);
+    re.axis[2][2] = (float)(
+        (long double)re.axis[0][0] * (long double)re.axis[1][1] -
+        (long double)re.axis[0][1] * (long double)re.axis[1][0]);
 
     /* 0x3001f5a5: trap_R_AddRefEntityToScene(&re). */
     trap_R_AddRefEntityToScene(&re);

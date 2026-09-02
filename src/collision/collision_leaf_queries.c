@@ -38,8 +38,11 @@ void CM_StoreLeafBrushes(cmLeafQueryWork_t *work, int32_t nodeNum)
     const collisionLeaf_t *const leaf = &cm_leafs[-1 - nodeNum];
     collisionBrush_t **const brushes = work->items;
 
-    for (int32_t leafBrushIndex = 0; leafBrushIndex < (int32_t)leaf->numLeafBrushes; ++leafBrushIndex) {
-        const int32_t brushIndex = cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
+    for (int32_t leafBrushIndex = 0;
+         leafBrushIndex < (int32_t)leaf->numLeafBrushes;
+         ++leafBrushIndex) {
+        const int32_t brushIndex =
+            cm_leafbrushes[leaf->firstLeafBrush + leafBrushIndex];
         collisionBrush_t *const brush = &cm_brushes[brushIndex];
 
         if (brush->checkcount == cm_checkcount) {
@@ -48,7 +51,11 @@ void CM_StoreLeafBrushes(cmLeafQueryWork_t *work, int32_t nodeNum)
         brush->checkcount = cm_checkcount;
 
         int32_t axis;
-        for (axis = 0; axis < 3 && !(brush->mins[axis] >= work->maxs[axis]) && !(work->mins[axis] >= brush->maxs[axis]); ++axis) {
+        for (axis = 0;
+             axis < 3 &&
+             !(brush->mins[axis] >= work->maxs[axis]) &&
+             !(work->mins[axis] >= brush->maxs[axis]);
+             ++axis) {
         }
         if (axis != 3) {
             continue;
@@ -68,7 +75,8 @@ void CM_BoxLeafnums_r(cmLeafQueryWork_t *work, int32_t nodeNum)
 {
     while (nodeNum >= 0) {
         const collisionNode_t *const node = &cm_nodes[nodeNum];
-        const int32_t side = BoxOnPlaneSide(work->mins, work->maxs, node->plane);
+        const int32_t side =
+            BoxOnPlaneSide(work->mins, work->maxs, node->plane);
 
         if (side == BOX_ON_PLANE_SIDE_FRONT) {
             nodeNum = node->children[0];
@@ -83,7 +91,9 @@ void CM_BoxLeafnums_r(cmLeafQueryWork_t *work, int32_t nodeNum)
     work->storeLeafs(work, nodeNum);
 }
 
-int32_t CM_BoxLeafnums(const vec3_t mins, const vec3_t maxs, int32_t *leafList, int32_t leafListSize, int32_t *lastLeaf)
+int32_t CM_BoxLeafnums(const vec3_t mins, const vec3_t maxs,
+                       int32_t *leafList, int32_t leafListSize,
+                       int32_t *lastLeaf)
 {
     cmLeafQueryWork_t work;
 
@@ -104,7 +114,8 @@ int32_t CM_BoxLeafnums(const vec3_t mins, const vec3_t maxs, int32_t *leafList, 
     return work.count;
 }
 
-int32_t CM_BoxBrushes(const vec3_t mins, const vec3_t maxs, collisionBrush_t **brushes, int32_t maxCount)
+int32_t CM_BoxBrushes(const vec3_t mins, const vec3_t maxs,
+                      collisionBrush_t **brushes, int32_t maxCount)
 {
     cmLeafQueryWork_t work;
 

@@ -16,13 +16,15 @@ enum {
     DOBJ_LAST_SEARCH_SLOT_INITIAL_VALUE = 1,
     DOBJ_ALLOC_STATE_RECORDS_PER_BYTE = 4,
     DOBJ_ALLOC_STATE_BITS_PER_RECORD = 2,
-    DOBJ_ALLOC_STATE_BYTES = DOBJ_POOL_COUNT / DOBJ_ALLOC_STATE_RECORDS_PER_BYTE,
+    DOBJ_ALLOC_STATE_BYTES =
+        DOBJ_POOL_COUNT / DOBJ_ALLOC_STATE_RECORDS_PER_BYTE,
     DOBJ_CHILD_PARENT_NONE = 255,
     DOBJ_PART_REMAP_PREFIX_SIZE = 16,
     DOBJ_PART_REMAP_SENTINEL = 127,
     DOBJ_PART_BITSET_WORD_COUNT = 4,
     DOBJ_PART_BITSET_WORD_BITS = 32,
-    DOBJ_MAX_BONES = DOBJ_PART_BITSET_WORD_COUNT * DOBJ_PART_BITSET_WORD_BITS,
+    DOBJ_MAX_BONES =
+        DOBJ_PART_BITSET_WORD_COUNT * DOBJ_PART_BITSET_WORD_BITS,
     DOBJ_MAX_BONE_INDEX = DOBJ_MAX_BONES - 1,
     DOBJ_PART_INDEX_NOT_FOUND = -1
 };
@@ -138,61 +140,113 @@ struct DObj_s {
 #else
 #define DOBJ_TYPES_ALIGNOF(type) __alignof__(type)
 #endif
-#define DOBJ_TYPES_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+#define DOBJ_TYPES_ASSERT(name, expression) \
+    typedef char name[(expression) ? 1 : -1]
 
-DOBJ_TYPES_ASSERT(dobj_eval_part_span_alignment, DOBJ_TYPES_ALIGNOF(dobj_eval_part_span_t) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_eval_part_span_second_part_offset, offsetof(dobj_eval_part_span_t, parts[1]) == 0x20);
-DOBJ_TYPES_ASSERT(dobj_eval_part_span_size, sizeof(dobj_eval_part_span_t) == 0x40);
-DOBJ_TYPES_ASSERT(dobj_eval_storage_span_alignment, DOBJ_TYPES_ALIGNOF(dobj_eval_storage_span_t) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_eval_storage_span_size, sizeof(dobj_eval_storage_span_t) == 0x40);
-DOBJ_TYPES_ASSERT(dobj_eval_storage_control_bits_offset, offsetof(dobj_eval_storage_t, controlPartBits) == 0x10);
-DOBJ_TYPES_ASSERT(dobj_eval_storage_blocked_bits_offset, offsetof(dobj_eval_storage_t, blockedPartBits) == 0x20);
-DOBJ_TYPES_ASSERT(dobj_eval_storage_spans_offset, offsetof(dobj_eval_storage_t, partSpans) == 0x30);
-DOBJ_TYPES_ASSERT(dobj_eval_storage_size, sizeof(dobj_eval_storage_t) == 0x30);
-DOBJ_TYPES_ASSERT(xanim_to_xmodel_alignment, DOBJ_TYPES_ALIGNOF(XAnimToXModel) == 0x01);
-DOBJ_TYPES_ASSERT(xanim_to_xmodel_bone_index_offset, offsetof(XAnimToXModel, boneIndex) == 0x10);
-DOBJ_TYPES_ASSERT(xanim_to_xmodel_size, sizeof(XAnimToXModel) == 0x10);
-DOBJ_TYPES_ASSERT(dobj_trace_part_remap_alignment, DOBJ_TYPES_ALIGNOF(DObjTracePartRemap) == 0x01);
-DOBJ_TYPES_ASSERT(dobj_trace_part_remap_pairs_offset, offsetof(DObjTracePartRemap, duplicatePairs) == 0x10);
-DOBJ_TYPES_ASSERT(dobj_trace_part_remap_size, sizeof(DObjTracePartRemap) == 0x10);
-DOBJ_TYPES_ASSERT(dobj_surface_ref_alignment, DOBJ_TYPES_ALIGNOF(dobj_surface_ref_t) == 0x02);
-DOBJ_TYPES_ASSERT(dobj_surface_ref_model_index_offset, offsetof(dobj_surface_ref_t, modelIndex) == 0x00);
-DOBJ_TYPES_ASSERT(dobj_surface_ref_surface_index_offset, offsetof(dobj_surface_ref_t, surfaceIndex) == 0x02);
-DOBJ_TYPES_ASSERT(dobj_surface_ref_size, sizeof(dobj_surface_ref_t) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_trace_result_alignment, DOBJ_TYPES_ALIGNOF(dobj_trace_result_t) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_trace_result_fraction_offset, offsetof(dobj_trace_result_t, fraction) == 0x00);
-DOBJ_TYPES_ASSERT(dobj_trace_result_surface_flags_offset, offsetof(dobj_trace_result_t, surfaceFlags) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_trace_result_normal_offset, offsetof(dobj_trace_result_t, normal) == 0x08);
-DOBJ_TYPES_ASSERT(dobj_trace_result_hit_part_offset, offsetof(dobj_trace_result_t, hitPartNameHandle) == 0x14);
-DOBJ_TYPES_ASSERT(dobj_trace_result_part_state_offset, offsetof(dobj_trace_result_t, hitPartStateIndex) == 0x16);
-DOBJ_TYPES_ASSERT(dobj_trace_result_startsolid_offset, offsetof(dobj_trace_result_t, startsolid) == 0x18);
-DOBJ_TYPES_ASSERT(dobj_trace_result_allsolid_offset, offsetof(dobj_trace_result_t, allsolid) == 0x19);
-DOBJ_TYPES_ASSERT(dobj_trace_result_size, sizeof(dobj_trace_result_t) == 0x1c);
+DOBJ_TYPES_ASSERT(dobj_eval_part_span_alignment,
+                  DOBJ_TYPES_ALIGNOF(dobj_eval_part_span_t) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_eval_part_span_second_part_offset,
+                  offsetof(dobj_eval_part_span_t, parts[1]) == 0x20);
+DOBJ_TYPES_ASSERT(dobj_eval_part_span_size,
+                  sizeof(dobj_eval_part_span_t) == 0x40);
+DOBJ_TYPES_ASSERT(dobj_eval_storage_span_alignment,
+                  DOBJ_TYPES_ALIGNOF(dobj_eval_storage_span_t) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_eval_storage_span_size,
+                  sizeof(dobj_eval_storage_span_t) == 0x40);
+DOBJ_TYPES_ASSERT(dobj_eval_storage_control_bits_offset,
+                  offsetof(dobj_eval_storage_t, controlPartBits) == 0x10);
+DOBJ_TYPES_ASSERT(dobj_eval_storage_blocked_bits_offset,
+                  offsetof(dobj_eval_storage_t, blockedPartBits) == 0x20);
+DOBJ_TYPES_ASSERT(dobj_eval_storage_spans_offset,
+                  offsetof(dobj_eval_storage_t, partSpans) == 0x30);
+DOBJ_TYPES_ASSERT(dobj_eval_storage_size,
+                  sizeof(dobj_eval_storage_t) == 0x30);
+DOBJ_TYPES_ASSERT(xanim_to_xmodel_alignment,
+                  DOBJ_TYPES_ALIGNOF(XAnimToXModel) == 0x01);
+DOBJ_TYPES_ASSERT(xanim_to_xmodel_bone_index_offset,
+                  offsetof(XAnimToXModel, boneIndex) == 0x10);
+DOBJ_TYPES_ASSERT(xanim_to_xmodel_size,
+                  sizeof(XAnimToXModel) == 0x10);
+DOBJ_TYPES_ASSERT(dobj_trace_part_remap_alignment,
+                  DOBJ_TYPES_ALIGNOF(DObjTracePartRemap) == 0x01);
+DOBJ_TYPES_ASSERT(dobj_trace_part_remap_pairs_offset,
+                  offsetof(DObjTracePartRemap, duplicatePairs) == 0x10);
+DOBJ_TYPES_ASSERT(dobj_trace_part_remap_size,
+                  sizeof(DObjTracePartRemap) == 0x10);
+DOBJ_TYPES_ASSERT(dobj_surface_ref_alignment,
+                  DOBJ_TYPES_ALIGNOF(dobj_surface_ref_t) == 0x02);
+DOBJ_TYPES_ASSERT(dobj_surface_ref_model_index_offset,
+                  offsetof(dobj_surface_ref_t, modelIndex) == 0x00);
+DOBJ_TYPES_ASSERT(dobj_surface_ref_surface_index_offset,
+                  offsetof(dobj_surface_ref_t, surfaceIndex) == 0x02);
+DOBJ_TYPES_ASSERT(dobj_surface_ref_size,
+                  sizeof(dobj_surface_ref_t) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_trace_result_alignment,
+                  DOBJ_TYPES_ALIGNOF(dobj_trace_result_t) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_trace_result_fraction_offset,
+                  offsetof(dobj_trace_result_t, fraction) == 0x00);
+DOBJ_TYPES_ASSERT(dobj_trace_result_surface_flags_offset,
+                  offsetof(dobj_trace_result_t, surfaceFlags) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_trace_result_normal_offset,
+                  offsetof(dobj_trace_result_t, normal) == 0x08);
+DOBJ_TYPES_ASSERT(dobj_trace_result_hit_part_offset,
+                  offsetof(dobj_trace_result_t, hitPartNameHandle) == 0x14);
+DOBJ_TYPES_ASSERT(dobj_trace_result_part_state_offset,
+                  offsetof(dobj_trace_result_t, hitPartStateIndex) == 0x16);
+DOBJ_TYPES_ASSERT(dobj_trace_result_startsolid_offset,
+                  offsetof(dobj_trace_result_t, startsolid) == 0x18);
+DOBJ_TYPES_ASSERT(dobj_trace_result_allsolid_offset,
+                  offsetof(dobj_trace_result_t, allsolid) == 0x19);
+DOBJ_TYPES_ASSERT(dobj_trace_result_size,
+                  sizeof(dobj_trace_result_t) == 0x1c);
 
 #if UINTPTR_MAX == UINT32_MAX
-DOBJ_TYPES_ASSERT(dobj_model_alignment, DOBJ_TYPES_ALIGNOF(DObjModel) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_model_model_offset, offsetof(DObjModel, model) == 0x00);
-DOBJ_TYPES_ASSERT(dobj_model_tag_name_offset, offsetof(DObjModel, tagName) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_model_index_offset, offsetof(DObjModel, modelIndex) == 0x08);
-DOBJ_TYPES_ASSERT(dobj_model_reserved_offset, offsetof(DObjModel, reserved_00a) == 0x0a);
-DOBJ_TYPES_ASSERT(dobj_model_ignore_collision_offset, offsetof(DObjModel, ignoreCollision) == 0x0c);
-DOBJ_TYPES_ASSERT(dobj_model_size, sizeof(DObjModel) == 0x10);
-DOBJ_TYPES_ASSERT(dobj_alignment, DOBJ_TYPES_ALIGNOF(DObj) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_runtime_tree_offset, offsetof(DObj, runtimeTree) == 0x00);
-DOBJ_TYPES_ASSERT(dobj_evaluation_storage_offset, offsetof(DObj, evaluationStorage) == 0x04);
-DOBJ_TYPES_ASSERT(dobj_skeleton_cache_key_offset, offsetof(DObj, skeletonCacheKey) == 0x08);
-DOBJ_TYPES_ASSERT(dobj_part_remap_table_offset, offsetof(DObj, partRemapTable) == 0x0c);
-DOBJ_TYPES_ASSERT(dobj_unknown_state_offset, offsetof(DObj, unknownState10) == 0x10);
-DOBJ_TYPES_ASSERT(dobj_root_handle_offset, offsetof(DObj, rootHandle) == 0x12);
-DOBJ_TYPES_ASSERT(dobj_trace_part_remap_handle_offset, offsetof(DObj, tracePartRemapHandle) == 0x14);
-DOBJ_TYPES_ASSERT(dobj_model_count_offset, offsetof(DObj, modelCount) == 0x16);
-DOBJ_TYPES_ASSERT(dobj_bone_count_offset, offsetof(DObj, boneCount) == 0x17);
-DOBJ_TYPES_ASSERT(dobj_collision_skip_model_mask_offset, offsetof(DObj, collisionSkipModelMask) == 0x18);
-DOBJ_TYPES_ASSERT(dobj_models_offset, offsetof(DObj, models) == 0x1c);
-DOBJ_TYPES_ASSERT(dobj_model_indices_offset, offsetof(DObj, modelIndices) == 0x3c);
-DOBJ_TYPES_ASSERT(dobj_model_parent_part_indices_offset, offsetof(DObj, modelParentPartIndices) == 0x4c);
-DOBJ_TYPES_ASSERT(dobj_model_part_base_indices_offset, offsetof(DObj, modelPartBaseIndices) == 0x54);
-DOBJ_TYPES_ASSERT(dobj_size, sizeof(DObj) == 0x5c);
+DOBJ_TYPES_ASSERT(dobj_model_alignment,
+                  DOBJ_TYPES_ALIGNOF(DObjModel) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_model_model_offset,
+                  offsetof(DObjModel, model) == 0x00);
+DOBJ_TYPES_ASSERT(dobj_model_tag_name_offset,
+                  offsetof(DObjModel, tagName) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_model_index_offset,
+                  offsetof(DObjModel, modelIndex) == 0x08);
+DOBJ_TYPES_ASSERT(dobj_model_reserved_offset,
+                  offsetof(DObjModel, reserved_00a) == 0x0a);
+DOBJ_TYPES_ASSERT(dobj_model_ignore_collision_offset,
+                  offsetof(DObjModel, ignoreCollision) == 0x0c);
+DOBJ_TYPES_ASSERT(dobj_model_size,
+                  sizeof(DObjModel) == 0x10);
+DOBJ_TYPES_ASSERT(dobj_alignment,
+                  DOBJ_TYPES_ALIGNOF(DObj) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_runtime_tree_offset,
+                  offsetof(DObj, runtimeTree) == 0x00);
+DOBJ_TYPES_ASSERT(dobj_evaluation_storage_offset,
+                  offsetof(DObj, evaluationStorage) == 0x04);
+DOBJ_TYPES_ASSERT(dobj_skeleton_cache_key_offset,
+                  offsetof(DObj, skeletonCacheKey) == 0x08);
+DOBJ_TYPES_ASSERT(dobj_part_remap_table_offset,
+                  offsetof(DObj, partRemapTable) == 0x0c);
+DOBJ_TYPES_ASSERT(dobj_unknown_state_offset,
+                  offsetof(DObj, unknownState10) == 0x10);
+DOBJ_TYPES_ASSERT(dobj_root_handle_offset,
+                  offsetof(DObj, rootHandle) == 0x12);
+DOBJ_TYPES_ASSERT(dobj_trace_part_remap_handle_offset,
+                  offsetof(DObj, tracePartRemapHandle) == 0x14);
+DOBJ_TYPES_ASSERT(dobj_model_count_offset,
+                  offsetof(DObj, modelCount) == 0x16);
+DOBJ_TYPES_ASSERT(dobj_bone_count_offset,
+                  offsetof(DObj, boneCount) == 0x17);
+DOBJ_TYPES_ASSERT(dobj_collision_skip_model_mask_offset,
+                  offsetof(DObj, collisionSkipModelMask) == 0x18);
+DOBJ_TYPES_ASSERT(dobj_models_offset,
+                  offsetof(DObj, models) == 0x1c);
+DOBJ_TYPES_ASSERT(dobj_model_indices_offset,
+                  offsetof(DObj, modelIndices) == 0x3c);
+DOBJ_TYPES_ASSERT(dobj_model_parent_part_indices_offset,
+                  offsetof(DObj, modelParentPartIndices) == 0x4c);
+DOBJ_TYPES_ASSERT(dobj_model_part_base_indices_offset,
+                  offsetof(DObj, modelPartBaseIndices) == 0x54);
+DOBJ_TYPES_ASSERT(dobj_size,
+                  sizeof(DObj) == 0x5c);
 #endif
 
 #undef DOBJ_TYPES_ASSERT

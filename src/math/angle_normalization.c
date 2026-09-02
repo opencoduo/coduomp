@@ -31,7 +31,10 @@ enum {
  */
 float AngleNormalize360(float angle)
 {
-    const uint32_t packed = coduo_fp_to_u32_extended((long double)angle * (long double)ANGLE_SHORT_SCALE) & ANGLE_SHORT_MASK;
+    const uint32_t packed =
+        coduo_fp_to_u32_extended((long double)angle *
+                                 (long double)ANGLE_SHORT_SCALE) &
+        ANGLE_SHORT_MASK;
 
     return (float)packed * ANGLE_SHORT_TO_DEGREES;
 }
@@ -41,7 +44,8 @@ float AngleNormalize180(float angle)
     float normalized = AngleNormalize360(angle);
 
     if (normalized > ANGLE_HALF_CIRCLE) {
-        normalized = (float)((long double)normalized - (long double)ANGLE_FULL_CIRCLE);
+        normalized = (float)((long double)normalized -
+                             (long double)ANGLE_FULL_CIRCLE);
     }
     return normalized;
 }
@@ -61,9 +65,12 @@ float AngleNormalize360Accurate(float angle)
         do {
             const float previous = angle;
 #if EMULATE_X87
-            angle = x87f_store_f32(x87f_add(x87f_load_f32(angle), x87f_load_f32(ANGLE_FULL_CIRCLE)));
+            angle = x87f_store_f32(
+                x87f_add(x87f_load_f32(angle),
+                         x87f_load_f32(ANGLE_FULL_CIRCLE)));
 #else
-            angle = (float)((long double)angle + (long double)ANGLE_FULL_CIRCLE);
+            angle = (float)((long double)angle +
+                            (long double)ANGLE_FULL_CIRCLE);
 #endif
             if (angle == previous) {
                 break;
@@ -76,9 +83,12 @@ float AngleNormalize360Accurate(float angle)
         do {
             const float previous = angle;
 #if EMULATE_X87
-            angle = x87f_store_f32(x87f_sub(x87f_load_f32(angle), x87f_load_f32(ANGLE_FULL_CIRCLE)));
+            angle = x87f_store_f32(
+                x87f_sub(x87f_load_f32(angle),
+                         x87f_load_f32(ANGLE_FULL_CIRCLE)));
 #else
-            angle = (float)((long double)angle - (long double)ANGLE_FULL_CIRCLE);
+            angle = (float)((long double)angle -
+                            (long double)ANGLE_FULL_CIRCLE);
 #endif
             if (angle == previous) {
                 break;
@@ -95,9 +105,12 @@ float AngleNormalize180Accurate(float angle)
         do {
             const float previous = angle;
 #if EMULATE_X87
-            angle = x87f_store_f32(x87f_add(x87f_load_f32(angle), x87f_load_f32(ANGLE_FULL_CIRCLE)));
+            angle = x87f_store_f32(
+                x87f_add(x87f_load_f32(angle),
+                         x87f_load_f32(ANGLE_FULL_CIRCLE)));
 #else
-            angle = (float)((long double)angle + (long double)ANGLE_FULL_CIRCLE);
+            angle = (float)((long double)angle +
+                            (long double)ANGLE_FULL_CIRCLE);
 #endif
             if (angle == previous) {
                 break;
@@ -107,9 +120,12 @@ float AngleNormalize180Accurate(float angle)
         do {
             const float previous = angle;
 #if EMULATE_X87
-            angle = x87f_store_f32(x87f_sub(x87f_load_f32(angle), x87f_load_f32(ANGLE_FULL_CIRCLE)));
+            angle = x87f_store_f32(
+                x87f_sub(x87f_load_f32(angle),
+                         x87f_load_f32(ANGLE_FULL_CIRCLE)));
 #else
-            angle = (float)((long double)angle - (long double)ANGLE_FULL_CIRCLE);
+            angle = (float)((long double)angle -
+                            (long double)ANGLE_FULL_CIRCLE);
 #endif
             if (angle == previous) {
                 break;

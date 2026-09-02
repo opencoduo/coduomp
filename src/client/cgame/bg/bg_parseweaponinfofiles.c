@@ -32,18 +32,19 @@ void BG_ParseWeaponInfoFiles(const char **argv, int argc)
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if (argc < 0 || argc > MAX_WEAPON_FILES) {
-        Com_Error(ERR_DROP, "\x15"
-                            "Server sent too many weapons");
+        Com_Error(ERR_DROP, "\x15" "Server sent too many weapons");
         return;
     }
 
     /* 0x3000ff0e..0x3000ff28: create the shared heap-backed empty string. The
      * pointer-valued syscall result is an explicit 32-bit ABI boundary. */
-    cg_emptyString = (const char *)(intptr_t)cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN_EXPLICIT, 1, 1);
+    cg_emptyString = (const char *)(intptr_t)
+        cgame_syscall(CG_HUNK_ALLOC_LOW_ALIGN_EXPLICIT, 1, 1);
     ((char *)cg_emptyString)[0] = '\0';
 
     /* Index zero is the "none" sentinel weaponInfo_t. */
-    weaponInfo_t *none = CG_AllocWeaponInfo(BG_WEAPON_FIELD_COUNT, 0, bg_weaponFieldDefs);
+    weaponInfo_t *none = CG_AllocWeaponInfo(BG_WEAPON_FIELD_COUNT, 0,
+                                          bg_weaponFieldDefs);
     CG_CopyString("none", (char **)&none->pickupName);
     bg_numWeapons = 0;
 
@@ -53,18 +54,22 @@ void BG_ParseWeaponInfoFiles(const char **argv, int argc)
         int32_t textLength;
         weaponInfo_t *weapon;
 
-        bg_numWeapons = coduo_int32_from_bits((uint32_t)bg_numWeapons + 1u);
-        weapon = CG_AllocWeaponInfo(BG_WEAPON_FIELD_COUNT, bg_numWeapons, bg_weaponFieldDefs);
+        bg_numWeapons = coduo_int32_from_bits(
+            (uint32_t)bg_numWeapons + 1u);
+        weapon = CG_AllocWeaponInfo(BG_WEAPON_FIELD_COUNT, bg_numWeapons,
+                                    bg_weaponFieldDefs);
 
         const size_t folderLength = strlen(bg_weaponDefsPath);
         const size_t tokenLength = strlen(argv[i]);
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        if (folderLength >= sizeof(filename) || tokenLength > sizeof(filename) - folderLength - 2) {
-            Com_Error(ERR_DROP, "\x15"
-                                "Server sent an overlong weapon name");
+        if (folderLength >= sizeof(filename) ||
+            tokenLength > sizeof(filename) - folderLength - 2) {
+            Com_Error(ERR_DROP,
+                      "\x15" "Server sent an overlong weapon name");
             return;
         }
-        Com_sprintf(filename, sizeof(filename), "%s/%s", bg_weaponDefsPath, argv[i]);
+        Com_sprintf(filename, sizeof(filename), "%s/%s", bg_weaponDefsPath,
+                    argv[i]);
 
         /* 0x3000ffe5 loads the cvar integer once, then tests and compares the
          * retained EAX value. */
@@ -73,18 +78,18 @@ void BG_ParseWeaponInfoFiles(const char **argv, int argc)
             Com_DPrintf("Parsing weapon file \"%s\"...\n", filename);
         }
 
-        fileLength = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE, filename, (intptr_t)&fileHandle, FS_READ);
+        fileLength = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE, filename,
+                                   (intptr_t)&fileHandle, FS_READ);
         if (fileLength <= 0) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "Could not load weapon file '%s'",
-                      filename);
+                "\x15" "Could not load weapon file '%s'", filename);
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (fileLength < headerLength) {
             (void)cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
-            Com_Error(ERR_DROP, "\x15\"%s\" is too short to be a weapon file", filename);
+            Com_Error(ERR_DROP,
+                "\x15\"%s\" is too short to be a weapon file", filename);
             return;
         }
 
@@ -94,13 +99,16 @@ void BG_ParseWeaponInfoFiles(const char **argv, int argc)
         text[headerLength] = '\0';
         if (strncmp(text, weaponFileHeader, (size_t)headerLength) != 0) {
             (void)cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
-            Com_Error(ERR_DROP, "\x15\"%s\" does not appear to be a weapon file", filename);
+            Com_Error(ERR_DROP,
+                "\x15\"%s\" does not appear to be a weapon file", filename);
         }
 
-        textLength = coduo_int32_from_bits((uint32_t)fileLength - (uint32_t)headerLength);
+        textLength = coduo_int32_from_bits((uint32_t)fileLength -
+                                      (uint32_t)headerLength);
         if (textLength >= WEAPON_TEXT_SIZE) {
             (void)cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
-            Com_Error(ERR_DROP, "\x15\"%s\" Is too long of a weapon file to parse", filename);
+            Com_Error(ERR_DROP,
+                "\x15\"%s\" Is too long of a weapon file to parse", filename);
         }
 
         memset(text, 0, sizeof(text));
@@ -110,15 +118,20 @@ void BG_ParseWeaponInfoFiles(const char **argv, int argc)
 
         /* Quotation marks and semicolons are forbidden anywhere in the payload. */
         if (strchr(text, '"') != NULL || strchr(text, ';') != NULL) {
-            Com_Error(ERR_DROP, "\x15\"%s\" is not a valid weapon file", filename);
+            Com_Error(ERR_DROP,
+                "\x15\"%s\" is not a valid weapon file", filename);
         }
 
         CG_CopyString(argv[i], (char **)&weapon->pickupName);
 
-        if (!ParseConfigStringToStruct(weapon, bg_weaponFieldDefs, BG_WEAPON_FIELD_COUNT, text, WEAPON_FIELD_CUSTOM_TYPE_LIMIT,
-                                       BG_ParseWeaponInfoSpecificFieldType, CG_WeaponInfoSetString)) {
+        if (!ParseConfigStringToStruct(weapon, bg_weaponFieldDefs,
+                                      BG_WEAPON_FIELD_COUNT, text,
+                                      WEAPON_FIELD_CUSTOM_TYPE_LIMIT,
+                                      BG_ParseWeaponInfoSpecificFieldType,
+                                      CG_WeaponInfoSetString)) {
             bg_weaponInfos[bg_numWeapons] = NULL;
-            bg_numWeapons = coduo_int32_from_bits((uint32_t)bg_numWeapons - 1u);
+            bg_numWeapons = coduo_int32_from_bits(
+                (uint32_t)bg_numWeapons - 1u);
         }
     }
 }

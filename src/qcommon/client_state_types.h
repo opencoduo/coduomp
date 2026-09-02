@@ -35,7 +35,8 @@ typedef struct clientState_s {
     char name[CLIENT_STATE_NAME_SIZE]; /* +0x3c, display name */
 } clientState_t;
 
-#define CLIENT_STATE_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
+#define CLIENT_STATE_LAYOUT_ASSERT(name_, expression_) \
+    typedef char name_[(expression_) ? 1 : -1]
 
 #if defined(_MSC_VER)
 #define CLIENT_STATE_ALIGNOF(type_) __alignof(type_)
@@ -48,17 +49,30 @@ typedef struct clientState_s {
 #endif
 
 CLIENT_STATE_LAYOUT_ASSERT(q_team_type_size, sizeof(team_t) == 4);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_alignment, CLIENT_STATE_ALIGNOF(clientState_t) == 4);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_client_num_offset, offsetof(clientState_t, clientNum) == 0x00);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_team_offset, offsetof(clientState_t, team) == 0x04);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_model_index_offset, offsetof(clientState_t, modelindex) == 0x08);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_model_index_offset, offsetof(clientState_t, attachModelIndex) == 0x0c);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_model_index_extent, sizeof(((clientState_t *)0)->attachModelIndex) == 0x18);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_tag_index_offset, offsetof(clientState_t, attachTagIndex) == 0x24);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_tag_index_extent, sizeof(((clientState_t *)0)->attachTagIndex) == 0x18);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_name_offset, offsetof(clientState_t, name) == 0x3c);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_name_extent, sizeof(((clientState_t *)0)->name) == 0x20);
-CLIENT_STATE_LAYOUT_ASSERT(q_client_state_size, sizeof(clientState_t) == 0x5c);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_alignment,
+                           CLIENT_STATE_ALIGNOF(clientState_t) == 4);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_client_num_offset,
+                           offsetof(clientState_t, clientNum) == 0x00);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_team_offset,
+                           offsetof(clientState_t, team) == 0x04);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_model_index_offset,
+                           offsetof(clientState_t, modelindex) == 0x08);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_model_index_offset,
+                           offsetof(clientState_t, attachModelIndex) == 0x0c);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_model_index_extent,
+                           sizeof(((clientState_t *)0)->attachModelIndex) ==
+                               0x18);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_tag_index_offset,
+                           offsetof(clientState_t, attachTagIndex) == 0x24);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_attach_tag_index_extent,
+                           sizeof(((clientState_t *)0)->attachTagIndex) ==
+                               0x18);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_name_offset,
+                           offsetof(clientState_t, name) == 0x3c);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_name_extent,
+                           sizeof(((clientState_t *)0)->name) == 0x20);
+CLIENT_STATE_LAYOUT_ASSERT(q_client_state_size,
+                           sizeof(clientState_t) == 0x5c);
 
 #undef CLIENT_STATE_ALIGNOF
 #undef CLIENT_STATE_LAYOUT_ASSERT

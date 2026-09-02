@@ -33,25 +33,32 @@ void BG_LerpAngles(const vec3_t target, float maxStep, vec3_t current)
     for (lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
 #if defined(WINDOWS_BEHAVIOR)
-        const x87f delta = x87f_sub(x87f_load_f32(target[lane]), x87f_load_f32(current[lane]));
+        const x87f delta = x87f_sub(x87f_load_f32(target[lane]),
+                                    x87f_load_f32(current[lane]));
         const x87f step = x87f_load_f32(maxStep);
 
         if (x87f_lt_signaling(step, delta)) {
-            current[lane] = x87f_store_f32(x87f_add(step, x87f_load_f32(current[lane])));
+            current[lane] = x87f_store_f32(
+                x87f_add(step, x87f_load_f32(current[lane])));
         } else if (x87f_lt_signaling(delta, x87f_neg(step))) {
-            current[lane] = x87f_store_f32(x87f_sub(x87f_load_f32(current[lane]), step));
+            current[lane] = x87f_store_f32(
+                x87f_sub(x87f_load_f32(current[lane]), step));
         } else {
             current[lane] = target[lane];
         }
 #else
-        const float delta = x87f_store_f32(x87f_sub(x87f_load_f32(target[lane]), x87f_load_f32(current[lane])));
+        const float delta = x87f_store_f32(
+            x87f_sub(x87f_load_f32(target[lane]),
+                     x87f_load_f32(current[lane])));
         const x87f deltaWide = x87f_load_f32(delta);
         const x87f step = x87f_load_f32(maxStep);
 
         if (x87f_lt(step, deltaWide)) {
-            current[lane] = x87f_store_f32(x87f_add(x87f_load_f32(current[lane]), step));
+            current[lane] = x87f_store_f32(
+                x87f_add(x87f_load_f32(current[lane]), step));
         } else if (x87f_lt(deltaWide, x87f_neg(step))) {
-            current[lane] = x87f_store_f32(x87f_sub(x87f_load_f32(current[lane]), step));
+            current[lane] = x87f_store_f32(
+                x87f_sub(x87f_load_f32(current[lane]), step));
         } else {
             current[lane] = target[lane];
         }
@@ -96,14 +103,19 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
     x87f lengthSquared;
     x87f factor;
 
-    delta[0] = x87f_store_f32(x87f_sub(x87f_load_f32(target[0]), x87f_load_f32(current[0])));
-    delta[1] = x87f_store_f32(x87f_sub(x87f_load_f32(target[1]), x87f_load_f32(current[1])));
-    delta2Wide = x87f_sub(x87f_load_f32(target[2]), x87f_load_f32(current[2]));
+    delta[0] = x87f_store_f32(
+        x87f_sub(x87f_load_f32(target[0]), x87f_load_f32(current[0])));
+    delta[1] = x87f_store_f32(
+        x87f_sub(x87f_load_f32(target[1]), x87f_load_f32(current[1])));
+    delta2Wide =
+        x87f_sub(x87f_load_f32(target[2]), x87f_load_f32(current[2]));
     delta[2] = x87f_store_f32(delta2Wide);
 
-    lengthSquared =
-        x87f_add(x87f_add(x87f_mul(delta2Wide, x87f_load_f32(delta[2])), x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
-                 x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])));
+    lengthSquared = x87f_add(
+        x87f_add(x87f_mul(delta2Wide, x87f_load_f32(delta[2])),
+                 x87f_mul(x87f_load_f32(delta[1]),
+                          x87f_load_f32(delta[1]))),
+        x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])));
     if (x87f_eq(lengthSquared, x87f_load_f32(zero))) {
         return;
     }
@@ -117,8 +129,12 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
     memcpy(&estimate, &bits, sizeof(estimate));
 
     factor = x87f_mul(
-        x87f_sub(x87f_load_f32(threeHalves),
-                 x87f_mul(x87f_mul(x87f_mul(lengthSquared, x87f_load_f32(half)), x87f_load_f32(estimate)), x87f_load_f32(estimate))),
+        x87f_sub(
+            x87f_load_f32(threeHalves),
+            x87f_mul(
+                x87f_mul(x87f_mul(lengthSquared, x87f_load_f32(half)),
+                         x87f_load_f32(estimate)),
+                x87f_load_f32(estimate))),
         x87f_load_f32(estimate));
     factor = x87f_mul(factor, x87f_load_f32(scale));
 
@@ -129,9 +145,15 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
         return;
     }
 
-    current[0] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(delta[0]), factor), x87f_load_f32(current[0])));
-    current[1] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(delta[1]), factor), x87f_load_f32(current[1])));
-    current[2] = x87f_store_f32(x87f_add(x87f_mul(factor, x87f_load_f32(delta[2])), x87f_load_f32(current[2])));
+    current[0] = x87f_store_f32(
+        x87f_add(x87f_mul(x87f_load_f32(delta[0]), factor),
+                 x87f_load_f32(current[0])));
+    current[1] = x87f_store_f32(
+        x87f_add(x87f_mul(x87f_load_f32(delta[1]), factor),
+                 x87f_load_f32(current[1])));
+    current[2] = x87f_store_f32(
+        x87f_add(x87f_mul(factor, x87f_load_f32(delta[2])),
+                 x87f_load_f32(current[2])));
 #else
     double delta2Wide;
     double lengthSquared;
@@ -141,7 +163,9 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
     delta[1] = (float)((double)target[1] - current[1]);
     delta2Wide = (double)target[2] - current[2];
     delta[2] = (float)delta2Wide;
-    lengthSquared = (delta2Wide * delta[2] + (double)delta[1] * delta[1]) + (double)delta[0] * delta[0];
+    lengthSquared =
+        (delta2Wide * delta[2] + (double)delta[1] * delta[1]) +
+        (double)delta[0] * delta[0];
     if (lengthSquared == zero) {
         return;
     }
@@ -154,7 +178,9 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
     bits = UINT32_C(0x5f3759df) - coduo_int32_sar_bits(bits, 1U);
     memcpy(&estimate, &bits, sizeof(estimate));
 
-    factor = ((double)threeHalves - ((lengthSquared * half * (double)estimate) * estimate)) * (double)estimate;
+    factor = ((double)threeHalves -
+              ((lengthSquared * half * (double)estimate) * estimate)) *
+             (double)estimate;
     factor *= scale;
     if (!(factor < one)) {
         current[0] = target[0];
@@ -163,16 +189,20 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
         return;
     }
 
-    current[0] = (float)((double)current[0] + (double)delta[0] * factor);
-    current[1] = (float)((double)current[1] + (double)delta[1] * factor);
-    current[2] = (float)((double)current[2] + (double)delta[2] * factor);
+    current[0] =
+        (float)((double)current[0] + (double)delta[0] * factor);
+    current[1] =
+        (float)((double)current[1] + (double)delta[1] * factor);
+    current[2] =
+        (float)((double)current[2] + (double)delta[2] * factor);
 #endif
 }
 #else
 /* NOT_FROM_ORIGINAL_SOURCE: reproduce the Linux i386 BG_LerpOffset call-site
  * ABI defect. The original passes a double to Q_rsqrt, then treats EAX's
  * retained float bits as a signed integer instead of consuming x87 ST0. */
-static float bg_compat_lerp_offset_qrsqrt_scale(float lengthSquared, float scale)
+static float bg_compat_lerp_offset_qrsqrt_scale(float lengthSquared,
+                                                float scale)
 {
     const double argument = (double)lengthSquared;
     uint32_t lowWord;
@@ -186,7 +216,8 @@ static float bg_compat_lerp_offset_qrsqrt_scale(float lengthSquared, float scale
     memcpy(&returnWord, &qrsqrtResult, sizeof(returnWord));
 
 #if EMULATE_X87
-    return x87f_store_f32(x87f_mul(x87f_load_i32(returnWord), x87f_load_f32(scale)));
+    return x87f_store_f32(
+        x87f_mul(x87f_load_i32(returnWord), x87f_load_f32(scale)));
 #else
     return (float)((double)returnWord * scale);
 #endif
@@ -199,17 +230,24 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
     float step;
 
 #if EMULATE_X87
-    delta[0] = x87f_store_f32(x87f_sub(x87f_load_f32(target[0]), x87f_load_f32(current[0])));
-    delta[1] = x87f_store_f32(x87f_sub(x87f_load_f32(target[1]), x87f_load_f32(current[1])));
-    delta[2] = x87f_store_f32(x87f_sub(x87f_load_f32(target[2]), x87f_load_f32(current[2])));
+    delta[0] = x87f_store_f32(
+        x87f_sub(x87f_load_f32(target[0]), x87f_load_f32(current[0])));
+    delta[1] = x87f_store_f32(
+        x87f_sub(x87f_load_f32(target[1]), x87f_load_f32(current[1])));
+    delta[2] = x87f_store_f32(
+        x87f_sub(x87f_load_f32(target[2]), x87f_load_f32(current[2])));
     lengthSquared = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])), x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+        x87f_add(x87f_mul(x87f_load_f32(delta[0]),
+                          x87f_load_f32(delta[0])),
+                 x87f_mul(x87f_load_f32(delta[1]),
+                          x87f_load_f32(delta[1]))),
         x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2]))));
 #else
     delta[0] = target[0] - current[0];
     delta[1] = target[1] - current[1];
     delta[2] = target[2] - current[2];
-    lengthSquared = delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2];
+    lengthSquared = delta[0] * delta[0] + delta[1] * delta[1] +
+                    delta[2] * delta[2];
 #endif
 
     if (lengthSquared == 0.0f) {
@@ -220,9 +258,15 @@ void BG_LerpOffset(const vec3_t target, float scale, vec3_t current)
     step = bg_compat_lerp_offset_qrsqrt_scale(lengthSquared, scale);
     if (step < 1.0f) {
 #if EMULATE_X87
-        current[0] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(step)), x87f_load_f32(current[0])));
-        current[1] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(step)), x87f_load_f32(current[1])));
-        current[2] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(step)), x87f_load_f32(current[2])));
+        current[0] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(step)),
+            x87f_load_f32(current[0])));
+        current[1] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(step)),
+            x87f_load_f32(current[1])));
+        current[2] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(step)),
+            x87f_load_f32(current[2])));
 #else
         current[0] = current[0] + delta[0] * step;
         current[1] = current[1] + delta[1] * step;

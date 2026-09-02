@@ -23,17 +23,22 @@ void Com_TouchMemory(void)
     uint32_t checksum = 0;
 
     const size_t lowStop = hunk.lowUsed >> HUNK_TOUCH_WORD_SHIFT;
-    for (size_t word = 0; word < lowStop; word += HUNK_TOUCH_WORD_STRIDE) {
+    for (size_t word = 0; word < lowStop;
+         word += HUNK_TOUCH_WORD_STRIDE) {
         checksum += (uint32_t)words[word];
     }
 
-    const size_t highStart = (hunk.totalSize - hunk.highUsed) >> HUNK_TOUCH_WORD_SHIFT;
+    const size_t highStart =
+        (hunk.totalSize - hunk.highUsed) >> HUNK_TOUCH_WORD_SHIFT;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     const size_t highStop = hunk.highUsed >> HUNK_TOUCH_WORD_SHIFT;
-    for (size_t word = highStart; word < highStop; word += HUNK_TOUCH_WORD_STRIDE) {
+    for (size_t word = highStart; word < highStop;
+         word += HUNK_TOUCH_WORD_STRIDE) {
         checksum += (uint32_t)words[word];
     }
 
-    const uint32_t elapsed = (uint32_t)Sys_Milliseconds() - startTime;
-    Com_Printf("Com_TouchMemory: %i msec. Using sum: %d\n", (int32_t)elapsed, (int32_t)checksum);
+    const uint32_t elapsed =
+        (uint32_t)Sys_Milliseconds() - startTime;
+    Com_Printf("Com_TouchMemory: %i msec. Using sum: %d\n",
+               (int32_t)elapsed, (int32_t)checksum);
 }

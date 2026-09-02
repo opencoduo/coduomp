@@ -8,7 +8,10 @@
 
 enum {
     UI_SCRIPT_MENU_PATH_SIZE = 256,
-    UI_SCRIPT_MENU_NAME_MAX = UI_SCRIPT_MENU_PATH_SIZE - (sizeof(UI_SCRIPT_MENU_DIRECTORY) - 1) - sizeof(UI_SCRIPT_MENU_EXTENSION)
+    UI_SCRIPT_MENU_NAME_MAX =
+        UI_SCRIPT_MENU_PATH_SIZE -
+        (sizeof(UI_SCRIPT_MENU_DIRECTORY) - 1) -
+        sizeof(UI_SCRIPT_MENU_EXTENSION)
 };
 
 // Source: uo_ui_mp_x86.dll 0x40009400..0x40009577
@@ -30,7 +33,8 @@ qboolean Load_ScriptMenu(const char *menuName, int32_t loadMode)
     strcat(menuPath, menuName);
     strcat(menuPath, UI_SCRIPT_MENU_EXTENSION);
 
-    languageIndex = coduo_crt_atoi(UI_Cvar_VariableString("cl_language"));
+    languageIndex =
+        coduo_crt_atoi(UI_Cvar_VariableString("cl_language"));
     if (languageIndex != 0) {
         char directory[UI_SCRIPT_MENU_PATH_SIZE];
         const char *basename = menuPath;
@@ -45,7 +49,8 @@ qboolean Load_ScriptMenu(const char *menuName, int32_t loadMode)
             }
         }
 
-        localizedDirectory = va("%s%s/", directory, trap_GetLanguagename(languageIndex));
+        localizedDirectory = va("%s%s/", directory,
+                                trap_GetLanguagename(languageIndex));
         localizedFilename = va("%s%s", localizedDirectory, basename);
         if (UI_ParseMenu(localizedFilename, loadMode)) {
             return qtrue;

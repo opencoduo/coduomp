@@ -24,8 +24,11 @@ enum {
     CVAR_NAME_COMPARE_LIMIT = 99999,
     COM_CVAR_BUFFER_TRACKED_COUNT = 65536,
     CVAR_SET_PRINT_CHANNEL_DEVELOPER = 4,
-    CVAR_LIST_SERVERINFO_FLAGS = CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
-    CVAR_WRITE_DEFAULTS_EXCLUDED_FLAGS = CVAR_ROM | CVAR_USER_CREATED | CVAR_CHEAT | CVAR_SCRIPT_SETCVAR
+    CVAR_LIST_SERVERINFO_FLAGS =
+        CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
+    CVAR_WRITE_DEFAULTS_EXCLUDED_FLAGS =
+        CVAR_ROM | CVAR_USER_CREATED |
+        CVAR_CHEAT | CVAR_SCRIPT_SETCVAR
 };
 
 static cvar_t *cvarHashTable[CVAR_HASH_BUCKET_COUNT];
@@ -49,7 +52,8 @@ uint32_t cvar_modifiedFlags;
 void Cvar_Init(void)
 {
     sv_cheats = Cvar_Get("sv_cheats", "0", CVAR_ROM | CVAR_SYSTEMINFO);
-    sv_console_lockout = Cvar_Get("sv_console_lockout", "0", CVAR_ROM | CVAR_SYSTEMINFO);
+    sv_console_lockout = Cvar_Get(
+        "sv_console_lockout", "0", CVAR_ROM | CVAR_SYSTEMINFO);
     Cvar_AddCommands();
 }
 
@@ -77,17 +81,19 @@ void Cvar_Set(const char *name, const char *value)
  * same-named, translation-unit-local image-path hash. */
 static uint32_t generateHashValue(const char *name)
 {
-    enum {
-        CVAR_HASH_CHARACTER_BASE_INDEX = 119
-    };
+    enum { CVAR_HASH_CHARACTER_BASE_INDEX = 119 };
     uint32_t hash = 0;
 
     if (name == NULL)
-        Com_Error(ERR_DROP, "\x15null name in generateHashValue");
+        Com_Error(ERR_DROP,
+                  "\x15null name in generateHashValue");
 
     for (int32_t index = 0; name[index] != '\0'; ++index) {
-        const int32_t lower = tolower(coduo_ctype_signed_byte_arg(name[index]));
-        hash += ((uint32_t)index + (uint32_t)CVAR_HASH_CHARACTER_BASE_INDEX) * (uint32_t)lower;
+        const int32_t lower =
+            tolower(coduo_ctype_signed_byte_arg(name[index]));
+        hash += ((uint32_t)index +
+                 (uint32_t)CVAR_HASH_CHARACTER_BASE_INDEX) *
+                (uint32_t)lower;
     }
 
     return hash & (CVAR_HASH_BUCKET_COUNT - 1);
@@ -101,7 +107,11 @@ qboolean Cvar_ValidateString(const char *name)
     if (name == NULL)
         return qfalse;
 
-    return strchr(name, '\\') == NULL && strchr(name, '"') == NULL && strchr(name, ';') == NULL ? qtrue : qfalse;
+    return strchr(name, '\\') == NULL &&
+                   strchr(name, '"') == NULL &&
+                   strchr(name, ';') == NULL
+               ? qtrue
+               : qfalse;
 }
 
 /* Source: CoDUOMP.exe 0x0043d8f0..0x0043d932.
@@ -111,7 +121,9 @@ cvar_t *Cvar_FindVar(const char *name)
 {
     const uint32_t hash = generateHashValue(name);
 
-    for (cvar_t *cvar = cvarHashTable[hash]; cvar != NULL; cvar = cvar->hashNext) {
+    for (cvar_t *cvar = cvarHashTable[hash];
+         cvar != NULL;
+         cvar = cvar->hashNext) {
         if (Q_stricmp(name, cvar->name) == 0)
             return cvar;
     }
@@ -124,11 +136,11 @@ cvar_t *Cvar_FindVar(const char *name)
  * Name: exact same-module Mac symbol Cvar_Get. The fixed cvar table, sorted
  * next chain, hash chain, placeholder replacement, and reset/latched value
  * ownership are all independently visible in the Windows instructions. */
-cvar_t *Cvar_Get(const char *name, const char *defaultValue, uint32_t flags)
+cvar_t *Cvar_Get(const char *name, const char *defaultValue,
+                 uint32_t flags)
 {
     if (name == NULL || defaultValue == NULL)
-        Com_Error(ERR_FATAL, "\x15"
-                             "Cvar_Get: NULL parameter");
+        Com_Error(ERR_FATAL, "\x15" "Cvar_Get: NULL parameter");
 
     if (Cvar_ValidateString(name) == qfalse) {
         /* NOT_FROM_ORIGINAL_SOURCE: keep the invalid name as formatter data. */
@@ -137,8 +149,10 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue, uint32_t flags)
 
     cvar_t *cvar = Cvar_FindVar(name);
     if (cvar != NULL) {
-        if ((cvar->flags & CVAR_PLACEHOLDER_CREATED_MASK) != 0 && (flags & CVAR_PLACEHOLDER_CREATED_MASK) == 0 &&
-            (defaultValue[0] != '\0' || (flags & CVAR_CHEAT) != 0)) {
+        if ((cvar->flags & CVAR_PLACEHOLDER_CREATED_MASK) != 0 &&
+            (flags & CVAR_PLACEHOLDER_CREATED_MASK) == 0 &&
+            (defaultValue[0] != '\0' ||
+             (flags & CVAR_CHEAT) != 0)) {
             cvar->flags &= ~CVAR_PLACEHOLDER_CREATED_MASK;
             Z_FreeInternal(cvar->resetString);
             cvar->resetString = CopyStringInternal(defaultValue);
@@ -149,8 +163,11 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue, uint32_t flags)
         if (cvar->resetString[0] == '\0') {
             Z_FreeInternal(cvar->resetString);
             cvar->resetString = CopyStringInternal(defaultValue);
-        } else if (defaultValue[0] != '\0' && strcmp(cvar->resetString, defaultValue) != 0) {
-            Com_DPrintf("Warning: cvar \"%s\" given initial values: \"%s\" and \"%s\"\n", name, cvar->resetString, defaultValue);
+        } else if (defaultValue[0] != '\0' &&
+                   strcmp(cvar->resetString, defaultValue) != 0) {
+            Com_DPrintf(
+                "Warning: cvar \"%s\" given initial values: \"%s\" and \"%s\"\n",
+                name, cvar->resetString, defaultValue);
         }
 
         if (cvar->latchedString != NULL) {
@@ -160,7 +177,8 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue, uint32_t flags)
             Z_FreeInternal(latchedValue);
         }
 
-        if ((cvar->flags & CVAR_CHEAT) != 0 && sv_cheats != NULL && sv_cheats->integer == 0) {
+        if ((cvar->flags & CVAR_CHEAT) != 0 &&
+            sv_cheats != NULL && sv_cheats->integer == 0) {
             (void)Cvar_Set2(name, defaultValue, qtrue);
         }
         return cvar;
@@ -179,7 +197,8 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue, uint32_t flags)
     cvar->resetString = CopyStringInternal(defaultValue);
 
     cvar_t **sortedLink = &cvar_vars;
-    while (*sortedLink != NULL && Q_stricmp(cvar->name, (*sortedLink)->name) >= 0) {
+    while (*sortedLink != NULL &&
+           Q_stricmp(cvar->name, (*sortedLink)->name) >= 0) {
         sortedLink = &(*sortedLink)->next;
     }
     cvar->next = *sortedLink;
@@ -199,7 +218,9 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue, uint32_t flags)
  * the ordinary path preserves the restart latch behavior. */
 cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
 {
-    Com_PrintMessage(CVAR_SET_PRINT_CHANNEL_DEVELOPER, va("      cvar set %s %s\n", name, value));
+    Com_PrintMessage(
+        CVAR_SET_PRINT_CHANNEL_DEVELOPER,
+        va("      cvar set %s %s\n", name, value));
 
     if (Cvar_ValidateString(name) == qfalse) {
         /* NOT_FROM_ORIGINAL_SOURCE: keep the invalid name as formatter data. */
@@ -210,14 +231,17 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
     if (cvar == NULL) {
         if (value == NULL)
             return NULL;
-        return Cvar_Get(name, value, force == qfalse ? CVAR_USER_CREATED : 0);
+        return Cvar_Get(
+            name, value,
+            force == qfalse ? CVAR_USER_CREATED : 0);
     }
 
     if (value == NULL)
         value = cvar->resetString;
 
     if (strcmp(value, cvar->string) == 0) {
-        if ((cvar->flags & CVAR_LATCH) != 0 && cvar->latchedString != NULL) {
+        if ((cvar->flags & CVAR_LATCH) != 0 &&
+            cvar->latchedString != NULL) {
             Z_FreeInternal(cvar->latchedString);
             cvar->latchedString = NULL;
         }
@@ -234,12 +258,15 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
             Com_Printf("%s is write protected.\n", name);
             return cvar;
         }
-        if ((cvar->flags & CVAR_CHEAT) != 0 && sv_cheats->integer == 0) {
+        if ((cvar->flags & CVAR_CHEAT) != 0 &&
+            sv_cheats->integer == 0) {
             Com_Printf("%s is cheat protected.\n", name);
             return cvar;
         }
-        if (sv_console_lockout->integer != 0 && sv_running->integer != 0) {
-            Com_Printf("Consol is locked out, cannot change cvars.\n");
+        if (sv_console_lockout->integer != 0 &&
+            sv_running->integer != 0) {
+            Com_Printf(
+                "Consol is locked out, cannot change cvars.\n");
             return cvar;
         }
         if ((cvar->flags & CVAR_LATCH) != 0) {
@@ -251,7 +278,8 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
                 return cvar;
             }
 
-            Com_Printf("%s will be changed upon restarting.\n", name);
+            Com_Printf(
+                "%s will be changed upon restarting.\n", name);
             cvar->latchedString = CopyStringInternal(value);
             cvar->modified = qtrue;
             return cvar;
@@ -302,7 +330,9 @@ void Cvar_SetExisting(const char *name, const char *value)
     if (cvar == NULL)
         return;
 
-    (void)Cvar_Set2(name, value, (cvar->flags & CVAR_LATCH) != 0 ? qfalse : qtrue);
+    (void)Cvar_Set2(
+        name, value,
+        (cvar->flags & CVAR_LATCH) != 0 ? qfalse : qtrue);
 }
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -316,15 +346,20 @@ void Cvar_Set_f(void)
 
     char value[CVAR_SET_VALUE_BUFFER_SIZE] = "";
     size_t valueLength = 0;
-    for (int32_t argumentIndex = 2; argumentIndex < argumentCount; ++argumentIndex) {
+    for (int32_t argumentIndex = 2;
+         argumentIndex < argumentCount;
+         ++argumentIndex) {
         const char *const argument = Cmd_Argv(argumentIndex);
         const size_t argumentLength = strlen(argument);
-        const size_t separatorLength = argumentIndex != argumentCount - 1 ? 1U : 0U;
-        const size_t availableLength = sizeof(value) - 1U - valueLength;
+        const size_t separatorLength =
+            argumentIndex != argumentCount - 1 ? 1U : 0U;
+        const size_t availableLength =
+            sizeof(value) - 1U - valueLength;
 
         /* NOT_FROM_ORIGINAL_SOURCE: charge the complete argument, optional
          * separator, and final NUL before extending the applied prefix. */
-        if (argumentLength > availableLength || separatorLength > availableLength - argumentLength) {
+        if (argumentLength > availableLength ||
+            separatorLength > availableLength - argumentLength) {
             break;
         }
 
@@ -346,21 +381,28 @@ void Cvar_Toggle_f(void)
 {
     const int32_t argumentCount = Cmd_Argc();
     if (argumentCount < 2) {
-        Com_Printf("usage: toggle <variable> <optional value sequence>\n");
+        Com_Printf(
+            "usage: toggle <variable> <optional value sequence>\n");
         return;
     }
 
     const char *const name = Cmd_Argv(1);
     if (argumentCount == 2) {
-        const int32_t toggledValue = coduo_fp_to_i32_extended((long double)Cvar_VariableValue(name)) == 0;
-        (void)Cvar_Set2(name, va("%i", toggledValue), qfalse);
+        const int32_t toggledValue =
+            coduo_fp_to_i32_extended(
+                (long double)Cvar_VariableValue(name)) == 0;
+        (void)Cvar_Set2(
+            name, va("%i", toggledValue), qfalse);
         return;
     }
 
     const char *const currentValue = Cvar_VariableString(name);
-    for (int32_t argumentIndex = 2; argumentIndex < argumentCount - 1; ++argumentIndex) {
+    for (int32_t argumentIndex = 2;
+         argumentIndex < argumentCount - 1;
+         ++argumentIndex) {
         if (strcmp(currentValue, Cmd_Argv(argumentIndex)) == 0) {
-            (void)Cvar_Set2(name, Cmd_Argv(argumentIndex + 1), qfalse);
+            (void)Cvar_Set2(
+                name, Cmd_Argv(argumentIndex + 1), qfalse);
             return;
         }
     }
@@ -417,12 +459,14 @@ void Cvar_SetA_f(void)
 void Cvar_SetFromCvar_f(void)
 {
     if (Cmd_Argc() != 3) {
-        Com_Printf("usage: setfromcvar <variable> <variablein>\n");
+        Com_Printf(
+            "usage: setfromcvar <variable> <variablein>\n");
         return;
     }
 
     const cvar_t *const source = Cvar_FindVar(Cmd_Argv(2));
-    const char *const value = source != NULL ? source->string : "";
+    const char *const value =
+        source != NULL ? source->string : "";
     (void)Cvar_Set2(Cmd_Argv(1), value, qfalse);
 }
 
@@ -443,18 +487,31 @@ void Cvar_Reset_f(void)
  * Name: exact same-module Mac symbol Cvar_List_f. */
 void Cvar_List_f(void)
 {
-    const char *const match = Cmd_Argc() > 1 ? Cmd_Argv(1) : NULL;
+    const char *const match =
+        Cmd_Argc() > 1 ? Cmd_Argv(1) : NULL;
 
     int32_t count = 0;
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
-        if (match == NULL || Com_Filter(match, cvar->name, qfalse) != qfalse) {
-            Com_Printf((cvar->flags & CVAR_LIST_SERVERINFO_FLAGS) != 0 ? "S" : " ");
-            Com_Printf((cvar->flags & CVAR_USERINFO) != 0 ? "U" : " ");
-            Com_Printf((cvar->flags & CVAR_ROM) != 0 ? "R" : " ");
-            Com_Printf((cvar->flags & CVAR_INIT) != 0 ? "I" : " ");
-            Com_Printf((cvar->flags & CVAR_ARCHIVE) != 0 ? "A" : " ");
-            Com_Printf((cvar->flags & CVAR_LATCH) != 0 ? "L" : " ");
-            Com_Printf((cvar->flags & CVAR_CHEAT) != 0 ? "C" : " ");
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
+        if (match == NULL ||
+            Com_Filter(match, cvar->name, qfalse) != qfalse) {
+            Com_Printf(
+                (cvar->flags & CVAR_LIST_SERVERINFO_FLAGS) != 0
+                    ? "S"
+                    : " ");
+            Com_Printf(
+                (cvar->flags & CVAR_USERINFO) != 0 ? "U" : " ");
+            Com_Printf(
+                (cvar->flags & CVAR_ROM) != 0 ? "R" : " ");
+            Com_Printf(
+                (cvar->flags & CVAR_INIT) != 0 ? "I" : " ");
+            Com_Printf(
+                (cvar->flags & CVAR_ARCHIVE) != 0 ? "A" : " ");
+            Com_Printf(
+                (cvar->flags & CVAR_LATCH) != 0 ? "L" : " ");
+            Com_Printf(
+                (cvar->flags & CVAR_CHEAT) != 0 ? "C" : " ");
             Com_Printf(" %s \"%s\"\n", cvar->name, cvar->string);
         }
         ++count;
@@ -476,7 +533,8 @@ void Cvar_Dump_f(void)
  * Name and output roles: same-family recovered Linux engine
  * Cvar_NextExport. This is the engine side of the PunkBuster cvar enumerator,
  * not part of PunkBuster's statically linked implementation. */
-qboolean Cvar_NextExport(const char **name, const char **string, uint32_t *flags, const char **resetString)
+qboolean Cvar_NextExport(const char **name, const char **string,
+                         uint32_t *flags, const char **resetString)
 {
     if (cvarExportCursor == NULL)
         cvarExportCursor = cvar_vars;
@@ -500,10 +558,13 @@ qboolean Cvar_NextExport(const char **name, const char **string, uint32_t *flags
 char *PbCvarValidate(char *buffer)
 {
     buffer[0] = '\0';
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
         const float parsedValue = (float)atof(cvar->string);
         const int32_t parsedInteger = atoi(cvar->string);
-        if (parsedValue != cvar->value || parsedInteger != cvar->integer) {
+        if (parsedValue != cvar->value ||
+            parsedInteger != cvar->integer) {
             /* NOT_FROM_ORIGINAL_SOURCE: the callback result must fit the
              * dispatcher's fixed terminated output contract. */
             Q_strncpyz(buffer, cvar->name, PB_CVAR_VALIDATE_OUTPUT_CAPACITY);
@@ -525,7 +586,8 @@ char *PbCvarValidate(char *buffer)
 void Cvar_SetValue(const char *name, float value)
 {
     char text[32];
-    const int32_t integerValue = coduo_fp_to_i32_extended((long double)value);
+    const int32_t integerValue =
+        coduo_fp_to_i32_extended((long double)value);
 
     if (value == (float)integerValue)
         Com_sprintf(text, sizeof(text), "%i", integerValue);
@@ -556,7 +618,8 @@ int32_t Cvar_VariableIntegerValue(const char *name)
 /* Source: CoDUOMP.exe 0x0043e200..0x0043e226.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043e200_0043e227.mcode.
  * Name: exact same-module Mac symbol Cvar_VariableStringBuffer. */
-void Cvar_VariableStringBuffer(const char *name, char *buffer, int32_t bufferLength)
+void Cvar_VariableStringBuffer(const char *name, char *buffer,
+                               int32_t bufferLength)
 {
     const cvar_t *const cvar = Cvar_FindVar(name);
 
@@ -574,8 +637,11 @@ void Cvar_VariableStringBuffer(const char *name, char *buffer, int32_t bufferLen
  * cvars whose current values differ are restored to their reset strings. */
 void Cvar_SetCheatState(void)
 {
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
-        if ((cvar->flags & CVAR_CHEAT) != 0 && strcmp(cvar->resetString, cvar->string) != 0) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
+        if ((cvar->flags & CVAR_CHEAT) != 0 &&
+            strcmp(cvar->resetString, cvar->string) != 0) {
             (void)Cvar_Set2(cvar->name, cvar->resetString, qtrue);
         }
     }
@@ -586,7 +652,9 @@ void Cvar_SetCheatState(void)
  * Cvar_ClearScriptSetServerinfoFlags. */
 void Cvar_ClearScriptSetServerinfoFlags(void)
 {
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
         cvar->flags &= ~CVAR_SCRIPT_SETCVAR_SERVERINFO;
     }
 }
@@ -598,8 +666,8 @@ void Cvar_VMSet(vmCvar_t *vmCvar, const char *value)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if ((uint32_t)vmCvar->handle >= (uint32_t)cvar_numIndexes) {
-        Com_Error(ERR_DROP, "\x15"
-                            "Cvar_VMSet: handle out of range");
+        Com_Error(ERR_DROP,
+                  "\x15" "Cvar_VMSet: handle out of range");
         return;
     }
 
@@ -610,7 +678,8 @@ void Cvar_VMSet(vmCvar_t *vmCvar, const char *value)
 /* Source: CoDUOMP.exe 0x0043e050..0x0043e08b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043e050_0043e08c.mcode.
  * Name: exact same-module Mac symbol Cvar_Register. */
-void Cvar_Register(vmCvar_t *vmCvar, const char *name, const char *defaultValue, uint32_t flags)
+void Cvar_Register(vmCvar_t *vmCvar, const char *name,
+                   const char *defaultValue, uint32_t flags)
 {
     cvar_t *const cvar = Cvar_Get(name, defaultValue, flags);
 
@@ -627,26 +696,29 @@ void Cvar_Register(vmCvar_t *vmCvar, const char *name, const char *defaultValue,
 void Cvar_Update(vmCvar_t *vmCvar)
 {
     if ((uint32_t)vmCvar->handle >= (uint32_t)cvar_numIndexes) {
-        Com_Error(ERR_DROP, "\x15"
-                            "Cvar_Update: handle out of range");
+        Com_Error(ERR_DROP,
+                  "\x15" "Cvar_Update: handle out of range");
     }
 
     const cvar_t *const cvar = &cvarTable[vmCvar->handle];
-    if (cvar->modificationCount == vmCvar->modificationCount || cvar->string == NULL) {
+    if (cvar->modificationCount == vmCvar->modificationCount ||
+        cvar->string == NULL) {
         return;
     }
 
     vmCvar->modificationCount = cvar->modificationCount;
     const size_t stringLength = strlen(cvar->string);
     if (stringLength + 1 > sizeof(vmCvar->string)) {
-        Com_Error(ERR_DROP,
-                  "\x15"
-                  "Cvar_Update: src %s length %d exceeds "
-                  "MAX_CVAR_VALUE_STRING",
-                  cvar->string, (int32_t)stringLength, (int32_t)sizeof(vmCvar->string));
+        Com_Error(
+            ERR_DROP,
+            "\x15" "Cvar_Update: src %s length %d exceeds "
+            "MAX_CVAR_VALUE_STRING",
+            cvar->string, (int32_t)stringLength,
+            (int32_t)sizeof(vmCvar->string));
     }
 
-    Q_strncpyz(vmCvar->string, cvar->string, (int32_t)sizeof(vmCvar->string));
+    Q_strncpyz(vmCvar->string, cvar->string,
+               (int32_t)sizeof(vmCvar->string));
     vmCvar->value = cvar->value;
     vmCvar->integer = cvar->integer;
 }
@@ -661,15 +733,19 @@ void Cvar_Update(vmCvar_t *vmCvar)
 /* Source: CoDUOMP.exe 0x0043d4b0..0x0043d521.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043d4b0_0043d522.mcode.
  * Name: exact same-module Mac symbol Com_SaveCvarsToBuffer. */
-qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t cvarCount, char *buffer, size_t bufferSize)
+qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames,
+                               int32_t cvarCount, char *buffer,
+                               size_t bufferSize)
 {
     char *cursor = buffer;
     size_t remaining = bufferSize;
 
     for (int32_t index = 0; index < cvarCount; ++index) {
         const cvar_t *const cvar = Cvar_FindVar(cvarNames[index]);
-        const char *const value = cvar != NULL ? cvar->string : "";
-        const int32_t written = coduo_crt_snprintf(cursor, remaining, "%s \"%s\"\n", cvarNames[index], value);
+        const char *const value =
+            cvar != NULL ? cvar->string : "";
+        const int32_t written = coduo_crt_snprintf(
+            cursor, remaining, "%s \"%s\"\n", cvarNames[index], value);
 
         if (written < 0)
             return qfalse;
@@ -682,14 +758,17 @@ qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t cvarCount, 
 }
 #else
 /* Source: coduo_lnxded 0x08072b9e..0x08072c3d. */
-qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t cvarCount, char *buffer, size_t bufferSize)
+qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames,
+                               int32_t cvarCount, char *buffer,
+                               size_t bufferSize)
 {
     size_t remaining = bufferSize;
 
     for (int32_t index = 0; index < cvarCount; ++index) {
         const char *const name = cvarNames[index];
         const char *const value = Cvar_VariableString(name);
-        const int32_t written = snprintf(buffer, (size_t)remaining, "%s \"%s\"\n", name, value);
+        const int32_t written = snprintf(
+            buffer, (size_t)remaining, "%s \"%s\"\n", name, value);
 
         /* NOT_FROM_ORIGINAL_SOURCE: advance only after the complete serialized
          * entry fits the remaining output extent. */
@@ -709,7 +788,9 @@ qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t cvarCount, 
  * Com_Parse, Com_ParseOnLine, Com_SkipRestOfLine, and Com_EndParseSession
  * around their surviving Com_ParseExt calls. The byte array is the original
  * fixed 65536-entry stack allocation used to report omitted requested cvars. */
-qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames, int32_t cvarCount, char *buffer, const char *fileName)
+qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames,
+                                 int32_t cvarCount, char *buffer,
+                                 const char *fileName)
 {
     uint8_t found[COM_CVAR_BUFFER_TRACKED_COUNT];
     int32_t foundCount = 0;
@@ -717,7 +798,8 @@ qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames, int32_t cvarCount
     /* NOT_FROM_ORIGINAL_SOURCE: validate the requested cvar count against the
      * fixed tracking array before clearing or indexing it. */
     if (cvarCount < 0 || cvarCount > COM_CVAR_BUFFER_TRACKED_COUNT) {
-        Com_Printf("Com_LoadCvarsFromBuffer: invalid cvar count %i\n", cvarCount);
+        Com_Printf("Com_LoadCvarsFromBuffer: invalid cvar count %i\n",
+                   cvarCount);
         return qfalse;
     }
 
@@ -736,7 +818,9 @@ qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames, int32_t cvarCount
         }
 
         if (index == cvarCount) {
-            Com_Printf("^3WARNING: unknown cvar '%s' in file '%s'\n", name, fileName);
+            Com_Printf(
+                "^3WARNING: unknown cvar '%s' in file '%s'\n",
+                name, fileName);
             Com_SkipRestOfLine(&buffer);
             continue;
         }
@@ -753,7 +837,9 @@ qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames, int32_t cvarCount
     if (foundCount == cvarCount)
         return qtrue;
 
-    Com_Printf("^1ERROR: the following cvars were not specified in file '%s'\n", fileName);
+    Com_Printf(
+        "^1ERROR: the following cvars were not specified in file '%s'\n",
+        fileName);
     for (int32_t index = 0; index < cvarCount; ++index) {
         if (found[index] == 0)
             Com_Printf("^1  %s\n", cvarNames[index]);
@@ -781,7 +867,8 @@ qboolean Cvar_Command(void)
         return qfalse;
 
     if (Cmd_Argc() == 1) {
-        Com_Printf("\"%s\" is:\"%s^7\" default:\"%s^7\"\n", cvar->name, cvar->string, cvar->resetString);
+        Com_Printf("\"%s\" is:\"%s^7\" default:\"%s^7\"\n",
+                   cvar->name, cvar->string, cvar->resetString);
         if (cvar->latchedString != NULL)
             Com_Printf("latched: \"%s\"\n", cvar->latchedString);
     } else {
@@ -803,11 +890,15 @@ void Cvar_CommandCompletion(void (*callback)(const char *name))
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043ecf0_0043ed23.mcode.
  * Name and argument roles: same-family Linux server symbol
  * Cvar_SetConfigstringValues. */
-void Cvar_SetConfigstringValues(int32_t base, int32_t count, uint32_t flags)
+void Cvar_SetConfigstringValues(int32_t base, int32_t count,
+                                uint32_t flags)
 {
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
         if ((cvar->flags & flags) != 0) {
-            SV_SetConfigValueForKey(base, count, cvar->name, cvar->string);
+            SV_SetConfigValueForKey(base, count,
+                                    cvar->name, cvar->string);
         }
     }
 }
@@ -818,9 +909,12 @@ void Cvar_SetConfigstringValues(int32_t base, int32_t count, uint32_t flags)
 const char *Cvar_InfoString(uint32_t flags)
 {
     cvarInfoString[0] = '\0';
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
         if ((cvar->flags & flags) != 0) {
-            Info_SetValueForKey(cvarInfoString, cvar->name, cvar->string);
+            Info_SetValueForKey(
+                cvarInfoString, cvar->name, cvar->string);
         }
     }
     return cvarInfoString;
@@ -832,9 +926,12 @@ const char *Cvar_InfoString(uint32_t flags)
 const char *Cvar_InfoString_Big(uint32_t flags)
 {
     cvarBigInfoString[0] = '\0';
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
         if ((cvar->flags & flags) != 0) {
-            Info_SetValueForKey_Big(cvarBigInfoString, cvar->name, cvar->string);
+            Info_SetValueForKey_Big(
+                cvarBigInfoString, cvar->name, cvar->string);
         }
     }
     return cvarBigInfoString;
@@ -843,7 +940,8 @@ const char *Cvar_InfoString_Big(uint32_t flags)
 /* Source: CoDUOMP.exe 0x0043edb0..0x0043edc8.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043edb0_0043edc9.mcode.
  * Name: exact same-module Mac symbol Cvar_InfoStringBuffer. */
-void Cvar_InfoStringBuffer(uint32_t flags, char *buffer, int32_t bufferLength)
+void Cvar_InfoStringBuffer(uint32_t flags, char *buffer,
+                           int32_t bufferLength)
 {
     Q_strncpyz(buffer, Cvar_InfoString(flags), bufferLength);
 }
@@ -856,15 +954,23 @@ void Cvar_WriteVariables(int32_t fileHandle)
 {
     char line[CVAR_WRITE_BUFFER_SIZE];
 
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
-        if (cvar->name != NULL && Q_stricmpn("cl_cdkey", cvar->name, CVAR_NAME_COMPARE_LIMIT) == 0) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
+        if (cvar->name != NULL &&
+            Q_stricmpn("cl_cdkey", cvar->name,
+                       CVAR_NAME_COMPARE_LIMIT) == 0) {
             continue;
         }
         if ((cvar->flags & CVAR_ARCHIVE) == 0)
             continue;
 
-        const char *const value = cvar->latchedString != NULL ? cvar->latchedString : cvar->string;
-        Com_sprintf(line, sizeof(line), "seta %s \"%s\"\n", cvar->name, value);
+        const char *const value =
+            cvar->latchedString != NULL
+                ? cvar->latchedString
+                : cvar->string;
+        Com_sprintf(line, sizeof(line),
+                    "seta %s \"%s\"\n", cvar->name, value);
         FS_Printf(fileHandle, "%s", line);
     }
 }
@@ -877,14 +983,20 @@ void Cvar_WriteDefaults(int32_t fileHandle)
 {
     char line[CVAR_WRITE_BUFFER_SIZE];
 
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
-        if (cvar->name != NULL && Q_stricmpn("cl_cdkey", cvar->name, CVAR_NAME_COMPARE_LIMIT) == 0) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
+        if (cvar->name != NULL &&
+            Q_stricmpn("cl_cdkey", cvar->name,
+                       CVAR_NAME_COMPARE_LIMIT) == 0) {
             continue;
         }
         if ((cvar->flags & CVAR_WRITE_DEFAULTS_EXCLUDED_FLAGS) != 0)
             continue;
 
-        Com_sprintf(line, sizeof(line), "set %s \"%s\"\n", cvar->name, cvar->resetString);
+        Com_sprintf(line, sizeof(line),
+                    "set %s \"%s\"\n",
+                    cvar->name, cvar->resetString);
         FS_Printf(fileHandle, "%s", line);
     }
 }
@@ -896,33 +1008,52 @@ void Cvar_WriteDefaults(int32_t fileHandle)
  * filters printed names without changing the reported total count. */
 void Cvar_DumpToChannel(int32_t channel)
 {
-    const char *const match = Cmd_Argc() > 1 ? Cmd_Argv(1) : NULL;
+    const char *const match =
+        Cmd_Argc() > 1 ? Cmd_Argv(1) : NULL;
 
-    if (channel == 0 && (com_logfile == NULL || com_logfile->integer == 0)) {
+    if (channel == 0 &&
+        (com_logfile == NULL || com_logfile->integer == 0)) {
         return;
     }
 
-    Com_PrintMessage(channel, "=============================== CVAR DUMP "
-                              "========================================\n");
+    Com_PrintMessage(
+        channel,
+        "=============================== CVAR DUMP "
+        "========================================\n");
 
     char line[CVAR_BIG_INFO_STRING_SIZE];
     int32_t count = 0;
-    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
-        if (match == NULL || Com_Filter(match, cvar->name, qfalse) != qfalse) {
+    for (cvar_t *cvar = cvar_vars;
+         cvar != NULL;
+         cvar = cvar->next) {
+        if (match == NULL ||
+            Com_Filter(match, cvar->name, qfalse) != qfalse) {
             if (cvar->latchedString != NULL) {
-                Com_sprintf(line, sizeof(line), "      %s \"%s\" -- latched \"%s\"\n", cvar->name, cvar->string, cvar->latchedString);
+                Com_sprintf(
+                    line, sizeof(line),
+                    "      %s \"%s\" -- latched \"%s\"\n",
+                    cvar->name, cvar->string,
+                    cvar->latchedString);
             } else {
-                Com_sprintf(line, sizeof(line), "      %s \"%s\"\n", cvar->name, cvar->string);
+                Com_sprintf(
+                    line, sizeof(line),
+                    "      %s \"%s\"\n",
+                    cvar->name, cvar->string);
             }
             Com_PrintMessage(channel, line);
         }
         ++count;
     }
 
-    Com_sprintf(line, sizeof(line), "\n%i total cvars\n%i cvar indexes\n", count, cvar_numIndexes);
+    Com_sprintf(
+        line, sizeof(line),
+        "\n%i total cvars\n%i cvar indexes\n",
+        count, cvar_numIndexes);
     Com_PrintMessage(channel, line);
-    Com_PrintMessage(channel, "=============================== END CVAR DUMP "
-                              "====================================\n");
+    Com_PrintMessage(
+        channel,
+        "=============================== END CVAR DUMP "
+        "====================================\n");
 }
 
 /* Source: CoDUOMP.exe 0x0043ec60..0x0043ece7, recovered from the executable
@@ -991,7 +1122,9 @@ void Cvar_AddCommands(void)
 void Cvar_Shutdown(void)
 {
     for (int32_t bucket = 0; bucket < CVAR_HASH_BUCKET_COUNT; ++bucket) {
-        for (cvar_t *cvar = cvarHashTable[bucket]; cvar != NULL; cvar = cvar->hashNext) {
+        for (cvar_t *cvar = cvarHashTable[bucket];
+             cvar != NULL;
+             cvar = cvar->hashNext) {
             if (cvar->latchedString != NULL) {
                 Z_FreeInternal(cvar->latchedString);
                 cvar->latchedString = NULL;

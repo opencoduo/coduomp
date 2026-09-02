@@ -9,7 +9,9 @@ enum {
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the inlined
  * CFxBoltFramePtr copy assignment at 0x004a0bb1..0x004a0bd1. */
-static void coduomp_fx_bolt_assign_frame_ptr(cfx_bolt_frame_ptr_t *destination, const cfx_bolt_frame_ptr_t *source)
+static void coduomp_fx_bolt_assign_frame_ptr(
+    cfx_bolt_frame_ptr_t *destination,
+    const cfx_bolt_frame_ptr_t *source)
 {
     if (destination->frame == source->frame) {
         return;
@@ -28,7 +30,8 @@ static void coduomp_fx_bolt_assign_frame_ptr(cfx_bolt_frame_ptr_t *destination, 
  * Name and parameter type: exact same-module Mac symbol
  * CFxBoltFrame::CFxBoltFrame(SFxBoltInfo const *). The Windows standalone
  * constructor returns its object address in EAX. */
-cfx_bolt_frame_t *CFxBoltFrame_Construct(cfx_bolt_frame_t *frame, const sfx_bolt_info_t *boltInfo)
+cfx_bolt_frame_t *CFxBoltFrame_Construct(
+    cfx_bolt_frame_t *frame, const sfx_bolt_info_t *boltInfo)
 {
     frame->referenceCount = 0;
     frame->lastSkeletonCacheKey = 0;
@@ -44,14 +47,16 @@ cfx_bolt_frame_t *CFxBoltFrame_Acquire(const sfx_bolt_info_t *boltInfo)
 {
     cfx_bolt_frame_t *frame = fxBoltFrames;
     while (frame != NULL) {
-        if (frame->boltInfo.entityNum == boltInfo->entityNum && frame->boltInfo.boneIndex == boltInfo->boneIndex) {
+        if (frame->boltInfo.entityNum == boltInfo->entityNum &&
+            frame->boltInfo.boneIndex == boltInfo->boneIndex) {
             ++frame->referenceCount;
             return frame;
         }
         frame = frame->next;
     }
 
-    frame = FxMem_AllocBoltFrame(&fxBoltFrameAllocator, sizeof(*frame));
+    frame = FxMem_AllocBoltFrame(
+        &fxBoltFrameAllocator, sizeof(*frame));
     if (frame != NULL) {
         frame = CFxBoltFrame_Construct(frame, boltInfo);
     }
@@ -91,7 +96,8 @@ orientation_t *CFxBoltFrame_GetOrientation(cfx_bolt_frame_t *frame)
     }
     if (frame->lastSkeletonCacheKey != dobj_skelCacheKey) {
         frame->lastSkeletonCacheKey = dobj_skelCacheKey;
-        if (FX_GetBoneOrientation(&frame->boltInfo, &frame->orientation) == qfalse) {
+        if (FX_GetBoneOrientation(&frame->boltInfo,
+                                  &frame->orientation) == qfalse) {
             frame->boltInfo.entityNum = FX_BOLT_UNBOUND;
             frame->boltInfo.boneIndex = FX_BOLT_UNBOUND;
             return NULL;
@@ -102,14 +108,17 @@ orientation_t *CFxBoltFrame_GetOrientation(cfx_bolt_frame_t *frame)
 
 /* Source: CoDUOMP.exe 0x004a0b60..0x004a0c48.
  * Name: same-module Mac symbol CFxBoltFramePtr::Archive. */
-void CFxBoltFramePtr_Archive(cfx_bolt_frame_ptr_t *framePtr, fx_archive_t *archive)
+void CFxBoltFramePtr_Archive(cfx_bolt_frame_ptr_t *framePtr,
+                             fx_archive_t *archive)
 {
     if (archive->loading != 0) {
         sfx_bolt_info_t boltInfo;
         boltInfo.entityNum = CFxArchive_ReadInt(archive);
         if (boltInfo.entityNum >= 0) {
             boltInfo.boneIndex = CFxArchive_ReadInt(archive);
-            cfx_bolt_frame_ptr_t loaded = {CFxBoltFrame_Acquire(&boltInfo)};
+            cfx_bolt_frame_ptr_t loaded = {
+                CFxBoltFrame_Acquire(&boltInfo)
+            };
             coduomp_fx_bolt_assign_frame_ptr(framePtr, &loaded);
             CFxBoltFramePtr_Destroy(&loaded);
         } else if (framePtr->frame != NULL) {

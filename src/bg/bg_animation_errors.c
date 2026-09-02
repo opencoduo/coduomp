@@ -36,16 +36,12 @@ void BG_AnimParseError(const char *format, ...)
     va_end(arguments);
 
     if (bgPlayerAnimScriptPath == NULL) {
-        COM_PARSE_ERROR(ERR_DROP,
-                        "\x15"
-                        "%s",
-                        message);
+        COM_PARSE_ERROR(ERR_DROP, "\x15" "%s", message);
     } else {
-        const int32_t displayLine = coduo_int32_from_bits((uint32_t)Com_GetCurrentParseLine() + 1u);
+        const int32_t displayLine = coduo_int32_from_bits(
+            (uint32_t)Com_GetCurrentParseLine() + 1u);
 
-        COM_PARSE_ERROR(ERR_DROP,
-                        "\x15"
-                        "%s: (%s, line %i)",
-                        message, bgPlayerAnimScriptPath, displayLine);
+        COM_PARSE_ERROR(ERR_DROP, "\x15" "%s: (%s, line %i)", message,
+                        bgPlayerAnimScriptPath, displayLine);
     }
 }

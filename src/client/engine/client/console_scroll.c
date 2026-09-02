@@ -9,9 +9,12 @@ enum {
  * Name and signature: exact same-module Mac symbol Con_PageUp. */
 void Con_PageUp(void)
 {
-    con.displayLine = (int32_t)((uint32_t)con.displayLine - (uint32_t)CON_PAGE_SCROLL_LINES);
-    if ((int32_t)((uint32_t)con.currentLine - (uint32_t)con.displayLine) >= con.totalLines) {
-        con.displayLine = (int32_t)((uint32_t)con.currentLine - (uint32_t)con.totalLines + 1u);
+    con.displayLine = (int32_t)(
+        (uint32_t)con.displayLine - (uint32_t)CON_PAGE_SCROLL_LINES);
+    if ((int32_t)((uint32_t)con.currentLine -
+                  (uint32_t)con.displayLine) >= con.totalLines) {
+        con.displayLine = (int32_t)(
+            (uint32_t)con.currentLine - (uint32_t)con.totalLines + 1u);
     }
     coduomp_console_manually_scrolled = qtrue;
 }
@@ -21,10 +24,12 @@ void Con_PageUp(void)
  * Name and signature: exact same-module Mac symbol Con_PageDown. */
 void Con_PageDown(void)
 {
-    con.displayLine = (int32_t)((uint32_t)con.displayLine + (uint32_t)CON_PAGE_SCROLL_LINES);
+    con.displayLine = (int32_t)(
+        (uint32_t)con.displayLine + (uint32_t)CON_PAGE_SCROLL_LINES);
     if (con.displayLine > con.currentLine)
         con.displayLine = con.currentLine;
-    coduomp_console_manually_scrolled = con.displayLine != con.currentLine;
+    coduomp_console_manually_scrolled =
+        con.displayLine != con.currentLine;
 }
 
 /* Source: CoDUOMP.exe 0x0040b460..0x0040b47d.
@@ -33,7 +38,8 @@ void Con_PageDown(void)
 void Con_Top(void)
 {
     con.displayLine = con.totalLines;
-    const int32_t oldestLine = (int32_t)((uint32_t)con.currentLine - (uint32_t)con.totalLines);
+    const int32_t oldestLine = (int32_t)(
+        (uint32_t)con.currentLine - (uint32_t)con.totalLines);
     if (oldestLine >= con.totalLines)
         con.displayLine = (int32_t)((uint32_t)oldestLine + 1u);
     coduomp_console_manually_scrolled = qtrue;

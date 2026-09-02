@@ -20,7 +20,8 @@ enum {
     HUD_FONT_CONSOLE = 2
 };
 
-void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem, char *scratch, int32_t scratchLen)
+void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem,
+                             char *scratch, int32_t scratchLen)
 {
     float fontScale;
     int32_t font = elem->font;
@@ -35,7 +36,8 @@ void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem, char *scratch, 
         item->font = 0;
         fontScale = elem->fontScale * floatOneQuarter;
         item->fontScale = fontScale;
-        item->fontHeight = (float)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_HEIGHT, 0, item->fontScaleBits));
+        item->fontHeight = (float)coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_R_TEXT_HEIGHT, 0, item->fontScaleBits));
         item->fontWidthBits = 0;
         break;
     case HUD_FONT_BIG:
@@ -60,7 +62,9 @@ void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem, char *scratch, 
 
     switch (elem->type) {
     case HE_TYPE_TEXT:
-        item->text = elem->text != 0 ? (char *)CG_SafeTranslateHudElemString(elem->text) : (char *)g_str_empty;
+        item->text = elem->text != 0
+                   ? (char *)CG_SafeTranslateHudElemString(elem->text)
+                   : (char *)g_str_empty;
         break;
     case HE_TYPE_VALUE:
         item->text = (char *)va("%g", (double)elem->value);
@@ -119,7 +123,8 @@ void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem, char *scratch, 
     {
         const uint8_t *to = (const uint8_t *)&elem->color;
         const uint8_t *from = (const uint8_t *)&elem->fromColor;
-        int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)elem->fadeStartTime);
+        int32_t elapsed = coduo_int32_from_bits(
+            (uint32_t)cg_time - (uint32_t)elem->fadeStartTime);
 
         /* Float faithfulness (0x30029dfe..0x30029ef3): each component performs
          * exactly ONE rounding -- the FSTP DWORD into item->color[i]. In the fade
@@ -136,7 +141,8 @@ void CG_GetHudElemInfo(cgAlignedDrawItem *item, hudElem_t *elem, char *scratch, 
         if (elem->fadeTime > 0 && elapsed < elem->fadeTime) {
             long double fraction = (long double)elapsed / elem->fadeTime;
             for (int i = 0; i < 4; ++i) {
-                item->color[i] = ((long double)(to[i] - from[i]) * fraction + from[i]) * colorByteToUnitScale;
+                item->color[i] = ((long double)(to[i] - from[i]) * fraction +
+                    from[i]) * colorByteToUnitScale;
             }
         } else {
             for (int i = 0; i < 4; ++i) {

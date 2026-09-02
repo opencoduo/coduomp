@@ -35,9 +35,11 @@
  * it therefore remains supporting rather than authoritative behavior.
  */
 #if defined(WINDOWS_BEHAVIOR)
-void MatrixTransposeTransformVector(const vec3_t vector, axis_t matrix, vec3_t transformed)
+void MatrixTransposeTransformVector(const vec3_t vector, axis_t matrix,
+                                    vec3_t transformed)
 {
-#if (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#if (defined(__i386__) || defined(__x86_64__)) && \
+    (defined(__GNUC__) || defined(__clang__))
     __asm__ __volatile__("flds 4(%1)\n\t"
                          "fmuls 4(%0)\n\t"
                          "flds 8(%1)\n\t"
@@ -69,28 +71,48 @@ void MatrixTransposeTransformVector(const vec3_t vector, axis_t matrix, vec3_t t
                          : "r"(vector), "r"(matrix), "r"(transformed)
                          : "st", "st(1)", "memory");
 #else
-    transformed[0] = (float)(((double)matrix[0][1] * (double)vector[1] + (double)matrix[0][2] * (double)vector[2]) +
-                             (double)vector[0] * (double)matrix[0][0]);
-    transformed[1] = (float)(((double)matrix[1][0] * (double)vector[0] + (double)matrix[1][1] * (double)vector[1]) +
-                             (double)matrix[1][2] * (double)vector[2]);
-    transformed[2] = (float)(((double)matrix[2][0] * (double)vector[0] + (double)matrix[2][1] * (double)vector[1]) +
-                             (double)matrix[2][2] * (double)vector[2]);
+    transformed[0] = (float)(
+        ((double)matrix[0][1] * (double)vector[1] +
+         (double)matrix[0][2] * (double)vector[2]) +
+        (double)vector[0] * (double)matrix[0][0]);
+    transformed[1] = (float)(
+        ((double)matrix[1][0] * (double)vector[0] +
+         (double)matrix[1][1] * (double)vector[1]) +
+        (double)matrix[1][2] * (double)vector[2]);
+    transformed[2] = (float)(
+        ((double)matrix[2][0] * (double)vector[0] +
+         (double)matrix[2][1] * (double)vector[1]) +
+        (double)matrix[2][2] * (double)vector[2]);
 #endif
 }
 #else
-void MatrixTransposeTransformVector(const vec3_t vector, axis_t matrix, vec3_t transformed)
+void MatrixTransposeTransformVector(const vec3_t vector, axis_t matrix,
+                                    vec3_t transformed)
 {
 #if EMULATE_X87
-    transformed[0] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(matrix[0][0])),
-                                                      x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(matrix[0][1]))),
-                                             x87f_mul(x87f_load_f32(vector[2]), x87f_load_f32(matrix[0][2]))));
-    transformed[1] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(matrix[1][0])),
-                                                      x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(matrix[1][1]))),
-                                             x87f_mul(x87f_load_f32(vector[2]), x87f_load_f32(matrix[1][2]))));
-    transformed[2] = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(vector[0]), x87f_load_f32(matrix[2][0])),
-                                                      x87f_mul(x87f_load_f32(vector[1]), x87f_load_f32(matrix[2][1]))),
-                                             x87f_mul(x87f_load_f32(vector[2]), x87f_load_f32(matrix[2][2]))));
-#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+    transformed[0] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(vector[0]),
+                          x87f_load_f32(matrix[0][0])),
+                 x87f_mul(x87f_load_f32(vector[1]),
+                          x87f_load_f32(matrix[0][1]))),
+        x87f_mul(x87f_load_f32(vector[2]),
+                 x87f_load_f32(matrix[0][2]))));
+    transformed[1] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(vector[0]),
+                          x87f_load_f32(matrix[1][0])),
+                 x87f_mul(x87f_load_f32(vector[1]),
+                          x87f_load_f32(matrix[1][1]))),
+        x87f_mul(x87f_load_f32(vector[2]),
+                 x87f_load_f32(matrix[1][2]))));
+    transformed[2] = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(vector[0]),
+                          x87f_load_f32(matrix[2][0])),
+                 x87f_mul(x87f_load_f32(vector[1]),
+                          x87f_load_f32(matrix[2][1]))),
+        x87f_mul(x87f_load_f32(vector[2]),
+                 x87f_load_f32(matrix[2][2]))));
+#elif (defined(__i386__) || defined(__x86_64__)) && \
+      (defined(__GNUC__) || defined(__clang__))
     __asm__ __volatile__("flds 0(%0)\n\t"
                          "fmuls 0(%1)\n\t"
                          "flds 4(%0)\n\t"
@@ -122,9 +144,15 @@ void MatrixTransposeTransformVector(const vec3_t vector, axis_t matrix, vec3_t t
                          : "r"(vector), "r"(matrix), "r"(transformed)
                          : "st", "st(1)", "memory");
 #else
-    transformed[0] = (vector[0] * matrix[0][0] + vector[1] * matrix[0][1]) + vector[2] * matrix[0][2];
-    transformed[1] = (vector[0] * matrix[1][0] + vector[1] * matrix[1][1]) + vector[2] * matrix[1][2];
-    transformed[2] = (vector[0] * matrix[2][0] + vector[1] * matrix[2][1]) + vector[2] * matrix[2][2];
+    transformed[0] =
+        (vector[0] * matrix[0][0] + vector[1] * matrix[0][1]) +
+        vector[2] * matrix[0][2];
+    transformed[1] =
+        (vector[0] * matrix[1][0] + vector[1] * matrix[1][1]) +
+        vector[2] * matrix[1][2];
+    transformed[2] =
+        (vector[0] * matrix[2][0] + vector[1] * matrix[2][1]) +
+        vector[2] * matrix[2][2];
 #endif
 }
 #endif

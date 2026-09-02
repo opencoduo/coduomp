@@ -30,7 +30,8 @@
 #endif
 
 #if defined(WINDOWS_BEHAVIOR)
-long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, float *out)
+long double PM_ViewHeightTableLerp(int32_t percent,
+                                   const pmLerpEntry_t *table, float *out)
 {
     // TEST ESI,ESI / JZ 0x3000a907: percent == 0 returns table[0] verbatim.
     // The scan starts at table[1] and stops at the first entry whose percent is
@@ -52,18 +53,21 @@ long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, 
             // JG 0x3000a921: table[i].percent > percent -> interpolate.
             if (curPercent > percent) {
                 const pmLerpEntry_t *prev = &table[i - 1]; // EDI + i*12 - 12
-                const pmLerpEntry_t *cur = &table[i];     // EAX
+                const pmLerpEntry_t *cur  = &table[i];     // EAX
 
                 // t = (percent - prev.percent) / (cur.percent - prev.percent)
                 // Both subtractions are 32-bit wrapping SUBs whose result is then
                 // read back by FILD as a signed 32-bit integer.
-                int32_t num = coduo_int32_from_bits((uint32_t)percent - (uint32_t)prev->percent);
-                int32_t den = coduo_int32_from_bits((uint32_t)cur->percent - (uint32_t)prev->percent);
+                int32_t num = coduo_int32_from_bits((uint32_t)percent -
+                                               (uint32_t)prev->percent);
+                int32_t den = coduo_int32_from_bits((uint32_t)cur->percent -
+                                               (uint32_t)prev->percent);
                 /* FILD num; FIDIV den leaves t live in x87 for both interpolations. */
                 long double t = (long double)num / den;
 
                 // originAdjust (int) diff, interpolated in float, stored through *out.
-                int32_t db = coduo_int32_from_bits((uint32_t)cur->originAdjust - (uint32_t)prev->originAdjust);
+                int32_t db = coduo_int32_from_bits((uint32_t)cur->originAdjust -
+                                              (uint32_t)prev->originAdjust);
                 // FILD db (bare) ; FMUL t ; FIADD prev.originAdjust (integer add) ; FSTP [EBX]
                 long double interpolatedOrigin = (long double)db * t;
                 interpolatedOrigin += prev->originAdjust;
@@ -71,7 +75,8 @@ long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, 
 
                 // height (float) diff, interpolated, returned in ST0.
                 // FLD cur.height ; FSUB prev.height ; FMULP by t ; FADD prev.height
-                long double interpolatedHeight = (long double)cur->height - prev->height;
+                long double interpolatedHeight =
+                    (long double)cur->height - prev->height;
                 interpolatedHeight *= t;
                 interpolatedHeight += prev->height;
                 return interpolatedHeight;
@@ -94,7 +99,9 @@ long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, 
 #else
 /* Linux game.mp.uo.i386.so RVA 0x00061a85 stores the interpolation fraction
  * and the returned height through binary32 locals before reloading ST0. */
-long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, float *outOriginAdjust)
+long double PM_ViewHeightTableLerp(int32_t percent,
+                                   const pmLerpEntry_t *table,
+                                   float *outOriginAdjust)
 {
     float viewHeight;
     const pmLerpEntry_t *entry;
@@ -114,21 +121,38 @@ long double PM_ViewHeightTableLerp(int32_t percent, const pmLerpEntry_t *table, 
             }
             if (percent < entry->percent) {
                 const pmLerpEntry_t *previous = &entry[-1];
-                int32_t percentDelta = coduo_int32_from_bits((uint32_t)percent - (uint32_t)previous->percent);
-                int32_t percentSpan = coduo_int32_from_bits((uint32_t)entry->percent - (uint32_t)previous->percent);
-                int32_t originAdjustSpan = coduo_int32_from_bits((uint32_t)entry->originAdjust - (uint32_t)previous->originAdjust);
+                int32_t percentDelta = coduo_int32_from_bits(
+                    (uint32_t)percent - (uint32_t)previous->percent);
+                int32_t percentSpan = coduo_int32_from_bits(
+                    (uint32_t)entry->percent -
+                    (uint32_t)previous->percent);
+                int32_t originAdjustSpan = coduo_int32_from_bits(
+                    (uint32_t)entry->originAdjust -
+                    (uint32_t)previous->originAdjust);
 #if EMULATE_X87
-                float fraction = x87f_store_f32(x87f_div(x87f_load_i32(percentDelta), x87f_load_i32(percentSpan)));
-                *outOriginAdjust = x87f_store_f32(
-                    x87f_add(x87f_mul(x87f_load_i32(originAdjustSpan), x87f_load_f32(fraction)), x87f_load_i32(previous->originAdjust)));
-                viewHeight = x87f_store_f32(
-                    x87f_add(x87f_mul(x87f_sub(x87f_load_f32(entry->height), x87f_load_f32(previous->height)), x87f_load_f32(fraction)),
-                             x87f_load_f32(previous->height)));
+                float fraction = x87f_store_f32(x87f_div(
+                    x87f_load_i32(percentDelta),
+                    x87f_load_i32(percentSpan)));
+                *outOriginAdjust = x87f_store_f32(x87f_add(
+                    x87f_mul(x87f_load_i32(originAdjustSpan),
+                             x87f_load_f32(fraction)),
+                    x87f_load_i32(previous->originAdjust)));
+                viewHeight = x87f_store_f32(x87f_add(
+                    x87f_mul(x87f_sub(x87f_load_f32(entry->height),
+                                      x87f_load_f32(previous->height)),
+                             x87f_load_f32(fraction)),
+                    x87f_load_f32(previous->height)));
 #else
-                float fraction = (float)((long double)percentDelta / (long double)percentSpan);
+                float fraction =
+                    (float)((long double)percentDelta /
+                            (long double)percentSpan);
 
-                *outOriginAdjust = (float)((long double)originAdjustSpan * (long double)fraction + (long double)previous->originAdjust);
-                viewHeight = (entry->height - previous->height) * fraction + previous->height;
+                *outOriginAdjust =
+                    (float)((long double)originAdjustSpan *
+                                (long double)fraction +
+                            (long double)previous->originAdjust);
+                viewHeight = (entry->height - previous->height) * fraction +
+                             previous->height;
 #endif
                 break;
             }

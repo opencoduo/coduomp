@@ -65,7 +65,8 @@ void CG_GetEntityOriginAxis(int32_t index, vec3_t outOrigin, axis_t outAxis)
 
     if (index < MAX_GENTITIES) {
         /* 0x3002adbc: entity = &cg_entities[index] (stride 0x288). */
-        centity_t *entity = cg_entities + index;
+        centity_t *entity =
+            cg_entities + index;
 
         outOrigin[0] = entity->lerpOrigin[0];
         outOrigin[1] = entity->lerpOrigin[1];

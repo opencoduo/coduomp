@@ -53,15 +53,12 @@
 //   0x3007bf2c = 0xc3700000 (-240.0f, -screenHeight/2)
 
 /* DEG2RAD (pi/180), exact .rdata value @0x3007bd70. */
-static const float CG_DEG2RAD = 0.017453292f;
+static const float CG_DEG2RAD      = 0.017453292f;
 /* DEG2RAD/2 (pi/360), exact .rdata value @0x3007be78; the projection scales hold a
  * full field-of-view in degrees, so a half is taken before converting to radians. */
 static const float CG_DEG2RAD_HALF = 0.008726646f;
 /* Virtual-screen half extents (negated), exact .rdata values @0x3007bf30 / 0x3007bf2c. */
-enum {
-    CG_PROJ_SCREEN_HALF_W = 320,
-    CG_PROJ_SCREEN_HALF_H = 240
-};
+enum { CG_PROJ_SCREEN_HALF_W = 320, CG_PROJ_SCREEN_HALF_H = 240 };
 
 void CG_ProjectDamageDirToScreen(float *outX, float *outY)
 {
@@ -69,7 +66,8 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
      * conversion or FSINCOS block starts. */
     float yawDegrees = cg_effectProjAngleYaw;
     float pitchDegrees = cg_effectProjAnglePitch;
-    float yawRad = (float)((long double)yawDegrees * (long double)CG_DEG2RAD);
+    float yawRad = (float)((long double)yawDegrees *
+                           (long double)CG_DEG2RAD);
 
     /* 0x30019382..0x300193eb: yaw FSINCOS first, then pitch FSINCOS. Each
      * stores cosine before sine. */
@@ -78,7 +76,8 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
     float sinPitch;
     float cosPitch;
     coduo_x87_sincosf(yawRad, &sinYaw, &cosYaw);
-    float pitchRad = (float)((long double)pitchDegrees * (long double)CG_DEG2RAD);
+    float pitchRad = (float)((long double)pitchDegrees *
+                             (long double)CG_DEG2RAD);
     coduo_x87_sincosf(pitchRad, &sinPitch, &cosPitch);
 
     vec3_t fwd;
@@ -91,13 +90,16 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
      * 0x30019421) and adds the x term to that (FADDP at 0x3001942d), then rounds
      * once (FSTP at 0x3001942f). FADD is not associative, so the (z+y)+x
      * grouping is reproduced literally rather than written left-to-right. */
-    float depth = (float)(((long double)cg_refdef.viewaxis[0][2] * (long double)fwd[2] +
-                           (long double)cg_refdef.viewaxis[0][1] * (long double)fwd[1]) +
-                          (long double)cg_refdef.viewaxis[0][0] * (long double)fwd[0]);
+    float depth = (float)(
+        ((long double)cg_refdef.viewaxis[0][2] * (long double)fwd[2] +
+         (long double)cg_refdef.viewaxis[0][1] * (long double)fwd[1]) +
+        (long double)cg_refdef.viewaxis[0][0] * (long double)fwd[0]);
 
     /* 0x30019433..0x30019470: gate — behind the view plane, or a non-positive
      * projection scale, zeroes both outputs. */
-    if (!(depth <= 0.0f) && !(cg_refdef.fov_x <= 0.0f) && !(cg_refdef.fov_y <= 0.0f)) {
+    if (!(depth <= 0.0f) &&
+        !(cg_refdef.fov_x <= 0.0f) &&
+        !(cg_refdef.fov_y <= 0.0f)) {
         /* 0x30019476..0x300194bd: screen X. Same (z+y)+x FADDP grouping as depth
          * (FADDP at 0x3001948a then 0x30019496). */
         /* sx is NOT stored: the dot-sum stays in an x87 register across the tan
@@ -106,24 +108,32 @@ void CG_ProjectDamageDirToScreen(float *outX, float *outY)
          * contrast IS genuinely rounded -- FSTP DWORD at 0x300194a9 followed by
          * a reload of the same slot at 0x300194ad -- so it stays `float`. */
         long double sx =
-            ((long double)cg_refdef.viewaxis[1][2] * (long double)fwd[2] + (long double)cg_refdef.viewaxis[1][1] * (long double)fwd[1]) +
+            ((long double)cg_refdef.viewaxis[1][2] * (long double)fwd[2] +
+             (long double)cg_refdef.viewaxis[1][1] * (long double)fwd[1]) +
             (long double)cg_refdef.viewaxis[1][0] * (long double)fwd[0];
-        long double tanXRaw = coduo_x87_tanl((long double)cg_refdef.fov_x * (long double)CG_DEG2RAD_HALF);
+        long double tanXRaw = coduo_x87_tanl(
+            (long double)cg_refdef.fov_x * (long double)CG_DEG2RAD_HALF);
         float tanX = (float)tanXRaw;
-        long double denominatorX = (long double)tanX * (long double)depth;
-        *outX = (float)((sx / denominatorX) * (long double)-(float)CG_PROJ_SCREEN_HALF_W);
+        long double denominatorX =
+            (long double)tanX * (long double)depth;
+        *outX = (float)((sx / denominatorX) *
+                        (long double)-(float)CG_PROJ_SCREEN_HALF_W);
 
         /* 0x300194bf..0x30019506: screen Y. Same (z+y)+x FADDP grouping as depth
          * (FADDP at 0x300194d3 then 0x300194df). */
         /* sy: register-held like sx (consumed by the FDIVP at 0x300194fe);
          * tanY genuinely rounded (FSTP 0x300194f2 + reload 0x300194f6). */
         long double sy =
-            ((long double)cg_refdef.viewaxis[2][2] * (long double)fwd[2] + (long double)cg_refdef.viewaxis[2][1] * (long double)fwd[1]) +
+            ((long double)cg_refdef.viewaxis[2][2] * (long double)fwd[2] +
+             (long double)cg_refdef.viewaxis[2][1] * (long double)fwd[1]) +
             (long double)cg_refdef.viewaxis[2][0] * (long double)fwd[0];
-        long double tanYRaw = coduo_x87_tanl((long double)cg_refdef.fov_y * (long double)CG_DEG2RAD_HALF);
+        long double tanYRaw = coduo_x87_tanl(
+            (long double)cg_refdef.fov_y * (long double)CG_DEG2RAD_HALF);
         float tanY = (float)tanYRaw;
-        long double denominatorY = (long double)tanY * (long double)depth;
-        *outY = (float)((sy / denominatorY) * (long double)-(float)CG_PROJ_SCREEN_HALF_H);
+        long double denominatorY =
+            (long double)tanY * (long double)depth;
+        *outY = (float)((sy / denominatorY) *
+                        (long double)-(float)CG_PROJ_SCREEN_HALF_H);
     } else {
         /* 0x3001950c/0x30019512: MOV [EDI],0 / MOV [ESI],0. */
         *outX = 0.0f;

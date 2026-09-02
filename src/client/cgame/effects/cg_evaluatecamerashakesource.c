@@ -35,7 +35,8 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source)
     // 0x3001b393-0x3001b39d: elapsed = cg_time - source->startMsec (signed int32).
     // MOV EAX,[cg_time]; SUB EAX,[ESI]; MOV [ESP],EAX; JS -> return 0.
     // A negative elapsed (shake in the future) yields qfalse.
-    int32_t elapsedMsec = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)source->startMsec);
+    int32_t elapsedMsec = coduo_int32_from_bits(
+        (uint32_t)cg_time - (uint32_t)source->startMsec);
     if (elapsedMsec < 0) {
         return qfalse; // 0x3001b40e: XOR EAX,EAX; RET
     }
@@ -62,7 +63,8 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source)
 
     // 0x3001b3bd-0x3001b3c6: distFalloff = 1.0f - (dist / source->radius).
     // FDIV [ESI+0xc]; FSUBR [0x3007bce0] (constant 1.0f, mem - st0); FSTP [ESP].
-    float distFalloff = (float)(1.0L - (long double)dist / (long double)source->radius);
+    float distFalloff = (float)(
+        1.0L - (long double)dist / (long double)source->radius);
 
     // 0x3001b3c9-0x3001b3d6: timeFalloff = (1.0f - elapsedFloat / duration) * amplitude.
     // FLD [ESP+4] (elapsedFloat); FDIV [ESI+8] (duration); FSUBR [0x3007bce0] (1.0f);
@@ -70,7 +72,10 @@ qboolean CG_EvaluateCameraShakeSource(cg_shakeSource_t *source)
     // The value NEVER leaves the x87 stack before its consumers: the FMUL ST1 /
     // FDIV ST0,ST1 at 0x3001b3ec/0x3001b3fd and the FSTP to source->timeFalloff
     // all take the unrounded st0, so the local must stay 80-bit (long double).
-    long double timeFalloff = (1.0L - (long double)elapsedFloat / (long double)source->duration) * (long double)source->amplitude;
+    long double timeFalloff =
+        (1.0L - (long double)elapsedFloat /
+                    (long double)source->duration) *
+        (long double)source->amplitude;
 
     // 0x3001b3d9-0x3001b3ea: compare distFalloff against 0.0f.
     // FLD [ESP] (distFalloff); FCOMP [0x3007bcec] (0.0f); FLD [ESP] (reload distFalloff);

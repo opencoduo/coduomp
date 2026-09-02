@@ -45,8 +45,8 @@ const char *CG_HudElemTimerString(const struct hudElem_s *elem)
     int32_t ms = CG_GetHudElemTime(elem);
 
     int32_t totalSeconds = ms / 1000;
-    int32_t hours = totalSeconds / 3600;
-    int32_t rem = totalSeconds - hours * 3600;   /* totalSeconds % 3600 */
+    int32_t hours   = totalSeconds / 3600;
+    int32_t rem     = totalSeconds - hours * 3600;   /* totalSeconds % 3600 */
     int32_t minutes = rem / 60;
     int32_t seconds = rem - minutes * 60;            /* rem % 60 */
 

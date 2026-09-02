@@ -46,12 +46,14 @@ extern displayContextDef_t *DC;
 /* NOT_FROM_ORIGINAL_SOURCE: source-factoring helper for the two inlined retail
  * paint bodies; the project-qualified name keeps it distinct from recovered
  * original functions. */
-static void client_ui_compat_paint_menu(menuDef_t *menu, qboolean passiveHudPass)
+static void client_ui_compat_paint_menu(menuDef_t *menu,
+                                        qboolean passiveHudPass)
 {
     float passiveHudOffset = 0.0f;
     float openMenuPreviousXScale = 0.0f;
 
-    if (client_ui_compat_should_skip_menu_paint(menu, passiveHudPass) != qfalse) {
+    if (client_ui_compat_should_skip_menu_paint(
+            menu, passiveHudPass) != qfalse) {
         return;
     }
 
@@ -67,7 +69,9 @@ static void client_ui_compat_paint_menu(menuDef_t *menu, qboolean passiveHudPass
         }
     }
 
-    client_ui_compat_begin_menu_paint(menu, passiveHudPass, &passiveHudOffset, &openMenuPreviousXScale);
+    client_ui_compat_begin_menu_paint(
+        menu, passiveHudPass, &passiveHudOffset,
+        &openMenuPreviousXScale);
 
     /* Fullscreen background (0x3005ae49 / 0x3005afaa): when menu->fullScreen is
      * set, draw menu->window.background across the whole virtual 640x480 screen. */
@@ -78,9 +82,14 @@ static void client_ui_compat_paint_menu(menuDef_t *menu, qboolean passiveHudPass
     /* Window border/decoration (0x3005ae6e / 0x3005afd5). The integer fadeCycle
      * at +0xcc is converted to float (FILD) and passed as the last arg; the
      * window pointer rides in EDI. */
-    Window_Paint((windowDef_t *)menu, menu->fadeAmount, menu->fadeInAmount, menu->fadeClamp, (float)menu->fadeCycle);
+    Window_Paint((windowDef_t *)menu,
+                 menu->fadeAmount,
+                 menu->fadeInAmount,
+                 menu->fadeClamp,
+                 (float)menu->fadeCycle);
 
-    client_ui_compat_finish_menu_window_paint(menu, passiveHudPass, passiveHudOffset);
+    client_ui_compat_finish_menu_window_paint(
+        menu, passiveHudPass, passiveHudOffset);
 
     /* Items (0x3005ae94 / 0x3005aff9): paint each of menu->items[0..itemCount).
      * itemCount is a signed dword; the loop runs only while (index < itemCount),
@@ -88,7 +97,8 @@ static void client_ui_compat_paint_menu(menuDef_t *menu, qboolean passiveHudPass
     {
         int32_t itemCount = menu->itemCount;
         int32_t i;
-        for (i = 0; i < itemCount; i = coduo_int32_from_bits((uint32_t)i + 1u)) {
+        for (i = 0; i < itemCount;
+             i = coduo_int32_from_bits((uint32_t)i + 1u)) {
             Item_Paint(menu->items[i]);
             /* itemCount is re-read from menu->itemCount each iteration in the
              * machine code (Item_Paint may change it). */
@@ -108,10 +118,13 @@ static void client_ui_compat_paint_menu(menuDef_t *menu, qboolean passiveHudPass
         debugColor[2] = 1.0f;
         debugColor[3] = 1.0f;
         debugX += passiveHudOffset;
-        DC->drawRect(debugX, menu->window.rect.y, menu->window.rect.w, menu->window.rect.h, 1.0f, debugColor);
+        DC->drawRect(debugX, menu->window.rect.y,
+                       menu->window.rect.w, menu->window.rect.h,
+                       1.0f, debugColor);
     }
 
-    client_ui_compat_end_menu_paint(menu, passiveHudPass, openMenuPreviousXScale);
+    client_ui_compat_end_menu_paint(
+        menu, passiveHudPass, openMenuPreviousXScale);
 }
 
 /* Return qtrue if `menu` is currently present on the open-menu stack. The machine
@@ -151,7 +164,9 @@ void Menu_PaintAll(void)
 
             /* Skip menus already on the open-menu stack: those are painted in
              * pass 2 (avoids double-painting). */
-            if (!client_ui_compat_menu_is_on_open_stack(menu) && menu != 0 && (menu->window.flags & (int32_t)WINDOW_VISIBLE) != 0) {
+            if (!client_ui_compat_menu_is_on_open_stack(menu) &&
+                menu != 0 &&
+                (menu->window.flags & (int32_t)WINDOW_VISIBLE) != 0) {
                 client_ui_compat_paint_menu(menu, qtrue);
             }
 
@@ -195,7 +210,8 @@ void Menu_PaintAll(void)
                 menuDef_t *menu = menuStack[i];
 
                 /* Gate: entry non-NULL and WINDOW_VISIBLE set. */
-                if (menu != 0 && (menu->window.flags & (int32_t)WINDOW_VISIBLE) != 0) {
+                if (menu != 0 &&
+                    (menu->window.flags & (int32_t)WINDOW_VISIBLE) != 0) {
                     client_ui_compat_paint_menu(menu, qfalse);
                 }
 

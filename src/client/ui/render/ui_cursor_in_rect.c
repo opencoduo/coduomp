@@ -6,10 +6,12 @@
 // comparisons establish the behavior.
 qboolean UI_CursorInRect(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    if (ui_displayContextStorage.context.cursorx < x || ui_displayContextStorage.context.cursory < y) {
+    if (ui_displayContextStorage.context.cursorx < x ||
+        ui_displayContextStorage.context.cursory < y) {
         return qfalse;
     }
-    if (ui_displayContextStorage.context.cursorx > x + width || ui_displayContextStorage.context.cursory > y + height) {
+    if (ui_displayContextStorage.context.cursorx > x + width ||
+        ui_displayContextStorage.context.cursory > y + height) {
         return qfalse;
     }
     return qtrue;

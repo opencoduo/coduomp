@@ -29,13 +29,13 @@ enum {
     CG_IMPACT_KICK_TOTAL_MS = 450
 };
 
-static const vec3_t cg_firstPersonTraceMins = {-8.0f, -8.0f, -8.0f};
-static const vec3_t cg_firstPersonTraceMaxs = {8.0f, 8.0f, 8.0f};
+static const vec3_t cg_firstPersonTraceMins = { -8.0f, -8.0f, -8.0f };
+static const vec3_t cg_firstPersonTraceMaxs = {  8.0f,  8.0f,  8.0f };
 
 void CG_OffsetFirstPersonView(void)
 {
     bg_view_angle_state_t state;
-    vec3_t offset = {0.0f, 0.0f, 0.0f};
+    vec3_t offset = { 0.0f, 0.0f, 0.0f };
 
     /* 0x3003fb60..0x3003fb74: the incoming snapshot's embedded pmType is the
      * early gate. The branch happens after the register saves in machine code,
@@ -48,10 +48,14 @@ void CG_OffsetFirstPersonView(void)
      * to the player-state tail time base. The first delta is zero when there has
      * not yet been a directional damage event. */
     state.ps = &cg_predictedPlayerState;
-    state.viewKickStartTime = (cg_damageDirLatestServerTime != 0)
-                                  ? (int32_t)((uint32_t)cg_damageDirLatestServerTime - (uint32_t)cg_predictedPlayerState.deltaTime)
-                                  : 0;
-    state.time = (int32_t)((uint32_t)cg_time - (uint32_t)cg_predictedPlayerState.deltaTime);
+    state.viewKickStartTime =
+        (cg_damageDirLatestServerTime != 0)
+            ? (int32_t)((uint32_t)cg_damageDirLatestServerTime -
+                        (uint32_t)cg_predictedPlayerState.deltaTime)
+            : 0;
+    state.time =
+        (int32_t)((uint32_t)cg_time -
+                  (uint32_t)cg_predictedPlayerState.deltaTime);
     state.viewKickPitch = cg_damageFlashScale;
     state.viewKickRoll = cg_damageFlashX;
     state.speed = cg_weaponMoveSpeed;
@@ -71,7 +75,8 @@ void CG_OffsetFirstPersonView(void)
         cg_refdef.vieworg[2] += cg_predictedPlayerState.viewHeightCurrent;
     }
 
-    if ((cg_predictedPlayerState.entityStateFlags & EF_RESTRICTED_MASK) != 0) {
+    if ((cg_predictedPlayerState.entityStateFlags &
+         EF_RESTRICTED_MASK) != 0) {
         return;
     }
 
@@ -79,8 +84,14 @@ void CG_OffsetFirstPersonView(void)
      * 19 units forward at full ADS and trace an 8-unit box from the eye to it.
      * The wrapper's +0x2e result byte gates whether its returned end position is
      * accepted. */
-    if (bg_weaponInfos[cg_snap->ps.currentWeapon]->weaponClass == WEAPCLASS_LMG && cg_predictedPlayerState.adsFraction != 0.0f) {
-        vec3_t angles = {0.0f, cg_predictedPlayerState.proneDirection, 0.0f};
+    if (bg_weaponInfos[cg_snap->ps.currentWeapon]->weaponClass ==
+            WEAPCLASS_LMG &&
+        cg_predictedPlayerState.adsFraction != 0.0f) {
+        vec3_t angles = {
+            0.0f,
+            cg_predictedPlayerState.proneDirection,
+            0.0f
+        };
         vec3_t forward;
         vec3_t traceEnd;
         trace_t trace;
@@ -92,8 +103,14 @@ void CG_OffsetFirstPersonView(void)
         traceEnd[1] = cg_refdef.vieworg[1] + distance * forward[1];
         traceEnd[2] = cg_refdef.vieworg[2] + distance * forward[2];
 
-        CG_Trace(CG_FIRST_PERSON_TRACE_HANDLE, traceEnd, cg_firstPersonTraceMaxs, &trace, cg_refdef.vieworg, cg_firstPersonTraceMins,
-                 cg_snap->ps.psClientNum);
+        CG_Trace(
+            CG_FIRST_PERSON_TRACE_HANDLE,
+            traceEnd,
+            cg_firstPersonTraceMaxs,
+            &trace,
+            cg_refdef.vieworg,
+            cg_firstPersonTraceMins,
+            cg_snap->ps.psClientNum);
 
         if (trace.allsolid == 0) {
             memcpy(cg_refdef.vieworg, trace.endpos, sizeof(cg_refdef.vieworg));
@@ -106,12 +123,18 @@ void CG_OffsetFirstPersonView(void)
     /* 0x3003fd69: the raw ST0 return is rounded to a float slot BEFORE the
      * vieworg[2] add (FSTP [ESP+0x18]; FADD; FSTP). */
     float verticalBob =
-        (float)BG_GetVerticalBobFactor(&cg_predictedPlayerState, cg_bobCyclePhase, cg_weaponMoveSpeed, cg_bobMax_vmCvar.value);
+        (float)BG_GetVerticalBobFactor(&cg_predictedPlayerState,
+                                       cg_bobCyclePhase,
+                                       cg_weaponMoveSpeed,
+                                       cg_bobMax_vmCvar.value);
     cg_refdef.vieworg[2] += verticalBob;
 
     {
         float horizontalBob =
-            BG_GetHorizontalBobFactor(&cg_predictedPlayerState, cg_bobCyclePhase, cg_weaponMoveSpeed, cg_bobMax_vmCvar.value);
+            BG_GetHorizontalBobFactor(&cg_predictedPlayerState,
+                                      cg_bobCyclePhase,
+                                      cg_weaponMoveSpeed,
+                                      cg_bobMax_vmCvar.value);
         float yaw = cg_refdefViewAngles[1] * CG_DEG2RAD;
         float pitch = cg_refdefViewAngles[0] * CG_DEG2RAD;
         float roll = cg_refdefViewAngles[2] * CG_DEG2RAD;
@@ -129,8 +152,10 @@ void CG_OffsetFirstPersonView(void)
         coduo_x87_sincosf(roll, &sinRoll, &cosRoll);
         sinRollSinPitch = sinRoll * sinPitch;
 
-        bobDirection[0] = cosRoll * sinYaw - sinRollSinPitch * cosYaw;
-        bobDirection[1] = -cosRoll * cosYaw - sinRollSinPitch * sinYaw;
+        bobDirection[0] =
+            cosRoll * sinYaw - sinRollSinPitch * cosYaw;
+        bobDirection[1] =
+            -cosRoll * cosYaw - sinRollSinPitch * sinYaw;
         bobDirection[2] = -sinRoll * cosPitch;
 
         cg_refdef.vieworg[0] += horizontalBob * bobDirection[0];
@@ -143,12 +168,14 @@ void CG_OffsetFirstPersonView(void)
      * while the current evaluation deliberately keeps the original negative
      * elapsed value. */
     {
-        int32_t elapsed = coduo_int32_from_bits(cg_time - (uint32_t)cg_impactViewKickTime);
+        int32_t elapsed = coduo_int32_from_bits(
+            cg_time - (uint32_t)cg_impactViewKickTime);
         float elapsedFloat = (float)elapsed;
         float phase;
 
         if (elapsedFloat < 0.0f) {
-            cg_impactViewKickTime = coduo_int32_from_bits(cg_time - (uint32_t)CG_IMPACT_KICK_TOTAL_MS);
+            cg_impactViewKickTime = coduo_int32_from_bits(
+                cg_time - (uint32_t)CG_IMPACT_KICK_TOTAL_MS);
         }
 
         if (elapsedFloat < (float)CG_IMPACT_KICK_RISE_MS) {
@@ -165,7 +192,11 @@ void CG_OffsetFirstPersonView(void)
 
     CG_SettleViewOriginZ();
 
-    AddLeanToPosition(cg_refdef.vieworg, cg_refdefViewAngles[1], cg_predictedPlayerState.leanFraction, 16.0f, 20.0f);
+    AddLeanToPosition(cg_refdef.vieworg,
+                          cg_refdefViewAngles[1],
+                          cg_predictedPlayerState.leanFraction,
+                          16.0f,
+                          20.0f);
 
     /* 0x3003ff7f..0x3003ffad: never allow the final eye Z below origin.z+8. */
     {

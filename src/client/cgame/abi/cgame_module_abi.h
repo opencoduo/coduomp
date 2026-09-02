@@ -27,13 +27,17 @@
 typedef int32_t cgame_abi_word32_t;
 typedef uint32_t cgame_abi_pointer32_t;
 
-typedef cgame_abi_word32_t(CGAME_ABI_CDECL *cgame_syscall32_t)(cgame_abi_word32_t command, ...);
-typedef void(CGAME_ABI_CDECL *cgame_dllEntry32_t)(cgame_syscall32_t dispatcher);
-typedef cgame_abi_word32_t(CGAME_ABI_CDECL *cgame_vmMain32_t)(cgame_abi_word32_t command, cgame_abi_word32_t arg0, cgame_abi_word32_t arg1,
-                                                              cgame_abi_word32_t arg2, cgame_abi_word32_t arg3, cgame_abi_word32_t arg4,
-                                                              cgame_abi_word32_t arg5, cgame_abi_word32_t arg6, cgame_abi_word32_t arg7,
-                                                              cgame_abi_word32_t arg8, cgame_abi_word32_t arg9, cgame_abi_word32_t arg10,
-                                                              cgame_abi_word32_t arg11);
+typedef cgame_abi_word32_t (CGAME_ABI_CDECL *cgame_syscall32_t)(
+    cgame_abi_word32_t command, ...);
+typedef void (CGAME_ABI_CDECL *cgame_dllEntry32_t)(cgame_syscall32_t dispatcher);
+typedef cgame_abi_word32_t (CGAME_ABI_CDECL *cgame_vmMain32_t)(
+    cgame_abi_word32_t command,
+    cgame_abi_word32_t arg0, cgame_abi_word32_t arg1,
+    cgame_abi_word32_t arg2, cgame_abi_word32_t arg3,
+    cgame_abi_word32_t arg4, cgame_abi_word32_t arg5,
+    cgame_abi_word32_t arg6, cgame_abi_word32_t arg7,
+    cgame_abi_word32_t arg8, cgame_abi_word32_t arg9,
+    cgame_abi_word32_t arg10, cgame_abi_word32_t arg11);
 
 typedef struct cgame_script_export_table32_s {
     cgame_abi_pointer32_t getFunction;
@@ -44,6 +48,7 @@ typedef struct cgame_script_export_table32_s {
 } cgame_script_export_table32_t;
 
 _Static_assert(sizeof(cgame_abi_word32_t) == 4, "cgame VM words are 32-bit");
-_Static_assert(sizeof(cgame_script_export_table32_t) == 20, "script export table is five pointer dwords");
+_Static_assert(sizeof(cgame_script_export_table32_t) == 20,
+               "script export table is five pointer dwords");
 
 #endif

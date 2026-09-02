@@ -50,8 +50,9 @@ enum {
 /* cg_entities[] view over the centity array base (stride 0x288 ==
  * sizeof(centity_t)); the established client convention. */
 
-void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *boneName, int32_t durationMsec, float startSpeed,
-                              int32_t count)
+void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos,
+                              const char *boneName, int32_t durationMsec,
+                              float startSpeed, int32_t count)
 {
     /* 0x30023d63: local DObj self-handle, initialized to 0; set only when a bone
      * name is present and resolved (E-0x80 in the machine frame). */
@@ -77,7 +78,8 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
     /* 0x30023da2..0x30023dd0: stamp the fixed spawn fields. startSpeed (a float)
      * is copied bit-for-bit into +0x58, +0x5c and +0xe4 (field_e4 is the chunk's
      * radius/expansion magnitude). */
-    chunk->spawnTimeCopy = (double)coduo_int32_from_bits(cg_flameTime); /* FILD/FSTP QWORD */
+    chunk->spawnTimeCopy =
+        (double)coduo_int32_from_bits(cg_flameTime); /* FILD/FSTP QWORD */
     chunk->kind = FLAME_CHUNK_KIND_ON_BONE;
     chunk->startSpeed = startSpeed;
     chunk->radius = startSpeed;
@@ -98,13 +100,16 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
         if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
             chunk->ownerInfoIndex = FLAME_CHUNK_WORLD_OWNER_INFO_INDEX;
             chunk->boneHandle = 0;
-        } else if (boneName != NULL) { /* 0x30023ddb/de2: TEST ESI,ESI; JZ */
+        } else if (boneName != NULL) {          /* 0x30023ddb/de2: TEST ESI,ESI; JZ */
             /* 0x30023de4..0x30023dfb: query the entity's DObj handle then resolve
              * the named bone/tag on it. */
-            dobjSelf = (struct DObj_s *)(uintptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, entityNum);
-            int32_t boneIndex =
-                coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, (intptr_t)dobjSelf, (intptr_t)boneName));
-            chunk->boneHandle = coduo_int32_from_bits((uint32_t)boneIndex + 1u); /* INC EAX; MOV [EBX+0x40] */
+            dobjSelf = (struct DObj_s *)(uintptr_t)cgame_syscall(
+                CG_DOBJ_GET_HANDLE, entityNum);
+            int32_t boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_DOBJ_GET_BONE_INDEX, (intptr_t)dobjSelf,
+                (intptr_t)boneName));
+            chunk->boneHandle = coduo_int32_from_bits(
+                (uint32_t)boneIndex + 1u); /* INC EAX; MOV [EBX+0x40] */
         }
     } else {
         /* 0x30023e0a: no slot -> a fixed sentinel flame-info index (1022). */
@@ -115,9 +120,11 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
      * trajectory timestamps. field_48 = spawn time; field_50 = spawn time +
      * 2*durationMsec (the chunk's end/expire time). Both doubles. */
     chunk->ownerClientNum = chunk->ownerInfoIndex;
-    long double spawnTimeWide = (long double)coduo_int32_from_bits(cg_flameTime);
+    long double spawnTimeWide =
+        (long double)coduo_int32_from_bits(cg_flameTime);
     chunk->spawnTime = (double)spawnTimeWide;
-    chunk->endTime = (double)((long double)durationMsec * 2.0L + spawnTimeWide);
+    chunk->endTime = (double)(
+        (long double)durationMsec * 2.0L + spawnTimeWide);
 
     /* 0x30023e32: with no explicit position, skip the position-transform entirely
      * (field_70/74/78 are left as CG_SpawnFlameChunk initialized them). */
@@ -130,8 +137,10 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
              * ABI: self in ESI (dobjSelf), bone index (boneHandle-1) in EDI,
              * &cg_entities[field_34] as the owning-entity stack arg. */
             centity_t *ent = &cg_entities[chunk->ownerInfoIndex];
-            int32_t calcBoneIndex = coduo_int32_from_bits((uint32_t)chunk->boneHandle - 1u);
-            int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_NUM_BONES, (intptr_t)dobjSelf));
+            int32_t calcBoneIndex = coduo_int32_from_bits(
+                (uint32_t)chunk->boneHandle - 1u);
+            int32_t boneCount = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_DOBJ_NUM_BONES, (intptr_t)dobjSelf));
             if ((uint32_t)calcBoneIndex >= (uint32_t)boneCount) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 chunk->boneHandle = 0;
@@ -143,7 +152,9 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
             CG_DObjCalcBone(dobjSelf, calcBoneIndex, ent);
 
             /* 0x30023e5f..0x30023e78: fetch the entity's per-bone matrix table. */
-            DObjSkelMat *boneTable = (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, (intptr_t)dobjSelf, 0);
+            DObjSkelMat *boneTable = (DObjSkelMat *)(intptr_t)
+                cgame_syscall(CG_DOBJ_GET_BONE_MATRICES,
+                              (intptr_t)dobjSelf, 0);
             if (boneTable == NULL) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 chunk->boneHandle = 0;
@@ -163,7 +174,8 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
             local.origin[1] = ent->lerpOrigin[1];
             local.origin[2] = ent->lerpOrigin[2];
 
-            int32_t matrixBoneIndex = coduo_int32_from_bits((uint32_t)chunk->boneHandle - 1u);
+            int32_t matrixBoneIndex = coduo_int32_from_bits(
+                (uint32_t)chunk->boneHandle - 1u);
             const DObjSkelMat *boneMatrix = &boneTable[matrixBoneIndex];
             DObjSkelMat world;
             CG_ComposeBoneMatrix(boneMatrix, &local, &world);
@@ -177,16 +189,25 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
              * consumed unrounded via FMUL ST2/ST3/ST4, so it must not be a float
              * local. Each dot product's FADDP chain order is
              * (col2*dz + col1*dy) + col0*dx, not row-major. */
-            long double dx = (long double)pos[0] - (long double)world.origin[0];
-            float dy = (float)((long double)pos[1] - (long double)world.origin[1]);
-            float dz = (float)((long double)pos[2] - (long double)world.origin[2]);
+            long double dx =
+                (long double)pos[0] - (long double)world.origin[0];
+            float dy = (float)(
+                (long double)pos[1] - (long double)world.origin[1]);
+            float dz = (float)(
+                (long double)pos[2] - (long double)world.origin[2]);
 
-            long double localX = (long double)world.axis[0][2] * (long double)dz + (long double)world.axis[0][1] * (long double)dy +
-                                 (long double)world.axis[0][0] * dx;
-            long double localY = (long double)world.axis[1][2] * (long double)dz + (long double)world.axis[1][1] * (long double)dy +
-                                 (long double)world.axis[1][0] * dx;
-            long double localZ = (long double)world.axis[2][2] * (long double)dz + (long double)world.axis[2][1] * (long double)dy +
-                                 (long double)world.axis[2][0] * dx;
+            long double localX =
+                (long double)world.axis[0][2] * (long double)dz +
+                (long double)world.axis[0][1] * (long double)dy +
+                (long double)world.axis[0][0] * dx;
+            long double localY =
+                (long double)world.axis[1][2] * (long double)dz +
+                (long double)world.axis[1][1] * (long double)dy +
+                (long double)world.axis[1][0] * dx;
+            long double localZ =
+                (long double)world.axis[2][2] * (long double)dz +
+                (long double)world.axis[2][1] * (long double)dy +
+                (long double)world.axis[2][0] * dx;
 
             /* 0x30023f3e rounds Z into a temporary first; X and Y are then
              * stored from their still-extended x87 values, followed by Z's raw
@@ -203,16 +224,21 @@ void CG_SpawnFlameChunkOnBone(centity_t *slot, const vec3_t pos, const char *bon
         }
     }
 
-position_ready:;
+position_ready:
+    ;
     /* 0x30023f64..0x30023fa9: finalize the lifetime/scale fields and stamp the
      * drift-start timestamp (field_80). field_138 is the chunk life-rate
      * (2*count) / (field_50 - field_48); field_130 is stamped with cg_flameTime. */
-    long double driftStartWide = (long double)coduo_int32_from_bits(cg_flameTime);
+    long double driftStartWide =
+        (long double)coduo_int32_from_bits(cg_flameTime);
     int32_t originFlameTime = coduo_int32_from_bits(cg_flameTime);
-    chunk->driftStartTime = (double)driftStartWide; /* 0x30023f77: FST QWORD (non-pop) */
-    chunk->soundAmpRate = 1.0f; /* 0x30023f85: MOV [EBX+0xb8],0x3f800000 */
-    chunk->lifeFraction = 0.0f; /* 0x30023f8f: MOV [EBX+0xe8],0 */
-    chunk->lifeRate = (double)(((long double)count + (long double)count) / ((long double)chunk->endTime - (long double)chunk->spawnTime));
+    chunk->driftStartTime = (double)driftStartWide;    /* 0x30023f77: FST QWORD (non-pop) */
+    chunk->soundAmpRate = 1.0f;                       /* 0x30023f85: MOV [EBX+0xb8],0x3f800000 */
+    chunk->lifeFraction = 0.0f;                       /* 0x30023f8f: MOV [EBX+0xe8],0 */
+    chunk->lifeRate = (double)(
+        ((long double)count + (long double)count) /
+        ((long double)chunk->endTime -
+         (long double)chunk->spawnTime));
     chunk->lifeStartTime = (double)driftStartWide;
 
     /* 0x30023faf: compute the chunk's initial world origin (into field_d8 vec3),

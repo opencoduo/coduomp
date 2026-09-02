@@ -50,11 +50,17 @@ int32_t Item_ListBox_MaxScroll(itemDef_t *item)
     }
 
     if ((item->window.flags & WINDOW_HORIZONTAL) != 0) {
-        maximum = coduo_int32_from_bits((uint32_t)count -
-                                        (uint32_t)coduo_fp_to_i32_extended((long double)item->window.rect.w / listBox->elementWidth) + 1u);
+        maximum = coduo_int32_from_bits(
+            (uint32_t)count -
+            (uint32_t)coduo_fp_to_i32_extended(
+                (long double)item->window.rect.w / listBox->elementWidth) +
+            1u);
     } else {
-        maximum = coduo_int32_from_bits((uint32_t)count -
-                                        (uint32_t)coduo_fp_to_i32_extended((long double)item->window.rect.h / listBox->elementHeight) + 1u);
+        maximum = coduo_int32_from_bits(
+            (uint32_t)count -
+            (uint32_t)coduo_fp_to_i32_extended(
+                (long double)item->window.rect.h / listBox->elementHeight) +
+            1u);
     }
 
     return maximum < 0 ? 0 : maximum;
@@ -90,12 +96,17 @@ int32_t Item_ListBox_ThumbPosition(itemDef_t *item)
     /* The original FIDIV leaves this quotient in the x87 stack through the
      * following FILD/FMUL; there is no binary32 spill before conversion. */
     if (maximum > 0) {
-        trackStep = ((long double)extent - (long double)(SCROLLBAR_SIZE * 2) - 2.0L - (long double)SCROLLBAR_SIZE) / (long double)maximum;
+        trackStep =
+            ((long double)extent - (long double)(SCROLLBAR_SIZE * 2) - 2.0L -
+             (long double)SCROLLBAR_SIZE) /
+            (long double)maximum;
     } else {
         trackStep = 0.0L;
     }
 
-    return coduo_fp_to_i32_extended((long double)listBox->startPos * trackStep + (long double)origin + (long double)(SCROLLBAR_SIZE + 1));
+    return coduo_fp_to_i32_extended(
+        (long double)listBox->startPos * trackStep +
+        (long double)origin + (long double)(SCROLLBAR_SIZE + 1));
 }
 
 int32_t Item_ListBox_ThumbDrawPosition(itemDef_t *item)
@@ -111,22 +122,37 @@ int32_t Item_ListBox_ThumbDrawPosition(itemDef_t *item)
 
     if ((item->window.flags & WINDOW_HORIZONTAL) != 0) {
         cursor = DC->cursorx;
-        edge = (long double)item->window.rect.x + (long double)(SCROLLBAR_SIZE + 1);
-        lowerBound = coduo_int32_from_bits((uint32_t)coduo_fp_to_i32_extended(edge) + LISTBOX_SCROLLBAR_HALF_PIXELS);
-        edge = ((long double)item->window.rect.w + (long double)item->window.rect.x) - (long double)(SCROLLBAR_SIZE * 2) - 1.0L;
-        upperBound = coduo_int32_from_bits((uint32_t)coduo_fp_to_i32_extended(edge) + LISTBOX_SCROLLBAR_HALF_PIXELS);
+        edge = (long double)item->window.rect.x +
+               (long double)(SCROLLBAR_SIZE + 1);
+        lowerBound = coduo_int32_from_bits(
+            (uint32_t)coduo_fp_to_i32_extended(edge) +
+            LISTBOX_SCROLLBAR_HALF_PIXELS);
+        edge = ((long double)item->window.rect.w +
+                (long double)item->window.rect.x) -
+               (long double)(SCROLLBAR_SIZE * 2) - 1.0L;
+        upperBound = coduo_int32_from_bits(
+            (uint32_t)coduo_fp_to_i32_extended(edge) +
+            LISTBOX_SCROLLBAR_HALF_PIXELS);
     } else {
         cursor = DC->cursory;
-        edge = (long double)item->window.rect.y + (long double)(SCROLLBAR_SIZE + 1);
-        lowerBound = coduo_int32_from_bits((uint32_t)coduo_fp_to_i32_extended(edge) + LISTBOX_SCROLLBAR_HALF_PIXELS);
-        edge = ((long double)item->window.rect.h + (long double)item->window.rect.y) - (long double)(SCROLLBAR_SIZE * 2) - 1.0L;
-        upperBound = coduo_int32_from_bits((uint32_t)coduo_fp_to_i32_extended(edge) + LISTBOX_SCROLLBAR_HALF_PIXELS);
+        edge = (long double)item->window.rect.y +
+               (long double)(SCROLLBAR_SIZE + 1);
+        lowerBound = coduo_int32_from_bits(
+            (uint32_t)coduo_fp_to_i32_extended(edge) +
+            LISTBOX_SCROLLBAR_HALF_PIXELS);
+        edge = ((long double)item->window.rect.h +
+                (long double)item->window.rect.y) -
+               (long double)(SCROLLBAR_SIZE * 2) - 1.0L;
+        upperBound = coduo_int32_from_bits(
+            (uint32_t)coduo_fp_to_i32_extended(edge) +
+            LISTBOX_SCROLLBAR_HALF_PIXELS);
     }
 
     if (cursor < lowerBound || cursor > upperBound) {
         return Item_ListBox_ThumbPosition(item);
     }
-    return coduo_int32_from_bits((uint32_t)cursor - LISTBOX_SCROLLBAR_HALF_PIXELS);
+    return coduo_int32_from_bits(
+        (uint32_t)cursor - LISTBOX_SCROLLBAR_HALF_PIXELS);
 }
 
 int32_t Item_ListBox_OverLB(itemDef_t *item, float x, float y)
@@ -148,12 +174,14 @@ int32_t Item_ListBox_OverLB(itemDef_t *item, float x, float y)
     region.w = SCROLLBAR_SIZE;
     region.h = SCROLLBAR_SIZE;
     if ((item->window.flags & WINDOW_HORIZONTAL) != 0) {
-        region.y = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+        region.y = item->window.rect.y + item->window.rect.h -
+                   SCROLLBAR_SIZE;
         region.x = item->window.rect.x;
         if (Rect_ContainsPoint(&region, x, y)) {
             return WINDOW_LB_LEFTARROW;
         }
-        region.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
+        region.x = item->window.rect.x + item->window.rect.w -
+                   SCROLLBAR_SIZE;
         if (Rect_ContainsPoint(&region, x, y)) {
             return WINDOW_LB_RIGHTARROW;
         }
@@ -169,14 +197,17 @@ int32_t Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         }
         region.x = thumb + SCROLLBAR_SIZE;
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        region.w = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE - region.x;
+        region.w = item->window.rect.x + item->window.rect.w -
+                   SCROLLBAR_SIZE - region.x;
     } else {
-        region.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
+        region.x = item->window.rect.x + item->window.rect.w -
+                   SCROLLBAR_SIZE;
         region.y = item->window.rect.y;
         if (Rect_ContainsPoint(&region, x, y)) {
             return WINDOW_LB_LEFTARROW;
         }
-        region.y = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE;
+        region.y = item->window.rect.y + item->window.rect.h -
+                   SCROLLBAR_SIZE;
         if (Rect_ContainsPoint(&region, x, y)) {
             return WINDOW_LB_RIGHTARROW;
         }
@@ -192,7 +223,8 @@ int32_t Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         }
         region.y = thumb + SCROLLBAR_SIZE;
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        region.h = item->window.rect.y + item->window.rect.h - SCROLLBAR_SIZE - region.y;
+        region.h = item->window.rect.y + item->window.rect.h -
+                   SCROLLBAR_SIZE - region.y;
     }
 
     return Rect_ContainsPoint(&region, x, y) ? WINDOW_LB_PGDN : 0;
@@ -219,16 +251,22 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
     memcpy(&body.y, &item->window.rect.y, sizeof(body.y));
 
     if ((item->window.flags & WINDOW_HORIZONTAL) != 0) {
-        if ((item->window.flags & WINDOW_LB_REGION_MASK) != 0 || listBox->elementStyle != LISTBOX_ELEMENT_IMAGE) {
+        if ((item->window.flags & WINDOW_LB_REGION_MASK) != 0 ||
+            listBox->elementStyle != LISTBOX_ELEMENT_IMAGE) {
             return;
         }
-        body.w = (float)((long double)item->window.rect.w - (long double)listBox->drawPadding);
-        body.h = (float)((long double)item->window.rect.h - (long double)SCROLLBAR_SIZE);
+        body.w = (float)((long double)item->window.rect.w -
+                         (long double)listBox->drawPadding);
+        body.h = (float)((long double)item->window.rect.h -
+                         (long double)SCROLLBAR_SIZE);
         if (!Rect_ContainsPoint(&body, x, y)) {
             return;
         }
-        cursor = coduo_int32_from_bits((uint32_t)coduo_fp_to_i32_extended(((long double)x - item->window.rect.x) / listBox->elementWidth) +
-                                       (uint32_t)listBox->startPos);
+        cursor = coduo_int32_from_bits(
+            (uint32_t)coduo_fp_to_i32_extended(
+                ((long double)x - item->window.rect.x) /
+                listBox->elementWidth) +
+            (uint32_t)listBox->startPos);
         listBox->cursorPos = cursor;
         if (cursor >= listBox->endPos) {
             listBox->cursorPos = listBox->endPos;
@@ -239,14 +277,18 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
     if ((item->window.flags & WINDOW_LB_REGION_MASK) != 0) {
         return;
     }
-    body.w = (float)((long double)item->window.rect.w - (long double)SCROLLBAR_SIZE);
-    body.h = (float)((long double)item->window.rect.h - (long double)listBox->drawPadding);
+    body.w = (float)((long double)item->window.rect.w -
+                     (long double)SCROLLBAR_SIZE);
+    body.h = (float)((long double)item->window.rect.h -
+                     (long double)listBox->drawPadding);
     if (!Rect_ContainsPoint(&body, x, y)) {
         return;
     }
-    cursor =
-        coduo_int32_from_bits((uint32_t)coduo_fp_to_i32_extended((((long double)y - 2.0L) - item->window.rect.y) / listBox->elementHeight) +
-                              (uint32_t)listBox->startPos);
+    cursor = coduo_int32_from_bits(
+        (uint32_t)coduo_fp_to_i32_extended(
+            (((long double)y - 2.0L) - item->window.rect.y) /
+            listBox->elementHeight) +
+        (uint32_t)listBox->startPos);
     listBox->cursorPos = cursor;
     if (cursor > listBox->endPos) {
         listBox->cursorPos = listBox->endPos;

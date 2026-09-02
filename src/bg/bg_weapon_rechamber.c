@@ -29,11 +29,13 @@ qboolean PM_Weapon_CheckForRechamber(qboolean allowInterrupt)
     playerState_t *const ps = pm->ps;
     const int32_t weaponState = ps->weaponState;
 
-    if (pml.weaponInfo->raiseEnabled == 0 || Com_BitCheck(ps->weaponRechamberBits, ps->currentWeapon) == 0) {
+    if (pml.weaponInfo->raiseEnabled == 0 ||
+        Com_BitCheck(ps->weaponRechamberBits, ps->currentWeapon) == 0) {
         return qfalse;
     }
 
-    if (weaponState == WEAPON_STATE_RECHAMBERING && allowInterrupt != qfalse) {
+    if (weaponState == WEAPON_STATE_RECHAMBERING &&
+        allowInterrupt != qfalse) {
         Com_BitClear(ps->weaponRechamberBits, ps->currentWeapon);
         PM_AddEvent(EV_EJECT_BRASS);
         if (ps->weaponTime != 0) {
@@ -41,9 +43,12 @@ qboolean PM_Weapon_CheckForRechamber(qboolean allowInterrupt)
         }
     }
 
-    if (ps->weaponTime == 0 || ((weaponState != WEAPON_STATE_FIRING && weaponState != WEAPON_STATE_RECHAMBERING &&
-                                 weaponState != WEAPON_STATE_MELEE_WINDUP && weaponState != WEAPON_STATE_MELEE_RELAX) &&
-                                ps->weaponDelay == 0)) {
+    if (ps->weaponTime == 0 ||
+        ((weaponState != WEAPON_STATE_FIRING &&
+          weaponState != WEAPON_STATE_RECHAMBERING &&
+          weaponState != WEAPON_STATE_MELEE_WINDUP &&
+          weaponState != WEAPON_STATE_MELEE_RELAX) &&
+         ps->weaponDelay == 0)) {
         if (weaponState == WEAPON_STATE_RECHAMBERING) {
             PM_Weapon_FinishRechamber();
         } else if (weaponState == WEAPON_STATE_IDLE) {
@@ -55,7 +60,9 @@ qboolean PM_Weapon_CheckForRechamber(qboolean allowInterrupt)
 
             ps->weaponState = WEAPON_STATE_RECHAMBERING;
             ps->weaponTime = pml.weaponInfo->raiseTime;
-            if (pml.weaponInfo->raiseInterruptTime == 0 || pml.weaponInfo->raiseTime <= pml.weaponInfo->raiseInterruptTime) {
+            if (pml.weaponInfo->raiseInterruptTime == 0 ||
+                pml.weaponInfo->raiseTime <=
+                    pml.weaponInfo->raiseInterruptTime) {
                 ps->weaponDelay = 1;
             } else {
                 ps->weaponDelay = pml.weaponInfo->raiseInterruptTime;

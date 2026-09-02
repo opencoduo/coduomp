@@ -18,8 +18,12 @@
 #error CASE_SENSITIVE_FS is not supported for Windows builds
 #endif
 
-qboolean coduomp_resolve_case_path(const char *trustedRoot, const char *requestedPath, char *resolvedPath, size_t resolvedPathSize);
-FILE *coduomp_fopen_case_read(const char *trustedRoot, const char *requestedPath);
+qboolean coduomp_resolve_case_path(const char *trustedRoot,
+                                   const char *requestedPath,
+                                   char *resolvedPath,
+                                   size_t resolvedPathSize);
+FILE *coduomp_fopen_case_read(const char *trustedRoot,
+                              const char *requestedPath);
 void coduomp_case_path_cache_clear(void);
 
 #endif

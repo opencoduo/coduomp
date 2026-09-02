@@ -34,7 +34,8 @@
  * header name `trap_syscall_68` is just the address-suffixed trap id and is
  * superseded here by the resolved role name.
  */
-int32_t trap_R_SetFog(int32_t a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7)
+int32_t trap_R_SetFog(int32_t a1, int32_t a2, int32_t a3, int32_t a4,
+                  int32_t a5, int32_t a6, int32_t a7)
 {
     return (int32_t)cgame_syscall(CG_R_SET_FOG, a1, a2, a3, a4, a5, a6, a7);
 }

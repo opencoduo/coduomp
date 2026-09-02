@@ -77,12 +77,17 @@ int32_t trap_R_Text_Height(int32_t font, float scale);
 void trap_R_ClearScene(void);
 void trap_R_AddRefEntity(const refEntity_t *entity);
 void trap_R_RenderScene(const refdef_t *refdef);
-void trap_R_Text_PaintWithCursor(float x, float y, int32_t font, float scale, const vec4_t color, const char *text, int32_t cursorPosition,
-                                 int8_t cursorCharacter, int32_t limit, int32_t textStyle);
+void trap_R_Text_PaintWithCursor(float x, float y, int32_t font,
+                                 float scale, const vec4_t color,
+                                 const char *text, int32_t cursorPosition,
+                                 int8_t cursorCharacter, int32_t limit,
+                                 int32_t textStyle);
 void trap_Key_SetOverstrikeMode(qboolean overstrike);
 qboolean trap_Key_GetOverstrikeMode(void);
-void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer, int32_t bufferSize);
-void trap_Key_GetBindingBuf(int32_t keynum, char *buffer, int32_t bufferSize);
+void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
+                                int32_t bufferSize);
+void trap_Key_GetBindingBuf(int32_t keynum, char *buffer,
+                            int32_t bufferSize);
 void trap_Key_SetBinding(int32_t keynum, const char *binding);
 void trap_GetAutoUpdate(void);
 qboolean trap_RunningGame(void);
@@ -113,10 +118,14 @@ void String_Report(void);
 void UI_GetFontInfo(void);
 fontInfo_t *Text_GetFont(int32_t font, float scale);
 void Text_SetActiveFont(int32_t font);
-void UI_DrawHandicap(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawGameType(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawNetGameType(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawJoinGameType(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
+void UI_DrawHandicap(const rectDef_t *rect, int32_t font, float scale,
+                     const vec4_t color, int32_t textStyle);
+void UI_DrawGameType(const rectDef_t *rect, int32_t font, float scale,
+                     const vec4_t color, int32_t textStyle);
+void UI_DrawNetGameType(const rectDef_t *rect, int32_t font, float scale,
+                        const vec4_t color, int32_t textStyle);
+void UI_DrawJoinGameType(const rectDef_t *rect, int32_t font, float scale,
+                         const vec4_t color, int32_t textStyle);
 void UI_DrawPreviewCinematic(const rectDef_t *rect);
 void UI_DrawMapPreview(const rectDef_t *rect, qboolean netMap);
 void UI_ValidateMapPreviewSelection(const rectDef_t *rect, qboolean netMap);
@@ -124,12 +133,21 @@ void UI_DrawNetMapPreview(const rectDef_t *rect);
 void UI_DrawNetMapCinematic(const rectDef_t *rect);
 int32_t UI_OwnerDrawWidth(int32_t ownerDraw, int32_t font, float scale);
 void UI_BuildPlayerList(void);
-void UI_DrawServerRefreshDate(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawServerRefreshTotals(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawKeyBindStatus(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawGLInfo(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_OwnerDraw(float x, float y, float width, float height, float textX, float textY, int32_t ownerDraw, int32_t ownerDrawFlags,
-                  int32_t alignment, float special, int32_t font, float textScale, vec4_t color, qhandle_t background, int32_t textStyle);
+void UI_DrawServerRefreshDate(const rectDef_t *rect, int32_t font,
+                              float scale, const vec4_t color,
+                              int32_t textStyle);
+void UI_DrawServerRefreshTotals(const rectDef_t *rect, int32_t font,
+                                float scale, const vec4_t color,
+                                int32_t textStyle);
+void UI_DrawKeyBindStatus(const rectDef_t *rect, int32_t font, float scale,
+                          const vec4_t color, int32_t textStyle);
+void UI_DrawGLInfo(const rectDef_t *rect, int32_t font, float scale,
+                   const vec4_t color, int32_t textStyle);
+void UI_OwnerDraw(float x, float y, float width, float height,
+                  float textX, float textY, int32_t ownerDraw,
+                  int32_t ownerDrawFlags, int32_t alignment, float special,
+                  int32_t font, float textScale, vec4_t color,
+                  qhandle_t background, int32_t textStyle);
 qboolean UI_OwnerDrawVisible(int32_t ownerDrawFlags);
 qboolean UI_Handicap_HandleKey(int32_t flags, float *special, int32_t key);
 int32_t UI_MapCountByGameType(void);
@@ -138,26 +156,33 @@ void UI_SelectCurrentMap(void);
 const char *UI_SelectedMap(int32_t index, int32_t *actual);
 const char *UI_FileText(const char *filename);
 void UI_Pause(qboolean pause);
-void UI_DrawCinematic(int32_t handle, float x, float y, float width, float height);
+void UI_DrawCinematic(int32_t handle, float x, float y, float width,
+                      float height);
 void UI_RunCinematicFrame(int32_t handle);
-int32_t UI_PlayCinematic(const char *name, float x, float y, float width, float height);
+int32_t UI_PlayCinematic(const char *name, float x, float y, float width,
+                         float height);
 void UI_StopCinematic(int32_t handle);
 qboolean UI_GameType_HandleKey(int32_t flags, float *special, int32_t key);
-qboolean UI_JoinGameType_HandleKey(int32_t flags, float *special, int32_t key);
+qboolean UI_JoinGameType_HandleKey(int32_t flags, float *special,
+                                   int32_t key);
 qboolean UI_NetSource_HandleKey(int32_t flags, float *special, int32_t key);
 qboolean UI_NetFilter_HandleKey(int32_t flags, float *special, int32_t key);
-qboolean UI_NetGameType_HandleKey(int32_t flags, float *special, int32_t key);
+qboolean UI_NetGameType_HandleKey(int32_t flags, float *special,
+                                  int32_t key);
 void UI_FeederSelection(float feeder, int32_t index);
 void UI_SelectCurrentMap(void);
-qboolean UI_OwnerDrawHandleKey(int32_t ownerDraw, int32_t flags, float *special, int32_t key);
+qboolean UI_OwnerDrawHandleKey(int32_t ownerDraw, int32_t flags,
+                               float *special, int32_t key);
 float UI_GetValue(int32_t ownerDraw, int32_t colorRangeType);
 int32_t UI_ServersQsortCompare(const void *left, const void *right);
 void UI_ServersSort(int32_t column, qboolean force);
 void UI_LoadMods(void);
 void UI_LoadMovies(void);
 void UI_LoadDemos(void);
-void UI_DrawNetSource(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
-void UI_DrawNetFilter(const rectDef_t *rect, int32_t font, float scale, const vec4_t color, int32_t textStyle);
+void UI_DrawNetSource(const rectDef_t *rect, int32_t font, float scale,
+                      const vec4_t color, int32_t textStyle);
+void UI_DrawNetFilter(const rectDef_t *rect, int32_t font, float scale,
+                      const vec4_t color, int32_t textStyle);
 void UI_Load(void);
 void UI_Cache_f(void);
 void Menu_SetItemBackground(const char *itemName, const char *backgroundName);
@@ -193,15 +218,20 @@ void UI_StartSkirmish(void);
 void UI_DrawTextBox(int32_t x, int32_t y, int32_t width, int32_t lines);
 const char *stristr(const char *string, const char *substring);
 int32_t UI_FeederCount(float feeder);
-const char *UI_FeederItemText(float feeder, int32_t index, int32_t column, int32_t *imageHandle);
+const char *UI_FeederItemText(float feeder, int32_t index, int32_t column,
+                              int32_t *imageHandle);
 qhandle_t UI_FeederItemImage(float feeder, int32_t index);
-qboolean trap_LAN_ServerStatus(const char *address, char *status, int32_t statusSize);
+qboolean trap_LAN_ServerStatus(const char *address, char *status,
+                               int32_t statusSize);
 void UI_SortServerStatusInfo(uiServerStatusInfo_t *statusInfo);
-qboolean UI_GetServerStatusInfo(const char *address, uiServerStatusInfo_t *statusInfo);
+qboolean UI_GetServerStatusInfo(const char *address,
+                                uiServerStatusInfo_t *statusInfo);
 void UI_ReadableSize(char *buffer, int32_t bufferSize, int32_t value);
 void UI_PrintTime(char *buffer, int32_t bufferSize, int32_t time);
-void Text_PaintCenter(float x, float y, const char *text, float scale, const vec4_t color, int32_t font);
-void UI_DisplayDownloadInfo(int32_t font, const char *downloadName, float centerPoint, float yStart, float scale);
+void Text_PaintCenter(float x, float y, const char *text, float scale,
+                      const vec4_t color, int32_t font);
+void UI_DisplayDownloadInfo(int32_t font, const char *downloadName,
+                            float centerPoint, float yStart, float scale);
 int32_t Menu_Count(void);
 void Menu_Reset(void);
 displayContextDef_t *Display_GetContext(void);
@@ -222,19 +252,27 @@ void UI_StopServerRefresh(void);
 void UI_BuildServerStatus(qboolean force);
 void UI_BuildFindPlayerList(qboolean force);
 void UI_SetColor(const vec4_t rgba);
-void UI_DrawHandlePic(float x, float y, float width, float height, qhandle_t shader);
-void UI_DrawNamedPic(float x, float y, float width, float height, const char *name, int32_t loadMode);
+void UI_DrawHandlePic(float x, float y, float width, float height,
+                      qhandle_t shader);
+void UI_DrawNamedPic(float x, float y, float width, float height,
+                     const char *name, int32_t loadMode);
 void UI_DrawCenteredPic(qhandle_t shader, int32_t width, int32_t height);
 void UI_AssetCache(void);
-void UI_FillRect(float x, float y, float width, float height, const vec4_t color);
+void UI_FillRect(float x, float y, float width, float height,
+                 const vec4_t color);
 void UI_DrawSides(float x, float y, float width, float height);
 void UI_DrawTopBottom(float x, float y, float width, float height);
-void UI_DrawRect(float x, float y, float width, float height, const vec4_t color);
+void UI_DrawRect(float x, float y, float width, float height,
+                 const vec4_t color);
 void UI_UpdateScreen(void);
-void UI_DrawSidesWithSize(float x, float y, float width, float height, float size);
-void UI_DrawTopBottomWithSize(float x, float y, float width, float height, float size);
-void UI_DrawRectWithSize(float x, float y, float width, float height, float size, const vec4_t color);
-qboolean UI_CursorInRect(int32_t x, int32_t y, int32_t width, int32_t height);
+void UI_DrawSidesWithSize(float x, float y, float width, float height,
+                          float size);
+void UI_DrawTopBottomWithSize(float x, float y, float width, float height,
+                              float size);
+void UI_DrawRectWithSize(float x, float y, float width, float height,
+                         float size, const vec4_t color);
+qboolean UI_CursorInRect(int32_t x, int32_t y, int32_t width,
+                         int32_t height);
 int32_t UI_ParseInfos(char *buffer, int32_t maxInfos, char **infos);
 void UI_LoadArenasFromFile(const char *filename);
 char *UI_LoadMenuTextFile(const char *filename);

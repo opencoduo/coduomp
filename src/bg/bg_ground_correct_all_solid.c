@@ -34,11 +34,32 @@
  * helper; no other original function addresses the table.
  */
 static const vec3_t pm_correctSolidOffsets[26] = {
-    {0.0f, 0.0f, 1.0f},   {-1.0f, 0.0f, 1.0f},  {0.0f, -1.0f, 1.0f},  {1.0f, 0.0f, 1.0f},  {0.0f, 1.0f, 1.0f},    {-1.0f, 0.0f, 0.0f},
-    {0.0f, -1.0f, 0.0f},  {1.0f, 0.0f, 0.0f},   {0.0f, 1.0f, 0.0f},   {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, -1.0f},  {0.0f, -1.0f, -1.0f},
-    {1.0f, 0.0f, -1.0f},  {0.0f, 1.0f, -1.0f},  {-1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, 1.0f}, {1.0f, 1.0f, 1.0f},    {-1.0f, 1.0f, 1.0f},
-    {-1.0f, -1.0f, 0.0f}, {1.0f, -1.0f, 0.0f},  {1.0f, 1.0f, 0.0f},   {-1.0f, 1.0f, 0.0f}, {-1.0f, -1.0f, -1.0f}, {1.0f, -1.0f, -1.0f},
-    {1.0f, 1.0f, -1.0f},  {-1.0f, 1.0f, -1.0f},
+    {  0.0f,  0.0f,  1.0f },
+    { -1.0f,  0.0f,  1.0f },
+    {  0.0f, -1.0f,  1.0f },
+    {  1.0f,  0.0f,  1.0f },
+    {  0.0f,  1.0f,  1.0f },
+    { -1.0f,  0.0f,  0.0f },
+    {  0.0f, -1.0f,  0.0f },
+    {  1.0f,  0.0f,  0.0f },
+    {  0.0f,  1.0f,  0.0f },
+    {  0.0f,  0.0f, -1.0f },
+    { -1.0f,  0.0f, -1.0f },
+    {  0.0f, -1.0f, -1.0f },
+    {  1.0f,  0.0f, -1.0f },
+    {  0.0f,  1.0f, -1.0f },
+    { -1.0f, -1.0f,  1.0f },
+    {  1.0f, -1.0f,  1.0f },
+    {  1.0f,  1.0f,  1.0f },
+    { -1.0f,  1.0f,  1.0f },
+    { -1.0f, -1.0f,  0.0f },
+    {  1.0f, -1.0f,  0.0f },
+    {  1.0f,  1.0f,  0.0f },
+    { -1.0f,  1.0f,  0.0f },
+    { -1.0f, -1.0f, -1.0f },
+    {  1.0f, -1.0f, -1.0f },
+    {  1.0f,  1.0f, -1.0f },
+    { -1.0f,  1.0f, -1.0f },
 };
 
 /*
@@ -71,7 +92,8 @@ qboolean PM_CorrectAllSolid(trace_t *results)
         playerState_t *tracePs = move->ps;
         int32_t traceClientNum = tracePs->psClientNum;
         int32_t traceMask = move->traceMask;
-        PM_trace(results, point, move->mins, move->maxs, point, traceClientNum, traceMask);
+        PM_trace(results, point, move->mins, move->maxs, point,
+                 traceClientNum, traceMask);
 
         /* [results+0x2f] == trace_t.startsolid. A neighbour that is not startsolid
          * is an acceptable non-solid position. */
@@ -97,7 +119,9 @@ qboolean PM_CorrectAllSolid(trace_t *results)
             playerState_t *groundTracePs = move->ps;
             int32_t groundTraceClientNum = groundTracePs->psClientNum;
             int32_t groundTraceMask = move->traceMask;
-            PM_trace(results, groundTracePs->psOrigin, move->mins, move->maxs, point, groundTraceClientNum, groundTraceMask);
+            PM_trace(results, groundTracePs->psOrigin, move->mins,
+                     move->maxs, point, groundTraceClientNum,
+                     groundTraceMask);
 
             /* Cache the whole trace_t (rep movsd, 0xc dwords == 48 bytes). */
             move = pm; /* 0x3000a262 reload before the copy. */

@@ -75,17 +75,23 @@ long double Item_Slider_ThumbPosition(itemDef_t *item)
         value = editField->maxVal;
     }
 
-    return ((value - (long double)editField->minVal) / ((long double)editField->maxVal - (long double)editField->minVal)) *
+    return ((value - (long double)editField->minVal) /
+            ((long double)editField->maxVal -
+             (long double)editField->minVal)) *
                UI_SLIDER_USABLE_WIDTH +
            (long double)origin + UI_SLIDER_THUMB_CENTER;
 }
 
 int32_t Item_Slider_OverSlider(itemDef_t *item, float x, float y)
 {
-    const long double left = Item_Slider_ThumbPosition(item) - UI_SLIDER_THUMB_HALF_WIDTH;
-    const float top = item->window.rect.y - UI_SLIDER_THUMB_TOP_OFFSET;
+    const long double left =
+        Item_Slider_ThumbPosition(item) - UI_SLIDER_THUMB_HALF_WIDTH;
+    const float top =
+        item->window.rect.y - UI_SLIDER_THUMB_TOP_OFFSET;
 
-    if ((long double)x < left || (long double)x > left + UI_SLIDER_THUMB_WIDTH || y < top || y > top + UI_SLIDER_THUMB_HEIGHT) {
+    if ((long double)x < left ||
+        (long double)x > left + UI_SLIDER_THUMB_WIDTH ||
+        y < top || y > top + UI_SLIDER_THUMB_HEIGHT) {
         return 0;
     }
     return UI_SLIDER_THUMB_REGION;
@@ -97,11 +103,15 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key)
     float origin;
     long double value;
 
-    if ((item->window.flags & WINDOW_HASFOCUS) == 0 || item->cvar == NULL ||
-        !Rect_ContainsPoint(&item->window.rect, (float)DC->cursorx, (float)DC->cursory)) {
+    if ((item->window.flags & WINDOW_HASFOCUS) == 0 ||
+        item->cvar == NULL ||
+        !Rect_ContainsPoint(&item->window.rect,
+                            (float)DC->cursorx,
+                            (float)DC->cursory)) {
         return qfalse;
     }
-    if (key != K_MOUSE1 && key != K_ENTER && key != K_MOUSE2 && key != K_MOUSE3) {
+    if (key != K_MOUSE1 && key != K_ENTER &&
+        key != K_MOUSE2 && key != K_MOUSE3) {
         return qfalse;
     }
 
@@ -114,13 +124,17 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key)
     } else {
         origin = item->window.rect.x;
     }
-    if (!Rect_ContainsPoint(&item->window.rect, (float)DC->cursorx, (float)DC->cursory)) {
+    if (!Rect_ContainsPoint(&item->window.rect,
+                            (float)DC->cursorx,
+                            (float)DC->cursory)) {
         return qfalse;
     }
 
     value = (long double)editField->minVal +
-            (((long double)(float)DC->cursorx - (long double)origin) * (long double)(1.0f / (float)UI_SLIDER_TRACK_WIDTH)) *
-                ((long double)editField->maxVal - (long double)editField->minVal);
+            (((long double)(float)DC->cursorx - (long double)origin) *
+             (long double)(1.0f / (float)UI_SLIDER_TRACK_WIDTH)) *
+            ((long double)editField->maxVal -
+             (long double)editField->minVal);
     DC->setCVar(item->cvar, va("%f", (double)value));
     return qtrue;
 }
@@ -141,7 +155,8 @@ void Item_Slider_Paint(itemDef_t *item)
         vec4_t dimmed;
         int32_t component;
         const int32_t phase = DC->realTime / UI_SLIDER_PULSE_PERIOD;
-        const float fraction = (float)((coduo_x87_sinl((long double)phase) + 1.0L) * 0.5L);
+        const float fraction =
+            (float)((coduo_x87_sinl((long double)phase) + 1.0L) * 0.5L);
 
         for (component = 0; component < 4; ++component) {
             dimmed[component] = parent->focusColor[component] * 0.8f;
@@ -157,7 +172,9 @@ void Item_Slider_Paint(itemDef_t *item)
     rectY = item->window.rect.y;
     if (item->text != NULL) {
         Item_Text_Paint(item);
-        trackX = (float)((long double)item->textRect.w + (long double)item->textRect.x + UI_SLIDER_TEXT_GAP);
+        trackX = (float)((long double)item->textRect.w +
+                         (long double)item->textRect.x +
+                         UI_SLIDER_TEXT_GAP);
     } else {
         trackX = item->window.rect.x;
     }
@@ -169,16 +186,19 @@ void Item_Slider_Paint(itemDef_t *item)
         display->setColor(color);
         display = DC;
         sliderBar = display->sliderBar;
-        display->drawHandlePic(trackX, rectY, UI_SLIDER_TRACK_WIDTH, 16.0f, sliderBar);
+        display->drawHandlePic(trackX, rectY, UI_SLIDER_TRACK_WIDTH, 16.0f,
+                               sliderBar);
     }
 
     {
         const long double thumbX = Item_Slider_ThumbPosition(item);
-        const long double thumbY = (long double)rectY - UI_SLIDER_THUMB_TOP_OFFSET;
+        const long double thumbY =
+            (long double)rectY - UI_SLIDER_THUMB_TOP_OFFSET;
         displayContextDef_t *display = DC;
         const qhandle_t sliderThumb = display->sliderThumb;
 
-        display->drawHandlePic((float)(thumbX - UI_SLIDER_THUMB_HALF_WIDTH), (float)thumbY, UI_SLIDER_THUMB_WIDTH, UI_SLIDER_THUMB_HEIGHT,
-                               sliderThumb);
+        display->drawHandlePic((float)(thumbX - UI_SLIDER_THUMB_HALF_WIDTH),
+                               (float)thumbY, UI_SLIDER_THUMB_WIDTH,
+                               UI_SLIDER_THUMB_HEIGHT, sliderThumb);
     }
 }

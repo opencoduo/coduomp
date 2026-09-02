@@ -54,17 +54,28 @@ void GetClipboardDataUI(char *buffer, int32_t bufferSize)
  * The second syscall argument is deliberately unused. If the UI requests a
  * unique key while an fs_game module is active, that module's key/checksum
  * pair is returned; otherwise the primary CoD:UO pair is returned. */
-void CLUI_GetCDKey(char *key, int32_t keySize, char *checksum)
+void CLUI_GetCDKey(char *key, int32_t keySize,
+                   char *checksum)
 {
-    const cvar_t *const fsGame = Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
-    const qboolean useUniqueModKey = coduo_uiVm != NULL && UI_usesUniqueCDKey() != 0 && fsGame != NULL && fsGame->string[0] != '\0';
-    const int32_t keyOffset = useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_OFFSET : CL_PRIMARY_CDKEY_OFFSET;
-    const int32_t checksumOffset = useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET : CL_PRIMARY_CDKEY_CHECKSUM_OFFSET;
+    const cvar_t *const fsGame =
+        Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
+    const qboolean useUniqueModKey =
+        coduo_uiVm != NULL &&
+        UI_usesUniqueCDKey() != 0 &&
+        fsGame != NULL &&
+        fsGame->string[0] != '\0';
+    const int32_t keyOffset =
+        useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_OFFSET
+                        : CL_PRIMARY_CDKEY_OFFSET;
+    const int32_t checksumOffset =
+        useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET
+                        : CL_PRIMARY_CDKEY_CHECKSUM_OFFSET;
 
     (void)keySize;
     memcpy(key, &cl_cdkey[keyOffset], CL_CDKEY_PART_SIZE);
     key[CL_CDKEY_PART_SIZE] = '\0';
-    memcpy(checksum, &cl_cdkeyChecksums[checksumOffset], CL_CDKEY_CHECKSUM_SIZE);
+    memcpy(checksum, &cl_cdkeyChecksums[checksumOffset],
+           CL_CDKEY_CHECKSUM_SIZE);
     checksum[CL_CDKEY_CHECKSUM_SIZE] = '\0';
 }
 
@@ -80,22 +91,37 @@ void CLUI_SetCDKey(const char *key, const char *checksum)
 #if defined(_WIN32)
     memcpy(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], key, CL_CDKEY_PART_SIZE);
     cl_cdkey[CL_UNIQUE_MOD_CDKEY_OFFSET] = '\0';
-    memcpy(&cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET], checksum, CL_CDKEY_CHECKSUM_SIZE);
+    memcpy(&cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET],
+           checksum, CL_CDKEY_CHECKSUM_SIZE);
     cl_cdkeyChecksums[CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET] = '\0';
     Com_WriteCDKey();
 #else
-    const cvar_t *const fsGame = Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
-    const qboolean useUniqueModKey = coduo_uiVm != NULL && UI_usesUniqueCDKey() != 0 && fsGame != NULL && fsGame->string[0] != '\0';
-    const int32_t keyOffset = useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_OFFSET : CL_PRIMARY_CDKEY_OFFSET;
-    const int32_t checksumOffset = useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET : CL_PRIMARY_CDKEY_CHECKSUM_OFFSET;
+    const cvar_t *const fsGame =
+        Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
+    const qboolean useUniqueModKey =
+        coduo_uiVm != NULL &&
+        UI_usesUniqueCDKey() != 0 &&
+        fsGame != NULL &&
+        fsGame->string[0] != '\0';
+    const int32_t keyOffset =
+        useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_OFFSET
+                        : CL_PRIMARY_CDKEY_OFFSET;
+    const int32_t checksumOffset =
+        useUniqueModKey ? CL_UNIQUE_MOD_CDKEY_CHECKSUM_OFFSET
+                        : CL_PRIMARY_CDKEY_CHECKSUM_OFFSET;
     /* NOT_FROM_ORIGINAL_SOURCE: modern user-data/content separation. */
-    const char *const gameDirectory = useUniqueModKey ? fsGame->string : "";
+    const char *const gameDirectory =
+        useUniqueModKey ? fsGame->string : "";
 
     memcpy(&cl_cdkey[keyOffset], key, CL_CDKEY_PART_SIZE);
     cl_cdkey[keyOffset + CL_CDKEY_PART_SIZE] = '\0';
-    memcpy(&cl_cdkeyChecksums[checksumOffset], checksum, CL_CDKEY_CHECKSUM_SIZE);
-    cl_cdkeyChecksums[checksumOffset + CL_CDKEY_CHECKSUM_SIZE] = '\0';
-    Com_WriteCDKey(gameDirectory, &cl_cdkey[keyOffset], &cl_cdkeyChecksums[checksumOffset]);
+    memcpy(&cl_cdkeyChecksums[checksumOffset],
+           checksum, CL_CDKEY_CHECKSUM_SIZE);
+    cl_cdkeyChecksums[
+        checksumOffset + CL_CDKEY_CHECKSUM_SIZE] = '\0';
+    Com_WriteCDKey(
+        gameDirectory, &cl_cdkey[keyOffset],
+        &cl_cdkeyChecksums[checksumOffset]);
 #endif
 }
 
@@ -105,7 +131,8 @@ void CLUI_SetCDKey(const char *key, const char *checksum)
 qboolean GetConfigString(int32_t index, char *buffer, int32_t bufferSize)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (buffer == NULL || bufferSize <= 0 || index < 0 || index >= MAX_CONFIGSTRINGS) {
+    if (buffer == NULL || bufferSize <= 0 ||
+        index < 0 || index >= MAX_CONFIGSTRINGS) {
         return qfalse;
     }
 
@@ -134,7 +161,10 @@ qboolean GetClientname(int32_t clientNum, char *buffer, int32_t bufferSize)
         return qfalse;
 
     for (int32_t index = 0; index < cl.snap.numClients; ++index) {
-        const clientState_t *const client = &cl.parseClients[(cl.snap.firstClientSequence + index) & (CODUO_PARSE_RING_COUNT - 1)];
+        const clientState_t *const client =
+            &cl.parseClients[
+                (cl.snap.firstClientSequence + index) &
+                (CODUO_PARSE_RING_COUNT - 1)];
         if (client->clientNum == clientNum) {
             int32_t copySize = bufferSize;
             if ((size_t)copySize > sizeof(client->name)) {
@@ -159,13 +189,16 @@ void GetClientState(uiClientState_t *state)
     state->connectPacketCount = clc.connectPacketCount;
     state->connState = cls.state;
 
-    strncpy(state->servername, cls.serverName, sizeof(state->servername) - 1);
+    strncpy(state->servername, cls.serverName,
+            sizeof(state->servername) - 1);
     state->servername[sizeof(state->servername) - 1] = '\0';
 
-    strncpy(state->updateInfoString, cls.updateInfoString, sizeof(state->updateInfoString) - 1);
+    strncpy(state->updateInfoString, cls.updateInfoString,
+            sizeof(state->updateInfoString) - 1);
     state->updateInfoString[sizeof(state->updateInfoString) - 1] = '\0';
 
-    strncpy(state->messageString, clc.serverMessage, sizeof(state->messageString) - 1);
+    strncpy(state->messageString, clc.serverMessage,
+            sizeof(state->messageString) - 1);
     state->messageString[sizeof(state->messageString) - 1] = '\0';
 
     state->clientNum = cl.snap.ps.psClientNum;

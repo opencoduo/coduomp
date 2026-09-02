@@ -67,7 +67,8 @@ typedef struct viewParms_s {
     float lodScale;                         /* original +0x144 */
     float projectionMatrix[16];             /* original +0x148 */
     float depthHackProjectionMatrix[16];    /* original +0x188 */
-    renderer_frustum_plane_t frustum[R_FRUSTUM_PLANE_COUNT];     /* original +0x1c8 */
+    renderer_frustum_plane_t
+        frustum[R_FRUSTUM_PLANE_COUNT];     /* original +0x1c8 */
     float zFar;                             /* original +0x218 */
     /* RTCW lineage places dirty between zFar and glFog. CoDUOMP zeroes and
      * whole-record copies this lane but has no field-specific access to it. */
@@ -87,52 +88,133 @@ typedef struct viewParms_s {
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-RENDERER_VIEW_PARMS_STATIC_ASSERT(RENDERER_VIEW_PARMS_ALIGNOF(renderer_frustum_plane_t) == 4, "renderer frustum-plane alignment changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(renderer_frustum_plane_t) == 0x14, "renderer frustum-plane size changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_frustum_plane_t, normal) == 0x00, "renderer frustum-plane normal offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_frustum_plane_t, distance) == 0x0c, "renderer frustum-plane distance offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_frustum_plane_t, type) == 0x10, "renderer frustum-plane type offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_frustum_plane_t, signBits) == 0x11, "renderer frustum-plane sign-bits offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_frustum_plane_t, padding12) == 0x12, "renderer frustum-plane padding offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    RENDERER_VIEW_PARMS_ALIGNOF(renderer_frustum_plane_t) == 4,
+    "renderer frustum-plane alignment changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(renderer_frustum_plane_t) == 0x14,
+                                  "renderer frustum-plane size changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_frustum_plane_t, normal) == 0x00,
+    "renderer frustum-plane normal offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_frustum_plane_t, distance) == 0x0c,
+    "renderer frustum-plane distance offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_frustum_plane_t, type) == 0x10,
+    "renderer frustum-plane type offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_frustum_plane_t, signBits) == 0x11,
+    "renderer frustum-plane sign-bits offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_frustum_plane_t, padding12) == 0x12,
+    "renderer frustum-plane padding offset changed");
 
-RENDERER_VIEW_PARMS_STATIC_ASSERT(RENDERER_VIEW_PARMS_ALIGNOF(renderer_dpvs_plane_t) == 4, "renderer DPVS-plane alignment changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(renderer_dpvs_plane_t) == 0x14, "renderer DPVS-plane size changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_dpvs_plane_t, normal) == 0x00, "renderer DPVS-plane normal offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_dpvs_plane_t, distance) == 0x0c, "renderer DPVS-plane distance offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_dpvs_plane_t, sideOffsets) == 0x10, "renderer DPVS-plane side-offset table moved");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(renderer_dpvs_plane_t, cameraSide) == 0x13, "renderer DPVS-plane camera-side offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    RENDERER_VIEW_PARMS_ALIGNOF(renderer_dpvs_plane_t) == 4,
+    "renderer DPVS-plane alignment changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(renderer_dpvs_plane_t) == 0x14,
+                                  "renderer DPVS-plane size changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_dpvs_plane_t, normal) == 0x00,
+    "renderer DPVS-plane normal offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_dpvs_plane_t, distance) == 0x0c,
+    "renderer DPVS-plane distance offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_dpvs_plane_t, sideOffsets) == 0x10,
+    "renderer DPVS-plane side-offset table moved");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(renderer_dpvs_plane_t, cameraSide) == 0x13,
+    "renderer DPVS-plane camera-side offset changed");
 
-RENDERER_VIEW_PARMS_STATIC_ASSERT(RENDERER_VIEW_PARMS_ALIGNOF(orientationr_t) == 4, "renderer orientation alignment changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(orientationr_t) == 0x7c, "renderer orientation size changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(RENDERER_VIEW_PARMS_ALIGNOF(viewParms_t) == 4, "renderer view-parms alignment changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(viewParms_t) == 0x260, "renderer view-parms size changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, orientation) == 0x000, "renderer view orientation offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, world) == 0x07c, "renderer world orientation offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, pvsOrigin) == 0x0f8, "renderer PVS-origin offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, isPortal) == 0x104, "renderer portal marker offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, isMirror) == 0x108, "renderer mirror marker offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, frameSceneNum) == 0x10c, "renderer view frame-scene-number offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, frameCount) == 0x110, "renderer view frame-count offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, portalPlane) == 0x114, "renderer portal-plane offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, viewportX) == 0x128, "renderer view viewport-X offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, viewportY) == 0x12c, "renderer view viewport-Y offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, viewportWidth) == 0x130, "renderer view viewport-width offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, viewportHeight) == 0x134, "renderer view viewport-height offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, fovX) == 0x138, "renderer horizontal-FOV offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, fovY) == 0x13c, "renderer vertical-FOV offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, lodBias) == 0x140, "renderer LOD-bias offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, lodScale) == 0x144, "renderer LOD-scale offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, projectionMatrix) == 0x148, "renderer projection-matrix offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, depthHackProjectionMatrix) == 0x188,
-                                  "renderer depth-hack projection offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, frustum) == 0x1c8, "renderer frustum offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, zFar) == 0x218, "renderer far-clip offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, dirty) == 0x21c, "renderer view dirty offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, glFog) == 0x220, "renderer view-local fog offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, glFog.registered) == 0x250, "renderer view-local fog registration offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, glFog.drawSky) == 0x254, "renderer view-local fog draw-sky offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, glFog.clearScreen) == 0x258, "renderer view-local fog clear-screen offset changed");
-RENDERER_VIEW_PARMS_STATIC_ASSERT(offsetof(viewParms_t, glFog.dirty) == 0x25c, "renderer view-local fog dirty offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    RENDERER_VIEW_PARMS_ALIGNOF(orientationr_t) == 4,
+    "renderer orientation alignment changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(orientationr_t) == 0x7c,
+                                  "renderer orientation size changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    RENDERER_VIEW_PARMS_ALIGNOF(viewParms_t) == 4,
+    "renderer view-parms alignment changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(sizeof(viewParms_t) == 0x260,
+                                  "renderer view-parms size changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, orientation) == 0x000,
+    "renderer view orientation offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, world) == 0x07c,
+    "renderer world orientation offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, pvsOrigin) == 0x0f8,
+    "renderer PVS-origin offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, isPortal) == 0x104,
+    "renderer portal marker offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, isMirror) == 0x108,
+    "renderer mirror marker offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, frameSceneNum) == 0x10c,
+    "renderer view frame-scene-number offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, frameCount) == 0x110,
+    "renderer view frame-count offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, portalPlane) == 0x114,
+    "renderer portal-plane offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, viewportX) == 0x128,
+    "renderer view viewport-X offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, viewportY) == 0x12c,
+    "renderer view viewport-Y offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, viewportWidth) == 0x130,
+    "renderer view viewport-width offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, viewportHeight) == 0x134,
+    "renderer view viewport-height offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, fovX) == 0x138,
+    "renderer horizontal-FOV offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, fovY) == 0x13c,
+    "renderer vertical-FOV offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, lodBias) == 0x140,
+    "renderer LOD-bias offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, lodScale) == 0x144,
+    "renderer LOD-scale offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, projectionMatrix) == 0x148,
+    "renderer projection-matrix offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, depthHackProjectionMatrix) == 0x188,
+    "renderer depth-hack projection offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, frustum) == 0x1c8,
+    "renderer frustum offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, zFar) == 0x218,
+    "renderer far-clip offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, dirty) == 0x21c,
+    "renderer view dirty offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, glFog) == 0x220,
+    "renderer view-local fog offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, glFog.registered) == 0x250,
+    "renderer view-local fog registration offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, glFog.drawSky) == 0x254,
+    "renderer view-local fog draw-sky offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, glFog.clearScreen) == 0x258,
+    "renderer view-local fog clear-screen offset changed");
+RENDERER_VIEW_PARMS_STATIC_ASSERT(
+    offsetof(viewParms_t, glFog.dirty) == 0x25c,
+    "renderer view-local fog dirty offset changed");
 #endif
 
 #undef RENDERER_VIEW_PARMS_ALIGNOF

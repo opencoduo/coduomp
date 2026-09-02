@@ -9,9 +9,12 @@
  * (fraction at +0x00, entityNum at +0x28) and the 48-byte total that the final REP
  * MOVSD (ECX=12 dwords) copies out. Proven at the i386 target width. */
 #if UINTPTR_MAX == 0xFFFFFFFFu
-_Static_assert(offsetof(trace_t, fraction) == 0x00, "trace_t.fraction at +0x00");
-_Static_assert(offsetof(trace_t, entityNum) == 0x28, "trace_t.entityNum at +0x28");
-_Static_assert(sizeof(trace_t) == 0x30, "trace_t is 48 bytes (12 dwords copied by REP MOVSD)");
+_Static_assert(offsetof(trace_t, fraction) == 0x00,
+               "trace_t.fraction at +0x00");
+_Static_assert(offsetof(trace_t, entityNum) == 0x28,
+               "trace_t.entityNum at +0x28");
+_Static_assert(sizeof(trace_t) == 0x30,
+               "trace_t is 48 bytes (12 dwords copied by REP MOVSD)");
 #endif
 
 /*
@@ -78,12 +81,16 @@ _Static_assert(sizeof(trace_t) == 0x30, "trace_t is 48 bytes (12 dwords copied b
  *   30035409  ESI = &result
  *   3003540d  REP MOVSD  (DF=0) copies 12 dwords = 48 bytes from result to *out
  */
-void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
-                     int32_t contentMask)
+void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins,
+                        const vec3_t maxs, const vec3_t end,
+                        int32_t passEntityNum, int32_t contentMask)
 {
     trace_t result;
 
-    cgame_syscall(CG_CM_CAPSULE_TRACE, (intptr_t)&result, (intptr_t)start, (intptr_t)end, (intptr_t)mins, (intptr_t)maxs, 0, contentMask);
+    cgame_syscall(CG_CM_CAPSULE_TRACE, (intptr_t)&result,
+                  (intptr_t)start, (intptr_t)end,
+                  (intptr_t)mins, (intptr_t)maxs,
+                  0, contentMask);
 
     if (result.fraction == doubleOne) {
         result.entityNum = ENTITYNUM_NONE;
@@ -92,7 +99,8 @@ void CG_TraceCapsule(trace_t *out, const vec3_t start, const vec3_t mins, const 
     }
 
     /* This twin passes 1 (not 0) in the marks helper's next-to-last slot. */
-    CG_ClipMoveToEntities(start, mins, maxs, end, passEntityNum, contentMask, 1, (trace_t *)&result);
+    CG_ClipMoveToEntities(start, mins, maxs, end, passEntityNum,
+                         contentMask, 1, (trace_t *)&result);
 
     *out = result;
 }

@@ -46,7 +46,8 @@ qboolean SV_inPVS(const vec3_t point1, const vec3_t point2)
     if (cluster2 < 0) {
         return qfalse;
     }
-    if (pvs != NULL && (pvs[cluster2 >> 3] & (1u << (cluster2 & 7))) == 0) {
+    if (pvs != NULL &&
+        (pvs[cluster2 >> 3] & (1u << (cluster2 & 7))) == 0) {
         return qfalse;
     }
     if (CM_AreasConnected(area1, area2) == qfalse) {
@@ -58,36 +59,43 @@ qboolean SV_inPVS(const vec3_t point1, const vec3_t point2)
 qboolean SV_inSnapshot(const vec3_t origin, int32_t entityNum)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (entityNum < 0 || entityNum >= sv_numGentities || entityNum >= MAX_GENTITIES) {
+    if (entityNum < 0 || entityNum >= sv_numGentities ||
+        entityNum >= MAX_GENTITIES) {
         return qfalse;
     }
 
     sharedEntity_t *const gentity = SV_GentityNum(entityNum);
 
-    if (gentity->linked == qfalse || (gentity->svFlags & SVF_NOCLIENT) != 0) {
+    if (gentity->linked == qfalse ||
+        (gentity->svFlags & SVF_NOCLIENT) != 0) {
         return qfalse;
     }
-    if ((gentity->svFlags & SVF_VISIBILITY_BYPASS_MASK) != 0 || gentity->soundTime != 0) {
+    if ((gentity->svFlags & SVF_VISIBILITY_BYPASS_MASK) != 0 ||
+        gentity->soundTime != 0) {
         return qtrue;
     }
 
-    svEntity_t *const serverEntity = SV_SvEntityForGentity(gentity);
+    svEntity_t *const serverEntity =
+        SV_SvEntityForGentity(gentity);
     const int32_t leafNum = CM_PointLeafnum(origin);
     const int32_t areaNum = CM_LeafArea(leafNum);
 
-    if (CM_AreasConnected(areaNum, serverEntity->areaNum) == qfalse && CM_AreasConnected(areaNum, serverEntity->areaNum2) == qfalse) {
+    if (CM_AreasConnected(areaNum, serverEntity->areaNum) == qfalse &&
+        CM_AreasConnected(areaNum, serverEntity->areaNum2) == qfalse) {
         return qfalse;
     }
     if (serverEntity->numClusters == 0) {
         return qfalse;
     }
 
-    const uint8_t *const pvs = CM_ClusterPVS(CM_LeafCluster(leafNum));
+    const uint8_t *const pvs =
+        CM_ClusterPVS(CM_LeafCluster(leafNum));
     int32_t testCluster = 0;
     int32_t clusterIndex = 0;
     while (clusterIndex < serverEntity->numClusters) {
         testCluster = serverEntity->clusterNums[clusterIndex];
-        if ((pvs[testCluster >> 3] & (1u << (testCluster & 7))) != 0) {
+        if ((pvs[testCluster >> 3] &
+             (1u << (testCluster & 7))) != 0) {
             break;
         }
         ++clusterIndex;
@@ -99,7 +107,9 @@ qboolean SV_inSnapshot(const vec3_t origin, int32_t entityNum)
         }
 
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        while (testCluster <= serverEntity->lastCluster && (pvs[testCluster >> 3] & (1u << (testCluster & 7))) == 0) {
+        while (testCluster <= serverEntity->lastCluster &&
+               (pvs[testCluster >> 3] &
+                (1u << (testCluster & 7))) == 0) {
             ++testCluster;
         }
         if (testCluster == serverEntity->lastCluster) {
@@ -107,24 +117,33 @@ qboolean SV_inSnapshot(const vec3_t origin, int32_t entityNum)
         }
     }
 
-    const uint32_t fogDistanceBits = (uint32_t)VM_Call(sv_gameVM, GAME_GET_FOG_OPAQUE_DIST_SQ_BITS, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    const uint32_t fogDistanceBits = (uint32_t)VM_Call(
+        sv_gameVM, GAME_GET_FOG_OPAQUE_DIST_SQ_BITS,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     float fogDistanceSquared;
-    memcpy(&fogDistanceSquared, &fogDistanceBits, sizeof(fogDistanceSquared));
+    memcpy(&fogDistanceSquared, &fogDistanceBits,
+           sizeof(fogDistanceSquared));
 
     if (fogDistanceSquared == FLT_MAX) {
         return qtrue;
     }
-    return BoxDistSqrdExceeds(gentity->absMin, gentity->absMax, origin, fogDistanceSquared) == qfalse ? qtrue : qfalse;
+    return BoxDistSqrdExceeds(gentity->absMin, gentity->absMax,
+                              origin, fogDistanceSquared) == qfalse
+        ? qtrue
+        : qfalse;
 }
 
 qboolean SV_inPVSIgnorePortals(const vec3_t point1, const vec3_t point2)
 {
-    const int32_t cluster1 = CM_LeafCluster(CM_PointLeafnum(point1));
+    const int32_t cluster1 =
+        CM_LeafCluster(CM_PointLeafnum(point1));
     const uint8_t *const pvs = CM_ClusterPVS(cluster1);
-    const int32_t cluster2 = CM_LeafCluster(CM_PointLeafnum(point2));
+    const int32_t cluster2 =
+        CM_LeafCluster(CM_PointLeafnum(point2));
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (pvs != NULL && (pvs[cluster2 >> 3] & (1u << (cluster2 & 7))) == 0) {
+    if (pvs != NULL &&
+        (pvs[cluster2 >> 3] & (1u << (cluster2 & 7))) == 0) {
         return qfalse;
     }
     return qtrue;
@@ -132,9 +151,11 @@ qboolean SV_inPVSIgnorePortals(const vec3_t point1, const vec3_t point2)
 
 void SV_AdjustAreaPortalState(sharedEntity_t *gentity, qboolean open)
 {
-    svEntity_t *const serverEntity = SV_SvEntityForGentity(gentity);
+    svEntity_t *const serverEntity =
+        SV_SvEntityForGentity(gentity);
 
     if (serverEntity->areaNum2 != -1) {
-        CM_AdjustAreaPortalState(serverEntity->areaNum, serverEntity->areaNum2, open);
+        CM_AdjustAreaPortalState(serverEntity->areaNum,
+                                 serverEntity->areaNum2, open);
     }
 }

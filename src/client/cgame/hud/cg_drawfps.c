@@ -106,7 +106,8 @@ static inline int32_t cgame_compat_stats_visible_len(const char *s)
     while (*s != '\0') {
         if ((int8_t)s[0] == '^') {
             int8_t next = (int8_t)s[1];
-            if (next != '\0' && next != '^' && next >= '0' && next <= '9') {
+            if (next != '\0' && next != '^' &&
+                next >= '0' && next <= '9') {
                 s += 2;           /* color escape: skip both bytes, do not count */
                 continue;
             }
@@ -141,13 +142,15 @@ float CG_DrawFPS(float y)
 
     /* --- ring update -------------------------------------------------------- */
     now = cgame_compat_stats_milliseconds();
-    sample = coduo_int32_from_bits((uint32_t)now - (uint32_t)cg_statsPrevTimeMs);
+    sample = coduo_int32_from_bits(
+        (uint32_t)now - (uint32_t)cg_statsPrevTimeMs);
     cg_statsPrevTimeMs = now;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     idx = (int32_t)((uint32_t)cg_statsFrameCount & 31u);
     cg_statsFrameTimes[idx] = sample;
-    cg_statsFrameCount = coduo_int32_from_bits((uint32_t)cg_statsFrameCount + 1u);
+    cg_statsFrameCount = coduo_int32_from_bits(
+        (uint32_t)cg_statsFrameCount + 1u);
     if ((uint32_t)cg_statsFrameCount < 32u) {
         return y; /* warmup: not enough samples yet */
     }
@@ -173,9 +176,11 @@ float CG_DrawFPS(float y)
     {
         long double devSum = 0.0f; /* seeded from FLD 0.0f at 0x3007bcec */
         for (i = 0; i < 32; i++) {
-            devSum += fabsl((long double)cg_statsFrameTimes[i] - (long double)avgMs);
+            devSum += fabsl((long double)cg_statsFrameTimes[i] -
+                            (long double)avgMs);
         }
-        avgDeviation = (float)(devSum * (long double)0.03125f);
+        avgDeviation =
+            (float)(devSum * (long double)0.03125f);
     }
 
     if (sum == 0) {
@@ -187,18 +192,26 @@ float CG_DrawFPS(float y)
 
     /* 0x30018210/0x30018234/0x30018258: the divisor is FILD'd straight into the
      * FDIVR (no FSTP DWORD), so sum/max/min stay exact -- no (float) casts. */
-    const float fpsValue = (float)((long double)32000.0f / (long double)sum);
-    const float minValue = (float)((long double)1000.0f / (long double)maxFrameTime);
-    const float maxValue = (float)((long double)1000.0f / (long double)minFrameTime);
-    fpsInt = coduo_x87_fistp_i32((long double)fpsValue + CG_STATS_FISTP_BIAS);
-    minStat = coduo_x87_fistp_i32((long double)minValue + CG_STATS_FISTP_BIAS);
-    maxStat = coduo_x87_fistp_i32((long double)maxValue + CG_STATS_FISTP_BIAS);
-    jitterInt = coduo_x87_fistp_i32((long double)avgDeviation + CG_STATS_FISTP_BIAS);
+    const float fpsValue = (float)(
+        (long double)32000.0f / (long double)sum);
+    const float minValue = (float)(
+        (long double)1000.0f / (long double)maxFrameTime);
+    const float maxValue = (float)(
+        (long double)1000.0f / (long double)minFrameTime);
+    fpsInt = coduo_x87_fistp_i32(
+        (long double)fpsValue + CG_STATS_FISTP_BIAS);
+    minStat = coduo_x87_fistp_i32(
+        (long double)minValue + CG_STATS_FISTP_BIAS);
+    maxStat = coduo_x87_fistp_i32(
+        (long double)maxValue + CG_STATS_FISTP_BIAS);
+    jitterInt = coduo_x87_fistp_i32(
+        (long double)avgDeviation + CG_STATS_FISTP_BIAS);
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): keep the recovered FPS
      * column intact and translate its authored right edge to the native
      * widescreen edge. */
-    const float rightAnchor = 620.0f + cgame_compat_right_hud_virtual_offset();
+    const float rightAnchor =
+        620.0f + cgame_compat_right_hud_virtual_offset();
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): cg_drawFPSMode 1 keeps
      * the original 32-frame aggregate but presents only its rounded number. Use
@@ -207,8 +220,11 @@ float CG_DrawFPS(float y)
      * unshadowed 8-pixel debug font. cg_drawFPS still owns visibility. */
     if (cgame_compat_uses_simple_fps_display() != qfalse) {
         text = va("%i", fpsInt);
-        x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)16.0f);
-        CG_DrawBigString(x, (float)((long double)y + (long double)2.0f), text, 1.0f);
+        x = (float)((long double)rightAnchor -
+                    (long double)cgame_compat_stats_visible_len(text) *
+                        (long double)16.0f);
+        CG_DrawBigString(
+            x, (float)((long double)y + (long double)2.0f), text, 1.0f);
         return (float)((long double)y + (long double)20.0f);
     }
 
@@ -216,10 +232,12 @@ float CG_DrawFPS(float y)
     text = va("%ifps(%i-%i,%i)", fpsInt, minStat, maxStat, jitterInt);
     int32_t visibleLength = cgame_compat_stats_visible_len(text);
     float drawY = (float)((long double)y + (long double)2.0f);
-    x = (float)((long double)rightAnchor - (long double)visibleLength * (long double)16.0f);
-    CG_DrawBigString(x, drawY, text, 1.0f); /* +2.0f = 0x3007bce4 */
+    x = (float)((long double)rightAnchor -
+                (long double)visibleLength *
+                    (long double)16.0f);
+    CG_DrawBigString(x, drawY, text, 1.0f);               /* +2.0f = 0x3007bce4 */
     int32_t detailLevel = cg_drawFPS_vmCvar.integer;
-    y = (float)((long double)y + (long double)20.0f); /* 0x3007be04 */
+    y = (float)((long double)y + (long double)20.0f);     /* 0x3007be04 */
 
     /* Only the detailed renderer lines below are gated by the detail level. */
     if (detailLevel <= 1) {
@@ -232,27 +250,40 @@ float CG_DrawFPS(float y)
     /* --- "%i/%i tris" -------------------------------------------------------- */
     /* Push order (0x3001835b push [c8]/3, 0x30018370 push [c4]/3, then fmt) makes
      * the first "%i" = indexCount/3 (0x84c4) and the second = drawnIndexCount/3 (0x84c8). */
-    text = va("%i/%i tris", cg_rendererStats.indexCount / 3, cg_rendererStats.drawnIndexCount / 3);
-    x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)8.0f);
-    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f), text, 1.0f);
+    text = va("%i/%i tris", cg_rendererStats.indexCount / 3,
+              cg_rendererStats.drawnIndexCount / 3);
+    x = (float)((long double)rightAnchor -
+                (long double)cgame_compat_stats_visible_len(text) *
+                    (long double)8.0f);
+    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
+                       text, 1.0f);
     y = (float)((long double)y + (long double)16.0f);
 
     /* --- "%i vert" ----------------------------------------------------------- */
     text = va("%i vert", cg_rendererStats.vertexCount);
-    x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)8.0f);
-    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f), text, 1.0f);
+    x = (float)((long double)rightAnchor -
+                (long double)cgame_compat_stats_visible_len(text) *
+                    (long double)8.0f);
+    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
+                       text, 1.0f);
     y = (float)((long double)y + (long double)16.0f);
 
     /* --- "%i prim" ----------------------------------------------------------- */
     text = va("%i prim", cg_rendererStats.drawCallCount);
-    x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)8.0f);
-    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f), text, 1.0f);
+    x = (float)((long double)rightAnchor -
+                (long double)cgame_compat_stats_visible_len(text) *
+                    (long double)8.0f);
+    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
+                       text, 1.0f);
     y = (float)((long double)y + (long double)16.0f);
 
     /* --- "%i ents" ----------------------------------------------------------- */
     text = va("%i ents", cg_rendererStats.entityCount);
-    x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)8.0f);
-    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f), text, 1.0f);
+    x = (float)((long double)rightAnchor -
+                (long double)cgame_compat_stats_visible_len(text) *
+                    (long double)8.0f);
+    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
+                       text, 1.0f);
     y = (float)((long double)y + (long double)16.0f);
 
     /* --- "%.2f/%.2f/%.2f mb  " ---------------------------------------------- */
@@ -270,21 +301,35 @@ float CG_DrawFPS(float y)
          * renderer memory. The (double) narrowing is the FSTP QWORD to the va arg. */
         int32_t imageMemory = cg_rendererStats.imageMemory;
         int32_t lightmapMemory = cg_rendererStats.lightmapMemory;
-        int32_t nonLightmapImageMemory = coduo_int32_from_bits((uint32_t)imageMemory - (uint32_t)lightmapMemory);
-        double imageMemoryMb = (double)((long double)cg_rendererStats.imageMemory * (long double)9.5367431640625e-07f);
-        double nonLightmapImageMemoryMb = (double)((long double)nonLightmapImageMemory * (long double)9.5367431640625e-07f);
-        double textureMemoryMb = (double)((long double)cg_rendererStats.textureMemory * (long double)9.5367431640625e-07f);
-        text = va("%.2f/%.2f/%.2f mb  ", textureMemoryMb, nonLightmapImageMemoryMb, imageMemoryMb);
+        int32_t nonLightmapImageMemory = coduo_int32_from_bits(
+            (uint32_t)imageMemory - (uint32_t)lightmapMemory);
+        double imageMemoryMb = (double)(
+            (long double)cg_rendererStats.imageMemory *
+            (long double)9.5367431640625e-07f);
+        double nonLightmapImageMemoryMb = (double)(
+            (long double)nonLightmapImageMemory *
+            (long double)9.5367431640625e-07f);
+        double textureMemoryMb = (double)(
+            (long double)cg_rendererStats.textureMemory *
+            (long double)9.5367431640625e-07f);
+        text = va("%.2f/%.2f/%.2f mb  ", textureMemoryMb,
+                  nonLightmapImageMemoryMb, imageMemoryMb);
     }
-    x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)8.0f);
-    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f), text, 1.0f);
+    x = (float)((long double)rightAnchor -
+                (long double)cgame_compat_stats_visible_len(text) *
+                    (long double)8.0f);
+    CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
+                       text, 1.0f);
     y = (float)((long double)y + (long double)16.0f);
 
     /* --- "%.2f dc  " (only when depth complexity is non-zero) ---------------- */
     if (cg_rendererStats.overdrawRatio != 0.0f) { /* FUCOMPP vs 0.0f @0x3007bcec */
         text = va("%.2f dc  ", (double)cg_rendererStats.overdrawRatio);
-        x = (float)((long double)rightAnchor - (long double)cgame_compat_stats_visible_len(text) * (long double)8.0f);
-        CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f), text, 1.0f);
+        x = (float)((long double)rightAnchor -
+                    (long double)cgame_compat_stats_visible_len(text) *
+                        (long double)8.0f);
+        CG_DrawSmallString(x, (float)((long double)y + (long double)1.0f),
+                           text, 1.0f);
         y = (float)((long double)y + (long double)16.0f);
     }
 

@@ -21,7 +21,8 @@ qboolean PM_InteruptWeaponWithProneMove(void)
 {
     playerState_t *ps = pm->ps;
 
-    if ((ps->playerStateFlags & PMF_ADS) != 0 && BG_GetInfoForWeapon(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG) {
+    if ((ps->playerStateFlags & PMF_ADS) != 0 &&
+        BG_GetInfoForWeapon(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG) {
         return qfalse;
     }
 

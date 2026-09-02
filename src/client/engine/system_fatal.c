@@ -22,7 +22,8 @@ enum {
 #if !defined(_WIN32)
 /* NOT_FROM_ORIGINAL_SOURCE: native platform implementation of the original
  * Win32 error-dialog operation. */
-void Sys_ShowErrorDialog(const char *message, const char *title, uint32_t dialogType)
+void Sys_ShowErrorDialog(const char *message, const char *title,
+                         uint32_t dialogType)
 {
     (void)dialogType;
     CoduoSDL_ShowErrorDialog(message, title);

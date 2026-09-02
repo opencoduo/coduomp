@@ -52,5 +52,7 @@ int32_t trap_FX_SetWind(const vec3_t direction, float intensity)
     uint32_t intensityBits;
 
     memcpy(&intensityBits, &intensity, sizeof(intensityBits));
-    return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_SET_WIND, (intptr_t)direction, coduo_int32_from_bits(intensityBits)));
+    return coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_FX_SET_WIND, (intptr_t)direction,
+        coduo_int32_from_bits(intensityBits)));
 }

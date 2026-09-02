@@ -48,12 +48,15 @@ qboolean PM_Weapon_WeaponTimeAdjust(void)
     if (ps->weaponTime != 0) {
         ps->weaponTime -= pml.msec;
         if (ps->weaponTime < 1) {
-            if (pml.weaponInfo->weaponTimeHold != 0 && (pm->command.buttons & PM_BUTTON_FIRE) != 0 &&
-                ps->currentWeapon == pm->command.weapon && PM_WeaponAmmoAvailable(ps->currentWeapon) != 0) {
+            if (pml.weaponInfo->weaponTimeHold != 0 &&
+                (pm->command.buttons & PM_BUTTON_FIRE) != 0 &&
+                ps->currentWeapon == pm->command.weapon &&
+                PM_WeaponAmmoAvailable(ps->currentWeapon) != 0) {
                 ps->weaponTime = 1;
                 if (ps->weaponState == WEAPON_STATE_RECHAMBERING) {
                     PM_Weapon_FinishRechamber();
-                } else if (ps->weaponState == WEAPON_STATE_FIRING || ps->weaponState == WEAPON_STATE_MELEE_WINDUP ||
+                } else if (ps->weaponState == WEAPON_STATE_FIRING ||
+                           ps->weaponState == WEAPON_STATE_MELEE_WINDUP ||
                            ps->weaponState == WEAPON_STATE_MELEE_RELAX) {
                     PM_ContinueWeaponAnim(0);
                     ps->weaponState = WEAPON_STATE_IDLE;
@@ -80,10 +83,14 @@ qboolean PM_Weapon_WeaponTimeAdjust(void)
 qboolean PM_Weapon_FinishFiring(qboolean delayExpired)
 {
     playerState_t *ps = pm->ps;
-    const qboolean primaryHeld = (pm->command.buttons & PM_BUTTON_FIRE) != 0 ? qtrue : qfalse;
+    const qboolean primaryHeld =
+        (pm->command.buttons & PM_BUTTON_FIRE) != 0 ? qtrue : qfalse;
 
-    if (primaryHeld == qfalse && pml.weaponInfo->weaponType == WEAPTYPE_GRENADE && pml.weaponInfo->specialTimeEnabled != 0 &&
-        ps->grenadeTimeLeft < pml.weaponInfo->specialTimeThreshold && ps->grenadeTimeLeft != 0) {
+    if (primaryHeld == qfalse &&
+        pml.weaponInfo->weaponType == WEAPTYPE_GRENADE &&
+        pml.weaponInfo->specialTimeEnabled != 0 &&
+        ps->grenadeTimeLeft < pml.weaponInfo->specialTimeThreshold &&
+        ps->grenadeTimeLeft != 0) {
         return qfalse;
     }
 
@@ -124,13 +131,18 @@ void PM_Weapon_StartFiring(qboolean delayExpired)
 
             /* The product remains live through the original truncating FISTP. */
 #if EMULATE_X87
-            ps->weaponDelay = x87f_store_i32_trunc(
-                x87f_mul(x87f_div(x87f_load_f32(one), x87f_load_f32(rate)), x87f_sub(x87f_load_f32(one), x87f_load_f32(adsFraction))));
-#elif defined(__x86_64__) && (defined(__GNUC__) || defined(__clang__))
-            ps->weaponDelay =
-                CODUO_X87_TRUNCATE_I32(((long double)one / (long double)rate) * ((long double)one - (long double)adsFraction));
+            ps->weaponDelay = x87f_store_i32_trunc(x87f_mul(
+                x87f_div(x87f_load_f32(one), x87f_load_f32(rate)),
+                x87f_sub(x87f_load_f32(one),
+                         x87f_load_f32(adsFraction))));
+#elif defined(__x86_64__) && \
+      (defined(__GNUC__) || defined(__clang__))
+            ps->weaponDelay = CODUO_X87_TRUNCATE_I32(
+                ((long double)one / (long double)rate) *
+                ((long double)one - (long double)adsFraction));
 #else
-            ps->weaponDelay = (int32_t)((one / rate) * (one - adsFraction));
+            ps->weaponDelay =
+                (int32_t)((one / rate) * (one - adsFraction));
 #endif
         }
 
@@ -162,9 +174,12 @@ qboolean PM_Weapon_CheckFiringAmmo(void)
         return qtrue;
     }
 
-    reserveHasAmmo = ps->ammo[weaponInfo->ammoIndex] >= ammoRequired ? qtrue : qfalse;
+    reserveHasAmmo =
+        ps->ammo[weaponInfo->ammoIndex] >= ammoRequired ? qtrue : qfalse;
 
-    if (pml.weaponInfo->weaponType != WEAPTYPE_GRENADE && reserveHasAmmo == qfalse && pml.weaponInfo->weaponClass != WEAPCLASS_SPOTTER) {
+    if (pml.weaponInfo->weaponType != WEAPTYPE_GRENADE &&
+        reserveHasAmmo == qfalse &&
+        pml.weaponInfo->weaponClass != WEAPCLASS_SPOTTER) {
         PM_AddEvent(EV_NOAMMO);
     }
 
@@ -185,9 +200,13 @@ void PM_Weapon_SetFPSFireAnim(void)
     pmWeaponAnim_t animation;
 
     if (ps->adsFraction > PM_WEAPON_ADS_RAISE_THRESHOLD) {
-        animation = clipEmpty != qfalse ? PM_WEAPON_ANIM_ADS_FIRE_LASTSHOT : PM_WEAPON_ANIM_ADS_FIRE;
+        animation = clipEmpty != qfalse
+                        ? PM_WEAPON_ANIM_ADS_FIRE_LASTSHOT
+                        : PM_WEAPON_ANIM_ADS_FIRE;
     } else {
-        animation = clipEmpty != qfalse ? PM_WEAPON_ANIM_FIRE_LASTSHOT : PM_WEAPON_ANIM_FIRE;
+        animation = clipEmpty != qfalse
+                        ? PM_WEAPON_ANIM_FIRE_LASTSHOT
+                        : PM_WEAPON_ANIM_FIRE;
     }
 
     PM_StartWeaponAnim(animation);
@@ -203,12 +222,15 @@ void PM_Weapon_AddFiringAimSpreadScale(void)
 
     /* Both original x87 bodies retain multiply/add through the binary32 store. */
 #if EMULATE_X87
-    ps->aimSpreadScale =
-        x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pml.weaponInfo->fireAimSpreadScale), x87f_load_f32(PM_AIM_SPREAD_SCALE_MAX)),
-                                x87f_load_f32(ps->aimSpreadScale)));
+    ps->aimSpreadScale = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(pml.weaponInfo->fireAimSpreadScale),
+                 x87f_load_f32(PM_AIM_SPREAD_SCALE_MAX)),
+        x87f_load_f32(ps->aimSpreadScale)));
 #else
-    ps->aimSpreadScale =
-        (float)((long double)pml.weaponInfo->fireAimSpreadScale * (long double)PM_AIM_SPREAD_SCALE_MAX + (long double)ps->aimSpreadScale);
+    ps->aimSpreadScale = (float)(
+        (long double)pml.weaponInfo->fireAimSpreadScale *
+            (long double)PM_AIM_SPREAD_SCALE_MAX +
+        (long double)ps->aimSpreadScale);
 #endif
     if (ps->aimSpreadScale > PM_AIM_SPREAD_SCALE_MAX) {
         ps->aimSpreadScale = PM_AIM_SPREAD_SCALE_MAX;
@@ -224,11 +246,13 @@ void PM_Weapon_FireWeapon(qboolean delayExpired)
         return;
     }
     if (pml.weaponInfo->weaponClass == WEAPCLASS_SPOTTER &&
-        ((ps->playerStateFlags & PMF_ADS) == 0 || pml.weaponInfo->adsFireDelayEnabled == 0)) {
+        ((ps->playerStateFlags & PMF_ADS) == 0 ||
+         pml.weaponInfo->adsFireDelayEnabled == 0)) {
         return;
     }
     if (pml.weaponInfo->weaponClass == WEAPCLASS_LMG &&
-        ((ps->playerStateFlags & PMF_ADS) == 0 || ps->adsFraction < PM_WEAPON_LMG_ADS_FRACTION_MIN)) {
+        ((ps->playerStateFlags & PMF_ADS) == 0 ||
+         ps->adsFraction < PM_WEAPON_LMG_ADS_FRACTION_MIN)) {
         return;
     }
 
@@ -237,20 +261,25 @@ void PM_Weapon_FireWeapon(qboolean delayExpired)
         return;
     }
 
-    if (PM_WeaponAmmoAvailable(weapon) != -1 && ((ps->entityStateFlags & EF_RESTRICTED_MASK) == 0 ||
-                                                 BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition) != qfalse)) {
+    if (PM_WeaponAmmoAvailable(weapon) != -1 &&
+        ((ps->entityStateFlags & EF_RESTRICTED_MASK) == 0 ||
+         BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType,
+                                          ps->vehiclePosition) != qfalse)) {
         PM_WeaponUseAmmo(weapon, PM_Weapon_GetAmmoRequired(weapon));
         if (pml.weaponInfo->weaponType == WEAPTYPE_GAS) {
             PM_WeaponUseAmmo(weapon, PM_Weapon_GetAmmoRequired(weapon));
         }
     }
 
-    if (pml.weaponInfo->weaponType == WEAPTYPE_GRENADE || pml.weaponInfo->weaponType == WEAPTYPE_GAS) {
+    if (pml.weaponInfo->weaponType == WEAPTYPE_GRENADE ||
+        pml.weaponInfo->weaponType == WEAPTYPE_GAS) {
         ps->weaponTime = pml.weaponInfo->fireTime;
     }
 
     PM_Weapon_SetFPSFireAnim();
-    PM_AddEvent(PM_WeaponClipEmpty(weapon) != qfalse ? EV_FIRE_WEAPON_LASTSHOT : EV_FIRE_WEAPON);
+    PM_AddEvent(PM_WeaponClipEmpty(weapon) != qfalse
+                    ? EV_FIRE_WEAPON_LASTSHOT
+                    : EV_FIRE_WEAPON);
     PM_Weapon_AddFiringAimSpreadScale();
     PM_RemoveEmptyClipOnlyWeapon();
 }
@@ -258,7 +287,8 @@ void PM_Weapon_FireWeapon(qboolean delayExpired)
 void PM_Weapon_FireMelee(void)
 {
     playerState_t *ps = pm->ps;
-    const int32_t minimumTime = pml.weaponInfo->meleeTime - pml.weaponInfo->meleeWindup;
+    const int32_t minimumTime =
+        pml.weaponInfo->meleeTime - pml.weaponInfo->meleeWindup;
 
     if (ps->weaponTime < minimumTime) {
         ps->weaponTime = minimumTime;
@@ -293,21 +323,26 @@ void PM_Weapon_CheckForMelee(qboolean delayExpired)
     if (pml.weaponInfo->meleeDamage == 0) {
         return;
     }
-    if ((ps->playerStateFlags & PMF_ADS) != 0 && BG_GetInfoForWeapon(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG) {
+    if ((ps->playerStateFlags & PMF_ADS) != 0 &&
+        BG_GetInfoForWeapon(ps->currentWeapon)->weaponClass == WEAPCLASS_LMG) {
         return;
     }
     if (weaponState == WEAPON_STATE_BREAKING_DOWN) {
         return;
     }
     if (pml.weaponInfo->weaponType == WEAPTYPE_GRENADE &&
-        ((pm->command.buttons & PM_BUTTON_FIRE) != 0 || weaponState == WEAPON_STATE_FIRING)) {
+        ((pm->command.buttons & PM_BUTTON_FIRE) != 0 ||
+         weaponState == WEAPON_STATE_FIRING)) {
         return;
     }
     if (delayExpired != qfalse) {
         return;
     }
-    if (ps->weaponDelay != 0 && weaponState != WEAPON_STATE_RELOADING && weaponState != WEAPON_STATE_RELOADING_INTERRUPT &&
-        weaponState != WEAPON_STATE_RELOAD_START && weaponState != WEAPON_STATE_RELOAD_START_INTERRUPT &&
+    if (ps->weaponDelay != 0 &&
+        weaponState != WEAPON_STATE_RELOADING &&
+        weaponState != WEAPON_STATE_RELOADING_INTERRUPT &&
+        weaponState != WEAPON_STATE_RELOAD_START &&
+        weaponState != WEAPON_STATE_RELOAD_START_INTERRUPT &&
         weaponState != WEAPON_STATE_RELOAD_END) {
         return;
     }
@@ -316,13 +351,16 @@ void PM_Weapon_CheckForMelee(qboolean delayExpired)
         ps->playerStateFlags &= ~PMF_MELEE_HELD;
         return;
     }
-    if ((ps->playerStateFlags & PMF_MELEE_HELD) != 0 || (ps->playerStateFlags & PMF_SPRINTING) != 0) {
+    if ((ps->playerStateFlags & PMF_MELEE_HELD) != 0 ||
+        (ps->playerStateFlags & PMF_SPRINTING) != 0) {
         return;
     }
 
     ps->playerStateFlags |= PMF_MELEE_HELD;
     if (weaponState >= WEAPON_STATE_RAISING &&
-        (weaponState <= WEAPON_STATE_DROPPING || weaponState == WEAPON_STATE_MELEE_WINDUP || weaponState == WEAPON_STATE_MELEE_RELAX)) {
+        (weaponState <= WEAPON_STATE_DROPPING ||
+         weaponState == WEAPON_STATE_MELEE_WINDUP ||
+         weaponState == WEAPON_STATE_MELEE_RELAX)) {
         return;
     }
 

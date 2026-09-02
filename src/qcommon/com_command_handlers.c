@@ -50,11 +50,9 @@ _Noreturn void Com_Quit_f(void)
 void Com_Error_f(void)
 {
     if (Cmd_Argc() > 1) {
-        Com_Error(ERR_DROP, "\x15"
-                            "Testing drop error");
+        Com_Error(ERR_DROP, "\x15" "Testing drop error");
     } else {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Testing fatal error");
+        Com_Error(ERR_FATAL, "\x15" "Testing fatal error");
     }
 }
 
@@ -70,8 +68,10 @@ void Com_Freeze_f(void)
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     for (;;) {
-        const int32_t elapsed = coduo_int32_from_bits((uint32_t)Com_Milliseconds() - startTime);
-        if ((double)elapsed * com_millisecondsToSeconds > (double)seconds) {
+        const int32_t elapsed = coduo_int32_from_bits(
+            (uint32_t)Com_Milliseconds() - startTime);
+        if ((double)elapsed * com_millisecondsToSeconds >
+            (double)seconds) {
             break;
         }
     }

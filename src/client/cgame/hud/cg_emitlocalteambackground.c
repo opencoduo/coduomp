@@ -77,8 +77,7 @@ void CG_EmitLocalTeamBackground(rectDef_t *rect, const vec4_t color)
     const int32_t clientNum = cg_snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_EmitLocalTeamBackground: "
+                  "\x15" "CG_EmitLocalTeamBackground: "
                   "invalid client number %i",
                   clientNum);
         return;

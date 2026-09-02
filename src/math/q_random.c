@@ -30,7 +30,8 @@ enum {
  */
 int32_t Q_rand(int32_t *seed)
 {
-    const uint32_t next = (uint32_t)*seed * (uint32_t)Q_RAND_MULTIPLIER + UINT32_C(1);
+    const uint32_t next =
+        (uint32_t)*seed * (uint32_t)Q_RAND_MULTIPLIER + UINT32_C(1);
     int32_t result;
 
     /* The LCG state is a complete modulo-2^32 dword. Preserve its bits without

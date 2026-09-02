@@ -80,8 +80,10 @@ typedef enum bg_anim_move_type_e {
 } bg_anim_move_type_t;
 
 enum {
-    BG_ANIM_IDLE_MOVE_TYPE_MASK = (1u << ANIM_MT_IDLE) | (1u << ANIM_MT_IDLECR),
-    BG_ANIM_CLIMB_MOVE_TYPE_MASK = (1u << ANIM_MT_CLIMBUP) | (1u << ANIM_MT_CLIMBDOWN)
+    BG_ANIM_IDLE_MOVE_TYPE_MASK =
+        (1u << ANIM_MT_IDLE) | (1u << ANIM_MT_IDLECR),
+    BG_ANIM_CLIMB_MOVE_TYPE_MASK =
+        (1u << ANIM_MT_CLIMBUP) | (1u << ANIM_MT_CLIMBDOWN)
 };
 
 /*
@@ -211,7 +213,8 @@ typedef union bg_condition_bits_u {
     uint32_t unsignedBits[2];
 } bg_condition_bits_t;
 
-typedef char bg_condition_bits_size[sizeof(bg_condition_bits_t) == 8 ? 1 : -1];
+typedef char bg_condition_bits_size[
+    sizeof(bg_condition_bits_t) == 8 ? 1 : -1];
 
 /* Mode plus the optional indexed-string domain used to parse that condition. */
 typedef struct bg_anim_condition_type_s {
@@ -261,7 +264,8 @@ typedef enum bg_anim_entry_flag_e {
 } bg_anim_entry_flag_t;
 
 enum {
-    BG_ANIM_ENTRY_STRAFE_MASK = BG_ANIM_ENTRY_STRAFE_LEFT | BG_ANIM_ENTRY_STRAFE_RIGHT,
+    BG_ANIM_ENTRY_STRAFE_MASK =
+        BG_ANIM_ENTRY_STRAFE_LEFT | BG_ANIM_ENTRY_STRAFE_RIGHT,
     BG_ANIM_CROUCH_STATE_MASK = 0x000000c4,
     BG_ANIM_PRONE_STATE_MASK = 0x00000308
 };
@@ -288,33 +292,29 @@ typedef struct bg_static_animation_s {
     int32_t moveSpeed;
     int32_t duration;
     int32_t hash;
-    BG_ANIMATION_UNION
-    {
+    BG_ANIMATION_UNION {
         uint32_t flags;
-        BG_ANIMATION_STRUCT
-        {
+        BG_ANIMATION_STRUCT {
             uint8_t flagsLowByte;
             uint8_t flagsUpperBytes[3];
         };
     };
-    BG_ANIMATION_UNION
-    {
+    BG_ANIMATION_UNION {
         uint32_t stateFlags;
-        BG_ANIMATION_STRUCT
-        {
+        BG_ANIMATION_STRUCT {
             uint8_t stateFlagsLowByte;
             uint8_t stateFlagsUpperBytes[3];
         };
     };
-    BG_ANIMATION_UNION
-    {
+    BG_ANIMATION_UNION {
         int32_t usedByScript;
         uint16_t entryBone;
     };
 } bg_static_animation_t;
 
 typedef const char *(*bg_anim_sound_alias_fn)(const char *name);
-typedef void (*bg_anim_sound_event_fn)(int clientNum, const char *soundAliasName);
+typedef void (*bg_anim_sound_event_fn)(int clientNum,
+                                       const char *soundAliasName);
 
 /* Complete BG animation table. The original i386 modules agree on every
  * region base through +0xa7ac8. Pointer-bearing script records and the final
@@ -329,8 +329,7 @@ typedef struct bg_static_animation_table_s {
     bg_anim_script_list_t scriptLists[ANIM_EVENT_COUNT - ANIM_EVENT_RELOAD];
     bg_anim_script_t globalItems[BG_ANIM_MAX_GLOBAL_SCRIPTS];
     int32_t globalItemCount;
-    BG_ANIMATION_UNION
-    {
+    BG_ANIMATION_UNION {
         const char *animTreeName;
         XAnim *animTreeHandle;
     };
@@ -355,42 +354,61 @@ typedef struct bgs_s {
     clientInfo_t clientinfo[BGS_CLIENTINFO_COUNT];
 } bgs_t;
 
-#define BG_ANIMATION_TYPES_ASSERT(name, expression) typedef char bg_animation_types_assert_##name[(expression) ? 1 : -1]
+#define BG_ANIMATION_TYPES_ASSERT(name, expression) \
+    typedef char bg_animation_types_assert_##name[(expression) ? 1 : -1]
 
-BG_ANIMATION_TYPES_ASSERT(condition_size, sizeof(bg_anim_condition_t) == 0x0c);
-BG_ANIMATION_TYPES_ASSERT(static_animation_size, sizeof(bg_static_animation_t) == 0x5c);
-BG_ANIMATION_TYPES_ASSERT(static_animation_flags_offset, offsetof(bg_static_animation_t, flags) == 0x50);
-BG_ANIMATION_TYPES_ASSERT(static_animation_tail_offset, offsetof(bg_static_animation_t, usedByScript) == 0x58);
-BG_ANIMATION_TYPES_ASSERT(script_command_count_offset, offsetof(bg_anim_script_t, commandCount) == 0x88);
+BG_ANIMATION_TYPES_ASSERT(condition_size,
+                          sizeof(bg_anim_condition_t) == 0x0c);
+BG_ANIMATION_TYPES_ASSERT(static_animation_size,
+                          sizeof(bg_static_animation_t) == 0x5c);
+BG_ANIMATION_TYPES_ASSERT(static_animation_flags_offset,
+                          offsetof(bg_static_animation_t, flags) == 0x50);
+BG_ANIMATION_TYPES_ASSERT(static_animation_tail_offset,
+                          offsetof(bg_static_animation_t, usedByScript) == 0x58);
+BG_ANIMATION_TYPES_ASSERT(script_command_count_offset,
+                          offsetof(bg_anim_script_t, commandCount) == 0x88);
 
 #if UINTPTR_MAX == UINT32_MAX
-BG_ANIMATION_TYPES_ASSERT(indexed_string_i386_layout, sizeof(bg_indexed_string_t) == 0x08);
-BG_ANIMATION_TYPES_ASSERT(condition_type_i386_layout, sizeof(bg_anim_condition_type_t) == 0x08);
+BG_ANIMATION_TYPES_ASSERT(indexed_string_i386_layout,
+                          sizeof(bg_indexed_string_t) == 0x08);
+BG_ANIMATION_TYPES_ASSERT(condition_type_i386_layout,
+                          sizeof(bg_anim_condition_type_t) == 0x08);
 BG_ANIMATION_TYPES_ASSERT(script_command_i386_layout,
-                          offsetof(bg_anim_script_command_t, soundAliasName) == 0x0c && sizeof(bg_anim_script_command_t) == 0x10);
-BG_ANIMATION_TYPES_ASSERT(script_i386_layout, offsetof(bg_anim_script_t, commands) == 0x8c && sizeof(bg_anim_script_t) == 0x10c);
+                          offsetof(bg_anim_script_command_t, soundAliasName) == 0x0c &&
+                              sizeof(bg_anim_script_command_t) == 0x10);
+BG_ANIMATION_TYPES_ASSERT(script_i386_layout,
+                          offsetof(bg_anim_script_t, commands) == 0x8c &&
+                              sizeof(bg_anim_script_t) == 0x10c);
 BG_ANIMATION_TYPES_ASSERT(script_list_i386_layout,
-                          offsetof(bg_anim_script_list_t, scripts) == 0x04 && sizeof(bg_anim_script_list_t) == 0x204);
-BG_ANIMATION_TYPES_ASSERT(static_table_i386_layout, offsetof(bg_static_animation_table_t, entryCount) == 0xb800 &&
-                                                        offsetof(bg_static_animation_table_t, animations) == 0xb804 &&
-                                                        offsetof(bg_static_animation_table_t, canned) == 0x14924 &&
-                                                        offsetof(bg_static_animation_table_t, statechanges) == 0x1da44 &&
-                                                        offsetof(bg_static_animation_table_t, events) == 0x1fa84 &&
-                                                        offsetof(bg_static_animation_table_t, scriptLists) == 0x20eac &&
-                                                        offsetof(bg_static_animation_table_t, globalItems) == 0x21ac4 &&
-                                                        offsetof(bg_static_animation_table_t, globalItemCount) == 0xa7ac4 &&
-                                                        offsetof(bg_static_animation_table_t, animTreeName) == 0xa7ac8 &&
-                                                        sizeof(bg_static_animation_table_t) == 0xa7acc);
-BG_ANIMATION_TYPES_ASSERT(bgs_i386_layout, offsetof(bgs_t, resolvedTorsoAnimHandle) == 0xa7acc &&
-                                               offsetof(bgs_t, soundAliasCallback) == 0xa7ad8 &&
-                                               offsetof(bgs_t, multiplayerAnimTree) == 0xa7ae0 && offsetof(bgs_t, clientinfo) == 0xa7af4 &&
-                                               sizeof(bgs_t) == 0xbaef4);
+                          offsetof(bg_anim_script_list_t, scripts) == 0x04 &&
+                              sizeof(bg_anim_script_list_t) == 0x204);
+BG_ANIMATION_TYPES_ASSERT(static_table_i386_layout,
+                          offsetof(bg_static_animation_table_t, entryCount) == 0xb800 &&
+                              offsetof(bg_static_animation_table_t, animations) == 0xb804 &&
+                              offsetof(bg_static_animation_table_t, canned) == 0x14924 &&
+                              offsetof(bg_static_animation_table_t, statechanges) == 0x1da44 &&
+                              offsetof(bg_static_animation_table_t, events) == 0x1fa84 &&
+                              offsetof(bg_static_animation_table_t, scriptLists) == 0x20eac &&
+                              offsetof(bg_static_animation_table_t, globalItems) == 0x21ac4 &&
+                              offsetof(bg_static_animation_table_t, globalItemCount) == 0xa7ac4 &&
+                              offsetof(bg_static_animation_table_t, animTreeName) == 0xa7ac8 &&
+                              sizeof(bg_static_animation_table_t) == 0xa7acc);
+BG_ANIMATION_TYPES_ASSERT(bgs_i386_layout,
+                          offsetof(bgs_t, resolvedTorsoAnimHandle) == 0xa7acc &&
+                              offsetof(bgs_t, soundAliasCallback) == 0xa7ad8 &&
+                              offsetof(bgs_t, multiplayerAnimTree) == 0xa7ae0 &&
+                              offsetof(bgs_t, clientinfo) == 0xa7af4 &&
+                              sizeof(bgs_t) == 0xbaef4);
 #elif UINTPTR_MAX == UINT64_MAX
 BG_ANIMATION_TYPES_ASSERT(script_command_64_layout,
-                          offsetof(bg_anim_script_command_t, soundAliasName) == 0x10 && sizeof(bg_anim_script_command_t) == 0x18);
-BG_ANIMATION_TYPES_ASSERT(script_64_layout, offsetof(bg_anim_script_t, commands) == 0x90 && sizeof(bg_anim_script_t) == 0x150);
+                          offsetof(bg_anim_script_command_t, soundAliasName) == 0x10 &&
+                              sizeof(bg_anim_script_command_t) == 0x18);
+BG_ANIMATION_TYPES_ASSERT(script_64_layout,
+                          offsetof(bg_anim_script_t, commands) == 0x90 &&
+                              sizeof(bg_anim_script_t) == 0x150);
 BG_ANIMATION_TYPES_ASSERT(script_list_64_layout,
-                          offsetof(bg_anim_script_list_t, scripts) == 0x08 && sizeof(bg_anim_script_list_t) == 0x408);
+                          offsetof(bg_anim_script_list_t, scripts) == 0x08 &&
+                              sizeof(bg_anim_script_list_t) == 0x408);
 #endif
 
 #undef BG_ANIMATION_TYPES_ASSERT

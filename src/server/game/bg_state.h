@@ -12,37 +12,46 @@ static inline uint32_t game_compat_bg_read_u32_at_offset(const void *base, size_
 {
     uint32_t value;
 
-    memcpy(&value, (const uint8_t *)(const void *)base + offset, sizeof(value));
+    memcpy(&value, (const uint8_t *)(const void *)base + offset,
+           sizeof(value));
     return value;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained accessor for generated animation-slot word reads. */
-static inline uint32_t game_compat_bg_anim_slot_animation_word(const void *clientInfo, size_t slotOffset)
+static inline uint32_t game_compat_bg_anim_slot_animation_word(const void *clientInfo,
+                                                size_t slotOffset)
 {
-    return game_compat_bg_read_u32_at_offset(clientInfo, slotOffset + offsetof(bg_anim_slot_t, animationWord));
+    return game_compat_bg_read_u32_at_offset(clientInfo,
+                              slotOffset +
+                                  offsetof(bg_anim_slot_t, animationWord));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained accessor for generated animation-slot word reads. */
 static inline uint32_t game_compat_bg_anim_slot_animation_word_from_slot(const void *slot)
 {
-    return game_compat_bg_read_u32_at_offset(slot, offsetof(bg_anim_slot_t, animationWord));
+    return game_compat_bg_read_u32_at_offset(
+        slot, offsetof(bg_anim_slot_t, animationWord));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained accessor for generated animation-entry reference reads. */
-static inline uint32_t game_compat_bg_anim_slot_animation_reference(const void *clientInfo, size_t slotOffset)
+static inline uint32_t game_compat_bg_anim_slot_animation_reference(const void *clientInfo,
+                                                     size_t slotOffset)
 {
-    return game_compat_bg_read_u32_at_offset(clientInfo, slotOffset + offsetof(bg_anim_slot_t, animationOffset));
+    return game_compat_bg_read_u32_at_offset(clientInfo,
+                              slotOffset +
+                                  offsetof(bg_anim_slot_t, animationOffset));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained accessor for generated animation-entry reference reads. */
 static inline uint32_t game_compat_bg_anim_slot_animation_reference_from_slot(const void *slot)
 {
-    return game_compat_bg_read_u32_at_offset(slot, offsetof(bg_anim_slot_t, animationOffset));
+    return game_compat_bg_read_u32_at_offset(
+        slot, offsetof(bg_anim_slot_t, animationOffset));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained accessor for original-i386 pointer/native-offset animation references. */
-static inline const bg_static_animation_t *game_compat_bg_static_animation_from_reference(const bg_static_animation_table_t *table,
-                                                                                          uint32_t animationReference)
+static inline const bg_static_animation_t *game_compat_bg_static_animation_from_reference(
+    const bg_static_animation_table_t *table, uint32_t animationReference)
 {
 #if UINTPTR_MAX == UINT32_MAX
     const bg_static_animation_t *animation;
@@ -55,15 +64,17 @@ static inline const bg_static_animation_t *game_compat_bg_static_animation_from_
 #else
     /* Native 64-bit builds keep the original 0x30-byte slot layout and store
      * this reference as a byte offset from the widened animation table. */
-    return (const bg_static_animation_t *)(const void *)((const uint8_t *)(const void *)table + animationReference);
+    return (const bg_static_animation_t *)(const void *)
+        ((const uint8_t *)(const void *)table + animationReference);
 #endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained accessor for generated static-animation flag reads. */
-static inline uint32_t game_compat_bg_static_animation_flags_from_reference(const bg_static_animation_table_t *table,
-                                                                            uint32_t animationReference)
+static inline uint32_t game_compat_bg_static_animation_flags_from_reference(
+    const bg_static_animation_table_t *table, uint32_t animationReference)
 {
-    return game_compat_bg_static_animation_from_reference(table, animationReference)->flags;
+    return game_compat_bg_static_animation_from_reference(
+        table, animationReference)->flags;
 }
 
 /*

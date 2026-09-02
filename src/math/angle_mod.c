@@ -33,15 +33,20 @@ float AngleMod(float angle)
 
 #if EMULATE_X87
 #if defined(WINDOWS_BEHAVIOR)
-    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(angleToShort)));
+    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(
+        x87f_mul(x87f_load_f32(angle), x87f_load_f32(angleToShort)));
 #else
-    packed = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(angleToShort)));
+    packed = x87f_store_i32_trunc(
+        x87f_mul(x87f_load_f32(angle), x87f_load_f32(angleToShort)));
 #endif
     packed &= ANGLE_MOD_MASK;
     packedFloat = x87f_store_f32(x87f_load_i32(packed));
-    return x87f_store_f32(x87f_mul(x87f_load_f32(packedFloat), x87f_load_f32(shortToAngle)));
+    return x87f_store_f32(
+        x87f_mul(x87f_load_f32(packedFloat),
+                 x87f_load_f32(shortToAngle)));
 #else
-    packed = coduo_fp_to_i32_extended((long double)angle * (long double)angleToShort);
+    packed = coduo_fp_to_i32_extended(
+        (long double)angle * (long double)angleToShort);
     packed &= ANGLE_MOD_MASK;
     packedFloat = (float)packed;
     return (float)((double)packedFloat * shortToAngle);

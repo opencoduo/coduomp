@@ -26,11 +26,16 @@ char *Q_strlwr(char *string);
 char *Q_strupr(char *string);
 void Q_strcat(char *destination, int32_t size, const char *source);
 int32_t Q_GetDecimalDelimiter(language_t language);
-void Q_LocalizedFloatToString(float value, char *buffer, uint32_t bufferSize, int32_t precision, language_t language);
+void Q_LocalizedFloatToString(float value, char *buffer,
+                              uint32_t bufferSize, int32_t precision,
+                              language_t language);
 
-const char *Com_StringContains(const char *haystack, const char *needle, qboolean caseSensitive);
-qboolean Com_Filter(const char *filter, const char *name, qboolean caseSensitive);
-qboolean Com_FilterPath(const char *filter, const char *name, qboolean caseSensitive);
+const char *Com_StringContains(const char *haystack, const char *needle,
+                               qboolean caseSensitive);
+qboolean Com_Filter(const char *filter, const char *name,
+                    qboolean caseSensitive);
+qboolean Com_FilterPath(const char *filter, const char *name,
+                        qboolean caseSensitive);
 
 int32_t Q_DrawStrlen(const char *string);
 char *Q_CleanStr(char *string);

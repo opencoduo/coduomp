@@ -63,12 +63,16 @@ void SV_Status_f(void)
     }
 
     Com_Printf("map: %s\n", sv_mapname->string);
-    Com_Printf("num score ping guid   name            lastmsg address               "
-               "qport rate\n");
-    Com_Printf("--- ----- ---- ------ --------------- ------- --------------------- "
-               "----- -----\n");
+    Com_Printf(
+        "num score ping guid   name            lastmsg address               "
+        "qport rate\n");
+    Com_Printf(
+        "--- ----- ---- ------ --------------- ------- --------------------- "
+        "----- -----\n");
 
-    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (int32_t clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state == CS_FREE) {
             continue;
@@ -91,14 +95,19 @@ void SV_Status_f(void)
 
         Com_Printf("%6i ", client->guid);
         Com_Printf("%s^7", client->name);
-        for (int32_t column = Q_DrawStrlen(client->name); column < SERVER_STATUS_NAME_COLUMN_WIDTH; ++column) {
+        for (int32_t column = Q_DrawStrlen(client->name);
+             column < SERVER_STATUS_NAME_COLUMN_WIDTH;
+             ++column) {
             Com_Printf(" ");
         }
 
         Com_Printf("%7i ", svs.realTime - client->lastPacketTime);
-        const char *const address = NET_AdrToString(client->netchan.remoteAddress);
+        const char *const address =
+            NET_AdrToString(client->netchan.remoteAddress);
         Com_Printf("%s", address);
-        for (int32_t column = (int32_t)strlen(address); column < SERVER_STATUS_ADDRESS_COLUMN_WIDTH; ++column) {
+        for (int32_t column = (int32_t)strlen(address);
+             column < SERVER_STATUS_ADDRESS_COLUMN_WIDTH;
+             ++column) {
             Com_Printf(" ");
         }
 
@@ -133,7 +142,8 @@ void SV_ConSay_f(void)
         Com_Printf("SV_ConSay_f: console message is too long\n");
         return;
     }
-    memcpy(text + sizeof(SERVER_CONSOLE_CHAT_PREFIX) - 1, message, messageLength + 1);
+    memcpy(text + sizeof(SERVER_CONSOLE_CHAT_PREFIX) - 1,
+           message, messageLength + 1);
     SV_SendServerCommand(NULL, qfalse, "h \"\x15%s\"", text);
 }
 
@@ -171,7 +181,8 @@ void SV_ConTell_f(void)
         Com_Printf("SV_ConTell_f: console message is too long\n");
         return;
     }
-    memcpy(text + sizeof(SERVER_CONSOLE_CHAT_PREFIX) - 1, message, messageLength + 1);
+    memcpy(text + sizeof(SERVER_CONSOLE_CHAT_PREFIX) - 1,
+           message, messageLength + 1);
     SV_SendServerCommand(client, qfalse, "h \"\x15%s\"", text);
 }
 

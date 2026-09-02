@@ -66,9 +66,10 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
      * dot in st0 and consumes it with FSUBR (0x300085ef) without storing it, so
      * it is carried long double (a `float currentspeed` would round where the DLL
      * does not). */
-    long double currentspeed = (long double)ps->velocity[2] * (long double)wishdir[2] +
-                               (long double)ps->velocity[1] * (long double)wishdir[1] +
-                               (long double)wishdir[0] * (long double)ps->velocity[0];
+    long double currentspeed =
+        (long double)ps->velocity[2] * (long double)wishdir[2] +
+        (long double)ps->velocity[1] * (long double)wishdir[1] +
+        (long double)wishdir[0] * (long double)ps->velocity[0];
 
     /* 0x300085ef FSUBR [ESP+0xc]: addspeed = wishspeed - currentspeed, left in
      * st0. 0x300085f3 FST float ptr [ESP+4] stores a ROUNDED copy (kept, reloaded
@@ -89,7 +90,9 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
      * opposite, ordered-less-than case so NaN is not replaced by 100. */
     if (wishspeed < 100.0f)
         accelSpeedBase = 100.0f;
-    long double accelspeed = (long double)accelSpeedBase * (long double)pml.frametime * (long double)accel;
+    long double accelspeed =
+        (long double)accelSpeedBase * (long double)pml.frametime *
+        (long double)accel;
 
     if (accelspeed > addspeed)
         accelspeed = addspeed;
@@ -97,7 +100,8 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
     /* On the ground, divide the acceleration by the player's friction. Airborne
      * (groundEntityNum == ENTITYNUM_NONE) skips this. */
     if (ps->groundEntityNum != ENTITYNUM_NONE) {
-        accelspeed = accelspeed * (1.0L / (long double)ps->friction);
+        accelspeed = accelspeed *
+            (1.0L / (long double)ps->friction);
     }
     /* 0x30008657 performs this second clamp on both the grounded and airborne
      * paths; only the friction divide itself is conditional. */
@@ -121,15 +125,24 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
     int32_t lane;
 
 #if EMULATE_X87
-    currentSpeed = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(pm->ps->velocity[0]), x87f_load_f32(wishdir[0])),
-                                                    x87f_mul(x87f_load_f32(pm->ps->velocity[1]), x87f_load_f32(wishdir[1]))),
-                                           x87f_mul(x87f_load_f32(pm->ps->velocity[2]), x87f_load_f32(wishdir[2]))));
+    currentSpeed = x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(pm->ps->velocity[0]),
+                          x87f_load_f32(wishdir[0])),
+                 x87f_mul(x87f_load_f32(pm->ps->velocity[1]),
+                          x87f_load_f32(wishdir[1]))),
+        x87f_mul(x87f_load_f32(pm->ps->velocity[2]),
+                 x87f_load_f32(wishdir[2]))));
 #else
-    currentSpeed =
-        (float)(((long double)pm->ps->velocity[0] * (long double)wishdir[0] + (long double)pm->ps->velocity[1] * (long double)wishdir[1]) +
-                (long double)pm->ps->velocity[2] * (long double)wishdir[2]);
+    currentSpeed = (float)(
+        ((long double)pm->ps->velocity[0] *
+             (long double)wishdir[0] +
+         (long double)pm->ps->velocity[1] *
+             (long double)wishdir[1]) +
+        (long double)pm->ps->velocity[2] *
+            (long double)wishdir[2]);
 #endif
-    addSpeed = (float)((long double)wishspeed - (long double)currentSpeed);
+    addSpeed = (float)((long double)wishspeed -
+                       (long double)currentSpeed);
     if (addSpeed <= 0.0f) {
         return;
     }
@@ -138,9 +151,14 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
         wishspeed = 100.0f;
     }
 #if EMULATE_X87
-    accelSpeed = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(accel), x87f_load_f32(pml.frametime)), x87f_load_f32(wishspeed)));
+    accelSpeed = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(accel),
+                 x87f_load_f32(pml.frametime)),
+        x87f_load_f32(wishspeed)));
 #else
-    accelSpeed = (float)((long double)accel * (long double)pml.frametime * (long double)wishspeed);
+    accelSpeed = (float)(
+        (long double)accel * (long double)pml.frametime *
+        (long double)wishspeed);
 #endif
     if (accelSpeed > addSpeed) {
         accelSpeed = addSpeed;
@@ -148,9 +166,14 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
 
     if (pm->ps->groundEntityNum != ENTITYNUM_NONE) {
 #if EMULATE_X87
-        accelSpeed = x87f_store_f32(x87f_mul(x87f_load_f32(accelSpeed), x87f_div(x87f_load_f32(1.0f), x87f_load_f32(pm->ps->friction))));
+        accelSpeed = x87f_store_f32(x87f_mul(
+            x87f_load_f32(accelSpeed),
+            x87f_div(x87f_load_f32(1.0f),
+                     x87f_load_f32(pm->ps->friction))));
 #else
-        accelSpeed = (float)((long double)accelSpeed * (1.0L / (long double)pm->ps->friction));
+        accelSpeed = (float)(
+            (long double)accelSpeed *
+            (1.0L / (long double)pm->ps->friction));
 #endif
     }
     if (accelSpeed > addSpeed) {
@@ -159,10 +182,14 @@ void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
 
     for (lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-        pm->ps->velocity[lane] = x87f_store_f32(
-            x87f_add(x87f_load_f32(pm->ps->velocity[lane]), x87f_mul(x87f_load_f32(accelSpeed), x87f_load_f32(wishdir[lane]))));
+        pm->ps->velocity[lane] = x87f_store_f32(x87f_add(
+            x87f_load_f32(pm->ps->velocity[lane]),
+            x87f_mul(x87f_load_f32(accelSpeed),
+                     x87f_load_f32(wishdir[lane]))));
 #else
-        pm->ps->velocity[lane] = (float)((long double)pm->ps->velocity[lane] + (long double)accelSpeed * (long double)wishdir[lane]);
+        pm->ps->velocity[lane] = (float)(
+            (long double)pm->ps->velocity[lane] +
+            (long double)accelSpeed * (long double)wishdir[lane]);
 #endif
     }
 }

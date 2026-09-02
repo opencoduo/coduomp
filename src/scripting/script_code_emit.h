@@ -31,7 +31,8 @@ extern uint8_t script_codeOwnsStrings;
 void CompileRemoveRefToString(uint16_t string);
 void CompileTransferRefToString(uint16_t string, uint8_t usage);
 void EmitCanonicalString(uint16_t string);
-void EmitOpcode(uint8_t opcode, int32_t stackDelta, int32_t localDepthMode);
+void EmitOpcode(uint8_t opcode, int32_t stackDelta,
+                int32_t localDepthMode);
 void EmitNOP(void);
 void EmitInteger(int32_t value);
 void EmitShort(int16_t value);
@@ -45,7 +46,8 @@ void EmitBuiltinMethod(script_method_callback_t method);
 
 /* Native reconstruction adapters for operands whose original i386 carrier is
  * narrower than the maintained host representation. */
-void coduomp_script_emit_value_payload(coduo_script_value_payload_t value);
+void coduomp_script_emit_value_payload(
+    coduo_script_value_payload_t value);
 void coduomp_script_emit_float_bits(uint32_t value);
 
 void EmitGetUndefined(void);
@@ -79,15 +81,27 @@ void EmitLocalVariable(uint16_t string);
 void EmitLocalVariableRef(uint16_t string);
 void EmitClearLocalVariable(uint16_t string);
 void EmitEvalArray(uint32_t firstSourcePos, uint32_t secondSourcePos);
-void EmitEvalArrayRef(uint32_t firstSourcePos, uint32_t secondSourcePos);
-void EmitClearArray(uint32_t firstSourcePos, uint32_t secondSourcePos);
+void EmitEvalArrayRef(uint32_t firstSourcePos,
+                      uint32_t secondSourcePos);
+void EmitClearArray(uint32_t firstSourcePos,
+                    uint32_t secondSourcePos);
 void EmitEmptyArray(void);
 void EmitAnimation(uint16_t string, uint32_t sourcePos);
-void EmitFieldVariable(scr_ast_node_t *objectNode, uint16_t string, uint32_t sourcePos);
-void EmitFieldVariableRef(scr_ast_node_t *objectNode, uint16_t string, uint32_t sourcePos);
-void EmitClearFieldVariable(scr_ast_node_t *objectNode, uint16_t string, uint32_t objectSourcePos, uint32_t opcodeSourcePos);
-void EmitCallRef(scr_ast_node_t *nameNode, scr_ast_list_t *argsNode, uint32_t callSourcePos);
-void EmitMethodRef(scr_ast_node_t *objectNode, scr_ast_node_t *nameNode, scr_ast_list_t *argsNode, uint32_t sourcePos);
+void EmitFieldVariable(scr_ast_node_t *objectNode,
+                       uint16_t string, uint32_t sourcePos);
+void EmitFieldVariableRef(scr_ast_node_t *objectNode,
+                          uint16_t string, uint32_t sourcePos);
+void EmitClearFieldVariable(scr_ast_node_t *objectNode,
+                            uint16_t string,
+                            uint32_t objectSourcePos,
+                            uint32_t opcodeSourcePos);
+void EmitCallRef(scr_ast_node_t *nameNode,
+                 scr_ast_list_t *argsNode,
+                 uint32_t callSourcePos);
+void EmitMethodRef(scr_ast_node_t *objectNode,
+                   scr_ast_node_t *nameNode,
+                   scr_ast_list_t *argsNode,
+                   uint32_t sourcePos);
 void EmitDecTop(void);
 void EmitCastFieldObject(uint32_t sourcePos);
 

@@ -14,12 +14,9 @@ fontInfo_t *Text_GetFont(int32_t font, float scale)
 {
     float scaledSize;
 
-    if (font == UI_FONT_BIG)
-        return &ui_displayContextStorage.context.bigFont;
-    if (font == UI_FONT_SMALL)
-        return &ui_displayContextStorage.context.smallFont;
-    if (font == UI_FONT_CONSOLE)
-        return &ui_displayContextStorage.context.consoleFont;
+    if (font == UI_FONT_BIG) return &ui_displayContextStorage.context.bigFont;
+    if (font == UI_FONT_SMALL) return &ui_displayContextStorage.context.smallFont;
+    if (font == UI_FONT_CONSOLE) return &ui_displayContextStorage.context.consoleFont;
 
     scaledSize = ui_displayContextStorage.context.yscale * scale;
     if (font == UI_FONT_BOLD) {

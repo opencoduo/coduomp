@@ -14,7 +14,8 @@
 #include "../client_recovered.h"
 #include "../globals.h"
 
-void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed, int32_t duration)
+void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed,
+                              int32_t duration)
 {
     int32_t modifierRemaining;
     float fade;
@@ -29,8 +30,10 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed, int32_t dur
     }
 
     /* All four time expressions are i386 32-bit ADD/SUB chains. */
-    modifierRemaining =
-        (int32_t)((uint32_t)params->soundModEndDelay - (uint32_t)elapsed + (uint32_t)params->soundFadeOutTime + (uint32_t)duration);
+    modifierRemaining = (int32_t)((uint32_t)params->soundModEndDelay
+                                - (uint32_t)elapsed
+                                + (uint32_t)params->soundFadeOutTime
+                                + (uint32_t)duration);
 
     /* Both ramps are FILD/FIDIV (0x3003c26b/0x3003c26f and 0x3003c3c0/0x3003c3c4):
      * the numerator enters the chain straight off FILD and the denominator is an
@@ -57,22 +60,31 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed, int32_t dur
         mixedVolume[i] = (params->soundVolume[i] - 1.0f) * fade + 1.0f;
     }
 
-    cgame_syscall(CG_MSS_FADE_SELECT_SOUNDS, (intptr_t)mixedVolume, 0);
+    cgame_syscall(CG_MSS_FADE_SELECT_SOUNDS,
+                  (intptr_t)mixedVolume, 0);
 
     if (fade != 0.0f) {
         /* 0x3003c39f: FLD float [ESP+0x10] with one PUSH live = frame slot
          * [E-0x34] = fade (the wet level scales with the fade envelope), not
          * the modifierRemaining int at [E-0x30]. */
-        cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS, (intptr_t)params->soundRoomType, CG_FloatBits(fade * params->soundWetLevel), 0);
+        cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS,
+                      (intptr_t)params->soundRoomType,
+                      CG_FloatBits(fade * params->soundWetLevel),
+                      0);
     } else {
-        cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS, (intptr_t)cg_genericShellshockAliasName, 0, 0);
+        cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS,
+                      (intptr_t)cg_genericShellshockAliasName, 0, 0);
     }
 
-    loopRemaining =
-        (int32_t)((uint32_t)params->soundLoopEndDelay - (uint32_t)elapsed + (uint32_t)duration + (uint32_t)params->soundLoopFadeTime);
+    loopRemaining = (int32_t)((uint32_t)params->soundLoopEndDelay
+                            - (uint32_t)elapsed
+                            + (uint32_t)duration
+                            + (uint32_t)params->soundLoopFadeTime);
     if (loopRemaining > 0) {
-        snd_alias_t *loopAlias = trap_Com_PickSoundAlias(cg_shellshockLoopAliasName, vec3_origin);
-        snd_alias_t *silentAlias = trap_Com_PickSoundAlias(cg_shellshockSilentLoopAliasName, vec3_origin);
+        snd_alias_t *loopAlias = trap_Com_PickSoundAlias(
+            cg_shellshockLoopAliasName, vec3_origin);
+        snd_alias_t *silentAlias = trap_Com_PickSoundAlias(
+            cg_shellshockSilentLoopAliasName, vec3_origin);
         /* long double: the FIDIV/FSUBR result is clamp-compared against 0.0f
          * straight in st0 (0x3003c45d FCOM) and only rounded to float once, at
          * the call-argument store (0x3003c47a FSTP). */
@@ -83,7 +95,8 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed, int32_t dur
              * (0x3003c453): both integers enter the chain exact, no float store.
              * The (long double) denominator keeps them exact and defers the sole
              * round to the (float) call-argument store at 0x3003c47a. */
-            loopVolume = 1.0f - loopRemaining / (long double)params->soundLoopFadeTime;
+            loopVolume = 1.0f
+                       - loopRemaining / (long double)params->soundLoopFadeTime;
             if (loopVolume < 0.0f) {
                 loopVolume = 0.0f;
             }
@@ -94,22 +107,30 @@ void CG_UpdateShellShockSound(shellshock_t *params, int32_t elapsed, int32_t dur
             loopVolume = fade;
         }
 
-        trap_MSS_PlayBlendedSoundAliases(loopAlias, silentAlias, (float)loopVolume, 1023, vec3_origin, 0);
+        trap_MSS_PlayBlendedSoundAliases(loopAlias, silentAlias,
+                                         (float)loopVolume,
+                                         1023, vec3_origin, 0);
     }
 
-    soundEndTime = (int32_t)((uint32_t)params->soundLoopEndDelay - (uint32_t)elapsed + (uint32_t)cg_time + (uint32_t)duration);
+    soundEndTime = (int32_t)((uint32_t)params->soundLoopEndDelay
+                           - (uint32_t)elapsed
+                           + (uint32_t)cg_time
+                           + (uint32_t)duration);
 
     if ((int32_t)cg_time < soundEndTime) {
         if (cg_shellshockSoundEndTime != 0) {
             snd_alias_t *alias;
             cg_shellshockSoundEndTime = 0;
-            alias = trap_Com_PickSoundAlias(cg_shellshockEndAbortAliasName, vec3_origin);
+            alias = trap_Com_PickSoundAlias(cg_shellshockEndAbortAliasName,
+                                             vec3_origin);
             (void)trap_MSS_PlaySoundAlias(alias, 1023, vec3_origin, 0);
         }
     } else if (soundEndTime != cg_shellshockSoundEndTime) {
         snd_alias_t *alias;
         cg_shellshockSoundEndTime = soundEndTime;
         alias = trap_Com_PickSoundAlias(cg_shellshockEndAliasName, vec3_origin);
-        (void)trap_MSS_PlaySoundAlias(alias, 1023, vec3_origin, (int32_t)((uint32_t)cg_time - (uint32_t)soundEndTime));
+        (void)trap_MSS_PlaySoundAlias(
+            alias, 1023, vec3_origin,
+            (int32_t)((uint32_t)cg_time - (uint32_t)soundEndTime));
     }
 }

@@ -67,23 +67,69 @@ extern sval_u script_yyvs[];
 extern sval_u *script_yyvsp;
 extern int32_t script_yynerrs;
 
-sval_u *node1_(sval_u *out, coduo_script_yystype_word_t word);
-sval_u *node_pos(sval_u *out, coduo_script_yystype_word_t word);
-sval_u *node0(sval_u *out, coduo_script_yystype_word_t word0);
-sval_u *node1(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1);
-sval_u *node2(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2);
-sval_u *node2_(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1);
-sval_u *coduomp_script_ast_new_script_root(sval_u *out, coduo_script_yystype_word_t entries);
-sval_u *node3(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3);
-sval_u *node4(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3, coduo_script_yystype_word_t word4);
-sval_u *node5(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3, coduo_script_yystype_word_t word4, coduo_script_yystype_word_t word5);
-sval_u *node6(sval_u *out, coduo_script_yystype_word_t word0, coduo_script_yystype_word_t word1, coduo_script_yystype_word_t word2,
-              coduo_script_yystype_word_t word3, coduo_script_yystype_word_t word4, coduo_script_yystype_word_t word5,
-              coduo_script_yystype_word_t word6);
-sval_u *linked_list_end(sval_u *out, coduo_script_yystype_word_t value);
-sval_u *prepend_node(sval_u *out, coduo_script_yystype_word_t value, coduo_script_yystype_word_t headValue);
-sval_u *append_node(sval_u *out, coduo_script_yystype_word_t listValue, coduo_script_yystype_word_t value);
+sval_u *
+node1_(sval_u *out,
+       coduo_script_yystype_word_t word);
+sval_u *
+node_pos(sval_u *out,
+         coduo_script_yystype_word_t word);
+sval_u *
+node0(sval_u *out,
+                      coduo_script_yystype_word_t word0);
+sval_u *
+node1(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1);
+sval_u *
+node2(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2);
+sval_u *
+node2_(sval_u *out,
+                  coduo_script_yystype_word_t word0,
+                  coduo_script_yystype_word_t word1);
+sval_u *coduomp_script_ast_new_script_root(
+    sval_u *out, coduo_script_yystype_word_t entries);
+sval_u *
+node3(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3);
+sval_u *
+node4(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3,
+                   coduo_script_yystype_word_t word4);
+sval_u *
+node5(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3,
+                   coduo_script_yystype_word_t word4,
+                   coduo_script_yystype_word_t word5);
+sval_u *
+node6(sval_u *out,
+                   coduo_script_yystype_word_t word0,
+                   coduo_script_yystype_word_t word1,
+                   coduo_script_yystype_word_t word2,
+                   coduo_script_yystype_word_t word3,
+                   coduo_script_yystype_word_t word4,
+                   coduo_script_yystype_word_t word5,
+                   coduo_script_yystype_word_t word6);
+sval_u *
+linked_list_end(sval_u *out,
+                      coduo_script_yystype_word_t value);
+sval_u *
+prepend_node(sval_u *out,
+                         coduo_script_yystype_word_t value,
+                         coduo_script_yystype_word_t headValue);
+sval_u *
+append_node(sval_u *out,
+                        coduo_script_yystype_word_t listValue,
+                        coduo_script_yystype_word_t value);
 #endif

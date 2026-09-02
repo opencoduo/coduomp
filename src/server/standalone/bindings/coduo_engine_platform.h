@@ -15,7 +15,8 @@
 
 #include <float.h>
 
-#if !defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && \
+#if !defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT) && !defined(__i386__) && \
+    !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && \
     !defined(__x86_64__) && !defined(_M_IX86) && !defined(_M_X64)
 #error "coduo_lnxded recovery requires a native x86/x87 target"
 #endif
@@ -32,12 +33,15 @@
 #error "coduo_lnxded recovery requires normal IEEE exceptional float behavior"
 #endif
 
-#if !defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT) && defined(FLT_EVAL_METHOD) && FLT_EVAL_METHOD != 2
+#if !defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT) && defined(FLT_EVAL_METHOD) && \
+    FLT_EVAL_METHOD != 2
 #error "coduo_lnxded recovery requires x87-style FLT_EVAL_METHOD == 2"
 #endif
 
-#if !defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-_Static_assert(sizeof(long double) > sizeof(double), "coduo_lnxded recovery requires extended long double");
+#if !defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT) && \
+    defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+_Static_assert(sizeof(long double) > sizeof(double),
+               "coduo_lnxded recovery requires extended long double");
 #endif
 
 #endif

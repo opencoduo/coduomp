@@ -45,12 +45,18 @@ typedef struct clSnapshot_s {
 } clSnapshot_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(clSnapshot_t, ps) == 0x1c, "i386 internal snapshot player-state offset changed");
-_Static_assert(offsetof(clSnapshot_t, unused018) == 0x18, "i386 internal snapshot unused field moved");
-_Static_assert(offsetof(clSnapshot_t, numEntities) == 0x4520, "i386 internal snapshot entity-count offset changed");
-_Static_assert(offsetof(clSnapshot_t, firstEntitySequence) == 0x4528, "i386 internal snapshot entity-sequence offset changed");
-_Static_assert(offsetof(clSnapshot_t, serverCommandSequence) == 0x4530, "i386 internal snapshot command-sequence offset changed");
-_Static_assert(sizeof(clSnapshot_t) == 0x4534, "i386 internal snapshot size changed");
+_Static_assert(offsetof(clSnapshot_t, ps) == 0x1c,
+               "i386 internal snapshot player-state offset changed");
+_Static_assert(offsetof(clSnapshot_t, unused018) == 0x18,
+               "i386 internal snapshot unused field moved");
+_Static_assert(offsetof(clSnapshot_t, numEntities) == 0x4520,
+               "i386 internal snapshot entity-count offset changed");
+_Static_assert(offsetof(clSnapshot_t, firstEntitySequence) == 0x4528,
+               "i386 internal snapshot entity-sequence offset changed");
+_Static_assert(offsetof(clSnapshot_t, serverCommandSequence) == 0x4530,
+               "i386 internal snapshot command-sequence offset changed");
+_Static_assert(sizeof(clSnapshot_t) == 0x4534,
+               "i386 internal snapshot size changed");
 #endif
 
 typedef struct clOutPacket_s {
@@ -71,22 +77,37 @@ typedef struct clKeyButton_s {
 } clKeyButton_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(clOutPacket_t) == 0x04, "i386 outgoing-packet alignment changed");
-_Static_assert(offsetof(clOutPacket_t, lastCommandNumber) == 0x00, "i386 outgoing-packet command-number offset changed");
-_Static_assert(sizeof(((clOutPacket_t *)0)->lastCommandNumber) == 0x04, "i386 outgoing-packet command-number extent changed");
-_Static_assert(offsetof(clOutPacket_t, lastCommandTime) == 0x04, "i386 outgoing-packet server-time offset changed");
-_Static_assert(sizeof(((clOutPacket_t *)0)->lastCommandTime) == 0x04, "i386 outgoing-packet server-time extent changed");
-_Static_assert(offsetof(clOutPacket_t, sendRealTime) == 0x08, "i386 outgoing-packet realtime offset changed");
-_Static_assert(sizeof(((clOutPacket_t *)0)->sendRealTime) == 0x04, "i386 outgoing-packet realtime extent changed");
-_Static_assert(sizeof(clOutPacket_t) == 0x0c, "original i386 outgoing-packet size changed");
+_Static_assert(_Alignof(clOutPacket_t) == 0x04,
+               "i386 outgoing-packet alignment changed");
+_Static_assert(offsetof(clOutPacket_t, lastCommandNumber) == 0x00,
+               "i386 outgoing-packet command-number offset changed");
+_Static_assert(sizeof(((clOutPacket_t *)0)->lastCommandNumber) == 0x04,
+               "i386 outgoing-packet command-number extent changed");
+_Static_assert(offsetof(clOutPacket_t, lastCommandTime) == 0x04,
+               "i386 outgoing-packet server-time offset changed");
+_Static_assert(sizeof(((clOutPacket_t *)0)->lastCommandTime) == 0x04,
+               "i386 outgoing-packet server-time extent changed");
+_Static_assert(offsetof(clOutPacket_t, sendRealTime) == 0x08,
+               "i386 outgoing-packet realtime offset changed");
+_Static_assert(sizeof(((clOutPacket_t *)0)->sendRealTime) == 0x04,
+               "i386 outgoing-packet realtime extent changed");
+_Static_assert(sizeof(clOutPacket_t) == 0x0c,
+               "original i386 outgoing-packet size changed");
 
-_Static_assert(_Alignof(clKeyButton_t) == 4, "original i386 client key-button alignment");
-_Static_assert(offsetof(clKeyButton_t, downKeys) == 0x00, "original i386 client key-button keys offset");
-_Static_assert(offsetof(clKeyButton_t, downtime) == 0x08, "original i386 client key-button downtime offset");
-_Static_assert(offsetof(clKeyButton_t, accumulatedMsec) == 0x0c, "original i386 client key-button accumulated-time offset");
-_Static_assert(offsetof(clKeyButton_t, active) == 0x10, "original i386 client key-button active offset");
-_Static_assert(offsetof(clKeyButton_t, wasPressed) == 0x14, "original i386 client key-button press-latch offset");
-_Static_assert(sizeof(clKeyButton_t) == 0x18, "original i386 client key-button extent");
+_Static_assert(_Alignof(clKeyButton_t) == 4,
+               "original i386 client key-button alignment");
+_Static_assert(offsetof(clKeyButton_t, downKeys) == 0x00,
+               "original i386 client key-button keys offset");
+_Static_assert(offsetof(clKeyButton_t, downtime) == 0x08,
+               "original i386 client key-button downtime offset");
+_Static_assert(offsetof(clKeyButton_t, accumulatedMsec) == 0x0c,
+               "original i386 client key-button accumulated-time offset");
+_Static_assert(offsetof(clKeyButton_t, active) == 0x10,
+               "original i386 client key-button active offset");
+_Static_assert(offsetof(clKeyButton_t, wasPressed) == 0x14,
+               "original i386 client key-button press-latch offset");
+_Static_assert(sizeof(clKeyButton_t) == 0x18,
+               "original i386 client key-button extent");
 #endif
 
 /* Engine input state followed by cgame-controlled command/mouse values. */
@@ -107,14 +128,26 @@ typedef struct clientCgameInputState_s {
 } clientCgameInputState_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(clientCgameInputState_t) == 104, "client cgame-input state size changed");
-_Static_assert(offsetof(clientCgameInputState_t, userCmdValue) == 44, "cgame user-command value offset changed");
-_Static_assert(offsetof(clientCgameInputState_t, userCmdSensitivityScale) == 56, "cgame user-command scale offset changed");
-_Static_assert(offsetof(clientCgameInputState_t, shellshockMouseMaxPitchSpeed) == 60, "shellshock mouse-pitch limit offset changed");
-_Static_assert(offsetof(clientCgameInputState_t, shellshockMouseMaxYawSpeed) == 64, "shellshock mouse-yaw limit offset changed");
-_Static_assert(offsetof(clientCgameInputState_t, clientLerpOrigin) == 68, "cgame client-lerp origin offset changed");
-_Static_assert(offsetof(clientCgameInputState_t, userCmdAimValues) == 80, "cgame aim-value offset changed");
-_Static_assert(offsetof(clientCgameInputState_t, viewAngles) == 92, "client view-angle offset changed");
+_Static_assert(sizeof(clientCgameInputState_t) == 104,
+               "client cgame-input state size changed");
+_Static_assert(offsetof(clientCgameInputState_t, userCmdValue) == 44,
+               "cgame user-command value offset changed");
+_Static_assert(offsetof(clientCgameInputState_t,
+                        userCmdSensitivityScale) == 56,
+               "cgame user-command scale offset changed");
+_Static_assert(offsetof(clientCgameInputState_t,
+                        shellshockMouseMaxPitchSpeed) == 60,
+               "shellshock mouse-pitch limit offset changed");
+_Static_assert(offsetof(clientCgameInputState_t,
+                        shellshockMouseMaxYawSpeed) == 64,
+               "shellshock mouse-yaw limit offset changed");
+_Static_assert(offsetof(clientCgameInputState_t, clientLerpOrigin) == 68,
+               "cgame client-lerp origin offset changed");
+_Static_assert(offsetof(clientCgameInputState_t, userCmdAimValues) == 80,
+               "cgame aim-value offset changed");
+_Static_assert(
+    offsetof(clientCgameInputState_t, viewAngles) == 92,
+    "client view-angle offset changed");
 #endif
 
 /* Complete pointer-free clientActive_t storage cleared by CL_ClearState.
@@ -173,11 +206,13 @@ typedef struct clientConnection_s {
     qboolean onlyVisibleClients;
     int32_t reliableSequence;
     int32_t reliableAcknowledge;
-    char reliableCommands[CODUO_RELIABLE_COMMAND_COUNT][CODUO_RELIABLE_COMMAND_CAPACITY];
+    char reliableCommands[CODUO_RELIABLE_COMMAND_COUNT]
+                         [CODUO_RELIABLE_COMMAND_CAPACITY];
     int32_t serverMessageSequence;
     int32_t serverCommandSequence;
     int32_t lastExecutedServerCommand;
-    char serverCommands[CODUO_RELIABLE_COMMAND_COUNT][CODUO_RELIABLE_COMMAND_CAPACITY];
+    char serverCommands[CODUO_RELIABLE_COMMAND_COUNT]
+                       [CODUO_RELIABLE_COMMAND_CAPACITY];
     int32_t downloadFile;
     /* Original +0x02014c; unused by CoDUOMP.exe except as part of the complete
      * clientConnection_t clear extent. */
@@ -214,49 +249,82 @@ typedef struct clientConnection_s {
  * embedded gameState_t moves by the selected client/cgame pool extension.
  * The stock source selects zero and therefore retains every retail offset. */
 enum {
-    CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES = MAX_GAMESTATE_CHARS - MAX_GAMESTATE_CHARS_RETAIL
+    CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES =
+        MAX_GAMESTATE_CHARS - MAX_GAMESTATE_CHARS_RETAIL
 };
 
-_Static_assert(offsetof(clientActive_t, snap) == 0x000004, "i386 client-active current snapshot moved");
-_Static_assert(offsetof(clientActive_t, serverTime) == 0x004538, "i386 client-active server time moved");
-_Static_assert(offsetof(clientActive_t, gameState) == 0x004554, "i386 client-active game state moved");
-_Static_assert(offsetof(clientActive_t, parseEntitySequence) == 0x00b598 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, snap) == 0x000004,
+               "i386 client-active current snapshot moved");
+_Static_assert(offsetof(clientActive_t, serverTime) == 0x004538,
+               "i386 client-active server time moved");
+_Static_assert(offsetof(clientActive_t, gameState) == 0x004554,
+               "i386 client-active game state moved");
+_Static_assert(offsetof(clientActive_t, parseEntitySequence) ==
+                   0x00b598 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active parse sequence moved");
-_Static_assert(offsetof(clientActive_t, inputState) == 0x00b5a0 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, inputState) ==
+                   0x00b5a0 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 cgame input-state offset changed");
-_Static_assert(offsetof(clientActive_t, serverId) == 0x00b608 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, serverId) ==
+                   0x00b608 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client server-id offset changed");
-_Static_assert(offsetof(clientActive_t, teamColorAllies) == 0x00b60c + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, teamColorAllies) ==
+                   0x00b60c + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active team colors moved");
-_Static_assert(offsetof(clientActive_t, cmds) == 0x00b62c + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, cmds) ==
+                   0x00b62c + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active user-command ring moved");
-_Static_assert(offsetof(clientActive_t, snapshots) == 0x00c3b0 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, snapshots) ==
+                   0x00c3b0 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active snapshot ring moved");
-_Static_assert(offsetof(clientActive_t, entityBaselines) == 0x096a30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, entityBaselines) ==
+                   0x096a30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active entity baselines moved");
-_Static_assert(offsetof(clientActive_t, parseEntities) == 0x0d3a30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, parseEntities) ==
+                   0x0d3a30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active parsed entities moved");
-_Static_assert(offsetof(clientActive_t, parseClients) == 0x14da30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, parseClients) ==
+                   0x14da30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active parsed clients moved");
-_Static_assert(offsetof(clientActive_t, unused17BA30) == 0x17ba30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+_Static_assert(offsetof(clientActive_t, unused17BA30) ==
+                   0x17ba30 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
                "i386 client-active unused tail moved");
-_Static_assert(sizeof(clientActive_t) == 0x17bb34 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES, "i386 client-active clear extent changed");
-_Static_assert(offsetof(clientStaticDownload_t, downloadTempName) == 256, "i386 static-download temporary name moved");
-_Static_assert(offsetof(clientStaticDownload_t, originalDownloadName) == 512, "i386 static-download original name moved");
-_Static_assert(offsetof(clientStaticDownload_t, downloadRestart) == 576, "i386 static-download restart flag moved");
-_Static_assert(sizeof(clientStaticDownload_t) == 580, "i386 static-download state size changed");
-_Static_assert(offsetof(clientConnection_t, reliableSequence) == 0x000134, "i386 client-connection reliable sequence moved");
-_Static_assert(offsetof(clientConnection_t, serverMessageSequence) == 0x01013c, "i386 client-connection server-message sequence moved");
-_Static_assert(offsetof(clientConnection_t, serverCommands) == 0x010148, "i386 client-connection server-command ring moved");
-_Static_assert(offsetof(clientConnection_t, downloadFile) == 0x020148, "i386 client-connection download state moved");
-_Static_assert(offsetof(clientConnection_t, unused2014C) == 0x02014c, "i386 client-connection unused download slot moved");
-_Static_assert(offsetof(clientConnection_t, redirectedList) == 0x020568, "i386 client redirect history moved");
-_Static_assert(offsetof(clientConnection_t, badChecksumList) == 0x020968, "i386 client bad-checksum history moved");
-_Static_assert(offsetof(clientConnection_t, demoName) == 0x020d68, "i386 client-connection demo name moved");
-_Static_assert(offsetof(clientConnection_t, voiceChatTime) == 0x020dd0, "i386 client-connection voice-chat state moved");
-_Static_assert(offsetof(clientConnection_t, netchan) == 0x020df8, "i386 client-connection net channel moved");
-_Static_assert(offsetof(clientConnection_t, netProfile) == 0x030e38, "i386 client-connection profile pointer moved");
-_Static_assert(sizeof(clientConnection_t) == 0x030e3c, "i386 client-connection clear extent changed");
+_Static_assert(sizeof(clientActive_t) ==
+                   0x17bb34 + CLIENT_ACTIVE_GAMESTATE_EXTENSION_BYTES,
+               "i386 client-active clear extent changed");
+_Static_assert(offsetof(clientStaticDownload_t, downloadTempName) == 256,
+               "i386 static-download temporary name moved");
+_Static_assert(offsetof(clientStaticDownload_t, originalDownloadName) == 512,
+               "i386 static-download original name moved");
+_Static_assert(offsetof(clientStaticDownload_t, downloadRestart) == 576,
+               "i386 static-download restart flag moved");
+_Static_assert(sizeof(clientStaticDownload_t) == 580,
+               "i386 static-download state size changed");
+_Static_assert(offsetof(clientConnection_t, reliableSequence) == 0x000134,
+               "i386 client-connection reliable sequence moved");
+_Static_assert(offsetof(clientConnection_t, serverMessageSequence) ==
+                   0x01013c,
+               "i386 client-connection server-message sequence moved");
+_Static_assert(offsetof(clientConnection_t, serverCommands) == 0x010148,
+               "i386 client-connection server-command ring moved");
+_Static_assert(offsetof(clientConnection_t, downloadFile) == 0x020148,
+               "i386 client-connection download state moved");
+_Static_assert(offsetof(clientConnection_t, unused2014C) == 0x02014c,
+               "i386 client-connection unused download slot moved");
+_Static_assert(offsetof(clientConnection_t, redirectedList) == 0x020568,
+               "i386 client redirect history moved");
+_Static_assert(offsetof(clientConnection_t, badChecksumList) == 0x020968,
+               "i386 client bad-checksum history moved");
+_Static_assert(offsetof(clientConnection_t, demoName) == 0x020d68,
+               "i386 client-connection demo name moved");
+_Static_assert(offsetof(clientConnection_t, voiceChatTime) == 0x020dd0,
+               "i386 client-connection voice-chat state moved");
+_Static_assert(offsetof(clientConnection_t, netchan) == 0x020df8,
+               "i386 client-connection net channel moved");
+_Static_assert(offsetof(clientConnection_t, netProfile) == 0x030e38,
+               "i386 client-connection profile pointer moved");
+_Static_assert(sizeof(clientConnection_t) == 0x030e3c,
+               "i386 client-connection clear extent changed");
 #endif
 
 enum {
@@ -318,25 +386,44 @@ typedef struct clientStatic_s {
 } clientStatic_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(clientStatic_t, keyCatchers) == 0x04, "i386 client-static key-catcher offset changed");
-_Static_assert(offsetof(clientStatic_t, cdDialogRequested) == 0x08, "i386 client-static CD-dialog flag moved");
-_Static_assert(offsetof(clientStatic_t, serverName) == 0x0c, "i386 client-static server-name offset changed");
-_Static_assert(offsetof(clientStatic_t, rendererStarted) == 0x10c, "i386 client-static renderer flag moved");
-_Static_assert(offsetof(clientStatic_t, frameCount) == 0x118, "i386 client-static frame count moved");
-_Static_assert(offsetof(clientStatic_t, realtime) == 0x120, "i386 client-static scaled time moved");
-_Static_assert(offsetof(clientStatic_t, logoStartTime) == 0x12c, "i386 client-static logo state moved");
-_Static_assert(offsetof(clientStatic_t, localServers) == 0x148, "i386 client-static local-server list moved");
-_Static_assert(offsetof(clientStatic_t, globalServers) == 0x4d50, "i386 client-static global-server list moved");
-_Static_assert(offsetof(clientStatic_t, favoriteServers) == 0x2eb054, "i386 client-static favorite-server list moved");
-_Static_assert(offsetof(clientStatic_t, updateServer) == 0x2efc5c, "i386 client-static update server moved");
-_Static_assert(offsetof(clientStatic_t, updateInfoString) == 0x2f0070, "i386 client-static update info moved");
-_Static_assert(offsetof(clientStatic_t, cdAuthorizeAddress) == 0x2f0470, "i386 client-static authorize server moved");
-_Static_assert(offsetof(clientStatic_t, autoUpdateServer) == 0x2f05c4, "i386 client-static auto-update server moved");
-_Static_assert(offsetof(clientStatic_t, rendererConfig) == 0x2f05d8, "i386 client-static renderer config moved");
-_Static_assert(offsetof(clientStatic_t, debugStringCapacity) == 0x2f0680, "i386 client-static debug state moved");
-_Static_assert(offsetof(clientStatic_t, wwwDownloadDisconnected) == 0x2f06a4, "i386 client-static disconnected WWW-download flag moved");
-_Static_assert(offsetof(clientStatic_t, staticDownload) == 0x2f06a8, "i386 client-static download state moved");
-_Static_assert(sizeof(clientStatic_t) == 0x2f08ec, "i386 client-static clear extent changed");
+_Static_assert(offsetof(clientStatic_t, keyCatchers) == 0x04,
+               "i386 client-static key-catcher offset changed");
+_Static_assert(offsetof(clientStatic_t, cdDialogRequested) == 0x08,
+               "i386 client-static CD-dialog flag moved");
+_Static_assert(offsetof(clientStatic_t, serverName) == 0x0c,
+               "i386 client-static server-name offset changed");
+_Static_assert(offsetof(clientStatic_t, rendererStarted) == 0x10c,
+               "i386 client-static renderer flag moved");
+_Static_assert(offsetof(clientStatic_t, frameCount) == 0x118,
+               "i386 client-static frame count moved");
+_Static_assert(offsetof(clientStatic_t, realtime) == 0x120,
+               "i386 client-static scaled time moved");
+_Static_assert(offsetof(clientStatic_t, logoStartTime) == 0x12c,
+               "i386 client-static logo state moved");
+_Static_assert(offsetof(clientStatic_t, localServers) == 0x148,
+               "i386 client-static local-server list moved");
+_Static_assert(offsetof(clientStatic_t, globalServers) == 0x4d50,
+               "i386 client-static global-server list moved");
+_Static_assert(offsetof(clientStatic_t, favoriteServers) == 0x2eb054,
+               "i386 client-static favorite-server list moved");
+_Static_assert(offsetof(clientStatic_t, updateServer) == 0x2efc5c,
+               "i386 client-static update server moved");
+_Static_assert(offsetof(clientStatic_t, updateInfoString) == 0x2f0070,
+               "i386 client-static update info moved");
+_Static_assert(offsetof(clientStatic_t, cdAuthorizeAddress) == 0x2f0470,
+               "i386 client-static authorize server moved");
+_Static_assert(offsetof(clientStatic_t, autoUpdateServer) == 0x2f05c4,
+               "i386 client-static auto-update server moved");
+_Static_assert(offsetof(clientStatic_t, rendererConfig) == 0x2f05d8,
+               "i386 client-static renderer config moved");
+_Static_assert(offsetof(clientStatic_t, debugStringCapacity) == 0x2f0680,
+               "i386 client-static debug state moved");
+_Static_assert(offsetof(clientStatic_t, wwwDownloadDisconnected) == 0x2f06a4,
+               "i386 client-static disconnected WWW-download flag moved");
+_Static_assert(offsetof(clientStatic_t, staticDownload) == 0x2f06a8,
+               "i386 client-static download state moved");
+_Static_assert(sizeof(clientStatic_t) == 0x2f08ec,
+               "i386 client-static clear extent changed");
 #endif
 
 extern clientActive_t cl;
@@ -449,15 +536,20 @@ void CL_CGameRendering(int32_t stereoView, qboolean drawFrame);
 void CL_UpdateColor(void);
 void CL_SetExpectedHunkUsage(const char *mapBspPath);
 void CL_CM_LoadMap(const char *mapBspPath);
-void CL_SubtitlePrint(const char *reference, int32_t timeMs, int32_t lineWidth);
+void CL_SubtitlePrint(const char *reference, int32_t timeMs,
+                      int32_t lineWidth);
 surfaceType_t CL_SurfaceTypeFromName(const char *name);
 const char *CL_SurfaceTypeToName(int32_t surfaceType);
 void CL_DObjInvalidateSkels(void);
-qboolean CL_DObjCreateSkelForBone(struct DObj_s *obj, int32_t boneIndex);
-qboolean CL_DObjCreateSkelForBones(struct DObj_s *obj, const uint32_t *partBits);
+qboolean CL_DObjCreateSkelForBone(
+    struct DObj_s *obj, int32_t boneIndex);
+qboolean CL_DObjCreateSkelForBones(
+    struct DObj_s *obj, const uint32_t *partBits);
 void CL_UpdateColorInternal(const char *cvarName, vec4_t color);
 void CL_LookupColor(uint8_t colorCode, vec4_t color);
-void CL_DrawString(int32_t x, int32_t y, const char *text, int32_t mode, int32_t charWidth, int32_t charHeight, int32_t textStyle);
+void CL_DrawString(int32_t x, int32_t y, const char *text,
+                   int32_t mode, int32_t charWidth,
+                   int32_t charHeight, int32_t textStyle);
 int32_t CL_SaveCgameState(int32_t bufferSize, uint8_t *buffer);
 int32_t CL_RestoreCgameState(int32_t bufferSize, uint8_t *buffer);
 void CL_GetGameState(gameState_t *gameState);
@@ -469,7 +561,8 @@ void CL_ClearStaticDownload(void);
 char *CL_TimeDemoLogBaseName(void);
 void CL_UpdateTimeDemo(void);
 void CL_FirstSnapshot(void);
-void CL_GetCurrentSnapshotNumber(int32_t *snapshotNumber, int32_t *serverTime);
+void CL_GetCurrentSnapshotNumber(int32_t *snapshotNumber,
+                                 int32_t *serverTime);
 void CL_Disconnect(qboolean showMainMenu);
 void coduomp_client_complete_server_cache_mod_teardown(void);
 void CL_Disconnect_f(void);
@@ -506,7 +599,8 @@ void CL_Vid_Restart_f(void);
 void CL_InitRef(void);
 void CL_RefPrintf(int32_t printLevel, const char *format, ...);
 int32_t CG_GetGameModel(int16_t modelIndex);
-void CG_DObjCalcPose(void *owner, struct DObj_s *obj, uint32_t *partBits);
+void CG_DObjCalcPose(void *owner, struct DObj_s *obj,
+                     uint32_t *partBits);
 void CL_DObjCalcAnim(struct DObj_s *obj, const uint32_t *partBits);
 void CL_DObjCalcSkel(struct DObj_s *obj, const uint32_t *partBits);
 fontInfo_t *CL_GetFontInfo(int32_t fontHandle, float scale);
@@ -553,7 +647,8 @@ void CL_PacketEvent(netadr_t from, msg_t *message, int32_t time);
 void CL_Netchan_Encode(uint8_t *data, int32_t length);
 void CL_Netchan_Decode(uint8_t *data, int32_t length);
 void CL_Netchan_TransmitNextFragment(netchan_t *channel);
-void CL_Netchan_Transmit(netchan_t *channel, uint8_t *data, int32_t length);
+void CL_Netchan_Transmit(netchan_t *channel, uint8_t *data,
+                         int32_t length);
 void CL_Netchan_AddOOBProfilePacket(int32_t length);
 void CL_Netchan_UpdateProfileStats(void);
 qboolean CL_CDKeyValidate(const char *key, const char *checksum);
@@ -569,10 +664,18 @@ void CL_NextDemo(void);
 void CL_ReadDemoMessage(void);
 qboolean isEntVisible(const entityState_t *entity);
 void SHOWNET(const msg_t *message, const char *label);
-void CL_DeltaEntity(msg_t *message, clSnapshot_t *frame, int32_t newNumber, const entityState_t *oldEntity, qboolean unchanged);
-void CL_DeltaClient(msg_t *message, clSnapshot_t *frame, int32_t newNumber, const clientState_t *oldClient, qboolean unchanged);
-void CL_ParsePacketEntities(msg_t *message, const clSnapshot_t *oldFrame, clSnapshot_t *newFrame);
-void CL_ParsePacketClients(msg_t *message, const clSnapshot_t *oldFrame, clSnapshot_t *newFrame);
+void CL_DeltaEntity(msg_t *message, clSnapshot_t *frame,
+                    int32_t newNumber, const entityState_t *oldEntity,
+                    qboolean unchanged);
+void CL_DeltaClient(msg_t *message, clSnapshot_t *frame,
+                    int32_t newNumber, const clientState_t *oldClient,
+                    qboolean unchanged);
+void CL_ParsePacketEntities(msg_t *message,
+                            const clSnapshot_t *oldFrame,
+                            clSnapshot_t *newFrame);
+void CL_ParsePacketClients(msg_t *message,
+                           const clSnapshot_t *oldFrame,
+                           clSnapshot_t *newFrame);
 void CL_ParseCommandString(msg_t *message);
 void CL_ParseDownload(msg_t *message);
 void CL_ParseGamestate(msg_t *message);
@@ -597,12 +700,18 @@ void CL_ConfigstringModified(void);
 void CL_SystemInfoChanged(void);
 void SCR_AdjustTo640(float *x, float *y, float *width, float *height);
 void SCR_AdjustFrom640(float *x, float *y, float *width, float *height);
-void SCR_DrawPic(float x, float y, float width, float height, int32_t shaderHandle);
-void SCR_DrawNamedPic(float x, float y, float width, float height, const char *name, int32_t shaderUsage);
-void SCR_FillRect(float x, float y, float width, float height, const vec4_t color);
+void SCR_DrawPic(float x, float y, float width, float height,
+                 int32_t shaderHandle);
+void SCR_DrawNamedPic(float x, float y, float width, float height,
+                      const char *name, int32_t shaderUsage);
+void SCR_FillRect(float x, float y, float width, float height,
+                  const vec4_t color);
 void SCR_DrawSmallChar(int32_t x, int32_t y, int32_t character);
-void SCR_DrawSmallStringExt(int32_t x, int32_t y, const char *text, const vec4_t color);
-void SCR_DrawConsoleString(int32_t x, int32_t y, const uint16_t *encodedText, int32_t encodedCount, const vec4_t color);
+void SCR_DrawSmallStringExt(int32_t x, int32_t y, const char *text,
+                            const vec4_t color);
+void SCR_DrawConsoleString(int32_t x, int32_t y,
+                           const uint16_t *encodedText,
+                           int32_t encodedCount, const vec4_t color);
 void SCR_DrawDemoRecording(void);
 void SCR_DrawDebugGraph(void);
 void SCR_DebugGraph(float value, int32_t color);

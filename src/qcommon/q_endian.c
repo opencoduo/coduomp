@@ -77,8 +77,11 @@ int16_t ShortNoSwap(int16_t value)
 int32_t LongSwap(int32_t value)
 {
     const uint32_t bits = (uint32_t)value;
-    const uint32_t swapped = ((bits & UINT32_C(0x000000ff)) << 24U) | ((bits & UINT32_C(0x0000ff00)) << 8U) |
-                             ((bits & UINT32_C(0x00ff0000)) >> 8U) | ((bits & UINT32_C(0xff000000)) >> 24U);
+    const uint32_t swapped =
+        ((bits & UINT32_C(0x000000ff)) << 24U) |
+        ((bits & UINT32_C(0x0000ff00)) << 8U) |
+        ((bits & UINT32_C(0x00ff0000)) >> 8U) |
+        ((bits & UINT32_C(0xff000000)) >> 24U);
     int32_t result;
 
     memcpy(&result, &swapped, sizeof(result));

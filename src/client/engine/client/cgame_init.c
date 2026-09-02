@@ -32,7 +32,8 @@ cvar_t *sv_running;
 void CL_SetExpectedHunkUsage(const char *mapBspPath)
 {
     int32_t fileHandle;
-    const int32_t fileLength = FS_FOpenFileByMode("hunkusage.dat", &fileHandle, FS_READ);
+    const int32_t fileLength =
+        FS_FOpenFileByMode("hunkusage.dat", &fileHandle, FS_READ);
     if (fileLength < 0) {
         (void)Cvar_Set2("com_expectedhunkusage", "-1", qtrue);
         return;
@@ -55,7 +56,8 @@ void CL_SetExpectedHunkUsage(const char *mapBspPath)
         if (Q_strcasecmp(token, mapBspPath) == 0) {
             token = Com_Parse(&parseData);
             if (token != NULL && token[0] != '\0') {
-                (void)Cvar_Set2("com_expectedhunkusage", token, qtrue);
+                (void)Cvar_Set2(
+                    "com_expectedhunkusage", token, qtrue);
                 Z_FreeInternal(fileBuffer);
                 return;
             }
@@ -91,10 +93,13 @@ void CL_InitRenderer(void)
 
     rendererExports.BeginRegistration(&cls.rendererConfig);
     coduomp_scr_reset_widescreen_backdrop_compat();
-    cls.whiteShader = rendererExports.RegisterShader("white", CL_RENDERER_SHADER_LOAD_MODE);
-    cls.consoleShader = rendererExports.RegisterShader("console", CL_RENDERER_SHADER_LOAD_MODE);
+    cls.whiteShader = rendererExports.RegisterShader(
+        "white", CL_RENDERER_SHADER_LOAD_MODE);
+    cls.consoleShader = rendererExports.RegisterShader(
+        "console", CL_RENDERER_SHADER_LOAD_MODE);
 
-    con_fieldWidthPixels = cls.rendererConfig.vidWidth - CL_CONSOLE_HORIZONTAL_MARGIN;
+    con_fieldWidthPixels =
+        cls.rendererConfig.vidWidth - CL_CONSOLE_HORIZONTAL_MARGIN;
     con_inputField.widthInPixels = con_fieldWidthPixels;
     con_inputField.charWidth = con_fieldCharWidth;
     con_inputField.charHeight = con_fieldCharHeight;
@@ -107,20 +112,28 @@ void CL_InitRenderer(void)
  * Name and signature: exact same-module Mac symbol CL_SubtitlePrint. The
  * Win32 optimizer inlines the outer CL_ConsolePrint checks before calling
  * CL_ConsolePrint_AddLine; the Mac call graph retains CL_ConsolePrint. */
-void CL_SubtitlePrint(const char *reference, int32_t timeMs, int32_t lineWidth)
+void CL_SubtitlePrint(const char *reference, int32_t timeMs,
+                      int32_t lineWidth)
 {
     const char *text = reference;
 
-    if (cl_languagetranslate != NULL && cl_languagetranslate->integer != 0 && reference[0] != '\0' && reference[1] != '\0') {
+    if (cl_languagetranslate != NULL &&
+        cl_languagetranslate->integer != 0 &&
+        reference[0] != '\0' && reference[1] != '\0') {
         text = SEH_StringEd_GetString(reference);
     }
 
     if (text == NULL) {
         if (cl_languagewarnings->integer != 0) {
             if (cl_languagewarningsaserrors->integer != 0) {
-                Com_Error(ERR_LOCALIZATION, "Could not translate subtitle text: \"%s\"", reference);
+                Com_Error(
+                    ERR_LOCALIZATION,
+                    "Could not translate subtitle text: \"%s\"",
+                    reference);
             } else {
-                Com_Printf("^3WARNING: Could not translate subtitle text: \"%s\"\n", reference);
+                Com_Printf(
+                    "^3WARNING: Could not translate subtitle text: \"%s\"\n",
+                    reference);
             }
             text = va("^1UNLOCALIZED(^7%s^1)^7", reference);
         } else {
@@ -153,7 +166,8 @@ void CL_UpdateLevelHunkUsage(void)
 {
     static const char hunkUsagePath[] = "hunkusage.dat";
     int32_t fileHandle;
-    const int32_t fileLength = FS_FOpenFileByMode(hunkUsagePath, &fileHandle, FS_READ);
+    const int32_t fileLength =
+        FS_FOpenFileByMode(hunkUsagePath, &fileHandle, FS_READ);
 
     if (fileLength >= 0) {
         const int32_t bufferSize = fileLength + 1;
@@ -175,7 +189,8 @@ void CL_UpdateLevelHunkUsage(void)
 
             if (Q_strcasecmp(mapToken, cl.mapBspName) == 0) {
                 const char *usageToken = Com_Parse(&parseData);
-                if (usageToken != NULL && usageToken[0] != '\0' && coduo_crt_atoi(usageToken) == hunk_used) {
+                if (usageToken != NULL && usageToken[0] != '\0' &&
+                    coduo_crt_atoi(usageToken) == hunk_used) {
                     Z_FreeInternal(fileBuffer);
                     Z_FreeInternal(outputBuffer);
                     return;
@@ -188,7 +203,8 @@ void CL_UpdateLevelHunkUsage(void)
 
             const char *usageToken = Com_Parse(&parseData);
             if (usageToken == NULL || usageToken[0] == '\0') {
-                Com_Error(ERR_DROP, "EXE_ERR_HUNGUSAGE_CORRUPT");
+                Com_Error(ERR_DROP,
+                          "EXE_ERR_HUNGUSAGE_CORRUPT");
                 continue;
             }
             Q_strcat(outputBuffer, bufferSize, usageToken);
@@ -202,7 +218,8 @@ void CL_UpdateLevelHunkUsage(void)
         }
 
         const int32_t outputLength = (int32_t)strlen(outputBuffer);
-        if (FS_Write(outputBuffer, outputLength, fileHandle) != outputLength) {
+        if (FS_Write(outputBuffer, outputLength, fileHandle) !=
+            outputLength) {
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
             Com_Error(ERR_DROP, "EXE_ERR_CANT_WRITE\x15%s", hunkUsagePath);
         }
@@ -211,16 +228,21 @@ void CL_UpdateLevelHunkUsage(void)
         Z_FreeInternal(outputBuffer);
     }
 
-    if (FS_FOpenFileByMode(hunkUsagePath, &fileHandle, FS_APPEND) < 0) {
-        Com_Error(ERR_DROP, "EXE_ERR_HUNKUSAGE_CANT_WRITE");
+    if (FS_FOpenFileByMode(
+            hunkUsagePath, &fileHandle, FS_APPEND) < 0) {
+        Com_Error(ERR_DROP,
+                  "EXE_ERR_HUNKUSAGE_CANT_WRITE");
     }
 
     char currentUsageLine[CL_HUNK_USAGE_LINE_SIZE];
-    Com_sprintf(currentUsageLine, sizeof(currentUsageLine), "%s %i\n", cl.mapBspName, hunk_used);
-    (void)FS_Write(currentUsageLine, (int32_t)strlen(currentUsageLine), fileHandle);
+    Com_sprintf(currentUsageLine, sizeof(currentUsageLine),
+                "%s %i\n", cl.mapBspName, hunk_used);
+    (void)FS_Write(currentUsageLine, (int32_t)strlen(currentUsageLine),
+                   fileHandle);
     FS_FCloseFile(fileHandle);
 
-    if (FS_FOpenFileByMode(hunkUsagePath, &fileHandle, FS_READ) >= 0) {
+    if (FS_FOpenFileByMode(
+            hunkUsagePath, &fileHandle, FS_READ) >= 0) {
         FS_FCloseFile(fileHandle);
     }
 }
@@ -239,7 +261,9 @@ void CL_ShutdownCGame(void)
         return;
     }
 
-    (void)VM_Call(coduo_cgameVm, CGVM_SHUTDOWN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(
+        coduo_cgameVm, CGVM_SHUTDOWN,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     VM_Free(coduo_cgameVm);
     coduo_cgameVm = NULL;
 }
@@ -258,34 +282,45 @@ void CL_InitCGame(void)
     XAnimSetUser(XANIM_USER_CLIENT);
     Con_Close();
 
-    const char *serverInfo = &cl.gameState.stringData[cl.gameState.stringOffsets[CS_SERVERINFO]];
+    const char *serverInfo =
+        &cl.gameState.stringData[cl.gameState.stringOffsets[CS_SERVERINFO]];
     const char *mapName = Info_ValueForKey(serverInfo, "mapname");
-    Com_sprintf(cl.mapBspName, sizeof(cl.mapBspName), "maps/mp/%s.bsp", mapName);
+    Com_sprintf(cl.mapBspName, sizeof(cl.mapBspName),
+                "maps/mp/%s.bsp", mapName);
 
     coduo_cgameVm = VM_Create("cgame", CL_CgameSystemCalls);
     if (coduo_cgameVm == NULL) {
         Com_Error(ERR_DROP, "\x15VM_Create on cgame failed");
     }
 
-    intptr_t apiVersion = VM_Call(coduo_cgameVm, CGVM_GET_API_VERSION, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    intptr_t apiVersion = VM_Call(
+        coduo_cgameVm, CGVM_GET_API_VERSION,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (apiVersion != CGVM_API_VERSION) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "cgame is version %d, expected %d",
+                  "\x15" "cgame is version %d, expected %d",
                   (int32_t)apiVersion, CGVM_API_VERSION);
     }
 
     cls.state = CA_LOADING;
-    (void)VM_Call(coduo_cgameVm, CGVM_SCRIPT_FAR_HOOK, (intptr_t)Scr_NearHook(NULL), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(
+        coduo_cgameVm, CGVM_SCRIPT_FAR_HOOK,
+        (intptr_t)Scr_NearHook(NULL),
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-    (void)VM_Call(coduo_cgameVm, CGVM_INIT, clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum, 0, 0, 0, 0, 0, 0, 0, 0,
-                  0);
+    (void)VM_Call(
+        coduo_cgameVm, CGVM_INIT,
+        clc.serverMessageSequence, clc.lastExecutedServerCommand,
+        clc.clientNum,
+        0, 0, 0, 0, 0, 0, 0, 0, 0);
     cls.state = CA_PRIMED;
 
     /* Win32 stores the wrapping subtraction in a dword and loads it with FILD,
      * so the elapsed value is interpreted as signed before conversion. */
-    const int32_t elapsedMilliseconds = (int32_t)(Sys_Milliseconds() - startTime);
-    Com_Printf("CL_InitCGame: %5.2f seconds\n", (double)elapsedMilliseconds * 0.001);
+    const int32_t elapsedMilliseconds =
+        (int32_t)(Sys_Milliseconds() - startTime);
+    Com_Printf("CL_InitCGame: %5.2f seconds\n",
+               (double)elapsedMilliseconds * 0.001);
 
     rendererExports.EndRegistration();
     if (Sys_LowPhysicalMemory() == qfalse) {

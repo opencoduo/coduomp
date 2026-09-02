@@ -50,8 +50,10 @@ qboolean trap_XAnimIsLooped(uint32_t packed)
      * order after the id. The low word is zero-extended (MOVZX), so animIndex
      * carries no sign; the high word is produced by a logical shift.
      */
-    int32_t treeIndex = (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT);
+    int32_t treeIndex =
+        (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT);
     int32_t animIndex = (int32_t)(packed & 0xffffu);
 
-    return (qboolean)cgame_syscall(CG_XANIM_IS_LOOPED_BY_TREE_INDEX, treeIndex, animIndex);
+    return (qboolean)cgame_syscall(CG_XANIM_IS_LOOPED_BY_TREE_INDEX,
+                                   treeIndex, animIndex);
 }

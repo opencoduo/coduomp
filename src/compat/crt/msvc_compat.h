@@ -10,7 +10,8 @@ extern "C" {
 
 int32_t coduo_crt_atoi(const char *string);
 int32_t coduo_crt_stricmp(const char *left, const char *right);
-int32_t coduo_crt_strnicmp(const char *left, const char *right, size_t count);
+int32_t coduo_crt_strnicmp(const char *left, const char *right,
+                           size_t count);
 char *coduo_crt_strlwr(char *text);
 char *coduo_crt_strupr(char *text);
 int32_t coduo_crt_isalpha(int32_t character);

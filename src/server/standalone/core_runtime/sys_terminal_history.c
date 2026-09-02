@@ -38,7 +38,8 @@ void Sys_TTYStoreHistoryLine(console_input_field_t *line)
 {
     int index;
 
-    for (index = SYS_TTY_HISTORY_LAST_INDEX; index > SYS_TTY_HISTORY_NEWEST_INDEX; index--) {
+    for (index = SYS_TTY_HISTORY_LAST_INDEX;
+         index > SYS_TTY_HISTORY_NEWEST_INDEX; index--) {
         sys_ttyHistory[index] = sys_ttyHistory[index - 1];
     }
 
@@ -84,13 +85,18 @@ void Sys_TTYTrackCompletionMatch(const char *name)
     if (Q_stricmpn(name, sys_ttyCompletionPrefix, (int)prefixLength) == 0) {
         sys_ttyCompletionMatchCount++;
         if (sys_ttyCompletionMatchCount == 1) {
-            Q_strncpyz(sys_ttyCompletionMatch, name, sizeof(sys_ttyCompletionMatch));
+            Q_strncpyz(sys_ttyCompletionMatch, name,
+                       sizeof(sys_ttyCompletionMatch));
             return;
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        for (int32_t index = 0; (size_t)index < sizeof(sys_ttyCompletionMatch) && name[index] != '\0'; ++index) {
-            if (tolower(coduo_ctype_signed_byte_arg(sys_ttyCompletionMatch[index])) != tolower(coduo_ctype_signed_byte_arg(name[index]))) {
+        for (int32_t index = 0;
+             (size_t)index < sizeof(sys_ttyCompletionMatch) &&
+             name[index] != '\0'; ++index) {
+            if (tolower(coduo_ctype_signed_byte_arg(
+                    sys_ttyCompletionMatch[index])) !=
+                tolower(coduo_ctype_signed_byte_arg(name[index]))) {
                 sys_ttyCompletionMatch[index] = '\0';
             }
         }
@@ -112,21 +118,28 @@ void Sys_TTYAppendCompletionArgs(void)
         const char *text;
         qboolean quote = qfalse;
 
-        Q_strcat(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), sys_ttyCompletionArgSpace);
+        Q_strcat(sys_ttyCompletionLine->buffer,
+                 sizeof(sys_ttyCompletionLine->buffer),
+                 sys_ttyCompletionArgSpace);
         text = Cmd_Argv(arg);
 
         for (const char *scan = text; *scan != '\0'; ++scan) {
             if (*scan == ' ') {
-                Q_strcat(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), sys_ttyCompletionQuote);
+                Q_strcat(sys_ttyCompletionLine->buffer,
+                         sizeof(sys_ttyCompletionLine->buffer),
+                         sys_ttyCompletionQuote);
                 quote = qtrue;
                 break;
             }
         }
 
-        Q_strcat(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), text);
+        Q_strcat(sys_ttyCompletionLine->buffer,
+                 sizeof(sys_ttyCompletionLine->buffer), text);
 
         if (quote != qfalse) {
-            Q_strcat(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), sys_ttyCompletionQuote);
+            Q_strcat(sys_ttyCompletionLine->buffer,
+                     sizeof(sys_ttyCompletionLine->buffer),
+                     sys_ttyCompletionQuote);
         }
     }
 }
@@ -140,7 +153,8 @@ void Sys_TTYAppendCompletionSuffix(char *sourceText, char *prefix)
         return;
     }
 
-    Q_strcat(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), match + strlen(prefix));
+    Q_strcat(sys_ttyCompletionLine->buffer,
+             sizeof(sys_ttyCompletionLine->buffer), match + strlen(prefix));
 }
 
 void Sys_TTYCompleteLine(console_input_field_t *line)
@@ -169,21 +183,31 @@ void Sys_TTYCompleteLine(console_input_field_t *line)
 
     Com_Memcpy(&originalLine, sys_ttyCompletionLine, sizeof(originalLine));
     if (sys_ttyCompletionMatchCount == 1) {
-        Com_sprintf(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), sys_ttyCompletionCommandFormat,
+        Com_sprintf(sys_ttyCompletionLine->buffer,
+                    sizeof(sys_ttyCompletionLine->buffer),
+                    sys_ttyCompletionCommandFormat,
                     sys_ttyCompletionMatch);
         if (Cmd_Argc() == 1) {
-            Q_strcat(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), sys_ttyCompletionArgSpace);
+            Q_strcat(sys_ttyCompletionLine->buffer,
+                     sizeof(sys_ttyCompletionLine->buffer),
+                     sys_ttyCompletionArgSpace);
         } else {
-            Sys_TTYAppendCompletionSuffix(originalLine.buffer, (char *)sys_ttyCompletionPrefix);
+            Sys_TTYAppendCompletionSuffix(originalLine.buffer,
+                                          (char *)sys_ttyCompletionPrefix);
         }
-        sys_ttyCompletionLine->cursor = (int32_t)strlen(sys_ttyCompletionLine->buffer);
+        sys_ttyCompletionLine->cursor =
+            (int32_t)strlen(sys_ttyCompletionLine->buffer);
         return;
     }
 
-    Com_sprintf(sys_ttyCompletionLine->buffer, sizeof(sys_ttyCompletionLine->buffer), sys_ttyCompletionCommandFormat,
+    Com_sprintf(sys_ttyCompletionLine->buffer,
+                sizeof(sys_ttyCompletionLine->buffer),
+                sys_ttyCompletionCommandFormat,
                 sys_ttyCompletionMatch);
-    sys_ttyCompletionLine->cursor = (int32_t)strlen(sys_ttyCompletionLine->buffer);
-    Sys_TTYAppendCompletionSuffix(originalLine.buffer, (char *)sys_ttyCompletionPrefix);
+    sys_ttyCompletionLine->cursor =
+        (int32_t)strlen(sys_ttyCompletionLine->buffer);
+    Sys_TTYAppendCompletionSuffix(originalLine.buffer,
+                                  (char *)sys_ttyCompletionPrefix);
     Com_Printf(sys_ttyCompletionListHeader, sys_ttyCompletionLine->buffer);
     Cmd_CommandCompletion(Sys_TTYPrintCompletionMatch);
     Cvar_CommandCompletion(Sys_TTYPrintCompletionMatch);

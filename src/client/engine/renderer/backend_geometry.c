@@ -27,10 +27,15 @@ enum {
 void RB_EndSurface_OptimizedGeneric(void)
 {
     renderer_world_interleaved_vertex_t *vertices =
-        (renderer_world_interleaved_vertex_t *)(void *)tess.shader->optimizedVertexStorage.address;
-    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {vertices[0].texCoord, vertices[0].lightmapCoord, vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord,      vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord};
+        (renderer_world_interleaved_vertex_t *)(void *)
+            tess.shader->optimizedVertexStorage.address;
+    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {
+        vertices[0].texCoord,
+        vertices[0].lightmapCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord
+    };
 
     if (r_lightmap->integer != 0) {
         if (glState.texEnv[glState.currenttmu] != GL_REPLACE) {
@@ -50,32 +55,41 @@ void RB_EndSurface_OptimizedGeneric(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(vertices[0]), vertices[0].color);
-    qglVertexPointer(3, GL_FLOAT, (int32_t)sizeof(vertices[0]), vertices[0].position);
+    qglColorPointer(4, GL_UNSIGNED_BYTE,
+                    (int32_t)sizeof(vertices[0]), vertices[0].color);
+    qglVertexPointer(3, GL_FLOAT,
+                     (int32_t)sizeof(vertices[0]), vertices[0].position);
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitexture(stage, baseTexCoords, (int32_t)sizeof(vertices[0]));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitexture(stage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitexture(showTrisStage, baseTexCoords, (int32_t)sizeof(vertices[0]));
+        RB_SetupMultitexture(showTrisStage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -90,8 +104,10 @@ void RB_EndSurface_OptimizedGeneric(void)
             qglColor3f(0.0f, tr.identityLight, 0.0f);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -108,10 +124,16 @@ void RB_EndSurface_OptimizedGeneric(void)
 void RB_EndSurface_OptimizedARB(void)
 {
     const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {
-        NULL, (const void *)(uintptr_t)offsetof(renderer_world_interleaved_vertex_t, lightmapCoord), NULL, NULL, NULL, NULL, NULL, NULL};
+        NULL,
+        (const void *)(uintptr_t)
+            offsetof(renderer_world_interleaved_vertex_t, lightmapCoord),
+        NULL, NULL, NULL, NULL, NULL, NULL
+    };
 
     if (r_logFile->integer != 0) {
-        GLimp_LogComment(va("--- RB_SurfaceOptimizedARB( %s ) ---\n", tess.shader->name));
+        GLimp_LogComment(
+            va("--- RB_SurfaceOptimizedARB( %s ) ---\n",
+               tess.shader->name));
     }
 
     if (r_lightmap->integer != 0) {
@@ -123,7 +145,8 @@ void RB_EndSurface_OptimizedARB(void)
         GL_TexEnv(tess.shader->stages[0]->bundle[1].textureEnvMode);
     }
 
-    qglBindBufferARB(GL_ARRAY_BUFFER_ARB, tess.shader->optimizedVertexStorage.glBuffer);
+    qglBindBufferARB(GL_ARRAY_BUFFER_ARB,
+                     tess.shader->optimizedVertexStorage.glBuffer);
 
     if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) == 0) {
         qglEnableClientState(GL_COLOR_ARRAY);
@@ -134,34 +157,49 @@ void RB_EndSurface_OptimizedARB(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(renderer_world_interleaved_vertex_t),
-                    (const void *)(uintptr_t)offsetof(renderer_world_interleaved_vertex_t, color));
-    qglVertexPointer(3, GL_FLOAT, (int32_t)sizeof(renderer_world_interleaved_vertex_t),
-                     (const void *)(uintptr_t)offsetof(renderer_world_interleaved_vertex_t, position));
+    qglColorPointer(
+        4, GL_UNSIGNED_BYTE,
+        (int32_t)sizeof(renderer_world_interleaved_vertex_t),
+        (const void *)(uintptr_t)
+            offsetof(renderer_world_interleaved_vertex_t, color));
+    qglVertexPointer(
+        3, GL_FLOAT,
+        (int32_t)sizeof(renderer_world_interleaved_vertex_t),
+        (const void *)(uintptr_t)
+            offsetof(renderer_world_interleaved_vertex_t, position));
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitexture(stage, baseTexCoords, (int32_t)sizeof(renderer_world_interleaved_vertex_t));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitexture(
+            stage, baseTexCoords,
+            (int32_t)sizeof(renderer_world_interleaved_vertex_t));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitexture(showTrisStage, baseTexCoords, (int32_t)sizeof(renderer_world_interleaved_vertex_t));
+        RB_SetupMultitexture(
+            showTrisStage, baseTexCoords,
+            (int32_t)sizeof(renderer_world_interleaved_vertex_t));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -176,8 +214,10 @@ void RB_EndSurface_OptimizedARB(void)
             qglColor3f(0.0f, tr.identityLight, 0.0f);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -194,13 +234,18 @@ void RB_EndSurface_OptimizedARB(void)
  * plus a 32-bit byte offset; no host pointer is narrowed at this boundary. */
 void RB_EndSurface_OptimizedATI(void)
 {
-    const uint32_t objectBuffer = tess.shader->optimizedVertexStorage.atiObjectBuffer;
-    const uint32_t vertexOffset = (uint32_t)tess.shader->optimizedVertexStorageOffset;
+    const uint32_t objectBuffer =
+        tess.shader->optimizedVertexStorage.atiObjectBuffer;
+    const uint32_t vertexOffset =
+        (uint32_t)tess.shader->optimizedVertexStorageOffset;
     const uint32_t texCoordOffsets[R_MAX_TEXTURE_UNITS] = {
-        vertexOffset, vertexOffset + (uint32_t)offsetof(renderer_world_interleaved_vertex_t, lightmapCoord),
-        vertexOffset, vertexOffset,
-        vertexOffset, vertexOffset,
-        vertexOffset, vertexOffset};
+        vertexOffset,
+        vertexOffset +
+            (uint32_t)offsetof(renderer_world_interleaved_vertex_t,
+                               lightmapCoord),
+        vertexOffset, vertexOffset, vertexOffset,
+        vertexOffset, vertexOffset, vertexOffset
+    };
 
     if (r_lightmap->integer != 0) {
         if (glState.texEnv[glState.currenttmu] != GL_REPLACE) {
@@ -220,34 +265,53 @@ void RB_EndSurface_OptimizedATI(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, (int32_t)sizeof(renderer_world_interleaved_vertex_t), objectBuffer,
-                      vertexOffset + (uint32_t)offsetof(renderer_world_interleaved_vertex_t, color));
-    qglArrayObjectATI(GL_VERTEX_ARRAY, 3, GL_FLOAT, (int32_t)sizeof(renderer_world_interleaved_vertex_t), objectBuffer,
-                      vertexOffset + (uint32_t)offsetof(renderer_world_interleaved_vertex_t, position));
+    qglArrayObjectATI(
+        GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE,
+        (int32_t)sizeof(renderer_world_interleaved_vertex_t),
+        objectBuffer,
+        vertexOffset +
+            (uint32_t)offsetof(renderer_world_interleaved_vertex_t,
+                               color));
+    qglArrayObjectATI(
+        GL_VERTEX_ARRAY, 3, GL_FLOAT,
+        (int32_t)sizeof(renderer_world_interleaved_vertex_t),
+        objectBuffer,
+        vertexOffset +
+            (uint32_t)offsetof(renderer_world_interleaved_vertex_t,
+                               position));
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitextureATI(stage, objectBuffer, texCoordOffsets, (int32_t)sizeof(renderer_world_interleaved_vertex_t));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitextureATI(
+            stage, objectBuffer, texCoordOffsets,
+            (int32_t)sizeof(renderer_world_interleaved_vertex_t));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitextureATI(showTrisStage, objectBuffer, texCoordOffsets, (int32_t)sizeof(renderer_world_interleaved_vertex_t));
+        RB_SetupMultitextureATI(
+            showTrisStage, objectBuffer, texCoordOffsets,
+            (int32_t)sizeof(renderer_world_interleaved_vertex_t));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -262,8 +326,10 @@ void RB_EndSurface_OptimizedATI(void)
             qglColor3f(0.0f, tr.identityLight, 0.0f);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -280,13 +346,20 @@ void RB_EndSurface_OptimizedATI(void)
 void RB_EndSurface_OptimizedNV(void)
 {
     renderer_world_interleaved_vertex_t *vertices =
-        (renderer_world_interleaved_vertex_t *)(void *)tess.shader->optimizedVertexStorage.address;
-    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {vertices[0].texCoord, vertices[0].lightmapCoord, vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord,      vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord};
+        (renderer_world_interleaved_vertex_t *)(void *)
+            tess.shader->optimizedVertexStorage.address;
+    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {
+        vertices[0].texCoord,
+        vertices[0].lightmapCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord
+    };
 
     if (r_logFile->integer != 0) {
-        GLimp_LogComment(va("--- RB_SurfaceOptimizedNV( %s ) ---\n", tess.shader->name));
+        GLimp_LogComment(
+            va("--- RB_SurfaceOptimizedNV( %s ) ---\n",
+               tess.shader->name));
     }
 
     if (r_lightmap->integer != 0) {
@@ -307,32 +380,41 @@ void RB_EndSurface_OptimizedNV(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(vertices[0]), vertices[0].color);
-    qglVertexPointer(3, GL_FLOAT, (int32_t)sizeof(vertices[0]), vertices[0].position);
+    qglColorPointer(4, GL_UNSIGNED_BYTE,
+                    (int32_t)sizeof(vertices[0]), vertices[0].color);
+    qglVertexPointer(3, GL_FLOAT,
+                     (int32_t)sizeof(vertices[0]), vertices[0].position);
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitexture(stage, baseTexCoords, (int32_t)sizeof(vertices[0]));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitexture(stage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitexture(showTrisStage, baseTexCoords, (int32_t)sizeof(vertices[0]));
+        RB_SetupMultitexture(showTrisStage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -347,8 +429,10 @@ void RB_EndSurface_OptimizedNV(void)
             qglColor3f(0.0f, tr.identityLight, 0.0f);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -364,10 +448,15 @@ void RB_EndSurface_OptimizedNV(void)
  * That stream has one texture-coordinate pair and a 24-byte vertex stride. */
 void RB_EndSurface_CachedStaticModelGeneric(void)
 {
-    renderer_cached_static_model_vertex_t *vertices = (renderer_cached_static_model_vertex_t *)(void *)tr.cachedStaticModelStorage.address;
-    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {vertices[0].texCoord, vertices[0].texCoord, vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord, vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord};
+    renderer_cached_static_model_vertex_t *vertices =
+        (renderer_cached_static_model_vertex_t *)(void *)
+            tr.cachedStaticModelStorage.address;
+    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord
+    };
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
@@ -381,29 +470,38 @@ void RB_EndSurface_CachedStaticModelGeneric(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(vertices[0]), vertices[0].color);
-    qglVertexPointer(3, GL_FLOAT, (int32_t)sizeof(vertices[0]), vertices[0].position);
+    qglColorPointer(4, GL_UNSIGNED_BYTE,
+                    (int32_t)sizeof(vertices[0]), vertices[0].color);
+    qglVertexPointer(3, GL_FLOAT,
+                     (int32_t)sizeof(vertices[0]), vertices[0].position);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitexture(stage, baseTexCoords, (int32_t)sizeof(vertices[0]));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitexture(stage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitexture(showTrisStage, baseTexCoords, (int32_t)sizeof(vertices[0]));
+        RB_SetupMultitexture(showTrisStage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -415,11 +513,14 @@ void RB_EndSurface_CachedStaticModelGeneric(void)
             RB_ChooseSurfaceCountColor(tess.renderedIndexCount, color);
             qglColor4ubv(color);
         } else {
-            qglColor3f(tr.identityLight * 0.5f, tr.identityLight, tr.identityLight);
+            qglColor3f(tr.identityLight * 0.5f,
+                       tr.identityLight, tr.identityLight);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -435,11 +536,14 @@ void RB_EndSurface_CachedStaticModelGeneric(void)
  * buffer for this backend, so each array argument is a byte offset. */
 void RB_EndSurface_CachedStaticModelARB(void)
 {
-    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    };
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
-    qglBindBufferARB(GL_ARRAY_BUFFER_ARB, tr.cachedStaticModelStorage.glBuffer);
+    qglBindBufferARB(GL_ARRAY_BUFFER_ARB,
+                     tr.cachedStaticModelStorage.glBuffer);
 
     if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) == 0) {
         qglEnableClientState(GL_COLOR_ARRAY);
@@ -450,31 +554,46 @@ void RB_EndSurface_CachedStaticModelARB(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(renderer_cached_static_model_vertex_t),
-                    (const void *)(uintptr_t)offsetof(renderer_cached_static_model_vertex_t, color));
-    qglVertexPointer(3, GL_FLOAT, (int32_t)sizeof(renderer_cached_static_model_vertex_t),
-                     (const void *)(uintptr_t)offsetof(renderer_cached_static_model_vertex_t, position));
+    qglColorPointer(
+        4, GL_UNSIGNED_BYTE,
+        (int32_t)sizeof(renderer_cached_static_model_vertex_t),
+        (const void *)(uintptr_t)
+            offsetof(renderer_cached_static_model_vertex_t, color));
+    qglVertexPointer(
+        3, GL_FLOAT,
+        (int32_t)sizeof(renderer_cached_static_model_vertex_t),
+        (const void *)(uintptr_t)
+            offsetof(renderer_cached_static_model_vertex_t, position));
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitexture(stage, baseTexCoords, (int32_t)sizeof(renderer_cached_static_model_vertex_t));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitexture(
+            stage, baseTexCoords,
+            (int32_t)sizeof(renderer_cached_static_model_vertex_t));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitexture(showTrisStage, baseTexCoords, (int32_t)sizeof(renderer_cached_static_model_vertex_t));
+        RB_SetupMultitexture(
+            showTrisStage, baseTexCoords,
+            (int32_t)sizeof(renderer_cached_static_model_vertex_t));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -486,11 +605,14 @@ void RB_EndSurface_CachedStaticModelARB(void)
             RB_ChooseSurfaceCountColor(tess.renderedIndexCount, color);
             qglColor4ubv(color);
         } else {
-            qglColor3f(tr.identityLight * 0.5f, tr.identityLight, tr.identityLight);
+            qglColor3f(tr.identityLight * 0.5f,
+                       tr.identityLight, tr.identityLight);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -507,10 +629,14 @@ void RB_EndSurface_CachedStaticModelARB(void)
  * replay: it neither changes culling nor disables the color array there. */
 void RB_EndSurface_CachedStaticModelATI(void)
 {
-    const uint32_t objectBuffer = tr.cachedStaticModelStorage.atiObjectBuffer;
-    const uint32_t vertexOffset = (uint32_t)tr.cachedStaticModelStorageOffset;
-    const uint32_t texCoordOffsets[R_MAX_TEXTURE_UNITS] = {vertexOffset, vertexOffset, vertexOffset, vertexOffset,
-                                                           vertexOffset, vertexOffset, vertexOffset, vertexOffset};
+    const uint32_t objectBuffer =
+        tr.cachedStaticModelStorage.atiObjectBuffer;
+    const uint32_t vertexOffset =
+        (uint32_t)tr.cachedStaticModelStorageOffset;
+    const uint32_t texCoordOffsets[R_MAX_TEXTURE_UNITS] = {
+        vertexOffset, vertexOffset, vertexOffset, vertexOffset,
+        vertexOffset, vertexOffset, vertexOffset, vertexOffset
+    };
 
     if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) == 0) {
         qglEnableClientState(GL_COLOR_ARRAY);
@@ -521,44 +647,66 @@ void RB_EndSurface_CachedStaticModelATI(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, (int32_t)sizeof(renderer_cached_static_model_vertex_t), objectBuffer,
-                      vertexOffset + (uint32_t)offsetof(renderer_cached_static_model_vertex_t, color));
-    qglArrayObjectATI(GL_VERTEX_ARRAY, 3, GL_FLOAT, (int32_t)sizeof(renderer_cached_static_model_vertex_t), objectBuffer,
-                      vertexOffset + (uint32_t)offsetof(renderer_cached_static_model_vertex_t, position));
+    qglArrayObjectATI(
+        GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE,
+        (int32_t)sizeof(renderer_cached_static_model_vertex_t),
+        objectBuffer,
+        vertexOffset +
+            (uint32_t)offsetof(renderer_cached_static_model_vertex_t,
+                               color));
+    qglArrayObjectATI(
+        GL_VERTEX_ARRAY, 3, GL_FLOAT,
+        (int32_t)sizeof(renderer_cached_static_model_vertex_t),
+        objectBuffer,
+        vertexOffset +
+            (uint32_t)offsetof(renderer_cached_static_model_vertex_t,
+                               position));
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitextureATI(stage, objectBuffer, texCoordOffsets, (int32_t)sizeof(renderer_cached_static_model_vertex_t));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitextureATI(
+            stage, objectBuffer, texCoordOffsets,
+            (int32_t)sizeof(renderer_cached_static_model_vertex_t));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitextureATI(showTrisStage, objectBuffer, texCoordOffsets, (int32_t)sizeof(renderer_cached_static_model_vertex_t));
+        RB_SetupMultitextureATI(
+            showTrisStage, objectBuffer, texCoordOffsets,
+            (int32_t)sizeof(renderer_cached_static_model_vertex_t));
 
         if (r_showtris->integer >= 5) {
             uint8_t color[4];
             RB_ChooseSurfaceCountColor(tess.renderedIndexCount, color);
             qglColor4ubv(color);
         } else {
-            qglColor3f(tr.identityLight * 0.5f, tr.identityLight, tr.identityLight);
+            qglColor3f(tr.identityLight * 0.5f,
+                       tr.identityLight, tr.identityLight);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 }
@@ -572,10 +720,15 @@ void RB_EndSurface_CachedStaticModelATI(void)
  * path consumes the shared cache stream through its native address member. */
 void RB_EndSurface_CachedStaticModelNV(void)
 {
-    renderer_cached_static_model_vertex_t *vertices = (renderer_cached_static_model_vertex_t *)(void *)tr.cachedStaticModelStorage.address;
-    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {vertices[0].texCoord, vertices[0].texCoord, vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord, vertices[0].texCoord,
-                                                      vertices[0].texCoord, vertices[0].texCoord};
+    renderer_cached_static_model_vertex_t *vertices =
+        (renderer_cached_static_model_vertex_t *)(void *)
+            tr.cachedStaticModelStorage.address;
+    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = {
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord,
+        vertices[0].texCoord, vertices[0].texCoord
+    };
 
     RB_SetIteratorFog();
     GL_Cull(tess.shader->cullType);
@@ -589,29 +742,38 @@ void RB_EndSurface_CachedStaticModelNV(void)
         glState.clientStateBits &= ~GLS_CLIENT_NORMAL_ARRAY;
     }
 
-    qglColorPointer(4, GL_UNSIGNED_BYTE, (int32_t)sizeof(vertices[0]), vertices[0].color);
-    qglVertexPointer(3, GL_FLOAT, (int32_t)sizeof(vertices[0]), vertices[0].position);
+    qglColorPointer(4, GL_UNSIGNED_BYTE,
+                    (int32_t)sizeof(vertices[0]), vertices[0].color);
+    qglVertexPointer(3, GL_FLOAT,
+                     (int32_t)sizeof(vertices[0]), vertices[0].position);
 
-    for (int32_t stageIndex = 0; stageIndex < tess.activeStageCount; ++stageIndex) {
+    for (int32_t stageIndex = 0;
+         stageIndex < tess.activeStageCount;
+         ++stageIndex) {
         shaderStage_t *stage = tess.activeStages[stageIndex];
 
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
         GL_State(stage->stateBits);
-        RB_SetupMultitexture(stage, baseTexCoords, (int32_t)sizeof(vertices[0]));
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        RB_SetupMultitexture(stage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
     }
 
     if (r_showtris->integer != 0) {
         if ((r_showtris->integer & 1) != 0)
             qglDepthRange(0.0, 0.10000000149011612);
 
-        shaderStage_t *showTrisStage = tr.showTrisShader->stages[0];
+        shaderStage_t *showTrisStage =
+            tr.showTrisShader->stages[0];
         GL_Cull(tr.showTrisShader->cullType);
         GL_State(showTrisStage->stateBits);
-        RB_SetupMultitexture(showTrisStage, baseTexCoords, (int32_t)sizeof(vertices[0]));
+        RB_SetupMultitexture(showTrisStage, baseTexCoords,
+                             (int32_t)sizeof(vertices[0]));
 
         if ((glState.clientStateBits & GLS_CLIENT_COLOR_ARRAY) != 0) {
             qglDisableClientState(GL_COLOR_ARRAY);
@@ -623,11 +785,14 @@ void RB_EndSurface_CachedStaticModelNV(void)
             RB_ChooseSurfaceCountColor(tess.renderedIndexCount, color);
             qglColor4ubv(color);
         } else {
-            qglColor3f(tr.identityLight * 0.5f, tr.identityLight, tr.identityLight);
+            qglColor3f(tr.identityLight * 0.5f,
+                       tr.identityLight, tr.identityLight);
         }
 
-        GL_DrawRangeElements(GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex, (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
-                             GL_UNSIGNED_SHORT, tess.optimizedIndexes);
+        GL_DrawRangeElements(
+            GL_TRIANGLES, (uint32_t)tess.optimizedFirstVertex,
+            (uint32_t)tess.optimizedVertexEnd, tess.renderedIndexCount,
+            GL_UNSIGNED_SHORT, tess.optimizedIndexes);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -674,8 +839,12 @@ void RB_EndSurface_Optimized(void)
         break;
     }
 
-    backEnd.pc.indexCount = (int32_t)((uint32_t)backEnd.pc.indexCount + (uint32_t)tess.renderedIndexCount);
-    backEnd.pc.vertexCount = (int32_t)((uint32_t)backEnd.pc.vertexCount + (uint32_t)tess.renderedVertexCount);
+    backEnd.pc.indexCount = (int32_t)(
+        (uint32_t)backEnd.pc.indexCount +
+        (uint32_t)tess.renderedIndexCount);
+    backEnd.pc.vertexCount = (int32_t)(
+        (uint32_t)backEnd.pc.vertexCount +
+        (uint32_t)tess.renderedVertexCount);
     tess.renderedIndexCount = 0;
     tess.renderedVertexCount = 0;
 }
@@ -702,10 +871,13 @@ void RB_EndSurface(void)
         return;
 
     if (tess.indexes[R_MAX_TESS_INDEXES - 1] != 0) {
-        ri.Error(ERR_DROP, "\x15RB_EndSurface() - SHADER_MAX_INDEXES hit");
+        ri.Error(ERR_DROP,
+                 "\x15RB_EndSurface() - SHADER_MAX_INDEXES hit");
     }
-    if (tess.xyz[(R_MAX_TESS_VERTICES - 1) * tess.vertexComponentCount] != 0.0f) {
-        ri.Error(ERR_DROP, "\x15RB_EndSurface() - SHADER_MAX_VERTEXES hit");
+    if (tess.xyz[(R_MAX_TESS_VERTICES - 1) *
+                 tess.vertexComponentCount] != 0.0f) {
+        ri.Error(ERR_DROP,
+                 "\x15RB_EndSurface() - SHADER_MAX_VERTEXES hit");
     }
 
     if (tess.shader == tr.stencilShadowShader) {
@@ -714,7 +886,8 @@ void RB_EndSurface(void)
         return;
     }
 
-    if (r_debugSort->integer != 0 && (float)r_debugSort->integer < tess.shader->sort) {
+    if (r_debugSort->integer != 0 &&
+        (float)r_debugSort->integer < tess.shader->sort) {
         tess.indexCount = 0;
         return;
     }
@@ -725,7 +898,8 @@ void RB_EndSurface(void)
                 tess.indexCount = 0;
                 return;
             }
-        } else if (rendererSkyboxPortalActive == qfalse && tess.stageIterator != RB_StageIteratorSky) {
+        } else if (rendererSkyboxPortalActive == qfalse &&
+                   tess.stageIterator != RB_StageIteratorSky) {
             tess.indexCount = 0;
             return;
         }
@@ -768,20 +942,27 @@ void RB_EndSurface(void)
  * actually writing the reserved last element. */
 void RB_CheckOverflow(int32_t vertexCount, int32_t indexCount)
 {
-    const int32_t nextVertexCount = (int32_t)((uint32_t)tess.vertexCount + (uint32_t)vertexCount);
-    const int32_t nextIndexCount = (int32_t)((uint32_t)tess.indexCount + (uint32_t)indexCount);
+    const int32_t nextVertexCount = (int32_t)(
+        (uint32_t)tess.vertexCount + (uint32_t)vertexCount);
+    const int32_t nextIndexCount = (int32_t)(
+        (uint32_t)tess.indexCount + (uint32_t)indexCount);
 
-    if (nextVertexCount < R_MAX_TESS_VERTICES && nextIndexCount < R_MAX_TESS_INDEXES) {
+    if (nextVertexCount < R_MAX_TESS_VERTICES &&
+        nextIndexCount < R_MAX_TESS_INDEXES) {
         return;
     }
 
     RB_EndSurface();
 
     if (vertexCount > R_MAX_TESS_VERTICES) {
-        ri.Error(ERR_DROP, "\x15RB_CheckOverflow: verts > MAX (%d > %d)", vertexCount, R_MAX_TESS_VERTICES);
+        ri.Error(ERR_DROP,
+                 "\x15RB_CheckOverflow: verts > MAX (%d > %d)",
+                 vertexCount, R_MAX_TESS_VERTICES);
     }
     if (indexCount > R_MAX_TESS_INDEXES) {
-        ri.Error(ERR_DROP, "\x15RB_CheckOverflow: indices > MAX (%d > %d)", indexCount, R_MAX_TESS_INDEXES);
+        ri.Error(ERR_DROP,
+                 "\x15RB_CheckOverflow: indices > MAX (%d > %d)",
+                 indexCount, R_MAX_TESS_INDEXES);
     }
 
     backEnd.currentEntity = tess.entity;
@@ -807,40 +988,54 @@ void RB_CheckOverflow_Optimized(void)
  * then copy the seven independently stored vertex arrays. */
 void RB_SurfaceTriangles(renderer_surface_t *surfaceData)
 {
-    renderer_world_mesh_surface_t *surface = (renderer_world_mesh_surface_t *)surfaceData;
+    renderer_world_mesh_surface_t *surface =
+        (renderer_world_mesh_surface_t *)surfaceData;
     RB_CheckOverflow(surface->vertexCount, surface->indexCount);
     const int32_t baseVertex = tess.vertexCount;
     tess.dlightBits |= surface->dlightBits;
 
     for (int32_t index = surface->indexCount - 1; index >= 0; --index) {
-        tess.indexes[tess.indexCount + index] = (uint16_t)(surface->indices[index] + tess.vertexCount);
+        tess.indexes[tess.indexCount + index] =
+            (uint16_t)(surface->indices[index] + tess.vertexCount);
     }
     tess.indexCount += surface->indexCount;
 
-    if ((tess.shader->surfaceFlags & SHADER_SURFACE_REQUIRES_VERTEX_BASIS) != 0 ||
+    if ((tess.shader->surfaceFlags &
+         SHADER_SURFACE_REQUIRES_VERTEX_BASIS) != 0 ||
         (r_dlightQuality->integer != 0 && tess.dlightBits != 0)) {
-        memcpy(&tess.stageNormals[tess.vertexCount], surface->normals, (size_t)surface->vertexCount * sizeof(*surface->normals));
+        memcpy(&tess.stageNormals[tess.vertexCount], surface->normals,
+               (size_t)surface->vertexCount * sizeof(*surface->normals));
         tess.requiresVertexBasis = qtrue;
 
-        if ((tess.shader->surfaceFlags & SHADER_SURFACE_TANGENT_SPACE_INPUT_MASK) != 0) {
+        if ((tess.shader->surfaceFlags &
+             SHADER_SURFACE_TANGENT_SPACE_INPUT_MASK) != 0) {
             if (surface->tangents != NULL) {
-                memcpy(&tess.stageTangents[tess.vertexCount], surface->tangents, (size_t)surface->vertexCount * sizeof(*surface->tangents));
+                memcpy(&tess.stageTangents[tess.vertexCount],
+                       surface->tangents,
+                       (size_t)surface->vertexCount *
+                           sizeof(*surface->tangents));
                 tess.stageTangentsValid = qtrue;
             }
             if (surface->bitangents != NULL) {
-                memcpy(&tess.stageBitangents[tess.vertexCount], surface->bitangents,
-                       (size_t)surface->vertexCount * sizeof(*surface->bitangents));
+                memcpy(&tess.stageBitangents[tess.vertexCount],
+                       surface->bitangents,
+                       (size_t)surface->vertexCount *
+                           sizeof(*surface->bitangents));
                 tess.stageBitangentsValid = qtrue;
             }
         }
     }
 
-    memcpy(&tess.xyz[tess.vertexCount * 3], surface->positions, (size_t)surface->vertexCount * sizeof(*surface->positions));
-    memcpy(&tess.texCoords[R_TESS_BASE_TEXCOORD_SET][tess.vertexCount], surface->texCoords,
+    memcpy(&tess.xyz[tess.vertexCount * 3], surface->positions,
+           (size_t)surface->vertexCount * sizeof(*surface->positions));
+    memcpy(&tess.texCoords[R_TESS_BASE_TEXCOORD_SET][tess.vertexCount],
+           surface->texCoords,
            (size_t)surface->vertexCount * sizeof(*surface->texCoords));
-    memcpy(&tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][tess.vertexCount], surface->lightmapCoords,
+    memcpy(&tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][tess.vertexCount],
+           surface->lightmapCoords,
            (size_t)surface->vertexCount * sizeof(*surface->lightmapCoords));
-    memcpy(&tess.vertexColors[tess.vertexCount], surface->colors, (size_t)surface->vertexCount * sizeof(*surface->colors));
+    memcpy(&tess.vertexColors[tess.vertexCount], surface->colors,
+           (size_t)surface->vertexCount * sizeof(*surface->colors));
 
     tess.vertexCount = baseVertex + surface->vertexCount;
 }
@@ -856,24 +1051,34 @@ void RB_DlightFallback(renderer_world_mesh_surface_t *surface)
     RB_CheckOverflow(surface->vertexCount, surface->indexCount);
 
     if (r_dlightQuality->integer != 0) {
-        memcpy(&tess.stageTangents[tess.vertexCount], surface->tangents, (size_t)surface->vertexCount * sizeof(*surface->tangents));
-        memcpy(&tess.stageBitangents[tess.vertexCount], surface->bitangents, (size_t)surface->vertexCount * sizeof(*surface->bitangents));
-        memcpy(&tess.stageNormals[tess.vertexCount], surface->normals, (size_t)surface->vertexCount * sizeof(*surface->normals));
+        memcpy(&tess.stageTangents[tess.vertexCount], surface->tangents,
+               (size_t)surface->vertexCount * sizeof(*surface->tangents));
+        memcpy(&tess.stageBitangents[tess.vertexCount],
+               surface->bitangents,
+               (size_t)surface->vertexCount * sizeof(*surface->bitangents));
+        memcpy(&tess.stageNormals[tess.vertexCount], surface->normals,
+               (size_t)surface->vertexCount * sizeof(*surface->normals));
         tess.stageTangentsValid = qtrue;
         tess.stageBitangentsValid = qtrue;
         tess.requiresVertexBasis = qtrue;
     }
 
-    memcpy(&tess.texCoords[R_TESS_BASE_TEXCOORD_SET][tess.vertexCount], surface->texCoords,
+    memcpy(&tess.texCoords[R_TESS_BASE_TEXCOORD_SET][tess.vertexCount],
+           surface->texCoords,
            (size_t)surface->vertexCount * sizeof(*surface->texCoords));
-    memcpy(&tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][tess.vertexCount], surface->lightmapCoords,
+    memcpy(&tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][tess.vertexCount],
+           surface->lightmapCoords,
            (size_t)surface->vertexCount * sizeof(*surface->lightmapCoords));
-    memcpy(&tess.vertexColors[tess.vertexCount], surface->colors, (size_t)surface->vertexCount * sizeof(*surface->colors));
-    memcpy(&tess.xyz[tess.vertexCount * 3], surface->positions, (size_t)surface->vertexCount * sizeof(*surface->positions));
+    memcpy(&tess.vertexColors[tess.vertexCount], surface->colors,
+           (size_t)surface->vertexCount * sizeof(*surface->colors));
+    memcpy(&tess.xyz[tess.vertexCount * 3], surface->positions,
+           (size_t)surface->vertexCount * sizeof(*surface->positions));
 
-    const int32_t adjustedVertexBase = tess.vertexCount - (int32_t)surface->indices[0];
+    const int32_t adjustedVertexBase =
+        tess.vertexCount - (int32_t)surface->indices[0];
     for (int32_t index = 0; index < surface->indexCount; ++index) {
-        tess.indexes[tess.indexCount + index] = (uint16_t)(surface->indices[index] + adjustedVertexBase);
+        tess.indexes[tess.indexCount + index] =
+            (uint16_t)(surface->indices[index] + adjustedVertexBase);
     }
 
     tess.vertexCount += surface->vertexCount;
@@ -890,15 +1095,19 @@ void RB_DlightFallback(renderer_world_mesh_surface_t *surface)
  * tessellation storage. */
 void RB_SurfaceOptimized(renderer_surface_t *surfaceData)
 {
-    renderer_world_mesh_surface_t *surface = (renderer_world_mesh_surface_t *)surfaceData;
-    const int32_t requestedIndexEnd = (int32_t)((uint32_t)tess.renderedIndexCount + (uint32_t)surface->indexCount);
+    renderer_world_mesh_surface_t *surface =
+        (renderer_world_mesh_surface_t *)surfaceData;
+    const int32_t requestedIndexEnd = (int32_t)(
+        (uint32_t)tess.renderedIndexCount +
+        (uint32_t)surface->indexCount);
 
     if (requestedIndexEnd >= R_MAX_OPTIMIZED_TESS_INDEXES) {
         RB_CheckOverflow_Optimized();
     }
 
     const int32_t firstVertex = surface->indices[0];
-    const int32_t vertexEnd = (int32_t)((uint32_t)firstVertex + (uint32_t)surface->vertexCount);
+    const int32_t vertexEnd = (int32_t)(
+        (uint32_t)firstVertex + (uint32_t)surface->vertexCount);
     if (tess.optimizedVertexEnd == 0) {
         tess.optimizedFirstVertex = firstVertex;
         tess.optimizedVertexEnd = vertexEnd;
@@ -909,13 +1118,21 @@ void RB_SurfaceOptimized(renderer_surface_t *surfaceData)
             tess.optimizedVertexEnd = vertexEnd;
     }
 
-    memcpy(&tess.optimizedIndexes[tess.renderedIndexCount], surface->indices,
-           (size_t)((uint32_t)surface->indexCount * (uint32_t)sizeof(*surface->indices)));
-    tess.renderedIndexCount = (int32_t)((uint32_t)tess.renderedIndexCount + (uint32_t)surface->indexCount);
-    tess.renderedVertexCount = (int32_t)((uint32_t)tess.renderedVertexCount + (uint32_t)surface->vertexCount);
+    memcpy(&tess.optimizedIndexes[tess.renderedIndexCount],
+           surface->indices,
+           (size_t)((uint32_t)surface->indexCount *
+                    (uint32_t)sizeof(*surface->indices)));
+    tess.renderedIndexCount = (int32_t)(
+        (uint32_t)tess.renderedIndexCount +
+        (uint32_t)surface->indexCount);
+    tess.renderedVertexCount = (int32_t)(
+        (uint32_t)tess.renderedVertexCount +
+        (uint32_t)surface->vertexCount);
 
-    if (backEnd.refdef.num_dlights != 0 && surface->dlightBits != 0 &&
-        (glConfig.vertexArrayRangeMode == R_VERTEX_ARRAY_RANGE_NONE || tr.defaultStorageMode == glState.currentStorageMode)) {
+    if (backEnd.refdef.num_dlights != 0 &&
+        surface->dlightBits != 0 &&
+        (glConfig.vertexArrayRangeMode == R_VERTEX_ARRAY_RANGE_NONE ||
+         tr.defaultStorageMode == glState.currentStorageMode)) {
         RB_DlightFallback(surface);
     }
 }
@@ -931,13 +1148,17 @@ void RB_SurfaceOptimized(renderer_surface_t *surfaceData)
  *
  * The Windows optimizer passes origin, left, and up in ESI, EBX, and EDI. The
  * five ordinary stack arguments match RB_AddQuadStampExt. */
-void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left, const vec3_t up, const uint8_t color[4], float s1, float t1, float s2,
-                            float t2)
+void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left,
+                            const vec3_t up, const uint8_t color[4],
+                            float s1, float t1, float s2, float t2)
 {
-    const int32_t requestedVertexEnd = (int32_t)((uint32_t)tess.vertexCount + 5u);
-    const int32_t requestedIndexEnd = (int32_t)((uint32_t)tess.indexCount + 12u);
+    const int32_t requestedVertexEnd = (int32_t)(
+        (uint32_t)tess.vertexCount + 5u);
+    const int32_t requestedIndexEnd = (int32_t)(
+        (uint32_t)tess.indexCount + 12u);
 
-    if (requestedVertexEnd >= R_MAX_TESS_VERTICES || requestedIndexEnd >= R_MAX_TESS_INDEXES) {
+    if (requestedVertexEnd >= R_MAX_TESS_VERTICES ||
+        requestedIndexEnd >= R_MAX_TESS_INDEXES) {
         RB_EndSurface();
         backEnd.currentEntity = tess.entity;
         RB_BeginSurface(tess.shader, tess.vertexComponentCount);
@@ -962,7 +1183,8 @@ void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left, const vec3_t
     tess.indexes[tess.indexCount + 10] = (uint16_t)(baseVertex + 0);
     tess.indexes[tess.indexCount + 11] = (uint16_t)centerVertex;
 
-    uint32_t xyzOffset = firstVertexArrayIndex * (uint32_t)tess.vertexComponentCount;
+    uint32_t xyzOffset =
+        firstVertexArrayIndex * (uint32_t)tess.vertexComponentCount;
     tess.xyz[xyzOffset + 0] = (left[0] + up[0]) + origin[0];
     tess.xyz[xyzOffset + 1] = (left[1] + up[1]) + origin[1];
     tess.xyz[xyzOffset + 2] = (left[2] + up[2]) + origin[2];
@@ -988,22 +1210,39 @@ void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left, const vec3_t
     tess.xyz[xyzOffset + 2] = origin[2];
 
     for (uint32_t vertexOffset = 0; vertexOffset < 5; ++vertexOffset) {
-        const uint32_t vertexIndex = firstVertexArrayIndex + vertexOffset;
-        tess.stageNormals[vertexIndex][0] = -backEnd.viewParms.orientation.axis[0][0];
-        tess.stageNormals[vertexIndex][1] = -backEnd.viewParms.orientation.axis[0][1];
-        tess.stageNormals[vertexIndex][2] = -backEnd.viewParms.orientation.axis[0][2];
+        const uint32_t vertexIndex =
+            firstVertexArrayIndex + vertexOffset;
+        tess.stageNormals[vertexIndex][0] =
+            -backEnd.viewParms.orientation.axis[0][0];
+        tess.stageNormals[vertexIndex][1] =
+            -backEnd.viewParms.orientation.axis[0][1];
+        tess.stageNormals[vertexIndex][2] =
+            -backEnd.viewParms.orientation.axis[0][2];
     }
 
-    const vec2_t cornerTexCoords[4] = {{s1, t1}, {s2, t1}, {s2, t2}, {s1, t2}};
+    const vec2_t cornerTexCoords[4] = {
+        {s1, t1},
+        {s2, t1},
+        {s2, t2},
+        {s1, t2}
+    };
     for (uint32_t vertexOffset = 0; vertexOffset < 4; ++vertexOffset) {
-        const uint32_t vertexIndex = firstVertexArrayIndex + vertexOffset;
-        memcpy(tess.texCoords[R_TESS_BASE_TEXCOORD_SET][vertexIndex], cornerTexCoords[vertexOffset], sizeof(vec2_t));
-        memcpy(tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][vertexIndex], cornerTexCoords[vertexOffset], sizeof(vec2_t));
+        const uint32_t vertexIndex =
+            firstVertexArrayIndex + vertexOffset;
+        memcpy(tess.texCoords[R_TESS_BASE_TEXCOORD_SET][vertexIndex],
+               cornerTexCoords[vertexOffset], sizeof(vec2_t));
+        memcpy(tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][vertexIndex],
+               cornerTexCoords[vertexOffset], sizeof(vec2_t));
     }
 
-    const vec2_t centerTexCoord = {(s1 + s2) * 0.5f, (t1 + t2) * 0.5f};
-    memcpy(tess.texCoords[R_TESS_BASE_TEXCOORD_SET][centerVertex], centerTexCoord, sizeof(vec2_t));
-    memcpy(tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][centerVertex], centerTexCoord, sizeof(vec2_t));
+    const vec2_t centerTexCoord = {
+        (s1 + s2) * 0.5f,
+        (t1 + t2) * 0.5f
+    };
+    memcpy(tess.texCoords[R_TESS_BASE_TEXCOORD_SET][centerVertex],
+           centerTexCoord, sizeof(vec2_t));
+    memcpy(tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][centerVertex],
+           centerTexCoord, sizeof(vec2_t));
 
     uint32_t centerColor;
     uint32_t edgeColor;
@@ -1019,8 +1258,10 @@ void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left, const vec3_t
     tess.vertexColors[firstVertexArrayIndex + 2] = edgeColor;
     tess.vertexColors[firstVertexArrayIndex + 3] = edgeColor;
 
-    tess.vertexCount = (int32_t)((uint32_t)tess.vertexCount + 5u);
-    tess.indexCount = (int32_t)((uint32_t)tess.indexCount + 12u);
+    tess.vertexCount = (int32_t)(
+        (uint32_t)tess.vertexCount + 5u);
+    tess.indexCount = (int32_t)(
+        (uint32_t)tess.indexCount + 12u);
 }
 
 /* Source: CoDUOMP.exe 0x004f10f0..0x004f13d8.
@@ -1033,17 +1274,21 @@ void RB_AddQuadStampExtFade(const vec3_t origin, const vec3_t left, const vec3_t
  * while normals, texture coordinates, and colors use its zero-extended low
  * half. The generated quad faces opposite the current view-forward axis in
  * local space. */
-void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left, const vec3_t up, const uint8_t color[4], float s1, float t1, float s2,
-                        float t2)
+void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left,
+                        const vec3_t up, const uint8_t color[4],
+                        float s1, float t1, float s2, float t2)
 {
     int32_t baseVertex;
     uint32_t xyzOffset;
     uint32_t packedColor;
 
-    const int32_t requestedVertexEnd = (int32_t)((uint32_t)tess.vertexCount + 4u);
-    const int32_t requestedIndexEnd = (int32_t)((uint32_t)tess.indexCount + 6u);
+    const int32_t requestedVertexEnd = (int32_t)(
+        (uint32_t)tess.vertexCount + 4u);
+    const int32_t requestedIndexEnd = (int32_t)(
+        (uint32_t)tess.indexCount + 6u);
 
-    if (requestedVertexEnd >= R_MAX_TESS_VERTICES || requestedIndexEnd >= R_MAX_TESS_INDEXES) {
+    if (requestedVertexEnd >= R_MAX_TESS_VERTICES ||
+        requestedIndexEnd >= R_MAX_TESS_INDEXES) {
         RB_EndSurface();
         backEnd.currentEntity = tess.entity;
         RB_BeginSurface(tess.shader, tess.vertexComponentCount);
@@ -1059,7 +1304,9 @@ void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left, const vec3_t up,
     tess.indexes[tess.indexCount + 4] = (uint16_t)(baseVertex + 1);
     tess.indexes[tess.indexCount + 5] = (uint16_t)(baseVertex + 2);
 
-    xyzOffset = (uint32_t)baseVertex * (uint32_t)tess.vertexComponentCount;
+    xyzOffset =
+        (uint32_t)baseVertex *
+        (uint32_t)tess.vertexComponentCount;
     tess.xyz[xyzOffset + 0] = (left[0] + up[0]) + origin[0];
     tess.xyz[xyzOffset + 1] = (left[1] + origin[1]) + up[1];
     tess.xyz[xyzOffset + 2] = (left[2] + origin[2]) + up[2];
@@ -1080,30 +1327,50 @@ void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left, const vec3_t up,
     tess.xyz[xyzOffset + 2] = (left[2] + origin[2]) - up[2];
 
     for (uint32_t vertexOffset = 0; vertexOffset < 4; ++vertexOffset) {
-        const uint32_t vertexIndex = firstVertexArrayIndex + vertexOffset;
+        const uint32_t vertexIndex =
+            firstVertexArrayIndex + vertexOffset;
 
-        tess.stageNormals[vertexIndex][0] = -backEnd.viewParms.orientation.axis[0][0];
-        tess.stageNormals[vertexIndex][1] = -backEnd.viewParms.orientation.axis[0][1];
-        tess.stageNormals[vertexIndex][2] = -backEnd.viewParms.orientation.axis[0][2];
+        tess.stageNormals[vertexIndex][0] =
+            -backEnd.viewParms.orientation.axis[0][0];
+        tess.stageNormals[vertexIndex][1] =
+            -backEnd.viewParms.orientation.axis[0][1];
+        tess.stageNormals[vertexIndex][2] =
+            -backEnd.viewParms.orientation.axis[0][2];
     }
 
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 0][0] = s1;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 0][1] = t1;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 1][0] = s2;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 1][1] = t1;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 2][0] = s2;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 2][1] = t2;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 3][0] = s1;
-    tess.texCoords[R_TESS_BASE_TEXCOORD_SET][firstVertexArrayIndex + 3][1] = t2;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 0][0] = s1;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 0][1] = t1;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 1][0] = s2;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 1][1] = t1;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 2][0] = s2;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 2][1] = t2;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 3][0] = s1;
+    tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 3][1] = t2;
 
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 0][0] = s1;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 0][1] = t1;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 1][0] = s2;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 1][1] = t1;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 2][0] = s2;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 2][1] = t2;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 3][0] = s1;
-    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET][firstVertexArrayIndex + 3][1] = t2;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 0][0] = s1;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 0][1] = t1;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 1][0] = s2;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 1][1] = t1;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 2][0] = s2;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 2][1] = t2;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 3][0] = s1;
+    tess.texCoords[R_TESS_LIGHTMAP_TEXCOORD_SET]
+                  [firstVertexArrayIndex + 3][1] = t2;
 
     memcpy(&packedColor, color, sizeof(packedColor));
     tess.vertexColors[firstVertexArrayIndex + 0] = packedColor;
@@ -1111,15 +1378,19 @@ void RB_AddQuadStampExt(const vec3_t origin, const vec3_t left, const vec3_t up,
     tess.vertexColors[firstVertexArrayIndex + 2] = packedColor;
     tess.vertexColors[firstVertexArrayIndex + 3] = packedColor;
 
-    tess.vertexCount = (int32_t)((uint32_t)tess.vertexCount + 4u);
-    tess.indexCount = (int32_t)((uint32_t)tess.indexCount + 6u);
+    tess.vertexCount = (int32_t)(
+        (uint32_t)tess.vertexCount + 4u);
+    tess.indexCount = (int32_t)(
+        (uint32_t)tess.indexCount + 6u);
 }
 
 /* Source: CoDUOMP.exe 0x004f13e0..0x004f13ff.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004f13e0_004f13ff.mcode.
  * Name: exact same-module Mac symbol RB_AddQuadStamp. The wrapper supplies
  * the complete [0,1] texture rectangle; several Windows callers inline it. */
-void RB_AddQuadStamp(const vec3_t origin, const vec3_t left, const vec3_t up, const uint8_t color[4])
+void RB_AddQuadStamp(const vec3_t origin, const vec3_t left,
+                     const vec3_t up, const uint8_t color[4])
 {
-    RB_AddQuadStampExt(origin, left, up, color, 0.0f, 0.0f, 1.0f, 1.0f);
+    RB_AddQuadStampExt(origin, left, up, color,
+                       0.0f, 0.0f, 1.0f, 1.0f);
 }

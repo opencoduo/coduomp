@@ -68,10 +68,13 @@
  * 0xad fills it, 0x9a consumes it for animation, and 0xae consumes it for the
  * final skeleton. The local matrix (base-0x30) is adjacent and non-overlapping.
  */
-qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self, const char *tagName, DObjSkelMat *out)
+qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self,
+                                         const char *tagName,
+                                         DObjSkelMat *out)
 {
     /* 3001fec6: ESI = trap(0xb2, self, tagName) -> the DObj bone/tag handle. */
-    int32_t boneHandle = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, (intptr_t)self, (intptr_t)tagName));
+    int32_t boneHandle = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_DOBJ_GET_BONE_INDEX, (intptr_t)self, (intptr_t)tagName));
 
     /* 3001fed6: JGE continues on non-negative; a negative handle means no such
      * tag on this entity's DObj -> leave `out` untouched and return 0. */
@@ -85,22 +88,28 @@ qboolean CG_DObjGetSpecialTagWorldMatrix(struct DObj_s *self, const char *tagNam
      * CalcSkel consume it. */
     uint32_t partBits[4];
     if (cgame_syscall(CG_DOBJ_CREATE_SKEL_FOR_BONE, (intptr_t)self, boneHandle) == 0) {
-        cgame_syscall(CG_DOBJ_GET_HIERARCHY_BITS, (intptr_t)self, boneHandle, (intptr_t)partBits);
-        cgame_syscall(CG_DOBJ_CALC_ANIM, (intptr_t)self, (intptr_t)partBits);
-        cgame_syscall(CG_DOBJ_CALC_SKEL, (intptr_t)self, (intptr_t)partBits);
+        cgame_syscall(CG_DOBJ_GET_HIERARCHY_BITS, (intptr_t)self, boneHandle,
+                      (intptr_t)partBits);
+        cgame_syscall(CG_DOBJ_CALC_ANIM, (intptr_t)self,
+                      (intptr_t)partBits);
+        cgame_syscall(CG_DOBJ_CALC_SKEL, (intptr_t)self,
+                      (intptr_t)partBits);
     }
 
     /* 3001ff2f: ECX = trap(0xa0, self, 0) -> base of the per-bone matrix table;
      * 3001ffa6/ffb8: index it by boneHandle*0x40 (SHL 6) to select this bone.
      * Unlike the 0x3001fdf0 sibling, this variant does not NULL-check the result. */
-    DObjSkelMat *boneMatrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *boneMatrixTable =
+        (DObjSkelMat *)(intptr_t)cgame_syscall(
+            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (boneMatrixTable == NULL) {
         return qfalse;
     }
 
     uint32_t boneOffset = (uint32_t)boneHandle << 6;
-    DObjSkelMat *boneMatrix = (DObjSkelMat *)((uintptr_t)(void *)boneMatrixTable + (uintptr_t)boneOffset);
+    DObjSkelMat *boneMatrix = (DObjSkelMat *)(
+        (uintptr_t)(void *)boneMatrixTable + (uintptr_t)boneOffset);
 
     /* 3001ff3a-0x3001ffb1: build the local placement matrix from the fixed global
      * cg_specialTagPlacement (an orientation_t). The 3x3 axis becomes the first

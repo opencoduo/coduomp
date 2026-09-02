@@ -9,7 +9,8 @@ enum {
 /* CoDUOMP.exe 0x00437780..0x00437a62 and coduo_lnxded
  * 0x0806dcf2..0x0806e081; canonical name confirmed by the supporting Mac
  * engine symbol. */
-void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
+void Com_MakeSoundAliasesPermanent(int32_t count,
+                                   sndAliasBank_t bank)
 {
     snd_alias_parse_node_t *node;
     snd_alias_parse_node_t *scan;
@@ -27,14 +28,16 @@ void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
     uint32_t checksum;
     int byteIndex;
 
-    com_soundAliasBuildList = Com_SortTempSoundAliases_r(com_soundAliasBuildList, &count);
+    com_soundAliasBuildList =
+        Com_SortTempSoundAliases_r(com_soundAliasBuildList, &count);
 
     stringBytes = 0;
     sharedBytes = 0;
     currentName = NULL;
     for (node = com_soundAliasBuildList; node != NULL; node = node->next) {
         length = strlen(node->aliasName) + 1;
-        if (currentName == NULL || Q_stricmp(currentName, node->aliasName) != 0) {
+        if (currentName == NULL ||
+            Q_stricmp(currentName, node->aliasName) != 0) {
             stringBytes += (int)length;
             currentName = node->aliasName;
         } else {
@@ -46,7 +49,8 @@ void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
         }
 
         length = strlen(node->soundFile) + 1;
-        for (scan = com_soundAliasBuildList; scan != node; scan = scan->next) {
+        for (scan = com_soundAliasBuildList; scan != node;
+             scan = scan->next) {
             if (Q_stricmp(scan->soundFile, node->soundFile) == 0) {
                 sharedBytes += (int)length;
                 node->duplicateFileNode = scan;
@@ -57,14 +61,17 @@ void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
         node->duplicateFileNode = NULL;
         stringBytes += (int)length;
 
-    next_node:;
+next_node:
+        ;
     }
 
     /* Linux 0x0806de38/0x0806de47 keeps the FILD byte counts exact through
      * division by 1024; Windows uses the equivalent exact power-of-two scale.
      * Widening the int first preserves that result on non-x87 hosts too. */
-    Com_DPrintf("Sound alias strings use %.1f KB; %.1f KB saved by string sharing\n", (double)stringBytes * 0.0009765625,
-                (double)sharedBytes * 0.0009765625);
+    Com_DPrintf(
+        "Sound alias strings use %.1f KB; %.1f KB saved by string sharing\n",
+        (double)stringBytes * 0.0009765625,
+        (double)sharedBytes * 0.0009765625);
 
     table = Z_MallocInternal((size_t)count * sizeof(*table) + (size_t)stringBytes);
     stringBase = (char *)&table[count];
@@ -73,7 +80,8 @@ void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
     recordIndex = 0;
 
     for (node = com_soundAliasBuildList; node != NULL; node = node->next) {
-        if (currentName == NULL || Q_stricmp(currentName, node->aliasName) != 0) {
+        if (currentName == NULL ||
+            Q_stricmp(currentName, node->aliasName) != 0) {
             currentName = stringCursor;
             strcpy(stringCursor, node->aliasName);
             stringCursor += strlen(stringCursor) + 1;
@@ -97,7 +105,8 @@ void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
         }
         node->permanentSoundFile = file;
 
-        Com_AddSoundAlias(node, &table[recordIndex], currentName, file, subtitle, bank);
+        Com_AddSoundAlias(node, &table[recordIndex], currentName,
+                                     file, subtitle, bank);
         recordIndex++;
     }
 
@@ -113,7 +122,8 @@ void Com_MakeSoundAliasesPermanent(int32_t count, sndAliasBank_t bank)
     checksum = (uint32_t)count * (uint32_t)stringBytes;
     com_soundAliasChecksum[bank] = (int32_t)checksum;
     for (byteIndex = 0; byteIndex < stringBytes; byteIndex++) {
-        checksum = (uint32_t)com_soundAliasChecksum[bank] * SOUND_ALIAS_CHECKSUM_MULTIPLIER;
+        checksum = (uint32_t)com_soundAliasChecksum[bank] *
+                   SOUND_ALIAS_CHECKSUM_MULTIPLIER;
         checksum += (uint32_t)(signed char)stringBase[byteIndex];
         com_soundAliasChecksum[bank] = (int32_t)checksum;
     }

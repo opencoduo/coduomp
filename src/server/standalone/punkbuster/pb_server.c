@@ -54,23 +54,27 @@ static char *pb_consoleCaptureBuffer;
 static int32_t pb_consoleCaptureBufferSize;
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed dlsym bridge for ISO C function pointers. */
-static serverPbModuleSaCallback_t coduomp_pb_load_server_sa_symbol(void *handle, const char *symbolName)
+static serverPbModuleSaCallback_t coduomp_pb_load_server_sa_symbol(
+    void *handle, const char *symbolName)
 {
     serverPbModuleSaCallback_t function;
     void *symbol = dlsym(handle, symbolName);
 
-    _Static_assert(sizeof(function) == sizeof(symbol), "PB server SA symbol pointer size mismatch");
+    _Static_assert(sizeof(function) == sizeof(symbol),
+                   "PB server SA symbol pointer size mismatch");
     memcpy(&function, &symbol, sizeof(function));
     return function;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed dlsym bridge for ISO C function pointers. */
-static serverPbModuleSbCallback_t coduomp_pb_load_server_sb_symbol(void *handle, const char *symbolName)
+static serverPbModuleSbCallback_t coduomp_pb_load_server_sb_symbol(
+    void *handle, const char *symbolName)
 {
     serverPbModuleSbCallback_t function;
     void *symbol = dlsym(handle, symbolName);
 
-    _Static_assert(sizeof(function) == sizeof(symbol), "PB server SB symbol pointer size mismatch");
+    _Static_assert(sizeof(function) == sizeof(symbol),
+                   "PB server SB symbol pointer size mismatch");
     memcpy(&function, &symbol, sizeof(function));
     return function;
 }
@@ -104,14 +108,19 @@ static const char pbCvarBasepath[] = "fs_basepath";
 static const char pbCvarHomepath[] = "fs_homepath";
 
 int32_t PB_ServerCommand(const char *command, intptr_t value);
-const char *PB_ServerQuery(serverPbQuery_t query, char *buffer);
+const char *PB_ServerQuery(serverPbQuery_t query,
+                           char *buffer);
 int32_t PB_ServerOutput(const char *text);
-int32_t PB_ServerChecksum(const char *data, int32_t length, int32_t clientNum);
-int32_t PB_ServerPacket(const char *address, uint16_t port, const void *data, int32_t length);
+int32_t PB_ServerChecksum(const char *data, int32_t length,
+                          int32_t clientNum);
+int32_t PB_ServerPacket(const char *address, uint16_t port, const void *data,
+                        int32_t length);
 void PB_SetServerCallbacks(serverPbState_t *server);
 void PB_CallServerSaCommandDrain(void);
-intptr_t PB_CallServerSb(serverPbState_t *server, int32_t opcode, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3);
-int32_t PB_CallServerSa(serverPbState_t *server, serverPbSaValue_t value);
+intptr_t PB_CallServerSb(serverPbState_t *server, int32_t opcode, intptr_t arg0,
+                         intptr_t arg1, intptr_t arg2, intptr_t arg3);
+int32_t PB_CallServerSa(serverPbState_t *server,
+                        serverPbSaValue_t value);
 char *itoa(int32_t value, char *buffer, int32_t base);
 void PB_InitServerObject(serverPbState_t *server);
 void PB_ShutdownServerObject(serverPbState_t *server);
@@ -127,18 +136,24 @@ const char *PB_LoadServerModule(serverPbState_t *server);
 void PB_ChmodModulePath(const char *path);
 char *PB_BuildModulePath(serverPbState_t *server, char *path, const char *filename);
 void PB_GetBasePath(serverPbState_t *server, char *buffer);
-void PB_CopyModuleIfMissing(serverPbState_t *server, const char *filename, const char *sourceBasePath);
+void PB_CopyModuleIfMissing(serverPbState_t *server, const char *filename,
+                            const char *sourceBasePath);
 void PB_GetHomePath(serverPbState_t *server);
-qboolean PB_CopyModuleFile(const char *sourcePath, const char *destPath, int32_t maxBytes);
+qboolean PB_CopyModuleFile(const char *sourcePath, const char *destPath,
+                           int32_t maxBytes);
 
-void PB_CallServerSbGlobal(int32_t opcode, int32_t clientNum, uint32_t length, const char *text)
+void PB_CallServerSbGlobal(int32_t opcode, int32_t clientNum, uint32_t length,
+                           const char *text)
 {
-    PB_CallServerSb(&pb_serverObject, opcode, clientNum, (intptr_t)length, (intptr_t)text, 0);
+    PB_CallServerSb(&pb_serverObject, opcode, clientNum, (intptr_t)length,
+                    (intptr_t)text, 0);
 }
 
-void PbServerCompleteCommand(int32_t clientNum, const char *left, const char *right)
+void PbServerCompleteCommand(int32_t clientNum, const char *left,
+                             const char *right)
 {
-    char command[PB_SERVER_COMMAND_BUFFER_SIZE + PB_SERVER_STRING_SEPARATOR_SIZE + PB_SERVER_COMMAND_NUL_BYTE];
+    char command[PB_SERVER_COMMAND_BUFFER_SIZE +
+                 PB_SERVER_STRING_SEPARATOR_SIZE + PB_SERVER_COMMAND_NUL_BYTE];
     uint32_t leftLength = (uint32_t)strlen(left);
     uint32_t rightLength = (uint32_t)strlen(right);
     uint32_t combinedLength = leftLength + rightLength;
@@ -150,7 +165,8 @@ void PbServerCompleteCommand(int32_t clientNum, const char *left, const char *ri
     strcpy(command, left);
     strcat(command, " ");
     strcat(command, right);
-    PB_CallServerSbGlobal(PB_SERVER_SB_COMMAND_EXEC, clientNum, strlen(command), command);
+    PB_CallServerSbGlobal(PB_SERVER_SB_COMMAND_EXEC, clientNum,
+                          strlen(command), command);
 }
 
 int32_t PB_ServerCommand(const char *command, intptr_t value)
@@ -173,7 +189,11 @@ int32_t PB_ServerCommand(const char *command, intptr_t value)
     }
 
     if (strcasecmp(command, pbCommandExecute) == 0) {
-        qboolean isPbCommand = strncasecmp(valueText, pbCommandPrefix, PB_COMMAND_PREFIX_LENGTH) == 0 ? qtrue : qfalse;
+        qboolean isPbCommand =
+            strncasecmp(valueText, pbCommandPrefix,
+                        PB_COMMAND_PREFIX_LENGTH) == 0
+                ? qtrue
+                : qfalse;
 
         Cmd_ExecuteString(valueText);
         if (isPbCommand != qfalse) {
@@ -229,11 +249,13 @@ const char *PB_ServerQuery(serverPbQuery_t query, char *buffer)
     }
 
     if (query == PB_SERVER_QUERY_CVAR_STRING) {
-        strncpy(buffer, Cvar_VariableString(buffer), SERVER_PB_QUERY_COPY_LIMIT);
+        strncpy(buffer, Cvar_VariableString(buffer),
+                SERVER_PB_QUERY_COPY_LIMIT);
         return NULL;
     }
 
-    if (query == PB_SERVER_QUERY_CLIENT_STATUS && Pb_Q_stats((int32_t)atoi(buffer), buffer) == qfalse) {
+    if (query == PB_SERVER_QUERY_CLIENT_STATUS &&
+        Pb_Q_stats((int32_t)atoi(buffer), buffer) == qfalse) {
         return pbQueryFailed;
     }
 
@@ -242,8 +264,11 @@ const char *PB_ServerQuery(serverPbQuery_t query, char *buffer)
 
 int32_t PB_ServerOutput(const char *text)
 {
-    if (strncasecmp(pb_serverObject.title, pbSkipNotifyPrefix, sizeof(pbSkipNotifyPrefix) - 1) == 0) {
-        Com_Printf(pbOutputFormat, &pb_serverObject.title[sizeof(pbSkipNotifyPrefix) - 1], text);
+    if (strncasecmp(pb_serverObject.title, pbSkipNotifyPrefix,
+                    sizeof(pbSkipNotifyPrefix) - 1) == 0) {
+        Com_Printf(pbOutputFormat,
+                   &pb_serverObject.title[sizeof(pbSkipNotifyPrefix) - 1],
+                   text);
     } else {
         SV_PrintPunkBusterMessage(pb_serverObject.title, text);
     }
@@ -254,7 +279,8 @@ int32_t PB_ServerOutput(const char *text)
 void PB_StartServer(void)
 {
     PB_SetServerCallbacks(&pb_serverObject);
-    PB_CallServerSbGlobal(PB_SERVER_SB_START, PB_SERVER_START_CLIENT_NUM, 0, "");
+    PB_CallServerSbGlobal(PB_SERVER_SB_START, PB_SERVER_START_CLIENT_NUM,
+                          0, "");
 
     if (pb_serverObject.serverSbCallback == NULL) {
         SV_SetPunkBusterCvar("0");
@@ -273,38 +299,45 @@ void PB_CallServerSaCommandDrain(void)
 
 void PbServerForceProcess(int32_t arg0, int32_t arg1)
 {
-    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_FORCE_PROCESS, PB_SERVER_START_CLIENT_NUM, arg1, arg0, 0);
+    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_FORCE_PROCESS,
+                    PB_SERVER_START_CLIENT_NUM, arg1, arg0, 0);
 }
 
 void PB_InvokeEventCallback(const char *text, const uint8_t *packetData)
 {
     if (pb_serverObject.eventCallback != NULL) {
-        pb_serverObject.eventCallback(&pb_serverObject, text, (intptr_t)packetData);
+        pb_serverObject.eventCallback(&pb_serverObject, text,
+                                      (intptr_t)packetData);
     }
 }
 
-const char *PB_InvokeStringQueryCallback(const char *text, intptr_t arg1, const char *arg2)
+const char *PB_InvokeStringQueryCallback(const char *text, intptr_t arg1,
+                                         const char *arg2)
 {
     if (pb_serverObject.stringQueryCallback == NULL) {
         return NULL;
     }
 
-    return pb_serverObject.stringQueryCallback(&pb_serverObject, text, arg1, (intptr_t)arg2);
+    return pb_serverObject.stringQueryCallback(&pb_serverObject, text, arg1,
+                                               (intptr_t)arg2);
 }
 
 void PbServerProcessEvents(void)
 {
-    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_MODULE_IDLE, PB_SERVER_START_CLIENT_NUM, 0, 0, 0);
+    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_MODULE_IDLE,
+                    PB_SERVER_START_CLIENT_NUM, 0, 0, 0);
 }
 
 void PB_NotifyServerEnabled(void)
 {
-    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_NOTIFY_ENABLED, PB_SERVER_START_CLIENT_NUM, 0, 0, 0);
+    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_NOTIFY_ENABLED,
+                    PB_SERVER_START_CLIENT_NUM, 0, 0, 0);
 }
 
 void PB_NotifyServerDisabled(void)
 {
-    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_NOTIFY_DISABLED, PB_SERVER_START_CLIENT_NUM, 0, 0, 0);
+    PB_CallServerSb(&pb_serverObject, PB_SERVER_SB_NOTIFY_DISABLED,
+                    PB_SERVER_START_CLIENT_NUM, 0, 0, 0);
 }
 
 void PB_Print(const char *text, int32_t textLimit)
@@ -324,13 +357,15 @@ void PB_Print(const char *text, int32_t textLimit)
     }
 }
 
-int32_t PB_ServerChecksum(const char *data, int32_t length, int32_t clientNum)
+int32_t PB_ServerChecksum(const char *data, int32_t length,
+                          int32_t clientNum)
 {
     SV_SendPbPacket(length, data, clientNum);
     return 0;
 }
 
-int32_t PB_ServerPacket(const char *address, uint16_t port, const void *data, int32_t length)
+int32_t PB_ServerPacket(const char *address, uint16_t port, const void *data,
+                        int32_t length)
 {
     Sys_SendPacketByName(address, port, data, length);
     return 0;
@@ -338,11 +373,13 @@ int32_t PB_ServerPacket(const char *address, uint16_t port, const void *data, in
 
 void PB_ServerLifecycleDispatch(int32_t lifecycleValue, int32_t sentinel)
 {
-    if (sentinel == PB_LIFECYCLE_SENTINEL && lifecycleValue == PB_LIFECYCLE_START) {
+    if (sentinel == PB_LIFECYCLE_SENTINEL &&
+        lifecycleValue == PB_LIFECYCLE_START) {
         PB_InitServerObject(&pb_serverObject);
     }
 
-    if (sentinel == PB_LIFECYCLE_SENTINEL && lifecycleValue == PB_LIFECYCLE_SHUTDOWN) {
+    if (sentinel == PB_LIFECYCLE_SENTINEL &&
+        lifecycleValue == PB_LIFECYCLE_SHUTDOWN) {
         PB_ShutdownServerObject(&pb_serverObject);
     }
 }
@@ -381,7 +418,8 @@ char *itoa(int32_t value, char *buffer, int32_t base)
         uint32_t digit = workingValue % base;
 
         digitIndex--;
-        digits[digitIndex] = (char)(digit < 10 ? digit + '0' : digit + 'W');
+        digits[digitIndex] =
+            (char)(digit < 10 ? digit + '0' : digit + 'W');
         workingValue /= base;
     }
 
@@ -447,7 +485,8 @@ void PB_UnloadServerDll(serverPbState_t *server)
     server->serverModuleHandle = NULL;
 }
 
-intptr_t PB_CallServerSb(serverPbState_t *server, int32_t opcode, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
+intptr_t PB_CallServerSb(serverPbState_t *server, int32_t opcode, intptr_t arg0,
+                         intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     if (server->commandCallback == NULL) {
         return 0;
@@ -461,7 +500,8 @@ intptr_t PB_CallServerSb(serverPbState_t *server, int32_t opcode, intptr_t arg0,
 
         const char *loadResult = PB_LoadServerModule(server);
         if (loadResult != NULL) {
-            if (opcode != PB_SERVER_SB_MODULE_IDLE && opcode != PB_SERVER_SB_MODULE_SHUTDOWN) {
+            if (opcode != PB_SERVER_SB_MODULE_IDLE &&
+                opcode != PB_SERVER_SB_MODULE_SHUTDOWN) {
                 return (intptr_t)loadResult;
             }
             return 0;
@@ -471,7 +511,8 @@ intptr_t PB_CallServerSb(serverPbState_t *server, int32_t opcode, intptr_t arg0,
     return server->serverSbCallback(server, opcode, arg0, arg1, arg2, arg3);
 }
 
-int32_t PB_CallServerSa(serverPbState_t *server, serverPbSaValue_t value)
+int32_t PB_CallServerSa(serverPbState_t *server,
+                        serverPbSaValue_t value)
 {
     if (server->commandCallback == NULL) {
         return 0;
@@ -479,7 +520,8 @@ int32_t PB_CallServerSa(serverPbState_t *server, serverPbSaValue_t value)
 
     if (server->serverModuleHandle == NULL) {
         if (server->loadPending != 0) {
-            PB_CallServerSb(server, PB_SERVER_SB_START, PB_SERVER_START_CLIENT_NUM, 0, (intptr_t)"", 0);
+            PB_CallServerSb(server, PB_SERVER_SB_START,
+                            PB_SERVER_START_CLIENT_NUM, 0, (intptr_t)"", 0);
         }
         return 0;
     }
@@ -527,31 +569,46 @@ const char *PB_LoadServerModule(serverPbState_t *server)
     }
 
     PB_UnloadServerDll(server);
-    FILE *moduleFile = fopen(PB_BuildModulePath(server, modulePath, pbModuleServerNew), pbFileReadMode);
+    FILE *moduleFile =
+        fopen(PB_BuildModulePath(server, modulePath, pbModuleServerNew),
+              pbFileReadMode);
     if (moduleFile != NULL) {
         fclose(moduleFile);
 
-        PB_ChmodModulePath(PB_BuildModulePath(server, modulePath, pbModuleServerOld));
+        PB_ChmodModulePath(
+            PB_BuildModulePath(server, modulePath, pbModuleServerOld));
         remove(PB_BuildModulePath(server, modulePath, pbModuleServerOld));
-        renameDestination = PB_BuildModulePath(server, renamePath, pbModuleServerOld);
-        renameSource = PB_BuildModulePath(server, modulePath, pbModuleServer);
+        renameDestination =
+            PB_BuildModulePath(server, renamePath, pbModuleServerOld);
+        renameSource =
+            PB_BuildModulePath(server, modulePath, pbModuleServer);
         rename(renameSource, renameDestination);
 
-        PB_ChmodModulePath(PB_BuildModulePath(server, modulePath, pbModuleServer));
+        PB_ChmodModulePath(
+            PB_BuildModulePath(server, modulePath, pbModuleServer));
         remove(PB_BuildModulePath(server, modulePath, pbModuleServer));
-        renameDestination = PB_BuildModulePath(server, renamePath, pbModuleServer);
-        renameSource = PB_BuildModulePath(server, modulePath, pbModuleServerNew);
+        renameDestination =
+            PB_BuildModulePath(server, renamePath, pbModuleServer);
+        renameSource =
+            PB_BuildModulePath(server, modulePath, pbModuleServerNew);
         rename(renameSource, renameDestination);
     }
 
-    server->serverModuleHandle = dlopen(PB_BuildModulePath(server, modulePath, pbModuleServer), PB_DLOPEN_LAZY);
+    server->serverModuleHandle =
+        dlopen(PB_BuildModulePath(server, modulePath, pbModuleServer),
+               PB_DLOPEN_LAZY);
     if (server->serverModuleHandle == NULL) {
         return pbLoadFailure;
     }
 
-    server->serverSaCallback = coduomp_pb_load_server_sa_symbol(server->serverModuleHandle, pbExportServerSa);
-    server->serverSbCallback = coduomp_pb_load_server_sb_symbol(server->serverModuleHandle, pbExportServerSb);
-    if (server->serverSaCallback == NULL || server->serverSbCallback == NULL) {
+    server->serverSaCallback =
+        coduomp_pb_load_server_sa_symbol(server->serverModuleHandle,
+                                         pbExportServerSa);
+    server->serverSbCallback =
+        coduomp_pb_load_server_sb_symbol(server->serverModuleHandle,
+                                         pbExportServerSb);
+    if (server->serverSaCallback == NULL ||
+        server->serverSbCallback == NULL) {
         PB_UnloadServerDll(server);
         return pbProcedureFailure;
     }
@@ -580,7 +637,8 @@ char *PB_BuildModulePath(serverPbState_t *server, char *path, const char *filena
         }
         strcat(basePath, pbDirectoryName);
 
-        if (strcasecmp(basePath, server->basePath) != 0 && basePath[0] != '\0' && server->basePath[0] != '\0') {
+        if (strcasecmp(basePath, server->basePath) != 0 &&
+            basePath[0] != '\0' && server->basePath[0] != '\0') {
             mkdir(server->basePath, PB_MODULE_FILE_MODE);
             PB_CopyModuleIfMissing(server, pbModuleServer, basePath);
             PB_CopyModuleIfMissing(server, pbModuleClient, basePath);
@@ -601,7 +659,8 @@ void PB_GetBasePath(serverPbState_t *server, char *buffer)
     }
 }
 
-void PB_CopyModuleIfMissing(serverPbState_t *server, const char *filename, const char *sourceBasePath)
+void PB_CopyModuleIfMissing(serverPbState_t *server, const char *filename,
+                            const char *sourceBasePath)
 {
     char targetPath[MAX_OSPATH];
     char sourcePath[MAX_OSPATH];
@@ -642,7 +701,8 @@ void PB_GetHomePath(serverPbState_t *server)
     strcat(server->basePath, pbDirectoryName);
 }
 
-qboolean PB_CopyModuleFile(const char *sourcePath, const char *destPath, int32_t maxBytes)
+qboolean PB_CopyModuleFile(const char *sourcePath, const char *destPath,
+                           int32_t maxBytes)
 {
     qboolean copied = qfalse;
     FILE *sourceFile = fopen(sourcePath, pbFileReadMode);
@@ -656,12 +716,15 @@ qboolean PB_CopyModuleFile(const char *sourcePath, const char *destPath, int32_t
         fseek(sourceFile, 0, PB_COPY_FILE_SEEK_END);
         int32_t fileSize = (int32_t)ftell(sourceFile);
 
-        if (fileSize > 0 && (maxBytes == PB_COPY_MODULE_NO_SIZE_LIMIT || fileSize < maxBytes)) {
+        if (fileSize > 0 &&
+            (maxBytes == PB_COPY_MODULE_NO_SIZE_LIMIT ||
+             fileSize < maxBytes)) {
             void *buffer = _Znaj((uint32_t)fileSize);
 
             if (buffer != NULL) {
                 fseek(sourceFile, 0, PB_COPY_FILE_SEEK_SET);
-                size_t bytesRead = fread(buffer, 1, (size_t)fileSize, sourceFile);
+                size_t bytesRead =
+                    fread(buffer, 1, (size_t)fileSize, sourceFile);
                 size_t bytesWritten = fwrite(buffer, 1, bytesRead, destFile);
 
                 _ZdlPv(buffer);

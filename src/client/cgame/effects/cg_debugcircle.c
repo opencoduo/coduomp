@@ -42,7 +42,8 @@
 // args and are opaque here (duration/depth flags). Typed as int to match the
 // sibling CG_DebugBox/CG_DebugCircleEx `int param` / `int flag`.
 
-void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius, const float color[4], int param, int flag)
+void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius,
+                    const float color[4], int param, int flag)
 {
     /*
      * 0x3001da00..0x3001da13: build an orthonormal frame around `dir`.
@@ -68,9 +69,12 @@ void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius, const f
      * Stored at [ESP+0x34/0x38/0x3c].
      */
     vec3_t up;
-    up[0] = (float)((long double)forward[1] * (long double)right[2] - (long double)forward[2] * (long double)right[1]);
-    up[1] = (float)((long double)forward[2] * (long double)right[0] - (long double)forward[0] * (long double)right[2]);
-    up[2] = (float)((long double)forward[0] * (long double)right[1] - (long double)forward[1] * (long double)right[0]);
+    up[0] = (float)((long double)forward[1] * (long double)right[2] -
+                    (long double)forward[2] * (long double)right[1]);
+    up[1] = (float)((long double)forward[2] * (long double)right[0] -
+                    (long double)forward[0] * (long double)right[2]);
+    up[2] = (float)((long double)forward[0] * (long double)right[1] -
+                    (long double)forward[1] * (long double)right[0]);
 
     /*
      * 0x3001da74..0x3001db10: generate 16 points evenly spaced around the circle.
@@ -94,7 +98,8 @@ void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius, const f
         int i;
         for (i = 0; i < 16; i++) {
             float indexAsFloat = (float)i;          /* FILD/FSTP at 0x3001da74 */
-            float angle = (float)((long double)indexAsFloat * (long double)0.39269909f);
+            float angle = (float)((long double)indexAsFloat *
+                                  (long double)0.39269909f);
             float sine;
             float cosine;
             coduo_x87_sincosf(angle, &sine, &cosine);
@@ -104,9 +109,15 @@ void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius, const f
             /* FADDP sums the two products FIRST, then FADD center[k]
              * (0x3001dac9..0x3001db0d) — the association is part of the
              * rounding behavior, so center[k] is added last. */
-            points[i][0] = (float)((long double)right[0] * (long double)c + (long double)up[0] * (long double)s + (long double)center[0]);
-            points[i][1] = (float)((long double)right[1] * (long double)c + (long double)up[1] * (long double)s + (long double)center[1]);
-            points[i][2] = (float)((long double)right[2] * (long double)c + (long double)up[2] * (long double)s + (long double)center[2]);
+            points[i][0] = (float)(
+                (long double)right[0] * (long double)c +
+                (long double)up[0] * (long double)s + (long double)center[0]);
+            points[i][1] = (float)(
+                (long double)right[1] * (long double)c +
+                (long double)up[1] * (long double)s + (long double)center[1]);
+            points[i][2] = (float)(
+                (long double)right[2] * (long double)c +
+                (long double)up[2] * (long double)s + (long double)center[2]);
         }
     }
 
@@ -123,7 +134,12 @@ void CG_DebugCircle(const vec3_t dir, const vec3_t center, float radius, const f
         int i;
         for (i = 0; i < 16; i++) {
             int next = (i + 1) & 0xf;
-            cgame_syscall(CG_ADD_DEBUG_LINE, (intptr_t)points[i], (intptr_t)points[next], (intptr_t)color, (int32_t)param, (int32_t)flag);
+            cgame_syscall(CG_ADD_DEBUG_LINE,
+                          (intptr_t)points[i],
+                          (intptr_t)points[next],
+                          (intptr_t)color,
+                          (int32_t)param,
+                          (int32_t)flag);
         }
     }
 }

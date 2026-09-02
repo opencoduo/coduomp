@@ -54,9 +54,12 @@ enum {
  * The Mac build inlines this predicate into its named KSC5601 collapse and
  * character-reader routines; the Windows function boundary and byte ranges
  * prove its role. */
-static qboolean Korean_ValidKSC5601HangulCode(uint8_t lead, uint8_t trail)
+static qboolean Korean_ValidKSC5601HangulCode(
+    uint8_t lead, uint8_t trail)
 {
-    return lead >= KSC5601_HANGUL_LEAD_FIRST && lead <= KSC5601_HANGUL_LEAD_LAST && trail >= KSC5601_HANGUL_TRAIL_FIRST &&
+    return lead >= KSC5601_HANGUL_LEAD_FIRST &&
+           lead <= KSC5601_HANGUL_LEAD_LAST &&
+           trail >= KSC5601_HANGUL_TRAIL_FIRST &&
            trail <= KSC5601_HANGUL_TRAIL_LAST;
 }
 
@@ -67,7 +70,9 @@ static qboolean Korean_ValidKSC5601HangulCode(uint8_t lead, uint8_t trail)
  * ranges prove the role. */
 qboolean Korean_ValidKSC5601HangulCodePacked(int32_t character)
 {
-    return Korean_ValidKSC5601HangulCode((uint8_t)((uint32_t)character >> 8), (uint8_t)character);
+    return Korean_ValidKSC5601HangulCode(
+        (uint8_t)((uint32_t)character >> 8),
+        (uint8_t)character);
 }
 
 /* Source: CoDUOMP.exe 0x00470ae0..0x00470b13.
@@ -80,7 +85,9 @@ int32_t Korean_CollapseKSC5601HangulCode(int32_t character)
         return 0;
 
     character -= KSC5601_HANGUL_COLLAPSE_BASE;
-    return ((int32_t)((uint32_t)character >> 8) * KSC5601_HANGUL_ROW_WIDTH) + (character & 0xff);
+    return ((int32_t)((uint32_t)character >> 8) *
+            KSC5601_HANGUL_ROW_WIDTH) +
+           (character & 0xff);
 }
 
 /* Source: CoDUOMP.exe 0x00470b20..0x00470b4e.
@@ -90,10 +97,16 @@ qboolean Taiwanese_ValidBig5Code(int32_t character)
 {
     const uint8_t lead = (uint8_t)((uint32_t)character >> 8);
     const uint8_t trail = (uint8_t)character;
-    const qboolean validLead = (lead >= BIG5_LEAD_FIRST_RANGE_FIRST && lead <= BIG5_LEAD_FIRST_RANGE_LAST) ||
-                               (lead >= BIG5_LEAD_SECOND_RANGE_FIRST && lead <= BIG5_LEAD_SECOND_RANGE_LAST);
-    const qboolean validTrail = (trail >= BIG5_TRAIL_FIRST_RANGE_FIRST && trail <= BIG5_TRAIL_FIRST_RANGE_LAST) ||
-                                (trail >= BIG5_TRAIL_SECOND_RANGE_FIRST && trail <= BIG5_TRAIL_SECOND_RANGE_LAST);
+    const qboolean validLead =
+        (lead >= BIG5_LEAD_FIRST_RANGE_FIRST &&
+         lead <= BIG5_LEAD_FIRST_RANGE_LAST) ||
+        (lead >= BIG5_LEAD_SECOND_RANGE_FIRST &&
+         lead <= BIG5_LEAD_SECOND_RANGE_LAST);
+    const qboolean validTrail =
+        (trail >= BIG5_TRAIL_FIRST_RANGE_FIRST &&
+         trail <= BIG5_TRAIL_FIRST_RANGE_LAST) ||
+        (trail >= BIG5_TRAIL_SECOND_RANGE_FIRST &&
+         trail <= BIG5_TRAIL_SECOND_RANGE_LAST);
     return validLead != qfalse && validTrail != qfalse;
 }
 
@@ -103,7 +116,8 @@ qboolean Taiwanese_ValidBig5Code(int32_t character)
  * Taiwanese_IsTrailingPunctuation. */
 qboolean Taiwanese_IsTrailingPunctuation(int32_t character)
 {
-    return character >= BIG5_TRAILING_PUNCTUATION_FIRST && character < BIG5_TRAILING_PUNCTUATION_END;
+    return character >= BIG5_TRAILING_PUNCTUATION_FIRST &&
+           character < BIG5_TRAILING_PUNCTUATION_END;
 }
 
 /* Source: CoDUOMP.exe 0x00470b70..0x00470bc4.
@@ -118,19 +132,28 @@ int32_t Taiwanese_CollapseBig5Code(int32_t character)
     character -= BIG5_COLLAPSE_BASE;
     if ((character & 0xff) >= BIG5_SECOND_RANGE_COLLAPSED_FIRST)
         character -= BIG5_SECOND_RANGE_GAP;
-    return ((int32_t)((uint32_t)character >> 8) * BIG5_COLLAPSED_ROW_WIDTH) + (character & 0xff);
+    return ((int32_t)((uint32_t)character >> 8) *
+            BIG5_COLLAPSED_ROW_WIDTH) +
+           (character & 0xff);
 }
 
 /* Source: CoDUOMP.exe 0x00470bd0..0x00470bf9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00470bd0_00470bfa.mcode.
  * The Windows optimizer emits this byte-pair specialization for
  * SEH_ReadCharFromString. */
-static qboolean Japanese_ValidShiftJISBytes(uint8_t lead, uint8_t trail)
+static qboolean Japanese_ValidShiftJISBytes(
+    uint8_t lead, uint8_t trail)
 {
-    const qboolean validLead = (lead >= SHIFT_JIS_LEAD_FIRST_RANGE_FIRST && lead <= SHIFT_JIS_LEAD_FIRST_RANGE_LAST) ||
-                               (lead >= SHIFT_JIS_LEAD_SECOND_RANGE_FIRST && lead <= SHIFT_JIS_LEAD_SECOND_RANGE_LAST);
-    const qboolean validTrail = (trail >= SHIFT_JIS_TRAIL_FIRST_RANGE_FIRST && trail <= SHIFT_JIS_TRAIL_FIRST_RANGE_LAST) ||
-                                (trail >= SHIFT_JIS_TRAIL_SECOND_RANGE_FIRST && trail <= SHIFT_JIS_TRAIL_SECOND_RANGE_LAST);
+    const qboolean validLead =
+        (lead >= SHIFT_JIS_LEAD_FIRST_RANGE_FIRST &&
+         lead <= SHIFT_JIS_LEAD_FIRST_RANGE_LAST) ||
+        (lead >= SHIFT_JIS_LEAD_SECOND_RANGE_FIRST &&
+         lead <= SHIFT_JIS_LEAD_SECOND_RANGE_LAST);
+    const qboolean validTrail =
+        (trail >= SHIFT_JIS_TRAIL_FIRST_RANGE_FIRST &&
+         trail <= SHIFT_JIS_TRAIL_FIRST_RANGE_LAST) ||
+        (trail >= SHIFT_JIS_TRAIL_SECOND_RANGE_FIRST &&
+         trail <= SHIFT_JIS_TRAIL_SECOND_RANGE_LAST);
     return validLead != qfalse && validTrail != qfalse;
 }
 
@@ -142,7 +165,9 @@ static qboolean Japanese_ValidShiftJISBytes(uint8_t lead, uint8_t trail)
  * retained only the byte-pair specialization above. */
 qboolean Japanese_ValidShiftJISCode(int32_t character)
 {
-    return Japanese_ValidShiftJISBytes((uint8_t)((uint32_t)character >> 8), (uint8_t)character);
+    return Japanese_ValidShiftJISBytes(
+        (uint8_t)((uint32_t)character >> 8),
+        (uint8_t)character);
 }
 
 /* Source: CoDUOMP.exe 0x00470c30..0x00470c43.
@@ -151,7 +176,8 @@ qboolean Japanese_ValidShiftJISCode(int32_t character)
  * Japanese_IsTrailingPunctuation. */
 qboolean Japanese_IsTrailingPunctuation(int32_t character)
 {
-    return character >= SHIFT_JIS_TRAILING_PUNCTUATION_FIRST && character < SHIFT_JIS_TRAILING_PUNCTUATION_END;
+    return character >= SHIFT_JIS_TRAILING_PUNCTUATION_FIRST &&
+           character < SHIFT_JIS_TRAILING_PUNCTUATION_END;
 }
 
 /* Source: CoDUOMP.exe 0x00470c50..0x00470cb8.
@@ -168,7 +194,9 @@ int32_t Japanese_CollapseShiftJISCode(int32_t character)
         --character;
     if ((character & 0xff00) >= SHIFT_JIS_HIGH_RANGE_FIRST)
         character -= SHIFT_JIS_HIGH_RANGE_GAP;
-    return ((int32_t)((uint32_t)character >> 8) * SHIFT_JIS_COLLAPSED_ROW_WIDTH) + (character & 0xff);
+    return ((int32_t)((uint32_t)character >> 8) *
+            SHIFT_JIS_COLLAPSED_ROW_WIDTH) +
+           (character & 0xff);
 }
 
 /* Source: CoDUOMP.exe 0x00470cc0..0x00470cda.
@@ -178,7 +206,10 @@ int32_t Japanese_CollapseShiftJISCode(int32_t character)
  * packed-code function. */
 static qboolean Chinese_ValidGBBytes(uint8_t lead, uint8_t trail)
 {
-    return lead >= GB2312_LEAD_FIRST && lead <= GB2312_LEAD_LAST && trail >= GB2312_TRAIL_FIRST && trail <= GB2312_TRAIL_LAST;
+    return lead >= GB2312_LEAD_FIRST &&
+           lead <= GB2312_LEAD_LAST &&
+           trail >= GB2312_TRAIL_FIRST &&
+           trail <= GB2312_TRAIL_LAST;
 }
 
 /* Source: CoDUOMP.exe 0x00470ce0..0x00470cff.
@@ -186,7 +217,9 @@ static qboolean Chinese_ValidGBBytes(uint8_t lead, uint8_t trail)
  * Name and signature: exact same-module Mac symbol Chinese_ValidGBCode. */
 qboolean Chinese_ValidGBCode(int32_t character)
 {
-    return Chinese_ValidGBBytes((uint8_t)((uint32_t)character >> 8), (uint8_t)character);
+    return Chinese_ValidGBBytes(
+        (uint8_t)((uint32_t)character >> 8),
+        (uint8_t)character);
 }
 
 /* Source: CoDUOMP.exe 0x00470d00..0x00470d13.
@@ -195,7 +228,8 @@ qboolean Chinese_ValidGBCode(int32_t character)
  * Chinese_IsTrailingPunctuation. */
 qboolean Chinese_IsTrailingPunctuation(int32_t character)
 {
-    return character >= GB2312_TRAILING_PUNCTUATION_FIRST && character < GB2312_TRAILING_PUNCTUATION_END;
+    return character >= GB2312_TRAILING_PUNCTUATION_FIRST &&
+           character < GB2312_TRAILING_PUNCTUATION_END;
 }
 
 /* Source: CoDUOMP.exe 0x00470d20..0x00470d50.
@@ -207,24 +241,30 @@ int32_t Chinese_CollapseGBCode(int32_t character)
         return 0;
 
     character -= GB2312_COLLAPSE_BASE;
-    return ((int32_t)((uint32_t)character >> 8) * GB2312_COLLAPSED_ROW_WIDTH) + (character & 0xff);
+    return ((int32_t)((uint32_t)character >> 8) *
+            GB2312_COLLAPSED_ROW_WIDTH) +
+           (character & 0xff);
 }
 
 /* Source: CoDUOMP.exe 0x00470d60..0x00470e9f.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00470d60_00470ea0.mcode.
  * Name and signature: exact same-module Mac symbol SEH_ReadCharFromString.
  * Invalid multibyte pairs consume only their first byte. */
-int32_t SEH_ReadCharFromString(const char **text, qboolean *isTrailingPunctuation)
+int32_t SEH_ReadCharFromString(
+    const char **text, qboolean *isTrailingPunctuation)
 {
     const uint8_t *cursor = (const uint8_t *)*text;
     int32_t character;
 
-    if (rendererMultibyteTextEnabled != qfalse && cl_language->integer >= LANGUAGE_KOREAN && cl_language->integer <= LANGUAGE_CHINESE) {
+    if (rendererMultibyteTextEnabled != qfalse &&
+        cl_language->integer >= LANGUAGE_KOREAN &&
+        cl_language->integer <= LANGUAGE_CHINESE) {
         character = ((int32_t)cursor[0] << 8) | cursor[1];
 
         switch ((language_t)cl_language->integer) {
         case LANGUAGE_KOREAN:
-            if (Korean_ValidKSC5601HangulCode(cursor[0], cursor[1]) != qfalse) {
+            if (Korean_ValidKSC5601HangulCode(
+                    cursor[0], cursor[1]) != qfalse) {
                 cursor += 2;
                 *text = (const char *)cursor;
                 if (isTrailingPunctuation != NULL)
@@ -237,17 +277,20 @@ int32_t SEH_ReadCharFromString(const char **text, qboolean *isTrailingPunctuatio
                 cursor += 2;
                 *text = (const char *)cursor;
                 if (isTrailingPunctuation != NULL) {
-                    *isTrailingPunctuation = Taiwanese_IsTrailingPunctuation(character);
+                    *isTrailingPunctuation =
+                        Taiwanese_IsTrailingPunctuation(character);
                 }
                 return character;
             }
             break;
         case LANGUAGE_JAPANESE:
-            if (Japanese_ValidShiftJISBytes(cursor[0], cursor[1]) != qfalse) {
+            if (Japanese_ValidShiftJISBytes(
+                    cursor[0], cursor[1]) != qfalse) {
                 cursor += 2;
                 *text = (const char *)cursor;
                 if (isTrailingPunctuation != NULL) {
-                    *isTrailingPunctuation = Japanese_IsTrailingPunctuation(character);
+                    *isTrailingPunctuation =
+                        Japanese_IsTrailingPunctuation(character);
                 }
                 return character;
             }
@@ -257,7 +300,8 @@ int32_t SEH_ReadCharFromString(const char **text, qboolean *isTrailingPunctuatio
                 cursor += 2;
                 *text = (const char *)cursor;
                 if (isTrailingPunctuation != NULL) {
-                    *isTrailingPunctuation = Chinese_IsTrailingPunctuation(character);
+                    *isTrailingPunctuation =
+                        Chinese_IsTrailingPunctuation(character);
                 }
                 return character;
             }
@@ -304,7 +348,8 @@ qboolean Language_IsAsian(void)
  * text layout does not use ordinary inter-word spaces. */
 qboolean Language_UsesSpaces(void)
 {
-    return cl_language->integer < LANGUAGE_TAIWANESE || cl_language->integer > LANGUAGE_CHINESE;
+    return cl_language->integer < LANGUAGE_TAIWANESE ||
+           cl_language->integer > LANGUAGE_CHINESE;
 }
 
 /* Source: CoDUOMP.exe 0x00470ee0..0x00471041.
@@ -320,9 +365,11 @@ int32_t SEH_PrintStrlen(const char *text)
         return 0;
 
     while (*cursor != '\0') {
-        const int32_t character = SEH_ReadCharFromString(&cursor, NULL);
+        const int32_t character =
+            SEH_ReadCharFromString(&cursor, NULL);
 
-        if (character == '^' && cursor != NULL && *cursor != '^' && *cursor >= '0' && *cursor <= '9') {
+        if (character == '^' && cursor != NULL && *cursor != '^' &&
+            *cursor >= '0' && *cursor <= '9') {
             ++cursor;
         } else if (character != '\n' && character != '\r') {
             ++length;

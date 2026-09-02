@@ -15,7 +15,8 @@ extern vec3_t sv_defaultEntityClipMaxs;
 
 int32_t SV_ClipHandleForEntity(const sharedEntity_t *entity);
 void SV_SetBrushModel(sharedEntity_t *entity);
-qboolean SV_EntityContact(const vec3_t mins, const vec3_t maxs, const sharedEntity_t *entity, qboolean capsule);
+qboolean SV_EntityContact(const vec3_t mins, const vec3_t maxs,
+                          const sharedEntity_t *entity, qboolean capsule);
 void SV_UnlinkEntity(sharedEntity_t *entity);
 void SV_SnapVector(vec3_t vector);
 void SV_LinkEntity(sharedEntity_t *entity);

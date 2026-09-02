@@ -50,8 +50,10 @@ void Com_Frame(void)
     }
 
     minMsec = COM_FRAME_DEFAULT_MSEC;
-    if (host_cvar_com_maxfps_pointer_slot->integer > 0 && dedicated->integer == 0) {
-        minMsec = COM_FRAME_MSEC_BASE / host_cvar_com_maxfps_pointer_slot->integer;
+    if (host_cvar_com_maxfps_pointer_slot->integer > 0 &&
+        dedicated->integer == 0) {
+        minMsec =
+            COM_FRAME_MSEC_BASE / host_cvar_com_maxfps_pointer_slot->integer;
     }
 
     do {
@@ -96,10 +98,13 @@ void Com_Frame(void)
     if (com_speeds->integer != 0) {
         Com_Printf("frame:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i rf:%3i "
                    "bk:%3i\n",
-                   com_frameNumber, frameEndTime - eventTime, (serverTime - eventTime) - com_timeGame,
-                   ((eventTime - frameStartTime) + clientStartTime) - serverTime,
-                   (frameEndTime - clientStartTime) - (com_timeFrontend + com_timeBackend), com_timeGame, com_timeFrontend,
-                   com_timeBackend);
+                   com_frameNumber, frameEndTime - eventTime,
+                   (serverTime - eventTime) - com_timeGame,
+                   ((eventTime - frameStartTime) + clientStartTime) -
+                       serverTime,
+                   (frameEndTime - clientStartTime) -
+                       (com_timeFrontend + com_timeBackend),
+                   com_timeGame, com_timeFrontend, com_timeBackend);
     }
 
     ++com_frameNumber;

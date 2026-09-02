@@ -61,7 +61,7 @@ void CG_TileClear(void)
      * exactly this order before testing the captured x. */
     int32_t rx = coduo_int32_from_bits((uint32_t)cg_refdef.x);
     int32_t rw = coduo_int32_from_bits((uint32_t)cg_refdef.width);
-    int32_t vidWidth = cgs_glconfig.vidWidth;
+    int32_t vidWidth  = cgs_glconfig.vidWidth;
     int32_t vidHeight = cgs_glconfig.vidHeight;
     int32_t ry = coduo_int32_from_bits((uint32_t)cg_refdef.y);
     int32_t rh = coduo_int32_from_bits((uint32_t)cg_refdef.height);
@@ -83,7 +83,9 @@ void CG_TileClear(void)
 
     // CALL2 (0x3001d1c6): bottom strip. args = (0, edgeYB, vidWidth, vidHeight-edgeYB).
     hShader = (int32_t)cgs_media_backTileShader;
-    CG_TileClearBox(hShader, 0, edgeYB, vidWidth, coduo_int32_from_bits((uint32_t)vidHeight - (uint32_t)edgeYB));
+    CG_TileClearBox(hShader, 0, edgeYB, vidWidth,
+                    coduo_int32_from_bits((uint32_t)vidHeight -
+                                     (uint32_t)edgeYB));
 
     // CALL3 (0x3001d1dc): left strip. args = (0, ry, rx, rh).
     // (arg2 = rx via ECX reloaded from the spilled rx at [ESP+0x30]; EDI recomputed
@@ -91,13 +93,15 @@ void CG_TileClear(void)
     {
         int32_t leftX = rx;
         hShader = (int32_t)cgs_media_backTileShader;
-        int32_t leftHeight = coduo_int32_from_bits((uint32_t)edgeYB - (uint32_t)ry + 1u);
+        int32_t leftHeight = coduo_int32_from_bits(
+            (uint32_t)edgeYB - (uint32_t)ry + 1u);
         CG_TileClearBox(hShader, 0, ry, leftX, leftHeight);
 
         // CALL4 (0x3001d1f0): right strip. args = (edgeXR, ry, vidWidth-edgeXR, rh).
         // (arg0/EAX = edgeXR reloaded from the spilled rx+rw-1 at [ESP+0x44];
         //  arg2 = vidWidth - edgeXR via SUB EBX,EAX.)
-        int32_t rightWidth = coduo_int32_from_bits((uint32_t)vidWidth - (uint32_t)edgeXR);
+        int32_t rightWidth = coduo_int32_from_bits(
+            (uint32_t)vidWidth - (uint32_t)edgeXR);
         hShader = (int32_t)cgs_media_backTileShader;
         CG_TileClearBox(hShader, edgeXR, ry, rightWidth, leftHeight);
     }

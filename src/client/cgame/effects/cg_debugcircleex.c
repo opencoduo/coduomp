@@ -69,7 +69,9 @@ enum {
     CG_DEBUG_CIRCLE_POINTS = 16   /* CMP EDI,0x10 in the point-build loop */
 };
 
-void CG_DebugCircleEx(const vec3_t center, int flag, float radius, float startAngle, float endAngle, const float color[4], int param)
+void CG_DebugCircleEx(const vec3_t center, int flag, float radius,
+                      float startAngle, float endAngle,
+                      const float color[4], int param)
 {
     vec3_t pts[CG_DEBUG_CIRCLE_POINTS];
     float angleStep;
@@ -80,11 +82,15 @@ void CG_DebugCircleEx(const vec3_t center, int flag, float radius, float startAn
      * float angleStep but KEEPS the 80-bit chain on st0, and the FCOMP against
      * 0.0f tests that unrounded value — so the sign test reads the long double
      * chain, not the float store. */
-    long double angleStepFull = ((long double)endAngle - (long double)startAngle) * (long double)CG_DEBUG_CIRCLE_STEP_SCALE;
+    long double angleStepFull =
+        ((long double)endAngle - (long double)startAngle) *
+        (long double)CG_DEBUG_CIRCLE_STEP_SCALE;
     angleStep = (float)angleStepFull;
     if (angleStepFull < 0.0f) {             /* FCOMP 0.0; TEST AH,5; JP-not-taken */
         startAngle = (float)((long double)startAngle - (long double)360.0f);
-        angleStep = (float)(((long double)endAngle - (long double)startAngle) * (long double)CG_DEBUG_CIRCLE_STEP_SCALE);
+        angleStep = (float)(
+            ((long double)endAngle - (long double)startAngle) *
+            (long double)CG_DEBUG_CIRCLE_STEP_SCALE);
     }
 
     /* 0x3001dbf0..0x3001dc57: build the 16 ring points. No (float) cast on i:
@@ -93,8 +99,11 @@ void CG_DebugCircleEx(const vec3_t center, int flag, float radius, float startAn
      * 0x3001da74 FILD IS followed by FSTP float / FLD float — the cast is
      * correct there. Two functions apart, opposite answers.) */
     for (i = 0; i < CG_DEBUG_CIRCLE_POINTS; i++) {
-        float angle = (float)(((long double)i * (long double)angleStep + (long double)startAngle) *
-                              (long double)CG_DEBUG_CIRCLE_ANGLE_SCALE_A * (long double)CG_DEBUG_CIRCLE_ANGLE_SCALE_B);
+        float angle = (float)(
+            ((long double)i * (long double)angleStep +
+             (long double)startAngle) *
+            (long double)CG_DEBUG_CIRCLE_ANGLE_SCALE_A *
+            (long double)CG_DEBUG_CIRCLE_ANGLE_SCALE_B);
         /* FSINCOS stores cosine first and sine second into binary32 scratch. */
         {
             float sine;
@@ -104,7 +113,8 @@ void CG_DebugCircleEx(const vec3_t center, int flag, float radius, float startAn
             /* 0x3001dc30..0x3001dc43 copies Z while xOffset remains live. */
             pts[i][2] = center[2];
             pts[i][0] = (float)(xOffset + (long double)center[0]);
-            pts[i][1] = (float)((long double)radius * (long double)sine + (long double)center[1]);
+            pts[i][1] = (float)((long double)radius * (long double)sine +
+                                (long double)center[1]);
         }
     }
 
@@ -113,6 +123,11 @@ void CG_DebugCircleEx(const vec3_t center, int flag, float radius, float startAn
      * Six pushed dwords cleaned by ADD ESP,0x18 — matches CG_DebugBox's use of
      * the same trap. The last argument is the register-arg `flag` (EBX). */
     for (i = 0; i < CG_DEBUG_CIRCLE_POINTS - 1; i++) {
-        cgame_syscall(CG_ADD_DEBUG_LINE, (intptr_t)pts[i], (intptr_t)pts[i + 1], (intptr_t)color, (int32_t)param, (int32_t)flag);
+        cgame_syscall(CG_ADD_DEBUG_LINE,
+                      (intptr_t)pts[i],
+                      (intptr_t)pts[i + 1],
+                      (intptr_t)color,
+                      (int32_t)param,
+                      (int32_t)flag);
     }
 }

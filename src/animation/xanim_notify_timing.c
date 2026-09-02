@@ -38,18 +38,23 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
 
     if (xanim_evalCurrentTime < xanim_evalWindowTime) {
         if (notifyTime < xanim_evalCurrentTime) {
-            frameDelta = (int32_t)xanim_evalWindowFrame - (int32_t)xanim_evalStartFrame + 1;
+            frameDelta = (int32_t)xanim_evalWindowFrame -
+                         (int32_t)xanim_evalStartFrame + 1;
         } else if (xanim_evalWindowTime <= notifyTime) {
-            frameDelta = (int32_t)xanim_evalWindowFrame - (int32_t)xanim_evalStartFrame;
+            frameDelta = (int32_t)xanim_evalWindowFrame -
+                         (int32_t)xanim_evalStartFrame;
         } else {
             return 1.0f;
         }
     } else {
-        if ((xanim_evalCurrentTime <= notifyTime && xanim_evalCurrentTime != 1.0f) || notifyTime < xanim_evalWindowTime) {
+        if ((xanim_evalCurrentTime <= notifyTime &&
+             xanim_evalCurrentTime != 1.0f) ||
+            notifyTime < xanim_evalWindowTime) {
             return 1.0f;
         }
 
-        frameDelta = (int32_t)xanim_evalWindowFrame - (int32_t)xanim_evalStartFrame;
+        frameDelta = (int32_t)xanim_evalWindowFrame -
+                     (int32_t)xanim_evalStartFrame;
     }
 
 #if EMULATE_X87
@@ -57,7 +62,8 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
     /* Binary64 has the same 53-bit significand selected by the original
      * Win32 x87 control word.  Volatile stores make each original arithmetic
      * instruction's precision boundary explicit on SSE and NEON. */
-    volatile double fraction = (double)notifyTime - (double)xanim_evalStartTime;
+    volatile double fraction =
+        (double)notifyTime - (double)xanim_evalStartTime;
     fraction = (double)frameDelta + fraction;
     fraction /= (double)xanim_evalTimeStep;
     return fraction;
@@ -70,7 +76,8 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
     fraction = x87f_div(fraction, x87f_load_f32(xanim_evalTimeStep));
     return x87f_store_f32(fraction);
 #endif
-#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#elif (defined(__i386__) || defined(__x86_64__)) && \
+      (defined(__GNUC__) || defined(__clang__))
 #if defined(WINDOWS_BEHAVIOR)
     double fraction;
 
@@ -84,7 +91,9 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
                          "fdivs %[timeStep]\n\t"
                          "fstpl %[fraction]"
                          : [fraction] "=m"(fraction)
-                         : [frameDelta] "m"(frameDelta), [notifyTime] "m"(notifyTime), [startTime] "m"(xanim_evalStartTime),
+                         : [frameDelta] "m"(frameDelta),
+                           [notifyTime] "m"(notifyTime),
+                           [startTime] "m"(xanim_evalStartTime),
                            [timeStep] "m"(xanim_evalTimeStep)
                          : "st", "st(1)", "memory");
     return fraction;
@@ -100,7 +109,9 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
                          "fdivs %[timeStep]\n\t"
                          "fstps %[fraction]"
                          : [fraction] "=m"(fraction)
-                         : [frameDelta] "m"(frameDelta), [notifyTime] "m"(notifyTime), [startTime] "m"(xanim_evalStartTime),
+                         : [frameDelta] "m"(frameDelta),
+                           [notifyTime] "m"(notifyTime),
+                           [startTime] "m"(xanim_evalStartTime),
                            [timeStep] "m"(xanim_evalTimeStep)
                          : "st", "st(1)", "memory");
     return fraction;
@@ -115,7 +126,8 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
     fraction /= (double)xanim_evalTimeStep;
     return fraction;
 #else
-    long double fraction = (long double)notifyTime - (long double)xanim_evalStartTime;
+    long double fraction =
+        (long double)notifyTime - (long double)xanim_evalStartTime;
     fraction = (long double)frameDelta + fraction;
     fraction /= (long double)xanim_evalTimeStep;
     volatile float narrowedFraction = (float)fraction;
@@ -130,7 +142,8 @@ xanim_notify_fraction_t XAnimGetNotifyFracLeaf(float notifyTime)
  * CoDUOMP.exe 0x00498590..0x00498614 and coduo_lnxded
  * 0x080bbc46..0x080bbcf4.
  */
-xanim_notify_fraction_t XAnimGetNotifyFracServer(XAnimInfo *node, XAnimEntry *entry)
+xanim_notify_fraction_t XAnimGetNotifyFracServer(XAnimInfo *node,
+                                                  XAnimEntry *entry)
 {
     if (xanim_evalRootHandle == 0 || node->notifyName == 0) {
         return 1.0f;
@@ -140,9 +153,13 @@ xanim_notify_fraction_t XAnimGetNotifyFracServer(XAnimInfo *node, XAnimEntry *en
         if (node->notifyChildIndex == 0) {
             return XAnimGetNotifyFracLeaf(1.0f);
         }
-        entry = &xanim_currentTree->sourceTree->entries[node->notifyChildIndex];
+        entry = &xanim_currentTree->sourceTree
+                     ->entries[node->notifyChildIndex];
     }
 
-    float notifyTime = node->notifyIndex < 0 ? 1.0f : entry->payload.leafAsset->data.xanimParts->noteTracks[node->notifyIndex].time;
+    float notifyTime = node->notifyIndex < 0
+        ? 1.0f
+        : entry->payload.leafAsset->data.xanimParts
+              ->noteTracks[node->notifyIndex].time;
     return XAnimGetNotifyFracLeaf(notifyTime);
 }

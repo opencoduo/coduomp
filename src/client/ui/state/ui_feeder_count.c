@@ -26,7 +26,8 @@ int32_t UI_FeederCount(float feeder)
     if (feeder == UI_FEEDER_MOVIES) {
         return ui_movieCount;
     }
-    if (feeder == UI_FEEDER_ACTIVE_MAPS || feeder == UI_FEEDER_ACTIVE_MAPS_ALT) {
+    if (feeder == UI_FEEDER_ACTIVE_MAPS ||
+        feeder == UI_FEEDER_ACTIVE_MAPS_ALT) {
         return UI_MapCountByGameType();
     }
     if (feeder == UI_FEEDER_SERVERS) {
@@ -40,9 +41,11 @@ int32_t UI_FeederCount(float feeder)
         return ui_foundPlayerServerCount;
     }
     if (feeder == UI_FEEDER_PLAYERS) {
-        if (ui_displayContextStorage.context.realTime > ui_playerRefreshDeadline) {
-            ui_playerRefreshDeadline =
-                (int32_t)((uint32_t)ui_displayContextStorage.context.realTime + (uint32_t)UI_PLAYER_REFRESH_MILLISECONDS);
+        if (ui_displayContextStorage.context.realTime >
+            ui_playerRefreshDeadline) {
+            ui_playerRefreshDeadline = (int32_t)(
+                (uint32_t)ui_displayContextStorage.context.realTime +
+                (uint32_t)UI_PLAYER_REFRESH_MILLISECONDS);
             UI_BuildPlayerList();
         }
         return ui_playerCount;

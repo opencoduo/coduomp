@@ -18,7 +18,9 @@ void Com_DPrintf(const char *format, ...);
  * result.  Calling-convention and structure-copy instruction selection do not
  * define separate behavior.
  */
-void CM_TraceSquareThroughTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide)
+void CM_TraceSquareThroughTerrainCollide(
+    traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide)
 {
     static qboolean warned;
 
@@ -26,7 +28,8 @@ void CM_TraceSquareThroughTerrainCollide(traceWork_t *traceWork, const collision
         warned = qtrue;
         /* CoDUOMP.exe 0x0042552b calls the original Com_DPrintf entry, so
          * this diagnostic remains developer-gated rather than unconditional. */
-        Com_DPrintf("^1Box collision on terrain currently being faked with capsule collision\n");
+        Com_DPrintf(
+            "^1Box collision on terrain currently being faked with capsule collision\n");
     }
 
     const float savedStartZ = traceWork->start[2];
@@ -42,7 +45,9 @@ void CM_TraceSquareThroughTerrainCollide(traceWork_t *traceWork, const collision
     traceWork->sphere.radius = savedRadius;
 }
 
-void CM_TraceThroughTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide)
+void CM_TraceThroughTerrainCollide(
+    traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide)
 {
     if (traceWork->isPoint != qfalse) {
         CM_TracePointThroughTerrainCollide(traceWork, terrainCollide);
@@ -62,7 +67,9 @@ void CM_TraceThroughTerrainCollide(traceWork_t *traceWork, const collisionTriang
     CM_TraceSquareThroughTerrainCollide(traceWork, terrainCollide);
 }
 
-qboolean CM_SightTraceThroughTerrainCollide(const traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide)
+qboolean CM_SightTraceThroughTerrainCollide(
+    const traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide)
 {
     traceWork_t sightWork;
 
@@ -72,7 +79,9 @@ qboolean CM_SightTraceThroughTerrainCollide(const traceWork_t *traceWork, const 
     return sightWork.trace.fraction == 1.0f ? qtrue : qfalse;
 }
 
-qboolean CM_PositionTestInTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide)
+qboolean CM_PositionTestInTerrainCollide(
+    traceWork_t *traceWork,
+    const collisionTriangleSoup_t *terrainCollide)
 {
     if (traceWork->isPoint != qfalse) {
         return qfalse;
@@ -80,7 +89,8 @@ qboolean CM_PositionTestInTerrainCollide(traceWork_t *traceWork, const collision
 
     const float savedStartZ = traceWork->start[2];
     const float savedEndZ = traceWork->end[2];
-    const qboolean intersects = CM_PositionTestSphereWithTerrainCollide(traceWork, terrainCollide);
+    const qboolean intersects =
+        CM_PositionTestSphereWithTerrainCollide(traceWork, terrainCollide);
 
     traceWork->start[2] = savedStartZ;
     traceWork->end[2] = savedEndZ;

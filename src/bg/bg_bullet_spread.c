@@ -44,24 +44,34 @@ void gunrandom(float *x, float *y)
     float cosine;
 
 #if EMULATE_X87
-    angleDegrees = x87f_store_f32(x87f_mul(x87f_div(x87f_load_f32(angleSample), x87f_load_f32(32768.0f)), x87f_load_f32(360.0f)));
+    angleDegrees = x87f_store_f32(x87f_mul(
+        x87f_div(x87f_load_f32(angleSample), x87f_load_f32(32768.0f)),
+        x87f_load_f32(360.0f)));
 #else
-    angleDegrees = (float)(((long double)angleSample / 32768.0f) * 360.0f);
+    angleDegrees = (float)(((long double)angleSample / 32768.0f) *
+                           360.0f);
 #endif
 
     radiusSample = (float)coduo_server_rand();
 #if EMULATE_X87
-    radius = x87f_store_f32(x87f_div(x87f_load_f32(radiusSample), x87f_load_f32(32768.0f)));
-    radians = x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(angleDegrees), x87f_load_f32(3.1415927f)), x87f_load_f32(180.0f)));
+    radius = x87f_store_f32(x87f_div(
+        x87f_load_f32(radiusSample), x87f_load_f32(32768.0f)));
+    radians = x87f_store_f32(x87f_div(
+        x87f_mul(x87f_load_f32(angleDegrees),
+                 x87f_load_f32(3.1415927f)),
+        x87f_load_f32(180.0f)));
 #else
     radius = (float)((long double)radiusSample / 32768.0f);
-    radians = (float)(((long double)angleDegrees * 3.1415927f) / 180.0f);
+    radians = (float)(((long double)angleDegrees * 3.1415927f) /
+                      180.0f);
 #endif
 
     BG_SinCos(radians, &sine, &cosine);
 #if EMULATE_X87
-    *x = x87f_store_f32(x87f_mul(x87f_load_f32(cosine), x87f_load_f32(radius)));
-    *y = x87f_store_f32(x87f_mul(x87f_load_f32(sine), x87f_load_f32(radius)));
+    *x = x87f_store_f32(x87f_mul(
+        x87f_load_f32(cosine), x87f_load_f32(radius)));
+    *y = x87f_store_f32(x87f_mul(
+        x87f_load_f32(sine), x87f_load_f32(radius)));
 #else
     *x = (float)((long double)cosine * radius);
     *y = (float)((long double)sine * radius);
@@ -79,24 +89,36 @@ void gunrandom(float *x, float *y)
     float cosine;
 
 #if EMULATE_X87
-    angleDegrees = x87f_store_f32(x87f_mul(x87f_div(x87f_load_i32(angleSample), x87f_load_f32(2147483648.0f)), x87f_load_f32(360.0f)));
+    angleDegrees = x87f_store_f32(x87f_mul(
+        x87f_div(x87f_load_i32(angleSample),
+                 x87f_load_f32(2147483648.0f)),
+        x87f_load_f32(360.0f)));
 #else
-    angleDegrees = (float)(((long double)angleSample / 2147483648.0f) * 360.0f);
+    angleDegrees = (float)(((long double)angleSample / 2147483648.0f) *
+                           360.0f);
 #endif
 
     radiusSample = coduo_server_rand();
 #if EMULATE_X87
-    radius = x87f_store_f32(x87f_div(x87f_load_i32(radiusSample), x87f_load_f32(2147483648.0f)));
-    radians = x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(angleDegrees), x87f_load_f64(3.141592653589793)), x87f_load_f64(180.0)));
+    radius = x87f_store_f32(x87f_div(
+        x87f_load_i32(radiusSample), x87f_load_f32(2147483648.0f)));
+    radians = x87f_store_f32(x87f_div(
+        x87f_mul(x87f_load_f32(angleDegrees),
+                 x87f_load_f64(3.141592653589793)),
+        x87f_load_f64(180.0)));
 #else
     radius = (float)((long double)radiusSample / 2147483648.0f);
-    radians = (float)(((long double)angleDegrees * 3.141592653589793L) / 180.0L);
+    radians = (float)(((long double)angleDegrees *
+                       3.141592653589793L) /
+                      180.0L);
 #endif
 
     BG_SinCos(radians, &sine, &cosine);
 #if EMULATE_X87
-    *x = x87f_store_f32(x87f_mul(x87f_load_f32(radius), x87f_load_f32(cosine)));
-    *y = x87f_store_f32(x87f_mul(x87f_load_f32(radius), x87f_load_f32(sine)));
+    *x = x87f_store_f32(x87f_mul(
+        x87f_load_f32(radius), x87f_load_f32(cosine)));
+    *y = x87f_store_f32(x87f_mul(
+        x87f_load_f32(radius), x87f_load_f32(sine)));
 #else
     *x = (float)((long double)radius * cosine);
     *y = (float)((long double)radius * sine);
@@ -105,7 +127,8 @@ void gunrandom(float *x, float *y)
 #endif
 
 #if defined(WINDOWS_BEHAVIOR)
-void BG_Bullet_Endpos(float spread, vec3_t end, const float *muzzlePoints)
+void BG_Bullet_Endpos(float spread, vec3_t end,
+                      const float *muzzlePoints)
 {
     const float *const forward = muzzlePoints;
     const float *const right = muzzlePoints + 3;
@@ -116,40 +139,57 @@ void BG_Bullet_Endpos(float spread, vec3_t end, const float *muzzlePoints)
     float radius;
 
 #if EMULATE_X87
-    const x87f radians = x87f_mul(x87f_mul(x87f_load_f32(spread), x87f_load_f32(3.1415927f)), x87f_load_f32(0.0055555557f));
+    const x87f radians = x87f_mul(
+        x87f_mul(x87f_load_f32(spread), x87f_load_f32(3.1415927f)),
+        x87f_load_f32(0.0055555557f));
     const double radiansCarrier = x87f_store_f64(radians);
     const double tangent = (double)coduo_x87_tanl(radiansCarrier);
 
-    radius = x87f_store_f32(x87f_mul(x87f_load_f64(tangent), x87f_load_f32(BG_BULLET_TRACE_DISTANCE)));
+    radius = x87f_store_f32(x87f_mul(
+        x87f_load_f64(tangent),
+        x87f_load_f32(BG_BULLET_TRACE_DISTANCE)));
 #else
     long double radians = (long double)spread * 3.1415927f;
 
     radians *= 0.0055555557f;
-    radius = (float)(coduo_x87_tanl(radians) * (long double)BG_BULLET_TRACE_DISTANCE);
+    radius = (float)(coduo_x87_tanl(radians) *
+                     (long double)BG_BULLET_TRACE_DISTANCE);
 #endif
 
     gunrandom(&randomRight, &randomUp);
 
 #if EMULATE_X87
-    const x87f lateralRight = x87f_mul(x87f_load_f32(randomRight), x87f_load_f32(radius));
-    const x87f lateralUp = x87f_mul(x87f_load_f32(randomUp), x87f_load_f32(radius));
+    const x87f lateralRight = x87f_mul(
+        x87f_load_f32(randomRight), x87f_load_f32(radius));
+    const x87f lateralUp = x87f_mul(
+        x87f_load_f32(randomUp), x87f_load_f32(radius));
 
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = x87f_store_f32(
-            x87f_add(x87f_mul(x87f_load_f32(forward[lane]), x87f_load_f32(BG_BULLET_TRACE_DISTANCE)), x87f_load_f32(origin[lane])));
+        end[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(forward[lane]),
+                     x87f_load_f32(BG_BULLET_TRACE_DISTANCE)),
+            x87f_load_f32(origin[lane])));
     }
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = x87f_store_f32(x87f_add(x87f_mul(lateralRight, x87f_load_f32(right[lane])), x87f_load_f32(end[lane])));
+        end[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(lateralRight, x87f_load_f32(right[lane])),
+            x87f_load_f32(end[lane])));
     }
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = x87f_store_f32(x87f_add(x87f_mul(lateralUp, x87f_load_f32(up[lane])), x87f_load_f32(end[lane])));
+        end[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(lateralUp, x87f_load_f32(up[lane])),
+            x87f_load_f32(end[lane])));
     }
 #else
-    const long double lateralRight = (long double)randomRight * radius;
-    const long double lateralUp = (long double)randomUp * radius;
+    const long double lateralRight =
+        (long double)randomRight * radius;
+    const long double lateralUp =
+        (long double)randomUp * radius;
 
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = (float)((long double)forward[lane] * BG_BULLET_TRACE_DISTANCE + origin[lane]);
+        end[lane] = (float)((long double)forward[lane] *
+                                BG_BULLET_TRACE_DISTANCE +
+                            origin[lane]);
     }
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
         end[lane] = (float)(lateralRight * right[lane] + end[lane]);
@@ -160,7 +200,8 @@ void BG_Bullet_Endpos(float spread, vec3_t end, const float *muzzlePoints)
 #endif
 }
 #else
-void BG_Bullet_Endpos(float spread, vec3_t end, const float *muzzlePoints)
+void BG_Bullet_Endpos(float spread, vec3_t end,
+                      const float *muzzlePoints)
 {
     const float *const forward = muzzlePoints;
     const float *const right = muzzlePoints + 3;
@@ -173,31 +214,48 @@ void BG_Bullet_Endpos(float spread, vec3_t end, const float *muzzlePoints)
     float randomUp;
 
 #if EMULATE_X87
-    tangentArgument = x87f_store_f64(x87f_div(x87f_mul(x87f_load_f32(spread), x87f_load_f64(3.141592653589793)), x87f_load_f64(180.0)));
+    tangentArgument = x87f_store_f64(x87f_div(
+        x87f_mul(x87f_load_f32(spread),
+                 x87f_load_f64(3.141592653589793)),
+        x87f_load_f64(180.0)));
 #else
-    tangentArgument = (double)(((long double)spread * 3.141592653589793L) / 180.0L);
+    tangentArgument = (double)(((long double)spread *
+                                3.141592653589793L) /
+                               180.0L);
 #endif
     tangent = (float)tan(tangentArgument);
 #if EMULATE_X87
-    radius = x87f_store_f32(x87f_mul(x87f_load_f32(tangent), x87f_load_f32(BG_BULLET_TRACE_DISTANCE)));
+    radius = x87f_store_f32(x87f_mul(
+        x87f_load_f32(tangent),
+        x87f_load_f32(BG_BULLET_TRACE_DISTANCE)));
 #else
     radius = tangent * BG_BULLET_TRACE_DISTANCE;
 #endif
 
     gunrandom(&randomRight, &randomUp);
 #if EMULATE_X87
-    randomRight = x87f_store_f32(x87f_mul(x87f_load_f32(randomRight), x87f_load_f32(radius)));
-    randomUp = x87f_store_f32(x87f_mul(x87f_load_f32(randomUp), x87f_load_f32(radius)));
+    randomRight = x87f_store_f32(x87f_mul(
+        x87f_load_f32(randomRight), x87f_load_f32(radius)));
+    randomUp = x87f_store_f32(x87f_mul(
+        x87f_load_f32(randomUp), x87f_load_f32(radius)));
 
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = x87f_store_f32(
-            x87f_add(x87f_mul(x87f_load_f32(forward[lane]), x87f_load_f32(BG_BULLET_TRACE_DISTANCE)), x87f_load_f32(origin[lane])));
+        end[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(forward[lane]),
+                     x87f_load_f32(BG_BULLET_TRACE_DISTANCE)),
+            x87f_load_f32(origin[lane])));
     }
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(right[lane]), x87f_load_f32(randomRight)), x87f_load_f32(end[lane])));
+        end[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(right[lane]),
+                     x87f_load_f32(randomRight)),
+            x87f_load_f32(end[lane])));
     }
     for (int32_t lane = 0; lane < BG_BULLET_VECTOR_LANES; ++lane) {
-        end[lane] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(up[lane]), x87f_load_f32(randomUp)), x87f_load_f32(end[lane])));
+        end[lane] = x87f_store_f32(x87f_add(
+            x87f_mul(x87f_load_f32(up[lane]),
+                     x87f_load_f32(randomUp)),
+            x87f_load_f32(end[lane])));
     }
 #else
     randomRight *= radius;

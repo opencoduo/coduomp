@@ -12,9 +12,13 @@
 
 #include "../client_recovered.h"
 
-int32_t trap_R_Text_PaintWithCursor(intptr_t xBits, intptr_t yBits, intptr_t font, intptr_t scaleBits, intptr_t color, intptr_t text,
-                                    intptr_t cursorPos, intptr_t cursorChar, intptr_t limit, intptr_t textStyle)
+int32_t trap_R_Text_PaintWithCursor(
+    intptr_t xBits, intptr_t yBits, intptr_t font, intptr_t scaleBits,
+    intptr_t color, intptr_t text, intptr_t cursorPos, intptr_t cursorChar,
+    intptr_t limit, intptr_t textStyle)
 {
-    return (int32_t)cgame_syscall(CG_R_TEXT_PAINT_WITH_CURSOR, xBits, yBits, font, scaleBits, color, text, cursorPos,
-                                  (int32_t)(int8_t)cursorChar, limit, textStyle);
+    return (int32_t)cgame_syscall(
+        CG_R_TEXT_PAINT_WITH_CURSOR,
+        xBits, yBits, font, scaleBits, color, text, cursorPos,
+        (int32_t)(int8_t)cursorChar, limit, textStyle);
 }

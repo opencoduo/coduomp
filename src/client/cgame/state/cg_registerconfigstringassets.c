@@ -88,7 +88,8 @@ enum {
  */
 /* NOT_FROM_ORIGINAL_SOURCE: readable factoring of the repeated inlined
  * config-string lookup graph in CG_RegisterConfigStringAssets. */
-static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE const char *cgame_compat_config_string_inline(int32_t cfg)
+static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE const char *
+cgame_compat_config_string_inline(int32_t cfg)
 {
     if (cfg < 0 || cfg >= MAX_CONFIGSTRINGS) {          /* TEST/JL + CMP 0x800/JL */
         Com_ErrorMessage(cg_configStringBadIndexFmt, cfg);
@@ -104,13 +105,14 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE const char *cgame_compat_config_s
  */
 /* NOT_FROM_ORIGINAL_SOURCE: readable factoring of the two duplicated loading
  * pump instruction regions in CG_RegisterConfigStringAssets. */
-static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets_loading_pump(void)
+static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void
+cgame_compat_register_assets_loading_pump(void)
 {
     const char *mapName;
-    qhandle_t levelShotShader;
-    char hunkUsageStr[64];   /* [ESP+0x94] region, CvarVariableStringBuffer dst */
-    int32_t expectedHunkUsage;
-    float loadFraction;
+    qhandle_t   levelShotShader;
+    char        hunkUsageStr[64];   /* [ESP+0x94] region, CvarVariableStringBuffer dst */
+    int32_t     expectedHunkUsage;
+    float       loadFraction;
 
     /* cg_snap != NULL -> a snapshot is installed, skip the loading pump.
      * (0x30038911/0x3003891c MOV/TEST/JNZ 0x30038b38.) */
@@ -139,7 +141,8 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets
     /* Resolve the map name from config string 0 (CS_SERVERINFO): register its
      * "levelshots/<map>.tga" shader, or fall back to "menu/art/unknownmap".
      * (0x30038995..0x300389e2.) Info_ValueForKey takes info in ECX, key in EBX. */
-    mapName = Info_ValueForKey(&cg_gameState.stringData[cg_gameState.stringOffsets[0]], "mapname");
+    mapName = Info_ValueForKey(
+        &cg_gameState.stringData[cg_gameState.stringOffsets[0]], "mapname");
 
     levelShotShader = 0;
     if (mapName != NULL && mapName[0] != '\0') {        /* 0x300389ab..0x300389b2 */
@@ -147,7 +150,8 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets
         levelShotShader = trap_R_RegisterShaderNoMip(shaderName, R_IMAGE_TRACK_UI); /* 0x300389c5 */
     }
     if (levelShotShader == 0) {                         /* 0x300389cf TEST ESI,ESI / JNZ */
-        levelShotShader = trap_R_RegisterShaderNoMip(cg_unknownMapShader, R_IMAGE_TRACK_UI); /* 0x300389da */
+        levelShotShader = trap_R_RegisterShaderNoMip(cg_unknownMapShader,
+                                                     R_IMAGE_TRACK_UI); /* 0x300389da */
     }
 
     /* Reset the 2D draw color to white (R_SetColor(NULL)). 0x300389e4..0x300389e8. */
@@ -165,8 +169,9 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets
         float y = (float)((long double)cgs_screenYScale * 0.0L);
         float w = (float)((long double)cgs_screenXScale * 640.0L);
         float h = (float)((long double)cgs_screenYScale * 480.0L);
-        trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y), CG_FloatBits(w), CG_FloatBits(h), CG_FloatBits(0.0f),
-                              CG_FloatBits(0.0f),  /* s1, t1 */
+        trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y),
+                              CG_FloatBits(w), CG_FloatBits(h),
+                              CG_FloatBits(0.0f), CG_FloatBits(0.0f),  /* s1, t1 */
                               CG_FloatBits(1.0f), CG_FloatBits(1.0f),  /* s2, t2 */
                               levelShotShader);
     }
@@ -174,7 +179,9 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets
     /* Progress fraction: read "com_expectedhunkusage" and atoi it; if positive,
      * divide the current hunk usage (trap CG_HUNK_USED) by it, clamp to 1.0, and
      * draw the styled loading bar. (0x30038a7f..0x30038b1f.) */
-    cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)"com_expectedhunkusage", (intptr_t)hunkUsageStr,
+    cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
+                  (intptr_t)"com_expectedhunkusage",
+                  (intptr_t)hunkUsageStr,
                   (int32_t)sizeof(hunkUsageStr));       /* size 0x40 = 64 */
     expectedHunkUsage = coduo_crt_atoi(hunkUsageStr);
 
@@ -184,13 +191,15 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets
     loadFraction = 0.8f;
 
     if (expectedHunkUsage > 0) {                        /* 0x30038aa9 TEST + 0x30038acf JLE */
-        int32_t currentHunkUsage = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_HUNK_USED)); /* 0x30038ad1 trap(0x3f) */
+        int32_t currentHunkUsage = coduo_int32_from_bits(
+            (uint32_t)cgame_syscall(CG_HUNK_USED)); /* 0x30038ad1 trap(0x3f) */
         /* 0x30038add FILD currentHunkUsage; 0x30038ae4 FIDIV expectedHunkUsage keep
          * both byte counts exact (they exceed 2^24, so (float) casts would round --
          * Class 4). 0x30038ae8 FST(float) stores the rounded fraction but *keeps*
          * the 80-bit quotient, which 0x30038aec FCOMPs against 1.0f (Class 8), so
          * the clamp test must read the unrounded value. */
-        long double frac = (long double)currentHunkUsage / (long double)expectedHunkUsage;
+        long double frac = (long double)currentHunkUsage /
+                           (long double)expectedHunkUsage;
         loadFraction = (float)frac;                     /* 0x30038ae8 FST DWORD */
         if (frac > 1.0f) {                              /* 0x30038aec FCOMP 1.0; TEST 0x41 */
             loadFraction = 1.0f;                        /* 0x30038af9 store 0x3f800000 */
@@ -201,7 +210,8 @@ static CG_REGISTER_ASSETS_COMPAT_ALWAYS_INLINE void cgame_compat_register_assets
     /* Force an out-of-frame present so the load screen animates, then release the
      * reentry latch. (0x30038b22..0x30038b33.) */
     cgame_syscall(CG_UPDATE_SCREEN);
-    cg_updateScreenActive = coduo_int32_from_bits((uint32_t)cg_updateScreenActive - 1u);
+    cg_updateScreenActive = coduo_int32_from_bits(
+        (uint32_t)cg_updateScreenActive - 1u);
 }
 
 void CG_RegisterConfigStringAssets(void)
@@ -210,9 +220,12 @@ void CG_RegisterConfigStringAssets(void)
 
     /* Seed the three signed HUD-stat integers from config strings 5, 6, 14 (inlined
      * config-string lookups + Q_atoi). (0x30038836..0x30038888.) */
-    cg_hudStat5Value = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_TEAM_SCORE_AXIS]]);
-    cg_hudStat6Value = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_TEAM_SCORE_ALLIES]]);
-    cg_hudStat14Value = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_HUD_STAT_14]]);
+    cg_hudStat5Value  = coduo_crt_atoi(
+        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_TEAM_SCORE_AXIS]]);
+    cg_hudStat6Value  = coduo_crt_atoi(
+        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_TEAM_SCORE_ALLIES]]);
+    cg_hudStat14Value = coduo_crt_atoi(
+        &cg_gameState.stringData[cg_gameState.stringOffsets[CS_HUD_STAT_14]]);
 
     /* Parse the map's fog config string. (0x3003888d CALL CG_ParseFog.) */
     CG_ParseFog();
@@ -220,9 +233,11 @@ void CG_RegisterConfigStringAssets(void)
     /* Register the script-menu files. (0x30038892..0x300388e8, EDI 0x535..0x555.)
      * Each nonempty name is loaded via trap(CG_R_REGISTERMENU); a zero (failed)
      * return reports "Could not load script menu file '%s'\n". */
-    for (index = CS_SCRIPTMENUS; index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT; index++) {
+    for (index = CS_SCRIPTMENUS;
+         index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT; index++) {
         const char *name = cgame_compat_config_string_inline(index);
-        if (name[0] != '\0' && cgame_syscall(CG_R_REGISTERMENU, (intptr_t)name) == 0) {
+        if (name[0] != '\0' &&
+            cgame_syscall(CG_R_REGISTERMENU, (intptr_t)name) == 0) {
             Com_ErrorMessage("Could not load script menu file '%s'\n", name);
         }
     }
@@ -238,7 +253,8 @@ void CG_RegisterConfigStringAssets(void)
     /* HUD materials [38, 53): register each via CG_RegisterMaterial (no pump).
      * (0x30038b50..0x30038b8b.) */
     for (index = CS_HEAD_ICONS; index < CS_LOCATIONS; index++) {
-        (void)CG_RegisterMaterial(cgame_compat_config_string_inline(index), R_IMAGE_TRACK_HUD);
+        (void)CG_RegisterMaterial(cgame_compat_config_string_inline(index),
+                                  R_IMAGE_TRACK_HUD);
     }
 
     /* Server 2D shaders [1654, 1909): skip empty entries; for each nonempty name

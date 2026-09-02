@@ -19,16 +19,24 @@ renderer_debug_state_t rendererDebugState;
  * paths. Source data: CoDUOMP.exe 0x0058fc68..0x0058fc77. */
 const vec4_t colorWhite = {1.0f, 1.0f, 1.0f, 1.0f};
 
-#define R_SCALED_DEBUG_VIEW_DOT_BIAS 0.99500000476837158203125f /* 0x3f7eb852 */
+#define R_SCALED_DEBUG_VIEW_DOT_BIAS \
+    0.99500000476837158203125f /* 0x3f7eb852 */
 
-#define R_PLUME_SWAY_RADIANS_PER_MILLISECOND 0.012566370889544487f /* 0x3c4de32e: 2*pi/500 ms */
-#define R_PLUME_SWAY_DISTANCE 4.0f /* 0x40800000 */
-#define R_PLUME_RISE_UNITS_PER_MILLISECOND 0.06400000303983688f /* 0x3d83126f: approximately 64 units/s */
+#define R_PLUME_SWAY_RADIANS_PER_MILLISECOND \
+    0.012566370889544487f /* 0x3c4de32e: 2*pi/500 ms */
+#define R_PLUME_SWAY_DISTANCE \
+    4.0f /* 0x40800000 */
+#define R_PLUME_RISE_UNITS_PER_MILLISECOND \
+    0.06400000303983688f /* 0x3d83126f: approximately 64 units/s */
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(renderer_debug_string_t) == 0x80, "renderer debug-string payload size changed");
-_Static_assert(sizeof(client_debug_string_t) == sizeof(renderer_debug_string_t), "client/renderer debug-string layouts diverged");
-_Static_assert(sizeof(client_debug_line_t) == sizeof(renderer_debug_line_t), "client/renderer debug-line layouts diverged");
+_Static_assert(sizeof(renderer_debug_string_t) == 0x80,
+               "renderer debug-string payload size changed");
+_Static_assert(sizeof(client_debug_string_t) ==
+                   sizeof(renderer_debug_string_t),
+               "client/renderer debug-string layouts diverged");
+_Static_assert(sizeof(client_debug_line_t) == sizeof(renderer_debug_line_t),
+               "client/renderer debug-line layouts diverged");
 #endif
 
 /* Source: CoDUOMP.exe 0x004e7670..0x004e76f0.
@@ -38,7 +46,8 @@ _Static_assert(sizeof(client_debug_line_t) == sizeof(renderer_debug_line_t), "cl
 void R_InitDebug(void)
 {
     memset(&rendererDebugState, 0, sizeof(rendererDebugState));
-    rendererDebugState.polygonVertexCapacity = R_DEBUG_POLYGON_VERTEX_CAPACITY;
+    rendererDebugState.polygonVertexCapacity =
+        R_DEBUG_POLYGON_VERTEX_CAPACITY;
     rendererDebugState.polygonCapacity = R_DEBUG_POLYGON_CAPACITY;
     rendererDebugState.stringCapacity = R_DEBUG_STRING_CAPACITY;
     rendererDebugState.lineCapacity = R_DEBUG_LINE_CAPACITY;
@@ -47,7 +56,8 @@ void R_InitDebug(void)
     rendererDebugState.immediateColor[1] = 1;
     rendererDebugState.immediateColor[2] = 1;
     rendererDebugState.immediateColor[3] = 1;
-    rendererDebugState.immediateVertexCapacity = RB_IMMEDIATE_VERTEX_CAPACITY;
+    rendererDebugState.immediateVertexCapacity =
+        RB_IMMEDIATE_VERTEX_CAPACITY;
 }
 
 /* Source: CoDUOMP.exe 0x004e7700..0x004e77ac.
@@ -91,7 +101,8 @@ void R_ShutdownDebug(void)
  * absent from Ghidra's function table and was recovered from the executable
  * gap. Name and two-argument ABI: same-module Mac symbol
  * RE_LocateDebugStrings and GetRefAPI export slot 50. */
-void RE_LocateDebugStrings(const client_debug_string_t *strings, int32_t stringCount)
+void RE_LocateDebugStrings(const client_debug_string_t *strings,
+                           int32_t stringCount)
 {
     rendererDebugState.locatedStrings = strings;
     rendererDebugState.locatedStringCount = stringCount;
@@ -101,7 +112,8 @@ void RE_LocateDebugStrings(const client_debug_string_t *strings, int32_t stringC
  * absent from Ghidra's function table and was recovered from the executable
  * gap. Name and two-argument ABI: same-module Mac symbol
  * RE_LocateDebugLines and GetRefAPI export slot 51. */
-void RE_LocateDebugLines(const client_debug_line_t *lines, int32_t lineCount)
+void RE_LocateDebugLines(const client_debug_line_t *lines,
+                         int32_t lineCount)
 {
     rendererDebugState.locatedLines = lines;
     rendererDebugState.locatedLineCount = lineCount;
@@ -113,12 +125,15 @@ void RE_LocateDebugLines(const client_debug_line_t *lines, int32_t lineCount)
  * GetRefAPI export slot 52. The only producer supplies totalSpawnCount as the
  * integer label. The original 40-byte record initially leaves alpha +0x18
  * zero; RB_AddPlumeStrings owns that lane while the plume is live. */
-void RE_AddPlume(const vec3_t origin, int32_t labelValue, const vec3_t color, int32_t duration)
+void RE_AddPlume(const vec3_t origin, int32_t labelValue,
+                 const vec3_t color, int32_t duration)
 {
     renderer_plume_t *plume;
 
     if (rendererDebugState.plumes == NULL) {
-        const uint32_t allocationSize = (uint32_t)rendererDebugState.plumeCapacity * (uint32_t)sizeof(*rendererDebugState.plumes);
+        const uint32_t allocationSize =
+            (uint32_t)rendererDebugState.plumeCapacity *
+            (uint32_t)sizeof(*rendererDebugState.plumes);
 
         rendererDebugState.plumes = malloc((size_t)allocationSize);
         if (rendererDebugState.plumes == NULL) {
@@ -151,9 +166,13 @@ void RB_AddPlumeStrings(void)
     int32_t plumeIndex = 0;
 
     while (plumeIndex < rendererDebugState.plumeCount) {
-        renderer_plume_t *plume = &rendererDebugState.plumes[plumeIndex];
-        const int32_t elapsed = (int32_t)((uint32_t)backEnd.refdef.time - (uint32_t)plume->startTime);
-        const int32_t doubledElapsed = (int32_t)((uint32_t)elapsed * 2U);
+        renderer_plume_t *plume =
+            &rendererDebugState.plumes[plumeIndex];
+        const int32_t elapsed = (int32_t)(
+            (uint32_t)backEnd.refdef.time -
+            (uint32_t)plume->startTime);
+        const int32_t doubledElapsed =
+            (int32_t)((uint32_t)elapsed * 2U);
         float sway;
         vec3_t labelOrigin;
 
@@ -165,15 +184,28 @@ void RB_AddPlumeStrings(void)
 
         plume->color[3] = 1.0f;
         if (doubledElapsed > plume->duration) {
-            plume->color[3] = (float)(2.0L - ((long double)elapsed * 2.0L) / (long double)plume->duration);
+            plume->color[3] = (float)(
+                2.0L -
+                ((long double)elapsed * 2.0L) /
+                    (long double)plume->duration);
         }
 
-        sway = sinf((float)elapsed * R_PLUME_SWAY_RADIANS_PER_MILLISECOND + (float)plumeIndex) * R_PLUME_SWAY_DISTANCE;
-        labelOrigin[0] = plume->origin[0] + backEnd.refdef.viewaxis[1][0] * sway;
-        labelOrigin[1] = plume->origin[1] + backEnd.refdef.viewaxis[1][1] * sway;
-        labelOrigin[2] = plume->origin[2] + backEnd.refdef.viewaxis[1][2] * sway + (float)elapsed * R_PLUME_RISE_UNITS_PER_MILLISECOND;
+        sway = sinf(
+                   (float)elapsed *
+                       R_PLUME_SWAY_RADIANS_PER_MILLISECOND +
+                   (float)plumeIndex) *
+               R_PLUME_SWAY_DISTANCE;
+        labelOrigin[0] = plume->origin[0] +
+                         backEnd.refdef.viewaxis[1][0] * sway;
+        labelOrigin[1] = plume->origin[1] +
+                         backEnd.refdef.viewaxis[1][1] * sway;
+        labelOrigin[2] = plume->origin[2] +
+                         backEnd.refdef.viewaxis[1][2] * sway +
+                         (float)elapsed *
+                             R_PLUME_RISE_UNITS_PER_MILLISECOND;
 
-        R_AddDebugString(labelOrigin, plume->color, 0.5f, va("%i", plume->labelValue));
+        R_AddDebugString(labelOrigin, plume->color, 0.5f,
+                         va("%i", plume->labelValue));
         ++plumeIndex;
     }
 }
@@ -183,21 +215,29 @@ void RB_AddPlumeStrings(void)
  * Name and parameter roles: same-module Mac symbol R_AddDebugPolygon. The
  * Windows body maintains a 512-record table over a separate 4096-vertex
  * vec3 array and allocates both stores together on first use. */
-void R_AddDebugPolygon(const vec4_t color, int32_t pointCount, const vec3_t *points)
+void R_AddDebugPolygon(const vec4_t color, int32_t pointCount,
+                       const vec3_t *points)
 {
     renderer_debug_polygon_t *polygon;
-    const int32_t requestedVertexCount = (int32_t)((uint32_t)rendererDebugState.polygonVertexCount + (uint32_t)pointCount);
-    const int32_t requestedPolygonCount = (int32_t)((uint32_t)rendererDebugState.polygonCount + 1U);
+    const int32_t requestedVertexCount = (int32_t)(
+        (uint32_t)rendererDebugState.polygonVertexCount +
+        (uint32_t)pointCount);
+    const int32_t requestedPolygonCount = (int32_t)(
+        (uint32_t)rendererDebugState.polygonCount + 1U);
 
     if (requestedVertexCount > rendererDebugState.polygonVertexCapacity)
         return;
     if (requestedPolygonCount > rendererDebugState.polygonCapacity)
         return;
 
-    if (rendererDebugState.polygons == NULL || rendererDebugState.polygonVertices == NULL) {
-        const uint32_t polygonBytes = (uint32_t)rendererDebugState.polygonCapacity * (uint32_t)sizeof(*rendererDebugState.polygons);
+    if (rendererDebugState.polygons == NULL ||
+        rendererDebugState.polygonVertices == NULL) {
+        const uint32_t polygonBytes =
+            (uint32_t)rendererDebugState.polygonCapacity *
+            (uint32_t)sizeof(*rendererDebugState.polygons);
         const uint32_t vertexBytes =
-            (uint32_t)rendererDebugState.polygonVertexCapacity * (uint32_t)sizeof(*rendererDebugState.polygonVertices);
+            (uint32_t)rendererDebugState.polygonVertexCapacity *
+            (uint32_t)sizeof(*rendererDebugState.polygonVertices);
 
         rendererDebugState.polygons = malloc((size_t)polygonBytes);
         if (rendererDebugState.polygons == NULL)
@@ -216,15 +256,19 @@ void R_AddDebugPolygon(const vec4_t color, int32_t pointCount, const vec3_t *poi
     memcpy(polygon->color, color, sizeof(polygon->color));
     rendererDebugState.polygonCount = requestedPolygonCount;
 
-    memcpy(&rendererDebugState.polygonVertices[rendererDebugState.polygonVertexCount], points,
-           (size_t)((uint32_t)pointCount * (uint32_t)sizeof(*points)));
+    memcpy(&rendererDebugState
+                .polygonVertices[rendererDebugState.polygonVertexCount],
+           points,
+           (size_t)((uint32_t)pointCount *
+                    (uint32_t)sizeof(*points)));
     rendererDebugState.polygonVertexCount = requestedVertexCount;
 }
 
 /* Source: CoDUOMP.exe 0x004e73f0..0x004e7494.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e73f0_004e7495.mcode.
  * Name and parameter roles: same-module Mac symbol R_AddDebugLine. */
-void R_AddDebugLine(const vec3_t start, const vec3_t end, const vec4_t color)
+void R_AddDebugLine(const vec3_t start, const vec3_t end,
+                    const vec4_t color)
 {
     renderer_debug_line_t *line;
 
@@ -232,7 +276,9 @@ void R_AddDebugLine(const vec3_t start, const vec3_t end, const vec4_t color)
         return;
 
     if (rendererDebugState.lines == NULL) {
-        const size_t allocationSize = (size_t)rendererDebugState.lineCapacity * sizeof(*rendererDebugState.lines);
+        const size_t allocationSize =
+            (size_t)rendererDebugState.lineCapacity *
+            sizeof(*rendererDebugState.lines);
 
         rendererDebugState.lines = malloc(allocationSize);
         if (rendererDebugState.lines == NULL)
@@ -252,22 +298,29 @@ void R_AddDebugLine(const vec3_t start, const vec3_t end, const vec4_t color)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e74a0_004e751f.mcode.
  * Name and parameter roles: same-module Mac symbol R_AddDebugBox. The edge
  * pairs are the exact 24 dwords at CoDUOMP.exe 0x00590f08..0x00590f67. */
-void R_AddDebugBox(const vec3_t mins, const vec3_t maxs, const vec4_t color)
+void R_AddDebugBox(const vec3_t mins, const vec3_t maxs,
+                   const vec4_t color)
 {
-    static const int32_t edgeVertexIndexes[12][2] = {{0, 1}, {0, 2}, {0, 4}, {1, 3}, {1, 5}, {2, 3},
-                                                     {2, 6}, {3, 7}, {4, 5}, {4, 6}, {5, 7}, {6, 7}};
+    static const int32_t edgeVertexIndexes[12][2] = {
+        {0, 1}, {0, 2}, {0, 4}, {1, 3}, {1, 5}, {2, 3},
+        {2, 6}, {3, 7}, {4, 5}, {4, 6}, {5, 7}, {6, 7}
+    };
     vec3_t corners[8];
     int32_t cornerIndex;
     int32_t edgeIndex;
 
     for (cornerIndex = 0; cornerIndex < 8; ++cornerIndex) {
-        corners[cornerIndex][0] = (cornerIndex & 1) != 0 ? maxs[0] : mins[0];
-        corners[cornerIndex][1] = (cornerIndex & 2) != 0 ? maxs[1] : mins[1];
-        corners[cornerIndex][2] = (cornerIndex & 4) != 0 ? maxs[2] : mins[2];
+        corners[cornerIndex][0] =
+            (cornerIndex & 1) != 0 ? maxs[0] : mins[0];
+        corners[cornerIndex][1] =
+            (cornerIndex & 2) != 0 ? maxs[1] : mins[1];
+        corners[cornerIndex][2] =
+            (cornerIndex & 4) != 0 ? maxs[2] : mins[2];
     }
 
     for (edgeIndex = 0; edgeIndex < 12; ++edgeIndex) {
-        R_AddDebugLine(corners[edgeVertexIndexes[edgeIndex][0]], corners[edgeVertexIndexes[edgeIndex][1]], color);
+        R_AddDebugLine(corners[edgeVertexIndexes[edgeIndex][0]],
+                       corners[edgeVertexIndexes[edgeIndex][1]], color);
     }
 }
 
@@ -280,8 +333,12 @@ void R_AddDebugBox(const vec3_t mins, const vec3_t maxs, const vec4_t color)
 void RB_DrawDebugPolys(void)
 {
     enum {
-        R_DEBUG_POLYGON_FILL_STATE = GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA,
-        R_DEBUG_POLYGON_WIREFRAME_STATE = GLS_DEPTHMASK_TRUE | GLS_POLYMODE_LINE
+        R_DEBUG_POLYGON_FILL_STATE =
+            GLS_DEPTHMASK_TRUE |
+            GLS_SRCBLEND_SRC_ALPHA |
+            GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA,
+        R_DEBUG_POLYGON_WIREFRAME_STATE =
+            GLS_DEPTHMASK_TRUE | GLS_POLYMODE_LINE
     };
     int32_t polygonIndex;
 
@@ -291,7 +348,8 @@ void RB_DrawDebugPolys(void)
     RB_SelectStorage(R_STATIC_VERTEX_MEMORY_HUNK);
     GL_Bind(tr.defaultImage);
     GL_ClientState(GLS_CLIENT_VERTEX_ARRAY);
-    qglVertexPointer(3, GL_FLOAT, 0, rendererDebugState.polygonVertices);
+    qglVertexPointer(3, GL_FLOAT, 0,
+                     rendererDebugState.polygonVertices);
 
     qglLoadMatrixf(tr.viewParms.world.modelMatrix);
     qglMatrixMode(GL_PROJECTION);
@@ -304,17 +362,22 @@ void RB_DrawDebugPolys(void)
     }
     GL_Cull(CT_TWO_SIDED);
 
-    for (polygonIndex = 0; polygonIndex < rendererDebugState.polygonCount; ++polygonIndex) {
-        const renderer_debug_polygon_t *polygon = &rendererDebugState.polygons[polygonIndex];
+    for (polygonIndex = 0;
+         polygonIndex < rendererDebugState.polygonCount;
+         ++polygonIndex) {
+        const renderer_debug_polygon_t *polygon =
+            &rendererDebugState.polygons[polygonIndex];
 
         GL_State(R_DEBUG_POLYGON_FILL_STATE);
         qglColor4fv(polygon->color);
-        qglDrawArrays(GL_POLYGON, polygon->firstVertex, polygon->vertexCount);
+        qglDrawArrays(GL_POLYGON, polygon->firstVertex,
+                      polygon->vertexCount);
 
         GL_State(R_DEBUG_POLYGON_WIREFRAME_STATE);
         qglDepthRange(0.0, 0.0);
         qglColor3fv(polygon->color);
-        qglDrawArrays(GL_POLYGON, polygon->firstVertex, polygon->vertexCount);
+        qglDrawArrays(GL_POLYGON, polygon->firstVertex,
+                      polygon->vertexCount);
         qglDepthRange(0.0, 1.0);
     }
 
@@ -330,7 +393,8 @@ void RB_DrawDebugPolys(void)
  * Name, argument roles, and source-level (lines, lineCount) order: exact
  * same-module Mac symbol RB_DrawDebugLines. The Windows optimizer inlines the
  * RB_gl* calls; the Mac call graph confirms their original boundaries. */
-void RB_DrawDebugLines(const renderer_debug_line_t *lines, int32_t lineCount)
+void RB_DrawDebugLines(const renderer_debug_line_t *lines,
+                       int32_t lineCount)
 {
     int32_t lineIndex;
 
@@ -347,7 +411,10 @@ void RB_DrawDebugLines(const renderer_debug_line_t *lines, int32_t lineCount)
     for (lineIndex = 0; lineIndex < lineCount; ++lineIndex) {
         const renderer_debug_line_t *line = &lines[lineIndex];
 
-        GL_State(GLS_DEPTHMASK_TRUE | (line->depthTest == qfalse ? GLS_DEPTHTEST_DISABLE : 0));
+        GL_State(GLS_DEPTHMASK_TRUE |
+                 (line->depthTest == qfalse
+                      ? GLS_DEPTHTEST_DISABLE
+                      : 0));
         RB_glBegin(GL_LINES);
         RB_glColor4fv(line->color);
         RB_glVertex3fv(line->start);
@@ -365,7 +432,8 @@ void RB_DrawDebugLines(const renderer_debug_line_t *lines, int32_t lineCount)
  * RB_SelectStorage, RB_BeginSurface, RB_AddQuadStampExt, and RB_EndSurface.
  * Windows machine code remains authoritative for the glyph geometry, color
  * conversion, shader changes, and dedicated backEnd.debugEntity selection. */
-void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringCount)
+void RB_DrawDebugStrings(const renderer_debug_string_t *strings,
+                         int32_t stringCount)
 {
     enum {
         R_DEBUG_FONT_POINT_SIZE = 16,
@@ -385,7 +453,8 @@ void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringC
         if (rendererDebugState.font == NULL)
             Sys_OutOfMemory();
         memset(rendererDebugState.font, 0, sizeof(*rendererDebugState.font));
-        RE_RegisterFont("fonts/normalFont", R_DEBUG_FONT_POINT_SIZE, rendererDebugState.font, R_DEBUG_FONT_LOAD_MODE);
+        RE_RegisterFont("fonts/normalFont", R_DEBUG_FONT_POINT_SIZE,
+                        rendererDebugState.font, R_DEBUG_FONT_LOAD_MODE);
     }
 
     qglLoadMatrixf(tr.viewParms.world.modelMatrix);
@@ -396,7 +465,8 @@ void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringC
 
     for (stringIndex = 0; stringIndex < stringCount; ++stringIndex) {
         const renderer_debug_string_t *debugString = &strings[stringIndex];
-        const unsigned char *text = (const unsigned char *)debugString->text;
+        const unsigned char *text =
+            (const unsigned char *)debugString->text;
         uint8_t color[4];
         vec3_t stringOrigin;
         vec3_t right;
@@ -412,7 +482,8 @@ void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringC
                 component = 0.0f;
             else if (component > 1.0f)
                 component = 1.0f;
-            color[colorIndex] = (uint8_t)(int32_t)(component * 255.0f);
+            color[colorIndex] =
+                (uint8_t)(int32_t)(component * 255.0f);
         }
 
         halfScale = debugString->scale * 0.5f;
@@ -432,7 +503,8 @@ void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringC
         diagonalOffset[2] = (up[2] + right[2]) * -2.0f;
 
         while (*text != '\0') {
-            glyphInfo_t *glyph = &rendererDebugState.font->glyphs[*text];
+            glyphInfo_t *glyph =
+                &rendererDebugState.font->glyphs[*text];
             vec3_t widthOffset;
             vec3_t heightOffset;
             vec3_t glyphOrigin;
@@ -442,7 +514,9 @@ void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringC
                 currentShaderHandle = glyph->glyph;
                 backEnd.currentEntity = &backEnd.debugEntity;
                 RB_SelectStorage(tr.defaultStorageMode);
-                RB_BeginSurface(tr.sortedShaders[currentShaderHandle], R_DEBUG_STRING_VERTEX_COMPONENT_COUNT);
+                RB_BeginSurface(
+                    tr.sortedShaders[currentShaderHandle],
+                    R_DEBUG_STRING_VERTEX_COMPONENT_COUNT);
             }
 
             widthOffset[0] = (float)glyph->imageWidth * right[0];
@@ -452,21 +526,30 @@ void RB_DrawDebugStrings(const renderer_debug_string_t *strings, int32_t stringC
             heightOffset[1] = (float)glyph->imageHeight * up[1];
             heightOffset[2] = (float)glyph->imageHeight * up[2];
 
-            glyphOrigin[0] = stringOrigin[0] - (float)glyph->imageWidth * right[0];
-            glyphOrigin[1] = stringOrigin[1] - (float)glyph->imageWidth * right[1];
-            glyphOrigin[2] = stringOrigin[2] - (float)glyph->imageWidth * right[2];
-            glyphOrigin[0] += (glyph->top + glyph->top - (float)glyph->imageHeight) * up[0];
-            glyphOrigin[1] += (glyph->top + glyph->top - (float)glyph->imageHeight) * up[1];
-            glyphOrigin[2] += (glyph->top + glyph->top - (float)glyph->imageHeight) * up[2];
+            glyphOrigin[0] =
+                stringOrigin[0] - (float)glyph->imageWidth * right[0];
+            glyphOrigin[1] =
+                stringOrigin[1] - (float)glyph->imageWidth * right[1];
+            glyphOrigin[2] =
+                stringOrigin[2] - (float)glyph->imageWidth * right[2];
+            glyphOrigin[0] +=
+                (glyph->top + glyph->top - (float)glyph->imageHeight) * up[0];
+            glyphOrigin[1] +=
+                (glyph->top + glyph->top - (float)glyph->imageHeight) * up[1];
+            glyphOrigin[2] +=
+                (glyph->top + glyph->top - (float)glyph->imageHeight) * up[2];
             glyphOrigin[0] += diagonalOffset[0];
             glyphOrigin[1] += diagonalOffset[1];
             glyphOrigin[2] += diagonalOffset[2];
 
-            RB_AddQuadStampExt(glyphOrigin, widthOffset, heightOffset, shadowColor, glyph->s, glyph->t, glyph->s2, glyph->t2);
+            RB_AddQuadStampExt(glyphOrigin, widthOffset, heightOffset,
+                               shadowColor,
+                               glyph->s, glyph->t, glyph->s2, glyph->t2);
             glyphOrigin[0] -= diagonalOffset[0];
             glyphOrigin[1] -= diagonalOffset[1];
             glyphOrigin[2] -= diagonalOffset[2];
-            RB_AddQuadStampExt(glyphOrigin, widthOffset, heightOffset, color, glyph->s, glyph->t, glyph->s2, glyph->t2);
+            RB_AddQuadStampExt(glyphOrigin, widthOffset, heightOffset, color,
+                               glyph->s, glyph->t, glyph->s2, glyph->t2);
 
             advance = glyph->xSkip * -2.0f;
             stringOrigin[0] += right[0] * advance;
@@ -488,11 +571,17 @@ void RB_DrawDebug(void)
 {
     RB_AddPlumeStrings();
     RB_DrawDebugPolys();
-    RB_DrawDebugLines(rendererDebugState.lines, rendererDebugState.lineCount);
-    RB_DrawDebugLines((const renderer_debug_line_t *)rendererDebugState.locatedLines, rendererDebugState.locatedLineCount);
+    RB_DrawDebugLines(rendererDebugState.lines,
+                      rendererDebugState.lineCount);
+    RB_DrawDebugLines(
+        (const renderer_debug_line_t *)rendererDebugState.locatedLines,
+        rendererDebugState.locatedLineCount);
     rendererDebugState.lineCount = 0;
-    RB_DrawDebugStrings(rendererDebugState.strings, rendererDebugState.stringCount);
-    RB_DrawDebugStrings((const renderer_debug_string_t *)rendererDebugState.locatedStrings, rendererDebugState.locatedStringCount);
+    RB_DrawDebugStrings(rendererDebugState.strings,
+                        rendererDebugState.stringCount);
+    RB_DrawDebugStrings(
+        (const renderer_debug_string_t *)rendererDebugState.locatedStrings,
+        rendererDebugState.locatedStringCount);
     rendererDebugState.stringCount = 0;
 }
 
@@ -502,15 +591,19 @@ void RB_DrawDebug(void)
  * corresponding Mac call from R_ShowLightVisCachePoints. The Windows LTCG
  * body receives origin in EBX and color in EDI, then copies the final scale
  * and text arguments into one fixed 128-byte debug record. */
-void R_AddDebugString(const vec3_t origin, const vec4_t color, float scale, const char *text)
+void R_AddDebugString(const vec3_t origin, const vec4_t color,
+                      float scale, const char *text)
 {
     renderer_debug_string_t *debugString;
 
-    if (rendererDebugState.stringCount + 1 > rendererDebugState.stringCapacity)
+    if (rendererDebugState.stringCount + 1 >
+        rendererDebugState.stringCapacity)
         return;
 
     if (rendererDebugState.strings == NULL) {
-        const size_t allocationSize = (size_t)rendererDebugState.stringCapacity * sizeof(*rendererDebugState.strings);
+        const size_t allocationSize =
+            (size_t)rendererDebugState.stringCapacity *
+            sizeof(*rendererDebugState.strings);
 
         rendererDebugState.strings = malloc(allocationSize);
         if (rendererDebugState.strings == NULL)
@@ -532,7 +625,8 @@ void R_AddDebugString(const vec3_t origin, const vec4_t color, float scale, cons
  * Name and three-argument interface: same-module Mac symbol
  * R_AddScaledDebugString. The scale grows only for points nearly collinear
  * with the view axis and is clamped to one exactly as in the x87 path. */
-void R_AddScaledDebugString(const vec3_t origin, const vec4_t color, const char *text)
+void R_AddScaledDebugString(const vec3_t origin, const vec4_t color,
+                            const char *text)
 {
     vec3_t viewDirection;
     long double distance;
@@ -545,10 +639,16 @@ void R_AddScaledDebugString(const vec3_t origin, const vec4_t color, const char 
     distance = (long double)VectorNormalize(viewDirection);
     /* The x87 body accumulates Z, then Y, then X before subtracting the
      * collinearity bias. Preserve that exact association across hosts. */
-    viewDot = ((long double)viewDirection[2] * (long double)tr.viewParms.orientation.axis[0][2] +
-               (long double)viewDirection[1] * (long double)tr.viewParms.orientation.axis[0][1]) +
-              (long double)viewDirection[0] * (long double)tr.viewParms.orientation.axis[0][0];
-    scale = (float)(distance * (viewDot - (long double)R_SCALED_DEBUG_VIEW_DOT_BIAS));
+    viewDot =
+        ((long double)viewDirection[2] *
+             (long double)tr.viewParms.orientation.axis[0][2] +
+         (long double)viewDirection[1] *
+             (long double)tr.viewParms.orientation.axis[0][1]) +
+        (long double)viewDirection[0] *
+            (long double)tr.viewParms.orientation.axis[0][0];
+    scale = (float)(
+        distance *
+        (viewDot - (long double)R_SCALED_DEBUG_VIEW_DOT_BIAS));
     if (scale < 1.0f)
         scale = 1.0f;
 

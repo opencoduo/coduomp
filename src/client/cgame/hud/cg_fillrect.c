@@ -55,12 +55,22 @@ void CG_FillRect(float x, float y, float width, float height, const float *color
     qhandle_t shader = cgs_media_whiteShader;
     scaledHeightRaw *= (long double)height;
     float scaledHeight = (float)scaledHeightRaw;
-    float scaledWidth = (float)((long double)cgs_screenXScale * (long double)width);
-    float scaledY = (float)((long double)cgs_screenYScale * (long double)y);
-    float scaledX = (float)((long double)cgs_screenXScale * (long double)x);
+    float scaledWidth = (float)(
+        (long double)cgs_screenXScale * (long double)width);
+    float scaledY = (float)(
+        (long double)cgs_screenYScale * (long double)y);
+    float scaledX = (float)(
+        (long double)cgs_screenXScale * (long double)x);
 
-    trap_R_DrawStretchPic(CG_FloatBits(scaledX), CG_FloatBits(scaledY), CG_FloatBits(scaledWidth), CG_FloatBits(scaledHeight),
-                          CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(1.0f), shader);
+    trap_R_DrawStretchPic(CG_FloatBits(scaledX),
+                          CG_FloatBits(scaledY),
+                          CG_FloatBits(scaledWidth),
+                          CG_FloatBits(scaledHeight),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(1.0f),
+                          shader);
 
     trap_R_SetColor(NULL);
 }

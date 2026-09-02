@@ -19,7 +19,8 @@
 #include "qcommon/q_string.h"
 
 typedef struct hudelem_field_s hudelem_field_t;
-typedef void (*hudelem_field_callback_t)(game_hudElem_t *elem, int fieldIndex);
+typedef void (*hudelem_field_callback_t)(game_hudElem_t *elem,
+                                          int fieldIndex);
 typedef void (*hudelem_method_callback_t)(int elemIndex);
 
 struct hudelem_field_s {
@@ -68,15 +69,23 @@ game_hudElem_t g_hudelems[HUDELEM_COUNT];
 static const hudelem_field_t hudelemFields[] = {
     {"x", offsetof(game_hudElem_t, client.x), SCRIPT_SPAWN_FIELD_INT, 0, 0},
     {"y", offsetof(game_hudElem_t, client.y), SCRIPT_SPAWN_FIELD_INT, 0, 0},
-    {"fontscale", offsetof(game_hudElem_t, client.fontScale), SCRIPT_SPAWN_FIELD_FLOAT, HudElem_SetFontScale, 0},
-    {"font", offsetof(game_hudElem_t, client.font), SCRIPT_SPAWN_FIELD_INT, HudElem_SetFont, HudElem_GetFont},
-    {"alignx", offsetof(game_hudElem_t, client.alignX), SCRIPT_SPAWN_FIELD_INT, HudElem_SetAlignX, HudElem_GetAlignX},
-    {"aligny", offsetof(game_hudElem_t, client.alignY), SCRIPT_SPAWN_FIELD_INT, HudElem_SetAlignY, HudElem_GetAlignY},
-    {"color", offsetof(game_hudElem_t, client.color), SCRIPT_SPAWN_FIELD_INT, HudElem_SetColor, HudElem_GetColor},
-    {"alpha", offsetof(game_hudElem_t, client.color), SCRIPT_SPAWN_FIELD_INT, HudElem_SetAlpha, HudElem_GetAlpha},
-    {"label", offsetof(game_hudElem_t, client.label), SCRIPT_SPAWN_FIELD_INT, HudElem_SetLocalizedString, 0},
+    {"fontscale", offsetof(game_hudElem_t, client.fontScale), SCRIPT_SPAWN_FIELD_FLOAT,
+     HudElem_SetFontScale, 0},
+    {"font", offsetof(game_hudElem_t, client.font), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetFont, HudElem_GetFont},
+    {"alignx", offsetof(game_hudElem_t, client.alignX), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetAlignX, HudElem_GetAlignX},
+    {"aligny", offsetof(game_hudElem_t, client.alignY), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetAlignY, HudElem_GetAlignY},
+    {"color", offsetof(game_hudElem_t, client.color), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetColor, HudElem_GetColor},
+    {"alpha", offsetof(game_hudElem_t, client.color), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetAlpha, HudElem_GetAlpha},
+    {"label", offsetof(game_hudElem_t, client.label), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetLocalizedString, 0},
     {"sort", offsetof(game_hudElem_t, client.sortKey), SCRIPT_SPAWN_FIELD_FLOAT, 0, 0},
-    {"archived", offsetof(game_hudElem_t, archived), SCRIPT_SPAWN_FIELD_INT, HudElem_SetBoolean, 0},
+    {"archived", offsetof(game_hudElem_t, archived), SCRIPT_SPAWN_FIELD_INT,
+     HudElem_SetBoolean, 0},
 };
 
 static const char *const hudelemFontNames[] = {
@@ -98,7 +107,8 @@ static const char *const hudelemVerticalAlignNames[] = {
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for HudElem_UpdateClient slot-count copy logic. */
-static void game_compat_hud_elem_copy_to_client_slot(hudElem_t *destBase, int *slotCount, const game_hudElem_t *elem)
+static void game_compat_hud_elem_copy_to_client_slot(
+    hudElem_t *destBase, int *slotCount, const game_hudElem_t *elem)
 {
     int slot = *slotCount;
 
@@ -122,9 +132,11 @@ static uint8_t game_compat_hud_elem_color_byte_from_float(float value)
     /* Stock helper 0x53335..0x53372 adds 0.5f and truncates the still-live
      * x87 sum. The helper argument itself is already rounded to float. */
 #if EMULATE_X87
-    return (uint8_t)x87f_store_i32_trunc(x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
+    return (uint8_t)x87f_store_i32_trunc(
+        x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
 #else
-    return (uint8_t)game_compat_int32_from_long_double_trunc((long double)value + 0.5L);
+    return (uint8_t)game_compat_int32_from_long_double_trunc(
+        (long double)value + 0.5L);
 #endif
 }
 
@@ -133,7 +145,8 @@ static int game_compat_hud_elem_ceil_milliseconds(float value)
 {
     /* 0x53373: the original static rounds via the CRT ceil() on the
      * widened double, then truncates; no float32/int round-trip. */
-    return game_compat_int32_from_long_double_trunc((long double)ceil((double)value));
+    return game_compat_int32_from_long_double_trunc(
+        (long double)ceil((double)value));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: factored round helper used by transition methods. */
@@ -142,14 +155,17 @@ static int game_compat_hud_elem_round_milliseconds(float value)
     /* Same stock helper at 0x53335: no binary32 spill between faddp and
      * truncating fistp. */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
+    return x87f_store_i32_trunc(
+        x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
 #else
-    return game_compat_int32_from_long_double_trunc((long double)value + 0.5L);
+    return game_compat_int32_from_long_double_trunc(
+        (long double)value + 0.5L);
 #endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: shared fade/scale/move time validation. */
-static void game_compat_hud_elem_validate_transition_time(float value, const char *tooLow, const char *tooHigh)
+static void game_compat_hud_elem_validate_transition_time(float value, const char *tooLow,
+                                           const char *tooHigh)
 {
     if (value <= 0.0f) {
         Scr_ParamError(0, va(tooLow, (double)value));
@@ -229,7 +245,8 @@ void HudElem_ClientDisconnect(const gentity_t *ent)
     for (int index = 0; index < HUDELEM_COUNT; index++) {
         game_hudElem_t *elem = &g_hudelems[index];
 
-        if (elem->client.type != HE_TYPE_NONE && elem->clientNum == ent->s.number) {
+        if (elem->client.type != HE_TYPE_NONE &&
+            elem->clientNum == ent->s.number) {
             HudElem_Free(elem);
         }
     }
@@ -291,7 +308,9 @@ void GScr_NewTeamHudElem(void)
     } else if (teamName == scr_const_spectator) {
         team = TEAM_SPECTATOR;
     } else {
-        Scr_ParamError(0, va("team \"%s\" should be \"allies\", \"axis\", or \"spectator\"", Scr_GetString(0)));
+        Scr_ParamError(0,
+                       va("team \"%s\" should be \"allies\", \"axis\", or \"spectator\"",
+                          Scr_GetString(0)));
         team = 0;
     }
 
@@ -332,7 +351,8 @@ void Scr_SetHudElemField(int elemIndex, int fieldIndex)
 /* VERIFIED_DECOMPILER(0x52456, 62456_Scr_FreeHudElemConstStrings.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void Scr_FreeHudElemConstStrings(game_hudElem_t *elem)
 {
-    for (uint32_t index = 0; index < sizeof(hudelemFields) / sizeof(hudelemFields[0]); index++) {
+    for (uint32_t index = 0; index < sizeof(hudelemFields) / sizeof(hudelemFields[0]);
+         index++) {
         const hudelem_field_t *field = &hudelemFields[index];
 
         if (field->type == 5) {
@@ -344,7 +364,8 @@ void Scr_FreeHudElemConstStrings(game_hudElem_t *elem)
 /* VERIFIED_DECOMPILER(0x52659, 62659_GScr_AddFieldsForHudElems.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void GScr_AddFieldsForHudElems(void)
 {
-    for (uint32_t index = 0; index < sizeof(hudelemFields) / sizeof(hudelemFields[0]); index++) {
+    for (uint32_t index = 0; index < sizeof(hudelemFields) / sizeof(hudelemFields[0]);
+         index++) {
         const hudelem_field_t *field = &hudelemFields[index];
 
         switch (field->type) {
@@ -356,7 +377,9 @@ void GScr_AddFieldsForHudElems(void)
         case 7:
         case 10:
         case 11:
-            Scr_AddClassField(g_scr_data.classMap[SCRIPT_OBJECT_HUDELEM].classnum, field->name, (uint16_t)index);
+            Scr_AddClassField(
+                g_scr_data.classMap[SCRIPT_OBJECT_HUDELEM].classnum,
+                field->name, (uint16_t)index);
             break;
         default:
             break;
@@ -365,7 +388,8 @@ void GScr_AddFieldsForHudElems(void)
 }
 
 /* VERIFIED_DECOMPILER(0x51c38, 61c38_FUN_00061c38.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void HudElem_SetEnumString(game_hudElem_t *elem, const hudelem_field_t *field, const char *const *values, int valueCount)
+void HudElem_SetEnumString(game_hudElem_t *elem, const hudelem_field_t *field,
+                           const char *const *values, int valueCount)
 {
     const char *value = Scr_GetString(0);
 
@@ -393,7 +417,8 @@ void HudElem_SetEnumString(game_hudElem_t *elem, const hudelem_field_t *field, c
 }
 
 /* VERIFIED_DECOMPILER(0x51d43, 61d43_FUN_00061d43.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void HudElem_GetEnumString(game_hudElem_t *elem, const hudelem_field_t *field, const char *const *values)
+void HudElem_GetEnumString(game_hudElem_t *elem, const hudelem_field_t *field,
+                           const char *const *values)
 {
     Scr_AddString(values[*(int32_t *)(void *)&((uint8_t *)elem)[field->offset]]);
 }
@@ -404,7 +429,8 @@ void HudElem_SetLocalizedString(game_hudElem_t *elem, int fieldIndex)
     const char *value = Scr_GetIString(0);
     int localizedStringIndex = G_LocalizedStringIndex(value);
 
-    *(int32_t *)(void *)&((uint8_t *)elem)[hudelemFields[fieldIndex].offset] = localizedStringIndex;
+    *(int32_t *)(void *)&((uint8_t *)elem)[hudelemFields[fieldIndex].offset] =
+        localizedStringIndex;
 }
 
 /* VERIFIED_DECOMPILER(0x51ddc, 61ddc_FUN_00061ddc.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
@@ -412,7 +438,8 @@ void HudElem_SetBoolean(game_hudElem_t *elem, int fieldIndex)
 {
     qboolean archived = Scr_GetBool(0);
 
-    *(qboolean *)(void *)&((uint8_t *)elem)[hudelemFields[fieldIndex].offset] = archived;
+    *(qboolean *)(void *)&((uint8_t *)elem)[hudelemFields[fieldIndex].offset] =
+        archived;
 }
 
 /* VERIFIED_DECOMPILER(0x526f0, 626f0_script_method_hudelem_settext.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
@@ -438,8 +465,8 @@ void HECmd_SetShader(int elemIndex)
     float bottomTexCoord = 1.0f;
 
     if (paramCount != 1 && paramCount != 3 && paramCount != 5) {
-        Scr_Error("USAGE: <hudelem> setShader(\"shadername\"[, optional_width, "
-                  "optional_height,optional_right_texcoord,optional_bottom_texcoord]);");
+        Scr_Error(
+            "USAGE: <hudelem> setShader(\"shadername\"[, optional_width, optional_height,optional_right_texcoord,optional_bottom_texcoord]);");
     }
 
     materialIndex = G_ShaderIndex(Scr_GetString(0));
@@ -483,16 +510,21 @@ static void HECmd_SetTimer_Internal(int elemIndex, int elemType, const char *met
         Scr_Error(va("USAGE: <hudelem> %s(time_in_seconds);\n", methodName));
     }
 
-    targetTime = game_compat_hud_elem_ceil_milliseconds(Scr_GetFloat(0) * HUDELEM_SECONDS_TO_MILLISECONDS);
+    targetTime =
+        game_compat_hud_elem_ceil_milliseconds(Scr_GetFloat(0) *
+                                 HUDELEM_SECONDS_TO_MILLISECONDS);
     if (targetTime < 1 && elemType != HE_TYPE_TIMER_UP) {
-        Scr_ParamError(0, va("time %g should be > 0",
-                             /* 0x5296a: bare fild of targetTime, no float32 rounding. */
-                             (double)(targetTime * HUDELEM_MILLISECONDS_TO_SECONDS)));
+        Scr_ParamError(
+            0,
+            va("time %g should be > 0",
+               /* 0x5296a: bare fild of targetTime, no float32 rounding. */
+               (double)(targetTime * HUDELEM_MILLISECONDS_TO_SECONDS)));
     }
 
     HudElem_ClearTypeSettings(elem);
     elem->client.type = (hudElemType_t)elemType;
-    elem->client.timerValue = coduo_int32_from_bits((uint32_t)targetTime + (uint32_t)level.time);
+    elem->client.timerValue = coduo_int32_from_bits(
+        (uint32_t)targetTime + (uint32_t)level.time);
 }
 
 /* VERIFIED_DECOMPILER(0x529c5, 629c5_FUN_000629c5.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
@@ -507,21 +539,31 @@ static void HECmd_SetClock_Internal(int elemIndex, int elemType, const char *met
     int height;
 
     if (paramCount != 3 && paramCount != 5) {
-        Scr_Error(va("USAGE: <hudelem> %s(time_in_seconds, total_clock_time_in_seconds, shadername[, width, height]);\n", methodName));
+        Scr_Error(va(
+            "USAGE: <hudelem> %s(time_in_seconds, total_clock_time_in_seconds, shadername[, width, height]);\n",
+            methodName));
     }
 
-    targetTime = game_compat_hud_elem_ceil_milliseconds(Scr_GetFloat(0) * HUDELEM_SECONDS_TO_MILLISECONDS);
+    targetTime =
+        game_compat_hud_elem_ceil_milliseconds(Scr_GetFloat(0) *
+                                 HUDELEM_SECONDS_TO_MILLISECONDS);
     if (targetTime < 1 && elemType != HE_TYPE_CLOCK_UP) {
-        Scr_ParamError(0, va("time %g should be > 0",
-                             /* 0x52a4f: bare fild of targetTime, no float32 rounding. */
-                             (double)(targetTime * HUDELEM_MILLISECONDS_TO_SECONDS)));
+        Scr_ParamError(
+            0,
+            va("time %g should be > 0",
+               /* 0x52a4f: bare fild of targetTime, no float32 rounding. */
+               (double)(targetTime * HUDELEM_MILLISECONDS_TO_SECONDS)));
     }
 
-    duration = game_compat_hud_elem_ceil_milliseconds(Scr_GetFloat(1) * HUDELEM_SECONDS_TO_MILLISECONDS);
+    duration =
+        game_compat_hud_elem_ceil_milliseconds(Scr_GetFloat(1) *
+                                 HUDELEM_SECONDS_TO_MILLISECONDS);
     if (duration < 1) {
-        Scr_ParamError(1, va("duration %g should be > 0",
-                             /* 0x52aa1: bare fild of duration, no float32 rounding. */
-                             (double)(duration * HUDELEM_MILLISECONDS_TO_SECONDS)));
+        Scr_ParamError(
+            1,
+            va("duration %g should be > 0",
+               /* 0x52aa1: bare fild of duration, no float32 rounding. */
+               (double)(duration * HUDELEM_MILLISECONDS_TO_SECONDS)));
     }
 
     materialIndex = G_ShaderIndex(Scr_GetString(2));
@@ -542,7 +584,8 @@ static void HECmd_SetClock_Internal(int elemIndex, int elemType, const char *met
 
     HudElem_ClearTypeSettings(elem);
     elem->client.type = (hudElemType_t)elemType;
-    elem->client.timerValue = coduo_int32_from_bits((uint32_t)targetTime + (uint32_t)level.time);
+    elem->client.timerValue = coduo_int32_from_bits(
+        (uint32_t)targetTime + (uint32_t)level.time);
     elem->client.rotationPeriodMs = duration;
     elem->client.materialIndex = materialIndex;
     elem->client.width = width;
@@ -564,13 +607,15 @@ void HECmd_SetTimerUp(int elemIndex)
 /* VERIFIED_DECOMPILER(0x52c2b, 62c2b_script_method_hudelem_settenthstimer.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void HECmd_SetTenthsTimer(int elemIndex)
 {
-    HECmd_SetTimer_Internal(elemIndex, HE_TYPE_TENTHS_TIMER, "setTenthsTimer");
+    HECmd_SetTimer_Internal(elemIndex, HE_TYPE_TENTHS_TIMER,
+                         "setTenthsTimer");
 }
 
 /* VERIFIED_DECOMPILER(0x52c60, 62c60_script_method_hudelem_settenthstimerup.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void HECmd_SetTenthsTimerUp(int elemIndex)
 {
-    HECmd_SetTimer_Internal(elemIndex, HE_TYPE_TENTHS_TIMER_UP, "setTenthsTimerUp");
+    HECmd_SetTimer_Internal(elemIndex, HE_TYPE_TENTHS_TIMER_UP,
+                         "setTenthsTimerUp");
 }
 
 /* VERIFIED_DECOMPILER(0x52c95, 62c95_script_method_hudelem_setclock.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
@@ -602,9 +647,12 @@ void HECmd_FadeOverTime(int elemIndex)
     game_hudElem_t *elem = &g_hudelems[elemIndex];
     float fadeTimeSeconds = Scr_GetFloat(0);
 
-    game_compat_hud_elem_validate_transition_time(fadeTimeSeconds, "fade time %g <= 0", "fade time %g > 60");
+    game_compat_hud_elem_validate_transition_time(fadeTimeSeconds, "fade time %g <= 0",
+                                   "fade time %g > 60");
     elem->client.fadeStartTime = level.time;
-    elem->client.fadeTime = game_compat_hud_elem_round_milliseconds(fadeTimeSeconds * HUDELEM_SECONDS_TO_MILLISECONDS);
+    elem->client.fadeTime =
+        game_compat_hud_elem_round_milliseconds(fadeTimeSeconds *
+                                  HUDELEM_SECONDS_TO_MILLISECONDS);
     elem->client.fromColor = elem->client.color;
 }
 
@@ -622,12 +670,15 @@ void HECmd_ScaleOverTime(int elemIndex)
     }
 
     scaleTimeSeconds = Scr_GetFloat(0);
-    game_compat_hud_elem_validate_transition_time(scaleTimeSeconds, "scale time %g <= 0", "scale time %g > 60");
+    game_compat_hud_elem_validate_transition_time(scaleTimeSeconds, "scale time %g <= 0",
+                                   "scale time %g > 60");
     width = Scr_GetInt(1);
     height = Scr_GetInt(2);
 
     elem->client.scaleStartTime = level.time;
-    elem->client.scaleTime = game_compat_hud_elem_round_milliseconds(scaleTimeSeconds * HUDELEM_SECONDS_TO_MILLISECONDS);
+    elem->client.scaleTime =
+        game_compat_hud_elem_round_milliseconds(scaleTimeSeconds *
+                                  HUDELEM_SECONDS_TO_MILLISECONDS);
     elem->client.scaleFromWidth = elem->client.width;
     elem->client.scaleFromHeight = elem->client.height;
     elem->client.width = width;
@@ -640,9 +691,12 @@ void HECmd_MoveOverTime(int elemIndex)
     game_hudElem_t *elem = &g_hudelems[elemIndex];
     float moveTimeSeconds = Scr_GetFloat(0);
 
-    game_compat_hud_elem_validate_transition_time(moveTimeSeconds, "move time %g <= 0", "move time %g > 60");
+    game_compat_hud_elem_validate_transition_time(moveTimeSeconds, "move time %g <= 0",
+                                   "move time %g > 60");
     elem->client.moveStartTime = level.time;
-    elem->client.moveTime = game_compat_hud_elem_round_milliseconds(moveTimeSeconds * HUDELEM_SECONDS_TO_MILLISECONDS);
+    elem->client.moveTime =
+        game_compat_hud_elem_round_milliseconds(moveTimeSeconds *
+                                  HUDELEM_SECONDS_TO_MILLISECONDS);
     elem->client.moveFromX = elem->client.x;
     elem->client.moveFromY = elem->client.y;
 }
@@ -685,7 +739,8 @@ static const hudelem_method_t hudelemMethods[] = {
 /* VERIFIED_DECOMPILER(0x53138, 63138_HudElem_GetMethod.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 hudelem_method_callback_t HudElem_GetMethod(const char **name)
 {
-    for (uint32_t index = 0; index < sizeof(hudelemMethods) / sizeof(hudelemMethods[0]); index++) {
+    for (uint32_t index = 0; index < sizeof(hudelemMethods) / sizeof(hudelemMethods[0]);
+         index++) {
         if (strcmp(*name, hudelemMethods[index].name) == 0) {
             *name = hudelemMethods[index].name;
             return hudelemMethods[index].callback;
@@ -750,7 +805,8 @@ void HudElem_SetColor(game_hudElem_t *elem, int fieldIndex)
 /* VERIFIED_DECOMPILER(0x51fad, 61fad_FUN_00061fad.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void HudElem_GetColor(game_hudElem_t *elem, int fieldIndex)
 {
-    const uint8_t *packedColor = (const uint8_t *)(const void *)&elem->client.color;
+    const uint8_t *packedColor =
+        (const uint8_t *)(const void *)&elem->client.color;
     vec3_t color;
 
     (void)fieldIndex;
@@ -776,7 +832,8 @@ void HudElem_SetAlpha(game_hudElem_t *elem, int fieldIndex)
 /* VERIFIED_DECOMPILER(0x520b6, 620b6_FUN_000620b6.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void HudElem_GetAlpha(game_hudElem_t *elem, int fieldIndex)
 {
-    const uint8_t *packedColor = (const uint8_t *)(const void *)&elem->client.color;
+    const uint8_t *packedColor =
+        (const uint8_t *)(const void *)&elem->client.color;
 
     (void)fieldIndex;
 
@@ -813,7 +870,8 @@ void HudElem_GetFont(game_hudElem_t *elem, int fieldIndex)
 /* VERIFIED_DECOMPILER(0x521f0, 621f0_FUN_000621f0.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */
 void HudElem_SetAlignX(game_hudElem_t *elem, int fieldIndex)
 {
-    HudElem_SetEnumString(elem, &hudelemFields[fieldIndex], hudelemHorizontalAlignNames, 3);
+    HudElem_SetEnumString(elem, &hudelemFields[fieldIndex], hudelemHorizontalAlignNames,
+                          3);
 }
 
 /* VERIFIED_DECOMPILER(0x52242, 62242_FUN_00062242.c, VERIFY-HUDELEM-PACKET-2026-06-17): DATAFLOW_VERIFIED */

@@ -9,7 +9,8 @@
  * command leaves below. */
 static void cgame_compat_open_active_player_menu(const char *menuName)
 {
-    if (cg_snap != 0 && (cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0) {
+    if (cg_snap != 0 &&
+        (cg_snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0) {
         (void)cgame_syscall(CG_UI_IS_MENU_OPEN, (intptr_t)menuName);
     }
 }
@@ -44,14 +45,17 @@ void CG_UpdateFlameTime(void)
 {
     /* FILD signed cg_time; FADD ST0,ST0; floor; _ftol2. The helper preserves
      * the target's signed-64 conversion and low-dword return for every input. */
-    cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor((double)coduo_int32_from_bits(cg_time) * 2.0));
+    cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
+        floor((double)coduo_int32_from_bits(cg_time) * 2.0));
 }
 
 void CG_AddLagometerFrameInfo(void) /* 0x30018a10 */
 {
     cg_lagometerFrameSamples[cg_lagometerFrameCount & (LAG_SAMPLES - 1)] =
-        coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)cg_latestSnapshotServerTime);
-    cg_lagometerFrameCount = coduo_int32_from_bits((uint32_t)cg_lagometerFrameCount + 1u);
+        coduo_int32_from_bits((uint32_t)cg_time -
+                         (uint32_t)cg_latestSnapshotServerTime);
+    cg_lagometerFrameCount =
+        coduo_int32_from_bits((uint32_t)cg_lagometerFrameCount + 1u);
 }
 
 void CG_AdjustFrom640(float *x, float *y) /* 0x3001c4c0 */

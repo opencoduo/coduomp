@@ -32,9 +32,10 @@ void BG_GetMarkDir(const float *dir, const float *normal, float *out)
     vec3_t markDir;
     float normalLength;
 
-    normalLength =
-        (float)CoduoLibm_Sqrt((double)((long double)normal[0] * (long double)normal[0] + (long double)normal[1] * (long double)normal[1] +
-                                       (long double)normal[2] * (long double)normal[2]));
+    normalLength = (float)CoduoLibm_Sqrt((double)(
+        (long double)normal[0] * (long double)normal[0] +
+        (long double)normal[1] * (long double)normal[1] +
+        (long double)normal[2] * (long double)normal[2]));
     if (normalLength < MARK_DIR_NORMAL_MIN_LENGTH) {
         safeNormal[0] = 0.0f;
         safeNormal[1] = 0.0f;
@@ -54,12 +55,19 @@ void BG_GetMarkDir(const float *dir, const float *normal, float *out)
         minDot = MARK_DIR_STEEP_DOT;
     }
 
-    while ((long double)markDir[0] * (long double)safeNormal[0] + (long double)markDir[1] * (long double)safeNormal[1] +
+    while ((long double)markDir[0] * (long double)safeNormal[0] +
+               (long double)markDir[1] * (long double)safeNormal[1] +
                (long double)markDir[2] * (long double)safeNormal[2] <
            (long double)minDot) {
-        markDir[0] = (float)((long double)markDir[0] + (long double)safeNormal[0] * MARK_DIR_NORMAL_BLEND);
-        markDir[1] = (float)((long double)markDir[1] + (long double)safeNormal[1] * MARK_DIR_NORMAL_BLEND);
-        markDir[2] = (float)((long double)markDir[2] + (long double)safeNormal[2] * MARK_DIR_NORMAL_BLEND);
+        markDir[0] = (float)((long double)markDir[0] +
+                             (long double)safeNormal[0] *
+                                 MARK_DIR_NORMAL_BLEND);
+        markDir[1] = (float)((long double)markDir[1] +
+                             (long double)safeNormal[1] *
+                                 MARK_DIR_NORMAL_BLEND);
+        markDir[2] = (float)((long double)markDir[2] +
+                             (long double)safeNormal[2] *
+                                 MARK_DIR_NORMAL_BLEND);
         VectorNormalize(markDir);
     }
 
@@ -76,7 +84,13 @@ void BG_GetMarkDir(const float *dir, const float *normal, float *out)
 const char *BG_GetVehiclePosTag(int vehiclePos)
 {
     const char *vehiclePosTags[7] = {
-        "*unused*", "tag_player", "tag_secondary_player", "tag_passenger", "tag_passenger2", "tag_passenger3", "tag_passenger4",
+        "*unused*",
+        "tag_player",
+        "tag_secondary_player",
+        "tag_passenger",
+        "tag_passenger2",
+        "tag_passenger3",
+        "tag_passenger4",
     };
 
     return vehiclePosTags[vehiclePos];

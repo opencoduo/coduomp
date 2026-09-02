@@ -12,9 +12,7 @@ enum {
 // Exact same-module PPC symbol: UI_LoadMovies.
 void UI_LoadMovies(void)
 {
-    enum {
-        UI_MOVIE_SUFFIX_COMPARE_LIMIT = 99999
-    };
+    enum { UI_MOVIE_SUFFIX_COMPARE_LIMIT = 99999 };
     char list[UI_MOVIE_LIST_BUFFER_SIZE];
     char *filename = list;
     int32_t movieIndex;

@@ -41,15 +41,18 @@ enum {
     R_LEVELSHOT_HEIGHT = 128,
     R_DOWNSAMPLE_BLOCK_WIDTH = 4,
     R_DOWNSAMPLE_BLOCK_HEIGHT = 3,
-    R_DOWNSAMPLE_BLOCK_SAMPLES = R_DOWNSAMPLE_BLOCK_WIDTH * R_DOWNSAMPLE_BLOCK_HEIGHT,
-    R_LEVELSHOT_PIXEL_BYTES = R_LEVELSHOT_WIDTH * R_LEVELSHOT_HEIGHT * TGA_BYTES_PER_PIXEL,
+    R_DOWNSAMPLE_BLOCK_SAMPLES =
+        R_DOWNSAMPLE_BLOCK_WIDTH * R_DOWNSAMPLE_BLOCK_HEIGHT,
+    R_LEVELSHOT_PIXEL_BYTES =
+        R_LEVELSHOT_WIDTH * R_LEVELSHOT_HEIGHT * TGA_BYTES_PER_PIXEL,
     R_LEVELSHOT_FILE_BYTES = TGA_HEADER_SIZE + R_LEVELSHOT_PIXEL_BYTES,
     R_SAVEGAME_SOURCE_WIDTH = 2048,
     R_SAVEGAME_SOURCE_HEIGHT = 1536,
     R_SAVEGAME_WIDTH = 512,
     R_SAVEGAME_HEIGHT = 512,
     R_SAVEGAME_BYTES_PER_PIXEL = 4,
-    R_SAVEGAME_PIXEL_BYTES = R_SAVEGAME_WIDTH * R_SAVEGAME_HEIGHT * R_SAVEGAME_BYTES_PER_PIXEL,
+    R_SAVEGAME_PIXEL_BYTES =
+        R_SAVEGAME_WIDTH * R_SAVEGAME_HEIGHT * R_SAVEGAME_BYTES_PER_PIXEL,
     R_SAVEGAME_JPEG_QUALITY = 90,
     R_CUBEMAP_FIRST_FACE = 1,
     R_CUBEMAP_FACE_COUNT = 6,
@@ -64,19 +67,33 @@ typedef struct renderer_jpeg_destination_s {
 } renderer_jpeg_destination_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_jpeg_destination_t) == 0x4, "renderer_jpeg_destination_t original alignment");
-_Static_assert(offsetof(renderer_jpeg_destination_t, callbacks) == 0x00, "renderer_jpeg_destination_t callbacks offset");
-_Static_assert(sizeof(((renderer_jpeg_destination_t *)0)->callbacks) == 0x14, "renderer_jpeg_destination_t callbacks extent");
-_Static_assert(offsetof(struct jpeg_destination_mgr, next_output_byte) == 0x00, "jpeg destination next_output_byte original offset");
-_Static_assert(offsetof(struct jpeg_destination_mgr, free_in_buffer) == 0x04, "jpeg destination free_in_buffer original offset");
-_Static_assert(offsetof(struct jpeg_destination_mgr, init_destination) == 0x08, "jpeg destination init_destination original offset");
-_Static_assert(offsetof(struct jpeg_destination_mgr, empty_output_buffer) == 0x0c, "jpeg destination empty_output_buffer original offset");
-_Static_assert(offsetof(struct jpeg_destination_mgr, term_destination) == 0x10, "jpeg destination term_destination original offset");
-_Static_assert(offsetof(renderer_jpeg_destination_t, buffer) == 0x14, "renderer_jpeg_destination_t buffer offset");
-_Static_assert(sizeof(((renderer_jpeg_destination_t *)0)->buffer) == 0x04, "renderer_jpeg_destination_t buffer extent");
-_Static_assert(offsetof(renderer_jpeg_destination_t, capacity) == 0x18, "renderer_jpeg_destination_t capacity offset");
-_Static_assert(sizeof(((renderer_jpeg_destination_t *)0)->capacity) == 0x04, "renderer_jpeg_destination_t capacity extent");
-_Static_assert(sizeof(renderer_jpeg_destination_t) == 0x1c, "renderer_jpeg_destination_t original size");
+_Static_assert(_Alignof(renderer_jpeg_destination_t) == 0x4,
+               "renderer_jpeg_destination_t original alignment");
+_Static_assert(offsetof(renderer_jpeg_destination_t, callbacks) == 0x00,
+               "renderer_jpeg_destination_t callbacks offset");
+_Static_assert(sizeof(((renderer_jpeg_destination_t *)0)->callbacks) == 0x14,
+               "renderer_jpeg_destination_t callbacks extent");
+_Static_assert(offsetof(struct jpeg_destination_mgr, next_output_byte) == 0x00,
+               "jpeg destination next_output_byte original offset");
+_Static_assert(offsetof(struct jpeg_destination_mgr, free_in_buffer) == 0x04,
+               "jpeg destination free_in_buffer original offset");
+_Static_assert(offsetof(struct jpeg_destination_mgr, init_destination) == 0x08,
+               "jpeg destination init_destination original offset");
+_Static_assert(offsetof(struct jpeg_destination_mgr, empty_output_buffer) ==
+                   0x0c,
+               "jpeg destination empty_output_buffer original offset");
+_Static_assert(offsetof(struct jpeg_destination_mgr, term_destination) == 0x10,
+               "jpeg destination term_destination original offset");
+_Static_assert(offsetof(renderer_jpeg_destination_t, buffer) == 0x14,
+               "renderer_jpeg_destination_t buffer offset");
+_Static_assert(sizeof(((renderer_jpeg_destination_t *)0)->buffer) == 0x04,
+               "renderer_jpeg_destination_t buffer extent");
+_Static_assert(offsetof(renderer_jpeg_destination_t, capacity) == 0x18,
+               "renderer_jpeg_destination_t capacity offset");
+_Static_assert(sizeof(((renderer_jpeg_destination_t *)0)->capacity) == 0x04,
+               "renderer_jpeg_destination_t capacity extent");
+_Static_assert(sizeof(renderer_jpeg_destination_t) == 0x1c,
+               "renderer_jpeg_destination_t original size");
 #endif
 
 /* Original 0x0388bed0. jpeg_finish_compress invokes JpegTermDestination before
@@ -93,7 +110,8 @@ static qboolean coduompJpegOutputOverflowed;
  * callback table and the standard libjpeg destination contract. */
 static void JpegInitDestination(j_compress_ptr compressor)
 {
-    renderer_jpeg_destination_t *destination = (renderer_jpeg_destination_t *)compressor->dest;
+    renderer_jpeg_destination_t *destination =
+        (renderer_jpeg_destination_t *)compressor->dest;
 
     destination->callbacks.next_output_byte = destination->buffer;
     destination->callbacks.free_in_buffer = destination->capacity;
@@ -103,7 +121,8 @@ static void JpegInitDestination(j_compress_ptr compressor)
  * ledger. */
 static boolean JpegEmptyOutputBuffer(j_compress_ptr compressor)
 {
-    renderer_jpeg_destination_t *destination = (renderer_jpeg_destination_t *)compressor->dest;
+    renderer_jpeg_destination_t *destination =
+        (renderer_jpeg_destination_t *)compressor->dest;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     coduompJpegOutputOverflowed = qtrue;
@@ -116,23 +135,30 @@ static boolean JpegEmptyOutputBuffer(j_compress_ptr compressor)
  * ledger. The byte count is capacity minus libjpeg's unused tail. */
 static void JpegTermDestination(j_compress_ptr compressor)
 {
-    const renderer_jpeg_destination_t *destination = (const renderer_jpeg_destination_t *)compressor->dest;
+    const renderer_jpeg_destination_t *destination =
+        (const renderer_jpeg_destination_t *)compressor->dest;
 
-    rendererJpegOutputSize = (uint32_t)(destination->capacity - destination->callbacks.free_in_buffer);
+    rendererJpegOutputSize =
+        (uint32_t)(destination->capacity -
+                   destination->callbacks.free_in_buffer);
 }
 
 /* Source: CoDUOMP.exe 0x00507440..0x0050747d, recovered from the executable-gap
  * ledger. Name: exact same-module Mac symbol jpegDest. Native libjpeg owns the
  * destination-manager object's layout; only its caller-supplied output buffer
  * and capacity are engine state. */
-static void jpegDest(j_compress_ptr compressor, JOCTET *buffer, size_t capacity)
+static void jpegDest(j_compress_ptr compressor, JOCTET *buffer,
+                     size_t capacity)
 {
     if (compressor->dest == NULL) {
-        compressor->dest = (struct jpeg_destination_mgr *)(*compressor->mem->alloc_small)((j_common_ptr)compressor, JPOOL_PERMANENT,
-                                                                                          sizeof(renderer_jpeg_destination_t));
+        compressor->dest =
+            (struct jpeg_destination_mgr *)(*compressor->mem->alloc_small)(
+                (j_common_ptr)compressor, JPOOL_PERMANENT,
+                sizeof(renderer_jpeg_destination_t));
     }
 
-    renderer_jpeg_destination_t *destination = (renderer_jpeg_destination_t *)compressor->dest;
+    renderer_jpeg_destination_t *destination =
+        (renderer_jpeg_destination_t *)compressor->dest;
     destination->callbacks.init_destination = JpegInitDestination;
     destination->callbacks.empty_output_buffer = JpegEmptyOutputBuffer;
     destination->callbacks.term_destination = JpegTermDestination;
@@ -148,12 +174,15 @@ static void jpegDest(j_compress_ptr compressor, JOCTET *buffer, size_t capacity)
  * exact same-module Mac R_ScreenshotFilename symbol and its caller. */
 void R_ScreenshotFilename(int32_t screenshotNumber, char *fileName)
 {
-    if (screenshotNumber < 0 || screenshotNumber > R_MAX_SCREENSHOT_NUMBER) {
-        Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE, "screenshots/shot9999.tga");
+    if (screenshotNumber < 0 ||
+        screenshotNumber > R_MAX_SCREENSHOT_NUMBER) {
+        Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE,
+                    "screenshots/shot9999.tga");
         return;
     }
 
-    Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE, "screenshots/shot%04i.tga", screenshotNumber);
+    Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE,
+                "screenshots/shot%04i.tga", screenshotNumber);
 }
 
 /* Source: CoDUOMP.exe 0x004c1a10..0x004c1a4a.
@@ -162,12 +191,15 @@ void R_ScreenshotFilename(int32_t screenshotNumber, char *fileName)
  * two embedded path strings and exact Mac R_ScreenshotFilenameJPEG symbol. */
 void R_ScreenshotFilenameJPEG(int32_t screenshotNumber, char *fileName)
 {
-    if (screenshotNumber < 0 || screenshotNumber > R_MAX_SCREENSHOT_NUMBER) {
-        Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE, "screenshots/shot9999.jpg");
+    if (screenshotNumber < 0 ||
+        screenshotNumber > R_MAX_SCREENSHOT_NUMBER) {
+        Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE,
+                    "screenshots/shot9999.jpg");
         return;
     }
 
-    Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE, "screenshots/shot%04i.jpg", screenshotNumber);
+    Com_sprintf(fileName, R_SCREENSHOT_PATH_SIZE,
+                "screenshots/shot%04i.jpg", screenshotNumber);
 }
 
 /* Source: CoDUOMP.exe 0x004c2d60..0x004c2f53.
@@ -186,14 +218,16 @@ void R_ScreenShot_f(void)
         return;
     }
 
-    if (strcmp(ri.Cmd_Argv(1), "savegame") == 0 && ri.Cmd_Argc() == 3 && ri.Cmd_Argv(2)[0] != '\0') {
+    if (strcmp(ri.Cmd_Argv(1), "savegame") == 0 &&
+        ri.Cmd_Argc() == 3 && ri.Cmd_Argv(2)[0] != '\0') {
         R_SaveGameShot(ri.Cmd_Argv(2));
         return;
     }
 
     silent = strcmp(ri.Cmd_Argv(1), "silent") == 0;
     if (ri.Cmd_Argc() == 2 && silent == qfalse) {
-        Com_sprintf(fileName, sizeof(fileName), "screenshots/%s.tga", ri.Cmd_Argv(1));
+        Com_sprintf(fileName, sizeof(fileName),
+                    "screenshots/%s.tga", ri.Cmd_Argv(1));
     } else {
         if (lastNumber == -1)
             lastNumber = 0;
@@ -209,7 +243,8 @@ void R_ScreenShot_f(void)
          * automatic TGA sequence intentionally never writes shot9999.tga.
          * The adjacent JPEG handler has the distinct == 10000 check below. */
         if (lastNumber >= R_MAX_SCREENSHOT_NUMBER) {
-            ri.Printf(R_PRINT_ALL, "ScreenShot: Couldn't create a file\n");
+            ri.Printf(R_PRINT_ALL,
+                      "ScreenShot: Couldn't create a file\n");
             return;
         }
         ++lastNumber;
@@ -236,14 +271,16 @@ void R_ScreenShotJPEG_f(void)
         return;
     }
 
-    if (strcmp(ri.Cmd_Argv(1), "savegame") == 0 && ri.Cmd_Argc() == 3 && ri.Cmd_Argv(2)[0] != '\0') {
+    if (strcmp(ri.Cmd_Argv(1), "savegame") == 0 &&
+        ri.Cmd_Argc() == 3 && ri.Cmd_Argv(2)[0] != '\0') {
         R_SaveGameShot(ri.Cmd_Argv(2));
         return;
     }
 
     silent = strcmp(ri.Cmd_Argv(1), "silent") == 0;
     if (ri.Cmd_Argc() == 2 && silent == qfalse) {
-        Com_sprintf(fileName, sizeof(fileName), "screenshots/%s.jpg", ri.Cmd_Argv(1));
+        Com_sprintf(fileName, sizeof(fileName),
+                    "screenshots/%s.jpg", ri.Cmd_Argv(1));
     } else {
         if (lastNumber == -1)
             lastNumber = 0;
@@ -256,13 +293,15 @@ void R_ScreenShotJPEG_f(void)
         }
 
         if (lastNumber == R_SCREENSHOT_NUMBER_LIMIT) {
-            ri.Printf(R_PRINT_ALL, "ScreenShot: Couldn't create a file\n");
+            ri.Printf(R_PRINT_ALL,
+                      "ScreenShot: Couldn't create a file\n");
             return;
         }
         lastNumber = (int32_t)((uint32_t)lastNumber + 1u);
     }
 
-    R_TakeScreenshotJPEG(0, 0, glConfig.vidWidth, glConfig.vidHeight, fileName);
+    R_TakeScreenshotJPEG(0, 0, glConfig.vidWidth, glConfig.vidHeight,
+                         fileName);
     if (silent == qfalse)
         ri.Printf(R_PRINT_ALL, "Wrote %s\n", fileName);
 }
@@ -286,7 +325,10 @@ void R_LevelShot(void)
 
     sprintf(fileName, "levelshots/%s.tga", tr.world->baseName);
 
-    const uint32_t sourceByteCount = (uint32_t)glConfig.vidWidth * (uint32_t)glConfig.vidHeight * (uint32_t)TGA_BYTES_PER_PIXEL;
+    const uint32_t sourceByteCount =
+        (uint32_t)glConfig.vidWidth *
+        (uint32_t)glConfig.vidHeight *
+        (uint32_t)TGA_BYTES_PER_PIXEL;
     source = ri.Hunk_AllocateTempMemory((size_t)sourceByteCount);
     tga = ri.Hunk_AllocateTempMemory(R_LEVELSHOT_FILE_BYTES);
     memset(tga, 0, TGA_HEADER_SIZE);
@@ -298,31 +340,54 @@ void R_LevelShot(void)
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): when the composited
      * output presentation owns the presented image, GL_FRONT holds the
      * scaled hardware drawable, not this render-sized frame. */
-    if (coduomp_capture_presented_frame_compat(0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGB, source) == qfalse) {
+    if (coduomp_capture_presented_frame_compat(
+            0, 0, glConfig.vidWidth, glConfig.vidHeight,
+            GL_RGB, source) == qfalse)
+    {
         qglReadBuffer(GL_FRONT);
-        qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGB, GL_UNSIGNED_BYTE, source);
+        qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight,
+                      GL_RGB, GL_UNSIGNED_BYTE, source);
         qglReadBuffer(GL_BACK);
     }
 
-    xScale = (long double)glConfig.vidWidth * (long double)0.001953125f; /* 1 / 512 */
-    yScale = (long double)glConfig.vidHeight * (long double)0.0026041667442768812f; /* 1 / 384 */
+    xScale = (long double)glConfig.vidWidth *
+             (long double)0.001953125f; /* 1 / 512 */
+    yScale = (long double)glConfig.vidHeight *
+             (long double)0.0026041667442768812f; /* 1 / 384 */
 
     destination = tga + TGA_HEADER_SIZE;
-    for (outputY = 0; outputY < R_LEVELSHOT_SOURCE_HEIGHT; outputY += R_DOWNSAMPLE_BLOCK_HEIGHT) {
-        for (outputX = 0; outputX < R_LEVELSHOT_SOURCE_WIDTH; outputX += R_DOWNSAMPLE_BLOCK_WIDTH) {
+    for (outputY = 0;
+         outputY < R_LEVELSHOT_SOURCE_HEIGHT;
+         outputY += R_DOWNSAMPLE_BLOCK_HEIGHT) {
+        for (outputX = 0;
+             outputX < R_LEVELSHOT_SOURCE_WIDTH;
+             outputX += R_DOWNSAMPLE_BLOCK_WIDTH) {
             int32_t red = 0;
             int32_t green = 0;
             int32_t blue = 0;
             int32_t sampleY;
 
-            for (sampleY = 0; sampleY < R_DOWNSAMPLE_BLOCK_HEIGHT; ++sampleY) {
+            for (sampleY = 0;
+                 sampleY < R_DOWNSAMPLE_BLOCK_HEIGHT;
+                 ++sampleY) {
                 int32_t sampleX;
 
-                for (sampleX = 0; sampleX < R_DOWNSAMPLE_BLOCK_WIDTH; ++sampleX) {
-                    const int32_t sourceX = (int32_t)((long double)(outputX + sampleX) * xScale);
-                    const int32_t sourceY = (int32_t)((long double)(outputY + sampleY) * yScale);
-                    const uint32_t sourcePixel = (uint32_t)sourceY * (uint32_t)glConfig.vidWidth + (uint32_t)sourceX;
-                    const uint8_t *sample = source + sourcePixel * (uint32_t)TGA_BYTES_PER_PIXEL;
+                for (sampleX = 0;
+                     sampleX < R_DOWNSAMPLE_BLOCK_WIDTH;
+                     ++sampleX) {
+                    const int32_t sourceX =
+                        (int32_t)(
+                            (long double)(outputX + sampleX) * xScale);
+                    const int32_t sourceY =
+                        (int32_t)(
+                            (long double)(outputY + sampleY) * yScale);
+                    const uint32_t sourcePixel =
+                        (uint32_t)sourceY *
+                            (uint32_t)glConfig.vidWidth +
+                        (uint32_t)sourceX;
+                    const uint8_t *sample =
+                        source + sourcePixel *
+                                     (uint32_t)TGA_BYTES_PER_PIXEL;
 
                     red += sample[0];
                     green += sample[1];
@@ -330,13 +395,17 @@ void R_LevelShot(void)
                 }
             }
 
-            *destination++ = (uint8_t)(blue / R_DOWNSAMPLE_BLOCK_SAMPLES);
-            *destination++ = (uint8_t)(green / R_DOWNSAMPLE_BLOCK_SAMPLES);
-            *destination++ = (uint8_t)(red / R_DOWNSAMPLE_BLOCK_SAMPLES);
+            *destination++ =
+                (uint8_t)(blue / R_DOWNSAMPLE_BLOCK_SAMPLES);
+            *destination++ =
+                (uint8_t)(green / R_DOWNSAMPLE_BLOCK_SAMPLES);
+            *destination++ =
+                (uint8_t)(red / R_DOWNSAMPLE_BLOCK_SAMPLES);
         }
     }
 
-    if (tr.overbrightBits > 0 && coduomp_gamma_output_available() != qfalse) {
+    if (tr.overbrightBits > 0 &&
+        coduomp_gamma_output_available() != qfalse) {
         R_GammaCorrect(tga + TGA_HEADER_SIZE, R_LEVELSHOT_PIXEL_BYTES);
     }
 
@@ -365,41 +434,69 @@ void R_SaveGameShot(const char *name)
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (strlen(name) > sizeof(fileName) - sizeof(".jpg")) {
-        ri.Printf(R_PRINT_ALL, "WARNING: savegame screenshot filename is too long\n");
+        ri.Printf(R_PRINT_ALL,
+                  "WARNING: savegame screenshot filename is too long\n");
         return;
     }
     Com_sprintf(fileName, sizeof(fileName), "%s.jpg", name);
 
-    const uint32_t sourceByteCount = (uint32_t)glConfig.vidWidth * (uint32_t)glConfig.vidHeight * (uint32_t)R_SAVEGAME_BYTES_PER_PIXEL;
+    const uint32_t sourceByteCount =
+        (uint32_t)glConfig.vidWidth *
+        (uint32_t)glConfig.vidHeight *
+        (uint32_t)R_SAVEGAME_BYTES_PER_PIXEL;
     source = ri.Hunk_AllocateTempMemory((size_t)sourceByteCount);
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): capture the presented
      * render-sized frame when the output compositor owns GL_FRONT. */
-    if (coduomp_capture_presented_frame_compat(0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGBA, source) == qfalse) {
+    if (coduomp_capture_presented_frame_compat(
+            0, 0, glConfig.vidWidth, glConfig.vidHeight,
+            GL_RGBA, source) == qfalse)
+    {
         qglReadBuffer(GL_FRONT);
-        qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGBA, GL_UNSIGNED_BYTE, source);
+        qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight,
+                      GL_RGBA, GL_UNSIGNED_BYTE, source);
         qglReadBuffer(GL_BACK);
     }
 
     output = ri.Hunk_AllocateTempMemory(R_SAVEGAME_PIXEL_BYTES);
-    xScale = (long double)glConfig.vidWidth * (long double)0.00048828125f; /* 1 / 2048 */
-    yScale = (long double)glConfig.vidHeight * (long double)0.0006510416860692203f; /* 1 / 1536 */
+    xScale = (long double)glConfig.vidWidth *
+             (long double)0.00048828125f; /* 1 / 2048 */
+    yScale = (long double)glConfig.vidHeight *
+             (long double)0.0006510416860692203f; /* 1 / 1536 */
 
     destination = output;
-    for (outputY = 0; outputY < R_SAVEGAME_SOURCE_HEIGHT; outputY += R_DOWNSAMPLE_BLOCK_HEIGHT) {
-        for (outputX = 0; outputX < R_SAVEGAME_SOURCE_WIDTH; outputX += R_DOWNSAMPLE_BLOCK_WIDTH) {
+    for (outputY = 0;
+         outputY < R_SAVEGAME_SOURCE_HEIGHT;
+         outputY += R_DOWNSAMPLE_BLOCK_HEIGHT) {
+        for (outputX = 0;
+             outputX < R_SAVEGAME_SOURCE_WIDTH;
+             outputX += R_DOWNSAMPLE_BLOCK_WIDTH) {
             int32_t red = 0;
             int32_t green = 0;
             int32_t blue = 0;
             int32_t sampleY;
 
-            for (sampleY = 0; sampleY < R_DOWNSAMPLE_BLOCK_HEIGHT; ++sampleY) {
+            for (sampleY = 0;
+                 sampleY < R_DOWNSAMPLE_BLOCK_HEIGHT;
+                 ++sampleY) {
                 int32_t sampleX;
 
-                for (sampleX = 0; sampleX < R_DOWNSAMPLE_BLOCK_WIDTH; ++sampleX) {
-                    const int32_t sourceX = (int32_t)((long double)(outputX + sampleX) * xScale);
-                    const int32_t sourceY = (int32_t)((long double)(outputY + sampleY) * yScale);
-                    const uint32_t sourcePixel = (uint32_t)sourceY * (uint32_t)glConfig.vidWidth + (uint32_t)sourceX;
-                    const uint8_t *sample = source + sourcePixel * (uint32_t)R_SAVEGAME_BYTES_PER_PIXEL;
+                for (sampleX = 0;
+                     sampleX < R_DOWNSAMPLE_BLOCK_WIDTH;
+                     ++sampleX) {
+                    const int32_t sourceX =
+                        (int32_t)(
+                            (long double)(outputX + sampleX) * xScale);
+                    const int32_t sourceY =
+                        (int32_t)(
+                            (long double)(outputY + sampleY) * yScale);
+                    const uint32_t sourcePixel =
+                        (uint32_t)sourceY *
+                            (uint32_t)glConfig.vidWidth +
+                        (uint32_t)sourceX;
+                    const uint8_t *sample =
+                        source + sourcePixel *
+                                     (uint32_t)
+                                         R_SAVEGAME_BYTES_PER_PIXEL;
 
                     red += sample[0];
                     green += sample[1];
@@ -407,19 +504,25 @@ void R_SaveGameShot(const char *name)
                 }
             }
 
-            destination[0] = (uint8_t)(red / R_DOWNSAMPLE_BLOCK_SAMPLES);
-            destination[1] = (uint8_t)(green / R_DOWNSAMPLE_BLOCK_SAMPLES);
-            destination[2] = (uint8_t)(blue / R_DOWNSAMPLE_BLOCK_SAMPLES);
+            destination[0] =
+                (uint8_t)(red / R_DOWNSAMPLE_BLOCK_SAMPLES);
+            destination[1] =
+                (uint8_t)(green / R_DOWNSAMPLE_BLOCK_SAMPLES);
+            destination[2] =
+                (uint8_t)(blue / R_DOWNSAMPLE_BLOCK_SAMPLES);
             destination[3] = 0;
             destination += R_SAVEGAME_BYTES_PER_PIXEL;
         }
     }
 
-    if (tr.overbrightBits > 0 && coduomp_gamma_output_available() != qfalse) {
+    if (tr.overbrightBits > 0 &&
+        coduomp_gamma_output_available() != qfalse) {
         R_GammaCorrect(output, R_SAVEGAME_PIXEL_BYTES);
     }
 
-    SaveJPG(fileName, R_SAVEGAME_JPEG_QUALITY, R_SAVEGAME_WIDTH, R_SAVEGAME_HEIGHT, output, qtrue);
+    SaveJPG(fileName, R_SAVEGAME_JPEG_QUALITY,
+            R_SAVEGAME_WIDTH, R_SAVEGAME_HEIGHT,
+            output, qtrue);
     ri.Hunk_FreeTempMemory(output);
     ri.Hunk_FreeTempMemory(source);
 }
@@ -429,19 +532,58 @@ void R_SaveGameShot(const char *name)
  * Name and five-argument boundary: exact same-module Mac RE_CubemapShot
  * symbol and CL_CubemapShot_f call sites. The Windows caller's suffix table
  * proves face values 1..6 are up, down, left, right, front, and back. */
-void RE_CubemapShot(const char *fileName, int32_t faceSize, cubemap_face_t face, float fresnelN0, float fresnelN1)
+void RE_CubemapShot(const char *fileName, int32_t faceSize,
+                    cubemap_face_t face,
+                    float fresnelN0, float fresnelN1)
 {
     /* The original automatic initializer contains a deliberately unused
      * zero entry because public cubemap face indices begin at one. */
     const vec3_t faceAxes[R_CUBEMAP_FACE_COUNT + R_CUBEMAP_FIRST_FACE][3] = {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},  {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}},
-        {{0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, {{-1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-        {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  {{0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-        {{0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
-    const uint32_t pixelCount = (uint32_t)faceSize * (uint32_t)faceSize;
-    const uint32_t sourceByteCount = pixelCount * (uint32_t)R_CUBEMAP_BYTES_PER_SOURCE_PIXEL;
-    const uint32_t fileByteCount = pixelCount * (uint32_t)R_CUBEMAP_BYTES_PER_OUTPUT_PIXEL + (uint32_t)TGA_HEADER_SIZE;
-    uint8_t *source = ri.Hunk_AllocateTempMemory((size_t)sourceByteCount);
+        {
+            { 0.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  0.0f}
+        },
+        {
+            { 0.0f,  0.0f,  1.0f},
+            { 0.0f,  1.0f,  0.0f},
+            {-1.0f,  0.0f,  0.0f}
+        },
+        {
+            { 0.0f,  0.0f, -1.0f},
+            { 0.0f,  1.0f,  0.0f},
+            { 1.0f,  0.0f,  0.0f}
+        },
+        {
+            {-1.0f,  0.0f,  0.0f},
+            { 0.0f, -1.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        },
+        {
+            { 1.0f,  0.0f,  0.0f},
+            { 0.0f,  1.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        },
+        {
+            { 0.0f, -1.0f,  0.0f},
+            { 1.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        },
+        {
+            { 0.0f,  1.0f,  0.0f},
+            {-1.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        }
+    };
+    const uint32_t pixelCount =
+        (uint32_t)faceSize * (uint32_t)faceSize;
+    const uint32_t sourceByteCount =
+        pixelCount * (uint32_t)R_CUBEMAP_BYTES_PER_SOURCE_PIXEL;
+    const uint32_t fileByteCount =
+        pixelCount * (uint32_t)R_CUBEMAP_BYTES_PER_OUTPUT_PIXEL +
+        (uint32_t)TGA_HEADER_SIZE;
+    uint8_t *source =
+        ri.Hunk_AllocateTempMemory((size_t)sourceByteCount);
     uint8_t *tga = ri.Hunk_AllocateTempMemory((size_t)fileByteCount);
     const int32_t halfSize = faceSize / 2;
     const float faceDistance = (float)halfSize - 0.5f;
@@ -457,9 +599,11 @@ void RE_CubemapShot(const char *fileName, int32_t faceSize, cubemap_face_t face,
     tga[TGA_HEADER_PIXEL_DEPTH_OFFSET] = 32;
 
     qglFinish();
-    qglReadPixels(1, glConfig.vidHeight - faceSize - 1, faceSize, faceSize, GL_RGB, GL_UNSIGNED_BYTE, source);
+    qglReadPixels(1, glConfig.vidHeight - faceSize - 1,
+                  faceSize, faceSize, GL_RGB, GL_UNSIGNED_BYTE, source);
 
-    if (tr.overbrightBits > 0 && coduomp_gamma_output_available() != qfalse) {
+    if (tr.overbrightBits > 0 &&
+        coduomp_gamma_output_available() != qfalse) {
         R_GammaCorrect(source, (int32_t)sourceByteCount);
     }
 
@@ -473,10 +617,17 @@ void RE_CubemapShot(const char *fileName, int32_t faceSize, cubemap_face_t face,
             const int32_t x = column - halfSize;
             /* 0x4c2426..0x4c245e uses the retained x87 sum for direction X,
              * then reloads its float copy for direction Y and Z. */
-            const long double xCoordinateRaw = (long double)x + 0.5L;
-            const float xCoordinate = (float)xCoordinateRaw;
-            const uint32_t sourcePixelIndex = (uint32_t)row * (uint32_t)faceSize + (uint32_t)column;
-            const uint8_t *sourcePixel = source + sourcePixelIndex * (uint32_t)R_CUBEMAP_BYTES_PER_SOURCE_PIXEL;
+            const long double xCoordinateRaw =
+                (long double)x + 0.5L;
+            const float xCoordinate =
+                (float)xCoordinateRaw;
+            const uint32_t sourcePixelIndex =
+                (uint32_t)row * (uint32_t)faceSize +
+                (uint32_t)column;
+            const uint8_t *sourcePixel =
+                source + sourcePixelIndex *
+                             (uint32_t)
+                                 R_CUBEMAP_BYTES_PER_SOURCE_PIXEL;
             vec3_t direction;
             double incidentAngle;
             double refractedAngle;
@@ -489,30 +640,46 @@ void RE_CubemapShot(const char *fileName, int32_t faceSize, cubemap_face_t face,
             int32_t component;
 
             for (component = 0; component < 3; ++component) {
-                const long double componentX = component == 0 ? xCoordinateRaw : (long double)xCoordinate;
-                direction[component] = (float)((long double)faceAxes[face][0][component] * (long double)faceDistance +
-                                               (long double)faceAxes[face][1][component] * componentX +
-                                               (long double)faceAxes[face][2][component] * (long double)yCoordinate);
+                const long double componentX =
+                    component == 0
+                        ? xCoordinateRaw
+                        : (long double)xCoordinate;
+                direction[component] = (float)(
+                    (long double)faceAxes[face][0][component] *
+                        (long double)faceDistance +
+                    (long double)faceAxes[face][1][component] *
+                        componentX +
+                    (long double)faceAxes[face][2][component] *
+                        (long double)yCoordinate);
             }
             (void)VectorNormalize(direction);
 
             if (direction[2] > 0.0f) {
                 /* 0x4c24a2..0x4c24cc stores the acos result as double but
                  * feeds the retained x87 value directly to FSIN. */
-                const long double incidentAngleRaw = acosl((long double)direction[2]);
+                const long double incidentAngleRaw =
+                    acosl((long double)direction[2]);
                 incidentAngle = (double)incidentAngleRaw;
-                refractedAngle = (double)asinl(((long double)fresnelN0 / (long double)fresnelN1) * sinl(incidentAngleRaw));
+                refractedAngle = (double)asinl(
+                    ((long double)fresnelN0 /
+                     (long double)fresnelN1) *
+                    sinl(incidentAngleRaw));
             } else {
-                const long double incidentAngleRaw = acosl(-(long double)direction[2]);
+                const long double incidentAngleRaw =
+                    acosl(-(long double)direction[2]);
                 incidentAngle = (double)incidentAngleRaw;
-                refractedAngle = (double)asinl(((long double)fresnelN1 / (long double)fresnelN0) * sinl(incidentAngleRaw));
+                refractedAngle = (double)asinl(
+                    ((long double)fresnelN1 /
+                     (long double)fresnelN0) *
+                    sinl(incidentAngleRaw));
             }
 
             angleDifference = incidentAngle - refractedAngle;
             angleSum = incidentAngle + refractedAngle;
             sPolarized = sin(angleDifference) / sin(angleSum);
             pPolarized = tan(angleDifference) / tan(angleSum);
-            reflectionFactor = (float)(0.5 * (sPolarized * sPolarized + pPolarized * pPolarized));
+            reflectionFactor = (float)(
+                0.5 * (sPolarized * sPolarized + pPolarized * pPolarized));
             if (reflectionFactor < 0.0f)
                 reflectionFactor = 0.0f;
             else if (reflectionFactor > 1.0f)
@@ -522,7 +689,8 @@ void RE_CubemapShot(const char *fileName, int32_t faceSize, cubemap_face_t face,
             destination[1] = sourcePixel[1];
             destination[2] = sourcePixel[0];
             scaledAlpha = reflectionFactor * 255.0f;
-            destination[3] = (uint8_t)lrint((double)scaledAlpha + 9.31322574615478515625e-10);
+            destination[3] = (uint8_t)lrint(
+                (double)scaledAlpha + 9.31322574615478515625e-10);
             destination += R_CUBEMAP_BYTES_PER_OUTPUT_PIXEL;
         }
     }
@@ -539,19 +707,57 @@ void RE_CubemapShot(const char *fileName, int32_t faceSize, cubemap_face_t face,
  * RE_CubemapWaterShot symbol and the Windows CL_CubemapShot_f call through
  * renderer export slot 0x04958164. The command's r0/g0/b0 and r90/g90/b90
  * vectors are the horizon and zenith colors selected by direction.z. */
-void RE_CubemapWaterShot(const char *fileName, int32_t faceSize, cubemap_face_t face, const vec3_t horizonColor, const vec3_t zenithColor)
+void RE_CubemapWaterShot(const char *fileName, int32_t faceSize,
+                         cubemap_face_t face,
+                         const vec3_t horizonColor,
+                         const vec3_t zenithColor)
 {
     /* Like RE_CubemapShot, the original automatic initializer includes the
      * deliberately unused face-zero entry. Keeping a local table reflects the
      * two separate source functions proved by both Windows bodies. */
     const vec3_t faceAxes[R_CUBEMAP_FACE_COUNT + R_CUBEMAP_FIRST_FACE][3] = {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},  {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}},
-        {{0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, {{-1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-        {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  {{0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-        {{0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+        {
+            { 0.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  0.0f}
+        },
+        {
+            { 0.0f,  0.0f,  1.0f},
+            { 0.0f,  1.0f,  0.0f},
+            {-1.0f,  0.0f,  0.0f}
+        },
+        {
+            { 0.0f,  0.0f, -1.0f},
+            { 0.0f,  1.0f,  0.0f},
+            { 1.0f,  0.0f,  0.0f}
+        },
+        {
+            {-1.0f,  0.0f,  0.0f},
+            { 0.0f, -1.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        },
+        {
+            { 1.0f,  0.0f,  0.0f},
+            { 0.0f,  1.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        },
+        {
+            { 0.0f, -1.0f,  0.0f},
+            { 1.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        },
+        {
+            { 0.0f,  1.0f,  0.0f},
+            {-1.0f,  0.0f,  0.0f},
+            { 0.0f,  0.0f,  1.0f}
+        }
+    };
     const uint32_t fileByteCount =
-        ((uint32_t)faceSize * (uint32_t)faceSize + (uint32_t)(TGA_HEADER_SIZE / TGA_BYTES_PER_PIXEL)) * (uint32_t)TGA_BYTES_PER_PIXEL;
-    uint8_t *tga = ri.Hunk_AllocateTempMemory((size_t)fileByteCount);
+        ((uint32_t)faceSize * (uint32_t)faceSize +
+         (uint32_t)(TGA_HEADER_SIZE / TGA_BYTES_PER_PIXEL)) *
+        (uint32_t)TGA_BYTES_PER_PIXEL;
+    uint8_t *tga =
+        ri.Hunk_AllocateTempMemory((size_t)fileByteCount);
     const int32_t halfSize = faceSize / 2;
     const float faceDistance = (float)halfSize - 0.5f;
     const float maximumColorComponent = 2.0f;
@@ -576,8 +782,10 @@ void RE_CubemapWaterShot(const char *fileName, int32_t faceSize, cubemap_face_t 
 
         for (column = 0; column < faceSize; ++column) {
             const int32_t x = column - halfSize;
-            const long double xCoordinateRaw = (long double)x + 0.5L;
-            const float xCoordinate = (float)xCoordinateRaw;
+            const long double xCoordinateRaw =
+                (long double)x + 0.5L;
+            const float xCoordinate =
+                (float)xCoordinateRaw;
             const renderer_light_t *sunLight = tr.world->sunLight;
             vec3_t direction;
             vec3_t color;
@@ -585,10 +793,17 @@ void RE_CubemapWaterShot(const char *fileName, int32_t faceSize, cubemap_face_t 
             int32_t component;
 
             for (component = 0; component < 3; ++component) {
-                const long double componentX = component == 0 ? xCoordinateRaw : (long double)xCoordinate;
-                direction[component] = (float)((long double)faceAxes[face][0][component] * (long double)faceDistance +
-                                               (long double)faceAxes[face][1][component] * componentX +
-                                               (long double)faceAxes[face][2][component] * (long double)yCoordinate);
+                const long double componentX =
+                    component == 0
+                        ? xCoordinateRaw
+                        : (long double)xCoordinate;
+                direction[component] = (float)(
+                    (long double)faceAxes[face][0][component] *
+                        (long double)faceDistance +
+                    (long double)faceAxes[face][1][component] *
+                        componentX +
+                    (long double)faceAxes[face][2][component] *
+                        (long double)yCoordinate);
             }
             (void)VectorNormalize(direction);
 
@@ -597,19 +812,25 @@ void RE_CubemapWaterShot(const char *fileName, int32_t faceSize, cubemap_face_t 
                 height = 0.0f;
 
             for (component = 0; component < 3; ++component) {
-                color[component] = horizonColor[component] * (1.0f - height) + zenithColor[component] * height;
+                color[component] =
+                    horizonColor[component] * (1.0f - height) +
+                    zenithColor[component] * height;
             }
 
             if (sunLight != NULL) {
                 float sunAmount =
-                    direction[0] * sunLight->position[0] + direction[1] * sunLight->position[1] + direction[2] * sunLight->position[2];
+                    direction[0] * sunLight->position[0] +
+                    direction[1] * sunLight->position[1] +
+                    direction[2] * sunLight->position[2];
 
                 if (sunAmount < 0.0f)
                     sunAmount = 0.0f;
 
                 for (component = 0; component < 3; ++component) {
                     const float lightFactor =
-                        sunLight->ambient[component] + sunLight->diffuse[component] + sunAmount * sunLight->diffuse[component];
+                        sunLight->ambient[component] +
+                        sunLight->diffuse[component] +
+                        sunAmount * sunLight->diffuse[component];
 
                     color[component] *= lightFactor;
                 }
@@ -622,9 +843,12 @@ void RE_CubemapWaterShot(const char *fileName, int32_t faceSize, cubemap_face_t 
                     color[component] = maximumColorComponent;
             }
 
-            destination[0] = (uint8_t)lrint((double)(color[2] * byteScale) + integerRoundingBias);
-            destination[1] = (uint8_t)lrint((double)(color[1] * byteScale) + integerRoundingBias);
-            destination[2] = (uint8_t)lrint((double)(color[0] * byteScale) + integerRoundingBias);
+            destination[0] = (uint8_t)lrint(
+                (double)(color[2] * byteScale) + integerRoundingBias);
+            destination[1] = (uint8_t)lrint(
+                (double)(color[1] * byteScale) + integerRoundingBias);
+            destination[2] = (uint8_t)lrint(
+                (double)(color[0] * byteScale) + integerRoundingBias);
             destination += TGA_BYTES_PER_PIXEL;
         }
     }
@@ -643,7 +867,8 @@ void R_GammaCorrect(uint8_t *buffer, int32_t byteCount)
     int32_t byteIndex;
 
     for (byteIndex = 0; byteIndex < byteCount; ++byteIndex)
-        buffer[byteIndex] = rendererGammaOverbrightTable[buffer[byteIndex]];
+        buffer[byteIndex] =
+            rendererGammaOverbrightTable[buffer[byteIndex]];
 }
 
 /* Source: CoDUOMP.exe 0x004c1800..0x004c191e.
@@ -652,7 +877,9 @@ void R_GammaCorrect(uint8_t *buffer, int32_t byteCount)
  * same-module Mac R_TakeScreenshot symbol, call graph, and caller. Windows
  * MSVC carries width in EAX, inlines the 18-byte memset and R_GammaCorrect,
  * and leaves a six-byte alignment NOP at 0x004c18ea..0x004c18ef. */
-void R_TakeScreenshot(int32_t x, int32_t y, int32_t width, int32_t height, const char *fileName)
+void R_TakeScreenshot(int32_t x, int32_t y,
+                      int32_t width, int32_t height,
+                      const char *fileName)
 {
     uint32_t allocationSize;
     int32_t fileSize;
@@ -663,7 +890,8 @@ void R_TakeScreenshot(int32_t x, int32_t y, int32_t width, int32_t height, const
     /* The original reserves a full-screen RGB payload even when the requested
      * rectangle is smaller. Preserve its exact multiply/add ordering. */
     allocationSize =
-        ((uint32_t)glConfig.vidWidth * (uint32_t)glConfig.vidHeight + TGA_HEADER_SIZE / TGA_BYTES_PER_PIXEL) * TGA_BYTES_PER_PIXEL;
+        ((uint32_t)glConfig.vidWidth * (uint32_t)glConfig.vidHeight +
+         TGA_HEADER_SIZE / TGA_BYTES_PER_PIXEL) * TGA_BYTES_PER_PIXEL;
     tga = ri.Hunk_AllocateTempMemory((size_t)allocationSize);
     memset(tga, 0, TGA_HEADER_SIZE);
 
@@ -677,22 +905,32 @@ void R_TakeScreenshot(int32_t x, int32_t y, int32_t width, int32_t height, const
     pixels = tga + TGA_HEADER_SIZE;
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): capture the presented
      * render-sized frame when the output compositor owns GL_FRONT. */
-    if (coduomp_capture_presented_frame_compat(x, y, width, height, GL_RGB, pixels) == qfalse) {
+    if (coduomp_capture_presented_frame_compat(
+            x, y, width, height, GL_RGB, pixels) == qfalse)
+    {
         qglReadBuffer(GL_FRONT);
-        qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+        qglReadPixels(x, y, width, height,
+                      GL_RGB, GL_UNSIGNED_BYTE, pixels);
         qglReadBuffer(GL_BACK);
     }
 
-    fileSize = (int32_t)(((uint32_t)width * (uint32_t)height + TGA_HEADER_SIZE / TGA_BYTES_PER_PIXEL) * TGA_BYTES_PER_PIXEL);
-    for (byteOffset = TGA_HEADER_SIZE; byteOffset < fileSize; byteOffset += TGA_BYTES_PER_PIXEL) {
+    fileSize = (int32_t)(
+        ((uint32_t)width * (uint32_t)height +
+         TGA_HEADER_SIZE / TGA_BYTES_PER_PIXEL) * TGA_BYTES_PER_PIXEL);
+    for (byteOffset = TGA_HEADER_SIZE;
+         byteOffset < fileSize;
+         byteOffset += TGA_BYTES_PER_PIXEL) {
         const uint8_t red = tga[byteOffset];
 
         tga[byteOffset] = tga[byteOffset + 2];
         tga[byteOffset + 2] = red;
     }
 
-    if (tr.overbrightBits > 0 && coduomp_gamma_output_available() != qfalse) {
-        const int32_t gammaByteCount = (int32_t)((uint32_t)glConfig.vidWidth * (uint32_t)glConfig.vidHeight * TGA_BYTES_PER_PIXEL);
+    if (tr.overbrightBits > 0 &&
+        coduomp_gamma_output_available() != qfalse) {
+        const int32_t gammaByteCount = (int32_t)(
+            (uint32_t)glConfig.vidWidth *
+            (uint32_t)glConfig.vidHeight * TGA_BYTES_PER_PIXEL);
         R_GammaCorrect(pixels, gammaByteCount);
     }
 
@@ -705,7 +943,9 @@ void R_TakeScreenshot(int32_t x, int32_t y, int32_t width, int32_t height, const
  * Name and source boundary: exact same-module Mac symbol SaveJPG. The original
  * embeds an IJG build configured for four-byte RGB input; the maintained
  * libjpeg-turbo boundary requests the equivalent RGBX layout explicitly. */
-void SaveJPG(const char *fileName, int32_t quality, int32_t imageWidth, int32_t imageHeight, uint8_t *imageBuffer, qboolean flipVertical)
+void SaveJPG(const char *fileName, int32_t quality,
+             int32_t imageWidth, int32_t imageHeight,
+             uint8_t *imageBuffer, qboolean flipVertical)
 {
     struct jpeg_error_mgr errorManager;
     struct jpeg_compress_struct compressor;
@@ -713,7 +953,9 @@ void SaveJPG(const char *fileName, int32_t quality, int32_t imageWidth, int32_t 
     compressor.err = jpeg_std_error(&errorManager);
     jpeg_create_compress(&compressor);
 
-    const uint32_t outputCapacity = (uint32_t)imageWidth * (uint32_t)imageHeight * JPEG_BYTES_PER_PIXEL;
+    const uint32_t outputCapacity =
+        (uint32_t)imageWidth * (uint32_t)imageHeight *
+        JPEG_BYTES_PER_PIXEL;
     JOCTET *outputBuffer;
 #if UINTPTR_MAX > UINT32_MAX
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail i386 allocates
@@ -738,11 +980,13 @@ void SaveJPG(const char *fileName, int32_t quality, int32_t imageWidth, int32_t 
     jpeg_set_quality(&compressor, quality, TRUE);
     jpeg_start_compress(&compressor, TRUE);
 
-    const uint32_t rowBytes = (uint32_t)imageWidth * JPEG_BYTES_PER_PIXEL;
+    const uint32_t rowBytes =
+        (uint32_t)imageWidth * JPEG_BYTES_PER_PIXEL;
     while (compressor.next_scanline < compressor.image_height) {
         JDIMENSION sourceRow = compressor.next_scanline;
         if (flipVertical != qfalse) {
-            sourceRow = compressor.image_height - 1 - compressor.next_scanline;
+            sourceRow =
+                compressor.image_height - 1 - compressor.next_scanline;
         }
 
         JSAMPROW scanline = imageBuffer + sourceRow * rowBytes;
@@ -751,9 +995,12 @@ void SaveJPG(const char *fileName, int32_t quality, int32_t imageWidth, int32_t 
 
     jpeg_finish_compress(&compressor);
     if (coduompJpegOutputOverflowed == qfalse) {
-        ri.FS_WriteFile(fileName, outputBuffer, (int32_t)rendererJpegOutputSize);
+        ri.FS_WriteFile(fileName, outputBuffer,
+                        (int32_t)rendererJpegOutputSize);
     } else {
-        ri.Printf(R_PRINT_WARNING, "WARNING: JPEG output for '%s' exceeded its buffer\n", fileName);
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: JPEG output for '%s' exceeded its buffer\n",
+                  fileName);
     }
 #if UINTPTR_MAX > UINT32_MAX
     ri.Z_Free(outputBuffer);
@@ -770,9 +1017,14 @@ void SaveJPG(const char *fileName, int32_t quality, int32_t imageWidth, int32_t 
  * inlines the R_GammaCorrect condition, and passes imageWidth to SaveJPG in
  * ECX. The one-byte FS_WriteFile call is present on both architectures before
  * SaveJPG and is therefore retained as original behavior. */
-void R_TakeScreenshotJPEG(int32_t x, int32_t y, int32_t width, int32_t height, const char *fileName)
+void R_TakeScreenshotJPEG(int32_t x, int32_t y,
+                          int32_t width, int32_t height,
+                          const char *fileName)
 {
-    const uint32_t byteCountBits = (uint32_t)glConfig.vidWidth * (uint32_t)glConfig.vidHeight * (uint32_t)JPEG_BYTES_PER_PIXEL;
+    const uint32_t byteCountBits =
+        (uint32_t)glConfig.vidWidth *
+        (uint32_t)glConfig.vidHeight *
+        (uint32_t)JPEG_BYTES_PER_PIXEL;
     const int32_t byteCount = (int32_t)byteCountBits;
     uint8_t *pixels;
 #if UINTPTR_MAX > UINT32_MAX
@@ -788,18 +1040,24 @@ void R_TakeScreenshotJPEG(int32_t x, int32_t y, int32_t width, int32_t height, c
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): capture the presented
      * render-sized frame when the output compositor owns GL_FRONT. */
-    if (coduomp_capture_presented_frame_compat(x, y, width, height, GL_RGBA, pixels) == qfalse) {
+    if (coduomp_capture_presented_frame_compat(
+            x, y, width, height, GL_RGBA, pixels) == qfalse)
+    {
         qglReadBuffer(GL_FRONT);
-        qglReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        qglReadPixels(x, y, width, height,
+                      GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         qglReadBuffer(GL_BACK);
     }
 
-    if (tr.overbrightBits > 0 && coduomp_gamma_output_available() != qfalse) {
+    if (tr.overbrightBits > 0 &&
+        coduomp_gamma_output_available() != qfalse) {
         R_GammaCorrect(pixels, byteCount);
     }
 
     ri.FS_WriteFile(fileName, pixels, JPEG_PATH_PRIME_BYTES);
-    SaveJPG(fileName, JPEG_SCREENSHOT_QUALITY, glConfig.vidWidth, glConfig.vidHeight, pixels, qtrue);
+    SaveJPG(fileName, JPEG_SCREENSHOT_QUALITY,
+            glConfig.vidWidth, glConfig.vidHeight,
+            pixels, qtrue);
 #if UINTPTR_MAX > UINT32_MAX
     ri.Z_Free(pixels);
 #else

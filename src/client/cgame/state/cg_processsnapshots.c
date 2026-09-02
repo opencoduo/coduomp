@@ -99,7 +99,8 @@ void CG_ProcessSnapshots(void)
                 /* 3003d372..3003d38c: restore full master sound volume
                  * immediately. The float is materialized on the stack and pushed
                  * as its raw bit pattern, matching the i386 code exactly. */
-                cgame_syscall(CG_MSS_FADE_ALL_SOUNDS, CG_FloatBits(1.0f), 0);
+                cgame_syscall(CG_MSS_FADE_ALL_SOUNDS,
+                              CG_FloatBits(1.0f), 0);
 
                 /* 3003d38f..3003d39d: finish the transition for this first snapshot. */
                 CG_SnapshotTransitionStage2();
@@ -109,6 +110,7 @@ void CG_ProcessSnapshots(void)
 
             /* 3003d3a2..3003d3a9: retry until a snapshot actually became cg_snap. */
         } while (cg_snap == NULL);
+
     }
 
     /* 3003d322 jumps here when cg_snap was already installed, and the initial-
@@ -142,7 +144,8 @@ void CG_ProcessSnapshots(void)
             }
 
             /* 3003d3fd..3003d40f: same server session — guard against backwards time. */
-            if (coduo_int32_from_bits((uint32_t)snap->serverTime - (uint32_t)cg_snap->serverTime) < 0) {
+            if (coduo_int32_from_bits((uint32_t)snap->serverTime -
+                                 (uint32_t)cg_snap->serverTime) < 0) {
                 Com_ErrorMessage("CG_ProcessSnapshots: Server time went backwards");
             }
 
@@ -153,8 +156,10 @@ void CG_ProcessSnapshots(void)
         /* 3003d41b..3003d43c: exit the loop once cg.time sits within the window,
          * i.e. cg.time >= cg_snap.serverTime AND cg.time < cg_nextSnap.serverTime.
          * The i386 forms both as signed subtractions and tests the sign bit (JS). */
-        if (coduo_int32_from_bits(cg_time - (uint32_t)cg_snap->serverTime) >= 0) {
-            if (coduo_int32_from_bits(cg_time - (uint32_t)cg_nextSnap->serverTime) < 0) {
+        if (coduo_int32_from_bits(cg_time -
+                             (uint32_t)cg_snap->serverTime) >= 0) {
+            if (coduo_int32_from_bits(cg_time -
+                                 (uint32_t)cg_nextSnap->serverTime) < 0) {
                 /* 3003d43c: cg.time is before the next snapshot — window found. */
                 break;
             }

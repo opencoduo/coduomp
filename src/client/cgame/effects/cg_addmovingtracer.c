@@ -48,10 +48,10 @@ void CG_AddMovingTracer(localEntity_t *le)
      * slot as raw dword (MOV) and reloaded as a float below.
      */
     if (le->leFlags == LEF_TRACER_MODE_A) {
-        width = cg_tracerwidthlmg_vmCvar.value;
+        width  = cg_tracerwidthlmg_vmCvar.value;
         length = cg_tracerlengthlmg_vmCvar.value;
     } else {
-        width = cg_tracerwidth_vmCvar.value;
+        width  = cg_tracerwidth_vmCvar.value;
         length = cg_tracerlength_vmCvar.value;
     }
 
@@ -91,9 +91,12 @@ void CG_AddMovingTracer(localEntity_t *le)
      *   endPoint[i] = dir[i]*length + pos[i], component by component
      *   (FLD dir[i] ; FMUL length ; FADD pos[i] ; FSTP endPoint[i]).
      */
-    endPoint[0] = (float)((long double)dir[0] * length + pos[0]);
-    endPoint[1] = (float)((long double)dir[1] * length + pos[1]);
-    endPoint[2] = (float)((long double)dir[2] * length + pos[2]);
+    endPoint[0] = (float)(
+        (long double)dir[0] * length + pos[0]);
+    endPoint[1] = (float)(
+        (long double)dir[1] * length + pos[1]);
+    endPoint[2] = (float)(
+        (long double)dir[2] * length + pos[2]);
 
     /*
      * 0x3002ab7c-0x3002abb3: CG_DrawMovingTracerPoly(pos, endPoint, width).

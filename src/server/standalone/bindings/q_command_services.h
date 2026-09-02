@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
-void PB_CallServerSbGlobal(int32_t command, int32_t clientNum, uint32_t length, const char *text);
+void PB_CallServerSbGlobal(int32_t command, int32_t clientNum,
+                           uint32_t length, const char *text);
 
 /* NOT_FROM_ORIGINAL_SOURCE: the standalone target has no PunkBuster client
  * console hook.  Returning false leaves ordinary command dispatch intact. */
@@ -18,6 +19,8 @@ void PB_CallServerSbGlobal(int32_t command, int32_t clientNum, uint32_t length, 
  * edge to the standalone server backend using the same opcode, client
  * sentinel, and NUL-inclusive length as the original Linux server body. */
 #define PB_DispatchServerConsoleCommand(text) \
-    PB_CallServerSbGlobal(Q_COMMAND_PB_CONSOLE_OPCODE, Q_COMMAND_PB_CONSOLE_CLIENT_NUM, (uint32_t)strlen(text) + UINT32_C(1), text)
+    PB_CallServerSbGlobal(Q_COMMAND_PB_CONSOLE_OPCODE, \
+                          Q_COMMAND_PB_CONSOLE_CLIENT_NUM, \
+                          (uint32_t)strlen(text) + UINT32_C(1), text)
 
 #endif

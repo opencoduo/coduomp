@@ -100,7 +100,8 @@ typedef enum surfaceType_e {
     SURFACE_TYPE_COUNT = 23
 } surfaceType_t;
 
-typedef char q_collision_surface_type_abi_size[sizeof(surfaceType_t) == 4 ? 1 : -1];
+typedef char q_collision_surface_type_abi_size[
+    sizeof(surfaceType_t) == 4 ? 1 : -1];
 
 /* Canonical Quake collision-plane record.  All authoritative CoD:UO engine
  * and module bodies use this 0x14-byte layout and the signbits byte at +0x11. */
@@ -112,10 +113,14 @@ typedef struct cplane_s {
     uint8_t pad[2];
 } cplane_t;
 
-typedef char q_collision_cplane_normal_offset[offsetof(cplane_t, normal) == 0x00 ? 1 : -1];
-typedef char q_collision_cplane_dist_offset[offsetof(cplane_t, dist) == 0x0c ? 1 : -1];
-typedef char q_collision_cplane_type_offset[offsetof(cplane_t, type) == 0x10 ? 1 : -1];
-typedef char q_collision_cplane_signbits_offset[offsetof(cplane_t, signbits) == 0x11 ? 1 : -1];
+typedef char q_collision_cplane_normal_offset[
+    offsetof(cplane_t, normal) == 0x00 ? 1 : -1];
+typedef char q_collision_cplane_dist_offset[
+    offsetof(cplane_t, dist) == 0x0c ? 1 : -1];
+typedef char q_collision_cplane_type_offset[
+    offsetof(cplane_t, type) == 0x10 ? 1 : -1];
+typedef char q_collision_cplane_signbits_offset[
+    offsetof(cplane_t, signbits) == 0x11 ? 1 : -1];
 typedef char q_collision_cplane_size[sizeof(cplane_t) == 0x14 ? 1 : -1];
 
 /* Four-float plane used by terrain collision and renderer geometry. */
@@ -127,8 +132,10 @@ typedef union plane_u {
     vec4_t equation;
 } plane_t;
 
-typedef char q_collision_plane_normal_offset[offsetof(plane_t, components.normal) == 0x00 ? 1 : -1];
-typedef char q_collision_plane_distance_offset[offsetof(plane_t, components.distance) == 0x0c ? 1 : -1];
+typedef char q_collision_plane_normal_offset[
+    offsetof(plane_t, components.normal) == 0x00 ? 1 : -1];
+typedef char q_collision_plane_distance_offset[
+    offsetof(plane_t, components.distance) == 0x0c ? 1 : -1];
 typedef char q_collision_plane_size[sizeof(plane_t) == 0x10 ? 1 : -1];
 
 /* Collision result shared by engine collision, server tracing, and the game
@@ -151,27 +158,44 @@ typedef struct trace_s {
     uint8_t startsolid;
 } trace_t;
 
-typedef char q_collision_trace_fraction_offset[offsetof(trace_t, fraction) == 0x00 ? 1 : -1];
-typedef char q_collision_trace_endpos_offset[offsetof(trace_t, endpos) == 0x04 ? 1 : -1];
-typedef char q_collision_trace_normal_offset[offsetof(trace_t, normal) == 0x10 ? 1 : -1];
-typedef char q_collision_trace_surface_flags_offset[offsetof(trace_t, surfaceFlags) == 0x1c ? 1 : -1];
-typedef char q_collision_trace_contents_offset[offsetof(trace_t, contents) == 0x20 ? 1 : -1];
+typedef char q_collision_trace_fraction_offset[
+    offsetof(trace_t, fraction) == 0x00 ? 1 : -1];
+typedef char q_collision_trace_endpos_offset[
+    offsetof(trace_t, endpos) == 0x04 ? 1 : -1];
+typedef char q_collision_trace_normal_offset[
+    offsetof(trace_t, normal) == 0x10 ? 1 : -1];
+typedef char q_collision_trace_surface_flags_offset[
+    offsetof(trace_t, surfaceFlags) == 0x1c ? 1 : -1];
+typedef char q_collision_trace_contents_offset[
+    offsetof(trace_t, contents) == 0x20 ? 1 : -1];
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char q_collision_trace_material_offset[offsetof(trace_t, material) == 0x24 ? 1 : -1];
-typedef char q_collision_trace_entity_num_offset[offsetof(trace_t, entityNum) == 0x28 ? 1 : -1];
-typedef char q_collision_trace_part_name_offset[offsetof(trace_t, partName) == 0x2a ? 1 : -1];
-typedef char q_collision_trace_part_group_offset[offsetof(trace_t, partGroup) == 0x2c ? 1 : -1];
-typedef char q_collision_trace_allsolid_offset[offsetof(trace_t, allsolid) == 0x2e ? 1 : -1];
-typedef char q_collision_trace_startsolid_offset[offsetof(trace_t, startsolid) == 0x2f ? 1 : -1];
+typedef char q_collision_trace_material_offset[
+    offsetof(trace_t, material) == 0x24 ? 1 : -1];
+typedef char q_collision_trace_entity_num_offset[
+    offsetof(trace_t, entityNum) == 0x28 ? 1 : -1];
+typedef char q_collision_trace_part_name_offset[
+    offsetof(trace_t, partName) == 0x2a ? 1 : -1];
+typedef char q_collision_trace_part_group_offset[
+    offsetof(trace_t, partGroup) == 0x2c ? 1 : -1];
+typedef char q_collision_trace_allsolid_offset[
+    offsetof(trace_t, allsolid) == 0x2e ? 1 : -1];
+typedef char q_collision_trace_startsolid_offset[
+    offsetof(trace_t, startsolid) == 0x2f ? 1 : -1];
 typedef char q_collision_trace_size[sizeof(trace_t) == 0x30 ? 1 : -1];
 #elif UINTPTR_MAX == UINT64_MAX
-typedef char q_collision_trace_material_offset[offsetof(trace_t, material) == 0x28 ? 1 : -1];
-typedef char q_collision_trace_entity_num_offset[offsetof(trace_t, entityNum) == 0x30 ? 1 : -1];
-typedef char q_collision_trace_part_name_offset[offsetof(trace_t, partName) == 0x32 ? 1 : -1];
-typedef char q_collision_trace_part_group_offset[offsetof(trace_t, partGroup) == 0x34 ? 1 : -1];
-typedef char q_collision_trace_allsolid_offset[offsetof(trace_t, allsolid) == 0x36 ? 1 : -1];
-typedef char q_collision_trace_startsolid_offset[offsetof(trace_t, startsolid) == 0x37 ? 1 : -1];
+typedef char q_collision_trace_material_offset[
+    offsetof(trace_t, material) == 0x28 ? 1 : -1];
+typedef char q_collision_trace_entity_num_offset[
+    offsetof(trace_t, entityNum) == 0x30 ? 1 : -1];
+typedef char q_collision_trace_part_name_offset[
+    offsetof(trace_t, partName) == 0x32 ? 1 : -1];
+typedef char q_collision_trace_part_group_offset[
+    offsetof(trace_t, partGroup) == 0x34 ? 1 : -1];
+typedef char q_collision_trace_allsolid_offset[
+    offsetof(trace_t, allsolid) == 0x36 ? 1 : -1];
+typedef char q_collision_trace_startsolid_offset[
+    offsetof(trace_t, startsolid) == 0x37 ? 1 : -1];
 typedef char q_collision_trace_size[sizeof(trace_t) == 0x38 ? 1 : -1];
 #endif
 

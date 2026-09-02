@@ -18,7 +18,8 @@ typedef struct fx_pool_allocator_s fx_pool_allocator_t;
  * management prove the payload at +0x0000..+0x7fef, signed free count at
  * +0x7ff0, free-list head at +0x7ff4, and intrusive links at +0x7ff8/+0x7ffc. */
 struct fx_mem_block_s {
-    uint8_t storage[FX_MEM_BLOCK_SIZE - sizeof(int32_t) - 3 * sizeof(void *)];
+    uint8_t storage[FX_MEM_BLOCK_SIZE - sizeof(int32_t) -
+                    3 * sizeof(void *)];
     int32_t freeCount;
     uint8_t *freeList;
     fx_mem_block_t *previous;
@@ -44,28 +45,50 @@ struct fx_pool_allocator_s {
 /* coduomp_fx_mem_block_for_element selects a block by masking a byte offset
  * within this array. Keep that native stride invariant explicit when host
  * pointers widen and the storage payload correspondingly shrinks. */
-CODUOMP_FX_STATIC_ASSERT(sizeof(fx_mem_block_t) == FX_MEM_BLOCK_SIZE, "native FX block size changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, storage) == 0, "native FX block storage offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(fx_mem_block_t) == FX_MEM_BLOCK_SIZE,
+                         "native FX block size changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, storage) == 0,
+                         "native FX block storage offset changed");
 
 #if UINTPTR_MAX == UINT32_MAX
-CODUOMP_FX_STATIC_ASSERT(CODUOMP_FX_ALIGNOF(fx_mem_block_t) == 0x04, "i386 FX block alignment changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, storage) == 0x0000, "i386 FX block storage offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->storage) == 0x7ff0, "i386 FX block storage extent changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, freeCount) == 0x7ff0, "i386 FX block free-count offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->freeCount) == 0x04, "i386 FX block free-count extent changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, freeList) == 0x7ff4, "i386 FX block free-list offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->freeList) == 0x04, "i386 FX block free-list extent changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, previous) == 0x7ff8, "i386 FX block previous-link offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->previous) == 0x04, "i386 FX block previous-link extent changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, next) == 0x7ffc, "i386 FX block next-link offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->next) == 0x04, "i386 FX block next-link extent changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(fx_mem_block_t) == 0x8000, "i386 FX block size changed");
-CODUOMP_FX_STATIC_ASSERT(CODUOMP_FX_ALIGNOF(fx_pool_allocator_t) == 0x04, "i386 FX pool descriptor alignment changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_pool_allocator_t, elementsPerBlock) == 0x00, "i386 FX pool element-capacity offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_pool_allocator_t *)0)->elementsPerBlock) == 0x04, "i386 FX pool element-capacity extent changed");
-CODUOMP_FX_STATIC_ASSERT(offsetof(fx_pool_allocator_t, blocks) == 0x04, "i386 FX pool block-head offset changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_pool_allocator_t *)0)->blocks) == 0x04, "i386 FX pool block-head extent changed");
-CODUOMP_FX_STATIC_ASSERT(sizeof(fx_pool_allocator_t) == 0x08, "i386 FX pool descriptor size changed");
+CODUOMP_FX_STATIC_ASSERT(CODUOMP_FX_ALIGNOF(fx_mem_block_t) == 0x04,
+                         "i386 FX block alignment changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, storage) == 0x0000,
+                         "i386 FX block storage offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->storage) == 0x7ff0,
+                         "i386 FX block storage extent changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, freeCount) == 0x7ff0,
+                         "i386 FX block free-count offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->freeCount) == 0x04,
+                         "i386 FX block free-count extent changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, freeList) == 0x7ff4,
+                         "i386 FX block free-list offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->freeList) == 0x04,
+                         "i386 FX block free-list extent changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, previous) == 0x7ff8,
+                         "i386 FX block previous-link offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->previous) == 0x04,
+                         "i386 FX block previous-link extent changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_mem_block_t, next) == 0x7ffc,
+                         "i386 FX block next-link offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_mem_block_t *)0)->next) == 0x04,
+                         "i386 FX block next-link extent changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(fx_mem_block_t) == 0x8000,
+                         "i386 FX block size changed");
+CODUOMP_FX_STATIC_ASSERT(CODUOMP_FX_ALIGNOF(fx_pool_allocator_t) == 0x04,
+                         "i386 FX pool descriptor alignment changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_pool_allocator_t, elementsPerBlock) ==
+                             0x00,
+                         "i386 FX pool element-capacity offset changed");
+CODUOMP_FX_STATIC_ASSERT(
+    sizeof(((fx_pool_allocator_t *)0)->elementsPerBlock) == 0x04,
+    "i386 FX pool element-capacity extent changed");
+CODUOMP_FX_STATIC_ASSERT(offsetof(fx_pool_allocator_t, blocks) == 0x04,
+                         "i386 FX pool block-head offset changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(((fx_pool_allocator_t *)0)->blocks) == 0x04,
+                         "i386 FX pool block-head extent changed");
+CODUOMP_FX_STATIC_ASSERT(sizeof(fx_pool_allocator_t) == 0x08,
+                         "i386 FX pool descriptor size changed");
 #endif
 #undef CODUOMP_FX_ALIGNOF
 #undef CODUOMP_FX_STATIC_ASSERT
@@ -81,7 +104,9 @@ extern "C" {
 #endif
 
 void FxMem_Init(void);
-fx_mem_block_t *FxMem_ClaimBlock(fx_mem_block_t *previous, int32_t elementCount, size_t elementSize);
+fx_mem_block_t *FxMem_ClaimBlock(fx_mem_block_t *previous,
+                                 int32_t elementCount,
+                                 size_t elementSize);
 void FxMem_UnlinkBlock(fx_mem_block_t *block);
 void FxMem_ReleaseBlock(fx_mem_block_t *block);
 void FxMem_FreeElem(uint8_t *element, size_t elementSize);
@@ -92,10 +117,12 @@ void FxMem_FreeBoltFrame(fx_pool_allocator_t *allocator, void *element);
 void *FxModelAlloc(int32_t size);
 /* NOT_FROM_ORIGINAL_SOURCE: portable source-level entry shared by the
  * original class-specific fixed-pool allocation template instantiations. */
-void *coduomp_fx_mem_alloc_from_pool(fx_pool_allocator_t *allocator, size_t size);
+void *coduomp_fx_mem_alloc_from_pool(fx_pool_allocator_t *allocator,
+                                     size_t size);
 /* NOT_FROM_ORIGINAL_SOURCE: portable source-level entry shared by the
  * original class-specific fixed-pool template instantiations. */
-void coduomp_fx_mem_free_from_pool(fx_pool_allocator_t *allocator, void *element);
+void coduomp_fx_mem_free_from_pool(fx_pool_allocator_t *allocator,
+                                   void *element);
 
 #ifdef __cplusplus
 }

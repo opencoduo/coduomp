@@ -40,11 +40,11 @@
  * base model + CLIENT_INFO_ATTACHMENT_COUNT (6) attach models + one weapon
  * model = 8 elements. The i386 builds it on the stack.
  */
-enum {
-    DOBJ_CORPSE_MODEL_SET_MAX = 1 + CLIENT_INFO_ATTACHMENT_COUNT + 1
-};
+enum { DOBJ_CORPSE_MODEL_SET_MAX = 1 + CLIENT_INFO_ATTACHMENT_COUNT + 1 };
 
-void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entityState_t *renderEntity, uint8_t *generationOut)
+void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle,
+                              entityState_t *renderEntity,
+                              uint8_t *generationOut)
 {
     /* EDI at entry = (dobjHandle != 0). 0x300058f9..0x30005902:
      * XOR/CMP EDX,0; SETNZ AL; MOV EDI,EAX. */
@@ -86,7 +86,9 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entitySta
     /* 0x30005952: when a DObj already exists, decide whether nothing changed and
      * we can bail without rebuilding. 0x3000597f otherwise releases it and rebuilds. */
     if (haveExistingDObj) {
-        if (info->dobjSavedModel == weaponIndex && info->dobjNeedsUpdate == 0 && info->dobjVersion == *generationOut) {
+        if (info->dobjSavedModel == weaponIndex &&
+            info->dobjNeedsUpdate == 0 &&
+            info->dobjVersion == *generationOut) {
             /* 0x30005979 JZ -> 0x30005b46: unchanged; return with no work and no
              * generation write. */
             return;
@@ -109,9 +111,12 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entitySta
     int16_t modelIndex = (int16_t)CG_RegisterModel(info->modelName, 7);
     elements[0].modelIndex = modelIndex;
     if (modelIndex == 0) {
-        Com_Error(ERR_DROP, bg_couldNotLoadModelErrorFormat, info->modelName);
+        Com_Error(ERR_DROP, bg_couldNotLoadModelErrorFormat,
+                           info->modelName);
     }
-    elements[0].model = (XModel *)(intptr_t)cgame_syscall(CG_DOBJ_WRAP_MODEL, CG_RegisterModel(info->modelName, 7));
+    elements[0].model =
+        (XModel *)(intptr_t)cgame_syscall(
+            CG_DOBJ_WRAP_MODEL, CG_RegisterModel(info->modelName, 7));
     elements[0].tagName = 0;   /* 0x300059d1 [ESP+0x1c]=0 */
     elements[0].ignoreCollision = 0; /* 0x300059d5 [ESP+0x24]=0 */
 
@@ -125,12 +130,17 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entitySta
         if (info->attachModelNames[i][0] == '\0') {
             continue; /* 0x300059f7 CMP [EDI],0; JZ skip */
         }
-        int16_t attachModelIndex = (int16_t)CG_RegisterModel(info->attachModelNames[i], 7);
+        int16_t attachModelIndex =
+            (int16_t)CG_RegisterModel(info->attachModelNames[i], 7);
         elements[count].modelIndex = attachModelIndex;
         if (attachModelIndex == 0) {
-            Com_Error(ERR_DROP, bg_couldNotLoadModelErrorFormat, info->attachModelNames[i]);
+            Com_Error(ERR_DROP, bg_couldNotLoadModelErrorFormat,
+                               info->attachModelNames[i]);
         }
-        elements[count].model = (XModel *)(intptr_t)cgame_syscall(CG_DOBJ_WRAP_MODEL, CG_RegisterModel(info->attachModelNames[i], 7));
+        elements[count].model =
+            (XModel *)(intptr_t)cgame_syscall(
+                CG_DOBJ_WRAP_MODEL,
+                CG_RegisterModel(info->attachModelNames[i], 7));
         /* 0x30005a34 addresses the same-index entry in the parallel tag array. */
         elements[count].tagName = info->attachTagNames[i];
         elements[count].ignoreCollision = 0; /* 0x30005a3f [ESI+0xc]=0 */
@@ -140,14 +150,17 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entitySta
     /* Held-weapon model. 0x30005a58..0x30005acb. Added only when a weapon index is
      * kept AND the record's clientNum still matches this render entity's
      * modelPartIndex, AND the weapon has a world model handle. */
-    if (weaponIndex != 0 && renderEntity->numberBits == (uint32_t)info->clientNum) {
+    if (weaponIndex != 0 &&
+        renderEntity->numberBits == (uint32_t)info->clientNum) {
         /* 0x30005a70 IMUL 0x1c4; ADD 0x30413580: cg_weaponInfos[weaponIndex]. */
         const cgWeaponInfo_t *weaponInfo = &cg_weaponInfos[weaponIndex];
         qhandle_t worldModel = weaponInfo->worldModelHandle;
         if (worldModel != 0) {
             /* The weapon's world model handle is wrapped directly (no
              * CG_RegisterModel). 0x30005a86 PUSH worldModel; PUSH 0x32. */
-            elements[count].model = (XModel *)(intptr_t)cgame_syscall(CG_DOBJ_WRAP_MODEL, worldModel);
+            elements[count].model =
+                (XModel *)(intptr_t)cgame_syscall(
+                    CG_DOBJ_WRAP_MODEL, worldModel);
             /* 0x30005a94 MOV DX,[weaponInfo+0xbc]: low 16 bits as the handle. */
             elements[count].modelIndex = (int16_t)worldModel;
             /* 0x30005a9f..0x30005ab6: gunHandLeft picks the attach tag side.
@@ -155,7 +168,9 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entitySta
              * "tag_weapon_left"; the JNE-skipped arm (gunHandLeft == 0) loads
              * 0x30071548 = "tag_weapon_right".  (A prior pass swapped these two,
              * attaching the weapon to the wrong-hand tag.) */
-            elements[count].tagName = (info->gunHandLeft != 0) ? bg_leftWeaponTagName : bg_rightWeaponTagName;
+            elements[count].tagName = (info->gunHandLeft != 0)
+                                          ? bg_leftWeaponTagName
+                                          : bg_rightWeaponTagName;
             elements[count].ignoreCollision = 0; /* 0x30005abf [ESP+ESI+0x24]=0 */
             ++count;                   /* 0x30005acb INC EBP */
         }
@@ -164,7 +179,8 @@ void CG_BuildCorpseDObjModels(clientInfo_t *info, intptr_t dobjHandle, entitySta
     /* Commit the model set. 0x30005acc..0x30005ae9:
      * cgame_syscall(0xa7, &elements, count, animTree, renderEntity->number).
      * The count is passed as a 16-bit value (MOVZX EAX,BP). */
-    cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)&elements[0], (intptr_t)(uint16_t)count, (intptr_t)animTree,
+    cgame_syscall(CG_CLIENT_DOBJ_CREATE, (intptr_t)&elements[0],
+                  (intptr_t)(uint16_t)count, (intptr_t)animTree,
                   (int)renderEntity->numberBits);
 
     /* 0x30005aef snapshots the rebuild word immediately after the trap, before

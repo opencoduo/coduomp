@@ -64,7 +64,8 @@ qboolean Q_isupper(int32_t character)
 
 qboolean Q_isalpha(int32_t character)
 {
-    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) ? qtrue : qfalse;
+    return ((character >= 'a' && character <= 'z') ||
+            (character >= 'A' && character <= 'Z')) ? qtrue : qfalse;
 }
 
 qboolean Q_isnumeric(int32_t character)
@@ -74,14 +75,15 @@ qboolean Q_isnumeric(int32_t character)
 
 qboolean Q_isalphanumeric(int32_t character)
 {
-    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9'))
-               ? qtrue
-               : qfalse;
+    return ((character >= 'a' && character <= 'z') ||
+            (character >= 'A' && character <= 'Z') ||
+            (character >= '0' && character <= '9')) ? qtrue : qfalse;
 }
 
 qboolean Q_isforfilename(int32_t character)
 {
-    return (Q_isalphanumeric(character) != qfalse || character == '_' || character == '-') && character != ' ' ? qtrue : qfalse;
+    return (Q_isalphanumeric(character) != qfalse || character == '_' ||
+            character == '-') && character != ' ' ? qtrue : qfalse;
 }
 
 char *Q_strrchr(const char *string, int32_t character)
@@ -215,11 +217,12 @@ void Q_strcat(char *destination, int32_t size, const char *source)
 
     /* All original bodies use a signed comparison here. */
     if (destinationLength >= size) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Q_strcat: already overflowed");
+        Com_Error(ERR_FATAL,
+                  "\x15" "Q_strcat: already overflowed");
     }
 
-    Q_strncpyz(destination + destinationLength, source, size - destinationLength);
+    Q_strncpyz(destination + destinationLength, source,
+               size - destinationLength);
 }
 
 int32_t Q_DrawStrlen(const char *string)
@@ -228,7 +231,8 @@ int32_t Q_DrawStrlen(const char *string)
     int32_t result;
 
     while (*string != '\0') {
-        if (string[0] == '^' && string[1] != '\0' && string[1] != '^' && string[1] >= '0' && string[1] <= '9') {
+        if (string[0] == '^' && string[1] != '\0' && string[1] != '^' &&
+            string[1] >= '0' && string[1] <= '9') {
             string += 2;
         } else {
             ++length;
@@ -246,7 +250,8 @@ char *Q_CleanStr(char *string)
     char *destination = string;
 
     while (*source != '\0') {
-        if (source[0] == '^' && source[1] != '\0' && source[1] != '^' && source[1] >= '0' && source[1] <= '9') {
+        if (source[0] == '^' && source[1] != '\0' && source[1] != '^' &&
+            source[1] >= '0' && source[1] <= '9') {
             ++source;
         } else {
             const int32_t character = (int32_t)(signed char)*source;

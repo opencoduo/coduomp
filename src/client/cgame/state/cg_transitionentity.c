@@ -52,11 +52,12 @@
 void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    if ((cent->nextState.eType == ET_PLAYER || cent->nextState.eType == ET_PLAYER_CORPSE) &&
-        (uint32_t)cent->nextState.clientNum >= (uint32_t)MAX_CLIENTS) {
+    if ((cent->nextState.eType == ET_PLAYER ||
+         cent->nextState.eType == ET_PLAYER_CORPSE) &&
+        (uint32_t)cent->nextState.clientNum >=
+            (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_TransitionEntity: invalid client number %i",
+                  "\x15" "CG_TransitionEntity: invalid client number %i",
                   cent->nextState.clientNum);
         return;
     }
@@ -76,8 +77,10 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
 
     /* Evaluate this entity's motion trajectories at cg.time to produce the current
      * interpolated render origin and angles. */
-    BG_EvaluateTrajectory(&cent->nextState.pos, (int32_t)cg_time, cent->lerpOrigin);
-    BG_EvaluateTrajectory(&cent->nextState.apos, (int32_t)cg_time, cent->lerpAngles);
+    BG_EvaluateTrajectory(&cent->nextState.pos, (int32_t)cg_time,
+                          cent->lerpOrigin);
+    BG_EvaluateTrajectory(&cent->nextState.apos, (int32_t)cg_time,
+                          cent->lerpAngles);
 
     switch (cent->nextState.eType) {
     case ET_PLAYER: {
@@ -91,12 +94,13 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
          * +0x3e8/+0x3ec/+0x3f0). The machine code seeds viewPitch/viewRoll from the
          * angle result and then zeroes lerpAngles[0]/[2] again below. */
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        clientInfo_t *anim = &bgs.clientinfo[cent->currentState.clientNum];
-        anim->leanAmount = cent->nextState.leanAmount; /* +0x3e0 <- nextState+0x6c */
-        anim->leanFraction = cent->nextState.leanf; /* +0x3e4 <- nextState+0xd8 */
-        anim->viewPitch = cent->lerpAngles[0]; /* +0x3e8 */
-        anim->viewYaw = cent->lerpAngles[1]; /* +0x3ec */
-        anim->viewRoll = cent->lerpAngles[2]; /* +0x3f0 */
+        clientInfo_t *anim =
+            &bgs.clientinfo[cent->currentState.clientNum];
+        anim->leanAmount   = cent->nextState.leanAmount;   /* +0x3e0 <- nextState+0x6c */
+        anim->leanFraction = cent->nextState.leanf;        /* +0x3e4 <- nextState+0xd8 */
+        anim->viewPitch    = cent->lerpAngles[0];    /* +0x3e8 */
+        anim->viewYaw      = cent->lerpAngles[1];    /* +0x3ec */
+        anim->viewRoll     = cent->lerpAngles[2];    /* +0x3f0 */
 
         /* MOV [ESI],0 and MOV [EBP+0x21c],0: clear lerpAngles[0] and [2]. */
         cent->lerpAngles[0] = 0.0f;
@@ -113,11 +117,12 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
         /* Corpse client-info row, indexed by (currentState.number - MAX_CLIENTS)
          * (EBX = [EBP+0x0], the just-copied nextState.number). */
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        uint32_t corpseIndex = (uint32_t)cent->currentState.number - (uint32_t)PLAYER_CLONE_ENTITYNUM_BASE;
+        uint32_t corpseIndex =
+            (uint32_t)cent->currentState.number -
+            (uint32_t)PLAYER_CLONE_ENTITYNUM_BASE;
         if (corpseIndex >= (uint32_t)PLAYER_CLONE_COUNT) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "CG_TransitionEntity: "
+                      "\x15" "CG_TransitionEntity: "
                       "invalid player clone entity %i",
                       cent->currentState.number);
             return;
@@ -127,7 +132,8 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
         /* The live player's 0x4d0-byte clientInfo_t row for this client. */
         /* Retail used the same unchecked wire clientNum for the live row copied
          * into this corpse. The common entry guard establishes the bound. */
-        clientInfo_t *playerAnim = &bgs.clientinfo[cent->currentState.clientNum];
+        clientInfo_t *playerAnim =
+            &bgs.clientinfo[cent->currentState.clientNum];
 
         /* animTree (+0x4c4) is preserved across every full-row copy below. */
         XAnimTree *corpseAnimTree = corpse->animTree;
@@ -139,13 +145,16 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
              * player tree and the old corpse tree to the clone trap. */
             memcpy(corpse, playerAnim, sizeof(clientInfo_t));
             corpse->animTree = corpseAnimTree;
-            cgame_syscall(CG_XANIM_CLONE_ANIM_TREE, (intptr_t)playerAnim->animTree, (intptr_t)corpseAnimTree);
+            cgame_syscall(CG_XANIM_CLONE_ANIM_TREE,
+                          (intptr_t)playerAnim->animTree,
+                          (intptr_t)corpseAnimTree);
             /* 0x3003c923 xor eax,eax: the clone path zeroes the event fields -- it jmps
              * straight to the common store tail (0x3003c94d), skipping the eventSequence
              * load at 0x3003c947. */
             eventValue = 0;
         } else {
-            if (corpse->modelName[0] == '\0' || corpse->clientNum != playerAnim->clientNum) {
+            if (corpse->modelName[0] == '\0' ||
+                corpse->clientNum != playerAnim->clientNum) {
                 /* Fresh path: (re)copy the player anim-state row over the corpse slot when
                  * the corpse has no live tag byte (+0x40 == 0) or its anim field diverges
                  * from the player's. animTree is preserved. */
@@ -164,7 +173,7 @@ void CG_TransitionEntity(centity_t *cent /* [ESP+0xc] */)
          * event fields with eventSequence instead of 0. */
         cent->previousEvent = eventValue;
         cent->modelPreviousEvent = eventValue;
-        corpse->dobjNeedsUpdate = 1; /* +0x404 */
+        corpse->dobjNeedsUpdate = 1;   /* +0x404 */
         break;
     }
 

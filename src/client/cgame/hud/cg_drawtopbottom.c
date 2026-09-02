@@ -59,15 +59,29 @@ void CG_DrawTopBottom(float x, float y, float width, float height, float size)
     float ss = (float)((long double)cgs_screenYScale * (long double)size);
 
     /* top horizontal bar */
-    trap_R_DrawStretchPic(CG_FloatBits(xs), CG_FloatBits(ys), CG_FloatBits(ws), CG_FloatBits(ss), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f), CG_FloatBits(0.0f), firstShader);
+    trap_R_DrawStretchPic(CG_FloatBits(xs),
+                          CG_FloatBits(ys),
+                          CG_FloatBits(ws),
+                          CG_FloatBits(ss),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          firstShader);
 
     /* bottom horizontal bar, at the scaled bottom edge minus one bar height */
     {
         long double bottomBase = (long double)ys;
         qhandle_t secondShader = cgs_media_whiteShader;
         float bottom = (float)((bottomBase + hs) - (long double)ss);
-        trap_R_DrawStretchPic(CG_FloatBits(xs), CG_FloatBits(bottom), CG_FloatBits(ws), CG_FloatBits(ss), CG_FloatBits(0.0f),
-                              CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f), secondShader);
+        trap_R_DrawStretchPic(CG_FloatBits(xs),
+                          CG_FloatBits(bottom),
+                          CG_FloatBits(ws),
+                          CG_FloatBits(ss),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          secondShader);
     }
 }

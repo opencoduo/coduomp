@@ -33,7 +33,9 @@ static const char reticleUpscalePrefix[] = "gfx/reticle/";
  *   bottomLeft=C when D==C and D!=B and C!=A,
  *   bottomRight=D when B==D and B!=A and D!=C.
  * Pixels compare as whole RGBA words; neighbors clamp at the borders. */
-static void reticle_upscale_epx_pass(const uint32_t *source, int32_t sourceWidth, int32_t sourceHeight, uint32_t *destination)
+static void reticle_upscale_epx_pass(
+    const uint32_t *source, int32_t sourceWidth, int32_t sourceHeight,
+    uint32_t *destination)
 {
     const int32_t destinationWidth = sourceWidth * 2;
 
@@ -63,7 +65,8 @@ static void reticle_upscale_epx_pass(const uint32_t *source, int32_t sourceWidth
             if (right == below && right != above && below != left)
                 bottomRight = below;
 
-            uint32_t *destinationBlock = &destination[(y * 2) * destinationWidth + (x * 2)];
+            uint32_t *destinationBlock =
+                &destination[(y * 2) * destinationWidth + (x * 2)];
             destinationBlock[0] = topLeft;
             destinationBlock[1] = topRight;
             destinationBlock[destinationWidth] = bottomLeft;
@@ -71,42 +74,54 @@ static void reticle_upscale_epx_pass(const uint32_t *source, int32_t sourceWidth
         }
     }
 }
-void coduomp_compat_upscale_reticle_pixels(const char *name, uint8_t **pixels, uint16_t *width, uint16_t *height, uint32_t format,
-                                           renderer_image_load_mode_t loadMode)
+void coduomp_compat_upscale_reticle_pixels(
+    const char *name, uint8_t **pixels,
+    uint16_t *width, uint16_t *height, uint32_t format,
+    renderer_image_load_mode_t loadMode)
 {
     if (r_hiresReticles == NULL || r_hiresReticles->integer == 0)
         return;
-    if (name == NULL || pixels == NULL || *pixels == NULL || width == NULL || height == NULL)
+    if (name == NULL || pixels == NULL || *pixels == NULL ||
+        width == NULL || height == NULL)
         return;
     /* Pixel loads only: metadata-only (delayed) loads carry no image data,
      * and only plain uncompressed RGBA is transformable. */
     if (loadMode != R_IMAGE_LOAD_PIXELS || format != GL_RGBA)
         return;
-    if (Q_stricmpn(name, reticleUpscalePrefix, (int32_t)(sizeof(reticleUpscalePrefix) - 1)) != 0)
+    if (Q_stricmpn(name, reticleUpscalePrefix,
+                   (int32_t)(sizeof(reticleUpscalePrefix) - 1)) != 0)
         return;
 
     const int32_t sourceWidth = *width;
     const int32_t sourceHeight = *height;
-    if (sourceWidth <= 0 || sourceHeight <= 0 || sourceWidth > RETICLE_UPSCALE_MAX_SOURCE_DIM ||
+    if (sourceWidth <= 0 || sourceHeight <= 0 ||
+        sourceWidth > RETICLE_UPSCALE_MAX_SOURCE_DIM ||
         sourceHeight > RETICLE_UPSCALE_MAX_SOURCE_DIM)
         return;
 
     const int32_t finalWidth = sourceWidth * RETICLE_UPSCALE_FACTOR;
     const int32_t finalHeight = sourceHeight * RETICLE_UPSCALE_FACTOR;
-    if (glConfig.maxTextureSize > 0 && (finalWidth > glConfig.maxTextureSize || finalHeight > glConfig.maxTextureSize))
+    if (glConfig.maxTextureSize > 0 &&
+        (finalWidth > glConfig.maxTextureSize ||
+         finalHeight > glConfig.maxTextureSize))
         return;
 
     /* Both buffers are transient image allocations released by the caller's
      * ordinary R_FreeImageAllocations sweep after the GL upload copies out. */
-    uint32_t *doubled = R_AllocTempMemory((size_t)(sourceWidth * 2) * (size_t)(sourceHeight * 2) * sizeof(uint32_t));
+    uint32_t *doubled = R_AllocTempMemory(
+        (size_t)(sourceWidth * 2) * (size_t)(sourceHeight * 2) *
+        sizeof(uint32_t));
     if (doubled == NULL)
         return;
-    uint32_t *quadrupled = R_AllocTempMemory((size_t)finalWidth * (size_t)finalHeight * sizeof(uint32_t));
+    uint32_t *quadrupled = R_AllocTempMemory(
+        (size_t)finalWidth * (size_t)finalHeight * sizeof(uint32_t));
     if (quadrupled == NULL)
         return;
 
-    reticle_upscale_epx_pass((const uint32_t *)*pixels, sourceWidth, sourceHeight, doubled);
-    reticle_upscale_epx_pass(doubled, sourceWidth * 2, sourceHeight * 2, quadrupled);
+    reticle_upscale_epx_pass((const uint32_t *)*pixels,
+                             sourceWidth, sourceHeight, doubled);
+    reticle_upscale_epx_pass(doubled, sourceWidth * 2, sourceHeight * 2,
+                             quadrupled);
 
     *pixels = (uint8_t *)quadrupled;
     *width = (uint16_t)finalWidth;

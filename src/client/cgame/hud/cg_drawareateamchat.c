@@ -53,7 +53,10 @@
  */
 /* Uses the shared rectDef_t type from client_recovered.h (same layout). */
 
-void CG_DrawAreaTeamChat(rectDef_t *ctx, intptr_t word1, intptr_t word2, intptr_t word3)
+void CG_DrawAreaTeamChat(rectDef_t *ctx,
+                         intptr_t word1,
+                         intptr_t word2,
+                         intptr_t word3)
 {
     /*
      * The trap carries the float sum as a raw 32-bit pattern; the machine code
@@ -73,5 +76,14 @@ void CG_DrawAreaTeamChat(rectDef_t *ctx, intptr_t word1, intptr_t word2, intptr_
      * the trap-54 family's per-handler buffers is proven; a final buffer name is
      * left to the sibling reconstruction that owns the whole family.
      */
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(ctx->x), coordSumBits, word1, word2, word3, (intptr_t)cg_hudEmitScratch, 0, 0, 0);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(ctx->x),
+                  coordSumBits,
+                  word1,
+                  word2,
+                  word3,
+                  (intptr_t)cg_hudEmitScratch,
+                  0,
+                  0,
+                  0);
 }

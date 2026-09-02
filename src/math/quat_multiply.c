@@ -36,7 +36,8 @@
 #if defined(WINDOWS_BEHAVIOR)
 void QuatMultiply(const vec4_t first, const vec4_t second, vec4_t product)
 {
-#if (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#if (defined(__i386__) || defined(__x86_64__)) && \
+    (defined(__GNUC__) || defined(__clang__))
     /* GAS's AT&T `fsubrp` spelling encodes the original DE E9 FSUBP. */
     __asm__ __volatile__("flds 12(%1)\n\t"
                          "fmuls 0(%0)\n\t"
@@ -130,21 +131,31 @@ void QuatMultiply(const vec4_t first, const vec4_t second, vec4_t product)
 void QuatMultiply(const vec4_t first, const vec4_t second, vec4_t product)
 {
 #if EMULATE_X87
-#define QUAT_PRODUCT(a, b) x87f_mul(x87f_load_f32(a), x87f_load_f32(b))
+#define QUAT_PRODUCT(a, b) \
+    x87f_mul(x87f_load_f32(a), x87f_load_f32(b))
     product[0] = x87f_store_f32(x87f_sub(
-        x87f_add(x87f_add(QUAT_PRODUCT(first[0], second[3]), QUAT_PRODUCT(first[3], second[0])), QUAT_PRODUCT(first[2], second[1])),
+        x87f_add(x87f_add(QUAT_PRODUCT(first[0], second[3]),
+                          QUAT_PRODUCT(first[3], second[0])),
+                 QUAT_PRODUCT(first[2], second[1])),
         QUAT_PRODUCT(first[1], second[2])));
     product[1] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_sub(QUAT_PRODUCT(first[1], second[3]), QUAT_PRODUCT(first[2], second[0])), QUAT_PRODUCT(first[3], second[1])),
+        x87f_add(x87f_sub(QUAT_PRODUCT(first[1], second[3]),
+                          QUAT_PRODUCT(first[2], second[0])),
+                 QUAT_PRODUCT(first[3], second[1])),
         QUAT_PRODUCT(first[0], second[2])));
     product[2] = x87f_store_f32(x87f_add(
-        x87f_sub(x87f_add(QUAT_PRODUCT(first[2], second[3]), QUAT_PRODUCT(first[1], second[0])), QUAT_PRODUCT(first[0], second[1])),
+        x87f_sub(x87f_add(QUAT_PRODUCT(first[2], second[3]),
+                          QUAT_PRODUCT(first[1], second[0])),
+                 QUAT_PRODUCT(first[0], second[1])),
         QUAT_PRODUCT(first[3], second[2])));
     product[3] = x87f_store_f32(x87f_sub(
-        x87f_sub(x87f_sub(QUAT_PRODUCT(first[3], second[3]), QUAT_PRODUCT(first[0], second[0])), QUAT_PRODUCT(first[1], second[1])),
+        x87f_sub(x87f_sub(QUAT_PRODUCT(first[3], second[3]),
+                          QUAT_PRODUCT(first[0], second[0])),
+                 QUAT_PRODUCT(first[1], second[1])),
         QUAT_PRODUCT(first[2], second[2])));
 #undef QUAT_PRODUCT
-#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#elif (defined(__i386__) || defined(__x86_64__)) && \
+      (defined(__GNUC__) || defined(__clang__))
     /* GAS's AT&T `fsubrp` spelling encodes the original DE E9 FSUBP. */
     __asm__ __volatile__("flds 0(%0)\n\t"
                          "fmuls 12(%1)\n\t"
@@ -198,10 +209,18 @@ void QuatMultiply(const vec4_t first, const vec4_t second, vec4_t product)
                          : "r"(first), "r"(second), "r"(product)
                          : "st", "st(1)", "memory");
 #else
-    product[0] = ((first[0] * second[3] + first[3] * second[0]) + first[2] * second[1]) - first[1] * second[2];
-    product[1] = ((first[1] * second[3] - first[2] * second[0]) + first[3] * second[1]) + first[0] * second[2];
-    product[2] = ((first[2] * second[3] + first[1] * second[0]) - first[0] * second[1]) + first[3] * second[2];
-    product[3] = ((first[3] * second[3] - first[0] * second[0]) - first[1] * second[1]) - first[2] * second[2];
+    product[0] = ((first[0] * second[3] + first[3] * second[0]) +
+                  first[2] * second[1]) -
+                 first[1] * second[2];
+    product[1] = ((first[1] * second[3] - first[2] * second[0]) +
+                  first[3] * second[1]) +
+                 first[0] * second[2];
+    product[2] = ((first[2] * second[3] + first[1] * second[0]) -
+                  first[0] * second[1]) +
+                 first[3] * second[2];
+    product[3] = ((first[3] * second[3] - first[0] * second[0]) -
+                  first[1] * second[1]) -
+                 first[2] * second[2];
 #endif
 }
 #endif

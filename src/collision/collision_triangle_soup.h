@@ -10,8 +10,9 @@
 extern "C" {
 #endif
 
-collisionTriangleSoup_t *CM_GenerateTerrainCollide(int32_t indexCount, const int16_t *indices, uint32_t vertexCount, const vec3_t *vertices,
-                                                   vec3_t bounds[2]);
+collisionTriangleSoup_t *CM_GenerateTerrainCollide(
+    int32_t indexCount, const int16_t *indices, uint32_t vertexCount,
+    const vec3_t *vertices, vec3_t bounds[2]);
 
 #ifdef __cplusplus
 }

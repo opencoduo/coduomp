@@ -43,11 +43,15 @@ static float bg_compat_quantize_angle_add(float left, float right)
     int32_t packed;
 
 #if EMULATE_X87
-    packed =
-        (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(x87f_add(x87f_load_f32(left), x87f_load_f32(right)), x87f_load_f32(angleToShort)));
-    return x87f_store_f32(x87f_mul(x87f_load_i32(packed & BG_SWING_ANGLE_MASK), x87f_load_f32(shortToAngle)));
+    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(
+        x87f_add(x87f_load_f32(left), x87f_load_f32(right)),
+        x87f_load_f32(angleToShort)));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_i32(packed & BG_SWING_ANGLE_MASK),
+        x87f_load_f32(shortToAngle)));
 #else
-    packed = coduo_fp_to_i32_extended(((long double)left + (long double)right) * angleToShort);
+    packed = coduo_fp_to_i32_extended(
+        ((long double)left + (long double)right) * angleToShort);
     return (float)((double)(packed & BG_SWING_ANGLE_MASK) * shortToAngle);
 #endif
 }
@@ -60,16 +64,21 @@ static float bg_compat_quantize_angle_subtract(float left, float right)
     int32_t packed;
 
 #if EMULATE_X87
-    packed =
-        (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(x87f_sub(x87f_load_f32(left), x87f_load_f32(right)), x87f_load_f32(angleToShort)));
-    return x87f_store_f32(x87f_mul(x87f_load_i32(packed & BG_SWING_ANGLE_MASK), x87f_load_f32(shortToAngle)));
+    packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(
+        x87f_sub(x87f_load_f32(left), x87f_load_f32(right)),
+        x87f_load_f32(angleToShort)));
+    return x87f_store_f32(x87f_mul(
+        x87f_load_i32(packed & BG_SWING_ANGLE_MASK),
+        x87f_load_f32(shortToAngle)));
 #else
-    packed = coduo_fp_to_i32_extended(((long double)left - (long double)right) * angleToShort);
+    packed = coduo_fp_to_i32_extended(
+        ((long double)left - (long double)right) * angleToShort);
     return (float)((double)(packed & BG_SWING_ANGLE_MASK) * shortToAngle);
 #endif
 }
 
-void BG_SwingAngles(float target, float deadband, float maxDeviation, float stepScale, float *angle, qboolean *active)
+void BG_SwingAngles(float target, float deadband, float maxDeviation,
+                    float stepScale, float *angle, qboolean *active)
 {
     float delta;
     float step;
@@ -89,7 +98,8 @@ void BG_SwingAngles(float target, float deadband, float maxDeviation, float step
     }
 
     if (delta >= 0.0f) {
-        float increment = (float)bg_compat_animation_frame_time() * step * stepScale;
+        float increment =
+            (float)bg_compat_animation_frame_time() * step * stepScale;
         if (increment >= delta) {
             increment = delta;
             *active = qfalse;
@@ -98,7 +108,8 @@ void BG_SwingAngles(float target, float deadband, float maxDeviation, float step
         }
         *angle = bg_compat_quantize_angle_add(*angle, increment);
     } else if (delta < 0.0f) {
-        float increment = -((float)bg_compat_animation_frame_time() * step * stepScale);
+        float increment =
+            -((float)bg_compat_animation_frame_time() * step * stepScale);
         if (increment <= delta) {
             increment = delta;
             *active = qfalse;
@@ -116,7 +127,8 @@ void BG_SwingAngles(float target, float deadband, float maxDeviation, float step
     }
 }
 #else
-void BG_SwingAngles(float target, float deadband, float maxDeviation, float stepScale, float *angle, qboolean *active)
+void BG_SwingAngles(float target, float deadband, float maxDeviation,
+                    float stepScale, float *angle, qboolean *active)
 {
     if (*active == qfalse) {
         const float delta = AngleSubtract(*angle, target);
@@ -135,7 +147,8 @@ void BG_SwingAngles(float target, float deadband, float maxDeviation, float step
         }
 
         if (delta >= 0.0f) {
-            const float maximumStep = (float)bg_compat_animation_frame_time() * step * stepScale;
+            const float maximumStep =
+                (float)bg_compat_animation_frame_time() * step * stepScale;
 
             if (delta <= maximumStep) {
                 *active = qfalse;
@@ -145,7 +158,8 @@ void BG_SwingAngles(float target, float deadband, float maxDeviation, float step
             }
             *angle = AngleMod(*angle + delta);
         } else if (delta < 0.0f) {
-            const float minimumStep = -((float)bg_compat_animation_frame_time() * step * stepScale);
+            const float minimumStep =
+                -((float)bg_compat_animation_frame_time() * step * stepScale);
 
             if (minimumStep <= delta) {
                 *active = qfalse;
@@ -168,10 +182,13 @@ void BG_SwingAngles(float target, float deadband, float maxDeviation, float step
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserve an unspilled x87 multiply/add chain in
  * the shared source on both original precision-control modes. */
-static float bg_compat_player_angle_multiply_add(float left, float scale, float addend)
+static float bg_compat_player_angle_multiply_add(float left, float scale,
+                                                  float addend)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(left), x87f_load_f32(scale)), x87f_load_f32(addend)));
+    return x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(left), x87f_load_f32(scale)),
+        x87f_load_f32(addend)));
 #elif defined(WINDOWS_BEHAVIOR)
     return (float)((double)left * scale + addend);
 #else
@@ -181,10 +198,14 @@ static float bg_compat_player_angle_multiply_add(float left, float scale, float 
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserve the corresponding subtract/multiply
  * chain used for the wrapped pitch target. */
-static float bg_compat_player_angle_subtract_multiply(float left, float subtract, float scale)
+static float bg_compat_player_angle_subtract_multiply(float left,
+                                                       float subtract,
+                                                       float scale)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_mul(x87f_sub(x87f_load_f32(left), x87f_load_f32(subtract)), x87f_load_f32(scale)));
+    return x87f_store_f32(x87f_mul(
+        x87f_sub(x87f_load_f32(left), x87f_load_f32(subtract)),
+        x87f_load_f32(scale)));
 #elif defined(WINDOWS_BEHAVIOR)
     return (float)(((double)left - subtract) * scale);
 #else
@@ -196,9 +217,14 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
 {
     const uint32_t entityFlags = entity->eFlags;
     const uint32_t vehicleState = (uint32_t)entity->vehicleAnimState;
-    const vehicle_type_t vehicleType = (vehicle_type_t)((vehicleState & VEHICLE_ANIM_STATE_TYPE_MASK) >> VEHICLE_ANIM_STATE_TYPE_SHIFT);
-    const int32_t vehiclePosition = (int32_t)((vehicleState & VEHICLE_ANIM_STATE_POS_MASK) >> VEHICLE_ANIM_STATE_POS_SHIFT);
-    const uint32_t animationIndex = (uint32_t)entity->legsAnim & ~ANIM_TOGGLEBIT;
+    const vehicle_type_t vehicleType = (vehicle_type_t)(
+        (vehicleState & VEHICLE_ANIM_STATE_TYPE_MASK) >>
+        VEHICLE_ANIM_STATE_TYPE_SHIFT);
+    const int32_t vehiclePosition = (int32_t)(
+        (vehicleState & VEHICLE_ANIM_STATE_POS_MASK) >>
+        VEHICLE_ANIM_STATE_POS_SHIFT);
+    const uint32_t animationIndex =
+        (uint32_t)entity->legsAnim & ~ANIM_TOGGLEBIT;
     float leanAmount;
     float viewPitch;
     float viewYaw;
@@ -211,20 +237,25 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
 #if defined(LINUX_BEHAVIOR)
     /* NOT_FROM_ORIGINAL_SOURCE: preserve the unoptimized Linux source edge
      * whose result is stored but never subsequently consumed. */
-    volatile float evaluatedLean = (float)GetLeanFraction(clientInfo->leanFraction);
+    volatile float evaluatedLean =
+        (float)GetLeanFraction(clientInfo->leanFraction);
     (void)evaluatedLean;
 #endif
     leanAmount = clientInfo->leanAmount;
     viewPitch = clientInfo->viewPitch;
     viewYaw = AngleMod(clientInfo->viewYaw);
 
-    if (!restricted || BG_AllowPlayerWeaponAtVehiclePos(vehicleType, vehiclePosition)) {
-        moveType = (uint32_t)BG_GetConditionValue(clientInfo, ANIM_COND_MOVETYPE, qfalse);
-        if ((moveType & BG_ANIM_CLIMB_MOVE_TYPE_MASK) != 0 || (moveType & BG_ANIM_IDLE_MOVE_TYPE_MASK) == 0) {
+    if (!restricted ||
+        BG_AllowPlayerWeaponAtVehiclePos(vehicleType, vehiclePosition)) {
+        moveType = (uint32_t)BG_GetConditionValue(
+            clientInfo, ANIM_COND_MOVETYPE, qfalse);
+        if ((moveType & BG_ANIM_CLIMB_MOVE_TYPE_MASK) != 0 ||
+            (moveType & BG_ANIM_IDLE_MOVE_TYPE_MASK) == 0) {
             clientInfo->torsoYawActive = qtrue;
             clientInfo->leanActive = qtrue;
             clientInfo->legsYawActive = qtrue;
-        } else if (BG_GetConditionValue(clientInfo, ANIM_COND_FIRING, qtrue) != 0) {
+        } else if (BG_GetConditionValue(clientInfo, ANIM_COND_FIRING,
+                                        qtrue) != 0) {
             clientInfo->torsoYawActive = qtrue;
             clientInfo->leanActive = qtrue;
         }
@@ -237,7 +268,8 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
     legsTarget = viewYaw + leanAmount;
     torsoTarget = viewYaw;
     if ((entityFlags & EF_ANGLE_FIXED_YAW) == 0) {
-        moveType = (uint32_t)BG_GetConditionValue(clientInfo, ANIM_COND_MOVETYPE, qfalse);
+        moveType = (uint32_t)BG_GetConditionValue(
+            clientInfo, ANIM_COND_MOVETYPE, qfalse);
         if ((moveType & BG_ANIM_CLIMB_MOVE_TYPE_MASK) != 0) {
             torsoMaximum = 0.0f;
             torsoTarget = legsTarget;
@@ -247,7 +279,8 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
             torsoMaximum = 45.0f;
         } else {
             if ((entityFlags & EF_ANGLE_TURRET_YAW) == 0) {
-                torsoTarget = bg_compat_player_angle_multiply_add(leanAmount, 0.3f, viewYaw);
+                torsoTarget = bg_compat_player_angle_multiply_add(
+                    leanAmount, 0.3f, viewYaw);
             }
             torsoMaximum = 90.0f;
         }
@@ -256,15 +289,22 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
         legsTarget = viewYaw;
     }
 
-    if (restricted && BG_AllowPlayerWeaponAtVehiclePos(vehicleType, vehiclePosition) && entity->weapon != 0) {
+    if (restricted &&
+        BG_AllowPlayerWeaponAtVehiclePos(vehicleType, vehiclePosition) &&
+        entity->weapon != 0) {
         legsTarget = clientInfo->turretOverrideAngles[1];
     }
 
-    BG_SwingAngles(torsoTarget, 0.0f, torsoMaximum, bg_compat_animation_swing_speed(), &clientInfo->torsoYawAngle,
+    BG_SwingAngles(torsoTarget, 0.0f, torsoMaximum,
+                   bg_compat_animation_swing_speed(),
+                   &clientInfo->torsoYawAngle,
                    &clientInfo->torsoYawActive);
 
     if ((entityFlags & EF_ANGLE_FIXED_YAW) != 0) {
-        BG_SwingAngles(legsTarget, 0.0f, 150.0f, bg_compat_animation_swing_speed(), &clientInfo->legsYawAngle, &clientInfo->legsYawActive);
+        BG_SwingAngles(legsTarget, 0.0f, 150.0f,
+                       bg_compat_animation_swing_speed(),
+                       &clientInfo->legsYawAngle,
+                       &clientInfo->legsYawActive);
     } else if ((entityFlags & EF_ANGLE_TORSO_ONLY_YAW) != 0) {
         clientInfo->legsYawActive = qfalse;
         clientInfo->legsYawAngle = viewYaw + leanAmount;
@@ -273,12 +313,19 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
          * animation table directly.  This is implicitly bounded: legsAnim is
          * a 10-bit entity netfield, and clearing its 0x200 toggle bit leaves
          * exactly the table's 0..511 index domain. */
-        if ((bgs.animationTable.entries[animationIndex].flagsLowByte & BG_ANIM_ENTRY_STRAFE_MASK) != 0) {
+        if ((bgs.animationTable.entries[animationIndex].flagsLowByte &
+             BG_ANIM_ENTRY_STRAFE_MASK) != 0) {
             clientInfo->legsYawActive = qfalse;
-            BG_SwingAngles(viewYaw, 0.0f, 150.0f, bg_compat_animation_swing_speed(), &clientInfo->legsYawAngle, &clientInfo->legsYawActive);
+            BG_SwingAngles(viewYaw, 0.0f, 150.0f,
+                           bg_compat_animation_swing_speed(),
+                           &clientInfo->legsYawAngle,
+                           &clientInfo->legsYawActive);
         } else {
-            BG_SwingAngles(legsTarget, clientInfo->legsYawActive != qfalse ? 0.0f : 40.0f, 150.0f, bg_compat_animation_swing_speed(),
-                           &clientInfo->legsYawAngle, &clientInfo->legsYawActive);
+            BG_SwingAngles(legsTarget,
+                           clientInfo->legsYawActive != qfalse ? 0.0f : 40.0f,
+                           150.0f, bg_compat_animation_swing_speed(),
+                           &clientInfo->legsYawAngle,
+                           &clientInfo->legsYawActive);
         }
     }
 
@@ -286,7 +333,8 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
         clientInfo->torsoYawAngle = viewYaw;
         clientInfo->legsYawAngle = viewYaw;
     } else {
-        moveType = (uint32_t)BG_GetConditionValue(clientInfo, ANIM_COND_MOVETYPE, qfalse);
+        moveType = (uint32_t)BG_GetConditionValue(
+            clientInfo, ANIM_COND_MOVETYPE, qfalse);
         if ((moveType & BG_ANIM_CLIMB_MOVE_TYPE_MASK) != 0) {
             clientInfo->torsoYawAngle = viewYaw + leanAmount;
             clientInfo->legsYawAngle = viewYaw + leanAmount;
@@ -296,15 +344,19 @@ void BG_PlayerAngles(const entityState_t *entity, clientInfo_t *clientInfo)
     if ((entityFlags & EF_ANGLE_FIXED_YAW) != 0 || restricted) {
         viewPitch = 0.0f;
     } else {
-        moveType = (uint32_t)BG_GetConditionValue(clientInfo, ANIM_COND_MOVETYPE, qfalse);
+        moveType = (uint32_t)BG_GetConditionValue(
+            clientInfo, ANIM_COND_MOVETYPE, qfalse);
         if ((moveType & BG_ANIM_CLIMB_MOVE_TYPE_MASK) != 0) {
             viewPitch = 0.0f;
         } else if (viewPitch > 180.0f) {
-            viewPitch = bg_compat_player_angle_subtract_multiply(viewPitch, 360.0f, 0.6f);
+            viewPitch = bg_compat_player_angle_subtract_multiply(
+                viewPitch, 360.0f, 0.6f);
         } else {
-            viewPitch = bg_compat_player_angle_multiply_add(viewPitch, 0.6f, 0.0f);
+            viewPitch = bg_compat_player_angle_multiply_add(
+                viewPitch, 0.6f, 0.0f);
         }
     }
 
-    BG_SwingAngles(viewPitch, 0.0f, 45.0f, 0.15f, &clientInfo->leanAngle, &clientInfo->leanActive);
+    BG_SwingAngles(viewPitch, 0.0f, 45.0f, 0.15f,
+                   &clientInfo->leanAngle, &clientInfo->leanActive);
 }

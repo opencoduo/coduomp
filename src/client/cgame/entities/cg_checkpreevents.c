@@ -44,15 +44,11 @@
 
 /* Ring index mask: (sequence & 3), MAX_ENTITY_EVENTS - 1. Proven at 0x30023aa2
  * (AND EAX,0x3). */
-enum {
-    MODEL_EVENT_RING_MASK = MAX_ENTITY_EVENTS - 1
-};
+enum { MODEL_EVENT_RING_MASK = MAX_ENTITY_EVENTS - 1 };
 
 /* One ring-counter period rolled off modelPreviousEvent when eventSequence has
  * wrapped below it (ADD ECX,0xffffff00 == subtract 0x100). Proven at 0x30023a45. */
-enum {
-    MODEL_EVENT_SEQUENCE_PERIOD = 0x100
-};
+enum { MODEL_EVENT_SEQUENCE_PERIOD = 0x100 };
 
 void CG_CheckPreEvents(centity_t *cent)
 {
@@ -92,17 +88,21 @@ void CG_CheckPreEvents(centity_t *cent)
     // back one ring-counter period (0x100) so the (modelPreviousEvent, eventSequence]
     // span is valid. 0x30023a45 ADD ECX,0xffffff00 == modelPreviousEvent - 0x100.
     if (eventSequence < cent->modelPreviousEvent) {
-        cent->modelPreviousEvent = coduo_int32_from_bits((uint32_t)cent->modelPreviousEvent - (uint32_t)MODEL_EVENT_SEQUENCE_PERIOD);
+        cent->modelPreviousEvent = coduo_int32_from_bits(
+            (uint32_t)cent->modelPreviousEvent -
+            (uint32_t)MODEL_EVENT_SEQUENCE_PERIOD);
     }
 
     // 0x30023a51 EDI = modelPreviousEvent; 0x30023a59 ECX = eventSequence -
     // modelPreviousEvent; 0x30023a5b CMP ECX,0x4 / 0x30023a5e JLE: never replay more
     // than MAX_ENTITY_EVENTS events — clamp modelPreviousEvent to
     // eventSequence - MAX_ENTITY_EVENTS. 0x30023a60 LEA EDX,[EAX-0x4].
-    uint32_t gapBits = (uint32_t)eventSequence - (uint32_t)cent->modelPreviousEvent;
+    uint32_t gapBits =
+        (uint32_t)eventSequence - (uint32_t)cent->modelPreviousEvent;
     int32_t signedGap = coduo_int32_from_bits(gapBits);
     if (signedGap > MAX_ENTITY_EVENTS) {
-        cent->modelPreviousEvent = coduo_int32_from_bits((uint32_t)eventSequence - (uint32_t)MAX_ENTITY_EVENTS);
+        cent->modelPreviousEvent = coduo_int32_from_bits(
+            (uint32_t)eventSequence - (uint32_t)MAX_ENTITY_EVENTS);
     }
 
     // 0x30023a69 CMP [ESI+0x1f4],EAX / 0x30023a6f JL work: process only when
@@ -133,7 +133,8 @@ void CG_CheckPreEvents(centity_t *cent)
             model->eventParmBits = parm;
             // 0x30023ab3 PUSH EAX (parm) / 0x30023aba PUSH ECX (event) /
             // 0x30023abd CALL CG_EntityPreEvent(cent, events[ring], eventParms[ring]).
-            CG_EntityPreEvent(cent, coduo_int32_from_bits(event), coduo_int32_from_bits(parm));
+            CG_EntityPreEvent(cent, coduo_int32_from_bits(event),
+                              coduo_int32_from_bits(parm));
             // 0x30023ac2 EAX = eventSequence (reloaded); 0x30023acb INC EDI;
             // 0x30023acc CMP EDI,EAX / 0x30023ace JNZ loop.
             eventSequence = model->eventSequence;

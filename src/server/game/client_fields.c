@@ -15,7 +15,8 @@
 
 /* Private descriptor used only by the client script-field table below. */
 typedef struct client_field_s client_field_t;
-typedef void (*client_field_callback_t)(gclient_t *client, gclient_t *self, const client_field_t *field);
+typedef void (*client_field_callback_t)(gclient_t *client, gclient_t *self,
+                                        const client_field_t *field);
 
 struct client_field_s {
     const char *name;
@@ -48,7 +49,8 @@ struct client_field_s {
 #define CLIENT_FIELD_SPECTATOR_CLIENT CLIENT_FIELD_OFFSET(followClient)
 #define CLIENT_FIELD_ARCHIVE_TIME CLIENT_FIELD_OFFSET(archiveTime)
 #define CLIENT_FIELD_PERS CLIENT_FIELD_OFFSET(pers)
-#define CLIENT_FIELD_NO_INACTIVITY_KICK CLIENT_FIELD_OFFSET(spectatorActivityState)
+#define CLIENT_FIELD_NO_INACTIVITY_KICK \
+    CLIENT_FIELD_OFFSET(spectatorActivityState)
 #define CLIENT_FIELD_ARCHIVE_MILLISECONDS 1000.0f
 #define CLIENT_FIELD_ARCHIVE_SECONDS_SCALE 0.001f
 
@@ -56,7 +58,8 @@ void CalculateRanks(void);
 void trap_GetConfigstring(int index, char *buffer, int bufferLength);
 
 /* VERIFIED_DECOMPILER(0x43644, 53644_FUN_00053644.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_ReadOnly(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_ReadOnly(gclient_t *client, gclient_t *self,
+                          const client_field_t *field)
 {
     (void)client;
     (void)self;
@@ -65,7 +68,8 @@ void ClientScr_ReadOnly(gclient_t *client, gclient_t *self, const client_field_t
 }
 
 /* VERIFIED_DECOMPILER(0x4367b, 5367b_FUN_0005367b.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetSessionTeam(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetSessionTeam(gclient_t *client, gclient_t *self,
+                                const client_field_t *field)
 {
     uint16_t value = Scr_GetConstString(0);
 
@@ -91,7 +95,8 @@ void ClientScr_SetSessionTeam(gclient_t *client, gclient_t *self, const client_f
 }
 
 /* VERIFIED_DECOMPILER(0x43771, 53771_FUN_00053771.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetSessionTeam(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetSessionTeam(gclient_t *client, gclient_t *self,
+                                const client_field_t *field)
 {
     (void)self;
     (void)field;
@@ -108,7 +113,8 @@ void ClientScr_GetSessionTeam(gclient_t *client, gclient_t *self, const client_f
 }
 
 /* VERIFIED_DECOMPILER(0x43803, 53803_FUN_00053803.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetSessionSquad(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetSessionSquad(gclient_t *client, gclient_t *self,
+                                 const client_field_t *field)
 {
     uint16_t value = Scr_GetConstString(0);
 
@@ -131,7 +137,8 @@ void ClientScr_SetSessionSquad(gclient_t *client, gclient_t *self, const client_
 }
 
 /* VERIFIED_DECOMPILER(0x438d2, 538d2_FUN_000538d2.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetSessionSquad(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetSessionSquad(gclient_t *client, gclient_t *self,
+                                 const client_field_t *field)
 {
     int sessionSquad = client->sessionSquad;
 
@@ -148,7 +155,8 @@ void ClientScr_GetSessionSquad(gclient_t *client, gclient_t *self, const client_
 }
 
 /* VERIFIED_DECOMPILER(0x43956, 53956_FUN_00053956.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetSessionState(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetSessionState(gclient_t *client, gclient_t *self,
+                                 const client_field_t *field)
 {
     uint16_t value = Scr_GetConstString(0);
 
@@ -171,7 +179,8 @@ void ClientScr_SetSessionState(gclient_t *client, gclient_t *self, const client_
 }
 
 /* VERIFIED_DECOMPILER(0x43a2f, 53a2f_FUN_00053a2f.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetSessionState(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetSessionState(gclient_t *client, gclient_t *self,
+                                 const client_field_t *field)
 {
     (void)self;
     (void)field;
@@ -188,7 +197,8 @@ void ClientScr_GetSessionState(gclient_t *client, gclient_t *self, const client_
 }
 
 /* VERIFIED_DECOMPILER(0x43ac7, 53ac7_FUN_00053ac7.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetMaxHealth(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetMaxHealth(gclient_t *client, gclient_t *self,
+                              const client_field_t *field)
 {
     (void)self;
     (void)field;
@@ -202,12 +212,14 @@ void ClientScr_SetMaxHealth(gclient_t *client, gclient_t *self, const client_fie
         client->ps.stats[STAT_HEALTH] = client->normalMaxHealth;
     }
 
-    g_entities[(int)(client - level.clients)].health = client->ps.stats[STAT_HEALTH];
+    g_entities[(int)(client - level.clients)].health =
+        client->ps.stats[STAT_HEALTH];
     client->ps.stats[STAT_MAX_HEALTH] = client->normalMaxHealth;
 }
 
 /* VERIFIED_DECOMPILER(0x43b82, 53b82_FUN_00053b82.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetMaxSpeed(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetMaxSpeed(gclient_t *client, gclient_t *self,
+                             const client_field_t *field)
 {
     (void)self;
     (void)field;
@@ -217,11 +229,13 @@ void ClientScr_SetMaxSpeed(gclient_t *client, gclient_t *self, const client_fiel
         client->maxSpeed = 0;
     }
 
-    g_entities[(int)(client - level.clients)].maxSpeed = (float)client->maxSpeed;
+    g_entities[(int)(client - level.clients)].maxSpeed =
+        (float)client->maxSpeed;
 }
 
 /* VERIFIED_DECOMPILER(0x43c05, 53c05_FUN_00053c05.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetScore(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetScore(gclient_t *client, gclient_t *self,
+                          const client_field_t *field)
 {
     (void)self;
     (void)field;
@@ -231,7 +245,8 @@ void ClientScr_SetScore(gclient_t *client, gclient_t *self, const client_field_t
 }
 
 /* VERIFIED_DECOMPILER(0x43c3d, 53c3d_FUN_00053c3d.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetSpectatorClient(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetSpectatorClient(gclient_t *client, gclient_t *self,
+                                    const client_field_t *field)
 {
     int clientNum = Scr_GetInt(0);
 
@@ -246,7 +261,8 @@ void ClientScr_SetSpectatorClient(gclient_t *client, gclient_t *self, const clie
 }
 
 /* VERIFIED_DECOMPILER(0x43c8c, 53c8c_FUN_00053c8c.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetStatusIcon(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetStatusIcon(gclient_t *client, gclient_t *self,
+                               const client_field_t *field)
 {
     (void)self;
     (void)field;
@@ -255,7 +271,8 @@ void ClientScr_SetStatusIcon(gclient_t *client, gclient_t *self, const client_fi
 }
 
 /* VERIFIED_DECOMPILER(0x43cc9, 53cc9_FUN_00053cc9.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetStatusIcon(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetStatusIcon(gclient_t *client, gclient_t *self,
+                               const client_field_t *field)
 {
     int icon = client->statusIcon;
     char configString[MAX_STRING_CHARS];
@@ -266,13 +283,15 @@ void ClientScr_GetStatusIcon(gclient_t *client, gclient_t *self, const client_fi
     if (icon == 0) {
         Scr_AddString("");
     } else if (icon < STATUS_ICON_LIMIT) {
-        trap_GetConfigstring(icon + STATUS_ICON_CONFIGSTRING_BASE, configString, sizeof(configString));
+        trap_GetConfigstring(icon + STATUS_ICON_CONFIGSTRING_BASE, configString,
+                             sizeof(configString));
         Scr_AddString(configString);
     }
 }
 
 /* VERIFIED_DECOMPILER(0x43d43, 53d43_FUN_00053d43.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetHeadIcon(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetHeadIcon(gclient_t *client, gclient_t *self,
+                             const client_field_t *field)
 {
     gentity_t *ent = &g_entities[(int)(client - level.clients)];
 
@@ -283,7 +302,8 @@ void ClientScr_SetHeadIcon(gclient_t *client, gclient_t *self, const client_fiel
 }
 
 /* VERIFIED_DECOMPILER(0x43da9, 53da9_FUN_00053da9.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetHeadIcon(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetHeadIcon(gclient_t *client, gclient_t *self,
+                             const client_field_t *field)
 {
     gentity_t *ent = &g_entities[(int)(client - level.clients)];
     int icon = ent->s.headIcon;
@@ -295,13 +315,15 @@ void ClientScr_GetHeadIcon(gclient_t *client, gclient_t *self, const client_fiel
     if (icon == 0) {
         Scr_AddString("");
     } else if (icon < HEAD_ICON_LIMIT) {
-        trap_GetConfigstring(icon + HEAD_ICON_CONFIGSTRING_BASE, configString, sizeof(configString));
+        trap_GetConfigstring(icon + HEAD_ICON_CONFIGSTRING_BASE, configString,
+                             sizeof(configString));
         Scr_AddString(configString);
     }
 }
 
 /* VERIFIED_DECOMPILER(0x43e4c, 53e4c_FUN_00053e4c.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetHeadIconTeam(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetHeadIconTeam(gclient_t *client, gclient_t *self,
+                                 const client_field_t *field)
 {
     gentity_t *ent = &g_entities[(int)(client - level.clients)];
     uint16_t value = Scr_GetConstString(0);
@@ -325,7 +347,8 @@ void ClientScr_SetHeadIconTeam(gclient_t *client, gclient_t *self, const client_
 }
 
 /* VERIFIED_DECOMPILER(0x43f48, 53f48_FUN_00053f48.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetHeadIconTeam(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetHeadIconTeam(gclient_t *client, gclient_t *self,
+                                 const client_field_t *field)
 {
     int headIconTeam = g_entities[(int)(client - level.clients)].s.headIconTeam;
 
@@ -344,27 +367,34 @@ void ClientScr_GetHeadIconTeam(gclient_t *client, gclient_t *self, const client_
 }
 
 /* VERIFIED_DECOMPILER(0x44005, 54005_FUN_00054005.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_SetArchiveTime(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_SetArchiveTime(gclient_t *client, gclient_t *self,
+                                const client_field_t *field)
 {
     (void)self;
     (void)field;
 
     /* 0x44024..0x44041: the product feeds truncating fistp directly. */
 #if EMULATE_X87
-    client->archiveTime = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f32(CLIENT_FIELD_ARCHIVE_MILLISECONDS)));
+    client->archiveTime = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_f32(Scr_GetFloat(0)),
+        x87f_load_f32(CLIENT_FIELD_ARCHIVE_MILLISECONDS)));
 #else
     client->archiveTime =
-        game_compat_int32_from_long_double_trunc((long double)Scr_GetFloat(0) * (long double)CLIENT_FIELD_ARCHIVE_MILLISECONDS);
+        game_compat_int32_from_long_double_trunc(
+            (long double)Scr_GetFloat(0) *
+            (long double)CLIENT_FIELD_ARCHIVE_MILLISECONDS);
 #endif
 }
 
 /* VERIFIED_DECOMPILER(0x44051, 54051_FUN_00054051.c, VERIFY-CLIENT-FIELDS-PACKET-2026-06-17): DATAFLOW_VERIFIED */
-void ClientScr_GetArchiveTime(gclient_t *client, gclient_t *self, const client_field_t *field)
+void ClientScr_GetArchiveTime(gclient_t *client, gclient_t *self,
+                                const client_field_t *field)
 {
     (void)self;
     (void)field;
 
-    Scr_AddFloat((float)((long double)client->archiveTime * (long double)CLIENT_FIELD_ARCHIVE_SECONDS_SCALE));
+    Scr_AddFloat((float)((long double)client->archiveTime *
+                         (long double)CLIENT_FIELD_ARCHIVE_SECONDS_SCALE));
 }
 
 static const client_field_t clientFields[] = {
@@ -380,8 +410,10 @@ static const client_field_t clientFields[] = {
     {"statusicon", 0, 5, ClientScr_SetStatusIcon, ClientScr_GetStatusIcon},
     {"headicon", 0, 5, ClientScr_SetHeadIcon, ClientScr_GetHeadIcon},
     {"headiconteam", 0, 5, ClientScr_SetHeadIconTeam, ClientScr_GetHeadIconTeam},
-    {"spectatorclient", CLIENT_FIELD_SPECTATOR_CLIENT, 0, ClientScr_SetSpectatorClient, 0},
-    {"archivetime", CLIENT_FIELD_ARCHIVE_TIME, 3, ClientScr_SetArchiveTime, ClientScr_GetArchiveTime},
+    {"spectatorclient", CLIENT_FIELD_SPECTATOR_CLIENT, 0,
+     ClientScr_SetSpectatorClient, 0},
+    {"archivetime", CLIENT_FIELD_ARCHIVE_TIME, 3, ClientScr_SetArchiveTime,
+     ClientScr_GetArchiveTime},
     {"pers", CLIENT_FIELD_PERS, 10, ClientScr_ReadOnly, 0},
     {"noInactivityKick", CLIENT_FIELD_NO_INACTIVITY_KICK, 0, 0, 0},
     {0, 0, 0, 0, 0},
@@ -401,7 +433,8 @@ void GScr_AddFieldsForClient(uint16_t classnum)
         case 6:
         case 7:
         case 10:
-            Scr_AddClassField(classnum, field->name, (uint16_t)(CLIENT_FIELD_CLASS_OFFSET | index));
+            Scr_AddClassField(classnum, field->name,
+                              (uint16_t)(CLIENT_FIELD_CLASS_OFFSET | index));
             break;
         default:
             break;

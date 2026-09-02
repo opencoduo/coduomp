@@ -50,7 +50,9 @@ void XAnimLoadAnimInfo(XAnimInfo *node)
     node->notifyIndex = (int16_t)ReadShort();
     node->notifyChildIndex = ReadShort();
     node->notifyType = ReadShort();
-    node->notifyName = ReadByte() != 0 ? ReadString() : 0;
+    node->notifyName = ReadByte() != 0
+        ? ReadString()
+        : 0;
 
     XAnimLoadAnimState(&node->states[XANIM_USER_CLIENT]);
     XAnimLoadAnimState(&node->states[XANIM_USER_SERVER]);
@@ -99,7 +101,8 @@ void XAnimLoadAnimTree(XAnimTree *tree)
 
     ScriptLoad_ReadData(liveNodes, bitsetSize);
     for (uint32_t animIndex = 0; animIndex < nodeCount; ++animIndex) {
-        if ((liveNodes[animIndex >> 3] & (uint8_t)(1U << (animIndex & 7U))) == 0) {
+        if ((liveNodes[animIndex >> 3] &
+             (uint8_t)(1U << (animIndex & 7U))) == 0) {
             continue;
         }
 
@@ -117,7 +120,8 @@ void XAnimSaveAnimTree(XAnimTree *tree)
     Com_Memset(liveNodes, 0, bitsetSize);
     for (uint32_t animIndex = 0; animIndex < nodeCount; ++animIndex) {
         if (tree->poolNodeHandles[animIndex] != 0) {
-            liveNodes[animIndex >> 3] |= (uint8_t)(1U << (animIndex & 7U));
+            liveNodes[animIndex >> 3] |=
+                (uint8_t)(1U << (animIndex & 7U));
         }
     }
 

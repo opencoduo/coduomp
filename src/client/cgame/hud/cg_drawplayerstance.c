@@ -41,33 +41,31 @@
  * & 0x10003) and tested against cg_predictedPlayerState.playerStateFlags. Exact EF/PMF source
  * flag names unresolved; named by the shader selected for each bit. */
 enum {
-    STANCE_FLAG_PRONE = 0x00000001u, /* 0x1     -> prone table / prone icons */
+    STANCE_FLAG_PRONE  = 0x00000001u, /* 0x1     -> prone table / prone icons */
     STANCE_FLAG_CROUCH = 0x00000002u, /* 0x2     -> crouch table / crouch icons */
     STANCE_FLAG_SPRINT = 0x00010000u, /* 0x10000 -> sprint icons */
-    STANCE_FLAG_MASK = 0x00010003u, /* the three bits latched together */
-    STANCE_FLAG_HELD = 0x00008000u  /* bit 0x8000 (TEST CH,CH): re-arm the timer */
+    STANCE_FLAG_MASK   = 0x00010003u, /* the three bits latched together */
+    STANCE_FLAG_HELD   = 0x00008000u  /* bit 0x8000 (TEST CH,CH): re-arm the timer */
 };
 
 /* Suppress bit read from cg_stanceHintSuppressFlags. */
-enum {
-    STANCE_HINT_SUPPRESS_BIT = 0x1u
-};
+enum { STANCE_HINT_SUPPRESS_BIT = 0x1u };
 
 enum {
     STANCE_VIEW_RESTRICTED = 0x100000u,
-    STANCE_VIEW_OVERRIDE = 0x400000u
+    STANCE_VIEW_OVERRIDE   = 0x400000u
 };
 
 /* cg_stanceHudShaders[] indices (see globals.h). */
 enum {
-    HUD_SHADER_STANCE_STAND = 0, /* 0x3044bb24: hudStanceStand */
-    HUD_SHADER_STANCE_CROUCH = 1, /* 0x3044bb28: hudStanceCrouch */
-    HUD_SHADER_STANCE_PRONE = 2, /* 0x3044bb2c: hudStanceProne */
-    HUD_SHADER_STANCE_SPRINT = 3, /* 0x3044bb30: hudStanceSprint */
-    HUD_SHADER_STANCE_FLASH = 4, /* 0x3044bb34: hudStanceFlash */
-    HUD_SHADER_FATIGUE_STAND = 5, /* 0x3044bb38: hudFatigueStand */
+    HUD_SHADER_STANCE_STAND   = 0, /* 0x3044bb24: hudStanceStand */
+    HUD_SHADER_STANCE_CROUCH  = 1, /* 0x3044bb28: hudStanceCrouch */
+    HUD_SHADER_STANCE_PRONE   = 2, /* 0x3044bb2c: hudStanceProne */
+    HUD_SHADER_STANCE_SPRINT  = 3, /* 0x3044bb30: hudStanceSprint */
+    HUD_SHADER_STANCE_FLASH   = 4, /* 0x3044bb34: hudStanceFlash */
+    HUD_SHADER_FATIGUE_STAND  = 5, /* 0x3044bb38: hudFatigueStand */
     HUD_SHADER_FATIGUE_CROUCH = 6, /* 0x3044bb3c: hudFatigueCrouch */
-    HUD_SHADER_FATIGUE_PRONE = 7, /* 0x3044bb40: hudFatigueProne */
+    HUD_SHADER_FATIGUE_PRONE  = 7, /* 0x3044bb40: hudFatigueProne */
     HUD_SHADER_FATIGUE_SPRINT = 8  /* 0x3044bb44: hudFatigueSprint */
 };
 
@@ -80,10 +78,10 @@ enum {
  * call at 0x3003229f) cleans ADD ESP,0x14 = 5 dwords.
  */
 void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
-                         const float *colorVec,   /* arg1 (float[4] color) */
-                         int32_t textArgA,        /* arg2 */
-                         int32_t textArgB,        /* arg3 */
-                         int32_t textArgC)        /* arg4 */
+                       const float *colorVec,   /* arg1 (float[4] color) */
+                       int32_t textArgA,        /* arg2 */
+                       int32_t textArgB,        /* arg3 */
+                       int32_t textArgC)        /* arg4 */
 {
     /* Reused 2D draw-color buffer (frame slots -0x150..-0x144). The top of the
      * function copies colorVec[0..2] into [0..2]; the alpha [3] is overwritten per
@@ -114,7 +112,8 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
         }
 
         /* 0x3002f02d: one unstored x87 chain, rounded only into slideX. */
-        slideX = (float)((((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L) + (long double)iconRect->x);
+        slideX = (float)((((long double)cg_hudCompassSize_vmCvar.value - 1.0L) *
+                          112.0L) + (long double)iconRect->x);
 
         /* 0x3002f040: stash colorVec[0..2] into the reused draw-color buffer. */
         drawColor[0] = colorVec[0];
@@ -140,7 +139,8 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
             /* 0x3002f096: while the slide window is open, draw the animated
              * stance-change label. */
             if (expire > now) {
-                if (((uint8_t)cg_predictedEventEntity.nextState.eFlags & STANCE_HINT_SUPPRESS_BIT) != 0u) {
+                if (((uint8_t)cg_predictedEventEntity.nextState.eFlags &
+                     STANCE_HINT_SUPPRESS_BIT) != 0u) {
                     expire = -1;                                  /* 0x3002f0a7 */
                     cg_stanceHintExpireTime = expire;
                 }
@@ -148,7 +148,9 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                     /* 0x3002f0b8: translate and measure "CGAME_PRONE_BLOCKED".
                      * CG_R_TEXT_WIDTH(label, arg2, arg3, 0) -> width (FILD'd). */
                     char *label = CG_SafeTranslateString_Internal("cgame", "CGAME_PRONE_BLOCKED");
-                    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, label, textArgA, textArgB, 0));
+                    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                                                  CG_R_TEXT_WIDTH, label,
+                                                  textArgA, textArgB, 0));
 
                     /* 0x3002f0e8: remaining slide time (expire - now) is threaded
                      * through the fixed constants and FSIN to make the pulsing alpha;
@@ -156,7 +158,8 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                      * `remaining` are FILD'd straight into the arithmetic below
                      * (0x3002f0f2 / 0x3002f110) with no FSTP DWORD, so they stay
                      * exact -- no (float) cast, which would round them. */
-                    int32_t remaining = coduo_int32_from_bits((uint32_t)cg_stanceHintExpireTime - (uint32_t)now);
+                    int32_t remaining = coduo_int32_from_bits(
+                        (uint32_t)cg_stanceHintExpireTime - (uint32_t)now);
                     float centerX;
 
                     /* 0x3002f110..0x3002f142: FMUL chain composing the sine argument
@@ -165,22 +168,32 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                      * registers; the ONLY rounding is the drawColor[3] store
                      * (FSTP 0x3002f15c) -- hence one expression through sinl/fabsl
                      * (sinf would round both the argument and the result). */
-                    drawColor[3] =
-                        (float)__builtin_fabsl(__builtin_sinl((long double)remaining * (long double)0.0006666666595f  /* 0x3007c1f8 */
-                                                              * (long double)540.0f            /* 0x3007c1f4 */
-                                                              * (long double)3.1415927410125732f /* PI */
-                                                              * (long double)0.0055555556900799274f)); /* 1/180 */
+                    drawColor[3] = (float)__builtin_fabsl(__builtin_sinl(
+                        (long double)remaining
+                             * (long double)0.0006666666595f  /* 0x3007c1f8 */
+                             * (long double)540.0f            /* 0x3007c1f4 */
+                             * (long double)3.1415927410125732f /* PI */
+                             * (long double)0.0055555556900799274f)); /* 1/180 */
 
                     /* 0x3002f103: FMUL 0.5 applies to the FILD'd WIDTH; the half-
                      * width stays UNROUNDED in ST1 (no float store) until the
                      * centering FSUB ST0,ST1 at 0x3002f166, so it is written
                      * inline: centerX = 320.0f - width*0.5f. */
-                    centerX = (float)((long double)320.0f - (long double)width * (long double)0.5f);
+                    centerX = (float)((long double)320.0f -
+                                      (long double)width * (long double)0.5f);
 
                     /* 0x3002f0d0..0x3002f175: draw the centered label.
                      * CG_R_TEXT_PAINT(x=centerX, y=270.0f, arg2, arg3, color, text,
                      *            0, 0, arg4). y const 0x43870000 = 270.0f. */
-                    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(centerX), CG_FloatBits(270.0f), textArgA, textArgB, drawColor, label, 0, 0,
+                    cgame_syscall(CG_R_TEXT_PAINT,
+                                  CG_FloatBits(centerX),
+                                  CG_FloatBits(270.0f),
+                                  textArgA,
+                                  textArgB,
+                                  drawColor,
+                                  label,
+                                  0,
+                                  0,
                                   textArgC);
                     now = coduo_int32_from_bits((uint32_t)cg_time); /* 0x3002f17b reload */
                 }
@@ -196,20 +209,31 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
          * label table, built exactly as the machine code fills the frame at
          * 0x3002f19d..0x3002f3d3. Each row is a stance target; the six columns are
          * the alternative bind commands, tried in order. */
-        char *cmdTableStanding[4][6] = {{0, 0, 0, 0, 0, 0},
-                                        {"+gostand", "toggleprone", 0, 0, 0, 0},
-                                        {"gocrouch", "togglecrouch", "raisestance", "+movedown", "+moveup", 0},
-                                        {0, 0, 0, 0, 0, 0}};
-        char *cmdTableCrouch[4][6] = {{0, 0, 0, 0, 0, 0},
-                                      {"+gostand", "raisestance", "+moveup", 0, 0, 0},
-                                      {0, 0, 0, 0, 0, 0},
-                                      {"goprone", "lowerstance", "toggleprone", "+prone", 0, 0}};
-        char *cmdTableProne[4][6] = {{"+gostand", "+moveup", 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0},
-                                     {"gocrouch", "togglecrouch", "lowerstance", "+movedown", 0, 0},
-                                     {"goprone", "+prone", 0, 0, 0, 0}};
-        char *hintLabels[4] = {"CGAME_STANCEHINT_JUMP", "CGAME_STANCEHINT_STAND", "CGAME_STANCEHINT_CROUCH", "CGAME_STANCEHINT_PRONE"};
-        char *chosenCmd[4] = {0, 0, 0, 0};
+        char *cmdTableStanding[4][6] = {
+            { 0, 0, 0, 0, 0, 0 },
+            { "+gostand", "toggleprone", 0, 0, 0, 0 },
+            { "gocrouch", "togglecrouch", "raisestance", "+movedown", "+moveup", 0 },
+            { 0, 0, 0, 0, 0, 0 }
+        };
+        char *cmdTableCrouch[4][6] = {
+            { 0, 0, 0, 0, 0, 0 },
+            { "+gostand", "raisestance", "+moveup", 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0 },
+            { "goprone", "lowerstance", "toggleprone", "+prone", 0, 0 }
+        };
+        char *cmdTableProne[4][6] = {
+            { "+gostand", "+moveup", 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0 },
+            { "gocrouch", "togglecrouch", "lowerstance", "+movedown", 0, 0 },
+            { "goprone", "+prone", 0, 0, 0, 0 }
+        };
+        char *hintLabels[4] = {
+            "CGAME_STANCEHINT_JUMP",
+            "CGAME_STANCEHINT_STAND",
+            "CGAME_STANCEHINT_CROUCH",
+            "CGAME_STANCEHINT_PRONE"
+        };
+        char *chosenCmd[4] = { 0, 0, 0, 0 };
         int32_t row;
         int32_t boundCount = 0;
         float lineHeight;  /* frame -0x164: measured line height */
@@ -224,17 +248,20 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
         if (coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime + 2000u) > now) {
             drawColor[3] = 1.0f;                                 /* 0x3f800000 */
         } else {
-            int32_t e = coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 3000u);
+            int32_t e = coduo_int32_from_bits(
+                (uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 3000u);
             /* 0x3002f40a FILD [ESP+0x10]; FMUL 0.001f; FSTP -- the int e is loaded
              * straight into the multiply (no FSTP DWORD first), so the implicit
              * int->float conversion must stay exact; an explicit (float) cast would
              * round e under -std=c11. */
-            drawColor[3] = (float)((long double)e * (long double)0.001f); /* 0x3007bd94 */
+            drawColor[3] = (float)((long double)e *
+                                   (long double)0.001f); /* 0x3007bd94 */
         }
 
         /* 0x3002f418: query the line height via CG_R_TEXT_HEIGHT(textArgA, textArgB). */
         {
-            int32_t h = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_HEIGHT, textArgA, textArgB));
+            int32_t h = coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_R_TEXT_HEIGHT, textArgA, textArgB));
             uint32_t selStanding = cg_stanceHintFlags & 0x1u;    /* AND EBX,0x1 */
             lineHeight = (float)h;
 
@@ -267,13 +294,16 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
 
             /* 0x3002f518: seed the baseline: rect.h*0.5 + rect.y - 1.5, then adjust
              * by the number of chosen lines (boundCount - 1). */
-            lineY = (float)((long double)iconRect->h * 0.5L + (long double)iconRect->y - 1.5L);
+            lineY = (float)((long double)iconRect->h * 0.5L +
+                            (long double)iconRect->y - 1.5L);
             {
                 int32_t k = boundCount - 1;
                 if (k == 0) {
-                    lineY = (float)((long double)lineHeight * 0.5L + (long double)lineY);
+                    lineY = (float)((long double)lineHeight * 0.5L +
+                                    (long double)lineY);
                 } else if (k == 2) {
-                    lineY = (float)((long double)lineY - ((long double)lineHeight * 0.5L + 1.5L));
+                    lineY = (float)((long double)lineY -
+                                    ((long double)lineHeight * 0.5L + 1.5L));
                 }
                 /* other counts leave lineY unchanged (0x3002f569) */
             }
@@ -294,7 +324,8 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                 /* 0x3002f5a1: translate the hint label, then format "<hint> <key>". */
                 hintText = CG_SafeTranslateString_Internal("cgame", hintLabels[row]);
                 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-                if (client_compat_validate_format_signature(hintText, "s") == qfalse) {
+                if (client_compat_validate_format_signature(hintText, "s") ==
+                    qfalse) {
                     Com_Printf("WARNING: rejected invalid stance-hint format\n");
                     fmt = hintText;
                 } else {
@@ -304,19 +335,29 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
                 /* 0x3002f5b1: x = slideX + rect.w (slide-in), y = lineY - 35.0f.
                  * (The result is written to a fresh slot -0x15c; slideX is unchanged
                  * across iterations.) */
-                x = slideX + iconRect->w; /* rect.w */
-                y = lineY - 35.0f; /* 0x3007c1f0 = 35 */
+                x = slideX + iconRect->w;                        /* rect.w */
+                y = lineY - 35.0f;                               /* 0x3007c1f0 = 35 */
 
                 /* 0x3002f5c2..0x3002f604: CG_R_TEXT_PAINT(x, y, arg2, arg3, color,
                  * text, 0, 0, arg4) — the same 9-args-after-id shape as the label
                  * draw at 0x3002f173. The cleanup ADD ESP,0x30 at 0x3002f612 covers
                  * 12 dwords: the two va() arguments left uncleaned above plus the
                  * trap id and these nine. */
-                cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(x), CG_FloatBits(y), textArgA, textArgB, drawColor, fmt, 0, 0, textArgC);
+                cgame_syscall(CG_R_TEXT_PAINT,
+                              CG_FloatBits(x),
+                              CG_FloatBits(y),
+                              textArgA,
+                              textArgB,
+                              drawColor,
+                              fmt,
+                              0,
+                              0,
+                              textArgC);
 
                 /* 0x3002f60a: advance the baseline by the measured line height plus
                  * the current baseline plus 1.5f (FLD lineHeight; FADD lineY; FADD 1.5). */
-                lineY = (float)((long double)lineHeight + (long double)lineY + 1.5L);
+                lineY = (float)((long double)lineHeight +
+                                (long double)lineY + 1.5L);
             }
         }
     }
@@ -337,11 +378,18 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
 
         /* 0x3002f661: drawColor[3] = colorVec[3]; set color, then draw the icon rect
          * scaled from virtual to real screen (x = slideX*screenXScale). */
-        drawColor[3] = colorVec[3]; /* [ECX+0xc] */
+        drawColor[3] = colorVec[3];                              /* [ECX+0xc] */
         cgame_syscall(CG_R_SETCOLOR, drawColor);
-        cgame_syscall(CG_R_DRAWSTRETCHPIC, CG_FloatBits(slideX * cgs_screenXScale), CG_FloatBits(iconRect->y * cgs_screenYScale),
-                      CG_FloatBits(iconRect->w * cgs_screenXScale), CG_FloatBits(iconRect->h * cgs_screenYScale), CG_FloatBits(0.0f),
-                      CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), shader);
+        cgame_syscall(CG_R_DRAWSTRETCHPIC,
+                      CG_FloatBits(slideX * cgs_screenXScale),
+                      CG_FloatBits(iconRect->y * cgs_screenYScale),
+                      CG_FloatBits(iconRect->w * cgs_screenXScale),
+                      CG_FloatBits(iconRect->h * cgs_screenYScale),
+                      CG_FloatBits(0.0f),
+                      CG_FloatBits(0.0f),
+                      CG_FloatBits(1.0f),
+                      CG_FloatBits(1.0f),
+                      shader);
     }
 
     /* -------- fatigue icon + partial overlay (0x3002f70a) -------- */
@@ -367,30 +415,41 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
 
         /* 0x3002f762: draw the partial fatigue overlay only when the fatigue
          * fraction is > 0.0f (FCOMP against 0.0f). */
-        if (cg_predictedPlayerState.fatigueScale > 0.0f) { /* 0x3007bcec = 0.0f */
+        if (cg_predictedPlayerState.fatigueScale > 0.0f) {                   /* 0x3007bcec = 0.0f */
             /* 0x3002f77c..0x3002f796 keeps 1-fatigueScale live in x87 after
              * storing its rounded float copy for the texture coordinate.  The
              * live value, not that copy, feeds the filled-height multiply. */
-            long double fracWide = 1.0L - (long double)cg_predictedPlayerState.fatigueScale;
-            float frac = (float)fracWide; /* 0x3002f796 FST */
+            long double fracWide = 1.0L -
+                (long double)cg_predictedPlayerState.fatigueScale;
+            float frac = (float)fracWide;                                    /* 0x3002f796 FST */
             float filledHeight = (float)((long double)iconRect->h * fracWide); /* 0x3002f7a2..0x3002f7aa */
             /* 0x3002f7a2..0x3002f7f8: the overlay covers the BOTTOM (1-frac) part of
              * the icon: y = (rect.h*frac + rect.y)*screenYScale (FLD tmp=h*frac;
              * FADD [EDI+4]; FMUL yscale), h = (rect.h - rect.h*frac)*screenYScale
              * (FLD [EDI+0xc]; FSUB tmp; FMUL yscale — positive), top texcoord
              * t1 = frac. x is the animated slide (slideX*screenXScale). */
-            cgame_syscall(CG_R_DRAWSTRETCHPIC, CG_FloatBits(slideX * cgs_screenXScale),
-                          CG_FloatBits((float)(((long double)filledHeight + (long double)iconRect->y) * (long double)cgs_screenYScale)),
+            cgame_syscall(CG_R_DRAWSTRETCHPIC,
+                          CG_FloatBits(slideX * cgs_screenXScale),
+                          CG_FloatBits((float)(((long double)filledHeight +
+                                               (long double)iconRect->y) *
+                                              (long double)cgs_screenYScale)),
                           CG_FloatBits(iconRect->w * cgs_screenXScale),
-                          CG_FloatBits((float)(((long double)iconRect->h - (long double)filledHeight) * (long double)cgs_screenYScale)),
-                          CG_FloatBits(0.0f), CG_FloatBits(frac), CG_FloatBits(1.0f), CG_FloatBits(1.0f), shader);
+                          CG_FloatBits((float)(((long double)iconRect->h -
+                                               (long double)filledHeight) *
+                                              (long double)cgs_screenYScale)),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(frac),
+                          CG_FloatBits(1.0f),
+                          CG_FloatBits(1.0f),
+                          shader);
         }
     }
 
     /* -------- countdown overlay (0x3002f81f) -------- */
     now = coduo_int32_from_bits((uint32_t)cg_time); /* 0x3002f824 countdown reload */
     if (coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime + 1000u) > now) {
-        int32_t e = coduo_int32_from_bits((uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 1000u);
+        int32_t e = coduo_int32_from_bits(
+            (uint32_t)cg_stanceHintChangeTime - (uint32_t)now + 1000u);
         /* 0x3002f86a loads ds:0x3044bb34 = cg_stanceHudShaders[4] = hudStanceFlash
          * (the countdown "flash" overlay), NOT index 5 (hudFatigueStand). A prior
          * pass used HUD_SHADER_FATIGUE_STAND (=5, ds:0x3044bb38) here. */
@@ -402,12 +461,20 @@ void CG_DrawPlayerStance(const rectDef_t *iconRect, /* arg0 (EDI) */
          * is one expression with a single rounding at the drawColor[3] store.
          * FILD feeds the multiply directly (no FSTP DWORD), so e stays exact --
          * no (float) cast (it would round e under -std=c11). */
-        drawColor[3] = (float)((long double)e * (long double)0.001f * (long double)0.8f);
+        drawColor[3] = (float)((long double)e * (long double)0.001f *
+                               (long double)0.8f);
         cgame_syscall(CG_R_SETCOLOR, drawColor);
 
-        cgame_syscall(CG_R_DRAWSTRETCHPIC, CG_FloatBits(slideX * cgs_screenXScale), CG_FloatBits(iconRect->y * cgs_screenYScale),
-                      CG_FloatBits(iconRect->w * cgs_screenXScale), CG_FloatBits(iconRect->h * cgs_screenYScale), CG_FloatBits(0.0f),
-                      CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), shader);
+        cgame_syscall(CG_R_DRAWSTRETCHPIC,
+                      CG_FloatBits(slideX * cgs_screenXScale),
+                      CG_FloatBits(iconRect->y * cgs_screenYScale),
+                      CG_FloatBits(iconRect->w * cgs_screenXScale),
+                      CG_FloatBits(iconRect->h * cgs_screenYScale),
+                      CG_FloatBits(0.0f),
+                      CG_FloatBits(0.0f),
+                      CG_FloatBits(1.0f),
+                      CG_FloatBits(1.0f),
+                      shader);
     }
 
     /* 0x3002f8f3: reset the 2D draw color to white. */

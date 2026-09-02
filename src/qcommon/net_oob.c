@@ -13,7 +13,8 @@ enum {
     NET_OOB_COMPRESS_SKIP_BYTES = 12,
     NET_OOB_PRINT_BUFFER_SIZE = 32768,
     NET_OOB_DATA_BUFFER_SIZE = 65536,
-    NET_OOB_DATA_PAYLOAD_CAPACITY = NET_OOB_DATA_BUFFER_SIZE - NET_OOB_MARKER_BYTES
+    NET_OOB_DATA_PAYLOAD_CAPACITY =
+        NET_OOB_DATA_BUFFER_SIZE - NET_OOB_MARKER_BYTES
 };
 
 /*
@@ -34,7 +35,8 @@ enum {
 
 void Com_Printf(const char *format, ...);
 
-void NET_OutOfBandPrint(netsrc_t source, netadr_t address, const char *format, ...)
+void NET_OutOfBandPrint(netsrc_t source, netadr_t address,
+                        const char *format, ...)
 {
     uint8_t packet[NET_OOB_PRINT_BUFFER_SIZE];
     va_list arguments;
@@ -44,13 +46,17 @@ void NET_OutOfBandPrint(netsrc_t source, netadr_t address, const char *format, .
     packet[2] = UINT8_MAX;
     packet[3] = UINT8_MAX;
     va_start(arguments, format);
-    const size_t payloadCapacity = sizeof(packet) - NET_OOB_MARKER_BYTES;
-    const int32_t payloadLength = vsnprintf((char *)packet + NET_OOB_MARKER_BYTES, payloadCapacity, format, arguments);
+    const size_t payloadCapacity =
+        sizeof(packet) - NET_OOB_MARKER_BYTES;
+    const int32_t payloadLength = vsnprintf(
+        (char *)packet + NET_OOB_MARKER_BYTES,
+        payloadCapacity, format, arguments);
     va_end(arguments);
 
     /* NOT_FROM_ORIGINAL_SOURCE: emit a connectionless message only when the
      * complete formatted payload fits its protocol buffer. */
-    if (payloadLength < 0 || (size_t)payloadLength >= payloadCapacity) {
+    if (payloadLength < 0 ||
+        (size_t)payloadLength >= payloadCapacity) {
         Com_Printf("NET_OutOfBandPrint: formatted packet too large\n");
         return;
     }
@@ -60,7 +66,8 @@ void NET_OutOfBandPrint(netsrc_t source, netadr_t address, const char *format, .
     net_compat_profile_oob_packet(source, packetLength);
 }
 
-void NET_OutOfBandData(netsrc_t source, netadr_t address, const uint8_t *data, int32_t length)
+void NET_OutOfBandData(netsrc_t source, netadr_t address,
+                       const uint8_t *data, int32_t length)
 {
     uint8_t packet[NET_OOB_DATA_BUFFER_SIZE];
     msg_t message;
@@ -86,7 +93,8 @@ void NET_OutOfBandData(netsrc_t source, netadr_t address, const uint8_t *data, i
     net_compat_profile_oob_packet(source, message.cursize);
 }
 
-void NET_OutOfBandPbPacket(netsrc_t source, netadr_t address, const void *data, int32_t length)
+void NET_OutOfBandPbPacket(netsrc_t source, netadr_t address,
+                           const void *data, int32_t length)
 {
     uint8_t packet[NET_OOB_DATA_BUFFER_SIZE];
 

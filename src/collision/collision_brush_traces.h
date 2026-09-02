@@ -10,9 +10,13 @@
 extern "C" {
 #endif
 
-void CM_TestBoxInBrush(traceWork_t *traceWork, const collisionBrush_t *brush);
-void CM_TraceThroughBrush(traceWork_t *traceWork, const collisionBrush_t *brush);
-int32_t CM_SightTraceThroughBrush(const traceWork_t *traceWork, const collisionBrush_t *brush);
+void CM_TestBoxInBrush(traceWork_t *traceWork,
+                       const collisionBrush_t *brush);
+void CM_TraceThroughBrush(traceWork_t *traceWork,
+                          const collisionBrush_t *brush);
+int32_t CM_SightTraceThroughBrush(
+    const traceWork_t *traceWork,
+    const collisionBrush_t *brush);
 
 #ifdef __cplusplus
 }

@@ -5,19 +5,22 @@
 // Source: uo_ui_mp_x86.dll 0x4001d430..0x4001d446.
 qhandle_t trap_R_RegisterModel(const char *name, int32_t loadMode)
 {
-    return (qhandle_t)ui_syscall(UI_R_REGISTER_MODEL, (intptr_t)name, (intptr_t)loadMode);
+    return (qhandle_t)ui_syscall(UI_R_REGISTER_MODEL, (intptr_t)name,
+                                 (intptr_t)loadMode);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d770..0x4001d78b.
 void trap_R_ModelBounds(qhandle_t model, vec3_t minimums, vec3_t maximums)
 {
-    ui_syscall(UI_R_MODEL_BOUNDS, (intptr_t)model, (intptr_t)minimums, (intptr_t)maximums);
+    ui_syscall(UI_R_MODEL_BOUNDS, (intptr_t)model, (intptr_t)minimums,
+               (intptr_t)maximums);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d4a0..0x4001d4bc.
 int32_t trap_R_Text_Height(int32_t font, float scale)
 {
-    return (int32_t)ui_syscall(UI_R_TEXT_HEIGHT, (intptr_t)font, (intptr_t)PASSFLOAT(scale));
+    return (int32_t)ui_syscall(UI_R_TEXT_HEIGHT, (intptr_t)font,
+                               (intptr_t)PASSFLOAT(scale));
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d5e0..0x4001d5ea.
@@ -39,11 +42,17 @@ void trap_R_RenderScene(const refdef_t *refdef)
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d520..0x4001d577.
-void trap_R_Text_PaintWithCursor(float x, float y, int32_t font, float scale, const vec4_t color, const char *text, int32_t cursorPosition,
-                                 int8_t cursorCharacter, int32_t limit, int32_t textStyle)
+void trap_R_Text_PaintWithCursor(float x, float y, int32_t font,
+                                 float scale, const vec4_t color,
+                                 const char *text, int32_t cursorPosition,
+                                 int8_t cursorCharacter, int32_t limit,
+                                 int32_t textStyle)
 {
-    ui_syscall(UI_R_TEXT_PAINT_WITH_CURSOR, (intptr_t)PASSFLOAT(x), (intptr_t)PASSFLOAT(y), (intptr_t)font, (intptr_t)PASSFLOAT(scale),
-               (intptr_t)color, (intptr_t)text, (intptr_t)cursorPosition, (intptr_t)cursorCharacter, (intptr_t)limit, (intptr_t)textStyle);
+    ui_syscall(UI_R_TEXT_PAINT_WITH_CURSOR, (intptr_t)PASSFLOAT(x),
+               (intptr_t)PASSFLOAT(y), (intptr_t)font,
+               (intptr_t)PASSFLOAT(scale), (intptr_t)color, (intptr_t)text,
+               (intptr_t)cursorPosition, (intptr_t)cursorCharacter,
+               (intptr_t)limit, (intptr_t)textStyle);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d880..0x4001d891.
@@ -59,15 +68,20 @@ qboolean trap_Key_GetOverstrikeMode(void)
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d800..0x4001d81b.
-void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer, int32_t bufferSize)
+void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
+                                int32_t bufferSize)
 {
-    ui_syscall(UI_KEY_KEYNUM_TO_STRING_BUF, (intptr_t)keynum, (intptr_t)buffer, (intptr_t)bufferSize);
+    ui_syscall(UI_KEY_KEYNUM_TO_STRING_BUF, (intptr_t)keynum,
+               (intptr_t)buffer,
+               (intptr_t)bufferSize);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d820..0x4001d83b.
-void trap_Key_GetBindingBuf(int32_t keynum, char *buffer, int32_t bufferSize)
+void trap_Key_GetBindingBuf(int32_t keynum, char *buffer,
+                            int32_t bufferSize)
 {
-    (void)ui_syscall(UI_KEY_GET_BINDING_BUF, (intptr_t)keynum, (intptr_t)buffer, (intptr_t)bufferSize);
+    (void)ui_syscall(UI_KEY_GET_BINDING_BUF, (intptr_t)keynum,
+                     (intptr_t)buffer, (intptr_t)bufferSize);
 }
 
 // Source: uo_ui_mp_x86.dll 0x4001d840..0x4001d856.
@@ -116,7 +130,8 @@ void ui_compat_lan_load_cached_servers(void)
 // at uo_ui_mp_x86.dll 0x4000cabb.
 qboolean ui_compat_lan_server_is_punkbuster(int32_t source, int32_t server)
 {
-    return (qboolean)ui_syscall(UI_LAN_SERVER_IS_PUNKBUSTER, (intptr_t)source, (intptr_t)server);
+    return (qboolean)ui_syscall(UI_LAN_SERVER_IS_PUNKBUSTER,
+                                (intptr_t)source, (intptr_t)server);
 }
 
 // NOT_FROM_ORIGINAL_SOURCE: typed adapter for the direct command-89 call site
@@ -137,7 +152,8 @@ void ui_compat_set_pb_client_status(int32_t status)
 // uo_ui_mp_x86.dll 0x4000c495.
 qboolean ui_compat_verify_cd_key(const char *key, const char *checksum)
 {
-    return (qboolean)ui_syscall(UI_VERIFY_CD_KEY, (intptr_t)key, (intptr_t)checksum);
+    return (qboolean)ui_syscall(UI_VERIFY_CD_KEY, (intptr_t)key,
+                                (intptr_t)checksum);
 }
 
 // NOT_FROM_ORIGINAL_SOURCE: typed adapter for the command-65 call site at

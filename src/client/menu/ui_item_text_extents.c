@@ -16,21 +16,23 @@ enum {
  * uo_ui_mp_x86.dll 0x40017190. */
 extern displayContextDef_t *DC;
 
-void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const char *text)
+void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height,
+                         const char *text)
 {
     displayContextDef_t *display;
     int32_t fullWidth;
 
     if (text == NULL) {
         text = item->text;
-        if (text == NULL)
-            return;
+        if (text == NULL) return;
     }
 
     *width = coduo_fp_to_i32_extended((long double)item->textRect.w);
     *height = coduo_fp_to_i32_extended((long double)item->textRect.h);
-    if (*width != 0 && item->textalignment != UI_TEXT_ALIGN_CENTER_WITH_VALUE &&
-        !((item->type == ITEM_TYPE_OWNERDRAW || item->cvar != NULL) && item->textalignment == UI_TEXT_ALIGN_CENTER)) {
+    if (*width != 0 &&
+        item->textalignment != UI_TEXT_ALIGN_CENTER_WITH_VALUE &&
+        !((item->type == ITEM_TYPE_OWNERDRAW || item->cvar != NULL) &&
+          item->textalignment == UI_TEXT_ALIGN_CENTER)) {
         return;
     }
 
@@ -41,7 +43,9 @@ void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const
         display = DC;
         fullWidth = display->textWidth(text, font, scale, 0);
     }
-    if (item->type == ITEM_TYPE_OWNERDRAW && (item->textalignment == UI_TEXT_ALIGN_CENTER || item->textalignment == UI_TEXT_ALIGN_RIGHT)) {
+    if (item->type == ITEM_TYPE_OWNERDRAW &&
+        (item->textalignment == UI_TEXT_ALIGN_CENTER ||
+         item->textalignment == UI_TEXT_ALIGN_RIGHT)) {
         float scale = item->textscale;
         int32_t font = item->font;
         int32_t ownerDraw = item->window.ownerDraw;
@@ -49,9 +53,13 @@ void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const
 
         display = DC;
         extraWidth = display->ownerDrawWidth(ownerDraw, font, scale);
-        fullWidth = coduo_int32_from_bits((uint32_t)fullWidth + (uint32_t)extraWidth);
-    } else if ((item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD || item->type == ITEM_TYPE_UPREDITFIELD) &&
-               item->textalignment == UI_TEXT_ALIGN_CENTER && item->cvar != NULL) {
+        fullWidth = coduo_int32_from_bits((uint32_t)fullWidth +
+                                     (uint32_t)extraWidth);
+    } else if ((item->type == ITEM_TYPE_EDITFIELD ||
+                item->type == ITEM_TYPE_NUMERICFIELD ||
+                item->type == ITEM_TYPE_UPREDITFIELD) &&
+               item->textalignment == UI_TEXT_ALIGN_CENTER &&
+               item->cvar != NULL) {
         char cvarBuffer[ITEM_TEXT_CVAR_BUFFER_SIZE];
         const char *cvar = item->cvar;
         int32_t extraWidth;
@@ -65,7 +73,8 @@ void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const
             display = DC;
             extraWidth = display->textWidth(cvarBuffer, font, scale, 0);
         }
-        fullWidth = coduo_int32_from_bits((uint32_t)fullWidth + (uint32_t)extraWidth);
+        fullWidth = coduo_int32_from_bits((uint32_t)fullWidth +
+                                     (uint32_t)extraWidth);
     } else if (item->textalignment == UI_TEXT_ALIGN_CENTER_WITH_VALUE) {
         float scale = item->textscale;
         int32_t font = item->font;
@@ -74,7 +83,8 @@ void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         display = DC;
         extraWidth = display->textWidth(text, font, scale, 0);
-        fullWidth = coduo_int32_from_bits((uint32_t)fullWidth + (uint32_t)extraWidth);
+        fullWidth = coduo_int32_from_bits((uint32_t)fullWidth +
+                                     (uint32_t)extraWidth);
     }
 
     {
@@ -110,11 +120,14 @@ void Item_SetTextExtents(itemDef_t *item, int32_t *width, int32_t *height, const
         memcpy(&item->textRect.x, &alignXBits, sizeof(alignXBits));
 
         if (alignment == UI_TEXT_ALIGN_RIGHT) {
-            /* bare FILD at 0x4001736d: fullWidth stays an exact integer. */
-            item->textRect.x = (float)((long double)item->textalignx - (long double)fullWidth);
-        } else if (alignment == UI_TEXT_ALIGN_CENTER || alignment == UI_TEXT_ALIGN_CENTER_WITH_VALUE) {
-            /* bare FILD at 0x40017388: fullWidth/2 stays an exact integer. */
-            item->textRect.x = (float)((long double)item->textalignx - (long double)(fullWidth / 2));
+        /* bare FILD at 0x4001736d: fullWidth stays an exact integer. */
+            item->textRect.x = (float)((long double)item->textalignx -
+                                      (long double)fullWidth);
+        } else if (alignment == UI_TEXT_ALIGN_CENTER ||
+                   alignment == UI_TEXT_ALIGN_CENTER_WITH_VALUE) {
+        /* bare FILD at 0x40017388: fullWidth/2 stays an exact integer. */
+            item->textRect.x = (float)((long double)item->textalignx -
+                                      (long double)(fullWidth / 2));
         }
     }
 

@@ -44,19 +44,22 @@ void CG_CheckOpenWaitingScriptMenu(void)
     /* 0x3003a822: read the pending menu name. If ui_waitingScriptMenu is empty
      * (first byte NUL, tested via MOV AL,[buf]/TEST AL,AL at 0x3003a839), nothing is
      * waiting — fall through to the shared cvar-reset/return tail. */
-    trap_Cvar_VariableStringBuffer(g_str_ui_waitingScriptMenu, value, sizeof(value));
+    trap_Cvar_VariableStringBuffer(g_str_ui_waitingScriptMenu, value,
+                                   sizeof(value));
     if (value[0] != '\0') {
         /* 0x3003a848..0x3003a853: ui_newScriptMenu = ui_waitingScriptMenu. */
         trap_Cvar_Set(g_str_ui_newScriptMenu, value);
 
         /* 0x3003a859..0x3003a87c: ui_newScriptMenuIndex = ui_waitingScriptMenuIndex.
          * The waiting-index value is read back into the same scratch buffer. */
-        trap_Cvar_VariableStringBuffer(g_str_ui_waitingScriptMenuIndex, value, sizeof(value));
+        trap_Cvar_VariableStringBuffer(g_str_ui_waitingScriptMenuIndex, value,
+                                       sizeof(value));
         trap_Cvar_Set(g_str_ui_newScriptMenuIndex, value);
 
         /* 0x3003a882..0x3003a8a3: read ui_waitingScriptMenuNoMouse and Q_atoi it to
          * pick which popup menu the pending script menu maps to. */
-        trap_Cvar_VariableStringBuffer(g_str_ui_waitingScriptMenuNoMouse, value, sizeof(value));
+        trap_Cvar_VariableStringBuffer(g_str_ui_waitingScriptMenuNoMouse, value,
+                                       sizeof(value));
 
         const char *popupMenu;
         if (coduo_crt_atoi(value) != 0) {

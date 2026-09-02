@@ -7,7 +7,8 @@
 
 enum {
     CL_RELIABLE_COMMAND_MASK = CODUO_RELIABLE_COMMAND_COUNT - 1,
-    CL_RELIABLE_COMMAND_MAX_CHANGED_LENGTH = CODUO_RELIABLE_COMMAND_CAPACITY - 2,
+    CL_RELIABLE_COMMAND_MAX_CHANGED_LENGTH =
+        CODUO_RELIABLE_COMMAND_CAPACITY - 2,
     CL_MONKEY_FRAME_MASK = 255
 };
 
@@ -19,13 +20,18 @@ enum {
  * Name: exact same-module Mac symbol CL_AddReliableCommand. */
 void CL_AddReliableCommand(const char *command)
 {
-    if (clc.reliableSequence - clc.reliableAcknowledge > CODUO_RELIABLE_COMMAND_COUNT) {
-        Com_Error(ERR_DROP, "EXE_ERR_CLIENT_CMD_OVERFLOW");
+    if (clc.reliableSequence - clc.reliableAcknowledge >
+        CODUO_RELIABLE_COMMAND_COUNT) {
+        Com_Error(ERR_DROP,
+                  "EXE_ERR_CLIENT_CMD_OVERFLOW");
     }
 
     ++clc.reliableSequence;
-    MSG_WriteReliableCommandToBuffer(command, clc.reliableCommands[clc.reliableSequence & CL_RELIABLE_COMMAND_MASK],
-                                     CODUO_RELIABLE_COMMAND_CAPACITY);
+    MSG_WriteReliableCommandToBuffer(
+        command,
+        clc.reliableCommands[
+            clc.reliableSequence & CL_RELIABLE_COMMAND_MASK],
+        CODUO_RELIABLE_COMMAND_CAPACITY);
 }
 
 /* Source: CoDUOMP.exe 0x0040f980..0x0040f9c6.
@@ -39,7 +45,9 @@ void CL_MakeMonkeyDoLaundry(void)
 {
     (void)coduo_crt_rand();
 
-    char *const command = clc.reliableCommands[clc.reliableSequence & CL_RELIABLE_COMMAND_MASK];
+    char *const command =
+        clc.reliableCommands[
+            clc.reliableSequence & CL_RELIABLE_COMMAND_MASK];
     size_t length = strlen(command);
     if (length >= CODUO_RELIABLE_COMMAND_CAPACITY - 1) {
         length = CL_RELIABLE_COMMAND_MAX_CHANGED_LENGTH;
@@ -57,11 +65,14 @@ void CL_MakeMonkeyDoLaundry(void)
  * the original once-per-256-frames gate. */
 void CL_ChangeReliableCommand(void)
 {
-    if (sysCheckCrashOrRerun == qfalse || ((uint32_t)cls.frameCount & (uint32_t)CL_MONKEY_FRAME_MASK) != 0u) {
+    if (sysCheckCrashOrRerun == qfalse ||
+        ((uint32_t)cls.frameCount &
+         (uint32_t)CL_MONKEY_FRAME_MASK) != 0u) {
         return;
     }
 
-    const double randomFraction = (double)((float)coduo_crt_rand() * CL_CRT_RANDOM_UNIT);
+    const double randomFraction =
+        (double)((float)coduo_crt_rand() * CL_CRT_RANDOM_UNIT);
     if (randomFraction < CL_MONKEY_PROBABILITY)
         CL_MakeMonkeyDoLaundry();
 }

@@ -35,13 +35,19 @@ int32_t coduomp_left_hud_virtual_x_compat(int32_t x)
 {
     const cvar_t *aspectMode = Cvar_FindVar("r_aspectMode");
 
-    if (cls.rendererConfig.vidWidth <= 0 || cls.rendererConfig.vidHeight <= 0 ||
-        (int64_t)cls.rendererConfig.vidWidth * 3 <= (int64_t)cls.rendererConfig.vidHeight * 4 ||
+    if (cls.rendererConfig.vidWidth <= 0 ||
+        cls.rendererConfig.vidHeight <= 0 ||
+        (int64_t)cls.rendererConfig.vidWidth * 3 <=
+            (int64_t)cls.rendererConfig.vidHeight * 4 ||
         (aspectMode != NULL && aspectMode->integer != 0)) {
         return x;
     }
 
-    return x - (((cls.rendererConfig.vidWidth * 480) / cls.rendererConfig.vidHeight - 640) / 2);
+    return x -
+        (((cls.rendererConfig.vidWidth * 480) /
+              cls.rendererConfig.vidHeight -
+          640) /
+         2);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maps virtual 640x480 coordinates to the same
@@ -52,22 +58,31 @@ int32_t coduomp_left_hud_virtual_x_compat(int32_t x)
  * backend halves of the command-ordered scope are accepted. Fullscreen UI and
  * classic presentation use a fitted 4:3 renderer viewport and retain the
  * recovered stock transform. */
-void coduomp_scr_adjust_from_640_compat(float *x, float *y, float *width, float *height)
+void coduomp_scr_adjust_from_640_compat(float *x, float *y,
+                                       float *width, float *height)
 {
-    float verticalScale = (float)cls.rendererConfig.vidHeight / 480.0f;
-    float horizontalScale = (float)cls.rendererConfig.vidWidth / 640.0f;
+    float verticalScale =
+        (float)cls.rendererConfig.vidHeight / 480.0f;
+    float horizontalScale =
+        (float)cls.rendererConfig.vidWidth / 640.0f;
     const cvar_t *aspectMode = Cvar_FindVar("r_aspectMode");
     float horizontalBias = 0.0f;
 
-    if (coduomp_console_rendering_compat_active != qfalse || coduomp_backend_console_2d_compat_active != qfalse) {
+    if (coduomp_console_rendering_compat_active != qfalse ||
+        coduomp_backend_console_2d_compat_active != qfalse) {
         horizontalScale = coduomp_console_canvas_scale_compat();
         verticalScale = horizontalScale;
-    } else if (cls.rendererConfig.vidWidth > 0 && cls.rendererConfig.vidHeight > 0 &&
-               (int64_t)cls.rendererConfig.vidWidth * 3 > (int64_t)cls.rendererConfig.vidHeight * 4 &&
-               (aspectMode == NULL || aspectMode->integer == 0) &&
-               (coduomp_cgame_rendering_compat_active != qfalse || coduomp_backend_cgame_2d_compat_active != qfalse)) {
+    } else if (cls.rendererConfig.vidWidth > 0 &&
+        cls.rendererConfig.vidHeight > 0 &&
+        (int64_t)cls.rendererConfig.vidWidth * 3 >
+            (int64_t)cls.rendererConfig.vidHeight * 4 &&
+        (aspectMode == NULL || aspectMode->integer == 0) &&
+        (coduomp_cgame_rendering_compat_active != qfalse ||
+         coduomp_backend_cgame_2d_compat_active != qfalse)) {
         horizontalScale = verticalScale;
-        horizontalBias = ((float)cls.rendererConfig.vidWidth - 640.0f * verticalScale) * 0.5f;
+        horizontalBias =
+            ((float)cls.rendererConfig.vidWidth -
+             640.0f * verticalScale) * 0.5f;
     }
 
     if (x != NULL)

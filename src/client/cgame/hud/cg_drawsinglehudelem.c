@@ -93,9 +93,10 @@
  * the 32-bit target ABI; guard those against 4-byte pointer width. */
 _Static_assert(offsetof(cgAlignedDrawItem, x) == 0x00, "item.x @ +0x00");
 _Static_assert(offsetof(cgAlignedDrawItem, label) == 0x10, "item.label @ +0x10");
-_Static_assert(offsetof(hudElem_t, type) == 0x00, "hudElem.type @ +0x00");
+_Static_assert(offsetof(hudElem_t, type)          == 0x00, "hudElem.type @ +0x00");
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-_Static_assert(offsetof(cgAlignedDrawItem, labelWidth) == 0x14, "item.labelWidth @ +0x14");
+_Static_assert(offsetof(cgAlignedDrawItem, labelWidth) == 0x14,
+               "item.labelWidth @ +0x14");
 _Static_assert(offsetof(cgAlignedDrawItem, text) == 0x18, "item.text @ +0x18");
 #endif
 

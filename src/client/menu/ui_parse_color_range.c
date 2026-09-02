@@ -46,7 +46,8 @@ qboolean ParseColorRange(int handle, int type, itemDef_t *item)
     // already has ranges (numColors != 0) that were added by the OTHER keyword
     // (colorRangeType != type), reject with the conflict diagnostic.
     if (item->numColors != 0 && type != item->colorRangeType) {
-        PC_SourceError(handle, "both addColorRange and addColorRangeRel - set within same itemdef\n");
+        PC_SourceError(handle,
+                       "both addColorRange and addColorRangeRel - set within same itemdef\n");
         return qfalse;                                  // 0x3005a11c XOR EAX,EAX
     }
 

@@ -65,16 +65,18 @@
 /* Each original copy passes 0x3f to strncpy and then writes NUL at +0x3f.
  * Q_strncpyz with the complete 0x40-byte destination performs that same bounded
  * copy and explicit termination while deriving the bound from the field. */
-typedef char bg_anim_entry_name_size_check[(sizeof(((bg_static_animation_t *)0)->name) == 0x40) ? 1 : -1];
+typedef char bg_anim_entry_name_size_check[
+    (sizeof(((bg_static_animation_t *)0)->name) == 0x40) ? 1 : -1];
 
 /* The root carries both shared entry flags. */
-#define BG_ANIM_ROOT_FLAGS (BG_ANIM_ENTRY_NON_PRIMITIVE | BG_ANIM_ENTRY_UNUSED)
+#define BG_ANIM_ROOT_FLAGS \
+    (BG_ANIM_ENTRY_NON_PRIMITIVE | BG_ANIM_ENTRY_UNUSED)
 
 /* Millisecond conversion / floor constants. */
 enum {
     BG_ANIM_MOVE_SPEED_SCALE = 1000, /* IMUL EAX,EAX,0x3e8 */
-    BG_ANIM_MIN_ANIM_LENGTH = 500,  /* MOV EAX,0x1f4; clamp entry->duration up */
-    BG_ANIM_BLEND_NONE = -1    /* MOV [ESI+0x40],0xffffffff sentinel */
+    BG_ANIM_MIN_ANIM_LENGTH  = 500,  /* MOV EAX,0x1f4; clamp entry->duration up */
+    BG_ANIM_BLEND_NONE       = -1    /* MOV [ESI+0x40],0xffffffff sentinel */
 };
 
 /*
@@ -88,25 +90,36 @@ static int32_t bg_compat_anim_displacement_i32(const vec3_t moveDelta)
 {
 #if defined(WINDOWS_BEHAVIOR)
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_sqrt(x87f_add(x87f_add(x87f_mul(x87f_load_f32(moveDelta[2]), x87f_load_f32(moveDelta[2])),
-                                                            x87f_mul(x87f_load_f32(moveDelta[1]), x87f_load_f32(moveDelta[1]))),
-                                                   x87f_mul(x87f_load_f32(moveDelta[0]), x87f_load_f32(moveDelta[0])))));
+    return x87f_store_i32_trunc(x87f_sqrt(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(moveDelta[2]),
+                          x87f_load_f32(moveDelta[2])),
+                 x87f_mul(x87f_load_f32(moveDelta[1]),
+                          x87f_load_f32(moveDelta[1]))),
+        x87f_mul(x87f_load_f32(moveDelta[0]),
+                 x87f_load_f32(moveDelta[0])))));
 #else
     const long double squared =
-        ((long double)moveDelta[2] * (long double)moveDelta[2] + (long double)moveDelta[1] * (long double)moveDelta[1]) +
+        ((long double)moveDelta[2] * (long double)moveDelta[2] +
+         (long double)moveDelta[1] * (long double)moveDelta[1]) +
         (long double)moveDelta[0] * (long double)moveDelta[0];
     return coduo_fp_to_i32_extended(sqrtl(squared));
 #endif
 #else
 #if EMULATE_X87
-    const x87f squared = x87f_add(x87f_add(x87f_mul(x87f_load_f32(moveDelta[0]), x87f_load_f32(moveDelta[0])),
-                                           x87f_mul(x87f_load_f32(moveDelta[1]), x87f_load_f32(moveDelta[1]))),
-                                  x87f_mul(x87f_load_f32(moveDelta[2]), x87f_load_f32(moveDelta[2])));
-    const float distance = (float)CoduoLibm_SqrtGlibc(x87f_store_f64(squared));
+    const x87f squared = x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(moveDelta[0]),
+                          x87f_load_f32(moveDelta[0])),
+                 x87f_mul(x87f_load_f32(moveDelta[1]),
+                          x87f_load_f32(moveDelta[1]))),
+        x87f_mul(x87f_load_f32(moveDelta[2]),
+                 x87f_load_f32(moveDelta[2])));
+    const float distance =
+        (float)CoduoLibm_SqrtGlibc(x87f_store_f64(squared));
     return x87f_store_i32_trunc(x87f_load_f32(distance));
 #else
     const long double squared =
-        ((long double)moveDelta[0] * (long double)moveDelta[0] + (long double)moveDelta[1] * (long double)moveDelta[1]) +
+        ((long double)moveDelta[0] * (long double)moveDelta[0] +
+         (long double)moveDelta[1] * (long double)moveDelta[1]) +
         (long double)moveDelta[2] * (long double)moveDelta[2];
     const float distance = (float)CoduoLibm_SqrtGlibc((double)squared);
 #if CODUO_ARCH_HAS_X87 && (defined(__GNUC__) || defined(__clang__))
@@ -138,11 +151,13 @@ void BG_FinalizePlayerAnims(void)
 
     /* 0x300016db..0x30001700: entry 0 is the fixed "root" node. */
     animTable->entries[0].flags |= BG_ANIM_ROOT_FLAGS;
-    Q_strncpyz(animTable->entries[0].name, "root", (int32_t)sizeof(animTable->entries[0].name));
+    Q_strncpyz(animTable->entries[0].name, "root",
+               (int32_t)sizeof(animTable->entries[0].name));
     animTable->entries[0].hash = 0;
 
     /* 0x30001713: loop over bones 1..boneCount-1 (signed <= guard). */
-    for (int32_t bone = 1; bone < initialBoneCount; bone = coduo_int32_from_bits((uint32_t)bone + 1u)) {
+    for (int32_t bone = 1; bone < initialBoneCount;
+         bone = coduo_int32_from_bits((uint32_t)bone + 1u)) {
         bg_static_animation_t *entry = &animTable->entries[bone];
 
         /* 0x30001720: reload the count and bounds-check the bone index (unsigned).
@@ -159,7 +174,8 @@ void BG_FinalizePlayerAnims(void)
         bg_runtime_animation_t *runtimeAnims = bgRuntimeAnimations;
         bg_runtime_animation_t *matched = (bg_runtime_animation_t *)0;
 
-        for (int32_t r = 0; r < runtimeCount; r = coduo_int32_from_bits((uint32_t)r + 1u)) {
+        for (int32_t r = 0; r < runtimeCount;
+             r = coduo_int32_from_bits((uint32_t)r + 1u)) {
             if ((uint32_t)runtimeAnims[r].anim.animIndex == (uint32_t)bone) {
                 matched = &runtimeAnims[r];
                 break;
@@ -181,7 +197,8 @@ void BG_FinalizePlayerAnims(void)
             /* 0x300017ad: the registered node is not a primitive animation.
              * Copy the registered name/hash and zero the geometry fields. */
             entry->flags |= BG_ANIM_ENTRY_NON_PRIMITIVE;
-            Q_strncpyz(entry->name, matched->name, (int32_t)sizeof(entry->name));
+            Q_strncpyz(entry->name, matched->name,
+                       (int32_t)sizeof(entry->name));
             entry->hash = matched->hash;
 
             if (entry->blendTime == 0) {
@@ -193,7 +210,9 @@ void BG_FinalizePlayerAnims(void)
         }
 
         /* 0x300017ea: real bone. Name it from the engine and hash the name. */
-        Q_strncpyz(entry->name, bg_compat_xanim_get_anim_name(treeHandle, animIndex), (int32_t)sizeof(entry->name));
+        Q_strncpyz(entry->name,
+                   bg_compat_xanim_get_anim_name(treeHandle, animIndex),
+                   (int32_t)sizeof(entry->name));
         entry->hash = BG_StringHashValue(entry->name); /* 0x30001809 */
 
         if (entry->blendTime == 0) {
@@ -201,7 +220,8 @@ void BG_FinalizePlayerAnims(void)
         }
 
         /* 0x3000182c: the bone's animation length (ms), keyed on the tree pointer. */
-        int32_t animLength = bg_compat_animation_get_length(tree, animIndex);
+        int32_t animLength =
+            bg_compat_animation_get_length(tree, animIndex);
         entry->duration = animLength; /* 0x30001837 */
 
         if (animLength != 0) {
@@ -211,14 +231,16 @@ void BG_FinalizePlayerAnims(void)
              * though XAnimGetRelDelta writes only its leading vec2. */
             vec3_t rotationDeltaStorage;
             vec3_t moveDelta;
-            bg_compat_xanim_get_rel_delta(treeHandle, animIndex, rotationDeltaStorage, moveDelta);
+            bg_compat_xanim_get_rel_delta(treeHandle, animIndex,
+                                           rotationDeltaStorage, moveDelta);
 
             /* The exact platform arithmetic/store graph is retained above. */
             int32_t dist = bg_compat_anim_displacement_i32(moveDelta);
 
             if (dist != 0) {
                 /* 0x30001897: signed (IMUL/CDQ/IDIV) move speed in units/second. */
-                int32_t scaledDistance = coduo_int32_from_bits((uint32_t)dist * (uint32_t)BG_ANIM_MOVE_SPEED_SCALE);
+                int32_t scaledDistance = coduo_int32_from_bits(
+                    (uint32_t)dist * (uint32_t)BG_ANIM_MOVE_SPEED_SCALE);
                 entry->moveSpeed = scaledDistance / entry->duration;
             } else {
                 entry->moveSpeed = 0; /* 0x300018a6 */

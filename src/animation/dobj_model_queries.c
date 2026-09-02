@@ -7,8 +7,10 @@
 DObjSkelMat *DObjGetMatrixArray(const DObj *obj, int32_t modelIndex)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    return obj != NULL && obj->evaluationStorage != NULL && (uint32_t)modelIndex < obj->modelCount
-               ? &obj->evaluationStorage->partSpans[obj->modelPartBaseIndices[modelIndex]].basePose
+    return obj != NULL && obj->evaluationStorage != NULL &&
+                   (uint32_t)modelIndex < obj->modelCount
+               ? &obj->evaluationStorage
+                      ->partSpans[obj->modelPartBaseIndices[modelIndex]].basePose
                : NULL;
 }
 
@@ -16,12 +18,15 @@ DObjSkelMat *DObjGetMatrixArray(const DObj *obj, int32_t modelIndex)
  * Name: exact same-version Mac symbol DObjGetBoneInfo. */
 void DObjGetBoneInfo(const DObj *obj, XModelPartColl **partCollisions)
 {
-    for (int32_t modelIndex = 0; modelIndex < obj->modelCount; ++modelIndex) {
-        const XModelPartsData *parts = obj->models[modelIndex]->info->parts->data.xmodelParts;
+    for (int32_t modelIndex = 0; modelIndex < obj->modelCount;
+         ++modelIndex) {
+        const XModelPartsData *parts =
+            obj->models[modelIndex]->info->parts->data.xmodelParts;
         int32_t partCount = XModelNumBones(obj->models[modelIndex]);
 
         for (int32_t partIndex = 0; partIndex < partCount; ++partIndex) {
-            *partCollisions++ = &parts->partCollisions[partIndex];
+            *partCollisions++ =
+                &parts->partCollisions[partIndex];
         }
     }
 }
@@ -32,7 +37,8 @@ void DObjGetBoneInfo(const DObj *obj, XModelPartColl **partCollisions)
  * Name: exact same-version Mac symbol DObjBad. */
 qboolean DObjBad(const DObj *obj)
 {
-    for (int32_t modelIndex = obj->modelCount - 1; modelIndex >= 0; --modelIndex) {
+    for (int32_t modelIndex = obj->modelCount - 1; modelIndex >= 0;
+         --modelIndex) {
         if (XModelBad(obj->models[modelIndex]) != qfalse) {
             return qtrue;
         }

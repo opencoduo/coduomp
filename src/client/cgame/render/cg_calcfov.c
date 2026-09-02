@@ -45,30 +45,28 @@
 
 /* File-local FOV constants (degrees), all proven as float immediates in the .mcode. */
 #define FOV_DEFAULT_GAMEMODE5 90.0f /* 0x42b40000, forced FOV in cg_predictedPlayerState.pmType == 5 */
-#define FOV_CLAMP_MIN 80.0f /* 0x42a00000 (0x3007bfb0), low clamp */
-#define FOV_CLAMP_MAX 160.0f /* 0x43200000 (0x3007be90), high clamp */
-#define FOV_VEHICLE_ADS 70.0f /* 0x428c0000 (0x3007bf84), vehicle-ADS lerp target */
-#define FOV_ZOOM_SCOPE 55.0f /* 0x425c0000 (0x3007c004), returned for the zoom/scope pair */
+#define FOV_CLAMP_MIN         80.0f /* 0x42a00000 (0x3007bfb0), low clamp */
+#define FOV_CLAMP_MAX        160.0f /* 0x43200000 (0x3007be90), high clamp */
+#define FOV_VEHICLE_ADS       70.0f /* 0x428c0000 (0x3007bf84), vehicle-ADS lerp target */
+#define FOV_ZOOM_SCOPE        55.0f /* 0x425c0000 (0x3007c004), returned for the zoom/scope pair */
 
 /* cg.predictedPlayerState.vehiclePosition values the FOV path distinguishes (1/2/3).
  * Exact source enum name unresolved; named by proven role in this function. */
 enum {
-    VEHICLE_POSITION_DRIVER = 1, /* the position that runs the ADS-blend FOV lerp */
-    VEHICLE_POSITION_GUNNER = 2, /* suppresses the ADS-blend lerp */
+    VEHICLE_POSITION_DRIVER   = 1, /* the position that runs the ADS-blend FOV lerp */
+    VEHICLE_POSITION_GUNNER   = 2, /* suppresses the ADS-blend lerp */
     VEHICLE_POSITION_PASSENGER = 3 /* diverts to the non-vehicle FOV path */
 };
 
 /* cg.predictedPlayerState.vehicleType value gated on (== 1) before the position check. */
-enum {
-    VEHICLE_TYPE_ONE = 1
-};
+enum { VEHICLE_TYPE_ONE = 1 };
 
 /* FOV-fade timing constants proven as decimal immediates in the .mcode. */
 enum {
-    FOV_FADE_BACKDATE_MS = 10,  /* startTime = cg.time - 10 for the "just changed" fade */
-    FOV_FADE_QUICK_MS = 1,   /* 1 ms duration for the snap-in fade */
-    FOV_FADE_STALE_MS = 50,  /* transition is "stale" once older than cg.time - 50 (0x32) */
-    FOV_FADE_SETTLE_MS = 700  /* 0x2bc, settle-out fade duration */
+    FOV_FADE_BACKDATE_MS   = 10,  /* startTime = cg.time - 10 for the "just changed" fade */
+    FOV_FADE_QUICK_MS      = 1,   /* 1 ms duration for the snap-in fade */
+    FOV_FADE_STALE_MS      = 50,  /* transition is "stale" once older than cg.time - 50 (0x32) */
+    FOV_FADE_SETTLE_MS     = 700  /* 0x2bc, settle-out fade duration */
 };
 
 float CG_CalcFov(void)
@@ -104,7 +102,8 @@ float CG_CalcFov(void)
             /* Vehicle/turret view FOV path (0x3004003a). */
             const int32_t vehiclePosition = cg_predictedPlayerState.vehiclePosition; /* ESI */
 
-            if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_ONE && vehiclePosition == VEHICLE_POSITION_PASSENGER) {
+            if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_ONE &&
+                vehiclePosition == VEHICLE_POSITION_PASSENGER) {
                 /* 0x3004004c: passenger of a type-1 vehicle -> non-vehicle path. */
                 goto non_vehicle;
             }
@@ -134,14 +133,19 @@ float CG_CalcFov(void)
                 const int32_t last = cg_fovAdsUpdateTime[adsSlot];
                 /* 0x300400b5: JG do-fade; 0x300400c3: JGE (in-window) commit_position. */
                 if (last <= now) {
-                    int32_t windowStart = coduo_int32_from_bits((uint32_t)now - (uint32_t)cg_frametime);
+                    int32_t windowStart = coduo_int32_from_bits(
+                        (uint32_t)now - (uint32_t)cg_frametime);
                     if (last >= windowStart) {
                         goto commit_position;
                     }
                 }
                 /* 0x300400c5: only when no HUD timeout is active. */
                 if (cg_timeoutEndTime == 0) {
-                    CG_StartFovFade(coduo_int32_from_bits((uint32_t)now - (uint32_t)FOV_FADE_BACKDATE_MS), FOV_FADE_QUICK_MS, 255);
+                    CG_StartFovFade(
+                        coduo_int32_from_bits(
+                            (uint32_t)now
+                            - (uint32_t)FOV_FADE_BACKDATE_MS),
+                        FOV_FADE_QUICK_MS, 255);
                 }
                 cg_fovAdsUpdateTime[adsSlot] = now; /* 0x300400e3 */
                 cg_fovTransitionTime = now;         /* 0x300400ea */
@@ -157,7 +161,11 @@ float CG_CalcFov(void)
              * suppressing the FOV fade on a vehicle-position change whenever a HUD
              * timeout was active. */
             if (cg_fovLastVehiclePosition != vehiclePosition) {
-                CG_StartFovFade(coduo_int32_from_bits((uint32_t)now - (uint32_t)FOV_FADE_BACKDATE_MS), FOV_FADE_QUICK_MS, 255);
+                CG_StartFovFade(
+                    coduo_int32_from_bits(
+                        (uint32_t)now
+                        - (uint32_t)FOV_FADE_BACKDATE_MS),
+                    FOV_FADE_QUICK_MS, 255);
                 cg_fovTransitionTime = now; /* 0x30040113 */
             }
             cg_fovAdsUpdateTime[adsSlot] = now;               /* 0x30040119 */
@@ -192,14 +200,16 @@ non_vehicle:
         long double t;
         if (cg_adsZoomingIn != 0) {
             /* 0x30040198: t0 = adsFrac - (1.0f - adsZoomInFrac). */
-            t = (long double)adsFrac - ((long double)1.0f - cur->adsZoomInFrac);
+            t = (long double)adsFrac -
+                ((long double)1.0f - cur->adsZoomInFrac);
             if (isnan(t) || t <= 0.0f) { /* FCOM/TEST 0x41 also bails unordered */
                 goto tail;
             }
             t = t / cur->adsZoomInFrac;  /* 0x300401af */
         } else {
             /* 0x300401b7: t0 = adsFrac - (1.0f - adsZoomOutFrac). */
-            t = (long double)adsFrac - ((long double)1.0f - cur->adsZoomOutFrac);
+            t = (long double)adsFrac -
+                ((long double)1.0f - cur->adsZoomOutFrac);
             if (isnan(t) || t <= 0.0f) { /* 0x300401c1 */
                 goto tail;
             }
@@ -218,9 +228,11 @@ tail:
     if (!(flags & EF_IN_VEHICLE)) {
         /* 0x30040200: leaving/absent the vehicle view. */
         if (cg_fovLastVehiclePosition > 0) {
-            int32_t fadeStart = coduo_int32_from_bits((uint32_t)now - (uint32_t)FOV_FADE_BACKDATE_MS);
+            int32_t fadeStart = coduo_int32_from_bits(
+                (uint32_t)now - (uint32_t)FOV_FADE_BACKDATE_MS);
             cg_fovFade.startTime = fadeStart;
-            int32_t fadeEnd = coduo_int32_from_bits((uint32_t)fadeStart + (uint32_t)FOV_FADE_QUICK_MS);
+            int32_t fadeEnd = coduo_int32_from_bits(
+                (uint32_t)fadeStart + (uint32_t)FOV_FADE_QUICK_MS);
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             qboolean expired = fadeEnd <= now;
             cg_fovFade.startValue = 1.0f;
@@ -236,11 +248,13 @@ tail:
     /* 0x30040244: settle-out an old transition. */
     int32_t transitionTime = cg_fovTransitionTime;
     if (transitionTime > 0) {
-        int32_t staleThreshold = coduo_int32_from_bits((uint32_t)now - (uint32_t)FOV_FADE_STALE_MS);
+        int32_t staleThreshold = coduo_int32_from_bits(
+            (uint32_t)now - (uint32_t)FOV_FADE_STALE_MS);
         if (transitionTime < staleThreshold) {
             int32_t fadeStart = coduo_int32_from_bits((uint32_t)now - 1u);
             cg_fovFade.startTime = fadeStart;
-            int32_t fadeEnd = coduo_int32_from_bits((uint32_t)fadeStart + (uint32_t)FOV_FADE_SETTLE_MS);
+            int32_t fadeEnd = coduo_int32_from_bits(
+                (uint32_t)fadeStart + (uint32_t)FOV_FADE_SETTLE_MS);
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             qboolean expired = fadeEnd <= now;
             cg_fovFade.startValue = 0.0f;

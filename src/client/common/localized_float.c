@@ -10,13 +10,16 @@
  *   uo_cgame_mp_x86.dll  0x3004f650..0x3004f6a5
  *   uo_ui_mp_x86.dll     0x40007680..0x400076d5
  */
-void Com_FormatLocalizedFloat(char *buffer, uint32_t bufferSize, int32_t precision, language_t language, float value)
+void Com_FormatLocalizedFloat(char *buffer, uint32_t bufferSize,
+                              int32_t precision, language_t language,
+                              float value)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (bufferSize == 0) {
         return;
     }
-    (void)coduo_crt_snprintf(buffer, bufferSize - 1u, "%.*f", precision, (double)value);
+    (void)coduo_crt_snprintf(
+        buffer, bufferSize - 1u, "%.*f", precision, (double)value);
     buffer[bufferSize - 1u] = '\0';
 
     switch (language) {

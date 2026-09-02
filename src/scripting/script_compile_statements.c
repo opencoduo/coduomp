@@ -81,10 +81,13 @@ void EmitEndStatement(void)
 
 /* Source: CoDUOMP.exe 0x0047d440..0x0047d4ef.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d440_0047d4ef.mcode. */
-void EmitWaitStatement(scr_ast_node_t *timeNode, uint32_t timeSourcePos, uint32_t opcodeSourcePos)
+void EmitWaitStatement(scr_ast_node_t *timeNode,
+                       uint32_t timeSourcePos,
+                       uint32_t opcodeSourcePos)
 {
     if (script_codegenMode != 0) {
-        CompileError(opcodeSourcePos, "wait not allowed in /# ... #/ comment");
+        CompileError(opcodeSourcePos,
+                              "wait not allowed in /# ... #/ comment");
     }
 
     EmitExpression(timeNode);
@@ -95,7 +98,8 @@ void EmitWaitStatement(scr_ast_node_t *timeNode, uint32_t timeSourcePos, uint32_
 
 /* Source: CoDUOMP.exe 0x0047d4f0..0x0047d5db.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d4f0_0047d5db.mcode. */
-void EmitIfStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *bodyNode, uint32_t sourcePos)
+void EmitIfStatement(scr_ast_node_t *conditionNode,
+                     scr_ast_node_t *bodyNode, uint32_t sourcePos)
 {
     EmitExpression(conditionNode);
     EmitOpcode(SCRIPT_OPCODE_JUMP_ON_FALSE, -1, 0);
@@ -107,13 +111,17 @@ void EmitIfStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *bodyNode, ui
     EmitNOP();
 
     char *current = (char *)TempMalloc(0);
-    const int32_t falseOffset = (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
+    const int32_t falseOffset =
+        (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
     memcpy(falsePatch, &falseOffset, sizeof(falseOffset));
 }
 
 /* Source: CoDUOMP.exe 0x0047d5e0..0x0047d774.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d5e0_0047d774.mcode. */
-void EmitIfElseStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *thenNode, scr_ast_node_t *elseNode, uint32_t sourcePos)
+void EmitIfElseStatement(scr_ast_node_t *conditionNode,
+                         scr_ast_node_t *thenNode,
+                         scr_ast_node_t *elseNode,
+                         uint32_t sourcePos)
 {
     EmitExpression(conditionNode);
     EmitOpcode(SCRIPT_OPCODE_JUMP_ON_FALSE, -1, 0);
@@ -127,7 +135,8 @@ void EmitIfElseStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *thenNode
     char *endPatch = (char *)script_codeEmitCursor;
 
     char *current = (char *)TempMalloc(0);
-    const int32_t falseOffset = (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
+    const int32_t falseOffset =
+        (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
     memcpy(falsePatch, &falseOffset, sizeof(falseOffset));
 
     EmitStatement(elseNode);
@@ -140,12 +149,21 @@ void EmitIfElseStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *thenNode
 
 /* Source: CoDUOMP.exe 0x0047d780..0x0047da10.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047d780_0047da10.mcode. */
-void EmitWhileStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *bodyNode, uint32_t conditionSourcePos, uint32_t loopSourcePos)
+void EmitWhileStatement(scr_ast_node_t *conditionNode,
+                        scr_ast_node_t *bodyNode,
+                        uint32_t conditionSourcePos,
+                        uint32_t loopSourcePos)
 {
     EmitNOP();
 
-    script_loop_patch_state_t saved = {script_breakAllowed,    script_breakAllowedInDeveloperBlock,    script_breakPatchList,
-                                       script_continueAllowed, script_continueAllowedInDeveloperBlock, script_continuePatchList};
+    script_loop_patch_state_t saved = {
+        script_breakAllowed,
+        script_breakAllowedInDeveloperBlock,
+        script_breakPatchList,
+        script_continueAllowed,
+        script_continueAllowedInDeveloperBlock,
+        script_continuePatchList
+    };
     script_breakAllowed = qfalse;
     script_breakAllowedInDeveloperBlock = qfalse;
     script_continueAllowed = qfalse;
@@ -177,26 +195,38 @@ void EmitWhileStatement(scr_ast_node_t *conditionNode, scr_ast_node_t *bodyNode,
     EmitInteger((int32_t)(loopStart - jumpPos));
 
     char *current = (char *)TempMalloc(0);
-    const int32_t falseOffset = (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
+    const int32_t falseOffset =
+        (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
     memcpy(falsePatch, &falseOffset, sizeof(falseOffset));
     ConnectBreakStatements();
 
     script_breakAllowed = saved.breakAllowed;
-    script_breakAllowedInDeveloperBlock = saved.breakAllowedInDeveloperBlock;
+    script_breakAllowedInDeveloperBlock =
+        saved.breakAllowedInDeveloperBlock;
     script_breakPatchList = saved.breakPatchList;
     script_continueAllowed = saved.continueAllowed;
-    script_continueAllowedInDeveloperBlock = saved.continueAllowedInDeveloperBlock;
+    script_continueAllowedInDeveloperBlock =
+        saved.continueAllowedInDeveloperBlock;
     script_continuePatchList = saved.continuePatchList;
 }
 
 /* Source: CoDUOMP.exe 0x0047da10..0x0047dbdd.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047da10_0047dbdd.mcode. */
-void EmitDoWhileStatement(scr_ast_node_t *bodyNode, scr_ast_node_t *conditionNode, uint32_t conditionSourcePos, uint32_t loopSourcePos)
+void EmitDoWhileStatement(scr_ast_node_t *bodyNode,
+                          scr_ast_node_t *conditionNode,
+                          uint32_t conditionSourcePos,
+                          uint32_t loopSourcePos)
 {
     EmitNOP();
 
-    script_loop_patch_state_t saved = {script_breakAllowed,    script_breakAllowedInDeveloperBlock,    script_breakPatchList,
-                                       script_continueAllowed, script_continueAllowedInDeveloperBlock, script_continuePatchList};
+    script_loop_patch_state_t saved = {
+        script_breakAllowed,
+        script_breakAllowedInDeveloperBlock,
+        script_breakPatchList,
+        script_continueAllowed,
+        script_continueAllowedInDeveloperBlock,
+        script_continuePatchList
+    };
     script_breakAllowed = qtrue;
     script_breakAllowedInDeveloperBlock = script_codegenMode != 0;
     script_breakPatchList = NULL;
@@ -220,20 +250,32 @@ void EmitDoWhileStatement(scr_ast_node_t *bodyNode, scr_ast_node_t *conditionNod
     ConnectBreakStatements();
 
     script_breakAllowed = saved.breakAllowed;
-    script_breakAllowedInDeveloperBlock = saved.breakAllowedInDeveloperBlock;
+    script_breakAllowedInDeveloperBlock =
+        saved.breakAllowedInDeveloperBlock;
     script_breakPatchList = saved.breakPatchList;
     script_continueAllowed = saved.continueAllowed;
-    script_continueAllowedInDeveloperBlock = saved.continueAllowedInDeveloperBlock;
+    script_continueAllowedInDeveloperBlock =
+        saved.continueAllowedInDeveloperBlock;
     script_continuePatchList = saved.continuePatchList;
 }
 
 /* Source: CoDUOMP.exe 0x0047dbe0..0x0047de4b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047dbe0_0047de4b.mcode. */
-void EmitForStatement(scr_ast_node_t *initNode, scr_ast_node_t *conditionNode, scr_ast_node_t *incrementNode, scr_ast_node_t *bodyNode,
-                      uint32_t conditionSourcePos, uint32_t loopSourcePos)
+void EmitForStatement(scr_ast_node_t *initNode,
+                      scr_ast_node_t *conditionNode,
+                      scr_ast_node_t *incrementNode,
+                      scr_ast_node_t *bodyNode,
+                      uint32_t conditionSourcePos,
+                      uint32_t loopSourcePos)
 {
-    script_loop_patch_state_t saved = {script_breakAllowed,    script_breakAllowedInDeveloperBlock,    script_breakPatchList,
-                                       script_continueAllowed, script_continueAllowedInDeveloperBlock, script_continuePatchList};
+    script_loop_patch_state_t saved = {
+        script_breakAllowed,
+        script_breakAllowedInDeveloperBlock,
+        script_breakPatchList,
+        script_continueAllowed,
+        script_continueAllowedInDeveloperBlock,
+        script_continuePatchList
+    };
     script_breakAllowed = qfalse;
     script_breakAllowedInDeveloperBlock = qfalse;
     script_continueAllowed = qfalse;
@@ -277,16 +319,20 @@ void EmitForStatement(scr_ast_node_t *initNode, scr_ast_node_t *conditionNode, s
 
     if (falsePatch != NULL) {
         char *current = (char *)TempMalloc(0);
-        const int32_t falseOffset = (int32_t)(current - falsePatch) - (int32_t)sizeof(falseOffset);
+        const int32_t falseOffset =
+            (int32_t)(current - falsePatch) -
+            (int32_t)sizeof(falseOffset);
         memcpy(falsePatch, &falseOffset, sizeof(falseOffset));
     }
 
     ConnectBreakStatements();
     script_breakAllowed = saved.breakAllowed;
-    script_breakAllowedInDeveloperBlock = saved.breakAllowedInDeveloperBlock;
+    script_breakAllowedInDeveloperBlock =
+        saved.breakAllowedInDeveloperBlock;
     script_breakPatchList = saved.breakPatchList;
     script_continueAllowed = saved.continueAllowed;
-    script_continueAllowedInDeveloperBlock = saved.continueAllowedInDeveloperBlock;
+    script_continueAllowedInDeveloperBlock =
+        saved.continueAllowedInDeveloperBlock;
     script_continuePatchList = saved.continuePatchList;
 }
 
@@ -318,8 +364,12 @@ void EmitDecStatement(scr_ast_node_t *refNode, uint32_t sourcePos)
  * this helper and also inlined it into EmitFormalParameterListRef. */
 void EmitFormalParameterListRefInternal(scr_ast_list_item_t *listItem)
 {
-    for (scr_ast_list_item_t *item = listItem->next; item != NULL; item = item->next) {
-        EmitSafeSetVariableField(SCR_AST_STRING_HANDLE(item->stringEntry->stringHandle), item->stringEntry->sourcePos);
+    for (scr_ast_list_item_t *item = listItem->next; item != NULL;
+         item = item->next) {
+        EmitSafeSetVariableField(
+                                 SCR_AST_STRING_HANDLE(
+                                     item->stringEntry->stringHandle),
+                                 item->stringEntry->sourcePos);
     }
 }
 
@@ -329,19 +379,27 @@ void EmitFormalParameterListRefInternal(scr_ast_list_item_t *listItem)
  * Name: exact same-module Mac symbol
  * EmitFormalWaittillParameterListRefInternal. The Windows compiler separately
  * emitted this helper and also inlined it into EmitWaittillStatement. */
-void EmitFormalWaittillParameterListRefInternal(scr_ast_list_item_t *listItem)
+void EmitFormalWaittillParameterListRefInternal(
+    scr_ast_list_item_t *listItem)
 {
-    for (scr_ast_list_item_t *item = listItem->next; item != NULL; item = item->next) {
-        EmitSafeSetWaittillVariableField(SCR_AST_STRING_HANDLE(item->stringEntry->stringHandle), item->stringEntry->sourcePos);
+    for (scr_ast_list_item_t *item = listItem->next; item != NULL;
+         item = item->next) {
+        EmitSafeSetWaittillVariableField(
+            SCR_AST_STRING_HANDLE(item->stringEntry->stringHandle),
+            item->stringEntry->sourcePos);
     }
 }
 
 /* Source: CoDUOMP.exe 0x0047dff0..0x0047e147.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047dff0_0047e147.mcode. */
-void EmitWaittillStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list, uint32_t objectSourcePos, uint32_t opcodeSourcePos)
+void EmitWaittillStatement(scr_ast_node_t *objectNode,
+                           scr_ast_list_t *list,
+                           uint32_t objectSourcePos,
+                           uint32_t opcodeSourcePos)
 {
     if (script_codegenMode != 0) {
-        CompileError(opcodeSourcePos, "waittill not allowed in developer script");
+        CompileError(opcodeSourcePos,
+                              "waittill not allowed in developer script");
     }
 
     scr_ast_list_item_t *eventItem = list->head->next;
@@ -357,15 +415,21 @@ void EmitWaittillStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list, uin
 
 /* Source: CoDUOMP.exe 0x0047e150..0x0047e2ee.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047e150_0047e2ee.mcode. */
-void EmitWaittillmatchStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list, uint32_t objectSourcePos, uint32_t opcodeSourcePos)
+void EmitWaittillmatchStatement(scr_ast_node_t *objectNode,
+                                scr_ast_list_t *list,
+                                uint32_t objectSourcePos,
+                                uint32_t opcodeSourcePos)
 {
     if (script_codegenMode != 0) {
-        CompileError(opcodeSourcePos, "waittillmatch not allowed in developer script");
+        CompileError(
+            opcodeSourcePos,
+            "waittillmatch not allowed in developer script");
     }
 
     scr_ast_list_item_t *eventItem = list->head->next;
     uint32_t matchCount = 0;
-    for (scr_ast_list_item_t *item = eventItem->next; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = eventItem->next; item != NULL;
+         item = item->next) {
         matchCount++;
     }
 
@@ -377,17 +441,20 @@ void EmitWaittillmatchStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list
         return;
     }
 
-    for (scr_ast_list_item_t *item = eventItem->next; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = eventItem->next; item != NULL;
+         item = item->next) {
         EmitExpression(item->entry->node);
     }
 
     EmitExpression(eventItem->entry->node);
     EmitPrimitiveExpression(objectNode);
-    EmitOpcode(SCRIPT_OPCODE_WAITTILLMATCH, -2 - (int32_t)matchCount, 0);
+    EmitOpcode(SCRIPT_OPCODE_WAITTILLMATCH,
+               -2 - (int32_t)matchCount, 0);
     AddOpcodePos(opcodeSourcePos);
     AddOpcodePos(eventItem->entry->sourcePos);
     AddOpcodePos(objectSourcePos);
-    for (scr_ast_list_item_t *item = eventItem->next; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = eventItem->next; item != NULL;
+         item = item->next) {
         AddOpcodePos(item->entry->sourcePos);
     }
     EmitByte((uint8_t)matchCount);
@@ -396,13 +463,16 @@ void EmitWaittillmatchStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list
 
 /* Source: CoDUOMP.exe 0x0047e2f0..0x0047e46d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047e2f0_0047e46d.mcode. */
-void EmitNotifyStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list, uint32_t objectSourcePos, uint32_t opcodeSourcePos)
+void EmitNotifyStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list,
+                         uint32_t objectSourcePos,
+                         uint32_t opcodeSourcePos)
 {
     EmitOpcode(SCRIPT_OPCODE_PUSH_CODEPOS, 1, 0);
 
     int32_t argumentCount = 0;
     scr_ast_list_item_t *lastItem = NULL;
-    for (scr_ast_list_item_t *item = list->head; item != NULL; item = item->next) {
+    for (scr_ast_list_item_t *item = list->head; item != NULL;
+         item = item->next) {
         lastItem = item;
         EmitExpression(item->entry->node);
         argumentCount++;
@@ -417,7 +487,10 @@ void EmitNotifyStatement(scr_ast_node_t *objectNode, scr_ast_list_t *list, uint3
 
 /* Source: CoDUOMP.exe 0x0047e470..0x0047e514.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047e470_0047e514.mcode. */
-void EmitEndOnStatement(scr_ast_node_t *objectNode, scr_ast_node_t *eventNode, uint32_t objectSourcePos, uint32_t opcodeSourcePos)
+void EmitEndOnStatement(scr_ast_node_t *objectNode,
+                        scr_ast_node_t *eventNode,
+                        uint32_t objectSourcePos,
+                        uint32_t opcodeSourcePos)
 {
     EmitExpression(eventNode);
     EmitPrimitiveExpression(objectNode);
@@ -462,12 +535,15 @@ void EmitCaseStatementInfo(uint32_t value, uint32_t sourcePos)
         return;
     }
 
-    script_switch_case_record_t *record = Hunk_AllocateTempMemoryHighInternal(sizeof(*record));
+    script_switch_case_record_t *record =
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*record));
     record->value = value;
     record->codePos = TempMalloc(0);
     if (script_codegenMode == SCRIPT_CODEGEN_MODE_RECORD_STRING_FIXUPS) {
-        record->codePos =
-            (uint8_t *)((uintptr_t)record->codePos + ((uintptr_t)script_codeRelocationEnd - (uintptr_t)script_codeRelocationStart));
+        record->codePos = (uint8_t *)(
+            (uintptr_t)record->codePos +
+            ((uintptr_t)script_codeRelocationEnd -
+             (uintptr_t)script_codeRelocationStart));
     }
     record->sourcePos = sourcePos;
     record->next = script_caseRecordList;
@@ -482,30 +558,40 @@ void EmitCaseStatement(scr_ast_node_t *valueNode, uint32_t sourcePos)
 
     if (valueNode->kind == SCR_AST_KIND_INTEGER_LITERAL) {
         int32_t integerValue = (int32_t)valueNode->payload.literal.value;
-        if ((uint32_t)integerValue + SCRIPT_CASE_INTEGER_TEST_BIAS >= SCRIPT_CASE_INTEGER_TEST_LIMIT) {
-            CompileError(sourcePos, va("case index %d out of range", integerValue));
+        if ((uint32_t)integerValue + SCRIPT_CASE_INTEGER_TEST_BIAS >=
+            SCRIPT_CASE_INTEGER_TEST_LIMIT) {
+            CompileError(
+                sourcePos, va("case index %d out of range", integerValue));
             return;
         }
         /* The original subtracts the bias (ADD ESI,0xff800000 = -0x800000 at
          * 0x0047e9bb) then masks — the entity-key normalization form, matching
          * GetInternalVariableIndex. Adding +0x800000 gives the same
          * masked result but the instruction subtracts; match it. */
-        caseValue = ((uint32_t)integerValue - SCRIPT_CASE_INTEGER_ENCODE_BIAS) & SCRIPT_CASE_INTEGER_ENCODE_MASK;
+        caseValue =
+            ((uint32_t)integerValue - SCRIPT_CASE_INTEGER_ENCODE_BIAS) &
+            SCRIPT_CASE_INTEGER_ENCODE_MASK;
     } else {
         if (valueNode->kind != SCR_AST_KIND_STRING) {
-            CompileError(sourcePos, "case expression must be an int or string");
+            CompileError(sourcePos,
+                                  "case expression must be an int or string");
             EmitPrimitiveExpression(valueNode);
             return;
         }
 
-        caseValue = SCR_AST_STRING_HANDLE(valueNode->payload.sourceString.stringHandle);
-        CompileTransferRefToString((uint16_t)caseValue, SCRIPT_STRING_USAGE_CASE);
+        caseValue = SCR_AST_STRING_HANDLE(
+            valueNode->payload.sourceString.stringHandle);
+        CompileTransferRefToString((uint16_t)caseValue,
+                                   SCRIPT_STRING_USAGE_CASE);
     }
 
     if (script_caseAllowed == qfalse) {
         CompileError(sourcePos, "illegal case statement");
-    } else if (script_caseAllowedInDeveloperBlock == qfalse && script_codegenMode != 0) {
-        CompileError(sourcePos, "cannot use /# ... #/ comments directly around a case statement");
+    } else if (script_caseAllowedInDeveloperBlock == qfalse &&
+               script_codegenMode != 0) {
+        CompileError(
+            sourcePos,
+            "cannot use /# ... #/ comments directly around a case statement");
     } else {
         EmitCaseStatementInfo(caseValue, sourcePos);
     }
@@ -513,10 +599,18 @@ void EmitCaseStatement(scr_ast_node_t *valueNode, uint32_t sourcePos)
 
 /* Source: CoDUOMP.exe 0x0047e540..0x0047e8c4.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047e540_0047e8c4.mcode. */
-void EmitSwitchStatement(scr_ast_node_t *valueNode, scr_ast_node_t *bodyNode, uint32_t sourcePos)
+void EmitSwitchStatement(scr_ast_node_t *valueNode,
+                         scr_ast_node_t *bodyNode,
+                         uint32_t sourcePos)
 {
-    script_switch_patch_state_t saved = {script_caseAllowed,  script_caseAllowedInDeveloperBlock,  script_caseRecordList,
-                                         script_breakAllowed, script_breakAllowedInDeveloperBlock, script_breakPatchList};
+    script_switch_patch_state_t saved = {
+        script_caseAllowed,
+        script_caseAllowedInDeveloperBlock,
+        script_caseRecordList,
+        script_breakAllowed,
+        script_breakAllowedInDeveloperBlock,
+        script_breakPatchList
+    };
     script_caseAllowed = qfalse;
     script_caseAllowedInDeveloperBlock = qfalse;
     script_breakAllowed = qfalse;
@@ -542,11 +636,13 @@ void EmitSwitchStatement(scr_ast_node_t *valueNode, scr_ast_node_t *bodyNode, ui
     EmitOpcode(SCRIPT_OPCODE_SWITCH_TABLE, 0, 0);
     AddOpcodePos(sourcePos);
     EmitShort(0);
-    script_switch_case_table_entry_t *table = (script_switch_case_table_entry_t *)TempMalloc(0);
+    script_switch_case_table_entry_t *table =
+        (script_switch_case_table_entry_t *)TempMalloc(0);
     const ptrdiff_t tableOffset = (char *)table - tablePatch;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (tableOffset < 0 || tableOffset > SCRIPT_SWITCH_TABLE_DISPLACEMENT_LIMIT) {
+    if (tableOffset < 0 ||
+        tableOffset > SCRIPT_SWITCH_TABLE_DISPLACEMENT_LIMIT) {
         CompileError(sourcePos, "switch body exceeds maximum bytecode span of %i bytes", SCRIPT_SWITCH_TABLE_DISPLACEMENT_LIMIT);
         return;
     }
@@ -555,7 +651,8 @@ void EmitSwitchStatement(scr_ast_node_t *valueNode, scr_ast_node_t *bodyNode, ui
     memcpy(tablePatch, &encodedTableOffset, sizeof(encodedTableOffset));
 
     uint32_t caseCount = 0;
-    for (script_switch_case_record_t *record = script_caseRecordList; record != NULL; record = record->next) {
+    for (script_switch_case_record_t *record = script_caseRecordList;
+         record != NULL; record = record->next) {
         caseCount++;
     }
 
@@ -566,14 +663,17 @@ void EmitSwitchStatement(scr_ast_node_t *valueNode, scr_ast_node_t *bodyNode, ui
         return;
     }
 
-    for (script_switch_case_record_t *record = script_caseRecordList; record != NULL; record = record->next) {
+    for (script_switch_case_record_t *record = script_caseRecordList;
+         record != NULL; record = record->next) {
         EmitInteger(record->value);
-        coduomp_script_emit_value_payload((coduo_script_value_payload_t)(uintptr_t)record->codePos);
+        coduomp_script_emit_value_payload(
+            (coduo_script_value_payload_t)(uintptr_t)record->codePos);
     }
 
     uint8_t *tableBytes = (uint8_t *)table;
     const uint16_t emittedCaseCount = (uint16_t)caseCount;
-    memcpy(tableBytes - sizeof(emittedCaseCount), &emittedCaseCount, sizeof(emittedCaseCount));
+    memcpy(tableBytes - sizeof(emittedCaseCount), &emittedCaseCount,
+           sizeof(emittedCaseCount));
     coduo_qsort(table, caseCount, sizeof(*table), CompareCaseInfo);
 
     for (uint32_t index = 1; index < caseCount; index++) {
@@ -581,19 +681,23 @@ void EmitSwitchStatement(scr_ast_node_t *valueNode, scr_ast_node_t *bodyNode, ui
             continue;
         }
 
-        for (script_switch_case_record_t *record = script_caseRecordList; record != NULL; record = record->next) {
+        for (script_switch_case_record_t *record = script_caseRecordList;
+             record != NULL; record = record->next) {
             if (record->value == table[index - 1].value) {
-                CompileError(record->sourcePos, "duplicate case expression");
+                CompileError(record->sourcePos,
+                                      "duplicate case expression");
             }
         }
     }
 
     ConnectBreakStatements();
     script_caseAllowed = saved.caseAllowed;
-    script_caseAllowedInDeveloperBlock = saved.caseAllowedInDeveloperBlock;
+    script_caseAllowedInDeveloperBlock =
+        saved.caseAllowedInDeveloperBlock;
     script_caseRecordList = saved.caseList;
     script_breakAllowed = saved.breakAllowed;
-    script_breakAllowedInDeveloperBlock = saved.breakAllowedInDeveloperBlock;
+    script_breakAllowedInDeveloperBlock =
+        saved.breakAllowedInDeveloperBlock;
     script_breakPatchList = saved.breakPatchList;
 }
 
@@ -617,15 +721,19 @@ void EmitBreakStatement(uint32_t sourcePos)
         CompileError(sourcePos, "illegal break statement");
         return;
     }
-    if (script_breakAllowedInDeveloperBlock == qfalse && script_codegenMode != 0) {
-        CompileError(sourcePos, "cannot use /# ... #/ comments directly around a break statement");
+    if (script_breakAllowedInDeveloperBlock == qfalse &&
+        script_codegenMode != 0) {
+        CompileError(
+            sourcePos,
+            "cannot use /# ... #/ comments directly around a break statement");
         return;
     }
 
     EmitOpcode(SCRIPT_OPCODE_JUMP_FORWARD, 0, 0);
     EmitInteger(0);
 
-    script_code_offset_patch_t *patch = Hunk_AllocateTempMemoryHighInternal(sizeof(*patch));
+    script_code_offset_patch_t *patch =
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*patch));
     patch->patch = (char *)script_codeEmitCursor;
     patch->next = script_breakPatchList;
     script_breakPatchList = patch;
@@ -639,15 +747,19 @@ void EmitContinueStatement(uint32_t sourcePos)
         CompileError(sourcePos, "illegal continue statement");
         return;
     }
-    if (script_continueAllowedInDeveloperBlock == qfalse && script_codegenMode != 0) {
-        CompileError(sourcePos, "cannot use /# ... #/ comments directly around a continue statement");
+    if (script_continueAllowedInDeveloperBlock == qfalse &&
+        script_codegenMode != 0) {
+        CompileError(
+            sourcePos,
+            "cannot use /# ... #/ comments directly around a continue statement");
         return;
     }
 
     EmitOpcode(SCRIPT_OPCODE_JUMP_FORWARD, 0, 0);
     EmitInteger(0);
 
-    script_code_offset_patch_t *patch = Hunk_AllocateTempMemoryHighInternal(sizeof(*patch));
+    script_code_offset_patch_t *patch =
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*patch));
     patch->patch = (char *)script_codeEmitCursor;
     patch->next = script_continuePatchList;
     script_continuePatchList = patch;
@@ -659,90 +771,129 @@ void EmitStatement(scr_ast_node_t *node)
 {
     switch (node->kind) {
     case SCR_AST_KIND_ASSIGNMENT_STATEMENT:
-        EmitAssignmentStatement(node->payload.assignmentStatement.refNode, node->payload.assignmentStatement.valueNode,
-                                node->payload.assignmentStatement.sourcePos);
+        EmitAssignmentStatement(
+            node->payload.assignmentStatement.refNode,
+            node->payload.assignmentStatement.valueNode,
+            node->payload.assignmentStatement.sourcePos);
         break;
     case SCR_AST_KIND_CALL_STATEMENT:
         EmitExpressionStatement(node->payload.child.node);
         break;
     case SCR_AST_KIND_RETURN_VALUE_STATEMENT:
-        EmitReturnStatement(node->payload.returnValueStatement.valueNode);
+        EmitReturnStatement(
+            node->payload.returnValueStatement.valueNode);
         break;
     case SCR_AST_KIND_RETURN_STATEMENT:
         EmitEndStatement();
         break;
     case SCR_AST_KIND_WAIT_STATEMENT:
-        EmitWaitStatement(node->payload.waitStatement.timeNode, node->payload.waitStatement.timeSourcePos,
+        EmitWaitStatement(node->payload.waitStatement.timeNode,
+                          node->payload.waitStatement.timeSourcePos,
                           node->payload.waitStatement.opcodeSourcePos);
         break;
     case SCR_AST_KIND_IF_STATEMENT:
-        EmitIfStatement(node->payload.ifStatement.conditionNode, node->payload.ifStatement.bodyNode, node->payload.ifStatement.sourcePos);
+        EmitIfStatement(node->payload.ifStatement.conditionNode,
+                        node->payload.ifStatement.bodyNode,
+                        node->payload.ifStatement.sourcePos);
         break;
     case SCR_AST_KIND_IF_ELSE_STATEMENT:
-        EmitIfElseStatement(node->payload.ifElseStatement.conditionNode, node->payload.ifElseStatement.thenNode,
-                            node->payload.ifElseStatement.elseNode, node->payload.ifElseStatement.sourcePos);
+        EmitIfElseStatement(node->payload.ifElseStatement.conditionNode,
+                            node->payload.ifElseStatement.thenNode,
+                            node->payload.ifElseStatement.elseNode,
+                            node->payload.ifElseStatement.sourcePos);
         break;
     case SCR_AST_KIND_WHILE_STATEMENT:
-        EmitWhileStatement(node->payload.whileStatement.conditionNode, node->payload.whileStatement.bodyNode,
-                           node->payload.whileStatement.conditionSourcePos, node->payload.whileStatement.loopSourcePos);
+        EmitWhileStatement(
+            node->payload.whileStatement.conditionNode,
+            node->payload.whileStatement.bodyNode,
+            node->payload.whileStatement.conditionSourcePos,
+            node->payload.whileStatement.loopSourcePos);
         break;
     case SCR_AST_KIND_DO_WHILE_STATEMENT:
-        EmitDoWhileStatement(node->payload.doWhileStatement.bodyNode, node->payload.doWhileStatement.conditionNode,
-                             node->payload.doWhileStatement.conditionSourcePos, node->payload.doWhileStatement.loopSourcePos);
+        EmitDoWhileStatement(
+            node->payload.doWhileStatement.bodyNode,
+            node->payload.doWhileStatement.conditionNode,
+            node->payload.doWhileStatement.conditionSourcePos,
+            node->payload.doWhileStatement.loopSourcePos);
         break;
     case SCR_AST_KIND_FOR_STATEMENT:
-        EmitForStatement(node->payload.forStatement.initNode, node->payload.forStatement.conditionNode,
-                         node->payload.forStatement.incrementNode, node->payload.forStatement.bodyNode,
-                         node->payload.forStatement.conditionSourcePos, node->payload.forStatement.loopSourcePos);
+        EmitForStatement(node->payload.forStatement.initNode,
+                         node->payload.forStatement.conditionNode,
+                         node->payload.forStatement.incrementNode,
+                         node->payload.forStatement.bodyNode,
+                         node->payload.forStatement.conditionSourcePos,
+                         node->payload.forStatement.loopSourcePos);
         break;
     case SCR_AST_KIND_INC_STATEMENT:
-        EmitIncStatement(node->payload.incDecStatement.refNode, node->payload.incDecStatement.sourcePos);
+        EmitIncStatement(node->payload.incDecStatement.refNode,
+                         node->payload.incDecStatement.sourcePos);
         break;
     case SCR_AST_KIND_DEC_STATEMENT:
-        EmitDecStatement(node->payload.incDecStatement.refNode, node->payload.incDecStatement.sourcePos);
+        EmitDecStatement(node->payload.incDecStatement.refNode,
+                         node->payload.incDecStatement.sourcePos);
         break;
     case SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT:
-        EmitBinaryEqualsOperatorExpression(node->payload.refAssignmentStatement.refNode, node->payload.refAssignmentStatement.valueNode,
-                                           (uint8_t)node->payload.refAssignmentStatement.opcode,
-                                           node->payload.refAssignmentStatement.sourcePos);
+        EmitBinaryEqualsOperatorExpression(
+            node->payload.refAssignmentStatement.refNode,
+            node->payload.refAssignmentStatement.valueNode,
+            (uint8_t)node->payload.refAssignmentStatement.opcode,
+            node->payload.refAssignmentStatement.sourcePos);
         break;
     case SCR_AST_KIND_STATEMENT_BLOCK:
         EmitStatementList(node->payload.statementBlock.block);
         break;
     case SCR_AST_KIND_DEVELOPER_STATEMENT_BLOCK:
-        EmitDeveloperStatementList(node->payload.developerStatementBlock.block, node->payload.developerStatementBlock.sourcePos);
+        EmitDeveloperStatementList(
+            node->payload.developerStatementBlock.block,
+            node->payload.developerStatementBlock.sourcePos);
         break;
     case SCR_AST_KIND_WAITTILL_STATEMENT:
-        EmitWaittillStatement(node->payload.waittillStatement.objectNode, node->payload.waittillStatement.list,
-                              node->payload.waittillStatement.objectSourcePos, node->payload.waittillStatement.opcodeSourcePos);
+        EmitWaittillStatement(
+            node->payload.waittillStatement.objectNode,
+            node->payload.waittillStatement.list,
+            node->payload.waittillStatement.objectSourcePos,
+            node->payload.waittillStatement.opcodeSourcePos);
         break;
     case SCR_AST_KIND_WAITTILLMATCH_STATEMENT:
-        EmitWaittillmatchStatement(node->payload.waittillStatement.objectNode, node->payload.waittillStatement.list,
-                                   node->payload.waittillStatement.objectSourcePos, node->payload.waittillStatement.opcodeSourcePos);
+        EmitWaittillmatchStatement(
+            node->payload.waittillStatement.objectNode,
+            node->payload.waittillStatement.list,
+            node->payload.waittillStatement.objectSourcePos,
+            node->payload.waittillStatement.opcodeSourcePos);
         break;
     case SCR_AST_KIND_NOTIFY_STATEMENT:
-        EmitNotifyStatement(node->payload.notifyStatement.objectNode, node->payload.notifyStatement.list,
-                            node->payload.notifyStatement.objectSourcePos, node->payload.notifyStatement.opcodeSourcePos);
+        EmitNotifyStatement(
+            node->payload.notifyStatement.objectNode,
+            node->payload.notifyStatement.list,
+            node->payload.notifyStatement.objectSourcePos,
+            node->payload.notifyStatement.opcodeSourcePos);
         break;
     case SCR_AST_KIND_ENDON_STATEMENT:
-        EmitEndOnStatement(node->payload.endonStatement.objectNode, node->payload.endonStatement.eventNode,
-                           node->payload.endonStatement.objectSourcePos, node->payload.endonStatement.opcodeSourcePos);
+        EmitEndOnStatement(
+            node->payload.endonStatement.objectNode,
+            node->payload.endonStatement.eventNode,
+            node->payload.endonStatement.objectSourcePos,
+            node->payload.endonStatement.opcodeSourcePos);
         break;
     case SCR_AST_KIND_SWITCH_STATEMENT:
-        EmitSwitchStatement(node->payload.switchStatement.valueNode, node->payload.switchStatement.bodyNode,
+        EmitSwitchStatement(node->payload.switchStatement.valueNode,
+                            node->payload.switchStatement.bodyNode,
                             node->payload.switchStatement.sourcePos);
         break;
     case SCR_AST_KIND_CASE_STATEMENT:
-        EmitCaseStatement(node->payload.caseStatement.valueNode, node->payload.caseStatement.sourcePos);
+        EmitCaseStatement(node->payload.caseStatement.valueNode,
+                          node->payload.caseStatement.sourcePos);
         break;
     case SCR_AST_KIND_DEFAULT_STATEMENT:
-        EmitDefaultStatement(node->payload.sourceOnlyStatement.sourcePos);
+        EmitDefaultStatement(
+            node->payload.sourceOnlyStatement.sourcePos);
         break;
     case SCR_AST_KIND_BREAK_STATEMENT:
         EmitBreakStatement(node->payload.sourceOnlyStatement.sourcePos);
         break;
     case SCR_AST_KIND_CONTINUE_STATEMENT:
-        EmitContinueStatement(node->payload.sourceOnlyStatement.sourcePos);
+        EmitContinueStatement(
+            node->payload.sourceOnlyStatement.sourcePos);
         break;
     default:
         break;
@@ -751,7 +902,8 @@ void EmitStatement(scr_ast_node_t *node)
 
 /* Source: CoDUOMP.exe 0x0047f2c0..0x0047f35e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047f2c0_0047f35e.mcode. */
-void EmitFormalParameterListRef(scr_ast_list_t *parameters, uint32_t sourcePos)
+void EmitFormalParameterListRef(scr_ast_list_t *parameters,
+                                uint32_t sourcePos)
 {
     EmitFormalParameterListRefInternal(parameters->head);
     EmitOpcode(SCRIPT_OPCODE_FUNCTION_PARAMETERS_DONE, 0, 0);
@@ -763,15 +915,25 @@ void EmitFormalParameterListRef(scr_ast_list_t *parameters, uint32_t sourcePos)
 void SpecifyThread(scr_ast_node_t *node)
 {
     if (node->kind == SCR_AST_KIND_FUNCTION_DEFINITION) {
-        uint16_t functionName = SCR_AST_STRING_HANDLE(node->payload.functionDefinition.nameHandle);
-        uint16_t functionObject = GetObject(GetVariable(script_currentFunctionRoot, functionName));
-        SpecifyThreadPosition(functionObject, node->payload.functionDefinition.sourcePos);
+        uint16_t functionName =
+            SCR_AST_STRING_HANDLE(
+                node->payload.functionDefinition.nameHandle);
+        uint16_t functionObject =
+            GetObject(GetVariable(
+                script_currentFunctionRoot, functionName));
+        SpecifyThreadPosition(functionObject,
+                              node->payload.functionDefinition.sourcePos);
         return;
     }
 
     if (node->kind == SCR_AST_KIND_DEVELOPER_FUNCTION_DEFINITION) {
-        uint16_t functionName = SCR_AST_STRING_HANDLE(node->payload.functionDefinition.nameHandle);
-        uint16_t functionObject = GetObject(GetVariable(script_currentFunctionRoot, functionName));
-        SpecifyDeveloperThreadPosition(functionObject, node->payload.functionDefinition.sourcePos);
+        uint16_t functionName =
+            SCR_AST_STRING_HANDLE(
+                node->payload.functionDefinition.nameHandle);
+        uint16_t functionObject =
+            GetObject(GetVariable(
+                script_currentFunctionRoot, functionName));
+        SpecifyDeveloperThreadPosition(
+            functionObject, node->payload.functionDefinition.sourcePos);
     }
 }

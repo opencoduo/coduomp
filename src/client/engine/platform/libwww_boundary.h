@@ -37,9 +37,12 @@ typedef struct _HTBasic {
     HTBool proxy;
 } HTBasic;
 
-typedef int32_t HTAlertCallback(HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber, const char *defaultMessage, void *input,
-                                HTAlertPar *reply);
-typedef int32_t HTNetAfter(HTRequest *request, HTResponse *response, void *parameter, int32_t status);
+typedef int32_t HTAlertCallback(
+    HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber,
+    const char *defaultMessage, void *input, HTAlertPar *reply);
+typedef int32_t HTNetAfter(
+    HTRequest *request, HTResponse *response, void *parameter,
+    int32_t status);
 typedef int32_t HTPrintCallback(const char *format, va_list arguments);
 
 enum {
@@ -59,13 +62,17 @@ enum {
     HT_PARSE_ACCESS = 16
 };
 
-void HTProfile_newNoCacheClient(const char *applicationName, const char *applicationVersion);
+void HTProfile_newNoCacheClient(
+    const char *applicationName, const char *applicationVersion);
 void HTAlertInit(void);
 void HTAlert_setInteractive(HTBool interactive);
 void HTPrint_setCallback(HTPrintCallback *callback);
 void HTTrace_setCallback(HTPrintCallback *callback);
-HTBool HTNet_addAfter(HTNetAfter *callback, const char *urlTemplate, void *parameter, int32_t status, HTFilterOrder order);
-HTBool HTAlert_add(HTAlertCallback *callback, HTAlertOpcode opcodeMask);
+HTBool HTNet_addAfter(
+    HTNetAfter *callback, const char *urlTemplate, void *parameter,
+    int32_t status, HTFilterOrder order);
+HTBool HTAlert_add(
+    HTAlertCallback *callback, HTAlertOpcode opcodeMask);
 
 char *HTParse(const char *address, const char *base, int32_t wanted);
 HTRequest *HTRequest_new(void);
@@ -76,7 +83,8 @@ void basic_credentials(HTRequest *request, HTBasic *credentials);
 HTBool HTBasic_delete(HTBasic *credentials);
 void *HTMemory_malloc(size_t size);
 void HTMemory_free(void *memory);
-HTBool HTLoadToFile(const char *url, HTRequest *request, const char *localFileName);
+HTBool HTLoadToFile(
+    const char *url, HTRequest *request, const char *localFileName);
 void HTProfile_delete(void);
 
 void HTEventList_stopLoop(void);

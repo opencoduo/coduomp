@@ -11,7 +11,9 @@
  * command 51.  The native source uses the corresponding host pointers while the
  * asset load mode remains an integer word at the engine syscall boundary.
  */
-void trap_R_RegisterFont(const char *name, int32_t pointSize, fontInfo_t *font, intptr_t loadMode)
+void trap_R_RegisterFont(const char *name, int32_t pointSize,
+                         fontInfo_t *font, intptr_t loadMode)
 {
-    (void)cgame_syscall(CG_R_REGISTER_FONT, (intptr_t)name, pointSize, (intptr_t)font, loadMode);
+    (void)cgame_syscall(CG_R_REGISTER_FONT, (intptr_t)name, pointSize,
+                        (intptr_t)font, loadMode);
 }

@@ -35,41 +35,48 @@ static int32_t game_compat_client_transform_angle_to_short(float angle)
     /* SetClientViewAngle 0x44402..0x445df keeps each product live through the
      * truncating fistp; this helper is the native-width adaptation site. */
 #if EMULATE_X87
-    int32_t packed = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(angle), x87f_load_f32(CLIENT_ANGLE_SHORT_SCALE)));
+    int32_t packed = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_f32(angle), x87f_load_f32(CLIENT_ANGLE_SHORT_SCALE)));
 #else
-    int32_t packed = game_compat_int32_from_long_double_trunc((long double)angle * (long double)CLIENT_ANGLE_SHORT_SCALE);
+    int32_t packed = game_compat_int32_from_long_double_trunc(
+        (long double)angle * (long double)CLIENT_ANGLE_SHORT_SCALE);
 #endif
     return (int32_t)((uint32_t)packed & 0xffffu);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for the SetClientViewAngle delta-angle loop. */
-static void game_compat_client_transform_update_delta_angles(gclient_t *client, const vec3_t angles)
+static void game_compat_client_transform_update_delta_angles(gclient_t *client,
+                                              const vec3_t angles)
 {
     for (int axis = 0; axis < 3; axis++) {
-        client->ps.deltaAngles[axis] = coduo_int32_from_bits((uint32_t)game_compat_client_transform_angle_to_short(angles[axis]) -
-                                                             (uint32_t)client->command.angles[axis]);
+        client->ps.deltaAngles[axis] = coduo_int32_from_bits(
+            (uint32_t)game_compat_client_transform_angle_to_short(angles[axis]) -
+            (uint32_t)client->command.angles[axis]);
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: helper for SetClientViewAngle prone clamp branches. */
 static void game_compat_client_transform_clamp_prone_view(gclient_t *client, vec3_t angles)
 {
-    if ((client->ps.playerStateFlags & PMF_PRONE) == 0 || (client->ps.entityStateFlags & EF_RESTRICTED_MASK) != 0) {
+    if ((client->ps.playerStateFlags & PMF_PRONE) == 0 ||
+        (client->ps.entityStateFlags & EF_RESTRICTED_MASK) != 0) {
         return;
     }
 
     float proneYaw = client->ps.proneDirection;
     float yawDelta = AngleNormalize180(AngleDelta(proneYaw, angles[1]));
 
-    if (yawDelta > CLIENT_PRONE_YAW_LIMIT || yawDelta < -CLIENT_PRONE_YAW_LIMIT) {
+    if (yawDelta > CLIENT_PRONE_YAW_LIMIT ||
+        yawDelta < -CLIENT_PRONE_YAW_LIMIT) {
         if (yawDelta > CLIENT_PRONE_YAW_LIMIT) {
             yawDelta -= CLIENT_PRONE_YAW_LIMIT;
         } else {
             yawDelta += CLIENT_PRONE_YAW_LIMIT;
         }
 
-        client->ps.deltaAngles[1] =
-            coduo_int32_from_bits((uint32_t)client->ps.deltaAngles[1] + (uint32_t)game_compat_client_transform_angle_to_short(yawDelta));
+        client->ps.deltaAngles[1] = coduo_int32_from_bits(
+            (uint32_t)client->ps.deltaAngles[1] +
+            (uint32_t)game_compat_client_transform_angle_to_short(yawDelta));
 
         if (yawDelta > 0.0f) {
             angles[1] = AngleNormalize360(proneYaw - CLIENT_PRONE_YAW_LIMIT);
@@ -81,20 +88,24 @@ static void game_compat_client_transform_clamp_prone_view(gclient_t *client, vec
     float pronePitch = client->ps.proneTorsoPitch;
     float pitchDelta = AngleNormalize180(AngleDelta(pronePitch, angles[0]));
 
-    if (pitchDelta > CLIENT_PRONE_PITCH_UP_LIMIT || pitchDelta < CLIENT_PRONE_PITCH_DOWN_LIMIT) {
+    if (pitchDelta > CLIENT_PRONE_PITCH_UP_LIMIT ||
+        pitchDelta < CLIENT_PRONE_PITCH_DOWN_LIMIT) {
         if (pitchDelta > CLIENT_PRONE_PITCH_UP_LIMIT) {
             pitchDelta -= CLIENT_PRONE_PITCH_UP_LIMIT;
         } else {
             pitchDelta += CLIENT_PRONE_PITCH_DOWN_ADJUST;
         }
 
-        client->ps.deltaAngles[0] =
-            coduo_int32_from_bits((uint32_t)client->ps.deltaAngles[0] + (uint32_t)game_compat_client_transform_angle_to_short(pitchDelta));
+        client->ps.deltaAngles[0] = coduo_int32_from_bits(
+            (uint32_t)client->ps.deltaAngles[0] +
+            (uint32_t)game_compat_client_transform_angle_to_short(pitchDelta));
 
         if (pitchDelta > 0.0f) {
-            angles[0] = AngleNormalize180(pronePitch - CLIENT_PRONE_PITCH_UP_LIMIT);
+            angles[0] =
+                AngleNormalize180(pronePitch - CLIENT_PRONE_PITCH_UP_LIMIT);
         } else {
-            angles[0] = AngleNormalize180(pronePitch + CLIENT_PRONE_PITCH_DOWN_ADJUST);
+            angles[0] =
+                AngleNormalize180(pronePitch + CLIENT_PRONE_PITCH_DOWN_ADJUST);
         }
     }
 }
@@ -219,14 +230,21 @@ void ClientUserinfoChanged(int clientNum)
 
     client->complaintDisabled = trap_IsLocalClient(clientNum);
 
-    client->predictItems = atoi(Info_ValueForKey(userinfo, "cg_predictItems")) != 0;
+    client->predictItems =
+        atoi(Info_ValueForKey(userinfo, "cg_predictItems")) != 0;
 
-    if (client->connectedState == CON_CONNECTED && level.clientNameMode == SCRIPT_CLIENT_NAME_MODE_MANUAL) {
-        ClientCleanName(Info_ValueForKey(userinfo, "name"), client->cleanName, CLIENT_NAME_SIZE);
+    if (client->connectedState == CON_CONNECTED &&
+        level.clientNameMode == SCRIPT_CLIENT_NAME_MODE_MANUAL) {
+        ClientCleanName(Info_ValueForKey(userinfo, "name"),
+                        client->cleanName,
+                        CLIENT_NAME_SIZE);
     } else {
         Q_strncpyz(oldName, client->userInfoName, sizeof(oldName));
-        ClientCleanName(Info_ValueForKey(userinfo, "name"), client->userInfoName, CLIENT_NAME_SIZE);
-        Q_strncpyz(client->cleanName, client->userInfoName, CLIENT_NAME_SIZE);
+        ClientCleanName(Info_ValueForKey(userinfo, "name"),
+                        client->userInfoName,
+                        CLIENT_NAME_SIZE);
+        Q_strncpyz(client->cleanName, client->userInfoName,
+                   CLIENT_NAME_SIZE);
     }
 
     client->handicap = atoi(Info_ValueForKey(userinfo, "handicap"));
@@ -235,9 +253,11 @@ void ClientUserinfoChanged(int clientNum)
     }
 
     clientInfo->clientNum = clientNum;
-    Q_strncpyz(clientInfo->name, client->userInfoName, CLIENT_NAME_SIZE);
+    Q_strncpyz(clientInfo->name, client->userInfoName,
+               CLIENT_NAME_SIZE);
 
-    if (clientInfo->team != client->sessionTeam && (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
+    if (clientInfo->team != client->sessionTeam &&
+        (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
         VEH_UnlinkPlayer(ent, 0);
     }
 

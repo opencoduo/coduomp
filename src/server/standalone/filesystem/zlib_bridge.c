@@ -9,12 +9,15 @@
  * deliberately substitutes sizeof(*stream), because the native zlib record
  * widens with host pointers while its behavior and contents remain the same.
  */
-int32_t coduomp_zlib_inflate_init2(z_stream *stream, int32_t windowBits, const char *version, int32_t streamSize)
+int32_t coduomp_zlib_inflate_init2(z_stream *stream,
+                                   int32_t windowBits, const char *version,
+                                   int32_t streamSize)
 {
     (void)version;
     (void)streamSize;
 
-    return inflateInit2_(stream, windowBits, ZLIB_VERSION, (int)sizeof(*stream));
+    return inflateInit2_(stream, windowBits, ZLIB_VERSION,
+                         (int)sizeof(*stream));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE:

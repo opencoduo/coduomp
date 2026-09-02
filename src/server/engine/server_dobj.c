@@ -45,7 +45,8 @@ qboolean SV_DObjCreateSkelForBone(int32_t entityNum, int32_t boneIndex)
         return DObjSkelIsBoneUpToDate(obj, boneIndex);
     }
 
-    dobj_eval_storage_t *storage = Hunk_AllocateTempMemoryInternal((size_t)DObjGetAllocSkelSize(obj));
+    dobj_eval_storage_t *storage =
+        Hunk_AllocateTempMemoryInternal((size_t)DObjGetAllocSkelSize(obj));
     DObjCreateSkel(obj, storage);
     return qfalse;
 }
@@ -53,7 +54,8 @@ qboolean SV_DObjCreateSkelForBone(int32_t entityNum, int32_t boneIndex)
 /* Source: CoDUOMP.exe 0x0045cfe0..0x0045d06c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0045cfe0_0045d06d.mcode.
  * Name: exact same-module Mac symbol SV_DObjCreateSkelForBones. */
-qboolean SV_DObjCreateSkelForBones(int32_t entityNum, const uint32_t *partBits)
+qboolean SV_DObjCreateSkelForBones(int32_t entityNum,
+                                   const uint32_t *partBits)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
     if (obj == NULL) {
@@ -64,7 +66,8 @@ qboolean SV_DObjCreateSkelForBones(int32_t entityNum, const uint32_t *partBits)
         return DObjSkelAreBonesUpToDate(obj, partBits);
     }
 
-    dobj_eval_storage_t *storage = Hunk_AllocateTempMemoryInternal((size_t)DObjGetAllocSkelSize(obj));
+    dobj_eval_storage_t *storage =
+        Hunk_AllocateTempMemoryInternal((size_t)DObjGetAllocSkelSize(obj));
     DObjCreateSkel(obj, storage);
     return qfalse;
 }
@@ -72,10 +75,12 @@ qboolean SV_DObjCreateSkelForBones(int32_t entityNum, const uint32_t *partBits)
 /* Source: CoDUOMP.exe 0x0045d070..0x0045d09c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0045d070_0045d09d.mcode.
  * Name: exact same-module Mac symbol SV_DObjUpdateServerTime. */
-qboolean SV_DObjUpdateServerTime(int32_t entityNum, float serverTime, qboolean notify)
+qboolean SV_DObjUpdateServerTime(int32_t entityNum, float serverTime,
+                                 qboolean notify)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
-    return obj != NULL ? DObjUpdateServerInfo(obj, serverTime, notify) : qfalse;
+    return obj != NULL ? DObjUpdateServerInfo(obj, serverTime, notify)
+                       : qfalse;
 }
 
 /* Source: CoDUOMP.exe 0x0045d0a0..0x0045d0dc.
@@ -92,12 +97,14 @@ void SV_DObjInitServerTime(int32_t entityNum, float serverTime)
 /* Source: CoDUOMP.exe 0x0045d0e0..0x0045d117.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0045d0e0_0045d118.mcode.
  * Name: exact same-module Mac symbol SV_DObjGetHierarchyBits. */
-void SV_DObjGetHierarchyBits(int32_t entityNum, int32_t boneIndex, uint32_t *partBits)
+void SV_DObjGetHierarchyBits(int32_t entityNum, int32_t boneIndex,
+                             uint32_t *partBits)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
     if (obj == NULL || (uint32_t)boneIndex >= obj->boneCount) {
         if (partBits != NULL) {
-            for (int32_t wordIndex = 0; wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
+            for (int32_t wordIndex = 0;
+                 wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
                 partBits[wordIndex] = 0;
             }
         }
@@ -153,7 +160,9 @@ int32_t SV_DObjGetBoneIndex(int32_t entityNum, const char *tagName)
 DObjSkelMat *SV_DObjGetMatrixArray(int32_t entityNum)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
-    return obj != NULL && obj->evaluationStorage != NULL ? DObjGetMatrixArray(obj, 0) : NULL;
+    return obj != NULL && obj->evaluationStorage != NULL
+               ? DObjGetMatrixArray(obj, 0)
+               : NULL;
 }
 
 /* Source: CoDUOMP.exe 0x0045d250..0x0045d295.
@@ -173,16 +182,21 @@ void SV_DObjDisplayAnim(int32_t entityNum)
 DObjAnimMat *SV_DObjGetRotTransArray(int32_t entityNum)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
-    return obj != NULL && obj->evaluationStorage != NULL ? DObjGetRotTransArray(obj) : NULL;
+    return obj != NULL && obj->evaluationStorage != NULL
+               ? DObjGetRotTransArray(obj)
+               : NULL;
 }
 
 /* Source: CoDUOMP.exe 0x0045d2e0..0x0045d332.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0045d2e0_0045d333.mcode.
  * Name: exact same-module Mac symbol SV_DObjSetRotTransIndex. */
-qboolean SV_DObjSetRotTransIndex(int32_t entityNum, const uint8_t *partBits, int32_t boneIndex)
+qboolean SV_DObjSetRotTransIndex(int32_t entityNum,
+                                 const uint8_t *partBits,
+                                 int32_t boneIndex)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
-    return obj != NULL && obj->evaluationStorage != NULL && (uint32_t)boneIndex < obj->boneCount
+    return obj != NULL && obj->evaluationStorage != NULL &&
+                   (uint32_t)boneIndex < obj->boneCount
                ? DObjSetRotTransIndex(obj, partBits, boneIndex)
                : qfalse;
 }
@@ -190,10 +204,13 @@ qboolean SV_DObjSetRotTransIndex(int32_t entityNum, const uint8_t *partBits, int
 /* Source: CoDUOMP.exe 0x0045d340..0x0045d396.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0045d340_0045d397.mcode.
  * Name: exact same-module Mac symbol SV_DObjSetControlRotTransIndex. */
-qboolean SV_DObjSetControlRotTransIndex(int32_t entityNum, const uint8_t *partBits, int32_t boneIndex)
+qboolean SV_DObjSetControlRotTransIndex(int32_t entityNum,
+                                        const uint8_t *partBits,
+                                        int32_t boneIndex)
 {
     DObj *obj = Com_GetServerDObj(entityNum);
-    return obj != NULL && obj->evaluationStorage != NULL && (uint32_t)boneIndex < obj->boneCount
+    return obj != NULL && obj->evaluationStorage != NULL &&
+                   (uint32_t)boneIndex < obj->boneCount
                ? DObjSetControlRotTransIndex(obj, partBits, boneIndex)
                : qfalse;
 }

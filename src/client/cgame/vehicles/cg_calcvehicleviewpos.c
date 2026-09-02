@@ -50,8 +50,8 @@ enum {
 void CG_CalcVehicleViewPos(void)
 {
     /* trace box mins/maxs at [ESP+0xec..0x100] = {-8,-8,-8}/{8,8,8}. */
-    vec3_t traceMins = {-8.0f, -8.0f, -8.0f};
-    vec3_t traceMaxs = {8.0f, 8.0f, 8.0f};
+    vec3_t traceMins = { -8.0f, -8.0f, -8.0f };
+    vec3_t traceMaxs = { 8.0f, 8.0f, 8.0f };
 
     /* Entry gate: draw the vehicle view only when the local player's entity-state
      * flags carry EF_IN_VEHICLE (0x100000). */
@@ -67,8 +67,7 @@ void CG_CalcVehicleViewPos(void)
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entnum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CG_CalcVehicleViewPos: invalid view-lock entity %i",
+                  "\x15" "CG_CalcVehicleViewPos: invalid view-lock entity %i",
                   entnum);
         return;
     }
@@ -96,8 +95,10 @@ void CG_CalcVehicleViewPos(void)
      * (exactly-one-of-C3/C2) skip fires on any NONZERO or NaN adsFraction,  *
      * so the chasecam copy runs only when adsFraction is exactly 0.0.       *
      * -------------------------------------------------------------------- */
-    if (viewMode == VEHICLE_VIEW_MODE_CHASE_ADS && cg_predictedPlayerState.adsFraction == 0.0f) {
-        if (CG_DObjGetWorldTagMatrix(dobj, "tag_chasecam", cent, &secondaryMat)) {
+    if (viewMode == VEHICLE_VIEW_MODE_CHASE_ADS &&
+        cg_predictedPlayerState.adsFraction == 0.0f) {
+        if (CG_DObjGetWorldTagMatrix(dobj, "tag_chasecam",
+                                            cent, &secondaryMat)) {
             cg_refdef.vieworg[0] = secondaryMat.origin[0];
             cg_refdef.vieworg[1] = secondaryMat.origin[1];
             cg_refdef.vieworg[2] = secondaryMat.origin[2];
@@ -124,19 +125,24 @@ void CG_CalcVehicleViewPos(void)
         /* BG_CalculateWeaponPosition_Sway: ESI=&psCopy, EDI=out_angles,
          * EAX=out_position; the remaining three logical parameters are pushed as
          * (previous_view_angles, 2.0f, cg_frametime). */
-        BG_CalculateWeaponPosition_Sway(&psCopy, cg_vehicleViewSwayPreviousViewAngles, cg_vehicleViewSwayOffset,
-                                        cg_vehicleViewSwayViewAngles, 2.0f, cg_frametime);
+        BG_CalculateWeaponPosition_Sway(&psCopy,
+                                        cg_vehicleViewSwayPreviousViewAngles,
+                                        cg_vehicleViewSwayOffset,
+                                        cg_vehicleViewSwayViewAngles, 2.0f,
+                                        cg_frametime);
 
         /* oscInt = cg_time % 100 folded to <=50; oscFactor = oscInt * 0.02f (0x3007c2b8). */
         int32_t oscInt = coduo_int32_from_bits(cg_time) % 100;
         if (oscInt > 50) {
             oscInt = 100 - oscInt;
         }
-        float oscFactor = (float)((long double)oscInt * (long double)0.019999999552965164f);
+        float oscFactor = (float)((long double)oscInt *
+                                  (long double)0.019999999552965164f);
         /* Bare FILD @0x300409b0 feeds FMUL 0x3007c2b8 directly; the only
          * binary32 rounding is the FSTP into the oscFactor stack slot. */
 
-        const char *originTag = CG_GetVehicleViewPosOriginTag(cg_predictedPlayerState.vehiclePosition);
+        const char *originTag =
+            CG_GetVehicleViewPosOriginTag(cg_predictedPlayerState.vehiclePosition);
         if (!CG_DObjGetWorldTagMatrix(dobj, originTag, cent, &primaryMat)) {
             return;
         }
@@ -150,7 +156,8 @@ void CG_CalcVehicleViewPos(void)
         long double offsX;
         long double offsY;
         float offsZ;
-        if (!CG_DObjGetWorldTagMatrix(dobj, "tag_secondary_view", cent, &secondaryMat)) {
+        if (!CG_DObjGetWorldTagMatrix(dobj, "tag_secondary_view",
+                                             cent, &secondaryMat)) {
             /* Branch A (no tag_secondary_view): offs[i] =
              *   up[i]*6.5 + (right[i]*0.0 + fwd[i]*(-20.0)).
              *   0x3007c2b4=-20.0, 0x3007c2b0=6.5, 0x3007bcec=0.0. */
@@ -159,26 +166,35 @@ void CG_CalcVehicleViewPos(void)
             float tzm20 = (float)((long double)primaryMat.axis[0][2] * -20.0L);
             float cx = (float)((long double)primaryMat.axis[1][0] * 0.0L + txm20);
             float cy = (float)((long double)primaryMat.axis[1][1] * 0.0L + tym20);
-            float cz = (float)((long double)primaryMat.axis[1][2] * 0.0L + (long double)tzm20);
-            offsX = (long double)primaryMat.axis[2][0] * 6.5L + (long double)cx;
-            offsY = (long double)primaryMat.axis[2][1] * 6.5L + (long double)cy;
-            offsZ = (float)((long double)primaryMat.axis[2][2] * 6.5L + (long double)cz);
+            float cz = (float)((long double)primaryMat.axis[1][2] * 0.0L +
+                               (long double)tzm20);
+            offsX = (long double)primaryMat.axis[2][0] * 6.5L +
+                    (long double)cx;
+            offsY = (long double)primaryMat.axis[2][1] * 6.5L +
+                    (long double)cy;
+            offsZ = (float)((long double)primaryMat.axis[2][2] * 6.5L +
+                            (long double)cz);
         } else {
             /* Branch B (tag_secondary_view present): offs[i] = secondary.trans[i] -
              * primary.trans[i]. */
-            offsX = (long double)secondaryMat.origin[0] - (long double)primaryMat.origin[0];
-            offsY = (long double)secondaryMat.origin[1] - (long double)primaryMat.origin[1];
-            offsZ = (float)((long double)secondaryMat.origin[2] - (long double)primaryMat.origin[2]);
+            offsX = (long double)secondaryMat.origin[0] -
+                    (long double)primaryMat.origin[0];
+            offsY = (long double)secondaryMat.origin[1] -
+                    (long double)primaryMat.origin[1];
+            offsZ = (float)((long double)secondaryMat.origin[2] -
+                            (long double)primaryMat.origin[2]);
         }
 
         /* Optional lean/recoil: when cg_snap->ps.entityStateFlags bit 0x200 is set
          * AND cent->currentState.hudTagMask == 0, add fwd[i]*(oscFactor*-0.5) to each offs[i].
          * 0x3007bf50 = -0.5. */
-        if ((cg_snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 && cent->currentState.hudTagMask == 0) {
+        if ((cg_snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 &&
+            cent->currentState.hudTagMask == 0) {
             long double half = (long double)oscFactor * -0.5L;
             offsX += (long double)primaryMat.axis[0][0] * half;
             offsY += (long double)primaryMat.axis[0][1] * half;
-            offsZ = (float)((long double)offsZ + (long double)primaryMat.axis[0][2] * half);
+            offsZ = (float)((long double)offsZ +
+                            (long double)primaryMat.axis[0][2] * half);
         }
 
         /* Rotate offs by the smoothed weapon-sway rotation scalars and add to
@@ -196,25 +212,37 @@ void CG_CalcVehicleViewPos(void)
         float nspa2 = -cg_vehicleViewSwayOffset[2];
 
         /* Pass 1: fwd*spa0 + offs (FADD into the offs stack slots). */
-        float rx = (float)((long double)primaryMat.axis[0][0] * (long double)spa0 + offsX);
-        float ry = (float)((long double)primaryMat.axis[0][1] * (long double)spa0 + offsY);
-        long double rz = (long double)primaryMat.axis[0][2] * (long double)spa0 + (long double)offsZ;
+        float rx = (float)((long double)primaryMat.axis[0][0] *
+                           (long double)spa0 + offsX);
+        float ry = (float)((long double)primaryMat.axis[0][1] *
+                           (long double)spa0 + offsY);
+        long double rz = (long double)primaryMat.axis[0][2] *
+                         (long double)spa0 + (long double)offsZ;
         /* Pass 2: + right*spa1. */
-        float sx = (float)((long double)primaryMat.axis[1][0] * (long double)spa1 + (long double)rx);
-        float sy = (float)((long double)primaryMat.axis[1][1] * (long double)spa1 + (long double)ry);
-        long double sz = (long double)primaryMat.axis[1][2] * (long double)spa1 + rz;
+        float sx = (float)((long double)primaryMat.axis[1][0] *
+                           (long double)spa1 + (long double)rx);
+        float sy = (float)((long double)primaryMat.axis[1][1] *
+                           (long double)spa1 + (long double)ry);
+        long double sz = (long double)primaryMat.axis[1][2] *
+                         (long double)spa1 + rz;
         /* Pass 3: + up*(-spa2). */
-        float dispX = (float)((long double)primaryMat.axis[2][0] * (long double)nspa2 + (long double)sx);
-        float dispY = (float)((long double)primaryMat.axis[2][1] * (long double)nspa2 + (long double)sy);
-        long double dispZ = (long double)primaryMat.axis[2][2] * (long double)nspa2 + sz;
+        float dispX = (float)((long double)primaryMat.axis[2][0] *
+                              (long double)nspa2 + (long double)sx);
+        float dispY = (float)((long double)primaryMat.axis[2][1] *
+                              (long double)nspa2 + (long double)sy);
+        long double dispZ = (long double)primaryMat.axis[2][2] *
+                            (long double)nspa2 + sz;
 
-        cg_refdef.vieworg[0] = (float)((long double)dispX + (long double)cg_refdef.vieworg[0]);
-        cg_refdef.vieworg[1] = (float)((long double)dispY + (long double)cg_refdef.vieworg[1]);
-        cg_refdef.vieworg[2] = (float)(dispZ + (long double)cg_refdef.vieworg[2]);
+        cg_refdef.vieworg[0] = (float)((long double)dispX +
+                                      (long double)cg_refdef.vieworg[0]);
+        cg_refdef.vieworg[1] = (float)((long double)dispY +
+                                      (long double)cg_refdef.vieworg[1]);
+        cg_refdef.vieworg[2] = (float)(dispZ +
+                                      (long double)cg_refdef.vieworg[2]);
 
         /* View angles from the primary basis. */
         vec3_t viewAngles;
-        AxisToAngles((const vec_t(*)[3])matCopy, viewAngles);
+        AxisToAngles((const vec_t (*)[3])matCopy, viewAngles);
 
         /* cg_refdefViewAngles[0] = viewAngles.pitch;
          * cg_refdefViewAngles[2] = viewAngles.roll. */
@@ -238,20 +266,23 @@ void CG_CalcVehicleViewPos(void)
             float fabsDelta = fabsf(angleDelta);
             if (fabsDelta > (double)0.4f) { /* 0x3007c2a8 == 0x3fd99999a0000000 == (double)0.4f, NOT double 0.4 */
                 const float bams = 0.0054931640625f; /* 0x3007bd5c = 0x3bb40000 (360/65536) */
-                viewAngles[0] =
-                    (float)((long double)viewAngles[0] - (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[0]) *
-                                                             (long double)bams); /* bare FILD @0x30040c83 -> FMUL bams */
-                viewAngles[1] =
-                    (float)((long double)viewAngles[1] - (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[1]) *
-                                                             (long double)bams); /* bare FILD @0x30040ca1 */
-                viewAngles[2] = (float)(-((long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[2]) *
-                                          (long double)bams)); /* bare FILD @0x30040cb5; FCHS @0x30040cc1 */
-                cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA, (intptr_t)viewAngles);
+                viewAngles[0] = (float)((long double)viewAngles[0] -
+                    (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[0]) *
+                    (long double)bams); /* bare FILD @0x30040c83 -> FMUL bams */
+                viewAngles[1] = (float)((long double)viewAngles[1] -
+                    (long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[1]) *
+                    (long double)bams); /* bare FILD @0x30040ca1 */
+                viewAngles[2] = (float)(-
+                    ((long double)coduo_int32_from_bits(cg_predictedPlayerState.deltaAngles[2]) *
+                     (long double)bams)); /* bare FILD @0x30040cb5; FCHS @0x30040cc1 */
+                cgame_syscall(CG_VEH_VIEW_ANGLE_DELTA,
+                              (intptr_t)viewAngles);
             }
         }
 
         /* Second lean-driven view-angle blend, gated on the same snap bit / hudTagMask. */
-        if ((cg_snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 && cent->currentState.hudTagMask == 0) {
+        if ((cg_snap->ps.entityStateFlags & CG_VEHICLE_VIEW_SWAY_FLAG) != 0 &&
+            cent->currentState.hudTagMask == 0) {
             /* 0x30040ce8: FLD [ESP+0x34] (ESP=frame) == frame+0x34 == the oscFactor
              * slot (FSTP'd at 0x300409c4 with ESP=frame-4); cg_refdefViewAngles[0] -=
              * oscFactor*0.5 (0x3007bce8 == 0.5). */
@@ -260,7 +291,9 @@ void CG_CalcVehicleViewPos(void)
              * * 0.25f (0x3007be58 = 0x3e800000; 0.140625f is the PRECEDING dword
              * 0x3007be54). Arg order arg1=2.334 (0x40156417), arg2=3.198 (0x404ca9d3),
              * arg3=cg_time. */
-            float osc = Q_SwayRand(2.3342339992523193f, 3.1978652477264404f, (float)coduo_int32_from_bits(cg_time));
+            float osc = Q_SwayRand(2.3342339992523193f,
+                                   3.1978652477264404f,
+                                   (float)coduo_int32_from_bits(cg_time));
             cg_refdefViewAngles[1] = osc * 0.25f + cg_refdefViewAngles[1];
         }
 
@@ -296,14 +329,16 @@ void CG_CalcVehicleViewPos(void)
             cg_refdefViewAngles[2] = 0.0f; /* MOV [0x30487ad0],0 */
             /* 0x30040dbe: MOV EAX,ECX — the selector is ps.vehiclePosition
              * (still live in ECX from 0x30040932), not viewMode. */
-            const char *originTag = CG_GetVehicleViewPosOriginTag(cg_predictedPlayerState.vehiclePosition);
+            const char *originTag =
+                CG_GetVehicleViewPosOriginTag(cg_predictedPlayerState.vehiclePosition);
             if (!CG_DObjGetWorldTagMatrix(dobj, originTag, cent, &primaryMat)) {
                 return;
             }
 
             vec3_t deltaVec;
             int32_t stFilter = cent->currentState.stateFilter;
-            if (CG_DObjGetWorldTagMatrix(dobj, "tag_chasecam", cent, &secondaryMat)) {
+            if (CG_DObjGetWorldTagMatrix(dobj, "tag_chasecam",
+                                                cent, &secondaryMat)) {
                 /* delta[i] = secondary.trans[i] - primary.trans[i]; if stFilter==1
                  * scale by 2.5 (0x3007be68 = 0x40200000; 127.0f is the earlier
                  * dword 0x3007be60). */
@@ -333,15 +368,18 @@ void CG_CalcVehicleViewPos(void)
              * Each dot product is evaluated z, y, x on x87, with the two FADDPs
              * retaining extended precision until the final FSTP. */
             vec3_t tagSpaceDelta;
-            tagSpaceDelta[0] = (float)((long double)deltaVec[2] * (long double)primaryMat.axis[0][2] +
-                                       (long double)deltaVec[1] * (long double)primaryMat.axis[0][1] +
-                                       (long double)deltaVec[0] * (long double)primaryMat.axis[0][0]);
-            tagSpaceDelta[1] = (float)((long double)deltaVec[2] * (long double)primaryMat.axis[1][2] +
-                                       (long double)deltaVec[1] * (long double)primaryMat.axis[1][1] +
-                                       (long double)deltaVec[0] * (long double)primaryMat.axis[1][0]);
-            tagSpaceDelta[2] = (float)((long double)deltaVec[2] * (long double)primaryMat.axis[2][2] +
-                                       (long double)deltaVec[1] * (long double)primaryMat.axis[2][1] +
-                                       (long double)deltaVec[0] * (long double)primaryMat.axis[2][0]);
+            tagSpaceDelta[0] = (float)(
+                (long double)deltaVec[2] * (long double)primaryMat.axis[0][2] +
+                (long double)deltaVec[1] * (long double)primaryMat.axis[0][1] +
+                (long double)deltaVec[0] * (long double)primaryMat.axis[0][0]);
+            tagSpaceDelta[1] = (float)(
+                (long double)deltaVec[2] * (long double)primaryMat.axis[1][2] +
+                (long double)deltaVec[1] * (long double)primaryMat.axis[1][1] +
+                (long double)deltaVec[0] * (long double)primaryMat.axis[1][0]);
+            tagSpaceDelta[2] = (float)(
+                (long double)deltaVec[2] * (long double)primaryMat.axis[2][2] +
+                (long double)deltaVec[1] * (long double)primaryMat.axis[2][1] +
+                (long double)deltaVec[0] * (long double)primaryMat.axis[2][0]);
 
             /* 0x30040f0b/11/25 installs the primary tag translation before the
              * orientation conversion and displacement rebuild. */
@@ -357,30 +395,43 @@ void CG_CalcVehicleViewPos(void)
             /* 0x30040f7a..0x30041004: rebuild the displacement in the current
              * view basis. */
             vec3_t displacement;
-            float displacementXBase = (float)((long double)viewAxis[1][0] * (long double)tagSpaceDelta[1] +
-                                              (long double)viewAxis[0][0] * (long double)tagSpaceDelta[0]);
-            float displacementYBase = (float)((long double)viewAxis[1][1] * (long double)tagSpaceDelta[1] +
-                                              (long double)viewAxis[0][1] * (long double)tagSpaceDelta[0]);
-            float displacementZBase = (float)((long double)viewAxis[0][2] * (long double)tagSpaceDelta[0]);
-            displacement[0] = (float)((long double)viewAxis[2][0] * (long double)tagSpaceDelta[2] + (long double)displacementXBase);
-            displacement[1] = (float)((long double)viewAxis[2][1] * (long double)tagSpaceDelta[2] + (long double)displacementYBase);
-            displacement[2] = (float)((long double)viewAxis[2][2] * (long double)tagSpaceDelta[2] +
-                                      (long double)viewAxis[1][2] * (long double)tagSpaceDelta[1] + (long double)displacementZBase);
+            float displacementXBase = (float)(
+                (long double)viewAxis[1][0] * (long double)tagSpaceDelta[1] +
+                (long double)viewAxis[0][0] * (long double)tagSpaceDelta[0]);
+            float displacementYBase = (float)(
+                (long double)viewAxis[1][1] * (long double)tagSpaceDelta[1] +
+                (long double)viewAxis[0][1] * (long double)tagSpaceDelta[0]);
+            float displacementZBase = (float)(
+                (long double)viewAxis[0][2] * (long double)tagSpaceDelta[0]);
+            displacement[0] = (float)(
+                (long double)viewAxis[2][0] * (long double)tagSpaceDelta[2] +
+                (long double)displacementXBase);
+            displacement[1] = (float)(
+                (long double)viewAxis[2][1] * (long double)tagSpaceDelta[2] +
+                (long double)displacementYBase);
+            displacement[2] = (float)(
+                (long double)viewAxis[2][2] * (long double)tagSpaceDelta[2] +
+                (long double)viewAxis[1][2] * (long double)tagSpaceDelta[1] +
+                (long double)displacementZBase);
 
             if (stFilter == VEHICLE_VIEW_MODE_GUNNER) {
                 displacement[2] = displacement[2] * 0.75f;
             }
 
             long double candidate[3];
-            candidate[0] = (long double)displacement[0] + (long double)cg_refdef.vieworg[0];
-            candidate[1] = (long double)displacement[1] + (long double)cg_refdef.vieworg[1];
-            candidate[2] = (long double)displacement[2] + (long double)cg_refdef.vieworg[2];
+            candidate[0] = (long double)displacement[0] +
+                           (long double)cg_refdef.vieworg[0];
+            candidate[1] = (long double)displacement[1] +
+                           (long double)cg_refdef.vieworg[1];
+            candidate[2] = (long double)displacement[2] +
+                           (long double)cg_refdef.vieworg[2];
 
             /* 0x30041046..0x30041088: the mode-1 ADS camera is lowered along
              * viewAxis[2] by 135.0f (0x43070000 at 0x3007c2a0). Gate is the
              * FUCOMPP/TEST AH,0x44/JNP-skip-on-equal idiom: lowered whenever
              * adsFraction != 0.0 (NaN included), not only when positive. */
-            if (stFilter == VEHICLE_VIEW_MODE_SEAT && cg_predictedPlayerState.adsFraction != 0.0f) {
+            if (stFilter == VEHICLE_VIEW_MODE_SEAT &&
+                cg_predictedPlayerState.adsFraction != 0.0f) {
                 candidate[0] -= (long double)viewAxis[2][0] * 135.0L;
                 candidate[1] -= (long double)viewAxis[2][1] * 135.0L;
                 candidate[2] -= (long double)viewAxis[2][2] * 135.0L;
@@ -395,16 +446,21 @@ void CG_CalcVehicleViewPos(void)
              * against the source tag-delta length. VectorNormalize is called only
              * outside the inclusive [0.5*sourceLength, 2*sourceLength] interval,
              * exactly matching the FCOMP branches. */
-            displacement[0] = (float)(candidate[0] - (long double)primaryMat.origin[0]);
-            displacement[1] = (float)(candidate[1] - (long double)primaryMat.origin[1]);
-            displacement[2] = (float)(candidate[2] - (long double)primaryMat.origin[2]);
+            displacement[0] = (float)(candidate[0] -
+                                      (long double)primaryMat.origin[0]);
+            displacement[1] = (float)(candidate[1] -
+                                      (long double)primaryMat.origin[1]);
+            displacement[2] = (float)(candidate[2] -
+                                      (long double)primaryMat.origin[2]);
 
-            long double displacementLength = coduo_x87_sqrtl((long double)displacement[2] * (long double)displacement[2] +
-                                                             (long double)displacement[1] * (long double)displacement[1] +
-                                                             (long double)displacement[0] * (long double)displacement[0]);
-            long double sourceLength =
-                coduo_x87_sqrtl((long double)deltaVec[2] * (long double)deltaVec[2] + (long double)deltaVec[1] * (long double)deltaVec[1] +
-                                (long double)deltaVec[0] * (long double)deltaVec[0]);
+            long double displacementLength = coduo_x87_sqrtl(
+                (long double)displacement[2] * (long double)displacement[2] +
+                (long double)displacement[1] * (long double)displacement[1] +
+                (long double)displacement[0] * (long double)displacement[0]);
+            long double sourceLength = coduo_x87_sqrtl(
+                (long double)deltaVec[2] * (long double)deltaVec[2] +
+                (long double)deltaVec[1] * (long double)deltaVec[1] +
+                (long double)deltaVec[0] * (long double)deltaVec[0]);
             float clampedLength = (float)(sourceLength + sourceLength);
 
             if (displacementLength > clampedLength) {
@@ -419,14 +475,17 @@ void CG_CalcVehicleViewPos(void)
                 (void)VectorNormalize(displacement);
             }
 
-            cg_vehicleViewSwayOrigin[0] =
-                (float)((long double)primaryMat.origin[0] + (long double)clampedLength * (long double)displacement[0]);
-            cg_vehicleViewSwayOrigin[1] =
-                (float)((long double)primaryMat.origin[1] + (long double)clampedLength * (long double)displacement[1]);
-            cg_vehicleViewSwayOrigin[2] =
-                (float)((long double)primaryMat.origin[2] + (long double)clampedLength * (long double)displacement[2]);
+            cg_vehicleViewSwayOrigin[0] = (float)(
+                (long double)primaryMat.origin[0] +
+                (long double)clampedLength * (long double)displacement[0]);
+            cg_vehicleViewSwayOrigin[1] = (float)(
+                (long double)primaryMat.origin[1] +
+                (long double)clampedLength * (long double)displacement[1]);
+            cg_vehicleViewSwayOrigin[2] = (float)(
+                (long double)primaryMat.origin[2] +
+                (long double)clampedLength * (long double)displacement[2]);
 
-        copy_sway_origin:
+copy_sway_origin:
             cg_refdef.vieworg[0] = cg_vehicleViewSwayOrigin[0];
             cg_refdef.vieworg[1] = cg_vehicleViewSwayOrigin[1];
             cg_refdef.vieworg[2] = cg_vehicleViewSwayOrigin[2];
@@ -440,7 +499,8 @@ void CG_CalcVehicleViewPos(void)
              * ECX still holding 0x304837d8 — into secondaryMat, then a
              * 12.0 (0x3007bdc4 = 0x41400000; 432.0f is the PRECEDING dword
              * 0x3007bdc0) / 32.0 (0x3007bdd0) blend. 0x3007bcec=0.0. */
-            const char *riderTag = CG_GetRiderTagName(cg_predictedPlayerState.vehiclePosition);
+            const char *riderTag =
+                CG_GetRiderTagName(cg_predictedPlayerState.vehiclePosition);
             if (!CG_DObjGetWorldTagMatrix(dobj, riderTag, cent, &secondaryMat)) {
                 /* 0x300411f0 JZ 0x300412bf: a failed rider-tag lookup FALLS INTO
                  * the tag_aimdownbarrel/tag_barrel arm, it does not trace. */
@@ -467,16 +527,18 @@ void CG_CalcVehicleViewPos(void)
             goto trace_tail;
         }
 
-    aimdownbarrel_arm:
+aimdownbarrel_arm:
         /* viewMode != 1 (0x300412bf): tag_aimdownbarrel copy, else tag_barrel blend. */
-        if (CG_DObjGetWorldTagMatrix(dobj, "tag_aimdownbarrel", cent, &secondaryMat)) {
+        if (CG_DObjGetWorldTagMatrix(dobj, "tag_aimdownbarrel",
+                                            cent, &secondaryMat)) {
             cg_refdef.vieworg[0] = secondaryMat.origin[0];
             cg_refdef.vieworg[1] = secondaryMat.origin[1];
             cg_refdef.vieworg[2] = secondaryMat.origin[2];
             goto trace_tail;
         }
 
-        if (!CG_DObjGetWorldTagMatrix(dobj, "tag_barrel", cent, &secondaryMat)) {
+        if (!CG_DObjGetWorldTagMatrix(dobj, "tag_barrel",
+                                             cent, &secondaryMat)) {
             return;
         }
         /* tag_barrel blend (0x30041326..0x300413ea):
@@ -509,17 +571,19 @@ trace_tail:
      * base+0x208). The anchor's z is raised by 20.0 (0x3007be04) and traced. */
     {
         vec3_t anchor;
-        if (CG_DObjGetWorldTagMatrix(dobj, "tag_body", cent, &secondaryMat)) {
+        if (CG_DObjGetWorldTagMatrix(dobj, "tag_body",
+                                            cent, &secondaryMat)) {
             anchor[0] = secondaryMat.origin[0];
             anchor[1] = secondaryMat.origin[1];
             anchor[2] = secondaryMat.origin[2];
         } else {
-            int32_t fallbackEntityNum = cg_predictedPlayerState.viewLockedEntityNum;
+            int32_t fallbackEntityNum =
+                cg_predictedPlayerState.viewLockedEntityNum;
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-            if ((uint32_t)fallbackEntityNum >= (uint32_t)MAX_GENTITIES) {
+            if ((uint32_t)fallbackEntityNum >=
+                (uint32_t)MAX_GENTITIES) {
                 Com_Error(ERR_DROP,
-                          "\x15"
-                          "CG_CalcVehicleViewPos: invalid reloaded "
+                          "\x15" "CG_CalcVehicleViewPos: invalid reloaded "
                           "view-lock entity %i",
                           fallbackEntityNum);
                 return;
@@ -539,13 +603,19 @@ trace_tail:
          * The four stack arguments at 0x3004140e..0x3004142b are, in source order,
          * out=&traceResult, arg1=&traceAnchor, arg2=&traceMins, arg3=entnum. */
         trace_t traceResult;
-        CG_Trace(CG_VEHICLE_VIEW_TRACE_MODEL, cg_refdef.vieworg, traceMaxs, &traceResult, traceAnchor, traceMins, entnum);
+        CG_Trace(CG_VEHICLE_VIEW_TRACE_MODEL, cg_refdef.vieworg,
+                           traceMaxs, &traceResult,
+                           traceAnchor,
+                           traceMins, entnum);
 
         /* Status re-trace gate: after accounting for the four live wrapper arguments,
          * [ESP+0x98] is traceResult.contents (+0x20), not normal (+0x10). */
         if (traceResult.startsolid != 0) {
             if (((uint32_t)traceResult.contents & CG_VEHICLE_VIEW_TRACE_BODY_FLAG) != 0) {
-                CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg_refdef.vieworg, traceMaxs, &traceResult, traceAnchor, traceMins, entnum);
+                CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg_refdef.vieworg,
+                                   traceMaxs, &traceResult,
+                                   traceAnchor,
+                                   traceMins, entnum);
             }
         }
 
@@ -557,9 +627,14 @@ trace_tail:
             /* (1.0 - fraction)*32 + endpos.z is one 80-bit chain in the DLL
              * (FLD 0x3007bce0=1.0; FSUB; FMUL 0x3007bdd0=32.0; FADD; FSTP
              * @0x300414a0..e8) — no float temp for the subtract. */
-            cg_refdef.vieworg[2] = (float)((1.0L - (long double)traceResult.fraction) * 32.0L + (long double)traceResult.endpos[2]);
+            cg_refdef.vieworg[2] = (float)(
+                (1.0L - (long double)traceResult.fraction) * 32.0L +
+                (long double)traceResult.endpos[2]);
 
-            CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg_refdef.vieworg, traceMaxs, &traceResult, traceAnchor, traceMins, entnum);
+            CG_Trace(CG_VEHICLE_VIEW_RETRACE_MODEL, cg_refdef.vieworg,
+                               traceMaxs, &traceResult,
+                               traceAnchor,
+                               traceMins, entnum);
 
             /* 0x30041505..0x30041529 copies traceResult.endpos (+0x04..+0x0c). */
             cg_refdef.vieworg[0] = traceResult.endpos[0];

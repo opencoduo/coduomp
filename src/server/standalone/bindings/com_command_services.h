@@ -22,6 +22,7 @@ void FS_ShutdownServerPakNames(void);
 void FS_ShutdownServerReferencedPaks(void);
 _Noreturn void Sys_Quit(void);
 
-#define COM_QUIT_TARGET_CLEANUP() Com_ClearServerFrameRunningFlag()
+#define COM_QUIT_TARGET_CLEANUP() \
+    Com_ClearServerFrameRunningFlag()
 
 #endif

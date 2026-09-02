@@ -79,20 +79,29 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */)
     vec3_t posB;
     BG_EvaluateTrajectory(&state->currentState.pos, cg_snap->serverTime, posA);          /* 0x30021bce */
     BG_EvaluateTrajectory(&state->nextState.pos, cg_nextSnap->serverTime, posB);  /* 0x30021be5 */
-    entity->lerpOrigin[0] = (float)(((long double)posB[0] - (long double)posA[0]) * (long double)frac + (long double)posA[0]); /* +0x208 */
-    entity->lerpOrigin[1] = (float)(((long double)posB[1] - (long double)posA[1]) * (long double)frac + (long double)posA[1]); /* +0x20c */
-    entity->lerpOrigin[2] = (float)(((long double)posB[2] - (long double)posA[2]) * (long double)frac + (long double)posA[2]); /* +0x210 */
+    entity->lerpOrigin[0] = (float)(
+        ((long double)posB[0] - (long double)posA[0]) *
+            (long double)frac +
+        (long double)posA[0]);                                  /* +0x208 */
+    entity->lerpOrigin[1] = (float)(
+        ((long double)posB[1] - (long double)posA[1]) *
+            (long double)frac +
+        (long double)posA[1]);                                  /* +0x20c */
+    entity->lerpOrigin[2] = (float)(
+        ((long double)posB[2] - (long double)posA[2]) *
+            (long double)frac +
+        (long double)posA[2]);                                  /* +0x210 */
 
     /* 0x30021c33..0x30021c98: blend the angles via short-way LerpAngle. Evaluate
      * currentState.apos and nextState.apos at the same two snapshot times, reusing
      * the same scratch buffers. */
     vec3_t angA;
     vec3_t angB;
-    BG_EvaluateTrajectory(&state->currentState.apos, cg_snap->serverTime, angA); /* 0x30021c3c */
+    BG_EvaluateTrajectory(&state->currentState.apos, cg_snap->serverTime, angA);         /* 0x30021c3c */
     BG_EvaluateTrajectory(&state->nextState.apos, cg_nextSnap->serverTime, angB); /* 0x30021c53 */
-    entity->lerpAngles[0] = LerpAngle(angA[0], angB[0], frac); /* 0x30021c67 -> +0x214 */
-    entity->lerpAngles[1] = LerpAngle(angA[1], angB[1], frac); /* 0x30021c7d -> +0x218 */
-    entity->lerpAngles[2] = LerpAngle(angA[2], angB[2], frac); /* 0x30021c93 -> +0x21c */
+    entity->lerpAngles[0] = LerpAngle(angA[0], angB[0], frac);        /* 0x30021c67 -> +0x214 */
+    entity->lerpAngles[1] = LerpAngle(angA[1], angB[1], frac);        /* 0x30021c7d -> +0x218 */
+    entity->lerpAngles[2] = LerpAngle(angA[2], angB[2], frac);        /* 0x30021c93 -> +0x21c */
 
     /* 0x30021c9e/0x30021ca7: only player entities publish the shared view-angle block.
      * The gate reads nextState.eType (+0xf8), the incoming-snapshot entity type. */
@@ -103,14 +112,14 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */)
         int32_t clientNum = state->nextState.clientNum;
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15"
-                      "CG_InterpolateEntityPosition: "
+                      "\x15" "CG_InterpolateEntityPosition: "
                       "invalid client number %i",
                       clientNum);
             return;
         }
         clientInfo_t *clientInfo = &bgs.clientinfo[clientNum];
-        cgLerpAngleBlock_t *block = (cgLerpAngleBlock_t *)(void *)&clientInfo->leanAmount;
+        cgLerpAngleBlock_t *block =
+            (cgLerpAngleBlock_t *)(void *)&clientInfo->leanAmount;
 
         /* 0x30021cca: leanAmount blends the current/next lean scalars short-way. */
         block->leanAmount = LerpAngle(state->currentState.leanValue, state->nextState.leanAmount, frac); /* +0x3e0 */
@@ -129,6 +138,7 @@ void CG_InterpolateEntityPosition(centity_t *entity /* ESI */)
         memcpy(&nextLeanFraction, &state->nextState.leanf, sizeof(nextLeanFraction));
 
         /* 0x30021d16: leanFraction blends the current/next lean-fraction scalars. */
-        block->leanFraction = LerpAngle(currentLeanFraction, nextLeanFraction, frac); /* +0x3e4 */
+        block->leanFraction =
+            LerpAngle(currentLeanFraction, nextLeanFraction, frac); /* +0x3e4 */
     }
 }

@@ -14,9 +14,14 @@
  * incorrectly classified the register values as scratch saves. The named Mac
  * wrapper and CL_CgameSystemCalls independently prove the same six-slot contract.
  */
-void trap_MSS_PlayBlendedSoundAliases(snd_alias_t *alias0, snd_alias_t *alias1, float blend, int32_t entityNum, const vec3_t origin,
+void trap_MSS_PlayBlendedSoundAliases(snd_alias_t *alias0,
+                                      snd_alias_t *alias1,
+                                      float blend,
+                                      int32_t entityNum,
+                                      const vec3_t origin,
                                       int32_t timeShift)
 {
-    cgame_syscall(CG_MSS_PLAY_BLENDED_SOUND_ALIASES, (intptr_t)alias0, (intptr_t)alias1, CG_FloatBits(blend), entityNum, (intptr_t)origin,
-                  timeShift);
+    cgame_syscall(CG_MSS_PLAY_BLENDED_SOUND_ALIASES,
+                  (intptr_t)alias0, (intptr_t)alias1, CG_FloatBits(blend),
+                  entityNum, (intptr_t)origin, timeShift);
 }

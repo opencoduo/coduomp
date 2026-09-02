@@ -69,15 +69,16 @@
  */
 
 /* Trap-54 fixed draw parameters, from the pushed immediates. */
-enum {
-    CG_WSHINT_STYLE = 5
-};          /* PUSH 5 (int)                       */
-#define CG_WSHINT_SCALE 0.25f         /* 0x3e800000                         */
-#define CG_WSHINT_SIZE 6.0f          /* 0x40c00000                         */
+enum { CG_WSHINT_STYLE = 5 };          /* PUSH 5 (int)                       */
+#define CG_WSHINT_SCALE  0.25f         /* 0x3e800000                         */
+#define CG_WSHINT_SIZE   6.0f          /* 0x40c00000                         */
 
 /* Draw-params struct pointed to by EDI. Only +0x0c is read by this function
  * (forwarded into both draw blocks); the surrounding fields are opaque here. */
-void CG_DrawWeaponSelectKeyHint(const vec4_t params, int32_t slot, float x, float y)
+void CG_DrawWeaponSelectKeyHint(const vec4_t params,
+                                int32_t slot,
+                                float x,
+                                float y)
 {
     const char *name;
     const char *key;
@@ -107,10 +108,20 @@ void CG_DrawWeaponSelectKeyHint(const vec4_t params, int32_t slot, float x, floa
     block[7] = 1.0f;
 
     float shadowX = (float)((long double)x + (long double)1.0f);
-    float shadowY = (float)((((long double)y + (long double)1.0f) - (long double)4.0f) + (long double)9.600000381469727f);
+    float shadowY = (float)((((long double)y + (long double)1.0f) -
+                              (long double)4.0f) +
+                             (long double)9.600000381469727f);
 
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(shadowX), CG_FloatBits(shadowY), CG_WSHINT_STYLE, CG_FloatBits(CG_WSHINT_SCALE),
-                  (intptr_t)block, (intptr_t)key, CG_FloatBits(CG_WSHINT_SIZE), 0, 0);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(shadowX),
+                  CG_FloatBits(shadowY),
+                  CG_WSHINT_STYLE,
+                  CG_FloatBits(CG_WSHINT_SCALE),
+                  (intptr_t)block,
+                  (intptr_t)key,
+                  CG_FloatBits(CG_WSHINT_SIZE),
+                  0,
+                  0);
 
     /* ---- draw 2: foreground pass (leading three block words = 1.0) ----
      * block[+0x0c] (index 3) is left holding shared0c from the first pass. */
@@ -122,10 +133,19 @@ void CG_DrawWeaponSelectKeyHint(const vec4_t params, int32_t slot, float x, floa
     block[6] = 1.0f;
     block[7] = 1.0f;
 
-    float foregroundY = (float)(((long double)y - (long double)4.0f) + (long double)9.600000381469727f);
+    float foregroundY = (float)(((long double)y - (long double)4.0f) +
+                                (long double)9.600000381469727f);
 
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(x), CG_FloatBits(foregroundY), CG_WSHINT_STYLE, CG_FloatBits(CG_WSHINT_SCALE),
-                  (intptr_t)block, (intptr_t)key, CG_FloatBits(CG_WSHINT_SIZE), 0, 0);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(x),
+                  CG_FloatBits(foregroundY),
+                  CG_WSHINT_STYLE,
+                  CG_FloatBits(CG_WSHINT_SCALE),
+                  (intptr_t)block,
+                  (intptr_t)key,
+                  CG_FloatBits(CG_WSHINT_SIZE),
+                  0,
+                  0);
 
     /* trap_R_SetColor(params): reset the 2D draw color after the draws. */
     cgame_syscall(CG_R_SETCOLOR, (intptr_t)params);

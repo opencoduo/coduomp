@@ -66,9 +66,11 @@ enum {
 
 /* Source: CoDUOMP.exe 0x00479c10..0x00479caa.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00479c10_00479caa.mcode. */
-void EmitOpcode(uint8_t opcode, int32_t stackDelta, int32_t localDepthMode)
+void EmitOpcode(uint8_t opcode, int32_t stackDelta,
+                int32_t localDepthMode)
 {
-    if (script_codeNeedsDeferredCheck != qfalse && script_codegenMode == SCRIPT_CODEGEN_MODE_INTERN_STRINGS) {
+    if (script_codeNeedsDeferredCheck != qfalse &&
+        script_codegenMode == SCRIPT_CODEGEN_MODE_INTERN_STRINGS) {
         script_codeNeedsDeferredCheck = qfalse;
         Scr_TransferStatementListToDeveloperBuffer();
     }
@@ -78,7 +80,8 @@ void EmitOpcode(uint8_t opcode, int32_t stackDelta, int32_t localDepthMode)
         script_codeMaxStackDepth = script_codeStackDepth;
     }
 
-    if (localDepthMode != 0 && script_codeMaxLocalDepth < script_codeStackDepth) {
+    if (localDepthMode != 0 &&
+        script_codeMaxLocalDepth < script_codeStackDepth) {
         script_codeMaxLocalDepth = script_codeStackDepth;
         if (localDepthMode == 3) {
             script_codeMaxLocalDepth = script_codeStackDepth + 1;
@@ -88,7 +91,8 @@ void EmitOpcode(uint8_t opcode, int32_t stackDelta, int32_t localDepthMode)
     script_codeEmitCursor = TempMalloc(sizeof(opcode));
     script_codeLastOpcodePos = script_codeEmitCursor;
     *script_codeEmitCursor = opcode;
-    script_codeChecksum = script_codeChecksum * SCRIPT_CODE_OPCODE_HASH_MULTIPLIER + opcode;
+    script_codeChecksum =
+        script_codeChecksum * SCRIPT_CODE_OPCODE_HASH_MULTIPLIER + opcode;
 }
 
 /* Source: CoDUOMP.exe 0x00479ac0..0x00479b07.
@@ -124,7 +128,9 @@ void EmitCanonicalString(uint16_t string)
 
     memcpy(out, &string, sizeof(string));
     script_code_string_fixup_t *fixup = Z_MallocInternal(sizeof(*fixup));
-    fixup->codePos = (char *)(script_codeEmitCursor + (script_codeRelocationEnd - script_codeRelocationStart));
+    fixup->codePos =
+        (char *)(script_codeEmitCursor +
+                 (script_codeRelocationEnd - script_codeRelocationStart));
     const uint16_t emptyString = 0;
     memcpy(fixup->codePos, &emptyString, sizeof(emptyString));
     fixup->next = script_codeStringFixups;
@@ -223,7 +229,8 @@ void EmitCodepos(uint32_t value)
 
 /* NOT_FROM_ORIGINAL_SOURCE: the i386 binary's value payload is one dword;
  * native reconstruction keeps script value payloads at host pointer width. */
-void coduomp_script_emit_value_payload(coduo_script_value_payload_t value)
+void coduomp_script_emit_value_payload(
+    coduo_script_value_payload_t value)
 {
     char *out = (char *)TempMalloc(sizeof(value));
     script_codeEmitCursor = (uint8_t *)out;
@@ -508,7 +515,8 @@ void EmitEvalArray(uint32_t firstSourcePos, uint32_t secondSourcePos)
 
 /* Source: CoDUOMP.exe 0x0047ade0..0x0047ae69.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047ade0_0047ae69.mcode. */
-void EmitEvalArrayRef(uint32_t firstSourcePos, uint32_t secondSourcePos)
+void EmitEvalArrayRef(uint32_t firstSourcePos,
+                      uint32_t secondSourcePos)
 {
     EmitOpcode(SCRIPT_OPCODE_SET_INDEXED_REF, -1, 0);
     AddOpcodePos(secondSourcePos);
@@ -517,7 +525,8 @@ void EmitEvalArrayRef(uint32_t firstSourcePos, uint32_t secondSourcePos)
 
 /* Source: CoDUOMP.exe 0x0047ae70..0x0047aef9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047ae70_0047aef9.mcode. */
-void EmitClearArray(uint32_t firstSourcePos, uint32_t secondSourcePos)
+void EmitClearArray(uint32_t firstSourcePos,
+                    uint32_t secondSourcePos)
 {
     EmitOpcode(SCRIPT_OPCODE_CLEAR_INDEXED, -1, 0);
     AddOpcodePos(secondSourcePos);
@@ -544,7 +553,8 @@ void EmitAnimation(uint16_t string, uint32_t sourcePos)
 
 /* Source: CoDUOMP.exe 0x0047b090..0x0047b12c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b090_0047b12c.mcode. */
-void EmitFieldVariable(scr_ast_node_t *objectNode, uint16_t string, uint32_t sourcePos)
+void EmitFieldVariable(scr_ast_node_t *objectNode,
+                       uint16_t string, uint32_t sourcePos)
 {
     EmitExpressionFieldObject(objectNode, sourcePos);
     EmitOpcode(SCRIPT_OPCODE_GET_FIELD, 1, 0);
@@ -554,7 +564,8 @@ void EmitFieldVariable(scr_ast_node_t *objectNode, uint16_t string, uint32_t sou
 
 /* Source: CoDUOMP.exe 0x0047b130..0x0047b1b9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b130_0047b1b9.mcode. */
-void EmitFieldVariableRef(scr_ast_node_t *objectNode, uint16_t string, uint32_t sourcePos)
+void EmitFieldVariableRef(scr_ast_node_t *objectNode,
+                          uint16_t string, uint32_t sourcePos)
 {
     EmitExpressionFieldObject(objectNode, sourcePos);
     EmitOpcode(SCRIPT_OPCODE_SET_FIELD_REF, 0, 0);
@@ -563,7 +574,10 @@ void EmitFieldVariableRef(scr_ast_node_t *objectNode, uint16_t string, uint32_t 
 
 /* Source: CoDUOMP.exe 0x0047b1c0..0x0047b256.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b1c0_0047b256.mcode. */
-void EmitClearFieldVariable(scr_ast_node_t *objectNode, uint16_t string, uint32_t objectSourcePos, uint32_t opcodeSourcePos)
+void EmitClearFieldVariable(scr_ast_node_t *objectNode,
+                            uint16_t string,
+                            uint32_t objectSourcePos,
+                            uint32_t opcodeSourcePos)
 {
     EmitExpressionFieldObject(objectNode, objectSourcePos);
     EmitOpcode(SCRIPT_OPCODE_CLEAR_FIELD, 0, 0);
@@ -573,7 +587,9 @@ void EmitClearFieldVariable(scr_ast_node_t *objectNode, uint16_t string, uint32_
 
 /* Source: CoDUOMP.exe 0x0047b260..0x0047b2e8.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b260_0047b2e8.mcode. */
-void EmitCallRef(scr_ast_node_t *nameNode, scr_ast_list_t *argsNode, uint32_t callSourcePos)
+void EmitCallRef(scr_ast_node_t *nameNode,
+                 scr_ast_list_t *argsNode,
+                 uint32_t callSourcePos)
 {
     /* The third sval_u parameter is part of the original source signature but
      * the Windows body at 0x0047b260 never reads it. */
@@ -584,7 +600,10 @@ void EmitCallRef(scr_ast_node_t *nameNode, scr_ast_list_t *argsNode, uint32_t ca
 
 /* Source: CoDUOMP.exe 0x0047b2f0..0x0047b380.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0047b2f0_0047b380.mcode. */
-void EmitMethodRef(scr_ast_node_t *objectNode, scr_ast_node_t *nameNode, scr_ast_list_t *argsNode, uint32_t sourcePos)
+void EmitMethodRef(scr_ast_node_t *objectNode,
+                   scr_ast_node_t *nameNode,
+                   scr_ast_list_t *argsNode,
+                   uint32_t sourcePos)
 {
     EmitMethod(objectNode, nameNode, argsNode, sourcePos, qfalse);
     EmitOpcode(SCRIPT_OPCODE_STORE_TEMP, -1, 0);

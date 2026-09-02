@@ -24,7 +24,8 @@ void GLimp_LogComment(const char *comment)
  * original fprintf call. Provisional name by exact role. */
 void RENDERER_GL_API_CALL GL_LogAlphaFunc(uint32_t func, float reference)
 {
-    fprintf(rendererGlLogFile, "glAlphaFunc( %s, %f )\n", GL_DepthFuncToString(func), (double)reference);
+    fprintf(rendererGlLogFile, "glAlphaFunc( %s, %f )\n",
+            GL_DepthFuncToString(func), (double)reference);
     fflush(rendererGlLogFile);
     rendererGlAlphaFuncDriver(func, reference);
 }
@@ -33,7 +34,8 @@ void RENDERER_GL_API_CALL GL_LogAlphaFunc(uint32_t func, float reference)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c9b90_004c9bc7.mcode. */
 void RENDERER_GL_API_CALL GL_LogBegin(uint32_t mode)
 {
-    fprintf(rendererGlLogFile, "glBegin( %s )\n", GL_PrimitiveModeToString(mode));
+    fprintf(rendererGlLogFile, "glBegin( %s )\n",
+            GL_PrimitiveModeToString(mode));
     fflush(rendererGlLogFile);
     rendererGlBeginDriver(mode);
 }
@@ -43,7 +45,8 @@ void RENDERER_GL_API_CALL GL_LogBegin(uint32_t mode)
  * original tr.images at 0x04889b20 proves that image_t begins with the name
  * string passed to fprintf. Texture zero and unregistered texture numbers use
  * va("%u") exactly as the original wrapper does. */
-void RENDERER_GL_API_CALL GL_LogBindTexture(uint32_t target, uint32_t texture)
+void RENDERER_GL_API_CALL GL_LogBindTexture(uint32_t target,
+                                            uint32_t texture)
 {
     const char *textureName;
 
@@ -53,11 +56,15 @@ void RENDERER_GL_API_CALL GL_LogBindTexture(uint32_t target, uint32_t texture)
         textureName = va("%u", texture);
 
     if (target == GL_TEXTURE_2D) {
-        fprintf(rendererGlLogFile, "glBindTexture( GL_TEXTURE_2D, %s )\n", textureName);
+        fprintf(rendererGlLogFile,
+                "glBindTexture( GL_TEXTURE_2D, %s )\n", textureName);
     } else if (target == GL_TEXTURE_CUBE_MAP_ARB) {
-        fprintf(rendererGlLogFile, "glBindTexture( GL_TEXTURE_CUBE_MAP_ARB, %s )\n", textureName);
+        fprintf(rendererGlLogFile,
+                "glBindTexture( GL_TEXTURE_CUBE_MAP_ARB, %s )\n",
+                textureName);
     } else {
-        fprintf(rendererGlLogFile, "glBindTexture( 0x%x, %s )\n", target, textureName);
+        fprintf(rendererGlLogFile, "glBindTexture( 0x%x, %s )\n",
+                target, textureName);
     }
 
     fflush(rendererGlLogFile);
@@ -66,9 +73,11 @@ void RENDERER_GL_API_CALL GL_LogBindTexture(uint32_t target, uint32_t texture)
 
 /* Source: CoDUOMP.exe 0x004c9c70..0x004c9caf.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c9c70_004c9caf.mcode. */
-void RENDERER_GL_API_CALL GL_LogBindProgramARB(uint32_t target, uint32_t program)
+void RENDERER_GL_API_CALL GL_LogBindProgramARB(uint32_t target,
+                                               uint32_t program)
 {
-    fprintf(rendererGlLogFile, "glBindProgramARB( %s, %u )\n", GL_EnumToString(target), program);
+    fprintf(rendererGlLogFile, "glBindProgramARB( %s, %u )\n",
+            GL_EnumToString(target), program);
     fflush(rendererGlLogFile);
     rendererGlBindProgramARBDriver(target, program);
 }
@@ -84,9 +93,11 @@ void RENDERER_GL_API_CALL GL_LogBindFragmentShaderATI(uint32_t shader)
 
 /* Source: CoDUOMP.exe 0x004c9ce0..0x004c9d1f.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c9ce0_004c9d1f.mcode. */
-void RENDERER_GL_API_CALL GL_LogBindBufferARB(uint32_t target, uint32_t buffer)
+void RENDERER_GL_API_CALL GL_LogBindBufferARB(uint32_t target,
+                                              uint32_t buffer)
 {
-    fprintf(rendererGlLogFile, "glBindBufferARB( %s, %u )\n", GL_EnumToString(target), buffer);
+    fprintf(rendererGlLogFile, "glBindBufferARB( %s, %u )\n",
+            GL_EnumToString(target), buffer);
     fflush(rendererGlLogFile);
     rendererGlBindBufferARBDriver(target, buffer);
 }
@@ -96,18 +107,24 @@ void RENDERER_GL_API_CALL GL_LogBindBufferARB(uint32_t target, uint32_t buffer)
  * i386 format uses %u for its 32-bit GLsizeiptrARB. GLsizeiptrARB is signed
  * pointer-width on native hosts; converting only for `%zu` preserves the
  * original unsigned rendering of its bits without changing the API type. */
-void RENDERER_GL_API_CALL GL_LogBufferDataARB(uint32_t target, intptr_t size, const void *data, uint32_t usage)
+void RENDERER_GL_API_CALL GL_LogBufferDataARB(uint32_t target, intptr_t size,
+                                              const void *data,
+                                              uint32_t usage)
 {
-    fprintf(rendererGlLogFile, "glBufferDataARB( %s, %zu, %p, %s )\n", GL_EnumToString(target), (size_t)size, data, GL_EnumToString(usage));
+    fprintf(rendererGlLogFile, "glBufferDataARB( %s, %zu, %p, %s )\n",
+            GL_EnumToString(target), (size_t)size, data,
+            GL_EnumToString(usage));
     fflush(rendererGlLogFile);
     rendererGlBufferDataARBDriver(target, size, data, usage);
 }
 
 /* Source: CoDUOMP.exe 0x004c9d80..0x004c9dc6.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c9d80_004c9dc6.mcode. */
-void *RENDERER_GL_API_CALL GL_LogMapBufferARB(uint32_t target, uint32_t access)
+void *RENDERER_GL_API_CALL GL_LogMapBufferARB(uint32_t target,
+                                              uint32_t access)
 {
-    fprintf(rendererGlLogFile, "glMapBufferARB( %s, %s )\n", GL_EnumToString(target), GL_EnumToString(access));
+    fprintf(rendererGlLogFile, "glMapBufferARB( %s, %s )\n",
+            GL_EnumToString(target), GL_EnumToString(access));
     fflush(rendererGlLogFile);
     return rendererGlMapBufferARBDriver(target, access);
 }
@@ -116,7 +133,8 @@ void *RENDERER_GL_API_CALL GL_LogMapBufferARB(uint32_t target, uint32_t access)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c9dd0_004c9e07.mcode. */
 uint8_t RENDERER_GL_API_CALL GL_LogUnmapBufferARB(uint32_t target)
 {
-    fprintf(rendererGlLogFile, "glUnmapBufferARB( %s )\n", GL_EnumToString(target));
+    fprintf(rendererGlLogFile, "glUnmapBufferARB( %s )\n",
+            GL_EnumToString(target));
     fflush(rendererGlLogFile);
     return rendererGlUnmapBufferARBDriver(target);
 }
@@ -125,14 +143,16 @@ uint8_t RENDERER_GL_API_CALL GL_LogUnmapBufferARB(uint32_t target)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c9f20_004c9fa6.mcode. The Windows
  * stack-cookie sequence is compiler security instrumentation, not source
  * behavior; the two original 128-byte name buffers are retained. */
-void RENDERER_GL_API_CALL GL_LogBlendFunc(uint32_t sourceFactor, uint32_t destinationFactor)
+void RENDERER_GL_API_CALL GL_LogBlendFunc(uint32_t sourceFactor,
+                                          uint32_t destinationFactor)
 {
     char sourceName[128];
     char destinationName[128];
 
     GL_BlendFactorToString(sourceFactor, sourceName);
     GL_BlendFactorToString(destinationFactor, destinationName);
-    fprintf(rendererGlLogFile, "glBlendFunc( %s, %s )\n", sourceName, destinationName);
+    fprintf(rendererGlLogFile, "glBlendFunc( %s, %s )\n",
+            sourceName, destinationName);
     fflush(rendererGlLogFile);
     rendererGlBlendFuncDriver(sourceFactor, destinationFactor);
 }
@@ -180,9 +200,11 @@ void RENDERER_GL_API_CALL GL_LogClearStencil(int32_t stencil)
 }
 
 /* Source: CoDUOMP.exe 0x004ca110..0x004ca157. */
-void RENDERER_GL_API_CALL GL_LogColor4f(float red, float green, float blue, float alpha)
+void RENDERER_GL_API_CALL GL_LogColor4f(float red, float green, float blue,
+                                        float alpha)
 {
-    fprintf(rendererGlLogFile, "glColor4f( %f,%f,%f,%f )\n", (double)red, (double)green, (double)blue, (double)alpha);
+    fprintf(rendererGlLogFile, "glColor4f( %f,%f,%f,%f )\n",
+            (double)red, (double)green, (double)blue, (double)alpha);
     fflush(rendererGlLogFile);
     rendererGlColor4fDriver(red, green, blue, alpha);
 }
@@ -190,15 +212,20 @@ void RENDERER_GL_API_CALL GL_LogColor4f(float red, float green, float blue, floa
 /* Source: CoDUOMP.exe 0x004ca160..0x004ca1ac. */
 void RENDERER_GL_API_CALL GL_LogColor4fv(const float *color)
 {
-    fprintf(rendererGlLogFile, "glColor4fv( %f,%f,%f,%f )\n", (double)color[0], (double)color[1], (double)color[2], (double)color[3]);
+    fprintf(rendererGlLogFile, "glColor4fv( %f,%f,%f,%f )\n",
+            (double)color[0], (double)color[1], (double)color[2],
+            (double)color[3]);
     fflush(rendererGlLogFile);
     rendererGlColor4fvDriver(color);
 }
 
 /* Source: CoDUOMP.exe 0x004ca1b0..0x004ca206. */
-void RENDERER_GL_API_CALL GL_LogColorPointer(int32_t size, uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogColorPointer(int32_t size, uint32_t type,
+                                              int32_t stride,
+                                              const void *pointer)
 {
-    fprintf(rendererGlLogFile, "glColorPointer( %d, %s, %d, %s )\n", size, GL_TypeToString(type), stride,
+    fprintf(rendererGlLogFile, "glColorPointer( %d, %s, %d, %s )\n",
+            size, GL_TypeToString(type), stride,
             GL_MemoryPointerToString(pointer));
     fflush(rendererGlLogFile);
     rendererGlColorPointerDriver(size, type, stride, pointer);
@@ -216,7 +243,8 @@ void RENDERER_GL_API_CALL GL_LogCullFace(uint32_t mode)
 /* Source: CoDUOMP.exe 0x004ca260..0x004ca297. */
 void RENDERER_GL_API_CALL GL_LogDepthFunc(uint32_t func)
 {
-    fprintf(rendererGlLogFile, "glDepthFunc( %s )\n", GL_DepthFuncToString(func));
+    fprintf(rendererGlLogFile, "glDepthFunc( %s )\n",
+            GL_DepthFuncToString(func));
     fflush(rendererGlLogFile);
     rendererGlDepthFuncDriver(func);
 }
@@ -240,7 +268,8 @@ void RENDERER_GL_API_CALL GL_LogDepthMask(uint8_t enabled)
 /* Source: CoDUOMP.exe 0x004ca2f0..0x004ca339. */
 void RENDERER_GL_API_CALL GL_LogDepthRange(double nearValue, double farValue)
 {
-    fprintf(rendererGlLogFile, "glDepthRange( %f, %f )\n", nearValue, farValue);
+    fprintf(rendererGlLogFile, "glDepthRange( %f, %f )\n",
+            nearValue, farValue);
     fflush(rendererGlLogFile);
     rendererGlDepthRangeDriver(nearValue, farValue);
 }
@@ -248,7 +277,8 @@ void RENDERER_GL_API_CALL GL_LogDepthRange(double nearValue, double farValue)
 /* Source: CoDUOMP.exe 0x004ca340..0x004ca377. */
 void RENDERER_GL_API_CALL GL_LogDisable(uint32_t capability)
 {
-    fprintf(rendererGlLogFile, "glDisable( %s )\n", GL_EnumToString(capability));
+    fprintf(rendererGlLogFile, "glDisable( %s )\n",
+            GL_EnumToString(capability));
     fflush(rendererGlLogFile);
     rendererGlDisableDriver(capability);
 }
@@ -256,34 +286,43 @@ void RENDERER_GL_API_CALL GL_LogDisable(uint32_t capability)
 /* Source: CoDUOMP.exe 0x004ca380..0x004ca3b7. */
 void RENDERER_GL_API_CALL GL_LogDisableClientState(uint32_t capability)
 {
-    fprintf(rendererGlLogFile, "glDisableClientState( %s )\n", GL_EnumToString(capability));
+    fprintf(rendererGlLogFile, "glDisableClientState( %s )\n",
+            GL_EnumToString(capability));
     fflush(rendererGlLogFile);
     rendererGlDisableClientStateDriver(capability);
 }
 
 /* Source: CoDUOMP.exe 0x004ca3c0..0x004ca41d. */
-void RENDERER_GL_API_CALL GL_LogDrawElements(uint32_t mode, int32_t count, uint32_t type, const void *indices)
+void RENDERER_GL_API_CALL GL_LogDrawElements(uint32_t mode, int32_t count,
+                                              uint32_t type,
+                                              const void *indices)
 {
-    fprintf(rendererGlLogFile, "glDrawElements( %s, %d, %s, %s )\n", GL_PrimitiveModeToString(mode), count, GL_TypeToString(type),
+    fprintf(rendererGlLogFile, "glDrawElements( %s, %d, %s, %s )\n",
+            GL_PrimitiveModeToString(mode), count, GL_TypeToString(type),
             GL_MemoryPointerToString(indices));
     fflush(rendererGlLogFile);
     rendererGlDrawElementsDriver(mode, count, type, indices);
 }
 
 /* Source: CoDUOMP.exe 0x004ca420..0x004ca490. */
-void RENDERER_GL_API_CALL GL_LogDrawRangeElementsEXT(uint32_t mode, uint32_t start, uint32_t end, int32_t count, uint32_t type,
-                                                     const void *indices)
+void RENDERER_GL_API_CALL GL_LogDrawRangeElementsEXT(
+    uint32_t mode, uint32_t start, uint32_t end, int32_t count,
+    uint32_t type, const void *indices)
 {
-    fprintf(rendererGlLogFile, "glDrawRangeElementsEXT( %s, %u, %u, %d, %s, %s )\n", GL_PrimitiveModeToString(mode), start, end, count,
+    fprintf(rendererGlLogFile,
+            "glDrawRangeElementsEXT( %s, %u, %u, %d, %s, %s )\n",
+            GL_PrimitiveModeToString(mode), start, end, count,
             GL_TypeToString(type), GL_MemoryPointerToString(indices));
     fflush(rendererGlLogFile);
-    rendererGlDrawRangeElementsEXTDriver(mode, start, end, count, type, indices);
+    rendererGlDrawRangeElementsEXTDriver(mode, start, end, count, type,
+                                         indices);
 }
 
 /* Source: CoDUOMP.exe 0x004ca490..0x004ca4c7. */
 void RENDERER_GL_API_CALL GL_LogEnable(uint32_t capability)
 {
-    fprintf(rendererGlLogFile, "glEnable( %s )\n", GL_EnumToString(capability));
+    fprintf(rendererGlLogFile, "glEnable( %s )\n",
+            GL_EnumToString(capability));
     fflush(rendererGlLogFile);
     rendererGlEnableDriver(capability);
 }
@@ -291,7 +330,8 @@ void RENDERER_GL_API_CALL GL_LogEnable(uint32_t capability)
 /* Source: CoDUOMP.exe 0x004ca4d0..0x004ca507. */
 void RENDERER_GL_API_CALL GL_LogEnableClientState(uint32_t capability)
 {
-    fprintf(rendererGlLogFile, "glEnableClientState( %s )\n", GL_EnumToString(capability));
+    fprintf(rendererGlLogFile, "glEnableClientState( %s )\n",
+            GL_EnumToString(capability));
     fflush(rendererGlLogFile);
     rendererGlEnableClientStateDriver(capability);
 }
@@ -330,20 +370,25 @@ const char *GL_FogParameterToString(uint32_t parameter)
  * log stream before forwarding; that omission is observable original behavior. */
 void RENDERER_GL_API_CALL GL_LogFogf(uint32_t parameter, float value)
 {
-    fprintf(rendererGlLogFile, "glFogf( %s, %g )\n", GL_FogParameterToString(parameter), (double)value);
+    fprintf(rendererGlLogFile, "glFogf( %s, %g )\n",
+            GL_FogParameterToString(parameter), (double)value);
     rendererGlFogfDriver(parameter, value);
 }
 
 /* Source: CoDUOMP.exe 0x004ca5f0..0x004ca670. GL_FOG_COLOR logs all four
  * components; every other parameter logs only values[0]. The original wrapper
  * forwards without an explicit fflush in either branch. */
-void RENDERER_GL_API_CALL GL_LogFogfv(uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogFogfv(uint32_t parameter,
+                                      const float *values)
 {
     if (parameter == GL_FOG_COLOR) {
-        fprintf(rendererGlLogFile, "glFogfv( GL_FOG_COLOR, { %g, %g, %g, %g } )\n", (double)values[0], (double)values[1], (double)values[2],
+        fprintf(rendererGlLogFile,
+                "glFogfv( GL_FOG_COLOR, { %g, %g, %g, %g } )\n",
+                (double)values[0], (double)values[1], (double)values[2],
                 (double)values[3]);
     } else {
-        fprintf(rendererGlLogFile, "glFogfv( %s, %g )\n", GL_FogParameterToString(parameter), (double)values[0]);
+        fprintf(rendererGlLogFile, "glFogfv( %s, %g )\n",
+                GL_FogParameterToString(parameter), (double)values[0]);
     }
     rendererGlFogfvDriver(parameter, values);
 }
@@ -352,7 +397,8 @@ void RENDERER_GL_API_CALL GL_LogFogfv(uint32_t parameter, const float *values)
  * this function forwards without an explicit fflush. */
 void RENDERER_GL_API_CALL GL_LogFogi(uint32_t parameter, int32_t value)
 {
-    fprintf(rendererGlLogFile, "glFogi( %s, %i )\n", GL_FogParameterToString(parameter), value);
+    fprintf(rendererGlLogFile, "glFogi( %s, %i )\n",
+            GL_FogParameterToString(parameter), value);
     rendererGlFogiDriver(parameter, value);
 }
 
@@ -365,23 +411,29 @@ void RENDERER_GL_API_CALL GL_LogPolygonMode(uint32_t face, uint32_t mode)
     char faceName[MAX_STRING_CHARS];
 
     strcpy(faceName, GL_EnumToString(face));
-    fprintf(rendererGlLogFile, "glPolygonMode( %s, %s )\n", faceName, GL_EnumToString(mode));
+    fprintf(rendererGlLogFile, "glPolygonMode( %s, %s )\n",
+            faceName, GL_EnumToString(mode));
     fflush(rendererGlLogFile);
     rendererGlPolygonModeDriver(face, mode);
 }
 
 /* Source: CoDUOMP.exe 0x004ca740..0x004ca788. */
-void RENDERER_GL_API_CALL GL_LogScissor(int32_t x, int32_t y, int32_t width, int32_t height)
+void RENDERER_GL_API_CALL GL_LogScissor(int32_t x, int32_t y,
+                                        int32_t width, int32_t height)
 {
-    fprintf(rendererGlLogFile, "glScissor( %d, %d, %d, %d )\n", x, y, width, height);
+    fprintf(rendererGlLogFile, "glScissor( %d, %d, %d, %d )\n",
+            x, y, width, height);
     fflush(rendererGlLogFile);
     rendererGlScissorDriver(x, y, width, height);
 }
 
 /* Source: CoDUOMP.exe 0x004ca790..0x004ca7e6. */
-void RENDERER_GL_API_CALL GL_LogTexCoordPointer(int32_t size, uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogTexCoordPointer(int32_t size, uint32_t type,
+                                                int32_t stride,
+                                                const void *pointer)
 {
-    fprintf(rendererGlLogFile, "glTexCoordPointer( %d, %s, %d, %s )\n", size, GL_TypeToString(type), stride,
+    fprintf(rendererGlLogFile, "glTexCoordPointer( %d, %s, %d, %s )\n",
+            size, GL_TypeToString(type), stride,
             GL_MemoryPointerToString(pointer));
     fflush(rendererGlLogFile);
     rendererGlTexCoordPointerDriver(size, type, stride, pointer);
@@ -389,74 +441,93 @@ void RENDERER_GL_API_CALL GL_LogTexCoordPointer(int32_t size, uint32_t type, int
 
 /* Source: CoDUOMP.exe 0x004ca7f0..0x004ca888. The target is copied because
  * GL_EnumToString's fallback buffer is shared with the parameter conversion. */
-void RENDERER_GL_API_CALL GL_LogTexEnvf(uint32_t target, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogTexEnvf(uint32_t target, uint32_t parameter,
+                                        float value)
 {
     char targetName[MAX_STRING_CHARS];
 
     strcpy(targetName, GL_EnumToString(target));
-    fprintf(rendererGlLogFile, "glTexEnvf( %s, %s, %g )\n", targetName, GL_EnumToString(parameter), (double)value);
+    fprintf(rendererGlLogFile, "glTexEnvf( %s, %s, %g )\n",
+            targetName, GL_EnumToString(parameter), (double)value);
     fflush(rendererGlLogFile);
     rendererGlTexEnvfDriver(target, parameter, value);
 }
 
 /* Source: CoDUOMP.exe 0x004ca890..0x004ca946. Two values are copied before
  * converting the third because all three can use the same fallback buffer. */
-void RENDERER_GL_API_CALL GL_LogTexEnvi(uint32_t target, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogTexEnvi(uint32_t target, uint32_t parameter,
+                                        int32_t value)
 {
     char targetName[MAX_STRING_CHARS];
     char parameterName[MAX_STRING_CHARS];
 
     strcpy(targetName, GL_EnumToString(target));
     strcpy(parameterName, GL_EnumToString(parameter));
-    fprintf(rendererGlLogFile, "glTexEnvi( %s, %s, %s )\n", targetName, parameterName, GL_EnumToString((uint32_t)value));
+    fprintf(rendererGlLogFile, "glTexEnvi( %s, %s, %s )\n",
+            targetName, parameterName, GL_EnumToString((uint32_t)value));
     fflush(rendererGlLogFile);
     rendererGlTexEnviDriver(target, parameter, value);
 }
 
 /* Source: CoDUOMP.exe 0x004ca950..0x004ca997. */
-void RENDERER_GL_API_CALL GL_LogTexParameterf(uint32_t target, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogTexParameterf(uint32_t target,
+                                              uint32_t parameter,
+                                              float value)
 {
-    fprintf(rendererGlLogFile, "glTexParameterf( 0x%x, 0x%x, %f )\n", target, parameter, (double)value);
+    fprintf(rendererGlLogFile, "glTexParameterf( 0x%x, 0x%x, %f )\n",
+            target, parameter, (double)value);
     fflush(rendererGlLogFile);
     rendererGlTexParameterfDriver(target, parameter, value);
 }
 
 /* Source: CoDUOMP.exe 0x004ca9a0..0x004ca9e0. */
-void RENDERER_GL_API_CALL GL_LogTexParameteri(uint32_t target, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogTexParameteri(uint32_t target,
+                                              uint32_t parameter,
+                                              int32_t value)
 {
-    fprintf(rendererGlLogFile, "glTexParameteri( 0x%x, 0x%x, 0x%x )\n", target, parameter, (uint32_t)value);
+    fprintf(rendererGlLogFile, "glTexParameteri( 0x%x, 0x%x, 0x%x )\n",
+            target, parameter, (uint32_t)value);
     fflush(rendererGlLogFile);
     rendererGlTexParameteriDriver(target, parameter, value);
 }
 
 /* Source: CoDUOMP.exe 0x004ca9e0..0x004caa2e. */
-void RENDERER_GL_API_CALL GL_LogNormalPointer(uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogNormalPointer(uint32_t type, int32_t stride,
+                                              const void *pointer)
 {
-    fprintf(rendererGlLogFile, "glNormalPointer( %s, %d, %s )\n", GL_TypeToString(type), stride, GL_MemoryPointerToString(pointer));
+    fprintf(rendererGlLogFile, "glNormalPointer( %s, %d, %s )\n",
+            GL_TypeToString(type), stride,
+            GL_MemoryPointerToString(pointer));
     fflush(rendererGlLogFile);
     rendererGlNormalPointerDriver(type, stride, pointer);
 }
 
 /* Source: CoDUOMP.exe 0x004caa30..0x004caa86. */
-void RENDERER_GL_API_CALL GL_LogVertexPointer(int32_t size, uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogVertexPointer(int32_t size, uint32_t type,
+                                              int32_t stride,
+                                              const void *pointer)
 {
-    fprintf(rendererGlLogFile, "glVertexPointer( %d, %s, %d, %s )\n", size, GL_TypeToString(type), stride,
+    fprintf(rendererGlLogFile, "glVertexPointer( %d, %s, %d, %s )\n",
+            size, GL_TypeToString(type), stride,
             GL_MemoryPointerToString(pointer));
     fflush(rendererGlLogFile);
     rendererGlVertexPointerDriver(size, type, stride, pointer);
 }
 
 /* Source: CoDUOMP.exe 0x004caa90..0x004caad8. */
-void RENDERER_GL_API_CALL GL_LogViewport(int32_t x, int32_t y, int32_t width, int32_t height)
+void RENDERER_GL_API_CALL GL_LogViewport(int32_t x, int32_t y,
+                                         int32_t width, int32_t height)
 {
-    fprintf(rendererGlLogFile, "glViewport( %d, %d, %d, %d )\n", x, y, width, height);
+    fprintf(rendererGlLogFile, "glViewport( %d, %d, %d, %d )\n",
+            x, y, width, height);
     fflush(rendererGlLogFile);
     rendererGlViewportDriver(x, y, width, height);
 }
 
 /* Source: CoDUOMP.exe 0x004caae0..0x004cab15. The logger intentionally omits
  * the condition argument from its text, but forwards it to the driver. */
-void RENDERER_GL_API_CALL GL_LogSetFenceNV(uint32_t fence, uint32_t condition)
+void RENDERER_GL_API_CALL GL_LogSetFenceNV(uint32_t fence,
+                                           uint32_t condition)
 {
     fprintf(rendererGlLogFile, "glSetFenceNV( %d )\n", (int32_t)fence);
     fflush(rendererGlLogFile);
@@ -475,7 +546,8 @@ void RENDERER_GL_API_CALL GL_LogFinishFenceNV(uint32_t fence)
  * texture-unit index, while the original GLenum is forwarded unchanged. */
 void RENDERER_GL_API_CALL GL_LogActiveTextureARB(uint32_t texture)
 {
-    fprintf(rendererGlLogFile, "glActiveTextureARB( GL_TEXTURE%i_ARB )\n", (int32_t)(texture - GL_TEXTURE0_ARB));
+    fprintf(rendererGlLogFile, "glActiveTextureARB( GL_TEXTURE%i_ARB )\n",
+            (int32_t)(texture - GL_TEXTURE0_ARB));
     fflush(rendererGlLogFile);
     rendererGlActiveTextureARBDriver(texture);
 }
@@ -483,14 +555,17 @@ void RENDERER_GL_API_CALL GL_LogActiveTextureARB(uint32_t texture)
 /* Source: CoDUOMP.exe 0x004cab90..0x004cabc7. */
 void RENDERER_GL_API_CALL GL_LogClientActiveTextureARB(uint32_t texture)
 {
-    fprintf(rendererGlLogFile, "glClientActiveTextureARB( GL_TEXTURE%i_ARB )\n", (int32_t)(texture - GL_TEXTURE0_ARB));
+    fprintf(rendererGlLogFile,
+            "glClientActiveTextureARB( GL_TEXTURE%i_ARB )\n",
+            (int32_t)(texture - GL_TEXTURE0_ARB));
     fflush(rendererGlLogFile);
     rendererGlClientActiveTextureARBDriver(texture);
 }
 
 /* Source: CoDUOMP.exe 0x004cabd0..0x004cabf5. The original logger prints only
  * the entry-point name and forwards all three arguments unchanged. */
-void RENDERER_GL_API_CALL GL_LogMultiTexCoord2fARB(uint32_t target, float s, float t)
+void RENDERER_GL_API_CALL GL_LogMultiTexCoord2fARB(uint32_t target,
+                                                   float s, float t)
 {
     fprintf(rendererGlLogFile, "glMultiTexCoord2fARB\n");
     fflush(rendererGlLogFile);
@@ -515,84 +590,106 @@ void RENDERER_GL_API_CALL GL_LogUnlockArraysEXT(void)
     rendererGlUnlockArraysEXTDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogPNTrianglesiATI(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogPNTrianglesiATI(uint32_t parameter,
+                                                int32_t value)
 {
     fprintf(rendererGlLogFile, "glPNTrianglesiATI\n");
     fflush(rendererGlLogFile);
     rendererGlPNTrianglesiATIDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogPNTrianglesfATI(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogPNTrianglesfATI(uint32_t parameter,
+                                                float value)
 {
     fprintf(rendererGlLogFile, "glPNTrianglesfATI\n");
     fflush(rendererGlLogFile);
     rendererGlPNTrianglesfATIDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogCompressedTexImage3DARB(uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
-                                                        int32_t height, int32_t depth, int32_t border, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_LogCompressedTexImage3DARB(
+    uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
+    int32_t height, int32_t depth, int32_t border, int32_t imageSize,
+    const void *data)
 {
     fprintf(rendererGlLogFile, "glCompressedTexImage3DARB\n");
     fflush(rendererGlLogFile);
-    rendererGlCompressedTexImage3DARBDriver(target, level, internalFormat, width, height, depth, border, imageSize, data);
+    rendererGlCompressedTexImage3DARBDriver(
+        target, level, internalFormat, width, height, depth, border,
+        imageSize, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogCompressedTexImage2DARB(uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
-                                                        int32_t height, int32_t border, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_LogCompressedTexImage2DARB(
+    uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
+    int32_t height, int32_t border, int32_t imageSize, const void *data)
 {
     fprintf(rendererGlLogFile, "glCompressedTexImage2DARB\n");
     fflush(rendererGlLogFile);
-    rendererGlCompressedTexImage2DARBDriver(target, level, internalFormat, width, height, border, imageSize, data);
+    rendererGlCompressedTexImage2DARBDriver(
+        target, level, internalFormat, width, height, border, imageSize, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogCompressedTexImage1DARB(uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
-                                                        int32_t border, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_LogCompressedTexImage1DARB(
+    uint32_t target, int32_t level, uint32_t internalFormat, int32_t width,
+    int32_t border, int32_t imageSize, const void *data)
 {
     fprintf(rendererGlLogFile, "glCompressedTexImage1DARB\n");
     fflush(rendererGlLogFile);
-    rendererGlCompressedTexImage1DARBDriver(target, level, internalFormat, width, border, imageSize, data);
+    rendererGlCompressedTexImage1DARBDriver(
+        target, level, internalFormat, width, border, imageSize, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogCompressedTexSubImage3DARB(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
-                                                           int32_t zOffset, int32_t width, int32_t height, int32_t depth, uint32_t format,
-                                                           int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_LogCompressedTexSubImage3DARB(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t zOffset, int32_t width, int32_t height, int32_t depth,
+    uint32_t format, int32_t imageSize, const void *data)
 {
     fprintf(rendererGlLogFile, "glCompressedTexSubImage3DARB\n");
     fflush(rendererGlLogFile);
-    rendererGlCompressedTexSubImage3DARBDriver(target, level, xOffset, yOffset, zOffset, width, height, depth, format, imageSize, data);
+    rendererGlCompressedTexSubImage3DARBDriver(
+        target, level, xOffset, yOffset, zOffset, width, height, depth,
+        format, imageSize, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogCompressedTexSubImage2DARB(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset, int32_t width,
-                                                           int32_t height, uint32_t format, int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_LogCompressedTexSubImage2DARB(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t width, int32_t height, uint32_t format, int32_t imageSize,
+    const void *data)
 {
     fprintf(rendererGlLogFile, "glCompressedTexSubImage2DARB\n");
     fflush(rendererGlLogFile);
-    rendererGlCompressedTexSubImage2DARBDriver(target, level, xOffset, yOffset, width, height, format, imageSize, data);
+    rendererGlCompressedTexSubImage2DARBDriver(
+        target, level, xOffset, yOffset, width, height, format, imageSize,
+        data);
 }
 
-void RENDERER_GL_API_CALL GL_LogCompressedTexSubImage1DARB(uint32_t target, int32_t level, int32_t xOffset, int32_t width, uint32_t format,
-                                                           int32_t imageSize, const void *data)
+void RENDERER_GL_API_CALL GL_LogCompressedTexSubImage1DARB(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t width,
+    uint32_t format, int32_t imageSize, const void *data)
 {
     fprintf(rendererGlLogFile, "glCompressedTexSubImage1DARB\n");
     fflush(rendererGlLogFile);
-    rendererGlCompressedTexSubImage1DARBDriver(target, level, xOffset, width, format, imageSize, data);
+    rendererGlCompressedTexSubImage1DARBDriver(
+        target, level, xOffset, width, format, imageSize, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetCompressedTexImageARB(uint32_t target, int32_t level, void *image)
+void RENDERER_GL_API_CALL GL_LogGetCompressedTexImageARB(
+    uint32_t target, int32_t level, void *image)
 {
     fprintf(rendererGlLogFile, "glGetCompressedTexImageARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetCompressedTexImageARBDriver(target, level, image);
 }
 
-void RENDERER_GL_API_CALL GL_LogDeleteBuffersARB(int32_t count, const uint32_t *buffers)
+void RENDERER_GL_API_CALL GL_LogDeleteBuffersARB(
+    int32_t count, const uint32_t *buffers)
 {
     fprintf(rendererGlLogFile, "glDeleteBuffersARB\n");
     fflush(rendererGlLogFile);
     rendererGlDeleteBuffersARBDriver(count, buffers);
 }
 
-void RENDERER_GL_API_CALL GL_LogGenBuffersARB(int32_t count, uint32_t *buffers)
+void RENDERER_GL_API_CALL GL_LogGenBuffersARB(int32_t count,
+                                              uint32_t *buffers)
 {
     fprintf(rendererGlLogFile, "glGenBuffersARB\n");
     fflush(rendererGlLogFile);
@@ -610,35 +707,40 @@ uint8_t RENDERER_GL_API_CALL GL_LogIsBufferARB(uint32_t buffer)
  * buffer queries followed by the first ATI object-buffer operations. The ARB
  * offset/size arguments are native pointer-width API scalars; ATI object-buffer
  * sizes remain GLsizei (signed 32-bit) on every host. */
-void RENDERER_GL_API_CALL GL_LogBufferSubDataARB(uint32_t target, intptr_t offset, intptr_t size, const void *data)
+void RENDERER_GL_API_CALL GL_LogBufferSubDataARB(
+    uint32_t target, intptr_t offset, intptr_t size, const void *data)
 {
     fprintf(rendererGlLogFile, "glBufferSubDataARB\n");
     fflush(rendererGlLogFile);
     rendererGlBufferSubDataARBDriver(target, offset, size, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetBufferSubDataARB(uint32_t target, intptr_t offset, intptr_t size, void *data)
+void RENDERER_GL_API_CALL GL_LogGetBufferSubDataARB(
+    uint32_t target, intptr_t offset, intptr_t size, void *data)
 {
     fprintf(rendererGlLogFile, "glGetBufferSubDataARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetBufferSubDataARBDriver(target, offset, size, data);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetBufferParameterivARB(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetBufferParameterivARB(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetBufferParameterivARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetBufferParameterivARBDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetBufferPointervARB(uint32_t target, uint32_t parameter, void **pointer)
+void RENDERER_GL_API_CALL GL_LogGetBufferPointervARB(
+    uint32_t target, uint32_t parameter, void **pointer)
 {
     fprintf(rendererGlLogFile, "glGetBufferPointervARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetBufferPointervARBDriver(target, parameter, pointer);
 }
 
-uint32_t RENDERER_GL_API_CALL GL_LogNewObjectBufferATI(int32_t size, const void *data, uint32_t usage)
+uint32_t RENDERER_GL_API_CALL GL_LogNewObjectBufferATI(
+    int32_t size, const void *data, uint32_t usage)
 {
     fprintf(rendererGlLogFile, "glNewObjectBufferATI\n");
     fflush(rendererGlLogFile);
@@ -652,22 +754,26 @@ uint8_t RENDERER_GL_API_CALL GL_LogIsObjectBufferATI(uint32_t buffer)
     return rendererGlIsObjectBufferATIDriver(buffer);
 }
 
-void RENDERER_GL_API_CALL GL_LogUpdateObjectBufferATI(uint32_t buffer, uint32_t offset, int32_t size, const void *data,
-                                                      uint32_t preserveMode)
+void RENDERER_GL_API_CALL GL_LogUpdateObjectBufferATI(
+    uint32_t buffer, uint32_t offset, int32_t size, const void *data,
+    uint32_t preserveMode)
 {
     fprintf(rendererGlLogFile, "glUpdateObjectBufferATI\n");
     fflush(rendererGlLogFile);
-    rendererGlUpdateObjectBufferATIDriver(buffer, offset, size, data, preserveMode);
+    rendererGlUpdateObjectBufferATIDriver(
+        buffer, offset, size, data, preserveMode);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetObjectBufferfvATI(uint32_t buffer, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetObjectBufferfvATI(
+    uint32_t buffer, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetObjectBufferfvATI\n");
     fflush(rendererGlLogFile);
     rendererGlGetObjectBufferfvATIDriver(buffer, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetObjectBufferivATI(uint32_t buffer, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetObjectBufferivATI(
+    uint32_t buffer, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetObjectBufferivATI\n");
     fflush(rendererGlLogFile);
@@ -683,64 +789,74 @@ void RENDERER_GL_API_CALL GL_LogFreeObjectBufferATI(uint32_t buffer)
     rendererGlFreeObjectBufferATIDriver(buffer);
 }
 
-void RENDERER_GL_API_CALL GL_LogArrayObjectATI(uint32_t array, int32_t size, uint32_t type, int32_t stride, uint32_t buffer,
-                                               uint32_t offset)
+void RENDERER_GL_API_CALL GL_LogArrayObjectATI(
+    uint32_t array, int32_t size, uint32_t type, int32_t stride,
+    uint32_t buffer, uint32_t offset)
 {
     fprintf(rendererGlLogFile, "glArrayObjectATI\n");
     fflush(rendererGlLogFile);
     rendererGlArrayObjectATIDriver(array, size, type, stride, buffer, offset);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetArrayObjectfvATI(uint32_t array, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetArrayObjectfvATI(
+    uint32_t array, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetArrayObjectfvATI\n");
     fflush(rendererGlLogFile);
     rendererGlGetArrayObjectfvATIDriver(array, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetArrayObjectivATI(uint32_t array, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetArrayObjectivATI(
+    uint32_t array, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetArrayObjectivATI\n");
     fflush(rendererGlLogFile);
     rendererGlGetArrayObjectivATIDriver(array, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVariantArrayObjectATI(uint32_t id, uint32_t type, int32_t stride, uint32_t buffer, uint32_t offset)
+void RENDERER_GL_API_CALL GL_LogVariantArrayObjectATI(
+    uint32_t id, uint32_t type, int32_t stride, uint32_t buffer,
+    uint32_t offset)
 {
     fprintf(rendererGlLogFile, "glVariantArrayObjectATI\n");
     fflush(rendererGlLogFile);
     rendererGlVariantArrayObjectATIDriver(id, type, stride, buffer, offset);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetVariantArrayObjectfvATI(uint32_t id, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetVariantArrayObjectfvATI(
+    uint32_t id, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetVariantArrayObjectfvATI\n");
     fflush(rendererGlLogFile);
     rendererGlGetVariantArrayObjectfvATIDriver(id, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetVariantArrayObjectivATI(uint32_t id, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetVariantArrayObjectivATI(
+    uint32_t id, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetVariantArrayObjectivATI\n");
     fflush(rendererGlLogFile);
     rendererGlGetVariantArrayObjectivATIDriver(id, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogElementPointerATI(uint32_t type, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogElementPointerATI(
+    uint32_t type, const void *pointer)
 {
     fprintf(rendererGlLogFile, "glElementPointerATI\n");
     fflush(rendererGlLogFile);
     rendererGlElementPointerATIDriver(type, pointer);
 }
 
-void RENDERER_GL_API_CALL GL_LogDrawElementArrayATI(uint32_t mode, int32_t count)
+void RENDERER_GL_API_CALL GL_LogDrawElementArrayATI(
+    uint32_t mode, int32_t count)
 {
     fprintf(rendererGlLogFile, "glDrawElementArrayATI\n");
     fflush(rendererGlLogFile);
     rendererGlDrawElementArrayATIDriver(mode, count);
 }
 
-void RENDERER_GL_API_CALL GL_LogDrawRangeElementArrayATI(uint32_t mode, uint32_t start, uint32_t end, int32_t count)
+void RENDERER_GL_API_CALL GL_LogDrawRangeElementArrayATI(
+    uint32_t mode, uint32_t start, uint32_t end, int32_t count)
 {
     fprintf(rendererGlLogFile, "glDrawRangeElementArrayATI\n");
     fflush(rendererGlLogFile);
@@ -758,18 +874,21 @@ void RENDERER_GL_API_CALL GL_LogFlushVertexArrayRangeNV(void)
     rendererGlFlushVertexArrayRangeNVDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexArrayRangeNV(int32_t length, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogVertexArrayRangeNV(
+    int32_t length, const void *pointer)
 {
     fprintf(rendererGlLogFile, "glVertexArrayRangeNV\n");
     fflush(rendererGlLogFile);
     rendererGlVertexArrayRangeNVDriver(length, pointer);
 }
 
-void *RENDERER_GL_API_CALL GL_LogAllocateMemoryNV(int32_t size, float readFrequency, float writeFrequency, float priority)
+void *RENDERER_GL_API_CALL GL_LogAllocateMemoryNV(
+    int32_t size, float readFrequency, float writeFrequency, float priority)
 {
     fprintf(rendererGlLogFile, "wglAllocateMemoryNV\n");
     fflush(rendererGlLogFile);
-    return rendererGlAllocateMemoryNVDriver(size, readFrequency, writeFrequency, priority);
+    return rendererGlAllocateMemoryNVDriver(
+        size, readFrequency, writeFrequency, priority);
 }
 
 void RENDERER_GL_API_CALL GL_LogFreeMemoryNV(void *memory)
@@ -779,7 +898,8 @@ void RENDERER_GL_API_CALL GL_LogFreeMemoryNV(void *memory)
     rendererGlFreeMemoryNVDriver(memory);
 }
 
-void RENDERER_GL_API_CALL GL_LogDeleteFencesNV(int32_t count, const uint32_t *fences)
+void RENDERER_GL_API_CALL GL_LogDeleteFencesNV(
+    int32_t count, const uint32_t *fences)
 {
     fprintf(rendererGlLogFile, "glDeleteFencesNV\n");
     fflush(rendererGlLogFile);
@@ -807,7 +927,8 @@ uint8_t RENDERER_GL_API_CALL GL_LogTestFenceNV(uint32_t fence)
     return rendererGlTestFenceNVDriver(fence);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetFenceivNV(uint32_t fence, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetFenceivNV(
+    uint32_t fence, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetFenceivNV\n");
     fflush(rendererGlLogFile);
@@ -816,112 +937,139 @@ void RENDERER_GL_API_CALL GL_LogGetFenceivNV(uint32_t fence, uint32_t parameter,
 
 /* Source: CoDUOMP.exe 0x004cb3e0..0x004cb585. NV register-combiner wrappers
  * log only their names, then forward their complete typed APIs. */
-void RENDERER_GL_API_CALL GL_LogCombinerParameterfvNV(uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogCombinerParameterfvNV(
+    uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glCombinerParameterfvNV\n");
     fflush(rendererGlLogFile);
     rendererGlCombinerParameterfvNVDriver(parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogCombinerParameterfNV(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogCombinerParameterfNV(
+    uint32_t parameter, float value)
 {
     fprintf(rendererGlLogFile, "glCombinerParameterfNV\n");
     fflush(rendererGlLogFile);
     rendererGlCombinerParameterfNVDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogCombinerParameterivNV(uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogCombinerParameterivNV(
+    uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glCombinerParameterivNV\n");
     fflush(rendererGlLogFile);
     rendererGlCombinerParameterivNVDriver(parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogCombinerParameteriNV(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogCombinerParameteriNV(
+    uint32_t parameter, int32_t value)
 {
     fprintf(rendererGlLogFile, "glCombinerParameteriNV\n");
     fflush(rendererGlLogFile);
     rendererGlCombinerParameteriNVDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogCombinerInputNV(uint32_t stage, uint32_t portion, uint32_t variable, uint32_t input, uint32_t mapping,
-                                                uint32_t componentUsage)
+void RENDERER_GL_API_CALL GL_LogCombinerInputNV(
+    uint32_t stage, uint32_t portion, uint32_t variable, uint32_t input,
+    uint32_t mapping, uint32_t componentUsage)
 {
     fprintf(rendererGlLogFile, "glCombinerInputNV\n");
     fflush(rendererGlLogFile);
-    rendererGlCombinerInputNVDriver(stage, portion, variable, input, mapping, componentUsage);
+    rendererGlCombinerInputNVDriver(
+        stage, portion, variable, input, mapping, componentUsage);
 }
 
-void RENDERER_GL_API_CALL GL_LogCombinerOutputNV(uint32_t stage, uint32_t portion, uint32_t abOutput, uint32_t cdOutput, uint32_t sumOutput,
-                                                 uint32_t scale, uint32_t bias, uint8_t abDotProduct, uint8_t cdDotProduct, uint8_t muxSum)
+void RENDERER_GL_API_CALL GL_LogCombinerOutputNV(
+    uint32_t stage, uint32_t portion, uint32_t abOutput, uint32_t cdOutput,
+    uint32_t sumOutput, uint32_t scale, uint32_t bias,
+    uint8_t abDotProduct, uint8_t cdDotProduct, uint8_t muxSum)
 {
     fprintf(rendererGlLogFile, "glCombinerOutputNV\n");
     fflush(rendererGlLogFile);
-    rendererGlCombinerOutputNVDriver(stage, portion, abOutput, cdOutput, sumOutput, scale, bias, abDotProduct, cdDotProduct, muxSum);
+    rendererGlCombinerOutputNVDriver(
+        stage, portion, abOutput, cdOutput, sumOutput, scale, bias,
+        abDotProduct, cdDotProduct, muxSum);
 }
 
-void RENDERER_GL_API_CALL GL_LogFinalCombinerInputNV(uint32_t variable, uint32_t input, uint32_t mapping, uint32_t componentUsage)
+void RENDERER_GL_API_CALL GL_LogFinalCombinerInputNV(
+    uint32_t variable, uint32_t input, uint32_t mapping,
+    uint32_t componentUsage)
 {
     fprintf(rendererGlLogFile, "glFinalCombinerInputNV\n");
     fflush(rendererGlLogFile);
-    rendererGlFinalCombinerInputNVDriver(variable, input, mapping, componentUsage);
+    rendererGlFinalCombinerInputNVDriver(
+        variable, input, mapping, componentUsage);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetCombinerInputParameterfvNV(uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
-                                                              float *values)
+void RENDERER_GL_API_CALL GL_LogGetCombinerInputParameterfvNV(
+    uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
+    float *values)
 {
     fprintf(rendererGlLogFile, "glGetCombinerInputParameterfvNV\n");
     fflush(rendererGlLogFile);
-    rendererGlGetCombinerInputParameterfvNVDriver(stage, portion, variable, parameter, values);
+    rendererGlGetCombinerInputParameterfvNVDriver(
+        stage, portion, variable, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetCombinerInputParameterivNV(uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
-                                                              int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetCombinerInputParameterivNV(
+    uint32_t stage, uint32_t portion, uint32_t variable, uint32_t parameter,
+    int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetCombinerInputParameterivNV\n");
     fflush(rendererGlLogFile);
-    rendererGlGetCombinerInputParameterivNVDriver(stage, portion, variable, parameter, values);
+    rendererGlGetCombinerInputParameterivNVDriver(
+        stage, portion, variable, parameter, values);
 }
 
 /* Source: CoDUOMP.exe 0x004cb590..0x004cb915. The remaining NV register-
  * combiner queries and ATI fragment-shader wrappers log only their names and
  * forward the complete extension APIs. */
-void RENDERER_GL_API_CALL GL_LogGetCombinerOutputParameterfvNV(uint32_t stage, uint32_t portion, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetCombinerOutputParameterfvNV(
+    uint32_t stage, uint32_t portion, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetCombinerOutputParameterfvNV\n");
     fflush(rendererGlLogFile);
-    rendererGlGetCombinerOutputParameterfvNVDriver(stage, portion, parameter, values);
+    rendererGlGetCombinerOutputParameterfvNVDriver(
+        stage, portion, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetCombinerOutputParameterivNV(uint32_t stage, uint32_t portion, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetCombinerOutputParameterivNV(
+    uint32_t stage, uint32_t portion, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetCombinerOutputParameterivNV\n");
     fflush(rendererGlLogFile);
-    rendererGlGetCombinerOutputParameterivNVDriver(stage, portion, parameter, values);
+    rendererGlGetCombinerOutputParameterivNVDriver(
+        stage, portion, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetFinalCombinerInputParameterfvNV(uint32_t variable, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetFinalCombinerInputParameterfvNV(
+    uint32_t variable, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetFinalCombinerInputParameterfvNV\n");
     fflush(rendererGlLogFile);
-    rendererGlGetFinalCombinerInputParameterfvNVDriver(variable, parameter, values);
+    rendererGlGetFinalCombinerInputParameterfvNVDriver(
+        variable, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetFinalCombinerInputParameterivNV(uint32_t variable, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetFinalCombinerInputParameterivNV(
+    uint32_t variable, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetFinalCombinerInputParameterivNV\n");
     fflush(rendererGlLogFile);
-    rendererGlGetFinalCombinerInputParameterivNVDriver(variable, parameter, values);
+    rendererGlGetFinalCombinerInputParameterivNVDriver(
+        variable, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogCombinerStageParameterfvNV(uint32_t stage, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogCombinerStageParameterfvNV(
+    uint32_t stage, uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glCombinerStageParameterfvNV\n");
     fflush(rendererGlLogFile);
     rendererGlCombinerStageParameterfvNVDriver(stage, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetCombinerStageParameterfvNV(uint32_t stage, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetCombinerStageParameterfvNV(
+    uint32_t stage, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetCombinerStageParameterfvNV\n");
     fflush(rendererGlLogFile);
@@ -956,85 +1104,111 @@ void RENDERER_GL_API_CALL GL_LogEndFragmentShaderATI(void)
     rendererGlEndFragmentShaderATIDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogPassTexCoordATI(uint32_t destination, uint32_t coordinate, uint32_t swizzle)
+void RENDERER_GL_API_CALL GL_LogPassTexCoordATI(
+    uint32_t destination, uint32_t coordinate, uint32_t swizzle)
 {
     fprintf(rendererGlLogFile, "glPassTexCoordATI\n");
     fflush(rendererGlLogFile);
     rendererGlPassTexCoordATIDriver(destination, coordinate, swizzle);
 }
 
-void RENDERER_GL_API_CALL GL_LogSampleMapATI(uint32_t destination, uint32_t interpolation, uint32_t swizzle)
+void RENDERER_GL_API_CALL GL_LogSampleMapATI(
+    uint32_t destination, uint32_t interpolation, uint32_t swizzle)
 {
     fprintf(rendererGlLogFile, "glSampleMapATI\n");
     fflush(rendererGlLogFile);
     rendererGlSampleMapATIDriver(destination, interpolation, swizzle);
 }
 
-void RENDERER_GL_API_CALL GL_LogColorFragmentOp1ATI(uint32_t operation, uint32_t destination, uint32_t destinationMask,
-                                                    uint32_t destinationModifier, uint32_t argument1, uint32_t argument1Replication,
-                                                    uint32_t argument1Modifier)
+void RENDERER_GL_API_CALL GL_LogColorFragmentOp1ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationMask,
+    uint32_t destinationModifier, uint32_t argument1,
+    uint32_t argument1Replication, uint32_t argument1Modifier)
 {
     fprintf(rendererGlLogFile, "glColorFragmentOp1ATI\n");
     fflush(rendererGlLogFile);
-    rendererGlColorFragmentOp1ATIDriver(operation, destination, destinationMask, destinationModifier, argument1, argument1Replication,
-                                        argument1Modifier);
+    rendererGlColorFragmentOp1ATIDriver(
+        operation, destination, destinationMask, destinationModifier,
+        argument1, argument1Replication, argument1Modifier);
 }
 
-void RENDERER_GL_API_CALL GL_LogColorFragmentOp2ATI(uint32_t operation, uint32_t destination, uint32_t destinationMask,
-                                                    uint32_t destinationModifier, uint32_t argument1, uint32_t argument1Replication,
-                                                    uint32_t argument1Modifier, uint32_t argument2, uint32_t argument2Replication,
-                                                    uint32_t argument2Modifier)
+void RENDERER_GL_API_CALL GL_LogColorFragmentOp2ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationMask,
+    uint32_t destinationModifier, uint32_t argument1,
+    uint32_t argument1Replication, uint32_t argument1Modifier,
+    uint32_t argument2, uint32_t argument2Replication,
+    uint32_t argument2Modifier)
 {
     fprintf(rendererGlLogFile, "glColorFragmentOp2ATI\n");
     fflush(rendererGlLogFile);
-    rendererGlColorFragmentOp2ATIDriver(operation, destination, destinationMask, destinationModifier, argument1, argument1Replication,
-                                        argument1Modifier, argument2, argument2Replication, argument2Modifier);
+    rendererGlColorFragmentOp2ATIDriver(
+        operation, destination, destinationMask, destinationModifier,
+        argument1, argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier);
 }
 
-void RENDERER_GL_API_CALL GL_LogColorFragmentOp3ATI(uint32_t operation, uint32_t destination, uint32_t destinationMask,
-                                                    uint32_t destinationModifier, uint32_t argument1, uint32_t argument1Replication,
-                                                    uint32_t argument1Modifier, uint32_t argument2, uint32_t argument2Replication,
-                                                    uint32_t argument2Modifier, uint32_t argument3, uint32_t argument3Replication,
-                                                    uint32_t argument3Modifier)
+void RENDERER_GL_API_CALL GL_LogColorFragmentOp3ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationMask,
+    uint32_t destinationModifier, uint32_t argument1,
+    uint32_t argument1Replication, uint32_t argument1Modifier,
+    uint32_t argument2, uint32_t argument2Replication,
+    uint32_t argument2Modifier, uint32_t argument3,
+    uint32_t argument3Replication, uint32_t argument3Modifier)
 {
     fprintf(rendererGlLogFile, "glColorFragmentOp3ATI\n");
     fflush(rendererGlLogFile);
-    rendererGlColorFragmentOp3ATIDriver(operation, destination, destinationMask, destinationModifier, argument1, argument1Replication,
-                                        argument1Modifier, argument2, argument2Replication, argument2Modifier, argument3,
-                                        argument3Replication, argument3Modifier);
+    rendererGlColorFragmentOp3ATIDriver(
+        operation, destination, destinationMask, destinationModifier,
+        argument1, argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier, argument3,
+        argument3Replication, argument3Modifier);
 }
 
-void RENDERER_GL_API_CALL GL_LogAlphaFragmentOp1ATI(uint32_t operation, uint32_t destination, uint32_t destinationModifier,
-                                                    uint32_t argument1, uint32_t argument1Replication, uint32_t argument1Modifier)
+void RENDERER_GL_API_CALL GL_LogAlphaFragmentOp1ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationModifier,
+    uint32_t argument1, uint32_t argument1Replication,
+    uint32_t argument1Modifier)
 {
     fprintf(rendererGlLogFile, "glAlphaFragmentOp1ATI\n");
     fflush(rendererGlLogFile);
-    rendererGlAlphaFragmentOp1ATIDriver(operation, destination, destinationModifier, argument1, argument1Replication, argument1Modifier);
+    rendererGlAlphaFragmentOp1ATIDriver(
+        operation, destination, destinationModifier, argument1,
+        argument1Replication, argument1Modifier);
 }
 
-void RENDERER_GL_API_CALL GL_LogAlphaFragmentOp2ATI(uint32_t operation, uint32_t destination, uint32_t destinationModifier,
-                                                    uint32_t argument1, uint32_t argument1Replication, uint32_t argument1Modifier,
-                                                    uint32_t argument2, uint32_t argument2Replication, uint32_t argument2Modifier)
+void RENDERER_GL_API_CALL GL_LogAlphaFragmentOp2ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationModifier,
+    uint32_t argument1, uint32_t argument1Replication,
+    uint32_t argument1Modifier, uint32_t argument2,
+    uint32_t argument2Replication, uint32_t argument2Modifier)
 {
     fprintf(rendererGlLogFile, "glAlphaFragmentOp2ATI\n");
     fflush(rendererGlLogFile);
-    rendererGlAlphaFragmentOp2ATIDriver(operation, destination, destinationModifier, argument1, argument1Replication, argument1Modifier,
-                                        argument2, argument2Replication, argument2Modifier);
+    rendererGlAlphaFragmentOp2ATIDriver(
+        operation, destination, destinationModifier, argument1,
+        argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier);
 }
 
-void RENDERER_GL_API_CALL GL_LogAlphaFragmentOp3ATI(uint32_t operation, uint32_t destination, uint32_t destinationModifier,
-                                                    uint32_t argument1, uint32_t argument1Replication, uint32_t argument1Modifier,
-                                                    uint32_t argument2, uint32_t argument2Replication, uint32_t argument2Modifier,
-                                                    uint32_t argument3, uint32_t argument3Replication, uint32_t argument3Modifier)
+void RENDERER_GL_API_CALL GL_LogAlphaFragmentOp3ATI(
+    uint32_t operation, uint32_t destination, uint32_t destinationModifier,
+    uint32_t argument1, uint32_t argument1Replication,
+    uint32_t argument1Modifier, uint32_t argument2,
+    uint32_t argument2Replication, uint32_t argument2Modifier,
+    uint32_t argument3, uint32_t argument3Replication,
+    uint32_t argument3Modifier)
 {
     fprintf(rendererGlLogFile, "glAlphaFragmentOp3ATI\n");
     fflush(rendererGlLogFile);
-    rendererGlAlphaFragmentOp3ATIDriver(operation, destination, destinationModifier, argument1, argument1Replication, argument1Modifier,
-                                        argument2, argument2Replication, argument2Modifier, argument3, argument3Replication,
-                                        argument3Modifier);
+    rendererGlAlphaFragmentOp3ATIDriver(
+        operation, destination, destinationModifier, argument1,
+        argument1Replication, argument1Modifier, argument2,
+        argument2Replication, argument2Modifier, argument3,
+        argument3Replication, argument3Modifier);
 }
 
-void RENDERER_GL_API_CALL GL_LogSetFragmentShaderConstantATI(uint32_t destination, const float *value)
+void RENDERER_GL_API_CALL GL_LogSetFragmentShaderConstantATI(
+    uint32_t destination, const float *value)
 {
     fprintf(rendererGlLogFile, "glSetFragmentShaderConstantATI\n");
     fflush(rendererGlLogFile);
@@ -1046,7 +1220,8 @@ void RENDERER_GL_API_CALL GL_LogSetFragmentShaderConstantATI(uint32_t destinatio
  * The 1d/2d/3d/4d machine bodies copy each 64-bit argument through x87 before
  * the stdcall driver call; the typed double parameters preserve that ABI-level
  * forwarding without embedding 32-bit stack arithmetic in maintained source. */
-void RENDERER_GL_API_CALL GL_LogVertexAttrib1sARB(uint32_t index, int16_t x)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib1sARB(
+    uint32_t index, int16_t x)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib1sARB\n");
     fflush(rendererGlLogFile);
@@ -1067,70 +1242,80 @@ void RENDERER_GL_API_CALL GL_LogVertexAttrib1dARB(uint32_t index, double x)
     rendererGlVertexAttrib1dARBDriver(index, x);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib2sARB(uint32_t index, int16_t x, int16_t y)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib2sARB(
+    uint32_t index, int16_t x, int16_t y)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib2sARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib2sARBDriver(index, x, y);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib2fARB(uint32_t index, float x, float y)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib2fARB(
+    uint32_t index, float x, float y)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib2fARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib2fARBDriver(index, x, y);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib2dARB(uint32_t index, double x, double y)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib2dARB(
+    uint32_t index, double x, double y)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib2dARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib2dARBDriver(index, x, y);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib3sARB(uint32_t index, int16_t x, int16_t y, int16_t z)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib3sARB(
+    uint32_t index, int16_t x, int16_t y, int16_t z)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib3sARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib3sARBDriver(index, x, y, z);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib3fARB(uint32_t index, float x, float y, float z)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib3fARB(
+    uint32_t index, float x, float y, float z)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib3fARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib3fARBDriver(index, x, y, z);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib3dARB(uint32_t index, double x, double y, double z)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib3dARB(
+    uint32_t index, double x, double y, double z)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib3dARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib3dARBDriver(index, x, y, z);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4sARB(uint32_t index, int16_t x, int16_t y, int16_t z, int16_t w)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4sARB(
+    uint32_t index, int16_t x, int16_t y, int16_t z, int16_t w)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4sARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4sARBDriver(index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4fARB(uint32_t index, float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4fARB(
+    uint32_t index, float x, float y, float z, float w)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4fARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4fARBDriver(index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4dARB(uint32_t index, double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4dARB(
+    uint32_t index, double x, double y, double z, double w)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4dARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4dARBDriver(index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NubARB(uint32_t index, uint8_t x, uint8_t y, uint8_t z, uint8_t w)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NubARB(
+    uint32_t index, uint8_t x, uint8_t y, uint8_t z, uint8_t w)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NubARB\n");
     fflush(rendererGlLogFile);
@@ -1140,173 +1325,198 @@ void RENDERER_GL_API_CALL GL_LogVertexAttrib4NubARB(uint32_t index, uint8_t x, u
 /* Source: CoDUOMP.exe 0x004cbbf0..0x004cc0c5. ARB vertex-attribute vector,
  * array-pointer, and array-toggle wrappers; each body is the same proven
  * log/flush/tail-forward shape with the extension's exact typed signature. */
-void RENDERER_GL_API_CALL GL_LogVertexAttrib1svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib1svARB(
+    uint32_t index, const int16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib1svARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib1svARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib1fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib1fvARB(
+    uint32_t index, const float *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib1fvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib1fvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib1dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib1dvARB(
+    uint32_t index, const double *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib1dvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib1dvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib2svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib2svARB(
+    uint32_t index, const int16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib2svARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib2svARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib2fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib2fvARB(
+    uint32_t index, const float *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib2fvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib2fvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib2dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib2dvARB(
+    uint32_t index, const double *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib2dvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib2dvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib3svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib3svARB(
+    uint32_t index, const int16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib3svARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib3svARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib3fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib3fvARB(
+    uint32_t index, const float *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib3fvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib3fvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib3dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib3dvARB(
+    uint32_t index, const double *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib3dvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib3dvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4bvARB(uint32_t index, const int8_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4bvARB(
+    uint32_t index, const int8_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4bvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4bvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4svARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4svARB(
+    uint32_t index, const int16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4svARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4svARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4ivARB(uint32_t index, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4ivARB(
+    uint32_t index, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4ivARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4ivARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4ubvARB(uint32_t index, const uint8_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4ubvARB(
+    uint32_t index, const uint8_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4ubvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4ubvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4usvARB(uint32_t index, const uint16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4usvARB(
+    uint32_t index, const uint16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4usvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4usvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4uivARB(uint32_t index, const uint32_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4uivARB(
+    uint32_t index, const uint32_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4uivARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4uivARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4fvARB(uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4fvARB(
+    uint32_t index, const float *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4fvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4fvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4dvARB(uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4dvARB(
+    uint32_t index, const double *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4dvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4dvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NbvARB(uint32_t index, const int8_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NbvARB(
+    uint32_t index, const int8_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NbvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4NbvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NsvARB(uint32_t index, const int16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NsvARB(
+    uint32_t index, const int16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NsvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4NsvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NivARB(uint32_t index, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NivARB(
+    uint32_t index, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NivARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4NivARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NubvARB(uint32_t index, const uint8_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NubvARB(
+    uint32_t index, const uint8_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NubvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4NubvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NusvARB(uint32_t index, const uint16_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NusvARB(
+    uint32_t index, const uint16_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NusvARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4NusvARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttrib4NuivARB(uint32_t index, const uint32_t *values)
+void RENDERER_GL_API_CALL GL_LogVertexAttrib4NuivARB(
+    uint32_t index, const uint32_t *values)
 {
     fprintf(rendererGlLogFile, "glVertexAttrib4NuivARB\n");
     fflush(rendererGlLogFile);
     rendererGlVertexAttrib4NuivARBDriver(index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertexAttribPointerARB(uint32_t index, int32_t size, uint32_t type, uint8_t normalized, int32_t stride,
-                                                       const void *pointer)
+void RENDERER_GL_API_CALL GL_LogVertexAttribPointerARB(
+    uint32_t index, int32_t size, uint32_t type, uint8_t normalized,
+    int32_t stride, const void *pointer)
 {
     fprintf(rendererGlLogFile, "glVertexAttribPointerARB\n");
     fflush(rendererGlLogFile);
-    rendererGlVertexAttribPointerARBDriver(index, size, type, normalized, stride, pointer);
+    rendererGlVertexAttribPointerARBDriver(
+        index, size, type, normalized, stride, pointer);
 }
 
 void RENDERER_GL_API_CALL GL_LogEnableVertexAttribArrayARB(uint32_t index)
@@ -1328,147 +1538,170 @@ void RENDERER_GL_API_CALL GL_LogDisableVertexAttribArrayARB(uint32_t index)
  * exact extension APIs. The two scalar-double setters have explicit x87
  * forwarding in the original and clean 40 bytes of stdcall arguments,
  * proving two 32-bit selectors followed by four 64-bit values. */
-void RENDERER_GL_API_CALL GL_LogProgramStringARB(uint32_t target, uint32_t format, int32_t length, const void *string)
+void RENDERER_GL_API_CALL GL_LogProgramStringARB(
+    uint32_t target, uint32_t format, int32_t length, const void *string)
 {
     fprintf(rendererGlLogFile, "glProgramStringARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramStringARBDriver(target, format, length, string);
 }
 
-void RENDERER_GL_API_CALL GL_LogDeleteProgramsARB(int32_t count, const uint32_t *programs)
+void RENDERER_GL_API_CALL GL_LogDeleteProgramsARB(
+    int32_t count, const uint32_t *programs)
 {
     fprintf(rendererGlLogFile, "glDeleteProgramsARB\n");
     fflush(rendererGlLogFile);
     rendererGlDeleteProgramsARBDriver(count, programs);
 }
 
-void RENDERER_GL_API_CALL GL_LogGenProgramsARB(int32_t count, uint32_t *programs)
+void RENDERER_GL_API_CALL GL_LogGenProgramsARB(
+    int32_t count, uint32_t *programs)
 {
     fprintf(rendererGlLogFile, "glGenProgramsARB\n");
     fflush(rendererGlLogFile);
     rendererGlGenProgramsARBDriver(count, programs);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4fARB(uint32_t target, uint32_t index, float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4fARB(
+    uint32_t target, uint32_t index, float x, float y, float z, float w)
 {
     fprintf(rendererGlLogFile, "glProgramEnvParameter4fARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramEnvParameter4fARBDriver(target, index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4dARB(uint32_t target, uint32_t index, double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4dARB(
+    uint32_t target, uint32_t index,
+    double x, double y, double z, double w)
 {
     fprintf(rendererGlLogFile, "glProgramEnvParameter4dARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramEnvParameter4dARBDriver(target, index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4fvARB(uint32_t target, uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4fvARB(
+    uint32_t target, uint32_t index, const float *values)
 {
     fprintf(rendererGlLogFile, "glProgramEnvParameter4fvARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramEnvParameter4fvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4dvARB(uint32_t target, uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_LogProgramEnvParameter4dvARB(
+    uint32_t target, uint32_t index, const double *values)
 {
     fprintf(rendererGlLogFile, "glProgramEnvParameter4dvARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramEnvParameter4dvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4fARB(uint32_t target, uint32_t index, float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4fARB(
+    uint32_t target, uint32_t index, float x, float y, float z, float w)
 {
     fprintf(rendererGlLogFile, "glProgramLocalParameter4fARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramLocalParameter4fARBDriver(target, index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4dARB(uint32_t target, uint32_t index, double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4dARB(
+    uint32_t target, uint32_t index,
+    double x, double y, double z, double w)
 {
     fprintf(rendererGlLogFile, "glProgramLocalParameter4dARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramLocalParameter4dARBDriver(target, index, x, y, z, w);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4fvARB(uint32_t target, uint32_t index, const float *values)
+void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4fvARB(
+    uint32_t target, uint32_t index, const float *values)
 {
     fprintf(rendererGlLogFile, "glProgramLocalParameter4fvARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramLocalParameter4fvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4dvARB(uint32_t target, uint32_t index, const double *values)
+void RENDERER_GL_API_CALL GL_LogProgramLocalParameter4dvARB(
+    uint32_t target, uint32_t index, const double *values)
 {
     fprintf(rendererGlLogFile, "glProgramLocalParameter4dvARB\n");
     fflush(rendererGlLogFile);
     rendererGlProgramLocalParameter4dvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetProgramEnvParameterfvARB(uint32_t target, uint32_t index, float *values)
+void RENDERER_GL_API_CALL GL_LogGetProgramEnvParameterfvARB(
+    uint32_t target, uint32_t index, float *values)
 {
     fprintf(rendererGlLogFile, "glGetProgramEnvParameterfvARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetProgramEnvParameterfvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetProgramEnvParameterdvARB(uint32_t target, uint32_t index, double *values)
+void RENDERER_GL_API_CALL GL_LogGetProgramEnvParameterdvARB(
+    uint32_t target, uint32_t index, double *values)
 {
     fprintf(rendererGlLogFile, "glGetProgramEnvParameterdvARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetProgramEnvParameterdvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetProgramLocalParameterfvARB(uint32_t target, uint32_t index, float *values)
+void RENDERER_GL_API_CALL GL_LogGetProgramLocalParameterfvARB(
+    uint32_t target, uint32_t index, float *values)
 {
     fprintf(rendererGlLogFile, "glGetProgramLocalParameterfvARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetProgramLocalParameterfvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetProgramLocalParameterdvARB(uint32_t target, uint32_t index, double *values)
+void RENDERER_GL_API_CALL GL_LogGetProgramLocalParameterdvARB(
+    uint32_t target, uint32_t index, double *values)
 {
     fprintf(rendererGlLogFile, "glGetProgramLocalParameterdvARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetProgramLocalParameterdvARBDriver(target, index, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetProgramivARB(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetProgramivARB(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetProgramivARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetProgramivARBDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetProgramStringARB(uint32_t target, uint32_t parameter, void *string)
+void RENDERER_GL_API_CALL GL_LogGetProgramStringARB(
+    uint32_t target, uint32_t parameter, void *string)
 {
     fprintf(rendererGlLogFile, "glGetProgramStringARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetProgramStringARBDriver(target, parameter, string);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetVertexAttribdvARB(uint32_t index, uint32_t parameter, double *values)
+void RENDERER_GL_API_CALL GL_LogGetVertexAttribdvARB(
+    uint32_t index, uint32_t parameter, double *values)
 {
     fprintf(rendererGlLogFile, "glGetVertexAttribdvARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetVertexAttribdvARBDriver(index, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetVertexAttribfvARB(uint32_t index, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetVertexAttribfvARB(
+    uint32_t index, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetVertexAttribfvARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetVertexAttribfvARBDriver(index, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetVertexAttribivARB(uint32_t index, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetVertexAttribivARB(
+    uint32_t index, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetVertexAttribivARB\n");
     fflush(rendererGlLogFile);
     rendererGlGetVertexAttribivARBDriver(index, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetVertexAttribPointervARB(uint32_t index, uint32_t parameter, void **pointer)
+void RENDERER_GL_API_CALL GL_LogGetVertexAttribPointervARB(
+    uint32_t index, uint32_t parameter, void **pointer)
 {
     fprintf(rendererGlLogFile, "glGetVertexAttribPointervARB\n");
     fflush(rendererGlLogFile);
@@ -1492,7 +1725,8 @@ void RENDERER_GL_API_CALL GL_LogAccum(uint32_t operation, float value)
     rendererGlAccumDriver(operation, value);
 }
 
-uint8_t RENDERER_GL_API_CALL GL_LogAreTexturesResident(int32_t count, const uint32_t *textures, uint8_t *residences)
+uint8_t RENDERER_GL_API_CALL GL_LogAreTexturesResident(
+    int32_t count, const uint32_t *textures, uint8_t *residences)
 {
     fprintf(rendererGlLogFile, "glAreTexturesResident\n");
     fflush(rendererGlLogFile);
@@ -1506,29 +1740,34 @@ void RENDERER_GL_API_CALL GL_LogArrayElement(int32_t index)
     rendererGlArrayElementDriver(index);
 }
 
-void RENDERER_GL_API_CALL GL_LogBitmap(int32_t width, int32_t height, float xOrigin, float yOrigin, float xMove, float yMove,
-                                       const uint8_t *bitmap)
+void RENDERER_GL_API_CALL GL_LogBitmap(
+    int32_t width, int32_t height, float xOrigin, float yOrigin,
+    float xMove, float yMove, const uint8_t *bitmap)
 {
     fprintf(rendererGlLogFile, "glBitmap\n");
     fflush(rendererGlLogFile);
-    rendererGlBitmapDriver(width, height, xOrigin, yOrigin, xMove, yMove, bitmap);
+    rendererGlBitmapDriver(
+        width, height, xOrigin, yOrigin, xMove, yMove, bitmap);
 }
 
-void RENDERER_GL_API_CALL GL_LogCallLists(int32_t count, uint32_t type, const void *lists)
+void RENDERER_GL_API_CALL GL_LogCallLists(
+    int32_t count, uint32_t type, const void *lists)
 {
     fprintf(rendererGlLogFile, "glCallLists\n");
     fflush(rendererGlLogFile);
     rendererGlCallListsDriver(count, type, lists);
 }
 
-void RENDERER_GL_API_CALL GL_LogClearAccum(float red, float green, float blue, float alpha)
+void RENDERER_GL_API_CALL GL_LogClearAccum(
+    float red, float green, float blue, float alpha)
 {
     fprintf(rendererGlLogFile, "glClearAccum\n");
     fflush(rendererGlLogFile);
     rendererGlClearAccumDriver(red, green, blue, alpha);
 }
 
-void RENDERER_GL_API_CALL GL_LogClearColor(float red, float green, float blue, float alpha)
+void RENDERER_GL_API_CALL GL_LogClearColor(
+    float red, float green, float blue, float alpha)
 {
     fprintf(rendererGlLogFile, "glClearColor\n");
     fflush(rendererGlLogFile);
@@ -1542,7 +1781,8 @@ void RENDERER_GL_API_CALL GL_LogClearIndex(float index)
     rendererGlClearIndexDriver(index);
 }
 
-void RENDERER_GL_API_CALL GL_LogClipPlane(uint32_t plane, const double *equation)
+void RENDERER_GL_API_CALL GL_LogClipPlane(
+    uint32_t plane, const double *equation)
 {
     fprintf(rendererGlLogFile, "glClipPlane\n");
     fflush(rendererGlLogFile);
@@ -1552,7 +1792,8 @@ void RENDERER_GL_API_CALL GL_LogClipPlane(uint32_t plane, const double *equation
 /* Source: CoDUOMP.exe 0x004cc700..0x004cca05. Complete core OpenGL Color3
  * scalar/vector family. glColor3d's x87 forwarding and `ret 0x18` prove three
  * 64-bit scalar arguments; all other variants tail-forward their typed APIs. */
-void RENDERER_GL_API_CALL GL_LogColor3b(int8_t red, int8_t green, int8_t blue)
+void RENDERER_GL_API_CALL GL_LogColor3b(
+    int8_t red, int8_t green, int8_t blue)
 {
     fprintf(rendererGlLogFile, "glColor3b\n");
     fflush(rendererGlLogFile);
@@ -1566,7 +1807,8 @@ void RENDERER_GL_API_CALL GL_LogColor3bv(const int8_t *values)
     rendererGlColor3bvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor3d(double red, double green, double blue)
+void RENDERER_GL_API_CALL GL_LogColor3d(
+    double red, double green, double blue)
 {
     fprintf(rendererGlLogFile, "glColor3d\n");
     fflush(rendererGlLogFile);
@@ -1594,7 +1836,8 @@ void RENDERER_GL_API_CALL GL_LogColor3fv(const float *values)
     rendererGlColor3fvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor3i(int32_t red, int32_t green, int32_t blue)
+void RENDERER_GL_API_CALL GL_LogColor3i(
+    int32_t red, int32_t green, int32_t blue)
 {
     fprintf(rendererGlLogFile, "glColor3i\n");
     fflush(rendererGlLogFile);
@@ -1608,7 +1851,8 @@ void RENDERER_GL_API_CALL GL_LogColor3iv(const int32_t *values)
     rendererGlColor3ivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor3s(int16_t red, int16_t green, int16_t blue)
+void RENDERER_GL_API_CALL GL_LogColor3s(
+    int16_t red, int16_t green, int16_t blue)
 {
     fprintf(rendererGlLogFile, "glColor3s\n");
     fflush(rendererGlLogFile);
@@ -1622,7 +1866,8 @@ void RENDERER_GL_API_CALL GL_LogColor3sv(const int16_t *values)
     rendererGlColor3svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor3ub(uint8_t red, uint8_t green, uint8_t blue)
+void RENDERER_GL_API_CALL GL_LogColor3ub(
+    uint8_t red, uint8_t green, uint8_t blue)
 {
     fprintf(rendererGlLogFile, "glColor3ub\n");
     fflush(rendererGlLogFile);
@@ -1636,7 +1881,8 @@ void RENDERER_GL_API_CALL GL_LogColor3ubv(const uint8_t *values)
     rendererGlColor3ubvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor3ui(uint32_t red, uint32_t green, uint32_t blue)
+void RENDERER_GL_API_CALL GL_LogColor3ui(
+    uint32_t red, uint32_t green, uint32_t blue)
 {
     fprintf(rendererGlLogFile, "glColor3ui\n");
     fflush(rendererGlLogFile);
@@ -1650,7 +1896,8 @@ void RENDERER_GL_API_CALL GL_LogColor3uiv(const uint32_t *values)
     rendererGlColor3uivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor3us(uint16_t red, uint16_t green, uint16_t blue)
+void RENDERER_GL_API_CALL GL_LogColor3us(
+    uint16_t red, uint16_t green, uint16_t blue)
 {
     fprintf(rendererGlLogFile, "glColor3us\n");
     fflush(rendererGlLogFile);
@@ -1669,7 +1916,8 @@ void RENDERER_GL_API_CALL GL_LogColor3usv(const uint16_t *values)
  * argument-aware wrappers. GL_LogColor4d's x87 forwarding and `ret 0x20`
  * prove four 64-bit scalar arguments. Every entry logs, flushes, and forwards
  * the complete typed OpenGL call. */
-void RENDERER_GL_API_CALL GL_LogColor4b(int8_t red, int8_t green, int8_t blue, int8_t alpha)
+void RENDERER_GL_API_CALL GL_LogColor4b(
+    int8_t red, int8_t green, int8_t blue, int8_t alpha)
 {
     fprintf(rendererGlLogFile, "glColor4b\n");
     fflush(rendererGlLogFile);
@@ -1683,7 +1931,8 @@ void RENDERER_GL_API_CALL GL_LogColor4bv(const int8_t *values)
     rendererGlColor4bvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor4d(double red, double green, double blue, double alpha)
+void RENDERER_GL_API_CALL GL_LogColor4d(
+    double red, double green, double blue, double alpha)
 {
     fprintf(rendererGlLogFile, "glColor4d\n");
     fflush(rendererGlLogFile);
@@ -1697,7 +1946,8 @@ void RENDERER_GL_API_CALL GL_LogColor4dv(const double *values)
     rendererGlColor4dvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor4i(int32_t red, int32_t green, int32_t blue, int32_t alpha)
+void RENDERER_GL_API_CALL GL_LogColor4i(
+    int32_t red, int32_t green, int32_t blue, int32_t alpha)
 {
     fprintf(rendererGlLogFile, "glColor4i\n");
     fflush(rendererGlLogFile);
@@ -1711,7 +1961,8 @@ void RENDERER_GL_API_CALL GL_LogColor4iv(const int32_t *values)
     rendererGlColor4ivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor4s(int16_t red, int16_t green, int16_t blue, int16_t alpha)
+void RENDERER_GL_API_CALL GL_LogColor4s(
+    int16_t red, int16_t green, int16_t blue, int16_t alpha)
 {
     fprintf(rendererGlLogFile, "glColor4s\n");
     fflush(rendererGlLogFile);
@@ -1725,7 +1976,8 @@ void RENDERER_GL_API_CALL GL_LogColor4sv(const int16_t *values)
     rendererGlColor4svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor4ub(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+void RENDERER_GL_API_CALL GL_LogColor4ub(
+    uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
 {
     fprintf(rendererGlLogFile, "glColor4ub\n");
     fflush(rendererGlLogFile);
@@ -1739,7 +1991,8 @@ void RENDERER_GL_API_CALL GL_LogColor4ubv(const uint8_t *values)
     rendererGlColor4ubvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor4ui(uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha)
+void RENDERER_GL_API_CALL GL_LogColor4ui(
+    uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha)
 {
     fprintf(rendererGlLogFile, "glColor4ui\n");
     fflush(rendererGlLogFile);
@@ -1753,7 +2006,8 @@ void RENDERER_GL_API_CALL GL_LogColor4uiv(const uint32_t *values)
     rendererGlColor4uivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogColor4us(uint16_t red, uint16_t green, uint16_t blue, uint16_t alpha)
+void RENDERER_GL_API_CALL GL_LogColor4us(
+    uint16_t red, uint16_t green, uint16_t blue, uint16_t alpha)
 {
     fprintf(rendererGlLogFile, "glColor4us\n");
     fflush(rendererGlLogFile);
@@ -1773,7 +2027,8 @@ void RENDERER_GL_API_CALL GL_LogColor4usv(const uint16_t *values)
  * 0x004ca490 are separate glDrawBuffer loggers installed into separate
  * dispatch slots. Every entry here logs only the API name, flushes, and
  * forwards the complete typed call. */
-void RENDERER_GL_API_CALL GL_LogColorMask(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+void RENDERER_GL_API_CALL GL_LogColorMask(
+    uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
 {
     fprintf(rendererGlLogFile, "glColorMask\n");
     fflush(rendererGlLogFile);
@@ -1787,42 +2042,51 @@ void RENDERER_GL_API_CALL GL_LogColorMaterial(uint32_t face, uint32_t mode)
     rendererGlColorMaterialDriver(face, mode);
 }
 
-void RENDERER_GL_API_CALL GL_LogCopyPixels(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t type)
+void RENDERER_GL_API_CALL GL_LogCopyPixels(
+    int32_t x, int32_t y, int32_t width, int32_t height, uint32_t type)
 {
     fprintf(rendererGlLogFile, "glCopyPixels\n");
     fflush(rendererGlLogFile);
     rendererGlCopyPixelsDriver(x, y, width, height, type);
 }
 
-void RENDERER_GL_API_CALL GL_LogCopyTexImage1D(uint32_t target, int32_t level, uint32_t internalFormat, int32_t x, int32_t y, int32_t width,
-                                               int32_t border)
+void RENDERER_GL_API_CALL GL_LogCopyTexImage1D(
+    uint32_t target, int32_t level, uint32_t internalFormat,
+    int32_t x, int32_t y, int32_t width, int32_t border)
 {
     fprintf(rendererGlLogFile, "glCopyTexImage1D\n");
     fflush(rendererGlLogFile);
-    rendererGlCopyTexImage1DDriver(target, level, internalFormat, x, y, width, border);
+    rendererGlCopyTexImage1DDriver(
+        target, level, internalFormat, x, y, width, border);
 }
 
-void RENDERER_GL_API_CALL GL_LogCopyTexImage2D(uint32_t target, int32_t level, uint32_t internalFormat, int32_t x, int32_t y, int32_t width,
-                                               int32_t height, int32_t border)
+void RENDERER_GL_API_CALL GL_LogCopyTexImage2D(
+    uint32_t target, int32_t level, uint32_t internalFormat,
+    int32_t x, int32_t y, int32_t width, int32_t height, int32_t border)
 {
     fprintf(rendererGlLogFile, "glCopyTexImage2D\n");
     fflush(rendererGlLogFile);
-    rendererGlCopyTexImage2DDriver(target, level, internalFormat, x, y, width, height, border);
+    rendererGlCopyTexImage2DDriver(
+        target, level, internalFormat, x, y, width, height, border);
 }
 
-void RENDERER_GL_API_CALL GL_LogCopyTexSubImage1D(uint32_t target, int32_t level, int32_t xOffset, int32_t x, int32_t y, int32_t width)
+void RENDERER_GL_API_CALL GL_LogCopyTexSubImage1D(
+    uint32_t target, int32_t level, int32_t xOffset,
+    int32_t x, int32_t y, int32_t width)
 {
     fprintf(rendererGlLogFile, "glCopyTexSubImage1D\n");
     fflush(rendererGlLogFile);
     rendererGlCopyTexSubImage1DDriver(target, level, xOffset, x, y, width);
 }
 
-void RENDERER_GL_API_CALL GL_LogCopyTexSubImage2D(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset, int32_t x, int32_t y,
-                                                  int32_t width, int32_t height)
+void RENDERER_GL_API_CALL GL_LogCopyTexSubImage2D(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t x, int32_t y, int32_t width, int32_t height)
 {
     fprintf(rendererGlLogFile, "glCopyTexSubImage2D\n");
     fflush(rendererGlLogFile);
-    rendererGlCopyTexSubImage2DDriver(target, level, xOffset, yOffset, x, y, width, height);
+    rendererGlCopyTexSubImage2DDriver(
+        target, level, xOffset, yOffset, x, y, width, height);
 }
 
 void RENDERER_GL_API_CALL GL_LogDeleteLists(uint32_t list, int32_t range)
@@ -1832,14 +2096,16 @@ void RENDERER_GL_API_CALL GL_LogDeleteLists(uint32_t list, int32_t range)
     rendererGlDeleteListsDriver(list, range);
 }
 
-void RENDERER_GL_API_CALL GL_LogDeleteTextures(int32_t count, const uint32_t *textures)
+void RENDERER_GL_API_CALL GL_LogDeleteTextures(
+    int32_t count, const uint32_t *textures)
 {
     fprintf(rendererGlLogFile, "glDeleteTextures\n");
     fflush(rendererGlLogFile);
     rendererGlDeleteTexturesDriver(count, textures);
 }
 
-void RENDERER_GL_API_CALL GL_LogDrawArrays(uint32_t mode, int32_t first, int32_t count)
+void RENDERER_GL_API_CALL GL_LogDrawArrays(
+    uint32_t mode, int32_t first, int32_t count)
 {
     fprintf(rendererGlLogFile, "glDrawArrays\n");
     fflush(rendererGlLogFile);
@@ -1855,7 +2121,9 @@ void RENDERER_GL_API_CALL GL_LogDrawBuffer(uint32_t buffer)
     rendererGlDrawBufferDriver(buffer);
 }
 
-void RENDERER_GL_API_CALL GL_LogDrawPixels(int32_t width, int32_t height, uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_LogDrawPixels(
+    int32_t width, int32_t height, uint32_t format, uint32_t type,
+    const void *pixels)
 {
     fprintf(rendererGlLogFile, "glDrawPixels\n");
     fflush(rendererGlLogFile);
@@ -1869,7 +2137,8 @@ void RENDERER_GL_API_CALL GL_LogEdgeFlag(uint8_t flag)
     rendererGlEdgeFlagDriver(flag);
 }
 
-void RENDERER_GL_API_CALL GL_LogEdgeFlagPointer(int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogEdgeFlagPointer(
+    int32_t stride, const void *pointer)
 {
     fprintf(rendererGlLogFile, "glEdgeFlagPointer\n");
     fflush(rendererGlLogFile);
@@ -1953,14 +2222,16 @@ void RENDERER_GL_API_CALL GL_LogEvalCoord2fv(const float *values)
     rendererGlEvalCoord2fvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogEvalMesh1(uint32_t mode, int32_t i1, int32_t i2)
+void RENDERER_GL_API_CALL GL_LogEvalMesh1(
+    uint32_t mode, int32_t i1, int32_t i2)
 {
     fprintf(rendererGlLogFile, "glEvalMesh1\n");
     fflush(rendererGlLogFile);
     rendererGlEvalMesh1Driver(mode, i1, i2);
 }
 
-void RENDERER_GL_API_CALL GL_LogEvalMesh2(uint32_t mode, int32_t i1, int32_t i2, int32_t j1, int32_t j2)
+void RENDERER_GL_API_CALL GL_LogEvalMesh2(
+    uint32_t mode, int32_t i1, int32_t i2, int32_t j1, int32_t j2)
 {
     fprintf(rendererGlLogFile, "glEvalMesh2\n");
     fflush(rendererGlLogFile);
@@ -1985,7 +2256,8 @@ void RENDERER_GL_API_CALL GL_LogEvalPoint2(int32_t i, int32_t j)
  * OpenGL name-only dispatch logger. GL_LogFrustum's six x87 loads and
  * `ret 0x30` prove six double arguments; GL_LogGenLists and GL_LogGetError
  * preserve their OpenGL return values. */
-void RENDERER_GL_API_CALL GL_LogFeedbackBuffer(int32_t size, uint32_t type, float *buffer)
+void RENDERER_GL_API_CALL GL_LogFeedbackBuffer(
+    int32_t size, uint32_t type, float *buffer)
 {
     fprintf(rendererGlLogFile, "glFeedbackBuffer\n");
     fflush(rendererGlLogFile);
@@ -2006,7 +2278,8 @@ void RENDERER_GL_API_CALL GL_LogFlush(void)
     rendererGlFlushDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogFogiv(uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogFogiv(
+    uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glFogiv\n");
     fflush(rendererGlLogFile);
@@ -2020,11 +2293,14 @@ void RENDERER_GL_API_CALL GL_LogFrontFace(uint32_t mode)
     rendererGlFrontFaceDriver(mode);
 }
 
-void RENDERER_GL_API_CALL GL_LogFrustum(double left, double right, double bottom, double top, double nearValue, double farValue)
+void RENDERER_GL_API_CALL GL_LogFrustum(
+    double left, double right, double bottom, double top,
+    double nearValue, double farValue)
 {
     fprintf(rendererGlLogFile, "glFrustum\n");
     fflush(rendererGlLogFile);
-    rendererGlFrustumDriver(left, right, bottom, top, nearValue, farValue);
+    rendererGlFrustumDriver(
+        left, right, bottom, top, nearValue, farValue);
 }
 
 uint32_t RENDERER_GL_API_CALL GL_LogGenLists(int32_t range)
@@ -2034,28 +2310,32 @@ uint32_t RENDERER_GL_API_CALL GL_LogGenLists(int32_t range)
     return rendererGlGenListsDriver(range);
 }
 
-void RENDERER_GL_API_CALL GL_LogGenTextures(int32_t count, uint32_t *textures)
+void RENDERER_GL_API_CALL GL_LogGenTextures(
+    int32_t count, uint32_t *textures)
 {
     fprintf(rendererGlLogFile, "glGenTextures\n");
     fflush(rendererGlLogFile);
     rendererGlGenTexturesDriver(count, textures);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetBooleanv(uint32_t parameter, uint8_t *values)
+void RENDERER_GL_API_CALL GL_LogGetBooleanv(
+    uint32_t parameter, uint8_t *values)
 {
     fprintf(rendererGlLogFile, "glGetBooleanv\n");
     fflush(rendererGlLogFile);
     rendererGlGetBooleanvDriver(parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetClipPlane(uint32_t plane, double *equation)
+void RENDERER_GL_API_CALL GL_LogGetClipPlane(
+    uint32_t plane, double *equation)
 {
     fprintf(rendererGlLogFile, "glGetClipPlane\n");
     fflush(rendererGlLogFile);
     rendererGlGetClipPlaneDriver(plane, equation);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetDoublev(uint32_t parameter, double *values)
+void RENDERER_GL_API_CALL GL_LogGetDoublev(
+    uint32_t parameter, double *values)
 {
     fprintf(rendererGlLogFile, "glGetDoublev\n");
     fflush(rendererGlLogFile);
@@ -2069,91 +2349,104 @@ uint32_t RENDERER_GL_API_CALL GL_LogGetError(void)
     return rendererGlGetErrorDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogGetFloatv(uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetFloatv(
+    uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetFloatv\n");
     fflush(rendererGlLogFile);
     rendererGlGetFloatvDriver(parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetIntegerv(uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetIntegerv(
+    uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetIntegerv\n");
     fflush(rendererGlLogFile);
     rendererGlGetIntegervDriver(parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetLightfv(uint32_t light, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetLightfv(
+    uint32_t light, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetLightfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetLightfvDriver(light, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetLightiv(uint32_t light, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetLightiv(
+    uint32_t light, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetLightiv\n");
     fflush(rendererGlLogFile);
     rendererGlGetLightivDriver(light, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetMapdv(uint32_t target, uint32_t query, double *values)
+void RENDERER_GL_API_CALL GL_LogGetMapdv(
+    uint32_t target, uint32_t query, double *values)
 {
     fprintf(rendererGlLogFile, "glGetMapdv\n");
     fflush(rendererGlLogFile);
     rendererGlGetMapdvDriver(target, query, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetMapfv(uint32_t target, uint32_t query, float *values)
+void RENDERER_GL_API_CALL GL_LogGetMapfv(
+    uint32_t target, uint32_t query, float *values)
 {
     fprintf(rendererGlLogFile, "glGetMapfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetMapfvDriver(target, query, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetMapiv(uint32_t target, uint32_t query, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetMapiv(
+    uint32_t target, uint32_t query, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetMapiv\n");
     fflush(rendererGlLogFile);
     rendererGlGetMapivDriver(target, query, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetMaterialfv(uint32_t face, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetMaterialfv(
+    uint32_t face, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetMaterialfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetMaterialfvDriver(face, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetMaterialiv(uint32_t face, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetMaterialiv(
+    uint32_t face, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetMaterialiv\n");
     fflush(rendererGlLogFile);
     rendererGlGetMaterialivDriver(face, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetPixelMapfv(uint32_t map, float *values)
+void RENDERER_GL_API_CALL GL_LogGetPixelMapfv(
+    uint32_t map, float *values)
 {
     fprintf(rendererGlLogFile, "glGetPixelMapfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetPixelMapfvDriver(map, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetPixelMapuiv(uint32_t map, uint32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetPixelMapuiv(
+    uint32_t map, uint32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetPixelMapuiv\n");
     fflush(rendererGlLogFile);
     rendererGlGetPixelMapuivDriver(map, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetPixelMapusv(uint32_t map, uint16_t *values)
+void RENDERER_GL_API_CALL GL_LogGetPixelMapusv(
+    uint32_t map, uint16_t *values)
 {
     fprintf(rendererGlLogFile, "glGetPixelMapusv\n");
     fflush(rendererGlLogFile);
     rendererGlGetPixelMapusvDriver(map, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetPointerv(uint32_t parameter, void **value)
+void RENDERER_GL_API_CALL GL_LogGetPointerv(
+    uint32_t parameter, void **value)
 {
     fprintf(rendererGlLogFile, "glGetPointerv\n");
     fflush(rendererGlLogFile);
@@ -2174,14 +2467,16 @@ const uint8_t *RENDERER_GL_API_CALL GL_LogGetString(uint32_t name)
     return rendererGlGetStringDriver(name);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexEnvfv(uint32_t target, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetTexEnvfv(
+    uint32_t target, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetTexEnvfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexEnvfvDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexEnviv(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetTexEnviv(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetTexEnviv\n");
     fflush(rendererGlLogFile);
@@ -2192,56 +2487,65 @@ void RENDERER_GL_API_CALL GL_LogGetTexEnviv(uint32_t target, uint32_t parameter,
  * OpenGL name-only dispatch logger. GL_LogIndexd's x87 load and `ret 0x08`
  * prove the scalar double ABI. The Is* wrappers return the driver's original
  * GLboolean byte. */
-void RENDERER_GL_API_CALL GL_LogGetTexGendv(uint32_t coordinate, uint32_t parameter, double *values)
+void RENDERER_GL_API_CALL GL_LogGetTexGendv(
+    uint32_t coordinate, uint32_t parameter, double *values)
 {
     fprintf(rendererGlLogFile, "glGetTexGendv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexGendvDriver(coordinate, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexGenfv(uint32_t coordinate, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetTexGenfv(
+    uint32_t coordinate, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetTexGenfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexGenfvDriver(coordinate, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexGeniv(uint32_t coordinate, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetTexGeniv(
+    uint32_t coordinate, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetTexGeniv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexGenivDriver(coordinate, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexImage(uint32_t target, int32_t level, uint32_t format, uint32_t type, void *pixels)
+void RENDERER_GL_API_CALL GL_LogGetTexImage(
+    uint32_t target, int32_t level, uint32_t format, uint32_t type,
+    void *pixels)
 {
     fprintf(rendererGlLogFile, "glGetTexImage\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexImageDriver(target, level, format, type, pixels);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexLevelParameterfv(uint32_t target, int32_t level, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetTexLevelParameterfv(
+    uint32_t target, int32_t level, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetTexLevelParameterfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexLevelParameterfvDriver(target, level, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexLevelParameteriv(uint32_t target, int32_t level, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetTexLevelParameteriv(
+    uint32_t target, int32_t level, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetTexLevelParameteriv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexLevelParameterivDriver(target, level, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexParameterfv(uint32_t target, uint32_t parameter, float *values)
+void RENDERER_GL_API_CALL GL_LogGetTexParameterfv(
+    uint32_t target, uint32_t parameter, float *values)
 {
     fprintf(rendererGlLogFile, "glGetTexParameterfv\n");
     fflush(rendererGlLogFile);
     rendererGlGetTexParameterfvDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogGetTexParameteriv(uint32_t target, uint32_t parameter, int32_t *values)
+void RENDERER_GL_API_CALL GL_LogGetTexParameteriv(
+    uint32_t target, uint32_t parameter, int32_t *values)
 {
     fprintf(rendererGlLogFile, "glGetTexParameteriv\n");
     fflush(rendererGlLogFile);
@@ -2255,7 +2559,8 @@ void RENDERER_GL_API_CALL GL_LogIndexMask(uint32_t mask)
     rendererGlIndexMaskDriver(mask);
 }
 
-void RENDERER_GL_API_CALL GL_LogIndexPointer(uint32_t type, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogIndexPointer(
+    uint32_t type, int32_t stride, const void *pointer)
 {
     fprintf(rendererGlLogFile, "glIndexPointer\n");
     fflush(rendererGlLogFile);
@@ -2339,7 +2644,8 @@ void RENDERER_GL_API_CALL GL_LogInitNames(void)
     rendererGlInitNamesDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogInterleavedArrays(uint32_t format, int32_t stride, const void *pointer)
+void RENDERER_GL_API_CALL GL_LogInterleavedArrays(
+    uint32_t format, int32_t stride, const void *pointer)
 {
     fprintf(rendererGlLogFile, "glInterleavedArrays\n");
     fflush(rendererGlLogFile);
@@ -2367,28 +2673,32 @@ uint8_t RENDERER_GL_API_CALL GL_LogIsTexture(uint32_t texture)
     return rendererGlIsTextureDriver(texture);
 }
 
-void RENDERER_GL_API_CALL GL_LogLightModelf(uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogLightModelf(
+    uint32_t parameter, float value)
 {
     fprintf(rendererGlLogFile, "glLightModelf\n");
     fflush(rendererGlLogFile);
     rendererGlLightModelfDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogLightModelfv(uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogLightModelfv(
+    uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glLightModelfv\n");
     fflush(rendererGlLogFile);
     rendererGlLightModelfvDriver(parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogLightModeli(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogLightModeli(
+    uint32_t parameter, int32_t value)
 {
     fprintf(rendererGlLogFile, "glLightModeli\n");
     fflush(rendererGlLogFile);
     rendererGlLightModeliDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogLightModeliv(uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogLightModeliv(
+    uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glLightModeliv\n");
     fflush(rendererGlLogFile);
@@ -2398,35 +2708,40 @@ void RENDERER_GL_API_CALL GL_LogLightModeliv(uint32_t parameter, const int32_t *
 /* Source: CoDUOMP.exe 0x004cdd60..0x004ce365. Core fixed-function QGL
  * name-only wrappers. The x87 forwarding and stdcall stack cleanup prove the
  * complete Map1d, Map2d, MapGrid1d, and MapGrid2d double-argument layouts. */
-void RENDERER_GL_API_CALL GL_LogLightf(uint32_t light, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogLightf(
+    uint32_t light, uint32_t parameter, float value)
 {
     fprintf(rendererGlLogFile, "glLightf\n");
     fflush(rendererGlLogFile);
     rendererGlLightfDriver(light, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogLightfv(uint32_t light, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogLightfv(
+    uint32_t light, uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glLightfv\n");
     fflush(rendererGlLogFile);
     rendererGlLightfvDriver(light, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogLighti(uint32_t light, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogLighti(
+    uint32_t light, uint32_t parameter, int32_t value)
 {
     fprintf(rendererGlLogFile, "glLighti\n");
     fflush(rendererGlLogFile);
     rendererGlLightiDriver(light, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogLightiv(uint32_t light, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogLightiv(
+    uint32_t light, uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glLightiv\n");
     fflush(rendererGlLogFile);
     rendererGlLightivDriver(light, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogLineStipple(int32_t factor, uint16_t pattern)
+void RENDERER_GL_API_CALL GL_LogLineStipple(
+    int32_t factor, uint16_t pattern)
 {
     fprintf(rendererGlLogFile, "glLineStipple\n");
     fflush(rendererGlLogFile);
@@ -2482,86 +2797,106 @@ void RENDERER_GL_API_CALL GL_LogLogicOp(uint32_t operation)
     rendererGlLogicOpDriver(operation);
 }
 
-void RENDERER_GL_API_CALL GL_LogMap1d(uint32_t target, double u1, double u2, int32_t stride, int32_t order, const double *points)
+void RENDERER_GL_API_CALL GL_LogMap1d(
+    uint32_t target, double u1, double u2, int32_t stride, int32_t order,
+    const double *points)
 {
     fprintf(rendererGlLogFile, "glMap1d\n");
     fflush(rendererGlLogFile);
     rendererGlMap1dDriver(target, u1, u2, stride, order, points);
 }
 
-void RENDERER_GL_API_CALL GL_LogMap1f(uint32_t target, float u1, float u2, int32_t stride, int32_t order, const float *points)
+void RENDERER_GL_API_CALL GL_LogMap1f(
+    uint32_t target, float u1, float u2, int32_t stride, int32_t order,
+    const float *points)
 {
     fprintf(rendererGlLogFile, "glMap1f\n");
     fflush(rendererGlLogFile);
     rendererGlMap1fDriver(target, u1, u2, stride, order, points);
 }
 
-void RENDERER_GL_API_CALL GL_LogMap2d(uint32_t target, double u1, double u2, int32_t uStride, int32_t uOrder, double v1, double v2,
-                                      int32_t vStride, int32_t vOrder, const double *points)
+void RENDERER_GL_API_CALL GL_LogMap2d(
+    uint32_t target, double u1, double u2, int32_t uStride, int32_t uOrder,
+    double v1, double v2, int32_t vStride, int32_t vOrder,
+    const double *points)
 {
     fprintf(rendererGlLogFile, "glMap2d\n");
     fflush(rendererGlLogFile);
-    rendererGlMap2dDriver(target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
+    rendererGlMap2dDriver(
+        target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
 }
 
-void RENDERER_GL_API_CALL GL_LogMap2f(uint32_t target, float u1, float u2, int32_t uStride, int32_t uOrder, float v1, float v2,
-                                      int32_t vStride, int32_t vOrder, const float *points)
+void RENDERER_GL_API_CALL GL_LogMap2f(
+    uint32_t target, float u1, float u2, int32_t uStride, int32_t uOrder,
+    float v1, float v2, int32_t vStride, int32_t vOrder,
+    const float *points)
 {
     fprintf(rendererGlLogFile, "glMap2f\n");
     fflush(rendererGlLogFile);
-    rendererGlMap2fDriver(target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
+    rendererGlMap2fDriver(
+        target, u1, u2, uStride, uOrder, v1, v2, vStride, vOrder, points);
 }
 
-void RENDERER_GL_API_CALL GL_LogMapGrid1d(int32_t count, double u1, double u2)
+void RENDERER_GL_API_CALL GL_LogMapGrid1d(
+    int32_t count, double u1, double u2)
 {
     fprintf(rendererGlLogFile, "glMapGrid1d\n");
     fflush(rendererGlLogFile);
     rendererGlMapGrid1dDriver(count, u1, u2);
 }
 
-void RENDERER_GL_API_CALL GL_LogMapGrid1f(int32_t count, float u1, float u2)
+void RENDERER_GL_API_CALL GL_LogMapGrid1f(
+    int32_t count, float u1, float u2)
 {
     fprintf(rendererGlLogFile, "glMapGrid1f\n");
     fflush(rendererGlLogFile);
     rendererGlMapGrid1fDriver(count, u1, u2);
 }
 
-void RENDERER_GL_API_CALL GL_LogMapGrid2d(int32_t uCount, double u1, double u2, int32_t vCount, double v1, double v2)
+void RENDERER_GL_API_CALL GL_LogMapGrid2d(
+    int32_t uCount, double u1, double u2,
+    int32_t vCount, double v1, double v2)
 {
     fprintf(rendererGlLogFile, "glMapGrid2d\n");
     fflush(rendererGlLogFile);
     rendererGlMapGrid2dDriver(uCount, u1, u2, vCount, v1, v2);
 }
 
-void RENDERER_GL_API_CALL GL_LogMapGrid2f(int32_t uCount, float u1, float u2, int32_t vCount, float v1, float v2)
+void RENDERER_GL_API_CALL GL_LogMapGrid2f(
+    int32_t uCount, float u1, float u2,
+    int32_t vCount, float v1, float v2)
 {
     fprintf(rendererGlLogFile, "glMapGrid2f\n");
     fflush(rendererGlLogFile);
     rendererGlMapGrid2fDriver(uCount, u1, u2, vCount, v1, v2);
 }
 
-void RENDERER_GL_API_CALL GL_LogMaterialf(uint32_t face, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogMaterialf(
+    uint32_t face, uint32_t parameter, float value)
 {
     fprintf(rendererGlLogFile, "glMaterialf\n");
     fflush(rendererGlLogFile);
     rendererGlMaterialfDriver(face, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogMaterialfv(uint32_t face, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogMaterialfv(
+    uint32_t face, uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glMaterialfv\n");
     fflush(rendererGlLogFile);
     rendererGlMaterialfvDriver(face, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogMateriali(uint32_t face, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogMateriali(
+    uint32_t face, uint32_t parameter, int32_t value)
 {
     fprintf(rendererGlLogFile, "glMateriali\n");
     fflush(rendererGlLogFile);
     rendererGlMaterialiDriver(face, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogMaterialiv(uint32_t face, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogMaterialiv(
+    uint32_t face, uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glMaterialiv\n");
     fflush(rendererGlLogFile);
@@ -2672,7 +3007,9 @@ void RENDERER_GL_API_CALL GL_LogNormal3sv(const int16_t *values)
     rendererGlNormal3svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogOrtho(double left, double right, double bottom, double top, double nearValue, double farValue)
+void RENDERER_GL_API_CALL GL_LogOrtho(
+    double left, double right, double bottom, double top,
+    double nearValue, double farValue)
 {
     fprintf(rendererGlLogFile, "glOrtho\n");
     fflush(rendererGlLogFile);
@@ -2686,21 +3023,24 @@ void RENDERER_GL_API_CALL GL_LogPassThrough(float token)
     rendererGlPassThroughDriver(token);
 }
 
-void RENDERER_GL_API_CALL GL_LogPixelMapfv(uint32_t map, int32_t mapSize, const float *values)
+void RENDERER_GL_API_CALL GL_LogPixelMapfv(
+    uint32_t map, int32_t mapSize, const float *values)
 {
     fprintf(rendererGlLogFile, "glPixelMapfv\n");
     fflush(rendererGlLogFile);
     rendererGlPixelMapfvDriver(map, mapSize, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogPixelMapuiv(uint32_t map, int32_t mapSize, const uint32_t *values)
+void RENDERER_GL_API_CALL GL_LogPixelMapuiv(
+    uint32_t map, int32_t mapSize, const uint32_t *values)
 {
     fprintf(rendererGlLogFile, "glPixelMapuiv\n");
     fflush(rendererGlLogFile);
     rendererGlPixelMapuivDriver(map, mapSize, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogPixelMapusv(uint32_t map, int32_t mapSize, const uint16_t *values)
+void RENDERER_GL_API_CALL GL_LogPixelMapusv(
+    uint32_t map, int32_t mapSize, const uint16_t *values)
 {
     fprintf(rendererGlLogFile, "glPixelMapusv\n");
     fflush(rendererGlLogFile);
@@ -2728,7 +3068,8 @@ void RENDERER_GL_API_CALL GL_LogPixelTransferf(uint32_t parameter, float value)
     rendererGlPixelTransferfDriver(parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogPixelTransferi(uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogPixelTransferi(
+    uint32_t parameter, int32_t value)
 {
     fprintf(rendererGlLogFile, "glPixelTransferi\n");
     fflush(rendererGlLogFile);
@@ -2791,7 +3132,8 @@ void RENDERER_GL_API_CALL GL_LogPopName(void)
     rendererGlPopNameDriver();
 }
 
-void RENDERER_GL_API_CALL GL_LogPrioritizeTextures(int32_t count, const uint32_t *textures, const float *priorities)
+void RENDERER_GL_API_CALL GL_LogPrioritizeTextures(
+    int32_t count, const uint32_t *textures, const float *priorities)
 {
     fprintf(rendererGlLogFile, "glPrioritizeTextures\n");
     fflush(rendererGlLogFile);
@@ -2944,7 +3286,8 @@ void RENDERER_GL_API_CALL GL_LogRasterPos3sv(const int16_t *values)
     rendererGlRasterPos3svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogRasterPos4d(double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_LogRasterPos4d(
+    double x, double y, double z, double w)
 {
     fprintf(rendererGlLogFile, "glRasterPos4d\n");
     fflush(rendererGlLogFile);
@@ -2958,7 +3301,8 @@ void RENDERER_GL_API_CALL GL_LogRasterPos4dv(const double *values)
     rendererGlRasterPos4dvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogRasterPos4f(float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_LogRasterPos4f(
+    float x, float y, float z, float w)
 {
     fprintf(rendererGlLogFile, "glRasterPos4f\n");
     fflush(rendererGlLogFile);
@@ -2972,7 +3316,8 @@ void RENDERER_GL_API_CALL GL_LogRasterPos4fv(const float *values)
     rendererGlRasterPos4fvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogRasterPos4i(int32_t x, int32_t y, int32_t z, int32_t w)
+void RENDERER_GL_API_CALL GL_LogRasterPos4i(
+    int32_t x, int32_t y, int32_t z, int32_t w)
 {
     fprintf(rendererGlLogFile, "glRasterPos4i\n");
     fflush(rendererGlLogFile);
@@ -2986,7 +3331,8 @@ void RENDERER_GL_API_CALL GL_LogRasterPos4iv(const int32_t *values)
     rendererGlRasterPos4ivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogRasterPos4s(int16_t x, int16_t y, int16_t z, int16_t w)
+void RENDERER_GL_API_CALL GL_LogRasterPos4s(
+    int16_t x, int16_t y, int16_t z, int16_t w)
 {
     fprintf(rendererGlLogFile, "glRasterPos4s\n");
     fflush(rendererGlLogFile);
@@ -3007,15 +3353,17 @@ void RENDERER_GL_API_CALL GL_LogReadBuffer(uint32_t mode)
     rendererGlReadBufferDriver(mode);
 }
 
-void RENDERER_GL_API_CALL GL_LogReadPixels(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t format, uint32_t type,
-                                           void *pixels)
+void RENDERER_GL_API_CALL GL_LogReadPixels(
+    int32_t x, int32_t y, int32_t width, int32_t height,
+    uint32_t format, uint32_t type, void *pixels)
 {
     fprintf(rendererGlLogFile, "glReadPixels\n");
     fflush(rendererGlLogFile);
     rendererGlReadPixelsDriver(x, y, width, height, format, type, pixels);
 }
 
-void RENDERER_GL_API_CALL GL_LogRectd(double x1, double y1, double x2, double y2)
+void RENDERER_GL_API_CALL GL_LogRectd(
+    double x1, double y1, double x2, double y2)
 {
     fprintf(rendererGlLogFile, "glRectd\n");
     fflush(rendererGlLogFile);
@@ -3029,49 +3377,56 @@ void RENDERER_GL_API_CALL GL_LogRectd(double x1, double y1, double x2, double y2
  * return value. Scalar double calls are materialized through x87 stack slots
  * by the original i386 compiler; the typed calls preserve their values and
  * ordering without encoding a platform-specific stack layout. */
-void RENDERER_GL_API_CALL GL_LogRectdv(const double *vertex1, const double *vertex2)
+void RENDERER_GL_API_CALL GL_LogRectdv(
+    const double *vertex1, const double *vertex2)
 {
     fprintf(rendererGlLogFile, "glRectdv\n");
     fflush(rendererGlLogFile);
     rendererGlRectdvDriver(vertex1, vertex2);
 }
 
-void RENDERER_GL_API_CALL GL_LogRectf(float x1, float y1, float x2, float y2)
+void RENDERER_GL_API_CALL GL_LogRectf(
+    float x1, float y1, float x2, float y2)
 {
     fprintf(rendererGlLogFile, "glRectf\n");
     fflush(rendererGlLogFile);
     rendererGlRectfDriver(x1, y1, x2, y2);
 }
 
-void RENDERER_GL_API_CALL GL_LogRectfv(const float *vertex1, const float *vertex2)
+void RENDERER_GL_API_CALL GL_LogRectfv(
+    const float *vertex1, const float *vertex2)
 {
     fprintf(rendererGlLogFile, "glRectfv\n");
     fflush(rendererGlLogFile);
     rendererGlRectfvDriver(vertex1, vertex2);
 }
 
-void RENDERER_GL_API_CALL GL_LogRecti(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
+void RENDERER_GL_API_CALL GL_LogRecti(
+    int32_t x1, int32_t y1, int32_t x2, int32_t y2)
 {
     fprintf(rendererGlLogFile, "glRecti\n");
     fflush(rendererGlLogFile);
     rendererGlRectiDriver(x1, y1, x2, y2);
 }
 
-void RENDERER_GL_API_CALL GL_LogRectiv(const int32_t *vertex1, const int32_t *vertex2)
+void RENDERER_GL_API_CALL GL_LogRectiv(
+    const int32_t *vertex1, const int32_t *vertex2)
 {
     fprintf(rendererGlLogFile, "glRectiv\n");
     fflush(rendererGlLogFile);
     rendererGlRectivDriver(vertex1, vertex2);
 }
 
-void RENDERER_GL_API_CALL GL_LogRects(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+void RENDERER_GL_API_CALL GL_LogRects(
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
     fprintf(rendererGlLogFile, "glRects\n");
     fflush(rendererGlLogFile);
     rendererGlRectsDriver(x1, y1, x2, y2);
 }
 
-void RENDERER_GL_API_CALL GL_LogRectsv(const int16_t *vertex1, const int16_t *vertex2)
+void RENDERER_GL_API_CALL GL_LogRectsv(
+    const int16_t *vertex1, const int16_t *vertex2)
 {
     fprintf(rendererGlLogFile, "glRectsv\n");
     fflush(rendererGlLogFile);
@@ -3085,14 +3440,16 @@ int32_t RENDERER_GL_API_CALL GL_LogRenderMode(uint32_t mode)
     return rendererGlRenderModeDriver(mode);
 }
 
-void RENDERER_GL_API_CALL GL_LogRotated(double angle, double x, double y, double z)
+void RENDERER_GL_API_CALL GL_LogRotated(
+    double angle, double x, double y, double z)
 {
     fprintf(rendererGlLogFile, "glRotated\n");
     fflush(rendererGlLogFile);
     rendererGlRotatedDriver(angle, x, y, z);
 }
 
-void RENDERER_GL_API_CALL GL_LogRotatef(float angle, float x, float y, float z)
+void RENDERER_GL_API_CALL GL_LogRotatef(
+    float angle, float x, float y, float z)
 {
     fprintf(rendererGlLogFile, "glRotatef\n");
     fflush(rendererGlLogFile);
@@ -3127,7 +3484,8 @@ void RENDERER_GL_API_CALL GL_LogShadeModel(uint32_t mode)
     rendererGlShadeModelDriver(mode);
 }
 
-void RENDERER_GL_API_CALL GL_LogStencilFunc(uint32_t func, int32_t reference, uint32_t mask)
+void RENDERER_GL_API_CALL GL_LogStencilFunc(
+    uint32_t func, int32_t reference, uint32_t mask)
 {
     fprintf(rendererGlLogFile, "glStencilFunc\n");
     fflush(rendererGlLogFile);
@@ -3141,7 +3499,8 @@ void RENDERER_GL_API_CALL GL_LogStencilMask(uint32_t mask)
     rendererGlStencilMaskDriver(mask);
 }
 
-void RENDERER_GL_API_CALL GL_LogStencilOp(uint32_t stencilFail, uint32_t depthFail, uint32_t depthPass)
+void RENDERER_GL_API_CALL GL_LogStencilOp(
+    uint32_t stencilFail, uint32_t depthFail, uint32_t depthPass)
 {
     fprintf(rendererGlLogFile, "glStencilOp\n");
     fflush(rendererGlLogFile);
@@ -3322,7 +3681,8 @@ void RENDERER_GL_API_CALL GL_LogTexCoord3sv(const int16_t *values)
     rendererGlTexCoord3svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexCoord4d(double s, double t, double r, double q)
+void RENDERER_GL_API_CALL GL_LogTexCoord4d(
+    double s, double t, double r, double q)
 {
     fprintf(rendererGlLogFile, "glTexCoord4d\n");
     fflush(rendererGlLogFile);
@@ -3336,7 +3696,8 @@ void RENDERER_GL_API_CALL GL_LogTexCoord4dv(const double *values)
     rendererGlTexCoord4dvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexCoord4f(float s, float t, float r, float q)
+void RENDERER_GL_API_CALL GL_LogTexCoord4f(
+    float s, float t, float r, float q)
 {
     fprintf(rendererGlLogFile, "glTexCoord4f\n");
     fflush(rendererGlLogFile);
@@ -3350,7 +3711,8 @@ void RENDERER_GL_API_CALL GL_LogTexCoord4fv(const float *values)
     rendererGlTexCoord4fvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexCoord4i(int32_t s, int32_t t, int32_t r, int32_t q)
+void RENDERER_GL_API_CALL GL_LogTexCoord4i(
+    int32_t s, int32_t t, int32_t r, int32_t q)
 {
     fprintf(rendererGlLogFile, "glTexCoord4i\n");
     fflush(rendererGlLogFile);
@@ -3364,7 +3726,8 @@ void RENDERER_GL_API_CALL GL_LogTexCoord4iv(const int32_t *values)
     rendererGlTexCoord4ivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexCoord4s(int16_t s, int16_t t, int16_t r, int16_t q)
+void RENDERER_GL_API_CALL GL_LogTexCoord4s(
+    int16_t s, int16_t t, int16_t r, int16_t q)
 {
     fprintf(rendererGlLogFile, "glTexCoord4s\n");
     fflush(rendererGlLogFile);
@@ -3378,68 +3741,78 @@ void RENDERER_GL_API_CALL GL_LogTexCoord4sv(const int16_t *values)
     rendererGlTexCoord4svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexEnvfv(uint32_t target, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogTexEnvfv(
+    uint32_t target, uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glTexEnvfv\n");
     fflush(rendererGlLogFile);
     rendererGlTexEnvfvDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexEnviv(uint32_t target, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogTexEnviv(
+    uint32_t target, uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glTexEnviv\n");
     fflush(rendererGlLogFile);
     rendererGlTexEnvivDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexGend(uint32_t coordinate, uint32_t parameter, double value)
+void RENDERER_GL_API_CALL GL_LogTexGend(
+    uint32_t coordinate, uint32_t parameter, double value)
 {
     fprintf(rendererGlLogFile, "glTexGend\n");
     fflush(rendererGlLogFile);
     rendererGlTexGendDriver(coordinate, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexGendv(uint32_t coordinate, uint32_t parameter, const double *values)
+void RENDERER_GL_API_CALL GL_LogTexGendv(
+    uint32_t coordinate, uint32_t parameter, const double *values)
 {
     fprintf(rendererGlLogFile, "glTexGendv\n");
     fflush(rendererGlLogFile);
     rendererGlTexGendvDriver(coordinate, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexGenf(uint32_t coordinate, uint32_t parameter, float value)
+void RENDERER_GL_API_CALL GL_LogTexGenf(
+    uint32_t coordinate, uint32_t parameter, float value)
 {
     fprintf(rendererGlLogFile, "glTexGenf\n");
     fflush(rendererGlLogFile);
     rendererGlTexGenfDriver(coordinate, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexGenfv(uint32_t coordinate, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogTexGenfv(
+    uint32_t coordinate, uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glTexGenfv\n");
     fflush(rendererGlLogFile);
     rendererGlTexGenfvDriver(coordinate, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexGeni(uint32_t coordinate, uint32_t parameter, int32_t value)
+void RENDERER_GL_API_CALL GL_LogTexGeni(
+    uint32_t coordinate, uint32_t parameter, int32_t value)
 {
     fprintf(rendererGlLogFile, "glTexGeni\n");
     fflush(rendererGlLogFile);
     rendererGlTexGeniDriver(coordinate, parameter, value);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexGeniv(uint32_t coordinate, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogTexGeniv(
+    uint32_t coordinate, uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glTexGeniv\n");
     fflush(rendererGlLogFile);
     rendererGlTexGenivDriver(coordinate, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexImage1D(uint32_t target, int32_t level, int32_t internalFormat, int32_t width, int32_t border,
-                                           uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_LogTexImage1D(
+    uint32_t target, int32_t level, int32_t internalFormat, int32_t width,
+    int32_t border, uint32_t format, uint32_t type, const void *pixels)
 {
     fprintf(rendererGlLogFile, "glTexImage1D\n");
     fflush(rendererGlLogFile);
-    rendererGlTexImage1DDriver(target, level, internalFormat, width, border, format, type, pixels);
+    rendererGlTexImage1DDriver(
+        target, level, internalFormat, width, border, format, type, pixels);
 }
 
 /* Source: CoDUOMP.exe 0x004cfa50..0x004d0065. Core fixed-function QGL
@@ -3447,42 +3820,53 @@ void RENDERER_GL_API_CALL GL_LogTexImage1D(uint32_t target, int32_t level, int32
  * its exact .rdata operation name, flushes rendererGlLogFile, and invokes the
  * corresponding driver entry. The scalar double wrappers explicitly copy
  * their arguments through x87 stack slots in the original i386 code. */
-void RENDERER_GL_API_CALL GL_LogTexImage2D(uint32_t target, int32_t level, int32_t internalFormat, int32_t width, int32_t height,
-                                           int32_t border, uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_LogTexImage2D(
+    uint32_t target, int32_t level, int32_t internalFormat, int32_t width,
+    int32_t height, int32_t border, uint32_t format, uint32_t type,
+    const void *pixels)
 {
     fprintf(rendererGlLogFile, "glTexImage2D\n");
     fflush(rendererGlLogFile);
-    rendererGlTexImage2DDriver(target, level, internalFormat, width, height, border, format, type, pixels);
+    rendererGlTexImage2DDriver(
+        target, level, internalFormat, width, height, border, format, type,
+        pixels);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexParameterfv(uint32_t target, uint32_t parameter, const float *values)
+void RENDERER_GL_API_CALL GL_LogTexParameterfv(
+    uint32_t target, uint32_t parameter, const float *values)
 {
     fprintf(rendererGlLogFile, "glTexParameterfv\n");
     fflush(rendererGlLogFile);
     rendererGlTexParameterfvDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexParameteriv(uint32_t target, uint32_t parameter, const int32_t *values)
+void RENDERER_GL_API_CALL GL_LogTexParameteriv(
+    uint32_t target, uint32_t parameter, const int32_t *values)
 {
     fprintf(rendererGlLogFile, "glTexParameteriv\n");
     fflush(rendererGlLogFile);
     rendererGlTexParameterivDriver(target, parameter, values);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexSubImage1D(uint32_t target, int32_t level, int32_t xOffset, int32_t width, uint32_t format,
-                                              uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_LogTexSubImage1D(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t width,
+    uint32_t format, uint32_t type, const void *pixels)
 {
     fprintf(rendererGlLogFile, "glTexSubImage1D\n");
     fflush(rendererGlLogFile);
-    rendererGlTexSubImage1DDriver(target, level, xOffset, width, format, type, pixels);
+    rendererGlTexSubImage1DDriver(
+        target, level, xOffset, width, format, type, pixels);
 }
 
-void RENDERER_GL_API_CALL GL_LogTexSubImage2D(uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset, int32_t width,
-                                              int32_t height, uint32_t format, uint32_t type, const void *pixels)
+void RENDERER_GL_API_CALL GL_LogTexSubImage2D(
+    uint32_t target, int32_t level, int32_t xOffset, int32_t yOffset,
+    int32_t width, int32_t height, uint32_t format, uint32_t type,
+    const void *pixels)
 {
     fprintf(rendererGlLogFile, "glTexSubImage2D\n");
     fflush(rendererGlLogFile);
-    rendererGlTexSubImage2DDriver(target, level, xOffset, yOffset, width, height, format, type, pixels);
+    rendererGlTexSubImage2DDriver(
+        target, level, xOffset, yOffset, width, height, format, type, pixels);
 }
 
 void RENDERER_GL_API_CALL GL_LogTranslated(double x, double y, double z)
@@ -3597,7 +3981,8 @@ void RENDERER_GL_API_CALL GL_LogVertex3iv(const int32_t *values)
     rendererGlVertex3ivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertex3s(int16_t x, int16_t y, int16_t z)
+void RENDERER_GL_API_CALL GL_LogVertex3s(
+    int16_t x, int16_t y, int16_t z)
 {
     fprintf(rendererGlLogFile, "glVertex3s\n");
     fflush(rendererGlLogFile);
@@ -3611,7 +3996,8 @@ void RENDERER_GL_API_CALL GL_LogVertex3sv(const int16_t *values)
     rendererGlVertex3svDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertex4d(double x, double y, double z, double w)
+void RENDERER_GL_API_CALL GL_LogVertex4d(
+    double x, double y, double z, double w)
 {
     fprintf(rendererGlLogFile, "glVertex4d\n");
     fflush(rendererGlLogFile);
@@ -3625,7 +4011,8 @@ void RENDERER_GL_API_CALL GL_LogVertex4dv(const double *values)
     rendererGlVertex4dvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertex4f(float x, float y, float z, float w)
+void RENDERER_GL_API_CALL GL_LogVertex4f(
+    float x, float y, float z, float w)
 {
     fprintf(rendererGlLogFile, "glVertex4f\n");
     fflush(rendererGlLogFile);
@@ -3639,7 +4026,8 @@ void RENDERER_GL_API_CALL GL_LogVertex4fv(const float *values)
     rendererGlVertex4fvDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertex4i(int32_t x, int32_t y, int32_t z, int32_t w)
+void RENDERER_GL_API_CALL GL_LogVertex4i(
+    int32_t x, int32_t y, int32_t z, int32_t w)
 {
     fprintf(rendererGlLogFile, "glVertex4i\n");
     fflush(rendererGlLogFile);
@@ -3653,7 +4041,8 @@ void RENDERER_GL_API_CALL GL_LogVertex4iv(const int32_t *values)
     rendererGlVertex4ivDriver(values);
 }
 
-void RENDERER_GL_API_CALL GL_LogVertex4s(int16_t x, int16_t y, int16_t z, int16_t w)
+void RENDERER_GL_API_CALL GL_LogVertex4s(
+    int16_t x, int16_t y, int16_t z, int16_t w)
 {
     fprintf(rendererGlLogFile, "glVertex4s\n");
     fflush(rendererGlLogFile);

@@ -16,7 +16,8 @@ int32_t ThreadInfoCompare(const void *left, const void *right);
 float Scr_GetEntryUsage(script_variable_type_t type, VariableUnion value);
 float Scr_GetEndonUsage(uint16_t localVars);
 float Scr_GetObjectUsage(uint16_t object);
-float Scr_GetThreadUsage(const VariableStackBuffer *frame, float *endonUsage);
+float Scr_GetThreadUsage(const VariableStackBuffer *frame,
+                         float *endonUsage);
 void Scr_DumpScriptThreads(void);
 void Scr_DumpScriptVariables(void);
 int32_t Scr_GetNumScriptVars(void);

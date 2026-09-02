@@ -6,6 +6,7 @@
 // identify this function as UI_Cvar_VariableString.
 const char *UI_Cvar_VariableString(const char *name)
 {
-    trap_Cvar_VariableStringBuffer(name, ui_menuFilesBuffer, MAX_STRING_CHARS);
+    trap_Cvar_VariableStringBuffer(name, ui_menuFilesBuffer,
+                                   MAX_STRING_CHARS);
     return ui_menuFilesBuffer;
 }

@@ -20,8 +20,9 @@ enum {
     CG_FRAME_VIEW_KICK_FLAG_0x80000 = 0x80000
 };
 
-void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPlayback, int32_t lockedViewFace, int32_t lockedViewSize,
-                        qboolean drawFrame)
+void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView,
+                        qboolean demoPlayback, int32_t lockedViewFace,
+                        int32_t lockedViewSize, qboolean drawFrame)
 {
     int32_t i;
     qboolean cameraClipped;
@@ -44,21 +45,25 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPla
     cg_lockedViewSize = lockedViewSize;
 
     if (stereoView != STEREO_RIGHT) {
-        cg_frametime = coduo_int32_from_bits((uint32_t)serverTime - (uint32_t)cg_physicsTime);
+        cg_frametime = coduo_int32_from_bits(
+            (uint32_t)serverTime - (uint32_t)cg_physicsTime);
         if (cg_frametime < 0) {
             cg_frametime = 0;
             cg_physicsTime = serverTime;
         }
 
         cg_lagometerFrameSamples[cg_lagometerFrameCount & (LAG_SAMPLES - 1)] =
-            coduo_int32_from_bits((uint32_t)serverTime - (uint32_t)cg_latestSnapshotServerTime);
-        cg_lagometerFrameCount = coduo_int32_from_bits((uint32_t)cg_lagometerFrameCount + 1u);
+            coduo_int32_from_bits((uint32_t)serverTime -
+                             (uint32_t)cg_latestSnapshotServerTime);
+        cg_lagometerFrameCount = coduo_int32_from_bits(
+            (uint32_t)cg_lagometerFrameCount + 1u);
     }
     cg_effectFrameTime = (uint32_t)cg_frametime;
 
     /* 0x30042209..0x30042225: all 184 table entries, handle field only. */
     for (i = 0; i < CG_CVAR_TABLE_COUNT; ++i) {
-        cgame_syscall(CG_CVAR_UPDATE, (intptr_t)cg_cvarTable[i].vmCvar);
+        cgame_syscall(CG_CVAR_UPDATE,
+                      (intptr_t)cg_cvarTable[i].vmCvar);
     }
     /* NOT_FROM_ORIGINAL_SOURCE: refresh the compatibility cvars beside the
      * recovered table so live presentation-mode changes take effect. */
@@ -92,12 +97,17 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPla
 
     /* If live input has run ahead of the installed snapshot but is not in the
      * future relative to cg.time, force the connection-information draw. */
-    if (cl_serverloadmap.string[0] != '\0' && cl_serverloadgametype.string[0] != '\0') {
+    if (cl_serverloadmap.string[0] != '\0' &&
+        cl_serverloadgametype.string[0] != '\0') {
         usercmd_t oldestCmd;
-        int32_t oldestCmdNumber = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER) - (uint32_t)(CMD_BACKUP - 1));
+        int32_t oldestCmdNumber = coduo_int32_from_bits(
+            (uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER) -
+            (uint32_t)(CMD_BACKUP - 1));
 
-        cgame_syscall(CG_GET_USER_CMD, oldestCmdNumber, (intptr_t)&oldestCmd);
-        if (oldestCmd.commandTime > cg_snap->ps.commandTime && oldestCmd.commandTime <= serverTime) {
+        cgame_syscall(CG_GET_USER_CMD, oldestCmdNumber,
+                      (intptr_t)&oldestCmd);
+        if (oldestCmd.commandTime > cg_snap->ps.commandTime &&
+            oldestCmd.commandTime <= serverTime) {
             CG_DrawInformation(qtrue);
             return;
         }
@@ -130,9 +140,12 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPla
     cg_shellShockSwayDuration = shellshockDuration;
     CG_UpdateShellShock(shellshockStartTime, shellshockParams, shellshockDuration);
 
-    cg_thirdPerson = (cg_thirdPerson_vmCvar.integer != qfalse || cg_nextSnap->ps.pmType >= PM_TYPE_DEAD) ? qtrue : qfalse;
+    cg_thirdPerson =
+        (cg_thirdPerson_vmCvar.integer != qfalse ||
+         cg_nextSnap->ps.pmType >= PM_TYPE_DEAD) ? qtrue : qfalse;
 
-    if ((cg_nextSnap->ps.playerStateFlags & CG_FRAME_VIEW_KICK_FLAG_0x80000) != 0) {
+    if ((cg_nextSnap->ps.playerStateFlags &
+         CG_FRAME_VIEW_KICK_FLAG_0x80000) != 0) {
         CG_UpdateViewKick();
     } else {
         cg_viewKickVel[0] = 0.0f;
@@ -170,7 +183,8 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPla
     if (cg_weaponSelect_vmCvar.integer < 0 || cg_weaponSelect_vmCvar.integer > bg_numWeapons) {
         int32_t slot;
 
-        Com_PrintMessage(cg_invalidWeaponSelectWarning, cg_weaponSelect_vmCvar.integer, bg_numWeapons);
+        Com_PrintMessage(cg_invalidWeaponSelectWarning,
+                         cg_weaponSelect_vmCvar.integer, bg_numWeapons);
 
         /* 0x3004266f..0x300426b5: replay every nonzero inventory-slot byte
          * through cg_weaponSelect, then leave the cvar at the literal "0". */
@@ -178,7 +192,10 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPla
             if (cg_predictedPlayerState.weaponSlots[slot] != 0) {
                 /* 0x3004267e: MOVSX EDX,AL — the slot byte is SIGN-extended
                  * into va("%i", ...), despite the unsigned storage. */
-                trap_Cvar_Set(cg_weaponSelectCvarName, va("%i", (int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot]));
+                trap_Cvar_Set(
+                    cg_weaponSelectCvarName,
+                    va("%i",
+                       (int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slot]));
             }
         }
         trap_Cvar_Set(cg_weaponSelectCvarName, "0");
@@ -188,21 +205,33 @@ void CG_DrawActiveFrame(int32_t serverTime, int32_t stereoView, qboolean demoPla
     /* FUCOMPP/TEST AH,0x44/JNP skips only ordered equality with zero;
      * unordered values fall through and are multiplied just like C !=. */
     if (cg_shellshockMouseSensitivityScale != 0.0f) {
-        shellshockBlend = (float)((long double)shellshockBlend * (long double)cg_shellshockMouseSensitivityScale);
+        shellshockBlend = (float)(
+            (long double)shellshockBlend *
+            (long double)cg_shellshockMouseSensitivityScale);
     }
 
-    viewAngleOffset[0] = (float)((long double)cg_adsViewErrorAngles[0] + (long double)cg_viewKickAngles[0]);
-    viewAngleOffset[1] = (float)((long double)cg_adsViewErrorAngles[1] + (long double)cg_viewKickAngles[1]);
-    viewAngleOffset[2] = (float)((long double)cg_adsViewErrorAngles[2] + (long double)cg_viewKickAngles[2]);
+    viewAngleOffset[0] = (float)((long double)cg_adsViewErrorAngles[0] +
+                                 (long double)cg_viewKickAngles[0]);
+    viewAngleOffset[1] = (float)((long double)cg_adsViewErrorAngles[1] +
+                                 (long double)cg_viewKickAngles[1]);
+    viewAngleOffset[2] = (float)((long double)cg_adsViewErrorAngles[2] +
+                                 (long double)cg_viewKickAngles[2]);
 
-    cgame_syscall(CG_SET_USER_CMD_AIM_VALUES, (intptr_t)viewAngleOffset);
-    cgame_syscall(CG_SET_USER_CMD_VALUE, cg_weaponSelect_vmCvar.integer, CG_FloatBits(shellshockBlend));
-    cgame_syscall(CG_SET_CLIENT_LERP_ORIGIN, CG_FloatBits(cg_refdef.vieworg[0]), CG_FloatBits(cg_refdef.vieworg[1]),
+    cgame_syscall(CG_SET_USER_CMD_AIM_VALUES,
+                  (intptr_t)viewAngleOffset);
+    cgame_syscall(CG_SET_USER_CMD_VALUE,
+                  cg_weaponSelect_vmCvar.integer, CG_FloatBits(shellshockBlend));
+    cgame_syscall(CG_SET_CLIENT_LERP_ORIGIN,
+                  CG_FloatBits(cg_refdef.vieworg[0]),
+                  CG_FloatBits(cg_refdef.vieworg[1]),
                   CG_FloatBits(cg_refdef.vieworg[2]));
 
     CG_DrawActive(stereoView);
 
-    cgame_syscall(CG_MSS_SET_LISTENER, cg_snap->ps.psClientNum, (intptr_t)cg_refdef.vieworg, (intptr_t)cg_refdef.viewaxis[0]);
+    cgame_syscall(CG_MSS_SET_LISTENER,
+                  cg_snap->ps.psClientNum,
+                  (intptr_t)cg_refdef.vieworg,
+                  (intptr_t)cg_refdef.viewaxis[0]);
     cgame_syscall(CG_MSS_UPDATE_LOOPING_SOUNDS);
 
     if (cg_stats_vmCvar.integer != qfalse) {

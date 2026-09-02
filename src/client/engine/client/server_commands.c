@@ -47,16 +47,18 @@ qboolean CL_GetUserCmd(int32_t commandNumber, usercmd_t *command)
 {
     if (commandNumber > cl.cmdNumber) {
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "CL_GetUserCmd: %i >= %i",
+                  "\x15" "CL_GetUserCmd: %i >= %i",
                   commandNumber, cl.cmdNumber);
     }
 
-    if (commandNumber <= cl.cmdNumber - CODUO_USERCMD_BACKUP_COUNT) {
+    if (commandNumber <=
+        cl.cmdNumber - CODUO_USERCMD_BACKUP_COUNT) {
         return qfalse;
     }
 
-    *command = cl.cmds[commandNumber & (CODUO_USERCMD_BACKUP_COUNT - 1)];
+    *command =
+        cl.cmds[
+            commandNumber & (CODUO_USERCMD_BACKUP_COUNT - 1)];
     return qtrue;
 }
 
@@ -67,18 +69,19 @@ void CL_ConfigstringModified(void)
 {
     const int32_t index = coduo_crt_atoi(Cmd_Argv(1));
     if (index < 0 || index >= MAX_CONFIGSTRINGS) {
-        Com_Error(ERR_DROP, "\x15"
-                            "configstring > MAX_CONFIGSTRINGS");
+        Com_Error(ERR_DROP,
+                  "\x15" "configstring > MAX_CONFIGSTRINGS");
     }
 
     const char *const newString = Cmd_Argv(2);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    if (index >= CS_EFFECTS && index < CS_FX && strcspn(newString, ".") >= FX_EFFECT_TEMPLATE_NAME_CAPACITY) {
-        Com_Error(ERR_DROP, "\x15"
-                            "CL_ConfigstringModified: effect name is too long");
+    if (index >= CS_EFFECTS && index < CS_FX &&
+        strcspn(newString, ".") >= FX_EFFECT_TEMPLATE_NAME_CAPACITY) {
+        Com_Error(ERR_DROP, "\x15" "CL_ConfigstringModified: effect name is too long");
     }
 
-    const char *const oldString = &cl.gameState.stringData[cl.gameState.stringOffsets[index]];
+    const char *const oldString =
+        &cl.gameState.stringData[cl.gameState.stringOffsets[index]];
     if (strcmp(oldString, newString) == 0)
         return;
 
@@ -86,25 +89,31 @@ void CL_ConfigstringModified(void)
     memset(&cl.gameState, 0, sizeof(cl.gameState));
     cl.gameState.dataCount = 1;
 
-    for (int32_t configString = 0; configString < MAX_CONFIGSTRINGS; ++configString) {
+    for (int32_t configString = 0;
+         configString < MAX_CONFIGSTRINGS;
+         ++configString) {
         const char *value;
         if (configString == index) {
             value = newString;
         } else {
-            value = &oldState.stringData[oldState.stringOffsets[configString]];
+            value = &oldState.stringData[
+                oldState.stringOffsets[configString]];
         }
 
         if (*value == '\0')
             continue;
 
         const int32_t valueBytes = (int32_t)strlen(value) + 1;
-        if (cl.gameState.dataCount + valueBytes > (int32_t)sizeof(cl.gameState.stringData)) {
-            Com_Error(ERR_DROP, "\x15"
-                                "MAX_GAMESTATE_CHARS exceeded");
+        if (cl.gameState.dataCount + valueBytes >
+            (int32_t)sizeof(cl.gameState.stringData)) {
+            Com_Error(ERR_DROP,
+                      "\x15" "MAX_GAMESTATE_CHARS exceeded");
         }
 
-        cl.gameState.stringOffsets[configString] = cl.gameState.dataCount;
-        memcpy(&cl.gameState.stringData[cl.gameState.dataCount], value, (size_t)valueBytes);
+        cl.gameState.stringOffsets[configString] =
+            cl.gameState.dataCount;
+        memcpy(&cl.gameState.stringData[cl.gameState.dataCount],
+               value, (size_t)valueBytes);
         cl.gameState.dataCount += valueBytes;
     }
 
@@ -122,56 +131,75 @@ qboolean CL_GetServerCommand(int32_t serverCommandNumber)
 {
     const char *command;
 
-    if (serverCommandNumber <= clc.serverCommandSequence - CODUO_RELIABLE_COMMAND_COUNT) {
+    if (serverCommandNumber <=
+        clc.serverCommandSequence - CODUO_RELIABLE_COMMAND_COUNT) {
         if (clc.demoPlayback != qfalse)
             return qfalse;
 
         Com_Printf("===== CL_GetServerCommand =====\n");
-        Com_Printf("serverCommandNumber: %d\n", serverCommandNumber & CL_RELIABLE_COMMAND_MASK);
-        for (int32_t commandIndex = 0; commandIndex < CODUO_RELIABLE_COMMAND_COUNT; ++commandIndex) {
-            Com_Printf("cmd %5d: %s\n", commandIndex, clc.serverCommands[commandIndex & CL_RELIABLE_COMMAND_MASK]);
+        Com_Printf("serverCommandNumber: %d\n",
+                   serverCommandNumber & CL_RELIABLE_COMMAND_MASK);
+        for (int32_t commandIndex = 0;
+             commandIndex < CODUO_RELIABLE_COMMAND_COUNT;
+             ++commandIndex) {
+            Com_Printf(
+                "cmd %5d: %s\n", commandIndex,
+                clc.serverCommands[
+                    commandIndex & CL_RELIABLE_COMMAND_MASK]);
         }
-        Com_Error(ERR_DROP, "\x15"
-                            "CL_GetServerCommand: "
-                            "\x14"
-                            "EXE_ERR_RELIABLE_CYCLED_OUT");
+        Com_Error(
+            ERR_DROP,
+            "\x15" "CL_GetServerCommand: "
+            "\x14" "EXE_ERR_RELIABLE_CYCLED_OUT");
     }
 
     if (serverCommandNumber > clc.serverCommandSequence) {
-        Com_Error(ERR_DROP, "\x15"
-                            "CL_GetServerCommand: "
-                            "\x14"
-                            "EXE_ERR_NOT_RECEIVED");
+        Com_Error(
+            ERR_DROP,
+            "\x15" "CL_GetServerCommand: "
+            "\x14" "EXE_ERR_NOT_RECEIVED");
     }
 
     clc.lastExecutedServerCommand = serverCommandNumber;
-    command = clc.serverCommands[serverCommandNumber & CL_RELIABLE_COMMAND_MASK];
+    command =
+        clc.serverCommands[
+            serverCommandNumber & CL_RELIABLE_COMMAND_MASK];
 
 process_command:
     if (cl_showServerCommands->integer != 0) {
-        Com_DPrintf("serverCommand: %i : %s\n", serverCommandNumber, command);
+        Com_DPrintf("serverCommand: %i : %s\n",
+                    serverCommandNumber, command);
     }
 
     Cmd_TokenizeString(command);
-    const char *const commandName = Cmd_Argc() > 0 ? Cmd_Argv(0) : "";
+    const char *const commandName =
+        Cmd_Argc() > 0 ? Cmd_Argv(0) : "";
 
     switch ((uint8_t)commandName[0]) {
     case CL_SERVER_COMMAND_DISCONNECT: {
         if (Cmd_Argc() >= 2) {
-            const char *const translatedReason = SEH_SafeTranslateString(Cmd_Argv(1));
-            const char *const translatedFormat = SEH_SafeTranslateString("EXE_SERVERDISCONNECTREASON");
+            const char *const translatedReason =
+                SEH_SafeTranslateString(Cmd_Argv(1));
+            const char *const translatedFormat =
+                SEH_SafeTranslateString(
+                    "EXE_SERVERDISCONNECTREASON");
             const char *completedReason;
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-            if (client_compat_validate_format_signature(translatedFormat, "s") == qfalse) {
-                Com_Printf("WARNING: rejected invalid server-disconnect format\n");
+            if (client_compat_validate_format_signature(
+                    translatedFormat, "s") == qfalse) {
+                Com_Printf(
+                    "WARNING: rejected invalid server-disconnect format\n");
                 completedReason = translatedFormat;
             } else {
                 completedReason = va(translatedFormat, translatedReason);
             }
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-            Com_Error(ERR_SERVER_DISCONNECT, "%s", completedReason);
+            Com_Error(
+                ERR_SERVER_DISCONNECT,
+                "%s", completedReason);
         } else {
-            Com_Error(ERR_SERVER_DISCONNECT, "EXE_SERVER_DISCONNECTED");
+            Com_Error(ERR_SERVER_DISCONNECT,
+                      "EXE_SERVER_DISCONNECTED");
         }
         /* The retail fallthrough is unreachable when Com_Error unwinds. */
         /* fall through */
@@ -181,16 +209,19 @@ process_command:
         Cmd_TokenizeString2(command, 3);
         const char *const value = Cmd_Argv(2);
         const char *const index = Cmd_Argv(1);
-        Com_sprintf(cl_bigConfigString, sizeof(cl_bigConfigString), "d %s %s", index, value);
+        Com_sprintf(
+            cl_bigConfigString, sizeof(cl_bigConfigString),
+            "d %s %s", index, value);
         return qfalse;
     }
 
     case CL_SERVER_COMMAND_BIG_CONFIG_CONTINUE: {
         Cmd_TokenizeString2(command, 3);
         const char *const fragment = Cmd_Argv(2);
-        if (strlen(cl_bigConfigString) + strlen(fragment) >= sizeof(cl_bigConfigString)) {
-            Com_Error(ERR_DROP, "\x15"
-                                "bcs exceeded BIG_INFO_STRING");
+        if (strlen(cl_bigConfigString) + strlen(fragment) >=
+            sizeof(cl_bigConfigString)) {
+            Com_Error(ERR_DROP,
+                      "\x15" "bcs exceeded BIG_INFO_STRING");
         }
         strcat(cl_bigConfigString, fragment);
         return qfalse;
@@ -199,9 +230,10 @@ process_command:
     case CL_SERVER_COMMAND_BIG_CONFIG_END: {
         Cmd_TokenizeString2(command, 3);
         const char *const fragment = Cmd_Argv(2);
-        if (strlen(cl_bigConfigString) + strlen(fragment) + 1 >= sizeof(cl_bigConfigString)) {
-            Com_Error(ERR_DROP, "\x15"
-                                "bcs exceeded BIG_INFO_STRING");
+        if (strlen(cl_bigConfigString) + strlen(fragment) + 1 >=
+            sizeof(cl_bigConfigString)) {
+            Com_Error(ERR_DROP,
+                      "\x15" "bcs exceeded BIG_INFO_STRING");
         }
         strcat(cl_bigConfigString, fragment);
         command = cl_bigConfigString;

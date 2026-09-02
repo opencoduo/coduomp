@@ -333,10 +333,14 @@ struct scr_ast_node_s {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(scr_ast_node_t, payload) == 4, "i386 AST payload offset changed");
-_Static_assert(sizeof(scr_ast_node_t) == 28, "i386 AST node size changed");
-_Static_assert(sizeof(scr_ast_list_item_t) == 8, "i386 AST list-item size changed");
-_Static_assert(sizeof(scr_ast_list_t) == 8, "i386 AST list header size changed");
+_Static_assert(offsetof(scr_ast_node_t, payload) == 4,
+               "i386 AST payload offset changed");
+_Static_assert(sizeof(scr_ast_node_t) == 28,
+               "i386 AST node size changed");
+_Static_assert(sizeof(scr_ast_list_item_t) == 8,
+               "i386 AST list-item size changed");
+_Static_assert(sizeof(scr_ast_list_t) == 8,
+               "i386 AST list header size changed");
 #endif
 
 #endif

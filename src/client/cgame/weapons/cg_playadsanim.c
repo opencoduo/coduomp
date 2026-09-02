@@ -61,15 +61,19 @@ void CG_PlayADSAnim(int32_t activeAnimIndex, intptr_t animTree)
 {
     /* --- Trap 0x8f: activate one ADS node, reset the other. --- */
     if (activeAnimIndex == WEAPON_XANIM_ADS_UP) {
-        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_UP, CG_FloatBits(1.0f), CG_FloatBits(CG_ADS_BLEND_TIME), 0, 1,
-                      0);
-        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_DOWN, CG_FloatBits(0.0f), CG_FloatBits(CG_ADS_BLEND_TIME), 0, 0,
-                      0);
+        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_UP,
+                      CG_FloatBits(1.0f), CG_FloatBits(CG_ADS_BLEND_TIME),
+                      0, 1, 0);
+        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_DOWN,
+                      CG_FloatBits(0.0f), CG_FloatBits(CG_ADS_BLEND_TIME),
+                      0, 0, 0);
     } else {
-        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_UP, CG_FloatBits(0.0f), CG_FloatBits(CG_ADS_BLEND_TIME), 0, 0,
-                      0);
-        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_DOWN, CG_FloatBits(1.0f), CG_FloatBits(CG_ADS_BLEND_TIME), 0, 1,
-                      0);
+        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_UP,
+                      CG_FloatBits(0.0f), CG_FloatBits(CG_ADS_BLEND_TIME),
+                      0, 0, 0);
+        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ADS_DOWN,
+                      CG_FloatBits(1.0f), CG_FloatBits(CG_ADS_BLEND_TIME),
+                      0, 1, 0);
     }
 
     /* --- Trap 0x94: set complementary XAnim times from the ADS zoom fraction.
@@ -77,9 +81,12 @@ void CG_PlayADSAnim(int32_t activeAnimIndex, intptr_t animTree)
      * the first call issued, then FLD 1.0f / FSUB [..] forms the complement for
      * the second. Both reads are of the same live global; order preserved. --- */
     float adsFraction = cg_predictedPlayerState.adsFraction;
-    cgame_syscall(CG_XANIM_SET_TIME, animTree, WEAPON_XANIM_ADS_UP, CG_FloatBits(adsFraction));
+    cgame_syscall(CG_XANIM_SET_TIME, animTree, WEAPON_XANIM_ADS_UP,
+                  CG_FloatBits(adsFraction));
 
     /* 1.0f from FLD float ptr [0x3007bce0] (bit pattern 0x3f800000). */
-    float complement = (float)(1.0L - (long double)cg_predictedPlayerState.adsFraction);
-    cgame_syscall(CG_XANIM_SET_TIME, animTree, WEAPON_XANIM_ADS_DOWN, CG_FloatBits(complement));
+    float complement = (float)(1.0L -
+                               (long double)cg_predictedPlayerState.adsFraction);
+    cgame_syscall(CG_XANIM_SET_TIME, animTree, WEAPON_XANIM_ADS_DOWN,
+                  CG_FloatBits(complement));
 }

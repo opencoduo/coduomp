@@ -32,7 +32,8 @@ extern int32_t bg_numAmmoClips;
  * its own enum-defined bound even though the original linker placed the seven
  * arrays consecutively. */
 extern const char *const bg_weaponTypeNames[WEAPTYPE_COUNT];
-extern const char *const bg_weaponOverlayReticleNames[WEAPON_OVERLAY_RETICLE_COUNT];
+extern const char *const bg_weaponOverlayReticleNames[
+    WEAPON_OVERLAY_RETICLE_COUNT];
 extern const char *const bg_weaponSlotNames[WEAPSLOT_COUNT];
 extern const char *const bg_weaponStanceNames[WEAPON_STANCE_COUNT];
 extern const char *const bg_weaponClassNames[WEAPCLASS_COUNT];
@@ -61,22 +62,31 @@ const char *BG_GetWeaponSlotNameForIndex(int32_t slot);
 int32_t BG_GetWeaponIndexForName(const char *name);
 qboolean BG_IsAimDownSightWeapon(int32_t weapon);
 #if defined(WINDOWS_BEHAVIOR)
-long double BG_GetMinSpreadForWeapon(const playerState_t *ps, int32_t weapon, int32_t time, int32_t isAds);
+long double BG_GetMinSpreadForWeapon(const playerState_t *ps, int32_t weapon,
+                                     int32_t time, int32_t isAds);
 #else
-float BG_GetMinSpreadForWeapon(const playerState_t *ps, int32_t weapon, int32_t time, int32_t isAds);
+float BG_GetMinSpreadForWeapon(const playerState_t *ps, int32_t weapon,
+                               int32_t time, int32_t isAds);
 #endif
-qboolean BG_ParseWeaponInfoSpecificFieldType(void *weaponInfoBase, const char *value, int32_t fieldType);
-void BG_WeaponFireRecoil(playerState_t *ps, vec2_t recoilVelocity, vec3_t viewKick);
+qboolean BG_ParseWeaponInfoSpecificFieldType(void *weaponInfoBase,
+                                              const char *value,
+                                              int32_t fieldType);
+void BG_WeaponFireRecoil(playerState_t *ps, vec2_t recoilVelocity,
+                         vec3_t viewKick);
 int32_t BG_GetMaxPickupableAmmo(const playerState_t *ps, int32_t weapon);
 int32_t BG_GetTotalAmmoReserve(const playerState_t *ps, int32_t weapon);
 int32_t BG_GetEmptySlotForWeapon(const playerState_t *ps, int32_t weapon);
-int32_t BG_GetStackSlotForWeapon(const playerState_t *ps, int32_t weapon, int32_t preferredSlot);
-qboolean BG_SetPlayerWeaponForSlot(playerState_t *ps, int32_t slot, int32_t weapon);
-int32_t BG_IsPlayerWeaponInSlot(const playerState_t *ps, int32_t weapon, qboolean includeAltWeapons);
+int32_t BG_GetStackSlotForWeapon(const playerState_t *ps, int32_t weapon,
+                                int32_t preferredSlot);
+qboolean BG_SetPlayerWeaponForSlot(playerState_t *ps, int32_t slot,
+                                   int32_t weapon);
+int32_t BG_IsPlayerWeaponInSlot(const playerState_t *ps, int32_t weapon,
+                                qboolean includeAltWeapons);
 qboolean BG_IsPlayerWeaponAnAlt(int32_t weapon, int32_t altWeapon);
 qboolean BG_GivePlayerWeapon(playerState_t *ps, int32_t weapon);
 int32_t BG_TakePlayerWeapon(playerState_t *ps, int32_t weapon);
-qboolean BG_CanItemBeGrabbed(const entityState_t *item, const playerState_t *ps, int32_t traceMode);
+qboolean BG_CanItemBeGrabbed(const entityState_t *item,
+                             const playerState_t *ps, int32_t traceMode);
 gitem_t *BG_FindItemForWeapon(int32_t weapon);
 gitem_t *BG_FindItem(const char *pickupName);
 

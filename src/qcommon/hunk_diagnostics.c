@@ -81,25 +81,34 @@ extern size_t hunk_totalZoneSize;
 
 void Com_Meminfo_f(void)
 {
-    Com_Printf(HUNK_SIZE_FORMAT " bytes total hunk\n", HUNK_SIZE_ARGUMENT(hunk.totalSize));
-    Com_Printf(HUNK_SIZE_FORMAT " bytes total zone\n", HUNK_SIZE_ARGUMENT(HUNK_TOTAL_ZONE_SIZE));
+    Com_Printf(HUNK_SIZE_FORMAT " bytes total hunk\n",
+               HUNK_SIZE_ARGUMENT(hunk.totalSize));
+    Com_Printf(HUNK_SIZE_FORMAT " bytes total zone\n",
+               HUNK_SIZE_ARGUMENT(HUNK_TOTAL_ZONE_SIZE));
     Com_Printf("\n");
 
-    Com_Printf(HUNK_SIZE_FORMAT " low mark\n", HUNK_SIZE_ARGUMENT(hunk.lowMark));
-    Com_Printf(HUNK_SIZE_FORMAT " low permanent\n", HUNK_SIZE_ARGUMENT(hunk.lowUsed));
+    Com_Printf(HUNK_SIZE_FORMAT " low mark\n",
+               HUNK_SIZE_ARGUMENT(hunk.lowMark));
+    Com_Printf(HUNK_SIZE_FORMAT " low permanent\n",
+               HUNK_SIZE_ARGUMENT(hunk.lowUsed));
     if (hunk.lowTemp != hunk.lowUsed) {
-        Com_Printf(HUNK_SIZE_FORMAT " low temp\n", HUNK_SIZE_ARGUMENT(hunk.lowTemp));
+        Com_Printf(HUNK_SIZE_FORMAT " low temp\n",
+                   HUNK_SIZE_ARGUMENT(hunk.lowTemp));
     }
     Com_Printf("\n");
 
-    Com_Printf(HUNK_SIZE_FORMAT " high mark\n", HUNK_SIZE_ARGUMENT(hunk.highMark));
-    Com_Printf(HUNK_SIZE_FORMAT " high permanent\n", HUNK_SIZE_ARGUMENT(hunk.highUsed));
+    Com_Printf(HUNK_SIZE_FORMAT " high mark\n",
+               HUNK_SIZE_ARGUMENT(hunk.highMark));
+    Com_Printf(HUNK_SIZE_FORMAT " high permanent\n",
+               HUNK_SIZE_ARGUMENT(hunk.highUsed));
     if (hunk.highTemp != hunk.highUsed) {
-        Com_Printf(HUNK_SIZE_FORMAT " high temp\n", HUNK_SIZE_ARGUMENT(hunk.highTemp));
+        Com_Printf(HUNK_SIZE_FORMAT " high temp\n",
+                   HUNK_SIZE_ARGUMENT(hunk.highTemp));
     }
     Com_Printf("\n");
 
-    Com_Printf(HUNK_SIZE_FORMAT " total hunk in use\n", HUNK_SIZE_ARGUMENT(hunk.highUsed + hunk.lowUsed));
+    Com_Printf(HUNK_SIZE_FORMAT " total hunk in use\n",
+               HUNK_SIZE_ARGUMENT(hunk.highUsed + hunk.lowUsed));
     Com_Printf("\n");
 }
 
@@ -113,15 +122,20 @@ void Hunk_Log(void)
         return;
     }
 
-    Com_sprintf(line, sizeof(line), "\r\n================\r\nHunk log\r\n================\r\n");
+    Com_sprintf(
+        line, sizeof(line),
+        "\r\n================\r\nHunk log\r\n================\r\n");
     (void)FS_Write(line, (int32_t)strlen(line), HUNK_LOG_FILE);
 
-    for (const hunk_log_block_t *block = HUNK_LOG_BLOCKS; block != NULL; block = block->next) {
+    for (const hunk_log_block_t *block = HUNK_LOG_BLOCKS;
+         block != NULL; block = block->next) {
         totalBytes += block->size;
         ++blockCount;
     }
 
-    Com_sprintf(line, sizeof(line), HUNK_LOG_SIZE_FORMAT " Hunk memory\r\n", HUNK_LOG_SIZE_ARGUMENT(totalBytes));
+    Com_sprintf(line, sizeof(line),
+                HUNK_LOG_SIZE_FORMAT " Hunk memory\r\n",
+                HUNK_LOG_SIZE_ARGUMENT(totalBytes));
     (void)FS_Write(line, (int32_t)strlen(line), HUNK_LOG_FILE);
     Com_sprintf(line, sizeof(line), "%d hunk blocks\r\n", blockCount);
     (void)FS_Write(line, (int32_t)strlen(line), HUNK_LOG_FILE);
@@ -137,23 +151,30 @@ void Hunk_SmallLog(void)
         return;
     }
 
-    for (hunk_log_block_t *block = HUNK_LOG_BLOCKS; block != NULL; block = block->next) {
+    for (hunk_log_block_t *block = HUNK_LOG_BLOCKS;
+         block != NULL; block = block->next) {
         block->printed = 0;
     }
 
-    Com_sprintf(line, sizeof(line),
-                "\r\n================\r\nHunk Small log\r\n"
-                "================\r\n");
+    Com_sprintf(
+        line, sizeof(line),
+        "\r\n================\r\nHunk Small log\r\n"
+        "================\r\n");
     (void)FS_Write(line, (int32_t)strlen(line), HUNK_LOG_FILE);
 
-    for (hunk_log_block_t *block = HUNK_LOG_BLOCKS; block != NULL; block = block->next) {
+    for (hunk_log_block_t *block = HUNK_LOG_BLOCKS;
+         block != NULL; block = block->next) {
         if (block->printed != 0) {
             continue;
         }
 
-        for (hunk_log_block_t *candidate = block->next; candidate != NULL; candidate = candidate->next) {
-            if (block->sourceLine == candidate->sourceLine && block->sourceFile != NULL && candidate->sourceFile != NULL &&
-                Q_stricmpn(block->sourceFile, candidate->sourceFile, HUNK_LOG_COMPARE_LIMIT) == 0) {
+        for (hunk_log_block_t *candidate = block->next;
+             candidate != NULL; candidate = candidate->next) {
+            if (block->sourceLine == candidate->sourceLine &&
+                block->sourceFile != NULL &&
+                candidate->sourceFile != NULL &&
+                Q_stricmpn(block->sourceFile, candidate->sourceFile,
+                           HUNK_LOG_COMPARE_LIMIT) == 0) {
                 totalBytes += candidate->size;
                 candidate->printed = 1;
             }
@@ -163,7 +184,9 @@ void Hunk_SmallLog(void)
         ++blockCount;
     }
 
-    Com_sprintf(line, sizeof(line), HUNK_LOG_SIZE_FORMAT " Hunk memory\r\n", HUNK_LOG_SIZE_ARGUMENT(totalBytes));
+    Com_sprintf(line, sizeof(line),
+                HUNK_LOG_SIZE_FORMAT " Hunk memory\r\n",
+                HUNK_LOG_SIZE_ARGUMENT(totalBytes));
     (void)FS_Write(line, (int32_t)strlen(line), HUNK_LOG_FILE);
     Com_sprintf(line, sizeof(line), "%d hunk blocks\r\n", blockCount);
     (void)FS_Write(line, (int32_t)strlen(line), HUNK_LOG_FILE);
@@ -177,8 +200,9 @@ void Com_InitHunkMemory(void)
     int32_t hunkMegabytes;
 
     if (FS_LoadStack() != 0) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Hunk initialization failed. File system load stack not zero");
+        Com_Error(
+            ERR_FATAL,
+            "\x15" "Hunk initialization failed. File system load stack not zero");
     }
 
     const char *defaultMegabytes = HUNK_DEFAULT_DEDICATED_MEGABYTES;
@@ -186,14 +210,17 @@ void Com_InitHunkMemory(void)
     if (dedicated == NULL || dedicated->integer == 0)
         defaultMegabytes = HUNK_DEFAULT_CLIENT_MEGABYTES;
 #endif
-    comHunkMegs = Cvar_Get("com_hunkMegs", defaultMegabytes, CVAR_ARCHIVE | CVAR_LATCH);
+    comHunkMegs = Cvar_Get("com_hunkMegs", defaultMegabytes,
+                           CVAR_ARCHIVE | CVAR_LATCH);
     if (dedicated != NULL && dedicated->integer != 0) {
         minimumMegabytes = HUNK_MINIMUM_MEGABYTES_DEDICATED;
-        minimumMessage = "Minimum com_hunkMegs for a dedicated server is %i, "
-                         "allocating %i megs.\n";
+        minimumMessage =
+            "Minimum com_hunkMegs for a dedicated server is %i, "
+            "allocating %i megs.\n";
     } else {
         minimumMegabytes = HUNK_MINIMUM_MEGABYTES_CLIENT;
-        minimumMessage = "Minimum com_hunkMegs is %i, allocating %i megs.\n";
+        minimumMessage =
+            "Minimum com_hunkMegs is %i, allocating %i megs.\n";
     }
 
     hunkMegabytes = comHunkMegs->integer;
@@ -203,7 +230,8 @@ void Com_InitHunkMemory(void)
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if ((size_t)hunkMegabytes > (SIZE_MAX - (size_t)(HUNK_ALIGNMENT - 1)) >> HUNK_MEGABYTE_SHIFT) {
+    if ((size_t)hunkMegabytes >
+        (SIZE_MAX - (size_t)(HUNK_ALIGNMENT - 1)) >> HUNK_MEGABYTE_SHIFT) {
         Sys_OutOfMemory();
     }
     hunk.totalSize = (size_t)hunkMegabytes << HUNK_MEGABYTE_SHIFT;
@@ -213,7 +241,9 @@ void Com_InitHunkMemory(void)
         Sys_OutOfMemory();
     }
 
-    hunk_data = (uint8_t *)(((uintptr_t)hunk_allocData + HUNK_ALIGNMENT - 1) & ~(uintptr_t)(HUNK_ALIGNMENT - 1));
+    hunk_data = (uint8_t *)(
+        ((uintptr_t)hunk_allocData + HUNK_ALIGNMENT - 1) &
+        ~(uintptr_t)(HUNK_ALIGNMENT - 1));
 
     Hunk_ClearToStart();
     Cmd_AddCommand("meminfo", Com_Meminfo_f);

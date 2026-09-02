@@ -26,7 +26,8 @@
 
 #include <string.h>
 
-void BG_CalculateView_Velocity(bg_view_angle_state_t *state, vec3_t angles)
+void BG_CalculateView_Velocity(bg_view_angle_state_t *state,
+                               vec3_t angles)
 {
 #if defined(WINDOWS_BEHAVIOR)
     /* 0x30015b51..0x30015b62: EDX = state->ps; then EDI = the current weapon's
@@ -93,7 +94,8 @@ void BG_CalculateView_Velocity(bg_view_angle_state_t *state, vec3_t angles)
      * (The 45.0f maxAmp pushed for the vertical call is reused as this call's
      * clamp arg; the source shape is the same call.) */
     float horizontalBobAmplitude = state->speed;
-    long double horizBob = BG_GetHorizontalBobFactor(ps, bobPhase, horizontalBobAmplitude, bobMaxAmp);
+    long double horizBob = BG_GetHorizontalBobFactor(
+        ps, bobPhase, horizontalBobAmplitude, bobMaxAmp);
     angles[1] = angles[1] - horizBob * weaponInfo->adsViewBobScale * ps->adsFraction;
 #else
     playerState_t *ps = state->ps;
@@ -103,26 +105,38 @@ void BG_CalculateView_Velocity(bg_view_angle_state_t *state, vec3_t angles)
     const float phase = BG_GetBobCycle(ps);
     float bob;
 
-    if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 && BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition) == 0) {
+    if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 &&
+        BG_AllowPlayerWeaponAtVehiclePos(
+            ps->vehicleType, ps->vehiclePosition) == 0) {
         return;
     }
     if (adsFraction == 0.0f || bobScale == 0.0f) {
         return;
     }
 
-    bob = BG_GetVerticalBobFactor(ps, phase, state->speed, 45.0f);
+    bob = BG_GetVerticalBobFactor(
+        ps, phase, state->speed, 45.0f);
 #if EMULATE_X87
-    bob = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(adsFraction), x87f_load_f32(bobScale)), x87f_load_f32(bob)));
-    angles[0] = x87f_store_f32(x87f_sub(x87f_load_f32(angles[0]), x87f_load_f32(bob)));
+    bob = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(adsFraction),
+                 x87f_load_f32(bobScale)),
+        x87f_load_f32(bob)));
+    angles[0] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(angles[0]), x87f_load_f32(bob)));
 #else
     bob = adsFraction * bobScale * bob;
     angles[0] -= bob;
 #endif
 
-    bob = BG_GetHorizontalBobFactor(ps, phase, state->speed, 45.0f);
+    bob = BG_GetHorizontalBobFactor(
+        ps, phase, state->speed, 45.0f);
 #if EMULATE_X87
-    bob = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(adsFraction), x87f_load_f32(bobScale)), x87f_load_f32(bob)));
-    angles[1] = x87f_store_f32(x87f_sub(x87f_load_f32(angles[1]), x87f_load_f32(bob)));
+    bob = x87f_store_f32(x87f_mul(
+        x87f_mul(x87f_load_f32(adsFraction),
+                 x87f_load_f32(bobScale)),
+        x87f_load_f32(bob)));
+    angles[1] = x87f_store_f32(x87f_sub(
+        x87f_load_f32(angles[1]), x87f_load_f32(bob)));
 #else
     bob = adsFraction * bobScale * bob;
     angles[1] -= bob;

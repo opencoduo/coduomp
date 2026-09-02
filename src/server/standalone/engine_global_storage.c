@@ -12,7 +12,8 @@
 #include "scripting/script_source_positions.h"
 #include "sound/alias/sound_alias.h"
 
-_Static_assert(sizeof(script_string_hash_slot_t) == 4, "script string hash slot size mismatch");
+_Static_assert(sizeof(script_string_hash_slot_t) == 4,
+               "script string hash slot size mismatch");
 
 cvar_t *sv_serverid;
 cvar_t *sv_showloss;
@@ -58,7 +59,8 @@ fileHandleData_t fs_handleFiles[FS_HANDLE_COUNT];
 cvar_t *fs_homepath;
 cvar_t *fs_ignoreLocalized;
 int fs_languageNameBufferIndex;
-char fs_languageNameBuffers[FS_LANGUAGE_NAME_BUFFER_COUNT][FS_LANGUAGE_NAME_BUFFER_SIZE];
+char fs_languageNameBuffers[FS_LANGUAGE_NAME_BUFFER_COUNT]
+                           [FS_LANGUAGE_NAME_BUFFER_SIZE];
 /* Source: coduo_lnxded 0x08477a20. FS_ReadFile increments this count at
  * 0x08063004 and 0x08063132; FS_ResetFiles clears it at 0x080631fb and
  * FS_FreeFile decrements it at 0x0806322c.  The exact Mac symbol/API names
@@ -127,7 +129,8 @@ const char *script_animParseStart;
 char *script_animParseState;
 uint32_t script_animTreeChecksum;
 int32_t script_animTreeCounts[SCRIPT_ANIM_SLOT_COUNT];
-uint16_t script_animTreeHandles[SCRIPT_ANIM_SLOT_COUNT][SCRIPT_ANIM_TREE_SLOT_COUNT];
+uint16_t script_animTreeHandles[SCRIPT_ANIM_SLOT_COUNT]
+                               [SCRIPT_ANIM_TREE_SLOT_COUNT];
 uint16_t script_animTreeRoot;
 XAnim *script_animTrees[SCRIPT_ANIM_SLOT_COUNT][SCRIPT_ANIM_TREE_SLOT_COUNT];
 uint8_t script_breakAllowed;
@@ -171,12 +174,14 @@ script_class_map_entry_t *script_entityTypeUsageRecords;
 int32_t script_errorParameterIndex;
 const char *script_errorMessage;
 const char *script_errorSource;
-script_vm_callback_slot_t script_exportCallbacks[SCRIPT_EXPORT_CALLBACK_COUNT];
+script_vm_callback_slot_t
+    script_exportCallbacks[SCRIPT_EXPORT_CALLBACK_COUNT];
 uint8_t script_forceErrorReport;
 script_codepos_t script_frameBackupCodepos[SCRIPT_CALL_STACK_COUNT];
 uint8_t script_frameBackupOpcode[SCRIPT_CALL_STACK_COUNT];
 uint16_t script_gameHandle;
-script_vm_callback_slot_t script_importCallbacks[SCRIPT_IMPORT_CALLBACK_COUNT];
+script_vm_callback_slot_t
+    script_importCallbacks[SCRIPT_IMPORT_CALLBACK_COUNT];
 uint8_t *script_importFieldBuffer;
 uint16_t script_levelHandle;
 uint8_t script_loadAnimTreesActive;
@@ -216,7 +221,8 @@ uint16_t script_savedObjectCount;
  * ShutdownOpcodeLookup restores this sentinel after freeing saved sources;
  * Scr_LoadSource replaces it from the serialized count before allocation.
  */
-int32_t script_savedSourceFileCount = SCRIPT_SAVED_SOURCE_FILE_COUNT_NONE;
+int32_t script_savedSourceFileCount =
+    SCRIPT_SAVED_SOURCE_FILE_COUNT_NONE;
 script_saved_source_file_t *script_savedSourceFiles;
 uint8_t *script_serializationCursor;
 uint32_t script_sourceBufferOffset;
@@ -233,9 +239,11 @@ uint8_t *script_sourcePosLastCodePos;
 uint32_t *script_sourcePosPool;
 uint32_t script_sourcePosPoolCapacity;
 uint32_t script_sourcePosPoolCount;
-uint32_t script_sourcePosTableCapacity[SCRIPT_SOURCE_POS_TABLE_COUNT];
+uint32_t
+    script_sourcePosTableCapacity[SCRIPT_SOURCE_POS_TABLE_COUNT];
 uint32_t script_sourcePosTableCount[SCRIPT_SOURCE_POS_TABLE_COUNT];
-script_source_pos_record_t *script_sourcePosTables[SCRIPT_SOURCE_POS_TABLE_COUNT];
+script_source_pos_record_t *
+    script_sourcePosTables[SCRIPT_SOURCE_POS_TABLE_COUNT];
 uint16_t script_stringCanonicalCount;
 uint16_t *script_stringCanonicalMap;
 script_string_hash_slot_t *script_stringFreedHashSlot;
@@ -250,8 +258,25 @@ Variable script_variableIndirections[SCRIPT_VARIABLE_NODE_COUNT];
 script_variable_node_t script_variableNodes[SCRIPT_VARIABLE_NODE_COUNT];
 uint16_t *script_variableToObjectId;
 const char *script_variableTypeNames[SCRIPT_VAR_COUNT] = {
-    "undefined", "string",    "localized string", "vector", "float",  "int",   "codepos",     "object",      "key/value",   "function",
-    "stack",     "animation", "thread",           "entity", "struct", "array", "dead thread", "dead entity", "dead object",
+    "undefined",
+    "string",
+    "localized string",
+    "vector",
+    "float",
+    "int",
+    "codepos",
+    "object",
+    "key/value",
+    "function",
+    "stack",
+    "animation",
+    "thread",
+    "entity",
+    "struct",
+    "array",
+    "dead thread",
+    "dead entity",
+    "dead object",
 };
 cvar_t *showdrop;
 cvar_t *showpackets;
@@ -300,7 +325,8 @@ int32_t sys_ttyHistoryCount;
  * The previous/next history readers consume this no-selection sentinel before
  * Sys_TTYStoreHistoryLine can restore it after the first submitted line.
  */
-int32_t sys_ttyHistoryCursor = SYS_TTY_HISTORY_RESET_CURSOR;
+int32_t sys_ttyHistoryCursor =
+    SYS_TTY_HISTORY_RESET_CURSOR;
 char sys_ttyInputReturnBuffer[SYS_TTY_INPUT_RETURN_BUFFER_SIZE];
 coduo_terminal_state_t sys_ttyOriginalTermios;
 int32_t sys_ttyOutputSuppressionDepth;
@@ -338,4 +364,5 @@ char *fs_serverReferencedPakNames[FS_MAX_SERVER_PAKS];
 char *fs_serverPakNames[FS_MAX_SERVER_PAKS];
 int32_t fs_serverReferencedPaks[FS_MAX_SERVER_PAKS];
 int32_t fs_serverPaks[FS_MAX_SERVER_PAKS];
-xanim_deferred_notify_t xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
+xanim_deferred_notify_t
+    xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];

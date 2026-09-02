@@ -54,7 +54,7 @@
  * The reconstructed .c source is identical for both; only this header changes.
  */
 #define EMU_X87_SOFTFLOAT 0
-#define EMU_X87_DOUBLE 1
+#define EMU_X87_DOUBLE    1
 #ifndef EMULATE_X87_BACKEND
 #define EMULATE_X87_BACKEND EMU_X87_SOFTFLOAT
 #endif
@@ -106,29 +106,20 @@ typedef extFloat80_t x87f;
 /* flds  — load a 32-bit float into an 80-bit register (exact widening). */
 static inline x87f x87f_load_f32(float v)
 {
-    union {
-        float f;
-        uint32_t u;
-    } c;
+    union { float f; uint32_t u; } c;
     c.f = v;
-    return f32_to_extF80((float32_t){c.u});
+    return f32_to_extF80((float32_t){ c.u });
 }
 
 /* fildl — load a 32-bit int into an 80-bit register. */
-static inline x87f x87f_load_i32(int32_t v)
-{
-    return i32_to_extF80(v);
-}
+static inline x87f x87f_load_i32(int32_t v) { return i32_to_extF80(v); }
 
 /* fldl — load a 64-bit double into an 80-bit register (exact widening). */
 static inline x87f x87f_load_f64(double v)
 {
-    union {
-        double d;
-        uint64_t u;
-    } c;
+    union { double d; uint64_t u; } c;
     c.d = v;
-    return f64_to_extF80((float64_t){c.u});
+    return f64_to_extF80((float64_t){ c.u });
 }
 
 /* fmul (…s/…p) — 80-bit multiply. */
@@ -182,20 +173,11 @@ static inline x87f x87f_abs(x87f a)
  * epsilon tests the original computes in extended precision (the source writes
  * these as `long double`, which is NOT 80-bit on arm64 — route through the shim
  * so the width matches x87). */
-static inline bool x87f_lt(x87f a, x87f b)
-{
-    return extF80_lt_quiet(a, b);
-}
-static inline bool x87f_le(x87f a, x87f b)
-{
-    return extF80_le_quiet(a, b);
-}
+static inline bool x87f_lt(x87f a, x87f b) { return extF80_lt_quiet(a, b); }
+static inline bool x87f_le(x87f a, x87f b) { return extF80_le_quiet(a, b); }
 /* extF80_eq is already the quiet form in SoftFloat (extF80_eq_signaling is the
  * signaling one), matching fucompp's non-signaling equality. */
-static inline bool x87f_eq(x87f a, x87f b)
-{
-    return extF80_eq(a, b);
-}
+static inline bool x87f_eq(x87f a, x87f b) { return extF80_eq(a, b); }
 /* FCOMP-style signaling comparisons used at specifically proved Windows
  * sites.  Unlike FUCOM, these raise invalid for a quiet NaN as well. */
 static inline bool x87f_lt_signaling(x87f a, x87f b)
@@ -218,10 +200,7 @@ static inline float x87f_store_f32(x87f a)
 {
     coduo_x87f_prepare();
     float32_t r = extF80_to_f32(a);
-    union {
-        uint32_t u;
-        float f;
-    } c;
+    union { uint32_t u; float f; } c;
     c.u = r.v;
     return c.f;
 }
@@ -235,10 +214,7 @@ static inline double x87f_store_f64(x87f a)
 {
     coduo_x87f_prepare();
     float64_t r = extF80_to_f64(a);
-    union {
-        uint64_t u;
-        double d;
-    } c;
+    union { uint64_t u; double d; } c;
     c.u = r.v;
     return c.d;
 }

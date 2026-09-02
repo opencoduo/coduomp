@@ -17,7 +17,9 @@ void CL_ShutdownUI(void)
     if (coduo_uiVm == NULL)
         return;
 
-    (void)VM_Call(coduo_uiVm, UIVM_SHUTDOWN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(
+        coduo_uiVm, UIVM_SHUTDOWN,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     VM_Free(coduo_uiVm);
     coduo_uiVm = NULL;
 }

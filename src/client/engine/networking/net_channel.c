@@ -35,7 +35,8 @@ void Net_DisplayProfile(void)
  * CL_Netchan_SendOOBPacket. The diagnostic verifies the caller supplied the
  * four-byte -1 connectionless marker; the original still sends malformed data
  * after reporting it. */
-void CL_Netchan_SendOOBPacket(netadr_t address, const void *data, int32_t length)
+void CL_Netchan_SendOOBPacket(netadr_t address, const void *data,
+                              int32_t length)
 {
     int32_t marker;
 
@@ -45,11 +46,13 @@ void CL_Netchan_SendOOBPacket(netadr_t address, const void *data, int32_t length
         return;
     }
     if (length < (int32_t)sizeof(marker)) {
-        Com_Printf("CL_Netchan_SendOOBPacket used to send non-OOB packet.\n");
+        Com_Printf(
+            "CL_Netchan_SendOOBPacket used to send non-OOB packet.\n");
     } else {
         memcpy(&marker, data, sizeof(marker));
         if (marker != -1) {
-            Com_Printf("CL_Netchan_SendOOBPacket used to send non-OOB packet.\n");
+            Com_Printf(
+                "CL_Netchan_SendOOBPacket used to send non-OOB packet.\n");
         }
     }
 

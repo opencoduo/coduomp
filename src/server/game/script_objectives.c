@@ -13,15 +13,15 @@
 #include "scr_vm.h"
 
 #define OBJECTIVE_ADD_USAGE_ERROR \
-    "objective_add needs at least the first two parameters out of its parameter list of: index state [string] " \
-    "[position]\n"
-#define OBJECTIVE_INDEX_ERROR "index %i is an illegal objective index. Valid indexes are 0 to %i\n"
-#define OBJECTIVE_STATE_ERROR "Illegal objective state \"%s\". Valid states are \"empty\", \"invisible\", \"current\"\n"
-#define OBJECTIVE_TEAM_ERROR "Illegal team string '%s'. Must be allies, axis, or none."
+    "objective_add needs at least the first two parameters out of its parameter list of: index state [string] [position]\n"
+#define OBJECTIVE_INDEX_ERROR \
+    "index %i is an illegal objective index. Valid indexes are 0 to %i\n"
+#define OBJECTIVE_STATE_ERROR \
+    "Illegal objective state \"%s\". Valid states are \"empty\", \"invisible\", \"current\"\n"
+#define OBJECTIVE_TEAM_ERROR \
+    "Illegal team string '%s'. Must be allies, axis, or none."
 
-enum {
-    OBJECTIVE_ICON_MAX_LEN = MAX_QPATH - 1
-};
+enum { OBJECTIVE_ICON_MAX_LEN = MAX_QPATH - 1 };
 
 int G_ShaderIndex(const char *name);
 
@@ -29,7 +29,9 @@ static objective_t *game_compat_objective_for_script_index(int index, uint32_t p
 {
     /* NOT_FROM_ORIGINAL_SOURCE: factored objective index validation from callers. */
     if (index < 0 || index >= PLAYERSTATE_OBJECTIVE_COUNT) {
-        Scr_ParamError(paramIndex, va(OBJECTIVE_INDEX_ERROR, index, PLAYERSTATE_OBJECTIVE_COUNT - 1));
+        Scr_ParamError(paramIndex,
+                       va(OBJECTIVE_INDEX_ERROR, index,
+                          PLAYERSTATE_OBJECTIVE_COUNT - 1));
     }
 
     return &level.objectives[index];
@@ -96,12 +98,17 @@ void SetObjectiveIcon(objective_t *objective, uint32_t paramIndex)
     for (index = 0; name[index] != '\0'; index++) {
         if (name[index] < ' ' || name[index] == '\x7f') {
             Scr_ParamError(
-                3, va("Illegal character '%c'(ascii %i) in objective icon name: %s\n", name[index], (unsigned char)name[index], name));
+                3,
+                va("Illegal character '%c'(ascii %i) in objective icon name: %s\n",
+                   name[index], (unsigned char)name[index], name));
         }
     }
 
     if (index > OBJECTIVE_ICON_MAX_LEN) {
-        Scr_ParamError(3, va("Objective icon name is too long (> %i): %s\n", OBJECTIVE_ICON_MAX_LEN, name));
+        Scr_ParamError(
+            3,
+            va("Objective icon name is too long (> %i): %s\n",
+               OBJECTIVE_ICON_MAX_LEN, name));
     }
 
     objective->icon = G_ShaderIndex(name);
@@ -111,9 +118,12 @@ static void game_compat_objective_set_rounded_origin(objective_t *objective, uin
 {
     /* NOT_FROM_ORIGINAL_SOURCE: factored vector read plus x87 fistp RC=truncate stores. */
     Scr_GetVector(paramIndex, objective->origin);
-    objective->origin[0] = (float)game_compat_int32_from_float_trunc(objective->origin[0]);
-    objective->origin[1] = (float)game_compat_int32_from_float_trunc(objective->origin[1]);
-    objective->origin[2] = (float)game_compat_int32_from_float_trunc(objective->origin[2]);
+    objective->origin[0] =
+        (float)game_compat_int32_from_float_trunc(objective->origin[0]);
+    objective->origin[1] =
+        (float)game_compat_int32_from_float_trunc(objective->origin[1]);
+    objective->origin[2] =
+        (float)game_compat_int32_from_float_trunc(objective->origin[2]);
 }
 
 /* VERIFIED_DECOMPILER(0x69f70, 79f70_script_func_objective_add.c, VERIFY-SCRIPT-OBJECTIVES-PACKET-2026-06-17): DATAFLOW_VERIFIED - parameter-count usage check, index validation, prior entity clear, state parse/error path, optional rounded origin/icon, entity reset, and team reset checked against current decompiler output. */
@@ -133,7 +143,9 @@ void Scr_Objective_Add(void)
 
     stateName = Scr_GetConstString(1);
     if (!ObjectiveStateIndexFromString(&state, stateName)) {
-        Scr_ParamError(1, va(OBJECTIVE_STATE_ERROR, SL_ConvertToString(stateName)));
+        Scr_ParamError(
+            1,
+            va(OBJECTIVE_STATE_ERROR, SL_ConvertToString(stateName)));
     }
 
     objective->state = state;
@@ -172,7 +184,8 @@ void Scr_Objective_State(void)
 
     objective->state = state;
 
-    if (state == OBJECTIVE_STATE_EMPTY || state == OBJECTIVE_STATE_INVISIBLE) {
+    if (state == OBJECTIVE_STATE_EMPTY ||
+        state == OBJECTIVE_STATE_INVISIBLE) {
         ClearObjective_OnEntity(objective);
     }
 }
@@ -242,6 +255,8 @@ void GScr_Objective_Team(void)
     } else if (teamName == scr_const_none) {
         objective->teamNum = TEAM_FREE;
     } else {
-        Scr_ParamError(1, va(OBJECTIVE_TEAM_ERROR, SL_ConvertToString(teamName)));
+        Scr_ParamError(1,
+                       va(OBJECTIVE_TEAM_ERROR,
+                          SL_ConvertToString(teamName)));
     }
 }

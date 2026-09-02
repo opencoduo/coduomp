@@ -17,10 +17,16 @@ void String_Report(void)
 {
     Com_Printf("Memory/String Pool Info\n");
     Com_Printf("----------------\n");
-    Com_Printf("String Pool is %.1f%% full, %i bytes out of %i used.\n", (double)(strPoolIndex * ui_stringPoolReciprocal * 100.0f),
-               strPoolIndex, UI_STRING_POOL_CAPACITY);
-    Com_Printf("Memory Pool is %.1f%% full, %i bytes out of %i used.\n", (double)(allocPoint * ui_memoryPoolReciprocal * 100.0f),
-               allocPoint, UI_MEMORY_POOL_CAPACITY);
+    Com_Printf("String Pool is %.1f%% full, %i bytes out of %i used.\n",
+               (double)(strPoolIndex * ui_stringPoolReciprocal *
+                        100.0f),
+               strPoolIndex,
+               UI_STRING_POOL_CAPACITY);
+    Com_Printf("Memory Pool is %.1f%% full, %i bytes out of %i used.\n",
+               (double)(allocPoint * ui_memoryPoolReciprocal *
+                        100.0f),
+               allocPoint,
+               UI_MEMORY_POOL_CAPACITY);
 }
 
 // Source: uo_ui_mp_x86.dll 0x400092f0..0x400092f5

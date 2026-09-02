@@ -40,8 +40,10 @@ int32_t UI_SetActiveMenu(int32_t menuValue)
     case UI_MENU_MAIN:
         trap_Key_SetCatcher(KEYCATCH_UI);
         Menus_OpenByName("main");
-        trap_Cvar_VariableStringBuffer("com_errorMessage", buffer, sizeof(buffer));
-        if (buffer[0] != '\0' && Q_stricmpn(";", buffer, UI_MENU_BUFFER_COMPARE_LIMIT) != 0) {
+        trap_Cvar_VariableStringBuffer("com_errorMessage", buffer,
+                                       sizeof(buffer));
+        if (buffer[0] != '\0' &&
+            Q_stricmpn(";", buffer, UI_MENU_BUFFER_COMPARE_LIMIT) != 0) {
             Menus_OpenByName("error_popmenu");
         }
         return 1;
@@ -49,7 +51,8 @@ int32_t UI_SetActiveMenu(int32_t menuValue)
     case UI_MENU_INGAME:
         trap_Key_SetCatcher(KEYCATCH_UI);
         Menus_CloseAll();
-        trap_Cvar_VariableStringBuffer("g_scriptMainMenu", buffer, sizeof(buffer));
+        trap_Cvar_VariableStringBuffer("g_scriptMainMenu", buffer,
+                                       sizeof(buffer));
         if (!Menus_OpenByName(buffer)) {
             Menus_OpenByName("main");
         }
@@ -85,7 +88,8 @@ int32_t UI_SetActiveMenu(int32_t menuValue)
     case UI_MENU_QUICK_MAP:
         trap_Key_SetCatcher(KEYCATCH_UI);
         Menus_CloseAll();
-        trap_Cvar_VariableStringBuffer("g_scriptQuickMap", buffer, sizeof(buffer));
+        trap_Cvar_VariableStringBuffer("g_scriptQuickMap", buffer,
+                                       sizeof(buffer));
         if (!Menus_OpenByName(buffer)) {
             Menus_OpenByName("main");
         }
@@ -105,11 +109,14 @@ int32_t UI_SetActiveMenu(int32_t menuValue)
     case UI_MENU_SCRIPT_FULLSCREEN: {
         menuDef_t *focused = Menu_GetFocused();
 
-        if (focused != NULL && previousMenu != UI_MENU_SCRIPT && previousMenu != UI_MENU_SCRIPT_FULLSCREEN) {
+        if (focused != NULL && previousMenu != UI_MENU_SCRIPT &&
+            previousMenu != UI_MENU_SCRIPT_FULLSCREEN) {
             return 0;
         }
-        trap_Cvar_VariableStringBuffer("ui_newScriptMenu", buffer, sizeof(buffer));
-        if (focused != NULL && Q_stricmp(buffer, focused->window.name) == 0) {
+        trap_Cvar_VariableStringBuffer("ui_newScriptMenu", buffer,
+                                       sizeof(buffer));
+        if (focused != NULL &&
+            Q_stricmp(buffer, focused->window.name) == 0) {
             return 1;
         }
 
@@ -124,11 +131,13 @@ int32_t UI_SetActiveMenu(int32_t menuValue)
         trap_Key_SetCatcher(KEYCATCH_UI);
         Menus_CloseAll();
         trap_Cvar_Set("ui_scriptMenu", buffer);
-        trap_Cvar_VariableStringBuffer("ui_newScriptMenuIndex", buffer, sizeof(buffer));
+        trap_Cvar_VariableStringBuffer("ui_newScriptMenuIndex", buffer,
+                                       sizeof(buffer));
         trap_Cvar_Set("ui_scriptMenuIndex", buffer);
         trap_Cvar_Set("ui_newScriptMenu", "");
         trap_Cvar_Set("ui_newScriptMenuIndex", "-1");
-        trap_Cvar_VariableStringBuffer("ui_scriptMenu", buffer, sizeof(buffer));
+        trap_Cvar_VariableStringBuffer("ui_scriptMenu", buffer,
+                                       sizeof(buffer));
         Menus_OpenByName(buffer);
         return 1;
     }

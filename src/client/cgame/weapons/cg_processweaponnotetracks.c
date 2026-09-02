@@ -60,7 +60,7 @@ void CG_ProcessWeaponNoteTracks(void)
      * (ADD ESI,0xc), EBP the remaining count (DEC EBP). */
     for (int i = 0; i < count; ++i) {
         const char *trackName = list[i].name; /* +0x00 */
-        const char *playedAliasName = NULL; /* fix: reset per track (stock: stale) */
+        const char *playedAliasName = NULL;   /* fix: reset per track (stock: stale) */
 
         /* 0x30042c84..0x30042cfc: first matching notetrack name wins; the chain
          * short-circuits (each JNZ falls through to the next Q_stricmp only when the
@@ -68,13 +68,13 @@ void CG_ProcessWeaponNoteTracks(void)
          * skips the MOV entirely, leaving the stale prior handle; with the per-track
          * reset above, a no-match track now leaves the alias empty instead. */
         if (coduo_crt_stricmp(trackName, "noteTrackSoundA") == 0) {
-            playedAliasName = weapon->noteTrackSoundA; /* +0x118 */
+            playedAliasName = weapon->noteTrackSoundA;   /* +0x118 */
         } else if (coduo_crt_stricmp(trackName, "noteTrackSoundB") == 0) {
-            playedAliasName = weapon->noteTrackSoundB; /* +0x11c */
+            playedAliasName = weapon->noteTrackSoundB;   /* +0x11c */
         } else if (coduo_crt_stricmp(trackName, "noteTrackSoundC") == 0) {
-            playedAliasName = weapon->noteTrackSoundC; /* +0x120 */
+            playedAliasName = weapon->noteTrackSoundC;   /* +0x120 */
         } else if (coduo_crt_stricmp(trackName, "noteTrackSoundD") == 0) {
-            playedAliasName = weapon->noteTrackSoundD; /* +0x124 */
+            playedAliasName = weapon->noteTrackSoundD;   /* +0x124 */
         }
 
         /* 0x30042d02: TEST EDI,EDI / JZ — only start a sound when the handle is
@@ -85,7 +85,9 @@ void CG_ProcessWeaponNoteTracks(void)
              * (const char *)handle, cg_snap->ps.psClientNum). channelObj (ECX/this) =
              * cg_snap + 0x20; soundName (EAX) = the registered handle; entityNum
              * (stack) = cg_snap->ps.psClientNum (+0xe0). */
-            CG_PlaySoundAliasByName(cg_snap->ps.psClientNum, &cg_snap->ps.psOrigin, playedAliasName);
+            CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
+                                    &cg_snap->ps.psOrigin,
+                                    playedAliasName);
         }
     }
 }

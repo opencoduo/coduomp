@@ -4,9 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-enum {
-    SYS_EVENT_QUEUE_COUNT = 256
-};
+enum { SYS_EVENT_QUEUE_COUNT = 256 };
 
 #if defined(__cplusplus)
 #define SYS_EVENT_TYPES_STATIC_ASSERT static_assert
@@ -47,14 +45,21 @@ typedef struct coduo_journal_event_record_s {
     uint32_t payloadAddress;
 } coduo_journal_event_record_t;
 
-SYS_EVENT_TYPES_STATIC_ASSERT(sizeof(coduo_journal_event_record_t) == 0x18, "event journal record size changed");
+SYS_EVENT_TYPES_STATIC_ASSERT(sizeof(coduo_journal_event_record_t) == 0x18,
+               "event journal record size changed");
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && UINTPTR_MAX == UINT32_MAX
-SYS_EVENT_TYPES_STATIC_ASSERT(sizeof(sysEventType_t) == 4, "sysEventType_t width mismatch");
-SYS_EVENT_TYPES_STATIC_ASSERT(sizeof(sysEvent_t) == 0x18, "sysEvent_t size mismatch");
-SYS_EVENT_TYPES_STATIC_ASSERT(offsetof(sysEvent_t, type) == 0x04, "sysEvent_t.type offset mismatch");
-SYS_EVENT_TYPES_STATIC_ASSERT(offsetof(sysEvent_t, payloadLength) == 0x10, "sysEvent_t.payloadLength offset mismatch");
-SYS_EVENT_TYPES_STATIC_ASSERT(offsetof(sysEvent_t, payload) == 0x14, "sysEvent_t.payload offset mismatch");
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && \
+    UINTPTR_MAX == UINT32_MAX
+SYS_EVENT_TYPES_STATIC_ASSERT(sizeof(sysEventType_t) == 4,
+               "sysEventType_t width mismatch");
+SYS_EVENT_TYPES_STATIC_ASSERT(sizeof(sysEvent_t) == 0x18,
+               "sysEvent_t size mismatch");
+SYS_EVENT_TYPES_STATIC_ASSERT(offsetof(sysEvent_t, type) == 0x04,
+               "sysEvent_t.type offset mismatch");
+SYS_EVENT_TYPES_STATIC_ASSERT(offsetof(sysEvent_t, payloadLength) == 0x10,
+               "sysEvent_t.payloadLength offset mismatch");
+SYS_EVENT_TYPES_STATIC_ASSERT(offsetof(sysEvent_t, payload) == 0x14,
+               "sysEvent_t.payload offset mismatch");
 #endif
 
 #undef SYS_EVENT_TYPES_STATIC_ASSERT

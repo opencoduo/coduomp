@@ -29,7 +29,9 @@
  * within this shared original-function cluster. */
 static x87f coduo_compat_get_lean_fraction_x87(float fraction)
 {
-    return x87f_mul(x87f_sub(x87f_load_f32(2.0f), x87f_abs(x87f_load_f32(fraction))), x87f_load_f32(fraction));
+    return x87f_mul(
+        x87f_sub(x87f_load_f32(2.0f), x87f_abs(x87f_load_f32(fraction))),
+        x87f_load_f32(fraction));
 }
 #endif
 
@@ -45,13 +47,17 @@ float GetLeanFraction(float fraction)
 float UnGetLeanFraction(float fraction)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_sqrt(x87f_sub(x87f_load_f32(1.0f), x87f_load_f32(fraction)))));
+    return x87f_store_f32(x87f_sub(
+        x87f_load_f32(1.0f),
+        x87f_sqrt(x87f_sub(x87f_load_f32(1.0f),
+                           x87f_load_f32(fraction)))));
 #else
     return (float)(1.0L - coduo_x87_sqrtl(1.0L - (long double)fraction));
 #endif
 }
 
-void AddLeanToPosition(vec3_t position, float yaw, float leanFraction, float maxLean, float side)
+void AddLeanToPosition(vec3_t position, float yaw, float leanFraction,
+                       float maxLean, float side)
 {
     float lean;
     vec3_t angles;
@@ -62,8 +68,10 @@ void AddLeanToPosition(vec3_t position, float yaw, float leanFraction, float max
     }
 
 #if EMULATE_X87
-    lean = x87f_store_f32(coduo_compat_get_lean_fraction_x87(leanFraction));
-    angles[2] = x87f_store_f32(x87f_mul(x87f_load_f32(lean), x87f_load_f32(maxLean)));
+    lean = x87f_store_f32(
+        coduo_compat_get_lean_fraction_x87(leanFraction));
+    angles[2] = x87f_store_f32(
+        x87f_mul(x87f_load_f32(lean), x87f_load_f32(maxLean)));
 #else
     lean = GetLeanFraction(leanFraction);
     angles[2] = lean * maxLean;
@@ -73,10 +81,17 @@ void AddLeanToPosition(vec3_t position, float yaw, float leanFraction, float max
     AngleVectors(angles, NULL, right, NULL);
 
 #if EMULATE_X87
-    lean = x87f_store_f32(x87f_mul(x87f_load_f32(lean), x87f_load_f32(side)));
-    position[0] = x87f_store_f32(x87f_add(x87f_load_f32(position[0]), x87f_mul(x87f_load_f32(right[0]), x87f_load_f32(lean))));
-    position[1] = x87f_store_f32(x87f_add(x87f_load_f32(position[1]), x87f_mul(x87f_load_f32(right[1]), x87f_load_f32(lean))));
-    position[2] = x87f_store_f32(x87f_add(x87f_load_f32(position[2]), x87f_mul(x87f_load_f32(right[2]), x87f_load_f32(lean))));
+    lean = x87f_store_f32(
+        x87f_mul(x87f_load_f32(lean), x87f_load_f32(side)));
+    position[0] = x87f_store_f32(x87f_add(
+        x87f_load_f32(position[0]),
+        x87f_mul(x87f_load_f32(right[0]), x87f_load_f32(lean))));
+    position[1] = x87f_store_f32(x87f_add(
+        x87f_load_f32(position[1]),
+        x87f_mul(x87f_load_f32(right[1]), x87f_load_f32(lean))));
+    position[2] = x87f_store_f32(x87f_add(
+        x87f_load_f32(position[2]),
+        x87f_mul(x87f_load_f32(right[2]), x87f_load_f32(lean))));
 #else
     lean *= side;
     position[0] += right[0] * lean;

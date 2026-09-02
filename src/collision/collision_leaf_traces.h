@@ -8,9 +8,12 @@
 extern "C" {
 #endif
 
-void CM_TestInLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf);
-void CM_TraceThroughLeaf(traceWork_t *traceWork, const collisionLeaf_t *leaf);
-int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork, const collisionLeaf_t *leaf);
+void CM_TestInLeaf(traceWork_t *traceWork,
+                   const collisionLeaf_t *leaf);
+void CM_TraceThroughLeaf(traceWork_t *traceWork,
+                         const collisionLeaf_t *leaf);
+int32_t CM_SightTraceThroughLeaf(const traceWork_t *traceWork,
+                                 const collisionLeaf_t *leaf);
 
 #ifdef __cplusplus
 }

@@ -34,7 +34,8 @@ void Menu_ShowItemByName(menuDef_t *menu, const char *name, qboolean show)
     int32_t index;
 
     for (index = 0; index < count; ++index) {
-        itemDef_t *item = Menu_GetMatchingItemByNumber(menu, name, index);
+        itemDef_t *item =
+            Menu_GetMatchingItemByNumber(menu, name, index);
 
         if (item == NULL) {
             continue;
@@ -54,21 +55,27 @@ void Menu_ShowItemByName(menuDef_t *menu, const char *name, qboolean show)
     }
 }
 
-void Menu_FadeItemByName(menuDef_t *menu, const char *name, qboolean fadeOut)
+void Menu_FadeItemByName(menuDef_t *menu, const char *name,
+                         qboolean fadeOut)
 {
     const int32_t count = Menu_ItemsMatchingGroup(menu, name);
     int32_t index;
 
     for (index = 0; index < count; ++index) {
-        itemDef_t *item = Menu_GetMatchingItemByNumber(menu, name, index);
+        itemDef_t *item =
+            Menu_GetMatchingItemByNumber(menu, name, index);
 
         if (item == NULL) {
             continue;
         }
         if (fadeOut) {
-            item->window.flags = (item->window.flags & ~WINDOW_FADINGIN) | WINDOW_FADINGOUT | WINDOW_VISIBLE;
+            item->window.flags =
+                (item->window.flags & ~WINDOW_FADINGIN) |
+                WINDOW_FADINGOUT | WINDOW_VISIBLE;
         } else {
-            item->window.flags = (item->window.flags & ~WINDOW_FADINGOUT) | WINDOW_FADINGIN | WINDOW_VISIBLE;
+            item->window.flags =
+                (item->window.flags & ~WINDOW_FADINGOUT) |
+                WINDOW_FADINGIN | WINDOW_VISIBLE;
         }
     }
 }

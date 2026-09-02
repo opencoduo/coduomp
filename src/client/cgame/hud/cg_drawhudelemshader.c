@@ -49,11 +49,12 @@
 /* Provenance for the fields this function reads. item carries char* members past
  * +0x10, so guard those offset asserts to the 32-bit target ABI. */
 _Static_assert(offsetof(cgAlignedDrawItem, x) == 0x00, "item.x @ +0x00");
-_Static_assert(offsetof(cgAlignedDrawItem, y) == 0x04, "item.y @ +0x04");
+_Static_assert(offsetof(cgAlignedDrawItem, y)      == 0x04, "item.y @ +0x04");
 _Static_assert(offsetof(cgAlignedDrawItem, height) == 0x0c, "item.height @ +0x0c");
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-_Static_assert(offsetof(cgAlignedDrawItem, fontHeight) == 0x28, "item.fontHeight @ +0x28");
-_Static_assert(offsetof(cgAlignedDrawItem, color) == 0x30, "item.color @ +0x30");
+_Static_assert(offsetof(cgAlignedDrawItem, fontHeight) == 0x28,
+               "item.fontHeight @ +0x28");
+_Static_assert(offsetof(cgAlignedDrawItem, color)  == 0x30, "item.color @ +0x30");
 #endif
 
 void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
@@ -66,7 +67,8 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
      * skipped.
      */
     char shaderName[MAX_QPATH];
-    if (!CG_GetShaderConfigString(elem->materialIndex, shaderName, (int)sizeof(shaderName))) {
+    if (!CG_GetShaderConfigString(elem->materialIndex, shaderName,
+                                  (int)sizeof(shaderName))) {
         return;
     }
 
@@ -74,7 +76,8 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
      * 3002a1fa..a208: register the named shader; the handle stays in EBX across the
      * body. R_IMAGE_TRACK_HUD is the machine's literal registration value 5.
      */
-    qhandle_t hShader = CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
+    qhandle_t hShader =
+        CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
 
     /*
      * 3002a20b..a21d: interpolate the element's animated destination size.
@@ -89,7 +92,8 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): make a complete
      * server/mod full-width shader (for example a killcam band) cover the
      * native drawable. Partial HUD shaders retain their stock dimensions. */
-    cgame_compat_expand_native_server_hud_shader(item, elem, &drawX, &sizeW);
+    cgame_compat_expand_native_server_hud_shader(
+        item, elem, &drawX, &sizeW);
 
     /*
      * 3002a221..a266: vertical placement of the element's top edge (yTop),
@@ -101,10 +105,12 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
         yTop = item->y;
         break;
     case HUDELEM_ALIGN_CENTER: /* 1: a249 — (item->height - sizeH)*0.5 + item->y */
-        yTop = (float)(((long double)item->height - (long double)sizeH) * (long double)0.5f + (long double)item->y);
+        yTop = (float)(((long double)item->height - (long double)sizeH) *
+                        (long double)0.5f + (long double)item->y);
         break;
     case HUDELEM_ALIGN_END:    /* 2: a239 — item->height + item->y - sizeH */
-        yTop = (float)((long double)item->height + (long double)item->y - (long double)sizeH);
+        yTop = (float)((long double)item->height + (long double)item->y -
+                        (long double)sizeH);
         break;
     default:                   /* >=3: a22f — yTop = 0 */
         yTop = 0.0f;
@@ -139,21 +145,16 @@ void CG_DrawHudElemShader(cgAlignedDrawItem *item, hudElem_t *elem)
          *   right <  0:  s1=-right, t1=0, s2=0,  t2=bottom   (mirrored S range)
          * shaderRightTexcoord = elem->+0x70, shaderBottomTexcoord = elem->+0x74.
          */
-        float right = elem->shaderRightTexcoord;
+        float right  = elem->shaderRightTexcoord;
         float bottom = elem->shaderBottomTexcoord;
         float s1, t1, s2, t2;
         if (right < 0.0f) {
-            s1 = -right;
-            t1 = 0.0f;
-            s2 = 0.0f;
-            t2 = bottom;
+            s1 = -right; t1 = 0.0f; s2 = 0.0f;  t2 = bottom;
         } else {
-            s1 = 0.0f;
-            t1 = 0.0f;
-            s2 = right;
-            t2 = bottom;
+            s1 = 0.0f;   t1 = 0.0f; s2 = right; t2 = bottom;
         }
-        CG_DrawStretchPic(drawX, item->y, sizeW, sizeH, s1, t1, s2, t2, hShader);
+        CG_DrawStretchPic(drawX, item->y, sizeW, sizeH,
+                          s1, t1, s2, t2, hShader);
     }
 
     /*

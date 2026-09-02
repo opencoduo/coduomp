@@ -14,7 +14,8 @@ void Com_Printf(const char *format, ...);
  * bodies at 0x0044e040 and 0x08084c4c likewise agree on the opposite-endpoint
  * queue, increment-before-copy order, and unchecked signed copy length.
  */
-qboolean NET_GetLoopPacket(netsrc_t source, netadr_t *address, msg_t *message)
+qboolean NET_GetLoopPacket(netsrc_t source, netadr_t *address,
+                           msg_t *message)
 {
     loopback_t *loop = &net_loopbacks[source];
     loopmsg_t *loopMessage;
@@ -28,11 +29,14 @@ qboolean NET_GetLoopPacket(netsrc_t source, netadr_t *address, msg_t *message)
         return qfalse;
     }
 
-    loopMessage = &loop->msgs[loop->get & (NET_LOOPBACK_MESSAGE_COUNT - 1)];
+    loopMessage =
+        &loop->msgs[loop->get & (NET_LOOPBACK_MESSAGE_COUNT - 1)];
     ++loop->get;
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (loopMessage->datalen < 0 || loopMessage->datalen > NET_LOOPBACK_MESSAGE_BYTES || loopMessage->datalen > message->maxsize) {
+    if (loopMessage->datalen < 0 ||
+        loopMessage->datalen > NET_LOOPBACK_MESSAGE_BYTES ||
+        loopMessage->datalen > message->maxsize) {
         Com_Printf("NET_GetLoopPacket: invalid packet length %i\n", loopMessage->datalen);
         return qfalse;
     }
@@ -46,7 +50,8 @@ qboolean NET_GetLoopPacket(netsrc_t source, netadr_t *address, msg_t *message)
     return qtrue;
 }
 
-void NET_SendLoopPacket(netsrc_t source, int32_t length, const void *data)
+void NET_SendLoopPacket(netsrc_t source, int32_t length,
+                        const void *data)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length < 0 || length > NET_LOOPBACK_MESSAGE_BYTES) {
@@ -54,8 +59,10 @@ void NET_SendLoopPacket(netsrc_t source, int32_t length, const void *data)
         return;
     }
 
-    loopback_t *loop = &net_loopbacks[source ^ NET_LOOPBACK_SOCKET_PAIR_MASK];
-    loopmsg_t *message = &loop->msgs[loop->send & (NET_LOOPBACK_MESSAGE_COUNT - 1)];
+    loopback_t *loop =
+        &net_loopbacks[source ^ NET_LOOPBACK_SOCKET_PAIR_MASK];
+    loopmsg_t *message =
+        &loop->msgs[loop->send & (NET_LOOPBACK_MESSAGE_COUNT - 1)];
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     ++loop->send;

@@ -41,7 +41,8 @@ void CG_UpdateViewKick(void)
         /* MOV [ESP+4],5 ; if (ESI <= 5) MOV [ESP+4],ESI  -> step = min(remaining,5).
          * FILD [ESP+4] ; FMUL 0.001f -> dt in seconds (this substep). */
         int32_t stepMs = (remaining > 5) ? 5 : remaining;
-        const long double dt = (long double)stepMs * (long double)0.001f;
+        const long double dt =
+            (long double)stepMs * (long double)0.001f;
 
         /* Inner loop: ECX walks cg_viewKickAngles[0..2]; [ECX-0xc] is the
          * matching cg_viewKickVel[i] (the two vec3s are adjacent in memory). */
@@ -85,7 +86,8 @@ void CG_UpdateViewKick(void)
                 }
 
                 /* FMUL st,st(1) (dt) ; FADD vel ; FSTP vel. */
-                vel = (float)((long double)accel * dt + (long double)vel);
+                vel = (float)((long double)accel * dt +
+                              (long double)vel);
                 cg_viewKickVel[i] = vel;
             }
 
@@ -104,7 +106,8 @@ void CG_UpdateViewKick(void)
             const long double crossingProduct = newAng * (long double)ang;
             /* TEST AH,0x01 takes the reset path for both a negative product
              * (C0) and unordered/NaN (C0|C2|C3). */
-            if (isnan(crossingProduct) || crossingProduct < (long double)0.0f) {
+            if (isnan(crossingProduct) ||
+                crossingProduct < (long double)0.0f) {
                 cg_viewKickAngles[i] = 0.0f;
                 cg_viewKickVel[i] = 0.0f;
                 continue;

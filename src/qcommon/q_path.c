@@ -57,7 +57,8 @@ void Com_StripFilename(const char *input, char *output)
     *Com_SkipPath(output) = '\0';
 }
 
-void Com_DefaultExtension(char *path, int32_t maximumSize, const char *extension)
+void Com_DefaultExtension(char *path, int32_t maximumSize,
+                          const char *extension)
 {
     char oldPath[MAX_QPATH];
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -74,5 +75,6 @@ void Com_DefaultExtension(char *path, int32_t maximumSize, const char *extension
     }
 
     Q_strncpyz(oldPath, path, (int32_t)sizeof(oldPath));
-    Com_sprintf(path, (size_t)(uint32_t)maximumSize, "%s%s", oldPath, extension);
+    Com_sprintf(path, (size_t)(uint32_t)maximumSize, "%s%s", oldPath,
+                extension);
 }

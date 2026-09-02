@@ -88,7 +88,8 @@
  * EAX at 0x30031acc is 0x30074a0c ("" in .rdata).
  */
 
-void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord, intptr_t arg0, intptr_t arg1, intptr_t arg2)
+void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord,
+                         intptr_t arg0, intptr_t arg1, intptr_t arg2)
 {
     /* 0x30031a90 MOV AL,[cg_fraggedByName]; TEST AL,AL; JZ epilogue */
     if (cg_fraggedByName[0] == 0)
@@ -112,7 +113,11 @@ void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord, intptr_t arg0, intptr
     }
 
     /* CG_R_TEXT_WIDTH measures the string's pixel width (int32 return). */
-    int32_t textWidth = (int32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)str2, regWord, arg0, 0);
+    int32_t textWidth = (int32_t)cgame_syscall(CG_R_TEXT_WIDTH,
+                                      (intptr_t)str2,
+                                      regWord,
+                                      arg0,
+                                      0);
 
     /* Y baseline = obj->h + obj->y (FLD f_c; FADD f_4). */
     float baselineY = obj->h + obj->y;
@@ -125,8 +130,14 @@ void CG_DrawObituaryLine(rectDef_t *obj, intptr_t regWord, intptr_t arg0, intptr
      * stays exact in 80-bit -- no (float) cast. */
     float drawX = centerX - halfWidth;
 
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(drawX),      /* word0: left edge, centered */
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(drawX),      /* word0: left edge, centered */
                   CG_FloatBits(baselineY),  /* word4: baseline Y */
-                  regWord, arg0, arg1, (intptr_t)str1,  /* drawn "Fragged by %s" string */
-                  0, 0, arg2);
+                  regWord,
+                  arg0,
+                  arg1,
+                  (intptr_t)str1,  /* drawn "Fragged by %s" string */
+                  0,
+                  0,
+                  arg2);
 }

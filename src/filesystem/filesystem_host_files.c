@@ -26,7 +26,8 @@ enum {
  * destination creation, and ownership. */
 void FS_Copyfiles(const char *sourceOSPath, char *destOSPath)
 {
-    if (strstr(sourceOSPath, "journal.dat") != NULL || strstr(sourceOSPath, "journaldata.dat") != NULL) {
+    if (strstr(sourceOSPath, "journal.dat") != NULL ||
+        strstr(sourceOSPath, "journaldata.dat") != NULL) {
         return;
     }
 
@@ -39,8 +40,7 @@ void FS_Copyfiles(const char *sourceOSPath, char *destOSPath)
     if (hostFileLength < 0 || hostFileLength > INT32_MAX) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         (void)fclose(file);
-        Com_Error(ERR_FATAL, "\x15"
-                             "Invalid file length in FS_Copyfiles()\n");
+        Com_Error(ERR_FATAL, "\x15" "Invalid file length in FS_Copyfiles()\n");
         return;
     }
     const int32_t fileLength = (int32_t)hostFileLength;
@@ -53,14 +53,13 @@ void FS_Copyfiles(const char *sourceOSPath, char *destOSPath)
         buffer = malloc(transferSize);
         if (buffer == NULL) {
             (void)fclose(file);
-            Com_Error(ERR_FATAL, "\x15"
-                                 "Out of memory in FS_Copyfiles()\n");
+            Com_Error(ERR_FATAL, "\x15" "Out of memory in FS_Copyfiles()\n");
             return;
         }
     }
-    if (transferSize != 0 && fread(buffer, 1, transferSize, file) != transferSize) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Short read in FS_Copyfiles()\n");
+    if (transferSize != 0 &&
+        fread(buffer, 1, transferSize, file) != transferSize) {
+        Com_Error(ERR_FATAL, "\x15" "Short read in FS_Copyfiles()\n");
     }
     (void)fclose(file);
 
@@ -75,9 +74,9 @@ void FS_Copyfiles(const char *sourceOSPath, char *destOSPath)
         return;
     }
 
-    if (transferSize != 0 && fwrite(buffer, 1, transferSize, file) != transferSize) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Short write in FS_Copyfiles()\n");
+    if (transferSize != 0 &&
+        fwrite(buffer, 1, transferSize, file) != transferSize) {
+        Com_Error(ERR_FATAL, "\x15" "Short write in FS_Copyfiles()\n");
     }
 
     (void)fclose(file);
@@ -92,25 +91,32 @@ void FS_CopyFile(const char *sourceQPath, const char *destQPath)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: both qpaths must remain below the selected
      * game root. */
-    if (coduo_compat_path_is_safe_relative(sourceQPath) == qfalse || coduo_compat_path_is_safe_relative(destQPath) == qfalse) {
+    if (coduo_compat_path_is_safe_relative(sourceQPath) == qfalse ||
+        coduo_compat_path_is_safe_relative(destQPath) == qfalse) {
         Com_Printf("WARNING: refusing unsafe copy path\n");
         return;
     }
 
     char sourceOSPath[MAX_OSPATH];
     char destOSPath[MAX_OSPATH];
-    const char *const stateRoot = filesystem_compat_state_root(fs_homepath->string);
+    const char *const stateRoot =
+        filesystem_compat_state_root(fs_homepath->string);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    FS_BuildOSPath(stateRoot, fs_currentGameDir, sourceQPath, sourceOSPath);
-    FS_BuildOSPath(stateRoot, fs_currentGameDir, destQPath, destOSPath);
+    FS_BuildOSPath(stateRoot, fs_currentGameDir,
+                   sourceQPath, sourceOSPath);
+    FS_BuildOSPath(stateRoot, fs_currentGameDir,
+                   destQPath, destOSPath);
 
     char resolvedPath[MAX_OSPATH];
-    if (filesystem_compat_resolve_case_path(stateRoot, sourceOSPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(
+            stateRoot, sourceOSPath,
+            resolvedPath, sizeof(resolvedPath)) != qfalse) {
         Q_strncpyz(sourceOSPath, resolvedPath, sizeof(sourceOSPath));
     }
 
-    if (strstr(sourceOSPath, "journal.dat") != NULL || strstr(sourceOSPath, "journaldata.dat") != NULL) {
+    if (strstr(sourceOSPath, "journal.dat") != NULL ||
+        strstr(sourceOSPath, "journaldata.dat") != NULL) {
         Com_Printf("Ignoring journal files\n");
         return;
     }
@@ -139,9 +145,11 @@ qboolean FS_FileExists(const char *qpath)
         return coduomp_fs_root_file_exists(fs_homepath->string, qpath);
 
     char osPath[MAX_OSPATH];
-    const char *const stateRoot = filesystem_compat_state_root(fs_homepath->string);
+    const char *const stateRoot =
+        filesystem_compat_state_root(fs_homepath->string);
     FS_BuildOSPath(stateRoot, fs_currentGameDir, qpath, osPath);
-    FILE *const file = filesystem_compat_fopen_read(stateRoot, osPath);
+    FILE *const file = filesystem_compat_fopen_read(
+        stateRoot, osPath);
     if (file == NULL)
         return qfalse;
 
@@ -161,7 +169,8 @@ qboolean FS_SV_FileExists(const char *qpath)
  * while FS_SV_FileExists retains the original fs_homepath root. */
 qboolean coduomp_fs_root_file_exists(const char *root, const char *qpath)
 {
-    if (root == NULL || root[0] == '\0' || coduo_compat_path_is_safe_relative(qpath) == qfalse) {
+    if (root == NULL || root[0] == '\0' ||
+        coduo_compat_path_is_safe_relative(qpath) == qfalse) {
         return qfalse;
     }
 
@@ -169,7 +178,8 @@ qboolean coduomp_fs_root_file_exists(const char *root, const char *qpath)
     FS_BuildOSPath(root, qpath, "", osPath);
     osPath[strlen(osPath) - 1] = '\0';
 
-    FILE *const file = filesystem_compat_fopen_read(root, osPath);
+    FILE *const file = filesystem_compat_fopen_read(
+        root, osPath);
     if (file == NULL)
         return qfalse;
 
@@ -181,7 +191,8 @@ qboolean coduomp_fs_root_file_exists(const char *root, const char *qpath)
  * namespace. Case recovery preserves the existing native-client behavior. */
 void coduomp_fs_root_remove(const char *root, const char *qpath)
 {
-    if (root == NULL || root[0] == '\0' || coduo_compat_path_is_safe_relative(qpath) == qfalse) {
+    if (root == NULL || root[0] == '\0' ||
+        coduo_compat_path_is_safe_relative(qpath) == qfalse) {
         return;
     }
 
@@ -190,7 +201,8 @@ void coduomp_fs_root_remove(const char *root, const char *qpath)
     osPath[strlen(osPath) - 1] = '\0';
 
     char resolvedPath[MAX_OSPATH];
-    if (filesystem_compat_resolve_case_path(root, osPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(
+            root, osPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
         Q_strncpyz(osPath, resolvedPath, sizeof(osPath));
     }
     FS_Remove(osPath);
@@ -201,16 +213,20 @@ void coduomp_fs_root_remove(const char *root, const char *qpath)
  * copy/remove fallback. */
 void FS_SV_Rename(const char *sourceQPath, const char *destQPath)
 {
-    coduomp_fs_root_rename(fs_homepath->string, sourceQPath, destQPath);
+    coduomp_fs_root_rename(
+        fs_homepath->string, sourceQPath, destQPath);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: explicit-root form used by the client namespace
  * while FS_SV_Rename retains the original fs_homepath root. */
-void coduomp_fs_root_rename(const char *root, const char *sourceQPath, const char *destQPath)
+void coduomp_fs_root_rename(const char *root,
+                            const char *sourceQPath,
+                            const char *destQPath)
 {
     filesystem_compat_check_started();
 
-    if (root == NULL || root[0] == '\0' || coduo_compat_path_is_safe_relative(sourceQPath) == qfalse ||
+    if (root == NULL || root[0] == '\0' ||
+        coduo_compat_path_is_safe_relative(sourceQPath) == qfalse ||
         coduo_compat_path_is_safe_relative(destQPath) == qfalse) {
         Com_Printf("WARNING: refusing unsafe rename path\n");
         return;
@@ -224,15 +240,20 @@ void coduomp_fs_root_rename(const char *root, const char *sourceQPath, const cha
     destOSPath[strlen(destOSPath) - 1] = '\0';
 
     char resolvedPath[MAX_OSPATH];
-    if (filesystem_compat_resolve_case_path(root, sourceOSPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(
+            root, sourceOSPath,
+            resolvedPath, sizeof(resolvedPath)) != qfalse) {
         Q_strncpyz(sourceOSPath, resolvedPath, sizeof(sourceOSPath));
     }
-    if (filesystem_compat_resolve_case_path(root, destOSPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(
+            root, destOSPath,
+            resolvedPath, sizeof(resolvedPath)) != qfalse) {
         Q_strncpyz(destOSPath, resolvedPath, sizeof(destOSPath));
     }
 
     if (fs_debug->integer != 0) {
-        Com_Printf("FS_SV_Rename: %s --> %s\n", sourceOSPath, destOSPath);
+        Com_Printf("FS_SV_Rename: %s --> %s\n",
+                   sourceOSPath, destOSPath);
     }
 
     if (rename(sourceOSPath, destOSPath) != 0) {
@@ -249,27 +270,36 @@ void FS_Rename(const char *sourceQPath, const char *destQPath)
 {
     filesystem_compat_check_started();
 
-    if (coduo_compat_path_is_safe_relative(sourceQPath) == qfalse || coduo_compat_path_is_safe_relative(destQPath) == qfalse) {
+    if (coduo_compat_path_is_safe_relative(sourceQPath) == qfalse ||
+        coduo_compat_path_is_safe_relative(destQPath) == qfalse) {
         Com_Printf("WARNING: refusing unsafe rename path\n");
         return;
     }
 
     char sourceOSPath[MAX_OSPATH];
     char destOSPath[MAX_OSPATH];
-    const char *const stateRoot = filesystem_compat_state_root(fs_homepath->string);
-    FS_BuildOSPath(stateRoot, fs_currentGameDir, sourceQPath, sourceOSPath);
-    FS_BuildOSPath(stateRoot, fs_currentGameDir, destQPath, destOSPath);
+    const char *const stateRoot =
+        filesystem_compat_state_root(fs_homepath->string);
+    FS_BuildOSPath(stateRoot, fs_currentGameDir,
+                   sourceQPath, sourceOSPath);
+    FS_BuildOSPath(stateRoot, fs_currentGameDir,
+                   destQPath, destOSPath);
 
     char resolvedPath[MAX_OSPATH];
-    if (filesystem_compat_resolve_case_path(stateRoot, sourceOSPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(
+            stateRoot, sourceOSPath,
+            resolvedPath, sizeof(resolvedPath)) != qfalse) {
         Q_strncpyz(sourceOSPath, resolvedPath, sizeof(sourceOSPath));
     }
-    if (filesystem_compat_resolve_case_path(stateRoot, destOSPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(
+            stateRoot, destOSPath,
+            resolvedPath, sizeof(resolvedPath)) != qfalse) {
         Q_strncpyz(destOSPath, resolvedPath, sizeof(destOSPath));
     }
 
     if (fs_debug->integer != 0) {
-        Com_Printf("FS_Rename: %s --> %s\n", sourceOSPath, destOSPath);
+        Com_Printf("FS_Rename: %s --> %s\n",
+                   sourceOSPath, destOSPath);
     }
 
     if (rename(sourceOSPath, destOSPath) == 0) {
@@ -299,7 +329,8 @@ qboolean FS_Delete(const char *qpath)
         return qfalse;
     if (strncmp(qpath, "save", FS_SAVE_PREFIX_LENGTH) != 0)
         return qfalse;
-    if (qpath[FS_SAVE_PREFIX_LENGTH] != '/' && qpath[FS_SAVE_PREFIX_LENGTH] != '\\') {
+    if (qpath[FS_SAVE_PREFIX_LENGTH] != '/' &&
+        qpath[FS_SAVE_PREFIX_LENGTH] != '\\') {
         return qfalse;
     }
 
@@ -311,7 +342,9 @@ qboolean FS_Delete(const char *qpath)
     }
 
     char osPath[MAX_OSPATH];
-    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string), fs_currentGameDir, qpath, osPath);
+    FS_BuildOSPath(
+        filesystem_compat_state_root(fs_homepath->string),
+        fs_currentGameDir, qpath, osPath);
     return remove(osPath) != -1 ? qtrue : qfalse;
 }
 
@@ -326,7 +359,9 @@ qboolean FS_Delete(const char *qpath)
 qboolean FS_MakeReadOnly(const char *qpath, qboolean makeReadOnly)
 {
     char osPath[MAX_OSPATH];
-    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string), fs_currentGameDir, qpath, osPath);
+    FS_BuildOSPath(
+        filesystem_compat_state_root(fs_homepath->string),
+        fs_currentGameDir, qpath, osPath);
 
 #if defined(_WIN32)
     DWORD attributes = GetFileAttributesA(osPath);
@@ -365,7 +400,8 @@ qboolean FS_MakeReadOnly(const char *qpath, qboolean makeReadOnly)
     char osPath[MAX_OSPATH];
 
     filesystem_compat_check_started();
-    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string), fs_currentGameDir, qpath, osPath);
+    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string),
+                   fs_currentGameDir, qpath, osPath);
 
     if (Sys_Stat(osPath, &fileStat) == -1) {
         return qfalse;

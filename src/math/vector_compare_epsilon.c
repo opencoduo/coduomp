@@ -9,7 +9,8 @@
 
 #include "compat/coduo_x87emu.h"
 
-static const float s_vectorCompareEpsilonSquared = 1.0000001111620804e-6f;
+static const float s_vectorCompareEpsilonSquared =
+    1.0000001111620804e-6f;
 
 /*
  * The four original Windows bodies have identical instructions except for
@@ -33,7 +34,8 @@ static const float s_vectorCompareEpsilonSquared = 1.0000001111620804e-6f;
 int32_t VectorCompareEpsilon(const vec3_t first, const vec3_t second)
 {
     for (int32_t component = 0; component < 3; ++component) {
-#if (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#if (defined(__i386__) || defined(__x86_64__)) && \
+    (defined(__GNUC__) || defined(__clang__))
         volatile float difference;
         uint16_t status;
 
@@ -45,7 +47,9 @@ int32_t VectorCompareEpsilon(const vec3_t first, const vec3_t second)
                              "fcomps %4\n\t"
                              "fnstsw %%ax"
                              : "=a"(status), "=m"(difference)
-                             : "r"(&first[component]), "r"(&second[component]), "m"(s_vectorCompareEpsilonSquared)
+                             : "r"(&first[component]),
+                               "r"(&second[component]),
+                               "m"(s_vectorCompareEpsilonSquared)
                              : "st", "memory");
 
         /* FCOMP sets neither C0 nor C3 only when square > epsilon. */
@@ -54,7 +58,8 @@ int32_t VectorCompareEpsilon(const vec3_t first, const vec3_t second)
         }
 #else
         volatile float difference = first[component] - second[component];
-        const double square = (double)difference * (double)difference;
+        const double square =
+            (double)difference * (double)difference;
 
         if (square > (double)s_vectorCompareEpsilonSquared) {
             return qfalse;
@@ -69,13 +74,19 @@ int32_t VectorCompareEpsilon(const vec3_t first, const vec3_t second)
 {
     for (int32_t component = 0; component < 3; ++component) {
 #if EMULATE_X87
-        const x87f firstDifference = x87f_sub(x87f_load_f32(first[component]), x87f_load_f32(second[component]));
-        const x87f secondDifference = x87f_sub(x87f_load_f32(first[component]), x87f_load_f32(second[component]));
+        const x87f firstDifference = x87f_sub(
+            x87f_load_f32(first[component]),
+            x87f_load_f32(second[component]));
+        const x87f secondDifference = x87f_sub(
+            x87f_load_f32(first[component]),
+            x87f_load_f32(second[component]));
 
-        if (x87f_lt(x87f_load_f32(s_vectorCompareEpsilonSquared), x87f_mul(firstDifference, secondDifference))) {
+        if (x87f_lt(x87f_load_f32(s_vectorCompareEpsilonSquared),
+                    x87f_mul(firstDifference, secondDifference))) {
             return qfalse;
         }
-#elif (defined(__i386__) || defined(__x86_64__)) && (defined(__GNUC__) || defined(__clang__))
+#elif (defined(__i386__) || defined(__x86_64__)) && \
+      (defined(__GNUC__) || defined(__clang__))
         uint16_t status;
 
         __asm__ __volatile__("flds 0(%1)\n\t"
@@ -88,17 +99,22 @@ int32_t VectorCompareEpsilon(const vec3_t first, const vec3_t second)
                              "fucompp\n\t"
                              "fnstsw %%ax"
                              : "=a"(status)
-                             : "r"(&first[component]), "r"(&second[component]), "m"(s_vectorCompareEpsilonSquared)
+                             : "r"(&first[component]),
+                               "r"(&second[component]),
+                               "m"(s_vectorCompareEpsilonSquared)
                              : "st", "st(1)", "memory");
 
         if ((status & UINT16_C(0x4100)) == 0) {
             return qfalse;
         }
 #else
-        const long double firstDifference = (long double)first[component] - second[component];
-        const long double secondDifference = (long double)first[component] - second[component];
+        const long double firstDifference =
+            (long double)first[component] - second[component];
+        const long double secondDifference =
+            (long double)first[component] - second[component];
 
-        if (firstDifference * secondDifference > (long double)s_vectorCompareEpsilonSquared) {
+        if (firstDifference * secondDifference >
+            (long double)s_vectorCompareEpsilonSquared) {
             return qfalse;
         }
 #endif

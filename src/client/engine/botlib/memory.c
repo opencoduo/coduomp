@@ -32,10 +32,14 @@ typedef union botlib_memory_header_u {
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(botlib_memory_header_t) == 4, "original botlib allocation header is four bytes");
-_Static_assert(_Alignof(botlib_memory_header_t) == 4, "original botlib allocation header is dword-aligned");
-_Static_assert(offsetof(botlib_memory_header_t, allocationMarker) == 0, "botlib allocation marker must precede the payload");
-_Static_assert(sizeof(((botlib_memory_header_t *)0)->allocationMarker) == 4, "botlib allocation marker must remain one dword");
+_Static_assert(sizeof(botlib_memory_header_t) == 4,
+               "original botlib allocation header is four bytes");
+_Static_assert(_Alignof(botlib_memory_header_t) == 4,
+               "original botlib allocation header is dword-aligned");
+_Static_assert(offsetof(botlib_memory_header_t, allocationMarker) == 0,
+               "botlib allocation marker must precede the payload");
+_Static_assert(sizeof(((botlib_memory_header_t *)0)->allocationMarker) == 4,
+               "botlib allocation marker must remain one dword");
 #endif
 
 /* Source: CoDUOMP.exe 0x00442740..0x00442772.
@@ -70,7 +74,8 @@ void *GetClearedMemory(size_t size)
  * Role name: the botlib GetHunkMemory API. */
 void *GetHunkMemory(size_t size)
 {
-    botlib_memory_header_t *allocation = Hunk_AllocAlignInternal(sizeof(botlib_memory_header_t) + size, BOTLIB_HUNK_ALIGNMENT);
+    botlib_memory_header_t *allocation = Hunk_AllocAlignInternal(
+        sizeof(botlib_memory_header_t) + size, BOTLIB_HUNK_ALIGNMENT);
     if (allocation == NULL)
         return NULL;
 
@@ -96,7 +101,8 @@ void *GetClearedHunkMemory(size_t size)
  * is deliberately ignored rather than passed to the CRT heap. */
 void FreeMemory(void *memory)
 {
-    botlib_memory_header_t *allocation = (botlib_memory_header_t *)memory - 1;
+    botlib_memory_header_t *allocation =
+        (botlib_memory_header_t *)memory - 1;
     if (allocation->allocationMarker == BOTLIB_HEAP_ALLOCATION_MARKER)
         free(allocation);
 }

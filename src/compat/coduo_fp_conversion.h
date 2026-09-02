@@ -36,7 +36,8 @@
  * passing a value through the binary64 adapter or adding a binary32 cast can
  * round a live x87 expression and change behavior before this conversion.
  */
-static CODUO_FP_ALWAYS_INLINE int32_t coduo_fp_to_i32_extended(long double value)
+static CODUO_FP_ALWAYS_INLINE int32_t
+coduo_fp_to_i32_extended(long double value)
 {
 #if defined(WINDOWS_BEHAVIOR)
     uint32_t lowBits = 0;
@@ -64,20 +65,23 @@ static CODUO_FP_ALWAYS_INLINE int32_t coduo_fp_to_i32_extended(long double value
  * object preserves a proved m64/ABI rounding boundary even when this adapter
  * is inlined into an x87 build that otherwise retains excess precision.
  */
-static CODUO_FP_ALWAYS_INLINE int32_t coduo_fp_to_i32_f64(double value)
+static CODUO_FP_ALWAYS_INLINE int32_t
+coduo_fp_to_i32_f64(double value)
 {
     volatile double roundedValue = value;
     return coduo_fp_to_i32_extended((long double)roundedValue);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: unsigned low-dword view of the same conversion. */
-static CODUO_FP_ALWAYS_INLINE uint32_t coduo_fp_to_u32_extended(long double value)
+static CODUO_FP_ALWAYS_INLINE uint32_t
+coduo_fp_to_u32_extended(long double value)
 {
     return (uint32_t)coduo_fp_to_i32_extended(value);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: low-byte view used by original AL consumers. */
-static CODUO_FP_ALWAYS_INLINE uint8_t coduo_fp_to_u8_extended(long double value)
+static CODUO_FP_ALWAYS_INLINE uint8_t
+coduo_fp_to_u8_extended(long double value)
 {
     return (uint8_t)coduo_fp_to_i32_extended(value);
 }

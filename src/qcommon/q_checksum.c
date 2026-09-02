@@ -35,10 +35,14 @@ typedef struct {
     uint8_t buffer[MD4_BLOCK_SIZE];
 } MD4_CTX;
 
-_Static_assert(sizeof(MD4_CTX) == 0x58, "MD4_CTX size mismatch");
-_Static_assert(offsetof(MD4_CTX, state) == 0x00, "MD4_CTX.state offset mismatch");
-_Static_assert(offsetof(MD4_CTX, count) == 0x10, "MD4_CTX.count offset mismatch");
-_Static_assert(offsetof(MD4_CTX, buffer) == 0x18, "MD4_CTX.buffer offset mismatch");
+_Static_assert(sizeof(MD4_CTX) == 0x58,
+               "MD4_CTX size mismatch");
+_Static_assert(offsetof(MD4_CTX, state) == 0x00,
+               "MD4_CTX.state offset mismatch");
+_Static_assert(offsetof(MD4_CTX, count) == 0x10,
+               "MD4_CTX.count offset mismatch");
+_Static_assert(offsetof(MD4_CTX, buffer) == 0x18,
+               "MD4_CTX.buffer offset mismatch");
 
 /*
  * The complete embedded MD4/checksum subsystem agrees between the two
@@ -64,9 +68,12 @@ _Static_assert(offsetof(MD4_CTX, buffer) == 0x18, "MD4_CTX.buffer offset mismatc
  */
 static uint8_t md4_padding[MD4_BLOCK_SIZE] = {0x80};
 
-static void MD4Transform(MD4_CTX *context, const uint8_t block[MD4_BLOCK_SIZE]);
-static void Encode(uint8_t *output, const uint32_t *input, uint32_t length);
-static void Decode(uint32_t *output, const uint8_t *input, uint32_t length);
+static void MD4Transform(MD4_CTX *context,
+                         const uint8_t block[MD4_BLOCK_SIZE]);
+static void Encode(uint8_t *output, const uint32_t *input,
+                   uint32_t length);
+static void Decode(uint32_t *output, const uint8_t *input,
+                   uint32_t length);
 
 static void MD4Init(MD4_CTX *context)
 {
@@ -78,7 +85,8 @@ static void MD4Init(MD4_CTX *context)
     context->state[3] = MD4_INIT_STATE_3;
 }
 
-static void MD4Update(MD4_CTX *context, const void *data, uint32_t length)
+static void MD4Update(MD4_CTX *context, const void *data,
+                      uint32_t length)
 {
     const uint8_t *input = data;
     uint32_t inputIndex;
@@ -100,13 +108,16 @@ static void MD4Update(MD4_CTX *context, const void *data, uint32_t length)
     } else {
         Com_Memcpy(&context->buffer[inputIndex], input, partLength);
         MD4Transform(context, context->buffer);
-        for (copyIndex = partLength; copyIndex + MD4_BLOCK_SIZE - 1 < length; copyIndex += MD4_BLOCK_SIZE) {
+        for (copyIndex = partLength;
+             copyIndex + MD4_BLOCK_SIZE - 1 < length;
+             copyIndex += MD4_BLOCK_SIZE) {
             MD4Transform(context, &input[copyIndex]);
         }
         inputIndex = 0;
     }
 
-    Com_Memcpy(&context->buffer[inputIndex], &input[copyIndex], length - copyIndex);
+    Com_Memcpy(&context->buffer[inputIndex], &input[copyIndex],
+               length - copyIndex);
 }
 
 static void MD4Final(uint8_t digest[MD4_DIGEST_SIZE], MD4_CTX *context)
@@ -144,17 +155,23 @@ uint32_t Com_BlockChecksum(const void *buffer, int32_t length)
      * supporting PowerPC Mac wrapper instead used native big-endian loads. */
     Decode(digestWords, digest, MD4_DIGEST_SIZE);
 
-    return digestWords[1] ^ digestWords[0] ^ digestWords[2] ^ digestWords[3];
+    return digestWords[1] ^ digestWords[0] ^ digestWords[2] ^
+           digestWords[3];
 }
 
-uint32_t Com_BlockChecksumKey(const void *buffer, int32_t length, int32_t key)
+uint32_t Com_BlockChecksumKey(const void *buffer, int32_t length,
+                              int32_t key)
 {
     MD4_CTX context;
     uint8_t digest[MD4_DIGEST_SIZE];
     uint32_t digestWords[MD4_STATE_WORD_COUNT];
     const uint32_t keyValue = (uint32_t)key;
-    const uint8_t keyBytes[COM_BLOCK_CHECKSUM_KEY_BYTES] = {(uint8_t)keyValue, (uint8_t)(keyValue >> 8U), (uint8_t)(keyValue >> 16U),
-                                                            (uint8_t)(keyValue >> 24U)};
+    const uint8_t keyBytes[COM_BLOCK_CHECKSUM_KEY_BYTES] = {
+        (uint8_t)keyValue,
+        (uint8_t)(keyValue >> 8U),
+        (uint8_t)(keyValue >> 16U),
+        (uint8_t)(keyValue >> 24U)
+    };
 
     MD4Init(&context);
     /* The Windows and Linux authorities are little-endian. The supporting
@@ -166,7 +183,8 @@ uint32_t Com_BlockChecksumKey(const void *buffer, int32_t length, int32_t key)
     MD4Final(digest, &context);
     Decode(digestWords, digest, MD4_DIGEST_SIZE);
 
-    return digestWords[1] ^ digestWords[0] ^ digestWords[2] ^ digestWords[3];
+    return digestWords[1] ^ digestWords[0] ^ digestWords[2] ^
+           digestWords[3];
 }
 
 uint32_t Com_HashKey(const char *text, int32_t length)
@@ -174,7 +192,8 @@ uint32_t Com_HashKey(const char *text, int32_t length)
     uint32_t hash = 0;
 
     for (int32_t index = 0; index < length && text[index] != '\0'; ++index) {
-        hash += ((uint32_t)index + COM_HASH_POSITION_BIAS) * (uint32_t)(int32_t)(int8_t)(uint8_t)text[index];
+        hash += ((uint32_t)index + COM_HASH_POSITION_BIAS) *
+                (uint32_t)(int32_t)(int8_t)(uint8_t)text[index];
     }
 
     /* Arithmetic right shift is made explicit so the original SAR/SRAWI
@@ -183,13 +202,18 @@ uint32_t Com_HashKey(const char *text, int32_t length)
      * shift distributes over XOR, producing the same hash>>10/hash>>20 graph
      * emitted by Linux and the supporting Mac body at 0x000dead0. */
     const uint32_t signFill = 0U - (hash >> 31U);
-    const uint32_t shifted10 = (hash >> COM_HASH_MIX_SHIFT) | (signFill << COM_HASH_SIGN_FILL_SHIFT);
-    const uint32_t shifted20 = (hash >> (2U * COM_HASH_MIX_SHIFT)) | (signFill << (32U - (2U * COM_HASH_MIX_SHIFT)));
+    const uint32_t shifted10 =
+        (hash >> COM_HASH_MIX_SHIFT) |
+        (signFill << COM_HASH_SIGN_FILL_SHIFT);
+    const uint32_t shifted20 =
+        (hash >> (2U * COM_HASH_MIX_SHIFT)) |
+        (signFill << (32U - (2U * COM_HASH_MIX_SHIFT)));
 
     return hash ^ shifted10 ^ shifted20;
 }
 
-static void MD4Transform(MD4_CTX *context, const uint8_t block[MD4_BLOCK_SIZE])
+static void MD4Transform(MD4_CTX *context,
+                         const uint8_t block[MD4_BLOCK_SIZE])
 {
     uint32_t a;
     uint32_t b;
@@ -204,7 +228,8 @@ static void MD4Transform(MD4_CTX *context, const uint8_t block[MD4_BLOCK_SIZE])
 
     Decode(x, block, MD4_BLOCK_SIZE);
 
-#define MD4_ROTATE_LEFT(value, bits) (((value) << (bits)) | ((value) >> (32U - (bits))))
+#define MD4_ROTATE_LEFT(value, bits) \
+    (((value) << (bits)) | ((value) >> (32U - (bits))))
 #define MD4_ROUND1(a_, b_, c_, d_, x_, s_) \
     do { \
         (a_) += (((~(b_)) & (d_)) | ((b_) & (c_))) + (x_); \
@@ -212,7 +237,8 @@ static void MD4Transform(MD4_CTX *context, const uint8_t block[MD4_BLOCK_SIZE])
     } while (0)
 #define MD4_ROUND2(a_, b_, c_, d_, x_, s_) \
     do { \
-        (a_) += (((b_) & (c_)) | (((b_) | (c_)) & (d_))) + (x_) + MD4_ROUND2_CONSTANT; \
+        (a_) += (((b_) & (c_)) | (((b_) | (c_)) & (d_))) + \
+                (x_) + MD4_ROUND2_CONSTANT; \
         (a_) = MD4_ROTATE_LEFT((a_), (s_)); \
     } while (0)
 #define MD4_ROUND3(a_, b_, c_, d_, x_, s_) \
@@ -285,7 +311,8 @@ static void MD4Transform(MD4_CTX *context, const uint8_t block[MD4_BLOCK_SIZE])
 #undef MD4_ROTATE_LEFT
 }
 
-static void Encode(uint8_t *output, const uint32_t *input, uint32_t length)
+static void Encode(uint8_t *output, const uint32_t *input,
+                   uint32_t length)
 {
     uint32_t inputIndex;
     uint32_t outputIndex;
@@ -293,22 +320,29 @@ static void Encode(uint8_t *output, const uint32_t *input, uint32_t length)
     inputIndex = 0;
     for (outputIndex = 0; outputIndex < length; outputIndex += 4U) {
         output[outputIndex] = (uint8_t)input[inputIndex];
-        output[outputIndex + 1U] = (uint8_t)(input[inputIndex] >> 8U);
-        output[outputIndex + 2U] = (uint8_t)(input[inputIndex] >> 16U);
-        output[outputIndex + 3U] = (uint8_t)(input[inputIndex] >> 24U);
+        output[outputIndex + 1U] =
+            (uint8_t)(input[inputIndex] >> 8U);
+        output[outputIndex + 2U] =
+            (uint8_t)(input[inputIndex] >> 16U);
+        output[outputIndex + 3U] =
+            (uint8_t)(input[inputIndex] >> 24U);
         inputIndex++;
     }
 }
 
-static void Decode(uint32_t *output, const uint8_t *input, uint32_t length)
+static void Decode(uint32_t *output, const uint8_t *input,
+                   uint32_t length)
 {
     uint32_t inputIndex;
     uint32_t outputIndex;
 
     outputIndex = 0;
     for (inputIndex = 0; inputIndex < length; inputIndex += 4U) {
-        output[outputIndex] = ((uint32_t)input[inputIndex]) | ((uint32_t)input[inputIndex + 1U] << 8U) |
-                              ((uint32_t)input[inputIndex + 2U] << 16U) | ((uint32_t)input[inputIndex + 3U] << 24U);
+        output[outputIndex] =
+            ((uint32_t)input[inputIndex]) |
+            ((uint32_t)input[inputIndex + 1U] << 8U) |
+            ((uint32_t)input[inputIndex + 2U] << 16U) |
+            ((uint32_t)input[inputIndex + 3U] << 24U);
         outputIndex++;
     }
 }

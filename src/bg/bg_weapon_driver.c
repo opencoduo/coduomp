@@ -70,9 +70,7 @@
  * processing entirely. */
 
 /* grenadeTimeLeft is stepped down by 10 ms per commit on the cook-off path. */
-enum {
-    GRENADE_SPECIAL_TIME_STEP = 10
-};
+enum { GRENADE_SPECIAL_TIME_STEP = 10 };
 
 void PM_Weapon(void)
 {
@@ -131,14 +129,16 @@ void PM_Weapon(void)
     /* 0x3001479f dev-mode weapon-state change logger, gated on bg_debugWeaponState.integer
      * being enabled and not the "none" print target. */
     int32_t debugWeaponState = bg_debugWeaponState.integer;
-    if (debugWeaponState != 0 && debugWeaponState != bg_compat_pmove_weapon_debug_target_none()) {
+    if (debugWeaponState != 0 &&
+        debugWeaponState != bg_compat_pmove_weapon_debug_target_none()) {
         PM_Weapon_PrintWeaponState(); /* client CALL 0x30014a80 */
         move = pm; /* reloads EDI at 0x300147b4 */
     }
 
     /* 0x300147ba dev-mode weapon-anim (weaponAnim +0x624) pose logger. */
     int32_t debugWeaponAnim = bg_debugWeaponAnim.integer;
-    if (debugWeaponAnim != 0 && debugWeaponAnim != bg_compat_pmove_weapon_debug_target_none()) {
+    if (debugWeaponAnim != 0 &&
+        debugWeaponAnim != bg_compat_pmove_weapon_debug_target_none()) {
         PM_Weapon_PrintWeaponAnim(); /* client CALL 0x30014bd0 */
         move = pm; /* reloads EDI at 0x300147cd */
     }
@@ -163,13 +163,15 @@ void PM_Weapon(void)
              * DIFFER (stateBit != oldBit), an edge detector; when they agree the code
              * bails to the clamp-only path at 0x3001484c. */
             int stateBit = (move->command.buttons & PM_BUTTON_ADS) != 0;
-            int oldBit = (move->oldCommand.buttons & PM_BUTTON_ADS) != 0;
+            int oldBit   = (move->oldCommand.buttons & PM_BUTTON_ADS) != 0;
 
             if (stateBit != oldBit) {
                 /* 0x30014807: only if grenadeTimeLeft >= specialTimeThreshold. */
                 if (ps->grenadeTimeLeft >= weaponInfo->specialTimeThreshold) {
                     /* 0x30014814 grenadeTimeLeft += -10 (step down by 10 ms). */
-                    ps->grenadeTimeLeft = coduo_int32_from_bits((uint32_t)ps->grenadeTimeLeft - (uint32_t)GRENADE_SPECIAL_TIME_STEP);
+                    ps->grenadeTimeLeft = coduo_int32_from_bits(
+                        (uint32_t)ps->grenadeTimeLeft -
+                        (uint32_t)GRENADE_SPECIAL_TIME_STEP);
 
                     /* 0x3001481a..0x30014840: append EV_GRENADE_SPOON (182), parm 0. */
                     ps = move->ps;
@@ -190,9 +192,11 @@ void PM_Weapon(void)
              * 0x30014861 CMP grenadeTimeLeft,specialTimeThreshold JGE 0x30014874
              * (skip bleed): the timer bleeds down by one frame only while the weapon
              * uses cook-off hold AND is still below its threshold. */
-            if (weaponInfo->specialTimeEnabled != 0 && ps->grenadeTimeLeft < weaponInfo->specialTimeThreshold) {
+            if (weaponInfo->specialTimeEnabled != 0 &&
+                ps->grenadeTimeLeft < weaponInfo->specialTimeThreshold) {
                 /* 0x30014869 grenadeTimeLeft -= pml.msec. */
-                ps->grenadeTimeLeft = coduo_int32_from_bits((uint32_t)ps->grenadeTimeLeft - (uint32_t)pml.msec);
+                ps->grenadeTimeLeft = coduo_int32_from_bits(
+                    (uint32_t)ps->grenadeTimeLeft - (uint32_t)pml.msec);
             }
 
             /* 0x30014874: has the cook-off run out? grenadeTimeLeft <= 50 -> commit
@@ -253,7 +257,8 @@ void PM_Weapon(void)
          * to pml.msec + 1. */
         if ((move->command.buttons & PM_BUTTON_FIRE) != 0) {
             /* 0x3001491c..0x3001492c. */
-            int32_t remaining = coduo_int32_from_bits((uint32_t)ps->weaponDelay - (uint32_t)pml.msec);
+            int32_t remaining = coduo_int32_from_bits(
+                (uint32_t)ps->weaponDelay - (uint32_t)pml.msec);
             if (remaining <= 0) {
                 ps->weaponDelay = coduo_int32_from_bits((uint32_t)pml.msec + 1u);
             }
@@ -278,25 +283,29 @@ void PM_Weapon(void)
         /* 0x30014949: look up the player fire animation script and, if it matches the
          * current condition state, run one of its commands. The fire scriptList sits
          * at +0x1fe8c inside the BG static-animation table. */
-        bg_anim_script_list_t *fireScriptList = &bgAnimStaticTable->events[ANIM_EVENT_FIRE_WEAPON];
+        bg_anim_script_list_t *fireScriptList =
+            &bgAnimStaticTable->events[ANIM_EVENT_FIRE_WEAPON];
         /* 0x30014959 CMP scriptCount,0; JZ -> skip when the list is empty. */
         if (fireScriptList->count != 0) {
             /* 0x3001495d ECX = ps->psClientNum (+0xd4); CALL BG_FirstValidItem
              * (EAX = &fireScriptList, ECX = clientNum). */
-            bg_anim_script_t *script = BG_FirstValidItem(ps->psClientNum, fireScriptList);
+            bg_anim_script_t *script =
+                BG_FirstValidItem(ps->psClientNum, fireScriptList);
 
             /* 0x3001496a JZ / 0x3001496e CMP script->commandCount,0 JZ: need a matched
              * script with at least one command. */
             if (script != NULL && script->commandCount != 0) {
                 /* 0x30014976 CALL rand; 0x3001497b CDQ; 0x3001497c IDIV
                  * script->commandCount -> pick command index = rand() % commandCount. */
-                int32_t commandIndex = coduo_server_randrange(0, script->commandCount);
+                int32_t commandIndex =
+                    coduo_server_randrange(0, script->commandCount);
 
                 /* 0x30014982..0x30014992: BG_AnimScriptAnimation(&script->commands[idx],
                  * ps, setTimer=1, allowContinue=0, checkDuration=1). SHL EDX,4 shows
                  * bg_anim_script_command_t is 0x10 bytes; LEA [EDX + ESI + 0x8c] where
                  * ESI = script, +0x8c = script->commands[0]. */
-                BG_AnimScriptAnimation(&script->commands[commandIndex], ps, qtrue, qfalse, qtrue);
+                BG_AnimScriptAnimation(&script->commands[commandIndex], ps,
+                                       qtrue, qfalse, qtrue);
             }
         }
     }
@@ -332,13 +341,17 @@ weapon_dispatch:
         move = pm;
         ps = move->ps;
         int forceMaxSpread = 0;
-        if ((ps->playerStateFlags & 0x1u) && (move->command.forwardmove != 0 || move->command.rightmove != 0)) {
+        if ((ps->playerStateFlags & 0x1u) &&
+            (move->command.forwardmove != 0 || move->command.rightmove != 0)) {
             forceMaxSpread = 1; /* 0x300149d6/0x300149db JNZ 0x30014a02 */
         }
-        if (!forceMaxSpread && (ps->playerStateFlags & PMF_SPRINTING) && (move->command.forwardmove != 0 || move->command.rightmove != 0)) {
+        if (!forceMaxSpread && (ps->playerStateFlags & PMF_SPRINTING) &&
+            (move->command.forwardmove != 0 || move->command.rightmove != 0)) {
             forceMaxSpread = 1; /* 0x300149e8/0x300149ed JNZ 0x30014a02 */
         }
-        if (!forceMaxSpread && (ps->weaponState == WEAPON_STATE_MELEE_WINDUP || ps->weaponState == WEAPON_STATE_MELEE_RELAX)) {
+        if (!forceMaxSpread &&
+            (ps->weaponState == WEAPON_STATE_MELEE_WINDUP ||
+             ps->weaponState == WEAPON_STATE_MELEE_RELAX)) {
             forceMaxSpread = 1; /* 0x300149f8/0x300149fd */
         }
         if (forceMaxSpread) {

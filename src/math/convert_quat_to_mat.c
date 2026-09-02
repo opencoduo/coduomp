@@ -34,17 +34,23 @@ void ConvertQuatToMat(float quaternionAndMatrix[9])
     float lengthSquared;
 
 #if EMULATE_X87
-    xSquared = x87f_store_f32(x87f_mul(x87f_load_f32(x), x87f_load_f32(x)));
-    ySquared = x87f_store_f32(x87f_mul(x87f_load_f32(y), x87f_load_f32(y)));
-    zSquared = x87f_store_f32(x87f_mul(x87f_load_f32(z), x87f_load_f32(z)));
-    lengthSquared = x87f_store_f32(
-        x87f_add(x87f_add(x87f_add(x87f_mul(x87f_load_f32(w), x87f_load_f32(w)), x87f_load_f32(zSquared)), x87f_load_f32(ySquared)),
-                 x87f_load_f32(xSquared)));
+    xSquared = x87f_store_f32(
+        x87f_mul(x87f_load_f32(x), x87f_load_f32(x)));
+    ySquared = x87f_store_f32(
+        x87f_mul(x87f_load_f32(y), x87f_load_f32(y)));
+    zSquared = x87f_store_f32(
+        x87f_mul(x87f_load_f32(z), x87f_load_f32(z)));
+    lengthSquared = x87f_store_f32(x87f_add(
+        x87f_add(x87f_add(
+            x87f_mul(x87f_load_f32(w), x87f_load_f32(w)),
+            x87f_load_f32(zSquared)), x87f_load_f32(ySquared)),
+        x87f_load_f32(xSquared)));
 #else
     xSquared = (float)((long double)x * x);
     ySquared = (float)((long double)y * y);
     zSquared = (float)((long double)z * z);
-    lengthSquared = (float)((((long double)w * w + zSquared) + ySquared) + xSquared);
+    lengthSquared = (float)((((long double)w * w + zSquared) +
+                             ySquared) + xSquared);
 #endif
 
     if (lengthSquared != 0.0f) {
@@ -62,28 +68,53 @@ void ConvertQuatToMat(float quaternionAndMatrix[9])
         float zw;
 
 #if EMULATE_X87
-        scale = x87f_store_f32(x87f_div(x87f_load_f32(2.0f), x87f_load_f32(lengthSquared)));
-        xx = x87f_store_f32(x87f_mul(x87f_load_f32(xSquared), x87f_load_f32(scale)));
-        yy = x87f_store_f32(x87f_mul(x87f_load_f32(ySquared), x87f_load_f32(scale)));
-        zz = x87f_store_f32(x87f_mul(x87f_load_f32(zSquared), x87f_load_f32(scale)));
-        scaledX = x87f_store_f32(x87f_mul(x87f_load_f32(x), x87f_load_f32(scale)));
-        scaledY = x87f_store_f32(x87f_mul(x87f_load_f32(y), x87f_load_f32(scale)));
-        xy = x87f_store_f32(x87f_mul(x87f_load_f32(scaledX), x87f_load_f32(y)));
-        xz = x87f_store_f32(x87f_mul(x87f_load_f32(scaledX), x87f_load_f32(z)));
-        xw = x87f_store_f32(x87f_mul(x87f_load_f32(scaledX), x87f_load_f32(w)));
-        yz = x87f_store_f32(x87f_mul(x87f_load_f32(scaledY), x87f_load_f32(z)));
-        yw = x87f_store_f32(x87f_mul(x87f_load_f32(scaledY), x87f_load_f32(w)));
-        zw = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(z), x87f_load_f32(w)), x87f_load_f32(scale)));
+        scale = x87f_store_f32(x87f_div(
+            x87f_load_f32(2.0f), x87f_load_f32(lengthSquared)));
+        xx = x87f_store_f32(x87f_mul(
+            x87f_load_f32(xSquared), x87f_load_f32(scale)));
+        yy = x87f_store_f32(x87f_mul(
+            x87f_load_f32(ySquared), x87f_load_f32(scale)));
+        zz = x87f_store_f32(x87f_mul(
+            x87f_load_f32(zSquared), x87f_load_f32(scale)));
+        scaledX = x87f_store_f32(
+            x87f_mul(x87f_load_f32(x), x87f_load_f32(scale)));
+        scaledY = x87f_store_f32(
+            x87f_mul(x87f_load_f32(y), x87f_load_f32(scale)));
+        xy = x87f_store_f32(
+            x87f_mul(x87f_load_f32(scaledX), x87f_load_f32(y)));
+        xz = x87f_store_f32(
+            x87f_mul(x87f_load_f32(scaledX), x87f_load_f32(z)));
+        xw = x87f_store_f32(
+            x87f_mul(x87f_load_f32(scaledX), x87f_load_f32(w)));
+        yz = x87f_store_f32(
+            x87f_mul(x87f_load_f32(scaledY), x87f_load_f32(z)));
+        yw = x87f_store_f32(
+            x87f_mul(x87f_load_f32(scaledY), x87f_load_f32(w)));
+        zw = x87f_store_f32(x87f_mul(
+            x87f_mul(x87f_load_f32(z), x87f_load_f32(w)),
+            x87f_load_f32(scale)));
 
-        quaternionAndMatrix[0] = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(zz), x87f_load_f32(yy))));
-        quaternionAndMatrix[1] = x87f_store_f32(x87f_add(x87f_load_f32(zw), x87f_load_f32(xy)));
-        quaternionAndMatrix[2] = x87f_store_f32(x87f_sub(x87f_load_f32(xz), x87f_load_f32(yw)));
-        quaternionAndMatrix[3] = x87f_store_f32(x87f_sub(x87f_load_f32(xy), x87f_load_f32(zw)));
-        quaternionAndMatrix[4] = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(zz), x87f_load_f32(xx))));
-        quaternionAndMatrix[5] = x87f_store_f32(x87f_add(x87f_load_f32(yz), x87f_load_f32(xw)));
-        quaternionAndMatrix[6] = x87f_store_f32(x87f_add(x87f_load_f32(yw), x87f_load_f32(xz)));
-        quaternionAndMatrix[7] = x87f_store_f32(x87f_sub(x87f_load_f32(yz), x87f_load_f32(xw)));
-        quaternionAndMatrix[8] = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(yy), x87f_load_f32(xx))));
+        quaternionAndMatrix[0] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(zz), x87f_load_f32(yy))));
+        quaternionAndMatrix[1] = x87f_store_f32(
+            x87f_add(x87f_load_f32(zw), x87f_load_f32(xy)));
+        quaternionAndMatrix[2] = x87f_store_f32(
+            x87f_sub(x87f_load_f32(xz), x87f_load_f32(yw)));
+        quaternionAndMatrix[3] = x87f_store_f32(
+            x87f_sub(x87f_load_f32(xy), x87f_load_f32(zw)));
+        quaternionAndMatrix[4] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(zz), x87f_load_f32(xx))));
+        quaternionAndMatrix[5] = x87f_store_f32(
+            x87f_add(x87f_load_f32(yz), x87f_load_f32(xw)));
+        quaternionAndMatrix[6] = x87f_store_f32(
+            x87f_add(x87f_load_f32(yw), x87f_load_f32(xz)));
+        quaternionAndMatrix[7] = x87f_store_f32(
+            x87f_sub(x87f_load_f32(yz), x87f_load_f32(xw)));
+        quaternionAndMatrix[8] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(yy), x87f_load_f32(xx))));
 #else
         scale = (float)((long double)2.0f / lengthSquared);
         xx = (float)((long double)xSquared * scale);
@@ -98,15 +129,18 @@ void ConvertQuatToMat(float quaternionAndMatrix[9])
         yw = (float)((long double)scaledY * w);
         zw = (float)((long double)z * w * scale);
 
-        quaternionAndMatrix[0] = (float)((long double)1.0f - ((long double)zz + yy));
+        quaternionAndMatrix[0] =
+            (float)((long double)1.0f - ((long double)zz + yy));
         quaternionAndMatrix[1] = (float)((long double)zw + xy);
         quaternionAndMatrix[2] = (float)((long double)xz - yw);
         quaternionAndMatrix[3] = (float)((long double)xy - zw);
-        quaternionAndMatrix[4] = (float)((long double)1.0f - ((long double)zz + xx));
+        quaternionAndMatrix[4] =
+            (float)((long double)1.0f - ((long double)zz + xx));
         quaternionAndMatrix[5] = (float)((long double)yz + xw);
         quaternionAndMatrix[6] = (float)((long double)yw + xz);
         quaternionAndMatrix[7] = (float)((long double)yz - xw);
-        quaternionAndMatrix[8] = (float)((long double)1.0f - ((long double)yy + xx));
+        quaternionAndMatrix[8] =
+            (float)((long double)1.0f - ((long double)yy + xx));
 #endif
         return;
     }
@@ -136,43 +170,80 @@ void ConvertQuatToMat(float quaternionAndMatrix[9])
     float zw;
 
 #if EMULATE_X87
-    xx = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[0]), x87f_load_f32(quaternionAndMatrix[0])));
-    yy = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[1]), x87f_load_f32(quaternionAndMatrix[1])));
-    zz = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[2]), x87f_load_f32(quaternionAndMatrix[2])));
-    scale = x87f_store_f32(x87f_add(x87f_add(x87f_add(x87f_load_f32(xx), x87f_load_f32(yy)), x87f_load_f32(zz)),
-                                    x87f_mul(x87f_load_f32(quaternionAndMatrix[3]), x87f_load_f32(quaternionAndMatrix[3]))));
+    xx = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[0]),
+                                  x87f_load_f32(quaternionAndMatrix[0])));
+    yy = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[1]),
+                                  x87f_load_f32(quaternionAndMatrix[1])));
+    zz = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[2]),
+                                  x87f_load_f32(quaternionAndMatrix[2])));
+    scale = x87f_store_f32(x87f_add(
+        x87f_add(x87f_add(x87f_load_f32(xx), x87f_load_f32(yy)),
+                 x87f_load_f32(zz)),
+        x87f_mul(x87f_load_f32(quaternionAndMatrix[3]),
+                 x87f_load_f32(quaternionAndMatrix[3]))));
 
     if (scale != 0.0f) {
-        scale = x87f_store_f32(x87f_div(x87f_load_f32(2.0f), x87f_load_f32(scale)));
-        xx = x87f_store_f32(x87f_mul(x87f_load_f32(xx), x87f_load_f32(scale)));
-        yy = x87f_store_f32(x87f_mul(x87f_load_f32(yy), x87f_load_f32(scale)));
-        zz = x87f_store_f32(x87f_mul(x87f_load_f32(zz), x87f_load_f32(scale)));
+        scale = x87f_store_f32(
+            x87f_div(x87f_load_f32(2.0f), x87f_load_f32(scale)));
+        xx = x87f_store_f32(
+            x87f_mul(x87f_load_f32(xx), x87f_load_f32(scale)));
+        yy = x87f_store_f32(
+            x87f_mul(x87f_load_f32(yy), x87f_load_f32(scale)));
+        zz = x87f_store_f32(
+            x87f_mul(x87f_load_f32(zz), x87f_load_f32(scale)));
 
-        quaternionAndMatrix[0] = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[0]), x87f_load_f32(scale)));
-        xy = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[0]), x87f_load_f32(quaternionAndMatrix[1])));
-        xz = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[0]), x87f_load_f32(quaternionAndMatrix[2])));
-        xw = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[0]), x87f_load_f32(quaternionAndMatrix[3])));
-        quaternionAndMatrix[1] = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[1]), x87f_load_f32(scale)));
-        yz = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[1]), x87f_load_f32(quaternionAndMatrix[2])));
-        yw = x87f_store_f32(x87f_mul(x87f_load_f32(quaternionAndMatrix[1]), x87f_load_f32(quaternionAndMatrix[3])));
-        zw = x87f_store_f32(
-            x87f_mul(x87f_mul(x87f_load_f32(quaternionAndMatrix[2]), x87f_load_f32(quaternionAndMatrix[3])), x87f_load_f32(scale)));
+        quaternionAndMatrix[0] = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[0]), x87f_load_f32(scale)));
+        xy = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[0]),
+            x87f_load_f32(quaternionAndMatrix[1])));
+        xz = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[0]),
+            x87f_load_f32(quaternionAndMatrix[2])));
+        xw = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[0]),
+            x87f_load_f32(quaternionAndMatrix[3])));
+        quaternionAndMatrix[1] = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[1]), x87f_load_f32(scale)));
+        yz = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[1]),
+            x87f_load_f32(quaternionAndMatrix[2])));
+        yw = x87f_store_f32(x87f_mul(
+            x87f_load_f32(quaternionAndMatrix[1]),
+            x87f_load_f32(quaternionAndMatrix[3])));
+        zw = x87f_store_f32(x87f_mul(
+            x87f_mul(x87f_load_f32(quaternionAndMatrix[2]),
+                     x87f_load_f32(quaternionAndMatrix[3])),
+            x87f_load_f32(scale)));
 
-        quaternionAndMatrix[0] = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(yy), x87f_load_f32(zz))));
-        quaternionAndMatrix[1] = x87f_store_f32(x87f_add(x87f_load_f32(xy), x87f_load_f32(zw)));
-        quaternionAndMatrix[2] = x87f_store_f32(x87f_sub(x87f_load_f32(xz), x87f_load_f32(yw)));
-        quaternionAndMatrix[3] = x87f_store_f32(x87f_sub(x87f_load_f32(xy), x87f_load_f32(zw)));
-        quaternionAndMatrix[4] = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(xx), x87f_load_f32(zz))));
-        quaternionAndMatrix[5] = x87f_store_f32(x87f_add(x87f_load_f32(yz), x87f_load_f32(xw)));
-        quaternionAndMatrix[6] = x87f_store_f32(x87f_add(x87f_load_f32(xz), x87f_load_f32(yw)));
-        quaternionAndMatrix[7] = x87f_store_f32(x87f_sub(x87f_load_f32(yz), x87f_load_f32(xw)));
-        quaternionAndMatrix[8] = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_add(x87f_load_f32(xx), x87f_load_f32(yy))));
+        quaternionAndMatrix[0] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(yy), x87f_load_f32(zz))));
+        quaternionAndMatrix[1] = x87f_store_f32(
+            x87f_add(x87f_load_f32(xy), x87f_load_f32(zw)));
+        quaternionAndMatrix[2] = x87f_store_f32(
+            x87f_sub(x87f_load_f32(xz), x87f_load_f32(yw)));
+        quaternionAndMatrix[3] = x87f_store_f32(
+            x87f_sub(x87f_load_f32(xy), x87f_load_f32(zw)));
+        quaternionAndMatrix[4] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(xx), x87f_load_f32(zz))));
+        quaternionAndMatrix[5] = x87f_store_f32(
+            x87f_add(x87f_load_f32(yz), x87f_load_f32(xw)));
+        quaternionAndMatrix[6] = x87f_store_f32(
+            x87f_add(x87f_load_f32(xz), x87f_load_f32(yw)));
+        quaternionAndMatrix[7] = x87f_store_f32(
+            x87f_sub(x87f_load_f32(yz), x87f_load_f32(xw)));
+        quaternionAndMatrix[8] = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_add(x87f_load_f32(xx), x87f_load_f32(yy))));
     } else {
 #else
     xx = quaternionAndMatrix[0] * quaternionAndMatrix[0];
     yy = quaternionAndMatrix[1] * quaternionAndMatrix[1];
     zz = quaternionAndMatrix[2] * quaternionAndMatrix[2];
-    scale = ((xx + yy) + zz) + quaternionAndMatrix[3] * quaternionAndMatrix[3];
+    scale = ((xx + yy) + zz) +
+            quaternionAndMatrix[3] * quaternionAndMatrix[3];
 
     if (scale != 0.0f) {
         scale = 2.0f / scale;

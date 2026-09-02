@@ -58,10 +58,10 @@ void CG_FreeWeaponDObjHandles(void)
 {
     uint32_t indexBits = 1u;
 
-    if (bg_numWeapons < 1)
-        return;
+    if (bg_numWeapons < 1) return;
     do {
-        const int32_t key = coduo_int32_from_bits(indexBits + (uint32_t)CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
+        const int32_t key = coduo_int32_from_bits(
+            indexBits + (uint32_t)CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
         /* 0x30044a90..0x30044aa3: PUSH 1; LEA EAX,[i+0x400]; PUSH EAX; PUSH 0xa8;
          * CALL [cgame_syscall]; ADD ESP,0xc. Release the DObj registration keyed
          * by (i + 0x400) for weapon i, with flag 1. */

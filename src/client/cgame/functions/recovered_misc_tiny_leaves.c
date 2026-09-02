@@ -3,12 +3,11 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-enum {
-    WEAPON_FILE_NAME_COMPARE_LIMIT = 99999
-};
+enum { WEAPON_FILE_NAME_COMPARE_LIMIT = 99999 };
 
 // Source RVA: 0x30010dd0
-int32_t compare_weaponfile_names(const char *const *left, const char *const *right)
+int32_t compare_weaponfile_names(const char *const *left,
+                                 const char *const *right)
 {
     const char *leftString = *left;
     const char *rightString = *right;

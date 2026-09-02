@@ -44,7 +44,10 @@
  * and the body is a pure trap forwarder to the cgame VM syscall pointer, not an
  * angle-difference computation.
  */
-void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t animIndex, float blendTime)
+void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t animIndex,
+                                          float blendTime)
 {
-    cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS_STRICT, (intptr_t)tree, (uint16_t)animIndex, CG_FloatBits(blendTime));
+    cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS_STRICT,
+                  (intptr_t)tree, (uint16_t)animIndex,
+                  CG_FloatBits(blendTime));
 }

@@ -21,7 +21,8 @@ void UI_AddServerToFavoritesList(const char *name, const char *address)
     }
 
     if (address[0] == '\0') {
-        Com_Printf("%s\n", UI_SafeTranslateString("EXE_FAVORITEADDRESSEMPTY"));
+        Com_Printf("%s\n",
+                   UI_SafeTranslateString("EXE_FAVORITEADDRESSEMPTY"));
         trap_Cvar_Set("ui_favorite_message", "@EXE_FAVORITEADDRESSEMPTY");
         return;
     }

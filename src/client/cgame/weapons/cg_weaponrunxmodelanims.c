@@ -63,27 +63,20 @@
 
 /* ps->entityStateFlags bits that force the vehicle/mounted animation path. Tested as a
  * single 0x106000 mask (TEST EAX,0x106000). Exact bit names unresolved. */
-enum {
-    CG_PS_MOUNTED_MASK = 0x106000
-};
+enum { CG_PS_MOUNTED_MASK = 0x106000 };
 
 /* Vehicle gate constants (ps->vehicleType / ps->vehiclePosition). */
-enum {
-    CG_VEHICLE_TYPE_MOUNTED = 1,
-    CG_VEHICLE_SEAT_GUNNER = 3
-};
+enum { CG_VEHICLE_TYPE_MOUNTED = 1, CG_VEHICLE_SEAT_GUNNER = 3 };
 
 /* weaponClass values (weaponInfo_t::weaponClass, +0x80) that skip the ADS-overlay
  * blend and take the "held weapon" idle branch. */
-enum {
-    CG_WEAPONCLASS_SKIP_ADS_A = 3,
-    CG_WEAPONCLASS_SKIP_ADS_B = 8
-};
+enum { CG_WEAPONCLASS_SKIP_ADS_A = 3, CG_WEAPONCLASS_SKIP_ADS_B = 8 };
 
 void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
 {
     /* 1. Resolve the weapon overlay DObj's runtime animation tree. */
-    intptr_t animTree = cgame_syscall(CG_DOBJ_GET_TREE, (intptr_t)wi->viewDObjSelf);
+    intptr_t animTree =
+        cgame_syscall(CG_DOBJ_GET_TREE, (intptr_t)wi->viewDObjSelf);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (animTree == 0) {
         return;
@@ -105,7 +98,8 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
     /* 4. useAdsAnim: 0 during the reload-transition window of the reload-loop
      * state, else driven by the QUALIFY (0x20) anim flag. */
     int32_t useAdsAnim = 0;
-    int32_t reloadWindow = coduo_int32_from_bits((uint32_t)ps->weaponTime - (uint32_t)weaponInfo->reloadLoopTime);
+    int32_t reloadWindow = coduo_int32_from_bits(
+        (uint32_t)ps->weaponTime - (uint32_t)weaponInfo->reloadLoopTime);
     if (!(ps->weaponState == WEAPON_STATE_RELOADING && reloadWindow > 0)) {
         if ((ps->playerStateFlags & PMF_ADS) != 0) {
             useAdsAnim = 1;
@@ -113,9 +107,12 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
     }
 
     /* 5. ADS overlay cross-fade for ADS-capable weapons (except classes 3/8). */
-    if (weaponInfo->adsEnabled != 0 && weaponInfo->weaponClass != CG_WEAPONCLASS_SKIP_ADS_A &&
+    if (weaponInfo->adsEnabled != 0 &&
+        weaponInfo->weaponClass != CG_WEAPONCLASS_SKIP_ADS_A &&
         weaponInfo->weaponClass != CG_WEAPONCLASS_SKIP_ADS_B) {
-        CG_PlayADSAnim(useAdsAnim ? WEAPON_XANIM_ADS_UP : WEAPON_XANIM_ADS_DOWN, animTree);
+        CG_PlayADSAnim(useAdsAnim ? WEAPON_XANIM_ADS_UP
+                                  : WEAPON_XANIM_ADS_DOWN,
+                       animTree);
     }
 
     /* 6. Change gate: unchanged anim state -> nothing to do. */
@@ -124,12 +121,15 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
     }
 
     /* 7. Decode the anim-state enum (drop the toggle bit). */
-    int32_t animState = coduo_int32_from_bits((uint32_t)ps->weaponAnim & ~(uint32_t)ANIM_TOGGLEBIT);
+    int32_t animState = coduo_int32_from_bits(
+        (uint32_t)ps->weaponAnim & ~(uint32_t)ANIM_TOGGLEBIT);
 
     if (animState == 0) {
         /* Idle: require every XModel overlay anim to report finished first. */
         int32_t animIndex;
-        for (animIndex = WEAPON_XANIM_IDLE; animIndex < WEAPON_XANIM_ADS_UP; ++animIndex) {
+        for (animIndex = WEAPON_XANIM_IDLE;
+             animIndex < WEAPON_XANIM_ADS_UP;
+             ++animIndex) {
             if (cgame_syscall(CG_XANIM_HAS_FINISHED, animTree, animIndex) == 0) {
                 /* At least one anim is still running; retry next frame. */
                 wi->lastRunAnim = -1;
@@ -140,12 +140,18 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
         /* All present. "Held weapon" classes with the QUALIFY flag use
          * LMG_DEPLOYED; every other weapon picks IDLE (clip loaded) or
          * EMPTY_IDLE (empty). */
-        if ((weaponInfo->weaponClass == CG_WEAPONCLASS_SKIP_ADS_A || weaponInfo->weaponClass == CG_WEAPONCLASS_SKIP_ADS_B) &&
+        if ((weaponInfo->weaponClass == CG_WEAPONCLASS_SKIP_ADS_A ||
+             weaponInfo->weaponClass == CG_WEAPONCLASS_SKIP_ADS_B) &&
             (ps->playerStateFlags & PMF_ADS) != 0) {
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_LMG_DEPLOYED);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_LMG_DEPLOYED);
         } else {
-            int32_t activeAnimIndex = (ps->clips[weaponInfo->clipIndex] != 0) ? WEAPON_XANIM_IDLE : WEAPON_XANIM_EMPTY_IDLE;
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, activeAnimIndex);
+            int32_t activeAnimIndex =
+                (ps->clips[weaponInfo->clipIndex] != 0)
+                    ? WEAPON_XANIM_IDLE
+                    : WEAPON_XANIM_EMPTY_IDLE;
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               activeAnimIndex);
         }
     } else {
         /* This is the source-level switch represented by the original jump
@@ -154,65 +160,85 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
          * PUSH immediate at 0x30042eaf..0x30042f25. */
         switch (animState) {
         case PM_WEAPON_ANIM_FIRE:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_FIRE);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_FIRE);
             break;
         case PM_WEAPON_ANIM_FIRE_LASTSHOT:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_LAST_SHOT);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_LAST_SHOT);
             break;
         case PM_WEAPON_ANIM_RECHAMBER:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_RECHAMBER);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_RECHAMBER);
             break;
         case PM_WEAPON_ANIM_ADS_FIRE:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_ADS_FIRE);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_ADS_FIRE);
             break;
         case PM_WEAPON_ANIM_ADS_FIRE_LASTSHOT:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_ADS_LAST_SHOT);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_ADS_LAST_SHOT);
             break;
         case PM_WEAPON_ANIM_ADS_RECHAMBER:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_ADS_RECHAMBER);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_ADS_RECHAMBER);
             break;
         case PM_WEAPON_ANIM_MELEE:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_MELEE);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_MELEE);
             break;
         case PM_WEAPON_ANIM_LOWER:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_DROP);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_DROP);
             break;
         case PM_WEAPON_ANIM_SWITCH_RAISE:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_RAISE);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_RAISE);
             break;
         case PM_WEAPON_ANIM_RELOAD:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_RELOAD);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_RELOAD);
             break;
         case PM_WEAPON_ANIM_RELOAD_EMPTY:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_RELOAD_EMPTY);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_RELOAD_EMPTY);
             break;
         case PM_WEAPON_ANIM_RELOAD_START:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_RELOAD_START);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_RELOAD_START);
             break;
         case PM_WEAPON_ANIM_RELOAD_END:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_RELOAD_END);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_RELOAD_END);
             break;
         case PM_WEAPON_ANIM_ALT_SWITCH_LOWER:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_ALT_DROP);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_ALT_DROP);
             break;
         case PM_WEAPON_ANIM_ALT_SWITCH_RAISE:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_ALT_RAISE);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_ALT_RAISE);
             break;
         case PM_WEAPON_ANIM_SPECIAL_FIRE:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_HOLD_FIRE);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_HOLD_FIRE);
             break;
         case PM_WEAPON_ANIM_ADS_IN:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_LMG_DEPLOY);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_LMG_DEPLOY);
             break;
         case PM_WEAPON_ANIM_ADS_OUT:
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_LMG_BREAKDOWN);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_LMG_BREAKDOWN);
             break;
         default:
             /* Out-of-range states, the unnamed pose 1, and PM_WEAPON_ANIM_DEPLOYED
              * share the retail diagnostic block at 0x30042f2a. DEPLOYED is
              * selected through the idle-path flag gate above, not this switch. */
-            CG_StartWeaponAnim(ps->currentWeapon, animTree, WEAPON_XANIM_IDLE);
-            Com_Printf(cg_weaponRunXModelAnimsInvalidAnimFmt, (int)animState);
+            CG_StartWeaponAnim(ps->currentWeapon, animTree,
+                               WEAPON_XANIM_IDLE);
+            Com_Printf(cg_weaponRunXModelAnimsInvalidAnimFmt,
+                       (int)animState);
             break;
         }
     }

@@ -25,20 +25,25 @@ renderer_vertex_program_t *R_LoadVertexProgram(const char *name)
     renderer_vertex_program_t *program;
 
     if (rendererVertexProgramCount == R_MAX_VERTEX_PROGRAMS) {
-        ri.Printf(R_PRINT_WARNING, "WARNING: tried to load more than %i unique vertex programs in a single map\n", R_MAX_VERTEX_PROGRAMS);
+        ri.Printf(
+            R_PRINT_WARNING,
+            "WARNING: tried to load more than %i unique vertex programs in a single map\n",
+            R_MAX_VERTEX_PROGRAMS);
         return NULL;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (strlen(name) >= R_VERTEX_PROGRAM_NAME_SIZE) {
-        ri.Printf(R_PRINT_WARNING, "WARNING: vertex program name '%s' is too long\n", name);
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: vertex program name '%s' is too long\n", name);
         return NULL;
     }
 
     path = va("scripts/%s.vp10", name);
     fileSize = ri.FS_ReadFile(path, &fileBuffer);
     if (fileSize < 0) {
-        ri.Printf(R_PRINT_WARNING, "WARNING: couldn't open vertex program '%s'\n", path);
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: couldn't open vertex program '%s'\n", path);
         return NULL;
     }
 
@@ -50,13 +55,18 @@ renderer_vertex_program_t *R_LoadVertexProgram(const char *name)
         int32_t errorPosition;
 
         qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, program->glProgramName);
-        qglProgramStringARB(GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, fileSize, fileBuffer);
+        qglProgramStringARB(GL_VERTEX_PROGRAM_ARB,
+                            GL_PROGRAM_FORMAT_ASCII_ARB, fileSize,
+                            fileBuffer);
         qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, 0);
         qglGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errorPosition);
         if (errorPosition >= 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-            ri.Printf(R_PRINT_WARNING, "WARNING: shader '%s': error in vertex program '%s' at char %i: %s\n", rendererParsedShader.name,
-                      path, errorPosition, qglGetString(GL_PROGRAM_ERROR_STRING_ARB));
+            ri.Printf(
+                R_PRINT_WARNING,
+                "WARNING: shader '%s': error in vertex program '%s' at char %i: %s\n",
+                rendererParsedShader.name, path, errorPosition,
+                qglGetString(GL_PROGRAM_ERROR_STRING_ARB));
             qglDeleteProgramsARB(1, &program->glProgramName);
             ri.FS_FreeFile(fileBuffer);
             return NULL;
@@ -76,7 +86,9 @@ renderer_vertex_program_t *R_FindVertexProgram(const char *name)
 {
     int32_t programIndex;
 
-    for (programIndex = 0; programIndex < rendererVertexProgramCount; ++programIndex) {
+    for (programIndex = 0;
+         programIndex < rendererVertexProgramCount;
+         ++programIndex) {
         if (Q_stricmp(name, rendererVertexPrograms[programIndex].name) == 0)
             return &rendererVertexPrograms[programIndex];
     }
@@ -98,8 +110,11 @@ void R_DeleteVertexPrograms(void)
         qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, 0);
         rendererCurrentVertexProgram = NULL;
 
-        for (programIndex = 0; programIndex < rendererVertexProgramCount; ++programIndex) {
-            qglDeleteProgramsARB(1, &rendererVertexPrograms[programIndex].glProgramName);
+        for (programIndex = 0;
+             programIndex < rendererVertexProgramCount;
+             ++programIndex) {
+            qglDeleteProgramsARB(
+                1, &rendererVertexPrograms[programIndex].glProgramName);
         }
     }
 
@@ -141,7 +156,9 @@ void R_DeleteFragmentShaders(void)
 
     GL_BindFragmentShaderATI(0);
 
-    for (int32_t shader = 1; shader <= tr.fragmentShaderCount; ++shader) {
+    for (int32_t shader = 1;
+         shader <= tr.fragmentShaderCount;
+         ++shader) {
         qglDeleteFragmentShaderATI((uint32_t)shader);
     }
 

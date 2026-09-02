@@ -16,19 +16,25 @@ enum {
  * Name and source-level boundary: same-module Mac R_AllocMemoryNV and its call
  * graph. The strict-less-than pool test is intentional: an allocation ending
  * exactly at either limit falls through to the next source. */
-renderer_static_vertex_memory_source_t R_AllocMemoryNV(renderer_static_vertex_memory_source_t firstSource, size_t size, uint8_t **memory)
+renderer_static_vertex_memory_source_t R_AllocMemoryNV(
+    renderer_static_vertex_memory_source_t firstSource, size_t size,
+    uint8_t **memory)
 {
     /* ADD/AND at 0x004c89a0..0x004c89a3 and each LEA pool end retain
      * wrapping 32-bit arithmetic; JGE interprets each end and limit signed. */
     const uint32_t alignedSize =
-        ((uint32_t)size + (R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U)) & ~(uint32_t)(R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U);
+        ((uint32_t)size + (R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U)) &
+        ~(uint32_t)(R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U);
 
     if (firstSource == R_STATIC_VERTEX_MEMORY_PRIMARY) {
-        const uint32_t used = (uint32_t)tr.staticVertexMemoryPrimaryUsed;
+        const uint32_t used =
+            (uint32_t)tr.staticVertexMemoryPrimaryUsed;
         const uint32_t end = used + alignedSize;
 
-        if ((int32_t)end < (int32_t)(uint32_t)tr.staticVertexMemoryPrimaryLimit) {
-            *memory = tr.staticVertexMemoryPrimary.address + used;
+        if ((int32_t)end <
+            (int32_t)(uint32_t)tr.staticVertexMemoryPrimaryLimit) {
+            *memory = tr.staticVertexMemoryPrimary.address +
+                      used;
             tr.staticVertexMemoryPrimaryUsed = (size_t)end;
             return R_STATIC_VERTEX_MEMORY_PRIMARY;
         }
@@ -36,17 +42,21 @@ renderer_static_vertex_memory_source_t R_AllocMemoryNV(renderer_static_vertex_me
     }
 
     if (firstSource == R_STATIC_VERTEX_MEMORY_SECONDARY) {
-        const uint32_t used = (uint32_t)tr.staticVertexMemorySecondaryUsed;
+        const uint32_t used =
+            (uint32_t)tr.staticVertexMemorySecondaryUsed;
         const uint32_t end = used + alignedSize;
 
-        if ((int32_t)end < (int32_t)(uint32_t)tr.staticVertexMemorySecondaryLimit) {
-            *memory = tr.staticVertexMemorySecondary.address + used;
+        if ((int32_t)end <
+            (int32_t)(uint32_t)tr.staticVertexMemorySecondaryLimit) {
+            *memory = tr.staticVertexMemorySecondary.address +
+                      used;
             tr.staticVertexMemorySecondaryUsed = (size_t)end;
             return R_STATIC_VERTEX_MEMORY_SECONDARY;
         }
     }
 
-    *memory = Hunk_AllocAlignInternal((size_t)alignedSize, R_STATIC_VERTEX_MEMORY_ALIGNMENT);
+    *memory = Hunk_AllocAlignInternal((size_t)alignedSize,
+                                     R_STATIC_VERTEX_MEMORY_ALIGNMENT);
     return R_STATIC_VERTEX_MEMORY_HUNK;
 }
 
@@ -56,18 +66,23 @@ renderer_static_vertex_memory_source_t R_AllocMemoryNV(renderer_static_vertex_me
  * boundary: same-module Mac R_AllocMemoryATI and its call graph. Unlike the NV
  * allocator, ATI accepts an allocation ending exactly at the pool limit and
  * has no hunk fallback. */
-renderer_static_vertex_memory_source_t R_AllocMemoryATI(renderer_static_vertex_memory_source_t firstSource, size_t size, size_t *offset)
+renderer_static_vertex_memory_source_t R_AllocMemoryATI(
+    renderer_static_vertex_memory_source_t firstSource, size_t size,
+    size_t *offset)
 {
     /* ADD/AND at 0x004c8a20..0x004c8a24 and each LEA pool end retain
      * wrapping 32-bit arithmetic; JG interprets each end and limit signed. */
     const uint32_t alignedSize =
-        ((uint32_t)size + (R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U)) & ~(uint32_t)(R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U);
+        ((uint32_t)size + (R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U)) &
+        ~(uint32_t)(R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U);
 
     if (firstSource == R_STATIC_VERTEX_MEMORY_PRIMARY) {
-        const uint32_t used = (uint32_t)tr.staticVertexMemoryPrimaryUsed;
+        const uint32_t used =
+            (uint32_t)tr.staticVertexMemoryPrimaryUsed;
         const uint32_t end = used + alignedSize;
 
-        if ((int32_t)end <= (int32_t)(uint32_t)tr.staticVertexMemoryPrimaryLimit) {
+        if ((int32_t)end <=
+            (int32_t)(uint32_t)tr.staticVertexMemoryPrimaryLimit) {
             *offset = (size_t)used;
             tr.staticVertexMemoryPrimaryUsed = (size_t)end;
             return R_STATIC_VERTEX_MEMORY_PRIMARY;
@@ -76,10 +91,12 @@ renderer_static_vertex_memory_source_t R_AllocMemoryATI(renderer_static_vertex_m
     }
 
     if (firstSource == R_STATIC_VERTEX_MEMORY_SECONDARY) {
-        const uint32_t used = (uint32_t)tr.staticVertexMemorySecondaryUsed;
+        const uint32_t used =
+            (uint32_t)tr.staticVertexMemorySecondaryUsed;
         const uint32_t end = used + alignedSize;
 
-        if ((int32_t)end <= (int32_t)(uint32_t)tr.staticVertexMemorySecondaryLimit) {
+        if ((int32_t)end <=
+            (int32_t)(uint32_t)tr.staticVertexMemorySecondaryLimit) {
             *offset = (size_t)used;
             tr.staticVertexMemorySecondaryUsed = (size_t)end;
             return R_STATIC_VERTEX_MEMORY_SECONDARY;
@@ -125,17 +142,22 @@ void R_InitAllocators(void)
 
         if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
             agpMegabytes = 13.0f;
-            tr.staticVertexMemorySecondaryLimit = R_DEFAULT_NV_AGP_MEMORY_BYTES;
-            tr.staticVertexMemorySecondary.address = qglAllocateMemoryNV((int32_t)R_DEFAULT_NV_AGP_MEMORY_BYTES, 0.0f, 0.0f, 0.5f);
+            tr.staticVertexMemorySecondaryLimit =
+                R_DEFAULT_NV_AGP_MEMORY_BYTES;
+            tr.staticVertexMemorySecondary.address = qglAllocateMemoryNV(
+                (int32_t)R_DEFAULT_NV_AGP_MEMORY_BYTES,
+                0.0f, 0.0f, 0.5f);
 
             if (tr.staticVertexMemorySecondary.address != NULL) {
                 secondaryWasPreallocated = qtrue;
             } else {
-                ri.Printf(R_PRINT_ALL, "^3No AGP memory available for video card to use with "
-                                       "NV_vertex_array_range.\n"
-                                       "^3This is usually because the motherboard has no AGP "
-                                       "drivers installed,\n"
-                                       "^3forcing the video card to use PCI mode.\n");
+                ri.Printf(
+                    R_PRINT_ALL,
+                    "^3No AGP memory available for video card to use with "
+                    "NV_vertex_array_range.\n"
+                    "^3This is usually because the motherboard has no AGP "
+                    "drivers installed,\n"
+                    "^3forcing the video card to use PCI mode.\n");
                 agpMegabytes = 0.0f;
                 videoMegabytes = 13.0f;
                 tr.staticVertexMemorySecondaryLimit = 0;
@@ -152,25 +174,39 @@ void R_InitAllocators(void)
         backendMegabytes = 32.0f;
 
     if (!secondaryWasPreallocated && videoMegabytes > 0.0f) {
-        const uint32_t negativeBytes = (uint32_t)(int32_t)(videoMegabytes * -1048576.0f);
-        const uint32_t alignedBytes = (31U - negativeBytes) & ~(uint32_t)31U;
+        const uint32_t negativeBytes = (uint32_t)(int32_t)(
+            videoMegabytes * -1048576.0f);
+        const uint32_t alignedBytes =
+            (31U - negativeBytes) & ~(uint32_t)31U;
 
         tr.staticVertexMemoryPrimaryLimit = alignedBytes;
 
         if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
-            tr.staticVertexMemoryPrimary.address = qglAllocateMemoryNV((int32_t)alignedBytes, 0.0f, 0.0f, 1.0f);
+            tr.staticVertexMemoryPrimary.address = qglAllocateMemoryNV(
+                (int32_t)alignedBytes, 0.0f, 0.0f, 1.0f);
             if (tr.staticVertexMemoryPrimary.address != NULL) {
-                ri.Printf(R_PRINT_ALL, "Allocated %i MB of video memory for vertex data\n", (double)videoMegabytes);
+                ri.Printf(R_PRINT_ALL,
+                          "Allocated %i MB of video memory for vertex data\n",
+                          (double)videoMegabytes);
             } else {
-                ri.Printf(R_PRINT_WARNING, "Failed to allocate %i MB of video memory for vertex data\n", (double)videoMegabytes);
+                ri.Printf(
+                    R_PRINT_WARNING,
+                    "Failed to allocate %i MB of video memory for vertex data\n",
+                    (double)videoMegabytes);
                 tr.staticVertexMemoryPrimaryLimit = 0;
             }
         } else if (glConfig.vertexArrayObjectATIAvailable) {
-            tr.staticVertexMemoryPrimary.atiObjectBuffer = qglNewObjectBufferATI((int32_t)alignedBytes, NULL, GL_STATIC_ATI);
+            tr.staticVertexMemoryPrimary.atiObjectBuffer =
+                qglNewObjectBufferATI((int32_t)alignedBytes, NULL,
+                                      GL_STATIC_ATI);
             if (tr.staticVertexMemoryPrimary.atiObjectBuffer != 0) {
-                ri.Printf(R_PRINT_ALL, "Allocated %i MB of static buffers\n", (double)videoMegabytes);
+                ri.Printf(R_PRINT_ALL,
+                          "Allocated %i MB of static buffers\n",
+                          (double)videoMegabytes);
             } else {
-                ri.Printf(R_PRINT_WARNING, "Failed to allocate %i MB of static buffers\n", (double)videoMegabytes);
+                ri.Printf(R_PRINT_WARNING,
+                          "Failed to allocate %i MB of static buffers\n",
+                          (double)videoMegabytes);
                 tr.staticVertexMemoryPrimaryLimit = 0;
             }
         } else {
@@ -181,28 +217,42 @@ void R_InitAllocators(void)
     }
 
     if (agpMegabytes > 0.0f) {
-        const uint32_t negativeBytes = (uint32_t)(int32_t)(agpMegabytes * -1048576.0f);
-        const uint32_t alignedBytes = (31U - negativeBytes) & ~(uint32_t)31U;
+        const uint32_t negativeBytes = (uint32_t)(int32_t)(
+            agpMegabytes * -1048576.0f);
+        const uint32_t alignedBytes =
+            (31U - negativeBytes) & ~(uint32_t)31U;
 
         tr.staticVertexMemorySecondaryLimit = alignedBytes;
 
         if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
             if (tr.staticVertexMemorySecondary.address == NULL) {
-                tr.staticVertexMemorySecondary.address = qglAllocateMemoryNV((int32_t)alignedBytes, 0.0f, 0.0f, 0.5f);
+                tr.staticVertexMemorySecondary.address = qglAllocateMemoryNV(
+                    (int32_t)alignedBytes, 0.0f, 0.0f, 0.5f);
             }
 
             if (tr.staticVertexMemorySecondary.address != NULL) {
-                ri.Printf(R_PRINT_ALL, "Allocated %i MB of AGP memory for vertex data\n", (double)agpMegabytes);
+                ri.Printf(R_PRINT_ALL,
+                          "Allocated %i MB of AGP memory for vertex data\n",
+                          (double)agpMegabytes);
             } else {
-                ri.Printf(R_PRINT_WARNING, "Failed to allocate %i MB of AGP memory for vertex data\n", (double)agpMegabytes);
+                ri.Printf(
+                    R_PRINT_WARNING,
+                    "Failed to allocate %i MB of AGP memory for vertex data\n",
+                    (double)agpMegabytes);
                 tr.staticVertexMemorySecondaryLimit = 0;
             }
         } else if (glConfig.vertexArrayObjectATIAvailable) {
-            tr.staticVertexMemorySecondary.atiObjectBuffer = qglNewObjectBufferATI((int32_t)alignedBytes, NULL, GL_DYNAMIC_ATI);
+            tr.staticVertexMemorySecondary.atiObjectBuffer =
+                qglNewObjectBufferATI((int32_t)alignedBytes, NULL,
+                                      GL_DYNAMIC_ATI);
             if (tr.staticVertexMemorySecondary.atiObjectBuffer != 0) {
-                ri.Printf(R_PRINT_ALL, "Allocated %i MB of dynamic buffers\n", (double)agpMegabytes);
+                ri.Printf(R_PRINT_ALL,
+                          "Allocated %i MB of dynamic buffers\n",
+                          (double)agpMegabytes);
             } else {
-                ri.Printf(R_PRINT_WARNING, "Failed to allocate %i MB of dynamic buffers\n", (double)agpMegabytes);
+                ri.Printf(R_PRINT_WARNING,
+                          "Failed to allocate %i MB of dynamic buffers\n",
+                          (double)agpMegabytes);
                 tr.staticVertexMemorySecondaryLimit = 0;
             }
         } else {
@@ -224,8 +274,10 @@ void R_InitAllocators(void)
         if (tr.vboStreamDraw)
             return;
 
-        const uint32_t negativeBytes = (uint32_t)(int32_t)(backendMegabytes * -1048576.0f);
-        const uint32_t alignedBytes = (31U - negativeBytes) & ~(uint32_t)31U;
+        const uint32_t negativeBytes = (uint32_t)(int32_t)(
+            backendMegabytes * -1048576.0f);
+        const uint32_t alignedBytes =
+            (31U - negativeBytes) & ~(uint32_t)31U;
         backEnd.dynamicBuffer.capacity = (int32_t)alignedBytes;
 
         if (backEnd.dynamicBuffer.capacity < 0) {
@@ -235,19 +287,23 @@ void R_InitAllocators(void)
         if (backEnd.dynamicBuffer.capacity <= 0)
             return;
 
-        backEnd.dynamicBuffer.storage.glBuffer =
-            R_CreateBufferARB(GL_ARRAY_BUFFER_ARB, (size_t)backEnd.dynamicBuffer.capacity, NULL, GL_DYNAMIC_DRAW_ARB);
+        backEnd.dynamicBuffer.storage.glBuffer = R_CreateBufferARB(
+            GL_ARRAY_BUFFER_ARB, (size_t)backEnd.dynamicBuffer.capacity,
+            NULL, GL_DYNAMIC_DRAW_ARB);
         return;
     }
 
     {
-        const uint32_t negativeBytes = (uint32_t)(int32_t)(backendMegabytes * -1048576.0f);
-        const uint32_t alignedBytes = (31U - negativeBytes) & ~(uint32_t)31U;
+        const uint32_t negativeBytes = (uint32_t)(int32_t)(
+            backendMegabytes * -1048576.0f);
+        const uint32_t alignedBytes =
+            (31U - negativeBytes) & ~(uint32_t)31U;
         backEnd.dynamicBuffer.capacity = (int32_t)alignedBytes;
     }
     backEnd.dynamicBuffer.currentOffset = 0;
 
-    if (backEnd.dynamicBuffer.capacity < 0 || r_optimizeBackend->integer == 0) {
+    if (backEnd.dynamicBuffer.capacity < 0 ||
+        r_optimizeBackend->integer == 0) {
         backEnd.dynamicBuffer.capacity = 0;
         return;
     }
@@ -255,35 +311,47 @@ void R_InitAllocators(void)
         return;
 
     if (tr.staticVertexMemorySecondaryLimit != 0) {
-        if ((size_t)backEnd.dynamicBuffer.capacity > tr.staticVertexMemorySecondaryLimit) {
-            backEnd.dynamicBuffer.capacity = (int32_t)tr.staticVertexMemorySecondaryLimit;
+        if ((size_t)backEnd.dynamicBuffer.capacity >
+            tr.staticVertexMemorySecondaryLimit) {
+            backEnd.dynamicBuffer.capacity =
+                (int32_t)tr.staticVertexMemorySecondaryLimit;
         }
 
-        tr.staticVertexMemorySecondaryUsed = (size_t)backEnd.dynamicBuffer.capacity;
+        tr.staticVertexMemorySecondaryUsed =
+            (size_t)backEnd.dynamicBuffer.capacity;
         if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
-            backEnd.dynamicBuffer.storage.address = tr.staticVertexMemorySecondary.address;
+            backEnd.dynamicBuffer.storage.address =
+                tr.staticVertexMemorySecondary.address;
         } else {
-            backEnd.dynamicBuffer.storage.atiObjectBuffer = tr.staticVertexMemorySecondary.atiObjectBuffer;
+            backEnd.dynamicBuffer.storage.atiObjectBuffer =
+                tr.staticVertexMemorySecondary.atiObjectBuffer;
         }
 
-        if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE && glConfig.fenceNVAvailable) {
+        if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE &&
+            glConfig.fenceNVAvailable) {
             tr.defaultStorageMode = R_STATIC_VERTEX_MEMORY_SECONDARY;
             tr.stageIteratorFunc = RB_StageIteratorGenericNV;
             return;
         }
     } else if (tr.staticVertexMemoryPrimaryLimit != 0) {
-        if ((size_t)backEnd.dynamicBuffer.capacity > tr.staticVertexMemoryPrimaryLimit) {
-            backEnd.dynamicBuffer.capacity = (int32_t)tr.staticVertexMemoryPrimaryLimit;
+        if ((size_t)backEnd.dynamicBuffer.capacity >
+            tr.staticVertexMemoryPrimaryLimit) {
+            backEnd.dynamicBuffer.capacity =
+                (int32_t)tr.staticVertexMemoryPrimaryLimit;
         }
 
-        tr.staticVertexMemoryPrimaryUsed = (size_t)backEnd.dynamicBuffer.capacity;
+        tr.staticVertexMemoryPrimaryUsed =
+            (size_t)backEnd.dynamicBuffer.capacity;
         if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
-            backEnd.dynamicBuffer.storage.address = tr.staticVertexMemoryPrimary.address;
+            backEnd.dynamicBuffer.storage.address =
+                tr.staticVertexMemoryPrimary.address;
         } else {
-            backEnd.dynamicBuffer.storage.atiObjectBuffer = tr.staticVertexMemoryPrimary.atiObjectBuffer;
+            backEnd.dynamicBuffer.storage.atiObjectBuffer =
+                tr.staticVertexMemoryPrimary.atiObjectBuffer;
         }
 
-        if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE && glConfig.fenceNVAvailable) {
+        if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE &&
+            glConfig.fenceNVAvailable) {
             tr.defaultStorageMode = R_STATIC_VERTEX_MEMORY_PRIMARY;
             tr.stageIteratorFunc = RB_StageIteratorGenericNV;
             return;
@@ -306,7 +374,8 @@ void RB_SelectStorageATI(renderer_static_vertex_memory_source_t storageMode)
         return;
 
     qglVertexPointer(tess.vertexComponentCount, GL_FLOAT, 0, tess.xyz);
-    qglNormalPointer(GL_FLOAT, (int32_t)sizeof(tess.stageNormals[0]), tess.stageNormals);
+    qglNormalPointer(GL_FLOAT, (int32_t)sizeof(tess.stageNormals[0]),
+                     tess.stageNormals);
     qglTexCoordPointer(2, GL_FLOAT, 0, tess.activeTexCoords[0]);
 }
 
@@ -319,14 +388,18 @@ void RB_SelectStorageNV(renderer_static_vertex_memory_source_t storageMode)
     if (glState.currentStorageMode == R_STATIC_VERTEX_MEMORY_HUNK) {
         qglEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
     } else if (storageMode == R_STATIC_VERTEX_MEMORY_HUNK) {
-        qglDisableClientState(glConfig.vertexArrayRangeMode == R_VERTEX_ARRAY_RANGE_NV ? GL_VERTEX_ARRAY_RANGE_NV
-                                                                                       : GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV);
+        qglDisableClientState(
+            glConfig.vertexArrayRangeMode == R_VERTEX_ARRAY_RANGE_NV
+                ? GL_VERTEX_ARRAY_RANGE_NV
+                : GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV);
     }
 
     if (storageMode == R_STATIC_VERTEX_MEMORY_PRIMARY) {
-        qglVertexArrayRangeNV((int32_t)tr.staticVertexMemoryPrimaryLimit, tr.staticVertexMemoryPrimary.address);
+        qglVertexArrayRangeNV((int32_t)tr.staticVertexMemoryPrimaryLimit,
+                              tr.staticVertexMemoryPrimary.address);
     } else if (storageMode == R_STATIC_VERTEX_MEMORY_SECONDARY) {
-        qglVertexArrayRangeNV((int32_t)tr.staticVertexMemorySecondaryLimit, tr.staticVertexMemorySecondary.address);
+        qglVertexArrayRangeNV((int32_t)tr.staticVertexMemorySecondaryLimit,
+                              tr.staticVertexMemorySecondary.address);
     } else {
         qglVertexPointer(tess.vertexComponentCount, GL_FLOAT, 0, tess.xyz);
         qglNormalPointer(GL_FLOAT, 0, tess.stageNormals);
@@ -343,7 +416,8 @@ void RB_FinishFenceNV(void)
 {
     const uint32_t sequence = backEnd.dynamicBuffer.reclaimSequence;
     renderer_dynamic_buffer_allocation_t *allocation =
-        &backEnd.dynamicBuffer.allocations[sequence & (R_DYNAMIC_BUFFER_ALLOCATION_COUNT - 1U)];
+        &backEnd.dynamicBuffer.allocations[
+            sequence & (R_DYNAMIC_BUFFER_ALLOCATION_COUNT - 1U)];
 
     if (allocation->offset >= 0)
         qglFinishFenceNV(sequence);
@@ -358,7 +432,8 @@ void RB_FinishFenceNV(void)
  * and the shared allocation-sequence operand. */
 void RB_SetFenceNV(void)
 {
-    qglSetFenceNV(backEnd.dynamicBuffer.allocationSequence, GL_ALL_COMPLETED_NV);
+    qglSetFenceNV(backEnd.dynamicBuffer.allocationSequence,
+                  GL_ALL_COMPLETED_NV);
 }
 
 /* Source: CoDUOMP.exe 0x0051d6f0..0x0051d7e7.
@@ -368,28 +443,40 @@ void RB_SetFenceNV(void)
  * bytes at the end of the circular buffer as a fence-free padding entry. */
 uint8_t *RB_GetBuffersNV(int32_t size)
 {
-    const int32_t alignedSize =
-        (int32_t)(((uint32_t)size + (R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U)) & ~(R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U));
+    const int32_t alignedSize = (int32_t)(
+        ((uint32_t)size + (R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U)) &
+        ~(R_STATIC_VERTEX_MEMORY_ALIGNMENT - 1U));
     uint32_t sequence = ++backEnd.dynamicBuffer.allocationSequence;
-    uint32_t allocationIndex = sequence & (R_DYNAMIC_BUFFER_ALLOCATION_COUNT - 1U);
+    uint32_t allocationIndex =
+        sequence & (R_DYNAMIC_BUFFER_ALLOCATION_COUNT - 1U);
 
-    if (sequence == backEnd.dynamicBuffer.reclaimSequence + R_DYNAMIC_BUFFER_ALLOCATION_COUNT) {
+    if (sequence == backEnd.dynamicBuffer.reclaimSequence +
+                        R_DYNAMIC_BUFFER_ALLOCATION_COUNT) {
         RB_FinishFenceNV();
     }
 
-    const int32_t allocationEnd = (int32_t)((uint32_t)backEnd.dynamicBuffer.currentOffset + (uint32_t)alignedSize);
+    const int32_t allocationEnd = (int32_t)(
+        (uint32_t)backEnd.dynamicBuffer.currentOffset +
+        (uint32_t)alignedSize);
     if (allocationEnd > backEnd.dynamicBuffer.capacity) {
-        const int32_t trailingBytes = (int32_t)((uint32_t)backEnd.dynamicBuffer.capacity - (uint32_t)backEnd.dynamicBuffer.currentOffset);
+        const int32_t trailingBytes = (int32_t)(
+            (uint32_t)backEnd.dynamicBuffer.capacity -
+            (uint32_t)backEnd.dynamicBuffer.currentOffset);
 
         if (trailingBytes != 0) {
-            renderer_dynamic_buffer_allocation_t *padding = &backEnd.dynamicBuffer.allocations[allocationIndex];
+            renderer_dynamic_buffer_allocation_t *padding =
+                &backEnd.dynamicBuffer.allocations[allocationIndex];
             padding->offset = -1;
             padding->size = trailingBytes;
-            backEnd.dynamicBuffer.freeBytes = (int32_t)((uint32_t)backEnd.dynamicBuffer.freeBytes - (uint32_t)trailingBytes);
+            backEnd.dynamicBuffer.freeBytes = (int32_t)(
+                (uint32_t)backEnd.dynamicBuffer.freeBytes -
+                (uint32_t)trailingBytes);
 
             sequence = ++backEnd.dynamicBuffer.allocationSequence;
-            allocationIndex = sequence & (R_DYNAMIC_BUFFER_ALLOCATION_COUNT - 1U);
-            if (sequence == backEnd.dynamicBuffer.reclaimSequence + R_DYNAMIC_BUFFER_ALLOCATION_COUNT) {
+            allocationIndex =
+                sequence & (R_DYNAMIC_BUFFER_ALLOCATION_COUNT - 1U);
+            if (sequence == backEnd.dynamicBuffer.reclaimSequence +
+                                R_DYNAMIC_BUFFER_ALLOCATION_COUNT) {
                 RB_FinishFenceNV();
             }
         }
@@ -400,11 +487,16 @@ uint8_t *RB_GetBuffersNV(int32_t size)
     while (alignedSize > backEnd.dynamicBuffer.freeBytes)
         RB_FinishFenceNV();
 
-    renderer_dynamic_buffer_allocation_t *allocation = &backEnd.dynamicBuffer.allocations[allocationIndex];
+    renderer_dynamic_buffer_allocation_t *allocation =
+        &backEnd.dynamicBuffer.allocations[allocationIndex];
     allocation->offset = backEnd.dynamicBuffer.currentOffset;
     allocation->size = alignedSize;
-    backEnd.dynamicBuffer.freeBytes = (int32_t)((uint32_t)backEnd.dynamicBuffer.freeBytes - (uint32_t)alignedSize);
-    backEnd.dynamicBuffer.currentOffset = (int32_t)((uint32_t)backEnd.dynamicBuffer.currentOffset + (uint32_t)alignedSize);
+    backEnd.dynamicBuffer.freeBytes = (int32_t)(
+        (uint32_t)backEnd.dynamicBuffer.freeBytes -
+        (uint32_t)alignedSize);
+    backEnd.dynamicBuffer.currentOffset = (int32_t)(
+        (uint32_t)backEnd.dynamicBuffer.currentOffset +
+        (uint32_t)alignedSize);
 
     return backEnd.dynamicBuffer.storage.address + allocation->offset;
 }
@@ -439,15 +531,18 @@ void R_ShutdownAllocators(void)
             if (glConfig.vertexArrayRangeMode == R_VERTEX_ARRAY_RANGE_NV)
                 qglDisableClientState(GL_VERTEX_ARRAY_RANGE_NV);
             else
-                qglDisableClientState(GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV);
+                qglDisableClientState(
+                    GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV);
 
             qglVertexPointer(tess.vertexComponentCount, GL_FLOAT, 0, tess.xyz);
             qglNormalPointer(GL_FLOAT, 0, tess.stageNormals);
             qglTexCoordPointer(2, GL_FLOAT, 0, tess.activeTexCoords[0]);
-            qglColorPointer(4, GL_UNSIGNED_BYTE, 0, tess.stageVertexColors);
+            qglColorPointer(4, GL_UNSIGNED_BYTE, 0,
+                            tess.stageVertexColors);
         } else if (glConfig.vertexArrayObjectATIAvailable) {
             qglVertexPointer(tess.vertexComponentCount, GL_FLOAT, 0, tess.xyz);
-            qglNormalPointer(GL_FLOAT, (int32_t)sizeof(vec3_t), tess.stageNormals);
+            qglNormalPointer(GL_FLOAT, (int32_t)sizeof(vec3_t),
+                             tess.stageNormals);
             qglTexCoordPointer(2, GL_FLOAT, 0, tess.activeTexCoords[0]);
         }
 
@@ -471,13 +566,15 @@ void R_ShutdownAllocators(void)
 
     if (glConfig.vertexArrayObjectATIAvailable) {
         if (tr.staticVertexMemorySecondary.atiObjectBuffer != 0) {
-            qglFreeObjectBufferATI(tr.staticVertexMemorySecondary.atiObjectBuffer);
+            qglFreeObjectBufferATI(
+                tr.staticVertexMemorySecondary.atiObjectBuffer);
             tr.staticVertexMemorySecondary.atiObjectBuffer = 0;
             tr.staticVertexMemorySecondaryLimit = 0;
         }
 
         if (tr.staticVertexMemoryPrimary.atiObjectBuffer != 0) {
-            qglFreeObjectBufferATI(tr.staticVertexMemoryPrimary.atiObjectBuffer);
+            qglFreeObjectBufferATI(
+                tr.staticVertexMemoryPrimary.atiObjectBuffer);
             tr.staticVertexMemoryPrimary.atiObjectBuffer = 0;
             tr.staticVertexMemoryPrimaryLimit = 0;
         }
@@ -491,21 +588,34 @@ void R_ShutdownAllocators(void)
  * Mac symbol R_MemInfo_f. */
 void R_MemInfo_f(void)
 {
-    const double bytesToMegabytes = (double)0.00000095367431640625f; /* exact original 0x35800000 = 2^-20 */
+    const double bytesToMegabytes =
+        (double)0.00000095367431640625f; /* exact original 0x35800000 = 2^-20 */
     double percentUsed = 0.0;
 
     if (tr.staticVertexMemorySecondaryLimit != 0) {
-        percentUsed = (double)(int32_t)tr.staticVertexMemorySecondaryUsed * 100.0 / (double)(int32_t)tr.staticVertexMemorySecondaryLimit;
+        percentUsed =
+            (double)(int32_t)tr.staticVertexMemorySecondaryUsed * 100.0 /
+            (double)(int32_t)tr.staticVertexMemorySecondaryLimit;
     }
-    ri.Printf(R_PRINT_ALL, "AGP:   %.2f / %.2f MB (%.1f%%)\n", (double)(int32_t)tr.staticVertexMemorySecondaryUsed * bytesToMegabytes,
-              (double)(int32_t)tr.staticVertexMemorySecondaryLimit * bytesToMegabytes, percentUsed);
+    ri.Printf(R_PRINT_ALL, "AGP:   %.2f / %.2f MB (%.1f%%)\n",
+              (double)(int32_t)tr.staticVertexMemorySecondaryUsed *
+                  bytesToMegabytes,
+              (double)(int32_t)tr.staticVertexMemorySecondaryLimit *
+                  bytesToMegabytes,
+              percentUsed);
 
     percentUsed = 0.0;
     if (tr.staticVertexMemoryPrimaryLimit != 0) {
-        percentUsed = (double)(int32_t)tr.staticVertexMemoryPrimaryUsed * 100.0 / (double)(int32_t)tr.staticVertexMemoryPrimaryLimit;
+        percentUsed =
+            (double)(int32_t)tr.staticVertexMemoryPrimaryUsed * 100.0 /
+            (double)(int32_t)tr.staticVertexMemoryPrimaryLimit;
     }
-    ri.Printf(R_PRINT_ALL, "Video: %.2f / %.2f MB (%.1f%%)\n", (double)(int32_t)tr.staticVertexMemoryPrimaryUsed * bytesToMegabytes,
-              (double)(int32_t)tr.staticVertexMemoryPrimaryLimit * bytesToMegabytes, percentUsed);
+    ri.Printf(R_PRINT_ALL, "Video: %.2f / %.2f MB (%.1f%%)\n",
+              (double)(int32_t)tr.staticVertexMemoryPrimaryUsed *
+                  bytesToMegabytes,
+              (double)(int32_t)tr.staticVertexMemoryPrimaryLimit *
+                  bytesToMegabytes,
+              percentUsed);
 }
 
 /* Source: CoDUOMP.exe 0x004c8820..0x004c888c.
@@ -516,7 +626,8 @@ void R_MemInfo_f(void)
  * created by binding a previously unused nonzero name. Choosing a name above
  * both renderer serials prevents a front-end allocation from reusing a name
  * still represented by the render command currently executing. */
-uint32_t R_CreateBufferARB(uint32_t target, size_t size, const void *data, uint32_t usage)
+uint32_t R_CreateBufferARB(uint32_t target, size_t size, const void *data,
+                           uint32_t usage)
 {
     uint32_t serial = (uint32_t)tr.dynamicBufferFrameSerial;
 
@@ -556,7 +667,9 @@ void R_DeleteBuffersARB(void)
     qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
     qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 
-    for (int32_t textureUnit = glConfig.maxActiveTextures - 1; textureUnit >= 0; --textureUnit) {
+    for (int32_t textureUnit = glConfig.maxActiveTextures - 1;
+         textureUnit >= 0;
+         --textureUnit) {
         GL_SelectTexture(textureUnit);
         qglTexCoordPointer(2, GL_FLOAT, 0, NULL);
     }
@@ -569,7 +682,9 @@ void R_DeleteBuffersARB(void)
     if (lastBuffer < tr.dynamicBufferFrameSerial)
         lastBuffer = tr.dynamicBufferFrameSerial;
 
-    for (uint32_t buffer = 1; (int32_t)buffer <= lastBuffer; ++buffer) {
+    for (uint32_t buffer = 1;
+         (int32_t)buffer <= lastBuffer;
+         ++buffer) {
         qglDeleteBuffersARB(1, &buffer);
     }
 
@@ -587,16 +702,19 @@ void R_DeleteBuffersARB(void)
  * registration pointer prove the repaired boundary. */
 void R_VboRefresh_f(void)
 {
-    static const char usage[] = "usage: r_vbo_refresh [list], where list is one or more of world, "
-                                "smodels, sverts, sindexes, xmodels, xverts, and xindexes\n";
+    static const char usage[] =
+        "usage: r_vbo_refresh [list], where list is one or more of world, "
+        "smodels, sverts, sindexes, xmodels, xverts, and xindexes\n";
     const int32_t argumentCount = cmd_argc;
     int32_t argumentIndex;
 
     if (tr.world == NULL || !glConfig.vertexBufferObjectAvailable)
         return;
 
-    for (argumentIndex = 1; argumentIndex < argumentCount; ++argumentIndex) {
-        const char *argument = argumentIndex < cmd_argc ? cmd_argv[argumentIndex] : "";
+    for (argumentIndex = 1; argumentIndex < argumentCount;
+         ++argumentIndex) {
+        const char *argument =
+            argumentIndex < cmd_argc ? cmd_argv[argumentIndex] : "";
 
         if (coduo_crt_stricmp(argument, "world") == 0) {
             R_RefreshOptimizedWorldSurfaces_ARB();

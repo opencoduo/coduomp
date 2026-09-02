@@ -27,8 +27,8 @@
  * (EDI) is 0 and 6 when it is 1 — i.e. category 7 for worldModel, 6 for iconModel. */
 enum {
     CG_ITEM_MODEL_CATEGORY_WORLD = 7, /* gitem_t.worldModel (+0x08) */
-    CG_ITEM_MODEL_CATEGORY_ICON = 6, /* gitem_t.iconModel  (+0x0c) */
-    CG_ITEM_ICON_SHADER_PARAM = 5  /* second arg to CG_RegisterShader for hudIcon */
+    CG_ITEM_MODEL_CATEGORY_ICON  = 6, /* gitem_t.iconModel  (+0x0c) */
+    CG_ITEM_ICON_SHADER_PARAM    = 5  /* second arg to CG_RegisterShader for hudIcon */
 };
 
 void CG_RegisterItemVisuals(int itemNum)
@@ -53,8 +53,11 @@ void CG_RegisterItemVisuals(int itemNum)
      * (+0x08). worldModel uses category 7, iconModel uses category 6. A slot whose
      * name pointer is NULL or an empty string ("" -> first byte 0) is skipped and
      * its handle slot is left untouched. */
-    const char *const modelNames[2] = {item->worldModel, item->iconModel};
-    const int modelCategories[2] = {CG_ITEM_MODEL_CATEGORY_WORLD, CG_ITEM_MODEL_CATEGORY_ICON};
+    const char *const modelNames[2] = { item->worldModel, item->iconModel };
+    const int modelCategories[2] = {
+        CG_ITEM_MODEL_CATEGORY_WORLD,
+        CG_ITEM_MODEL_CATEGORY_ICON
+    };
     int32_t *modelHandleSlot = &itemInfo->modelHandle; /* &+0x04, then &+0x08 */
     for (int i = 0; i < 2; ++i) {
         const char *name = modelNames[i];
@@ -69,7 +72,8 @@ void CG_RegisterItemVisuals(int itemNum)
      * material/shader register (0x3003db80), reused here for an item icon; the
      * declaration's "CG_RegisterMaterial" name is a first-caller misnomer.
      * No NULL check on hudIcon (the machine code registers unconditionally). */
-    itemInfo->iconShader = CG_RegisterMaterial(item->hudIcon, CG_ITEM_ICON_SHADER_PARAM);
+    itemInfo->iconShader = CG_RegisterMaterial(item->hudIcon,
+                                                    CG_ITEM_ICON_SHADER_PARAM);
 
     /* 0x30044b46..b5f: if the pickup-sound name (gitem_t.pickupSound, +0x04) is
      * non-NULL, register it via cgame_syscall(0xc3, name) and cache the returned

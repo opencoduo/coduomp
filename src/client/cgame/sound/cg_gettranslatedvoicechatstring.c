@@ -43,9 +43,7 @@
  * original inlined strcpy(prefix) / strcat(input) / strcat(suffix); the compiler
  * emitted the 17-byte prefix copy as register moves (0x3003a19c..0x3003a1d0) and
  * the 6-byte suffix as a dword+word store (0x3003a20e..0x3003a21c). */
-enum {
-    CG_UNLOCALIZED_SUFFIX_LEN = 6
-}; /* "^1)^7" + NUL, dword+word appended */
+enum { CG_UNLOCALIZED_SUFFIX_LEN = 6 }; /* "^1)^7" + NUL, dword+word appended */
 
 static const char CG_UNLOCALIZED_PREFIX[] = "^1UNLOCALIZED(^7";
 static const char CG_UNLOCALIZED_SUFFIX[] = "^1)^7";
@@ -55,7 +53,9 @@ const char *CG_GetTranslatedVoiceChatString(const char *string)
     /* 0x3003a150..0x3003a161: EAX = (int32_t)cgame_syscall(0x38, string). If the engine has
      * a translation (nonzero), return it directly (JNZ 0x3003a240 -> POP ESI; RET,
      * EAX unchanged). */
-    const char *translated = (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, (intptr_t)string);
+    const char *translated =
+        (const char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE,
+                                              (intptr_t)string);
     if (translated != (const char *)0) {
         return translated;
     }

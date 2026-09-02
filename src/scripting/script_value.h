@@ -36,23 +36,28 @@ void RemoveRefToVector(const float *vector);
 
 void AddRefToValueOfType(script_variable_type_t type, VariableUnion value);
 void AddRefToValue(const VariableValue *value);
-void RemoveRefToValueOfType(script_variable_type_t type, VariableUnion value);
+void RemoveRefToValueOfType(script_variable_type_t type,
+                            VariableUnion value);
 void RemoveRefToValue(VariableValue *value);
 
 uint16_t VM_ConcatenateStrings(const VariableValue values[2]);
 void GetSizeValue(VariableValue *value);
 uint16_t CastFieldObject(VariableValue *value);
 void EvalArray(VariableValue *index, VariableValue *container);
-uint16_t FindArrayVariableByValue(uint16_t handle, VariableValue values[2]);
+uint16_t FindArrayVariableByValue(uint16_t handle,
+                                  VariableValue values[2]);
 uint16_t EvalArrayRef(uint16_t handle, VariableValue values[2]);
 void ClearArray(uint16_t handle, VariableValue values[2]);
 
 void CastVector2(VariableValue values[3]);
 void ClearVector(VariableValue values[3]);
-void UnmatchingTypesError(VariableValue *left, VariableValue *right);
-qboolean CastWeakerPair(VariableValue *left, VariableValue *right);
+void UnmatchingTypesError(VariableValue *left,
+                                        VariableValue *right);
+qboolean CastWeakerPair(VariableValue *left,
+                                     VariableValue *right);
 qboolean CastWeakerPairValues(VariableValue values[2]);
-qboolean CheckEquality(VariableValue *left, VariableValue *right);
+qboolean CheckEquality(VariableValue *left,
+                                  VariableValue *right);
 qboolean ScriptRuntime_StringStartsWithZeroLiteral(const char *text);
 qboolean CastBool(VariableValue *value);
 qboolean CastInt(VariableValue *value);
@@ -107,7 +112,8 @@ uint32_t CODUO_SCRIPT_CDECL Scr_GetAnimsIndex(XAnim *tree);
 XAnim *Scr_GetAnims(uint32_t treeIndex);
 
 void Scr_SetTime(uint32_t time);
-void Scr_SetDynamicEntityField(int32_t entityNum, int32_t classNum, uint16_t fieldName);
+void Scr_SetDynamicEntityField(int32_t entityNum, int32_t classNum,
+                               uint16_t fieldName);
 void Scr_Error(const char *message);
 void Scr_TerminalError(const char *message);
 void Scr_ErrorWithDialogMessage(const char *message, const char *source);

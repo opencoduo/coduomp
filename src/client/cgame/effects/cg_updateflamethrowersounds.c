@@ -54,20 +54,20 @@ enum {
 };
 
 /* .rdata float/double constants (exact addresses verified via objdump). */
-#define FLAME_MS_TO_SEC 0.0010000000474974513f  /* 0x3007bd94 (== 0.001f) */
-#define FLAME_ENVA_GAIN 2.200000047683716f      /* 0x3007c2e8 (float 2.2f) */
-#define FLAME_ENVB_GAIN5 5.0f                    /* 0x3007bde0 (5.0f) */
-#define FLAME_ENVB_GAIN_HALF 0.5f                    /* 0x3007bce8 (0.5f) */
-#define FLAME_E8_THRESH 0.9                      /* 0x3007c2e0 (double 0.9) */
-#define FLAME_E4_SCALE 0.003448275849223137f   /* 0x3007c298 (float) */
-#define FLAME_PRIORITY_MAX 100000.0f               /* 0x3007c2d8 (float 1e5) */
-#define FLAME_ENVDECAY_SCALE 4.0f                    /* 0x3007be40 (4.0f) */
-#define FLAME_LIFE_SCALE 0.0003333333333333333   /* 0x3007c2d0 (double 1/3000) */
-#define FLAME_STREAM_FADE 4000.0f                 /* 0x3007c144 (float 4000.0f) */
-#define FLAME_ONEF 1.0f                     /* 0x3007bce0 (1.0f) */
-#define FLAME_ZEROF 0.0f                     /* 0x3007bcec (0.0f) */
-#define FLAME_ONE_D 1.0                      /* 0x3007bcf8 (double 1.0) */
-#define FLAME_ZERO_D 0.0                      /* 0x3007bcf0 (double 0.0) */
+#define FLAME_MS_TO_SEC        0.0010000000474974513f  /* 0x3007bd94 (== 0.001f) */
+#define FLAME_ENVA_GAIN        2.200000047683716f      /* 0x3007c2e8 (float 2.2f) */
+#define FLAME_ENVB_GAIN5       5.0f                    /* 0x3007bde0 (5.0f) */
+#define FLAME_ENVB_GAIN_HALF   0.5f                    /* 0x3007bce8 (0.5f) */
+#define FLAME_E8_THRESH        0.9                      /* 0x3007c2e0 (double 0.9) */
+#define FLAME_E4_SCALE         0.003448275849223137f   /* 0x3007c298 (float) */
+#define FLAME_PRIORITY_MAX     100000.0f               /* 0x3007c2d8 (float 1e5) */
+#define FLAME_ENVDECAY_SCALE   4.0f                    /* 0x3007be40 (4.0f) */
+#define FLAME_LIFE_SCALE       0.0003333333333333333   /* 0x3007c2d0 (double 1/3000) */
+#define FLAME_STREAM_FADE      4000.0f                 /* 0x3007c144 (float 4000.0f) */
+#define FLAME_ONEF             1.0f                     /* 0x3007bce0 (1.0f) */
+#define FLAME_ZEROF            0.0f                     /* 0x3007bcec (0.0f) */
+#define FLAME_ONE_D            1.0                      /* 0x3007bcf8 (double 1.0) */
+#define FLAME_ZERO_D           0.0                      /* 0x3007bcf0 (double 0.0) */
 
 void CG_UpdateFlamethrowerSounds(void)
 {
@@ -103,7 +103,8 @@ void CG_UpdateFlamethrowerSounds(void)
 
     /* 0x30029255..0x3002925f: clamped nonnegative frame delta; then advance the
      * previous-run timestamp to now. */
-    int32_t deltaTime = coduo_int32_from_bits((uint32_t)now - (uint32_t)clampedPrev);         /* [ESP+0x18] */
+    int32_t deltaTime = coduo_int32_from_bits(
+        (uint32_t)now - (uint32_t)clampedPrev);         /* [ESP+0x18] */
     cg_flameSoundsPrevTime = now;
 
     /* 0x3002924f/0x30029259/0x30029264: walk the flame-chunk list only when it is
@@ -137,7 +138,10 @@ void CG_UpdateFlamethrowerSounds(void)
              * below, which FSTP and genuinely reload the rounded float -- the two
              * are asymmetric and must not be normalised to one shape.) */
             long double envAFull =
-                (long double)deltaTime * (long double)FLAME_MS_TO_SEC * (long double)FLAME_ENVA_GAIN + (long double)loop->envA;
+                (long double)deltaTime *
+                    (long double)FLAME_MS_TO_SEC *
+                    (long double)FLAME_ENVA_GAIN +
+                (long double)loop->envA;
             loop->envA = (float)envAFull;              /* FST 0x300292bb */
             /* 0x300292c1..0x300292d6: clamp envA to <= 1.0. FCOMP 1.0f; TEST AH,0x41;
              * JNZ (envA <= 1.0) skips the store; store 1.0 only when envA > 1.0. */
@@ -147,48 +151,57 @@ void CG_UpdateFlamethrowerSounds(void)
 
             /* 0x300292d8..0x300292f8: if this emitter was touched this/last frame
              * AND its flame-info gate (field_5c) is set, this chunk is done. */
-            int32_t previousFrame = coduo_int32_from_bits((uint32_t)cg_clientFrame - 1u); /* 0x300292ec DEC ECX */
-            if (cg_flameInfo[idx].clientFrame >= previousFrame && cg_flameInfo[idx].soundPathFlag == 1) { /* CMP ...,0x1 ; JZ 0x30029351 */
-                goto stamp_owner; /* fall through to the stamp label */
+            int32_t previousFrame = coduo_int32_from_bits(
+                (uint32_t)cg_clientFrame - 1u); /* 0x300292ec DEC ECX */
+            if (cg_flameInfo[idx].clientFrame >= previousFrame &&
+                cg_flameInfo[idx].soundPathFlag == 1) { /* CMP ...,0x1 ; JZ 0x30029351 */
+                goto stamp_owner;                      /* fall through to the stamp label */
             }
 
             /* 0x300292fa..0x30029324: envB += cg.frametime * 0.001f * chunk.soundAmpRate
              *                              * 5.0f, clamped to <= 1.0. The FILD at
              * 0x300292fa feeds the FMUL at 0x30029306 with no intervening store, so
              * cg_frametime stays exact in 80-bit -- no (float) cast. */
-            float envB = (float)((long double)cg_frametime * (long double)FLAME_MS_TO_SEC * (long double)chunk->soundAmpRate *
-                                     (long double)FLAME_ENVB_GAIN5 +
-                                 (long double)loop->envB);
-            loop->envB = envB; /* FSTP */
+            float envB = (float)(
+                (long double)cg_frametime *
+                    (long double)FLAME_MS_TO_SEC *
+                    (long double)chunk->soundAmpRate *
+                    (long double)FLAME_ENVB_GAIN5 +
+                (long double)loop->envB);
+            loop->envB = envB;                         /* FSTP */
             /* 0x30029329..0x3002933e: FLD envB; FCOMP 1.0(double); TEST AH,0x41; JNZ
              * (envB <= 1.0) skips; store 1.0 only when envB > 1.0. */
             if ((double)envB > FLAME_ONE_D) {
-                loop->envB = FLAME_ONEF; /* 0x30029346 store 0x3f800000 */
+                loop->envB = FLAME_ONEF;               /* 0x30029346 store 0x3f800000 */
             }
         }
 
     stamp_owner:
         /* 0x30029351..0x3002935d: mark this index as updated this frame. */
-        loop->frameOwner = flameTime; /* MOV [ECX*4 + 0x300a8720],EBP */
+        loop->frameOwner = flameTime;                  /* MOV [ECX*4 + 0x300a8720],EBP */
 
         /* 0x30029364..0x30029390: the "secondary" envB accumulation path, taken only
          * when this emitter's frame stamp is current/recent, this flame-info's owning chunk
          * matches the current chunk, and its gate (field_5c) == 1. */
         {
-            int32_t previousFrame = coduo_int32_from_bits((uint32_t)cg_clientFrame - 1u); /* 0x30029373 DEC EDI */
+            int32_t previousFrame = coduo_int32_from_bits(
+                (uint32_t)cg_clientFrame - 1u); /* 0x30029373 DEC EDI */
             if (cg_flameInfo[idx].clientFrame >= previousFrame && /* JL 0x300293e9 */
-                cg_flameInfo[idx].ownerChunk == chunk && /* CMP ...,EBX ; JNZ */
-                cg_flameInfo[idx].soundPathFlag == 1) { /* CMP ...,0x1 ; JNZ */
+                cg_flameInfo[idx].ownerChunk == chunk &&  /* CMP ...,EBX ; JNZ */
+                cg_flameInfo[idx].soundPathFlag == 1) {   /* CMP ...,0x1 ; JNZ */
                 /* 0x30029392..0x300293b7: envB += cg.frametime * 0.001f
                  *                              * chunk.soundAmpRate * 0.5f. FILD at
                  * 0x30029392 feeds the FMUL directly (no store) -- no (float) cast. */
-                float envB = (float)((long double)cg_frametime * (long double)FLAME_MS_TO_SEC * (long double)chunk->soundAmpRate *
-                                         (long double)FLAME_ENVB_GAIN_HALF +
-                                     (long double)loop->envB);
-                loop->envB = envB; /* FSTP */
+                float envB = (float)(
+                    (long double)cg_frametime *
+                        (long double)FLAME_MS_TO_SEC *
+                        (long double)chunk->soundAmpRate *
+                        (long double)FLAME_ENVB_GAIN_HALF +
+                    (long double)loop->envB);
+                loop->envB = envB;                     /* FSTP */
                 /* 0x300293be..0x300293d6: clamp envB to <= 1.0 (double 1.0). */
                 if ((double)envB > FLAME_ONE_D) {
-                    loop->envB = FLAME_ONEF; /* 0x300293de store 0x3f800000 */
+                    loop->envB = FLAME_ONEF;           /* 0x300293de store 0x3f800000 */
                 }
             }
         }
@@ -197,13 +210,13 @@ void CG_UpdateFlamethrowerSounds(void)
          * parent, then +0x08 forward) into a running "priority" max in `priority`.
          * The result is a local; it is not read after the walk in this build (dead
          * store), but is computed for fidelity. */
-        float priority = 0.0f; /* 0x300293ee [ESP+0x10] = 0 */
-        for (flameChunk_t *child = chunk->parent; /* 0x300293e9 ESI = [EBX+8] (parent) */
-             child != NULL; /* 0x3002948d/8f */
-             child = child->parent) { /* 0x3002948a MOV ESI,[ESI+8] (parent chain) */
+        float priority = 0.0f;                         /* 0x300293ee [ESP+0x10] = 0 */
+        for (flameChunk_t *child = chunk->parent;      /* 0x300293e9 ESI = [EBX+8] (parent) */
+             child != NULL;                            /* 0x3002948d/8f */
+             child = child->parent) {                  /* 0x3002948a MOV ESI,[ESI+8] (parent chain) */
             /* 0x30029400..0x30029405: skip a child in a nonzero mode. */
             if (child->kind != 0) {
-                continue; /* JNZ 0x3002948a */
+                continue;                              /* JNZ 0x3002948a */
             }
             /* 0x3002940b..0x30029422: contribution is 0 unless
              * chunk.lifeFraction is ordered below 0.9. FLD 0.0; FLD
@@ -218,21 +231,22 @@ void CG_UpdateFlamethrowerSounds(void)
             long double contribution;
             float chunkE8 = chunk->lifeFraction;
             if (!((double)chunkE8 < FLAME_E8_THRESH)) {
-                contribution = FLAME_ZEROF; /* ST0 holds the FLD 0.0 */
+                contribution = FLAME_ZEROF;            /* ST0 holds the FLD 0.0 */
             } else {
                 /* 0x30029424..0x30029459: t = child.radius * 0.00344..f. The
                  * first comparison consumes the unrounded x87 product; ordered
                  * t < 1.0 is then stored to a float slot, while greater/equal/
                  * unordered selects stored 1.0. _CIpow leaves its result raw for
                  * the later priority compare. */
-                long double tFull = (long double)child->radius * FLAME_E4_SCALE;
+                long double tFull =
+                    (long double)child->radius * FLAME_E4_SCALE;
                 float t;
                 /* 0x30029432..0x3002943d: FCOM 1.0f; TEST AH,0x5; JP taken (t >= 1.0)
                  * -> t = 1.0f; else store t. */
                 if (!(tFull < FLAME_ONEF)) {
-                    t = FLAME_ONEF; /* 0x30029447 store 0x3f800000 */
+                    t = FLAME_ONEF;                    /* 0x30029447 store 0x3f800000 */
                 } else {
-                    t = (float)tFull; /* 0x3002943f FSTP m32 */
+                    t = (float)tFull;                  /* 0x3002943f FSTP m32 */
                 }
                 contribution = powl((long double)t, 1.0L); /* exp 1.0 @0x3007bcf8 */
             }
@@ -240,7 +254,7 @@ void CG_UpdateFlamethrowerSounds(void)
              * FCOM priority; TEST AH,0x41; JNZ (contribution <= priority) pops;
              * else store contribution. */
             if (contribution > priority) {
-                priority = (float)contribution; /* FSTP float @0x30029469 */
+                priority = (float)contribution;        /* FSTP float @0x30029469 */
             }
             /* 0x30029471..0x30029489: cap priority at 100000.0f. FCOMP 1e5f;
              * TEST AH,0x41; JNZ (priority <= 1e5) skips; else store 1e5. */
@@ -248,7 +262,7 @@ void CG_UpdateFlamethrowerSounds(void)
                 priority = FLAME_PRIORITY_MAX;
             }
         }
-        (void)priority; /* dead store — preserved for fidelity */
+        (void)priority;                                /* dead store — preserved for fidelity */
 
         /* 0x30029495..0x3002949b: mode-3 chunks take the burn-elapsed path below
          * (0x30029593); otherwise process the active-stream sound. */
@@ -257,15 +271,16 @@ void CG_UpdateFlamethrowerSounds(void)
              * has a live emit (field_60 != 0), its frame stamp is current/recent,
              * and its last-emit stamp (field_44) is not already this frame's flameTime. */
             cgFlameInfo_t *fi = &cg_flameInfo[idx];
-            int32_t previousFrame = coduo_int32_from_bits((uint32_t)cg_clientFrame - 1u);
-            if (fi->activeFlag != 0 && /* TEST ESI ; JZ 0x3002958a */
-                fi->clientFrame >= previousFrame && /* CMP ...,EDI ; JL 0x3002958a */
-                fi->lastUpdateTime != flameTime) { /* CMP ...,EBP ; JZ 0x3002958a */
+            int32_t previousFrame = coduo_int32_from_bits(
+                (uint32_t)cg_clientFrame - 1u);
+            if (fi->activeFlag != 0 &&                            /* TEST ESI ; JZ 0x3002958a */
+                fi->clientFrame >= previousFrame &&            /* CMP ...,EDI ; JL 0x3002958a */
+                fi->lastUpdateTime != flameTime) {                    /* CMP ...,EBP ; JZ 0x3002958a */
 
                 /* 0x300294d2..0x30029543: when the flamethrower-stream alias name is
                  * registered and this index's envB remains nonzero, start the stream
                  * sound positioned near the effect slot's origin. */
-                if (cg_flameStreamSound != 0) { /* TEST EDX ; JZ 0x30029546 */
+                if (cg_flameStreamSound != 0) {                 /* TEST EDX ; JZ 0x30029546 */
                     /* 0x300294dc..0x300294f3: FLD 0.0; FLD envB; FUCOMPP; TEST AH,0x44;
                      * JNP is taken when envB == 0.0 (equal => PF=0), jumping past the
                      * block to 0x30029546. So the stream start fires when envB != 0.0
@@ -283,11 +298,13 @@ void CG_UpdateFlamethrowerSounds(void)
                         scratch[1] = cg_entities[idx].lerpOrigin[1]; /* +0x20c */
                         /* scratch[2] = (1.0f - envB) * 4000.0f + origin[2]:
                          *   FLD 1.0f; FSUB envB; FMUL 4000.0f; FADD origin[2]; FSTP. */
-                        scratch[2] = (FLAME_ONEF - cg_flameSoundLoops[idx].envB) * FLAME_STREAM_FADE + cg_entities[idx].lerpOrigin[2];
+                        scratch[2] = (FLAME_ONEF - cg_flameSoundLoops[idx].envB)
+                                   * FLAME_STREAM_FADE + cg_entities[idx].lerpOrigin[2];
                         /* 0x30029538: CG_PlaySoundAliasByName(channelObj=scratch (ECX),
                          * soundName=cg_flameStreamSound (EAX=EDX, an alias-name pointer),
                          * entityNum=idx (ECX pushed at 0x3002951a)). */
-                        (void)CG_PlaySoundAliasByName(idx, &scratch[0], cg_flameStreamSound);
+                        (void)CG_PlaySoundAliasByName(idx, &scratch[0],
+                                                       cg_flameStreamSound);
                         /* 0x3002953d: reload flameTime latch (unchanged). */
                     }
                 }
@@ -295,30 +312,36 @@ void CG_UpdateFlamethrowerSounds(void)
                 /* 0x30029546..0x30029573: when the flamethrower-fire sound is
                  * registered, emit it for this chunk and then start it as a local
                  * sound on this frame's channel. */
-                if (cg_flameFireSound != 0) { /* MOV EAX,fire ; TEST ; JZ */
+                if (cg_flameFireSound != 0) {                   /* MOV EAX,fire ; TEST ; JZ */
                     /* 0x3002954f..0x30029555: compute the chunk's current vec3
                      * origin into the stack block beginning at ESP+0x2c. */
                     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                    vec3_t soundOrigin = {chunk->worldPos[0], chunk->worldPos[1], chunk->worldPos[2]};
+                    vec3_t soundOrigin = {
+                        chunk->worldPos[0],
+                        chunk->worldPos[1],
+                        chunk->worldPos[2]
+                    };
                     CG_ComputeFlameChunkOrigin(chunk, flameTime, soundOrigin);
                     /* 0x3002955a..0x30029568: after the two still-live compute
                      * arguments and the entity-number push, LEA [ESP+0x38]
                      * resolves back to that same output vec3 at the pre-call
                      * [ESP+0x2c].  The alias-name pointer is reloaded in EAX. */
-                    (void)CG_PlaySoundAliasByName(ENTITYNUM_WORLD, soundOrigin, cg_flameFireSound);
+                    (void)CG_PlaySoundAliasByName(ENTITYNUM_WORLD,
+                                                   soundOrigin,
+                                                   cg_flameFireSound);
                     /* 0x3002956d: reload flameTime latch (unchanged). */
                 }
 
                 /* 0x30029576..0x30029585: stamp this flame-info's last stream-emit
                  * time and move on to the next chunk. */
                 cg_flameInfo[idx].lastUpdateTime = flameTime;
-                continue; /* JMP 0x30029636 */
+                continue;                                        /* JMP 0x30029636 */
             }
 
             /* 0x3002958a..0x3002958d: only mode-3 chunks continue to the burn-elapsed
              * path; any other mode goes to the next chunk. */
             if (chunk->kind != FLAME_CHUNK_MODE_3) {
-                continue; /* JNZ 0x30029636 */
+                continue;                                        /* JNZ 0x30029636 */
             }
         }
 
@@ -334,7 +357,10 @@ void CG_UpdateFlamethrowerSounds(void)
              * x87 stack (FILD/FSUBR/FMUL feed FCOM/FCOMP directly), so it must
              * stay at register precision (a double local would insert a
              * rounding the DLL does not perform). */
-            long double burn = ((long double)chunk->endTime - (long double)(int32_t)cg_flameTime) * (long double)FLAME_LIFE_SCALE;
+            long double burn =
+                ((long double)chunk->endTime -
+                 (long double)(int32_t)cg_flameTime) *
+                (long double)FLAME_LIFE_SCALE;
             /* 0x300295a2..0x300295c8: clamp burn to [0.0, 1.0].
              *   FCOM 0.0(double 0x3007bcf0); TEST AH,0x5; JP (burn >= 0.0) -> 0x300295b9,
              *   else burn = 0.0.
@@ -349,7 +375,7 @@ void CG_UpdateFlamethrowerSounds(void)
              * less, equal, and unordered. Play only for an ordered burn > 0.0.
              * The raw register value is compared without a float narrowing. */
             if (!(burn > FLAME_ZEROF)) {
-                continue; /* JNZ 0x30029636 */
+                continue;                                        /* JNZ 0x30029636 */
             }
         }
 
@@ -357,22 +383,26 @@ void CG_UpdateFlamethrowerSounds(void)
          * for this chunk and start the loop. The chunk's sound origin is at
          * chunk +0xd8; the three calls go through the cgame trap vector. */
         {
-            const float *soundOrigin = chunk->worldPos; /* 0x300295db LEA ESI,[EBX+0xd8] */
+            const float *soundOrigin = chunk->worldPos;             /* 0x300295db LEA ESI,[EBX+0xd8] */
             /* 0x300295e1..0x300295ec: loAlias = trap_Com_PickSoundAlias(
              * "fl_catch_fire_low" @0x30077578, nameBuf).  Pushes low->high:
              * nameBuf, string, 0xc4. */
-            snd_alias_t *loAlias = trap_Com_PickSoundAlias("fl_catch_fire_low", soundOrigin);
+            snd_alias_t *loAlias = trap_Com_PickSoundAlias(
+                "fl_catch_fire_low", soundOrigin);
             /* 0x300295f5..0x30029602: hiAlias = trap_Com_PickSoundAlias(
              * "fl_catch_fire_high" @0x30077564, nameBuf).  (loHandle is saved into
              * EDI at 0x30029600 as the previous EAX before this second registration
              * overwrites EAX.) */
-            snd_alias_t *hiAlias = trap_Com_PickSoundAlias("fl_catch_fire_high", soundOrigin);
+            snd_alias_t *hiAlias = trap_Com_PickSoundAlias(
+                "fl_catch_fire_high", soundOrigin);
             /* 0x3002960b..0x30029627: start the looping catch-fire sound.
              * cgame_syscall(CG_MSS_PLAY_BLENDED_SOUND_ALIASES, loHandle(EDI), hiHandle(EAX), floatBits(1.0f)
              * (ECX from [ESP+0x28]=0x3f800000), 0x3fe(1022), nameBuf, 0).
              * Pushes low->high: 0, nameBuf, 0x3fe, ECX(=1.0f bits), EAX(hiHandle),
              * EDI(loHandle), 0xc7. */
-            trap_MSS_PlayBlendedSoundAliases(loAlias, hiAlias, FLAME_ONEF, ENTITYNUM_WORLD, soundOrigin, 0);
+            trap_MSS_PlayBlendedSoundAliases(loAlias, hiAlias, FLAME_ONEF,
+                                             ENTITYNUM_WORLD,
+                                             soundOrigin, 0);
             /* 0x3002962d: reload flameTime latch (unchanged). */
         }
     }
@@ -389,15 +419,17 @@ void CG_UpdateFlamethrowerSounds(void)
      * FSTP: it writes the ROUNDED scaledDelta to [ESP+0x18] (which the envA decay
      * at 0x30029681 genuinely reloads) while KEEPING the unrounded value in st0,
      * which is what the *4.0f at 0x30029666 consumes. Hence the split. */
-    long double scaledDeltaFull = (long double)deltaTime * (long double)FLAME_MS_TO_SEC; /* FILD; FMUL 0.001f */
-    float scaledDelta = (float)scaledDeltaFull; /* FST [ESP+0x18] @0x30029662 */
+    long double scaledDeltaFull =
+        (long double)deltaTime *
+        (long double)FLAME_MS_TO_SEC; /* FILD; FMUL 0.001f */
+    float scaledDelta = (float)scaledDeltaFull;               /* FST [ESP+0x18] @0x30029662 */
     float envStep = (float)(scaledDeltaFull * FLAME_ENVDECAY_SCALE); /* FMUL 4.0f; FSTP [ESP+0x1c] @0x3002966c */
 
-    const char *cooldownSound = cg_flameCooldownSound; /* 0x30029645 MOV ECX,cooldown */
+    const char *cooldownSound = cg_flameCooldownSound;         /* 0x30029645 MOV ECX,cooldown */
 
-    for (int32_t i = 0; i < FLAME_INFO_COUNT; ++i) { /* ESI 0x300ab7b0.. step 0xb8 */
-        cgFlameSoundLoop_t *loop = &cg_flameSoundLoops[i]; /* EDI 0x300a8718.. step 12 */
-        cgFlameInfo_t *fi = &cg_flameInfo[i];
+    for (int32_t i = 0; i < FLAME_INFO_COUNT; ++i) {           /* ESI 0x300ab7b0.. step 0xb8 */
+        cgFlameSoundLoop_t *loop = &cg_flameSoundLoops[i];     /* EDI 0x300a8718.. step 12 */
+        cgFlameInfo_t     *fi    = &cg_flameInfo[i];
 
         /* 0x30029670..0x30029689: if envA != 0.0, decay it by 2*scaledDelta.
          * FLD 0.0; FLD envA; FUCOMPP; TEST AH,0x44; JNP skips only ordered
@@ -405,7 +437,9 @@ void CG_UpdateFlamethrowerSounds(void)
         if (loop->envA != FLAME_ZEROF) {
             /* 0x30029681..0x30029689: FLD scaledDelta; FADD ST0,ST0 (=2*scaledDelta);
              * FSUBR envA (= envA - 2*scaledDelta); FSTP envA. */
-            loop->envA = (float)((long double)loop->envA - ((long double)scaledDelta + (long double)scaledDelta));
+            loop->envA = (float)(
+                (long double)loop->envA -
+                ((long double)scaledDelta + (long double)scaledDelta));
         }
         /* 0x3002968b..0x3002969a: FLD envA; FCOMP 0.0f; TEST AH,0x5; JP (envA >= 0)
          * skips; when envA < 0 clamp to 0.0. */
@@ -417,26 +451,29 @@ void CG_UpdateFlamethrowerSounds(void)
          * stores the DECAYED value to the [ESP+0x14] scratch (FLD envB; FSUB
          * envStep; FST [ESP+0x14]; FSTP envB) — the silent-test below reads the
          * POST-decay value, not a pre-decay copy. */
-        float newEnvB = loop->envB - envStep; /* FLD envB; FSUB [ESP+0x1c] */
-        loop->envB = newEnvB; /* FST scratch / FSTP envB */
+        float newEnvB = loop->envB - envStep;                  /* FLD envB; FSUB [ESP+0x1c] */
+        loop->envB = newEnvB;                                  /* FST scratch / FSTP envB */
 
         /* 0x300296b0..0x300296ee: emit the cooldown sound once when it is
          * registered, post-decay envB is nonzero, this flame-info still has a
          * live emit, and its frame stamp is stale. */
-        if (cooldownSound != 0) { /* TEST ECX ; JZ 0x300296f1 */
+        if (cooldownSound != 0) {                              /* TEST ECX ; JZ 0x300296f1 */
             /* 0x300296b2..0x300296c3: FLD 0.0; FLD newEnvB([ESP+0x14]); FUCOMPP;
              * TEST AH,0x44; JNP is taken when newEnvB == 0.0 (equal => PF=0),
              * skipping to 0x300296f1. So the cooldown block runs when newEnvB != 0.0
              * (envelope still decaying). A prior pass misread the JNP sense. */
-            if (newEnvB != FLAME_ZEROF && fi->activeFlag != 0 && /* CMP [ESI],0 ; JZ skip */
-                fi->clientFrame < coduo_int32_from_bits((uint32_t)cg_clientFrame - 1u)) { /* DEC EDX; CMP; JGE skip */
+            if (newEnvB != FLAME_ZEROF &&
+                fi->activeFlag != 0 &&                           /* CMP [ESI],0 ; JZ skip */
+                fi->clientFrame < coduo_int32_from_bits(
+                    (uint32_t)cg_clientFrame - 1u)) {         /* DEC EDX; CMP; JGE skip */
                 /* 0x300296d8..0x300296e3: clear the live-emit flag and start the
                  * flamethrower-cooldown local sound positioned on this slot.
                  * CG_PlaySoundAliasByName(channelObj=&cg_entities[i].lerpOrigin (ECX=EBP),
                  * soundName=cooldownSound (EAX, an alias-name pointer), entityNum=i (EBX)). */
                 fi->activeFlag = 0;
-                (void)CG_PlaySoundAliasByName(i, &cg_entities[i].lerpOrigin[0], cooldownSound);
-                cooldownSound = cg_flameCooldownSound; /* 0x300296e8 reload ECX */
+                (void)CG_PlaySoundAliasByName(
+                    i, &cg_entities[i].lerpOrigin[0], cooldownSound);
+                cooldownSound = cg_flameCooldownSound;         /* 0x300296e8 reload ECX */
             }
         }
 

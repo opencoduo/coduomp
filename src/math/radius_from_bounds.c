@@ -42,13 +42,18 @@ float RadiusFromBounds(const vec3_t mins, const vec3_t maxs)
          * predicate.  The four Windows bodies load/compare the first operand
          * and retain it only for ordered-greater; this spelling also preserves
          * the original second-operand choice for equality and NaNs. */
-        corner[axis] = minMagnitude > maxMagnitude ? minMagnitude : maxMagnitude;
+        corner[axis] = minMagnitude > maxMagnitude
+                           ? minMagnitude
+                           : maxMagnitude;
     }
 
     /* Volatile separates the two original FADDP operations and prevents an
      * SSE/NEON compiler from reassociating or contracting the graph. */
-    volatile double zy = (double)corner[2] * (double)corner[2] + (double)corner[1] * (double)corner[1];
-    const double squared = zy + (double)corner[0] * (double)corner[0];
+    volatile double zy =
+        (double)corner[2] * (double)corner[2] +
+        (double)corner[1] * (double)corner[1];
+    const double squared =
+        zy + (double)corner[0] * (double)corner[0];
 
     return (float)sqrt(squared);
 }
@@ -60,17 +65,25 @@ float RadiusFromBounds(const vec3_t mins, const vec3_t maxs)
     for (int32_t axis = 0; axis < 3; ++axis) {
         const float minMagnitude = fabsf(mins[axis]);
         const float maxMagnitude = fabsf(maxs[axis]);
-        corner[axis] = minMagnitude > maxMagnitude ? minMagnitude : maxMagnitude;
+        corner[axis] = minMagnitude > maxMagnitude
+                           ? minMagnitude
+                           : maxMagnitude;
     }
 
 #if EMULATE_X87
-    x87f squared = x87f_add(x87f_mul(x87f_load_f32(corner[0]), x87f_load_f32(corner[0])),
-                            x87f_mul(x87f_load_f32(corner[1]), x87f_load_f32(corner[1])));
-    squared = x87f_add(squared, x87f_mul(x87f_load_f32(corner[2]), x87f_load_f32(corner[2])));
+    x87f squared = x87f_add(
+        x87f_mul(x87f_load_f32(corner[0]), x87f_load_f32(corner[0])),
+        x87f_mul(x87f_load_f32(corner[1]), x87f_load_f32(corner[1])));
+    squared = x87f_add(
+        squared,
+        x87f_mul(x87f_load_f32(corner[2]), x87f_load_f32(corner[2])));
     return (float)sqrt(x87f_store_f64(squared));
 #else
-    const long double xy = (long double)corner[0] * (long double)corner[0] + (long double)corner[1] * (long double)corner[1];
-    const long double squared = xy + (long double)corner[2] * (long double)corner[2];
+    const long double xy =
+        (long double)corner[0] * (long double)corner[0] +
+        (long double)corner[1] * (long double)corner[1];
+    const long double squared =
+        xy + (long double)corner[2] * (long double)corner[2];
 
     return (float)sqrt((double)squared);
 #endif

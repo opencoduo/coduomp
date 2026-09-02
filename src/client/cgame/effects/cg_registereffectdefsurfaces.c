@@ -87,20 +87,26 @@ enum {
     CG_SURFACE_MAX_INDEX = 23     /* CMP ESI,0x17 / JZ: index exempt from the warning */
 };
 
-int32_t CG_RegisterEffectDefSurfaces(const effectDef_t *defs, const char *effectTypeName, qhandle_t *handles)
+int32_t CG_RegisterEffectDefSurfaces(const effectDef_t *defs,
+                                     const char *effectTypeName,
+                                     qhandle_t *handles)
 {
     int32_t missing = 0;
 
     for (int32_t i = 0; i < CG_EFFECT_SURFACE_COUNT; ++i) {
         if (defs[i].name[0] != 0) {
             // 0x3001dd0b: register this surface's effect definition, keep its handle.
-            handles[i] = (qhandle_t)coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)&defs[i]));
+            handles[i] = (qhandle_t)coduo_int32_from_bits((uint32_t)cgame_syscall(
+                CG_FX_REGISTER_EFFECT, (intptr_t)&defs[i]));
         } else {
             // 0x3001dcd5..0x3001dd00: no definition. Warn unless the slot is marked
             // optional or is the last (exempt) surface index, then store handle 0.
             if (defs[i].name[1] == 0 && i != CG_SURFACE_MAX_INDEX) {
-                const char *surfaceName = (const char *)(intptr_t)cgame_syscall(CG_SURFACE_TYPE_TO_NAME, i);
-                Com_PrintMessage("no entry for effect type '%s' on surface type '%s'\n", effectTypeName, surfaceName);
+                const char *surfaceName =
+                    (const char *)(intptr_t)cgame_syscall(CG_SURFACE_TYPE_TO_NAME, i);
+                Com_PrintMessage(
+                    "no entry for effect type '%s' on surface type '%s'\n",
+                    effectTypeName, surfaceName);
                 ++missing;
             }
             handles[i] = 0;

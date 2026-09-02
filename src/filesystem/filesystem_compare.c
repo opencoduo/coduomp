@@ -49,9 +49,7 @@ qboolean FS_FileCompare(const char *leftPath, const char *rightPath)
 {
     FILE *leftFile = fopen(leftPath, "rb");
     if (leftFile == NULL) {
-        Com_Error(0,
-                  "\x15"
-                  "FS_FileCompare: %s does not exist\n",
+        Com_Error(0, "\x15" "FS_FileCompare: %s does not exist\n",
                   leftPath);
     }
 
@@ -80,19 +78,21 @@ qboolean FS_FileCompare(const char *leftPath, const char *rightPath)
     const size_t transferSize = (size_t)(uint32_t)leftLength;
     uint8_t *const leftData = Z_MallocInternal(transferSize);
     if (fread(leftData, 1, transferSize, leftFile) != transferSize) {
-        Com_Error(0, "\x15"
-                     "Short read in FS_FileCompare()\n");
+        Com_Error(0, "\x15" "Short read in FS_FileCompare()\n");
     }
     (void)fclose(leftFile);
 
     uint8_t *const rightData = Z_MallocInternal(transferSize);
     if (fread(rightData, 1, transferSize, rightFile) != transferSize) {
-        Com_Error(0, "\x15"
-                     "Short read in FS_FileCompare()\n");
+        Com_Error(0, "\x15" "Short read in FS_FileCompare()\n");
     }
     (void)fclose(rightFile);
 
-    const qboolean equal = (leftLength <= 0 || memcmp(leftData, rightData, transferSize) == 0) ? qtrue : qfalse;
+    const qboolean equal =
+        (leftLength <= 0 ||
+         memcmp(leftData, rightData, transferSize) == 0)
+            ? qtrue
+            : qfalse;
     free(leftData);
     free(rightData);
     return equal;
@@ -101,13 +101,15 @@ qboolean FS_FileCompare(const char *leftPath, const char *rightPath)
 /* Source: CoDUOMP.exe 0x0042d640..0x0042d6ac.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0042d640_0042d6ad.mcode.
  * Name: exact same-module Mac symbol FS_ShiftedStrStr. */
-const char *FS_ShiftedStrStr(const char *haystack, const char *encodedNeedle, int8_t shift)
+const char *FS_ShiftedStrStr(const char *haystack,
+                             const char *encodedNeedle, int8_t shift)
 {
     char needle[MAX_OSPATH];
     int32_t index;
 
     for (index = 0; encodedNeedle[index] != '\0'; ++index) {
-        needle[index] = (char)((uint8_t)encodedNeedle[index] + (uint8_t)shift);
+        needle[index] = (char)(
+            (uint8_t)encodedNeedle[index] + (uint8_t)shift);
     }
     needle[index] = '\0';
     return strstr(haystack, needle);
@@ -166,7 +168,8 @@ qboolean FS_PureIgnoresExtension(const char *extension)
     if (Q_stricmpn(extension, "menu", FS_CASE_COMPARE_LIMIT) == 0)
         return qtrue;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (Q_stricmpn(extension, ".dm_NETWORK_PROTOCOL_VERSION", FS_CASE_COMPARE_LIMIT) == 0) {
+    if (Q_stricmpn(extension, ".dm_NETWORK_PROTOCOL_VERSION",
+                   FS_CASE_COMPARE_LIMIT) == 0) {
         return qtrue;
     }
     if (Q_stricmpn(extension, "dat", FS_CASE_COMPARE_LIMIT) == 0)

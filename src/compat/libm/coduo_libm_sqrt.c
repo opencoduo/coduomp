@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-#define SQRT_HIGH_SIGN_MASK 0x80000000u
+#define SQRT_HIGH_SIGN_MASK     0x80000000u
 #define SQRT_HIGH_EXPONENT_MASK 0x7ff00000u
 #define SQRT_HIGH_MANTISSA_MASK 0x000fffffu
 
@@ -87,7 +87,8 @@ double CoduoLibm_Sqrt(double value)
         if (mantissa != 0u || low != 0u) {
             /* NaN: quieted by the add at 0x2008aa39, value otherwise kept. */
 #if EMULATE_X87
-            return x87f_store_f64(x87f_add(x87f_load_f64(value), x87f_load_f64(1.0)));
+            return x87f_store_f64(
+                x87f_add(x87f_load_f64(value), x87f_load_f64(1.0)));
 #else
             return (double)((long double)value + 1.0L);
 #endif
@@ -151,7 +152,8 @@ double CoduoLibm_SqrtGlibc(double value)
     if (exponent == SQRT_HIGH_EXPONENT_MASK) {
         if (mantissa != 0u || low != 0u) {
 #if EMULATE_X87
-            return x87f_store_f64(x87f_add(x87f_load_f64(value), x87f_load_f64(1.0)));
+            return x87f_store_f64(
+                x87f_add(x87f_load_f64(value), x87f_load_f64(1.0)));
 #else
             return (double)((long double)value + 1.0L);
 #endif
@@ -162,7 +164,8 @@ double CoduoLibm_SqrtGlibc(double value)
         return CoduoLibm_IndefiniteNaN();
     }
 
-    if ((high & SQRT_HIGH_SIGN_MASK) != 0u && (exponent != 0u || mantissa != 0u || low != 0u)) {
+    if ((high & SQRT_HIGH_SIGN_MASK) != 0u &&
+        (exponent != 0u || mantissa != 0u || low != 0u)) {
         return CoduoLibm_IndefiniteNaN();
     }
 

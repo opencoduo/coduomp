@@ -77,15 +77,14 @@
  * script->commandCount against 8). It is a soft warning: the count keeps growing.
  */
 /* Fixed blendTime (ms) stamped on an event-type-2 entry (0x300020ef stores 0x1e). */
-enum {
-    ANIM_EVENT2_BLENDTIME = 30
-};
+enum { ANIM_EVENT2_BLENDTIME = 30 };
 
 /* BG_ANIM_ENTRY_TURRET — bg_static_animation_t.flags (+0x50) bit set when a
  * "turretanim" parameter is applied (0x30002235 OR ...,4). Promoted to
  * client_recovered.h (second consumer: CG_PlayerVehiclePositionAndBlend 0x30032fe0). */
 
-void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation_t *animations)
+void BG_ParseCommands(char **text, bg_anim_script_t *script,
+                      bg_static_animation_t *animations)
 {
     bg_anim_script_command_t *command = (bg_anim_script_command_t *)0;
     int16_t animIndex = 0;      /* command.animIndex[slot] of the current slot */
@@ -94,7 +93,8 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
     for (;;) {
         /* 0x30001ea0/0x30001f11: fresh command allows line breaks; a continued slot
          * stays on the current line. */
-        char *token = (bodyPartSlot == 0) ? Com_Parse(text) : Com_ParseOnLine(text);
+        char *token = (bodyPartSlot == 0) ? Com_Parse(text)
+                                          : Com_ParseOnLine(text);
 
         /* 0x30001f1b/0x30001f23: empty / end-of-text ends the whole command block. */
         if (token == (char *)0 || token[0] == '\0') {
@@ -114,15 +114,15 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
         /* Slot 0 allocates the next command and bumps the count, warning past the
          * soft maximum (0x30001f45..0x30001f7e). */
         if (bodyPartSlot == 0) {
-            if (script->commandCount >= BG_ANIM_MAX_SCRIPT_COMMANDS) {
+        if (script->commandCount >= BG_ANIM_MAX_SCRIPT_COMMANDS) {
                 BG_AnimParseError("BG_ParseCommands: exceeded maximum number of "
-                                  "animations (%i)",
-                                  BG_ANIM_MAX_SCRIPT_COMMANDS);
+                          "animations (%i)", BG_ANIM_MAX_SCRIPT_COMMANDS);
             }
             {
                 int32_t commandIndex = script->commandCount;
                 command = &script->commands[commandIndex];
-                script->commandCount = coduo_int32_from_bits((uint32_t)commandIndex + 1u);
+                script->commandCount =
+                    coduo_int32_from_bits((uint32_t)commandIndex + 1u);
             }
             /* 0x30001f7e MOV [EBX],0 zeroes the dword at command+0 = both bodyPart
              * words (bodyPart[0] +0x00, bodyPart[1] +0x02). soundAliasName (+0x0c) is
@@ -134,7 +134,9 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
 
         /* 0x30001f84: resolve the body-part keyword to an index in the
          * animBodyPartsStr table, stored (word) in bodyPart[slot]. */
-        int16_t animPartIndex = (int16_t)BG_IndexForString(token, animBodyPartsStr, qtrue);
+        int16_t animPartIndex =
+            (int16_t)BG_IndexForString(token, animBodyPartsStr,
+                                       qtrue);
         command->bodyPart[bodyPartSlot] = animPartIndex;
 
         /* 0x30001f9c: a non-positive index means this token was not a body part —
@@ -164,17 +166,20 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
 
                 /* Skip when there is no channel or this slot is torso-only
                  * (0x30002032 / 0x3000203a). */
-                if (animGroup != ANIM_MT_UNUSED && command->bodyPart[bodyPartSlot] != ANIM_BP_TORSO) {
+                if (animGroup != ANIM_MT_UNUSED &&
+                    command->bodyPart[bodyPartSlot] != ANIM_BP_TORSO) {
                     /* 0x30002045: mark this channel bit on the ANIMATION entry.
                      * The OR at 0x3000204c uses EAX = &animations[animIndex] set at
                      * 0x30002014 (LEA EAX,[ECX+EDX], ECX = animIndex*0x5c) and never
                      * recomputed; the sibling moveSpeed test below likewise indexes by
                      * animIndex. A prior pass indexed by animPartIndex. */
-                    animations[animIndex].stateFlags |= (uint32_t)(1u << ((uint32_t)animGroup & 31u));
+                    animations[animIndex].stateFlags |=
+                        (uint32_t)(1u << ((uint32_t)animGroup & 31u));
 
                     /* 0x3000204f: climb-up / climb-down additionally flag the
                      * animated entry as moving when it has a nonzero moveSpeed. */
-                    if (animGroup == ANIM_MT_CLIMBUP || animGroup == ANIM_MT_CLIMBDOWN) {
+                    if (animGroup == ANIM_MT_CLIMBUP ||
+                        animGroup == ANIM_MT_CLIMBDOWN) {
                         bg_static_animation_t *ae = &animations[animIndex];
                         if (ae->moveSpeed != 0) {
                             ae->flags |= BG_ANIM_ENTRY_VERTICAL_MOTION;
@@ -183,11 +188,14 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
 
                     /* 0x3000206f: consult the first strafing (type 10) condition in
                      * the owning script; its value 1/2 sets the matching flag bit. */
-                    for (int32_t ci = 0; ci < script->conditionCount; ci = coduo_int32_from_bits((uint32_t)ci + 1u)) {
-                        if (script->conditions[ci].type != ANIM_COND_STRAFING) {
+                    for (int32_t ci = 0; ci < script->conditionCount;
+                         ci = coduo_int32_from_bits((uint32_t)ci + 1u)) {
+                        if (script->conditions[ci].type !=
+                            ANIM_COND_STRAFING) {
                             continue;
                         }
-                        int32_t moveValue = script->conditions[ci].value[0];
+                        int32_t moveValue =
+                            script->conditions[ci].value[0];
                         if (moveValue == 1) {
                             animations[animIndex].flags |= BG_ANIM_ENTRY_STRAFE_LEFT;
                         } else if (moveValue == 2) {
@@ -233,9 +241,11 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
                     }
                     /* 0x300021fd: store Q_atoi(value) as the slot duration word. */
 #if defined(WINDOWS_BEHAVIOR)
-                    command->duration[bodyPartSlot] = (int16_t)coduo_crt_atoi(value);
+                    command->duration[bodyPartSlot] =
+                        (int16_t)coduo_crt_atoi(value);
 #else
-                    command->duration[bodyPartSlot] = (int16_t)atoi(value);
+                    command->duration[bodyPartSlot] =
+                        (int16_t)atoi(value);
 #endif
                     continue;
                 }
@@ -249,7 +259,7 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
                     /* 0x30002238: only valid on the "both" body part (sentinel 3). */
                     if (command->bodyPart[bodyPartSlot] != ANIM_BP_BOTH) {
                         BG_AnimParseError("BG_ParseCommands: Turret animations can only be "
-                                          "played on the 'both' body part");
+                                  "played on the 'both' body part");
                     }
                     continue;
                 }
@@ -263,7 +273,8 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
                     /* 0x3000228b: only stamped in-game (else the value is dropped). */
                     if (bgRuntimeAnimations == NULL) {
 #if defined(WINDOWS_BEHAVIOR)
-                        animations[animIndex].blendTime = coduo_crt_atoi(value);
+                        animations[animIndex].blendTime =
+                            coduo_crt_atoi(value);
 #else
                         animations[animIndex].blendTime = atoi(value);
 #endif
@@ -279,7 +290,8 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
 
             /* 0x300022f4: after the parameter loop, advance to the next slot unless
              * this slot was the terminator sentinel (3) or slot 1 is done. */
-            if (command->bodyPart[bodyPartSlot] != ANIM_BP_BOTH && bodyPartSlot < 1) {
+            if (command->bodyPart[bodyPartSlot] != ANIM_BP_BOTH &&
+                bodyPartSlot < 1) {
                 bodyPartSlot = coduo_int32_from_bits((uint32_t)bodyPartSlot + 1u);
                 continue; /* 0x30002301: back to the master loop for slot 1 */
             }
@@ -306,13 +318,14 @@ void BG_ParseCommands(char **text, bg_anim_script_t *script, bg_static_animation
                 /* 0x30002400: reject raw .wav references (sound scripts only). */
                 if (strstr(sound, ".wav") != (char *)0) {
                     BG_AnimParseError("BG_ParseCommands: wav files not supported, only "
-                                      "sound scripts");
+                              "sound scripts");
                 }
                 /* 0x3000242e: store the registered alias handle. */
                 {
                     /* 0x30002419: load the import block after the extension
                      * check and any parse-error callback. */
-                    const bgs_t *arena = (const bgs_t *)(const void *)bgAnimStaticTable;
+                    const bgs_t *arena =
+                        (const bgs_t *)(const void *)bgAnimStaticTable;
                     command->soundAliasName = arena->soundAliasCallback(sound);
                 }
                 continue;

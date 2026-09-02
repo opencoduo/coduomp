@@ -37,7 +37,8 @@ typedef enum refEntityType_e {
     RT_MAX_REF_ENTITY_TYPE = 16
 } refEntityType_t;
 
-typedef char q_renderer_ref_entity_type_abi_size[sizeof(refEntityType_t) == 4 ? 1 : -1];
+typedef char q_renderer_ref_entity_type_abi_size[
+    sizeof(refEntityType_t) == 4 ? 1 : -1];
 
 /* Canonical refEntity_t.renderfx bits.  Cgame's submitted records and the
  * Windows renderer consumers agree on every value below. */
@@ -88,7 +89,8 @@ typedef enum renderer_image_track_e {
     R_IMAGE_TRACK_COUNT = 11
 } renderer_image_track_t;
 
-typedef char q_renderer_image_track_abi_size[sizeof(renderer_image_track_t) == 4 ? 1 : -1];
+typedef char q_renderer_image_track_abi_size[
+    sizeof(renderer_image_track_t) == 4 ? 1 : -1];
 
 /* Public polygon vertex passed between both client modules and the renderer.
  * CoDUOMP.exe's retained polygon paths and cgame CG_ImpactMark/CG_AddMarks
@@ -233,16 +235,15 @@ typedef struct refEntity_s {
         /* Animated entities use the owner passed to CG_DObjCalcPose. Static
          * entities retain their renderer registration in the same word. */
         void *owner;                         /* original +0x94 */
-        struct renderer_registered_static_model_s *staticModelRegistration;
+        struct renderer_registered_static_model_s
+            *staticModelRegistration;
     };
     /* Copied at the scene, FX, and archive boundaries, but otherwise unused
      * by CoDUOMP.exe. */
     uint8_t rendererPrivateState98[4];       /* original +0x98 */
 } refEntity_t;
 
-enum {
-    GLYPHS_PER_FONT = 256
-};
+enum { GLYPHS_PER_FONT = 256 };
 
 /* Inherited Quake glyphInfo_t/fontInfo_t identity with CoD:UO's changed
  * serialized lanes.  CoDUOMP.exe RE_RegisterFont (0x004e8f40) decodes every
@@ -273,102 +274,192 @@ typedef struct fontInfo_s {
 } fontInfo_t;
 
 #if defined(__cplusplus)
-#define Q_RENDERER_STATIC_ASSERT(expression, message) static_assert((expression), message)
+#define Q_RENDERER_STATIC_ASSERT(expression, message) \
+    static_assert((expression), message)
 #define Q_RENDERER_ALIGNOF(type) alignof(type)
 #else
-#define Q_RENDERER_STATIC_ASSERT(expression, message) _Static_assert((expression), message)
+#define Q_RENDERER_STATIC_ASSERT(expression, message) \
+    _Static_assert((expression), message)
 #define Q_RENDERER_ALIGNOF(type) _Alignof(type)
 #endif
 
-Q_RENDERER_STATIC_ASSERT(sizeof(glyphInfo_t) == 0x50, "glyphInfo_t extent changed");
-Q_RENDERER_STATIC_ASSERT(offsetof(glyphInfo_t, glyph) == 0x2c, "glyphInfo_t.glyph moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glyphInfo_t, shaderName) == 0x30, "glyphInfo_t.shaderName moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(fontInfo_t, glyphScale) == 0x5000, "fontInfo_t.glyphScale moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(fontInfo_t, lineHeight) == 0x5004, "fontInfo_t.lineHeight moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(fontInfo_t, fontDataName) == 0x5008, "fontInfo_t.fontDataName moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(fontInfo_t) == 0x5048, "fontInfo_t extent changed");
+Q_RENDERER_STATIC_ASSERT(sizeof(glyphInfo_t) == 0x50,
+                         "glyphInfo_t extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(glyphInfo_t, glyph) == 0x2c,
+                         "glyphInfo_t.glyph moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glyphInfo_t, shaderName) == 0x30,
+                         "glyphInfo_t.shaderName moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(fontInfo_t, glyphScale) == 0x5000,
+                         "fontInfo_t.glyphScale moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(fontInfo_t, lineHeight) == 0x5004,
+                         "fontInfo_t.lineHeight moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(fontInfo_t, fontDataName) == 0x5008,
+                         "fontInfo_t.fontDataName moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(fontInfo_t) == 0x5048,
+                         "fontInfo_t extent changed");
 
-Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(renderer_frame_statistics_t) == 4, "renderer frame-statistics alignment changed");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, indexCount) == 0x00, "renderer frame-statistics index count moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, drawnIndexCount) == 0x04,
-                         "renderer frame-statistics drawn index count moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, vertexCount) == 0x08, "renderer frame-statistics vertex count moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, drawCallCount) == 0x0c, "renderer frame-statistics draw-call count moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, imageMemory) == 0x10, "renderer frame-statistics image memory moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, lightmapMemory) == 0x14, "renderer frame-statistics lightmap memory moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, textureMemory) == 0x18, "renderer frame-statistics texture memory moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, entityCount) == 0x1c, "renderer frame-statistics entity count moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(renderer_frame_statistics_t, overdrawRatio) == 0x20, "renderer frame-statistics overdraw ratio moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(renderer_frame_statistics_t) == 0x24, "renderer frame-statistics extent changed");
+Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(renderer_frame_statistics_t) == 4,
+                         "renderer frame-statistics alignment changed");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, indexCount) == 0x00,
+    "renderer frame-statistics index count moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, drawnIndexCount) == 0x04,
+    "renderer frame-statistics drawn index count moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, vertexCount) == 0x08,
+    "renderer frame-statistics vertex count moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, drawCallCount) == 0x0c,
+    "renderer frame-statistics draw-call count moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, imageMemory) == 0x10,
+    "renderer frame-statistics image memory moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, lightmapMemory) == 0x14,
+    "renderer frame-statistics lightmap memory moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, textureMemory) == 0x18,
+    "renderer frame-statistics texture memory moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, entityCount) == 0x1c,
+    "renderer frame-statistics entity count moved");
+Q_RENDERER_STATIC_ASSERT(
+    offsetof(renderer_frame_statistics_t, overdrawRatio) == 0x20,
+    "renderer frame-statistics overdraw ratio moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(renderer_frame_statistics_t) == 0x24,
+                         "renderer frame-statistics extent changed");
 
-Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, xyz) == 0x00, "polyVert_t.xyz moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, st) == 0x0c, "polyVert_t.st moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, lightmapCoords) == 0x14, "polyVert_t.lightmapCoords moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, modulate) == 0x1c, "polyVert_t.modulate moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(polyVert_t) == 0x20, "polyVert_t extent changed");
-Q_RENDERER_STATIC_ASSERT(offsetof(markFragment_t, shaderHandle) == 0x00, "markFragment_t.shaderHandle moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(markFragment_t, firstPoint) == 0x04, "markFragment_t.firstPoint moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(markFragment_t, numPoints) == 0x08, "markFragment_t.numPoints moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(markFragment_t) == 0x0c, "markFragment_t extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, xyz) == 0x00,
+                         "polyVert_t.xyz moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, st) == 0x0c,
+                         "polyVert_t.st moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, lightmapCoords) == 0x14,
+                         "polyVert_t.lightmapCoords moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(polyVert_t, modulate) == 0x1c,
+                         "polyVert_t.modulate moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(polyVert_t) == 0x20,
+                         "polyVert_t extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(markFragment_t, shaderHandle) == 0x00,
+                         "markFragment_t.shaderHandle moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(markFragment_t, firstPoint) == 0x04,
+                         "markFragment_t.firstPoint moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(markFragment_t, numPoints) == 0x08,
+                         "markFragment_t.numPoints moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(markFragment_t) == 0x0c,
+                         "markFragment_t extent changed");
 
 #if UINTPTR_MAX == UINT32_MAX
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, rendererString) == 0x00, "glconfig_t.rendererString moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, wglExtensionsString) == 0x10, "glconfig_t.wglExtensionsString moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, colorBits) == 0x20, "glconfig_t.colorBits moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, deviceSupportsGamma) == 0x2c, "glconfig_t.deviceSupportsGamma moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, vertexArrayRangeMode) == 0x5c, "glconfig_t.vertexArrayRangeMode moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, registerCombinerMode) == 0x64, "glconfig_t.registerCombinerMode moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, vidWidth) == 0x84, "glconfig_t.vidWidth moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, vidHeight) == 0x88, "glconfig_t.vidHeight moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, windowAspect) == 0x8c, "glconfig_t.windowAspect moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, smpActive) == 0x9c, "glconfig_t.smpActive moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(glconfig_t) == 0xa0, "glconfig_t extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, rendererString) == 0x00,
+                         "glconfig_t.rendererString moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, wglExtensionsString) == 0x10,
+                         "glconfig_t.wglExtensionsString moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, colorBits) == 0x20,
+                         "glconfig_t.colorBits moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, deviceSupportsGamma) == 0x2c,
+                         "glconfig_t.deviceSupportsGamma moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, vertexArrayRangeMode) == 0x5c,
+                         "glconfig_t.vertexArrayRangeMode moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, registerCombinerMode) == 0x64,
+                         "glconfig_t.registerCombinerMode moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, vidWidth) == 0x84,
+                         "glconfig_t.vidWidth moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, vidHeight) == 0x88,
+                         "glconfig_t.vidHeight moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, windowAspect) == 0x8c,
+                         "glconfig_t.windowAspect moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(glconfig_t, smpActive) == 0x9c,
+                         "glconfig_t.smpActive moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(glconfig_t) == 0xa0,
+                         "glconfig_t extent changed");
 #endif
 
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, reType) == 0x00, "refEntity_t.reType moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->reType) == 0x04, "refEntity_t.reType extent changed");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, renderfx) == 0x04, "refEntity_t.renderfx moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, hModel) == 0x08, "refEntity_t.hModel moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, lightingOrigin) == 0x0c, "refEntity_t.lightingOrigin moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shadowPlane) == 0x18, "refEntity_t.shadowPlane moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, axis) == 0x1c, "refEntity_t.axis moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->axis) == 0x24, "refEntity_t.axis extent changed");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, nonNormalizedAxes) == 0x40, "refEntity_t.nonNormalizedAxes moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, origin) == 0x44, "refEntity_t.origin moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, frame) == 0x50, "refEntity_t.frame moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, oldorigin) == 0x54, "refEntity_t.oldorigin moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, oldframe) == 0x60, "refEntity_t.oldframe moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, backlerp) == 0x64, "refEntity_t.backlerp moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, radius2) == 0x64, "refEntity_t.radius2 moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, spriteShaderHandle) == 0x68, "refEntity_t.spriteShaderHandle moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shaderRGBA) == 0x6c, "refEntity_t.shaderRGBA moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shaderTexCoord) == 0x70, "refEntity_t.shaderTexCoord moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shaderTime) == 0x78, "refEntity_t.shaderTime moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, radius) == 0x7c, "refEntity_t.radius moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, customShader) == 0x80, "refEntity_t.customShader moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rotation) == 0x80, "refEntity_t.rotation moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricityEndTime) == 0x80, "refEntity_t.electricityEndTime moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState84) == 0x84, "refEntity_t private state moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->rendererPrivateState84) == 0x0c, "refEntity_t private-state extent changed");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricity.parameter) == 0x84, "refEntity_t electricity parameter moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricity.lifeTime) == 0x88, "refEntity_t electricity lifetime moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricity.reserved8c) == 0x8c, "refEntity_t electricity reserved word moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, dobj) == 0x90, "refEntity_t.dobj moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, reType) == 0x00,
+                         "refEntity_t.reType moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->reType) == 0x04,
+                         "refEntity_t.reType extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, renderfx) == 0x04,
+                         "refEntity_t.renderfx moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, hModel) == 0x08,
+                         "refEntity_t.hModel moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, lightingOrigin) == 0x0c,
+                         "refEntity_t.lightingOrigin moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shadowPlane) == 0x18,
+                         "refEntity_t.shadowPlane moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, axis) == 0x1c,
+                         "refEntity_t.axis moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->axis) == 0x24,
+                         "refEntity_t.axis extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, nonNormalizedAxes) == 0x40,
+                         "refEntity_t.nonNormalizedAxes moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, origin) == 0x44,
+                         "refEntity_t.origin moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, frame) == 0x50,
+                         "refEntity_t.frame moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, oldorigin) == 0x54,
+                         "refEntity_t.oldorigin moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, oldframe) == 0x60,
+                         "refEntity_t.oldframe moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, backlerp) == 0x64,
+                         "refEntity_t.backlerp moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, radius2) == 0x64,
+                         "refEntity_t.radius2 moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, spriteShaderHandle) == 0x68,
+                         "refEntity_t.spriteShaderHandle moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shaderRGBA) == 0x6c,
+                         "refEntity_t.shaderRGBA moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shaderTexCoord) == 0x70,
+                         "refEntity_t.shaderTexCoord moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, shaderTime) == 0x78,
+                         "refEntity_t.shaderTime moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, radius) == 0x7c,
+                         "refEntity_t.radius moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, customShader) == 0x80,
+                         "refEntity_t.customShader moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rotation) == 0x80,
+                         "refEntity_t.rotation moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricityEndTime) == 0x80,
+                         "refEntity_t.electricityEndTime moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState84) == 0x84,
+                         "refEntity_t private state moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->rendererPrivateState84) ==
+                             0x0c,
+                         "refEntity_t private-state extent changed");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricity.parameter) == 0x84,
+                         "refEntity_t electricity parameter moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricity.lifeTime) == 0x88,
+                         "refEntity_t electricity lifetime moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, electricity.reserved8c) == 0x8c,
+                         "refEntity_t electricity reserved word moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, dobj) == 0x90,
+                         "refEntity_t.dobj moved");
 
 #if UINTPTR_MAX == UINT32_MAX
-Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(refEntity_t) == 0x04, "i386 refEntity_t alignment changed");
-Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->dobj) == 0x04, "i386 refEntity_t DObj pointer widened");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, owner) == 0x94, "i386 refEntity_t.owner moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x94, "i386 refEntity_t static registration moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState98) == 0x98, "i386 refEntity_t private tail moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(refEntity_t) == 0x9c, "i386 refEntity_t size changed");
+Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(refEntity_t) == 0x04,
+                         "i386 refEntity_t alignment changed");
+Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->dobj) == 0x04,
+                         "i386 refEntity_t DObj pointer widened");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, owner) == 0x94,
+                         "i386 refEntity_t.owner moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x94,
+                         "i386 refEntity_t static registration moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState98) == 0x98,
+                         "i386 refEntity_t private tail moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(refEntity_t) == 0x9c,
+                         "i386 refEntity_t size changed");
 #elif UINTPTR_MAX == UINT64_MAX
-Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(refEntity_t) == 0x08, "64-bit refEntity_t alignment changed");
-Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->dobj) == 0x08, "64-bit refEntity_t DObj pointer narrowed");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, owner) == 0x98, "64-bit refEntity_t.owner moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x98, "64-bit refEntity_t static registration moved");
-Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState98) == 0xa0, "64-bit refEntity_t private tail moved");
-Q_RENDERER_STATIC_ASSERT(sizeof(refEntity_t) == 0xa8, "64-bit refEntity_t size changed");
+Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(refEntity_t) == 0x08,
+                         "64-bit refEntity_t alignment changed");
+Q_RENDERER_STATIC_ASSERT(sizeof(((refEntity_t *)0)->dobj) == 0x08,
+                         "64-bit refEntity_t DObj pointer narrowed");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, owner) == 0x98,
+                         "64-bit refEntity_t.owner moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, staticModelRegistration) == 0x98,
+                         "64-bit refEntity_t static registration moved");
+Q_RENDERER_STATIC_ASSERT(offsetof(refEntity_t, rendererPrivateState98) == 0xa0,
+                         "64-bit refEntity_t private tail moved");
+Q_RENDERER_STATIC_ASSERT(sizeof(refEntity_t) == 0xa8,
+                         "64-bit refEntity_t size changed");
 #endif
 
 /* Public renderer scene definition shared by cgame, UI, and the engine.
@@ -390,19 +481,30 @@ typedef struct refdef_s {
     int32_t rdflags;
 } refdef_t;
 
-typedef char q_renderer_refdef_x_offset[offsetof(refdef_t, x) == 0x00 ? 1 : -1];
-typedef char q_renderer_refdef_y_offset[offsetof(refdef_t, y) == 0x04 ? 1 : -1];
-typedef char q_renderer_refdef_width_offset[offsetof(refdef_t, width) == 0x08 ? 1 : -1];
-typedef char q_renderer_refdef_height_offset[offsetof(refdef_t, height) == 0x0c ? 1 : -1];
-typedef char q_renderer_refdef_fov_x_offset[offsetof(refdef_t, fov_x) == 0x10 ? 1 : -1];
-typedef char q_renderer_refdef_fov_y_offset[offsetof(refdef_t, fov_y) == 0x14 ? 1 : -1];
-typedef char q_renderer_refdef_vieworg_offset[offsetof(refdef_t, vieworg) == 0x18 ? 1 : -1];
-typedef char q_renderer_refdef_viewaxis_offset[offsetof(refdef_t, viewaxis) == 0x24 ? 1 : -1];
-typedef char q_renderer_refdef_time_offset[offsetof(refdef_t, time) == 0x48 ? 1 : -1];
-typedef char q_renderer_refdef_rdflags_offset[offsetof(refdef_t, rdflags) == 0x4c ? 1 : -1];
+typedef char q_renderer_refdef_x_offset[
+    offsetof(refdef_t, x) == 0x00 ? 1 : -1];
+typedef char q_renderer_refdef_y_offset[
+    offsetof(refdef_t, y) == 0x04 ? 1 : -1];
+typedef char q_renderer_refdef_width_offset[
+    offsetof(refdef_t, width) == 0x08 ? 1 : -1];
+typedef char q_renderer_refdef_height_offset[
+    offsetof(refdef_t, height) == 0x0c ? 1 : -1];
+typedef char q_renderer_refdef_fov_x_offset[
+    offsetof(refdef_t, fov_x) == 0x10 ? 1 : -1];
+typedef char q_renderer_refdef_fov_y_offset[
+    offsetof(refdef_t, fov_y) == 0x14 ? 1 : -1];
+typedef char q_renderer_refdef_vieworg_offset[
+    offsetof(refdef_t, vieworg) == 0x18 ? 1 : -1];
+typedef char q_renderer_refdef_viewaxis_offset[
+    offsetof(refdef_t, viewaxis) == 0x24 ? 1 : -1];
+typedef char q_renderer_refdef_time_offset[
+    offsetof(refdef_t, time) == 0x48 ? 1 : -1];
+typedef char q_renderer_refdef_rdflags_offset[
+    offsetof(refdef_t, rdflags) == 0x4c ? 1 : -1];
 typedef char q_renderer_refdef_size[sizeof(refdef_t) == 0x50 ? 1 : -1];
 
-Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(refdef_t) == 0x04, "refdef_t alignment changed");
+Q_RENDERER_STATIC_ASSERT(Q_RENDERER_ALIGNOF(refdef_t) == 0x04,
+                         "refdef_t alignment changed");
 
 #undef Q_RENDERER_ALIGNOF
 #undef Q_RENDERER_STATIC_ASSERT

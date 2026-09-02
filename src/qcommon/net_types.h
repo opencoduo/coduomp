@@ -115,67 +115,127 @@ typedef struct netchan_s {
 } netchan_t;
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-_Static_assert(sizeof(netadrtype_t) == sizeof(int32_t), "network-address type width changed");
-_Static_assert(sizeof(netsrc_t) == sizeof(int32_t), "network source width changed");
-_Static_assert(_Alignof(netadr_t) == 4, "network-address alignment changed");
-_Static_assert(offsetof(netadr_t, type) == 0x00, "network-address type moved");
-_Static_assert(offsetof(netadr_t, ip) == 0x04, "network-address IPv4 bytes moved");
-_Static_assert(sizeof(((netadr_t *)0)->ip) == 0x04, "network-address IPv4 extent changed");
-_Static_assert(offsetof(netadr_t, ipx) == 0x08, "network-address IPX bytes moved");
-_Static_assert(sizeof(((netadr_t *)0)->ipx) == 0x0a, "network-address IPX extent changed");
-_Static_assert(offsetof(netadr_t, port) == 0x12, "network-address port moved");
-_Static_assert(sizeof(netadr_t) == 0x14, "network-address size changed");
-_Static_assert(_Alignof(loopmsg_t) == 4, "loopback-message alignment changed");
-_Static_assert(offsetof(loopmsg_t, data) == 0x000, "loopback-message data moved");
-_Static_assert(sizeof(((loopmsg_t *)0)->data) == 0x578, "loopback-message data extent changed");
-_Static_assert(offsetof(loopmsg_t, datalen) == 0x578, "loopback-message data length moved");
-_Static_assert(sizeof(loopmsg_t) == 0x57c, "loopback-message size changed");
-_Static_assert(_Alignof(loopback_t) == 4, "loopback-queue alignment changed");
-_Static_assert(offsetof(loopback_t, msgs) == 0x0000, "loopback-queue messages moved");
-_Static_assert(sizeof(((loopback_t *)0)->msgs) == 0x57c0, "loopback-queue message extent changed");
-_Static_assert(offsetof(loopback_t, get) == 0x57c0, "loopback-queue read index moved");
-_Static_assert(offsetof(loopback_t, send) == 0x57c4, "loopback-queue write index moved");
-_Static_assert(sizeof(loopback_t) == 0x57c8, "loopback-queue size changed");
-_Static_assert(_Alignof(netProfileSample_t) == 4, "network-profile sample alignment changed");
-_Static_assert(offsetof(netProfileSample_t, time) == 0x00, "network-profile sample time moved");
-_Static_assert(offsetof(netProfileSample_t, bytes) == 0x04, "network-profile sample byte count moved");
-_Static_assert(offsetof(netProfileSample_t, fragmented) == 0x08, "network-profile sample fragment flag moved");
-_Static_assert(sizeof(netProfileSample_t) == 0x0c, "network-profile sample size changed");
-_Static_assert(_Alignof(netProfileStream_t) == 4, "network-profile stream alignment changed");
-_Static_assert(offsetof(netProfileStream_t, samples) == 0x000, "network-profile samples moved");
-_Static_assert(sizeof(((netProfileStream_t *)0)->samples) == 0x2d0, "network-profile sample extent changed");
-_Static_assert(offsetof(netProfileStream_t, ringIndex) == 0x2d0, "network-profile ring index moved");
-_Static_assert(offsetof(netProfileStream_t, bytesPerSecond) == 0x2d4, "network-profile byte rate moved");
-_Static_assert(offsetof(netProfileStream_t, lastRateCalcTime) == 0x2d8, "network-profile rate timestamp moved");
-_Static_assert(offsetof(netProfileStream_t, sampleCount) == 0x2dc, "network-profile sample count moved");
-_Static_assert(offsetof(netProfileStream_t, fragmentSampleCount) == 0x2e0, "network-profile fragment count moved");
-_Static_assert(offsetof(netProfileStream_t, fragmentPercent) == 0x2e4, "network-profile fragment percentage moved");
-_Static_assert(offsetof(netProfileStream_t, maxBytes) == 0x2e8, "network-profile maximum bytes moved");
-_Static_assert(offsetof(netProfileStream_t, minBytes) == 0x2ec, "network-profile minimum bytes moved");
-_Static_assert(sizeof(netProfileStream_t) == 0x2f0, "network-profile stream size changed");
-_Static_assert(_Alignof(netProfileInfo_t) == 4, "network-profile object alignment changed");
-_Static_assert(offsetof(netProfileInfo_t, send) == 0x000, "network-profile send stream moved");
-_Static_assert(offsetof(netProfileInfo_t, receive) == 0x2f0, "network-profile receive stream moved");
-_Static_assert(sizeof(netProfileInfo_t) == 0x5e0, "network-profile object size changed");
+_Static_assert(sizeof(netadrtype_t) == sizeof(int32_t),
+               "network-address type width changed");
+_Static_assert(sizeof(netsrc_t) == sizeof(int32_t),
+               "network source width changed");
+_Static_assert(_Alignof(netadr_t) == 4,
+               "network-address alignment changed");
+_Static_assert(offsetof(netadr_t, type) == 0x00,
+               "network-address type moved");
+_Static_assert(offsetof(netadr_t, ip) == 0x04,
+               "network-address IPv4 bytes moved");
+_Static_assert(sizeof(((netadr_t *)0)->ip) == 0x04,
+               "network-address IPv4 extent changed");
+_Static_assert(offsetof(netadr_t, ipx) == 0x08,
+               "network-address IPX bytes moved");
+_Static_assert(sizeof(((netadr_t *)0)->ipx) == 0x0a,
+               "network-address IPX extent changed");
+_Static_assert(offsetof(netadr_t, port) == 0x12,
+               "network-address port moved");
+_Static_assert(sizeof(netadr_t) == 0x14,
+               "network-address size changed");
+_Static_assert(_Alignof(loopmsg_t) == 4,
+               "loopback-message alignment changed");
+_Static_assert(offsetof(loopmsg_t, data) == 0x000,
+               "loopback-message data moved");
+_Static_assert(sizeof(((loopmsg_t *)0)->data) == 0x578,
+               "loopback-message data extent changed");
+_Static_assert(offsetof(loopmsg_t, datalen) == 0x578,
+               "loopback-message data length moved");
+_Static_assert(sizeof(loopmsg_t) == 0x57c,
+               "loopback-message size changed");
+_Static_assert(_Alignof(loopback_t) == 4,
+               "loopback-queue alignment changed");
+_Static_assert(offsetof(loopback_t, msgs) == 0x0000,
+               "loopback-queue messages moved");
+_Static_assert(sizeof(((loopback_t *)0)->msgs) == 0x57c0,
+               "loopback-queue message extent changed");
+_Static_assert(offsetof(loopback_t, get) == 0x57c0,
+               "loopback-queue read index moved");
+_Static_assert(offsetof(loopback_t, send) == 0x57c4,
+               "loopback-queue write index moved");
+_Static_assert(sizeof(loopback_t) == 0x57c8,
+               "loopback-queue size changed");
+_Static_assert(_Alignof(netProfileSample_t) == 4,
+               "network-profile sample alignment changed");
+_Static_assert(offsetof(netProfileSample_t, time) == 0x00,
+               "network-profile sample time moved");
+_Static_assert(offsetof(netProfileSample_t, bytes) == 0x04,
+               "network-profile sample byte count moved");
+_Static_assert(offsetof(netProfileSample_t, fragmented) == 0x08,
+               "network-profile sample fragment flag moved");
+_Static_assert(sizeof(netProfileSample_t) == 0x0c,
+               "network-profile sample size changed");
+_Static_assert(_Alignof(netProfileStream_t) == 4,
+               "network-profile stream alignment changed");
+_Static_assert(offsetof(netProfileStream_t, samples) == 0x000,
+               "network-profile samples moved");
+_Static_assert(sizeof(((netProfileStream_t *)0)->samples) == 0x2d0,
+               "network-profile sample extent changed");
+_Static_assert(offsetof(netProfileStream_t, ringIndex) == 0x2d0,
+               "network-profile ring index moved");
+_Static_assert(offsetof(netProfileStream_t, bytesPerSecond) == 0x2d4,
+               "network-profile byte rate moved");
+_Static_assert(offsetof(netProfileStream_t, lastRateCalcTime) == 0x2d8,
+               "network-profile rate timestamp moved");
+_Static_assert(offsetof(netProfileStream_t, sampleCount) == 0x2dc,
+               "network-profile sample count moved");
+_Static_assert(offsetof(netProfileStream_t, fragmentSampleCount) == 0x2e0,
+               "network-profile fragment count moved");
+_Static_assert(offsetof(netProfileStream_t, fragmentPercent) == 0x2e4,
+               "network-profile fragment percentage moved");
+_Static_assert(offsetof(netProfileStream_t, maxBytes) == 0x2e8,
+               "network-profile maximum bytes moved");
+_Static_assert(offsetof(netProfileStream_t, minBytes) == 0x2ec,
+               "network-profile minimum bytes moved");
+_Static_assert(sizeof(netProfileStream_t) == 0x2f0,
+               "network-profile stream size changed");
+_Static_assert(_Alignof(netProfileInfo_t) == 4,
+               "network-profile object alignment changed");
+_Static_assert(offsetof(netProfileInfo_t, send) == 0x000,
+               "network-profile send stream moved");
+_Static_assert(offsetof(netProfileInfo_t, receive) == 0x2f0,
+               "network-profile receive stream moved");
+_Static_assert(sizeof(netProfileInfo_t) == 0x5e0,
+               "network-profile object size changed");
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(netchan_t) == 4, "i386 netchan alignment changed");
-_Static_assert(offsetof(netchan_t, sock) == 0x00000, "i386 netchan socket source moved");
-_Static_assert(offsetof(netchan_t, dropped) == 0x00004, "i386 netchan dropped-packet count moved");
-_Static_assert(offsetof(netchan_t, remoteAddress) == 0x00008, "i386 netchan remote address moved");
-_Static_assert(offsetof(netchan_t, qport) == 0x0001c, "i386 netchan qport moved");
-_Static_assert(offsetof(netchan_t, incomingSequence) == 0x00020, "i386 netchan incoming sequence moved");
-_Static_assert(offsetof(netchan_t, outgoingSequence) == 0x00024, "i386 netchan outgoing sequence moved");
-_Static_assert(offsetof(netchan_t, fragmentSequence) == 0x00028, "i386 netchan fragment sequence moved");
-_Static_assert(offsetof(netchan_t, fragmentLength) == 0x0002c, "i386 netchan fragment length moved");
-_Static_assert(offsetof(netchan_t, fragmentBuffer) == 0x00030, "i386 netchan fragment buffer moved");
-_Static_assert(sizeof(((netchan_t *)0)->fragmentBuffer) == 0x08000, "i386 netchan fragment-buffer extent changed");
-_Static_assert(offsetof(netchan_t, unsentFragments) == 0x08030, "i386 netchan unsent-fragment flag moved");
-_Static_assert(offsetof(netchan_t, unsentFragmentStart) == 0x08034, "i386 netchan unsent-fragment cursor moved");
-_Static_assert(offsetof(netchan_t, unsentLength) == 0x08038, "i386 netchan unsent length moved");
-_Static_assert(offsetof(netchan_t, unsentBuffer) == 0x0803c, "i386 netchan unsent buffer moved");
-_Static_assert(sizeof(((netchan_t *)0)->unsentBuffer) == 0x08000, "i386 netchan unsent-buffer extent changed");
-_Static_assert(offsetof(netchan_t, profile) == 0x1003c, "i386 netchan profile pointer moved");
-_Static_assert(sizeof(netchan_t) == 0x10040, "i386 netchan size changed");
+_Static_assert(_Alignof(netchan_t) == 4,
+               "i386 netchan alignment changed");
+_Static_assert(offsetof(netchan_t, sock) == 0x00000,
+               "i386 netchan socket source moved");
+_Static_assert(offsetof(netchan_t, dropped) == 0x00004,
+               "i386 netchan dropped-packet count moved");
+_Static_assert(offsetof(netchan_t, remoteAddress) == 0x00008,
+               "i386 netchan remote address moved");
+_Static_assert(offsetof(netchan_t, qport) == 0x0001c,
+               "i386 netchan qport moved");
+_Static_assert(offsetof(netchan_t, incomingSequence) == 0x00020,
+               "i386 netchan incoming sequence moved");
+_Static_assert(offsetof(netchan_t, outgoingSequence) == 0x00024,
+               "i386 netchan outgoing sequence moved");
+_Static_assert(offsetof(netchan_t, fragmentSequence) == 0x00028,
+               "i386 netchan fragment sequence moved");
+_Static_assert(offsetof(netchan_t, fragmentLength) == 0x0002c,
+               "i386 netchan fragment length moved");
+_Static_assert(offsetof(netchan_t, fragmentBuffer) == 0x00030,
+               "i386 netchan fragment buffer moved");
+_Static_assert(sizeof(((netchan_t *)0)->fragmentBuffer) == 0x08000,
+               "i386 netchan fragment-buffer extent changed");
+_Static_assert(offsetof(netchan_t, unsentFragments) == 0x08030,
+               "i386 netchan unsent-fragment flag moved");
+_Static_assert(offsetof(netchan_t, unsentFragmentStart) == 0x08034,
+               "i386 netchan unsent-fragment cursor moved");
+_Static_assert(offsetof(netchan_t, unsentLength) == 0x08038,
+               "i386 netchan unsent length moved");
+_Static_assert(offsetof(netchan_t, unsentBuffer) == 0x0803c,
+               "i386 netchan unsent buffer moved");
+_Static_assert(sizeof(((netchan_t *)0)->unsentBuffer) == 0x08000,
+               "i386 netchan unsent-buffer extent changed");
+_Static_assert(offsetof(netchan_t, profile) == 0x1003c,
+               "i386 netchan profile pointer moved");
+_Static_assert(sizeof(netchan_t) == 0x10040,
+               "i386 netchan size changed");
 #endif
 #endif
 

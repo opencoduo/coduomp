@@ -124,8 +124,8 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
          *   block #3 (pitch): 0x3004533a FSTP [esp+0x1c] = -2*envelope*DEG2RAD.
          * A prior pass read block #1's phase as envelope*DEG2RAD (a generic
          * AngleVectors assumption), giving the sway a spurious X component. */
-        const float angYaw = 0.0f * CG_DEG2RAD;            /* 0x300452cc: [esp+0x1c] = 0 */
-        const float angMid = 0.0f * CG_DEG2RAD;            /* 0x300452fa: [esp+0x1c] = 0 */
+        const float angYaw   = 0.0f * CG_DEG2RAD;            /* 0x300452cc: [esp+0x1c] = 0 */
+        const float angMid   = 0.0f * CG_DEG2RAD;            /* 0x300452fa: [esp+0x1c] = 0 */
         const float angPitch = (-2.0f * envelope) * CG_DEG2RAD; /* 0x3004533a: [esp+0x1c] */
 
         float sinYaw, cosYaw;
@@ -164,7 +164,8 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
     CG_SpinEffectPointToWorld(out);
 
     /* 0x300453f3: elapsed ms since the last impact-event kick was recorded. */
-    const int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)cg_impactViewKickTime);
+    const int32_t elapsed = coduo_int32_from_bits(
+        (uint32_t)cg_time - (uint32_t)cg_impactViewKickTime);
     const float kick = cg_impactViewKick;
 
     if (elapsed < 150) {
@@ -172,7 +173,8 @@ void CG_CalcViewLeanKickOffset(vec3_t out /* EAX -> EDI: in/out view offset vec3
         out[2] += (float)elapsed * kick * 0.25f / 150.0f;
     } else if (elapsed < 450) {
         /* 0x30045443: recoil decay — linear ramp down over the next 300 ms. */
-        out[2] += (float)coduo_int32_from_bits(450u - (uint32_t)elapsed) * kick * 0.25f / 300.0f;
+        out[2] += (float)coduo_int32_from_bits(450u - (uint32_t)elapsed) *
+                  kick * 0.25f / 300.0f;
     }
     /* elapsed >= 450: recoil has fully settled, no Z bump. */
 

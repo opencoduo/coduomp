@@ -24,11 +24,13 @@ void Sys_OutOfMemory(void);
 
 /* NOT_FROM_ORIGINAL_SOURCE: compare the two cursor extents by subtraction so
  * their sum never has to be represented. */
-#define HUNK_USAGE_EXCEEDS_TOTAL(first, second) ((first) > hunk.totalSize || (second) > hunk.totalSize - (first))
+#define HUNK_USAGE_EXCEEDS_TOTAL(first, second) \
+    ((first) > hunk.totalSize || (second) > hunk.totalSize - (first))
 
 /* NOT_FROM_ORIGINAL_SOURCE: overflow-safe spelling of the allocator's
  * power-of-two alignment operation. */
-static qboolean coduo_compat_hunk_align_up(size_t value, size_t alignment, size_t limit, size_t *alignedOut)
+static qboolean coduo_compat_hunk_align_up(size_t value, size_t alignment,
+                                           size_t limit, size_t *alignedOut)
 {
     if (alignment == 0 || (alignment & (alignment - 1u)) != 0 || value > limit)
         return qfalse;
@@ -55,18 +57,19 @@ void *Hunk_AllocAlignInternal(size_t size, size_t alignment)
     uint8_t *allocation;
 
     if (hunk_data == NULL) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Hunk_AllocAlign: Hunk memory system not initialized");
+        Com_Error(
+            ERR_FATAL,
+            "\x15" "Hunk_AllocAlign: Hunk memory system not initialized");
     }
 
-    if (hunk.highUsed > hunk.totalSize || size > hunk.totalSize - hunk.highUsed ||
-        coduo_compat_hunk_align_up(hunk.highUsed + size, alignment, hunk.totalSize, &newHighUsed) == qfalse ||
+    if (hunk.highUsed > hunk.totalSize ||
+        size > hunk.totalSize - hunk.highUsed ||
+        coduo_compat_hunk_align_up(hunk.highUsed + size, alignment,
+                                   hunk.totalSize, &newHighUsed) == qfalse ||
         HUNK_USAGE_EXCEEDS_TOTAL(newHighUsed, hunk.lowTemp)) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_AllocAlign failed on %i",
-                  (int32_t)size);
+                  "\x15" "Hunk_AllocAlign failed on %i", (int32_t)size);
         return NULL;
     }
 
@@ -84,13 +87,15 @@ void *Hunk_AllocateTempMemoryHighInternal(size_t size)
 {
     size_t newHighTemp;
 
-    if (hunk.highTemp > hunk.totalSize || size > hunk.totalSize - hunk.highTemp ||
-        coduo_compat_hunk_align_up(hunk.highTemp + size, HUNK_TEMP_ALIGNMENT, hunk.totalSize, &newHighTemp) == qfalse ||
+    if (hunk.highTemp > hunk.totalSize ||
+        size > hunk.totalSize - hunk.highTemp ||
+        coduo_compat_hunk_align_up(hunk.highTemp + size,
+                                   HUNK_TEMP_ALIGNMENT, hunk.totalSize,
+                                   &newHighTemp) == qfalse ||
         HUNK_USAGE_EXCEEDS_TOTAL(newHighTemp, hunk.lowTemp)) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_AllocateTempMemoryHigh: failed on %i",
+                  "\x15" "Hunk_AllocateTempMemoryHigh: failed on %i",
                   (int32_t)size);
         return NULL;
     }
@@ -119,13 +124,12 @@ void *Hunk_AllocLowAlignInternal(size_t size, size_t alignment)
     size_t newLowUsed;
     uint8_t *allocation;
 
-    if (coduo_compat_hunk_align_up(hunk.lowUsed, alignment, hunk.totalSize, &alignedLowUsed) == qfalse ||
+    if (coduo_compat_hunk_align_up(hunk.lowUsed, alignment, hunk.totalSize,
+                                   &alignedLowUsed) == qfalse ||
         size > hunk.totalSize - alignedLowUsed) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_AllocLowAlign failed on %i",
-                  (int32_t)size);
+                  "\x15" "Hunk_AllocLowAlign failed on %i", (int32_t)size);
         return NULL;
     }
 
@@ -133,9 +137,7 @@ void *Hunk_AllocLowAlignInternal(size_t size, size_t alignment)
     if (HUNK_USAGE_EXCEEDS_TOTAL(hunk.highTemp, newLowUsed)) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_AllocLowAlign failed on %i",
-                  (int32_t)size);
+                  "\x15" "Hunk_AllocLowAlign failed on %i", (int32_t)size);
         return NULL;
     }
 
@@ -192,12 +194,13 @@ void *Hunk_AllocateTempMemoryInternal(size_t size)
     }
 
     oldLowTemp = hunk.lowTemp;
-    if (coduo_compat_hunk_align_up(oldLowTemp, HUNK_TEMP_ALIGNMENT, hunk.totalSize, &alignedLowTemp) == qfalse ||
-        sizeof(*header) > hunk.totalSize - alignedLowTemp || size > hunk.totalSize - alignedLowTemp - sizeof(*header)) {
+    if (coduo_compat_hunk_align_up(oldLowTemp, HUNK_TEMP_ALIGNMENT,
+                                   hunk.totalSize, &alignedLowTemp) == qfalse ||
+        sizeof(*header) > hunk.totalSize - alignedLowTemp ||
+        size > hunk.totalSize - alignedLowTemp - sizeof(*header)) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_AllocateTempMemory: failed on %i",
+                  "\x15" "Hunk_AllocateTempMemory: failed on %i",
                   (int32_t)size);
         return NULL;
     }
@@ -207,9 +210,9 @@ void *Hunk_AllocateTempMemoryInternal(size_t size)
     if (HUNK_USAGE_EXCEEDS_TOTAL(hunk.highTemp, newLowTemp)) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_AllocateTempMemory: failed on %i, needs %i",
-                  (int32_t)allocationBytes, (int32_t)(hunk.highTemp - (hunk.totalSize - newLowTemp)));
+                  "\x15" "Hunk_AllocateTempMemory: failed on %i, needs %i",
+                  (int32_t)allocationBytes,
+                  (int32_t)(hunk.highTemp - (hunk.totalSize - newLowTemp)));
         return NULL;
     }
 
@@ -223,11 +226,11 @@ void *Hunk_AllocateTempMemoryInternal(size_t size)
 /* CoDUOMP.exe 0x00435fc0; coduo_lnxded 0x0806c6d0. */
 void *Hunk_ReallocateTempMemory(size_t size)
 {
-    if (hunk.lowUsed > hunk.totalSize || size > hunk.totalSize - hunk.lowUsed) {
+    if (hunk.lowUsed > hunk.totalSize ||
+        size > hunk.totalSize - hunk.lowUsed) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_ReallocateTempMemory: failed on %i",
+                  "\x15" "Hunk_ReallocateTempMemory: failed on %i",
                   (int32_t)size);
         return NULL;
     }
@@ -236,8 +239,7 @@ void *Hunk_ReallocateTempMemory(size_t size)
     if (HUNK_USAGE_EXCEEDS_TOTAL(hunk.highTemp, newLowTemp)) {
         Com_Meminfo_f();
         Com_Error(ERR_DROP,
-                  "\x15"
-                  "Hunk_ReallocateTempMemory: failed on %i",
+                  "\x15" "Hunk_ReallocateTempMemory: failed on %i",
                   (int32_t)size);
         return NULL;
     }
@@ -269,8 +271,8 @@ void Hunk_FreeTempMemory(void *memory)
 
     header = (hunk_temp_header_t *)memory - 1;
     if (header->magic != HUNK_TEMP_MAGIC) {
-        Com_Error(ERR_FATAL, "\x15"
-                             "Hunk_FreeTempMemory: bad magic");
+        Com_Error(ERR_FATAL,
+                  "\x15" "Hunk_FreeTempMemory: bad magic");
     }
 
     header->magic = HUNK_TEMP_FREED_MAGIC;

@@ -74,12 +74,15 @@ enum {
 #define SYS_OUT_OF_MEMORY_EXIT_STATUS -1
 
 #ifndef CODUO_ENGINE_HOST_LONG_DOUBLE_IS_X87
-#define CODUO_ENGINE_HOST_LONG_DOUBLE_IS_X87 (LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384)
+#define CODUO_ENGINE_HOST_LONG_DOUBLE_IS_X87 \
+    (LDBL_MANT_DIG == 64 && LDBL_MAX_EXP == 16384)
 #endif
 
 #ifndef CODUO_ENGINE_HAS_X87_INLINE_ASM
-#if (defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(__x86_64__)) && \
-    CODUO_ENGINE_HOST_LONG_DOUBLE_IS_X87 && (defined(__GNUC__) || defined(__clang__))
+#if (defined(__i386__) || defined(__i486__) || defined(__i586__) || \
+     defined(__i686__) || defined(__x86_64__)) && \
+    CODUO_ENGINE_HOST_LONG_DOUBLE_IS_X87 && \
+    (defined(__GNUC__) || defined(__clang__))
 #define CODUO_ENGINE_HAS_X87_INLINE_ASM 1
 #else
 #define CODUO_ENGINE_HAS_X87_INLINE_ASM 0
@@ -121,7 +124,8 @@ extern uint16_t sys_snapVectorFpuControlWord;
 extern coduo_terminal_state_t sys_ttyOriginalTermios;
 extern int32_t sys_ttyEraseChar;
 extern int32_t sys_ttyEofChar;
-extern int32_t sys_ttyOutputSuppressionDepth;
+extern int32_t
+    sys_ttyOutputSuppressionDepth;
 extern int32_t sys_ttyHistoryCursor;
 extern int32_t sys_ttyHistoryCount;
 extern char sys_ttyInputReturnBuffer[SYS_TTY_INPUT_RETURN_BUFFER_SIZE];
@@ -137,18 +141,27 @@ void PB_Print(const char *message, int32_t limit);
 void PB_StartServer(void);
 void PB_RunServerFrame(void);
 void Cbuf_ExecuteText(cbufExec_t exec_when, const char *text);
-cvar_t *Cvar_Get(const char *name, const char *value, uint32_t flags);
+cvar_t *Cvar_Get(const char *name, const char *value,
+                              uint32_t flags);
 void Cvar_Set(const char *name, const char *value);
 const char *Cvar_VariableString(const char *name);
-void CL_ConsolePrint(int32_t channel, const char *message, int32_t arg2, int32_t arg3);
+void CL_ConsolePrint(int32_t channel, const char *message,
+                     int32_t arg2, int32_t arg3);
 void CL_MapLoading(void);
 qboolean CL_CDKeyValidate(const char *cdkey, const char *hash);
 void CL_Frame(int32_t rawMsec, int32_t scaledMsec);
-void CL_MouseEvent(int32_t value, int32_t value2, int32_t time);
-void CL_PacketEvent(netadr_t from, msg_t *msg, int32_t time);
+void CL_MouseEvent(int32_t value,
+                   int32_t value2,
+                   int32_t time);
+void CL_PacketEvent(netadr_t from, msg_t *msg,
+                    int32_t time);
 void CL_CharEvent(int32_t value);
-void CL_KeyEvent(int32_t value, int32_t value2, int32_t time);
-void CL_JoystickEvent(int32_t value, int32_t value2, int32_t time);
+void CL_KeyEvent(int32_t value,
+                 int32_t value2,
+                 int32_t time);
+void CL_JoystickEvent(int32_t value,
+                      int32_t value2,
+                      int32_t time);
 void Key_WriteBindings(int32_t handle);
 void Sys_Print(const char *message);
 qboolean FS_Initialized(void);
@@ -157,7 +170,8 @@ int32_t FS_FOpenTextFileWrite(const char *qpath);
 void FS_ForceFlush(int32_t handle);
 int32_t FS_LoadStack(void);
 int32_t FS_Read(void *buffer, int32_t length, int32_t handle);
-int32_t FS_Write(const void *buffer, int32_t length, int32_t handle);
+int32_t FS_Write(const void *buffer, int32_t length,
+                 int32_t handle);
 int32_t FS_Seek(int32_t handle, int32_t offset, int32_t origin);
 void Cmd_Shutdown(void);
 void Cvar_Shutdown(void);
@@ -223,8 +237,11 @@ qboolean Sys_ConfigureChecksumChanged(int32_t checksum);
 qboolean Sys_GetPacket(netadr_t *from, msg_t *msg);
 qboolean Sys_IsLANAddress(netadr_t adr);
 qboolean Sys_StringToAdr(const char *text, netadr_t *adr);
-void Sys_SendPacket(int32_t length, const void *data, netadr_t to);
-void Sys_SendPacketByName(const char *address, uint16_t port, const void *data, int32_t length);
+void Sys_SendPacket(int32_t length,
+                    const void *data,
+                    netadr_t to);
+void Sys_SendPacketByName(const char *address, uint16_t port,
+                          const void *data, int32_t length);
 void NET_Sleep(int32_t msec);
 sysEvent_t Sys_GetEvent(void);
 void *Com_ZoneDebugAlloc(size_t size);
@@ -242,6 +259,7 @@ int32_t Sys_Stat(const char *path, struct stat *statbuf);
 void Sys_Exit(int status);
 void Sys_Quit(void);
 void NET_Init(void);
-void MSG_Init(msg_t *msg, uint8_t *data, int32_t length);
+void MSG_Init(msg_t *msg, uint8_t *data,
+              int32_t length);
 
 #endif

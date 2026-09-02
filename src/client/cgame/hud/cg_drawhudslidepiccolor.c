@@ -68,22 +68,39 @@
 // CoD source symbol unproven (same-module PPC bank exposes no matching entry at this
 // address); role name used with an uncertainty note.
 
-void CG_DrawHudSlidePicColor(const rectDef_t *rect, qhandle_t hShader, const float *color)
+void CG_DrawHudSlidePicColor(const rectDef_t *rect, qhandle_t hShader,
+                             const float *color)
 {
     /* Constants from .rdata (natural-form): -25.0 (0x3007be9c), 25.0 (0x3007be98),
      * 345.0 (0x3007be94), 160.0 (0x3007be90), 1.0 (0x3007bce0). */
-    const float x = (float)(((((long double)rect->x - (-25.0L)) * (long double)cg_hudCompassSize_vmCvar.value) - 25.0L) *
+    const float x = (float)(((((long double)rect->x - (-25.0L)) *
+                              (long double)cg_hudCompassSize_vmCvar.value) -
+                             25.0L) * (long double)cgs_screenXScale);
+    const long double yAnchor =
+        (((long double)rect->y - 345.0L) *
+         (long double)cg_hudCompassSize_vmCvar.value) + 345.0L;
+    const long double ySlide =
+        ((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 160.0L;
+    const float y = (float)((yAnchor - ySlide) *
+                            (long double)cgs_screenYScale);
+    const float w = (float)((long double)cg_hudCompassSize_vmCvar.value *
+                            (long double)rect->w *
                             (long double)cgs_screenXScale);
-    const long double yAnchor = (((long double)rect->y - 345.0L) * (long double)cg_hudCompassSize_vmCvar.value) + 345.0L;
-    const long double ySlide = ((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 160.0L;
-    const float y = (float)((yAnchor - ySlide) * (long double)cgs_screenYScale);
-    const float w = (float)((long double)cg_hudCompassSize_vmCvar.value * (long double)rect->w * (long double)cgs_screenXScale);
-    const float h = (float)((long double)cg_hudCompassSize_vmCvar.value * (long double)rect->h * (long double)cgs_screenYScale);
+    const float h = (float)((long double)cg_hudCompassSize_vmCvar.value *
+                            (long double)rect->h *
+                            (long double)cgs_screenYScale);
 
     trap_R_SetColor(color);
 
-    trap_R_DrawStretchPic(CG_FloatBits(x), CG_FloatBits(y), CG_FloatBits(w), CG_FloatBits(h), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                          CG_FloatBits(1.0f), CG_FloatBits(1.0f), hShader);
+    trap_R_DrawStretchPic(CG_FloatBits(x),
+                          CG_FloatBits(y),
+                          CG_FloatBits(w),
+                          CG_FloatBits(h),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f),
+                          CG_FloatBits(1.0f),
+                          CG_FloatBits(1.0f),
+                          hShader);
 
     trap_R_SetColor(NULL);
 }

@@ -69,9 +69,9 @@ typedef struct shellshock_s shellshock_t;
  */
 enum {
     FLAME_CHUNK_COUNT = 0x2000,   /* 8192 pool nodes */
-    FLAME_CHUNK_SIZE = 0x150,    /* 336 bytes per flameChunk_t */
-    FLAME_INFO_COUNT = 1024,     /* per-owner flame-info elements */
-    FLAME_INFO_SIZE = 0xb8      /* 184 bytes per element */
+    FLAME_CHUNK_SIZE  = 0x150,    /* 336 bytes per flameChunk_t */
+    FLAME_INFO_COUNT  = 1024,     /* per-owner flame-info elements */
+    FLAME_INFO_SIZE   = 0xb8      /* 184 bytes per element */
 };
 
 /*
@@ -84,8 +84,8 @@ enum {
  *     TEAMCHAT_WIDTH-1.
  */
 enum {
-    TEAMCHAT_HEIGHT = 8,
-    TEAMCHAT_WIDTH = 90,
+    TEAMCHAT_HEIGHT     = 8,
+    TEAMCHAT_WIDTH      = 90,
     TEAMCHAT_LINE_BYTES = TEAMCHAT_WIDTH * 3 + 1   /* 271 = stride 0x10f */
 };
 
@@ -107,9 +107,7 @@ int hudElemSortCompare(const void *a, const void *b);
 
 /* LAG_SAMPLES — the lagometer ring capacity (a power of two). Proven from the
  * ring index being masked with 0x7f before every access (& (LAG_SAMPLES-1)). */
-enum {
-    LAG_SAMPLES = 128
-};
+enum { LAG_SAMPLES = 128 };
 
 /* lagometer_t — the cgame network-lag graph ring, based at 0x305380a4. Only the
  * snapshot-side tail is modelled here, since that is all the reconstructed
@@ -128,12 +126,13 @@ typedef union lagometerSnapshotFlags_u {
     int32_t word;                         /* producer dword store */
     uint8_t bytes[sizeof(int32_t)];        /* consumer byte test */
 } lagometerSnapshotFlags_t;
-_Static_assert(sizeof(lagometerSnapshotFlags_t) == 4, "lagometer snapshot flag entry is one dword");
+_Static_assert(sizeof(lagometerSnapshotFlags_t) == 4,
+               "lagometer snapshot flag entry is one dword");
 
 typedef struct lagometer_s {
     lagometerSnapshotFlags_t snapshotFlags[LAG_SAMPLES]; /* +0x000 (0x305380a4): dword entries; byte[0] bit 0x1 tested by draw */
     int32_t snapshotSamples[LAG_SAMPLES]; /* +0x200 (0x305382a4): per-snapshot latency sample; -1 marks a dropped snapshot */
-    int32_t snapshotCount; /* +0x400 (0x305384a4): running count; index = snapshotCount & (LAG_SAMPLES-1) */
+    int32_t snapshotCount;                /* +0x400 (0x305384a4): running count; index = snapshotCount & (LAG_SAMPLES-1) */
 } lagometer_t;
 _Static_assert(offsetof(lagometer_t, snapshotSamples) == 0x200, "lagometer snapshotSamples at +0x200");
 _Static_assert(offsetof(lagometer_t, snapshotCount) == 0x400, "lagometer snapshotCount at +0x400");
@@ -208,18 +207,18 @@ _Static_assert(sizeof(menuDef_t) == 0x810, "menuDef_t is exactly 0x810 bytes");
 
 /* Static animation-script token tables. Names and contents match game_mp_uo;
  * addresses and NULL/-1 sentinels are verified against the client DLL. */
-extern bg_indexed_string_t animStateStr[]; /* 0x30082054 */
-extern bg_indexed_string_t bgAnimGroupStrings[]; /* 0x30082080 */
-extern bg_indexed_string_t bgAnimEventStrings[]; /* 0x30082118 */
-extern bg_indexed_string_t animBodyPartsStr[]; /* 0x300821a0 */
-extern bg_indexed_string_t animMountedStr[]; /* 0x300821f8 */
-extern bg_indexed_string_t animVehicleMotionStr[]; /* 0x30082240 */
-extern bg_indexed_string_t animVehicleStr[]; /* 0x30082268 */
-extern bg_indexed_string_t animWeaponClassStr[]; /* 0x30082290 */
-extern bg_indexed_string_t animWeaponPositionStr[]; /* 0x300822f0 */
-extern bg_indexed_string_t animStrafeStateStr[]; /* 0x30082308 */
-extern bg_indexed_string_t bgAnimConditionTypeStrings[]; /* 0x30082328 */
-extern bg_indexed_string_t bgAnimParseSectionStrings[]; /* 0x300823f8 */
+extern bg_indexed_string_t animStateStr[];                /* 0x30082054 */
+extern bg_indexed_string_t bgAnimGroupStrings[];          /* 0x30082080 */
+extern bg_indexed_string_t bgAnimEventStrings[];          /* 0x30082118 */
+extern bg_indexed_string_t animBodyPartsStr[];             /* 0x300821a0 */
+extern bg_indexed_string_t animMountedStr[];               /* 0x300821f8 */
+extern bg_indexed_string_t animVehicleMotionStr[];         /* 0x30082240 */
+extern bg_indexed_string_t animVehicleStr[];               /* 0x30082268 */
+extern bg_indexed_string_t animWeaponClassStr[];           /* 0x30082290 */
+extern bg_indexed_string_t animWeaponPositionStr[];        /* 0x300822f0 */
+extern bg_indexed_string_t animStrafeStateStr[];           /* 0x30082308 */
+extern bg_indexed_string_t bgAnimConditionTypeStrings[];   /* 0x30082328 */
+extern bg_indexed_string_t bgAnimParseSectionStrings[];    /* 0x300823f8 */
 
 /* The ABI-gap audit proved pm->ps is playerState_t: cg_pmove assigns
  * it &cg_predictedPlayerState, and the movement accesses match the shared server
@@ -288,47 +287,84 @@ extern bg_indexed_string_t bgAnimParseSectionStrings[]; /* 0x300823f8 */
  * source-level trap expression constructs the same command/argument vector
  * consumed by CL_CgameSystemCalls. */
 #if UINTPTR_MAX == UINT32_MAX
-typedef intptr_t(CGAME_ABI_CDECL *cgame_syscall_t)(intptr_t command, ...);
+typedef intptr_t (CGAME_ABI_CDECL *cgame_syscall_t)(intptr_t command, ...);
 #else
 typedef intptr_t (*cgame_syscall_t)(intptr_t *arguments);
 
-#define CGAME_NATIVE_SYSCALL_1(a0) cgame_syscall_vector((intptr_t[]){(intptr_t)(a0)})
-#define CGAME_NATIVE_SYSCALL_2(a0, a1) cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1)})
-#define CGAME_NATIVE_SYSCALL_3(a0, a1, a2) cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2)})
+#define CGAME_NATIVE_SYSCALL_1(a0) \
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0)})
+#define CGAME_NATIVE_SYSCALL_2(a0, a1) \
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1)})
+#define CGAME_NATIVE_SYSCALL_3(a0, a1, a2) \
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2)})
 #define CGAME_NATIVE_SYSCALL_4(a0, a1, a2, a3) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3)})
 #define CGAME_NATIVE_SYSCALL_5(a0, a1, a2, a3, a4) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4)})
 #define CGAME_NATIVE_SYSCALL_6(a0, a1, a2, a3, a4, a5) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5)})
 #define CGAME_NATIVE_SYSCALL_7(a0, a1, a2, a3, a4, a5, a6) \
-    cgame_syscall_vector( \
-        (intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), (intptr_t)(a6)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
+                                      (intptr_t)(a6)})
 #define CGAME_NATIVE_SYSCALL_8(a0, a1, a2, a3, a4, a5, a6, a7) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), \
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
                                       (intptr_t)(a6), (intptr_t)(a7)})
 #define CGAME_NATIVE_SYSCALL_9(a0, a1, a2, a3, a4, a5, a6, a7, a8) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), \
-                                      (intptr_t)(a6), (intptr_t)(a7), (intptr_t)(a8)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
+                                      (intptr_t)(a6), (intptr_t)(a7), \
+                                      (intptr_t)(a8)})
 #define CGAME_NATIVE_SYSCALL_10(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), \
-                                      (intptr_t)(a6), (intptr_t)(a7), (intptr_t)(a8), (intptr_t)(a9)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
+                                      (intptr_t)(a6), (intptr_t)(a7), \
+                                      (intptr_t)(a8), (intptr_t)(a9)})
 #define CGAME_NATIVE_SYSCALL_11(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), \
-                                      (intptr_t)(a6), (intptr_t)(a7), (intptr_t)(a8), (intptr_t)(a9), (intptr_t)(a10)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
+                                      (intptr_t)(a6), (intptr_t)(a7), \
+                                      (intptr_t)(a8), (intptr_t)(a9), \
+                                      (intptr_t)(a10)})
 #define CGAME_NATIVE_SYSCALL_12(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), \
-                                      (intptr_t)(a6), (intptr_t)(a7), (intptr_t)(a8), (intptr_t)(a9), (intptr_t)(a10), (intptr_t)(a11)})
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
+                                      (intptr_t)(a6), (intptr_t)(a7), \
+                                      (intptr_t)(a8), (intptr_t)(a9), \
+                                      (intptr_t)(a10), (intptr_t)(a11)})
 #define CGAME_NATIVE_SYSCALL_13(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12) \
-    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), (intptr_t)(a2), (intptr_t)(a3), (intptr_t)(a4), (intptr_t)(a5), \
-                                      (intptr_t)(a6), (intptr_t)(a7), (intptr_t)(a8), (intptr_t)(a9), (intptr_t)(a10), (intptr_t)(a11), \
+    cgame_syscall_vector((intptr_t[]){(intptr_t)(a0), (intptr_t)(a1), \
+                                      (intptr_t)(a2), (intptr_t)(a3), \
+                                      (intptr_t)(a4), (intptr_t)(a5), \
+                                      (intptr_t)(a6), (intptr_t)(a7), \
+                                      (intptr_t)(a8), (intptr_t)(a9), \
+                                      (intptr_t)(a10), (intptr_t)(a11), \
                                       (intptr_t)(a12)})
-#define CGAME_NATIVE_SYSCALL_SELECT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, name, ...) name
+#define CGAME_NATIVE_SYSCALL_SELECT( \
+    _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, name, ...) \
+    name
 #define cgame_syscall(...) \
-    CGAME_NATIVE_SYSCALL_SELECT(__VA_ARGS__, CGAME_NATIVE_SYSCALL_13, CGAME_NATIVE_SYSCALL_12, CGAME_NATIVE_SYSCALL_11, \
-                                CGAME_NATIVE_SYSCALL_10, CGAME_NATIVE_SYSCALL_9, CGAME_NATIVE_SYSCALL_8, CGAME_NATIVE_SYSCALL_7, \
-                                CGAME_NATIVE_SYSCALL_6, CGAME_NATIVE_SYSCALL_5, CGAME_NATIVE_SYSCALL_4, CGAME_NATIVE_SYSCALL_3, \
-                                CGAME_NATIVE_SYSCALL_2, CGAME_NATIVE_SYSCALL_1)(__VA_ARGS__)
+    CGAME_NATIVE_SYSCALL_SELECT( \
+        __VA_ARGS__, CGAME_NATIVE_SYSCALL_13, CGAME_NATIVE_SYSCALL_12, \
+        CGAME_NATIVE_SYSCALL_11, CGAME_NATIVE_SYSCALL_10, \
+        CGAME_NATIVE_SYSCALL_9, CGAME_NATIVE_SYSCALL_8, \
+        CGAME_NATIVE_SYSCALL_7, CGAME_NATIVE_SYSCALL_6, \
+        CGAME_NATIVE_SYSCALL_5, CGAME_NATIVE_SYSCALL_4, \
+        CGAME_NATIVE_SYSCALL_3, CGAME_NATIVE_SYSCALL_2, \
+        CGAME_NATIVE_SYSCALL_1)(__VA_ARGS__)
 #endif
 
 /* Anim-tree memory allocator callback handed to Scr_PrecacheAnimTrees
@@ -341,11 +377,14 @@ typedef void *(CGAME_ABI_CDECL *scr_anim_tree_alloc_t)(size_t size);
 /* Script callback types shared by the five-function cgame->engine export table.
  * The exact roles and order are proved by the matching cgame_mp Mac symbols and
  * by the server/engine Scr_FarHook interface. */
-typedef void(CGAME_ABI_CDECL *scr_function_callback_t)(void);
-typedef void(CGAME_ABI_CDECL *scr_method_callback_t)(uint32_t scriptObject);
-typedef scr_function_callback_t(CGAME_ABI_CDECL *scr_get_function_callback_t)(const char **name, int32_t *developerOnly);
-typedef scr_method_callback_t(CGAME_ABI_CDECL *scr_get_method_callback_t)(const char **name, int32_t *developerOnly);
-typedef void(CGAME_ABI_CDECL *scr_object_field_callback_t)(int32_t classNum, int32_t objectNum, int32_t fieldIndex);
+typedef void (CGAME_ABI_CDECL *scr_function_callback_t)(void);
+typedef void (CGAME_ABI_CDECL *scr_method_callback_t)(uint32_t scriptObject);
+typedef scr_function_callback_t (CGAME_ABI_CDECL *scr_get_function_callback_t)(
+    const char **name, int32_t *developerOnly);
+typedef scr_method_callback_t (CGAME_ABI_CDECL *scr_get_method_callback_t)(
+    const char **name, int32_t *developerOnly);
+typedef void (CGAME_ABI_CDECL *scr_object_field_callback_t)(
+    int32_t classNum, int32_t objectNum, int32_t fieldIndex);
 typedef void *(CGAME_ABI_CDECL *scr_load_read_callback_t)(uint32_t size);
 
 typedef struct cg_scriptExportTable_s {
@@ -359,12 +398,15 @@ typedef struct cg_scriptExportTable_s {
 /* One native function-pointer cell in the script import ABI. A member using this
  * carrier has a proven slot and role but is not called by maintained cgame source,
  * so its full prototype is intentionally not asserted here. */
-typedef void(CGAME_ABI_CDECL *cg_engineImportGeneric_t)(void);
-typedef void(CGAME_ABI_CDECL *cg_script_load_marker_t)(void);
-typedef void(CGAME_ABI_CDECL *cg_script_precache_anim_trees_t)(scr_anim_tree_alloc_t alloc);
-typedef XAnim *(CGAME_ABI_CDECL *cg_script_find_anim_tree_t)(const char *name);
-typedef void(CGAME_ABI_CDECL *cg_script_find_anim_t)(const char *treeName, const char *animName, scr_anim_t *outAnim);
-typedef uint32_t(CGAME_ABI_CDECL *cg_script_get_anims_index_t)(XAnim *anims);
+typedef void (CGAME_ABI_CDECL *cg_engineImportGeneric_t)(void);
+typedef void (CGAME_ABI_CDECL *cg_script_load_marker_t)(void);
+typedef void (CGAME_ABI_CDECL *cg_script_precache_anim_trees_t)(
+    scr_anim_tree_alloc_t alloc);
+typedef XAnim *(CGAME_ABI_CDECL *cg_script_find_anim_tree_t)(
+    const char *name);
+typedef void (CGAME_ABI_CDECL *cg_script_find_anim_t)(
+    const char *treeName, const char *animName, scr_anim_t *outAnim);
+typedef uint32_t (CGAME_ABI_CDECL *cg_script_get_anims_index_t)(XAnim *anims);
 
 /* Native-pointer view of the complete 102-entry script import table copied by
  * Scr_FarHook. Slot names and order come from the independently recovered engine
@@ -372,7 +414,7 @@ typedef uint32_t(CGAME_ABI_CDECL *cg_script_get_anims_index_t)(XAnim *anims);
  * other named members use cg_engineImportGeneric_t only as an ABI-width carrier.
  * Slots 54, 55, 75, and 78 are genuine unwritten holes in the engine table. */
 typedef struct cg_scriptImportTable_s {
-    cg_engineImportGeneric_t getBool; /* slot 0 */
+    cg_engineImportGeneric_t getBool;                         /* slot 0 */
     cg_engineImportGeneric_t getInt;
     cg_engineImportGeneric_t getAnim;
     cg_engineImportGeneric_t getAnimTree;
@@ -403,11 +445,11 @@ typedef struct cg_scriptImportTable_s {
     cg_engineImportGeneric_t addArray;
     cg_engineImportGeneric_t addArrayStringIndexed;
     cg_engineImportGeneric_t makeArray;
-    cg_engineImportGeneric_t beginLoadScripts; /* slot 31 */
-    cg_script_load_marker_t beginLoadAnimTrees; /* slot 32 */
+    cg_engineImportGeneric_t beginLoadScripts;                 /* slot 31 */
+    cg_script_load_marker_t beginLoadAnimTrees;                /* slot 32 */
     cg_engineImportGeneric_t endLoadScripts;
-    cg_script_load_marker_t endLoadAnimTrees; /* slot 34 */
-    cg_script_precache_anim_trees_t precacheAnimTrees; /* slot 35 */
+    cg_script_load_marker_t endLoadAnimTrees;                  /* slot 34 */
+    cg_script_precache_anim_trees_t precacheAnimTrees;         /* slot 35 */
     cg_engineImportGeneric_t freeScripts;
     cg_engineImportGeneric_t freeGameVariable;
     cg_engineImportGeneric_t shutdownSystem;
@@ -452,8 +494,8 @@ typedef struct cg_scriptImportTable_s {
     cg_engineImportGeneric_t loadShutdown;
     cg_engineImportGeneric_t unusedSlot78;
     cg_engineImportGeneric_t loadScript;
-    cg_script_find_anim_tree_t findAnimTree; /* slot 80 */
-    cg_script_find_anim_t findAnim; /* slot 81 */
+    cg_script_find_anim_tree_t findAnimTree;                    /* slot 80 */
+    cg_script_find_anim_t findAnim;                             /* slot 81 */
     cg_engineImportGeneric_t getFunctionHandle;
     cg_engineImportGeneric_t freeThread;
     cg_engineImportGeneric_t convertThreadToSave;
@@ -470,23 +512,29 @@ typedef struct cg_scriptImportTable_s {
     cg_engineImportGeneric_t setTime;
     cg_engineImportGeneric_t runCurrentThreads;
     cg_engineImportGeneric_t resetTimeout;
-    cg_script_get_anims_index_t getAnimsIndex; /* slot 98 */
+    cg_script_get_anims_index_t getAnimsIndex;                  /* slot 98 */
     cg_engineImportGeneric_t getAnims;
     cg_engineImportGeneric_t mtAlloc;
-    cg_engineImportGeneric_t mtFree; /* slot 101 */
+    cg_engineImportGeneric_t mtFree;                            /* slot 101 */
 } cg_scriptImportTable_t;
 
-_Static_assert(sizeof(cg_scriptImportTable_t) == 102 * sizeof(cg_engineImportGeneric_t),
+_Static_assert(sizeof(cg_scriptImportTable_t) ==
+                   102 * sizeof(cg_engineImportGeneric_t),
                "script import table must contain 102 function pointers");
-_Static_assert(offsetof(cg_scriptImportTable_t, beginLoadAnimTrees) == 32 * sizeof(cg_engineImportGeneric_t),
+_Static_assert(offsetof(cg_scriptImportTable_t, beginLoadAnimTrees) ==
+                   32 * sizeof(cg_engineImportGeneric_t),
                "beginLoadAnimTrees must remain script import slot 32");
-_Static_assert(offsetof(cg_scriptImportTable_t, findAnimTree) == 80 * sizeof(cg_engineImportGeneric_t),
+_Static_assert(offsetof(cg_scriptImportTable_t, findAnimTree) ==
+                   80 * sizeof(cg_engineImportGeneric_t),
                "findAnimTree must remain script import slot 80");
-_Static_assert(offsetof(cg_scriptImportTable_t, getAnimsIndex) == 98 * sizeof(cg_engineImportGeneric_t),
+_Static_assert(offsetof(cg_scriptImportTable_t, getAnimsIndex) ==
+                   98 * sizeof(cg_engineImportGeneric_t),
                "getAnimsIndex must remain script import slot 98");
-_Static_assert(offsetof(cg_scriptImportTable_t, unusedSlot54) == 54 * sizeof(cg_engineImportGeneric_t),
+_Static_assert(offsetof(cg_scriptImportTable_t, unusedSlot54) ==
+                   54 * sizeof(cg_engineImportGeneric_t),
                "unused script import slot 54 moved");
-_Static_assert(offsetof(cg_scriptImportTable_t, unusedSlot78) == 78 * sizeof(cg_engineImportGeneric_t),
+_Static_assert(offsetof(cg_scriptImportTable_t, unusedSlot78) ==
+                   78 * sizeof(cg_engineImportGeneric_t),
                "unused script import slot 78 moved");
 
 /*
@@ -508,9 +556,7 @@ extern cgame_syscall_t cgame_syscall_vector;
  * consumers, only that each holds a NUL-terminated string. Exact source names
  * unresolved; named by their proven role as the trap-54 string arguments.
  */
-enum {
-    CG_HUD_STRING_BUFFER_SIZE = 256
-};
+enum { CG_HUD_STRING_BUFFER_SIZE = 256 };
 extern char cg_trapStringBufferA[CG_HUD_STRING_BUFFER_SIZE]; /* 0x30538600 */
 extern char cg_trapStringBufferB[CG_HUD_STRING_BUFFER_SIZE]; /* 0x30538700 */
 
@@ -541,41 +587,41 @@ extern const char cg_originTagName[11];
  * +0x04 with an 8-byte stride) and registered by the neighbor CG_InitConsoleCommands.
  */
 typedef struct consoleCommand_s {
-    const char *name; /* +0x00 */
+    const char *name;       /* +0x00 */
     void (*function)(void); /* +0x04 */
 } consoleCommand_t;
 extern const consoleCommand_t cg_consoleCommands[];
 
 /* Console-command handlers installed by cg_consoleCommands[]. */
 void CG_PrintViewOriginAndSpin_f(void); /* 0x300172d0 */
-void CG_ScoresDown_f(void); /* 0x30017330 */
-void CG_ScoresUp_f(void); /* 0x30017310 */
-void CG_SizeUp_f(void); /* 0x30017270 */
-void CG_SizeDown_f(void); /* 0x300172a0 */
-void CG_NextWeapon_f(void); /* 0x300474c0 */
-void CG_PrevWeapon_f(void); /* 0x30047550 */
-void CG_AltWeapon_f(void); /* 0x30047400 */
-void CG_WeaponSlot_f(void); /* 0x30047750 */
-void CG_Tcmd_f(void); /* 0x30017210 */
-void CG_LoadHud_f(void); /* 0x30017380 */
-void CG_Fade_f(void); /* 0x300173c0 */
-void CG_FxSetTestPosition(void); /* 0x3003f390 */
-void CG_FxTest(void); /* 0x3003f430 */
-void CG_FxRestart(void); /* 0x3003f400 */
-void CG_ShellShock_f(void); /* 0x300174b0 */
-void CG_ShellShock_Load_f(void); /* 0x30017590 */
-void CG_ShellShock_Save_f(void); /* 0x300175f0 */
-void CG_TellTarget_f(void); /* 0x30017660 */
-void CG_QuickMessage_f(void); /* 0x300176f0 */
-void CG_QuickMap_f(void); /* 0x30017750 */
-void CG_VoiceChat_f(void); /* 0x30017780 */
-void CG_TeamVoiceChat_f(void); /* 0x30017820 */
-void CG_OpenWMPurchase_f(void); /* 0x30017720 */
+void CG_ScoresDown_f(void);             /* 0x30017330 */
+void CG_ScoresUp_f(void);               /* 0x30017310 */
+void CG_SizeUp_f(void);                 /* 0x30017270 */
+void CG_SizeDown_f(void);               /* 0x300172a0 */
+void CG_NextWeapon_f(void);             /* 0x300474c0 */
+void CG_PrevWeapon_f(void);             /* 0x30047550 */
+void CG_AltWeapon_f(void);              /* 0x30047400 */
+void CG_WeaponSlot_f(void);             /* 0x30047750 */
+void CG_Tcmd_f(void);                   /* 0x30017210 */
+void CG_LoadHud_f(void);                /* 0x30017380 */
+void CG_Fade_f(void);                   /* 0x300173c0 */
+void CG_FxSetTestPosition(void);         /* 0x3003f390 */
+void CG_FxTest(void);             /* 0x3003f430 */
+void CG_FxRestart(void);          /* 0x3003f400 */
+void CG_ShellShock_f(void);           /* 0x300174b0 */
+void CG_ShellShock_Load_f(void);       /* 0x30017590 */
+void CG_ShellShock_Save_f(void);       /* 0x300175f0 */
+void CG_TellTarget_f(void);           /* 0x30017660 */
+void CG_QuickMessage_f(void);   /* 0x300176f0 */
+void CG_QuickMap_f(void);         /* 0x30017750 */
+void CG_VoiceChat_f(void);            /* 0x30017780 */
+void CG_TeamVoiceChat_f(void);        /* 0x30017820 */
+void CG_OpenWMPurchase_f(void);       /* 0x30017720 */
 /* CG_InitConsoleCommands (0x30017920): register every cgame console command with
  * the engine (trap CG_ADD_COMMAND). Walks cg_consoleCommands[] registering each
  * name, then registers a fixed list of server-forwarded command names so they show
  * up in the client console/autocomplete. Takes no args, returns nothing. */
-void CG_InitConsoleCommands(void); /* 0x30017920 */
+void CG_InitConsoleCommands(void);    /* 0x30017920 */
 /* 0x30071854 .rdata — cg_damageDirShaderParams: the static shader/texcoord parameter
  * block handed to the rotated-quad trap (CG_R_DRAW_ROTATED_QUAD via CG_DrawTurretTagQuad) by
  * CG_DrawDamageDirectionIndicators (0x3001aad5 PUSHes its address). Eight floats in .rdata:
@@ -635,9 +681,7 @@ extern const float cg_turretTagShaderParams[8];
  * machine indexes); supersedes the mechanical single-dword split. The mechanical
  * owner=g_damage / "different table" note was a wrong size-match guess.
  */
-enum {
-    CG_SCOREBOARD_VALUESELECT_COUNT = 5
-};
+enum { CG_SCOREBOARD_VALUESELECT_COUNT = 5 };
 
 /*
  * cgScoreboardColumn_t / cg_scoreboardColumns[5] (.rdata @ 0x30071a64) — the
@@ -656,16 +700,16 @@ enum {
  * .rdata table, not three unrelated constants.
  */
 typedef struct cgScoreboardColumn_s {
-    float widthFraction; /* +0x00 */
-    const char *headerRef; /* +0x04 */
-    int32_t mode; /* +0x08 */
-    uint32_t nextColumnValueSelect; /* +0x0c: selector for the following column */
+    float       widthFraction; /* +0x00 */
+    const char *headerRef;     /* +0x04 */
+    int32_t     mode;          /* +0x08 */
+    uint32_t    nextColumnValueSelect; /* +0x0c: selector for the following column */
 } cgScoreboardColumn_t;
 
 typedef struct cgScoreboardColumnPrefix_s {
-    float widthFraction;
+    float       widthFraction;
     const char *headerRef;
-    int32_t mode;
+    int32_t     mode;
 } cgScoreboardColumnPrefix_t;
 
 /* One physical .rdata object beginning four bytes before the column array. The
@@ -677,28 +721,32 @@ typedef struct cgScoreboardLayout_s {
     cgScoreboardColumnPrefix_t lastColumn;
 } cgScoreboardLayout_t;
 
-enum {
-    CG_SCOREBOARD_COLUMN_COUNT = 5
-}; /* loop runs ESI 0..0x40 step 0x10 */
+enum { CG_SCOREBOARD_COLUMN_COUNT = 5 }; /* loop runs ESI 0..0x40 step 0x10 */
 
 /* Draw mode selecting the trap-52 (measure/right-align) header path. */
-enum {
-    CG_SB_COLUMN_MODE_MEASURED = 2
-};
+enum { CG_SB_COLUMN_MODE_MEASURED = 2 };
 
 extern const cgScoreboardLayout_t cg_scoreboardLayout;
 #define CG_SCOREBOARD_COLUMN(index) \
-    ((index) < 4 ? &cg_scoreboardLayout.columns[(index)] : (const cgScoreboardColumn_t *)(const void *)&cg_scoreboardLayout.lastColumn)
+    ((index) < 4 ? &cg_scoreboardLayout.columns[(index)] \
+                 : (const cgScoreboardColumn_t *)(const void *)&cg_scoreboardLayout.lastColumn)
 #define CG_SCOREBOARD_VALUE_SELECT(index) \
-    ((index) == 0 ? cg_scoreboardLayout.leadingValueSelect : (int32_t)cg_scoreboardLayout.columns[(index) - 1].nextColumnValueSelect)
+    ((index) == 0 ? cg_scoreboardLayout.leadingValueSelect \
+                  : (int32_t)cg_scoreboardLayout.columns[(index) - 1].nextColumnValueSelect)
 
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-_Static_assert(offsetof(cgScoreboardColumn_t, widthFraction) == 0x00, "sb column widthFraction @ +0x00");
-_Static_assert(offsetof(cgScoreboardColumn_t, headerRef) == 0x04, "sb column headerRef @ +0x04");
-_Static_assert(offsetof(cgScoreboardColumn_t, mode) == 0x08, "sb column mode @ +0x08");
-_Static_assert(offsetof(cgScoreboardLayout_t, columns) == 0x04, "sb columns begin four bytes after selector lane");
-_Static_assert(offsetof(cgScoreboardLayout_t, lastColumn) == 0x44, "sb short final column begins at layout +0x44");
-_Static_assert(sizeof(cgScoreboardLayout_t) == 0x50, "sb physical layout ends before 0x30071ab0 float table");
+_Static_assert(offsetof(cgScoreboardColumn_t, widthFraction) == 0x00,
+               "sb column widthFraction @ +0x00");
+_Static_assert(offsetof(cgScoreboardColumn_t, headerRef) == 0x04,
+               "sb column headerRef @ +0x04");
+_Static_assert(offsetof(cgScoreboardColumn_t, mode) == 0x08,
+               "sb column mode @ +0x08");
+_Static_assert(offsetof(cgScoreboardLayout_t, columns) == 0x04,
+               "sb columns begin four bytes after selector lane");
+_Static_assert(offsetof(cgScoreboardLayout_t, lastColumn) == 0x44,
+               "sb short final column begins at layout +0x44");
+_Static_assert(sizeof(cgScoreboardLayout_t) == 0x50,
+               "sb physical layout ends before 0x30071ab0 float table");
 _Static_assert(sizeof(cgScoreboardColumn_t) == 0x10, "sb column stride 0x10");
 #endif
 /* 0x30071b18 .rdata: cg_shellshockRandomTable — a precomputed 2-D noise/direction
@@ -716,16 +764,17 @@ extern const float cg_shellshockRandomTable[CG_SHELLSHOCK_RANDOM_TABLE_ROWS][2];
 /* 0x30071f30..0x30071f57 .rdata refs=1 first=0x3003c0f3. Ten 1.0f
  * alias-channel targets consumed by MSS_FadeSelectSounds when shellshock ends.
  * vec3_origin starts at the distinct following address 0x30071f58. */
-extern const float cg_soundChannelFullVolumes[SND_ALIAS_CHANNEL_COUNT];
+extern const float
+    cg_soundChannelFullVolumes[SND_ALIAS_CHANNEL_COUNT];
 /* Read-only BG_CheckProneValid diagnostic colors. The raw .rdata bytes prove
  * four-float objects; the mechanical export had truncated each to one dword.
  * The client medium cyan is {0, 0.5, 0.5, 1}, which differs from the recovered
  * server binary's corresponding color. */
-extern const vec4_t bg_proneColorRed; /* 0x30071f74 */
-extern const vec4_t bg_proneColorGreen; /* 0x30071f84 */
-extern const vec4_t bg_proneColorYellow; /* 0x30071fb4 */
-extern const vec4_t bg_proneColorMagenta; /* 0x30071fe4 */
-extern const vec4_t bg_proneColorCyan; /* 0x30071ff4 */
+extern const vec4_t bg_proneColorRed;        /* 0x30071f74 */
+extern const vec4_t bg_proneColorGreen;      /* 0x30071f84 */
+extern const vec4_t bg_proneColorYellow;     /* 0x30071fb4 */
+extern const vec4_t bg_proneColorMagenta;    /* 0x30071fe4 */
+extern const vec4_t bg_proneColorCyan;       /* 0x30071ff4 */
 extern const vec4_t bg_proneColorMediumCyan; /* 0x30072014 */
 /* 0x30072034 .rdata refs=7 width=imm first=0x3000ccf6 owner=veh_findvaliddismountspot */
 extern const vec4_t cg_colorWhite;
@@ -1292,8 +1341,8 @@ extern int32_t cg_scoreboardLeadTeam;
  * (27 * 4 bytes) over the target table in CG_ShellShockLoad. Storage in globals.c.
  */
 #define CG_SHOCK_PARAM_COUNT 27
-extern const char *const cg_shockParamNames[CG_SHOCK_PARAM_COUNT]; /* 0x30085dc0 */
-extern vmCvar_t *const cg_shockParamTargets[CG_SHOCK_PARAM_COUNT]; /* 0x30085e30 */
+extern const char *const cg_shockParamNames[CG_SHOCK_PARAM_COUNT];   /* 0x30085dc0 */
+extern vmCvar_t *const cg_shockParamTargets[CG_SHOCK_PARAM_COUNT];   /* 0x30085e30 */
 /* 0x30085ea0 .data refs=3 width=imm first=0x3003f7bb owner=scr_vehicle_damagescale */
 extern uint32_t cg_vehicleDamageBoundsMinsBits[3];
 /* 0x30085eac .data refs=1 width=imm first=0x3003f7df owner=scr_vehicle_damagescale */
@@ -1333,7 +1382,8 @@ extern const float cg_muzzleEffectBoundsAndBias[7];
  * dwords = 0x580 bytes) and by BG_ANIM_MAX_CONDITIONS==11. The registration code
  * fills entries flat via [idx*8+0x3008bf38] (idx = c*16 + valueIndex).
  * Zero-initialized in .data. */
-extern bg_indexed_string_t bgAnimConditionAliases[BG_ANIM_MAX_CONDITIONS * BG_ANIM_CONDITION_VALUE_COUNT];
+extern bg_indexed_string_t
+    bgAnimConditionAliases[BG_ANIM_MAX_CONDITIONS * BG_ANIM_CONDITION_VALUE_COUNT];
 /* 0x3008bf3c .data refs=1 width=4 first=0x30002789 owner=cg_drawcrosshair */
 /* 0x3008c4b8 .data refs=3 width=4 first=0x3000202c owner=cg_drawfps */
 /* 0x3008c4b8 resolved to bgAnimParseCurrentAnimGroup (declared in client_recovered.h);
@@ -1355,7 +1405,8 @@ extern int32_t bgAnimConditionAliasCounts[BG_ANIM_MAX_CONDITIONS];
  * wrong) and .bits[1] at 0x3008c4ec once BG_IndexForString resolves the value
  * name to index v. Extent 11*16 = 176 entries (BG_ANIM_MAX_CONDITIONS *
  * BG_ANIM_CONDITION_VALUE_COUNT), matching bgAnimConditionAliases. Zero-init. */
-extern bg_condition_bits_t bgAnimConditionAliasBits[BG_ANIM_MAX_CONDITIONS * BG_ANIM_CONDITION_VALUE_COUNT];
+extern bg_condition_bits_t
+    bgAnimConditionAliasBits[BG_ANIM_MAX_CONDITIONS * BG_ANIM_CONDITION_VALUE_COUNT];
 /* 0x3008ca68 .data: bgAnimScriptFileBuffer — the static text buffer the player
  * animation script file ("mp/playeranim.script") is read into once by
  * BG_AnimParseAnimScript (0x30002470) via the FS_READ trap, then NUL-terminated
@@ -1363,9 +1414,7 @@ extern bg_condition_bits_t bgAnimConditionAliasBits[BG_ANIM_MAX_CONDITIONS * BG_
  * the next .data object is 0x300a5108, and the loader rejects file lengths
  * >= 0x1869f (99999) before writing the trailing NUL at buffer[fileLen].
  * Mechanical owner cg_drawcrosshair is the wrong first-toucher; superseded here. */
-enum {
-    BG_ANIM_SCRIPT_TEXT_SIZE = 0x186a0
-};
+enum { BG_ANIM_SCRIPT_TEXT_SIZE = 0x186a0 };
 extern char bgAnimScriptFileBuffer[BG_ANIM_SCRIPT_TEXT_SIZE];
 /* 0x300a510c .data: bgAnimConditionAliasStringUsed — the running byte cursor into
  * bgAnimConditionAliasStringBuffer, passed by address to BG_CopyStringIntoBuffer as the pool
@@ -1584,10 +1633,10 @@ extern int32_t cg_flameDamageBestPosTime;
  * client_recovered.h (which includes it), and an array-of-struct extern needs a
  * complete element type. Defined here; client_recovered.h reuses this same tag. */
 typedef struct cgFlameSoundLoop_s {
-    float envA; /* +0x00: sound envelope A, accumulated then clamped to <= 1.0,
+    float    envA;      /* +0x00: sound envelope A, accumulated then clamped to <= 1.0,
                          * decayed toward 0 in the final pass. */
-    float envB; /* +0x04: sound envelope B, accumulated/clamped to <= 1.0. */
-    int32_t frameOwner; /* +0x08: the flameTime stamp of the frame that last updated
+    float    envB;      /* +0x04: sound envelope B, accumulated/clamped to <= 1.0. */
+    int32_t  frameOwner;/* +0x08: the flameTime stamp of the frame that last updated
                          * this entry (skip re-update when it already == flameTime). */
 } cgFlameSoundLoop_t;
 #if UINTPTR_MAX == 0xFFFFFFFFu
@@ -1882,37 +1931,37 @@ typedef struct cgWeaponInfo_s {
      * CG_DObjGetSpecialTagWorldMatrix("tag_flash"); a zero handle skips that path.
      * Exact CoD member name unproven; named by proven role. The original field is
      * 4 bytes on i386 and widens with the native DObj pointer on 64-bit hosts. */
-    DObj *viewDObjSelf; /* +0x00 : local view-weapon DObj self handle. Also read
+    DObj *viewDObjSelf;             /* +0x00 : local view-weapon DObj self handle. Also read
                                      *         by CG_ResetWeaponAnimTrees (0x30042fc0, MOV
                                      *         EAX,[EDI]) as the weapon's overlay DObj handle
                                      *         resolved through CG_DOBJ_GET_TREE; a zero
                                      *         handle skips the weapon. Same physical dword. */
-    float animRates[WEAPON_XANIM_COUNT]; /* +0x04..+0x63: registered XAnim playback rates */
-    char name[64]; /* +0x64..+0xa3 : cached config-string weapon name
+    float     animRates[WEAPON_XANIM_COUNT]; /* +0x04..+0x63: registered XAnim playback rates */
+    char      name[64];    /* +0x64..+0xa3 : cached config-string weapon name
                                      *         (NUL-terminated). Proven 0x40-byte extent:
                                      *         CG_RefreshWeaponDObjModelSet (0x30044890)
                                      *         Q_strncpyz's it with destsize 0x3f then forces
                                      *         name[0x3f]='\0'; it ends exactly at +0xa4 where
                                      *         lastRunAnim begins. */
-    int32_t lastRunAnim; /* +0xa4 : the weapon-anim number last processed by
+    int32_t   lastRunAnim;          /* +0xa4 : the weapon-anim number last processed by
                                      *         CG_WeaponRunXModelAnims (0x30042d30), latched
                                      *         from ps->weaponAnim each frame the anim changes.
                                      *         The function early-outs when ps->weaponAnim still
                                      *         equals this, and stores -1 here when a run is
                                      *         skipped because not all XModel anims are registered
                                      *         yet. Provisional role name; exact source unproven. */
-    int32_t registered; /* +0xa8: registration-complete/in-progress gate */
-    const gitem_t *item; /* +0xac on i386: registered item definition */
+    int32_t   registered;           /* +0xa8: registration-complete/in-progress gate */
+    const gitem_t *item;            /* +0xac on i386: registered item definition */
     /* +0xb0/+0xb4 : the weapon's HUD display-name string pointers. Proven by the
      * selected-weapon-name HUD draw (0x3002ecc9/0x3002ece6): +0xb0 is always
      * formatted as the primary display name ("%s"), and when the bg_weaponInfos
      * record's secondary-name pointer (+0x78) is non-empty the draw uses
      * va("%s / %s", displayName, modeName). Exact CoD member names unproven;
      * named by proven role. */
-    const char *displayName; /* +0xb0 on i386: primary HUD display name */
-    const char *modeName; /* +0xb4 on i386: localized alternate-mode name */
+    const char *displayName;          /* +0xb0 on i386: primary HUD display name */
+    const char *modeName;             /* +0xb4 on i386: localized alternate-mode name */
     const char *aiOverlayDescription; /* +0xb8 on i386: localized AI-overlay description */
-    qhandle_t worldModelHandle; /* +0xbc : the weapon's world/pickup model DObj handle.
+    qhandle_t worldModelHandle;     /* +0xbc : the weapon's world/pickup model DObj handle.
                                      *         CG_BuildCorpseDObjModels (0x300058f0) reads it
                                      *         as a dword (nonzero gate, wrapped via
                                      *         CG_DOBJ_WRAP_MODEL) and stores its low 16 bits as
@@ -1920,33 +1969,33 @@ typedef struct cgWeaponInfo_s {
                                      *         source member name unproven; named by proven role.
                                      *         qhandle_t is the 32-bit registration-handle
                                      *         domain returned and consumed at these sites. */
-    qhandle_t pickupModelHandle; /* +0xc0 */
-    qhandle_t viewModelHandle; /* +0xc4 */
-    uint32_t viewFlashEffect; /* +0xc8: registered first-person muzzle effect */
-    uint32_t worldFlashEffect; /* +0xcc: registered third-person muzzle effect */
-    uint8_t registeredAssetsD0[12]; /* ABI_AUDITED_OPAQUE: registered weapon assets
+    qhandle_t pickupModelHandle;    /* +0xc0 */
+    qhandle_t viewModelHandle;      /* +0xc4 */
+    uint32_t  viewFlashEffect;      /* +0xc8: registered first-person muzzle effect */
+    uint32_t  worldFlashEffect;     /* +0xcc: registered third-person muzzle effect */
+    uint8_t   registeredAssetsD0[12]; /* ABI_AUDITED_OPAQUE: registered weapon assets
                                        * not consumed by maintained cgame code. */
-    const char *projectileSound; /* +0xdc on i386 */
+    const char *projectileSound;    /* +0xdc on i386 */
     /* +0xe0..+0x114, +0x174/+0x178 : per-weapon canonical alias-name pointers, played by
      * CG_EntityEvent (0x30022810) for this weapon's mechanical events. Each is a
      * alias-name pointer handed to CG_PlayEntitySoundAliasByName; NULL means "no
      * sound for this event". Field names encode the weapon-event id that plays each
      * (proven from the dispatcher), not an invented semantic name — exact CoD member
      * names are unresolved. */
-    const char *pullbackSound; /* +0xe0 on i386 */
-    const char *fireSound; /* +0xe4 on i386 */
-    const char *fireEchoSound; /* +0xe8 on i386 */
-    const char *lastShotSound; /* +0xec on i386 */
-    const char *rechamberSound; /* +0xf0 on i386 */
-    const char *reloadSound; /* +0xf4 on i386 */
-    const char *reloadEmptySound; /* +0xf8 on i386 */
-    const char *reloadStartSound; /* +0xfc on i386 */
-    const char *reloadEndSound; /* +0x100 on i386 */
-    const char *raiseSound; /* +0x104 on i386 */
-    const char *altSwitchSound; /* +0x108 on i386 */
-    const char *putawaySound; /* +0x10c on i386 */
-    const char *deploySound; /* +0x110 on i386 */
-    const char *breakdownSound; /* +0x114 on i386 */
+    const char *pullbackSound;          /* +0xe0 on i386 */
+    const char *fireSound;              /* +0xe4 on i386 */
+    const char *fireEchoSound;          /* +0xe8 on i386 */
+    const char *lastShotSound;          /* +0xec on i386 */
+    const char *rechamberSound;         /* +0xf0 on i386 */
+    const char *reloadSound;            /* +0xf4 on i386 */
+    const char *reloadEmptySound;       /* +0xf8 on i386 */
+    const char *reloadStartSound;       /* +0xfc on i386 */
+    const char *reloadEndSound;         /* +0x100 on i386 */
+    const char *raiseSound;             /* +0x104 on i386 */
+    const char *altSwitchSound;         /* +0x108 on i386 */
+    const char *putawaySound;           /* +0x10c on i386 */
+    const char *deploySound;            /* +0x110 on i386 */
+    const char *breakdownSound;         /* +0x114 on i386 */
     /* +0x118..+0x124 : the four "noteTrackSound{A,B,C,D}" alias-name pointers played by
      * CG_ProcessWeaponNoteTracks (0x30042c40). That function scans the currently
      * bound animation's notetrack list (trap_XAnimGetNotetracks) and, when a track's
@@ -1954,10 +2003,10 @@ typedef struct cgWeaponInfo_s {
      * (0x300761e4/0x300761d4/0x300761c4/0x300761b4), reads the corresponding handle
      * here and, if nonzero, starts it via CG_PlaySoundAliasByName. Each is the
      * canonical alias-name pointer returned by trap_Com_SoundAliasString. */
-    const char *noteTrackSoundA; /* +0x118 on i386 */
-    const char *noteTrackSoundB; /* +0x11c on i386 */
-    const char *noteTrackSoundC; /* +0x120 on i386 */
-    const char *noteTrackSoundD; /* +0x124 on i386 */
+    const char *noteTrackSoundA;       /* +0x118 on i386 */
+    const char *noteTrackSoundB;       /* +0x11c on i386 */
+    const char *noteTrackSoundC;       /* +0x120 on i386 */
+    const char *noteTrackSoundD;       /* +0x124 on i386 */
     /* +0x128/+0x12c : the muzzle-flash "fire loop" and "fire tail" positional sound
      * alias-name pointers. Both are resolved sounds (CG_RegisterWeaponInfo at 0x300444e3/
      * 0x30044501 registers them via trap 0xc3 from the parse-struct name fields
@@ -1966,8 +2015,8 @@ typedef struct cgWeaponInfo_s {
      * effect's remaining lifetime is > 0 and switches to stopFireSound (+0x12c)
      * on the frame the lifetime reaches <= 0, both via CG_PlaySoundAliasByName with the
      * tag-flash origin as the channel object. NULL means "no sound". */
-    const char *loopFireSound; /* +0x128 on i386 */
-    const char *stopFireSound; /* +0x12c on i386 */
+    const char *loopFireSound;         /* +0x128 on i386 */
+    const char *stopFireSound;         /* +0x12c on i386 */
     /* +0x130/+0x134 : two named effect/model resources for this weapon's muzzle
      * effect. CG_Missile (0x3001edb0) registers each via CG_COM_PICK_SOUND_ALIAS
      * (trap 0xc4: name, channelObj=&cent lerpOrigin) into an engine handle and
@@ -1976,30 +2025,30 @@ typedef struct cgWeaponInfo_s {
      * record stride holds at both ABIs. Exact CoD member names unproven; named by role. */
     const char *projectileSoundBlend1; /* +0x130 on i386 */
     const char *projectileSoundBlend2; /* +0x134 on i386 */
-    qhandle_t itemHudIconShader; /* +0x138 */
-    qhandle_t itemSelectIconShader; /* +0x13c */
-    qhandle_t itemAmmoIconShader; /* +0x140 */
-    qhandle_t hudIconShader; /* +0x144 */
-    qhandle_t modeIconShader; /* +0x148: 2D HUD icon material/shader handle for
+    qhandle_t itemHudIconShader;     /* +0x138 */
+    qhandle_t itemSelectIconShader;  /* +0x13c */
+    qhandle_t itemAmmoIconShader;    /* +0x140 */
+    qhandle_t hudIconShader;         /* +0x144 */
+    qhandle_t modeIconShader;        /* +0x148: 2D HUD icon material/shader handle for
                                      *         this weapon. Proven by the selected-weapon
                                      *         icon draw CG_DrawPlayerWeaponModeIcon (0x3002ef78):
                                      *         MOV EAX,[record+0x148]; if zero the draw is
                                      *         skipped, otherwise it is passed as the hShader
                                      *         to CG_DrawPic. Exact CoD member name unproven;
                                      *         named by proven role. */
-    qhandle_t ammoIconShader; /* +0x14c */
-    int32_t clipModelHandle; /* +0x150: registered clip/magazine model */
-    uint8_t clipModelState[4]; /* ABI_AUDITED_OPAQUE: auxiliary clip-model state. */
+    qhandle_t ammoIconShader;       /* +0x14c */
+    int32_t   clipModelHandle;      /* +0x150: registered clip/magazine model */
+    uint8_t   clipModelState[4]; /* ABI_AUDITED_OPAQUE: auxiliary clip-model state. */
     /* +0x158..+0x164 : projectile dynamic-light parameters. CG_Missile
      * (0x3001edb0) emits the light only when projectileDLight (+0x158) != 0.0,
      * calling trap_R_AddLightToScene(&cent lerpOrigin, projectileDLight,
      * flashLightR, flashLightG, flashLightB). Four consecutive floats; exact CoD
      * member names unproven, named by proven role. */
-    float projectileDLight; /* +0x158: projectile dynamic-light intensity */
-    float flashLightR; /* +0x15c: dynamic-light red                      */
-    float flashLightG; /* +0x160: dynamic-light green                    */
-    float flashLightB; /* +0x164: dynamic-light blue                     */
-    uint32_t flashRenderFx; /* +0x168: base RF_* render-flags for the muzzle-
+    float     projectileDLight;     /* +0x158: projectile dynamic-light intensity */
+    float     flashLightR;          /* +0x15c: dynamic-light red                      */
+    float     flashLightG;          /* +0x160: dynamic-light green                    */
+    float     flashLightB;          /* +0x164: dynamic-light blue                     */
+    uint32_t  flashRenderFx;        /* +0x168: base RF_* render-flags for the muzzle-
                                      *         effect refEntity. CG_Missile OR-s in
                                      *         RF_NOSHADOW (0x40) before storing it into
                                      *         refEntity.renderfx. Exact CoD member name
@@ -2010,13 +2059,13 @@ typedef struct cgWeaponInfo_s {
      * variant is selected for weapon-event 0xa6; +0x16c for all other eject events.
      * qhandle_t on the target; kept 4-byte-wide so the 0x1c4 record stride holds at
      * both ABIs. Exact CoD member names unproven; named by proven role. */
-    uint32_t shellEjectEffect; /* +0x16c */
-    uint32_t lastShotEjectEffect; /* +0x170 */
-    uint32_t projectileExplosionEffect; /* +0x174 */
+    uint32_t  shellEjectEffect;     /* +0x16c */
+    uint32_t  lastShotEjectEffect;  /* +0x170 */
+    uint32_t  projectileExplosionEffect; /* +0x174 */
     const char *projectileExplosionSound; /* +0x178 on i386 */
-    uint32_t projectileTrailEffect; /* +0x17c */
-    uint8_t projectileTrailAssets[8]; /* ABI_AUDITED_OPAQUE: two unconsumed projectile assets. */
-    qhandle_t reticleCenterShader; /* +0x188: registered 2D material/shader handle for
+    uint32_t  projectileTrailEffect;     /* +0x17c */
+    uint8_t   projectileTrailAssets[8]; /* ABI_AUDITED_OPAQUE: two unconsumed projectile assets. */
+    qhandle_t reticleCenterShader;  /* +0x188: registered 2D material/shader handle for
                                      *         this weapon's 3D-view-centered HUD icon (distinct
                                      *         from the weapon-select icon hudIconShader at
                                      *         +0x148). Read by the view-centered weapon-icon
@@ -2029,9 +2078,9 @@ typedef struct cgWeaponInfo_s {
                                      *         mislabel of this field and is superseded here.)
                                      *         Exact CoD member name unproven; named by proven
                                      *         role. */
-    qhandle_t reticleSideShader; /* +0x18c */
-    qhandle_t adsOverlayShader; /* +0x190 */
-    uint8_t overlayAssets[48]; /* ABI_AUDITED_OPAQUE: trailing weapon overlay resources. */
+    qhandle_t reticleSideShader;    /* +0x18c */
+    qhandle_t adsOverlayShader;     /* +0x190 */
+    uint8_t   overlayAssets[48]; /* ABI_AUDITED_OPAQUE: trailing weapon overlay resources. */
 } cgWeaponInfo_t;
 #if UINTPTR_MAX == 0xFFFFFFFFu
 _Static_assert(offsetof(cgWeaponInfo_t, animRates) == 0x04, "cgWeaponInfo animRates +0x04");
@@ -2174,12 +2223,8 @@ extern uint8_t ui_unreferencedAggregateStorage[4372];
  *
  * The region ends exactly at 0x303b3420 (== &cg_voiceChatTables[8]); that end
  * address is the loop sentinel at 0x30039ed2/0x3003a3d8. */
-enum {
-    CG_VOICE_CHAT_TABLE_COUNT = 8
-};
-enum {
-    CG_VOICE_CHAT_TABLE_STRIDE = 0x49148
-}; /* original i386 stride */
+enum { CG_VOICE_CHAT_TABLE_COUNT = 8 };
+enum { CG_VOICE_CHAT_TABLE_STRIDE = 0x49148 }; /* original i386 stride */
 /* Mark-poly (decal) pool, proven by CG_InitMarkPolys (0x3002e400) and
  * CG_AllocMark (0x3002e490). The owner=quatinverse labels the mechanical exporter
  * put on 0x303b5d20/0x303b5d40/0x303b5eb4/0x30412d40/0x30412d44 were wrong (the
@@ -2191,9 +2236,7 @@ enum {
  * is superseded by the cg_markPolys array below. The two mechanical dwords at
  * 0x30412d40 and 0x30412d44 are the +0x0/+0x4 link fields of the single
  * cg_activeMarkPolys sentinel node, folded into it here. */
-enum {
-    MARK_FRAGMENT_MAX_POINTS = 10
-}; /* CG_ImpactMark clamps numPoints to 0xa */
+enum { MARK_FRAGMENT_MAX_POINTS = 10 }; /* CG_ImpactMark clamps numPoints to 0xa */
 
 /* markPoly_t — one mark-poly pool node (0x174 bytes, proven from CG_InitMarkPolys
  * zeroing MAX_MARK_POLYS * 0x174 bytes at the pool base). Intrusive link fields at
@@ -2201,22 +2244,22 @@ enum {
  * and read by CG_AddMarks (0x3002e8c0). The reserved gaps are decal state not yet
  * touched by a reconstructed function. */
 typedef struct markPoly_s {
-    struct markPoly_s *prevMark; /* +0x00: active-list back link (toward oldest) */
-    struct markPoly_s *nextMark; /* +0x04: active-list forward / free-list link */
-    int32_t markTime; /* +0x08: cg.time when the mark was created;
+    struct markPoly_s *prevMark;   /* +0x00: active-list back link (toward oldest) */
+    struct markPoly_s *nextMark;   /* +0x04: active-list forward / free-list link */
+    int32_t            markTime;   /* +0x08: cg.time when the mark was created;
                                     * CG_AllocMark reclaims the oldest run sharing
                                     * this value when the free list is exhausted */
-    qhandle_t markShader; /* +0x0c: surface shader (from the fragment) */
-    int32_t alphaFade; /* +0x10: qboolean — CG_AddMarks fades the alpha
+    qhandle_t          markShader; /* +0x0c: surface shader (from the fragment) */
+    int32_t            alphaFade;  /* +0x10: qboolean — CG_AddMarks fades the alpha
                                     * byte of every vert when set */
-    float colors[4]; /* +0x14: red/green/blue at +0x14/+0x18/+0x1c,
+    float              colors[4];  /* +0x14: red/green/blue at +0x14/+0x18/+0x1c,
                                     * alpha at +0x20 (all faded by CG_AddMarks) */
-    uint8_t markState24[4]; /* ABI_AUDITED_OPAQUE: decal state not touched here. */
-    int32_t numVerts; /* +0x28: vertex count for this mark's poly */
-    uint8_t markState2C[4]; /* ABI_AUDITED_OPAQUE: decal state not touched here. */
-    polyVert_t verts[MARK_FRAGMENT_MAX_POINTS]; /* +0x30: up to 10 verts,
+    uint8_t            markState24[4]; /* ABI_AUDITED_OPAQUE: decal state not touched here. */
+    int32_t            numVerts;   /* +0x28: vertex count for this mark's poly */
+    uint8_t            markState2C[4]; /* ABI_AUDITED_OPAQUE: decal state not touched here. */
+    polyVert_t         verts[MARK_FRAGMENT_MAX_POINTS]; /* +0x30: up to 10 verts,
                                     * 32 bytes each -> +0x30..+0x170 */
-    int32_t duration; /* +0x170: mark lifetime in ms; CG_AddMarks
+    int32_t            duration;   /* +0x170: mark lifetime in ms; CG_AddMarks
                                     * expires the mark when cg.time > markTime+duration */
 } markPoly_t;
 #if defined(__i386__) || defined(_M_IX86)
@@ -2231,9 +2274,7 @@ _Static_assert(offsetof(markPoly_t, numVerts) == 0x28, "markPoly_t.numVerts @ +0
 _Static_assert(offsetof(markPoly_t, verts) == 0x30, "markPoly_t.verts @ +0x30");
 _Static_assert(offsetof(markPoly_t, duration) == 0x170, "markPoly_t.duration @ +0x170");
 #endif
-enum {
-    MAX_MARK_POLYS = 1024
-}; /* pool node count (0x17400 dwords / 0x174 bytes) */
+enum { MAX_MARK_POLYS = 1024 }; /* pool node count (0x17400 dwords / 0x174 bytes) */
 /* 0x303b5d20 .data — cg_freeMarkPolys: head of the singly-linked free list of
  * markPoly_t (threaded via ->nextMark). CG_InitMarkPolys points it at
  * &cg_markPolys[0]; CG_AllocMark pops from it, and reclaimed active marks are
@@ -2562,9 +2603,9 @@ extern int32_t cgs_cursorY;
  * trap_Milliseconds); CG_CalcFov (0x3003ffc0) consumes/updates it. Provisional
  * field names (no cgame symbol table recovered); exact original names unproven. */
 typedef struct cgFovFade_s {
-    float startValue; /* +0x00 (0x3044b69c) fade start/anchor value */
+    float startValue;   /* +0x00 (0x3044b69c) fade start/anchor value */
     float currentValue; /* +0x04 (0x3044b6a0) current interpolated value */
-    int32_t startTime; /* +0x08 (0x3044b6a4) cg.time when the fade began (ms) */
+    int32_t startTime;  /* +0x08 (0x3044b6a4) cg.time when the fade began (ms) */
     int32_t durationMs; /* +0x0c (0x3044b6a8) fade duration (ms) */
 } cgFovFade_t;
 extern cgFovFade_t cg_fovFade;
@@ -2650,7 +2691,8 @@ extern qhandle_t cgs_media_hudNoWeaponIcon;
  * "hintFriendly" (CG_RegisterGraphics, 0x3044b720), and CG_DrawCrosshair
  * (0x30019e5c) tints the crosshair green {0.25, 1, 0.25} for exactly this value.
  * Role proven by both consumers and by the game-module hintStrings table. */
-extern qhandle_t cgs_media_usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT];
+extern qhandle_t
+    cgs_media_usableHintShaders[CURSOR_HINT_BUILTIN_ICON_COUNT];
 /* 0x3044b720..0x3044b91f and 0x3044b920..0x3044bb1f: per-weapon HUD
  * and ammo-icon handles. CG_RegisterWeapon indexes both arrays by weapon index;
  * CG_RegisterGraphics initializes element zero of the first array to hintFriendly. */
@@ -2735,13 +2777,13 @@ extern const char *cg_soundOutOfAmmo;
 /* 0x3044bbbc .data refs=2 width=4 first=0x30022a4f owner=cmd_callvote_f */
 extern const char *cg_soundLandDamage;
 /* 0x3044bbc0 .data refs=1 width=4 first=0x300234bc owner=cmd_callvote_f */
-extern const char *cg_soundDeath; /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+extern const char *cg_soundDeath;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
 /* 0x3044bbc4 .data refs=1 width=4 first=0x3002318f owner=cmd_callvote_f */
-extern const char *cg_soundPlayerTeleportIn; /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+extern const char *cg_soundPlayerTeleportIn;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
 /* 0x3044bbc8 .data refs=1 width=4 first=0x300231a9 owner=cmd_callvote_f */
-extern const char *cg_soundPlayerTeleportOut; /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+extern const char *cg_soundPlayerTeleportOut;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
 /* 0x3044bbcc .data refs=1 width=4 first=0x300231ce owner=cmd_callvote_f */
-extern const char *cg_soundItemRespawn; /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
+extern const char *cg_soundItemRespawn;  /* event sound-name pointer (retyped from uint32_t; CG_EntityEvent) */
 /* 0x3044bbd0 .data: registered "player_talk" sound reference. The registration
  * pipeline at 0x3002b64a..0x3002b669 stores the result of registering the literal
  * "player_talk" here; CG_DrawVote plays it when voteModified is consumed. */
@@ -2880,18 +2922,14 @@ extern qhandle_t cgs_media_checkboxFail;
  * parallel (name, effectDef_t[24], qhandle_t[24]) triples — the final loop runs its
  * byte cursor from 0 to 0x58 in steps of 4 (0x58/4 == 22), and hands the parser the
  * count 0x16 (22). */
-enum {
-    CG_IMPACT_EFFECT_TYPES = 22
-};
+enum { CG_IMPACT_EFFECT_TYPES = 22 };
 
 /* CG_IMPACT_SURFACE_TYPES — surface types per effect type (one effectDef_t /
  * qhandle_t per surface). Proven from CG_RegisterImpactEffects: the per-type
  * effectDef_t table stride is 0x600 == 24 * sizeof(effectDef_t), and the per-type
  * qhandle_t rows are 0x60 == 24 * 4 apart. Matches the 24-surface loop in
  * CG_RegisterEffectDefSurfaces. */
-enum {
-    CG_IMPACT_SURFACE_TYPES = 24
-};
+enum { CG_IMPACT_SURFACE_TYPES = 24 };
 
 /* 0x3044c274 .data: cg_impactEffects[CG_IMPACT_EFFECT_TYPES][CG_IMPACT_SURFACE_TYPES]
  * — the registered impact/explosion effect-handle table, one qhandle_t per
@@ -2957,9 +2995,7 @@ typedef enum vehicleTreadEffectIndex_e {
  * the mechanical g_data_bg_animparseanimscript_3044cac0 (owner label was
  * first-touching, not the identity); this is the [0] cell of that array. */
 extern qhandle_t cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_COUNT];
-enum {
-    CG_COMPLAINT_STATUS_COUNT = 4
-};
+enum { CG_COMPLAINT_STATUS_COUNT = 4 };
 
 /* 0x3044caf4/0x3044caf8: complaint-vote HUD state. CG_ServerCommand stores the
  * complained-about client number or one of four negative status codes and an
@@ -3249,17 +3285,17 @@ extern vmCvar_t cg_debugProneCheckDepthCheck;
  * 0xc3; CG_PlayEntitySoundAliasByName consumes them as const char *, so they are modeled as
  * such. Fields between the proven offsets stay reserved. refs=8. */
 typedef struct itemInfo_s {
-    int32_t registered; /* +0x00 : nonzero once CG_RegisterItemVisuals ran */
-    int32_t modelHandle; /* +0x04 : gitem_t.worldModel handle, CG_RegisterModel(7,..) */
-    int32_t iconModelHandle; /* +0x08 : gitem_t.iconModel handle, CG_RegisterModel(6,..).
+    int32_t     registered;         /* +0x00 : nonzero once CG_RegisterItemVisuals ran */
+    int32_t     modelHandle;        /* +0x04 : gitem_t.worldModel handle, CG_RegisterModel(7,..) */
+    int32_t     iconModelHandle;    /* +0x08 : gitem_t.iconModel handle, CG_RegisterModel(6,..).
                                      *          Proven a distinct second handle by
                                      *          CG_RegisterItemVisuals (0x30044ac0), which stores
                                      *          both model handles into +0x04 and +0x08. */
-    int32_t iconShader; /* +0x0c : registered icon/HUD shader handle */
-    uint8_t auxiliaryAssets[12]; /* ABI_AUDITED_OPAQUE: registered item assets not consumed here. */
-    const char *pickupSound; /* +0x1c : registered pickup/foley sound (trap 0xc3);
+    int32_t     iconShader;         /* +0x0c : registered icon/HUD shader handle */
+    uint8_t     auxiliaryAssets[12]; /* ABI_AUDITED_OPAQUE: registered item assets not consumed here. */
+    const char *pickupSound;        /* +0x1c : registered pickup/foley sound (trap 0xc3);
                                      *          CG_EntityEvent plays this for event 0x94 */
-    const char *pickupSoundAlt; /* +0x20 : copy of +0x1c; CG_EntityEvent plays it
+    const char *pickupSoundAlt;     /* +0x20 : copy of +0x1c; CG_EntityEvent plays it
                                      *          for event 0x96 */
 } itemInfo_t;
 #if UINTPTR_MAX == 0xFFFFFFFFu
@@ -3642,9 +3678,7 @@ extern vec3_t cg_predictedError;
 extern int32_t cg_predictedEventSequence;
 /* MAX_PREDICTED_EVENTS: size of the cg_predictedEvents[] ring; the index mask
  * (i & 0xf) at 0x30034f23 proves 16 entries (a power of two). */
-enum {
-    MAX_PREDICTED_EVENTS = 16
-};
+enum { MAX_PREDICTED_EVENTS = 16 };
 /* 0x30487998..0x304879d8 .data: cg_predictedEvents[MAX_PREDICTED_EVENTS] -- ring
  * of recently fired predicted event ids, written by CG_CheckPlayerstateEvents
  * (0x30034f26) at index (i & (MAX_PREDICTED_EVENTS-1)). Supersedes the mechanical
@@ -3687,17 +3721,18 @@ extern int32_t cg_impactViewKickTime;
  * retained on the record fields' provisional roles). Members are vec3_t so they decay
  * to float* for AngleVectors. */
 typedef struct cgDObjPreviewOrientation_s {
-    vec3_t angles; /* +0x00: {pitch=0, spinYaw, roll=0} input to AngleVectors */
-    vec3_t forward; /* +0x0c: AngleVectors `forward` output (ESI at the call) */
-    vec3_t negRight; /* +0x18: -(AngleVectors `right`), stored via fld 0; fsub right */
-    vec3_t up; /* +0x24: AngleVectors `up` output (EBX at the call) */
+    vec3_t angles;    /* +0x00: {pitch=0, spinYaw, roll=0} input to AngleVectors */
+    vec3_t forward;   /* +0x0c: AngleVectors `forward` output (ESI at the call) */
+    vec3_t negRight;  /* +0x18: -(AngleVectors `right`), stored via fld 0; fsub right */
+    vec3_t up;        /* +0x24: AngleVectors `up` output (EBX at the call) */
 } cgDObjPreviewOrientation_t;
-enum {
-    CG_DOBJ_PREVIEW_ORIENTATION_COUNT = 3
-};
-extern cgDObjPreviewOrientation_t cg_dobjPreviewOrientations[CG_DOBJ_PREVIEW_ORIENTATION_COUNT]; /* 0x304879e8 */
-_Static_assert(sizeof(cgDObjPreviewOrientation_t) == 0x30, "cgDObjPreviewOrientation_t is 48 bytes (4 vec3_t)");
-_Static_assert(offsetof(cgDObjPreviewOrientation_t, negRight) == 0x18, "preview orientation negRight at record +0x18");
+enum { CG_DOBJ_PREVIEW_ORIENTATION_COUNT = 3 };
+extern cgDObjPreviewOrientation_t
+    cg_dobjPreviewOrientations[CG_DOBJ_PREVIEW_ORIENTATION_COUNT]; /* 0x304879e8 */
+_Static_assert(sizeof(cgDObjPreviewOrientation_t) == 0x30,
+               "cgDObjPreviewOrientation_t is 48 bytes (4 vec3_t)");
+_Static_assert(offsetof(cgDObjPreviewOrientation_t, negRight) == 0x18,
+               "preview orientation negRight at record +0x18");
 /* 0x30487a78..0x30487a84 (.data): the cropped 3D-view rectangle (cg.refdef view
  * region), four contiguous ints x/y/width/height in real screen pixels. Named by
  * their CG_TileClear consumer (0x3001d160): it skips border drawing when
@@ -3779,9 +3814,7 @@ extern vec3_t cg_weaponSwayAngles;
 /* Persistent weapon-sway positional output filled as one vec3. */
 extern vec3_t cg_weaponSwayOffset;
 
-enum {
-    CG_DOBJINFO_LOW_COUNT = 64
-};
+enum { CG_DOBJINFO_LOW_COUNT = 64 };
 
 /*
  * cg_dObjInfoKeys[] / cg_dObjInfoHandles[] — the parallel "DObj info" registration
@@ -3900,15 +3933,15 @@ extern int32_t cg_scoreboardTeamCount[TEAM_COUNT];
  * +0x00/+0x04/+0x08/+0x0c/+0x14 and derives team at +0x10.
  */
 typedef struct cgScore_s {
-    int32_t client; /* +0x00: clientNum (0..63); indexes
+    int32_t client;                  /* +0x00: clientNum (0..63); indexes
                                       *        bgs.clientinfo. 0x30037850 MOV
                                       *        EAX,[ESI] / IMUL 0x4d0. */
-    int32_t score; /* +0x04: reported client score */
-    int32_t ping; /* +0x08: ping; averaged per team */
-    int32_t deaths; /* +0x0c: reported deaths */
-    int32_t team; /* +0x10: team_t of this row; compared to the
+    int32_t score;                   /* +0x04: reported client score */
+    int32_t ping;                    /* +0x08: ping; averaged per team */
+    int32_t deaths;                  /* +0x0c: reported deaths */
+    int32_t team;                    /* +0x10: team_t of this row; compared to the
                                       *        requested section (0x30037866). */
-    qhandle_t statusIcon; /* +0x14: status index or registered shader */
+    qhandle_t statusIcon;            /* +0x14: status index or registered shader */
 } cgScore_t;
 
 /*
@@ -4008,10 +4041,10 @@ extern int32_t cg_centerPrintPriority;
  * against cg_time; rate==0.0f means the fade is inactive. color[] is the RGBA drawn
  * this frame; fromColor[] is the fade's stored source RGBA. See CG_DrawFade. */
 typedef struct cg_screen_fade_s {
-    int32_t endTime; /* +0x00 (0x3048adc0): fade end time in cg_time ms */
-    float rate; /* +0x04 (0x3048adc4): 1/duration; 0.0f => fade inactive */
-    vec4_t color; /* +0x08 (0x3048adc8): current RGBA composed and drawn */
-    vec4_t fromColor; /* +0x18 (0x3048add8): stored source RGBA of the fade */
+    int32_t endTime;      /* +0x00 (0x3048adc0): fade end time in cg_time ms */
+    float   rate;         /* +0x04 (0x3048adc4): 1/duration; 0.0f => fade inactive */
+    vec4_t  color;        /* +0x08 (0x3048adc8): current RGBA composed and drawn */
+    vec4_t  fromColor;    /* +0x18 (0x3048add8): stored source RGBA of the fade */
 } cg_screen_fade_t;
 extern cg_screen_fade_t cg_screenFade;
 /* 0x3048ade8 (.data): cg_outOfAmmoState — persistent low/out-of-ammo warning state
@@ -4154,12 +4187,11 @@ extern int32_t cg_weaponSelectLastTime;
 typedef struct cg_damageDirIndicator_s {
     int32_t serverTime;
     int32_t duration;
-    float yaw;
+    float   yaw;
 } cg_damageDirIndicator_t;
-enum {
-    CG_DAMAGE_DIRECTION_SLOT_COUNT = 8
-};
-extern cg_damageDirIndicator_t cg_damageDirIndicators[CG_DAMAGE_DIRECTION_SLOT_COUNT];
+enum { CG_DAMAGE_DIRECTION_SLOT_COUNT = 8 };
+extern cg_damageDirIndicator_t
+    cg_damageDirIndicators[CG_DAMAGE_DIRECTION_SLOT_COUNT];
 /* 0x3048aed4 .data — cg_damageDirLatestServerTime: cg_snap->serverTime of the most
  * recent damage event, latched right after the array (writer 0x30034d28). It sits
  * exactly at &cg_damageDirIndicators[8], which is why the drawer's loop terminator
@@ -4368,13 +4400,11 @@ extern float cg_compassRefYaw;
  * sentinel, not a value read. Not all 18 refs are reconstructed, so the address suffix is
  * kept and the exact CoD source name is left unproven; role-derived. */
 extern float cg_compassRefVel;
-enum {
-    CG_COMPASS_BLIP_COUNT = 64
-};
+enum { CG_COMPASS_BLIP_COUNT = 64 };
 typedef struct cgCompassBlip_s {
-    int32_t updateTime; /* +0x00: last snapshot update time */
-    vec3_t origin; /* +0x04: world/map origin and yaw in z */
-    int32_t kindOrExpireTime; /* +0x10: tank kind or friendly pulse deadline */
+    int32_t updateTime;                 /* +0x00: last snapshot update time */
+    vec3_t  origin;                     /* +0x04: world/map origin and yaw in z */
+    int32_t kindOrExpireTime;           /* +0x10: tank kind or friendly pulse deadline */
 } cgCompassBlip_t;
 _Static_assert(sizeof(cgCompassBlip_t) == 0x14, "compass blip stride 0x14");
 extern cgCompassBlip_t cg_compassFriendlies[CG_COMPASS_BLIP_COUNT];

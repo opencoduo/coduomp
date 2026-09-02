@@ -17,13 +17,17 @@ void UI_VerifyLanguage(void)
 
     /* Each copy is strncpy(dst, src, 7) + dst[7] = 0: 7 characters
      * survive. */
-    Q_strncpyz(clientLanguage, UI_Cvar_VariableString("cl_language"), UI_LANGUAGE_COPY_SIZE + 1);
+    Q_strncpyz(clientLanguage, UI_Cvar_VariableString("cl_language"),
+               UI_LANGUAGE_COPY_SIZE + 1);
 
-    Q_strncpyz(uiLanguage, UI_Cvar_VariableString("ui_language"), UI_LANGUAGE_COPY_SIZE + 1);
+    Q_strncpyz(uiLanguage, UI_Cvar_VariableString("ui_language"),
+               UI_LANGUAGE_COPY_SIZE + 1);
 
-    verifiedLanguage = trap_VerifyLanguageSelection(coduo_crt_atoi(uiLanguage));
+    verifiedLanguage =
+        trap_VerifyLanguageSelection(coduo_crt_atoi(uiLanguage));
     if (verifiedLanguage != coduo_crt_atoi(uiLanguage)) {
-        Q_strncpyz(uiLanguage, va("%i", verifiedLanguage), UI_LANGUAGE_COPY_SIZE + 1);
+        Q_strncpyz(uiLanguage, va("%i", verifiedLanguage),
+                   UI_LANGUAGE_COPY_SIZE + 1);
         trap_Cvar_Set("ui_language", uiLanguage);
     }
 
@@ -32,5 +36,6 @@ void UI_VerifyLanguage(void)
      * unspecified operand evaluation order. */
     int32_t uiLanguageValue = coduo_crt_atoi(uiLanguage);
     int32_t clientLanguageValue = coduo_crt_atoi(clientLanguage);
-    trap_Cvar_Set("ui_languagechanged", uiLanguageValue != clientLanguageValue ? "1" : "0");
+    trap_Cvar_Set("ui_languagechanged",
+                  uiLanguageValue != clientLanguageValue ? "1" : "0");
 }

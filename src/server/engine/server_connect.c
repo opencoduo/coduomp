@@ -60,21 +60,31 @@ void SV_DirectConnect(netadr_t from)
 
     const int32_t protocol = atoi(Info_ValueForKey(userinfo, "protocol"));
     if (protocol != SERVER_PROTOCOL_VERSION) {
-        NET_OutOfBandPrint(NS_SERVER, from, "error\n%s", "EXE_SERVER_IS_DIFFERENT_VER");
-        Com_DPrintf("    rejected connect from protocol version %i (should be %i)\n", protocol, SERVER_PROTOCOL_VERSION);
+        NET_OutOfBandPrint(NS_SERVER, from, "error\n%s",
+                           "EXE_SERVER_IS_DIFFERENT_VER");
+        Com_DPrintf(
+            "    rejected connect from protocol version %i (should be %i)\n",
+            protocol, SERVER_PROTOCOL_VERSION);
         return;
     }
 
-    const int32_t challengeNumber = atoi(Info_ValueForKey(userinfo, "challenge"));
+    const int32_t challengeNumber =
+        atoi(Info_ValueForKey(userinfo, "challenge"));
     const int32_t qport = atoi(Info_ValueForKey(userinfo, "qport"));
 
     client_t *client = svs.clients;
     int32_t clientNum;
-    for (clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
+    for (clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum, ++client) {
         if (NET_CompareBaseAdr(from, client->netchan.remoteAddress) != qfalse &&
-            (client->netchan.qport == qport || from.port == client->netchan.remoteAddress.port)) {
-            if (svs.realTime - client->lastConnectTime < sv_reconnectlimit->integer * SERVER_CONNECT_MILLISECONDS_PER_SECOND) {
-                Com_DPrintf("%s:reconnect rejected : too soon\n", NET_AdrToString(from));
+            (client->netchan.qport == qport ||
+             from.port == client->netchan.remoteAddress.port)) {
+            if (svs.realTime - client->lastConnectTime <
+                sv_reconnectlimit->integer *
+                    SERVER_CONNECT_MILLISECONDS_PER_SECOND) {
+                Com_DPrintf("%s:reconnect rejected : too soon\n",
+                            NET_AdrToString(from));
                 return;
             }
             break;
@@ -84,18 +94,22 @@ void SV_DirectConnect(netadr_t from)
     int32_t guid = 0;
     int32_t challengeIndex = 0;
     if (NET_IsLocalAddress(from) == qfalse) {
-        for (challengeIndex = 0; challengeIndex < MAX_CHALLENGES; ++challengeIndex) {
+        for (challengeIndex = 0;
+             challengeIndex < MAX_CHALLENGES;
+             ++challengeIndex) {
             challenge_t *const challenge = &svs.challenges[challengeIndex];
             /* Both authoritative bodies require the original source port as
              * well as the address bytes when matching a challenge row. */
-            if (NET_CompareAdr(from, challenge->address) != qfalse && challengeNumber == challenge->challengeNumber) {
+            if (NET_CompareAdr(from, challenge->address) != qfalse &&
+                challengeNumber == challenge->challengeNumber) {
                 guid = challenge->numericGuid;
                 break;
             }
         }
 
         if (challengeIndex == MAX_CHALLENGES) {
-            NET_OutOfBandPrint(NS_SERVER, from, "error\nEXE_BAD_CHALLENGE");
+            NET_OutOfBandPrint(NS_SERVER, from,
+                               "error\nEXE_BAD_CHALLENGE");
             return;
         }
 
@@ -108,28 +122,38 @@ void SV_DirectConnect(netadr_t from)
             ping = challenge->firstPingMsec;
         }
 
-        Com_Printf("Client %i connecting with %i challenge ping from %s\n", challengeIndex, ping, NET_AdrToString(from));
+        Com_Printf("Client %i connecting with %i challenge ping from %s\n",
+                   challengeIndex, ping, NET_AdrToString(from));
         challenge->connected = qtrue;
 
         if (Sys_IsLANAddress(from) == qfalse) {
             /* Both x87 bodies compare the exact FILD result directly with the
              * binary32 cvar value; no float store occurs. */
-            if (sv_minPing->value != 0.0f && (long double)ping < (long double)sv_minPing->value) {
-                NET_OutOfBandPrint(NS_SERVER, from, "error\nEXE_ERR_HIGH_PING_ONLY");
-                Com_DPrintf("Client %i rejected on a too low ping\n", challengeIndex);
+            if (sv_minPing->value != 0.0f &&
+                (long double)ping < (long double)sv_minPing->value) {
+                NET_OutOfBandPrint(NS_SERVER, from,
+                                   "error\nEXE_ERR_HIGH_PING_ONLY");
+                Com_DPrintf("Client %i rejected on a too low ping\n",
+                            challengeIndex);
                 return;
             }
-            if (sv_maxPing->value != 0.0f && (long double)sv_maxPing->value < (long double)ping) {
-                NET_OutOfBandPrint(NS_SERVER, from, "error\nEXE_ERR_LOW_PING_ONLY");
-                Com_DPrintf("Client %i rejected on a too high ping: %i\n", challengeIndex, ping);
+            if (sv_maxPing->value != 0.0f &&
+                (long double)sv_maxPing->value < (long double)ping) {
+                NET_OutOfBandPrint(NS_SERVER, from,
+                                   "error\nEXE_ERR_LOW_PING_ONLY");
+                Com_DPrintf(
+                    "Client %i rejected on a too high ping: %i\n",
+                    challengeIndex, ping);
                 return;
             }
         }
     }
 
-    const int32_t clPunkbuster = atoi(Info_ValueForKey(userinfo, "cl_punkbuster"));
+    const int32_t clPunkbuster =
+        atoi(Info_ValueForKey(userinfo, "cl_punkbuster"));
     const char *const clGuid = Info_ValueForKey(userinfo, "cl_guid");
-    const char *const pbReject = server_compat_pb_connect_query(from, clPunkbuster, clGuid);
+    const char *const pbReject =
+        server_compat_pb_connect_query(from, clPunkbuster, clGuid);
     if (pbReject != NULL) {
         if (Q_stricmpn(pbReject, "error\n", 6) == 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: forward callback text as formatter
@@ -143,9 +167,13 @@ void SV_DirectConnect(netadr_t from)
     memset(&emptyClient, 0, sizeof(emptyClient));
 
     client = svs.clients;
-    for (clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
-        if (client->state != CS_FREE && NET_CompareBaseAdr(from, client->netchan.remoteAddress) != qfalse &&
-            (client->netchan.qport == qport || from.port == client->netchan.remoteAddress.port)) {
+    for (clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum, ++client) {
+        if (client->state != CS_FREE &&
+            NET_CompareBaseAdr(from, client->netchan.remoteAddress) != qfalse &&
+            (client->netchan.qport == qport ||
+             from.port == client->netchan.remoteAddress.port)) {
             Com_Printf("%s:reconnect\n", NET_AdrToString(from));
             if (client->state >= CS_CONNECTED) {
                 SV_FreeClient(client);
@@ -156,10 +184,15 @@ void SV_DirectConnect(netadr_t from)
 
     if (clientNum == sv_maxclients->integer) {
         const char *const password = Info_ValueForKey(userinfo, "password");
-        const int32_t firstAvailableClient = strcmp(password, sv_privatePassword->string) == 0 ? 0 : sv_privateClients->integer;
+        const int32_t firstAvailableClient =
+            strcmp(password, sv_privatePassword->string) == 0
+                ? 0
+                : sv_privateClients->integer;
 
         client = NULL;
-        for (clientNum = firstAvailableClient; clientNum < sv_maxclients->integer; ++clientNum) {
+        for (clientNum = firstAvailableClient;
+             clientNum < sv_maxclients->integer;
+             ++clientNum) {
             client_t *const candidate = &svs.clients[clientNum];
             if (candidate->state == CS_FREE) {
                 client = candidate;
@@ -167,7 +200,8 @@ void SV_DirectConnect(netadr_t from)
             }
         }
         if (client == NULL) {
-            NET_OutOfBandPrint(NS_SERVER, from, "error\nEXE_SERVERISFULL");
+            NET_OutOfBandPrint(NS_SERVER, from,
+                               "error\nEXE_SERVERISFULL");
             Com_DPrintf("Rejected a connection.\n");
             return;
         }
@@ -185,8 +219,10 @@ void SV_DirectConnect(netadr_t from)
     Netchan_Setup(NS_SERVER, &client->netchan, from, qport);
     Q_strncpyz(client->userinfo, userinfo, sizeof(client->userinfo));
 
-    const char *const gameReject =
-        (const char *)VM_Call(sv_gameVM, GAME_CLIENT_CONNECT, clientNum, client->scriptId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    const char *const gameReject = (const char *)VM_Call(
+        sv_gameVM, GAME_CLIENT_CONNECT,
+        clientNum, client->scriptId,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (gameReject != NULL) {
         NET_OutOfBandPrint(NS_SERVER, from, "error\n%s", gameReject);
         Com_DPrintf("Game rejected a connection: %s.\n", gameReject);
@@ -198,7 +234,9 @@ void SV_DirectConnect(netadr_t from)
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     svs.challenges[clientNum].firstPingMsec = 0;
     NET_OutOfBandPrint(NS_SERVER, from, "connectResponse");
-    Com_Printf("Going from CS_FREE to CS_CONNECTED for %s (num %i guid %i)\n", client->name, clientNum, client->guid);
+    Com_Printf(
+        "Going from CS_FREE to CS_CONNECTED for %s (num %i guid %i)\n",
+        client->name, clientNum, client->guid);
     client->state = CS_CONNECTED;
     client->lastPacketTime = svs.realTime;
     client->lastConnectTime = svs.realTime;
@@ -206,7 +244,9 @@ void SV_DirectConnect(netadr_t from)
     client->gamestateMessageNum = -1;
 
     int32_t connectedCount = 0;
-    for (clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
+    for (clientNum = 0;
+         clientNum < sv_maxclients->integer;
+         ++clientNum) {
         if (svs.clients[clientNum].state >= CS_CONNECTED) {
             ++connectedCount;
         }

@@ -81,7 +81,9 @@ void CG_VoiceChat_f(void)
     // not PSF_ACTIVE_PLAYER) is refused voice chat. An active player, intermission,
     // or missing snapshot falls through to the send path below.
     snapshot_t *snap = cg_snap;
-    if (snap != NULL && snap->ps.pmType != PM_TYPE_INTERMISSION && (snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
+    if (snap != NULL &&
+        snap->ps.pmType != PM_TYPE_INTERMISSION &&
+        (snap->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
         // 0x300177bd..0x300177d7: Com_PrintMessage("%s\n", localized text). The
         // translator takes (domain, reference) in (EAX, ECX) at the call site.
         Com_PrintMessage("%s\n", CG_SafeTranslateString_Internal("cgame", "CGAME_NOSPECTATORVOICECHAT"));
@@ -93,5 +95,6 @@ void CG_VoiceChat_f(void)
     char token[64];
 
     trap_Argv(1, token, (int32_t)sizeof(token));
-    cgame_syscall(CG_SEND_CONSOLE_COMMAND, (intptr_t)va("cmd vsay %s\n", token));
+    cgame_syscall(CG_SEND_CONSOLE_COMMAND,
+                  (intptr_t)va("cmd vsay %s\n", token));
 }

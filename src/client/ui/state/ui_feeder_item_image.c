@@ -21,12 +21,15 @@ qhandle_t UI_FeederItemImage(float feeder, int32_t index)
         }
         team = &ui_teams[index];
         if (team->imageShader == UI_SHADER_UNREGISTERED) {
-            team->imageShader = trap_R_RegisterShaderNoMip(team->imageName, R_IMAGE_TRACK_UI);
+            team->imageShader =
+                trap_R_RegisterShaderNoMip(team->imageName,
+                                           R_IMAGE_TRACK_UI);
         }
         return team->imageShader;
     }
 
-    if (feeder == UI_FEEDER_ACTIVE_MAPS || feeder == UI_FEEDER_ACTIVE_MAPS_ALT) {
+    if (feeder == UI_FEEDER_ACTIVE_MAPS ||
+        feeder == UI_FEEDER_ACTIVE_MAPS_ALT) {
         int32_t mapIndex;
         uiMapInfo_t *map;
 
@@ -36,7 +39,9 @@ qhandle_t UI_FeederItemImage(float feeder, int32_t index)
         }
         map = &ui_maps[mapIndex];
         if (map->imageShader == UI_SHADER_UNREGISTERED) {
-            map->imageShader = trap_R_RegisterShaderNoMip(map->imageName, R_IMAGE_TRACK_UI);
+            map->imageShader =
+                trap_R_RegisterShaderNoMip(map->imageName,
+                                           R_IMAGE_TRACK_UI);
         }
         return map->imageShader;
     }

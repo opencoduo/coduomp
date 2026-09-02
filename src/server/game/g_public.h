@@ -10,14 +10,18 @@
  * Module export prototypes.
  * These functions are exported to the engine via the VM interface.
  */
-extern intptr_t vmMain(int32_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5,
-                       intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11);
+extern intptr_t vmMain(int32_t command, intptr_t arg0, intptr_t arg1,
+                       intptr_t arg2, intptr_t arg3, intptr_t arg4,
+                       intptr_t arg5, intptr_t arg6, intptr_t arg7,
+                       intptr_t arg8, intptr_t arg9, intptr_t arg10,
+                       intptr_t arg11);
 extern void dllEntry(game_syscall_t syscallPtr);
 
 /*
  * Game lifecycle functions called by vmMain.
  */
-extern void G_InitGame(int levelTime, int randomSeed, int restart, int cvarRestartGate);
+extern void G_InitGame(int levelTime, int randomSeed, int restart,
+                       int cvarRestartGate);
 extern void G_ShutdownGame(int restart);
 extern char *ClientConnect(int clientNum, uint16_t persistentValue);
 extern void ClientBegin(int clientNum);

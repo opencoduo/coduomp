@@ -24,16 +24,22 @@
  * and EAX respectively; that register assignment is not a different source
  * signature.
  */
-void BG_AddPredictableEventToPlayerstate(int32_t event, int32_t eventParm, playerState_t *ps);
+void BG_AddPredictableEventToPlayerstate(int32_t event, int32_t eventParm,
+                                         playerState_t *ps);
 /* Project a mutable player state into its network entity state. Both routines
  * advance the player state's event cursors. Linux symbols establish the
  * canonical player-state-first source signature; the Windows register order
  * is a compiler ABI detail. */
-void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es, qboolean snap);
-void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps, entityState_t *es, int32_t time, qboolean snap);
+void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
+                                 qboolean snap);
+void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
+                                            entityState_t *es, int32_t time,
+                                            qboolean snap);
 extern const int32_t iSingleClientEvents[7];
 extern const int32_t *pEventSingleClientList;
-void BG_EvaluateTrajectory(const trajectory_t *trajectory, int32_t atTime, vec3_t result);
-void BG_EvaluateTrajectoryDelta(const trajectory_t *trajectory, int32_t atTime, vec3_t result);
+void BG_EvaluateTrajectory(const trajectory_t *trajectory, int32_t atTime,
+                           vec3_t result);
+void BG_EvaluateTrajectoryDelta(const trajectory_t *trajectory,
+                                int32_t atTime, vec3_t result);
 
 #endif

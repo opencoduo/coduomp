@@ -57,9 +57,16 @@
 //   3002fcfd ADD  ESP,0x34             unwind 0xc frame + 0x28 pushed args
 //   3002fd00 RET                        (cdecl: caller cleans arg0..arg3)
 
-void CG_DrawPlayerBarHealthTitle(rectDef_t *obj, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
+void CG_DrawPlayerBarHealthTitle(rectDef_t *obj,
+                                 intptr_t arg0, intptr_t arg1,
+                                 intptr_t arg2, intptr_t arg3)
 {
     char *translated = CG_SafeTranslateString_Internal("cgame", "CGAME_HEALTH");
 
-    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(obj->x), CG_FloatBits(obj->y), arg0, arg1, arg2, (intptr_t)translated, 0, 0, arg3);
+    cgame_syscall(CG_R_TEXT_PAINT,
+                  CG_FloatBits(obj->x), CG_FloatBits(obj->y),
+                  arg0, arg1, arg2,
+                  (intptr_t)translated,
+                  0, 0,
+                  arg3);
 }

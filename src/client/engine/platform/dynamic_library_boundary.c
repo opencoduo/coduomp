@@ -23,13 +23,14 @@ static int coduomp_mingw32_read_image_file(HANDLE file, ULONGLONG offset, void *
 
     fileOffset.QuadPart = (LONGLONG)offset;
     return SetFilePointerEx(file, fileOffset, NULL, FILE_BEGIN) != FALSE &&
-           ReadFile(file, destination, byteCount, &bytesRead, NULL) != FALSE && bytesRead == byteCount;
+           ReadFile(file, destination, byteCount, &bytesRead, NULL) != FALSE &&
+           bytesRead == byteCount;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: resolve a slash-and-decimal COFF section name
  * such as MinGW's "/4" spelling for .eh_frame. */
-static int coduomp_mingw32_long_section_name_matches(HANDLE file, const IMAGE_FILE_HEADER *fileHeader, const IMAGE_SECTION_HEADER *section,
-                                                     const char *expectedName)
+static int coduomp_mingw32_long_section_name_matches(HANDLE file, const IMAGE_FILE_HEADER *fileHeader,
+                                                     const IMAGE_SECTION_HEADER *section, const char *expectedName)
 {
     DWORD nameOffset = 0;
     DWORD stringTableSize;
@@ -53,7 +54,8 @@ static int coduomp_mingw32_long_section_name_matches(HANDLE file, const IMAGE_FI
     if (hasDigit == 0 || nameOffset < sizeof(stringTableSize) || fileHeader->PointerToSymbolTable == 0)
         return 0;
 
-    stringTableOffset = (ULONGLONG)fileHeader->PointerToSymbolTable + (ULONGLONG)fileHeader->NumberOfSymbols * IMAGE_SIZEOF_SYMBOL;
+    stringTableOffset = (ULONGLONG)fileHeader->PointerToSymbolTable +
+                        (ULONGLONG)fileHeader->NumberOfSymbols * IMAGE_SIZEOF_SYMBOL;
     if (coduomp_mingw32_read_image_file(file, stringTableOffset, &stringTableSize, sizeof(stringTableSize)) == 0)
         return 0;
 
@@ -63,7 +65,8 @@ static int coduomp_mingw32_long_section_name_matches(HANDLE file, const IMAGE_FI
         return 0;
     }
 
-    if (coduomp_mingw32_read_image_file(file, stringTableOffset + nameOffset, actualName, (DWORD)(expectedLength + 1u)) == 0) {
+    if (coduomp_mingw32_read_image_file(file, stringTableOffset + nameOffset,
+                                        actualName, (DWORD)(expectedLength + 1u)) == 0) {
         return 0;
     }
     return memcmp(actualName, expectedName, expectedLength + 1u) == 0;
@@ -93,13 +96,15 @@ static const void *coduomp_mingw32_static_unwind_frames(HMODULE module)
         return NULL;
 
     ntHeaders = (const IMAGE_NT_HEADERS32 *)(imageBase + (size_t)dosHeader->e_lfanew);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE || ntHeaders->FileHeader.Machine != IMAGE_FILE_MACHINE_I386 ||
+    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE ||
+        ntHeaders->FileHeader.Machine != IMAGE_FILE_MACHINE_I386 ||
         ntHeaders->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
         return NULL;
     }
 
     sections = IMAGE_FIRST_SECTION(ntHeaders);
-    if ((const unsigned char *)(sections + ntHeaders->FileHeader.NumberOfSections) > imageBase + ntHeaders->OptionalHeader.SizeOfHeaders) {
+    if ((const unsigned char *)(sections + ntHeaders->FileHeader.NumberOfSections) >
+        imageBase + ntHeaders->OptionalHeader.SizeOfHeaders) {
         return NULL;
     }
 
@@ -107,8 +112,9 @@ static const void *coduomp_mingw32_static_unwind_frames(HMODULE module)
     if (modulePathLength == 0 || modulePathLength >= sizeof(modulePath))
         return NULL;
 
-    file = CreateFileA(modulePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
-                       FILE_ATTRIBUTE_NORMAL, NULL);
+    file = CreateFileA(modulePath, GENERIC_READ,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                       NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
         return NULL;
 
@@ -121,13 +127,15 @@ static const void *coduomp_mingw32_static_unwind_frames(HMODULE module)
         memcpy(shortName, sections[index].Name, IMAGE_SIZEOF_SHORT_NAME);
         shortName[IMAGE_SIZEOF_SHORT_NAME] = '\0';
         nameMatches = strcmp(shortName, ".eh_frame") == 0 ||
-                      coduomp_mingw32_long_section_name_matches(file, &ntHeaders->FileHeader, &sections[index], ".eh_frame");
+                      coduomp_mingw32_long_section_name_matches(
+                          file, &ntHeaders->FileHeader, &sections[index], ".eh_frame");
         if (nameMatches == 0)
             continue;
 
         sectionRva = sections[index].VirtualAddress;
         sectionSize = sections[index].Misc.VirtualSize;
-        if (sectionRva != 0 && sectionRva < ntHeaders->OptionalHeader.SizeOfImage && sectionSize >= sizeof(uint32_t) &&
+        if (sectionRva != 0 && sectionRva < ntHeaders->OptionalHeader.SizeOfImage &&
+            sectionSize >= sizeof(uint32_t) &&
             sectionSize <= ntHeaders->OptionalHeader.SizeOfImage - sectionRva) {
             const uint32_t *const candidate = (const uint32_t *)(imageBase + sectionRva);
             if (*candidate != 0)
@@ -197,7 +205,8 @@ void *coduomp_library_open(const char *libraryName)
  * populated portably through an object-pointer cast. Copying the native
  * loader's symbol carrier into the caller's typed slot preserves its bits and
  * keeps that conversion confined to this explicit dynamic-library boundary. */
-void coduomp_library_symbol(void *libraryHandle, const char *symbolName, void *destination, size_t destinationSize)
+void coduomp_library_symbol(void *libraryHandle, const char *symbolName,
+                            void *destination, size_t destinationSize)
 {
 #if defined(_WIN32)
     FARPROC symbol = GetProcAddress((HMODULE)libraryHandle, symbolName);

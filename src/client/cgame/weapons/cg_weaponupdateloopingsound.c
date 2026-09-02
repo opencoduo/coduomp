@@ -75,7 +75,8 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
         return;
 
     /* 0x300490e9: count the emission down by this frame's elapsed time (raw ms). */
-    cent->flashSoundLifetime = coduo_int32_from_bits((uint32_t)cent->flashSoundLifetime - (uint32_t)cg_frametime);
+    cent->flashSoundLifetime = coduo_int32_from_bits(
+        (uint32_t)cent->flashSoundLifetime - (uint32_t)cg_frametime);
 
     /* soundPos: the 3D emission point handed to CG_PlaySoundAliasByName as the channel
      * object (its origin). Written at [ESP+0x14..0x1c] in the machine code. */
@@ -92,7 +93,8 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
         if (self != NULL) {
             /* 0x30049116: CG_DObjGetSpecialTagWorldMatrix(self, "tag_flash",
              * &tagMatrix) — EDI=self, EAX=tagName, PUSH &tagMatrix. */
-            if (CG_DObjGetSpecialTagWorldMatrix(self, cg_muzzleFlashTagName, &tagMatrix)) {
+            if (CG_DObjGetSpecialTagWorldMatrix(self, cg_muzzleFlashTagName,
+                                                &tagMatrix)) {
                 /* 0x30049122-0x30049136: translation row -> soundPos. */
                 soundPos[0] = tagMatrix.origin[0];
                 soundPos[1] = tagMatrix.origin[1];
@@ -102,12 +104,14 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
         }
     } else {
         /* 0x3004913c-0x30049148: query this entity's engine DObj handle. */
-        struct DObj_s *self = (struct DObj_s *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number);
+        struct DObj_s *self = (struct DObj_s *)(intptr_t)cgame_syscall(
+            CG_DOBJ_GET_HANDLE, cent->currentState.number);
         if (self != NULL) {
             /* 0x3004915c: CG_DObjGetWorldTagMatrix(self=handle,
              * tagName="tag_flash", entity=cent, out=&tagMatrix) — ECX=handle,
              * EAX=tagName, PUSH &tagMatrix, PUSH cent. */
-            if (CG_DObjGetWorldTagMatrix(self, cg_muzzleFlashTagName, cent, &tagMatrix)) {
+            if (CG_DObjGetWorldTagMatrix(self, cg_muzzleFlashTagName,
+                                         cent, &tagMatrix)) {
                 /* 0x30049168-0x3004917c: translation row -> soundPos. */
                 soundPos[0] = tagMatrix.origin[0];
                 soundPos[1] = tagMatrix.origin[1];
@@ -121,7 +125,8 @@ void CG_WeaponUpdateLoopingSound(centity_t *cent)
         /* 0x30049182-0x3004918e: no tag point — use the entity's trajectory position
          * at cg_time. result in ECX (&soundPos), tr in EBX (&currentState.pos),
          * atTime in EAX (cg_time). */
-        BG_EvaluateTrajectory(&cent->currentState.pos, coduo_int32_from_bits(cg_time), soundPos);
+        BG_EvaluateTrajectory(&cent->currentState.pos,
+                              coduo_int32_from_bits(cg_time), soundPos);
     }
 
     /* 0x30049193: reload the (already-decremented) remaining lifetime and choose

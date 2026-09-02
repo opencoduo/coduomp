@@ -47,13 +47,15 @@ void QGL_EnableLogging(int32_t enable)
             (void)asctime(localTime);
 
             basePath = ri.Cvar_Get("fs_basepath", "", CVAR_NONE);
-            Com_sprintf(logPath, sizeof(logPath), "%s/gl.log", basePath->string);
+            Com_sprintf(logPath, sizeof(logPath), "%s/gl.log",
+                        basePath->string);
             rendererGlLogFile = fopen(logPath, "wt");
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
             if (rendererGlLogFile == NULL) {
                 rendererGlLoggingState = 0;
                 ri.Cvar_Set("r_logFile", "0");
-                ri.Printf(R_PRINT_ALL, "QGL_EnableLogging: could not open %s\n", logPath);
+                ri.Printf(R_PRINT_ALL,
+                          "QGL_EnableLogging: could not open %s\n", logPath);
                 return;
             }
             fprintf(rendererGlLogFile, "%s\n", asctime(localTime));
@@ -61,14 +63,14 @@ void QGL_EnableLogging(int32_t enable)
         }
 
 #define QGL_GL_ENTRY(type_, name_) \
-    if (qgl##name_ != NULL) \
-        qgl##name_ = GL_Log##name_;
+        if (qgl##name_ != NULL) \
+            qgl##name_ = GL_Log##name_;
 #include "qgl_gl_entries.h"
 #undef QGL_GL_ENTRY
 
 #define QGL_WGL_ENTRY(type_, name_) \
-    if (qwgl##name_ != NULL) \
-        qwgl##name_ = WGL_Log##name_;
+        if (qwgl##name_ != NULL) \
+            qwgl##name_ = WGL_Log##name_;
 #include "qgl_wgl_entries.h"
 #undef QGL_WGL_ENTRY
     } else {
@@ -78,11 +80,13 @@ void QGL_EnableLogging(int32_t enable)
             rendererGlLogFile = NULL;
         }
 
-#define QGL_GL_ENTRY(type_, name_) qgl##name_ = rendererGl##name_##Driver;
+#define QGL_GL_ENTRY(type_, name_) \
+        qgl##name_ = rendererGl##name_##Driver;
 #include "qgl_gl_entries.h"
 #undef QGL_GL_ENTRY
 
-#define QGL_WGL_ENTRY(type_, name_) qwgl##name_ = rendererWgl##name_##Driver;
+#define QGL_WGL_ENTRY(type_, name_) \
+        qwgl##name_ = rendererWgl##name_##Driver;
 #include "qgl_wgl_entries.h"
 #undef QGL_WGL_ENTRY
     }

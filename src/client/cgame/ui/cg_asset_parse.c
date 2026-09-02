@@ -14,7 +14,8 @@ enum {
     UI_STRING_COMPARE_LIMIT = 99999
 };
 
-#define ASSET_TOKEN_IS(text_) (Q_stricmpn((text_), token.string, UI_STRING_COMPARE_LIMIT) == 0)
+#define ASSET_TOKEN_IS(text_) \
+    (Q_stricmpn((text_), token.string, UI_STRING_COMPARE_LIMIT) == 0)
 #define READ_ASSET_TOKEN() trap_PC_ReadToken(sourceHandle, &token)
 
 qboolean CG_Asset_Parse(int32_t sourceHandle, int32_t loadMode)
@@ -33,32 +34,38 @@ qboolean CG_Asset_Parse(int32_t sourceHandle, int32_t loadMode)
         }
 
         if (ASSET_TOKEN_IS("font")) {
-            if (!PC_String_Parse(sourceHandle, &name) || !PC_Int_Parse(sourceHandle, &pointSize)) {
+            if (!PC_String_Parse(sourceHandle, &name) ||
+                !PC_Int_Parse(sourceHandle, &pointSize)) {
                 return qfalse;
             }
             g_uiDCInstance.registerFont(name, pointSize, &g_uiDCInstance.textFont, loadMode);
         } else if (ASSET_TOKEN_IS("smallFont")) {
-            if (!PC_String_Parse(sourceHandle, &name) || !PC_Int_Parse(sourceHandle, &pointSize)) {
+            if (!PC_String_Parse(sourceHandle, &name) ||
+                !PC_Int_Parse(sourceHandle, &pointSize)) {
                 return qfalse;
             }
             g_uiDCInstance.registerFont(name, pointSize, &g_uiDCInstance.smallFont, loadMode);
         } else if (ASSET_TOKEN_IS("bigfont")) {
-            if (!PC_String_Parse(sourceHandle, &name) || !PC_Int_Parse(sourceHandle, &pointSize)) {
+            if (!PC_String_Parse(sourceHandle, &name) ||
+                !PC_Int_Parse(sourceHandle, &pointSize)) {
                 return qfalse;
             }
             g_uiDCInstance.registerFont(name, pointSize, &g_uiDCInstance.bigFont, loadMode);
         } else if (ASSET_TOKEN_IS("extrabigfont")) {
-            if (!PC_String_Parse(sourceHandle, &name) || !PC_Int_Parse(sourceHandle, &pointSize)) {
+            if (!PC_String_Parse(sourceHandle, &name) ||
+                !PC_Int_Parse(sourceHandle, &pointSize)) {
                 return qfalse;
             }
             g_uiDCInstance.registerFont(name, pointSize, &g_uiDCInstance.extraBigFont, loadMode);
         } else if (ASSET_TOKEN_IS("boldFont")) {
-            if (!PC_String_Parse(sourceHandle, &name) || !PC_Int_Parse(sourceHandle, &pointSize)) {
+            if (!PC_String_Parse(sourceHandle, &name) ||
+                !PC_Int_Parse(sourceHandle, &pointSize)) {
                 return qfalse;
             }
             g_uiDCInstance.registerFont(name, pointSize, &g_uiDCInstance.boldFont, loadMode);
         } else if (ASSET_TOKEN_IS("consoleFont")) {
-            if (!PC_String_Parse(sourceHandle, &name) || !PC_Int_Parse(sourceHandle, &pointSize)) {
+            if (!PC_String_Parse(sourceHandle, &name) ||
+                !PC_Int_Parse(sourceHandle, &pointSize)) {
                 return qfalse;
             }
             g_uiDCInstance.registerFont(name, pointSize, &g_uiDCInstance.consoleFont, loadMode);
@@ -91,7 +98,8 @@ qboolean CG_Asset_Parse(int32_t sourceHandle, int32_t loadMode)
             if (!PC_String_Parse(sourceHandle, &g_uiDCInstance.cursorName)) {
                 return qfalse;
             }
-            g_uiDCInstance.cursor = trap_R_RegisterShaderNoMip(g_uiDCInstance.cursorName, loadMode);
+            g_uiDCInstance.cursor =
+                trap_R_RegisterShaderNoMip(g_uiDCInstance.cursorName, loadMode);
         } else if (ASSET_TOKEN_IS("fadeClamp")) {
             if (!PC_Float_Parse(sourceHandle, &g_uiDCInstance.menuFadeClamp)) {
                 return qfalse;

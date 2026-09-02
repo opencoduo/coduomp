@@ -61,7 +61,10 @@ int coduomp_crt_putenv_copy(const char *assignment)
     memcpy(name, assignment, nameLength);
     name[nameLength] = '\0';
 
-    const int result = separator[1] != '\0' ? setenv(name, separator + 1, 1) : unsetenv(name);
+    const int result =
+        separator[1] != '\0'
+            ? setenv(name, separator + 1, 1)
+            : unsetenv(name);
     free(name);
     return result;
 #endif

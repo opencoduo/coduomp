@@ -42,16 +42,21 @@
 void CG_AddLagometerSnapshotInfo(snapshot_t *snap)
 {
     if (snap == NULL) {
-        uint32_t slot = (uint32_t)cg_lagometer.snapshotCount & (uint32_t)(LAG_SAMPLES - 1);
+        uint32_t slot = (uint32_t)cg_lagometer.snapshotCount &
+                        (uint32_t)(LAG_SAMPLES - 1);
         cg_lagometer.snapshotSamples[slot] = -1;
-        cg_lagometer.snapshotCount = coduo_int32_from_bits((uint32_t)cg_lagometer.snapshotCount + 1u);
+        cg_lagometer.snapshotCount = coduo_int32_from_bits(
+            (uint32_t)cg_lagometer.snapshotCount + 1u);
         return;
     }
 
-    uint32_t sampleSlot = (uint32_t)cg_lagometer.snapshotCount & (uint32_t)(LAG_SAMPLES - 1);
+    uint32_t sampleSlot = (uint32_t)cg_lagometer.snapshotCount &
+                          (uint32_t)(LAG_SAMPLES - 1);
     cg_lagometer.snapshotSamples[sampleSlot] = snap->ping;
     /* 0x30018a71 reloads snapshotCount before the second mask. */
-    uint32_t flagSlot = (uint32_t)cg_lagometer.snapshotCount & (uint32_t)(LAG_SAMPLES - 1);
+    uint32_t flagSlot = (uint32_t)cg_lagometer.snapshotCount &
+                        (uint32_t)(LAG_SAMPLES - 1);
     cg_lagometer.snapshotFlags[flagSlot].word = coduo_int32_from_bits(snap->snapFlags);
-    cg_lagometer.snapshotCount = coduo_int32_from_bits((uint32_t)cg_lagometer.snapshotCount + 1u);
+    cg_lagometer.snapshotCount = coduo_int32_from_bits(
+        (uint32_t)cg_lagometer.snapshotCount + 1u);
 }

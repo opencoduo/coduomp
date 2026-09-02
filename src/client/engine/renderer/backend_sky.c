@@ -33,44 +33,72 @@ enum {
     R_SUN_INITIAL_UPDATE_MSEC = 10,
     R_SUN_SPRITE_SHADER_LIGHTMAP_MODE = -3,
     R_SUN_SPRITE_SHADER_USAGE = 4,
-    R_SKY_VERTEX_COUNT = R_SKYBOX_FACE_COUNT * R_SKY_GRID_SIDE * R_SKY_GRID_SIDE,
-    R_SKY_MAX_INDEX_COUNT = (R_SKY_GRID_SIDE - 1) * (R_SKY_GRID_SIDE - 1) * 4
+    R_SKY_VERTEX_COUNT =
+        R_SKYBOX_FACE_COUNT * R_SKY_GRID_SIDE * R_SKY_GRID_SIDE,
+    R_SKY_MAX_INDEX_COUNT =
+        (R_SKY_GRID_SIDE - 1) * (R_SKY_GRID_SIDE - 1) * 4
 };
 
 /* The original descriptor is rendererWorldData.skyVertexStorage at
  * 0x0388bfa8, reached through the fixed pointer at 0x0389c4d0.
  * R_BuildSkyBox fills it according to the selected static-memory backend. */
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(renderer_sky_vertex_t) == 0x04, "i386 sky-vertex alignment changed");
-_Static_assert(offsetof(renderer_sky_vertex_t, texCoord) == 0x00, "i386 sky-vertex texture-coordinate offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_t *)0)->texCoord) == 0x08, "i386 sky-vertex texture-coordinate extent changed");
-_Static_assert(offsetof(renderer_sky_vertex_t, position) == 0x08, "i386 sky-vertex position offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_t *)0)->position) == 0x10, "i386 sky-vertex position extent changed");
-_Static_assert(sizeof(renderer_sky_vertex_t) == 0x18, "original i386 sky-vertex stride changed");
+_Static_assert(_Alignof(renderer_sky_vertex_t) == 0x04,
+               "i386 sky-vertex alignment changed");
+_Static_assert(offsetof(renderer_sky_vertex_t, texCoord) == 0x00,
+               "i386 sky-vertex texture-coordinate offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_t *)0)->texCoord) == 0x08,
+               "i386 sky-vertex texture-coordinate extent changed");
+_Static_assert(offsetof(renderer_sky_vertex_t, position) == 0x08,
+               "i386 sky-vertex position offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_t *)0)->position) == 0x10,
+               "i386 sky-vertex position extent changed");
+_Static_assert(sizeof(renderer_sky_vertex_t) == 0x18,
+               "original i386 sky-vertex stride changed");
 
-_Static_assert(_Alignof(renderer_sky_vertex_base_t) == 0x04, "i386 sky-vertex base-union alignment changed");
-_Static_assert(offsetof(renderer_sky_vertex_base_t, vertices) == 0x00, "i386 sky-vertex client-base offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_base_t *)0)->vertices) == 0x04, "i386 sky-vertex client-base extent changed");
-_Static_assert(offsetof(renderer_sky_vertex_base_t, bufferObject) == 0x00, "i386 sky-vertex object-base offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_base_t *)0)->bufferObject) == 0x04, "i386 sky-vertex object-base extent changed");
-_Static_assert(sizeof(renderer_sky_vertex_base_t) == 0x04, "original i386 sky-vertex base-union size changed");
+_Static_assert(_Alignof(renderer_sky_vertex_base_t) == 0x04,
+               "i386 sky-vertex base-union alignment changed");
+_Static_assert(offsetof(renderer_sky_vertex_base_t, vertices) == 0x00,
+               "i386 sky-vertex client-base offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_base_t *)0)->vertices) == 0x04,
+               "i386 sky-vertex client-base extent changed");
+_Static_assert(offsetof(renderer_sky_vertex_base_t, bufferObject) == 0x00,
+               "i386 sky-vertex object-base offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_base_t *)0)->bufferObject) ==
+                   0x04,
+               "i386 sky-vertex object-base extent changed");
+_Static_assert(sizeof(renderer_sky_vertex_base_t) == 0x04,
+               "original i386 sky-vertex base-union size changed");
 
-_Static_assert(_Alignof(renderer_sky_vertex_storage_t) == 0x04, "i386 sky-storage alignment changed");
-_Static_assert(offsetof(renderer_sky_vertex_storage_t, memorySource) == 0x00, "i386 sky-storage memory-source offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->memorySource) == 0x04, "i386 sky-storage memory-source extent changed");
-_Static_assert(offsetof(renderer_sky_vertex_storage_t, backend) == 0x04, "i386 sky-storage backend offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->backend) == 0x04, "i386 sky-storage backend extent changed");
-_Static_assert(offsetof(renderer_sky_vertex_storage_t, base) == 0x08, "i386 sky-storage base offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->base) == 0x04, "i386 sky-storage base extent changed");
-_Static_assert(offsetof(renderer_sky_vertex_storage_t, objectOffset) == 0x0c, "i386 sky-storage object offset changed");
-_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->objectOffset) == 0x04, "i386 sky-storage object extent changed");
-_Static_assert(sizeof(renderer_sky_vertex_storage_t) == 0x10, "original i386 sky-storage descriptor size changed");
+_Static_assert(_Alignof(renderer_sky_vertex_storage_t) == 0x04,
+               "i386 sky-storage alignment changed");
+_Static_assert(offsetof(renderer_sky_vertex_storage_t, memorySource) == 0x00,
+               "i386 sky-storage memory-source offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->memorySource) ==
+                   0x04,
+               "i386 sky-storage memory-source extent changed");
+_Static_assert(offsetof(renderer_sky_vertex_storage_t, backend) == 0x04,
+               "i386 sky-storage backend offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->backend) == 0x04,
+               "i386 sky-storage backend extent changed");
+_Static_assert(offsetof(renderer_sky_vertex_storage_t, base) == 0x08,
+               "i386 sky-storage base offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->base) == 0x04,
+               "i386 sky-storage base extent changed");
+_Static_assert(offsetof(renderer_sky_vertex_storage_t, objectOffset) == 0x0c,
+               "i386 sky-storage object offset changed");
+_Static_assert(sizeof(((renderer_sky_vertex_storage_t *)0)->objectOffset) ==
+                   0x04,
+               "i386 sky-storage object extent changed");
+_Static_assert(sizeof(renderer_sky_vertex_storage_t) == 0x10,
+               "original i386 sky-storage descriptor size changed");
 #endif
 
 /* Exact 0x005b9cf4 float; semantically 1.0f / 640.0f. */
 static const float r_sunFlareViewportScale = 0.0015625000232830644f;
 /* Exact 0x005b9d00 double; semantically 2^-30. */
-static const double r_integerRoundingBias = 9.31322574615478515625e-10;
+static const double r_integerRoundingBias =
+    9.31322574615478515625e-10;
 /* Exact 0x0389c574/0x0389ada0 values used to keep sky sampling inside an
  * image's edge texels: 1/256 and 255/256. */
 static const float r_skyTexCoordMin = 0.00390625f;
@@ -83,21 +111,41 @@ static const float r_skyCloudWorldRadiusSquared = 16777216.0f;
 static const float r_negativePi = -3.1415927410125732f;
 static const float r_pi = 3.1415927410125732f;
 /* Exact 0x005b9da8 float; semantically 1.0f / 180.0f. */
-static const float r_inverseDegreesPerHalfTurn = 0.0055555556900799274f;
+static const float r_inverseDegreesPerHalfTurn =
+    0.0055555556900799274f;
 /* Exact 0x005b9d30 tangent-scale float used to turn the configured angular
  * sprite size into a displacement around the unit sun direction. */
-static const float r_sunSpriteAngularScale = 0.0013110929867252707f;
+static const float r_sunSpriteAngularScale =
+    0.0013110929867252707f;
 /* Exact 0x005b9d2c float selecting a stable reference direction. */
-static const float r_sunSpriteReferenceThreshold = 0.9900000095367432f;
+static const float r_sunSpriteReferenceThreshold =
+    0.9900000095367432f;
 
 /* Original pointer tables at 0x005ceae0 and 0x005ceb30. Their order is also
  * the serialized .sun-file order and the order printed by R_SunHelp_f.
  * PE_RELOCATION_VALUES_VERIFIED: all twenty cvar-name targets match the PE. */
 static const char *const rendererSunCvarNames[R_SUN_CVAR_COUNT] = {
-    "r_sunsprite_shader",   "r_sunsprite_size",     "r_sunflare_shader",      "r_sunflare_min_size", "r_sunflare_min_angle",
-    "r_sunflare_max_size",  "r_sunflare_max_angle", "r_sunflare_max_alpha",   "r_sunflare_fadein",   "r_sunflare_fadeout",
-    "r_sunblind_min_angle", "r_sunblind_max_angle", "r_sunblind_max_darken",  "r_sunblind_fadein",   "r_sunblind_fadeout",
-    "r_sunglare_min_angle", "r_sunglare_max_angle", "r_sunglare_max_lighten", "r_sunglare_fadein",   "r_sunglare_fadeout"};
+    "r_sunsprite_shader",
+    "r_sunsprite_size",
+    "r_sunflare_shader",
+    "r_sunflare_min_size",
+    "r_sunflare_min_angle",
+    "r_sunflare_max_size",
+    "r_sunflare_max_angle",
+    "r_sunflare_max_alpha",
+    "r_sunflare_fadein",
+    "r_sunflare_fadeout",
+    "r_sunblind_min_angle",
+    "r_sunblind_max_angle",
+    "r_sunblind_max_darken",
+    "r_sunblind_fadein",
+    "r_sunblind_fadeout",
+    "r_sunglare_min_angle",
+    "r_sunglare_max_angle",
+    "r_sunglare_max_lighten",
+    "r_sunglare_fadein",
+    "r_sunglare_fadeout"
+};
 
 /* Original pointer table 0x005ceb30.
  * PE_RELOCATION_VALUES_VERIFIED: all twenty description targets match. */
@@ -121,7 +169,8 @@ static const char *const rendererSunCvarDescriptions[R_SUN_CVAR_COUNT] = {
     "angle from sun in degres inside which glare is max",
     "0-1 fraction for how white the world is at max glare",
     "time in seconds to fade glare from 0% to 100%",
-    "time in seconds to fade glare from 100% to 0%"}; /* original 0x005ceb30 */
+    "time in seconds to fade glare from 100% to 0%"
+}; /* original 0x005ceb30 */
 
 static float rendererSkyTexCoordMin;
 static float rendererSkyTexCoordMax;
@@ -146,27 +195,51 @@ void R_SetSkyBox(renderer_sky_vertex_storage_t *storage)
 /* Original 0x0389ada8..0x0389b53f and 0x0389b5a0..0x0389c4cf.
  * R_InitSkyTexCoords fills one ray/sphere intersection scale and one angular
  * cloud coordinate for every point of every cube face. */
-static float rendererSkyCloudTexP[R_SKYBOX_FACE_COUNT][R_SKY_GRID_SIDE][R_SKY_GRID_SIDE];
-static vec2_t rendererSkyCloudTexCoords[R_SKYBOX_FACE_COUNT][R_SKY_GRID_SIDE][R_SKY_GRID_SIDE];
+static float rendererSkyCloudTexP
+    [R_SKYBOX_FACE_COUNT][R_SKY_GRID_SIDE][R_SKY_GRID_SIDE];
+static vec2_t rendererSkyCloudTexCoords
+    [R_SKYBOX_FACE_COUNT][R_SKY_GRID_SIDE][R_SKY_GRID_SIDE];
 
 /* Exact six-dword table at original 0x005ceac4. Sky shader face arrays use a
  * different order from the clipping/grid side order. */
-static const int32_t rendererSkyFaceImageOrder[R_SKYBOX_FACE_COUNT] = {0, 2, 1, 3, 4, 5};
+static const int32_t rendererSkyFaceImageOrder[R_SKYBOX_FACE_COUNT] = {
+    0, 2, 1, 3, 4, 5
+};
 
 /* Original 0x005cec10 table. Positive entries select source coordinate n-1;
  * negative entries select and negate source coordinate -n-1. */
-static const int32_t rendererSkyAxisMap[R_SKYBOX_FACE_COUNT][R_SKY_TRIANGLE_VERTEX_COUNT] = {{3, -1, 2},  {-3, 1, 2},  {1, 3, 2},
-                                                                                             {-1, -3, 2}, {-2, -1, 3}, {2, -1, -3}};
+static const int32_t
+    rendererSkyAxisMap[R_SKYBOX_FACE_COUNT][R_SKY_TRIANGLE_VERTEX_COUNT] = {
+        { 3, -1,  2},
+        {-3,  1,  2},
+        { 1,  3,  2},
+        {-1, -3,  2},
+        {-2, -1,  3},
+        { 2, -1, -3}
+    };
 
 /* Original 0x005ceb80 plane normals used by ClipSkyPolygon. */
-static const vec3_t rendererSkyClipNormals[R_SKY_CLIP_PLANE_COUNT] = {{1.0f, 1.0f, 0.0f}, {1.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 1.0f},
-                                                                      {0.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 1.0f},  {-1.0f, 0.0f, 1.0f}};
+static const vec3_t rendererSkyClipNormals[R_SKY_CLIP_PLANE_COUNT] = {
+    { 1.0f,  1.0f, 0.0f},
+    { 1.0f, -1.0f, 0.0f},
+    { 0.0f, -1.0f, 1.0f},
+    { 0.0f,  1.0f, 1.0f},
+    { 1.0f,  0.0f, 1.0f},
+    {-1.0f,  0.0f, 1.0f}
+};
 
 /* Original 0x005cebc8 table used to project a dominant cube face into sky
  * s/t coordinates. It uses the same signed one-based selector convention as
  * rendererSkyAxisMap. */
-static const int32_t rendererSkyProjectionMap[R_SKYBOX_FACE_COUNT][R_SKY_TRIANGLE_VERTEX_COUNT] = {{-2, 3, 1},  {2, 3, -1},  {1, 3, 2},
-                                                                                                   {-1, 3, -2}, {-2, -1, 3}, {-2, 1, -3}};
+static const int32_t rendererSkyProjectionMap
+    [R_SKYBOX_FACE_COUNT][R_SKY_TRIANGLE_VERTEX_COUNT] = {
+        {-2,  3,  1},
+        { 2,  3, -1},
+        { 1,  3,  2},
+        {-1,  3, -2},
+        {-2, -1,  3},
+        {-2,  1, -3}
+    };
 
 /* Exact original +/-0.1f clipping thresholds at 0x005b9cc0/0x005b9cc4. */
 static const float rendererSkyClipEpsilon = 0.10000000149011612f;
@@ -194,15 +267,18 @@ void AddSkyPolygon(int32_t vertexCount, vec3_t *vertices)
     for (; vertexIndex + 3 < vertexCount; vertexIndex += 4) {
         sumXRaw += (long double)vertices[vertexIndex][0];
         sumYRaw = (long double)sum[1] + vertices[vertexIndex][1];
-        sum[2] = (float)((long double)sum[2] + vertices[vertexIndex][2]);
+        sum[2] = (float)((long double)sum[2] +
+                         vertices[vertexIndex][2]);
 
         sumXRaw += (long double)vertices[vertexIndex + 1][0];
         sum[0] = (float)sumXRaw;
         sumYRaw += (long double)vertices[vertexIndex + 1][1];
         {
-            long double sumZRaw = (long double)sum[2] + vertices[vertexIndex + 1][2];
+            long double sumZRaw =
+                (long double)sum[2] + vertices[vertexIndex + 1][2];
 
-            sumXRaw = (long double)sum[0] + vertices[vertexIndex + 2][0];
+            sumXRaw = (long double)sum[0] +
+                      vertices[vertexIndex + 2][0];
             sum[0] = (float)sumXRaw;
             sumYRaw += (long double)vertices[vertexIndex + 2][1];
             sum[1] = (float)sumYRaw;
@@ -210,15 +286,19 @@ void AddSkyPolygon(int32_t vertexCount, vec3_t *vertices)
             sum[2] = (float)sumZRaw;
         }
 
-        sumXRaw = (long double)sum[0] + vertices[vertexIndex + 3][0];
-        sumYRaw = (long double)sum[1] + vertices[vertexIndex + 3][1];
+        sumXRaw = (long double)sum[0] +
+                  vertices[vertexIndex + 3][0];
+        sumYRaw = (long double)sum[1] +
+                  vertices[vertexIndex + 3][1];
         sum[1] = (float)sumYRaw;
-        sum[2] = (float)((long double)sum[2] + vertices[vertexIndex + 3][2]);
+        sum[2] = (float)((long double)sum[2] +
+                         vertices[vertexIndex + 3][2]);
     }
     for (; vertexIndex < vertexCount; ++vertexIndex) {
         sumXRaw += (long double)vertices[vertexIndex][0];
         sumYRaw += (long double)vertices[vertexIndex][1];
-        sum[2] = (float)((long double)sum[2] + vertices[vertexIndex][2]);
+        sum[2] = (float)((long double)sum[2] +
+                         vertices[vertexIndex][2]);
     }
     sum[0] = (float)sumXRaw;
     sum[1] = (float)sumYRaw;
@@ -226,16 +306,19 @@ void AddSkyPolygon(int32_t vertexCount, vec3_t *vertices)
     absoluteSum[0] = (float)fabsl(sumXRaw);
     absoluteSum[1] = (float)fabsl(sumYRaw);
     absoluteSum[2] = fabsf(sum[2]);
-    if (absoluteSum[0] > absoluteSum[1] && absoluteSum[0] > absoluteSum[2]) {
+    if (absoluteSum[0] > absoluteSum[1] &&
+        absoluteSum[0] > absoluteSum[2]) {
         axis = sumXRaw < 0.0L ? 1 : 0;
-    } else if (absoluteSum[1] > absoluteSum[2] && absoluteSum[1] > absoluteSum[0]) {
+    } else if (absoluteSum[1] > absoluteSum[2] &&
+               absoluteSum[1] > absoluteSum[0]) {
         axis = sum[1] < 0.0f ? 3 : 2;
     } else {
         axis = sum[2] < 0.0f ? 5 : 4;
     }
 
     for (vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
-        const int32_t divisorSelector = rendererSkyProjectionMap[axis][2];
+        const int32_t divisorSelector =
+            rendererSkyProjectionMap[axis][2];
         const int32_t sSelector = rendererSkyProjectionMap[axis][0];
         const int32_t tSelector = rendererSkyProjectionMap[axis][1];
         float divisor;
@@ -253,14 +336,18 @@ void AddSkyPolygon(int32_t vertexCount, vec3_t *vertices)
             continue;
 
         if (sSelector < 0) {
-            s = (float)((-1.0L / (long double)divisor) * vertices[vertexIndex][-sSelector - 1]);
+            s = (float)((-1.0L / (long double)divisor) *
+                        vertices[vertexIndex][-sSelector - 1]);
         } else {
-            s = (float)((long double)vertices[vertexIndex][sSelector - 1] / (long double)divisor);
+            s = (float)((long double)vertices[vertexIndex][sSelector - 1] /
+                        (long double)divisor);
         }
         if (tSelector < 0) {
-            tRaw = (-1.0L / (long double)divisor) * vertices[vertexIndex][-tSelector - 1];
+            tRaw = (-1.0L / (long double)divisor) *
+                   vertices[vertexIndex][-tSelector - 1];
         } else {
-            tRaw = (long double)vertices[vertexIndex][tSelector - 1] / (long double)divisor;
+            tRaw = (long double)vertices[vertexIndex][tSelector - 1] /
+                   (long double)divisor;
         }
         if (s < rendererSkyMins[0][axis])
             rendererSkyMins[0][axis] = s;
@@ -284,7 +371,8 @@ typedef enum renderer_sky_clip_side_e {
  * same-module Mac symbol/signature ClipSkyPolygon. The input needs one spare
  * vector because the original body closes the polygon in place before
  * splitting it; every maintained caller provides that storage. */
-void ClipSkyPolygon(int32_t vertexCount, vec3_t *vertices, int32_t clipStage)
+void ClipSkyPolygon(int32_t vertexCount, vec3_t *vertices,
+                    int32_t clipStage)
 {
     renderer_sky_clip_side_t sides[R_SKY_MAX_CLIP_VERTICES];
     float distances[R_SKY_MAX_CLIP_VERTICES];
@@ -295,8 +383,7 @@ void ClipSkyPolygon(int32_t vertexCount, vec3_t *vertices, int32_t clipStage)
     int32_t vertexIndex;
 
     if (vertexCount > R_SKY_MAX_INPUT_CLIP_VERTICES) {
-        ri.Error(ERR_DROP, "\x15"
-                           "ClipSkyPolygon: MAX_CLIP_VERTS");
+        ri.Error(ERR_DROP, "\x15" "ClipSkyPolygon: MAX_CLIP_VERTS");
     }
 
     if (clipStage == R_SKY_CLIP_PLANE_COUNT) {
@@ -305,9 +392,13 @@ void ClipSkyPolygon(int32_t vertexCount, vec3_t *vertices, int32_t clipStage)
     }
 
     for (vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
-        const float distance = vertices[vertexIndex][0] * rendererSkyClipNormals[clipStage][0] +
-                               vertices[vertexIndex][1] * rendererSkyClipNormals[clipStage][1] +
-                               vertices[vertexIndex][2] * rendererSkyClipNormals[clipStage][2];
+        const float distance =
+            vertices[vertexIndex][0] *
+                rendererSkyClipNormals[clipStage][0] +
+            vertices[vertexIndex][1] *
+                rendererSkyClipNormals[clipStage][1] +
+            vertices[vertexIndex][2] *
+                rendererSkyClipNormals[clipStage][2];
 
         distances[vertexIndex] = distance;
         if (distance > rendererSkyClipEpsilon) {
@@ -352,29 +443,42 @@ void ClipSkyPolygon(int32_t vertexCount, vec3_t *vertices, int32_t clipStage)
 
         case R_SKY_CLIP_ON_PLANE:
             for (outputSide = 0; outputSide < 2; ++outputSide) {
-                clipped[outputSide][clippedCount[outputSide]][0] = vertices[vertexIndex][0];
-                clipped[outputSide][clippedCount[outputSide]][1] = vertices[vertexIndex][1];
-                clipped[outputSide][clippedCount[outputSide]][2] = vertices[vertexIndex][2];
+                clipped[outputSide][clippedCount[outputSide]][0] =
+                    vertices[vertexIndex][0];
+                clipped[outputSide][clippedCount[outputSide]][1] =
+                    vertices[vertexIndex][1];
+                clipped[outputSide][clippedCount[outputSide]][2] =
+                    vertices[vertexIndex][2];
                 ++clippedCount[outputSide];
             }
             break;
         }
 
-        if (sides[vertexIndex] == R_SKY_CLIP_ON_PLANE || sides[vertexIndex + 1] == R_SKY_CLIP_ON_PLANE ||
+        if (sides[vertexIndex] == R_SKY_CLIP_ON_PLANE ||
+            sides[vertexIndex + 1] == R_SKY_CLIP_ON_PLANE ||
             sides[vertexIndex] == sides[vertexIndex + 1]) {
             continue;
         }
 
         {
-            const float fraction = distances[vertexIndex] / (distances[vertexIndex] - distances[vertexIndex + 1]);
+            const float fraction =
+                distances[vertexIndex] /
+                (distances[vertexIndex] - distances[vertexIndex + 1]);
             vec3_t intersection;
             int32_t component;
 
-            for (component = 0; component < R_SKY_TRIANGLE_VERTEX_COUNT; ++component) {
+            for (component = 0;
+                 component < R_SKY_TRIANGLE_VERTEX_COUNT;
+                 ++component) {
                 intersection[component] =
-                    vertices[vertexIndex][component] + fraction * (vertices[vertexIndex + 1][component] - vertices[vertexIndex][component]);
-                clipped[0][clippedCount[0]][component] = intersection[component];
-                clipped[1][clippedCount[1]][component] = intersection[component];
+                    vertices[vertexIndex][component] +
+                    fraction *
+                        (vertices[vertexIndex + 1][component] -
+                         vertices[vertexIndex][component]);
+                clipped[0][clippedCount[0]][component] =
+                    intersection[component];
+                clipped[1][clippedCount[1]][component] =
+                    intersection[component];
             }
             ++clippedCount[0];
             ++clippedCount[1];
@@ -412,19 +516,32 @@ void RB_ClipSkyPolygons(shaderCommands_t *tessellation)
 
     ClearSkyBox();
 
-    for (firstIndex = 0; firstIndex < tessellation->indexCount; firstIndex += R_SKY_TRIANGLE_VERTEX_COUNT) {
+    for (firstIndex = 0;
+         firstIndex < tessellation->indexCount;
+         firstIndex += R_SKY_TRIANGLE_VERTEX_COUNT) {
         int32_t triangleVertex;
 
-        for (triangleVertex = 0; triangleVertex < R_SKY_TRIANGLE_VERTEX_COUNT; ++triangleVertex) {
-            const uint16_t vertexIndex = tessellation->indexes[firstIndex + triangleVertex];
-            const int32_t componentOffset = (int32_t)vertexIndex * tessellation->vertexComponentCount;
+        for (triangleVertex = 0;
+             triangleVertex < R_SKY_TRIANGLE_VERTEX_COUNT;
+             ++triangleVertex) {
+            const uint16_t vertexIndex =
+                tessellation->indexes[firstIndex + triangleVertex];
+            const int32_t componentOffset =
+                (int32_t)vertexIndex * tessellation->vertexComponentCount;
 
-            triangle[triangleVertex][0] = tessellation->xyz[componentOffset + 0] - backEnd.viewParms.orientation.origin[0];
-            triangle[triangleVertex][1] = tessellation->xyz[componentOffset + 1] - backEnd.viewParms.orientation.origin[1];
-            triangle[triangleVertex][2] = tessellation->xyz[componentOffset + 2] - backEnd.viewParms.orientation.origin[2];
+            triangle[triangleVertex][0] =
+                tessellation->xyz[componentOffset + 0] -
+                backEnd.viewParms.orientation.origin[0];
+            triangle[triangleVertex][1] =
+                tessellation->xyz[componentOffset + 1] -
+                backEnd.viewParms.orientation.origin[1];
+            triangle[triangleVertex][2] =
+                tessellation->xyz[componentOffset + 2] -
+                backEnd.viewParms.orientation.origin[2];
         }
 
-        ClipSkyPolygon(R_SKY_TRIANGLE_VERTEX_COUNT, triangle, R_SKY_INITIAL_CLIP_STAGE);
+        ClipSkyPolygon(R_SKY_TRIANGLE_VERTEX_COUNT, triangle,
+                       R_SKY_INITIAL_CLIP_STAGE);
     }
 }
 
@@ -433,15 +550,19 @@ void RB_ClipSkyPolygons(shaderCommands_t *tessellation)
  * same-module Mac symbol and five-argument signature MakeSkyVec. Windows
  * instructions prove the signed axis table, homogeneous zero, and clamped
  * sky-image texcoord transformation. */
-void MakeSkyVec(float s, float t, int32_t axis, vec2_t texCoord, vec4_t position)
+void MakeSkyVec(float s, float t, int32_t axis,
+                vec2_t texCoord, vec4_t position)
 {
     const float source[R_SKY_TRIANGLE_VERTEX_COUNT] = {s, t, 1.0f};
     float skyS;
     float skyT;
     int32_t component;
 
-    for (component = 0; component < R_SKY_TRIANGLE_VERTEX_COUNT; ++component) {
-        const int32_t sourceSelector = rendererSkyAxisMap[axis][component];
+    for (component = 0;
+         component < R_SKY_TRIANGLE_VERTEX_COUNT;
+         ++component) {
+        const int32_t sourceSelector =
+            rendererSkyAxisMap[axis][component];
 
         if (sourceSelector < 0) {
             position[component] = -source[-sourceSelector - 1];
@@ -474,30 +595,52 @@ void MakeSkyVec(float s, float t, int32_t axis, vec2_t texCoord, vec4_t position
  * Windows proves the inclusive 9-point grid walks through zero-extended
  * 16-bit loop values and dimensions, cloud-coordinate lookup, vertex-limit
  * check, and both triangle windings. */
-static void FillCloudySkySide(const int32_t mins[2], const int32_t maxs[2], int32_t side, qboolean addIndexes)
+static void FillCloudySkySide(const int32_t mins[2],
+                              const int32_t maxs[2], int32_t side,
+                              qboolean addIndexes)
 {
     const int32_t vertexStart = tess.vertexCount;
-    const uint16_t sWidth = (uint16_t)((uint16_t)maxs[0] - (uint16_t)mins[0] + 1u);
-    const uint16_t tHeight = (uint16_t)((uint16_t)maxs[1] - (uint16_t)mins[1] + 1u);
-    const int32_t maxSBound = (int32_t)((uint32_t)maxs[0] + R_SKY_GRID_CENTER);
-    const int32_t maxTBound = (int32_t)((uint32_t)maxs[1] + R_SKY_GRID_CENTER);
+    const uint16_t sWidth = (uint16_t)(
+        (uint16_t)maxs[0] - (uint16_t)mins[0] + 1u);
+    const uint16_t tHeight = (uint16_t)(
+        (uint16_t)maxs[1] - (uint16_t)mins[1] + 1u);
+    const int32_t maxSBound = (int32_t)(
+        (uint32_t)maxs[0] + R_SKY_GRID_CENTER);
+    const int32_t maxTBound = (int32_t)(
+        (uint32_t)maxs[1] + R_SKY_GRID_CENTER);
     uint16_t t;
     uint16_t s;
 
-    for (t = (uint16_t)((uint16_t)mins[1] + R_SKY_GRID_CENTER); (int32_t)(uint32_t)t <= maxTBound; t = (uint16_t)(t + 1u)) {
-        for (s = (uint16_t)((uint16_t)mins[0] + R_SKY_GRID_CENTER); (int32_t)(uint32_t)s <= maxSBound; s = (uint16_t)(s + 1u)) {
-            float *position = &tess.xyz[tess.vertexCount * tess.vertexComponentCount];
+    for (t = (uint16_t)(
+             (uint16_t)mins[1] + R_SKY_GRID_CENTER);
+         (int32_t)(uint32_t)t <= maxTBound;
+         t = (uint16_t)(t + 1u)) {
+        for (s = (uint16_t)(
+                 (uint16_t)mins[0] + R_SKY_GRID_CENTER);
+             (int32_t)(uint32_t)s <= maxSBound;
+             s = (uint16_t)(s + 1u)) {
+            float *position =
+                &tess.xyz[tess.vertexCount *
+                          tess.vertexComponentCount];
 
-            MakeSkyVec((float)((int32_t)(uint32_t)s - R_SKY_GRID_CENTER) * 0.25f, (float)((int32_t)(uint32_t)t - R_SKY_GRID_CENTER) * 0.25f,
+            MakeSkyVec((float)((int32_t)(uint32_t)s -
+                               R_SKY_GRID_CENTER) * 0.25f,
+                       (float)((int32_t)(uint32_t)t -
+                               R_SKY_GRID_CENTER) * 0.25f,
                        side, NULL, position);
-            tess.texCoords[R_TESS_BASE_TEXCOORD_SET][tess.vertexCount][0] = rendererSkyCloudTexCoords[side][t][s][0];
-            tess.texCoords[R_TESS_BASE_TEXCOORD_SET][tess.vertexCount][1] = rendererSkyCloudTexCoords[side][t][s][1];
+            tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                          [tess.vertexCount][0] =
+                rendererSkyCloudTexCoords[side][t][s][0];
+            tess.texCoords[R_TESS_BASE_TEXCOORD_SET]
+                          [tess.vertexCount][1] =
+                rendererSkyCloudTexCoords[side][t][s][1];
 
             ++tess.vertexCount;
             if (tess.vertexCount >= R_MAX_TESS_VERTICES) {
-                ri.Error(ERR_DROP, "\x15"
-                                   "SHADER_MAX_VERTEXES hit in "
-                                   "FillCloudySkySide()\n");
+                ri.Error(
+                    ERR_DROP,
+                    "\x15" "SHADER_MAX_VERTEXES hit in "
+                    "FillCloudySkySide()\n");
             }
         }
     }
@@ -505,15 +648,25 @@ static void FillCloudySkySide(const int32_t mins[2], const int32_t maxs[2], int3
     if (addIndexes == qfalse)
         return;
 
-    for (t = 0; (int32_t)(uint32_t)t < (int32_t)(uint32_t)tHeight - 1; t = (uint16_t)(t + 1u)) {
-        for (s = 0; (int32_t)(uint32_t)s < (int32_t)(uint32_t)sWidth - 1; s = (uint16_t)(s + 1u)) {
-            const uint32_t vertex = (uint32_t)vertexStart + (uint32_t)t * (uint32_t)sWidth + (uint32_t)s;
+    for (t = 0;
+         (int32_t)(uint32_t)t < (int32_t)(uint32_t)tHeight - 1;
+         t = (uint16_t)(t + 1u)) {
+        for (s = 0;
+             (int32_t)(uint32_t)s < (int32_t)(uint32_t)sWidth - 1;
+             s = (uint16_t)(s + 1u)) {
+            const uint32_t vertex =
+                (uint32_t)vertexStart +
+                (uint32_t)t * (uint32_t)sWidth +
+                (uint32_t)s;
 
             tess.indexes[tess.indexCount++] = (uint16_t)vertex;
-            tess.indexes[tess.indexCount++] = (uint16_t)(vertex + sWidth);
+            tess.indexes[tess.indexCount++] =
+                (uint16_t)(vertex + sWidth);
             tess.indexes[tess.indexCount++] = (uint16_t)(vertex + 1);
-            tess.indexes[tess.indexCount++] = (uint16_t)(vertex + sWidth);
-            tess.indexes[tess.indexCount++] = (uint16_t)(vertex + sWidth + 1);
+            tess.indexes[tess.indexCount++] =
+                (uint16_t)(vertex + sWidth);
+            tess.indexes[tess.indexCount++] =
+                (uint16_t)(vertex + sWidth + 1);
             tess.indexes[tess.indexCount++] = (uint16_t)(vertex + 1);
         }
     }
@@ -536,13 +689,25 @@ static void FillCloudBox(shader_t *shader, int32_t stageIndex)
         if (side == R_SKYBOX_FACE_COUNT - 1)
             continue;
 
-        rendererSkyMins[0][side] = (float)((long double)floor((double)((long double)rendererSkyMins[0][side] * 4.0L)) * 0.25L);
-        rendererSkyMins[1][side] = (float)((long double)floor((double)((long double)rendererSkyMins[1][side] * 4.0L)) * 0.25L);
-        rendererSkyMaxs[0][side] = (float)((long double)ceil((double)((long double)rendererSkyMaxs[0][side] * 4.0L)) * 0.25L);
-        const long double maxTRaw = (long double)ceil((double)((long double)rendererSkyMaxs[1][side] * 4.0L)) * 0.25L;
+        rendererSkyMins[0][side] =
+            (float)((long double)floor((double)(
+                        (long double)rendererSkyMins[0][side] * 4.0L)) *
+                    0.25L);
+        rendererSkyMins[1][side] =
+            (float)((long double)floor((double)(
+                        (long double)rendererSkyMins[1][side] * 4.0L)) *
+                    0.25L);
+        rendererSkyMaxs[0][side] =
+            (float)((long double)ceil((double)(
+                        (long double)rendererSkyMaxs[0][side] * 4.0L)) *
+                    0.25L);
+        const long double maxTRaw =
+            (long double)ceil((double)(
+                (long double)rendererSkyMaxs[1][side] * 4.0L)) * 0.25L;
         rendererSkyMaxs[1][side] = (float)maxTRaw;
 
-        if (rendererSkyMins[0][side] >= rendererSkyMaxs[0][side] || (long double)rendererSkyMins[1][side] >= maxTRaw) {
+        if (rendererSkyMins[0][side] >= rendererSkyMaxs[0][side] ||
+            (long double)rendererSkyMins[1][side] >= maxTRaw) {
             continue;
         }
 
@@ -561,7 +726,8 @@ static void FillCloudBox(shader_t *shader, int32_t stageIndex)
                 maxs[coordinate] = R_SKY_GRID_CENTER;
         }
 
-        FillCloudySkySide(mins, maxs, side, stageIndex == 0 ? qtrue : qfalse);
+        FillCloudySkySide(mins, maxs, side,
+                          stageIndex == 0 ? qtrue : qfalse);
     }
 }
 
@@ -570,21 +736,27 @@ static void FillCloudBox(shader_t *shader, int32_t stageIndex)
  * same-module Mac symbol R_BuildSkyBox. Windows proves backend priority
  * ARB-VBO, NV vertex-array range, ATI object buffer, then client hunk memory;
  * it also proves the ATI pool-selection rewrite to storage mode 3. */
-static void R_BuildSkyBox(const renderer_sky_vertex_t skyVertices[R_SKY_VERTEX_COUNT])
+static void R_BuildSkyBox(const renderer_sky_vertex_t skyVertices
+                             [R_SKY_VERTEX_COUNT])
 {
     renderer_sky_vertex_storage_t *storage = rendererSkyBox;
-    const size_t skyVertexBytes = sizeof(renderer_sky_vertex_t) * R_SKY_VERTEX_COUNT;
+    const size_t skyVertexBytes = sizeof(renderer_sky_vertex_t) *
+                                  R_SKY_VERTEX_COUNT;
 
     if (glConfig.vertexBufferObjectAvailable != qfalse) {
         storage->memorySource = tr.defaultStorageMode;
         storage->backend = R_SKY_VERTEX_BACKEND_ARB_BUFFER;
-        storage->base.bufferObject = R_CreateBufferARB(GL_ARRAY_BUFFER_ARB, skyVertexBytes, skyVertices, GL_STATIC_DRAW_ARB);
+        storage->base.bufferObject = R_CreateBufferARB(
+            GL_ARRAY_BUFFER_ARB, skyVertexBytes, skyVertices,
+            GL_STATIC_DRAW_ARB);
         if (storage->base.bufferObject != 0)
             return;
-    } else if (glConfig.vertexArrayRangeMode != R_VERTEX_ARRAY_RANGE_NONE) {
+    } else if (glConfig.vertexArrayRangeMode !=
+               R_VERTEX_ARRAY_RANGE_NONE) {
         uint8_t *memory;
 
-        storage->memorySource = R_AllocMemoryNV(R_STATIC_VERTEX_MEMORY_PRIMARY, skyVertexBytes, &memory);
+        storage->memorySource = R_AllocMemoryNV(
+            R_STATIC_VERTEX_MEMORY_PRIMARY, skyVertexBytes, &memory);
         storage->backend = R_SKY_VERTEX_BACKEND_NV_MEMORY;
         storage->base.vertices = (renderer_sky_vertex_t *)memory;
         memcpy(storage->base.vertices, skyVertices, skyVertexBytes);
@@ -592,19 +764,24 @@ static void R_BuildSkyBox(const renderer_sky_vertex_t skyVertices[R_SKY_VERTEX_C
     } else if (glConfig.vertexArrayObjectATIAvailable != qfalse) {
         size_t objectOffset = 0;
         const renderer_static_vertex_memory_source_t memorySource =
-            R_AllocMemoryATI(R_STATIC_VERTEX_MEMORY_PRIMARY, skyVertexBytes, &objectOffset);
+            R_AllocMemoryATI(R_STATIC_VERTEX_MEMORY_PRIMARY,
+                             skyVertexBytes, &objectOffset);
 
         storage->memorySource = memorySource;
         storage->backend = R_SKY_VERTEX_BACKEND_ATI_OBJECT;
-        if (memorySource == R_STATIC_VERTEX_MEMORY_PRIMARY || memorySource == R_STATIC_VERTEX_MEMORY_SECONDARY) {
+        if (memorySource == R_STATIC_VERTEX_MEMORY_PRIMARY ||
+            memorySource == R_STATIC_VERTEX_MEMORY_SECONDARY) {
             const renderer_static_vertex_memory_base_t bufferBase =
-                memorySource == R_STATIC_VERTEX_MEMORY_PRIMARY ? tr.staticVertexMemoryPrimary : tr.staticVertexMemorySecondary;
+                memorySource == R_STATIC_VERTEX_MEMORY_PRIMARY
+                    ? tr.staticVertexMemoryPrimary
+                    : tr.staticVertexMemorySecondary;
 
             storage->memorySource = R_STATIC_VERTEX_MEMORY_HUNK;
             storage->base.bufferObject = bufferBase.atiObjectBuffer;
             storage->objectOffset = (uint32_t)objectOffset;
-            qglUpdateObjectBufferATI(storage->base.bufferObject, storage->objectOffset, (int32_t)skyVertexBytes, skyVertices,
-                                     GL_PRESERVE_ATI);
+            qglUpdateObjectBufferATI(
+                storage->base.bufferObject, storage->objectOffset,
+                (int32_t)skyVertexBytes, skyVertices, GL_PRESERVE_ATI);
             return;
         }
     }
@@ -624,7 +801,8 @@ void R_InitSkyTexCoords(float cloudHeight)
 {
     renderer_sky_vertex_t skyVertices[R_SKY_VERTEX_COUNT];
     const float cloudHeightSquared = cloudHeight * cloudHeight;
-    const float cloudHeightSquaredPlusRadiusSquared = cloudHeightSquared + r_skyCloudWorldRadiusSquared;
+    const float cloudHeightSquaredPlusRadiusSquared =
+        cloudHeightSquared + r_skyCloudWorldRadiusSquared;
     int32_t side;
 
     rendererSkyTexCoordMax = 1.0f;
@@ -640,10 +818,15 @@ void R_InitSkyTexCoords(float cloudHeight)
             int32_t s;
 
             for (s = 0; s < R_SKY_GRID_SIDE; ++s) {
-                const int32_t vertexIndex = side * R_SKY_GRID_SIDE * R_SKY_GRID_SIDE + t * R_SKY_GRID_SIDE + s;
-                renderer_sky_vertex_t *vertex = &skyVertices[vertexIndex];
-                const float skyS = (float)(s - R_SKY_GRID_CENTER) * 0.25f;
-                const float skyT = (float)(t - R_SKY_GRID_CENTER) * 0.25f;
+                const int32_t vertexIndex =
+                    side * R_SKY_GRID_SIDE * R_SKY_GRID_SIDE +
+                    t * R_SKY_GRID_SIDE + s;
+                renderer_sky_vertex_t *vertex =
+                    &skyVertices[vertexIndex];
+                const float skyS =
+                    (float)(s - R_SKY_GRID_CENTER) * 0.25f;
+                const float skyT =
+                    (float)(t - R_SKY_GRID_CENTER) * 0.25f;
                 float xSquared;
                 float ySquared;
                 float zSquared;
@@ -656,22 +839,31 @@ void R_InitSkyTexCoords(float cloudHeight)
                 vec3_t cloudDirection;
                 float angle;
 
-                MakeSkyVec(skyS, skyT, side, vertex->texCoord, vertex->position);
+                MakeSkyVec(skyS, skyT, side, vertex->texCoord,
+                           vertex->position);
                 xSquared = vertex->position[0] * vertex->position[0];
                 ySquared = vertex->position[1] * vertex->position[1];
                 zSquared = vertex->position[2] * vertex->position[2];
                 lengthSquared = (xSquared + ySquared) + zSquared;
-                radicand = (xSquared + ySquared) * cloudHeightSquared + lengthSquared * cloudHeight * r_skyCloudWorldDiameter +
-                           cloudHeightSquaredPlusRadiusSquared * zSquared;
+                radicand =
+                    (xSquared + ySquared) * cloudHeightSquared +
+                    lengthSquared * cloudHeight *
+                        r_skyCloudWorldDiameter +
+                    cloudHeightSquaredPlusRadiusSquared * zSquared;
                 root = (float)sqrt((double)radicand);
-                numerator = (root + root) - vertex->position[2] * r_skyCloudWorldDiameter;
-                inverseDenominator = 1.0f / (lengthSquared + lengthSquared);
+                numerator = (root + root) -
+                            vertex->position[2] *
+                                r_skyCloudWorldDiameter;
+                inverseDenominator =
+                    1.0f / (lengthSquared + lengthSquared);
                 rayScale = numerator * inverseDenominator;
                 rendererSkyCloudTexP[side][t][s] = rayScale;
 
                 cloudDirection[0] = vertex->position[0] * rayScale;
                 cloudDirection[1] = vertex->position[1] * rayScale;
-                cloudDirection[2] = vertex->position[2] * rayScale + r_skyCloudWorldRadius;
+                cloudDirection[2] =
+                    vertex->position[2] * rayScale +
+                    r_skyCloudWorldRadius;
                 (void)VectorNormalize(cloudDirection);
 
                 angle = (float)acos((double)cloudDirection[0]);
@@ -701,7 +893,10 @@ void R_InitSkyTexCoords(float cloudHeight)
  * each live stage has depth writes disabled. */
 shader_t *R_FindSunSpriteShader(const char *name)
 {
-    shader_t *shader = R_FindShader(name, R_SUN_SPRITE_SHADER_LIGHTMAP_MODE, qfalse, R_SUN_SPRITE_SHADER_USAGE);
+    shader_t *shader = R_FindShader(
+        name, R_SUN_SPRITE_SHADER_LIGHTMAP_MODE,
+        qfalse,
+        R_SUN_SPRITE_SHADER_USAGE);
     int32_t stageIndex;
 
     for (stageIndex = 0; stageIndex < R_MAX_SHADER_STAGES; ++stageIndex) {
@@ -729,7 +924,8 @@ void R_SetSunSpriteSize(float spriteSize)
     const float scale = spriteSize * r_sunSpriteAngularScale;
     int32_t component;
 
-    if (tr.sunDirection[2] * tr.sunDirection[2] <= r_sunSpriteReferenceThreshold) {
+    if (tr.sunDirection[2] * tr.sunDirection[2] <=
+        r_sunSpriteReferenceThreshold) {
         reference[0] = tr.sunDirection[1];
         reference[1] = -tr.sunDirection[0];
         reference[2] = 0.0f;
@@ -739,25 +935,35 @@ void R_SetSunSpriteSize(float spriteSize)
         reference[2] = 0.0f;
     }
 
-    right[0] = tr.sunDirection[1] * reference[2] - tr.sunDirection[2] * reference[1];
-    right[1] = tr.sunDirection[2] * reference[0] - tr.sunDirection[0] * reference[2];
-    right[2] = tr.sunDirection[0] * reference[1] - tr.sunDirection[1] * reference[0];
+    right[0] = tr.sunDirection[1] * reference[2] -
+               tr.sunDirection[2] * reference[1];
+    right[1] = tr.sunDirection[2] * reference[0] -
+               tr.sunDirection[0] * reference[2];
+    right[2] = tr.sunDirection[0] * reference[1] -
+               tr.sunDirection[1] * reference[0];
     (void)VectorNormalize(right);
     right[0] *= scale;
     right[1] *= scale;
     right[2] *= scale;
 
-    up[0] = right[1] * tr.sunDirection[2] - right[2] * tr.sunDirection[1];
-    up[1] = right[2] * tr.sunDirection[0] - right[0] * tr.sunDirection[2];
-    up[2] = right[0] * tr.sunDirection[1] - right[1] * tr.sunDirection[0];
+    up[0] = right[1] * tr.sunDirection[2] -
+            right[2] * tr.sunDirection[1];
+    up[1] = right[2] * tr.sunDirection[0] -
+            right[0] * tr.sunDirection[2];
+    up[2] = right[0] * tr.sunDirection[1] -
+            right[1] * tr.sunDirection[0];
 
     for (component = 0; component < 3; ++component) {
         rightPlusUp[component] = right[component] + up[component];
         rightMinusUp[component] = right[component] - up[component];
-        rendererSunState.spriteVertices[0][component] = tr.sunDirection[component] + rightPlusUp[component];
-        rendererSunState.spriteVertices[1][component] = tr.sunDirection[component] + rightMinusUp[component];
-        rendererSunState.spriteVertices[2][component] = tr.sunDirection[component] - rightPlusUp[component];
-        rendererSunState.spriteVertices[3][component] = tr.sunDirection[component] - rightMinusUp[component];
+        rendererSunState.spriteVertices[0][component] =
+            tr.sunDirection[component] + rightPlusUp[component];
+        rendererSunState.spriteVertices[1][component] =
+            tr.sunDirection[component] + rightMinusUp[component];
+        rendererSunState.spriteVertices[2][component] =
+            tr.sunDirection[component] - rightPlusUp[component];
+        rendererSunState.spriteVertices[3][component] =
+            tr.sunDirection[component] - rightMinusUp[component];
     }
     rendererSunState.spriteVertices[0][3] = 0.0f;
     rendererSunState.spriteVertices[1][3] = 0.0f;
@@ -777,47 +983,65 @@ void R_SetSunFromCvars(void)
 
     rendererSunState.spriteShader = NULL;
     if (r_sunsprite_shader->string[0] != '\0') {
-        rendererSunState.spriteShader = R_FindSunSpriteShader(r_sunsprite_shader->string);
+        rendererSunState.spriteShader =
+            R_FindSunSpriteShader(r_sunsprite_shader->string);
     }
     R_SetSunSpriteSize(r_sunsprite_size->value);
 
     rendererSunState.flareShader = NULL;
     if (r_sunflare_shader->string[0] != '\0') {
-        rendererSunState.flareShader =
-            R_FindShader(r_sunflare_shader->string, R_SUN_SPRITE_SHADER_LIGHTMAP_MODE, qfalse, R_SUN_SPRITE_SHADER_USAGE);
+        rendererSunState.flareShader = R_FindShader(
+            r_sunflare_shader->string,
+            R_SUN_SPRITE_SHADER_LIGHTMAP_MODE,
+            qfalse,
+            R_SUN_SPRITE_SHADER_USAGE);
     }
-    rendererSunState.flareMinHalfSize = r_sunflare_min_size->value * 0.5f;
-    rendererSunState.flareMinCosAngle =
-        coduo_x87_fcos_to_f32((long double)r_sunflare_min_angle->value * (long double)r_pi * (long double)r_inverseDegreesPerHalfTurn);
-    rendererSunState.flareMaxHalfSize = r_sunflare_max_size->value * 0.5f;
-    rendererSunState.flareMaxCosAngle =
-        coduo_x87_fcos_to_f32((long double)r_sunflare_max_angle->value * (long double)r_pi * (long double)r_inverseDegreesPerHalfTurn);
+    rendererSunState.flareMinHalfSize =
+        r_sunflare_min_size->value * 0.5f;
+    rendererSunState.flareMinCosAngle = coduo_x87_fcos_to_f32(
+        (long double)r_sunflare_min_angle->value * (long double)r_pi *
+        (long double)r_inverseDegreesPerHalfTurn);
+    rendererSunState.flareMaxHalfSize =
+        r_sunflare_max_size->value * 0.5f;
+    rendererSunState.flareMaxCosAngle = coduo_x87_fcos_to_f32(
+        (long double)r_sunflare_max_angle->value * (long double)r_pi *
+        (long double)r_inverseDegreesPerHalfTurn);
     rendererSunState.flareMaxAlpha = r_sunflare_max_alpha->value;
 
     milliseconds = r_sunflare_fadein->value * 1000.0f;
-    rendererSunState.flareFadeInMsec = (int32_t)lrint((double)milliseconds + r_integerRoundingBias);
+    rendererSunState.flareFadeInMsec = (int32_t)lrint(
+        (double)milliseconds + r_integerRoundingBias);
     milliseconds = r_sunflare_fadeout->value * 1000.0f;
-    rendererSunState.flareFadeOutMsec = (int32_t)lrint((double)milliseconds + r_integerRoundingBias);
+    rendererSunState.flareFadeOutMsec = (int32_t)lrint(
+        (double)milliseconds + r_integerRoundingBias);
 
-    rendererSunState.blindMinCosAngle =
-        coduo_x87_fcos_to_f32((long double)r_sunblind_min_angle->value * (long double)r_pi * (long double)r_inverseDegreesPerHalfTurn);
-    rendererSunState.blindMaxCosAngle =
-        coduo_x87_fcos_to_f32((long double)r_sunblind_max_angle->value * (long double)r_pi * (long double)r_inverseDegreesPerHalfTurn);
+    rendererSunState.blindMinCosAngle = coduo_x87_fcos_to_f32(
+        (long double)r_sunblind_min_angle->value * (long double)r_pi *
+        (long double)r_inverseDegreesPerHalfTurn);
+    rendererSunState.blindMaxCosAngle = coduo_x87_fcos_to_f32(
+        (long double)r_sunblind_max_angle->value * (long double)r_pi *
+        (long double)r_inverseDegreesPerHalfTurn);
     rendererSunState.blindMaxDarken = r_sunblind_max_darken->value;
     milliseconds = r_sunblind_fadein->value * 1000.0f;
-    rendererSunState.blindFadeInMsec = (int32_t)lrint((double)milliseconds + r_integerRoundingBias);
+    rendererSunState.blindFadeInMsec = (int32_t)lrint(
+        (double)milliseconds + r_integerRoundingBias);
     milliseconds = r_sunblind_fadeout->value * 1000.0f;
-    rendererSunState.blindFadeOutMsec = (int32_t)lrint((double)milliseconds + r_integerRoundingBias);
+    rendererSunState.blindFadeOutMsec = (int32_t)lrint(
+        (double)milliseconds + r_integerRoundingBias);
 
-    rendererSunState.glareMinCosAngle =
-        coduo_x87_fcos_to_f32((long double)r_sunglare_min_angle->value * (long double)r_pi * (long double)r_inverseDegreesPerHalfTurn);
-    rendererSunState.glareMaxCosAngle =
-        coduo_x87_fcos_to_f32((long double)r_sunglare_max_angle->value * (long double)r_pi * (long double)r_inverseDegreesPerHalfTurn);
+    rendererSunState.glareMinCosAngle = coduo_x87_fcos_to_f32(
+        (long double)r_sunglare_min_angle->value * (long double)r_pi *
+        (long double)r_inverseDegreesPerHalfTurn);
+    rendererSunState.glareMaxCosAngle = coduo_x87_fcos_to_f32(
+        (long double)r_sunglare_max_angle->value * (long double)r_pi *
+        (long double)r_inverseDegreesPerHalfTurn);
     rendererSunState.glareMaxLighten = r_sunglare_max_lighten->value;
     milliseconds = r_sunglare_fadein->value * 1000.0f;
-    rendererSunState.glareFadeInMsec = (int32_t)lrint((double)milliseconds + r_integerRoundingBias);
+    rendererSunState.glareFadeInMsec = (int32_t)lrint(
+        (double)milliseconds + r_integerRoundingBias);
     milliseconds = r_sunglare_fadeout->value * 1000.0f;
-    rendererSunState.glareFadeOutMsec = (int32_t)lrint((double)milliseconds + r_integerRoundingBias);
+    rendererSunState.glareFadeOutMsec = (int32_t)lrint(
+        (double)milliseconds + r_integerRoundingBias);
 }
 
 /* Source: CoDUOMP.exe 0x00515990..0x00515a10.
@@ -829,8 +1053,10 @@ void R_SaveSunFromCvars(const char *sunName)
 {
     char buffer[R_SUN_FILE_BUFFER_SIZE];
 
-    if (ri.Com_SaveCvarsToBuffer(rendererSunCvarNames, R_SUN_CVAR_COUNT, buffer, sizeof(buffer)) != qfalse) {
-        ri.FS_WriteFile(va("scripts/%s.sun", sunName), buffer, (int32_t)strlen(buffer));
+    if (ri.Com_SaveCvarsToBuffer(rendererSunCvarNames, R_SUN_CVAR_COUNT,
+                                 buffer, sizeof(buffer)) != qfalse) {
+        ri.FS_WriteFile(va("scripts/%s.sun", sunName), buffer,
+                        (int32_t)strlen(buffer));
     }
 }
 
@@ -845,11 +1071,14 @@ void R_LoadSunThroughCvars(const char *sunName)
     char *fileBuffer = NULL;
 
     if (ri.FS_ReadFile(fileName, (void **)&fileBuffer) < 0) {
-        ri.Printf(R_PRINT_ALL, "^3WARNING: couldn't load sun file '%s'\n", fileName);
+        ri.Printf(R_PRINT_ALL,
+                  "^3WARNING: couldn't load sun file '%s'\n", fileName);
         return;
     }
 
-    if (ri.Com_LoadCvarsFromBuffer(rendererSunCvarNames, R_SUN_CVAR_COUNT, fileBuffer, fileName) != qfalse) {
+    if (ri.Com_LoadCvarsFromBuffer(rendererSunCvarNames,
+                                   R_SUN_CVAR_COUNT,
+                                   fileBuffer, fileName) != qfalse) {
         R_SetSunFromCvars();
     }
     ri.FS_FreeFile(fileBuffer);
@@ -863,8 +1092,9 @@ void R_LoadSunThroughCvars(const char *sunName)
 void R_SaveSun_f(void)
 {
     if (ri.Cmd_Argc() != 2) {
-        ri.Printf(R_PRINT_ALL, "USAGE: r_savesun <sunname>\n"
-                               "  sunname must not have an extension\n");
+        ri.Printf(R_PRINT_ALL,
+                  "USAGE: r_savesun <sunname>\n"
+                  "  sunname must not have an extension\n");
         return;
     }
 
@@ -879,12 +1109,14 @@ void R_SaveSun_f(void)
 void R_LoadSun_f(void)
 {
     if (ri.Cmd_Argc() != 2) {
-        ri.Printf(R_PRINT_ALL, "USAGE: r_loadsun <sunname>\n"
-                               "  sunname must not have an extension\n");
+        ri.Printf(R_PRINT_ALL,
+                  "USAGE: r_loadsun <sunname>\n"
+                  "  sunname must not have an extension\n");
         return;
     }
     if (r_cheats->integer == 0) {
-        ri.Printf(R_PRINT_ALL, "You must have cheats enabled to use r_loadsun\n");
+        ri.Printf(R_PRINT_ALL,
+                  "You must have cheats enabled to use r_loadsun\n");
         return;
     }
 
@@ -902,26 +1134,35 @@ void R_SunHelp_f(void)
     int32_t cvarIndex;
 
     ri.Printf(R_PRINT_ALL, "\n=== SUN COMMANDS ===\n");
-    ri.Printf(R_PRINT_ALL, "r_loadsun <sunname> -- loads sun from "
-                           "'scripts/<sunname>.sun'\n");
-    ri.Printf(R_PRINT_ALL, "r_savesun <sunname> -- saves sun as "
-                           "'scripts/<sunname>.sun'\n");
+    ri.Printf(R_PRINT_ALL,
+              "r_loadsun <sunname> -- loads sun from "
+              "'scripts/<sunname>.sun'\n");
+    ri.Printf(R_PRINT_ALL,
+              "r_savesun <sunname> -- saves sun as "
+              "'scripts/<sunname>.sun'\n");
     ri.Printf(R_PRINT_ALL, "\n=== SUN CVARS ===\n");
-    ri.Printf(R_PRINT_ALL, "(must have r_suntest set to 1 to tweak these values)\n");
+    ri.Printf(R_PRINT_ALL,
+              "(must have r_suntest set to 1 to tweak these values)\n");
 
     for (cvarIndex = 0; cvarIndex < R_SUN_CVAR_COUNT; ++cvarIndex) {
         if (cvarIndex > 0 &&
-            coduo_crt_strnicmp(rendererSunCvarNames[cvarIndex - 1], rendererSunCvarNames[cvarIndex], R_SUN_CVAR_GROUP_PREFIX_LENGTH) != 0) {
+            coduo_crt_strnicmp(rendererSunCvarNames[cvarIndex - 1],
+                                 rendererSunCvarNames[cvarIndex],
+                                 R_SUN_CVAR_GROUP_PREFIX_LENGTH) != 0) {
             ri.Printf(R_PRINT_ALL, "\n");
         }
-        ri.Printf(R_PRINT_ALL, "^2%-22s^7 %s\n", rendererSunCvarNames[cvarIndex], rendererSunCvarDescriptions[cvarIndex]);
+        ri.Printf(R_PRINT_ALL, "^2%-22s^7 %s\n",
+                  rendererSunCvarNames[cvarIndex],
+                  rendererSunCvarDescriptions[cvarIndex]);
     }
 }
 
 /* Source: CoDUOMP.exe 0x004ef370..0x004ef423.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004ef370_004ef424.mcode. Name and the
  * call to RB_AddFlare are corroborated by the same-module Mac symbols. */
-void RB_UpdateSunFlare(shader_t *shader, float alpha, float size, float spriteSize, int32_t fadeInMsec, int32_t fadeOutMsec)
+void RB_UpdateSunFlare(shader_t *shader, float alpha, float size,
+                       float spriteSize, int32_t fadeInMsec,
+                       int32_t fadeOutMsec)
 {
     renderer_flare_source_t source;
     float scaledRadius;
@@ -941,7 +1182,10 @@ void RB_UpdateSunFlare(shader_t *shader, float alpha, float size, float spriteSi
     /* The Windows body rounds this float once, adds the exact double 2^-30,
      * then uses the current x87 integer-conversion mode. This is the original
      * viewport-width scaling, not pointer or ABI arithmetic. */
-    scaledRadius = (float)((long double)backEnd.viewParms.viewportWidth * (long double)spriteSize * (long double)r_sunFlareViewportScale);
+    scaledRadius = (float)(
+        (long double)backEnd.viewParms.viewportWidth *
+        (long double)spriteSize *
+        (long double)r_sunFlareViewportScale);
     source.screenRadius = FastRound(scaledRadius);
     source.fadeInMsec = fadeInMsec;
     source.fadeOutMsec = fadeOutMsec;
@@ -956,20 +1200,29 @@ void RB_CalcSunFlare(float sunViewDot)
 {
     long double fraction;
 
-    if (rendererSunState.flareShader == NULL || sunViewDot <= rendererSunState.flareMinCosAngle) {
+    if (rendererSunState.flareShader == NULL ||
+        sunViewDot <= rendererSunState.flareMinCosAngle) {
         return;
     }
 
     if (sunViewDot >= rendererSunState.flareMaxCosAngle) {
         fraction = 1.0L;
     } else {
-        fraction = ((long double)sunViewDot - (long double)rendererSunState.flareMinCosAngle) /
-                   ((long double)rendererSunState.flareMaxCosAngle - (long double)rendererSunState.flareMinCosAngle);
+        fraction =
+            ((long double)sunViewDot -
+             (long double)rendererSunState.flareMinCosAngle) /
+            ((long double)rendererSunState.flareMaxCosAngle -
+             (long double)rendererSunState.flareMinCosAngle);
     }
 
-    RB_UpdateSunFlare(rendererSunState.flareShader, (float)((long double)rendererSunState.flareMaxAlpha * fraction),
-                      (float)((long double)rendererSunState.flareMinHalfSize + (long double)rendererSunState.flareMaxHalfSize * fraction),
-                      rendererSunState.spriteSize, rendererSunState.flareFadeInMsec, rendererSunState.flareFadeOutMsec);
+    RB_UpdateSunFlare(
+        rendererSunState.flareShader,
+        (float)((long double)rendererSunState.flareMaxAlpha * fraction),
+        (float)((long double)rendererSunState.flareMinHalfSize +
+                (long double)rendererSunState.flareMaxHalfSize * fraction),
+        rendererSunState.spriteSize,
+        rendererSunState.flareFadeInMsec,
+        rendererSunState.flareFadeOutMsec);
 }
 
 /* Source: CoDUOMP.exe 0x00515d60..0x00515ed6.
@@ -978,7 +1231,8 @@ void RB_CalcSunFlare(float sunViewDot)
  * time, both angular ramps, visibility scaling, fade directions, persistent
  * fractions, and output scaling. The same-module Mac symbol and ABI prove the
  * float visibility followed by blind/glare output pointers. */
-void RB_CalcSunBlind(float sunVisibility, float *blindFraction, float *glareFraction)
+void RB_CalcSunBlind(float sunVisibility, float *blindFraction,
+                     float *glareFraction)
 {
     const int32_t currentTime = backEnd.refdef.time;
     int32_t elapsedTime;
@@ -987,13 +1241,19 @@ void RB_CalcSunBlind(float sunVisibility, float *blindFraction, float *glareFrac
     if (rendererSunState.lastUpdateTime == 0) {
         elapsedTime = R_SUN_INITIAL_UPDATE_MSEC;
     } else {
-        elapsedTime = (int32_t)((uint32_t)currentTime - (uint32_t)rendererSunState.lastUpdateTime);
+        elapsedTime = (int32_t)(
+            (uint32_t)currentTime -
+            (uint32_t)rendererSunState.lastUpdateTime);
     }
     rendererSunState.lastUpdateTime = currentTime;
 
-    sunViewDot = (float)((long double)backEnd.viewParms.orientation.axis[0][0] * tr.sunDirection[0] +
-                         ((long double)backEnd.viewParms.orientation.axis[0][1] * tr.sunDirection[1] +
-                          (long double)backEnd.viewParms.orientation.axis[0][2] * tr.sunDirection[2]));
+    sunViewDot = (float)(
+        (long double)backEnd.viewParms.orientation.axis[0][0] *
+            tr.sunDirection[0] +
+        ((long double)backEnd.viewParms.orientation.axis[0][1] *
+             tr.sunDirection[1] +
+         (long double)backEnd.viewParms.orientation.axis[0][2] *
+             tr.sunDirection[2]));
 
     if (rendererSunState.blindMaxDarken <= 0.0f) {
         *blindFraction = 0.0f;
@@ -1005,15 +1265,21 @@ void RB_CalcSunBlind(float sunVisibility, float *blindFraction, float *glareFrac
         } else if (sunViewDot >= rendererSunState.blindMaxCosAngle) {
             targetFractionRaw = 1.0L;
         } else {
-            targetFractionRaw = ((long double)sunViewDot - rendererSunState.blindMinCosAngle) /
-                                ((long double)rendererSunState.blindMaxCosAngle - rendererSunState.blindMinCosAngle);
+            targetFractionRaw =
+                ((long double)sunViewDot -
+                 rendererSunState.blindMinCosAngle) /
+                ((long double)rendererSunState.blindMaxCosAngle -
+                 rendererSunState.blindMinCosAngle);
         }
-        const float targetFraction = (float)(targetFractionRaw * (long double)sunVisibility);
-        const long double updatedFractionRaw =
-            R_UpdateOverTime(rendererSunState.currentBlindFraction, targetFraction, rendererSunState.blindFadeInMsec,
-                             rendererSunState.blindFadeOutMsec, elapsedTime);
+        const float targetFraction =
+            (float)(targetFractionRaw * (long double)sunVisibility);
+        const long double updatedFractionRaw = R_UpdateOverTime(
+            rendererSunState.currentBlindFraction, targetFraction,
+            rendererSunState.blindFadeInMsec,
+            rendererSunState.blindFadeOutMsec, elapsedTime);
         rendererSunState.currentBlindFraction = (float)updatedFractionRaw;
-        *blindFraction = (float)(updatedFractionRaw * rendererSunState.blindMaxDarken);
+        *blindFraction = (float)(updatedFractionRaw *
+                                 rendererSunState.blindMaxDarken);
     }
 
     if (rendererSunState.glareMaxLighten <= 0.0f) {
@@ -1026,15 +1292,21 @@ void RB_CalcSunBlind(float sunVisibility, float *blindFraction, float *glareFrac
         } else if (sunViewDot >= rendererSunState.glareMaxCosAngle) {
             targetFractionRaw = 1.0L;
         } else {
-            targetFractionRaw = ((long double)sunViewDot - rendererSunState.glareMinCosAngle) /
-                                ((long double)rendererSunState.glareMaxCosAngle - rendererSunState.glareMinCosAngle);
+            targetFractionRaw =
+                ((long double)sunViewDot -
+                 rendererSunState.glareMinCosAngle) /
+                ((long double)rendererSunState.glareMaxCosAngle -
+                 rendererSunState.glareMinCosAngle);
         }
-        const float targetFraction = (float)(targetFractionRaw * (long double)sunVisibility);
-        const long double updatedFractionRaw =
-            R_UpdateOverTime(rendererSunState.currentGlareFraction, targetFraction, rendererSunState.glareFadeInMsec,
-                             rendererSunState.glareFadeOutMsec, elapsedTime);
+        const float targetFraction =
+            (float)(targetFractionRaw * (long double)sunVisibility);
+        const long double updatedFractionRaw = R_UpdateOverTime(
+            rendererSunState.currentGlareFraction, targetFraction,
+            rendererSunState.glareFadeInMsec,
+            rendererSunState.glareFadeOutMsec, elapsedTime);
         rendererSunState.currentGlareFraction = (float)updatedFractionRaw;
-        *glareFraction = (float)(updatedFractionRaw * rendererSunState.glareMaxLighten);
+        *glareFraction = (float)(updatedFractionRaw *
+                                 rendererSunState.glareMaxLighten);
     }
 }
 
@@ -1069,10 +1341,12 @@ void RB_DrawSunSprite(void)
         return;
 
     RB_SelectStorage(tr.defaultStorageMode);
-    RB_BeginSurface(rendererSunState.spriteShader, R_SUN_SURFACE_VERTEX_COMPONENTS);
+    RB_BeginSurface(rendererSunState.spriteShader,
+                    R_SUN_SURFACE_VERTEX_COMPONENTS);
     tess.stageIterator = tr.stageIteratorFunc;
 
-    memcpy(tess.xyz, rendererSunState.spriteVertices, sizeof(rendererSunState.spriteVertices));
+    memcpy(tess.xyz, rendererSunState.spriteVertices,
+           sizeof(rendererSunState.spriteVertices));
 
     tess.texCoords[R_TESS_BASE_TEXCOORD_SET][0][0] = 1.0f;
     tess.texCoords[R_TESS_BASE_TEXCOORD_SET][0][1] = 1.0f;
@@ -1108,9 +1382,13 @@ void RB_AddSunEffects(void)
     if (r_suntest->integer != 0)
         R_SetSunFromCvars();
 
-    sunViewDot = (long double)backEnd.viewParms.orientation.axis[0][2] * tr.sunDirection[2] +
-                 (long double)backEnd.viewParms.orientation.axis[0][1] * tr.sunDirection[1] +
-                 (long double)backEnd.viewParms.orientation.axis[0][0] * tr.sunDirection[0];
+    sunViewDot =
+        (long double)backEnd.viewParms.orientation.axis[0][2] *
+            tr.sunDirection[2] +
+        (long double)backEnd.viewParms.orientation.axis[0][1] *
+            tr.sunDirection[1] +
+        (long double)backEnd.viewParms.orientation.axis[0][0] *
+            tr.sunDirection[0];
     storedSunViewDot = (float)sunViewDot;
     if (sunViewDot <= 0.0f)
         return;
@@ -1178,7 +1456,8 @@ void DrawSkyBox(shader_t *shader, int32_t boxSet)
     RB_SelectStorage(storage->memorySource);
     GL_State(GLS_DEPTHMASK_TRUE);
     GL_Cull(CT_FRONT_SIDED);
-    GL_ClientState(GLS_CLIENT_TEXCOORD0_ARRAY | GLS_CLIENT_VERTEX_ARRAY);
+    GL_ClientState(GLS_CLIENT_TEXCOORD0_ARRAY |
+                   GLS_CLIENT_VERTEX_ARRAY);
     qglColor3f(tr.identityLight, tr.identityLight, tr.identityLight);
 
     if (boxSet != R_SKY_BOX_OUTER) {
@@ -1189,8 +1468,12 @@ void DrawSkyBox(shader_t *shader, int32_t boxSet)
 
     switch (storage->backend) {
     case R_SKY_VERTEX_BACKEND_CLIENT:
-        qglTexCoordPointer(2, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), &storage->base.vertices[0].texCoord);
-        qglVertexPointer(4, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), &storage->base.vertices[0].position);
+        qglTexCoordPointer(2, GL_FLOAT,
+                          (int32_t)sizeof(renderer_sky_vertex_t),
+                          &storage->base.vertices[0].texCoord);
+        qglVertexPointer(4, GL_FLOAT,
+                         (int32_t)sizeof(renderer_sky_vertex_t),
+                         &storage->base.vertices[0].position);
         if (qglLockArraysEXT != NULL) {
             qglLockArraysEXT(0, R_SKY_VERTEX_COUNT);
             arraysLocked = qtrue;
@@ -1199,21 +1482,34 @@ void DrawSkyBox(shader_t *shader, int32_t boxSet)
 
     case R_SKY_VERTEX_BACKEND_ARB_BUFFER:
         qglBindBufferARB(GL_ARRAY_BUFFER_ARB, storage->base.bufferObject);
-        qglTexCoordPointer(2, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), NULL);
-        qglVertexPointer(4, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t),
-                         (const void *)(uintptr_t)offsetof(renderer_sky_vertex_t, position));
+        qglTexCoordPointer(
+            2, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), NULL);
+        qglVertexPointer(
+            4, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t),
+            (const void *)(uintptr_t)offsetof(renderer_sky_vertex_t,
+                                              position));
         break;
 
     case R_SKY_VERTEX_BACKEND_ATI_OBJECT:
-        qglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, 2, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), storage->base.bufferObject,
-                          storage->objectOffset);
-        qglArrayObjectATI(GL_VERTEX_ARRAY, 4, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), storage->base.bufferObject,
-                          storage->objectOffset + (uint32_t)offsetof(renderer_sky_vertex_t, position));
+        qglArrayObjectATI(
+            GL_TEXTURE_COORD_ARRAY, 2, GL_FLOAT,
+            (int32_t)sizeof(renderer_sky_vertex_t),
+            storage->base.bufferObject, storage->objectOffset);
+        qglArrayObjectATI(
+            GL_VERTEX_ARRAY, 4, GL_FLOAT,
+            (int32_t)sizeof(renderer_sky_vertex_t),
+            storage->base.bufferObject,
+            storage->objectOffset +
+                (uint32_t)offsetof(renderer_sky_vertex_t, position));
         break;
 
     case R_SKY_VERTEX_BACKEND_NV_MEMORY:
-        qglTexCoordPointer(2, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), &storage->base.vertices[0].texCoord);
-        qglVertexPointer(4, GL_FLOAT, (int32_t)sizeof(renderer_sky_vertex_t), &storage->base.vertices[0].position);
+        qglTexCoordPointer(2, GL_FLOAT,
+                          (int32_t)sizeof(renderer_sky_vertex_t),
+                          &storage->base.vertices[0].texCoord);
+        qglVertexPointer(4, GL_FLOAT,
+                         (int32_t)sizeof(renderer_sky_vertex_t),
+                         &storage->base.vertices[0].position);
         break;
 
     default:
@@ -1232,12 +1528,21 @@ void DrawSkyBox(shader_t *shader, int32_t boxSet)
 
         /* Exact original constants are 4.0f and 0.25f: snap each bound to
          * the 9-point grid before deciding whether this side is visible. */
-        rendererSkyMins[0][side] = (float)(floor((double)rendererSkyMins[0][side] * 4.0) * 0.25);
-        rendererSkyMins[1][side] = (float)(floor((double)rendererSkyMins[1][side] * 4.0) * 0.25);
-        rendererSkyMaxs[0][side] = (float)(ceil((double)rendererSkyMaxs[0][side] * 4.0) * 0.25);
-        rendererSkyMaxs[1][side] = (float)(ceil((double)rendererSkyMaxs[1][side] * 4.0) * 0.25);
+        rendererSkyMins[0][side] =
+            (float)(floor((double)rendererSkyMins[0][side] * 4.0) *
+                    0.25);
+        rendererSkyMins[1][side] =
+            (float)(floor((double)rendererSkyMins[1][side] * 4.0) *
+                    0.25);
+        rendererSkyMaxs[0][side] =
+            (float)(ceil((double)rendererSkyMaxs[0][side] * 4.0) *
+                    0.25);
+        rendererSkyMaxs[1][side] =
+            (float)(ceil((double)rendererSkyMaxs[1][side] * 4.0) *
+                    0.25);
 
-        if (rendererSkyMins[0][side] >= rendererSkyMaxs[0][side] || rendererSkyMins[1][side] >= rendererSkyMaxs[1][side]) {
+        if (rendererSkyMins[0][side] >= rendererSkyMaxs[0][side] ||
+            rendererSkyMins[1][side] >= rendererSkyMaxs[1][side]) {
             continue;
         }
 
@@ -1270,12 +1575,16 @@ void DrawSkyBox(shader_t *shader, int32_t boxSet)
 
         for (t = minT; t < maxT; ++t) {
             for (s = minS; s < maxS; ++s) {
-                const int32_t vertex = side * R_SKY_GRID_SIDE * R_SKY_GRID_SIDE + t * R_SKY_GRID_SIDE + s;
+                const int32_t vertex =
+                    side * R_SKY_GRID_SIDE * R_SKY_GRID_SIDE +
+                    t * R_SKY_GRID_SIDE + s;
 
                 indexes[indexCount + 0] = (uint16_t)(vertex + 1);
                 indexes[indexCount + 1] = (uint16_t)vertex;
-                indexes[indexCount + 2] = (uint16_t)(vertex + R_SKY_GRID_SIDE);
-                indexes[indexCount + 3] = (uint16_t)(vertex + R_SKY_GRID_SIDE + 1);
+                indexes[indexCount + 2] =
+                    (uint16_t)(vertex + R_SKY_GRID_SIDE);
+                indexes[indexCount + 3] =
+                    (uint16_t)(vertex + R_SKY_GRID_SIDE + 1);
                 indexCount += 4;
             }
         }
@@ -1292,13 +1601,18 @@ void DrawSkyBox(shader_t *shader, int32_t boxSet)
             qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             qglDisable(GL_TEXTURE_2D);
             qglColor3f(1.0f, 1.0f, 1.0f);
-            GL_DrawElements(GL_QUADS, indexCount, GL_UNSIGNED_SHORT, indexes);
+            GL_DrawElements(GL_QUADS, indexCount, GL_UNSIGNED_SHORT,
+                            indexes);
             qglEnable(GL_TEXTURE_2D);
             qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        backEnd.pc.indexCount = (int32_t)((uint32_t)backEnd.pc.indexCount + (uint32_t)indexCount);
-        backEnd.pc.vertexCount = (int32_t)((uint32_t)backEnd.pc.vertexCount + (uint32_t)R_SKY_VERTEX_COUNT);
+        backEnd.pc.indexCount = (int32_t)(
+            (uint32_t)backEnd.pc.indexCount +
+            (uint32_t)indexCount);
+        backEnd.pc.vertexCount = (int32_t)(
+            (uint32_t)backEnd.pc.vertexCount +
+            (uint32_t)R_SKY_VERTEX_COUNT);
     }
 
     if (arraysLocked != qfalse)
@@ -1332,15 +1646,19 @@ void RB_StageIteratorSky(qboolean portalPass)
         return;
     }
 
-    if (rendererFogCount != 0 && (backEnd.refdef.rdflags & RDF_SKYBOX_PORTAL) == 0) {
+    if (rendererFogCount != 0 &&
+        (backEnd.refdef.rdflags & RDF_SKYBOX_PORTAL) == 0) {
         return;
     }
 
     /* 0x00516019..0x0051603d: the embedded view fog controls the decision
      * when registered. Otherwise only an active world fog can suppress the
      * sky; JLE 0x0051603f makes the no-fog case draw by default. */
-    if ((backEnd.viewParms.glFog.registered != qfalse && backEnd.viewParms.glFog.drawSky == qfalse) ||
-        (backEnd.viewParms.glFog.registered == qfalse && rendererCurrentFogIndex > 0 && rendererFogs[R_FOG_WORLD_VIEW].drawSky == qfalse)) {
+    if ((backEnd.viewParms.glFog.registered != qfalse &&
+         backEnd.viewParms.glFog.drawSky == qfalse) ||
+        (backEnd.viewParms.glFog.registered == qfalse &&
+         rendererCurrentFogIndex > 0 &&
+         rendererFogs[R_FOG_WORLD_VIEW].drawSky == qfalse)) {
         return;
     }
 
@@ -1356,7 +1674,8 @@ void RB_StageIteratorSky(qboolean portalPass)
     R_FogOff();
 
     shader = tess.shader;
-    if (shader->skyOuterBox[0] != NULL && shader->skyOuterBox[0] != tr.defaultImage) {
+    if (shader->skyOuterBox[0] != NULL &&
+        shader->skyOuterBox[0] != tr.defaultImage) {
         DrawSkyBox(shader, R_SKY_BOX_OUTER);
     }
 
@@ -1368,7 +1687,8 @@ void RB_StageIteratorSky(qboolean portalPass)
         tr.stageIteratorFunc(qfalse);
 
     shader = tess.shader;
-    if (shader->skyInnerBox[0] != NULL && shader->skyInnerBox[0] != tr.defaultImage) {
+    if (shader->skyInnerBox[0] != NULL &&
+        shader->skyInnerBox[0] != tr.defaultImage) {
         DrawSkyBox(shader, R_SKY_BOX_INNER);
     }
 

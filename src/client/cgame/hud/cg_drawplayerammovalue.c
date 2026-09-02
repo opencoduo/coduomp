@@ -40,12 +40,14 @@
  */
 
 /* Value clamp used for both counts: the display never shows more than 999. */
-enum {
-    CG_AMMO_COUNT_DISPLAY_MAX = 999
-}; /* 0x3e7 */
+enum { CG_AMMO_COUNT_DISPLAY_MAX = 999 }; /* 0x3e7 */
 
-void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/, const rectDef_t *rect /*ESI*/, int32_t font /*EBX*/, int32_t scaleBits /*stack arg0*/,
-                            const vec4_t color /*stack arg1*/, int32_t textStyle /*stack arg2*/)
+void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/,
+                            const rectDef_t *rect /*ESI*/,
+                            int32_t font /*EBX*/,
+                            int32_t scaleBits /*stack arg0*/,
+                            const vec4_t color /*stack arg1*/,
+                            int32_t textStyle /*stack arg2*/)
 {
     /* EAX at entry: cg.predictedPlayerState.entityStateFlags (0x30483248). */
     uint32_t entityFlags = cg_predictedPlayerState.entityStateFlags;
@@ -98,7 +100,8 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/, const rectDef_t *rect /*ES
     {
         /* cg_entities base 0x3048c6e0, stride 0x288 (centity_t), indexed by
          * snapshot clientNum (0x30030cc8: [cg_snap+0xe0], IMUL 0x288, ADD base). */
-        const centity_t *ent = cg_entities + snap->ps.psClientNum;
+        const centity_t *ent =
+            cg_entities + snap->ps.psClientNum;
         uint32_t psFlags = snap->ps.playerStateFlags; /* [cg_snap+0x18] */
 
         weapon = ent->currentState.weapon; /* default: [ent+0xcc] */
@@ -119,7 +122,8 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/, const rectDef_t *rect /*ES
     int ammoShown = 1; /* S-0x4 */
 
     /* 0x30030d14: total reserve+clip ammo usable through this weapon. */
-    int32_t ammoValue = BG_GetTotalAmmoReserve(&cg_predictedPlayerState, weapon);
+    int32_t ammoValue =
+        BG_GetTotalAmmoReserve(&cg_predictedPlayerState, weapon);
 
     weaponInfo_t *wi = bg_weaponInfos[weapon]; /* [0x30134cd8 + weapon*4] */
 
@@ -178,49 +182,66 @@ void CG_DrawPlayerAmmoValue(int32_t viewMode /*ECX*/, const rectDef_t *rect /*ES
             /* 0x30030dc7 block: left clip + centered "|" separator + right reserve. */
 
             /* Left-aligned clip string drawn at (rect.x, rect.y). */
-            trap_R_Text_Paint(CG_FloatBits(rect->x), CG_FloatBits(rect->y), font, scaleBits, (intptr_t)color, (intptr_t)clipStr, 0, 0,
-                              textStyle);
+            trap_R_Text_Paint(CG_FloatBits(rect->x), CG_FloatBits(rect->y),
+                      font, scaleBits, (intptr_t)color,
+                      (intptr_t)clipStr, 0, 0, textStyle);
 
             /* Reserve string width, then right-align it inside the rect:
              * x = rect.w + rect.x - reserveWidth. */
             /* 0x30030de8..0x30030e04 forms and retains the right edge in
              * ST0 across the width callback, then subtracts the returned
              * integer without an intervening binary32 store. */
-            long double rightEdge = (long double)rect->w + (long double)rect->x;
-            int32_t reserveWidth = trap_R_Text_Width(reserveStr, font, scaleBits, 0);
-            float rightX = (float)(rightEdge - (long double)reserveWidth);
+            long double rightEdge =
+                (long double)rect->w + (long double)rect->x;
+            int32_t reserveWidth =
+                trap_R_Text_Width(reserveStr, font, scaleBits, 0);
+            float rightX =
+                (float)(rightEdge - (long double)reserveWidth);
 
-            trap_R_Text_Paint(CG_FloatBits(rightX), CG_FloatBits(rect->y), font, scaleBits, (intptr_t)color, (intptr_t)reserveStr, 0, 0,
-                              textStyle);
+            trap_R_Text_Paint(CG_FloatBits(rightX), CG_FloatBits(rect->y),
+                      font, scaleBits, (intptr_t)color,
+                      (intptr_t)reserveStr, 0, 0, textStyle);
 
             /* 0x30030e25..0x30030e69: draw the "|" clip/reserve separator centered.
              * After trap_R_Text_Width(reserveStr), 0x30030e0c reloads the caller's
              * color pointer into EBP from the expanded stack.  The separator draw
              * therefore receives the same color as both number draws; EBP no longer
              * holds reserveStr at 0x30030e4f. */
-            int32_t separatorWidth = trap_R_Text_Width(cg_ammoCountSeparator, font, scaleBits, 0);
+            int32_t separatorWidth =
+                trap_R_Text_Width(cg_ammoCountSeparator, font, scaleBits, 0);
             /* 0x30030e3b FILD separatorWidth; FSUBR rect->w -- fed straight into the
              * subtract with no FSTP DWORD, so no (float) cast. */
-            float separatorX = (float)((long double)rect->x + ((long double)rect->w - (long double)separatorWidth) * 0.5L);
+            float separatorX = (float)(
+                (long double)rect->x +
+                ((long double)rect->w - (long double)separatorWidth) * 0.5L);
 
-            trap_R_Text_Paint(CG_FloatBits(separatorX), CG_FloatBits(rect->y), font, scaleBits, (intptr_t)color,
-                              (intptr_t)cg_ammoCountSeparator, 0, 0, textStyle);
+            trap_R_Text_Paint(CG_FloatBits(separatorX), CG_FloatBits(rect->y),
+                      font, scaleBits, (intptr_t)color,
+                      (intptr_t)cg_ammoCountSeparator, 0, 0, textStyle);
         } else {
             /* 0x30030e72 block: clip only, horizontally centered. */
-            int32_t clipWidth = trap_R_Text_Width(clipStr, font, scaleBits, 0);
+            int32_t clipWidth =
+                trap_R_Text_Width(clipStr, font, scaleBits, 0);
             /* 0x30030e8b FILD clipWidth; FSUBR rect->w (no FSTP DWORD) -> no cast. */
-            float centerX = (float)((long double)rect->x + ((long double)rect->w - (long double)clipWidth) * 0.5L);
+            float centerX = (float)(
+                (long double)rect->x +
+                ((long double)rect->w - (long double)clipWidth) * 0.5L);
 
-            trap_R_Text_Paint(CG_FloatBits(centerX), CG_FloatBits(rect->y), font, scaleBits, (intptr_t)color, (intptr_t)clipStr, 0, 0,
-                              textStyle);
+            trap_R_Text_Paint(CG_FloatBits(centerX), CG_FloatBits(rect->y),
+                      font, scaleBits, (intptr_t)color,
+                      (intptr_t)clipStr, 0, 0, textStyle);
         }
     } else if (ammoShown) {
         /* 0x30030ebf block: reserve/total only, horizontally centered. */
-        int32_t reserveWidth = trap_R_Text_Width(reserveStr, font, scaleBits, 0);
+        int32_t reserveWidth =
+            trap_R_Text_Width(reserveStr, font, scaleBits, 0);
         /* 0x30030edc FILD reserveWidth; FSUBR rect->w (no FSTP DWORD) -> no cast. */
-        float centerX = (float)((long double)rect->x + ((long double)rect->w - (long double)reserveWidth) * 0.5L);
+        float centerX = (float)(
+            (long double)rect->x +
+            ((long double)rect->w - (long double)reserveWidth) * 0.5L);
 
-        trap_R_Text_Paint(CG_FloatBits(centerX), CG_FloatBits(rect->y), font, scaleBits, (intptr_t)color, (intptr_t)reserveStr, 0, 0,
-                          textStyle);
+        trap_R_Text_Paint(CG_FloatBits(centerX), CG_FloatBits(rect->y),
+                  font, scaleBits, (intptr_t)color,
+                  (intptr_t)reserveStr, 0, 0, textStyle);
     }
 }

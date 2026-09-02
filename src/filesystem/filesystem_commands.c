@@ -27,26 +27,36 @@ void FS_DisplayPath(qboolean localizedFilter)
 {
     const int32_t currentLanguage = cl_language->integer;
 
-    Com_Printf("Current language: %s\n", filesystem_compat_language_name(currentLanguage));
+    Com_Printf("Current language: %s\n",
+               filesystem_compat_language_name(currentLanguage));
     if (fs_ignoreLocalized->integer != 0) {
-        Com_Printf("    localized assets are being ignored\n");
+        Com_Printf(
+            "    localized assets are being ignored\n");
     }
     Com_Printf("Current search path:\n");
 
-    for (const searchpath_t *search = fs_searchpaths; search != NULL; search = search->next) {
-        if (filesystem_compat_server_scope_allows_searchpath(search) == qfalse) {
+    for (const searchpath_t *search = fs_searchpaths;
+         search != NULL;
+         search = search->next) {
+        if (filesystem_compat_server_scope_allows_searchpath(search) ==
+            qfalse) {
             continue;
         }
-        if (localizedFilter != qfalse && search->localized != qfalse &&
-            (fs_ignoreLocalized->integer != 0 || search->language != cl_language->integer)) {
+        if (localizedFilter != qfalse &&
+            search->localized != qfalse &&
+            (fs_ignoreLocalized->integer != 0 ||
+             search->language != cl_language->integer)) {
             continue;
         }
 
         if (search->pack != NULL) {
             const pack_t *const pack = search->pack;
-            Com_Printf("%s (%i files)\n", pack->pakFilename, pack->numFiles);
+            Com_Printf("%s (%i files)\n",
+                       pack->pakFilename, pack->numFiles);
             if (search->localized != qfalse) {
-                Com_Printf("    localized assets pak file for %s\n", filesystem_compat_language_name(search->language));
+                Com_Printf(
+                    "    localized assets pak file for %s\n",
+                    filesystem_compat_language_name(search->language));
             }
             if (fs_numServerPaks != 0) {
                 if (FS_PakIsPure(pack) != qfalse)
@@ -57,17 +67,24 @@ void FS_DisplayPath(qboolean localizedFilter)
             continue;
         }
 
-        const directory_t *const directory = search->dir;
-        Com_Printf("%s/%s\n", directory->path, directory->gamedir);
+        const directory_t *const directory =
+            search->dir;
+        Com_Printf("%s/%s\n",
+                   directory->path, directory->gamedir);
         if (search->localized != qfalse) {
-            Com_Printf("    localized assets game folder for %s\n", filesystem_compat_language_name(search->language));
+            Com_Printf(
+                "    localized assets game folder for %s\n",
+                filesystem_compat_language_name(search->language));
         }
     }
 
     Com_Printf("\nFile Handles:\n");
-    for (int32_t handle = 1; handle < FS_HANDLE_COUNT; ++handle) {
+    for (int32_t handle = 1;
+         handle < FS_HANDLE_COUNT;
+         ++handle) {
         if (fs_handleFiles[handle].ioObject != NULL) {
-            Com_Printf("handle %i: %s\n", handle, fs_handleFiles[handle].name);
+            Com_Printf("handle %i: %s\n",
+                       handle, fs_handleFiles[handle].name);
         }
     }
 }
@@ -84,14 +101,17 @@ void FS_DisplayPath(qboolean localizedFilter)
     }
 
     Com_Printf("Current search path:\n");
-    for (searchpath = fs_searchpaths; searchpath != NULL; searchpath = searchpath->next) {
-        if (filesystem_compat_server_scope_allows_searchpath(searchpath) == qfalse) {
+    for (searchpath = fs_searchpaths; searchpath != NULL;
+         searchpath = searchpath->next) {
+        if (filesystem_compat_server_scope_allows_searchpath(searchpath) ==
+            qfalse) {
             continue;
         }
         if (localizedFilter == 0 || FS_UseSearchPath(searchpath) != 0) {
             if (searchpath->pack != NULL) {
                 pack = searchpath->pack;
-                Com_Printf("%s (%i files)\n", pack->pakFilename, pack->numFiles);
+                Com_Printf("%s (%i files)\n", pack->pakFilename,
+                           pack->numFiles);
                 if (fs_numServerPaks != 0) {
                     if (FS_PakIsPure(pack) == 0) {
                         Com_Printf("    not on the pure list\n");
@@ -109,7 +129,8 @@ void FS_DisplayPath(qboolean localizedFilter)
     Com_Printf("\nFile Handles:\n");
     for (handle = 1; handle < FS_HANDLE_COUNT; handle++) {
         if (fs_handleFiles[handle].ioObject != NULL) {
-            Com_Printf("handle %i: %s\n", handle, fs_handleFiles[handle].name);
+            Com_Printf("handle %i: %s\n", handle,
+                       fs_handleFiles[handle].name);
         }
     }
 }
@@ -153,7 +174,8 @@ void FS_Dir_f(void)
     }
 
     const char *const path = Cmd_Argv(1);
-    const char *const extension = argumentCount == 3 ? Cmd_Argv(2) : "";
+    const char *const extension =
+        argumentCount == 3 ? Cmd_Argv(2) : "";
 
     Com_Printf("Directory of %s %s\n", path, extension);
     Com_Printf("---------------\n");
@@ -181,7 +203,8 @@ void FS_NewDir_f(void)
     Com_Printf("---------------\n");
 
     int32_t fileCount;
-    char **const files = FS_ListFilteredFiles("", "", Cmd_Argv(1), &fileCount);
+    char **const files = FS_ListFilteredFiles(
+        "", "", Cmd_Argv(1), &fileCount);
     FS_SortFileList(files, fileCount);
 
     for (int32_t index = 0; index < fileCount; ++index) {

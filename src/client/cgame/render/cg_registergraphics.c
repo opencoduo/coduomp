@@ -89,7 +89,8 @@ void CG_RegisterGraphics(void)
      * The names come from the initialized global pointer table cg_numberShaderNames[i]
      * (read as [ESI + 0x30085d70]); each is registered into cg_numberShaders[i]. */
     for (i = 0; i < NUM_HUD_NUMBER_SHADERS; i++) {
-        cg_numberShaders[i] = CG_RegisterMaterial(cg_numberShaderNames[i], R_IMAGE_TRACK_HUD);
+        cg_numberShaders[i] =
+            CG_RegisterMaterial(cg_numberShaderNames[i], R_IMAGE_TRACK_HUD);
     }
 
     /*
@@ -111,10 +112,10 @@ void CG_RegisterGraphics(void)
      * correct. The bindings below follow the machine code; the shifted label COMMENTS in
      * globals.h should be reconciled by the coordinator (not renamed here to bound blast radius).
      */
-    cgs_media_lagometerShader = CG_RegisterMaterial("gfx/2d/net.tga", R_IMAGE_TRACK_HUD);   /* 0x3044b6e8 */
-    cgs_lagometerShader = CG_RegisterMaterial("lagometer", R_IMAGE_TRACK_HUD);
-    cgs_disconnectedIcon = CG_RegisterMaterial("headiconDisconnected", R_IMAGE_TRACK_HUD);   /* 0x3044b6d4 */
-    cgs_youInKillCamIcon = CG_RegisterMaterial("headiconYouInKillCam", R_IMAGE_TRACK_HUD);   /* 0x3044b6d8 */
+    cgs_media_lagometerShader          = CG_RegisterMaterial("gfx/2d/net.tga", R_IMAGE_TRACK_HUD);   /* 0x3044b6e8 */
+    cgs_lagometerShader                = CG_RegisterMaterial("lagometer", R_IMAGE_TRACK_HUD);
+    cgs_disconnectedIcon               = CG_RegisterMaterial("headiconDisconnected", R_IMAGE_TRACK_HUD);   /* 0x3044b6d4 */
+    cgs_youInKillCamIcon               = CG_RegisterMaterial("headiconYouInKillCam", R_IMAGE_TRACK_HUD);   /* 0x3044b6d8 */
 
     /* 0x3002bb3b-0x3002bbc2: twelve consecutive registrations whose handles are
      * deliberately DISCARDED (no MOV between the CALLs) — precache side effect
@@ -132,8 +133,8 @@ void CG_RegisterGraphics(void)
     (void)CG_RegisterMaterial("gfx/icons/hud@bino_owned", R_IMAGE_TRACK_HUD); /* 0x30077528 */
     (void)CG_RegisterMaterial("gfx/icons/hud@artillery", R_IMAGE_TRACK_HUD);  /* 0x30077510 */
 
-    cgs_media_tracerShader = CG_RegisterMaterial("gfx/misc/tracer", R_IMAGE_TRACK_EFFECT);     /* 0x3044b6e4, lm 4 */
-    cgs_media_selectShader = CG_RegisterMaterial("gfx/2d/select", R_IMAGE_TRACK_HUD);          /* 0x3044b6dc */
+    cgs_media_tracerShader             = CG_RegisterMaterial("gfx/misc/tracer", R_IMAGE_TRACK_EFFECT);     /* 0x3044b6e4, lm 4 */
+    cgs_media_selectShader             = CG_RegisterMaterial("gfx/2d/select", R_IMAGE_TRACK_HUD);          /* 0x3044b6dc */
     cgs_media_usableHintShaders[CURSOR_HINT_ACTIVATE] = CG_RegisterMaterial("hintActivate", R_IMAGE_TRACK_HUD);
     cgs_media_usableHintShaders[CURSOR_HINT_NOACTIVATE] = CG_RegisterMaterial("hintNoActivate", R_IMAGE_TRACK_HUD);
     cgs_media_usableHintShaders[CURSOR_HINT_DOOR] = CG_RegisterMaterial("hintDoor", R_IMAGE_TRACK_HUD);
@@ -142,23 +143,23 @@ void CG_RegisterGraphics(void)
     cgs_media_usableHintShaders[CURSOR_HINT_LMG] = CG_RegisterMaterial("hintLMGMount", R_IMAGE_TRACK_HUD);
     cgs_media_usableHintShaders[CURSOR_HINT_HEALTH] = CG_RegisterMaterial("hintHealth", R_IMAGE_TRACK_HUD);
     cgs_media_usableHintShaders[CURSOR_HINT_LADDER] = CG_RegisterMaterial("hintLadder", R_IMAGE_TRACK_HUD);
-    cg_weaponHudIcons[0] = CG_RegisterMaterial("hintFriendly", R_IMAGE_TRACK_HUD);           /* 0x3044b720 */
+    cg_weaponHudIcons[0]               = CG_RegisterMaterial("hintFriendly", R_IMAGE_TRACK_HUD);           /* 0x3044b720 */
 
-    cg_stanceHudShaders[0] = CG_RegisterMaterial("hudStanceStand", R_IMAGE_TRACK_HUD);         /* 0x3044bb24 */
-    cg_stanceHudShaders[1] = CG_RegisterMaterial("hudStanceCrouch", R_IMAGE_TRACK_HUD);        /* 0x3044bb28 */
-    cg_stanceHudShaders[2] = CG_RegisterMaterial("hudStanceProne", R_IMAGE_TRACK_HUD);         /* 0x3044bb2c */
-    cg_stanceHudShaders[3] = CG_RegisterMaterial("hudStanceSprint", R_IMAGE_TRACK_HUD);        /* 0x3044bb30 */
-    cg_stanceHudShaders[4] = CG_RegisterMaterial("hudStanceFlash", R_IMAGE_TRACK_HUD);         /* 0x3044bb34 */
-    cg_stanceHudShaders[5] = CG_RegisterMaterial("hudFatigueStand", R_IMAGE_TRACK_HUD);        /* 0x3044bb38 */
-    cg_stanceHudShaders[6] = CG_RegisterMaterial("hudFatigueCrouch", R_IMAGE_TRACK_HUD);       /* 0x3044bb3c */
-    cg_stanceHudShaders[7] = CG_RegisterMaterial("hudFatigueProne", R_IMAGE_TRACK_HUD);        /* 0x3044bb40 */
-    cg_stanceHudShaders[8] = CG_RegisterMaterial("hudFatigueSprint", R_IMAGE_TRACK_HUD);       /* 0x3044bb44 */
+    cg_stanceHudShaders[0]             = CG_RegisterMaterial("hudStanceStand", R_IMAGE_TRACK_HUD);         /* 0x3044bb24 */
+    cg_stanceHudShaders[1]             = CG_RegisterMaterial("hudStanceCrouch", R_IMAGE_TRACK_HUD);        /* 0x3044bb28 */
+    cg_stanceHudShaders[2]             = CG_RegisterMaterial("hudStanceProne", R_IMAGE_TRACK_HUD);         /* 0x3044bb2c */
+    cg_stanceHudShaders[3]             = CG_RegisterMaterial("hudStanceSprint", R_IMAGE_TRACK_HUD);        /* 0x3044bb30 */
+    cg_stanceHudShaders[4]             = CG_RegisterMaterial("hudStanceFlash", R_IMAGE_TRACK_HUD);         /* 0x3044bb34 */
+    cg_stanceHudShaders[5]             = CG_RegisterMaterial("hudFatigueStand", R_IMAGE_TRACK_HUD);        /* 0x3044bb38 */
+    cg_stanceHudShaders[6]             = CG_RegisterMaterial("hudFatigueCrouch", R_IMAGE_TRACK_HUD);       /* 0x3044bb3c */
+    cg_stanceHudShaders[7]             = CG_RegisterMaterial("hudFatigueProne", R_IMAGE_TRACK_HUD);        /* 0x3044bb40 */
+    cg_stanceHudShaders[8]             = CG_RegisterMaterial("hudFatigueSprint", R_IMAGE_TRACK_HUD);       /* 0x3044bb44 */
 
-    cg_hudObjectiveReserved = 0;   /* MOV [0x3044bb48],0 — reserved slot zeroed */
+    cg_hudObjectiveReserved            = 0;   /* MOV [0x3044bb48],0 — reserved slot zeroed */
 
-    cg_objectiveShaders[0] = CG_RegisterMaterial("hudObjective", R_IMAGE_TRACK_HUD);           /* 0x3044bb4c */
-    cg_objectiveShaders[1] = CG_RegisterMaterial("hudObjectiveUp", R_IMAGE_TRACK_HUD);         /* 0x3044bb50 */
-    cg_objectiveShaders[2] = CG_RegisterMaterial("hudObjectiveDown", R_IMAGE_TRACK_HUD);       /* 0x3044bb54 */
+    cg_objectiveShaders[0]             = CG_RegisterMaterial("hudObjective", R_IMAGE_TRACK_HUD);           /* 0x3044bb4c */
+    cg_objectiveShaders[1]             = CG_RegisterMaterial("hudObjectiveUp", R_IMAGE_TRACK_HUD);         /* 0x3044bb50 */
+    cg_objectiveShaders[2]             = CG_RegisterMaterial("hudObjectiveDown", R_IMAGE_TRACK_HUD);       /* 0x3044bb54 */
 
     /* The compass and hit-direction materials occupy the next media slots. */
     cg_compassFriendlyShaders[0] = CG_RegisterMaterial("gfx/hud/hud@objective_friendly.tga", R_IMAGE_TRACK_HUD);
@@ -173,31 +174,37 @@ void CG_RegisterGraphics(void)
      * levelshot draw + CG_HUNK_USED/Q_atoi("com_expectedhunkusage") progress-bar work lives
      * inside it). trap id 0x59 pushed with (5, name) at 0x3002bff6/0x3002c22c/0x3002c460. */
     CG_DrawInformation(qfalse); /* inlined load-screen updater (0x3002a530) */
-    cgs_media_checkboxClear =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"ui/assets/checkbox_clear", R_IMAGE_TRACK_HUD));
+    cgs_media_checkboxClear = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                (intptr_t)"ui/assets/checkbox_clear",
+                                R_IMAGE_TRACK_HUD));
     CG_DrawInformation(qfalse); /* inlined load-screen updater (0x3002a530) */
-    cgs_media_checkboxChecked =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"ui/assets/checkbox_checked", R_IMAGE_TRACK_HUD));
+    cgs_media_checkboxChecked = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                (intptr_t)"ui/assets/checkbox_checked",
+                                R_IMAGE_TRACK_HUD));
     CG_DrawInformation(qfalse); /* inlined load-screen updater (0x3002a530) */
-    cgs_media_checkboxFail =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)"ui/assets/checkbox_fail", R_IMAGE_TRACK_HUD));
+    cgs_media_checkboxFail = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_R_REGISTERSHADER,
+                                (intptr_t)"ui/assets/checkbox_fail",
+                                R_IMAGE_TRACK_HUD));
 
     /* Remaining 2D media handles. */
-    cgs_media_backTileShader = CG_RegisterMaterial("gfx/2d/backtile", R_IMAGE_TRACK_HUD);      /* 0x3044b6f0 */
-    cgs_media_hudNoWeaponIcon = CG_RegisterMaterial("hudNoWeaponIcon", R_IMAGE_TRACK_HUD);      /* 0x3044b6f4 */
-    cgs_media_flareShader = CG_RegisterMaterial("flareShader", R_IMAGE_TRACK_EFFECT);       /* 0x3044bba0, lm 4 */
-    cgs_media_hudColorBar = CG_RegisterMaterial("hudColorBar", R_IMAGE_TRACK_HUD);          /* 0x3044b6c0 */
-    cgs_media_hudAlliedIcon = CG_RegisterMaterial("hudAlliedIcon", R_IMAGE_TRACK_HUD);        /* 0x3044b6bc */
-    cgs_media_hudAxisIcon = CG_RegisterMaterial("hudAxisIcon", R_IMAGE_TRACK_HUD);          /* 0x3044b6b8 */
-    cgs_media_headiconAxisFlag = CG_RegisterMaterial("gfx/hud/headicon@axis_flag", R_IMAGE_TRACK_HUD); /* 0x3044bbac */
+    cgs_media_backTileShader   = CG_RegisterMaterial("gfx/2d/backtile", R_IMAGE_TRACK_HUD);      /* 0x3044b6f0 */
+    cgs_media_hudNoWeaponIcon  = CG_RegisterMaterial("hudNoWeaponIcon", R_IMAGE_TRACK_HUD);      /* 0x3044b6f4 */
+    cgs_media_flareShader      = CG_RegisterMaterial("flareShader", R_IMAGE_TRACK_EFFECT);       /* 0x3044bba0, lm 4 */
+    cgs_media_hudColorBar      = CG_RegisterMaterial("hudColorBar", R_IMAGE_TRACK_HUD);          /* 0x3044b6c0 */
+    cgs_media_hudAlliedIcon    = CG_RegisterMaterial("hudAlliedIcon", R_IMAGE_TRACK_HUD);        /* 0x3044b6bc */
+    cgs_media_hudAxisIcon      = CG_RegisterMaterial("hudAxisIcon", R_IMAGE_TRACK_HUD);          /* 0x3044b6b8 */
+    cgs_media_headiconAxisFlag = CG_RegisterMaterial("gfx/hud/headicon@axis_flag", R_IMAGE_TRACK_HUD);     /* 0x3044bbac */
     cgs_media_headiconAlliesFlag = CG_RegisterMaterial("gfx/hud/headicon@allies_flag", R_IMAGE_TRACK_HUD); /* 0x3044bba8 */
 
     /* " - models" phase banner (built inline, printed with LOADING... prefix). */
     CG_LoadingString(" - models");
 
-    cgs_voiceChatIcon = (uint32_t)CG_RegisterMaterial("headiconVoiceChat", R_IMAGE_TRACK_UI); /* 0x3044b6cc, lm 2 */
-    cgs_talkBalloonIcon = CG_RegisterMaterial("headiconTalkBalloon", R_IMAGE_TRACK_UI); /* 0x3044b6d0, lm 2 */
-    cg_railCoreShader = CG_RegisterMaterial("railCore", 1); /* 0x3044b6c8, lm 1 (EBP=1 at the call site) */
+    cgs_voiceChatIcon    = (uint32_t)CG_RegisterMaterial("headiconVoiceChat", R_IMAGE_TRACK_UI);  /* 0x3044b6cc, lm 2 */
+    cgs_talkBalloonIcon  = CG_RegisterMaterial("headiconTalkBalloon", R_IMAGE_TRACK_UI);          /* 0x3044b6d0, lm 2 */
+    cg_railCoreShader    = CG_RegisterMaterial("railCore", 1);   /* 0x3044b6c8, lm 1 (EBP=1 at the call site) */
 
     /* Second cgame media batch (black/white and friends). */
     CG_RegisterScoreboardShaders();
@@ -219,15 +226,16 @@ void CG_RegisterGraphics(void)
      * at 0x3002c5fd puts that handle into 0x3044bba4 — the slot's mechanical
      * label "markShadowFadeShader" predates this proof; it actually holds the
      * wake material handle. */
-    cgs_media_markShadowShader = CG_RegisterMaterial("markShadow", R_IMAGE_TRACK_EFFECT); /* 0x3044bb9c, lm 4 */
-    cgs_media_wakeMarkShader = CG_RegisterMaterial("wake", R_IMAGE_TRACK_EFFECT); /* 0x3044bba4, lm 4 */
+    cgs_media_markShadowShader     = CG_RegisterMaterial("markShadow", R_IMAGE_TRACK_EFFECT);   /* 0x3044bb9c, lm 4 */
+    cgs_media_wakeMarkShader = CG_RegisterMaterial("wake", R_IMAGE_TRACK_EFFECT);         /* 0x3044bba4, lm 4 */
 
     /* " - inline models" phase banner. */
     CG_LoadingString(" - inline models");
 
     /* Inline "*N" brush models: for each of trap_CM_NumInlineModels() models present,
      * register "*i" and store its midpoint. */
-    cg_numInlineModels = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_CM_NUM_INLINE_MODELS));
+    cg_numInlineModels = coduo_int32_from_bits(
+        (uint32_t)cgame_syscall(CG_CM_NUM_INLINE_MODELS));
     if (cg_numInlineModels > 1) {
         for (i = 1; i < cg_numInlineModels; i++) {
             char name[10];
@@ -236,7 +244,7 @@ void CG_RegisterGraphics(void)
             int32_t model;
             int axis;
 
-            Com_sprintf(name, sizeof(name), "*%i", i); /* "*1", "*2", ... */
+            Com_sprintf(name, sizeof(name), "*%i", i);          /* "*1", "*2", ... */
             model = CG_RegisterModel(name, 7);
             /* 0x3002c67b: MOV [EBP*4+0x30448de8],EAX executes BEFORE the trap
              * CALL at 0x3002c682 — the stored handle is CG_RegisterModel's
@@ -244,14 +252,16 @@ void CG_RegisterGraphics(void)
             cg_inlineModelHandles[i] = model;
             /* trap CG_R_MODEL_BOUNDS (0x4d): fills the two bounds vec3s read by
              * the midpoint loop below (args model, &mins, &maxs). */
-            (void)cgame_syscall(CG_R_MODEL_BOUNDS, model, (intptr_t)mins, (intptr_t)maxs);
+            (void)cgame_syscall(CG_R_MODEL_BOUNDS, model,
+                                (intptr_t)mins, (intptr_t)maxs);
             /* Per axis the x87 computes: FLD maxs; FSUB mins; FMUL 0.5(double
              * @0x3007bd28); FADD mins; FSTP(float) — i.e. (maxs - mins) * 0.5
              * + mins = the box midpoint, with the multiply/add carried in
              * extended precision and rounded to float on store. Preserved as a
              * double-precision expression cast to float. */
             for (axis = 0; axis < 3; axis++) {
-                cg_inlineModelMidpoints[i][axis] = (float)(((double)maxs[axis] - mins[axis]) * 0.5 + mins[axis]);
+                cg_inlineModelMidpoints[i][axis] =
+                    (float)(((double)maxs[axis] - mins[axis]) * 0.5 + mins[axis]);
             }
         }
     }
@@ -284,7 +294,8 @@ void CG_RegisterGraphics(void)
              * jumping to the shellshock-loop setup. */
             break;
         }
-        cg_effectDefs[i] = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)cs);
+        cg_effectDefs[i] =
+            (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)cs);
     }
 
     /* Precache the CS_SHELLSHOCKS config strings into cg_shellShocks[0..14]. */
@@ -316,32 +327,44 @@ void CG_RegisterGraphics(void)
      * string twice, so both stores are preserved deliberately — not a reconstruction error.
      */
     CG_RegisterImpactEffects();
-    cgs_media_fleshImpactEffect =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/impacts/flesh_hit_noblood.efx"));
+    cgs_media_fleshImpactEffect = coduo_int32_from_bits((uint32_t)cgame_syscall(
+        CG_FX_REGISTER_EFFECT, (intptr_t)"fx/impacts/flesh_hit_noblood.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_SAND] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_sand.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_sand.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_GRASS] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_grass.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_grass.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_DIRT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_dirt.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_dirt.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_ROCK] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_rock.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_rock.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_SNOW] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_snow.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_snow.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_TANK_SNOW_ALT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_snow.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_tanktread_snow.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_SAND] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_sand.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_sand.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_GRASS] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_grass.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_grass.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_DIRT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_dirt.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_dirt.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_ROCK] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_rock.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_rock.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_SNOW] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_snow.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_snow.efx"));
     cgs_media_vehicleTreadEffects[VEH_TREAD_EFFECT_JEEP_SNOW_ALT] =
-        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_snow.efx"));
+        coduo_int32_from_bits((uint32_t)cgame_syscall(
+            CG_FX_REGISTER_EFFECT, (intptr_t)"fx/map_mp/mp_jeepwheel_snow.efx"));
 
     /* " - game media done" phase banner (final CG_LoadingString + trap_UpdateScreen). */
     CG_LoadingString(" - game media done");

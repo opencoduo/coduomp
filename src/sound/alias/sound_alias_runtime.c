@@ -10,8 +10,9 @@ enum {
     SOUND_ALIAS_BSP_EXTENSION_LENGTH = 4,
     SOUND_ALIAS_LOADSPEC_PREFIX_LENGTH = sizeof("soundloadspecs/mp/") - 1,
     SOUND_ALIAS_LOADSPEC_EXTENSION_LENGTH = sizeof(".csv") - 1,
-    SOUND_ALIAS_LOADSPEC_NAME_CAPACITY =
-        SND_ALIAS_SOURCE_NAME_CAPACITY - SOUND_ALIAS_LOADSPEC_PREFIX_LENGTH - SOUND_ALIAS_LOADSPEC_EXTENSION_LENGTH - 1
+    SOUND_ALIAS_LOADSPEC_NAME_CAPACITY = SND_ALIAS_SOURCE_NAME_CAPACITY -
+        SOUND_ALIAS_LOADSPEC_PREFIX_LENGTH -
+        SOUND_ALIAS_LOADSPEC_EXTENSION_LENGTH - 1
 };
 
 /*
@@ -37,16 +38,21 @@ void Com_LoadSoundAliases(const char *sourceName, sndAliasBank_t bank)
         return;
     }
 
-    if (bank == SND_ALIAS_BANK_CGAME && Q_stricmp(com_soundAliasLocalizedSource, sourceName) == 0) {
-        com_soundAliases[SND_ALIAS_BANK_CGAME] = com_soundAliases[SND_ALIAS_BANK_GAME];
-        com_soundAliasCount[SND_ALIAS_BANK_CGAME] = com_soundAliasCount[SND_ALIAS_BANK_GAME];
-        memcpy(com_soundAliasHash[SND_ALIAS_BANK_CGAME], com_soundAliasHash[SND_ALIAS_BANK_GAME],
+    if (bank == SND_ALIAS_BANK_CGAME &&
+        Q_stricmp(com_soundAliasLocalizedSource, sourceName) == 0) {
+        com_soundAliases[SND_ALIAS_BANK_CGAME] =
+            com_soundAliases[SND_ALIAS_BANK_GAME];
+        com_soundAliasCount[SND_ALIAS_BANK_CGAME] =
+            com_soundAliasCount[SND_ALIAS_BANK_GAME];
+        memcpy(com_soundAliasHash[SND_ALIAS_BANK_CGAME],
+               com_soundAliasHash[SND_ALIAS_BANK_GAME],
                sizeof(com_soundAliasHash[SND_ALIAS_BANK_CGAME]));
     } else {
         char normalizedSource[SND_ALIAS_SOURCE_NAME_CAPACITY];
         size_t normalizedLength;
 
-        if (Q_stricmpn(sourceName, "maps/", SOUND_ALIAS_MAP_PREFIX_LENGTH) == 0) {
+        if (Q_stricmpn(sourceName, "maps/",
+                       SOUND_ALIAS_MAP_PREFIX_LENGTH) == 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: form the map-relative offset only when
              * it belongs to the source, and test a suffix only when complete. */
             if (sourceNameLength < SOUND_ALIAS_MAP_PATH_SKIP) {
@@ -70,7 +76,8 @@ void Com_LoadSoundAliases(const char *sourceName, sndAliasBank_t bank)
         char **aliasFiles;
         int32_t fileCount;
 
-        if (bank == SND_ALIAS_BANK_CGAME || bank == SND_ALIAS_BANK_GAME) {
+        if (bank == SND_ALIAS_BANK_CGAME ||
+            bank == SND_ALIAS_BANK_GAME) {
             char loadSpecPath[SND_ALIAS_SOURCE_NAME_CAPACITY];
 
             /* NOT_FROM_ORIGINAL_SOURCE: require the complete loadspec path and
@@ -84,21 +91,25 @@ void Com_LoadSoundAliases(const char *sourceName, sndAliasBank_t bank)
             memcpy(loadSpecPath + SOUND_ALIAS_LOADSPEC_PREFIX_LENGTH + normalizedLength, ".csv", SOUND_ALIAS_LOADSPEC_EXTENSION_LENGTH + 1);
             aliasFiles = Com_ParseLoadSpecFile(loadSpecPath, &fileCount);
         } else {
-            aliasFiles = FS_ListFiles("soundaliases", "csv", &fileCount);
+            aliasFiles =
+                FS_ListFiles("soundaliases", "csv", &fileCount);
         }
 
         if (fileCount == 0) {
-            Com_Printf("WARNING: can't find any sound alias files "
-                       "(soundaliases/*.csv)\n");
+            Com_Printf(
+                "WARNING: can't find any sound alias files "
+                "(soundaliases/*.csv)\n");
             return;
         }
 
         Hunk_SetMarkTemp();
         int32_t aliasCount = 0;
-        for (int32_t fileIndex = 0; fileIndex < fileCount; ++fileIndex) {
+        for (int32_t fileIndex = 0;
+             fileIndex < fileCount; ++fileIndex) {
             com_soundAliasCurrentFile = aliasFiles[fileIndex];
-            aliasCount =
-                Com_LoadSoundAliasFile(va("soundaliases/%s", com_soundAliasCurrentFile), normalizedSource, aliasCount, (qboolean)bank);
+            aliasCount = Com_LoadSoundAliasFile(
+                va("soundaliases/%s", com_soundAliasCurrentFile),
+                normalizedSource, aliasCount, (qboolean)bank);
         }
 
         if (aliasCount != 0) {
@@ -106,7 +117,8 @@ void Com_LoadSoundAliases(const char *sourceName, sndAliasBank_t bank)
         }
         Hunk_ClearToMarkTemp();
 
-        if (bank == SND_ALIAS_BANK_CGAME || bank == SND_ALIAS_BANK_GAME) {
+        if (bank == SND_ALIAS_BANK_CGAME ||
+            bank == SND_ALIAS_BANK_GAME) {
             Com_FreeFileList(aliasFiles);
         } else {
             FS_FreeFileList(aliasFiles);
@@ -141,13 +153,15 @@ void Com_UnloadSoundAliases(sndAliasBank_t bank)
     }
 
     if (com_soundAliases[bank] != NULL) {
-        if (bank != SND_ALIAS_BANK_CGAME || com_soundAliases[SND_ALIAS_BANK_GAME] == NULL) {
+        if (bank != SND_ALIAS_BANK_CGAME ||
+            com_soundAliases[SND_ALIAS_BANK_GAME] == NULL) {
             Z_FreeInternal(com_soundAliases[bank]);
         }
 
         com_soundAliases[bank] = NULL;
         com_soundAliasCount[bank] = 0;
-        memset(com_soundAliasHash[bank], 0, sizeof(com_soundAliasHash[bank]));
+        memset(com_soundAliasHash[bank], 0,
+               sizeof(com_soundAliasHash[bank]));
     }
 
     com_soundAliasBankActive[bank] = 0;

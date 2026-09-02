@@ -21,7 +21,8 @@ struct stat;
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the Linux libc boundary used by the
  * original filesystem extension comparison. */
-static inline int32_t fs_compat_stricmp(const char *left, const char *right)
+static inline int32_t fs_compat_stricmp(const char *left,
+                                       const char *right)
 {
     return strcasecmp(left, right);
 }
@@ -48,13 +49,18 @@ const char *Sys_DefaultHomePath(void);
 
 /* NOT_FROM_ORIGINAL_SOURCE: published pack names must satisfy the relative
  * virtual-path policy and exclude the surrounding stream delimiter. */
-static inline qboolean filesystem_compat_accept_server_pak_name(const char *path)
+static inline qboolean filesystem_compat_accept_server_pak_name(
+    const char *path)
 {
-    return coduo_compat_path_is_safe_relative(path) != qfalse && strchr(path, '@') == NULL ? qtrue : qfalse;
+    return coduo_compat_path_is_safe_relative(path) != qfalse &&
+                   strchr(path, '@') == NULL
+               ? qtrue
+               : qfalse;
 }
 
-static inline qboolean filesystem_compat_resolve_case_path(const char *trustedRoot, const char *path, char *resolvedPath,
-                                                           size_t resolvedPathSize)
+static inline qboolean filesystem_compat_resolve_case_path(
+    const char *trustedRoot, const char *path,
+    char *resolvedPath, size_t resolvedPathSize)
 {
     (void)trustedRoot;
     (void)path;
@@ -80,7 +86,8 @@ static inline void filesystem_compat_end_streamed_file(int32_t handle)
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the original dedicated server's direct
  * libc fopen boundary. */
-static inline FILE *filesystem_compat_fopen_read(const char *trustedRoot, const char *path)
+static inline FILE *filesystem_compat_fopen_read(
+    const char *trustedRoot, const char *path)
 {
     (void)trustedRoot;
     return fopen(path, "rb");
@@ -101,32 +108,37 @@ static inline void filesystem_compat_host_paths_changed(void)
 
 /* NOT_FROM_ORIGINAL_SOURCE: the standalone target has no connection-owned
  * filesystem namespace; these adapters retain its original home-root policy. */
-static inline const char *filesystem_compat_state_root(const char *ordinaryHomeRoot)
+static inline const char *filesystem_compat_state_root(
+    const char *ordinaryHomeRoot)
 {
     return ordinaryHomeRoot;
 }
 
-static inline void filesystem_compat_add_server_game_directory(const char *gameName)
+static inline void filesystem_compat_add_server_game_directory(
+    const char *gameName)
 {
     (void)gameName;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: the standalone server has no client mod menu or
  * per-server content cache. */
-static inline int32_t filesystem_compat_append_cached_mods(char *listBuffer, int32_t bufferSize)
+static inline int32_t filesystem_compat_append_cached_mods(
+    char *listBuffer, int32_t bufferSize)
 {
     (void)listBuffer;
     (void)bufferSize;
     return 0;
 }
 
-static inline qboolean filesystem_compat_server_scope_allows_searchpath(const searchpath_t *searchpath)
+static inline qboolean filesystem_compat_server_scope_allows_searchpath(
+    const searchpath_t *searchpath)
 {
     (void)searchpath;
     return qtrue;
 }
 
-static inline qboolean filesystem_compat_download_file_exists(const char *qpath)
+static inline qboolean filesystem_compat_download_file_exists(
+    const char *qpath)
 {
     return FS_SV_FileExists(qpath);
 }
@@ -140,24 +152,33 @@ static inline void filesystem_compat_remove_download(const char *qpath)
     FS_Remove(osPath);
 }
 
-int32_t filesystem_compat_archive_tell(const fileHandleData_t *fileHandle);
-int32_t filesystem_compat_archive_length(const fileHandleData_t *fileHandle);
-void filesystem_compat_archive_close_current(fileHandleData_t *fileHandle);
+int32_t filesystem_compat_archive_tell(
+    const fileHandleData_t *fileHandle);
+int32_t filesystem_compat_archive_length(
+    const fileHandleData_t *fileHandle);
+void filesystem_compat_archive_close_current(
+    fileHandleData_t *fileHandle);
 void filesystem_compat_archive_close(fileHandleData_t *fileHandle);
-int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle, void *buffer, uint32_t byteCount);
+int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle,
+                                       void *buffer, uint32_t byteCount);
 int32_t filesystem_compat_archive_rewind(fileHandleData_t *fileHandle);
 void filesystem_compat_pack_close(pack_t *pack);
-qboolean filesystem_compat_archive_open_entry(pack_t *pack, const fileInPack_t *packFile, fileHandleData_t *fileHandle, qboolean uniqueFile,
-                                              qboolean quiet);
-qboolean filesystem_compat_archive_open_catalog(const char *path, void **archiveOut, uint32_t *entryCountOut);
+qboolean filesystem_compat_archive_open_entry(
+    pack_t *pack, const fileInPack_t *packFile,
+    fileHandleData_t *fileHandle, qboolean uniqueFile,
+    qboolean quiet);
+qboolean filesystem_compat_archive_open_catalog(
+    const char *path, void **archiveOut, uint32_t *entryCountOut);
 void filesystem_compat_archive_close_catalog(void *archive);
 int32_t filesystem_compat_archive_go_to_first(void *archive);
 int32_t filesystem_compat_archive_go_to_next(void *archive);
-int32_t filesystem_compat_archive_get_current_info(void *archive, filesystem_compat_archive_file_info_t *fileInfo, char *filename,
-                                                   uint32_t filenameSize);
+int32_t filesystem_compat_archive_get_current_info(
+    void *archive, filesystem_compat_archive_file_info_t *fileInfo,
+    char *filename, uint32_t filenameSize);
 int32_t filesystem_compat_archive_get_current_position(void *archive);
 
-static inline qboolean filesystem_compat_www_bad_checksum(const char *pakName)
+static inline qboolean filesystem_compat_www_bad_checksum(
+    const char *pakName)
 {
     (void)pakName;
     return qfalse;
@@ -179,7 +200,8 @@ static inline const char *filesystem_compat_language_name(int32_t language)
     return language == 0 ? "english" : NULL;
 }
 
-static inline void filesystem_compat_report_unsupported_pak_language(const char *base, const char *game, const char *pakName)
+static inline void filesystem_compat_report_unsupported_pak_language(
+    const char *base, const char *game, const char *pakName)
 {
     /* The original dedicated engine silently ignores localized paks for
      * languages other than English. */
@@ -232,14 +254,16 @@ static inline void filesystem_compat_append_cd_key(const char *gameDirectory)
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the dedicated engine's asynchronous
  * streamed-file service after the common reentrancy guard is cleared. */
-static inline int32_t filesystem_compat_streamed_read(void *buffer, int32_t byteCount, int32_t handle)
+static inline int32_t filesystem_compat_streamed_read(
+    void *buffer, int32_t byteCount, int32_t handle)
 {
     return Sys_StreamedRead(buffer, byteCount, 1, handle);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the dedicated engine's stream-thread seek
  * dispatch while the common callback guard is clear. */
-static inline void filesystem_compat_stream_seek(int32_t handle, int32_t offset, int32_t origin)
+static inline void filesystem_compat_stream_seek(
+    int32_t handle, int32_t offset, int32_t origin)
 {
     Sys_StreamSeek(handle, offset, origin);
 }
@@ -250,7 +274,9 @@ static inline void filesystem_compat_shutdown_begin(void)
 {
 }
 
-char **Sys_ListFiles(const char *directory, const char *extension, const char *filter, int32_t *numFiles, qboolean wantDirectories);
+char **Sys_ListFiles(const char *directory, const char *extension,
+                     const char *filter, int32_t *numFiles,
+                     qboolean wantDirectories);
 void Sys_FreeFileList(char **list);
 
 #endif

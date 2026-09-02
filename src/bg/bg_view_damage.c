@@ -59,16 +59,26 @@
 /* NOT_FROM_ORIGINAL_SOURCE: extended carrier for the inlined lean expression. */
 static x87f bg_compat_view_lean_fraction_x87(float fraction)
 {
-    return x87f_mul(x87f_sub(x87f_load_f32(2.0f), x87f_abs(x87f_load_f32(fraction))), x87f_load_f32(fraction));
+    return x87f_mul(
+        x87f_sub(x87f_load_f32(2.0f),
+                 x87f_abs(x87f_load_f32(fraction))),
+        x87f_load_f32(fraction));
 }
 #endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring of the two original stores. */
-static void bg_compat_add_view_kick_pitch_roll(bg_view_angle_state_t *state, vec3_t angles, float fraction)
+static void bg_compat_add_view_kick_pitch_roll(
+    bg_view_angle_state_t *state, vec3_t angles, float fraction)
 {
 #if EMULATE_X87
-    angles[0] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(fraction), x87f_load_f32(state->viewKickPitch)), x87f_load_f32(angles[0])));
-    angles[2] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(fraction), x87f_load_f32(state->viewKickRoll)), x87f_load_f32(angles[2])));
+    angles[0] = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(fraction),
+                 x87f_load_f32(state->viewKickPitch)),
+        x87f_load_f32(angles[0])));
+    angles[2] = x87f_store_f32(x87f_add(
+        x87f_mul(x87f_load_f32(fraction),
+                 x87f_load_f32(state->viewKickRoll)),
+        x87f_load_f32(angles[2])));
 #else
     angles[0] += fraction * state->viewKickPitch;
     angles[2] += fraction * state->viewKickRoll;
@@ -76,7 +86,8 @@ static void bg_compat_add_view_kick_pitch_roll(bg_view_angle_state_t *state, vec
 }
 #endif
 
-void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles)
+void BG_CalculateView_DamageKick(bg_view_angle_state_t *state,
+                                 vec3_t angles)
 {
 #if defined(WINDOWS_BEHAVIOR)
     /* 0x30015a12..0x30015a17: gate on viewKickStartTime (+0x04). */
@@ -121,7 +132,8 @@ void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles)
 
     /* 0x30015a9b..0x30015aa4: elapsed damage-kick count loaded directly into
      * x87 extended precision with FILD dword; there is no float conversion. */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)state->time - (uint32_t)startDelta);
+    int32_t elapsed = coduo_int32_from_bits(
+        (uint32_t)state->time - (uint32_t)startDelta);
     long double t = (long double)elapsed; /* FILD dword: no intervening float rounding */
 
     /* 0x30015aa8..0x30015b23: piecewise triangle-wave curve, scaled by the ADS envelope.
@@ -138,7 +150,8 @@ void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles)
          * [0x3007bce4]=2.0. FST at 0x30015abb rounds only the fabs copy.) */
         long double u = (long double)t * 0.01f;
         float uf = (float)u;                                       /* FST [ESP+0x4] */
-        curve = scale * ((2.0L - (long double)fabsf(uf)) * u);
+        curve = scale *
+            ((2.0L - (long double)fabsf(uf)) * u);
     } else {
         /* 0x30015ada..0x30015b1d: falling tail.
          *   w = 1.0f - (t - 100.0f) * 0.0025f      // [0x3007bf54]=0.0025, [0x3007bce0]=1.0
@@ -154,7 +167,8 @@ void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles)
         }
         long double v = 1.0f - w;
         float vf = (float)v;                                       /* FST [ESP+0x4] */
-        curve = scale * (1.0L - (2.0L - (long double)fabsf(vf)) * v);
+        curve = scale *
+            (1.0L - (2.0L - (long double)fabsf(vf)) * v);
     }
 
     /* 0x30015b28..0x30015b37: accumulate the curve into the X and Z axes.
@@ -174,14 +188,19 @@ void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles)
     }
 
     ps = state->ps;
-    if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 && BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition) == 0) {
+    if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 &&
+        BG_AllowPlayerWeaponAtVehiclePos(
+            ps->vehicleType, ps->vehiclePosition) == 0) {
         return;
     }
 
     weapon = BG_GetInfoForWeapon(ps->currentWeapon);
     adsFraction = ps->adsFraction;
 #if EMULATE_X87
-    scale = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_mul(x87f_load_f32(adsFraction), x87f_load_f32(VIEWKICK_ADS_SCALE))));
+    scale = x87f_store_f32(x87f_sub(
+        x87f_load_f32(1.0f),
+        x87f_mul(x87f_load_f32(adsFraction),
+                 x87f_load_f32(VIEWKICK_ADS_SCALE))));
 #else
     scale = 1.0f - adsFraction * VIEWKICK_ADS_SCALE;
 #endif
@@ -189,41 +208,64 @@ void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles)
     if (adsFraction != 0.0f && weapon->adsOverlayReticle != 0) {
 #if EMULATE_X87
         scale = x87f_store_f32(x87f_mul(
-            x87f_load_f32(scale), x87f_add(x87f_mul(x87f_load_f32(adsFraction), x87f_load_f32(VIEWKICK_ADS_SCALE)), x87f_load_f32(1.0f))));
+            x87f_load_f32(scale),
+            x87f_add(
+                x87f_mul(x87f_load_f32(adsFraction),
+                         x87f_load_f32(VIEWKICK_ADS_SCALE)),
+                x87f_load_f32(1.0f))));
 #else
         scale *= adsFraction * VIEWKICK_ADS_SCALE + 1.0f;
 #endif
     }
 
-    elapsed = (float)coduo_int32_from_bits((uint32_t)state->time - (uint32_t)state->viewKickStartTime);
+    elapsed = (float)coduo_int32_from_bits(
+        (uint32_t)state->time - (uint32_t)state->viewKickStartTime);
     if (elapsed < VIEWKICK_FADE_IN_MS) {
 #if EMULATE_X87
-        const float leanArg = x87f_store_f32(x87f_div(x87f_load_f32(elapsed), x87f_load_f32(VIEWKICK_FADE_IN_MS)));
-        bg_compat_add_view_kick_pitch_roll(state, angles,
-                                           x87f_store_f32(x87f_mul(bg_compat_view_lean_fraction_x87(leanArg), x87f_load_f32(scale))));
+        const float leanArg = x87f_store_f32(x87f_div(
+            x87f_load_f32(elapsed),
+            x87f_load_f32(VIEWKICK_FADE_IN_MS)));
+        bg_compat_add_view_kick_pitch_roll(
+            state, angles,
+            x87f_store_f32(x87f_mul(
+                bg_compat_view_lean_fraction_x87(leanArg),
+                x87f_load_f32(scale))));
 #else
-        bg_compat_add_view_kick_pitch_roll(state, angles, GetLeanFraction(elapsed / VIEWKICK_FADE_IN_MS) * scale);
+        bg_compat_add_view_kick_pitch_roll(
+            state, angles,
+            GetLeanFraction(elapsed / VIEWKICK_FADE_IN_MS) * scale);
 #endif
     } else {
         float fadeOutFraction;
 
 #if EMULATE_X87
-        fadeOutFraction =
-            x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_div(x87f_sub(x87f_load_f32(elapsed), x87f_load_f32(VIEWKICK_FADE_IN_MS)),
-                                                                  x87f_load_f32(VIEWKICK_FADE_OUT_MS))));
+        fadeOutFraction = x87f_store_f32(x87f_sub(
+            x87f_load_f32(1.0f),
+            x87f_div(
+                x87f_sub(x87f_load_f32(elapsed),
+                         x87f_load_f32(VIEWKICK_FADE_IN_MS)),
+                x87f_load_f32(VIEWKICK_FADE_OUT_MS))));
 #else
-        fadeOutFraction = 1.0f - (elapsed - VIEWKICK_FADE_IN_MS) / VIEWKICK_FADE_OUT_MS;
+        fadeOutFraction =
+            1.0f - (elapsed - VIEWKICK_FADE_IN_MS) /
+                       VIEWKICK_FADE_OUT_MS;
 #endif
         if (fadeOutFraction > 0.0f) {
             float fadeOutLean;
 
 #if EMULATE_X87
-            const float leanArg = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), x87f_load_f32(fadeOutFraction)));
-            fadeOutLean = x87f_store_f32(x87f_sub(x87f_load_f32(1.0f), bg_compat_view_lean_fraction_x87(leanArg)));
+            const float leanArg = x87f_store_f32(x87f_sub(
+                x87f_load_f32(1.0f),
+                x87f_load_f32(fadeOutFraction)));
+            fadeOutLean = x87f_store_f32(x87f_sub(
+                x87f_load_f32(1.0f),
+                bg_compat_view_lean_fraction_x87(leanArg)));
 #else
-            fadeOutLean = 1.0f - GetLeanFraction(1.0f - fadeOutFraction);
+            fadeOutLean =
+                1.0f - GetLeanFraction(1.0f - fadeOutFraction);
 #endif
-            bg_compat_add_view_kick_pitch_roll(state, angles, fadeOutLean * scale);
+            bg_compat_add_view_kick_pitch_roll(
+                state, angles, fadeOutLean * scale);
         }
     }
 #endif

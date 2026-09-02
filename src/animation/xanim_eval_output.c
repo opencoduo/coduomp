@@ -13,8 +13,10 @@ void XAnimClearData(DObjAnimMat *part)
 {
     const uint8_t *skipBytes = (const uint8_t *)xanim_evalSkipBits;
 
-    for (int32_t partIndex = 0; partIndex < xanim_evalPartCount; ++partIndex, ++part) {
-        if ((skipBytes[partIndex >> 3] & (uint8_t)(1U << (partIndex & 7))) != 0) {
+    for (int32_t partIndex = 0; partIndex < xanim_evalPartCount;
+         ++partIndex, ++part) {
+        if ((skipBytes[partIndex >> 3] &
+             (uint8_t)(1U << (partIndex & 7))) != 0) {
             continue;
         }
 

@@ -99,8 +99,10 @@ void CG_AddScaleFade(localEntity_t *le)
      * into the FMUL with no FSTP DWORD, so it enters exact. Under -std=c11 an
      * explicit (float) really rounds (fildl/fstps/flds) and would diverge once
      * |endTime - cg_time| exceeds 2^24 ms (~4.66 h of uptime). */
-    int32_t remaining = coduo_int32_from_bits((uint32_t)le->endTime - (uint32_t)cg_time);
-    long double phase = (long double)remaining * (long double)le->lifeRate;
+    int32_t remaining = coduo_int32_from_bits(
+        (uint32_t)le->endTime - (uint32_t)cg_time);
+    long double phase =
+        (long double)remaining * (long double)le->lifeRate;
 
     /* Only the alpha channel is packed from the fade (0..255, wrapped by the byte store).
      * The 255.0f multiplier is the shared .rdata float at 0x3007bd64. */
@@ -119,10 +121,14 @@ void CG_AddScaleFade(localEntity_t *le)
      * le->radius — stays in 80-bit st registers with NO float store, so the
      * locals are long double (BoxOnPlaneSide precedent); float locals would
      * round before the cull compare. */
-    long double dx = (long double)re->origin[0] - (long double)cg_refdef.vieworg[0];
-    long double dy = (long double)re->origin[1] - (long double)cg_refdef.vieworg[1];
-    long double dz = (long double)re->origin[2] - (long double)cg_refdef.vieworg[2];
-    long double dist = coduo_x87_sqrtl(dz * dz + dy * dy + dx * dx);
+    long double dx =
+        (long double)re->origin[0] - (long double)cg_refdef.vieworg[0];
+    long double dy =
+        (long double)re->origin[1] - (long double)cg_refdef.vieworg[1];
+    long double dz =
+        (long double)re->origin[2] - (long double)cg_refdef.vieworg[2];
+    long double dist = coduo_x87_sqrtl(
+        dz * dz + dy * dy + dx * dx);
 
     if (!(dist < (long double)le->radius)) {
         /* Camera is outside the sprite radius: submit it to the scene. */

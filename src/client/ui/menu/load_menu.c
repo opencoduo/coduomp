@@ -28,7 +28,8 @@ qboolean Load_Menu(int32_t sourceHandle, int32_t loadMode)
             return qtrue;
         }
 
-        languageIndex = coduo_crt_atoi(UI_Cvar_VariableString("cl_language"));
+        languageIndex =
+            coduo_crt_atoi(UI_Cvar_VariableString("cl_language"));
         if (languageIndex != 0) {
             char directory[UI_MENU_DIRECTORY_SIZE];
             const char *basename = token.string;
@@ -42,7 +43,9 @@ qboolean Load_Menu(int32_t sourceHandle, int32_t loadMode)
              * copy count and terminator index. Validate that operation against
              * the fixed directory buffer before publishing the path. */
             if (filenameLength > sizeof(directory)) {
-                PC_SourceError(sourceHandle, "menu filename exceeds localized path capacity\n");
+                PC_SourceError(
+                    sourceHandle,
+                    "menu filename exceeds localized path capacity\n");
                 return qfalse;
             }
 
@@ -60,7 +63,8 @@ qboolean Load_Menu(int32_t sourceHandle, int32_t loadMode)
                 }
             }
 
-            localizedDirectory = va("%s%s/", directory, trap_GetLanguagename(languageIndex));
+            localizedDirectory = va("%s%s/", directory,
+                                    trap_GetLanguagename(languageIndex));
             localizedFilename = va("%s%s", localizedDirectory, basename);
             if (UI_ParseMenu(localizedFilename, loadMode)) {
                 continue;

@@ -10,7 +10,8 @@ enum {
 // Source: uo_ui_mp_x86.dll 0x4000e050..0x4000e36e
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_4000e050_4000e36e.mcode
 // Exact same-module PPC symbol: UI_GetServerStatusInfo.
-qboolean UI_GetServerStatusInfo(const char *address, uiServerStatusInfo_t *statusInfo)
+qboolean UI_GetServerStatusInfo(const char *address,
+                                uiServerStatusInfo_t *statusInfo)
 {
     static const char empty[] = "";
     char *cursor;
@@ -21,7 +22,8 @@ qboolean UI_GetServerStatusInfo(const char *address, uiServerStatusInfo_t *statu
     }
 
     memset(statusInfo, 0, sizeof(*statusInfo));
-    if (!trap_LAN_ServerStatus(address, statusInfo->text, sizeof(statusInfo->text))) {
+    if (!trap_LAN_ServerStatus(address, statusInfo->text,
+                               sizeof(statusInfo->text))) {
         return qfalse;
     }
 
@@ -112,7 +114,9 @@ qboolean UI_GetServerStatusInfo(const char *address, uiServerStatusInfo_t *statu
             }
 
             line = &statusInfo->lines[statusInfo->numLines];
-            Com_sprintf(statusInfo->numberText[playerIndex], sizeof(statusInfo->numberText[playerIndex]), "%d", playerIndex);
+            Com_sprintf(statusInfo->numberText[playerIndex],
+                        sizeof(statusInfo->numberText[playerIndex]),
+                        "%d", playerIndex);
             line->column[0] = statusInfo->numberText[playerIndex];
             line->column[1] = score;
             line->column[2] = ping;
