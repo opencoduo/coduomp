@@ -16,7 +16,6 @@ extern int32_t xanim_poolUsedCount;
 extern int32_t xanim_poolHighWaterCount;
 extern XAnimTree *xanim_currentTree;
 extern int32_t xanim_deferredNotifyCount;
-extern xanim_deferred_notify_t
-    xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
+extern xanim_deferred_notify_t xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
 
 #endif

@@ -7,12 +7,8 @@
 extern "C" {
 #endif
 
-void CM_ProjectPointOntoLine(const vec3_t point, const vec3_t linePoint,
-                             const vec3_t lineDirection, vec3_t projected);
-long double CM_DistanceSquaredPointToSegment(const vec3_t point,
-                                             const vec3_t start,
-                                             const vec3_t end,
-                                             const vec3_t direction);
+void CM_ProjectPointOntoLine(const vec3_t point, const vec3_t linePoint, const vec3_t lineDirection, vec3_t projected);
+long double CM_DistanceSquaredPointToSegment(const vec3_t point, const vec3_t start, const vec3_t end, const vec3_t direction);
 long double CM_DistanceSquared(const vec3_t start, const vec3_t end);
 long double CM_FastSqrt(float value);
 void CreateRotationMatrix(const vec3_t angles, axis_t matrix);

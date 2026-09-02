@@ -127,29 +127,16 @@ void PM_FlyMove(void)
          * with the FLD forward / FMUL fmove computed first, then FLD right / FMUL smove
          * FADDP, then FMUL scale. */
 #if EMULATE_X87
-        wishvelX = x87f_mul(
-            x87f_add(
-                x87f_mul(x87f_load_f32(fmove),
-                         x87f_load_f32(pml.forward[0])),
-                x87f_mul(x87f_load_f32(smove),
-                         x87f_load_f32(pml.right[0]))),
-            x87f_load_f32(scale));
-        wishvel[1] = x87f_store_f32(x87f_mul(
-            x87f_add(
-                x87f_mul(x87f_load_f32(fmove),
-                         x87f_load_f32(pml.forward[1])),
-                x87f_mul(x87f_load_f32(smove),
-                         x87f_load_f32(pml.right[1]))),
-            x87f_load_f32(scale)));
+        wishvelX = x87f_mul(x87f_add(x87f_mul(x87f_load_f32(fmove), x87f_load_f32(pml.forward[0])),
+                                     x87f_mul(x87f_load_f32(smove), x87f_load_f32(pml.right[0]))),
+                            x87f_load_f32(scale));
+        wishvel[1] = x87f_store_f32(x87f_mul(x87f_add(x87f_mul(x87f_load_f32(fmove), x87f_load_f32(pml.forward[1])),
+                                                      x87f_mul(x87f_load_f32(smove), x87f_load_f32(pml.right[1]))),
+                                             x87f_load_f32(scale)));
 #else
-        wishvelX =
-            ((long double)pml.forward[0] * (long double)fmove +
-             (long double)pml.right[0] * (long double)smove) *
-            (long double)scale;
-        wishvel[1] = (float)(
-            ((long double)pml.forward[1] * (long double)fmove +
-             (long double)pml.right[1] * (long double)smove) *
-            (long double)scale);
+        wishvelX = ((long double)pml.forward[0] * (long double)fmove + (long double)pml.right[0] * (long double)smove) * (long double)scale;
+        wishvel[1] = (float)(((long double)pml.forward[1] * (long double)fmove + (long double)pml.right[1] * (long double)smove) *
+                             (long double)scale);
 #endif
 
         /* 0x30008fbf..0x30008fe5: z picks up the basis-rotated term AND the up-move byte,
@@ -157,20 +144,13 @@ void PM_FlyMove(void)
          * (the machine code multiplies the rotated term by scale, then adds
          * upmove*scale via FILD/FMUL/FADDP). */
 #if EMULATE_X87
-        wishvelZ = x87f_add(
-            x87f_mul(
-                x87f_add(
-                    x87f_mul(x87f_load_f32(fmove),
-                             x87f_load_f32(pml.forward[2])),
-                    x87f_mul(x87f_load_f32(smove),
-                             x87f_load_f32(pml.right[2]))),
-                x87f_load_f32(scale)),
-            x87f_mul(x87f_load_i32(umove), x87f_load_f32(scale)));
+        wishvelZ = x87f_add(x87f_mul(x87f_add(x87f_mul(x87f_load_f32(fmove), x87f_load_f32(pml.forward[2])),
+                                              x87f_mul(x87f_load_f32(smove), x87f_load_f32(pml.right[2]))),
+                                     x87f_load_f32(scale)),
+                            x87f_mul(x87f_load_i32(umove), x87f_load_f32(scale)));
 #else
         wishvelZ =
-            ((long double)pml.forward[2] * (long double)fmove +
-             (long double)pml.right[2] * (long double)smove) *
-                (long double)scale +
+            ((long double)pml.forward[2] * (long double)fmove + (long double)pml.right[2] * (long double)smove) * (long double)scale +
             (long double)umove * (long double)scale;
 #endif
     }
@@ -185,11 +165,9 @@ void PM_FlyMove(void)
     playerState_t *ps = move->ps;
     if (ps->speed != 0) {
         int32_t downImpulse = (move->command.wbuttons & PM_WBUTTON_LEAN_RIGHT) << 4;
-        int32_t upImpulse   = (move->command.wbuttons & PM_WBUTTON_LEAN_LEFT) << 4;
+        int32_t upImpulse = (move->command.wbuttons & PM_WBUTTON_LEAN_LEFT) << 4;
 #if EMULATE_X87
-        wishvelZ = x87f_add(
-            x87f_sub(wishvelZ, x87f_load_i32(downImpulse)),
-            x87f_load_i32(upImpulse));
+        wishvelZ = x87f_add(x87f_sub(wishvelZ, x87f_load_i32(downImpulse)), x87f_load_i32(upImpulse));
 #else
         wishvelZ = wishvelZ - downImpulse + upImpulse;
 #endif
@@ -247,46 +225,29 @@ void PM_FlyMove(void)
 
         for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-            wishvel[lane] = x87f_store_f32(x87f_add(
-                x87f_mul(
-                    x87f_mul(x87f_load_f32(scale),
-                             x87f_load_f32(pml.forward[lane])),
-                    x87f_load_i32(forwardMove)),
-                x87f_mul(
-                    x87f_mul(x87f_load_f32(scale),
-                             x87f_load_f32(pml.right[lane])),
-                    x87f_load_i32(rightMove))));
+            wishvel[lane] = x87f_store_f32(
+                x87f_add(x87f_mul(x87f_mul(x87f_load_f32(scale), x87f_load_f32(pml.forward[lane])), x87f_load_i32(forwardMove)),
+                         x87f_mul(x87f_mul(x87f_load_f32(scale), x87f_load_f32(pml.right[lane])), x87f_load_i32(rightMove))));
 #else
-            wishvel[lane] = (float)(
-                ((long double)scale * (long double)pml.forward[lane]) *
-                    (long double)forwardMove +
-                ((long double)scale * (long double)pml.right[lane]) *
-                    (long double)rightMove);
+            wishvel[lane] = (float)(((long double)scale * (long double)pml.forward[lane]) * (long double)forwardMove +
+                                    ((long double)scale * (long double)pml.right[lane]) * (long double)rightMove);
 #endif
         }
 
 #if EMULATE_X87
-        wishvel[2] = x87f_store_f32(x87f_add(
-            x87f_load_f32(wishvel[2]),
-            x87f_mul(x87f_load_i32(move->command.upmove),
-                     x87f_load_f32(scale))));
+        wishvel[2] =
+            x87f_store_f32(x87f_add(x87f_load_f32(wishvel[2]), x87f_mul(x87f_load_i32(move->command.upmove), x87f_load_f32(scale))));
 #else
-        wishvel[2] = (float)(
-            (long double)wishvel[2] +
-            (long double)move->command.upmove * (long double)scale);
+        wishvel[2] = (float)((long double)wishvel[2] + (long double)move->command.upmove * (long double)scale);
 #endif
     }
 
     if (move->ps->speed != 0) {
-        const int32_t downImpulse =
-            (move->command.wbuttons & PM_WBUTTON_LEAN_RIGHT) << 4;
-        const int32_t upImpulse =
-            (move->command.wbuttons & PM_WBUTTON_LEAN_LEFT) << 4;
+        const int32_t downImpulse = (move->command.wbuttons & PM_WBUTTON_LEAN_RIGHT) << 4;
+        const int32_t upImpulse = (move->command.wbuttons & PM_WBUTTON_LEAN_LEFT) << 4;
 #if EMULATE_X87
-        wishvel[2] = x87f_store_f32(x87f_sub(
-            x87f_load_f32(wishvel[2]), x87f_load_i32(downImpulse)));
-        wishvel[2] = x87f_store_f32(x87f_add(
-            x87f_load_f32(wishvel[2]), x87f_load_i32(upImpulse)));
+        wishvel[2] = x87f_store_f32(x87f_sub(x87f_load_f32(wishvel[2]), x87f_load_i32(downImpulse)));
+        wishvel[2] = x87f_store_f32(x87f_add(x87f_load_f32(wishvel[2]), x87f_load_i32(upImpulse)));
 #else
         wishvel[2] = (float)((long double)wishvel[2] - downImpulse);
         wishvel[2] = (float)((long double)wishvel[2] + upImpulse);

@@ -46,8 +46,7 @@ int32_t BG_StringHashValue(const char *text)
  * diagnostic, and return paths agree. Linux game RVA 0x0001f77d has the same
  * behavior. The Linux ELF signature supplies the canonical argument order.
  */
-int32_t BG_IndexForString(const char *name, bg_indexed_string_t *strings,
-                          qboolean allowMissing)
+int32_t BG_IndexForString(const char *name, bg_indexed_string_t *strings, qboolean allowMissing)
 {
     const int32_t hash = BG_StringHashValue(name);
     int32_t index;
@@ -57,10 +56,8 @@ int32_t BG_IndexForString(const char *name, bg_indexed_string_t *strings,
             strings[index].hash = BG_StringHashValue(strings[index].name);
         }
 
-        if (hash == strings[index].hash && name != NULL &&
-            strings[index].name != NULL &&
-            Q_stricmpn(name, strings[index].name,
-                       BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
+        if (hash == strings[index].hash && name != NULL && strings[index].name != NULL &&
+            Q_stricmpn(name, strings[index].name, BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
             return index;
         }
     }
@@ -76,8 +73,7 @@ int32_t BG_IndexForString(const char *name, bg_indexed_string_t *strings,
  * 0x0001f877 agrees, including its strict `used + strlen + 1 < bufferSize`
  * test. Keep the original 32-bit unsigned addition on wider hosts.
  */
-char *BG_CopyStringIntoBuffer(const char *text, char *buffer,
-                              uint32_t bufferSize, int32_t *used)
+char *BG_CopyStringIntoBuffer(const char *text, char *buffer, uint32_t bufferSize, int32_t *used)
 {
     const uint32_t textLength = (uint32_t)strlen(text);
     const uint32_t nextUsed = (uint32_t)*used + textLength + UINT32_C(1);
@@ -109,18 +105,14 @@ int32_t BG_AnimationIndexForString(const char *name)
 
     if (bgRuntimeAnimations == NULL) {
         for (index = 0; index < bgAnimStaticTable->entryCount; ++index) {
-            bg_static_animation_t *animation =
-                &bgAnimStaticTable->entries[index];
+            bg_static_animation_t *animation = &bgAnimStaticTable->entries[index];
 
-            if (hash == animation->hash && name != NULL &&
-                Q_stricmpn(name, animation->name,
-                           BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
+            if (hash == animation->hash && name != NULL && Q_stricmpn(name, animation->name, BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
                 return index;
             }
         }
 
-        BG_AnimParseError(
-            "BG_AnimationIndexForString: unknown player animation '%s'", name);
+        BG_AnimParseError("BG_AnimationIndexForString: unknown player animation '%s'", name);
         return -1;
     }
 
@@ -137,9 +129,7 @@ int32_t BG_AnimationIndexForString(const char *name)
         /* The Windows TEST of the name cursor cannot fail for an entry reached
          * from a non-NULL array base; the field is an inline array in the
          * recovered type, so no separate source-level pointer test remains. */
-        if (hash == animation->hash && name != NULL &&
-            Q_stricmpn(name, animation->name,
-                       BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
+        if (hash == animation->hash && name != NULL && Q_stricmpn(name, animation->name, BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
             return index;
         }
     }
@@ -183,15 +173,14 @@ bg_static_animation_t *BG_AnimationForString(const char *name)
     for (index = 0; index < bgAnimStaticTable->entryCount; ++index) {
         bg_static_animation_t *animation = &bgAnimStaticTable->entries[index];
 
-        if (hash == animation->hash && name != NULL &&
-            Q_stricmpn(name, animation->name,
-                       BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
+        if (hash == animation->hash && name != NULL && Q_stricmpn(name, animation->name, BG_STRING_WHOLE_COMPARE_COUNT) == 0) {
             return animation;
         }
     }
 
     Com_Error(ERR_DROP,
-              "\x15" "BG_AnimationForString: unknown player animation '%s'",
+              "\x15"
+              "BG_AnimationForString: unknown player animation '%s'",
               name);
     return NULL;
 }

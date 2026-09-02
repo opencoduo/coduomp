@@ -37,8 +37,7 @@ void BG_SetupAnimNoteTypes(bg_static_animation_table_t *table)
      * body at 0x30001601 writes [ECX + i*0x5c + 0x58] = 0 with the count reloaded
      * from [ECX+0xb800] each iteration and the JL (signed) continuation. */
     int32_t entryCount = table->entryCount;
-    for (int32_t i = 0; i < entryCount;
-         i = coduo_int32_from_bits((uint32_t)i + 1u)) {
+    for (int32_t i = 0; i < entryCount; i = coduo_int32_from_bits((uint32_t)i + 1u)) {
         table->entries[i].usedByScript = 0;
         entryCount = table->entryCount; /* 0x30001607 reloads [ECX+0xb800] each pass */
     }
@@ -49,15 +48,13 @@ void BG_SetupAnimNoteTypes(bg_static_animation_table_t *table)
      * player scriptList is scriptLists[0] (+0x20eac). */
     bg_anim_script_list_t *scriptList = &table->scriptLists[0];
     int32_t scriptCount = scriptList->count;
-    for (int32_t j = 0; j < scriptCount;
-         j = coduo_int32_from_bits((uint32_t)j + 1u)) {
+    for (int32_t j = 0; j < scriptCount; j = coduo_int32_from_bits((uint32_t)j + 1u)) {
         /* 0x30001635 MOV ESI,[EDI]: the slot holds an absolute bg_anim_script_t*. */
         bg_anim_script_t *script = scriptList->scripts[j];
 
         /* 0x30001637 MOV EAX,[ESI+0x88] (commandCount); 0x30001641 JLE (signed). */
         int32_t commandCount = script->commandCount;
-        for (int32_t k = 0; k < commandCount;
-             k = coduo_int32_from_bits((uint32_t)k + 1u)) {
+        for (int32_t k = 0; k < commandCount; k = coduo_int32_from_bits((uint32_t)k + 1u)) {
             bg_anim_script_command_t *cmd = &script->commands[k];
 
             /* 0x30001650 CMP word [cmd+0x00],0 (bodyPart[0]); if nonzero,

@@ -13,11 +13,9 @@ enum {
 
 #define SOUND_ALIAS_SUBTITLE_PREFIX "SUBTITLE_"
 #define SOUND_ALIAS_SUBTITLE_FILE "soundaliases/subtitle.st"
-#define SOUND_ALIAS_SUBTITLE_READ_WARNING_FORMAT \
-    "WARNING: Could not read local copy of StringEd file %s\n"
+#define SOUND_ALIAS_SUBTITLE_READ_WARNING_FORMAT "WARNING: Could not read local copy of StringEd file %s\n"
 #define SOUND_ALIAS_SUBTITLE_REFERENCE_TOKEN "REFERENCE"
-#define SOUND_ALIAS_SUBTITLE_BAD_SYNTAX_FORMAT \
-    "StringEd file %s has bad syntax"
+#define SOUND_ALIAS_SUBTITLE_BAD_SYNTAX_FORMAT "StringEd file %s has bad syntax"
 #define SOUND_ALIAS_SUBTITLE_LANG_ENGLISH_TOKEN "LANG_ENGLISH"
 
 /* CoDUOMP.exe 0x00436610..0x00436645 and coduo_lnxded
@@ -43,11 +41,9 @@ uint32_t Com_HashAliasName(const char *name)
         if (character >= 'A' && character <= 'Z') {
             character += 'a' - 'A';
         }
-        hash = (uint32_t)character +
-               hash * SOUND_ALIAS_HASH_MULTIPLIER;
+        hash = (uint32_t)character + hash * SOUND_ALIAS_HASH_MULTIPLIER;
 #else
-        hash = (uint32_t)tolower(coduo_ctype_signed_byte_arg(*name)) +
-               hash * SOUND_ALIAS_HASH_MULTIPLIER;
+        hash = (uint32_t)tolower(coduo_ctype_signed_byte_arg(*name)) + hash * SOUND_ALIAS_HASH_MULTIPLIER;
 #endif
         name++;
     }
@@ -66,14 +62,12 @@ qboolean Com_IsValidAliasName(const char *name)
      * same maintained alias-name domain under the original C locale. */
     const uint8_t *cursor = (const uint8_t *)name;
 
-    if ((int8_t)*cursor <= SOUND_ALIAS_NAME_MIN_PRINTABLE ||
-        (!Q_isalpha(*cursor) && *cursor != '_')) {
+    if ((int8_t)*cursor <= SOUND_ALIAS_NAME_MIN_PRINTABLE || (!Q_isalpha(*cursor) && *cursor != '_')) {
         return qfalse;
     }
 
     for (++cursor; *cursor != '\0'; ++cursor) {
-        if ((int8_t)*cursor <= SOUND_ALIAS_NAME_MIN_PRINTABLE ||
-            (!Q_isalphanumeric(*cursor) && *cursor != '_')) {
+        if ((int8_t)*cursor <= SOUND_ALIAS_NAME_MIN_PRINTABLE || (!Q_isalphanumeric(*cursor) && *cursor != '_')) {
             return qfalse;
         }
     }
@@ -83,8 +77,7 @@ qboolean Com_IsValidAliasName(const char *name)
     signed char ch;
 
     ch = (signed char)*name;
-    if (ch <= SOUND_ALIAS_NAME_MIN_PRINTABLE ||
-        (isalpha(coduo_ctype_signed_byte_arg(ch)) == 0 && ch != '_')) {
+    if (ch <= SOUND_ALIAS_NAME_MIN_PRINTABLE || (isalpha(coduo_ctype_signed_byte_arg(ch)) == 0 && ch != '_')) {
         return qfalse;
     }
 
@@ -94,8 +87,7 @@ qboolean Com_IsValidAliasName(const char *name)
         if (ch == '\0') {
             return qtrue;
         }
-        if (ch <= SOUND_ALIAS_NAME_MIN_PRINTABLE ||
-            (isalnum(coduo_ctype_signed_byte_arg(ch)) == 0 && ch != '_')) {
+        if (ch <= SOUND_ALIAS_NAME_MIN_PRINTABLE || (isalnum(coduo_ctype_signed_byte_arg(ch)) == 0 && ch != '_')) {
             return qfalse;
         }
     } while (1);
@@ -113,14 +105,12 @@ qboolean Com_SoundAliasSubtitleReferenceExists(const char *subtitle)
     qboolean found;
 
     found = qfalse;
-    if (Q_strncmp(subtitle, SOUND_ALIAS_SUBTITLE_PREFIX,
-                  (int)(sizeof(SOUND_ALIAS_SUBTITLE_PREFIX) - 1)) != 0) {
+    if (Q_strncmp(subtitle, SOUND_ALIAS_SUBTITLE_PREFIX, (int)(sizeof(SOUND_ALIAS_SUBTITLE_PREFIX) - 1)) != 0) {
         return qfalse;
     }
 
     if (FS_ReadFile(SOUND_ALIAS_SUBTITLE_FILE, &fileBuffer) < 0) {
-        Com_Printf(SOUND_ALIAS_SUBTITLE_READ_WARNING_FORMAT,
-                   SOUND_ALIAS_SUBTITLE_FILE);
+        Com_Printf(SOUND_ALIAS_SUBTITLE_READ_WARNING_FORMAT, SOUND_ALIAS_SUBTITLE_FILE);
         return qfalse;
     }
 
@@ -133,8 +123,7 @@ qboolean Com_SoundAliasSubtitleReferenceExists(const char *subtitle)
         }
         if (strcmp(token, SOUND_ALIAS_SUBTITLE_REFERENCE_TOKEN) == 0) {
             token = Com_ParseOnLine(&parseCursor);
-            if (Q_stricmp(subtitle + sizeof(SOUND_ALIAS_SUBTITLE_PREFIX) - 1,
-                          token) == 0) {
+            if (Q_stricmp(subtitle + sizeof(SOUND_ALIAS_SUBTITLE_PREFIX) - 1, token) == 0) {
                 found = qtrue;
                 break;
             }
@@ -157,8 +146,7 @@ const char *Com_SoundAliasSubtitleReferenceForText(const char *englishText)
     char *token;
 
     if (FS_ReadFile(SOUND_ALIAS_SUBTITLE_FILE, &fileBuffer) < 0) {
-        Com_Printf(SOUND_ALIAS_SUBTITLE_READ_WARNING_FORMAT,
-                   SOUND_ALIAS_SUBTITLE_FILE);
+        Com_Printf(SOUND_ALIAS_SUBTITLE_READ_WARNING_FORMAT, SOUND_ALIAS_SUBTITLE_FILE);
         return NULL;
     }
 
@@ -177,12 +165,9 @@ const char *Com_SoundAliasSubtitleReferenceForText(const char *englishText)
             do {
                 token = Com_Parse(&parseCursor);
                 if (parseCursor == NULL) {
-                    Com_Error(ERR_DROP,
-                              SOUND_ALIAS_SUBTITLE_BAD_SYNTAX_FORMAT,
-                              SOUND_ALIAS_SUBTITLE_FILE);
+                    Com_Error(ERR_DROP, SOUND_ALIAS_SUBTITLE_BAD_SYNTAX_FORMAT, SOUND_ALIAS_SUBTITLE_FILE);
                 }
-            } while (strcmp(token, SOUND_ALIAS_SUBTITLE_LANG_ENGLISH_TOKEN) !=
-                     0);
+            } while (strcmp(token, SOUND_ALIAS_SUBTITLE_LANG_ENGLISH_TOKEN) != 0);
 
             token = Com_ParseOnLine(&parseCursor);
             if (Q_stricmp(englishText, token) == 0) {

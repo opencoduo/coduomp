@@ -23,8 +23,7 @@ char *UI_LoadMenuTextFile(const char *filename)
         return uiMenuTextFailureResult;
     }
     if (length >= UI_MENU_TEXT_BUFFER_SIZE) {
-        trap_Print(va("^1menu file too large: %s is %i, max allowed is %i",
-                      filename, length, UI_MENU_TEXT_BUFFER_SIZE));
+        trap_Print(va("^1menu file too large: %s is %i, max allowed is %i", filename, length, UI_MENU_TEXT_BUFFER_SIZE));
         trap_FS_FCloseFile(handle);
         return uiMenuTextFailureResult;
     }

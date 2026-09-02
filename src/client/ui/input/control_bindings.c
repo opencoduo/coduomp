@@ -64,8 +64,7 @@ void client_ui_compat_remove_key_from_extra_bindings(int32_t key)
 
 /* NOT_FROM_ORIGINAL_SOURCE: render the optional console row using the same UI
  * presentation as BindingFromName while leaving the original function stock. */
-const char *client_ui_compat_binding_from_name(const char *command,
-                                               qboolean firstKeyOnly)
+const char *client_ui_compat_binding_from_name(const char *command, qboolean firstKeyOnly)
 {
     return BindingFromName(command, firstKeyOnly);
 }

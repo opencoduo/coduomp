@@ -33,16 +33,12 @@ qboolean Item_YesNo_HandleKey(itemDef_t *item, int32_t key)
 
     cursorX = (float)DC->cursorx;
     cursorY = (float)DC->cursory;
-    if (!(cursorX >= item->window.rect.x &&
-          cursorX <= item->window.rect.x + item->window.rect.w &&
-          cursorY >= item->window.rect.y &&
+    if (!(cursorX >= item->window.rect.x && cursorX <= item->window.rect.x + item->window.rect.w && cursorY >= item->window.rect.y &&
           cursorY <= item->window.rect.y + item->window.rect.h) ||
-        (item->window.flags & WINDOW_HASFOCUS) == 0 ||
-        item->cvar == NULL) {
+        (item->window.flags & WINDOW_HASFOCUS) == 0 || item->cvar == NULL) {
         return qfalse;
     }
-    if (key != K_MOUSE1 && key != K_ENTER &&
-        key != K_MOUSE2 && key != K_MOUSE3) {
+    if (key != K_MOUSE1 && key != K_ENTER && key != K_MOUSE2 && key != K_MOUSE3) {
         return qfalse;
     }
 
@@ -77,8 +73,7 @@ void Item_YesNo_Paint(itemDef_t *item)
             dimmed[component] = parent->focusColor[component] * 0.8f;
         }
         pulseStep = display->realTime / UI_YESNO_PULSE_PERIOD;
-        fraction = (float)((coduo_x87_sinl((long double)pulseStep) + 1.0L) *
-                           0.5L);
+        fraction = (float)((coduo_x87_sinl((long double)pulseStep) + 1.0L) * 0.5L);
         LerpColor(color, parent->focusColor, dimmed, fraction);
     } else {
         color[0] = item->window.foreColor[0];
@@ -87,16 +82,13 @@ void Item_YesNo_Paint(itemDef_t *item)
         color[3] = item->window.foreColor[3];
     }
 
-    valueText = display->getLocalizedString(
-        value == 0.0f ? "EXE_NO" : "EXE_YES");
+    valueText = display->getLocalizedString(value == 0.0f ? "EXE_NO" : "EXE_YES");
     if (item->text != NULL) {
         Item_Text_Paint(item);
-        x = (float)((long double)item->textRect.w +
-                    (long double)item->textRect.x + UI_YESNO_VALUE_GAP);
+        x = (float)((long double)item->textRect.w + (long double)item->textRect.x + UI_YESNO_VALUE_GAP);
     } else {
         x = item->textRect.x;
     }
     display = DC;
-    display->drawText(x, item->textRect.y, item->font, item->textscale,
-                      color, valueText, 0, 0, item->textStyle);
+    display->drawText(x, item->textRect.y, item->font, item->textscale, color, valueText, 0, 0, item->textStyle);
 }

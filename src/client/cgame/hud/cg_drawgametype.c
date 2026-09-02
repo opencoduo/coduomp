@@ -76,8 +76,7 @@
 // reconstructed as `float` and forwarded as raw bits — exactly as the rest of the
 // CG_R_TEXT_PAINT emitter family does.
 
-void CG_DrawGameType(rectDef_t *obj /* EAX */,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
+void CG_DrawGameType(rectDef_t *obj /* EAX */, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     /* 0x30031c53..0x30031c58 loads h, snapshots the raw x dword, then adds y.
      * Keeping x after the completed sum would change the retail memory-access
@@ -90,14 +89,5 @@ void CG_DrawGameType(rectDef_t *obj /* EAX */,
     /* the sum is forwarded through a plain 32-bit syscall slot as its bit pattern */
     memcpy(&sumBits, &sum, sizeof(sumBits));
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  xBits,
-                  sumBits,
-                  arg0,
-                  arg1,
-                  arg2,
-                  (intptr_t)cgs_gametype,
-                  0,
-                  0,
-                  arg3);
+    cgame_syscall(CG_R_TEXT_PAINT, xBits, sumBits, arg0, arg1, arg2, (intptr_t)cgs_gametype, 0, 0, arg3);
 }

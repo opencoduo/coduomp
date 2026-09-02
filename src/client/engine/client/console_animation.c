@@ -14,16 +14,12 @@ void Con_RunConsole(void)
     con.finalFrac = (cls.keyCatchers & KEYCATCH_CONSOLE) != 0 ? 0.5f : 0.0f;
 
     if (con.finalFrac < con.displayFrac) {
-        const float animationStep =
-            (float)cls.realFrametime * scr_conspeed->value *
-            CON_MSEC_TO_SECONDS;
+        const float animationStep = (float)cls.realFrametime * scr_conspeed->value * CON_MSEC_TO_SECONDS;
         con.displayFrac -= animationStep;
         if (con.displayFrac < con.finalFrac)
             con.displayFrac = con.finalFrac;
     } else if (con.finalFrac > con.displayFrac) {
-        const float animationStep =
-            (float)cls.realFrametime * scr_conspeed->value *
-            CON_MSEC_TO_SECONDS;
+        const float animationStep = (float)cls.realFrametime * scr_conspeed->value * CON_MSEC_TO_SECONDS;
         con.displayFrac += animationStep;
         if (con.displayFrac > con.finalFrac)
             con.displayFrac = con.finalFrac;
@@ -43,8 +39,7 @@ void Con_DrawConsole(void)
             return;
         }
     } else if (cls.state == CA_LOADING) {
-        if (con_debug->integer != 0 &&
-            (cls.keyCatchers & KEYCATCH_UI) == 0) {
+        if (con_debug->integer != 0 && (cls.keyCatchers & KEYCATCH_UI) == 0) {
             Con_DrawSolidConsole(1.0f);
             return;
         }

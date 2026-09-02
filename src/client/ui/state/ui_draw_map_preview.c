@@ -15,8 +15,7 @@ void UI_DrawMapPreview(const rectDef_t *rect, qboolean netMap)
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (ui_mapCount <= 0) {
-        shader = trap_R_RegisterShaderNoMip("menu/art/unknownmap",
-                                           R_IMAGE_TRACK_UI);
+        shader = trap_R_RegisterShaderNoMip("menu/art/unknownmap", R_IMAGE_TRACK_UI);
         UI_DrawHandlePic(rect->x, rect->y, rect->w, rect->h, shader);
         return;
     }
@@ -34,14 +33,12 @@ void UI_DrawMapPreview(const rectDef_t *rect, qboolean netMap)
 
     map = &ui_maps[mapIndex];
     if (map->imageShader == UI_MAP_SHADER_UNREGISTERED) {
-        map->imageShader = trap_R_RegisterShaderNoMip(
-            map->imageName, R_IMAGE_TRACK_UI);
+        map->imageShader = trap_R_RegisterShaderNoMip(map->imageName, R_IMAGE_TRACK_UI);
     }
 
     shader = map->imageShader;
     if (shader <= 0) {
-        shader = trap_R_RegisterShaderNoMip("menu/art/unknownmap",
-                                       R_IMAGE_TRACK_UI);
+        shader = trap_R_RegisterShaderNoMip("menu/art/unknownmap", R_IMAGE_TRACK_UI);
     }
     UI_DrawHandlePic(rect->x, rect->y, rect->w, rect->h, shader);
 }

@@ -51,28 +51,25 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (interval <= 0) {
-            Com_Error(
-                ERR_DROP,
-                "\x15" "CG_AddCEntity_LoopedFx: invalid interval %i",
-                interval);
+            Com_Error(ERR_DROP,
+                      "\x15"
+                      "CG_AddCEntity_LoopedFx: invalid interval %i",
+                      interval);
             return;
         }
 
-        int32_t elapsed = coduo_int32_from_bits(
-            (uint32_t)entryTime - (uint32_t)cent->loopedFxNextTime);
+        int32_t elapsed = coduo_int32_from_bits((uint32_t)entryTime - (uint32_t)cent->loopedFxNextTime);
 
         if (elapsed < interval) {
             return; // less than one interval elapsed: not time to emit yet
         }
 
         do {
-            int32_t nextTime = coduo_int32_from_bits(
-                (uint32_t)cent->loopedFxNextTime + (uint32_t)interval);
+            int32_t nextTime = coduo_int32_from_bits((uint32_t)cent->loopedFxNextTime + (uint32_t)interval);
             cent->loopedFxNextTime = nextTime;
             /* 0x30021a6e reloads cg_time after every publication. */
             int32_t currentTime = coduo_int32_from_bits(cg_time);
-            elapsed = coduo_int32_from_bits(
-                (uint32_t)currentTime - (uint32_t)nextTime);
+            elapsed = coduo_int32_from_bits((uint32_t)currentTime - (uint32_t)nextTime);
         } while (elapsed > interval);
     }
 
@@ -83,13 +80,8 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
         float dz = cent->lerpOrigin[2] - cg_predictedPlayerState.psOrigin[2];
         /* long double: the sum is never stored — it rides st1 straight into the
          * FCOMPP against radius*radius (0x30021acc..0x30021af0). */
-        long double dist2 =
-            ((long double)dz * (long double)dz +
-             (long double)dy * (long double)dy) +
-            (long double)dx * (long double)dx;
-        long double radius2 =
-            (long double)cent->currentState.loopedFxCullRadius *
-            (long double)cent->currentState.loopedFxCullRadius;
+        long double dist2 = ((long double)dz * (long double)dz + (long double)dy * (long double)dy) + (long double)dx * (long double)dx;
+        long double radius2 = (long double)cent->currentState.loopedFxCullRadius * (long double)cent->currentState.loopedFxCullRadius;
 
         /* FCOMPP / TEST AH,0x41 / JNP returns only for ordered <=; unordered
          * values continue to the play path. */
@@ -115,18 +107,12 @@ void CG_AddCEntity_LoopedFx(centity_t *cent)
     /* long double: never stored — compared against 0.0f straight in st
      * (0x30021b33..0x30021b5b FUCOMPP). */
     long double dirLen2 =
-        ((long double)dirX * (long double)dirX +
-         (long double)dirY * (long double)dirY) +
-        (long double)dirZ * (long double)dirZ;
+        ((long double)dirX * (long double)dirX + (long double)dirY * (long double)dirY) + (long double)dirZ * (long double)dirZ;
 
     if (dirLen2 != 0.0f) {
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits(handle),
-                      (intptr_t)cent->lerpOrigin,
+        cgame_syscall(CG_PLAY_EFFECT_ORIENTED, coduo_int32_from_bits(handle), (intptr_t)cent->lerpOrigin,
                       (intptr_t)cent->currentState.effectEndOrigin);
     } else {
-        cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                      coduo_int32_from_bits(handle),
-                      (intptr_t)cent->lerpOrigin);
+        cgame_syscall(CG_PLAY_EFFECT_ORIGIN, coduo_int32_from_bits(handle), (intptr_t)cent->lerpOrigin);
     }
 }

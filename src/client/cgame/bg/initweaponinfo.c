@@ -62,16 +62,14 @@ void InitWeaponInfo(void)
     // loadedFlag. Use the native pointer-array size so the same 128 entries fit
     // after pointers widen, while preserving the exact original 0x200 on i386.
     weaponInfo_t **weaponArray =
-        (weaponInfo_t **)(intptr_t)cgame_syscall(
-            CG_GET_WEAPON_INFO_MEMORY,
-            sizeof(weaponInfo_t *) * MAX_WEAPONS,
-            (intptr_t)&loadedFlag);
+        (weaponInfo_t **)(intptr_t)cgame_syscall(CG_GET_WEAPON_INFO_MEMORY, sizeof(weaponInfo_t *) * MAX_WEAPONS, (intptr_t)&loadedFlag);
     bg_weaponInfos = weaponArray;
 
     // 0x30010e2f/0x30010e31: NULL array => fatal error (ERR_DROP). The "\x15"
     // leading byte is the CG_ERROR marker consumed by the Com_Error family.
     if (weaponArray == NULL) {
-        Com_Error(ERR_DROP, "\x15" "Could not allocate weaponInfo_t array\n");
+        Com_Error(ERR_DROP, "\x15"
+                            "Could not allocate weaponInfo_t array\n");
         /* 0x30010e3d reloads the global if the fatal callback returns. */
         weaponArray = bg_weaponInfos;
     }
@@ -89,7 +87,7 @@ void InitWeaponInfo(void)
     for (int i = 0; i < MAX_AMMO_TYPES; ++i) {
         bg_ammoClipNames[i] = NULL;
     }
-    bg_ammoTypeMax[0]  = 0;
+    bg_ammoTypeMax[0] = 0;
     bg_ammoClipSizes[0] = 0;
 
     // 0x30010e60..0x30010e73: clear the local argv[] pointer array (127 dwords),
@@ -115,8 +113,7 @@ void InitWeaponInfo(void)
         // 0x30010ea5..0x30010eaa: cg_gameState.stringData + stringOffsets[CS_WEAPONS]
         // is the config-string text. The SUB/MOV byte loop is a strcpy into
         // weaponListBuf.
-        const char *weaponList =
-            &cg_gameState.stringData[cg_gameState.stringOffsets[CS_WEAPONS]];
+        const char *weaponList = &cg_gameState.stringData[cg_gameState.stringOffsets[CS_WEAPONS]];
         {
             const char *src = weaponList;
             char *dst = weaponListBuf;
@@ -145,8 +142,8 @@ void InitWeaponInfo(void)
                     if (*p != ' ') {
                         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
                         if (argc >= MAX_WEAPON_FILES) {
-                            Com_Error(ERR_DROP,
-                                      "\x15" "Server sent too many weapons");
+                            Com_Error(ERR_DROP, "\x15"
+                                                "Server sent too many weapons");
                             return;
                         }
                         argv[argc] = p;

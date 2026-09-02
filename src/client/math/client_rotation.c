@@ -21,22 +21,18 @@
 
 void RotatePoint2D(vec2_t point, float degrees)
 {
-    const float radians =
-        (float)((long double)degrees * 0.017453292f);
+    const float radians = (float)((long double)degrees * 0.017453292f);
     float sine;
     float cosine;
     const float x = point[0];
     const float y = point[1];
 
     coduo_x87_sincosf(radians, &sine, &cosine);
-    point[0] = (float)((long double)cosine * x -
-                       (long double)sine * y);
-    point[1] = (float)((long double)sine * x +
-                       (long double)cosine * y);
+    point[0] = (float)((long double)cosine * x - (long double)sine * y);
+    point[1] = (float)((long double)sine * x + (long double)cosine * y);
 }
 
-void RotatePointByAngles(const vec3_t point, const vec3_t angles,
-                         vec3_t output)
+void RotatePointByAngles(const vec3_t point, const vec3_t angles, vec3_t output)
 {
     const int32_t componentA[3] = {1, 2, 0};
     const int32_t componentB[3] = {2, 0, 1};
@@ -44,8 +40,7 @@ void RotatePointByAngles(const vec3_t point, const vec3_t angles,
 
     for (int32_t axis = 0; axis < 3; ++axis) {
         if (angles[axis] != 0.0f) {
-            const double radians = (double)(
-                (long double)angles[axis] * 3.14159274f / 180.0);
+            const double radians = (double)((long double)angles[axis] * 3.14159274f / 180.0);
             double sine;
             double cosine;
             const int32_t a = componentA[axis];
@@ -54,10 +49,8 @@ void RotatePointByAngles(const vec3_t point, const vec3_t angles,
             const float oldB = rotated[b];
 
             coduo_x87_sincos(radians, &sine, &cosine);
-            rotated[a] = (float)((long double)oldA * cosine -
-                                 (long double)oldB * sine);
-            rotated[b] = (float)((long double)oldB * cosine +
-                                 (long double)oldA * sine);
+            rotated[a] = (float)((long double)oldA * cosine - (long double)oldB * sine);
+            rotated[b] = (float)((long double)oldB * cosine + (long double)oldA * sine);
         }
     }
 
@@ -66,8 +59,7 @@ void RotatePointByAngles(const vec3_t point, const vec3_t angles,
     output[2] = rotated[2];
 }
 
-void RotatePointAroundOrigin(const vec3_t point, const vec3_t origin,
-                             const vec3_t angles, vec3_t output)
+void RotatePointAroundOrigin(const vec3_t point, const vec3_t origin, const vec3_t angles, vec3_t output)
 {
     vec3_t difference;
     vec3_t rotated;

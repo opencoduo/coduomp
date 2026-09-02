@@ -83,9 +83,7 @@ void Q_StripToAlphanumeric(char *str)
         /* 0x3003aa35..0x3003aa52: the original routine performs this signed
          * three-range comparison chain in its own body. Keep it here rather
          * than introducing a non-original helper call on unoptimized builds. */
-        if ((c >= 'a' && c <= 'z') ||
-            (c >= 'A' && c <= 'Z') ||
-            (c >= '0' && c <= '9')) {
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
             str[dst] = str[i];   /* keep the byte; compact toward the front */
             dst++;
         }

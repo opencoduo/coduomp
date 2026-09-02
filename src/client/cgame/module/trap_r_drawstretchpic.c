@@ -13,24 +13,7 @@
 // cgs.screenXScale/screenYScale and passes texcoords (0,0,1,1) plus a shader
 // handle — the R_DrawStretchPic signature.
 
-int32_t trap_R_DrawStretchPic(int32_t x,
-                              int32_t y,
-                              int32_t w,
-                              int32_t h,
-                              int32_t s1,
-                              int32_t t1,
-                              int32_t s2,
-                              int32_t t2,
-                              int32_t hShader)
+int32_t trap_R_DrawStretchPic(int32_t x, int32_t y, int32_t w, int32_t h, int32_t s1, int32_t t1, int32_t s2, int32_t t2, int32_t hShader)
 {
-    return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_DRAWSTRETCHPIC,
-                                                    x,
-                                                    y,
-                                                    w,
-                                                    h,
-                                                    s1,
-                                                    t1,
-                                                    s2,
-                                                    t2,
-                                                    hShader));
+    return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_DRAWSTRETCHPIC, x, y, w, h, s1, t1, s2, t2, hShader));
 }

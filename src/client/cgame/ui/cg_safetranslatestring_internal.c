@@ -61,9 +61,7 @@ char *CG_SafeTranslateString_Internal(const char *domain, const char *reference)
 {
     /* 0x3002d6e0..0x3002d6f4: EAX = (int32_t)cgame_syscall(0x38, reference). Nonzero return
      * is the engine-owned translated string; return it directly. */
-    char *translated =
-        (char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE,
-                                        reference);
+    char *translated = (char *)(intptr_t)cgame_syscall(CG_SE_TRANSLATE_REFERENCE, reference);
     if (translated != (char *)0) {
         return translated;
     }
@@ -75,32 +73,24 @@ char *CG_SafeTranslateString_Internal(const char *domain, const char *reference)
         if (cl_languagewarningsaserrors_vmCvar.integer != 0) {
             /* 0x3002d712..0x3002d71e: localization error; PUSH 0x7 at
              * 0x3002d717 is the shared ERR_LOCALIZATION value. */
-            Com_Error(ERR_LOCALIZATION,
-                      "Could not translate %s string \"%s\"",
-                      domain, reference);
+            Com_Error(ERR_LOCALIZATION, "Could not translate %s string \"%s\"", domain, reference);
         } else {
             /* 0x3002d723..0x3002d72d: warning print. */
-            Com_Printf("^3WARNING: Could not translate %s string \"%s\"\n",
-                       domain, reference);
+            Com_Printf("^3WARNING: Could not translate %s string \"%s\"\n", domain, reference);
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         const size_t prefixLength = sizeof(CG_UNLOCALIZED_PREFIX) - 1u;
-        const size_t referenceCapacity = sizeof(cg_translatedString) -
-                                         prefixLength -
-                                         (sizeof(CG_UNLOCALIZED_SUFFIX) - 1u);
+        const size_t referenceCapacity = sizeof(cg_translatedString) - prefixLength - (sizeof(CG_UNLOCALIZED_SUFFIX) - 1u);
         memcpy(cg_translatedString, CG_UNLOCALIZED_PREFIX, prefixLength);
-        Q_strncpyz(cg_translatedString + prefixLength, reference,
-                   (int32_t)referenceCapacity);
-        memcpy(cg_translatedString + strlen(cg_translatedString),
-               CG_UNLOCALIZED_SUFFIX, sizeof(CG_UNLOCALIZED_SUFFIX));
+        Q_strncpyz(cg_translatedString + prefixLength, reference, (int32_t)referenceCapacity);
+        memcpy(cg_translatedString + strlen(cg_translatedString), CG_UNLOCALIZED_SUFFIX, sizeof(CG_UNLOCALIZED_SUFFIX));
 
         /* 0x3002d7bb: EAX = &cg_translatedString. */
         return cg_translatedString;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    Q_strncpyz(cg_translatedString, reference,
-               (int32_t)sizeof(cg_translatedString));
+    Q_strncpyz(cg_translatedString, reference, (int32_t)sizeof(cg_translatedString));
     return cg_translatedString;
 }

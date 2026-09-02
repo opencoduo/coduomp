@@ -16,8 +16,7 @@ extern scr_script_load_record_t *script_pendingScriptLoadCursor;
 extern int32_t script_parseErrorCount;
 
 qboolean Scr_IsIdentifier(const char *text);
-uint32_t Scr_GetFunctionHandle(const char *scriptName,
-                               const char *functionName);
+uint32_t Scr_GetFunctionHandle(const char *scriptName, const char *functionName);
 void Scr_BeginLoadScripts(void);
 void Scr_BeginLoadAnimTrees(void);
 void ScriptImport_ParseSource(char *source, scr_ast_node_t **out);
@@ -32,8 +31,7 @@ void EmitNormalThread(scr_ast_node_t *node, uint32_t sourcePos);
 void EmitDeveloperThread(scr_ast_node_t *node, uint32_t sourcePos);
 void EmitThread(scr_ast_node_t *node, uint32_t sourcePos);
 void EmitThreadList(scr_ast_script_entry_block_t *block);
-void ScriptCompile(scr_ast_node_t *script,
-                   uint16_t currentFunctionRoot);
+void ScriptCompile(scr_ast_node_t *script, uint16_t currentFunctionRoot);
 
 int32_t yyparse(void);
 

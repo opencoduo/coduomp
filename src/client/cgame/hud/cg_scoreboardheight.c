@@ -32,10 +32,10 @@
 // the pixel dimensions they represent. Addresses are the constant-pool slots.
 enum {
     SB_TEAM_BANNER_HEIGHT = 28, // 0x3007bdc8: added per free/spectator banner
-    SB_ROW_HEIGHT         = 12, // 0x3007bdc4: added per player row
-    SB_HEADER_HEIGHT      = 66, // 0x3007bdcc: header block when a team is present
-    SB_EMPTY_HEIGHT       = 10, // 0x3007bda4: base height with no team header
-    SB_HEADER_LINES       = 2,  // line count credited for the team header block
+    SB_ROW_HEIGHT = 12, // 0x3007bdc4: added per player row
+    SB_HEADER_HEIGHT = 66, // 0x3007bdcc: header block when a team is present
+    SB_EMPTY_HEIGHT = 10, // 0x3007bda4: base height with no team header
+    SB_HEADER_LINES = 2,  // line count credited for the team header block
 };
 
 float CG_ScoreboardHeight(int32_t *lineCount)
@@ -58,8 +58,7 @@ float CG_ScoreboardHeight(int32_t *lineCount)
     // 0x30036e5c..0x30036e6e: if either scored team (AXIS or ALLIES) has any
     // rows, the scoreboard shows the team-scores header instead of the bare list.
     // 0x30036e70 FSTP ST0 discards the 10.0 base; 0x30036e78 FLD 66.0 replaces it.
-    if (cg_scoreboardTeamCount[TEAM_AXIS] != 0 ||
-        cg_scoreboardTeamCount[TEAM_ALLIES] != 0) {
+    if (cg_scoreboardTeamCount[TEAM_AXIS] != 0 || cg_scoreboardTeamCount[TEAM_ALLIES] != 0) {
         *lineCount = SB_HEADER_LINES;
         height = (float)SB_HEADER_HEIGHT;
     }

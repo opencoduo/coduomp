@@ -70,12 +70,9 @@ static DWORD previousJoystickButtons; /* original 0x009cdd64 */
 static uint32_t previousJoystickDirections; /* original 0x009cdd68 */
 static JOYINFOEX joystickInfo;        /* original 0x009cdd6c */
 
-_Static_assert(sizeof(MIDIINCAPSA) == 44,
-               "original Win32 MIDI capabilities record size");
-_Static_assert(sizeof(JOYCAPSA) == 404,
-               "original Win32 joystick capabilities record size");
-_Static_assert(sizeof(JOYINFOEX) == 52,
-               "original Win32 joystick state record size");
+_Static_assert(sizeof(MIDIINCAPSA) == 44, "original Win32 MIDI capabilities record size");
+_Static_assert(sizeof(JOYCAPSA) == 404, "original Win32 joystick capabilities record size");
+_Static_assert(sizeof(JOYINFOEX) == 52, "original Win32 joystick state record size");
 #endif
 
 static void IN_StartupMouse(void);
@@ -210,15 +207,11 @@ void IN_MouseEvent(int32_t buttonMask)
 
     for (int32_t button = 0; button < IN_MOUSE_BUTTON_COUNT; ++button) {
         const int32_t buttonBit = 1 << button;
-        if ((buttonMask & buttonBit) != 0 &&
-            (previousMouseButtons & buttonBit) == 0) {
-            Sys_QueEvent(sysMsgTime, SE_KEY, K_MOUSE1 + button,
-                         qtrue, 0, NULL);
+        if ((buttonMask & buttonBit) != 0 && (previousMouseButtons & buttonBit) == 0) {
+            Sys_QueEvent(sysMsgTime, SE_KEY, K_MOUSE1 + button, qtrue, 0, NULL);
         }
-        if ((buttonMask & buttonBit) == 0 &&
-            (previousMouseButtons & buttonBit) != 0) {
-            Sys_QueEvent(sysMsgTime, SE_KEY, K_MOUSE1 + button,
-                         qfalse, 0, NULL);
+        if ((buttonMask & buttonBit) == 0 && (previousMouseButtons & buttonBit) != 0) {
+            Sys_QueEvent(sysMsgTime, SE_KEY, K_MOUSE1 + button, qfalse, 0, NULL);
         }
     }
     previousMouseButtons = buttonMask;
@@ -278,21 +271,15 @@ void IN_Init(void)
 {
     in_midi = Cvar_Get("in_midi", "0", CVAR_ARCHIVE);
     in_midiport = Cvar_Get("in_midiport", "-1", CVAR_ARCHIVE);
-    in_midichannel =
-        Cvar_Get("in_midichannel", "-1", CVAR_ARCHIVE);
+    in_midichannel = Cvar_Get("in_midichannel", "-1", CVAR_ARCHIVE);
     in_mididevice = Cvar_Get("in_mididevice", "0", CVAR_ARCHIVE);
     Cmd_AddCommand("midiinfo", MidiInfo_f);
 
-    in_mouse = Cvar_Get("in_mouse", "1",
-                        CVAR_ARCHIVE | CVAR_LATCH);
-    in_joystick = Cvar_Get("in_joystick", "0",
-                           CVAR_ARCHIVE | CVAR_LATCH);
-    in_joyBallScale =
-        Cvar_Get("in_joyBallScale", "0.02", CVAR_ARCHIVE);
-    in_debugjoystick =
-        Cvar_Get("in_debugjoystick", "0", CVAR_TEMP);
-    joy_threshold =
-        Cvar_Get("joy_threshold", "0.15", CVAR_ARCHIVE);
+    in_mouse = Cvar_Get("in_mouse", "1", CVAR_ARCHIVE | CVAR_LATCH);
+    in_joystick = Cvar_Get("in_joystick", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    in_joyBallScale = Cvar_Get("in_joyBallScale", "0.02", CVAR_ARCHIVE);
+    in_debugjoystick = Cvar_Get("in_debugjoystick", "0", CVAR_TEMP);
+    joy_threshold = Cvar_Get("joy_threshold", "0.15", CVAR_ARCHIVE);
 
     IN_Startup();
 }
@@ -367,18 +354,14 @@ static void IN_StartupJoystick(void)
             break;
     }
     if (joystickId == joystickCount) {
-        Com_Printf("joystick not found -- no valid joysticks (%x)\n",
-                   result);
+        Com_Printf("joystick not found -- no valid joysticks (%x)\n", result);
         return;
     }
 
     memset(&joystickCaps, 0, sizeof(joystickCaps));
-    result = joyGetDevCapsA((UINT_PTR)joystickId, &joystickCaps,
-                            sizeof(joystickCaps));
+    result = joyGetDevCapsA((UINT_PTR)joystickId, &joystickCaps, sizeof(joystickCaps));
     if (result != JOYERR_NOERROR) {
-        Com_Printf(
-            "joystick not found -- invalid joystick capabilities (%x)\n",
-            result);
+        Com_Printf("joystick not found -- invalid joystick capabilities (%x)\n", result);
         return;
     }
 
@@ -386,16 +369,10 @@ static void IN_StartupJoystick(void)
     Com_DPrintf("Pname: %s\n", joystickCaps.szPname);
     Com_DPrintf("OemVxD: %s\n", joystickCaps.szOEMVxD);
     Com_DPrintf("RegKey: %s\n", joystickCaps.szRegKey);
-    Com_DPrintf("Numbuttons: %i / %i\n",
-                (int32_t)joystickCaps.wNumButtons,
-                (int32_t)joystickCaps.wMaxButtons);
-    Com_DPrintf("Axis: %i / %i\n",
-                (int32_t)joystickCaps.wNumAxes,
-                (int32_t)joystickCaps.wMaxAxes);
+    Com_DPrintf("Numbuttons: %i / %i\n", (int32_t)joystickCaps.wNumButtons, (int32_t)joystickCaps.wMaxButtons);
+    Com_DPrintf("Axis: %i / %i\n", (int32_t)joystickCaps.wNumAxes, (int32_t)joystickCaps.wMaxAxes);
     Com_DPrintf("Caps: 0x%x\n", joystickCaps.wCaps);
-    Com_DPrintf((joystickCaps.wCaps & JOYCAPS_HASPOV) != 0
-                    ? "HASPOV\n"
-                    : "no POV\n");
+    Com_DPrintf((joystickCaps.wCaps & JOYCAPS_HASPOV) != 0 ? "HASPOV\n" : "no POV\n");
 
     previousJoystickButtons = 0;
     previousJoystickDirections = 0;
@@ -414,9 +391,7 @@ static float JoyToF(DWORD axisValue)
 {
     /* Exact 0x38000000 float from 0x005b9b68: 1 / 32768. */
     const float centeredAxisScale = 0.000030517578125f;
-    float value =
-        (int32_t)(axisValue - IN_JOYSTICK_AXIS_CENTER) *
-        centeredAxisScale;
+    float value = (int32_t)(axisValue - IN_JOYSTICK_AXIS_CENTER) * centeredAxisScale;
     if (value < -1.0f)
         value = -1.0f;
     if (value > 1.0f)
@@ -449,23 +424,8 @@ static DWORD coduomp_joystick_axis_value(int32_t axisIndex)
 }
 
 static const int32_t joystickDirectionKeys[IN_JOYSTICK_DIRECTION_COUNT] = {
-    K_LEFTARROW,
-    K_RIGHTARROW,
-    K_UPARROW,
-    K_DOWNARROW,
-    K_JOY16,
-    K_JOY17,
-    K_JOY18,
-    K_JOY19,
-    K_JOY20,
-    K_JOY21,
-    K_JOY22,
-    K_JOY23,
-    K_JOY24,
-    K_JOY25,
-    K_JOY26,
-    K_JOY27
-};
+    K_LEFTARROW, K_RIGHTARROW, K_UPARROW, K_DOWNARROW, K_JOY16, K_JOY17, K_JOY18, K_JOY19,
+    K_JOY20,     K_JOY21,      K_JOY22,   K_JOY23,     K_JOY24, K_JOY25, K_JOY26, K_JOY27};
 #endif
 
 /* Source: CoDUOMP.exe 0x0046a0c0..0x0046a3c5.
@@ -484,37 +444,25 @@ static void IN_JoyMove(void)
         return;
 
     if (in_debugjoystick->integer != 0) {
-        Com_Printf(
-            "%8x %5i %5.2f %5.2f %5.2f %5.2f %6i %6i\n",
-            joystickInfo.dwButtons, (int32_t)joystickInfo.dwPOV,
-            JoyToF(joystickInfo.dwXpos),
-            JoyToF(joystickInfo.dwYpos),
-            JoyToF(joystickInfo.dwZpos),
-            JoyToF(joystickInfo.dwRpos),
-            JoyToI(joystickInfo.dwUpos),
-            JoyToI(joystickInfo.dwVpos));
+        Com_Printf("%8x %5i %5.2f %5.2f %5.2f %5.2f %6i %6i\n", joystickInfo.dwButtons, (int32_t)joystickInfo.dwPOV,
+                   JoyToF(joystickInfo.dwXpos), JoyToF(joystickInfo.dwYpos), JoyToF(joystickInfo.dwZpos), JoyToF(joystickInfo.dwRpos),
+                   JoyToI(joystickInfo.dwUpos), JoyToI(joystickInfo.dwVpos));
     }
 
     for (UINT button = 0; button < joystickCaps.wNumButtons; ++button) {
         const DWORD buttonBit = 1U << button;
-        if ((joystickInfo.dwButtons & buttonBit) != 0 &&
-            (previousJoystickButtons & buttonBit) == 0) {
-            Sys_QueEvent(sysMsgTime, SE_KEY, K_JOY1 + (int32_t)button,
-                         qtrue, 0, NULL);
+        if ((joystickInfo.dwButtons & buttonBit) != 0 && (previousJoystickButtons & buttonBit) == 0) {
+            Sys_QueEvent(sysMsgTime, SE_KEY, K_JOY1 + (int32_t)button, qtrue, 0, NULL);
         }
-        if ((joystickInfo.dwButtons & buttonBit) == 0 &&
-            (previousJoystickButtons & buttonBit) != 0) {
-            Sys_QueEvent(sysMsgTime, SE_KEY, K_JOY1 + (int32_t)button,
-                         qfalse, 0, NULL);
+        if ((joystickInfo.dwButtons & buttonBit) == 0 && (previousJoystickButtons & buttonBit) != 0) {
+            Sys_QueEvent(sysMsgTime, SE_KEY, K_JOY1 + (int32_t)button, qfalse, 0, NULL);
         }
     }
     previousJoystickButtons = joystickInfo.dwButtons;
 
     uint32_t directions = 0;
     const int32_t digitalAxisCount =
-        joystickCaps.wNumAxes < IN_JOYSTICK_DIGITAL_AXIS_COUNT
-            ? (int32_t)joystickCaps.wNumAxes
-            : IN_JOYSTICK_DIGITAL_AXIS_COUNT;
+        joystickCaps.wNumAxes < IN_JOYSTICK_DIGITAL_AXIS_COUNT ? (int32_t)joystickCaps.wNumAxes : IN_JOYSTICK_DIGITAL_AXIS_COUNT;
     for (int32_t axis = 0; axis < digitalAxisCount; ++axis) {
         const float value = JoyToF(coduomp_joystick_axis_value(axis));
         if (value < -joy_threshold->value)
@@ -523,8 +471,7 @@ static void IN_JoyMove(void)
             directions |= 1U << (axis * 2 + 1);
     }
 
-    if ((joystickCaps.wCaps & JOYCAPS_HASPOV) != 0 &&
-        joystickInfo.dwPOV != JOY_POVCENTERED) {
+    if ((joystickCaps.wCaps & JOYCAPS_HASPOV) != 0 && joystickInfo.dwPOV != JOY_POVCENTERED) {
         if (joystickInfo.dwPOV == JOY_POVFORWARD)
             directions |= IN_JOYSTICK_POV_FORWARD_BIT;
         else if (joystickInfo.dwPOV == JOY_POVBACKWARD)
@@ -535,35 +482,22 @@ static void IN_JoyMove(void)
             directions |= IN_JOYSTICK_POV_LEFT_BIT;
     }
 
-    for (int32_t direction = 0;
-         direction < IN_JOYSTICK_DIRECTION_COUNT;
-         ++direction) {
+    for (int32_t direction = 0; direction < IN_JOYSTICK_DIRECTION_COUNT; ++direction) {
         const uint32_t directionBit = 1U << direction;
-        if ((directions & directionBit) != 0 &&
-            (previousJoystickDirections & directionBit) == 0) {
-            Sys_QueEvent(sysMsgTime, SE_KEY,
-                         joystickDirectionKeys[direction],
-                         qtrue, 0, NULL);
+        if ((directions & directionBit) != 0 && (previousJoystickDirections & directionBit) == 0) {
+            Sys_QueEvent(sysMsgTime, SE_KEY, joystickDirectionKeys[direction], qtrue, 0, NULL);
         }
-        if ((directions & directionBit) == 0 &&
-            (previousJoystickDirections & directionBit) != 0) {
-            Sys_QueEvent(sysMsgTime, SE_KEY,
-                         joystickDirectionKeys[direction],
-                         qfalse, 0, NULL);
+        if ((directions & directionBit) == 0 && (previousJoystickDirections & directionBit) != 0) {
+            Sys_QueEvent(sysMsgTime, SE_KEY, joystickDirectionKeys[direction], qfalse, 0, NULL);
         }
     }
     previousJoystickDirections = directions;
 
     if (joystickCaps.wNumAxes >= IN_JOYSTICK_BALL_AXIS_COUNT) {
-        const int32_t deltaX =
-            (int32_t)(JoyToI(joystickInfo.dwUpos) *
-                      in_joyBallScale->value);
-        const int32_t deltaY =
-            (int32_t)(JoyToI(joystickInfo.dwVpos) *
-                      in_joyBallScale->value);
+        const int32_t deltaX = (int32_t)(JoyToI(joystickInfo.dwUpos) * in_joyBallScale->value);
+        const int32_t deltaY = (int32_t)(JoyToI(joystickInfo.dwVpos) * in_joyBallScale->value);
         if (deltaX != 0 || deltaY != 0)
-            Sys_QueEvent(sysMsgTime, SE_MOUSE, deltaX, deltaY,
-                         0, NULL);
+            Sys_QueEvent(sysMsgTime, SE_MOUSE, deltaX, deltaY, 0, NULL);
     }
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: native backends provide joystick events
@@ -599,9 +533,7 @@ static void MIDI_NoteOn(int32_t note, int32_t velocity)
 /* Source: CoDUOMP.exe 0x0046a460..0x0046a4cf, recovered from an executable
  * gap after repairing the missing Ghidra function entry.
  * Role name: WinMM input callback installed by IN_StartupMIDI. */
-static void CALLBACK MIDI_InputCallback(
-    HMIDIIN inputHandle, UINT message, DWORD_PTR instance,
-    DWORD_PTR messageData, DWORD_PTR timestamp)
+static void CALLBACK MIDI_InputCallback(HMIDIIN inputHandle, UINT message, DWORD_PTR instance, DWORD_PTR messageData, DWORD_PTR timestamp)
 {
     (void)inputHandle;
     (void)instance;
@@ -614,22 +546,17 @@ static void CALLBACK MIDI_InputCallback(
     const uint8_t status = (uint8_t)packedMessage;
     const uint8_t messageType = status & IN_MIDI_STATUS_TYPE_MASK;
     if (messageType == IN_MIDI_NOTE_ON) {
-        const int32_t channel =
-            (status & IN_MIDI_CHANNEL_MASK) + 1;
+        const int32_t channel = (status & IN_MIDI_CHANNEL_MASK) + 1;
         if (channel != in_midichannel->integer)
             return;
-        const int32_t note =
-            (packedMessage >> 8) & IN_MIDI_DATA_BYTE_MASK;
-        const int32_t velocity =
-            (packedMessage >> 16) & IN_MIDI_DATA_BYTE_MASK;
+        const int32_t note = (packedMessage >> 8) & IN_MIDI_DATA_BYTE_MASK;
+        const int32_t velocity = (packedMessage >> 16) & IN_MIDI_DATA_BYTE_MASK;
         MIDI_NoteOn(note, velocity);
     } else if (messageType == IN_MIDI_NOTE_OFF) {
-        const int32_t channel =
-            (status & IN_MIDI_CHANNEL_MASK) + 1;
+        const int32_t channel = (status & IN_MIDI_CHANNEL_MASK) + 1;
         if (channel != in_midichannel->integer)
             return;
-        const int32_t note =
-            (packedMessage >> 8) & IN_MIDI_DATA_BYTE_MASK;
+        const int32_t note = (packedMessage >> 8) & IN_MIDI_DATA_BYTE_MASK;
         MIDI_NoteOff(note);
     }
 }
@@ -640,8 +567,7 @@ static void CALLBACK MIDI_InputCallback(
  * Name: command string and behavior establish the console command role. */
 static void MidiInfo_f(void)
 {
-    Com_Printf("\nMIDI control:       %s\n",
-               in_midi->integer != 0 ? "enabled" : "disabled");
+    Com_Printf("\nMIDI control:       %s\n", in_midi->integer != 0 ? "enabled" : "disabled");
     Com_Printf("port:               %d\n", in_midiport->integer);
     Com_Printf("channel:            %d\n", in_midichannel->integer);
     Com_Printf("current device:     %d\n", in_mididevice->integer);
@@ -650,15 +576,11 @@ static void MidiInfo_f(void)
 #if defined(_WIN32)
     for (int32_t device = 0; device < midiDeviceCount; ++device) {
         cvar_t *const selectedDevice = Cvar_FindVar("in_mididevice");
-        const float selectedValue =
-            selectedDevice != NULL ? selectedDevice->value : 0.0f;
+        const float selectedValue = selectedDevice != NULL ? selectedDevice->value : 0.0f;
         Com_Printf(device == selectedValue ? "***" : "");
-        Com_Printf("device %2d:       %s\n", device,
-                   midiDeviceCaps[device].szPname);
-        Com_Printf("...manufacturer ID: 0x%hx\n",
-                   midiDeviceCaps[device].wMid);
-        Com_Printf("...product ID:      0x%hx\n",
-                   midiDeviceCaps[device].wPid);
+        Com_Printf("device %2d:       %s\n", device, midiDeviceCaps[device].szPname);
+        Com_Printf("...manufacturer ID: 0x%hx\n", midiDeviceCaps[device].wMid);
+        Com_Printf("...product ID:      0x%hx\n", midiDeviceCaps[device].wPid);
         Com_Printf("\n");
     }
 #endif
@@ -683,29 +605,20 @@ static void IN_StartupMIDI(void)
         midiDeviceCount = IN_MIDI_DEVICE_CAPACITY;
     }
     for (int32_t device = 0; device < midiDeviceCount; ++device) {
-        midiInGetDevCapsA((UINT_PTR)device, &midiDeviceCaps[device],
-                          sizeof(midiDeviceCaps[device]));
+        midiInGetDevCapsA((UINT_PTR)device, &midiDeviceCaps[device], sizeof(midiDeviceCaps[device]));
     }
 
     const int32_t device = in_mididevice->integer;
-    const MMRESULT result = midiInOpen(
-        &midiInputHandle, (UINT)device,
-        (DWORD_PTR)MIDI_InputCallback, 0, CALLBACK_FUNCTION);
+    const MMRESULT result = midiInOpen(&midiInputHandle, (UINT)device, (DWORD_PTR)MIDI_InputCallback, 0, CALLBACK_FUNCTION);
     if (result == MMSYSERR_NOERROR) {
         midiInStart(midiInputHandle);
         return;
     }
 
-    const int32_t capsIndex =
-        coduo_fp_to_i32_extended(
-            (long double)in_mididevice->value);
+    const int32_t capsIndex = coduo_fp_to_i32_extended((long double)in_mididevice->value);
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    const char *const deviceName =
-        capsIndex >= 0 && capsIndex < midiDeviceCount
-            ? midiDeviceCaps[capsIndex].szPname
-            : "unknown";
-    Com_Printf("WARNING: could not open MIDI device %d: '%s'\n",
-               device, deviceName);
+    const char *const deviceName = capsIndex >= 0 && capsIndex < midiDeviceCount ? midiDeviceCaps[capsIndex].szPname : "unknown";
+    Com_Printf("WARNING: could not open MIDI device %d: '%s'\n", device, deviceName);
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: native MIDI integration is deferred to the
      * platform input backend; the original implementation is WinMM-only. */

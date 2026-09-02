@@ -5,32 +5,28 @@
 
 /* NOT_FROM_ORIGINAL_SOURCE: the dedicated engine has no client-audio work at
  * this bank-lifecycle boundary. */
-static inline void sound_alias_compat_before_bank_activation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_before_bank_activation(sndAliasBank_t bank)
 {
     (void)bank;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: the dedicated engine has no client-audio work at
  * this bank-lifecycle boundary. */
-static inline void sound_alias_compat_after_bank_activation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_after_bank_activation(sndAliasBank_t bank)
 {
     (void)bank;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: the dedicated engine has no client-audio work at
  * this bank-lifecycle boundary. */
-static inline void sound_alias_compat_before_bank_deactivation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_before_bank_deactivation(sndAliasBank_t bank)
 {
     (void)bank;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: the dedicated engine has no client-audio work at
  * this bank-lifecycle boundary. */
-static inline void sound_alias_compat_after_bank_deactivation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_after_bank_deactivation(sndAliasBank_t bank)
 {
     (void)bank;
 }

@@ -44,6 +44,5 @@ void CG_PrintViewOriginAndSpin_f(void)
     const int32_t y = coduo_fp_to_i32_extended(cg_refdef.vieworg[1]);
     const int32_t x = coduo_fp_to_i32_extended(cg_refdef.vieworg[0]);
 
-    Com_PrintMessage("(%i %i %i) : %i\n",
-                     x, y, z, spin);
+    Com_PrintMessage("(%i %i %i) : %i\n", x, y, z, spin);
 }

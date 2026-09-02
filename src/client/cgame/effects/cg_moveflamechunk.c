@@ -69,16 +69,12 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
         /* The target does not read +0x34 or form this row address until both
          * leading float gates have passed (0x30025ddf). */
         cgFlameInfo_t *info = &cg_flameInfo[chunk->ownerInfoIndex];
-        double elapsedF8 = (double)(
-            ((long double)flameTime -
-             (long double)chunk->endTimeCopy3) *
-            (long double)0.001); /* [ESP+0x30] */
+        double elapsedF8 = (double)(((long double)flameTime - (long double)chunk->endTimeCopy3) * (long double)0.001); /* [ESP+0x30] */
         /* 0x30025e0e is FMUL m32 (c330 = float 1800.0f), so the product is built
          * from a float operand and only widened by the FST double [ESP+0x28] at
          * 0x30025e14. (1800 is exact in both widths; form follows the bytes.) */
-        long double bcScaledRaw =
-            (long double)chunk->alpha * (long double)1800.0f;
-        double bcScaled = (double)bcScaledRaw;                         /* [ESP+0x28] */
+        long double bcScaledRaw = (long double)chunk->alpha * (long double)1800.0f;
+        double bcScaled = (double)bcScaledRaw; /* [ESP+0x28] */
         /* x is NEVER stored: both paths keep it in st0 through the optional
          * 0.35 multiply and the elapsedF8 multiply, and the only rounding is
          * the FSTP float of -x as the call argument (0x30025fa7). A double
@@ -86,18 +82,16 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
         long double x;
         flameChunk_t *ownerChunk = info->ownerChunk; /* [EAX+0x300ab790], saved [ESP+0x58] */
 
-        if (ownerChunk != NULL &&
-            chunk->emitCounter == info->emitCounter &&            /* [EBP+0x128] == info+0x90 */
-            info->clientFrame >= coduo_int32_from_bits(
-                (uint32_t)cg_clientFrame - 1u))  /* DEC EDX; current/recent emitter */
+        if (ownerChunk != NULL && chunk->emitCounter == info->emitCounter && /* [EBP+0x128] == info+0x90 */
+            info->clientFrame >= coduo_int32_from_bits((uint32_t)cg_clientFrame - 1u)) /* DEC EDX; current/recent emitter */
         {
             /* Emit-basis (field_100/104/108) delta between the owner chunk and this
              * chunk, each component folded to (-180,180] via AngleNormalize180;
              * distA = |normalized angle delta|. AngleVectors is called on the owner's
              * emit basis (its `forward` output at [ESP+0x38] is immediately overwritten
              * by the delta below — reproduced faithfully). */
-            float fwd[3];                                    /* [ESP+0x38] */
-            float angInput[3];                               /* [ESP+0x18] */
+            float fwd[3]; /* [ESP+0x38] */
+            float angInput[3]; /* [ESP+0x18] */
             /* distA, posDiff and distB are NEVER stored: the whole
              * squares/FADDP/FSQRT chain (0x30025eb9..0x30025f0f) runs on the
              * x87 stack, so these stay long double (BoxOnPlaneSide precedent).
@@ -105,10 +99,10 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
              * [ESP+0x58] at 0x30025f1d), reloaded when it wins the max. */
             long double distA, distB, metricFull, metric;
             long double posDiff0, posDiff1, posDiff2;
-            float metricMem;         /* the rounded [ESP+0x58] copy */
-            double ramp;             /* genuinely spilled to a double slot
+            float metricMem; /* the rounded [ESP+0x58] copy */
+            double ramp; /* genuinely spilled to a double slot
                                       * ([ESP+0x18], FSTP at 0x30025f72) */
-            long double result;      /* _CIpow leaves ST0 raw; the FSUBR 1.0 /
+            long double result; /* _CIpow leaves ST0 raw; the FSUBR 1.0 /
                                       * FMUL bcScaled below consume it with no
                                       * store, so result stays 80-bit (powl) */
             int i;
@@ -124,23 +118,18 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
             for (i = 0; i < 3; i++)
                 fwd[i] = AngleNormalize180(fwd[i]); /* in place (push offsets the FSTP) */
             /* Inline FSQRT chains; FADDP order is (z^2 + y^2) + x^2. */
-            distA = coduo_x87_sqrtl(
-                (long double)fwd[2] * fwd[2] +
-                (long double)fwd[1] * fwd[1] +
-                (long double)fwd[0] * fwd[0]);
+            distA = coduo_x87_sqrtl((long double)fwd[2] * fwd[2] + (long double)fwd[1] * fwd[1] + (long double)fwd[0] * fwd[0]);
 
             posDiff0 = (long double)chunk->emitOrigin[0] - ownerChunk->emitOrigin[0];
             posDiff1 = (long double)chunk->emitOrigin[1] - ownerChunk->emitOrigin[1];
             posDiff2 = (long double)chunk->emitOrigin[2] - ownerChunk->emitOrigin[2];
-            distB = coduo_x87_sqrtl(
-                posDiff2 * posDiff2 + posDiff1 * posDiff1 +
-                posDiff0 * posDiff0);
+            distB = coduo_x87_sqrtl(posDiff2 * posDiff2 + posDiff1 * posDiff1 + posDiff0 * posDiff0);
 
             /* metric = max(distA, distB * 0.05f). The FCOMPP at 0x30025f23
              * compares the UNROUNDED distA and product; but when the product
              * wins, the code reloads the ROUNDED float copy from [ESP+0x58]. */
             metricFull = distB * 0.05f;
-            metricMem = (float)metricFull;   /* FST float [ESP+0x58] @0x30025f1d */
+            metricMem = (float)metricFull; /* FST float [ESP+0x58] @0x30025f1d */
             if (distA > metricFull)
                 metric = distA;
             else
@@ -152,9 +141,9 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
              * 0x3007c320 = 0xC01B333340000000 = -6.800000190734863. */
             /* TEST AH,5 / JP also selects this arm for an unordered metric. */
             if (!(metric < 30.5)) {
-                ramp = 0.0;              /* FLD 0.0 (0x3007bcf0) */
+                ramp = 0.0; /* FLD 0.0 (0x3007bcf0) */
             } else if (metric < (double)-6.8f) { /* 0x3007c320 */
-                ramp = 1.0;              /* FLD 1.0 (0x3007bcf8) */
+                ramp = 1.0; /* FLD 1.0 (0x3007bcf8) */
             } else {
                 /* FSUB/FMUL/FSUBR run on the st0 metric with no narrowing;
                  * the one rounding is the FSTP double into ramp (0x30025f72). */
@@ -190,11 +179,9 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
             /* Gate 2: elapsed = flameTime - field_80 must exceed 20.0. The
              * difference is never stored (FILD/FSUB feed FCOMP 20.0 directly at
              * 0x30026001), so it stays at register precision. */
-            long double elapsed80 =
-                (long double)flameTime -
-                (long double)chunk->driftStartTime;
+            long double elapsed80 = (long double)flameTime - (long double)chunk->driftStartTime;
             if (elapsed80 > 20.0) {
-                float origin[3];         /* [ESP+0x44] */
+                float origin[3]; /* [ESP+0x44] */
 
                 CG_ComputeFlameChunkOrigin(chunk, flameTime, origin); /* into [ESP+0x44] */
 
@@ -218,10 +205,9 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                      * later FILD [ESP+0x58] reads (0x30026093, 0x3002613a) are
                      * dominated by that store, so the end-time updates below use
                      * this same future timestamp. */
-                    float futureOrigin[3];   /* [ESP+0x44] */
+                    float futureOrigin[3]; /* [ESP+0x44] */
                     float dist;
-                    int32_t futureTime = coduo_int32_from_bits(
-                        (uint32_t)flameTime + 350u); /* LEA EAX,[EDI+350] */
+                    int32_t futureTime = coduo_int32_from_bits((uint32_t)flameTime + 350u); /* LEA EAX,[EDI+350] */
                     CG_ComputeFlameChunkOrigin(chunk, futureTime, futureOrigin);
                     dist = VectorDistance(futureOrigin, cg_flameDamageTrace.endpos);
 
@@ -250,14 +236,8 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                          * reads it), so the DLL passes the futureOrigin value here.
                          * The recon splits that one slot into `origin`/`futureOrigin`,
                          * so this call must pass `futureOrigin` to stay byte-faithful. */
-                        CG_FlamethrowerTrace(
-                            (int32_t)FLAME_DAMAGE_TRACE_CONTENTMASK,
-                            cg_flameTraceMaxs,
-                            cg_flameTraceMins,
-                            &cg_flameDamageTrace,
-                            chunk->posCopy,
-                            futureOrigin,
-                            chunk->ownerInfoIndex);
+                        CG_FlamethrowerTrace((int32_t)FLAME_DAMAGE_TRACE_CONTENTMASK, cg_flameTraceMaxs, cg_flameTraceMins,
+                                             &cg_flameDamageTrace, chunk->posCopy, futureOrigin, chunk->ownerInfoIndex);
 
                         if (cg_flameDamageTrace.startsolid != 0) {
                             /* Fresh hit: seed the trace record's fraction/endpos from
@@ -273,11 +253,9 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                         chunk->posCopy[0] = cg_flameDamageTrace.endpos[0];
                         chunk->posCopy[1] = cg_flameDamageTrace.endpos[1];
                         chunk->posCopy[2] = cg_flameDamageTrace.endpos[2];
-                        chunk->endTimeCopy = (double)(
-                            (long double)chunk->endTimeCopy +
-                            ((long double)futureTime -
-                             (long double)chunk->endTimeCopy) * /* FILD @0x3002613a */
-                            (long double)cg_flameDamageTrace.fraction);
+                        chunk->endTimeCopy = (double)((long double)chunk->endTimeCopy +
+                                                      ((long double)futureTime - (long double)chunk->endTimeCopy) * /* FILD @0x3002613a */
+                                                          (long double)cg_flameDamageTrace.fraction);
                         CG_ComputeFlameChunkOrigin(chunk, flameTime, origin);
 
                         if ((double)flameTime < chunk->endTimeCopy) {
@@ -291,8 +269,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                              * normal (any of normal[0..2] != 0) copy it into the
                              * chunk's sprite-offset field_118/11c/120. */
                             if (cg_flameDamageTrace.fraction < 1.0f) {
-                                if (cg_flameDamageTrace.normal[0] != 0.0f ||
-                                    cg_flameDamageTrace.normal[1] != 0.0f ||
+                                if (cg_flameDamageTrace.normal[0] != 0.0f || cg_flameDamageTrace.normal[1] != 0.0f ||
                                     cg_flameDamageTrace.normal[2] != 0.0f) {
                                     chunk->centerOffset[0] = cg_flameDamageTrace.normal[0];
                                     chunk->centerOffset[1] = cg_flameDamageTrace.normal[1];
@@ -341,8 +318,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                     drift[0] = chunk->driftSpeed * chunk->driftDir[0];
                                     drift[1] = chunk->driftDir[1] * chunk->driftSpeed;
                                     drift[2] = chunk->driftDir[2] * chunk->driftSpeed;
-                                    PM_ClipVelocity(drift, cg_flameDamageTrace.normal,
-                                                    &chunk->driftDir[0], 1.1f);
+                                    PM_ClipVelocity(drift, cg_flameDamageTrace.normal, &chunk->driftDir[0], 1.1f);
                                     len = VectorNormalize(&chunk->driftDir[0]);
                                     chunk->driftSpeed = len * 0.25f;
                                     chunk->alpha = 0.5f;
@@ -356,42 +332,31 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                      * field_14 untouched. Once past those gates (0x3002637b),
                                      * field_14 is ALWAYS cleared (0x3002655e) whatever the
                                      * sub-outcome. */
-                                    if (chunk->damageFrameStamp == 0 &&
-                                        (int32_t)cg_flameDamageTrace.entityNum >= cgs_maxclients &&
-                                        (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK)
-                                            != FLAME_SURF_KIND_1300 &&
-                                        (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK)
-                                            != FLAME_SURF_KIND_1400 &&
-                                        (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK)
-                                            != FLAME_SURF_KIND_0C00)
-                                    {
+                                    if (chunk->damageFrameStamp == 0 && (int32_t)cg_flameDamageTrace.entityNum >= cgs_maxclients &&
+                                        (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK) != FLAME_SURF_KIND_1300 &&
+                                        (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK) != FLAME_SURF_KIND_1400 &&
+                                        (cg_flameDamageTrace.surfaceFlags & FLAME_SURF_KIND_MASK) != FLAME_SURF_KIND_0C00) {
                                         /* field_2c != 0 or field_14 == 0 -> just clear
                                          * field_14 (no-op if already 0) and stamp. */
                                         if (chunk->kind == 0 && chunk->ownerSentinel != 0) {
                                             /* 0x30026391 reloads +0x34 and forms a fresh
                                              * owner-info row; it does not retain the row
                                              * used by block A above. */
-                                            cgFlameInfo_t *damageInfo =
-                                                &cg_flameInfo[chunk->ownerInfoIndex];
-                                            int32_t flameClock =
-                                                coduo_int32_from_bits(cg_flameTime);
-                                            int32_t lastStamp =
-                                                damageInfo->lastFlameStamp; /* [ESP+0x58] */
+                                            cgFlameInfo_t *damageInfo = &cg_flameInfo[chunk->ownerInfoIndex];
+                                            int32_t flameClock = coduo_int32_from_bits(cg_flameTime);
+                                            int32_t lastStamp = damageInfo->lastFlameStamp; /* [ESP+0x58] */
                                             int doSpawn = 0;
 
                                             /* Rate-limit: last source must be > 200 ms old. */
-                                            if (lastStamp < coduo_int32_from_bits(
-                                                    (uint32_t)flameClock - 200u)) {
+                                            if (lastStamp < coduo_int32_from_bits((uint32_t)flameClock - 200u)) {
                                                 /* If the last stamp is in the future
                                                  * (lastStamp > cg_flameTime) or older than
                                                  * 6000 ms, spawn unconditionally; otherwise
                                                  * require the new source > 32 units away. */
-                                                if (lastStamp > flameClock ||
-                                                    (double)flameClock - 6000.0f > (double)lastStamp) {
+                                                if (lastStamp > flameClock || (double)flameClock - 6000.0f > (double)lastStamp) {
                                                     doSpawn = 1;
                                                 } else {
-                                                    float d = VectorDistance(&chunk->worldPos[0],
-                                                                             damageInfo->lastFlamePos);
+                                                    float d = VectorDistance(&chunk->worldPos[0], damageInfo->lastFlamePos);
                                                     if (d > 32.0f)
                                                         doSpawn = 1;
                                                 }
@@ -401,17 +366,14 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                 flameChunk_t *child;
                                                 float spawnA;
 
-                                                damageInfo->lastFlameStamp =
-                                                    coduo_int32_from_bits(cg_flameTime);
+                                                damageInfo->lastFlameStamp = coduo_int32_from_bits(cg_flameTime);
                                                 damageInfo->lastFlamePos[0] = chunk->worldPos[0];
                                                 damageInfo->lastFlamePos[1] = chunk->worldPos[1];
                                                 damageInfo->lastFlamePos[2] = chunk->worldPos[2];
 
                                                 /* a = min(field_e4, 145.0f), b = -0.2f. */
-                                                spawnA = (chunk->radius < 145.0f)
-                                                             ? chunk->radius : 145.0f;
-                                                child = CG_FlameDropDrip(chunk, spawnA,
-                                                                                 -0.2f);
+                                                spawnA = (chunk->radius < 145.0f) ? chunk->radius : 145.0f;
+                                                child = CG_FlameDropDrip(chunk, spawnA, -0.2f);
                                                 if (child != NULL) {
                                                     /* r0/r1/r3 are NEVER stored: each FILD feeds
                                                      * its FMUL directly (0x3002648f, 0x300264d0,
@@ -420,8 +382,7 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                      * unbroken to a single FSTP. double locals
                                                      * would insert roundings the DLL lacks. */
                                                     long double r0, r1, r3;
-                                                    child->spawnTime = (double)
-                                                        coduo_int32_from_bits(cg_flameTime);
+                                                    child->spawnTime = (double)coduo_int32_from_bits(cg_flameTime);
 
                                                     /* end time field_50 = field_48 + r0 +
                                                      *   2000*(1 + 0.5*(1 - |normal[2]|)),
@@ -431,33 +392,28 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                      * (0x3007bee4 @0x30026499), the sibling term
                                                      * is FMUL m64 double 2000.0 (0x3007c300
                                                      * @0x300264b9). */
-                                                    r0 = (long double)coduo_crt_rand() *
-                                                         (long double)3.0517578125e-05f *
+                                                    r0 = (long double)coduo_crt_rand() * (long double)3.0517578125e-05f *
                                                          (long double)2000.0f;
-                                                    child->endTime = (double)(
-                                                        r0 +
-                                                        ((long double)1.0 +
-                                                         (long double)0.5 *
-                                                            ((long double)1.0 -
-                                                             __builtin_fabsl((long double)
-                                                                 cg_flameDamageTrace.normal[2]))) *
-                                                            (long double)2000.0 +
-                                                        (long double)child->spawnTime);
+                                                    child->endTime =
+                                                        (double)(r0 +
+                                                                 ((long double)1.0 +
+                                                                  (long double)0.5 *
+                                                                      ((long double)1.0 -
+                                                                       __builtin_fabsl((long double)cg_flameDamageTrace.normal[2]))) *
+                                                                     (long double)2000.0 +
+                                                                 (long double)child->spawnTime);
 
                                                     /* With p < 0.3, seed field_18 =
                                                      * Q_rint(lerp(field_48, field_50, r2)),
                                                      * r2 = rand()/32768*0.45 + 0.25. */
-                                                    r1 = (long double)coduo_crt_rand() *
-                                                         (long double)3.0517578125e-05f;
+                                                    r1 = (long double)coduo_crt_rand() * (long double)3.0517578125e-05f;
                                                     if (r1 < 0.3) {
                                                         /* FMUL 0x3007c174 / FADD 0x3007be58 are FLOAT
                                                          * (DWORD) loads: 0.45f and 0.25f, not the double
                                                          * literals (0.45f != 0.45). */
-                                                        long double r2 =
-                                                            (long double)coduo_crt_rand() *
-                                                                (long double)3.0517578125e-05f *
-                                                                (long double)0.45f +
-                                                            (long double)0.25f;
+                                                        long double r2 = (long double)coduo_crt_rand() * (long double)3.0517578125e-05f *
+                                                                             (long double)0.45f +
+                                                                         (long double)0.25f;
                                                         /* The _ftol2 at 0x30026517 converts the RAW st0
                                                          * sum -- nothing stores it, so no (float) cast.
                                                          * (The FST float [ESP+0x58] at 0x30026511 is a
@@ -467,32 +423,26 @@ void CG_MoveFlameChunk(flameChunk_t *chunk, int32_t flameTime)
                                                          * follows.) */
                                                         child->emitScatterIndex = (uint32_t)coduo_fp_to_i32_extended(
                                                             (long double)child->spawnTime +
-                                                                ((long double)child->endTime -
-                                                                 (long double)child->spawnTime) * r2);
+                                                            ((long double)child->endTime - (long double)child->spawnTime) * r2);
                                                     }
 
                                                     /* field_138 = 150.0 / (field_50 - field_48). */
-                                                    child->lifeRate = (double)(
-                                                        150.0L /
-                                                        ((long double)child->endTime -
-                                                         (long double)child->spawnTime));
+                                                    child->lifeRate =
+                                                        (double)(150.0L / ((long double)child->endTime - (long double)child->spawnTime));
                                                     /* field_130 = cg_flameTime +
                                                      *   r3*(field_50-field_48)*field_138. */
-                                                    r3 = (long double)coduo_crt_rand() *
-                                                         (long double)3.0517578125e-05f;
-                                                    child->lifeStartTime = (double)(
-                                                        r3 * ((long double)child->endTime -
-                                                              (long double)child->spawnTime) *
-                                                            (long double)child->lifeRate +
-                                                        (long double)coduo_int32_from_bits(cg_flameTime));
+                                                    r3 = (long double)coduo_crt_rand() * (long double)3.0517578125e-05f;
+                                                    child->lifeStartTime =
+                                                        (double)(r3 * ((long double)child->endTime - (long double)child->spawnTime) *
+                                                                     (long double)child->lifeRate +
+                                                                 (long double)coduo_int32_from_bits(cg_flameTime));
                                                 }
                                             }
                                         }
 
                                         chunk->ownerSentinel = 0; /* 0x3002655e */
                                     }
-                                    chunk->damageFrameStamp =
-                                        coduo_int32_from_bits(cg_flameTime); /* 0x30026565 */
+                                    chunk->damageFrameStamp = coduo_int32_from_bits(cg_flameTime); /* 0x30026565 */
                                 }
                             }
                         }

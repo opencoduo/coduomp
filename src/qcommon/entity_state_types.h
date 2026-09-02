@@ -16,23 +16,14 @@ enum {
     ENTITYNUM_NONE = MAX_GENTITIES - 1
 };
 
-#define PLAYER_CLONE_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
+#define PLAYER_CLONE_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
 
-PLAYER_CLONE_LAYOUT_ASSERT(player_clone_entitynum_base_nonnegative,
-                           PLAYER_CLONE_ENTITYNUM_BASE >= 0);
-PLAYER_CLONE_LAYOUT_ASSERT(player_clone_count_positive,
-                           PLAYER_CLONE_COUNT > 0);
-PLAYER_CLONE_LAYOUT_ASSERT(player_clone_range_after_clients,
-                           PLAYER_CLONE_ENTITYNUM_BASE >= MAX_CLIENTS);
-PLAYER_CLONE_LAYOUT_ASSERT(player_clone_entitynum_base_in_domain,
-                           (int32_t)PLAYER_CLONE_ENTITYNUM_BASE <=
-                               (int32_t)ENTITYNUM_WORLD);
-PLAYER_CLONE_LAYOUT_ASSERT(player_clone_count_in_domain,
-                           PLAYER_CLONE_COUNT <= ENTITYNUM_WORLD);
-PLAYER_CLONE_LAYOUT_ASSERT(
-    player_clone_range_fits_entity_domain,
-    PLAYER_CLONE_ENTITYNUM_BASE <= ENTITYNUM_WORLD - PLAYER_CLONE_COUNT);
+PLAYER_CLONE_LAYOUT_ASSERT(player_clone_entitynum_base_nonnegative, PLAYER_CLONE_ENTITYNUM_BASE >= 0);
+PLAYER_CLONE_LAYOUT_ASSERT(player_clone_count_positive, PLAYER_CLONE_COUNT > 0);
+PLAYER_CLONE_LAYOUT_ASSERT(player_clone_range_after_clients, PLAYER_CLONE_ENTITYNUM_BASE >= MAX_CLIENTS);
+PLAYER_CLONE_LAYOUT_ASSERT(player_clone_entitynum_base_in_domain, (int32_t)PLAYER_CLONE_ENTITYNUM_BASE <= (int32_t)ENTITYNUM_WORLD);
+PLAYER_CLONE_LAYOUT_ASSERT(player_clone_count_in_domain, PLAYER_CLONE_COUNT <= ENTITYNUM_WORLD);
+PLAYER_CLONE_LAYOUT_ASSERT(player_clone_range_fits_entity_domain, PLAYER_CLONE_ENTITYNUM_BASE <= ENTITYNUM_WORLD - PLAYER_CLONE_COUNT);
 
 #undef PLAYER_CLONE_LAYOUT_ASSERT
 
@@ -113,8 +104,7 @@ enum entityFlags_e {
     EF_FORCED_STANCE_MASK = EF_FORCE_PRONE | EF_FORCE_CROUCH,
     EF_ZOOM_FOV_MASK = EF_FORCED_STANCE_MASK,
     EF_RESTRICTED_MASK = EF_FORCED_STANCE_MASK | EF_IN_VEHICLE,
-    EF_VEHICLE_STATE_MASK =
-        EF_IN_VEHICLE | EF_VEHICLE_ACTIVE | EF_VEHICLE_POPOUT
+    EF_VEHICLE_STATE_MASK = EF_IN_VEHICLE | EF_VEHICLE_ACTIVE | EF_VEHICLE_POPOUT
 };
 
 /* The original source shape uses anonymous aggregate views.  The game module
@@ -143,34 +133,42 @@ enum entityFlags_e {
  * type-specific interpretations without creating module-local record copies.
  */
 typedef struct entityState_s {
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t number;                     /* +0x000 */
         uint32_t numberBits;
     };
     entityType_t eType;                    /* +0x004 */
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         uint32_t eFlags;                   /* +0x008 */
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             uint8_t eFlagsLowByte;
             uint8_t eFlagsUpperBytes[3];
         };
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         trajectory_t pos;                  /* +0x00c */
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             trType_t posTrType;
             int32_t posTrTime;
             int32_t posTrDuration;
             vec3_t origin;
-            ENTITY_STATE_UNION {
+            ENTITY_STATE_UNION
+            {
                 vec3_t posTrDelta;
                 vec3_t laserDir;
             };
         };
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         trajectory_t apos;                 /* +0x030 */
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             trType_t aposTrType;
             int32_t aposTrTime;
             int32_t aposTrDuration;
@@ -178,93 +176,118 @@ typedef struct entityState_s {
             vec3_t aposTrDelta;
         };
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t time;                       /* +0x054 */
         int32_t iconFadeEndTime;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t time2;                      /* +0x058 */
         int32_t vehicleWheelTracePacked;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         vec3_t origin2;                     /* +0x05c */
         vec3_t loopedFxForward;
         vec3_t effectEndOrigin;
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             int32_t vehicleBodyPitchPacked;
             float vehicleSecondaryBaseYaw;
             int32_t vehicleBodyRollPacked;
         };
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         vec3_t angles2;                     /* +0x068 */
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             float angles2Pitch;
-            ENTITY_STATE_UNION {
+            ENTITY_STATE_UNION
+            {
                 float clientInfoLeanYawPayload;
                 float leanAmount;
             };
             float angles2Roll;
         };
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             float vehicleBarrelPitch;
             float vehicleTurretYaw;
             float vehicleSecondaryGunPitch;
         };
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             float primaryPitch;
             float primaryYaw;
             float gunnerPitch;
-        } vehicleTurret;
-        ENTITY_STATE_STRUCT {
+        }
+        vehicleTurret;
+        ENTITY_STATE_STRUCT
+        {
             float pitch;
             float yaw;
             float pitchCarry;
-        } turret;
-        ENTITY_STATE_STRUCT {
+        }
+        turret;
+        ENTITY_STATE_STRUCT
+        {
             float cullDistance;
             float repeatDelayMs;
             float unused70;
-        } loopedFx;
-        ENTITY_STATE_STRUCT {
+        }
+        loopedFx;
+        ENTITY_STATE_STRUCT
+        {
             float unused68;
             float leanAmount;
             float unused70;
-        } clientInfo;
-        ENTITY_STATE_STRUCT {
+        }
+        clientInfo;
+        ENTITY_STATE_STRUCT
+        {
             float scale;
             float radius;
             float durationMs;
-        } earthquake;
-        ENTITY_STATE_STRUCT {
-            ENTITY_STATE_UNION {
+        }
+        earthquake;
+        ENTITY_STATE_STRUCT
+        {
+            ENTITY_STATE_UNION
+            {
                 float loopedFxCullRadius;
                 float portalShaderHandleBits;
             };
-            ENTITY_STATE_UNION {
+            ENTITY_STATE_UNION
+            {
                 float loopedFxInterval;
                 float leanValue;
             };
             int32_t effectShaderHandle;
         };
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t otherEntityNum;             /* +0x074 */
         int32_t vehicleEntityNum;
         uint32_t vehicleEntityNumBits;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t attackerEntityNum;          /* +0x078 */
         int32_t vehicleSlot;
         int32_t compassBlipIndex;
     };
     int32_t groundEntityNum;                /* +0x07c */
     uint32_t constantLight;                 /* +0x080 */
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t loopSound;                  /* +0x084 */
         int32_t clientSound;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t surfType;                   /* +0x088 */
         uint32_t surfTypeBits;
         int32_t vehicleAnimState;
@@ -272,96 +295,119 @@ typedef struct entityState_s {
         int32_t stateFilter;
         uint32_t poseType;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t index;                      /* +0x08c */
         int32_t itemIndex;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t xmodel;                     /* +0x090 */
         int32_t modelIndex;
         int32_t dobjModelIndex;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t clientNum;                  /* +0x094 */
         uint32_t clientNumBits;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t iHeadIcon;                  /* +0x098 */
         int32_t headIcon;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t iHeadIconTeam;              /* +0x09c */
         int32_t headIconTeam;
     };
     int32_t solid;                          /* +0x0a0 */
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t eventParm;                  /* +0x0a4 */
         uint32_t eventParmBits;
         int32_t tempEffectId;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t eventSequence;              /* +0x0a8 */
         int32_t eventCount;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t events[MAX_ENTITY_EVENTS];  /* +0x0ac */
         uint32_t eventBits[MAX_ENTITY_EVENTS];
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t eventParms[MAX_ENTITY_EVENTS]; /* +0x0bc */
         uint32_t eventParmBitsRing[MAX_ENTITY_EVENTS];
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t weapon;                     /* +0x0cc */
         uint32_t weaponIndex;
     };
-    ENTITY_STATE_UNION {
-        ENTITY_STATE_STRUCT {
-            ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
+        ENTITY_STATE_STRUCT
+        {
+            ENTITY_STATE_UNION
+            {
                 int32_t legsAnim;           /* +0x0d0 */
                 uint32_t legsAnimWord;
             };
-            ENTITY_STATE_UNION {
+            ENTITY_STATE_UNION
+            {
                 int32_t torsoAnim;          /* +0x0d4 */
                 uint32_t torsoAnimWord;
             };
         };
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             int32_t weaponAnim;
             int32_t followClient;
-        } surfaceImpact;
+        }
+        surfaceImpact;
         int32_t anim[2];
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         float leanf;                        /* +0x0d8 */
         float clientInfoLeanFraction;
         float vehicleWheelAngle;
         float iconBaseYaw;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t scale;                      /* +0x0dc */
         uint32_t scaleBits;
         int32_t hintStringIndex;
         int32_t loopedFxId;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         uint32_t dmgFlags;                  /* +0x0e0 */
         cursorHint_t cursorHint;
     };
-    ENTITY_STATE_UNION {
+    ENTITY_STATE_UNION
+    {
         int32_t animMovetype;               /* +0x0e4 */
         int32_t turretOverheatState;
         uint32_t hudTagMask;
     };
-    ENTITY_STATE_UNION {
-        ENTITY_STATE_STRUCT {
+    ENTITY_STATE_UNION
+    {
+        ENTITY_STATE_STRUCT
+        {
             float fTorsoHeight;             /* +0x0e8 */
             float fTorsoPitch;              /* +0x0ec */
             float fWaistPitch;              /* +0x0f0 */
         };
         vec3_t viewAngles;
         vec3_t entityAngles;
-        ENTITY_STATE_STRUCT {
+        ENTITY_STATE_STRUCT
+        {
             float vehicleFollowPitchCenter;
             float vehicleFollowPitchDownLimit;
             float vehicleFollowPitchUpLimit;
@@ -372,8 +418,7 @@ typedef struct entityState_s {
 #undef ENTITY_STATE_STRUCT
 #undef ENTITY_STATE_UNION
 
-#define ENTITY_STATE_LAYOUT_ASSERT(name_, expression_) \
-    typedef char name_[(expression_) ? 1 : -1]
+#define ENTITY_STATE_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
 
 #if defined(_MSC_VER)
 #define ENTITY_STATE_ALIGNOF(type_) __alignof(type_)
@@ -387,78 +432,42 @@ typedef struct entityState_s {
 
 ENTITY_STATE_LAYOUT_ASSERT(entity_type_size, sizeof(entityType_t) == 4);
 ENTITY_STATE_LAYOUT_ASSERT(entity_type_is_signed, (entityType_t)-1 < 0);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_alignment,
-                           ENTITY_STATE_ALIGNOF(entityState_t) == 4);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_number_offset,
-                           offsetof(entityState_t, number) == 0x000);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_type_offset,
-                           offsetof(entityState_t, eType) == 0x004);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_flags_offset,
-                           offsetof(entityState_t, eFlags) == 0x008);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_pos_offset,
-                           offsetof(entityState_t, pos) == 0x00c);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_apos_offset,
-                           offsetof(entityState_t, apos) == 0x030);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_time_offset,
-                           offsetof(entityState_t, time) == 0x054);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_time2_offset,
-                           offsetof(entityState_t, time2) == 0x058);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_origin2_offset,
-                           offsetof(entityState_t, origin2) == 0x05c);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_angles2_offset,
-                           offsetof(entityState_t, angles2) == 0x068);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_other_entity_offset,
-                           offsetof(entityState_t, otherEntityNum) == 0x074);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_attacker_offset,
-                           offsetof(entityState_t, attackerEntityNum) == 0x078);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_ground_entity_offset,
-                           offsetof(entityState_t, groundEntityNum) == 0x07c);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_constant_light_offset,
-                           offsetof(entityState_t, constantLight) == 0x080);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_loop_sound_offset,
-                           offsetof(entityState_t, loopSound) == 0x084);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_surface_type_offset,
-                           offsetof(entityState_t, surfType) == 0x088);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_index_offset,
-                           offsetof(entityState_t, index) == 0x08c);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_xmodel_offset,
-                           offsetof(entityState_t, xmodel) == 0x090);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_client_num_offset,
-                           offsetof(entityState_t, clientNum) == 0x094);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_head_icon_offset,
-                           offsetof(entityState_t, iHeadIcon) == 0x098);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_head_icon_team_offset,
-                           offsetof(entityState_t, iHeadIconTeam) == 0x09c);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_solid_offset,
-                           offsetof(entityState_t, solid) == 0x0a0);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_event_parm_offset,
-                           offsetof(entityState_t, eventParm) == 0x0a4);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_event_sequence_offset,
-                           offsetof(entityState_t, eventSequence) == 0x0a8);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_events_offset,
-                           offsetof(entityState_t, events) == 0x0ac);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_event_parms_offset,
-                           offsetof(entityState_t, eventParms) == 0x0bc);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_weapon_offset,
-                           offsetof(entityState_t, weapon) == 0x0cc);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_legs_anim_offset,
-                           offsetof(entityState_t, legsAnim) == 0x0d0);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_torso_anim_offset,
-                           offsetof(entityState_t, torsoAnim) == 0x0d4);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_lean_offset,
-                           offsetof(entityState_t, leanf) == 0x0d8);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_scale_offset,
-                           offsetof(entityState_t, scale) == 0x0dc);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_damage_flags_offset,
-                           offsetof(entityState_t, dmgFlags) == 0x0e0);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_anim_move_type_offset,
-                           offsetof(entityState_t, animMovetype) == 0x0e4);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_torso_height_offset,
-                           offsetof(entityState_t, fTorsoHeight) == 0x0e8);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_torso_pitch_offset,
-                           offsetof(entityState_t, fTorsoPitch) == 0x0ec);
-ENTITY_STATE_LAYOUT_ASSERT(entity_state_waist_pitch_offset,
-                           offsetof(entityState_t, fWaistPitch) == 0x0f0);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_alignment, ENTITY_STATE_ALIGNOF(entityState_t) == 4);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_number_offset, offsetof(entityState_t, number) == 0x000);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_type_offset, offsetof(entityState_t, eType) == 0x004);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_flags_offset, offsetof(entityState_t, eFlags) == 0x008);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_pos_offset, offsetof(entityState_t, pos) == 0x00c);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_apos_offset, offsetof(entityState_t, apos) == 0x030);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_time_offset, offsetof(entityState_t, time) == 0x054);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_time2_offset, offsetof(entityState_t, time2) == 0x058);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_origin2_offset, offsetof(entityState_t, origin2) == 0x05c);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_angles2_offset, offsetof(entityState_t, angles2) == 0x068);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_other_entity_offset, offsetof(entityState_t, otherEntityNum) == 0x074);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_attacker_offset, offsetof(entityState_t, attackerEntityNum) == 0x078);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_ground_entity_offset, offsetof(entityState_t, groundEntityNum) == 0x07c);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_constant_light_offset, offsetof(entityState_t, constantLight) == 0x080);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_loop_sound_offset, offsetof(entityState_t, loopSound) == 0x084);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_surface_type_offset, offsetof(entityState_t, surfType) == 0x088);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_index_offset, offsetof(entityState_t, index) == 0x08c);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_xmodel_offset, offsetof(entityState_t, xmodel) == 0x090);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_client_num_offset, offsetof(entityState_t, clientNum) == 0x094);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_head_icon_offset, offsetof(entityState_t, iHeadIcon) == 0x098);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_head_icon_team_offset, offsetof(entityState_t, iHeadIconTeam) == 0x09c);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_solid_offset, offsetof(entityState_t, solid) == 0x0a0);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_event_parm_offset, offsetof(entityState_t, eventParm) == 0x0a4);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_event_sequence_offset, offsetof(entityState_t, eventSequence) == 0x0a8);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_events_offset, offsetof(entityState_t, events) == 0x0ac);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_event_parms_offset, offsetof(entityState_t, eventParms) == 0x0bc);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_weapon_offset, offsetof(entityState_t, weapon) == 0x0cc);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_legs_anim_offset, offsetof(entityState_t, legsAnim) == 0x0d0);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_torso_anim_offset, offsetof(entityState_t, torsoAnim) == 0x0d4);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_lean_offset, offsetof(entityState_t, leanf) == 0x0d8);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_scale_offset, offsetof(entityState_t, scale) == 0x0dc);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_damage_flags_offset, offsetof(entityState_t, dmgFlags) == 0x0e0);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_anim_move_type_offset, offsetof(entityState_t, animMovetype) == 0x0e4);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_torso_height_offset, offsetof(entityState_t, fTorsoHeight) == 0x0e8);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_torso_pitch_offset, offsetof(entityState_t, fTorsoPitch) == 0x0ec);
+ENTITY_STATE_LAYOUT_ASSERT(entity_state_waist_pitch_offset, offsetof(entityState_t, fWaistPitch) == 0x0f0);
 ENTITY_STATE_LAYOUT_ASSERT(entity_state_size, sizeof(entityState_t) == 0x0f4);
 
 #undef ENTITY_STATE_ALIGNOF

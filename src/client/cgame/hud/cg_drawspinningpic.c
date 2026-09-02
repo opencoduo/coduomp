@@ -37,30 +37,25 @@
 // proven-role provisional name.
 
 // HUD virtual-screen anchor constants for this element (from .rdata float table).
-enum { HUD_SPIN_ANCHOR_UNUSED = 0 };
-#define HUD_SPIN_X_PRE   (-25.0f)   /* 0x3007be9c: subtracted from rect.x before scale */
-#define HUD_SPIN_X_POST  (25.0f)    /* 0x3007be98: subtracted after scale */
+enum {
+    HUD_SPIN_ANCHOR_UNUSED = 0
+};
+#define HUD_SPIN_X_PRE (-25.0f)   /* 0x3007be9c: subtracted from rect.x before scale */
+#define HUD_SPIN_X_POST (25.0f)    /* 0x3007be98: subtracted after scale */
 #define HUD_SPIN_Y_ANCHOR (345.0f)  /* 0x3007be94: rect.y pivot, restored after scale */
-#define HUD_SPIN_Y_SLIDE  (160.0f)  /* 0x3007be90: extra y offset scaled by (scale-1) */
-#define HUD_SCALE_ONE     (1.0f)    /* 0x3007bce0: 1.0 baseline for the (scale-1) term */
+#define HUD_SPIN_Y_SLIDE (160.0f)  /* 0x3007be90: extra y offset scaled by (scale-1) */
+#define HUD_SCALE_ONE (1.0f)    /* 0x3007bce0: 1.0 baseline for the (scale-1) term */
 
-void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader,
-                        const float *color)
+void CG_DrawSpinningPic(const rectDef_t *rect, qhandle_t hShader, const float *color)
 {
     // 0x3002f913..0x3002f927  FLD [EAX]; FSUB -25; FMUL scale; FSUB 25; FSTP [ESP+0xc]
-    float x = (float)((((long double)rect->x -
-                        (long double)HUD_SPIN_X_PRE) *
-                       (long double)cg_hudCompassSize_vmCvar.value) -
+    float x = (float)((((long double)rect->x - (long double)HUD_SPIN_X_PRE) * (long double)cg_hudCompassSize_vmCvar.value) -
                       (long double)HUD_SPIN_X_POST);
 
     // 0x3002f92b..0x3002f954  ((rect.y-345)*scale + 345) - (scale-1)*160
-    long double yAnchor = (((long double)rect->y -
-                            (long double)HUD_SPIN_Y_ANCHOR) *
-                           (long double)cg_hudCompassSize_vmCvar.value) +
+    long double yAnchor = (((long double)rect->y - (long double)HUD_SPIN_Y_ANCHOR) * (long double)cg_hudCompassSize_vmCvar.value) +
                           (long double)HUD_SPIN_Y_ANCHOR;
-    long double ySlide = ((long double)cg_hudCompassSize_vmCvar.value -
-                          (long double)HUD_SCALE_ONE) *
-                         (long double)HUD_SPIN_Y_SLIDE;
+    long double ySlide = ((long double)cg_hudCompassSize_vmCvar.value - (long double)HUD_SCALE_ONE) * (long double)HUD_SPIN_Y_SLIDE;
     float y = (float)(yAnchor - ySlide);
 
     // 0x3002f958..0x3002f961  FLD scale; FMUL [EAX+8]; FSTP [ESP+4]

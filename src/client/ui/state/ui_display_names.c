@@ -6,14 +6,14 @@
 // Same-module PPC symbol: UI_GetMapDisplayName.
 const char *UI_GetMapDisplayName(const char *mapName)
 {
-    enum { UI_DISPLAY_NAME_COMPARE_LIMIT = 99999 };
+    enum {
+        UI_DISPLAY_NAME_COMPARE_LIMIT = 99999
+    };
 
     for (int32_t index = 0; index < ui_mapCount; ++index) {
         const char *candidate = ui_maps[index].mapName;
 
-        if (mapName != NULL && candidate != NULL &&
-            Q_stricmpn(candidate, mapName,
-                       UI_DISPLAY_NAME_COMPARE_LIMIT) == 0) {
+        if (mapName != NULL && candidate != NULL && Q_stricmpn(candidate, mapName, UI_DISPLAY_NAME_COMPARE_LIMIT) == 0) {
             return ui_maps[index].displayName;
         }
     }
@@ -26,14 +26,14 @@ const char *UI_GetMapDisplayName(const char *mapName)
 // Same-module PPC symbol: UI_GetGameTypeDisplayName.
 const char *UI_GetGameTypeDisplayName(const char *gameType)
 {
-    enum { UI_DISPLAY_NAME_COMPARE_LIMIT = 99999 };
+    enum {
+        UI_DISPLAY_NAME_COMPARE_LIMIT = 99999
+    };
 
     for (int32_t index = 0; index < ui_gameTypeCount; ++index) {
         const char *candidate = ui_gameTypes[index].gameType;
 
-        if (gameType != NULL && candidate != NULL &&
-            Q_stricmpn(candidate, gameType,
-                       UI_DISPLAY_NAME_COMPARE_LIMIT) == 0) {
+        if (gameType != NULL && candidate != NULL && Q_stricmpn(candidate, gameType, UI_DISPLAY_NAME_COMPARE_LIMIT) == 0) {
             return ui_gameTypes[index].displayName;
         }
     }

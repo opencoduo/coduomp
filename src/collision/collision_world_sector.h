@@ -31,18 +31,13 @@ extern worldSector_t cm_worldSectorPool[SERVER_WORLD_SECTOR_POOL_COUNT];
 
 void CM_InitWorldSector(void);
 worldSector_t *CM_AllocWorldSector(const vec2_t mins, const vec2_t maxs);
-void CM_RebucketWorldSectorLinks(worldSector_t *sector,
-                                 const vec2_t sectorMins,
-                                 const vec2_t sectorMaxs);
+void CM_RebucketWorldSectorLinks(worldSector_t *sector, const vec2_t sectorMins, const vec2_t sectorMaxs);
 void SV_UnlinkEntityFromWorldSector(svEntity_t *serverEntity);
-void SV_LinkEntityToWorldSector(svEntity_t *serverEntity,
-                                const vec2_t mins, const vec2_t maxs);
+void SV_LinkEntityToWorldSector(svEntity_t *serverEntity, const vec2_t mins, const vec2_t maxs);
 qboolean CM_IsBigStaticModel(const vec3_t mins, const vec3_t maxs);
 void CM_LinkStaticModel(worldSectorAreaLink_t *areaLink);
 void CM_AreaEntities_r(worldSector_t *sector, cmAreaEntitiesWork_t *work);
-int32_t CM_AreaEntities(const vec3_t mins, const vec3_t maxs,
-                        int32_t *entityList, int32_t maxEntityCount,
-                        int32_t contentsMask);
+int32_t CM_AreaEntities(const vec3_t mins, const vec3_t maxs, int32_t *entityList, int32_t maxEntityCount, int32_t contentsMask);
 
 #ifdef __cplusplus
 }

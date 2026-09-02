@@ -39,7 +39,8 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
     }
 
     editField = (editFieldDef_t *)item->typeData;
-    if (editField == NULL || item->cvar == NULL) return qfalse;
+    if (editField == NULL || item->cvar == NULL)
+        return qfalse;
 
     memset(buffer, 0, sizeof(buffer));
     DC->getCVarString(item->cvar, buffer, sizeof(buffer));
@@ -52,9 +53,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
         key &= ~K_CHAR_FLAG;
         if (key == UI_CHAR_BACKSPACE) {
             if (item->cursorPos > 0) {
-                memmove(buffer + item->cursorPos - 1,
-                        buffer + item->cursorPos,
-                        (size_t)(length - item->cursorPos + 1));
+                memmove(buffer + item->cursorPos - 1, buffer + item->cursorPos, (size_t)(length - item->cursorPos + 1));
                 --item->cursorPos;
                 if (item->cursorPos < editField->paintOffset) {
                     --editField->paintOffset;
@@ -64,33 +63,26 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
             return qtrue;
         }
 
-        if (key < ' ' || item->cvar == NULL) return qtrue;
+        if (key < ' ' || item->cvar == NULL)
+            return qtrue;
         if (item->type == ITEM_TYPE_NUMERICFIELD && !Q_isnumeric(key)) {
             return qfalse;
         }
-        if (item->type == ITEM_TYPE_UPREDITFIELD &&
-            key >= 'a' && key <= 'z') {
+        if (item->type == ITEM_TYPE_UPREDITFIELD && key >= 'a' && key <= 'z') {
             key -= 'a' - 'A';
         }
 
         if (!DC->getOverstrikeMode()) {
-            if (length == UI_EDIT_INSERT_MAX_CHARS ||
-                (editField->maxChars != 0 &&
-                 length >= editField->maxChars)) {
+            if (length == UI_EDIT_INSERT_MAX_CHARS || (editField->maxChars != 0 && length >= editField->maxChars)) {
                 return qtrue;
             }
-            memmove(buffer + item->cursorPos + 1,
-                    buffer + item->cursorPos,
-                    (size_t)(length - item->cursorPos + 1));
-        } else if (editField->maxChars != 0 &&
-                   item->cursorPos >= editField->maxChars) {
+            memmove(buffer + item->cursorPos + 1, buffer + item->cursorPos, (size_t)(length - item->cursorPos + 1));
+        } else if (editField->maxChars != 0 && item->cursorPos >= editField->maxChars) {
             if (editField->maxCharsGotoNext != 0) {
                 itemDef_t *next = Menu_SetNextCursorItem(item->parent);
 
                 if (next != NULL &&
-                    (next->type == ITEM_TYPE_EDITFIELD ||
-                     next->type == ITEM_TYPE_NUMERICFIELD ||
-                     next->type == ITEM_TYPE_UPREDITFIELD)) {
+                    (next->type == ITEM_TYPE_EDITFIELD || next->type == ITEM_TYPE_NUMERICFIELD || next->type == ITEM_TYPE_UPREDITFIELD)) {
                     g_editItem = next;
                 }
             }
@@ -102,20 +94,15 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
         ++length;
         if (item->cursorPos < length) {
             ++item->cursorPos;
-            if (editField->maxPaintChars != 0 &&
-                item->cursorPos > editField->maxPaintChars) {
+            if (editField->maxPaintChars != 0 && item->cursorPos > editField->maxPaintChars) {
                 ++editField->paintOffset;
             }
         }
-        if (editField->maxChars != 0 &&
-            item->cursorPos >= editField->maxChars &&
-            editField->maxCharsGotoNext != 0) {
+        if (editField->maxChars != 0 && item->cursorPos >= editField->maxChars && editField->maxCharsGotoNext != 0) {
             itemDef_t *next = Menu_SetNextCursorItem(item->parent);
 
             if (next != NULL &&
-                (next->type == ITEM_TYPE_EDITFIELD ||
-                 next->type == ITEM_TYPE_NUMERICFIELD ||
-                 next->type == ITEM_TYPE_UPREDITFIELD)) {
+                (next->type == ITEM_TYPE_EDITFIELD || next->type == ITEM_TYPE_NUMERICFIELD || next->type == ITEM_TYPE_UPREDITFIELD)) {
                 g_editItem = next;
             }
         }
@@ -124,17 +111,13 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
         case K_DEL:
         case K_KP_DEL:
             if (item->cursorPos < length) {
-                memmove(buffer + item->cursorPos,
-                        buffer + item->cursorPos + 1,
-                        (size_t)(length - item->cursorPos));
+                memmove(buffer + item->cursorPos, buffer + item->cursorPos + 1, (size_t)(length - item->cursorPos));
                 DC->setCVar(item->cvar, buffer);
             }
             return qtrue;
         case K_RIGHTARROW:
         case K_KP_RIGHTARROW:
-            if (editField->maxPaintChars != 0 &&
-                item->cursorPos >= editField->maxPaintChars &&
-                item->cursorPos < length) {
+            if (editField->maxPaintChars != 0 && item->cursorPos >= editField->maxPaintChars && item->cursorPos < length) {
                 ++item->cursorPos;
                 ++editField->paintOffset;
             } else if (item->cursorPos < length) {
@@ -143,7 +126,8 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
             return qtrue;
         case K_LEFTARROW:
         case K_KP_LEFTARROW:
-            if (item->cursorPos > 0) --item->cursorPos;
+            if (item->cursorPos > 0)
+                --item->cursorPos;
             if (item->cursorPos < editField->paintOffset) {
                 --editField->paintOffset;
             }
@@ -157,47 +141,38 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int32_t key)
         case K_KP_END:
             item->cursorPos = length;
             if (length > editField->maxPaintChars) {
-                editField->paintOffset =
-                    length - editField->maxPaintChars;
+                editField->paintOffset = length - editField->maxPaintChars;
             }
             return qtrue;
         case K_INS:
         case K_KP_INS:
-            DC->setOverstrikeMode(
-                !DC->getOverstrikeMode());
+            DC->setOverstrikeMode(!DC->getOverstrikeMode());
             return qtrue;
         default:
             break;
         }
     }
 
-    if (key == K_TAB || key == K_DOWNARROW ||
-        key == K_KP_DOWNARROW) {
+    if (key == K_TAB || key == K_DOWNARROW || key == K_KP_DOWNARROW) {
         itemDef_t *next = Menu_SetNextCursorItem(item->parent);
 
         if (next != NULL &&
-            (next->type == ITEM_TYPE_EDITFIELD ||
-             next->type == ITEM_TYPE_NUMERICFIELD ||
-             next->type == ITEM_TYPE_UPREDITFIELD)) {
+            (next->type == ITEM_TYPE_EDITFIELD || next->type == ITEM_TYPE_NUMERICFIELD || next->type == ITEM_TYPE_UPREDITFIELD)) {
             g_editItem = next;
         }
     }
     if (key == K_UPARROW || key == K_KP_UPARROW) {
         itemDef_t *previous = Menu_SetPrevCursorItem(item->parent);
 
-        if (previous != NULL &&
-            (previous->type == ITEM_TYPE_EDITFIELD ||
-             previous->type == ITEM_TYPE_NUMERICFIELD ||
-             previous->type == ITEM_TYPE_UPREDITFIELD)) {
+        if (previous != NULL && (previous->type == ITEM_TYPE_EDITFIELD || previous->type == ITEM_TYPE_NUMERICFIELD ||
+                                 previous->type == ITEM_TYPE_UPREDITFIELD)) {
             g_editItem = previous;
         }
     }
-    if ((key == K_ENTER || key == K_KP_ENTER) &&
-        item->accept != NULL) {
+    if ((key == K_ENTER || key == K_KP_ENTER) && item->accept != NULL) {
         Item_RunScript(item, item->accept);
     }
-    if (key == K_ENTER || key == K_KP_ENTER ||
-        key == K_ESCAPE) {
+    if (key == K_ENTER || key == K_KP_ENTER || key == K_ESCAPE) {
         return qfalse;
     }
     return qtrue;

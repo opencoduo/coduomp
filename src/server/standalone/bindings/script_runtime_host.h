@@ -25,11 +25,9 @@ extern "C" {
 #include "scripting/script_variable.h"
 
 #define SCRIPT_HUNK_ALLOC(size) Hunk_AllocInternal(size)
-#define SCRIPT_HUNK_ALLOC_ALIGN(size, alignment) \
-    Hunk_AllocAlignInternal((size), (alignment))
+#define SCRIPT_HUNK_ALLOC_ALIGN(size, alignment) Hunk_AllocAlignInternal((size), (alignment))
 #define SCRIPT_HUNK_ALLOC_LOW(size) Hunk_AllocLowInternal(size)
-#define SCRIPT_HUNK_ALLOC_TEMP_HIGH(size) \
-    Hunk_AllocateTempMemoryHighInternal(size)
+#define SCRIPT_HUNK_ALLOC_TEMP_HIGH(size) Hunk_AllocateTempMemoryHighInternal(size)
 #define SCRIPT_HUNK_CLEAR_TEMP_HIGH() Hunk_ClearTempMemoryHigh()
 #define SCRIPT_HUNK_COMMIT_TEMP() Hunk_CommitTempMemory()
 #define SCRIPT_OUT_OF_MEMORY() Sys_OutOfMemory()
@@ -39,10 +37,8 @@ extern "C" {
 #else
 #define SCRIPT_STRICMP(left, right) strcasecmp((left), (right))
 #endif
-#define SCRIPT_ISALNUM_SIGNED_BYTE(value) \
-    isalnum(coduo_ctype_signed_byte_arg(value))
-#define SCRIPT_TOLOWER_SIGNED_BYTE(value) \
-    tolower(coduo_ctype_signed_byte_arg(value))
+#define SCRIPT_ISALNUM_SIGNED_BYTE(value) isalnum(coduo_ctype_signed_byte_arg(value))
+#define SCRIPT_TOLOWER_SIGNED_BYTE(value) tolower(coduo_ctype_signed_byte_arg(value))
 #define SCRIPT_SPRINTF sprintf
 
 #ifdef __cplusplus

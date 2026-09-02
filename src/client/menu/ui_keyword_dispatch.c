@@ -73,21 +73,16 @@ qboolean Item_Parse(int32_t sourceHandle, itemDef_t *item)
         }
 
         keyword = itemKeywordHashTable[KeywordHash_Key(token.string)];
-        while (keyword != NULL && keyword->keyword != NULL &&
-               Q_stricmpn(token.string, keyword->keyword,
-                          UI_KEYWORD_COMPARE_LIMIT) != 0) {
+        while (keyword != NULL && keyword->keyword != NULL && Q_stricmpn(token.string, keyword->keyword, UI_KEYWORD_COMPARE_LIMIT) != 0) {
             keyword = keyword->next;
         }
 
         if (keyword == NULL || keyword->keyword == NULL) {
-            PC_SourceError(sourceHandle, "unknown menu item keyword %s",
-                           token.string);
+            PC_SourceError(sourceHandle, "unknown menu item keyword %s", token.string);
             continue;
         }
         if (!keyword->func(item, sourceHandle)) {
-            PC_SourceError(sourceHandle,
-                           "couldn't parse menu item keyword %s",
-                           token.string);
+            PC_SourceError(sourceHandle, "couldn't parse menu item keyword %s", token.string);
             return qfalse;
         }
     }
@@ -117,20 +112,16 @@ qboolean Menu_Parse(int32_t sourceHandle, menuDef_t *menu)
         }
 
         keyword = menuKeywordHashTable[KeywordHash_Key(token.string)];
-        while (keyword != NULL && keyword->keyword != NULL &&
-               Q_stricmpn(token.string, keyword->keyword,
-                          UI_KEYWORD_COMPARE_LIMIT) != 0) {
+        while (keyword != NULL && keyword->keyword != NULL && Q_stricmpn(token.string, keyword->keyword, UI_KEYWORD_COMPARE_LIMIT) != 0) {
             keyword = keyword->next;
         }
 
         if (keyword == NULL || keyword->keyword == NULL) {
-            PC_SourceError(sourceHandle, "unknown menu keyword %s",
-                           token.string);
+            PC_SourceError(sourceHandle, "unknown menu keyword %s", token.string);
             continue;
         }
         if (!keyword->func(menu, sourceHandle)) {
-            PC_SourceError(sourceHandle, "couldn't parse menu keyword %s",
-                           token.string);
+            PC_SourceError(sourceHandle, "couldn't parse menu keyword %s", token.string);
             return qfalse;
         }
     }

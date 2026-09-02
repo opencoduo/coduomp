@@ -60,29 +60,15 @@ void CG_DrawSides(float x, float y, float width, float height, float size)
     float ss = (float)((long double)cgs_screenXScale * (long double)size);
 
     /* left vertical bar */
-    trap_R_DrawStretchPic(CG_FloatBits(xs),
-                          CG_FloatBits(ys),
-                          CG_FloatBits(ss),
-                          CG_FloatBits(hs),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          firstShader);
+    trap_R_DrawStretchPic(CG_FloatBits(xs), CG_FloatBits(ys), CG_FloatBits(ss), CG_FloatBits(hs), CG_FloatBits(0.0f), CG_FloatBits(0.0f),
+                          CG_FloatBits(0.0f), CG_FloatBits(0.0f), firstShader);
 
     /* right vertical bar, at the scaled right edge minus one bar width */
     {
         long double rightBase = (long double)xs;
         qhandle_t secondShader = cgs_media_whiteShader;
         float right = (float)((rightBase + ws) - (long double)ss);
-        trap_R_DrawStretchPic(CG_FloatBits(right),
-                          CG_FloatBits(ys),
-                          CG_FloatBits(ss),
-                          CG_FloatBits(hs),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          CG_FloatBits(0.0f),
-                          secondShader);
+        trap_R_DrawStretchPic(CG_FloatBits(right), CG_FloatBits(ys), CG_FloatBits(ss), CG_FloatBits(hs), CG_FloatBits(0.0f),
+                              CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(0.0f), secondShader);
     }
 }

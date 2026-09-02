@@ -33,12 +33,9 @@ void PM_SetWaterLevel(void)
 
     point[0] = pm->ps->psOrigin[0];
     point[1] = pm->ps->psOrigin[1];
-    point[2] = (float)((long double)pm->ps->psOrigin[2] +
-                       (long double)pm->ps->playerMins[2] +
-                       PM_WATER_BOTTOM_EPSILON);
+    point[2] = (float)((long double)pm->ps->psOrigin[2] + (long double)pm->ps->playerMins[2] + PM_WATER_BOTTOM_EPSILON);
 
-    contents = pm->pointContents(point, pm->ps->psClientNum,
-                                 CONTENTS_WATER);
+    contents = pm->pointContents(point, pm->ps->psClientNum, CONTENTS_WATER);
     if (contents == 0) {
         return;
     }
@@ -47,28 +44,20 @@ void PM_SetWaterLevel(void)
      * conversion: Windows consumes _ftol2's low dword, while Linux uses a
      * signed-dword FISTP.  The shared compatibility conversion preserves that
      * already-adjudicated platform ABI without changing the arithmetic. */
-    height = coduo_fp_to_i32_extended(
-        (long double)pm->ps->viewHeightCurrent -
-        (long double)pm->ps->playerMins[2]);
+    height = coduo_fp_to_i32_extended((long double)pm->ps->viewHeightCurrent - (long double)pm->ps->playerMins[2]);
 
     pm->watertype = (uint8_t)contents;
     pm->waterlevel = 1;
 
-    point[2] = (float)((long double)pm->ps->psOrigin[2] +
-                       (long double)pm->ps->playerMins[2] +
-                       (long double)(height / 2));
-    contents = pm->pointContents(point, pm->ps->psClientNum,
-                                 CONTENTS_WATER);
+    point[2] = (float)((long double)pm->ps->psOrigin[2] + (long double)pm->ps->playerMins[2] + (long double)(height / 2));
+    contents = pm->pointContents(point, pm->ps->psClientNum, CONTENTS_WATER);
     if (contents == 0) {
         return;
     }
 
     pm->waterlevel = 2;
-    point[2] = (float)((long double)pm->ps->psOrigin[2] +
-                       (long double)pm->ps->playerMins[2] +
-                       (long double)height);
-    contents = pm->pointContents(point, pm->ps->psClientNum,
-                                 CONTENTS_WATER);
+    point[2] = (float)((long double)pm->ps->psOrigin[2] + (long double)pm->ps->playerMins[2] + (long double)height);
+    contents = pm->pointContents(point, pm->ps->psClientNum, CONTENTS_WATER);
     if (contents != 0) {
         pm->waterlevel = 3;
     }

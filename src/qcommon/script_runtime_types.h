@@ -48,10 +48,8 @@ typedef uint8_t *script_codepos_t;
 typedef uintptr_t coduo_script_value_payload_t;
 typedef uintptr_t coduo_script_yystype_word_t;
 
-#define SCRIPT_VALUE_INT_PAYLOAD(value) \
-    ((coduo_script_value_payload_t)(uint32_t)(int32_t)(value))
-#define SCRIPT_VALUE_U32_PAYLOAD(value) \
-    ((coduo_script_value_payload_t)(uint32_t)(value))
+#define SCRIPT_VALUE_INT_PAYLOAD(value) ((coduo_script_value_payload_t)(uint32_t)(int32_t)(value))
+#define SCRIPT_VALUE_U32_PAYLOAD(value) ((coduo_script_value_payload_t)(uint32_t)(value))
 
 typedef struct script_source_pos_record_s {
     uint8_t *codePos;
@@ -184,12 +182,10 @@ typedef struct script_vector_storage_s {
 #pragma pack(pop)
 #endif
 
-#define SCRIPT_VECTOR_STORAGE_FROM_VALUE(vector)                       \
-    ((script_vector_storage_t *)((uint8_t *)(void *)(vector) -         \
-        offsetof(script_vector_storage_t, value)))
-#define SCRIPT_VECTOR_STORAGE_FROM_PAYLOAD(payload)                     \
-    ((script_vector_storage_t *)(uintptr_t)(                           \
-        (payload) - offsetof(script_vector_storage_t, value)))
+#define SCRIPT_VECTOR_STORAGE_FROM_VALUE(vector) \
+    ((script_vector_storage_t *)((uint8_t *)(void *)(vector) - offsetof(script_vector_storage_t, value)))
+#define SCRIPT_VECTOR_STORAGE_FROM_PAYLOAD(payload) \
+    ((script_vector_storage_t *)(uintptr_t)((payload) - offsetof(script_vector_storage_t, value)))
 
 #pragma pack(push, 1)
 typedef struct script_switch_case_table_entry_s {
@@ -225,8 +221,7 @@ typedef union sval_u {
     coduo_script_yystype_word_t words[2];
 } sval_u;
 
-#define SCRIPT_RUNTIME_LAYOUT_ASSERT(name_, expression_) \
-    typedef char name_[(expression_) ? 1 : -1]
+#define SCRIPT_RUNTIME_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
 
 #if defined(__cplusplus)
 #define SCRIPT_RUNTIME_ALIGNOF(type_) alignof(type_)
@@ -236,210 +231,89 @@ typedef union sval_u {
 #define SCRIPT_RUNTIME_ALIGNOF(type_) _Alignof(type_)
 #endif
 
-SCRIPT_RUNTIME_LAYOUT_ASSERT(
-    script_anim_property_flag_size,
-    sizeof(script_anim_property_flag_t) == sizeof(uint32_t));
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_codepos_pointer_size,
-                             sizeof(script_codepos_t) == sizeof(uint8_t *));
-SCRIPT_RUNTIME_LAYOUT_ASSERT(
-    script_value_payload_pointer_size,
-    sizeof(coduo_script_value_payload_t) == sizeof(uintptr_t));
-SCRIPT_RUNTIME_LAYOUT_ASSERT(
-    script_yystype_word_pointer_size,
-    sizeof(coduo_script_yystype_word_t) == sizeof(uintptr_t));
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_indirection_size,
-                             sizeof(Variable) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_value_index_offset,
-                             offsetof(Variable, valueIndex) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_previous_offset,
-                             offsetof(Variable, previousSibling) == 0x02);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_memory_block_size,
-                             sizeof(script_memory_block_t) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_memory_block_payload_offset,
-                             offsetof(script_memory_block_t,
-                                      freeNode.payload) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_string_hash_slot_size,
-                             sizeof(script_string_hash_slot_t) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_string_hash_handle_offset,
-                             offsetof(script_string_hash_slot_t,
-                                      stringHandle) == 0x02);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_anim_property_flag_size, sizeof(script_anim_property_flag_t) == sizeof(uint32_t));
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_codepos_pointer_size, sizeof(script_codepos_t) == sizeof(uint8_t *));
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_value_payload_pointer_size, sizeof(coduo_script_value_payload_t) == sizeof(uintptr_t));
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yystype_word_pointer_size, sizeof(coduo_script_yystype_word_t) == sizeof(uintptr_t));
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_indirection_size, sizeof(Variable) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_value_index_offset, offsetof(Variable, valueIndex) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_previous_offset, offsetof(Variable, previousSibling) == 0x02);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_memory_block_size, sizeof(script_memory_block_t) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_memory_block_payload_offset, offsetof(script_memory_block_t, freeNode.payload) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_string_hash_slot_size, sizeof(script_string_hash_slot_t) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_string_hash_handle_offset, offsetof(script_string_hash_slot_t, stringHandle) == 0x02);
 
 #if UINTPTR_MAX == UINT32_MAX
 #define SCRIPT_RUNTIME_I386_SIZE_ALIGN(name_, type_, size_, alignment_) \
     SCRIPT_RUNTIME_LAYOUT_ASSERT(name_##_size, sizeof(type_) == (size_)); \
-    SCRIPT_RUNTIME_LAYOUT_ASSERT(                                      \
-        name_##_alignment,                                              \
-        SCRIPT_RUNTIME_ALIGNOF(type_) == (alignment_))
+    SCRIPT_RUNTIME_LAYOUT_ASSERT(name_##_alignment, SCRIPT_RUNTIME_ALIGNOF(type_) == (alignment_))
 
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_source_pos_record,
-                               script_source_pos_record_t, 0x10, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_source_file_record,
-                               script_source_file_record_t, 0x14, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_saved_source_file,
-                               script_saved_source_file_t, 0x08, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_code_string_fixup,
-                               script_code_string_fixup_t, 0x08, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_code_offset_patch,
-                               script_code_offset_patch_t, 0x08, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_switch_case_record,
-                               script_switch_case_record_t, 0x10, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_load_record,
-                               scr_script_load_record_t, 0x08, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_union,
-                               VariableUnion, 0x04, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_value,
-                               VariableValue, 0x08, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_stack_buffer,
-                               VariableStackBuffer, 0x0c, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_stack_entry,
-                               VariableStackBufferEntry, 0x05, 0x01);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_vector_storage,
-                               script_vector_storage_t, 0x0e, 0x02);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_switch_table_entry,
-                               script_switch_case_table_entry_t, 0x08, 0x01);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_internal,
-                               VariableValueInternal, 0x08, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_node,
-                               script_variable_node_t, 0x0c, 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_indirection_alignment,
-                             SCRIPT_RUNTIME_ALIGNOF(Variable) == 0x02);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_memory_block_alignment,
-                             SCRIPT_RUNTIME_ALIGNOF(script_memory_block_t) ==
-                                 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(
-    script_string_hash_slot_alignment,
-    SCRIPT_RUNTIME_ALIGNOF(script_string_hash_slot_t) == 0x02);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_yy_buffer,
-                               script_yy_buffer_t, 0x28, 0x04);
-SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_yacc_value,
-                               sval_u, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_source_pos_record, script_source_pos_record_t, 0x10, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_source_file_record, script_source_file_record_t, 0x14, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_saved_source_file, script_saved_source_file_t, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_code_string_fixup, script_code_string_fixup_t, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_code_offset_patch, script_code_offset_patch_t, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_switch_case_record, script_switch_case_record_t, 0x10, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_load_record, scr_script_load_record_t, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_union, VariableUnion, 0x04, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_value, VariableValue, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_stack_buffer, VariableStackBuffer, 0x0c, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_stack_entry, VariableStackBufferEntry, 0x05, 0x01);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_vector_storage, script_vector_storage_t, 0x0e, 0x02);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_switch_table_entry, script_switch_case_table_entry_t, 0x08, 0x01);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_internal, VariableValueInternal, 0x08, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_variable_node, script_variable_node_t, 0x0c, 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_indirection_alignment, SCRIPT_RUNTIME_ALIGNOF(Variable) == 0x02);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_memory_block_alignment, SCRIPT_RUNTIME_ALIGNOF(script_memory_block_t) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_string_hash_slot_alignment, SCRIPT_RUNTIME_ALIGNOF(script_string_hash_slot_t) == 0x02);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_yy_buffer, script_yy_buffer_t, 0x28, 0x04);
+SCRIPT_RUNTIME_I386_SIZE_ALIGN(script_yacc_value, sval_u, 0x08, 0x04);
 
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_code_offset,
-                             offsetof(script_source_pos_record_t,
-                                      codePos) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_index_offset,
-                             offsetof(script_source_pos_record_t,
-                                      sourcePosIndex) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_reserved08_offset,
-                             offsetof(script_source_pos_record_t,
-                                      reserved08) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_reserved0c_offset,
-                             offsetof(script_source_pos_record_t,
-                                      reserved0c) == 0x0c);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_relocated_offset,
-                             offsetof(script_source_file_record_t,
-                                      relocatedCodeStart) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_name_offset,
-                             offsetof(script_source_file_record_t,
-                                      filename) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_source_offset,
-                             offsetof(script_source_file_record_t,
-                                      source) == 0x0c);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_length_offset,
-                             offsetof(script_source_file_record_t,
-                                      sourceLen) == 0x10);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_saved_source_length_offset,
-                             offsetof(script_saved_source_file_t,
-                                      sourceLen) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_fixup_next_offset,
-                             offsetof(script_code_string_fixup_t,
-                                      next) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_patch_next_offset,
-                             offsetof(script_code_offset_patch_t,
-                                      next) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_case_code_offset,
-                             offsetof(script_switch_case_record_t,
-                                      codePos) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_case_source_offset,
-                             offsetof(script_switch_case_record_t,
-                                      sourcePos) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_case_next_offset,
-                             offsetof(script_switch_case_record_t,
-                                      next) == 0x0c);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_load_record_padding_offset,
-                             offsetof(scr_script_load_record_t,
-                                      padding02) == 0x02);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_load_record_source_offset,
-                             offsetof(scr_script_load_record_t,
-                                      sourcePos) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_union_value_offset,
-                             offsetof(VariableUnion,
-                                      halves.valueOrRefCount) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_union_parent_offset,
-                             offsetof(VariableUnion,
-                                      halves.parentHandle) == 0x02);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_value_payload_offset,
-                             offsetof(VariableValue, payload) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_value_type_offset,
-                             offsetof(VariableValue, type) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_internal_status_offset,
-                             offsetof(VariableValueInternal,
-                                      status) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_time_offset,
-                             offsetof(VariableStackBuffer, time) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_pos_offset,
-                             offsetof(VariableStackBuffer, pos) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_size_offset,
-                             offsetof(VariableStackBuffer, size) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_local_id_offset,
-                             offsetof(VariableStackBuffer, localId) == 0x0a);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_entries_offset,
-                             offsetof(VariableStackBuffer, entries) == 0x0c);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_entry_payload_offset,
-                             offsetof(VariableStackBufferEntry,
-                                      payload) == 0x01);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_vector_value_offset,
-                             offsetof(script_vector_storage_t,
-                                      value) == 0x02);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_table_code_offset,
-                             offsetof(script_switch_case_table_entry_t,
-                                      codePos) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_value_offset,
-                             offsetof(script_variable_node_t,
-                                      payload.valuePayload) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_type_offset,
-                             offsetof(script_variable_node_t,
-                                      packedTypeIndex) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_hash_offset,
-                             offsetof(script_variable_node_t,
-                                      hashOrFreeNext) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_sibling_offset,
-                             offsetof(script_variable_node_t,
-                                      nextSibling) == 0x0a);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_input_file_offset,
-                             offsetof(script_yy_buffer_t,
-                                      inputFile) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_buffer_start_offset,
-                             offsetof(script_yy_buffer_t,
-                                      chBuf) == 0x04);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_buffer_cursor_offset,
-                             offsetof(script_yy_buffer_t,
-                                      bufPos) == 0x08);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_buffer_size_offset,
-                             offsetof(script_yy_buffer_t,
-                                      bufSize) == 0x0c);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_character_count_offset,
-                             offsetof(script_yy_buffer_t,
-                                      nChars) == 0x10);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_owned_offset,
-                             offsetof(script_yy_buffer_t,
-                                      isOurBuffer) == 0x14);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_interactive_offset,
-                             offsetof(script_yy_buffer_t,
-                                      isInteractive) == 0x18);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_line_start_offset,
-                             offsetof(script_yy_buffer_t,
-                                      atBol) == 0x1c);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_fill_offset,
-                             offsetof(script_yy_buffer_t,
-                                      fillBuffer) == 0x20);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_status_offset,
-                             offsetof(script_yy_buffer_t,
-                                      bufferStatus) == 0x24);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yacc_words_offset,
-                             offsetof(sval_u, words) == 0x00);
-SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yacc_source_pos_offset,
-                             offsetof(sval_u, source.sourcePos) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_code_offset, offsetof(script_source_pos_record_t, codePos) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_index_offset, offsetof(script_source_pos_record_t, sourcePosIndex) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_reserved08_offset, offsetof(script_source_pos_record_t, reserved08) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_pos_reserved0c_offset, offsetof(script_source_pos_record_t, reserved0c) == 0x0c);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_relocated_offset, offsetof(script_source_file_record_t, relocatedCodeStart) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_name_offset, offsetof(script_source_file_record_t, filename) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_source_offset, offsetof(script_source_file_record_t, source) == 0x0c);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_source_file_length_offset, offsetof(script_source_file_record_t, sourceLen) == 0x10);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_saved_source_length_offset, offsetof(script_saved_source_file_t, sourceLen) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_fixup_next_offset, offsetof(script_code_string_fixup_t, next) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_patch_next_offset, offsetof(script_code_offset_patch_t, next) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_case_code_offset, offsetof(script_switch_case_record_t, codePos) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_case_source_offset, offsetof(script_switch_case_record_t, sourcePos) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_case_next_offset, offsetof(script_switch_case_record_t, next) == 0x0c);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_load_record_padding_offset, offsetof(scr_script_load_record_t, padding02) == 0x02);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_load_record_source_offset, offsetof(scr_script_load_record_t, sourcePos) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_union_value_offset, offsetof(VariableUnion, halves.valueOrRefCount) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_union_parent_offset, offsetof(VariableUnion, halves.parentHandle) == 0x02);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_value_payload_offset, offsetof(VariableValue, payload) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_value_type_offset, offsetof(VariableValue, type) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_internal_status_offset, offsetof(VariableValueInternal, status) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_time_offset, offsetof(VariableStackBuffer, time) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_pos_offset, offsetof(VariableStackBuffer, pos) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_size_offset, offsetof(VariableStackBuffer, size) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_local_id_offset, offsetof(VariableStackBuffer, localId) == 0x0a);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_entries_offset, offsetof(VariableStackBuffer, entries) == 0x0c);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_stack_entry_payload_offset, offsetof(VariableStackBufferEntry, payload) == 0x01);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_vector_value_offset, offsetof(script_vector_storage_t, value) == 0x02);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_switch_table_code_offset, offsetof(script_switch_case_table_entry_t, codePos) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_value_offset, offsetof(script_variable_node_t, payload.valuePayload) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_type_offset, offsetof(script_variable_node_t, packedTypeIndex) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_hash_offset, offsetof(script_variable_node_t, hashOrFreeNext) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_variable_node_sibling_offset, offsetof(script_variable_node_t, nextSibling) == 0x0a);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_input_file_offset, offsetof(script_yy_buffer_t, inputFile) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_buffer_start_offset, offsetof(script_yy_buffer_t, chBuf) == 0x04);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_buffer_cursor_offset, offsetof(script_yy_buffer_t, bufPos) == 0x08);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_buffer_size_offset, offsetof(script_yy_buffer_t, bufSize) == 0x0c);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_character_count_offset, offsetof(script_yy_buffer_t, nChars) == 0x10);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_owned_offset, offsetof(script_yy_buffer_t, isOurBuffer) == 0x14);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_interactive_offset, offsetof(script_yy_buffer_t, isInteractive) == 0x18);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_line_start_offset, offsetof(script_yy_buffer_t, atBol) == 0x1c);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_fill_offset, offsetof(script_yy_buffer_t, fillBuffer) == 0x20);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yy_status_offset, offsetof(script_yy_buffer_t, bufferStatus) == 0x24);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yacc_words_offset, offsetof(sval_u, words) == 0x00);
+SCRIPT_RUNTIME_LAYOUT_ASSERT(script_yacc_source_pos_offset, offsetof(sval_u, source.sourcePos) == 0x04);
 
 #undef SCRIPT_RUNTIME_I386_SIZE_ALIGN
 #endif

@@ -45,9 +45,7 @@ void CG_SetConfigValues(void)
     /* EDI starts at the value-range base; the name index trails it by 128. */
     for (valueIndex = CS_CONFIGVALUE_VALUES;
          /* 0x300384a5: LEA ECX,[EDI-0x115]; CMP ECX,0x80; JL loop (signed) */
-         (valueIndex - CS_CONFIGVALUE_VALUES) < CS_CONFIGVALUE_COUNT;
-         valueIndex++)
-    {
+         (valueIndex - CS_CONFIGVALUE_VALUES) < CS_CONFIGVALUE_COUNT; valueIndex++) {
         const char *name;
         const char *value;
         int nameIndex = valueIndex - CS_CONFIGVALUE_COUNT; /* EDI - 0x80 */

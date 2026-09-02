@@ -26,10 +26,7 @@ uiCursorType_t Display_CursorType(int32_t cursorX, int32_t cursorY)
 
         /* 0x3005b280..0x3005b2db uses inclusive x87 comparisons against a
          * 7-by-7 square whose upper edges are left/top + 7.0f. */
-        if (pointX >= resizeLeft &&
-            pointX <= resizeLeft + 7.0f &&
-            pointY >= resizeTop &&
-            pointY <= resizeTop + 7.0f) {
+        if (pointX >= resizeLeft && pointX <= resizeLeft + 7.0f && pointY >= resizeTop && pointY <= resizeTop + 7.0f) {
             return UI_CURSOR_SIZER;
         }
     }

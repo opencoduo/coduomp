@@ -94,20 +94,16 @@ int32_t FS_PathCmp(const char *leftPath, const char *rightPath)
 #if defined(WINDOWS_BEHAVIOR)
 void FS_SortFileList(char **list, int32_t count)
 {
-    char **const sortedList =
-        Z_MallocInternal(((size_t)count + 1u) * sizeof(*sortedList));
+    char **const sortedList = Z_MallocInternal(((size_t)count + 1u) * sizeof(*sortedList));
     sortedList[0] = NULL;
 
     int32_t sortedCount = 0;
     for (int32_t inputIndex = 0; inputIndex < count; ++inputIndex) {
         int32_t insertIndex = 0;
-        while (insertIndex < sortedCount &&
-               FS_PathCmp(sortedList[insertIndex],
-                          list[inputIndex]) >= 0) {
+        while (insertIndex < sortedCount && FS_PathCmp(sortedList[insertIndex], list[inputIndex]) >= 0) {
             ++insertIndex;
         }
-        for (int32_t shiftIndex = sortedCount;
-             shiftIndex > insertIndex; --shiftIndex) {
+        for (int32_t shiftIndex = sortedCount; shiftIndex > insertIndex; --shiftIndex) {
             sortedList[shiftIndex] = sortedList[shiftIndex - 1];
         }
         sortedList[insertIndex] = list[inputIndex];
@@ -120,20 +116,16 @@ void FS_SortFileList(char **list, int32_t count)
 #else
 void FS_SortFileList(char **list, int32_t count)
 {
-    char **const sortedList =
-        Z_MallocInternal(((size_t)count + 1u) * sizeof(*sortedList));
+    char **const sortedList = Z_MallocInternal(((size_t)count + 1u) * sizeof(*sortedList));
     sortedList[0] = NULL;
 
     int32_t sortedCount = 0;
     for (int32_t inputIndex = 0; inputIndex < count; ++inputIndex) {
         int32_t insertIndex = 0;
-        while (insertIndex < sortedCount &&
-               FS_PathCmp(list[inputIndex],
-                          sortedList[insertIndex]) >= 0) {
+        while (insertIndex < sortedCount && FS_PathCmp(list[inputIndex], sortedList[insertIndex]) >= 0) {
             ++insertIndex;
         }
-        for (int32_t shiftIndex = sortedCount;
-             shiftIndex > insertIndex; --shiftIndex) {
+        for (int32_t shiftIndex = sortedCount; shiftIndex > insertIndex; --shiftIndex) {
             sortedList[shiftIndex] = sortedList[shiftIndex - 1];
         }
         sortedList[insertIndex] = list[inputIndex];
@@ -151,8 +143,7 @@ void FS_SortFileList(char **list, int32_t count)
 char *PakFileLanguage(const char *text)
 {
     fs_languageNameBufferIndex ^= 1;
-    char *const language =
-        fs_languageNameBuffers[fs_languageNameBufferIndex];
+    char *const language = fs_languageNameBuffers[fs_languageNameBufferIndex];
 
     if (strlen(text) < FS_LOCALIZED_PAK_PREFIX_LENGTH) {
         language[0] = '\0';
@@ -161,9 +152,7 @@ char *PakFileLanguage(const char *text)
 
     memset(language, 0, FS_LANGUAGE_NAME_SIZE);
     int32_t index = FS_LOCALIZED_PAK_PREFIX_LENGTH;
-    while (index < FS_LANGUAGE_NAME_SIZE &&
-           text[index] != '\0' &&
-           fs_compat_isalpha((int32_t)(int8_t)(uint8_t)text[index]) != 0) {
+    while (index < FS_LANGUAGE_NAME_SIZE && text[index] != '\0' && fs_compat_isalpha((int32_t)(int8_t)(uint8_t)text[index]) != 0) {
         language[index - FS_LOCALIZED_PAK_PREFIX_LENGTH] = text[index];
         ++index;
     }

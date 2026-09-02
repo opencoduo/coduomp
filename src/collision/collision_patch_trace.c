@@ -25,39 +25,28 @@ extern cvar_t *cm_playerCurveClip;
  * trace has no volume to test. Box and capsule traces expand every facet
  * plane by their support point, then accept the first facet whose surface
  * and inward-facing border planes all contain the trace start. */
-qboolean CM_PositionTestInPatchCollide(
-    traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+qboolean CM_PositionTestInPatchCollide(traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     if (traceWork->isPoint != qfalse)
         return qfalse;
 
 
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets;
-         ++facetIndex) {
-        const facet_t *const facet =
-            &patchCollide->facets[facetIndex];
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex) {
+        const facet_t *const facet = &patchCollide->facets[facetIndex];
         qboolean outside = qfalse;
 
-        for (int32_t facetPlaneIndex = -1;
-             facetPlaneIndex <
-                 facet->numBorders;
-             ++facetPlaneIndex) {
+        for (int32_t facetPlaneIndex = -1; facetPlaneIndex < facet->numBorders; ++facetPlaneIndex) {
             int32_t planeIndex;
             qboolean inward;
             if (facetPlaneIndex < 0) {
                 planeIndex = facet->surfacePlane;
                 inward = qfalse;
             } else {
-                planeIndex =
-                    facet->borderPlanes[facetPlaneIndex];
-                inward =
-                    facet->borderInward[facetPlaneIndex];
+                planeIndex = facet->borderPlanes[facetPlaneIndex];
+                inward = facet->borderInward[facetPlaneIndex];
             }
 
-            const patchPlane_t *const sourcePlane =
-                &patchCollide->planes[planeIndex];
+            const patchPlane_t *const sourcePlane = &patchCollide->planes[planeIndex];
             vec4_t plane;
             if (inward != qfalse) {
                 plane[0] = -sourcePlane->normal[0];
@@ -74,61 +63,24 @@ qboolean CM_PositionTestInPatchCollide(
             long double distance;
             if (traceWork->sphere.use != qfalse) {
                 const long double offsetDistance =
-                    ((long double)plane[0] *
-                         traceWork->sphere.offset[0] +
-                     (long double)plane[2] *
-                         traceWork->sphere.offset[2]) +
-                    (long double)plane[1] *
-                        traceWork->sphere.offset[1];
+                    ((long double)plane[0] * traceWork->sphere.offset[0] + (long double)plane[2] * traceWork->sphere.offset[2]) +
+                    (long double)plane[1] * traceWork->sphere.offset[1];
                 vec3_t supportPoint;
-                for (int32_t axis = 0; axis < 3;
-                     ++axis) {
-                    supportPoint[axis] =
-                        offsetDistance > 0.0L
-                            ? traceWork->start[axis] -
-                                  traceWork->sphere.offset[axis]
-                            : traceWork->start[axis] +
-                                  traceWork->sphere.offset[axis];
+                for (int32_t axis = 0; axis < 3; ++axis) {
+                    supportPoint[axis] = offsetDistance > 0.0L ? traceWork->start[axis] - traceWork->sphere.offset[axis]
+                                                               : traceWork->start[axis] + traceWork->sphere.offset[axis];
                 }
-                distance =
-                    ((long double)plane[2] *
-                         supportPoint[2] +
-                     (long double)plane[1] *
-                         supportPoint[1]) +
-                    (long double)plane[0] *
-                        supportPoint[0] -
-                    ((long double)plane[3] +
-                     traceWork->sphere.radius);
+                distance = ((long double)plane[2] * supportPoint[2] + (long double)plane[1] * supportPoint[1]) +
+                           (long double)plane[0] * supportPoint[0] - ((long double)plane[3] + traceWork->sphere.radius);
             } else {
-                const vec3_t supportOffset = {
-                    traceWork
-                        ->offsets[sourcePlane->signbits][0],
-                    traceWork
-                        ->offsets[sourcePlane->signbits][1],
-                    traceWork
-                        ->offsets[sourcePlane->signbits][2]
-                };
-                const long double supportDistance =
-                    ((long double)plane[2] *
-                         supportOffset[2] +
-                     (long double)plane[1] *
-                         supportOffset[1]) +
-                    (long double)plane[0] *
-                        supportOffset[0];
+                const vec3_t supportOffset = {traceWork->offsets[sourcePlane->signbits][0], traceWork->offsets[sourcePlane->signbits][1],
+                                              traceWork->offsets[sourcePlane->signbits][2]};
+                const long double supportDistance = ((long double)plane[2] * supportOffset[2] + (long double)plane[1] * supportOffset[1]) +
+                                                    (long double)plane[0] * supportOffset[0];
                 const long double expandedDistance =
-                    facetPlaneIndex < 0
-                        ? (long double)plane[3] -
-                              supportDistance
-                        : (long double)plane[3] +
-                              fabsl(supportDistance);
-                distance =
-                    ((long double)plane[2] *
-                         traceWork->start[2] +
-                     (long double)plane[1] *
-                         traceWork->start[1]) +
-                    (long double)plane[0] *
-                        traceWork->start[0] -
-                    expandedDistance;
+                    facetPlaneIndex < 0 ? (long double)plane[3] - supportDistance : (long double)plane[3] + fabsl(supportDistance);
+                distance = ((long double)plane[2] * traceWork->start[2] + (long double)plane[1] * traceWork->start[1]) +
+                           (long double)plane[0] * traceWork->start[0] - expandedDistance;
             }
 
             if (distance > 0.0L) {
@@ -150,113 +102,57 @@ qboolean CM_PositionTestInPatchCollide(
  * CM_TraceThroughPatchCollide. It precomputes every patch-plane crossing,
  * then accepts a surface crossing only when all oriented facet borders
  * contain the same point on the segment. */
-void CM_TracePointThroughPatchCollide(
-    traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+void CM_TracePointThroughPatchCollide(traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
-    if (cm_playerCurveClip->integer == 0 ||
-        traceWork->isPoint == qfalse) {
+    if (cm_playerCurveClip->integer == 0 || traceWork->isPoint == qfalse) {
         return;
     }
 
     float planeIntersections[CM_PATCH_PLANE_LIMIT];
     qboolean planeFrontFacing[CM_PATCH_PLANE_LIMIT];
 
-    for (int32_t planeIndex = 0;
-         planeIndex < patchCollide->numPlanes;
-         ++planeIndex) {
-        const patchPlane_t *const plane =
-            &patchCollide->planes[planeIndex];
-        const vec3_t supportOffset = {
-            traceWork->offsets[plane->signbits][0],
-            traceWork->offsets[plane->signbits][1],
-            traceWork->offsets[plane->signbits][2]
-        };
+    for (int32_t planeIndex = 0; planeIndex < patchCollide->numPlanes; ++planeIndex) {
+        const patchPlane_t *const plane = &patchCollide->planes[planeIndex];
+        const vec3_t supportOffset = {traceWork->offsets[plane->signbits][0], traceWork->offsets[plane->signbits][1],
+                                      traceWork->offsets[plane->signbits][2]};
         const long double offsetDistance =
-            ((long double)plane->normal[2] *
-                 supportOffset[2] +
-             (long double)plane->normal[0] *
-                 supportOffset[0]) +
-            (long double)plane->normal[1] *
-                supportOffset[1];
-        const float startDistance = (float)(
-            ((long double)plane->normal[0] *
-                 traceWork->start[0] +
-             (long double)plane->normal[1] *
-                 traceWork->start[1]) +
-            (long double)plane->normal[2] *
-                traceWork->start[2] -
-            plane->dist +
-            offsetDistance);
+            ((long double)plane->normal[2] * supportOffset[2] + (long double)plane->normal[0] * supportOffset[0]) +
+            (long double)plane->normal[1] * supportOffset[1];
+        const float startDistance =
+            (float)(((long double)plane->normal[0] * traceWork->start[0] + (long double)plane->normal[1] * traceWork->start[1]) +
+                    (long double)plane->normal[2] * traceWork->start[2] - plane->dist + offsetDistance);
         const long double endDistance =
-            ((long double)plane->normal[2] *
-                 traceWork->end[2] +
-             (long double)plane->normal[0] *
-                 traceWork->end[0]) +
-            (long double)plane->normal[1] *
-                traceWork->end[1] -
-            plane->dist +
-            offsetDistance;
+            ((long double)plane->normal[2] * traceWork->end[2] + (long double)plane->normal[0] * traceWork->end[0]) +
+            (long double)plane->normal[1] * traceWork->end[1] - plane->dist + offsetDistance;
 
-        planeFrontFacing[planeIndex] =
-            startDistance > 0.0f ||
-            isunordered(startDistance, 0.0f);
-        if ((long double)startDistance ==
-            endDistance) {
-            planeIntersections[planeIndex] =
-                99999.0f;
+        planeFrontFacing[planeIndex] = startDistance > 0.0f || isunordered(startDistance, 0.0f);
+        if ((long double)startDistance == endDistance) {
+            planeIntersections[planeIndex] = 99999.0f;
         } else {
-            const long double intersection =
-                (long double)startDistance /
-                ((long double)startDistance -
-                 endDistance);
-            planeIntersections[planeIndex] =
-                intersection > 0.0L ||
-                        isunordered(intersection, 0.0L)
-                    ? (float)intersection
-                    : 99999.0f;
+            const long double intersection = (long double)startDistance / ((long double)startDistance - endDistance);
+            planeIntersections[planeIndex] = intersection > 0.0L || isunordered(intersection, 0.0L) ? (float)intersection : 99999.0f;
         }
     }
 
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets;
-         ++facetIndex) {
-        const facet_t *const facet =
-            &patchCollide->facets[facetIndex];
-        const int32_t surfacePlaneIndex =
-            facet->surfacePlane;
-        if (planeFrontFacing[surfacePlaneIndex] ==
-            qfalse) {
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex) {
+        const facet_t *const facet = &patchCollide->facets[facetIndex];
+        const int32_t surfacePlaneIndex = facet->surfacePlane;
+        if (planeFrontFacing[surfacePlaneIndex] == qfalse) {
             continue;
         }
 
-        const float surfaceIntersection =
-            planeIntersections[surfacePlaneIndex];
-        if (!(surfaceIntersection > 0.0f ||
-              isunordered(surfaceIntersection, 0.0f)) ||
-            surfaceIntersection >
-                traceWork->trace.fraction) {
+        const float surfaceIntersection = planeIntersections[surfacePlaneIndex];
+        if (!(surfaceIntersection > 0.0f || isunordered(surfaceIntersection, 0.0f)) || surfaceIntersection > traceWork->trace.fraction) {
             continue;
         }
 
         qboolean inside = qtrue;
-        for (int32_t borderIndex = 0;
-             borderIndex <
-                 facet->numBorders;
-             ++borderIndex) {
-            const int32_t borderPlaneIndex =
-                facet->borderPlanes[borderIndex];
-            const qboolean facesInward =
-                planeFrontFacing[borderPlaneIndex] ^
-                facet->borderInward[borderIndex];
-            const float borderIntersection =
-                planeIntersections[borderPlaneIndex];
-            if ((facesInward != qfalse &&
-                 borderIntersection >
-                     surfaceIntersection) ||
-                (facesInward == qfalse &&
-                 borderIntersection <
-                     surfaceIntersection)) {
+        for (int32_t borderIndex = 0; borderIndex < facet->numBorders; ++borderIndex) {
+            const int32_t borderPlaneIndex = facet->borderPlanes[borderIndex];
+            const qboolean facesInward = planeFrontFacing[borderPlaneIndex] ^ facet->borderInward[borderIndex];
+            const float borderIntersection = planeIntersections[borderPlaneIndex];
+            if ((facesInward != qfalse && borderIntersection > surfaceIntersection) ||
+                (facesInward == qfalse && borderIntersection < surfaceIntersection)) {
                 inside = qfalse;
                 break;
             }
@@ -264,57 +160,24 @@ void CM_TracePointThroughPatchCollide(
         if (inside == qfalse)
             continue;
 
-        const patchPlane_t *const surfacePlane =
-            &patchCollide
-                 ->planes[surfacePlaneIndex];
-        const vec3_t supportOffset = {
-            traceWork
-                ->offsets[surfacePlane->signbits][0],
-            traceWork
-                ->offsets[surfacePlane->signbits][1],
-            traceWork
-                ->offsets[surfacePlane->signbits][2]
-        };
+        const patchPlane_t *const surfacePlane = &patchCollide->planes[surfacePlaneIndex];
+        const vec3_t supportOffset = {traceWork->offsets[surfacePlane->signbits][0], traceWork->offsets[surfacePlane->signbits][1],
+                                      traceWork->offsets[surfacePlane->signbits][2]};
         const long double offsetDistance =
-            ((long double)surfacePlane->normal[2] *
-                 supportOffset[2] +
-             (long double)surfacePlane->normal[0] *
-                 supportOffset[0]) +
-            (long double)surfacePlane->normal[1] *
-                supportOffset[1];
+            ((long double)surfacePlane->normal[2] * supportOffset[2] + (long double)surfacePlane->normal[0] * supportOffset[0]) +
+            (long double)surfacePlane->normal[1] * supportOffset[1];
         const long double startDistance =
-            ((long double)surfacePlane->normal[1] *
-                 traceWork->start[1] +
-             (long double)surfacePlane->normal[2] *
-                 traceWork->start[2]) +
-            (long double)surfacePlane->normal[0] *
-                traceWork->start[0] -
-            surfacePlane->dist +
-            offsetDistance;
+            ((long double)surfacePlane->normal[1] * traceWork->start[1] + (long double)surfacePlane->normal[2] * traceWork->start[2]) +
+            (long double)surfacePlane->normal[0] * traceWork->start[0] - surfacePlane->dist + offsetDistance;
         const long double endDistance =
-            ((long double)surfacePlane->normal[0] *
-                 traceWork->end[0] +
-             (long double)surfacePlane->normal[1] *
-                 traceWork->end[1]) +
-            (long double)surfacePlane->normal[2] *
-                traceWork->end[2] -
-            surfacePlane->dist +
-            offsetDistance;
-        const long double fraction =
-            (startDistance - 0.125f) /
-            (startDistance - endDistance);
+            ((long double)surfacePlane->normal[0] * traceWork->end[0] + (long double)surfacePlane->normal[1] * traceWork->end[1]) +
+            (long double)surfacePlane->normal[2] * traceWork->end[2] - surfacePlane->dist + offsetDistance;
+        const long double fraction = (startDistance - 0.125f) / (startDistance - endDistance);
 
-        traceWork->trace.fraction =
-            fraction >= 0.0L ||
-                    isunordered(fraction, 0.0L)
-                ? (float)fraction
-                : 0.0f;
-        traceWork->trace.normal[0] =
-            surfacePlane->normal[0];
-        traceWork->trace.normal[1] =
-            surfacePlane->normal[1];
-        traceWork->trace.normal[2] =
-            surfacePlane->normal[2];
+        traceWork->trace.fraction = fraction >= 0.0L || isunordered(fraction, 0.0L) ? (float)fraction : 0.0f;
+        traceWork->trace.normal[0] = surfacePlane->normal[0];
+        traceWork->trace.normal[1] = surfacePlane->normal[1];
+        traceWork->trace.normal[2] = surfacePlane->normal[2];
     }
 }
 
@@ -323,110 +186,56 @@ void CM_TracePointThroughPatchCollide(
  * Role name: point-sight specialization called by
  * CM_SightTraceThroughPatchCollide. Its cached plane/facet test mirrors the
  * point trace, but it reports obstruction without modifying trace output. */
-qboolean CM_SightTracePointThroughPatchCollide(
-    const traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+qboolean CM_SightTracePointThroughPatchCollide(const traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
-    if (cm_playerCurveClip->integer == 0 ||
-        traceWork->isPoint == qfalse) {
+    if (cm_playerCurveClip->integer == 0 || traceWork->isPoint == qfalse) {
         return qtrue;
     }
 
     float planeIntersections[CM_PATCH_PLANE_LIMIT];
     qboolean planeFrontFacing[CM_PATCH_PLANE_LIMIT];
 
-    for (int32_t planeIndex = 0;
-         planeIndex < patchCollide->numPlanes;
-         ++planeIndex) {
-        const patchPlane_t *const plane =
-            &patchCollide->planes[planeIndex];
-        const vec3_t supportOffset = {
-            traceWork->offsets[plane->signbits][0],
-            traceWork->offsets[plane->signbits][1],
-            traceWork->offsets[plane->signbits][2]
-        };
+    for (int32_t planeIndex = 0; planeIndex < patchCollide->numPlanes; ++planeIndex) {
+        const patchPlane_t *const plane = &patchCollide->planes[planeIndex];
+        const vec3_t supportOffset = {traceWork->offsets[plane->signbits][0], traceWork->offsets[plane->signbits][1],
+                                      traceWork->offsets[plane->signbits][2]};
         const long double offsetDistance =
-            ((long double)plane->normal[2] *
-                 supportOffset[2] +
-             (long double)plane->normal[0] *
-                 supportOffset[0]) +
-            (long double)plane->normal[1] *
-                supportOffset[1];
-        const float startDistance = (float)(
-            ((long double)plane->normal[0] *
-                 traceWork->start[0] +
-             (long double)plane->normal[1] *
-                 traceWork->start[1]) +
-            (long double)plane->normal[2] *
-                traceWork->start[2] -
-            plane->dist +
-            offsetDistance);
+            ((long double)plane->normal[2] * supportOffset[2] + (long double)plane->normal[0] * supportOffset[0]) +
+            (long double)plane->normal[1] * supportOffset[1];
+        const float startDistance =
+            (float)(((long double)plane->normal[0] * traceWork->start[0] + (long double)plane->normal[1] * traceWork->start[1]) +
+                    (long double)plane->normal[2] * traceWork->start[2] - plane->dist + offsetDistance);
         const long double endDistance =
-            ((long double)plane->normal[2] *
-                 traceWork->end[2] +
-             (long double)plane->normal[0] *
-                 traceWork->end[0]) +
-            (long double)plane->normal[1] *
-                traceWork->end[1] -
-            plane->dist +
-            offsetDistance;
+            ((long double)plane->normal[2] * traceWork->end[2] + (long double)plane->normal[0] * traceWork->end[0]) +
+            (long double)plane->normal[1] * traceWork->end[1] - plane->dist + offsetDistance;
 
-        planeFrontFacing[planeIndex] =
-            startDistance > 0.0f ||
-            isunordered(startDistance, 0.0f);
-        if ((long double)startDistance ==
-            endDistance) {
-            planeIntersections[planeIndex] =
-                99999.0f;
+        planeFrontFacing[planeIndex] = startDistance > 0.0f || isunordered(startDistance, 0.0f);
+        if ((long double)startDistance == endDistance) {
+            planeIntersections[planeIndex] = 99999.0f;
         } else {
-            const long double intersection =
-                (long double)startDistance /
-                ((long double)startDistance -
-                 endDistance);
-            planeIntersections[planeIndex] =
-                intersection > 0.0L ||
-                        isunordered(intersection, 0.0L)
-                    ? (float)intersection
-                    : 99999.0f;
+            const long double intersection = (long double)startDistance / ((long double)startDistance - endDistance);
+            planeIntersections[planeIndex] = intersection > 0.0L || isunordered(intersection, 0.0L) ? (float)intersection : 99999.0f;
         }
     }
 
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets;
-         ++facetIndex) {
-        const facet_t *const facet =
-            &patchCollide->facets[facetIndex];
-        const int32_t surfacePlaneIndex =
-            facet->surfacePlane;
-        if (planeFrontFacing[surfacePlaneIndex] ==
-            qfalse) {
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex) {
+        const facet_t *const facet = &patchCollide->facets[facetIndex];
+        const int32_t surfacePlaneIndex = facet->surfacePlane;
+        if (planeFrontFacing[surfacePlaneIndex] == qfalse) {
             continue;
         }
 
-        const float surfaceIntersection =
-            planeIntersections[surfacePlaneIndex];
-        if (!(surfaceIntersection > 0.0f ||
-              isunordered(surfaceIntersection, 0.0f)))
+        const float surfaceIntersection = planeIntersections[surfacePlaneIndex];
+        if (!(surfaceIntersection > 0.0f || isunordered(surfaceIntersection, 0.0f)))
             continue;
 
         qboolean inside = qtrue;
-        for (int32_t borderIndex = 0;
-             borderIndex <
-                 facet->numBorders;
-             ++borderIndex) {
-            const int32_t borderPlaneIndex =
-                facet->borderPlanes[borderIndex];
-            const qboolean facesInward =
-                planeFrontFacing[borderPlaneIndex] ^
-                facet->borderInward[borderIndex];
-            const float borderIntersection =
-                planeIntersections[borderPlaneIndex];
-            if ((facesInward != qfalse &&
-                 borderIntersection >
-                     surfaceIntersection) ||
-                (facesInward == qfalse &&
-                 borderIntersection <
-                     surfaceIntersection)) {
+        for (int32_t borderIndex = 0; borderIndex < facet->numBorders; ++borderIndex) {
+            const int32_t borderPlaneIndex = facet->borderPlanes[borderIndex];
+            const qboolean facesInward = planeFrontFacing[borderPlaneIndex] ^ facet->borderInward[borderIndex];
+            const float borderIntersection = planeIntersections[borderPlaneIndex];
+            if ((facesInward != qfalse && borderIntersection > surfaceIntersection) ||
+                (facesInward == qfalse && borderIntersection < surfaceIntersection)) {
                 inside = qfalse;
                 break;
             }
@@ -434,51 +243,24 @@ qboolean CM_SightTracePointThroughPatchCollide(
         if (inside == qfalse)
             continue;
 
-        const patchPlane_t *const surfacePlane =
-            &patchCollide
-                 ->planes[surfacePlaneIndex];
-        const vec3_t supportOffset = {
-            traceWork
-                ->offsets[surfacePlane->signbits][0],
-            traceWork
-                ->offsets[surfacePlane->signbits][1],
-            traceWork
-                ->offsets[surfacePlane->signbits][2]
-        };
+        const patchPlane_t *const surfacePlane = &patchCollide->planes[surfacePlaneIndex];
+        const vec3_t supportOffset = {traceWork->offsets[surfacePlane->signbits][0], traceWork->offsets[surfacePlane->signbits][1],
+                                      traceWork->offsets[surfacePlane->signbits][2]};
         const long double offsetDistance =
-            ((long double)surfacePlane->normal[2] *
-                 supportOffset[2] +
-             (long double)surfacePlane->normal[0] *
-                 supportOffset[0]) +
-            (long double)surfacePlane->normal[1] *
-                supportOffset[1];
-        const float startDistance = (float)(
-            ((long double)surfacePlane->normal[1] *
-                 traceWork->start[1] +
-             (long double)surfacePlane->normal[2] *
-                 traceWork->start[2]) +
-            (long double)surfacePlane->normal[0] *
-                traceWork->start[0] -
-            surfacePlane->dist +
-            offsetDistance);
+            ((long double)surfacePlane->normal[2] * supportOffset[2] + (long double)surfacePlane->normal[0] * supportOffset[0]) +
+            (long double)surfacePlane->normal[1] * supportOffset[1];
+        const float startDistance =
+            (float)(((long double)surfacePlane->normal[1] * traceWork->start[1] +
+                     (long double)surfacePlane->normal[2] * traceWork->start[2]) +
+                    (long double)surfacePlane->normal[0] * traceWork->start[0] - surfacePlane->dist + offsetDistance);
         const long double endDistance =
-            ((long double)surfacePlane->normal[0] *
-                 traceWork->end[0] +
-             (long double)surfacePlane->normal[1] *
-                 traceWork->end[1]) +
-            (long double)surfacePlane->normal[2] *
-                traceWork->end[2] -
-            surfacePlane->dist +
-            offsetDistance;
-        const long double distanceDelta =
-            (long double)startDistance -
-            endDistance;
+            ((long double)surfacePlane->normal[0] * traceWork->end[0] + (long double)surfacePlane->normal[1] * traceWork->end[1]) +
+            (long double)surfacePlane->normal[2] * traceWork->end[2] - surfacePlane->dist + offsetDistance;
+        const long double distanceDelta = (long double)startDistance - endDistance;
         if (!(distanceDelta > 0.0L))
             continue;
 
-        const long double fraction =
-            ((long double)startDistance - 0.125f) /
-            distanceDelta;
+        const long double fraction = ((long double)startDistance - 0.125f) / distanceDelta;
         if (fraction < 1.0L)
             return qfalse;
     }
@@ -492,46 +274,33 @@ qboolean CM_SightTracePointThroughPatchCollide(
  * non-point facet is clipped as an expanded convex volume. The final border
  * is its back plane, so entering through that plane is not a visible surface
  * collision. */
-void CM_TraceThroughPatchCollide(
-    traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+void CM_TraceThroughPatchCollide(traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     if (traceWork->isPoint != qfalse) {
-        CM_TracePointThroughPatchCollide(
-            traceWork, patchCollide);
+        CM_TracePointThroughPatchCollide(traceWork, patchCollide);
         return;
     }
 
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets;
-         ++facetIndex) {
-        const facet_t *const facet =
-            &patchCollide->facets[facetIndex];
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex) {
+        const facet_t *const facet = &patchCollide->facets[facetIndex];
         float enterFraction = -1.0f;
-        float leaveFraction =
-            traceWork->trace.fraction;
+        float leaveFraction = traceWork->trace.fraction;
         int32_t hitBorder = -1;
         vec3_t hitNormal;
         qboolean facetAccepted = qtrue;
 
-        for (int32_t facetPlaneIndex = -1;
-             facetPlaneIndex <
-                 facet->numBorders;
-             ++facetPlaneIndex) {
+        for (int32_t facetPlaneIndex = -1; facetPlaneIndex < facet->numBorders; ++facetPlaneIndex) {
             int32_t planeIndex;
             qboolean inward;
             if (facetPlaneIndex < 0) {
                 planeIndex = facet->surfacePlane;
                 inward = qfalse;
             } else {
-                planeIndex =
-                    facet->borderPlanes[facetPlaneIndex];
-                inward =
-                    facet->borderInward[facetPlaneIndex];
+                planeIndex = facet->borderPlanes[facetPlaneIndex];
+                inward = facet->borderInward[facetPlaneIndex];
             }
 
-            const patchPlane_t *const sourcePlane =
-                &patchCollide->planes[planeIndex];
+            const patchPlane_t *const sourcePlane = &patchCollide->planes[planeIndex];
             vec4_t plane;
             if (inward != qfalse) {
                 plane[0] = -sourcePlane->normal[0];
@@ -548,67 +317,32 @@ void CM_TraceThroughPatchCollide(
             vec3_t expandedStart;
             vec3_t expandedEnd;
             if (traceWork->sphere.use != qfalse) {
-                plane[3] =
-                    (float)((long double)plane[3] +
-                            traceWork->sphere.radius);
+                plane[3] = (float)((long double)plane[3] + traceWork->sphere.radius);
                 const long double offsetDistance =
-                    ((long double)plane[0] *
-                         traceWork->sphere.offset[0] +
-                     (long double)plane[2] *
-                         traceWork->sphere.offset[2]) +
-                    (long double)plane[1] *
-                        traceWork->sphere.offset[1];
-                for (int32_t axis = 0; axis < 3;
-                     ++axis) {
+                    ((long double)plane[0] * traceWork->sphere.offset[0] + (long double)plane[2] * traceWork->sphere.offset[2]) +
+                    (long double)plane[1] * traceWork->sphere.offset[1];
+                for (int32_t axis = 0; axis < 3; ++axis) {
                     if (offsetDistance > 0.0L) {
-                        expandedStart[axis] =
-                            traceWork->start[axis] -
-                            traceWork->sphere.offset[axis];
-                        expandedEnd[axis] =
-                            traceWork->end[axis] -
-                            traceWork->sphere.offset[axis];
+                        expandedStart[axis] = traceWork->start[axis] - traceWork->sphere.offset[axis];
+                        expandedEnd[axis] = traceWork->end[axis] - traceWork->sphere.offset[axis];
                     } else {
-                        expandedStart[axis] =
-                            traceWork->start[axis] +
-                            traceWork->sphere.offset[axis];
-                        expandedEnd[axis] =
-                            traceWork->end[axis] +
-                            traceWork->sphere.offset[axis];
+                        expandedStart[axis] = traceWork->start[axis] + traceWork->sphere.offset[axis];
+                        expandedEnd[axis] = traceWork->end[axis] + traceWork->sphere.offset[axis];
                     }
                 }
             } else {
-                const vec3_t supportOffset = {
-                    traceWork
-                        ->offsets[sourcePlane->signbits][0],
-                    traceWork
-                        ->offsets[sourcePlane->signbits][1],
-                    traceWork
-                        ->offsets[sourcePlane->signbits][2]
-                };
-                const long double supportDistance =
-                    ((long double)plane[2] *
-                         supportOffset[2] +
-                     (long double)plane[1] *
-                         supportOffset[1]) +
-                    (long double)plane[0] *
-                        supportOffset[0];
-                plane[3] = (float)(
-                    facetPlaneIndex < 0
-                        ? (long double)plane[3] -
-                              supportDistance
-                        : (long double)plane[3] +
-                              fabsl(supportDistance));
-                memcpy(expandedStart, traceWork->start,
-                       sizeof(expandedStart));
-                memcpy(expandedEnd, traceWork->end,
-                       sizeof(expandedEnd));
+                const vec3_t supportOffset = {traceWork->offsets[sourcePlane->signbits][0], traceWork->offsets[sourcePlane->signbits][1],
+                                              traceWork->offsets[sourcePlane->signbits][2]};
+                const long double supportDistance = ((long double)plane[2] * supportOffset[2] + (long double)plane[1] * supportOffset[1]) +
+                                                    (long double)plane[0] * supportOffset[0];
+                plane[3] =
+                    (float)(facetPlaneIndex < 0 ? (long double)plane[3] - supportDistance : (long double)plane[3] + fabsl(supportDistance));
+                memcpy(expandedStart, traceWork->start, sizeof(expandedStart));
+                memcpy(expandedEnd, traceWork->end, sizeof(expandedEnd));
             }
 
             qboolean hit;
-            if (CM_CheckFacetPlane(
-                    plane, expandedStart, expandedEnd,
-                    &enterFraction, &leaveFraction,
-                    &hit) == qfalse) {
+            if (CM_CheckFacetPlane(plane, expandedStart, expandedEnd, &enterFraction, &leaveFraction, &hit) == qfalse) {
                 facetAccepted = qfalse;
                 break;
             }
@@ -621,24 +355,15 @@ void CM_TraceThroughPatchCollide(
             }
         }
 
-        if (facetAccepted == qfalse ||
-            hitBorder ==
-                facet->numBorders - 1 ||
-            !(enterFraction < leaveFraction) ||
-            enterFraction < 0.0f ||
-            !(enterFraction <
-              traceWork->trace.fraction)) {
+        if (facetAccepted == qfalse || hitBorder == facet->numBorders - 1 || !(enterFraction < leaveFraction) || enterFraction < 0.0f ||
+            !(enterFraction < traceWork->trace.fraction)) {
             continue;
         }
 
-        traceWork->trace.fraction =
-            enterFraction;
-        traceWork->trace.normal[0] =
-            hitNormal[0];
-        traceWork->trace.normal[1] =
-            hitNormal[1];
-        traceWork->trace.normal[2] =
-            hitNormal[2];
+        traceWork->trace.fraction = enterFraction;
+        traceWork->trace.normal[0] = hitNormal[0];
+        traceWork->trace.normal[1] = hitNormal[1];
+        traceWork->trace.normal[2] = hitNormal[2];
     }
 }
 
@@ -647,43 +372,31 @@ void CM_TraceThroughPatchCollide(
  * Name: exact same-module Mac symbol CM_SightTraceThroughPatchCollide. This
  * uses the same expanded facet clipping as the full trace, but returns as
  * soon as an accepted front/side crossing obstructs the segment. */
-qboolean CM_SightTraceThroughPatchCollide(
-    const traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+qboolean CM_SightTraceThroughPatchCollide(const traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     if (traceWork->isPoint != qfalse) {
-        return CM_SightTracePointThroughPatchCollide(
-            traceWork, patchCollide);
+        return CM_SightTracePointThroughPatchCollide(traceWork, patchCollide);
     }
 
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets;
-         ++facetIndex) {
-        const facet_t *const facet =
-            &patchCollide->facets[facetIndex];
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex) {
+        const facet_t *const facet = &patchCollide->facets[facetIndex];
         float enterFraction = -1.0f;
         float leaveFraction = 1.0f;
         int32_t hitBorder = -1;
         qboolean facetAccepted = qtrue;
 
-        for (int32_t facetPlaneIndex = -1;
-             facetPlaneIndex <
-                 facet->numBorders;
-             ++facetPlaneIndex) {
+        for (int32_t facetPlaneIndex = -1; facetPlaneIndex < facet->numBorders; ++facetPlaneIndex) {
             int32_t planeIndex;
             qboolean inward;
             if (facetPlaneIndex < 0) {
                 planeIndex = facet->surfacePlane;
                 inward = qfalse;
             } else {
-                planeIndex =
-                    facet->borderPlanes[facetPlaneIndex];
-                inward =
-                    facet->borderInward[facetPlaneIndex];
+                planeIndex = facet->borderPlanes[facetPlaneIndex];
+                inward = facet->borderInward[facetPlaneIndex];
             }
 
-            const patchPlane_t *const sourcePlane =
-                &patchCollide->planes[planeIndex];
+            const patchPlane_t *const sourcePlane = &patchCollide->planes[planeIndex];
             vec4_t plane;
             if (inward != qfalse) {
                 plane[0] = -sourcePlane->normal[0];
@@ -700,81 +413,41 @@ qboolean CM_SightTraceThroughPatchCollide(
             vec3_t expandedStart;
             vec3_t expandedEnd;
             if (traceWork->sphere.use != qfalse) {
-                plane[3] =
-                    (float)((long double)plane[3] +
-                            traceWork->sphere.radius);
+                plane[3] = (float)((long double)plane[3] + traceWork->sphere.radius);
                 const long double offsetDistance =
-                    ((long double)plane[0] *
-                         traceWork->sphere.offset[0] +
-                     (long double)plane[2] *
-                         traceWork->sphere.offset[2]) +
-                    (long double)plane[1] *
-                        traceWork->sphere.offset[1];
-                for (int32_t axis = 0; axis < 3;
-                     ++axis) {
+                    ((long double)plane[0] * traceWork->sphere.offset[0] + (long double)plane[2] * traceWork->sphere.offset[2]) +
+                    (long double)plane[1] * traceWork->sphere.offset[1];
+                for (int32_t axis = 0; axis < 3; ++axis) {
                     if (offsetDistance > 0.0L) {
-                        expandedStart[axis] =
-                            traceWork->start[axis] -
-                            traceWork->sphere.offset[axis];
-                        expandedEnd[axis] =
-                            traceWork->end[axis] -
-                            traceWork->sphere.offset[axis];
+                        expandedStart[axis] = traceWork->start[axis] - traceWork->sphere.offset[axis];
+                        expandedEnd[axis] = traceWork->end[axis] - traceWork->sphere.offset[axis];
                     } else {
-                        expandedStart[axis] =
-                            traceWork->start[axis] +
-                            traceWork->sphere.offset[axis];
-                        expandedEnd[axis] =
-                            traceWork->end[axis] +
-                            traceWork->sphere.offset[axis];
+                        expandedStart[axis] = traceWork->start[axis] + traceWork->sphere.offset[axis];
+                        expandedEnd[axis] = traceWork->end[axis] + traceWork->sphere.offset[axis];
                     }
                 }
             } else {
-                const vec3_t supportOffset = {
-                    traceWork
-                        ->offsets[sourcePlane->signbits][0],
-                    traceWork
-                        ->offsets[sourcePlane->signbits][1],
-                    traceWork
-                        ->offsets[sourcePlane->signbits][2]
-                };
-                const long double supportDistance =
-                    ((long double)plane[2] *
-                         supportOffset[2] +
-                     (long double)plane[1] *
-                         supportOffset[1]) +
-                    (long double)plane[0] *
-                        supportOffset[0];
-                plane[3] = (float)(
-                    facetPlaneIndex < 0
-                        ? (long double)plane[3] -
-                              supportDistance
-                        : (long double)plane[3] +
-                              fabsl(supportDistance));
-                memcpy(expandedStart, traceWork->start,
-                       sizeof(expandedStart));
-                memcpy(expandedEnd, traceWork->end,
-                       sizeof(expandedEnd));
+                const vec3_t supportOffset = {traceWork->offsets[sourcePlane->signbits][0], traceWork->offsets[sourcePlane->signbits][1],
+                                              traceWork->offsets[sourcePlane->signbits][2]};
+                const long double supportDistance = ((long double)plane[2] * supportOffset[2] + (long double)plane[1] * supportOffset[1]) +
+                                                    (long double)plane[0] * supportOffset[0];
+                plane[3] =
+                    (float)(facetPlaneIndex < 0 ? (long double)plane[3] - supportDistance : (long double)plane[3] + fabsl(supportDistance));
+                memcpy(expandedStart, traceWork->start, sizeof(expandedStart));
+                memcpy(expandedEnd, traceWork->end, sizeof(expandedEnd));
             }
 
             qboolean hit;
-            if (CM_CheckFacetPlane(
-                    plane, expandedStart, expandedEnd,
-                    &enterFraction, &leaveFraction,
-                    &hit) == qfalse) {
+            if (CM_CheckFacetPlane(plane, expandedStart, expandedEnd, &enterFraction, &leaveFraction, &hit) == qfalse) {
                 facetAccepted = qfalse;
                 break;
             }
-            if (hit != qfalse &&
-                facetPlaneIndex >= 0) {
+            if (hit != qfalse && facetPlaneIndex >= 0) {
                 hitBorder = facetPlaneIndex;
             }
         }
 
-        if (facetAccepted != qfalse &&
-            hitBorder !=
-                facet->numBorders - 1 &&
-            enterFraction < leaveFraction &&
-            enterFraction >= 0.0f) {
+        if (facetAccepted != qfalse && hitBorder != facet->numBorders - 1 && enterFraction < leaveFraction && enterFraction >= 0.0f) {
             return qfalse;
         }
     }
@@ -787,39 +460,26 @@ qboolean CM_SightTraceThroughPatchCollide(
  * Name: exact same-module Mac symbol CM_CheckFacetPlane. The routine clips
  * one segment against a facet plane, tightening its entering or leaving
  * fraction with the original 0.125-unit surface epsilon. */
-qboolean CM_CheckFacetPlane(
-    const vec4_t plane, const vec3_t start,
-    const vec3_t end, float *enterFraction,
-    float *leaveFraction, qboolean *hit)
+qboolean CM_CheckFacetPlane(const vec4_t plane, const vec3_t start, const vec3_t end, float *enterFraction, float *leaveFraction,
+                            qboolean *hit)
 {
     *hit = qfalse;
 
-    const float startDistance = (float)(
-        ((long double)plane[2] * start[2] +
-         (long double)plane[1] * start[1]) +
-        (long double)plane[0] * start[0] -
-        plane[3]);
-    const float endDistance = (float)(
-        ((long double)plane[2] * end[2] +
-         (long double)plane[1] * end[1]) +
-        (long double)plane[0] * end[0] -
-        plane[3]);
+    const float startDistance =
+        (float)(((long double)plane[2] * start[2] + (long double)plane[1] * start[1]) + (long double)plane[0] * start[0] - plane[3]);
+    const float endDistance =
+        (float)(((long double)plane[2] * end[2] + (long double)plane[1] * end[1]) + (long double)plane[0] * end[0] - plane[3]);
 
-    if (startDistance > 0.0f &&
-        (endDistance >= 0.125f ||
-         endDistance >= startDistance)) {
+    if (startDistance > 0.0f && (endDistance >= 0.125f || endDistance >= startDistance)) {
         return qfalse;
     }
 
-    if (startDistance <= 0.0f &&
-        endDistance <= 0.0f) {
+    if (startDistance <= 0.0f && endDistance <= 0.0f) {
         return qtrue;
     }
 
     if (startDistance > endDistance) {
-        long double fraction =
-            ((long double)startDistance - 0.125f) /
-            ((long double)startDistance - endDistance);
+        long double fraction = ((long double)startDistance - 0.125f) / ((long double)startDistance - endDistance);
         if (fraction < 0.0L)
             fraction = 0.0L;
         if (fraction > *enterFraction) {
@@ -827,9 +487,7 @@ qboolean CM_CheckFacetPlane(
             *hit = qtrue;
         }
     } else {
-        long double fraction =
-            ((long double)startDistance + 0.125f) /
-            ((long double)startDistance - endDistance);
+        long double fraction = ((long double)startDistance + 0.125f) / ((long double)startDistance - endDistance);
         if (fraction > 1.0L)
             fraction = 1.0L;
         if (fraction < *leaveFraction)
@@ -842,10 +500,7 @@ qboolean CM_CheckFacetPlane(
 #else
 
 
-
-qboolean CM_PositionTestInPatchCollide(
-    traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+qboolean CM_PositionTestInPatchCollide(traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     if (traceWork->isPoint != 0) {
         return 0;
@@ -853,45 +508,31 @@ qboolean CM_PositionTestInPatchCollide(
 
 
     const facet_t *facet = patchCollide->facets;
-    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets;
-         ++facetIndex, ++facet) {
-        const patchPlane_t *plane =
-            &patchCollide->planes[facet->surfacePlane];
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
+        const patchPlane_t *plane = &patchCollide->planes[facet->surfacePlane];
 
-        vec3_t planeNormal = {plane->normal[0], plane->normal[1],
-                              plane->normal[2]};
+        vec3_t planeNormal = {plane->normal[0], plane->normal[1], plane->normal[2]};
         float planeDist = plane->dist;
         vec3_t testPoint;
 
         if (traceWork->sphere.use != 0) {
             planeDist += traceWork->sphere.radius;
 
-            const float sphereOffset =
-                ((planeNormal[0] * traceWork->sphere.offset[0]) +
-                 (planeNormal[1] * traceWork->sphere.offset[1])) +
-                (planeNormal[2] * traceWork->sphere.offset[2]);
+            const float sphereOffset = ((planeNormal[0] * traceWork->sphere.offset[0]) + (planeNormal[1] * traceWork->sphere.offset[1])) +
+                                       (planeNormal[2] * traceWork->sphere.offset[2]);
 
             if (sphereOffset > 0.0f) {
-                testPoint[0] =
-                    traceWork->start[0] - traceWork->sphere.offset[0];
-                testPoint[1] =
-                    traceWork->start[1] - traceWork->sphere.offset[1];
-                testPoint[2] =
-                    traceWork->start[2] - traceWork->sphere.offset[2];
+                testPoint[0] = traceWork->start[0] - traceWork->sphere.offset[0];
+                testPoint[1] = traceWork->start[1] - traceWork->sphere.offset[1];
+                testPoint[2] = traceWork->start[2] - traceWork->sphere.offset[2];
             } else {
-                testPoint[0] =
-                    traceWork->start[0] + traceWork->sphere.offset[0];
-                testPoint[1] =
-                    traceWork->start[1] + traceWork->sphere.offset[1];
-                testPoint[2] =
-                    traceWork->start[2] + traceWork->sphere.offset[2];
+                testPoint[0] = traceWork->start[0] + traceWork->sphere.offset[0];
+                testPoint[1] = traceWork->start[1] + traceWork->sphere.offset[1];
+                testPoint[2] = traceWork->start[2] + traceWork->sphere.offset[2];
             }
         } else {
             const float *offset = traceWork->offsets[plane->signbits];
-            const float planeOffset =
-                ((offset[0] * planeNormal[0]) +
-                 (offset[1] * planeNormal[1])) +
-                (offset[2] * planeNormal[2]);
+            const float planeOffset = ((offset[0] * planeNormal[0]) + (offset[1] * planeNormal[1])) + (offset[2] * planeNormal[2]);
 
             planeDist -= planeOffset;
             testPoint[0] = traceWork->start[0];
@@ -901,17 +542,11 @@ qboolean CM_PositionTestInPatchCollide(
 
         /* 0x8051188..0x80511aa: the root distance is compared against zero
          * in the 80-bit register chain with no intermediate float store. */
-        if (!((((planeNormal[0] * testPoint[0]) +
-                (planeNormal[1] * testPoint[1])) +
-               (planeNormal[2] * testPoint[2])) -
-                  planeDist >
-              0.0f)) {
+        if (!((((planeNormal[0] * testPoint[0]) + (planeNormal[1] * testPoint[1])) + (planeNormal[2] * testPoint[2])) - planeDist > 0.0f)) {
             int32_t childIndex;
 
-            for (childIndex = 0; childIndex < facet->numBorders;
-                 ++childIndex) {
-                plane =
-                    &patchCollide->planes[facet->borderPlanes[childIndex]];
+            for (childIndex = 0; childIndex < facet->numBorders; ++childIndex) {
+                plane = &patchCollide->planes[facet->borderPlanes[childIndex]];
 
                 if (facet->borderInward[childIndex] == 0) {
                     planeNormal[0] = plane->normal[0];
@@ -929,38 +564,21 @@ qboolean CM_PositionTestInPatchCollide(
                     planeDist += traceWork->sphere.radius;
 
                     const float sphereOffset =
-                        ((planeNormal[0] * traceWork->sphere.offset[0]) +
-                         (planeNormal[1] * traceWork->sphere.offset[1])) +
+                        ((planeNormal[0] * traceWork->sphere.offset[0]) + (planeNormal[1] * traceWork->sphere.offset[1])) +
                         (planeNormal[2] * traceWork->sphere.offset[2]);
 
                     if (sphereOffset > 0.0f) {
-                        testPoint[0] =
-                            traceWork->start[0] -
-                            traceWork->sphere.offset[0];
-                        testPoint[1] =
-                            traceWork->start[1] -
-                            traceWork->sphere.offset[1];
-                        testPoint[2] =
-                            traceWork->start[2] -
-                            traceWork->sphere.offset[2];
+                        testPoint[0] = traceWork->start[0] - traceWork->sphere.offset[0];
+                        testPoint[1] = traceWork->start[1] - traceWork->sphere.offset[1];
+                        testPoint[2] = traceWork->start[2] - traceWork->sphere.offset[2];
                     } else {
-                        testPoint[0] =
-                            traceWork->start[0] +
-                            traceWork->sphere.offset[0];
-                        testPoint[1] =
-                            traceWork->start[1] +
-                            traceWork->sphere.offset[1];
-                        testPoint[2] =
-                            traceWork->start[2] +
-                            traceWork->sphere.offset[2];
+                        testPoint[0] = traceWork->start[0] + traceWork->sphere.offset[0];
+                        testPoint[1] = traceWork->start[1] + traceWork->sphere.offset[1];
+                        testPoint[2] = traceWork->start[2] + traceWork->sphere.offset[2];
                     }
                 } else {
-                    const float *offset =
-                        traceWork->offsets[plane->signbits];
-                    const float planeOffset =
-                        ((offset[0] * planeNormal[0]) +
-                         (offset[1] * planeNormal[1])) +
-                        (offset[2] * planeNormal[2]);
+                    const float *offset = traceWork->offsets[plane->signbits];
+                    const float planeOffset = ((offset[0] * planeNormal[0]) + (offset[1] * planeNormal[1])) + (offset[2] * planeNormal[2]);
 
                     planeDist += fabsf(planeOffset);
                     testPoint[0] = traceWork->start[0];
@@ -971,10 +589,7 @@ qboolean CM_PositionTestInPatchCollide(
                 /* 0x80513a3..0x80513c5: the child distance is compared
                  * against zero in the 80-bit register chain with no
                  * intermediate float store. */
-                if ((((planeNormal[0] * testPoint[0]) +
-                      (planeNormal[1] * testPoint[1])) +
-                     (planeNormal[2] * testPoint[2])) -
-                        planeDist >
+                if ((((planeNormal[0] * testPoint[0]) + (planeNormal[1] * testPoint[1])) + (planeNormal[2] * testPoint[2])) - planeDist >
                     0.0f) {
                     break;
                 }
@@ -990,9 +605,7 @@ qboolean CM_PositionTestInPatchCollide(
 }
 
 
-void CM_TracePointThroughPatchCollide(
-    traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+void CM_TracePointThroughPatchCollide(traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     float planeFractions[CM_PATCH_PLANE_LIMIT];
     qboolean planeSides[CM_PATCH_PLANE_LIMIT];
@@ -1002,55 +615,35 @@ void CM_TracePointThroughPatchCollide(
     }
 
     const patchPlane_t *plane = patchCollide->planes;
-    for (int32_t planeIndex = 0; planeIndex < patchCollide->numPlanes;
-         ++planeIndex, ++plane) {
+    for (int32_t planeIndex = 0; planeIndex < patchCollide->numPlanes; ++planeIndex, ++plane) {
         const float *offset = traceWork->offsets[plane->signbits];
 #if EMULATE_X87
         /* x87 (DLL 0x0804f85b): planeOffset is a 3-term dot rounded to its own
          * float slot; each distance is then ONE 80-bit chain — the dot, the
          * -dist and the +planeOffset — rounded once at the store
          * (fmul;fmul;faddp;fmul;faddp;fsub dist;fadd planeOffset;fstp). */
-        const float planeOffset = x87f_store_f32(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(offset[0]),
-                              x87f_load_f32(plane->normal[0])),
-                     x87f_mul(x87f_load_f32(offset[1]),
-                              x87f_load_f32(plane->normal[1]))),
-            x87f_mul(x87f_load_f32(offset[2]),
-                     x87f_load_f32(plane->normal[2]))));
-        const float startDistance = x87f_store_f32(x87f_add(
-            x87f_sub(
-                x87f_add(x87f_add(x87f_mul(x87f_load_f32(traceWork->start[0]),
-                                           x87f_load_f32(plane->normal[0])),
-                                  x87f_mul(x87f_load_f32(traceWork->start[1]),
-                                           x87f_load_f32(plane->normal[1]))),
-                         x87f_mul(x87f_load_f32(traceWork->start[2]),
-                                  x87f_load_f32(plane->normal[2]))),
-                x87f_load_f32(plane->dist)),
-            x87f_load_f32(planeOffset)));
-        const float endDistance = x87f_store_f32(x87f_add(
-            x87f_sub(
-                x87f_add(x87f_add(x87f_mul(x87f_load_f32(traceWork->end[0]),
-                                           x87f_load_f32(plane->normal[0])),
-                                  x87f_mul(x87f_load_f32(traceWork->end[1]),
-                                           x87f_load_f32(plane->normal[1]))),
-                         x87f_mul(x87f_load_f32(traceWork->end[2]),
-                                  x87f_load_f32(plane->normal[2]))),
-                x87f_load_f32(plane->dist)),
-            x87f_load_f32(planeOffset)));
-#else
-        const float planeOffset =
-            ((offset[0] * plane->normal[0]) +
-             (offset[1] * plane->normal[1])) +
-            (offset[2] * plane->normal[2]);
-        const float startDistance =
-            (((traceWork->start[0] * plane->normal[0]) +
-              (traceWork->start[1] * plane->normal[1])) +
-             (traceWork->start[2] * plane->normal[2])) -
-            plane->dist + planeOffset;
+        const float planeOffset = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(offset[0]), x87f_load_f32(plane->normal[0])),
+                                                                   x87f_mul(x87f_load_f32(offset[1]), x87f_load_f32(plane->normal[1]))),
+                                                          x87f_mul(x87f_load_f32(offset[2]), x87f_load_f32(plane->normal[2]))));
+        const float startDistance = x87f_store_f32(
+            x87f_add(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(traceWork->start[0]), x87f_load_f32(plane->normal[0])),
+                                                x87f_mul(x87f_load_f32(traceWork->start[1]), x87f_load_f32(plane->normal[1]))),
+                                       x87f_mul(x87f_load_f32(traceWork->start[2]), x87f_load_f32(plane->normal[2]))),
+                              x87f_load_f32(plane->dist)),
+                     x87f_load_f32(planeOffset)));
         const float endDistance =
-            (((traceWork->end[0] * plane->normal[0]) +
-              (traceWork->end[1] * plane->normal[1])) +
-             (traceWork->end[2] * plane->normal[2])) -
+            x87f_store_f32(x87f_add(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(traceWork->end[0]), x87f_load_f32(plane->normal[0])),
+                                                               x87f_mul(x87f_load_f32(traceWork->end[1]), x87f_load_f32(plane->normal[1]))),
+                                                      x87f_mul(x87f_load_f32(traceWork->end[2]), x87f_load_f32(plane->normal[2]))),
+                                             x87f_load_f32(plane->dist)),
+                                    x87f_load_f32(planeOffset)));
+#else
+        const float planeOffset = ((offset[0] * plane->normal[0]) + (offset[1] * plane->normal[1])) + (offset[2] * plane->normal[2]);
+        const float startDistance = (((traceWork->start[0] * plane->normal[0]) + (traceWork->start[1] * plane->normal[1])) +
+                                     (traceWork->start[2] * plane->normal[2])) -
+                                    plane->dist + planeOffset;
+        const float endDistance =
+            (((traceWork->end[0] * plane->normal[0]) + (traceWork->end[1] * plane->normal[1])) + (traceWork->end[2] * plane->normal[2])) -
             plane->dist + planeOffset;
 #endif
 
@@ -1064,13 +657,10 @@ void CM_TracePointThroughPatchCollide(
             planeFractions[planeIndex] = 99999.0f;
         } else {
 #if EMULATE_X87
-            planeFractions[planeIndex] = x87f_store_f32(
-                x87f_div(x87f_load_f32(startDistance),
-                         x87f_sub(x87f_load_f32(startDistance),
-                                  x87f_load_f32(endDistance))));
-#else
             planeFractions[planeIndex] =
-                startDistance / (startDistance - endDistance);
+                x87f_store_f32(x87f_div(x87f_load_f32(startDistance), x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
+#else
+            planeFractions[planeIndex] = startDistance / (startDistance - endDistance);
 #endif
             if (planeFractions[planeIndex] <= 0.0f) {
                 planeFractions[planeIndex] = 99999.0f;
@@ -1079,8 +669,7 @@ void CM_TracePointThroughPatchCollide(
     }
 
     const facet_t *facet = patchCollide->facets;
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
         const int32_t rootPlaneIndex = facet->surfacePlane;
 
         if (planeSides[rootPlaneIndex] == 0) {
@@ -1093,13 +682,10 @@ void CM_TracePointThroughPatchCollide(
         }
 
         int32_t childIndex;
-        for (childIndex = 0; childIndex < facet->numBorders;
-             ++childIndex) {
-            const int32_t childPlaneIndex =
-                facet->borderPlanes[childIndex];
+        for (childIndex = 0; childIndex < facet->numBorders; ++childIndex) {
+            const int32_t childPlaneIndex = facet->borderPlanes[childIndex];
 
-            if (planeSides[childPlaneIndex] ==
-                facet->borderInward[childIndex]) {
+            if (planeSides[childPlaneIndex] == facet->borderInward[childIndex]) {
                 if (planeFractions[childPlaneIndex] < rootFraction) {
                     break;
                 }
@@ -1115,58 +701,34 @@ void CM_TracePointThroughPatchCollide(
 #if EMULATE_X87
             /* Same structure as the per-plane pass above; this is the site that
              * actually sets trace.fraction for curved terrain. */
-            const float planeOffset = x87f_store_f32(x87f_add(
-                x87f_add(x87f_mul(x87f_load_f32(offset[0]),
-                                  x87f_load_f32(plane->normal[0])),
-                         x87f_mul(x87f_load_f32(offset[1]),
-                                  x87f_load_f32(plane->normal[1]))),
-                x87f_mul(x87f_load_f32(offset[2]),
-                         x87f_load_f32(plane->normal[2]))));
-            const float startDistance = x87f_store_f32(x87f_add(
-                x87f_sub(
-                    x87f_add(
-                        x87f_add(x87f_mul(x87f_load_f32(traceWork->start[0]),
-                                          x87f_load_f32(plane->normal[0])),
-                                 x87f_mul(x87f_load_f32(traceWork->start[1]),
-                                          x87f_load_f32(plane->normal[1]))),
-                        x87f_mul(x87f_load_f32(traceWork->start[2]),
-                                 x87f_load_f32(plane->normal[2]))),
-                    x87f_load_f32(plane->dist)),
-                x87f_load_f32(planeOffset)));
-            const float endDistance = x87f_store_f32(x87f_add(
-                x87f_sub(
-                    x87f_add(
-                        x87f_add(x87f_mul(x87f_load_f32(traceWork->end[0]),
-                                          x87f_load_f32(plane->normal[0])),
-                                 x87f_mul(x87f_load_f32(traceWork->end[1]),
-                                          x87f_load_f32(plane->normal[1]))),
-                        x87f_mul(x87f_load_f32(traceWork->end[2]),
-                                 x87f_load_f32(plane->normal[2]))),
-                    x87f_load_f32(plane->dist)),
-                x87f_load_f32(planeOffset)));
+            const float planeOffset = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(offset[0]), x87f_load_f32(plane->normal[0])),
+                                                                       x87f_mul(x87f_load_f32(offset[1]), x87f_load_f32(plane->normal[1]))),
+                                                              x87f_mul(x87f_load_f32(offset[2]), x87f_load_f32(plane->normal[2]))));
+            const float startDistance = x87f_store_f32(
+                x87f_add(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(traceWork->start[0]), x87f_load_f32(plane->normal[0])),
+                                                    x87f_mul(x87f_load_f32(traceWork->start[1]), x87f_load_f32(plane->normal[1]))),
+                                           x87f_mul(x87f_load_f32(traceWork->start[2]), x87f_load_f32(plane->normal[2]))),
+                                  x87f_load_f32(plane->dist)),
+                         x87f_load_f32(planeOffset)));
+            const float endDistance = x87f_store_f32(
+                x87f_add(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(traceWork->end[0]), x87f_load_f32(plane->normal[0])),
+                                                    x87f_mul(x87f_load_f32(traceWork->end[1]), x87f_load_f32(plane->normal[1]))),
+                                           x87f_mul(x87f_load_f32(traceWork->end[2]), x87f_load_f32(plane->normal[2]))),
+                                  x87f_load_f32(plane->dist)),
+                         x87f_load_f32(planeOffset)));
 
-            traceWork->trace.fraction = x87f_store_f32(x87f_div(
-                x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(0.125f)),
-                x87f_sub(x87f_load_f32(startDistance),
-                         x87f_load_f32(endDistance))));
+            traceWork->trace.fraction = x87f_store_f32(x87f_div(x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(0.125f)),
+                                                                x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 #else
-            const float planeOffset =
-                ((offset[0] * plane->normal[0]) +
-                 (offset[1] * plane->normal[1])) +
-                (offset[2] * plane->normal[2]);
-            const float startDistance =
-                (((traceWork->start[0] * plane->normal[0]) +
-                  (traceWork->start[1] * plane->normal[1])) +
-                 (traceWork->start[2] * plane->normal[2])) -
-                plane->dist + planeOffset;
-            const float endDistance =
-                (((traceWork->end[0] * plane->normal[0]) +
-                  (traceWork->end[1] * plane->normal[1])) +
-                 (traceWork->end[2] * plane->normal[2])) -
-                plane->dist + planeOffset;
+            const float planeOffset = ((offset[0] * plane->normal[0]) + (offset[1] * plane->normal[1])) + (offset[2] * plane->normal[2]);
+            const float startDistance = (((traceWork->start[0] * plane->normal[0]) + (traceWork->start[1] * plane->normal[1])) +
+                                         (traceWork->start[2] * plane->normal[2])) -
+                                        plane->dist + planeOffset;
+            const float endDistance = (((traceWork->end[0] * plane->normal[0]) + (traceWork->end[1] * plane->normal[1])) +
+                                       (traceWork->end[2] * plane->normal[2])) -
+                                      plane->dist + planeOffset;
 
-            traceWork->trace.fraction =
-                (startDistance - 0.125f) / (startDistance - endDistance);
+            traceWork->trace.fraction = (startDistance - 0.125f) / (startDistance - endDistance);
 #endif
             if (traceWork->trace.fraction < 0.0f) {
                 traceWork->trace.fraction = 0.0f;
@@ -1179,9 +741,7 @@ void CM_TracePointThroughPatchCollide(
     }
 }
 
-qboolean CM_SightTracePointThroughPatchCollide(
-    const traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+qboolean CM_SightTracePointThroughPatchCollide(const traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     float planeFractions[CM_PATCH_PLANE_LIMIT];
     qboolean planeSides[CM_PATCH_PLANE_LIMIT];
@@ -1191,22 +751,14 @@ qboolean CM_SightTracePointThroughPatchCollide(
     }
 
     const patchPlane_t *plane = patchCollide->planes;
-    for (int32_t planeIndex = 0; planeIndex < patchCollide->numPlanes;
-         ++planeIndex, ++plane) {
+    for (int32_t planeIndex = 0; planeIndex < patchCollide->numPlanes; ++planeIndex, ++plane) {
         const float *offset = traceWork->offsets[plane->signbits];
-        const float planeOffset =
-            ((offset[0] * plane->normal[0]) +
-             (offset[1] * plane->normal[1])) +
-            (offset[2] * plane->normal[2]);
-        const float startDistance =
-            (((traceWork->start[0] * plane->normal[0]) +
-              (traceWork->start[1] * plane->normal[1])) +
-             (traceWork->start[2] * plane->normal[2])) -
-            plane->dist + planeOffset;
+        const float planeOffset = ((offset[0] * plane->normal[0]) + (offset[1] * plane->normal[1])) + (offset[2] * plane->normal[2]);
+        const float startDistance = (((traceWork->start[0] * plane->normal[0]) + (traceWork->start[1] * plane->normal[1])) +
+                                     (traceWork->start[2] * plane->normal[2])) -
+                                    plane->dist + planeOffset;
         const float endDistance =
-            (((traceWork->end[0] * plane->normal[0]) +
-              (traceWork->end[1] * plane->normal[1])) +
-             (traceWork->end[2] * plane->normal[2])) -
+            (((traceWork->end[0] * plane->normal[0]) + (traceWork->end[1] * plane->normal[1])) + (traceWork->end[2] * plane->normal[2])) -
             plane->dist + planeOffset;
 
         if (startDistance <= 0.0f) {
@@ -1218,8 +770,7 @@ qboolean CM_SightTracePointThroughPatchCollide(
         if (startDistance == endDistance) {
             planeFractions[planeIndex] = 99999.0f;
         } else {
-            planeFractions[planeIndex] =
-                startDistance / (startDistance - endDistance);
+            planeFractions[planeIndex] = startDistance / (startDistance - endDistance);
             if (planeFractions[planeIndex] <= 0.0f) {
                 planeFractions[planeIndex] = 99999.0f;
             }
@@ -1227,8 +778,7 @@ qboolean CM_SightTracePointThroughPatchCollide(
     }
 
     const facet_t *facet = patchCollide->facets;
-    for (int32_t facetIndex = 0;
-         facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
         const int32_t rootPlaneIndex = facet->surfacePlane;
 
         if (planeSides[rootPlaneIndex] == 0) {
@@ -1241,13 +791,10 @@ qboolean CM_SightTracePointThroughPatchCollide(
         }
 
         int32_t childIndex;
-        for (childIndex = 0; childIndex < facet->numBorders;
-             ++childIndex) {
-            const int32_t childPlaneIndex =
-                facet->borderPlanes[childIndex];
+        for (childIndex = 0; childIndex < facet->numBorders; ++childIndex) {
+            const int32_t childPlaneIndex = facet->borderPlanes[childIndex];
 
-            if (planeSides[childPlaneIndex] ==
-                facet->borderInward[childIndex]) {
+            if (planeSides[childPlaneIndex] == facet->borderInward[childIndex]) {
                 if (planeFractions[childPlaneIndex] < rootFraction) {
                     break;
                 }
@@ -1260,25 +807,15 @@ qboolean CM_SightTracePointThroughPatchCollide(
             plane = &patchCollide->planes[rootPlaneIndex];
 
             const float *offset = traceWork->offsets[plane->signbits];
-            const float planeOffset =
-                ((offset[0] * plane->normal[0]) +
-                 (offset[1] * plane->normal[1])) +
-                (offset[2] * plane->normal[2]);
-            const float startDistance =
-                (((traceWork->start[0] * plane->normal[0]) +
-                  (traceWork->start[1] * plane->normal[1])) +
-                 (traceWork->start[2] * plane->normal[2])) -
-                plane->dist + planeOffset;
-            const float endDistance =
-                (((traceWork->end[0] * plane->normal[0]) +
-                  (traceWork->end[1] * plane->normal[1])) +
-                 (traceWork->end[2] * plane->normal[2])) -
-                plane->dist + planeOffset;
+            const float planeOffset = ((offset[0] * plane->normal[0]) + (offset[1] * plane->normal[1])) + (offset[2] * plane->normal[2]);
+            const float startDistance = (((traceWork->start[0] * plane->normal[0]) + (traceWork->start[1] * plane->normal[1])) +
+                                         (traceWork->start[2] * plane->normal[2])) -
+                                        plane->dist + planeOffset;
+            const float endDistance = (((traceWork->end[0] * plane->normal[0]) + (traceWork->end[1] * plane->normal[1])) +
+                                       (traceWork->end[2] * plane->normal[2])) -
+                                      plane->dist + planeOffset;
 
-            if (startDistance - endDistance > 0.0f &&
-                (startDistance - 0.125f) /
-                        (startDistance - endDistance) <
-                    1.0f) {
+            if (startDistance - endDistance > 0.0f && (startDistance - 0.125f) / (startDistance - endDistance) < 1.0f) {
                 return 0;
             }
         }
@@ -1288,10 +825,7 @@ qboolean CM_SightTracePointThroughPatchCollide(
 }
 
 
-
-void CM_TraceThroughPatchCollide(
-    traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+void CM_TraceThroughPatchCollide(traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     if (traceWork->isPoint != 0) {
         CM_TracePointThroughPatchCollide(traceWork, patchCollide);
@@ -1299,16 +833,13 @@ void CM_TraceThroughPatchCollide(
     }
 
     const facet_t *facet = patchCollide->facets;
-    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets;
-         ++facetIndex, ++facet) {
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
         float enterFraction = -1.0f;
         float leaveFraction = traceWork->trace.fraction;
         int32_t hitChildIndex = -1;
 
-        const patchPlane_t *plane =
-            &patchCollide->planes[facet->surfacePlane];
-        vec4_t clipPlane = {plane->normal[0], plane->normal[1],
-                            plane->normal[2], plane->dist};
+        const patchPlane_t *plane = &patchCollide->planes[facet->surfacePlane];
+        vec4_t clipPlane = {plane->normal[0], plane->normal[1], plane->normal[2], plane->dist};
         vec3_t start;
         vec3_t end;
 
@@ -1317,20 +848,12 @@ void CM_TraceThroughPatchCollide(
 #if EMULATE_X87
             /* planeOffset is a 3-term dot rounded to its float slot; the
              * clipPlane[3] adjust is then its own rounded store. */
-            const float planeOffset = x87f_store_f32(x87f_add(
-                x87f_add(x87f_mul(x87f_load_f32(offset[0]),
-                                  x87f_load_f32(clipPlane[0])),
-                         x87f_mul(x87f_load_f32(offset[1]),
-                                  x87f_load_f32(clipPlane[1]))),
-                x87f_mul(x87f_load_f32(offset[2]),
-                         x87f_load_f32(clipPlane[2]))));
-            clipPlane[3] = x87f_store_f32(x87f_sub(
-                x87f_load_f32(clipPlane[3]), x87f_load_f32(planeOffset)));
+            const float planeOffset = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(offset[0]), x87f_load_f32(clipPlane[0])),
+                                                                       x87f_mul(x87f_load_f32(offset[1]), x87f_load_f32(clipPlane[1]))),
+                                                              x87f_mul(x87f_load_f32(offset[2]), x87f_load_f32(clipPlane[2]))));
+            clipPlane[3] = x87f_store_f32(x87f_sub(x87f_load_f32(clipPlane[3]), x87f_load_f32(planeOffset)));
 #else
-            const float planeOffset =
-                ((offset[0] * clipPlane[0]) +
-                 (offset[1] * clipPlane[1])) +
-                (offset[2] * clipPlane[2]);
+            const float planeOffset = ((offset[0] * clipPlane[0]) + (offset[1] * clipPlane[1])) + (offset[2] * clipPlane[2]);
             clipPlane[3] -= planeOffset;
 #endif
             start[0] = traceWork->start[0];
@@ -1341,26 +864,19 @@ void CM_TraceThroughPatchCollide(
             end[2] = traceWork->end[2];
         } else {
 #if EMULATE_X87
-            clipPlane[3] = x87f_store_f32(
-                x87f_add(x87f_load_f32(clipPlane[3]),
-                         x87f_load_f32(traceWork->sphere.radius)));
+            clipPlane[3] = x87f_store_f32(x87f_add(x87f_load_f32(clipPlane[3]), x87f_load_f32(traceWork->sphere.radius)));
             /* Stock sums the sphere dot ascending -- cp0*off0 + cp1*off1
              * + cp2*off2 (VA 0x8050475..0x805049a). */
-            const float sphereOffset = x87f_store_f32(x87f_add(
-                x87f_add(x87f_mul(x87f_load_f32(clipPlane[0]),
-                                  x87f_load_f32(traceWork->sphere.offset[0])),
-                         x87f_mul(x87f_load_f32(clipPlane[1]),
-                                  x87f_load_f32(traceWork->sphere.offset[1]))),
-                x87f_mul(x87f_load_f32(clipPlane[2]),
-                         x87f_load_f32(traceWork->sphere.offset[2]))));
+            const float sphereOffset =
+                x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(clipPlane[0]), x87f_load_f32(traceWork->sphere.offset[0])),
+                                                 x87f_mul(x87f_load_f32(clipPlane[1]), x87f_load_f32(traceWork->sphere.offset[1]))),
+                                        x87f_mul(x87f_load_f32(clipPlane[2]), x87f_load_f32(traceWork->sphere.offset[2]))));
 #else
             clipPlane[3] += traceWork->sphere.radius;
             /* Stock sums the sphere dot ascending -- cp0*off0 + cp1*off1
              * + cp2*off2 (VA 0x8050475..0x805049a). */
-            const float sphereOffset =
-                ((clipPlane[0] * traceWork->sphere.offset[0]) +
-                 (clipPlane[1] * traceWork->sphere.offset[1])) +
-                (clipPlane[2] * traceWork->sphere.offset[2]);
+            const float sphereOffset = ((clipPlane[0] * traceWork->sphere.offset[0]) + (clipPlane[1] * traceWork->sphere.offset[1])) +
+                                       (clipPlane[2] * traceWork->sphere.offset[2]);
 #endif
 
             if (sphereOffset > 0.0f) {
@@ -1381,9 +897,7 @@ void CM_TraceThroughPatchCollide(
         }
 
         qboolean hitPlaneChanged;
-        if (CM_CheckFacetPlane(clipPlane, start, end, &enterFraction,
-                                        &leaveFraction,
-                                        &hitPlaneChanged) == 0) {
+        if (CM_CheckFacetPlane(clipPlane, start, end, &enterFraction, &leaveFraction, &hitPlaneChanged) == 0) {
             continue;
         }
 
@@ -1395,8 +909,7 @@ void CM_TraceThroughPatchCollide(
         }
 
         int32_t childIndex;
-        for (childIndex = 0; childIndex < facet->numBorders;
-             ++childIndex) {
+        for (childIndex = 0; childIndex < facet->numBorders; ++childIndex) {
             plane = &patchCollide->planes[facet->borderPlanes[childIndex]];
 
             if (facet->borderInward[childIndex] == 0) {
@@ -1412,24 +925,14 @@ void CM_TraceThroughPatchCollide(
             }
 
             if (traceWork->sphere.use == 0) {
-                const float *offset =
-                    traceWork->offsets[plane->signbits];
+                const float *offset = traceWork->offsets[plane->signbits];
 #if EMULATE_X87
-                const float planeOffset = x87f_store_f32(x87f_add(
-                    x87f_add(x87f_mul(x87f_load_f32(offset[0]),
-                                      x87f_load_f32(clipPlane[0])),
-                             x87f_mul(x87f_load_f32(offset[1]),
-                                      x87f_load_f32(clipPlane[1]))),
-                    x87f_mul(x87f_load_f32(offset[2]),
-                             x87f_load_f32(clipPlane[2]))));
-                clipPlane[3] = x87f_store_f32(
-                    x87f_add(x87f_load_f32(clipPlane[3]),
-                             x87f_abs(x87f_load_f32(planeOffset))));
+                const float planeOffset = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(offset[0]), x87f_load_f32(clipPlane[0])),
+                                                                           x87f_mul(x87f_load_f32(offset[1]), x87f_load_f32(clipPlane[1]))),
+                                                                  x87f_mul(x87f_load_f32(offset[2]), x87f_load_f32(clipPlane[2]))));
+                clipPlane[3] = x87f_store_f32(x87f_add(x87f_load_f32(clipPlane[3]), x87f_abs(x87f_load_f32(planeOffset))));
 #else
-                const float planeOffset =
-                    ((offset[0] * clipPlane[0]) +
-                     (offset[1] * clipPlane[1])) +
-                    (offset[2] * clipPlane[2]);
+                const float planeOffset = ((offset[0] * clipPlane[0]) + (offset[1] * clipPlane[1])) + (offset[2] * clipPlane[2]);
                 clipPlane[3] += fabsf(planeOffset);
 #endif
                 start[0] = traceWork->start[0];
@@ -1440,55 +943,39 @@ void CM_TraceThroughPatchCollide(
                 end[2] = traceWork->end[2];
             } else {
 #if EMULATE_X87
-                clipPlane[3] = x87f_store_f32(
-                    x87f_add(x87f_load_f32(clipPlane[3]),
-                             x87f_load_f32(traceWork->sphere.radius)));
+                clipPlane[3] = x87f_store_f32(x87f_add(x87f_load_f32(clipPlane[3]), x87f_load_f32(traceWork->sphere.radius)));
                 /* Stock sums the sphere dot ascending -- cp0*off0 +
                  * cp1*off1 + cp2*off2 (VA 0x8050734..0x8050759). */
-                const float sphereOffset = x87f_store_f32(x87f_add(
-                    x87f_add(
-                        x87f_mul(x87f_load_f32(clipPlane[0]),
-                                 x87f_load_f32(traceWork->sphere.offset[0])),
-                        x87f_mul(x87f_load_f32(clipPlane[1]),
-                                 x87f_load_f32(traceWork->sphere.offset[1]))),
-                    x87f_mul(x87f_load_f32(clipPlane[2]),
-                             x87f_load_f32(traceWork->sphere.offset[2]))));
+                const float sphereOffset =
+                    x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(clipPlane[0]), x87f_load_f32(traceWork->sphere.offset[0])),
+                                                     x87f_mul(x87f_load_f32(clipPlane[1]), x87f_load_f32(traceWork->sphere.offset[1]))),
+                                            x87f_mul(x87f_load_f32(clipPlane[2]), x87f_load_f32(traceWork->sphere.offset[2]))));
 #else
                 clipPlane[3] += traceWork->sphere.radius;
                 /* Stock sums the sphere dot ascending -- cp0*off0 +
                  * cp1*off1 + cp2*off2 (VA 0x8050734..0x8050759). */
-                const float sphereOffset =
-                    ((clipPlane[0] * traceWork->sphere.offset[0]) +
-                     (clipPlane[1] * traceWork->sphere.offset[1])) +
-                    (clipPlane[2] * traceWork->sphere.offset[2]);
+                const float sphereOffset = ((clipPlane[0] * traceWork->sphere.offset[0]) + (clipPlane[1] * traceWork->sphere.offset[1])) +
+                                           (clipPlane[2] * traceWork->sphere.offset[2]);
 #endif
 
                 if (sphereOffset > 0.0f) {
-                    start[0] =
-                        traceWork->start[0] - traceWork->sphere.offset[0];
-                    start[1] =
-                        traceWork->start[1] - traceWork->sphere.offset[1];
-                    start[2] =
-                        traceWork->start[2] - traceWork->sphere.offset[2];
+                    start[0] = traceWork->start[0] - traceWork->sphere.offset[0];
+                    start[1] = traceWork->start[1] - traceWork->sphere.offset[1];
+                    start[2] = traceWork->start[2] - traceWork->sphere.offset[2];
                     end[0] = traceWork->end[0] - traceWork->sphere.offset[0];
                     end[1] = traceWork->end[1] - traceWork->sphere.offset[1];
                     end[2] = traceWork->end[2] - traceWork->sphere.offset[2];
                 } else {
-                    start[0] =
-                        traceWork->start[0] + traceWork->sphere.offset[0];
-                    start[1] =
-                        traceWork->start[1] + traceWork->sphere.offset[1];
-                    start[2] =
-                        traceWork->start[2] + traceWork->sphere.offset[2];
+                    start[0] = traceWork->start[0] + traceWork->sphere.offset[0];
+                    start[1] = traceWork->start[1] + traceWork->sphere.offset[1];
+                    start[2] = traceWork->start[2] + traceWork->sphere.offset[2];
                     end[0] = traceWork->end[0] + traceWork->sphere.offset[0];
                     end[1] = traceWork->end[1] + traceWork->sphere.offset[1];
                     end[2] = traceWork->end[2] + traceWork->sphere.offset[2];
                 }
             }
 
-            if (CM_CheckFacetPlane(clipPlane, start, end,
-                                            &enterFraction, &leaveFraction,
-                                            &hitPlaneChanged) == 0) {
+            if (CM_CheckFacetPlane(clipPlane, start, end, &enterFraction, &leaveFraction, &hitPlaneChanged) == 0) {
                 break;
             }
 
@@ -1500,10 +987,8 @@ void CM_TraceThroughPatchCollide(
             }
         }
 
-        if (childIndex >= facet->numBorders &&
-            hitChildIndex != facet->numBorders - 1 &&
-            enterFraction < leaveFraction && enterFraction >= 0.0f &&
-            enterFraction < traceWork->trace.fraction) {
+        if (childIndex >= facet->numBorders && hitChildIndex != facet->numBorders - 1 && enterFraction < leaveFraction &&
+            enterFraction >= 0.0f && enterFraction < traceWork->trace.fraction) {
             if (enterFraction < 0.0f) {
                 enterFraction = 0.0f;
             }
@@ -1517,35 +1002,26 @@ void CM_TraceThroughPatchCollide(
 }
 
 
-qboolean CM_SightTraceThroughPatchCollide(
-    const traceWork_t *traceWork,
-    const patchCollide_t *patchCollide)
+qboolean CM_SightTraceThroughPatchCollide(const traceWork_t *traceWork, const patchCollide_t *patchCollide)
 {
     if (traceWork->isPoint != 0) {
-        return CM_SightTracePointThroughPatchCollide(traceWork,
-                                                       patchCollide);
+        return CM_SightTracePointThroughPatchCollide(traceWork, patchCollide);
     }
 
     const facet_t *facet = patchCollide->facets;
-    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets;
-         ++facetIndex, ++facet) {
+    for (int32_t facetIndex = 0; facetIndex < patchCollide->numFacets; ++facetIndex, ++facet) {
         float enterFraction = -1.0f;
         float leaveFraction = 1.0f;
         int32_t hitChildIndex = -1;
 
-        const patchPlane_t *plane =
-            &patchCollide->planes[facet->surfacePlane];
-        vec4_t clipPlane = {plane->normal[0], plane->normal[1],
-                            plane->normal[2], plane->dist};
+        const patchPlane_t *plane = &patchCollide->planes[facet->surfacePlane];
+        vec4_t clipPlane = {plane->normal[0], plane->normal[1], plane->normal[2], plane->dist};
         vec3_t start;
         vec3_t end;
 
         if (traceWork->sphere.use == 0) {
             const float *offset = traceWork->offsets[plane->signbits];
-            const float planeOffset =
-                ((offset[0] * clipPlane[0]) +
-                 (offset[1] * clipPlane[1])) +
-                (offset[2] * clipPlane[2]);
+            const float planeOffset = ((offset[0] * clipPlane[0]) + (offset[1] * clipPlane[1])) + (offset[2] * clipPlane[2]);
             clipPlane[3] -= planeOffset;
             start[0] = traceWork->start[0];
             start[1] = traceWork->start[1];
@@ -1555,10 +1031,8 @@ qboolean CM_SightTraceThroughPatchCollide(
             end[2] = traceWork->end[2];
         } else {
             clipPlane[3] += traceWork->sphere.radius;
-            const float sphereOffset =
-                ((clipPlane[0] * traceWork->sphere.offset[0]) +
-                 (clipPlane[1] * traceWork->sphere.offset[1])) +
-                (clipPlane[2] * traceWork->sphere.offset[2]);
+            const float sphereOffset = ((clipPlane[0] * traceWork->sphere.offset[0]) + (clipPlane[1] * traceWork->sphere.offset[1])) +
+                                       (clipPlane[2] * traceWork->sphere.offset[2]);
 
             if (sphereOffset > 0.0f) {
                 start[0] = traceWork->start[0] - traceWork->sphere.offset[0];
@@ -1578,15 +1052,12 @@ qboolean CM_SightTraceThroughPatchCollide(
         }
 
         qboolean hitPlaneChanged;
-        if (CM_CheckFacetPlane(clipPlane, start, end, &enterFraction,
-                                        &leaveFraction,
-                                        &hitPlaneChanged) == 0) {
+        if (CM_CheckFacetPlane(clipPlane, start, end, &enterFraction, &leaveFraction, &hitPlaneChanged) == 0) {
             continue;
         }
 
         int32_t childIndex;
-        for (childIndex = 0; childIndex < facet->numBorders;
-             ++childIndex) {
+        for (childIndex = 0; childIndex < facet->numBorders; ++childIndex) {
             plane = &patchCollide->planes[facet->borderPlanes[childIndex]];
 
             if (facet->borderInward[childIndex] == 0) {
@@ -1602,12 +1073,8 @@ qboolean CM_SightTraceThroughPatchCollide(
             }
 
             if (traceWork->sphere.use == 0) {
-                const float *offset =
-                    traceWork->offsets[plane->signbits];
-                const float planeOffset =
-                    ((offset[0] * clipPlane[0]) +
-                     (offset[1] * clipPlane[1])) +
-                    (offset[2] * clipPlane[2]);
+                const float *offset = traceWork->offsets[plane->signbits];
+                const float planeOffset = ((offset[0] * clipPlane[0]) + (offset[1] * clipPlane[1])) + (offset[2] * clipPlane[2]);
                 clipPlane[3] += fabsf(planeOffset);
                 start[0] = traceWork->start[0];
                 start[1] = traceWork->start[1];
@@ -1617,37 +1084,27 @@ qboolean CM_SightTraceThroughPatchCollide(
                 end[2] = traceWork->end[2];
             } else {
                 clipPlane[3] += traceWork->sphere.radius;
-                const float sphereOffset =
-                    ((clipPlane[0] * traceWork->sphere.offset[0]) +
-                     (clipPlane[1] * traceWork->sphere.offset[1])) +
-                    (clipPlane[2] * traceWork->sphere.offset[2]);
+                const float sphereOffset = ((clipPlane[0] * traceWork->sphere.offset[0]) + (clipPlane[1] * traceWork->sphere.offset[1])) +
+                                           (clipPlane[2] * traceWork->sphere.offset[2]);
 
                 if (sphereOffset > 0.0f) {
-                    start[0] =
-                        traceWork->start[0] - traceWork->sphere.offset[0];
-                    start[1] =
-                        traceWork->start[1] - traceWork->sphere.offset[1];
-                    start[2] =
-                        traceWork->start[2] - traceWork->sphere.offset[2];
+                    start[0] = traceWork->start[0] - traceWork->sphere.offset[0];
+                    start[1] = traceWork->start[1] - traceWork->sphere.offset[1];
+                    start[2] = traceWork->start[2] - traceWork->sphere.offset[2];
                     end[0] = traceWork->end[0] - traceWork->sphere.offset[0];
                     end[1] = traceWork->end[1] - traceWork->sphere.offset[1];
                     end[2] = traceWork->end[2] - traceWork->sphere.offset[2];
                 } else {
-                    start[0] =
-                        traceWork->start[0] + traceWork->sphere.offset[0];
-                    start[1] =
-                        traceWork->start[1] + traceWork->sphere.offset[1];
-                    start[2] =
-                        traceWork->start[2] + traceWork->sphere.offset[2];
+                    start[0] = traceWork->start[0] + traceWork->sphere.offset[0];
+                    start[1] = traceWork->start[1] + traceWork->sphere.offset[1];
+                    start[2] = traceWork->start[2] + traceWork->sphere.offset[2];
                     end[0] = traceWork->end[0] + traceWork->sphere.offset[0];
                     end[1] = traceWork->end[1] + traceWork->sphere.offset[1];
                     end[2] = traceWork->end[2] + traceWork->sphere.offset[2];
                 }
             }
 
-            if (CM_CheckFacetPlane(clipPlane, start, end,
-                                            &enterFraction, &leaveFraction,
-                                            &hitPlaneChanged) == 0) {
+            if (CM_CheckFacetPlane(clipPlane, start, end, &enterFraction, &leaveFraction, &hitPlaneChanged) == 0) {
                 break;
             }
 
@@ -1656,9 +1113,8 @@ qboolean CM_SightTraceThroughPatchCollide(
             }
         }
 
-        if (childIndex >= facet->numBorders &&
-            hitChildIndex != facet->numBorders - 1 &&
-            enterFraction < leaveFraction && enterFraction >= 0.0f) {
+        if (childIndex >= facet->numBorders && hitChildIndex != facet->numBorders - 1 && enterFraction < leaveFraction &&
+            enterFraction >= 0.0f) {
             return 0;
         }
     }
@@ -1667,59 +1123,37 @@ qboolean CM_SightTraceThroughPatchCollide(
 }
 
 
-qboolean CM_CheckFacetPlane(
-    const vec4_t plane,
-    const vec3_t start,
-    const vec3_t end,
-    float *enterFraction,
-    float *leaveFraction,
-    qboolean *enterPlaneChanged)
+qboolean CM_CheckFacetPlane(const vec4_t plane, const vec3_t start, const vec3_t end, float *enterFraction, float *leaveFraction,
+                            qboolean *enterPlaneChanged)
 {
     *enterPlaneChanged = 0;
 
 #if EMULATE_X87
     /* Each distance is one 80-bit chain — three products, two adds and the
      * -plane[3] — rounded once at its float slot. */
-    const float startDistance = x87f_store_f32(x87f_sub(
-        x87f_add(x87f_add(x87f_mul(x87f_load_f32(start[0]),
-                                   x87f_load_f32(plane[0])),
-                          x87f_mul(x87f_load_f32(start[1]),
-                                   x87f_load_f32(plane[1]))),
-                 x87f_mul(x87f_load_f32(start[2]), x87f_load_f32(plane[2]))),
-        x87f_load_f32(plane[3])));
-    const float endDistance = x87f_store_f32(x87f_sub(
-        x87f_add(x87f_add(x87f_mul(x87f_load_f32(end[0]),
-                                   x87f_load_f32(plane[0])),
-                          x87f_mul(x87f_load_f32(end[1]),
-                                   x87f_load_f32(plane[1]))),
-                 x87f_mul(x87f_load_f32(end[2]), x87f_load_f32(plane[2]))),
-        x87f_load_f32(plane[3])));
+    const float startDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(start[0]), x87f_load_f32(plane[0])),
+                                                                          x87f_mul(x87f_load_f32(start[1]), x87f_load_f32(plane[1]))),
+                                                                 x87f_mul(x87f_load_f32(start[2]), x87f_load_f32(plane[2]))),
+                                                        x87f_load_f32(plane[3])));
+    const float endDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(end[0]), x87f_load_f32(plane[0])),
+                                                                        x87f_mul(x87f_load_f32(end[1]), x87f_load_f32(plane[1]))),
+                                                               x87f_mul(x87f_load_f32(end[2]), x87f_load_f32(plane[2]))),
+                                                      x87f_load_f32(plane[3])));
 #else
-    const float startDistance =
-        (((start[0] * plane[0]) + (start[1] * plane[1])) +
-         (start[2] * plane[2])) -
-        plane[3];
-    const float endDistance =
-        (((end[0] * plane[0]) + (end[1] * plane[1])) +
-         (end[2] * plane[2])) -
-        plane[3];
+    const float startDistance = (((start[0] * plane[0]) + (start[1] * plane[1])) + (start[2] * plane[2])) - plane[3];
+    const float endDistance = (((end[0] * plane[0]) + (end[1] * plane[1])) + (end[2] * plane[2])) - plane[3];
 #endif
 
     qboolean hit;
 
-    if (!(startDistance > 0.0f) ||
-        (!(endDistance >= 0.125f) && !(endDistance >= startDistance))) {
+    if (!(startDistance > 0.0f) || (!(endDistance >= 0.125f) && !(endDistance >= startDistance))) {
         if (!(0.0f >= startDistance) || !(0.0f >= endDistance)) {
             if (endDistance < startDistance) {
 #if EMULATE_X87
-                float fraction = x87f_store_f32(x87f_div(
-                    x87f_sub(x87f_load_f32(startDistance),
-                             x87f_load_f32(0.125f)),
-                    x87f_sub(x87f_load_f32(startDistance),
-                             x87f_load_f32(endDistance))));
+                float fraction = x87f_store_f32(x87f_div(x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(0.125f)),
+                                                         x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 #else
-                float fraction =
-                    (startDistance - 0.125f) / (startDistance - endDistance);
+                float fraction = (startDistance - 0.125f) / (startDistance - endDistance);
 #endif
                 if (fraction < 0.0f) {
                     fraction = 0.0f;
@@ -1731,14 +1165,10 @@ qboolean CM_CheckFacetPlane(
                 }
             } else {
 #if EMULATE_X87
-                float fraction = x87f_store_f32(x87f_div(
-                    x87f_add(x87f_load_f32(startDistance),
-                             x87f_load_f32(0.125f)),
-                    x87f_sub(x87f_load_f32(startDistance),
-                             x87f_load_f32(endDistance))));
+                float fraction = x87f_store_f32(x87f_div(x87f_add(x87f_load_f32(startDistance), x87f_load_f32(0.125f)),
+                                                         x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 #else
-                float fraction =
-                    (startDistance + 0.125f) / (startDistance - endDistance);
+                float fraction = (startDistance + 0.125f) / (startDistance - endDistance);
 #endif
                 if (fraction > 1.0f) {
                     fraction = 1.0f;

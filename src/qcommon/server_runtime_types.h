@@ -263,8 +263,7 @@ typedef struct serverStatic_s {
     netadr_t redirectAddress;
     netadr_t authorizeServerAddress;
     netProfileInfo_t *netProfile;
-    serverAuthorizeGuidCacheEntry_t
-        authorizeGuidCache[SERVER_AUTHORIZE_GUID_CACHE_ENTRY_COUNT];
+    serverAuthorizeGuidCacheEntry_t authorizeGuidCache[SERVER_AUTHORIZE_GUID_CACHE_ENTRY_COUNT];
 } serverStatic_t;
 
 typedef struct serverHeader_s {
@@ -274,47 +273,28 @@ typedef struct serverHeader_s {
     int32_t gamestateChecksumFeed;
 } serverHeader_t;
 
-#define SERVER_RUNTIME_LAYOUT_ASSERT(name_, expression_) \
-    typedef char name_[(expression_) ? 1 : -1]
+#define SERVER_RUNTIME_LAYOUT_ASSERT(name_, expression_) typedef char name_[(expression_) ? 1 : -1]
 
-SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_state_offset,
-                             offsetof(sharedEntity_t, entityState) == 0x000);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_single_client_offset,
-                             offsetof(sharedEntity_t, singleClient) == 0x0fc);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_owner_offset,
-                             offsetof(sharedEntity_t, ownerNum) == 0x154);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_size,
-                             sizeof(sharedEntity_t) == 0x158);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_cached_snapshot_client_size,
-                             sizeof(serverCachedSnapshotClient_t) == 0x4564);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_cached_snapshot_frame_size,
-                             sizeof(serverCachedSnapshotFrame_t) == 0x1c);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_challenge_size,
-                             sizeof(challenge_t) == 0x54);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_snapshot_entity_numbers_size,
-                             sizeof(snapshotEntityNumbers_t) == 0x1004);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_server_header_size,
-                             sizeof(serverHeader_t) == 0x10);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_state_offset, offsetof(sharedEntity_t, entityState) == 0x000);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_single_client_offset, offsetof(sharedEntity_t, singleClient) == 0x0fc);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_owner_offset, offsetof(sharedEntity_t, ownerNum) == 0x154);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_shared_entity_size, sizeof(sharedEntity_t) == 0x158);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_cached_snapshot_client_size, sizeof(serverCachedSnapshotClient_t) == 0x4564);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_cached_snapshot_frame_size, sizeof(serverCachedSnapshotFrame_t) == 0x1c);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_challenge_size, sizeof(challenge_t) == 0x54);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_snapshot_entity_numbers_size, sizeof(snapshotEntityNumbers_t) == 0x1004);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_server_header_size, sizeof(serverHeader_t) == 0x10);
 
 #if UINTPTR_MAX == UINT32_MAX
-SERVER_RUNTIME_LAYOUT_ASSERT(q_sv_client_command_handler_size,
-                             sizeof(sv_client_command_handler_t) == 0x08);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_world_sector_area_link_size,
-                             sizeof(worldSectorAreaLink_t) == 0x54);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_world_sector_size,
-                             sizeof(worldSector_t) == 0x28);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_sv_entity_size,
-                             sizeof(svEntity_t) == 0x180);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_server_reliable_command_size,
-                             sizeof(serverReliableCommand_t) == 0x408);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_server_download_size,
-                             sizeof(serverClientDownload_t) == 0x1b0);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_client_snapshot_size,
-                             sizeof(clientSnapshot_t) == 0x4520);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_server_client_size,
-                             sizeof(client_t) == 0xab0b4);
-SERVER_RUNTIME_LAYOUT_ASSERT(q_server_static_size,
-                             sizeof(serverStatic_t) == 0x1510c);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_sv_client_command_handler_size, sizeof(sv_client_command_handler_t) == 0x08);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_world_sector_area_link_size, sizeof(worldSectorAreaLink_t) == 0x54);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_world_sector_size, sizeof(worldSector_t) == 0x28);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_sv_entity_size, sizeof(svEntity_t) == 0x180);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_server_reliable_command_size, sizeof(serverReliableCommand_t) == 0x408);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_server_download_size, sizeof(serverClientDownload_t) == 0x1b0);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_client_snapshot_size, sizeof(clientSnapshot_t) == 0x4520);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_server_client_size, sizeof(client_t) == 0xab0b4);
+SERVER_RUNTIME_LAYOUT_ASSERT(q_server_static_size, sizeof(serverStatic_t) == 0x1510c);
 #endif
 
 #undef SERVER_RUNTIME_LAYOUT_ASSERT

@@ -25,8 +25,7 @@ typedef struct xanim_runtime_tree_tail_span_s {
     uint16_t words[XANIM_RUNTIME_TREE_TAIL_WORD_COUNT];
 } xanim_runtime_tree_tail_span_t;
 
-typedef char xanim_runtime_tree_tail_span_size[
-    sizeof(xanim_runtime_tree_tail_span_t) == 0x06 ? 1 : -1];
+typedef char xanim_runtime_tree_tail_span_size[sizeof(xanim_runtime_tree_tail_span_t) == 0x06 ? 1 : -1];
 
 typedef enum xanimUser_e {
     XANIM_USER_CLIENT = 0,
@@ -44,13 +43,13 @@ typedef struct scr_anim_s {
     uint16_t treeIndex;
 } scr_anim_t;
 
-typedef char xanim_scr_anim_index_offset[
-    offsetof(scr_anim_t, animIndex) == 0x00 ? 1 : -1];
-typedef char xanim_scr_anim_tree_index_offset[
-    offsetof(scr_anim_t, treeIndex) == 0x02 ? 1 : -1];
+typedef char xanim_scr_anim_index_offset[offsetof(scr_anim_t, animIndex) == 0x00 ? 1 : -1];
+typedef char xanim_scr_anim_tree_index_offset[offsetof(scr_anim_t, treeIndex) == 0x02 ? 1 : -1];
 typedef char xanim_scr_anim_size[sizeof(scr_anim_t) == 0x04 ? 1 : -1];
 
-enum { BG_RUNTIME_ANIMATION_NAME_SIZE = 64 };
+enum {
+    BG_RUNTIME_ANIMATION_NAME_SIZE = 64
+};
 
 /* Runtime animation registration record shared by cgame and game.  The
  * Windows cgame body at 0x300012a0 and Windows game body at 0x20001290 have
@@ -66,19 +65,11 @@ typedef struct bg_runtime_animation_s {
     char name[BG_RUNTIME_ANIMATION_NAME_SIZE];
 } bg_runtime_animation_t;
 
-typedef char xanim_bg_runtime_animation_anim_offset[
-    offsetof(bg_runtime_animation_t, anim) == 0x00 ? 1 : -1];
-typedef char xanim_bg_runtime_animation_hash_offset[
-    offsetof(bg_runtime_animation_t, hash) == 0x04 ? 1 : -1];
-typedef char xanim_bg_runtime_animation_name_offset[
-    offsetof(bg_runtime_animation_t, name) == 0x08 ? 1 : -1];
-typedef char xanim_bg_runtime_animation_name_size[
-    sizeof(((bg_runtime_animation_t *)0)->name) ==
-            BG_RUNTIME_ANIMATION_NAME_SIZE
-        ? 1
-        : -1];
-typedef char xanim_bg_runtime_animation_size[
-    sizeof(bg_runtime_animation_t) == 0x48 ? 1 : -1];
+typedef char xanim_bg_runtime_animation_anim_offset[offsetof(bg_runtime_animation_t, anim) == 0x00 ? 1 : -1];
+typedef char xanim_bg_runtime_animation_hash_offset[offsetof(bg_runtime_animation_t, hash) == 0x04 ? 1 : -1];
+typedef char xanim_bg_runtime_animation_name_offset[offsetof(bg_runtime_animation_t, name) == 0x08 ? 1 : -1];
+typedef char xanim_bg_runtime_animation_name_size[sizeof(((bg_runtime_animation_t *)0)->name) == BG_RUNTIME_ANIMATION_NAME_SIZE ? 1 : -1];
+typedef char xanim_bg_runtime_animation_size[sizeof(bg_runtime_animation_t) == 0x48 ? 1 : -1];
 
 /* Signed fixed-point rotation components.  CoDUOMP.exe XAnimLoadFile at
  * 0x00495ed0 and coduo_lnxded XAnimLoadFile at 0x080b816e use the same
@@ -255,7 +246,9 @@ typedef struct XAnimInfo {
  * client name is retained for the word at +0x04; the Linux server transports
  * its script notify handle through the same notify-type field.  Windows cgame
  * CG_SetGunHandFromNotetracks consumes type 1 from this exact record domain. */
-enum { XANIM_NOTIFY_CLIENT = 1 };
+enum {
+    XANIM_NOTIFY_CLIENT = 1
+};
 
 typedef struct xanim_deferred_notify_s {
     const char *name;
@@ -272,259 +265,136 @@ typedef struct xanim_deferred_notify_s {
 #else
 #define XANIM_TYPES_ALIGNOF(type) __alignof__(type)
 #endif
-#define XANIM_TYPES_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
+#define XANIM_TYPES_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
 
-XANIM_TYPES_ASSERT(xanim_int16_vec2_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_int16_vec2_t) == 0x02);
-XANIM_TYPES_ASSERT(xanim_scr_anim_alignment,
-                   XANIM_TYPES_ALIGNOF(scr_anim_t) == 0x02);
-XANIM_TYPES_ASSERT(xanim_bg_runtime_animation_alignment,
-                   XANIM_TYPES_ALIGNOF(bg_runtime_animation_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_int16_vec2_components_offset,
-                   offsetof(xanim_int16_vec2_t, components) == 0x00);
-XANIM_TYPES_ASSERT(xanim_int16_vec2_size,
-                   sizeof(xanim_int16_vec2_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_int16_vec4_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_int16_vec4_t) == 0x02);
-XANIM_TYPES_ASSERT(xanim_int16_vec4_components_offset,
-                   offsetof(xanim_int16_vec4_t, components) == 0x00);
-XANIM_TYPES_ASSERT(xanim_int16_vec4_size,
-                   sizeof(xanim_int16_vec4_t) == 0x08);
+XANIM_TYPES_ASSERT(xanim_int16_vec2_alignment, XANIM_TYPES_ALIGNOF(xanim_int16_vec2_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_scr_anim_alignment, XANIM_TYPES_ALIGNOF(scr_anim_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_bg_runtime_animation_alignment, XANIM_TYPES_ALIGNOF(bg_runtime_animation_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_int16_vec2_components_offset, offsetof(xanim_int16_vec2_t, components) == 0x00);
+XANIM_TYPES_ASSERT(xanim_int16_vec2_size, sizeof(xanim_int16_vec2_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_int16_vec4_alignment, XANIM_TYPES_ALIGNOF(xanim_int16_vec4_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_int16_vec4_components_offset, offsetof(xanim_int16_vec4_t, components) == 0x00);
+XANIM_TYPES_ASSERT(xanim_int16_vec4_size, sizeof(xanim_int16_vec4_t) == 0x08);
 
-XANIM_TYPES_ASSERT(xanim_notetrack_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_notetrack_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_notetrack_name_offset,
-                   offsetof(xanim_notetrack_t, nameHandle) == 0x00);
-XANIM_TYPES_ASSERT(xanim_notetrack_padding_offset,
-                   offsetof(xanim_notetrack_t, padding02) == 0x02);
-XANIM_TYPES_ASSERT(xanim_notetrack_time_offset,
-                   offsetof(xanim_notetrack_t, time) == 0x04);
-XANIM_TYPES_ASSERT(xanim_notetrack_size,
-                   sizeof(xanim_notetrack_t) == 0x08);
+XANIM_TYPES_ASSERT(xanim_notetrack_alignment, XANIM_TYPES_ALIGNOF(xanim_notetrack_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_notetrack_name_offset, offsetof(xanim_notetrack_t, nameHandle) == 0x00);
+XANIM_TYPES_ASSERT(xanim_notetrack_padding_offset, offsetof(xanim_notetrack_t, padding02) == 0x02);
+XANIM_TYPES_ASSERT(xanim_notetrack_time_offset, offsetof(xanim_notetrack_t, time) == 0x04);
+XANIM_TYPES_ASSERT(xanim_notetrack_size, sizeof(xanim_notetrack_t) == 0x08);
 
-XANIM_TYPES_ASSERT(xanim_rotation_data_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_rotation_stream_data_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_rotation_data_frames4_offset,
-                   offsetof(xanim_rotation_stream_data_t, frames4) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_data_frames2_offset,
-                   offsetof(xanim_rotation_stream_data_t, frames2) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_data_inline_offset,
-                   offsetof(xanim_rotation_stream_data_t, inlinePrefix) ==
-                       0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_data_lane0_offset,
-                   offsetof(xanim_rotation_stream_data_t,
-                            inlinePrefix.lane0) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_data_lane1_offset,
-                   offsetof(xanim_rotation_stream_data_t,
-                            inlinePrefix.lane1) == 0x02);
-XANIM_TYPES_ASSERT(xanim_rotation_data_size,
-                   sizeof(xanim_rotation_stream_data_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_rotation_data_alignment, XANIM_TYPES_ALIGNOF(xanim_rotation_stream_data_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_rotation_data_frames4_offset, offsetof(xanim_rotation_stream_data_t, frames4) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_data_frames2_offset, offsetof(xanim_rotation_stream_data_t, frames2) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_data_inline_offset, offsetof(xanim_rotation_stream_data_t, inlinePrefix) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_data_lane0_offset, offsetof(xanim_rotation_stream_data_t, inlinePrefix.lane0) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_data_lane1_offset, offsetof(xanim_rotation_stream_data_t, inlinePrefix.lane1) == 0x02);
+XANIM_TYPES_ASSERT(xanim_rotation_data_size, sizeof(xanim_rotation_stream_data_t) == 0x04);
 
-XANIM_TYPES_ASSERT(xanim_rotation_tail_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_rotation_stream_tail_t) == 0x02);
-XANIM_TYPES_ASSERT(xanim_rotation_tail_inline_offset,
-                   offsetof(xanim_rotation_stream_tail_t, inlineFull) ==
-                       0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_tail_lane2_offset,
-                   offsetof(xanim_rotation_stream_tail_t,
-                            inlineFull.lane2) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_tail_lane3_offset,
-                   offsetof(xanim_rotation_stream_tail_t,
-                            inlineFull.lane3) == 0x02);
-XANIM_TYPES_ASSERT(xanim_rotation_tail_byte_keys_offset,
-                   offsetof(xanim_rotation_stream_tail_t, byteKeys) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_tail_short_keys_offset,
-                   offsetof(xanim_rotation_stream_tail_t, shortKeys) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_tail_size,
-                   sizeof(xanim_rotation_stream_tail_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_alignment, XANIM_TYPES_ALIGNOF(xanim_rotation_stream_tail_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_inline_offset, offsetof(xanim_rotation_stream_tail_t, inlineFull) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_lane2_offset, offsetof(xanim_rotation_stream_tail_t, inlineFull.lane2) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_lane3_offset, offsetof(xanim_rotation_stream_tail_t, inlineFull.lane3) == 0x02);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_byte_keys_offset, offsetof(xanim_rotation_stream_tail_t, byteKeys) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_short_keys_offset, offsetof(xanim_rotation_stream_tail_t, shortKeys) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_tail_size, sizeof(xanim_rotation_stream_tail_t) == 0x04);
 
-XANIM_TYPES_ASSERT(xanim_rotation_stream_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_rotation_stream_t) == 0x02);
-XANIM_TYPES_ASSERT(xanim_rotation_stream_data_offset,
-                   offsetof(xanim_rotation_stream_t, data) == 0x00);
-XANIM_TYPES_ASSERT(xanim_rotation_stream_frame_offset,
-                   offsetof(xanim_rotation_stream_t, frameIndex) == 0x04);
-XANIM_TYPES_ASSERT(xanim_rotation_stream_tail_offset,
-                   offsetof(xanim_rotation_stream_t, tail) == 0x06);
-XANIM_TYPES_ASSERT(xanim_rotation_stream_size,
-                   sizeof(xanim_rotation_stream_t) == 0x0a);
+XANIM_TYPES_ASSERT(xanim_rotation_stream_alignment, XANIM_TYPES_ALIGNOF(xanim_rotation_stream_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_rotation_stream_data_offset, offsetof(xanim_rotation_stream_t, data) == 0x00);
+XANIM_TYPES_ASSERT(xanim_rotation_stream_frame_offset, offsetof(xanim_rotation_stream_t, frameIndex) == 0x04);
+XANIM_TYPES_ASSERT(xanim_rotation_stream_tail_offset, offsetof(xanim_rotation_stream_t, tail) == 0x06);
+XANIM_TYPES_ASSERT(xanim_rotation_stream_size, sizeof(xanim_rotation_stream_t) == 0x0a);
 
-XANIM_TYPES_ASSERT(
-    xanim_translation_data_alignment,
-    XANIM_TYPES_ALIGNOF(xanim_translation_stream_data_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_translation_data_frames_offset,
-                   offsetof(xanim_translation_stream_data_t, frames) ==
-                       0x00);
-XANIM_TYPES_ASSERT(xanim_translation_data_inline_offset,
-                   offsetof(xanim_translation_stream_data_t, inlineLane0) ==
-                       0x00);
-XANIM_TYPES_ASSERT(xanim_translation_data_size,
-                   sizeof(xanim_translation_stream_data_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_translation_data_alignment, XANIM_TYPES_ALIGNOF(xanim_translation_stream_data_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_translation_data_frames_offset, offsetof(xanim_translation_stream_data_t, frames) == 0x00);
+XANIM_TYPES_ASSERT(xanim_translation_data_inline_offset, offsetof(xanim_translation_stream_data_t, inlineLane0) == 0x00);
+XANIM_TYPES_ASSERT(xanim_translation_data_size, sizeof(xanim_translation_stream_data_t) == 0x04);
 
-XANIM_TYPES_ASSERT(
-    xanim_translation_key_alignment,
-    XANIM_TYPES_ALIGNOF(xanim_translation_stream_key_t) == 0x02);
-XANIM_TYPES_ASSERT(xanim_translation_key_byte_offset,
-                   offsetof(xanim_translation_stream_key_t, byteKeys) ==
-                       0x00);
-XANIM_TYPES_ASSERT(xanim_translation_key_short_offset,
-                   offsetof(xanim_translation_stream_key_t, shortKeys) ==
-                       0x00);
-XANIM_TYPES_ASSERT(xanim_translation_key_size,
-                   sizeof(xanim_translation_stream_key_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_translation_key_alignment, XANIM_TYPES_ALIGNOF(xanim_translation_stream_key_t) == 0x02);
+XANIM_TYPES_ASSERT(xanim_translation_key_byte_offset, offsetof(xanim_translation_stream_key_t, byteKeys) == 0x00);
+XANIM_TYPES_ASSERT(xanim_translation_key_short_offset, offsetof(xanim_translation_stream_key_t, shortKeys) == 0x00);
+XANIM_TYPES_ASSERT(xanim_translation_key_size, sizeof(xanim_translation_stream_key_t) == 0x02);
 
-XANIM_TYPES_ASSERT(
-    xanim_translation_inline_alignment,
-    XANIM_TYPES_ALIGNOF(xanim_translation_stream_inline_lanes_t) == 0x04);
-XANIM_TYPES_ASSERT(
-    xanim_translation_inline_lane1_offset,
-    offsetof(xanim_translation_stream_inline_lanes_t, lane1) == 0x00);
-XANIM_TYPES_ASSERT(
-    xanim_translation_inline_lane2_offset,
-    offsetof(xanim_translation_stream_inline_lanes_t, lane2) == 0x04);
-XANIM_TYPES_ASSERT(xanim_translation_inline_size,
-                   sizeof(xanim_translation_stream_inline_lanes_t) == 0x08);
+XANIM_TYPES_ASSERT(xanim_translation_inline_alignment, XANIM_TYPES_ALIGNOF(xanim_translation_stream_inline_lanes_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_translation_inline_lane1_offset, offsetof(xanim_translation_stream_inline_lanes_t, lane1) == 0x00);
+XANIM_TYPES_ASSERT(xanim_translation_inline_lane2_offset, offsetof(xanim_translation_stream_inline_lanes_t, lane2) == 0x04);
+XANIM_TYPES_ASSERT(xanim_translation_inline_size, sizeof(xanim_translation_stream_inline_lanes_t) == 0x08);
 
-XANIM_TYPES_ASSERT(xanim_translation_stream_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_translation_stream_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_translation_stream_data_offset,
-                   offsetof(xanim_translation_stream_t, data) == 0x00);
-XANIM_TYPES_ASSERT(xanim_translation_stream_frame_offset,
-                   offsetof(xanim_translation_stream_t, frameIndex) == 0x04);
-XANIM_TYPES_ASSERT(xanim_translation_stream_key_offset,
-                   offsetof(xanim_translation_stream_t, key) == 0x06);
-XANIM_TYPES_ASSERT(xanim_translation_stream_inline_offset,
-                   offsetof(xanim_translation_stream_t, inlineLanes) ==
-                       0x08);
-XANIM_TYPES_ASSERT(xanim_translation_stream_size,
-                   sizeof(xanim_translation_stream_t) == 0x10);
+XANIM_TYPES_ASSERT(xanim_translation_stream_alignment, XANIM_TYPES_ALIGNOF(xanim_translation_stream_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_translation_stream_data_offset, offsetof(xanim_translation_stream_t, data) == 0x00);
+XANIM_TYPES_ASSERT(xanim_translation_stream_frame_offset, offsetof(xanim_translation_stream_t, frameIndex) == 0x04);
+XANIM_TYPES_ASSERT(xanim_translation_stream_key_offset, offsetof(xanim_translation_stream_t, key) == 0x06);
+XANIM_TYPES_ASSERT(xanim_translation_stream_inline_offset, offsetof(xanim_translation_stream_t, inlineLanes) == 0x08);
+XANIM_TYPES_ASSERT(xanim_translation_stream_size, sizeof(xanim_translation_stream_t) == 0x10);
 
-XANIM_TYPES_ASSERT(xanim_stream_pair_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_part_stream_pair_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_stream_pair_translation_offset,
-                   offsetof(xanim_part_stream_pair_t, translation) == 0x00);
-XANIM_TYPES_ASSERT(xanim_stream_pair_rotation_offset,
-                   offsetof(xanim_part_stream_pair_t, rotation) == 0x04);
-XANIM_TYPES_ASSERT(xanim_stream_pair_size,
-                   sizeof(xanim_part_stream_pair_t) == 0x08);
+XANIM_TYPES_ASSERT(xanim_stream_pair_alignment, XANIM_TYPES_ALIGNOF(xanim_part_stream_pair_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_stream_pair_translation_offset, offsetof(xanim_part_stream_pair_t, translation) == 0x00);
+XANIM_TYPES_ASSERT(xanim_stream_pair_rotation_offset, offsetof(xanim_part_stream_pair_t, rotation) == 0x04);
+XANIM_TYPES_ASSERT(xanim_stream_pair_size, sizeof(xanim_part_stream_pair_t) == 0x08);
 
-XANIM_TYPES_ASSERT(xanim_parts_alignment,
-                   XANIM_TYPES_ALIGNOF(XAnimParts) == 0x04);
-XANIM_TYPES_ASSERT(xanim_parts_frame_count_offset,
-                   offsetof(XAnimParts, frameCountMinusOne) == 0x00);
-XANIM_TYPES_ASSERT(xanim_parts_looped_offset,
-                   offsetof(XAnimParts, looped) == 0x02);
-XANIM_TYPES_ASSERT(xanim_parts_delta_flag_offset,
-                   offsetof(XAnimParts, hasDeltaMotion) == 0x03);
-XANIM_TYPES_ASSERT(xanim_parts_frame_rate_offset,
-                   offsetof(XAnimParts, frameRate) == 0x04);
-XANIM_TYPES_ASSERT(xanim_parts_frequency_offset,
-                   offsetof(XAnimParts, frequency) == 0x08);
-XANIM_TYPES_ASSERT(xanim_parts_names_offset,
-                   offsetof(XAnimParts, partNameHandles) == 0x0c);
-XANIM_TYPES_ASSERT(xanim_parts_streams_offset,
-                   offsetof(XAnimParts, partStreamPairs) == 0x10);
-XANIM_TYPES_ASSERT(xanim_parts_notetracks_offset,
-                   offsetof(XAnimParts, noteTracks) == 0x14);
-XANIM_TYPES_ASSERT(xanim_parts_delta_motion_offset,
-                   offsetof(XAnimParts, deltaMotion) == 0x18);
-XANIM_TYPES_ASSERT(xanim_parts_rotation_bits_offset,
-                   offsetof(XAnimParts, compressedRotationBits) == 0x1c);
+XANIM_TYPES_ASSERT(xanim_parts_alignment, XANIM_TYPES_ALIGNOF(XAnimParts) == 0x04);
+XANIM_TYPES_ASSERT(xanim_parts_frame_count_offset, offsetof(XAnimParts, frameCountMinusOne) == 0x00);
+XANIM_TYPES_ASSERT(xanim_parts_looped_offset, offsetof(XAnimParts, looped) == 0x02);
+XANIM_TYPES_ASSERT(xanim_parts_delta_flag_offset, offsetof(XAnimParts, hasDeltaMotion) == 0x03);
+XANIM_TYPES_ASSERT(xanim_parts_frame_rate_offset, offsetof(XAnimParts, frameRate) == 0x04);
+XANIM_TYPES_ASSERT(xanim_parts_frequency_offset, offsetof(XAnimParts, frequency) == 0x08);
+XANIM_TYPES_ASSERT(xanim_parts_names_offset, offsetof(XAnimParts, partNameHandles) == 0x0c);
+XANIM_TYPES_ASSERT(xanim_parts_streams_offset, offsetof(XAnimParts, partStreamPairs) == 0x10);
+XANIM_TYPES_ASSERT(xanim_parts_notetracks_offset, offsetof(XAnimParts, noteTracks) == 0x14);
+XANIM_TYPES_ASSERT(xanim_parts_delta_motion_offset, offsetof(XAnimParts, deltaMotion) == 0x18);
+XANIM_TYPES_ASSERT(xanim_parts_rotation_bits_offset, offsetof(XAnimParts, compressedRotationBits) == 0x1c);
 XANIM_TYPES_ASSERT(xanim_parts_size, sizeof(XAnimParts) == 0x20);
 
-typedef char xanim_entry_child_count_offset[
-    offsetof(XAnimEntry, childCount) == 0x00 ? 1 : -1];
-typedef char xanim_entry_parent_index_offset[
-    offsetof(XAnimEntry, parentIndex) == 0x02 ? 1 : -1];
-typedef char xanim_entry_payload_offset[
-    offsetof(XAnimEntry, payload) == 0x04 ? 1 : -1];
-typedef char xanim_entry_leaf_asset_offset[
-    offsetof(XAnimEntry, payload.leafAsset) == 0x04 ? 1 : -1];
-typedef char xanim_entry_parent_flags_offset[
-    offsetof(XAnimEntry, payload.parent.flags) == 0x04 ? 1 : -1];
-typedef char xanim_entry_first_child_offset[
-    offsetof(XAnimEntry, payload.parent.firstChildIndex) == 0x06 ? 1 : -1];
+typedef char xanim_entry_child_count_offset[offsetof(XAnimEntry, childCount) == 0x00 ? 1 : -1];
+typedef char xanim_entry_parent_index_offset[offsetof(XAnimEntry, parentIndex) == 0x02 ? 1 : -1];
+typedef char xanim_entry_payload_offset[offsetof(XAnimEntry, payload) == 0x04 ? 1 : -1];
+typedef char xanim_entry_leaf_asset_offset[offsetof(XAnimEntry, payload.leafAsset) == 0x04 ? 1 : -1];
+typedef char xanim_entry_parent_flags_offset[offsetof(XAnimEntry, payload.parent.flags) == 0x04 ? 1 : -1];
+typedef char xanim_entry_first_child_offset[offsetof(XAnimEntry, payload.parent.firstChildIndex) == 0x06 ? 1 : -1];
 typedef char xanim_entry_size[sizeof(XAnimEntry) == 0x08 ? 1 : -1];
-typedef char xanim_entry_alignment[
-    XANIM_TYPES_ALIGNOF(XAnimEntry) == 0x04 ? 1 : -1];
+typedef char xanim_entry_alignment[XANIM_TYPES_ALIGNOF(XAnimEntry) == 0x04 ? 1 : -1];
 
-typedef char xanim_name_offset[
-    offsetof(XAnim, name) == 0x00 ? 1 : -1];
-typedef char xanim_node_count_offset[
-    offsetof(XAnim, nodeCount) == 0x04 ? 1 : -1];
-typedef char xanim_entries_offset[
-    offsetof(XAnim, entries) == 0x08 ? 1 : -1];
+typedef char xanim_name_offset[offsetof(XAnim, name) == 0x00 ? 1 : -1];
+typedef char xanim_node_count_offset[offsetof(XAnim, nodeCount) == 0x04 ? 1 : -1];
+typedef char xanim_entries_offset[offsetof(XAnim, entries) == 0x08 ? 1 : -1];
 typedef char xanim_size[sizeof(XAnim) == 0x08 ? 1 : -1];
-typedef char xanim_alignment[
-    XANIM_TYPES_ALIGNOF(XAnim) == 0x04 ? 1 : -1];
+typedef char xanim_alignment[XANIM_TYPES_ALIGNOF(XAnim) == 0x04 ? 1 : -1];
 
-typedef char xanim_tree_source_offset[
-    offsetof(XAnimTree, sourceTree) == 0x00 ? 1 : -1];
-typedef char xanim_tree_active_count_offset[
-    offsetof(XAnimTree, activePoolNodeCount) == 0x04 ? 1 : -1];
-typedef char xanim_tree_remap_selector_offset[
-    offsetof(XAnimTree, partRemapTableSelector) == 0x08 ? 1 : -1];
-typedef char xanim_tree_handles_offset[
-    offsetof(XAnimTree, poolNodeHandles) == 0x0c ? 1 : -1];
-typedef char xanim_tree_handle_size[
-    sizeof(((XAnimTree *)0)->poolNodeHandles[0]) == 0x02 ? 1 : -1];
+typedef char xanim_tree_source_offset[offsetof(XAnimTree, sourceTree) == 0x00 ? 1 : -1];
+typedef char xanim_tree_active_count_offset[offsetof(XAnimTree, activePoolNodeCount) == 0x04 ? 1 : -1];
+typedef char xanim_tree_remap_selector_offset[offsetof(XAnimTree, partRemapTableSelector) == 0x08 ? 1 : -1];
+typedef char xanim_tree_handles_offset[offsetof(XAnimTree, poolNodeHandles) == 0x0c ? 1 : -1];
+typedef char xanim_tree_handle_size[sizeof(((XAnimTree *)0)->poolNodeHandles[0]) == 0x02 ? 1 : -1];
 typedef char xanim_tree_size[sizeof(XAnimTree) == 0x0c ? 1 : -1];
-typedef char xanim_tree_alignment[
-    XANIM_TYPES_ALIGNOF(XAnimTree) == 0x04 ? 1 : -1];
+typedef char xanim_tree_alignment[XANIM_TYPES_ALIGNOF(XAnimTree) == 0x04 ? 1 : -1];
 
-XANIM_TYPES_ASSERT(xanim_state_alignment,
-                   XANIM_TYPES_ALIGNOF(XAnimState) == 0x04);
-XANIM_TYPES_ASSERT(xanim_state_time_offset,
-                   offsetof(XAnimState, time) == 0x00);
-XANIM_TYPES_ASSERT(xanim_state_old_time_offset,
-                   offsetof(XAnimState, oldTime) == 0x04);
-XANIM_TYPES_ASSERT(xanim_state_cycle_offset,
-                   offsetof(XAnimState, cycleCount) == 0x08);
-XANIM_TYPES_ASSERT(xanim_state_old_cycle_offset,
-                   offsetof(XAnimState, oldCycleCount) == 0x0a);
-XANIM_TYPES_ASSERT(xanim_state_blend_time_offset,
-                   offsetof(XAnimState, weightBlendTimeRemaining) == 0x0c);
-XANIM_TYPES_ASSERT(xanim_state_target_weight_offset,
-                   offsetof(XAnimState, targetWeight) == 0x10);
-XANIM_TYPES_ASSERT(xanim_state_current_weight_offset,
-                   offsetof(XAnimState, currentWeight) == 0x14);
-XANIM_TYPES_ASSERT(xanim_state_rate_scale_offset,
-                   offsetof(XAnimState, rateScale) == 0x18);
+XANIM_TYPES_ASSERT(xanim_state_alignment, XANIM_TYPES_ALIGNOF(XAnimState) == 0x04);
+XANIM_TYPES_ASSERT(xanim_state_time_offset, offsetof(XAnimState, time) == 0x00);
+XANIM_TYPES_ASSERT(xanim_state_old_time_offset, offsetof(XAnimState, oldTime) == 0x04);
+XANIM_TYPES_ASSERT(xanim_state_cycle_offset, offsetof(XAnimState, cycleCount) == 0x08);
+XANIM_TYPES_ASSERT(xanim_state_old_cycle_offset, offsetof(XAnimState, oldCycleCount) == 0x0a);
+XANIM_TYPES_ASSERT(xanim_state_blend_time_offset, offsetof(XAnimState, weightBlendTimeRemaining) == 0x0c);
+XANIM_TYPES_ASSERT(xanim_state_target_weight_offset, offsetof(XAnimState, targetWeight) == 0x10);
+XANIM_TYPES_ASSERT(xanim_state_current_weight_offset, offsetof(XAnimState, currentWeight) == 0x14);
+XANIM_TYPES_ASSERT(xanim_state_rate_scale_offset, offsetof(XAnimState, rateScale) == 0x18);
 XANIM_TYPES_ASSERT(xanim_state_size, sizeof(XAnimState) == 0x1c);
 
-XANIM_TYPES_ASSERT(xanim_info_alignment,
-                   XANIM_TYPES_ALIGNOF(XAnimInfo) == 0x04);
-XANIM_TYPES_ASSERT(xanim_info_notify_child_offset,
-                   offsetof(XAnimInfo, notifyChildIndex) == 0x00);
-XANIM_TYPES_ASSERT(xanim_info_notify_index_offset,
-                   offsetof(XAnimInfo, notifyIndex) == 0x02);
-XANIM_TYPES_ASSERT(xanim_info_notify_name_offset,
-                   offsetof(XAnimInfo, notifyName) == 0x04);
-XANIM_TYPES_ASSERT(xanim_info_notify_type_offset,
-                   offsetof(XAnimInfo, notifyType) == 0x06);
-XANIM_TYPES_ASSERT(xanim_info_free_prev_offset,
-                   offsetof(XAnimInfo, freePrev) == 0x08);
-XANIM_TYPES_ASSERT(xanim_info_free_next_offset,
-                   offsetof(XAnimInfo, freeNext) == 0x0a);
-XANIM_TYPES_ASSERT(xanim_info_states_offset,
-                   offsetof(XAnimInfo, states) == 0x0c);
-XANIM_TYPES_ASSERT(xanim_info_states_size,
-                   sizeof(((XAnimInfo *)0)->states) == 0x38);
+XANIM_TYPES_ASSERT(xanim_info_alignment, XANIM_TYPES_ALIGNOF(XAnimInfo) == 0x04);
+XANIM_TYPES_ASSERT(xanim_info_notify_child_offset, offsetof(XAnimInfo, notifyChildIndex) == 0x00);
+XANIM_TYPES_ASSERT(xanim_info_notify_index_offset, offsetof(XAnimInfo, notifyIndex) == 0x02);
+XANIM_TYPES_ASSERT(xanim_info_notify_name_offset, offsetof(XAnimInfo, notifyName) == 0x04);
+XANIM_TYPES_ASSERT(xanim_info_notify_type_offset, offsetof(XAnimInfo, notifyType) == 0x06);
+XANIM_TYPES_ASSERT(xanim_info_free_prev_offset, offsetof(XAnimInfo, freePrev) == 0x08);
+XANIM_TYPES_ASSERT(xanim_info_free_next_offset, offsetof(XAnimInfo, freeNext) == 0x0a);
+XANIM_TYPES_ASSERT(xanim_info_states_offset, offsetof(XAnimInfo, states) == 0x0c);
+XANIM_TYPES_ASSERT(xanim_info_states_size, sizeof(((XAnimInfo *)0)->states) == 0x38);
 XANIM_TYPES_ASSERT(xanim_info_size, sizeof(XAnimInfo) == 0x44);
 
-XANIM_TYPES_ASSERT(xanim_deferred_notify_alignment,
-                   XANIM_TYPES_ALIGNOF(xanim_deferred_notify_t) == 0x04);
-XANIM_TYPES_ASSERT(xanim_deferred_notify_name_offset,
-                   offsetof(xanim_deferred_notify_t, name) == 0x00);
-XANIM_TYPES_ASSERT(xanim_deferred_notify_type_offset,
-                   offsetof(xanim_deferred_notify_t, notifyType) == 0x04);
-XANIM_TYPES_ASSERT(xanim_deferred_notify_padding_offset,
-                   offsetof(xanim_deferred_notify_t, padding06) == 0x06);
-XANIM_TYPES_ASSERT(xanim_deferred_notify_time_offset,
-                   offsetof(xanim_deferred_notify_t, timeFrac) == 0x08);
-XANIM_TYPES_ASSERT(xanim_deferred_notify_size,
-                   sizeof(xanim_deferred_notify_t) == 0x0c);
+XANIM_TYPES_ASSERT(xanim_deferred_notify_alignment, XANIM_TYPES_ALIGNOF(xanim_deferred_notify_t) == 0x04);
+XANIM_TYPES_ASSERT(xanim_deferred_notify_name_offset, offsetof(xanim_deferred_notify_t, name) == 0x00);
+XANIM_TYPES_ASSERT(xanim_deferred_notify_type_offset, offsetof(xanim_deferred_notify_t, notifyType) == 0x04);
+XANIM_TYPES_ASSERT(xanim_deferred_notify_padding_offset, offsetof(xanim_deferred_notify_t, padding06) == 0x06);
+XANIM_TYPES_ASSERT(xanim_deferred_notify_time_offset, offsetof(xanim_deferred_notify_t, timeFrac) == 0x08);
+XANIM_TYPES_ASSERT(xanim_deferred_notify_size, sizeof(xanim_deferred_notify_t) == 0x0c);
 
 #undef XANIM_TYPES_ASSERT
 #undef XANIM_TYPES_ALIGNOF

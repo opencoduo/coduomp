@@ -30,12 +30,10 @@ int32_t FastRound(float value)
 int32_t FastRound(float value)
 {
 #if EMULATE_X87
-    return x87f_store_i32_trunc(
-        x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
+    return x87f_store_i32_trunc(x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
 #elif defined(__x86_64__)
     static const float half = 0.5f;
-    return CODUO_X87_TRUNCATE_I32(
-        (long double)value + (long double)half);
+    return CODUO_X87_TRUNCATE_I32((long double)value + (long double)half);
 #else
     return (int32_t)(value + 0.5f);
 #endif

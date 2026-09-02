@@ -31,7 +31,8 @@ void CM_FloodArea_r(int32_t areaNum, int32_t floodNum)
         if (area->floodNum == floodNum) {
             return;
         }
-        Com_Error(ERR_DROP, "\x15" "FloodArea_r: reflooded");
+        Com_Error(ERR_DROP, "\x15"
+                            "FloodArea_r: reflooded");
     }
 
     area->floodNum = floodNum;
@@ -65,8 +66,8 @@ void CM_AdjustAreaPortalState(int32_t area1, int32_t area2, qboolean open)
     }
 
     if (area1 >= cm_numAreas || area2 >= cm_numAreas) {
-        Com_Error(ERR_DROP,
-                  "\x15" "CM_ChangeAreaPortalState: bad area number");
+        Com_Error(ERR_DROP, "\x15"
+                            "CM_ChangeAreaPortalState: bad area number");
     }
 
     if (open != qfalse) {
@@ -77,9 +78,8 @@ void CM_AdjustAreaPortalState(int32_t area1, int32_t area2, qboolean open)
         cm_areaPortals[area2 * cm_numAreas + area1]--;
 
         if (cm_areaPortals[area2 * cm_numAreas + area1] < 0) {
-            Com_Error(ERR_DROP,
-                      "\x15"
-                      "CM_AdjustAreaPortalState: negative reference count");
+            Com_Error(ERR_DROP, "\x15"
+                                "CM_AdjustAreaPortalState: negative reference count");
         }
     }
 

@@ -17,8 +17,7 @@ qboolean UI_Handicap_HandleKey(int32_t flags, float *special, int32_t key)
     (void)flags;
     (void)special;
 
-    if (key != K_MOUSE1 && key != K_MOUSE2 &&
-        key != K_ENTER && key != K_KP_ENTER) {
+    if (key != K_MOUSE1 && key != K_MOUSE2 && key != K_ENTER && key != K_KP_ENTER) {
         return qfalse;
     }
 
@@ -34,7 +33,7 @@ qboolean UI_Handicap_HandleKey(int32_t flags, float *special, int32_t key)
     value += key == K_MOUSE2 ? -UI_HANDICAP_STEP : UI_HANDICAP_STEP;
     if (value > UI_HANDICAP_MAXIMUM) {
         value = UI_HANDICAP_MINIMUM;
-    /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
+        /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     } else if (value < UI_HANDICAP_MINIMUM) {
         value = UI_HANDICAP_MAXIMUM;
     }

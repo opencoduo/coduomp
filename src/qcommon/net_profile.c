@@ -16,8 +16,7 @@ enum {
     NET_PROFILE_EMPTY_MIN_BYTES = 9999
 };
 
-static const float net_profileMillisecondsToSeconds =
-    0.0010000000474974513f;
+static const float net_profileMillisecondsToSeconds = 0.0010000000474974513f;
 
 void Com_Printf(const char *format, ...);
 void Sys_OutOfMemory(void);
@@ -59,8 +58,7 @@ extern cvar_t *sv_running;
 void Net_DumpProfile_f(void)
 {
     if (net_profileActiveMode == NET_PROFILE_OFF) {
-        Com_Printf(
-            "Network profiling is not on. Set net_profile to turn on network profiling\n");
+        Com_Printf("Network profiling is not on. Set net_profile to turn on network profiling\n");
         return;
     }
 
@@ -71,18 +69,13 @@ void NetProf_PrepProfiling(netProfileInfo_t **profile)
 {
     if (net_profile->integer != 0) {
         if (net_profileActiveMode == NET_PROFILE_OFF) {
-            if (sv_running->integer == 0 ||
-                (cl_running->integer != 0 &&
-                 net_profile->integer == NET_PROFILE_SERVER)) {
+            if (sv_running->integer == 0 || (cl_running->integer != 0 && net_profile->integer == NET_PROFILE_SERVER)) {
                 net_profileActiveMode = NET_PROFILE_CLIENT;
             } else {
                 net_profileActiveMode = NET_PROFILE_SERVER;
             }
 
-            Com_Printf(
-                "Net Profiling turned on: %s\n",
-                net_profileSocketNames[
-                    net_profileActiveMode - NET_PROFILE_CLIENT]);
+            Com_Printf("Net Profiling turned on: %s\n", net_profileSocketNames[net_profileActiveMode - NET_PROFILE_CLIENT]);
         }
 
         if (*profile == NULL) {
@@ -107,19 +100,16 @@ void NetProf_PrepProfiling(netProfileInfo_t **profile)
     }
 }
 
-void NetProf_AddPacket(netProfileStream_t *profile, int32_t length,
-                       qboolean fragmented)
+void NetProf_AddPacket(netProfileStream_t *profile, int32_t length, qboolean fragmented)
 {
-    profile->ringIndex =
-        (profile->ringIndex + 1) % NET_PROFILE_SAMPLE_COUNT;
+    profile->ringIndex = (profile->ringIndex + 1) % NET_PROFILE_SAMPLE_COUNT;
     netProfileSample_t *sample = &profile->samples[profile->ringIndex];
     sample->time = (int32_t)Sys_Milliseconds();
     sample->bytes = length;
     sample->fragmented = fragmented;
 }
 
-void NetProf_NewSendPacket(netchan_t *channel, int32_t length,
-                           qboolean fragmented)
+void NetProf_NewSendPacket(netchan_t *channel, int32_t length, qboolean fragmented)
 {
     if (net_profileActiveMode == NET_PROFILE_OFF) {
         return;
@@ -127,14 +117,11 @@ void NetProf_NewSendPacket(netchan_t *channel, int32_t length,
 
     NetProf_AddPacket(&channel->profile->send, length, fragmented);
     if ((net_showprofile->integer & NET_SHOWPROFILE_PACKETS) != 0) {
-        Com_Printf("%s send%s: %i\n",
-                   net_profileSocketNames[channel->sock],
-                   fragmented ? " fragment" : "", length);
+        Com_Printf("%s send%s: %i\n", net_profileSocketNames[channel->sock], fragmented ? " fragment" : "", length);
     }
 }
 
-void NetProf_NewRecievePacket(netchan_t *channel, int32_t length,
-                              qboolean fragmented)
+void NetProf_NewRecievePacket(netchan_t *channel, int32_t length, qboolean fragmented)
 {
     if (net_profileActiveMode == NET_PROFILE_OFF) {
         return;
@@ -142,9 +129,7 @@ void NetProf_NewRecievePacket(netchan_t *channel, int32_t length,
 
     NetProf_AddPacket(&channel->profile->receive, length, fragmented);
     if ((net_showprofile->integer & NET_SHOWPROFILE_PACKETS) != 0) {
-        Com_Printf("%s recieve%s: %i\n",
-                   net_profileSocketNames[channel->sock],
-                   fragmented ? " fragment" : "", length);
+        Com_Printf("%s recieve%s: %i\n", net_profileSocketNames[channel->sock], fragmented ? " fragment" : "", length);
     }
 }
 
@@ -160,9 +145,7 @@ void NetProf_UpdateStatistics(netProfileStream_t *profile)
 
     for (int32_t index = 0; index < NET_PROFILE_SAMPLE_COUNT; ++index) {
         const netProfileSample_t *sample = &profile->samples[index];
-        if (sample->time == 0 ||
-            (int32_t)Sys_Milliseconds() >
-                sample->time + NET_PROFILE_SAMPLE_WINDOW_MILLISECONDS) {
+        if (sample->time == 0 || (int32_t)Sys_Milliseconds() > sample->time + NET_PROFILE_SAMPLE_WINDOW_MILLISECONDS) {
             continue;
         }
 
@@ -194,20 +177,15 @@ void NetProf_UpdateStatistics(netProfileStream_t *profile)
         return;
     }
 
-    profile->fragmentPercent = fragmentSampleCount != 0
-        ? fragmentSampleCount * 100 / sampleCount
-        : 0;
+    profile->fragmentPercent = fragmentSampleCount != 0 ? fragmentSampleCount * 100 / sampleCount : 0;
     profile->maxBytes = maxBytes;
     profile->minBytes = minBytes;
 
-    if (profile->lastRateCalcTime + NET_PROFILE_RATE_UPDATE_MILLISECONDS <
-        (int32_t)Sys_Milliseconds()) {
-        const int32_t elapsedMilliseconds =
-            (int32_t)Sys_Milliseconds() - oldestSampleTime;
+    if (profile->lastRateCalcTime + NET_PROFILE_RATE_UPDATE_MILLISECONDS < (int32_t)Sys_Milliseconds()) {
+        const int32_t elapsedMilliseconds = (int32_t)Sys_Milliseconds() - oldestSampleTime;
 
         if (oldestSampleIndex != -1) {
-            const netProfileSample_t *oldestSample =
-                &profile->samples[oldestSampleIndex];
+            const netProfileSample_t *oldestSample = &profile->samples[oldestSampleIndex];
             totalBytes -= oldestSample->bytes;
             --sampleCount;
             if (oldestSample->fragmented != qfalse) {
@@ -219,22 +197,17 @@ void NetProf_UpdateStatistics(netProfileStream_t *profile)
             profile->bytesPerSecond = 0;
         } else {
 #if EMULATE_X87
-            const x87f rate = x87f_div(
-                x87f_load_i32(totalBytes),
-                x87f_mul(x87f_load_i32(elapsedMilliseconds),
-                         x87f_load_f32(net_profileMillisecondsToSeconds)));
+            const x87f rate = x87f_div(x87f_load_i32(totalBytes),
+                                       x87f_mul(x87f_load_i32(elapsedMilliseconds), x87f_load_f32(net_profileMillisecondsToSeconds)));
 #if defined(WINDOWS_BEHAVIOR)
             const int64_t converted = x87f_store_i64_trunc(rate);
-            profile->bytesPerSecond = coduo_int32_from_bits(
-                (uint32_t)(uint64_t)converted);
+            profile->bytesPerSecond = coduo_int32_from_bits((uint32_t)(uint64_t)converted);
 #else
             profile->bytesPerSecond = x87f_store_i32_trunc(rate);
 #endif
 #else
             profile->bytesPerSecond = coduo_fp_to_i32_extended(
-                (long double)totalBytes /
-                ((long double)elapsedMilliseconds *
-                 (long double)net_profileMillisecondsToSeconds));
+                (long double)totalBytes / ((long double)elapsedMilliseconds * (long double)net_profileMillisecondsToSeconds));
 #endif
         }
         profile->lastRateCalcTime = (int32_t)Sys_Milliseconds();

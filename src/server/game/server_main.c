@@ -59,8 +59,7 @@ void dllEntry(game_syscall_t syscallPtr)
 
 enum {
     SERVERINFO_BUFFER_SIZE = 1024,
-    INITIAL_RESERVED_ENTITY_COUNT =
-        PLAYER_CLONE_ENTITYNUM_BASE + PLAYER_CLONE_COUNT
+    INITIAL_RESERVED_ENTITY_COUNT = PLAYER_CLONE_ENTITYNUM_BASE + PLAYER_CLONE_COUNT
 };
 
 /* ------------------------------------------------------------------ */
@@ -72,10 +71,8 @@ enum {
  * Routes commands to appropriate handler functions based on command ID.
  */
 /* VERIFIED_DECOMPILER(0x56ac0, 66ac0_vmMain.c, VERIFY-SERVER-MAIN-PACKET-2026-06-17): DATAFLOW_VERIFIED - command switch cases 1..0x17, default -1, call/argument order, return values, weapon bound branch, and level/client offset accesses checked against current decompiler output. */
-intptr_t vmMain(int32_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2,
-                intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6,
-                intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10,
-                intptr_t arg11)
+intptr_t vmMain(int32_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6,
+                intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11)
 {
     intptr_t result = 0;
 
@@ -219,9 +216,7 @@ void G_FindTeams(void)
         uint16_t teamName = ent->teamName;
         uint32_t teamFlags = ent->flags;
 
-        if (ent->linked == 0 ||
-            teamName == 0 ||
-            (teamFlags & ENTITY_TEAM_SLAVE_FLAG) != 0) {
+        if (ent->linked == 0 || teamName == 0 || (teamFlags & ENTITY_TEAM_SLAVE_FLAG) != 0) {
             continue;
         }
 
@@ -239,9 +234,7 @@ void G_FindTeams(void)
             gentity_t *candidate = &g_entities[j];
             uint32_t candidateFlags = candidate->flags;
 
-            if (candidate->linked == 0 ||
-                candidate->teamName == 0 ||
-                (candidateFlags & ENTITY_TEAM_SLAVE_FLAG) != 0 ||
+            if (candidate->linked == 0 || candidate->teamName == 0 || (candidateFlags & ENTITY_TEAM_SLAVE_FLAG) != 0 ||
                 candidate->teamName != teamName) {
                 continue;
             }
@@ -273,8 +266,7 @@ void G_RegisterCvars(void)
     for (i = 0; i < gameCvarTableCount; i++) {
         game_cvar_table_t *entry = &gameCvarTable[i];
 
-        trap_Cvar_Register(entry->vmCvar, entry->cvarName,
-                           entry->defaultString, entry->cvarFlags);
+        trap_Cvar_Register(entry->vmCvar, entry->cvarName, entry->defaultString, entry->cvarFlags);
         if (entry->vmCvar != NULL) {
             entry->modificationCount = entry->vmCvar->modificationCount;
         }
@@ -287,8 +279,7 @@ void G_RegisterCvars(void)
     trap_Cvar_Register(&g_debugArchiveCheck, "g_debugArchiveCheck", "0", 0);
 
     if (Scr_IsValidGameType(g_gametype.string) == 0) {
-        G_Printf("g_gametype %s is not a valid gametype, defaulting to dm\n",
-                 g_gametype.string);
+        G_Printf("g_gametype %s is not a valid gametype, defaulting to dm\n", g_gametype.string);
         trap_Cvar_Set("g_gametype", GAMETYPE_DEFAULT);
         trap_Cvar_Update(&g_gametype);
     }
@@ -311,11 +302,8 @@ void G_UpdateCvars(void)
             if (entry->modificationCount != entry->vmCvar->modificationCount) {
                 entry->modificationCount = entry->vmCvar->modificationCount;
                 if (entry->trackChange != 0) {
-                    trap_SendServerCommand(
-                        SERVER_COMMAND_ALL_CLIENTS,
-                        CVAR_NOTIFY_UNRELIABLE,
-                        va(CVAR_CHANGE_COMMAND, entry->cvarName,
-                           entry->vmCvar->string));
+                    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, CVAR_NOTIFY_UNRELIABLE,
+                                           va(CVAR_CHANGE_COMMAND, entry->cvarName, entry->vmCvar->string));
                 }
             }
         }
@@ -411,8 +399,7 @@ void G_FreeEntities(void)
  *           or this gate is zero.
  */
 /* VERIFIED_DECOMPILER(0x586cf, 686cf_G_InitGame.c, VERIFY-SERVER-MAIN-PACKET-2026-06-17): DATAFLOW_VERIFIED - initialization print/seed/cvar gate, level/bg/bgs clears and stores, log open modes and messages, configstring winner clear, entity/client setup, spawn/vehicle/team/UI sequence, fog zero plus cg_atmos default -1, objective/script startup, and spawning reset checked against current decompiler output. */
-void G_InitGame(int levelTimeIn, int randomSeed, int restart,
-                int cvarRestartGate)
+void G_InitGame(int levelTimeIn, int randomSeed, int restart, int cvarRestartGate)
 {
     char serverinfo[SERVERINFO_BUFFER_SIZE];
     char configstr[MAX_STRING_CHARS];
@@ -479,20 +466,18 @@ void G_InitGame(int levelTimeIn, int randomSeed, int restart,
     GScr_LoadConsts();
 
     /* Clear winner field in the game-state configstring. */
-    trap_GetConfigstring(CS_GAMESTATE, configstr,
-                         MAX_STRING_CHARS);
-    Info_SetValueForKey(configstr, "winner",
-                        INITIAL_WINNER_CONFIGSTRING_VALUE);
+    trap_GetConfigstring(CS_GAMESTATE, configstr, MAX_STRING_CHARS);
+    Info_SetValueForKey(configstr, "winner", INITIAL_WINNER_CONFIGSTRING_VALUE);
     trap_SetConfigstring(CS_GAMESTATE, configstr);
 
     /* Clear entity and client arrays */
     memset(g_entities, 0, sizeof(g_entities));
-    lvl->gentities = (gentity_t *)g_entities;   /* level.gentities = g_entities */
+    lvl->gentities = (gentity_t *)g_entities; /* level.gentities = g_entities */
 
-    lvl->maxclients = g_maxclients.integer;      /* level.maxclients */
+    lvl->maxclients = g_maxclients.integer; /* level.maxclients */
 
     memset(g_clients, 0, sizeof(g_clients));
-    lvl->clients = (gclient_t *)g_clients;       /* level.clients = g_clients */
+    lvl->clients = (gclient_t *)g_clients; /* level.clients = g_clients */
 
     /* Wire each entity's client pointer to the corresponding gclient slot */
     for (i = 0; i < lvl->maxclients; i++) {
@@ -504,9 +489,7 @@ void G_InitGame(int levelTimeIn, int randomSeed, int restart,
     lvl->freeListHead = NULL;
     lvl->freeListTail = NULL;
 
-    trap_LocateGameData(lvl->gentities, lvl->num_entities,
-                        sizeof(lvl->gentities[0]), &lvl->clients[0].ps,
-                        sizeof(lvl->clients[0]));
+    trap_LocateGameData(lvl->gentities, lvl->num_entities, sizeof(lvl->gentities[0]), &lvl->clients[0].ps, sizeof(lvl->clients[0]));
 
     G_ParseHitLocDmgTable();
 
@@ -615,8 +598,6 @@ void G_LogPrintf(const char *format, ...)
     va_end(args);
 
     seconds = (lvl->time / 1000) % 60;
-    Com_sprintf(line, MAX_STRING_CHARS, "%3i:%i%i %s",
-                (lvl->time / 1000) / 60, seconds / 10, seconds % 10,
-                message);
+    Com_sprintf(line, MAX_STRING_CHARS, "%3i:%i%i %s", (lvl->time / 1000) / 60, seconds / 10, seconds % 10, message);
     trap_FS_Write(line, (int)strlen(line), lvl->logFile);
 }

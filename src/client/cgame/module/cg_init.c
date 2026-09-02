@@ -25,8 +25,7 @@ enum {
     CG_INIT_HUD_STAT_CONFIGSTRING = 14
 };
 
-void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
-             int32_t clientNum)
+void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence, int32_t clientNum)
 {
     cgame_compat_reset_recovered_cgs_state();
     cgame_compat_reset_recovered_cg_state();
@@ -46,42 +45,31 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
     cg_processedSnapshotNum = serverMessageNum;
     cgs_serverCommandSequence = serverCommandSequence;
 
-    cgs_media_whiteShader =
-        CG_RegisterMaterial("white", R_IMAGE_TRACK_HUD);
-    cgs_media_hudSoftLineShader =
-        CG_RegisterMaterial("hudSoftLine", R_IMAGE_TRACK_HUD);
-    cgs_media_hudSoftLineHShader =
-        CG_RegisterMaterial("hudSoftLineH", R_IMAGE_TRACK_HUD);
+    cgs_media_whiteShader = CG_RegisterMaterial("white", R_IMAGE_TRACK_HUD);
+    cgs_media_hudSoftLineShader = CG_RegisterMaterial("hudSoftLine", R_IMAGE_TRACK_HUD);
+    cgs_media_hudSoftLineHShader = CG_RegisterMaterial("hudSoftLineH", R_IMAGE_TRACK_HUD);
 
     CG_RegisterCvars();
     CG_InitConsoleCommands();
 
     cgame_syscall(CG_GET_GLCONFIG, &cgs_glconfig);
-    cgs_screenXScale = (float)(
-        (long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
-    cgs_screenYScale = (float)(
-        (long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
+    cgs_screenXScale = (float)((long double)cgs_glconfig.vidWidth * (long double)(1.0f / 640.0f));
+    cgs_screenYScale = (float)((long double)cgs_glconfig.vidHeight * (long double)(1.0f / 480.0f));
 
     cgame_syscall(CG_GET_GAME_STATE, &cg_gameState);
 
     {
-        const char *serverGame =
-            &cg_gameState.stringData[cg_gameState.stringOffsets[2]];
+        const char *serverGame = &cg_gameState.stringData[cg_gameState.stringOffsets[2]];
         if (memcmp("cod", serverGame, CG_INIT_GAME_VERSION_BYTES) != 0) {
-            Com_ErrorMessage("Client/Server game mismatch: %s/%s",
-                             "cod", serverGame);
+            Com_ErrorMessage("Client/Server game mismatch: %s/%s", "cod", serverGame);
         }
     }
 
-    cg_hudStat14Value = coduo_crt_atoi(
-        &cg_gameState.stringData[
-            cg_gameState.stringOffsets[CG_INIT_HUD_STAT_CONFIGSTRING]]);
+    cg_hudStat14Value = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CG_INIT_HUD_STAT_CONFIGSTRING]]);
 
     /* 0x3002e080..0x3002e09b: MSVC rand returns 0..32767. The x87 code
      * multiplies by 1/32768, doubles, then subtracts 1. */
-    cg_initialRandomValue = (float)(
-        (long double)coduo_crt_rand() *
-        (long double)(1.0f / 32768.0f) * 2.0L - 1.0L);
+    cg_initialRandomValue = (float)((long double)coduo_crt_rand() * (long double)(1.0f / 32768.0f) * 2.0L - 1.0L);
 
     CG_ParseServerinfo();
     CG_SetConfigValues();
@@ -123,8 +111,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
 
     CG_LoadingString("");
 
-    cg_hudSpinBaseTime = (float)atof(
-        &cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
+    cg_hudSpinBaseTime = (float)atof(&cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
 
     cgame_syscall(CG_R_FINISH_LOADING_MODELS);
     cgame_syscall(CG_MSS_STOP_SOUNDS, 0);

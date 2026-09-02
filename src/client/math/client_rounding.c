@@ -17,16 +17,13 @@ int32_t Script_BiasedRoundToInt(float value)
     static const double bias = 0.499999999068677425384521484375;
 
 #if EMULATE_X87
-    return x87f_store_i32(x87f_sub(x87f_load_f32(value),
-                                   x87f_load_f64(bias)));
+    return x87f_store_i32(x87f_sub(x87f_load_f32(value), x87f_load_f64(bias)));
 #else
-    const long double rounded =
-        nearbyintl((long double)value - (long double)bias);
+    const long double rounded = nearbyintl((long double)value - (long double)bias);
 
     /* Masked x87 FISTP returns the signed indefinite value for NaN and
      * out-of-range inputs; an ISO C integer cast would be undefined. */
-    if (!(rounded >= (long double)INT32_MIN &&
-          rounded <= (long double)INT32_MAX)) {
+    if (!(rounded >= (long double)INT32_MIN && rounded <= (long double)INT32_MAX)) {
         return INT32_MIN;
     }
     return (int32_t)rounded;

@@ -47,11 +47,8 @@ void CG_AddFadeRGB(localEntity_t *le)
      * (-fexcess-precision=standard) an explicit (float) would compile to a real
      * fildl/fstps/flds and round it, diverging once |endTime - cg_time| exceeds
      * 2^24 ms (~4.66 h of uptime, which a long-running server reaches daily). */
-    int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)le->endTime - (uint32_t)cg_time);
-    long double scaled =
-        (long double)remaining * (long double)le->lifeRate *
-        (long double)colorByteScale;
+    int32_t remaining = coduo_int32_from_bits((uint32_t)le->endTime - (uint32_t)cg_time);
+    long double scaled = (long double)remaining * (long double)le->lifeRate * (long double)colorByteScale;
 
     re->shaderRGBA[0] = (uint8_t)coduo_fp_to_i32_extended(scaled * le->color[0]);
     re->shaderRGBA[1] = (uint8_t)coduo_fp_to_i32_extended(scaled * le->color[1]);

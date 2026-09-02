@@ -39,10 +39,8 @@ int32_t KeywordHash_Key(const char *keyword)
         sum += (uint32_t)(character * weight++);
     }
 
-    mixed = (uint32_t)coduo_int32_sar(
-                sum, KEYWORD_HASH_MIX_SHIFT) ^ sum;
-    mixed = (uint32_t)coduo_int32_sar(
-                mixed, KEYWORD_HASH_MIX_SHIFT) ^ sum;
+    mixed = (uint32_t)coduo_int32_sar(sum, KEYWORD_HASH_MIX_SHIFT) ^ sum;
+    mixed = (uint32_t)coduo_int32_sar(mixed, KEYWORD_HASH_MIX_SHIFT) ^ sum;
     return (int32_t)(mixed & KEYWORD_HASH_MASK);
 }
 
@@ -54,15 +52,12 @@ void KeywordHash_Add(keywordHash_t **hashTable, keywordHash_t *keyword)
     hashTable[hash] = keyword;
 }
 
-keywordHash_t *KeywordHash_Find(keywordHash_t *const *hashTable,
-                                const char *keyword)
+keywordHash_t *KeywordHash_Find(keywordHash_t *const *hashTable, const char *keyword)
 {
     keywordHash_t *entry = hashTable[KeywordHash_Key(keyword)];
 
     while (entry != NULL) {
-        if (entry->keyword != NULL && keyword != NULL &&
-            Q_stricmpn(keyword, entry->keyword,
-                       KEYWORD_FIND_COMPARE_LIMIT) == 0) {
+        if (entry->keyword != NULL && keyword != NULL && Q_stricmpn(keyword, entry->keyword, KEYWORD_FIND_COMPARE_LIMIT) == 0) {
             return entry;
         }
         entry = entry->next;

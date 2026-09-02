@@ -6,8 +6,7 @@
 #include <stdint.h>
 
 #if UINTPTR_MAX != UINT32_MAX && \
-    (!defined(__x86_64__) || defined(__SSE_MATH__) || \
-     !defined(__FLT_EVAL_METHOD__) || __FLT_EVAL_METHOD__ != 2)
+    (!defined(__x86_64__) || defined(__SSE_MATH__) || !defined(__FLT_EVAL_METHOD__) || __FLT_EVAL_METHOD__ != 2)
 #error "The recovered Windows engine requires i686 or x86-64 GCC x87 code generation"
 #endif
 
@@ -37,10 +36,9 @@ void coduomp_restore_retail_x87_precision(void)
     /* NOT_FROM_ORIGINAL_SOURCE: x86-64 MinGW can still emit x87 operations,
      * but the 64-bit CRT does not expose a reliable precision-control path.
      * Apply the same 53-bit x87 control-word state directly for that port. */
-    __asm__ volatile ("fnstcw %0" : "=m" (controlWord));
-    controlWord = (uint16_t)((controlWord & (uint16_t)~CODUOMP_X87_PRECISION_MASK) |
-                             CODUOMP_X87_DOUBLE_PRECISION);
-    __asm__ volatile ("fldcw %0" : : "m" (controlWord));
+    __asm__ volatile("fnstcw %0" : "=m"(controlWord));
+    controlWord = (uint16_t)((controlWord & (uint16_t)~CODUOMP_X87_PRECISION_MASK) | CODUOMP_X87_DOUBLE_PRECISION);
+    __asm__ volatile("fldcw %0" : : "m"(controlWord));
 #endif
 }
 

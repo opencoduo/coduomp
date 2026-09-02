@@ -17,10 +17,10 @@ void Item_Text_Paint(itemDef_t *item)
         char *cursor;
         const char *cvar = item->cvar;
 
-        if (cvar == NULL) return;
+        if (cvar == NULL)
+            return;
         display = DC;
-        display->getCVarString(cvar, cvarBuffer,
-                               MAX_STRING_CHARS);
+        display->getCVarString(cvar, cvarBuffer, MAX_STRING_CHARS);
         if ((item->window.flags & WINDOW_TEXTCVARSHORT) != 0) {
             cursor = cvarBuffer;
             {
@@ -44,7 +44,8 @@ void Item_Text_Paint(itemDef_t *item)
 
     Item_TextColor(item, color);
     Item_SetTextExtents(item, &width, &height, text);
-    if (text[0] == '\0') return;
+    if (text[0] == '\0')
+        return;
 
     {
         int32_t flags = item->window.flags;
@@ -55,9 +56,7 @@ void Item_Text_Paint(itemDef_t *item)
             Item_Text_AutoWrapped_Paint(item, text, color);
         } else {
             display = DC;
-            display->drawText(
-                item->textRect.x, item->textRect.y, item->font,
-                item->textscale, color, text, 0, 0, item->textStyle);
+            display->drawText(item->textRect.x, item->textRect.y, item->font, item->textscale, color, text, 0, 0, item->textStyle);
         }
     }
 }

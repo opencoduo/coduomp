@@ -96,8 +96,7 @@ void Sys_Init(void)
         architecture = "winnt";
         break;
     case VER_PLATFORM_WIN32_WINDOWS: {
-        const uint16_t build =
-            (uint16_t)sysOsVersionInfo.dwBuildNumber;
+        const uint16_t build = (uint16_t)sysOsVersionInfo.dwBuildNumber;
         if (build >= SYS_WINDOWS_98_FIRST_BUILD)
             architecture = "win98";
         else if (build >= SYS_WINDOWS_95_OSR2_FIRST_BUILD)
@@ -113,31 +112,19 @@ void Sys_Init(void)
     (void)Cvar_Set2("arch", architecture, qtrue);
 
 #if UINTPTR_MAX == UINT32_MAX
-    (void)Cvar_Get(
-        "win_hinstance",
-        va("%i", (int32_t)(uintptr_t)sysApplicationInstance),
-        CVAR_ROM);
+    (void)Cvar_Get("win_hinstance", va("%i", (int32_t)(uintptr_t)sysApplicationInstance), CVAR_ROM);
 #else
-    (void)Cvar_Get(
-        "win_hinstance",
-        va("%" PRIuPTR, (uintptr_t)sysApplicationInstance),
-        CVAR_ROM);
+    (void)Cvar_Get("win_hinstance", va("%" PRIuPTR, (uintptr_t)sysApplicationInstance), CVAR_ROM);
 #endif
 
     WNDPROC windowProcedure = MainWndProc;
     uintptr_t windowProcedureAddress = 0;
-    _Static_assert(sizeof(windowProcedureAddress) >= sizeof(windowProcedure),
-                   "WNDPROC must fit in uintptr_t");
-    memcpy(&windowProcedureAddress, &windowProcedure,
-           sizeof(windowProcedure));
+    _Static_assert(sizeof(windowProcedureAddress) >= sizeof(windowProcedure), "WNDPROC must fit in uintptr_t");
+    memcpy(&windowProcedureAddress, &windowProcedure, sizeof(windowProcedure));
 #if UINTPTR_MAX == UINT32_MAX
-    (void)Cvar_Get(
-        "win_wndproc", va("%i", (int32_t)windowProcedureAddress),
-        CVAR_ROM);
+    (void)Cvar_Get("win_wndproc", va("%i", (int32_t)windowProcedureAddress), CVAR_ROM);
 #else
-    (void)Cvar_Get(
-        "win_wndproc", va("%" PRIuPTR, windowProcedureAddress),
-        CVAR_ROM);
+    (void)Cvar_Get("win_wndproc", va("%" PRIuPTR, windowProcedureAddress), CVAR_ROM);
 #endif
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: native Unix renderers do not consume the
@@ -157,27 +144,22 @@ void Sys_Init(void)
             (void)Cvar_Set2("sys_cpustring", "Alpha AXP", qtrue);
             break;
         case CPUID_INTEL_UNSUPPORTED:
-            (void)Cvar_Set2(
-                "sys_cpustring", "x86 (pre-Pentium)", qtrue);
+            (void)Cvar_Set2("sys_cpustring", "x86 (pre-Pentium)", qtrue);
             break;
         case CPUID_INTEL_PENTIUM:
-            (void)Cvar_Set2(
-                "sys_cpustring", "x86 (P5/PPro, non-MMX)", qtrue);
+            (void)Cvar_Set2("sys_cpustring", "x86 (P5/PPro, non-MMX)", qtrue);
             break;
         case CPUID_INTEL_MMX:
-            (void)Cvar_Set2(
-                "sys_cpustring", "x86 (P5/Pentium2, MMX)", qtrue);
+            (void)Cvar_Set2("sys_cpustring", "x86 (P5/Pentium2, MMX)", qtrue);
             break;
         case CPUID_INTEL_KATMAI:
-            (void)Cvar_Set2(
-                "sys_cpustring", "Intel Pentium III", qtrue);
+            (void)Cvar_Set2("sys_cpustring", "Intel Pentium III", qtrue);
             break;
         case CPUID_AMD_3DNOW:
             (void)Cvar_Set2("sys_cpustring", "AMD w/ 3DNow!", qtrue);
             break;
         default:
-            Com_Error(
-                ERR_FATAL, "\x15Unknown cpu type %d\n", cpuClass);
+            Com_Error(ERR_FATAL, "\x15Unknown cpu type %d\n", cpuClass);
             break;
         }
     } else {
@@ -195,24 +177,17 @@ void Sys_Init(void)
         else if (Q_stricmp(configuredCpu, "axp") == 0)
             cpuClass = CPUID_AXP;
         else {
-            Com_Printf(
-                "WARNING: unknown sys_cpustring '%s'\n", configuredCpu);
+            Com_Printf("WARNING: unknown sys_cpustring '%s'\n", configuredCpu);
             cpuClass = CPUID_GENERIC;
         }
     }
 
     Cvar_SetValue("sys_cpuid", (float)cpuClass);
     Com_Printf("%s\n", Cvar_VariableString("sys_cpustring"));
-    Com_Printf(
-        "Measured CPU speed is %.2lf GHz\n",
-        sysCpuFrequencyMHz * 0.001);
-    Com_Printf(
-        "System memory is %i MB (capped at 1 GB)\n",
-        sysPhysicalMemoryMB);
+    Com_Printf("Measured CPU speed is %.2lf GHz\n", sysCpuFrequencyMHz * 0.001);
+    Com_Printf("System memory is %i MB (capped at 1 GB)\n", sysPhysicalMemoryMB);
     Com_Printf("Video card memory is %i MB\n", sysVideoMemoryMB);
-    Com_Printf(
-        "Streaming SIMD Extensions (SSE) %ssupported\n",
-        sysSseSupported != qfalse ? "" : "not ");
+    Com_Printf("Streaming SIMD Extensions (SSE) %ssupported\n", sysSseSupported != qfalse ? "" : "not ");
     Com_Printf("\n");
     (void)Cvar_Set2("username", Sys_GetCurrentUser(), qtrue);
     IN_Init();
@@ -221,8 +196,7 @@ void Sys_Init(void)
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the identical initial
  * JMP-thunk resolution and RET/NOP terminator scan in the original
  * Sys_FunctionsMatch and Sys_FunctionChecksum bodies. */
-static const uint8_t *coduomp_resolve_function_entry(
-    const uint8_t *function)
+static const uint8_t *coduomp_resolve_function_entry(const uint8_t *function)
 {
     int32_t displacement;
 
@@ -237,15 +211,12 @@ static const uint8_t *coduomp_resolve_function_entry(
  * scan stops at C3 90 90 and compares/checksums through the first NOP. If no
  * such terminator appears in the first 1024 candidate positions, it uses
  * 1026 bytes. */
-static int32_t coduomp_function_comparison_length(
-    const uint8_t *function)
+static int32_t coduomp_function_comparison_length(const uint8_t *function)
 {
     int32_t offset;
 
     for (offset = 0; offset < SYS_FUNCTION_SCAN_LIMIT; ++offset) {
-        if (function[offset] == 0xc3 &&
-            function[offset + 1] == 0x90 &&
-            function[offset + 2] == 0x90) {
+        if (function[offset] == 0xc3 && function[offset + 1] == 0x90 && function[offset + 2] == 0x90) {
             break;
         }
     }
@@ -259,17 +230,14 @@ static int32_t coduomp_function_comparison_length(
 void Sys_CreateCrashMarker(void)
 {
 #if defined(_WIN32)
-    HANDLE marker = CreateFileA(
-        "crash", GENERIC_WRITE, 0, NULL, CREATE_NEW,
-        FILE_ATTRIBUTE_HIDDEN, NULL);
+    HANDLE marker = CreateFileA("crash", GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_HIDDEN, NULL);
     if (marker != INVALID_HANDLE_VALUE)
         CloseHandle(marker);
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: POSIX equivalent of the Windows hidden-file
      * sentinel operation. POSIX has no hidden attribute; the filename and
      * exclusive-create behavior remain identical. */
-    const int marker =
-        open("crash", O_WRONLY | O_CREAT | O_EXCL, 0600);
+    const int marker = open("crash", O_WRONLY | O_CREAT | O_EXCL, 0600);
     if (marker != -1)
         close(marker);
 #endif
@@ -291,9 +259,7 @@ void Sys_CreateSplashWindow(void)
     WNDCLASSA windowClass = {0};
     windowClass.lpfnWndProc = DefWindowProcA;
     windowClass.hInstance = (HINSTANCE)sysApplicationInstance;
-    windowClass.hIcon = LoadIconA(
-        (HINSTANCE)sysApplicationInstance,
-        MAKEINTRESOURCEA(SYS_SPLASH_ICON_RESOURCE));
+    windowClass.hIcon = LoadIconA((HINSTANCE)sysApplicationInstance, MAKEINTRESOURCEA(SYS_SPLASH_ICON_RESOURCE));
     windowClass.hCursor = LoadCursorA(NULL, IDC_ARROW);
     windowClass.lpszClassName = "CoD Splash Screen";
     if (RegisterClassA(&windowClass) == 0)
@@ -302,49 +268,38 @@ void Sys_CreateSplashWindow(void)
 
     const int32_t screenWidth = GetSystemMetrics(SM_CXSCREEN);
     const int32_t screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    HBITMAP bitmap = (HBITMAP)LoadImageA(
-        NULL, "coduo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    HBITMAP bitmap = (HBITMAP)LoadImageA(NULL, "coduo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     if (bitmap == NULL) {
         Sys_DestroySplashWindow();
         return;
     }
     sysSplashBitmap = bitmap;
 
-    HWND splash = CreateWindowExA(
-        WS_EX_APPWINDOW, "CoD Splash Screen",
-        "CoD:United Offensive Multiplayer",
-        WS_POPUP | WS_BORDER | WS_SYSMENU,
-        (screenWidth - SYS_SPLASH_WIDTH) / 2,
-        (screenHeight - SYS_SPLASH_HEIGHT) / 2,
-        SYS_SPLASH_WIDTH, SYS_SPLASH_HEIGHT,
-        NULL, NULL, (HINSTANCE)sysApplicationInstance, NULL);
+    HWND splash =
+        CreateWindowExA(WS_EX_APPWINDOW, "CoD Splash Screen", "CoD:United Offensive Multiplayer", WS_POPUP | WS_BORDER | WS_SYSMENU,
+                        (screenWidth - SYS_SPLASH_WIDTH) / 2, (screenHeight - SYS_SPLASH_HEIGHT) / 2, SYS_SPLASH_WIDTH, SYS_SPLASH_HEIGHT,
+                        NULL, NULL, (HINSTANCE)sysApplicationInstance, NULL);
     sysSplashWindow = splash;
     if (splash == NULL) {
         Sys_DestroySplashWindow();
         return;
     }
 
-    HWND image = CreateWindowExA(
-        0, "Static", NULL, WS_CHILD | WS_VISIBLE | SS_BITMAP,
-        0, 0, SYS_SPLASH_WIDTH, SYS_SPLASH_HEIGHT,
-        splash, NULL, (HINSTANCE)sysApplicationInstance, NULL);
+    HWND image = CreateWindowExA(0, "Static", NULL, WS_CHILD | WS_VISIBLE | SS_BITMAP, 0, 0, SYS_SPLASH_WIDTH, SYS_SPLASH_HEIGHT, splash,
+                                 NULL, (HINSTANCE)sysApplicationInstance, NULL);
     if (image == NULL) {
         Sys_DestroySplashWindow();
         return;
     }
 
-    (void)SendMessageA(
-        image, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bitmap);
+    (void)SendMessageA(image, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bitmap);
 
     RECT imageRect;
     (void)GetWindowRect(image, &imageRect);
     const int32_t imageWidth = imageRect.right - imageRect.left;
     const int32_t imageHeight = imageRect.bottom - imageRect.top;
-    (void)SetWindowPos(
-        splash, NULL,
-        (screenWidth - imageWidth) / 2,
-        (screenHeight - imageHeight) / 2,
-        imageWidth, imageHeight, SWP_NOZORDER);
+    (void)SetWindowPos(splash, NULL, (screenWidth - imageWidth) / 2, (screenHeight - imageHeight) / 2, imageWidth, imageHeight,
+                       SWP_NOZORDER);
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: non-Windows launchers own any splash UI. */
 #endif
@@ -368,8 +323,7 @@ void Sys_DestroySplashWindow(void)
         sysSplashBitmap = NULL;
     }
     if (sysSplashClassRegistered != qfalse) {
-        (void)UnregisterClassA("CoD Splash Screen",
-                               (HINSTANCE)sysApplicationInstance);
+        (void)UnregisterClassA("CoD Splash Screen", (HINSTANCE)sysApplicationInstance);
         sysSplashClassRegistered = qfalse;
     }
 #endif
@@ -404,31 +358,21 @@ void Sys_HideSplashWindow(void)
  * Provisional role name: compares two x86 function bodies after resolving an
  * initial near-JMP thunk. Relative near calls compare by resolved target so
  * relocation alone does not make otherwise matching code unequal. */
-qboolean Sys_FunctionsMatch(const uint8_t *leftFunction,
-                            const uint8_t *rightFunction)
+qboolean Sys_FunctionsMatch(const uint8_t *leftFunction, const uint8_t *rightFunction)
 {
-    const uint8_t *left =
-        coduomp_resolve_function_entry(leftFunction);
-    const uint8_t *right =
-        coduomp_resolve_function_entry(rightFunction);
-    const int32_t length =
-        coduomp_function_comparison_length(left);
+    const uint8_t *left = coduomp_resolve_function_entry(leftFunction);
+    const uint8_t *right = coduomp_resolve_function_entry(rightFunction);
+    const int32_t length = coduomp_function_comparison_length(left);
 
     for (int32_t offset = 0; offset < length; ++offset) {
         if (left[offset] == 0xe8) {
             int32_t leftDisplacement;
             int32_t rightDisplacement;
-            memcpy(&leftDisplacement, &left[offset + 1],
-                   sizeof(leftDisplacement));
-            memcpy(&rightDisplacement, &right[offset + 1],
-                   sizeof(rightDisplacement));
+            memcpy(&leftDisplacement, &left[offset + 1], sizeof(leftDisplacement));
+            memcpy(&rightDisplacement, &right[offset + 1], sizeof(rightDisplacement));
 
-            const uintptr_t leftTarget =
-                (uintptr_t)&left[offset + 5] +
-                (intptr_t)leftDisplacement;
-            const uintptr_t rightTarget =
-                (uintptr_t)&right[offset + 5] +
-                (intptr_t)rightDisplacement;
+            const uintptr_t leftTarget = (uintptr_t)&left[offset + 5] + (intptr_t)leftDisplacement;
+            const uintptr_t rightTarget = (uintptr_t)&right[offset + 5] + (intptr_t)rightDisplacement;
             if (leftTarget == rightTarget) {
                 offset += 4;
                 continue;
@@ -448,10 +392,8 @@ qboolean Sys_FunctionsMatch(const uint8_t *leftFunction,
  * by Sys_FunctionsMatch. */
 uint32_t Sys_FunctionChecksum(const uint8_t *function)
 {
-    const uint8_t *entry =
-        coduomp_resolve_function_entry(function);
-    return Com_BlockChecksum(
-        entry, coduomp_function_comparison_length(entry));
+    const uint8_t *entry = coduomp_resolve_function_entry(function);
+    return Com_BlockChecksum(entry, coduomp_function_comparison_length(entry));
 }
 
 /* Source: CoDUOMP.exe 0x0046aec0..0x0046aec5, recovered from an executable
@@ -489,8 +431,7 @@ void Sys_Shutdown(void)
  * Sys_UnableToLoadDLLError. */
 void Sys_UnableToLoadDLLError(void)
 {
-    Com_Error(ERR_FATAL, "%s\n",
-              Sys_LocalizeString("WIN_UNABLE_LOAD_DLL_BODY"));
+    Com_Error(ERR_FATAL, "%s\n", Sys_LocalizeString("WIN_UNABLE_LOAD_DLL_BODY"));
 }
 
 /* Source: CoDUOMP.exe 0x0046b2a0..0x0046b380.
@@ -507,24 +448,14 @@ void Sys_StartProcess(const char *executableName, qboolean doExit)
     startupInfo.cb = sizeof(startupInfo);
     GetCurrentDirectoryA(sizeof(workingDirectory), workingDirectory);
 
-    if (CreateProcessA(
-            NULL,
-            va("\"%s\\%s\"", workingDirectory, executableName),
-            NULL, NULL, FALSE, 0, NULL, NULL,
-            &startupInfo, &processInfo) == FALSE) {
+    if (CreateProcessA(NULL, va("\"%s\\%s\"", workingDirectory, executableName), NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo,
+                       &processInfo) == FALSE) {
         const DWORD errorCode = GetLastError();
         char *systemMessage = NULL;
-        FormatMessageA(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, errorCode,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (char *)&systemMessage, 0, NULL);
-        Com_Error(
-            ERR_FATAL,
-            "EXE_ERR_COULDNT_START_PROCESS\x15'%s\\%s'\n%s\n%08x",
-            workingDirectory, executableName, systemMessage, errorCode);
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorCode,
+                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (char *)&systemMessage, 0, NULL);
+        Com_Error(ERR_FATAL, "EXE_ERR_COULDNT_START_PROCESS\x15'%s\\%s'\n%s\n%08x", workingDirectory, executableName, systemMessage,
+                  errorCode);
     }
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: POSIX implementation of the Windows
@@ -534,12 +465,9 @@ void Sys_StartProcess(const char *executableName, qboolean doExit)
     char executablePath[2 * MAX_OSPATH];
 
     if (getcwd(workingDirectory, sizeof(workingDirectory)) == NULL) {
-        Com_Error(ERR_FATAL,
-                  "EXE_ERR_COULDNT_START_PROCESS\x15'%s'\n%s\n%08x",
-                  executableName, strerror(errno), (uint32_t)errno);
+        Com_Error(ERR_FATAL, "EXE_ERR_COULDNT_START_PROCESS\x15'%s'\n%s\n%08x", executableName, strerror(errno), (uint32_t)errno);
     }
-    Com_sprintf(executablePath, sizeof(executablePath), "%s/%s",
-                workingDirectory, executableName);
+    Com_sprintf(executablePath, sizeof(executablePath), "%s/%s", workingDirectory, executableName);
 
     const pid_t child = fork();
     if (child == 0) {
@@ -547,9 +475,7 @@ void Sys_StartProcess(const char *executableName, qboolean doExit)
         _exit(127);
     }
     if (child < 0) {
-        Com_Error(ERR_FATAL,
-                  "EXE_ERR_COULDNT_START_PROCESS\x15'%s/%s'\n%s\n%08x",
-                  workingDirectory, executableName, strerror(errno),
+        Com_Error(ERR_FATAL, "EXE_ERR_COULDNT_START_PROCESS\x15'%s/%s'\n%s\n%08x", workingDirectory, executableName, strerror(errno),
                   (uint32_t)errno);
     }
 #endif
@@ -608,11 +534,8 @@ void coduomp_loading_keepalive(void)
 #if defined(_WIN32)
     MSG message;
 
-    if (PeekMessageA(
-            &message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST,
-            PM_NOREMOVE) != FALSE &&
-        GetMessageA(
-            &message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST) > 0) {
+    if (PeekMessageA(&message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST, PM_NOREMOVE) != FALSE &&
+        GetMessageA(&message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST) > 0) {
         TranslateMessage(&message);
         DispatchMessageA(&message);
     }
@@ -709,18 +632,15 @@ qboolean Sys_ScanForInstallMedia(void)
             FILE *file;
 
             sprintf(sysInstallMediaPath, "%s%s", driveRoot, "");
-            sprintf(candidatePath, "%s\\%s", sysInstallMediaPath,
-                    "setup\\setup.exe");
+            sprintf(candidatePath, "%s\\%s", sysInstallMediaPath, "setup\\setup.exe");
             file = fopen(candidatePath, "r");
             if (file != NULL) {
                 fclose(file);
                 return qtrue;
             }
 
-            sprintf(sysInstallMediaPath, "%s%s", driveRoot,
-                    "bin\\x86\\glibc-2.1");
-            sprintf(candidatePath, "%s\\%s", sysInstallMediaPath,
-                    "setup\\setup");
+            sprintf(sysInstallMediaPath, "%s%s", driveRoot, "bin\\x86\\glibc-2.1");
+            sprintf(candidatePath, "%s\\%s", sysInstallMediaPath, "setup\\setup");
             file = fopen(candidatePath, "r");
             if (file != NULL) {
                 fclose(file);
@@ -758,8 +678,7 @@ int32_t Sys_MonkeyShouldBeSpanked(void)
     static const char marker[] = "q3monkeyid";
     char **const arguments = __argv;
 
-    if (arguments[1] == NULL ||
-        Q_stricmpn(arguments[1], "monkey", 99999) != 0) {
+    if (arguments[1] == NULL || Q_stricmpn(arguments[1], "monkey", 99999) != 0) {
         char tempExecutable[MAX_OSPATH];
         char modulePath[MAX_OSPATH];
         char commandLine[SYS_MONKEY_COMMAND_CAPACITY];
@@ -771,30 +690,21 @@ int32_t Sys_MonkeyShouldBeSpanked(void)
         GetTempFileNameA(tempExecutable, "Del", 0, tempExecutable);
         CopyFileA(modulePath, tempExecutable, FALSE);
 
-        const HANDLE tempFile = CreateFileA(
-            tempExecutable, 0, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-            FILE_FLAG_DELETE_ON_CLOSE, NULL);
-        const HANDLE originalProcess = OpenProcess(
-            SYNCHRONIZE, TRUE, GetCurrentProcessId());
+        const HANDLE tempFile = CreateFileA(tempExecutable, 0, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+        const HANDLE originalProcess = OpenProcess(SYNCHRONIZE, TRUE, GetCurrentProcessId());
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
 #if UINTPTR_MAX == UINT32_MAX
-        Com_sprintf(commandLine, sizeof(commandLine),
-                    "%s monkey %d %d \"%s\"",
-                    tempExecutable, (int32_t)sysExecutableChecksum,
+        Com_sprintf(commandLine, sizeof(commandLine), "%s monkey %d %d \"%s\"", tempExecutable, (int32_t)sysExecutableChecksum,
                     (int32_t)(intptr_t)originalProcess, modulePath);
 #else
-        Com_sprintf(commandLine, sizeof(commandLine),
-                    "%s monkey %d %" PRIdPTR " \"%s\"",
-                    tempExecutable, (int32_t)sysExecutableChecksum,
+        Com_sprintf(commandLine, sizeof(commandLine), "%s monkey %d %" PRIdPTR " \"%s\"", tempExecutable, (int32_t)sysExecutableChecksum,
                     (intptr_t)originalProcess, modulePath);
 #endif
 
         memset(&startupInfo, 0, sizeof(startupInfo));
         startupInfo.cb = sizeof(startupInfo);
-        CreateProcessA(
-            NULL, commandLine, NULL, NULL, TRUE, 0, NULL, NULL,
-            &startupInfo, &processInfo);
+        CreateProcessA(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, NULL, &startupInfo, &processInfo);
         CloseHandle(originalProcess);
         CloseHandle(tempFile);
         exit(EXIT_SUCCESS);
@@ -805,14 +715,11 @@ int32_t Sys_MonkeyShouldBeSpanked(void)
     /* 0x0046b130..0x0046b141 calls the same 32-bit atoi entry for both
      * serialized dwords. Keep the native-width parser only for Win64, where
      * the process handle no longer fits the retail decimal lane. */
-    const intptr_t originalProcessValue =
-        (intptr_t)coduo_crt_atoi(arguments[3]);
+    const intptr_t originalProcessValue = (intptr_t)coduo_crt_atoi(arguments[3]);
 #else
-    const intptr_t originalProcessValue =
-        (intptr_t)strtoimax(arguments[3], NULL, 10);
+    const intptr_t originalProcessValue = (intptr_t)strtoimax(arguments[3], NULL, 10);
 #endif
-    const HANDLE originalProcess =
-        (HANDLE)(uintptr_t)originalProcessValue;
+    const HANDLE originalProcess = (HANDLE)(uintptr_t)originalProcessValue;
     WaitForSingleObject(originalProcess, INFINITE);
     CloseHandle(originalProcess);
 
@@ -830,8 +737,7 @@ int32_t Sys_MonkeyShouldBeSpanked(void)
         Sys_OutOfMemory();
 
     memset(image, 0, (size_t)fileSize);
-    const size_t readCount =
-        fread(image, (size_t)fileSize, 1, file);
+    const size_t readCount = fread(image, (size_t)fileSize, 1, file);
     if (readCount != 1) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         return (int32_t)readCount;
@@ -846,8 +752,7 @@ int32_t Sys_MonkeyShouldBeSpanked(void)
     long markerOffset;
     for (markerOffset = 0; markerOffset < fileSize; ++markerOffset) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        comparison = Q_strncmp(
-            (const char *)&image[markerOffset], marker, markerLength);
+        comparison = Q_strncmp((const char *)&image[markerOffset], marker, markerLength);
         if (comparison == 0)
             break;
     }
@@ -855,19 +760,15 @@ int32_t Sys_MonkeyShouldBeSpanked(void)
         return comparison;
 
     image[markerOffset] = (uint8_t)(sysExecutableChecksum >> 24);
-    image[markerOffset + 1] =
-        (uint8_t)(sysExecutableChecksum >> 16);
-    image[markerOffset + 2] =
-        (uint8_t)(sysExecutableChecksum >> 8);
+    image[markerOffset + 1] = (uint8_t)(sysExecutableChecksum >> 16);
+    image[markerOffset + 2] = (uint8_t)(sysExecutableChecksum >> 8);
     image[markerOffset + 3] = (uint8_t)sysExecutableChecksum;
-    memset(&image[markerOffset + sizeof(sysExecutableChecksum)], 0,
-           sizeof(marker) - 1 - sizeof(sysExecutableChecksum));
+    memset(&image[markerOffset + sizeof(sysExecutableChecksum)], 0, sizeof(marker) - 1 - sizeof(sysExecutableChecksum));
 
     file = fopen(arguments[4], "wb");
     if (file == NULL)
         return 0;
-    const size_t writeCount =
-        fwrite(image, (size_t)fileSize, 1, file);
+    const size_t writeCount = fwrite(image, (size_t)fileSize, 1, file);
     if (writeCount != 1) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         return (int32_t)writeCount;
@@ -973,7 +874,7 @@ int32_t Sys_UnloadDll(void *libraryHandle)
         return qtrue;
 
     Com_Error(ERR_FATAL, "\x15"
-              "Sys_UnloadDll FreeLibrary failed");
+                         "Sys_UnloadDll FreeLibrary failed");
     return qfalse;
 }
 
@@ -1005,8 +906,7 @@ static qboolean Sys_FilesMatch(const char *virtualPath, const char *osPath)
         void *const osBytes = Z_MallocInternal(transferSize);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         const size_t bytesRead = fread(osBytes, 1, transferSize, file);
-        if (bytesRead == transferSize && osSize == virtualSize &&
-            memcmp(virtualBytes, osBytes, transferSize) == 0) {
+        if (bytesRead == transferSize && osSize == virtualSize && memcmp(virtualBytes, osBytes, transferSize) == 0) {
             matches = qtrue;
         }
         free(osBytes);
@@ -1024,11 +924,9 @@ static qboolean Sys_FilesMatch(const char *virtualPath, const char *osPath)
  * engine; game modules and arbitrary names remain subject to the original
  * loader path.
  */
-static qboolean coduomp_is_reconstructed_client_module(
-    const char *moduleName)
+static qboolean coduomp_is_reconstructed_client_module(const char *moduleName)
 {
-    if (strcmp(moduleName, "cgame") == 0 ||
-        strcmp(moduleName, "ui") == 0) {
+    if (strcmp(moduleName, "cgame") == 0 || strcmp(moduleName, "ui") == 0) {
         return qtrue;
     }
     return qfalse;
@@ -1040,9 +938,7 @@ static qboolean coduomp_is_reconstructed_client_module(
  * UI modules, the Windows loader verifies that a pack-owned DLL and its
  * extracted disk copy match before LoadLibrary. It then tries the active game,
  * base game, main, and finally the bare DLL name in that order. */
-void *Sys_LoadDll(const char *moduleName, char *loadedPath,
-                  vmMain_t *vmMain,
-                  coduo_module_syscall_t moduleSyscall)
+void *Sys_LoadDll(const char *moduleName, char *loadedPath, vmMain_t *vmMain, coduo_module_syscall_t moduleSyscall)
 {
     char dllName[MAX_QPATH];
     char pureIdentityName[MAX_QPATH];
@@ -1056,8 +952,7 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
     const char *baseGame;
     const char *game;
     const char *loadedFile;
-    const qboolean reconstructedClientModule =
-        coduomp_is_reconstructed_client_module(moduleName);
+    const qboolean reconstructedClientModule = coduomp_is_reconstructed_client_module(moduleName);
     void *libraryHandle;
 
     loadedPath[0] = '\0';
@@ -1073,8 +968,7 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
      * is loaded separately below and is never represented as having retail
      * bytes.
      */
-    Com_sprintf(pureIdentityName, sizeof(pureIdentityName),
-                "uo_%s_mp_x86.dll", moduleName);
+    Com_sprintf(pureIdentityName, sizeof(pureIdentityName), "uo_%s_mp_x86.dll", moduleName);
 #if defined(_WIN32)
     Q_strncpyz(dllName, pureIdentityName, sizeof(dllName));
 #elif defined(__APPLE__) && defined(__aarch64__)
@@ -1083,22 +977,19 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
      * Apple Silicon ABI. The module entry-point contract remains dllEntry /
      * vmMain; only the platform loader artifact name differs.
      */
-    Com_sprintf(
-        dllName, sizeof(dllName), "uo_%s_mp_arm64.dylib", moduleName);
+    Com_sprintf(dllName, sizeof(dllName), "uo_%s_mp_arm64.dylib", moduleName);
 #elif defined(__linux__) && defined(__i386__)
     /*
      * NOT_FROM_ORIGINAL_SOURCE: native module filename for the reconstructed
      * Linux i386 ABI.
      */
-    Com_sprintf(
-        dllName, sizeof(dllName), "uo_%s_mp_x86.so", moduleName);
+    Com_sprintf(dllName, sizeof(dllName), "uo_%s_mp_x86.so", moduleName);
 #else
     /*
      * NOT_FROM_ORIGINAL_SOURCE: native Unix module filename. Architecture is
      * explicit so an incompatible module cannot be selected silently.
      */
-    Com_sprintf(
-        dllName, sizeof(dllName), "uo_%s_mp_x86_64.so", moduleName);
+    Com_sprintf(dllName, sizeof(dllName), "uo_%s_mp_x86_64.so", moduleName);
 #endif
 
     cvar = Cvar_FindVar("fs_basepath");
@@ -1114,45 +1005,30 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
     if (Q_strncmp(moduleName, "game", 4) != 0) {
         int32_t fileHandle;
         qboolean packagedCopyMatches = qfalse;
-        const char *const packagedModuleName =
-            reconstructedClientModule != qfalse
-                ? pureIdentityName
-                : dllName;
+        const char *const packagedModuleName = reconstructedClientModule != qfalse ? pureIdentityName : dllName;
 
         fs_fileAccessed = 1;
-        if (FS_FOpenFileRead(packagedModuleName,
-                             &fileHandle, qfalse) >= 0) {
+        if (FS_FOpenFileRead(packagedModuleName, &fileHandle, qfalse) >= 0) {
             pack_t *const pack = fs_handleFiles[fileHandle].zipArchive;
             FS_FCloseFile(fileHandle);
-            if (pack != NULL &&
-                reconstructedClientModule == qfalse) {
-                FS_BuildOSPath_Internal(
-                    basePath, pack->pakGamename, dllName, dllPath, qfalse);
+            if (pack != NULL && reconstructedClientModule == qfalse) {
+                FS_BuildOSPath_Internal(basePath, pack->pakGamename, dllName, dllPath, qfalse);
                 packagedCopyMatches = Sys_FilesMatch(dllName, dllPath);
             }
         }
 
         if (packagedCopyMatches == qfalse) {
-            if (cl_connectedToPureServer != qfalse &&
-                reconstructedClientModule == qfalse) {
+            if (cl_connectedToPureServer != qfalse && reconstructedClientModule == qfalse) {
                 /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-                Com_Error(1, "EXE_ERR_GAME_FAILED_PURE_CHECK\x15%s",
-                          dllName);
+                Com_Error(1, "EXE_ERR_GAME_FAILED_PURE_CHECK\x15%s", dllName);
             }
-            FS_BuildOSPath_Internal(
-                basePath,
-                reconstructedClientModule != qfalse
-                    ? "main"
-                    : game,
-                dllName, dllPath, qfalse);
+            FS_BuildOSPath_Internal(basePath, reconstructedClientModule != qfalse ? "main" : game, dllName, dllPath, qfalse);
         }
     }
 
     libraryHandle = NULL;
 #if defined(__APPLE__)
-    if (reconstructedClientModule != qfalse &&
-        coduomp_macos_framework_module_path(
-            dllName, bundledDllPath, sizeof(bundledDllPath)) != 0) {
+    if (reconstructedClientModule != qfalse && coduomp_macos_framework_module_path(dllName, bundledDllPath, sizeof(bundledDllPath)) != 0) {
         loadedFile = bundledDllPath;
         libraryHandle = coduomp_library_open(loadedFile);
     }
@@ -1162,13 +1038,11 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
         libraryHandle = coduomp_library_open(loadedFile);
     }
     if (libraryHandle == NULL) {
-        FS_BuildOSPath_Internal(
-            basePath, baseGame, dllName, dllPath, qfalse);
+        FS_BuildOSPath_Internal(basePath, baseGame, dllName, dllPath, qfalse);
         libraryHandle = coduomp_library_open(dllPath);
     }
     if (libraryHandle == NULL) {
-        FS_BuildOSPath_Internal(
-            basePath, "main", dllName, dllPath, qfalse);
+        FS_BuildOSPath_Internal(basePath, "main", dllName, dllPath, qfalse);
         libraryHandle = coduomp_library_open(dllPath);
     }
     if (libraryHandle == NULL) {
@@ -1182,10 +1056,8 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
     loadedPath[63] = '\0';
 
     coduo_dll_entry_t dllEntry = NULL;
-    coduomp_library_symbol(
-        libraryHandle, "dllEntry", &dllEntry, sizeof(dllEntry));
-    coduomp_library_symbol(
-        libraryHandle, "vmMain", vmMain, sizeof(*vmMain));
+    coduomp_library_symbol(libraryHandle, "dllEntry", &dllEntry, sizeof(dllEntry));
+    coduomp_library_symbol(libraryHandle, "vmMain", vmMain, sizeof(*vmMain));
     if (*vmMain == NULL || dllEntry == NULL) {
         (void)coduomp_library_close(libraryHandle);
         return NULL;
@@ -1202,10 +1074,8 @@ void *Sys_LoadDll(const char *moduleName, char *loadedPath,
         game_dll_entry_t gameDllEntry;
         game_syscall_t gameSyscall;
 
-        _Static_assert(sizeof(gameDllEntry) == sizeof(dllEntry),
-                       "native dllEntry pointer size mismatch");
-        _Static_assert(sizeof(gameSyscall) == sizeof(moduleSyscall),
-                       "native syscall pointer size mismatch");
+        _Static_assert(sizeof(gameDllEntry) == sizeof(dllEntry), "native dllEntry pointer size mismatch");
+        _Static_assert(sizeof(gameSyscall) == sizeof(moduleSyscall), "native syscall pointer size mismatch");
         memcpy(&gameDllEntry, &dllEntry, sizeof(gameDllEntry));
         memcpy(&gameSyscall, &moduleSyscall, sizeof(gameSyscall));
         gameDllEntry(gameSyscall);
@@ -1225,22 +1095,15 @@ uint32_t Sys_GetExecutableChecksum(const void *imageBase)
 {
 #if defined(_WIN32)
     const uint8_t *const image = (const uint8_t *)imageBase;
-    const IMAGE_DOS_HEADER *const dosHeader =
-        (const IMAGE_DOS_HEADER *)image;
-    const IMAGE_NT_HEADERS *const ntHeaders =
-        (const IMAGE_NT_HEADERS *)(image + dosHeader->e_lfanew);
+    const IMAGE_DOS_HEADER *const dosHeader = (const IMAGE_DOS_HEADER *)image;
+    const IMAGE_NT_HEADERS *const ntHeaders = (const IMAGE_NT_HEADERS *)(image + dosHeader->e_lfanew);
 
-    if (IsBadReadPtr(ntHeaders, sizeof(*ntHeaders)) != FALSE ||
-        ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
+    if (IsBadReadPtr(ntHeaders, sizeof(*ntHeaders)) != FALSE || ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
         return 0;
     }
 
-    const IMAGE_SECTION_HEADER *const section =
-        (const IMAGE_SECTION_HEADER *)
-            ((const uint8_t *)ntHeaders + sizeof(*ntHeaders));
-    return Com_BlockChecksum(
-        image + section->VirtualAddress,
-        (int32_t)section->SizeOfRawData);
+    const IMAGE_SECTION_HEADER *const section = (const IMAGE_SECTION_HEADER *)((const uint8_t *)ntHeaders + sizeof(*ntHeaders));
+    return Com_BlockChecksum(image + section->VirtualAddress, (int32_t)section->SizeOfRawData);
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: non-PE native executables need a platform
      * image-section checksum provider. Returning zero preserves the existing

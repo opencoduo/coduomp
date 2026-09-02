@@ -49,25 +49,17 @@ enum {
     PM_FOOTSTEP_DEFAULT_SURFACE = 13
 };
 
-#define PM_LERP_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
-PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_stride,
-                      sizeof(pmLerpEntry_t) == 0x0c);
-PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_percent_offset,
-                      offsetof(pmLerpEntry_t, percent) == 0x00);
-PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_height_offset,
-                      offsetof(pmLerpEntry_t, height) == 0x04);
-PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_origin_adjust_offset,
-                      offsetof(pmLerpEntry_t, originAdjust) == 0x08);
+#define PM_LERP_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_stride, sizeof(pmLerpEntry_t) == 0x0c);
+PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_percent_offset, offsetof(pmLerpEntry_t, percent) == 0x00);
+PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_height_offset, offsetof(pmLerpEntry_t, height) == 0x04);
+PM_LERP_LAYOUT_ASSERT(q_pm_lerp_entry_origin_adjust_offset, offsetof(pmLerpEntry_t, originAdjust) == 0x08);
 #undef PM_LERP_LAYOUT_ASSERT
 
-typedef void (*pm_trace_fn_t)(trace_t *results, const float *start,
-                              const float *mins, const float *maxs,
-                              const float *end, int passEntityNum,
-                              int traceType);
+typedef void (*pm_trace_fn_t)(trace_t *results, const float *start, const float *mins, const float *maxs, const float *end,
+                              int passEntityNum, int traceType);
 typedef int (*pm_entity_type_fn_t)(int entityNum);
-typedef int (*pm_pointcontents_fn_t)(const float *point, int passEntityNum,
-                                     int contentMask);
+typedef int (*pm_pointcontents_fn_t)(const float *point, int passEntityNum, int contentMask);
 
 /* Shared BG movement context. Windows cgame/game and the Linux game module
  * agree on the complete 0x11c-byte i386 record, including all three trace
@@ -129,57 +121,32 @@ typedef struct pml_s {
 } pml_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-#define PMOVE_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
-PMOVE_LAYOUT_ASSERT(q_pmove_command_offset,
-                    offsetof(pmove_t, command) == 0x004);
-PMOVE_LAYOUT_ASSERT(q_pmove_old_command_offset,
-                    offsetof(pmove_t, oldCommand) == 0x01c);
-PMOVE_LAYOUT_ASSERT(q_pmove_trace_mask_offset,
-                    offsetof(pmove_t, traceMask) == 0x034);
-PMOVE_LAYOUT_ASSERT(q_pmove_debug_move_offset,
-                    offsetof(pmove_t, debugMove) == 0x038);
-PMOVE_LAYOUT_ASSERT(q_pmove_view_clamp_target_offset,
-                    offsetof(pmove_t, viewClampTargetAngles) == 0x03c);
-PMOVE_LAYOUT_ASSERT(q_pmove_numtouch_offset,
-                    offsetof(pmove_t, numtouch) == 0x054);
-PMOVE_LAYOUT_ASSERT(q_pmove_touch_list_offset,
-                    offsetof(pmove_t, impactEntityNums) == 0x058);
-PMOVE_LAYOUT_ASSERT(q_pmove_mins_offset,
-                    offsetof(pmove_t, mins) == 0x0d8);
-PMOVE_LAYOUT_ASSERT(q_pmove_maxs_offset,
-                    offsetof(pmove_t, maxs) == 0x0e4);
-PMOVE_LAYOUT_ASSERT(q_pmove_watertype_offset,
-                    offsetof(pmove_t, watertype) == 0x0f0);
-PMOVE_LAYOUT_ASSERT(q_pmove_waterlevel_offset,
-                    offsetof(pmove_t, waterlevel) == 0x0f1);
-PMOVE_LAYOUT_ASSERT(q_pmove_horizontal_speed_offset,
-                    offsetof(pmove_t, horizontalSpeed) == 0x0f4);
-PMOVE_LAYOUT_ASSERT(q_pmove_weapon_animscript_offset,
-                    offsetof(pmove_t, weaponAnimscriptEnabled) == 0x100);
-PMOVE_LAYOUT_ASSERT(q_pmove_trace_offset,
-                    offsetof(pmove_t, trace) == 0x104);
-PMOVE_LAYOUT_ASSERT(q_pmove_point_contents_offset,
-                    offsetof(pmove_t, pointContents) == 0x110);
-PMOVE_LAYOUT_ASSERT(q_pmove_entity_type_offset,
-                    offsetof(pmove_t, entityType) == 0x114);
-PMOVE_LAYOUT_ASSERT(q_pmove_ads_blocked_offset,
-                    offsetof(pmove_t, adsInputBlocked) == 0x118);
+#define PMOVE_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+PMOVE_LAYOUT_ASSERT(q_pmove_command_offset, offsetof(pmove_t, command) == 0x004);
+PMOVE_LAYOUT_ASSERT(q_pmove_old_command_offset, offsetof(pmove_t, oldCommand) == 0x01c);
+PMOVE_LAYOUT_ASSERT(q_pmove_trace_mask_offset, offsetof(pmove_t, traceMask) == 0x034);
+PMOVE_LAYOUT_ASSERT(q_pmove_debug_move_offset, offsetof(pmove_t, debugMove) == 0x038);
+PMOVE_LAYOUT_ASSERT(q_pmove_view_clamp_target_offset, offsetof(pmove_t, viewClampTargetAngles) == 0x03c);
+PMOVE_LAYOUT_ASSERT(q_pmove_numtouch_offset, offsetof(pmove_t, numtouch) == 0x054);
+PMOVE_LAYOUT_ASSERT(q_pmove_touch_list_offset, offsetof(pmove_t, impactEntityNums) == 0x058);
+PMOVE_LAYOUT_ASSERT(q_pmove_mins_offset, offsetof(pmove_t, mins) == 0x0d8);
+PMOVE_LAYOUT_ASSERT(q_pmove_maxs_offset, offsetof(pmove_t, maxs) == 0x0e4);
+PMOVE_LAYOUT_ASSERT(q_pmove_watertype_offset, offsetof(pmove_t, watertype) == 0x0f0);
+PMOVE_LAYOUT_ASSERT(q_pmove_waterlevel_offset, offsetof(pmove_t, waterlevel) == 0x0f1);
+PMOVE_LAYOUT_ASSERT(q_pmove_horizontal_speed_offset, offsetof(pmove_t, horizontalSpeed) == 0x0f4);
+PMOVE_LAYOUT_ASSERT(q_pmove_weapon_animscript_offset, offsetof(pmove_t, weaponAnimscriptEnabled) == 0x100);
+PMOVE_LAYOUT_ASSERT(q_pmove_trace_offset, offsetof(pmove_t, trace) == 0x104);
+PMOVE_LAYOUT_ASSERT(q_pmove_point_contents_offset, offsetof(pmove_t, pointContents) == 0x110);
+PMOVE_LAYOUT_ASSERT(q_pmove_entity_type_offset, offsetof(pmove_t, entityType) == 0x114);
+PMOVE_LAYOUT_ASSERT(q_pmove_ads_blocked_offset, offsetof(pmove_t, adsInputBlocked) == 0x118);
 PMOVE_LAYOUT_ASSERT(q_pmove_extent, sizeof(pmove_t) == 0x11c);
-PMOVE_LAYOUT_ASSERT(q_pml_walking_offset,
-                    offsetof(pml_t, walking) == 0x2c);
-PMOVE_LAYOUT_ASSERT(q_pml_ground_plane_offset,
-                    offsetof(pml_t, groundPlane) == 0x30);
-PMOVE_LAYOUT_ASSERT(q_pml_ground_lift_flag_offset,
-                    offsetof(pml_t, groundLiftFlag) == 0x34);
-PMOVE_LAYOUT_ASSERT(q_pml_ground_trace_offset,
-                    offsetof(pml_t, groundTrace) == 0x38);
-PMOVE_LAYOUT_ASSERT(q_pml_max_clip_impact_offset,
-                    offsetof(pml_t, maxClipImpact) == 0x68);
-PMOVE_LAYOUT_ASSERT(q_pml_previous_water_level_offset,
-                    offsetof(pml_t, previousWaterLevel) == 0x84);
-PMOVE_LAYOUT_ASSERT(q_pml_weapon_info_offset,
-                    offsetof(pml_t, weaponInfo) == 0x88);
+PMOVE_LAYOUT_ASSERT(q_pml_walking_offset, offsetof(pml_t, walking) == 0x2c);
+PMOVE_LAYOUT_ASSERT(q_pml_ground_plane_offset, offsetof(pml_t, groundPlane) == 0x30);
+PMOVE_LAYOUT_ASSERT(q_pml_ground_lift_flag_offset, offsetof(pml_t, groundLiftFlag) == 0x34);
+PMOVE_LAYOUT_ASSERT(q_pml_ground_trace_offset, offsetof(pml_t, groundTrace) == 0x38);
+PMOVE_LAYOUT_ASSERT(q_pml_max_clip_impact_offset, offsetof(pml_t, maxClipImpact) == 0x68);
+PMOVE_LAYOUT_ASSERT(q_pml_previous_water_level_offset, offsetof(pml_t, previousWaterLevel) == 0x84);
+PMOVE_LAYOUT_ASSERT(q_pml_weapon_info_offset, offsetof(pml_t, weaponInfo) == 0x88);
 PMOVE_LAYOUT_ASSERT(q_pml_extent, sizeof(pml_t) == 0x8c);
 #undef PMOVE_LAYOUT_ASSERT
 #endif

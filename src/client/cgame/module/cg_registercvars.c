@@ -56,8 +56,7 @@ void CG_RegisterCvars(void)
     // walk with stride 0x10.
     for (int32_t i = 0; i < CG_CVAR_TABLE_COUNT; ++i) {
         const cvarTable_t *entry = &cg_cvarTable[i];
-        trap_Cvar_Register(entry->vmCvar, entry->cvarName,
-                           entry->defaultString, entry->cvarFlags);
+        trap_Cvar_Register(entry->vmCvar, entry->cvarName, entry->defaultString, entry->cvarFlags);
     }
 
     // 3002b1e0..3002b1fc: read "sv_running" into a 0x400 buffer, then Q_atoi it.

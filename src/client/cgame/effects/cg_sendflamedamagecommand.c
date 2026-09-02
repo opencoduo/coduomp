@@ -33,7 +33,9 @@
 #include "client/cgame/client_recovered.h"
 
 /* ms between successive flame-damage notifications for one client (LEA cg_time-0x7d0). */
-enum { CG_FLAME_DAMAGE_COMMAND_INTERVAL = 2000 };
+enum {
+    CG_FLAME_DAMAGE_COMMAND_INTERVAL = 2000
+};
 
 void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId)
 {
@@ -44,8 +46,7 @@ void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId)
 
     /* 0x300291da CMP EDI(lastPainTime),ESI(cg_time-2000) ; 0x300291de JG ret.
      * Signed compare: skip when the last event is more recent than the window. */
-    int32_t windowStart = coduo_int32_from_bits(
-        (uint32_t)now - (uint32_t)CG_FLAME_DAMAGE_COMMAND_INTERVAL);
+    int32_t windowStart = coduo_int32_from_bits((uint32_t)now - (uint32_t)CG_FLAME_DAMAGE_COMMAND_INTERVAL);
     if (state->lastPainTime > windowStart) {
         return;                                  /* 0x30029203 RET */
     }
@@ -57,6 +58,5 @@ void CG_SendFlameDamageCommand(int32_t clientNum, int32_t painId)
     /* 0x300291e1 PUSH "fdc %i"; 0x300291e0 PUSH painId; 0x300291f2 CALL va ->
      * 0x300291f8 PUSH 0x18; 0x300291f7 PUSH result; 0x300291fa CALL cgame_syscall.
      * cgame_syscall(CG_SEND_CLIENT_COMMAND, va("fdc %i", painId)); ADD ESP,0x10. */
-    cgame_syscall(CG_SEND_CLIENT_COMMAND,
-                  (intptr_t)va("fdc %i", painId));
+    cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)va("fdc %i", painId));
 }

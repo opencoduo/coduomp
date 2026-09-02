@@ -97,31 +97,25 @@ void CG_ResetWeaponAnimTrees(playerState_t *ps)
             continue; /* no overlay DObj for this weapon */
 
         /* Resolve the weapon overlay DObj's runtime tree for the follow-on traps. */
-        intptr_t animTree = cgame_syscall(
-            CG_DOBJ_GET_TREE, (intptr_t)overlayDObj);
+        intptr_t animTree = cgame_syscall(CG_DOBJ_GET_TREE, (intptr_t)overlayDObj);
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (animTree == 0) {
             continue;
         }
 
         /* Clear all goal weights below the root with zero blend time. */
-        cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS, animTree,
-                      WEAPON_XANIM_ROOT, 0);
+        cgame_syscall(CG_XANIM_CLEAR_TREE_GOAL_WEIGHTS, animTree, WEAPON_XANIM_ROOT, 0);
 
         /* Seed the root with weight 1.0f, blend time 0.0f, its animation rate,
          * notifyName 1, and restart 0. */
-        int32_t rootAnimRateBits =
-            CG_FloatBits(record->animRates[WEAPON_XANIM_ROOT]);
-        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ROOT,
-                      CG_FloatBits(1.0f), CG_FloatBits(0.0f),
-                      rootAnimRateBits, 1, 0);
+        int32_t rootAnimRateBits = CG_FloatBits(record->animRates[WEAPON_XANIM_ROOT]);
+        cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, animTree, WEAPON_XANIM_ROOT, CG_FloatBits(1.0f), CG_FloatBits(0.0f), rootAnimRateBits, 1,
+                      0);
 
         /* Choose IDLE or EMPTY_IDLE from the player's clip state. */
         weaponInfo_t *weap = bg_weaponInfos[weaponIndex];
         int32_t clipIndex = weap->clipIndex;
-        int32_t activeAnimIndex = (ps->clips[clipIndex] != 0)
-                                      ? WEAPON_XANIM_IDLE
-                                      : WEAPON_XANIM_EMPTY_IDLE;
+        int32_t activeAnimIndex = (ps->clips[clipIndex] != 0) ? WEAPON_XANIM_IDLE : WEAPON_XANIM_EMPTY_IDLE;
 
         CG_StartWeaponAnim(weaponIndex, animTree, activeAnimIndex);
     }

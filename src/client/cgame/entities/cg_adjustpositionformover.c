@@ -54,9 +54,8 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EAX */,
-                               int32_t fromTime, int32_t toTime, vec3_t out /* ESI */,
-                               vec3_t angleDelta)
+void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EAX */, int32_t fromTime, int32_t toTime,
+                               vec3_t out /* ESI */, vec3_t angleDelta)
 {
     // 0x3001f5c4..0x3001f5d3: pre-zero the optional angle-delta output.
     if (angleDelta != NULL) {
@@ -93,21 +92,15 @@ void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EA
              * on the x87 stack across the optional-output test and all three
              * angle-delta calculations. Z alone is rounded through a float
              * scratch slot before its later reload. */
-            long double posDelta0 =
-                (long double)posTo[0] - (long double)posFrom[0];
+            long double posDelta0 = (long double)posTo[0] - (long double)posFrom[0];
             qboolean publishAngleDelta = angleDelta != NULL;
-            long double posDelta1 =
-                (long double)posTo[1] - (long double)posFrom[1];
-            float posDelta2 = (float)(
-                (long double)posTo[2] - (long double)posFrom[2]);
+            long double posDelta1 = (long double)posTo[1] - (long double)posFrom[1];
+            float posDelta2 = (float)((long double)posTo[2] - (long double)posFrom[2]);
 
             vec3_t aposDelta;
-            aposDelta[0] = (float)(
-                (long double)aposTo[0] - (long double)aposFrom[0]);
-            aposDelta[1] = (float)(
-                (long double)aposTo[1] - (long double)aposFrom[1]);
-            aposDelta[2] = (float)(
-                (long double)aposTo[2] - (long double)aposFrom[2]);
+            aposDelta[0] = (float)((long double)aposTo[0] - (long double)aposFrom[0]);
+            aposDelta[1] = (float)((long double)aposTo[1] - (long double)aposFrom[1]);
+            aposDelta[2] = (float)((long double)aposTo[2] - (long double)aposFrom[2]);
 
             /* FXCH selects x first; y remains live for the following FADD. */
             out[0] = (float)(posDelta0 + (long double)in[0]);
@@ -116,12 +109,9 @@ void CG_AdjustPositionForMover(const vec3_t in /* EDI */, int32_t moverNum /* EA
 
             // 0x3001f6c1..0x3001f6d4: publish the angle delta only if requested.
             if (publishAngleDelta) {
-                memcpy(&angleDelta[0], &aposDelta[0],
-                                 sizeof(angleDelta[0]));
-                memcpy(&angleDelta[1], &aposDelta[1],
-                                 sizeof(angleDelta[1]));
-                memcpy(&angleDelta[2], &aposDelta[2],
-                                 sizeof(angleDelta[2]));
+                memcpy(&angleDelta[0], &aposDelta[0], sizeof(angleDelta[0]));
+                memcpy(&angleDelta[1], &aposDelta[1], sizeof(angleDelta[1]));
+                memcpy(&angleDelta[2], &aposDelta[2], sizeof(angleDelta[2]));
             }
             return;
         }

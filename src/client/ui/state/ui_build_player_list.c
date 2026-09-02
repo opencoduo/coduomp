@@ -23,10 +23,8 @@ void UI_BuildPlayerList(void)
     trap_GetClientState(&state);
     ui_myClientNum = state.clientNum;
 
-    trap_GetConfigString(UI_SERVERINFO_CONFIG_STRING, serverInfo,
-                         sizeof(serverInfo));
-    maxClients =
-        coduo_crt_atoi(Info_ValueForKey(serverInfo, "sv_maxclients"));
+    trap_GetConfigString(UI_SERVERINFO_CONFIG_STRING, serverInfo, sizeof(serverInfo));
+    maxClients = coduo_crt_atoi(Info_ValueForKey(serverInfo, "sv_maxclients"));
     ui_playerCount = 0;
 
     for (clientNum = 0; clientNum < maxClients; ++clientNum) {

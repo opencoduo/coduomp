@@ -8,12 +8,9 @@
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for the client-only command and
  * audio work surrounding the common bank activation. */
-static inline void sound_alias_compat_before_bank_activation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_before_bank_activation(sndAliasBank_t bank)
 {
-    if ((bank == SND_ALIAS_BANK_COMMON ||
-         bank == SND_ALIAS_BANK_CGAME) &&
-        !com_soundAliasBankActive[SND_ALIAS_BANK_COMMON] &&
+    if ((bank == SND_ALIAS_BANK_COMMON || bank == SND_ALIAS_BANK_CGAME) && !com_soundAliasBankActive[SND_ALIAS_BANK_COMMON] &&
         !com_soundAliasBankActive[SND_ALIAS_BANK_CGAME]) {
         Cmd_AddCommand("snd_list", Com_SoundList_f);
     }
@@ -21,8 +18,7 @@ static inline void sound_alias_compat_before_bank_activation(
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for loading client audio after
  * the common bank state becomes active. */
-static inline void sound_alias_compat_after_bank_activation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_after_bank_activation(sndAliasBank_t bank)
 {
     if (bank == SND_ALIAS_BANK_COMMON || bank == SND_ALIAS_BANK_CGAME) {
         Com_LoadSoundAliasSounds(bank);
@@ -31,8 +27,7 @@ static inline void sound_alias_compat_after_bank_activation(
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for releasing client audio before
  * the common alias table is freed. */
-static inline void sound_alias_compat_before_bank_deactivation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_before_bank_deactivation(sndAliasBank_t bank)
 {
     if (bank != SND_ALIAS_BANK_GAME) {
         Com_UnloadSoundAliasSounds(bank);
@@ -41,12 +36,9 @@ static inline void sound_alias_compat_before_bank_deactivation(
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for removing the client command
  * after the last client-audio bank becomes inactive. */
-static inline void sound_alias_compat_after_bank_deactivation(
-    sndAliasBank_t bank)
+static inline void sound_alias_compat_after_bank_deactivation(sndAliasBank_t bank)
 {
-    if ((bank == SND_ALIAS_BANK_COMMON ||
-         bank == SND_ALIAS_BANK_CGAME) &&
-        !com_soundAliasBankActive[SND_ALIAS_BANK_COMMON] &&
+    if ((bank == SND_ALIAS_BANK_COMMON || bank == SND_ALIAS_BANK_CGAME) && !com_soundAliasBankActive[SND_ALIAS_BANK_COMMON] &&
         !com_soundAliasBankActive[SND_ALIAS_BANK_CGAME]) {
         Cmd_RemoveCommand("snd_list");
     }

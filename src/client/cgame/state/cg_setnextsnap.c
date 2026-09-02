@@ -27,10 +27,8 @@ void CG_SetNextSnap(snapshot_t *snap)
          * cg_frameInterpolation while 0x3003cc62 FCOMP tests the UNROUNDED st0
          * against 0.0f -- so the sign test must read the wide quotient, not the
          * float lvalue. */
-        int32_t numerator = coduo_int32_from_bits(
-            cg_time - (uint32_t)cg_snap->serverTime);
-        int32_t denominator = coduo_int32_from_bits(
-            (uint32_t)snap->serverTime - (uint32_t)cg_snap->serverTime);
+        int32_t numerator = coduo_int32_from_bits(cg_time - (uint32_t)cg_snap->serverTime);
+        int32_t denominator = coduo_int32_from_bits((uint32_t)snap->serverTime - (uint32_t)cg_snap->serverTime);
         long double frac = (long double)numerator / (long double)denominator;
         cg_frameInterpolation = (float)frac;
         if (frac < 0.0f) {
@@ -44,8 +42,7 @@ void CG_SetNextSnap(snapshot_t *snap)
         clientState_t *client = &snap->clients[i];
         clientInfo_t *state = &bgs.clientinfo[client->clientNum];
 
-        state->obituaryTeam = state->infoValid != 0
-                                ? state->team : client->team;
+        state->obituaryTeam = state->infoValid != 0 ? state->team : client->team;
         state->infoValid = 1;
         state->moduleState.active = 1;
         state->clientNum = client->clientNum;
@@ -54,13 +51,10 @@ void CG_SetNextSnap(snapshot_t *snap)
         if (strcmp(state->name, client->name) != 0) {
             if (state->name[0] != '\0') {
                 const char *renamed = CG_SafeTranslateString_Internal("cgame", "CGAME_PLAYERRENAMES");
-                const char *message = va("%s^7 %s %s", state->name,
-                                         renamed, client->name);
-                cgame_syscall(CG_GAME_MESSAGE, (intptr_t)message,
-                              cg_gameMessageWidth_vmCvar.integer);
+                const char *message = va("%s^7 %s %s", state->name, renamed, client->name);
+                cgame_syscall(CG_GAME_MESSAGE, (intptr_t)message, cg_gameMessageWidth_vmCvar.integer);
             }
-            Q_strncpyz(state->name, client->name,
-                       sizeof(state->name));
+            Q_strncpyz(state->name, client->name, sizeof(state->name));
         }
 
         {
@@ -72,26 +66,21 @@ void CG_SetNextSnap(snapshot_t *snap)
         }
 
         for (int32_t part = 0; part < 6; part++) {
-            const char *modelName =
-                CG_ConfigString(client->attachModelIndex[part] + 405);
-            const char *skinName =
-                CG_ConfigString(client->attachTagIndex[part] + 117);
+            const char *modelName = CG_ConfigString(client->attachModelIndex[part] + 405);
+            const char *skinName = CG_ConfigString(client->attachTagIndex[part] + 117);
 
             if (strcmp(state->attachModelNames[part], modelName) != 0) {
-                Q_strncpyz(state->attachModelNames[part], modelName,
-                           sizeof(state->attachModelNames[part]));
+                Q_strncpyz(state->attachModelNames[part], modelName, sizeof(state->attachModelNames[part]));
                 state->dobjNeedsUpdate = 1;
             }
             if (strcmp(state->attachTagNames[part], skinName) != 0) {
-                Q_strncpyz(state->attachTagNames[part], skinName,
-                           sizeof(state->attachTagNames[part]));
+                Q_strncpyz(state->attachTagNames[part], skinName, sizeof(state->attachTagNames[part]));
                 state->dobjNeedsUpdate = 1;
             }
         }
     }
 
-    CG_RefreshWeaponInfosForConfigString(
-        CG_ConfigString(snap->ps.viewModelIndex + 405));
+    CG_RefreshWeaponInfosForConfigString(CG_ConfigString(snap->ps.viewModelIndex + 405));
 
     cg_crosshairHealthEntNum = snap->ps.stats[STAT_IDENT_CLIENT_NUM];
     cg_crosshairHealth = snap->ps.stats[STAT_IDENT_CLIENT_HEALTH];
@@ -100,23 +89,17 @@ void CG_SetNextSnap(snapshot_t *snap)
         cg_entities[cg_snap->ps.psClientNum].currentValid = 0;
     }
 
-    qboolean spawnCountChanged =
-        snap->ps.stats[STAT_SPAWN_COUNT] !=
-            cg_snap->ps.stats[STAT_SPAWN_COUNT];
+    qboolean spawnCountChanged = snap->ps.stats[STAT_SPAWN_COUNT] != cg_snap->ps.stats[STAT_SPAWN_COUNT];
 
     if ((snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0) {
         centity_t *cent = &cg_entities[snap->ps.psClientNum];
-        qboolean resetPlayerState =
-            cg_initialSnapshotPending != 0 ||
-            spawnCountChanged ||
-            snap->ps.psClientNum != cg_snap->ps.psClientNum;
+        qboolean resetPlayerState = cg_initialSnapshotPending != 0 || spawnCountChanged || snap->ps.psClientNum != cg_snap->ps.psClientNum;
 
         BG_PlayerStateToEntityState(&snap->ps, &cent->nextState, qfalse);
 
         if (resetPlayerState || cent->currentValid == 0 ||
             ((cent->nextState.eFlags ^ cent->currentState.eFlags) & EF_DOBJ_STATE_CHANGED) != 0) {
-            memcpy(&cg_snap->ps, &snap->ps,
-                   sizeof(playerState_t));
+            memcpy(&cg_snap->ps, &snap->ps, sizeof(playerState_t));
             CG_TransitionEntity(cent);
 
             /* 0x3003d009..0x3003d031 selects the reset branch from the
@@ -132,11 +115,8 @@ void CG_SetNextSnap(snapshot_t *snap)
                 cg_predictedError[2] = 0.0f;
             }
         }
-    } else if (cg_initialSnapshotPending != 0 ||
-               spawnCountChanged ||
-               snap->ps.psClientNum != cg_snap->ps.psClientNum) {
-        memcpy(&cg_snap->ps, &snap->ps,
-               sizeof(playerState_t));
+    } else if (cg_initialSnapshotPending != 0 || spawnCountChanged || snap->ps.psClientNum != cg_snap->ps.psClientNum) {
+        memcpy(&cg_snap->ps, &snap->ps, sizeof(playerState_t));
         CG_SnapshotTransitionStage2();
     }
 
@@ -146,8 +126,7 @@ void CG_SetNextSnap(snapshot_t *snap)
         centity_t *cent = &cg_entities[entity->number];
 
         memcpy(&cent->nextState, entity, sizeof(*entity));
-        if (cent->currentValid == 0 ||
-            ((cent->nextState.eFlags ^ cent->currentState.eFlags) & EF_DOBJ_STATE_CHANGED) != 0) {
+        if (cent->currentValid == 0 || ((cent->nextState.eFlags ^ cent->currentState.eFlags) & EF_DOBJ_STATE_CHANGED) != 0) {
             CG_TransitionEntity(cent);
         }
     }
@@ -159,18 +138,15 @@ void CG_SetNextSnap(snapshot_t *snap)
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
             if ((uint32_t)entityClientNum >= (uint32_t)MAX_CLIENTS) {
                 Com_Error(ERR_DROP,
-                          "\x15" "CG_SetNextSnap: "
+                          "\x15"
+                          "CG_SetNextSnap: "
                           "invalid entity client number %i",
                           entityClientNum);
                 return;
             }
-            intptr_t handle = cgame_syscall(CG_DOBJ_GET_HANDLE,
-                                            entityClientNum);
+            intptr_t handle = cgame_syscall(CG_DOBJ_GET_HANDLE, entityClientNum);
             clientInfo_t *anim = &bgs.clientinfo[entityClientNum];
-            CG_BuildCorpseDObjModels(
-                anim,
-                handle, &cent->nextState,
-                cent->corpseTagState);
+            CG_BuildCorpseDObjModels(anim, handle, &cent->nextState, cent->corpseTagState);
         }
     }
 

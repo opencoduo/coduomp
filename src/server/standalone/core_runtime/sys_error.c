@@ -15,10 +15,8 @@ void Sys_Error(const char *format, ...)
     va_list argptr;
 
 #if !defined(_WIN32)
-    flags = fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_GETFL_COMMAND,
-                  SYS_F_GETFL_UNUSED_ARGUMENT);
-    fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_SETFL_COMMAND,
-          flags & ~SYS_LINUX_O_NONBLOCK);
+    flags = fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_GETFL_COMMAND, SYS_F_GETFL_UNUSED_ARGUMENT);
+    fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_SETFL_COMMAND, flags & ~SYS_LINUX_O_NONBLOCK);
 #endif
 
     if (sys_ttyConsoleActive != 0) {

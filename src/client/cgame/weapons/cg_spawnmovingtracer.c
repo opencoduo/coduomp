@@ -44,8 +44,7 @@
  * with the source address noted, per the constant-form rules.
  */
 
-void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
-                          int32_t weaponInfoIndex, int32_t weaponIndex)
+void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin, int32_t weaponInfoIndex, int32_t weaponIndex)
 {
     /* 30048a06..30048a44: select the tracer width/length pair by the weapon's
      * ammo type. bg_weaponInfos[weaponInfoIndex] (0x30134cd8[EDX*4]); if non-null and
@@ -55,14 +54,12 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
     float tracerLength;  /* ST0/[ESP+0x10] : mode-selected tracer length */
     {
         const weaponInfo_t *weapon = bg_weaponInfos[weaponInfoIndex];
-        if (weapon != 0 &&
-            (weapon->ammoType == WEAPON_AMMO_TYPE_LMG ||
-             weapon->ammoType == WEAPON_AMMO_TYPE_HMG ||
-             weapon->ammoType == WEAPON_AMMO_TYPE_UMG)) {
-            tracerWidth  = cg_tracerwidthlmg_vmCvar.value;   /* 0x304407c8 */
+        if (weapon != 0 && (weapon->ammoType == WEAPON_AMMO_TYPE_LMG || weapon->ammoType == WEAPON_AMMO_TYPE_HMG ||
+                            weapon->ammoType == WEAPON_AMMO_TYPE_UMG)) {
+            tracerWidth = cg_tracerwidthlmg_vmCvar.value;   /* 0x304407c8 */
             tracerLength = cg_tracerlengthlmg_vmCvar.value;  /* 0x304506e8 */
         } else {
-            tracerWidth  = cg_tracerwidth_vmCvar.value;   /* 0x3048c268 */
+            tracerWidth = cg_tracerwidth_vmCvar.value;   /* 0x3048c268 */
             tracerLength = cg_tracerlength_vmCvar.value;  /* 0x30530668 */
         }
     }
@@ -102,10 +99,7 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
     int32_t r = coduo_crt_rand();   /* 0x3005b879 */
     /* r enters via a bare FILD fed straight into FMUL 3.05e-5f (0x30048abf FILD;
      * 0x30048ac3 FMUL) with no FSTP DWORD between, so drop the (float) cast (Class 4). */
-    long double tailScalarWide =
-        50.0L +
-        ((long double)r * (long double)3.0517578e-05f) *
-        ((long double)dist - 60.0L);
+    long double tailScalarWide = 50.0L + ((long double)r * (long double)3.0517578e-05f) * ((long double)dist - 60.0L);
     float tailScalar = (float)tailScalarWide; /* 0x30048adb FST, value remains live */
     /*                  0x300715c8          0x3007bec0            0x3007bff0 */
 
@@ -114,8 +108,7 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
      * so the tracer never overshoots the end point.
      * FADD length; FCOM dist; TEST AH,0x41; JNZ keeps (tail+length) when it is <= dist,
      * else replaces it with dist. */
-    long double headScalar =
-        tailScalarWide + (long double)tracerLength;
+    long double headScalar = tailScalarWide + (long double)tracerLength;
     if (headScalar > (long double)dist) {
         headScalar = (long double)dist;
     }
@@ -126,18 +119,12 @@ void CG_SpawnMovingTracer(vec3_t startOrigin, vec3_t endOrigin,
      * its stack slot. */
     vec3_t tail;   /* [ESP+0x2c..0x34] : passed to the builder in EDI */
     vec3_t head;   /* [ESP+0x20..0x28] : passed to the builder as a pushed pointer */
-    tail[0] = (float)((long double)tailScalar * (long double)dir[0] +
-                      (long double)startOrigin[0]);
-    tail[1] = (float)((long double)tailScalar * (long double)dir[1] +
-                      (long double)startOrigin[1]);
-    tail[2] = (float)((long double)tailScalar * (long double)dir[2] +
-                      (long double)startOrigin[2]);
-    head[0] = (float)((long double)dir[0] * headScalar +
-                      (long double)startOrigin[0]);
-    head[1] = (float)((long double)dir[1] * headScalar +
-                      (long double)startOrigin[1]);
-    head[2] = (float)((long double)dir[2] * headScalar +
-                      (long double)startOrigin[2]);
+    tail[0] = (float)((long double)tailScalar * (long double)dir[0] + (long double)startOrigin[0]);
+    tail[1] = (float)((long double)tailScalar * (long double)dir[1] + (long double)startOrigin[1]);
+    tail[2] = (float)((long double)tailScalar * (long double)dir[2] + (long double)startOrigin[2]);
+    head[0] = (float)((long double)dir[0] * headScalar + (long double)startOrigin[0]);
+    head[1] = (float)((long double)dir[1] * headScalar + (long double)startOrigin[1]);
+    head[2] = (float)((long double)dir[2] * headScalar + (long double)startOrigin[2]);
 
     /* 30048b00..30048b57: CG_DrawMovingTracerPoly(tail, head, tracerWidth).
      * PUSH tracerWidth (as its int slot); PUSH &head; EDI=&tail; CALL 0x30048460;

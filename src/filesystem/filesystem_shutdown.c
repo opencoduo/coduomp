@@ -39,9 +39,7 @@ void FS_Shutdown(qboolean clearLookupLists)
 
     for (int32_t handle = 1; handle < FS_HANDLE_COUNT; ++handle) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (handle == com_consoleLogFile ||
-            handle == com_journalFile ||
-            handle == com_journalDataFile) {
+        if (handle == com_consoleLogFile || handle == com_journalFile || handle == com_journalDataFile) {
             continue;
         }
 

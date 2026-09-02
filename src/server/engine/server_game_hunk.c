@@ -22,9 +22,8 @@ void Com_Error(errorParm_t code, const char *format, ...);
 void *SV_Hunk_AllocInternal(size_t size)
 {
     if (sv.state != SS_LOADING) {
-        Com_Error(ERR_DROP,
-                  "\x15trap_Hunk_Alloc can only be called in G_InitGame and "
-                  "the first few frames of G_RunFrame\n");
+        Com_Error(ERR_DROP, "\x15trap_Hunk_Alloc can only be called in G_InitGame and "
+                            "the first few frames of G_RunFrame\n");
     }
     return Hunk_AllocInternal(size);
 }
@@ -32,9 +31,8 @@ void *SV_Hunk_AllocInternal(size_t size)
 void *SV_Hunk_AllocLowInternal(size_t size)
 {
     if (sv.state != SS_LOADING) {
-        Com_Error(ERR_DROP,
-                  "\x15trap_Hunk_AllocLow can only be called in G_InitGame "
-                  "and the first few frames of G_RunFrame\n");
+        Com_Error(ERR_DROP, "\x15trap_Hunk_AllocLow can only be called in G_InitGame "
+                            "and the first few frames of G_RunFrame\n");
     }
     return Hunk_AllocLowInternal(size);
 }
@@ -42,9 +40,8 @@ void *SV_Hunk_AllocLowInternal(size_t size)
 void *SV_Hunk_AllocAlignInternal(size_t size, size_t alignment)
 {
     if (sv.state != SS_LOADING) {
-        Com_Error(ERR_DROP,
-                  "\x15trap_Hunk_AllocAlign can only be called in G_InitGame "
-                  "and the first few frames of G_RunFrame\n");
+        Com_Error(ERR_DROP, "\x15trap_Hunk_AllocAlign can only be called in G_InitGame "
+                            "and the first few frames of G_RunFrame\n");
     }
     return Hunk_AllocAlignInternal(size, alignment);
 }
@@ -52,10 +49,8 @@ void *SV_Hunk_AllocAlignInternal(size_t size, size_t alignment)
 void *SV_Hunk_AllocLowAlignInternal(size_t size, size_t alignment)
 {
     if (sv.state != SS_LOADING) {
-        Com_Error(
-            ERR_DROP,
-            "\x15trap_Hunk_AllocLowAlign can only be called in G_InitGame "
-            "and the first few frames of G_RunFrame\n");
+        Com_Error(ERR_DROP, "\x15trap_Hunk_AllocLowAlign can only be called in G_InitGame "
+                            "and the first few frames of G_RunFrame\n");
     }
     return Hunk_AllocLowAlignInternal(size, alignment);
 }

@@ -75,8 +75,7 @@ int32_t com_frameTime;
 
 void Com_Init(char *commandLine)
 {
-    Com_Printf("%s %s (%s) build %s\n", COM_INIT_PRODUCT_STRING,
-               COM_INIT_VERSION_STRING, COM_INIT_PLATFORM, COM_INIT_BUILD_DATE);
+    Com_Printf("%s %s (%s) build %s\n", COM_INIT_PRODUCT_STRING, COM_INIT_VERSION_STRING, COM_INIT_PLATFORM, COM_INIT_BUILD_DATE);
 
     if (CODUO_SETJMP(com_frameAbortContext, COM_INIT_LONGJMP_SAVE_MASK) != 0) {
         Com_ErrorCleanup();
@@ -105,11 +104,8 @@ void Com_Init(char *commandLine)
     }
     Cbuf_Execute();
 
-    host_cvar_com_recommendedSet_pointer_slot =
-        Cvar_Get("com_recommendedSet", COM_INIT_ZERO,
-                 COM_INIT_RECOMMENDED_FLAGS);
-    if (host_cvar_com_recommendedSet_pointer_slot->integer == 0 ||
-        Com_ApplyConfigureFileChecksum() != 0) {
+    host_cvar_com_recommendedSet_pointer_slot = Cvar_Get("com_recommendedSet", COM_INIT_ZERO, COM_INIT_RECOMMENDED_FLAGS);
+    if (host_cvar_com_recommendedSet_pointer_slot->integer == 0 || Com_ApplyConfigureFileChecksum() != 0) {
         Com_SetRecommended();
         Cvar_Set("com_recommendedSet", COM_INIT_ONE);
     }
@@ -119,45 +115,28 @@ void Com_Init(char *commandLine)
     }
 
     Com_StartupVariable(NULL);
-    dedicated = Cvar_Get("dedicated", COM_INIT_DEDICATED_DEFAULT,
-                         COM_INIT_DEDICATED_FLAGS);
+    dedicated = Cvar_Get("dedicated", COM_INIT_DEDICATED_DEFAULT, COM_INIT_DEDICATED_FLAGS);
 
     Com_InitHunkMemory();
     cvar_modifiedFlags &= ~COM_INIT_CVAR_AUTOWRITE_MASK;
 
-    host_cvar_com_maxfps_pointer_slot =
-        Cvar_Get("com_maxfps", COM_INIT_MAXFPS_DEFAULT,
-                 COM_INIT_ARCHIVE_FLAGS);
-    com_developer =
-        Cvar_Get("developer", COM_INIT_ZERO, COM_INIT_DEVELOPER_FLAGS);
-    host_cvar_developer_script_pointer_slot =
-        Cvar_Get("developer_script", COM_INIT_ZERO, COM_INIT_DEVELOPER_FLAGS);
+    host_cvar_com_maxfps_pointer_slot = Cvar_Get("com_maxfps", COM_INIT_MAXFPS_DEFAULT, COM_INIT_ARCHIVE_FLAGS);
+    com_developer = Cvar_Get("developer", COM_INIT_ZERO, COM_INIT_DEVELOPER_FLAGS);
+    host_cvar_developer_script_pointer_slot = Cvar_Get("developer_script", COM_INIT_ZERO, COM_INIT_DEVELOPER_FLAGS);
     com_logfile = Cvar_Get("logfile", COM_INIT_ZERO, 0);
-    com_timescale =
-        Cvar_Get("timescale", COM_INIT_ONE,
-                 CVAR_CHEAT | CVAR_SCRIPT_MAKE_SERVERINFO);
-    com_fixedtime =
-        Cvar_Get("fixedtime", COM_INIT_ZERO, COM_INIT_LATCH_FLAGS);
-    host_cvar_viewlog_pointer_slot =
-        Cvar_Get("viewlog", COM_INIT_ZERO, COM_INIT_LATCH_FLAGS);
-    com_speeds =
-        Cvar_Get("com_speeds", COM_INIT_ZERO, 0);
-    sv_paused =
-        Cvar_Get("sv_paused", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
-    cl_paused =
-        Cvar_Get("cl_paused", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
-    sv_running =
-        Cvar_Get("sv_running", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
-    cl_running =
-        Cvar_Get("cl_running", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
-    host_cvar_com_introplayed_pointer_slot =
-        Cvar_Get("com_introplayed", COM_INIT_ZERO, COM_INIT_ARCHIVE_FLAGS);
-    host_cvar_com_animCheck_pointer_slot =
-        Cvar_Get("com_animCheck", COM_INIT_ZERO, 0);
+    com_timescale = Cvar_Get("timescale", COM_INIT_ONE, CVAR_CHEAT | CVAR_SCRIPT_MAKE_SERVERINFO);
+    com_fixedtime = Cvar_Get("fixedtime", COM_INIT_ZERO, COM_INIT_LATCH_FLAGS);
+    host_cvar_viewlog_pointer_slot = Cvar_Get("viewlog", COM_INIT_ZERO, COM_INIT_LATCH_FLAGS);
+    com_speeds = Cvar_Get("com_speeds", COM_INIT_ZERO, 0);
+    sv_paused = Cvar_Get("sv_paused", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
+    cl_paused = Cvar_Get("cl_paused", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
+    sv_running = Cvar_Get("sv_running", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
+    cl_running = Cvar_Get("cl_running", COM_INIT_ZERO, COM_INIT_PAUSED_FLAGS);
+    host_cvar_com_introplayed_pointer_slot = Cvar_Get("com_introplayed", COM_INIT_ZERO, COM_INIT_ARCHIVE_FLAGS);
+    host_cvar_com_animCheck_pointer_slot = Cvar_Get("com_animCheck", COM_INIT_ZERO, 0);
 
     hunk_used = 0;
-    if (dedicated->integer != 0 &&
-        host_cvar_viewlog_pointer_slot->integer == 0) {
+    if (dedicated->integer != 0 && host_cvar_viewlog_pointer_slot->integer == 0) {
         Cvar_Set("viewlog", COM_INIT_ONE);
     }
 
@@ -170,15 +149,10 @@ void Com_Init(char *commandLine)
     Cmd_AddCommand("writeconfig", Com_WriteConfig_f);
     Cmd_AddCommand("writedefaults", Com_WriteDefaults_f);
 
-    cvar_version =
-        Cvar_Get("version",
-                 va("%s %s build %s %s", COM_INIT_PRODUCT_STRING,
-                    COM_INIT_VERSION_STRING, Com_BuildVersionString(),
-                    COM_INIT_PLATFORM),
-                 COM_INIT_VERSION_FLAGS);
-    cvar_shortversion =
-        Cvar_Get("shortversion", COM_INIT_VERSION_STRING,
-                 COM_INIT_SHORTVERSION_FLAGS);
+    cvar_version = Cvar_Get(
+        "version", va("%s %s build %s %s", COM_INIT_PRODUCT_STRING, COM_INIT_VERSION_STRING, Com_BuildVersionString(), COM_INIT_PLATFORM),
+        COM_INIT_VERSION_FLAGS);
+    cvar_shortversion = Cvar_Get("shortversion", COM_INIT_VERSION_STRING, COM_INIT_SHORTVERSION_FLAGS);
 
     Sys_Init();
     Netchan_Init(Com_Milliseconds() & COM_INIT_QPORT_MASK);
@@ -207,8 +181,7 @@ void Com_Init(char *commandLine)
     if (dedicated->integer == 0) {
         Cvar_Set("cl_movieplaying", COM_INIT_ZERO);
         if (host_cvar_com_introplayed_pointer_slot->integer == 0) {
-            Cvar_Set(host_cvar_com_introplayed_pointer_slot->name,
-                     COM_INIT_ONE);
+            Cvar_Set(host_cvar_com_introplayed_pointer_slot->name, COM_INIT_ONE);
             Cbuf_AddText(COM_INIT_INTRO_CINEMATIC);
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             Cvar_Set("nextmap", COM_INIT_NEXTMAP_GMI_LOGO);

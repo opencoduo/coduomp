@@ -3,7 +3,9 @@
 #include "sound_alias_runtime_services.h"
 #include "compat/crt/random_compat.h"
 
-enum { SOUND_ALIAS_REPICK_MINIMUM = 3 };
+enum {
+    SOUND_ALIAS_REPICK_MINIMUM = 3
+};
 
 /*
  * Complete common weighted-selection and anti-repeat loop.  The original
@@ -16,13 +18,10 @@ enum { SOUND_ALIAS_REPICK_MINIMUM = 3 };
  * negative scale constant.  Those inputs stay target-local; the loop below
  * does not homogenize them.
  */
-snd_alias_t *Com_PickSoundAlias(const char *name,
-                                sndAliasBank_t bank,
-                                const vec3_t origin)
+snd_alias_t *Com_PickSoundAlias(const char *name, sndAliasBank_t bank, const vec3_t origin)
 {
     const float selector = sound_alias_compat_pick_selector(origin);
-    snd_alias_t *const firstAlias =
-        Com_FindSoundAlias(name, bank, selector);
+    snd_alias_t *const firstAlias = Com_FindSoundAlias(name, bank, selector);
     if (firstAlias == NULL) {
         return NULL;
     }
@@ -43,9 +42,7 @@ snd_alias_t *Com_PickSoundAlias(const char *name,
         if (Com_ValidateSoundAliasLOD(cursor, selector)) {
             ++matchingCount;
             totalWeight += cursor->selectionWeight;
-            if (cursor->selectionWeight *
-                    SOUND_ALIAS_COMPAT_RANDOM_SCALE >
-                (float)coduo_server_rand() * totalWeight) {
+            if (cursor->selectionWeight * SOUND_ALIAS_COMPAT_RANDOM_SCALE > (float)coduo_server_rand() * totalWeight) {
                 selectedAlias = cursor;
             }
 
@@ -55,8 +52,7 @@ snd_alias_t *Com_PickSoundAlias(const char *name,
         }
     }
 
-    if (matchingCount >= SOUND_ALIAS_REPICK_MINIMUM &&
-        maxPickSequence == selectedAlias->pickSequence) {
+    if (matchingCount >= SOUND_ALIAS_REPICK_MINIMUM && maxPickSequence == selectedAlias->pickSequence) {
         totalWeight = 0.0f;
         cursor = firstAlias;
 
@@ -65,9 +61,7 @@ snd_alias_t *Com_PickSoundAlias(const char *name,
             if (Com_ValidateSoundAliasLOD(cursor, selector)) {
                 if (maxPickSequence != cursor->pickSequence) {
                     totalWeight += cursor->selectionWeight;
-                    if (cursor->selectionWeight *
-                            SOUND_ALIAS_COMPAT_RANDOM_SCALE >
-                        (float)coduo_server_rand() * totalWeight) {
+                    if (cursor->selectionWeight * SOUND_ALIAS_COMPAT_RANDOM_SCALE > (float)coduo_server_rand() * totalWeight) {
                         selectedAlias = cursor;
                     }
                 }

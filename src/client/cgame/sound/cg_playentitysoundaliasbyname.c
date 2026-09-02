@@ -49,6 +49,5 @@ void CG_PlayEntitySoundAliasByName(int clientNum, const char *soundName)
 {
     /* 3002ca57/3002ca62: base 0x3048c6f8 is cg_entities+0x18; the client number
      * is reused as the entityNum argument. */
-    (void)CG_PlaySoundAliasByName(
-        clientNum, &cg_entities[clientNum].currentState.pos.trBase, soundName);
+    (void)CG_PlaySoundAliasByName(clientNum, &cg_entities[clientNum].currentState.pos.trBase, soundName);
 }

@@ -61,8 +61,7 @@
  * All are exactly the natural literals below (values verified against the .rdata bytes).
  */
 
-void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
-                                           vec3_t angles)
+void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state, vec3_t angles)
 {
 #if defined(WINDOWS_BEHAVIOR)
     /* 0x300151d0..0x300151e2: weaponInfo = bg_weaponInfos[state->ps->currentWeapon].
@@ -88,8 +87,7 @@ void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
      * the DLL. */
     long double swayMag;
     if (weaponInfo->adsEnabled != 0) {
-        swayMag = ((long double)weaponInfo->idleSwayAds - weaponInfo->idleSwayHip)
-                  * ps->adsFraction + weaponInfo->idleSwayHip;
+        swayMag = ((long double)weaponInfo->idleSwayAds - weaponInfo->idleSwayHip) * ps->adsFraction + weaponInfo->idleSwayHip;
     } else if (weaponInfo->idleSwayHip != 0.0f) {
         swayMag = weaponInfo->idleSwayHip;
     } else {
@@ -156,15 +154,11 @@ void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
      * leaves it in ST1 for the three FMUL ST1 sine scalings; the trailing
      * FSTP ST0 discards it) -- long double. */
     long double amp = swayMag * idleScale;
-    angles[2] = (float)(
-        __builtin_sinl((long double)state->time * (long double)0.0005f) *
-        amp * (long double)0.04f + (long double)angles[2]);
-    angles[1] = (float)(
-        __builtin_sinl((long double)state->time * (long double)0.0007f) *
-        amp * (long double)0.01f + (long double)angles[1]);
-    angles[0] = (float)(
-        __builtin_sinl((long double)state->time * (long double)0.001f) *
-        amp * (long double)0.01f + (long double)angles[0]);
+    angles[2] =
+        (float)(__builtin_sinl((long double)state->time * (long double)0.0005f) * amp * (long double)0.04f + (long double)angles[2]);
+    angles[1] =
+        (float)(__builtin_sinl((long double)state->time * (long double)0.0007f) * amp * (long double)0.01f + (long double)angles[1]);
+    angles[0] = (float)(__builtin_sinl((long double)state->time * (long double)0.001f) * amp * (long double)0.01f + (long double)angles[0]);
     /* 0x300152e0 FSTP ST0 discards the leftover `amp`; 0x300152e2 RET. */
 #else
     playerState_t *ps = state->ps;
@@ -176,15 +170,9 @@ void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
 #if EMULATE_X87
         idleAmount = x87f_store_f32(x87f_add(
             x87f_load_f32(weapon->idleSwayHip),
-            x87f_mul(
-                x87f_sub(x87f_load_f32(weapon->idleSwayAds),
-                         x87f_load_f32(weapon->idleSwayHip)),
-                x87f_load_f32(ps->adsFraction))));
+            x87f_mul(x87f_sub(x87f_load_f32(weapon->idleSwayAds), x87f_load_f32(weapon->idleSwayHip)), x87f_load_f32(ps->adsFraction))));
 #else
-        idleAmount =
-            weapon->idleSwayHip +
-            (weapon->idleSwayAds - weapon->idleSwayHip) *
-                ps->adsFraction;
+        idleAmount = weapon->idleSwayHip + (weapon->idleSwayAds - weapon->idleSwayHip) * ps->adsFraction;
 #endif
     } else {
         idleAmount = weapon->idleSwayHip;
@@ -204,10 +192,8 @@ void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
     if (state->idleScale != targetScale) {
         if (state->idleScale < targetScale) {
 #if EMULATE_X87
-            state->idleScale = x87f_store_f32(x87f_add(
-                x87f_load_f32(state->idleScale),
-                x87f_mul(x87f_load_f32(state->frameTime),
-                         x87f_load_f32(0.5f))));
+            state->idleScale =
+                x87f_store_f32(x87f_add(x87f_load_f32(state->idleScale), x87f_mul(x87f_load_f32(state->frameTime), x87f_load_f32(0.5f))));
 #else
             state->idleScale += state->frameTime * 0.5f;
 #endif
@@ -216,10 +202,8 @@ void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
             }
         } else {
 #if EMULATE_X87
-            state->idleScale = x87f_store_f32(x87f_sub(
-                x87f_load_f32(state->idleScale),
-                x87f_mul(x87f_load_f32(state->frameTime),
-                         x87f_load_f32(0.5f))));
+            state->idleScale =
+                x87f_store_f32(x87f_sub(x87f_load_f32(state->idleScale), x87f_mul(x87f_load_f32(state->frameTime), x87f_load_f32(0.5f))));
 #else
             state->idleScale -= state->frameTime * 0.5f;
 #endif
@@ -230,38 +214,23 @@ void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
     }
 
 #if EMULATE_X87
-    idleAmount = x87f_store_f32(x87f_mul(
-        x87f_load_f32(idleAmount), x87f_load_f32(state->idleScale)));
-#define BG_LINUX_IDLE_SINE(freq)                                           \
-    ((float)CoduoLibm_Sin(x87f_store_f64(                                 \
-        x87f_mul(x87f_load_i32(state->time), x87f_load_f32(freq)))))
-    angles[2] = x87f_store_f32(x87f_add(
-        x87f_load_f32(angles[2]),
-        x87f_mul(x87f_mul(x87f_load_f32(idleAmount),
-                          x87f_load_f32(BG_LINUX_IDLE_SINE(0.0005f))),
-                 x87f_load_f32(0.04f))));
-    angles[1] = x87f_store_f32(x87f_add(
-        x87f_load_f32(angles[1]),
-        x87f_mul(x87f_mul(x87f_load_f32(idleAmount),
-                          x87f_load_f32(BG_LINUX_IDLE_SINE(0.0007f))),
-                 x87f_load_f32(0.01f))));
-    angles[0] = x87f_store_f32(x87f_add(
-        x87f_load_f32(angles[0]),
-        x87f_mul(x87f_mul(x87f_load_f32(idleAmount),
-                          x87f_load_f32(BG_LINUX_IDLE_SINE(0.001f))),
-                 x87f_load_f32(0.01f))));
+    idleAmount = x87f_store_f32(x87f_mul(x87f_load_f32(idleAmount), x87f_load_f32(state->idleScale)));
+#define BG_LINUX_IDLE_SINE(freq) ((float)CoduoLibm_Sin(x87f_store_f64(x87f_mul(x87f_load_i32(state->time), x87f_load_f32(freq)))))
+    angles[2] = x87f_store_f32(
+        x87f_add(x87f_load_f32(angles[2]),
+                 x87f_mul(x87f_mul(x87f_load_f32(idleAmount), x87f_load_f32(BG_LINUX_IDLE_SINE(0.0005f))), x87f_load_f32(0.04f))));
+    angles[1] = x87f_store_f32(
+        x87f_add(x87f_load_f32(angles[1]),
+                 x87f_mul(x87f_mul(x87f_load_f32(idleAmount), x87f_load_f32(BG_LINUX_IDLE_SINE(0.0007f))), x87f_load_f32(0.01f))));
+    angles[0] = x87f_store_f32(
+        x87f_add(x87f_load_f32(angles[0]),
+                 x87f_mul(x87f_mul(x87f_load_f32(idleAmount), x87f_load_f32(BG_LINUX_IDLE_SINE(0.001f))), x87f_load_f32(0.01f))));
 #undef BG_LINUX_IDLE_SINE
 #else
     idleAmount *= state->idleScale;
-    angles[2] += idleAmount *
-                 (float)CoduoLibm_Sin((double)state->time * 0.0005f) *
-                 0.04f;
-    angles[1] += idleAmount *
-                 (float)CoduoLibm_Sin((double)state->time * 0.0007f) *
-                 0.01f;
-    angles[0] += idleAmount *
-                 (float)CoduoLibm_Sin((double)state->time * 0.001f) *
-                 0.01f;
+    angles[2] += idleAmount * (float)CoduoLibm_Sin((double)state->time * 0.0005f) * 0.04f;
+    angles[1] += idleAmount * (float)CoduoLibm_Sin((double)state->time * 0.0007f) * 0.01f;
+    angles[0] += idleAmount * (float)CoduoLibm_Sin((double)state->time * 0.001f) * 0.01f;
 #endif
 #endif
 }

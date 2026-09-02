@@ -30,11 +30,15 @@
 
 /* Word-wrap column limit: a line is flagged for wrapping once it reaches 75
  * drawable glyphs (CMP ESI,0x4b at 0x300190c8). */
-enum { CG_CENTERPRINT_WRAP_COLUMN = 75 };
+enum {
+    CG_CENTERPRINT_WRAP_COLUMN = 75
+};
 
 /* Display duration added to cg_time when the print is queued (ADD ECX,0x7d0 at
  * 0x300190fc). */
-enum { CG_CENTERPRINT_DURATION_MS = 2000 };
+enum {
+    CG_CENTERPRINT_DURATION_MS = 2000
+};
 
 /* Direct CRT strncpy count for the 1024-byte cg_centerPrintString buffer (PUSH
  * 0x3ff at 0x3001907b); the routine separately NUL-forces byte 1023. */
@@ -42,8 +46,7 @@ enum {
     CG_CENTERPRINT_COPY_COUNT = 1023
 };
 
-void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
-                            int32_t priority)
+void CG_PriorityCenterPrint(const char *str, float y, float charWidth, int32_t priority)
 {
     const char *localized;
     char *cursor;
@@ -60,8 +63,7 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
     /* Localize/format the message, then copy it into the center-print buffer.
      * (0x3001906c..0x30019086) */
     localized = CG_TranslateMessage(str, "Center Print");
-    (void)strncpy(cg_centerPrintString, localized,
-                  (size_t)CG_CENTERPRINT_COPY_COUNT);
+    (void)strncpy(cg_centerPrintString, localized, (size_t)CG_CENTERPRINT_COPY_COUNT);
 
     /* Record the priority of this (now pending) print and force the final byte
      * of the buffer to NUL. (0x30019090, 0x3001909d) */
@@ -79,14 +81,12 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
     wrapPending = 0;
     if (cg_centerPrintString[0] != '\0') {
         do {
-            c = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_SE_READ_CHAR_FROM_STRING, (intptr_t)&cursor, 0));
+            c = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_SE_READ_CHAR_FROM_STRING, (intptr_t)&cursor, 0));
             if (c == '\n') {
                 wrapPending = 0;
                 charsThisLine = 0;
             } else {
-                charsThisLine = coduo_int32_from_bits(
-                    (uint32_t)charsThisLine + 1u);
+                charsThisLine = coduo_int32_from_bits((uint32_t)charsThisLine + 1u);
                 if (charsThisLine >= CG_CENTERPRINT_WRAP_COLUMN) {
                     wrapPending = 1;
                 }
@@ -107,8 +107,7 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
      * (0x300190f2..0x3001911b) */
     uint32_t printTimeBase = cg_time;       /* 0x300190f2 MOV ECX,[cg_time] */
     long double yLive = (long double)y;     /* 0x300190f8 FLD y */
-    cg_centerPrintTime = coduo_int32_from_bits(
-        printTimeBase + (uint32_t)CG_CENTERPRINT_DURATION_MS);
+    cg_centerPrintTime = coduo_int32_from_bits(printTimeBase + (uint32_t)CG_CENTERPRINT_DURATION_MS);
     int32_t yInteger = coduo_fp_to_i32_extended(yLive);
     long double charWidthLive = (long double)charWidth; /* 0x3001910d FLD */
     cg_centerPrintY = yInteger;             /* 0x30019111 store first result */
@@ -121,14 +120,11 @@ void CG_PriorityCenterPrint(const char *str, float y, float charWidth,
     cursor = cg_centerPrintString;
     if (cg_centerPrintString[0] != '\0') {
         do {
-            c = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                CG_SE_READ_CHAR_FROM_STRING, (intptr_t)&cursor, 0));
+            c = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_SE_READ_CHAR_FROM_STRING, (intptr_t)&cursor, 0));
             if (c == '\n') {
-                cg_centerPrintLines = coduo_int32_from_bits(
-                    (uint32_t)cg_centerPrintLines + 1u);
+                cg_centerPrintLines = coduo_int32_from_bits((uint32_t)cg_centerPrintLines + 1u);
             } else if (c == '\\' && *cursor == 'n') {
-                cg_centerPrintLines = coduo_int32_from_bits(
-                    (uint32_t)cg_centerPrintLines + 1u);
+                cg_centerPrintLines = coduo_int32_from_bits((uint32_t)cg_centerPrintLines + 1u);
                 cursor++;
             }
         } while (*cursor != '\0');

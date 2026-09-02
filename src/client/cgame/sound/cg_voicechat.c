@@ -84,14 +84,15 @@
 /* 0x3007a16c — the "^3" (yellow) color-code prefix pushed as the second "%s". */
 static const char voiceChatYellowColorPrefix[] = "^3";
 /* The three per-mode chat-line format strings (.rdata @0x3007a158/44/30). */
-static const char teamVoiceChatFormat[]  = "[%s]%s[%s]: %c%c%s";
+static const char teamVoiceChatFormat[] = "[%s]%s[%s]: %c%c%s";
 static const char groupVoiceChatFormat[] = "(%s)%s(%s): %c%c%s";
-static const char openVoiceChatFormat[]  = "%s %s(%s): %c%c%s";
+static const char openVoiceChatFormat[] = "%s %s(%s): %c%c%s";
 
-enum { CG_VOICECHAT_COLOR_ESCAPE = 0x5e /* '^' */ };
+enum {
+    CG_VOICECHAT_COLOR_ESCAPE = 0x5e /* '^' */
+};
 
-void CG_VoiceChat(cgVoiceChatMessage_t *msg, int32_t mode, int32_t voiceOnly,
-                  int32_t clientNum, int32_t color, const char *voiceChatString)
+void CG_VoiceChat(cgVoiceChatMessage_t *msg, int32_t mode, int32_t voiceOnly, int32_t clientNum, int32_t color, const char *voiceChatString)
 {
     clientInfo_t *element;
     cgVoiceChatTable_t *aliasTable;
@@ -169,13 +170,8 @@ void CG_VoiceChat(cgVoiceChatMessage_t *msg, int32_t mode, int32_t voiceOnly,
      * The "%c%c" pair prints '^' then (char)color (arg4, read at 0x3003a361/
      * 0x3003a384/0x3003a3a2 — one push deeper than the 0x3003a30a voiceChatString
      * read with the same 0x17c displacement). */
-    Com_sprintf(out.text, sizeof(out.text), fmt,
-               element->name,
-               voiceChatYellowColorPrefix,
-               cfgHint,
-               CG_VOICECHAT_COLOR_ESCAPE,
-               color,
-               translated);
+    Com_sprintf(out.text, sizeof(out.text), fmt, element->name, voiceChatYellowColorPrefix, cfgHint, CG_VOICECHAT_COLOR_ESCAPE, color,
+                translated);
 
     /* 0x3003a3cf..0x3003a3e7: relocate the descriptor to the global scratch and play. */
     cgVoiceChatScratch = out;

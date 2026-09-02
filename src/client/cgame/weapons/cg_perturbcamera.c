@@ -67,12 +67,9 @@ void CG_PerturbCamera(float dist)
      * forward[i]*dist + vieworg[i]; P is stashed on the x87 stack and, after the
      * fa recovery below, stored to 0x30487a90/94/98.)
      */
-    long double p0 =
-        (long double)cg_refdef.viewaxis[0][0] * dist + cg_refdef.vieworg[0];
-    long double p1 =
-        (long double)cg_refdef.viewaxis[0][1] * dist + cg_refdef.vieworg[1];
-    long double p2 =
-        (long double)cg_refdef.viewaxis[0][2] * dist + cg_refdef.vieworg[2];
+    long double p0 = (long double)cg_refdef.viewaxis[0][0] * dist + cg_refdef.vieworg[0];
+    long double p1 = (long double)cg_refdef.viewaxis[0][1] * dist + cg_refdef.vieworg[1];
+    long double p2 = (long double)cg_refdef.viewaxis[0][2] * dist + cg_refdef.vieworg[2];
     float storedP2 = (float)p2;
 
     /* The compiler recovers the forward components from sums sharing the live
@@ -93,14 +90,11 @@ void CG_PerturbCamera(float dist)
      * reusing the P accumulators on the x87 stack). Net result is just fa[i], so
      * the horizontal length and pitch are computed directly from the axis.
      */
-    long double len = coduo_x87_sqrtl(
-        recoveredY * recoveredY +
-        (long double)recoveredX * recoveredX);
+    long double len = coduo_x87_sqrtl(recoveredY * recoveredY + (long double)recoveredX * recoveredX);
     if (len < 1.0f) {            /* FCOM 1.0f @0x3007bce0; clamp when len < 1.0f */
         len = 1.0f;
     }
 
     /* pitch = atan2(fa.z, len) * -(180/pi); constant -57.2957763671875f @0x3007be80 */
-    cg_refdefViewAngles[0] = (float)(
-        coduo_x87_atan2l(recoveredZ, len) * -57.2957763671875f);
+    cg_refdefViewAngles[0] = (float)(coduo_x87_atan2l(recoveredZ, len) * -57.2957763671875f);
 }

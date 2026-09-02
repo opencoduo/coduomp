@@ -12,8 +12,7 @@ void PM_DropTimers(void)
 {
     if (pm->ps->pmTime != 0) {
         if (pml.msec < pm->ps->pmTime) {
-            pm->ps->pmTime = coduo_int32_from_bits(
-                (uint32_t)pm->ps->pmTime - (uint32_t)pml.msec);
+            pm->ps->pmTime = coduo_int32_from_bits((uint32_t)pm->ps->pmTime - (uint32_t)pml.msec);
         } else {
             pm->ps->playerStateFlags &= ~(uint32_t)PMF_ALL_TIMES;
             pm->ps->pmTime = 0;
@@ -21,16 +20,14 @@ void PM_DropTimers(void)
     }
 
     if (pm->ps->legsTimer > 0) {
-        pm->ps->legsTimer = coduo_int32_from_bits(
-            (uint32_t)pm->ps->legsTimer - (uint32_t)pml.msec);
+        pm->ps->legsTimer = coduo_int32_from_bits((uint32_t)pm->ps->legsTimer - (uint32_t)pml.msec);
         if (pm->ps->legsTimer < 0) {
             pm->ps->legsTimer = 0;
         }
     }
 
     if (pm->ps->torsoTimer > 0) {
-        pm->ps->torsoTimer = coduo_int32_from_bits(
-            (uint32_t)pm->ps->torsoTimer - (uint32_t)pml.msec);
+        pm->ps->torsoTimer = coduo_int32_from_bits((uint32_t)pm->ps->torsoTimer - (uint32_t)pml.msec);
         if (pm->ps->torsoTimer < 0) {
             pm->ps->torsoTimer = 0;
         }

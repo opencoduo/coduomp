@@ -44,40 +44,28 @@ void CL_CheckAutoUpdate(void)
     int32_t resolvedServerCount = 0;
     netadr_t resolvedAddress;
 
-    for (int32_t serverIndex = 0;
-         serverIndex < CL_AUTOUPDATE_SERVER_COUNT;
-         ++serverIndex) {
-        if (NET_StringToAdr(cls.autoUpdateServerNames[serverIndex],
-                            &resolvedAddress) != qfalse) {
-            resolvedServerNames[resolvedServerCount++] =
-                cls.autoUpdateServerNames[serverIndex];
+    for (int32_t serverIndex = 0; serverIndex < CL_AUTOUPDATE_SERVER_COUNT; ++serverIndex) {
+        if (NET_StringToAdr(cls.autoUpdateServerNames[serverIndex], &resolvedAddress) != qfalse) {
+            resolvedServerNames[resolvedServerCount++] = cls.autoUpdateServerNames[serverIndex];
         }
     }
 
     if (resolvedServerCount == 0) {
-        Com_DPrintf(
-            "Couldn't resolve an AutoUpdate Server address.\n");
+        Com_DPrintf("Couldn't resolve an AutoUpdate Server address.\n");
         cls_autoupdateServerResolved = qtrue;
         return;
     }
 
-    const int32_t firstServer =
-        coduo_crt_randrange(0, resolvedServerCount);
+    const int32_t firstServer = coduo_crt_randrange(0, resolvedServerCount);
     Com_DPrintf("Resolving AutoUpdate Server... \n");
 
-    if (NET_StringToAdr(resolvedServerNames[firstServer],
-                        &cls.autoUpdateServer) == qfalse) {
-        Com_DPrintf(
-            "Couldn't resolve first address, trying others... \n");
+    if (NET_StringToAdr(resolvedServerNames[firstServer], &cls.autoUpdateServer) == qfalse) {
+        Com_DPrintf("Couldn't resolve first address, trying others... \n");
 
         int32_t fallbackOffset;
-        for (fallbackOffset = 1;
-             fallbackOffset < resolvedServerCount;
-             ++fallbackOffset) {
-            const int32_t serverIndex =
-                (firstServer + fallbackOffset) % resolvedServerCount;
-            if (NET_StringToAdr(resolvedServerNames[serverIndex],
-                                &cls.autoUpdateServer) != qfalse) {
+        for (fallbackOffset = 1; fallbackOffset < resolvedServerCount; ++fallbackOffset) {
+            const int32_t serverIndex = (firstServer + fallbackOffset) % resolvedServerCount;
+            if (NET_StringToAdr(resolvedServerNames[serverIndex], &cls.autoUpdateServer) != qfalse) {
                 Com_DPrintf("Alternate server address resolved... \n");
                 break;
             }
@@ -90,19 +78,11 @@ void CL_CheckAutoUpdate(void)
         }
     }
 
-    cls.autoUpdateServer.port =
-        (uint16_t)BigShort((int16_t)CL_AUTOUPDATE_SERVER_PORT);
-    Com_DPrintf("%i.%i.%i.%i:%i",
-                cls.autoUpdateServer.ip[0],
-                cls.autoUpdateServer.ip[1],
-                cls.autoUpdateServer.ip[2],
-                cls.autoUpdateServer.ip[3],
-                (int32_t)BigShort(
-                    (int16_t)cls.autoUpdateServer.port));
+    cls.autoUpdateServer.port = (uint16_t)BigShort((int16_t)CL_AUTOUPDATE_SERVER_PORT);
+    Com_DPrintf("%i.%i.%i.%i:%i", cls.autoUpdateServer.ip[0], cls.autoUpdateServer.ip[1], cls.autoUpdateServer.ip[2],
+                cls.autoUpdateServer.ip[3], (int32_t)BigShort((int16_t)cls.autoUpdateServer.port));
 
-    NET_OutOfBandPrint(NS_CLIENT, cls.autoUpdateServer,
-                       "getUpdateInfo \"%s\" \"%s\"",
-                       "1.51", "win-x86");
+    NET_OutOfBandPrint(NS_CLIENT, cls.autoUpdateServer, "getUpdateInfo \"%s\" \"%s\"", "1.51", "win-x86");
     cls_autoupdateServerResolved = qtrue;
 }
 
@@ -131,43 +111,28 @@ void CL_GetAutoUpdate(void)
 void CL_UpdateInfoPacket(netadr_t address)
 {
     if (cls.autoUpdateServer.type == NA_BOT) {
-        Com_DPrintf(
-            "CL_UpdateInfoPacket:  Auto-Updater has bad address\n");
+        Com_DPrintf("CL_UpdateInfoPacket:  Auto-Updater has bad address\n");
         return;
     }
 
-    Com_DPrintf(
-        "Auto-Updater resolved to %i.%i.%i.%i:%i\n",
-        cls.autoUpdateServer.ip[0],
-        cls.autoUpdateServer.ip[1],
-        cls.autoUpdateServer.ip[2],
-        cls.autoUpdateServer.ip[3],
-        (int32_t)BigShort(
-            (int16_t)cls.autoUpdateServer.port));
+    Com_DPrintf("Auto-Updater resolved to %i.%i.%i.%i:%i\n", cls.autoUpdateServer.ip[0], cls.autoUpdateServer.ip[1],
+                cls.autoUpdateServer.ip[2], cls.autoUpdateServer.ip[3], (int32_t)BigShort((int16_t)cls.autoUpdateServer.port));
 
     if (NET_CompareAdr(cls.autoUpdateServer, address) == qfalse) {
-        Com_DPrintf(
-            "CL_UpdateInfoPacket:  Received packet from "
-            "%i.%i.%i.%i:%i\n",
-            address.ip[0], address.ip[1],
-            address.ip[2], address.ip[3],
-            (int32_t)BigShort((int16_t)address.port));
+        Com_DPrintf("CL_UpdateInfoPacket:  Received packet from "
+                    "%i.%i.%i.%i:%i\n",
+                    address.ip[0], address.ip[1], address.ip[2], address.ip[3], (int32_t)BigShort((int16_t)address.port));
         return;
     }
 
-    (void)Cvar_Set2(
-        "cl_updateavailable", Cmd_Argv(1), qtrue);
-    if (cl_updateAvailable->string == NULL ||
-        Q_stricmp(cl_updateAvailable->string, "1") != 0) {
+    (void)Cvar_Set2("cl_updateavailable", Cmd_Argv(1), qtrue);
+    if (cl_updateAvailable->string == NULL || Q_stricmp(cl_updateAvailable->string, "1") != 0) {
         return;
     }
 
-    (void)Cvar_Set2(
-        "cl_updatefiles", Cmd_Argv(2), qtrue);
-    (void)Cvar_Set2(
-        "cl_updateversion", Cmd_Argv(3), qtrue);
-    (void)Cvar_Set2(
-        "cl_updateoldversion", "1.51", qtrue);
+    (void)Cvar_Set2("cl_updatefiles", Cmd_Argv(2), qtrue);
+    (void)Cvar_Set2("cl_updateversion", Cmd_Argv(3), qtrue);
+    (void)Cvar_Set2("cl_updateoldversion", "1.51", qtrue);
 }
 
 /* Source: CoDUOMP.exe 0x00412880..0x004131a6.
@@ -176,8 +141,7 @@ void CL_UpdateInfoPacket(netadr_t address)
  * The embedded PunkBuster implementation originally consumed PB_ packets at
  * the top of this function. Modern builds intentionally reject that optional,
  * retired boundary as documented in coduomp/PUNKBUSTER_BOUNDARY.md. */
-void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
-                             int32_t packetTime)
+void CL_ConnectionlessPacket(netadr_t address, msg_t *message, int32_t packetTime)
 {
     message->readcount = 0;
     message->bit = 0;
@@ -189,8 +153,7 @@ void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
         NetProf_AddPacket(&clc.netProfile->send, message->cursize, qfalse);
     }
 
-    if (Q_stricmpn((const char *)message->data + sizeof(int32_t),
-                   "PB_", 3) == 0) {
+    if (Q_stricmpn((const char *)message->data + sizeof(int32_t), "PB_", 3) == 0) {
         return;
     }
 
@@ -202,14 +165,12 @@ void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
 
     if (Q_stricmp(command, "challengeResponse") == 0) {
         if (cls.state != CA_CONNECTING) {
-            Com_Printf(
-                "Unwanted challenge response received.  Ignored.\n");
+            Com_Printf("Unwanted challenge response received.  Ignored.\n");
             return;
         }
 
         clc.challenge = coduo_crt_atoi(Cmd_Argv(1));
-        clc.onlyVisibleClients =
-            Cmd_Argc() > 2 ? coduo_crt_atoi(Cmd_Argv(2)) : qfalse;
+        clc.onlyVisibleClients = Cmd_Argc() > 2 ? coduo_crt_atoi(Cmd_Argv(2)) : qfalse;
         cls.state = CA_CHALLENGING;
         clc.connectPacketCount = 0;
         clc.connectTime = CL_CHALLENGE_IMMEDIATE_RESEND_TIME;
@@ -224,33 +185,26 @@ void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
             return;
         }
         if (cls.state != CA_CHALLENGING) {
-            Com_Printf(
-                "connectResponse packet while not connecting.  Ignored.\n");
+            Com_Printf("connectResponse packet while not connecting.  Ignored.\n");
             return;
         }
         if (NET_CompareBaseAdr(address, clc.serverAddress) == qfalse) {
-            Com_Printf(
-                "connectResponse from a different address.  Ignored.\n");
+            Com_Printf("connectResponse from a different address.  Ignored.\n");
 
             /* NET_AdrToString intentionally uses one static buffer. These
              * sequenced calls retain the original diagnostic's aliasing. */
-            const char *expectedAddress =
-                NET_AdrToString(clc.serverAddress);
+            const char *expectedAddress = NET_AdrToString(clc.serverAddress);
             const char *receivedAddress = NET_AdrToString(address);
-            Com_Printf("%s should have been %s\n", receivedAddress,
-                       expectedAddress);
+            Com_Printf("%s should have been %s\n", receivedAddress, expectedAddress);
             return;
         }
 
-        if (cls_autoupdateServerResolved != qfalse &&
-            NET_CompareAdr(clc.serverAddress, cls.autoUpdateServer) !=
-                qfalse &&
+        if (cls_autoupdateServerResolved != qfalse && NET_CompareAdr(clc.serverAddress, cls.autoUpdateServer) != qfalse &&
             cl_updateAvailable->integer != 0) {
             cl_updateStarted = qtrue;
         }
 
-        const int32_t qport =
-            (int32_t)Cvar_VariableValue("net_qport");
+        const int32_t qport = (int32_t)Cvar_VariableValue("net_qport");
         Netchan_Setup(NS_CLIENT, &clc.netchan, address, qport);
         cls.state = CA_CONNECTED;
         clc.lastPacketTime = cls.realTime;
@@ -288,15 +242,12 @@ void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
         return;
     }
     if (Q_stricmp(command, "error") == 0) {
-        if (cls.state == CA_DISCONNECTED ||
-            NET_CompareBaseAdr(address, clc.serverAddress) == qfalse) {
+        if (cls.state == CA_DISCONNECTED || NET_CompareBaseAdr(address, clc.serverAddress) == qfalse) {
             return;
         }
 
         const char *errorText = MSG_ReadBigString(message);
-        const char *localizedError =
-            SEH_LocalizeTextMessage(
-                errorText, "server error", LOCMSG_SAFE);
+        const char *localizedError = SEH_LocalizeTextMessage(errorText, "server error", LOCMSG_SAFE);
         Com_Error(ERR_DROP, "\x15%s", localizedError);
         return;
     }
@@ -309,11 +260,9 @@ void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
         return;
     }
     if (strncmp(command, "needcdkey", 9) == 0) {
-        strncpy(clc.serverMessage, "EXE_AWAITINGCDKEYAUTH",
-                CL_SERVER_MESSAGE_SIZE - 1);
+        strncpy(clc.serverMessage, "EXE_AWAITINGCDKEYAUTH", CL_SERVER_MESSAGE_SIZE - 1);
         clc.serverMessage[CL_SERVER_MESSAGE_SIZE - 1] = '\0';
-        (void)SEH_LocalizeTextMessage("EXE_AWAITINGCDKEYAUTH",
-                                      "need cd key message", LOCMSG_SAFE);
+        (void)SEH_LocalizeTextMessage("EXE_AWAITINGCDKEYAUTH", "need cd key message", LOCMSG_SAFE);
         Com_Printf("%s\n", clc.serverMessage);
         CL_RequestAuthorization();
         return;

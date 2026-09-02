@@ -32,13 +32,14 @@
 
 /* CROSSHAIR_TIMEOUT: the crosshair-name latch stays valid for 1000 ms after the
  * traced entity was last acquired (0x3e8). */
-enum { CROSSHAIR_TIMEOUT = 1000 };
+enum {
+    CROSSHAIR_TIMEOUT = 1000
+};
 
 int32_t CG_CrosshairPlayer(void)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    int32_t expiry = coduo_int32_from_bits(
-        (uint32_t)cg_crosshairEntTime + (uint32_t)CROSSHAIR_TIMEOUT);
+    int32_t expiry = coduo_int32_from_bits((uint32_t)cg_crosshairEntTime + (uint32_t)CROSSHAIR_TIMEOUT);
 
     if (coduo_int32_from_bits((uint32_t)cg_time) > expiry) {
         return -1;

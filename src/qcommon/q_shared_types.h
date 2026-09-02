@@ -18,7 +18,9 @@ enum {
     MAX_VA_STRING = 32000
 };
 
-enum { MAX_PARSE_SESSIONS = 16 };
+enum {
+    MAX_PARSE_SESSIONS = 16
+};
 
 /*
  * Common Com tokenizer session.  The authoritative i386 bodies all index
@@ -48,26 +50,17 @@ typedef struct com_parse_session_s {
     char name[MAX_QPATH];
 } com_parse_session_t;
 
-typedef char q_com_parse_session_line_offset[
-    offsetof(com_parse_session_t, line) == 0x400 ? 1 : -1];
-typedef char q_com_parse_session_unget_offset[
-    offsetof(com_parse_session_t, ungetToken) == 0x404 ? 1 : -1];
-typedef char q_com_parse_session_space_delimited_offset[
-    offsetof(com_parse_session_t, spaceDelimited) == 0x408 ? 1 : -1];
-typedef char q_com_parse_session_csv_offset[
-    offsetof(com_parse_session_t, csv) == 0x40c ? 1 : -1];
-typedef char q_com_parse_session_parse_negative_offset[
-    offsetof(com_parse_session_t, parseNegativeNumbers) == 0x410 ? 1 : -1];
-typedef char q_com_parse_session_saved_line_offset[
-    offsetof(com_parse_session_t, savedLine) == 0x414 ? 1 : -1];
-typedef char q_com_parse_session_saved_parse_offset[
-    offsetof(com_parse_session_t, savedParse) == 0x418 ? 1 : -1];
+typedef char q_com_parse_session_line_offset[offsetof(com_parse_session_t, line) == 0x400 ? 1 : -1];
+typedef char q_com_parse_session_unget_offset[offsetof(com_parse_session_t, ungetToken) == 0x404 ? 1 : -1];
+typedef char q_com_parse_session_space_delimited_offset[offsetof(com_parse_session_t, spaceDelimited) == 0x408 ? 1 : -1];
+typedef char q_com_parse_session_csv_offset[offsetof(com_parse_session_t, csv) == 0x40c ? 1 : -1];
+typedef char q_com_parse_session_parse_negative_offset[offsetof(com_parse_session_t, parseNegativeNumbers) == 0x410 ? 1 : -1];
+typedef char q_com_parse_session_saved_line_offset[offsetof(com_parse_session_t, savedLine) == 0x414 ? 1 : -1];
+typedef char q_com_parse_session_saved_parse_offset[offsetof(com_parse_session_t, savedParse) == 0x418 ? 1 : -1];
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char q_com_parse_session_name_offset[
-    offsetof(com_parse_session_t, name) == 0x41c ? 1 : -1];
-typedef char q_com_parse_session_size[
-    sizeof(com_parse_session_t) == 0x45c ? 1 : -1];
+typedef char q_com_parse_session_name_offset[offsetof(com_parse_session_t, name) == 0x41c ? 1 : -1];
+typedef char q_com_parse_session_size[sizeof(com_parse_session_t) == 0x45c ? 1 : -1];
 #endif
 
 /*
@@ -88,16 +81,11 @@ typedef struct pc_token_s {
     char string[MAX_TOKEN_CHARS];
 } pc_token_t;
 
-typedef char q_pc_token_type_offset[
-    offsetof(pc_token_t, type) == 0x00 ? 1 : -1];
-typedef char q_pc_token_subtype_offset[
-    offsetof(pc_token_t, subtype) == 0x04 ? 1 : -1];
-typedef char q_pc_token_int_value_offset[
-    offsetof(pc_token_t, intValue) == 0x08 ? 1 : -1];
-typedef char q_pc_token_float_value_offset[
-    offsetof(pc_token_t, floatValue) == 0x0c ? 1 : -1];
-typedef char q_pc_token_string_offset[
-    offsetof(pc_token_t, string) == 0x10 ? 1 : -1];
+typedef char q_pc_token_type_offset[offsetof(pc_token_t, type) == 0x00 ? 1 : -1];
+typedef char q_pc_token_subtype_offset[offsetof(pc_token_t, subtype) == 0x04 ? 1 : -1];
+typedef char q_pc_token_int_value_offset[offsetof(pc_token_t, intValue) == 0x08 ? 1 : -1];
+typedef char q_pc_token_float_value_offset[offsetof(pc_token_t, floatValue) == 0x0c ? 1 : -1];
+typedef char q_pc_token_string_offset[offsetof(pc_token_t, string) == 0x10 ? 1 : -1];
 typedef char q_pc_token_size[sizeof(pc_token_t) == 0x410 ? 1 : -1];
 
 /* Shared scalar domain used by the engine message and module boundaries. */
@@ -197,18 +185,12 @@ typedef struct com_parse_mark_s {
 } com_parse_mark_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char q_com_parse_mark_line_offset[
-    offsetof(com_parse_mark_t, line) == 0x00 ? 1 : -1];
-typedef char q_com_parse_mark_parse_offset[
-    offsetof(com_parse_mark_t, parse) == 0x04 ? 1 : -1];
-typedef char q_com_parse_mark_unget_offset[
-    offsetof(com_parse_mark_t, ungetToken) == 0x08 ? 1 : -1];
-typedef char q_com_parse_mark_saved_line_offset[
-    offsetof(com_parse_mark_t, savedLine) == 0x0c ? 1 : -1];
-typedef char q_com_parse_mark_saved_parse_offset[
-    offsetof(com_parse_mark_t, savedParse) == 0x10 ? 1 : -1];
-typedef char q_com_parse_mark_size[
-    sizeof(com_parse_mark_t) == 0x14 ? 1 : -1];
+typedef char q_com_parse_mark_line_offset[offsetof(com_parse_mark_t, line) == 0x00 ? 1 : -1];
+typedef char q_com_parse_mark_parse_offset[offsetof(com_parse_mark_t, parse) == 0x04 ? 1 : -1];
+typedef char q_com_parse_mark_unget_offset[offsetof(com_parse_mark_t, ungetToken) == 0x08 ? 1 : -1];
+typedef char q_com_parse_mark_saved_line_offset[offsetof(com_parse_mark_t, savedLine) == 0x0c ? 1 : -1];
+typedef char q_com_parse_mark_saved_parse_offset[offsetof(com_parse_mark_t, savedParse) == 0x10 ? 1 : -1];
+typedef char q_com_parse_mark_size[sizeof(com_parse_mark_t) == 0x14 ? 1 : -1];
 #endif
 
 /*
@@ -237,11 +219,9 @@ typedef enum cvarFlags_e {
     CVAR_SCRIPT_MAKE_SERVERINFO = 0x0800,
     CVAR_SCRIPT_SETCVAR = 0x1000,
     CVAR_SCRIPT_SETCVAR_SERVERINFO = 0x2000,
-    CVAR_PLACEHOLDER_CREATED_MASK =
-        CVAR_USER_CREATED | CVAR_SCRIPT_SETCVAR,
+    CVAR_PLACEHOLDER_CREATED_MASK = CVAR_USER_CREATED | CVAR_SCRIPT_SETCVAR,
     CVAR_RESTART_PRESERVE_MASK = CVAR_INIT | CVAR_ROM | CVAR_NORESTART,
-    CVAR_SERVERINFO_SYNC_MASK =
-        CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
+    CVAR_SERVERINFO_SYNC_MASK = CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
     CVAR_SYSTEMINFO_SYNC_MASK = CVAR_SYSTEMINFO,
     CVAR_SYSTEMINFO_KEY_VALUE = CVAR_SCRIPT_MAKE_SERVERINFO,
     CVAR_SYSTEMINFO_KEY_VALUE_SYNC_MASK = CVAR_SCRIPT_MAKE_SERVERINFO
@@ -258,7 +238,9 @@ typedef char q_cvar_flags_abi_size[sizeof(cvarFlags_t) == 4 ? 1 : -1];
  * The record contains no pointers, so the same 0x110-byte layout applies to
  * the original 32-bit binaries and native 64-bit recovery builds.
  */
-enum { MAX_CVAR_VALUE_STRING = 256 };
+enum {
+    MAX_CVAR_VALUE_STRING = 256
+};
 
 typedef struct vmCvar_s {
     int32_t handle;                              /* +0x00 */
@@ -268,18 +250,12 @@ typedef struct vmCvar_s {
     char string[MAX_CVAR_VALUE_STRING];          /* +0x10 */
 } vmCvar_t;
 
-typedef char q_vm_cvar_handle_offset[
-    offsetof(vmCvar_t, handle) == 0x00 ? 1 : -1];
-typedef char q_vm_cvar_modification_count_offset[
-    offsetof(vmCvar_t, modificationCount) == 0x04 ? 1 : -1];
-typedef char q_vm_cvar_value_offset[
-    offsetof(vmCvar_t, value) == 0x08 ? 1 : -1];
-typedef char q_vm_cvar_integer_offset[
-    offsetof(vmCvar_t, integer) == 0x0c ? 1 : -1];
-typedef char q_vm_cvar_string_offset[
-    offsetof(vmCvar_t, string) == 0x10 ? 1 : -1];
-typedef char q_vm_cvar_string_extent[
-    sizeof(((vmCvar_t *)0)->string) == 0x100 ? 1 : -1];
+typedef char q_vm_cvar_handle_offset[offsetof(vmCvar_t, handle) == 0x00 ? 1 : -1];
+typedef char q_vm_cvar_modification_count_offset[offsetof(vmCvar_t, modificationCount) == 0x04 ? 1 : -1];
+typedef char q_vm_cvar_value_offset[offsetof(vmCvar_t, value) == 0x08 ? 1 : -1];
+typedef char q_vm_cvar_integer_offset[offsetof(vmCvar_t, integer) == 0x0c ? 1 : -1];
+typedef char q_vm_cvar_string_offset[offsetof(vmCvar_t, string) == 0x10 ? 1 : -1];
+typedef char q_vm_cvar_string_extent[sizeof(((vmCvar_t *)0)->string) == 0x100 ? 1 : -1];
 typedef char q_vm_cvar_size[sizeof(vmCvar_t) == 0x110 ? 1 : -1];
 
 /*
@@ -298,14 +274,10 @@ typedef struct cvarTable_s {
 } cvarTable_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char q_cvar_table_vm_cvar_offset[
-    offsetof(cvarTable_t, vmCvar) == 0x00 ? 1 : -1];
-typedef char q_cvar_table_name_offset[
-    offsetof(cvarTable_t, cvarName) == 0x04 ? 1 : -1];
-typedef char q_cvar_table_default_offset[
-    offsetof(cvarTable_t, defaultString) == 0x08 ? 1 : -1];
-typedef char q_cvar_table_flags_offset[
-    offsetof(cvarTable_t, cvarFlags) == 0x0c ? 1 : -1];
+typedef char q_cvar_table_vm_cvar_offset[offsetof(cvarTable_t, vmCvar) == 0x00 ? 1 : -1];
+typedef char q_cvar_table_name_offset[offsetof(cvarTable_t, cvarName) == 0x04 ? 1 : -1];
+typedef char q_cvar_table_default_offset[offsetof(cvarTable_t, defaultString) == 0x08 ? 1 : -1];
+typedef char q_cvar_table_flags_offset[offsetof(cvarTable_t, cvarFlags) == 0x0c ? 1 : -1];
 typedef char q_cvar_table_size[sizeof(cvarTable_t) == 0x10 ? 1 : -1];
 #endif
 
@@ -353,24 +325,15 @@ typedef struct usercmd_s {
     int8_t upmove;           /* +0x16 */
 } usercmd_t;
 
-typedef char q_usercmd_command_time_offset[
-    offsetof(usercmd_t, commandTime) == 0x00 ? 1 : -1];
-typedef char q_usercmd_buttons_offset[
-    offsetof(usercmd_t, buttons) == 0x04 ? 1 : -1];
-typedef char q_usercmd_wbuttons_offset[
-    offsetof(usercmd_t, wbuttons) == 0x05 ? 1 : -1];
-typedef char q_usercmd_weapon_offset[
-    offsetof(usercmd_t, weapon) == 0x06 ? 1 : -1];
-typedef char q_usercmd_angles_offset[
-    offsetof(usercmd_t, angles) == 0x08 ? 1 : -1];
-typedef char q_usercmd_angles_extent[
-    sizeof(((usercmd_t *)0)->angles) == 0x0c ? 1 : -1];
-typedef char q_usercmd_forwardmove_offset[
-    offsetof(usercmd_t, forwardmove) == 0x14 ? 1 : -1];
-typedef char q_usercmd_rightmove_offset[
-    offsetof(usercmd_t, rightmove) == 0x15 ? 1 : -1];
-typedef char q_usercmd_upmove_offset[
-    offsetof(usercmd_t, upmove) == 0x16 ? 1 : -1];
+typedef char q_usercmd_command_time_offset[offsetof(usercmd_t, commandTime) == 0x00 ? 1 : -1];
+typedef char q_usercmd_buttons_offset[offsetof(usercmd_t, buttons) == 0x04 ? 1 : -1];
+typedef char q_usercmd_wbuttons_offset[offsetof(usercmd_t, wbuttons) == 0x05 ? 1 : -1];
+typedef char q_usercmd_weapon_offset[offsetof(usercmd_t, weapon) == 0x06 ? 1 : -1];
+typedef char q_usercmd_angles_offset[offsetof(usercmd_t, angles) == 0x08 ? 1 : -1];
+typedef char q_usercmd_angles_extent[sizeof(((usercmd_t *)0)->angles) == 0x0c ? 1 : -1];
+typedef char q_usercmd_forwardmove_offset[offsetof(usercmd_t, forwardmove) == 0x14 ? 1 : -1];
+typedef char q_usercmd_rightmove_offset[offsetof(usercmd_t, rightmove) == 0x15 ? 1 : -1];
+typedef char q_usercmd_upmove_offset[offsetof(usercmd_t, upmove) == 0x16 ? 1 : -1];
 typedef char q_usercmd_size[sizeof(usercmd_t) == 0x18 ? 1 : -1];
 
 #endif

@@ -39,8 +39,8 @@
  */
 #define MATRIX43_STRINGIFY_INNER(value) #value
 #define MATRIX43_STRINGIFY(value) MATRIX43_STRINGIFY_INNER(value)
-#define MATRIX43_ADDRESS(base, offset)                                        \
-    MATRIX43_STRINGIFY(offset) "(%[" MATRIX43_STRINGIFY(base) "])"
+#define MATRIX43_ADDRESS(base, offset) MATRIX43_STRINGIFY(offset) "(%[" MATRIX43_STRINGIFY(base) "])"
+// clang-format off
 #define MATRIX43_NATIVE_X87_STORE3(                                           \
     destinationOffset, aBase, aOffset, bBase, bOffset,                       \
     cBase, cOffset, dBase, dOffset, eBase, eOffset, fBase, fOffset)          \
@@ -79,215 +79,133 @@
                          : [left] "r"(left), [right] "r"(right),            \
                            [store] "r"(output)                               \
                          : "st", "st(1)", "memory")
+// clang-format on
 #endif
 
 #if EMULATE_X87
-#define MATRIX43_STORE3(destination, a, b, c, d, e, f)                        \
-    do {                                                                      \
-        (destination) = x87f_store_f32(x87f_add(                              \
-            x87f_add(x87f_mul(x87f_load_f32(a), x87f_load_f32(b)),           \
-                     x87f_mul(x87f_load_f32(c), x87f_load_f32(d))),          \
-            x87f_mul(x87f_load_f32(e), x87f_load_f32(f))));                  \
+#define MATRIX43_STORE3(destination, a, b, c, d, e, f) \
+    do { \
+        (destination) = \
+            x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(a), x87f_load_f32(b)), x87f_mul(x87f_load_f32(c), x87f_load_f32(d))), \
+                                    x87f_mul(x87f_load_f32(e), x87f_load_f32(f)))); \
     } while (0)
-#define MATRIX43_STORE4(destination, a, b, c, d, e, f, translation)           \
-    do {                                                                      \
-        (destination) = x87f_store_f32(x87f_add(                              \
-            x87f_add(                                                         \
-                x87f_add(x87f_mul(x87f_load_f32(a), x87f_load_f32(b)),       \
-                         x87f_mul(x87f_load_f32(c), x87f_load_f32(d))),      \
-                x87f_mul(x87f_load_f32(e), x87f_load_f32(f))),              \
-            x87f_load_f32(translation)));                                    \
+#define MATRIX43_STORE4(destination, a, b, c, d, e, f, translation) \
+    do { \
+        (destination) = x87f_store_f32( \
+            x87f_add(x87f_add(x87f_add(x87f_mul(x87f_load_f32(a), x87f_load_f32(b)), x87f_mul(x87f_load_f32(c), x87f_load_f32(d))), \
+                              x87f_mul(x87f_load_f32(e), x87f_load_f32(f))), \
+                     x87f_load_f32(translation))); \
     } while (0)
 #else
-#define MATRIX43_STORE3(destination, a, b, c, d, e, f)                        \
-    do {                                                                      \
-        (destination) = (float)(                                              \
-            ((long double)(a) * (long double)(b) +                           \
-             (long double)(c) * (long double)(d)) +                          \
-            (long double)(e) * (long double)(f));                            \
+#define MATRIX43_STORE3(destination, a, b, c, d, e, f) \
+    do { \
+        (destination) = \
+            (float)(((long double)(a) * (long double)(b) + (long double)(c) * (long double)(d)) + (long double)(e) * (long double)(f)); \
     } while (0)
-#define MATRIX43_STORE4(destination, a, b, c, d, e, f, translation)           \
-    do {                                                                      \
-        (destination) = (float)(                                              \
-            (((long double)(a) * (long double)(b) +                          \
-              (long double)(c) * (long double)(d)) +                         \
-             (long double)(e) * (long double)(f)) +                          \
-            (long double)(translation));                                     \
+#define MATRIX43_STORE4(destination, a, b, c, d, e, f, translation) \
+    do { \
+        (destination) = \
+            (float)((((long double)(a) * (long double)(b) + (long double)(c) * (long double)(d)) + (long double)(e) * (long double)(f)) + \
+                    (long double)(translation)); \
     } while (0)
 #endif
 
 #if defined(WINDOWS_BEHAVIOR)
-void MatrixMultiply43(const matrix43_t *left, const matrix43_t *right,
-                      matrix43_t *output)
+void MatrixMultiply43(const matrix43_t *left, const matrix43_t *right, matrix43_t *output)
 {
-#if CODUO_ARCH_HAS_X87 && !EMULATE_X87 && \
-    (defined(__GNUC__) || defined(__clang__))
-    MATRIX43_NATIVE_X87_STORE3(0, left, 0, right, 0,
-                               left, 4, right, 12,
-                               right, 24, left, 8);
-    MATRIX43_NATIVE_X87_STORE3(12, left, 16, right, 12,
-                               left, 12, right, 0,
-                               left, 20, right, 24);
-    MATRIX43_NATIVE_X87_STORE3(24, left, 28, right, 12,
-                               left, 24, right, 0,
-                               left, 32, right, 24);
+#if CODUO_ARCH_HAS_X87 && !EMULATE_X87 && (defined(__GNUC__) || defined(__clang__))
+    MATRIX43_NATIVE_X87_STORE3(0, left, 0, right, 0, left, 4, right, 12, right, 24, left, 8);
+    MATRIX43_NATIVE_X87_STORE3(12, left, 16, right, 12, left, 12, right, 0, left, 20, right, 24);
+    MATRIX43_NATIVE_X87_STORE3(24, left, 28, right, 12, left, 24, right, 0, left, 32, right, 24);
 
-    MATRIX43_NATIVE_X87_STORE3(4, left, 4, right, 16,
-                               right, 28, left, 8,
-                               right, 4, left, 0);
-    MATRIX43_NATIVE_X87_STORE3(16, left, 20, right, 28,
-                               left, 16, right, 16,
-                               left, 12, right, 4);
-    MATRIX43_NATIVE_X87_STORE3(28, left, 32, right, 28,
-                               left, 28, right, 16,
-                               left, 24, right, 4);
+    MATRIX43_NATIVE_X87_STORE3(4, left, 4, right, 16, right, 28, left, 8, right, 4, left, 0);
+    MATRIX43_NATIVE_X87_STORE3(16, left, 20, right, 28, left, 16, right, 16, left, 12, right, 4);
+    MATRIX43_NATIVE_X87_STORE3(28, left, 32, right, 28, left, 28, right, 16, left, 24, right, 4);
 
-    MATRIX43_NATIVE_X87_STORE3(8, left, 0, right, 8,
-                               left, 4, right, 20,
-                               right, 32, left, 8);
-    MATRIX43_NATIVE_X87_STORE3(20, left, 20, right, 32,
-                               left, 16, right, 20,
-                               left, 12, right, 8);
-    MATRIX43_NATIVE_X87_STORE3(32, left, 32, right, 32,
-                               left, 28, right, 20,
-                               left, 24, right, 8);
+    MATRIX43_NATIVE_X87_STORE3(8, left, 0, right, 8, left, 4, right, 20, right, 32, left, 8);
+    MATRIX43_NATIVE_X87_STORE3(20, left, 20, right, 32, left, 16, right, 20, left, 12, right, 8);
+    MATRIX43_NATIVE_X87_STORE3(32, left, 32, right, 32, left, 28, right, 20, left, 24, right, 8);
 
-    MATRIX43_NATIVE_X87_STORE4(36, left, 40, right, 12,
-                               left, 36, right, 0,
-                               left, 44, right, 24, right, 36);
-    MATRIX43_NATIVE_X87_STORE4(40, left, 44, right, 28,
-                               left, 40, right, 16,
-                               left, 36, right, 4, right, 40);
-    MATRIX43_NATIVE_X87_STORE4(44, left, 44, right, 32,
-                               left, 40, right, 20,
-                               left, 36, right, 8, right, 44);
+    MATRIX43_NATIVE_X87_STORE4(36, left, 40, right, 12, left, 36, right, 0, left, 44, right, 24, right, 36);
+    MATRIX43_NATIVE_X87_STORE4(40, left, 44, right, 28, left, 40, right, 16, left, 36, right, 4, right, 40);
+    MATRIX43_NATIVE_X87_STORE4(44, left, 44, right, 32, left, 40, right, 20, left, 36, right, 8, right, 44);
 #else
-    MATRIX43_STORE3(output->axis[0][0], left->axis[0][0], right->axis[0][0],
-                    left->axis[0][1], right->axis[1][0],
-                    right->axis[2][0], left->axis[0][2]);
-    MATRIX43_STORE3(output->axis[1][0], left->axis[1][1], right->axis[1][0],
-                    left->axis[1][0], right->axis[0][0],
-                    left->axis[1][2], right->axis[2][0]);
-    MATRIX43_STORE3(output->axis[2][0], left->axis[2][1], right->axis[1][0],
-                    left->axis[2][0], right->axis[0][0],
-                    left->axis[2][2], right->axis[2][0]);
+    MATRIX43_STORE3(output->axis[0][0], left->axis[0][0], right->axis[0][0], left->axis[0][1], right->axis[1][0], right->axis[2][0],
+                    left->axis[0][2]);
+    MATRIX43_STORE3(output->axis[1][0], left->axis[1][1], right->axis[1][0], left->axis[1][0], right->axis[0][0], left->axis[1][2],
+                    right->axis[2][0]);
+    MATRIX43_STORE3(output->axis[2][0], left->axis[2][1], right->axis[1][0], left->axis[2][0], right->axis[0][0], left->axis[2][2],
+                    right->axis[2][0]);
 
-    MATRIX43_STORE3(output->axis[0][1], left->axis[0][1], right->axis[1][1],
-                    right->axis[2][1], left->axis[0][2],
-                    right->axis[0][1], left->axis[0][0]);
-    MATRIX43_STORE3(output->axis[1][1], left->axis[1][2], right->axis[2][1],
-                    left->axis[1][1], right->axis[1][1],
-                    left->axis[1][0], right->axis[0][1]);
-    MATRIX43_STORE3(output->axis[2][1], left->axis[2][2], right->axis[2][1],
-                    left->axis[2][1], right->axis[1][1],
-                    left->axis[2][0], right->axis[0][1]);
+    MATRIX43_STORE3(output->axis[0][1], left->axis[0][1], right->axis[1][1], right->axis[2][1], left->axis[0][2], right->axis[0][1],
+                    left->axis[0][0]);
+    MATRIX43_STORE3(output->axis[1][1], left->axis[1][2], right->axis[2][1], left->axis[1][1], right->axis[1][1], left->axis[1][0],
+                    right->axis[0][1]);
+    MATRIX43_STORE3(output->axis[2][1], left->axis[2][2], right->axis[2][1], left->axis[2][1], right->axis[1][1], left->axis[2][0],
+                    right->axis[0][1]);
 
-    MATRIX43_STORE3(output->axis[0][2], left->axis[0][0], right->axis[0][2],
-                    left->axis[0][1], right->axis[1][2],
-                    right->axis[2][2], left->axis[0][2]);
-    MATRIX43_STORE3(output->axis[1][2], left->axis[1][2], right->axis[2][2],
-                    left->axis[1][1], right->axis[1][2],
-                    left->axis[1][0], right->axis[0][2]);
-    MATRIX43_STORE3(output->axis[2][2], left->axis[2][2], right->axis[2][2],
-                    left->axis[2][1], right->axis[1][2],
-                    left->axis[2][0], right->axis[0][2]);
+    MATRIX43_STORE3(output->axis[0][2], left->axis[0][0], right->axis[0][2], left->axis[0][1], right->axis[1][2], right->axis[2][2],
+                    left->axis[0][2]);
+    MATRIX43_STORE3(output->axis[1][2], left->axis[1][2], right->axis[2][2], left->axis[1][1], right->axis[1][2], left->axis[1][0],
+                    right->axis[0][2]);
+    MATRIX43_STORE3(output->axis[2][2], left->axis[2][2], right->axis[2][2], left->axis[2][1], right->axis[1][2], left->axis[2][0],
+                    right->axis[0][2]);
 
-    MATRIX43_STORE4(output->origin[0], left->origin[1], right->axis[1][0],
-                    left->origin[0], right->axis[0][0],
-                    left->origin[2], right->axis[2][0], right->origin[0]);
-    MATRIX43_STORE4(output->origin[1], left->origin[2], right->axis[2][1],
-                    left->origin[1], right->axis[1][1],
-                    left->origin[0], right->axis[0][1], right->origin[1]);
-    MATRIX43_STORE4(output->origin[2], left->origin[2], right->axis[2][2],
-                    left->origin[1], right->axis[1][2],
-                    left->origin[0], right->axis[0][2], right->origin[2]);
+    MATRIX43_STORE4(output->origin[0], left->origin[1], right->axis[1][0], left->origin[0], right->axis[0][0], left->origin[2],
+                    right->axis[2][0], right->origin[0]);
+    MATRIX43_STORE4(output->origin[1], left->origin[2], right->axis[2][1], left->origin[1], right->axis[1][1], left->origin[0],
+                    right->axis[0][1], right->origin[1]);
+    MATRIX43_STORE4(output->origin[2], left->origin[2], right->axis[2][2], left->origin[1], right->axis[1][2], left->origin[0],
+                    right->axis[0][2], right->origin[2]);
 #endif
 }
 #else
-void MatrixMultiply43(const matrix43_t *left, const matrix43_t *right,
-                      matrix43_t *output)
+void MatrixMultiply43(const matrix43_t *left, const matrix43_t *right, matrix43_t *output)
 {
-#if CODUO_ARCH_HAS_X87 && !EMULATE_X87 && \
-    (defined(__GNUC__) || defined(__clang__))
-    MATRIX43_NATIVE_X87_STORE3(0, left, 0, right, 0,
-                               left, 4, right, 12,
-                               left, 8, right, 24);
-    MATRIX43_NATIVE_X87_STORE3(12, left, 12, right, 0,
-                               left, 16, right, 12,
-                               left, 20, right, 24);
-    MATRIX43_NATIVE_X87_STORE3(24, left, 24, right, 0,
-                               left, 28, right, 12,
-                               left, 32, right, 24);
+#if CODUO_ARCH_HAS_X87 && !EMULATE_X87 && (defined(__GNUC__) || defined(__clang__))
+    MATRIX43_NATIVE_X87_STORE3(0, left, 0, right, 0, left, 4, right, 12, left, 8, right, 24);
+    MATRIX43_NATIVE_X87_STORE3(12, left, 12, right, 0, left, 16, right, 12, left, 20, right, 24);
+    MATRIX43_NATIVE_X87_STORE3(24, left, 24, right, 0, left, 28, right, 12, left, 32, right, 24);
 
-    MATRIX43_NATIVE_X87_STORE3(4, left, 0, right, 4,
-                               left, 4, right, 16,
-                               left, 8, right, 28);
-    MATRIX43_NATIVE_X87_STORE3(16, left, 12, right, 4,
-                               left, 16, right, 16,
-                               left, 20, right, 28);
-    MATRIX43_NATIVE_X87_STORE3(28, left, 24, right, 4,
-                               left, 28, right, 16,
-                               left, 32, right, 28);
+    MATRIX43_NATIVE_X87_STORE3(4, left, 0, right, 4, left, 4, right, 16, left, 8, right, 28);
+    MATRIX43_NATIVE_X87_STORE3(16, left, 12, right, 4, left, 16, right, 16, left, 20, right, 28);
+    MATRIX43_NATIVE_X87_STORE3(28, left, 24, right, 4, left, 28, right, 16, left, 32, right, 28);
 
-    MATRIX43_NATIVE_X87_STORE3(8, left, 0, right, 8,
-                               left, 4, right, 20,
-                               left, 8, right, 32);
-    MATRIX43_NATIVE_X87_STORE3(20, left, 12, right, 8,
-                               left, 16, right, 20,
-                               left, 20, right, 32);
-    MATRIX43_NATIVE_X87_STORE3(32, left, 24, right, 8,
-                               left, 28, right, 20,
-                               left, 32, right, 32);
+    MATRIX43_NATIVE_X87_STORE3(8, left, 0, right, 8, left, 4, right, 20, left, 8, right, 32);
+    MATRIX43_NATIVE_X87_STORE3(20, left, 12, right, 8, left, 16, right, 20, left, 20, right, 32);
+    MATRIX43_NATIVE_X87_STORE3(32, left, 24, right, 8, left, 28, right, 20, left, 32, right, 32);
 
-    MATRIX43_NATIVE_X87_STORE4(36, left, 36, right, 0,
-                               left, 40, right, 12,
-                               left, 44, right, 24, right, 36);
-    MATRIX43_NATIVE_X87_STORE4(40, left, 36, right, 4,
-                               left, 40, right, 16,
-                               left, 44, right, 28, right, 40);
-    MATRIX43_NATIVE_X87_STORE4(44, left, 36, right, 8,
-                               left, 40, right, 20,
-                               left, 44, right, 32, right, 44);
+    MATRIX43_NATIVE_X87_STORE4(36, left, 36, right, 0, left, 40, right, 12, left, 44, right, 24, right, 36);
+    MATRIX43_NATIVE_X87_STORE4(40, left, 36, right, 4, left, 40, right, 16, left, 44, right, 28, right, 40);
+    MATRIX43_NATIVE_X87_STORE4(44, left, 36, right, 8, left, 40, right, 20, left, 44, right, 32, right, 44);
 #else
-    MATRIX43_STORE3(output->axis[0][0], left->axis[0][0], right->axis[0][0],
-                    left->axis[0][1], right->axis[1][0],
-                    left->axis[0][2], right->axis[2][0]);
-    MATRIX43_STORE3(output->axis[1][0], left->axis[1][0], right->axis[0][0],
-                    left->axis[1][1], right->axis[1][0],
-                    left->axis[1][2], right->axis[2][0]);
-    MATRIX43_STORE3(output->axis[2][0], left->axis[2][0], right->axis[0][0],
-                    left->axis[2][1], right->axis[1][0],
-                    left->axis[2][2], right->axis[2][0]);
+    MATRIX43_STORE3(output->axis[0][0], left->axis[0][0], right->axis[0][0], left->axis[0][1], right->axis[1][0], left->axis[0][2],
+                    right->axis[2][0]);
+    MATRIX43_STORE3(output->axis[1][0], left->axis[1][0], right->axis[0][0], left->axis[1][1], right->axis[1][0], left->axis[1][2],
+                    right->axis[2][0]);
+    MATRIX43_STORE3(output->axis[2][0], left->axis[2][0], right->axis[0][0], left->axis[2][1], right->axis[1][0], left->axis[2][2],
+                    right->axis[2][0]);
 
-    MATRIX43_STORE3(output->axis[0][1], left->axis[0][0], right->axis[0][1],
-                    left->axis[0][1], right->axis[1][1],
-                    left->axis[0][2], right->axis[2][1]);
-    MATRIX43_STORE3(output->axis[1][1], left->axis[1][0], right->axis[0][1],
-                    left->axis[1][1], right->axis[1][1],
-                    left->axis[1][2], right->axis[2][1]);
-    MATRIX43_STORE3(output->axis[2][1], left->axis[2][0], right->axis[0][1],
-                    left->axis[2][1], right->axis[1][1],
-                    left->axis[2][2], right->axis[2][1]);
+    MATRIX43_STORE3(output->axis[0][1], left->axis[0][0], right->axis[0][1], left->axis[0][1], right->axis[1][1], left->axis[0][2],
+                    right->axis[2][1]);
+    MATRIX43_STORE3(output->axis[1][1], left->axis[1][0], right->axis[0][1], left->axis[1][1], right->axis[1][1], left->axis[1][2],
+                    right->axis[2][1]);
+    MATRIX43_STORE3(output->axis[2][1], left->axis[2][0], right->axis[0][1], left->axis[2][1], right->axis[1][1], left->axis[2][2],
+                    right->axis[2][1]);
 
-    MATRIX43_STORE3(output->axis[0][2], left->axis[0][0], right->axis[0][2],
-                    left->axis[0][1], right->axis[1][2],
-                    left->axis[0][2], right->axis[2][2]);
-    MATRIX43_STORE3(output->axis[1][2], left->axis[1][0], right->axis[0][2],
-                    left->axis[1][1], right->axis[1][2],
-                    left->axis[1][2], right->axis[2][2]);
-    MATRIX43_STORE3(output->axis[2][2], left->axis[2][0], right->axis[0][2],
-                    left->axis[2][1], right->axis[1][2],
-                    left->axis[2][2], right->axis[2][2]);
+    MATRIX43_STORE3(output->axis[0][2], left->axis[0][0], right->axis[0][2], left->axis[0][1], right->axis[1][2], left->axis[0][2],
+                    right->axis[2][2]);
+    MATRIX43_STORE3(output->axis[1][2], left->axis[1][0], right->axis[0][2], left->axis[1][1], right->axis[1][2], left->axis[1][2],
+                    right->axis[2][2]);
+    MATRIX43_STORE3(output->axis[2][2], left->axis[2][0], right->axis[0][2], left->axis[2][1], right->axis[1][2], left->axis[2][2],
+                    right->axis[2][2]);
 
-    MATRIX43_STORE4(output->origin[0], left->origin[0], right->axis[0][0],
-                    left->origin[1], right->axis[1][0],
-                    left->origin[2], right->axis[2][0], right->origin[0]);
-    MATRIX43_STORE4(output->origin[1], left->origin[0], right->axis[0][1],
-                    left->origin[1], right->axis[1][1],
-                    left->origin[2], right->axis[2][1], right->origin[1]);
-    MATRIX43_STORE4(output->origin[2], left->origin[0], right->axis[0][2],
-                    left->origin[1], right->axis[1][2],
-                    left->origin[2], right->axis[2][2], right->origin[2]);
+    MATRIX43_STORE4(output->origin[0], left->origin[0], right->axis[0][0], left->origin[1], right->axis[1][0], left->origin[2],
+                    right->axis[2][0], right->origin[0]);
+    MATRIX43_STORE4(output->origin[1], left->origin[0], right->axis[0][1], left->origin[1], right->axis[1][1], left->origin[2],
+                    right->axis[2][1], right->origin[1]);
+    MATRIX43_STORE4(output->origin[2], left->origin[0], right->axis[0][2], left->origin[1], right->axis[1][2], left->origin[2],
+                    right->axis[2][2], right->origin[2]);
 #endif
 }
 #endif

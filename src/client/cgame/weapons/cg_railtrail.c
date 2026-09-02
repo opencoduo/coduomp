@@ -87,8 +87,7 @@ void CG_RailTrail(int32_t colorIndex, const vec3_t start, const vec3_t end)
             /* i enters via a bare FILD fed straight into FMUL 0.3926991f (0x30043350
              * FILD; 0x30043354 FMUL) with no FSTP DWORD between, so drop the (float)
              * cast (Class 4). Constant 0x3007bedc = 0x3ec90fdb = 0.3926991f (2*pi/16). */
-            float angle = (float)((long double)i *
-                                  (long double)0.3926991f);
+            float angle = (float)((long double)i * (long double)0.3926991f);
             float sine;
             float cosine;
             coduo_x87_sincosf(angle, &sine, &cosine);
@@ -96,21 +95,16 @@ void CG_RailTrail(int32_t colorIndex, const vec3_t start, const vec3_t end)
             float c = (float)((long double)cosine * (long double)radius);
             /* 0x30043397..0x300433db keeps both products live through FADDP
              * and adds the start component before the sole float store. */
-            points[i][0] = (float)((long double)radial[0] * (long double)c +
-                                   (long double)tangent[0] * (long double)s +
-                                   (long double)start[0]);
-            points[i][1] = (float)((long double)radial[1] * (long double)c +
-                                   (long double)tangent[1] * (long double)s +
-                                   (long double)start[1]);
-            points[i][2] = (float)((long double)radial[2] * (long double)c +
-                                   (long double)tangent[2] * (long double)s +
-                                   (long double)start[2]);
+            points[i][0] =
+                (float)((long double)radial[0] * (long double)c + (long double)tangent[0] * (long double)s + (long double)start[0]);
+            points[i][1] =
+                (float)((long double)radial[1] * (long double)c + (long double)tangent[1] * (long double)s + (long double)start[1]);
+            points[i][2] =
+                (float)((long double)radial[2] * (long double)c + (long double)tangent[2] * (long double)s + (long double)start[2]);
         }
 
         for (i = 0; i < RAIL_RING_SEGMENTS; ++i) {
-            CG_SpawnRailCoreSegment(points[i],
-                                    points[(i + 1) & (RAIL_RING_SEGMENTS - 1)],
-                                    color);
+            CG_SpawnRailCoreSegment(points[i], points[(i + 1) & (RAIL_RING_SEGMENTS - 1)], color);
         }
         return;
     }

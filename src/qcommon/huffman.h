@@ -67,62 +67,34 @@ typedef struct huffman_s {
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-HUFFMAN_STATIC_ASSERT(HUFFMAN_ALIGNOF(node_t) == 4,
-                      "i386 Huffman node alignment changed");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, left) == 0x00,
-                      "i386 Huffman node left child moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, right) == 0x04,
-                      "i386 Huffman node right child moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, parent) == 0x08,
-                      "i386 Huffman node parent moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, next) == 0x0c,
-                      "i386 Huffman node next link moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, prev) == 0x10,
-                      "i386 Huffman node previous link moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, head) == 0x14,
-                      "i386 Huffman node head slot moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, weight) == 0x18,
-                      "i386 Huffman node weight moved");
-HUFFMAN_STATIC_ASSERT(offsetof(node_t, symbol) == 0x1c,
-                      "i386 Huffman node symbol moved");
-HUFFMAN_STATIC_ASSERT(sizeof(node_t) == 0x20,
-                      "i386 Huffman node size changed");
-HUFFMAN_STATIC_ASSERT(HUFFMAN_ALIGNOF(huff_t) == 4,
-                      "i386 Huffman state alignment changed");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, blocNode) == 0x0000,
-                      "i386 Huffman node cursor moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, blocPtrs) == 0x0004,
-                      "i386 Huffman pointer cursor moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, tree) == 0x0008,
-                      "i386 Huffman tree root moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, lhead) == 0x000c,
-                      "i386 Huffman list head moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, ltail) == 0x0010,
-                      "i386 Huffman list tail moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, loc) == 0x0014,
-                      "i386 Huffman symbol locations moved");
-HUFFMAN_STATIC_ASSERT(sizeof(((huff_t *)0)->loc) == 0x0404,
-                      "i386 Huffman symbol-location extent changed");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, freelist) == 0x0418,
-                      "i386 Huffman free list moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, nodeList) == 0x041c,
-                      "i386 Huffman node pool moved");
-HUFFMAN_STATIC_ASSERT(sizeof(((huff_t *)0)->nodeList) == 0x6000,
-                      "i386 Huffman node-pool extent changed");
-HUFFMAN_STATIC_ASSERT(offsetof(huff_t, nodePtrs) == 0x641c,
-                      "i386 Huffman head-slot pool moved");
-HUFFMAN_STATIC_ASSERT(sizeof(((huff_t *)0)->nodePtrs) == 0x0c00,
-                      "i386 Huffman head-slot pool extent changed");
-HUFFMAN_STATIC_ASSERT(sizeof(huff_t) == 0x701c,
-                      "i386 Huffman state size changed");
-HUFFMAN_STATIC_ASSERT(HUFFMAN_ALIGNOF(huffman_t) == 4,
-                      "i386 Huffman state-pair alignment changed");
-HUFFMAN_STATIC_ASSERT(offsetof(huffman_t, compressor) == 0x0000,
-                      "i386 Huffman compressor moved");
-HUFFMAN_STATIC_ASSERT(offsetof(huffman_t, decompressor) == 0x701c,
-                      "i386 Huffman decompressor moved");
-HUFFMAN_STATIC_ASSERT(sizeof(huffman_t) == 0xe038,
-                      "i386 Huffman state-pair size changed");
+HUFFMAN_STATIC_ASSERT(HUFFMAN_ALIGNOF(node_t) == 4, "i386 Huffman node alignment changed");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, left) == 0x00, "i386 Huffman node left child moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, right) == 0x04, "i386 Huffman node right child moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, parent) == 0x08, "i386 Huffman node parent moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, next) == 0x0c, "i386 Huffman node next link moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, prev) == 0x10, "i386 Huffman node previous link moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, head) == 0x14, "i386 Huffman node head slot moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, weight) == 0x18, "i386 Huffman node weight moved");
+HUFFMAN_STATIC_ASSERT(offsetof(node_t, symbol) == 0x1c, "i386 Huffman node symbol moved");
+HUFFMAN_STATIC_ASSERT(sizeof(node_t) == 0x20, "i386 Huffman node size changed");
+HUFFMAN_STATIC_ASSERT(HUFFMAN_ALIGNOF(huff_t) == 4, "i386 Huffman state alignment changed");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, blocNode) == 0x0000, "i386 Huffman node cursor moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, blocPtrs) == 0x0004, "i386 Huffman pointer cursor moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, tree) == 0x0008, "i386 Huffman tree root moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, lhead) == 0x000c, "i386 Huffman list head moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, ltail) == 0x0010, "i386 Huffman list tail moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, loc) == 0x0014, "i386 Huffman symbol locations moved");
+HUFFMAN_STATIC_ASSERT(sizeof(((huff_t *)0)->loc) == 0x0404, "i386 Huffman symbol-location extent changed");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, freelist) == 0x0418, "i386 Huffman free list moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, nodeList) == 0x041c, "i386 Huffman node pool moved");
+HUFFMAN_STATIC_ASSERT(sizeof(((huff_t *)0)->nodeList) == 0x6000, "i386 Huffman node-pool extent changed");
+HUFFMAN_STATIC_ASSERT(offsetof(huff_t, nodePtrs) == 0x641c, "i386 Huffman head-slot pool moved");
+HUFFMAN_STATIC_ASSERT(sizeof(((huff_t *)0)->nodePtrs) == 0x0c00, "i386 Huffman head-slot pool extent changed");
+HUFFMAN_STATIC_ASSERT(sizeof(huff_t) == 0x701c, "i386 Huffman state size changed");
+HUFFMAN_STATIC_ASSERT(HUFFMAN_ALIGNOF(huffman_t) == 4, "i386 Huffman state-pair alignment changed");
+HUFFMAN_STATIC_ASSERT(offsetof(huffman_t, compressor) == 0x0000, "i386 Huffman compressor moved");
+HUFFMAN_STATIC_ASSERT(offsetof(huffman_t, decompressor) == 0x701c, "i386 Huffman decompressor moved");
+HUFFMAN_STATIC_ASSERT(sizeof(huffman_t) == 0xe038, "i386 Huffman state-pair size changed");
 #endif
 
 #undef HUFFMAN_ALIGNOF
@@ -140,13 +112,10 @@ void Huff_Init(huffman_t *huffman);
 void Huff_addRef(huff_t *state, uint8_t symbol);
 void Huff_putBit(int32_t bit, uint8_t *output, int32_t *offset);
 int32_t Huff_getBit(const uint8_t *input, int32_t *offset);
-int32_t Huff_Receive(node_t *node, int32_t *symbol,
-                     const uint8_t *input);
+int32_t Huff_Receive(node_t *node, int32_t *symbol, const uint8_t *input);
 
-void Huff_offsetReceive(node_t *node, int32_t *symbol,
-                        const uint8_t *input, int32_t *offset);
-void Huff_offsetTransmit(huff_t *state, int32_t symbol,
-                         uint8_t *output, int32_t *offset);
+void Huff_offsetReceive(node_t *node, int32_t *symbol, const uint8_t *input, int32_t *offset);
+void Huff_offsetTransmit(huff_t *state, int32_t symbol, uint8_t *output, int32_t *offset);
 void Huff_transmit(huff_t *state, int32_t symbol, uint8_t *output);
 
 void Huff_Compress(msg_t *message, int32_t offset);
@@ -157,12 +126,10 @@ qboolean Huff_Decompress(msg_t *message, int32_t offset);
 
 void MSG_initHuffman(void);
 
-int32_t MSG_WriteBitsCompress(const uint8_t *input, uint8_t *output,
-                              int32_t inputLength);
+int32_t MSG_WriteBitsCompress(const uint8_t *input, uint8_t *output, int32_t inputLength);
 /* NOT_FROM_ORIGINAL_SOURCE: the result reports input- or output-extent
  * failure; callers must discard a partial transform. */
-int32_t MSG_ReadBitsCompress(const uint8_t *input, uint8_t *output,
-                             int32_t inputLength, int32_t outputCapacity);
+int32_t MSG_ReadBitsCompress(const uint8_t *input, uint8_t *output, int32_t inputLength, int32_t outputCapacity);
 
 #ifdef __cplusplus
 }

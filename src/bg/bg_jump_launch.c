@@ -102,12 +102,9 @@ void PM_Jump(float jumpHeight)
      * st0 through the optional FDIVP and the FSQRT with NO intervening float store
      * (FSTP [velocity[2]] @ 0x30008cde is the only rounding), so launchEnergy is
      * long double and gravity feeds a bare FILD (no (float) cast). */
-    long double launchEnergy =
-        (long double)launchGravity *
-        ((long double)jumpHeight + (long double)jumpHeight);
+    long double launchEnergy = (long double)launchGravity * ((long double)jumpHeight + (long double)jumpHeight);
 
-    if ((launchFlags & PMF_WALLJUMP) != 0 &&
-        launchPs->pmTime <= 1800) {
+    if ((launchFlags & PMF_WALLJUMP) != 0 && launchPs->pmTime <= 1800) {
         /* PM_GetJumpFactor returns live in ST0 on Windows and is consumed by
          * FDIVP (0x30008cda); the source-level call represents the proven
          * adjacent helper that this optimized DLL inlined. */
@@ -138,30 +135,20 @@ void PM_Jump(float jumpHeight)
     /* Linux stores the doubled-height/gravity product as binary32 before the
      * wall-jump gate, and stores the optional division back to the same slot. */
 #if EMULATE_X87
-    launchEnergy = x87f_store_f32(x87f_mul(
-        x87f_load_i32(ps->gravity),
-        x87f_add(x87f_load_f32(jumpHeight),
-                 x87f_load_f32(jumpHeight))));
+    launchEnergy = x87f_store_f32(x87f_mul(x87f_load_i32(ps->gravity), x87f_add(x87f_load_f32(jumpHeight), x87f_load_f32(jumpHeight))));
 #else
-    launchEnergy = (float)(
-        (long double)ps->gravity *
-        ((long double)jumpHeight + (long double)jumpHeight));
+    launchEnergy = (float)((long double)ps->gravity * ((long double)jumpHeight + (long double)jumpHeight));
 #endif
 
-    if ((ps->playerStateFlags & PMF_WALLJUMP) != 0 &&
-        ps->pmTime <= 1800) {
+    if ((ps->playerStateFlags & PMF_WALLJUMP) != 0 && ps->pmTime <= 1800) {
 #if EMULATE_X87
-        launchEnergy = x87f_store_f32(x87f_div(
-            x87f_load_f32(launchEnergy),
-            x87f_load_f32((float)PM_GetJumpFactor())));
+        launchEnergy = x87f_store_f32(x87f_div(x87f_load_f32(launchEnergy), x87f_load_f32((float)PM_GetJumpFactor())));
 #else
-        launchEnergy = (float)(
-            (long double)launchEnergy / PM_GetJumpFactor());
+        launchEnergy = (float)((long double)launchEnergy / PM_GetJumpFactor());
 #endif
     }
 
-    ps->velocity[2] =
-        (float)CoduoLibm_SqrtGlibc((double)launchEnergy);
+    ps->velocity[2] = (float)CoduoLibm_SqrtGlibc((double)launchEnergy);
     ps->playerStateFlags |= PMF_WALLJUMP | PMF_JUMP_HELD;
     ps->pmTime = 0;
     ps->jumpOriginZ = ps->psOrigin[2];

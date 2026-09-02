@@ -10,9 +10,7 @@
 const char *RE_GetShaderName(int32_t shaderHandle)
 {
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetShaderByHandle: out of range hShader '%d'\n",
-                  shaderHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
         return "";
     }
 
@@ -27,9 +25,7 @@ const char *RE_GetShaderName(int32_t shaderHandle)
 shader_t *R_GetShaderByHandle(int32_t shaderHandle)
 {
     if (shaderHandle < 0 || shaderHandle >= tr.numShaders) {
-        ri.Printf(R_PRINT_WARNING,
-                  "R_GetShaderByHandle: out of range hShader '%d'\n",
-                  shaderHandle);
+        ri.Printf(R_PRINT_WARNING, "R_GetShaderByHandle: out of range hShader '%d'\n", shaderHandle);
         return tr.defaultShader;
     }
 
@@ -47,17 +43,11 @@ void R_ShaderList_f(void)
 
     ri.Printf(R_PRINT_ALL, "-----------------------\n");
 
-    for (int32_t shaderIndex = 0;
-         shaderIndex < tr.numShaders;
-         ++shaderIndex) {
-        shader_t *const shader =
-            ri.Cmd_Argc() > 1
-                ? tr.sortedShaders[shaderIndex]
-                : tr.shaders[shaderIndex];
+    for (int32_t shaderIndex = 0; shaderIndex < tr.numShaders; ++shaderIndex) {
+        shader_t *const shader = ri.Cmd_Argc() > 1 ? tr.sortedShaders[shaderIndex] : tr.shaders[shaderIndex];
 
         ri.Printf(R_PRINT_ALL, "%i ", shader->numUnfoggedPasses);
-        ri.Printf(R_PRINT_ALL,
-                  shader->lightmapIndex >= 0 ? "L " : "  ");
+        ri.Printf(R_PRINT_ALL, shader->lightmapIndex >= 0 ? "L " : "  ");
 
         if (shader->stages[0] == NULL) {
             ri.Printf(R_PRINT_ALL, "      ");
@@ -78,11 +68,7 @@ void R_ShaderList_f(void)
             }
         }
 
-        ri.Printf(
-            R_PRINT_ALL,
-            (shader->flags & SHADER_FLAG_EXPLICITLY_DEFINED) != 0
-                ? "E "
-                : "  ");
+        ri.Printf(R_PRINT_ALL, (shader->flags & SHADER_FLAG_EXPLICITLY_DEFINED) != 0 ? "E " : "  ");
 
         if (shader->optimalStageIteratorFunc == tr.stageIteratorFunc) {
             ri.Printf(R_PRINT_ALL, "gen ");
@@ -92,12 +78,7 @@ void R_ShaderList_f(void)
             ri.Printf(R_PRINT_ALL, "    ");
         }
 
-        ri.Printf(
-            R_PRINT_ALL,
-            (shader->flags & SHADER_FLAG_DEFAULTED) != 0
-                ? ": %s (DEFAULTED)\n"
-                : ": %s\n",
-            shader->name);
+        ri.Printf(R_PRINT_ALL, (shader->flags & SHADER_FLAG_DEFAULTED) != 0 ? ": %s (DEFAULTED)\n" : ": %s\n", shader->name);
         ++listedShaderCount;
     }
 

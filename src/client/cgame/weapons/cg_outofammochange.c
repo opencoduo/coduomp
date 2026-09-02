@@ -47,7 +47,9 @@
  * inventory slots are searched 1,2,3,4,5,7,6 -- slot 7 is preferred over slot 6
  * as the fallback. Written to the stack scratch array one dword per slot, then
  * indexed 0..6. */
-enum { CG_OUT_OF_AMMO_SLOT_SCAN_COUNT = 7 };
+enum {
+    CG_OUT_OF_AMMO_SLOT_SCAN_COUNT = 7
+};
 
 void CG_OutOfAmmoChange(void)
 {
@@ -94,9 +96,8 @@ void CG_OutOfAmmoChange(void)
              * (weaponInfo reloaded from bg_weaponInfos[weapon]). If nonzero the
              * candidate has usable ammo -> commit it (JNZ 0x30047734). */
             weaponInfo = bg_weaponInfos[weapon];
-            uint32_t totalBits =
-                (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
-                (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
+            uint32_t totalBits = (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
+                                 (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
             if (totalBits != 0u) {
                 /* 0x30047734 MOV ECX,[cg_weaponSelect_vmCvar.integer]; 0x3004773a CALL
                  * CG_SelectWeaponIndex(weapon=EAX, currentWeapon=ECX). */
@@ -111,10 +112,7 @@ void CG_OutOfAmmoChange(void)
      * (checkAlt=1). EDX = currentWeaponInfo->weaponIndex (+0x00). If the weapon
      * is not in any tracked slot (result 0), fall straight through to the
      * wrap/cycle fallback. */
-    int32_t currentSlot = BG_IsPlayerWeaponInSlot(
-        &cg_predictedPlayerState,
-        currentWeaponInfo->weaponIndex,
-        1);
+    int32_t currentSlot = BG_IsPlayerWeaponInSlot(&cg_predictedPlayerState, currentWeaponInfo->weaponIndex, 1);
     if (currentSlot != 0) {
         /* 0x300476a3..0x300476d3: build the default slot-scan priority order
          * {1,2,3,4,5,7,6}. */
@@ -141,15 +139,12 @@ void CG_OutOfAmmoChange(void)
              * into a weapon index; total = clips[clipIndex] + ammo[ammoIndex].
              * If nonzero the slot's weapon has ammo -> commit it. */
             weaponInfo_t *weaponInfo = bg_weaponInfos[(int32_t)(int8_t)weaponInSlot];
-            uint32_t totalBits =
-                (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
-                (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
+            uint32_t totalBits = (uint32_t)cg_predictedPlayerState.clips[weaponInfo->clipIndex] +
+                                 (uint32_t)cg_predictedPlayerState.ammo[weaponInfo->ammoIndex];
             if (totalBits != 0u) {
                 /* 0x30047729..0x30047745: re-read the slot's weapon index
                  * (sign-extended) and commit via CG_SelectWeaponIndex. */
-                CG_SelectWeaponIndex(
-                    (int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slotOrder[k]],
-                    cg_weaponSelect_vmCvar.integer);
+                CG_SelectWeaponIndex((int32_t)(int8_t)cg_predictedPlayerState.weaponSlots[slotOrder[k]], cg_weaponSelect_vmCvar.integer);
                 return;
             }
         }

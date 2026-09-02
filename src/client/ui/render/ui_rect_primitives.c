@@ -3,16 +3,12 @@
 // Source: uo_ui_mp_x86.dll 0x40007b30..0x40007b9c
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_40007b30_40007b9c.mcode
 // Same-module PPC role: UI_FillRect.
-void UI_FillRect(float x, float y, float width, float height,
-                 const vec4_t color)
+void UI_FillRect(float x, float y, float width, float height, const vec4_t color)
 {
     trap_R_SetColor(color);
-    trap_R_DrawStretchPic(x * ui_displayContextStorage.context.xscale,
-                          y * ui_displayContextStorage.context.yscale,
-                          width * ui_displayContextStorage.context.xscale,
-                          height * ui_displayContextStorage.context.yscale,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x * ui_displayContextStorage.context.xscale, y * ui_displayContextStorage.context.yscale,
+                          width * ui_displayContextStorage.context.xscale, height * ui_displayContextStorage.context.yscale, 0.0f, 0.0f,
+                          0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
     trap_R_SetColor(NULL);
 }
 
@@ -25,12 +21,8 @@ void UI_DrawSides(float x, float y, float width, float height)
     y *= ui_displayContextStorage.context.yscale;
     width *= ui_displayContextStorage.context.xscale;
     height *= ui_displayContextStorage.context.yscale;
-    trap_R_DrawStretchPic(x, y, 1.0f, height,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
-    trap_R_DrawStretchPic(x + width - 1.0f, y, 1.0f, height,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x, y, 1.0f, height, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x + width - 1.0f, y, 1.0f, height, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
 }
 
 // Source: uo_ui_mp_x86.dll 0x40007c40..0x40007cd3
@@ -42,19 +34,14 @@ void UI_DrawTopBottom(float x, float y, float width, float height)
     y *= ui_displayContextStorage.context.yscale;
     width *= ui_displayContextStorage.context.xscale;
     height *= ui_displayContextStorage.context.yscale;
-    trap_R_DrawStretchPic(x, y, width, 1.0f,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
-    trap_R_DrawStretchPic(x, y + height - 1.0f, width, 1.0f,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x, y, width, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x, y + height - 1.0f, width, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
 }
 
 // Source: uo_ui_mp_x86.dll 0x40007ce0..0x40007d21
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_40007ce0_40007d21.mcode
 // Role name: UI_DrawRect.
-void UI_DrawRect(float x, float y, float width, float height,
-                 const vec4_t color)
+void UI_DrawRect(float x, float y, float width, float height, const vec4_t color)
 {
     trap_R_SetColor(color);
     UI_DrawTopBottom(x, y, width, height);
@@ -101,46 +88,35 @@ void UI_DrawTextBox(int32_t x, int32_t y, int32_t width, int32_t lines)
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_400087a0_4000883d.mcode
 // Role name: UI_DrawSides; the suffix distinguishes this variable-thickness
 // source variant from the fixed-one-pixel sibling above.
-void UI_DrawSidesWithSize(float x, float y, float width, float height,
-                          float size)
+void UI_DrawSidesWithSize(float x, float y, float width, float height, float size)
 {
     x *= ui_displayContextStorage.context.xscale;
     y *= ui_displayContextStorage.context.yscale;
     width *= ui_displayContextStorage.context.xscale;
     height *= ui_displayContextStorage.context.yscale;
     size *= ui_displayContextStorage.context.xscale;
-    trap_R_DrawStretchPic(x, y, size, height,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
-    trap_R_DrawStretchPic(x + width - size, y, size, height,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x, y, size, height, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x + width - size, y, size, height, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
 }
 
 // Source: uo_ui_mp_x86.dll 0x40008840..0x400088dd
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_40008840_400088dd.mcode
 // Role name: UI_DrawTopBottom; variable thickness is y-scaled.
-void UI_DrawTopBottomWithSize(float x, float y, float width, float height,
-                              float size)
+void UI_DrawTopBottomWithSize(float x, float y, float width, float height, float size)
 {
     x *= ui_displayContextStorage.context.xscale;
     y *= ui_displayContextStorage.context.yscale;
     width *= ui_displayContextStorage.context.xscale;
     height *= ui_displayContextStorage.context.yscale;
     size *= ui_displayContextStorage.context.yscale;
-    trap_R_DrawStretchPic(x, y, width, size,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
-    trap_R_DrawStretchPic(x, y + height - size, width, size,
-                          0.0f, 0.0f, 0.0f, 0.0f,
-                          ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x, y, width, size, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
+    trap_R_DrawStretchPic(x, y + height - size, width, size, 0.0f, 0.0f, 0.0f, 0.0f, ui_displayContextStorage.context.whiteShader);
 }
 
 // Source: uo_ui_mp_x86.dll 0x400088e0..0x4000892f
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_400088e0_4000892f.mcode
 // Role name: UI_DrawRect; variable-thickness source variant.
-void UI_DrawRectWithSize(float x, float y, float width, float height,
-                         float size, const vec4_t color)
+void UI_DrawRectWithSize(float x, float y, float width, float height, float size, const vec4_t color)
 {
     trap_R_SetColor(color);
     UI_DrawTopBottomWithSize(x, y, width, height, size);

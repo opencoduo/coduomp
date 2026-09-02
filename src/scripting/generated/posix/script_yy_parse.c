@@ -19,11 +19,9 @@ static qboolean coduomp_script_yy_table_index_is_valid(int32_t tableIndex)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: names the generated yycheck table probe. */
-static qboolean coduomp_script_yy_check_matches(int32_t tableIndex,
-                                                int32_t value)
+static qboolean coduomp_script_yy_check_matches(int32_t tableIndex, int32_t value)
 {
-    return coduomp_script_yy_table_index_is_valid(tableIndex) != qfalse &&
-           script_yycheck[tableIndex] == value;
+    return coduomp_script_yy_table_index_is_valid(tableIndex) != qfalse && script_yycheck[tableIndex] == value;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: names the generated parser stack overflow check. */
@@ -46,8 +44,7 @@ static int32_t coduomp_script_yy_load_lookahead(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: names the generated state/value stack push. */
-static void coduomp_script_yy_push_value(int16_t state,
-                                         sval_u value)
+static void coduomp_script_yy_push_value(int16_t state, sval_u value)
 {
     script_yyssp++;
     *script_yyssp = state;
@@ -230,10 +227,8 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
 
     switch (rule) {
     case 1:
-        coduomp_script_ast_new_script_root(
-            &script_parseRootValue, script_yyvsp[0].words[0]);
-        script_parseRoot =
-            (scr_ast_node_t *)script_parseRootValue.words[0];
+        coduomp_script_ast_new_script_root(&script_parseRootValue, script_yyvsp[0].words[0]);
+        script_parseRoot = (scr_ast_node_t *)script_parseRootValue.words[0];
         break;
     case 2:
         node_pos(&local_10, script_yyval.words[1]);
@@ -243,110 +238,128 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
         node_pos(&local_14, script_yyvsp[-1].words[1]);
         node_pos(&local_18, script_yyvsp[0].words[1]);
         node_pos(&local_1c, script_yyval.words[1]);
-        node5(&script_yyval, SCR_AST_KIND_BOOL_OR, script_yyval.words[0], local_1c.words[0], script_yyvsp[0].words[0], local_18.words[0], local_14.words[0]);
+        node5(&script_yyval, SCR_AST_KIND_BOOL_OR, script_yyval.words[0], local_1c.words[0], script_yyvsp[0].words[0], local_18.words[0],
+              local_14.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 4:
         node_pos(&local_20, script_yyvsp[-1].words[1]);
         node_pos(&local_24, script_yyvsp[0].words[1]);
         node_pos(&local_28, script_yyval.words[1]);
-        node5(&script_yyval, SCR_AST_KIND_BOOL_AND, script_yyval.words[0], local_28.words[0], script_yyvsp[0].words[0], local_24.words[0], local_20.words[0]);
+        node5(&script_yyval, SCR_AST_KIND_BOOL_AND, script_yyval.words[0], local_28.words[0], script_yyvsp[0].words[0], local_24.words[0],
+              local_20.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 5:
         node_pos(&local_2c, script_yyvsp[-1].words[1]);
         node1_(&local_30, 0x3d);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_30.words[0], local_2c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_30.words[0],
+              local_2c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 6:
         node_pos(&local_34, script_yyvsp[-1].words[1]);
         node1_(&local_38, 0x3e);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_38.words[0], local_34.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_38.words[0],
+              local_34.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 7:
         node_pos(&local_3c, script_yyvsp[-1].words[1]);
         node1_(&local_40, 0x3f);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_40.words[0], local_3c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_40.words[0],
+              local_3c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 8:
         node_pos(&local_44, script_yyvsp[-1].words[1]);
         node1_(&local_48, 0x40);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_48.words[0], local_44.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_48.words[0],
+              local_44.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 9:
         node_pos(&local_4c, script_yyvsp[-1].words[1]);
         node1_(&local_50, 0x41);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_50.words[0], local_4c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_50.words[0],
+              local_4c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 10:
         node_pos(&local_54, script_yyvsp[-1].words[1]);
         node1_(&local_58, 0x42);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_58.words[0], local_54.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_58.words[0],
+              local_54.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0xb:
         node_pos(&local_5c, script_yyvsp[-1].words[1]);
         node1_(&local_60, 0x43);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_60.words[0], local_5c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_60.words[0],
+              local_5c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0xc:
         node_pos(&local_64, script_yyvsp[-1].words[1]);
         node1_(&local_68, 0x44);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_68.words[0], local_64.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_68.words[0],
+              local_64.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0xd:
         node_pos(&local_6c, script_yyvsp[-1].words[1]);
         node1_(&local_70, 0x45);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_70.words[0], local_6c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_70.words[0],
+              local_6c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0xe:
         node_pos(&local_74, script_yyvsp[-1].words[1]);
         node1_(&local_78, 0x46);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_78.words[0], local_74.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_78.words[0],
+              local_74.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0xf:
         node_pos(&local_7c, script_yyvsp[-1].words[1]);
         node1_(&local_80, 0x47);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_80.words[0], local_7c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_80.words[0],
+              local_7c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0x10:
         node_pos(&local_84, script_yyvsp[-1].words[1]);
         node1_(&local_88, 0x48);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_88.words[0], local_84.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_88.words[0],
+              local_84.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0x11:
         node_pos(&local_8c, script_yyvsp[-1].words[1]);
         node1_(&local_90, 0x49);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_90.words[0], local_8c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_90.words[0],
+              local_8c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0x12:
         node_pos(&local_94, script_yyvsp[-1].words[1]);
         node1_(&local_98, 0x4a);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_98.words[0], local_94.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_98.words[0],
+              local_94.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0x13:
         node_pos(&local_9c, script_yyvsp[-1].words[1]);
         node1_(&local_a0, 0x4b);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_a0.words[0], local_9c.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_a0.words[0],
+              local_9c.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0x14:
         node_pos(&local_a4, script_yyvsp[-1].words[1]);
         node1_(&local_a8, 0x4c);
-        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_a8.words[0], local_a4.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_BINARY_OPERATOR, script_yyval.words[0], script_yyvsp[0].words[0], local_a8.words[0],
+              local_a4.words[0]);
         script_yyval.words[1] = script_yyvsp[-1].words[1];
         break;
     case 0x15:
@@ -424,7 +437,8 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
     case 0x28:
         node_pos(&local_ec, script_yyvsp[-2].words[1]);
         node_pos(&local_f0, script_yyval.words[1]);
-        node5(&script_yyval, SCR_AST_KIND_METHOD_CALL_VALUE, script_yyval.words[0], script_yyvsp[-3].words[0], script_yyvsp[-1].words[0], local_f0.words[0], local_ec.words[0]);
+        node5(&script_yyval, SCR_AST_KIND_METHOD_CALL_VALUE, script_yyval.words[0], script_yyvsp[-3].words[0], script_yyvsp[-1].words[0],
+              local_f0.words[0], local_ec.words[0]);
         script_yyval.words[1] = script_yyvsp[-2].words[1];
         break;
     case 0x29:
@@ -513,13 +527,15 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
     case 0x3e:
         node_pos(&local_140, script_yyvsp[0].words[1]);
         node_pos(&local_144, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_OBJECT_STRING_REF, script_yyval.words[0], script_yyvsp[0].words[0], local_144.words[0], local_140.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_OBJECT_STRING_REF, script_yyval.words[0], script_yyvsp[0].words[0], local_144.words[0],
+              local_140.words[0]);
         script_yyval.words[1] = script_yyvsp[0].words[1];
         break;
     case 0x3f:
         node_pos(&local_148, script_yyvsp[-1].words[1]);
         node_pos(&local_14c, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF, script_yyval.words[0], script_yyvsp[-1].words[0], local_14c.words[0], local_148.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_OBJECT_INDEX_OBJECT_REF, script_yyval.words[0], script_yyvsp[-1].words[0], local_14c.words[0],
+              local_148.words[0]);
         script_yyval.words[1] = script_yyvsp[-2].words[1];
         break;
     case 0x40:
@@ -557,72 +573,86 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
     case 0x48:
         node_pos(&local_170, script_yyvsp[-1].words[1]);
         node1_(&local_174, 0x3d);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_174.words[0], local_170.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_174.words[0],
+              local_170.words[0]);
         break;
     case 0x49:
         node_pos(&local_178, script_yyvsp[-1].words[1]);
         node1_(&local_17c, 0x3e);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_17c.words[0], local_178.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_17c.words[0],
+              local_178.words[0]);
         break;
     case 0x4a:
         node_pos(&local_180, script_yyvsp[-1].words[1]);
         node1_(&local_184, 0x3f);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_184.words[0], local_180.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_184.words[0],
+              local_180.words[0]);
         break;
     case 0x4b:
         node_pos(&local_188, script_yyvsp[-1].words[1]);
         node1_(&local_18c, 0x46);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_18c.words[0], local_188.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_18c.words[0],
+              local_188.words[0]);
         break;
     case 0x4c:
         node_pos(&local_190, script_yyvsp[-1].words[1]);
         node1_(&local_194, 0x47);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_194.words[0], local_190.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_194.words[0],
+              local_190.words[0]);
         break;
     case 0x4d:
         node_pos(&local_198, script_yyvsp[-1].words[1]);
         node1_(&local_19c, 0x48);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_19c.words[0], local_198.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_19c.words[0],
+              local_198.words[0]);
         break;
     case 0x4e:
         node_pos(&local_1a0, script_yyvsp[-1].words[1]);
         node1_(&local_1a4, 0x49);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1a4.words[0], local_1a0.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1a4.words[0],
+              local_1a0.words[0]);
         break;
     case 0x4f:
         node_pos(&local_1a8, script_yyvsp[-1].words[1]);
         node1_(&local_1ac, 0x4a);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1ac.words[0], local_1a8.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1ac.words[0],
+              local_1a8.words[0]);
         break;
     case 0x50:
         node_pos(&local_1b0, script_yyvsp[-1].words[1]);
         node1_(&local_1b4, 0x4b);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1b4.words[0], local_1b0.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1b4.words[0],
+              local_1b0.words[0]);
         break;
     case 0x51:
         node_pos(&local_1b8, script_yyvsp[-1].words[1]);
         node1_(&local_1bc, 0x4c);
-        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1bc.words[0], local_1b8.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_REF_ASSIGNMENT_STATEMENT, script_yyval.words[0], script_yyvsp[0].words[0], local_1bc.words[0],
+              local_1b8.words[0]);
         break;
     case 0x52:
         node_pos(&local_1c0, script_yyvsp[-3].words[1]);
         node_pos(&local_1c4, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_WAITTILL_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1c4.words[0], local_1c0.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_WAITTILL_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1c4.words[0],
+              local_1c0.words[0]);
         break;
     case 0x53:
         node_pos(&local_1c8, script_yyvsp[-3].words[1]);
         node_pos(&local_1cc, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_WAITTILLMATCH_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1cc.words[0], local_1c8.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_WAITTILLMATCH_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1cc.words[0],
+              local_1c8.words[0]);
         break;
     case 0x54:
         node_pos(&local_1d0, script_yyvsp[-3].words[1]);
         node_pos(&local_1d4, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_NOTIFY_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1d4.words[0], local_1d0.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_NOTIFY_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1d4.words[0],
+              local_1d0.words[0]);
         break;
     case 0x55:
         node_pos(&local_1d8, script_yyvsp[-1].words[1]);
         node_pos(&local_1dc, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_ENDON_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1dc.words[0], local_1d8.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_ENDON_STATEMENT, script_yyval.words[0], script_yyvsp[-1].words[0], local_1dc.words[0],
+              local_1d8.words[0]);
         break;
     case 0x56:
         node_pos(&local_1e0, script_yyval.words[1]);
@@ -635,7 +665,8 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
     case 0x58:
         node_pos(&local_1e8, script_yyvsp[-3].words[1]);
         node_pos(&local_1ec, script_yyvsp[-1].words[1]);
-        node4(&script_yyval, SCR_AST_KIND_DO_WHILE_STATEMENT, script_yyvsp[-4].words[0], script_yyvsp[-1].words[0], local_1ec.words[0], local_1e8.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_DO_WHILE_STATEMENT, script_yyvsp[-4].words[0], script_yyvsp[-1].words[0], local_1ec.words[0],
+              local_1e8.words[0]);
         break;
     case 0x59:
         node0(&script_yyval, 0);
@@ -650,17 +681,20 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
         break;
     case 0x5e:
         node_pos(&local_1f8, script_yyvsp[-4].words[1]);
-        node4(&script_yyval, SCR_AST_KIND_IF_ELSE_STATEMENT, script_yyvsp[-4].words[0], script_yyvsp[-2].words[0], script_yyvsp[0].words[0], local_1f8.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_IF_ELSE_STATEMENT, script_yyvsp[-4].words[0], script_yyvsp[-2].words[0], script_yyvsp[0].words[0],
+              local_1f8.words[0]);
         break;
     case 0x5f:
         node_pos(&local_1fc, script_yyval.words[1]);
         node_pos(&local_200, script_yyvsp[-2].words[1]);
-        node4(&script_yyval, SCR_AST_KIND_WHILE_STATEMENT, script_yyvsp[-2].words[0], script_yyvsp[0].words[0], local_200.words[0], local_1fc.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_WHILE_STATEMENT, script_yyvsp[-2].words[0], script_yyvsp[0].words[0], local_200.words[0],
+              local_1fc.words[0]);
         break;
     case 0x60:
         node_pos(&local_204, script_yyval.words[1]);
         node_pos(&local_208, script_yyvsp[-4].words[1]);
-        node6(&script_yyval, SCR_AST_KIND_FOR_STATEMENT, script_yyvsp[-5].words[0], script_yyvsp[-4].words[0], script_yyvsp[-2].words[0], script_yyvsp[0].words[0], local_208.words[0], local_204.words[0]);
+        node6(&script_yyval, SCR_AST_KIND_FOR_STATEMENT, script_yyvsp[-5].words[0], script_yyvsp[-4].words[0], script_yyvsp[-2].words[0],
+              script_yyvsp[0].words[0], local_208.words[0], local_204.words[0]);
         break;
     case 0x61:
         node_pos(&local_20c, script_yyvsp[-2].words[1]);
@@ -755,11 +789,13 @@ static void coduomp_script_yy_run_reduction(int32_t rule)
         break;
     case 0x75:
         node_pos(&local_294, script_yyval.words[1]);
-        node4(&script_yyval, SCR_AST_KIND_FUNCTION_DEFINITION, script_yyval.words[0], script_yyvsp[-4].words[0], script_yyvsp[-1].words[0], local_294.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_FUNCTION_DEFINITION, script_yyval.words[0], script_yyvsp[-4].words[0], script_yyvsp[-1].words[0],
+              local_294.words[0]);
         break;
     case 0x76:
         node_pos(&local_298, script_yyvsp[-7].words[1]);
-        node4(&script_yyval, SCR_AST_KIND_DEVELOPER_FUNCTION_DEFINITION, script_yyvsp[-7].words[0], script_yyvsp[-5].words[0], script_yyvsp[-2].words[0], local_298.words[0]);
+        node4(&script_yyval, SCR_AST_KIND_DEVELOPER_FUNCTION_DEFINITION, script_yyvsp[-7].words[0], script_yyvsp[-5].words[0],
+              script_yyvsp[-2].words[0], local_298.words[0]);
         break;
     case 0x77:
         node_pos(&local_29c, script_yyvsp[-2].words[1]);
@@ -806,10 +842,8 @@ int32_t yyparse(void)
 
             if (tableIndex != 0) {
                 tableIndex += lookahead;
-                if (coduomp_script_yy_check_matches(tableIndex, lookahead) !=
-                    qfalse) {
-                    int16_t nextState =
-                        script_yytable[tableIndex];
+                if (coduomp_script_yy_check_matches(tableIndex, lookahead) != qfalse) {
+                    int16_t nextState = script_yytable[tableIndex];
                     if (coduomp_script_yy_stack_can_push() == qfalse) {
                         yyerror();
                         return SCRIPT_YY_PARSE_ERROR;
@@ -826,10 +860,7 @@ int32_t yyparse(void)
             }
 
             tableIndex = script_yyrindex[state];
-            if (tableIndex == 0 ||
-                coduomp_script_yy_check_matches(tableIndex + lookahead,
-                                                lookahead) ==
-                    qfalse) {
+            if (tableIndex == 0 || coduomp_script_yy_check_matches(tableIndex + lookahead, lookahead) == qfalse) {
                 if (script_yyerrflag == 0) {
                     yyerror();
                     script_yynerrs++;
@@ -840,10 +871,7 @@ int32_t yyparse(void)
                     while (qtrue) {
                         tableIndex = script_yysindex[*script_yyssp];
                         if (tableIndex != 0 &&
-                            coduomp_script_yy_check_matches(
-                                tableIndex + SCRIPT_YY_ERROR_TOKEN,
-                                SCRIPT_YY_ERROR_TOKEN) !=
-                                qfalse) {
+                            coduomp_script_yy_check_matches(tableIndex + SCRIPT_YY_ERROR_TOKEN, SCRIPT_YY_ERROR_TOKEN) != qfalse) {
                             break;
                         }
 
@@ -863,8 +891,7 @@ int32_t yyparse(void)
 
                     tableIndex += SCRIPT_YY_ERROR_TOKEN;
                     state = script_yytable[tableIndex];
-                    coduomp_script_yy_push_value((int16_t)state,
-                                                 script_yylval);
+                    coduomp_script_yy_push_value((int16_t)state, script_yylval);
                 } else {
                     if (script_yychar == SCRIPT_YY_EOF_TOKEN) {
                         return SCRIPT_YY_PARSE_ERROR;
@@ -893,8 +920,7 @@ int32_t yyparse(void)
             }
 
             state = SCRIPT_YY_ACCEPT_STATE;
-            coduomp_script_yy_push_value(SCRIPT_YY_ACCEPT_STATE,
-                                         script_yyval);
+            coduomp_script_yy_push_value(SCRIPT_YY_ACCEPT_STATE, script_yyval);
             coduomp_script_yy_load_lookahead();
             if (script_yychar == SCRIPT_YY_EOF_TOKEN) {
                 return SCRIPT_YY_PARSE_ACCEPT;
@@ -904,9 +930,7 @@ int32_t yyparse(void)
 
         int32_t tableIndex = script_yygindex[lhs];
         int16_t nextState;
-        if (tableIndex == 0 ||
-            coduomp_script_yy_check_matches(tableIndex + state, state) ==
-                qfalse) {
+        if (tableIndex == 0 || coduomp_script_yy_check_matches(tableIndex + state, state) == qfalse) {
             nextState = script_yydgoto[lhs];
         } else {
             nextState = script_yytable[tableIndex + state];

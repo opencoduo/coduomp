@@ -12,8 +12,7 @@
  * length. The one-byte-wider temporary preserves the final output byte that
  * host vsnprintf would otherwise replace with its terminator.
  */
-int coduo_crt_vsnprintf(char *destination, size_t count,
-                        const char *format, va_list arguments)
+int coduo_crt_vsnprintf(char *destination, size_t count, const char *format, va_list arguments)
 {
     va_list lengthArguments;
     va_list formatArguments;
@@ -40,8 +39,7 @@ int coduo_crt_vsnprintf(char *destination, size_t count,
             return -1;
         }
         va_copy(formatArguments, arguments);
-        if (vsnprintf(outputPrefix, count + 1, format,
-                      formatArguments) >= 0) {
+        if (vsnprintf(outputPrefix, count + 1, format, formatArguments) >= 0) {
             memcpy(destination, outputPrefix, count);
         }
         va_end(formatArguments);
@@ -51,8 +49,7 @@ int coduo_crt_vsnprintf(char *destination, size_t count,
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: variadic legacy-MSVC formatting entry. */
-int coduo_crt_snprintf(char *destination, size_t count,
-                       const char *format, ...)
+int coduo_crt_snprintf(char *destination, size_t count, const char *format, ...)
 {
     va_list arguments;
     int result;

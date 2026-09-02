@@ -27,8 +27,7 @@
 #include "qcommon/q_string.h"
 
 typedef struct script_entity_field_s script_entity_field_t;
-typedef void (*script_entity_field_setter_t)(gentity_t *ent,
-                                              uint32_t fieldIndex);
+typedef void (*script_entity_field_setter_t)(gentity_t *ent, uint32_t fieldIndex);
 
 typedef struct script_spawn_field_s {
     const char *name;
@@ -77,8 +76,7 @@ typedef struct script_function_s {
 #define GRENADE_EXPLOSION_TRACE_DROP 17.0f
 #define GRENADE_EXPLOSION_TRACE_CONTENTS MASK_GRENADE_TRACE
 #define SCRIPT_SPAWN_ERROR_FORMAT "unable to spawn \"%s\" entity"
-#define SCRIPT_PRECACHE_TURRET_INIT_ERROR \
-    "precacheTurret must be called before any wait statements in the level script\n"
+#define SCRIPT_PRECACHE_TURRET_INIT_ERROR "precacheTurret must be called before any wait statements in the level script\n"
 #define OBITUARY_TEMP_EVENT EV_OBITUARY
 #define OBITUARY_TEMP_FLAG 0x00000008u
 #define OBITUARY_MOD_EVENT_FLAG 0x80
@@ -121,18 +119,15 @@ typedef struct script_function_s {
     "USAGE: playFx <effect id from loadFx> <vector position of effect> " \
     "<optional forward vector>"
 #define SCRIPT_PLAYFX_UNLOADED "not successfully loaded"
-#define SCRIPT_PLAYFX_ZERO_FORWARD \
-    "playFx called with (0 0 0) forward direction (effect = %s)\n"
+#define SCRIPT_PLAYFX_ZERO_FORWARD "playFx called with (0 0 0) forward direction (effect = %s)\n"
 #define SCRIPT_FX_TAG_CONFIGSTRING_BASE CS_FX
 #define SCRIPT_FX_TAG_CONFIGSTRING_COUNT CS_FX_COUNT
 #define SCRIPT_FX_ID_MAX 79
-#define SCRIPT_PLAYFXONTAG_USAGE \
-    "USAGE: playFxOnTag <effect id from loadFx> <entity> <tag name>"
+#define SCRIPT_PLAYFXONTAG_USAGE "USAGE: playFxOnTag <effect id from loadFx> <entity> <tag name>"
 #define SCRIPT_INVALID_EFFECT_ID "effect id %i is invalid\n"
 #define SCRIPT_PLAYFXONTAG_NO_MODEL "cannot play fx on entity with no model"
 #define SCRIPT_PLAYFXONTAG_QUOTE_ERROR "cannot use \" characters in tag names\n"
-#define SCRIPT_PLAYFXONTAG_MISSING_TAG \
-    "tag '%s' does not exist on entity with model '%s'"
+#define SCRIPT_PLAYFXONTAG_MISSING_TAG "tag '%s' does not exist on entity with model '%s'"
 #define SCRIPT_FX_ON_TAG_CONFIGSTRING_FORMAT "%02d%s"
 #define SCRIPT_ATMOS_CVAR "cg_atmos"
 #define SCRIPT_ATMOS_EFFECT_ID_BUFFER_SIZE 44
@@ -143,18 +138,15 @@ typedef struct script_function_s {
     "USAGE: playLoopedFx <effect id from loadFx> <repeat delay> " \
     "<vector position of effect> <optional cull distance (0 = never cull)> " \
     "<optional forward vector>"
-#define SCRIPT_PLAYLOOPEDFX_ZERO_FORWARD \
-    "playLoopedFx called with (0 0 0) forward direction (effect = %s)\n"
+#define SCRIPT_PLAYLOOPEDFX_ZERO_FORWARD "playLoopedFx called with (0 0 0) forward direction (effect = %s)\n"
 #define LOOPED_FX_ENTITY_FLAG SVF_LOOPED_FX
-#define SCRIPT_SETCULLFOG_USAGE \
-    "USAGE: setCullFog(near distance, far distance, red, green, blue, transition time);\n"
+#define SCRIPT_SETCULLFOG_USAGE "USAGE: setCullFog(near distance, far distance, red, green, blue, transition time);\n"
 #define SCRIPT_SETEXPFOG_USAGE \
     "USAGE: setExpFog(density, red, green, blue, transition time);\n" \
     "Density must be greater than 0 and less than 1, and typically less than .001.  " \
     "For example, .0002 means the fog gets .02%% more dense for every 1 unit of " \
     "distance (about 1%% thicker every 50 units of distance)\n"
-#define SCRIPT_SETEXPFOG_DENSITY_ERROR \
-    "setExpFog: distance must be greater than 0 and less than 1"
+#define SCRIPT_SETEXPFOG_DENSITY_ERROR "setExpFog: distance must be greater than 0 and less than 1"
 #define SCRIPT_FOG_FORMAT "%g %g %g %g %g %g %.0f"
 #define SCRIPT_MAX_PLAYER_NUMBER 63
 #define SCRIPT_GAMESTATE_CONFIGSTRING CS_GAMESTATE
@@ -163,11 +155,9 @@ typedef struct script_function_s {
 #define SCRIPT_WINNER_ALLIES -2
 #define SCRIPT_WINNER_AXIS -1
 #define SCRIPT_WINNER_NONE 0
-#define SCRIPT_WINNING_TEAM_ERROR \
-    "Illegal team string '%s'. Must be allies, axis, or none."
+#define SCRIPT_WINNING_TEAM_ERROR "Illegal team string '%s'. Must be allies, axis, or none."
 #define SCRIPT_ANNOUNCEMENT_COMMAND "c \"%s\" 2"
-#define SCRIPT_TEAM_SCORE_ERROR \
-    "Illegal team string '%s'. Must be allies, or axis."
+#define SCRIPT_TEAM_SCORE_ERROR "Illegal team string '%s'. Must be allies, or axis."
 #define SCRIPT_AXIS_SCORE_CONFIGSTRING CS_TEAM_SCORE_AXIS
 #define SCRIPT_ALLIES_SCORE_CONFIGSTRING CS_TEAM_SCORE_ALLIES
 #define SCRIPT_TEAM_SCORE_FORMAT "%i"
@@ -179,15 +169,13 @@ typedef struct script_function_s {
 #define SCRIPT_SHELLSHOCK_CONFIGSTRING_COUNT CS_SHELLSHOCKS_COUNT
 #define SCRIPT_SHELLSHOCK_FIRST_INDEX 1
 #define SCRIPT_SHELLSHOCK_LAST_INDEX 15
-#define SCRIPT_SHELLSHOCK_USAGE \
-    "USAGE: <player> shellshock(<shellshockname>, <duration>)\n"
+#define SCRIPT_SHELLSHOCK_USAGE "USAGE: <player> shellshock(<shellshockname>, <duration>)\n"
 #define SCRIPT_SHELLSHOCK_NOT_PRECACHED "shellshock '%s' was not precached\n"
 #define SCRIPT_SHELLSHOCK_DURATION_ERROR "duration %g should be >= 0 and <= 60"
 #define SCRIPT_SHELLSHOCK_DURATION_MAX_MS 60000
 #define SCRIPT_SHELLSHOCK_SECONDS_PER_MS 0.001f
 #define SCRIPT_STOPSHELLSHOCK_USAGE "USAGE: <player> stopshellshock()\n"
-#define SCRIPT_VIEWKICK_USAGE \
-    "USAGE: <player> viewkick <force 0-127> <source position>\n"
+#define SCRIPT_VIEWKICK_USAGE "USAGE: <player> viewkick <force 0-127> <source position>\n"
 #define SCRIPT_VIEWKICK_DAMAGE_ERROR "viewkick: damage %g < 0\n"
 #define SCRIPT_VIEWKICK_DAMAGE_ROUND 50
 #define SCRIPT_VIEWKICK_DAMAGE_SCALE 100
@@ -197,8 +185,7 @@ typedef struct script_function_s {
 #define SPAWNPOINT_TRACE_MASK 0x02810011u
 #define SPAWNPOINT_TRACE_UP 128.0f
 #define SPAWNPOINT_TRACE_DOWN 262144.0f
-#define SPAWNPOINT_SOLID_WARNING \
-    "WARNING: Spawn point entity %i is in solid at (%i, %i, %i)\n"
+#define SPAWNPOINT_SOLID_WARNING "WARNING: Spawn point entity %i is in solid at (%i, %i, %i)\n"
 #define SCRIPT_EXEC_NO_FILENAME "exec command requires a filename"
 #define SCRIPT_EXEC_COMMAND_FORMAT "exec %s\n"
 #define SCRIPT_EXIT_STATE_NONE 0
@@ -208,8 +195,7 @@ typedef struct script_function_s {
 #define SCRIPT_EXIT_LEVEL_ALREADY_CALLED "exitlevel already called"
 #define SCRIPT_MAP_RESTART_COMMAND "map_restart\n"
 #define SCRIPT_CONSOLE_COMMAND_NOW 2
-#define SCRIPT_SPAWNDUPLICATE_NO_DETAILS \
-    "Attempted to spawn duplicate of an entity that didn't save it's spawn details"
+#define SCRIPT_SPAWNDUPLICATE_NO_DETAILS "Attempted to spawn duplicate of an entity that didn't save it's spawn details"
 #define GAMETYPE_LIST_PATH "maps/mp/gametypes"
 #define GAMETYPE_LIST_EXTENSION "gsc"
 #define GAMETYPE_SCRIPT_EXTENSION ".gsc"
@@ -225,8 +211,7 @@ typedef struct script_function_s {
 #define SCRIPT_CALLBACK_PLAYER_KILLED "CodeCallback_PlayerKilled"
 #define LEVEL_SCRIPT_PATH "maps/mp/%s"
 #define LEVEL_MAPNAME_CVAR "mapname"
-#define LEVEL_MAPNAME_CVAR_FLAGS \
-    (CVAR_SERVERINFO | CVAR_ROM)
+#define LEVEL_MAPNAME_CVAR_FLAGS (CVAR_SERVERINFO | CVAR_ROM)
 #define SCRIPT_CLASS_ENTITY_NAME "entity"
 #define SCRIPT_CLASS_HUDELEM_NAME "hudelem"
 #define SCRIPT_CLASS_VEHICLE_NODE_NAME "vehiclenode"
@@ -238,10 +223,8 @@ typedef struct script_function_s {
 #define SCRIPT_MOVER_SVFLAGS 0x80u
 #define SCRIPT_MODEL_CONTENTS 0x2080
 #define SCRIPT_ORIGIN_CONTENTS 0
-#define SCRIPT_SPAWN_FIELD_ERROR_FORMAT \
-    COM_ERROR_MARKER "classname '%s', key '%s', value '%s': %s"
-#define SCRIPT_READ_ONLY_ENTITY_FIELD_ERROR \
-    "Tried to set a read only entity field"
+#define SCRIPT_SPAWN_FIELD_ERROR_FORMAT COM_ERROR_MARKER "classname '%s', key '%s', value '%s': %s"
+#define SCRIPT_READ_ONLY_ENTITY_FIELD_ERROR "Tried to set a read only entity field"
 #define SCRIPT_NEW_STRING_MAX_LENGTH 65536u
 #define WORLDSPAWN_CLASSNAME "worldspawn"
 #define WORLDSPAWN_GAME_VALUE "cod"
@@ -332,12 +315,10 @@ const char *ConcatArgs(int start);
 void BG_EvaluateTrajectory(const trajectory_t *trajectory, int atTime, float *out);
 int G_IndexForMeansOfDeath(const char *name);
 uint16_t G_GetHitLocationString(int hitLocation);
-int G_RadiusDamage(const float *origin, gentity_t *inflictor,
-                          gentity_t *attacker, float damage, float minDamage,
-                          float radius, gentity_t *ignore, int meansOfDeath);
+int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacker, float damage, float minDamage, float radius,
+                   gentity_t *ignore, int meansOfDeath);
 int G_EffectIndex(const char *name);
-int G_FindConfigstringIndex(const char *name, int start, int max,
-                                   qboolean create, const char *errormsg);
+int G_FindConfigstringIndex(const char *name, int start, int max, qboolean create, const char *errormsg);
 const char *G_ModelName(int modelIndex);
 void G_AddEvent(gentity_t *ent, int event, int eventParm);
 gentity_t *G_Spawn(void);
@@ -414,12 +395,8 @@ void Scr_SetGenericField(void *base, int type, size_t offset);
 void SP_script_brushmodel(gentity_t *ent);
 void SP_script_model(gentity_t *ent);
 void SP_script_origin(gentity_t *ent);
-int ScriptMover_Updatemove(trajectory_t *trajectory,
-                           const float *currentValue, float speed,
-                           float linearTime, float decelTime,
-                           const float *linearStart,
-                           const float *decelStart,
-                           const float *targetValue);
+int ScriptMover_Updatemove(trajectory_t *trajectory, const float *currentValue, float speed, float linearTime, float decelTime,
+                           const float *linearStart, const float *decelStart, const float *targetValue);
 void Reached_ScriptMover(gentity_t *ent);
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_message_mode_name). */
@@ -444,14 +421,11 @@ static const char *game_compat_script_message_mode_name(script_message_mode_t mo
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_check_message_length). */
-static void game_compat_script_check_message_length(uint32_t index, const char *modeName,
-                                        uint32_t size, uint32_t used,
-                                        uint32_t prefixLength,
-                                        uint32_t textLength)
+static void game_compat_script_check_message_length(uint32_t index, const char *modeName, uint32_t size, uint32_t used,
+                                                    uint32_t prefixLength, uint32_t textLength)
 {
     if (size <= used + prefixLength + textLength) {
-        Scr_ParamError(index, va("%s is too long. Max length is %i\n",
-                                 modeName, size));
+        Scr_ParamError(index, va("%s is too long. Max length is %i\n", modeName, size));
     }
 }
 
@@ -462,43 +436,33 @@ static void game_compat_script_validate_localized_string(uint32_t index, const c
         int ch = text[charIndex];
 
         if (isalnum(coduo_ctype_signed_byte_arg(ch)) == 0 && ch != '_') {
-            Scr_ParamError(
-                index,
-                va("Illegal localized string reference: %s (must contain only alpha-numeric characters and underscores",
-                   text));
+            Scr_ParamError(index,
+                           va("Illegal localized string reference: %s (must contain only alpha-numeric characters and underscores", text));
         }
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_plain_string_has_letters). */
-static qboolean game_compat_script_plain_string_has_letters(uint32_t index,
-                                                const char *modeName,
-                                                const char *text)
+static qboolean game_compat_script_plain_string_has_letters(uint32_t index, const char *modeName, const char *text)
 {
     qboolean hasLetters = qfalse;
 
     for (uint32_t charIndex = 0; text[charIndex] != '\0'; charIndex++) {
         int ch = text[charIndex];
 
-        if (ch == SCRIPT_LOCALIZED_SEPARATOR ||
-            ch == SCRIPT_PLAIN_SEPARATOR ||
-            ch == SCRIPT_ESCAPE_CHAR) {
-            Scr_ParamError(index,
-                           va("bad escape character (%i) present in string",
-                              (int)text[charIndex]));
+        if (ch == SCRIPT_LOCALIZED_SEPARATOR || ch == SCRIPT_PLAIN_SEPARATOR || ch == SCRIPT_ESCAPE_CHAR) {
+            Scr_ParamError(index, va("bad escape character (%i) present in string", (int)text[charIndex]));
         }
 
         if (isalpha(coduo_ctype_signed_byte_arg(ch)) != 0) {
             if (!hasLetters && g_languagewarnings.integer != 0) {
                 if (g_languagewarningsaserrors.integer == 0) {
-                    Com_Printf(
-                        "^3WARNING: Non-localized %s string is not allowed to have letters in it. Must be changed over to a localized string: \"%s\"\n",
-                        modeName, text);
+                    Com_Printf("^3WARNING: Non-localized %s string is not allowed to have letters in it. Must be "
+                               "changed over to a localized string: \"%s\"\n",
+                               modeName, text);
                 } else {
-                    Scr_LocalizationError(
-                        index,
-                        va("non-localized %s strings are not allowed to have letters in them: \"%s\"",
-                           modeName, text));
+                    Scr_LocalizationError(index,
+                                          va("non-localized %s strings are not allowed to have letters in them: \"%s\"", modeName, text));
                 }
             }
             hasLetters = qtrue;
@@ -517,8 +481,7 @@ static void game_compat_script_append_message_prefix(char *buffer, uint32_t *use
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_append_message_text). */
-static void game_compat_script_append_message_text(char *buffer, uint32_t *used,
-                                       const char *text)
+static void game_compat_script_append_message_text(char *buffer, uint32_t *used, const char *text)
 {
     uint32_t textLength = (uint32_t)strlen(text);
 
@@ -546,8 +509,7 @@ void Scr_LocalizationError(uint32_t index, const char *message)
 }
 
 /* VERIFIED_DECOMPILER(0x668c7, 768c7_Scr_ConstructMessageString.c, VERIFY-SCRIPT-BUILTINS-PACKET-2026-06-17): DATAFLOW_VERIFIED - mode strings, parameter loop, localized/plain markers, player-name formatting, validation errors, length checks, sanitized copy, and empty-message marker checked against current decompiler output. */
-void Scr_ConstructMessageString(uint32_t index, char *buffer, uint32_t size,
-                                script_message_mode_t mode)
+void Scr_ConstructMessageString(uint32_t index, char *buffer, uint32_t size, script_message_mode_t mode)
 {
     const char *modeName = game_compat_script_message_mode_name(mode);
     qboolean needsPlainMarker = qtrue;
@@ -569,30 +531,24 @@ void Scr_ConstructMessageString(uint32_t index, char *buffer, uint32_t size,
             game_compat_script_validate_localized_string(paramIndex, text);
 
             prefixLength = used != 0 ? 1u : 0u;
-            game_compat_script_check_message_length(paramIndex, modeName, size, used,
-                                        prefixLength, textLength);
+            game_compat_script_check_message_length(paramIndex, modeName, size, used, prefixLength, textLength);
             if (prefixLength != 0) {
-                game_compat_script_append_message_prefix(buffer, &used,
-                                             SCRIPT_LOCALIZED_SEPARATOR);
+                game_compat_script_append_message_prefix(buffer, &used, SCRIPT_LOCALIZED_SEPARATOR);
             }
             needsPlainMarker = qtrue;
-        } else if (type == SCRIPT_VAR_OBJECT &&
-                   Scr_GetPointerType(paramIndex) == SCRIPT_VAR_ENTITY) {
+        } else if (type == SCRIPT_VAR_OBJECT && Scr_GetPointerType(paramIndex) == SCRIPT_VAR_ENTITY) {
             gentity_t *ent = Scr_GetEntity(paramIndex);
 
             if (ent->client == 0) {
                 Scr_ParamError(paramIndex, "Entity is not a player");
             }
 
-            text = va(SCRIPT_PLAYER_NAME_MESSAGE_FORMAT,
-                      ent->client->userInfoName);
+            text = va(SCRIPT_PLAYER_NAME_MESSAGE_FORMAT, ent->client->userInfoName);
             textLength = (uint32_t)strlen(text);
             prefixLength = needsPlainMarker ? 1u : 0u;
-            game_compat_script_check_message_length(paramIndex, modeName, size, used,
-                                        prefixLength, textLength);
+            game_compat_script_check_message_length(paramIndex, modeName, size, used, prefixLength, textLength);
             if (prefixLength != 0) {
-                game_compat_script_append_message_prefix(buffer, &used,
-                                             SCRIPT_PLAIN_SEPARATOR);
+                game_compat_script_append_message_prefix(buffer, &used, SCRIPT_PLAIN_SEPARATOR);
             }
             needsPlainMarker = qfalse;
         } else {
@@ -600,8 +556,7 @@ void Scr_ConstructMessageString(uint32_t index, char *buffer, uint32_t size,
 
             text = Scr_GetString(paramIndex);
             textLength = (uint32_t)strlen(text);
-            hasLetters = game_compat_script_plain_string_has_letters(paramIndex, modeName,
-                                                         text);
+            hasLetters = game_compat_script_plain_string_has_letters(paramIndex, modeName, text);
 
             if (hasLetters) {
                 prefixLength = used != 0 ? 1u : 0u;
@@ -611,8 +566,7 @@ void Scr_ConstructMessageString(uint32_t index, char *buffer, uint32_t size,
                 prefix = SCRIPT_PLAIN_SEPARATOR;
             }
 
-            game_compat_script_check_message_length(paramIndex, modeName, size, used,
-                                        prefixLength, textLength);
+            game_compat_script_check_message_length(paramIndex, modeName, size, used, prefixLength, textLength);
             if (prefixLength != 0) {
                 game_compat_script_append_message_prefix(buffer, &used, prefix);
             }
@@ -633,10 +587,8 @@ void Scr_MakeGameMessage(int entityNum, const char *command)
 {
     char message[MAX_STRING_CHARS];
 
-    Scr_ConstructMessageString(0, message, sizeof(message),
-                               SCRIPT_MESSAGE_MODE_GAME);
-    trap_SendServerCommand(entityNum, UNRELIABLE_SERVER_COMMAND,
-                           va("%s \"%s\"", command, message));
+    Scr_ConstructMessageString(0, message, sizeof(message), SCRIPT_MESSAGE_MODE_GAME);
+    trap_SendServerCommand(entityNum, UNRELIABLE_SERVER_COMMAND, va("%s \"%s\"", command, message));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_debug_set_default_color). */
@@ -684,8 +636,7 @@ int Script_BiasedRoundToInt(float value)
      * The sum is truncated straight from the x87 register -> shim.
      */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(
-        x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
+    return x87f_store_i32_trunc(x87f_add(x87f_load_f32(value), x87f_load_f32(0.5f)));
 #else
     return (int)((long double)value + (long double)0.5f);
 #endif
@@ -717,21 +668,13 @@ static void game_compat_script_copy_vector(vec3_t dest, const vec3_t src)
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_obituary_uses_means_of_death_eventparm). */
 static qboolean game_compat_script_obituary_uses_means_of_death_eventparm(int meansOfDeath)
 {
-    return meansOfDeath == MOD_MELEE ||
-           meansOfDeath == MOD_MELEE_BINOCULARS ||
-           meansOfDeath == MOD_HEAD_SHOT ||
-           meansOfDeath == MOD_ARTILLERY ||
-           meansOfDeath == MOD_SUICIDE ||
-           meansOfDeath == MOD_FALLING ||
-           meansOfDeath == MOD_CRUSH ||
-           meansOfDeath == MOD_CRUSH_TANK ||
-           meansOfDeath == MOD_CRUSH_JEEP ||
-           meansOfDeath == MOD_WATER;
+    return meansOfDeath == MOD_MELEE || meansOfDeath == MOD_MELEE_BINOCULARS || meansOfDeath == MOD_HEAD_SHOT ||
+           meansOfDeath == MOD_ARTILLERY || meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_FALLING || meansOfDeath == MOD_CRUSH ||
+           meansOfDeath == MOD_CRUSH_TANK || meansOfDeath == MOD_CRUSH_JEEP || meansOfDeath == MOD_WATER;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_builtin_make_player_box). */
-static void game_compat_script_builtin_make_player_box(const vec3_t origin, vec3_t mins,
-                                           vec3_t maxs)
+static void game_compat_script_builtin_make_player_box(const vec3_t origin, vec3_t mins, vec3_t maxs)
 {
     for (uint32_t axis = 0; axis < 3; axis++) {
         mins[axis] = origin[axis] + playerMins[axis];
@@ -740,9 +683,8 @@ static void game_compat_script_builtin_make_player_box(const vec3_t origin, vec3
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_precache_configstring). */
-static void game_compat_script_precache_configstring(const char *value, int base, int count,
-                                         const char *duplicateMessage,
-                                         const char *tooManyMessage)
+static void game_compat_script_precache_configstring(const char *value, int base, int count, const char *duplicateMessage,
+                                                     const char *tooManyMessage)
 {
     char buffer[MAX_STRING_CHARS];
 
@@ -769,9 +711,8 @@ static void game_compat_script_precache_configstring(const char *value, int base
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_find_configstring_index). */
-static int game_compat_script_find_configstring_index(const char *value, int base, int count,
-                                          const char *missingMessage,
-                                          int emptyValue, int returnBias)
+static int game_compat_script_find_configstring_index(const char *value, int base, int count, const char *missingMessage, int emptyValue,
+                                                      int returnBias)
 {
     char buffer[MAX_STRING_CHARS];
 
@@ -810,8 +751,7 @@ static void game_compat_script_bullettrace_add_entity(uint16_t entityNum)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_bullettrace_add_position_or_direction). */
-static void game_compat_script_bullettrace_add_position_or_direction(
-    const trace_t *trace, const vec3_t start, const vec3_t end)
+static void game_compat_script_bullettrace_add_position_or_direction(const trace_t *trace, const vec3_t start, const vec3_t end)
 {
     vec3_t direction;
 
@@ -877,15 +817,13 @@ void script_func_println(void)
 /* VERIFIED_DECOMPILER(0x66e58, 76e58_script_func_iprintln.c, VERIFY-SCRIPT-BUILTINS-PACKET-2026-06-17): DATAFLOW_VERIFIED - global client target, command string, Scr_MakeGameMessage call, and void return checked against current decompiler output. */
 void script_func_iprintln(void)
 {
-    Scr_MakeGameMessage(SERVER_COMMAND_ALL_CLIENTS,
-                        SCRIPT_IPRINTLN_COMMAND);
+    Scr_MakeGameMessage(SERVER_COMMAND_ALL_CLIENTS, SCRIPT_IPRINTLN_COMMAND);
 }
 
 /* VERIFIED_DECOMPILER(0x66e86, 76e86_script_func_iprintlnbold.c, VERIFY-SCRIPT-BUILTINS-PACKET-2026-06-17): DATAFLOW_VERIFIED - global client target, bold command string, Scr_MakeGameMessage call, and void return checked against current decompiler output. */
 void script_func_iprintlnbold(void)
 {
-    Scr_MakeGameMessage(SERVER_COMMAND_ALL_CLIENTS,
-                        SCRIPT_IPRINTLN_BOLD_COMMAND);
+    Scr_MakeGameMessage(SERVER_COMMAND_ALL_CLIENTS, SCRIPT_IPRINTLN_BOLD_COMMAND);
 }
 
 /* VERIFIED_DECOMPILER(0x66eb4, 76eb4_script_func_print3d.c, VERIFY-SCRIPT-BUILTINS-PACKET-2026-06-17): DATAFLOW_VERIFIED - defaults, optional argument ladder including two-arg skip, vector/text call order, and trap_AddDebugString arguments checked against current decompiler output. */
@@ -960,8 +898,7 @@ void script_func_isdefined(void)
 /* VERIFIED_DECOMPILER(0x670eb, 770eb_script_func_isalive.c, VERIFY-SCRIPT-BUILTINS-PACKET-2026-06-17): DATAFLOW_VERIFIED - pointer/entity guards, entity fetch, health > 0 truth value, false fallbacks, and Scr_AddInt calls checked against current decompiler output. */
 void script_func_isalive(void)
 {
-    if (Scr_GetType(0) == SCRIPT_VAR_OBJECT &&
-        Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(0) == SCRIPT_VAR_OBJECT && Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY) {
         gentity_t *ent = Scr_GetEntity(0);
         Scr_AddInt(ent->health > 0);
         return;
@@ -973,12 +910,10 @@ void script_func_isalive(void)
 /* VERIFIED_DECOMPILER(0x67176, 77176_script_func_isvalidplayer.c, VERIFY-SCRIPT-BUILTINS-PACKET-2026-06-17): DATAFLOW_VERIFIED - pointer/entity guards, linked byte, client pointer, connected-state check, false fallbacks, and Scr_AddInt calls checked against current decompiler output. */
 void script_func_isvalidplayer(void)
 {
-    if (Scr_GetType(0) == SCRIPT_VAR_OBJECT &&
-        Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(0) == SCRIPT_VAR_OBJECT && Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY) {
         gentity_t *ent = Scr_GetEntity(0);
 
-        Scr_AddInt(ent->linked != 0 && ent->client != 0 &&
-                   ent->client->connectedState == CON_CONNECTED);
+        Scr_AddInt(ent->linked != 0 && ent->client != 0 && ent->client->connectedState == CON_CONNECTED);
         return;
     }
 
@@ -1015,15 +950,13 @@ void script_func_getweaponmodel(void)
         if (game_compat_script_weapon_missing_name_should_warn(weaponName)) {
             /* NOT_FROM_ORIGINAL_SOURCE: forward the completed warning as data
              * through a literal conversion. */
-            Com_Printf("%s",
-                       va("unknown weapon '%s' in getWeaponModel\n",
-                          weaponName));
+            Com_Printf("%s", va("unknown weapon '%s' in getWeaponModel\n", weaponName));
         }
         Scr_AddString(SCRIPT_EMPTY_STRING);
         return;
     }
 
-    Scr_AddString(((weaponInfo_t*)BG_GetInfoForWeapon(weapon))->worldModel);
+    Scr_AddString(((weaponInfo_t *)BG_GetInfoForWeapon(weapon))->worldModel);
 }
 
 /* VERIFIED_DECOMPILER(0x675c8, 775c8_script_func_getweaponclassname.c, VERIFY-SCRIPT-BUILTINS-PACKET2-2026-06-17): DATAFLOW_VERIFIED - byte weapon index, missing-weapon warning path, undefined fallback, alt-weapon loop, scriptClassname and altWeapon offsets, no-Radiant-name warning, and void return checked against current decompiler output. */
@@ -1037,9 +970,7 @@ void script_func_getweaponclassname(void)
         if (game_compat_script_weapon_missing_name_should_warn(weaponName)) {
             /* NOT_FROM_ORIGINAL_SOURCE: forward the completed warning as data
              * through a literal conversion. */
-            Com_Printf("%s",
-                       va("unknown weapon '%s' in getWeaponClassname\n",
-                          weaponName));
+            Com_Printf("%s", va("unknown weapon '%s' in getWeaponClassname\n", weaponName));
         }
         Scr_AddUndefined();
         return;
@@ -1060,9 +991,9 @@ void script_func_getweaponclassname(void)
 
     /* NOT_FROM_ORIGINAL_SOURCE: forward the completed warning as data through
      * a literal conversion. */
-    Com_Printf("%s",
-               va("^3WARNING^7: no Radiant name found for weapon '%s' in "
-                  "getWeaponClassname\n", weaponName));
+    Com_Printf("%s", va("^3WARNING^7: no Radiant name found for weapon '%s' in "
+                        "getWeaponClassname\n",
+                        weaponName));
     Scr_AddUndefined();
 }
 
@@ -1073,8 +1004,7 @@ void script_func_getanimlength(void)
     uint32_t anim;
 
     animRef = Scr_GetAnim(0, NULL);
-    anim = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
-           animRef.animIndex;
+    anim = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | animRef.animIndex;
     if (!trap_XAnimIsPrimitive(anim)) {
         Scr_ParamError(0, "non-primitive animation has no concept of length");
     }
@@ -1090,8 +1020,7 @@ void script_func_animhasnotetrack(void)
     uint16_t notetrack;
 
     animRef = Scr_GetAnim(0, NULL);
-    anim = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
-           animRef.animIndex;
+    anim = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | animRef.animIndex;
     notetrack = Scr_GetConstString(1);
     Scr_AddBool(trap_XAnimNotetrackExists(anim, notetrack));
 }
@@ -1138,82 +1067,78 @@ static void game_compat_script_spawn_set_var_active(int active)
     level.spawningMapEntities = active;
 }
 
-static const script_spawn_field_t script_spawn_fields[] = {
-    {"classname", SPAWN_FIELD_CLASSNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"origin", SPAWN_FIELD_ORIGIN_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
-    {"model", SPAWN_FIELD_MODEL_INDEX_OFFSET, SCRIPT_SPAWN_FIELD_MODEL},
-    {"spawnflags", SPAWN_FIELD_SPAWNFLAGS_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"speed", SPAWN_FIELD_SPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"closespeed", SPAWN_FIELD_CLOSESPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"target", SPAWN_FIELD_TARGET_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"targetname", SPAWN_FIELD_TARGETNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"message", SPAWN_FIELD_MESSAGE_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"teamname", SPAWN_FIELD_TEAMNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"wait", SPAWN_FIELD_WAIT_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"random", SPAWN_FIELD_RANDOM_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"count", SPAWN_FIELD_COUNT_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"health", SPAWN_FIELD_HEALTH_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"light", SPAWN_FIELD_LIGHT_OFFSET, SCRIPT_SPAWN_FIELD_LIGHT},
-    {"dmg", SPAWN_FIELD_DMG_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"angles", SPAWN_FIELD_ANGLES_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
-    {"duration", SPAWN_FIELD_DURATION_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"rotate", SPAWN_FIELD_ROTATE_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
-    {"degrees", SPAWN_FIELD_DEGREES_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"time", SPAWN_FIELD_SPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"_color", SPAWN_FIELD_COLOR_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
-    {"color", SPAWN_FIELD_COLOR_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
-    {"key", SPAWN_FIELD_KEY_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"harc", SPAWN_FIELD_HARC_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"varc", SPAWN_FIELD_VARC_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"delay", SPAWN_FIELD_DELAY_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
-    {"radius", SPAWN_FIELD_RADIUS_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"missionlevel", SPAWN_FIELD_MISSIONLEVEL_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"start_size", SPAWN_FIELD_START_SIZE_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"end_size", SPAWN_FIELD_END_SIZE_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"shard", SPAWN_FIELD_COUNT_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"spawnitem", SPAWN_FIELD_SPAWNITEM_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"track", SPAWN_FIELD_TRACK_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"vehicletype", SPAWN_FIELD_VEHICLETYPE_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
-    {"capturing", SPAWN_FIELD_CAPTURING_OFFSET, SCRIPT_SPAWN_FIELD_INT},
-    {"vehicle_owner", SPAWN_FIELD_VEHICLE_OWNER_OFFSET, SCRIPT_SPAWN_FIELD_ENTITY},
-    {0, 0, 0}
-};
+static const script_spawn_field_t script_spawn_fields[] = {{"classname", SPAWN_FIELD_CLASSNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"origin", SPAWN_FIELD_ORIGIN_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
+                                                           {"model", SPAWN_FIELD_MODEL_INDEX_OFFSET, SCRIPT_SPAWN_FIELD_MODEL},
+                                                           {"spawnflags", SPAWN_FIELD_SPAWNFLAGS_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"speed", SPAWN_FIELD_SPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"closespeed", SPAWN_FIELD_CLOSESPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"target", SPAWN_FIELD_TARGET_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"targetname", SPAWN_FIELD_TARGETNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"message", SPAWN_FIELD_MESSAGE_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"teamname", SPAWN_FIELD_TEAMNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"wait", SPAWN_FIELD_WAIT_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"random", SPAWN_FIELD_RANDOM_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"count", SPAWN_FIELD_COUNT_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"health", SPAWN_FIELD_HEALTH_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"light", SPAWN_FIELD_LIGHT_OFFSET, SCRIPT_SPAWN_FIELD_LIGHT},
+                                                           {"dmg", SPAWN_FIELD_DMG_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"angles", SPAWN_FIELD_ANGLES_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
+                                                           {"duration", SPAWN_FIELD_DURATION_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"rotate", SPAWN_FIELD_ROTATE_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
+                                                           {"degrees", SPAWN_FIELD_DEGREES_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"time", SPAWN_FIELD_SPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"_color", SPAWN_FIELD_COLOR_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
+                                                           {"color", SPAWN_FIELD_COLOR_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR},
+                                                           {"key", SPAWN_FIELD_KEY_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"harc", SPAWN_FIELD_HARC_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"varc", SPAWN_FIELD_VARC_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"delay", SPAWN_FIELD_DELAY_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT},
+                                                           {"radius", SPAWN_FIELD_RADIUS_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"missionlevel", SPAWN_FIELD_MISSIONLEVEL_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"start_size", SPAWN_FIELD_START_SIZE_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"end_size", SPAWN_FIELD_END_SIZE_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"shard", SPAWN_FIELD_COUNT_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"spawnitem", SPAWN_FIELD_SPAWNITEM_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"track", SPAWN_FIELD_TRACK_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"vehicletype", SPAWN_FIELD_VEHICLETYPE_OFFSET, SCRIPT_SPAWN_FIELD_STRING},
+                                                           {"capturing", SPAWN_FIELD_CAPTURING_OFFSET, SCRIPT_SPAWN_FIELD_INT},
+                                                           {"vehicle_owner", SPAWN_FIELD_VEHICLE_OWNER_OFFSET, SCRIPT_SPAWN_FIELD_ENTITY},
+                                                           {0, 0, 0}};
 
-const script_spawn_entry_t spawns[] = {
-    {"info_null", SP_info_null},
-    {"info_notnull", SP_info_notnull},
-    {"func_door", SP_func_door},
-    {"func_static", SP_func_static},
-    {"func_rotating", SP_func_rotating},
-    {"func_bobbing", SP_func_bobbing},
-    {"func_pendulum", SP_func_pendulum},
-    {"func_group", SP_info_null},
-    {"func_door_rotating", SP_func_door_rotating},
-    {"trigger_multiple", SP_trigger_multiple},
-    {"trigger_hurt", SP_trigger_hurt},
-    {"trigger_dammage", SP_trigger_damage},
-    {"trigger_mount", SP_trigger_mount},
-    {"trigger_once", SP_trigger_once},
-    {"target_location", SP_target_location},
-    {"mp_target_location", SP_target_location},
-    {"light", SP_light},
-    {"misc_teleporter_dest", SP_misc_teleporter_dest},
-    {"misc_model", SP_misc_model},
-    {"misc_mg42", SP_turret},
-    {"misc_turret", SP_turret},
-    {"misc_spawner", SP_misc_spawner},
-    {"corona", SP_corona},
-    {"trigger_use", trigger_use},
-    {"trigger_damage", SP_trigger_damage},
-    {"trigger_lookat", SP_trigger_lookat},
-    {"script_brushmodel", SP_script_brushmodel},
-    {"script_model", SP_script_model},
-    {"script_origin", SP_script_origin},
-    {"script_vehicle", SP_script_vehicle},
-    {"script_vehicle_collmap", SP_script_vehicle_collmap},
-    {"script_vehicle_owner_icon", SP_script_vehicle_owner_icon},
-    {0, 0}
-};
+const script_spawn_entry_t spawns[] = {{"info_null", SP_info_null},
+                                       {"info_notnull", SP_info_notnull},
+                                       {"func_door", SP_func_door},
+                                       {"func_static", SP_func_static},
+                                       {"func_rotating", SP_func_rotating},
+                                       {"func_bobbing", SP_func_bobbing},
+                                       {"func_pendulum", SP_func_pendulum},
+                                       {"func_group", SP_info_null},
+                                       {"func_door_rotating", SP_func_door_rotating},
+                                       {"trigger_multiple", SP_trigger_multiple},
+                                       {"trigger_hurt", SP_trigger_hurt},
+                                       {"trigger_dammage", SP_trigger_damage},
+                                       {"trigger_mount", SP_trigger_mount},
+                                       {"trigger_once", SP_trigger_once},
+                                       {"target_location", SP_target_location},
+                                       {"mp_target_location", SP_target_location},
+                                       {"light", SP_light},
+                                       {"misc_teleporter_dest", SP_misc_teleporter_dest},
+                                       {"misc_model", SP_misc_model},
+                                       {"misc_mg42", SP_turret},
+                                       {"misc_turret", SP_turret},
+                                       {"misc_spawner", SP_misc_spawner},
+                                       {"corona", SP_corona},
+                                       {"trigger_use", trigger_use},
+                                       {"trigger_damage", SP_trigger_damage},
+                                       {"trigger_lookat", SP_trigger_lookat},
+                                       {"script_brushmodel", SP_script_brushmodel},
+                                       {"script_model", SP_script_model},
+                                       {"script_origin", SP_script_origin},
+                                       {"script_vehicle", SP_script_vehicle},
+                                       {"script_vehicle_collmap", SP_script_vehicle_collmap},
+                                       {"script_vehicle_owner_icon", SP_script_vehicle_owner_icon},
+                                       {0, 0}};
 
 static void game_compat_script_entity_field_set_read_only(gentity_t *ent, uint32_t fieldIndex);
 static void game_compat_script_entity_field_set_origin(gentity_t *ent, uint32_t fieldIndex);
@@ -1221,14 +1146,10 @@ static void game_compat_script_entity_field_set_angles(gentity_t *ent, uint32_t 
 static void game_compat_script_entity_field_set_health(gentity_t *ent, uint32_t fieldIndex);
 
 static const script_entity_field_t script_entity_fields[] = {
-    {"classname", SPAWN_FIELD_CLASSNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING,
-     game_compat_script_entity_field_set_read_only},
-    {"origin", SPAWN_FIELD_ORIGIN_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR,
-     game_compat_script_entity_field_set_origin},
-    {"model", SPAWN_FIELD_MODEL_INDEX_OFFSET, SCRIPT_SPAWN_FIELD_MODEL,
-     game_compat_script_entity_field_set_read_only},
-    {"spawnflags", SPAWN_FIELD_SPAWNFLAGS_OFFSET, SCRIPT_SPAWN_FIELD_INT,
-     game_compat_script_entity_field_set_read_only},
+    {"classname", SPAWN_FIELD_CLASSNAME_OFFSET, SCRIPT_SPAWN_FIELD_STRING, game_compat_script_entity_field_set_read_only},
+    {"origin", SPAWN_FIELD_ORIGIN_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR, game_compat_script_entity_field_set_origin},
+    {"model", SPAWN_FIELD_MODEL_INDEX_OFFSET, SCRIPT_SPAWN_FIELD_MODEL, game_compat_script_entity_field_set_read_only},
+    {"spawnflags", SPAWN_FIELD_SPAWNFLAGS_OFFSET, SCRIPT_SPAWN_FIELD_INT, game_compat_script_entity_field_set_read_only},
     {"speed", SPAWN_FIELD_SPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT, 0},
     {"closespeed", SPAWN_FIELD_CLOSESPEED_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT, 0},
     {"target", SPAWN_FIELD_TARGET_OFFSET, SCRIPT_SPAWN_FIELD_STRING, 0},
@@ -1238,12 +1159,10 @@ static const script_entity_field_t script_entity_fields[] = {
     {"wait", SPAWN_FIELD_WAIT_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT, 0},
     {"random", SPAWN_FIELD_RANDOM_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT, 0},
     {"count", SPAWN_FIELD_COUNT_OFFSET, SCRIPT_SPAWN_FIELD_INT, 0},
-    {"health", SPAWN_FIELD_HEALTH_OFFSET, SCRIPT_SPAWN_FIELD_INT,
-     game_compat_script_entity_field_set_health},
+    {"health", SPAWN_FIELD_HEALTH_OFFSET, SCRIPT_SPAWN_FIELD_INT, game_compat_script_entity_field_set_health},
     {"light", SPAWN_FIELD_LIGHT_OFFSET, SCRIPT_SPAWN_FIELD_LIGHT, 0},
     {"dmg", SPAWN_FIELD_DMG_OFFSET, SCRIPT_SPAWN_FIELD_INT, 0},
-    {"angles", SPAWN_FIELD_ANGLES_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR,
-     game_compat_script_entity_field_set_angles},
+    {"angles", SPAWN_FIELD_ANGLES_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR, game_compat_script_entity_field_set_angles},
     {"duration", SPAWN_FIELD_DURATION_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT, 0},
     {"rotate", SPAWN_FIELD_ROTATE_OFFSET, SCRIPT_SPAWN_FIELD_VECTOR, 0},
     {"degrees", SPAWN_FIELD_DEGREES_OFFSET, SCRIPT_SPAWN_FIELD_FLOAT, 0},
@@ -1261,12 +1180,10 @@ static const script_entity_field_t script_entity_fields[] = {
     {"shard", SPAWN_FIELD_COUNT_OFFSET, SCRIPT_SPAWN_FIELD_INT, 0},
     {"spawnitem", SPAWN_FIELD_SPAWNITEM_OFFSET, SCRIPT_SPAWN_FIELD_STRING, 0},
     {"track", SPAWN_FIELD_TRACK_OFFSET, SCRIPT_SPAWN_FIELD_STRING, 0},
-    {"vehicletype", SPAWN_FIELD_VEHICLETYPE_OFFSET, SCRIPT_SPAWN_FIELD_STRING,
-     game_compat_script_entity_field_set_read_only},
+    {"vehicletype", SPAWN_FIELD_VEHICLETYPE_OFFSET, SCRIPT_SPAWN_FIELD_STRING, game_compat_script_entity_field_set_read_only},
     {"capturing", SPAWN_FIELD_CAPTURING_OFFSET, SCRIPT_SPAWN_FIELD_INT, 0},
     {"vehicle_owner", SPAWN_FIELD_VEHICLE_OWNER_OFFSET, SCRIPT_SPAWN_FIELD_ENTITY, 0},
-    {0, 0, 0, 0}
-};
+    {0, 0, 0, 0}};
 
 static const char script_radiant_fields[] = ".txt";
 
@@ -1291,13 +1208,11 @@ static uint16_t game_compat_script_entity_classname(gentity_t *ent)
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_entity_client). */
 static gclient_t *game_compat_script_entity_client(gentity_t *ent)
 {
-    return *(gclient_t **)(void *)
-        game_compat_script_spawn_entity_byte_slot(ent, ENTITY_FIELD_CLIENT_OFFSET);
+    return *(gclient_t **)(void *)game_compat_script_spawn_entity_byte_slot(ent, ENTITY_FIELD_CLIENT_OFFSET);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_spawn_copy_vector_at). */
-static void game_compat_script_spawn_copy_vector_at(gentity_t *ent, size_t offset,
-                                        const vec3_t value)
+static void game_compat_script_spawn_copy_vector_at(gentity_t *ent, size_t offset, const vec3_t value)
 {
     float *slot = (float *)(void *)game_compat_script_spawn_entity_byte_slot(ent, offset);
 
@@ -1307,8 +1222,7 @@ static void game_compat_script_spawn_copy_vector_at(gentity_t *ent, size_t offse
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_spawn_set_string_at). */
-static void game_compat_script_spawn_set_string_at(gentity_t *ent, size_t offset,
-                                       uint16_t value)
+static void game_compat_script_spawn_set_string_at(gentity_t *ent, size_t offset, uint16_t value)
 {
     *game_compat_script_entity_string_slot(ent, offset) = value;
 }
@@ -1382,8 +1296,7 @@ void Scr_SetEntityFieldError(gentity_t *ent, const char *message)
         G_SpawnString("classname", SCRIPT_EMPTY_STRING, &classname);
         /* NOT_FROM_ORIGINAL_SOURCE: keep spawn fields and the completed
          * diagnostic as data through a single formatting pass. */
-        Com_Error(ERR_DROP, SCRIPT_SPAWN_FIELD_ERROR_FORMAT, classname,
-                  script_spawn_field_key, script_spawn_field_value, message);
+        Com_Error(ERR_DROP, SCRIPT_SPAWN_FIELD_ERROR_FORMAT, classname, script_spawn_field_key, script_spawn_field_value, message);
     }
 
     Scr_ObjectError(message);
@@ -1419,8 +1332,7 @@ void G_ParseDynamicEntityField(const char *key, const char *value, gentity_t *en
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_spawn_find_field). */
 static const script_spawn_field_t *game_compat_script_spawn_find_field(const char *key)
 {
-    for (const script_spawn_field_t *field = script_spawn_fields;
-         field->name != 0; field++) {
+    for (const script_spawn_field_t *field = script_spawn_fields; field->name != 0; field++) {
         if (Q_stricmp(field->name, key) == 0) {
             return field;
         }
@@ -1465,12 +1377,10 @@ void G_ParseEntityField(const char *key, const char *value, gentity_t *ent)
     }
     case SCRIPT_SPAWN_FIELD_MODEL:
         if (value[0] == '*') {
-            *(uint32_t *)(void *)game_compat_script_spawn_entity_byte_slot(
-                ent, SPAWN_FIELD_BRUSHMODEL_INDEX_OFFSET) =
+            *(uint32_t *)(void *)game_compat_script_spawn_entity_byte_slot(ent, SPAWN_FIELD_BRUSHMODEL_INDEX_OFFSET) =
                 (uint32_t)atoi(&value[1]) & 0xffffu;
         } else {
-            *game_compat_script_spawn_entity_byte_slot(ent, SPAWN_FIELD_MODEL_INDEX_OFFSET) =
-                (uint8_t)G_ModelIndex(value);
+            *game_compat_script_spawn_entity_byte_slot(ent, SPAWN_FIELD_MODEL_INDEX_OFFSET) = (uint8_t)G_ModelIndex(value);
         }
         break;
     default:
@@ -1489,17 +1399,14 @@ void G_ParseEntityFields(gentity_t *ent)
         G_ParseEntityField(pair[0], pair[1], ent);
     }
 
-    G_SetOrigin(ent, (float *)(void *)game_compat_script_spawn_entity_byte_slot(
-                         ent, SPAWN_FIELD_ORIGIN_OFFSET));
-    G_SetAngle(ent, (float *)(void *)game_compat_script_spawn_entity_byte_slot(
-                        ent, SPAWN_FIELD_ANGLES_OFFSET));
+    G_SetOrigin(ent, (float *)(void *)game_compat_script_spawn_entity_byte_slot(ent, SPAWN_FIELD_ORIGIN_OFFSET));
+    G_SetAngle(ent, (float *)(void *)game_compat_script_spawn_entity_byte_slot(ent, SPAWN_FIELD_ANGLES_OFFSET));
 }
 
 /* VERIFIED_DECOMPILER(0x7183f, 8183f_G_DuplicateEntityFields.c, VERIFY-SCRIPT-BUILTINS-PACKET2-2026-06-17): DATAFLOW_VERIFIED - spawn-field table loop, int/float dword copies, string Scr_SetString copy, vector three-dword copy, model byte copy, default/no-op cases, and void return checked against current decompiler output. */
 void G_DuplicateEntityFields(gentity_t *dest, gentity_t *source)
 {
-    for (const script_spawn_field_t *field = script_spawn_fields;
-         field->name != 0; field++) {
+    for (const script_spawn_field_t *field = script_spawn_fields; field->name != 0; field++) {
         uint8_t *destBase = game_compat_script_spawn_entity_byte_slot(dest, field->offset);
         uint8_t *sourceBase = game_compat_script_spawn_entity_byte_slot(source, field->offset);
 
@@ -1509,19 +1416,16 @@ void G_DuplicateEntityFields(gentity_t *dest, gentity_t *source)
             *(uint32_t *)(void *)destBase = *(uint32_t *)(void *)sourceBase;
             break;
         case SCRIPT_SPAWN_FIELD_STRING:
-            Scr_SetString((uint16_t *)(void *)destBase,
-                          *(uint16_t *)(void *)sourceBase);
+            Scr_SetString((uint16_t *)(void *)destBase, *(uint16_t *)(void *)sourceBase);
             break;
-        case SCRIPT_SPAWN_FIELD_VECTOR:
-            {
-                uint32_t *destWords = (uint32_t *)(void *)destBase;
-                const uint32_t *sourceWords = (const uint32_t *)(const void *)sourceBase;
+        case SCRIPT_SPAWN_FIELD_VECTOR: {
+            uint32_t *destWords = (uint32_t *)(void *)destBase;
+            const uint32_t *sourceWords = (const uint32_t *)(const void *)sourceBase;
 
-                destWords[0] = sourceWords[0];
-                destWords[1] = sourceWords[1];
-                destWords[2] = sourceWords[2];
-            }
-            break;
+            destWords[0] = sourceWords[0];
+            destWords[1] = sourceWords[1];
+            destWords[2] = sourceWords[2];
+        } break;
         case SCRIPT_SPAWN_FIELD_MODEL:
             *destBase = *sourceBase;
             break;
@@ -1540,8 +1444,7 @@ void G_DuplicateScriptFields(gentity_t *dest, gentity_t *source)
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_spawn_find_entry). */
 static const script_spawn_entry_t *game_compat_script_spawn_find_entry(const char *classname)
 {
-    for (const script_spawn_entry_t *entry = spawns;
-         entry->classname != 0; entry++) {
+    for (const script_spawn_entry_t *entry = spawns; entry->classname != 0; entry++) {
         if (strcmp(entry->classname, classname) == 0) {
             return entry;
         }
@@ -1667,15 +1570,13 @@ uint16_t G_NewString(const char *value)
     int32_t signedCopyLength;
 
     if (copyLength > SCRIPT_NEW_STRING_MAX_LENGTH) {
-        G_Error("G_NewString: len = %i > %i\n", (int)copyLength,
-                (int)SCRIPT_NEW_STRING_MAX_LENGTH);
+        G_Error("G_NewString: len = %i > %i\n", (int)copyLength, (int)SCRIPT_NEW_STRING_MAX_LENGTH);
     }
 
     /* 0x71c77 and 0x71cc6 consume the wrapped strlen-plus-one dword. */
     signedCopyLength = coduo_int32_from_bits(copyLength);
     for (int32_t index = 0; index < signedCopyLength; index++) {
-        if (value[index] == '\\' &&
-            index < coduo_int32_from_bits(copyLength - UINT32_C(1))) {
+        if (value[index] == '\\' && index < coduo_int32_from_bits(copyLength - UINT32_C(1))) {
             index++;
             if (value[index] == 'n') {
                 *out = '\n';
@@ -1694,8 +1595,7 @@ uint16_t G_NewString(const char *value)
 /* VERIFIED_DECOMPILER(0x71d79, 81d79_GScr_AddFieldsForEntity.c, VERIFY-SCRIPT-FIELDS-2026-06-17): DATAFLOW_VERIFIED - entity classnum load, field-table walk, registered type switch cases, class-field index calculation, and client-field registration checked against current decompiler output. */
 void GScr_AddFieldsForEntity(void)
 {
-    uint16_t classnum =
-        g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].classnum;
+    uint16_t classnum = g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].classnum;
 
     for (uint32_t index = 0; script_entity_fields[index].name != 0; index++) {
         const script_entity_field_t *field = &script_entity_fields[index];
@@ -1720,16 +1620,13 @@ void Scr_SetEntityField(int entityNum, uint32_t fieldIndex)
     gentity_t *ent = &g_entities[entityNum];
     const script_entity_field_t *field;
 
-    if ((fieldIndex & SCRIPT_ENTITY_FIELD_CLIENT_MASK) ==
-        SCRIPT_ENTITY_FIELD_CLIENT_VALUE) {
+    if ((fieldIndex & SCRIPT_ENTITY_FIELD_CLIENT_MASK) == SCRIPT_ENTITY_FIELD_CLIENT_VALUE) {
         gclient_t *client = game_compat_script_entity_client(ent);
 
         if (client == 0) {
             Scr_SetEntityFieldError(ent, "field must be applied to a player");
         }
-        Scr_SetClientField(client,
-                           (int)(fieldIndex &
-                                 SCRIPT_ENTITY_FIELD_CLIENT_INDEX_MASK));
+        Scr_SetClientField(client, (int)(fieldIndex & SCRIPT_ENTITY_FIELD_CLIENT_INDEX_MASK));
         return;
     }
 
@@ -1803,16 +1700,13 @@ void Scr_GetEntityField(int entityNum, uint32_t fieldIndex)
     gentity_t *ent = &g_entities[entityNum];
     const script_entity_field_t *field;
 
-    if ((fieldIndex & SCRIPT_ENTITY_FIELD_CLIENT_MASK) ==
-        SCRIPT_ENTITY_FIELD_CLIENT_VALUE) {
+    if ((fieldIndex & SCRIPT_ENTITY_FIELD_CLIENT_MASK) == SCRIPT_ENTITY_FIELD_CLIENT_VALUE) {
         gclient_t *client = game_compat_script_entity_client(ent);
 
         if (client == 0) {
             Scr_SetEntityFieldError(ent, "field must be applied to a player");
         }
-        Scr_GetClientField(client,
-                           (int)(fieldIndex &
-                                 SCRIPT_ENTITY_FIELD_CLIENT_INDEX_MASK));
+        Scr_GetClientField(client, (int)(fieldIndex & SCRIPT_ENTITY_FIELD_CLIENT_INDEX_MASK));
         return;
     }
 
@@ -1891,11 +1785,9 @@ void Scr_GetObjectField(int classnum, int objectNum, int fieldIndex)
 /* VERIFIED_DECOMPILER(0x722ca, 822ca_Scr_FreeEntityConstStrings.c, VERIFY-WAVE2-SCRIPT-SPAWNFREE-2026-06-17): DATAFLOW_VERIFIED - string-field table scan, Scr_SetString clears, six attach model byte clears, and attach tag string clears checked against current decompiler output. */
 void Scr_FreeEntityConstStrings(gentity_t *ent)
 {
-    for (const script_entity_field_t *field = script_entity_fields;
-         field->name != 0; field++) {
+    for (const script_entity_field_t *field = script_entity_fields; field->name != 0; field++) {
         if (field->type == SCRIPT_SPAWN_FIELD_STRING) {
-            Scr_SetString(game_compat_script_entity_string_slot(ent, field->offset),
-                          0);
+            Scr_SetString(game_compat_script_entity_string_slot(ent, field->offset), 0);
         }
     }
 
@@ -1924,8 +1816,7 @@ gentity_t *Scr_GetEntity(uint32_t index)
     int classnum;
     uint32_t entityNum = Scr_GetEntityNum(index, &classnum);
 
-    if (classnum == SCRIPT_OBJECT_ENTITY &&
-        entityNum < MAX_GENTITIES) {
+    if (classnum == SCRIPT_OBJECT_ENTITY && entityNum < MAX_GENTITIES) {
         return &g_entities[entityNum];
     }
 
@@ -1952,8 +1843,7 @@ game_hudElem_t *Scr_GetHudElem(uint32_t index)
     int classnum;
     uint32_t elemNum = Scr_GetEntityNum(index, &classnum);
 
-    if (classnum == SCRIPT_OBJECT_HUDELEM &&
-        elemNum < SCRIPT_HUDELEM_COUNT) {
+    if (classnum == SCRIPT_OBJECT_HUDELEM && elemNum < SCRIPT_HUDELEM_COUNT) {
         return &g_hudelems[elemNum];
     }
 
@@ -1964,15 +1854,13 @@ game_hudElem_t *Scr_GetHudElem(uint32_t index)
 /* VERIFIED_DECOMPILER(0x7253d, 8253d_Scr_ExecEntThread.c, VERIFY-SCRIPT-FIELDS-2026-06-17): DATAFLOW_VERIFIED - s_number load, entity class id, handle/paramCount forwarding, Scr_ExecEntThreadNum argument order, and return value checked against current decompiler output. */
 uint16_t Scr_ExecEntThread(gentity_t *ent, uint32_t handle, int paramCount)
 {
-    return Scr_ExecEntThreadNum(ent->s.number, SCRIPT_OBJECT_ENTITY, handle,
-                                paramCount);
+    return Scr_ExecEntThreadNum(ent->s.number, SCRIPT_OBJECT_ENTITY, handle, paramCount);
 }
 
 /* VERIFIED_DECOMPILER(0x7257b, 8257b_Scr_AddExecEntThread.c, VERIFY-SCRIPT-FIELDS-2026-06-17): DATAFLOW_VERIFIED - s_number load, entity class id, handle/paramCount forwarding, Scr_AddExecEntThreadNum argument order, and void return checked against current decompiler output. */
 void Scr_AddExecEntThread(gentity_t *ent, uint32_t handle, int paramCount)
 {
-    Scr_AddExecEntThreadNum(ent->s.number, SCRIPT_OBJECT_ENTITY, handle,
-                            paramCount);
+    Scr_AddExecEntThreadNum(ent->s.number, SCRIPT_OBJECT_ENTITY, handle, paramCount);
 }
 
 /* VERIFIED_DECOMPILER(0x725b6, 825b6_Scr_Notify.c, VERIFY-SCRIPT-FIELDS-2026-06-17): DATAFLOW_VERIFIED - s_number load, entity class id, event/paramCount forwarding, Scr_NotifyNum argument order, and void return checked against current decompiler output. */
@@ -1986,8 +1874,7 @@ void Scr_GetEnt(void)
 {
     uint16_t matchValue = Scr_GetConstString(0);
     const char *fieldName = Scr_GetString(1);
-    int32_t fieldIndex = coduo_int32_from_bits(Scr_GetOffset(
-        g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].classnum, fieldName));
+    int32_t fieldIndex = coduo_int32_from_bits(Scr_GetOffset(g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].classnum, fieldName));
     const script_entity_field_t *field;
 
     if (fieldIndex < 0) {
@@ -2039,8 +1926,7 @@ void Scr_GetEntArray(void)
 
     uint16_t matchValue = Scr_GetConstString(0);
     const char *fieldName = Scr_GetString(1);
-    int32_t fieldIndex = coduo_int32_from_bits(Scr_GetOffset(
-        g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].classnum, fieldName));
+    int32_t fieldIndex = coduo_int32_from_bits(Scr_GetOffset(g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].classnum, fieldName));
     const script_entity_field_t *field;
 
     if (fieldIndex < 0) {
@@ -2082,8 +1968,7 @@ char *G_AddSpawnVarToken(const char *token)
     level_locals_t *lvl = &level;
     uint32_t length = (uint32_t)strlen(token);
     uint32_t copyLength = length + UINT32_C(1);
-    int32_t requiredLength = coduo_int32_from_bits(
-        length + (uint32_t)lvl->spawnTextLength + UINT32_C(1));
+    int32_t requiredLength = coduo_int32_from_bits(length + (uint32_t)lvl->spawnTextLength + UINT32_C(1));
     char *text = lvl->spawnText;
     char *dest;
 
@@ -2094,8 +1979,7 @@ char *G_AddSpawnVarToken(const char *token)
 
     dest = &text[lvl->spawnTextLength];
     memcpy(dest, token, (size_t)copyLength);
-    lvl->spawnTextLength = coduo_int32_from_bits(
-        (uint32_t)lvl->spawnTextLength + copyLength);
+    lvl->spawnTextLength = coduo_int32_from_bits((uint32_t)lvl->spawnTextLength + copyLength);
     return dest;
 }
 
@@ -2156,17 +2040,14 @@ void SP_worldspawn(void)
         G_Error("SP_worldspawn: The first entity isn't 'worldspawn'");
     }
 
-    trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_GAME,
-                         WORLDSPAWN_GAME_VALUE);
-    trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_START_TIME,
-                         va(WORLDSPAWN_START_TIME_FORMAT, lvl->startTime));
+    trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_GAME, WORLDSPAWN_GAME_VALUE);
+    trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_START_TIME, va(WORLDSPAWN_START_TIME_FORMAT, lvl->startTime));
 
     G_SpawnString("ambienttrack", SCRIPT_EMPTY_STRING, &value);
     if (value[0] == '\0') {
         trap_SetConfigstring(CS_AMBIENT, SCRIPT_EMPTY_STRING);
     } else {
-        trap_SetConfigstring(CS_AMBIENT,
-                             va(WORLDSPAWN_AMBIENT_FORMAT, value));
+        trap_SetConfigstring(CS_AMBIENT, va(WORLDSPAWN_AMBIENT_FORMAT, value));
     }
 
     G_SpawnString("message", SCRIPT_EMPTY_STRING, &value);
@@ -2179,8 +2060,7 @@ void SP_worldspawn(void)
 
     G_SpawnString("northyaw", SCRIPT_EMPTY_STRING, &value);
     if (value[0] == '\0') {
-        trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_NORTHYAW,
-                             WORLDSPAWN_DEFAULT_ZERO);
+        trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_NORTHYAW, WORLDSPAWN_DEFAULT_ZERO);
     } else {
         trap_SetConfigstring(WORLDSPAWN_CONFIGSTRING_NORTHYAW, value);
     }
@@ -2189,8 +2069,7 @@ void SP_worldspawn(void)
     world->worldspawnSpawnflagsScratch = atoi(value);
     world->spawnflags = world->worldspawnSpawnflagsScratch;
     world->s.number = ENTITYNUM_WORLD;
-    Scr_SetString(game_compat_script_entity_string_slot(world, SPAWN_FIELD_CLASSNAME_OFFSET),
-                  scr_const[SCR_CONST_WORLDSPAWN_INDEX]);
+    Scr_SetString(game_compat_script_entity_string_slot(world, SPAWN_FIELD_CLASSNAME_OFFSET), scr_const[SCR_CONST_WORLDSPAWN_INDEX]);
     world->linked = 1;
 }
 
@@ -2271,11 +2150,9 @@ void UpdateIPBans(void)
 
         uint32_t compare = ipFilters[index].compare;
         uint32_t used = (uint32_t)strlen(cvarValue);
-        uint32_t remaining =
-            (uint32_t)MAX_STRING_CHARS - used;
-        Com_sprintf(&cvarValue[used], (size_t)remaining,
-                    "%i.%i.%i.%i ", compare & 0xff, (compare >> 8) & 0xff,
-                    (compare >> 16) & 0xff, compare >> 24);
+        uint32_t remaining = (uint32_t)MAX_STRING_CHARS - used;
+        Com_sprintf(&cvarValue[used], (size_t)remaining, "%i.%i.%i.%i ", compare & 0xff, (compare >> 8) & 0xff, (compare >> 16) & 0xff,
+                    compare >> 24);
     }
 
     trap_Cvar_Set(IP_FILTER_CVAR_NAME, cvarValue);
@@ -2286,8 +2163,7 @@ qboolean G_FilterPacket(const char *from)
 {
     uint32_t in = 0;
 
-    for (int index = 0; from[0] != '\0' && index < IP_FILTER_OCTET_COUNT;
-         index++) {
+    for (int index = 0; from[0] != '\0' && index < IP_FILTER_OCTET_COUNT; index++) {
         uint8_t *octets = (uint8_t *)(void *)&in;
 
         octets[index] = 0;
@@ -2397,8 +2273,7 @@ void Svcmd_RemoveIP_f(void)
     }
 
     for (int index = 0; index < numIPFilters; index++) {
-        if (ipFilters[index].mask == filter.mask &&
-            ipFilters[index].compare == filter.compare) {
+        if (ipFilters[index].mask == filter.mask && ipFilters[index].compare == filter.compare) {
             ipFilters[index].compare = UINT32_MAX;
             G_Printf(IP_FILTER_REMOVED_MESSAGE);
             UpdateIPBans();
@@ -2463,11 +2338,8 @@ void Svcmd_EntityList_f(void)
         }
 
         if (ent->scriptClassname != 0) {
-            G_Printf(CONSOLE_ENTITY_ORIGIN_FORMAT,
-                     SL_ConvertToString(ent->scriptClassname),
-                     (double)ent->currentOrigin[0],
-                     (double)ent->currentOrigin[1],
-                     (double)ent->currentOrigin[2]);
+            G_Printf(CONSOLE_ENTITY_ORIGIN_FORMAT, SL_ConvertToString(ent->scriptClassname), (double)ent->currentOrigin[0],
+                     (double)ent->currentOrigin[1], (double)ent->currentOrigin[2]);
         }
 
         G_Printf(CONSOLE_ENTITY_LINE_END);
@@ -2500,8 +2372,7 @@ gclient_t *ClientForString(const char *text)
     for (int clientNum = 0; clientNum < level.maxclients; clientNum++) {
         gclient_t *client = &level.clients[clientNum];
 
-        if (client->connectedState != 0 &&
-            Q_stricmp(client->userInfoName, text) == 0) {
+        if (client->connectedState != 0 && Q_stricmp(client->userInfoName, text) == 0) {
             return client;
         }
     }
@@ -2533,16 +2404,12 @@ int ConsoleCommand(void)
     }
 
     if (Q_stricmp(cmd, "listip") == 0) {
-        trap_SendConsoleCommand(CONSOLE_LISTIP_EXEC_TIME,
-                                CONSOLE_LISTIP_COMMAND);
+        trap_SendConsoleCommand(CONSOLE_LISTIP_EXEC_TIME, CONSOLE_LISTIP_COMMAND);
         return 1;
     }
 
-    if (g_dedicated.integer != 0 &&
-        Q_stricmp(cmd, CONSOLE_SAY_COMMAND) == 0) {
-        trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS,
-                               CONSOLE_SAY_RELIABLE,
-                               va(CONSOLE_SAY_FORMAT, ConcatArgs(1)));
+    if (g_dedicated.integer != 0 && Q_stricmp(cmd, CONSOLE_SAY_COMMAND) == 0) {
+        trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, CONSOLE_SAY_RELIABLE, va(CONSOLE_SAY_FORMAT, ConcatArgs(1)));
         return 1;
     }
 
@@ -2682,11 +2549,9 @@ void script_func_logprint(void)
     for (index = 0; index < paramCount; index++) {
         const char *text = Scr_GetString(index);
         uint32_t length = (uint32_t)strlen(text);
-        int32_t combinedLength = coduo_int32_from_bits(
-            length + (uint32_t)total);
+        int32_t combinedLength = coduo_int32_from_bits(length + (uint32_t)total);
 
-        if (combinedLength >
-            (int32_t)(MAX_STRING_CHARS - 1u)) {
+        if (combinedLength > (int32_t)(MAX_STRING_CHARS - 1u)) {
             break;
         }
 
@@ -2724,8 +2589,7 @@ void script_func_obituary(void)
     temp = G_TempEntity(vec3_origin, OBITUARY_TEMP_EVENT);
     temp->s.vehicleEntityNum = victim->s.number;
 
-    if (Scr_GetType(1) == SCRIPT_VAR_OBJECT &&
-        Scr_GetPointerType(1) == SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(1) == SCRIPT_VAR_OBJECT && Scr_GetPointerType(1) == SCRIPT_VAR_ENTITY) {
         gentity_t *attacker = Scr_GetEntity(1);
 
         temp->s.vehicleSlot = attacker->s.number;
@@ -2761,23 +2625,18 @@ void script_func_positionwouldtelefrag(void)
     Scr_GetVector(0, origin);
     game_compat_script_builtin_make_player_box(origin, mins, maxs);
 
-    count = trap_EntitiesInBox(mins, maxs, entityNumbers,
-                               POSITION_TELEFRAG_MAX_ENTITIES,
-                               POSITION_TELEFRAG_PLAYER_CONTENTS);
+    count = trap_EntitiesInBox(mins, maxs, entityNumbers, POSITION_TELEFRAG_MAX_ENTITIES, POSITION_TELEFRAG_PLAYER_CONTENTS);
     for (index = 0; index < count; index++) {
         gentity_t *ent = script_object_to_gentity((uint32_t)entityNumbers[index]);
 
-        if (ent->client != 0 &&
-            ent->client->ps.pmType < PM_TYPE_DEAD) {
+        if (ent->client != 0 && ent->client->ps.pmType < PM_TYPE_DEAD) {
             Scr_AddInt(1);
             return;
         }
     }
 
     game_compat_script_builtin_make_player_box(origin, mins, maxs);
-    count = trap_EntitiesInBox(mins, maxs, entityNumbers,
-                               POSITION_TELEFRAG_MAX_ENTITIES,
-                               POSITION_TELEFRAG_SECONDARY_CONTENTS);
+    count = trap_EntitiesInBox(mins, maxs, entityNumbers, POSITION_TELEFRAG_MAX_ENTITIES, POSITION_TELEFRAG_SECONDARY_CONTENTS);
     for (index = 0; index < count; index++) {
         gentity_t *ent = script_object_to_gentity((uint32_t)entityNumbers[index]);
 
@@ -2793,70 +2652,46 @@ void script_func_positionwouldtelefrag(void)
 /* VERIFIED_DECOMPILER(0x6abee, 7abee_script_func_precachemenu.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; menu configstring duplicate scan, empty-slot scan, overflow error, and set call checked against current decompiler output. */
 void script_func_precachemenu(void)
 {
-    game_compat_script_precache_configstring(
-        Scr_GetString(0),
-        SCRIPT_MENU_CONFIGSTRING_BASE,
-        SCRIPT_MENU_CONFIGSTRING_COUNT,
-        "Script tried to precache the menu '%s' more than once\n",
-        "Too many menus precached. Max allowed menus is %i");
+    game_compat_script_precache_configstring(Scr_GetString(0), SCRIPT_MENU_CONFIGSTRING_BASE, SCRIPT_MENU_CONFIGSTRING_COUNT,
+                                             "Script tried to precache the menu '%s' more than once\n",
+                                             "Too many menus precached. Max allowed menus is %i");
 }
 
 /* VERIFIED_DECOMPILER(0x6ad04, 7ad04_GScr_GetScriptMenuIndex.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; menu configstring lookup loop, error path, and zero-based return checked against current decompiler output. */
 int GScr_GetScriptMenuIndex(const char *menuName)
 {
-    return game_compat_script_find_configstring_index(
-        menuName,
-        SCRIPT_MENU_CONFIGSTRING_BASE,
-        SCRIPT_MENU_CONFIGSTRING_COUNT,
-        "Menu '%s' was not precached\n",
-        0,
-        0);
+    return game_compat_script_find_configstring_index(menuName, SCRIPT_MENU_CONFIGSTRING_BASE, SCRIPT_MENU_CONFIGSTRING_COUNT,
+                                                      "Menu '%s' was not precached\n", 0, 0);
 }
 
 /* VERIFIED_DECOMPILER(0x6adab, 7adab_script_func_precachestatusicon.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; status-icon configstring duplicate scan, empty-slot scan, overflow error, and set call checked against current decompiler output. */
 void script_func_precachestatusicon(void)
 {
-    game_compat_script_precache_configstring(
-        Scr_GetString(0),
-        STATUS_ICON_CONFIGSTRING_BASE,
-        STATUS_ICON_CONFIGSTRING_COUNT,
-        "Script tried to precache the player status icon '%s' more than once\n",
-        "Too many player status icons precached. Max allowed is %i");
+    game_compat_script_precache_configstring(Scr_GetString(0), STATUS_ICON_CONFIGSTRING_BASE, STATUS_ICON_CONFIGSTRING_COUNT,
+                                             "Script tried to precache the player status icon '%s' more than once\n",
+                                             "Too many player status icons precached. Max allowed is %i");
 }
 
 /* VERIFIED_DECOMPILER(0x6aebb, 7aebb_GScr_GetStatusIconIndex.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; empty-name return, status-icon lookup loop, error path, and one-based return checked against current decompiler output. */
 int GScr_GetStatusIconIndex(const char *name)
 {
-    return game_compat_script_find_configstring_index(
-        name,
-        STATUS_ICON_CONFIGSTRING_BASE,
-        STATUS_ICON_CONFIGSTRING_COUNT,
-        "Status icon '%s' was not precached\n",
-        0,
-        1);
+    return game_compat_script_find_configstring_index(name, STATUS_ICON_CONFIGSTRING_BASE, STATUS_ICON_CONFIGSTRING_COUNT,
+                                                      "Status icon '%s' was not precached\n", 0, 1);
 }
 
 /* VERIFIED_DECOMPILER(0x6af78, 7af78_script_func_precacheheadicon.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; head-icon configstring duplicate scan, empty-slot scan, overflow error, and set call checked against current decompiler output. */
 void script_func_precacheheadicon(void)
 {
-    game_compat_script_precache_configstring(
-        Scr_GetString(0),
-        HEAD_ICON_CONFIGSTRING_BASE,
-        HEAD_ICON_CONFIGSTRING_COUNT,
-        "Script tried to precache the player head icon '%s' more than once\n",
-        "Too many player head icons precached. Max allowed is %i");
+    game_compat_script_precache_configstring(Scr_GetString(0), HEAD_ICON_CONFIGSTRING_BASE, HEAD_ICON_CONFIGSTRING_COUNT,
+                                             "Script tried to precache the player head icon '%s' more than once\n",
+                                             "Too many player head icons precached. Max allowed is %i");
 }
 
 /* VERIFIED_DECOMPILER(0x6b088, 7b088_GScr_GetHeadIconIndex.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; empty-name return, head-icon lookup loop, error path, and one-based return checked against current decompiler output. */
 int GScr_GetHeadIconIndex(const char *name)
 {
-    return game_compat_script_find_configstring_index(
-        name,
-        HEAD_ICON_CONFIGSTRING_BASE,
-        HEAD_ICON_CONFIGSTRING_COUNT,
-        "Head icon '%s' was not precached\n",
-        0,
-        1);
+    return game_compat_script_find_configstring_index(name, HEAD_ICON_CONFIGSTRING_BASE, HEAD_ICON_CONFIGSTRING_COUNT,
+                                                      "Head icon '%s' was not precached\n", 0, 1);
 }
 
 /* VERIFIED_DECOMPILER(0x6b145, 7b145_script_func_bullettrace.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; trace mask/pass entity handling, LocationalTrace call, array keys, entity/position fallback, and surface-type extraction checked against current decompiler output. */
@@ -2876,15 +2711,13 @@ void script_func_bullettrace(void)
         contentMask &= ~BULLETTRACE_CHARACTER_CONTENTS;
     }
 
-    if (Scr_GetType(3) == SCRIPT_VAR_OBJECT &&
-        Scr_GetPointerType(3) == SCRIPT_VAR_ENTITY) {
+    if (Scr_GetType(3) == SCRIPT_VAR_OBJECT && Scr_GetPointerType(3) == SCRIPT_VAR_ENTITY) {
         gentity_t *passEntity = Scr_GetEntity(3);
 
         passEntityNum = passEntity->s.number;
     }
 
-    trap_LocationalTrace(&trace, start, end, passEntityNum, contentMask,
-                         bulletPriorityMap);
+    trap_LocationalTrace(&trace, start, end, passEntityNum, contentMask, bulletPriorityMap);
 
     Scr_MakeArray();
     Scr_AddFloat(trace.fraction);
@@ -2900,9 +2733,7 @@ void script_func_bullettrace(void)
     Scr_AddArrayStringIndexed(scr_const_position);
 
     if (trace.fraction < 1.0f) {
-        surfaceType = (trace.surfaceFlags &
-                       (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
-                      SURFACE_TYPE_SHIFT;
+        surfaceType = (trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT;
         Scr_AddString(trap_SurfaceTypeToName((int)surfaceType));
     } else {
         Scr_AddConstString(scr_const_none);
@@ -2931,12 +2762,8 @@ void script_func_grenadeexplosioneffect(void)
     game_compat_script_copy_vector(traceEnd, eventOrigin);
     traceEnd[2] -= GRENADE_EXPLOSION_TRACE_DROP;
 
-    trap_Trace(&trace, eventOrigin, vec3_origin, vec3_origin, traceEnd,
-               ENTITYNUM_NONE, GRENADE_EXPLOSION_TRACE_CONTENTS);
-    temp->s.surfType =
-        (int)((trace.surfaceFlags &
-               (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >>
-              SURFACE_TYPE_SHIFT);
+    trap_Trace(&trace, eventOrigin, vec3_origin, vec3_origin, traceEnd, ENTITYNUM_NONE, GRENADE_EXPLOSION_TRACE_CONTENTS);
+    temp->s.surfType = (int)((trace.surfaceFlags & (SURFACE_TYPE_MASK << SURFACE_TYPE_SHIFT)) >> SURFACE_TYPE_SHIFT);
 }
 
 /* VERIFIED_DECOMPILER(0x6c229, 7c229_script_func_radiusdamage.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; vector/float parameter order, repeated Scr_GetNumParam checks, attacker fallback, radius-damage call, and ignore-player globals checked against current decompiler output. */
@@ -2966,8 +2793,7 @@ void script_func_radiusdamage(void)
         attacker = &g_entities[ENTITYNUM_WORLD];
     }
 
-    G_RadiusDamage(origin, inflictor, attacker, damage, minDamage, radius, 0,
-                   MOD_EXPLOSIVE);
+    G_RadiusDamage(origin, inflictor, attacker, damage, minDamage, radius, 0, MOD_EXPLOSIVE);
     level.radiusDamageIgnorePlayersActive = 0;
 }
 
@@ -3019,8 +2845,7 @@ void script_func_getmovedelta(void)
 
     game_compat_script_get_anim_delta_time_range(&startTime, &endTime);
     animRef = Scr_GetAnim(0, NULL);
-    anim[0] = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
-              animRef.animIndex;
+    anim[0] = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | animRef.animIndex;
     trap_XAnimGetRelDelta(anim[0], rotationDelta, moveDelta, startTime, endTime);
     Scr_AddVector(moveDelta);
 }
@@ -3037,8 +2862,7 @@ void script_func_getangledelta(void)
 
     game_compat_script_get_anim_delta_time_range(&startTime, &endTime);
     animRef = Scr_GetAnim(0, NULL);
-    anim[0] = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
-              animRef.animIndex;
+    anim[0] = ((uint32_t)animRef.treeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | animRef.animIndex;
     trap_XAnimGetRelDelta(anim[0], rotationDelta, moveDelta, startTime, endTime);
     Scr_AddFloat(RotationToYaw(rotationDelta));
 }
@@ -3066,22 +2890,17 @@ void script_func_rewindfx(void)
     }
 
     ent = Scr_GetEntity(0);
-    rewindTime = coduo_int32_from_bits(
-        (uint32_t)Scr_GetInt(1) *
-        (uint32_t)SCRIPT_REWINDFX_TIME_SCALE);
-    trap_SendServerCommand((uint32_t)ent->s.number, UNRELIABLE_SERVER_COMMAND,
-                           va(SCRIPT_REWINDFX_COMMAND, rewindTime));
+    rewindTime = coduo_int32_from_bits((uint32_t)Scr_GetInt(1) * (uint32_t)SCRIPT_REWINDFX_TIME_SCALE);
+    trap_SendServerCommand((uint32_t)ent->s.number, UNRELIABLE_SERVER_COMMAND, va(SCRIPT_REWINDFX_COMMAND, rewindTime));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_get_effect_configstring_name). */
-static void game_compat_script_get_effect_configstring_name(int effectId, char *buffer,
-                                                uint32_t bufferSize)
+static void game_compat_script_get_effect_configstring_name(int effectId, char *buffer, uint32_t bufferSize)
 {
     if (effectId == 0) {
         strcpy(buffer, SCRIPT_PLAYFX_UNLOADED);
     } else {
-        trap_GetConfigstring(effectId + SCRIPT_FX_CONFIGSTRING_BASE, buffer,
-                             (int)bufferSize);
+        trap_GetConfigstring(effectId + SCRIPT_FX_CONFIGSTRING_BASE, buffer, (int)bufferSize);
     }
 }
 
@@ -3106,8 +2925,7 @@ void script_func_playfx(void)
 
         Scr_GetVector(2, forward);
         if (VectorNormalize(forward) == 0.0f) {
-            game_compat_script_get_effect_configstring_name(effectId, effectName,
-                                                sizeof(effectName));
+            game_compat_script_get_effect_configstring_name(effectId, effectName, sizeof(effectName));
             Scr_Error(va(SCRIPT_PLAYFX_ZERO_FORWARD, effectName));
         }
 
@@ -3144,8 +2962,7 @@ void script_func_playloopedfx(void)
 
         Scr_GetVector(4, forward);
         if (VectorNormalize(forward) == 0.0f) {
-            game_compat_script_get_effect_configstring_name(effectId, effectName,
-                                                sizeof(effectName));
+            game_compat_script_get_effect_configstring_name(effectId, effectName, sizeof(effectName));
             Scr_Error(va(SCRIPT_PLAYLOOPEDFX_ZERO_FORWARD, effectName));
         }
     }
@@ -3155,8 +2972,7 @@ void script_func_playloopedfx(void)
     }
 
     Scr_GetVector(2, origin);
-    repeatDelay =
-        Script_BiasedRoundToInt(Scr_GetFloat(1) * SCRIPT_SECONDS_TO_MILLISECONDS);
+    repeatDelay = Script_BiasedRoundToInt(Scr_GetFloat(1) * SCRIPT_SECONDS_TO_MILLISECONDS);
 
     ent = G_Spawn();
     ent->s.eType = ET_LOOPED_FX;
@@ -3199,16 +3015,11 @@ void script_func_playfxontag(void)
 
     if (trap_DObjGetBoneIndex(ent, tagName) < 0) {
         trap_DObjDumpInfo(ent);
-        Scr_ParamError(2, va(SCRIPT_PLAYFXONTAG_MISSING_TAG, tagName,
-                             G_ModelName(ent->modelIndex)));
+        Scr_ParamError(2, va(SCRIPT_PLAYFXONTAG_MISSING_TAG, tagName, G_ModelName(ent->modelIndex)));
     }
 
-    eventParm = G_FindConfigstringIndex(
-        va(SCRIPT_FX_ON_TAG_CONFIGSTRING_FORMAT, effectId, tagName),
-        SCRIPT_FX_TAG_CONFIGSTRING_BASE,
-        SCRIPT_FX_TAG_CONFIGSTRING_COUNT,
-        1,
-        0);
+    eventParm = G_FindConfigstringIndex(va(SCRIPT_FX_ON_TAG_CONFIGSTRING_FORMAT, effectId, tagName), SCRIPT_FX_TAG_CONFIGSTRING_BASE,
+                                        SCRIPT_FX_TAG_CONFIGSTRING_COUNT, 1, 0);
     G_AddEvent(ent, EV_PLAY_FX_ON_TAG, eventParm);
 }
 
@@ -3239,19 +3050,13 @@ void script_func_setwind(void)
 
     Scr_GetVector(0, angles);
     strength = Scr_GetFloat(1);
-    trap_SetConfigstring(
-        SCRIPT_WIND_CONFIGSTRING,
-        va(SCRIPT_WIND_CONFIGSTRING_FORMAT,
-           (double)angles[0],
-           (double)angles[1],
-           (double)angles[2],
-           (double)strength));
+    trap_SetConfigstring(SCRIPT_WIND_CONFIGSTRING,
+                         va(SCRIPT_WIND_CONFIGSTRING_FORMAT, (double)angles[0], (double)angles[1], (double)angles[2], (double)strength));
 }
 
 /* VERIFIED_DECOMPILER(0x6cca8, 7cca8_FUN_0007cca8.c, VERIFY-SCRIPT-BUILTINS-FX-TEAM-2026-06-17): DATAFLOW_VERIFIED; validation error fallthroughs, fog format, transition-ms conversion, and G_setfog call checked against current decompiler output. */
-static void Scr_SetFog(const char *caller, float nearDistance,
-                           float farDistance, float density, float red,
-                           float green, float blue, float transitionSeconds)
+static void Scr_SetFog(const char *caller, float nearDistance, float farDistance, float density, float red, float green, float blue,
+                       float transitionSeconds)
 {
     if (nearDistance < 0.0f) {
         Scr_Error(va("%s: near distance must be >= 0", caller));
@@ -3259,25 +3064,15 @@ static void Scr_SetFog(const char *caller, float nearDistance,
     if (farDistance <= nearDistance) {
         Scr_Error(va("%s: near distance must be less than far distance", caller));
     }
-    if (red < 0.0f || red > 1.0f ||
-        green < 0.0f || green > 1.0f ||
-        blue < 0.0f || blue > 1.0f) {
-        Scr_Error(va("%s: red/green/blue color components must be in the range [0, 1]",
-                     caller));
+    if (red < 0.0f || red > 1.0f || green < 0.0f || green > 1.0f || blue < 0.0f || blue > 1.0f) {
+        Scr_Error(va("%s: red/green/blue color components must be in the range [0, 1]", caller));
     }
     if (transitionSeconds < 0.0f) {
         Scr_Error(va("%s: transition time must be >= 0 seconds", caller));
     }
 
-    G_setfog(va(SCRIPT_FOG_FORMAT,
-                (double)nearDistance,
-                (double)farDistance,
-                (double)density,
-                (double)red,
-                (double)green,
-                (double)blue,
-                (double)((long double)transitionSeconds *
-                         (long double)SCRIPT_SECONDS_TO_MILLISECONDS)));
+    G_setfog(va(SCRIPT_FOG_FORMAT, (double)nearDistance, (double)farDistance, (double)density, (double)red, (double)green, (double)blue,
+                (double)((long double)transitionSeconds * (long double)SCRIPT_SECONDS_TO_MILLISECONDS)));
 }
 
 /* VERIFIED_DECOMPILER(0x6ce1e, 7ce1e_script_func_setcullfog.c, VERIFY-SCRIPT-BUILTINS-FX-TEAM-2026-06-17): DATAFLOW_VERIFIED; count error fallthrough, six float reads, density constant, and Scr_SetFog argument order checked against current decompiler output. */
@@ -3301,8 +3096,7 @@ void Scr_SetLinearFog(void)
     blue = Scr_GetFloat(4);
     transitionSeconds = Scr_GetFloat(5);
 
-    Scr_SetFog("setCullFog", nearDistance, farDistance, 1.0f,
-                   red, green, blue, transitionSeconds);
+    Scr_SetFog("setCullFog", nearDistance, farDistance, 1.0f, red, green, blue, transitionSeconds);
 }
 
 /* VERIFIED_DECOMPILER(0x6cee8, 7cee8_script_func_setexpfog.c, VERIFY-SCRIPT-BUILTINS-FX-TEAM-2026-06-17): DATAFLOW_VERIFIED; count/density error fallthroughs, five float reads, near/far constants, and Scr_SetFog argument order checked against current decompiler output. */
@@ -3328,16 +3122,13 @@ void Scr_SetExponentialFog(void)
         Scr_Error(SCRIPT_SETEXPFOG_DENSITY_ERROR);
     }
 
-    Scr_SetFog("setExpFog", 0.0f, 1.0f, density, red, green, blue,
-                   transitionSeconds);
+    Scr_SetFog("setExpFog", 0.0f, 1.0f, density, red, green, blue, transitionSeconds);
 }
 
 /* VERIFIED_DECOMPILER(0x6cfd6, 7cfd6_script_func_isplayer.c, VERIFY-SCRIPT-BUILTINS-FX-TEAM-2026-06-17): DATAFLOW_VERIFIED; pointer/entity type gates, client pointer test, and integer returns checked against current decompiler output. */
 void script_func_isplayer(void)
 {
-    if (Scr_GetType(0) == SCRIPT_VAR_OBJECT &&
-        Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY &&
-        Scr_GetEntity(0)->client != 0) {
+    if (Scr_GetType(0) == SCRIPT_VAR_OBJECT && Scr_GetPointerType(0) == SCRIPT_VAR_ENTITY && Scr_GetEntity(0)->client != 0) {
         Scr_AddInt(1);
         return;
     }
@@ -3387,8 +3178,7 @@ void script_func_setwinningteam(void)
     } else if (team == scr_const_none) {
         winner = SCRIPT_WINNER_NONE;
     } else {
-        Scr_ParamError(0, va(SCRIPT_WINNING_TEAM_ERROR,
-                             SL_ConvertToString(team)));
+        Scr_ParamError(0, va(SCRIPT_WINNING_TEAM_ERROR, SL_ConvertToString(team)));
         return;
     }
 
@@ -3400,10 +3190,8 @@ void script_func_announcement(void)
 {
     char message[MAX_STRING_CHARS];
 
-    Scr_ConstructMessageString(0, message, sizeof(message),
-                               SCRIPT_MESSAGE_MODE_ANNOUNCEMENT);
-    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, UNRELIABLE_SERVER_COMMAND,
-                           va(SCRIPT_ANNOUNCEMENT_COMMAND, message));
+    Scr_ConstructMessageString(0, message, sizeof(message), SCRIPT_MESSAGE_MODE_ANNOUNCEMENT);
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, UNRELIABLE_SERVER_COMMAND, va(SCRIPT_ANNOUNCEMENT_COMMAND, message));
 }
 
 /* VERIFIED_DECOMPILER(0x6d327, 7d327_script_func_clientannouncement.c, VERIFY-SCRIPT-BUILTINS-FX-TEAM-2026-06-17): DATAFLOW_VERIFIED; entity target, message construction offset, unreliable command, and command format checked against current decompiler output. */
@@ -3412,11 +3200,8 @@ void script_func_clientannouncement(void)
     gentity_t *ent = Scr_GetEntity(0);
     char message[MAX_STRING_CHARS];
 
-    Scr_ConstructMessageString(1, message, sizeof(message),
-                               SCRIPT_MESSAGE_MODE_ANNOUNCEMENT);
-    trap_SendServerCommand((uint32_t)ent->s.number,
-                           UNRELIABLE_SERVER_COMMAND,
-                           va(SCRIPT_ANNOUNCEMENT_COMMAND, message));
+    Scr_ConstructMessageString(1, message, sizeof(message), SCRIPT_MESSAGE_MODE_ANNOUNCEMENT);
+    trap_SendServerCommand((uint32_t)ent->s.number, UNRELIABLE_SERVER_COMMAND, va(SCRIPT_ANNOUNCEMENT_COMMAND, message));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_team_score_error). */
@@ -3521,8 +3306,7 @@ void script_func_updateclientnames(void)
         char *cleanName = client->cleanName;
         char *userinfoName = client->userInfoName;
 
-        if (client->connectedState == CON_CONNECTED &&
-            strcmp(userinfoName, cleanName) != 0) {
+        if (client->connectedState == CON_CONNECTED && strcmp(userinfoName, cleanName) != 0) {
             char previousName[CLIENT_NAME_SIZE];
 
             Q_strncpyz(previousName, userinfoName, CLIENT_NAME_SIZE);
@@ -3541,8 +3325,7 @@ void script_func_getteamplayersalive(void)
     for (int clientNum = 0; clientNum < g_maxclients.integer; clientNum++) {
         gentity_t *ent = &g_entities[clientNum];
 
-        if (ent->linked != 0 && ent->client->sessionTeam == team &&
-            ent->health > 0) {
+        if (ent->linked != 0 && ent->client->sessionTeam == team && ent->health > 0) {
             count++;
         }
     }
@@ -3553,9 +3336,7 @@ void script_func_getteamplayersalive(void)
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_biased_seconds_to_milliseconds). */
 static int game_compat_script_biased_seconds_to_milliseconds(float seconds)
 {
-    return Script_BiasedRoundToInt(
-        (float)((long double)SCRIPT_SECONDS_TO_MILLISECONDS *
-                (long double)seconds));
+    return Script_BiasedRoundToInt((float)((long double)SCRIPT_SECONDS_TO_MILLISECONDS * (long double)seconds));
 }
 
 /* VERIFIED_DECOMPILER(0x6d8dd, 7d8dd_script_func_earthquake.c, VERIFY-SCRIPT-BUILTINS-EARTHQUAKE-ADMIN-2026-06-17): DATAFLOW_VERIFIED; float/second-to-ms parameter order, temp-event type 201, angles2 earthquake offsets +0x68/+0x70/+0x6c, and void return checked against current decompiler output. */
@@ -3583,11 +3364,8 @@ static int game_compat_script_shellshock_index(const char *name)
 {
     char config[MAX_STRING_CHARS];
 
-    for (int index = SCRIPT_SHELLSHOCK_FIRST_INDEX;
-         index <= SCRIPT_SHELLSHOCK_LAST_INDEX;
-         index++) {
-        trap_GetConfigstring(SCRIPT_SHELLSHOCK_CONFIGSTRING_BASE + index,
-                             config, sizeof(config));
+    for (int index = SCRIPT_SHELLSHOCK_FIRST_INDEX; index <= SCRIPT_SHELLSHOCK_LAST_INDEX; index++) {
+        trap_GetConfigstring(SCRIPT_SHELLSHOCK_CONFIGSTRING_BASE + index, config, sizeof(config));
         if (strcasecmp(config, name) == 0) {
             return index;
         }
@@ -3620,10 +3398,8 @@ void GScr_ShellShock(uint32_t scriptObject)
         /* 0x6da41..0x6da4c: fild duration feeds the multiply directly (no
          * intermediate float store), then one rounding to double at the
          * vararg slot. */
-        Scr_ParamError(1, va(SCRIPT_SHELLSHOCK_DURATION_ERROR,
-                             (double)((long double)duration *
-                                      (long double)
-                                          SCRIPT_SHELLSHOCK_SECONDS_PER_MS)));
+        Scr_ParamError(
+            1, va(SCRIPT_SHELLSHOCK_DURATION_ERROR, (double)((long double)duration * (long double)SCRIPT_SHELLSHOCK_SECONDS_PER_MS)));
     }
 
     /*
@@ -3664,10 +3440,8 @@ void GScr_ViewKick(uint32_t scriptObject)
     }
 
     force = Scr_GetInt(0);
-    damage = coduo_int32_from_bits(
-        (uint32_t)force * (uint32_t)ent->maxHealth +
-        (uint32_t)SCRIPT_VIEWKICK_DAMAGE_ROUND) /
-        SCRIPT_VIEWKICK_DAMAGE_SCALE;
+    damage = coduo_int32_from_bits((uint32_t)force * (uint32_t)ent->maxHealth + (uint32_t)SCRIPT_VIEWKICK_DAMAGE_ROUND) /
+             SCRIPT_VIEWKICK_DAMAGE_SCALE;
     ent->client->damageTaken = damage;
     if (damage < 0) {
         Scr_Error(va(SCRIPT_VIEWKICK_DAMAGE_ERROR, (double)Scr_GetFloat(0)));
@@ -3692,7 +3466,7 @@ void GScr_LocalToWorldCoords(uint32_t scriptObject)
     AnglesToAxis(ent->currentAngles, axis);
     /* C99 multidimensional-array qualifier bridge; the transform is
      * read-only. */
-    MatrixTransformVector(local, (const vec_t (*)[3])axis, world);
+    MatrixTransformVector(local, (const vec_t(*)[3])axis, world);
     world[0] += ent->currentOrigin[0];
     world[1] += ent->currentOrigin[1];
     world[2] += ent->currentOrigin[2];
@@ -3712,8 +3486,7 @@ static turret_state_t *game_compat_script_turret_state(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x6dd1a, 7dd1a_script_method_scriptbuiltin_setrightarc.c, VERIFY-SCRIPT-BUILTINS-EARTHQUAKE-ADMIN-2026-06-17): DATAFLOW_VERIFIED; entity object lookup, turretState +0x168 error fallthrough, negated float store to turret +0x10, and positive clamp to zero checked against current decompiler output. */
 void GScr_SetRightArc(uint32_t scriptObject)
 {
-    turret_state_t *turret =
-        game_compat_script_turret_state(script_object_to_gentity(scriptObject));
+    turret_state_t *turret = game_compat_script_turret_state(script_object_to_gentity(scriptObject));
 
     turret->rightArc = -Scr_GetFloat(0);
     if (turret->rightArc > 0.0f) {
@@ -3724,8 +3497,7 @@ void GScr_SetRightArc(uint32_t scriptObject)
 /* VERIFIED_DECOMPILER(0x6dda0, 7dda0_script_method_scriptbuiltin_setleftarc.c, VERIFY-SCRIPT-BUILTINS-EARTHQUAKE-ADMIN-2026-06-17): DATAFLOW_VERIFIED; entity object lookup, turretState +0x168 error fallthrough, float store to turret +0x18, and negative clamp to zero checked against current decompiler output. */
 void GScr_SetLeftArc(uint32_t scriptObject)
 {
-    turret_state_t *turret =
-        game_compat_script_turret_state(script_object_to_gentity(scriptObject));
+    turret_state_t *turret = game_compat_script_turret_state(script_object_to_gentity(scriptObject));
 
     turret->leftArc = Scr_GetFloat(0);
     if (turret->leftArc < 0.0f) {
@@ -3736,8 +3508,7 @@ void GScr_SetLeftArc(uint32_t scriptObject)
 /* VERIFIED_DECOMPILER(0x6de19, 7de19_script_method_scriptbuiltin_settoparc.c, VERIFY-SCRIPT-BUILTINS-EARTHQUAKE-ADMIN-2026-06-17): DATAFLOW_VERIFIED; entity object lookup, turretState +0x168 error fallthrough, negated float store to turret +0x0c, and positive clamp to zero checked against current decompiler output. */
 void GScr_SetTopArc(uint32_t scriptObject)
 {
-    turret_state_t *turret =
-        game_compat_script_turret_state(script_object_to_gentity(scriptObject));
+    turret_state_t *turret = game_compat_script_turret_state(script_object_to_gentity(scriptObject));
 
     turret->topArc = -Scr_GetFloat(0);
     if (turret->topArc > 0.0f) {
@@ -3748,8 +3519,7 @@ void GScr_SetTopArc(uint32_t scriptObject)
 /* VERIFIED_DECOMPILER(0x6de9f, 7de9f_script_method_scriptbuiltin_setbottomarc.c, VERIFY-SCRIPT-BUILTINS-EARTHQUAKE-ADMIN-2026-06-17): DATAFLOW_VERIFIED; entity object lookup, turretState +0x168 error fallthrough, float store to turret +0x14, and negative clamp to zero checked against current decompiler output. */
 void GScr_SetBottomArc(uint32_t scriptObject)
 {
-    turret_state_t *turret =
-        game_compat_script_turret_state(script_object_to_gentity(scriptObject));
+    turret_state_t *turret = game_compat_script_turret_state(script_object_to_gentity(scriptObject));
 
     turret->bottomArc = Scr_GetFloat(0);
     if (turret->bottomArc < 0.0f) {
@@ -3768,28 +3538,22 @@ void GScr_PlaceSpawnPoint(uint32_t scriptObject)
     game_compat_script_copy_vector(start, ent->currentOrigin);
     game_compat_script_copy_vector(end, ent->currentOrigin);
     end[2] += SPAWNPOINT_TRACE_UP;
-    trap_TraceCapsule(&trace, start, playerMins, playerMaxs, end,
-                      ent->s.number, SPAWNPOINT_TRACE_MASK);
+    trap_TraceCapsule(&trace, start, playerMins, playerMaxs, end, ent->s.number, SPAWNPOINT_TRACE_MASK);
 
     game_compat_script_copy_vector(start, trace.endpos);
     game_compat_script_copy_vector(end, trace.endpos);
     end[2] -= SPAWNPOINT_TRACE_DOWN;
-    trap_TraceCapsule(&trace, start, playerMins, playerMaxs, end,
-                      ent->s.number, SPAWNPOINT_TRACE_MASK);
+    trap_TraceCapsule(&trace, start, playerMins, playerMaxs, end, ent->s.number, SPAWNPOINT_TRACE_MASK);
     ent->s.groundEntityNum = trace.entityNum;
 
     game_compat_script_copy_vector(start, trace.endpos);
-    trap_TraceCapsule(&trace, start, playerMins, playerMaxs, start,
-                      ent->s.number, SPAWNPOINT_TRACE_MASK);
+    trap_TraceCapsule(&trace, start, playerMins, playerMaxs, start, ent->s.number, SPAWNPOINT_TRACE_MASK);
     if (trace.startsolid) {
         /* 0x6e0a2..0x6e0e4: each coordinate uses x87 fistp with RC=0xc00.
          * The defined helper also preserves INT32_MIN for NaN/out-of-range
          * input instead of relying on an undefined host-language cast. */
-        Com_Printf(
-            SPAWNPOINT_SOLID_WARNING, ent->s.number,
-            game_compat_int32_from_float_trunc(ent->currentOrigin[0]),
-            game_compat_int32_from_float_trunc(ent->currentOrigin[1]),
-            game_compat_int32_from_float_trunc(ent->currentOrigin[2]));
+        Com_Printf(SPAWNPOINT_SOLID_WARNING, ent->s.number, game_compat_int32_from_float_trunc(ent->currentOrigin[0]),
+                   game_compat_int32_from_float_trunc(ent->currentOrigin[1]), game_compat_int32_from_float_trunc(ent->currentOrigin[2]));
     }
 
     G_SetOrigin(ent, trace.endpos);
@@ -3802,9 +3566,7 @@ void script_func_exec(void)
         Scr_Error(SCRIPT_EXEC_NO_FILENAME);
     }
 
-    trap_SendConsoleCommand(
-        SCRIPT_CONSOLE_COMMAND_NOW,
-        va(SCRIPT_EXEC_COMMAND_FORMAT, Scr_GetString(0)));
+    trap_SendConsoleCommand(SCRIPT_CONSOLE_COMMAND_NOW, va(SCRIPT_EXEC_COMMAND_FORMAT, Scr_GetString(0)));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_exit_state_error_message). */
@@ -3837,8 +3599,7 @@ static void game_compat_script_set_exit_state(int exitState)
 void script_func_map_restart(void)
 {
     game_compat_script_set_exit_state(SCRIPT_EXIT_STATE_MAP_RESTART);
-    trap_SendConsoleCommand(SCRIPT_CONSOLE_COMMAND_NOW,
-                            SCRIPT_MAP_RESTART_COMMAND);
+    trap_SendConsoleCommand(SCRIPT_CONSOLE_COMMAND_NOW, SCRIPT_MAP_RESTART_COMMAND);
 }
 
 /* VERIFIED_DECOMPILER(0x6e227, 7e227_script_func_exitlevel.c, VERIFY-SCRIPT-BUILTINS-EARTHQUAKE-ADMIN-2026-06-17): DATAFLOW_VERIFIED; exit-state error selection/fallthrough, exit-level state 2, optional integer parameter storage, ExitLevel call, and void return checked against current decompiler output. */
@@ -3863,8 +3624,7 @@ static void game_compat_script_copy_saved_spawn_vars(gentity_t *ent)
     for (int pairIndex = 0; pairIndex < ent->savedSpawnVarCount; pairIndex++) {
         for (int slot = 0; slot < 2; slot++) {
             int index = pairIndex * 2 + slot;
-            levelPairs[index] =
-                &levelText[ent->savedSpawnVarPairs[index] - ent->savedSpawnText];
+            levelPairs[index] = &levelText[ent->savedSpawnVarPairs[index] - ent->savedSpawnText];
         }
     }
 }
@@ -3883,8 +3643,7 @@ void GScr_RespawnDuplicate(uint32_t scriptObject)
     spawned = G_CallSpawn();
     if (spawned == 0) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        Scr_Error(va(SCRIPT_SPAWN_ERROR_FORMAT,
-                     SL_ConvertToString(ent->scriptClassname)));
+        Scr_Error(va(SCRIPT_SPAWN_ERROR_FORMAT, SL_ConvertToString(ent->scriptClassname)));
         return;
     } else {
         spawned->savedSpawnTextLength = ent->savedSpawnTextLength;
@@ -3954,8 +3713,7 @@ void script_func_randomfloatrange(void)
 
     if (max <= min) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        Com_Printf("Scr_RandomFloatRange parms: %f %f ", (double)min,
-                   (double)max);
+        Com_Printf("Scr_RandomFloatRange parms: %f %f ", (double)min, (double)max);
         Scr_Error("Scr_RandomFloatRange range must be positive float.\n");
     }
 
@@ -3968,12 +3726,10 @@ void script_func_sin(void)
     /* 0x6b56f..0x6b57f: fmul QWORD pi, fdiv QWORD 180.0 (double consts), rounded
      * to double at the libm CoduoLibm_Sin() call boundary -> shim. */
 #if EMULATE_X87
-    double radians = x87f_store_f64(x87f_div(
-        x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f64(SCRIPT_PI)),
-        x87f_load_f64(SCRIPT_HALF_CIRCLE_DEGREES)));
+    double radians = x87f_store_f64(
+        x87f_div(x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f64(SCRIPT_PI)), x87f_load_f64(SCRIPT_HALF_CIRCLE_DEGREES)));
 #else
-    double radians = (double)Scr_GetFloat(0) * SCRIPT_PI /
-                     SCRIPT_HALF_CIRCLE_DEGREES;
+    double radians = (double)Scr_GetFloat(0) * SCRIPT_PI / SCRIPT_HALF_CIRCLE_DEGREES;
 #endif
     Scr_AddFloat((float)CoduoLibm_Sin(radians));
 }
@@ -3983,12 +3739,10 @@ void script_func_cos(void)
 {
     /* 0x6b5b9..0x6b5c9: fmul QWORD pi, fdiv QWORD 180.0 (see script_func_sin). */
 #if EMULATE_X87
-    double radians = x87f_store_f64(x87f_div(
-        x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f64(SCRIPT_PI)),
-        x87f_load_f64(SCRIPT_HALF_CIRCLE_DEGREES)));
+    double radians = x87f_store_f64(
+        x87f_div(x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f64(SCRIPT_PI)), x87f_load_f64(SCRIPT_HALF_CIRCLE_DEGREES)));
 #else
-    double radians = (double)Scr_GetFloat(0) * SCRIPT_PI /
-                     SCRIPT_HALF_CIRCLE_DEGREES;
+    double radians = (double)Scr_GetFloat(0) * SCRIPT_PI / SCRIPT_HALF_CIRCLE_DEGREES;
 #endif
     Scr_AddFloat((float)CoduoLibm_Cos(radians));
 }
@@ -3999,12 +3753,10 @@ void script_func_tan(void)
     /* 0x6b603..0x6b613: fmul QWORD pi, fdiv QWORD 180.0, then ONE direct
      * rounding to a float slot (fstp DWORD) — no intermediate double rounding. */
 #if EMULATE_X87
-    float radians = x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f64(SCRIPT_PI)),
-        x87f_load_f64(SCRIPT_HALF_CIRCLE_DEGREES)));
+    float radians = x87f_store_f32(
+        x87f_div(x87f_mul(x87f_load_f32(Scr_GetFloat(0)), x87f_load_f64(SCRIPT_PI)), x87f_load_f64(SCRIPT_HALF_CIRCLE_DEGREES)));
 #else
-    float radians = (float)((double)Scr_GetFloat(0) * SCRIPT_PI /
-                            SCRIPT_HALF_CIRCLE_DEGREES);
+    float radians = (float)((double)Scr_GetFloat(0) * SCRIPT_PI / SCRIPT_HALF_CIRCLE_DEGREES);
 #endif
     float sine;
     float cosine;
@@ -4018,8 +3770,7 @@ void script_func_tan(void)
 
     /* sine / cosine kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-    Scr_AddFloat(x87f_store_f32(
-        x87f_div(x87f_load_f32(sine), x87f_load_f32(cosine))));
+    Scr_AddFloat(x87f_store_f32(x87f_div(x87f_load_f32(sine), x87f_load_f32(cosine))));
 #else
     Scr_AddFloat(sine / cosine);
 #endif
@@ -4047,10 +3798,8 @@ void script_func_asin(void)
 
         /* degrees * 180.0f(DWORD) / PI(QWORD) kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-        degrees = x87f_store_f32(x87f_div(
-            x87f_mul(x87f_load_f32(degrees),
-                     x87f_load_f32(SCRIPT_HALF_CIRCLE_DEGREES_FLOAT)),
-            x87f_load_f64(SCRIPT_PI)));
+        degrees = x87f_store_f32(
+            x87f_div(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(SCRIPT_HALF_CIRCLE_DEGREES_FLOAT)), x87f_load_f64(SCRIPT_PI)));
 #else
         degrees = degrees * SCRIPT_HALF_CIRCLE_DEGREES_FLOAT / SCRIPT_PI;
 #endif
@@ -4071,10 +3820,8 @@ void script_func_acos(void)
 
         /* degrees * 180.0f(DWORD) / PI(QWORD) kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-        degrees = x87f_store_f32(x87f_div(
-            x87f_mul(x87f_load_f32(degrees),
-                     x87f_load_f32(SCRIPT_HALF_CIRCLE_DEGREES_FLOAT)),
-            x87f_load_f64(SCRIPT_PI)));
+        degrees = x87f_store_f32(
+            x87f_div(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(SCRIPT_HALF_CIRCLE_DEGREES_FLOAT)), x87f_load_f64(SCRIPT_PI)));
 #else
         degrees = degrees * SCRIPT_HALF_CIRCLE_DEGREES_FLOAT / SCRIPT_PI;
 #endif
@@ -4092,10 +3839,8 @@ void script_func_atan(void)
 
     /* degrees * 180.0f(DWORD) / PI(QWORD) kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-    degrees = x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(degrees),
-                 x87f_load_f32(SCRIPT_HALF_CIRCLE_DEGREES_FLOAT)),
-        x87f_load_f64(SCRIPT_PI)));
+    degrees = x87f_store_f32(
+        x87f_div(x87f_mul(x87f_load_f32(degrees), x87f_load_f32(SCRIPT_HALF_CIRCLE_DEGREES_FLOAT)), x87f_load_f64(SCRIPT_PI)));
 #else
     degrees = degrees * SCRIPT_HALF_CIRCLE_DEGREES_FLOAT / SCRIPT_PI;
 #endif
@@ -4107,9 +3852,8 @@ static float game_compat_script_vector_length_squared(const vec3_t value)
 {
     /* 3-mul/2-add dot kept 80-bit, rounded to float on return -> shim. */
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(x87f_add(
-        x87f_mul(x87f_load_f32(value[0]), x87f_load_f32(value[0])),
-        x87f_mul(x87f_load_f32(value[1]), x87f_load_f32(value[1]))),
+    return x87f_store_f32(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(value[0]), x87f_load_f32(value[0])), x87f_mul(x87f_load_f32(value[1]), x87f_load_f32(value[1]))),
         x87f_mul(x87f_load_f32(value[2]), x87f_load_f32(value[2]))));
 #else
     return value[0] * value[0] + value[1] * value[1] + value[2] * value[2];
@@ -4120,10 +3864,9 @@ static float game_compat_script_vector_length_squared(const vec3_t value)
 static float game_compat_script_vector_dot(const vec3_t a, const vec3_t b)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(x87f_add(
-        x87f_mul(x87f_load_f32(a[0]), x87f_load_f32(b[0])),
-        x87f_mul(x87f_load_f32(a[1]), x87f_load_f32(b[1]))),
-        x87f_mul(x87f_load_f32(a[2]), x87f_load_f32(b[2]))));
+    return x87f_store_f32(
+        x87f_add(x87f_add(x87f_mul(x87f_load_f32(a[0]), x87f_load_f32(b[0])), x87f_mul(x87f_load_f32(a[1]), x87f_load_f32(b[1]))),
+                 x87f_mul(x87f_load_f32(a[2]), x87f_load_f32(b[2]))));
 #else
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 #endif
@@ -4141,13 +3884,9 @@ static int game_compat_script_soundfade_seconds_to_milliseconds(float seconds)
     /* 0x6bd0a..0x6bd24: fmul DWORD 1000.0f then truncating fistp (RC=0xc00)
      * straight from the x87 register — plain truncation -> shim. */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_mul(
-        x87f_load_f32(seconds),
-        x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS)));
+    return x87f_store_i32_trunc(x87f_mul(x87f_load_f32(seconds), x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS)));
 #else
-    return game_compat_int32_from_long_double_trunc(
-        (long double)seconds *
-        (long double)SCRIPT_SECONDS_TO_MILLISECONDS);
+    return game_compat_int32_from_long_double_trunc((long double)seconds * (long double)SCRIPT_SECONDS_TO_MILLISECONDS);
 #endif
 }
 
@@ -4185,14 +3924,11 @@ void script_func_length(void)
      * usable here. */
     /* dot 80-bit -> double at sqrt boundary -> float -> shim. */
 #if EMULATE_X87
-    Scr_AddFloat((float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(
-        x87f_mul(x87f_load_f32(value[0]), x87f_load_f32(value[0])),
-        x87f_mul(x87f_load_f32(value[1]), x87f_load_f32(value[1]))),
+    Scr_AddFloat((float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
+        x87f_add(x87f_mul(x87f_load_f32(value[0]), x87f_load_f32(value[0])), x87f_mul(x87f_load_f32(value[1]), x87f_load_f32(value[1]))),
         x87f_mul(x87f_load_f32(value[2]), x87f_load_f32(value[2]))))));
 #else
-    Scr_AddFloat((float)CoduoLibm_Sqrt((double)(value[0] * value[0] +
-                                      value[1] * value[1] +
-                                      value[2] * value[2])));
+    Scr_AddFloat((float)CoduoLibm_Sqrt((double)(value[0] * value[0] + value[1] * value[1] + value[2] * value[2])));
 #endif
 }
 
@@ -4302,10 +4038,7 @@ void script_func_musicplay(void)
 {
     const char *alias = Scr_GetString(0);
 
-    trap_SendServerCommand(
-        SERVER_COMMAND_ALL_CLIENTS,
-        RELIABLE_SERVER_COMMAND,
-        va(SCRIPT_MUSIC_PLAY_COMMAND, alias));
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, RELIABLE_SERVER_COMMAND, va(SCRIPT_MUSIC_PLAY_COMMAND, alias));
 }
 
 /* VERIFIED_DECOMPILER(0x6bc1a, 7bc1a_script_func_musicstop.c, VERIFY-SCRIPT-BUILTINS-VECTOR-AUDIO-2026-06-17): DATAFLOW_VERIFIED; parameter-count branches, biased millisecond conversion, negative-time error fallthrough, and command send checked against current decompiler output. */
@@ -4327,10 +4060,7 @@ void script_func_musicstop(void)
         Scr_Error(va("musicStop: fade time must be >= 0\n"));
     }
 
-    trap_SendServerCommand(
-        SERVER_COMMAND_ALL_CLIENTS,
-        RELIABLE_SERVER_COMMAND,
-        va(SCRIPT_MUSIC_STOP_COMMAND, fadeTime));
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, RELIABLE_SERVER_COMMAND, va(SCRIPT_MUSIC_STOP_COMMAND, fadeTime));
 }
 
 /* VERIFIED_DECOMPILER(0x6bcd3, 7bcd3_script_func_soundfade.c, VERIFY-SCRIPT-BUILTINS-VECTOR-AUDIO-2026-06-17): DATAFLOW_VERIFIED; volume fetch, optional direct rounded millisecond conversion, command format, and global reliable send checked against current decompiler output. */
@@ -4343,27 +4073,22 @@ void script_func_soundfade(void)
         fadeTime = game_compat_script_soundfade_seconds_to_milliseconds(Scr_GetFloat(1));
     }
 
-    trap_SendServerCommand(
-        SERVER_COMMAND_ALL_CLIENTS,
-        RELIABLE_SERVER_COMMAND,
-        va(SCRIPT_SOUNDFADE_COMMAND, (double)volume, fadeTime));
+    trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, RELIABLE_SERVER_COMMAND, va(SCRIPT_SOUNDFADE_COMMAND, (double)volume, fadeTime));
 }
 
 /* VERIFIED_DECOMPILER(0x6bd6d, 7bd6d_script_func_precachemodel.c, VERIFY-SCRIPT-BUILTINS-VECTOR-AUDIO-2026-06-17): DATAFLOW_VERIFIED; precache-phase error fallthrough, string fetch, and G_ModelIndex call checked against current decompiler output. */
 void script_func_precachemodel(void)
 {
-    game_compat_script_check_precache_phase(
-        "precacheModel must be called before any wait statements in the gametype or "
-        "level script\n");
+    game_compat_script_check_precache_phase("precacheModel must be called before any wait statements in the gametype or "
+                                            "level script\n");
     G_ModelIndex(Scr_GetString(0));
 }
 
 /* VERIFIED_DECOMPILER(0x6bdb3, 7bdb3_script_func_precacheshellshock.c, VERIFY-SCRIPT-BUILTINS-VECTOR-AUDIO-2026-06-17): DATAFLOW_VERIFIED; precache-phase error fallthrough, string fetch, and G_ShellShockIndex call checked against current decompiler output. */
 void script_func_precacheshellshock(void)
 {
-    game_compat_script_check_precache_phase(
-        "precacheShellShock must be called before any wait statements in the gametype or "
-        "level script\n");
+    game_compat_script_check_precache_phase("precacheShellShock must be called before any wait statements in the gametype or "
+                                            "level script\n");
     G_ShellShockIndex(Scr_GetString(0));
 }
 
@@ -4373,9 +4098,8 @@ void script_func_precacheitem(void)
     const char *itemName;
     gitem_t *item;
 
-    game_compat_script_check_precache_phase(
-        "precacheItem must be called before any wait statements in the gametype or "
-        "level script\n");
+    game_compat_script_check_precache_phase("precacheItem must be called before any wait statements in the gametype or "
+                                            "level script\n");
 
     itemName = Scr_GetString(0);
     item = BG_FindItem(itemName);
@@ -4391,9 +4115,8 @@ void script_func_precacheshader(void)
 {
     const char *shaderName;
 
-    game_compat_script_check_precache_phase(
-        "precacheShader must be called before any wait statements in the gametype or "
-        "level script\n");
+    game_compat_script_check_precache_phase("precacheShader must be called before any wait statements in the gametype or "
+                                            "level script\n");
 
     shaderName = Scr_GetString(0);
     if (shaderName[0] == '\0') {
@@ -4408,9 +4131,8 @@ void script_func_precachestring(void)
 {
     const char *value;
 
-    game_compat_script_check_precache_phase(
-        "precacheString must be called before any wait statements in the gametype or "
-        "level script\n");
+    game_compat_script_check_precache_phase("precacheString must be called before any wait statements in the gametype or "
+                                            "level script\n");
 
     value = Scr_GetIString(0);
     if (value[0] != '\0') {
@@ -4442,11 +4164,8 @@ void script_func_ambientplay(void)
         Scr_Error(va("ambientPlay: fade time must be >= 0\n"));
     }
 
-    trap_SetConfigstring(
-        SCRIPT_AMBIENT_CONFIGSTRING,
-        va(SCRIPT_AMBIENT_PLAY_CONFIGSTRING, alias,
-           coduo_int32_from_bits((uint32_t)fadeTime +
-                                 (uint32_t)level.time)));
+    trap_SetConfigstring(SCRIPT_AMBIENT_CONFIGSTRING,
+                         va(SCRIPT_AMBIENT_PLAY_CONFIGSTRING, alias, coduo_int32_from_bits((uint32_t)fadeTime + (uint32_t)level.time)));
 }
 
 /* VERIFIED_DECOMPILER(0x6c053, 7c053_script_func_ambientstop.c, VERIFY-SCRIPT-BUILTINS-VECTOR-AUDIO-2026-06-17): DATAFLOW_VERIFIED; parameter-count branches, biased millisecond conversion, negative-time error fallthrough, and configstring format checked against current decompiler output. */
@@ -4468,11 +4187,8 @@ void script_func_ambientstop(void)
         Scr_Error(va("ambientStop: fade time must be >= 0\n"));
     }
 
-    trap_SetConfigstring(
-        SCRIPT_AMBIENT_CONFIGSTRING,
-        va(SCRIPT_AMBIENT_STOP_CONFIGSTRING,
-           coduo_int32_from_bits((uint32_t)fadeTime +
-                                 (uint32_t)level.time)));
+    trap_SetConfigstring(SCRIPT_AMBIENT_CONFIGSTRING,
+                         va(SCRIPT_AMBIENT_STOP_CONFIGSTRING, coduo_int32_from_bits((uint32_t)fadeTime + (uint32_t)level.time)));
 }
 
 #define SCRIPT_FUNCTION_COUNT 120u
@@ -4512,8 +4228,7 @@ void ScrCmd_detachAll(uint32_t scriptObject);
 void ScrCmd_GetAttachSize(uint32_t scriptObject);
 void ScrCmd_GetAttachModelName(uint32_t scriptObject);
 void ScrCmd_GetAttachTagName(uint32_t scriptObject);
-void ScrCmd_GetAttachIgnoreCollision(
-    uint32_t scriptObject);
+void ScrCmd_GetAttachIgnoreCollision(uint32_t scriptObject);
 void ScrCmd_LinkTo(uint32_t scriptObject);
 void ScrCmd_Unlink(uint32_t scriptObject);
 void ScrCmd_EnableLinkTo(uint32_t scriptObject);
@@ -4547,10 +4262,8 @@ void GScr_SetHintString(uint32_t scriptObject);
 void GScr_GetEntityNumber(uint32_t scriptObject);
 void GScr_GetTurretHeat(uint32_t scriptObject);
 void GScr_GetTurretOverheating(uint32_t scriptObject);
-void GScr_EnableGrenadeTouchDamage(
-    uint32_t scriptObject);
-void GScr_DisableGrenadeTouchDamage(
-    uint32_t scriptObject);
+void GScr_EnableGrenadeTouchDamage(uint32_t scriptObject);
+void GScr_DisableGrenadeTouchDamage(uint32_t scriptObject);
 void GScr_EnableGrenadeBounce(uint32_t scriptObject);
 void GScr_DisableGrenadeBounce(uint32_t scriptObject);
 
@@ -4575,8 +4288,7 @@ const script_method_t scriptbuiltin_methods[SCRIPTBUILTIN_METHOD_COUNT] = {
     {"getattachsize", ScrCmd_GetAttachSize},
     {"getattachmodelname", ScrCmd_GetAttachModelName},
     {"getattachtagname", ScrCmd_GetAttachTagName},
-    {"getattachignorecollision",
-     ScrCmd_GetAttachIgnoreCollision},
+    {"getattachignorecollision", ScrCmd_GetAttachIgnoreCollision},
     {"linkto", ScrCmd_LinkTo},
     {"unlink", ScrCmd_Unlink},
     {"enablelinkto", ScrCmd_EnableLinkTo},
@@ -4616,10 +4328,8 @@ const script_method_t scriptbuiltin_methods[SCRIPTBUILTIN_METHOD_COUNT] = {
     {"settoparc", GScr_SetTopArc},
     {"setbottomarc", GScr_SetBottomArc},
     {"getentitynumber", GScr_GetEntityNumber},
-    {"enablegrenadetouchdamage",
-     GScr_EnableGrenadeTouchDamage},
-    {"disablegrenadetouchdamage",
-     GScr_DisableGrenadeTouchDamage},
+    {"enablegrenadetouchdamage", GScr_EnableGrenadeTouchDamage},
+    {"disablegrenadetouchdamage", GScr_DisableGrenadeTouchDamage},
     {"enablegrenadebounce", GScr_EnableGrenadeBounce},
     {"disablegrenadebounce", GScr_DisableGrenadeBounce},
     {"placespawnpoint", GScr_PlaceSpawnPoint},
@@ -4629,9 +4339,8 @@ const script_method_t scriptbuiltin_methods[SCRIPTBUILTIN_METHOD_COUNT] = {
     {"getturretoverheating", GScr_GetTurretOverheating},
 };
 
-typedef char scriptbuiltin_methods_count_check[
-    (sizeof(scriptbuiltin_methods) / sizeof(scriptbuiltin_methods[0]) ==
-     SCRIPTBUILTIN_METHOD_COUNT) ? 1 : -1];
+typedef char scriptbuiltin_methods_count_check
+    [(sizeof(scriptbuiltin_methods) / sizeof(scriptbuiltin_methods[0]) == SCRIPTBUILTIN_METHOD_COUNT) ? 1 : -1];
 
 const script_method_t scriptent_methods[SCRIPTENT_METHOD_COUNT] = {
     {"moveto", ScriptEntCmd_MoveTo},
@@ -4648,9 +4357,7 @@ const script_method_t scriptent_methods[SCRIPTENT_METHOD_COUNT] = {
     {"notsolid", ScriptEntCmd_NotSolid},
 };
 
-typedef char scriptent_methods_count_check[
-    (sizeof(scriptent_methods) / sizeof(scriptent_methods[0]) ==
-     SCRIPTENT_METHOD_COUNT) ? 1 : -1];
+typedef char scriptent_methods_count_check[(sizeof(scriptent_methods) / sizeof(scriptent_methods[0]) == SCRIPTENT_METHOD_COUNT) ? 1 : -1];
 
 const script_function_t functions[SCRIPT_FUNCTION_COUNT] = {
     {"print", script_func_print, 1},
@@ -4775,8 +4482,7 @@ const script_function_t functions[SCRIPT_FUNCTION_COUNT] = {
     {"prof_end", Scr_Prof_End, 0},
 };
 
-typedef char script_functions_count_check[
-    (sizeof(functions) / sizeof(functions[0]) == SCRIPT_FUNCTION_COUNT) ? 1 : -1];
+typedef char script_functions_count_check[(sizeof(functions) / sizeof(functions[0]) == SCRIPT_FUNCTION_COUNT) ? 1 : -1];
 
 /* VERIFIED_DECOMPILER(0x6e61a, 7e61a_Scr_Prof_Begin.c, VERIFY-SCRIPT-BUILTINS-REGISTRY-LOAD-2026-06-17): DATAFLOW_VERIFIED; empty body and void return checked against current decompiler output. */
 void Scr_Prof_Begin(void)
@@ -4844,9 +4550,7 @@ void Scr_ParseGameTypeList(void)
     gametypeCount = 0;
     memset(g_scr_data.gametypes, 0, sizeof(g_scr_data.gametypes));
 
-    fileCount = trap_FS_GetFileList(GAMETYPE_LIST_PATH,
-                                    GAMETYPE_LIST_EXTENSION, fileList,
-                                    sizeof(fileList));
+    fileCount = trap_FS_GetFileList(GAMETYPE_LIST_PATH, GAMETYPE_LIST_EXTENSION, fileList, sizeof(fileList));
     cursor = fileList;
 
     for (fileIndex = 0; fileIndex < fileCount; fileIndex++) {
@@ -4861,15 +4565,13 @@ void Scr_ParseGameTypeList(void)
             continue;
         }
 
-        if (Q_stricmp(&cursor[entryLength - extensionLength],
-                      GAMETYPE_SCRIPT_EXTENSION) == 0) {
+        if (Q_stricmp(&cursor[entryLength - extensionLength], GAMETYPE_SCRIPT_EXTENSION) == 0) {
             cursor[entryLength - extensionLength] = '\0';
         }
 
         if (gametypeCount == GAMETYPE_MAX_COUNT) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            G_Printf("Too many game type scripts found! Only loading the first %i\n",
-                     GAMETYPE_MAX_COUNT);
+            G_Printf("Too many game type scripts found! Only loading the first %i\n", GAMETYPE_MAX_COUNT);
             g_scr_data.gametypeCount = gametypeCount;
             return;
         }
@@ -4878,10 +4580,8 @@ void Scr_ParseGameTypeList(void)
         entry->script = game_compat_script_hunk_copy_string(cursor);
         Script_LowercaseString(entry->script);
 
-        fileLength = trap_FS_FOpenFile(va(GAMETYPE_DESCRIPTION_PATH, cursor),
-                                       &handle, FS_READ);
-        if (fileLength < 1 ||
-            fileLength > GAMETYPE_DESCRIPTION_MAX_LENGTH) {
+        fileLength = trap_FS_FOpenFile(va(GAMETYPE_DESCRIPTION_PATH, cursor), &handle, FS_READ);
+        if (fileLength < 1 || fileLength > GAMETYPE_DESCRIPTION_MAX_LENGTH) {
             if (fileLength < 1) {
                 Com_Printf("WARNING: Could not load GameType description file %s "
                            "for gametype %s\n",
@@ -4906,10 +4606,7 @@ void Scr_ParseGameTypeList(void)
             entry->displayName = game_compat_script_hunk_copy_string(token);
 
             token = Com_Parse(&parse);
-            entry->teamBased = token != 0 &&
-                                       Q_stricmp(token, GAMETYPE_TEAM_TOKEN) == 0
-                                   ? qtrue
-                                   : qfalse;
+            entry->teamBased = token != 0 && Q_stricmp(token, GAMETYPE_TEAM_TOKEN) == 0 ? qtrue : qfalse;
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -5119,8 +4816,7 @@ void GScr_LoadConsts(void)
 }
 
 /* VERIFIED_DECOMPILER(0x66340, 76340_FUN_00076340.c, VERIFY-SCRIPT-BUILTINS-REGISTRY-LOAD-2026-06-17): DATAFLOW_VERIFIED; Scr_LoadScript required guard, script/label G_Error argument order, function-handle lookup, and return checked against current decompiler output. */
-uint32_t Script_LoadFunctionHandle(const char *scriptName, const char *labelName,
-                                   qboolean required)
+uint32_t Script_LoadFunctionHandle(const char *scriptName, const char *labelName, qboolean required)
 {
     uint32_t handle;
 
@@ -5130,8 +4826,7 @@ uint32_t Script_LoadFunctionHandle(const char *scriptName, const char *labelName
 
     handle = Scr_GetFunctionHandle(scriptName, labelName);
     if (handle == 0 && required) {
-        G_Error("Could not find label '%s' in script '%s'", labelName,
-                scriptName);
+        G_Error("Could not find label '%s' in script '%s'", labelName, scriptName);
     }
 
     return handle;
@@ -5142,25 +4837,13 @@ void GScr_LoadGameTypeScript(void)
 {
     char scriptName[MAX_QPATH];
 
-    Com_sprintf(scriptName, sizeof(scriptName), GAMETYPE_SCRIPT_PATH,
-                g_gametype.string);
-    g_scr_data.gametypeScriptMain =
-        Script_LoadFunctionHandle(scriptName, SCRIPT_MAIN_LABEL, qtrue);
-    g_scr_data.gametypeStart =
-        Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT,
-                                  SCRIPT_CALLBACK_START_GAMETYPE, qtrue);
-    g_scr_data.playerConnect =
-        Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT,
-                                  SCRIPT_CALLBACK_PLAYER_CONNECT, qtrue);
-    g_scr_data.playerDisconnect =
-        Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT,
-                                  SCRIPT_CALLBACK_PLAYER_DISCONNECT, qtrue);
-    g_scr_data.playerDamage =
-        Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT,
-                                  SCRIPT_CALLBACK_PLAYER_DAMAGE, qtrue);
-    g_scr_data.playerKilled =
-        Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT,
-                                  SCRIPT_CALLBACK_PLAYER_KILLED, qtrue);
+    Com_sprintf(scriptName, sizeof(scriptName), GAMETYPE_SCRIPT_PATH, g_gametype.string);
+    g_scr_data.gametypeScriptMain = Script_LoadFunctionHandle(scriptName, SCRIPT_MAIN_LABEL, qtrue);
+    g_scr_data.gametypeStart = Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT, SCRIPT_CALLBACK_START_GAMETYPE, qtrue);
+    g_scr_data.playerConnect = Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT, SCRIPT_CALLBACK_PLAYER_CONNECT, qtrue);
+    g_scr_data.playerDisconnect = Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT, SCRIPT_CALLBACK_PLAYER_DISCONNECT, qtrue);
+    g_scr_data.playerDamage = Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT, SCRIPT_CALLBACK_PLAYER_DAMAGE, qtrue);
+    g_scr_data.playerKilled = Script_LoadFunctionHandle(GAMETYPE_CALLBACK_SETUP_SCRIPT, SCRIPT_CALLBACK_PLAYER_KILLED, qtrue);
 }
 
 /* VERIFIED_DECOMPILER(0x664f9, 764f9_FUN_000764f9.c, VERIFY-SCRIPT-BUILTINS-REGISTRY-LOAD-2026-06-17): DATAFLOW_VERIFIED; mapname cvar registration, 64-byte level script path format, optional main-label load, and handle store checked against current decompiler output. */
@@ -5169,23 +4852,17 @@ void GScr_LoadLevelScript(void)
     vmCvar_t mapname;
     char scriptName[MAX_QPATH];
 
-    trap_Cvar_Register(&mapname, LEVEL_MAPNAME_CVAR, emptyString,
-                       LEVEL_MAPNAME_CVAR_FLAGS);
-    Com_sprintf(scriptName, sizeof(scriptName), LEVEL_SCRIPT_PATH,
-                mapname.string);
-    g_scr_data.levelScriptMain =
-        Script_LoadFunctionHandle(scriptName, SCRIPT_MAIN_LABEL, qfalse);
+    trap_Cvar_Register(&mapname, LEVEL_MAPNAME_CVAR, emptyString, LEVEL_MAPNAME_CVAR_FLAGS);
+    Com_sprintf(scriptName, sizeof(scriptName), LEVEL_SCRIPT_PATH, mapname.string);
+    g_scr_data.levelScriptMain = Script_LoadFunctionHandle(scriptName, SCRIPT_MAIN_LABEL, qfalse);
 }
 
 /* VERIFIED_DECOMPILER(0x66592, 76592_FUN_00076592.c, VERIFY-SCRIPT-BUILTINS-REGISTRY-LOAD-2026-06-17): DATAFLOW_VERIFIED; three class-name stores, class-map registration, source-model classnum alias mirrors, field registration order, and void return checked against current decompiler output. */
 void GScr_RegisterScriptClasses(void)
 {
-    g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].name =
-        SCRIPT_CLASS_ENTITY_NAME;
-    g_scr_data.classMap[SCRIPT_OBJECT_HUDELEM].name =
-        SCRIPT_CLASS_HUDELEM_NAME;
-    g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].name =
-        SCRIPT_CLASS_VEHICLE_NODE_NAME;
+    g_scr_data.classMap[SCRIPT_OBJECT_ENTITY].name = SCRIPT_CLASS_ENTITY_NAME;
+    g_scr_data.classMap[SCRIPT_OBJECT_HUDELEM].name = SCRIPT_CLASS_HUDELEM_NAME;
+    g_scr_data.classMap[SCRIPT_OBJECT_VEHICLE_NODE].name = SCRIPT_CLASS_VEHICLE_NODE_NAME;
 
     Scr_SetClassMap(g_scr_data.classMap, (int)SCRIPT_CLASS_MAP_COUNT);
     GScr_AddFieldsForEntity();
@@ -5212,8 +4889,7 @@ void GScr_LoadScripts(void)
     GScr_RegisterScriptClasses();
     Scr_EndLoadScripts();
     BG_FindAnims();
-    BG_AnimParseAnimScript(&bgs.animationTable, runtimeAnimations,
-                           &runtimeAnimationCount);
+    BG_AnimParseAnimScript(&bgs.animationTable, runtimeAnimations, &runtimeAnimationCount);
     Scr_PrecacheAnimTrees(GScr_AllocAnimTreeMemory);
     BG_FindAnimTrees();
     Scr_EndLoadAnimTrees();
@@ -5254,8 +4930,7 @@ void Scr_StartupGameType(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_exec_entity_thread). */
-static void game_compat_script_exec_entity_thread(gentity_t *ent, uint32_t handle,
-                                      int paramCount)
+static void game_compat_script_exec_entity_thread(gentity_t *ent, uint32_t handle, int paramCount)
 {
     uint16_t threadId = Scr_ExecEntThread(ent, handle, paramCount);
 
@@ -5275,10 +4950,8 @@ void Scr_PlayerDisconnect(gentity_t *ent)
 }
 
 /* VERIFIED_DECOMPILER(0x6eef5, 7eef5_Scr_PlayerDamage.c, VERIFY-SCRIPT-BUILTINS-REGISTRY-LOAD-2026-06-17): DATAFLOW_VERIFIED; hit-location, dir/point vectors, weapon pickup name, MOD/badMOD helper, flags/damage/entity push order, 9-arg entity thread, and free checked against current decompiler output. */
-void Scr_PlayerDamage(gentity_t *target, gentity_t *inflictor,
-                      gentity_t *attacker, int damage, int flags,
-                      int meansOfDeath, int weapon, const float *point,
-                      const float *dir, int hitLocation)
+void Scr_PlayerDamage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, int damage, int flags, int meansOfDeath, int weapon,
+                      const float *point, const float *dir, int hitLocation)
 {
     const weaponInfo_t *weaponInfo;
 
@@ -5296,9 +4969,8 @@ void Scr_PlayerDamage(gentity_t *target, gentity_t *inflictor,
 }
 
 /* VERIFIED_DECOMPILER(0x6efdd, 7efdd_Scr_PlayerKilled.c, VERIFY-SCRIPT-BUILTINS-REGISTRY-LOAD-2026-06-17): DATAFLOW_VERIFIED; hit-location, dir vector, weapon pickup name, MOD/badMOD helper, damage/entity push order, 7-arg entity thread, and free checked against current decompiler output. */
-void Scr_PlayerKilled(gentity_t *self, gentity_t *inflictor,
-                      gentity_t *attacker, int damage, int meansOfDeath,
-                      int weapon, const float *dir, int hitLocation)
+void Scr_PlayerKilled(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath, int weapon,
+                      const float *dir, int hitLocation)
 {
     const weaponInfo_t *weaponInfo;
 
@@ -5330,25 +5002,17 @@ static int game_compat_script_mover_truncate_milliseconds(float seconds)
      * of the product -> shim.
      */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_mul(
-        x87f_load_f32(seconds),
-        x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS)));
+    return x87f_store_i32_trunc(x87f_mul(x87f_load_f32(seconds), x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS)));
 #else
-    return game_compat_int32_from_long_double_trunc(
-        (long double)seconds *
-        (long double)SCRIPT_SECONDS_TO_MILLISECONDS);
+    return game_compat_int32_from_long_double_trunc((long double)seconds * (long double)SCRIPT_SECONDS_TO_MILLISECONDS);
 #endif
 }
 
 /* VERIFIED_DECOMPILER(0x6f168, 7f168_FUN_0007f168.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; accel-to-linear, decel, gravity-evaluate, stationary target snap, trajectory stores, return values, and round-to-ms conversions checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x46080, size 0x220.
  */
-int ScriptMover_Updatemove(trajectory_t *trajectory,
-                           const float *currentValue, float speed,
-                           float linearTime, float decelTime,
-                           const float *linearStart,
-                           const float *decelStart,
-                           const float *targetValue)
+int ScriptMover_Updatemove(trajectory_t *trajectory, const float *currentValue, float speed, float linearTime, float decelTime,
+                           const float *linearStart, const float *decelStart, const float *targetValue)
 {
     (void)currentValue;
 
@@ -5368,12 +5032,9 @@ int ScriptMover_Updatemove(trajectory_t *trajectory,
         delta[2] = decelStart[2] - linearStart[2];
         /* 0x6f22f: fild trDuration feeds the divide directly (no float cast). */
 #if EMULATE_X87
-        inverseDuration = x87f_store_f32(x87f_div(
-            x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS),
-            x87f_load_i32(trajectory->trDuration)));
+        inverseDuration = x87f_store_f32(x87f_div(x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS), x87f_load_i32(trajectory->trDuration)));
 #else
-        inverseDuration =
-            SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
+        inverseDuration = SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
 #endif
         trajectory->trDelta[0] = delta[0] * inverseDuration;
         trajectory->trDelta[1] = delta[1] * inverseDuration;
@@ -5382,9 +5043,7 @@ int ScriptMover_Updatemove(trajectory_t *trajectory,
         return 0;
     }
 
-    if ((trajectory->trType == TR_LINEAR_STOP ||
-         (trajectory->trType == TR_ACCELERATE && linearTime <= 0.0f)) &&
-        decelTime > 0.0f) {
+    if ((trajectory->trType == TR_LINEAR_STOP || (trajectory->trType == TR_ACCELERATE && linearTime <= 0.0f)) && decelTime > 0.0f) {
         vec3_t direction;
 
         trajectory->trTime = level.time;
@@ -5415,8 +5074,7 @@ int ScriptMover_Updatemove(trajectory_t *trajectory,
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_mover_set_reached). */
-static void game_compat_script_mover_set_reached(gentity_t *ent,
-                                     void (*reached)(gentity_t *ent))
+static void game_compat_script_mover_set_reached(gentity_t *ent, void (*reached)(gentity_t *ent))
 {
     ent->moverReached = reached;
 }
@@ -5504,9 +5162,7 @@ static qboolean game_compat_script_mover_is_script_entity(gentity_t *ent)
 {
     uint16_t classname = game_compat_script_mover_classname(ent);
 
-    return classname == scr_const_script_brushmodel ||
-           classname == scr_const_script_model ||
-           classname == scr_const_script_origin;
+    return classname == scr_const_script_brushmodel || classname == scr_const_script_model || classname == scr_const_script_origin;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_mover_commands_blocked). */
@@ -5527,8 +5183,7 @@ static gentity_t *game_compat_script_mover_command_entity(uint32_t scriptObject)
 
     ent = script_object_to_gentity(scriptObject);
     if (!game_compat_script_mover_is_script_entity(ent)) {
-        Scr_Error(va("entity %i is not a script_brushmodel, script_model, or script_origin",
-                     scriptObject));
+        Scr_Error(va("entity %i is not a script_brushmodel, script_model, or script_origin", scriptObject));
         return 0;
     }
 
@@ -5562,46 +5217,35 @@ static void game_compat_script_mover_init_light(gentity_t *ent)
          */
         /* color[k]*255.0f fistp-direct; light/4.0f divide fistp-direct -> shim. */
 #if EMULATE_X87
-        uint32_t red = game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(
-            x87f_mul(x87f_load_f32(color[0]), x87f_load_f32(255.0f))));
-        uint32_t green = game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(
-            x87f_mul(x87f_load_f32(color[1]), x87f_load_f32(255.0f))));
-        uint32_t blue = game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(
-            x87f_mul(x87f_load_f32(color[2]), x87f_load_f32(255.0f))));
-        uint32_t intensity = game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(
-            x87f_div(x87f_load_f32(light), x87f_load_f32(4.0f))));
+        uint32_t red =
+            game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(x87f_mul(x87f_load_f32(color[0]), x87f_load_f32(255.0f))));
+        uint32_t green =
+            game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(x87f_mul(x87f_load_f32(color[1]), x87f_load_f32(255.0f))));
+        uint32_t blue =
+            game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(x87f_mul(x87f_load_f32(color[2]), x87f_load_f32(255.0f))));
+        uint32_t intensity =
+            game_compat_script_mover_clamp_light_component(x87f_store_i32_trunc(x87f_div(x87f_load_f32(light), x87f_load_f32(4.0f))));
 #else
         uint32_t red = game_compat_script_mover_clamp_light_component(
-            game_compat_int32_from_long_double_trunc(
-                (long double)color[0] * (long double)255.0f));
+            game_compat_int32_from_long_double_trunc((long double)color[0] * (long double)255.0f));
         uint32_t green = game_compat_script_mover_clamp_light_component(
-            game_compat_int32_from_long_double_trunc(
-                (long double)color[1] * (long double)255.0f));
+            game_compat_int32_from_long_double_trunc((long double)color[1] * (long double)255.0f));
         uint32_t blue = game_compat_script_mover_clamp_light_component(
-            game_compat_int32_from_long_double_trunc(
-                (long double)color[2] * (long double)255.0f));
+            game_compat_int32_from_long_double_trunc((long double)color[2] * (long double)255.0f));
         uint32_t intensity = game_compat_script_mover_clamp_light_component(
-            game_compat_int32_from_long_double_trunc(
-                (long double)light / (long double)4.0f));
+            game_compat_int32_from_long_double_trunc((long double)light / (long double)4.0f));
 #endif
 
-        ent->s.constantLight = (intensity << 24) | (blue << 16) |
-                             (green << 8) | red;
+        ent->s.constantLight = (intensity << 24) | (blue << 16) | (green << 8) | red;
     }
 }
 
 /* VERIFIED_DECOMPILER(0x6f662, 7f662_FUN_0007f662.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; target delta, active trajectory evaluation, no-accel path, speed computation via double sqrt, accel/linear/decel trajectory setup, stored waypoints, and current evaluation checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x45a60, size 0x43c.
  */
-void ScriptMover_SetupMove(trajectory_t *trajectory,
-                           const float *targetValue,
-                           float totalTime, float accelTime,
-                           float decelTime, float *currentValue,
-                           float *speed, float *linearTime,
-                           float *storedDecelTime,
-                           float *linearStart,
-                           float *decelStart,
-                           float *storedTargetValue)
+void ScriptMover_SetupMove(trajectory_t *trajectory, const float *targetValue, float totalTime, float accelTime, float decelTime,
+                           float *currentValue, float *speed, float *linearTime, float *storedDecelTime, float *linearStart,
+                           float *decelStart, float *storedTargetValue)
 {
     vec3_t delta;
 
@@ -5625,12 +5269,9 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
 
         /* 0x6f7a0: fild trDuration feeds the divide directly (no float cast). */
 #if EMULATE_X87
-        inverseDuration = x87f_store_f32(x87f_div(
-            x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS),
-            x87f_load_i32(trajectory->trDuration)));
+        inverseDuration = x87f_store_f32(x87f_div(x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS), x87f_load_i32(trajectory->trDuration)));
 #else
-        inverseDuration =
-            SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
+        inverseDuration = SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
 #endif
         trajectory->trDelta[0] = delta[0] * inverseDuration;
         trajectory->trDelta[1] = delta[1] * inverseDuration;
@@ -5641,9 +5282,7 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
 
         /* totalTime - accelTime - decelTime kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-        *linearTime = x87f_store_f32(x87f_sub(
-            x87f_sub(x87f_load_f32(totalTime), x87f_load_f32(accelTime)),
-            x87f_load_f32(decelTime)));
+        *linearTime = x87f_store_f32(x87f_sub(x87f_sub(x87f_load_f32(totalTime), x87f_load_f32(accelTime)), x87f_load_f32(decelTime)));
 #else
         *linearTime = totalTime - accelTime - decelTime;
 #endif
@@ -5651,29 +5290,23 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
 
         {
 #if EMULATE_X87
-            float distance = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(
-                x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
-                x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
-                x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2])))));
-#else
             float distance =
-                (float)CoduoLibm_Sqrt((double)(delta[0] * delta[0] +
-                                     delta[1] * delta[1] +
-                                     delta[2] * delta[2]));
+                (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
+                                                                       x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+                                                              x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2])))));
+#else
+            float distance = (float)CoduoLibm_Sqrt((double)(delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2]));
 #endif
             vec3_t velocity;
 
             /* (dist+dist) / ((tt+tt) - at - dt) kept 80-bit, one store -> shim. */
 #if EMULATE_X87
-            *speed = x87f_store_f32(x87f_div(
-                x87f_add(x87f_load_f32(distance), x87f_load_f32(distance)),
-                x87f_sub(x87f_sub(
-                    x87f_add(x87f_load_f32(totalTime), x87f_load_f32(totalTime)),
-                    x87f_load_f32(accelTime)),
-                    x87f_load_f32(decelTime))));
+            *speed = x87f_store_f32(
+                x87f_div(x87f_add(x87f_load_f32(distance), x87f_load_f32(distance)),
+                         x87f_sub(x87f_sub(x87f_add(x87f_load_f32(totalTime), x87f_load_f32(totalTime)), x87f_load_f32(accelTime)),
+                                  x87f_load_f32(decelTime))));
 #else
-            *speed = (distance + distance) /
-                     ((totalTime + totalTime) - accelTime - decelTime);
+            *speed = (distance + distance) / ((totalTime + totalTime) - accelTime - decelTime);
 #endif
             VectorNormalize2(delta, velocity);
             velocity[0] *= *speed;
@@ -5686,9 +5319,7 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                 game_compat_script_copy_vector(trajectory->trBase, currentValue);
                 game_compat_script_copy_vector(trajectory->trDelta, velocity);
                 trajectory->trType = TR_ACCELERATE;
-                BG_EvaluateTrajectory(trajectory,
-                                      level.time + trajectory->trDuration,
-                                      linearStart);
+                BG_EvaluateTrajectory(trajectory, level.time + trajectory->trDuration, linearStart);
             } else {
                 game_compat_script_copy_vector(linearStart, currentValue);
 
@@ -5697,8 +5328,7 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                     float inverseDuration;
 
                     trajectory->trTime = level.time;
-                    trajectory->trDuration =
-                        game_compat_script_mover_truncate_milliseconds(*linearTime);
+                    trajectory->trDuration = game_compat_script_mover_truncate_milliseconds(*linearTime);
                     game_compat_script_copy_vector(trajectory->trBase, currentValue);
 
                     linearDelta[0] = velocity[0] * *linearTime;
@@ -5706,13 +5336,10 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                     linearDelta[2] = velocity[2] * *linearTime;
                     /* 0x6fa1b: fild trDuration feeds the divide directly. */
 #if EMULATE_X87
-                    inverseDuration = x87f_store_f32(x87f_div(
-                        x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS),
-                        x87f_load_i32(trajectory->trDuration)));
-#else
                     inverseDuration =
-                        SCRIPT_SECONDS_TO_MILLISECONDS /
-                        trajectory->trDuration;
+                        x87f_store_f32(x87f_div(x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS), x87f_load_i32(trajectory->trDuration)));
+#else
+                    inverseDuration = SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
 #endif
                     trajectory->trDelta[0] = linearDelta[0] * inverseDuration;
                     trajectory->trDelta[1] = linearDelta[1] * inverseDuration;
@@ -5720,8 +5347,7 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                     trajectory->trType = TR_LINEAR_STOP;
                 } else {
                     trajectory->trTime = level.time;
-                    trajectory->trDuration =
-                        game_compat_script_mover_truncate_milliseconds(*storedDecelTime);
+                    trajectory->trDuration = game_compat_script_mover_truncate_milliseconds(*storedDecelTime);
                     game_compat_script_copy_vector(trajectory->trBase, currentValue);
                     game_compat_script_copy_vector(trajectory->trDelta, velocity);
                     trajectory->trType = TR_DECCELERATE;
@@ -5731,9 +5357,8 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
             /* linearStart[k] + velocity[k]*linearTime, MA one store -> shim. */
 #if EMULATE_X87
             for (int k = 0; k < 3; k++) {
-                decelStart[k] = x87f_store_f32(x87f_add(
-                    x87f_mul(x87f_load_f32(velocity[k]), x87f_load_f32(*linearTime)),
-                    x87f_load_f32(linearStart[k])));
+                decelStart[k] = x87f_store_f32(
+                    x87f_add(x87f_mul(x87f_load_f32(velocity[k]), x87f_load_f32(*linearTime)), x87f_load_f32(linearStart[k])));
             }
 #else
             decelStart[0] = linearStart[0] + velocity[0] * *linearTime;
@@ -5750,16 +5375,9 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
 /* VERIFIED_DECOMPILER(0x6fb7a, 7fb7a_FUN_0007fb7a.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; velocity setup, active trajectory evaluation, no-accel path, speed via double sqrt, accel/linear/decel setup, predicted target trajectory, and current evaluation checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x45680, size 0x394.
  */
-void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory,
-                                const float *velocity,
-                                float totalTime, float accelTime,
-                                float decelTime,
-                                float *currentValue, float *speed,
-                                float *linearTime,
-                                float *storedDecelTime,
-                                float *linearStart,
-                                float *decelStart,
-                                float *targetValue)
+void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory, const float *velocity, float totalTime, float accelTime, float decelTime,
+                                float *currentValue, float *speed, float *linearTime, float *storedDecelTime, float *linearStart,
+                                float *decelStart, float *targetValue)
 {
     if (trajectory->trType != TR_STATIONARY) {
         BG_EvaluateTrajectory(trajectory, level.time, currentValue);
@@ -5774,27 +5392,21 @@ void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory,
         game_compat_script_copy_vector(trajectory->trDelta, velocity);
         trajectory->trType = TR_LINEAR_STOP;
         BG_EvaluateTrajectory(trajectory, level.time, currentValue);
-        BG_EvaluateTrajectory(trajectory, level.time + trajectory->trDuration,
-                              targetValue);
+        BG_EvaluateTrajectory(trajectory, level.time + trajectory->trDuration, targetValue);
     } else {
 
         /* totalTime - accelTime - decelTime, 2 subs one store; velocity length
          * dot 80-bit -> double -> sqrt -> float -> shim. */
 #if EMULATE_X87
-        *linearTime = x87f_store_f32(x87f_sub(
-            x87f_sub(x87f_load_f32(totalTime), x87f_load_f32(accelTime)),
-            x87f_load_f32(decelTime)));
+        *linearTime = x87f_store_f32(x87f_sub(x87f_sub(x87f_load_f32(totalTime), x87f_load_f32(accelTime)), x87f_load_f32(decelTime)));
         *storedDecelTime = decelTime;
-        *speed = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(
-            x87f_mul(x87f_load_f32(velocity[0]), x87f_load_f32(velocity[0])),
-            x87f_mul(x87f_load_f32(velocity[1]), x87f_load_f32(velocity[1]))),
-            x87f_mul(x87f_load_f32(velocity[2]), x87f_load_f32(velocity[2])))));
+        *speed = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(velocity[0]), x87f_load_f32(velocity[0])),
+                                                                        x87f_mul(x87f_load_f32(velocity[1]), x87f_load_f32(velocity[1]))),
+                                                               x87f_mul(x87f_load_f32(velocity[2]), x87f_load_f32(velocity[2])))));
 #else
         *linearTime = totalTime - accelTime - decelTime;
         *storedDecelTime = decelTime;
-        *speed = (float)CoduoLibm_Sqrt((double)(velocity[0] * velocity[0] +
-                                      velocity[1] * velocity[1] +
-                                      velocity[2] * velocity[2]));
+        *speed = (float)CoduoLibm_Sqrt((double)(velocity[0] * velocity[0] + velocity[1] * velocity[1] + velocity[2] * velocity[2]));
 #endif
 
         if (accelTime != 0.0f) {
@@ -5803,22 +5415,19 @@ void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory,
             game_compat_script_copy_vector(trajectory->trBase, currentValue);
             game_compat_script_copy_vector(trajectory->trDelta, velocity);
             trajectory->trType = TR_ACCELERATE;
-            BG_EvaluateTrajectory(trajectory, level.time + trajectory->trDuration,
-                                  linearStart);
+            BG_EvaluateTrajectory(trajectory, level.time + trajectory->trDuration, linearStart);
         } else {
             game_compat_script_copy_vector(linearStart, currentValue);
 
             if (*linearTime != 0.0f) {
                 trajectory->trTime = level.time;
-                trajectory->trDuration =
-                    game_compat_script_mover_truncate_milliseconds(*linearTime);
+                trajectory->trDuration = game_compat_script_mover_truncate_milliseconds(*linearTime);
                 game_compat_script_copy_vector(trajectory->trBase, currentValue);
                 game_compat_script_copy_vector(trajectory->trDelta, velocity);
                 trajectory->trType = TR_LINEAR_STOP;
             } else {
                 trajectory->trTime = level.time;
-                trajectory->trDuration =
-                    game_compat_script_mover_truncate_milliseconds(*storedDecelTime);
+                trajectory->trDuration = game_compat_script_mover_truncate_milliseconds(*storedDecelTime);
                 game_compat_script_copy_vector(trajectory->trBase, currentValue);
                 game_compat_script_copy_vector(trajectory->trDelta, velocity);
                 trajectory->trType = TR_DECCELERATE;
@@ -5828,9 +5437,8 @@ void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory,
         /* linearStart[k] + velocity[k]*linearTime, MA one store -> shim. */
 #if EMULATE_X87
         for (int k = 0; k < 3; k++) {
-            decelStart[k] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(velocity[k]), x87f_load_f32(*linearTime)),
-                x87f_load_f32(linearStart[k])));
+            decelStart[k] =
+                x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(velocity[k]), x87f_load_f32(*linearTime)), x87f_load_f32(linearStart[k])));
         }
 #else
         decelStart[0] = linearStart[0] + velocity[0] * *linearTime;
@@ -5843,13 +5451,10 @@ void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory,
 
             decelTrajectory.trType = TR_DECCELERATE;
             decelTrajectory.trTime = level.time;
-            decelTrajectory.trDuration =
-                game_compat_script_mover_truncate_milliseconds(*storedDecelTime);
+            decelTrajectory.trDuration = game_compat_script_mover_truncate_milliseconds(*storedDecelTime);
             game_compat_script_copy_vector(decelTrajectory.trBase, decelStart);
             game_compat_script_copy_vector(decelTrajectory.trDelta, velocity);
-            BG_EvaluateTrajectory(&decelTrajectory,
-                                  level.time + decelTrajectory.trDuration,
-                                  targetValue);
+            BG_EvaluateTrajectory(&decelTrajectory, level.time + decelTrajectory.trDuration, targetValue);
         } else {
             game_compat_script_copy_vector(targetValue, decelStart);
         }
@@ -5861,26 +5466,19 @@ void ScriptMover_SetupMoveSpeed(trajectory_t *trajectory,
 /* VERIFIED_DECOMPILER(0x700ca, 800ca_FUN_000800ca.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; position trajectory/setup storage arguments and trap_LinkEntity side effect checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x455e0, size 0x64.
  */
-void ScriptMover_Move(gentity_t *ent, const float *targetValue,
-                      float totalTime, float accelTime, float decelTime)
+void ScriptMover_Move(gentity_t *ent, const float *targetValue, float totalTime, float accelTime, float decelTime)
 {
-    ScriptMover_SetupMove(
-        &ent->s.pos, targetValue, totalTime, accelTime, decelTime,
-        ent->currentOrigin,
-        game_compat_script_mover_pos_speed(ent),
-        game_compat_script_mover_pos_linear_time(ent),
-        game_compat_script_mover_pos_decel_time(ent),
-        game_compat_script_mover_pos_linear_start(ent),
-        game_compat_script_mover_pos_decel_start(ent),
-        game_compat_script_mover_pos_target(ent));
+    ScriptMover_SetupMove(&ent->s.pos, targetValue, totalTime, accelTime, decelTime, ent->currentOrigin,
+                          game_compat_script_mover_pos_speed(ent), game_compat_script_mover_pos_linear_time(ent),
+                          game_compat_script_mover_pos_decel_time(ent), game_compat_script_mover_pos_linear_start(ent),
+                          game_compat_script_mover_pos_decel_start(ent), game_compat_script_mover_pos_target(ent));
     trap_LinkEntity(ent);
 }
 
 /* VERIFIED_DECOMPILER(0x7016b, 8016b_FUN_0008016b.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; gravity trajectory time/duration/base/delta/type stores, immediate evaluation, and trap_LinkEntity side effect checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x45520, size 0x8c.
  */
-void ScriptMover_GravityMove(gentity_t *ent, const float *velocity,
-                             float duration)
+void ScriptMover_GravityMove(gentity_t *ent, const float *velocity, float duration)
 {
     ent->s.pos.trTime = level.time;
     ent->s.pos.trDuration = game_compat_script_mover_truncate_milliseconds(duration);
@@ -5894,38 +5492,24 @@ void ScriptMover_GravityMove(gentity_t *ent, const float *velocity,
 /* VERIFIED_DECOMPILER(0x70253, 80253_FUN_00080253.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; angular trajectory/setup storage arguments and trap_LinkEntity side effect checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x45480, size 0x64.
  */
-void ScriptMover_Rotate(gentity_t *ent, const float *targetAngles,
-                        float totalTime, float accelTime,
-                        float decelTime)
+void ScriptMover_Rotate(gentity_t *ent, const float *targetAngles, float totalTime, float accelTime, float decelTime)
 {
-    ScriptMover_SetupMove(
-        &ent->s.apos, targetAngles, totalTime, accelTime, decelTime,
-        ent->currentAngles,
-        game_compat_script_mover_apos_speed(ent),
-        game_compat_script_mover_apos_linear_time(ent),
-        game_compat_script_mover_apos_decel_time(ent),
-        game_compat_script_mover_apos_linear_start(ent),
-        game_compat_script_mover_apos_decel_start(ent),
-        game_compat_script_mover_apos_target(ent));
+    ScriptMover_SetupMove(&ent->s.apos, targetAngles, totalTime, accelTime, decelTime, ent->currentAngles,
+                          game_compat_script_mover_apos_speed(ent), game_compat_script_mover_apos_linear_time(ent),
+                          game_compat_script_mover_apos_decel_time(ent), game_compat_script_mover_apos_linear_start(ent),
+                          game_compat_script_mover_apos_decel_start(ent), game_compat_script_mover_apos_target(ent));
     trap_LinkEntity(ent);
 }
 
 /* VERIFIED_DECOMPILER(0x702f4, 802f4_FUN_000802f4.c, VERIFY-SCRIPT-MOVER-CORE-2026-06-17): DATAFLOW_VERIFIED; angular velocity setup storage arguments and trap_LinkEntity side effect checked against current decompiler output.
  * Mac PEF symbol evidence: game_mp.dll code 0x453e0, size 0x64.
  */
-void ScriptMover_RotateSpeed(gentity_t *ent, const float *velocity,
-                             float totalTime, float accelTime,
-                             float decelTime)
+void ScriptMover_RotateSpeed(gentity_t *ent, const float *velocity, float totalTime, float accelTime, float decelTime)
 {
-    ScriptMover_SetupMoveSpeed(
-        &ent->s.apos, velocity, totalTime, accelTime, decelTime,
-        ent->currentAngles,
-        game_compat_script_mover_apos_speed(ent),
-        game_compat_script_mover_apos_linear_time(ent),
-        game_compat_script_mover_apos_decel_time(ent),
-        game_compat_script_mover_apos_linear_start(ent),
-        game_compat_script_mover_apos_decel_start(ent),
-        game_compat_script_mover_apos_target(ent));
+    ScriptMover_SetupMoveSpeed(&ent->s.apos, velocity, totalTime, accelTime, decelTime, ent->currentAngles,
+                               game_compat_script_mover_apos_speed(ent), game_compat_script_mover_apos_linear_time(ent),
+                               game_compat_script_mover_apos_decel_time(ent), game_compat_script_mover_apos_linear_start(ent),
+                               game_compat_script_mover_apos_decel_start(ent), game_compat_script_mover_apos_target(ent));
     trap_LinkEntity(ent);
 }
 
@@ -5977,8 +5561,7 @@ void SP_script_origin(gentity_t *ent)
 }
 
 /* VERIFIED_DECOMPILER(0x70681, 80681_ScriptEntCmdGetCommandTimes.c, VERIFY-SCRIPT-BUILTINS-ENTITY-METHODS-2026-06-17): DATAFLOW_VERIFIED - total/accel/decel parameter indices, positive/nonnegative checks, optional-parameter branches, zero defaults, total-vs-accel+decel error, stores, and void return checked against current decompiler output. */
-void ScriptEntCmdGetCommandTimes(float *totalTime, float *accelTime,
-                                 float *decelTime)
+void ScriptEntCmdGetCommandTimes(float *totalTime, float *accelTime, float *decelTime)
 {
     int paramCount;
 
@@ -6103,9 +5686,7 @@ void ScriptEntCmd_RotateTo(uint32_t scriptObject)
     ScriptEntCmdGetCommandTimes(&totalTime, &accelTime, &decelTime);
 
     for (int axis = 0; axis < 3; axis++) {
-        adjustedTarget[axis] =
-            ent->currentAngles[axis] +
-            AngleSubtract(target[axis], ent->currentAngles[axis]);
+        adjustedTarget[axis] = ent->currentAngles[axis] + AngleSubtract(target[axis], ent->currentAngles[axis]);
     }
 
     ScriptMover_Rotate(ent, adjustedTarget, totalTime, accelTime, decelTime);
@@ -6204,16 +5785,11 @@ void ScriptEntCmd_NotSolid(uint32_t scriptObject)
 void Reached_ScriptMover(gentity_t *ent)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (ent->s.pos.trType != TR_STATIONARY &&
-        ent->s.pos.trTime + ent->s.pos.trDuration <= level.time) {
-        int reached = ScriptMover_Updatemove(
-            &ent->s.pos, ent->currentOrigin,
-            *game_compat_script_mover_pos_speed(ent),
-            *game_compat_script_mover_pos_linear_time(ent),
-            *game_compat_script_mover_pos_decel_time(ent),
-            game_compat_script_mover_pos_linear_start(ent),
-            game_compat_script_mover_pos_decel_start(ent),
-            game_compat_script_mover_pos_target(ent));
+    if (ent->s.pos.trType != TR_STATIONARY && ent->s.pos.trTime + ent->s.pos.trDuration <= level.time) {
+        int reached = ScriptMover_Updatemove(&ent->s.pos, ent->currentOrigin, *game_compat_script_mover_pos_speed(ent),
+                                             *game_compat_script_mover_pos_linear_time(ent), *game_compat_script_mover_pos_decel_time(ent),
+                                             game_compat_script_mover_pos_linear_start(ent), game_compat_script_mover_pos_decel_start(ent),
+                                             game_compat_script_mover_pos_target(ent));
 
         BG_EvaluateTrajectory(&ent->s.pos, level.time, ent->currentOrigin);
         trap_LinkEntity(ent);
@@ -6224,16 +5800,11 @@ void Reached_ScriptMover(gentity_t *ent)
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (ent->s.apos.trType != TR_STATIONARY &&
-        ent->s.apos.trTime + ent->s.apos.trDuration <= level.time) {
+    if (ent->s.apos.trType != TR_STATIONARY && ent->s.apos.trTime + ent->s.apos.trDuration <= level.time) {
         int reached = ScriptMover_Updatemove(
-            &ent->s.apos, ent->currentAngles,
-            *game_compat_script_mover_apos_speed(ent),
-            *game_compat_script_mover_apos_linear_time(ent),
-            *game_compat_script_mover_apos_decel_time(ent),
-            game_compat_script_mover_apos_linear_start(ent),
-            game_compat_script_mover_apos_decel_start(ent),
-            game_compat_script_mover_apos_target(ent));
+            &ent->s.apos, ent->currentAngles, *game_compat_script_mover_apos_speed(ent), *game_compat_script_mover_apos_linear_time(ent),
+            *game_compat_script_mover_apos_decel_time(ent), game_compat_script_mover_apos_linear_start(ent),
+            game_compat_script_mover_apos_decel_start(ent), game_compat_script_mover_apos_target(ent));
 
         BG_EvaluateTrajectory(&ent->s.apos, level.time, ent->currentAngles);
         trap_LinkEntity(ent);

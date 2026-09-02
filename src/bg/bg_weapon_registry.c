@@ -96,8 +96,7 @@ int32_t BG_GetAmmoTypeForName(const char *name)
 {
     int32_t ammoIndex;
 
-    for (ammoIndex = 0; ammoIndex < bg_numAmmoTypes;
-         ammoIndex = coduo_int32_from_bits((uint32_t)ammoIndex + 1u)) {
+    for (ammoIndex = 0; ammoIndex < bg_numAmmoTypes; ammoIndex = coduo_int32_from_bits((uint32_t)ammoIndex + 1u)) {
         if (Q_stricmp(bg_ammoTypeNames[ammoIndex], name) == 0) {
             return ammoIndex;
         }
@@ -111,8 +110,7 @@ int32_t BG_GetAmmoClipForName(const char *name)
 {
     int32_t clipIndex;
 
-    for (clipIndex = 0; clipIndex < bg_numAmmoClips;
-         clipIndex = coduo_int32_from_bits((uint32_t)clipIndex + 1u)) {
+    for (clipIndex = 0; clipIndex < bg_numAmmoClips; clipIndex = coduo_int32_from_bits((uint32_t)clipIndex + 1u)) {
         if (Q_stricmp(bg_ammoClipNames[clipIndex], name) == 0) {
             return clipIndex;
         }
@@ -126,8 +124,7 @@ int32_t BG_GetWeaponSlotForName(const char *name)
 {
     int32_t slot;
 
-    for (slot = 0; slot < WEAPSLOT_COUNT;
-         slot = coduo_int32_from_bits((uint32_t)slot + 1u)) {
+    for (slot = 0; slot < WEAPSLOT_COUNT; slot = coduo_int32_from_bits((uint32_t)slot + 1u)) {
         if (Q_stricmp(name, bg_weaponSlotNames[slot]) == 0) {
             return slot;
         }
@@ -145,8 +142,7 @@ int32_t BG_GetWeaponIndexForName(const char *name)
 {
     int32_t weapon;
 
-    for (weapon = 0; weapon <= bg_numWeapons;
-         weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
+    for (weapon = 0; weapon <= bg_numWeapons; weapon = coduo_int32_from_bits((uint32_t)weapon + 1u)) {
         const weaponInfo_t *weaponInfo = bg_weaponInfos[weapon];
 
         if (Q_stricmp(name, weaponInfo->pickupName) == 0) {

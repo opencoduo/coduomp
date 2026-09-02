@@ -23,8 +23,7 @@ void XAnimClearTreeWeights(XAnimTree *tree, uint32_t animIndex)
 
     XAnimEntry *entry = &tree->sourceTree->entries[animIndex];
     for (int32_t child = 0; child < entry->childCount; ++child) {
-        XAnimClearTreeWeights(
-            tree, entry->payload.parent.firstChildIndex + child);
+        XAnimClearTreeWeights(tree, entry->payload.parent.firstChildIndex + child);
     }
 
     XAnimFreeInfo(tree, handle);
@@ -47,10 +46,8 @@ void XAnimClearTree(XAnimTree *tree)
     XAnimClearTreeWeights(tree, XANIM_ROOT_NODE_INDEX);
 
     uint32_t nodeCount = tree->sourceTree->nodeCount;
-    for (int32_t selector = 0;
-         selector < XANIM_PART_REMAP_TABLE_COUNT; ++selector) {
-        uint8_t *partRemapTable =
-            coduo_xanim_part_remap_table_bytes(tree, selector);
+    for (int32_t selector = 0; selector < XANIM_PART_REMAP_TABLE_COUNT; ++selector) {
+        uint8_t *partRemapTable = coduo_xanim_part_remap_table_bytes(tree, selector);
 
         uint32_t lastIndexBits = nodeCount - 1U;
         int32_t animIndex;
@@ -58,20 +55,16 @@ void XAnimClearTree(XAnimTree *tree)
          * signed-negative loop test, including the zero-count wrap case. */
         memcpy(&animIndex, &lastIndexBits, sizeof(animIndex));
         for (; animIndex >= 0; --animIndex) {
-            uint16_t handle = coduo_xanim_part_remap_handle_load(
-                partRemapTable, (size_t)animIndex);
+            uint16_t handle = coduo_xanim_part_remap_handle_load(partRemapTable, (size_t)animIndex);
             if (handle == 0) {
                 continue;
             }
 
             XAnimEntry *entry = &tree->sourceTree->entries[animIndex];
             XAnimParts *record = entry->payload.leafAsset->data.xanimParts;
-            uint32_t remapSize =
-                (uint32_t)(int16_t)record->partNameHandles[0] +
-                DOBJ_PART_REMAP_PREFIX_SIZE;
+            uint32_t remapSize = (uint32_t)(int16_t)record->partNameHandles[0] + DOBJ_PART_REMAP_PREFIX_SIZE;
             SL_RemoveRefToStringOfLen(handle, remapSize);
-            coduo_xanim_part_remap_handle_store(
-                partRemapTable, (size_t)animIndex, 0);
+            coduo_xanim_part_remap_handle_store(partRemapTable, (size_t)animIndex, 0);
         }
     }
 }

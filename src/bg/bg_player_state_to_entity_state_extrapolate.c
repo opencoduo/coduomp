@@ -22,10 +22,7 @@ enum {
     BG_EXTRAPOLATE_MAX_PENDING_EVENTS = 4
 };
 
-void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
-                                            entityState_t *es,
-                                            int32_t time,
-                                            qboolean snap)
+void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps, entityState_t *es, int32_t time, qboolean snap)
 {
     bg_compat_player_state_set_entity_number(es, ps);
 
@@ -51,23 +48,14 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
 
     /* Publish one pending predictable-event parm through the direct event
      * slot. SUB/ADD/INC are 32-bit wrapping operations in the retail ABI. */
-    int32_t pendingDelta =
-        coduo_int32_from_bits((uint32_t)ps->oldEventIndex -
-                         (uint32_t)ps->eventIndex);
+    int32_t pendingDelta = coduo_int32_from_bits((uint32_t)ps->oldEventIndex - (uint32_t)ps->eventIndex);
     if (pendingDelta < 0) {
-        int32_t behind =
-            coduo_int32_from_bits((uint32_t)ps->eventIndex -
-                             (uint32_t)ps->oldEventIndex);
+        int32_t behind = coduo_int32_from_bits((uint32_t)ps->eventIndex - (uint32_t)ps->oldEventIndex);
         if (behind > BG_EXTRAPOLATE_MAX_PENDING_EVENTS) {
-            ps->oldEventIndex = coduo_int32_from_bits(
-                (uint32_t)ps->eventIndex -
-                (uint32_t)BG_EXTRAPOLATE_MAX_PENDING_EVENTS);
+            ps->oldEventIndex = coduo_int32_from_bits((uint32_t)ps->eventIndex - (uint32_t)BG_EXTRAPOLATE_MAX_PENDING_EVENTS);
         }
-        es->eventParm =
-            (uint8_t)ps->eventParms[(uint32_t)ps->oldEventIndex &
-                                    (MAX_PS_EVENTS - 1)];
-        ps->oldEventIndex =
-            coduo_int32_from_bits((uint32_t)ps->oldEventIndex + 1u);
+        es->eventParm = (uint8_t)ps->eventParms[(uint32_t)ps->oldEventIndex & (MAX_PS_EVENTS - 1)];
+        ps->oldEventIndex = coduo_int32_from_bits((uint32_t)ps->oldEventIndex + 1u);
     } else {
         es->eventParm = 0;
     }
@@ -75,9 +63,7 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
     /* If a reset moved the producer cursor behind the consumer cursor, retail
      * first catches the consumer up to the producer. The comparison uses the
      * signed result of a wrapping 32-bit subtraction. */
-    int32_t cursorLead =
-        coduo_int32_from_bits((uint32_t)ps->lastEventIndex -
-                         (uint32_t)ps->eventIndex);
+    int32_t cursorLead = coduo_int32_from_bits((uint32_t)ps->lastEventIndex - (uint32_t)ps->eventIndex);
     if (cursorLead > 0) {
         ps->lastEventIndex = ps->eventIndex;
     }
@@ -88,15 +74,13 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
     if (eventCursor != ps->eventIndex) {
         const int32_t *eventExclusions = pEventSingleClientList;
         for (;;) {
-            uint32_t sourceSlot =
-                (uint32_t)eventCursor & (MAX_PS_EVENTS - 1);
+            uint32_t sourceSlot = (uint32_t)eventCursor & (MAX_PS_EVENTS - 1);
             uint8_t event = (uint8_t)ps->events[sourceSlot];
 
             bg_compat_player_event(es->number, event);
 
             int32_t exclusionIndex = 0;
-            while (eventExclusions[exclusionIndex] > 0 &&
-                   eventExclusions[exclusionIndex] != event) {
+            while (eventExclusions[exclusionIndex] > 0 && eventExclusions[exclusionIndex] != event) {
                 exclusionIndex++;
             }
 
@@ -104,16 +88,13 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
                 /* Retail reloads the event byte after the scan and reloads
                  * eventSequence separately for the event and parm stores. */
                 uint8_t eventForStore = (uint8_t)ps->events[sourceSlot];
-                uint32_t eventOutputSlot =
-                    (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
+                uint32_t eventOutputSlot = (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
                 es->events[eventOutputSlot] = eventForStore;
 
-                uint32_t parmOutputSlot =
-                    (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
+                uint32_t parmOutputSlot = (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
                 uint8_t eventParm = (uint8_t)ps->eventParms[sourceSlot];
                 es->eventParms[parmOutputSlot] = eventParm;
-                es->eventSequence = coduo_int32_from_bits(
-                    (uint32_t)es->eventSequence + 1u);
+                es->eventSequence = coduo_int32_from_bits((uint32_t)es->eventSequence + 1u);
             }
 
             /* The producer cursor is reloaded before the local cursor's INC. */
@@ -129,9 +110,7 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
     es->weapon = (uint8_t)ps->currentWeapon;
     es->groundEntityNum = (uint16_t)ps->groundEntityNum;
 
-    es->eType = (ps->playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0
-                    ? ET_PLAYER
-                    : ET_INVISIBLE;
+    es->eType = (ps->playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 ? ET_PLAYER : ET_INVISIBLE;
 
     /* Snapping occurs only after the complete event projection, and applies to
      * both the copied origin and the copied angles. */
@@ -156,19 +135,13 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
     /* Replace the 3-bit position, 3-bit type, and 2-bit motion fields in the
      * already-existing packed word, preserving the other bits at each step. */
     uint32_t vehicleState = (uint32_t)es->vehicleAnimState;
-    vehicleState =
-        (vehicleState & ~VEHICLE_ANIM_STATE_POS_MASK) |
-        ((uint32_t)ps->vehiclePosition << VEHICLE_ANIM_STATE_POS_SHIFT);
+    vehicleState = (vehicleState & ~VEHICLE_ANIM_STATE_POS_MASK) | ((uint32_t)ps->vehiclePosition << VEHICLE_ANIM_STATE_POS_SHIFT);
     es->vehicleAnimState = (int32_t)vehicleState;
 
-    vehicleState =
-        (vehicleState & ~VEHICLE_ANIM_STATE_TYPE_MASK) |
-        ((uint32_t)ps->vehicleType << VEHICLE_ANIM_STATE_TYPE_SHIFT);
+    vehicleState = (vehicleState & ~VEHICLE_ANIM_STATE_TYPE_MASK) | ((uint32_t)ps->vehicleType << VEHICLE_ANIM_STATE_TYPE_SHIFT);
     es->vehicleAnimState = (int32_t)vehicleState;
 
-    vehicleState =
-        (vehicleState & ~VEHICLE_ANIM_STATE_MOTION_MASK) |
-        ((uint32_t)ps->vehicleMotion << VEHICLE_ANIM_STATE_MOTION_SHIFT);
+    vehicleState = (vehicleState & ~VEHICLE_ANIM_STATE_MOTION_MASK) | ((uint32_t)ps->vehicleMotion << VEHICLE_ANIM_STATE_MOTION_SHIFT);
     es->vehicleAnimState = (int32_t)vehicleState;
 
     uint32_t outputEFlags = es->eFlags;
@@ -192,28 +165,22 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
     /* The extrapolating path has no viewHeightLerpTime==0 shortcut. It spills
      * both integer operands to binary32 before dividing, then spills the
      * quotient to binary32 before either clamp comparison. */
-    if (ps->viewHeightTarget == ps->proneViewHeight &&
-        ps->viewHeightTarget != ps->crouchViewHeight) {
+    if (ps->viewHeightTarget == ps->proneViewHeight && ps->viewHeightTarget != ps->crouchViewHeight) {
         int32_t duration;
         /* 0x30006c7e compares against proneViewHeight (+0x574) first;
          * 0x30006c92 then compares against crouchViewHeight (+0x578). */
         if (ps->viewHeightLerpTarget == ps->proneViewHeight) {
             duration = BG_EXTRAPOLATE_VIEWHEIGHT_LERP_LONG_MS;
         } else if (ps->viewHeightLerpTarget == ps->crouchViewHeight) {
-            duration = ps->viewHeightLerpDown != 0
-                           ? BG_EXTRAPOLATE_VIEWHEIGHT_LERP_SHORT_MS
-                           : BG_EXTRAPOLATE_VIEWHEIGHT_LERP_LONG_MS;
+            duration = ps->viewHeightLerpDown != 0 ? BG_EXTRAPOLATE_VIEWHEIGHT_LERP_SHORT_MS : BG_EXTRAPOLATE_VIEWHEIGHT_LERP_LONG_MS;
         } else {
             duration = BG_EXTRAPOLATE_VIEWHEIGHT_LERP_SHORT_MS;
         }
 
-        int32_t elapsed =
-            coduo_int32_from_bits((uint32_t)ps->commandTime -
-                             (uint32_t)ps->viewHeightLerpTime);
+        int32_t elapsed = coduo_int32_from_bits((uint32_t)ps->commandTime - (uint32_t)ps->viewHeightLerpTime);
         float elapsedFloat = (float)(long double)elapsed;
         float durationFloat = (float)(long double)duration;
-        float fraction =
-            (float)((long double)elapsedFloat / (long double)durationFloat);
+        float fraction = (float)((long double)elapsedFloat / (long double)durationFloat);
 
         if (fraction < 0.0f) {
             fraction = 0.0f;
@@ -226,10 +193,8 @@ void BG_PlayerStateToEntityStateExtrapolate(playerState_t *ps,
         }
 
         es->viewAngles[0] = fraction * ps->torsoHeight;
-        es->viewAngles[1] =
-            AngleNormalize180(ps->torsoPitch) * fraction;
-        es->viewAngles[2] =
-            AngleNormalize180(ps->waistPitch) * fraction;
+        es->viewAngles[1] = AngleNormalize180(ps->torsoPitch) * fraction;
+        es->viewAngles[2] = AngleNormalize180(ps->waistPitch) * fraction;
     } else {
         es->viewAngles[0] = 0.0f;
         es->viewAngles[1] = 0.0f;

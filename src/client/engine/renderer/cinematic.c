@@ -8,10 +8,7 @@
  * Name and signature: same-module Mac symbol RE_UploadCinematic, with argument
  * positions proved by the Windows stack accesses. The display width/height are
  * part of the shared renderer API but this upload-only path does not use them. */
-void RE_UploadCinematic(int32_t width, int32_t height,
-                        int32_t columns, int32_t rows,
-                        const uint8_t *data, int32_t client,
-                        qboolean dirty)
+void RE_UploadCinematic(int32_t width, int32_t height, int32_t columns, int32_t rows, const uint8_t *data, int32_t client, qboolean dirty)
 {
     image_t *image = tr.scratchImages[client];
 
@@ -21,8 +18,7 @@ void RE_UploadCinematic(int32_t width, int32_t height,
     GL_Bind(image);
     if (image->width == columns && image->height == rows) {
         if (dirty) {
-            qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, columns, rows,
-                             GL_RGBA, GL_UNSIGNED_BYTE, data);
+            qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, columns, rows, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
         return;
     }
@@ -31,8 +27,7 @@ void RE_UploadCinematic(int32_t width, int32_t height,
     image->width = (uint16_t)columns;
     image->uploadHeight = (uint16_t)rows;
     image->height = (uint16_t)rows;
-    qglTexImage2D(GL_TEXTURE_2D, 0, 3, columns, rows, 0,
-                  GL_RGBA, GL_UNSIGNED_BYTE, data);
+    qglTexImage2D(GL_TEXTURE_2D, 0, 3, columns, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -45,9 +40,8 @@ void RE_UploadCinematic(int32_t width, int32_t height,
  * arguments independently proved by Windows stack accesses. MSVC inlined the
  * original R_SyncRenderThread and RB immediate-mode calls into this body; they
  * remain source-level calls here. */
-void RE_StretchRaw(int32_t x, int32_t y, int32_t width, int32_t height,
-                   int32_t columns, int32_t rows, const uint8_t *data,
-                   int32_t client, qboolean dirty)
+void RE_StretchRaw(int32_t x, int32_t y, int32_t width, int32_t height, int32_t columns, int32_t rows, const uint8_t *data, int32_t client,
+                   qboolean dirty)
 {
     image_t *image;
     int32_t columnPower = 0;
@@ -79,7 +73,8 @@ void RE_StretchRaw(int32_t x, int32_t y, int32_t width, int32_t height,
     }
     if ((1 << columnPower) != columns || (1 << rowPower) != rows) {
         ri.Error(ERR_DROP,
-                 "\x15" "Draw_StretchRaw: size not a power of 2: %i by %i",
+                 "\x15"
+                 "Draw_StretchRaw: size not a power of 2: %i by %i",
                  columns, rows);
     }
 
@@ -87,16 +82,14 @@ void RE_StretchRaw(int32_t x, int32_t y, int32_t width, int32_t height,
     GL_Bind(image);
     if (image->width == columns && image->height == rows) {
         if (dirty) {
-            qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, columns, rows,
-                             GL_RGBA, GL_UNSIGNED_BYTE, data);
+            qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, columns, rows, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
     } else {
         image->uploadWidth = (uint16_t)columns;
         image->width = (uint16_t)columns;
         image->uploadHeight = (uint16_t)rows;
         image->height = (uint16_t)rows;
-        qglTexImage2D(GL_TEXTURE_2D, 0, 3, columns, rows, 0,
-                      GL_RGBA, GL_UNSIGNED_BYTE, data);
+        qglTexImage2D(GL_TEXTURE_2D, 0, 3, columns, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -104,8 +97,7 @@ void RE_StretchRaw(int32_t x, int32_t y, int32_t width, int32_t height,
     }
 
     if (r_speeds->integer != 0) {
-        ri.Printf(R_PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n",
-                  columns, rows, ri.Milliseconds() - uploadStart);
+        ri.Printf(R_PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", columns, rows, ri.Milliseconds() - uploadStart);
     }
 
     RB_SetGL2D();

@@ -8,9 +8,7 @@ enum {
     NET_OOB_MARKER = -1
 };
 
-void NET_SendPacket(netsrc_t sock,
-                    int32_t length,
-                    const void *data, netadr_t to)
+void NET_SendPacket(netsrc_t sock, int32_t length, const void *data, netadr_t to)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (length < 0) {

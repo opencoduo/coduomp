@@ -6,20 +6,18 @@
 
 #define COM_CONFIGURE_FILE_PATH "configure_mp.csv"
 #define COM_CONFIGURE_FILE_NOT_FOUND_ERROR \
-    "EXE_ERR_NOT_FOUND" "\x15" COM_CONFIGURE_FILE_PATH
+    "EXE_ERR_NOT_FOUND" \
+    "\x15" COM_CONFIGURE_FILE_PATH
 #define COM_CONFIGURE_HASH_MULTIPLIER 31337
 #define COM_CONFIGURE_HASH_MASK 0x0fffffff
 #define COM_CONFIGURE_HASH_OFFSET 1
 
-uint32_t
-Com_HashConfigureFileBuffer(const char *data,
-                            int32_t length)
+uint32_t Com_HashConfigureFileBuffer(const char *data, int32_t length)
 {
     uint32_t hash = 0;
 
     for (int32_t index = 0; index < length; ++index) {
-        hash = hash * COM_CONFIGURE_HASH_MULTIPLIER +
-               (uint32_t)data[index];
+        hash = hash * COM_CONFIGURE_HASH_MULTIPLIER + (uint32_t)data[index];
     }
 
     return (hash & COM_CONFIGURE_HASH_MASK) + COM_CONFIGURE_HASH_OFFSET;
@@ -59,7 +57,5 @@ void Com_InitScriptRuntime(void)
         debugReport = qtrue;
     }
 
-    Scr_Init(debugReport,
-                       host_cvar_developer_script_pointer_slot->integer,
-                       com_developer->integer);
+    Scr_Init(debugReport, host_cvar_developer_script_pointer_slot->integer, com_developer->integer);
 }

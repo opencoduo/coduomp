@@ -33,8 +33,7 @@
  * FLAGS, CLIPMASK, DIE, BYTE_17B/17C/17D -- all replaced by struct fields. */
 /* CLIENT_OFFSET_* replaced by gclient_t struct field access,
  * leanFraction -> client->ps.leanFraction, leanYaw -> client->ps.viewAngles[1]. */
-#define CLIENT_SESSION_COPY_SIZE \
-    (offsetof(gclient_t, archiveClient) - offsetof(gclient_t, sessionState))
+#define CLIENT_SESSION_COPY_SIZE (offsetof(gclient_t, archiveClient) - offsetof(gclient_t, sessionState))
 #define CLIENT_SPAWN_PRESERVED_PS_FLAGS 0x00010008u
 #define CLIENT_SPAWN_ACTIVE_PS_FLAG 0x00000010u
 #define CLIENT_SPAWN_TURRET_FLAGS 0x00006000u
@@ -44,8 +43,7 @@
 #define CLIENT_SPAWN_VIEWHEIGHT_MODE 8
 #define CLIENT_SPAWN_LEVELTIME_BACKDATE_MS 100
 #define CLIENT_SECONDS_TO_MS 1000
-#define CLIENT_DISCONNECT_TAIL_CLEAR_SIZE \
-    (offsetof(gclient_t, spectatorActivityState) - offsetof(gclient_t, clientNum))
+#define CLIENT_DISCONNECT_TAIL_CLEAR_SIZE (offsetof(gclient_t, spectatorActivityState) - offsetof(gclient_t, clientNum))
 #define SERVER_COMMAND_RELIABLE 1
 #define DISCONNECT_REASON "disconnect"
 #define DISCONNECT_MENU_RESPONSE_VALUE "-1"
@@ -54,10 +52,8 @@
 #define LEAN_SIDE_SCALE 16.0f
 #define LEAN_FORWARD_SCALE 20.0f
 
-typedef char client_session_copy_size_check[
-    (CLIENT_SESSION_COPY_SIZE == 276) ? 1 : -1];
-typedef char client_disconnect_tail_clear_size_check[
-    (CLIENT_DISCONNECT_TAIL_CLEAR_SIZE == 92) ? 1 : -1];
+typedef char client_session_copy_size_check[(CLIENT_SESSION_COPY_SIZE == 276) ? 1 : -1];
+typedef char client_disconnect_tail_clear_size_check[(CLIENT_DISCONNECT_TAIL_CLEAR_SIZE == 92) ? 1 : -1];
 
 static const float CLIENT_WALK_SPEED_SCALE = 0.4f;
 static const float CLIENT_RUN_SPEED_SCALE = 1.0f;
@@ -89,11 +85,9 @@ void Scr_Notify(gentity_t *ent, uint16_t event, int paramCount);
 void CalculateRanks(void);
 void StopFollowing(gentity_t *ent);
 void HudElem_ClientDisconnect(gentity_t *ent);
-void trap_SendServerCommand(int clientNum, int reliable,
-                                   const char *command);
-void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
-                       int damage, int meansOfDeath, int weapon,
-                       const float *dir, int hitLocation);
+void trap_SendServerCommand(int clientNum, int reliable, const char *command);
+void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath, int weapon, const float *dir,
+                int hitLocation);
 
 /* VERIFIED_DECOMPILER(0x44ab4, 54ab4_ClientConnect.c, VERIFY-WORKER-CLIENT-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED - client/BGS zeroing and preserved animTree, initial session fields, entity setup, userinfo/password rejection, connect script notify, and rank update checked. */
 char *ClientConnect(int clientNum, uint16_t persistentValue)
@@ -139,9 +133,7 @@ char *ClientConnect(int clientNum, uint16_t persistentValue)
         const char *password = Info_ValueForKey(userinfo, "password");
         const char *requiredPassword = g_password.string;
 
-        if (requiredPassword[0] != '\0' &&
-            Q_stricmp(requiredPassword, PASSWORD_NONE) != 0 &&
-            strcmp(requiredPassword, password) != 0) {
+        if (requiredPassword[0] != '\0' && Q_stricmp(requiredPassword, PASSWORD_NONE) != 0 && strcmp(requiredPassword, password) != 0) {
             G_FreeEntity(ent);
             return INVALID_PASSWORD_MESSAGE;
         }
@@ -155,8 +147,7 @@ char *ClientConnect(int clientNum, uint16_t persistentValue)
 /* VERIFIED_DECOMPILER(0x44d82, 54d82_ClientBegin.c, VERIFY-WORKER-CLIENT-LIFECYCLE-2026-06-17): DATAFLOW_VERIFIED - connected-state store, CalculateRanks call, begin notify target/const/arg-count, and void return checked. */
 void ClientBegin(int clientNum)
 {
-    level.clients[clientNum].connectedState =
-        CON_CONNECTED;
+    level.clients[clientNum].connectedState = CON_CONNECTED;
     CalculateRanks();
     Scr_Notify(&g_entities[clientNum], scr_const_begin, 0);
 }
@@ -167,18 +158,14 @@ void ClientSpawn(gentity_t *ent, const float *origin, const float *angles)
     int clientNum = (int)(ent - g_entities);
     gclient_t *client = ent->client;
     uint8_t savedSession[CLIENT_SESSION_COPY_SIZE];
-    uint32_t preservedPsFlags =
-        client->ps.entityStateFlags & CLIENT_SPAWN_PRESERVED_PS_FLAGS;
+    uint32_t preservedPsFlags = client->ps.entityStateFlags & CLIENT_SPAWN_PRESERVED_PS_FLAGS;
     int32_t preservedSpawnCount = client->ps.stats[STAT_SPAWN_COUNT];
 
-    if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 &&
-        (client->ps.entityStateFlags & CLIENT_SPAWN_TURRET_FLAGS) != 0) {
-        G_ClientStopUsingTurret(
-            &level.gentities[client->ps.viewLockedEntityNum]);
+    if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 && (client->ps.entityStateFlags & CLIENT_SPAWN_TURRET_FLAGS) != 0) {
+        G_ClientStopUsingTurret(&level.gentities[client->ps.viewLockedEntityNum]);
     }
 
-    if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 &&
-        (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
+    if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 && (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
         VEH_UnlinkPlayer(ent, 0);
     }
 
@@ -205,8 +192,7 @@ void ClientSpawn(gentity_t *ent, const float *origin, const float *angles)
     memcpy(&client->sessionState, savedSession, sizeof(savedSession));
 
     client->archiveClient = CLIENT_ARCHIVE_NONE;
-    client->ps.stats[STAT_SPAWN_COUNT] = coduo_int32_from_bits(
-        (uint32_t)preservedSpawnCount + UINT32_C(1));
+    client->ps.stats[STAT_SPAWN_COUNT] = coduo_int32_from_bits((uint32_t)preservedSpawnCount + UINT32_C(1));
     client->ps.stats[STAT_MAX_HEALTH] = client->normalMaxHealth;
     client->ps.entityStateFlags = preservedPsFlags | CLIENT_SPAWN_ACTIVE_PS_FLAG;
     client->clientNum = clientNum;
@@ -249,22 +235,15 @@ void ClientSpawn(gentity_t *ent, const float *origin, const float *angles)
     SetClientViewAngle(ent, angles);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    client->inactivityTime = coduo_int32_from_bits(
-        (uint32_t)g_inactivity.integer *
-            (uint32_t)CLIENT_SECONDS_TO_MS +
-        (uint32_t)level.time);
-    client->spectatorInactivityTime = coduo_int32_from_bits(
-        (uint32_t)g_inactivityspectator.integer *
-            (uint32_t)CLIENT_SECONDS_TO_MS +
-        (uint32_t)level.time);
+    client->inactivityTime = coduo_int32_from_bits((uint32_t)g_inactivity.integer * (uint32_t)CLIENT_SECONDS_TO_MS + (uint32_t)level.time);
+    client->spectatorInactivityTime =
+        coduo_int32_from_bits((uint32_t)g_inactivityspectator.integer * (uint32_t)CLIENT_SECONDS_TO_MS + (uint32_t)level.time);
     client->inactivityWarningSent = 0;
     client->spectatorInactivityWarning = 0;
     client->latchedButtons = 0;
     client->latchedWbuttons = 0;
     client->command.commandTime = level.time;
-    client->ps.commandTime = coduo_int32_from_bits(
-        (uint32_t)level.time -
-        (uint32_t)CLIENT_SPAWN_LEVELTIME_BACKDATE_MS);
+    client->ps.commandTime = coduo_int32_from_bits((uint32_t)level.time - (uint32_t)CLIENT_SPAWN_LEVELTIME_BACKDATE_MS);
 
     ClientEndFrame(ent);
     ClientThink_real(ent, &client->command);
@@ -284,9 +263,7 @@ void ClientDisconnect(int clientNum)
     for (int index = 0; index < level.maxclients; index++) {
         gclient_t *other = &level.clients[index];
 
-        if (other->connectedState != 0 &&
-            other->sessionState == SESS_STATE_SPECTATOR &&
-            other->archiveClient == clientNum) {
+        if (other->connectedState != 0 && other->sessionState == SESS_STATE_SPECTATOR && other->archiveClient == clientNum) {
             StopFollowing(&g_entities[index]);
         }
     }
@@ -294,12 +271,10 @@ void ClientDisconnect(int clientNum)
     for (int index = 0; index < level.maxclients; index++) {
         gclient_t *other = &level.clients[index];
 
-        if (other->connectedState != 0 &&
-            other->pendingComplaintClient == clientNum) {
+        if (other->connectedState != 0 && other->pendingComplaintClient == clientNum) {
             other->pendingComplaintClient = CLIENT_ARCHIVE_NONE;
             other->pendingComplaintTime = 0;
-            trap_SendServerCommand(index, SERVER_COMMAND_RELIABLE,
-                                   DISCONNECT_COMPLAINT_CANCEL);
+            trap_SendServerCommand(index, SERVER_COMMAND_RELIABLE, DISCONNECT_COMPLAINT_CANCEL);
             break;
         }
     }
@@ -323,10 +298,8 @@ void G_SetPlayerSize(void)
      * products (0x456b6/0x456de), storing element [1] before [0] each time;
      * value-identical to negating one product, form kept for
      * instruction-stream parity. */
-    playerMins[0] = playerMins[1] =
-        g_bounds_width.value * -PLAYER_SIZE_HALF_WIDTH;
-    playerMaxs[0] = playerMaxs[1] =
-        g_bounds_width.value * PLAYER_SIZE_HALF_WIDTH;
+    playerMins[0] = playerMins[1] = g_bounds_width.value * -PLAYER_SIZE_HALF_WIDTH;
+    playerMaxs[0] = playerMaxs[1] = g_bounds_width.value * PLAYER_SIZE_HALF_WIDTH;
     playerMaxs[2] = g_bounds_height_standing.value;
 }
 
@@ -335,8 +308,7 @@ void G_AddLean(gentity_t *ent, float *origin)
 {
     gclient_t *client = ent->client;
 
-    AddLeanToPosition(origin,
-                      client->ps.viewAngles[1],  /* leanYaw at +0xec */
-                      client->ps.leanFraction,  /* lean fraction at +0x44 */
+    AddLeanToPosition(origin, client->ps.viewAngles[1], /* leanYaw at +0xec */
+                      client->ps.leanFraction, /* lean fraction at +0x44 */
                       LEAN_SIDE_SCALE, LEAN_FORWARD_SCALE);
 }

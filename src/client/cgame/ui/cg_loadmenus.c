@@ -52,7 +52,9 @@ static const char *const CG_LOADMENU_KEYWORD = "loadmenu"; // 0x30077bc8
 static const char *const CG_CLOSE_BRACE_TOKEN = "}";       // 0x30072764
 
 // Universal Q_stricmp limit: Q_stricmpn(99999, ...) degenerates to a full compare.
-enum { STRICMP_NO_LIMIT = 99999 };
+enum {
+    STRICMP_NO_LIMIT = 99999
+};
 
 void CG_LoadMenus(int32_t loadMode, const char *menuFile)
 {
@@ -67,31 +69,26 @@ void CG_LoadMenus(int32_t loadMode, const char *menuFile)
     // 0x3002d2e2..0x3002d2fc: open the requested file (mode FS_READ). The trap
     // writes the handle into &fileHandle and returns the byte length in ESI.
     fileHandle = 0;
-    length = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_FS_FOPEN_FILE, (intptr_t)menuFile, (intptr_t)&fileHandle, FS_READ));
+    length = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)menuFile, (intptr_t)&fileHandle, FS_READ));
 
     // 0x3002d2fa CMP EAX,EBX(0) ; JNZ 0x3002d349: EAX is the handle just written.
     // A zero handle means the open failed.
     if (fileHandle == 0) {
         // 0x3002d2fe..0x3002d312: report and switch to the default file.
-        cgame_syscall(CG_ERROR,
-                      (intptr_t)va("^3menu file not found: %s, using default\n",
-                                            menuFile));
+        cgame_syscall(CG_ERROR, (intptr_t)va("^3menu file not found: %s, using default\n", menuFile));
 
         // 0x3002d312..0x3002d330: re-open the default "ui_mp/hud.txt".
         fileHandle = 0;
-        length = coduo_int32_from_bits((uint32_t)cgame_syscall(
-            CG_FS_FOPEN_FILE, (intptr_t)CG_DEFAULT_MENU_FILE,
-            (intptr_t)&fileHandle, FS_READ));
+        length = coduo_int32_from_bits(
+            (uint32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)CG_DEFAULT_MENU_FILE, (intptr_t)&fileHandle, FS_READ));
 
         // 0x3002d32e CMP EAX,EBX(0) ; JNZ 0x3002d349.
         if (fileHandle == 0) {
             // 0x3002d332..0x3002d346: the default is missing too.
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            cgame_syscall(CG_ERROR,
-                          (intptr_t)va("^1default menu file not found: "
-                                                "ui/hud.txt, unable to continue!\n",
-                                                menuFile));
+            cgame_syscall(CG_ERROR, (intptr_t)va("^1default menu file not found: "
+                                                 "ui/hud.txt, unable to continue!\n",
+                                                 menuFile));
         }
     }
 
@@ -99,10 +96,9 @@ void CG_LoadMenus(int32_t loadMode, const char *menuFile)
     if (length >= MAX_MENULIST_FILE) {
         // 0x3002d351..0x3002d372: file too large -> report, close, and give up.
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        cgame_syscall(CG_ERROR,
-                      (intptr_t)va("^1menu file too large: %s is %i, "
-                                            "max allowed is %i",
-                                            menuFile, length, MAX_MENULIST_FILE));
+        cgame_syscall(CG_ERROR, (intptr_t)va("^1menu file too large: %s is %i, "
+                                             "max allowed is %i",
+                                             menuFile, length, MAX_MENULIST_FILE));
         cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
         // 0x3002d37b..0x3002d381: epilogue, return void.
         return;
@@ -110,10 +106,7 @@ void CG_LoadMenus(int32_t loadMode, const char *menuFile)
 
     // 0x3002d382..0x3002d3a8: read the whole file into the shared 4096-byte buffer,
     // close it, and NUL-terminate at the byte length.
-    cgame_syscall(CG_FS_READ,
-                  (intptr_t)cg_menuListText,
-                  length,
-                  fileHandle);
+    cgame_syscall(CG_FS_READ, (intptr_t)cg_menuListText, length, fileHandle);
     cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
     cg_menuListText[length] = '\0'; // 0x3002d39c MOV byte[ESI + 0x300da888],BL(0)
 
@@ -171,7 +164,5 @@ void CG_LoadMenus(int32_t loadMode, const char *menuFile)
     // 0x3002d44e..0x3002d463: report the elapsed load time. One CG_MILLISECONDS read for
     // the end time; 0x3002d456 SUB EAX,EBP forms (endMs - startMs).
     Com_Printf("UI menu load time = %d milli seconds\n",
-               coduo_int32_from_bits(
-                   (uint32_t)cgame_syscall(CG_MILLISECONDS) -
-                   (uint32_t)startMs));
+               coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MILLISECONDS) - (uint32_t)startMs));
 }

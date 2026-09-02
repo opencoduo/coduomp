@@ -61,9 +61,13 @@ static const char *const CG_HUD_MENU_FILE_DEFAULT = "ui_mp/hud.txt";
 static const char *const CG_HUD_FILES_CVAR = "cg_hudFiles";
 
 // The asset load mode passed to CG_LoadMenus (the literal 5 at 0x3002dcca).
-enum { CG_HUD_LOAD_MODE = 5 };
+enum {
+    CG_HUD_LOAD_MODE = 5
+};
 
-enum { CG_UI_TEXT_FILE_BUFFER_SIZE = 4096 };
+enum {
+    CG_UI_TEXT_FILE_BUFFER_SIZE = 4096
+};
 
 static qboolean cgame_compat_overstrikeMode;
 static char cgame_compat_textFileBuffer[CG_UI_TEXT_FILE_BUFFER_SIZE];
@@ -86,9 +90,7 @@ static qboolean cgame_compat_get_overstrike_mode(void)
 static const char *cgame_compat_resolve_text_token(const char *filename)
 {
     int32_t handle = 0;
-    int32_t length = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE,
-                                             (intptr_t)filename,
-                                             (intptr_t)&handle, FS_READ);
+    int32_t length = (int32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)filename, (intptr_t)&handle, FS_READ);
 
     if (handle == 0) {
         return NULL;
@@ -98,16 +100,14 @@ static const char *cgame_compat_resolve_text_token(const char *filename)
         cgame_syscall(CG_FS_FCLOSE_FILE, handle);
         return NULL;
     }
-    cgame_syscall(CG_FS_READ, (intptr_t)cgame_compat_textFileBuffer,
-                  length, handle);
+    cgame_syscall(CG_FS_READ, (intptr_t)cgame_compat_textFileBuffer, length, handle);
     cgame_compat_textFileBuffer[length] = '\0';
     cgame_syscall(CG_FS_FCLOSE_FILE, handle);
     return cgame_compat_textFileBuffer;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: UI's matching callback is intentionally empty. */
-static void cgame_compat_feeder_add_item(float feeder, const char *name,
-                                         int32_t value)
+static void cgame_compat_feeder_add_item(float feeder, const char *name, int32_t value)
 {
     (void)feeder;
     (void)name;
@@ -144,8 +144,8 @@ void CG_UIDisplayContextInit(void)
     // address. Each machine-code address has been resolved to the recovered
     // original function.
     display->registerShaderNoMip = trap_R_RegisterShaderNoMip; // +0x00
-    display->setColor            = trap_R_SetColor;            // +0x04
-    display->drawHandlePic       = CG_DrawPic;                 // +0x08
+    display->setColor = trap_R_SetColor;            // +0x04
+    display->drawHandlePic = CG_DrawPic;                 // +0x08
 #if defined(_WIN32) && UINTPTR_MAX == UINT32_MAX
     /* The retail initializer stores these exact trap-wrapper addresses
      * (0x3003e0f0/0x3003de30/0x3003dde0/0x3003de10). Their recovered
@@ -155,37 +155,37 @@ void CG_UIDisplayContextInit(void)
      * proved function-pointer values and call frames. Register-based 64-bit
      * ABIs do not; those builds must deviate through the adapters below. */
     display->drawStretchPic = (ui_drawStretchPic_t)trap_R_DrawStretchPic; // +0x0c
-    display->drawText       = (ui_drawText_t)trap_R_Text_Paint;           // +0x10
-    display->textWidth      = (ui_textWidth_t)trap_R_Text_Width;          // +0x14
-    display->textHeight     = (ui_textHeight_t)trap_R_Text_Height;        // +0x18
+    display->drawText = (ui_drawText_t)trap_R_Text_Paint;           // +0x10
+    display->textWidth = (ui_textWidth_t)trap_R_Text_Width;          // +0x14
+    display->textHeight = (ui_textHeight_t)trap_R_Text_Height;        // +0x18
 #else
     display->drawStretchPic = OpenCoDUO_UI_DrawStretchPicAdapter; // +0x0c
-    display->drawText       = OpenCoDUO_UI_DrawTextAdapter;       // +0x10
-    display->textWidth      = OpenCoDUO_UI_TextWidthAdapter;      // +0x14
-    display->textHeight     = OpenCoDUO_UI_TextHeightAdapter;     // +0x18
+    display->drawText = OpenCoDUO_UI_DrawTextAdapter;       // +0x10
+    display->textWidth = OpenCoDUO_UI_TextWidthAdapter;      // +0x14
+    display->textHeight = OpenCoDUO_UI_TextHeightAdapter;     // +0x18
 #endif
-    display->translateString     = trap_SE_TranslateReference;     // +0x1c
-    display->getLocalizedString  = CG_SafeTranslateString;         // +0x20
+    display->translateString = trap_SE_TranslateReference;     // +0x1c
+    display->getLocalizedString = CG_SafeTranslateString;         // +0x20
     display->localizeWithBinding = CG_TranslateMessage;            // +0x24
-    display->registerModel       = CG_RegisterModel;               // +0x2c
-    display->modelBounds         = trap_R_ModelBounds;             // +0x30
-    display->fillRect            = CG_FillRect;                    // +0x34
-    display->drawRect            = CG_DrawRect;                    // +0x38
-    display->drawSides           = CG_DrawSides;                   // +0x3c
-    display->drawTopBottom       = CG_DrawTopBottom;               // +0x40
-    display->clearScene          = trap_R_ClearScene;              // +0x44
+    display->registerModel = CG_RegisterModel;               // +0x2c
+    display->modelBounds = trap_R_ModelBounds;             // +0x30
+    display->fillRect = CG_FillRect;                    // +0x34
+    display->drawRect = CG_DrawRect;                    // +0x38
+    display->drawSides = CG_DrawSides;                   // +0x3c
+    display->drawTopBottom = CG_DrawTopBottom;               // +0x40
+    display->clearScene = trap_R_ClearScene;              // +0x44
     display->addRefEntityToScene = trap_R_AddRefEntityToScene;     // +0x48
-    display->renderScene         = trap_R_RenderScene;             // +0x4c
-    display->registerFont        = trap_R_RegisterFont;            // +0x50
-    display->ownerDrawItem       = CG_OwnerDraw;                   // +0x54
-    display->ownerDrawValue      = CG_OwnerDrawValue;              // +0x58
-    display->ownerDrawVisible    = CG_OwnerDrawVisible;            // +0x5c
-    display->runScript           = CG_RunMenuScript;               // +0x60
-    display->getTeamColor        = CG_GetTeamColor;                // +0x64
-    display->getCVarString       = trap_Cvar_VariableStringBuffer; // +0x68
-    display->getCVarValue        = CG_Cvar_Get;                    // +0x6c
-    display->setCVar             = trap_Cvar_Set;                  // +0x70
-    display->getConfigString     = CG_ConfigString;                // +0x74
+    display->renderScene = trap_R_RenderScene;             // +0x4c
+    display->registerFont = trap_R_RegisterFont;            // +0x50
+    display->ownerDrawItem = CG_OwnerDraw;                   // +0x54
+    display->ownerDrawValue = CG_OwnerDrawValue;              // +0x58
+    display->ownerDrawVisible = CG_OwnerDrawVisible;            // +0x5c
+    display->runScript = CG_RunMenuScript;               // +0x60
+    display->getTeamColor = CG_GetTeamColor;                // +0x64
+    display->getCVarString = trap_Cvar_VariableStringBuffer; // +0x68
+    display->getCVarValue = CG_Cvar_Get;                    // +0x6c
+    display->setCVar = trap_Cvar_Set;                  // +0x70
+    display->getConfigString = CG_ConfigString;                // +0x74
 #if defined(_WIN32) && UINTPTR_MAX == UINT32_MAX
     display->drawTextWithCursor = (ui_drawTextWithCursor_t)trap_R_Text_PaintWithCursor; // +0x78
 #else
@@ -194,31 +194,31 @@ void CG_UIDisplayContextInit(void)
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     display->setOverstrikeMode = cgame_compat_set_overstrike_mode; // +0x7c
     display->getOverstrikeMode = cgame_compat_get_overstrike_mode; // +0x80
-    display->startLocalSound    = CG_PlayClientSoundAliasByName; // +0x84
-    display->ownerDrawHandleKey = CG_OwnerDrawHandleKey;         // +0x88
-    display->feederCount        = CG_FeederCount;                // +0x8c
-    display->feederItemText     = CG_FeederItemText;             // +0x90
+    display->startLocalSound = CG_PlayClientSoundAliasByName; // +0x84
+    display->ownerDrawHandleKey = CG_OwnerDrawHandleKey; // +0x88
+    display->feederCount = CG_FeederCount; // +0x8c
+    display->feederItemText = CG_FeederItemText; // +0x90
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     display->resolveTextToken = cgame_compat_resolve_text_token; // +0x94
     display->feederItemImage = CG_FeederItemImage; // +0x98
     display->feederSelection = CG_FeederSelection; // +0x9c
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    display->feederAddItem = cgame_compat_feeder_add_item;   // +0xa0
-    display->getAutoUpdate = cgame_compat_get_auto_update;   // +0xa4
-    display->runningGame   = cgame_compat_running_game;      // +0xa8
+    display->feederAddItem = cgame_compat_feeder_add_item; // +0xa0
+    display->getAutoUpdate = cgame_compat_get_auto_update; // +0xa4
+    display->runningGame = cgame_compat_running_game; // +0xa8
     display->keynumToStringBuf = trap_Key_KeynumToStringBuf; // +0xac
-    display->getBindingBuf     = trap_Key_GetBindingBuf;     // +0xb0
-    display->setBinding        = trap_Key_SetBinding;        // +0xb4
+    display->getBindingBuf = trap_Key_GetBindingBuf; // +0xb0
+    display->setBinding = trap_Key_SetBinding; // +0xb4
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    display->executeText        = cgame_compat_execute_text; // +0xb8
-    display->error             = Com_Error;                 // +0xbc
-    display->print             = Com_Printf;                // +0xc0
-    display->ownerDrawWidth    = CG_OwnerDrawWidth;         // +0xc8
-    display->registerAsset     = trap_Com_SoundAliasString; // +0xcc
-    display->playCinematic     = CG_PlayCinematic;          // +0xd0
-    display->stopCinematic     = CG_StopCinematic;          // +0xd4
-    display->drawCinematic     = CG_DrawCinematic;          // +0xd8
-    display->runCinematicFrame = CG_RunCinematicFrame;      // +0xdc
+    display->executeText = cgame_compat_execute_text; // +0xb8
+    display->error = Com_Error; // +0xbc
+    display->print = Com_Printf; // +0xc0
+    display->ownerDrawWidth = CG_OwnerDrawWidth; // +0xc8
+    display->registerAsset = trap_Com_SoundAliasString; // +0xcc
+    display->playCinematic = CG_PlayCinematic; // +0xd0
+    display->stopCinematic = CG_StopCinematic; // +0xd4
+    display->drawCinematic = CG_DrawCinematic; // +0xd8
+    display->runCinematicFrame = CG_RunCinematicFrame; // +0xdc
 
     // 0x3002da9c..0x3002daa6 push this call's arguments before the assignment
     // block, but the indirect CALL itself is at 0x3002dc99, after every callback
@@ -232,16 +232,11 @@ void CG_UIDisplayContextInit(void)
     menuCount = 0;
 
     // 0x3002dc99: set the default HUD-menu-list cvar.
-    cgame_syscall(CG_CVAR_SET,
-                  (intptr_t)CG_HUD_FILES_CVAR,
-                  (intptr_t)CG_HUD_MENU_FILE_DEFAULT);
+    cgame_syscall(CG_CVAR_SET, (intptr_t)CG_HUD_FILES_CVAR, (intptr_t)CG_HUD_MENU_FILE_DEFAULT);
 
     // 0x3002dc9f..0x3002dcbf: read the current cg_hudFiles value, then choose the
     // menu file: the buffer if non-empty, else the built-in default.
-    cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER,
-                  (intptr_t)CG_HUD_FILES_CVAR,
-                  (intptr_t)cvarValue,
-                  0x400);
+    cgame_syscall(CG_CVAR_VARIABLE_STRING_BUFFER, (intptr_t)CG_HUD_FILES_CVAR, (intptr_t)cvarValue, 0x400);
     menuFile = (cvarValue[0] != '\0') ? cvarValue : CG_HUD_MENU_FILE_DEFAULT;
 
     // 0x3002dcca..0x3002dccc: load the selected HUD menu list.

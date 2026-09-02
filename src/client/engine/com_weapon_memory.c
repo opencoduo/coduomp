@@ -15,8 +15,7 @@ static int32_t com_weaponInfoMemoryOwner; /* original 0x0389fd44 */
  * Com_GetWeaponInfoMemory. The allocation is retained between the cgame and
  * game module owners; previousOwner reports the ownership state observed
  * before this request. */
-void *Com_GetWeaponInfoMemory(int32_t byteCount, int32_t *previousOwner,
-                              int32_t callerOwner)
+void *Com_GetWeaponInfoMemory(int32_t byteCount, int32_t *previousOwner, int32_t callerOwner)
 {
     if (byteCount <= 0)
         return NULL;
@@ -28,8 +27,7 @@ void *Com_GetWeaponInfoMemory(int32_t byteCount, int32_t *previousOwner,
         return com_weaponInfoMemory;
     }
 
-    com_weaponInfoMemory = Hunk_AllocLowAlignInternal(
-        (size_t)byteCount, COM_WEAPON_MEMORY_ALIGNMENT);
+    com_weaponInfoMemory = Hunk_AllocLowAlignInternal((size_t)byteCount, COM_WEAPON_MEMORY_ALIGNMENT);
     *previousOwner = 0;
     com_weaponInfoMemoryOwner = callerOwner;
     return com_weaponInfoMemory;
@@ -40,8 +38,7 @@ void *Com_GetWeaponInfoMemory(int32_t byteCount, int32_t *previousOwner,
  * Name and signature: exact same-module Mac symbol
  * Com_FreeWeaponInfoMemory. Hunk memory is not individually freed; clearing
  * this pointer only releases the reusable allocation from its current owner. */
-void Com_FreeWeaponInfoMemory(int32_t callerOwner,
-                              qboolean preserveAllocation)
+void Com_FreeWeaponInfoMemory(int32_t callerOwner, qboolean preserveAllocation)
 {
     if (callerOwner != com_weaponInfoMemoryOwner)
         return;

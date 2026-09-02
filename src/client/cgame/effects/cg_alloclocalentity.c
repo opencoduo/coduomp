@@ -70,8 +70,7 @@ localEntity_t *CG_AllocLocalEntity(void)
     }
 
     /* cg_numLocalEntities++  (INC dword ptr [0x30134cfc]) */
-    cg_numLocalEntities = coduo_int32_from_bits(
-        (uint32_t)cg_numLocalEntities + 1u);
+    cg_numLocalEntities = coduo_int32_from_bits((uint32_t)cg_numLocalEntities + 1u);
 
     /* Pop le off the free list: cg_freeLocalEntities = le->next.
      * (MOV EAX,[EDX+4]; LEA ESI,[EDX+4]; store to [0x30537d80]; ESI holds &le->next.) */

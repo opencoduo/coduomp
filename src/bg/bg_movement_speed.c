@@ -34,8 +34,7 @@ enum {
 long double BG_GetSpeed(const playerState_t *ps, int32_t time)
 {
     if ((ps->playerStateFlags & PMF_LADDER) != 0) {
-        const int32_t jumpAge = coduo_int32_from_bits(
-            (uint32_t)time - (uint32_t)ps->lastJumpCommandTime);
+        const int32_t jumpAge = coduo_int32_from_bits((uint32_t)time - (uint32_t)ps->lastJumpCommandTime);
         if (jumpAge < BG_LADDER_JUMP_SPEED_DELAY) {
             return 0.0L;
         }
@@ -43,24 +42,19 @@ long double BG_GetSpeed(const playerState_t *ps, int32_t time)
     }
 
 #if EMULATE_X87
-    const x87f squared = x87f_add(
-        x87f_mul(x87f_load_f32(ps->velocity[0]),
-                 x87f_load_f32(ps->velocity[0])),
-        x87f_mul(x87f_load_f32(ps->velocity[1]),
-                 x87f_load_f32(ps->velocity[1])));
+    const x87f squared = x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]), x87f_load_f32(ps->velocity[0])),
+                                  x87f_mul(x87f_load_f32(ps->velocity[1]), x87f_load_f32(ps->velocity[1])));
     return (long double)x87f_store_f64(x87f_sqrt(squared));
 #else
-    return coduo_x87_sqrtl(
-        (long double)ps->velocity[0] * (long double)ps->velocity[0] +
-        (long double)ps->velocity[1] * (long double)ps->velocity[1]);
+    return coduo_x87_sqrtl((long double)ps->velocity[0] * (long double)ps->velocity[0] +
+                           (long double)ps->velocity[1] * (long double)ps->velocity[1]);
 #endif
 }
 #else
 float BG_GetSpeed(const playerState_t *ps, int32_t time)
 {
     if ((ps->playerStateFlags & PMF_LADDER) != 0) {
-        const int32_t jumpAge = coduo_int32_from_bits(
-            (uint32_t)time - (uint32_t)ps->lastJumpCommandTime);
+        const int32_t jumpAge = coduo_int32_from_bits((uint32_t)time - (uint32_t)ps->lastJumpCommandTime);
         if (jumpAge < BG_LADDER_JUMP_SPEED_DELAY) {
             return 0.0f;
         }
@@ -68,16 +62,12 @@ float BG_GetSpeed(const playerState_t *ps, int32_t time)
     }
 
 #if EMULATE_X87
-    const x87f squared = x87f_add(
-        x87f_mul(x87f_load_f32(ps->velocity[0]),
-                 x87f_load_f32(ps->velocity[0])),
-        x87f_mul(x87f_load_f32(ps->velocity[1]),
-                 x87f_load_f32(ps->velocity[1])));
+    const x87f squared = x87f_add(x87f_mul(x87f_load_f32(ps->velocity[0]), x87f_load_f32(ps->velocity[0])),
+                                  x87f_mul(x87f_load_f32(ps->velocity[1]), x87f_load_f32(ps->velocity[1])));
     return (float)CoduoLibm_SqrtGlibc(x87f_store_f64(squared));
 #else
     const long double squared =
-        (long double)ps->velocity[0] * (long double)ps->velocity[0] +
-        (long double)ps->velocity[1] * (long double)ps->velocity[1];
+        (long double)ps->velocity[0] * (long double)ps->velocity[0] + (long double)ps->velocity[1] * (long double)ps->velocity[1];
     return (float)CoduoLibm_SqrtGlibc((double)squared);
 #endif
 }

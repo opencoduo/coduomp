@@ -63,11 +63,16 @@
 
 /* CG_FillRect virtual-640x480 screen extents (the raw 640.0f/480.0f pushed at
  * 0x3001a8aa/0x3001a8a5). Fixed screen size, so plain float literals. */
-enum { CG_SCREEN_VIRTUAL_WIDTH = 640, CG_SCREEN_VIRTUAL_HEIGHT = 480 };
+enum {
+    CG_SCREEN_VIRTUAL_WIDTH = 640,
+    CG_SCREEN_VIRTUAL_HEIGHT = 480
+};
 
 /* Only advance the fade for a plausible per-frame real-time delta: strictly more
  * than 0 ms and strictly less than this cap (skips paused/hitched frames). */
-enum { CG_SCREEN_FADE_MAX_STEP_MS = 500 };
+enum {
+    CG_SCREEN_FADE_MAX_STEP_MS = 500
+};
 
 void CG_ScreenFade(void)
 {
@@ -79,8 +84,7 @@ void CG_ScreenFade(void)
 
     int32_t startTime = cg_fovFade.startTime;
     int32_t durationMs = cg_fovFade.durationMs;
-    int32_t endTime = coduo_int32_from_bits((uint32_t)startTime +
-                                       (uint32_t)durationMs);
+    int32_t endTime = coduo_int32_from_bits((uint32_t)startTime + (uint32_t)durationMs);
     int32_t cgameTime = coduo_int32_from_bits(cg_time);
 
     if (endTime < cgameTime) {
@@ -92,24 +96,20 @@ void CG_ScreenFade(void)
 
         if (currentForEquality != targetForEquality) {
         /* Fade still scheduled and not yet at target: step by real elapsed time. */
-            int32_t now = coduo_int32_from_bits(
-                (uint32_t)cgame_syscall(CG_MILLISECONDS));
-            int32_t deltaMs = coduo_int32_from_bits(
-                (uint32_t)now - (uint32_t)cg_screenFadeLastMs);
+            int32_t now = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_MILLISECONDS));
+            int32_t deltaMs = coduo_int32_from_bits((uint32_t)now - (uint32_t)cg_screenFadeLastMs);
             lastMsWriteback = now;
 
             if (deltaMs < CG_SCREEN_FADE_MAX_STEP_MS && deltaMs > 0) {
                 float currentForDirection = cg_fovFade.currentValue;
                 float targetForDirection = cg_fovFade.startValue;
-                long double step =
-                    (long double)deltaMs / (long double)cg_fovFade.durationMs;
+                long double step = (long double)deltaMs / (long double)cg_fovFade.durationMs;
 
                 /* TEST AH,0x41 sends less, equal, and unordered through the
                  * rising arm; only ordered greater selects the falling arm. */
                 if (!(currentForDirection > targetForDirection)) {
                     /* 0xa85e: rising toward the target. */
-                    long double candidate =
-                        step + cg_fovFade.currentValue;
+                    long double candidate = step + cg_fovFade.currentValue;
                     cg_fovFade.currentValue = (float)candidate;
                     if (candidate > cg_fovFade.startValue) {
                         /* overshot up -> snap to target; equality already stored it */
@@ -117,8 +117,7 @@ void CG_ScreenFade(void)
                     }
                 } else {
                     /* 0xa837: falling toward the target (currentValue -= step). */
-                    long double candidate =
-                        (long double)cg_fovFade.currentValue - step;
+                    long double candidate = (long double)cg_fovFade.currentValue - step;
                     cg_fovFade.currentValue = (float)candidate;
                     if (candidate < cg_fovFade.startValue) {
                         /* overshot down -> snap to target */
@@ -147,9 +146,6 @@ void CG_ScreenFade(void)
         color[2] = 0.0f;
         color[3] = alpha;
 
-        CG_FillRect(0.0f, 0.0f,
-                    (float)CG_SCREEN_VIRTUAL_WIDTH,
-                    (float)CG_SCREEN_VIRTUAL_HEIGHT,
-                    color);
+        CG_FillRect(0.0f, 0.0f, (float)CG_SCREEN_VIRTUAL_WIDTH, (float)CG_SCREEN_VIRTUAL_HEIGHT, color);
     }
 }

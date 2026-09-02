@@ -83,24 +83,19 @@ void CG_BuildTimeoutHudStrings(void)
 
     /* Config string N = &cg_gameState.stringData[offset]; here the timeout-time
      * config string, parsed to an integer time via Q_atoi. */
-    cg_timeoutEndTime =
-        coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_TIMEOUT_TIME]]);
+    cg_timeoutEndTime = coduo_crt_atoi(&cg_gameState.stringData[cg_gameState.stringOffsets[CS_TIMEOUT_TIME]]);
     if (cg_timeoutEndTime != 0) {
         /* Non-zero timeout: mark active and convert the relative time into an
          * absolute end time by adding the current engine milliseconds. */
         cg_timeoutActive = 1;
-        cg_timeoutEndTime = coduo_int32_from_bits(
-            (uint32_t)cg_timeoutEndTime +
-            (uint32_t)cgame_syscall(CG_MILLISECONDS));
+        cg_timeoutEndTime = coduo_int32_from_bits((uint32_t)cg_timeoutEndTime + (uint32_t)cgame_syscall(CG_MILLISECONDS));
     }
 
     /* Format the timeout-text config string through the engine, copy up to 255
      * bytes, then force the final byte of the 256-byte buffer to NUL. */
     {
         char *formatted = (char *)(intptr_t)cgame_syscall(
-            CG_SE_LOCALIZE_MESSAGE,
-            &cg_gameState.stringData[cg_gameState.stringOffsets[CS_TIMEOUT_STRING]],
-            "timeout string");
+            CG_SE_LOCALIZE_MESSAGE, &cg_gameState.stringData[cg_gameState.stringOffsets[CS_TIMEOUT_STRING]], "timeout string");
         strncpy(cg_timeoutString, formatted, 255);
     }
 

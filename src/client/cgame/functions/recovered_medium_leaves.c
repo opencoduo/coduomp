@@ -52,8 +52,7 @@ void CG_LoadingString(const char *text) /* 0x3002a4e0 */
     cgame_syscall(CG_UPDATE_SCREEN);
 }
 
-void VectorLerp(const vec3_t from, const vec3_t to, float fraction,
-                vec3_t out) /* 0x30023b20 */
+void VectorLerp(const vec3_t from, const vec3_t to, float fraction, vec3_t out) /* 0x30023b20 */
 {
     /* 0x30023b20: inverse stays unrounded in st(0) across the three
      * multiplies (FLD ST0 copies, no float store); each inverse*from[k]
@@ -68,8 +67,7 @@ void VectorLerp(const vec3_t from, const vec3_t to, float fraction,
     out[2] += fraction * to[2];
 }
 
-qboolean CG_CheckDrawScoreboardLine(int32_t *line, float y,
-                                     float height) /* 0x30036ed0 */
+qboolean CG_CheckDrawScoreboardLine(int32_t *line, float y, float height) /* 0x30036ed0 */
 {
     if (cg_scoreboardOverflowed != 0) {
         return qfalse;

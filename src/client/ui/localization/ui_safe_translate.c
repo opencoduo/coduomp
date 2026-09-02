@@ -8,9 +8,7 @@ static const char UI_UNLOCALIZED_PREFIX[] = "^1UNLOCALIZED(^7";
 static const char UI_UNLOCALIZED_SUFFIX[] = "^1)^7";
 
 enum {
-    UI_TRANSLATION_BUFFER_SIZE =
-        MAX_STRING_CHARS + sizeof(UI_UNLOCALIZED_PREFIX) +
-        sizeof(UI_UNLOCALIZED_SUFFIX) - 2,
+    UI_TRANSLATION_BUFFER_SIZE = MAX_STRING_CHARS + sizeof(UI_UNLOCALIZED_PREFIX) + sizeof(UI_UNLOCALIZED_SUFFIX) - 2,
     UI_COMPAT_LANGUAGE_SPANISH = 4
 };
 
@@ -34,22 +32,17 @@ const char *UI_SafeTranslateString(const char *reference)
 
     if (cl_languageWarnings.integer != 0) {
         if (cl_languageWarningsAsErrors.integer != 0) {
-            Com_Error(ERR_LOCALIZATION,
-                      "Could not translate ui string \"%s\"", reference);
+            Com_Error(ERR_LOCALIZATION, "Could not translate ui string \"%s\"", reference);
         } else {
-            Com_Printf("^3WARNING: Could not translate ui string \"%s\"\n",
-                       reference);
+            Com_Printf("^3WARNING: Could not translate ui string \"%s\"\n", reference);
         }
         /* NOT_FROM_ORIGINAL_SOURCE: preserve parser-domain references while
          * bounding nonstandard callers to the shared fallback buffer. */
-        Com_sprintf(ui_translationBuffer, sizeof(ui_translationBuffer),
-                    "%s%s%s", UI_UNLOCALIZED_PREFIX, reference,
-                    UI_UNLOCALIZED_SUFFIX);
+        Com_sprintf(ui_translationBuffer, sizeof(ui_translationBuffer), "%s%s%s", UI_UNLOCALIZED_PREFIX, reference, UI_UNLOCALIZED_SUFFIX);
     } else {
         /* NOT_FROM_ORIGINAL_SOURCE: the warning-disabled path shares the same
          * fallback-buffer capacity. */
-        Q_strncpyz(ui_translationBuffer, reference,
-                   (int32_t)sizeof(ui_translationBuffer));
+        Q_strncpyz(ui_translationBuffer, reference, (int32_t)sizeof(ui_translationBuffer));
     }
     return ui_translationBuffer;
 }

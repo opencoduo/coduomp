@@ -31,8 +31,7 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
      * If adsEnabled == 0 (TEST EDX,EDX / JZ 0x30045206) fall straight to the
      * zeroing path.
      */
-    const weaponInfo_t *weaponInfo =
-        bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
+    const weaponInfo_t *weaponInfo = bg_weaponInfos[cg_predictedPlayerState.currentWeapon];
 
     if (weaponInfo->adsEnabled != 0) {
         /*
@@ -59,17 +58,11 @@ void CG_CalcAdsViewOffset(const vec3_t pos)
              * The trailing FSTP ST0 (0x30045201) pops the leftover adsFraction.
              */
             cg_adsViewOffset[0] =
-                (float)(((long double)pos[0] -
-                         (long double)cg_refdef.vieworg[0]) *
-                        (long double)cg_predictedPlayerState.adsFraction);
+                (float)(((long double)pos[0] - (long double)cg_refdef.vieworg[0]) * (long double)cg_predictedPlayerState.adsFraction);
             cg_adsViewOffset[1] =
-                (float)(((long double)pos[1] -
-                         (long double)cg_refdef.vieworg[1]) *
-                        (long double)cg_predictedPlayerState.adsFraction);
+                (float)(((long double)pos[1] - (long double)cg_refdef.vieworg[1]) * (long double)cg_predictedPlayerState.adsFraction);
             cg_adsViewOffset[2] =
-                (float)(((long double)pos[2] -
-                         (long double)cg_refdef.vieworg[2]) *
-                        (long double)cg_predictedPlayerState.adsFraction);
+                (float)(((long double)pos[2] - (long double)cg_refdef.vieworg[2]) * (long double)cg_predictedPlayerState.adsFraction);
             return;
         }
         /* 0x30045204: FSTP ST0 pops the adsFraction copy before zeroing. */

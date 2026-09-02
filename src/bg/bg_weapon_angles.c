@@ -38,8 +38,7 @@
 
 #include <math.h>
 
-void BG_CalculateWeaponAngles(pm_weapon_angle_state_t *state,
-                              vec3_t angles)
+void BG_CalculateWeaponAngles(pm_weapon_angle_state_t *state, vec3_t angles)
 {
     /* 0x30015921: ECX = state->ps (state arrives in ESI, ps is at state+0x00). */
     playerState_t *ps = state->ps;
@@ -77,24 +76,15 @@ void BG_CalculateWeaponAngles(pm_weapon_angle_state_t *state,
 #if defined(WINDOWS_BEHAVIOR) && EMULATE_X87
         const float absLean = fabsf(ps->leanFraction);
         angles[2] = x87f_store_f32(x87f_mul(
-            x87f_mul(x87f_load_f32(ps->leanFraction),
-                     x87f_sub(x87f_load_f32(2.0f),
-                              x87f_load_f32(absLean))),
-            x87f_load_f32(-2.0f)));
+            x87f_mul(x87f_load_f32(ps->leanFraction), x87f_sub(x87f_load_f32(2.0f), x87f_load_f32(absLean))), x87f_load_f32(-2.0f)));
 #elif defined(WINDOWS_BEHAVIOR)
         const float absLean = fabsf(ps->leanFraction);
-        angles[2] = (float)(
-            ((long double)ps->leanFraction *
-             (2.0L - (long double)absLean)) * -2.0L);
+        angles[2] = (float)(((long double)ps->leanFraction * (2.0L - (long double)absLean)) * -2.0L);
 #elif EMULATE_X87
         angles[2] = x87f_store_f32(x87f_sub(
             x87f_load_f32(angles[2]),
-            x87f_mul(
-                x87f_mul(
-                    x87f_sub(x87f_load_f32(2.0f),
-                             x87f_abs(x87f_load_f32(ps->leanFraction))),
-                    x87f_load_f32(ps->leanFraction)),
-                x87f_load_f32(2.0f))));
+            x87f_mul(x87f_mul(x87f_sub(x87f_load_f32(2.0f), x87f_abs(x87f_load_f32(ps->leanFraction))), x87f_load_f32(ps->leanFraction)),
+                     x87f_load_f32(2.0f))));
 #else
         angles[2] -= GetLeanFraction(ps->leanFraction) * 2.0f;
 #endif

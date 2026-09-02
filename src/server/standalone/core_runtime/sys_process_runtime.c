@@ -90,10 +90,7 @@ void Sys_Print(const char *message)
 void Sys_CheckCrashOrRerun(void)
 {
 #if SYS_PROCESS_HAS_X87_INLINE_ASM
-    __asm__ __volatile__("fldcw %0"
-                         :
-                         : "m"(sys_frameX87ControlWord)
-                         : "memory");
+    __asm__ __volatile__("fldcw %0" : : "m"(sys_frameX87ControlWord) : "memory");
 #elif defined(CODUO_ENGINE_ALLOW_NON_X87_FLOAT)
 #else
 #error "Sys_CheckCrashOrRerun requires x87 inline assembly for original FPU control word"
@@ -102,12 +99,10 @@ void Sys_CheckCrashOrRerun(void)
 
 void Sys_PrintBinVersion(const char *localInstall)
 {
-    const char *separator =
-        "==============================================================";
+    const char *separator = "==============================================================";
 
     fprintf(stdout, "\n\n%s\n", separator);
-    fprintf(stdout, SYS_VERSION_BANNER, SYS_VERSION_BUILD_DATE,
-            SYS_VERSION_BUILD_TIME);
+    fprintf(stdout, SYS_VERSION_BANNER, SYS_VERSION_BUILD_DATE, SYS_VERSION_BUILD_TIME);
     fprintf(stdout, " local install: %s\n", localInstall);
     fprintf(stdout, "%s\n\n", separator);
 }
@@ -120,8 +115,7 @@ void Sys_Chmod(const char *path, uint32_t mode)
         mode_t newMode = statbuf.st_mode | mode;
 
         if (chmod(path, newMode) != 0) {
-            Com_Printf("chmod('%s', %d) failed: errno %d\n", path, newMode,
-                       errno);
+            Com_Printf("chmod('%s', %d) failed: errno %d\n", path, newMode, errno);
         }
         Com_DPrintf("chmod +%d '%s'\n", mode, path);
         return;
@@ -143,8 +137,7 @@ void Sys_StartProcessNow(const char *command)
     memset(&processInfo, 0, sizeof(processInfo));
     Q_strncpyz(commandLine, command, sizeof(commandLine));
 
-    if (CreateProcessA(NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL,
-                       &startupInfo, &processInfo) != 0) {
+    if (CreateProcessA(NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo) != 0) {
         CloseHandle(processInfo.hThread);
         CloseHandle(processInfo.hProcess);
     }
@@ -174,8 +167,7 @@ void Sys_StartProcess(const char *command, qboolean delayUntilFinalExit)
     }
 
     Com_DPrintf("Sys_StartProcess %s (delaying to final exit)\n", command);
-    Q_strncpyz(sys_delayedProcessCommand, command,
-               SYS_DELAYED_PROCESS_COMMAND_SIZE);
+    Q_strncpyz(sys_delayedProcessCommand, command, SYS_DELAYED_PROCESS_COMMAND_SIZE);
     Cbuf_ExecuteText(EXEC_APPEND, "quit\n");
 }
 
@@ -201,9 +193,8 @@ void Sys_Mkdir(char *path)
 
 /* NOT_FROM_ORIGINAL_SOURCE: carries recursion depth without changing the
  * original Sys_ListFilteredFiles interface. */
-static void coduo_compat_list_filtered_files_recursive(
-    const char *directory, const char *subdirectory, const char *filter,
-    char **list, int *numfiles, int32_t recursionDepth)
+static void coduo_compat_list_filtered_files_recursive(const char *directory, const char *subdirectory, const char *filter, char **list,
+                                                       int *numfiles, int32_t recursionDepth)
 {
     char fullDirectory[MAX_OSPATH];
     char childPath[MAX_OSPATH];
@@ -222,8 +213,7 @@ static void coduo_compat_list_filtered_files_recursive(
     if (subdirectory[0] == '\0') {
         Com_sprintf(fullDirectory, sizeof(fullDirectory), "%s", directory);
     } else {
-        Com_sprintf(fullDirectory, sizeof(fullDirectory), "%s/%s", directory,
-                    subdirectory);
+        Com_sprintf(fullDirectory, sizeof(fullDirectory), "%s/%s", directory, subdirectory);
     }
 
     DIR *dir = opendir(fullDirectory);
@@ -233,33 +223,25 @@ static void coduo_compat_list_filtered_files_recursive(
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        Com_sprintf(childPath, sizeof(childPath), "%s/%s", fullDirectory,
-                    entry->d_name);
+        Com_sprintf(childPath, sizeof(childPath), "%s/%s", fullDirectory, entry->d_name);
         if (Sys_Stat(childPath, &statbuf) == -1) {
             continue;
         }
 
-        if ((statbuf.st_mode & S_IFDIR) != 0 &&
-            Q_stricmp(entry->d_name, ".") != 0 &&
-            Q_stricmp(entry->d_name, "..") != 0) {
+        if ((statbuf.st_mode & S_IFDIR) != 0 && Q_stricmp(entry->d_name, ".") != 0 && Q_stricmp(entry->d_name, "..") != 0) {
             if (subdirectory[0] == '\0') {
-                Com_sprintf(relativePath, sizeof(relativePath), "%s",
-                            entry->d_name);
+                Com_sprintf(relativePath, sizeof(relativePath), "%s", entry->d_name);
             } else {
-                Com_sprintf(relativePath, sizeof(relativePath), "%s/%s",
-                            subdirectory, entry->d_name);
+                Com_sprintf(relativePath, sizeof(relativePath), "%s/%s", subdirectory, entry->d_name);
             }
-            coduo_compat_list_filtered_files_recursive(
-                directory, relativePath, filter, list, numfiles,
-                recursionDepth + 1);
+            coduo_compat_list_filtered_files_recursive(directory, relativePath, filter, list, numfiles, recursionDepth + 1);
         }
 
         if (*numfiles >= SYS_LISTFILES_MAX_COUNT) {
             break;
         }
 
-        Com_sprintf(relativePath, sizeof(relativePath), "%s/%s", subdirectory,
-                    entry->d_name);
+        Com_sprintf(relativePath, sizeof(relativePath), "%s/%s", subdirectory, entry->d_name);
         if (Com_FilterPath(filter, relativePath, qfalse) != qfalse) {
             list[*numfiles] = CopyStringInternal(relativePath);
             ++*numfiles;
@@ -269,15 +251,12 @@ static void coduo_compat_list_filtered_files_recursive(
     closedir(dir);
 }
 
-void Sys_ListFilteredFiles(const char *directory, const char *subdirectory,
-                           const char *filter, char **list, int *numfiles)
+void Sys_ListFilteredFiles(const char *directory, const char *subdirectory, const char *filter, char **list, int *numfiles)
 {
-    coduo_compat_list_filtered_files_recursive(
-        directory, subdirectory, filter, list, numfiles, 0);
+    coduo_compat_list_filtered_files_recursive(directory, subdirectory, filter, list, numfiles, 0);
 }
 
-char **Sys_ListFiles(const char *directory, const char *extension,
-                     const char *filter, int *numfiles, qboolean wantsubs)
+char **Sys_ListFiles(const char *directory, const char *extension, const char *filter, int *numfiles, qboolean wantsubs)
 {
     char *list[SYS_LISTFILES_STACK_CAPACITY];
     int count = 0;
@@ -311,10 +290,8 @@ char **Sys_ListFiles(const char *directory, const char *extension,
                 continue;
             }
 
-            if ((listDirectories == qfalse &&
-                 (statbuf.st_mode & S_IFDIR) != 0) ||
-                (listDirectories != qfalse &&
-                 (statbuf.st_mode & S_IFDIR) == 0)) {
+            if ((listDirectories == qfalse && (statbuf.st_mode & S_IFDIR) != 0) ||
+                (listDirectories != qfalse && (statbuf.st_mode & S_IFDIR) == 0)) {
                 continue;
             }
 
@@ -322,9 +299,7 @@ char **Sys_ListFiles(const char *directory, const char *extension,
                 size_t nameLength = strlen(entry->d_name);
                 size_t extensionLength = strlen(extension);
 
-                if (nameLength < extensionLength ||
-                    Q_stricmp(entry->d_name + nameLength - extensionLength,
-                              extension) != 0) {
+                if (nameLength < extensionLength || Q_stricmp(entry->d_name + nameLength - extensionLength, extension) != 0) {
                     continue;
                 }
             }
@@ -364,28 +339,23 @@ void Sys_OpenURL(const char *url, qboolean delayUntilFinalExit)
 
     Com_Printf("Sys_OpenURL %s\n", url);
 #if defined(_WIN32)
-    Com_sprintf(command, sizeof(command), "cmd.exe /c start \"\" \"%s\"",
-                url);
+    Com_sprintf(command, sizeof(command), "cmd.exe /c start \"\" \"%s\"", url);
     Sys_StartProcess(command, delayUntilFinalExit);
 #else
     Q_strncpyz(scriptName, "openurl.sh", SYS_OPENURL_SCRIPT_NAME_SIZE);
 
-    Com_sprintf(scriptPath, sizeof(scriptPath), "%s/%s", Sys_Cwd(),
-                scriptName);
+    Com_sprintf(scriptPath, sizeof(scriptPath), "%s/%s", Sys_Cwd(), scriptName);
     if (access(scriptPath, SYS_ACCESS_EXECUTE) == -1) {
         Com_DPrintf("%s not found\n", scriptPath);
-        Com_sprintf(scriptPath, sizeof(scriptPath), "%s/%s",
-                    Cvar_VariableString("fs_homepath"), scriptName);
+        Com_sprintf(scriptPath, sizeof(scriptPath), "%s/%s", Cvar_VariableString("fs_homepath"), scriptName);
         if (access(scriptPath, SYS_ACCESS_EXECUTE) == -1) {
             Com_DPrintf("%s not found\n", scriptPath);
-            Com_sprintf(scriptPath, sizeof(scriptPath), "%s/%s",
-                        Cvar_VariableString("fs_basepath"), scriptName);
+            Com_sprintf(scriptPath, sizeof(scriptPath), "%s/%s", Cvar_VariableString("fs_basepath"), scriptName);
             if (access(scriptPath, SYS_ACCESS_EXECUTE) == -1) {
                 Com_DPrintf("%s not found\n", scriptPath);
-                Com_Printf(
-                    "Can't find script '%s' to open requested URL (use +set "
-                    "developer 1 for more verbosity)\n",
-                    scriptName);
+                Com_Printf("Can't find script '%s' to open requested URL (use +set "
+                           "developer 1 for more verbosity)\n",
+                           scriptName);
                 return;
             }
         }
@@ -405,8 +375,7 @@ void Sys_OpenURL(const char *url, qboolean delayUntilFinalExit)
 
 void Sys_ParseArgs(int argc, char **argv)
 {
-    if (argc == 2 &&
-        (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-v") == 0)) {
+    if (argc == 2 && (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-v") == 0)) {
         Sys_PrintBinVersion(argv[0]);
         Sys_Exit(0);
     }
@@ -447,10 +416,8 @@ int main(int argc, char **argv)
     Sys_InitTerminalConsole();
 
 #if !defined(_WIN32)
-    int flags = fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_GETFL_COMMAND,
-                      SYS_F_GETFL_UNUSED_ARGUMENT);
-    fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_SETFL_COMMAND,
-          flags | SYS_LINUX_O_NONBLOCK);
+    int flags = fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_GETFL_COMMAND, SYS_F_GETFL_UNUSED_ARGUMENT);
+    fcntl(SYS_STDIN_FILE_DESCRIPTOR, SYS_F_SETFL_COMMAND, flags | SYS_LINUX_O_NONBLOCK);
 #endif
 
     PB_StartServer();
@@ -551,8 +518,7 @@ const char *Sys_DefaultHomePath(void)
         const char *errorText = strerror(errorForText);
         int32_t error = *errorLocationForNumber;
 
-        Sys_Error("Unable to create directory \"%s\", error is %s(%d)\n",
-                  sys_homePath, errorText, error);
+        Sys_Error("Unable to create directory \"%s\", error is %s(%d)\n", sys_homePath, errorText, error);
     }
 
     return sys_homePath;

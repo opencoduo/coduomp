@@ -37,36 +37,23 @@ typedef struct seeded_md5_context_s {
     uint8_t digest[SEEDED_MD5_DIGEST_SIZE];
 } seeded_md5_context_t;
 
-_Static_assert(sizeof(seeded_md5_context_t) ==
-                   SEEDED_MD5_CONTEXT_SIZE,
-               "seeded MD5 context size mismatch");
-_Static_assert(offsetof(seeded_md5_context_t, count) ==
-                   SEEDED_MD5_CONTEXT_COUNT_OFFSET,
-               "seeded MD5 count offset mismatch");
-_Static_assert(offsetof(seeded_md5_context_t, state) ==
-                   SEEDED_MD5_CONTEXT_STATE_OFFSET,
-               "seeded MD5 state offset mismatch");
-_Static_assert(offsetof(seeded_md5_context_t, buffer) ==
-                   SEEDED_MD5_CONTEXT_BUFFER_OFFSET,
-               "seeded MD5 buffer offset mismatch");
-_Static_assert(offsetof(seeded_md5_context_t, digest) ==
-                   SEEDED_MD5_CONTEXT_DIGEST_OFFSET,
-               "seeded MD5 digest offset mismatch");
+_Static_assert(sizeof(seeded_md5_context_t) == SEEDED_MD5_CONTEXT_SIZE, "seeded MD5 context size mismatch");
+_Static_assert(offsetof(seeded_md5_context_t, count) == SEEDED_MD5_CONTEXT_COUNT_OFFSET, "seeded MD5 count offset mismatch");
+_Static_assert(offsetof(seeded_md5_context_t, state) == SEEDED_MD5_CONTEXT_STATE_OFFSET, "seeded MD5 state offset mismatch");
+_Static_assert(offsetof(seeded_md5_context_t, buffer) == SEEDED_MD5_CONTEXT_BUFFER_OFFSET, "seeded MD5 buffer offset mismatch");
+_Static_assert(offsetof(seeded_md5_context_t, digest) == SEEDED_MD5_CONTEXT_DIGEST_OFFSET, "seeded MD5 digest offset mismatch");
 
 /* 128 sets the first padding byte's high bit. */
 static uint8_t seeded_md5_padding[SEEDED_MD5_PADDING_SIZE] = {0x80};
 
-void SeededMD5_Transform(
-    uint32_t state[SEEDED_MD5_STATE_WORD_COUNT],
-    const uint32_t block[SEEDED_MD5_BLOCK_SIZE / sizeof(uint32_t)])
+void SeededMD5_Transform(uint32_t state[SEEDED_MD5_STATE_WORD_COUNT], const uint32_t block[SEEDED_MD5_BLOCK_SIZE / sizeof(uint32_t)])
 {
     uint32_t a = state[0];
     uint32_t b = state[1];
     uint32_t c = state[2];
     uint32_t d = state[3];
 
-#define SEEDED_MD5_ROTATE_LEFT(value, bits) \
-    (((value) << (bits)) | ((value) >> (32U - (bits))))
+#define SEEDED_MD5_ROTATE_LEFT(value, bits) (((value) << (bits)) | ((value) >> (32U - (bits))))
 #define SEEDED_MD5_ROUND1(a_, b_, c_, d_, k_, s_, ti_) \
     do { \
         (a_) += (((b_) & (c_)) | (~(b_) & (d_))) + block[(k_)] + (ti_); \
@@ -172,25 +159,15 @@ void SeededMD5_Init(seeded_md5_context_t *context, int32_t seed)
 {
     context->count[1] = 0;
     context->count[0] = 0;
-    context->state[0] =
-        (uint32_t)seed * SEEDED_MD5_SEED_STATE_0_MULTIPLIER +
-        SEEDED_MD5_INIT_STATE_0;
-    context->state[1] =
-        (uint32_t)seed * SEEDED_MD5_SEED_STATE_1_MULTIPLIER +
-        SEEDED_MD5_INIT_STATE_1;
-    context->state[2] =
-        (uint32_t)seed * SEEDED_MD5_SEED_STATE_2_MULTIPLIER +
-        SEEDED_MD5_INIT_STATE_2;
-    context->state[3] =
-        (uint32_t)seed * SEEDED_MD5_SEED_STATE_3_MULTIPLIER +
-        SEEDED_MD5_INIT_STATE_3;
+    context->state[0] = (uint32_t)seed * SEEDED_MD5_SEED_STATE_0_MULTIPLIER + SEEDED_MD5_INIT_STATE_0;
+    context->state[1] = (uint32_t)seed * SEEDED_MD5_SEED_STATE_1_MULTIPLIER + SEEDED_MD5_INIT_STATE_1;
+    context->state[2] = (uint32_t)seed * SEEDED_MD5_SEED_STATE_2_MULTIPLIER + SEEDED_MD5_INIT_STATE_2;
+    context->state[3] = (uint32_t)seed * SEEDED_MD5_SEED_STATE_3_MULTIPLIER + SEEDED_MD5_INIT_STATE_3;
 }
 
-void SeededMD5_Update(seeded_md5_context_t *context,
-                      const uint8_t *input, uint32_t length)
+void SeededMD5_Update(seeded_md5_context_t *context, const uint8_t *input, uint32_t length)
 {
-    uint32_t bufferIndex =
-        (context->count[0] >> 3U) & SEEDED_MD5_BLOCK_MASK;
+    uint32_t bufferIndex = (context->count[0] >> 3U) & SEEDED_MD5_BLOCK_MASK;
     uint32_t lengthBits = length * SEEDED_MD5_BYTE_BITS;
 
     context->count[0] += lengthBits;
@@ -208,13 +185,10 @@ void SeededMD5_Update(seeded_md5_context_t *context,
         if (bufferIndex == SEEDED_MD5_BLOCK_SIZE) {
             uint32_t block[SEEDED_MD5_BLOCK_SIZE / sizeof(uint32_t)];
 
-            for (uint32_t index = 0; index < SEEDED_MD5_BLOCK_SIZE;
-                 index += sizeof(uint32_t)) {
-                block[index / sizeof(uint32_t)] =
-                    ((uint32_t)context->buffer[index]) |
-                    ((uint32_t)context->buffer[index + 1U] << 8U) |
-                    ((uint32_t)context->buffer[index + 2U] << 16U) |
-                    ((uint32_t)context->buffer[index + 3U] << 24U);
+            for (uint32_t index = 0; index < SEEDED_MD5_BLOCK_SIZE; index += sizeof(uint32_t)) {
+                block[index / sizeof(uint32_t)] = ((uint32_t)context->buffer[index]) | ((uint32_t)context->buffer[index + 1U] << 8U) |
+                                                  ((uint32_t)context->buffer[index + 2U] << 16U) |
+                                                  ((uint32_t)context->buffer[index + 3U] << 24U);
             }
 
             SeededMD5_Transform(context->state, block);
@@ -227,8 +201,7 @@ void SeededMD5_Final(seeded_md5_context_t *context)
 {
     uint32_t finalCount[SEEDED_MD5_COUNT_WORD_COUNT];
     uint32_t block[SEEDED_MD5_BLOCK_SIZE / sizeof(uint32_t)];
-    uint32_t bufferIndex =
-        (context->count[0] >> 3U) & SEEDED_MD5_BLOCK_MASK;
+    uint32_t bufferIndex = (context->count[0] >> 3U) & SEEDED_MD5_BLOCK_MASK;
     uint32_t padLength;
 
     finalCount[0] = context->count[0];
@@ -242,13 +215,9 @@ void SeededMD5_Final(seeded_md5_context_t *context)
 
     SeededMD5_Update(context, seeded_md5_padding, padLength);
 
-    for (uint32_t index = 0; index < SEEDED_MD5_FINAL_COUNT_TARGET;
-         index += sizeof(uint32_t)) {
-        block[index / sizeof(uint32_t)] =
-            ((uint32_t)context->buffer[index]) |
-            ((uint32_t)context->buffer[index + 1U] << 8U) |
-            ((uint32_t)context->buffer[index + 2U] << 16U) |
-            ((uint32_t)context->buffer[index + 3U] << 24U);
+    for (uint32_t index = 0; index < SEEDED_MD5_FINAL_COUNT_TARGET; index += sizeof(uint32_t)) {
+        block[index / sizeof(uint32_t)] = ((uint32_t)context->buffer[index]) | ((uint32_t)context->buffer[index + 1U] << 8U) |
+                                          ((uint32_t)context->buffer[index + 2U] << 16U) | ((uint32_t)context->buffer[index + 3U] << 24U);
     }
     block[14] = finalCount[0];
     block[15] = finalCount[1];
@@ -256,13 +225,9 @@ void SeededMD5_Final(seeded_md5_context_t *context)
     SeededMD5_Transform(context->state, block);
 
     for (uint32_t index = 0; index < SEEDED_MD5_STATE_WORD_COUNT; ++index) {
-        context->digest[index * sizeof(uint32_t)] =
-            (uint8_t)context->state[index];
-        context->digest[index * sizeof(uint32_t) + 1U] =
-            (uint8_t)(context->state[index] >> 8U);
-        context->digest[index * sizeof(uint32_t) + 2U] =
-            (uint8_t)(context->state[index] >> 16U);
-        context->digest[index * sizeof(uint32_t) + 3U] =
-            (uint8_t)(context->state[index] >> 24U);
+        context->digest[index * sizeof(uint32_t)] = (uint8_t)context->state[index];
+        context->digest[index * sizeof(uint32_t) + 1U] = (uint8_t)(context->state[index] >> 8U);
+        context->digest[index * sizeof(uint32_t) + 2U] = (uint8_t)(context->state[index] >> 16U);
+        context->digest[index * sizeof(uint32_t) + 3U] = (uint8_t)(context->state[index] >> 24U);
     }
 }

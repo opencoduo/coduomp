@@ -26,7 +26,7 @@
 void CG_ApplyWeaponMovementAngles(vec3_t angles /* EDI: view-angle accumulator, in/out */)
 {
     // 30045078..3004508f: zero a scratch vec3 (v[2],v[1],v[0] stores).
-    vec3_t movement = { 0.0f, 0.0f, 0.0f };
+    vec3_t movement = {0.0f, 0.0f, 0.0f};
 
     // 30045090: CALL 0x30044ce0 with ESI = &movement. The callee accumulates the
     // computed weapon-movement angles into movement[0..2] (three FADD [ESI+n]/FSTP).

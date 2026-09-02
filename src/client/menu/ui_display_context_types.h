@@ -26,97 +26,67 @@
  * supporting build intentionally rounds this slot differently.
  */
 
-typedef qhandle_t (*ui_registerShaderNoMip_t)(const char *name,
-                                               int32_t loadMode);
+typedef qhandle_t (*ui_registerShaderNoMip_t)(const char *name, int32_t loadMode);
 typedef void (*ui_setColor_t)(const vec4_t color);
-typedef void (*ui_drawHandlePic_t)(float x, float y, float width, float height,
-                                   qhandle_t shader);
-typedef void (*ui_drawStretchPic_t)(float x, float y, float width, float height,
-                                    float s0, float t0, float s1, float t1,
-                                    qhandle_t shader);
-typedef void (*ui_drawText_t)(float x, float y, int32_t font, float scale,
-                              const vec4_t color, const char *text,
-                              float fixedAdvance, int32_t limit,
-                              int32_t textStyle);
-typedef int32_t (*ui_textWidth_t)(const char *text, int32_t font, float scale,
-                                  int32_t limit);
+typedef void (*ui_drawHandlePic_t)(float x, float y, float width, float height, qhandle_t shader);
+typedef void (*ui_drawStretchPic_t)(float x, float y, float width, float height, float s0, float t0, float s1, float t1, qhandle_t shader);
+typedef void (*ui_drawText_t)(float x, float y, int32_t font, float scale, const vec4_t color, const char *text, float fixedAdvance,
+                              int32_t limit, int32_t textStyle);
+typedef int32_t (*ui_textWidth_t)(const char *text, int32_t font, float scale, int32_t limit);
 typedef int32_t (*ui_textHeight_t)(int32_t font, float scale);
 typedef const char *(*ui_translateString_t)(const char *reference);
 typedef const char *(*ui_getLocalizedString_t)(const char *reference);
-typedef const char *(*ui_localizeWithBinding_t)(const char *message,
-                                                const char *context);
+typedef const char *(*ui_localizeWithBinding_t)(const char *message, const char *context);
 typedef void (*ui_setFont_t)(int32_t font);
 typedef qhandle_t (*ui_registerModel_t)(const char *name, int32_t loadMode);
-typedef void (*ui_modelBounds_t)(qhandle_t model, vec3_t minimums,
-                                 vec3_t maximums);
-typedef void (*ui_fillRect_t)(float x, float y, float width, float height,
-                              const vec4_t color);
-typedef void (*ui_drawRect_t)(float x, float y, float width, float height,
-                              float size, const vec4_t color);
-typedef void (*ui_drawBorderParts_t)(float x, float y, float width,
-                                     float height, float size);
+typedef void (*ui_modelBounds_t)(qhandle_t model, vec3_t minimums, vec3_t maximums);
+typedef void (*ui_fillRect_t)(float x, float y, float width, float height, const vec4_t color);
+typedef void (*ui_drawRect_t)(float x, float y, float width, float height, float size, const vec4_t color);
+typedef void (*ui_drawBorderParts_t)(float x, float y, float width, float height, float size);
 typedef void (*ui_clearScene_t)(void);
 typedef void (*ui_addRefEntity_t)(const refEntity_t *entity);
 typedef void (*ui_renderScene_t)(const refdef_t *refdef);
-typedef void (*ui_registerFont_t)(const char *name, int32_t pointSize,
-                                  fontInfo_t *fontStorage, intptr_t context);
-typedef void (*ui_ownerDrawItem_t)(float x, float y, float width, float height,
-                                   float textX, float textY,
-                                   int32_t ownerDraw, int32_t ownerDrawFlags,
-                                   int32_t alignment, float special,
-                                   int32_t font, float textScale,
-                                   vec4_t color, qhandle_t background,
-                                   int32_t textStyle);
-typedef float (*ui_ownerDrawValue_t)(int32_t ownerDraw,
-                                     int32_t colorRangeType);
+typedef void (*ui_registerFont_t)(const char *name, int32_t pointSize, fontInfo_t *fontStorage, intptr_t context);
+typedef void (*ui_ownerDrawItem_t)(float x, float y, float width, float height, float textX, float textY, int32_t ownerDraw,
+                                   int32_t ownerDrawFlags, int32_t alignment, float special, int32_t font, float textScale, vec4_t color,
+                                   qhandle_t background, int32_t textStyle);
+typedef float (*ui_ownerDrawValue_t)(int32_t ownerDraw, int32_t colorRangeType);
 typedef qboolean (*ui_ownerDrawVisible_t)(int32_t ownerDrawFlags);
 typedef void (*ui_runScript_t)(char **arguments);
 typedef void (*ui_getTeamColor_t)(vec4_t color);
-typedef void (*ui_getCVarString_t)(const char *name, char *buffer,
-                                   int32_t bufferSize);
+typedef void (*ui_getCVarString_t)(const char *name, char *buffer, int32_t bufferSize);
 typedef long double (*ui_getCVarValue_t)(const char *name);
 typedef void (*ui_setCVar_t)(const char *name, const char *value);
 typedef const char *(*ui_configString_t)(int32_t index);
-typedef void (*ui_drawTextWithCursor_t)(float x, float y, int32_t font,
-                                        float scale, const vec4_t color,
-                                        const char *text,
-                                        int32_t cursorPosition,
-                                        int8_t cursorCharacter,
-                                        int32_t limit, int32_t textStyle);
+typedef void (*ui_drawTextWithCursor_t)(float x, float y, int32_t font, float scale, const vec4_t color, const char *text,
+                                        int32_t cursorPosition, int8_t cursorCharacter, int32_t limit, int32_t textStyle);
 typedef void (*ui_setOverstrikeMode_t)(qboolean overstrike);
 typedef qboolean (*ui_getOverstrikeMode_t)(void);
 typedef void (*ui_startLocalSound_t)(const char *soundName);
-typedef qboolean (*ui_ownerDrawHandleKey_t)(int32_t ownerDraw, int32_t flags,
-                                            float *special, int32_t key);
+typedef qboolean (*ui_ownerDrawHandleKey_t)(int32_t ownerDraw, int32_t flags, float *special, int32_t key);
 typedef int32_t (*ui_feederCount_t)(float feeder);
-enum { UI_FEEDER_IMAGE_HANDLE_NONE = -1 };
-typedef const char *(*ui_feederItemText_t)(float feeder, int32_t index,
-                                           int32_t column,
-                                           int32_t *imageHandle);
+enum {
+    UI_FEEDER_IMAGE_HANDLE_NONE = -1
+};
+typedef const char *(*ui_feederItemText_t)(float feeder, int32_t index, int32_t column, int32_t *imageHandle);
 typedef const char *(*ui_resolveTextToken_t)(const char *token);
 typedef qhandle_t (*ui_feederItemImage_t)(float feeder, int32_t index);
 typedef void (*ui_feederSelection_t)(float feeder, int32_t index);
-typedef void (*ui_feederAddItem_t)(float feeder, const char *name,
-                                   int32_t value);
+typedef void (*ui_feederAddItem_t)(float feeder, const char *name, int32_t value);
 typedef void (*ui_getAutoUpdate_t)(void);
 typedef qboolean (*ui_runningGame_t)(void);
-typedef void (*ui_keynumToStringBuf_t)(int32_t keynum, char *buffer,
-                                       int32_t bufferSize);
-typedef void (*ui_getBindingBuf_t)(int32_t keynum, char *buffer,
-                                   int32_t bufferSize);
+typedef void (*ui_keynumToStringBuf_t)(int32_t keynum, char *buffer, int32_t bufferSize);
+typedef void (*ui_getBindingBuf_t)(int32_t keynum, char *buffer, int32_t bufferSize);
 typedef void (*ui_setBinding_t)(int32_t keynum, const char *binding);
 typedef void (*ui_executeText_t)(int32_t executionMode, const char *text);
 typedef void (*ui_error_t)(errorParm_t level, const char *format, ...);
 typedef void (*ui_print_t)(const char *format, ...);
 typedef void (*ui_pause_t)(qboolean paused);
-typedef int32_t (*ui_ownerDrawWidth_t)(int32_t ownerDraw, int32_t font,
-                                       float scale);
+typedef int32_t (*ui_ownerDrawWidth_t)(int32_t ownerDraw, int32_t font, float scale);
 typedef const char *(*ui_registerAsset_t)(const char *name);
-typedef int32_t (*ui_playCinematic_t)(const char *name, float x, float y,
-                                      float width, float height);
+typedef int32_t (*ui_playCinematic_t)(const char *name, float x, float y, float width, float height);
 typedef void (*ui_stopCinematic_t)(int32_t cinematic);
-typedef void (*ui_drawCinematic_t)(int32_t cinematic, float x, float y,
-                                   float width, float height);
+typedef void (*ui_drawCinematic_t)(int32_t cinematic, float x, float y, float width, float height);
 typedef void (*ui_runCinematicFrame_t)(int32_t cinematic);
 
 typedef struct displayContextDef_s {
@@ -229,9 +199,8 @@ typedef struct displayContextDef_s {
 } displayContextDef_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-#define UI_DISPLAY_CONTEXT_OFFSET_ASSERT(field, expected)                    \
-    _Static_assert(offsetof(displayContextDef_t, field) == (expected),       \
-                   "displayContextDef_t." #field " moved")
+#define UI_DISPLAY_CONTEXT_OFFSET_ASSERT(field, expected) \
+    _Static_assert(offsetof(displayContextDef_t, field) == (expected), "displayContextDef_t." #field " moved")
 
 UI_DISPLAY_CONTEXT_OFFSET_ASSERT(registerShaderNoMip, 0x000);
 UI_DISPLAY_CONTEXT_OFFSET_ASSERT(setColor, 0x004);
@@ -338,8 +307,7 @@ UI_DISPLAY_CONTEXT_OFFSET_ASSERT(gradientImage, 0x1e3d4);
 UI_DISPLAY_CONTEXT_OFFSET_ASSERT(displayCursor, 0x1e3d8);
 UI_DISPLAY_CONTEXT_OFFSET_ASSERT(fps, 0x1e3dc);
 
-_Static_assert(sizeof(displayContextDef_t) == 0x1e3e0,
-               "original common display-context size is 123872 bytes");
+_Static_assert(sizeof(displayContextDef_t) == 0x1e3e0, "original common display-context size is 123872 bytes");
 
 #undef UI_DISPLAY_CONTEXT_OFFSET_ASSERT
 #endif

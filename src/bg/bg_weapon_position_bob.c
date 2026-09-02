@@ -39,10 +39,11 @@
  * 0x3007bda4; the product is kept when <= 10.0, replaced by 10.0 when strictly
  * greater). Modelled as min(x, 10.0).
  */
-enum { BG_SWAY_MAX_BOB_AMP = 10 };
+enum {
+    BG_SWAY_MAX_BOB_AMP = 10
+};
 
-void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
-                                          vec3_t angles)
+void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state, vec3_t angles)
 {
 #if defined(WINDOWS_BEHAVIOR)
     /* 0x300152f3: EDX = state->ps. */
@@ -60,9 +61,7 @@ void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
      * Constants are the exact 32-bit .rdata floats: 0.024639944 (0x3007be48 =
      * 2*PI/255), 6.2831855 = 2*PI (0x3007be44), 7.0685835 (0x3007bf64). */
     int bobByte = ps->bobCycle & 0xff;
-    float phase = (float)(
-        (long double)bobByte * (long double)0.024639944f +
-        (long double)6.2831855f + (long double)7.0685835f);
+    float phase = (float)((long double)bobByte * (long double)0.024639944f + (long double)6.2831855f + (long double)7.0685835f);
 
     /* 0x30015332..0x3001533f: ampInput = state->speed * 0.16 (0x3007bf60). */
     float ampInput = state->speed * 0.16f;
@@ -73,9 +72,7 @@ void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
     /* 0x30015350: the raw ST0 return is multiplied by -1.0 (0x3007bdb0) and
      * stays in the x87 stack unrounded through the ADS scaling until the
      * angles[0] accumulate store -- no float local in the DLL. */
-    long double pitch = BG_GetVerticalBobFactor(ps, phase, ampInput,
-                                                (float)BG_SWAY_MAX_BOB_AMP) *
-                        -1.0f;
+    long double pitch = BG_GetVerticalBobFactor(ps, phase, ampInput, (float)BG_SWAY_MAX_BOB_AMP) * -1.0f;
 
     int32_t viewHeightTarget = ps->viewHeightTarget;
     int32_t proneViewHeight = ps->proneViewHeight;
@@ -92,20 +89,17 @@ void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
      *   amp2 = min(stance * ampInput, 10.0)
      *   yaw  = -sin(phase) * amp2
      * (FSIN of phase, FMUL amp2, FMUL -1.0 @0x3007bdb0.) */
-    long double amp2 =
-        (long double)yawStance * (long double)ampInput;
+    long double amp2 = (long double)yawStance * (long double)ampInput;
     if (amp2 > (long double)BG_SWAY_MAX_BOB_AMP) {
         amp2 = (long double)BG_SWAY_MAX_BOB_AMP;
     }
-    float yaw = (float)(
-        __builtin_sinl((long double)phase) * amp2 * -1.0L);
+    float yaw = (float)(__builtin_sinl((long double)phase) * amp2 * -1.0L);
 
     /* 0x300153b6..0x300153c8: roll phase, shifted by 0.47123894 (0x3007bf5c =
      * 0x3ef1463b; 0.4712389f would be 1 ULP low at 0x3ef1463a), and the 1.5x
      * (0x3007be70) amplitude used by the roll term. */
     float rollPhase = phase - 0.47123894f;
-    long double rollAmpBase =
-        (long double)ampInput * 1.5L;
+    long double rollAmpBase = (long double)ampInput * 1.5L;
     float rollTestStance;
     if (viewHeightTarget == proneViewHeight) {
         rollTestStance = BG_BOB_AMPLITUDE_PRONE;
@@ -136,8 +130,7 @@ void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
         } else {
             rollApplyStance = BG_BOB_AMPLITUDE_STANDING;
         }
-        long double rollApplyAmp =
-            rollAmpBase * (long double)rollApplyStance;
+        long double rollApplyAmp = rollAmpBase * (long double)rollApplyStance;
         if (rollApplyAmp > (long double)BG_SWAY_MAX_BOB_AMP) {
             rollApplyAmp = (long double)BG_SWAY_MAX_BOB_AMP;
         }
@@ -152,12 +145,10 @@ void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
      * components are scaled by it (constants 1.0 @0x3007bce0). */
     float adsFraction = ps->adsFraction;
     if (adsFraction != 0.0f) {
-        long double adsScale =
-            1.0L - (long double)adsFraction *
-                       (1.0L - (long double)wi->adsBobFactor);
+        long double adsScale = 1.0L - (long double)adsFraction * (1.0L - (long double)wi->adsBobFactor);
         pitch *= adsScale;
         yaw = (float)((long double)yaw * adsScale);
-        roll  *= adsScale;
+        roll *= adsScale;
     }
 
     /* 0x300154a9..0x300154bb: accumulate into the running angle vector. */
@@ -176,34 +167,22 @@ void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
     /* Linux loads these source constants as binary64 values before storing
      * the resulting phase to binary32. */
 #if EMULATE_X87
-    phase = x87f_store_f32(x87f_add(
-        x87f_add(x87f_load_f32(phase),
-                 x87f_load_f64(0.7853981633974483)),
-        x87f_load_f64(6.283185307179586)));
+    phase = x87f_store_f32(x87f_add(x87f_add(x87f_load_f32(phase), x87f_load_f64(0.7853981633974483)), x87f_load_f64(6.283185307179586)));
 #else
-    phase = (float)((long double)phase +
-                    0.7853981633974483L +
-                    6.283185307179586L);
+    phase = (float)((long double)phase + 0.7853981633974483L + 6.283185307179586L);
 #endif
 
-    pitch = -BG_GetVerticalBobFactor(ps, phase, speed,
-                                     (float)BG_SWAY_MAX_BOB_AMP);
-    yaw = -BG_GetHorizontalBobFactor(ps, phase, speed,
-                                    (float)BG_SWAY_MAX_BOB_AMP);
-    roll = BG_GetHorizontalBobFactor(
-        ps, phase - 0.47123889803846897,
-        speed * 1.5f, (float)BG_SWAY_MAX_BOB_AMP);
+    pitch = -BG_GetVerticalBobFactor(ps, phase, speed, (float)BG_SWAY_MAX_BOB_AMP);
+    yaw = -BG_GetHorizontalBobFactor(ps, phase, speed, (float)BG_SWAY_MAX_BOB_AMP);
+    roll = BG_GetHorizontalBobFactor(ps, phase - 0.47123889803846897, speed * 1.5f, (float)BG_SWAY_MAX_BOB_AMP);
     if (roll < 0.0f) {
-        roll = BG_GetHorizontalBobFactor(
-            ps, phase - 0.47123889803846897,
-            speed * 1.5f, (float)BG_SWAY_MAX_BOB_AMP);
+        roll = BG_GetHorizontalBobFactor(ps, phase - 0.47123889803846897, speed * 1.5f, (float)BG_SWAY_MAX_BOB_AMP);
     } else {
         roll = 0.0f;
     }
 
     if (ps->adsFraction != 0.0f) {
-        const float adsScale =
-            1.0f - (1.0f - weapon->adsBobFactor) * ps->adsFraction;
+        const float adsScale = 1.0f - (1.0f - weapon->adsBobFactor) * ps->adsFraction;
 
         pitch *= adsScale;
         yaw *= adsScale;

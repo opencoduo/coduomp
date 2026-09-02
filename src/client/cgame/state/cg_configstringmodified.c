@@ -15,10 +15,10 @@
 // was a forbidden size match; this routine performs no weapon-position math.
 
 enum {
-    CS_CLIENT_STATE_11    = 11,
-    CS_HUD_STAT_14        = 14,
-    CG_ASSET_SORT_2D      = 5,
-    CG_HUD_TEXT_CAPACITY  = 255
+    CS_CLIENT_STATE_11 = 11,
+    CS_HUD_STAT_14 = 14,
+    CG_ASSET_SORT_2D = 5,
+    CG_HUD_TEXT_CAPACITY = 255
 };
 
 void CG_ConfigStringModified(void)
@@ -41,8 +41,7 @@ void CG_ConfigStringModified(void)
         CG_ConfigString3Modified();
     } else if (index == CS_SERVERINFO) {
         CG_ParseServerinfo();
-    } else if (index >= CS_CONFIGVALUE_NAMES &&
-               index < CS_CONFIGVALUE_VALUES + CS_CONFIGVALUE_COUNT) {
+    } else if (index >= CS_CONFIGVALUE_NAMES && index < CS_CONFIGVALUE_VALUES + CS_CONFIGVALUE_COUNT) {
         CG_SetConfigValues();
     } else if (index == CS_TEAM_SCORE_AXIS) {
         cg_hudStat5Value = coduo_crt_atoi(value);
@@ -53,9 +52,7 @@ void CG_ConfigStringModified(void)
     } else if (index == CS_VOTE_TIME) {
         cg_voteTime = coduo_crt_atoi(value);
         if (cg_voteTime != 0) {
-            cg_voteTime = coduo_int32_from_bits(
-                (uint32_t)cg_voteTime +
-                (uint32_t)cgame_syscall(CG_MILLISECONDS));
+            cg_voteTime = coduo_int32_from_bits((uint32_t)cg_voteTime + (uint32_t)cgame_syscall(CG_MILLISECONDS));
         }
         cg_voteModified = qtrue;
     } else if (index == CS_VOTE_YES) {
@@ -71,9 +68,7 @@ void CG_ConfigStringModified(void)
     } else if (index == CS_TIMEOUT_TIME) {
         cg_timeoutEndTime = coduo_crt_atoi(value);
         if (cg_timeoutEndTime != 0) {
-            cg_timeoutEndTime = coduo_int32_from_bits(
-                (uint32_t)cg_timeoutEndTime +
-                (uint32_t)cgame_syscall(CG_MILLISECONDS));
+            cg_timeoutEndTime = coduo_int32_from_bits((uint32_t)cg_timeoutEndTime + (uint32_t)cgame_syscall(CG_MILLISECONDS));
         }
         cg_timeoutActive = 0;
     } else if (index == CS_TIMEOUT_STRING) {
@@ -85,21 +80,16 @@ void CG_ConfigStringModified(void)
     } else if (index >= CS_MODELS && index < CS_SOUNDS) {
         cg_gameModels[index - CS_MODELS] = CG_RegisterModel(value, 7);
     } else if (index >= CS_EFFECTS && index < CS_FX) {
-        cg_effectDefs[index - CS_EFFECTS] =
-            (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)value);
-    } else if (index >= CS_SHELLSHOCKS &&
-               index < CS_SHELLSHOCKS + CS_SHELLSHOCKS_COUNT) {
+        cg_effectDefs[index - CS_EFFECTS] = (uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)value);
+    } else if (index >= CS_SHELLSHOCKS && index < CS_SHELLSHOCKS + CS_SHELLSHOCKS_COUNT) {
         shellshock_t *params;
 
         if (value[0] == '\0' || CG_ShellShockLoad(value) == 0) {
             return;
         }
-        params = index == CS_SHELLSHOCKS
-                     ? &cg_consoleShellShock
-                     : &cg_shellShocks[index - CS_SHELLSHOCKS - 1];
+        params = index == CS_SHELLSHOCKS ? &cg_consoleShellShock : &cg_shellShocks[index - CS_SHELLSHOCKS - 1];
         CG_SetShellShockParams(params);
-    } else if (index >= CS_SCRIPTMENUS &&
-               index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT) {
+    } else if (index >= CS_SCRIPTMENUS && index < CS_SCRIPTMENUS + CS_SCRIPTMENUS_COUNT) {
         CG_RegisterConfigStringMenu(index);
     } else if (index >= CS_STATUS_ICONS && index < CS_HEAD_ICONS) {
         trap_R_RegisterShaderNoMip(CG_ConfigString(index), CG_ASSET_SORT_2D);
@@ -118,18 +108,16 @@ void CG_ConfigStringModified(void)
 
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (windStringLength >= sizeof(buffer)) {
-            Com_Error(ERR_DROP,
-                      "\x15" "CG_ConfigStringModified: wind config string "
-                      "exceeds BIG_INFO_STRING");
+            Com_Error(ERR_DROP, "\x15"
+                                "CG_ConfigStringModified: wind config string "
+                                "exceeds BIG_INFO_STRING");
             return;
         }
         memcpy(buffer, windString, windStringLength + 1);
-        if (sscanf(buffer, "%f %f %f %f",
-                   &direction[0], &direction[1], &direction[2],
-                   &intensity) != 4) {
-            Com_Error(ERR_DROP,
-                      "\x15" "CG_ConfigStringModified: invalid wind config "
-                      "string");
+        if (sscanf(buffer, "%f %f %f %f", &direction[0], &direction[1], &direction[2], &intensity) != 4) {
+            Com_Error(ERR_DROP, "\x15"
+                                "CG_ConfigStringModified: invalid wind config "
+                                "string");
             return;
         }
         trap_FX_SetWind(direction, intensity);

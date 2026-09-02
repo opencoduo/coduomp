@@ -11,14 +11,11 @@
 #define CG_CLOCK_NEEDLE_SUFFIX "Needle"
 
 enum {
-    CG_CLOCK_NEEDLE_SUFFIX_LENGTH =
-        sizeof(CG_CLOCK_NEEDLE_SUFFIX) - 1,
-    CG_CLOCK_BASE_NAME_CAPACITY =
-        MAX_QPATH - CG_CLOCK_NEEDLE_SUFFIX_LENGTH
+    CG_CLOCK_NEEDLE_SUFFIX_LENGTH = sizeof(CG_CLOCK_NEEDLE_SUFFIX) - 1,
+    CG_CLOCK_BASE_NAME_CAPACITY = MAX_QPATH - CG_CLOCK_NEEDLE_SUFFIX_LENGTH
 };
 
-_Static_assert(MAX_QPATH > CG_CLOCK_NEEDLE_SUFFIX_LENGTH,
-               "clock shader path cannot hold its Needle suffix");
+_Static_assert(MAX_QPATH > CG_CLOCK_NEEDLE_SUFFIX_LENGTH, "clock shader path cannot hold its Needle suffix");
 
 /*
  * CG_DrawHudElemClock (0x3002a000) — render a CLOCK / analog-timer HUD element:
@@ -61,12 +58,11 @@ _Static_assert(MAX_QPATH > CG_CLOCK_NEEDLE_SUFFIX_LENGTH,
 
 /* Provenance for the item fields read here (char* members => guard to 32-bit ABI). */
 _Static_assert(offsetof(cgAlignedDrawItem, x) == 0x00, "item.x @ +0x00");
-_Static_assert(offsetof(cgAlignedDrawItem, y)      == 0x04, "item.y @ +0x04");
+_Static_assert(offsetof(cgAlignedDrawItem, y) == 0x04, "item.y @ +0x04");
 _Static_assert(offsetof(cgAlignedDrawItem, height) == 0x0c, "item.height @ +0x0c");
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
-_Static_assert(offsetof(cgAlignedDrawItem, fontHeight) == 0x28,
-               "item.fontHeight @ +0x28");
-_Static_assert(offsetof(cgAlignedDrawItem, color)  == 0x30, "item.color @ +0x30");
+_Static_assert(offsetof(cgAlignedDrawItem, fontHeight) == 0x28, "item.fontHeight @ +0x28");
+_Static_assert(offsetof(cgAlignedDrawItem, color) == 0x30, "item.color @ +0x30");
 #endif
 
 void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
@@ -80,8 +76,7 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
      * global MAX_QPATH increase expands both capacities together.
      */
     char shaderName[MAX_QPATH];
-    if (!CG_GetShaderConfigString(elem->materialIndex, shaderName,
-                                  CG_CLOCK_BASE_NAME_CAPACITY)) {
+    if (!CG_GetShaderConfigString(elem->materialIndex, shaderName, CG_CLOCK_BASE_NAME_CAPACITY)) {
         return;
     }
 
@@ -93,8 +88,7 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
      * R_IMAGE_TRACK_HUD (the machine's literal 5), matching
      * CG_DrawHudElemShader. Handle kept in EBP across the body.
      */
-    qhandle_t hFace =
-        CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
+    qhandle_t hFace = CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
 
     /*
      * 3002a044..a074: append the literal "Needle" to the config-string name and
@@ -105,8 +99,7 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
      */
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     strcat(shaderName, CG_CLOCK_NEEDLE_SUFFIX);
-    qhandle_t hNeedle =
-        CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
+    qhandle_t hNeedle = CG_RegisterMaterial(shaderName, R_IMAGE_TRACK_HUD);
 
     /*
      * 3002a092..a10e: convert the element's timer value into a needle rotation
@@ -128,18 +121,14 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
     uint32_t bams;
     if (periodMs != 0) {
         float periodRounded = (float)periodMs; /* FILD then FSTP m32 at 0x3002a0b8 */
-        long double bamsRaw =
-            ((long double)timerValue * (long double)360.0f) /
-            (long double)periodRounded * (long double)182.04445f;
+        long double bamsRaw = ((long double)timerValue * (long double)360.0f) / (long double)periodRounded * (long double)182.04445f;
         bams = (uint32_t)coduo_fp_to_i32_extended(bamsRaw) & 0xffffu;
     } else {
-        long double bamsRaw =
-            (long double)timerValue * (long double)1.0922667f;
+        long double bamsRaw = (long double)timerValue * (long double)1.0922667f;
         bams = (uint32_t)coduo_fp_to_i32_extended(bamsRaw) & 0xffffu;
     }
     float bamsRounded = (float)(int32_t)bams; /* FILD then FSTP m32 */
-    float angle = (float)((long double)bamsRounded *
-                          (long double)0.0054931641f); /* bams -> degrees */
+    float angle = (float)((long double)bamsRounded * (long double)0.0054931641f); /* bams -> degrees */
 
     /*
      * 3002a114..a12a: interpolate the element's animated size.
@@ -159,12 +148,10 @@ void CG_DrawHudElemClock(cgAlignedDrawItem *item, hudElem_t *elem)
         yTop = item->y;
         break;
     case HUDELEM_ALIGN_CENTER: /* 1: a154 — (item->height - sizeH)*0.5 + item->y */
-        yTop = (float)(((long double)item->height - (long double)sizeH) *
-                        (long double)0.5f + (long double)item->y);
+        yTop = (float)(((long double)item->height - (long double)sizeH) * (long double)0.5f + (long double)item->y);
         break;
     case HUDELEM_ALIGN_END:    /* 2: a140 — item->height + item->y - sizeH */
-        yTop = (float)((long double)item->height + (long double)item->y -
-                        (long double)sizeH);
+        yTop = (float)((long double)item->height + (long double)item->y - (long double)sizeH);
         break;
     default:                   /* >=3: a13c — yTop = 0 */
         yTop = 0.0f;

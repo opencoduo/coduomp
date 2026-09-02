@@ -27,10 +27,10 @@ enum {
  * binary values explicit prevents host headers from selecting a different pi
  * approximation. */
 #define R_WAVE_DEGREES_PER_STEP 0.3515625f             /* 0x3eb40000 */
-#define R_PI_F                  3.1415927410125732f     /* 0x40490fdb */
-#define R_INV_180_F             0.0055555556900799274f /* 0x3bb60b61 */
-#define R_INV_WAVE_TABLE_F      0.0009765625f           /* 0x3a800000 */
-#define R_INV_WAVE_QUARTER_F    0.00390625f             /* 0x3b800000 */
+#define R_PI_F 3.1415927410125732f     /* 0x40490fdb */
+#define R_INV_180_F 0.0055555556900799274f /* 0x3bb60b61 */
+#define R_INV_WAVE_TABLE_F 0.0009765625f           /* 0x3a800000 */
+#define R_INV_WAVE_QUARTER_F 0.00390625f             /* 0x3b800000 */
 #define R_DIFFUSE_SUN_HALF_WEIGHT 0.5f                   /* 0x3f000000 */
 
 trGlobals_t tr;
@@ -63,13 +63,11 @@ renderer_surface_fn_t rb_surfaceTable[] = {
     [R_SURFACE_CACHED_STATIC_MODEL_ARB] = RB_SurfaceStaticModelCached,
     [R_SURFACE_CACHED_STATIC_MODEL_ATI] = RB_SurfaceStaticModelCached,
     [R_SURFACE_CACHED_STATIC_MODEL_NV] = RB_SurfaceStaticModelCached,
-    [R_SURFACE_STATIC_MODEL_T2V3_GENERIC] =
-        RB_SurfaceStaticModelT2V3_Generic,
+    [R_SURFACE_STATIC_MODEL_T2V3_GENERIC] = RB_SurfaceStaticModelT2V3_Generic,
     [R_SURFACE_STATIC_MODEL_T2V3_ARB] = RB_SurfaceStaticModelT2V3_ARB,
     [R_SURFACE_STATIC_MODEL_T2V3_ATI] = RB_SurfaceStaticModelATI,
     [R_SURFACE_STATIC_MODEL_T2V3_NV] = RB_SurfaceStaticModelT2V3_NV,
-    [R_SURFACE_STATIC_MODEL_T2N3V3_GENERIC] =
-        RB_SurfaceStaticModelT2N3V3_Generic,
+    [R_SURFACE_STATIC_MODEL_T2N3V3_GENERIC] = RB_SurfaceStaticModelT2N3V3_Generic,
     [R_SURFACE_STATIC_MODEL_T2N3V3_ARB] = RB_SurfaceStaticModelT2N3V3_ARB,
     [R_SURFACE_STATIC_MODEL_T2N3V3_ATI] = RB_SurfaceStaticModelATI,
     [R_SURFACE_STATIC_MODEL_T2N3V3_NV] = RB_SurfaceStaticModelT2N3V3_NV,
@@ -112,9 +110,7 @@ int32_t rendererLightVisMaxAssociativity;
 int32_t rendererLightVisUsedEntryCount;
 int32_t rendererLightVisFlushedEntryCount;
 int32_t rendererLightVisRuntimeFillCount;
-renderer_light_vis_cache_entry_t
-    rendererLightVisCache[R_LIGHT_VIS_BUCKET_COUNT]
-                         [R_LIGHT_VIS_ENTRIES_PER_BUCKET]; /* 0x00d92fc0 */
+renderer_light_vis_cache_entry_t rendererLightVisCache[R_LIGHT_VIS_BUCKET_COUNT][R_LIGHT_VIS_ENTRIES_PER_BUCKET]; /* 0x00d92fc0 */
 
 /* Optional light-vis history and its sorted coordinate index. Original
  * pointers/counts: 0x00d92fa8/0x00d92fb0 and 0x00d92fac/0x00d92fb4. */
@@ -158,9 +154,7 @@ void R_SetHwLightGlobals(void)
     else if (tr.diffuseSunSteps > R_DIFFUSE_SUN_STEPS_MAX)
         tr.diffuseSunSteps = R_DIFFUSE_SUN_STEPS_MAX;
 
-    tr.diffuseSunSampleScale =
-        R_DIFFUSE_SUN_HALF_WEIGHT /
-        (float)(tr.diffuseSunSteps * tr.diffuseSunSteps);
+    tr.diffuseSunSampleScale = R_DIFFUSE_SUN_HALF_WEIGHT / (float)(tr.diffuseSunSteps * tr.diffuseSunSteps);
 
     tr.maxEntityLights = r_maxEntLights->integer;
     if (tr.maxEntityLights < tr.diffuseSunQuality + 1)
@@ -201,39 +195,25 @@ void R_Init(void)
 
     memset(tess.constantColor255, 0xff, sizeof(tess.constantColor255));
 
-    for (int32_t waveIndex = 0;
-         waveIndex < R_WAVE_TABLE_SIZE;
-         ++waveIndex) {
+    for (int32_t waveIndex = 0; waveIndex < R_WAVE_TABLE_SIZE; ++waveIndex) {
         const float waveIndexFloat = (float)waveIndex;
         const long double angle =
-            (long double)waveIndexFloat *
-            (long double)R_WAVE_DEGREES_PER_STEP *
-            (long double)R_PI_F *
-            (long double)R_INV_180_F;
+            (long double)waveIndexFloat * (long double)R_WAVE_DEGREES_PER_STEP * (long double)R_PI_F * (long double)R_INV_180_F;
 
         tr.sinTable[waveIndex] = (float)sinl(angle);
-        tr.squareTable[waveIndex] =
-            waveIndex < R_WAVE_TABLE_HALF ? 1.0f : -1.0f;
-        const long double sawToothRaw =
-            (long double)waveIndexFloat *
-            (long double)R_INV_WAVE_TABLE_F;
-        tr.sawToothTable[waveIndex] =
-            (float)sawToothRaw;
+        tr.squareTable[waveIndex] = waveIndex < R_WAVE_TABLE_HALF ? 1.0f : -1.0f;
+        const long double sawToothRaw = (long double)waveIndexFloat * (long double)R_INV_WAVE_TABLE_F;
+        tr.sawToothTable[waveIndex] = (float)sawToothRaw;
         /* 0x4c4e98..0x4c4ead stores sawToothRaw but subtracts its retained
          * value from one for the inverse table. */
-        tr.inverseSawToothTable[waveIndex] =
-            (float)(1.0L - sawToothRaw);
+        tr.inverseSawToothTable[waveIndex] = (float)(1.0L - sawToothRaw);
 
         if (waveIndex < R_WAVE_TABLE_QUARTER) {
-            tr.triangleTable[waveIndex] =
-                waveIndexFloat * R_INV_WAVE_QUARTER_F;
+            tr.triangleTable[waveIndex] = waveIndexFloat * R_INV_WAVE_QUARTER_F;
         } else if (waveIndex < R_WAVE_TABLE_HALF) {
-            tr.triangleTable[waveIndex] =
-                1.0f - tr.triangleTable[
-                    waveIndex - R_WAVE_TABLE_QUARTER];
+            tr.triangleTable[waveIndex] = 1.0f - tr.triangleTable[waveIndex - R_WAVE_TABLE_QUARTER];
         } else {
-            tr.triangleTable[waveIndex] =
-                -tr.triangleTable[waveIndex - R_WAVE_TABLE_HALF];
+            tr.triangleTable[waveIndex] = -tr.triangleTable[waveIndex - R_WAVE_TABLE_HALF];
         }
     }
 
@@ -249,9 +229,7 @@ void R_Init(void)
         rendererMaxPolyVerts = R_MIN_POLY_VERTS;
 
     backendAllocationSize =
-        sizeof(*rendererBackendData) +
-        (size_t)rendererMaxPolys * sizeof(srfPoly_t) +
-        (size_t)rendererMaxPolyVerts * sizeof(polyVert_t);
+        sizeof(*rendererBackendData) + (size_t)rendererMaxPolys * sizeof(srfPoly_t) + (size_t)rendererMaxPolyVerts * sizeof(polyVert_t);
     rendererBackendData = ri.Hunk_Alloc(backendAllocationSize);
     rendererBackendData->commandUsed = 0;
 

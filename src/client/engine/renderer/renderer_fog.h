@@ -48,36 +48,21 @@ typedef struct renderer_fog_s {
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-RENDERER_FOG_STATIC_ASSERT(RENDERER_FOG_ALIGNOF(renderer_fog_t) == 4,
-                           "renderer fog alignment changed");
-RENDERER_FOG_STATIC_ASSERT(sizeof(renderer_fog_t) == 0x40,
-                           "renderer fog size changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, mode) == 0x00,
-                           "renderer fog mode offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, hint) == 0x04,
-                           "renderer fog hint offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, startTime) == 0x08,
-                           "renderer fog start-time offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, finishTime) == 0x0c,
-                           "renderer fog finish-time offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, color) == 0x10,
-                           "renderer fog color offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, start) == 0x20,
-                           "renderer fog start offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, end) == 0x24,
-                           "renderer fog end offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, useEndForClip) == 0x28,
-                           "renderer fog clip marker offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, density) == 0x2c,
-                           "renderer fog density offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, registered) == 0x30,
-                           "renderer fog registration offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, drawSky) == 0x34,
-                           "renderer fog draw-sky offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, clearScreen) == 0x38,
-                           "renderer fog clear-screen offset changed");
-RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, dirty) == 0x3c,
-                           "renderer fog dirty offset changed");
+RENDERER_FOG_STATIC_ASSERT(RENDERER_FOG_ALIGNOF(renderer_fog_t) == 4, "renderer fog alignment changed");
+RENDERER_FOG_STATIC_ASSERT(sizeof(renderer_fog_t) == 0x40, "renderer fog size changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, mode) == 0x00, "renderer fog mode offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, hint) == 0x04, "renderer fog hint offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, startTime) == 0x08, "renderer fog start-time offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, finishTime) == 0x0c, "renderer fog finish-time offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, color) == 0x10, "renderer fog color offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, start) == 0x20, "renderer fog start offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, end) == 0x24, "renderer fog end offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, useEndForClip) == 0x28, "renderer fog clip marker offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, density) == 0x2c, "renderer fog density offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, registered) == 0x30, "renderer fog registration offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, drawSky) == 0x34, "renderer fog draw-sky offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, clearScreen) == 0x38, "renderer fog clear-screen offset changed");
+RENDERER_FOG_STATIC_ASSERT(offsetof(renderer_fog_t, dirty) == 0x3c, "renderer fog dirty offset changed");
 #endif
 
 #undef RENDERER_FOG_ALIGNOF

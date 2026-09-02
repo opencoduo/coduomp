@@ -59,11 +59,11 @@
 
 /* 16-byte display-string buffer used as the trap-54 string argument. Proven from
  * MOV ESI,0x10 (the Com_sprintf size) and LEA EDI,[ESP+0x18] (dest). */
-enum { CG_HUDSTAT_STRING_SIZE = 16 };
+enum {
+    CG_HUDSTAT_STRING_SIZE = 16
+};
 
-void CG_DrawRedScore(rectDef_t *obj /* EBX */,
-                     intptr_t arg0, intptr_t arg1, intptr_t arg2,
-                     intptr_t arg3)
+void CG_DrawRedScore(rectDef_t *obj /* EBX */, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3)
 {
     char displayString[CG_HUDSTAT_STRING_SIZE];
 
@@ -75,8 +75,7 @@ void CG_DrawRedScore(rectDef_t *obj /* EBX */,
         Com_sprintf(displayString, CG_HUDSTAT_STRING_SIZE, cg_hudStatUnsetText);
     } else {
         /* PUSH statValue ; PUSH "%i" ; Com_sprintf(buf, 16, "%i", statValue). */
-        Com_sprintf(displayString, CG_HUDSTAT_STRING_SIZE,
-                   "%i", statValue);
+        Com_sprintf(displayString, CG_HUDSTAT_STRING_SIZE, "%i", statValue);
     }
 
     /*
@@ -84,16 +83,12 @@ void CG_DrawRedScore(rectDef_t *obj /* EBX */,
      * PUSH &buf ; PUSH EBP(arg0) ; PUSH ECX(arg1) ; PUSH 0.)  The trap-52 helper
      * returns an integer (FISUB below reads it as an integer memory operand).
      */
-    int32_t keyedResult = (int32_t)cgame_syscall(CG_R_TEXT_WIDTH,
-                                        (intptr_t)displayString,
-                                        arg0, arg1, 0);
+    int32_t keyedResult = (int32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)displayString, arg0, arg1, 0);
 
     /* FLD f_8 ; FADD f_0 ; FISUB (integer)keyedResult (0x3003159e). keyedResult is
      * subtracted as an INTEGER straight into the 80-bit chain -- no FSTP DWORD
      * rounds it first, so no (float) cast here (that would round under -std=c11). */
-    float coordA =
-        (float)(((long double)obj->w + (long double)obj->x) -
-                (long double)keyedResult);
+    float coordA = (float)(((long double)obj->w + (long double)obj->x) - (long double)keyedResult);
     /* FLD f_c ; FADD f_4. */
     float coordB = obj->h + obj->y;
 
@@ -103,14 +98,5 @@ void CG_DrawRedScore(rectDef_t *obj /* EBX */,
      * are forwarded as their raw 32-bit words (FSTP float -> dword), matching the
      * rest of the CG_R_TEXT_PAINT emitter family.
      */
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits(coordA),
-                  CG_FloatBits(coordB),
-                  arg0,
-                  arg1,
-                  arg2,
-                  (intptr_t)displayString,
-                  0,
-                  0,
-                  arg3);
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(coordA), CG_FloatBits(coordB), arg0, arg1, arg2, (intptr_t)displayString, 0, 0, arg3);
 }

@@ -70,8 +70,8 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
     int32_t ownerIsLocal;    /* [ESP+0x10] */
     int32_t flameInfoActive; /* [ESP+0x28] */
     int32_t chunkAlive;      /* [ESP+0x2c] */
-    double  refTime;         /* [ESP+0x48]: per-flame reference time (double) */
-    double  age;             /* [ESP+0x40]: refTime - f->spawnTime (double) */
+    double refTime;         /* [ESP+0x48]: per-flame reference time (double) */
+    double age;             /* [ESP+0x40]: refTime - f->spawnTime (double) */
 
     /* cg_flameTime = _ftol2(floor(2.0 * cg_time)) — the inlined
      * CG_UpdateFlameTime (0x30023af0). 0x300272b3: FILD cg_time; FSTP double
@@ -81,8 +81,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
      * spill is modelled by the (double) cast alone. Spelled the same way as the
      * byte-for-byte equivalent chain in cg_addflametoscene.c (0x30026904),
      * which lacks only the spill/reload pair. */
-    cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(
-        floor((double)coduo_int32_from_bits(cg_time) * 2.0));
+    cg_flameTime = (uint32_t)coduo_fp_to_i32_extended(floor((double)coduo_int32_from_bits(cg_time) * 2.0));
 
     f = ownerChunk;
     prev = (flameChunk_t *)0; /* XOR ESI,ESI */
@@ -141,10 +140,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
              * sqrt helper RAW in st0 (no float store of the argument), so the
              * argument must not round to float: sqrtl on the 80-bit chain, one
              * float rounding at the result store ([ESP+0x1c]). */
-            float distToView = (float)coduo_x87_sqrtl(
-                (long double)vz * vz +
-                (long double)vy * vy +
-                (long double)vx * vx);
+            float distToView = (float)coduo_x87_sqrtl((long double)vz * vz + (long double)vy * vy + (long double)vx * vx);
 
             /* 0x300273da: run the sound-envelope accumulation only when
              * (double)f->birthTime > age AND prev != NULL. FILD [EDI+0xa4]; FCOMP age;
@@ -156,10 +152,8 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
                  * JP skip => skip when envA >= 1.0f or unordered). */
                 if (*envA < 1.0f) {
                     /* dot = f->axisRow · prev->axisRow (+0xac/+0xb0/+0xb4). */
-                    float dot = (float)(
-                        (long double)f->axisDir[2] * prev->axisDir[2] +
-                        (long double)f->axisDir[1] * prev->axisDir[1] +
-                        (long double)f->axisDir[0] * prev->axisDir[0]);
+                    float dot = (float)((long double)f->axisDir[2] * prev->axisDir[2] + (long double)f->axisDir[1] * prev->axisDir[1] +
+                                        (long double)f->axisDir[0] * prev->axisDir[0]);
                     /* Proceed only when dot < 1.0f. */
                     if (dot < 1.0f) {
                         /* Proceed only when distToView < 1024.0f. */
@@ -169,11 +163,9 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
                              * FMULP; FMUL 500.0; FADD envA; FSTP envA. */
                             /* 0x3002746b..0x30027494 is ONE chain whose only
                              * rounding is the envA store, so no float temp. */
-                            *envA = (float)(
-                                ((long double)1.0f -
-                                 (long double)distToView / 1024.0f) *
-                                ((long double)1.0f - (long double)dot) *
-                                (long double)500.0f + (long double)*envA);
+                            *envA = (float)(((long double)1.0f - (long double)distToView / 1024.0f) *
+                                                ((long double)1.0f - (long double)dot) * (long double)500.0f +
+                                            (long double)*envA);
                             /* Clamp to 1.0f: FCOMP 1.0f; TEST AH,0x41; JNZ skip =>
                              * skip (keep) when envA <= 1.0f (or unordered); set 1.0f
                              * only when envA > 1.0f. */
@@ -201,8 +193,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
              * proceed only when cutoff < (float)age. The FILD'd birthTime IS
              * stored as a float (0x300274d8), but the *0.2f product stays in st0
              * UNSTORED for the compare, so cutoff is long double. */
-            long double cutoff =
-                (long double)(float)f->birthTime * (long double)0.2f;
+            long double cutoff = (long double)(float)f->birthTime * (long double)0.2f;
             if (!(cutoff < (float)age))
                 goto step_chain;
         }
@@ -242,10 +233,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
                     /* Square sum passed RAW in st0 to the CRT sqrt helper
                      * (0x300275b2, no argument store), one float rounding at
                      * the result store. */
-                    float sepLen = (float)coduo_x87_sqrtl(
-                        (long double)sz * sz +
-                        (long double)sy * sy +
-                        (long double)sx * sx);
+                    float sepLen = (float)coduo_x87_sqrtl((long double)sz * sz + (long double)sy * sy + (long double)sx * sx);
 
                     /* thr = pow((ratioA + 1) * 0.5, 1.5) * f->radius * weight;
                      * thr += thr (FADD ST0,ST0). Then FCOMPP thr,sepLen;
@@ -255,8 +243,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
                      * doubling and the FCOMPP all stay in st registers with no
                      * store, so thr is long double; powl widens the base OPERAND
                      * and keeps the raw result 80-bit. */
-                    long double thr = powl(((long double)ratioA + 1.0f) * 0.5f, 1.5L)
-                                      * f->radius * weight;
+                    long double thr = powl(((long double)ratioA + 1.0f) * 0.5f, 1.5L) * f->radius * weight;
                     thr = thr + thr;
                     if (!(thr > sepLen))
                         break;
@@ -268,9 +255,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
                  * JP 0x3002761e => stop when >= 50.0 (or unordered); continue
                  * only when < 50.0. */
                 {
-                    float dt = (float)(
-                        (long double)f->spawnTime -
-                        (long double)next->spawnTime);
+                    float dt = (float)((long double)f->spawnTime - (long double)next->spawnTime);
                     dt = fabsf(dt); /* FABS clears the sign bit, including NaNs. */
                     if (!(dt < 50.0))
                         break;
@@ -298,8 +283,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
          * unordered). The difference, FABS and quotient stay in st registers
          * (no store) up to the FCOMPP, so radDiff is long double. */
         {
-            long double radDiff = fabsl(
-                (long double)lastKept->radius - (long double)f->radius);
+            long double radDiff = fabsl((long double)lastKept->radius - (long double)f->radius);
             if (!((long double)f->radius / (long double)10.0f > radDiff))
                 goto add_to_scene;
         }
@@ -351,10 +335,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
             }
 
             /* cosang = toF · toView (both normalized). */
-            cosang =
-                (long double)toF[2] * toView[2] +
-                (long double)toF[1] * toView[1] +
-                (long double)toF[0] * toView[0];
+            cosang = (long double)toF[2] * toView[2] + (long double)toF[1] * toView[1] + (long double)toF[0] * toView[0];
 
             /* score = ((1.0 - |cosang|) * 0.9 + 0.1) * (lenView / sizeCap * lenF).
              * Machine (0x3002775d..): FABS; FSUBR 1.0(0x3007bcf8); FMUL 0.9(0x3007c268);
@@ -364,9 +345,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
              * grouping is kept. */
             score = 1.0 - fabsl(cosang);                                 /* FABS; FSUBR 1.0 */
             score = score * 0.8999999761581421 + 0.10000000149011612;   /* 0x3007c268, c260 */
-            score = score *
-                ((long double)lenView / (long double)sizeCap *
-                 (long double)lenF);
+            score = score * ((long double)lenView / (long double)sizeCap * (long double)lenF);
 
             /* term = pow(1.0 - f->lifeFraction, 3.0) * sizeRatio * 32.0.
              * FLD f->lifeFraction; FSUBR 1.0(0x3007bcf8); FLD 3.0(0x3007bdf8); CALL pow;
@@ -383,40 +362,36 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
             goto add_to_scene;
         }
 
-    add_to_scene:
-        {
+    add_to_scene: {
             /* 0x300277a9: life fraction from f->lifeFraction through the 0.5 knee.
              * FLD e8; FCOMP 0.5f; FLD e8; TEST AH,0x5; JP else => when e8 >= 0.5f
              * take the else; proceed (e8 < 0.5f) with e8/0.5f. */
-            float e8 = f->lifeFraction;
-            float lifeFrac;
+        float e8 = f->lifeFraction;
+        float lifeFrac;
 
-            if (e8 < 0.5f) {
-                lifeFrac = e8 / 0.5f;              /* FDIV 0.5f */
-            } else {
+        if (e8 < 0.5f) {
+            lifeFrac = e8 / 0.5f;              /* FDIV 0.5f */
+        } else {
                 /* FCOMP 0.5f (reloaded e8); TEST AH,0x41; JNZ 0x300277f9 => when
                  * e8 <= 0.5f (== 0.5f, or unordered) use 1.0f; else falloff. */
-                if (e8 > 0.5f)
-                    lifeFrac = (float)(
-                        (long double)1.0f -
-                        ((long double)e8 - (long double)0.5f) /
-                            (long double)0.5f);              /* FSUB; FDIV; FSUBR */
-                else
-                    lifeFrac = 1.0f;                        /* 0x3f800000 */
-            }
-
-            /* alpha = lifeFrac * 0.5f; add the sprite. */
-            {
-                float alpha = lifeFrac * 0.5f;    /* FMUL 0.5f */
-                CG_AddFlameToScene(f, f->lifeFraction, alpha, 1);
-            }
-            lastKept = f;                          /* MOV EBP,EDI */
+            if (e8 > 0.5f)
+                lifeFrac = (float)((long double)1.0f - ((long double)e8 - (long double)0.5f) / (long double)0.5f); /* FSUB; FDIV; FSUBR */
+            else
+                lifeFrac = 1.0f; /* 0x3f800000 */
         }
+
+        /* alpha = lifeFrac * 0.5f; add the sprite. */
+        {
+            float alpha = lifeFrac * 0.5f; /* FMUL 0.5f */
+            CG_AddFlameToScene(f, f->lifeFraction, alpha, 1);
+        }
+        lastKept = f; /* MOV EBP,EDI */
+    }
         /* falls into finalize */
 
     finalize:
         /* 0x30027823: prev = f; f->sizeRate = CG_FlameGetSizeRate(f). */
-        prev = f;                                  /* MOV ESI,EDI */
+        prev = f; /* MOV ESI,EDI */
         /* f->sizeRate is a float; the x87 result is stored straight in. */
         f->sizeRate = CG_FlameGetSizeRate(f); /* CALL 0x30023b70; FSTP [EDI+0x64] */
 
@@ -426,7 +401,7 @@ void CG_AddFlameChunks(flameChunk_t *ownerChunk)
          * (== the f we just processed). */
         if (next == (flameChunk_t *)0)
             break;
-        prev = f;              /* MOV ESI,[ESP+0x18] at 0x30027351 restores saved f */
-        f = next;              /* MOV EDI,EBX */
+        prev = f; /* MOV ESI,[ESP+0x18] at 0x30027351 restores saved f */
+        f = next; /* MOV EDI,EBX */
     }
 }

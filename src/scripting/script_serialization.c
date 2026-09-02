@@ -40,23 +40,18 @@ typedef enum script_serialization_child_name_type_e {
 } script_serialization_child_name_type_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(VariableStackBuffer, pos) == 4,
-               "i386 saved-stack pos offset changed");
-_Static_assert(offsetof(VariableStackBuffer, size) == 8,
-               "i386 saved-stack size offset changed");
-_Static_assert(offsetof(VariableStackBuffer, entries) == 12,
-               "i386 saved-stack header size changed");
+_Static_assert(offsetof(VariableStackBuffer, pos) == 4, "i386 saved-stack pos offset changed");
+_Static_assert(offsetof(VariableStackBuffer, size) == 8, "i386 saved-stack size offset changed");
+_Static_assert(offsetof(VariableStackBuffer, entries) == 12, "i386 saved-stack header size changed");
 #endif
 
 void ScriptSave_PrepareStack(VariableStackBuffer *frame);
-static void ScriptStack_ReadEntryValue(const VariableStackBufferEntry *entry,
-                                       VariableValue *value);
+static void ScriptStack_ReadEntryValue(const VariableStackBufferEntry *entry, VariableValue *value);
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed reader for a packed native saved-stack
  * entry. The i386 entry payload is four bytes; native builds retain the same
  * type-byte format while widening payload storage to uintptr_t. */
-static void ScriptStack_ReadEntryValue(const VariableStackBufferEntry *entry,
-                                       VariableValue *value)
+static void ScriptStack_ReadEntryValue(const VariableStackBufferEntry *entry, VariableValue *value)
 {
     value->type = (script_variable_type_t)entry->type;
     value->payload = entry->payload;
@@ -66,14 +61,12 @@ static void ScriptStack_ReadEntryValue(const VariableStackBufferEntry *entry,
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00486840_00486853.mcode.
  * This independent entry is included in Ghidra's fragmented
  * FUN_004864e0_0048699e record. */
-void ScriptSave_PrepareValue(script_variable_type_t type,
-                             uintptr_t payload)
+void ScriptSave_PrepareValue(script_variable_type_t type, uintptr_t payload)
 {
     if (type == SCRIPT_VAR_OBJECT) {
         ScriptSave_PrepareObject((uint16_t)payload);
     } else if (type == SCRIPT_VAR_STACK) {
-        ScriptSave_PrepareStack(
-            (VariableStackBuffer *)payload);
+        ScriptSave_PrepareStack((VariableStackBuffer *)payload);
     }
 }
 
@@ -83,10 +76,7 @@ void ScriptSave_PrepareValue(script_variable_type_t type,
  * FUN_004864e0_0048699e record. */
 void ScriptSave_PrepareValueObjectRefs(VariableValue *value)
 {
-    ScriptSave_PrepareValue(
-        (script_variable_type_t)(
-            value->type & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK),
-        value->payload);
+    ScriptSave_PrepareValue((script_variable_type_t)(value->type & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK), value->payload);
 }
 
 /* Source: CoDUOMP.exe 0x004867f0..0x0048683b.
@@ -163,8 +153,7 @@ uint16_t ReadString(void)
     const char *text = (const char *)script_serializationCursor;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     size_t size = strlen(text) + 1;
-    uint16_t string = SL_GetStringOfLen(
-        text, 0, size, SCRIPT_SERIALIZATION_STRING_TYPE);
+    uint16_t string = SL_GetStringOfLen(text, 0, size, SCRIPT_SERIALIZATION_STRING_TYPE);
 
     script_serializationCursor += size;
     return string;
@@ -269,9 +258,7 @@ void ScriptSave_WriteCodepos(const uint8_t *codePos)
     int32_t offset = -1;
 
     if (codePos != NULL) {
-        uint32_t offsetBits =
-            (uint32_t)((uintptr_t)codePos -
-                       (uintptr_t)script_codeBase);
+        uint32_t offsetBits = (uint32_t)((uintptr_t)codePos - (uintptr_t)script_codeBase);
 
         memcpy(&offset, &offsetBits, sizeof(offset));
     }
@@ -286,10 +273,7 @@ uint8_t *ScriptLoad_ReadCodepos(void)
     int32_t offset = ScriptLoad_ReadInt();
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    return offset < 0
-               ? NULL
-               : (uint8_t *)((uintptr_t)script_codeBase +
-                             (uint32_t)offset);
+    return offset < 0 ? NULL : (uint8_t *)((uintptr_t)script_codeBase + (uint32_t)offset);
 }
 
 /* Source: CoDUOMP.exe 0x00486550..0x0048657e.
@@ -304,8 +288,7 @@ void ScriptSave_WriteObject(uint16_t object)
 uint16_t ScriptLoad_ReadObject(void)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    uint16_t object =
-        script_objectIdToVariable[ReadShort()];
+    uint16_t object = script_objectIdToVariable[ReadShort()];
 
     AddRefToObject(object);
     return object;
@@ -349,13 +332,11 @@ void ScriptSave_WriteStack(VariableStackBuffer *frame)
 VariableStackBuffer *ScriptLoad_ReadStack(void)
 {
     uint16_t entryCount = ReadShort();
-    size_t frameSize = offsetof(VariableStackBuffer, entries) +
-                       (size_t)entryCount * sizeof(VariableStackBufferEntry);
+    size_t frameSize = offsetof(VariableStackBuffer, entries) + (size_t)entryCount * sizeof(VariableStackBufferEntry);
 #if defined(WINDOWS_BEHAVIOR)
     VariableStackBuffer *frame = MT_Alloc(frameSize);
 #else
-    VariableStackBuffer *frame =
-        MT_Alloc(frameSize, SCRIPT_SERIALIZATION_MT_PERMANENT);
+    VariableStackBuffer *frame = MT_Alloc(frameSize, SCRIPT_SERIALIZATION_MT_PERMANENT);
 #endif
 
     frame->size = entryCount;
@@ -409,8 +390,7 @@ void ScriptSave_WriteValue(script_variable_type_t type, uintptr_t payload)
         ScriptSave_WriteObject((uint16_t)payload);
         break;
     case SCRIPT_VAR_STACK:
-        ScriptSave_WriteStack(
-            (VariableStackBuffer *)payload);
+        ScriptSave_WriteStack((VariableStackBuffer *)payload);
         break;
     default:
         break;
@@ -419,13 +399,11 @@ void ScriptSave_WriteValue(script_variable_type_t type, uintptr_t payload)
 
 /* Source: CoDUOMP.exe 0x004869d0..0x00486a7d.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004869d0_00486a7e.mcode. */
-void ScriptSave_WriteChildValue(const VariableValue *value, uint32_t name,
-                                qboolean parentIsArray)
+void ScriptSave_WriteChildValue(const VariableValue *value, uint32_t name, qboolean parentIsArray)
 {
     ScriptSave_WriteValue(value->type, value->payload);
 
-    if (parentIsArray != qfalse &&
-        name <= SCRIPT_SERIALIZATION_OBJECT_NAME_LIMIT) {
+    if (parentIsArray != qfalse && name <= SCRIPT_SERIALIZATION_OBJECT_NAME_LIMIT) {
         if (name <= SCRIPT_SERIALIZATION_SHORT_NAME_LIMIT) {
             WriteByte(SCRIPT_CHILD_NAME_STRING);
             WriteString((uint16_t)name);
@@ -448,14 +426,10 @@ void ScriptSave_WriteChildValue(const VariableValue *value, uint32_t name,
  * this root-value writer and also inlines it into Scr_SavePost. */
 void ScriptSave_WriteRootValue(void)
 {
-    script_variable_node_t *node =
-        &script_variableNodes[script_animArrayHandle];
+    script_variable_node_t *node = &script_variableNodes[script_animArrayHandle];
 
-    ScriptSave_WriteValue(
-        (script_variable_type_t)(
-            node->packedTypeIndex &
-            SCRIPT_SERIALIZATION_PERSISTENT_TYPE_MASK),
-        node->payload.valuePayload);
+    ScriptSave_WriteValue((script_variable_type_t)(node->packedTypeIndex & SCRIPT_SERIALIZATION_PERSISTENT_TYPE_MASK),
+                          node->payload.valuePayload);
 }
 
 /* Source: CoDUOMP.exe 0x00486a80..0x00486af2.
@@ -510,8 +484,7 @@ uint32_t ScriptLoad_ReadChildValue(VariableValue *value)
 {
     ScriptLoad_ReadValue(value);
 
-    script_serialization_child_name_type_t nameType =
-        (script_serialization_child_name_type_t)*script_serializationCursor++;
+    script_serialization_child_name_type_t nameType = (script_serialization_child_name_type_t)*script_serializationCursor++;
     switch (nameType) {
     case SCRIPT_CHILD_NAME_SHORT:
         return ReadShort();
@@ -520,8 +493,7 @@ uint32_t ScriptLoad_ReadChildValue(VariableValue *value)
     case SCRIPT_CHILD_NAME_STRING:
         return ReadString();
     case SCRIPT_CHILD_NAME_OBJECT:
-        return SCRIPT_SERIALIZATION_OBJECT_NAME_BASE +
-               ScriptLoad_ReadObject();
+        return SCRIPT_SERIALIZATION_OBJECT_NAME_BASE + ScriptLoad_ReadObject();
     default:
         return 0;
     }
@@ -532,55 +504,32 @@ uint32_t ScriptLoad_ReadChildValue(VariableValue *value)
 void ScriptSave_WriteObjectRecord(uint16_t object)
 {
     script_variable_node_t *objectNode = &script_variableNodes[object];
-    script_variable_type_t savedType =
-        (script_variable_type_t)(
-            objectNode->packedTypeIndex &
-            SCRIPT_SERIALIZATION_PERSISTENT_TYPE_MASK);
-    script_variable_type_t baseType =
-        savedType & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK;
+    script_variable_type_t savedType = (script_variable_type_t)(objectNode->packedTypeIndex & SCRIPT_SERIALIZATION_PERSISTENT_TYPE_MASK);
+    script_variable_type_t baseType = savedType & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK;
 
     WriteByte((uint8_t)savedType);
 
     if (baseType == SCRIPT_VAR_THREAD) {
-        ScriptSave_WriteObject(
-            objectNode->payload.halves.parentHandle);
-        ScriptSave_WriteOptionalString(
-            (uint16_t)(objectNode->packedTypeIndex >>
-                       SCRIPT_SERIALIZATION_NAME_SHIFT));
-    } else if (baseType == SCRIPT_VAR_ENTITY ||
-               baseType == SCRIPT_VAR_DEAD_ENTITY) {
-        WriteShort(
-            objectNode->payload.halves.parentHandle);
-        WriteShort(
-            (uint16_t)(objectNode->packedTypeIndex >>
-                       SCRIPT_SERIALIZATION_NAME_SHIFT));
+        ScriptSave_WriteObject(objectNode->payload.halves.parentHandle);
+        ScriptSave_WriteOptionalString((uint16_t)(objectNode->packedTypeIndex >> SCRIPT_SERIALIZATION_NAME_SHIFT));
+    } else if (baseType == SCRIPT_VAR_ENTITY || baseType == SCRIPT_VAR_DEAD_ENTITY) {
+        WriteShort(objectNode->payload.halves.parentHandle);
+        WriteShort((uint16_t)(objectNode->packedTypeIndex >> SCRIPT_SERIALIZATION_NAME_SHIFT));
     }
 
-    qboolean parentIsArray =
-        baseType == SCRIPT_VAR_ARRAY ? qtrue : qfalse;
+    qboolean parentIsArray = baseType == SCRIPT_VAR_ARRAY ? qtrue : qfalse;
     uint16_t childCount = 0;
-    for (uint16_t child = FindNextSibling(object);
-         child != 0; child = FindNextSibling(child)) {
+    for (uint16_t child = FindNextSibling(object); child != 0; child = FindNextSibling(child)) {
         ++childCount;
     }
     WriteShort(childCount);
 
-    for (uint16_t child = FindNextSibling(object);
-         child != 0; child = FindNextSibling(child)) {
-        script_variable_node_t *childNode =
-            &script_variableNodes[child];
-        VariableValue value = {
-            .payload = childNode->payload.valuePayload,
-            .type = (script_variable_type_t)(
-                childNode->packedTypeIndex &
-                SCRIPT_SERIALIZATION_PERSISTENT_TYPE_MASK)
-        };
+    for (uint16_t child = FindNextSibling(object); child != 0; child = FindNextSibling(child)) {
+        script_variable_node_t *childNode = &script_variableNodes[child];
+        VariableValue value = {.payload = childNode->payload.valuePayload,
+                               .type = (script_variable_type_t)(childNode->packedTypeIndex & SCRIPT_SERIALIZATION_PERSISTENT_TYPE_MASK)};
 
-        ScriptSave_WriteChildValue(
-            &value,
-            childNode->packedTypeIndex >>
-                SCRIPT_SERIALIZATION_NAME_SHIFT,
-            parentIsArray);
+        ScriptSave_WriteChildValue(&value, childNode->packedTypeIndex >> SCRIPT_SERIALIZATION_NAME_SHIFT, parentIsArray);
     }
 }
 
@@ -589,28 +538,20 @@ void ScriptSave_WriteObjectRecord(uint16_t object)
 void ScriptLoad_ReadObjectRecord(uint16_t object)
 {
     script_variable_node_t *objectNode = &script_variableNodes[object];
-    script_variable_type_t savedType =
-        (script_variable_type_t)*script_serializationCursor++;
+    script_variable_type_t savedType = (script_variable_type_t)*script_serializationCursor++;
 
-    objectNode->packedTypeIndex &=
-        ~(uint32_t)SCRIPT_SERIALIZATION_VALUE_TYPE_MASK;
+    objectNode->packedTypeIndex &= ~(uint32_t)SCRIPT_SERIALIZATION_VALUE_TYPE_MASK;
     objectNode->packedTypeIndex |= (uint32_t)savedType;
 
     switch (savedType & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) {
     case SCRIPT_VAR_THREAD:
-        objectNode->payload.halves.parentHandle =
-            ScriptLoad_ReadObject();
-        objectNode->packedTypeIndex |=
-            (uint32_t)ScriptLoad_ReadOptionalString()
-            << SCRIPT_SERIALIZATION_NAME_SHIFT;
+        objectNode->payload.halves.parentHandle = ScriptLoad_ReadObject();
+        objectNode->packedTypeIndex |= (uint32_t)ScriptLoad_ReadOptionalString() << SCRIPT_SERIALIZATION_NAME_SHIFT;
         break;
     case SCRIPT_VAR_ENTITY:
     case SCRIPT_VAR_DEAD_ENTITY:
-        objectNode->payload.halves.parentHandle =
-            ReadShort();
-        objectNode->packedTypeIndex |=
-            (uint32_t)ReadShort()
-            << SCRIPT_SERIALIZATION_NAME_SHIFT;
+        objectNode->payload.halves.parentHandle = ReadShort();
+        objectNode->packedTypeIndex |= (uint32_t)ReadShort() << SCRIPT_SERIALIZATION_NAME_SHIFT;
         break;
     case SCRIPT_VAR_ARRAY:
         objectNode->payload.halves.parentHandle = 0;
@@ -619,28 +560,20 @@ void ScriptLoad_ReadObjectRecord(uint16_t object)
         break;
     }
 
-    qboolean parentIsArray =
-        (savedType & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) ==
-                SCRIPT_VAR_ARRAY
-            ? qtrue
-            : qfalse;
+    qboolean parentIsArray = (savedType & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) == SCRIPT_VAR_ARRAY ? qtrue : qfalse;
     uint16_t childCount = ReadShort();
 
     for (uint16_t index = 0; index < childCount; ++index) {
         VariableValue value;
         uint32_t name = ScriptLoad_ReadChildValue(&value);
-        uint16_t childIndirection =
-            GetVariableIndexInternal(object, name);
-        uint16_t child =
-            script_variableIndirections[childIndirection].valueIndex;
-        script_variable_node_t *childNode =
-            &script_variableNodes[child];
+        uint16_t childIndirection = GetVariableIndexInternal(object, name);
+        uint16_t child = script_variableIndirections[childIndirection].valueIndex;
+        script_variable_node_t *childNode = &script_variableNodes[child];
 
         if (parentIsArray != qfalse) {
             if (name <= SCRIPT_SERIALIZATION_SHORT_NAME_LIMIT) {
                 SL_RemoveRefToString((uint16_t)name);
-            } else if (name <=
-                       SCRIPT_SERIALIZATION_OBJECT_NAME_LIMIT) {
+            } else if (name <= SCRIPT_SERIALIZATION_OBJECT_NAME_LIMIT) {
                 RemoveRefToObject((uint16_t)name);
             }
         }
@@ -669,12 +602,9 @@ void ScriptLoad_ReadRootValue(void)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00487380_00487528.mcode. */
 void Scr_SavePre(void)
 {
-    script_variableToObjectId = Hunk_AllocateTempMemoryHighInternal(
-        SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
-    script_objectIdToVariable = Hunk_AllocateTempMemoryHighInternal(
-        SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
-    Com_Memset(script_variableToObjectId, 0,
-               SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
+    script_variableToObjectId = Hunk_AllocateTempMemoryHighInternal(SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
+    script_objectIdToVariable = Hunk_AllocateTempMemoryHighInternal(SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
+    Com_Memset(script_variableToObjectId, 0, SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
     script_savedObjectCount = 0;
 
     ScriptSave_PrepareObject(script_levelHandle);
@@ -682,24 +612,16 @@ void Scr_SavePre(void)
     ScriptSave_PrepareObject(script_timeArrayHandle);
     ScriptSave_PrepareObject(script_pauseArrayHandle);
 
-    for (uint32_t index = 0;
-         index < script_entityTypeUsageCount; ++index) {
-        uint16_t entityType = FindObject(
-            FindVariable(script_entityTypeClassMapRoot,
-                                     index));
+    for (uint32_t index = 0; index < script_entityTypeUsageCount; ++index) {
+        uint16_t entityType = FindObject(FindVariable(script_entityTypeClassMapRoot, index));
         ScriptSave_PrepareObject(entityType);
 
-        uint16_t classType = FindObject(
-            FindVariable(script_classMapRoot, index));
+        uint16_t classType = FindObject(FindVariable(script_classMapRoot, index));
         ScriptSave_PrepareObject(classType);
     }
 
-    script_variable_node_t *animNode =
-        &script_variableNodes[script_animArrayHandle];
-    VariableValue animValue = {
-        .payload = animNode->payload.valuePayload,
-        .type = (script_variable_type_t)animNode->packedTypeIndex
-    };
+    script_variable_node_t *animNode = &script_variableNodes[script_animArrayHandle];
+    VariableValue animValue = {.payload = animNode->payload.valuePayload, .type = (script_variable_type_t)animNode->packedTypeIndex};
     ScriptSave_PrepareValueObjectRefs(&animValue);
 }
 
@@ -710,10 +632,8 @@ void Scr_SavePost(void)
     ScriptSave_WriteInt((int32_t)script_currentTimeKey);
     WriteShort(script_savedObjectCount);
 
-    for (uint32_t objectId = 1;
-         objectId <= script_savedObjectCount; ++objectId) {
-        ScriptSave_WriteObjectRecord(
-            script_objectIdToVariable[objectId]);
+    for (uint32_t objectId = 1; objectId <= script_savedObjectCount; ++objectId) {
+        ScriptSave_WriteObjectRecord(script_objectIdToVariable[objectId]);
     }
 
     ScriptSave_WriteRootValue();
@@ -722,11 +642,8 @@ void Scr_SavePost(void)
     ScriptSave_WriteObject(script_timeArrayHandle);
     ScriptSave_WriteObject(script_pauseArrayHandle);
 
-    for (uint32_t index = 0;
-         index < script_entityTypeUsageCount; ++index) {
-        uint16_t entityType = FindObject(
-            FindVariable(script_entityTypeClassMapRoot,
-                                     index));
+    for (uint32_t index = 0; index < script_entityTypeUsageCount; ++index) {
+        uint16_t entityType = FindObject(FindVariable(script_entityTypeClassMapRoot, index));
         ScriptSave_WriteObject(entityType);
     }
 }
@@ -744,31 +661,25 @@ void Scr_LoadPre(void)
     uint32_t saveDataSize;
 
     script_serializationCursor = Scr_LoadRead(sizeof(saveDataSize));
-    memcpy(&saveDataSize, script_serializationCursor,
-           sizeof(saveDataSize));
+    memcpy(&saveDataSize, script_serializationCursor, sizeof(saveDataSize));
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     script_serializationCursor = Scr_LoadRead(saveDataSize);
 
     script_currentTimeKey = (uint32_t)ScriptLoad_ReadInt();
     script_savedObjectCount = ReadShort();
-    script_variableToObjectId = Hunk_AllocateTempMemoryInternal(
-        SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
-    script_objectIdToVariable = Hunk_AllocateTempMemoryInternal(
-        ((size_t)script_savedObjectCount + 1) *
-        sizeof(script_objectIdToVariable[0]));
+    script_variableToObjectId = Hunk_AllocateTempMemoryInternal(SCRIPT_SERIALIZATION_FULL_OBJECT_ID_MAP_BYTES);
+    script_objectIdToVariable =
+        Hunk_AllocateTempMemoryInternal(((size_t)script_savedObjectCount + 1) * sizeof(script_objectIdToVariable[0]));
 
-    for (uint32_t objectId = 1;
-         objectId <= script_savedObjectCount; ++objectId) {
+    for (uint32_t objectId = 1; objectId <= script_savedObjectCount; ++objectId) {
         uint16_t object = AllocObject();
 
         script_objectIdToVariable[objectId] = object;
         script_variableToObjectId[object] = (uint16_t)objectId;
     }
 
-    for (uint32_t objectId = 1;
-         objectId <= script_savedObjectCount; ++objectId) {
-        ScriptLoad_ReadObjectRecord(
-            script_objectIdToVariable[objectId]);
+    for (uint32_t objectId = 1; objectId <= script_savedObjectCount; ++objectId) {
+        ScriptLoad_ReadObjectRecord(script_objectIdToVariable[objectId]);
     }
 
     ScriptLoad_ReadRootValue();
@@ -777,14 +688,9 @@ void Scr_LoadPre(void)
     script_timeArrayHandle = ScriptLoad_ReadObject();
     script_pauseArrayHandle = ScriptLoad_ReadObject();
 
-    for (uint32_t index = 0;
-         index < script_entityTypeUsageCount; ++index) {
-        VariableValue value = {
-            .payload = ScriptLoad_ReadObject(),
-            .type = SCRIPT_VAR_OBJECT
-        };
-        uint16_t classEntry = FindVariable(
-            script_entityTypeClassMapRoot, index);
+    for (uint32_t index = 0; index < script_entityTypeUsageCount; ++index) {
+        VariableValue value = {.payload = ScriptLoad_ReadObject(), .type = SCRIPT_VAR_OBJECT};
+        uint16_t classEntry = FindVariable(script_entityTypeClassMapRoot, index);
 
         SetVariableValue(classEntry, &value);
     }
@@ -804,38 +710,24 @@ void ScriptSave_PrepareObject(uint16_t object)
 
     script_variable_node_t *objectNode = &script_variableNodes[object];
     uint32_t packedTypeIndex = objectNode->packedTypeIndex;
-    qboolean parentIsArray =
-        (packedTypeIndex & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) ==
-                SCRIPT_VAR_ARRAY
-            ? qtrue
-            : qfalse;
+    qboolean parentIsArray = (packedTypeIndex & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) == SCRIPT_VAR_ARRAY ? qtrue : qfalse;
 
-    for (uint16_t child = FindNextSibling(object);
-         child != 0; child = FindNextSibling(child)) {
-        script_variable_node_t *childNode =
-            &script_variableNodes[child];
+    for (uint16_t child = FindNextSibling(object); child != 0; child = FindNextSibling(child)) {
+        script_variable_node_t *childNode = &script_variableNodes[child];
 
         if (parentIsArray != qfalse) {
-            uint32_t name = childNode->packedTypeIndex >>
-                            SCRIPT_SERIALIZATION_NAME_SHIFT;
-            if (name > SCRIPT_SERIALIZATION_SHORT_NAME_LIMIT &&
-                name <= SCRIPT_SERIALIZATION_OBJECT_NAME_LIMIT) {
+            uint32_t name = childNode->packedTypeIndex >> SCRIPT_SERIALIZATION_NAME_SHIFT;
+            if (name > SCRIPT_SERIALIZATION_SHORT_NAME_LIMIT && name <= SCRIPT_SERIALIZATION_OBJECT_NAME_LIMIT) {
                 ScriptSave_PrepareObject((uint16_t)name);
             }
         }
 
-        VariableValue childValue = {
-            .payload = childNode->payload.valuePayload,
-            .type = (script_variable_type_t)
-                childNode->packedTypeIndex
-        };
+        VariableValue childValue = {.payload = childNode->payload.valuePayload, .type = (script_variable_type_t)childNode->packedTypeIndex};
         ScriptSave_PrepareValueObjectRefs(&childValue);
     }
 
-    if ((packedTypeIndex & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) ==
-        SCRIPT_VAR_THREAD) {
-        ScriptSave_PrepareObject(
-            objectNode->payload.halves.parentHandle);
+    if ((packedTypeIndex & SCRIPT_SERIALIZATION_VALUE_TYPE_MASK) == SCRIPT_VAR_THREAD) {
+        ScriptSave_PrepareObject(objectNode->payload.halves.parentHandle);
     }
 }
 
@@ -868,8 +760,7 @@ uint16_t Scr_ConvertThreadFromLoad(uint16_t objectId)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00487bb0_00487cb9.mcode. */
 void Scr_LoadShutdown(void)
 {
-    for (uint32_t objectId = 1;
-         objectId <= script_savedObjectCount; ++objectId) {
+    for (uint32_t objectId = 1; objectId <= script_savedObjectCount; ++objectId) {
         RemoveRefToObject(script_objectIdToVariable[objectId]);
     }
 

@@ -71,12 +71,12 @@
 /* Fixed CG_R_TEXT_PAINT draw parameters, proven from the pushed immediates. */
 enum {
     CG_SPEC_STYLE = 4, /* PUSH 4 (int) style / font id                        */
-    CG_SPEC_MODE  = 3, /* trailing PUSH 3 (int) mode                          */
+    CG_SPEC_MODE = 3, /* trailing PUSH 3 (int) mode                          */
 };
 #define CG_SPEC_SCREEN_WIDTH 640.0f /* 0x3007bf34; centering reference width   */
-#define CG_SPEC_HALF         0.5f   /* 0x3007bce8; center = (w - width) * 0.5f  */
-#define CG_SPEC_Y            443.0f /* 0x43dd8000; fixed y coordinate           */
-#define CG_SPEC_SCALE        (1.0f / 3.0f) /* 0x3eaaaaab; measure + draw scale  */
+#define CG_SPEC_HALF 0.5f   /* 0x3007bce8; center = (w - width) * 0.5f  */
+#define CG_SPEC_Y 443.0f /* 0x43dd8000; fixed y coordinate           */
+#define CG_SPEC_SCALE (1.0f / 3.0f) /* 0x3eaaaaab; measure + draw scale  */
 
 void CG_DrawSpectatorMessage(void)
 {
@@ -90,24 +90,14 @@ void CG_DrawSpectatorMessage(void)
 
     /* 0x3001b755..0x3001b781: the scale word and the three later draw words are
      * materialized before the syscall; only EAX's low dword is consumed. */
-    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_R_TEXT_WIDTH, (intptr_t)translated, CG_SPEC_STYLE, scaleBits, 0));
+    int32_t width = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)translated, CG_SPEC_STYLE, scaleBits, 0));
 
     /* Center horizontally: x = (640.0f - width) * 0.5f. 0x3001b791 FILD width;
      * FSUBR 640.0f; FMUL 0.5f; FSTP -- width is loaded straight into the FSUBR with
      * no FSTP DWORD, so the implicit int->float conversion must stay exact (no
      * (float) cast, which would round width under -std=c11). */
-    float x = (float)(((long double)CG_SPEC_SCREEN_WIDTH -
-                       (long double)width) * (long double)CG_SPEC_HALF);
+    float x = (float)(((long double)CG_SPEC_SCREEN_WIDTH - (long double)width) * (long double)CG_SPEC_HALF);
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits(x),
-                  yBits,
-                  CG_SPEC_STYLE,
-                  scaleBits,
-                  (intptr_t)color,
-                  (intptr_t)translated,
-                  trailingZero,
-                  0,
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(x), yBits, CG_SPEC_STYLE, scaleBits, (intptr_t)color, (intptr_t)translated, trailingZero, 0,
                   CG_SPEC_MODE);
 }

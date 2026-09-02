@@ -43,8 +43,7 @@ int hudElemSortCompare(const void *a, const void *b)
 {
     const hudElem_t *ea = *(const hudElem_t *const *)a;
     const hudElem_t *eb = *(const hudElem_t *const *)b;
-    const long double difference =
-        (long double)ea->sortKey - (long double)eb->sortKey;
+    const long double difference = (long double)ea->sortKey - (long double)eb->sortKey;
 
     /* The DLL compares the one unrounded FSUB result to 0 twice.  This also
      * preserves its unordered/NaN result of equality (0). */

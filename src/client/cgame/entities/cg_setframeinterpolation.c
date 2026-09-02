@@ -49,8 +49,7 @@ void CG_SetFrameInterpolation(void)
     /* SUB is a modulo-2^32 operation. Interpret the resulting bits as signed
      * only at the FILD/FIDIV boundary, matching Win32 x86 even when the
      * mathematical subtraction is outside the int32_t range. */
-    uint32_t snapSpanBits =
-        (uint32_t)cg_nextSnap->serverTime - (uint32_t)cg_snap->serverTime;
+    uint32_t snapSpanBits = (uint32_t)cg_nextSnap->serverTime - (uint32_t)cg_snap->serverTime;
     int32_t snapSpan;
     memcpy(&snapSpan, &snapSpanBits, sizeof(snapSpan));
 
@@ -60,8 +59,7 @@ void CG_SetFrameInterpolation(void)
         return;
     }
 
-    uint32_t elapsedBits =
-        (uint32_t)cg_time - (uint32_t)cg_snap->serverTime;
+    uint32_t elapsedBits = (uint32_t)cg_time - (uint32_t)cg_snap->serverTime;
     int32_t elapsed;
     memcpy(&elapsed, &elapsedBits, sizeof(elapsed));
 

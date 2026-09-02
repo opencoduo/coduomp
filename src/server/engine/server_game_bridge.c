@@ -37,14 +37,12 @@ void Com_Error(errorParm_t code, const char *format, ...);
  * from the former Linux recovered source was a transcription error.
  */
 
-void SV_GameSendServerCommand(int32_t clientNum, qboolean reliable,
-                              const char *command)
+void SV_GameSendServerCommand(int32_t clientNum, qboolean reliable, const char *command)
 {
     if (clientNum == SERVER_GAME_BROADCAST_CLIENT) {
         SV_SendServerCommand(NULL, reliable, "%s", command);
     } else if (clientNum >= 0 && clientNum < sv_maxclients->integer) {
-        SV_SendServerCommand(&svs.clients[clientNum], reliable,
-                             "%s", command);
+        SV_SendServerCommand(&svs.clients[clientNum], reliable, "%s", command);
     }
 }
 
@@ -59,20 +57,20 @@ void SV_GetServerinfo(char *buffer, int32_t bufferSize)
 {
     if (bufferSize < 1) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_GetServerinfo: bufferSize == %i",
+                  "\x15"
+                  "SV_GetServerinfo: bufferSize == %i",
                   bufferSize);
     }
 
-    Q_strncpyz(buffer,
-               Cvar_InfoString(CVAR_SERVERINFO_SYNC_MASK),
-               bufferSize);
+    Q_strncpyz(buffer, Cvar_InfoString(CVAR_SERVERINFO_SYNC_MASK), bufferSize);
 }
 
 void SV_GetUsercmd(int32_t clientNum, usercmd_t *command)
 {
     if (clientNum < 0 || clientNum >= sv_maxclients->integer) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_GetUsercmd: bad clientNum:%i",
+                  "\x15"
+                  "SV_GetUsercmd: bad clientNum:%i",
                   clientNum);
     }
 
@@ -83,7 +81,9 @@ void SV_SetUserinfo(int32_t clientNum, const char *userinfo)
 {
     if (clientNum < 0 || clientNum >= sv_maxclients->integer) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_SetUserinfo: bad index %i\n", clientNum);
+                  "\x15"
+                  "SV_SetUserinfo: bad index %i\n",
+                  clientNum);
     }
     if (userinfo == NULL) {
         userinfo = "";
@@ -91,19 +91,22 @@ void SV_SetUserinfo(int32_t clientNum, const char *userinfo)
 
     client_t *const client = &svs.clients[clientNum];
     Q_strncpyz(client->userinfo, userinfo, sizeof(client->userinfo));
-    Q_strncpyz(client->name, Info_ValueForKey(userinfo, "name"),
-               sizeof(client->name));
+    Q_strncpyz(client->name, Info_ValueForKey(userinfo, "name"), sizeof(client->name));
 }
 
 void SV_GetUserinfo(int32_t clientNum, char *buffer, int32_t bufferSize)
 {
     if (bufferSize < 1) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_GetUserinfo: bufferSize == %i", bufferSize);
+                  "\x15"
+                  "SV_GetUserinfo: bufferSize == %i",
+                  bufferSize);
     }
     if (clientNum < 0 || clientNum >= sv_maxclients->integer) {
         Com_Error(ERR_DROP,
-                  "\x15" "SV_GetUserinfo: bad index %i\n", clientNum);
+                  "\x15"
+                  "SV_GetUserinfo: bad index %i\n",
+                  clientNum);
     }
 
     Q_strncpyz(buffer, svs.clients[clientNum].userinfo, bufferSize);

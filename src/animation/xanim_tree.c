@@ -15,13 +15,15 @@ enum {
 
 /* Sources: CoDUOMP.exe 0x00496d00 and coduo_lnxded 0x080b9570.
  * Name: exact same-version Mac symbol XAnimSetLeafNode. */
-void XAnimSetLeafNode(XAnim *tree, uint16_t nodeIndex,
-                      const char *animName)
+void XAnimSetLeafNode(XAnim *tree, uint16_t nodeIndex, const char *animName)
 {
     fileData_t *asset = FS_GetDataForFile("xanim", animName, "");
 
     if (asset == NULL) {
-        Com_Error(1, "\x15" "Cannot find 'xanim/%s'", animName);
+        Com_Error(1,
+                  "\x15"
+                  "Cannot find 'xanim/%s'",
+                  animName);
         return;
     }
 
@@ -31,9 +33,8 @@ void XAnimSetLeafNode(XAnim *tree, uint16_t nodeIndex,
 
 /* Sources: CoDUOMP.exe 0x00496d40 and coduo_lnxded 0x080b95e2.
  * Name: exact same-version Mac symbol XAnimSetParentNode. */
-void XAnimSetParentNode(XAnim *tree, uint16_t nodeIndex,
-                        const char *unusedName, uint16_t firstChildIndex,
-                        uint16_t childCount, uint16_t flags)
+void XAnimSetParentNode(XAnim *tree, uint16_t nodeIndex, const char *unusedName, uint16_t firstChildIndex, uint16_t childCount,
+                        uint16_t flags)
 {
     XAnimEntry *entry;
 
@@ -51,11 +52,9 @@ void XAnimSetParentNode(XAnim *tree, uint16_t nodeIndex,
 
 /* Sources: CoDUOMP.exe 0x00496d80 and coduo_lnxded 0x080b966a.
  * Name: exact same-version Mac symbol XAnimAllocTree. */
-XAnim *XAnimAllocTree(const char *name, uint32_t nodeCount,
-                      script_anim_tree_alloc_t alloc)
+XAnim *XAnimAllocTree(const char *name, uint32_t nodeCount, script_anim_tree_alloc_t alloc)
 {
-    XAnim *tree = alloc(
-        sizeof(*tree) + (size_t)nodeCount * sizeof(tree->entries[0]));
+    XAnim *tree = alloc(sizeof(*tree) + (size_t)nodeCount * sizeof(tree->entries[0]));
 
     tree->name = name;
     tree->nodeCount = nodeCount;
@@ -65,8 +64,7 @@ XAnim *XAnimAllocTree(const char *name, uint32_t nodeCount,
 /* Sources: CoDUOMP.exe 0x00496da0 and coduo_lnxded 0x080b969a.
  * Both authoritative bodies allocate exactly 8 * nodeCount + 14 bytes on
  * i386, clear that complete range, then store the source-tree pointer. */
-XAnimTree *XAnimAllocRuntimeTree(
-    XAnim *sourceTree, script_anim_tree_alloc_t alloc)
+XAnimTree *XAnimAllocRuntimeTree(XAnim *sourceTree, script_anim_tree_alloc_t alloc)
 {
     size_t size = coduo_xanim_runtime_tree_size(sourceTree->nodeCount);
     XAnimTree *runtimeTree = alloc(size);
@@ -78,11 +76,9 @@ XAnimTree *XAnimAllocRuntimeTree(
 
 /* Sources: CoDUOMP.exe 0x00496dd0 and coduo_lnxded 0x080b9700.
  * Both bodies pass the same packed runtime-tree size to the callback. */
-void XAnimCopyRuntimeTree(XAnimTree *runtimeTree,
-                          void (*copy)(void *data, size_t size))
+void XAnimCopyRuntimeTree(XAnimTree *runtimeTree, void (*copy)(void *data, size_t size))
 {
-    copy(runtimeTree,
-         coduo_xanim_runtime_tree_size(runtimeTree->sourceTree->nodeCount));
+    copy(runtimeTree, coduo_xanim_runtime_tree_size(runtimeTree->sourceTree->nodeCount));
 }
 
 /* Sources: CoDUOMP.exe 0x0043d3c0 and coduo_lnxded 0x08072aba.
@@ -125,8 +121,7 @@ void Com_XAnimFreeSmallTree(XAnimTree *runtimeTree)
 
 /* Sources: CoDUOMP.exe 0x0049bf70 and coduo_lnxded 0x080c0850.
  * Name: exact same-version Mac symbol XAnimFillInSyncNodes_r. */
-void XAnimFillInSyncNodes_r(XAnim *tree, uint32_t animIndex,
-                            uint8_t requireLooping)
+void XAnimFillInSyncNodes_r(XAnim *tree, uint32_t animIndex, uint8_t requireLooping)
 {
     XAnimEntry *entry = &tree->entries[animIndex];
 
@@ -136,12 +131,14 @@ void XAnimFillInSyncNodes_r(XAnim *tree, uint32_t animIndex,
         if (asset->data.xanimParts->looped != requireLooping) {
             if (requireLooping) {
                 Com_Error(1,
-                          "\x15" "animation '%s' in '%s' cannot be sync "
+                          "\x15"
+                          "animation '%s' in '%s' cannot be sync "
                           "looping and nonlooping",
                           asset->name, tree->name);
             } else {
                 Com_Error(1,
-                          "\x15" "animation '%s' in '%s' cannot be sync "
+                          "\x15"
+                          "animation '%s' in '%s' cannot be sync "
                           "nonlooping and looping",
                           asset->name, tree->name);
             }
@@ -159,18 +156,15 @@ void XAnimFillInSyncNodes_r(XAnim *tree, uint32_t animIndex,
         } while (cursor->childCount != 0);
 
         Com_Error(1,
-                  "\x15" "duplicate specification of animation sync in "
+                  "\x15"
+                  "duplicate specification of animation sync in "
                   "'%s', %d nodes above '%s'",
                   tree->name, depth, cursor->payload.leafAsset->name);
     }
 
-    entry->payload.parent.flags |= requireLooping
-        ? XANIM_SYNC_LOOPING
-        : XANIM_SYNC_NON_LOOPING;
+    entry->payload.parent.flags |= requireLooping ? XANIM_SYNC_LOOPING : XANIM_SYNC_NON_LOOPING;
     for (int32_t child = 0; child < entry->childCount; ++child) {
-        XAnimFillInSyncNodes_r(
-            tree, entry->payload.parent.firstChildIndex + child,
-            requireLooping);
+        XAnimFillInSyncNodes_r(tree, entry->payload.parent.firstChildIndex + child, requireLooping);
     }
 }
 
@@ -187,23 +181,20 @@ void XAnimSetupSyncNodes_r(XAnim *tree, uint32_t animIndex)
     uint16_t syncFlags = entry->payload.parent.flags & XANIM_SYNC_MASK;
     if (syncFlags == 0) {
         for (int32_t child = 0; child < entry->childCount; ++child) {
-            XAnimSetupSyncNodes_r(
-                tree, entry->payload.parent.firstChildIndex + child);
+            XAnimSetupSyncNodes_r(tree, entry->payload.parent.firstChildIndex + child);
         }
         return;
     }
 
     if (syncFlags == XANIM_SYNC_MASK) {
-        Com_Error(1,
-                  "\x15" "animation cannot be sync looping and sync "
-                  "nonlooping");
+        Com_Error(1, "\x15"
+                     "animation cannot be sync looping and sync "
+                     "nonlooping");
     }
 
     entry->payload.parent.flags |= XANIM_NOTIFY_SOURCE;
     for (int32_t child = 0; child < entry->childCount; ++child) {
-        XAnimFillInSyncNodes_r(
-            tree, entry->payload.parent.firstChildIndex + child,
-            syncFlags == XANIM_SYNC_LOOPING);
+        XAnimFillInSyncNodes_r(tree, entry->payload.parent.firstChildIndex + child, syncFlags == XANIM_SYNC_LOOPING);
     }
 }
 

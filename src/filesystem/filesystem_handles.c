@@ -24,12 +24,8 @@ FILE *FS_FileForHandle(int32_t handle)
  * symbol FS_HandleForFile. */
 int32_t FS_HandleForFile(qboolean uniqueFile)
 {
-    const int32_t firstHandle =
-        uniqueFile != qfalse ? FS_UNIQUE_HANDLE_FIRST
-                             : FS_REGULAR_HANDLE_FIRST;
-    const int32_t handleCount =
-        uniqueFile != qfalse ? FS_UNIQUE_HANDLE_COUNT
-                             : FS_REGULAR_HANDLE_COUNT;
+    const int32_t firstHandle = uniqueFile != qfalse ? FS_UNIQUE_HANDLE_FIRST : FS_REGULAR_HANDLE_FIRST;
+    const int32_t handleCount = uniqueFile != qfalse ? FS_UNIQUE_HANDLE_COUNT : FS_REGULAR_HANDLE_COUNT;
 
     for (int32_t offset = 0; offset < handleCount; ++offset) {
         const int32_t handle = firstHandle + offset;
@@ -37,13 +33,12 @@ int32_t FS_HandleForFile(qboolean uniqueFile)
             return handle;
     }
 
-    for (int32_t handle = FS_REGULAR_HANDLE_FIRST;
-         handle < FS_HANDLE_COUNT; ++handle) {
-        Com_Printf("FILE %2i: '%s'\n", handle,
-                   fs_handleFiles[handle].name);
+    for (int32_t handle = FS_REGULAR_HANDLE_FIRST; handle < FS_HANDLE_COUNT; ++handle) {
+        Com_Printf("FILE %2i: '%s'\n", handle, fs_handleFiles[handle].name);
     }
 
-    Com_Error(ERR_DROP, "\x15" "FS_HandleForFile: none free");
+    Com_Error(ERR_DROP, "\x15"
+                        "FS_HandleForFile: none free");
     return -1;
 }
 

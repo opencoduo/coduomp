@@ -18,9 +18,7 @@ static int32_t dl_requestStatus = -1000; /* original 0x005c51fc */
 /* Source: CoDUOMP.exe 0x0043ee70..0x0043ee80, recovered from the executable
  * gap before DL_InitDownload. Registered as the global libwww after-filter;
  * the fourth callback argument is stored as the completed request status. */
-static int32_t DL_AfterFilter(
-    HTRequest *request, HTResponse *response, void *parameter,
-    int32_t status)
+static int32_t DL_AfterFilter(HTRequest *request, HTResponse *response, void *parameter, int32_t status)
 {
     (void)request;
     (void)response;
@@ -35,11 +33,12 @@ static int32_t DL_AfterFilter(
  * gap. Name: exact same-module Mac symbol HTAlertCallback_progress. The
  * HTRequest_net accessor is the typed source-level form of the inlined
  * request->net load at Windows request offset 0x18. */
-int32_t HTAlertCallback_progress(
-    HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber,
-    const char *defaultMessage, void *input, HTAlertPar *reply)
+int32_t HTAlertCallback_progress(HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber, const char *defaultMessage, void *input,
+                                 HTAlertPar *reply)
 {
-    enum { HT_PROG_READ = 8 };
+    enum {
+        HT_PROG_READ = 8
+    };
     (void)messageNumber;
     (void)defaultMessage;
     (void)input;
@@ -49,33 +48,28 @@ int32_t HTAlertCallback_progress(
         return HT_TRUE;
 
     if (dl_forceRawBytesCount == qfalse) {
-        Cvar_SetValue(
-            "cl_downloadCount",
-            (float)HTRequest_bytesRead(request));
+        Cvar_SetValue("cl_downloadCount", (float)HTRequest_bytesRead(request));
         return HT_TRUE;
     }
 
     HTNet *const net = HTRequest_net(request);
     if (HTNet_rawBytesCount(net) == HT_FALSE) {
-        Com_DPrintf(
-            "Force raw byte count on request->net %p\n",
-            (void *)net);
+        Com_DPrintf("Force raw byte count on request->net %p\n", (void *)net);
         HTFTP_setRawBytesCount(request);
     }
 
-    Cvar_SetValue(
-        "cl_downloadCount",
-        (float)HTFTP_getDNetRawBytesCount(request));
+    Cvar_SetValue("cl_downloadCount", (float)HTFTP_getDNetRawBytesCount(request));
     return HT_TRUE;
 }
 
 /* Source: CoDUOMP.exe 0x0043ef20..0x0043ef51, recovered from the executable
  * gap. Name: exact same-module Mac symbol HTAlertCallback_confirm. */
-int32_t HTAlertCallback_confirm(
-    HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber,
-    const char *defaultMessage, void *input, HTAlertPar *reply)
+int32_t HTAlertCallback_confirm(HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber, const char *defaultMessage, void *input,
+                                HTAlertPar *reply)
 {
-    enum { HT_CONFIRM_REPLACE_EXISTING = 9 };
+    enum {
+        HT_CONFIRM_REPLACE_EXISTING = 9
+    };
     (void)request;
     (void)opcode;
     (void)defaultMessage;
@@ -87,18 +81,15 @@ int32_t HTAlertCallback_confirm(
         return HT_TRUE;
     }
 
-    Com_Printf(
-        "Aborting, unknown libwww confirm message id: %d\n",
-        messageNumber);
+    Com_Printf("Aborting, unknown libwww confirm message id: %d\n", messageNumber);
     HTEventList_stopLoop();
     return HT_FALSE;
 }
 
 /* Source: CoDUOMP.exe 0x0043ef60..0x0043ef79, recovered from the executable
  * gap. Name: exact same-module Mac symbol HTAlertCallback_prompt. */
-int32_t HTAlertCallback_prompt(
-    HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber,
-    const char *defaultMessage, void *input, HTAlertPar *reply)
+int32_t HTAlertCallback_prompt(HTRequest *request, HTAlertOpcode opcode, int32_t messageNumber, const char *defaultMessage, void *input,
+                               HTAlertPar *reply)
 {
     (void)request;
     (void)opcode;
@@ -106,10 +97,9 @@ int32_t HTAlertCallback_prompt(
     (void)input;
     (void)reply;
 
-    Com_Printf(
-        "Aborting, libwww prompt message id: %d "
-        "(prompted for a login/password?)\n",
-        messageNumber);
+    Com_Printf("Aborting, libwww prompt message id: %d "
+               "(prompted for a login/password?)\n",
+               messageNumber);
     HTEventList_stopLoop();
     return HT_FALSE;
 }
@@ -127,14 +117,10 @@ void DL_InitDownload(void)
     HTAlert_setInteractive(HT_TRUE);
     HTPrint_setCallback(Com_VPrintf);
     HTTrace_setCallback(Com_VPrintf);
-    (void)HTNet_addAfter(
-        DL_AfterFilter, NULL, NULL, HT_ALL, HT_FILTER_LAST);
-    (void)HTAlert_add(
-        HTAlertCallback_progress, HT_A_PROGRESS);
-    (void)HTAlert_add(
-        HTAlertCallback_confirm, HT_A_CONFIRM);
-    (void)HTAlert_add(
-        HTAlertCallback_prompt, HT_A_PROMPT_MASK);
+    (void)HTNet_addAfter(DL_AfterFilter, NULL, NULL, HT_ALL, HT_FILTER_LAST);
+    (void)HTAlert_add(HTAlertCallback_progress, HT_A_PROGRESS);
+    (void)HTAlert_add(HTAlertCallback_confirm, HT_A_CONFIRM);
+    (void)HTAlert_add(HTAlertCallback_prompt, HT_A_PROMPT_MASK);
 
     Com_Printf("Client download subsystem initialized\n");
     dl_initialized = qtrue;
@@ -166,16 +152,14 @@ qboolean DL_BeginDownload(char *localFileName, const char *remoteUrl)
     char *scheme;
 
     if (dl_running != qfalse) {
-        Com_Printf(
-            "ERROR: DL_BeginDownload called with a download "
-            "request already active\n");
+        Com_Printf("ERROR: DL_BeginDownload called with a download "
+                   "request already active\n");
         return qfalse;
     }
 
     dl_requestStatus = -1000;
     if (localFileName == NULL || remoteUrl == NULL) {
-        Com_DPrintf(
-            "Empty download URL or empty local file name\n");
+        Com_DPrintf("Empty download URL or empty local file name\n");
         return qfalse;
     }
 
@@ -192,8 +176,7 @@ qboolean DL_BeginDownload(char *localFileName, const char *remoteUrl)
     dl_request = HTRequest_new();
     if (coduo_crt_stricmp(scheme, "http") == 0) {
         char *host = HTParse(remoteUrl, "", HT_PARSE_HOST);
-        char *path = HTParse(
-            remoteUrl, "", HT_PARSE_PATH | HT_PARSE_PUNCTUATION);
+        char *path = HTParse(remoteUrl, "", HT_PARSE_PATH | HT_PARSE_PUNCTUATION);
         char *hostSeparator = strchr(host, '@');
 
         if (hostSeparator != NULL) {
@@ -215,16 +198,10 @@ qboolean DL_BeginDownload(char *localFileName, const char *remoteUrl)
             (void)HTBasic_delete(credentials);
 
             ++hostSeparator;
-            const size_t requestUrlCapacity =
-                strlen(hostSeparator) + strlen(path) +
-                DL_HTTP_URL_PREFIX_CAPACITY;
+            const size_t requestUrlCapacity = strlen(hostSeparator) + strlen(path) + DL_HTTP_URL_PREFIX_CAPACITY;
             requestUrl = HTMemory_malloc(requestUrlCapacity);
-            (void)coduo_crt_snprintf(
-                requestUrl, requestUrlCapacity, "http://%s%s",
-                hostSeparator, path);
-            Com_DPrintf(
-                "HTTP Basic Auth - %s %s %s\n",
-                host, password, requestUrl);
+            (void)coduo_crt_snprintf(requestUrl, requestUrlCapacity, "http://%s%s", hostSeparator, path);
+            Com_DPrintf("HTTP Basic Auth - %s %s %s\n", host, password, requestUrl);
 
             HTMemory_free(host);
             HTMemory_free(path);
@@ -254,14 +231,11 @@ qboolean DL_BeginDownload(char *localFileName, const char *remoteUrl)
     scheme = HTParse(remoteUrl, "", HT_PARSE_ACCESS);
     {
         char *host = HTParse(remoteUrl, "", HT_PARSE_HOST);
-        char *path = HTParse(
-            remoteUrl, "", HT_PARSE_PATH | HT_PARSE_PUNCTUATION);
+        char *path = HTParse(remoteUrl, "", HT_PARSE_PATH | HT_PARSE_PUNCTUATION);
         char *hostSeparator = strchr(host, '@');
 
         if (hostSeparator != NULL) {
-            Cvar_Set(
-                "cl_downloadName",
-                va("%s://*:*%s%s", scheme, hostSeparator, path));
+            Cvar_Set("cl_downloadName", va("%s://*:*%s%s", scheme, hostSeparator, path));
         } else {
             Cvar_Set("cl_downloadName", remoteUrl);
         }
@@ -287,9 +261,8 @@ qboolean DL_BeginDownload(char *localFileName, const char *remoteUrl)
 dlDownloadResult_t DL_DownloadLoop(void)
 {
     if (dl_running == qfalse) {
-        Com_DPrintf(
-            "DL_DownloadLoop: unexpected call with "
-            "dl_running == qfalse\n");
+        Com_DPrintf("DL_DownloadLoop: unexpected call with "
+                    "dl_running == qfalse\n");
         return DL_DOWNLOAD_SUCCESS;
     }
 
@@ -304,10 +277,9 @@ dlDownloadResult_t DL_DownloadLoop(void)
     Cvar_Set("ui_dl_running", "0");
 
     if (dl_requestStatus < 0) {
-        Com_DPrintf(
-            "DL_DownloadLoop: request terminated with "
-            "failure status %d\n",
-            dl_requestStatus);
+        Com_DPrintf("DL_DownloadLoop: request terminated with "
+                    "failure status %d\n",
+                    dl_requestStatus);
         return DL_DOWNLOAD_FAILURE;
     }
     return DL_DOWNLOAD_SUCCESS;

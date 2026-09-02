@@ -24,16 +24,13 @@ void Com_ReadCDKey(void);
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the two identical
  * basegame/fs_game directory-addition blocks in FS_Startup. */
-static void filesystem_compat_add_startup_game_directories(
-    const char *gameName)
+static void filesystem_compat_add_startup_game_directories(const char *gameName)
 {
     if (fs_cdpath->string[0] != '\0')
         FS_AddLocalizedGameDirectory(fs_cdpath->string, gameName);
     if (fs_basepath->string[0] != '\0')
         FS_AddLocalizedGameDirectory(fs_basepath->string, gameName);
-    if (fs_homepath->string[0] != '\0' &&
-        Q_stricmp(fs_homepath->string,
-                  fs_basepath->string) != 0) {
+    if (fs_homepath->string[0] != '\0' && Q_stricmp(fs_homepath->string, fs_basepath->string) != 0) {
         FS_AddLocalizedGameDirectory(fs_homepath->string, gameName);
     }
     filesystem_compat_add_server_game_directory(gameName);
@@ -51,57 +48,34 @@ void FS_Startup(const char *gameName)
     Com_Printf("----- FS_Startup -----\n");
     fs_packFiles = 0;
 
-    fs_debug = Cvar_Get(
-        "fs_debug", "0", CVAR_NONE);
-    fs_copyfiles = Cvar_Get(
-        "fs_copyfiles", "0", CVAR_INIT);
-    fs_cdpath = Cvar_Get(
-        "fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT);
-    fs_basepath = Cvar_Get(
-        "fs_basepath", Sys_DefaultBasePath(), CVAR_INIT);
-    fs_basegame = Cvar_Get(
-        "fs_basegame", "uo", CVAR_INIT);
+    fs_debug = Cvar_Get("fs_debug", "0", CVAR_NONE);
+    fs_copyfiles = Cvar_Get("fs_copyfiles", "0", CVAR_INIT);
+    fs_cdpath = Cvar_Get("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT);
+    fs_basepath = Cvar_Get("fs_basepath", Sys_DefaultBasePath(), CVAR_INIT);
+    fs_basegame = Cvar_Get("fs_basegame", "uo", CVAR_INIT);
 
     defaultHomePath = Sys_DefaultHomePath();
-    fs_homepath = Cvar_Get(
-        "fs_homepath",
-        defaultHomePath != NULL ? defaultHomePath : fs_basepath->string,
-        CVAR_INIT);
-    fs_game = Cvar_Get(
-        "fs_game", "",
-        CVAR_SYSTEMINFO | CVAR_INIT);
-    fs_restrict = Cvar_Get(
-        "fs_restrict", "", CVAR_INIT);
-    fs_ignoreLocalized = Cvar_Get(
-        "fs_ignoreLozalized", "0",
-        CVAR_LATCH | CVAR_CHEAT);
+    fs_homepath = Cvar_Get("fs_homepath", defaultHomePath != NULL ? defaultHomePath : fs_basepath->string, CVAR_INIT);
+    fs_game = Cvar_Get("fs_game", "", CVAR_SYSTEMINFO | CVAR_INIT);
+    fs_restrict = Cvar_Get("fs_restrict", "", CVAR_INIT);
+    fs_ignoreLocalized = Cvar_Get("fs_ignoreLozalized", "0", CVAR_LATCH | CVAR_CHEAT);
 
     if (fs_cdpath->string[0] != '\0')
-        FS_AddLocalizedGameDirectory(
-            fs_cdpath->string, gameName);
+        FS_AddLocalizedGameDirectory(fs_cdpath->string, gameName);
     if (fs_basepath->string[0] != '\0')
-        FS_AddLocalizedGameDirectory(
-            fs_basepath->string, gameName);
+        FS_AddLocalizedGameDirectory(fs_basepath->string, gameName);
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (fs_basepath->string[0] != '\0' &&
-        Q_stricmp(fs_homepath->string,
-                  fs_basepath->string) != 0) {
-        FS_AddLocalizedGameDirectory(
-            fs_homepath->string, gameName);
+    if (fs_basepath->string[0] != '\0' && Q_stricmp(fs_homepath->string, fs_basepath->string) != 0) {
+        FS_AddLocalizedGameDirectory(fs_homepath->string, gameName);
     }
     filesystem_compat_add_server_game_directory(gameName);
 
-    if (fs_basegame->string[0] != '\0' &&
-        gameName != NULL &&
-        Q_stricmp(gameName, "main") == 0 &&
+    if (fs_basegame->string[0] != '\0' && gameName != NULL && Q_stricmp(gameName, "main") == 0 &&
         Q_stricmp(fs_basegame->string, gameName) != 0) {
         filesystem_compat_add_startup_game_directories(fs_basegame->string);
     }
 
-    if (fs_game->string[0] != '\0' &&
-        gameName != NULL &&
-        Q_stricmp(gameName, "main") == 0 &&
-        Q_stricmp(fs_game->string, gameName) != 0) {
+    if (fs_game->string[0] != '\0' && gameName != NULL && Q_stricmp(gameName, "main") == 0 && Q_stricmp(fs_game->string, gameName) != 0) {
         filesystem_compat_add_startup_game_directories(fs_game->string);
     }
 
@@ -145,17 +119,14 @@ void FS_InitFilesystem(void)
     FS_CheckRestrictedDemoPaks();
 
     if (FS_ReadFile("default_mp.cfg", NULL) <= 0) {
-        Com_Error(
-            ERR_FATAL,
-            "Couldn't load %s.  Make sure Call of Duty is run from the "
-            "correct folder.",
-            "default_mp.cfg");
+        Com_Error(ERR_FATAL,
+                  "Couldn't load %s.  Make sure Call of Duty is run from the "
+                  "correct folder.",
+                  "default_mp.cfg");
     }
 
-    Q_strncpyz(fs_savedBasePath, fs_basepath->string,
-               sizeof(fs_savedBasePath));
-    Q_strncpyz(fs_savedGame, fs_game->string,
-               sizeof(fs_savedGame));
+    Q_strncpyz(fs_savedBasePath, fs_basepath->string, sizeof(fs_savedBasePath));
+    Q_strncpyz(fs_savedGame, fs_game->string, sizeof(fs_savedGame));
     memset(fs_gameDirVar, 0, sizeof(fs_gameDirVar));
 }
 
@@ -178,10 +149,8 @@ void FS_Restart(int32_t checksumFeed)
     if (FS_ReadFile("default_mp.cfg", NULL) <= 0) {
         if (fs_savedBasePath[0] != '\0') {
             FS_PureServerSetLoadedPaks("", "");
-            (void)Cvar_Set2(
-                "fs_basepath", fs_savedBasePath, qtrue);
-            (void)Cvar_Set2(
-                "fs_gamedirvar", fs_savedGame, qtrue);
+            (void)Cvar_Set2("fs_basepath", fs_savedBasePath, qtrue);
+            (void)Cvar_Set2("fs_gamedirvar", fs_savedGame, qtrue);
             fs_savedBasePath[0] = '\0';
             fs_savedGame[0] = '\0';
             (void)Cvar_Set2("fs_restrict", "0", qtrue);
@@ -189,22 +158,18 @@ void FS_Restart(int32_t checksumFeed)
             Com_Error(ERR_DROP, "Invalid game folder\n");
         }
 
-        Com_Error(
-            ERR_FATAL,
-            "Couldn't load %s.  Make sure Call of Duty is run from the "
-            "correct folder.",
-            "default_mp.cfg");
+        Com_Error(ERR_FATAL,
+                  "Couldn't load %s.  Make sure Call of Duty is run from the "
+                  "correct folder.",
+                  "default_mp.cfg");
     }
 
-    if (Q_stricmp(fs_game->string, fs_savedGame) != 0 &&
-        Com_SafeMode() == qfalse) {
+    if (Q_stricmp(fs_game->string, fs_savedGame) != 0 && Com_SafeMode() == qfalse) {
         Cbuf_AddText(va("exec %s\n", "uoconfig_mp.cfg"));
     }
 
-    Q_strncpyz(fs_savedBasePath, fs_basepath->string,
-               sizeof(fs_savedBasePath));
-    Q_strncpyz(fs_savedGame, fs_game->string,
-               sizeof(fs_savedGame));
+    Q_strncpyz(fs_savedBasePath, fs_basepath->string, sizeof(fs_savedBasePath));
+    Q_strncpyz(fs_savedGame, fs_game->string, sizeof(fs_savedGame));
 }
 
 #else
@@ -219,8 +184,7 @@ void FS_Startup(const char *gameName)
     fs_debug = Cvar_Get("fs_debug", "0", 0);
     fs_copyfiles = Cvar_Get("fs_copyfiles", "0", CVAR_INIT);
     fs_cdpath = Cvar_Get("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT);
-    fs_basepath = Cvar_Get(
-        "fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT);
+    fs_basepath = Cvar_Get("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT);
     fs_basegame = Cvar_Get("fs_basegame", "uo", CVAR_INIT);
 
     homePath = Sys_DefaultHomePath();
@@ -231,8 +195,7 @@ void FS_Startup(const char *gameName)
 
     fs_game = Cvar_Get("fs_game", "", CVAR_INIT | CVAR_SYSTEMINFO);
     fs_restrict = Cvar_Get("fs_restrict", "", CVAR_INIT);
-    fs_ignoreLocalized = Cvar_Get(
-        "fs_ignoreLocalized", "0", CVAR_LATCH | CVAR_CHEAT);
+    fs_ignoreLocalized = Cvar_Get("fs_ignoreLocalized", "0", CVAR_LATCH | CVAR_CHEAT);
 
     if (*fs_cdpath->string != '\0') {
         FS_AddLocalizedGameDirectory(fs_cdpath->string, gameName);
@@ -251,18 +214,14 @@ void FS_Startup(const char *gameName)
         if (Q_stricmp(gameName, "main") == 0) {
             if (Q_stricmp(fs_basegame->string, gameName) != 0) {
                 if (*fs_cdpath->string != '\0') {
-                    FS_AddLocalizedGameDirectory(
-                        fs_cdpath->string, fs_basegame->string);
+                    FS_AddLocalizedGameDirectory(fs_cdpath->string, fs_basegame->string);
                 }
                 if (*fs_basepath->string != '\0') {
-                    FS_AddLocalizedGameDirectory(
-                        fs_basepath->string, fs_basegame->string);
+                    FS_AddLocalizedGameDirectory(fs_basepath->string, fs_basegame->string);
                 }
                 if (*fs_homepath->string != '\0') {
-                    if (Q_stricmp(fs_homepath->string,
-                                  fs_basepath->string) != 0) {
-                        FS_AddLocalizedGameDirectory(
-                            fs_homepath->string, fs_basegame->string);
+                    if (Q_stricmp(fs_homepath->string, fs_basepath->string) != 0) {
+                        FS_AddLocalizedGameDirectory(fs_homepath->string, fs_basegame->string);
                     }
                 }
             }
@@ -273,18 +232,14 @@ void FS_Startup(const char *gameName)
         if (Q_stricmp(gameName, "main") == 0) {
             if (Q_stricmp(fs_game->string, gameName) != 0) {
                 if (*fs_cdpath->string != '\0') {
-                    FS_AddLocalizedGameDirectory(
-                        fs_cdpath->string, fs_game->string);
+                    FS_AddLocalizedGameDirectory(fs_cdpath->string, fs_game->string);
                 }
                 if (*fs_basepath->string != '\0') {
-                    FS_AddLocalizedGameDirectory(
-                        fs_basepath->string, fs_game->string);
+                    FS_AddLocalizedGameDirectory(fs_basepath->string, fs_game->string);
                 }
                 if (*fs_homepath->string != '\0') {
-                    if (Q_stricmp(fs_homepath->string,
-                                  fs_basepath->string) != 0) {
-                        FS_AddLocalizedGameDirectory(
-                            fs_homepath->string, fs_game->string);
+                    if (Q_stricmp(fs_homepath->string, fs_basepath->string) != 0) {
+                        FS_AddLocalizedGameDirectory(fs_homepath->string, fs_game->string);
                     }
                 }
             }
@@ -329,8 +284,7 @@ void FS_InitFilesystem(void)
                   "default_mp.cfg");
     }
 
-    Q_strncpyz(fs_savedBasePath, fs_basepath->string,
-               sizeof(fs_savedBasePath));
+    Q_strncpyz(fs_savedBasePath, fs_basepath->string, sizeof(fs_savedBasePath));
     Q_strncpyz(fs_savedGame, fs_game->string, sizeof(fs_savedGame));
     /* coduo_lnxded 0x08065bad clears the same 0x084843a0 object populated by
      * BSP lookup and consumed by sound-loadspec game_ matching. */
@@ -368,8 +322,7 @@ void FS_Restart(int32_t checksumFeed)
         }
     }
 
-    Q_strncpyz(fs_savedBasePath, fs_basepath->string,
-               sizeof(fs_savedBasePath));
+    Q_strncpyz(fs_savedBasePath, fs_basepath->string, sizeof(fs_savedBasePath));
     Q_strncpyz(fs_savedGame, fs_game->string, sizeof(fs_savedGame));
 }
 
@@ -384,8 +337,7 @@ qboolean FS_ConditionalRestart(int32_t checksumFeed)
     if (sv_running->integer != 0)
         return qfalse;
 
-    if (fs_game->modified == qfalse &&
-        checksumFeed == fs_checksumFeed) {
+    if (fs_game->modified == qfalse && checksumFeed == fs_checksumFeed) {
         return qfalse;
     }
 

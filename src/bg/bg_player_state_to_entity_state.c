@@ -16,10 +16,10 @@
 #include <stdint.h>
 
 enum {
-    BG_VIEWHEIGHT_LERP_LONG_MS  = 400,
+    BG_VIEWHEIGHT_LERP_LONG_MS = 400,
     BG_VIEWHEIGHT_LERP_SHORT_MS = 200,
-    BG_MOVEMENT_DIR_FOLD_LIMIT  = 128,
-    BG_MAX_PENDING_EVENTS       = 4
+    BG_MOVEMENT_DIR_FOLD_LIMIT = 128,
+    BG_MAX_PENDING_EVENTS = 4
 };
 
 static const float BG_MOVEMENT_DIR_FULL_RANGE = 256.0f;
@@ -27,25 +27,20 @@ static const float BG_MOVEMENT_DIR_FULL_RANGE = 256.0f;
 /* The original source table is emitted independently into each module.  The
  * Windows cgame and both game-module bodies contain the same six values and
  * signed terminator; Linux retains the canonical symbol name. */
-const int32_t iSingleClientEvents[7] = {
-    EV_STANCE_FORCE_STAND,
-    EV_STANCE_FORCE_CROUCH,
-    EV_STANCE_FORCE_PRONE,
-    EV_STEP_VIEW,
-    EV_BULLET_HIT_CLIENT_SMALL,
-    EV_BULLET_HIT_CLIENT_LARGE,
-    -1
-};
+const int32_t iSingleClientEvents[7] = {EV_STANCE_FORCE_STAND,
+                                        EV_STANCE_FORCE_CROUCH,
+                                        EV_STANCE_FORCE_PRONE,
+                                        EV_STEP_VIEW,
+                                        EV_BULLET_HIT_CLIENT_SMALL,
+                                        EV_BULLET_HIT_CLIENT_LARGE,
+                                        -1};
 const int32_t *pEventSingleClientList = iSingleClientEvents;
 
-void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
-                                 qboolean snap)
+void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es, qboolean snap)
 {
     /* Follow/spectator states are rendered as a player; other states use the
      * client-reserved no-op entity type. The NEG/SBB expression yields 1 or 7. */
-    es->eType = (ps->playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0
-                    ? ET_PLAYER
-                    : ET_INVISIBLE;
+    es->eType = (ps->playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 ? ET_PLAYER : ET_INVISIBLE;
     bg_compat_player_state_set_entity_number(es, ps);
 
     es->posTrType = TR_INTERPOLATE;
@@ -88,17 +83,11 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
     /* Preserve unrelated bits in the packed vehicle state while replacing the
      * 3-bit position, 3-bit type, and 2-bit animation-pitch fields in order. */
     uint32_t vehicleState = (uint32_t)es->vehicleAnimState;
-    vehicleState =
-        (vehicleState & ~VEHICLE_ANIM_STATE_POS_MASK) |
-        ((uint32_t)ps->vehiclePosition << VEHICLE_ANIM_STATE_POS_SHIFT);
+    vehicleState = (vehicleState & ~VEHICLE_ANIM_STATE_POS_MASK) | ((uint32_t)ps->vehiclePosition << VEHICLE_ANIM_STATE_POS_SHIFT);
     es->vehicleAnimState = (int32_t)vehicleState;
-    vehicleState =
-        (vehicleState & ~VEHICLE_ANIM_STATE_TYPE_MASK) |
-        ((uint32_t)ps->vehicleType << VEHICLE_ANIM_STATE_TYPE_SHIFT);
+    vehicleState = (vehicleState & ~VEHICLE_ANIM_STATE_TYPE_MASK) | ((uint32_t)ps->vehicleType << VEHICLE_ANIM_STATE_TYPE_SHIFT);
     es->vehicleAnimState = (int32_t)vehicleState;
-    vehicleState =
-        (vehicleState & ~VEHICLE_ANIM_STATE_MOTION_MASK) |
-        ((uint32_t)ps->vehicleMotion << VEHICLE_ANIM_STATE_MOTION_SHIFT);
+    vehicleState = (vehicleState & ~VEHICLE_ANIM_STATE_MOTION_MASK) | ((uint32_t)ps->vehicleMotion << VEHICLE_ANIM_STATE_MOTION_SHIFT);
     es->vehicleAnimState = (int32_t)vehicleState;
 
     if (ps->pmType >= PM_TYPE_DEAD) {
@@ -117,8 +106,7 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
 
     /* The three output view angles carry the prone lean payload only at the
      * configured prone viewheight; every other stance writes zeroes. */
-    if (ps->viewHeightTarget == ps->proneViewHeight &&
-        ps->viewHeightTarget != ps->crouchViewHeight) {
+    if (ps->viewHeightTarget == ps->proneViewHeight && ps->viewHeightTarget != ps->crouchViewHeight) {
         float fraction;
         if (ps->viewHeightLerpTime == 0) {
             fraction = 1.0f;
@@ -127,22 +115,17 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
             if (ps->viewHeightLerpTarget == ps->proneViewHeight) {
                 duration = BG_VIEWHEIGHT_LERP_LONG_MS;
             } else if (ps->viewHeightLerpTarget == ps->crouchViewHeight) {
-                duration = ps->viewHeightLerpDown != 0
-                               ? BG_VIEWHEIGHT_LERP_SHORT_MS
-                               : BG_VIEWHEIGHT_LERP_LONG_MS;
+                duration = ps->viewHeightLerpDown != 0 ? BG_VIEWHEIGHT_LERP_SHORT_MS : BG_VIEWHEIGHT_LERP_LONG_MS;
             } else {
                 duration = BG_VIEWHEIGHT_LERP_SHORT_MS;
             }
 
-            int32_t elapsed =
-                coduo_int32_from_bits((uint32_t)ps->commandTime -
-                                 (uint32_t)ps->viewHeightLerpTime);
+            int32_t elapsed = coduo_int32_from_bits((uint32_t)ps->commandTime - (uint32_t)ps->viewHeightLerpTime);
             /* 0x300067aa..0x300067db: FILD/FIDIV leaves the exact quotient in
              * st0 while FST writes the rounded float used by later paths. The
              * first (negative) compare consumes the retained quotient; only
              * the upper-bound compare reloads the rounded copy. */
-            long double fractionWide =
-                (long double)elapsed / (long double)duration;
+            long double fractionWide = (long double)elapsed / (long double)duration;
             fraction = (float)fractionWide;
             if (fractionWide < 0.0L) {
                 fraction = 0.0f;
@@ -156,10 +139,8 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
         }
 
         es->viewAngles[0] = fraction * ps->torsoHeight;
-        es->viewAngles[1] =
-            AngleNormalize180(ps->torsoPitch) * fraction;
-        es->viewAngles[2] =
-            AngleNormalize180(ps->waistPitch) * fraction;
+        es->viewAngles[1] = AngleNormalize180(ps->torsoPitch) * fraction;
+        es->viewAngles[2] = AngleNormalize180(ps->waistPitch) * fraction;
     } else {
         es->viewAngles[0] = 0.0f;
         es->viewAngles[1] = 0.0f;
@@ -169,22 +150,14 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
     /* Publish one pending predictable-event parm through the direct event slot.
      * If its cursor fell over four entries behind, catch it up to the oldest
      * event still resident in the four-slot player-state ring. */
-    int32_t pendingDelta =
-        coduo_int32_from_bits((uint32_t)ps->oldEventIndex -
-                         (uint32_t)ps->eventIndex);
+    int32_t pendingDelta = coduo_int32_from_bits((uint32_t)ps->oldEventIndex - (uint32_t)ps->eventIndex);
     if (pendingDelta < 0) {
-        int32_t behind =
-            coduo_int32_from_bits((uint32_t)ps->eventIndex -
-                             (uint32_t)ps->oldEventIndex);
+        int32_t behind = coduo_int32_from_bits((uint32_t)ps->eventIndex - (uint32_t)ps->oldEventIndex);
         if (behind > BG_MAX_PENDING_EVENTS) {
-            ps->oldEventIndex = coduo_int32_from_bits(
-                (uint32_t)ps->eventIndex - (uint32_t)BG_MAX_PENDING_EVENTS);
+            ps->oldEventIndex = coduo_int32_from_bits((uint32_t)ps->eventIndex - (uint32_t)BG_MAX_PENDING_EVENTS);
         }
-        es->eventParm =
-            (uint8_t)ps->eventParms[(uint32_t)ps->oldEventIndex &
-                                    (MAX_PS_EVENTS - 1)];
-        ps->oldEventIndex =
-            coduo_int32_from_bits((uint32_t)ps->oldEventIndex + 1u);
+        es->eventParm = (uint8_t)ps->eventParms[(uint32_t)ps->oldEventIndex & (MAX_PS_EVENTS - 1)];
+        ps->oldEventIndex = coduo_int32_from_bits((uint32_t)ps->oldEventIndex + 1u);
     } else {
         es->eventParm = 0;
     }
@@ -195,15 +168,13 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
     if (eventCursor != ps->eventIndex) {
         const int32_t *eventExclusions = pEventSingleClientList;
         for (;;) {
-            uint32_t sourceSlot =
-                (uint32_t)eventCursor & (MAX_PS_EVENTS - 1);
+            uint32_t sourceSlot = (uint32_t)eventCursor & (MAX_PS_EVENTS - 1);
             uint8_t event = (uint8_t)ps->events[sourceSlot];
 
             bg_compat_player_event(es->number, event);
 
             int32_t exclusionIndex = 0;
-            while (eventExclusions[exclusionIndex] > 0 &&
-                   eventExclusions[exclusionIndex] != event) {
+            while (eventExclusions[exclusionIndex] > 0 && eventExclusions[exclusionIndex] != event) {
                 exclusionIndex++;
             }
 
@@ -211,16 +182,13 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *es,
                 /* Retail reloads the source event byte after scanning. It also
                  * reloads eventSequence between the event and parm stores. */
                 uint8_t eventForStore = (uint8_t)ps->events[sourceSlot];
-                uint32_t eventOutputSlot =
-                    (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
+                uint32_t eventOutputSlot = (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
                 es->events[eventOutputSlot] = eventForStore;
 
-                uint32_t parmOutputSlot =
-                    (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
+                uint32_t parmOutputSlot = (uint32_t)es->eventSequence & (MAX_PS_EVENTS - 1);
                 uint8_t eventParm = (uint8_t)ps->eventParms[sourceSlot];
                 es->eventParms[parmOutputSlot] = eventParm;
-                es->eventSequence = coduo_int32_from_bits(
-                    (uint32_t)es->eventSequence + 1u);
+                es->eventSequence = coduo_int32_from_bits((uint32_t)es->eventSequence + 1u);
             }
 
             /* 0x3000693e snapshots the live producer cursor before INC EBX. */

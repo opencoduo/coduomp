@@ -39,7 +39,5 @@
 // it, but the original engine command's return contract is not needed or assumed.
 int32_t CG_BoldGameMessage(const char *message /* ECX */)
 {
-    return coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_BOLD_GAME_MESSAGE, (intptr_t)message,
-        cg_gameBoldMessageWidth_vmCvar.integer));
+    return coduo_int32_from_bits((uint32_t)cgame_syscall(CG_BOLD_GAME_MESSAGE, (intptr_t)message, cg_gameBoldMessageWidth_vmCvar.integer));
 }

@@ -42,17 +42,14 @@ script_t *LoadScriptFile(const char *filename)
     }
 
     int32_t handle;
-    int32_t fileLength = FS_FOpenFileByMode(
-        path, &handle, FS_READ);
+    int32_t fileLength = FS_FOpenFileByMode(path, &handle, FS_READ);
     if (handle == 0)
         return NULL;
 
 #if defined(WINDOWS_BEHAVIOR)
-    script_t *script = GetClearedMemory(
-        sizeof(*script) + (size_t)fileLength + 1);
+    script_t *script = GetClearedMemory(sizeof(*script) + (size_t)fileLength + 1);
 #else
-    script_t *script = Com_ZoneDebugAlloc(
-        sizeof(*script) + (size_t)fileLength + 1);
+    script_t *script = Com_ZoneDebugAlloc(sizeof(*script) + (size_t)fileLength + 1);
 #endif
     memset(script, 0, sizeof(*script));
     strcpy(script->filename, filename);
@@ -78,8 +75,7 @@ script_t *LoadScriptFile(const char *filename)
  * 0x0807f4f1..0x0807f5d9.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00448ab0_00448b9d.mcode.
  * Name: exact same-module Mac symbol LoadScriptMemory. */
-script_t *LoadScriptMemory(const char *buffer, size_t length,
-                              const char *name)
+script_t *LoadScriptMemory(const char *buffer, size_t length, const char *name)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: require the complete source name and NUL to
      * fit the platform-specific script record before allocating. */
@@ -90,8 +86,7 @@ script_t *LoadScriptMemory(const char *buffer, size_t length,
 #if defined(WINDOWS_BEHAVIOR)
     script_t *script = GetClearedMemory(sizeof(*script) + length + 1);
 #else
-    script_t *script = Com_ZoneDebugAllocClear(
-        sizeof(*script) + length + 1);
+    script_t *script = Com_ZoneDebugAllocClear(sizeof(*script) + length + 1);
 #endif
     memset(script, 0, sizeof(*script));
     strcpy(script->filename, name);

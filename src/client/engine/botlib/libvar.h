@@ -17,22 +17,14 @@ typedef struct libvar_s {
 } libvar_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(libvar_t) == 4,
-               "i386 libvar alignment changed");
-_Static_assert(offsetof(libvar_t, name) == 0x00,
-               "original libvar name offset");
-_Static_assert(offsetof(libvar_t, string) == 0x04,
-               "original libvar string offset");
-_Static_assert(offsetof(libvar_t, unused08) == 0x08,
-               "original libvar unused lane offset");
-_Static_assert(offsetof(libvar_t, modified) == 0x0c,
-               "original libvar modified offset");
-_Static_assert(offsetof(libvar_t, value) == 0x10,
-               "original libvar value offset");
-_Static_assert(offsetof(libvar_t, next) == 0x14,
-               "original libvar next offset");
-_Static_assert(sizeof(libvar_t) == 0x18,
-               "original libvar extent");
+_Static_assert(_Alignof(libvar_t) == 4, "i386 libvar alignment changed");
+_Static_assert(offsetof(libvar_t, name) == 0x00, "original libvar name offset");
+_Static_assert(offsetof(libvar_t, string) == 0x04, "original libvar string offset");
+_Static_assert(offsetof(libvar_t, unused08) == 0x08, "original libvar unused lane offset");
+_Static_assert(offsetof(libvar_t, modified) == 0x0c, "original libvar modified offset");
+_Static_assert(offsetof(libvar_t, value) == 0x10, "original libvar value offset");
+_Static_assert(offsetof(libvar_t, next) == 0x14, "original libvar next offset");
+_Static_assert(sizeof(libvar_t) == 0x18, "original libvar extent");
 #endif
 
 #ifdef __cplusplus

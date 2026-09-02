@@ -9,8 +9,7 @@
 void net_compat_profile_oob_packet(netsrc_t source, int32_t length)
 {
     if (net_profile->integer != 0) {
-        netProfileInfo_t **profile =
-            source == NS_SERVER ? &svs.netProfile : &clc.netProfile;
+        netProfileInfo_t **profile = source == NS_SERVER ? &svs.netProfile : &clc.netProfile;
         NetProf_PrepProfiling(profile);
         NetProf_AddPacket(&(*profile)->send, length, qfalse);
     }

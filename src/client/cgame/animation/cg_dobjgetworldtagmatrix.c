@@ -75,13 +75,11 @@
  * The Mac CG_DObjGetWorldTagMatrix follows the corresponding local-tag lookup,
  * AnglesToAxis, and matrix-composition path, resolving the source name.
  */
-qboolean CG_DObjGetWorldTagMatrix(struct DObj_s *self, const char *tagName,
-                                  centity_t *entity, DObjSkelMat *out)
+qboolean CG_DObjGetWorldTagMatrix(struct DObj_s *self, const char *tagName, centity_t *entity, DObjSkelMat *out)
 {
     /* 3001fe00: EDI = trap(0xb2, self, tagName) -> the named bone/tag handle
      * (tagName arrives in EAX and is pushed as the trap's second argument). */
-    int32_t boneHandle = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_DOBJ_GET_BONE_INDEX, (intptr_t)self, (intptr_t)tagName));
+    int32_t boneHandle = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, (intptr_t)self, (intptr_t)tagName));
 
     /* 3001fe0b: a negative handle means the entity has no DObj -> no matrix. */
     if (boneHandle < 0) {
@@ -95,9 +93,7 @@ qboolean CG_DObjGetWorldTagMatrix(struct DObj_s *self, const char *tagName,
 
     /* 3001fe21: EBP = trap(0xa0, self, 0) -> base of the entity's per-bone matrix
      * table; 3001fe29: index it by handle*0x40 (SHL 6) to select this bone. */
-    DObjSkelMat *boneMatrixTable =
-        (DObjSkelMat *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *boneMatrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (boneMatrixTable == NULL) {
@@ -107,8 +103,7 @@ qboolean CG_DObjGetWorldTagMatrix(struct DObj_s *self, const char *tagName,
     /* SHL EDI,6 wraps in 32 bits. Add that byte offset at the explicit
      * engine-pointer boundary so a native 64-bit valid base is retained. */
     uint32_t boneOffset = (uint32_t)boneHandle << 6;
-    DObjSkelMat *boneMatrix =
-        (DObjSkelMat *)((uintptr_t)boneMatrixTable + (uintptr_t)boneOffset);
+    DObjSkelMat *boneMatrix = (DObjSkelMat *)((uintptr_t)boneMatrixTable + (uintptr_t)boneOffset);
 
     /* 3001fe3d-0x3001fea4: build the local placement matrix from the entity's
      * axis angles (+0x214) and origin (+0x208). AngleVectors fills forward/right/up

@@ -26,28 +26,24 @@ void UI_BuildFindPlayerList(qboolean force)
         if (ui_findPlayerNextRefresh == 0) {
             return;
         }
-        if (ui_findPlayerNextRefresh >
-            ui_displayContextStorage.context.realTime) {
+        if (ui_findPlayerNextRefresh > ui_displayContextStorage.context.realTime) {
             return;
         }
     } else {
         int32_t resendTime;
 
         ui_findPlayerServerIndex = 0;
-        memset(ui_pendingServerStatus, 0,
-               sizeof(ui_pendingServerStatus));
+        memset(ui_pendingServerStatus, 0, sizeof(ui_pendingServerStatus));
         ui_foundPlayerServerCount = 0;
         ui_foundPlayerServerIndex = 0;
-        trap_Cvar_VariableStringBuffer("ui_findPlayer", ui_findPlayerName,
-                                       sizeof(ui_findPlayerName));
+        trap_Cvar_VariableStringBuffer("ui_findPlayer", ui_findPlayerName, sizeof(ui_findPlayerName));
         Q_CleanStr(ui_findPlayerName);
         if (ui_findPlayerName[0] == '\0') {
             ui_findPlayerNextRefresh = 0;
             return;
         }
 
-        resendTime = ui_serverStatusTimeOut.integer / 2 -
-                     UI_FIND_PLAYER_RESEND_BIAS;
+        resendTime = ui_serverStatusTimeOut.integer / 2 - UI_FIND_PLAYER_RESEND_BIAS;
         if (resendTime < UI_FIND_PLAYER_MINIMUM_RESEND) {
             resendTime = UI_FIND_PLAYER_MINIMUM_RESEND;
         }
@@ -57,9 +53,7 @@ void UI_BuildFindPlayerList(qboolean force)
         /* Retail deliberately reserves slot 0: results are written at [count]
          * with count starting at 1 and all readers use [index + 1]. This
          * status text therefore goes to slot 1 (0x4023983c). */
-        Com_sprintf(ui_foundPlayerServerNames[1],
-                    UI_FIND_PLAYER_TEXT_SIZE, "searching %d...",
-                    ui_findPlayerServerIndex);
+        Com_sprintf(ui_foundPlayerServerNames[1], UI_FIND_PLAYER_TEXT_SIZE, "searching %d...", ui_findPlayerServerIndex);
         ui_findPlayerCompletedCount = 0;
         ++ui_findPlayerRequestCount;
     }
@@ -73,10 +67,8 @@ void UI_BuildFindPlayerList(qboolean force)
         }
     }
 
-    for (slotIndex = 0;
-         slotIndex < UI_MAX_FOUND_PLAYER_SERVERS; ++slotIndex) {
-        uiPendingServerStatus_t *pending =
-            &ui_pendingServerStatus[slotIndex];
+    for (slotIndex = 0; slotIndex < UI_MAX_FOUND_PLAYER_SERVERS; ++slotIndex) {
+        uiPendingServerStatus_t *pending = &ui_pendingServerStatus[slotIndex];
 
         if (pending->active) {
             uiServerStatusInfo_t statusInfo;
@@ -85,10 +77,8 @@ void UI_BuildFindPlayerList(qboolean force)
                 int32_t lineIndex;
 
                 ++ui_findPlayerCompletedCount;
-                for (lineIndex = 0; lineIndex < statusInfo.numLines;
-                     ++lineIndex) {
-                    const char *ping =
-                        statusInfo.lines[lineIndex].column[2];
+                for (lineIndex = 0; lineIndex < statusInfo.numLines; ++lineIndex) {
+                    const char *ping = statusInfo.lines[lineIndex].column[2];
                     const char *name;
                     char cleanName[UI_FIND_PLAYER_NAME_COPY_SIZE + 1];
 
@@ -103,38 +93,26 @@ void UI_BuildFindPlayerList(qboolean force)
                         continue;
                     }
 
-                    if (ui_foundPlayerServerCount <
-                        UI_FIND_PLAYER_RESULT_LIMIT) {
+                    if (ui_foundPlayerServerCount < UI_FIND_PLAYER_RESULT_LIMIT) {
                         int32_t result = ui_foundPlayerServerCount;
-                        strncpy(ui_foundPlayerServerAddresses[result],
-                                pending->address,
-                                UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1);
-                        ui_foundPlayerServerAddresses[result]
-                                                           [UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1] = '\0';
-                        strncpy(ui_foundPlayerServerNames[result],
-                                pending->name,
-                                UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1);
-                        ui_foundPlayerServerNames[result]
-                                                       [UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1] = '\0';
+                        strncpy(ui_foundPlayerServerAddresses[result], pending->address, UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1);
+                        ui_foundPlayerServerAddresses[result][UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1] = '\0';
+                        strncpy(ui_foundPlayerServerNames[result], pending->name, UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1);
+                        ui_foundPlayerServerNames[result][UI_FOUND_PLAYER_SERVER_TEXT_SIZE - 1] = '\0';
                         ++ui_foundPlayerServerCount;
                     } else {
                         ui_findPlayerServerIndex = ui_displayServerCount;
                     }
                 }
 
-                Com_sprintf(
-                    ui_foundPlayerServerNames[ui_foundPlayerServerCount],
-                    UI_FIND_PLAYER_TEXT_SIZE, "searching %d/%d...",
-                    ui_findPlayerServerIndex,
-                    ui_findPlayerCompletedCount);
+                Com_sprintf(ui_foundPlayerServerNames[ui_foundPlayerServerCount], UI_FIND_PLAYER_TEXT_SIZE, "searching %d/%d...",
+                            ui_findPlayerServerIndex, ui_findPlayerCompletedCount);
                 pending->active = qfalse;
             }
         }
 
-        if (pending->active &&
-            pending->startTime >= (int32_t)(
-                (uint32_t)ui_displayContextStorage.context.realTime -
-                (uint32_t)ui_serverStatusTimeOut.integer)) {
+        if (pending->active && pending->startTime >= (int32_t)((uint32_t)ui_displayContextStorage.context.realTime -
+                                                               (uint32_t)ui_serverStatusTimeOut.integer)) {
             continue;
         }
         if (pending->active) {
@@ -157,56 +135,43 @@ void UI_BuildFindPlayerList(qboolean force)
         }
 
         pending->startTime = ui_displayContextStorage.context.realTime;
-        ui_compat_lan_get_server_address(
-            (int32_t)ui_netSource,
-            ui_displayServers[ui_findPlayerServerIndex], pending->address,
-            sizeof(pending->address));
+        ui_compat_lan_get_server_address((int32_t)ui_netSource, ui_displayServers[ui_findPlayerServerIndex], pending->address,
+                                         sizeof(pending->address));
         {
             char serverInfo[UI_SERVER_INFO_SIZE];
             const char *hostname;
 
-            ui_compat_lan_get_server_info(
-                (int32_t)ui_netSource,
-                ui_displayServers[ui_findPlayerServerIndex], serverInfo,
-                sizeof(serverInfo));
+            ui_compat_lan_get_server_info((int32_t)ui_netSource, ui_displayServers[ui_findPlayerServerIndex], serverInfo,
+                                          sizeof(serverInfo));
             hostname = Info_ValueForKey(serverInfo, "hostname");
             strncpy(pending->name, hostname, sizeof(pending->name) - 1);
             pending->name[sizeof(pending->name) - 1] = '\0';
         }
         pending->active = qtrue;
-        Com_sprintf(ui_foundPlayerServerNames[ui_foundPlayerServerCount],
-                    UI_FIND_PLAYER_TEXT_SIZE, "searching %d/%d...",
-                    ui_findPlayerServerIndex + 1,
-                    ui_findPlayerCompletedCount);
+        Com_sprintf(ui_foundPlayerServerNames[ui_foundPlayerServerCount], UI_FIND_PLAYER_TEXT_SIZE, "searching %d/%d...",
+                    ui_findPlayerServerIndex + 1, ui_findPlayerCompletedCount);
         ++ui_findPlayerServerIndex;
     }
 
-    for (slotIndex = 0;
-         slotIndex < UI_MAX_FOUND_PLAYER_SERVERS; ++slotIndex) {
+    for (slotIndex = 0; slotIndex < UI_MAX_FOUND_PLAYER_SERVERS; ++slotIndex) {
         if (ui_pendingServerStatus[slotIndex].active) {
-            ui_findPlayerNextRefresh = (int32_t)(
-                (uint32_t)ui_displayContextStorage.context.realTime +
-                (uint32_t)UI_FIND_PLAYER_RETRY_MILLISECONDS);
+            ui_findPlayerNextRefresh =
+                (int32_t)((uint32_t)ui_displayContextStorage.context.realTime + (uint32_t)UI_FIND_PLAYER_RETRY_MILLISECONDS);
             return;
         }
     }
 
     if (ui_foundPlayerServerCount == 0) {
-        Com_sprintf(ui_foundPlayerServerNames[0],
-                    UI_FIND_PLAYER_TEXT_SIZE, "no servers found");
+        Com_sprintf(ui_foundPlayerServerNames[0], UI_FIND_PLAYER_TEXT_SIZE, "no servers found");
     } else {
         int32_t foundCount = ui_foundPlayerServerCount - 1;
         const char *plural = ui_foundPlayerServerCount == 2 ? "" : "s";
 
         /* Final status goes to [count] (count<<6 + 0x402397fc), one slot
          * past the last result, matching the reserved-slot-0 read scheme. */
-        Com_sprintf(
-            ui_foundPlayerServerNames[ui_foundPlayerServerCount],
-            UI_FIND_PLAYER_TEXT_SIZE,
-            "%d server%s found with player %s", foundCount, plural,
-            ui_findPlayerName);
+        Com_sprintf(ui_foundPlayerServerNames[ui_foundPlayerServerCount], UI_FIND_PLAYER_TEXT_SIZE, "%d server%s found with player %s",
+                    foundCount, plural, ui_findPlayerName);
     }
     ui_findPlayerNextRefresh = 0;
-    UI_FeederSelection(UI_FIND_PLAYER_FEEDER,
-                       ui_foundPlayerServerIndex);
+    UI_FeederSelection(UI_FIND_PLAYER_FEEDER, ui_foundPlayerServerIndex);
 }

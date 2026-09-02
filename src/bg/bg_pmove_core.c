@@ -26,19 +26,15 @@
  * below as a complete behavior-selected body.
  */
 
-void PM_trace(trace_t *results, const vec3_t start, const vec3_t mins,
-              const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
+void PM_trace(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int32_t passEntityNum,
               int32_t traceType)
 {
     pm->trace(results, start, mins, maxs, end, passEntityNum, traceType);
 
-    if (results->startsolid != 0 &&
-        (results->contents & (int32_t)CONTENTS_BODY) != 0) {
+    if (results->startsolid != 0 && (results->contents & (int32_t)CONTENTS_BODY) != 0) {
         PM_AddTouchEnt(results->entityNum);
-        pm->traceMask = coduo_int32_from_bits(
-            (uint32_t)pm->traceMask & ~CONTENTS_BODY);
-        traceType = coduo_int32_from_bits(
-            (uint32_t)traceType & ~CONTENTS_BODY);
+        pm->traceMask = coduo_int32_from_bits((uint32_t)pm->traceMask & ~CONTENTS_BODY);
+        traceType = coduo_int32_from_bits((uint32_t)traceType & ~CONTENTS_BODY);
         pm->trace(results, start, mins, maxs, end, passEntityNum, traceType);
     }
 }
@@ -75,18 +71,14 @@ void PM_AddTouchEnt(int32_t entityNum)
 }
 
 #if defined(WINDOWS_BEHAVIOR)
-void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
-                     float overbounce)
+void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output, float overbounce)
 {
     /* Both Windows modules accumulate Y, Z, X and retain the x87 value through
      * the scale and three output expressions.  The original process control
      * word supplies PC=53; long double remains the source-level x87 carrier. */
 #if EMULATE_X87
     x87f backoff = x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(input[1]),
-                          x87f_load_f32(normal[1])),
-                 x87f_mul(x87f_load_f32(normal[2]),
-                          x87f_load_f32(input[2]))),
+        x87f_add(x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(normal[1])), x87f_mul(x87f_load_f32(normal[2]), x87f_load_f32(input[2]))),
         x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(normal[0])));
 
     if (x87f_lt_signaling(backoff, x87f_load_f32(0.0f))) {
@@ -95,20 +87,11 @@ void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
         backoff = x87f_div(backoff, x87f_load_f32(overbounce));
     }
 
-    output[0] = x87f_store_f32(x87f_sub(
-        x87f_load_f32(input[0]),
-        x87f_mul(backoff, x87f_load_f32(normal[0]))));
-    output[1] = x87f_store_f32(x87f_sub(
-        x87f_load_f32(input[1]),
-        x87f_mul(backoff, x87f_load_f32(normal[1]))));
-    output[2] = x87f_store_f32(x87f_sub(
-        x87f_load_f32(input[2]),
-        x87f_mul(backoff, x87f_load_f32(normal[2]))));
+    output[0] = x87f_store_f32(x87f_sub(x87f_load_f32(input[0]), x87f_mul(backoff, x87f_load_f32(normal[0]))));
+    output[1] = x87f_store_f32(x87f_sub(x87f_load_f32(input[1]), x87f_mul(backoff, x87f_load_f32(normal[1]))));
+    output[2] = x87f_store_f32(x87f_sub(x87f_load_f32(input[2]), x87f_mul(backoff, x87f_load_f32(normal[2]))));
 #else
-    long double backoff =
-        (long double)input[1] * normal[1] +
-        (long double)normal[2] * input[2] +
-        (long double)input[0] * normal[0];
+    long double backoff = (long double)input[1] * normal[1] + (long double)normal[2] * input[2] + (long double)input[0] * normal[0];
 
     if (backoff < 0.0f) {
         backoff *= overbounce;
@@ -122,8 +105,7 @@ void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
 #endif
 }
 #else
-void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
-                     float overbounce)
+void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output, float overbounce)
 {
     float backoff;
     int32_t index;
@@ -132,21 +114,15 @@ void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
      * and stores each normal*backoff product before subtracting it. */
 #if EMULATE_X87
     backoff = x87f_store_f32(x87f_add(
-        x87f_add(x87f_mul(x87f_load_f32(input[0]),
-                          x87f_load_f32(normal[0])),
-                 x87f_mul(x87f_load_f32(input[1]),
-                          x87f_load_f32(normal[1]))),
+        x87f_add(x87f_mul(x87f_load_f32(input[0]), x87f_load_f32(normal[0])), x87f_mul(x87f_load_f32(input[1]), x87f_load_f32(normal[1]))),
         x87f_mul(x87f_load_f32(input[2]), x87f_load_f32(normal[2]))));
     if (backoff < 0.0f) {
-        backoff = x87f_store_f32(
-            x87f_mul(x87f_load_f32(backoff), x87f_load_f32(overbounce)));
+        backoff = x87f_store_f32(x87f_mul(x87f_load_f32(backoff), x87f_load_f32(overbounce)));
     } else {
-        backoff = x87f_store_f32(
-            x87f_div(x87f_load_f32(backoff), x87f_load_f32(overbounce)));
+        backoff = x87f_store_f32(x87f_div(x87f_load_f32(backoff), x87f_load_f32(overbounce)));
     }
 #else
-    backoff = input[0] * normal[0] + input[1] * normal[1] +
-              input[2] * normal[2];
+    backoff = input[0] * normal[0] + input[1] * normal[1] + input[2] * normal[2];
     if (backoff < 0.0f) {
         backoff *= overbounce;
     } else {
@@ -158,11 +134,8 @@ void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
         float change;
 
 #if EMULATE_X87
-        change = x87f_store_f32(
-            x87f_mul(x87f_load_f32(normal[index]),
-                     x87f_load_f32(backoff)));
-        output[index] = x87f_store_f32(
-            x87f_sub(x87f_load_f32(input[index]), x87f_load_f32(change)));
+        change = x87f_store_f32(x87f_mul(x87f_load_f32(normal[index]), x87f_load_f32(backoff)));
+        output[index] = x87f_store_f32(x87f_sub(x87f_load_f32(input[index]), x87f_load_f32(change)));
 #else
         change = normal[index] * backoff;
         output[index] = input[index] - change;
@@ -172,12 +145,8 @@ void PM_ClipVelocity(const vec3_t input, const vec3_t normal, vec3_t output,
 #endif
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char bg_pmove_trace_mask_offset[
-    offsetof(pmove_t, traceMask) == 0x34 ? 1 : -1];
-typedef char bg_pmove_numtouch_offset[
-    offsetof(pmove_t, numtouch) == 0x54 ? 1 : -1];
-typedef char bg_pmove_touch_list_offset[
-    offsetof(pmove_t, impactEntityNums) == 0x58 ? 1 : -1];
-typedef char bg_pmove_trace_callback_offset[
-    offsetof(pmove_t, trace) == 0x104 ? 1 : -1];
+typedef char bg_pmove_trace_mask_offset[offsetof(pmove_t, traceMask) == 0x34 ? 1 : -1];
+typedef char bg_pmove_numtouch_offset[offsetof(pmove_t, numtouch) == 0x54 ? 1 : -1];
+typedef char bg_pmove_touch_list_offset[offsetof(pmove_t, impactEntityNums) == 0x58 ? 1 : -1];
+typedef char bg_pmove_trace_callback_offset[offsetof(pmove_t, trace) == 0x104 ? 1 : -1];
 #endif

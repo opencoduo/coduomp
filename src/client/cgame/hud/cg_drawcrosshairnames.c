@@ -139,12 +139,12 @@ void CG_DrawCrosshairNames(void)
         //   frac >  0.5 (healthy side): R = 2*(1 - frac), G = 1
         color[2] = 0.0f;
         if (!(frac > 0.5f)) {
-            color[0] = 1.0f;                  // 0x3001a759 MOV [ESP+8],1.0
-            color[1] = (float)(frac + frac);  // 0x3001a757 FADD ST0,ST0; FSTP [ESP+0xc]
+            color[0] = 1.0f; // 0x3001a759 MOV [ESP+8],1.0
+            color[1] = (float)(frac + frac); // 0x3001a757 FADD ST0,ST0; FSTP [ESP+0xc]
         } else {
             long double red = 1.0L - frac;
-            color[0] = (float)(red + red);   // 0x3001a745 FSUB; FADD ST0,ST0
-            color[1] = 1.0f;                 // 0x3001a777 MOV [ESP+0xc],1.0
+            color[0] = (float)(red + red); // 0x3001a745 FSUB; FADD ST0,ST0
+            color[1] = 1.0f; // 0x3001a777 MOV [ESP+0xc],1.0
         }
     } else {
         // 0x3001a767..0x3001a77d: white.
@@ -160,7 +160,5 @@ void CG_DrawCrosshairNames(void)
     // The push order proves the slot mapping:
     //   a0 = 345.0 (x), a1 = 217.0 (y), a2 = 0, a3 = 0.25 (scale),
     //   a4 = &color, a5 = name, a6 = 0, a7 = 0, a8 = 3 (style/flags).
-    trap_R_Text_Paint(CG_FloatBits(345.0f), CG_FloatBits(217.0f),
-              0, CG_FloatBits(0.25f), (intptr_t)color,
-              (intptr_t)name, 0, 0, 3);
+    trap_R_Text_Paint(CG_FloatBits(345.0f), CG_FloatBits(217.0f), 0, CG_FloatBits(0.25f), (intptr_t)color, (intptr_t)name, 0, 0, 3);
 }

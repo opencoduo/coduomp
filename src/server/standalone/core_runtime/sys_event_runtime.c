@@ -27,8 +27,7 @@ static qboolean coduomp_sys_pop_queued_event(sysEvent_t *event)
         return qfalse;
     }
 
-    int32_t eventIndex =
-        sys_eventQueueConsumer & SYS_EVENT_QUEUE_INDEX_MASK;
+    int32_t eventIndex = sys_eventQueueConsumer & SYS_EVENT_QUEUE_INDEX_MASK;
     ++sys_eventQueueConsumer;
     *event = sys_eventQueue[eventIndex];
     return qtrue;
@@ -72,19 +71,12 @@ void Sys_ShutdownStreamThread(void)
 {
 }
 
-void Sys_QueEvent(int32_t time,
-                  int32_t type,
-                  int32_t value,
-                  int32_t value2,
-                  int32_t payloadLength,
-                  void *payload)
+void Sys_QueEvent(int32_t time, int32_t type, int32_t value, int32_t value2, int32_t payloadLength, void *payload)
 {
-    int32_t eventIndex =
-        sys_eventQueueProducer & SYS_EVENT_QUEUE_INDEX_MASK;
+    int32_t eventIndex = sys_eventQueueProducer & SYS_EVENT_QUEUE_INDEX_MASK;
     sysEvent_t *event = &sys_eventQueue[eventIndex];
 
-    if (SYS_EVENT_QUEUE_OVERFLOW_DISTANCE <
-        sys_eventQueueProducer - sys_eventQueueConsumer) {
+    if (SYS_EVENT_QUEUE_OVERFLOW_DISTANCE < sys_eventQueueProducer - sys_eventQueueConsumer) {
         Com_Printf("Sys_QueEvent: overflow\n");
         if (event->payload != NULL) {
             Z_FreeInternal(event->payload);
@@ -121,9 +113,7 @@ sysEvent_t Sys_GetEvent(void)
         char *payload = Z_MallocInternal(inputLength + 1);
 
         strcpy(payload, consoleInput);
-        Sys_QueEvent(0, SYS_EVENT_CONSOLE, 0, 0,
-                     (int32_t)(inputLength + 1),
-                     payload);
+        Sys_QueEvent(0, SYS_EVENT_CONSOLE, 0, 0, (int32_t)(inputLength + 1), payload);
     }
 
     Sys_Input();
@@ -132,15 +122,12 @@ sysEvent_t Sys_GetEvent(void)
 
     MSG_Init(&msg, sys_packetBuffer, MAX_MSGLEN);
     if (Sys_GetPacket(&from, &msg) != qfalse) {
-        int32_t payloadLength =
-            SYS_PACKET_EVENT_ADDRESS_BYTES + msg.cursize;
+        int32_t payloadLength = SYS_PACKET_EVENT_ADDRESS_BYTES + msg.cursize;
         uint8_t *payload = Z_MallocInternal(payloadLength);
 
         memcpy(payload, &from, SYS_PACKET_EVENT_ADDRESS_BYTES);
-        memcpy(&payload[SYS_PACKET_EVENT_ADDRESS_BYTES], msg.data,
-               (size_t)msg.cursize);
-        Sys_QueEvent(0, SYS_EVENT_PACKET, 0, 0, payloadLength,
-                     payload);
+        memcpy(&payload[SYS_PACKET_EVENT_ADDRESS_BYTES], msg.data, (size_t)msg.cursize);
+        Sys_QueEvent(0, SYS_EVENT_PACKET, 0, 0, payloadLength, payload);
     }
 
     if (coduomp_sys_pop_queued_event(&event) != qfalse) {

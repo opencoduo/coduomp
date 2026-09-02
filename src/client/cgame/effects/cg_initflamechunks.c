@@ -58,9 +58,7 @@ void CG_InitFlameChunks(void)
      * i386 request is 0x2a0000 == FLAME_CHUNK_COUNT * sizeof(flameChunk_t).
      * sizeof keeps that exact request on i386 and accommodates widened intrusive
      * list pointers in the native 64-bit record. */
-    cg_flameChunks = (flameChunk_t *)(intptr_t)cgame_syscall(
-        CG_Z_MALLOC_INTERNAL,
-        (int)((size_t)FLAME_CHUNK_COUNT * sizeof(flameChunk_t)));
+    cg_flameChunks = (flameChunk_t *)(intptr_t)cgame_syscall(CG_Z_MALLOC_INTERNAL, (int)((size_t)FLAME_CHUNK_COUNT * sizeof(flameChunk_t)));
 
     /* 0x300279f8: thread the pool into the free list and clear the flame-info region. */
     CG_ClearFlameChunks();
@@ -81,10 +79,8 @@ void CG_InitFlameChunks(void)
 
     /* 0x30027a65 / 0x30027a75: register the two flamethrower smoke effects.
      * Args pushed name then 0xe2, so the id is 0xe2 and the payload is the name. */
-    cg_flameSmokeEffect = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, "fx/smoke/smoke_flamethrower.efx"));
-    cg_flameSmokeEffectLarge = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, "fx/smoke/smoke_flamethrower_lg.efx"));
+    cg_flameSmokeEffect = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, "fx/smoke/smoke_flamethrower.efx"));
+    cg_flameSmokeEffectLarge = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FX_REGISTER_EFFECT, "fx/smoke/smoke_flamethrower_lg.efx"));
 
     /* 0x30027a99: MOV dword ptr [0x300851e0],0 — flame-subsystem dword reset to 0 as
      * the final init step (role provisional; single write, no reader recovered). */

@@ -80,8 +80,7 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
             centity_t *proxy = cg_entities + proxyNum;
             /* 0x30021d50..0x30021d92: six raw dword copies of lerpOrigin and
              * lerpAngles. The two vec3s are contiguous in centity_t. */
-            memcpy(entity->lerpOrigin, proxy->lerpOrigin,
-                   sizeof(entity->lerpOrigin) + sizeof(entity->lerpAngles));
+            memcpy(entity->lerpOrigin, proxy->lerpOrigin, sizeof(entity->lerpOrigin) + sizeof(entity->lerpAngles));
             return;
         }
         /* proxyNum == 0x3ff falls through to the derive path (0x30021d43 JZ). */
@@ -90,8 +89,7 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
     /* 0x30021d9a: on the position trajectory type, some entities use a separate
      * smoothing routine (0x30021bb0) instead of the direct trajectory evaluation. */
     trType_t posTrType = state->currentState.pos.trType;                         /* +0xc */
-    if (posTrType == TR_INTERPOLATE ||
-        (posTrType == TR_LINEAR_STOP && state->currentState.number < 0x40)) {    /* number < MAX_CLIENTS */
+    if (posTrType == TR_INTERPOLATE || (posTrType == TR_LINEAR_STOP && state->currentState.number < 0x40)) {    /* number < MAX_CLIENTS */
         /* 0x30021db2: ESI = entity; 0x30021db4 tail-call the sibling. */
         CG_InterpolateEntityPosition(entity);
         return;
@@ -99,10 +97,8 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
 
     /* 0x30021dbd..0x30021de0: evaluate the pos/apos trajectories at cg_time.
      * BG_EvaluateTrajectory register ABI: EAX=atTime(cg_time), ECX=out, EBX=tr. */
-    BG_EvaluateTrajectory(&state->currentState.pos,
-                          coduo_int32_from_bits(cg_time), entity->lerpOrigin);
-    BG_EvaluateTrajectory(&state->currentState.apos,
-                          coduo_int32_from_bits(cg_time), entity->lerpAngles);
+    BG_EvaluateTrajectory(&state->currentState.pos, coduo_int32_from_bits(cg_time), entity->lerpOrigin);
+    BG_EvaluateTrajectory(&state->currentState.apos, coduo_int32_from_bits(cg_time), entity->lerpAngles);
 
     /* 0x30021de5: select the per-entity 0x4d0-stride state record whose shared
      * angle block (+0x3e0) receives the derived view angles. */
@@ -112,7 +108,8 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
         const int32_t clientNum = state->currentState.clientNum;
         if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
             Com_Error(ERR_DROP,
-                      "\x15" "CG_CalcEntityLerpPositions: "
+                      "\x15"
+                      "CG_CalcEntityLerpPositions: "
                       "invalid client number %i",
                       clientNum);
             return;
@@ -122,18 +119,16 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
     } else if (state->currentState.eType == ET_PLAYER_CORPSE) {
         /* 0x30021e07: cg_corpseInfo[number - 0x40] (stride 0x4d0). */
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        uint32_t corpseIndex =
-            (uint32_t)state->currentState.number -
-            (uint32_t)PLAYER_CLONE_ENTITYNUM_BASE;
+        uint32_t corpseIndex = (uint32_t)state->currentState.number - (uint32_t)PLAYER_CLONE_ENTITYNUM_BASE;
         if (corpseIndex >= (uint32_t)PLAYER_CLONE_COUNT) {
             Com_Error(ERR_DROP,
-                      "\x15" "CG_CalcEntityLerpPositions: "
+                      "\x15"
+                      "CG_CalcEntityLerpPositions: "
                       "invalid player clone entity %i",
                       state->currentState.number);
             return;
         }
-        block = (cgLerpAngleBlock_t *)(void *)
-            &cg_corpseInfo[corpseIndex].leanAmount;
+        block = (cgLerpAngleBlock_t *)(void *)&cg_corpseInfo[corpseIndex].leanAmount;
     }
 
     if (block != NULL) {
@@ -154,8 +149,7 @@ void CG_CalcEntityLerpPositions(centity_t *entity)
     if (entity != &cg_predictedEventEntity) {
         /* 0x30021e5d..0x30021e73: mover-lag-correct lerpOrigin in place.
          * fromTime = cg_snap->serverTime, toTime = cg_time, angleDelta = NULL. */
-        CG_AdjustPositionForMover(entity->lerpOrigin, state->currentState.groundEntityNum,
-                                  cg_snap->serverTime, coduo_int32_from_bits(cg_time),
-                                  entity->lerpOrigin, NULL);
+        CG_AdjustPositionForMover(entity->lerpOrigin, state->currentState.groundEntityNum, cg_snap->serverTime,
+                                  coduo_int32_from_bits(cg_time), entity->lerpOrigin, NULL);
     }
 }

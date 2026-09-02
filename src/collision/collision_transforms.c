@@ -37,11 +37,9 @@ void RotatePoint(vec3_t point, const axis_t matrix)
     const x87f z = x87f_load_f32(point[2]);
 
     for (int32_t row = 0; row < 3; ++row) {
-        point[row] = x87f_store_f32(x87f_add(
-            x87f_add(
-                x87f_mul(z, x87f_load_f32(matrix[row][2])),
-                x87f_mul(y, x87f_load_f32(matrix[row][1]))),
-            x87f_mul(x, x87f_load_f32(matrix[row][0]))));
+        point[row] =
+            x87f_store_f32(x87f_add(x87f_add(x87f_mul(z, x87f_load_f32(matrix[row][2])), x87f_mul(y, x87f_load_f32(matrix[row][1]))),
+                                    x87f_mul(x, x87f_load_f32(matrix[row][0]))));
     }
 #else
     const long double x = (long double)point[0];
@@ -49,10 +47,7 @@ void RotatePoint(vec3_t point, const axis_t matrix)
     const long double z = (long double)point[2];
 
     for (int32_t row = 0; row < 3; ++row) {
-        point[row] = (float)(
-            (z * (long double)matrix[row][2] +
-             y * (long double)matrix[row][1]) +
-            x * (long double)matrix[row][0]);
+        point[row] = (float)((z * (long double)matrix[row][2] + y * (long double)matrix[row][1]) + x * (long double)matrix[row][0]);
     }
 #endif
 }
@@ -66,17 +61,13 @@ void RotatePoint(vec3_t point, const axis_t matrix)
 #if EMULATE_X87
     for (int32_t row = 0; row < 3; ++row) {
         point[row] = x87f_store_f32(x87f_add(
-            x87f_add(
-                x87f_mul(x87f_load_f32(matrix[row][0]), x87f_load_f32(x)),
-                x87f_mul(x87f_load_f32(matrix[row][1]), x87f_load_f32(y))),
+            x87f_add(x87f_mul(x87f_load_f32(matrix[row][0]), x87f_load_f32(x)), x87f_mul(x87f_load_f32(matrix[row][1]), x87f_load_f32(y))),
             x87f_mul(x87f_load_f32(matrix[row][2]), x87f_load_f32(z))));
     }
 #else
     for (int32_t row = 0; row < 3; ++row) {
-        point[row] = (float)(
-            ((long double)matrix[row][0] * (long double)x +
-             (long double)matrix[row][1] * (long double)y) +
-            (long double)matrix[row][2] * (long double)z);
+        point[row] = (float)(((long double)matrix[row][0] * (long double)x + (long double)matrix[row][1] * (long double)y) +
+                             (long double)matrix[row][2] * (long double)z);
     }
 #endif
 }

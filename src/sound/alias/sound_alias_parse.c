@@ -19,36 +19,27 @@ enum {
 /* Original Windows pointer table 0x005c51a4.
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * ten ordered sound-channel name targets. */
-static const char *const soundAliasChannelNames[SND_ALIAS_CHANNEL_COUNT] = {
-        "auto",      "menu",  "weapon",    "voice",      "item",
-        "body",      "local", "music",     "announcer",  "shellshock"
-};
+static const char *const soundAliasChannelNames[SND_ALIAS_CHANNEL_COUNT] = {"auto", "menu",  "weapon", "voice",     "item",
+                                                                            "body", "local", "music",  "announcer", "shellshock"};
 
 /* Original Windows 19-entry field-name table at 0x005c5158, shared by CSV
  * loading and the developer localization rewrite path.
  * PE_RELOCATION_VALUES_VERIFIED: verify_relocated_initializers.py follows all
  * 19 original pointers, including the leading NULL. */
-const char *const soundAliasFieldNames
-    [SND_ALIAS_FIELD_COUNT] = {
-        NULL,         "name",        "sequence", "file",
-        "subtitle",  "vol_min",     "vol_max",  "pitch_min",
-        "pitch_max", "dist_min",    "dist_max", "channel",
-        "type",      "loop",        "probability",
-        "loadspec",  "masterslave", "lod_min",  "lod_max"
-};
+const char *const soundAliasFieldNames[SND_ALIAS_FIELD_COUNT] = {
+    NULL,       "name",    "sequence", "file", "subtitle",    "vol_min",  "vol_max",     "pitch_min", "pitch_max", "dist_min",
+    "dist_max", "channel", "type",     "loop", "probability", "loadspec", "masterslave", "lod_min",   "lod_max"};
 
 /* CoDUOMP.exe 0x00436770..0x00436824 and coduo_lnxded
  * 0x0806c9c8..0x0806cae6; canonical name confirmed by the supporting Mac
  * engine symbol. */
-void Com_LoadSoundAliasDefaults(snd_alias_parse_node_t *node,
-                                 qboolean defaultLoadspec)
+void Com_LoadSoundAliasDefaults(snd_alias_parse_node_t *node, qboolean defaultLoadspec)
 {
     const size_t sourceFileLength = strlen(com_soundAliasCurrentFile);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (sourceFileLength >= sizeof(node->sourceFile)) {
-        Com_Error(ERR_DROP, "\x15Sound alias source filename exceeds %i bytes",
-                  (int32_t)sizeof(node->sourceFile) - 1);
+        Com_Error(ERR_DROP, "\x15Sound alias source filename exceeds %i bytes", (int32_t)sizeof(node->sourceFile) - 1);
         return;
     }
     strcpy(node->sourceFile, com_soundAliasCurrentFile);
@@ -84,18 +75,15 @@ sndAliasChannel_t Com_SoundAliasChannelForName(const char *text)
     int length;
     int channel;
 
-    for (channel = 0; channel < SND_ALIAS_CHANNEL_COUNT;
-         channel++) {
+    for (channel = 0; channel < SND_ALIAS_CHANNEL_COUNT; channel++) {
         if (Q_stricmp(text, soundAliasChannelNames[channel]) == 0) {
             return channel;
         }
     }
 
     length = 0;
-    for (channel = 0; channel < SND_ALIAS_CHANNEL_COUNT;
-         channel++) {
-        length += sprintf(expectedChannels + length, "%s",
-                          soundAliasChannelNames[channel]);
+    for (channel = 0; channel < SND_ALIAS_CHANNEL_COUNT; channel++) {
+        length += sprintf(expectedChannels + length, "%s", soundAliasChannelNames[channel]);
         if (channel < SND_ALIAS_CHANNEL_ANNOUNCER) {
             length += sprintf(expectedChannels + length, ", ");
         } else if (channel == SND_ALIAS_CHANNEL_ANNOUNCER) {
@@ -104,8 +92,9 @@ sndAliasChannel_t Com_SoundAliasChannelForName(const char *text)
     }
 
     Com_Error(ERR_DROP,
-              "\x15" "Sound alias file %s: Unknown sound channel '%s'; "
-                     "should be %s\n",
+              "\x15"
+              "Sound alias file %s: Unknown sound channel '%s'; "
+              "should be %s\n",
               com_soundAliasCurrentFile, text, expectedChannels);
     return SND_ALIAS_CHANNEL_AUTO;
 }
@@ -124,8 +113,9 @@ sndAliasType_t Com_SoundAliasTypeForName(const char *text)
     }
 
     Com_Error(ERR_DROP,
-              "\x15" "Sound alias file %s: Unknown sound type '%s'; "
-                     "should be streamed or loaded\n",
+              "\x15"
+              "Sound alias file %s: Unknown sound type '%s'; "
+              "should be streamed or loaded\n",
               com_soundAliasCurrentFile, text);
     return SND_ALIAS_TYPE_UNKNOWN;
 }
@@ -144,8 +134,9 @@ qboolean Com_SoundAliasLoop(const char *text)
     }
 
     Com_Error(ERR_DROP,
-              "\x15" "Sound alias file %s: Unknown sound looping type '%s'; "
-                     "should be looping or nonlooping\n",
+              "\x15"
+              "Sound alias file %s: Unknown sound looping type '%s'; "
+              "should be looping or nonlooping\n",
               com_soundAliasCurrentFile, text);
     return qfalse;
 }
@@ -153,8 +144,7 @@ qboolean Com_SoundAliasLoop(const char *text)
 /* CoDUOMP.exe 0x004369d0..0x00436c77 and coduo_lnxded
  * 0x0806ccfb..0x0806d096; canonical name confirmed by the supporting Mac
  * engine symbol. */
-qboolean Com_SoundAliasLoadSpec(const char *sourceFile,
-                                const char *text)
+qboolean Com_SoundAliasLoadSpec(const char *sourceFile, const char *text)
 {
     size_t sourceLength;
     char loadspec[SOUND_ALIAS_LOADSPEC_COPY_SIZE];
@@ -168,8 +158,9 @@ qboolean Com_SoundAliasLoadSpec(const char *sourceFile,
     strncpy(loadspec, text, sizeof(loadspec));
     if (loadspec[SOUND_ALIAS_LOADSPEC_MAX_CHARS] != '\0') {
         Com_Error(ERR_DROP,
-                  "\x15" "Sound alias file %s: loadspec is > %i "
-                         "characters\n",
+                  "\x15"
+                  "Sound alias file %s: loadspec is > %i "
+                  "characters\n",
                   com_soundAliasCurrentFile, SOUND_ALIAS_LOADSPEC_MAX_CHARS);
     }
 
@@ -184,30 +175,24 @@ qboolean Com_SoundAliasLoadSpec(const char *sourceFile,
             }
         } while (*cursor != '\0');
 
-        if (strcmp(sourceFile, "menu") == 0 &&
-            strstr(cursor, "menu") == NULL) {
+        if (strcmp(sourceFile, "menu") == 0 && strstr(cursor, "menu") == NULL) {
             return 0;
         }
 
         match = strstr(cursor, "all_");
-        if (match != NULL &&
-            strncmp(match, "all_mp", SOUND_ALIAS_ALL_MP_COMPARE_CHARS) == 0) {
+        if (match != NULL && strncmp(match, "all_mp", SOUND_ALIAS_ALL_MP_COMPARE_CHARS) == 0) {
             return 0;
         }
 
         if (fs_gameDirVar[0] != '\0') {
             match = strstr(cursor, "game_");
-            if (match != NULL &&
-                strncmp(match + SOUND_ALIAS_GAME_PREFIX_CHARS,
-                        fs_gameDirVar,
-                        strlen(fs_gameDirVar)) == 0) {
+            if (match != NULL && strncmp(match + SOUND_ALIAS_GAME_PREFIX_CHARS, fs_gameDirVar, strlen(fs_gameDirVar)) == 0) {
                 return 0;
             }
         }
 
         while ((cursor = strstr(cursor, sourceFile)) != NULL) {
-            if ((cursor == loadspec ||
-                 cursor[-1] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) &&
+            if ((cursor == loadspec || cursor[-1] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) &&
                 cursor[sourceLength] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) {
                 return 0;
             }
@@ -218,9 +203,7 @@ qboolean Com_SoundAliasLoadSpec(const char *sourceFile,
     }
 
     while ((match = strstr(cursor, sourceFile)) != NULL) {
-        if ((match == loadspec ||
-             match[-1] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) &&
-            match[sourceLength] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) {
+        if ((match == loadspec || match[-1] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) && match[sourceLength] < SOUND_ALIAS_TOKEN_BOUNDARY_MIN) {
             return 1;
         }
         cursor = match + 1;
@@ -243,9 +226,7 @@ qboolean Com_SoundAliasLoadSpec(const char *sourceFile,
         match = strstr(cursor, "game_");
         if (match != NULL) {
             foundModifier = qtrue;
-            if (strncmp(match + SOUND_ALIAS_GAME_PREFIX_CHARS,
-                        fs_gameDirVar,
-                        strlen(fs_gameDirVar)) != 0) {
+            if (strncmp(match + SOUND_ALIAS_GAME_PREFIX_CHARS, fs_gameDirVar, strlen(fs_gameDirVar)) != 0) {
                 return 0;
             }
         }
@@ -261,8 +242,7 @@ qboolean Com_SoundAliasLoadSpec(const char *sourceFile,
 /* CoDUOMP.exe 0x00436c80..0x00436cbd and coduo_lnxded
  * 0x0806d096..0x0806d0f7; canonical name confirmed by the supporting Mac
  * engine symbol. */
-void Com_SoundAliasMasterSlave(const char *text,
-                               snd_alias_parse_node_t *node)
+void Com_SoundAliasMasterSlave(const char *text, snd_alias_parse_node_t *node)
 {
     if (Q_stricmp(text, "master") == 0) {
         node->isMaster = 1;
@@ -277,11 +257,8 @@ void Com_SoundAliasMasterSlave(const char *text,
 /* CoDUOMP.exe 0x00436cc0..0x00436f86 and coduo_lnxded
  * 0x0806d0f8..0x0806d4ad; canonical name confirmed by the supporting Mac
  * engine symbol. */
-void Com_LoadSoundAliasField(
-    const char *sourceFile, const char *text,
-    sndAliasField_t column,
-    uint8_t seenColumns[SND_ALIAS_FIELD_COUNT],
-    snd_alias_parse_node_t *node)
+void Com_LoadSoundAliasField(const char *sourceFile, const char *text, sndAliasField_t column, uint8_t seenColumns[SND_ALIAS_FIELD_COUNT],
+                             snd_alias_parse_node_t *node)
 {
     size_t length;
     int index;
@@ -292,8 +269,9 @@ void Com_LoadSoundAliasField(
 
     if (seenColumns[column] != 0) {
         Com_Error(ERR_DROP,
-                  "\x15" "Sound alias file %s: Duplicate entries for the "
-                         "'%s' column\n",
+                  "\x15"
+                  "Sound alias file %s: Duplicate entries for the "
+                  "'%s' column\n",
                   com_soundAliasCurrentFile, soundAliasFieldNames[column]);
     }
 
@@ -304,15 +282,16 @@ void Com_LoadSoundAliasField(
         length = strlen(text);
         if (length >= sizeof(node->aliasName) - 1) {
             Com_Error(ERR_DROP,
-                      "\x15" "Sound alias file %s: Alias name '%s' is "
-                             "longer than %i characters\n",
-                      com_soundAliasCurrentFile, text,
-                      (int)(sizeof(node->aliasName) - 1));
+                      "\x15"
+                      "Sound alias file %s: Alias name '%s' is "
+                      "longer than %i characters\n",
+                      com_soundAliasCurrentFile, text, (int)(sizeof(node->aliasName) - 1));
         }
         if (Com_IsValidAliasName(text) == qfalse) {
             Com_Error(ERR_DROP,
-                      "\x15" "Sound alias file %s: Alias name '%s' is "
-                             "invalid\n",
+                      "\x15"
+                      "Sound alias file %s: Alias name '%s' is "
+                      "invalid\n",
                       com_soundAliasCurrentFile, text);
         }
         strcpy(node->aliasName, text);
@@ -324,10 +303,10 @@ void Com_LoadSoundAliasField(
         length = strlen(text);
         if (length >= sizeof(node->soundFile) - 1) {
             Com_Error(ERR_DROP,
-                      "\x15" "Sound alias file %s: Sound file '%s' is "
-                             "longer than %i characters\n",
-                      com_soundAliasCurrentFile, text,
-                      (int)(sizeof(node->soundFile) - 1));
+                      "\x15"
+                      "Sound alias file %s: Sound file '%s' is "
+                      "longer than %i characters\n",
+                      com_soundAliasCurrentFile, text, (int)(sizeof(node->soundFile) - 1));
         }
         strcpy(node->soundFile, text);
         break;
@@ -335,19 +314,18 @@ void Com_LoadSoundAliasField(
         length = strlen(text);
         if (length >= sizeof(node->subtitle) - 1) {
             Com_Error(ERR_DROP,
-                      "\x15" "Sound alias file %s: Subtitle '%s' is longer "
-                             "than %i characters\n",
-                      com_soundAliasCurrentFile, text,
-                      (int)(sizeof(node->subtitle) - 1));
+                      "\x15"
+                      "Sound alias file %s: Subtitle '%s' is longer "
+                      "than %i characters\n",
+                      com_soundAliasCurrentFile, text, (int)(sizeof(node->subtitle) - 1));
         }
         for (index = 0; text[index] != '\0'; index++) {
             if ((signed char)text[index] < 0) {
                 Com_Error(ERR_DROP,
-                          "\x15" "Sound alias file %s: Subtitle '%s' has "
-                                 "invalid character '%c' ascii %i\n",
-                          com_soundAliasCurrentFile, text,
-                          (int)(signed char)text[index],
-                          (unsigned char)text[index]);
+                          "\x15"
+                          "Sound alias file %s: Subtitle '%s' has "
+                          "invalid character '%c' ascii %i\n",
+                          com_soundAliasCurrentFile, text, (int)(signed char)text[index], (unsigned char)text[index]);
             }
         }
         strcpy(node->subtitle, text);
@@ -389,8 +367,7 @@ void Com_LoadSoundAliasField(
         node->selectionWeight = (float)atof(text);
         break;
     case SND_ALIAS_FIELD_LOAD_SPEC:
-        node->matchesLoadSpecification =
-            Com_SoundAliasLoadSpec(sourceFile, text);
+        node->matchesLoadSpecification = Com_SoundAliasLoadSpec(sourceFile, text);
         break;
     case SND_ALIAS_FIELD_MASTER_SLAVE:
         Com_SoundAliasMasterSlave(text, node);

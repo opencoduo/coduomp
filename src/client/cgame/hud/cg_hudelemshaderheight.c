@@ -39,8 +39,7 @@
  *   - duration <= 0                       (signed JLE at 0x3002999e)
  *   - elapsed  >= duration                (signed JGE at 0x300299af)
  */
-long double CG_HudElemShaderHeight(const hudElem_t *elem,
-                                 const cgAlignedDrawItem *item)
+long double CG_HudElemShaderHeight(const hudElem_t *elem, const cgAlignedDrawItem *item)
 {
     /* Float faithfulness: this function performs NO float store anywhere
      * (0x30029980..0x300299dc contains not one FST/FSTP DWORD). goal, prev and
@@ -70,8 +69,7 @@ long double CG_HudElemShaderHeight(const hudElem_t *elem,
     }
 
     /* elapsed = cg.time - startTime (signed subtract; stored at [ESP+8]). */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time -
-                                      (uint32_t)elem->scaleStartTime);
+    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)elem->scaleStartTime);
     if (elapsed >= duration) {
         return goal;                      /* JGE 0x300299d9: window elapsed, ST0 = goal */
     }
@@ -92,8 +90,7 @@ long double CG_HudElemShaderHeight(const hudElem_t *elem,
      * The 1.0f is floatOne (bit pattern 0x3f800000). Note FIMUL consumes the
      * INTEGER elapsed straight into the x87 chain -- there is no float
      * conversion of elapsed in the instruction stream. */
-    const long double frac =
-        (1.0f / (long double)duration) * (long double)elapsed;
+    const long double frac = (1.0f / (long double)duration) * (long double)elapsed;
 
     /* 300299d1 FXCH ST2 / 300299d3 FSUB ST0,ST1 -> (goal - prev)
      * 300299d5 FMULP ST2               -> frac * (goal - prev)

@@ -30,9 +30,7 @@ int32_t sysMsgTime; /* original 0x0489bc2c */
 /* Source: CoDUOMP.exe 0x0046ba10..0x0046bac0.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0046ba10_0046bac1.mcode.
  * Name and signature: exact same-module Mac symbol Sys_QueEvent. */
-void Sys_QueEvent(int32_t time, sysEventType_t type,
-                  int32_t value, int32_t value2,
-                  int32_t payloadLength, void *payload)
+void Sys_QueEvent(int32_t time, sysEventType_t type, int32_t value, int32_t value2, int32_t payloadLength, void *payload)
 {
     sysEvent_t *event = &eventQueue[eventHead & SYS_EVENT_QUEUE_MASK];
 
@@ -65,8 +63,7 @@ void Sys_QueEvent(int32_t time, sysEventType_t type,
 void Sys_ClearEventQueue(void)
 {
     while (eventTail < eventHead) {
-        sysEvent_t *const event =
-            &eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
+        sysEvent_t *const event = &eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
         ++eventTail;
         if (event->payload != NULL)
             free(event->payload);
@@ -85,11 +82,8 @@ void Sys_PumpEvents(void)
 #if defined(_WIN32)
     MSG message;
 
-    if (PeekMessageA(
-            &message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST,
-            PM_NOREMOVE) != FALSE &&
-        GetMessageA(
-            &message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST) > 0) {
+    if (PeekMessageA(&message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST, PM_NOREMOVE) != FALSE &&
+        GetMessageA(&message, NULL, WM_POWERBROADCAST, WM_POWERBROADCAST) > 0) {
         TranslateMessage(&message);
         DispatchMessageA(&message);
     }
@@ -109,16 +103,14 @@ void Sys_PumpEvents(void)
 sysEvent_t Sys_GetEvent(void)
 {
     if (eventHead > eventTail) {
-        const sysEvent_t event =
-            eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
+        const sysEvent_t event = eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
         ++eventTail;
         return event;
     }
 
 #if defined(_WIN32)
     MSG windowMessage;
-    while (PeekMessageA(
-               &windowMessage, NULL, 0, 0, PM_NOREMOVE) != FALSE) {
+    while (PeekMessageA(&windowMessage, NULL, 0, 0, PM_NOREMOVE) != FALSE) {
         if (GetMessageA(&windowMessage, NULL, 0, 0) == FALSE)
             Com_Quit_f();
 
@@ -129,8 +121,7 @@ sysEvent_t Sys_GetEvent(void)
 #else
     CoduoSDL_PumpEvents();
     if (eventHead > eventTail) {
-        const sysEvent_t event =
-            eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
+        const sysEvent_t event = eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
         ++eventTail;
         return event;
     }
@@ -138,46 +129,33 @@ sysEvent_t Sys_GetEvent(void)
 
     char *const consoleLine = Sys_ConsoleInput();
     if (consoleLine != NULL) {
-        const int32_t payloadLength =
-            (int32_t)strlen(consoleLine) + 1;
-        char *const payload = Z_MallocInternal(
-            (size_t)payloadLength);
+        const int32_t payloadLength = (int32_t)strlen(consoleLine) + 1;
+        char *const payload = Z_MallocInternal((size_t)payloadLength);
 
         /* Sys_ConsoleInput includes a trailing newline. The original copies
          * through the preceding character, replaces that newline with NUL,
          * and retains strlen(line)+1 as the owned payload allocation/length. */
         strncpy(payload, consoleLine, (size_t)payloadLength - 2);
         payload[payloadLength - 2] = '\0';
-        Sys_QueEvent(
-            0, SE_CONSOLE, 0, 0, payloadLength, payload);
+        Sys_QueEvent(0, SE_CONSOLE, 0, 0, payloadLength, payload);
     }
 
     msg_t packetMessage;
     netadr_t packetAddress;
-    MSG_Init(
-        &packetMessage, sysPacketBuffer,
-        (int32_t)sizeof(sysPacketBuffer));
+    MSG_Init(&packetMessage, sysPacketBuffer, (int32_t)sizeof(sysPacketBuffer));
 
     if (Sys_GetPacket(&packetAddress, &packetMessage) != qfalse) {
-        const int32_t unreadLength =
-            packetMessage.cursize - packetMessage.readcount;
-        const int32_t payloadLength =
-            (int32_t)sizeof(packetAddress) + unreadLength;
-        uint8_t *const payload = Z_MallocInternal(
-            (size_t)payloadLength);
+        const int32_t unreadLength = packetMessage.cursize - packetMessage.readcount;
+        const int32_t payloadLength = (int32_t)sizeof(packetAddress) + unreadLength;
+        uint8_t *const payload = Z_MallocInternal((size_t)payloadLength);
 
         memcpy(payload, &packetAddress, sizeof(packetAddress));
-        memcpy(
-            payload + sizeof(packetAddress),
-            packetMessage.data + packetMessage.readcount,
-            (size_t)unreadLength);
-        Sys_QueEvent(
-            0, SE_PACKET, 0, 0, payloadLength, payload);
+        memcpy(payload + sizeof(packetAddress), packetMessage.data + packetMessage.readcount, (size_t)unreadLength);
+        Sys_QueEvent(0, SE_PACKET, 0, 0, payloadLength, payload);
     }
 
     if (eventHead > eventTail) {
-        const sysEvent_t event =
-            eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
+        const sysEvent_t event = eventQueue[eventTail & SYS_EVENT_QUEUE_MASK];
         ++eventTail;
         return event;
     }

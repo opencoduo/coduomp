@@ -44,19 +44,19 @@
 /* .rdata float/double constants used by this function (dumped at the exact
  * addresses via objdump -s -j .rdata). */
 #define COMPASS_MAX_DELTA_MS (500.0f)   /* 0x3007beec: snap if elapsed > 500 ms */
-#define COMPASS_MAX_STEP     (10.0)     /* 0x3007bd30 (double): cap chased error to 10 deg */
-#define COMPASS_STEP_NEG     (-10.0f)   /* 0x3007bda0: clamped step, negative side */
-#define COMPASS_STEP_POS     (10.0f)    /* 0x3007bda4: clamped step, positive side */
-#define MS_PER_SEC           (0.001f)   /* 0x3007bd94: ms -> seconds */
-#define SETTLE_DELTA         (0.5)      /* 0x3007bd28 (double): settle if |step| < 0.5 */
-#define SETTLE_VEL           (2.0)      /* 0x3007bde8 (double): ... and |vel| < 2.0 */
-#define SPRING_ACCEL         (1500.0f)  /* 0x3007bee8: velocity push per second */
-#define SPRING_DAMP          (3.0f)     /* 0x3007be5c: base damping vel*(1 - 3*stepSec) */
-#define OVERSHOOT_DAMP       (5.0f)     /* 0x3007bde0: extra damping when vel,step share sign */
-#define BIAS_DAMP            (2.0f)     /* FADD ST0,ST0 doubles the stepSec bias term */
-#define COMPASS_VEL_MAX      (2000.0f)  /* 0x3007bee4 / imm 0x44fa0000 */
-#define COMPASS_VEL_MIN      (-2000.0f) /* 0x3007bee0 / imm 0xc4fa0000 */
-#define FZERO                (0.0f)     /* 0x3007bcec */
+#define COMPASS_MAX_STEP (10.0)     /* 0x3007bd30 (double): cap chased error to 10 deg */
+#define COMPASS_STEP_NEG (-10.0f)   /* 0x3007bda0: clamped step, negative side */
+#define COMPASS_STEP_POS (10.0f)    /* 0x3007bda4: clamped step, positive side */
+#define MS_PER_SEC (0.001f)   /* 0x3007bd94: ms -> seconds */
+#define SETTLE_DELTA (0.5)      /* 0x3007bd28 (double): settle if |step| < 0.5 */
+#define SETTLE_VEL (2.0)      /* 0x3007bde8 (double): ... and |vel| < 2.0 */
+#define SPRING_ACCEL (1500.0f)  /* 0x3007bee8: velocity push per second */
+#define SPRING_DAMP (3.0f)     /* 0x3007be5c: base damping vel*(1 - 3*stepSec) */
+#define OVERSHOOT_DAMP (5.0f)     /* 0x3007bde0: extra damping when vel,step share sign */
+#define BIAS_DAMP (2.0f)     /* FADD ST0,ST0 doubles the stepSec bias term */
+#define COMPASS_VEL_MAX (2000.0f)  /* 0x3007bee4 / imm 0x44fa0000 */
+#define COMPASS_VEL_MIN (-2000.0f) /* 0x3007bee0 / imm 0xc4fa0000 */
+#define FZERO (0.0f)     /* 0x3007bcec */
 
 void CG_UpdateCompassOrientation(void)
 {
@@ -69,7 +69,7 @@ void CG_UpdateCompassOrientation(void)
     }
 
     int32_t prev = coduo_int32_from_bits(cg_compassSpinPrevTime); /* 0x3001d6ea */
-    int32_t now  = coduo_int32_from_bits(cg_time);                /* 0x3001d6ef */
+    int32_t now = coduo_int32_from_bits(cg_time);                /* 0x3001d6ef */
 
     /* 0x3001d6f5/0x3001d6f7: nothing to do if no time has passed this frame. */
     if (prev == now) {
@@ -118,16 +118,14 @@ void CG_UpdateCompassOrientation(void)
     if (fabsl(step) > (long double)COMPASS_MAX_STEP) {
         /* 0x3001d754..0x3001d768: sign taken from the raw float bit pattern (>= 0). */
         float signProbe = (float)step;
-        step = (signProbe >= 0.0f) ?
-            (long double)COMPASS_STEP_POS : (long double)COMPASS_STEP_NEG;
+        step = (signProbe >= 0.0f) ? (long double)COMPASS_STEP_POS : (long double)COMPASS_STEP_NEG;
     }
 
     /* 0x3001d76e/0x3001d770: nothing to do if no time elapsed (elapsed > 0 here). */
     int32_t remaining = elapsed;
     if (remaining <= 0) {
         /* 0x3001d911 finish. */
-        cg_compassRefYaw = AngleNormalize360(
-            (float)(step + (long double)target));
+        cg_compassRefYaw = AngleNormalize360((float)(step + (long double)target));
         return;
     }
 
@@ -144,13 +142,11 @@ void CG_UpdateCompassOrientation(void)
         }
 
         /* 0x3001d78e..0x3001d798: stepSec = step_ms / 1000. */
-        float stepSec =
-            (float)((long double)step_ms * (long double)MS_PER_SEC);
+        float stepSec = (float)((long double)step_ms * (long double)MS_PER_SEC);
 
         /* 0x3001d79c..0x3001d7c0: settle test. If the pointer is essentially at rest
          * (|step| < 0.5 AND |vel| < 2.0), snap the yaw to the target and stop. */
-        if (fabsl(step) < (long double)SETTLE_DELTA &&
-            fabsl((long double)cg_compassRefVel) < (long double)SETTLE_VEL) {
+        if (fabsl(step) < (long double)SETTLE_DELTA && fabsl((long double)cg_compassRefVel) < (long double)SETTLE_VEL) {
             /* 0x3001d92c: refYaw := target; vel := 0. */
             cg_compassRefYaw = target;
             cg_compassRefVel = 0.0f;
@@ -162,10 +158,8 @@ void CG_UpdateCompassOrientation(void)
          * rounded (0x3001d7d3 FSTP float [ESP] at the call boundary), but the raw st0
          * return is NOT: it is FCOM'd against 0 unstored at 0x3001d7dd/0x3001d83c and
          * carried in ST0 for the next substep. */
-        float normalizeArg = (float)(
-            (long double)cg_compassRefVel * (long double)stepSec + step);
-        long double newStep =
-            (long double)AngleNormalize180(normalizeArg);
+        float normalizeArg = (float)((long double)cg_compassRefVel * (long double)stepSec + step);
+        long double newStep = (long double)AngleNormalize180(normalizeArg);
 
         /* 0x3001d7dd..0x3001d81c: form the candidate velocity in a working register (the
          * global is not rewritten until the final store below); drive it toward closing
@@ -177,20 +171,17 @@ void CG_UpdateCompassOrientation(void)
         long double vel;
         if (newStep > FZERO) {
             /* 0x3001d7ed..0x3001d7fd: still ahead of target -> decelerate. */
-            vel = (long double)cg_compassRefVel -
-                  (long double)stepSec * (long double)SPRING_ACCEL;
+            vel = (long double)cg_compassRefVel - (long double)stepSec * (long double)SPRING_ACCEL;
         } else if (newStep < FZERO) {
             /* 0x3001d80c..0x3001d81c: behind target -> accelerate. */
-            vel = (long double)cg_compassRefVel +
-                  (long double)stepSec * (long double)SPRING_ACCEL;
+            vel = (long double)cg_compassRefVel + (long double)stepSec * (long double)SPRING_ACCEL;
         } else {
             /* 0x3001d81e: newStep == 0 -> velocity unchanged. */
             vel = cg_compassRefVel;
         }
 
         /* 0x3001d824..0x3001d830: base damping vel *= (1 - 3*stepSec). */
-        vel = vel - (long double)SPRING_DAMP *
-                    ((long double)stepSec * vel);
+        vel = vel - (long double)SPRING_DAMP * ((long double)stepSec * vel);
 
         /* 0x3001d832..0x3001d909: overshoot/zero-crossing handling, keyed on the signs
          * of the damped vel and newStep (both compared against 0). The vel > 0 branch is
@@ -201,12 +192,10 @@ void CG_UpdateCompassOrientation(void)
             /* 0x3001d84e..0x3001d85a: if vel and newStep share the (+) sign, apply
              * extra damping vel *= (1 - 5*stepSec). */
             if (newStep > FZERO) {
-                vel = vel - (long double)OVERSHOOT_DAMP *
-                            ((long double)stepSec * vel);
+                vel = vel - (long double)OVERSHOOT_DAMP * ((long double)stepSec * vel);
             }
             /* 0x3001d85c..0x3001d872: nudge vel down by 2*stepSec; clamp to 0 on cross. */
-            cg_compassRefVel = (float)(
-                vel - (long double)BIAS_DAMP * (long double)stepSec);
+            cg_compassRefVel = (float)(vel - (long double)BIAS_DAMP * (long double)stepSec);
             if (cg_compassRefVel < FZERO) {
                 cg_compassRefVel = 0.0f;
             }
@@ -214,12 +203,10 @@ void CG_UpdateCompassOrientation(void)
             /* 0x3001d88b..0x3001d89c: if vel and newStep share the (-) sign, extra damping.
              * (Reached for vel <= 0; the newStep < 0 test gates the extra damping.) */
             if (newStep < FZERO) {
-                vel = vel - (long double)OVERSHOOT_DAMP *
-                            ((long double)stepSec * vel);
+                vel = vel - (long double)OVERSHOOT_DAMP * ((long double)stepSec * vel);
             }
             /* 0x3001d89e..0x3001d8bf: nudge vel up by 2*stepSec; clamp to 0 on cross. */
-            cg_compassRefVel = (float)(
-                vel + (long double)BIAS_DAMP * (long double)stepSec);
+            cg_compassRefVel = (float)(vel + (long double)BIAS_DAMP * (long double)stepSec);
             if (cg_compassRefVel > FZERO) {
                 cg_compassRefVel = 0.0f;
             }
@@ -236,6 +223,5 @@ void CG_UpdateCompassOrientation(void)
 
     /* 0x3001d911..0x3001d921 finish: requantize (step + target) through 16-bit BAMS
      * and store it as the new reference yaw. */
-    cg_compassRefYaw =
-        AngleNormalize360((float)(step + (long double)target));
+    cg_compassRefYaw = AngleNormalize360((float)(step + (long double)target));
 }

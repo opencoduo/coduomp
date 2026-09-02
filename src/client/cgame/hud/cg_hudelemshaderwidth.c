@@ -33,8 +33,7 @@ long double CG_HudElemShaderDimension(int32_t value, const cgAlignedDrawItem *it
 }
 
 // Source RVA: 0x30029920
-long double CG_HudElemShaderWidth(const hudElem_t *elem,
-                              const cgAlignedDrawItem *item)
+long double CG_HudElemShaderWidth(const hudElem_t *elem, const cgAlignedDrawItem *item)
 {
     /*
      * 0x30029923..0x30029932: target = anim->targetValue. If nonzero, convert
@@ -61,8 +60,7 @@ long double CG_HudElemShaderWidth(const hudElem_t *elem,
      * 0x30029940..0x3002994f: elapsed = cg_time - anim->startTime (signed).
      * If elapsed >= duration the animation has completed: return the end value.
      */
-    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time -
-                                      (uint32_t)elem->scaleStartTime);
+    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)elem->scaleStartTime);
     if (elapsed >= duration) {
         return endValue;
     }
@@ -91,7 +89,6 @@ long double CG_HudElemShaderWidth(const hudElem_t *elem,
      * / FADDP) evaluates startValue + (endValue - startValue) * fraction with
      * that subtraction done before the multiply, leaving the result in ST0.
      */
-    const long double fraction =
-        (1.0f / (long double)duration) * (long double)elapsed;
+    const long double fraction = (1.0f / (long double)duration) * (long double)elapsed;
     return startValue + (endValue - startValue) * fraction;
 }

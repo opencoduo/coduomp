@@ -30,6 +30,5 @@
  */
 const char *trap_Com_SoundAliasString(const char *name)
 {
-    return (const char *)(uintptr_t)cgame_syscall(CG_COM_SOUND_ALIAS_STRING,
-                                                   (intptr_t)name);
+    return (const char *)(uintptr_t)cgame_syscall(CG_COM_SOUND_ALIAS_STRING, (intptr_t)name);
 }

@@ -23,15 +23,13 @@ cvar_t *Cvar_FindVar(const char *name);
 cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force);
 void Cvar_Set(const char *name, const char *value);
 qboolean Cvar_ValidateString(const char *name);
-void Cvar_Register(vmCvar_t *vmCvar, const char *name,
-                   const char *defaultValue, uint32_t flags);
+void Cvar_Register(vmCvar_t *vmCvar, const char *name, const char *defaultValue, uint32_t flags);
 void Cvar_Update(vmCvar_t *vmCvar);
 void Cvar_VMSet(vmCvar_t *vmCvar, const char *value);
 float Cvar_VariableValue(const char *name);
 int32_t Cvar_VariableIntegerValue(const char *name);
 const char *Cvar_VariableString(const char *name);
-void Cvar_VariableStringBuffer(const char *name, char *buffer,
-                               int32_t bufferLength);
+void Cvar_VariableStringBuffer(const char *name, char *buffer, int32_t bufferLength);
 void Cvar_SetLatched(const char *name, const char *value);
 void Cvar_Reset(const char *name);
 void Cvar_SetExisting(const char *name, const char *value);
@@ -55,21 +53,14 @@ qboolean Cvar_Command(void);
 void Cvar_CommandCompletion(void (*callback)(const char *name));
 void Cvar_AddCommands(void);
 void Cvar_Shutdown(void);
-void Cvar_InfoStringBuffer(uint32_t flags, char *buffer,
-                           int32_t bufferLength);
+void Cvar_InfoStringBuffer(uint32_t flags, char *buffer, int32_t bufferLength);
 const char *Cvar_InfoString(uint32_t flags);
 const char *Cvar_InfoString_Big(uint32_t flags);
-void Cvar_SetConfigstringValues(int32_t base, int32_t count,
-                                uint32_t flags);
-qboolean Cvar_NextExport(const char **name, const char **string,
-                         uint32_t *flags, const char **resetString);
+void Cvar_SetConfigstringValues(int32_t base, int32_t count, uint32_t flags);
+qboolean Cvar_NextExport(const char **name, const char **string, uint32_t *flags, const char **resetString);
 char *PbCvarValidate(char *buffer);
-qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames,
-                               int32_t cvarCount, char *buffer,
-                               size_t bufferSize);
-qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames,
-                                 int32_t cvarCount, char *buffer,
-                                 const char *fileName);
+qboolean Com_SaveCvarsToBuffer(const char *const *cvarNames, int32_t cvarCount, char *buffer, size_t bufferSize);
+qboolean Com_LoadCvarsFromBuffer(const char *const *cvarNames, int32_t cvarCount, char *buffer, const char *fileName);
 
 #ifdef __cplusplus
 }

@@ -53,34 +53,27 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
 
     menu = item->parent;
 
-    if ((item->window.flags & (WINDOW_FADINGOUT | WINDOW_FADINGIN)) != 0 &&
-        display->realTime > item->window.nextTime) {
-        item->window.nextTime =
-            (int32_t)((uint32_t)display->realTime + (uint32_t)menu->fadeCycle);
+    if ((item->window.flags & (WINDOW_FADINGOUT | WINDOW_FADINGIN)) != 0 && display->realTime > item->window.nextTime) {
+        item->window.nextTime = (int32_t)((uint32_t)display->realTime + (uint32_t)menu->fadeCycle);
 
         if ((item->window.flags & WINDOW_FADINGOUT) != 0) {
             /* 0x30057e83-0x30057e93: FST (not FSTP) stores the rounded alpha to
              * foreColor[3] but KEEPS the unrounded 80-bit difference in st0, and the
              * FCOMP against 0.0 tests that unrounded value -- Class 8. Model the live
              * value in long double and round only the stored copy. */
-            long double faded =
-                (long double)item->window.foreColor[3] - menu->fadeAmount;
+            long double faded = (long double)item->window.foreColor[3] - menu->fadeAmount;
             item->window.foreColor[3] = (float)faded;
             if (faded <= 0.0f) {
-                item->window.flags = (int32_t)(
-                    (uint32_t)item->window.flags &
-                    ~(WINDOW_FADINGOUT | WINDOW_VISIBLE));
+                item->window.flags = (int32_t)((uint32_t)item->window.flags & ~(WINDOW_FADINGOUT | WINDOW_VISIBLE));
             }
         } else {
             /* 0x30057ea8-0x30057eb8: same FST-keep (Class 8) -- the clamp compare
              * runs on the unrounded st0, not the float stored to foreColor[3]. */
-            long double faded =
-                (long double)item->window.foreColor[3] + menu->fadeInAmount;
+            long double faded = (long double)item->window.foreColor[3] + menu->fadeInAmount;
             item->window.foreColor[3] = (float)faded;
             if (faded >= menu->fadeClamp) {
                 item->window.foreColor[3] = menu->fadeClamp;
-                item->window.flags = (int32_t)(
-                    (uint32_t)item->window.flags & ~WINDOW_FADINGIN);
+                item->window.flags = (int32_t)((uint32_t)item->window.flags & ~WINDOW_FADINGIN);
             }
         }
     }
@@ -90,13 +83,11 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
     color[2] = item->window.foreColor[2];
     color[3] = item->window.foreColor[3];
 
-    if (item->numColors > 0 &&
-        (ownerDrawValue = display->ownerDrawValue) != NULL) {
+    if (item->numColors > 0 && (ownerDrawValue = display->ownerDrawValue) != NULL) {
         /* Direct consumer proof: 0x30057f11 loads item+0x248, not the adjacent
          * feeder/special float at +0x24c. 0x30057f06..0x30057f1c also snapshots
          * the callback pointer from the entry display context before calling it. */
-        float value = ownerDrawValue(item->window.ownerDraw,
-                                     item->colorRangeType);
+        float value = ownerDrawValue(item->window.ownerDraw, item->colorRangeType);
 
         for (i = 0; i < item->numColors; i++) {
             colorRangeDef_t *range = &item->colorRanges[i];
@@ -125,12 +116,9 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
         dimmed[3] = menu->focusColor[3] * UI_PULSE_DIM_SCALE;
         /* 0x30058018..0x300580b1: signed integer phase -> FILD -> FSIN;
          * there is no intervening float/double argument store. */
-        t = (float)((coduo_x87_sinl(
-                         (long double)(DC->realTime / UI_PULSE_PERIOD_MS)) +
-                     1.0L) * 0.5L);
+        t = (float)((coduo_x87_sinl((long double)(DC->realTime / UI_PULSE_PERIOD_MS)) + 1.0L) * 0.5L);
         LerpColor(color, menu->focusColor, dimmed, t);
-    } else if (item->textStyle == ITEM_TEXTSTYLE_PULSE &&
-               ((DC->realTime / UI_BLINK_PERIOD_MS) & 1) == 0) {
+    } else if (item->textStyle == ITEM_TEXTSTYLE_PULSE && ((DC->realTime / UI_BLINK_PERIOD_MS) & 1) == 0) {
         vec4_t dimmed;
         float t;
 
@@ -138,14 +126,11 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
         dimmed[1] = item->window.foreColor[1] * UI_PULSE_DIM_SCALE;
         dimmed[2] = item->window.foreColor[2] * UI_PULSE_DIM_SCALE;
         dimmed[3] = item->window.foreColor[3] * UI_PULSE_DIM_SCALE;
-        t = (float)((coduo_x87_sinl(
-                         (long double)(DC->realTime / UI_PULSE_PERIOD_MS)) +
-                     1.0L) * 0.5L);
+        t = (float)((coduo_x87_sinl((long double)(DC->realTime / UI_PULSE_PERIOD_MS)) + 1.0L) * 0.5L);
         LerpColor(color, item->window.foreColor, dimmed, t);
     }
 
-    if (((uint32_t)item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 &&
-        Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE) == qfalse) {
+    if (((uint32_t)item->cvarFlags & ITEM_CVAR_ENABLE_MASK) != 0 && Item_EnableShowViaCvar(item, ITEM_CVAR_ENABLE) == qfalse) {
         color[0] = menu->disableColor[0];
         color[1] = menu->disableColor[1];
         color[2] = menu->disableColor[2];
@@ -160,8 +145,7 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
          * the partial sum an extra time (Class 1), so fold each arm into one
          * rvalue. */
         if (item->text[0] != '\0') {
-            x = (long double)item->textRect.x + item->textRect.w +
-                OWNERDRAW_TEXT_GAP;
+            x = (long double)item->textRect.x + item->textRect.w + OWNERDRAW_TEXT_GAP;
         } else {
             x = (long double)item->textRect.x + item->textRect.w;
         }
@@ -171,19 +155,7 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
         textX = item->textalignx;
     }
 
-    DC->ownerDrawItem(x,
-                        item->window.rect.y,
-                        item->window.rect.w,
-                        item->window.rect.h,
-                        textX,
-                        item->textaligny,
-                        item->window.ownerDraw,
-                        item->window.ownerDrawFlags,
-                        item->alignment,
-                        item->special,
-                        item->font,
-                        item->textscale,
-                        color,
-                        item->window.background,
-                        item->textStyle);
+    DC->ownerDrawItem(x, item->window.rect.y, item->window.rect.w, item->window.rect.h, textX, item->textaligny, item->window.ownerDraw,
+                      item->window.ownerDrawFlags, item->alignment, item->special, item->font, item->textscale, color,
+                      item->window.background, item->textStyle);
 }

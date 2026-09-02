@@ -10,10 +10,12 @@
 #include <stdint.h>
 #include <string.h>
 
-enum { CG_VOICE_FILE_BYTES = 0x4000, CG_VOICE_DEFAULT_ICON_SORT = 2 };
+enum {
+    CG_VOICE_FILE_BYTES = 0x4000,
+    CG_VOICE_DEFAULT_ICON_SORT = 2
+};
 
-qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
-                            int32_t maxVoiceChats)
+qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table, int32_t maxVoiceChats)
 {
     char fileText[CG_VOICE_FILE_BYTES + 1];
     char *parse;
@@ -21,17 +23,14 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
     int32_t length;
     char *token;
 
-    length = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_FS_FOPEN_FILE, (intptr_t)fileName, (intptr_t)&fileHandle, FS_READ));
+    length = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_FS_FOPEN_FILE, (intptr_t)fileName, (intptr_t)&fileHandle, FS_READ));
     if (fileHandle == 0) {
-        cgame_syscall(CG_PRINT, (intptr_t)va(
-            "^1voice chat file not found: %s\n", fileName));
+        cgame_syscall(CG_PRINT, (intptr_t)va("^1voice chat file not found: %s\n", fileName));
         return qfalse;
     }
     if (length >= CG_VOICE_FILE_BYTES) {
-        cgame_syscall(CG_PRINT, (intptr_t)va(
-            "^1voice chat file too large: %s is %i, max allowed is %i",
-            fileName, length, CG_VOICE_FILE_BYTES));
+        cgame_syscall(CG_PRINT,
+                      (intptr_t)va("^1voice chat file too large: %s is %i, max allowed is %i", fileName, length, CG_VOICE_FILE_BYTES));
         cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
         return qfalse;
     }
@@ -41,8 +40,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
     cgame_syscall(CG_FS_FCLOSE_FILE, fileHandle);
 
     Q_strncpyz(table->fileName, fileName, sizeof(table->fileName));
-    for (int32_t i = 0; i < maxVoiceChats;
-         i = coduo_int32_from_bits((uint32_t)i + 1u)) {
+    for (int32_t i = 0; i < maxVoiceChats; i = coduo_int32_from_bits((uint32_t)i + 1u)) {
         table->entries[i].name[0] = '\0';
     }
 
@@ -58,8 +56,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
     } else if (Q_stricmpn(token, "neuter", 99999) == 0) {
         table->gender = CG_VOICE_GENDER_NEUTER;
     } else {
-        cgame_syscall(CG_PRINT, (intptr_t)va(
-            "^1expected gender not found in voice chat file: %s\n", fileName));
+        cgame_syscall(CG_PRINT, (intptr_t)va("^1expected gender not found in voice chat file: %s\n", fileName));
         return qfalse;
     }
 
@@ -83,8 +80,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
          * added `token==NULL || token[0]=='\0' -> return qtrue`, turning a truncated file
          * (EOF right after an entry name) into a spurious SUCCESS. */
         if (token == NULL || Q_stricmpn(token, "{", 99999) != 0) {
-            cgame_syscall(CG_PRINT, (intptr_t)va(
-                "^1expected { found %s in voice chat file: %s\n", token, fileName));
+            cgame_syscall(CG_PRINT, (intptr_t)va("^1expected { found %s in voice chat file: %s\n", token, fileName));
             return qfalse;
         }
 
@@ -98,8 +94,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
                 return qtrue;
             }
             if (Q_stricmpn(token, "}", 99999) == 0) {
-                table->entryCount = coduo_int32_from_bits(
-                    (uint32_t)table->entryCount + 1u);
+                table->entryCount = coduo_int32_from_bits((uint32_t)table->entryCount + 1u);
                 break;
             }
 
@@ -109,8 +104,7 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
             if (token == NULL || token[0] == '\0') {
                 return qtrue;
             }
-            Q_strncpyz(entry->text[variant], token,
-                       sizeof(entry->text[variant]));
+            Q_strncpyz(entry->text[variant], token, sizeof(entry->text[variant]));
 
             token = Com_ParseOnLine(&parse);
             /* 0x30039c10-13: an EMPTY on-line token (token[0]==0) is routed to this
@@ -120,25 +114,20 @@ qboolean CG_ParseVoiceChats(const char *fileName, cgVoiceChatTable_t *table,
              * when token==NULL. A prior pass omitted the empty-token case (it fell to the
              * else arm and called CG_RegisterMaterial("")), and guarded the unget with
              * token != NULL. */
-            if (token == NULL || token[0] == '\0' ||
-                Q_stricmpn(token, "}", 99999) == 0) {
-                icon = CG_RegisterMaterial("headiconVoiceChat",
-                                           CG_VOICE_DEFAULT_ICON_SORT);
+            if (token == NULL || token[0] == '\0' || Q_stricmpn(token, "}", 99999) == 0) {
+                icon = CG_RegisterMaterial("headiconVoiceChat", CG_VOICE_DEFAULT_ICON_SORT);
                 Com_UngetToken();
             } else {
                 icon = CG_RegisterMaterial(token, CG_VOICE_DEFAULT_ICON_SORT);
                 if (icon == 0) {
-                    icon = CG_RegisterMaterial("headiconVoiceChat",
-                                               CG_VOICE_DEFAULT_ICON_SORT);
+                    icon = CG_RegisterMaterial("headiconVoiceChat", CG_VOICE_DEFAULT_ICON_SORT);
                 }
             }
             entry->icons[variant] = icon;
-            entry->variantCount = coduo_int32_from_bits(
-                (uint32_t)entry->variantCount + 1u);
+            entry->variantCount = coduo_int32_from_bits((uint32_t)entry->variantCount + 1u);
         }
         if (entry->variantCount >= CG_MAX_VOICE_CHATS) {
-            table->entryCount = coduo_int32_from_bits(
-                (uint32_t)table->entryCount + 1u);
+            table->entryCount = coduo_int32_from_bits((uint32_t)table->entryCount + 1u);
         }
     }
 

@@ -15,8 +15,7 @@ enum {
  * as a raw x87 80-bit TBYTE in its 12-byte floatValue slot.  Off x87,
  * extFloat80_t has the same little-endian ten-byte payload, so this adapter
  * preserves the original token representation. */
-static inline void coduo_pc_store_token_float80(uint8_t *destination,
-                                                 x87f value)
+static inline void coduo_pc_store_token_float80(uint8_t *destination, x87f value)
 {
     memcpy(destination, &value, PC_X87_EXTENDED_TBYTE_SIZE);
 }

@@ -29,8 +29,7 @@
      * Returns the animated width in ST0.
  */
 
-long double CG_HudElemWidth(const hudElem_t *elem,
-                                   const cgAlignedDrawItem *item)
+long double CG_HudElemWidth(const hudElem_t *elem, const cgAlignedDrawItem *item)
 {
     /*
      * 0x300299e3..0x300299e9: index = node->type - 1. If (unsigned)index > 8 the

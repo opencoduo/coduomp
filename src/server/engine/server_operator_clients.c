@@ -52,9 +52,7 @@ client_t *SV_GetPlayerByName(void)
     }
 
     const char *const name = Cmd_Argv(1);
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
 
         if (client->state == CS_FREE) {
@@ -112,12 +110,10 @@ client_t *SV_GetPlayerByNum(void)
     return client;
 }
 
-int32_t SV_KickClient(client_t *client, char *nameOut,
-                      int32_t nameOutSize)
+int32_t SV_KickClient(client_t *client, char *nameOut, int32_t nameOutSize)
 {
     if (client->netchan.remoteAddress.type == NA_LOOPBACK) {
-        SV_SendServerCommand(NULL, qfalse,
-                             "e \"EXE_CANNOTKICKHOSTPLAYER\"");
+        SV_SendServerCommand(NULL, qfalse, "e \"EXE_CANNOTKICKHOSTPLAYER\"");
         return 0;
     }
 
@@ -141,8 +137,7 @@ int32_t SV_KickUser_f(char *nameOut, int32_t nameOutSize)
 
     if (Cmd_Argc() != 2) {
         const char *const command = Cmd_Argv(0);
-        Com_Printf("Usage: %s <player name>\n%s all = kick everyone\n",
-                   command, command);
+        Com_Printf("Usage: %s <player name>\n%s all = kick everyone\n", command, command);
         return 0;
     }
 
@@ -152,9 +147,7 @@ int32_t SV_KickUser_f(char *nameOut, int32_t nameOutSize)
     }
 
     if (Q_stricmp(Cmd_Argv(1), "all") == 0) {
-        for (int32_t clientNum = 0;
-             clientNum < sv_maxclients->integer;
-             ++clientNum) {
+        for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
             client_t *const candidate = &svs.clients[clientNum];
             if (candidate->state != CS_FREE) {
                 (void)SV_KickClient(candidate, NULL, 0);

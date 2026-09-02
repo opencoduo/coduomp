@@ -45,24 +45,22 @@ void *UI_Alloc(size_t size)
     const uint32_t requestedBits = (uint32_t)size;
     const uint32_t usedBits = (uint32_t)allocPoint;
     const int32_t requestedSize = coduo_int32_from_bits(requestedBits);
-    const int32_t requestedEnd =
-        coduo_int32_from_bits(usedBits + requestedBits);
+    const int32_t requestedEnd = coduo_int32_from_bits(usedBits + requestedBits);
     void *allocation;
 
     /* Both originals use a signed comparison before rounding the request. */
     if (requestedEnd > UI_MEMORY_POOL_CAPACITY) {
         outOfMemory = qtrue;
         Com_Printf("UI_Alloc: failed to allocate %d bytes\n", requestedSize);
-        Com_Error(ERR_DROP,
-                  "\x15" "UI_Alloc: " "\x14" "EXE_ERR_OUT_OF_MEMORY");
+        Com_Error(ERR_DROP, "\x15"
+                            "UI_Alloc: "
+                            "\x14"
+                            "EXE_ERR_OUT_OF_MEMORY");
         return NULL;
     }
 
     allocation = &memoryPool[coduo_int32_from_bits(usedBits)];
-    allocPoint = coduo_int32_from_bits(
-        usedBits +
-        ((requestedBits + UI_MEMORY_ALIGNMENT_MASK) &
-         ~(uint32_t)UI_MEMORY_ALIGNMENT_MASK));
+    allocPoint = coduo_int32_from_bits(usedBits + ((requestedBits + UI_MEMORY_ALIGNMENT_MASK) & ~(uint32_t)UI_MEMORY_ALIGNMENT_MASK));
     return allocation;
 }
 
@@ -85,8 +83,7 @@ int32_t String_Hash(const char *string)
     for (index = 0; string[index] != '\0'; ++index) {
         const int32_t character = (int32_t)(signed char)string[index];
 
-        hash += (uint32_t)coduo_crt_tolower(character) *
-                (UI_STRING_HASH_BASE_WEIGHT + index);
+        hash += (uint32_t)coduo_crt_tolower(character) * (UI_STRING_HASH_BASE_WEIGHT + index);
     }
     return (int32_t)(hash & (UI_STRING_HASH_SIZE - 1));
 }
@@ -117,13 +114,13 @@ const char *String_Alloc(const char *string)
     }
 
     length = (int32_t)strlen(string);
-    nextPoolIndex = coduo_int32_from_bits(
-        (uint32_t)strPoolIndex + (uint32_t)length + 1u);
+    nextPoolIndex = coduo_int32_from_bits((uint32_t)strPoolIndex + (uint32_t)length + 1u);
     if (nextPoolIndex >= UI_STRING_POOL_CAPACITY) {
-        Com_Printf("String_Alloc: failed to allocate %d bytes\n",
-                   coduo_int32_from_bits((uint32_t)length + 1u));
-        Com_Error(ERR_DROP,
-                  "\x15" "String_Alloc: " "\x14" "EXE_ERR_OUT_OF_MEMORY");
+        Com_Printf("String_Alloc: failed to allocate %d bytes\n", coduo_int32_from_bits((uint32_t)length + 1u));
+        Com_Error(ERR_DROP, "\x15"
+                            "String_Alloc: "
+                            "\x14"
+                            "EXE_ERR_OUT_OF_MEMORY");
         return NULL;
     }
 

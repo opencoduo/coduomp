@@ -46,7 +46,8 @@ void CG_Player_DoControllers(centity_t *part, uint32_t *partBits)
     const int32_t clientNum = part->currentState.clientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_Player_DoControllers: "
+                  "\x15"
+                  "CG_Player_DoControllers: "
                   "invalid client number %i",
                   clientNum);
         return;
@@ -58,8 +59,7 @@ void CG_Player_DoControllers(centity_t *part, uint32_t *partBits)
         // (part); CALL 0x30005730; ADD ESP,8. The original callee takes part in EAX,
         // dobjHandle in EDI, partBits as arg, and the record as its final arg; the
         // maintained shared C boundary names the equivalent owner/state values.
-        BG_Player_DoControllers((void *)dobjHandle, &part->currentState,
-                                partBits, clientInfo);
+        BG_Player_DoControllers((void *)dobjHandle, &part->currentState, partBits, clientInfo);
     }
 
     // 0x30021fdb POP EDI; RET.

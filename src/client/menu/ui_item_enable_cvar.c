@@ -29,8 +29,7 @@
 
 extern displayContextDef_t *DC;
 
-void Q_strcat(char *destination, int32_t destinationSize,
-              const char *source);
+void Q_strcat(char *destination, int32_t destinationSize, const char *source);
 int32_t Q_stricmpn(const char *left, const char *right, int32_t count);
 qboolean String_Parse(char **data, const char **string);
 
@@ -38,13 +37,17 @@ qboolean String_Parse(char **data, const char **string);
  * A menu-script token separator: an isolated ";" token (0x30052884: CMP byte,0x3b
  * then CMP byte[+1],0) is skipped, matching the ui_shared.c list-separator handling.
  */
-enum { CVARTEST_SEPARATOR_CHAR = ';' };
+enum {
+    CVARTEST_SEPARATOR_CHAR = ';'
+};
 
 /*
  * Q_stricmpn is called with the constant 99999 (0x1869f) limit at 0x300528a0, i.e.
  * an effectively-unbounded case-insensitive compare (Q_stricmp behavior).
  */
-enum { STRICMP_UNBOUNDED_LIMIT = 99999 };
+enum {
+    STRICMP_UNBOUNDED_LIMIT = 99999
+};
 
 qboolean Item_EnableShowViaCvar(itemDef_t *item, int32_t flag)
 {

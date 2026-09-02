@@ -4,20 +4,13 @@
 
 // Offset guards proving the original i386 cgVoiceChatTable_t layout used below.
 #if UINTPTR_MAX == 0xFFFFFFFFu
-_Static_assert(offsetof(cgVoiceChatTable_t, entryCount) == 0x44,
-               "cgVoiceChatTable_t.entryCount at +0x44");
-_Static_assert(offsetof(cgVoiceChatTable_t, entries) == 0x48,
-               "cgVoiceChatTable_t.entries at +0x48");
-_Static_assert(offsetof(cgVoiceChatEntry_t, variantCount) == 0x40,
-               "cgVoiceChatEntry_t.variantCount at +0x40");
-_Static_assert(offsetof(cgVoiceChatEntry_t, sounds) == 0x44,
-               "cgVoiceChatEntry_t.sounds at +0x44");
-_Static_assert(offsetof(cgVoiceChatEntry_t, text) == 0x144,
-               "cgVoiceChatEntry_t.text at +0x144");
-_Static_assert(offsetof(cgVoiceChatEntry_t, icons) == 0x1144,
-               "cgVoiceChatEntry_t.icons at +0x1144");
-_Static_assert(sizeof(cgVoiceChatEntry_t) == 0x1244,
-               "cgVoiceChatEntry_t stride 0x1244");
+_Static_assert(offsetof(cgVoiceChatTable_t, entryCount) == 0x44, "cgVoiceChatTable_t.entryCount at +0x44");
+_Static_assert(offsetof(cgVoiceChatTable_t, entries) == 0x48, "cgVoiceChatTable_t.entries at +0x48");
+_Static_assert(offsetof(cgVoiceChatEntry_t, variantCount) == 0x40, "cgVoiceChatEntry_t.variantCount at +0x40");
+_Static_assert(offsetof(cgVoiceChatEntry_t, sounds) == 0x44, "cgVoiceChatEntry_t.sounds at +0x44");
+_Static_assert(offsetof(cgVoiceChatEntry_t, text) == 0x144, "cgVoiceChatEntry_t.text at +0x144");
+_Static_assert(offsetof(cgVoiceChatEntry_t, icons) == 0x1144, "cgVoiceChatEntry_t.icons at +0x1144");
+_Static_assert(sizeof(cgVoiceChatEntry_t) == 0x1244, "cgVoiceChatEntry_t stride 0x1244");
 #endif
 
 // Source: uo_cgame_mp_x86.dll 0x30039f10..0x30039fb4
@@ -51,11 +44,7 @@ _Static_assert(sizeof(cgVoiceChatEntry_t) == 0x1244,
 // The prologue saves ECX/EBP/ESI/EDI; EBX is neither saved nor restored here,
 // confirming it is a caller-owned input, not a local.
 
-qboolean CG_PickSoundAlias(cgVoiceChatTable_t *table,
-                           const char *name,
-                           const char **outSoundName,
-                           qhandle_t *outIcon,
-                           const char **outText)
+qboolean CG_PickSoundAlias(cgVoiceChatTable_t *table, const char *name, const char **outSoundName, qhandle_t *outIcon, const char **outText)
 {
     // 0x30039f12 MOV EBP,[EBX+0x44]  : loop bound = number of aliases in table.
     // 0x30039f16 XOR ESI,ESI         : ESI = scan index i, starts at 0.
@@ -75,8 +64,7 @@ qboolean CG_PickSoundAlias(cgVoiceChatTable_t *table,
         // 0x30039f2c MOV EAX,0x1869f    : Q_stricmpn limit 99999 (== Q_stricmp).
         // 0x30039f33 CALL Q_stricmpn    : compare(name, entry[i].name).
         // 0x30039f3a JZ  -> pick path   : EAX==0 means the names match.
-        if (name == NULL ||
-            Q_stricmpn(name, table->entries[i].name, 99999) != 0) {
+        if (name == NULL || Q_stricmpn(name, table->entries[i].name, 99999) != 0) {
             // 0x30039f3c INC ESI / ADD EDI,0x1244 / CMP / JL : keep scanning.
             continue;
         }
@@ -94,10 +82,8 @@ qboolean CG_PickSoundAlias(cgVoiceChatTable_t *table,
         // 0x30039f70 CALL _ftol2 : truncate to the variant index r (EAX).
         //   _ftol2 consumes the raw ST0 left by the FILD/FMUL/FIMUL chain, so the
         //   product stays 80-bit (no intermediate float `scaled` store).
-        int32_t r = coduo_fp_to_i32_extended(
-            (long double)coduo_crt_rand() *
-            (long double)(1.0f / 32768.0f) *
-            (long double)table->entries[i].variantCount);
+        int32_t r = coduo_fp_to_i32_extended((long double)coduo_crt_rand() * (long double)(1.0f / 32768.0f) *
+                                             (long double)table->entries[i].variantCount);
 
         // 0x30039f75 IMUL ESI,ESI,0x491 : ESI = i * 0x491 (0x491*4 == 0x1244,
         //   so ESI*4 == i*0x1244 == entry byte offset; ECX below reuses this).

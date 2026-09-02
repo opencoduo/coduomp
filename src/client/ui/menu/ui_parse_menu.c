@@ -2,7 +2,9 @@
 
 #include <string.h>
 
-enum { UI_MENU_KEYWORD_COMPARE_LIMIT = 99999 };
+enum {
+    UI_MENU_KEYWORD_COMPARE_LIMIT = 99999
+};
 
 // Source: uo_ui_mp_x86.dll 0x40009300..0x400093f4
 // Evidence: cgame_mp/mcode/uo_ui_mp_x86/FUN_40009300_400093f4.mcode
@@ -23,13 +25,11 @@ qboolean UI_ParseMenu(const char *filename, int32_t loadMode)
         if (token.string[0] == '}') {
             break;
         }
-        if (Q_stricmpn("assetGlobalDef", token.string,
-                       UI_MENU_KEYWORD_COMPARE_LIMIT) == 0) {
+        if (Q_stricmpn("assetGlobalDef", token.string, UI_MENU_KEYWORD_COMPARE_LIMIT) == 0) {
             if (!Asset_Parse(sourceHandle, loadMode)) {
                 break;
             }
-        } else if (Q_stricmpn("menudef", token.string,
-                              UI_MENU_KEYWORD_COMPARE_LIMIT) == 0) {
+        } else if (Q_stricmpn("menudef", token.string, UI_MENU_KEYWORD_COMPARE_LIMIT) == 0) {
             Menu_New(sourceHandle, loadMode);
         }
         memset(&token, 0, sizeof(token));

@@ -42,12 +42,9 @@ void UI_FeederSelection(float feeder, int32_t index)
         const char *mapName;
 
         ui_currentServer = index;
-        ui_compat_lan_get_server_info(
-            (int32_t)ui_netSource, ui_displayServers[index],
-            ui_selectedServerInfo, UI_SERVER_INFO_SIZE);
+        ui_compat_lan_get_server_info((int32_t)ui_netSource, ui_displayServers[index], ui_selectedServerInfo, UI_SERVER_INFO_SIZE);
         mapName = Info_ValueForKey(ui_selectedServerInfo, "mapname");
-        ui_serverMapPreviewShader = trap_R_RegisterShaderNoMip(
-            va("levelshots/%s", mapName), R_IMAGE_TRACK_UI);
+        ui_serverMapPreviewShader = trap_R_RegisterShaderNoMip(va("levelshots/%s", mapName), R_IMAGE_TRACK_UI);
         if (ui_serverMapCinematic >= 0) {
             trap_CIN_StopCinematic(ui_serverMapCinematic);
             ui_serverMapCinematic = UI_CINEMATIC_UNINITIALIZED;
@@ -66,9 +63,7 @@ void UI_FeederSelection(float feeder, int32_t index)
         /* Retail reserves slot 0: found-player results are written at [count]
          * with count starting at 1, so readers use the next 64-byte slot
          * (+0x40 base 0x4023943c). */
-        strncpy(ui_serverStatusAddress,
-                ui_foundPlayerServerAddresses[index + 1],
-                UI_SERVER_ADDRESS_COPY_SIZE);
+        strncpy(ui_serverStatusAddress, ui_foundPlayerServerAddresses[index + 1], UI_SERVER_ADDRESS_COPY_SIZE);
         ui_serverStatusAddress[UI_SERVER_ADDRESS_COPY_SIZE] = '\0';
         Menu_SetFeederSelection(NULL, NULL, UI_SERVER_STATUS_FEEDER, 0);
         UI_BuildServerStatus(qtrue);
@@ -99,11 +94,8 @@ void UI_FeederSelection(float feeder, int32_t index)
         return;
     }
 
-    if (feeder == UI_FEEDER_ACTIVE_MAPS ||
-        feeder == UI_FEEDER_ACTIVE_MAPS_ALT) {
-        int32_t oldMapIndex = feeder == UI_FEEDER_ACTIVE_MAPS_ALT
-                                  ? ui_currentNetMap
-                                  : ui_currentMap;
+    if (feeder == UI_FEEDER_ACTIVE_MAPS || feeder == UI_FEEDER_ACTIVE_MAPS_ALT) {
+        int32_t oldMapIndex = feeder == UI_FEEDER_ACTIVE_MAPS_ALT ? ui_currentNetMap : ui_currentMap;
         int32_t actualMapIndex;
 
         if (ui_maps[oldMapIndex].cinematic >= 0) {

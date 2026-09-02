@@ -87,8 +87,7 @@ void CG_RegisterSurfaceTypeSounds(const char **table, const char *baseName)
     // per-surface asset name, register it, and store the returned handle.
     for (int32_t surfaceType = 0; surfaceType < SURFACE_TYPE_COUNT; ++surfaceType) {
         // 0x3002b510..0x3002b516: surfaceName = engine name string for this surface.
-        const char *surfaceName =
-            (const char *)(intptr_t)cgame_syscall(CG_SURFACE_TYPE_TO_NAME, surfaceType);
+        const char *surfaceName = (const char *)(intptr_t)cgame_syscall(CG_SURFACE_TYPE_TO_NAME, surfaceType);
 
         // 0x3002b51c..0x3002b528: assetName = "<baseName>_<surfaceName>".
         sprintf(assetName, "%s_%s", baseName, surfaceName);

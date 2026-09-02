@@ -31,8 +31,7 @@
 #define CLIENT_THINK_VEHICLE_KNOCKBACK_FLAG 0x00000200u
 #define CLIENT_THINK_BUTTON_USE PM_BUTTON_ACTIVATE
 #define CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_MS 3000
-#define CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_LAST_MS \
-    (CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_MS - 1)
+#define CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_LAST_MS (CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_MS - 1)
 
 /* ------------------------------------------------------------------ */
 /*  0x40c91  ClientThink_real                                         */
@@ -76,25 +75,16 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
     /* Get command time and clamp to prevent large jumps */
     time = command->commandTime;
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (coduo_int32_from_bits(
-            (uint32_t)level.time +
-            (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX) < time) {
-        time = coduo_int32_from_bits(
-            (uint32_t)level.time +
-            (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX);
+    if (coduo_int32_from_bits((uint32_t)level.time + (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX) < time) {
+        time = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)CLIENT_THINK_TIME_CLAMP_MAX);
     }
-    if (time < coduo_int32_from_bits(
-                   (uint32_t)level.time +
-                   (uint32_t)CLIENT_THINK_TIME_CLAMP_MIN)) {
-        time = coduo_int32_from_bits(
-            (uint32_t)level.time +
-            (uint32_t)CLIENT_THINK_TIME_CLAMP_MIN);
+    if (time < coduo_int32_from_bits((uint32_t)level.time + (uint32_t)CLIENT_THINK_TIME_CLAMP_MIN)) {
+        time = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)CLIENT_THINK_TIME_CLAMP_MIN);
     }
     command->commandTime = time;
 
     /* Calculate msec delta from last command */
-    msec = coduo_int32_from_bits(
-        (uint32_t)time - (uint32_t)client->ps.commandTime);
+    msec = coduo_int32_from_bits((uint32_t)time - (uint32_t)client->ps.commandTime);
     entityClientNum = (int)(ent - g_entities);
 
     /* Validate msec and check for client number mismatch */
@@ -113,12 +103,10 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
 
         /* Apply pmove_fixed timing if enabled */
         if (pmove_fixed.integer != 0 || client->pmoveFixed != 0) {
-            int32_t fixedNumerator = coduo_int32_from_bits(
-                (uint32_t)pmove_msec.integer + (uint32_t)time - UINT32_C(1));
+            int32_t fixedNumerator = coduo_int32_from_bits((uint32_t)pmove_msec.integer + (uint32_t)time - UINT32_C(1));
             int32_t fixedQuotient = fixedNumerator / pmove_msec.integer;
 
-            time = coduo_int32_from_bits(
-                (uint32_t)fixedQuotient * (uint32_t)pmove_msec.integer);
+            time = coduo_int32_from_bits((uint32_t)fixedQuotient * (uint32_t)pmove_msec.integer);
         }
         command->commandTime = time;
 
@@ -154,9 +142,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         pm.command = *command;
         pm.command.commandTime = time;
         pm.oldCommand = client->oldPmoveCommand;
-        pm.traceMask = (client->ps.pmType < PM_TYPE_DEAD)
-                           ? MASK_PLAYERSOLID
-                           : MASK_DEADSOLID;
+        pm.traceMask = (client->ps.pmType < PM_TYPE_DEAD) ? MASK_PLAYERSOLID : MASK_DEADSOLID;
         pm.trace = trap_TraceCapsule;
         pm.trace2 = trap_TraceCapsule;
         pm.trace3 = trap_TraceCapsule;
@@ -165,10 +151,8 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         pm.adsInputBlocked = G_IsInMatchTimeout();
         pm.debugMove = g_debugMove.integer;
         if ((client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
-            gentity_t *controlledVehicle =
-                &g_entities[ent->passEntityNum];
-            const vehicle_state_t *vehicleState =
-                (const vehicle_state_t *)controlledVehicle->vehicle;
+            gentity_t *controlledVehicle = &g_entities[ent->passEntityNum];
+            const vehicle_state_t *vehicleState = (const vehicle_state_t *)controlledVehicle->vehicle;
 
             pm.viewClampTargetAngles[0] = vehicleState->viewClampTargetAngles[0];
             pm.viewClampTargetAngles[1] = vehicleState->viewClampTargetAngles[1];
@@ -188,8 +172,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         client->oldButtons = client->currentButtons;
         client->currentButtons = client->command.buttons;
         if ((client->ps.entityStateFlags & EF_IN_VEHICLE) == 0 &&
-            ((const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon))->weaponClass ==
-                WEAPCLASS_LMG &&
+            ((const weaponInfo_t *)BG_GetInfoForWeapon(ent->s.weapon))->weaponClass == WEAPCLASS_LMG &&
             (client->ps.playerStateFlags & PMF_ADS) != 0) {
             client->currentButtons &= ~CLIENT_THINK_BUTTON_USE;
         }
@@ -218,33 +201,24 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         muzzleAngles[1] = client->ps.viewAngles[1] + viewKickAngles[1];
         muzzleAngles[2] = client->ps.viewAngles[2] + viewKickAngles[2];
         {
-            const weaponInfo_t *weaponInfo =
-                (const weaponInfo_t *)BG_GetInfoForWeapon(client->ps.currentWeapon);
-            int shellshockTimeRemaining = coduo_int32_from_bits(
-                (uint32_t)client->ps.motionState.shellshock.time +
-                (uint32_t)client->ps.motionState.shellshock.duration -
-                (uint32_t)level.time);
+            const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(client->ps.currentWeapon);
+            int shellshockTimeRemaining =
+                coduo_int32_from_bits((uint32_t)client->ps.motionState.shellshock.time +
+                                      (uint32_t)client->ps.motionState.shellshock.duration - (uint32_t)level.time);
             float shellshockSwayScale;
 
             if (shellshockTimeRemaining > 0) {
                 float shellshockFraction = 1.0f;
 
-                if (shellshockTimeRemaining <=
-                    CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_LAST_MS) {
+                if (shellshockTimeRemaining <= CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_LAST_MS) {
                     /* The binary divides by 3000.0f (fdivp at 0x412bc), not
                      * a multiply by the reciprocal, and smooths as
                      * (3 - (f + f)) * f * f (0x412c4..0x412e4). */
-                    shellshockFraction =
-                        (float)shellshockTimeRemaining /
-                        (float)CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_MS;
-                    shellshockFraction =
-                        (3.0f - (shellshockFraction + shellshockFraction)) *
-                        shellshockFraction * shellshockFraction;
+                    shellshockFraction = (float)shellshockTimeRemaining / (float)CLIENT_THINK_SHELLSHOCK_SWAY_BLEND_MS;
+                    shellshockFraction = (3.0f - (shellshockFraction + shellshockFraction)) * shellshockFraction * shellshockFraction;
                 }
 
-                shellshockSwayScale =
-                    1.0f + (weaponInfo->swayShellShockScale - 1.0f) *
-                               shellshockFraction;
+                shellshockSwayScale = 1.0f + (weaponInfo->swayShellShockScale - 1.0f) * shellshockFraction;
             } else {
                 shellshockSwayScale = 1.0f;
             }
@@ -252,16 +226,12 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             (void)shellshockSwayScale;
         }
-        BG_CalculateWeaponPosition_Sway(&client->ps,
-                                        client->weaponPreviousViewAngles,
-                                        client->weaponSwayOffsets,
-                                        client->weaponSwayAngles,
+        BG_CalculateWeaponPosition_Sway(&client->ps, client->weaponPreviousViewAngles, client->weaponSwayOffsets, client->weaponSwayAngles,
                                         1.0f, msec);
         {
             weaponContext.ps = &client->ps;
             weaponContext.speed = clientSpeed;
-            weaponContext.frameTime =
-                (float)((long double)msec * (long double)0.001f);
+            weaponContext.frameTime = (float)((long double)msec * (long double)0.001f);
             weaponContext.moveOffset[0] = client->weaponMoveOffset[0];
             weaponContext.moveOffset[1] = client->weaponMoveOffset[1];
             weaponContext.moveOffset[2] = client->weaponMoveOffset[2];
@@ -285,8 +255,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         }
 
         /* Handle ADS (aim-down-sight) angle composition */
-        if (BG_IsAimDownSightWeapon(client->ps.currentWeapon) &&
-            (client->ps.adsFraction != 0.0f || isnan(client->ps.adsFraction))) {
+        if (BG_IsAimDownSightWeapon(client->ps.currentWeapon) && (client->ps.adsFraction != 0.0f || isnan(client->ps.adsFraction))) {
             axis_t axis1;
             axis_t axis2;
             axis_t result;
@@ -295,14 +264,14 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
             MatrixMultiply(axis1, axis2, result);
             /* C99 multidimensional-array qualifier bridge; AxisToAngles
              * retains a read-only view of result. */
-            AxisToAngles((const vec_t (*)[3])result, muzzleAngles);
+            AxisToAngles((const vec_t(*)[3])result, muzzleAngles);
         }
 
         /* Vehicle collision detection only runs while not linked into a vehicle. */
         if ((client->ps.entityStateFlags & EF_IN_VEHICLE) == 0) {
             vec3_t mins, maxs;
             trace_t trace;
-            
+
             /* Set up capsule bounds for player */
             mins[0] = client->ps.playerMins[0];
             mins[1] = client->ps.playerMins[1];
@@ -310,7 +279,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
             maxs[0] = client->ps.playerMaxs[0];
             maxs[1] = client->ps.playerMaxs[1];
             maxs[2] = client->ps.playerMaxs[2];
-            
+
             /* Adjust maxs based on stance */
             if ((client->ps.playerStateFlags & PMF_PRONE) == 0) {
                 if ((client->ps.playerStateFlags & PMF_DUCKED) != 0) {
@@ -319,11 +288,10 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
             } else {
                 maxs[2] = CLIENT_THINK_PRONE_MAX_Z;
             }
-            
+
             /* Trace capsule from player position */
-            trap_TraceCapsule(&trace, client->ps.psOrigin, mins, maxs, client->ps.psOrigin,
-                            client->ps.psClientNum, pm.traceMask);
-            
+            trap_TraceCapsule(&trace, client->ps.psOrigin, mins, maxs, client->ps.psOrigin, client->ps.psClientNum, pm.traceMask);
+
             if (trace.startsolid != 0 || trace.allsolid != 0) {
                 gentity_t *hitEnt = &g_entities[trace.entityNum];
                 if (hitEnt->s.eType == ET_VEHICLE) {
@@ -345,43 +313,26 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
                      * a rounding it does not perform. */
 #if EMULATE_X87
                     if (playerSpeed < 1.0f ||
-                        x87f_lt(x87f_load_f32(0.8f),
-                                x87f_add(
-                                    x87f_add(x87f_mul(x87f_load_f32(away[0]),
-                                                      x87f_load_f32(velocityDir[0])),
-                                             x87f_mul(x87f_load_f32(away[1]),
-                                                      x87f_load_f32(velocityDir[1]))),
-                                    x87f_mul(x87f_load_f32(away[2]),
-                                             x87f_load_f32(velocityDir[2]))))) {
+                        x87f_lt(x87f_load_f32(0.8f), x87f_add(x87f_add(x87f_mul(x87f_load_f32(away[0]), x87f_load_f32(velocityDir[0])),
+                                                                       x87f_mul(x87f_load_f32(away[1]), x87f_load_f32(velocityDir[1]))),
+                                                              x87f_mul(x87f_load_f32(away[2]), x87f_load_f32(velocityDir[2]))))) {
 #else
-                    if (playerSpeed < 1.0f ||
-                        away[0] * velocityDir[0] + away[1] * velocityDir[1] +
-                                away[2] * velocityDir[2] >
-                            0.8f) {
+                    if (playerSpeed < 1.0f || away[0] * velocityDir[0] + away[1] * velocityDir[1] + away[2] * velocityDir[2] > 0.8f) {
 #endif
                         vehicleUnlinkedForPmove = hitEnt;
                         trap_UnlinkEntity(hitEnt);
 
-                        if ((client->ps.playerStateFlags & PMF_PRONE) == 0 &&
-                            playerSpeed < 1.0f) {
-                            vehicle_state_t *vehicleState =
-                                (vehicle_state_t *)hitEnt->vehicle;
+                        if ((client->ps.playerStateFlags & PMF_PRONE) == 0 && playerSpeed < 1.0f) {
+                            vehicle_state_t *vehicleState = (vehicle_state_t *)hitEnt->vehicle;
 #if EMULATE_X87
                             float vehicleSpeed = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
-                                x87f_add(x87f_mul(x87f_load_f32(vehicleState->velocity[0]),
-                                                  x87f_load_f32(vehicleState->velocity[0])),
-                                         x87f_mul(x87f_load_f32(vehicleState->velocity[1]),
-                                                  x87f_load_f32(vehicleState->velocity[1]))),
-                                x87f_mul(x87f_load_f32(vehicleState->velocity[2]),
-                                         x87f_load_f32(vehicleState->velocity[2])))));
+                                x87f_add(x87f_mul(x87f_load_f32(vehicleState->velocity[0]), x87f_load_f32(vehicleState->velocity[0])),
+                                         x87f_mul(x87f_load_f32(vehicleState->velocity[1]), x87f_load_f32(vehicleState->velocity[1]))),
+                                x87f_mul(x87f_load_f32(vehicleState->velocity[2]), x87f_load_f32(vehicleState->velocity[2])))));
 #else
-                            float vehicleSpeed =
-                                (float)CoduoLibm_Sqrt((double)(vehicleState->velocity[0] *
-                                                     vehicleState->velocity[0] +
-                                                     vehicleState->velocity[1] *
-                                                     vehicleState->velocity[1] +
-                                                     vehicleState->velocity[2] *
-                                                     vehicleState->velocity[2]));
+                            float vehicleSpeed = (float)CoduoLibm_Sqrt((double)(vehicleState->velocity[0] * vehicleState->velocity[0] +
+                                                                                vehicleState->velocity[1] * vehicleState->velocity[1] +
+                                                                                vehicleState->velocity[2] * vehicleState->velocity[2]));
 #endif
 
                             if (vehicleSpeed > 1.0f) {
@@ -390,53 +341,35 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
                                 VEH_PlayerCollision(hitEnt, ent);
 #if EMULATE_X87
                                 knockbackSpeed = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
-                                    x87f_add(x87f_mul(x87f_load_f32(client->ps.velocity[0]),
-                                                      x87f_load_f32(client->ps.velocity[0])),
-                                             x87f_mul(x87f_load_f32(client->ps.velocity[1]),
-                                                      x87f_load_f32(client->ps.velocity[1]))),
-                                    x87f_mul(x87f_load_f32(client->ps.velocity[2]),
-                                             x87f_load_f32(client->ps.velocity[2])))));
+                                    x87f_add(x87f_mul(x87f_load_f32(client->ps.velocity[0]), x87f_load_f32(client->ps.velocity[0])),
+                                             x87f_mul(x87f_load_f32(client->ps.velocity[1]), x87f_load_f32(client->ps.velocity[1]))),
+                                    x87f_mul(x87f_load_f32(client->ps.velocity[2]), x87f_load_f32(client->ps.velocity[2])))));
 #else
-                                knockbackSpeed =
-                                    (float)CoduoLibm_Sqrt((double)(client->ps.velocity[0] *
-                                                         client->ps.velocity[0] +
-                                                         client->ps.velocity[1] *
-                                                         client->ps.velocity[1] +
-                                                         client->ps.velocity[2] *
-                                                         client->ps.velocity[2]));
+                                knockbackSpeed = (float)CoduoLibm_Sqrt((double)(client->ps.velocity[0] * client->ps.velocity[0] +
+                                                                                client->ps.velocity[1] * client->ps.velocity[1] +
+                                                                                client->ps.velocity[2] * client->ps.velocity[2]));
 #endif
-                                if (knockbackSpeed <
-                                    CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED) {
+                                if (knockbackSpeed < CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED) {
                                     VectorNormalize(client->ps.velocity);
-                                    client->ps.velocity[0] *=
-                                        CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
-                                    client->ps.velocity[1] *=
-                                        CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
-                                    client->ps.velocity[2] *=
-                                        CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                                    client->ps.velocity[0] *= CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                                    client->ps.velocity[1] *= CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                                    client->ps.velocity[2] *= CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
                                 }
                             } else {
-                                client->ps.velocity[0] =
-                                    away[0] * CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
-                                client->ps.velocity[1] =
-                                    away[1] * CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
-                                client->ps.velocity[2] =
-                                    away[2] * CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                                client->ps.velocity[0] = away[0] * CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                                client->ps.velocity[1] = away[1] * CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                                client->ps.velocity[2] = away[2] * CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
                             }
 
-                            client->ps.pmTime =
-                                (int)CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
-                            client->ps.playerStateFlags |=
-                                CLIENT_THINK_VEHICLE_KNOCKBACK_FLAG;
+                            client->ps.pmTime = (int)CLIENT_THINK_VEHICLE_KNOCKBACK_SPEED;
+                            client->ps.playerStateFlags |= CLIENT_THINK_VEHICLE_KNOCKBACK_FLAG;
                         }
                     }
 
                     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
                     if ((client->ps.playerStateFlags & PMF_PRONE) != 0 &&
                         client->vehicleProneDamageTime <
-                            coduo_int32_from_bits(
-                                (uint32_t)level.time -
-                                    (uint32_t)CLIENT_THINK_VEHICLE_DAMAGE_COOLDOWN_MS)) {
+                            coduo_int32_from_bits((uint32_t)level.time - (uint32_t)CLIENT_THINK_VEHICLE_DAMAGE_COOLDOWN_MS)) {
                         int oldHealth = ent->health;
                         VEH_PlayerDamage(ent, hitEnt, CLIENT_THINK_VEHICLE_DAMAGE);
                         /* If health didn't change, damage self (fallback) */
@@ -466,9 +399,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
             trap_LinkEntity(vehicleUnlinkedForPmove);
         }
 
-        ent->s.turretOverheatState =
-            (ent->client->ps.playerStateFlags &
-             PMF_DUCKED) != 0;
+        ent->s.turretOverheatState = (ent->client->ps.playerStateFlags & PMF_DUCKED) != 0;
 
         if (ent->client->ps.eventIndex != oldEventSequence) {
             ent->lastThinkTime = level.time;
@@ -479,9 +410,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         if (g_smoothClients.integer == 0) {
             BG_PlayerStateToEntityState(&ent->client->ps, &ent->s, qtrue);
         } else {
-            BG_PlayerStateToEntityStateExtrapolate(
-                &ent->client->ps, &ent->s, ent->client->ps.commandTime,
-                qtrue);
+            BG_PlayerStateToEntityStateExtrapolate(&ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue);
         }
 
         /* VERIFIED_DECOMPILER(0x40c91, 50c91_ClientThink_real.c, VERIFY-P1-CLIENTTHINK-2026-06-17): DATAFLOW_VERIFIED - after BG_PlayerStateToEntityState*, copy currentOrigin (+0x13c) from entity +0x18, which is pos.trBase[0] because gentity_t::pos starts at +0x0c and trajectory_t::trBase starts at +0x0c. */
@@ -511,7 +440,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *command)
         ent->currentAngles[0] = 0.0f;
         ent->currentAngles[1] = 0.0f;
         ent->currentAngles[2] = 0.0f;
-        ent->currentAngles[1] = ent->client->ps.viewAngles[1];  /* Yaw from view angles */
+        ent->currentAngles[1] = ent->client->ps.viewAngles[1]; /* Yaw from view angles */
 
         /* Process entity impacts */
         ClientImpacts(ent, &pm);

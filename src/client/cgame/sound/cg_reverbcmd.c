@@ -54,8 +54,7 @@ void CG_ReverbCmd(void)
     int32_t argc = trap_Argc();
     if (argc != 4) {
         /* PUSH EAX (argc) / PUSH fmt / CALL Com_PrintMessage / ADD ESP,8 / RET */
-        Com_PrintMessage("ERROR: CG_ReverbCmd called with %i args (should be 4)\n",
-                         argc);
+        Com_PrintMessage("ERROR: CG_ReverbCmd called with %i args (should be 4)\n", argc);
         return;
     }
 
@@ -89,8 +88,5 @@ void CG_ReverbCmd(void)
     /* MOV ECX,[frame+0xc] (argv[2]'s float bits) ; PUSH roundedGain ; PUSH ECX ;
      * PUSH g_textScratchBuffer ; PUSH 0xdd ; CALL *cgame_syscall ; ADD ESP,0x10.
      * The engine reads arg 2 as a float, so we forward argv[2]'s bit pattern. */
-    cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS,
-                  (intptr_t)g_textScratchBuffer,
-                  CG_FloatBits(reverbParam),
-                  roundedGain);
+    cgame_syscall(CG_MSS_SET_ENVIRONMENT_EFFECTS, (intptr_t)g_textScratchBuffer, CG_FloatBits(reverbParam), roundedGain);
 }

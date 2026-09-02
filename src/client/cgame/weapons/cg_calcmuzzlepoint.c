@@ -113,7 +113,9 @@
 
 /* MAX_CLIENTS — entity numbers below this are player clients; the muzzle
  * fallback prints a diagnostic and applies a stance viewheight only for them. */
-enum { CG_MAX_CLIENTS = 64 };
+enum {
+    CG_MAX_CLIENTS = 64
+};
 
 /* Entity currentState.eFlags stance bits selecting the viewheight offset added
  * to a non-DObj entity's muzzle. */
@@ -126,8 +128,7 @@ enum { CG_MAX_CLIENTS = 64 };
  * client_recovered.h — NOT the unconditional Com_Printf. The caller cleans the
  * stack (ADD ESP,0xc after fmt + two int args here). */
 
-qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
-                            vec3_t muzzle)
+qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum, vec3_t muzzle)
 {
     /* 30048b6c: the current snapshot / local playerState. */
     snapshot_t *snap = cg_snap;
@@ -135,8 +136,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
     /* 30048b74/0x30048b81: local first-person predicted-player muzzle path — the
      * view is first-person (one of the 0xc0000 flags) and this is the local
      * client. Everything else falls through to the entity paths at 0x30048c68. */
-    if ((snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 &&
-        entityNum == snap->ps.psClientNum) {
+    if ((snap->ps.playerStateFlags & PSF_PLAYER_ENTITY_MASK) != 0 && entityNum == snap->ps.psClientNum) {
 
         /* 30048b8d-0x30048bbc: muzzle = ps.origin, then muzzle.z += ps.viewHeightCurrent. */
         muzzle[0] = snap->ps.psOrigin[0];
@@ -147,8 +147,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
         /* 30048bb6-0x30048bd4: for an LMG fired while PMF_ADS is set, nudge
          * the muzzle forward along the aim direction. */
         weaponInfo_t *w = bg_weaponInfos[snap->ps.currentWeapon];
-        if (w->weaponClass == WEAPCLASS_LMG &&
-            (snap->ps.playerStateFlags & PMF_ADS) != 0) {
+        if (w->weaponClass == WEAPCLASS_LMG && (snap->ps.playerStateFlags & PMF_ADS) != 0) {
 
             /* 30048bdc-0x30048bfa: angles = (0, proneDirection, 0); the yaw is the
              * ps float at +0x5b0 copied as a dword. */
@@ -169,11 +168,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
 
         /* 30048c3c-0x30048c58: apply the view-anchored spin offset. leanFraction
          * and the spin angle are ps/cg floats read as dwords. */
-        AddLeanToPosition(muzzle,
-                              cg_refdefViewAngles[1],
-                              snap->ps.leanFraction,
-                              CG_MUZZLE_SPIN_SCALE_A,
-                              CG_MUZZLE_SPIN_SCALE_B);
+        AddLeanToPosition(muzzle, cg_refdefViewAngles[1], snap->ps.leanFraction, CG_MUZZLE_SPIN_SCALE_A, CG_MUZZLE_SPIN_SCALE_B);
 
         /* 30048c5e: MOV EAX,1 ; RET. */
         return qtrue;
@@ -187,8 +182,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
      * zero engine handle (JZ 0x30048c95) both fail out with no muzzle. */
     if (slot->currentValid != 0) {
         /* 30048c80-0x30048c88: query the entity's DObj handle from the engine. */
-        struct DObj_s *dobj = (struct DObj_s *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_HANDLE, (int32_t)slot->currentState.number);
+        struct DObj_s *dobj = (struct DObj_s *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, (int32_t)slot->currentState.number);
 
         if (dobj != NULL) {
             /* 30048ca1-0x30048cb1: build the entity's DObj bone/tag world matrix.
@@ -198,8 +192,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
              * the named bone — NOT a dead load (the earlier annotation was wrong;
              * see the callee body at 0x3001fdf8). */
             DObjSkelMat boneMatrix;
-            if (CG_DObjGetWorldTagMatrix(dobj,
-                                                weaponName, slot, &boneMatrix)) {
+            if (CG_DObjGetWorldTagMatrix(dobj, weaponName, slot, &boneMatrix)) {
                 /* 30048cb5-0x30048cc9: muzzle = the DObjSkelMat origin row read
                  * at [ESP+0x58/0x5c/0x60] over the buffer based at ESP+0x28. */
                 muzzle[0] = boneMatrix.origin[0];
@@ -234,8 +227,7 @@ qboolean CG_CalcMuzzlePoint(const char *weaponName, int32_t entityNum,
 
     /* 30048cee-0x30048cf5: developer diagnostic for a missing weapon DObj on a
      * client (Com_DPrintf, the developer-gated printer at 0x3002b470). */
-    Com_DPrintf("No %s in CG_CalcMuzzlePoint on entity %d.\n", weaponName,
-                entityNum);
+    Com_DPrintf("No %s in CG_CalcMuzzlePoint on entity %d.\n", weaponName, entityNum);
 
     /* 30048cfa-0x30048d43: add the per-stance viewheight (int cvar-like globals,
      * FILD to float) to muzzle.z based on the entity's eFlags stance bits. */

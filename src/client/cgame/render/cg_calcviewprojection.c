@@ -43,9 +43,9 @@
  * cg_refdef.vieworg (0x30487a90), passed as an integer marker/handle argument;
  * the second is the exclude id (-1 = none), the third is the mask (0x20).
  */
-#define MARK_VIEWORG_ARG   (cg_refdef.vieworg)
-#define MARK_EXCLUDE_NONE  (-1)
-#define MARK_PASS_MASK     ((int32_t)RDF_DRAW_SKYBOX)
+#define MARK_VIEWORG_ARG (cg_refdef.vieworg)
+#define MARK_EXCLUDE_NONE (-1)
+#define MARK_PASS_MASK ((int32_t)RDF_DRAW_SKYBOX)
 
 qboolean CG_CalcViewProjection(void)
 {
@@ -57,10 +57,8 @@ qboolean CG_CalcViewProjection(void)
     long double fovX = (long double)CG_CalcFov();
 
     /* Screen (3D-view) dimensions, converted int -> float (FILD). */
-    long double viewHeightCurrent =
-        (long double)coduo_int32_from_bits(cg_refdef.height); /* FILD [0x30487a84] */
-    long double viewWidth =
-        (long double)coduo_int32_from_bits(cg_refdef.width);  /* FILD [0x30487a80] */
+    long double viewHeightCurrent = (long double)coduo_int32_from_bits(cg_refdef.height); /* FILD [0x30487a84] */
+    long double viewWidth = (long double)coduo_int32_from_bits(cg_refdef.width);  /* FILD [0x30487a80] */
 
     /*
      * Vertical FOV from horizontal FOV and aspect. Exactly the x87 sequence:
@@ -72,9 +70,7 @@ qboolean CG_CalcViewProjection(void)
      */
     long double halfFovX = fovX * (long double)DEG_TO_HALF_RAD;
     long double tangent = coduo_x87_tanl(halfFovX);
-    long double fovY = coduo_x87_atan2l(
-        viewHeightCurrent, viewWidth / tangent) *
-        (long double)HALF_RAD_TO_DEG;
+    long double fovY = coduo_x87_atan2l(viewHeightCurrent, viewWidth / tangent) * (long double)HALF_RAD_TO_DEG;
 
     /*
      * First mark-render pass. If it drew (nonzero), set the flag bit and pulse
@@ -89,15 +85,12 @@ qboolean CG_CalcViewProjection(void)
     long double termA = fovY; /* st0 at 0x30040315 (fovY, possibly pulsed) */
     long double termB = fovX; /* st1 at 0x30040315 (fovX, possibly pulsed) */
 
-    if (CG_PointContents(MARK_VIEWORG_ARG, MARK_EXCLUDE_NONE,
-                                    MARK_PASS_MASK) != 0) {   /* 0x300402e1 CALL, 0x300402e9 TEST */
+    if (CG_PointContents(MARK_VIEWORG_ARG, MARK_EXCLUDE_NONE, MARK_PASS_MASK) != 0) {   /* 0x300402e1 CALL, 0x300402e9 TEST */
         /* 0x300402f2 FILD feeds cg_time straight into the FMUL/FSIN with no
          * intermediate float store, so drop the explicit (float) cast: under
          * -std=c11 it would round cg_time (a ms clock that passes 2^24) where the
          * DLL keeps it exact in 80-bit. */
-        long double pulse = coduo_x87_sinl(
-            (long double)coduo_int32_from_bits(cg_time) *
-            (long double)PULSE_RATE_2500MS);
+        long double pulse = coduo_x87_sinl((long double)coduo_int32_from_bits(cg_time) * (long double)PULSE_RATE_2500MS);
         markFlags |= RDF_DRAW_SKYBOX;                       /* 0x300402fd OR EAX,0x20 */
         termB = fovX + pulse;                                 /* 0x3004030a FADDP ST3,ST0 */
         termA = fovY - pulse;                                 /* 0x3004030c FSUBP */
@@ -112,8 +105,7 @@ qboolean CG_CalcViewProjection(void)
      * Second mark-render pass. Same three args; toggles the same flag bit by its
      * own return, but does not affect termA/termB or the returned value.
      */
-    if (CG_PointContents(MARK_VIEWORG_ARG, MARK_EXCLUDE_NONE,
-                                    MARK_PASS_MASK) != 0) {   /* 0x30040323 CALL, 0x3004032b TEST */
+    if (CG_PointContents(MARK_VIEWORG_ARG, MARK_EXCLUDE_NONE, MARK_PASS_MASK) != 0) {   /* 0x30040323 CALL, 0x3004032b TEST */
         markFlags = (int32_t)cg_refdef.rdflags | RDF_DRAW_SKYBOX;   /* 0x30040334 OR */
     } else {
         markFlags = (int32_t)cg_refdef.rdflags & ~RDF_DRAW_SKYBOX;  /* 0x30040339 AND */
@@ -129,8 +121,7 @@ qboolean CG_CalcViewProjection(void)
      */
     cg_refdef.fov_x = (float)termB;               /* 0x30040343 FSTP [..a88] */
     cg_refdef.fov_y = (float)termA;               /* 0x3004034c FSTP [..a8c] */
-    cg_zoomSensitivity = (float)(
-        termB / (long double)cg_fov_vmCvar.value); /* 0x30040352 FDIV, 0x30040358 FSTP */
+    cg_zoomSensitivity = (float)(termB / (long double)cg_fov_vmCvar.value); /* 0x30040352 FDIV, 0x30040358 FSTP */
 
     return drewFirst ? qtrue : qfalse;                        /* 0x30040349 MOV EAX,ESI */
 }

@@ -63,36 +63,34 @@
  * x87-vs-SSE. On x86-64 the ABI default is SSE, so !defined(__SSE_MATH__) means
  * -mfpmath=387 was chosen.
  */
-#if defined(__i386__) || defined(__i486__) || defined(__i586__) || \
-    defined(__i686__)
-#  define CODUO_FP_DETECT_X87_CODEGEN 1
+#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
+#define CODUO_FP_DETECT_X87_CODEGEN 1
 #elif defined(__x86_64__) || defined(__amd64__)
-#  if !defined(__SSE_MATH__) && defined(__FLT_EVAL_METHOD__) && \
-      (__FLT_EVAL_METHOD__ == 2)
-#    define CODUO_FP_DETECT_X87_CODEGEN 1
-#  else
-#    define CODUO_FP_DETECT_X87_CODEGEN 0
-#  endif
+#if !defined(__SSE_MATH__) && defined(__FLT_EVAL_METHOD__) && (__FLT_EVAL_METHOD__ == 2)
+#define CODUO_FP_DETECT_X87_CODEGEN 1
+#else
+#define CODUO_FP_DETECT_X87_CODEGEN 0
+#endif
 #else
 /* Non-x86 (arm64, …): no x87 unit exists. */
-#  define CODUO_FP_DETECT_X87_CODEGEN 0
+#define CODUO_FP_DETECT_X87_CODEGEN 0
 #endif
 
-#if defined(__i386__) || defined(__i486__) || defined(__i586__) || \
-    defined(__i686__)
+#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
 /* 32-bit x86 is natively all-x87: faithful, no emulation. */
-#  define EMULATE_X87 0
+#define EMULATE_X87 0
 #elif defined(__x86_64__) || defined(__amd64__)
-#  if CODUO_FP_DETECT_X87_CODEGEN
+#if CODUO_FP_DETECT_X87_CODEGEN
 /* gcc -mfpmath=387 confirmed: faithful, no emulation. */
-#    define EMULATE_X87 0
-#  else
-#    error "x86-64 build without x87 codegen: float math (collision geometry) will deviate from the reference. Build with gcc -mfpmath=387 for a faithful build, or choose explicitly: -DEMULATE_X87=1 (software x87, faithful anywhere) or -DEMULATE_X87=0 (native SSE, NOT bit-exact). See docs/fp-faithfulness.md."
-#  endif
+#define EMULATE_X87 0
+#else
+#error \
+    "x86-64 build without x87 codegen: float math (collision geometry) will deviate from the reference. Build with gcc -mfpmath=387 for a faithful build, or choose explicitly: -DEMULATE_X87=1 (software x87, faithful anywhere) or -DEMULATE_X87=0 (native SSE, NOT bit-exact). See docs/fp-faithfulness.md."
+#endif
 #else
 /* arm64 and any other non-x86 arch: no x87 unit, so emulate to be faithful.
  * (Disable deliberately with -DEMULATE_X87=0 only for e.g. differential tests.) */
-#  define EMULATE_X87 1
+#define EMULATE_X87 1
 #endif
 
 #undef CODUO_FP_DETECT_X87_CODEGEN /* detection intermediate: never leaks */

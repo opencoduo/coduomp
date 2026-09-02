@@ -141,9 +141,7 @@ const char *ConcatArgs(int32_t start)
     int32_t length = 0;
     const int32_t argumentCount = Cmd_Argc();
 
-    for (int32_t argument = start;
-         argument < argumentCount;
-         ++argument) {
+    for (int32_t argument = start; argument < argumentCount; ++argument) {
         const char *const text = Cmd_Argv(argument);
         const int32_t textLength = (int32_t)strlen(text);
         if (length + textLength >= CL_CONCAT_ARGS_CAPACITY - 1)
@@ -168,16 +166,14 @@ void CL_Vsay_f(void)
 {
     const char *const text = ConcatArgs(1);
 
-    if (clc.voiceChatText[0] != '\0' &&
-        strcmp(text, clc.voiceChatText) == 0) {
+    if (clc.voiceChatText[0] != '\0' && strcmp(text, clc.voiceChatText) == 0) {
         ++clc.voiceChatRepeatCount;
         clc.voiceChatTime = cls.realTime;
         return;
     }
 
     clc.voiceChatRepeatCount = 0;
-    strncpy(clc.voiceChatText, text,
-            sizeof(clc.voiceChatText) - 1);
+    strncpy(clc.voiceChatText, text, sizeof(clc.voiceChatText) - 1);
     clc.voiceChatText[sizeof(clc.voiceChatText) - 1] = '\0';
     clc.voiceChatTime = cls.realTime;
 }
@@ -194,8 +190,7 @@ void CL_PlayVoiceChat(void)
     char *cursor;
     int32_t tokenCount = 0;
 
-    if (clc.voiceChatTime == 0 ||
-        clc.voiceChatTime + CL_VOICE_CHAT_DELAY_MSEC >= cls.realTime) {
+    if (clc.voiceChatTime == 0 || clc.voiceChatTime + CL_VOICE_CHAT_DELAY_MSEC >= cls.realTime) {
         return;
     }
 
@@ -210,9 +205,7 @@ void CL_PlayVoiceChat(void)
         clc.voiceChatRepeatCount %= pairCount;
 
         cursor = clc.voiceChatText;
-        for (int32_t pair = 0;
-             pair < clc.voiceChatRepeatCount;
-             ++pair) {
+        for (int32_t pair = 0; pair < clc.voiceChatRepeatCount; ++pair) {
             (void)Com_ParseExt(&cursor, qfalse);
             (void)Com_ParseExt(&cursor, qfalse);
         }
@@ -310,16 +303,12 @@ void CL_Disconnect(qboolean showMainMenu)
     }
 
     if (coduo_uiVm != NULL && showMainMenu != qfalse) {
-        (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU,
-                      0, 0, 0, 0, 0, 0,
-                      0, 0, 0, 0, 0, 0);
+        (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     SCR_StopCinematic();
 
-    if (cls.state >= CA_CONNECTED &&
-        clc.reliableSequence - clc.reliableAcknowledge <=
-            CODUO_RELIABLE_COMMAND_COUNT) {
+    if (cls.state >= CA_CONNECTED && clc.reliableSequence - clc.reliableAcknowledge <= CODUO_RELIABLE_COMMAND_COUNT) {
         CL_AddReliableCommand("disconnect");
         CL_WritePacket();
         CL_WritePacket();
@@ -343,21 +332,17 @@ void CL_Disconnect(qboolean showMainMenu)
 void CL_ForwardCommandToServer(const char *command)
 {
     const int32_t argumentCount = Cmd_Argc();
-    const char *const commandName =
-        argumentCount > 0 ? Cmd_Argv(0) : "";
+    const char *const commandName = argumentCount > 0 ? Cmd_Argv(0) : "";
 
     if (commandName[0] == '-')
         return;
 
-    if (clc.demoPlayback != qfalse ||
-        cls.state < CA_CONNECTED ||
-        commandName[0] == '+') {
+    if (clc.demoPlayback != qfalse || cls.state < CA_CONNECTED || commandName[0] == '+') {
         Com_Printf("Unknown command \"%s\"\n", commandName);
         return;
     }
 
-    CL_AddReliableCommand(
-        argumentCount > 1 ? command : commandName);
+    CL_AddReliableCommand(argumentCount > 1 ? command : commandName);
 }
 
 /* Source: CoDUOMP.exe 0x00410da0..0x00410ddb.
@@ -372,8 +357,7 @@ void CL_ForwardToServer_f(void)
     }
 
     if (Cmd_Argc() > CL_FIRST_COMMAND_ARGUMENT) {
-        CL_AddReliableCommand(
-            Cmd_Args(CL_FIRST_COMMAND_ARGUMENT));
+        CL_AddReliableCommand(Cmd_Args(CL_FIRST_COMMAND_ARGUMENT));
     }
 }
 
@@ -400,9 +384,7 @@ void CL_Setenv_f(void)
         memcpy(assignment, name, nameLength);
         assignmentLength = nameLength;
         assignment[assignmentLength++] = '=';
-        for (int32_t argumentIndex = CL_SETENV_FIRST_VALUE_ARGUMENT;
-             argumentIndex < argumentCount;
-             ++argumentIndex) {
+        for (int32_t argumentIndex = CL_SETENV_FIRST_VALUE_ARGUMENT; argumentIndex < argumentCount; ++argumentIndex) {
             const char *const value = Cmd_Argv(argumentIndex);
             const size_t valueLength = strlen(value);
             const size_t remainingCapacity = sizeof(assignment) - assignmentLength;
@@ -441,11 +423,8 @@ void CL_Disconnect_f(void)
 {
     SCR_StopCinematic();
 
-    if (cls.state != CA_DISCONNECTED &&
-        cls.state != CA_CINEMATIC &&
-        cls.state != CA_LOGO) {
-        Com_Error(ERR_DISCONNECT,
-                  "EXE_DISCONNECTED_FROM_SERVER");
+    if (cls.state != CA_DISCONNECTED && cls.state != CA_CINEMATIC && cls.state != CA_LOGO) {
+        Com_Error(ERR_DISCONNECT, "EXE_DISCONNECTED_FROM_SERVER");
     }
 }
 
@@ -456,8 +435,7 @@ void CL_Disconnect_f(void)
  * all other remembered server names are requeued through the command buffer. */
 void CL_Reconnect_f(void)
 {
-    if (cls.serverName[0] != '\0' &&
-        strcmp(cls.serverName, "localhost") != 0) {
+    if (cls.serverName[0] != '\0' && strcmp(cls.serverName, "localhost") != 0) {
         Cbuf_AddText(va("connect %s\n", cls.serverName));
         return;
     }
@@ -483,8 +461,7 @@ void CL_Connect_f(void)
     clc.serverMessage[0] = '\0';
 
     const char *const server = Cmd_Argv(CL_CONNECT_SERVER_ARGUMENT);
-    if (sv_running->integer != 0 &&
-        strcmp(server, "localhost") == 0) {
+    if (sv_running->integer != 0 && strcmp(server, "localhost") == 0) {
         Com_Shutdown("EXE_SERVERQUIT");
     }
 
@@ -504,29 +481,18 @@ void CL_Connect_f(void)
     }
 
     if (clc.serverAddress.port == 0) {
-        clc.serverAddress.port = (uint16_t)BigShort(
-            (int16_t)CL_DEFAULT_SERVER_PORT);
+        clc.serverAddress.port = (uint16_t)BigShort((int16_t)CL_DEFAULT_SERVER_PORT);
     }
 
-    Com_Printf("%s resolved to %i.%i.%i.%i:%i\n",
-               cls.serverName,
-               clc.serverAddress.ip[0],
-               clc.serverAddress.ip[1],
-               clc.serverAddress.ip[2],
-               clc.serverAddress.ip[3],
-               (int32_t)(int16_t)BigShort(
-                   (int16_t)clc.serverAddress.port));
+    Com_Printf("%s resolved to %i.%i.%i.%i:%i\n", cls.serverName, clc.serverAddress.ip[0], clc.serverAddress.ip[1], clc.serverAddress.ip[2],
+               clc.serverAddress.ip[3], (int32_t)(int16_t)BigShort((int16_t)clc.serverAddress.port));
 
-    if (clc.serverAddress.type != NA_LOOPBACK &&
-        clc.serverAddress.type != NA_BAD &&
-        CL_CDKeyValidate(
-            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
-            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+    if (clc.serverAddress.type != NA_LOOPBACK && clc.serverAddress.type != NA_BAD &&
+        CL_CDKeyValidate(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
         Com_Error(ERR_DROP, "EXE_ERR_INVALID_CD_KEY");
     }
 
-    if (clc.serverAddress.type == NA_LOOPBACK ||
-        clc.serverAddress.type == NA_BAD) {
+    if (clc.serverAddress.type == NA_LOOPBACK || clc.serverAddress.type == NA_BAD) {
         cls.state = CA_CHALLENGING;
     } else {
         cls.state = CA_CONNECTING;
@@ -535,8 +501,7 @@ void CL_Connect_f(void)
     cls.keyCatchers = 0;
     clc.connectTime = CL_CONNECT_INITIAL_RESEND_TIME;
     clc.connectPacketCount = 0;
-    (void)Cvar_Set2(
-        "cl_currentServerAddress", server, qtrue);
+    (void)Cvar_Set2("cl_currentServerAddress", server, qtrue);
 }
 
 /* Source: CoDUOMP.exe 0x004111c0..0x00411445.
@@ -552,9 +517,8 @@ void CL_Rcon_f(void)
     netadr_t destination;
 
     if (rcon_client_password->string[0] == '\0') {
-        Com_Printf(
-            "You must set 'rcon_password' before\n"
-            "issuing an rcon command.\n");
+        Com_Printf("You must set 'rcon_password' before\n"
+                   "issuing an rcon command.\n");
         return;
     }
 
@@ -562,54 +526,40 @@ void CL_Rcon_f(void)
     message[messageLength] = '\0';
 
     const char *source = "rcon ";
-    while (*source != '\0' &&
-           messageLength < CL_RCON_PACKET_CAPACITY) {
+    while (*source != '\0' && messageLength < CL_RCON_PACKET_CAPACITY) {
         message[messageLength++] = *source++;
     }
 
     source = rcon_client_password->string;
-    while (*source != '\0' &&
-           messageLength < CL_RCON_PACKET_CAPACITY) {
+    while (*source != '\0' && messageLength < CL_RCON_PACKET_CAPACITY) {
         message[messageLength++] = *source++;
     }
 
-    for (int32_t argumentIndex = CL_FIRST_COMMAND_ARGUMENT;
-         argumentIndex < Cmd_Argc();
-         ++argumentIndex) {
+    for (int32_t argumentIndex = CL_FIRST_COMMAND_ARGUMENT; argumentIndex < Cmd_Argc(); ++argumentIndex) {
         source = " ";
-        while (*source != '\0' &&
-               messageLength < CL_RCON_PACKET_CAPACITY) {
+        while (*source != '\0' && messageLength < CL_RCON_PACKET_CAPACITY) {
             message[messageLength++] = *source++;
         }
 
         const char *const argument = Cmd_Argv(argumentIndex);
-        const int32_t remainingCapacity =
-            CL_RCON_PACKET_CAPACITY - messageLength;
-        qboolean quoteArgument =
-            argument[0] == '\0' ? qtrue : qfalse;
+        const int32_t remainingCapacity = CL_RCON_PACKET_CAPACITY - messageLength;
+        qboolean quoteArgument = argument[0] == '\0' ? qtrue : qfalse;
 
-        for (int32_t offset = 0;
-             quoteArgument == qfalse &&
-             offset < remainingCapacity &&
-             argument[offset] != '\0';
-             ++offset) {
+        for (int32_t offset = 0; quoteArgument == qfalse && offset < remainingCapacity && argument[offset] != '\0'; ++offset) {
             if ((int8_t)(uint8_t)argument[offset] <= ' ')
                 quoteArgument = qtrue;
         }
 
-        if (quoteArgument != qfalse &&
-            messageLength < CL_RCON_PACKET_CAPACITY) {
+        if (quoteArgument != qfalse && messageLength < CL_RCON_PACKET_CAPACITY) {
             message[messageLength++] = '"';
         }
 
         source = argument;
-        while (*source != '\0' &&
-               messageLength < CL_RCON_PACKET_CAPACITY) {
+        while (*source != '\0' && messageLength < CL_RCON_PACKET_CAPACITY) {
             message[messageLength++] = *source++;
         }
 
-        if (quoteArgument != qfalse &&
-            messageLength < CL_RCON_PACKET_CAPACITY) {
+        if (quoteArgument != qfalse && messageLength < CL_RCON_PACKET_CAPACITY) {
             message[messageLength++] = '"';
         }
     }
@@ -624,27 +574,23 @@ void CL_Rcon_f(void)
         destination = clc.netchan.remoteAddress;
     } else {
         if (rcon_client_address->string[0] == '\0') {
-            Com_Printf(
-                "You must either be connected,\n"
-                "or set the 'rconAddress' cvar\n"
-                "to issue rcon commands\n");
+            Com_Printf("You must either be connected,\n"
+                       "or set the 'rconAddress' cvar\n"
+                       "to issue rcon commands\n");
             return;
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-        if (NET_StringToAdr(rcon_client_address->string, &destination) ==
-            qfalse) {
+        if (NET_StringToAdr(rcon_client_address->string, &destination) == qfalse) {
             Com_Printf("Bad rcon address\n");
             return;
         }
         if (destination.port == 0) {
-            destination.port = (uint16_t)BigShort(
-                (int16_t)CL_DEFAULT_SERVER_PORT);
+            destination.port = (uint16_t)BigShort((int16_t)CL_DEFAULT_SERVER_PORT);
         }
     }
 
-    CL_Netchan_SendOOBPacket(
-        destination, message, (int32_t)strlen(message) + 1);
+    CL_Netchan_SendOOBPacket(destination, message, (int32_t)strlen(message) + 1);
 }
 
 /* Source: CoDUOMP.exe 0x00411450..0x0041153c.
@@ -663,8 +609,7 @@ void CL_SendPureChecksums(void)
     Com_sprintf(command, sizeof(command), "Va ");
 
     const size_t prefixLength = strlen(command);
-    Q_strncpyz(command + prefixLength, checksums,
-               (int32_t)(sizeof(command) - prefixLength));
+    Q_strncpyz(command + prefixLength, checksums, (int32_t)(sizeof(command) - prefixLength));
 
     command[0] += CL_PURE_COMMAND_FIRST_CHAR_DELTA;
     command[1] += CL_PURE_COMMAND_SECOND_CHAR_DELTA;
@@ -746,9 +691,7 @@ int32_t CG_GetGameModel(int16_t modelIndex)
         return 0;
     }
 
-    return (int32_t)VM_Call(
-        coduo_cgameVm, CGVM_GET_MODEL_HANDLE, modelIndex,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return (int32_t)VM_Call(coduo_cgameVm, CGVM_GET_MODEL_HANDLE, modelIndex, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* Source: CoDUOMP.exe 0x00413f60..0x00413f7e, recovered after repairing the
@@ -756,13 +699,9 @@ int32_t CG_GetGameModel(int16_t modelIndex)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00413f60_00413f7f.mcode.
  * Name and three forwarded arguments: exact same-module Mac symbol
  * CG_DObjCalcPose. */
-void CG_DObjCalcPose(void *owner, struct DObj_s *obj,
-                     uint32_t *partBits)
+void CG_DObjCalcPose(void *owner, struct DObj_s *obj, uint32_t *partBits)
 {
-    (void)VM_Call(
-        coduo_cgameVm, CGVM_DOBJ_CALC_POSE,
-        (intptr_t)owner, (intptr_t)obj, (intptr_t)partBits,
-        0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(coduo_cgameVm, CGVM_DOBJ_CALC_POSE, (intptr_t)owner, (intptr_t)obj, (intptr_t)partBits, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* Source: CoDUOMP.exe 0x00413f80..0x00413fa4, recovered after repairing the
@@ -775,9 +714,7 @@ fontInfo_t *CL_GetFontInfo(int32_t fontHandle, float scale)
 {
     const int32_t scaleHundredths = (int32_t)(scale * 100.0f);
 
-    return (fontInfo_t *)VM_Call(
-        coduo_uiVm, UIVM_GET_FONT, fontHandle, scaleHundredths,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return (fontInfo_t *)VM_Call(coduo_uiVm, UIVM_GET_FONT, fontHandle, scaleHundredths, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* Source: CoDUOMP.exe 0x00413fb0..0x00414164.
@@ -787,50 +724,47 @@ fontInfo_t *CL_GetFontInfo(int32_t fontHandle, float scale)
  * 59 returned exports into the client-owned renderer table. */
 void CL_InitRef(void)
 {
-    refimport_t imports = {
-        .Printf = CL_RefPrintf,
-        .Error = Com_Error,
-        .Milliseconds = CL_ScaledMilliseconds,
-        .Hunk_Alloc = Hunk_AllocInternal,
-        .Hunk_AllocateTempMemory = Hunk_AllocateTempMemoryInternal,
-        .Z_Malloc = Z_MallocInternal,
-        .Z_Free = Z_FreeInternal,
-        .Hunk_FreeTempMemory = Hunk_FreeTempMemory,
-        .Cvar_Get = Cvar_Get,
-        .Cvar_FindVar = Cvar_FindVar,
-        .Cvar_Set = Cvar_Set,
-        .Cmd_AddCommand = Cmd_AddCommand,
-        .Cmd_RemoveCommand = Cmd_RemoveCommand,
-        .Cmd_Argc = Cmd_Argc,
-        .Cmd_Argv = Cmd_Argv,
-        .Cmd_ExecuteText = Cbuf_ExecuteText,
-        .Com_SaveCvarsToBuffer = Com_SaveCvarsToBuffer,
-        .Com_LoadCvarsFromBuffer = Com_LoadCvarsFromBuffer,
-        .FS_FileIsInPAK = FS_FileIsInPAK,
-        .FS_ReadFile = FS_ReadFile,
-        .FS_FreeFile = FS_FreeFile,
-        .FS_ListFiles = FS_ListFiles,
-        .FS_FreeFileList = FS_FreeFileList,
-        .FS_WriteFile = FS_WriteFile,
-        .FS_FileExists = FS_FileExists,
-        .FS_FOpenFileRead = FS_FOpenFileRead,
-        .FS_FCloseFile = FS_FCloseFile,
-        .FS_Read = FS_Read,
-        .FS_Write = FS_Write,
-        .CM_SaveLump = CM_SaveLump,
-        .CM_PlaneForIndex = CM_PlaneForIndex,
-        .CIN_UploadCinematic = CIN_UploadCinematic,
-        .CIN_PlayCinematic = CIN_PlayCinematic,
-        .CIN_RunCinematic = CIN_RunCinematic,
-        .CG_GetGameModel = CG_GetGameModel,
-        .CG_DObjCalcPose = CG_DObjCalcPose,
-        .AdjustFrom640 = SCR_AdjustFrom640,
-        .CL_GetFontInfo = CL_GetFontInfo
-    };
+    refimport_t imports = {.Printf = CL_RefPrintf,
+                           .Error = Com_Error,
+                           .Milliseconds = CL_ScaledMilliseconds,
+                           .Hunk_Alloc = Hunk_AllocInternal,
+                           .Hunk_AllocateTempMemory = Hunk_AllocateTempMemoryInternal,
+                           .Z_Malloc = Z_MallocInternal,
+                           .Z_Free = Z_FreeInternal,
+                           .Hunk_FreeTempMemory = Hunk_FreeTempMemory,
+                           .Cvar_Get = Cvar_Get,
+                           .Cvar_FindVar = Cvar_FindVar,
+                           .Cvar_Set = Cvar_Set,
+                           .Cmd_AddCommand = Cmd_AddCommand,
+                           .Cmd_RemoveCommand = Cmd_RemoveCommand,
+                           .Cmd_Argc = Cmd_Argc,
+                           .Cmd_Argv = Cmd_Argv,
+                           .Cmd_ExecuteText = Cbuf_ExecuteText,
+                           .Com_SaveCvarsToBuffer = Com_SaveCvarsToBuffer,
+                           .Com_LoadCvarsFromBuffer = Com_LoadCvarsFromBuffer,
+                           .FS_FileIsInPAK = FS_FileIsInPAK,
+                           .FS_ReadFile = FS_ReadFile,
+                           .FS_FreeFile = FS_FreeFile,
+                           .FS_ListFiles = FS_ListFiles,
+                           .FS_FreeFileList = FS_FreeFileList,
+                           .FS_WriteFile = FS_WriteFile,
+                           .FS_FileExists = FS_FileExists,
+                           .FS_FOpenFileRead = FS_FOpenFileRead,
+                           .FS_FCloseFile = FS_FCloseFile,
+                           .FS_Read = FS_Read,
+                           .FS_Write = FS_Write,
+                           .CM_SaveLump = CM_SaveLump,
+                           .CM_PlaneForIndex = CM_PlaneForIndex,
+                           .CIN_UploadCinematic = CIN_UploadCinematic,
+                           .CIN_PlayCinematic = CIN_PlayCinematic,
+                           .CIN_RunCinematic = CIN_RunCinematic,
+                           .CG_GetGameModel = CG_GetGameModel,
+                           .CG_DObjCalcPose = CG_DObjCalcPose,
+                           .AdjustFrom640 = SCR_AdjustFrom640,
+                           .CL_GetFontInfo = CL_GetFontInfo};
 
     Com_Printf("----- Initializing Renderer ----\n");
-    refexport_t *const exports =
-        GetRefAPI(RENDERER_API_VERSION, &imports);
+    refexport_t *const exports = GetRefAPI(RENDERER_API_VERSION, &imports);
     Com_Printf("-------------------------------\n");
 
     if (exports == NULL)
@@ -871,13 +805,9 @@ void CL_DrawLogo(void)
     long double alpha;
 
     if (elapsed < cls.logoFadeInDuration) {
-        alpha = (long double)elapsed /
-                (long double)cls.logoFadeInDuration;
-    } else if (elapsed >
-               cls.logoTotalDuration - cls.logoFadeOutDuration) {
-        alpha =
-            (long double)(cls.logoTotalDuration - elapsed) /
-            (long double)cls.logoFadeOutDuration;
+        alpha = (long double)elapsed / (long double)cls.logoFadeInDuration;
+    } else if (elapsed > cls.logoTotalDuration - cls.logoFadeOutDuration) {
+        alpha = (long double)(cls.logoTotalDuration - elapsed) / (long double)cls.logoFadeOutDuration;
     } else {
         alpha = 1.0f;
     }
@@ -888,25 +818,16 @@ void CL_DrawLogo(void)
         alpha = 0.0f;
 
     const float storedAlpha = (float)alpha;
-    const vec4_t color = {
-        storedAlpha, storedAlpha, storedAlpha, 1.0f
-    };
+    const vec4_t color = {storedAlpha, storedAlpha, storedAlpha, 1.0f};
     const float width = (float)cls.rendererConfig.vidWidth;
     const float height = (float)cls.rendererConfig.vidHeight;
-    const float splitY = (float)(
-        ((long double)cls.rendererConfig.vidHeight +
-         (long double)cls.rendererConfig.vidHeight) *
-        (long double)0.3333333432674408f);
-    const float bottomHeight =
-        (float)((long double)height - (long double)splitY);
+    const float splitY =
+        (float)(((long double)cls.rendererConfig.vidHeight + (long double)cls.rendererConfig.vidHeight) * (long double)0.3333333432674408f);
+    const float bottomHeight = (float)((long double)height - (long double)splitY);
 
     rendererExports.SetColor(color);
-    rendererExports.StretchPic(
-        0.0f, 0.0f, width, splitY,
-        0.0f, 0.0f, 1.0f, 1.0f, cls.logoShaderTop);
-    rendererExports.StretchPic(
-        0.0f, splitY, width, bottomHeight,
-        0.0f, 0.0f, 1.0f, 1.0f, cls.logoShaderBottom);
+    rendererExports.StretchPic(0.0f, 0.0f, width, splitY, 0.0f, 0.0f, 1.0f, 1.0f, cls.logoShaderTop);
+    rendererExports.StretchPic(0.0f, splitY, width, bottomHeight, 0.0f, 0.0f, 1.0f, 1.0f, cls.logoShaderBottom);
     rendererExports.SetColor(NULL);
 
     if (elapsed > cls.logoTotalDuration)
@@ -938,9 +859,8 @@ void CL_PlayLogo_f(void)
     };
 
     if (Cmd_Argc() != CL_LOGO_ARGUMENT_COUNT) {
-        Com_Printf(
-            "USAGE: logo <image name> <fadein seconds> "
-            "<full duration seconds> <fadeout seconds>\n");
+        Com_Printf("USAGE: logo <image name> <fadein seconds> "
+                   "<full duration seconds> <fadeout seconds>\n");
         return;
     }
 
@@ -948,35 +868,25 @@ void CL_PlayLogo_f(void)
 
     if (cls.state == CA_CINEMATIC) {
         SCR_StopCinematic();
-    } else if (cls.state != CA_LOGO &&
-               cls.state != CA_DISCONNECTED) {
+    } else if (cls.state != CA_LOGO && cls.state != CA_DISCONNECTED) {
         return;
     }
 
     cls.state = CA_LOGO;
     if (coduo_uiVm != NULL) {
-        (void)VM_Call(
-            coduo_uiVm, UIVM_SET_ACTIVE_MENU, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        (void)VM_Call(coduo_uiVm, UIVM_SET_ACTIVE_MENU, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
     MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
     MSS_FadeAllSounds(1.0f, CL_LOGO_AUDIO_FADE_MSEC);
 
     const char *const imageName = Cmd_Argv(1);
-    cls.logoFadeInDuration = FastRound(
-        (float)(atof(Cmd_Argv(2)) * 1000.0));
-    const int32_t fullDuration = FastRound(
-        (float)(atof(Cmd_Argv(3)) * 1000.0));
-    cls.logoFadeOutDuration = FastRound(
-        (float)(atof(Cmd_Argv(4)) * 1000.0));
-    cls.logoTotalDuration =
-        cls.logoFadeInDuration + fullDuration +
-        cls.logoFadeOutDuration;
+    cls.logoFadeInDuration = FastRound((float)(atof(Cmd_Argv(2)) * 1000.0));
+    const int32_t fullDuration = FastRound((float)(atof(Cmd_Argv(3)) * 1000.0));
+    cls.logoFadeOutDuration = FastRound((float)(atof(Cmd_Argv(4)) * 1000.0));
+    cls.logoTotalDuration = cls.logoFadeInDuration + fullDuration + cls.logoFadeOutDuration;
 
-    cls.logoShaderTop = rendererExports.RegisterShaderNoMip(
-        va("%s1", imageName), CL_LOGO_SHADER_LOAD_MODE);
-    cls.logoShaderBottom = rendererExports.RegisterShaderNoMip(
-        va("%s2", imageName), CL_LOGO_SHADER_LOAD_MODE);
+    cls.logoShaderTop = rendererExports.RegisterShaderNoMip(va("%s1", imageName), CL_LOGO_SHADER_LOAD_MODE);
+    cls.logoShaderBottom = rendererExports.RegisterShaderNoMip(va("%s2", imageName), CL_LOGO_SHADER_LOAD_MODE);
     cls.logoStartTime = cls.realTime + CL_LOGO_START_DELAY_MSEC;
 }
 
@@ -999,14 +909,11 @@ void CL_Vid_Restart_f(void)
 
     if (coduo_cgameVm != NULL) {
         uint8_t *const temporaryState = Hunk_AllocateTempMemoryInternal(0);
-        savedCgameStateSize =
-            CL_SaveCgameState(
-                (int32_t)Hunk_MemoryRemaining(), temporaryState);
+        savedCgameStateSize = CL_SaveCgameState((int32_t)Hunk_MemoryRemaining(), temporaryState);
 
         savedCgameState = Z_MallocInternal((size_t)savedCgameStateSize);
         memset(savedCgameState, 0, (size_t)savedCgameStateSize);
-        memcpy(savedCgameState, temporaryState,
-               (size_t)savedCgameStateSize);
+        memcpy(savedCgameState, temporaryState, (size_t)savedCgameStateSize);
         Hunk_FreeTempMemory(temporaryState);
     }
 
@@ -1019,14 +926,9 @@ void CL_Vid_Restart_f(void)
     FS_ClearPakReferences(qtrue);
     Hunk_ClearToStart();
 
-    (void)Cvar_Get(
-        "cl_language", "0",
-        CVAR_ARCHIVE | CVAR_LATCH);
-    (void)Cvar_Get(
-        "cl_languagetranslate", "1", CVAR_LATCH);
-    (void)Cvar_Get(
-        "fs_ignoreLocalized", "0",
-        CVAR_LATCH | CVAR_CHEAT);
+    (void)Cvar_Get("cl_language", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    (void)Cvar_Get("cl_languagetranslate", "1", CVAR_LATCH);
+    (void)Cvar_Get("fs_ignoreLocalized", "0", CVAR_LATCH | CVAR_CHEAT);
 
     if (sv_running->integer == 0)
         FS_ConditionalRestart(clc.checksumFeed);
@@ -1038,17 +940,14 @@ void CL_Vid_Restart_f(void)
     CL_InitRef();
     CL_StartHunkUsers();
 
-    if (cls.state > CA_CONNECTED &&
-        cls.state != CA_CINEMATIC &&
-        cls.state != CA_LOGO) {
+    if (cls.state > CA_CONNECTED && cls.state != CA_CINEMATIC && cls.state != CA_LOGO) {
         CL_InitCGame();
         CL_SendPureChecksums();
     }
 
     if (savedCgameState != NULL) {
         if (coduo_cgameVm != NULL) {
-            (void)CL_RestoreCgameState(
-                savedCgameStateSize, savedCgameState);
+            (void)CL_RestoreCgameState(savedCgameStateSize, savedCgameState);
         }
         Z_FreeInternal(savedCgameState);
     }
@@ -1065,9 +964,7 @@ void CL_StartHunkUsers(void)
     if (cl_running == NULL || cl_running->integer == 0)
         return;
 
-    XModelEnforceExist(
-        Cvar_Get("cl_xmodelcheck", "0",
-                 CVAR_ARCHIVE | CVAR_LATCH)->integer);
+    XModelEnforceExist(Cvar_Get("cl_xmodelcheck", "0", CVAR_ARCHIVE | CVAR_LATCH)->integer);
 
     if (cls.rendererStarted == qfalse) {
         cls.rendererStarted = qtrue;
@@ -1101,10 +998,8 @@ void CL_Snd_Restart_f(void)
         return;
     }
 
-    uint8_t *const temporarySave =
-        Hunk_AllocateTempMemoryInternal(0);
-    const int32_t saveSize =
-        MSS_Save(temporarySave, (int32_t)Hunk_MemoryRemaining());
+    uint8_t *const temporarySave = Hunk_AllocateTempMemoryInternal(0);
+    const int32_t saveSize = MSS_Save(temporarySave, (int32_t)Hunk_MemoryRemaining());
 
     uint8_t *const retainedSave = Z_MallocInternal((size_t)saveSize);
     memset(retainedSave, 0, (size_t)saveSize);
@@ -1134,8 +1029,7 @@ void CL_OpenedPK3List_f(void)
  * CL_ReferencedPK3List_f. */
 void CL_ReferencedPK3List_f(void)
 {
-    Com_Printf("Referenced PK3 Names: %s\n",
-               FS_ReferencedPakNames());
+    Com_Printf("Referenced PK3 Names: %s\n", FS_ReferencedPakNames());
 }
 
 /* Source: CoDUOMP.exe 0x00411890..0x004118da.
@@ -1149,13 +1043,10 @@ void CL_Configstrings_f(void)
         return;
     }
 
-    for (int32_t index = 0;
-         index < MAX_CONFIGSTRINGS;
-         ++index) {
+    for (int32_t index = 0; index < MAX_CONFIGSTRINGS; ++index) {
         const int32_t offset = cl.gameState.stringOffsets[index];
         if (offset != 0) {
-            Com_Printf("%4i: %s\n", index,
-                       &cl.gameState.stringData[offset]);
+            Com_Printf("%4i: %s\n", index, &cl.gameState.stringData[offset]);
         }
     }
 }
@@ -1183,9 +1074,7 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
 {
     uint32_t value = 0;
 
-    for (int32_t keyIndex = 0;
-         keyIndex < CL_CDKEY_CHECKED_LENGTH;
-         ++keyIndex) {
+    for (int32_t keyIndex = 0; keyIndex < CL_CDKEY_CHECKED_LENGTH; ++keyIndex) {
         value ^= (uint32_t)(int32_t)(int8_t)key[keyIndex];
 
         for (int32_t bit = 0; bit < 8; ++bit) {
@@ -1196,12 +1085,9 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
     }
 
     char calculatedChecksum[CL_CDKEY_CHECKSUM_LENGTH + 1];
-    coduo_crt_snprintf(calculatedChecksum, sizeof(calculatedChecksum),
-                         "%04x", value);
+    coduo_crt_snprintf(calculatedChecksum, sizeof(calculatedChecksum), "%04x", value);
 
-    if (checksum != NULL &&
-        Q_stricmpn(calculatedChecksum, checksum,
-                   CL_CDKEY_CHECKSUM_LENGTH) != 0) {
+    if (checksum != NULL && Q_stricmpn(calculatedChecksum, checksum, CL_CDKEY_CHECKSUM_LENGTH) != 0) {
         return qfalse;
     }
     return qtrue;
@@ -1214,45 +1100,32 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
  * sanitization, and authorization request. */
 void CL_RequestAuthorization(void)
 {
-    static const char authorizeHost[] =
-        "coduoauthorize.activision.com";
+    static const char authorizeHost[] = "coduoauthorize.activision.com";
 
-    if (CL_CDKeyValidate(
-            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
-            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+    if (CL_CDKeyValidate(&cl_cdkey[CL_PRIMARY_CDKEY_OFFSET], &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
         Com_Error(1, "EXE_ERR_INVALID_CD_KEY");
         return;
     }
 
     if (cls.cdAuthorizeAddress.port == 0) {
         Com_Printf("Resolving %s\n", authorizeHost);
-        if (NET_StringToAdr(authorizeHost,
-                            &cls.cdAuthorizeAddress) == qfalse) {
+        if (NET_StringToAdr(authorizeHost, &cls.cdAuthorizeAddress) == qfalse) {
             Com_Printf("Couldn't resolve address\n");
             return;
         }
 
-        cls.cdAuthorizeAddress.port =
-            (uint16_t)BigShort((int16_t)CL_AUTHORIZE_SERVER_PORT);
-        Com_Printf("%s resolved to %i.%i.%i.%i:%i\n",
-                   authorizeHost,
-                   cls.cdAuthorizeAddress.ip[0],
-                   cls.cdAuthorizeAddress.ip[1],
-                   cls.cdAuthorizeAddress.ip[2],
-                   cls.cdAuthorizeAddress.ip[3],
-                   (int32_t)BigShort(
-                       (int16_t)cls.cdAuthorizeAddress.port));
+        cls.cdAuthorizeAddress.port = (uint16_t)BigShort((int16_t)CL_AUTHORIZE_SERVER_PORT);
+        Com_Printf("%s resolved to %i.%i.%i.%i:%i\n", authorizeHost, cls.cdAuthorizeAddress.ip[0], cls.cdAuthorizeAddress.ip[1],
+                   cls.cdAuthorizeAddress.ip[2], cls.cdAuthorizeAddress.ip[3], (int32_t)BigShort((int16_t)cls.cdAuthorizeAddress.port));
     }
 
     if (cls.cdAuthorizeAddress.type == NA_BOT)
         return;
 
     char sanitizedKey[CL_CDKEY_AUTH_BUFFER_SIZE];
-    const cvar_t *const restrictFilesystem =
-        Cvar_FindVar("fs_restrict");
+    const cvar_t *const restrictFilesystem = Cvar_FindVar("fs_restrict");
 
-    if (restrictFilesystem != NULL &&
-        restrictFilesystem->value != 0.0f) {
+    if (restrictFilesystem != NULL && restrictFilesystem->value != 0.0f) {
         strncpy(sanitizedKey, "demo", CL_CDKEY_AUTH_BUFFER_SIZE - 1);
         sanitizedKey[CL_CDKEY_AUTH_BUFFER_SIZE - 1] = '\0';
     } else {
@@ -1263,8 +1136,7 @@ void CL_RequestAuthorization(void)
         size_t destinationLength = 0;
         for (size_t index = 0; index < sourceLength; ++index) {
             const char character = cl_cdkey[index];
-            if ((character >= '0' && character <= '9') ||
-                (character >= 'a' && character <= 'z') ||
+            if ((character >= '0' && character <= '9') || (character >= 'a' && character <= 'z') ||
                 (character >= 'A' && character <= 'Z')) {
                 sanitizedKey[destinationLength++] = character;
             }
@@ -1272,12 +1144,9 @@ void CL_RequestAuthorization(void)
         sanitizedKey[destinationLength] = '\0';
     }
 
-    const cvar_t *const anonymous =
-        Cvar_Get("cl_anonymous", "", CVAR_SYSTEMINFO | CVAR_INIT);
+    const cvar_t *const anonymous = Cvar_Get("cl_anonymous", "", CVAR_SYSTEMINFO | CVAR_INIT);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    NET_OutOfBandPrint(
-        NS_CLIENT, cls.cdAuthorizeAddress,
-        "%s", va("getKeyAuthorize %i %s", anonymous->integer, sanitizedKey));
+    NET_OutOfBandPrint(NS_CLIENT, cls.cdAuthorizeAddress, "%s", va("getKeyAuthorize %i %s", anonymous->integer, sanitizedKey));
 }
 
 /* Source: CoDUOMP.exe 0x00411e60..0x004121c8.
@@ -1290,55 +1159,40 @@ void CL_CheckForResend(void)
     if (clc.demoPlayback != qfalse)
         return;
 
-    if (cls.state != CA_CONNECTING &&
-        cls.state != CA_CHALLENGING) {
+    if (cls.state != CA_CONNECTING && cls.state != CA_CHALLENGING) {
         return;
     }
 
-    if ((int32_t)((uint32_t)cls.realtime -
-                  (uint32_t)clc.connectTime) <
-        CL_CONNECT_RESEND_MSEC) {
+    if ((int32_t)((uint32_t)cls.realtime - (uint32_t)clc.connectTime) < CL_CONNECT_RESEND_MSEC) {
         return;
     }
 
     clc.connectTime = cls.realtime;
-    clc.connectPacketCount = (int32_t)(
-        (uint32_t)clc.connectPacketCount + 1u);
+    clc.connectPacketCount = (int32_t)((uint32_t)clc.connectPacketCount + 1u);
 
     switch (cls.state) {
     case CA_CONNECTING: {
-        if (net_lanauthorize->integer != 0 ||
-            Sys_IsLANAddress(clc.serverAddress) == qfalse) {
+        if (net_lanauthorize->integer != 0 || Sys_IsLANAddress(clc.serverAddress) == qfalse) {
             CL_RequestAuthorization();
         }
 
         char challengePacket[CL_CONNECT_PACKET_CAPACITY];
         strcpy(challengePacket, "getchallenge");
-        int32_t challengeLength =
-            (int32_t)strlen(challengePacket);
-        PbClientConnecting(
-            PB_CLIENT_CONNECTING_CHALLENGE,
-            challengePacket, &challengeLength);
+        int32_t challengeLength = (int32_t)strlen(challengePacket);
+        PbClientConnecting(PB_CLIENT_CONNECTING_CHALLENGE, challengePacket, &challengeLength);
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-        NET_OutOfBandPrint(
-            NS_CLIENT, clc.serverAddress, "%s", challengePacket);
+        NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "%s", challengePacket);
         return;
     }
 
     case CA_CHALLENGING: {
-        const int32_t qport =
-            (int32_t)Cvar_VariableValue("net_qport");
+        const int32_t qport = (int32_t)Cvar_VariableValue("net_qport");
 
         char info[CL_CONNECT_PACKET_CAPACITY];
-        Q_strncpyz(
-            info, Cvar_InfoString(CVAR_USERINFO),
-            sizeof(info));
-        Info_SetValueForKey(
-            info, "protocol",
-            va("%i", CL_NETWORK_PROTOCOL_VERSION));
+        Q_strncpyz(info, Cvar_InfoString(CVAR_USERINFO), sizeof(info));
+        Info_SetValueForKey(info, "protocol", va("%i", CL_NETWORK_PROTOCOL_VERSION));
         Info_SetValueForKey(info, "qport", va("%i", qport));
-        Info_SetValueForKey(
-            info, "challenge", va("%i", clc.challenge));
+        Info_SetValueForKey(info, "challenge", va("%i", clc.challenge));
 
         char connectPacket[CL_CONNECT_PACKET_CAPACITY];
         strcpy(connectPacket, "connect ");
@@ -1350,28 +1204,20 @@ void CL_CheckForResend(void)
         connectPacket[infoLength + 9] = '"';
         connectPacket[infoLength + 10] = '\0';
 
-        const int32_t connectLength =
-            (int32_t)infoLength + 10;
+        const int32_t connectLength = (int32_t)infoLength + 10;
         char punkBusterPacket[CL_CONNECT_PACKET_CAPACITY];
-        memcpy(
-            punkBusterPacket, connectPacket,
-            (size_t)connectLength);
+        memcpy(punkBusterPacket, connectPacket, (size_t)connectLength);
         int32_t punkBusterLength = connectLength;
-        PbClientConnecting(
-            PB_CLIENT_CONNECTING_REQUEST,
-            punkBusterPacket, &punkBusterLength);
+        PbClientConnecting(PB_CLIENT_CONNECTING_REQUEST, punkBusterPacket, &punkBusterLength);
 
-        NET_OutOfBandData(
-            NS_CLIENT, clc.serverAddress,
-            (const uint8_t *)connectPacket, connectLength);
+        NET_OutOfBandData(NS_CLIENT, clc.serverAddress, (const uint8_t *)connectPacket, connectLength);
         cvar_modifiedFlags &= ~((uint32_t)CVAR_USERINFO);
         return;
     }
 
     default:
-        Com_Error(
-            ERR_FATAL,
-            "\x15" "CL_CheckForResend: bad cls.state");
+        Com_Error(ERR_FATAL, "\x15"
+                             "CL_CheckForResend: bad cls.state");
         return;
     }
 }
@@ -1423,16 +1269,12 @@ void CL_Init(void)
     cl_timeNudge = Cvar_Get("cl_timeNudge", "0", CVAR_TEMP);
     cl_shownet = Cvar_Get("cl_shownet", "0", CVAR_TEMP);
     cl_shownuments = Cvar_Get("cl_shownuments", "0", CVAR_TEMP);
-    cl_visibleClients =
-        Cvar_Get("cl_visibleClients", "0", CVAR_TEMP);
-    cl_showServerCommands =
-        Cvar_Get("cl_showServerCommands", "0", 0);
+    cl_visibleClients = Cvar_Get("cl_visibleClients", "0", CVAR_TEMP);
+    cl_showServerCommands = Cvar_Get("cl_showServerCommands", "0", 0);
     cl_showSend = Cvar_Get("cl_showSend", "0", CVAR_TEMP);
-    cl_showTimeDelta =
-        Cvar_Get("cl_showTimeDelta", "0", CVAR_TEMP);
+    cl_showTimeDelta = Cvar_Get("cl_showTimeDelta", "0", CVAR_TEMP);
     cl_freezeDemo = Cvar_Get("cl_freezeDemo", "0", CVAR_TEMP);
-    rcon_client_password =
-        Cvar_Get("rconPassword", "", CVAR_TEMP);
+    rcon_client_password = Cvar_Get("rconPassword", "", CVAR_TEMP);
     cl_activeAction = Cvar_Get("activeAction", "", CVAR_TEMP);
     cl_timedemo = Cvar_Get("timedemo", "0", 0);
     cl_avidemo = Cvar_Get("cl_avidemo", "0", 0);
@@ -1440,44 +1282,28 @@ void CL_Init(void)
     rcon_client_address = Cvar_Get("rconAddress", "", 0);
 
     cl_yawspeed = Cvar_Get("cl_yawspeed", "140", CVAR_ARCHIVE);
-    cl_pitchspeed =
-        Cvar_Get("cl_pitchspeed", "140", CVAR_ARCHIVE);
-    cl_anglespeedkey =
-        Cvar_Get("cl_anglespeedkey", "1.5", 0);
-    cl_maxpackets =
-        Cvar_Get("cl_maxpackets", CL_MAXPACKETS_DEFAULT_TEXT,
-                 CVAR_ARCHIVE);
+    cl_pitchspeed = Cvar_Get("cl_pitchspeed", "140", CVAR_ARCHIVE);
+    cl_anglespeedkey = Cvar_Get("cl_anglespeedkey", "1.5", 0);
+    cl_maxpackets = Cvar_Get("cl_maxpackets", CL_MAXPACKETS_DEFAULT_TEXT, CVAR_ARCHIVE);
     cl_packetdup = Cvar_Get("cl_packetdup", "1", CVAR_ARCHIVE);
     cl_run = Cvar_Get("cl_run", "1", CVAR_TEMP);
     cl_stance = Cvar_Get("cl_stance", "0", CVAR_TEMP);
     cl_stanceTemp = Cvar_Get("cl_stanceTemp", "0", CVAR_TEMP);
-    cl_goStandJumpTime =
-        Cvar_Get("cl_goStandJumpTime", "0", CVAR_ARCHIVE);
+    cl_goStandJumpTime = Cvar_Get("cl_goStandJumpTime", "0", CVAR_ARCHIVE);
     sensitivity = Cvar_Get("sensitivity", "5", CVAR_ARCHIVE);
-    cl_mouseAccel =
-        Cvar_Get("cl_mouseAccel", "0", CVAR_ARCHIVE);
+    cl_mouseAccel = Cvar_Get("cl_mouseAccel", "0", CVAR_ARCHIVE);
     cl_freelook = Cvar_Get("cl_freelook", "1", CVAR_ARCHIVE);
     cl_showmouserate = Cvar_Get("cl_showmouserate", "0", 0);
-    cl_allowDownload =
-        Cvar_Get("cl_allowDownload", "0", CVAR_ARCHIVE);
-    cl_serverAllowDownload = Cvar_Get(
-        "sv_allowDownload", "1",
-        CVAR_ARCHIVE | CVAR_SYSTEMINFO);
-    cl_wwwDownload = Cvar_Get(
-        "cl_wwwDownload", "1",
-        CVAR_ARCHIVE | CVAR_USERINFO);
+    cl_allowDownload = Cvar_Get("cl_allowDownload", "0", CVAR_ARCHIVE);
+    cl_serverAllowDownload = Cvar_Get("sv_allowDownload", "1", CVAR_ARCHIVE | CVAR_SYSTEMINFO);
+    cl_wwwDownload = Cvar_Get("cl_wwwDownload", "1", CVAR_ARCHIVE | CVAR_USERINFO);
     cl_conXOffset = Cvar_Get("cl_conXOffset", "0", 0);
-    r_inGameVideo =
-        Cvar_Get("r_inGameVideo", "1", CVAR_ARCHIVE);
-    cl_serverStatusResendTime =
-        Cvar_Get("cl_serverStatusResendTime", "750", 0);
+    r_inGameVideo = Cvar_Get("r_inGameVideo", "1", CVAR_ARCHIVE);
+    cl_serverStatusResendTime = Cvar_Get("cl_serverStatusResendTime", "750", 0);
 
-    cl_viewPitchCompensate =
-        Cvar_Get("cl_viewPitchCompensate", "0", CVAR_ROM);
-    cl_viewYawCompensate =
-        Cvar_Get("cl_viewYawCompensate", "0", CVAR_ROM);
-    cl_bypassMouseInput =
-        Cvar_Get("cl_bypassMouseInput", "0", 0);
+    cl_viewPitchCompensate = Cvar_Get("cl_viewPitchCompensate", "0", CVAR_ROM);
+    cl_viewYawCompensate = Cvar_Get("cl_viewYawCompensate", "0", CVAR_ROM);
+    cl_bypassMouseInput = Cvar_Get("cl_bypassMouseInput", "0", 0);
     m_pitch = Cvar_Get("m_pitch", "0.022", CVAR_ARCHIVE);
     m_yaw = Cvar_Get("m_yaw", "0.022", CVAR_ARCHIVE);
     m_forward = Cvar_Get("m_forward", "0.25", CVAR_ARCHIVE);
@@ -1500,37 +1326,17 @@ void CL_Init(void)
     (void)Cvar_Get("cg_crosshairSize", "48", CVAR_ARCHIVE);
     (void)Cvar_Get("cg_drawCrosshair", "1", CVAR_ARCHIVE);
 
-    (void)Cvar_Get(
-        "name", "Unknown Soldier",
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "rate", CL_RATE_DEFAULT_TEXT,
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "snaps", CL_SNAPS_DEFAULT_TEXT,
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "model", "",
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "head", "",
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "handicap", "100",
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "cl_anonymous", "0",
-        CVAR_ARCHIVE | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "cl_guid", "unknown",
-        CVAR_ROM | CVAR_USERINFO);
-    (void)Cvar_Get(
-        "cl_punkbuster", "0",
-        CVAR_ROM | CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("name", "Unknown Soldier", CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("rate", CL_RATE_DEFAULT_TEXT, CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("snaps", CL_SNAPS_DEFAULT_TEXT, CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("model", "", CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("head", "", CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("handicap", "100", CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("cl_anonymous", "0", CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("cl_guid", "unknown", CVAR_ROM | CVAR_USERINFO);
+    (void)Cvar_Get("cl_punkbuster", "0", CVAR_ROM | CVAR_ARCHIVE | CVAR_USERINFO);
     (void)Cvar_Get("password", "", CVAR_USERINFO);
-    (void)Cvar_Get(
-        "cg_predictItems", "1",
-        CVAR_ARCHIVE | CVAR_USERINFO);
+    (void)Cvar_Get("cg_predictItems", "1", CVAR_ARCHIVE | CVAR_USERINFO);
     (void)Cvar_Get("cg_viewsize", "100", CVAR_ARCHIVE);
 
     cl_waitForFire = Cvar_Get("cl_waitForFire", "0", CVAR_ROM);
@@ -1544,48 +1350,26 @@ void CL_Init(void)
     fx_debugBolt = Cvar_Get("fx_debugBolt", "0", CVAR_CHEAT);
     fx_count = Cvar_Get("fx_count", "0", CVAR_CHEAT);
 
-    cl_updateAvailable =
-        Cvar_Get("cl_updateavailable", "0", CVAR_ROM);
+    cl_updateAvailable = Cvar_Get("cl_updateavailable", "0", CVAR_ROM);
     cl_updateFiles = Cvar_Get("cl_updatefiles", "", CVAR_ROM);
-    cl_updateOldVersion =
-        Cvar_Get("cl_updateoldversion", "", CVAR_ROM);
-    cl_updateVersion =
-        Cvar_Get("cl_updateversion", "", CVAR_ROM);
-    cl_serverLoadMap =
-        Cvar_Get("cl_serverloadmap", "", CVAR_ROM);
-    cl_serverLoadGameType =
-        Cvar_Get("cl_serverloadgametype", "", CVAR_ROM);
-    cl_serverLoadWaiting =
-        Cvar_Get("cl_serverloadwaiting", "0", CVAR_ROM);
-    cg_announcerSounds =
-        Cvar_Get("cg_announcerSounds", "1", CVAR_ARCHIVE);
+    cl_updateOldVersion = Cvar_Get("cl_updateoldversion", "", CVAR_ROM);
+    cl_updateVersion = Cvar_Get("cl_updateversion", "", CVAR_ROM);
+    cl_serverLoadMap = Cvar_Get("cl_serverloadmap", "", CVAR_ROM);
+    cl_serverLoadGameType = Cvar_Get("cl_serverloadgametype", "", CVAR_ROM);
+    cl_serverLoadWaiting = Cvar_Get("cl_serverloadwaiting", "0", CVAR_ROM);
+    cg_announcerSounds = Cvar_Get("cg_announcerSounds", "1", CVAR_ARCHIVE);
     cl_executeString = Cvar_Get("cl_executeString", "", 0);
 
-    strncpy(cls.autoUpdateServerNames[0], "au2cod1.activision.com",
-            sizeof(cls.autoUpdateServerNames[0]) - 1);
-    cls.autoUpdateServerNames[0]
-                             [sizeof(cls.autoUpdateServerNames[0]) - 1] =
-        '\0';
-    strncpy(cls.autoUpdateServerNames[1], "au2cod2.activision.com",
-            sizeof(cls.autoUpdateServerNames[1]) - 1);
-    cls.autoUpdateServerNames[1]
-                             [sizeof(cls.autoUpdateServerNames[1]) - 1] =
-        '\0';
-    strncpy(cls.autoUpdateServerNames[2], "au2cod3.activision.com",
-            sizeof(cls.autoUpdateServerNames[2]) - 1);
-    cls.autoUpdateServerNames[2]
-                             [sizeof(cls.autoUpdateServerNames[2]) - 1] =
-        '\0';
-    strncpy(cls.autoUpdateServerNames[3], "au2cod4.activision.com",
-            sizeof(cls.autoUpdateServerNames[3]) - 1);
-    cls.autoUpdateServerNames[3]
-                             [sizeof(cls.autoUpdateServerNames[3]) - 1] =
-        '\0';
-    strncpy(cls.autoUpdateServerNames[4], "au2cod5.activision.com",
-            sizeof(cls.autoUpdateServerNames[4]) - 1);
-    cls.autoUpdateServerNames[4]
-                             [sizeof(cls.autoUpdateServerNames[4]) - 1] =
-        '\0';
+    strncpy(cls.autoUpdateServerNames[0], "au2cod1.activision.com", sizeof(cls.autoUpdateServerNames[0]) - 1);
+    cls.autoUpdateServerNames[0][sizeof(cls.autoUpdateServerNames[0]) - 1] = '\0';
+    strncpy(cls.autoUpdateServerNames[1], "au2cod2.activision.com", sizeof(cls.autoUpdateServerNames[1]) - 1);
+    cls.autoUpdateServerNames[1][sizeof(cls.autoUpdateServerNames[1]) - 1] = '\0';
+    strncpy(cls.autoUpdateServerNames[2], "au2cod3.activision.com", sizeof(cls.autoUpdateServerNames[2]) - 1);
+    cls.autoUpdateServerNames[2][sizeof(cls.autoUpdateServerNames[2]) - 1] = '\0';
+    strncpy(cls.autoUpdateServerNames[3], "au2cod4.activision.com", sizeof(cls.autoUpdateServerNames[3]) - 1);
+    cls.autoUpdateServerNames[3][sizeof(cls.autoUpdateServerNames[3]) - 1] = '\0';
+    strncpy(cls.autoUpdateServerNames[4], "au2cod5.activision.com", sizeof(cls.autoUpdateServerNames[4]) - 1);
+    cls.autoUpdateServerNames[4][sizeof(cls.autoUpdateServerNames[4]) - 1] = '\0';
 
     Cmd_AddCommand("cmd", CL_ForwardToServer_f);
     Cmd_AddCommand("configstrings", CL_Configstrings_f);
@@ -1614,14 +1398,12 @@ void CL_Init(void)
     Cmd_AddCommand("setRecommended", CL_SetRecommended_f);
     Cmd_AddCommand("updatescreen", CL_UpdateScreen_f);
     Cmd_AddCommand("cubemapShot", CL_CubemapShot_f);
-    Cmd_AddCommand(
-        "localizeSoundAliasFiles", Com_WriteLocalizedSoundAliasFiles);
+    Cmd_AddCommand("localizeSoundAliasFiles", Com_WriteLocalizedSoundAliasFiles);
     Cmd_AddCommand("vsay", CL_Vsay_f);
 
     cls_autoupdateServerResolved = qfalse;
     cl_updateStarted = qfalse;
-    (void)Cvar_Get("cl_noautoupdate", CL_NOAUTOUPDATE_DEFAULT_TEXT,
-                   CVAR_ROM);
+    (void)Cvar_Get("cl_noautoupdate", CL_NOAUTOUPDATE_DEFAULT_TEXT, CVAR_ROM);
     cvar_t *const noAutoUpdate = Cvar_FindVar("cl_noautoupdate");
     if (noAutoUpdate == NULL || noAutoUpdate->value == 0.0f)
         CL_CheckAutoUpdate();
@@ -1711,8 +1493,7 @@ void CL_SetupForNewServerMap(void)
     Con_Close();
     cls.keyCatchers = 0;
 
-    if (cls.state >= CA_CONNECTED &&
-        Q_stricmp(cls.serverName, localServerName) == 0) {
+    if (cls.state >= CA_CONNECTED && Q_stricmp(cls.serverName, localServerName) == 0) {
         cls.state = CA_CONNECTED;
         memset(cls.updateInfoString, 0, sizeof(cls.updateInfoString));
         memset(clc.serverMessage, 0, sizeof(clc.serverMessage));
@@ -1723,8 +1504,7 @@ void CL_SetupForNewServerMap(void)
         Cvar_Set2("nextmap", "", qtrue);
         CL_Disconnect(qtrue);
 
-        Q_strncpyz(cls.serverName, localServerName,
-                   sizeof(cls.serverName));
+        Q_strncpyz(cls.serverName, localServerName, sizeof(cls.serverName));
         cls.state = CA_CHALLENGING;
         cls.keyCatchers = 0;
         SCR_UpdateScreen();
@@ -1745,8 +1525,7 @@ void CL_SetupForNewServerMap(void)
  * CL_MapLoading plus the two original packet-reader call sites. */
 void CL_MapLoading(const char *mapName, const char *gameType)
 {
-    Com_Printf("Server changing map %s, gametype %s\n",
-               mapName, gameType);
+    Com_Printf("Server changing map %s, gametype %s\n", mapName, gameType);
     Cvar_Set2("cl_serverloadmap", mapName, qtrue);
     Cvar_Set2("cl_serverloadgametype", gameType, qtrue);
     Cvar_Set2("cl_serverloadwaiting", "0", qtrue);

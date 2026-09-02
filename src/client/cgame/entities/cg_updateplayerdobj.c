@@ -12,19 +12,16 @@ void CG_UpdatePlayerDObj(centity_t *cent)
         return;
     }
 
-    intptr_t handle = cgame_syscall(CG_DOBJ_GET_HANDLE,
-                                    cent->nextState.clientNum);
+    intptr_t handle = cgame_syscall(CG_DOBJ_GET_HANDLE, cent->nextState.clientNum);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    const int32_t clientNum =
-        coduo_int32_from_bits(cent->corpseModelInfo.clientNumBits);
+    const int32_t clientNum = coduo_int32_from_bits(cent->corpseModelInfo.clientNumBits);
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_UpdatePlayerDObj: invalid client number %i",
+                  "\x15"
+                  "CG_UpdatePlayerDObj: invalid client number %i",
                   clientNum);
         return;
     }
     clientInfo_t *state = &bgs.clientinfo[clientNum];
-    CG_BuildCorpseDObjModels(
-        state, handle,
-        &cent->corpseModelInfo, cent->corpseTagState);
+    CG_BuildCorpseDObjModels(state, handle, &cent->corpseModelInfo, cent->corpseTagState);
 }

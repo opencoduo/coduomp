@@ -31,28 +31,22 @@ void *CFxModel_Alloc(size_t size)
 DObj *CFxModel_Register(const char *name)
 {
     const size_t prefixLength = sizeof(fxModelNamePrefix) - 1U;
-    if (coduo_crt_strnicmp(name, fxModelNamePrefix,
-                             prefixLength) != 0) {
+    if (coduo_crt_strnicmp(name, fxModelNamePrefix, prefixLength) != 0) {
         return NULL;
     }
 
-    for (fx_model_registration_t *registration = fxModelRegistrations;
-         registration != NULL;
-         registration = registration->next) {
+    for (fx_model_registration_t *registration = fxModelRegistrations; registration != NULL; registration = registration->next) {
         if (coduo_crt_stricmp(name, registration->name) == 0) {
             return &registration->dobj;
         }
     }
 
-    fx_model_registration_t *registration =
-        FxMem_AllocModel(&fxModelAllocator, sizeof(*registration));
+    fx_model_registration_t *registration = FxMem_AllocModel(&fxModelAllocator, sizeof(*registration));
     if (registration == NULL) {
         return NULL;
     }
 
-    XModel *model = XModelPrecache(
-        name + prefixLength, XMODEL_LOAD_SURFACES_PREPROCESSED,
-        CFxModel_Alloc, CFxModel_Alloc);
+    XModel *model = XModelPrecache(name + prefixLength, XMODEL_LOAD_SURFACES_PREPROCESSED, CFxModel_Alloc, CFxModel_Alloc);
     if (model == NULL) {
         FxMem_FreeModel(&fxModelAllocator, registration);
         return NULL;
@@ -61,8 +55,7 @@ DObj *CFxModel_Register(const char *name)
     /* 0x004a0cfb..0x004a0d17 calls renderer export slot 3:
      * RegisterModel(name, 9), tests AX, and stores that renderer handle into
      * the DObj descriptor. This is not an SL_GetString call. */
-    int16_t rendererModelHandle = (int16_t)
-        rendererExports.RegisterModel(name, FX_MODEL_RENDERER_LOAD_MODE);
+    int16_t rendererModelHandle = (int16_t)rendererExports.RegisterModel(name, FX_MODEL_RENDERER_LOAD_MODE);
     if (rendererModelHandle == 0) {
         FxMem_FreeModel(&fxModelAllocator, registration);
         return NULL;
@@ -75,17 +68,13 @@ DObj *CFxModel_Register(const char *name)
     /* DObjCreate does not consume this ABI-carried halfword. */
     descriptor.reserved_00a = 0;
     descriptor.ignoreCollision = 0;
-    DObjCreate(&descriptor, FX_MODEL_DOBJ_MODEL_COUNT, NULL,
-               &registration->dobj, FX_MODEL_DOBJ_GAME_ID);
+    DObjCreate(&descriptor, FX_MODEL_DOBJ_MODEL_COUNT, NULL, &registration->dobj, FX_MODEL_DOBJ_GAME_ID);
 
-    dobj_eval_storage_t *storage = Hunk_AllocAlignInternal(
-        (size_t)DObjGetAllocSkelSize(&registration->dobj),
-        FX_MODEL_HUNK_ALIGNMENT);
+    dobj_eval_storage_t *storage = Hunk_AllocAlignInternal((size_t)DObjGetAllocSkelSize(&registration->dobj), FX_MODEL_HUNK_ALIGNMENT);
     DObjCreateSkel(&registration->dobj, storage);
 
     uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
-    for (int32_t wordIndex = 0;
-         wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
+    for (int32_t wordIndex = 0; wordIndex < DOBJ_PART_BITSET_WORD_COUNT; ++wordIndex) {
         partBits[wordIndex] = UINT32_MAX;
     }
     DObjCalcAnim(&registration->dobj, partBits);
@@ -114,9 +103,7 @@ const char *CFxModel_NameForDObj(const DObj *obj)
         return "";
     }
     const fx_model_registration_t *registration =
-        (const fx_model_registration_t *)(
-            (const uint8_t *)obj -
-            offsetof(fx_model_registration_t, dobj));
+        (const fx_model_registration_t *)((const uint8_t *)obj - offsetof(fx_model_registration_t, dobj));
     return registration->name;
 }
 

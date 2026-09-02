@@ -29,8 +29,7 @@ void Sys_EndStreamedFile(int32_t handle)
     (void)handle;
 }
 
-int32_t Sys_StreamedRead(void *buffer, int32_t size, int32_t count,
-                         int32_t handle)
+int32_t Sys_StreamedRead(void *buffer, int32_t size, int32_t count, int32_t handle)
 {
     return FS_Read(buffer, size * count, handle);
 }

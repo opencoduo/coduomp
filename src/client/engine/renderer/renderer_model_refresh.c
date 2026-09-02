@@ -5,8 +5,7 @@
  * Name and source-level XModel accessor calls: exact same-module Mac symbol
  * R_RefreshXModels_ARB. The Windows optimizer inlines XModelGetNumLods and
  * XModelGetSurfaces but preserves the same model/LOD/surface traversal. */
-void R_RefreshXModels_ARB(
-    renderer_vbo_refresh_components_t refreshComponents)
+void R_RefreshXModels_ARB(renderer_vbo_refresh_components_t refreshComponents)
 {
     for (int32_t modelIndex = 0; modelIndex < tr.modelCount; ++modelIndex) {
         model_t *model = tr.models[modelIndex];
@@ -17,13 +16,10 @@ void R_RefreshXModels_ARB(
         const int32_t lodCount = XModelGetNumLods(model->xmodel);
         for (int32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex) {
             XSurface **surfaces;
-            const int32_t surfaceCount =
-                XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
+            const int32_t surfaceCount = XModelGetSurfaces(model->xmodel, &surfaces, lodIndex);
 
-            for (int32_t surfaceIndex = 0;
-                 surfaceIndex < surfaceCount; ++surfaceIndex) {
-                XSurfaceRefresh_ARB(surfaces[surfaceIndex],
-                                    (uint32_t)refreshComponents);
+            for (int32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
+                XSurfaceRefresh_ARB(surfaces[surfaceIndex], (uint32_t)refreshComponents);
             }
         }
     }
@@ -36,8 +32,7 @@ void R_RefreshXModels_ARB(
  * surface cursor is incremented before the selected surface is refreshed;
  * retain that ordering even though index zero is consequently not selected
  * by this incremental path. At most one XSurface is refreshed per call. */
-void R_IncrementalRefreshXModels_ARB(
-    renderer_vbo_refresh_components_t refreshComponents)
+void R_IncrementalRefreshXModels_ARB(renderer_vbo_refresh_components_t refreshComponents)
 {
     int32_t visitedModelCount = 0;
 
@@ -46,22 +41,18 @@ void R_IncrementalRefreshXModels_ARB(
 
         if (model->xmodel != NULL) {
             XSurface **surfaces;
-            const int32_t surfaceCount = XModelGetSurfaces(
-                model->xmodel, &surfaces, tr.xmodelRefreshLodIndex);
+            const int32_t surfaceCount = XModelGetSurfaces(model->xmodel, &surfaces, tr.xmodelRefreshLodIndex);
 
             /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
             ++tr.xmodelRefreshSurfaceIndex;
             if (tr.xmodelRefreshSurfaceIndex < surfaceCount) {
-                XSurfaceRefresh_ARB(
-                    surfaces[tr.xmodelRefreshSurfaceIndex],
-                    (uint32_t)refreshComponents);
+                XSurfaceRefresh_ARB(surfaces[tr.xmodelRefreshSurfaceIndex], (uint32_t)refreshComponents);
                 return;
             }
 
             tr.xmodelRefreshSurfaceIndex = 0;
             ++tr.xmodelRefreshLodIndex;
-            if (tr.xmodelRefreshLodIndex <
-                XModelGetNumLods(model->xmodel)) {
+            if (tr.xmodelRefreshLodIndex < XModelGetNumLods(model->xmodel)) {
                 continue;
             }
         }

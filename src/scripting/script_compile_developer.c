@@ -21,8 +21,7 @@ enum {
  * also the exact same-module Mac symbol. */
 void EmitStatementList(scr_ast_statement_block_t *block)
 {
-    for (scr_ast_statement_item_t *item = block->sentinel->head;
-         item != NULL; item = item->next) {
+    for (scr_ast_statement_item_t *item = block->sentinel->head; item != NULL; item = item->next) {
         EmitStatement(item->node);
     }
 }
@@ -33,20 +32,14 @@ void EmitStatementList(scr_ast_statement_block_t *block)
 void Scr_TransferToDeveloperBuffer(void)
 {
     uint8_t *tempEnd = TempMalloc(0);
-    int32_t byteCount = (int32_t)((uintptr_t)tempEnd -
-                                  (uintptr_t)script_codeRelocationStart);
-    int32_t usedBytes = (int32_t)(
-        (uintptr_t)script_codeRelocationEnd -
-        (uintptr_t)script_developerOpBuffer);
+    int32_t byteCount = (int32_t)((uintptr_t)tempEnd - (uintptr_t)script_codeRelocationStart);
+    int32_t usedBytes = (int32_t)((uintptr_t)script_codeRelocationEnd - (uintptr_t)script_developerOpBuffer);
 
     if (SCRIPT_DEVELOPER_OP_BUFFER_SIZE < usedBytes + byteCount) {
-        Com_Error(
-            ERR_DROP,
-            "max developer script size exceeded - increase DEV_OP_BUF_SIZE");
+        Com_Error(ERR_DROP, "max developer script size exceeded - increase DEV_OP_BUF_SIZE");
     }
 
-    Com_Memcpy(script_codeRelocationEnd, script_codeRelocationStart,
-               (size_t)byteCount);
+    Com_Memcpy(script_codeRelocationEnd, script_codeRelocationStart, (size_t)byteCount);
     script_codeRelocationEnd += byteCount;
 }
 
@@ -60,8 +53,7 @@ void Scr_TransferStatementListToDeveloperBuffer(void)
     uint32_t savedChecksum = script_codeChecksum;
 
     EmitOpcode(SCRIPT_OPCODE_DEFERRED_DEVELOPER_CHECK, 0, 0);
-    int32_t codeOffset = (int32_t)(
-        (uintptr_t)script_codeRelocationStart - (uintptr_t)script_codeBase);
+    int32_t codeOffset = (int32_t)((uintptr_t)script_codeRelocationStart - (uintptr_t)script_codeBase);
     script_codeChecksum = savedChecksum;
 
     if (script_developerOpcodePatchCapacity <= codeOffset) {
@@ -71,13 +63,9 @@ void Scr_TransferStatementListToDeveloperBuffer(void)
             newCapacity = (int32_t)((uint32_t)codeOffset * 2u);
         }
 
-        uint8_t **newTable =
-            Z_MallocInternal((size_t)newCapacity * sizeof(newTable[0]));
-        Com_Memcpy(newTable, script_developerOpcodePatchTable,
-                   (size_t)oldCapacity * sizeof(newTable[0]));
-        Com_Memset(&newTable[oldCapacity], 0,
-                   (size_t)(newCapacity - oldCapacity) *
-                       sizeof(newTable[0]));
+        uint8_t **newTable = Z_MallocInternal((size_t)newCapacity * sizeof(newTable[0]));
+        Com_Memcpy(newTable, script_developerOpcodePatchTable, (size_t)oldCapacity * sizeof(newTable[0]));
+        Com_Memset(&newTable[oldCapacity], 0, (size_t)(newCapacity - oldCapacity) * sizeof(newTable[0]));
 
         script_developerOpcodePatchCapacity = newCapacity;
         Z_FreeInternal(script_developerOpcodePatchTable);
@@ -91,8 +79,7 @@ void Scr_TransferStatementListToDeveloperBuffer(void)
 
 /* CoDUOMP.exe 0x0047efd0..0x0047f0fd and coduo_lnxded
  * 0x080a12fe..0x080a13c2 agree on both developer-enabled paths. */
-void EmitDeveloperStatementList(scr_ast_statement_block_t *block,
-                                uint32_t sourcePos)
+void EmitDeveloperStatementList(scr_ast_statement_block_t *block, uint32_t sourcePos)
 {
     if (script_codegenMode != SCRIPT_CODEGEN_MODE_INTERN_STRINGS) {
         CompileError(sourcePos, "cannot recurse /#");
@@ -127,17 +114,13 @@ void Scr_InitDeveloperOpcodes(void)
     }
 
     script_developerOpBuffer = Z_MallocInternal(SCRIPT_DEVELOPER_OP_BUFFER_SIZE);
-    script_developerOpcodePatchCapacity =
-        SCRIPT_DEVELOPER_OPCODE_PATCH_INITIAL_CAPACITY;
-    script_developerOpcodePatchTable = Z_MallocInternal(
-        (size_t)script_developerOpcodePatchCapacity *
-        sizeof(script_developerOpcodePatchTable[0]));
+    script_developerOpcodePatchCapacity = SCRIPT_DEVELOPER_OPCODE_PATCH_INITIAL_CAPACITY;
+    script_developerOpcodePatchTable =
+        Z_MallocInternal((size_t)script_developerOpcodePatchCapacity * sizeof(script_developerOpcodePatchTable[0]));
     Com_Memset(script_developerOpcodePatchTable, 0,
-               (size_t)script_developerOpcodePatchCapacity *
-                   sizeof(script_developerOpcodePatchTable[0]));
+               (size_t)script_developerOpcodePatchCapacity * sizeof(script_developerOpcodePatchTable[0]));
     script_codeRelocationEnd = script_developerOpBuffer;
-    Com_Memset(script_frameBackupCodepos, 0,
-               sizeof(script_frameBackupCodepos));
+    Com_Memset(script_frameBackupCodepos, 0, sizeof(script_frameBackupCodepos));
     script_codeStringFixups = NULL;
 }
 
@@ -149,8 +132,7 @@ void Scr_InsertDeveloperOpcodes(void)
         return;
     }
 
-    for (int32_t codeOffset = 0;
-         codeOffset < script_developerOpcodePatchCapacity; ++codeOffset) {
+    for (int32_t codeOffset = 0; codeOffset < script_developerOpcodePatchCapacity; ++codeOffset) {
         uint8_t *patch = script_developerOpcodePatchTable[codeOffset];
         if (patch != NULL) {
             *patch = script_codeBase[codeOffset];

@@ -78,8 +78,7 @@ void PM_Weapon_PrintWeaponState(void)
 
 void PM_Weapon_PrintWeaponAnim(void)
 {
-    const uint32_t weaponAnim =
-        pm->ps->weaponAnim & ~(uint32_t)ANIM_TOGGLEBIT;
+    const uint32_t weaponAnim = pm->ps->weaponAnim & ~(uint32_t)ANIM_TOGGLEBIT;
 
     Com_Printf(" %i %s_", pm->command.commandTime, PMDebugPrefix);
     PMDebugLastWeaponAnim = weaponAnim;

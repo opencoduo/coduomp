@@ -2,7 +2,9 @@
 #include "../globals.h"
 #include "compat/coduo_native_x87.h"
 
-enum { CG_WHIZBY_ENTITYNUM_WORLD = 1022 };
+enum {
+    CG_WHIZBY_ENTITYNUM_WORLD = 1022
+};
 
 // Source: uo_cgame_mp_x86.dll 0x300480f0..0x30048259
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300480f0_30048259.mcode
@@ -73,13 +75,9 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * leaves the unstored value in ST0. `long double` is the established source
      * carrier for that x87 register residency; the runtime control word governs
      * the precision of the arithmetic instructions that honor PC. */
-    long double t =
-        ((long double)cg_refdef.vieworg[2] - (long double)muzzle[2]) *
-            (long double)dir[2] +
-        ((long double)cg_refdef.vieworg[1] - (long double)muzzle[1]) *
-            (long double)dir[1] +
-        ((long double)cg_refdef.vieworg[0] - (long double)muzzle[0]) *
-            (long double)dir[0];
+    long double t = ((long double)cg_refdef.vieworg[2] - (long double)muzzle[2]) * (long double)dir[2] +
+                    ((long double)cg_refdef.vieworg[1] - (long double)muzzle[1]) * (long double)dir[1] +
+                    ((long double)cg_refdef.vieworg[0] - (long double)muzzle[0]) * (long double)dir[0];
     float tRounded = (float)t; /* 0x3004814e FST DWORD [ESP+0x8] */
 
     /* 0x30048152..0x3004815d: FCOMP 64.0 / TEST AH,5 / JNP return, comparing the
@@ -97,10 +95,8 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * one x87-register chain and FCOMPP'd directly; the t+64 side reloads the
      * rounded copy (FSUB -64.0f @0x30048167).
      * FCOMPP / TEST AH,5 / JNP return jumps out when the length is < tRounded + 64. */
-    long double rayLength =
-        (long double)dir[2] * (long double)diff[2] +
-        (long double)dir[1] * (long double)diff[1] +
-        (long double)dir[0] * (long double)diff[0];
+    long double rayLength = (long double)dir[2] * (long double)diff[2] + (long double)dir[1] * (long double)diff[1] +
+                            (long double)dir[0] * (long double)diff[0];
     if (rayLength < (long double)tRounded + 64.0f) {
         return;
     }
@@ -110,14 +106,10 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * memory-format store (carried in point0); point[1]/point[2] are FSTP'd to float slots
      * ([ESP+0x1c] @0x300481ab, [ESP+0x20] @0x300481ba). All three use the reloaded
      * rounded tRounded ([ESP+0x8]). */
-    long double point0 =
-        (long double)muzzle[0] +
-        (long double)tRounded * (long double)dir[0];
+    long double point0 = (long double)muzzle[0] + (long double)tRounded * (long double)dir[0];
     vec3_t point; /* [0] never stored -- carried in point0 above */
-    point[1] = (float)((long double)muzzle[1] +
-                       (long double)tRounded * (long double)dir[1]);
-    point[2] = (float)((long double)muzzle[2] +
-                       (long double)tRounded * (long double)dir[2]);
+    point[1] = (float)((long double)muzzle[1] + (long double)tRounded * (long double)dir[1]);
+    point[2] = (float)((long double)muzzle[2] + (long double)tRounded * (long double)dir[2]);
 
     /* 0x300481be..0x300481fd: dist = |cg_refdef.vieworg - point|; FCOMP 140.0 /
      * TEST AH,0x41 / JZ skip. ex/ey/ez and the FSQRT result stay on the x87
@@ -127,12 +119,9 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * C3|C0 with JZ skips (does nothing) when dist > 140.0f, so the sound fires only
      * when the closest approach is within 140 units (dist <= 140.0f, equal included). */
     long double ex = point0 - cg_refdef.vieworg[0];
-    long double ey =
-        (long double)point[1] - (long double)cg_refdef.vieworg[1];
-    long double ez =
-        (long double)point[2] - (long double)cg_refdef.vieworg[2];
-    long double dist = coduo_x87_sqrtl(
-        ez * ez + ey * ey + ex * ex);
+    long double ey = (long double)point[1] - (long double)cg_refdef.vieworg[1];
+    long double ez = (long double)point[2] - (long double)cg_refdef.vieworg[2];
+    long double dist = coduo_x87_sqrtl(ez * ez + ey * ey + ex * ex);
     if (dist > 140.0f) {
         return;
     }
@@ -144,14 +133,11 @@ void CG_WhizbySound(const vec3_t impactOrigin, const vec3_t muzzle)
      * emitPoint[1]/[2] use the rounded point[1]/point[2]. ECX = &emitPoint. */
     vec3_t emitPoint;
     emitPoint[0] = (float)(point0 - 16.0f * (long double)dir[0]);
-    emitPoint[1] = (float)((long double)point[1] -
-                           16.0f * (long double)dir[1]);
-    emitPoint[2] = (float)((long double)point[2] -
-                           16.0f * (long double)dir[2]);
+    emitPoint[1] = (float)((long double)point[1] - 16.0f * (long double)dir[1]);
+    emitPoint[2] = (float)((long double)point[2] - 16.0f * (long double)dir[2]);
 
     /* 0x30048203 / 0x3004820e / 0x30048243: play the "whizby" sound at emitPoint.
      * ECX=&emitPoint (channelObj), EAX=whizby handle (0x3044c1e4), pushed arg=0x3fe
      * (entity/loop number). The returned started-sound number is discarded. */
-    CG_PlaySoundAliasByName(CG_WHIZBY_ENTITYNUM_WORLD,
-                            emitPoint, cg_soundWhizby);
+    CG_PlaySoundAliasByName(CG_WHIZBY_ENTITYNUM_WORLD, emitPoint, cg_soundWhizby);
 }

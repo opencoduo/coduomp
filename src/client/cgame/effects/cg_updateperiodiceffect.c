@@ -54,18 +54,14 @@ void CG_UpdatePeriodicEffect(void)
 
     /* Emit only once the throttle window has fully elapsed. cg_time is stored as
      * an unsigned dword but the DLL compares it signed (JLE), so mirror that. */
-    int32_t nextEffectTime = coduo_int32_from_bits(
-        (uint32_t)cg_periodicEffectLastTime + (uint32_t)interval);
+    int32_t nextEffectTime = coduo_int32_from_bits((uint32_t)cg_periodicEffectLastTime + (uint32_t)interval);
     if (coduo_int32_from_bits(cg_time) <= nextEffectTime) {
         return;
     }
 
-    qhandle_t effect = (qhandle_t)cgame_syscall(
-        CG_FX_REGISTER_EFFECT, (intptr_t)cg_periodicEffectName);
+    qhandle_t effect = (qhandle_t)cgame_syscall(CG_FX_REGISTER_EFFECT, (intptr_t)cg_periodicEffectName);
 
-    cgame_syscall(CG_PLAY_EFFECT_ORIGIN,
-                  (int32_t)effect,
-                  (intptr_t)&cg_periodicEffectOrigin);
+    cgame_syscall(CG_PLAY_EFFECT_ORIGIN, (int32_t)effect, (intptr_t)&cg_periodicEffectOrigin);
 
     cg_periodicEffectLastTime = coduo_int32_from_bits(cg_time);
 }

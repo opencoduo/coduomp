@@ -7,16 +7,14 @@
 
 // 0x30016310 / 0x30016320: installed in cg_scriptExports by Scr_FarHook.
 // Source RVA: 0x30016310
-void CGAME_ABI_CDECL Scr_SetObjectField(
-    int32_t classNum, int32_t objectNum, int32_t fieldIndex)
+void CGAME_ABI_CDECL Scr_SetObjectField(int32_t classNum, int32_t objectNum, int32_t fieldIndex)
 {
     (void)classNum;
     (void)objectNum;
     (void)fieldIndex;
 }
 // Source RVA: 0x30016320
-void CGAME_ABI_CDECL Scr_GetObjectField(
-    int32_t classNum, int32_t objectNum, int32_t fieldIndex)
+void CGAME_ABI_CDECL Scr_GetObjectField(int32_t classNum, int32_t objectNum, int32_t fieldIndex)
 {
     (void)classNum;
     (void)objectNum;
@@ -24,7 +22,9 @@ void CGAME_ABI_CDECL Scr_GetObjectField(
 }
 
 // 0x300257d0: same-module Mac symbol; intentionally empty flame hook.
-void CG_FlameSmokeParticle(void) {}
+void CG_FlameSmokeParticle(void)
+{
+}
 
 // 0x3002d520: installed as displayContextDef_t::feederSelection.
 void CG_FeederSelection(float feederID, int32_t index)
@@ -37,19 +37,33 @@ void CG_FeederSelection(float feederID, int32_t index)
  * callback-table installation that distinguishes their roles. Keep the agreed
  * irreducible-function spelling: the RVA is the only honest identity evidence. */
 // Source RVA: 0x3002ea20
-void UnresolvedFunction_3002ea20(void) {}
+void UnresolvedFunction_3002ea20(void)
+{
+}
 // Source RVA: 0x3002ea80
-void UnresolvedFunction_3002ea80(void) {}
+void UnresolvedFunction_3002ea80(void)
+{
+}
 // Source RVA: 0x30031700
-void UnresolvedFunction_30031700(void) {}
+void UnresolvedFunction_30031700(void)
+{
+}
 // Source RVA: 0x30031710
-void UnresolvedFunction_30031710(void) {}
+void UnresolvedFunction_30031710(void)
+{
+}
 // Source RVA: 0x30032750
-void UnresolvedFunction_30032750(void) {}
+void UnresolvedFunction_30032750(void)
+{
+}
 // Source RVA: 0x30032760
-void UnresolvedFunction_30032760(void) {}
+void UnresolvedFunction_30032760(void)
+{
+}
 // Source RVA: 0x30032770
-void UnresolvedFunction_30032770(void) {}
+void UnresolvedFunction_30032770(void)
+{
+}
 
 // 0x30032880: installed as displayContextDef_t::runScript; matching PPC symbol.
 // Source RVA: 0x30032880

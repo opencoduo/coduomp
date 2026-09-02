@@ -72,23 +72,21 @@
 
 /* Fixed CG_R_TEXT_PAINT draw parameters, proven from the pushed immediates. */
 enum {
-    CG_DRAW54_STYLE     = 5, /* PUSH 5  (arg3) style/font id                    */
-    CG_DRAW54_MODE_ON   = 3, /* AND EAX,3 result when the mode flag is nonzero  */
-    CG_DRAW54_MODE_OFF  = 0, /* AND EAX,3 result when the mode flag is zero     */
+    CG_DRAW54_STYLE = 5, /* PUSH 5  (arg3) style/font id                    */
+    CG_DRAW54_MODE_ON = 3, /* AND EAX,3 result when the mode flag is nonzero  */
+    CG_DRAW54_MODE_OFF = 0, /* AND EAX,3 result when the mode flag is zero     */
 };
-#define CG_DRAW54_SUM_SCALE   0.8f          /* 0x3007bdf0 (0x3f4ccccd)          */
-#define CG_DRAW54_HEIGHT_SCALE (1.0f/48.0f) /* 0x3007bf04 (0x3caaaaab)          */
+#define CG_DRAW54_SUM_SCALE 0.8f          /* 0x3007bdf0 (0x3f4ccccd)          */
+#define CG_DRAW54_HEIGHT_SCALE (1.0f / 48.0f) /* 0x3007bf04 (0x3caaaaab)          */
 
-void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
-                             float x, float y, void *handle,
-                             float width, float height, int32_t extra)
+void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color, float x, float y, void *handle, float width, float height,
+                             int32_t extra)
 {
     qboolean useRawCoordinates = adjustFlag != 0;
     /* height*0.8f + y, then height/48.0f (arg2 / arg4 before any rescale). Both
      * chains stay on the x87 stack UNROUNDED (long double) until the outgoing
      * argument spills at 0x3001cec1..0x3001ced1. */
-    long double sum =
-        (long double)height * (long double)CG_DRAW54_SUM_SCALE;
+    long double sum = (long double)height * (long double)CG_DRAW54_SUM_SCALE;
 
     /* 0x3001ce4f..0x3001ce6a: the first three local-white dwords are stored
      * before y is added; the alpha dword follows that addition. */
@@ -99,8 +97,7 @@ void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
     sum += (long double)y;
     whiteColor[3] = 1.0f;
 
-    long double scale =
-        (long double)height * (long double)CG_DRAW54_HEIGHT_SCALE;
+    long double scale = (long double)height * (long double)CG_DRAW54_HEIGHT_SCALE;
     long double widthRaw;
 
     /* EDX == 0 -> CG_AdjustFrom640 rescale of x/width by screenXScale and of
@@ -111,14 +108,12 @@ void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
      * (FMULP ST3, 0x3001cea4) while the height-scale multiplies the reciprocal
      * ROUNDED to float (FST 0x3001cea0 / FLD 0x3001ceaa / FMULP ST2). */
     if (!useRawCoordinates) {
-        long double invX =
-            (long double)1.0f / (long double)cgs_screenXScale;
+        long double invX = (long double)1.0f / (long double)cgs_screenXScale;
         x = (float)((long double)x * invX);             /* FSTP 0x3001ce90 */
         {
-            long double invY =
-                (long double)1.0f / (long double)cgs_screenYScale;
+            long double invY = (long double)1.0f / (long double)cgs_screenYScale;
             float invYRounded = (float)invY;               /* FST 0x3001cea0  */
-            sum   = sum * invY;                            /* 0x3001cea4      */
+            sum = sum * invY;                            /* 0x3001cea4      */
             widthRaw = (long double)width * invX;
             scale = scale * invYRounded;                   /* 0x3001ceae      */
         }
@@ -137,8 +132,7 @@ void CG_EmitTrap54DrawScaled(int modeFlag, int adjustFlag, const vec_t *color,
     mode &= 3;
     float sumOut = (float)sum;
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  xBits,                            /* arg1 */
+    cgame_syscall(CG_R_TEXT_PAINT, xBits,                            /* arg1 */
                   CG_FloatBits(sumOut),             /* arg2 */
                   CG_DRAW54_STYLE,                  /* arg3 */
                   CG_FloatBits(scaleOut),           /* arg4 */

@@ -44,9 +44,8 @@
 
 #include "client/cgame/client_recovered.h"
 
-float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
-                                   float y, int team, float rowScale,
-                                   int *rowCounter) {
+float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx, float y, int team, float rowScale, int *rowCounter)
+{
     vec4_t rowColor;
     int alternateShade;
     int i;
@@ -58,8 +57,7 @@ float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
     alternateShade = 0; /* 0x3003781f XOR EDI,EDI */
 
     /* 0x3003782a/0x30037896: signed row-count loop over the collected entries. */
-    for (i = 0; i < cg_scoreboardNumClients;
-         i = coduo_int32_from_bits((uint32_t)i + 1u)) {
+    for (i = 0; i < cg_scoreboardNumClients; i = coduo_int32_from_bits((uint32_t)i + 1u)) {
         const cgScore_t *entry = &cg_scoreboardEntries[i];
 
         /* 0x30037852..0x30037860: only rows whose client anim/player state has
@@ -73,8 +71,7 @@ float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
             continue;
 
         /* 0x3003787c: draw one client row; y advances by the returned amount. */
-        y = CG_DrawClientScore(&rowColor[0], y, entry, rowScale,
-                               alternateShade, rowCounter);
+        y = CG_DrawClientScore(&rowColor[0], y, entry, rowScale, alternateShade, rowCounter);
 
         /* 0x30037888: alternate the row background shade on each drawn row. */
         alternateShade ^= 1;

@@ -25,9 +25,7 @@ int32_t FS_FOpenFileWrite(const char *qpath)
     char osPath[MAX_OSPATH];
 
     fileHandle->zipArchive = NULL;
-    FS_BuildOSPath(
-        filesystem_compat_state_root(fs_homepath->string),
-        fs_currentGameDir, qpath, osPath);
+    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string), fs_currentGameDir, qpath, osPath);
 
     if (fs_debug->integer != 0)
         Com_Printf("FS_FOpenFileWrite: %s\n", osPath);
@@ -56,9 +54,7 @@ int32_t FS_FOpenTextFileWrite(const char *qpath)
     char osPath[MAX_OSPATH];
 
     fileHandle->zipArchive = NULL;
-    FS_BuildOSPath(
-        filesystem_compat_state_root(fs_homepath->string),
-        fs_currentGameDir, qpath, osPath);
+    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string), fs_currentGameDir, qpath, osPath);
 
     if (fs_debug->integer != 0)
         Com_Printf("FS_FOpenFileWrite: %s\n", osPath);
@@ -88,9 +84,7 @@ int32_t FS_FOpenFileAppend(const char *qpath)
 
     fileHandle->zipArchive = NULL;
     Q_strncpyz(fileHandle->name, qpath, FS_HANDLE_NAME_SIZE);
-    FS_BuildOSPath(
-        filesystem_compat_state_root(fs_homepath->string),
-        fs_currentGameDir, qpath, osPath);
+    FS_BuildOSPath(filesystem_compat_state_root(fs_homepath->string), fs_currentGameDir, qpath, osPath);
 
     if (fs_debug->integer != 0)
         Com_Printf("FS_FOpenFileAppend: %s\n", osPath);
@@ -114,13 +108,11 @@ int32_t FS_SV_FOpenFileWrite(const char *qpath)
 /* NOT_FROM_ORIGINAL_SOURCE: explicit-root form used only by the client
  * server-namespace adapter. FS_SV_FOpenFileWrite above preserves the
  * original fs_homepath behavior. */
-int32_t coduomp_fs_root_fopen_file_write(const char *root,
-                                         const char *qpath)
+int32_t coduomp_fs_root_fopen_file_write(const char *root, const char *qpath)
 {
     filesystem_compat_check_started();
 
-    if (root == NULL || root[0] == '\0' ||
-        coduo_compat_path_is_safe_relative(qpath) == qfalse) {
+    if (root == NULL || root[0] == '\0' || coduo_compat_path_is_safe_relative(qpath) == qfalse) {
         return 0;
     }
 
@@ -169,18 +161,15 @@ int32_t FS_SV_FOpenFileRead(const char *qpath, int32_t *handleOut)
     osPath[strlen(osPath) - 1] = '\0';
     if (fs_debug->integer != 0)
         Com_Printf("FS_SV_FOpenFileRead (fs_homepath): %s\n", osPath);
-    fileHandle->ioObject = filesystem_compat_fopen_read(
-        fs_homepath->string, osPath);
+    fileHandle->ioObject = filesystem_compat_fopen_read(fs_homepath->string, osPath);
     fileHandle->sync = qfalse;
 
-    if (fileHandle->ioObject == NULL &&
-        Q_stricmp(fs_homepath->string, fs_basepath->string) != 0) {
+    if (fileHandle->ioObject == NULL && Q_stricmp(fs_homepath->string, fs_basepath->string) != 0) {
         FS_BuildOSPath(fs_basepath->string, qpath, "", osPath);
         osPath[strlen(osPath) - 1] = '\0';
         if (fs_debug->integer != 0)
             Com_Printf("FS_SV_FOpenFileRead (fs_basepath): %s\n", osPath);
-        fileHandle->ioObject = filesystem_compat_fopen_read(
-            fs_basepath->string, osPath);
+        fileHandle->ioObject = filesystem_compat_fopen_read(fs_basepath->string, osPath);
         fileHandle->sync = qfalse;
     }
 
@@ -191,8 +180,7 @@ int32_t FS_SV_FOpenFileRead(const char *qpath, int32_t *handleOut)
         osPath[strlen(osPath) - 1] = '\0';
         if (fs_debug->integer != 0)
             Com_Printf("FS_SV_FOpenFileRead (fs_cdpath) : %s\n", osPath);
-        fileHandle->ioObject = filesystem_compat_fopen_read(
-            fs_cdpath->string, osPath);
+        fileHandle->ioObject = filesystem_compat_fopen_read(fs_cdpath->string, osPath);
         fileHandle->sync = qfalse;
         if (fileHandle->ioObject == NULL)
             handle = 0;

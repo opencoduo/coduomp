@@ -51,66 +51,36 @@ typedef struct trRefdef_s {
 } trRefdef_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(trRefdef_t) == 4,
-               "i386 renderer refdef alignment changed");
-_Static_assert(offsetof(trRefdef_t, x) == 0x000,
-               "i386 renderer refdef viewport-X offset changed");
-_Static_assert(offsetof(trRefdef_t, y) == 0x004,
-               "i386 renderer refdef viewport-Y offset changed");
-_Static_assert(offsetof(trRefdef_t, width) == 0x008,
-               "i386 renderer refdef viewport-width offset changed");
-_Static_assert(offsetof(trRefdef_t, height) == 0x00c,
-               "i386 renderer refdef viewport-height offset changed");
-_Static_assert(offsetof(trRefdef_t, fov_x) == 0x010,
-               "i386 renderer refdef horizontal-FOV offset changed");
-_Static_assert(offsetof(trRefdef_t, fov_y) == 0x014,
-               "i386 renderer refdef vertical-FOV offset changed");
-_Static_assert(offsetof(trRefdef_t, vieworg) == 0x018,
-               "i386 renderer refdef view-origin offset changed");
-_Static_assert(sizeof(((trRefdef_t *)0)->vieworg) == 0x00c,
-               "i386 renderer refdef view-origin extent changed");
-_Static_assert(offsetof(trRefdef_t, viewaxis) == 0x024,
-               "i386 renderer refdef view-axis offset changed");
-_Static_assert(sizeof(((trRefdef_t *)0)->viewaxis) == 0x024,
-               "i386 renderer refdef view-axis extent changed");
-_Static_assert(offsetof(trRefdef_t, time) == 0x048,
-               "i386 renderer refdef-time offset changed");
-_Static_assert(offsetof(trRefdef_t, rdflags) == 0x04c,
-               "i386 renderer refdef flags offset changed");
-_Static_assert(offsetof(trRefdef_t, floatTime) == 0x050,
-               "i386 renderer refdef floating-time offset changed");
-_Static_assert(offsetof(trRefdef_t, text) == 0x054,
-               "i386 renderer shader-text offset changed");
-_Static_assert(sizeof(((trRefdef_t *)0)->text) == 0x100,
-               "i386 renderer shader-text extent changed");
-_Static_assert(offsetof(trRefdef_t, num_entities) == 0x154,
-               "i386 renderer entity-count offset changed");
-_Static_assert(offsetof(trRefdef_t, entities) == 0x158,
-               "i386 renderer entity-array offset changed");
-_Static_assert(offsetof(trRefdef_t, num_dlights) == 0x15c,
-               "i386 renderer world-light-count offset changed");
-_Static_assert(offsetof(trRefdef_t, entityDlightCount) == 0x160,
-               "i386 renderer entity-light-count offset changed");
-_Static_assert(offsetof(trRefdef_t, dlights) == 0x164,
-               "i386 renderer light-array offset changed");
-_Static_assert(offsetof(trRefdef_t, coronaCount) == 0x168,
-               "i386 renderer corona-count offset changed");
-_Static_assert(offsetof(trRefdef_t, coronas) == 0x16c,
-               "i386 renderer corona-array offset changed");
-_Static_assert(offsetof(trRefdef_t, numDrawSurfs) == 0x178,
-               "i386 renderer draw-surface-count offset changed");
-_Static_assert(offsetof(trRefdef_t, numPolys) == 0x170,
-               "i386 renderer polygon-count offset changed");
-_Static_assert(offsetof(trRefdef_t, polys) == 0x174,
-               "i386 renderer polygon-array offset changed");
-_Static_assert(offsetof(trRefdef_t, drawSurfs) == 0x17c,
-               "i386 renderer draw-surface-array offset changed");
-_Static_assert(offsetof(trRefdef_t, entitySurfaceCount) == 0x180,
-               "i386 renderer entity-surface-count offset changed");
-_Static_assert(offsetof(trRefdef_t, entitySurfaces) == 0x184,
-               "i386 renderer entity-surface-array offset changed");
-_Static_assert(sizeof(trRefdef_t) == 0x188,
-               "i386 renderer refdef size changed");
+_Static_assert(_Alignof(trRefdef_t) == 4, "i386 renderer refdef alignment changed");
+_Static_assert(offsetof(trRefdef_t, x) == 0x000, "i386 renderer refdef viewport-X offset changed");
+_Static_assert(offsetof(trRefdef_t, y) == 0x004, "i386 renderer refdef viewport-Y offset changed");
+_Static_assert(offsetof(trRefdef_t, width) == 0x008, "i386 renderer refdef viewport-width offset changed");
+_Static_assert(offsetof(trRefdef_t, height) == 0x00c, "i386 renderer refdef viewport-height offset changed");
+_Static_assert(offsetof(trRefdef_t, fov_x) == 0x010, "i386 renderer refdef horizontal-FOV offset changed");
+_Static_assert(offsetof(trRefdef_t, fov_y) == 0x014, "i386 renderer refdef vertical-FOV offset changed");
+_Static_assert(offsetof(trRefdef_t, vieworg) == 0x018, "i386 renderer refdef view-origin offset changed");
+_Static_assert(sizeof(((trRefdef_t *)0)->vieworg) == 0x00c, "i386 renderer refdef view-origin extent changed");
+_Static_assert(offsetof(trRefdef_t, viewaxis) == 0x024, "i386 renderer refdef view-axis offset changed");
+_Static_assert(sizeof(((trRefdef_t *)0)->viewaxis) == 0x024, "i386 renderer refdef view-axis extent changed");
+_Static_assert(offsetof(trRefdef_t, time) == 0x048, "i386 renderer refdef-time offset changed");
+_Static_assert(offsetof(trRefdef_t, rdflags) == 0x04c, "i386 renderer refdef flags offset changed");
+_Static_assert(offsetof(trRefdef_t, floatTime) == 0x050, "i386 renderer refdef floating-time offset changed");
+_Static_assert(offsetof(trRefdef_t, text) == 0x054, "i386 renderer shader-text offset changed");
+_Static_assert(sizeof(((trRefdef_t *)0)->text) == 0x100, "i386 renderer shader-text extent changed");
+_Static_assert(offsetof(trRefdef_t, num_entities) == 0x154, "i386 renderer entity-count offset changed");
+_Static_assert(offsetof(trRefdef_t, entities) == 0x158, "i386 renderer entity-array offset changed");
+_Static_assert(offsetof(trRefdef_t, num_dlights) == 0x15c, "i386 renderer world-light-count offset changed");
+_Static_assert(offsetof(trRefdef_t, entityDlightCount) == 0x160, "i386 renderer entity-light-count offset changed");
+_Static_assert(offsetof(trRefdef_t, dlights) == 0x164, "i386 renderer light-array offset changed");
+_Static_assert(offsetof(trRefdef_t, coronaCount) == 0x168, "i386 renderer corona-count offset changed");
+_Static_assert(offsetof(trRefdef_t, coronas) == 0x16c, "i386 renderer corona-array offset changed");
+_Static_assert(offsetof(trRefdef_t, numDrawSurfs) == 0x178, "i386 renderer draw-surface-count offset changed");
+_Static_assert(offsetof(trRefdef_t, numPolys) == 0x170, "i386 renderer polygon-count offset changed");
+_Static_assert(offsetof(trRefdef_t, polys) == 0x174, "i386 renderer polygon-array offset changed");
+_Static_assert(offsetof(trRefdef_t, drawSurfs) == 0x17c, "i386 renderer draw-surface-array offset changed");
+_Static_assert(offsetof(trRefdef_t, entitySurfaceCount) == 0x180, "i386 renderer entity-surface-count offset changed");
+_Static_assert(offsetof(trRefdef_t, entitySurfaces) == 0x184, "i386 renderer entity-surface-array offset changed");
+_Static_assert(sizeof(trRefdef_t) == 0x188, "i386 renderer refdef size changed");
 #endif
 
 #endif

@@ -48,9 +48,12 @@
 /* Beam-alpha clamp limits and scale factors (0x3007c134..0x3007c144). Named by
  * their proven role in the muzzle->camera facing fade; kept file-local because they
  * are one-function tuning constants. */
-enum { CG_LASER_MAX_LEN = 4000, CG_LASER_FADE_DIST = 700 };
+enum {
+    CG_LASER_MAX_LEN = 4000,
+    CG_LASER_FADE_DIST = 700
+};
 #define CG_LASER_INV_FADE_DIST 0.0014285714132711291f /* 1/700  @0x3007c138 */
-#define CG_LASER_INV_MAX_LEN   0.0002500000118743628f /* 1/4000 @0x3007c134 */
+#define CG_LASER_INV_MAX_LEN 0.0002500000118743628f /* 1/4000 @0x3007c134 */
 
 void CG_Missile(centity_t *cent /* EBX */)
 {
@@ -76,8 +79,7 @@ void CG_Missile(centity_t *cent /* EBX */)
      * ECX = &cent->lerpOrigin (channel object), EAX = wi->flashSound (soundName),
      * one stack arg = cent->currentState.number. */
     if (wi->projectileSound != 0) {
-        CG_PlaySoundAliasByName(cent->currentState.number, &cent->lerpOrigin,
-                                wi->projectileSound);
+        CG_PlaySoundAliasByName(cent->currentState.number, &cent->lerpOrigin, wi->projectileSound);
     }
 
     /* 0x3001ee15: the view-facing beam is only emitted when this weapon carries a
@@ -86,10 +88,8 @@ void CG_Missile(centity_t *cent /* EBX */)
     if (wi->projectileSoundBlend1 != 0) {
         /* 0x3001ee29: register both muzzle-effect resources into engine handles via
          * CG_COM_PICK_SOUND_ALIAS (trap 0xc4: name, channelObj = &cent->lerpOrigin). */
-        snd_alias_t *alias0 = trap_Com_PickSoundAlias(
-            wi->projectileSoundBlend1, cent->lerpOrigin);
-        snd_alias_t *alias1 = trap_Com_PickSoundAlias(
-            wi->projectileSoundBlend2, cent->lerpOrigin);
+        snd_alias_t *alias0 = trap_Com_PickSoundAlias(wi->projectileSoundBlend1, cent->lerpOrigin);
+        snd_alias_t *alias1 = trap_Com_PickSoundAlias(wi->projectileSoundBlend2, cent->lerpOrigin);
 
         /* 0x3001ee55/0x3001ee61: both handles must be live to draw the beam. */
         if (alias0 != NULL && alias1 != NULL) {
@@ -105,12 +105,9 @@ void CG_Missile(centity_t *cent /* EBX */)
              * origin). Computed at single precision and normalized in place; its
              * pre-normalization length is the muzzle->camera distance. */
             vec3_t toCamera;
-            toCamera[0] = (float)((long double)cg_refdef.vieworg[0] -
-                                  (long double)cent->lerpOrigin[0]);
-            toCamera[1] = (float)((long double)cg_refdef.vieworg[1] -
-                                  (long double)cent->lerpOrigin[1]);
-            toCamera[2] = (float)((long double)cg_refdef.vieworg[2] -
-                                  (long double)cent->lerpOrigin[2]);
+            toCamera[0] = (float)((long double)cg_refdef.vieworg[0] - (long double)cent->lerpOrigin[0]);
+            toCamera[1] = (float)((long double)cg_refdef.vieworg[1] - (long double)cent->lerpOrigin[1]);
+            toCamera[2] = (float)((long double)cg_refdef.vieworg[2] - (long double)cent->lerpOrigin[2]);
             float camDist = VectorNormalize(toCamera);
 
             /* 0x3001eeb7..0x3001eee0: clamp the laser direction's length to
@@ -121,20 +118,16 @@ void CG_Missile(centity_t *cent /* EBX */)
              * inline FSQRT (0x3001eed3) and FCOMPs the UNROUNDED st0 against 4000.0f
              * (0x3001eed5) with no float store -- so mag stays long double and the
              * root is sqrtl (no result rounding). */
-            long double mag = sqrtl(
-                (long double)laserDir[2] * (long double)laserDir[2] +
-                (long double)laserDir[1] * (long double)laserDir[1] +
-                (long double)laserDir[0] * (long double)laserDir[0]);
+            long double mag =
+                sqrtl((long double)laserDir[2] * (long double)laserDir[2] + (long double)laserDir[1] * (long double)laserDir[1] +
+                      (long double)laserDir[0] * (long double)laserDir[0]);
             if (mag > (float)CG_LASER_MAX_LEN) {
                 /* 0x3001eee2: normalize laserDir in place (discard its length via
                  * FSTP ST0) then scale each component to length 4000. */
                 (void)VectorNormalize(laserDir);
-                laserDir[0] = (float)((long double)laserDir[0] *
-                                      (long double)(float)CG_LASER_MAX_LEN);
-                laserDir[1] = (float)((long double)laserDir[1] *
-                                      (long double)(float)CG_LASER_MAX_LEN);
-                laserDir[2] = (float)((long double)laserDir[2] *
-                                      (long double)(float)CG_LASER_MAX_LEN);
+                laserDir[0] = (float)((long double)laserDir[0] * (long double)(float)CG_LASER_MAX_LEN);
+                laserDir[1] = (float)((long double)laserDir[1] * (long double)(float)CG_LASER_MAX_LEN);
+                laserDir[2] = (float)((long double)laserDir[2] * (long double)(float)CG_LASER_MAX_LEN);
             }
 
             /* 0x3001ef17: facing = dot(laserDir, toCamera). The dot, both clamps,
@@ -142,10 +135,8 @@ void CG_Missile(centity_t *cent /* EBX */)
              * with NO float store until the single FSTP of alpha at 0x3001ef98 -- so
              * facing stays long double and the FCOM clamps (0x3001ef33/0x3001ef4a)
              * compare the unrounded value. */
-            long double facing =
-                (long double)laserDir[2] * (long double)toCamera[2] +
-                (long double)laserDir[1] * (long double)toCamera[1] +
-                (long double)laserDir[0] * (long double)toCamera[0];
+            long double facing = (long double)laserDir[2] * (long double)toCamera[2] + (long double)laserDir[1] * (long double)toCamera[1] +
+                                 (long double)laserDir[0] * (long double)toCamera[0];
 
             /* 0x3001ef33..0x3001ef5f: clamp facing to [-4000, 4000].
              * FCOM vs -4000.0 / JP-skip pattern: facing < -4000 -> -4000; then
@@ -159,21 +150,16 @@ void CG_Missile(centity_t *cent /* EBX */)
              * scale facing by camDist / 700 (facing * camDist * (1/700)). The FCOMP vs
              * 700.0 / JP-skip leaves facing unscaled when camDist >= 700. */
             if (camDist < (float)CG_LASER_FADE_DIST)
-                facing = facing * (long double)camDist *
-                         (long double)CG_LASER_INV_FADE_DIST;
+                facing = facing * (long double)camDist * (long double)CG_LASER_INV_FADE_DIST;
 
             /* 0x3001ef7a: alpha = (facing/4000 + 1.0) * 0.5, mapping the clamped facing
              * from [-4000,4000] into [0,1]. */
-            float alpha = (float)(
-                (facing * (long double)CG_LASER_INV_MAX_LEN +
-                 (long double)1.0f) * (long double)0.5f);
+            float alpha = (float)((facing * (long double)CG_LASER_INV_MAX_LEN + (long double)1.0f) * (long double)0.5f);
 
             /* 0x3001ef80..0x3001efa6: play the two selected aliases at the
              * entity's weapon origin, with alpha as the blend and timeShift 0.
              * EDX=EDI supplies &cent->lerpOrigin and ECX=0 supplies timeShift. */
-            trap_MSS_PlayBlendedSoundAliases(alias0, alias1, alpha,
-                                              cent->currentState.number,
-                                              cent->lerpOrigin, 0);
+            trap_MSS_PlayBlendedSoundAliases(alias0, alias1, alpha, cent->currentState.number, cent->lerpOrigin, 0);
         }
     }
 
@@ -181,13 +167,11 @@ void CG_Missile(centity_t *cent /* EBX */)
      * ECX-slot arg = cent->currentState.eType, EAX-slot arg = wi->clipModelHandle; ESI carries
      * cent->currentState.number (register). Caller-cleaned; the cleanup folds into the ADD
      * ESP,0x10 after the trap-0xa5 call below. */
-    CG_RefreshEntityDObjAnimTree(cent->currentState.number, cent->currentState.eType,
-                                 wi->clipModelHandle);
+    CG_RefreshEntityDObjAnimTree(cent->currentState.number, cent->currentState.eType, wi->clipModelHandle);
 
     /* 0x3001efbb: handle = (int32_t)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number).
      * A zero handle means no DObj skeleton — nothing to draw, jump to the epilogue. */
-    struct DObj_s *dobj = (struct DObj_s *)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, cent->currentState.number);
+    struct DObj_s *dobj = (struct DObj_s *)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number);
     if (dobj == NULL)
         return;
 
@@ -195,11 +179,7 @@ void CG_Missile(centity_t *cent /* EBX */)
      * FLD 0.0 / FLD wi->projectileDLight / FUCOMPP / TEST AH,0x44 / JNP is the
      * "!= 0.0" test. */
     if (wi->projectileDLight != 0.0f) {
-        trap_R_AddLightToScene(cent->lerpOrigin,
-                               wi->projectileDLight,
-                               wi->flashLightR,
-                               wi->flashLightG,
-                               wi->flashLightB);
+        trap_R_AddLightToScene(cent->lerpOrigin, wi->projectileDLight, wi->flashLightR, wi->flashLightG, wi->flashLightB);
     }
 
     /* 0x3001f016..0x3001f0a1: build and submit one RT_MODEL render entity.
@@ -252,16 +232,12 @@ void CG_Missile(centity_t *cent /* EBX */)
      * resolving its bone. The previous raw int[2] reconstruction omitted this
      * machine-code store and left the engine-facing entityNum uninitialized. */
     boltInfo.entityNum = cent->currentState.number;
-    boltInfo.boneIndex = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_RESOLVE_TAG, cent->currentState.number, (intptr_t)cg_originTagName));
+    boltInfo.boneIndex =
+        coduo_int32_from_bits((uint32_t)cgame_syscall(CG_RESOLVE_TAG, cent->currentState.number, (intptr_t)cg_originTagName));
     if (boltInfo.boneIndex >= 0) {
         /* 0x3001f0db: cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
          * wi->projectileTrailEffect, &cent->lerpOrigin, 0, &boltInfo). */
-        cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                      (int32_t)wi->projectileTrailEffect,
-                      (intptr_t)&cent->lerpOrigin,
-                      0,
-                      (intptr_t)&boltInfo);
+        cgame_syscall(CG_PLAY_EFFECT_ON_TAG, (int32_t)wi->projectileTrailEffect, (intptr_t)&cent->lerpOrigin, 0, (intptr_t)&boltInfo);
     }
 
     /* 0x3001f0f8: latch so the tag effect plays exactly once (ESI = 1). */

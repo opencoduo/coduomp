@@ -10,14 +10,10 @@ extern "C" {
 #endif
 
 void CM_PositionTest(traceWork_t *traceWork);
-void CM_TraceThroughTree(
-    traceWork_t *traceWork, int32_t nodeNum,
-    float startFraction, float endFraction,
-    const vec3_t start, const vec3_t end);
-int32_t CM_SightTraceThroughTree(
-    const traceWork_t *traceWork, int32_t nodeNum,
-    float startFraction, float endFraction,
-    const vec3_t start, const vec3_t end);
+void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum, float startFraction, float endFraction, const vec3_t start,
+                         const vec3_t end);
+int32_t CM_SightTraceThroughTree(const traceWork_t *traceWork, int32_t nodeNum, float startFraction, float endFraction, const vec3_t start,
+                                 const vec3_t end);
 
 #ifdef __cplusplus
 }

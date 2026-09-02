@@ -68,8 +68,7 @@
 #define INTERMISSION_PS_FLAGS_CLEAR 0x00020200u
 #define FOLLOW_PLAYERSTATE_COPY_SIZE offsetof(gclient_t, sessionState)
 #define FOLLOW_PLAYERSTATE_CLEAR_OFFSET offsetof(gclient_t, ps.hudCurrent)
-#define FOLLOW_PLAYERSTATE_CLEAR_SIZE \
-    sizeof(((gclient_t *)0)->ps.hudCurrent)
+#define FOLLOW_PLAYERSTATE_CLEAR_SIZE sizeof(((gclient_t *)0)->ps.hudCurrent)
 #define ARCHIVE_CLIENT_NONE -1
 #define SPECTATOR_ARCHIVE_STEP_MS 50
 #define SPECTATOR_ARCHIVE_HUDELEM_UPDATE_FLAGS 2u
@@ -138,10 +137,8 @@
 #define CLIENT_EVENTS_DROP_WEAPON 203
 #define CLIENT_EVENTS_SUICIDE 210
 #define ENTITY_FLAG_GODMODE 0x00000001u
-#define CLIENTEND_VEHICLE_STATE_ORIGIN_OFFSET \
-    offsetof(vehicle_state_t, origin)
-#define CLIENTEND_VEHICLE_STATE_NULL_SENTINEL \
-    ((vehicle_state_t *)(intptr_t)(-((intptr_t)CLIENTEND_VEHICLE_STATE_ORIGIN_OFFSET)))
+#define CLIENTEND_VEHICLE_STATE_ORIGIN_OFFSET offsetof(vehicle_state_t, origin)
+#define CLIENTEND_VEHICLE_STATE_NULL_SENTINEL ((vehicle_state_t *)(intptr_t)(-((intptr_t)CLIENTEND_VEHICLE_STATE_ORIGIN_OFFSET)))
 #define SUICIDE_DAMAGE 100000
 #define DAMAGE_FEEDBACK_MAX_COUNT 127
 #define DAMAGE_FEEDBACK_ALPHA_MAX 255.0f
@@ -165,22 +162,16 @@ static int debugArchiveLastSpectatorLog[MAX_CLIENTS];
 int BG_PlayerTouchesItem(gclient_t *client, gentity_t *itemEnt, int time);
 qboolean Cmd_FollowCycle_f(gentity_t *ent, int direction);
 qboolean G_ClientCanSpectateTeam(gclient_t *client, int team);
-void HudElem_UpdateClient(gclient_t *client, int clientNum,
-                                 uint32_t updateFlags);
-void G_Damage(gentity_t *target, gentity_t *inflictor,
-                     gentity_t *attacker, const float *dir, const float *point,
-                     int damage, int dflags, int mod, int hitLoc);
-qboolean G_EntAttach(gentity_t *ent, const char *modelName,
-                            const char *tagName, qboolean ignoreCollision);
-qboolean G_EntDetach(gentity_t *ent, const char *modelName,
-                            const char *tagName);
+void HudElem_UpdateClient(gclient_t *client, int clientNum, uint32_t updateFlags);
+void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, const float *dir, const float *point, int damage, int dflags,
+              int mod, int hitLoc);
+qboolean G_EntAttach(gentity_t *ent, const char *modelName, const char *tagName, qboolean ignoreCollision);
+qboolean G_EntDetach(gentity_t *ent, const char *modelName, const char *tagName);
 void G_SetFixedLink(gentity_t *ent, int mode);
 void G_SetOrigin(gentity_t *ent, const float *origin);
 int G_TagIndex(const char *tagName);
 void G_SafeDObjFree(gentity_t *ent);
-void BG_UpdatePlayerDObj(gentity_t *ent, const gentity_t *entState,
-                         clientInfo_t *clientInfo,
-                         uint8_t *dObjVersion);
+void BG_UpdatePlayerDObj(gentity_t *ent, const gentity_t *entState, clientInfo_t *clientInfo, uint8_t *dObjVersion);
 void G_CheckForPreventFriendlyFire(gentity_t *ent);
 void G_CheckForCursorHints(gentity_t *ent);
 void G_AddEvent(gentity_t *ent, int event, int eventParm);
@@ -194,8 +185,7 @@ static qboolean game_compat_client_frame_should_log_archive(int minLevel, int *l
     if (g_debugArchiveCheck.integer >= 5) {
         return qtrue;
     }
-    if (*lastLogTime == 0 ||
-        level.time - *lastLogTime >= DEBUG_ARCHIVE_THROTTLE_MS) {
+    if (*lastLogTime == 0 || level.time - *lastLogTime >= DEBUG_ARCHIVE_THROTTLE_MS) {
         *lastLogTime = level.time;
         return qtrue;
     }
@@ -203,34 +193,25 @@ static qboolean game_compat_client_frame_should_log_archive(int minLevel, int *l
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: gated archive/follow diagnostic for live repros. */
-static void game_compat_client_frame_log_archive_client_state(const char *label, int clientNum,
-                                              const gclient_t *client,
-                                              int result)
+static void game_compat_client_frame_log_archive_client_state(const char *label, int clientNum, const gclient_t *client, int result)
 {
     G_Printf("archive_debug %s time=%d client=%d result=%d "
              "connected=%d session=%d psClient=%d pmType=%d "
              "psFlags=0x%x esFlags=0x%x follow=%d archive=%d "
              "archiveTime=%d lastCmd=%d lastUsercmd=%d "
              "origin=(%.1f %.1f %.1f)\n",
-             label, level.time, clientNum, result,
-             client->connectedState, client->sessionState,
-             client->ps.psClientNum, client->ps.pmType,
-             client->ps.playerStateFlags, client->ps.entityStateFlags,
-             client->followClient, client->archiveClient, client->archiveTime,
-             client->ps.commandTime, client->lastUsercmdTime,
-             client->ps.psOrigin[0], client->ps.psOrigin[1],
-             client->ps.psOrigin[2]);
+             label, level.time, clientNum, result, client->connectedState, client->sessionState, client->ps.psClientNum, client->ps.pmType,
+             client->ps.playerStateFlags, client->ps.entityStateFlags, client->followClient, client->archiveClient, client->archiveTime,
+             client->ps.commandTime, client->lastUsercmdTime, client->ps.psOrigin[0], client->ps.psOrigin[1], client->ps.psOrigin[2]);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: gated archive/follow diagnostic for live repros. */
-static void game_compat_client_frame_log_archive_player_state(const char *label, int clientNum,
-                                              const playerState_t *ps)
+static void game_compat_client_frame_log_archive_player_state(const char *label, int clientNum, const playerState_t *ps)
 {
     G_Printf("archive_debug %s time=%d client=%d psClient=%d pmType=%d "
              "psFlags=0x%x esFlags=0x%x lastCmd=%d "
              "origin=(%.1f %.1f %.1f)\n",
-             label, level.time, clientNum, ps->psClientNum, ps->pmType,
-             ps->playerStateFlags, ps->entityStateFlags, ps->commandTime,
+             label, level.time, clientNum, ps->psClientNum, ps->pmType, ps->playerStateFlags, ps->entityStateFlags, ps->commandTime,
              ps->psOrigin[0], ps->psOrigin[1], ps->psOrigin[2]);
 }
 void FireWeapon(gentity_t *ent);
@@ -275,9 +256,7 @@ static uint32_t game_compat_client_end_frame_pack_non_pvs_offset(int value, uint
 {
     int quarterOffset = (value + 2) / 4;
 
-    return ((uint32_t)(quarterOffset + CLIENTEND_NONPVS_OFFSET_CENTER) &
-            CLIENTEND_NONPVS_OFFSET_MASK)
-           << shift;
+    return ((uint32_t)(quarterOffset + CLIENTEND_NONPVS_OFFSET_CENTER) & CLIENTEND_NONPVS_OFFSET_MASK) << shift;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring for StuckInClient contents predicate. */
@@ -293,12 +272,8 @@ static qboolean game_compat_stuck_bounds_overlap(const gentity_t *a, const genti
 {
     /* Each stock rejection is an ordered `ja`; unordered inputs fall through
      * as overlapping rather than behaving like a source-level `<=`. */
-    return !(b->absMin[0] > a->absMax[0]) &&
-           !(a->absMin[0] > b->absMax[0]) &&
-           !(b->absMin[1] > a->absMax[1]) &&
-           !(a->absMin[1] > b->absMax[1]) &&
-           !(b->absMin[2] > a->absMax[2]) &&
-           !(a->absMin[2] > b->absMax[2]);
+    return !(b->absMin[0] > a->absMax[0]) && !(a->absMin[0] > b->absMax[0]) && !(b->absMin[1] > a->absMax[1]) &&
+           !(a->absMin[1] > b->absMax[1]) && !(b->absMin[2] > a->absMax[2]) && !(a->absMin[2] > b->absMax[2]);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring for StuckInClient capsule flag test. */
@@ -308,10 +283,7 @@ static qboolean game_compat_stuck_entity_uses_capsule(const gentity_t *ent)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring for StuckInClient capsule-vs-box test. */
-static qboolean game_compat_stuck_capsule_box_overlap(const gentity_t *capsule,
-                                       const gentity_t *box,
-                                       float deltaX,
-                                       float deltaY)
+static qboolean game_compat_stuck_capsule_box_overlap(const gentity_t *capsule, const gentity_t *box, float deltaX, float deltaY)
 {
     float normal[2];
     float adjustedX;
@@ -327,24 +299,17 @@ static qboolean game_compat_stuck_capsule_box_overlap(const gentity_t *capsule,
     /* Stock 0x42863..0x42879: (maxs[0]*-1.0)*normal[k] + delta kept 80-bit, one
      * store -> shim. */
 #if EMULATE_X87
-    adjustedX = x87f_store_f32(x87f_add(
-        x87f_mul(x87f_mul(x87f_load_f32(capsule->maxs[0]), x87f_load_f32(-1.0f)),
-                 x87f_load_f32(normal[0])),
-        x87f_load_f32(deltaX)));
-    adjustedY = x87f_store_f32(x87f_add(
-        x87f_mul(x87f_mul(x87f_load_f32(capsule->maxs[0]), x87f_load_f32(-1.0f)),
-                 x87f_load_f32(normal[1])),
-        x87f_load_f32(deltaY)));
+    adjustedX = x87f_store_f32(x87f_add(x87f_mul(x87f_mul(x87f_load_f32(capsule->maxs[0]), x87f_load_f32(-1.0f)), x87f_load_f32(normal[0])),
+                                        x87f_load_f32(deltaX)));
+    adjustedY = x87f_store_f32(x87f_add(x87f_mul(x87f_mul(x87f_load_f32(capsule->maxs[0]), x87f_load_f32(-1.0f)), x87f_load_f32(normal[1])),
+                                        x87f_load_f32(deltaY)));
 #else
-    adjustedX = (float)(((long double)capsule->maxs[0] * -1.0L) *
-                        (long double)normal[0] + (long double)deltaX);
-    adjustedY = (float)(((long double)capsule->maxs[0] * -1.0L) *
-                        (long double)normal[1] + (long double)deltaY);
+    adjustedX = (float)(((long double)capsule->maxs[0] * -1.0L) * (long double)normal[0] + (long double)deltaX);
+    adjustedY = (float)(((long double)capsule->maxs[0] * -1.0L) * (long double)normal[1] + (long double)deltaY);
 #endif
 
     /* Stock rejects only when both ordered greater-than tests succeed. */
-    return !(game_compat_abs_float(adjustedX) > box->maxs[0]) ||
-           !(game_compat_abs_float(adjustedY) > box->maxs[1]);
+    return !(game_compat_abs_float(adjustedX) > box->maxs[0]) || !(game_compat_abs_float(adjustedY) > box->maxs[1]);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring for StuckInClient shape dispatch. */
@@ -367,16 +332,11 @@ static qboolean game_compat_stuck_shapes_overlap(const gentity_t *ent, const gen
 
         /* dx*dx+dy*dy vs radius*radius kept 80-bit, full-width compare -> shim */
 #if EMULATE_X87
-        return x87f_le(
-            x87f_add(x87f_mul(x87f_load_f32(dx), x87f_load_f32(dx)),
-                     x87f_mul(x87f_load_f32(dy), x87f_load_f32(dy))),
-            x87f_mul(x87f_load_f32(radius), x87f_load_f32(radius)));
+        return x87f_le(x87f_add(x87f_mul(x87f_load_f32(dx), x87f_load_f32(dx)), x87f_mul(x87f_load_f32(dy), x87f_load_f32(dy))),
+                       x87f_mul(x87f_load_f32(radius), x87f_load_f32(radius)));
 #else
-        long double distanceSquared =
-            (long double)dx * (long double)dx +
-            (long double)dy * (long double)dy;
-        long double radiusSquared =
-            (long double)radius * (long double)radius;
+        long double distanceSquared = (long double)dx * (long double)dx + (long double)dy * (long double)dy;
+        long double radiusSquared = (long double)radius * (long double)radius;
 
         return !(distanceSquared > radiusSquared);
 #endif
@@ -396,17 +356,12 @@ static float game_compat_stuck_client_move_speed(gclient_t *client)
      * (0x42a34..0x42a6a): the planar speed rounds to double at the sqrt call
      * boundary and to float at the result store. */
 #if EMULATE_X87
-    float speed2D = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(
-        x87f_mul(x87f_load_f32(client->ps.velocity[0]),
-                 x87f_load_f32(client->ps.velocity[0])),
-        x87f_mul(x87f_load_f32(client->ps.velocity[1]),
-                 x87f_load_f32(client->ps.velocity[1])))));
+    float speed2D = (float)CoduoLibm_Sqrt(
+        x87f_store_f64(x87f_add(x87f_mul(x87f_load_f32(client->ps.velocity[0]), x87f_load_f32(client->ps.velocity[0])),
+                                x87f_mul(x87f_load_f32(client->ps.velocity[1]), x87f_load_f32(client->ps.velocity[1])))));
 #else
-    long double speedSquared =
-        (long double)client->ps.velocity[0] *
-            (long double)client->ps.velocity[0] +
-        (long double)client->ps.velocity[1] *
-            (long double)client->ps.velocity[1];
+    long double speedSquared = (long double)client->ps.velocity[0] * (long double)client->ps.velocity[0] +
+                               (long double)client->ps.velocity[1] * (long double)client->ps.velocity[1];
     float speed2D = (float)CoduoLibm_Sqrt((double)speedSquared);
 #endif
 
@@ -430,8 +385,7 @@ static void game_compat_stuck_apply_push(gclient_t *client, const float *dir, fl
 static void game_compat_update_sv_private_clients(void)
 {
     if (sv_privateClients.handle == 0) {
-        trap_Cvar_Register(&sv_privateClients, "sv_privateClients", "0",
-                           CVAR_SERVERINFO);
+        trap_Cvar_Register(&sv_privateClients, "sv_privateClients", "0", CVAR_SERVERINFO);
     } else {
         trap_Cvar_Update(&sv_privateClients);
     }
@@ -448,26 +402,21 @@ void P_DamageFeedback(gentity_t *ent)
      * RECOVERED(UO-GAME-UNK-0058): damage feedback now uses typed client fields; the
      * event id range and feedback constants remain preserved from static evidence.
      */
-    if (client->ps.pmType >= PM_TYPE_DEAD || damageTaken <= 0 ||
-        client->normalMaxHealth <= 0) {
+    if (client->ps.pmType >= PM_TYPE_DEAD || damageTaken <= 0 || client->normalMaxHealth <= 0) {
         return;
     }
 
-    damageTaken = coduo_int32_from_bits((uint32_t)damageTaken * UINT32_C(100)) /
-                  client->normalMaxHealth;
+    damageTaken = coduo_int32_from_bits((uint32_t)damageTaken * UINT32_C(100)) / client->normalMaxHealth;
     if (damageTaken > DAMAGE_FEEDBACK_MAX_COUNT) {
         damageTaken = DAMAGE_FEEDBACK_MAX_COUNT;
     }
 
-    client->ps.aimSpreadScale =
-        (float)((long double)damageTaken +
-                (long double)client->ps.aimSpreadScale);
+    client->ps.aimSpreadScale = (float)((long double)damageTaken + (long double)client->ps.aimSpreadScale);
     if (client->ps.aimSpreadScale > DAMAGE_FEEDBACK_ALPHA_MAX) {
         client->ps.aimSpreadScale = DAMAGE_FEEDBACK_ALPHA_MAX;
     }
 
-    float kick = (float)((long double)damageTaken *
-                         (long double)DAMAGE_FEEDBACK_KICK_SCALE);
+    float kick = (float)((long double)damageTaken * (long double)DAMAGE_FEEDBACK_KICK_SCALE);
     if (kick < DAMAGE_FEEDBACK_KICK_MIN) {
         kick = DAMAGE_FEEDBACK_KICK_MIN;
     } else if (kick > DAMAGE_FEEDBACK_KICK_MAX) {
@@ -485,24 +434,20 @@ void P_DamageFeedback(gentity_t *ent)
         /* Stock 0x3f7f4..0x3f823: the damageFrom.axis dot is a 3-mul/2-add chain
          * kept 80-bit, multiplied by (-)kick, one store -> shim. */
 #if EMULATE_X87
-        client->damageRoll = x87f_store_f32(x87f_mul(
-            x87f_neg(x87f_load_f32(kick)),
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(damageFrom[0]), x87f_load_f32(axis[1][0])),
-                              x87f_mul(x87f_load_f32(damageFrom[1]), x87f_load_f32(axis[1][1]))),
-                     x87f_mul(x87f_load_f32(damageFrom[2]), x87f_load_f32(axis[1][2])))));
-        client->damagePitch = x87f_store_f32(x87f_mul(
-            x87f_load_f32(kick),
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(damageFrom[0]), x87f_load_f32(axis[0][0])),
-                              x87f_mul(x87f_load_f32(damageFrom[1]), x87f_load_f32(axis[0][1]))),
-                     x87f_mul(x87f_load_f32(damageFrom[2]), x87f_load_f32(axis[0][2])))));
+        client->damageRoll = x87f_store_f32(
+            x87f_mul(x87f_neg(x87f_load_f32(kick)), x87f_add(x87f_add(x87f_mul(x87f_load_f32(damageFrom[0]), x87f_load_f32(axis[1][0])),
+                                                                      x87f_mul(x87f_load_f32(damageFrom[1]), x87f_load_f32(axis[1][1]))),
+                                                             x87f_mul(x87f_load_f32(damageFrom[2]), x87f_load_f32(axis[1][2])))));
+        client->damagePitch = x87f_store_f32(
+            x87f_mul(x87f_load_f32(kick), x87f_add(x87f_add(x87f_mul(x87f_load_f32(damageFrom[0]), x87f_load_f32(axis[0][0])),
+                                                            x87f_mul(x87f_load_f32(damageFrom[1]), x87f_load_f32(axis[0][1]))),
+                                                   x87f_mul(x87f_load_f32(damageFrom[2]), x87f_load_f32(axis[0][2])))));
 #else
         long double rollDot =
-            ((long double)damageFrom[0] * (long double)axis[1][0] +
-             (long double)damageFrom[1] * (long double)axis[1][1]) +
+            ((long double)damageFrom[0] * (long double)axis[1][0] + (long double)damageFrom[1] * (long double)axis[1][1]) +
             (long double)damageFrom[2] * (long double)axis[1][2];
         long double pitchDot =
-            ((long double)damageFrom[0] * (long double)axis[0][0] +
-             (long double)damageFrom[1] * (long double)axis[0][1]) +
+            ((long double)damageFrom[0] * (long double)axis[0][0] + (long double)damageFrom[1] * (long double)axis[0][1]) +
             (long double)damageFrom[2] * (long double)axis[0][2];
 
         client->damageRoll = (float)(-(long double)kick * rollDot);
@@ -511,25 +456,17 @@ void P_DamageFeedback(gentity_t *ent)
         /* Stock 0x3f86b..0x3f884: (angle/circle)*scale kept 80-bit, fistp with
          * RC=truncate DIRECTLY (no float rounding of the scaled angle). */
 #if EMULATE_X87
-        client->ps.damagePitch = x87f_store_i32_trunc(x87f_mul(
-            x87f_div(x87f_load_f32(damageAngles[0]),
-                     x87f_load_f32(DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE)),
-            x87f_load_f32(DAMAGE_FEEDBACK_BYTE_SCALE)));
-        client->ps.damageYaw = x87f_store_i32_trunc(x87f_mul(
-            x87f_div(x87f_load_f32(damageAngles[1]),
-                     x87f_load_f32(DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE)),
-            x87f_load_f32(DAMAGE_FEEDBACK_BYTE_SCALE)));
-#else
         client->ps.damagePitch =
-            game_compat_int32_from_long_double_trunc(
-                ((long double)damageAngles[0] /
-                 (long double)DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE) *
-                (long double)DAMAGE_FEEDBACK_BYTE_SCALE);
+            x87f_store_i32_trunc(x87f_mul(x87f_div(x87f_load_f32(damageAngles[0]), x87f_load_f32(DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE)),
+                                          x87f_load_f32(DAMAGE_FEEDBACK_BYTE_SCALE)));
         client->ps.damageYaw =
-            game_compat_int32_from_long_double_trunc(
-                ((long double)damageAngles[1] /
-                 (long double)DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE) *
-                (long double)DAMAGE_FEEDBACK_BYTE_SCALE);
+            x87f_store_i32_trunc(x87f_mul(x87f_div(x87f_load_f32(damageAngles[1]), x87f_load_f32(DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE)),
+                                          x87f_load_f32(DAMAGE_FEEDBACK_BYTE_SCALE)));
+#else
+        client->ps.damagePitch = game_compat_int32_from_long_double_trunc(
+            ((long double)damageAngles[0] / (long double)DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE) * (long double)DAMAGE_FEEDBACK_BYTE_SCALE);
+        client->ps.damageYaw = game_compat_int32_from_long_double_trunc(
+            ((long double)damageAngles[1] / (long double)DAMAGE_FEEDBACK_DEGREES_PER_CIRCLE) * (long double)DAMAGE_FEEDBACK_BYTE_SCALE);
 #endif
     } else {
         client->damageRoll = 0.0f;
@@ -540,21 +477,17 @@ void P_DamageFeedback(gentity_t *ent)
     }
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (ent->painEventTime < level.time &&
-        (ent->flags & ENTITY_FLAG_GODMODE) == 0) {
+    if (ent->painEventTime < level.time && (ent->flags & ENTITY_FLAG_GODMODE) == 0) {
         /* The binary truncates (fistp with RC=truncate at 0x3f90c) straight
          * from the x87 register; the fild operands feed the divide with no
          * intermediate float store. */
 #if EMULATE_X87
-        int healthPercent = x87f_store_i32_trunc(x87f_mul(
-            x87f_div(x87f_load_i32(client->ps.stats[STAT_HEALTH]),
-                     x87f_load_i32(client->ps.stats[STAT_MAX_HEALTH])),
-            x87f_load_f32(100.0f)));
+        int healthPercent = x87f_store_i32_trunc(
+            x87f_mul(x87f_div(x87f_load_i32(client->ps.stats[STAT_HEALTH]), x87f_load_i32(client->ps.stats[STAT_MAX_HEALTH])),
+                     x87f_load_f32(100.0f)));
 #else
-        int healthPercent =
-            game_compat_int32_from_long_double_trunc(
-                ((long double)client->ps.stats[STAT_HEALTH] /
-                 (long double)client->ps.stats[STAT_MAX_HEALTH]) * 100.0L);
+        int healthPercent = game_compat_int32_from_long_double_trunc(
+            ((long double)client->ps.stats[STAT_HEALTH] / (long double)client->ps.stats[STAT_MAX_HEALTH]) * 100.0L);
 #endif
 
         if (healthPercent < 0) {
@@ -563,14 +496,11 @@ void P_DamageFeedback(gentity_t *ent)
             healthPercent = 100;
         }
         G_AddEvent(ent, EV_PAIN, healthPercent);
-        ent->painEventTime = coduo_int32_from_bits(
-            (uint32_t)level.time + DAMAGE_FEEDBACK_EVENT_INTERVAL_MS);
+        ent->painEventTime = coduo_int32_from_bits((uint32_t)level.time + DAMAGE_FEEDBACK_EVENT_INTERVAL_MS);
     }
 
-    client->ps.damageEvent = coduo_int32_from_bits(
-        (uint32_t)client->ps.damageEvent + UINT32_C(1));
-    client->damageTime = coduo_int32_from_bits(
-        (uint32_t)level.time - DAMAGE_FEEDBACK_TIME_BACKDATE_MS);
+    client->ps.damageEvent = coduo_int32_from_bits((uint32_t)client->ps.damageEvent + UINT32_C(1));
+    client->damageTime = coduo_int32_from_bits((uint32_t)level.time - DAMAGE_FEEDBACK_TIME_BACKDATE_MS);
     client->ps.damageCount = damageTaken;
     client->damageTaken = 0;
 }
@@ -585,8 +515,7 @@ void G_CheckFlameDamage(gentity_t *ent)
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if ((ent->client->spectatorWbuttons & 1) != 0 &&
-        ent->client->flameDamageTime > coduo_int32_from_bits(
-            (uint32_t)level.time - FLAME_DAMAGE_WINDOW_MS)) {
+        ent->client->flameDamageTime > coduo_int32_from_bits((uint32_t)level.time - FLAME_DAMAGE_WINDOW_MS)) {
         gentity_t *inflictor = &g_entities[ent->client->flameDamageInflictor];
 
         if (inflictor->client != 0) {
@@ -609,8 +538,7 @@ void G_CheckFlameDamage(gentity_t *ent)
                 damage = coduo_int32_from_bits((uint32_t)damage << 2U);
             }
 
-            G_Damage(ent, inflictor, inflictor, dir, inflictor->client->ps.psOrigin,
-                     damage, 0, MOD_FLAME, 0);
+            G_Damage(ent, inflictor, inflictor, dir, inflictor->client->ps.psOrigin, damage, 0, MOD_FLAME, 0);
         }
     }
 }
@@ -632,10 +560,7 @@ void ClientImpacts(gentity_t *ent, const pmove_t *trace)
         int entityNum = trace->impactEntityNums[impactIndex];
         int previous;
 
-        for (previous = 0;
-             previous < impactIndex &&
-             trace->impactEntityNums[previous] != entityNum;
-             previous++) {
+        for (previous = 0; previous < impactIndex && trace->impactEntityNums[previous] != entityNum; previous++) {
         }
 
         if (previous == impactIndex) {
@@ -685,9 +610,7 @@ void G_TouchTriggers(gentity_t *ent)
     queryMaxs[1] = client->ps.psOrigin[1] + TOUCH_TRIGGERS_BOUNDS_XY;
     queryMaxs[2] = client->ps.psOrigin[2] + TOUCH_TRIGGERS_BOUNDS_Z;
 
-    int touchCount = trap_EntitiesInBox(queryMins, queryMaxs, touchList,
-                                        (int)MAX_GENTITIES,
-                                        TOUCH_TRIGGERS_CONTENTS_MASK);
+    int touchCount = trap_EntitiesInBox(queryMins, queryMaxs, touchList, (int)MAX_GENTITIES, TOUCH_TRIGGERS_CONTENTS_MASK);
 
     contactMins[0] = client->ps.psOrigin[0] + ent->mins[0];
     contactMins[1] = client->ps.psOrigin[1] + ent->mins[1];
@@ -759,8 +682,7 @@ void G_DoTouchTriggers(gentity_t *ent, const float *origin)
     queryMaxs[1] = origin[1] + TOUCH_TRIGGERS_BOUNDS_XY;
     queryMaxs[2] = origin[2] + TOUCH_TRIGGERS_BOUNDS_Z;
 
-    int touchCount = trap_EntitiesInBox(queryMins, queryMaxs, touchList,
-                                        (int)MAX_GENTITIES, contentMask);
+    int touchCount = trap_EntitiesInBox(queryMins, queryMaxs, touchList, (int)MAX_GENTITIES, contentMask);
 
     contactMins[0] = origin[0] + ent->mins[0];
     contactMins[1] = origin[1] + ent->mins[1];
@@ -804,11 +726,9 @@ void G_DoTouchTriggers(gentity_t *ent, const float *origin)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring for ClientEvents attach/detach cases. */
-static void game_compat_client_events_handle_weapon_view_model(gentity_t *ent, int weapon,
-                                              qboolean attach)
+static void game_compat_client_events_handle_weapon_view_model(gentity_t *ent, int weapon, qboolean attach)
 {
-    const char *modelName =
-        ((weaponInfo_t *)BG_GetInfoForWeapon(weapon))->viewModel;
+    const char *modelName = ((weaponInfo_t *)BG_GetInfoForWeapon(weapon))->viewModel;
 
     if (modelName == 0 || *modelName == '\0') {
         return;
@@ -823,8 +743,7 @@ static void game_compat_client_events_handle_weapon_view_model(gentity_t *ent, i
 
 /* NOT_FROM_ORIGINAL_SOURCE: local factoring for ClientEvents damage range cases. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original ClientEvents (0x40860); no standalone original body. */
-static void game_compat_client_events_handle_damage_event(gentity_t *ent, gclient_t *client,
-                                          int eventParm)
+static void game_compat_client_events_handle_damage_event(gentity_t *ent, gclient_t *client, int eventParm)
 {
     float damageScale;
     if (eventParm < 100) {
@@ -839,14 +758,10 @@ static void game_compat_client_events_handle_damage_event(gentity_t *ent, gclien
 
     /* Stock stores the fild(maxHealth) * damageScale product to float before
      * reloading it for the truncating fistp argument conversion. */
-    float damage = (float)((long double)damageScale *
-                           (long double)client->ps.stats[STAT_MAX_HEALTH]);
-    ent->painEventTime = coduo_int32_from_bits(
-        (uint32_t)level.time + CLIENT_EVENTS_PAIN_DELAY_MS);
+    float damage = (float)((long double)damageScale * (long double)client->ps.stats[STAT_MAX_HEALTH]);
+    ent->painEventTime = coduo_int32_from_bits((uint32_t)level.time + CLIENT_EVENTS_PAIN_DELAY_MS);
     /* VERIFIED_DECOMPILER(0x40860, 50860_ClientEvents.c, VERIFY-WAVE2-CLIENT-FRAME-STATE-2026-06-17): DATAFLOW_VERIFIED - fall-damage scale, pain delay, max-health conversion, and MOD_FALLING call arguments match generated output. Binary uses x87 fistp with RC=truncate for the scaled fall damage. */
-    G_Damage(ent, 0, 0, 0, 0,
-             game_compat_int32_from_float_trunc(damage), 0,
-             CLIENT_EVENTS_FALL_DAMAGE_MOD, 0);
+    G_Damage(ent, 0, 0, 0, 0, game_compat_int32_from_float_trunc(damage), 0, CLIENT_EVENTS_FALL_DAMAGE_MOD, 0);
 }
 
 /* 0x40860 ClientEvents */
@@ -856,8 +771,7 @@ void ClientEvents(gentity_t *ent, uint32_t oldEventSequence)
     gclient_t *client = ent->client;
     int32_t eventSequence = client->ps.eventIndex;
     int32_t sequence = coduo_int32_from_bits(oldEventSequence);
-    int32_t backlogStart = coduo_int32_from_bits(
-        (uint32_t)eventSequence - CLIENT_EVENTS_MAX_BACKLOG);
+    int32_t backlogStart = coduo_int32_from_bits((uint32_t)eventSequence - CLIENT_EVENTS_MAX_BACKLOG);
 
     /*
      * RECOVERED(UO-GAME-UNK-0062): player-state event ring offsets and event ids are
@@ -869,32 +783,25 @@ void ClientEvents(gentity_t *ent, uint32_t oldEventSequence)
     }
 
     while (sequence < eventSequence) {
-        int event = (int)((const uint32_t *)(const void *)client->ps.events)
-            [(uint32_t)sequence & CLIENT_EVENTS_RING_MASK];
-        int eventParm =
-            client->ps.eventParms
-                [(uint32_t)sequence & CLIENT_EVENTS_RING_MASK];
+        int event = (int)((const uint32_t *)(const void *)client->ps.events)[(uint32_t)sequence & CLIENT_EVENTS_RING_MASK];
+        int eventParm = client->ps.eventParms[(uint32_t)sequence & CLIENT_EVENTS_RING_MASK];
 
-        if (event >= CLIENT_EVENTS_DAMAGE_MIN &&
-            event <= CLIENT_EVENTS_DAMAGE_MAX) {
+        if (event >= CLIENT_EVENTS_DAMAGE_MIN && event <= CLIENT_EVENTS_DAMAGE_MAX) {
             if (ent->s.eType != ET_PLAYER) {
                 return;
             }
             game_compat_client_events_handle_damage_event(ent, client, eventParm);
-            sequence = coduo_int32_from_bits(
-                (uint32_t)sequence + UINT32_C(1));
+            sequence = coduo_int32_from_bits((uint32_t)sequence + UINT32_C(1));
             continue;
         }
 
         switch (event) {
         case CLIENT_EVENTS_WEAPON_RAISE:
-            game_compat_client_events_handle_weapon_view_model(
-                ent, ent->s.weapon, 1);
+            game_compat_client_events_handle_weapon_view_model(ent, ent->s.weapon, 1);
             break;
 
         case CLIENT_EVENTS_WEAPON_LOWER:
-            game_compat_client_events_handle_weapon_view_model(
-                ent, ent->s.weapon, 0);
+            game_compat_client_events_handle_weapon_view_model(ent, ent->s.weapon, 0);
             break;
 
         case CLIENT_EVENTS_FIRE_BEGIN:
@@ -914,10 +821,8 @@ void ClientEvents(gentity_t *ent, uint32_t oldEventSequence)
             break;
 
         case CLIENT_EVENTS_DROP_WEAPON:
-            if (client->ps.currentWeapon != 0 &&
-                Com_BitCheck(client->ps.weaponBits, client->ps.currentWeapon) != 0) {
-                Drop_Weapon(ent, client->ps.currentWeapon,
-                            CLIENT_EVENTS_DROP_TAG_RIGHT);
+            if (client->ps.currentWeapon != 0 && Com_BitCheck(client->ps.weaponBits, client->ps.currentWeapon) != 0) {
+                Drop_Weapon(ent, client->ps.currentWeapon, CLIENT_EVENTS_DROP_TAG_RIGHT);
             }
             break;
 
@@ -947,8 +852,7 @@ void G_SetClientContents(gentity_t *ent)
      * Client contents are cleared for non-colliding client modes and otherwise use
      * the recovered body contents mask.
      */
-    if (client->noclip != 0 || client->ufo != 0 ||
-        client->sessionState == SESS_STATE_DEAD) {
+    if (client->noclip != 0 || client->ufo != 0 || client->sessionState == SESS_STATE_DEAD) {
         ent->scriptContents = 0;
     } else {
         ent->scriptContents = CONTENTS_BODY;
@@ -995,9 +899,7 @@ void G_RunClient(gentity_t *ent)
      * recovered and these source-level names can be confirmed.
      */
     if (ent->linkInfo != 0) {
-        client->ps.pmType = client->sessionState == SESS_STATE_DEAD
-                             ? PM_TYPE_LINKED_DEAD
-                             : PM_TYPE_LINKED;
+        client->ps.pmType = client->sessionState == SESS_STATE_DEAD ? PM_TYPE_LINKED_DEAD : PM_TYPE_LINKED;
         G_SetFixedLink(ent, RUNCLIENT_FIXED_LINK_MODE);
         G_SetOrigin(ent, ent->currentOrigin);
         ent->s.pos.trType = TR_INTERPOLATE;
@@ -1006,8 +908,7 @@ void G_RunClient(gentity_t *ent)
         client->ps.psOrigin[0] = ent->currentOrigin[0];
         client->ps.psOrigin[1] = ent->currentOrigin[1];
         client->ps.psOrigin[2] = ent->currentOrigin[2];
-    } else if (client->ps.pmType == PM_TYPE_LINKED ||
-               client->ps.pmType == PM_TYPE_LINKED_DEAD) {
+    } else if (client->ps.pmType == PM_TYPE_LINKED || client->ps.pmType == PM_TYPE_LINKED_DEAD) {
         client->ps.pmType--;
     }
 }
@@ -1023,9 +924,7 @@ void IntermissionClientEndFrame(gentity_t *ent)
      * still-unnamed entity/client flags while forcing the client into a passive
      * intermission presentation state.
      */
-    ent->svFlags =
-        (ent->svFlags & ~INTERMISSION_ENTITY_FLAGS_CLEAR) |
-        INTERMISSION_ENTITY_FLAGS_SET;
+    ent->svFlags = (ent->svFlags & ~INTERMISSION_ENTITY_FLAGS_CLEAR) | INTERMISSION_ENTITY_FLAGS_SET;
     ent->takeDamage = 0;
     ent->scriptContents = 0;
 
@@ -1042,12 +941,11 @@ void SpectatorClientEndFrame(gentity_t *ent)
 {
     gclient_t *client = ent->client;
     playerState_t archivedPlayerState;
-    clientState_t archiveMeta = { 0 };
+    clientState_t archiveMeta = {0};
     int archivedClient;
     int clientNum = (int)(ent - g_entities);
 
-    if (game_compat_client_frame_should_log_archive(1,
-            &debugArchiveLastSpectatorLog[(uint32_t)clientNum])) {
+    if (game_compat_client_frame_should_log_archive(1, &debugArchiveLastSpectatorLog[(uint32_t)clientNum])) {
         game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("spectator_begin"), clientNum, client, 0);
     }
 
@@ -1056,9 +954,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
      * presentation setup, then may replace the client/player-state prefix with archived
      * follow data. Archive payload layout remains recovered.
      */
-    ent->svFlags =
-        (ent->svFlags & ~INTERMISSION_ENTITY_FLAGS_CLEAR) |
-        INTERMISSION_ENTITY_FLAGS_SET;
+    ent->svFlags = (ent->svFlags & ~INTERMISSION_ENTITY_FLAGS_CLEAR) | INTERMISSION_ENTITY_FLAGS_SET;
     ent->takeDamage = 0;
     ent->scriptContents = 0;
     client->ps.playerStateFlags &= ~PSF_ACTIVE_PLAYER;
@@ -1076,20 +972,13 @@ void SpectatorClientEndFrame(gentity_t *ent)
                 client->archiveTime = 0;
             }
 
-            int archiveResult =
-                trap_GetArchivedClientInfo(client->followClient,
-                                           &client->archiveTime,
-                                           &archivedPlayerState, &archiveMeta);
-            int canSpectate =
-                archiveResult != 0 &&
-                G_ClientCanSpectateTeam(client, archiveMeta.team) != 0;
+            int archiveResult = trap_GetArchivedClientInfo(client->followClient, &client->archiveTime, &archivedPlayerState, &archiveMeta);
+            int canSpectate = archiveResult != 0 && G_ClientCanSpectateTeam(client, archiveMeta.team) != 0;
             if (g_debugArchiveCheck.integer >= 5) {
                 G_Printf("archive_debug spectator_follow_probe time=%d "
                          "client=%d follow=%d archiveTime=%d result=%d "
                          "team=%d canSpectate=%d\n",
-                         level.time, clientNum, client->followClient,
-                         client->archiveTime, archiveResult, archiveMeta.team,
-                         canSpectate);
+                         level.time, clientNum, client->followClient, client->archiveTime, archiveResult, archiveMeta.team, canSpectate);
             }
             if (canSpectate) {
                 goto useArchivedState;
@@ -1105,31 +994,24 @@ void SpectatorClientEndFrame(gentity_t *ent)
         }
     }
 
-    if (client->archiveClient < 0 &&
-        G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) == 0) {
+    if (client->archiveClient < 0 && G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) == 0) {
         Cmd_FollowCycle_f(ent, 1);
     }
 
     archivedClient = client->archiveClient;
     int archiveResult =
-        archivedClient < 0 ? 0 :
-        trap_GetArchivedClientInfo(archivedClient, &client->archiveTime,
-                                   &archivedPlayerState, &archiveMeta);
-    int canSpectate =
-        archiveResult != 0 &&
-        G_ClientCanSpectateTeam(client, archiveMeta.team) != 0;
+        archivedClient < 0 ? 0 : trap_GetArchivedClientInfo(archivedClient, &client->archiveTime, &archivedPlayerState, &archiveMeta);
+    int canSpectate = archiveResult != 0 && G_ClientCanSpectateTeam(client, archiveMeta.team) != 0;
     if (g_debugArchiveCheck.integer >= 5) {
         G_Printf("archive_debug spectator_archive_probe time=%d client=%d "
                  "archive=%d archiveTime=%d result=%d team=%d "
                  "canSpectate=%d\n",
-                 level.time, clientNum, archivedClient, client->archiveTime,
-                 archiveResult, archiveMeta.team, canSpectate);
+                 level.time, clientNum, archivedClient, client->archiveTime, archiveResult, archiveMeta.team, canSpectate);
     }
     if (archivedClient < 0 || archiveResult == 0 || canSpectate == 0) {
         StopFollowing(ent);
         client->ps.playerStateFlags &= ~SPECTATOR_CAN_FOLLOW_TEAM_FLAG;
-        if (G_ClientCanSpectateTeam(client, TEAM_ALLIES) == 0 &&
-            G_ClientCanSpectateTeam(client, TEAM_AXIS) == 0 &&
+        if (G_ClientCanSpectateTeam(client, TEAM_ALLIES) == 0 && G_ClientCanSpectateTeam(client, TEAM_AXIS) == 0 &&
             G_ClientCanSpectateTeam(client, TEAM_FREE) == 0) {
             client->ps.playerStateFlags &= ~SPECTATOR_CAN_FOLLOW_FLAG;
         } else {
@@ -1138,42 +1020,35 @@ void SpectatorClientEndFrame(gentity_t *ent)
         return;
     }
 
-    useArchivedState:
-    {
-        if (g_debugArchiveCheck.integer >= 5) {
-            game_compat_client_frame_log_archive_player_state(
-                DEBUG_LABEL("spectator_archive_buffer"), clientNum,
-                &archivedPlayerState);
-        }
-
-        uint32_t preservedPsFlags =
-            (client->ps.entityStateFlags & SPECTATOR_ARCHIVE_PRESERVE_PS_FLAG) |
-            (archivedPlayerState.entityStateFlags &
-             ~SPECTATOR_ARCHIVE_PRESERVE_PS_FLAG);
-
-        memcpy(&client->ps, &archivedPlayerState, sizeof(archivedPlayerState));
-        HudElem_UpdateClient(client, ent->s.number,
-                             SPECTATOR_ARCHIVE_HUDELEM_UPDATE_FLAGS);
-        client->ps.entityStateFlags = preservedPsFlags;
-        client->ps.playerStateFlags &= ~PSF_ACTIVE_PLAYER;
-        client->ps.playerStateFlags |= PSF_FOLLOWING;
-
-        if (client->followClient < 0) {
-            client->ps.playerStateFlags |= SPECTATOR_CAN_FOLLOW_FLAG;
-            if (G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) == 0) {
-                client->ps.playerStateFlags &= ~SPECTATOR_CAN_FOLLOW_TEAM_FLAG;
-            } else {
-                client->ps.playerStateFlags |= SPECTATOR_CAN_FOLLOW_TEAM_FLAG;
-            }
-        } else {
-            client->ps.playerStateFlags &= ~SPECTATOR_ARCHIVE_FLAGS_CLEAR;
-        }
-
-        if (g_debugArchiveCheck.integer >= 5) {
-            game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("spectator_after_archive_copy"),
-                                              clientNum, client, 1);
-        }
+useArchivedState: {
+    if (g_debugArchiveCheck.integer >= 5) {
+        game_compat_client_frame_log_archive_player_state(DEBUG_LABEL("spectator_archive_buffer"), clientNum, &archivedPlayerState);
     }
+
+    uint32_t preservedPsFlags = (client->ps.entityStateFlags & SPECTATOR_ARCHIVE_PRESERVE_PS_FLAG) |
+                                (archivedPlayerState.entityStateFlags & ~SPECTATOR_ARCHIVE_PRESERVE_PS_FLAG);
+
+    memcpy(&client->ps, &archivedPlayerState, sizeof(archivedPlayerState));
+    HudElem_UpdateClient(client, ent->s.number, SPECTATOR_ARCHIVE_HUDELEM_UPDATE_FLAGS);
+    client->ps.entityStateFlags = preservedPsFlags;
+    client->ps.playerStateFlags &= ~PSF_ACTIVE_PLAYER;
+    client->ps.playerStateFlags |= PSF_FOLLOWING;
+
+    if (client->followClient < 0) {
+        client->ps.playerStateFlags |= SPECTATOR_CAN_FOLLOW_FLAG;
+        if (G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) == 0) {
+            client->ps.playerStateFlags &= ~SPECTATOR_CAN_FOLLOW_TEAM_FLAG;
+        } else {
+            client->ps.playerStateFlags |= SPECTATOR_CAN_FOLLOW_TEAM_FLAG;
+        }
+    } else {
+        client->ps.playerStateFlags &= ~SPECTATOR_ARCHIVE_FLAGS_CLEAR;
+    }
+
+    if (g_debugArchiveCheck.integer >= 5) {
+        game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("spectator_after_archive_copy"), clientNum, client, 1);
+    }
+}
 }
 
 /* 0x424b0 G_ClientCanSpectateTeam */
@@ -1199,22 +1074,17 @@ qboolean GetFollowPlayerState(int clientNum, void *playerState)
      * player-state-sized client prefix, then clears a large output-only tail region.
      */
     if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0) {
-        if (game_compat_client_frame_should_log_archive(1,
-                &debugArchiveLastGetFollowLog[(uint32_t)clientNum])) {
-            game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("get_follow_state_blocked"),
-                                              clientNum, client, 0);
+        if (game_compat_client_frame_should_log_archive(1, &debugArchiveLastGetFollowLog[(uint32_t)clientNum])) {
+            game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("get_follow_state_blocked"), clientNum, client, 0);
         }
         return 0;
     }
 
     memcpy(playerState, client, FOLLOW_PLAYERSTATE_COPY_SIZE);
-    memset((uint8_t *)playerState + FOLLOW_PLAYERSTATE_CLEAR_OFFSET, 0,
-           FOLLOW_PLAYERSTATE_CLEAR_SIZE);
+    memset((uint8_t *)playerState + FOLLOW_PLAYERSTATE_CLEAR_OFFSET, 0, FOLLOW_PLAYERSTATE_CLEAR_SIZE);
     result = 1;
-    if (game_compat_client_frame_should_log_archive(2,
-            &debugArchiveLastGetFollowLog[(uint32_t)clientNum])) {
-        game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("get_follow_state_ok"),
-                                          clientNum, client, result);
+    if (game_compat_client_frame_should_log_archive(2, &debugArchiveLastGetFollowLog[(uint32_t)clientNum])) {
+        game_compat_client_frame_log_archive_client_state(DEBUG_LABEL("get_follow_state_ok"), clientNum, client, result);
     }
     return result;
 }
@@ -1230,8 +1100,7 @@ qboolean StuckInClient(gentity_t *ent)
      * bounds and capsule flags; broader entity collision naming remains tied to that
      * evidence record.
      */
-    if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0 ||
-        client->sessionState != SESS_STATE_PLAYING ||
+    if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0 || client->sessionState != SESS_STATE_PLAYING ||
         game_compat_stuck_client_contents(ent) == 0) {
         return 0;
     }
@@ -1240,13 +1109,9 @@ qboolean StuckInClient(gentity_t *ent)
         gentity_t *other = &g_entities[entityNum];
         gclient_t *otherClient = other->client;
 
-        if (other->linked == 0 || other == ent || otherClient == 0 ||
-            (otherClient->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0 ||
-            otherClient->sessionState != SESS_STATE_PLAYING ||
-            other->health <= 0 ||
-            game_compat_stuck_client_contents(other) == 0 ||
-            (other->s.eFlags & STUCK_ENTITY_SKIP_FLAG) != 0 ||
-            game_compat_stuck_bounds_overlap(ent, other) == 0 ||
+        if (other->linked == 0 || other == ent || otherClient == 0 || (otherClient->ps.playerStateFlags & PSF_ACTIVE_PLAYER) == 0 ||
+            otherClient->sessionState != SESS_STATE_PLAYING || other->health <= 0 || game_compat_stuck_client_contents(other) == 0 ||
+            (other->s.eFlags & STUCK_ENTITY_SKIP_FLAG) != 0 || game_compat_stuck_bounds_overlap(ent, other) == 0 ||
             game_compat_stuck_shapes_overlap(ent, other) == 0) {
             continue;
         }
@@ -1263,22 +1128,17 @@ qboolean StuckInClient(gentity_t *ent)
          * random jitter for each component. */
 #if EMULATE_X87
         for (int k = 0; k < 2; k++) {
-            dir[k] = x87f_store_f32(x87f_add(
-                x87f_load_f32(dir[k]),
-                x87f_load_f64(coduo_server_rand_signed_unit())));
+            dir[k] = x87f_store_f32(x87f_add(x87f_load_f32(dir[k]), x87f_load_f64(coduo_server_rand_signed_unit())));
         }
 #else
-        dir[0] = (float)((long double)dir[0] +
-                         (long double)coduo_server_rand_signed_unit());
-        dir[1] = (float)((long double)dir[1] +
-                         (long double)coduo_server_rand_signed_unit());
+        dir[0] = (float)((long double)dir[0] + (long double)coduo_server_rand_signed_unit());
+        dir[1] = (float)((long double)dir[1] + (long double)coduo_server_rand_signed_unit());
 #endif
         VectorNormalize2D(dir);
 
         otherSpeed = game_compat_stuck_client_move_speed(otherClient);
         entSpeed = game_compat_stuck_client_move_speed(client);
-        if (otherSpeed < STUCK_SPEED_EPSILON &&
-            entSpeed < STUCK_SPEED_EPSILON) {
+        if (otherSpeed < STUCK_SPEED_EPSILON && entSpeed < STUCK_SPEED_EPSILON) {
             otherSpeed = otherClient->ps.speed;
             entSpeed = client->ps.speed;
         }
@@ -1303,8 +1163,7 @@ void G_PlayerController(gentity_t *ent, uint32_t *partBits)
      * controller output. DObj passes its four-word part-bit set through this
      * entity callback slot.
      */
-    BG_Player_DoControllers(ent, &ent->s, partBits,
-                            &bgs.clientinfo[ent->s.clientNum]);
+    BG_Player_DoControllers(ent, &ent->s, partBits, &bgs.clientinfo[ent->s.clientNum]);
 }
 
 /* 0x42c81 G_UpdateClientInfo */
@@ -1322,8 +1181,7 @@ void G_UpdateClientInfo(gentity_t *ent)
      * and G_PlayerController. The entity source words remain recovered because
      * multiple temp-entity/sound paths reuse the same offsets.
      */
-    clientInfo->leanAmount =
-        ent->s.clientInfo.leanAmount;
+    clientInfo->leanAmount = ent->s.clientInfo.leanAmount;
     clientInfo->leanFraction = ent->s.clientInfoLeanFraction;
     clientInfo->viewPitch = client->ps.viewAngles[0];
     clientInfo->viewYaw = client->ps.viewAngles[1];
@@ -1333,15 +1191,13 @@ void G_UpdateClientInfo(gentity_t *ent)
     client->baseModelIndex = ent->modelIndex;
     modelChanged = strcmp(clientInfo->modelName, modelName) != 0;
     if (modelChanged) {
-        Q_strncpyz(clientInfo->modelName, modelName,
-                   CLIENT_INFO_MODEL_NAME_SIZE);
+        Q_strncpyz(clientInfo->modelName, modelName, CLIENT_INFO_MODEL_NAME_SIZE);
     }
 
     for (int slot = 0; slot < CLIENT_INFO_ATTACHMENT_COUNT; slot++) {
         if (ent->attachModelIndex[slot] == 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-            if (clientInfo->attachModelNames[slot][0] != '\0' ||
-                clientInfo->attachTagNames[slot][0] != '\0') {
+            if (clientInfo->attachModelNames[slot][0] != '\0' || clientInfo->attachTagNames[slot][0] != '\0') {
                 modelChanged = 1;
             }
             clientInfo->attachModelNames[slot][0] = '\0';
@@ -1355,16 +1211,14 @@ void G_UpdateClientInfo(gentity_t *ent)
         client->attachModelIndices[slot] = ent->attachModelIndex[slot];
         if (strcmp(clientInfo->attachModelNames[slot], modelName) != 0) {
             modelChanged = 1;
-            Q_strncpyz(clientInfo->attachModelNames[slot], modelName,
-                       CLIENT_INFO_MODEL_NAME_SIZE);
+            Q_strncpyz(clientInfo->attachModelNames[slot], modelName, CLIENT_INFO_MODEL_NAME_SIZE);
         }
 
         const char *tagName = SL_ConvertToString(ent->attachTagIndex[slot]);
         client->attachTagIndices[slot] = G_TagIndex(tagName);
         if (strcmp(clientInfo->attachTagNames[slot], tagName) != 0) {
             modelChanged = 1;
-            Q_strncpyz(clientInfo->attachTagNames[slot], tagName,
-                       CLIENT_INFO_MODEL_NAME_SIZE);
+            Q_strncpyz(clientInfo->attachTagNames[slot], tagName, CLIENT_INFO_MODEL_NAME_SIZE);
         }
     }
 
@@ -1382,26 +1236,20 @@ int G_GetNonPVSFriendlyInfo(gentity_t *ent, const float *origin, int lastClient)
 {
     int team = ent->client->sessionTeam;
 
-    if (team == TEAM_FREE ||
-        team == TEAM_SPECTATOR) {
+    if (team == TEAM_FREE || team == TEAM_SPECTATOR) {
         return 0;
     }
 
-    int startClient =
-        lastClient == CLIENTEND_NONPVS_NONE
-            ? 0
-            : coduo_int32_from_bits((uint32_t)lastClient + UINT32_C(1));
+    int startClient = lastClient == CLIENTEND_NONPVS_NONE ? 0 : coduo_int32_from_bits((uint32_t)lastClient + UINT32_C(1));
 
     for (int scan = 0; scan < CLIENTEND_NONPVS_SCAN_CLIENTS; scan++) {
-        int clientNum = game_compat_client_end_frame_wrap_non_pvs_client_index(
-            coduo_int32_from_bits((uint32_t)startClient + (uint32_t)scan));
+        int clientNum =
+            game_compat_client_end_frame_wrap_non_pvs_client_index(coduo_int32_from_bits((uint32_t)startClient + (uint32_t)scan));
         gentity_t *candidate = &g_entities[clientNum];
         gclient_t *candidateClient = candidate->client;
 
-        if (candidate->linked == 0 || candidateClient == 0 ||
-            candidateClient->sessionState != 0 ||
-            candidateClient->sessionTeam != team || candidate == ent ||
-            trap_InSnapshot(origin, candidate->s.number) != 0) {
+        if (candidate->linked == 0 || candidateClient == 0 || candidateClient->sessionState != 0 || candidateClient->sessionTeam != team ||
+            candidate == ent || trap_InSnapshot(origin, candidate->s.number) != 0) {
             continue;
         }
 
@@ -1412,15 +1260,11 @@ int G_GetNonPVSFriendlyInfo(gentity_t *ent, const float *origin, int lastClient)
         float deltaXf = candidate->currentOrigin[0] - origin[0];
         float deltaYf = candidate->currentOrigin[1] - origin[1];
 #if EMULATE_X87
-        int deltaX = x87f_store_i32_trunc(
-            x87f_add(x87f_load_f32(deltaXf), x87f_load_f32(0.5f)));
-        int deltaY = x87f_store_i32_trunc(
-            x87f_add(x87f_load_f32(deltaYf), x87f_load_f32(0.5f)));
+        int deltaX = x87f_store_i32_trunc(x87f_add(x87f_load_f32(deltaXf), x87f_load_f32(0.5f)));
+        int deltaY = x87f_store_i32_trunc(x87f_add(x87f_load_f32(deltaYf), x87f_load_f32(0.5f)));
 #else
-        int deltaX = game_compat_int32_from_long_double_trunc(
-            (long double)deltaXf + 0.5L);
-        int deltaY = game_compat_int32_from_long_double_trunc(
-            (long double)deltaYf + 0.5L);
+        int deltaX = game_compat_int32_from_long_double_trunc((long double)deltaXf + 0.5L);
+        int deltaY = game_compat_int32_from_long_double_trunc((long double)deltaYf + 0.5L);
 #endif
         float scaleX = 1.0f;
         float scaleY = 1.0f;
@@ -1429,41 +1273,29 @@ int G_GetNonPVSFriendlyInfo(gentity_t *ent, const float *origin, int lastClient)
          * is kept 80-bit and rounded to float on store -> shim. */
         if (deltaX > CLIENTEND_NONPVS_OFFSET_LIMIT_POS) {
 #if EMULATE_X87
-            scaleX = x87f_store_f32(x87f_div(
-                x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_POS),
-                x87f_load_i32(deltaX)));
+            scaleX = x87f_store_f32(x87f_div(x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_POS), x87f_load_i32(deltaX)));
 #else
-            scaleX = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_POS /
-                             (long double)deltaX);
+            scaleX = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_POS / (long double)deltaX);
 #endif
         } else if (deltaX < CLIENTEND_NONPVS_OFFSET_LIMIT_NEG) {
 #if EMULATE_X87
-            scaleX = x87f_store_f32(x87f_div(
-                x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG),
-                x87f_load_i32(deltaX)));
+            scaleX = x87f_store_f32(x87f_div(x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG), x87f_load_i32(deltaX)));
 #else
-            scaleX = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG /
-                             (long double)deltaX);
+            scaleX = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG / (long double)deltaX);
 #endif
         }
 
         if (deltaY > CLIENTEND_NONPVS_OFFSET_LIMIT_POS) {
 #if EMULATE_X87
-            scaleY = x87f_store_f32(x87f_div(
-                x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_POS),
-                x87f_load_i32(deltaY)));
+            scaleY = x87f_store_f32(x87f_div(x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_POS), x87f_load_i32(deltaY)));
 #else
-            scaleY = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_POS /
-                             (long double)deltaY);
+            scaleY = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_POS / (long double)deltaY);
 #endif
         } else if (deltaY < CLIENTEND_NONPVS_OFFSET_LIMIT_NEG) {
 #if EMULATE_X87
-            scaleY = x87f_store_f32(x87f_div(
-                x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG),
-                x87f_load_i32(deltaY)));
+            scaleY = x87f_store_f32(x87f_div(x87f_load_f32((float)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG), x87f_load_i32(deltaY)));
 #else
-            scaleY = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG /
-                             (long double)deltaY);
+            scaleY = (float)((long double)CLIENTEND_NONPVS_OFFSET_LIMIT_NEG / (long double)deltaY);
 #endif
         }
 
@@ -1472,19 +1304,15 @@ int G_GetNonPVSFriendlyInfo(gentity_t *ent, const float *origin, int lastClient)
              * truncate straight from the register (no float store) -> shim. */
             if (scaleX < scaleY) {
 #if EMULATE_X87
-                deltaY = x87f_store_i32_trunc(
-                    x87f_mul(x87f_load_i32(deltaY), x87f_load_f32(scaleX)));
+                deltaY = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(deltaY), x87f_load_f32(scaleX)));
 #else
-                deltaY = game_compat_int32_from_long_double_trunc(
-                    (long double)deltaY * (long double)scaleX);
+                deltaY = game_compat_int32_from_long_double_trunc((long double)deltaY * (long double)scaleX);
 #endif
             } else if (scaleY < scaleX) {
 #if EMULATE_X87
-                deltaX = x87f_store_i32_trunc(
-                    x87f_mul(x87f_load_i32(deltaX), x87f_load_f32(scaleY)));
+                deltaX = x87f_store_i32_trunc(x87f_mul(x87f_load_i32(deltaX), x87f_load_f32(scaleY)));
 #else
-                deltaX = game_compat_int32_from_long_double_trunc(
-                    (long double)deltaX * (long double)scaleY);
+                deltaX = game_compat_int32_from_long_double_trunc((long double)deltaX * (long double)scaleY);
 #endif
             }
         }
@@ -1495,20 +1323,15 @@ int G_GetNonPVSFriendlyInfo(gentity_t *ent, const float *origin, int lastClient)
         /* Stock 0x45a93: (int)(currentAngles[1] * YAW_SCALE) kept 80-bit, fistp
          * truncate straight from the register (no float store) -> shim. */
 #if EMULATE_X87
-        int yawByte = x87f_store_i32_trunc(x87f_mul(
-            x87f_load_f32(candidate->currentAngles[1]),
-            x87f_load_f32(CLIENTEND_NONPVS_YAW_SCALE)));
+        int yawByte = x87f_store_i32_trunc(x87f_mul(x87f_load_f32(candidate->currentAngles[1]), x87f_load_f32(CLIENTEND_NONPVS_YAW_SCALE)));
 #else
-        int yawByte = game_compat_int32_from_long_double_trunc(
-            (long double)candidate->currentAngles[1] *
-            (long double)CLIENTEND_NONPVS_YAW_SCALE);
+        int yawByte =
+            game_compat_int32_from_long_double_trunc((long double)candidate->currentAngles[1] * (long double)CLIENTEND_NONPVS_YAW_SCALE);
 #endif
-        return (int)(
-            (((uint32_t)yawByte & 0xffu)
-             << CLIENTEND_NONPVS_YAW_SHIFT) |
-            game_compat_client_end_frame_pack_non_pvs_offset(deltaY, CLIENTEND_NONPVS_Y_SHIFT) |
-            game_compat_client_end_frame_pack_non_pvs_offset(deltaX, CLIENTEND_NONPVS_X_SHIFT) |
-            ((uint32_t)candidate->s.number & CLIENTEND_NONPVS_ENTITY_MASK));
+        return (int)((((uint32_t)yawByte & 0xffu) << CLIENTEND_NONPVS_YAW_SHIFT) |
+                     game_compat_client_end_frame_pack_non_pvs_offset(deltaY, CLIENTEND_NONPVS_Y_SHIFT) |
+                     game_compat_client_end_frame_pack_non_pvs_offset(deltaX, CLIENTEND_NONPVS_X_SHIFT) |
+                     ((uint32_t)candidate->s.number & CLIENTEND_NONPVS_ENTITY_MASK));
     }
 
     return 0;
@@ -1556,13 +1379,9 @@ void ClientEndFrame(gentity_t *ent)
         return;
     }
 
-    ent->svFlags =
-        (ent->svFlags | CLIENTEND_ENTITY_FLAGS_NORMAL_SET) &
-        ~CLIENTEND_ENTITY_FLAGS_NORMAL_CLEAR;
+    ent->svFlags = (ent->svFlags | CLIENTEND_ENTITY_FLAGS_NORMAL_SET) & ~CLIENTEND_ENTITY_FLAGS_NORMAL_CLEAR;
     ent->takeDamage = 1;
-    client->ps.playerStateFlags =
-        (client->ps.playerStateFlags | PSF_ACTIVE_PLAYER) &
-        ~CLIENTEND_STANCE_FLAGS_CLEAR;
+    client->ps.playerStateFlags = (client->ps.playerStateFlags | PSF_ACTIVE_PLAYER) & ~CLIENTEND_STANCE_FLAGS_CLEAR;
     client->ps.viewModelIndex = client->viewModelIndex;
 
     G_SetClientContents(ent);
@@ -1571,8 +1390,7 @@ void ClientEndFrame(gentity_t *ent)
         gentity_t *owner = &g_entities[ent->passEntityNum];
         vehicle_state_t *vehicleState = (vehicle_state_t *)owner->vehicle;
 
-        if (vehicleState != NULL &&
-            vehicleState != CLIENTEND_VEHICLE_STATE_NULL_SENTINEL) {
+        if (vehicleState != NULL && vehicleState != CLIENTEND_VEHICLE_STATE_NULL_SENTINEL) {
             float vehiclePitchSignal = vehicleState->angularVelocity[0];
 
             if (game_compat_abs_float(vehiclePitchSignal) < CLIENTEND_VEHICLE_PITCH_THRESHOLD) {
@@ -1596,39 +1414,29 @@ void ClientEndFrame(gentity_t *ent)
     } else if (client->ufo != 0) {
         client->ps.pmType = PM_TYPE_UFO;
     } else if (client->sessionState == SESS_STATE_DEAD) {
-        client->ps.pmType = ent->linkInfo != 0 ? PM_TYPE_LINKED_DEAD
-                                            : PM_TYPE_DEAD;
-        ent->svFlags =
-            (ent->svFlags | CLIENTEND_ENTITY_FLAGS_DEAD_SET) &
-            ~CLIENTEND_ENTITY_FLAGS_DEAD_CLEAR;
+        client->ps.pmType = ent->linkInfo != 0 ? PM_TYPE_LINKED_DEAD : PM_TYPE_DEAD;
+        ent->svFlags = (ent->svFlags | CLIENTEND_ENTITY_FLAGS_DEAD_SET) & ~CLIENTEND_ENTITY_FLAGS_DEAD_CLEAR;
         ent->takeDamage = 0;
     } else {
-        client->ps.pmType = ent->linkInfo != 0 ? PM_TYPE_LINKED
-                                            : PM_TYPE_NORMAL;
+        client->ps.pmType = ent->linkInfo != 0 ? PM_TYPE_LINKED : PM_TYPE_NORMAL;
     }
 
     /* VERIFIED_DECOMPILER(0x42f59, 52f59_ClientEndFrame.c, VERIFY-WAVE2-CLIENT-FRAME-STATE-2026-06-17): DATAFLOW_VERIFIED - gravity cvar assignment uses generated ROUND before speed and damage-alpha stores. */
 #if EMULATE_X87
-    client->ps.gravity =
-        x87f_store_i32_trunc(x87f_load_f32(g_gravity.value));
+    client->ps.gravity = x87f_store_i32_trunc(x87f_load_f32(g_gravity.value));
 #elif defined(__i386__) || defined(__x86_64__)
-    client->ps.gravity =
-        CODUO_X87_TRUNCATE_I32((long double)g_gravity.value);
+    client->ps.gravity = CODUO_X87_TRUNCATE_I32((long double)g_gravity.value);
 #else
-    client->ps.gravity =
-        game_compat_int32_from_float_trunc(g_gravity.value);
+    client->ps.gravity = game_compat_int32_from_float_trunc(g_gravity.value);
 #endif
     client->ps.speed = client->maxSpeed;
     /* Stock 0x432a8: aimSpreadScale / 255.0 kept 80-bit, rounded to float on
      * store -> shim (divide). */
 #if EMULATE_X87
-    client->damageAlphaFraction = x87f_store_f32(x87f_div(
-        x87f_load_f32(client->ps.aimSpreadScale),
-        x87f_load_f64(CLIENTEND_DAMAGE_ALPHA_SCALE)));
-#else
     client->damageAlphaFraction =
-        (float)((long double)client->ps.aimSpreadScale /
-                (long double)CLIENTEND_DAMAGE_ALPHA_SCALE);
+        x87f_store_f32(x87f_div(x87f_load_f32(client->ps.aimSpreadScale), x87f_load_f64(CLIENTEND_DAMAGE_ALPHA_SCALE)));
+#else
+    client->damageAlphaFraction = (float)((long double)client->ps.aimSpreadScale / (long double)CLIENTEND_DAMAGE_ALPHA_SCALE);
 #endif
 
     G_CheckForPreventFriendlyFire(ent);
@@ -1636,9 +1444,7 @@ void ClientEndFrame(gentity_t *ent)
     G_CheckFlameDamage(ent);
     P_DamageFeedback(ent);
 
-    if (coduo_int32_from_bits((uint32_t)level.time -
-                              (uint32_t)client->lastUsercmdTime) >
-        CLIENTEND_INACTIVE_THRESHOLD_MS) {
+    if (coduo_int32_from_bits((uint32_t)level.time - (uint32_t)client->lastUsercmdTime) > CLIENTEND_INACTIVE_THRESHOLD_MS) {
         ent->s.eFlags |= CLIENTEND_PS_INACTIVE_FLAG;
     } else {
         ent->s.eFlags &= ~CLIENTEND_PS_INACTIVE_FLAG;
@@ -1650,8 +1456,7 @@ void ClientEndFrame(gentity_t *ent)
     if (g_smoothClients.integer == 0) {
         BG_PlayerStateToEntityState(&client->ps, &ent->s, qtrue);
     } else {
-        BG_PlayerStateToEntityStateExtrapolate(
-            &client->ps, &ent->s, client->ps.commandTime, qtrue);
+        BG_PlayerStateToEntityStateExtrapolate(&client->ps, &ent->s, client->ps.commandTime, qtrue);
     }
 
     if (ent->health > 0 && StuckInClient(ent) != 0) {
@@ -1664,28 +1469,21 @@ void ClientEndFrame(gentity_t *ent)
     leanOrigin[2] = client->ps.psOrigin[2] + client->ps.viewHeightCurrent;
     G_AddLean(ent, leanOrigin);
 
-    int nonPvsFriendly =
-        G_GetNonPVSFriendlyInfo(
-            ent, leanOrigin,
-            client->nonpvsFriendlyClient);
+    int nonPvsFriendly = G_GetNonPVSFriendlyInfo(ent, leanOrigin, client->nonpvsFriendlyClient);
     client->ps.compassFriendInfo = nonPvsFriendly;
     if (nonPvsFriendly == 0) {
         client->nonpvsFriendlyClient = CLIENTEND_NONPVS_NONE;
     } else {
         int friendlyClient = nonPvsFriendly & CLIENTEND_NONPVS_ENTITY_MASK;
         client->nonpvsFriendlyClient = friendlyClient;
-        if ((g_entities[friendlyClient].s.eFlags &
-             CLIENTEND_FRIENDLY_ENTITY_FLAG) != 0) {
+        if ((g_entities[friendlyClient].s.eFlags & CLIENTEND_FRIENDLY_ENTITY_FLAG) != 0) {
             client->ps.entityStateFlags |= CLIENTEND_PS_FRIENDLY_HAS_FLAG;
         } else {
             client->ps.entityStateFlags &= ~CLIENTEND_PS_FRIENDLY_HAS_FLAG;
         }
     }
 
-    int nonPvsTank =
-        G_GetNonPVSTankInfo(
-            ent, leanOrigin,
-            client->nonpvsTankClient);
+    int nonPvsTank = G_GetNonPVSTankInfo(ent, leanOrigin, client->nonpvsTankClient);
     client->ps.compassTankInfo = nonPvsTank;
     if (nonPvsTank == 0) {
         client->nonpvsTankClient = CLIENTEND_NONPVS_NONE;
@@ -1697,14 +1495,11 @@ void ClientEndFrame(gentity_t *ent)
         ent->controller = G_PlayerController;
         G_UpdateClientInfo(ent);
 
-        if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 &&
-            (client->ps.entityStateFlags & CLIENTEND_TURRET_PS_FLAGS) != 0) {
-            turret_think_client(
-                &level.gentities[client->ps.viewLockedEntityNum]);
+        if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 && (client->ps.entityStateFlags & CLIENTEND_TURRET_PS_FLAGS) != 0) {
+            turret_think_client(&level.gentities[client->ps.viewLockedEntityNum]);
         }
 
-        if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 &&
-            (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
+        if ((client->ps.playerStateFlags & PSF_ACTIVE_PLAYER) != 0 && (client->ps.entityStateFlags & EF_IN_VEHICLE) != 0) {
             G_PlayerVehiclePositionAndBlend(ent);
         }
 
@@ -1738,12 +1533,9 @@ void SpectatorThink(gentity_t *ent, const usercmd_t *command)
     client->oldWbuttons = client->spectatorWbuttons;
     client->spectatorWbuttons = client->command.wbuttons;
 
-    if (client->followClient < 0 &&
-        G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) != 0 &&
-        client->archiveClient >= 0 &&
+    if (client->followClient < 0 && G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) != 0 && client->archiveClient >= 0 &&
         /* VERIFIED_DECOMPILER(0x3fe8a, 4fe8a_SpectatorThink.c, VERIFY-WAVE4-CLIENT-FRAME-LOCAL-2026-06-17): DATAFLOW_VERIFIED - stop-follow edge compares regular button byte gclient+0x462c against previous gclient+0x4630. */
-        ((client->currentButtons & SPECTATOR_BUTTON_STOP_FOLLOW_MASK) !=
-         (client->oldButtons & SPECTATOR_BUTTON_STOP_FOLLOW_MASK))) {
+        ((client->currentButtons & SPECTATOR_BUTTON_STOP_FOLLOW_MASK) != (client->oldButtons & SPECTATOR_BUTTON_STOP_FOLLOW_MASK))) {
         StopFollowing(ent);
     }
 
@@ -1759,9 +1551,7 @@ void SpectatorThink(gentity_t *ent, const usercmd_t *command)
         pmove_t pmove;
 
         client->ps.pmType = PM_TYPE_SPECTATOR;
-        client->ps.speed = G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) != 0
-                            ? SPECTATOR_PM_FLAGS_ALLOWED
-                            : 0;
+        client->ps.speed = G_ClientCanSpectateTeam(client, SPECTATOR_FOLLOW_TEAM) != 0 ? SPECTATOR_PM_FLAGS_ALLOWED : 0;
 
         memset(&pmove, 0, sizeof(pmove));
         pmove.ps = &client->ps;
@@ -1793,18 +1583,12 @@ qboolean ClientInactivityTimer(gclient_t *client)
      */
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (g_inactivity.integer == 0) {
-        client->inactivityTime = coduo_int32_from_bits(
-            (uint32_t)level.time + (uint32_t)INACTIVITY_GRACE_MS);
+        client->inactivityTime = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)INACTIVITY_GRACE_MS);
         client->inactivityWarningSent = 0;
-    } else if (client->command.forwardmove != 0 ||
-               client->command.rightmove != 0 ||
-               client->command.upmove != 0 ||
-               (client->command.buttons &
-                INACTIVITY_INPUT_BUTTON_MASK) != 0) {
-        client->inactivityTime = coduo_int32_from_bits(
-            (uint32_t)level.time +
-            (uint32_t)g_inactivity.integer *
-                (uint32_t)INACTIVITY_SECONDS_TO_MS);
+    } else if (client->command.forwardmove != 0 || client->command.rightmove != 0 || client->command.upmove != 0 ||
+               (client->command.buttons & INACTIVITY_INPUT_BUTTON_MASK) != 0) {
+        client->inactivityTime =
+            coduo_int32_from_bits((uint32_t)level.time + (uint32_t)g_inactivity.integer * (uint32_t)INACTIVITY_SECONDS_TO_MS);
         client->inactivityWarningSent = 0;
     } else if (client->complaintDisabled == 0) {
         if (client->inactivityTime < level.time) {
@@ -1812,13 +1596,10 @@ qboolean ClientInactivityTimer(gclient_t *client)
             return 0;
         }
 
-        if (coduo_int32_from_bits(
-                (uint32_t)client->inactivityTime -
-                (uint32_t)INACTIVITY_WARNING_MS) < level.time &&
+        if (coduo_int32_from_bits((uint32_t)client->inactivityTime - (uint32_t)INACTIVITY_WARNING_MS) < level.time &&
             client->inactivityWarningSent == 0) {
             client->inactivityWarningSent = 1;
-            trap_SendServerCommand((int)(client - level.clients), SERVER_COMMAND_UNRELIABLE,
-                                   "c \"GAME_INACTIVEDROPWARNING\"");
+            trap_SendServerCommand((int)(client - level.clients), SERVER_COMMAND_UNRELIABLE, "c \"GAME_INACTIVEDROPWARNING\"");
         }
     }
 
@@ -1835,29 +1616,20 @@ qboolean ClientSpectatorInactivityTimer(gclient_t *client)
      */
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (client->spectatorInactivityTime < 0) {
-        client->spectatorInactivityTime = coduo_int32_from_bits(
-            (uint32_t)level.time + (uint32_t)INACTIVITY_GRACE_MS);
+        client->spectatorInactivityTime = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)INACTIVITY_GRACE_MS);
         client->spectatorInactivityWarning = 0;
     }
 
     game_compat_update_sv_private_clients();
 
-    if (g_inactivityspectator.integer == 0 ||
-        client->sessionState != SESS_STATE_SPECTATOR ||
+    if (g_inactivityspectator.integer == 0 || client->sessionState != SESS_STATE_SPECTATOR ||
         client->ps.psClientNum < sv_privateClients.integer) {
-        client->spectatorInactivityTime = coduo_int32_from_bits(
-            (uint32_t)level.time + (uint32_t)INACTIVITY_GRACE_MS);
+        client->spectatorInactivityTime = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)INACTIVITY_GRACE_MS);
         client->spectatorInactivityWarning = 0;
-    } else if (client->command.forwardmove != 0 ||
-               client->command.rightmove != 0 ||
-               client->command.upmove != 0 ||
-               (client->command.buttons &
-                INACTIVITY_INPUT_BUTTON_MASK) != 0 ||
-               client->spectatorActivityState != 0) {
-        client->spectatorInactivityTime = coduo_int32_from_bits(
-            (uint32_t)level.time +
-            (uint32_t)g_inactivityspectator.integer *
-                (uint32_t)INACTIVITY_SECONDS_TO_MS);
+    } else if (client->command.forwardmove != 0 || client->command.rightmove != 0 || client->command.upmove != 0 ||
+               (client->command.buttons & INACTIVITY_INPUT_BUTTON_MASK) != 0 || client->spectatorActivityState != 0) {
+        client->spectatorInactivityTime =
+            coduo_int32_from_bits((uint32_t)level.time + (uint32_t)g_inactivityspectator.integer * (uint32_t)INACTIVITY_SECONDS_TO_MS);
         client->spectatorInactivityWarning = 0;
     } else if (client->complaintDisabled == 0) {
         if (client->spectatorInactivityTime < level.time) {
@@ -1865,13 +1637,10 @@ qboolean ClientSpectatorInactivityTimer(gclient_t *client)
             return 0;
         }
 
-        if (coduo_int32_from_bits(
-                (uint32_t)client->spectatorInactivityTime -
-                (uint32_t)INACTIVITY_WARNING_MS) < level.time &&
+        if (coduo_int32_from_bits((uint32_t)client->spectatorInactivityTime - (uint32_t)INACTIVITY_WARNING_MS) < level.time &&
             client->spectatorInactivityWarning == 0) {
             client->spectatorInactivityWarning = 1;
-            trap_SendServerCommand((int)(client - level.clients), SERVER_COMMAND_UNRELIABLE,
-                                   "c \"GAME_INACTIVEDROPWARNING\"");
+            trap_SendServerCommand((int)(client - level.clients), SERVER_COMMAND_UNRELIABLE, "c \"GAME_INACTIVEDROPWARNING\"");
         }
     }
 
@@ -1880,8 +1649,7 @@ qboolean ClientSpectatorInactivityTimer(gclient_t *client)
 
 /* 0x404e5 ClientIntermissionThink */
 /* VERIFIED_DECOMPILER(0x404e5, 504e5_ClientIntermissionThink.c, VERIFY-WAVE4-CLIENT-FRAME-LOCAL-2026-06-17): DATAFLOW_VERIFIED - old/current button and wbutton mirror stores checked. */
-void ClientIntermissionThink(gentity_t *ent,
-                             const usercmd_t *command)
+void ClientIntermissionThink(gentity_t *ent, const usercmd_t *command)
 {
     gclient_t *client = ent->client;
     (void)command;

@@ -12,5 +12,4 @@ vec3_t cm_worldMaxs; /* original 0x0494de90 */
 worldSector_t cm_worldSectorRoot; /* original 0x0494dec8 */
 worldSector_t *cm_freeWorldSectors; /* original 0x0494def0 */
 worldSector_t cm_nullWorldSector; /* original 0x0494def4 */
-worldSector_t
-    cm_worldSectorPool[SERVER_WORLD_SECTOR_POOL_COUNT]; /* 0x0494df1c */
+worldSector_t cm_worldSectorPool[SERVER_WORLD_SECTOR_POOL_COUNT]; /* 0x0494df1c */

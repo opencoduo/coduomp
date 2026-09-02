@@ -7,12 +7,9 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-_Static_assert(offsetof(clientInfo_t, infoValid) == 0x00,
-               "clientInfo_t.infoValid +0x00");
-_Static_assert(offsetof(clientInfo_t, name) == 0x0c,
-               "clientInfo_t.name +0x0c");
-_Static_assert(offsetof(clientInfo_t, team) == 0x2c,
-               "clientInfo_t.team +0x2c");
+_Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "clientInfo_t.infoValid +0x00");
+_Static_assert(offsetof(clientInfo_t, name) == 0x0c, "clientInfo_t.name +0x0c");
+_Static_assert(offsetof(clientInfo_t, team) == 0x2c, "clientInfo_t.team +0x2c");
 
 int32_t CG_FeederCount(float feederID) /* 0x3002d480 */
 {
@@ -23,12 +20,11 @@ int32_t CG_FeederCount(float feederID) /* 0x3002d480 */
     };
 
     int32_t count = 0;
-    if (feederID == CG_FEEDER_AXIS_PLAYERS ||
-        feederID == CG_FEEDER_ALLIES_PLAYERS) {
-        team_t team = feederID == CG_FEEDER_AXIS_PLAYERS
-            ? TEAM_AXIS : TEAM_ALLIES;
+    if (feederID == CG_FEEDER_AXIS_PLAYERS || feederID == CG_FEEDER_ALLIES_PLAYERS) {
+        team_t team = feederID == CG_FEEDER_AXIS_PLAYERS ? TEAM_AXIS : TEAM_ALLIES;
         for (int32_t i = 0; i < cg_scoreboardNumClients; ++i)
-            if (cg_scoreboardEntries[i].team == team) ++count;
+            if (cg_scoreboardEntries[i].team == team)
+                ++count;
         return count;
     }
     return feederID == CG_FEEDER_ALL_PLAYERS ? cg_scoreboardNumClients : 0;
@@ -73,18 +69,19 @@ qboolean CG_OwnerDrawVisible(int32_t flags) /* 0x300318d0 */
 
 int32_t CG_ClientNumFromName(const char *name) /* 0x300327f0 */
 {
-    enum { CG_CLIENT_NAME_COMPARE_LIMIT = 99999 };
+    enum {
+        CG_CLIENT_NAME_COMPARE_LIMIT = 99999
+    };
     /* 0x300327f1 snapshots cgs_maxclients once in EBP for the whole loop. */
     const int32_t maxclients = cgs_maxclients;
 
     for (int32_t i = 0; i < maxclients; ++i) {
         /* The retail loop trusts the serverinfo-derived maxclients contract and
          * advances a raw 0x4d0 row pointer; it has no local array-bound branch. */
-        const clientInfo_t *state = cgame_compat_unchecked_clientinfo(
-            &bgs.clientinfo[0], i);
+        const clientInfo_t *state = cgame_compat_unchecked_clientinfo(&bgs.clientinfo[0], i);
         const char *rowName = state->name;
-        if (state->infoValid != 0 && rowName != NULL && name != NULL &&
-            Q_stricmpn(name, rowName, CG_CLIENT_NAME_COMPARE_LIMIT) == 0) return i;
+        if (state->infoValid != 0 && rowName != NULL && name != NULL && Q_stricmpn(name, rowName, CG_CLIENT_NAME_COMPARE_LIMIT) == 0)
+            return i;
     }
     return -1;
 }
@@ -95,7 +92,8 @@ void CG_GetTeamColor(vec4_t color) /* 0x30032890 */
     const int32_t clientNum = cg_snap->ps.psClientNum;
     if ((uint32_t)clientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_GetTeamColor: invalid client number %i",
+                  "\x15"
+                  "CG_GetTeamColor: invalid client number %i",
                   clientNum);
         return;
     }
@@ -104,23 +102,32 @@ void CG_GetTeamColor(vec4_t color) /* 0x30032890 */
     if (infoValid != 0) {
         const int32_t team = state->team;
         if (team == TEAM_AXIS) {
-            color[0] = 1.0f; color[1] = 0.0f; color[2] = 0.0f; color[3] = 0.25f;
+            color[0] = 1.0f;
+            color[1] = 0.0f;
+            color[2] = 0.0f;
+            color[3] = 0.25f;
             return;
         }
         if (team == TEAM_ALLIES) {
             /* 0x300328d9..0x300328e5 publishes green, red, blue, alpha. */
-            color[1] = 0.0f; color[0] = 0.0f; color[2] = 1.0f; color[3] = 0.25f;
+            color[1] = 0.0f;
+            color[0] = 0.0f;
+            color[2] = 1.0f;
+            color[3] = 0.25f;
             return;
         }
     }
-    color[0] = 0.0f; color[1] = 0.1700000018f; color[2] = 0.0f; color[3] = 0.25f;
+    color[0] = 0.0f;
+    color[1] = 0.1700000018f;
+    color[2] = 0.0f;
+    color[3] = 0.25f;
 }
 
 /* 0x3001d270..0x3001d2ea.  The original register ABI receives value in ECX and
  * color in EAX.  The three x87 paths multiply by the literal float bit patterns
  * at 0x3007be1c (0x3d088889 = 1/30) and 0x3007be20 (0x3cf83e10 = 1/33). */
 #define HUD_GREEN_STEP (0.033333335f)
-#define HUD_BLUE_STEP  (0.030303031f)
+#define HUD_BLUE_STEP (0.030303031f)
 
 // Source RVA: 0x3001d270
 void CG_HudColorForValue(int32_t value, vec4_t color)
@@ -141,8 +148,7 @@ void CG_HudColorForValue(int32_t value, vec4_t color)
         color[2] = 0.0f;
     } else {
         int32_t blueStep = value - 66;
-        color[2] = (float)((long double)blueStep *
-                           (long double)HUD_BLUE_STEP); /* bare FILD @0x3001d2b0 */
+        color[2] = (float)((long double)blueStep * (long double)HUD_BLUE_STEP); /* bare FILD @0x3001d2b0 */
     }
 
     if (value > 60) {
@@ -151,8 +157,7 @@ void CG_HudColorForValue(int32_t value, vec4_t color)
         color[1] = 0.0f;
     } else {
         int32_t greenStep = value - 30;
-        color[1] = (float)((long double)greenStep *
-                           (long double)HUD_GREEN_STEP); /* bare FILD @0x3001d2db */
+        color[1] = (float)((long double)greenStep * (long double)HUD_GREEN_STEP); /* bare FILD @0x3001d2db */
     }
 }
 
@@ -180,8 +185,7 @@ void CG_GetHudEmitColor(vec4_t color)
         color[2] = 0.0f;
     } else {
         int32_t blueStep = value - 66;
-        color[2] = (float)((long double)blueStep *
-                           (long double)HUD_BLUE_STEP);
+        color[2] = (float)((long double)blueStep * (long double)HUD_BLUE_STEP);
     }
 
     if (value > 60) {
@@ -190,7 +194,6 @@ void CG_GetHudEmitColor(vec4_t color)
         color[1] = 0.0f;
     } else {
         int32_t greenStep = value - 30;
-        color[1] = (float)((long double)greenStep *
-                           (long double)HUD_GREEN_STEP);
+        color[1] = (float)((long double)greenStep * (long double)HUD_GREEN_STEP);
     }
 }

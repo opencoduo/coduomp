@@ -31,28 +31,21 @@ struct fileData_s {
 };
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char file_data_payload_size[
-    sizeof(fileDataPayload) == 0x04 ? 1 : -1];
+typedef char file_data_payload_size[sizeof(fileDataPayload) == 0x04 ? 1 : -1];
 struct file_data_payload_alignment_probe_s {
     unsigned char byte;
     fileDataPayload value;
 };
-typedef char file_data_payload_alignment[
-    offsetof(struct file_data_payload_alignment_probe_s, value) == 0x04
-        ? 1 : -1];
-typedef char file_data_name_offset[
-    offsetof(fileData_t, name) == 0x00 ? 1 : -1];
-typedef char file_data_payload_offset[
-    offsetof(fileData_t, data) == 0x04 ? 1 : -1];
-typedef char file_data_callback_offset[
-    offsetof(fileData_t, freeData) == 0x08 ? 1 : -1];
+typedef char file_data_payload_alignment[offsetof(struct file_data_payload_alignment_probe_s, value) == 0x04 ? 1 : -1];
+typedef char file_data_name_offset[offsetof(fileData_t, name) == 0x00 ? 1 : -1];
+typedef char file_data_payload_offset[offsetof(fileData_t, data) == 0x04 ? 1 : -1];
+typedef char file_data_callback_offset[offsetof(fileData_t, freeData) == 0x08 ? 1 : -1];
 typedef char file_data_size[sizeof(fileData_t) == 0x0c ? 1 : -1];
 struct file_data_alignment_probe_s {
     unsigned char byte;
     fileData_t value;
 };
-typedef char file_data_alignment[
-    offsetof(struct file_data_alignment_probe_s, value) == 0x04 ? 1 : -1];
+typedef char file_data_alignment[offsetof(struct file_data_alignment_probe_s, value) == 0x04 ? 1 : -1];
 #endif
 
 #endif

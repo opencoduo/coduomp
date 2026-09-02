@@ -11,8 +11,7 @@
  */
 void CG_ParseFog(void)
 {
-    char *cursor = &cg_gameState.stringData[
-        cg_gameState.stringOffsets[CS_FOGVARS]];
+    char *cursor = &cg_gameState.stringData[cg_gameState.stringOffsets[CS_FOGVARS]];
     float values[6];
     char *token;
 
@@ -20,8 +19,7 @@ void CG_ParseFog(void)
 
     token = Com_Parse(&cursor);
     if (token == NULL || token[0] == '\0') {
-        cgame_syscall(CG_R_SET_FOG, 8, 3,
-                      coduo_fp_to_i32_extended((long double)values[0]), 0, 0, 0);
+        cgame_syscall(CG_R_SET_FOG, 8, 3, coduo_fp_to_i32_extended((long double)values[0]), 0, 0, 0);
         return;
     }
 
@@ -34,9 +32,7 @@ void CG_ParseFog(void)
     token = Com_Parse(&cursor);
     int32_t fogType = coduo_crt_atoi(token);
 
-    trap_R_SetFog(4, coduo_fp_to_i32_extended((long double)values[0]),
-              coduo_fp_to_i32_extended((long double)values[1]),
-              CG_FloatBits(values[3]), CG_FloatBits(values[4]),
-              CG_FloatBits(values[5]), CG_FloatBits(values[2]));
+    trap_R_SetFog(4, coduo_fp_to_i32_extended((long double)values[0]), coduo_fp_to_i32_extended((long double)values[1]),
+                  CG_FloatBits(values[3]), CG_FloatBits(values[4]), CG_FloatBits(values[5]), CG_FloatBits(values[2]));
     cgame_syscall(CG_R_SET_FOG, 8, 4, fogType, 0, 0, 0, 0);
 }

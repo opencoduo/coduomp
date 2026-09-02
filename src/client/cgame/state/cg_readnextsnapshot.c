@@ -29,7 +29,9 @@
 /* trap-count guard the "way out of range" warning fires on: cgame prints when the
  * engine's latest snapshot is more than this many ahead of what cgame has processed
  * (CMP latestSnapshotNum, processedSnapshotNum + 0x3e8). */
-enum { CG_SNAPSHOT_RANGE_WARN = 1000 };
+enum {
+    CG_SNAPSHOT_RANGE_WARN = 1000
+};
 
 /* The cgame trap dispatcher (VM syscall pointer at 0x30085e9c) is declared in
  * globals.h. */
@@ -43,11 +45,9 @@ snapshot_t *CG_ReadNextSnapshot(void)
     /* 0x3003d22b..0x3003d24c: warn if the engine has run far ahead of us.
      * CMP latestSnapshotNum, processedSnapshotNum+0x3e8 ; JLE skips the warning,
      * so the warning fires when latest > processed + 1000. */
-    int32_t warningLimit = coduo_int32_from_bits(
-        (uint32_t)processed + (uint32_t)CG_SNAPSHOT_RANGE_WARN);
+    int32_t warningLimit = coduo_int32_from_bits((uint32_t)processed + (uint32_t)CG_SNAPSHOT_RANGE_WARN);
     if (latest > warningLimit) {
-        Com_PrintMessage("WARNING: CG_ReadNextSnapshot: way out of range, %i > %i\n",
-                         latest, processed);
+        Com_PrintMessage("WARNING: CG_ReadNextSnapshot: way out of range, %i > %i\n", latest, processed);
         /* 0x3003d241/0x3003d247: reload both counters after the call. */
         latest = cg_latestSnapshotNum;
         processed = cg_processedSnapshotNum;
@@ -59,9 +59,7 @@ snapshot_t *CG_ReadNextSnapshot(void)
         /* 0x3003d260..0x3003d276: pick the free double-buffer slot — the one NOT
          * currently installed as cg_snap.
          *   CMP [cg_snap], &cg_activeSnapshots0 ; JZ keeps ESI = &cg_activeSnapshots1. */
-        snapshot_t *dest = (cg_snap == &cg_activeSnapshots0)
-                                 ? &cg_activeSnapshots1
-                                 : &cg_activeSnapshots0;
+        snapshot_t *dest = (cg_snap == &cg_activeSnapshots0) ? &cg_activeSnapshots1 : &cg_activeSnapshots0;
 
         /* 0x3003d276/0x3003d27b: ++processedSnapshotNum, written back to the global. */
         processed = coduo_int32_from_bits((uint32_t)processed + 1u);
@@ -69,108 +67,90 @@ snapshot_t *CG_ReadNextSnapshot(void)
 
         /* 0x3003d277..0x3003d286: trap_GetSnapshot(processedSnapshotNum, dest).
          * Three dwords pushed (id, number, dest), caller-cleaned (ADD ESP,0xc). */
-        int32_t got = (int32_t)cgame_syscall(CG_GET_SNAPSHOT, processed,
-                                    (intptr_t)dest);
+        int32_t got = (int32_t)cgame_syscall(CG_GET_SNAPSHOT, processed, (intptr_t)dest);
 
         /* 0x3003d289/0x3003d28b: nonzero => the snapshot was delivered. */
         if (got != 0) {
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-            if ((uint32_t)dest->ps.psClientNum >=
-                (uint32_t)MAX_CLIENTS) {
-                Com_Error(
-                    ERR_DROP,
-                    "\x15" "CG_ReadNextSnapshot: "
-                    "invalid player client number %i",
-                    dest->ps.psClientNum);
+            if ((uint32_t)dest->ps.psClientNum >= (uint32_t)MAX_CLIENTS) {
+                Com_Error(ERR_DROP,
+                          "\x15"
+                          "CG_ReadNextSnapshot: "
+                          "invalid player client number %i",
+                          dest->ps.psClientNum);
                 return NULL;
             }
 
             /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
             {
                 const int32_t currentWeapon = dest->ps.currentWeapon;
-                if ((uint32_t)currentWeapon >= (uint32_t)MAX_WEAPONS ||
-                    currentWeapon > bg_numWeapons ||
-                    (currentWeapon != 0 &&
-                     bg_weaponInfos[currentWeapon] == NULL)) {
-                    Com_Error(
-                        ERR_DROP,
-                        "\x15" "CG_ReadNextSnapshot: "
-                        "invalid player weapon %i",
-                        currentWeapon);
+                if ((uint32_t)currentWeapon >= (uint32_t)MAX_WEAPONS || currentWeapon > bg_numWeapons ||
+                    (currentWeapon != 0 && bg_weaponInfos[currentWeapon] == NULL)) {
+                    Com_Error(ERR_DROP,
+                              "\x15"
+                              "CG_ReadNextSnapshot: "
+                              "invalid player weapon %i",
+                              currentWeapon);
                     return NULL;
                 }
             }
-            for (int32_t eventSlot = 0;
-                 eventSlot < MAX_PS_EVENTS;
-                 ++eventSlot) {
-                if ((uint32_t)dest->ps.events[eventSlot] >=
-                    (uint32_t)EV_MAX_EVENTS) {
-                    Com_Error(
-                        ERR_DROP,
-                        "\x15" "CG_ReadNextSnapshot: "
-                        "invalid player event %i",
-                        dest->ps.events[eventSlot]);
+            for (int32_t eventSlot = 0; eventSlot < MAX_PS_EVENTS; ++eventSlot) {
+                if ((uint32_t)dest->ps.events[eventSlot] >= (uint32_t)EV_MAX_EVENTS) {
+                    Com_Error(ERR_DROP,
+                              "\x15"
+                              "CG_ReadNextSnapshot: "
+                              "invalid player event %i",
+                              dest->ps.events[eventSlot]);
                     return NULL;
                 }
             }
-            for (int32_t entityIndex = 0;
-                 entityIndex < dest->numEntities;
-                 ++entityIndex) {
-                const entityState_t *const entity =
-                    &dest->entities[entityIndex];
-                if ((entity->eType == ET_PLAYER ||
-                     entity->eType == ET_PLAYER_CORPSE) &&
-                    (uint32_t)entity->clientNum >=
-                        (uint32_t)MAX_CLIENTS) {
-                    Com_Error(
-                        ERR_DROP,
-                        "\x15" "CG_ReadNextSnapshot: "
-                        "invalid entity client number %i",
-                        entity->clientNum);
+            for (int32_t entityIndex = 0; entityIndex < dest->numEntities; ++entityIndex) {
+                const entityState_t *const entity = &dest->entities[entityIndex];
+                if ((entity->eType == ET_PLAYER || entity->eType == ET_PLAYER_CORPSE) &&
+                    (uint32_t)entity->clientNum >= (uint32_t)MAX_CLIENTS) {
+                    Com_Error(ERR_DROP,
+                              "\x15"
+                              "CG_ReadNextSnapshot: "
+                              "invalid entity client number %i",
+                              entity->clientNum);
                     return NULL;
                 }
 
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-                if (entity->eType == ET_PLAYER ||
-                    entity->eType == ET_PLAYER_CORPSE) {
+                if (entity->eType == ET_PLAYER || entity->eType == ET_PLAYER_CORPSE) {
                     const int32_t weapon = entity->weapon;
-                    if ((uint32_t)weapon >= (uint32_t)MAX_WEAPONS ||
-                        weapon > bg_numWeapons ||
+                    if ((uint32_t)weapon >= (uint32_t)MAX_WEAPONS || weapon > bg_numWeapons ||
                         (weapon != 0 && bg_weaponInfos[weapon] == NULL)) {
                         Com_Error(ERR_DROP,
-                                  "\x15" "CG_ReadNextSnapshot: invalid entity weapon %i",
+                                  "\x15"
+                                  "CG_ReadNextSnapshot: invalid entity weapon %i",
                                   weapon);
                         return NULL;
                     }
                 }
 
-                if (entity->eType > ET_EVENTS &&
-                    (uint32_t)(entity->eType - ET_EVENTS) >=
-                        (uint32_t)EV_MAX_EVENTS) {
-                    Com_Error(
-                        ERR_DROP,
-                        "\x15" "CG_ReadNextSnapshot: "
-                        "invalid event entity type %i",
-                        entity->eType);
+                if (entity->eType > ET_EVENTS && (uint32_t)(entity->eType - ET_EVENTS) >= (uint32_t)EV_MAX_EVENTS) {
+                    Com_Error(ERR_DROP,
+                              "\x15"
+                              "CG_ReadNextSnapshot: "
+                              "invalid event entity type %i",
+                              entity->eType);
                     return NULL;
                 }
-                for (int32_t eventSlot = 0;
-                     eventSlot < MAX_ENTITY_EVENTS;
-                     ++eventSlot) {
-                    if ((uint32_t)entity->events[eventSlot] >=
-                        (uint32_t)EV_MAX_EVENTS) {
-                        Com_Error(
-                            ERR_DROP,
-                            "\x15" "CG_ReadNextSnapshot: "
-                            "invalid entity event %i",
-                            entity->events[eventSlot]);
+                for (int32_t eventSlot = 0; eventSlot < MAX_ENTITY_EVENTS; ++eventSlot) {
+                    if ((uint32_t)entity->events[eventSlot] >= (uint32_t)EV_MAX_EVENTS) {
+                        Com_Error(ERR_DROP,
+                                  "\x15"
+                                  "CG_ReadNextSnapshot: "
+                                  "invalid entity event %i",
+                                  entity->events[eventSlot]);
                         return NULL;
                     }
                 }
             }
 
             /* 0x3003d2c0..0x3003d2ca: log it in the lagometer and return the slot. */
-            CG_AddLagometerSnapshotInfo(dest);   /* CALL 0x30018a40 with EAX=dest */
+            CG_AddLagometerSnapshotInfo(dest); /* CALL 0x30018a40 with EAX=dest */
             return dest;
         }
 
@@ -181,13 +161,11 @@ snapshot_t *CG_ReadNextSnapshot(void)
          * Then reload processed/latest and continue the loop while processed < latest
          * (JL 0x3003d260). The index mask is LAG_SAMPLES-1 (128-entry ring). */
         int32_t snapshotCount = cg_lagometer.snapshotCount; /* 0x3003d28d */
-        latest = cg_latestSnapshotNum;                    /* 0x3003d292 reload */
-        cg_lagometer.snapshotSamples[
-            (uint32_t)snapshotCount & (uint32_t)(LAG_SAMPLES - 1)] = -1;
-        int32_t nextSnapshotCount = coduo_int32_from_bits(
-            (uint32_t)cg_lagometer.snapshotCount + 1u);    /* 0x3003d2a6/0x3003d2b1 */
-        processed = cg_processedSnapshotNum;              /* 0x3003d2ac reload */
-        cg_lagometer.snapshotCount = nextSnapshotCount;    /* 0x3003d2b4 store */
+        latest = cg_latestSnapshotNum; /* 0x3003d292 reload */
+        cg_lagometer.snapshotSamples[(uint32_t)snapshotCount & (uint32_t)(LAG_SAMPLES - 1)] = -1;
+        int32_t nextSnapshotCount = coduo_int32_from_bits((uint32_t)cg_lagometer.snapshotCount + 1u); /* 0x3003d2a6/0x3003d2b1 */
+        processed = cg_processedSnapshotNum; /* 0x3003d2ac reload */
+        cg_lagometer.snapshotCount = nextSnapshotCount; /* 0x3003d2b4 store */
     }
 
     /* 0x3003d2bc: XOR EAX,EAX ; RET — no next snapshot available. */

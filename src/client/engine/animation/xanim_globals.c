@@ -18,8 +18,7 @@ float xanim_evalTime;
 int16_t xanim_evalCurrentFrame;
 uint16_t xanim_evalRootHandle;
 int32_t xanim_deferredNotifyCount;
-xanim_deferred_notify_t
-    xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
+xanim_deferred_notify_t xanim_deferredNotifies[XANIM_DEFERRED_NOTIFY_CAPACITY];
 uint16_t xanim_rootTreeHandle;
 int32_t xanim_evalPartCount;
 uint32_t xanim_evalPartBits[DOBJ_PART_BITSET_WORD_COUNT];

@@ -33,9 +33,7 @@ static int32_t coduomp_script_memory_int32_from_size(size_t size)
  * negative sizes without granting the optimizer in-bounds array provenance. */
 static uint8_t coduomp_script_memory_read_width(int32_t index)
 {
-    return *(const uint8_t *)(
-        (uintptr_t)(const void *)&script_memoryBitWidthTable[0] +
-        (intptr_t)index);
+    return *(const uint8_t *)((uintptr_t)(const void *)&script_memoryBitWidthTable[0] + (intptr_t)index);
 }
 
 /* Source: CoDUOMP.exe 0x00480750..0x00480755, recovered from an exporter
@@ -92,21 +90,15 @@ void MT_DumpTree(void)
 {
     Com_Printf("********************************\n");
     for (int32_t bucket = 0; bucket <= SCRIPT_MEMORY_MAX_BUCKET; ++bucket) {
-        int32_t freeCount =
-            MT_GetSubTreeSize(script_memoryFreeRoots[bucket]);
+        int32_t freeCount = MT_GetSubTreeSize(script_memoryFreeRoots[bucket]);
         int32_t bucketSize = 1 << bucket;
 
-        Com_Printf("%d subtree has %d * %d = %d free buckets\n",
-                   bucket, freeCount, bucketSize,
-                   freeCount * bucketSize);
+        Com_Printf("%d subtree has %d * %d = %d free buckets\n", bucket, freeCount, bucketSize, freeCount * bucketSize);
     }
     Com_Printf("********************************\n");
     Com_Printf("********************************\n");
-    Com_Printf("total memory alloc buckets: %d (%d instances)\n",
-               script_memoryAllocatedBucketCount,
-               script_memoryAllocatedInstanceCount);
-    Com_Printf("total memory free buckets: %d\n",
-               65535 - script_memoryAllocatedBucketCount);
+    Com_Printf("total memory alloc buckets: %d (%d instances)\n", script_memoryAllocatedBucketCount, script_memoryAllocatedInstanceCount);
+    Com_Printf("total memory free buckets: %d\n", 65535 - script_memoryAllocatedBucketCount);
     Com_Printf("********************************\n");
 }
 
@@ -123,9 +115,7 @@ int32_t MT_GetScore(uint16_t blockIndex)
         trailingZeros += script_memoryTrailingZeroBits[highByte];
     }
 
-    return (1 << trailingZeros) +
-           (int32_t)(distance - script_memoryPopcountTable[lowByte] -
-                     script_memoryPopcountTable[highByte]);
+    return (1 << trailingZeros) + (int32_t)(distance - script_memoryPopcountTable[lowByte] - script_memoryPopcountTable[highByte]);
 }
 
 /* Source: CoDUOMP.exe 0x00480820..0x00480953.
@@ -145,20 +135,17 @@ void MT_AddMemoryNode(uint16_t blockIndex, int32_t bucket)
             if (currentKey < blockKey) {
                 for (;;) {
                     *link = blockIndex;
-                    script_memoryBlocks[blockIndex] =
-                        script_memoryBlocks[current];
+                    script_memoryBlocks[blockIndex] = script_memoryBlocks[current];
                     if (current == 0) {
                         return;
                     }
 
                     span >>= 1;
                     if ((int32_t)current < center) {
-                        link =
-                            &script_memoryBlocks[blockIndex].freeNode.left;
+                        link = &script_memoryBlocks[blockIndex].freeNode.left;
                         center -= span;
                     } else {
-                        link =
-                            &script_memoryBlocks[blockIndex].freeNode.right;
+                        link = &script_memoryBlocks[blockIndex].freeNode.right;
                         center += span;
                     }
                     blockIndex = current;
@@ -227,10 +214,7 @@ qboolean MT_RemoveMemoryNode(uint16_t blockIndex, int32_t bucket)
             next = replacement.freeNode.left;
             *link = next;
             link = &script_memoryBlocks[next].freeNode.left;
-        } else if (MT_GetScore(
-                       replacement.freeNode.left) <
-                   MT_GetScore(
-                       replacement.freeNode.right)) {
+        } else if (MT_GetScore(replacement.freeNode.left) < MT_GetScore(replacement.freeNode.right)) {
             next = replacement.freeNode.right;
             *link = next;
             link = &script_memoryBlocks[next].freeNode.right;
@@ -266,10 +250,7 @@ void MT_RemoveHeadMemoryNode(int32_t bucket)
             next = replacement.freeNode.left;
             *link = next;
             link = &script_memoryBlocks[next].freeNode.left;
-        } else if (MT_GetScore(
-                       replacement.freeNode.left) <
-                   MT_GetScore(
-                       replacement.freeNode.right)) {
+        } else if (MT_GetScore(replacement.freeNode.left) < MT_GetScore(replacement.freeNode.right)) {
             next = replacement.freeNode.right;
             *link = next;
             link = &script_memoryBlocks[next].freeNode.right;
@@ -297,8 +278,7 @@ void MT_Init(void)
 
     script_memoryBlocks[0].freeNode.left = 0;
     script_memoryBlocks[0].freeNode.right = 0;
-    script_memoryArenaEnd =
-        (uint8_t *)&script_memoryBlocks[SCRIPT_MEMORY_BLOCK_COUNT];
+    script_memoryArenaEnd = (uint8_t *)&script_memoryBlocks[SCRIPT_MEMORY_BLOCK_COUNT];
     script_vectorLocalPoolBase = script_memoryArenaEnd;
     script_vectorLocalPoolByteCount = 0;
 
@@ -314,8 +294,7 @@ void MT_Init(void)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00480fd0_00481075.mcode. */
 qboolean MT_Realloc(size_t lhsSize, size_t rhsSize)
 {
-    return MT_GetSize(coduomp_script_memory_int32_from_size(lhsSize)) ==
-                   MT_GetSize(coduomp_script_memory_int32_from_size(rhsSize))
+    return MT_GetSize(coduomp_script_memory_int32_from_size(lhsSize)) == MT_GetSize(coduomp_script_memory_int32_from_size(rhsSize))
                ? qtrue
                : qfalse;
 }
@@ -334,15 +313,11 @@ int32_t MT_GetSize(int32_t size)
     }
 
     if (size >= SCRIPT_MEMORY_MAX_ALLOCATION_SIZE) {
-        MT_Error(
-            "MT_GetSize: max allocation exceeded", (size_t)size);
+        MT_Error("MT_GetSize: max allocation exceeded", (size_t)size);
         return 0;
     }
 
-    int32_t blockCountMinusOne =
-        (size + SCRIPT_MEMORY_BLOCK_SIZE - 1) /
-            SCRIPT_MEMORY_BLOCK_SIZE -
-        1;
+    int32_t blockCountMinusOne = (size + SCRIPT_MEMORY_BLOCK_SIZE - 1) / SCRIPT_MEMORY_BLOCK_SIZE - 1;
     if (blockCountMinusOne < SCRIPT_MEMORY_LOOKUP_COUNT) {
         return coduomp_script_memory_read_width(blockCountMinusOne);
     }
@@ -354,9 +329,7 @@ int32_t MT_GetSize(int32_t size)
 void MT_Error(const char *operation, size_t size)
 {
     MT_DumpTree();
-    Scr_TerminalError(
-        va("%s: failed allocation of %d bytes for script usage",
-           operation, coduomp_script_memory_int32_from_size(size)));
+    Scr_TerminalError(va("%s: failed allocation of %d bytes for script usage", operation, coduomp_script_memory_int32_from_size(size)));
 }
 
 /* Source: CoDUOMP.exe 0x00480dc0..0x00480edc.
@@ -370,8 +343,7 @@ uint16_t MT_AllocIndex(size_t size, int32_t type)
 #if !defined(WINDOWS_BEHAVIOR)
     (void)type;
 #endif
-    int32_t requestedBucket =
-        MT_GetSize(coduomp_script_memory_int32_from_size(size));
+    int32_t requestedBucket = MT_GetSize(coduomp_script_memory_int32_from_size(size));
     int32_t bucket = requestedBucket;
 
     while (bucket <= SCRIPT_MEMORY_MAX_BUCKET) {
@@ -380,18 +352,12 @@ uint16_t MT_AllocIndex(size_t size, int32_t type)
             MT_RemoveHeadMemoryNode(bucket);
             while (bucket != requestedBucket) {
                 --bucket;
-                MT_AddMemoryNode(
-                    (uint16_t)(blockIndex + (1U << bucket)), bucket);
+                MT_AddMemoryNode((uint16_t)(blockIndex + (1U << bucket)), bucket);
             }
 
-            script_memoryAllocatedInstanceCount =
-                coduomp_script_memory_int32_from_bits(
-                    (uint32_t)script_memoryAllocatedInstanceCount + 1u);
-            script_memoryAllocatedBucketCount =
-                coduomp_script_memory_int32_from_bits(
-                    (uint32_t)script_memoryAllocatedBucketCount +
-                    (1u << ((uint32_t)requestedBucket &
-                            SCRIPT_MEMORY_TARGET_SHIFT_MASK)));
+            script_memoryAllocatedInstanceCount = coduomp_script_memory_int32_from_bits((uint32_t)script_memoryAllocatedInstanceCount + 1u);
+            script_memoryAllocatedBucketCount = coduomp_script_memory_int32_from_bits(
+                (uint32_t)script_memoryAllocatedBucketCount + (1u << ((uint32_t)requestedBucket & SCRIPT_MEMORY_TARGET_SHIFT_MASK)));
             return blockIndex;
         }
         ++bucket;
@@ -405,21 +371,14 @@ uint16_t MT_AllocIndex(size_t size, int32_t type)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00480ee0_00480f87.mcode. */
 void MT_FreeIndex(uint16_t blockIndex, size_t size)
 {
-    int32_t bucket =
-        MT_GetSize(coduomp_script_memory_int32_from_size(size));
+    int32_t bucket = MT_GetSize(coduomp_script_memory_int32_from_size(size));
 
-    script_memoryAllocatedInstanceCount =
-        coduomp_script_memory_int32_from_bits(
-            (uint32_t)script_memoryAllocatedInstanceCount - 1u);
-    script_memoryAllocatedBucketCount =
-        coduomp_script_memory_int32_from_bits(
-            (uint32_t)script_memoryAllocatedBucketCount -
-            (1u << ((uint32_t)bucket &
-                    SCRIPT_MEMORY_TARGET_SHIFT_MASK)));
+    script_memoryAllocatedInstanceCount = coduomp_script_memory_int32_from_bits((uint32_t)script_memoryAllocatedInstanceCount - 1u);
+    script_memoryAllocatedBucketCount = coduomp_script_memory_int32_from_bits((uint32_t)script_memoryAllocatedBucketCount -
+                                                                              (1u << ((uint32_t)bucket & SCRIPT_MEMORY_TARGET_SHIFT_MASK)));
 
     while (bucket != SCRIPT_MEMORY_MAX_BUCKET) {
-        uint32_t bucketMask =
-            1u << ((uint32_t)bucket & SCRIPT_MEMORY_TARGET_SHIFT_MASK);
+        uint32_t bucketMask = 1u << ((uint32_t)bucket & SCRIPT_MEMORY_TARGET_SHIFT_MASK);
         uint16_t buddy = (uint16_t)(blockIndex ^ bucketMask);
         if (MT_RemoveMemoryNode(buddy, bucket) == qfalse) {
             break;
@@ -451,9 +410,7 @@ void *MT_Alloc(size_t size, int32_t type)
  * 0x080a2f8e..0x080a2fb2. */
 void MT_Free(void *ptr, size_t size)
 {
-    size_t byteOffset =
-        (uint8_t *)ptr - (uint8_t *)script_memoryBlocks;
+    size_t byteOffset = (uint8_t *)ptr - (uint8_t *)script_memoryBlocks;
 
-    MT_FreeIndex(
-        (uint16_t)(byteOffset / SCRIPT_MEMORY_BLOCK_SIZE), size);
+    MT_FreeIndex((uint16_t)(byteOffset / SCRIPT_MEMORY_BLOCK_SIZE), size);
 }

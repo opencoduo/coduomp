@@ -45,8 +45,7 @@ int32_t server_compat_generate_checksum_feed(void)
     checksumHigh = (uint32_t)coduo_server_rand() << 16;
     checksumLow = (uint32_t)coduo_server_rand();
     checksumTime = (uint32_t)Sys_Milliseconds();
-    return coduo_int32_from_bits(
-        checksumTime ^ checksumHigh ^ checksumLow);
+    return coduo_int32_from_bits(checksumTime ^ checksumHigh ^ checksumLow);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: target adapter for the dedicated engine's

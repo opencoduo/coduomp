@@ -43,48 +43,35 @@ enum {
  * by an add and one binary32 store. The original platform control word governs
  * native x87; the software path selects the same Windows PC=53 or Linux PC=64
  * policy independently of the host architecture. */
-static float bg_compat_controller_add_product(float addend, float left,
-                                               float right)
+static float bg_compat_controller_add_product(float addend, float left, float right)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(
-        x87f_mul(x87f_load_f32(left), x87f_load_f32(right)),
-        x87f_load_f32(addend)));
+    return x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(left), x87f_load_f32(right)), x87f_load_f32(addend)));
 #else
-    return (float)((long double)left * (long double)right +
-                   (long double)addend);
+    return (float)((long double)left * (long double)right + (long double)addend);
 #endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: subtraction companion for unspilled x87 chains. */
-static float bg_compat_controller_subtract_product(float minuend, float left,
-                                                    float right)
+static float bg_compat_controller_subtract_product(float minuend, float left, float right)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_sub(
-        x87f_load_f32(minuend),
-        x87f_mul(x87f_load_f32(left), x87f_load_f32(right))));
+    return x87f_store_f32(x87f_sub(x87f_load_f32(minuend), x87f_mul(x87f_load_f32(left), x87f_load_f32(right))));
 #else
-    return (float)((long double)minuend -
-                   (long double)left * (long double)right);
+    return (float)((long double)minuend - (long double)left * (long double)right);
 #endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: three-factor subtraction chain used by the prone
  * lean offset. */
 #if !defined(LINUX_BEHAVIOR)
-static float bg_compat_controller_subtract_triple_product(
-    float minuend, float first, float second, float third)
+static float bg_compat_controller_subtract_triple_product(float minuend, float first, float second, float third)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_sub(
-        x87f_load_f32(minuend),
-        x87f_mul(x87f_mul(x87f_load_f32(first), x87f_load_f32(second)),
-                 x87f_load_f32(third))));
+    return x87f_store_f32(
+        x87f_sub(x87f_load_f32(minuend), x87f_mul(x87f_mul(x87f_load_f32(first), x87f_load_f32(second)), x87f_load_f32(third))));
 #else
-    return (float)((long double)minuend -
-                   (long double)first * (long double)second *
-                       (long double)third);
+    return (float)((long double)minuend - (long double)first * (long double)second * (long double)third);
 #endif
 }
 #endif
@@ -92,18 +79,13 @@ static float bg_compat_controller_subtract_triple_product(
 /* NOT_FROM_ORIGINAL_SOURCE: addition form of the three-factor chain retained
  * by the unoptimized Linux controller body. */
 #if defined(LINUX_BEHAVIOR)
-static float bg_compat_controller_add_triple_product(
-    float addend, float first, float second, float third)
+static float bg_compat_controller_add_triple_product(float addend, float first, float second, float third)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_add(
-        x87f_mul(x87f_mul(x87f_load_f32(first), x87f_load_f32(second)),
-                 x87f_load_f32(third)),
-        x87f_load_f32(addend)));
+    return x87f_store_f32(
+        x87f_add(x87f_mul(x87f_mul(x87f_load_f32(first), x87f_load_f32(second)), x87f_load_f32(third)), x87f_load_f32(addend)));
 #else
-    return (float)((long double)first * (long double)second *
-                       (long double)third +
-                   (long double)addend);
+    return (float)((long double)first * (long double)second * (long double)third + (long double)addend);
 #endif
 }
 #endif
@@ -111,48 +93,37 @@ static float bg_compat_controller_add_triple_product(
 /* NOT_FROM_ORIGINAL_SOURCE: retain the two-product x87 subtraction used by
  * the prone spine-yaw outputs without introducing a binary32 spill between
  * the products and the subtraction. */
-static float bg_compat_controller_product_subtract_product(
-    float left0, float right0, float left1, float right1)
+static float bg_compat_controller_product_subtract_product(float left0, float right0, float left1, float right1)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(left0), x87f_load_f32(right0)),
-        x87f_mul(x87f_load_f32(left1), x87f_load_f32(right1))));
+    return x87f_store_f32(
+        x87f_sub(x87f_mul(x87f_load_f32(left0), x87f_load_f32(right0)), x87f_mul(x87f_load_f32(left1), x87f_load_f32(right1))));
 #else
-    return (float)((long double)left0 * (long double)right0 -
-                   (long double)left1 * (long double)right1);
+    return (float)((long double)left0 * (long double)right0 - (long double)left1 * (long double)right1);
 #endif
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: Windows reloads the rounded spine-roll slot for
  * this subtraction; Linux instead retains a second product in x87. */
 #if !defined(LINUX_BEHAVIOR)
-static float bg_compat_controller_product_subtract(
-    float left, float right, float subtrahend)
+static float bg_compat_controller_product_subtract(float left, float right, float subtrahend)
 {
 #if EMULATE_X87
-    return x87f_store_f32(x87f_sub(
-        x87f_mul(x87f_load_f32(left), x87f_load_f32(right)),
-        x87f_load_f32(subtrahend)));
+    return x87f_store_f32(x87f_sub(x87f_mul(x87f_load_f32(left), x87f_load_f32(right)), x87f_load_f32(subtrahend)));
 #else
-    return (float)((long double)left * (long double)right -
-                   (long double)subtrahend);
+    return (float)((long double)left * (long double)right - (long double)subtrahend);
 #endif
 }
 #endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: preserve the extended comparison of an unspilled
  * product against positive zero. */
-static qboolean bg_compat_controller_product_is_positive(float left,
-                                                          float right)
+static qboolean bg_compat_controller_product_is_positive(float left, float right)
 {
 #if EMULATE_X87
-    return x87f_lt(x87f_load_f32(0.0f),
-                   x87f_mul(x87f_load_f32(left), x87f_load_f32(right)))
-               ? qtrue : qfalse;
+    return x87f_lt(x87f_load_f32(0.0f), x87f_mul(x87f_load_f32(left), x87f_load_f32(right))) ? qtrue : qfalse;
 #else
-    return (long double)left * (long double)right > 0.0L
-               ? qtrue : qfalse;
+    return (long double)left * (long double)right > 0.0L ? qtrue : qfalse;
 #endif
 }
 
@@ -162,20 +133,14 @@ static float bg_compat_controller_yaw_radians(float yaw)
 {
 #if EMULATE_X87
 #if defined(LINUX_BEHAVIOR)
-    return x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(yaw),
-                 x87f_load_f64(3.141592653589793)),
-        x87f_load_f64(180.0)));
+    return x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(yaw), x87f_load_f64(3.141592653589793)), x87f_load_f64(180.0)));
 #else
-    return x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(yaw), x87f_load_f32(3.1415927f)),
-        x87f_load_f32(180.0f)));
+    return x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(yaw), x87f_load_f32(3.1415927f)), x87f_load_f32(180.0f)));
 #endif
 #elif defined(LINUX_BEHAVIOR)
     return (float)((long double)yaw * 3.141592653589793L / 180.0L);
 #else
-    return (float)((long double)yaw * (long double)3.1415927f /
-                   (long double)180.0f);
+    return (float)((long double)yaw * (long double)3.1415927f / (long double)180.0f);
 #endif
 }
 
@@ -189,22 +154,17 @@ static float bg_compat_controller_debug_sin(int32_t time, int32_t clientNum)
     float phaseSin;
 
 #if EMULATE_X87
-    const x87f phase = x87f_add(
-        x87f_mul(x87f_load_f32(timeAsFloat), x87f_load_f32(0.003f)),
-        x87f_load_f32(clientNumAsFloat));
+    const x87f phase = x87f_add(x87f_mul(x87f_load_f32(timeAsFloat), x87f_load_f32(0.003f)), x87f_load_f32(clientNumAsFloat));
     phaseSin = (float)sin(x87f_store_f64(phase));
     return phaseSin;
 #else
-    const long double phase =
-        (long double)timeAsFloat * (long double)0.003f +
-        (long double)clientNumAsFloat;
+    const long double phase = (long double)timeAsFloat * (long double)0.003f + (long double)clientNumAsFloat;
     phaseSin = (float)sin((double)phase);
     return phaseSin;
 #endif
 }
 
-void BG_Player_DoControllersInternal(clientInfo_t *anim,
-                             const entityState_t *entity, vec3_t out[8])
+void BG_Player_DoControllersInternal(clientInfo_t *anim, const entityState_t *entity, vec3_t out[8])
 {
     const uint32_t entityFlags = entity->eFlags;
     const int32_t entityClientNum = entity->clientNum;
@@ -212,8 +172,7 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
     float baseYaw = anim->torsoYawAngle;
     float adjustedViewYaw = anim->viewYaw;
     vec3_t originAngles = {0.0f, anim->legsYawAngle, 0.0f};
-    const int specialView =
-        (entityFlags & EF_IN_VEHICLE) != 0;
+    const int specialView = (entityFlags & EF_IN_VEHICLE) != 0;
 
     /* 0x30004def..0x30004ead: vehicle/turret override selection. */
     if (specialView) {
@@ -224,15 +183,10 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
         originAngles[2] = anim->turretOverrideAngles[2];
 
         const uint32_t vehicleState = (uint32_t)entity->vehicleAnimState;
-        const vehicle_type_t vehicleType = (vehicle_type_t)(
-            (vehicleState & VEHICLE_ANIM_STATE_TYPE_MASK) >>
-            VEHICLE_ANIM_STATE_TYPE_SHIFT);
-        const int32_t vehiclePosition = (int32_t)(
-            (vehicleState & VEHICLE_ANIM_STATE_POS_MASK) >>
-            VEHICLE_ANIM_STATE_POS_SHIFT);
+        const vehicle_type_t vehicleType = (vehicle_type_t)((vehicleState & VEHICLE_ANIM_STATE_TYPE_MASK) >> VEHICLE_ANIM_STATE_TYPE_SHIFT);
+        const int32_t vehiclePosition = (int32_t)((vehicleState & VEHICLE_ANIM_STATE_POS_MASK) >> VEHICLE_ANIM_STATE_POS_SHIFT);
 
-        if (entity->weapon != 0 &&
-            BG_AllowPlayerWeaponAtVehiclePos(vehicleType, vehiclePosition)) {
+        if (entity->weapon != 0 && BG_AllowPlayerWeaponAtVehiclePos(vehicleType, vehiclePosition)) {
             basePitch = anim->viewPitch;
             baseYaw = anim->viewYaw;
         }
@@ -244,8 +198,7 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
             adjustedViewYaw = -180.0f - adjustedViewYaw;
         }
         adjustedViewYaw = AngleNormalize180(adjustedViewYaw + baseYaw);
-    } else if ((anim->conditionWords[ANIM_COND_MOVETYPE][0] &
-                BG_ANIM_CLIMB_MOVE_TYPE_MASK) == 0) {
+    } else if ((anim->conditionWords[ANIM_COND_MOVETYPE][0] & BG_ANIM_CLIMB_MOVE_TYPE_MASK) == 0) {
         /* 0x30004ec4: the raw leanAngle load precedes the prone-flag branch,
          * so basePitch picks it up even when the prone flag is clear. */
         basePitch = anim->leanAngle;
@@ -279,9 +232,7 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
     const float leanPhase = GetLeanFraction(leanInput);
 #if defined(LINUX_BEHAVIOR)
 #if EMULATE_X87
-    float leanSwing = x87f_store_f32(x87f_mul(
-        x87f_mul(x87f_load_f32(leanPhase), x87f_load_f32(50.0f)),
-        x87f_load_f32(0.925f)));
+    float leanSwing = x87f_store_f32(x87f_mul(x87f_mul(x87f_load_f32(leanPhase), x87f_load_f32(50.0f)), x87f_load_f32(0.925f)));
 #else
     float leanSwing = (float)((long double)leanPhase * 50.0L * 0.925L);
 #endif
@@ -293,11 +244,9 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
     /* 0x30004fb5..0x30004fc5: FMUL 2.5f then FSUBR from the 0.0f constant --
      * 0 - x, not a negated-constant multiply (matches the zero-sign edge). */
 #if defined(LINUX_BEHAVIOR)
-    float originOffsetY =
-        bg_compat_controller_add_product(0.0f, -leanPhase, 2.5f);
+    float originOffsetY = bg_compat_controller_add_product(0.0f, -leanPhase, 2.5f);
 #else
-    float originOffsetY =
-        bg_compat_controller_subtract_product(0.0f, leanPhase, 2.5f);
+    float originOffsetY = bg_compat_controller_subtract_product(0.0f, leanPhase, 2.5f);
 #endif
 
     if ((entityFlags & EF_DEAD) == 0 && !specialView) {
@@ -326,8 +275,7 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
         originAngles[0] += entity->viewAngles[1];
         /* FMUL pi and FDIV 180 are one 53-bit chain before the float spill
          * consumed by FSINCOS. */
-        const float yawRadians =
-            bg_compat_controller_yaw_radians(originYawDelta);
+        const float yawRadians = bg_compat_controller_yaw_radians(originYawDelta);
         float yawSin;
         float yawCos;
         coduo_x87_sincosf(yawRadians, &yawSin, &yawCos);
@@ -335,27 +283,19 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
          * both the X offset and the lean term below consume. */
         const float yawCosInv = 1.0f - yawCos;
 #if defined(LINUX_BEHAVIOR)
-        originOffsetX = bg_compat_controller_add_product(
-            originOffsetX, yawCosInv, -24.0f);
-        originOffsetY = bg_compat_controller_add_product(
-            originOffsetY, yawSin, -12.0f);
+        originOffsetX = bg_compat_controller_add_product(originOffsetX, yawCosInv, -24.0f);
+        originOffsetY = bg_compat_controller_add_product(originOffsetY, yawSin, -12.0f);
 #else
-        originOffsetX =
-            bg_compat_controller_subtract_product(0.0f, yawCosInv, 24.0f);
-        originOffsetY =
-            bg_compat_controller_subtract_product(originOffsetY, yawSin,
-                                                   12.0f);
+        originOffsetX = bg_compat_controller_subtract_product(0.0f, yawCosInv, 24.0f);
+        originOffsetY = bg_compat_controller_subtract_product(originOffsetY, yawSin, 12.0f);
 #endif
         /* FMUL remains in ST0 for the comparison; do not round a tiny product
          * to binary32 before deciding its sign. */
         if (bg_compat_controller_product_is_positive(yawSin, leanPhase)) {
 #if defined(LINUX_BEHAVIOR)
-            originOffsetY = bg_compat_controller_add_triple_product(
-                originOffsetY, yawCosInv, -leanPhase, 16.0f);
+            originOffsetY = bg_compat_controller_add_triple_product(originOffsetY, yawCosInv, -leanPhase, 16.0f);
 #else
-            originOffsetY =
-                bg_compat_controller_subtract_triple_product(
-                    originOffsetY, yawCosInv, leanPhase, 16.0f);
+            originOffsetY = bg_compat_controller_subtract_triple_product(originOffsetY, yawCosInv, leanPhase, 16.0f);
 #endif
         }
 
@@ -367,19 +307,14 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
          * (the roll value) and that rounded value is what the yaw subtracts. */
         spine1Roll = leanSwing * 0.2f;
 #if defined(LINUX_BEHAVIOR)
-        spine1Yaw =
-            bg_compat_controller_product_subtract_product(
-                originYawDelta, 0.1f, leanSwing, 0.2f);
+        spine1Yaw = bg_compat_controller_product_subtract_product(originYawDelta, 0.1f, leanSwing, 0.2f);
 #else
-        spine1Yaw = bg_compat_controller_product_subtract(
-            originYawDelta, 0.1f, spine1Roll);
+        spine1Yaw = bg_compat_controller_product_subtract(originYawDelta, 0.1f, spine1Roll);
 #endif
         spine2Pitch = originPitchDelta;
         /* 0x300051fa multiplies leanSwing by the .rdata -1.0f at 0x3007bdb0
          * before the subtract, i.e. spine2Yaw adds the full lean swing. */
-        spine2Yaw =
-            bg_compat_controller_product_subtract_product(
-                originYawDelta, 0.80000001f, leanSwing, -1.0f);
+        spine2Yaw = bg_compat_controller_product_subtract_product(originYawDelta, 0.80000001f, leanSwing, -1.0f);
         spine2Roll = leanSwing * -0.2f;
     } else {
         /* 0x30005215..0x300053df: standing/crouched stance-dependent scaling. */
@@ -396,20 +331,13 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
 
 #if defined(LINUX_BEHAVIOR)
 #if EMULATE_X87
-        originAngles[2] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_mul(x87f_load_f32(leanPhase),
-                              x87f_load_f32(50.0f)),
-                     x87f_load_f32(0.075f)),
-            x87f_load_f32(originAngles[2])));
+        originAngles[2] = x87f_store_f32(x87f_add(x87f_mul(x87f_mul(x87f_load_f32(leanPhase), x87f_load_f32(50.0f)), x87f_load_f32(0.075f)),
+                                                  x87f_load_f32(originAngles[2])));
 #else
-        originAngles[2] =
-            (float)((long double)originAngles[2] +
-                    (long double)leanPhase * 50.0L * 0.075L);
+        originAngles[2] = (float)((long double)originAngles[2] + (long double)leanPhase * 50.0L * 0.075L);
 #endif
 #else
-        originAngles[2] =
-            bg_compat_controller_add_product(originAngles[2], leanPhase,
-                                              3.7500002f);
+        originAngles[2] = bg_compat_controller_add_product(originAngles[2], leanPhase, 3.7500002f);
 #endif
         spine0Pitch = originPitchDelta * 0.2f;
         spine0Yaw = originYawDelta * 0.40000001f;
@@ -423,26 +351,17 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
     }
 
     /* 0x300050c8..0x300051be / 0x30005281..0x3000539b: yaw test motion. */
-    const int32_t controllerPitchDebug =
-        bg_compat_controller_debug_value();
+    const int32_t controllerPitchDebug = bg_compat_controller_debug_value();
     if (controllerPitchDebug == CONTROL_TAG_DEBUG_YAW_POSITIVE) {
         /* The CRT sin result is explicitly spilled to float before FMUL 45;
          * that product and the following add share one x87 chain. */
-        const float phaseSin = bg_compat_controller_debug_sin(
-            bg_compat_controller_debug_time(), entityClientNum);
-        spine0Pitch =
-            bg_compat_controller_add_product(spine0Pitch, phaseSin, 45.0f);
-    } else if (controllerPitchDebug ==
-               CONTROL_TAG_DEBUG_YAW_NEGATIVE_AND_ROLL) {
-        const float phaseSin = bg_compat_controller_debug_sin(
-            bg_compat_controller_debug_time(), entityClientNum);
-        spine0Pitch =
-            bg_compat_controller_subtract_product(spine0Pitch, phaseSin,
-                                                   45.0f);
-    } else if (entity->viewAngles[1] != 0.0f ||
-               entity->viewAngles[2] != 0.0f) {
-        spine0Pitch += AngleSubtract(entity->viewAngles[1],
-                                     entity->viewAngles[2]);
+        const float phaseSin = bg_compat_controller_debug_sin(bg_compat_controller_debug_time(), entityClientNum);
+        spine0Pitch = bg_compat_controller_add_product(spine0Pitch, phaseSin, 45.0f);
+    } else if (controllerPitchDebug == CONTROL_TAG_DEBUG_YAW_NEGATIVE_AND_ROLL) {
+        const float phaseSin = bg_compat_controller_debug_sin(bg_compat_controller_debug_time(), entityClientNum);
+        spine0Pitch = bg_compat_controller_subtract_product(spine0Pitch, phaseSin, 45.0f);
+    } else if (entity->viewAngles[1] != 0.0f || entity->viewAngles[2] != 0.0f) {
+        spine0Pitch += AngleSubtract(entity->viewAngles[1], entity->viewAngles[2]);
     }
 
     out[0][0] = spine0Pitch;
@@ -462,19 +381,12 @@ void BG_Player_DoControllersInternal(clientInfo_t *anim,
     out[4][1] = viewYawDelta * 0.69999999f;
     out[4][2] = secondaryLeanSwing * -0.30000001f;
 
-    const int32_t controllerRollDebug =
-        bg_compat_controller_debug_value();
-    if (controllerRollDebug == CONTROL_TAG_DEBUG_ROLL ||
-        controllerRollDebug ==
-            CONTROL_TAG_DEBUG_YAW_NEGATIVE_AND_ROLL) {
-        const float phaseSin = bg_compat_controller_debug_sin(
-            bg_compat_controller_debug_time(), entityClientNum);
-        out[5][0] =
-            bg_compat_controller_add_product(0.0f, phaseSin, 45.0f);
-    } else if (entity->viewAngles[1] != 0.0f ||
-               entity->viewAngles[2] != 0.0f) {
-        out[5][0] = AngleSubtract(entity->viewAngles[2],
-                                  entity->viewAngles[1]);
+    const int32_t controllerRollDebug = bg_compat_controller_debug_value();
+    if (controllerRollDebug == CONTROL_TAG_DEBUG_ROLL || controllerRollDebug == CONTROL_TAG_DEBUG_YAW_NEGATIVE_AND_ROLL) {
+        const float phaseSin = bg_compat_controller_debug_sin(bg_compat_controller_debug_time(), entityClientNum);
+        out[5][0] = bg_compat_controller_add_product(0.0f, phaseSin, 45.0f);
+    } else if (entity->viewAngles[1] != 0.0f || entity->viewAngles[2] != 0.0f) {
+        out[5][0] = AngleSubtract(entity->viewAngles[2], entity->viewAngles[1]);
     } else {
         out[5][0] = 0.0f;
     }

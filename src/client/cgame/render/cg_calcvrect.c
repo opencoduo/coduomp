@@ -104,19 +104,19 @@ void CG_CalcVrect(void)
     }
 
     {
-        int32_t vidWidth  = cgs_glconfig.vidWidth;
+        int32_t vidWidth = cgs_glconfig.vidWidth;
         int32_t vidHeight = cgs_glconfig.vidHeight;
         /* size percentage of the backbuffer, forced to an even pixel count. */
-        int32_t width  = (vidWidth  * widthSize  / 100) & ~1;
+        int32_t width = (vidWidth * widthSize / 100) & ~1;
         int32_t height = (vidHeight * heightSize / 100) & ~1;
 
         /* Center the view rect on screen (signed halving rounds toward zero). */
-        int32_t viewX = (vidWidth  - width ) / 2;
+        int32_t viewX = (vidWidth - width) / 2;
         int32_t viewY = (vidHeight - height) / 2;
 
-        cg_refdef.x      = (uint32_t)viewX;
+        cg_refdef.x = (uint32_t)viewX;
         cg_refdef.height = (uint32_t)height;
-        cg_refdef.width  = (uint32_t)width;
-        cg_refdef.y      = (uint32_t)viewY;
+        cg_refdef.width = (uint32_t)width;
+        cg_refdef.y = (uint32_t)viewY;
     }
 }

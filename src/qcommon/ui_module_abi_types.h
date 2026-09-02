@@ -136,10 +136,8 @@ typedef struct uiClientState_s {
     char messageString[MAX_STRING_CHARS];
 } uiClientState_t;
 
-typedef char q_ui_client_state_client_num_offset[
-    offsetof(uiClientState_t, clientNum) == 0x8 ? 1 : -1];
-typedef char q_ui_client_state_size[
-    sizeof(uiClientState_t) == 0xc0c ? 1 : -1];
+typedef char q_ui_client_state_client_num_offset[offsetof(uiClientState_t, clientNum) == 0x8 ? 1 : -1];
+typedef char q_ui_client_state_size[sizeof(uiClientState_t) == 0xc0c ? 1 : -1];
 
 typedef enum uiVmCommand_e {
     UIVM_GET_API_VERSION = 0,

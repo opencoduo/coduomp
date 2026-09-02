@@ -16,26 +16,16 @@ typedef struct orientationr_s {
 } orientationr_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(_Alignof(orientationr_t) == 4,
-               "i386 renderer orientation alignment changed");
-_Static_assert(offsetof(orientationr_t, origin) == 0x00,
-               "original renderer orientation origin offset");
-_Static_assert(sizeof(((orientationr_t *)0)->origin) == 0x0c,
-               "original renderer orientation origin extent");
-_Static_assert(offsetof(orientationr_t, axis) == 0x0c,
-               "original renderer orientation axis offset");
-_Static_assert(sizeof(((orientationr_t *)0)->axis) == 0x24,
-               "original renderer orientation axis extent");
-_Static_assert(offsetof(orientationr_t, viewOrigin) == 0x30,
-               "original renderer local-view-origin offset");
-_Static_assert(sizeof(((orientationr_t *)0)->viewOrigin) == 0x0c,
-               "original renderer local-view-origin extent");
-_Static_assert(offsetof(orientationr_t, modelMatrix) == 0x3c,
-               "original renderer model-matrix offset");
-_Static_assert(sizeof(((orientationr_t *)0)->modelMatrix) == 0x40,
-               "original renderer model-matrix extent");
-_Static_assert(sizeof(orientationr_t) == 0x7c,
-               "original renderer orientation extent");
+_Static_assert(_Alignof(orientationr_t) == 4, "i386 renderer orientation alignment changed");
+_Static_assert(offsetof(orientationr_t, origin) == 0x00, "original renderer orientation origin offset");
+_Static_assert(sizeof(((orientationr_t *)0)->origin) == 0x0c, "original renderer orientation origin extent");
+_Static_assert(offsetof(orientationr_t, axis) == 0x0c, "original renderer orientation axis offset");
+_Static_assert(sizeof(((orientationr_t *)0)->axis) == 0x24, "original renderer orientation axis extent");
+_Static_assert(offsetof(orientationr_t, viewOrigin) == 0x30, "original renderer local-view-origin offset");
+_Static_assert(sizeof(((orientationr_t *)0)->viewOrigin) == 0x0c, "original renderer local-view-origin extent");
+_Static_assert(offsetof(orientationr_t, modelMatrix) == 0x3c, "original renderer model-matrix offset");
+_Static_assert(sizeof(((orientationr_t *)0)->modelMatrix) == 0x40, "original renderer model-matrix extent");
+_Static_assert(sizeof(orientationr_t) == 0x7c, "original renderer orientation extent");
 #endif
 
 #endif

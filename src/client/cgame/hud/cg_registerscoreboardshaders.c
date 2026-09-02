@@ -52,7 +52,9 @@
 #include "client/cgame/globals.h"
 #include "client/cgame/client_recovered.h"
 
-enum { CG_SB_REGISTER_SHADER_SORT = 5 };
+enum {
+    CG_SB_REGISTER_SHADER_SORT = 5
+};
 
 void CG_RegisterScoreboardShaders(void)
 {
@@ -61,66 +63,44 @@ void CG_RegisterScoreboardShaders(void)
     /* 0x30037e9d..0x30037f7e: fixed fill + scroll-indicator shaders. Each is
      * preceded by a CG_DrawInformation(0) loading pump (0x3002a530). */
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName, CG_SB_REGISTER_SHADER_SORT);
 
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_whiteMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_blackMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER,
-                  (intptr_t)cg_scoreboardScrollUpArrowMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollUpArrowMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER,
-                  (intptr_t)cg_scoreboardScrollUpKeyMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollUpKeyMaterialName, CG_SB_REGISTER_SHADER_SORT);
 
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER,
-                  (intptr_t)cg_scoreboardScrollDownArrowMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollDownArrowMaterialName, CG_SB_REGISTER_SHADER_SORT);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER,
-                  (intptr_t)cg_scoreboardScrollDownKeyMaterialName,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cg_scoreboardScrollDownKeyMaterialName, CG_SB_REGISTER_SHADER_SORT);
 
     /* 0x30037f84..0x30038038: the four team banners. Each banner's shader name is
      * whatever the corresponding g_ScoresBanner_* cvar currently holds; copy that
      * value into a local buffer, then register it. */
-    trap_Cvar_VariableStringBuffer(cg_scoreboardSpectatorsBannerCvarName,
-                                   cvarValue, MAX_STRING_CHARS);
+    trap_Cvar_VariableStringBuffer(cg_scoreboardSpectatorsBannerCvarName, cvarValue, MAX_STRING_CHARS);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue, CG_SB_REGISTER_SHADER_SORT);
 
-    trap_Cvar_VariableStringBuffer(cg_scoreboardAxisBannerCvarName,
-                                   cvarValue, MAX_STRING_CHARS);
+    trap_Cvar_VariableStringBuffer(cg_scoreboardAxisBannerCvarName, cvarValue, MAX_STRING_CHARS);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue, CG_SB_REGISTER_SHADER_SORT);
 
-    trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesBannerCvarName,
-                                   cvarValue, MAX_STRING_CHARS);
+    trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesBannerCvarName, cvarValue, MAX_STRING_CHARS);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue, CG_SB_REGISTER_SHADER_SORT);
 
-    trap_Cvar_VariableStringBuffer(cg_scoreboardNoneBannerCvarName,
-                                   cvarValue, MAX_STRING_CHARS);
+    trap_Cvar_VariableStringBuffer(cg_scoreboardNoneBannerCvarName, cvarValue, MAX_STRING_CHARS);
     CG_DrawInformation(0);
-    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue,
-                  CG_SB_REGISTER_SHADER_SORT);
+    cgame_syscall(CG_R_REGISTERSHADER, (intptr_t)cvarValue, CG_SB_REGISTER_SHADER_SORT);
 }

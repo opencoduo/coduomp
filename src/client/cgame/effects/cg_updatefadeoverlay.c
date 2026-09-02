@@ -26,8 +26,7 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
-                              int32_t duration)
+qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime, int32_t duration)
 {
     /* 3003b7e3 TEST EAX,EAX / JZ  0x3003b861 : startTime == 0  (no active overlay).
      * 3003b7e7 TEST ECX,ECX / JLE 0x3003b861 : duration <= 0 (signed).
@@ -41,8 +40,7 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
 
     /* 3003b7eb SUB EAX,[cg_time] / 3003b7f1 ADD EAX,ECX : remaining ms in overlay's
      * window = startTime - cg_time + duration. Stored to [ESP] (the FILD source). */
-    int32_t remaining = coduo_int32_from_bits(
-        (uint32_t)startTime - (uint32_t)cg_time + (uint32_t)duration);
+    int32_t remaining = coduo_int32_from_bits((uint32_t)startTime - (uint32_t)cg_time + (uint32_t)duration);
 
     /* 3003b7f3 TEST EAX,EAX / JLE : overlay expired (remaining <= 0). */
     if (remaining <= 0) {
@@ -71,8 +69,7 @@ qboolean CG_UpdateFadeOverlay(shellshock_t *overlay, int32_t startTime,
          *   biases an exact half so it does not round down. The intermediate product
          *   is stored/reloaded at single precision, so the outer float cast is
          *   load-bearing (it truncates the mantissa exactly as FSTP float does). */
-        float ramp = (float)((double)remaining / (double)fadeInTime
-                             * (double)level);
+        float ramp = (float)((double)remaining / (double)fadeInTime * (double)level);
         level = CG_RoundToNearest(ramp);
     }
 

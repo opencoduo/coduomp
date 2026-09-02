@@ -53,8 +53,7 @@
  * pain callback at +0x224, death callback at +0x228. Entities with a
  * vehicle state pointer use Scr_Vehicle_DamageScale for damage modification.
  */
-void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
-              const float *dir, const float *point, int damage, int flags,
+void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, const float *dir, const float *point, int damage, int flags,
               int mod, int hitLocation)
 {
     vec3_t normalizedDir = {0.0f, 0.0f, 0.0f};
@@ -71,19 +70,19 @@ void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
     }
 
     /* Non-client entity damage path */
-    
+
     /* Vehicle damage scaling */
     if (target->vehicle != NULL) {
         /* Check vehicle immunity */
         if (G_IsVehicleImmune(target, mod)) {
             return;
         }
-        
+
         /* Radius damage with less than 100 damage is ignored for vehicles */
         if ((flags & DAMAGE_RADIUS) != 0 && damage < 100) {
             return;
         }
-        
+
         /* Scale damage based on vehicle type */
         float scale = Scr_Vehicle_DamageScale(target, attacker, inflictor, point, mod);
         /* NO shim: a single float*float product is exact in double (<=48 sig
@@ -130,7 +129,7 @@ void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
     }
 
     /* General entity damage */
-    
+
     /* Check invulnerability flag */
     if ((target->flags & 1) != 0) {
         return;
@@ -167,7 +166,7 @@ void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
         if (target->health < -999) {
             target->health = -999;
         }
-        
+
         /* Send death notify */
         Scr_AddEntity(attacker);
         Scr_Notify(target, scr_const_death, 1);
@@ -177,8 +176,7 @@ void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
 
         /* Call death callback if present */
         if (target->die != NULL) {
-            target->die(target, inflictor, attacker, damage, mod,
-                       inflictor->s.weapon, normalizedDir, hitLocation);
+            target->die(target, inflictor, attacker, damage, mod, inflictor->s.weapon, normalizedDir, hitLocation);
         }
     } else {
         /* Call pain callback if present and health still positive */
@@ -223,9 +221,8 @@ void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
  * expanded by radius * CoduoLibm_Sqrt(2). Damage scales linearly from maxDamage
  * at origin to minDamage at radius distance.
  */
-int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacker,
-                   float maxDamage, float minDamage, float radius, gentity_t *ignore,
-                   int mod)
+int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacker, float maxDamage, float minDamage, float radius,
+                   gentity_t *ignore, int mod)
 {
     vec3_t mins, maxs;
     int entityList[1024];
@@ -249,7 +246,7 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
     }
 
     /* Calculate bounding box (expanded by CoduoLibm_Sqrt(2) for diagonal coverage) */
-    float expandRadius = radius * 1.4142135f;  /* CoduoLibm_Sqrt(2), original float32 0x3fb504f3 */
+    float expandRadius = radius * 1.4142135f; /* CoduoLibm_Sqrt(2), original float32 0x3fb504f3 */
     mins[0] = origin[0] - expandRadius;
     mins[1] = origin[1] - expandRadius;
     mins[2] = origin[2] - expandRadius;
@@ -258,8 +255,7 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
     maxs[2] = origin[2] + expandRadius;
 
     /* Find all entities in bounding box */
-    numEntities = trap_EntitiesInBox(mins, maxs, entityList, 1024,
-                                     MASK_ALL);
+    numEntities = trap_EntitiesInBox(mins, maxs, entityList, 1024, MASK_ALL);
 
     hitAny = 0;
 
@@ -300,42 +296,23 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
                  * temporary. */
 #if EMULATE_X87
                 {
-                    x87f loBound = x87f_sub(
-                        x87f_load_f32(ent->absMin[axis]),
-                        x87f_mul(x87f_load_f32(ent->mins[axis]),
-                                 x87f_load_f32(
-                                     RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE)));
-                    x87f hiBound = x87f_sub(
-                        x87f_load_f32(ent->absMax[axis]),
-                        x87f_mul(x87f_load_f32(ent->maxs[axis]),
-                                 x87f_load_f32(
-                                     RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE)));
+                    x87f loBound = x87f_sub(x87f_load_f32(ent->absMin[axis]),
+                                            x87f_mul(x87f_load_f32(ent->mins[axis]), x87f_load_f32(RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE)));
+                    x87f hiBound = x87f_sub(x87f_load_f32(ent->absMax[axis]),
+                                            x87f_mul(x87f_load_f32(ent->maxs[axis]), x87f_load_f32(RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE)));
                     if (x87f_lt(x87f_load_f32(origin[axis]), loBound)) {
-                        delta[axis] = x87f_store_f32(
-                            x87f_sub(loBound, x87f_load_f32(origin[axis])));
+                        delta[axis] = x87f_store_f32(x87f_sub(loBound, x87f_load_f32(origin[axis])));
                     } else if (x87f_lt(hiBound, x87f_load_f32(origin[axis]))) {
-                        delta[axis] = x87f_store_f32(
-                            x87f_sub(x87f_load_f32(origin[axis]), hiBound));
+                        delta[axis] = x87f_store_f32(x87f_sub(x87f_load_f32(origin[axis]), hiBound));
                     } else {
                         delta[axis] = 0.0f;
                     }
                 }
 #else
-                if (origin[axis] <
-                    ent->absMin[axis] -
-                        ent->mins[axis] * RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE) {
-                    delta[axis] = (ent->absMin[axis] -
-                                   ent->mins[axis] *
-                                       RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE) -
-                                  origin[axis];
-                } else if (ent->absMax[axis] -
-                               ent->maxs[axis] *
-                                   RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE <
-                           origin[axis]) {
-                    delta[axis] = origin[axis] -
-                                  (ent->absMax[axis] -
-                                   ent->maxs[axis] *
-                                       RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE);
+                if (origin[axis] < ent->absMin[axis] - ent->mins[axis] * RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE) {
+                    delta[axis] = (ent->absMin[axis] - ent->mins[axis] * RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE) - origin[axis];
+                } else if (ent->absMax[axis] - ent->maxs[axis] * RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE < origin[axis]) {
+                    delta[axis] = origin[axis] - (ent->absMax[axis] - ent->maxs[axis] * RADIUS_DAMAGE_VEHICLE_BOUNDS_SCALE);
                 } else {
                     delta[axis] = 0.0f;
                 }
@@ -346,14 +323,12 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
 #if EMULATE_X87
         /* double dot summed in x87 width (FLT_EVAL_METHOD=2), rounded to the
          * double distanceSquared, then sqrt. */
-        double distanceSquared = x87f_store_f64(x87f_add(
-            x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
-                     x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
-            x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2]))));
+        double distanceSquared = x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
+                                                                  x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+                                                         x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2]))));
 #else
-        double distanceSquared = (double)delta[0] * (double)delta[0] +
-                                 (double)delta[1] * (double)delta[1] +
-                                 (double)delta[2] * (double)delta[2];
+        double distanceSquared =
+            (double)delta[0] * (double)delta[0] + (double)delta[1] * (double)delta[1] + (double)delta[2] * (double)delta[2];
 #endif
         distance = (float)CoduoLibm_Sqrt(distanceSquared);
 
@@ -369,17 +344,12 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
 #if EMULATE_X87
         /* minDamage + (1 - distance/radius) * (maxDamage - minDamage), all in
          * x87 width. */
-        damage = x87f_store_f32(x87f_add(
-            x87f_load_f32(minDamage),
-            x87f_mul(x87f_sub(x87f_load_f32(1.0f),
-                              x87f_div(x87f_load_f32(distance),
-                                       x87f_load_f32(radius))),
-                     x87f_sub(x87f_load_f32(maxDamage),
-                              x87f_load_f32(minDamage)))));
+        damage = x87f_store_f32(x87f_add(x87f_load_f32(minDamage),
+                                         x87f_mul(x87f_sub(x87f_load_f32(1.0f), x87f_div(x87f_load_f32(distance), x87f_load_f32(radius))),
+                                                  x87f_sub(x87f_load_f32(maxDamage), x87f_load_f32(minDamage)))));
 #else
         damage = (float)((long double)minDamage +
-                         ((1.0L - (long double)distance / (long double)radius) *
-                          ((long double)maxDamage - (long double)minDamage)));
+                         ((1.0L - (long double)distance / (long double)radius) * ((long double)maxDamage - (long double)minDamage)));
 #endif
 
         /* Check line of sight */
@@ -396,9 +366,8 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
             dir[2] = ent->currentOrigin[2] - origin[2];
             dir[2] += RADIUS_DAMAGE_VERTICAL_OFFSET;
             /* Direct line of sight - apply full damage */
-            G_Damage(ent, inflictor, attacker, dir, origin,
-                    (int32_t)((long double)damage * (long double)damageScale),
-                    DAMAGE_RADIUS, mod, 0);
+            G_Damage(ent, inflictor, attacker, dir, origin, (int32_t)((long double)damage * (long double)damageScale), DAMAGE_RADIUS, mod,
+                     0);
         } else {
             /* No direct line of sight - check for partial damage through geometry */
             /* Trace to entity midpoint */
@@ -416,8 +385,7 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
             midpoint[0] *= 0.5;
             midpoint[1] *= 0.5;
             midpoint[2] *= 0.5;
-            trap_Trace(&trace, origin, vec3_origin, vec3_origin, midpoint,
-                       ENTITYNUM_NONE, RADIUS_DAMAGE_PARTIAL_TRACE_MASK);
+            trap_Trace(&trace, origin, vec3_origin, vec3_origin, midpoint, ENTITYNUM_NONE, RADIUS_DAMAGE_PARTIAL_TRACE_MASK);
 
             if (trace.fraction < 1.0f) {
                 midpointDir[0] = midpoint[0] - origin[0];
@@ -425,18 +393,14 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
                 midpointDir[2] = midpoint[2] - origin[2];
                 /* 0x51079: machine sums x*x + y*y + z*z in that order. */
 #if EMULATE_X87
-                double midpointDistanceSquared = x87f_store_f64(x87f_add(
-                    x87f_add(x87f_mul(x87f_load_f32(midpointDir[0]),
-                                      x87f_load_f32(midpointDir[0])),
-                             x87f_mul(x87f_load_f32(midpointDir[1]),
-                                      x87f_load_f32(midpointDir[1]))),
-                    x87f_mul(x87f_load_f32(midpointDir[2]),
-                             x87f_load_f32(midpointDir[2]))));
-#else
                 double midpointDistanceSquared =
-                    (double)midpointDir[0] * (double)midpointDir[0] +
-                    (double)midpointDir[1] * (double)midpointDir[1] +
-                    (double)midpointDir[2] * (double)midpointDir[2];
+                    x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(midpointDir[0]), x87f_load_f32(midpointDir[0])),
+                                                     x87f_mul(x87f_load_f32(midpointDir[1]), x87f_load_f32(midpointDir[1]))),
+                                            x87f_mul(x87f_load_f32(midpointDir[2]), x87f_load_f32(midpointDir[2]))));
+#else
+                double midpointDistanceSquared = (double)midpointDir[0] * (double)midpointDir[0] +
+                                                 (double)midpointDir[1] * (double)midpointDir[1] +
+                                                 (double)midpointDir[2] * (double)midpointDir[2];
 #endif
                 midpointDistance = (float)CoduoLibm_Sqrt(midpointDistanceSquared);
 
@@ -446,9 +410,7 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
                  * emulate. */
 #if EMULATE_X87
                 if (x87f_lt(x87f_load_f32(midpointDistance),
-                            x87f_mul(x87f_load_f32(radius),
-                                     x87f_load_f32(
-                                         RADIUS_DAMAGE_PARTIAL_RADIUS_SCALE)))) {
+                            x87f_mul(x87f_load_f32(radius), x87f_load_f32(RADIUS_DAMAGE_PARTIAL_RADIUS_SCALE)))) {
 #else
                 if (midpointDistance < radius * RADIUS_DAMAGE_PARTIAL_RADIUS_SCALE) {
 #endif
@@ -463,9 +425,7 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
                     dir[2] = ent->currentOrigin[2] - origin[2];
                     dir[2] += RADIUS_DAMAGE_VERTICAL_OFFSET;
                     G_Damage(ent, inflictor, attacker, dir, origin,
-                            (int32_t)((long double)damage *
-                                      (long double)RADIUS_DAMAGE_PARTIAL_DAMAGE_SCALE),
-                            DAMAGE_RADIUS, mod, 0);
+                             (int32_t)((long double)damage * (long double)RADIUS_DAMAGE_PARTIAL_DAMAGE_SCALE), DAMAGE_RADIUS, mod, 0);
                 }
             }
         }
@@ -490,29 +450,25 @@ int G_RadiusDamage(const float *origin, gentity_t *inflictor, gentity_t *attacke
  * invulnerability, and applies hit location damage multipliers from
  * g_fHitLocDamageMult table.
  */
-void G_DamageClient(gentity_t *target, gentity_t *inflictor, gentity_t *attacker,
-                    const float *dir, const float *point, int damage, int flags,
-                    int mod, int hitLocation)
+void G_DamageClient(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, const float *dir, const float *point, int damage,
+                    int flags, int mod, int hitLocation)
 {
     int weapon;
-    
+
     /* Check if client can take damage */
-    if (!game_compat_gentity_can_take_damage(target) ||
-        target->client->noclip != 0 ||
-        target->client->ufo != 0 ||
-        target->client->connectedState != 2) {  /* Not connected/active */
+    if (!game_compat_gentity_can_take_damage(target) || target->client->noclip != 0 || target->client->ufo != 0 ||
+        target->client->connectedState != 2) { /* Not connected/active */
         return;
     }
-    
+
     /* Handle vehicle occupant damage */
-    if (target->client != NULL &&
-        (target->client->ps.entityStateFlags & DAMAGECLIENT_VEHICLE_OCCUPANT_PSF) != 0) {
+    if (target->client != NULL && (target->client->ps.entityStateFlags & DAMAGECLIENT_VEHICLE_OCCUPANT_PSF) != 0) {
         /* Scale radius damage for vehicle occupants */
         if ((flags & DAMAGE_RADIUS) != 0) {
             float scale = G_VehicleOccupantRadiusDamageScale(target);
             damage = (int32_t)((long double)(float)damage * (long double)scale);
         }
-        
+
         /* Check vehicle occupant invulnerability */
         if (G_IsVehicleOccupantInvulnerable(target) != 0) {
             /* Allow damage from vehicle itself */
@@ -521,11 +477,10 @@ void G_DamageClient(gentity_t *target, gentity_t *inflictor, gentity_t *attacker
             }
         }
     }
-    
+
     /* Apply hit location damage multiplier */
     float multiplier = g_fHitLocDamageMult[hitLocation];
-    int32_t scaledDamage = (int32_t)((long double)damage *
-                                    (long double)multiplier);
+    int32_t scaledDamage = (int32_t)((long double)damage * (long double)multiplier);
 
     /* Determine hit location type from inflictor */
     if (inflictor == NULL) {
@@ -537,10 +492,9 @@ void G_DamageClient(gentity_t *target, gentity_t *inflictor, gentity_t *attacker
     } else {
         weapon = inflictor->s.weapon;
     }
-    
+
     /* Call script damage handler */
-    Scr_PlayerDamage(target, inflictor, attacker, scaledDamage, flags, mod,
-                     weapon, point, dir, hitLocation);
+    Scr_PlayerDamage(target, inflictor, attacker, scaledDamage, flags, mod, weapon, point, dir, hitLocation);
 }
 
 /* ------------------------------------------------------------------ */
@@ -564,8 +518,7 @@ static int game_compat_can_damage_trace_point(gentity_t *target, const float *po
 {
     trace_t trace;
 
-    trap_LocationalTrace(&trace, point, origin, target->s.number,
-                         DAMAGE_VISIBILITY_TRACE_MASK, bulletPriorityMap);
+    trap_LocationalTrace(&trace, point, origin, target->s.number, DAMAGE_VISIBILITY_TRACE_MASK, bulletPriorityMap);
     return trace.fraction == 1.0f;
 }
 
@@ -654,14 +607,10 @@ float CanDamage(gentity_t *target, const float *origin)
      * halfHeight in a second rounding (VectorMA then z adjust). */
 #if EMULATE_X87
     for (int j = 0; j < 3; j++) {
-        float plus = x87f_store_f32(x87f_add(
-            x87f_load_f32(center[j]),
-            x87f_mul(x87f_load_f32(side[j]),
-                     x87f_load_f32(DAMAGE_VISIBILITY_SAMPLE_RADIUS))));
-        float minus = x87f_store_f32(x87f_sub(
-            x87f_load_f32(center[j]),
-            x87f_mul(x87f_load_f32(side[j]),
-                     x87f_load_f32(DAMAGE_VISIBILITY_SAMPLE_RADIUS))));
+        float plus = x87f_store_f32(
+            x87f_add(x87f_load_f32(center[j]), x87f_mul(x87f_load_f32(side[j]), x87f_load_f32(DAMAGE_VISIBILITY_SAMPLE_RADIUS))));
+        float minus = x87f_store_f32(
+            x87f_sub(x87f_load_f32(center[j]), x87f_mul(x87f_load_f32(side[j]), x87f_load_f32(DAMAGE_VISIBILITY_SAMPLE_RADIUS))));
         tracePoints[1][j] = plus;
         tracePoints[2][j] = plus;
         tracePoints[3][j] = minus;
@@ -704,8 +653,7 @@ float CanDamage(gentity_t *target, const float *origin)
 
     if (hitCount < 4) {
 #if EMULATE_X87
-        return x87f_store_f32(
-            x87f_div(x87f_load_i32(hitCount), x87f_load_f32(3.0f)));
+        return x87f_store_f32(x87f_div(x87f_load_i32(hitCount), x87f_load_f32(3.0f)));
 #else
         return (float)hitCount / 3.0f;
 #endif

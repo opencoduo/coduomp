@@ -28,7 +28,9 @@
  * EAX,0x25 at 0x30032b30). The same +37 base is used by the sibling head-icon
  * builder at 0x300217ef. Exact CoD CS_* symbol unproven; the numeric offset is
  * proven. */
-enum { CG_HEADICON_CONFIGSTRING_BASE = 37 };
+enum {
+    CG_HEADICON_CONFIGSTRING_BASE = 37
+};
 
 /* Sprite scale (pixels) used for the visibility head icon (MOV [ESP+0xc],0x41800000
  * at 0x30032b55 == 16.0f). */
@@ -49,7 +51,8 @@ void CG_AddHeadIcon(centity_t *cent)
     const int32_t centClientNum = cent->currentState.clientNum;
     if ((uint32_t)centClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_AddHeadIcon: invalid entity client number %i",
+                  "\x15"
+                  "CG_AddHeadIcon: invalid entity client number %i",
                   centClientNum);
         return;
     }
@@ -67,7 +70,8 @@ void CG_AddHeadIcon(centity_t *cent)
     const int32_t localClientNum = cg_snap->ps.psClientNum;
     if ((uint32_t)localClientNum >= (uint32_t)MAX_CLIENTS) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_AddHeadIcon: invalid local client number %i",
+                  "\x15"
+                  "CG_AddHeadIcon: invalid local client number %i",
                   localClientNum);
         return;
     }
@@ -83,12 +87,9 @@ void CG_AddHeadIcon(centity_t *cent)
      * (localHudTeam == TEAM_SPECTATOR), or the teams match. */
     if (cent->currentState.iHeadIcon != 0) {
         int32_t iconTeam = cent->currentState.headIconTeam;
-        if (iconTeam == 0 ||
-            localHudTeam == TEAM_SPECTATOR ||
-            iconTeam == localHudTeam) {
-            const int32_t configStringIndex = coduo_int32_from_bits(
-                (uint32_t)cent->currentState.iHeadIcon +
-                (uint32_t)CG_HEADICON_CONFIGSTRING_BASE);
+        if (iconTeam == 0 || localHudTeam == TEAM_SPECTATOR || iconTeam == localHudTeam) {
+            const int32_t configStringIndex =
+                coduo_int32_from_bits((uint32_t)cent->currentState.iHeadIcon + (uint32_t)CG_HEADICON_CONFIGSTRING_BASE);
             const char *name = CG_ConfigString(configStringIndex);
             qhandle_t shader = CG_RegisterMaterial(name, R_IMAGE_TRACK_HUD);
             if (shader != 0) {
@@ -135,10 +136,7 @@ void CG_AddHeadIcon(centity_t *cent)
          * (rendered slightly smaller: size - 5.0). */
         if ((eFlags & EF_HEADICON_TALKING) != 0) {
             CG_AddHeadIconSprite(cent, cgs_talkBalloonIcon,
-                                 coduo_fp_to_i32_extended(
-                                     (long double)size -
-                                     (long double)CG_TALKBALLOON_SIZE_BIAS),
-                                 0);
+                                 coduo_fp_to_i32_extended((long double)size - (long double)CG_TALKBALLOON_SIZE_BIAS), 0);
         }
     }
 }

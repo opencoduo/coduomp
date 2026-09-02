@@ -3,8 +3,7 @@
 
 #include "ui_runtime.h"
 
-qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key,
-                                qboolean down);
+qboolean Item_ListBox_HandleKey(itemDef_t *item, int32_t key, qboolean down);
 
 /* Route one forced up/down key to the first item bound to a feeder.  The
  * command keys are the literal 154/155 values formed at 0x30058892. */
@@ -21,9 +20,7 @@ void Menu_ScrollFeeder(menuDef_t *menu, int32_t feeder, qboolean down)
         if (item->special == feederId) {
             /* 0x30058884 reloads the matching slot for the call rather than
              * retaining the pointer used by the comparison. */
-            Item_ListBox_HandleKey(menu->items[i],
-                                   down ? K_DOWNARROW : K_UPARROW,
-                                   qtrue);
+            Item_ListBox_HandleKey(menu->items[i], down ? K_DOWNARROW : K_UPARROW, qtrue);
             return;
         }
     }

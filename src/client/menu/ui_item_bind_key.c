@@ -82,12 +82,8 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int32_t key, qboolean down)
      * outside, matching the status-word tests. */
     if (item != NULL) {
         const rectDef_t *rect = &item->window.rect;
-        cursorInside =
-            cursorX >= (long double)rect->x &&
-            cursorX <= (long double)rect->x + (long double)rect->w &&
-            (long double)cursorY >= (long double)rect->y &&
-            (long double)cursorY <=
-                (long double)rect->y + (long double)rect->h;
+        cursorInside = cursorX >= (long double)rect->x && cursorX <= (long double)rect->x + (long double)rect->w &&
+                       (long double)cursorY >= (long double)rect->y && (long double)cursorY <= (long double)rect->y + (long double)rect->h;
     }
 
     // 0x30057032..0x30057078: an inside-rect hit while NOT already capturing enters
@@ -96,8 +92,7 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int32_t key, qboolean down)
     if (cursorInside && g_waitingForKey == 0) {
         // 0x30057081: only a *down* press arms; a key-up inside the rect just
         // returns qtrue without arming.
-        if (down != 0 &&
-            (key == BIND_KEY_MOUSE1 || key == BIND_KEY_ENTER)) {
+        if (down != 0 && (key == BIND_KEY_MOUSE1 || key == BIND_KEY_ENTER)) {
             // 0x3005709f/0x300570a6: capture the item and arm.
             g_bindItem = item;
             g_waitingForKey = 1;
@@ -142,8 +137,7 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int32_t key, qboolean down)
         // 0x300570eb: ESI remains the incoming item; the capture global is only
         // a guard above. BindingIDFromName(item->cvar).
         id = BindingIDFromName(item->cvar);
-        if (id != BIND_KEY_UNBOUND ||
-            client_ui_compat_extra_binding_for_name(item->cvar) != NULL) {
+        if (id != BIND_KEY_UNBOUND || client_ui_compat_extra_binding_for_name(item->cvar) != NULL) {
             key = BIND_KEY_UNBOUND;
         }
     }
@@ -189,8 +183,7 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int32_t key, qboolean down)
         } else if (binding->bind1 == BIND_KEY_UNBOUND) {
             // 0x3005719a/0x3005719f: first key slot is free — take it.
             binding->bind1 = key;
-        } else if (binding->bind1 != key &&
-                   binding->bind2 == BIND_KEY_UNBOUND) {
+        } else if (binding->bind1 != key && binding->bind2 == BIND_KEY_UNBOUND) {
             // 0x300571a7..0x300571ba: bind1 already used by a different key and
             // bind2 free — take the second slot.
             binding->bind2 = key;

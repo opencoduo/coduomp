@@ -37,9 +37,7 @@ cg_scriptExportTable_t *Scr_FarHook(const cg_scriptImportTable_t *imports)
          * increasing addresses. Preserve that per-slot read-before-write rule
          * for overlap, widening the unit to one native pointer slot on 64-bit
          * builds so all 102 logical imports survive pointer expansion. */
-        for (size_t offset = 0;
-             offset < sizeof(cg_scriptImports);
-             offset += sizeof(slotBytes)) {
+        for (size_t offset = 0; offset < sizeof(cg_scriptImports); offset += sizeof(slotBytes)) {
             for (size_t byte = 0; byte < sizeof(slotBytes); ++byte)
                 slotBytes[byte] = source[offset + byte];
             for (size_t byte = 0; byte < sizeof(slotBytes); ++byte)

@@ -63,8 +63,7 @@ void SV_ShutdownGameProgs(void)
     }
 
     XAnimSetUser(XANIM_USER_SERVER);
-    (void)VM_Call(sv_gameVM, GAME_SHUTDOWN,
-                  qfalse, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(sv_gameVM, GAME_SHUTDOWN, qfalse, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     Hunk_ClearToMarkLow();
     VM_Free(sv_gameVM);
     sv_gameVM = NULL;
@@ -75,22 +74,15 @@ void SV_InitGameVM(qboolean restart, qboolean cvarRestartGate)
     SV_ResetEntityParsePoint();
 
     script_vm_callback_slot_t *const engineCallbacks = Scr_NearHook(NULL);
-    const script_vm_callback_slot_t *const gameCallbacks =
-        (const script_vm_callback_slot_t *)VM_Call(
-            sv_gameVM, GAME_SCRIPT_FAR_HOOK,
-            (intptr_t)engineCallbacks,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    const script_vm_callback_slot_t *const gameCallbacks = (const script_vm_callback_slot_t *)VM_Call(
+        sv_gameVM, GAME_SCRIPT_FAR_HOOK, (intptr_t)engineCallbacks, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     (void)Scr_NearHook(gameCallbacks);
 
     SERVER_GAME_LOADING_KEEPALIVE();
-    (void)VM_Call(sv_gameVM, GAME_INIT,
-                  svs.time, Com_Milliseconds(), restart, cvarRestartGate,
-                  0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(sv_gameVM, GAME_INIT, svs.time, Com_Milliseconds(), restart, cvarRestartGate, 0, 0, 0, 0, 0, 0, 0, 0);
     SERVER_GAME_LOADING_KEEPALIVE();
 
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         svs.clients[clientNum].gentity = NULL;
     }
 
@@ -101,8 +93,7 @@ void SV_InitGameVM(qboolean restart, qboolean cvarRestartGate)
 
 void SV_RestartGameProgs(qboolean cvarRestartGate)
 {
-    (void)VM_Call(sv_gameVM, GAME_SHUTDOWN,
-                  qtrue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    (void)VM_Call(sv_gameVM, GAME_SHUTDOWN, qtrue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     Hunk_ClearToMarkLow();
     SV_InitGameVM(qtrue, cvarRestartGate);
 }
@@ -111,15 +102,15 @@ void SV_InitGameProgs(qboolean cvarRestartGate)
 {
     sv_gameVM = VM_Create("game", SV_GameSystemCalls);
     if (sv_gameVM == NULL) {
-        Com_Error(ERR_FATAL, "\x15" "VM_Create on game failed");
+        Com_Error(ERR_FATAL, "\x15"
+                             "VM_Create on game failed");
     }
 
-    const intptr_t apiVersion = VM_Call(
-        sv_gameVM, GAME_GET_API_VERSION,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    const intptr_t apiVersion = VM_Call(sv_gameVM, GAME_GET_API_VERSION, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (apiVersion != GAME_API_VERSION) {
         Com_Error(ERR_FATAL,
-                  "\x15" "game is version %d, expected %d",
+                  "\x15"
+                  "game is version %d, expected %d",
                   (int32_t)apiVersion, GAME_API_VERSION);
     }
 
@@ -134,7 +125,5 @@ qboolean SV_GameCommand(void)
     }
 
     XAnimSetUser(XANIM_USER_SERVER);
-    return (qboolean)VM_Call(
-        sv_gameVM, GAME_CONSOLE_COMMAND,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return (qboolean)VM_Call(sv_gameVM, GAME_CONSOLE_COMMAND, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }

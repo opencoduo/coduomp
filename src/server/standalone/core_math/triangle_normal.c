@@ -1,7 +1,6 @@
 #include "core_math_private.h"
 
-void TriangleNormal(const vec3_t point, const vec3_t edgePoint0,
-                  const vec3_t edgePoint1, vec3_t out)
+void TriangleNormal(const vec3_t point, const vec3_t edgePoint0, const vec3_t edgePoint1, vec3_t out)
 {
     vec3_t edge0;
     vec3_t edge1;

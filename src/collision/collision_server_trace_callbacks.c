@@ -35,8 +35,7 @@ enum {
  * retains each platform's proven x87 operation graph.
  */
 
-void SV_ClipMoveToEntity(cmClipMoveWork_t *work,
-                         svEntity_t *serverEntity)
+void SV_ClipMoveToEntity(cmClipMoveWork_t *work, svEntity_t *serverEntity)
 {
     const int32_t entityNum = (int32_t)(serverEntity - sv_entities);
     sharedEntity_t *const gentity = SV_GentityNum(entityNum);
@@ -45,21 +44,16 @@ void SV_ClipMoveToEntity(cmClipMoveWork_t *work,
         return;
     }
     if (work->passEntityNum != ENTITYNUM_NONE &&
-        (entityNum == work->passEntityNum ||
-         gentity->ownerNum == work->passEntityNum ||
-         gentity->ownerNum == work->passOwnerNum)) {
+        (entityNum == work->passEntityNum || gentity->ownerNum == work->passEntityNum || gentity->ownerNum == work->passOwnerNum)) {
         return;
     }
 
-    const float *const angles =
-        gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
+    const float *const angles = gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
     trace_t trace;
     trace.fraction = work->bestTrace.fraction;
 
-    CM_TransformedBoxTrace(
-        &trace, work->start, work->end, work->mins, work->maxs,
-        SV_ClipHandleForEntity(gentity), work->contentsMask,
-        gentity->currentOrigin, angles, work->capsule);
+    CM_TransformedBoxTrace(&trace, work->start, work->end, work->mins, work->maxs, SV_ClipHandleForEntity(gentity), work->contentsMask,
+                           gentity->currentOrigin, angles, work->capsule);
 
     /* The x87 unordered case follows the replacement path. */
     if (trace.fraction >= work->bestTrace.fraction) {
@@ -74,8 +68,7 @@ void SV_ClipMoveToEntity(cmClipMoveWork_t *work,
     work->bestTrace = trace;
 }
 
-void SV_PointTraceToEntity(cmPointTraceWork_t *work,
-                           svEntity_t *serverEntity)
+void SV_PointTraceToEntity(cmPointTraceWork_t *work, svEntity_t *serverEntity)
 {
     const int32_t entityNum = (int32_t)(serverEntity - sv_entities);
     sharedEntity_t *const gentity = SV_GentityNum(entityNum);
@@ -84,9 +77,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
         return;
     }
     if (work->passEntityNum != ENTITYNUM_NONE &&
-        (entityNum == work->passEntityNum ||
-         gentity->ownerNum == work->passEntityNum ||
-         gentity->ownerNum == work->passOwnerNum)) {
+        (entityNum == work->passEntityNum || gentity->ownerNum == work->passEntityNum || gentity->ownerNum == work->passOwnerNum)) {
         return;
     }
 
@@ -99,8 +90,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
 #endif
                            : NULL;
 
-    if (dobj != NULL &&
-        (gentity->svFlags & SVF_DOBJ_BOUNDS_MASK) != 0U) {
+    if (dobj != NULL && (gentity->svFlags & SVF_DOBJ_BOUNDS_MASK) != 0U) {
         vec3_t dobjMins;
         vec3_t dobjMaxs;
 
@@ -123,9 +113,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
             dobjMaxs[axis] += gentity->currentOrigin[axis];
         }
 
-        if (CM_TraceLineSkipsBox(work->start, work->end,
-                                 dobjMins, dobjMaxs,
-                                 work->bestTrace.fraction) != qfalse) {
+        if (CM_TraceLineSkipsBox(work->start, work->end, dobjMins, dobjMaxs, work->bestTrace.fraction) != qfalse) {
             return;
         }
 
@@ -138,9 +126,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
 #else
                         (intptr_t)entityNum,
 #endif
-                        (intptr_t)0, (intptr_t)0, (intptr_t)0,
-                        (intptr_t)0, (intptr_t)0, (intptr_t)0,
-                        (intptr_t)0, (intptr_t)0, (intptr_t)0,
+                        (intptr_t)0, (intptr_t)0, (intptr_t)0, (intptr_t)0, (intptr_t)0, (intptr_t)0, (intptr_t)0, (intptr_t)0, (intptr_t)0,
                         (intptr_t)0, (intptr_t)0);
 
         matrix43_t entityMatrix;
@@ -151,19 +137,15 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
 
         vec3_t localStart;
         vec3_t localEnd;
-        MatrixTransposeTransformVector43(work->start, &entityMatrix,
-                                         localStart);
-        MatrixTransposeTransformVector43(work->end, &entityMatrix,
-                                         localEnd);
+        MatrixTransposeTransformVector43(work->start, &entityMatrix, localStart);
+        MatrixTransposeTransformVector43(work->end, &entityMatrix, localEnd);
 
         dobj_trace_result_t dobjTrace;
         dobjTrace.fraction = work->bestTrace.fraction;
         if ((gentity->svFlags & SVF_DOBJ_USE_MODEL_BOUNDS) != 0U) {
-            DObjTraceModelParts(dobj, localStart, localEnd,
-                                work->contentsMask, &dobjTrace);
+            DObjTraceModelParts(dobj, localStart, localEnd, work->contentsMask, &dobjTrace);
         } else {
-            DObjTraceParts(dobj, localStart, localEnd,
-                           work->dobjTracePartState, &dobjTrace);
+            DObjTraceParts(dobj, localStart, localEnd, work->dobjTracePartState, &dobjTrace);
         }
 
         /* The x87 unordered case follows the replacement path. */
@@ -181,31 +163,18 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         trace.allsolid = 0;
         const matrix43_t *const matrixView = &entityMatrix;
-        MatrixTransformVector(dobjTrace.normal, matrixView->axis,
-                              trace.normal);
+        MatrixTransformVector(dobjTrace.normal, matrixView->axis, trace.normal);
 
-        const vec3_t delta = {
-            work->end[0] - work->start[0],
-            work->end[1] - work->start[1],
-            work->end[2] - work->start[2]
-        };
-        trace.endpos[0] =
-            work->start[0] + delta[0] * trace.fraction;
-        trace.endpos[1] =
-            work->start[1] + delta[1] * trace.fraction;
-        trace.endpos[2] =
-            work->start[2] + delta[2] * trace.fraction;
+        const vec3_t delta = {work->end[0] - work->start[0], work->end[1] - work->start[1], work->end[2] - work->start[2]};
+        trace.endpos[0] = work->start[0] + delta[0] * trace.fraction;
+        trace.endpos[1] = work->start[1] + delta[1] * trace.fraction;
+        trace.endpos[2] = work->start[2] + delta[2] * trace.fraction;
     } else {
-        const float *const angles =
-            gentity->bmodel != qfalse
-                ? gentity->currentAngles
-                : vec3_origin;
+        const float *const angles = gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
 
         trace.fraction = work->bestTrace.fraction;
-        CM_TransformedBoxTrace(
-            &trace, work->start, work->end, vec3_origin, vec3_origin,
-            SV_ClipHandleForEntity(gentity), work->contentsMask,
-            gentity->currentOrigin, angles, qfalse);
+        CM_TransformedBoxTrace(&trace, work->start, work->end, vec3_origin, vec3_origin, SV_ClipHandleForEntity(gentity),
+                               work->contentsMask, gentity->currentOrigin, angles, qfalse);
 
         /* The x87 unordered case follows the replacement path. */
         if (trace.fraction >= work->bestTrace.fraction) {
@@ -231,8 +200,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
     work->bestTrace = trace;
 }
 
-int32_t SV_ClipSightTraceToEntity(cmClipSightTraceWork_t *work,
-                                  svEntity_t *serverEntity)
+int32_t SV_ClipSightTraceToEntity(cmClipSightTraceWork_t *work, svEntity_t *serverEntity)
 {
     const int32_t entityNum = (int32_t)(serverEntity - sv_entities);
     sharedEntity_t *const gentity = SV_GentityNum(entityNum);
@@ -241,29 +209,21 @@ int32_t SV_ClipSightTraceToEntity(cmClipSightTraceWork_t *work,
         return 0;
     }
     if (work->passEntityNum != ENTITYNUM_NONE &&
-        (entityNum == work->passEntityNum ||
-         gentity->ownerNum == work->passEntityNum ||
-         gentity->ownerNum == work->passEntityOwnerNum)) {
+        (entityNum == work->passEntityNum || gentity->ownerNum == work->passEntityNum || gentity->ownerNum == work->passEntityOwnerNum)) {
         return 0;
     }
     if (work->passOwnerNum != ENTITYNUM_NONE &&
-        (entityNum == work->passOwnerNum ||
-         gentity->ownerNum == work->passOwnerNum ||
-         gentity->ownerNum == work->passOwnerOwnerNum)) {
+        (entityNum == work->passOwnerNum || gentity->ownerNum == work->passOwnerNum || gentity->ownerNum == work->passOwnerOwnerNum)) {
         return 0;
     }
 
-    const float *const angles =
-        gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
-    const int32_t hit = CM_TransformedBoxSightTrace(
-        0, work->start, work->end, work->mins, work->maxs,
-        SV_ClipHandleForEntity(gentity), work->contentsMask,
-        gentity->currentOrigin, angles, work->capsule);
+    const float *const angles = gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
+    const int32_t hit = CM_TransformedBoxSightTrace(0, work->start, work->end, work->mins, work->maxs, SV_ClipHandleForEntity(gentity),
+                                                    work->contentsMask, gentity->currentOrigin, angles, work->capsule);
     return hit != 0 ? SV_SIGHT_TRACE_ENTITY_HIT : 0;
 }
 
-int32_t SV_PointSightTraceToEntity(cmPointSightTraceWork_t *work,
-                                   svEntity_t *serverEntity)
+int32_t SV_PointSightTraceToEntity(cmPointSightTraceWork_t *work, svEntity_t *serverEntity)
 {
     const int32_t entityNum = (int32_t)(serverEntity - sv_entities);
     sharedEntity_t *const gentity = SV_GentityNum(entityNum);
@@ -272,48 +232,34 @@ int32_t SV_PointSightTraceToEntity(cmPointSightTraceWork_t *work,
         return 0;
     }
     if (work->passEntityNum != ENTITYNUM_NONE &&
-        (entityNum == work->passEntityNum ||
-         gentity->ownerNum == work->passEntityNum ||
-         gentity->ownerNum == work->passEntityOwnerNum)) {
+        (entityNum == work->passEntityNum || gentity->ownerNum == work->passEntityNum || gentity->ownerNum == work->passEntityOwnerNum)) {
         return 0;
     }
     if (work->passOwnerNum != ENTITYNUM_NONE &&
-        (entityNum == work->passOwnerNum ||
-         gentity->ownerNum == work->passOwnerNum ||
-         gentity->ownerNum == work->passOwnerOwnerNum)) {
+        (entityNum == work->passOwnerNum || gentity->ownerNum == work->passOwnerNum || gentity->ownerNum == work->passOwnerOwnerNum)) {
         return 0;
     }
 
-    const float *const angles =
-        gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
-    const int32_t hit = CM_TransformedBoxSightTrace(
-        0, work->start, work->end, vec3_origin, vec3_origin,
-        SV_ClipHandleForEntity(gentity), work->contentsMask,
-        gentity->currentOrigin, angles, qfalse);
+    const float *const angles = gentity->bmodel != qfalse ? gentity->currentAngles : vec3_origin;
+    const int32_t hit = CM_TransformedBoxSightTrace(0, work->start, work->end, vec3_origin, vec3_origin, SV_ClipHandleForEntity(gentity),
+                                                    work->contentsMask, gentity->currentOrigin, angles, qfalse);
     return hit != 0 ? SV_SIGHT_TRACE_ENTITY_HIT : 0;
 }
 
-int32_t SV_PointContents(const vec3_t point, int32_t passEntityNum,
-                         int32_t contentMask)
+int32_t SV_PointContents(const vec3_t point, int32_t passEntityNum, int32_t contentMask)
 {
     int32_t contents = CM_PointContents(point, 0);
     int32_t entityList[MAX_GENTITIES];
-    const int32_t entityCount =
-        CM_AreaEntities(point, point, entityList, MAX_GENTITIES,
-                        contentMask);
+    const int32_t entityCount = CM_AreaEntities(point, point, entityList, MAX_GENTITIES, contentMask);
 
-    for (int32_t entityIndex = 0;
-         entityIndex < entityCount;
-         ++entityIndex) {
+    for (int32_t entityIndex = 0; entityIndex < entityCount; ++entityIndex) {
         const int32_t entityNum = entityList[entityIndex];
         if (entityNum == passEntityNum) {
             continue;
         }
 
         sharedEntity_t *const gentity = SV_GentityNum(entityNum);
-        contents |= CM_TransformedPointContents(
-            point, SV_ClipHandleForEntity(gentity),
-            gentity->currentOrigin, gentity->currentAngles);
+        contents |= CM_TransformedPointContents(point, SV_ClipHandleForEntity(gentity), gentity->currentOrigin, gentity->currentAngles);
     }
 
     return contents & contentMask;

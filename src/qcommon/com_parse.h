@@ -53,8 +53,7 @@ float Com_ParseFloat(char **data);
 int32_t Com_ParseInt(char **data);
 void Com_Parse1DMatrix(char **data, int32_t x, float *matrix);
 void Com_Parse2DMatrix(char **data, int32_t y, int32_t x, float *matrix);
-void Com_Parse3DMatrix(char **data, int32_t z, int32_t y, int32_t x,
-                       float *matrix);
+void Com_Parse3DMatrix(char **data, int32_t z, int32_t y, int32_t x, float *matrix);
 
 #ifdef __cplusplus
 }

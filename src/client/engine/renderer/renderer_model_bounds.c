@@ -40,8 +40,7 @@ void R_ModelBounds(int32_t modelHandle, vec3_t mins, vec3_t maxs)
  * The scalar expressions retain the Windows x87 multiply/add order. The
  * explicit comparisons also retain its unordered behavior: a NaN vertex
  * component changes neither bound. */
-void R_GetXModelBounds(const DObj *obj, const axis_t transform,
-                       vec3_t mins, vec3_t maxs)
+void R_GetXModelBounds(const DObj *obj, const axis_t transform, vec3_t mins, vec3_t maxs)
 {
     int32_t lodIndex = 0;
     uint32_t partBits[DOBJ_PART_BITSET_WORD_COUNT];
@@ -65,46 +64,32 @@ void R_GetXModelBounds(const DObj *obj, const axis_t transform,
     maxs[2] = -FLT_MAX;
 
     int32_t surfaceCount = DObjGetNumSurfaces(obj, &lodIndex);
-    dobj_surface_ref_t *surfaceRefs = CODUOMP_ALLOCA(
-        (size_t)surfaceCount * sizeof(surfaceRefs[0]));
+    dobj_surface_ref_t *surfaceRefs = CODUOMP_ALLOCA((size_t)surfaceCount * sizeof(surfaceRefs[0]));
     DObjGetSurfaces(obj, surfaceRefs, partBits, &lodIndex);
 
-    for (int32_t surfaceRefIndex = 0;
-         surfaceRefIndex < surfaceCount; ++surfaceRefIndex) {
-        const dobj_surface_ref_t *surfaceRef =
-            &surfaceRefs[surfaceRefIndex];
+    for (int32_t surfaceRefIndex = 0; surfaceRefIndex < surfaceCount; ++surfaceRefIndex) {
+        const dobj_surface_ref_t *surfaceRef = &surfaceRefs[surfaceRefIndex];
         int32_t modelIndex = surfaceRef->modelIndex;
-        const DObjSkelMat *matrixArray =
-            &obj->evaluationStorage
-                 ->partSpans[obj->modelPartBaseIndices[modelIndex]]
-                 .basePose;
-        XSurface *surface = DObjGetSurface(
-            obj, modelIndex, surfaceRef->surfaceIndex, &lodIndex);
+        const DObjSkelMat *matrixArray = &obj->evaluationStorage->partSpans[obj->modelPartBaseIndices[modelIndex]].basePose;
+        XSurface *surface = DObjGetSurface(obj, modelIndex, surfaceRef->surfaceIndex, &lodIndex);
 
         XSurfaceGetVerts(surface, matrixArray, surfaceVertices, NULL, NULL);
 
-        for (int32_t vertexIndex = 0;
-             vertexIndex < surface->vertexCount; ++vertexIndex) {
+        for (int32_t vertexIndex = 0; vertexIndex < surface->vertexCount; ++vertexIndex) {
             const vec3_t *vertex = &surfaceVertices[vertexIndex];
             const long double transformedRaw[3] = {
-                ((long double)(*vertex)[0] * transform[0][0] +
-                 (long double)(*vertex)[2] * transform[2][0]) +
-                (long double)(*vertex)[1] * transform[1][0],
-                ((long double)(*vertex)[2] * transform[2][1] +
-                 (long double)(*vertex)[1] * transform[1][1]) +
-                (long double)(*vertex)[0] * transform[0][1],
-                ((long double)(*vertex)[2] * transform[2][2] +
-                 (long double)(*vertex)[1] * transform[1][2]) +
-                (long double)(*vertex)[0] * transform[0][2]
-            };
+                ((long double)(*vertex)[0] * transform[0][0] + (long double)(*vertex)[2] * transform[2][0]) +
+                    (long double)(*vertex)[1] * transform[1][0],
+                ((long double)(*vertex)[2] * transform[2][1] + (long double)(*vertex)[1] * transform[1][1]) +
+                    (long double)(*vertex)[0] * transform[0][1],
+                ((long double)(*vertex)[2] * transform[2][2] + (long double)(*vertex)[1] * transform[1][2]) +
+                    (long double)(*vertex)[0] * transform[0][2]};
 
             for (int32_t axisIndex = 0; axisIndex < 3; ++axisIndex) {
-                if (transformedRaw[axisIndex] <
-                    (long double)mins[axisIndex]) {
+                if (transformedRaw[axisIndex] < (long double)mins[axisIndex]) {
                     mins[axisIndex] = (float)transformedRaw[axisIndex];
                 }
-                if ((long double)maxs[axisIndex] <
-                    transformedRaw[axisIndex]) {
+                if ((long double)maxs[axisIndex] < transformedRaw[axisIndex]) {
                     maxs[axisIndex] = (float)transformedRaw[axisIndex];
                 }
             }

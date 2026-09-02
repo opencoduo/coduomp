@@ -17,9 +17,7 @@ enum {
  * same-module Mac symbol FS_AddNonPackFileDirectory_Internal. The maintained
  * common path uses bounded formatting; target services retain case recovery
  * and the distinct loading-keepalive boundaries. */
-void FS_AddNonPackFileDirectory_Internal(
-    const char *base, const char *game, const char *path,
-    const char *extension)
+void FS_AddNonPackFileDirectory_Internal(const char *base, const char *game, const char *path, const char *extension)
 {
     char gamePath[MAX_OSPATH];
     char osPath[MAX_OSPATH];
@@ -28,11 +26,8 @@ void FS_AddNonPackFileDirectory_Internal(
      * and NUL to fit; never select a truncated path. */
     const size_t gameLength = strlen(game);
     const size_t pathLength = strlen(path);
-    if (gameLength > sizeof(gamePath) - 2u ||
-        pathLength > sizeof(gamePath) - gameLength - 2u) {
-        Com_Printf(
-            "WARNING: loose asset directory '%s/%s' is too long\n",
-            game, path);
+    if (gameLength > sizeof(gamePath) - 2u || pathLength > sizeof(gamePath) - gameLength - 2u) {
+        Com_Printf("WARNING: loose asset directory '%s/%s' is too long\n", game, path);
         return;
     }
     Com_sprintf(gamePath, sizeof(gamePath), "%s/%s", game, path);
@@ -40,31 +35,23 @@ void FS_AddNonPackFileDirectory_Internal(
     osPath[strlen(osPath) - 1] = '\0';
     char resolvedPath[MAX_OSPATH];
     const char *directoryPath = osPath;
-    if (filesystem_compat_resolve_case_path(
-            base, osPath, resolvedPath,
-            sizeof(resolvedPath)) != qfalse) {
+    if (filesystem_compat_resolve_case_path(base, osPath, resolvedPath, sizeof(resolvedPath)) != qfalse) {
         directoryPath = resolvedPath;
     }
 
     int32_t fileCount;
-    char **const files =
-        Sys_ListFiles(directoryPath, extension, NULL,
-                      &fileCount, qfalse);
+    char **const files = Sys_ListFiles(directoryPath, extension, NULL, &fileCount, qfalse);
 
     int32_t namesLength = 0;
     for (int32_t index = 0; index < fileCount; ++index)
         namesLength += (int32_t)strlen(files[index]) + 1;
 
     int32_t hashSize = 1;
-    while (hashSize <= fileCount &&
-           hashSize <= FS_LOOSE_FILE_HASH_GROWTH_LIMIT) {
+    while (hashSize <= fileCount && hashSize <= FS_LOOSE_FILE_HASH_GROWTH_LIMIT) {
         hashSize <<= 1;
     }
 
-    fs_dir_file_list_t *const fileList =
-        Z_MallocInternal(sizeof(*fileList) +
-                         (size_t)hashSize *
-                             sizeof(fileList->hashTable[0]));
+    fs_dir_file_list_t *const fileList = Z_MallocInternal(sizeof(*fileList) + (size_t)hashSize * sizeof(fileList->hashTable[0]));
     fileList->hashSize = hashSize;
     fileList->hashTable = (fs_dir_file_t **)(fileList + 1);
     for (int32_t index = 0; index < fileList->hashSize; ++index)
@@ -75,15 +62,12 @@ void FS_AddNonPackFileDirectory_Internal(
     fs_dirFileLists = fileList;
     fileList->numFiles = fileCount;
 
-    fs_dir_file_t *const entries =
-        Z_MallocInternal((size_t)fileCount * sizeof(*entries) +
-                         (size_t)namesLength);
+    fs_dir_file_t *const entries = Z_MallocInternal((size_t)fileCount * sizeof(*entries) + (size_t)namesLength);
     char *nameCursor = (char *)(entries + fileCount);
 
     for (int32_t index = 0; index < fileCount; ++index) {
         char *const name = Q_strlwr(files[index]);
-        const uint32_t hash =
-            FS_HashFileName(name, fileList->hashSize);
+        const uint32_t hash = FS_HashFileName(name, fileList->hashSize);
         fs_dir_file_t *const entry = &entries[index];
 
         entry->data.name = nameCursor;
@@ -107,14 +91,10 @@ void FS_AddNonPackFileDirectory_Internal(
  * loose-file index for the requested relative path and extension. */
 void FS_AddNonPackFileDirectory(const char *path, const char *extension)
 {
-    for (searchpath_t *searchpath = fs_searchpaths;
-         searchpath != NULL; searchpath = searchpath->next) {
-        if (filesystem_compat_server_scope_allows_searchpath(searchpath) !=
-                qfalse &&
-            searchpath->pack == NULL) {
+    for (searchpath_t *searchpath = fs_searchpaths; searchpath != NULL; searchpath = searchpath->next) {
+        if (filesystem_compat_server_scope_allows_searchpath(searchpath) != qfalse && searchpath->pack == NULL) {
             directory_t *const directory = searchpath->dir;
-            FS_AddNonPackFileDirectory_Internal(
-                directory->path, directory->gamedir, path, extension);
+            FS_AddNonPackFileDirectory_Internal(directory->path, directory->gamedir, path, extension);
         }
     }
 }
@@ -124,8 +104,7 @@ void FS_AddNonPackFileDirectory(const char *path, const char *extension)
  * same-module Mac symbol FS_GetDataForFile. Pack hits return the common data
  * record beginning at basename, while loose hits already begin with the
  * equivalent name/payload/callback fields. */
-fileData_t *FS_GetDataForFile(const char *base, const char *path,
-                              const char *extension)
+fileData_t *FS_GetDataForFile(const char *base, const char *path, const char *extension)
 {
     char lookupPath[FS_DATA_LOOKUP_PATH_SIZE];
 
@@ -134,18 +113,14 @@ fileData_t *FS_GetDataForFile(const char *base, const char *path,
     const size_t baseLength = strlen(base);
     const size_t pathLength = strlen(path);
     const size_t extensionLength = strlen(extension);
-    if (baseLength > sizeof(lookupPath) - 2u ||
-        pathLength > sizeof(lookupPath) - baseLength - 2u ||
-        extensionLength >
-            sizeof(lookupPath) - baseLength - pathLength - 2u) {
-        Com_Printf("WARNING: asset lookup path '%s/%s%s' is too long\n",
-                   base, path, extension);
+    if (baseLength > sizeof(lookupPath) - 2u || pathLength > sizeof(lookupPath) - baseLength - 2u ||
+        extensionLength > sizeof(lookupPath) - baseLength - pathLength - 2u) {
+        Com_Printf("WARNING: asset lookup path '%s/%s%s' is too long\n", base, path, extension);
         return NULL;
     }
     Com_sprintf(lookupPath, sizeof(lookupPath), "%s/%s%s", base, path, extension);
 
-    for (searchpath_t *searchpath = fs_lookupSearchpaths;
-         searchpath != NULL; searchpath = searchpath->next) {
+    for (searchpath_t *searchpath = fs_lookupSearchpaths; searchpath != NULL; searchpath = searchpath->next) {
         if (FS_UseSearchPath(searchpath) == qfalse)
             continue;
 
@@ -153,25 +128,20 @@ fileData_t *FS_GetDataForFile(const char *base, const char *path,
         if (pack == NULL)
             continue;
 
-        const uint32_t hash =
-            FS_HashFileName(lookupPath, pack->hashSize);
-        for (fileInPack_t *file = pack->hashTable[hash];
-             file != NULL; file = file->next) {
+        const uint32_t hash = FS_HashFileName(lookupPath, pack->hashSize);
+        for (fileInPack_t *file = pack->hashTable[hash]; file != NULL; file = file->next) {
             if (FS_FilenameCompare(file->name, lookupPath) == 0)
                 return &file->data;
         }
     }
 
     Com_sprintf(lookupPath, sizeof(lookupPath), "%s%s", path, extension);
-    for (fs_dir_file_list_t *list = fs_lookupDirFileLists;
-         list != NULL; list = list->next) {
+    for (fs_dir_file_list_t *list = fs_lookupDirFileLists; list != NULL; list = list->next) {
         if (fs_compat_stricmp(list->path, base) != 0)
             continue;
 
-        const uint32_t hash =
-            FS_HashFileName(lookupPath, list->hashSize);
-        for (fs_dir_file_t *file = list->hashTable[hash];
-             file != NULL; file = file->next) {
+        const uint32_t hash = FS_HashFileName(lookupPath, list->hashSize);
+        for (fs_dir_file_t *file = list->hashTable[hash]; file != NULL; file = file->next) {
             if (FS_FilenameCompare(file->data.name, lookupPath) == 0)
                 return &file->data;
         }

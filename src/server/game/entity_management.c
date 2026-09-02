@@ -69,8 +69,7 @@
 #define TURRET_USE_MODE_GUNNER 2
 #define TURRET_USE_PS_FLAG_ALT 0x00004000u
 #define TURRET_USE_PS_FLAG_GUNNER 0x00002000u
-#define TURRET_USE_PS_FLAG_MASK \
-    (TURRET_USE_PS_FLAG_ALT | TURRET_USE_PS_FLAG_GUNNER)
+#define TURRET_USE_PS_FLAG_MASK (TURRET_USE_PS_FLAG_ALT | TURRET_USE_PS_FLAG_GUNNER)
 #define TURRET_STOP_USE_SELECTOR_ALT_BUTTON_FLAG 0x00000002u
 #define TURRET_STOP_USE_SELECTOR_GUNNER_BUTTON_FLAG 0x00000001u
 #define TURRET_STOP_USE_EVENT_DISABLED -1
@@ -89,19 +88,14 @@
 #define TURRET_BOUND_Z 56.0f
 #define MISC_SPAWNER_THINK_MSEC 100
 
-GAME_I386_LAYOUT_ASSERT(bg_static_animation_table_anim_tree_offset,
-                      offsetof(bg_static_animation_table_t, animTreeHandle) ==
-                      0x0a7ac8u);
+GAME_I386_LAYOUT_ASSERT(bg_static_animation_table_anim_tree_offset, offsetof(bg_static_animation_table_t, animTreeHandle) == 0x0a7ac8u);
 
 int trap_XAnimGetNumChildren(uint32_t anim);
 uint32_t *trap_XAnimGetChildAt(uint32_t *out, uint32_t anim, int childIndex);
-void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t anim,
-                                          float blendTime);
-void trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight,
-                             float goalTime, float rate,
-                             uint16_t notifyName, qboolean restart);
-void trap_XAnimCalcAbsDelta(XAnimTree *tree, uint32_t anim, float *rot,
-                            float *trans);
+void trap_XAnimClearTreeGoalWeightsStrict(XAnimTree *tree, uint32_t anim, float blendTime);
+void trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float goalTime, float rate, uint16_t notifyName,
+                             qboolean restart);
+void trap_XAnimCalcAbsDelta(XAnimTree *tree, uint32_t anim, float *rot, float *trans);
 
 /* ------------------------------------------------------------------ */
 /*  0x7a17a  G_SetOrigin                                              */
@@ -121,7 +115,7 @@ void G_SetOrigin(gentity_t *ent, const float *origin)
     ent->s.pos.trBase[0] = origin[0];
     ent->s.pos.trBase[1] = origin[1];
     ent->s.pos.trBase[2] = origin[2];
-    
+
     /* Reset trajectory to stationary */
     ent->s.pos.trType = TR_STATIONARY;
     ent->s.pos.trTime = 0;
@@ -129,7 +123,7 @@ void G_SetOrigin(gentity_t *ent, const float *origin)
     ent->s.pos.trDelta[0] = 0.0f;
     ent->s.pos.trDelta[1] = 0.0f;
     ent->s.pos.trDelta[2] = 0.0f;
-    
+
     /* Update current position */
     ent->currentOrigin[0] = origin[0];
     ent->currentOrigin[1] = origin[1];
@@ -154,7 +148,7 @@ void G_SetAngle(gentity_t *ent, const float *angles)
     ent->s.apos.trBase[0] = angles[0];
     ent->s.apos.trBase[1] = angles[1];
     ent->s.apos.trBase[2] = angles[2];
-    
+
     /* Reset angle trajectory to stationary */
     ent->s.apos.trType = TR_STATIONARY;
     ent->s.apos.trTime = 0;
@@ -162,7 +156,7 @@ void G_SetAngle(gentity_t *ent, const float *angles)
     ent->s.apos.trDelta[0] = 0.0f;
     ent->s.apos.trDelta[1] = 0.0f;
     ent->s.apos.trDelta[2] = 0.0f;
-    
+
     /* Update current angles */
     ent->currentAngles[0] = angles[0];
     ent->currentAngles[1] = angles[1];
@@ -188,7 +182,7 @@ void G_InitGentity(gentity_t *ent);
 gentity_t *G_Spawn(void)
 {
     gentity_t *ent;
-    
+
     /* Try to allocate from free list */
     if (level.freeListHead == NULL) {
         /* Free list is empty, extend entity array */
@@ -198,29 +192,24 @@ gentity_t *G_Spawn(void)
             for (i = 0; i < level.num_entities; i++) {
                 gentity_t *e = &g_entities[i];
                 const char *classname;
-                
+
                 if (e->scriptClassname == 0) {
                     classname = "";
                 } else {
                     classname = SL_ConvertToString(e->scriptClassname);
                 }
-                
-                G_Printf("%4i: '%s', origin: %f %f %f\n",
-                        i, classname,
-                        e->currentOrigin[0],
-                        e->currentOrigin[1],
-                        e->currentOrigin[2]);
+
+                G_Printf("%4i: '%s', origin: %f %f %f\n", i, classname, e->currentOrigin[0], e->currentOrigin[1], e->currentOrigin[2]);
             }
             G_Error("G_Spawn: no free entities");
         }
-        
+
         /* Allocate next entity from array */
         ent = &level.gentities[level.num_entities];
         level.num_entities++;
-        
+
         /* Notify engine of new entity count */
-        trap_LocateGameData(level.gentities, level.num_entities,
-                            sizeof(level.gentities[0]), &level.clients[0].ps,
+        trap_LocateGameData(level.gentities, level.num_entities, sizeof(level.gentities[0]), &level.clients[0].ps,
                             sizeof(level.clients[0]));
     } else {
         /* Take entity from free list */
@@ -236,7 +225,7 @@ gentity_t *G_Spawn(void)
         /* Clear nextFree pointer */
         ent->nextFree = NULL;
     }
-    
+
     /* Initialize the entity */
     G_InitGentity(ent);
 
@@ -329,8 +318,7 @@ gentity_t *G_SpawnSoundBlend(void)
 {
     gentity_t *ent = G_Spawn();
 
-    Scr_SetString(&ent->scriptClassname,
-                  scr_const_sound_blend);
+    Scr_SetString(&ent->scriptClassname, scr_const_sound_blend);
     SP_sound_blend(ent);
     return ent;
 }
@@ -340,8 +328,7 @@ gentity_t *G_SpawnSoundBlend(void)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x5a6a9, 6a6a9_G_SetSoundBlend.c, VERIFY-ENTITYMGMT-EARLY-SPAWN-SOUND-TURRET-2026-06-17): DATAFLOW_VERIFIED - both-aliases-zero unlink branch, byte-narrowed alias stores, repeat-delay store at 0x6c, link call, and void return checked against current decompiler output. */
-void G_SetSoundBlend(gentity_t *ent, int soundAlias0, int soundAlias1,
-                     float repeatDelay)
+void G_SetSoundBlend(gentity_t *ent, int soundAlias0, int soundAlias1, float repeatDelay)
 {
     if (soundAlias0 == 0 && soundAlias1 == 0) {
         trap_UnlinkEntity(ent);
@@ -359,8 +346,7 @@ void G_SetSoundBlend(gentity_t *ent, int soundAlias0, int soundAlias1,
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x5a708, 6a708_G_SetSoundBlendAndPitch.c, VERIFY-ENTITYMGMT-EARLY-SPAWN-SOUND-TURRET-2026-06-17): DATAFLOW_VERIFIED - both-aliases-zero unlink branch, byte-narrowed alias stores, floor(pitch*100) negation, 0.99 volume clamp, pitch payload store at 0xd8, link call, and void return checked against current decompiler output. */
-void G_SetSoundBlendAndPitch(gentity_t *ent, int soundAlias0,
-                             int soundAlias1, float volume, float pitch)
+void G_SetSoundBlendAndPitch(gentity_t *ent, int soundAlias0, int soundAlias1, float volume, float pitch)
 {
     double pitchProduct;
     double encodedPitch;
@@ -378,25 +364,19 @@ void G_SetSoundBlendAndPitch(gentity_t *ent, int soundAlias0,
      * (encodedPitch - x) subtracts stay 80-bit and round to double -> shim.
      * PITCH_MAX loads as 0.99f-widened-to-double (0x3FEFAE1480000000), which
      * (long double)0.99f / x87f_load_f32(0.99f) reproduce exactly. */
-    pitchProduct = (double)((long double)pitch *
-                            (long double)SOUND_BLEND_PITCH_SCALE);
+    pitchProduct = (double)((long double)pitch * (long double)SOUND_BLEND_PITCH_SCALE);
     encodedPitch = -floor(pitchProduct);
     if (volume < SOUND_BLEND_PITCH_MAX) {
 #if EMULATE_X87
-        encodedPitch = x87f_store_f64(x87f_sub(
-            x87f_load_f64(encodedPitch), x87f_load_f32(volume)));
+        encodedPitch = x87f_store_f64(x87f_sub(x87f_load_f64(encodedPitch), x87f_load_f32(volume)));
 #else
-        encodedPitch = (double)((long double)encodedPitch -
-                                (long double)volume);
+        encodedPitch = (double)((long double)encodedPitch - (long double)volume);
 #endif
     } else {
 #if EMULATE_X87
-        encodedPitch = x87f_store_f64(x87f_sub(
-            x87f_load_f64(encodedPitch),
-            x87f_load_f32(SOUND_BLEND_PITCH_MAX)));
+        encodedPitch = x87f_store_f64(x87f_sub(x87f_load_f64(encodedPitch), x87f_load_f32(SOUND_BLEND_PITCH_MAX)));
 #else
-        encodedPitch = (double)((long double)encodedPitch -
-                                (long double)SOUND_BLEND_PITCH_MAX);
+        encodedPitch = (double)((long double)encodedPitch - (long double)SOUND_BLEND_PITCH_MAX);
 #endif
     }
     game_compat_g_set_sound_blend_pitch_payload(ent, (float)encodedPitch);
@@ -464,17 +444,14 @@ void target_location_linkup(gentity_t *ent)
 
     targetLocationConfigIndex = 1;
     for (entityIndex = 0; entityIndex < level.num_entities; ++entityIndex) {
-        gentity_t *candidate =
-            &g_entities[entityIndex];
+        gentity_t *candidate = &g_entities[entityIndex];
 
         if (candidate->scriptClassname == scr_const_target_location) {
             /* target_location reuses gentity +0x240, the generic health slot,
              * as its configstring index. */
             candidate->health = targetLocationConfigIndex;
-            trap_SetConfigstring(
-                TARGET_LOCATION_CONFIGSTRING_BASE +
-                    targetLocationConfigIndex,
-                SL_ConvertToString(candidate->targetLocationMessage));
+            trap_SetConfigstring(TARGET_LOCATION_CONFIGSTRING_BASE + targetLocationConfigIndex,
+                                 SL_ConvertToString(candidate->targetLocationMessage));
 
             ++targetLocationConfigIndex;
             candidate->targetLocationNext = level.targetLocationHead;
@@ -492,8 +469,7 @@ void SP_target_location(gentity_t *ent)
 {
     Scr_SetString(&ent->scriptClassname, scr_const_target_location);
     ent->think = target_location_linkup;
-    ent->nextthink = coduo_int32_from_bits(
-        (uint32_t)level.time + (uint32_t)TARGET_LOCATION_LINK_DELAY);
+    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)TARGET_LOCATION_LINK_DELAY);
     G_SetOrigin(ent, ent->currentOrigin);
 }
 
@@ -538,8 +514,7 @@ static void game_compat_g_turret_vector_subtract(const float *a, const float *b,
 /* NOT_FROM_ORIGINAL_SOURCE: three-float multiply-add for muzzle reconstruction; extracted during reconstruction of 0x5a8b0. */
 /* VERIFIED_DECOMPILER(0x5a8b0, 6a8b0_FUN_0006a8b0.c, VERIFY-NEXT-001-TURRET-FIRE-2026-06-17): DATAFLOW_VERIFIED - extracted player-origin plus normalized distance scaled by forward vector stores preserve muzzle origin writes at output indices 9..11. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_CalcTurretMuzzlePoints (0x5a8b0); no standalone original body. */
-static void game_compat_g_turret_vector_ma(const float *start, float scale, const float *dir,
-                             float *out)
+static void game_compat_g_turret_vector_ma(const float *start, float scale, const float *dir, float *out)
 {
     out[0] = start[0] + dir[0] * scale;
     out[1] = start[1] + dir[1] * scale;
@@ -573,8 +548,7 @@ static float *game_compat_g_turret_bottom_arc_payload(gentity_t *turret)
 /* NOT_FROM_ORIGINAL_SOURCE: axis minimum arc selector; extracted during reconstruction of 0x5c919. */
 /* VERIFIED_DECOMPILER(0x5c919, 6c919_turret_use.c, VERIFY-ENTITYMGMT-EARLY-SPAWN-SOUND-TURRET-2026-06-17): DATAFLOW_VERIFIED - extracted selector preserves min clamp source offsets 0x0c/0x10 for pitch/yaw axes in turret_use. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original turret_use (0x5c919); no standalone original body. */
-static float game_compat_g_turret_min_arc_for_axis(const turret_state_t *turretState,
-                                   int axisIndex)
+static float game_compat_g_turret_min_arc_for_axis(const turret_state_t *turretState, int axisIndex)
 {
     return axisIndex == 0 ? turretState->topArc : turretState->rightArc;
 }
@@ -582,15 +556,13 @@ static float game_compat_g_turret_min_arc_for_axis(const turret_state_t *turretS
 /* NOT_FROM_ORIGINAL_SOURCE: axis maximum arc selector; extracted during reconstruction of 0x5c919. */
 /* VERIFIED_DECOMPILER(0x5c919, 6c919_turret_use.c, VERIFY-ENTITYMGMT-EARLY-SPAWN-SOUND-TURRET-2026-06-17): DATAFLOW_VERIFIED - extracted selector preserves max clamp source offsets 0x14/0x18 for pitch/yaw axes in turret_use. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original turret_use (0x5c919); no standalone original body. */
-static float game_compat_g_turret_max_arc_for_axis(const turret_state_t *turretState,
-                                   int axisIndex)
+static float game_compat_g_turret_max_arc_for_axis(const turret_state_t *turretState, int axisIndex)
 {
     return axisIndex == 0 ? turretState->bottomArc : turretState->leftArc;
 }
 
 /* VERIFIED_DECOMPILER(0x5a8b0, 6a8b0_FUN_0006a8b0.c, VERIFY-NEXT-001-TURRET-FIRE-2026-06-17): DATAFLOW_VERIFIED - tag lookup failure paths, classname diagnostics, angle composition from angles2/currentAngles, AngleVectors outputs, forward copy, normalized flash-player distance, muzzle origin stores, and qboolean return checked against current decompiler output. */
-qboolean G_CalcTurretMuzzlePoints(gentity_t *turret, gentity_t *fireEnt,
-                                  weapon_muzzle_t *muzzle)
+qboolean G_CalcTurretMuzzlePoints(gentity_t *turret, gentity_t *fireEnt, weapon_muzzle_t *muzzle)
 {
     DObjSkelMat flashMatrix;
     DObjSkelMat playerMatrix;
@@ -601,21 +573,18 @@ qboolean G_CalcTurretMuzzlePoints(gentity_t *turret, gentity_t *fireEnt,
     (void)fireEnt;
 
     if (G_DObjGetWorldTagMatrix(turret, TURRET_TAG_FLASH, &flashMatrix) == 0) {
-        Com_Printf("Couldn't find %s on turret (entity %d, classname '%s').\n",
-                   TURRET_TAG_FLASH, turret->s.number,
+        Com_Printf("Couldn't find %s on turret (entity %d, classname '%s').\n", TURRET_TAG_FLASH, turret->s.number,
                    SL_ConvertToString(turret->scriptClassname));
         return qfalse;
     }
 
     if (G_DObjGetWorldTagMatrix(turret, TURRET_TAG_PLAYER, &playerMatrix) == 0) {
-        Com_Printf("Couldn't find %s on turret (entity %d, classname '%s').\n",
-                   TURRET_TAG_PLAYER, turret->s.number,
+        Com_Printf("Couldn't find %s on turret (entity %d, classname '%s').\n", TURRET_TAG_PLAYER, turret->s.number,
                    SL_ConvertToString(turret->scriptClassname));
         return qfalse;
     }
 
-    angles[0] = turret->s.turret.pitch +
-                turret->currentAngles[0];
+    angles[0] = turret->s.turret.pitch + turret->currentAngles[0];
     angles[1] = turret->s.turret.yaw + turret->currentAngles[1];
     angles[2] = 0.0f;
     AngleVectors(angles, muzzle->forward, muzzle->right, muzzle->up);
@@ -624,12 +593,9 @@ qboolean G_CalcTurretMuzzlePoints(gentity_t *turret, gentity_t *fireEnt,
     muzzle->extraVector[1] = muzzle->forward[1];
     muzzle->extraVector[2] = muzzle->forward[2];
 
-    game_compat_g_turret_vector_subtract(flashMatrix.origin,
-                           playerMatrix.origin,
-                           flashToPlayer);
+    game_compat_g_turret_vector_subtract(flashMatrix.origin, playerMatrix.origin, flashToPlayer);
     distance = VectorNormalize(flashToPlayer);
-    game_compat_g_turret_vector_ma(playerMatrix.origin,
-                     distance, muzzle->forward, muzzle->origin);
+    game_compat_g_turret_vector_ma(playerMatrix.origin, distance, muzzle->forward, muzzle->origin);
 
     return qtrue;
 }
@@ -667,8 +633,7 @@ void G_FireTurret(gentity_t *turret, gentity_t *fireEnt, int damage)
     const weaponInfo_t *weaponInfo;
     qboolean hit;
 
-    if (lvl->matchTimeoutDuration != 0 ||
-        lvl->matchTimeoutRecoveryEndTime != 0) {
+    if (lvl->matchTimeoutDuration != 0 || lvl->matchTimeoutRecoveryEndTime != 0) {
         return;
     }
 
@@ -688,8 +653,7 @@ void G_FireTurret(gentity_t *turret, gentity_t *fireEnt, int damage)
     if (weaponInfo->weaponType == WEAPTYPE_BULLET) {
         hit = Bullet_Fire(normalizedFireEnt, 0.0f, damage, &muzzle, turret);
         turretState->heat += weaponInfo->turretHeatPerShot;
-        G_AddEvent(turret, EV_FIRE_WEAPON_MG42,
-                   hit == 0 ? TURRET_BULLET_MISS_EVENT_PARM : 0);
+        G_AddEvent(turret, EV_FIRE_WEAPON_MG42, hit == 0 ? TURRET_BULLET_MISS_EVENT_PARM : 0);
     } else {
         Weapon_RocketLauncher_Fire(turret, 0.0f, &muzzle);
     }
@@ -706,9 +670,7 @@ static uint32_t game_compat_g_turret_player_anim(uint32_t animationWord)
 {
     uint32_t animTreeIndex = (uint32_t)Scr_GetAnimsIndex(bgAnimStaticTable->animTreeHandle);
 
-    return ((animTreeIndex << SCR_ANIM_TREE_INDEX_SHIFT) |
-            (animationWord & 0xffffu)) &
-           ~ANIM_TOGGLEBIT;
+    return ((animTreeIndex << SCR_ANIM_TREE_INDEX_SHIFT) | (animationWord & 0xffffu)) & ~ANIM_TOGGLEBIT;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: weight blend-time expression; extracted during reconstruction of 0x5ac06. */
@@ -717,8 +679,7 @@ static uint32_t game_compat_g_turret_player_anim(uint32_t animationWord)
  * full 80-bit precision, as the stock inline code does (e.g. 0x5b0fe
  * subtracts the unrounded 1.0-secondWeight, not the float argument). */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_PlayerTurretPositionAndBlend (0x5ac06); no standalone original body. */
-static float game_compat_g_turret_xanim_goal_time_for_weight(XAnimTree *animTree, uint32_t anim,
-                                            long double targetWeight)
+static float game_compat_g_turret_xanim_goal_time_for_weight(XAnimTree *animTree, uint32_t anim, long double targetWeight)
 {
     /* 0x5b0f9..0x5b12d: |weight - targetWeight| kept 80-bit -> float (0x5b0fe);
      * (BLEND_MSEC / fild(frameTime)) * weightDelta -> float (0x5b111); 1.0f /
@@ -726,24 +687,17 @@ static float game_compat_g_turret_xanim_goal_time_for_weight(XAnimTree *animTree
      * selectedWeight, or the float-exact 1.0-selectedWeight), so load it f64. */
 #if EMULATE_X87
     float weight = trap_XAnimGetWeight(animTree, anim);
-    float weightDelta = x87f_store_f32(x87f_abs(x87f_sub(
-        x87f_load_f32(weight), x87f_load_f64((double)targetWeight))));
-    float blendFrames = x87f_store_f32(x87f_mul(
-        x87f_div(x87f_load_f32(TURRET_POSITION_BLEND_MSEC),
-                 x87f_load_i32(level.frameTime)),
-        x87f_load_f32(weightDelta)));
+    float weightDelta = x87f_store_f32(x87f_abs(x87f_sub(x87f_load_f32(weight), x87f_load_f64((double)targetWeight))));
+    float blendFrames = x87f_store_f32(
+        x87f_mul(x87f_div(x87f_load_f32(TURRET_POSITION_BLEND_MSEC), x87f_load_i32(level.frameTime)), x87f_load_f32(weightDelta)));
 
     if (blendFrames > 0.0f) {
-        return x87f_store_f32(
-            x87f_div(x87f_load_f32(1.0f), x87f_load_f32(blendFrames)));
+        return x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_load_f32(blendFrames)));
     }
     return 0.0f;
 #else
-    float weightDelta = fabsl(trap_XAnimGetWeight(animTree, anim) -
-                              targetWeight);
-    float blendFrames = (TURRET_POSITION_BLEND_MSEC /
-                         level.frameTime) *
-                        weightDelta;
+    float weightDelta = fabsl(trap_XAnimGetWeight(animTree, anim) - targetWeight);
+    float blendFrames = (TURRET_POSITION_BLEND_MSEC / level.frameTime) * weightDelta;
 
     if (blendFrames > 0.0f) {
         return 1.0f / blendFrames;
@@ -755,14 +709,10 @@ static float game_compat_g_turret_xanim_goal_time_for_weight(XAnimTree *animTree
 /* NOT_FROM_ORIGINAL_SOURCE: goal-weight wrapper; extracted during reconstruction of 0x5ac06. */
 /* VERIFIED_DECOMPILER(0x5ac06, 6ac06_FUN_0006ac06.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; trap_XAnimSetGoalWeight argument order, computed goal time, fixed rate, notify, and restart fields match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_PlayerTurretPositionAndBlend (0x5ac06); no standalone original body. */
-static void game_compat_g_turret_set_anim_weight(XAnimTree *animTree, uint32_t anim,
-                                  long double targetWeight)
+static void game_compat_g_turret_set_anim_weight(XAnimTree *animTree, uint32_t anim, long double targetWeight)
 {
-    trap_XAnimSetGoalWeight(animTree, anim, targetWeight,
-                            game_compat_g_turret_xanim_goal_time_for_weight(animTree, anim,
-                                                           targetWeight),
-                            1.0f,
-                            0, 0);
+    trap_XAnimSetGoalWeight(animTree, anim, targetWeight, game_compat_g_turret_xanim_goal_time_for_weight(animTree, anim, targetWeight),
+                            1.0f, 0, 0);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: animation child-position clamp; extracted during reconstruction of 0x5ac06. */
@@ -784,37 +734,30 @@ static float game_compat_g_turret_clamp_child_position(float childPosition, int 
 /* NOT_FROM_ORIGINAL_SOURCE: two-child blend helper; extracted during reconstruction of 0x5ac06. */
 /* VERIFIED_DECOMPILER(0x5ac06, 6ac06_FUN_0006ac06.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; previous top-animation child lookup, fractional split, NaN-inclusive second child path, and weighted goal calls match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_PlayerTurretPositionAndBlend (0x5ac06); no standalone original body. */
-static void game_compat_g_turret_set_child_pair_weight(XAnimTree *animTree, uint32_t parentAnim,
-                                       int childIndex, float secondWeight,
-                                       float weightScale)
+static void game_compat_g_turret_set_child_pair_weight(XAnimTree *animTree, uint32_t parentAnim, int childIndex, float secondWeight,
+                                                       float weightScale)
 {
     uint32_t childAnim;
 
     trap_XAnimGetChildAt(&childAnim, parentAnim, childIndex);
-    game_compat_g_turret_set_anim_weight(animTree, childAnim,
-                          (1.0f - secondWeight) * weightScale);
+    game_compat_g_turret_set_anim_weight(animTree, childAnim, (1.0f - secondWeight) * weightScale);
 
     if (secondWeight != 0.0f || isnan(secondWeight)) {
         trap_XAnimGetChildAt(&childAnim, parentAnim, childIndex + 1);
-        game_compat_g_turret_set_anim_weight(animTree, childAnim,
-                              secondWeight * weightScale);
+        game_compat_g_turret_set_anim_weight(animTree, childAnim, secondWeight * weightScale);
     }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: two-child initial weight helper; extracted during reconstruction of 0x5ac06. */
 /* VERIFIED_DECOMPILER(0x5ac06, 6ac06_FUN_0006ac06.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; search-loop child lookup outputs, immediate 1.0-rate priming, fractional split, and NaN-inclusive second child path match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_PlayerTurretPositionAndBlend (0x5ac06); no standalone original body. */
-static float game_compat_g_turret_prime_child_pair(XAnimTree *animTree, uint32_t parentAnim,
-                                    float childPosition,
-                                    int *childIndexOut,
-                                    uint32_t *firstChildAnim,
-                                    uint32_t *secondChildAnim)
+static float game_compat_g_turret_prime_child_pair(XAnimTree *animTree, uint32_t parentAnim, float childPosition, int *childIndexOut,
+                                                   uint32_t *firstChildAnim, uint32_t *secondChildAnim)
 {
 #if EMULATE_X87
     int childIndex = x87f_store_i32_trunc(x87f_load_f32(childPosition));
 #elif defined(__i386__) || defined(__x86_64__)
-    int childIndex =
-        CODUO_X87_TRUNCATE_I32((long double)childPosition);
+    int childIndex = CODUO_X87_TRUNCATE_I32((long double)childPosition);
 #else
     int childIndex = game_compat_int32_from_float_trunc(childPosition);
 #endif
@@ -823,13 +766,11 @@ static float game_compat_g_turret_prime_child_pair(XAnimTree *animTree, uint32_t
     *childIndexOut = childIndex;
     *secondChildAnim = 0;
     trap_XAnimGetChildAt(firstChildAnim, parentAnim, childIndex);
-    trap_XAnimSetGoalWeight(animTree, *firstChildAnim, 1.0f - secondWeight,
-                            1.0f, 1.0f, 0, 0);
+    trap_XAnimSetGoalWeight(animTree, *firstChildAnim, 1.0f - secondWeight, 1.0f, 1.0f, 0, 0);
 
     if (secondWeight != 0.0f || isnan(secondWeight)) {
         trap_XAnimGetChildAt(secondChildAnim, parentAnim, childIndex + 1);
-        trap_XAnimSetGoalWeight(animTree, *secondChildAnim, secondWeight,
-                                1.0f, 1.0f, 0, 0);
+        trap_XAnimSetGoalWeight(animTree, *secondChildAnim, secondWeight, 1.0f, 1.0f, 0, 0);
     }
 
     return secondWeight;
@@ -838,19 +779,11 @@ static float game_compat_g_turret_prime_child_pair(XAnimTree *animTree, uint32_t
 /* NOT_FROM_ORIGINAL_SOURCE: aiming animation search loop; extracted during reconstruction of 0x5ac06. */
 /* VERIFIED_DECOMPILER(0x5ac06, 6ac06_FUN_0006ac06.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; top-child iteration, no-child errors, child-position math, priming side effects, delta-Z selection, previous sample capture, and loop exit match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_PlayerTurretPositionAndBlend (0x5ac06); no standalone original body. */
-static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t rootAnim,
-                                    float targetForwardOffset,
-                                    float turretYaw,
-                                    float horizontalRotateIncrement,
-                                    uint32_t *selectedAnim,
-                                    uint32_t *selectedFirstChildAnim,
-                                    uint32_t *selectedSecondChildAnim,
-                                    float *selectedSecondWeight,
-                                    int *previousChildIndex,
-                                    float *previousSecondWeight,
-                                    float *previousDeltaZ,
-                                    float *currentDeltaZ,
-                                    int *topChildCountOut)
+static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t rootAnim, float targetForwardOffset, float turretYaw,
+                                                   float horizontalRotateIncrement, uint32_t *selectedAnim,
+                                                   uint32_t *selectedFirstChildAnim, uint32_t *selectedSecondChildAnim,
+                                                   float *selectedSecondWeight, int *previousChildIndex, float *previousSecondWeight,
+                                                   float *previousDeltaZ, float *currentDeltaZ, int *topChildCountOut)
 {
     int topChildCount = trap_XAnimGetNumChildren(rootAnim);
     int topIndex;
@@ -858,8 +791,7 @@ static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t
     vec3_t deltaTranslation;
 
     if (topChildCount == 0) {
-        Com_Error(1, COM_ERROR_MARKER "Player anim '%s' has no children",
-                  trap_XAnimGetAnimName(rootAnim));
+        Com_Error(1, COM_ERROR_MARKER "Player anim '%s' has no children", trap_XAnimGetAnimName(rootAnim));
     }
 
     *topChildCountOut = topChildCount;
@@ -885,20 +817,15 @@ static int game_compat_g_turret_select_aiming_anim(XAnimTree *animTree, uint32_t
 
         childCount = trap_XAnimGetNumChildren(topAnim);
         if (childCount == 0) {
-            Com_Error(1, COM_ERROR_MARKER "Player anim '%s' has no children",
-                      trap_XAnimGetAnimName(topAnim));
+            Com_Error(1, COM_ERROR_MARKER "Player anim '%s' has no children", trap_XAnimGetAnimName(topAnim));
         }
 
-        childPosition = game_compat_g_turret_clamp_child_position(
-            (float)childCount * 0.5f - turretYaw / horizontalRotateIncrement,
-            childCount);
-        secondWeight = game_compat_g_turret_prime_child_pair(animTree, topAnim,
-                                              childPosition, &childIndex,
-                                              &firstChildAnim,
-                                              &secondChildAnim);
+        childPosition =
+            game_compat_g_turret_clamp_child_position((float)childCount * 0.5f - turretYaw / horizontalRotateIncrement, childCount);
+        secondWeight =
+            game_compat_g_turret_prime_child_pair(animTree, topAnim, childPosition, &childIndex, &firstChildAnim, &secondChildAnim);
 
-        trap_XAnimCalcAbsDelta(animTree, topAnim, deltaRotation,
-                               deltaTranslation);
+        trap_XAnimCalcAbsDelta(animTree, topAnim, deltaRotation, deltaTranslation);
         (void)deltaRotation;
 
         *selectedAnim = topAnim;
@@ -958,8 +885,7 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
      * i386 modules and a table-relative byte offset in native 64-bit builds. */
     animationWord = game_compat_bg_anim_slot_animation_word(clientInfo, offsetof(clientInfo_t, legsYawAngle));
     animationReference = game_compat_bg_anim_slot_animation_reference(clientInfo, offsetof(clientInfo_t, legsYawAngle));
-    if (animationWord == 0 ||
-        animationReference == 0 ||
+    if (animationWord == 0 || animationReference == 0 ||
         (game_compat_bg_static_animation_flags_from_reference(bgAnimStaticTable, animationReference) & BG_ANIM_ENTRY_TURRET) == 0) {
         return;
     }
@@ -983,27 +909,19 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
     viewDelta[0] = player->currentOrigin[0] - turret->currentOrigin[0];
     viewDelta[1] = player->currentOrigin[1] - turret->currentOrigin[1];
     viewDelta[2] = player->currentOrigin[2] - turret->currentOrigin[2];
-    tagForwardOffset = viewDelta[0] * turretAxis.axis[2][0] +
-                       viewDelta[1] * turretAxis.axis[2][1] +
-                       viewDelta[2] * turretAxis.axis[2][2];
-    targetForwardOffset = tagForwardOffset -
-                          weaponTagMatrix->origin[2];
+    tagForwardOffset = viewDelta[0] * turretAxis.axis[2][0] + viewDelta[1] * turretAxis.axis[2][1] + viewDelta[2] * turretAxis.axis[2][2];
+    targetForwardOffset = tagForwardOffset - weaponTagMatrix->origin[2];
 
     trap_XAnimClearTreeGoalWeightsStrict(animTree, rootAnim, 0.0f);
-    selectedTopIndex = game_compat_g_turret_select_aiming_anim(
-        animTree, rootAnim, targetForwardOffset, turretYaw,
-        weaponInfo->animHorRotateInc,
-        &selectedAnim, &selectedFirstChildAnim, &selectedSecondChildAnim,
-        &selectedSecondWeight, &previousChildIndex, &previousSecondWeight,
-        &previousDeltaZ,
-        &currentDeltaZ, &topChildCount);
+    selectedTopIndex = game_compat_g_turret_select_aiming_anim(animTree, rootAnim, targetForwardOffset, turretYaw,
+                                                               weaponInfo->animHorRotateInc, &selectedAnim, &selectedFirstChildAnim,
+                                                               &selectedSecondChildAnim, &selectedSecondWeight, &previousChildIndex,
+                                                               &previousSecondWeight, &previousDeltaZ, &currentDeltaZ, &topChildCount);
 
     trap_XAnimClearTreeGoalWeightsStrict(animTree, rootAnim, 0.0f);
-    game_compat_g_turret_set_anim_weight(animTree, selectedFirstChildAnim,
-                          1.0f - selectedSecondWeight);
+    game_compat_g_turret_set_anim_weight(animTree, selectedFirstChildAnim, 1.0f - selectedSecondWeight);
     if (selectedSecondWeight != 0.0f || isnan(selectedSecondWeight)) {
-        game_compat_g_turret_set_anim_weight(animTree, selectedSecondChildAnim,
-                              selectedSecondWeight);
+        game_compat_g_turret_set_anim_weight(animTree, selectedSecondChildAnim, selectedSecondWeight);
     }
 
     if (selectedTopIndex == 0 || selectedTopIndex == topChildCount) {
@@ -1014,25 +932,19 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
         game_compat_g_turret_set_anim_weight(animTree, selectedAnim, 1.0f);
     } else {
         uint32_t previousAnim;
-        float selectedWeight =
-            (targetForwardOffset - previousDeltaZ) /
-            (currentDeltaZ - previousDeltaZ);
+        float selectedWeight = (targetForwardOffset - previousDeltaZ) / (currentDeltaZ - previousDeltaZ);
 
         game_compat_g_turret_set_anim_weight(animTree, selectedAnim, selectedWeight);
         trap_XAnimGetChildAt(&previousAnim, rootAnim, selectedTopIndex - 1);
         game_compat_g_turret_set_anim_weight(animTree, previousAnim, 1.0f - selectedWeight);
-        game_compat_g_turret_set_child_pair_weight(animTree, previousAnim,
-                                   previousChildIndex, previousSecondWeight,
-                                   1.0f);
+        game_compat_g_turret_set_child_pair_weight(animTree, previousAnim, previousChildIndex, previousSecondWeight, 1.0f);
     }
 
     trap_XAnimCalcAbsDelta(animTree, rootAnim, deltaRotation, deltaTranslation);
     VectorAngleMultiply(deltaTranslation, turretYaw);
 
-    yawTransform.origin[0] = deltaTranslation[0] +
-                             weaponTagMatrix->origin[0];
-    yawTransform.origin[1] = deltaTranslation[1] +
-                             weaponTagMatrix->origin[1];
+    yawTransform.origin[0] = deltaTranslation[0] + weaponTagMatrix->origin[0];
+    yawTransform.origin[1] = deltaTranslation[1] + weaponTagMatrix->origin[1];
     yawTransform.origin[2] = tagForwardOffset;
     YawToAxis(RotationToYaw(deltaRotation) + turretYaw, yawTransform.axis);
     MatrixMultiply43(&yawTransform, &turretAxis, &combinedAxis);
@@ -1047,8 +959,7 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
     traceEnd[0] = client->ps.psOrigin[0];
     traceEnd[1] = client->ps.psOrigin[1];
     traceEnd[2] = turret->currentOrigin[2];
-    trap_Trace(&trace, traceStart, vec3_origin, vec3_origin, traceEnd,
-               player->s.number, TURRET_TRACE_CONTENTS);
+    trap_Trace(&trace, traceStart, vec3_origin, vec3_origin, traceEnd, player->s.number, TURRET_TRACE_CONTENTS);
     if (trace.fraction < 1.0f) {
         client->ps.psOrigin[2] = trace.endpos[2];
     }
@@ -1059,8 +970,7 @@ void G_PlayerTurretPositionAndBlend(gentity_t *player, gentity_t *turret)
     player->currentOrigin[2] = client->ps.psOrigin[2];
     /* C99 multidimensional-array qualifier bridge; AxisToAngles retains a
      * read-only view of the composed axis. */
-    AxisToAngles((const vec_t (*)[3])combinedAxis.axis,
-                 player->currentAngles);
+    AxisToAngles((const vec_t(*)[3])combinedAxis.axis, player->currentAngles);
     trap_LinkEntity(player);
 }
 
@@ -1089,21 +999,15 @@ void G_UpdateTurretClientAiming(gentity_t *turret, gentity_t *player)
 {
     turret_state_t *turretState = turret->turretState;
     vec3_t deltaAngles;
-    const weaponInfo_t *weaponInfo =
-        (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
+    const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
 
     (void)weaponInfo;
 
     player->client->ps.viewLockedEntityNum = turret->s.number;
-    AnglesSubtract(player->client->ps.viewAngles, turret->currentAngles,
-                   deltaAngles);
+    AnglesSubtract(player->client->ps.viewAngles, turret->currentAngles, deltaAngles);
 
-    turret->s.turret.pitch =
-        game_compat_g_turret_clamp_angle(deltaAngles[0], turretState->topArc,
-                           turretState->bottomArc);
-    turret->s.turret.yaw =
-        game_compat_g_turret_clamp_angle(deltaAngles[1], turretState->rightArc,
-                           turretState->leftArc);
+    turret->s.turret.pitch = game_compat_g_turret_clamp_angle(deltaAngles[0], turretState->topArc, turretState->bottomArc);
+    turret->s.turret.yaw = game_compat_g_turret_clamp_angle(deltaAngles[1], turretState->rightArc, turretState->leftArc);
     turret->s.turret.pitchCarry = 0.0f;
 
     turret->s.loopedFxForward[0] = turretState->leftArc;
@@ -1125,11 +1029,9 @@ void G_UpdateTurretClientAiming(gentity_t *turret, gentity_t *player)
 void G_FireTurretFromClient(gentity_t *turret, gentity_t *player)
 {
     turret_state_t *turretState = turret->turretState;
-    const weaponInfo_t *weaponInfo =
-        (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
+    const weaponInfo_t *weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
 
-    turretState->fireSoundTime = coduo_int32_from_bits(
-        (uint32_t)weaponInfo->fireTime * UINT32_C(3));
+    turretState->fireSoundTime = coduo_int32_from_bits((uint32_t)weaponInfo->fireTime * UINT32_C(3));
     if (player->client != NULL) {
         G_FireTurret(turret, player, turret->damage);
     }
@@ -1151,13 +1053,10 @@ void G_RunClientTurret(gentity_t *turret, gentity_t *player)
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
     turret->s.eFlags &= ~TURRET_CLIENT_FIRING_FLAG;
 
-    turretState->fireTimeRemaining = coduo_int32_from_bits(
-        (uint32_t)turretState->fireTimeRemaining -
-        (uint32_t)TURRET_CLIENT_THINK_MSEC);
+    turretState->fireTimeRemaining = coduo_int32_from_bits((uint32_t)turretState->fireTimeRemaining - (uint32_t)TURRET_CLIENT_THINK_MSEC);
     if (turretState->fireTimeRemaining < 1) {
         turretState->fireTimeRemaining = 0;
-        if ((player->client->currentButtons & PM_BUTTON_FIRE) != 0 &&
-            turretState->overheating == 0) {
+        if ((player->client->currentButtons & PM_BUTTON_FIRE) != 0 && turretState->overheating == 0) {
             turretState->fireTimeRemaining = (int)weaponInfo->fireTime;
             G_FireTurretFromClient(turret, player);
             turret->s.eFlags |= TURRET_CLIENT_FIRING_FLAG;
@@ -1177,12 +1076,8 @@ void G_UpdateTurretSound(gentity_t *turret)
     turret->s.clientSound = 0;
     if (turretState->fireSoundTime > 0) {
         turret->s.clientSound = turretState->sustainedFireLoopSound;
-        turretState->fireSoundTime = coduo_int32_from_bits(
-            (uint32_t)turretState->fireSoundTime -
-            (uint32_t)TURRET_CLIENT_THINK_MSEC);
-        if ((turretState->fireSoundTime < 1 &&
-             turretState->sustainedFireStopSound != 0) ||
-            G_IsInMatchTimeout() != 0) {
+        turretState->fireSoundTime = coduo_int32_from_bits((uint32_t)turretState->fireSoundTime - (uint32_t)TURRET_CLIENT_THINK_MSEC);
+        if ((turretState->fireSoundTime < 1 && turretState->sustainedFireStopSound != 0) || G_IsInMatchTimeout() != 0) {
             turret->s.clientSound = 0;
             G_PlaySoundAlias(turret, turretState->sustainedFireStopSound);
         }
@@ -1196,8 +1091,7 @@ void G_UpdateTurretSound(gentity_t *turret)
 /* NOT_FROM_ORIGINAL_SOURCE: stop-use event selector emission; extracted during reconstruction of 0x5bcc8. */
 /* VERIFIED_DECOMPILER(0x5bcc8, 6bcc8_G_ClientStopUsingTurret.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; disabled-event return, gunner/alt/default event IDs, event arguments, and selector reset match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_ClientStopUsingTurret (0x5bcc8); no standalone original body. */
-static void game_compat_g_turret_emit_stop_use_event(gentity_t *player,
-                                     turret_state_t *turretState)
+static void game_compat_g_turret_emit_stop_use_event(gentity_t *player, turret_state_t *turretState)
 {
     if (turretState->stopUseEventType == TURRET_STOP_USE_EVENT_DISABLED) {
         return;
@@ -1245,8 +1139,7 @@ void turret_think_client(gentity_t *turret)
 {
     gentity_t *player = &g_entities[turret->passEntityNum];
 
-    if (*game_compat_g_turret_active_byte(player) == 1 &&
-        player->client->sessionState == SESS_STATE_PLAYING) {
+    if (*game_compat_g_turret_active_byte(player) == 1 && player->client->sessionState == SESS_STATE_PLAYING) {
         G_RunClientTurret(turret, player);
         G_UpdateTurretSound(turret);
     } else {
@@ -1259,8 +1152,7 @@ void turret_think_client(gentity_t *turret)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x5bedf, 6bedf_FUN_0006bedf.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; pitch carry fold-in, default/weapon turn rates, rest-pitch fast clamp, two-axis AngleSubtract loop, arrival flag, rest clamp/recovery flags, final pitch step, carry residual, and return value match. */
-qboolean G_TurretAimAtAngles(gentity_t *turret, const float *targetAngles,
-                             qboolean useWeaponTurnRates)
+qboolean G_TurretAimAtAngles(gentity_t *turret, const float *targetAngles, qboolean useWeaponTurnRates)
 {
     turret_state_t *turretState = turret->turretState;
     const weaponInfo_t *weaponInfo;
@@ -1272,25 +1164,21 @@ qboolean G_TurretAimAtAngles(gentity_t *turret, const float *targetAngles,
     int axisIndex;
 
     previousPitch = turret->s.turret.pitch;
-    turret->s.turret.pitch +=
-        turret->s.turret.pitchCarry;
+    turret->s.turret.pitch += turret->s.turret.pitchCarry;
     arrived = qtrue;
 
     if (useWeaponTurnRates == qfalse) {
         turnRates[0] = TURRET_DEFAULT_TURN_RATE;
         turnRates[1] = TURRET_DEFAULT_TURN_RATE;
     } else {
-        weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(
-            turret->s.weapon);
+        weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
         turnRates[0] = weaponInfo->turretPitchRate;
-        weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(
-            turret->s.weapon);
+        weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
         turnRates[1] = weaponInfo->turretYawRate;
     }
 
     if ((turretState->flags & TURRET_STATE_REST_PITCH_CLAMP_FLAG) != 0 &&
-        (turretState->flags & TURRET_STATE_REST_PITCH_RECOVERING_FLAG) != 0 &&
-        turnRates[0] < TURRET_FAST_REST_PITCH_RATE) {
+        (turretState->flags & TURRET_STATE_REST_PITCH_RECOVERING_FLAG) != 0 && turnRates[0] < TURRET_FAST_REST_PITCH_RATE) {
         turnRates[0] = TURRET_FAST_REST_PITCH_RATE;
     }
 
@@ -1317,21 +1205,16 @@ qboolean G_TurretAimAtAngles(gentity_t *turret, const float *targetAngles,
     *game_compat_g_turret_pitch_carry(turret) = targetPitch;
 
     if ((turretState->flags & TURRET_STATE_REST_PITCH_CLAMP_FLAG) != 0) {
-        if ((turretState->flags &
-             TURRET_STATE_REST_PITCH_CLAMP_UP_FLAG) == 0) {
-            if (turretState->restPitchClamp <
-                turret->s.turret.pitch) {
+        if ((turretState->flags & TURRET_STATE_REST_PITCH_CLAMP_UP_FLAG) == 0) {
+            if (turretState->restPitchClamp < turret->s.turret.pitch) {
                 targetPitch = turretState->restPitchClamp;
             } else {
-                turretState->flags &=
-                    ~TURRET_STATE_REST_PITCH_RECOVERING_FLAG;
+                turretState->flags &= ~TURRET_STATE_REST_PITCH_RECOVERING_FLAG;
             }
-        } else if (turret->s.turret.pitch <
-                   turretState->restPitchClamp) {
+        } else if (turret->s.turret.pitch < turretState->restPitchClamp) {
             targetPitch = turretState->restPitchClamp;
         } else {
-            turretState->flags &=
-                ~TURRET_STATE_REST_PITCH_RECOVERING_FLAG;
+            turretState->flags &= ~TURRET_STATE_REST_PITCH_RECOVERING_FLAG;
         }
     }
 
@@ -1380,8 +1263,7 @@ void turret_think(gentity_t *turret)
     const weaponInfo_t *weaponInfo;
     int riderEntityNum = turret->passEntityNum;
 
-    turret->nextthink = coduo_int32_from_bits(
-        (uint32_t)level.time + (uint32_t)TURRET_THINK_MSEC);
+    turret->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)TURRET_THINK_MSEC);
     if (turret->linkInfo != NULL) {
         G_GeneralLink(turret);
     }
@@ -1391,15 +1273,13 @@ void turret_think(gentity_t *turret)
         G_AddEvent(turret, EV_OVERHEATING, 0);
         Scr_Notify(turret, scr_const_overheating, 0);
         turret->s.turretOverheatState = 1;
-    } else if (turretState->overheating != 0 &&
-               turretState->heat <= TURRET_OVERHEAT_CLEAR_THRESHOLD) {
+    } else if (turretState->overheating != 0 && turretState->heat <= TURRET_OVERHEAT_CLEAR_THRESHOLD) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         turretState->overheating = 0;
         turret->s.turretOverheatState = 0;
     }
 
-    weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(
-        turret->s.weapon);
+    weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
     if (turretState->heat > 0.0f) {
         turretState->heat -= weaponInfo->turretHeatDecay;
     } else {
@@ -1435,8 +1315,7 @@ void turret_think_init(gentity_t *turret)
     int pitchStep;
 
     turret->think = turret_think;
-    turret->nextthink = coduo_int32_from_bits(
-        (uint32_t)level.time + (uint32_t)TURRET_THINK_MSEC);
+    turret->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)TURRET_THINK_MSEC);
 
     aimTag = G_DObjGetLocalTagMatrix(turret, TURRET_TAG_AIM);
     if (aimTag == NULL) {
@@ -1458,28 +1337,21 @@ void turret_think_init(gentity_t *turret)
     tagDelta[2] = buttTag->origin[2] - aimTag->origin[2];
     MatrixTransformVector43(aimTag->origin, &entityAxis, traceStart);
 
-    for (pitchStep = 0; pitchStep <= TURRET_INIT_PITCH_STEPS;
-         pitchStep++) {
-        testAngles[0] = (float)pitchStep *
-                        (TURRET_INIT_PITCH_RANGE /
-                         (float)TURRET_INIT_PITCH_STEPS);
+    for (pitchStep = 0; pitchStep <= TURRET_INIT_PITCH_STEPS; pitchStep++) {
+        testAngles[0] = (float)pitchStep * (TURRET_INIT_PITCH_RANGE / (float)TURRET_INIT_PITCH_STEPS);
         testAngles[1] = 0.0f;
         testAngles[2] = 0.0f;
         AnglesToAxis(testAngles, pitchAxis);
         /* C99 multidimensional-array qualifier bridge; the pitch axis remains
          * read-only in MatrixTransformVector. */
-        MatrixTransformVector(tagDelta,
-                              (const vec_t (*)[3])pitchAxis,
-                              rotatedDelta);
+        MatrixTransformVector(tagDelta, (const vec_t(*)[3])pitchAxis, rotatedDelta);
 
         localEnd[0] = rotatedDelta[0] + aimTag->origin[0];
         localEnd[1] = rotatedDelta[1] + aimTag->origin[1];
         localEnd[2] = rotatedDelta[2] + aimTag->origin[2];
         MatrixTransformVector43(localEnd, &entityAxis, traceEnd);
 
-        trap_LocationalTrace(&trace, traceStart, traceEnd, turret->s.number,
-                             TURRET_INIT_TRACE_CONTENTS,
-                             bulletPriorityMap);
+        trap_LocationalTrace(&trace, traceStart, traceEnd, turret->s.number, TURRET_INIT_TRACE_CONTENTS, bulletPriorityMap);
         if (trace.fraction < 1.0f) {
             turretState->restPitch = testAngles[0];
             return;
@@ -1499,15 +1371,12 @@ void turret_controller(gentity_t *turret, uint32_t *partBits)
     tagAngles[0] = turret->s.turret.pitch;
     tagAngles[1] = turret->s.turret.yaw;
     tagAngles[2] = 0.0f;
-    G_DObjSetControlTagAngles(turret, partBits, TURRET_TAG_AIM,
-                              tagAngles);
-    G_DObjSetControlTagAngles(turret, partBits, TURRET_TAG_AIM_ANIMATED,
-                              tagAngles);
+    G_DObjSetControlTagAngles(turret, partBits, TURRET_TAG_AIM, tagAngles);
+    G_DObjSetControlTagAngles(turret, partBits, TURRET_TAG_AIM_ANIMATED, tagAngles);
 
     tagAngles[0] = turret->s.turret.pitchCarry;
     tagAngles[1] = 0.0f;
-    G_DObjSetControlTagAngles(turret, partBits, TURRET_TAG_FLASH,
-                              tagAngles);
+    G_DObjSetControlTagAngles(turret, partBits, TURRET_TAG_FLASH, tagAngles);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1515,8 +1384,7 @@ void turret_controller(gentity_t *turret, uint32_t *partBits)
 /* ------------------------------------------------------------------ */
 
 /* VERIFIED_DECOMPILER(0x5c693, 6c693_FUN_0006c693.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; yaw center math, fabs arc half-width, yaw vector normalization, player delta, height/use-mode gate, horizontal normalize, acos degree conversion, and arc comparison match. */
-static qboolean G_TurretPlayerFacingUseArc(gentity_t *turret,
-                                           gentity_t *player)
+static qboolean G_TurretPlayerFacingUseArc(gentity_t *turret, gentity_t *player)
 {
     turret_state_t *turretState = turret->turretState;
     vec3_t forward;
@@ -1534,13 +1402,10 @@ static qboolean G_TurretPlayerFacingUseArc(gentity_t *turret,
     /* Stock 0x5c6e2: (|rightArc|+|leftArc|)*0.5 kept 80-bit, one store -> shim;
      * yawBase and yawBase+halfUseArc are single adds (native). */
 #if EMULATE_X87
-    halfUseArc = x87f_store_f32(x87f_mul(
-        x87f_add(x87f_load_f32(fabsf(turretState->rightArc)),
-                 x87f_load_f32(fabsf(turretState->leftArc))),
-        x87f_load_f32(0.5f)));
+    halfUseArc = x87f_store_f32(
+        x87f_mul(x87f_add(x87f_load_f32(fabsf(turretState->rightArc)), x87f_load_f32(fabsf(turretState->leftArc))), x87f_load_f32(0.5f)));
 #else
-    halfUseArc = 0.5f *
-                 (fabsf(turretState->rightArc) + fabsf(turretState->leftArc));
+    halfUseArc = 0.5f * (fabsf(turretState->rightArc) + fabsf(turretState->leftArc));
 #endif
     yawCenter = AngleNormalize180(yawBase + halfUseArc);
     YawVectors(yawCenter, forward, NULL);
@@ -1549,8 +1414,7 @@ static qboolean G_TurretPlayerFacingUseArc(gentity_t *turret,
     delta[0] = turret->currentOrigin[0] - player->currentOrigin[0];
     delta[1] = turret->currentOrigin[1] - player->currentOrigin[1];
 
-    if (turret->currentOrigin[2] < player->currentOrigin[2] &&
-        turretState->useMode != TURRET_USE_MODE_GUNNER &&
+    if (turret->currentOrigin[2] < player->currentOrigin[2] && turretState->useMode != TURRET_USE_MODE_GUNNER &&
         turretState->useMode != TURRET_USE_MODE_ALT) {
         return qfalse;
     }
@@ -1561,19 +1425,13 @@ static qboolean G_TurretPlayerFacingUseArc(gentity_t *turret,
      * (the Q_acos arg); 0x5c7ce: (Q_acos * 180.0f) / M_PI(QWORD double), one
      * store.  Q_acos is external (stock calls Q_acos@plt) -> faithful. */
 #if EMULATE_X87
-    float facingDot = x87f_store_f32(x87f_add(x87f_add(
-        x87f_mul(x87f_load_f32(forward[0]), x87f_load_f32(delta[0])),
-        x87f_mul(x87f_load_f32(forward[1]), x87f_load_f32(delta[1]))),
-        x87f_mul(x87f_load_f32(forward[2]), x87f_load_f32(delta[2]))));
-    angleToPlayer = x87f_store_f32(x87f_div(
-        x87f_mul(x87f_load_f32(Q_acos(facingDot)), x87f_load_f32(180.0f)),
-        x87f_load_f64(M_PI)));
+    float facingDot = x87f_store_f32(x87f_add(x87f_add(x87f_mul(x87f_load_f32(forward[0]), x87f_load_f32(delta[0])),
+                                                       x87f_mul(x87f_load_f32(forward[1]), x87f_load_f32(delta[1]))),
+                                              x87f_mul(x87f_load_f32(forward[2]), x87f_load_f32(delta[2]))));
+    angleToPlayer = x87f_store_f32(x87f_div(x87f_mul(x87f_load_f32(Q_acos(facingDot)), x87f_load_f32(180.0f)), x87f_load_f64(M_PI)));
 #else
     angleToPlayer =
-        (float)(((long double)180.0f *
-                 (long double)Q_acos(forward[0] * delta[0] +
-                                      forward[1] * delta[1] +
-                                      forward[2] * delta[2])) /
+        (float)(((long double)180.0f * (long double)Q_acos(forward[0] * delta[0] + forward[1] * delta[1] + forward[2] * delta[2])) /
                 (long double)M_PI);
 #endif
 
@@ -1607,9 +1465,7 @@ qboolean G_IsTurretUsable(gentity_t *turret, gentity_t *player)
 {
     gclient_t *client = player->client;
 
-    if (*game_compat_g_turret_active_byte(turret) != 0 ||
-        turret->turretState == NULL ||
-        turret->takeDamage == 0) {
+    if (*game_compat_g_turret_active_byte(turret) != 0 || turret->turretState == NULL || turret->takeDamage == 0) {
         return qfalse;
     }
 
@@ -1617,8 +1473,7 @@ qboolean G_IsTurretUsable(gentity_t *turret, gentity_t *player)
         return qfalse;
     }
 
-    if (client->ps.grenadeTimeLeft != 0 ||
-        client->ps.groundEntityNum == ENTITYNUM_NONE) {
+    if (client->ps.grenadeTimeLeft != 0 || client->ps.groundEntityNum == ENTITYNUM_NONE) {
         return qfalse;
     }
 
@@ -1632,8 +1487,7 @@ qboolean G_IsTurretUsable(gentity_t *turret, gentity_t *player)
 /* NOT_FROM_ORIGINAL_SOURCE: player-state use-mode flag update; extracted during reconstruction of 0x5c919. */
 /* VERIFIED_DECOMPILER(0x5c919, 6c919_turret_use.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; gunner/alt/default ps flag masks, set/clear order, and default OR-only path match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original turret_use (0x5c919); no standalone original body. */
-static void game_compat_g_turret_set_use_mode_flags(gclient_t *client,
-                                    const turret_state_t *turretState)
+static void game_compat_g_turret_set_use_mode_flags(gclient_t *client, const turret_state_t *turretState)
 {
     if (turretState->useMode == TURRET_USE_MODE_GUNNER) {
         client->ps.entityStateFlags |= TURRET_USE_PS_FLAG_GUNNER;
@@ -1649,13 +1503,11 @@ static void game_compat_g_turret_set_use_mode_flags(gclient_t *client,
 /* NOT_FROM_ORIGINAL_SOURCE: stop-use event selector capture; extracted during reconstruction of 0x5c919. */
 /* VERIFIED_DECOMPILER(0x5c919, 6c919_turret_use.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; playerStateFlags gunner-first, alt-second, default-zero selector writes match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original turret_use (0x5c919); no standalone original body. */
-static void game_compat_g_turret_select_stop_use_event(turret_state_t *turretState,
-                                       const gclient_t *client)
+static void game_compat_g_turret_select_stop_use_event(turret_state_t *turretState, const gclient_t *client)
 {
     if ((client->ps.playerStateFlags & TURRET_STOP_USE_SELECTOR_GUNNER_BUTTON_FLAG) != 0) {
         turretState->stopUseEventType = TURRET_STOP_USE_EVENT_GUNNER;
-    } else if ((client->ps.playerStateFlags &
-                TURRET_STOP_USE_SELECTOR_ALT_BUTTON_FLAG) != 0) {
+    } else if ((client->ps.playerStateFlags & TURRET_STOP_USE_SELECTOR_ALT_BUTTON_FLAG) != 0) {
         turretState->stopUseEventType = TURRET_STOP_USE_EVENT_ALT;
     } else {
         turretState->stopUseEventType = 0;
@@ -1692,8 +1544,7 @@ void turret_use(gentity_t *turret, gentity_t *other, gentity_t *activator)
 
     for (axisIndex = 0; axisIndex < 2; axisIndex++) {
         float *turretAngle = &game_compat_g_turret_pitch_yaw(turret)[axisIndex];
-        float delta = AngleSubtract(client->ps.viewAngles[axisIndex],
-                                    turret->currentAngles[axisIndex]);
+        float delta = AngleSubtract(client->ps.viewAngles[axisIndex], turret->currentAngles[axisIndex]);
         float minAngle = game_compat_g_turret_min_arc_for_axis(turretState, axisIndex);
         float maxAngle = game_compat_g_turret_max_arc_for_axis(turretState, axisIndex);
 
@@ -1705,8 +1556,7 @@ void turret_use(gentity_t *turret, gentity_t *other, gentity_t *activator)
         *turretAngle = delta;
     }
 
-    angles[0] = turret->s.turret.pitch +
-                turret->currentAngles[0];
+    angles[0] = turret->s.turret.pitch + turret->currentAngles[0];
     angles[1] = turret->s.turret.yaw + turret->currentAngles[1];
     angles[2] = 0.0f;
     SetClientViewAngle(other, angles);
@@ -1734,10 +1584,7 @@ static turret_state_t *game_compat_g_alloc_turret_state(void)
         }
     }
 
-    Com_Error(1,
-              COM_ERROR_MARKER
-              "G_SpawnTurret: max number of turrets (%d) exceeded",
-              TURRET_MAX_COUNT);
+    Com_Error(1, COM_ERROR_MARKER "G_SpawnTurret: max number of turrets (%d) exceeded", TURRET_MAX_COUNT);
     return NULL;
 }
 
@@ -1755,8 +1602,7 @@ static uint8_t game_compat_g_turret_sound_alias_for_name(const char *name)
 /* NOT_FROM_ORIGINAL_SOURCE: spawn/default turret arc parser; extracted during reconstruction of 0x5cc27. */
 /* VERIFIED_DECOMPILER(0x5cc27, 6cc27_G_SpawnTurret.c, VERIFY-ENTITY-MGMT-TURRET-2026-06-17): DATAFLOW_VERIFIED; G_SpawnFloat defaulting, right/top negation and nonpositive clamp, left/bottom nonnegative clamp, and destination stores match. */
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original G_SpawnTurret (0x5cc27); no standalone original body. */
-static void game_compat_g_spawn_turret_arc_float(const char *key, float weaponDefault,
-                                  qboolean negate, float *out)
+static void game_compat_g_spawn_turret_arc_float(const char *key, float weaponDefault, qboolean negate, float *out)
 {
     if (G_SpawnFloat(key, "", out) == 0) {
         *out = weaponDefault;
@@ -1784,10 +1630,7 @@ void G_SpawnTurret(gentity_t *turret, const char *weaponName)
     weaponIndex = BG_GetWeaponIndexForName(weaponName);
     turret->s.weapon = weaponIndex & 0xff;
     if (turret->s.weapon == 0) {
-        Com_Error(1,
-                  COM_ERROR_MARKER
-                  "bad weaponinfo '%s' specified for turret",
-                  weaponName);
+        Com_Error(1, COM_ERROR_MARKER "bad weaponinfo '%s' specified for turret", weaponName);
     }
 
     weaponInfo = (const weaponInfo_t *)BG_GetInfoForWeapon(turret->s.weapon);
@@ -1800,19 +1643,13 @@ void G_SpawnTurret(gentity_t *turret, const char *weaponName)
     turretState->useMode = weaponInfo->stance;
     turretState->stopUseEventType = TURRET_STOP_USE_EVENT_DISABLED;
     turretState->fireSoundTime = 0;
-    turretState->sustainedFireLoopSound =
-        game_compat_g_turret_sound_alias_for_name(weaponInfo->loopFireSound);
-    turretState->sustainedFireStopSound =
-        game_compat_g_turret_sound_alias_for_name(weaponInfo->stopFireSound);
+    turretState->sustainedFireLoopSound = game_compat_g_turret_sound_alias_for_name(weaponInfo->loopFireSound);
+    turretState->sustainedFireStopSound = game_compat_g_turret_sound_alias_for_name(weaponInfo->stopFireSound);
 
-    game_compat_g_spawn_turret_arc_float("rightarc", weaponInfo->turretRightArcDefault,
-                          qtrue, &turretState->rightArc);
-    game_compat_g_spawn_turret_arc_float("leftarc", weaponInfo->turretLeftArcDefault,
-                          qfalse, &turretState->leftArc);
-    game_compat_g_spawn_turret_arc_float("toparc", weaponInfo->turretTopArcDefault,
-                          qtrue, &turretState->topArc);
-    game_compat_g_spawn_turret_arc_float("bottomarc", weaponInfo->turretBottomArcDefault,
-                          qfalse, &turretState->bottomArc);
+    game_compat_g_spawn_turret_arc_float("rightarc", weaponInfo->turretRightArcDefault, qtrue, &turretState->rightArc);
+    game_compat_g_spawn_turret_arc_float("leftarc", weaponInfo->turretLeftArcDefault, qfalse, &turretState->leftArc);
+    game_compat_g_spawn_turret_arc_float("toparc", weaponInfo->turretTopArcDefault, qtrue, &turretState->topArc);
+    game_compat_g_spawn_turret_arc_float("bottomarc", weaponInfo->turretBottomArcDefault, qfalse, &turretState->bottomArc);
     turretState->restPitch = TURRET_INIT_PITCH_RANGE;
 
     if (turret->health == 0) {
@@ -1846,8 +1683,7 @@ void G_SpawnTurret(gentity_t *turret, const char *weaponName)
     turret->s.turret.yaw = 0.0f;
     turret->s.turret.pitch = 0.0f;
     turret->think = turret_think_init;
-    turret->nextthink = coduo_int32_from_bits(
-        (uint32_t)level.time + (uint32_t)MISC_SPAWNER_THINK_MSEC);
+    turret->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)MISC_SPAWNER_THINK_MSEC);
     turret->controller = turret_controller;
     turret->use = turret_use;
     turret->s.apos.trType = TR_LINEAR_STOP;
@@ -1883,8 +1719,7 @@ void misc_spawner_think(gentity_t *ent)
 
     if (dropped == NULL) {
         G_Printf("-----> WARNING <-------\n");
-        G_Printf("misc_spawner used at %s failed to drop!\n",
-                 vtos(ent->currentOrigin));
+        G_Printf("misc_spawner used at %s failed to drop!\n", vtos(ent->currentOrigin));
     }
 }
 
@@ -1899,8 +1734,7 @@ void misc_spawner_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
     (void)activator;
 
     ent->think = misc_spawner_think;
-    ent->nextthink = coduo_int32_from_bits(
-        (uint32_t)level.time + (uint32_t)MISC_SPAWNER_THINK_MSEC);
+    ent->nextthink = coduo_int32_from_bits((uint32_t)level.time + (uint32_t)MISC_SPAWNER_THINK_MSEC);
     trap_LinkEntity(ent);
 }
 
@@ -1913,8 +1747,7 @@ void SP_misc_spawner(gentity_t *ent)
 {
     if (ent->spawnItem == 0) {
         G_Printf("-----> WARNING <-------\n");
-        G_Printf("misc_spawner at loc %s has no spawnitem!\n",
-                 vtos(ent->currentOrigin));
+        G_Printf("misc_spawner at loc %s has no spawnitem!\n", vtos(ent->currentOrigin));
         return;
     }
 
@@ -1936,11 +1769,8 @@ void miscGunnerEnemyScan(gentity_t *ent)
         /* 0x5d39b..0x5d3b0 compares the float distance with an exact fild of
          * enemyScanRadius and rejects only an ordered distance above it;
          * unordered distances therefore remain eligible. */
-        if (candidate->linked != 0 &&
-            candidate->health >= 0 &&
-            !((long double)VectorDistance(ent->currentOrigin,
-                                          candidate->currentOrigin) >
-              (long double)ent->enemyScanRadius)) {
+        if (candidate->linked != 0 && candidate->health >= 0 &&
+            !((long double)VectorDistance(ent->currentOrigin, candidate->currentOrigin) > (long double)ent->enemyScanRadius)) {
             vec3_t delta;
             vec3_t angles;
 
@@ -1973,8 +1803,7 @@ gentity_t *G_SpawnPlayerClone(void)
 {
     int slot = level.playerCloneCursor;
     int nextSlot = slot + 1;
-    gentity_t *clone =
-        &level.gentities[PLAYER_CLONE_ENTITYNUM_BASE + slot];
+    gentity_t *clone = &level.gentities[PLAYER_CLONE_ENTITYNUM_BASE + slot];
     uint32_t oldFlags = clone->s.eFlags;
 
     level.playerCloneCursor = nextSlot % PLAYER_CLONE_COUNT;
@@ -1984,8 +1813,7 @@ gentity_t *G_SpawnPlayerClone(void)
     }
 
     G_InitGentity(clone);
-    clone->s.eFlags = (oldFlags & PLAYER_CLONE_TOGGLE_S_FLAG) ^
-                     PLAYER_CLONE_TOGGLE_S_FLAG;
+    clone->s.eFlags = (oldFlags & PLAYER_CLONE_TOGGLE_S_FLAG) ^ PLAYER_CLONE_TOGGLE_S_FLAG;
 
     return clone;
 }
@@ -2056,8 +1884,7 @@ gentity_t *G_TempEntity(const float *origin, int event)
     ent = G_Spawn();
 
     /* Set entity type to event type */
-    ent->s.eType = coduo_int32_from_bits((uint32_t)event +
-                                         (uint32_t)ET_EVENTS);
+    ent->s.eType = coduo_int32_from_bits((uint32_t)event + (uint32_t)ET_EVENTS);
 
     /* Set classname to "tempEntity" */
     Scr_SetString(&ent->scriptClassname, scr_const_tempEntity);

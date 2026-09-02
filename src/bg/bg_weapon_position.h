@@ -45,53 +45,32 @@ typedef struct bg_view_angle_state_s {
 } bg_view_angle_state_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-typedef char pm_weapon_angle_state_size[
-    sizeof(pm_weapon_angle_state_t) == 0x4c ? 1 : -1];
-typedef char pm_weapon_angle_state_recoil_state_offset[
-    offsetof(pm_weapon_angle_state_t, weaponRecoilState) == 0x40 ? 1 : -1];
-typedef char pm_weapon_angle_state_base_angles_offset[
-    offsetof(pm_weapon_angle_state_t, baseAngles) == 0x44 ? 1 : -1];
-typedef char bg_view_angle_state_size[
-    sizeof(bg_view_angle_state_t) == 0x18 ? 1 : -1];
+typedef char pm_weapon_angle_state_size[sizeof(pm_weapon_angle_state_t) == 0x4c ? 1 : -1];
+typedef char pm_weapon_angle_state_recoil_state_offset[offsetof(pm_weapon_angle_state_t, weaponRecoilState) == 0x40 ? 1 : -1];
+typedef char pm_weapon_angle_state_base_angles_offset[offsetof(pm_weapon_angle_state_t, baseAngles) == 0x44 ? 1 : -1];
+typedef char bg_view_angle_state_size[sizeof(bg_view_angle_state_t) == 0x18 ? 1 : -1];
 #endif
 
-void BG_CalculateWeaponPosition_BasePosition_angles(
-    pm_weapon_angle_state_t *state, vec3_t angles);
-void BG_CalculateWeaponPosition_BaseAngles(pm_weapon_angle_state_t *state,
-                                           vec3_t angles);
-void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state,
-                                           vec3_t angles);
-void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state,
-                                          vec3_t angles);
-void BG_CalculateWeaponPosition_DamageKick(pm_weapon_angle_state_t *state,
-                                           vec3_t angles);
-qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(
-    float *angle, float *velocity, float frameTime, float maxAngle,
-    float returnAcceleration, float maxVelocity, float damping,
-    float friction);
-void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state,
-                                          vec3_t angles);
-void BG_CalculateWeaponAngles(pm_weapon_angle_state_t *state,
-                              vec3_t weaponAngles);
+void BG_CalculateWeaponPosition_BasePosition_angles(pm_weapon_angle_state_t *state, vec3_t angles);
+void BG_CalculateWeaponPosition_BaseAngles(pm_weapon_angle_state_t *state, vec3_t angles);
+void BG_CalculateWeaponPosition_IdleAngles(pm_weapon_angle_state_t *state, vec3_t angles);
+void BG_CalculateWeaponPosition_BobOffset(pm_weapon_angle_state_t *state, vec3_t angles);
+void BG_CalculateWeaponPosition_DamageKick(pm_weapon_angle_state_t *state, vec3_t angles);
+qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float *angle, float *velocity, float frameTime, float maxAngle,
+                                                          float returnAcceleration, float maxVelocity, float damping, float friction);
+void BG_CalculateWeaponPosition_GunRecoil(pm_weapon_angle_state_t *state, vec3_t angles);
+void BG_CalculateWeaponAngles(pm_weapon_angle_state_t *state, vec3_t weaponAngles);
 
-void BG_CalculateView_DamageKick(bg_view_angle_state_t *state,
-                                 vec3_t angles);
-void BG_CalculateView_Velocity(bg_view_angle_state_t *state,
-                               vec3_t angles);
-void BG_CalculateViewAngles(bg_view_angle_state_t *state,
-                            vec3_t viewAngles);
+void BG_CalculateView_DamageKick(bg_view_angle_state_t *state, vec3_t angles);
+void BG_CalculateView_Velocity(bg_view_angle_state_t *state, vec3_t angles);
+void BG_CalculateViewAngles(bg_view_angle_state_t *state, vec3_t viewAngles);
 
 #if defined(WINDOWS_BEHAVIOR)
-long double BG_SmoothWeaponSwayValue(float target, float current, float rate,
-                                     int32_t msec);
+long double BG_SmoothWeaponSwayValue(float target, float current, float rate, int32_t msec);
 #else
-float BG_SmoothWeaponSwayValue(float target, float current, float rate,
-                               int32_t msec);
+float BG_SmoothWeaponSwayValue(float target, float current, float rate, int32_t msec);
 #endif
-void BG_CalculateWeaponPosition_Sway(const playerState_t *ps,
-                                     vec3_t previousViewAngles,
-                                     vec3_t swayOffsets,
-                                     vec2_t swayAngles, float scale,
+void BG_CalculateWeaponPosition_Sway(const playerState_t *ps, vec3_t previousViewAngles, vec3_t swayOffsets, vec2_t swayAngles, float scale,
                                      int32_t msec);
 
 #endif

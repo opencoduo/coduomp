@@ -67,8 +67,7 @@ void CG_ConfigString3Modified(void)
     const char *cs = &cg_gameState.stringData[cg_gameState.stringOffsets[3]];
 
     /* Key "n": the asset name. Register it and take the returned engine handle. */
-    snd_alias_t *alias = trap_Com_PickSoundAlias(Info_ValueForKey(cs, "n"),
-                                                  vec3_origin);
+    snd_alias_t *alias = trap_Com_PickSoundAlias(Info_ValueForKey(cs, "n"), vec3_origin);
 
     /* Key "t": a millisecond timestamp. The nonnegative delta from cg_time is
      * submitted alongside the handle; a negative delta or an uninitialized

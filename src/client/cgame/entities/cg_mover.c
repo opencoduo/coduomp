@@ -88,14 +88,12 @@ void CG_Mover(centity_t *cent /* one 32-bit stack arg */)
         return;
 
     /* PUSH cent->number; PUSH 0xa5; CALL cgame_syscall; ADD ESP,8. */
-    dobj = (struct DObj_s *)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, cent->currentState.number);
+    dobj = (struct DObj_s *)cgame_syscall(CG_DOBJ_GET_HANDLE, cent->currentState.number);
 
     /* CMP [cent+0xa0],0xffffff; JZ skips this null-skeleton reject.
      * When != 0xffffff and the DObj handle came back 0, there is no model to
      * draw for this frame -> return. */
-    if (cent->currentState.solid != (int32_t)SOLID_BMODEL &&
-        dobj == NULL)
+    if (cent->currentState.solid != (int32_t)SOLID_BMODEL && dobj == NULL)
         return;
 
     uint32_t zBits;
@@ -138,9 +136,9 @@ void CG_Mover(centity_t *cent /* one 32-bit stack arg */)
     } else {
         /* Animated DObj model: reType RT_MODEL, remember the skeleton handle and
          * the owning centity for the engine. */
-        ent.reType     = RT_MODEL;
+        ent.reType = RT_MODEL;
         ent.dobj = dobj;
-        ent.owner      = cent;
+        ent.owner = cent;
     }
 
     /* PUSH &ent; PUSH 0x3d; CALL cgame_syscall; ADD ESP,8. */

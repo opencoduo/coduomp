@@ -32,22 +32,19 @@ void CG_AddViewWeapon(void)
         CG_ResetWeaponAnimTrees(ps);
         return;
     }
-    if (cg_thirdPerson != 0 ||
-        cg_viewWeaponSuppressed != 0) {
+    if (cg_thirdPerson != 0 || cg_viewWeaponSuppressed != 0) {
         return;
     }
 
     qboolean drawViewWeapon = qtrue;
     if (cg_drawGun_vmCvar.integer != CG_DRAW_GUN_ALWAYS) {
         float overlayFrac;
-        if (cg_drawGun_vmCvar.integer == CG_DRAW_GUN_HIDDEN ||
-            CG_CalcAdsOverlayFrac(&overlayFrac)) {
+        if (cg_drawGun_vmCvar.integer == CG_DRAW_GUN_HIDDEN || CG_CalcAdsOverlayFrac(&overlayFrac)) {
             drawViewWeapon = qfalse;
         }
     }
 
-    if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 &&
-        !BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition)) {
+    if ((ps->entityStateFlags & EF_RESTRICTED_MASK) != 0 && !BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition)) {
         if (ps->currentWeapon > 0) {
             cgWeaponInfo_t *wi = &cg_weaponInfos[ps->currentWeapon];
             CG_WeaponRunXModelAnims((playerState_t *)ps, wi);
@@ -84,19 +81,14 @@ void CG_AddViewWeapon(void)
     /* cg_frametime enters via a bare FILD fed straight into FMUL 0.001f (0x300466c2
      * FILD; 0x300466d3 FMUL; 0x300466ed FSTP) with no FSTP DWORD between, so drop the
      * (float) cast (Class 4). */
-    state.frameTime = (float)(
-        (long double)cg_frametime *
-        (long double)CG_MILLISECONDS_TO_SECONDS);
+    state.frameTime = (float)((long double)cg_frametime * (long double)CG_MILLISECONDS_TO_SECONDS);
     state.moveOffset[0] = cg_weaponPositionPrevAngles[0];
     state.moveOffset[1] = cg_weaponPositionPrevAngles[1];
     state.moveOffset[2] = cg_weaponPositionPrevAngles[2];
     state.idleScale = cg_weaponPositionMoveScale;
-    state.time = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)ps->deltaTime);
-    state.viewKickStartTime = cg_damageDirLatestServerTime != 0
-        ? coduo_int32_from_bits((uint32_t)cg_damageDirLatestServerTime -
-                          (uint32_t)ps->deltaTime)
-        : 0;
+    state.time = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)ps->deltaTime);
+    state.viewKickStartTime =
+        cg_damageDirLatestServerTime != 0 ? coduo_int32_from_bits((uint32_t)cg_damageDirLatestServerTime - (uint32_t)ps->deltaTime) : 0;
     state.viewKickPitch = cg_damageFlashScale;
     state.viewKickYaw = cg_damageFlashX;
     state.recoilPitch = cg_weaponPositionBaseAngles[0];
@@ -107,8 +99,7 @@ void CG_AddViewWeapon(void)
     /* The cgame caller copies the third recoil float through the otherwise
      * unused +0x40 word.  Preserve that original dword without converting it
      * through the game module's integer spelling for the same slot. */
-    memcpy(&state.weaponRecoilState, &cg_weaponRecoilAngles[2],
-           sizeof(state.weaponRecoilState));
+    memcpy(&state.weaponRecoilState, &cg_weaponRecoilAngles[2], sizeof(state.weaponRecoilState));
     state.baseAngles[0] = cg_weaponSwayAngles[0];
     state.baseAngles[1] = cg_weaponSwayAngles[1];
 
@@ -133,15 +124,13 @@ void CG_AddViewWeapon(void)
      * BasePosition_angles advances moveOffset, and AddWeaponIdle advances the
      * value/rate spring pairs. */
     cg_weaponPositionMoveScale = state.idleScale;
-    memcpy(cg_weaponPositionPrevAngles, state.moveOffset,
-           sizeof(cg_weaponPositionPrevAngles));
+    memcpy(cg_weaponPositionPrevAngles, state.moveOffset, sizeof(cg_weaponPositionPrevAngles));
     cg_weaponPositionBaseAngles[0] = state.recoilPitch;
     cg_weaponPositionBaseAngles[1] = state.recoilYaw;
     cg_weaponPositionBaseAngles[2] = state.recoilRoll;
     cg_weaponRecoilAngles[0] = state.recoilPitchVelocity;
     cg_weaponRecoilAngles[1] = state.recoilYawVelocity;
-    memcpy(&cg_weaponRecoilAngles[2], &state.weaponRecoilState,
-           sizeof(cg_weaponRecoilAngles[2]));
+    memcpy(&cg_weaponRecoilAngles[2], &state.weaponRecoilState, sizeof(cg_weaponRecoilAngles[2]));
 
     CG_WeaponRunXModelAnims((playerState_t *)ps, wi);
 
@@ -150,8 +139,7 @@ void CG_AddViewWeapon(void)
     hand.renderfx = CG_VIEW_WEAPON_RENDERFX;
 
     float viewOriginOffset = 0.0f;
-    if ((ps->playerStateFlags & CG_VIEW_WEAPON_PULLBACK_FLAG) != 0 &&
-        weapon->weaponClass == CG_VIEW_WEAPON_PULLBACK_CLASS) {
+    if ((ps->playerStateFlags & CG_VIEW_WEAPON_PULLBACK_FLAG) != 0 && weapon->weaponClass == CG_VIEW_WEAPON_PULLBACK_CLASS) {
         viewOriginOffset = CG_VIEW_WEAPON_PULLBACK_DISTANCE;
         CG_PerturbCamera(viewOriginOffset);
     }
@@ -167,44 +155,21 @@ void CG_AddViewWeapon(void)
     hand.axis[2][2] = weaponAxis[2][2];
 
     {
-        long double base0 =
-            (long double)cg_gunX_vmCvar.value *
-                (long double)cg_refdef.viewaxis[0][0] +
-            (long double)positionOffset[0];
-        long double base1 =
-            (long double)cg_gunX_vmCvar.value *
-                (long double)cg_refdef.viewaxis[0][1] +
-            (long double)positionOffset[1];
-        float base2 = (float)(
-            (long double)cg_gunX_vmCvar.value *
-                (long double)cg_refdef.viewaxis[0][2] +
-            (long double)positionOffset[2]);
-        float xy0 = (float)(
-            base0 + (long double)cg_gunY_vmCvar.value *
-                        (long double)cg_refdef.viewaxis[1][0]);
-        float xy1 = (float)(
-            base1 + (long double)cg_gunY_vmCvar.value *
-                        (long double)cg_refdef.viewaxis[1][1]);
-        long double yzWide =
-            (long double)base2 + (long double)cg_gunY_vmCvar.value *
-                        (long double)cg_refdef.viewaxis[1][2];
+        long double base0 = (long double)cg_gunX_vmCvar.value * (long double)cg_refdef.viewaxis[0][0] + (long double)positionOffset[0];
+        long double base1 = (long double)cg_gunX_vmCvar.value * (long double)cg_refdef.viewaxis[0][1] + (long double)positionOffset[1];
+        float base2 = (float)((long double)cg_gunX_vmCvar.value * (long double)cg_refdef.viewaxis[0][2] + (long double)positionOffset[2]);
+        float xy0 = (float)(base0 + (long double)cg_gunY_vmCvar.value * (long double)cg_refdef.viewaxis[1][0]);
+        float xy1 = (float)(base1 + (long double)cg_gunY_vmCvar.value * (long double)cg_refdef.viewaxis[1][1]);
+        long double yzWide = (long double)base2 + (long double)cg_gunY_vmCvar.value * (long double)cg_refdef.viewaxis[1][2];
 
         /* Components 0/1 are FSTP'd after the gun-Y term. Component 2 first
          * spills the gun-X/base sum to base2, then reloads it; that reloaded
          * value stays live across the gun-Y and gun-Z additions until its
          * final origin store. */
-        hand.origin[0] = (float)(
-            (long double)xy0 + (long double)cg_gunZ_vmCvar.value *
-                                   (long double)cg_refdef.viewaxis[2][0]);
-        hand.origin[1] = (float)(
-            (long double)xy1 + (long double)cg_gunZ_vmCvar.value *
-                                   (long double)cg_refdef.viewaxis[2][1]);
-        hand.origin[2] = (float)(
-            yzWide + (long double)cg_gunZ_vmCvar.value *
-                         (long double)cg_refdef.viewaxis[2][2]);
+        hand.origin[0] = (float)((long double)xy0 + (long double)cg_gunZ_vmCvar.value * (long double)cg_refdef.viewaxis[2][0]);
+        hand.origin[1] = (float)((long double)xy1 + (long double)cg_gunZ_vmCvar.value * (long double)cg_refdef.viewaxis[2][1]);
+        hand.origin[2] = (float)(yzWide + (long double)cg_gunZ_vmCvar.value * (long double)cg_refdef.viewaxis[2][2]);
     }
 
-    CG_AddPlayerWeapon(&hand, ps,
-                       &cg_predictedEventEntity,
-                       drawViewWeapon, viewOriginOffset);
+    CG_AddPlayerWeapon(&hand, ps, &cg_predictedEventEntity, drawViewWeapon, viewOriginOffset);
 }

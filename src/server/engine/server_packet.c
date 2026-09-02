@@ -30,8 +30,7 @@ enum {
     SERVER_STATUS_INFO_BUFFER_SIZE = MAX_STRING_CHARS,
     SERVER_STATUS_LINE_BUFFER_SIZE = MAX_STRING_CHARS,
     SERVER_STATUS_TEXT_APPEND_LIMIT = MAX_MSGLEN - 1,
-    SERVER_STATUS_INFO_CVAR_FLAGS =
-        CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
+    SERVER_STATUS_INFO_CVAR_FLAGS = CVAR_SERVERINFO | CVAR_SCRIPT_SETCVAR_SERVERINFO,
     SERVER_RCON_OUTPUT_CHUNK_SIZE = 1300,
     SERVER_RCON_REDIRECT_BUFFER_SIZE = MAX_MSGLEN - 16,
     SERVER_RCON_COMMAND_BUFFER_SIZE = MAX_STRING_CHARS,
@@ -101,22 +100,18 @@ void SVC_Status(netadr_t from)
 
     cvar_t *const fsRestrict = Cvar_FindVar("fs_restrict");
     if (fsRestrict != NULL && fsRestrict->value != 0.0f) {
-        Com_sprintf(restrictedKeywords, sizeof(restrictedKeywords),
-                    "demo %s", Info_ValueForKey(info, "sv_keywords"));
+        Com_sprintf(restrictedKeywords, sizeof(restrictedKeywords), "demo %s", Info_ValueForKey(info, "sv_keywords"));
         Info_SetValueForKey(info, "sv_keywords", restrictedKeywords);
     }
 
     status[0] = '\0';
     int32_t statusLength = 0;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state < CS_CONNECTED)
             continue;
 
-        Com_sprintf(line, sizeof(line), "%i %i \"%s\"\n",
-                    SV_GetClientScore(client), client->ping, client->name);
+        Com_sprintf(line, sizeof(line), "%i %i \"%s\"\n", SV_GetClientScore(client), client->ping, client->name);
         const int32_t lineLength = (int32_t)strlen(line);
         if (statusLength + lineLength > SERVER_STATUS_TEXT_APPEND_LIMIT)
             break;
@@ -126,39 +121,24 @@ void SVC_Status(netadr_t from)
     }
 
     if (sv_disableClientConsole->integer != 0) {
-        Info_SetValueForKey(info, "con_disabled",
-                            va("%i", sv_disableClientConsole->integer));
+        Info_SetValueForKey(info, "con_disabled", va("%i", sv_disableClientConsole->integer));
     }
 
     cvar_t *const password = Cvar_FindVar("g_password");
-    Info_SetValueForKey(
-        info, "pswrd",
-        password != NULL && password->string != NULL &&
-                password->string[0] != '\0'
-            ? "1"
-            : "0");
+    Info_SetValueForKey(info, "pswrd", password != NULL && password->string != NULL && password->string[0] != '\0' ? "1" : "0");
 
     qboolean reportsMod = qfalse;
     cvar_t *const fsGameCvar = Cvar_FindVar("fs_game");
-    const char *const fsGame =
-        fsGameCvar != NULL ? fsGameCvar->string : NULL;
-    if (sv_pure->integer == 0 ||
-        (fsGame != NULL && fsGame[0] != '\0')) {
+    const char *const fsGame = fsGameCvar != NULL ? fsGameCvar->string : NULL;
+    if (sv_pure->integer == 0 || (fsGame != NULL && fsGame[0] != '\0')) {
         reportsMod = qtrue;
     } else {
-        cvar_t *const referencedPakNames =
-            Cvar_FindVar("sv_referencedPakNames");
-        if (referencedPakNames != NULL &&
-            referencedPakNames->string != NULL &&
-            referencedPakNames->string[0] != '\0') {
+        cvar_t *const referencedPakNames = Cvar_FindVar("sv_referencedPakNames");
+        if (referencedPakNames != NULL && referencedPakNames->string != NULL && referencedPakNames->string[0] != '\0') {
             Cmd_TokenizeString(referencedPakNames->string);
             const int32_t pakCount = Cmd_Argc();
-            for (int32_t pakIndex = 0;
-                 pakIndex < pakCount;
-                 ++pakIndex) {
-                if (FS_idPak(
-                        Cmd_Argv(pakIndex), "main",
-                        fs_basegame->string) == qfalse) {
+            for (int32_t pakIndex = 0; pakIndex < pakCount; ++pakIndex) {
+                if (FS_idPak(Cmd_Argv(pakIndex), "main", fs_basegame->string) == qfalse) {
                     reportsMod = qtrue;
                     break;
                 }
@@ -167,8 +147,7 @@ void SVC_Status(netadr_t from)
     }
     Info_SetValueForKey(info, "mod", va("%i", reportsMod));
 
-    NET_OutOfBandPrint(NS_SERVER, from, "statusResponse\n%s\n%s",
-                       info, status);
+    NET_OutOfBandPrint(NS_SERVER, from, "statusResponse\n%s\n%s", info, status);
 }
 
 /* Source: CoDUOMP.exe 0x004614e0..0x004616e3.
@@ -186,22 +165,18 @@ void SVC_GameCompleteStatus(netadr_t from)
 
     cvar_t *const fsRestrict = Cvar_FindVar("fs_restrict");
     if (fsRestrict != NULL && fsRestrict->value != 0.0f) {
-        Com_sprintf(restrictedKeywords, sizeof(restrictedKeywords),
-                    "demo %s", Info_ValueForKey(info, "sv_keywords"));
+        Com_sprintf(restrictedKeywords, sizeof(restrictedKeywords), "demo %s", Info_ValueForKey(info, "sv_keywords"));
         Info_SetValueForKey(info, "sv_keywords", restrictedKeywords);
     }
 
     status[0] = '\0';
     int32_t statusLength = 0;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum) {
         client_t *const client = &svs.clients[clientNum];
         if (client->state < CS_CONNECTED)
             continue;
 
-        Com_sprintf(line, sizeof(line), "%i %i \"%s\"\n",
-                    SV_GetClientScore(client), client->ping, client->name);
+        Com_sprintf(line, sizeof(line), "%i %i \"%s\"\n", SV_GetClientScore(client), client->ping, client->name);
         const int32_t lineLength = (int32_t)strlen(line);
         if (statusLength + lineLength > SERVER_STATUS_TEXT_APPEND_LIMIT)
             break;
@@ -210,8 +185,7 @@ void SVC_GameCompleteStatus(netadr_t from)
         statusLength += lineLength;
     }
 
-    NET_OutOfBandPrint(NS_SERVER, from,
-                       "gameCompleteStatus\n%s\n%s", info, status);
+    NET_OutOfBandPrint(NS_SERVER, from, "gameCompleteStatus\n%s\n%s", info, status);
 }
 
 /* Source: CoDUOMP.exe 0x004616f0..0x00461fee.
@@ -237,56 +211,45 @@ void SVC_Info(netadr_t from)
     char info[SERVER_STATUS_INFO_BUFFER_SIZE];
     info[0] = '\0';
     Info_SetValueForKey(info, "challenge", Cmd_Argv(1));
-    Info_SetValueForKey(info, "protocol",
-                        va("%i", SERVER_PROTOCOL_VERSION));
+    Info_SetValueForKey(info, "protocol", va("%i", SERVER_PROTOCOL_VERSION));
     Info_SetValueForKey(info, "hostname", sv_hostname->string);
     Info_SetValueForKey(info, "mapname", sv_mapname->string);
 
     if (connectedClientCount != 0) {
-        Info_SetValueForKey(info, "clients",
-                            va("%i", connectedClientCount));
+        Info_SetValueForKey(info, "clients", va("%i", connectedClientCount));
     }
 
-    const int32_t publicClientSlots =
-        sv_maxclients->integer - sv_privateClients->integer +
-        privateClientCount;
+    const int32_t publicClientSlots = sv_maxclients->integer - sv_privateClients->integer + privateClientCount;
     if (publicClientSlots > 0) {
-        Info_SetValueForKey(info, "sv_maxclients",
-                            va("%i", publicClientSlots));
+        Info_SetValueForKey(info, "sv_maxclients", va("%i", publicClientSlots));
     }
 
     Info_SetValueForKey(info, "gametype", g_gametype->string);
     if (sv_pure->integer != 0)
         Info_SetValueForKey(info, "pure", va("%i", sv_pure->integer));
     if (sv_minPing->integer != 0) {
-        Info_SetValueForKey(info, "minPing",
-                            va("%i", sv_minPing->integer));
+        Info_SetValueForKey(info, "minPing", va("%i", sv_minPing->integer));
     }
     if (sv_maxPing->integer != 0) {
-        Info_SetValueForKey(info, "maxPing",
-                            va("%i", sv_maxPing->integer));
+        Info_SetValueForKey(info, "maxPing", va("%i", sv_maxPing->integer));
     }
 
     cvar_t *cvar = Cvar_FindVar("fs_game");
-    const char *const fsGame =
-        cvar != NULL && cvar->string != NULL ? cvar->string : "";
+    const char *const fsGame = cvar != NULL && cvar->string != NULL ? cvar->string : "";
     if (fsGame[0] != '\0')
         Info_SetValueForKey(info, "game", fsGame);
 
     if (sv_allowAnonymous->integer != 0) {
-        Info_SetValueForKey(info, "sv_allowAnonymous",
-                            va("%i", sv_allowAnonymous->integer));
+        Info_SetValueForKey(info, "sv_allowAnonymous", va("%i", sv_allowAnonymous->integer));
     }
 
     cvar = Cvar_FindVar("g_password");
-    if (cvar != NULL && cvar->string != NULL &&
-        cvar->string[0] != '\0') {
+    if (cvar != NULL && cvar->string != NULL && cvar->string[0] != '\0') {
         Info_SetValueForKey(info, "pswrd", "1");
     }
 
     cvar = Cvar_FindVar("scr_friendlyfire");
-    const char *value =
-        cvar != NULL && cvar->string != NULL ? cvar->string : "";
+    const char *value = cvar != NULL && cvar->string != NULL ? cvar->string : "";
     if (atoi(value) != 0)
         Info_SetValueForKey(info, "ff", value);
 
@@ -318,24 +281,15 @@ void SVC_Info(netadr_t from)
     if (sv_pure->integer == 0 || fsGame[0] != '\0') {
         reportsMod = qtrue;
     } else {
-        cvar_t *const referencedPakNames =
-            Cvar_FindVar("sv_referencedPakNames");
-        if (referencedPakNames != NULL &&
-            referencedPakNames->string != NULL &&
-            referencedPakNames->string[0] != '\0') {
+        cvar_t *const referencedPakNames = Cvar_FindVar("sv_referencedPakNames");
+        if (referencedPakNames != NULL && referencedPakNames->string != NULL && referencedPakNames->string[0] != '\0') {
             cvar_t *const baseGameCvar = Cvar_FindVar("fs_basegame");
-            const char *const baseGame =
-                baseGameCvar != NULL && baseGameCvar->string != NULL
-                    ? baseGameCvar->string
-                    : "";
+            const char *const baseGame = baseGameCvar != NULL && baseGameCvar->string != NULL ? baseGameCvar->string : "";
 
             Cmd_TokenizeString(referencedPakNames->string);
             const int32_t pakCount = Cmd_Argc();
-            for (int32_t pakIndex = 0;
-                 pakIndex < pakCount;
-                 ++pakIndex) {
-                if (FS_idPak(
-                        Cmd_Argv(pakIndex), "main", baseGame) == qfalse) {
+            for (int32_t pakIndex = 0; pakIndex < pakCount; ++pakIndex) {
+                if (FS_idPak(Cmd_Argv(pakIndex), "main", baseGame) == qfalse) {
                     reportsMod = qtrue;
                     break;
                 }
@@ -356,15 +310,13 @@ void SV_FlushRedirect(char *text)
     while (length > SERVER_RCON_OUTPUT_CHUNK_SIZE) {
         const char saved = text[SERVER_RCON_OUTPUT_CHUNK_SIZE];
         text[SERVER_RCON_OUTPUT_CHUNK_SIZE] = '\0';
-        NET_OutOfBandPrint(NS_SERVER, svs.redirectAddress,
-                           "print\n%s", text);
+        NET_OutOfBandPrint(NS_SERVER, svs.redirectAddress, "print\n%s", text);
         length -= SERVER_RCON_OUTPUT_CHUNK_SIZE;
         text += SERVER_RCON_OUTPUT_CHUNK_SIZE;
         *text = saved;
     }
 
-    NET_OutOfBandPrint(NS_SERVER, svs.redirectAddress,
-                       "print\n%s", text);
+    NET_OutOfBandPrint(NS_SERVER, svs.redirectAddress, "print\n%s", text);
 }
 
 /* Source: CoDUOMP.exe 0x004620d0..0x004623b3.
@@ -378,28 +330,22 @@ void SVC_RemoteCommand(netadr_t from)
     char commandBuffer[SERVER_RCON_COMMAND_BUFFER_SIZE];
 
     const uint32_t now = Com_Milliseconds();
-    const int32_t elapsed =
-        (int32_t)(now - sv_lastRemoteCommandTime);
-    if (sv_lastRemoteCommandTime != 0 &&
-        elapsed < SERVER_RCON_THROTTLE_MSEC) {
+    const int32_t elapsed = (int32_t)(now - sv_lastRemoteCommandTime);
+    if (sv_lastRemoteCommandTime != 0 && elapsed < SERVER_RCON_THROTTLE_MSEC) {
         return;
     }
     sv_lastRemoteCommandTime = now;
 
     qboolean validPassword = qfalse;
-    if (rconPassword->string[0] != '\0' &&
-        strcmp(Cmd_Argv(1), rconPassword->string) == 0) {
+    if (rconPassword->string[0] != '\0' && strcmp(Cmd_Argv(1), rconPassword->string) == 0) {
         validPassword = qtrue;
-        Com_Printf("Rcon from %s:\n%s\n", NET_AdrToString(from),
-                   Cmd_Argv(2));
+        Com_Printf("Rcon from %s:\n%s\n", NET_AdrToString(from), Cmd_Argv(2));
     } else {
-        Com_Printf("Bad rcon from %s:\n%s\n", NET_AdrToString(from),
-                   Cmd_Argv(2));
+        Com_Printf("Bad rcon from %s:\n%s\n", NET_AdrToString(from), Cmd_Argv(2));
     }
 
     svs.redirectAddress = from;
-    Com_BeginRedirect(redirectBuffer, SERVER_RCON_REDIRECT_BUFFER_SIZE,
-                      SV_FlushRedirect);
+    Com_BeginRedirect(redirectBuffer, SERVER_RCON_REDIRECT_BUFFER_SIZE, SV_FlushRedirect);
 
     if (rconPassword->string[0] == '\0') {
         Com_Printf("No rconpassword set on the server.\n");
@@ -408,15 +354,9 @@ void SVC_RemoteCommand(netadr_t from)
     } else {
         int32_t commandLength = 0;
         const int32_t argumentCount = Cmd_Argc();
-        for (int32_t argument = 2;
-             argument < argumentCount;
-             ++argument) {
-            commandLength = Com_AddToString(
-                Cmd_Argv(argument), commandBuffer, commandLength,
-                SERVER_RCON_COMMAND_BUFFER_SIZE, qtrue);
-            commandLength = Com_AddToString(
-                " ", commandBuffer, commandLength,
-                SERVER_RCON_COMMAND_BUFFER_SIZE, qfalse);
+        for (int32_t argument = 2; argument < argumentCount; ++argument) {
+            commandLength = Com_AddToString(Cmd_Argv(argument), commandBuffer, commandLength, SERVER_RCON_COMMAND_BUFFER_SIZE, qtrue);
+            commandLength = Com_AddToString(" ", commandBuffer, commandLength, SERVER_RCON_COMMAND_BUFFER_SIZE, qfalse);
         }
 
         if (commandLength < SERVER_RCON_COMMAND_BUFFER_SIZE) {
@@ -450,26 +390,20 @@ void SV_ConnectionlessPacket(netadr_t from, msg_t *message)
         NetProf_AddPacket(&svs.netProfile->send, message->cursize, qfalse);
     }
 
-    const char *const packetData =
-        (const char *)message->data + SERVER_CONNECTIONLESS_MARKER_SIZE;
-    const int32_t payloadLength =
-        message->cursize - SERVER_CONNECTIONLESS_MARKER_SIZE;
+    const char *const packetData = (const char *)message->data + SERVER_CONNECTIONLESS_MARKER_SIZE;
+    const int32_t payloadLength = message->cursize - SERVER_CONNECTIONLESS_MARKER_SIZE;
 
     /* NOT_FROM_ORIGINAL_SOURCE: gate every prefix comparison by the received
      * payload length; packet contents and protocol bytes remain unchanged. */
-    if (payloadLength >= SERVER_PUNKBUSTER_PREFIX_LENGTH &&
-        Q_stricmpn(packetData, "pb_",
-                   SERVER_PUNKBUSTER_PREFIX_LENGTH) == 0) {
+    if (payloadLength >= SERVER_PUNKBUSTER_PREFIX_LENGTH && Q_stricmpn(packetData, "pb_", SERVER_PUNKBUSTER_PREFIX_LENGTH) == 0) {
         server_compat_handle_pb_packet(from, message);
         return;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: a failed transform leaves its result
      * unpublished, so discard it before command tokenization. */
-    if (payloadLength >= SERVER_CONNECT_PREFIX_LENGTH &&
-        Q_strncmp(packetData, "connect", SERVER_CONNECT_PREFIX_LENGTH) == 0 &&
-        Huff_Decompress(message,
-                        SERVER_CONNECT_COMPRESSED_PAYLOAD_OFFSET) == qfalse) {
+    if (payloadLength >= SERVER_CONNECT_PREFIX_LENGTH && Q_strncmp(packetData, "connect", SERVER_CONNECT_PREFIX_LENGTH) == 0 &&
+        Huff_Decompress(message, SERVER_CONNECT_COMPRESSED_PAYLOAD_OFFSET) == qfalse) {
         return;
     }
 
@@ -478,8 +412,7 @@ void SV_ConnectionlessPacket(netadr_t from, msg_t *message)
     const char *const command = Cmd_Argv(0);
 
     if (sv_packet_info->integer != 0) {
-        Com_Printf("SV packet %s : %s\n", NET_AdrToString(from),
-                   command);
+        Com_Printf("SV packet %s : %s\n", NET_AdrToString(from), command);
     }
 
     if (Q_stricmp(command, "getstatus") == 0) {
@@ -489,19 +422,14 @@ void SV_ConnectionlessPacket(netadr_t from, msg_t *message)
     } else if (Q_stricmp(command, "getchallenge") == 0) {
         SV_GetChallenge(from);
     } else if (Q_stricmp(command, "connect") == 0) {
-        PB_InvokeEventCallback(
-            NET_IsLocalAddress(from) != qfalse
-                ? "localhost"
-                : NET_AdrToString(from),
-            message->data);
+        PB_InvokeEventCallback(NET_IsLocalAddress(from) != qfalse ? "localhost" : NET_AdrToString(from), message->data);
         SV_DirectConnect(from);
     } else if (Q_stricmp(command, "ipAuthorize") == 0) {
         SV_AuthorizeIpPacket(from);
     } else if (Q_stricmp(command, "rcon") == 0) {
         SVC_RemoteCommand(from);
     } else if (Q_stricmp(command, "disconnect") != 0) {
-        Com_DPrintf("bad connectionless packet from %s:\n%s\n",
-                    NET_AdrToString(from), commandText);
+        Com_DPrintf("bad connectionless packet from %s:\n%s\n", NET_AdrToString(from), commandText);
     }
 }
 
@@ -521,8 +449,7 @@ void SV_PacketEvent(netadr_t from, msg_t *message)
         }
     }
 
-    dobj_skelCacheKey = (int32_t)(
-        (uint32_t)dobj_skelCacheKey + 1u);
+    dobj_skelCacheKey = (int32_t)((uint32_t)dobj_skelCacheKey + 1u);
     if (dobj_skelCacheKey == 0)
         ++dobj_skelCacheKey;
 
@@ -534,19 +461,14 @@ void SV_PacketEvent(netadr_t from, msg_t *message)
     const int32_t qport = MSG_ReadShort(message) & 0xffff;
 
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
-        if (client->state == CS_FREE ||
-            NET_CompareBaseAdr(from, client->netchan.remoteAddress) ==
-                qfalse ||
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
+        if (client->state == CS_FREE || NET_CompareBaseAdr(from, client->netchan.remoteAddress) == qfalse ||
             client->netchan.qport != qport) {
             continue;
         }
 
         if (client->netchan.remoteAddress.port != from.port) {
-            Com_Printf(
-                "SV_ReadPackets: fixing up a translated port\n");
+            Com_Printf("SV_ReadPackets: fixing up a translated port\n");
             client->netchan.remoteAddress.port = from.port;
         }
 
@@ -555,21 +477,15 @@ void SV_PacketEvent(netadr_t from, msg_t *message)
             client->messageAcknowledge = MSG_ReadLong(message);
             if (client->messageAcknowledge >= 0) {
                 client->reliableAcknowledge = MSG_ReadLong(message);
-                const int32_t reliableBacklog = (int32_t)(
-                    (uint32_t)client->reliableSequence -
-                    (uint32_t)client->reliableAcknowledge);
-                if (reliableBacklog <
-                    MAX_RELIABLE_COMMANDS) {
-                    SV_Netchan_Decode(
-                        client, message->data + message->readcount,
-                        message->cursize - message->readcount);
+                const int32_t reliableBacklog = (int32_t)((uint32_t)client->reliableSequence - (uint32_t)client->reliableAcknowledge);
+                if (reliableBacklog < MAX_RELIABLE_COMMANDS) {
+                    SV_Netchan_Decode(client, message->data + message->readcount, message->cursize - message->readcount);
                     if (client->state != CS_ZOMBIE) {
                         client->lastPacketTime = svs.realTime;
                         SV_ExecuteClientMessage(client, message);
                     }
                 } else {
-                    client->reliableAcknowledge =
-                        client->reliableSequence;
+                    client->reliableAcknowledge = client->reliableSequence;
                 }
             }
         }

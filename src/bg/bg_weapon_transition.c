@@ -71,40 +71,32 @@ void PM_BeginWeaponChange(int32_t currentWeapon, int32_t nextWeapon)
     if (nextWeapon < 0 || nextWeapon > BG_GetNumWeapons()) {
         return;
     }
-    if (nextWeapon != 0 &&
-        Com_BitCheck(ps->weaponBits, nextWeapon) == qfalse) {
+    if (nextWeapon != 0 && Com_BitCheck(ps->weaponBits, nextWeapon) == qfalse) {
         return;
     }
     if (ps->weaponState == WEAPON_STATE_DROPPING) {
         return;
     }
-    if ((pml.weaponInfo->weaponClass == WEAPCLASS_LMG ||
-         pml.weaponInfo->weaponClass == WEAPCLASS_SPOTTER) &&
-        ((ps->playerStateFlags & PMF_ADS) != 0 ||
-         ps->adsFraction > PM_CHANGE_ADS_EPSILON)) {
+    if ((pml.weaponInfo->weaponClass == WEAPCLASS_LMG || pml.weaponInfo->weaponClass == WEAPCLASS_SPOTTER) &&
+        ((ps->playerStateFlags & PMF_ADS) != 0 || ps->adsFraction > PM_CHANGE_ADS_EPSILON)) {
         return;
     }
 
     ps->weaponDelay = 0;
 
-    if (currentWeapon == 0 ||
-        Com_BitCheck(ps->weaponBits, currentWeapon) == qfalse ||
-        ps->grenadeTimeLeft > 0) {
+    if (currentWeapon == 0 || Com_BitCheck(ps->weaponBits, currentWeapon) == qfalse || ps->grenadeTimeLeft > 0) {
         ps->weaponTime = 0;
         ps->weaponState = WEAPON_STATE_DROPPING;
         ps->grenadeTimeLeft = 0;
         PM_SetProneMovementOverride();
-        BG_AddPredictableEventToPlayerstate(EV_REMOVE_WEAPON_ATTACHMENTS,
-                                            currentWeapon, ps);
+        BG_AddPredictableEventToPlayerstate(EV_REMOVE_WEAPON_ATTACHMENTS, currentWeapon, ps);
         return;
     }
 
     currentWeaponInfo = BG_GetInfoForWeapon(currentWeapon);
-    isAltSwitch = nextWeapon != 0 &&
-                  nextWeapon == currentWeaponInfo->altWeapon;
+    isAltSwitch = nextWeapon != 0 && nextWeapon == currentWeaponInfo->altWeapon;
     canPlayLowerAnim = qtrue;
-    if (currentWeaponInfo->clipRequired != 0 &&
-        ps->clips[currentWeaponInfo->clipIndex] == 0) {
+    if (currentWeaponInfo->clipRequired != 0 && ps->clips[currentWeaponInfo->clipIndex] == 0) {
         canPlayLowerAnim = qfalse;
     }
 
@@ -148,14 +140,10 @@ qboolean PM_Weapon_FinishWeaponChange(void)
     }
 
     requestedWeapon = 0;
-    if ((ps->playerStateFlags & PMF_LADDER) == 0 &&
-        Com_BitCheck(ps->weaponBits, pm->command.weapon) != qfalse) {
-        if ((ps->playerStateFlags & PMF_WEAPON_DISABLED) == 0 &&
-            Com_BitCheck(ps->weaponBits, pm->command.weapon) != qfalse &&
-            ((ps->entityStateFlags & EF_IN_VEHICLE) == 0 ||
-             (ps->entityStateFlags & EF_VEHICLE_ALLOW_WEAPON) != 0 ||
-             BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType,
-                                              ps->vehiclePosition) != qfalse)) {
+    if ((ps->playerStateFlags & PMF_LADDER) == 0 && Com_BitCheck(ps->weaponBits, pm->command.weapon) != qfalse) {
+        if ((ps->playerStateFlags & PMF_WEAPON_DISABLED) == 0 && Com_BitCheck(ps->weaponBits, pm->command.weapon) != qfalse &&
+            ((ps->entityStateFlags & EF_IN_VEHICLE) == 0 || (ps->entityStateFlags & EF_VEHICLE_ALLOW_WEAPON) != 0 ||
+             BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition) != qfalse)) {
             requestedWeapon = pm->command.weapon;
             if (requestedWeapon > BG_GetNumWeapons()) {
                 requestedWeapon = 0;
@@ -178,8 +166,7 @@ qboolean PM_Weapon_FinishWeaponChange(void)
 
     ps->weaponState = WEAPON_STATE_RAISING;
     if (oldWeapon == 0) {
-        ps->weaponTime =
-            BG_GetInfoForWeapon(requestedWeapon)->switchRaiseTime;
+        ps->weaponTime = BG_GetInfoForWeapon(requestedWeapon)->switchRaiseTime;
         ps->aimSpreadScale = PM_AIM_SPREAD_SCALE_MAX;
         PM_StartWeaponAnim(PM_WEAPON_ANIM_SWITCH_RAISE);
         PM_SetProneMovementOverride();
@@ -192,9 +179,7 @@ qboolean PM_Weapon_FinishWeaponChange(void)
         ps->adsFraction = 0.0f;
     }
 
-    isAltSwitch = requestedWeapon != 0 &&
-                  requestedWeapon ==
-                      BG_GetInfoForWeapon(oldWeapon)->altWeapon;
+    isAltSwitch = requestedWeapon != 0 && requestedWeapon == BG_GetInfoForWeapon(oldWeapon)->altWeapon;
     if (isAltSwitch != qfalse) {
         ps->weaponTime = newWeaponInfo->altSwitchRaiseTime;
     } else {
@@ -202,10 +187,8 @@ qboolean PM_Weapon_FinishWeaponChange(void)
         ps->weaponTime = newWeaponInfo->switchRaiseTime;
     }
 
-    BG_UpdateConditionValue(ps->psClientNum, ANIM_COND_WEAPON,
-                            requestedWeapon, qtrue);
-    BG_UpdateConditionValue(ps->psClientNum, ANIM_COND_WEAPONCLASS,
-                            newWeaponInfo->weaponClass, qtrue);
+    BG_UpdateConditionValue(ps->psClientNum, ANIM_COND_WEAPON, requestedWeapon, qtrue);
+    BG_UpdateConditionValue(ps->psClientNum, ANIM_COND_WEAPONCLASS, newWeaponInfo->weaponClass, qtrue);
 
     if (isAltSwitch == qfalse) {
         BG_AnimScriptEvent(ps, ANIM_EVENT_RAISE_WEAPON, qfalse, qfalse);
@@ -262,9 +245,7 @@ void PM_Weapon_CheckForDeployBreakdown(void)
     playerState_t *ps = pm->ps;
     int32_t weaponClass = pml.weaponInfo->weaponClass;
 
-    if ((weaponClass != WEAPCLASS_LMG &&
-         weaponClass != WEAPCLASS_SPOTTER) ||
-        pm->adsInputBlocked != 0) {
+    if ((weaponClass != WEAPCLASS_LMG && weaponClass != WEAPCLASS_SPOTTER) || pm->adsInputBlocked != 0) {
         return;
     }
 
@@ -295,12 +276,8 @@ void PM_Weapon_CheckForDeployBreakdown(void)
         break;
     }
 
-    if ((ps->playerStateFlags & PMF_ADS) == 0 ||
-        ps->adsFraction == 1.0f ||
-        ps->weaponState == WEAPON_STATE_DEPLOYING) {
-        if ((ps->playerStateFlags & PMF_ADS) == 0 &&
-            ps->adsFraction != 0.0f &&
-            ps->weaponState != WEAPON_STATE_BREAKING_DOWN) {
+    if ((ps->playerStateFlags & PMF_ADS) == 0 || ps->adsFraction == 1.0f || ps->weaponState == WEAPON_STATE_DEPLOYING) {
+        if ((ps->playerStateFlags & PMF_ADS) == 0 && ps->adsFraction != 0.0f && ps->weaponState != WEAPON_STATE_BREAKING_DOWN) {
             PM_BeginWeaponBreakingdown();
         }
     } else {
@@ -318,24 +295,15 @@ void PM_Weapon_CheckForChangeWeapon(void)
     int32_t currentWeapon = ps->currentWeapon;
     int32_t requestedWeapon = pm->command.weapon;
 
-    if (pml.weaponInfo->weaponType == WEAPTYPE_GRENADE &&
-        pml.weaponInfo->specialTimeEnabled != 0 &&
-        specialTime < pml.weaponInfo->specialTimeThreshold &&
-        specialTime != 0 &&
-        Com_BitCheck(ps->weaponBits, currentWeapon) != qfalse) {
+    if (pml.weaponInfo->weaponType == WEAPTYPE_GRENADE && pml.weaponInfo->specialTimeEnabled != 0 &&
+        specialTime < pml.weaponInfo->specialTimeThreshold && specialTime != 0 && Com_BitCheck(ps->weaponBits, currentWeapon) != qfalse) {
         return;
     }
 
-    if (weaponTime != 0 &&
-        weaponState != WEAPON_STATE_RELOADING &&
-        weaponState != WEAPON_STATE_RELOAD_START &&
-        weaponState != WEAPON_STATE_RELOAD_END &&
-        weaponState != WEAPON_STATE_RELOAD_START_INTERRUPT &&
-        weaponState != WEAPON_STATE_RELOADING_INTERRUPT &&
-        weaponState != WEAPON_STATE_RECHAMBERING &&
-        (weaponState == WEAPON_STATE_FIRING ||
-         weaponState == WEAPON_STATE_MELEE_WINDUP ||
-         weaponState == WEAPON_STATE_MELEE_RELAX ||
+    if (weaponTime != 0 && weaponState != WEAPON_STATE_RELOADING && weaponState != WEAPON_STATE_RELOAD_START &&
+        weaponState != WEAPON_STATE_RELOAD_END && weaponState != WEAPON_STATE_RELOAD_START_INTERRUPT &&
+        weaponState != WEAPON_STATE_RELOADING_INTERRUPT && weaponState != WEAPON_STATE_RECHAMBERING &&
+        (weaponState == WEAPON_STATE_FIRING || weaponState == WEAPON_STATE_MELEE_WINDUP || weaponState == WEAPON_STATE_MELEE_RELAX ||
          weaponDelay != 0)) {
         return;
     }
@@ -348,23 +316,17 @@ void PM_Weapon_CheckForChangeWeapon(void)
     }
 
     if ((ps->playerStateFlags & PMF_WEAPON_DISABLED) != 0 ||
-        (((ps->entityStateFlags & EF_IN_VEHICLE) != 0 &&
-          (ps->entityStateFlags & EF_VEHICLE_ALLOW_WEAPON) == 0) &&
-         BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType,
-                                          ps->vehiclePosition) == qfalse)) {
+        (((ps->entityStateFlags & EF_IN_VEHICLE) != 0 && (ps->entityStateFlags & EF_VEHICLE_ALLOW_WEAPON) == 0) &&
+         BG_AllowPlayerWeaponAtVehiclePos(ps->vehicleType, ps->vehiclePosition) == qfalse)) {
         if (currentWeapon != 0) {
             PM_BeginWeaponChange(currentWeapon, 0);
         }
         return;
     }
 
-    if (currentWeapon == requestedWeapon ||
-        ((ps->playerStateFlags & PMF_FOLLOW) != 0 &&
-         currentWeapon != 0) ||
-        (requestedWeapon != 0 &&
-         Com_BitCheck(ps->weaponBits, requestedWeapon) == qfalse)) {
-        if (currentWeapon != 0 &&
-            Com_BitCheck(ps->weaponBits, currentWeapon) == qfalse) {
+    if (currentWeapon == requestedWeapon || ((ps->playerStateFlags & PMF_FOLLOW) != 0 && currentWeapon != 0) ||
+        (requestedWeapon != 0 && Com_BitCheck(ps->weaponBits, requestedWeapon) == qfalse)) {
+        if (currentWeapon != 0 && Com_BitCheck(ps->weaponBits, currentWeapon) == qfalse) {
             PM_BeginWeaponChange(currentWeapon, 0);
         }
         return;

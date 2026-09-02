@@ -91,10 +91,11 @@
 #define CG_SB_HEADER_TRAP_FLOAT 0.3f
 
 /* Fixed trailing mode word in the trap-54 draw vector (PUSH 0x3). */
-enum { CG_SB_HEADER_TRAP54_MODE = 3 };
+enum {
+    CG_SB_HEADER_TRAP54_MODE = 3
+};
 
-float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale,
-                                          const vec4_t color)
+float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale, const vec4_t color)
 {
     /* Running left-edge cursor for the current column (stack local F+0x8). */
     float xCursor = CG_SB_HEADER_X_START;
@@ -108,8 +109,7 @@ float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale,
         if (col->headerRef[0] != 0) {
             /* 0x30036d84 CALL CG_SafeTranslateString_Internal("cgame", ref)  (EAX=domain,
              * ECX=ref). Returns a pointer into the shared translate buffer. */
-            const char *str = CG_SafeTranslateString_Internal(CG_SB_LOCALIZATION_DOMAIN,
-                                                 col->headerRef);
+            const char *str = CG_SafeTranslateString_Internal(CG_SB_LOCALIZATION_DOMAIN, col->headerRef);
 
             /* In-cell horizontal offset before the running cursor. Neither branch
              * stores it: the measured branch leaves FMUL/FISUB's result in st(0)
@@ -122,55 +122,35 @@ float CG_DrawScoreboard_ListColumnHeaders(float startY, float widthScale,
             if (col->mode == CG_SB_COLUMN_MODE_MEASURED) {
                 /* 0x30036da8 trap 52: measure the localized string's pixel width.
                  * Args (push order): str, 0, bits(0.3f), 0. Returns int32 width. */
-                int32_t textWidth =
-                    coduo_int32_from_bits((uint32_t)cgame_syscall(CG_R_TEXT_WIDTH,
-                                  (intptr_t)str,
-                                  0,
-                                  CG_FloatBits(CG_SB_HEADER_TRAP_FLOAT),
-                                  0));
+                int32_t textWidth = coduo_int32_from_bits(
+                    (uint32_t)cgame_syscall(CG_R_TEXT_WIDTH, (intptr_t)str, 0, CG_FloatBits(CG_SB_HEADER_TRAP_FLOAT), 0));
 
                 /* 0x30036dae FLD arg1(widthScale); 0x30036db2 FMUL widthFraction;
                  * 0x30036dbc FISUB dword (int)textWidth => right-aligned in-cell x.
                  * FISUB is an INTEGER subtract, so textWidth is NOT rounded to float
                  * first (no (float) cast; the int stays exact in 80-bit as x87 does). */
-                xInCell =
-                    (long double)widthScale *
-                        (long double)col->widthFraction -
-                    (long double)textWidth;
+                xInCell = (long double)widthScale * (long double)col->widthFraction - (long double)textWidth;
             } else {
                 /* 0x30036dc5 FLD [0x3007bcec] = 0.0f. */
                 xInCell = 0.0f;
             }
 
             /* 0x30036dcb FLD arg0(startY); 0x30036dd1 FADD [0x3007c010]=10.5f. */
-            float drawY = (float)(
-                (long double)startY +
-                (long double)CG_SB_HEADER_Y_OFFSET);
+            float drawY = (float)((long double)startY + (long double)CG_SB_HEADER_Y_OFFSET);
 
             /* 0x30036dee FADD [ESP+0x8] => in-cell offset plus running cursor. */
             float drawX = xInCell + xCursor;
 
             /* 0x30036e0f trap 54: 10-slot draw vector.
              * (54, bits(drawX), bits(drawY), 0, bits(0.3f), colorPtr, str, 0, 0, 3) */
-            cgame_syscall(CG_R_TEXT_PAINT,
-                          CG_FloatBits(drawX),
-                          CG_FloatBits(drawY),
-                          0,
-                          CG_FloatBits(CG_SB_HEADER_TRAP_FLOAT),
-                      (intptr_t)color,
-                          (intptr_t)str,
-                          0,
-                          0,
-                          CG_SB_HEADER_TRAP54_MODE);
+            cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(drawX), CG_FloatBits(drawY), 0, CG_FloatBits(CG_SB_HEADER_TRAP_FLOAT),
+                          (intptr_t)color, (intptr_t)str, 0, 0, CG_SB_HEADER_TRAP54_MODE);
         }
 
         /* 0x30036e18 FLD arg1(widthScale); 0x30036e22 FMUL widthFraction (current
          * entry, via post-incremented index / base-0x10 displacement);
          * 0x30036e28 FADD xCursor; FSTP xCursor. */
-        xCursor = (float)(
-            (long double)widthScale *
-                (long double)col->widthFraction +
-            (long double)xCursor);
+        xCursor = (float)((long double)widthScale * (long double)col->widthFraction + (long double)xCursor);
     }
 
     /* 0x30036e36 FLD arg0(startY); 0x30036e3b FADD [0x3007c0a0]=14.0f; RET (st0). */

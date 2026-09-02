@@ -102,28 +102,20 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
 
     // 0x300218a0..0x300218df: primary sound alias = CS_SOUNDS + fxId.
     soundIndex1 = self->currentState.eventParm;
-    cfgIndex = coduo_int32_from_bits(
-        (uint32_t)soundIndex1 + (uint32_t)CS_SOUNDS);
+    cfgIndex = coduo_int32_from_bits((uint32_t)soundIndex1 + (uint32_t)CS_SOUNDS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
-    stringOffset = cgame_compat_read_target_i32_index(
-        cg_gameState.stringOffsets, cfgIndex);
-    soundName = (const char *)(
-        (uintptr_t)(const void *)cg_gameState.stringData +
-        (uintptr_t)(intptr_t)stringOffset);
+    stringOffset = cgame_compat_read_target_i32_index(cg_gameState.stringOffsets, cfgIndex);
+    soundName = (const char *)((uintptr_t)(const void *)cg_gameState.stringData + (uintptr_t)(intptr_t)stringOffset);
     alias1 = trap_Com_PickSoundAlias(soundName, self->lerpOrigin);
 
     // 0x300218df..0x30021924: secondary sound alias = CS_SOUNDS + surfaceType.
     soundIndex2 = self->currentState.loopedFxId;
-    cfgIndex = coduo_int32_from_bits(
-        (uint32_t)soundIndex2 + (uint32_t)CS_SOUNDS);
+    cfgIndex = coduo_int32_from_bits((uint32_t)soundIndex2 + (uint32_t)CS_SOUNDS);
     if (cfgIndex < 0 || cfgIndex >= MAX_CONFIGSTRINGS)
         Com_ErrorMessage("CG_ConfigString: bad index: %i", cfgIndex);
-    stringOffset = cgame_compat_read_target_i32_index(
-        cg_gameState.stringOffsets, cfgIndex);
-    soundName = (const char *)(
-        (uintptr_t)(const void *)cg_gameState.stringData +
-        (uintptr_t)(intptr_t)stringOffset);
+    stringOffset = cgame_compat_read_target_i32_index(cg_gameState.stringOffsets, cfgIndex);
+    soundName = (const char *)((uintptr_t)(const void *)cg_gameState.stringData + (uintptr_t)(intptr_t)stringOffset);
     alias2 = trap_Com_PickSoundAlias(soundName, self->lerpOrigin);
 
     // 0x30021926..0x30021937: only start the pair when both sounds registered.
@@ -138,9 +130,7 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
         float a = self->nextState.leanAmount;
         float b = self->currentState.leanValue;
         float t = cg_frameInterpolation;
-        phase = (float)(
-            ((long double)a - (long double)b) * (long double)t +
-            (long double)b);
+        phase = (float)(((long double)a - (long double)b) * (long double)t + (long double)b);
     } else {
         // 0x30021954..0x300219f0: cyclic (wraparound) interpolation. Split each sample
         // into integer and fractional parts of its magnitude, lerp them separately, and
@@ -160,13 +150,11 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
         const float absAFrac = fabsf(self->nextState.leanAmount);
         volatile double absAFracDouble = (double)absAFrac;
         const double floorFracA = floor(absAFracDouble);
-        float fracA = (float)((long double)absAFrac -
-                              (long double)floorFracA);
+        float fracA = (float)((long double)absAFrac - (long double)floorFracA);
         const float absBFrac = fabsf(self->currentState.leanValue);
         volatile double absBFracDouble = (double)absBFrac;
         const double floorFracB = floor(absBFracDouble);
-        long double fracB =
-            (long double)absBFrac - (long double)floorFracB;
+        long double fracB = (long double)absBFrac - (long double)floorFracB;
         double intLerp;
 
         // FST (no pop) at 0x30021999 rounds a copy into the phase slot while the
@@ -188,12 +176,10 @@ void CG_AddLoopedEntitySound(centity_t *self /* EBX */)
         // 0x300219e4 FSTP QWORD: the lerp rounds to DOUBLE (floor's argument slot).
         float intLerpFraction = cg_frameInterpolation;
         intLerp = (intA - intB) * intLerpFraction + intB;
-        phase = (float)(-(long double)floor(intLerp) -
-                        (long double)phase);
+        phase = (float)(-(long double)floor(intLerp) - (long double)phase);
     }
 
     // 0x30021a0b..0x30021a26: the wrapper receives origin in EDX and a zero
     // timeShift in ECX in addition to its four stack arguments.
-    trap_MSS_PlayBlendedSoundAliases(alias1, alias2, phase, self->currentState.number,
-                                     self->lerpOrigin, 0);
+    trap_MSS_PlayBlendedSoundAliases(alias1, alias2, phase, self->currentState.number, self->lerpOrigin, 0);
 }

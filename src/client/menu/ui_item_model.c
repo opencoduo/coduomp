@@ -15,8 +15,7 @@ enum {
 #define UI_MODEL_VIEW_INSET 1.0f
 #define UI_MODEL_DEPTH_SCALE 0.2680000066757202f
 #define UI_MODEL_MILLISECONDS_PER_SECOND 1000.0f
-#define UI_MODEL_FRAME_TRUNCATION_BIAS \
-    (0.5 - (1.0 / 1073741824.0))
+#define UI_MODEL_FRAME_TRUNCATION_BIAS (0.5 - (1.0 / 1073741824.0))
 
 extern displayContextDef_t *DC;
 void Com_Printf(const char *format, ...);
@@ -49,8 +48,7 @@ void Item_Model_Paint(itemDef_t *item)
     float viewportHeight;
     displayContextDef_t *display;
 
-    if (item->typeValidated != ITEM_TYPE_MODEL &&
-        item->typeValidated != ITEM_TYPE_MENUMODEL) {
+    if (item->typeValidated != ITEM_TYPE_MODEL && item->typeValidated != ITEM_TYPE_MENUMODEL) {
         Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_MODEL, "
                    "or ITEM_TYPE_MENUMODEL\n");
         return;
@@ -105,14 +103,11 @@ void Item_Model_Paint(itemDef_t *item)
     display = DC;
     refdef.time = display->realTime;
 
-    if (model->rotationSpeed != 0 &&
-        display->realTime > item->window.nextTime) {
+    if (model->rotationSpeed != 0 && display->realTime > item->window.nextTime) {
         int32_t rotationTime = display->realTime;
 
-        item->window.nextTime = coduo_int32_from_bits(
-            (uint32_t)rotationTime + (uint32_t)model->rotationSpeed);
-        model->angle = coduo_int32_from_bits(
-            (uint32_t)model->angle + 1u) % UI_MODEL_ANGLE_COUNT;
+        item->window.nextTime = coduo_int32_from_bits((uint32_t)rotationTime + (uint32_t)model->rotationSpeed);
+        model->angle = coduo_int32_from_bits((uint32_t)model->angle + 1u) % UI_MODEL_ANGLE_COUNT;
     }
 
     memset(&entity, 0, sizeof(entity));
@@ -129,44 +124,29 @@ void Item_Model_Paint(itemDef_t *item)
         float fpsFloat;
 
         display = DC;
-        elapsed = coduo_int32_from_bits(
-            (uint32_t)display->realTime - (uint32_t)previousFrameTime);
+        elapsed = coduo_int32_from_bits((uint32_t)display->realTime - (uint32_t)previousFrameTime);
         elapsedFloat = (float)elapsed;
         fpsFloat = (float)model->fps;
-        model->backlerp = (float)(
-            ((long double)elapsedFloat /
-             UI_MODEL_MILLISECONDS_PER_SECOND) *
-                (long double)fpsFloat +
-            (long double)model->backlerp);
+        model->backlerp =
+            (float)(((long double)elapsedFloat / UI_MODEL_MILLISECONDS_PER_SECOND) * (long double)fpsFloat + (long double)model->backlerp);
     }
     if (model->backlerp > 1.0f) {
-        int32_t elapsedFrames = coduo_x87_fistp_i32(
-            (long double)model->backlerp - UI_MODEL_FRAME_TRUNCATION_BIAS);
+        int32_t elapsedFrames = coduo_x87_fistp_i32((long double)model->backlerp - UI_MODEL_FRAME_TRUNCATION_BIAS);
         int32_t startFrame = model->startFrame;
         int32_t numFrames = model->numFrames;
 
-        model->frame = coduo_int32_from_bits(
-            (uint32_t)model->frame + (uint32_t)elapsedFrames);
+        model->frame = coduo_int32_from_bits((uint32_t)model->frame + (uint32_t)elapsedFrames);
         /* NOT_FROM_ORIGINAL_SOURCE: the parser establishes a positive frame
          * span; retain the guard for runtime records while preserving the
          * original positive-span frame wrapping behavior. */
-        if (numFrames > 0 && coduo_int32_from_bits(
-                (uint32_t)model->frame - (uint32_t)startFrame) > numFrames) {
-            model->frame = coduo_int32_from_bits(
-                (uint32_t)(model->frame % numFrames) +
-                (uint32_t)startFrame);
+        if (numFrames > 0 && coduo_int32_from_bits((uint32_t)model->frame - (uint32_t)startFrame) > numFrames) {
+            model->frame = coduo_int32_from_bits((uint32_t)(model->frame % numFrames) + (uint32_t)startFrame);
         }
-        model->oldFrame = coduo_int32_from_bits(
-            (uint32_t)model->oldFrame + (uint32_t)elapsedFrames);
-        if (numFrames > 0 && coduo_int32_from_bits(
-                (uint32_t)model->oldFrame - (uint32_t)startFrame) >
-            numFrames) {
-            model->oldFrame = coduo_int32_from_bits(
-                (uint32_t)(model->oldFrame % numFrames) +
-                (uint32_t)startFrame);
+        model->oldFrame = coduo_int32_from_bits((uint32_t)model->oldFrame + (uint32_t)elapsedFrames);
+        if (numFrames > 0 && coduo_int32_from_bits((uint32_t)model->oldFrame - (uint32_t)startFrame) > numFrames) {
+            model->oldFrame = coduo_int32_from_bits((uint32_t)(model->oldFrame % numFrames) + (uint32_t)startFrame);
         }
-        model->backlerp = (float)(
-            (long double)model->backlerp - (float)elapsedFrames);
+        model->backlerp = (float)((long double)model->backlerp - (float)elapsedFrames);
     }
 
     display = DC;

@@ -86,38 +86,24 @@
 #define CG_FIRE_MODE_MASK 0x7
 
 enum {
-    CG_BULLET_SURFACE_SOUND_COUNT =
-        sizeof(cg_bulletSmallSurfaceSounds) /
-        sizeof(cg_bulletSmallSurfaceSounds[0])
+    CG_BULLET_SURFACE_SOUND_COUNT = sizeof(cg_bulletSmallSurfaceSounds) / sizeof(cg_bulletSmallSurfaceSounds[0])
 };
 
-_Static_assert(CG_BULLET_SURFACE_SOUND_COUNT ==
-                   sizeof(cg_bulletLargeSurfaceSounds) /
-                       sizeof(cg_bulletLargeSurfaceSounds[0]),
+_Static_assert(CG_BULLET_SURFACE_SOUND_COUNT == sizeof(cg_bulletLargeSurfaceSounds) / sizeof(cg_bulletLargeSurfaceSounds[0]),
                "bullet surface sound rows differ in size");
-_Static_assert(CG_BULLET_SURFACE_SOUND_COUNT <=
-                   CG_IMPACT_SURFACE_TYPES,
-               "bullet sound domain exceeds impact effect domain");
+_Static_assert(CG_BULLET_SURFACE_SOUND_COUNT <= CG_IMPACT_SURFACE_TYPES, "bullet sound domain exceeds impact effect domain");
 
-void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
-                       vec3_t effectDir2, int32_t weaponIndex, int32_t surfaceType,
+void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1, vec3_t effectDir2, int32_t weaponIndex, int32_t surfaceType,
                        int32_t linkedEntitySlotPlus1, int32_t vehicleMountPos)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    if (weaponIndex <= 0 ||
-        weaponIndex > bg_numWeapons ||
-        (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
+    if (weaponIndex <= 0 || weaponIndex > bg_numWeapons || (uint32_t)weaponIndex >= (uint32_t)MAX_WEAPONS ||
         bg_weaponInfos[weaponIndex] == NULL) {
-        Com_Printf(
-            "WARNING: CG_BulletHitEvent: invalid weapon index %i\n",
-            weaponIndex);
+        Com_Printf("WARNING: CG_BulletHitEvent: invalid weapon index %i\n", weaponIndex);
         return;
     }
-    if ((uint32_t)surfaceType >=
-        (uint32_t)CG_BULLET_SURFACE_SOUND_COUNT) {
-        Com_Printf(
-            "WARNING: CG_BulletHitEvent: invalid surface type %i\n",
-            surfaceType);
+    if ((uint32_t)surfaceType >= (uint32_t)CG_BULLET_SURFACE_SOUND_COUNT) {
+        Com_Printf("WARNING: CG_BulletHitEvent: invalid surface type %i\n", surfaceType);
         return;
     }
 
@@ -130,21 +116,17 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
         /* 30048ec8: no DObj on the firing entity — only use a caller-supplied slot. */
         if (linkedEntitySlotPlus1 != 0) {
             /* 30048ed0: linkedEntitySlotPlus1 is (slot + 1). */
-            linkedVehicle = cgame_compat_unchecked_cgentity(
-                coduo_int32_from_bits((uint32_t)linkedEntitySlotPlus1 - 1u));
+            linkedVehicle = cgame_compat_unchecked_cgentity(coduo_int32_from_bits((uint32_t)linkedEntitySlotPlus1 - 1u));
         }
     } else if (fireEnt->currentState.eType == ET_VEHICLE) {
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
         if (linkedEntitySlotPlus1 == 0) {
-            Com_Printf(
-                "WARNING: CG_BulletHitEvent: vehicle event has no linked entity\n");
+            Com_Printf("WARNING: CG_BulletHitEvent: vehicle event has no linked entity\n");
             return;
         }
 
-        linkedVehicle = cgame_compat_unchecked_cgentity(
-            coduo_int32_from_bits((uint32_t)linkedEntitySlotPlus1 - 1u));
-    } else if ((fireEnt->currentState.eFlags & 0x100000u) != 0u &&
-               fireEnt->currentState.vehicleEntityNum != 0x3ff) {
+        linkedVehicle = cgame_compat_unchecked_cgentity(coduo_int32_from_bits((uint32_t)linkedEntitySlotPlus1 - 1u));
+    } else if ((fireEnt->currentState.eFlags & 0x100000u) != 0u && fireEnt->currentState.vehicleEntityNum != 0x3ff) {
         /* 30048e87..30048eae: a live vehicle-linked weapon (eFlags bit 0x100000 set,
          * vehicleEntityNum not the 0x3ff sentinel). Suppress when the fire-mode field
          * marks a state that must not spawn a linked tracer: (stateFilter & 0x38)==0x8
@@ -174,15 +156,10 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
     /* 30048f18..30048f27: flat index = surfaceType + fxRow*24 into cg_impactEffects.
      * The primary effect is that entry; the secondary (blood/debris) effect is the same
      * column six rows further on (base 0x3044c4b4 == &cg_impactEffects[0][0] + 6*24). */
-    int32_t flatIndex = coduo_int32_from_bits(
-        (uint32_t)fxRow * (uint32_t)CG_IMPACT_SURFACE_TYPES +
-        (uint32_t)surfaceType);
-    qhandle_t primaryEffect = (qhandle_t)cgame_compat_read_target_i32_index(
-        &cg_impactEffects[0][0], flatIndex);
+    int32_t flatIndex = coduo_int32_from_bits((uint32_t)fxRow * (uint32_t)CG_IMPACT_SURFACE_TYPES + (uint32_t)surfaceType);
+    qhandle_t primaryEffect = (qhandle_t)cgame_compat_read_target_i32_index(&cg_impactEffects[0][0], flatIndex);
     qhandle_t secondaryEffect = (qhandle_t)cgame_compat_read_target_i32_index(
-        &cg_impactEffects[0][0],
-        coduo_int32_from_bits((uint32_t)flatIndex +
-                         6u * CG_IMPACT_SURFACE_TYPES));
+        &cg_impactEffects[0][0], coduo_int32_from_bits((uint32_t)flatIndex + 6u * CG_IMPACT_SURFACE_TYPES));
 
     /* 30048f2d..30048f42: with blood disabled, a flesh hit (surface 7) uses the no-blood
      * flesh impact effect and drops the secondary blood effect. */
@@ -196,24 +173,19 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 
     /* 30048f55..30048f6f: primary oriented impact effect. */
     if (primaryEffect != 0) {
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits((uint32_t)primaryEffect),
-                      (intptr_t)origin, (intptr_t)effectDir1);
+        cgame_syscall(CG_PLAY_EFFECT_ORIENTED, coduo_int32_from_bits((uint32_t)primaryEffect), (intptr_t)origin, (intptr_t)effectDir1);
     }
 
     /* 30048f72..30048f8c: secondary oriented impact effect. */
     if (secondaryEffect != 0) {
-        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                      coduo_int32_from_bits((uint32_t)secondaryEffect),
-                      (intptr_t)origin, (intptr_t)effectDir2);
+        cgame_syscall(CG_PLAY_EFFECT_ORIENTED, coduo_int32_from_bits((uint32_t)secondaryEffect), (intptr_t)origin, (intptr_t)effectDir2);
     }
 
     /* 30048f8f..30049025: vehicle-mounted-weapon tracer. Only when a linked vehicle
      * exists that has a DObj and is an ET_VEHICLE. */
     if (linkedVehicle != 0) {
         /* 30048f97..30048fa9: the linked vehicle must be a renderable ET_VEHICLE. */
-        if (linkedVehicle->currentValid == 0 ||
-            linkedVehicle->currentState.eType != ET_VEHICLE) {
+        if (linkedVehicle->currentValid == 0 || linkedVehicle->currentState.eType != ET_VEHICLE) {
             return;
         }
 
@@ -228,23 +200,20 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
          * vehicleEntityNum when the caller did not supply a slot). */
         int32_t tracerEntityNum;
         if (linkedEntitySlotPlus1 != 0) {
-            tracerEntityNum = coduo_int32_from_bits(
-                (uint32_t)linkedEntitySlotPlus1 - 1u);
+            tracerEntityNum = coduo_int32_from_bits((uint32_t)linkedEntitySlotPlus1 - 1u);
         } else {
             tracerEntityNum = fireEnt->currentState.vehicleEntityNum;
         }
 
         if (mountPos == 2) {
             /* 30048fc9..30048ff7: secondary mount — "tag_secondary_flash". */
-            CG_SpawnTracer(origin, tracerEntityNum, weaponIndex, surfaceType,
-                           cg_muzzleTagNames[5]);
+            CG_SpawnTracer(origin, tracerEntityNum, weaponIndex, surfaceType, cg_muzzleTagNames[5]);
             return;
         }
         if (mountPos == 1) {
             /* 30048ffd..30049011: primary/alt mount — "tag_altfire". Falls through to the
              * shared CG_SpawnTracer call below with tracerEntityNum as the entity. */
-            CG_SpawnTracer(origin, tracerEntityNum, weaponIndex, surfaceType,
-                           cg_muzzleTagNames[4]);
+            CG_SpawnTracer(origin, tracerEntityNum, weaponIndex, surfaceType, cg_muzzleTagNames[4]);
             return;
         }
 
@@ -261,6 +230,5 @@ void CG_BulletHitEvent(int32_t fireEntityNum, vec3_t origin, vec3_t effectDir1,
 
     /* 30049037..30049054: spawn the ordinary "tag_flash" tracer for this shot, keyed on
      * the firing entity number. */
-    CG_SpawnTracer(origin, fireEntityNum, weaponIndex, surfaceType,
-                   cg_muzzleTagNames[0]);
+    CG_SpawnTracer(origin, fireEntityNum, weaponIndex, surfaceType, cg_muzzleTagNames[0]);
 }

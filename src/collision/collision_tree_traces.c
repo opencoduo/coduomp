@@ -29,8 +29,7 @@ extern int32_t cm_checkcount;
  * Name: same-family Linux symbol CM_PositionTest. Stationary traces
  * enumerate the BSP leaves touched by the start-position bounds, expanded by
  * one unit, then test each leaf until one proves the trace wholly solid. */
-void CM_PositionTest(
-    traceWork_t *traceWork)
+void CM_PositionTest(traceWork_t *traceWork)
 {
     enum {
         CM_TEST_TRACE_MAX_LEAVES = 1024
@@ -40,19 +39,12 @@ void CM_PositionTest(
     int32_t leafList[CM_TEST_TRACE_MAX_LEAVES];
 
     leafWork.count = 0;
-    leafWork.maxCount =
-        CM_TEST_TRACE_MAX_LEAVES;
+    leafWork.maxCount = CM_TEST_TRACE_MAX_LEAVES;
     leafWork.overflowed = qfalse;
     leafWork.items = leafList;
     for (int32_t axis = 0; axis < 3; ++axis) {
-        leafWork.mins[axis] =
-            traceWork->start[axis] +
-            traceWork->mins[axis] -
-            1.0f;
-        leafWork.maxs[axis] =
-            traceWork->start[axis] +
-            traceWork->maxs[axis] +
-            1.0f;
+        leafWork.mins[axis] = traceWork->start[axis] + traceWork->mins[axis] - 1.0f;
+        leafWork.maxs[axis] = traceWork->start[axis] + traceWork->maxs[axis] + 1.0f;
     }
     leafWork.lastLeaf = 0;
     leafWork.storeLeafs = CM_StoreLeafs;
@@ -61,12 +53,8 @@ void CM_PositionTest(
     CM_BoxLeafnums_r(&leafWork, 0);
     cm_checkcount++;
 
-    for (int32_t leafIndex = 0;
-         leafIndex < leafWork.count;
-         ++leafIndex) {
-        CM_TestInLeaf(
-            traceWork,
-            &cm_leafs[leafList[leafIndex]]);
+    for (int32_t leafIndex = 0; leafIndex < leafWork.count; ++leafIndex) {
+        CM_TestInLeaf(traceWork, &cm_leafs[leafList[leafIndex]]);
         if (traceWork->trace.allsolid != qfalse)
             return;
     }
@@ -77,10 +65,8 @@ void CM_PositionTest(
  * Name: same-family Linux symbol CM_TraceThroughTree. Recursively split a
  * moving trace at BSP planes, preserving the original z+y+x non-axial dot
  * product order and the two independently clamped child fractions. */
-void CM_TraceThroughTree(
-    traceWork_t *traceWork, int32_t nodeNum,
-    float startFraction, float endFraction,
-    const vec3_t start, const vec3_t end)
+void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum, float startFraction, float endFraction, const vec3_t start,
+                         const vec3_t end)
 {
     vec3_t currentStart = {start[0], start[1], start[2]};
     const float *const currentEnd = end;
@@ -90,57 +76,40 @@ void CM_TraceThroughTree(
      * those proven tail calls; the non-tail near-child call at 0x00427e30
      * remains recursive so leaf order and fraction updates stay unchanged. */
     for (;;) {
-        if (traceWork->trace.fraction <=
-            startFraction) {
+        if (traceWork->trace.fraction <= startFraction) {
             return;
         }
 
         if (nodeNum < 0) {
-            CM_TraceThroughLeaf(
-                traceWork, &cm_leafs[-1 - nodeNum]);
+            CM_TraceThroughLeaf(traceWork, &cm_leafs[-1 - nodeNum]);
             return;
         }
 
-        const collisionNode_t *const node =
-            &cm_nodes[nodeNum];
+        const collisionNode_t *const node = &cm_nodes[nodeNum];
         const cplane_t *const plane = node->plane;
         float startDistance;
         float endDistance;
         float offset;
 
         if (plane->type < 3) {
-            startDistance =
-                currentStart[plane->type] -
-                plane->dist;
-            endDistance =
-                currentEnd[plane->type] -
-                plane->dist;
+            startDistance = currentStart[plane->type] - plane->dist;
+            endDistance = currentEnd[plane->type] - plane->dist;
             offset = traceWork->maxs[plane->type];
         } else {
             startDistance =
-                ((plane->normal[2] * currentStart[2] +
-                  plane->normal[1] * currentStart[1]) +
-                 plane->normal[0] * currentStart[0]) -
+                ((plane->normal[2] * currentStart[2] + plane->normal[1] * currentStart[1]) + plane->normal[0] * currentStart[0]) -
                 plane->dist;
             endDistance =
-                ((plane->normal[2] * currentEnd[2] +
-                  plane->normal[1] * currentEnd[1]) +
-                 plane->normal[0] * currentEnd[0]) -
-                plane->dist;
-            offset =
-                traceWork->isPoint == qfalse
-                    ? 2048.0f
-                    : 0.0f;
+                ((plane->normal[2] * currentEnd[2] + plane->normal[1] * currentEnd[1]) + plane->normal[0] * currentEnd[0]) - plane->dist;
+            offset = traceWork->isPoint == qfalse ? 2048.0f : 0.0f;
         }
 
-        if (startDistance >= offset + 1.0f &&
-            endDistance >= offset + 1.0f) {
+        if (startDistance >= offset + 1.0f && endDistance >= offset + 1.0f) {
             nodeNum = node->children[0];
             continue;
         }
 
-        if (startDistance < -1.0f - offset &&
-            endDistance < -1.0f - offset) {
+        if (startDistance < -1.0f - offset && endDistance < -1.0f - offset) {
             nodeNum = node->children[1];
             continue;
         }
@@ -150,27 +119,15 @@ void CM_TraceThroughTree(
         float secondFraction;
 
         if (startDistance < endDistance) {
-            const float inverseDistance =
-                1.0f /
-                (startDistance - endDistance);
+            const float inverseDistance = 1.0f / (startDistance - endDistance);
             side = 1;
-            secondFraction =
-                (startDistance + offset + 0.125f) *
-                inverseDistance;
-            firstFraction =
-                (startDistance - offset + 0.125f) *
-                inverseDistance;
+            secondFraction = (startDistance + offset + 0.125f) * inverseDistance;
+            firstFraction = (startDistance - offset + 0.125f) * inverseDistance;
         } else if (endDistance < startDistance) {
-            const float inverseDistance =
-                1.0f /
-                (startDistance - endDistance);
+            const float inverseDistance = 1.0f / (startDistance - endDistance);
             side = 0;
-            secondFraction =
-                (startDistance - offset - 0.125f) *
-                inverseDistance;
-            firstFraction =
-                (startDistance + offset + 0.125f) *
-                inverseDistance;
+            secondFraction = (startDistance - offset - 0.125f) * inverseDistance;
+            firstFraction = (startDistance + offset + 0.125f) * inverseDistance;
         } else {
             side = 0;
             firstFraction = 1.0f;
@@ -182,37 +139,22 @@ void CM_TraceThroughTree(
         if (firstFraction > 1.0f)
             firstFraction = 1.0f;
 
-        const float firstMidFraction =
-            startFraction +
-            (endFraction - startFraction) *
-                firstFraction;
+        const float firstMidFraction = startFraction + (endFraction - startFraction) * firstFraction;
         vec3_t mid;
         for (int32_t axis = 0; axis < 3; ++axis) {
-            mid[axis] =
-                currentStart[axis] +
-                (currentEnd[axis] - currentStart[axis]) *
-                    firstFraction;
+            mid[axis] = currentStart[axis] + (currentEnd[axis] - currentStart[axis]) * firstFraction;
         }
 
-        CM_TraceThroughTree(
-            traceWork, node->children[side],
-            startFraction, firstMidFraction,
-            currentStart, mid);
+        CM_TraceThroughTree(traceWork, node->children[side], startFraction, firstMidFraction, currentStart, mid);
 
         if (secondFraction < 0.0f)
             secondFraction = 0.0f;
         if (secondFraction > 1.0f)
             secondFraction = 1.0f;
 
-        const float secondMidFraction =
-            startFraction +
-            (endFraction - startFraction) *
-                secondFraction;
+        const float secondMidFraction = startFraction + (endFraction - startFraction) * secondFraction;
         for (int32_t axis = 0; axis < 3; ++axis) {
-            mid[axis] =
-                currentStart[axis] +
-                (currentEnd[axis] - currentStart[axis]) *
-                    secondFraction;
+            mid[axis] = currentStart[axis] + (currentEnd[axis] - currentStart[axis]) * secondFraction;
         }
 
         nodeNum = node->children[side ^ 1];
@@ -227,103 +169,54 @@ void CM_TraceThroughTree(
  * Name: exact same-module Mac symbol CM_SightTraceThroughTree. Recursively
  * split the sight segment at BSP planes, visit the near child first, and
  * propagate the first nonzero brush or terrain hit number. */
-int32_t CM_SightTraceThroughTree(
-    const traceWork_t *traceWork,
-    int32_t nodeNum,
-    float startFraction, float endFraction,
-    const vec3_t start, const vec3_t end)
+int32_t CM_SightTraceThroughTree(const traceWork_t *traceWork, int32_t nodeNum, float startFraction, float endFraction, const vec3_t start,
+                                 const vec3_t end)
 {
     if (nodeNum < 0) {
-        return CM_SightTraceThroughLeaf(
-            traceWork,
-            &cm_leafs[-1 - nodeNum]);
+        return CM_SightTraceThroughLeaf(traceWork, &cm_leafs[-1 - nodeNum]);
     }
 
-    const collisionNode_t *const node =
-        &cm_nodes[nodeNum];
-    const cplane_t *const plane =
-        node->plane;
+    const collisionNode_t *const node = &cm_nodes[nodeNum];
+    const cplane_t *const plane = node->plane;
     long double startDistanceRaw;
     float endDistance;
     long double offsetRaw;
     const float nonAxialOffset = 2048.0f;
 
     if (plane->type < 3) {
-        startDistanceRaw =
-            (long double)start[plane->type] -
-            plane->dist;
-        endDistance =
-            end[plane->type] -
-            plane->dist;
-        offsetRaw =
-            traceWork->maxs[plane->type];
+        startDistanceRaw = (long double)start[plane->type] - plane->dist;
+        endDistance = end[plane->type] - plane->dist;
+        offsetRaw = traceWork->maxs[plane->type];
     } else {
-        startDistanceRaw =
-            ((long double)plane->normal[1] * start[1] +
-             (long double)plane->normal[2] * start[2]) +
-            (long double)plane->normal[0] * start[0] -
-            plane->dist;
-        endDistance = (float)(
-            ((long double)plane->normal[1] * end[1] +
-             (long double)plane->normal[2] * end[2]) +
-            (long double)plane->normal[0] * end[0] -
-            plane->dist);
-        offsetRaw =
-            traceWork->isPoint == qfalse
-                ? nonAxialOffset
-                : 0.0f;
+        startDistanceRaw = ((long double)plane->normal[1] * start[1] + (long double)plane->normal[2] * start[2]) +
+                           (long double)plane->normal[0] * start[0] - plane->dist;
+        endDistance = (float)(((long double)plane->normal[1] * end[1] + (long double)plane->normal[2] * end[2]) +
+                              (long double)plane->normal[0] * end[0] - plane->dist);
+        offsetRaw = traceWork->isPoint == qfalse ? nonAxialOffset : 0.0f;
     }
 
-    if (startDistanceRaw >= offsetRaw + 1.0f &&
-        (long double)endDistance >=
-            offsetRaw + 1.0f) {
-        return CM_SightTraceThroughTree(
-            traceWork, node->children[0],
-            startFraction, endFraction,
-            start, end);
+    if (startDistanceRaw >= offsetRaw + 1.0f && (long double)endDistance >= offsetRaw + 1.0f) {
+        return CM_SightTraceThroughTree(traceWork, node->children[0], startFraction, endFraction, start, end);
     }
 
-    if (startDistanceRaw < -1.0f - offsetRaw &&
-        (long double)endDistance <
-            -1.0f - offsetRaw) {
-        return CM_SightTraceThroughTree(
-            traceWork, node->children[1],
-            startFraction, endFraction,
-            start, end);
+    if (startDistanceRaw < -1.0f - offsetRaw && (long double)endDistance < -1.0f - offsetRaw) {
+        return CM_SightTraceThroughTree(traceWork, node->children[1], startFraction, endFraction, start, end);
     }
 
     int32_t side;
     float firstFraction;
     long double secondFractionRaw;
     const float splitEpsilon = 0.125f;
-    if (startDistanceRaw <
-        (long double)endDistance) {
-        const long double inverseDistanceRaw =
-            1.0f /
-            (startDistanceRaw - endDistance);
+    if (startDistanceRaw < (long double)endDistance) {
+        const long double inverseDistanceRaw = 1.0f / (startDistanceRaw - endDistance);
         side = 1;
-        firstFraction = (float)(
-            (startDistanceRaw + offsetRaw +
-             splitEpsilon) *
-            inverseDistanceRaw);
-        secondFractionRaw =
-            (startDistanceRaw - offsetRaw +
-             splitEpsilon) *
-            inverseDistanceRaw;
-    } else if ((long double)endDistance <
-               startDistanceRaw) {
-        const long double inverseDistanceRaw =
-            1.0f /
-            (startDistanceRaw - endDistance);
+        firstFraction = (float)((startDistanceRaw + offsetRaw + splitEpsilon) * inverseDistanceRaw);
+        secondFractionRaw = (startDistanceRaw - offsetRaw + splitEpsilon) * inverseDistanceRaw;
+    } else if ((long double)endDistance < startDistanceRaw) {
+        const long double inverseDistanceRaw = 1.0f / (startDistanceRaw - endDistance);
         side = 0;
-        firstFraction = (float)(
-            (startDistanceRaw - offsetRaw -
-             splitEpsilon) *
-            inverseDistanceRaw);
-        secondFractionRaw =
-            (startDistanceRaw + offsetRaw +
-             splitEpsilon) *
-            inverseDistanceRaw;
+        firstFraction = (float)((startDistanceRaw - offsetRaw - splitEpsilon) * inverseDistanceRaw);
+        secondFractionRaw = (startDistanceRaw + offsetRaw + splitEpsilon) * inverseDistanceRaw;
     } else {
         side = 0;
         firstFraction = 0.0f;
@@ -335,26 +228,13 @@ int32_t CM_SightTraceThroughTree(
     if (secondFractionRaw > 1.0f)
         secondFractionRaw = 1.0f;
 
-    const float secondMidFraction = (float)(
-        (long double)startFraction +
-        ((long double)endFraction -
-         startFraction) *
-            secondFractionRaw);
+    const float secondMidFraction = (float)((long double)startFraction + ((long double)endFraction - startFraction) * secondFractionRaw);
     vec3_t mid;
-    for (int32_t axis = 0; axis < 3;
-         ++axis) {
-        mid[axis] = (float)(
-            (long double)start[axis] +
-            ((long double)end[axis] -
-             start[axis]) *
-                secondFractionRaw);
+    for (int32_t axis = 0; axis < 3; ++axis) {
+        mid[axis] = (float)((long double)start[axis] + ((long double)end[axis] - start[axis]) * secondFractionRaw);
     }
 
-    const int32_t sightHit =
-        CM_SightTraceThroughTree(
-            traceWork, node->children[side],
-            startFraction, secondMidFraction,
-            start, mid);
+    const int32_t sightHit = CM_SightTraceThroughTree(traceWork, node->children[side], startFraction, secondMidFraction, start, mid);
     if (sightHit != 0)
         return sightHit;
 
@@ -363,22 +243,12 @@ int32_t CM_SightTraceThroughTree(
     if (firstFraction > 1.0f)
         firstFraction = 1.0f;
 
-    const float firstMidFraction =
-        startFraction +
-        (endFraction - startFraction) *
-            firstFraction;
-    for (int32_t axis = 0; axis < 3;
-         ++axis) {
-        mid[axis] =
-            start[axis] +
-            (end[axis] - start[axis]) *
-                firstFraction;
+    const float firstMidFraction = startFraction + (endFraction - startFraction) * firstFraction;
+    for (int32_t axis = 0; axis < 3; ++axis) {
+        mid[axis] = start[axis] + (end[axis] - start[axis]) * firstFraction;
     }
 
-    return CM_SightTraceThroughTree(
-        traceWork, node->children[side ^ 1],
-        firstMidFraction, endFraction,
-        mid, end);
+    return CM_SightTraceThroughTree(traceWork, node->children[side ^ 1], firstMidFraction, endFraction, mid, end);
 }
 #else
 
@@ -428,9 +298,8 @@ void CM_PositionTest(traceWork_t *traceWork)
 }
 
 
-void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
-                         float startFraction, float endFraction,
-                         const vec3_t start, const vec3_t end)
+void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum, float startFraction, float endFraction, const vec3_t start,
+                         const vec3_t end)
 {
     if (traceWork->trace.fraction <= startFraction) {
         return;
@@ -449,12 +318,8 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
 
     if (plane->type < 3) {
 #if EMULATE_X87
-        startDistance = x87f_store_f32(
-            x87f_sub(x87f_load_f32(start[plane->type]),
-                     x87f_load_f32(plane->dist)));
-        endDistance = x87f_store_f32(
-            x87f_sub(x87f_load_f32(end[plane->type]),
-                     x87f_load_f32(plane->dist)));
+        startDistance = x87f_store_f32(x87f_sub(x87f_load_f32(start[plane->type]), x87f_load_f32(plane->dist)));
+        endDistance = x87f_store_f32(x87f_sub(x87f_load_f32(end[plane->type]), x87f_load_f32(plane->dist)));
 #else
         startDistance = start[plane->type] - plane->dist;
         endDistance = end[plane->type] - plane->dist;
@@ -469,33 +334,19 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
          * diverges by 1-2 ULP on roughly a quarter of realistic plane/point
          * values), so keep it one expression. */
 #if EMULATE_X87
-        startDistance = x87f_store_f32(x87f_sub(
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]),
-                                       x87f_load_f32(start[0])),
-                              x87f_mul(x87f_load_f32(plane->normal[1]),
-                                       x87f_load_f32(start[1]))),
-                     x87f_mul(x87f_load_f32(plane->normal[2]),
-                              x87f_load_f32(start[2]))),
-            x87f_load_f32(plane->dist)));
+        startDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]), x87f_load_f32(start[0])),
+                                                                  x87f_mul(x87f_load_f32(plane->normal[1]), x87f_load_f32(start[1]))),
+                                                         x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(start[2]))),
+                                                x87f_load_f32(plane->dist)));
 
-        endDistance = x87f_store_f32(x87f_sub(
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]),
-                                       x87f_load_f32(end[0])),
-                              x87f_mul(x87f_load_f32(plane->normal[1]),
-                                       x87f_load_f32(end[1]))),
-                     x87f_mul(x87f_load_f32(plane->normal[2]),
-                              x87f_load_f32(end[2]))),
-            x87f_load_f32(plane->dist)));
+        endDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]), x87f_load_f32(end[0])),
+                                                                x87f_mul(x87f_load_f32(plane->normal[1]), x87f_load_f32(end[1]))),
+                                                       x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(end[2]))),
+                                              x87f_load_f32(plane->dist)));
 #else
-        startDistance = ((plane->normal[0] * start[0]) +
-                         (plane->normal[1] * start[1]) +
-                         (plane->normal[2] * start[2])) -
-                        plane->dist;
+        startDistance = ((plane->normal[0] * start[0]) + (plane->normal[1] * start[1]) + (plane->normal[2] * start[2])) - plane->dist;
 
-        endDistance = ((plane->normal[0] * end[0]) +
-                       (plane->normal[1] * end[1]) +
-                       (plane->normal[2] * end[2])) -
-                      plane->dist;
+        endDistance = ((plane->normal[0] * end[0]) + (plane->normal[1] * end[1]) + (plane->normal[2] * end[2])) - plane->dist;
 #endif
 
         if (traceWork->isPoint == 0) {
@@ -509,36 +360,26 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
     /* The side tests form offset+1 and -1-offset in 80-bit and compare there
      * (fld offset; fld1; faddp; fld distance; fucompp) — no float store, so
      * they must not round the sum first. */
-    const x87f sideOffsetPlusOne =
-        x87f_add(x87f_load_f32(offset), x87f_load_f32(1.0f));
-    const x87f sideMinusOneMinusOffset =
-        x87f_sub(x87f_load_f32(-1.0f), x87f_load_f32(offset));
+    const x87f sideOffsetPlusOne = x87f_add(x87f_load_f32(offset), x87f_load_f32(1.0f));
+    const x87f sideMinusOneMinusOffset = x87f_sub(x87f_load_f32(-1.0f), x87f_load_f32(offset));
 
-    if (!x87f_lt(x87f_load_f32(startDistance), sideOffsetPlusOne) &&
-        !x87f_lt(x87f_load_f32(endDistance), sideOffsetPlusOne)) {
-        CM_TraceThroughTree(traceWork, node->children[0], startFraction,
-                            endFraction, start, end);
+    if (!x87f_lt(x87f_load_f32(startDistance), sideOffsetPlusOne) && !x87f_lt(x87f_load_f32(endDistance), sideOffsetPlusOne)) {
+        CM_TraceThroughTree(traceWork, node->children[0], startFraction, endFraction, start, end);
         return;
     }
 
-    if (x87f_lt(x87f_load_f32(startDistance), sideMinusOneMinusOffset) &&
-        x87f_lt(x87f_load_f32(endDistance), sideMinusOneMinusOffset)) {
-        CM_TraceThroughTree(traceWork, node->children[1], startFraction,
-                            endFraction, start, end);
+    if (x87f_lt(x87f_load_f32(startDistance), sideMinusOneMinusOffset) && x87f_lt(x87f_load_f32(endDistance), sideMinusOneMinusOffset)) {
+        CM_TraceThroughTree(traceWork, node->children[1], startFraction, endFraction, start, end);
         return;
     }
 #else
-    if (startDistance >= offset + 1.0f &&
-        endDistance >= offset + 1.0f) {
-        CM_TraceThroughTree(traceWork, node->children[0], startFraction,
-                            endFraction, start, end);
+    if (startDistance >= offset + 1.0f && endDistance >= offset + 1.0f) {
+        CM_TraceThroughTree(traceWork, node->children[0], startFraction, endFraction, start, end);
         return;
     }
 
-    if (startDistance < -1.0f - offset &&
-        endDistance < -1.0f - offset) {
-        CM_TraceThroughTree(traceWork, node->children[1], startFraction,
-                            endFraction, start, end);
+    if (startDistance < -1.0f - offset && endDistance < -1.0f - offset) {
+        CM_TraceThroughTree(traceWork, node->children[1], startFraction, endFraction, start, end);
         return;
     }
 #endif
@@ -552,22 +393,16 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
         /* 1/(startDistance-endDistance) in 80-bit rounded to float (fld;fsub;
          * fld1;fdivrp;fstp); each fraction is one 80-bit chain rounded once
          * (fadd offset; fld 0.125f; faddp; fmul inverseDistance; fstp). */
-        const float inverseDistance = x87f_store_f32(
-            x87f_div(x87f_load_f32(1.0f),
-                     x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(endDistance))));
+        const float inverseDistance =
+            x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 
         side = 1;
-        secondFraction = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_add(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
-        firstFraction = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
+        secondFraction =
+            x87f_store_f32(x87f_mul(x87f_add(x87f_add(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
+        firstFraction =
+            x87f_store_f32(x87f_mul(x87f_add(x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
 #else
         const float inverseDistance = 1.0f / (startDistance - endDistance);
 
@@ -577,28 +412,21 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
 #endif
     } else if (endDistance < startDistance) {
 #if EMULATE_X87
-        const float inverseDistance = x87f_store_f32(
-            x87f_div(x87f_load_f32(1.0f),
-                     x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(endDistance))));
+        const float inverseDistance =
+            x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 
         side = 0;
-        secondFraction = x87f_store_f32(x87f_mul(
-            x87f_sub(x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
-        firstFraction = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_add(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
+        secondFraction =
+            x87f_store_f32(x87f_mul(x87f_sub(x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
+        firstFraction =
+            x87f_store_f32(x87f_mul(x87f_add(x87f_add(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
 #else
         const float inverseDistance = 1.0f / (startDistance - endDistance);
 
         side = 0;
-        secondFraction =
-            (startDistance - offset - 0.125f) * inverseDistance;
+        secondFraction = (startDistance - offset - 0.125f) * inverseDistance;
         firstFraction = (startDistance + offset + 0.125f) * inverseDistance;
 #endif
     } else {
@@ -617,23 +445,18 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
 #if EMULATE_X87
     /* Each lerp is one 80-bit chain rounded once at the store
      * (fld end; fsub start; fmul frac; fld start; faddp; fstp). */
-    const float firstMidFraction = x87f_store_f32(x87f_add(
-        x87f_load_f32(startFraction),
-        x87f_mul(x87f_sub(x87f_load_f32(endFraction),
-                          x87f_load_f32(startFraction)),
-                 x87f_load_f32(firstFraction))));
+    const float firstMidFraction =
+        x87f_store_f32(x87f_add(x87f_load_f32(startFraction), x87f_mul(x87f_sub(x87f_load_f32(endFraction), x87f_load_f32(startFraction)),
+                                                                       x87f_load_f32(firstFraction))));
     vec3_t mid;
 
     for (int32_t axis = 0; axis < 3; ++axis) {
-        mid[axis] = x87f_store_f32(x87f_add(
-            x87f_load_f32(start[axis]),
-            x87f_mul(x87f_sub(x87f_load_f32(end[axis]),
-                              x87f_load_f32(start[axis])),
-                     x87f_load_f32(firstFraction))));
+        mid[axis] =
+            x87f_store_f32(x87f_add(x87f_load_f32(start[axis]), x87f_mul(x87f_sub(x87f_load_f32(end[axis]), x87f_load_f32(start[axis])),
+                                                                         x87f_load_f32(firstFraction))));
     }
 #else
-    const float firstMidFraction =
-        startFraction + (endFraction - startFraction) * firstFraction;
+    const float firstMidFraction = startFraction + (endFraction - startFraction) * firstFraction;
     vec3_t mid;
 
     mid[0] = start[0] + (end[0] - start[0]) * firstFraction;
@@ -641,8 +464,7 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
     mid[2] = start[2] + (end[2] - start[2]) * firstFraction;
 #endif
 
-    CM_TraceThroughTree(traceWork, node->children[side], startFraction,
-                        firstMidFraction, start, mid);
+    CM_TraceThroughTree(traceWork, node->children[side], startFraction, firstMidFraction, start, mid);
 
     if (secondFraction < 0.0f) {
         secondFraction = 0.0f;
@@ -652,40 +474,29 @@ void CM_TraceThroughTree(traceWork_t *traceWork, int32_t nodeNum,
     }
 
 #if EMULATE_X87
-    const float secondMidFraction = x87f_store_f32(x87f_add(
-        x87f_load_f32(startFraction),
-        x87f_mul(x87f_sub(x87f_load_f32(endFraction),
-                          x87f_load_f32(startFraction)),
-                 x87f_load_f32(secondFraction))));
+    const float secondMidFraction =
+        x87f_store_f32(x87f_add(x87f_load_f32(startFraction), x87f_mul(x87f_sub(x87f_load_f32(endFraction), x87f_load_f32(startFraction)),
+                                                                       x87f_load_f32(secondFraction))));
 
     for (int32_t axis = 0; axis < 3; ++axis) {
-        mid[axis] = x87f_store_f32(x87f_add(
-            x87f_load_f32(start[axis]),
-            x87f_mul(x87f_sub(x87f_load_f32(end[axis]),
-                              x87f_load_f32(start[axis])),
-                     x87f_load_f32(secondFraction))));
+        mid[axis] =
+            x87f_store_f32(x87f_add(x87f_load_f32(start[axis]), x87f_mul(x87f_sub(x87f_load_f32(end[axis]), x87f_load_f32(start[axis])),
+                                                                         x87f_load_f32(secondFraction))));
     }
 #else
-    const float secondMidFraction =
-        startFraction + (endFraction - startFraction) * secondFraction;
+    const float secondMidFraction = startFraction + (endFraction - startFraction) * secondFraction;
 
     mid[0] = start[0] + (end[0] - start[0]) * secondFraction;
     mid[1] = start[1] + (end[1] - start[1]) * secondFraction;
     mid[2] = start[2] + (end[2] - start[2]) * secondFraction;
 #endif
 
-    CM_TraceThroughTree(traceWork, node->children[side ^ 1],
-                        secondMidFraction, endFraction, mid, end);
+    CM_TraceThroughTree(traceWork, node->children[side ^ 1], secondMidFraction, endFraction, mid, end);
 }
 
 
-int32_t
-CM_SightTraceThroughTree(const traceWork_t *traceWork,
-                         int32_t nodeNum,
-                         float startFraction,
-                         float endFraction,
-                         const vec3_t start,
-                         const vec3_t end)
+int32_t CM_SightTraceThroughTree(const traceWork_t *traceWork, int32_t nodeNum, float startFraction, float endFraction, const vec3_t start,
+                                 const vec3_t end)
 {
     if (nodeNum < 0) {
         return CM_SightTraceThroughLeaf(traceWork, &cm_leafs[-1 - nodeNum]);
@@ -699,12 +510,8 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
 
     if (plane->type < 3) {
 #if EMULATE_X87
-        startDistance = x87f_store_f32(
-            x87f_sub(x87f_load_f32(start[plane->type]),
-                     x87f_load_f32(plane->dist)));
-        endDistance = x87f_store_f32(
-            x87f_sub(x87f_load_f32(end[plane->type]),
-                     x87f_load_f32(plane->dist)));
+        startDistance = x87f_store_f32(x87f_sub(x87f_load_f32(start[plane->type]), x87f_load_f32(plane->dist)));
+        endDistance = x87f_store_f32(x87f_sub(x87f_load_f32(end[plane->type]), x87f_load_f32(plane->dist)));
 #else
         startDistance = start[plane->type] - plane->dist;
         endDistance = end[plane->type] - plane->dist;
@@ -717,33 +524,19 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
          * ...` form would round the float slot four times and does NOT match
          * the stock binary, so keep it one expression. */
 #if EMULATE_X87
-        startDistance = x87f_store_f32(x87f_sub(
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]),
-                                       x87f_load_f32(start[0])),
-                              x87f_mul(x87f_load_f32(plane->normal[1]),
-                                       x87f_load_f32(start[1]))),
-                     x87f_mul(x87f_load_f32(plane->normal[2]),
-                              x87f_load_f32(start[2]))),
-            x87f_load_f32(plane->dist)));
+        startDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]), x87f_load_f32(start[0])),
+                                                                  x87f_mul(x87f_load_f32(plane->normal[1]), x87f_load_f32(start[1]))),
+                                                         x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(start[2]))),
+                                                x87f_load_f32(plane->dist)));
 
-        endDistance = x87f_store_f32(x87f_sub(
-            x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]),
-                                       x87f_load_f32(end[0])),
-                              x87f_mul(x87f_load_f32(plane->normal[1]),
-                                       x87f_load_f32(end[1]))),
-                     x87f_mul(x87f_load_f32(plane->normal[2]),
-                              x87f_load_f32(end[2]))),
-            x87f_load_f32(plane->dist)));
+        endDistance = x87f_store_f32(x87f_sub(x87f_add(x87f_add(x87f_mul(x87f_load_f32(plane->normal[0]), x87f_load_f32(end[0])),
+                                                                x87f_mul(x87f_load_f32(plane->normal[1]), x87f_load_f32(end[1]))),
+                                                       x87f_mul(x87f_load_f32(plane->normal[2]), x87f_load_f32(end[2]))),
+                                              x87f_load_f32(plane->dist)));
 #else
-        startDistance = ((plane->normal[0] * start[0]) +
-                         (plane->normal[1] * start[1]) +
-                         (plane->normal[2] * start[2])) -
-                        plane->dist;
+        startDistance = ((plane->normal[0] * start[0]) + (plane->normal[1] * start[1]) + (plane->normal[2] * start[2])) - plane->dist;
 
-        endDistance = ((plane->normal[0] * end[0]) +
-                       (plane->normal[1] * end[1]) +
-                       (plane->normal[2] * end[2])) -
-                      plane->dist;
+        endDistance = ((plane->normal[0] * end[0]) + (plane->normal[1] * end[1]) + (plane->normal[2] * end[2])) - plane->dist;
 #endif
 
         if (traceWork->isPoint == 0) {
@@ -755,37 +548,23 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
 
 #if EMULATE_X87
     /* offset+1 and -1-offset are formed and compared in 80-bit (no store). */
-    const x87f sideOffsetPlusOne =
-        x87f_add(x87f_load_f32(offset), x87f_load_f32(1.0f));
-    const x87f sideMinusOneMinusOffset =
-        x87f_sub(x87f_load_f32(-1.0f), x87f_load_f32(offset));
+    const x87f sideOffsetPlusOne = x87f_add(x87f_load_f32(offset), x87f_load_f32(1.0f));
+    const x87f sideMinusOneMinusOffset = x87f_sub(x87f_load_f32(-1.0f), x87f_load_f32(offset));
 
-    if (!x87f_lt(x87f_load_f32(startDistance), sideOffsetPlusOne) &&
-        !x87f_lt(x87f_load_f32(endDistance), sideOffsetPlusOne)) {
-        return CM_SightTraceThroughTree(traceWork, node->children[0],
-                                        startFraction, endFraction, start,
-                                        end);
+    if (!x87f_lt(x87f_load_f32(startDistance), sideOffsetPlusOne) && !x87f_lt(x87f_load_f32(endDistance), sideOffsetPlusOne)) {
+        return CM_SightTraceThroughTree(traceWork, node->children[0], startFraction, endFraction, start, end);
     }
 
-    if (x87f_lt(x87f_load_f32(startDistance), sideMinusOneMinusOffset) &&
-        x87f_lt(x87f_load_f32(endDistance), sideMinusOneMinusOffset)) {
-        return CM_SightTraceThroughTree(traceWork, node->children[1],
-                                        startFraction, endFraction, start,
-                                        end);
+    if (x87f_lt(x87f_load_f32(startDistance), sideMinusOneMinusOffset) && x87f_lt(x87f_load_f32(endDistance), sideMinusOneMinusOffset)) {
+        return CM_SightTraceThroughTree(traceWork, node->children[1], startFraction, endFraction, start, end);
     }
 #else
-    if (startDistance >= offset + 1.0f &&
-        endDistance >= offset + 1.0f) {
-        return CM_SightTraceThroughTree(traceWork, node->children[0],
-                                        startFraction, endFraction, start,
-                                        end);
+    if (startDistance >= offset + 1.0f && endDistance >= offset + 1.0f) {
+        return CM_SightTraceThroughTree(traceWork, node->children[0], startFraction, endFraction, start, end);
     }
 
-    if (startDistance < -1.0f - offset &&
-        endDistance < -1.0f - offset) {
-        return CM_SightTraceThroughTree(traceWork, node->children[1],
-                                        startFraction, endFraction, start,
-                                        end);
+    if (startDistance < -1.0f - offset && endDistance < -1.0f - offset) {
+        return CM_SightTraceThroughTree(traceWork, node->children[1], startFraction, endFraction, start, end);
     }
 #endif
 
@@ -795,22 +574,16 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
 
     if (startDistance < endDistance) {
 #if EMULATE_X87
-        const float inverseDistance = x87f_store_f32(
-            x87f_div(x87f_load_f32(1.0f),
-                     x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(endDistance))));
+        const float inverseDistance =
+            x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 
         side = 1;
-        firstFraction = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_add(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
-        secondFraction = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
+        firstFraction =
+            x87f_store_f32(x87f_mul(x87f_add(x87f_add(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
+        secondFraction =
+            x87f_store_f32(x87f_mul(x87f_add(x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
 #else
         const float inverseDistance = 1.0f / (startDistance - endDistance);
 
@@ -820,28 +593,21 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
 #endif
     } else if (endDistance < startDistance) {
 #if EMULATE_X87
-        const float inverseDistance = x87f_store_f32(
-            x87f_div(x87f_load_f32(1.0f),
-                     x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(endDistance))));
+        const float inverseDistance =
+            x87f_store_f32(x87f_div(x87f_load_f32(1.0f), x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(endDistance))));
 
         side = 0;
-        firstFraction = x87f_store_f32(x87f_mul(
-            x87f_sub(x87f_sub(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
-        secondFraction = x87f_store_f32(x87f_mul(
-            x87f_add(x87f_add(x87f_load_f32(startDistance),
-                              x87f_load_f32(offset)),
-                     x87f_load_f32(0.125f)),
-            x87f_load_f32(inverseDistance)));
+        firstFraction =
+            x87f_store_f32(x87f_mul(x87f_sub(x87f_sub(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
+        secondFraction =
+            x87f_store_f32(x87f_mul(x87f_add(x87f_add(x87f_load_f32(startDistance), x87f_load_f32(offset)), x87f_load_f32(0.125f)),
+                                    x87f_load_f32(inverseDistance)));
 #else
         const float inverseDistance = 1.0f / (startDistance - endDistance);
 
         side = 0;
-        firstFraction =
-            (startDistance - offset - 0.125f) * inverseDistance;
+        firstFraction = (startDistance - offset - 0.125f) * inverseDistance;
         secondFraction = (startDistance + offset + 0.125f) * inverseDistance;
 #endif
     } else {
@@ -858,23 +624,18 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
     }
 
 #if EMULATE_X87
-    const float secondMidFraction = x87f_store_f32(x87f_add(
-        x87f_load_f32(startFraction),
-        x87f_mul(x87f_sub(x87f_load_f32(endFraction),
-                          x87f_load_f32(startFraction)),
-                 x87f_load_f32(secondFraction))));
+    const float secondMidFraction =
+        x87f_store_f32(x87f_add(x87f_load_f32(startFraction), x87f_mul(x87f_sub(x87f_load_f32(endFraction), x87f_load_f32(startFraction)),
+                                                                       x87f_load_f32(secondFraction))));
     vec3_t mid;
 
     for (int32_t axis = 0; axis < 3; ++axis) {
-        mid[axis] = x87f_store_f32(x87f_add(
-            x87f_load_f32(start[axis]),
-            x87f_mul(x87f_sub(x87f_load_f32(end[axis]),
-                              x87f_load_f32(start[axis])),
-                     x87f_load_f32(secondFraction))));
+        mid[axis] =
+            x87f_store_f32(x87f_add(x87f_load_f32(start[axis]), x87f_mul(x87f_sub(x87f_load_f32(end[axis]), x87f_load_f32(start[axis])),
+                                                                         x87f_load_f32(secondFraction))));
     }
 #else
-    const float secondMidFraction =
-        startFraction + (endFraction - startFraction) * secondFraction;
+    const float secondMidFraction = startFraction + (endFraction - startFraction) * secondFraction;
     vec3_t mid;
 
     mid[0] = start[0] + (end[0] - start[0]) * secondFraction;
@@ -882,10 +643,7 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
     mid[2] = start[2] + (end[2] - start[2]) * secondFraction;
 #endif
 
-    const int32_t sightHit =
-        CM_SightTraceThroughTree(traceWork, node->children[side],
-                                 startFraction, secondMidFraction, start,
-                                 mid);
+    const int32_t sightHit = CM_SightTraceThroughTree(traceWork, node->children[side], startFraction, secondMidFraction, start, mid);
     if (sightHit != 0) {
         return sightHit;
     }
@@ -898,29 +656,23 @@ CM_SightTraceThroughTree(const traceWork_t *traceWork,
     }
 
 #if EMULATE_X87
-    const float firstMidFraction = x87f_store_f32(x87f_add(
-        x87f_load_f32(startFraction),
-        x87f_mul(x87f_sub(x87f_load_f32(endFraction),
-                          x87f_load_f32(startFraction)),
-                 x87f_load_f32(firstFraction))));
+    const float firstMidFraction =
+        x87f_store_f32(x87f_add(x87f_load_f32(startFraction), x87f_mul(x87f_sub(x87f_load_f32(endFraction), x87f_load_f32(startFraction)),
+                                                                       x87f_load_f32(firstFraction))));
 
     for (int32_t axis = 0; axis < 3; ++axis) {
-        mid[axis] = x87f_store_f32(x87f_add(
-            x87f_load_f32(start[axis]),
-            x87f_mul(x87f_sub(x87f_load_f32(end[axis]),
-                              x87f_load_f32(start[axis])),
-                     x87f_load_f32(firstFraction))));
+        mid[axis] =
+            x87f_store_f32(x87f_add(x87f_load_f32(start[axis]), x87f_mul(x87f_sub(x87f_load_f32(end[axis]), x87f_load_f32(start[axis])),
+                                                                         x87f_load_f32(firstFraction))));
     }
 #else
-    const float firstMidFraction =
-        startFraction + (endFraction - startFraction) * firstFraction;
+    const float firstMidFraction = startFraction + (endFraction - startFraction) * firstFraction;
 
     mid[0] = start[0] + (end[0] - start[0]) * firstFraction;
     mid[1] = start[1] + (end[1] - start[1]) * firstFraction;
     mid[2] = start[2] + (end[2] - start[2]) * firstFraction;
 #endif
 
-    return CM_SightTraceThroughTree(traceWork, node->children[side ^ 1],
-                                    firstMidFraction, endFraction, mid, end);
+    return CM_SightTraceThroughTree(traceWork, node->children[side ^ 1], firstMidFraction, endFraction, mid, end);
 }
 #endif

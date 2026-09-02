@@ -38,18 +38,13 @@ void gunrandom(float *x, float *y)
     int32_t angleRandom;
     int32_t magnitudeRandom;
 
-    gunrandomSeed = gunrandomSeed * MSVC_RAND_MULTIPLIER +
-                    MSVC_RAND_INCREMENT;
+    gunrandomSeed = gunrandomSeed * MSVC_RAND_MULTIPLIER + MSVC_RAND_INCREMENT;
     angleRandom = (int32_t)((gunrandomSeed >> 16) & MSVC_RAND_MAXIMUM);
-    gunrandomSeed = gunrandomSeed * MSVC_RAND_MULTIPLIER +
-                    MSVC_RAND_INCREMENT;
-    magnitudeRandom =
-        (int32_t)((gunrandomSeed >> 16) & MSVC_RAND_MAXIMUM);
+    gunrandomSeed = gunrandomSeed * MSVC_RAND_MULTIPLIER + MSVC_RAND_INCREMENT;
+    magnitudeRandom = (int32_t)((gunrandomSeed >> 16) & MSVC_RAND_MAXIMUM);
 
-    angle = (float)((long double)(float)angleRandom / randomDivisor *
-                    fullCircleDegrees);
-    magnitude =
-        (float)((long double)(float)magnitudeRandom / randomDivisor);
+    angle = (float)((long double)(float)angleRandom / randomDivisor * fullCircleDegrees);
+    magnitude = (float)((long double)(float)magnitudeRandom / randomDivisor);
     angle = (float)((long double)angle * pi / degreesPerHalfCircle);
     {
         float sine;

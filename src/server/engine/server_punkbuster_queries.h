@@ -12,8 +12,7 @@ extern "C" {
 int32_t Pb_Q_maxclients(void);
 qboolean Pb_Q_client(int32_t clientNum, char *info);
 qboolean Pb_Q_stats(int32_t clientNum, char *info);
-void SV_SendPbPacket(int32_t length, const void *data,
-                     int32_t clientNum);
+void SV_SendPbPacket(int32_t length, const void *data, int32_t clientNum);
 
 #ifdef __cplusplus
 }

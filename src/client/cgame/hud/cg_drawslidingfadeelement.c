@@ -53,7 +53,9 @@
  */
 
 /* trap 0x1a's trailing mode/count argument; role only, exact meaning unproven. */
-enum { CG_SLIDING_FADE_DRAW_MODE = 2 };
+enum {
+    CG_SLIDING_FADE_DRAW_MODE = 2
+};
 
 void CG_DrawSlidingFadeElement(void)
 {
@@ -88,8 +90,7 @@ void CG_DrawSlidingFadeElement(void)
          * expired, in which case nothing is drawn.
          */
         int32_t scoreboardShowTime = cg_scoreboardShowTime;
-        const vec_t *color = CG_FadeColor(
-            scoreboardShowTime, CG_FADE_TIME);
+        const vec_t *color = CG_FadeColor(scoreboardShowTime, CG_FADE_TIME);
         if (color == NULL) {
             /* 0x3001af58 JZ 0x3001afbd: skip the draw entirely. */
             return;
@@ -98,16 +99,13 @@ void CG_DrawSlidingFadeElement(void)
          * 0x3001af5a FLD cg_hudAlpha_vmCvar.value / 0x3001af60 FMUL color[3] / 0x3001af63
          * FSTP: alpha = cg_hudAlpha_vmCvar.value * fade alpha (color[3]).
          */
-        alpha = (float)(
-            (long double)cg_hudAlpha_vmCvar.value
-            * (long double)color[3]);
+        alpha = (float)((long double)cg_hudAlpha_vmCvar.value * (long double)color[3]);
     } else {
         /*
          * 0x3001af68 MOV EAX,[cg_hudAlpha_vmCvar.value] / 0x3001af6d MOV [ESP],EAX: the raw
          * 32-bit float word is used directly, without an x87 promotion.
          */
-        alpha = CG_FloatFromBits(
-            (uint32_t)CG_FloatBits(cg_hudAlpha_vmCvar.value));
+        alpha = CG_FloatFromBits((uint32_t)CG_FloatBits(cg_hudAlpha_vmCvar.value));
     }
 
     /*
@@ -130,6 +128,5 @@ void CG_DrawSlidingFadeElement(void)
     int32_t deadAlphaCopy = alphaBits;
     int32_t yArg = y;
     (void)deadAlphaCopy;
-    cgame_syscall(CG_DRAW_SLIDING_FADE_ELEMENT, yArg, xArg, alphaBits,
-                  CG_SLIDING_FADE_DRAW_MODE);
+    cgame_syscall(CG_DRAW_SLIDING_FADE_ELEMENT, yArg, xArg, alphaBits, CG_SLIDING_FADE_DRAW_MODE);
 }

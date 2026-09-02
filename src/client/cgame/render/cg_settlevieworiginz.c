@@ -48,8 +48,7 @@
 void CG_SettleViewOriginZ(void)
 {
     int32_t now = coduo_int32_from_bits(cg_time);
-    int32_t elapsed = coduo_int32_from_bits(
-        cg_time - (uint32_t)cg_weaponChangeViewOffsetTime);
+    int32_t elapsed = coduo_int32_from_bits(cg_time - (uint32_t)cg_weaponChangeViewOffsetTime);
 
     /* Negative delta => the cg.time base moved backward (map restart / rollback):
      * re-baseline the stamp. elapsed is left negative, so the window test below
@@ -65,9 +64,7 @@ void CG_SettleViewOriginZ(void)
          * FSTP. One 80-bit chain -- the count feeds a bare FILD (no (float) cast
          * rounding, Class 4) and there is no intermediate float `amount` store. */
         int32_t remaining = coduo_int32_from_bits(100u - (uint32_t)elapsed);
-        long double amount =
-            (long double)remaining * cg_weaponChangeViewOffset * k;
-        cg_refdef.vieworg[2] =
-            (float)((long double)cg_refdef.vieworg[2] - amount); /* FSUBR: mem - st */
+        long double amount = (long double)remaining * cg_weaponChangeViewOffset * k;
+        cg_refdef.vieworg[2] = (float)((long double)cg_refdef.vieworg[2] - amount); /* FSUBR: mem - st */
     }
 }

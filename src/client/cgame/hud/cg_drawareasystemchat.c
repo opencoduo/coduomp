@@ -69,8 +69,7 @@
 /* rectDef_t and the area-chat declarations are shared in
  * client_recovered.h (promoted when this twin became a second user). */
 
-void CG_DrawAreaSystemChat(rectDef_t *obj, intptr_t stackArg0,
-                           intptr_t stackArg1, intptr_t stackArg2)
+void CG_DrawAreaSystemChat(rectDef_t *obj, intptr_t stackArg0, intptr_t stackArg1, intptr_t stackArg2)
 {
     float sum = obj->h + obj->y;
     int32_t sumBits;
@@ -78,14 +77,5 @@ void CG_DrawAreaSystemChat(rectDef_t *obj, intptr_t stackArg0,
     /* the sum is forwarded through a plain 32-bit syscall slot as its bit pattern */
     memcpy(&sumBits, &sum, sizeof(sumBits));
 
-    cgame_syscall(CG_R_TEXT_PAINT,
-                  CG_FloatBits(obj->x),
-                  sumBits,
-                  stackArg0,
-                  stackArg1,
-                  stackArg2,
-                  (intptr_t)cg_trapStringBufferA,
-                  0,
-                  0,
-                  0);
+    cgame_syscall(CG_R_TEXT_PAINT, CG_FloatBits(obj->x), sumBits, stackArg0, stackArg1, stackArg2, (intptr_t)cg_trapStringBufferA, 0, 0, 0);
 }

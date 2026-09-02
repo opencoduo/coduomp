@@ -71,10 +71,8 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
     /* 300482d1..300482fb: select the tracer length by the weapon's ammo type
      * (LMG/HMG/UMG -> mode A, else mode B). NULL weaponInfo -> mode B. */
     float tracerLength;
-    if (weaponInfo != 0 &&
-        (weaponInfo->ammoType == WEAPON_AMMO_TYPE_LMG ||
-         weaponInfo->ammoType == WEAPON_AMMO_TYPE_HMG ||
-         weaponInfo->ammoType == WEAPON_AMMO_TYPE_UMG)) {
+    if (weaponInfo != 0 && (weaponInfo->ammoType == WEAPON_AMMO_TYPE_LMG || weaponInfo->ammoType == WEAPON_AMMO_TYPE_HMG ||
+                            weaponInfo->ammoType == WEAPON_AMMO_TYPE_UMG)) {
         tracerLength = cg_tracerlengthlmg_vmCvar.value; /* 0x304506e8 */
     } else {
         tracerLength = cg_tracerlength_vmCvar.value; /* 0x30530668 */
@@ -108,10 +106,8 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
      * [ESP+0x48] @0x3004838d (then copied to span's slot). sqrtl keeps arg+result
      * 80-bit and the store to `float span` is that one rounding -- sqrtf would round
      * the argument to float before the call, a rounding the binary does not perform. */
-    float span = (float)sqrtl(
-        (long double)seg[2] * (long double)seg[2] +
-        (long double)seg[1] * (long double)seg[1] +
-        (long double)seg[0] * (long double)seg[0]); /* 0x3006bee0 */
+    float span = (float)sqrtl((long double)seg[2] * (long double)seg[2] + (long double)seg[1] * (long double)seg[1] +
+                              (long double)seg[0] * (long double)seg[0]); /* 0x3006bee0 */
 
     /* 30048399..300483a2: allocate a zeroed local entity, leType = LE_MOVING_TRACER (2). */
     localEntity_t *le = CG_AllocLocalEntity(); /* 0x3002aa70 */
@@ -119,10 +115,8 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
 
     /* 300483a9..300483c7: mode-A ammo types also mark leFlags = LEF_TRACER_MODE_A, which
      * makes CG_AddMovingTracer read the mode-A width/length twins when rendering. */
-    if (weaponInfo != 0 &&
-        (weaponInfo->ammoType == WEAPON_AMMO_TYPE_LMG ||
-         weaponInfo->ammoType == WEAPON_AMMO_TYPE_HMG ||
-         weaponInfo->ammoType == WEAPON_AMMO_TYPE_UMG)) {
+    if (weaponInfo != 0 && (weaponInfo->ammoType == WEAPON_AMMO_TYPE_LMG || weaponInfo->ammoType == WEAPON_AMMO_TYPE_HMG ||
+                            weaponInfo->ammoType == WEAPON_AMMO_TYPE_UMG)) {
         le->leFlags = LEF_TRACER_MODE_A; /* 0x20 */
     }
 
@@ -142,13 +136,10 @@ void CG_SpawnTracerLine(const vec3_t endOrigin, const vec3_t startOrigin, int32_
      * truncates via _ftol2 (0x3006be3c) into a negative int, then endTime = startTime -
      * that == startTime + span*1000/speed. i.e. the ms at which the TR_LINEAR trajectory
      * (speed units/s) carries the tracer the full `span` from start to newEnd. */
-    int32_t startTime = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)startDither); /* 0x304831b0 */
-    int32_t travelMs = coduo_fp_to_i32_extended(
-        (long double)span * (long double)-1000.0f /
-        (long double)cg_tracerSpeed_vmCvar.value); /* 0x3007bff8 / 0x304556c8, trunc 0x3006be3c */
-    le->endTime = coduo_int32_from_bits(
-        (uint32_t)startTime - (uint32_t)travelMs);
+    int32_t startTime = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)startDither); /* 0x304831b0 */
+    int32_t travelMs = coduo_fp_to_i32_extended((long double)span * (long double)-1000.0f /
+                                                (long double)cg_tracerSpeed_vmCvar.value); /* 0x3007bff8 / 0x304556c8, trunc 0x3006be3c */
+    le->endTime = coduo_int32_from_bits((uint32_t)startTime - (uint32_t)travelMs);
 
     /* 3004840f..3004841f: TR_LINEAR trajectory based at the shot start point. */
     le->pos.trType = TR_LINEAR;         /* +0x18 = 2 */

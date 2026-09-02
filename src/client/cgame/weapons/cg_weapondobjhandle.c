@@ -8,6 +8,5 @@ int32_t CG_WeaponDObjHandle(int32_t weaponIndex)
     /* The original is exactly `ADD EAX,0x400; RET`; EAX is both input and
      * result. This is an integer handle-band mapping, not pointer arithmetic.
      * ADD is modulo 2^32 on the retail Win32/x86 target. */
-    return coduo_int32_from_bits((uint32_t)weaponIndex +
-                            (uint32_t)CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
+    return coduo_int32_from_bits((uint32_t)weaponIndex + (uint32_t)CG_VIEW_WEAPON_DOBJ_HANDLE_BASE);
 }

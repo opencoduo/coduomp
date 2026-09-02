@@ -51,8 +51,7 @@ float LibVarStringValue(const char *string)
  * Role name: private LibVar record allocator. */
 static libvar_t *LibVarAlloc(const char *name)
 {
-    libvar_t *variable = GetClearedMemory(
-        sizeof(*variable) + strlen(name) + 1);
+    libvar_t *variable = GetClearedMemory(sizeof(*variable) + strlen(name) + 1);
     variable->name = (char *)(variable + 1);
     strcpy(variable->name, name);
     variable->next = libvarList;
@@ -91,10 +90,8 @@ void LibVarDeAllocAll(void)
  * Role name and comparison semantics: botlib LibVarGet. */
 libvar_t *LibVarGet(const char *name)
 {
-    for (libvar_t *variable = libvarList; variable != NULL;
-         variable = variable->next) {
-        if (variable->name != NULL && name != NULL &&
-            Q_stricmp(name, variable->name) == 0)
+    for (libvar_t *variable = libvarList; variable != NULL; variable = variable->next) {
+        if (variable->name != NULL && name != NULL && Q_stricmp(name, variable->name) == 0)
             return variable;
     }
     return NULL;

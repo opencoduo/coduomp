@@ -246,298 +246,157 @@ struct XModel_s {
 #else
 #define XMODEL_TYPES_ALIGNOF(type) __alignof__(type)
 #endif
-#define XMODEL_TYPES_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
+#define XMODEL_TYPES_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
 
-XMODEL_TYPES_ASSERT(xmodel_part_name_table_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelPartNameTable) == 2);
-XMODEL_TYPES_ASSERT(xmodel_part_name_table_count_offset,
-                    offsetof(XModelPartNameTable, count) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_part_name_table_handles_offset,
-                    offsetof(XModelPartNameTable, handles) == 0x02);
-XMODEL_TYPES_ASSERT(xmodel_part_name_table_handle_stride,
-                    sizeof(((XModelPartNameTable *)0)->handles[0]) == 0x02);
-XMODEL_TYPES_ASSERT(xmodel_part_name_table_size,
-                    sizeof(XModelPartNameTable) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_part_name_slot_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelPartNameTableSlot) == 4);
-XMODEL_TYPES_ASSERT(xmodel_part_name_slot_table_offset,
-                    offsetof(XModelPartNameTableSlot, partNameTable) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_part_name_slot_deltas_offset,
-                    offsetof(XModelPartNameTableSlot, parentPartDeltas) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_part_name_slot_size,
-                    sizeof(XModelPartNameTableSlot) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_part_name_table_alignment, XMODEL_TYPES_ALIGNOF(XModelPartNameTable) == 2);
+XMODEL_TYPES_ASSERT(xmodel_part_name_table_count_offset, offsetof(XModelPartNameTable, count) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_part_name_table_handles_offset, offsetof(XModelPartNameTable, handles) == 0x02);
+XMODEL_TYPES_ASSERT(xmodel_part_name_table_handle_stride, sizeof(((XModelPartNameTable *)0)->handles[0]) == 0x02);
+XMODEL_TYPES_ASSERT(xmodel_part_name_table_size, sizeof(XModelPartNameTable) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_part_name_slot_alignment, XMODEL_TYPES_ALIGNOF(XModelPartNameTableSlot) == 4);
+XMODEL_TYPES_ASSERT(xmodel_part_name_slot_table_offset, offsetof(XModelPartNameTableSlot, partNameTable) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_part_name_slot_deltas_offset, offsetof(XModelPartNameTableSlot, parentPartDeltas) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_part_name_slot_size, sizeof(XModelPartNameTableSlot) == 0x08);
 
-XMODEL_TYPES_ASSERT(xmodel_part_collision_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelPartColl) == 4);
-XMODEL_TYPES_ASSERT(xmodel_part_collision_mins_offset,
-                    offsetof(XModelPartColl, mins) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_part_collision_maxs_offset,
-                    offsetof(XModelPartColl, maxs) == 0x0c);
-XMODEL_TYPES_ASSERT(xmodel_part_collision_center_offset,
-                    offsetof(XModelPartColl, center) == 0x18);
-XMODEL_TYPES_ASSERT(xmodel_part_collision_radius_offset,
-                    offsetof(XModelPartColl, radiusSq) == 0x24);
-XMODEL_TYPES_ASSERT(xmodel_part_collision_size,
-                    sizeof(XModelPartColl) == 0x28);
+XMODEL_TYPES_ASSERT(xmodel_part_collision_alignment, XMODEL_TYPES_ALIGNOF(XModelPartColl) == 4);
+XMODEL_TYPES_ASSERT(xmodel_part_collision_mins_offset, offsetof(XModelPartColl, mins) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_part_collision_maxs_offset, offsetof(XModelPartColl, maxs) == 0x0c);
+XMODEL_TYPES_ASSERT(xmodel_part_collision_center_offset, offsetof(XModelPartColl, center) == 0x18);
+XMODEL_TYPES_ASSERT(xmodel_part_collision_radius_offset, offsetof(XModelPartColl, radiusSq) == 0x24);
+XMODEL_TYPES_ASSERT(xmodel_part_collision_size, sizeof(XModelPartColl) == 0x28);
 
-XMODEL_TYPES_ASSERT(xmodel_collision_plane_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelCollTriPlane) == 4);
-XMODEL_TYPES_ASSERT(xmodel_collision_plane_normal_offset,
-                    offsetof(XModelCollTriPlane, normal) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_collision_plane_distance_offset,
-                    offsetof(XModelCollTriPlane, distance) == 0x0c);
-XMODEL_TYPES_ASSERT(xmodel_collision_plane_size,
-                    sizeof(XModelCollTriPlane) == 0x10);
-XMODEL_TYPES_ASSERT(xmodel_collision_triangle_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelCollTri) == 4);
-XMODEL_TYPES_ASSERT(xmodel_collision_triangle_planes_offset,
-                    offsetof(XModelCollTri, planes) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_collision_triangle_second_plane_offset,
-                    offsetof(XModelCollTri, planes[1]) == 0x10);
-XMODEL_TYPES_ASSERT(xmodel_collision_triangle_third_plane_offset,
-                    offsetof(XModelCollTri, planes[2]) == 0x20);
-XMODEL_TYPES_ASSERT(xmodel_collision_triangle_size,
-                    sizeof(XModelCollTri) == 0x30);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelCollSurf) == 4);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_triangles_offset,
-                    offsetof(XModelCollSurf, collTris) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_count_offset,
-                    offsetof(XModelCollSurf, numCollTris) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_mins_offset,
-                    offsetof(XModelCollSurf, expandedMins) == 0x08);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_maxs_offset,
-                    offsetof(XModelCollSurf, expandedMaxs) == 0x14);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_pose_offset,
-                    offsetof(XModelCollSurf, basePoseIndex) == 0x20);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_contents_offset,
-                    offsetof(XModelCollSurf, contents) == 0x24);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_flags_offset,
-                    offsetof(XModelCollSurf, surfaceFlags) == 0x28);
-XMODEL_TYPES_ASSERT(xmodel_collision_surface_size,
-                    sizeof(XModelCollSurf) == 0x2c);
+XMODEL_TYPES_ASSERT(xmodel_collision_plane_alignment, XMODEL_TYPES_ALIGNOF(XModelCollTriPlane) == 4);
+XMODEL_TYPES_ASSERT(xmodel_collision_plane_normal_offset, offsetof(XModelCollTriPlane, normal) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_collision_plane_distance_offset, offsetof(XModelCollTriPlane, distance) == 0x0c);
+XMODEL_TYPES_ASSERT(xmodel_collision_plane_size, sizeof(XModelCollTriPlane) == 0x10);
+XMODEL_TYPES_ASSERT(xmodel_collision_triangle_alignment, XMODEL_TYPES_ALIGNOF(XModelCollTri) == 4);
+XMODEL_TYPES_ASSERT(xmodel_collision_triangle_planes_offset, offsetof(XModelCollTri, planes) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_collision_triangle_second_plane_offset, offsetof(XModelCollTri, planes[1]) == 0x10);
+XMODEL_TYPES_ASSERT(xmodel_collision_triangle_third_plane_offset, offsetof(XModelCollTri, planes[2]) == 0x20);
+XMODEL_TYPES_ASSERT(xmodel_collision_triangle_size, sizeof(XModelCollTri) == 0x30);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_alignment, XMODEL_TYPES_ALIGNOF(XModelCollSurf) == 4);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_triangles_offset, offsetof(XModelCollSurf, collTris) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_count_offset, offsetof(XModelCollSurf, numCollTris) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_mins_offset, offsetof(XModelCollSurf, expandedMins) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_maxs_offset, offsetof(XModelCollSurf, expandedMaxs) == 0x14);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_pose_offset, offsetof(XModelCollSurf, basePoseIndex) == 0x20);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_contents_offset, offsetof(XModelCollSurf, contents) == 0x24);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_flags_offset, offsetof(XModelCollSurf, surfaceFlags) == 0x28);
+XMODEL_TYPES_ASSERT(xmodel_collision_surface_size, sizeof(XModelCollSurf) == 0x2c);
 
-XMODEL_TYPES_ASSERT(xsurface_strip_info_alignment,
-                    XMODEL_TYPES_ALIGNOF(XStripInfo) == 4);
-XMODEL_TYPES_ASSERT(xsurface_strip_info_count_offset,
-                    offsetof(XStripInfo, stripCount) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_strip_info_counts_offset,
-                    offsetof(XStripInfo, stripVertexCounts) == 0x04);
-XMODEL_TYPES_ASSERT(xsurface_strip_info_indices_offset,
-                    offsetof(XStripInfo, stripIndices) == 0x08);
-XMODEL_TYPES_ASSERT(xsurface_strip_info_size,
-                    sizeof(XStripInfo) == 0x0c);
+XMODEL_TYPES_ASSERT(xsurface_strip_info_alignment, XMODEL_TYPES_ALIGNOF(XStripInfo) == 4);
+XMODEL_TYPES_ASSERT(xsurface_strip_info_count_offset, offsetof(XStripInfo, stripCount) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_strip_info_counts_offset, offsetof(XStripInfo, stripVertexCounts) == 0x04);
+XMODEL_TYPES_ASSERT(xsurface_strip_info_indices_offset, offsetof(XStripInfo, stripIndices) == 0x08);
+XMODEL_TYPES_ASSERT(xsurface_strip_info_size, sizeof(XStripInfo) == 0x0c);
 
-XMODEL_TYPES_ASSERT(xsurface_triangle_size,
-                    sizeof(XSurfaceTriangle) == 0x06);
-XMODEL_TYPES_ASSERT(xsurface_texcoord_size,
-                    sizeof(XSurfaceTexCoord) == 0x08);
-XMODEL_TYPES_ASSERT(xsurface_simple_blend_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSimpleBlendInfo) == 4);
-XMODEL_TYPES_ASSERT(xsurface_simple_blend_position_offset,
-                    offsetof(XSimpleBlendInfo, position) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_simple_blend_matrix_offset,
-                    offsetof(XSimpleBlendInfo, boneMatrixOffset) == 0x0c);
-XMODEL_TYPES_ASSERT(xsurface_simple_blend_size,
-                    sizeof(XSimpleBlendInfo) == 0x10);
-XMODEL_TYPES_ASSERT(xsurface_weighted_point_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSurfaceWeightedPoint) == 4);
-XMODEL_TYPES_ASSERT(xsurface_weighted_point_position_offset,
-                    offsetof(XSurfaceWeightedPoint, blend.position) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_weighted_point_matrix_offset,
-                    offsetof(XSurfaceWeightedPoint,
-                             blend.boneMatrixOffset) == 0x0c);
-XMODEL_TYPES_ASSERT(xsurface_weighted_point_weight_offset,
-                    offsetof(XSurfaceWeightedPoint, weight) == 0x10);
-XMODEL_TYPES_ASSERT(xsurface_weighted_point_size,
-                    sizeof(XSurfaceWeightedPoint) == 0x14);
-XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSurfaceRigidVert) == 4);
-XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_normal_offset,
-                    offsetof(XSurfaceRigidVert, normal) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_position_offset,
-                    offsetof(XSurfaceRigidVert, position) == 0x0c);
-XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_size,
-                    sizeof(XSurfaceRigidVert) == 0x18);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSurfaceBlendVert) == 4);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_normal_offset,
-                    offsetof(XSurfaceBlendVert, normal) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_count_offset,
-                    offsetof(XSurfaceBlendVert,
-                             additiveWeightCount) == 0x0c);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_position_offset,
-                    offsetof(XSurfaceBlendVert, blend.position) == 0x10);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_matrix_offset,
-                    offsetof(XSurfaceBlendVert,
-                             blend.boneMatrixOffset) == 0x1c);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_weight_offset,
-                    offsetof(XSurfaceBlendVert, primaryWeight) == 0x20);
-XMODEL_TYPES_ASSERT(xsurface_blend_vertex_size,
-                    sizeof(XSurfaceBlendVert) == 0x24);
-XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSurfaceBlendVertNoWeight) == 4);
-XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_normal_offset,
-                    offsetof(XSurfaceBlendVertNoWeight, normal) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_count_offset,
-                    offsetof(XSurfaceBlendVertNoWeight,
-                             additiveWeightCount) == 0x0c);
-XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_position_offset,
-                    offsetof(XSurfaceBlendVertNoWeight,
-                             blend.position) == 0x10);
-XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_matrix_offset,
-                    offsetof(XSurfaceBlendVertNoWeight,
-                             blend.boneMatrixOffset) == 0x1c);
-XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_size,
-                    sizeof(XSurfaceBlendVertNoWeight) == 0x20);
-XMODEL_TYPES_ASSERT(xsurface_vertex_data_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSurfaceVertexData) == 4);
-XMODEL_TYPES_ASSERT(xsurface_vertex_data_rigid_offset,
-                    offsetof(XSurfaceVertexData, rigidVertices) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_vertex_data_blend_offset,
-                    offsetof(XSurfaceVertexData, blendPrimaryStream) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_vertex_data_size,
-                    sizeof(XSurfaceVertexData) == 0x04);
-XMODEL_TYPES_ASSERT(xsurface_alignment,
-                    XMODEL_TYPES_ALIGNOF(XSurface) == 4);
-XMODEL_TYPES_ASSERT(xsurface_tile_mode_offset,
-                    offsetof(XSurface, tileMode) == 0x00);
-XMODEL_TYPES_ASSERT(xsurface_padding_offset,
-                    offsetof(XSurface, padding01) == 0x01);
-XMODEL_TYPES_ASSERT(xsurface_vertex_count_offset,
-                    offsetof(XSurface, vertexCount) == 0x02);
-XMODEL_TYPES_ASSERT(xsurface_triangle_count_offset,
-                    offsetof(XSurface, triangleCount) == 0x04);
-XMODEL_TYPES_ASSERT(xsurface_bone_index_offset,
-                    offsetof(XSurface, boneIndex) == 0x06);
-XMODEL_TYPES_ASSERT(xsurface_bone_usage_offset,
-                    offsetof(XSurface, boneUsage) == 0x08);
-XMODEL_TYPES_ASSERT(xsurface_bone_usage_size,
-                    sizeof(((XSurface *)0)->boneUsage) == 0x10);
-XMODEL_TYPES_ASSERT(xsurface_weighted_points_offset,
-                    offsetof(XSurface, weightedPoints) == 0x18);
-XMODEL_TYPES_ASSERT(xsurface_triangles_offset,
-                    offsetof(XSurface, triangles) == 0x1c);
-XMODEL_TYPES_ASSERT(xsurface_vertex_data_offset,
-                    offsetof(XSurface, vertexData) == 0x20);
-XMODEL_TYPES_ASSERT(xsurface_texcoords_offset,
-                    offsetof(XSurface, texCoords) == 0x24);
-XMODEL_TYPES_ASSERT(xsurface_optimized_arb_offset,
-                    offsetof(XSurface, optimizedDataARB) == 0x28);
-XMODEL_TYPES_ASSERT(xsurface_optimized_ati_offset,
-                    offsetof(XSurface, optimizedDataATI) == 0x2c);
-XMODEL_TYPES_ASSERT(xsurface_optimized_nv_offset,
-                    offsetof(XSurface, optimizedDataNV) == 0x30);
-XMODEL_TYPES_ASSERT(xsurface_size,
-                    sizeof(XSurface) == 0x34);
+XMODEL_TYPES_ASSERT(xsurface_triangle_size, sizeof(XSurfaceTriangle) == 0x06);
+XMODEL_TYPES_ASSERT(xsurface_texcoord_size, sizeof(XSurfaceTexCoord) == 0x08);
+XMODEL_TYPES_ASSERT(xsurface_simple_blend_alignment, XMODEL_TYPES_ALIGNOF(XSimpleBlendInfo) == 4);
+XMODEL_TYPES_ASSERT(xsurface_simple_blend_position_offset, offsetof(XSimpleBlendInfo, position) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_simple_blend_matrix_offset, offsetof(XSimpleBlendInfo, boneMatrixOffset) == 0x0c);
+XMODEL_TYPES_ASSERT(xsurface_simple_blend_size, sizeof(XSimpleBlendInfo) == 0x10);
+XMODEL_TYPES_ASSERT(xsurface_weighted_point_alignment, XMODEL_TYPES_ALIGNOF(XSurfaceWeightedPoint) == 4);
+XMODEL_TYPES_ASSERT(xsurface_weighted_point_position_offset, offsetof(XSurfaceWeightedPoint, blend.position) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_weighted_point_matrix_offset, offsetof(XSurfaceWeightedPoint, blend.boneMatrixOffset) == 0x0c);
+XMODEL_TYPES_ASSERT(xsurface_weighted_point_weight_offset, offsetof(XSurfaceWeightedPoint, weight) == 0x10);
+XMODEL_TYPES_ASSERT(xsurface_weighted_point_size, sizeof(XSurfaceWeightedPoint) == 0x14);
+XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_alignment, XMODEL_TYPES_ALIGNOF(XSurfaceRigidVert) == 4);
+XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_normal_offset, offsetof(XSurfaceRigidVert, normal) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_position_offset, offsetof(XSurfaceRigidVert, position) == 0x0c);
+XMODEL_TYPES_ASSERT(xsurface_rigid_vertex_size, sizeof(XSurfaceRigidVert) == 0x18);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_alignment, XMODEL_TYPES_ALIGNOF(XSurfaceBlendVert) == 4);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_normal_offset, offsetof(XSurfaceBlendVert, normal) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_count_offset, offsetof(XSurfaceBlendVert, additiveWeightCount) == 0x0c);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_position_offset, offsetof(XSurfaceBlendVert, blend.position) == 0x10);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_matrix_offset, offsetof(XSurfaceBlendVert, blend.boneMatrixOffset) == 0x1c);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_weight_offset, offsetof(XSurfaceBlendVert, primaryWeight) == 0x20);
+XMODEL_TYPES_ASSERT(xsurface_blend_vertex_size, sizeof(XSurfaceBlendVert) == 0x24);
+XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_alignment, XMODEL_TYPES_ALIGNOF(XSurfaceBlendVertNoWeight) == 4);
+XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_normal_offset, offsetof(XSurfaceBlendVertNoWeight, normal) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_count_offset, offsetof(XSurfaceBlendVertNoWeight, additiveWeightCount) == 0x0c);
+XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_position_offset, offsetof(XSurfaceBlendVertNoWeight, blend.position) == 0x10);
+XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_matrix_offset, offsetof(XSurfaceBlendVertNoWeight, blend.boneMatrixOffset) == 0x1c);
+XMODEL_TYPES_ASSERT(xsurface_compact_blend_vertex_size, sizeof(XSurfaceBlendVertNoWeight) == 0x20);
+XMODEL_TYPES_ASSERT(xsurface_vertex_data_alignment, XMODEL_TYPES_ALIGNOF(XSurfaceVertexData) == 4);
+XMODEL_TYPES_ASSERT(xsurface_vertex_data_rigid_offset, offsetof(XSurfaceVertexData, rigidVertices) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_vertex_data_blend_offset, offsetof(XSurfaceVertexData, blendPrimaryStream) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_vertex_data_size, sizeof(XSurfaceVertexData) == 0x04);
+XMODEL_TYPES_ASSERT(xsurface_alignment, XMODEL_TYPES_ALIGNOF(XSurface) == 4);
+XMODEL_TYPES_ASSERT(xsurface_tile_mode_offset, offsetof(XSurface, tileMode) == 0x00);
+XMODEL_TYPES_ASSERT(xsurface_padding_offset, offsetof(XSurface, padding01) == 0x01);
+XMODEL_TYPES_ASSERT(xsurface_vertex_count_offset, offsetof(XSurface, vertexCount) == 0x02);
+XMODEL_TYPES_ASSERT(xsurface_triangle_count_offset, offsetof(XSurface, triangleCount) == 0x04);
+XMODEL_TYPES_ASSERT(xsurface_bone_index_offset, offsetof(XSurface, boneIndex) == 0x06);
+XMODEL_TYPES_ASSERT(xsurface_bone_usage_offset, offsetof(XSurface, boneUsage) == 0x08);
+XMODEL_TYPES_ASSERT(xsurface_bone_usage_size, sizeof(((XSurface *)0)->boneUsage) == 0x10);
+XMODEL_TYPES_ASSERT(xsurface_weighted_points_offset, offsetof(XSurface, weightedPoints) == 0x18);
+XMODEL_TYPES_ASSERT(xsurface_triangles_offset, offsetof(XSurface, triangles) == 0x1c);
+XMODEL_TYPES_ASSERT(xsurface_vertex_data_offset, offsetof(XSurface, vertexData) == 0x20);
+XMODEL_TYPES_ASSERT(xsurface_texcoords_offset, offsetof(XSurface, texCoords) == 0x24);
+XMODEL_TYPES_ASSERT(xsurface_optimized_arb_offset, offsetof(XSurface, optimizedDataARB) == 0x28);
+XMODEL_TYPES_ASSERT(xsurface_optimized_ati_offset, offsetof(XSurface, optimizedDataATI) == 0x2c);
+XMODEL_TYPES_ASSERT(xsurface_optimized_nv_offset, offsetof(XSurface, optimizedDataNV) == 0x30);
+XMODEL_TYPES_ASSERT(xsurface_size, sizeof(XSurface) == 0x34);
 
-XMODEL_TYPES_ASSERT(xmodel_surfs_data_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelSurfsData) == 4);
-XMODEL_TYPES_ASSERT(xmodel_surfs_data_next_offset,
-                    offsetof(XModelSurfsData, next) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_surfs_data_count_offset,
-                    offsetof(XModelSurfsData, surfaceCount) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_surfs_data_padding_offset,
-                    offsetof(XModelSurfsData, padding06) == 0x06);
-XMODEL_TYPES_ASSERT(xmodel_surfs_data_surfaces_offset,
-                    offsetof(XModelSurfsData, surfaces) == 0x08);
-XMODEL_TYPES_ASSERT(xmodel_surfs_data_size,
-                    sizeof(XModelSurfsData) == 0x0c);
-XMODEL_TYPES_ASSERT(xmodel_surfs_name_offset,
-                    offsetof(XModelSurfs, name) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_surfs_payload_offset,
-                    offsetof(XModelSurfs, surfs) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_surfs_callback_offset,
-                    offsetof(XModelSurfs, freeData) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_surfs_data_alignment, XMODEL_TYPES_ALIGNOF(XModelSurfsData) == 4);
+XMODEL_TYPES_ASSERT(xmodel_surfs_data_next_offset, offsetof(XModelSurfsData, next) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_surfs_data_count_offset, offsetof(XModelSurfsData, surfaceCount) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_surfs_data_padding_offset, offsetof(XModelSurfsData, padding06) == 0x06);
+XMODEL_TYPES_ASSERT(xmodel_surfs_data_surfaces_offset, offsetof(XModelSurfsData, surfaces) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_surfs_data_size, sizeof(XModelSurfsData) == 0x0c);
+XMODEL_TYPES_ASSERT(xmodel_surfs_name_offset, offsetof(XModelSurfs, name) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_surfs_payload_offset, offsetof(XModelSurfs, surfs) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_surfs_callback_offset, offsetof(XModelSurfs, freeData) == 0x08);
 XMODEL_TYPES_ASSERT(xmodel_surfs_size, sizeof(XModelSurfs) == 0x0c);
 
-XMODEL_TYPES_ASSERT(xmodel_parts_data_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelPartsData) == 4);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_table_offset,
-                    offsetof(XModelPartsData, partNameTableSlot) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_root_count_offset,
-                    offsetof(XModelPartsData, rootPartCount) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_padding_offset,
-                    offsetof(XModelPartsData, padding06) == 0x06);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_collision_offset,
-                    offsetof(XModelPartsData, partCollisions) == 0x08);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_rotations_offset,
-                    offsetof(XModelPartsData, baseRotations) == 0x0c);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_translations_offset,
-                    offsetof(XModelPartsData, baseTranslations) == 0x10);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_state_indices_offset,
-                    offsetof(XModelPartsData, partStateIndices) == 0x14);
-XMODEL_TYPES_ASSERT(xmodel_parts_data_size,
-                    sizeof(XModelPartsData) == 0x18);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_alignment, XMODEL_TYPES_ALIGNOF(XModelPartsData) == 4);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_table_offset, offsetof(XModelPartsData, partNameTableSlot) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_root_count_offset, offsetof(XModelPartsData, rootPartCount) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_padding_offset, offsetof(XModelPartsData, padding06) == 0x06);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_collision_offset, offsetof(XModelPartsData, partCollisions) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_rotations_offset, offsetof(XModelPartsData, baseRotations) == 0x0c);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_translations_offset, offsetof(XModelPartsData, baseTranslations) == 0x10);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_state_indices_offset, offsetof(XModelPartsData, partStateIndices) == 0x14);
+XMODEL_TYPES_ASSERT(xmodel_parts_data_size, sizeof(XModelPartsData) == 0x18);
 
-XMODEL_TYPES_ASSERT(xmodel_lod_info_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelLodInfo) == 4);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_distance_offset,
-                    offsetof(XModelLodInfo, distance) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_name_offset,
-                    offsetof(XModelLodInfo, name) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_surface_count_offset,
-                    offsetof(XModelLodInfo, surfaceCount) == 0x08);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_padding_offset,
-                    offsetof(XModelLodInfo, padding0a) == 0x0a);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_name_table_offset,
-                    offsetof(XModelLodInfo, surfaceNameTable) == 0x0c);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_surfs_offset,
-                    offsetof(XModelLodInfo, surfs) == 0x10);
-XMODEL_TYPES_ASSERT(xmodel_lod_info_size,
-                    sizeof(XModelLodInfo) == 0x14);
-XMODEL_TYPES_ASSERT(xmodel_info_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelInfo) == 4);
-XMODEL_TYPES_ASSERT(xmodel_info_parts_offset,
-                    offsetof(XModelInfo, parts) == 0x00);
-XMODEL_TYPES_ASSERT(xmodel_info_lods_offset,
-                    offsetof(XModelInfo, lodRecords) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_info_collision_surfaces_offset,
-                    offsetof(XModelInfo, collisionSurfaces) == 0x40);
-XMODEL_TYPES_ASSERT(xmodel_info_collision_count_offset,
-                    offsetof(XModelInfo, collisionSurfaceCount) == 0x44);
-XMODEL_TYPES_ASSERT(xmodel_info_contents_offset,
-                    offsetof(XModelInfo, contents) == 0x48);
-XMODEL_TYPES_ASSERT(xmodel_info_mins_offset,
-                    offsetof(XModelInfo, mins) == 0x4c);
-XMODEL_TYPES_ASSERT(xmodel_info_maxs_offset,
-                    offsetof(XModelInfo, maxs) == 0x58);
-XMODEL_TYPES_ASSERT(xmodel_info_lod_count_offset,
-                    offsetof(XModelInfo, lodCount) == 0x64);
-XMODEL_TYPES_ASSERT(xmodel_info_file_count_offset,
-                    offsetof(XModelInfo, modelFileCount) == 0x66);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_alignment, XMODEL_TYPES_ALIGNOF(XModelLodInfo) == 4);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_distance_offset, offsetof(XModelLodInfo, distance) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_name_offset, offsetof(XModelLodInfo, name) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_surface_count_offset, offsetof(XModelLodInfo, surfaceCount) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_padding_offset, offsetof(XModelLodInfo, padding0a) == 0x0a);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_name_table_offset, offsetof(XModelLodInfo, surfaceNameTable) == 0x0c);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_surfs_offset, offsetof(XModelLodInfo, surfs) == 0x10);
+XMODEL_TYPES_ASSERT(xmodel_lod_info_size, sizeof(XModelLodInfo) == 0x14);
+XMODEL_TYPES_ASSERT(xmodel_info_alignment, XMODEL_TYPES_ALIGNOF(XModelInfo) == 4);
+XMODEL_TYPES_ASSERT(xmodel_info_parts_offset, offsetof(XModelInfo, parts) == 0x00);
+XMODEL_TYPES_ASSERT(xmodel_info_lods_offset, offsetof(XModelInfo, lodRecords) == 0x04);
+XMODEL_TYPES_ASSERT(xmodel_info_collision_surfaces_offset, offsetof(XModelInfo, collisionSurfaces) == 0x40);
+XMODEL_TYPES_ASSERT(xmodel_info_collision_count_offset, offsetof(XModelInfo, collisionSurfaceCount) == 0x44);
+XMODEL_TYPES_ASSERT(xmodel_info_contents_offset, offsetof(XModelInfo, contents) == 0x48);
+XMODEL_TYPES_ASSERT(xmodel_info_mins_offset, offsetof(XModelInfo, mins) == 0x4c);
+XMODEL_TYPES_ASSERT(xmodel_info_maxs_offset, offsetof(XModelInfo, maxs) == 0x58);
+XMODEL_TYPES_ASSERT(xmodel_info_lod_count_offset, offsetof(XModelInfo, lodCount) == 0x64);
+XMODEL_TYPES_ASSERT(xmodel_info_file_count_offset, offsetof(XModelInfo, modelFileCount) == 0x66);
 XMODEL_TYPES_ASSERT(xmodel_info_size, sizeof(XModelInfo) == 0x68);
 
-XMODEL_TYPES_ASSERT(xmodel_config_lod_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelConfigLod) == 4);
-XMODEL_TYPES_ASSERT(xmodel_config_lod_name_offset,
-                    offsetof(XModelConfigLod, name) == 0x000);
-XMODEL_TYPES_ASSERT(xmodel_config_lod_distance_offset,
-                    offsetof(XModelConfigLod, distance) == 0x400);
-XMODEL_TYPES_ASSERT(xmodel_config_lod_size,
-                    sizeof(XModelConfigLod) == 0x404);
-XMODEL_TYPES_ASSERT(xmodel_config_alignment,
-                    XMODEL_TYPES_ALIGNOF(XModelConfig) == 4);
-XMODEL_TYPES_ASSERT(xmodel_config_lods_offset,
-                    offsetof(XModelConfig, lods) == 0x000);
-XMODEL_TYPES_ASSERT(xmodel_config_second_lod_offset,
-                    offsetof(XModelConfig, lods[1]) == 0x404);
-XMODEL_TYPES_ASSERT(xmodel_config_third_lod_offset,
-                    offsetof(XModelConfig, lods[2]) == 0x808);
-XMODEL_TYPES_ASSERT(xmodel_config_mins_offset,
-                    offsetof(XModelConfig, mins) == 0xc0c);
-XMODEL_TYPES_ASSERT(xmodel_config_maxs_offset,
-                    offsetof(XModelConfig, maxs) == 0xc18);
-XMODEL_TYPES_ASSERT(xmodel_config_file_count_offset,
-                    offsetof(XModelConfig, modelFileCount) == 0xc24);
+XMODEL_TYPES_ASSERT(xmodel_config_lod_alignment, XMODEL_TYPES_ALIGNOF(XModelConfigLod) == 4);
+XMODEL_TYPES_ASSERT(xmodel_config_lod_name_offset, offsetof(XModelConfigLod, name) == 0x000);
+XMODEL_TYPES_ASSERT(xmodel_config_lod_distance_offset, offsetof(XModelConfigLod, distance) == 0x400);
+XMODEL_TYPES_ASSERT(xmodel_config_lod_size, sizeof(XModelConfigLod) == 0x404);
+XMODEL_TYPES_ASSERT(xmodel_config_alignment, XMODEL_TYPES_ALIGNOF(XModelConfig) == 4);
+XMODEL_TYPES_ASSERT(xmodel_config_lods_offset, offsetof(XModelConfig, lods) == 0x000);
+XMODEL_TYPES_ASSERT(xmodel_config_second_lod_offset, offsetof(XModelConfig, lods[1]) == 0x404);
+XMODEL_TYPES_ASSERT(xmodel_config_third_lod_offset, offsetof(XModelConfig, lods[2]) == 0x808);
+XMODEL_TYPES_ASSERT(xmodel_config_mins_offset, offsetof(XModelConfig, mins) == 0xc0c);
+XMODEL_TYPES_ASSERT(xmodel_config_maxs_offset, offsetof(XModelConfig, maxs) == 0xc18);
+XMODEL_TYPES_ASSERT(xmodel_config_file_count_offset, offsetof(XModelConfig, modelFileCount) == 0xc24);
 XMODEL_TYPES_ASSERT(xmodel_config_size, sizeof(XModelConfig) == 0xc28);
 
 XMODEL_TYPES_ASSERT(xmodel_alignment, XMODEL_TYPES_ALIGNOF(XModel) == 4);
 XMODEL_TYPES_ASSERT(xmodel_name_offset, offsetof(XModel, name) == 0x00);
 XMODEL_TYPES_ASSERT(xmodel_info_offset, offsetof(XModel, info) == 0x04);
-XMODEL_TYPES_ASSERT(xmodel_callback_offset,
-                    offsetof(XModel, freeData) == 0x08);
+XMODEL_TYPES_ASSERT(xmodel_callback_offset, offsetof(XModel, freeData) == 0x08);
 XMODEL_TYPES_ASSERT(xmodel_size, sizeof(XModel) == 0x0c);
 
 #undef XMODEL_TYPES_ASSERT

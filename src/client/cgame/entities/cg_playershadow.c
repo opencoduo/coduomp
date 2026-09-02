@@ -84,14 +84,14 @@
 qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent)
 {
     trace_t traceResult;
-    vec3_t            traceStart;
-    float             alpha0;
-    float             dist;
+    vec3_t traceStart;
+    float alpha0;
+    float dist;
     /* long double: neither fade ramp is stored. Both legs run from the FLD of
      * dist ([ESP+0x8]) straight through the FMUL by alpha0 at 0x30032d51 with
      * no intermediate float store; the single rounding is the FSTP at
      * 0x30032d63 that materializes the CG_ImpactMark red/green/blue argument. */
-    long double       scale;
+    long double scale;
 
     *shadowPlane = 0.0f;
 
@@ -103,9 +103,7 @@ qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent)
     traceStart[1] = cent->lerpOrigin[1];
     traceStart[2] = cent->lerpOrigin[2] - 64.0f;
 
-    cgame_syscall(CG_CM_BOX_TRACE, (intptr_t)&traceResult,
-                  (intptr_t)cent->lerpOrigin,
-                  (intptr_t)traceStart, 0, 0, 0, 0x2810011);
+    cgame_syscall(CG_CM_BOX_TRACE, (intptr_t)&traceResult, (intptr_t)cent->lerpOrigin, (intptr_t)traceStart, 0, 0, 0, 0x2810011);
 
     /* No hit at fraction 1.0, and reject the degenerate zero-fraction result. */
     if (traceResult.fraction == doubleOne)
@@ -136,8 +134,7 @@ qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent)
     if (!(dist > 250.0f)) {
         return qtrue;
     } else if (dist < 512.0) {
-        scale = ((long double)dist - 250.0L) *
-                (long double)0.0038167938931297709;
+        scale = ((long double)dist - 250.0L) * (long double)0.0038167938931297709;
     } else if (dist > 1024.0) {
         /* 0x30032d36 test ah,0x41 / 0x30032d39 je: the far cull is taken only when
          * C0=0 AND C3=0, i.e. dist STRICTLY > 1024.0. At dist == 1024.0 (C3=1) the
@@ -150,9 +147,8 @@ qboolean CG_PlayerShadow(float *shadowPlane, centity_t *cent)
 
     scale = scale * alpha0;
 
-    CG_ImpactMark(cgs_media_markShadowShader, traceResult.endpos,
-                  traceResult.normal,
-                  0.0f, scale, scale, scale, 1.0f, qfalse, 16.0f, 1, -1);
+    CG_ImpactMark(cgs_media_markShadowShader, traceResult.endpos, traceResult.normal, 0.0f, scale, scale, scale, 1.0f, qfalse, 16.0f, 1,
+                  -1);
 
     return qtrue;
 }

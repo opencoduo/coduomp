@@ -21,8 +21,7 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 
-void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
-                             const vec3_t colorRGB)
+void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end, const vec3_t colorRGB)
 {
     localEntity_t *le;
 
@@ -44,15 +43,13 @@ void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
     /* 300430be MOV ECX,[cg_railTrailTime_vmCvar.integer]; 300430c4 MOV EDX,[cg.time];
      * 300430ca ADD EDX,ECX; 300430cc MOV [EAX+0x10],EDX:
      * le->endTime = cg.time + cg_railTrailTime_vmCvar.integer. */
-    le->endTime = coduo_int32_from_bits(
-        cg_time + (uint32_t)cg_railTrailTime_vmCvar.integer);
+    le->endTime = coduo_int32_from_bits(cg_time + (uint32_t)cg_railTrailTime_vmCvar.integer);
 
     /* 300430cf FILD [cg_railTrailTime_vmCvar.integer]; 300430d5 FSTP [ESP+8] (spill to float);
      * 300430d9 FLD [0x3007bce0](=1.0f); 300430df FDIV [ESP+8];
      * 300430e3 FSTP [EAX+0x14]: le->lifeRate = 1.0f / (float)cg_railTrailTime_vmCvar.integer.
      * The x87 divide operates on the float-rounded lifetime (FILD -> FSTP dword). */
-    float lifetime = (float)coduo_int32_from_bits(
-        (uint32_t)cg_railTrailTime_vmCvar.integer);
+    float lifetime = (float)coduo_int32_from_bits((uint32_t)cg_railTrailTime_vmCvar.integer);
     le->lifeRate = (float)(1.0L / (long double)lifetime);
 
     /* 300430ec MOV [EAX+0x50],0x7: le->refEntity.reType = RT_RAIL_CORE. */
@@ -62,8 +59,7 @@ void CG_SpawnRailCoreSegment(const vec3_t start, const vec3_t end,
      * 300430fb FDIV [0x3007be88](=1000.0f); 30043101 FSTP [EAX+0xc8]:
      * le->refEntity.shaderTime = (float)cg.time / 1000.0f (ms -> seconds). */
     float timeMilliseconds = (float)coduo_int32_from_bits(cg_time);
-    le->refEntity.shaderTime = (float)(
-        (long double)timeMilliseconds / 1000.0L);
+    le->refEntity.shaderTime = (float)((long double)timeMilliseconds / 1000.0L);
 
     /* 30043107 MOV ECX,[cg_railCoreShader]; 3004310d MOV [EAX+0xb8],ECX:
      * le->refEntity.spriteShaderHandle = cg_railCoreShader (registered "railCore"). */

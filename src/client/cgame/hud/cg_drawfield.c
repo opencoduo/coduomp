@@ -76,15 +76,17 @@
 static const char CG_HUDELEM_NUM_FORMAT[] = "%i";
 
 /* MOV ESI,0x10 -> Com_sprintf size argument (the value-text buffer size). */
-enum { CG_HUDELEM_NUM_BUFSIZE = 16 };
+enum {
+    CG_HUDELEM_NUM_BUFSIZE = 16
+};
 
 /* Per-digit-count magnitude clamps (jump table at 0x30017db4). */
 enum {
-    CG_HUDELEM_W1_MAX =    9,  /* 0x9 */
-    CG_HUDELEM_W2_MAX =   99,  /* 0x63 */
-    CG_HUDELEM_W2_MIN =   -9,  /* 0xfffffff7 */
-    CG_HUDELEM_W3_MAX =  999,  /* 0x3e7 */
-    CG_HUDELEM_W3_MIN =  -99,  /* 0xffffff9d */
+    CG_HUDELEM_W1_MAX = 9,  /* 0x9 */
+    CG_HUDELEM_W2_MAX = 99,  /* 0x63 */
+    CG_HUDELEM_W2_MIN = -9,  /* 0xfffffff7 */
+    CG_HUDELEM_W3_MAX = 999,  /* 0x3e7 */
+    CG_HUDELEM_W3_MIN = -99,  /* 0xffffff9d */
     CG_HUDELEM_W4_MAX = 9999,  /* 0x270f */
     CG_HUDELEM_W4_MIN = -999,  /* 0xfffffc19 */
 };
@@ -96,14 +98,16 @@ enum {
 };
 
 /* The minus sign occupies the last cg_numberShaders[] slot (MOV EAX,0xa on '-'). */
-enum { CG_NUMBER_SHADER_MINUS = 10 };
+enum {
+    CG_NUMBER_SHADER_MINUS = 10
+};
 
 /* Right/center-justify pen bias: MOV EAX,0xfffffffe (-2) minus glyphs*charWidth. */
-enum { CG_HUDELEM_JUSTIFY_BIAS = -2 };
+enum {
+    CG_HUDELEM_JUSTIFY_BIAS = -2
+};
 
-int CG_DrawField(int width /*ECX*/,
-                 int x /*arg0*/, int y /*arg1*/, int value /*arg2*/,
-                 int charWidth /*arg3*/, int charHeight /*arg4*/,
+int CG_DrawField(int width /*ECX*/, int x /*arg0*/, int y /*arg1*/, int value /*arg2*/, int charWidth /*arg3*/, int charHeight /*arg4*/,
                  int drawGlyphs /*arg5*/, int justify /*arg6*/)
 {
     /* CMP EBX,1 / JGE: a sub-1 width has no field to draw. */
@@ -175,8 +179,7 @@ int CG_DrawField(int width /*ECX*/,
     int pen = x;
     if (justify == 0) {
         uint32_t glyphSpan = (uint32_t)glyphs * (uint32_t)charWidth;
-        int32_t adjustment = coduo_int32_from_bits(
-            (uint32_t)CG_HUDELEM_JUSTIFY_BIAS - glyphSpan);
+        int32_t adjustment = coduo_int32_from_bits((uint32_t)CG_HUDELEM_JUSTIFY_BIAS - glyphSpan);
         pen = coduo_int32_from_bits((uint32_t)pen + (uint32_t)adjustment);
     }
 
@@ -210,21 +213,13 @@ int CG_DrawField(int width /*ECX*/,
                  * into its FMUL by the screen scale (no intervening float store: e.g.
                  * 0x30017cf7 FILD; 0x30017d0f FMUL), so it stays exact in 80-bit -- no
                  * (float) casts, which would round the integers first. */
-                float px = (float)((long double)pen *
-                                   (long double)cgs_screenXScale);
-                float py = (float)((long double)y *
-                                   (long double)cgs_screenYScale);
-                float pw = (float)((long double)charWidth *
-                                   (long double)cgs_screenXScale);
-                float ph = (float)((long double)charHeight *
-                                   (long double)cgs_screenYScale);
+                float px = (float)((long double)pen * (long double)cgs_screenXScale);
+                float py = (float)((long double)y * (long double)cgs_screenYScale);
+                float pw = (float)((long double)charWidth * (long double)cgs_screenXScale);
+                float ph = (float)((long double)charHeight * (long double)cgs_screenYScale);
 
-                cgame_syscall(CG_R_DRAWSTRETCHPIC,
-                              CG_FloatBits(px), CG_FloatBits(py),
-                              CG_FloatBits(pw), CG_FloatBits(ph),
-                              CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                              CG_FloatBits(1.0f), CG_FloatBits(1.0f),
-                              cg_numberShaders[glyphIndex]);
+                cgame_syscall(CG_R_DRAWSTRETCHPIC, CG_FloatBits(px), CG_FloatBits(py), CG_FloatBits(pw), CG_FloatBits(ph),
+                              CG_FloatBits(0.0f), CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), cg_numberShaders[glyphIndex]);
             }
 
             /* Advance the pen and step to the next character (0x30017d8e..0x30017d9a);

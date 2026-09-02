@@ -17,8 +17,7 @@ enum {
 // Exact same-module PPC symbol: UI_Update.
 void UI_Update(const char *name)
 {
-    int32_t value = coduo_fp_to_i32_extended(
-        (long double)trap_Cvar_VariableValue(name));
+    int32_t value = coduo_fp_to_i32_extended((long double)trap_Cvar_VariableValue(name));
 
     if (name == NULL) {
         return;
@@ -69,8 +68,7 @@ void UI_Update(const char *name)
         }
         return;
     }
-    if (Q_stricmpn("ui_mousePitch", name,
-                   UI_UPDATE_NAME_COMPARE_LIMIT) == 0) {
+    if (Q_stricmpn("ui_mousePitch", name, UI_UPDATE_NAME_COMPARE_LIMIT) == 0) {
         trap_Cvar_SetValue("m_pitch", value == 0 ? 0.022f : -0.022f);
     }
 }

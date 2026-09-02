@@ -71,36 +71,24 @@
 #include <stdint.h>
 
 enum {
-    CG_MODEL_EVENT_SURFACE_SOUND_COUNT =
-        sizeof(cg_bulletSmallSurfaceSounds) /
-        sizeof(cg_bulletSmallSurfaceSounds[0])
+    CG_MODEL_EVENT_SURFACE_SOUND_COUNT = sizeof(cg_bulletSmallSurfaceSounds) / sizeof(cg_bulletSmallSurfaceSounds[0])
 };
 
-_Static_assert(CG_MODEL_EVENT_SURFACE_SOUND_COUNT ==
-                   sizeof(cg_bulletLargeSurfaceSounds) /
-                       sizeof(cg_bulletLargeSurfaceSounds[0]),
+_Static_assert(CG_MODEL_EVENT_SURFACE_SOUND_COUNT == sizeof(cg_bulletLargeSurfaceSounds) / sizeof(cg_bulletLargeSurfaceSounds[0]),
                "model-event bullet sound rows differ in size");
 
-void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex,
-                             vec3_t lerpOrigin, int32_t vehicleEntityNum)
+void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIndex, vec3_t lerpOrigin, int32_t vehicleEntityNum)
 {
     const char *impactSound;
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-    if (weaponIndex == 0 ||
-        weaponIndex >= (uint32_t)MAX_WEAPONS ||
-        bg_numWeapons < 1 ||
-        weaponIndex > (uint32_t)bg_numWeapons ||
+    if (weaponIndex == 0 || weaponIndex >= (uint32_t)MAX_WEAPONS || bg_numWeapons < 1 || weaponIndex > (uint32_t)bg_numWeapons ||
         bg_weaponInfos[weaponIndex] == NULL) {
-        Com_Printf(
-            "WARNING: CG_ModelEventFireWeapon: invalid weapon index %u\n",
-            weaponIndex);
+        Com_Printf("WARNING: CG_ModelEventFireWeapon: invalid weapon index %u\n", weaponIndex);
         return;
     }
     if (poseType >= (uint32_t)CG_MODEL_EVENT_SURFACE_SOUND_COUNT) {
-        Com_Printf(
-            "WARNING: CG_ModelEventFireWeapon: invalid surface type %u\n",
-            poseType);
+        Com_Printf("WARNING: CG_ModelEventFireWeapon: invalid surface type %u\n", poseType);
         return;
     }
 
@@ -122,6 +110,5 @@ void CG_ModelEventFireWeapon(int32_t event, uint32_t poseType, uint32_t weaponIn
     /* 0x30049087..0x30049097: spawn the bullet tracer from the muzzle. The impact is
      * the same weapon-angles context; the surface index doubles as the tracer's
      * surfaceType; the muzzle bone tag is cg_muzzleTagNames[0] ("tag_flash"). */
-    CG_SpawnTracer(lerpOrigin, vehicleEntityNum, (int32_t)weaponIndex,
-                   (int32_t)poseType, cg_muzzleTagNames[0]);
+    CG_SpawnTracer(lerpOrigin, vehicleEntityNum, (int32_t)weaponIndex, (int32_t)poseType, cg_muzzleTagNames[0]);
 }

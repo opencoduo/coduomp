@@ -80,12 +80,12 @@
 
 void CG_AddPlayerWaterShadow(centity_t *cent)
 {
-    vec3_t     probeBelow;   /* origin, 24u down: must be in water   */
-    vec3_t     probeAbove;   /* origin, 32u up:   must be in air      */
+    vec3_t probeBelow;   /* origin, 24u down: must be in water   */
+    vec3_t probeAbove;   /* origin, 32u up:   must be in air      */
     trace_t trace; /* water-surface trace result           */
     polyVert_t verts[4];     /* the flat surface quad                 */
-    int32_t    contentsBelow;
-    int32_t    contentsAbove;
+    int32_t contentsBelow;
+    int32_t contentsAbove;
 
     if (cg_shadows_vmCvar.integer == 0)
         return;
@@ -94,8 +94,7 @@ void CG_AddPlayerWaterShadow(centity_t *cent)
     probeBelow[0] = cent->lerpOrigin[0];
     probeBelow[1] = cent->lerpOrigin[1];
     probeBelow[2] = cent->lerpOrigin[2] - 24.0f;
-    contentsBelow = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_CM_POINT_CONTENTS, (intptr_t)probeBelow, 0));
+    contentsBelow = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_CM_POINT_CONTENTS, (intptr_t)probeBelow, 0));
     if ((contentsBelow & (int32_t)CONTENTS_WATER) == 0)
         return;
 
@@ -103,16 +102,12 @@ void CG_AddPlayerWaterShadow(centity_t *cent)
     probeAbove[0] = cent->lerpOrigin[0];
     probeAbove[1] = cent->lerpOrigin[1];
     probeAbove[2] = cent->lerpOrigin[2] + 32.0f;
-    contentsAbove = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_CM_POINT_CONTENTS, (intptr_t)probeAbove, 0));
-    if ((contentsAbove &
-         (int32_t)(CONTENTS_WATER | CG_WATER_SHADOW_CONTENTS_SOLID)) != 0)
+    contentsAbove = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_CM_POINT_CONTENTS, (intptr_t)probeAbove, 0));
+    if ((contentsAbove & (int32_t)(CONTENTS_WATER | CG_WATER_SHADOW_CONTENTS_SOLID)) != 0)
         return;
 
     /* Trace from the air point down to the water point to find the surface hit. */
-    cgame_syscall(CG_CM_BOX_TRACE, (intptr_t)&trace,
-                  (intptr_t)probeAbove,
-                  (intptr_t)probeBelow, 0, 0, 0, 0x20);
+    cgame_syscall(CG_CM_BOX_TRACE, (intptr_t)&trace, (intptr_t)probeAbove, (intptr_t)probeBelow, 0, 0, 0, 0x20);
 
     /* A full 1.0 fraction means the trace reached the far end with no surface hit. */
     if (trace.fraction == doubleOne)
@@ -152,7 +147,5 @@ void CG_AddPlayerWaterShadow(centity_t *cent)
         verts[i].modulate[3] = 0xff;
     }
 
-    cgame_syscall(CG_R_ADDPOLYTOSCENE,
-                  (int32_t)cgs_media_wakeMarkShader, 4,
-                  (intptr_t)verts);
+    cgame_syscall(CG_R_ADDPOLYTOSCENE, (int32_t)cgs_media_wakeMarkShader, 4, (intptr_t)verts);
 }

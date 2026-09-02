@@ -44,34 +44,27 @@ enum {
                             * which is referenced only by an unrelated function
                             * (0x4e9d7c) -- displacing the sun sample-ray start by
                             * ~offset*38.4 instead of ~0. */
-#define DIFFUSE_SUN_TRACE_START_HEIGHT \
-    0.100000001490116119384765625f /* 0x3dcccccd */
+#define DIFFUSE_SUN_TRACE_START_HEIGHT 0.100000001490116119384765625f /* 0x3dcccccd */
 #define DIFFUSE_SUN_TRACE_END_HEIGHT 32768.0f /* 0x47000000 */
 
-#define LIGHT_CACHE_TRACE_START_OFFSET \
-    0.00999999977648258203125f /* 0x3c23d70a */
-#define LIGHT_CACHE_DIRECTIONAL_START_SCALE \
-    0.100000001490116119384765625f /* 0x3dcccccd */
+#define LIGHT_CACHE_TRACE_START_OFFSET 0.00999999977648258203125f /* 0x3c23d70a */
+#define LIGHT_CACHE_DIRECTIONAL_START_SCALE 0.100000001490116119384765625f /* 0x3dcccccd */
 #define LIGHT_CACHE_DIRECTIONAL_END_SCALE 32768.0f /* 0x47000000 */
 
-#define SHOW_LEAF_LIGHT_VIEW_DOT_MINIMUM \
-    0.949999988079071044921875f /* 0x3f733333 */
+#define SHOW_LEAF_LIGHT_VIEW_DOT_MINIMUM 0.949999988079071044921875f /* 0x3f733333 */
 #define SHOW_LEAF_LIGHT_MAX_DISTANCE_SQUARED 9216.0f /* 0x46100000 */
 #define SHOW_LEAF_LIGHT_DIRECTION_LENGTH 1024.0f /* 0x44800000 */
 
 /* Exact original 0x005b9bc0 float. Semantically this is one cache entry as a
  * percentage of the 8192 * 32 entry light-visibility cache. */
-#define LIGHT_VIS_CACHE_PERCENT_PER_ENTRY \
-    0.0003814697265625f /* 0x39c80000 = 100 / 262144 */
+#define LIGHT_VIS_CACHE_PERCENT_PER_ENTRY 0.0003814697265625f /* 0x39c80000 = 100 / 262144 */
 
 /* Exact Windows constants used to map the current view origin onto the
  * light-vis grid. The two double adjustments make x87 round-to-nearest act as
  * round-half-up for X/Y and floor for Z over the biased nonnegative range. */
 #define LIGHT_VIS_GRID_WORLD_MIN -131072.0f /* 0xc8000000 */
-#define LIGHT_VIS_GRID_ROUND_EPSILON \
-    0.000000000931322574615478515625 /* 0x3e10000000000000 */
-#define LIGHT_VIS_GRID_FLOOR_ADJUSTMENT \
-    0.499999999068677425384521484375 /* 0x3fdfffffff000000 */
+#define LIGHT_VIS_GRID_ROUND_EPSILON 0.000000000931322574615478515625 /* 0x3e10000000000000 */
+#define LIGHT_VIS_GRID_FLOOR_ADJUSTMENT 0.499999999068677425384521484375 /* 0x3fdfffffff000000 */
 
 /* Shared renderer debug colors pooled by the original compiler at the noted
  * .rdata addresses. */
@@ -105,26 +98,19 @@ uint32_t reverse_bits(uint32_t value)
     if (reverseBitsTableNeedsInitialization != qfalse) {
         reverseBitsTableNeedsInitialization = qfalse;
 
-        for (uint32_t byteValue = 0;
-             byteValue < REVERSE_BITS_TABLE_SIZE;
-             ++byteValue) {
+        for (uint32_t byteValue = 0; byteValue < REVERSE_BITS_TABLE_SIZE; ++byteValue) {
             uint8_t reversed = 0;
 
-            for (uint32_t sourceBit = 0;
-                 sourceBit < CHAR_BIT;
-                 ++sourceBit) {
+            for (uint32_t sourceBit = 0; sourceBit < CHAR_BIT; ++sourceBit) {
                 if ((byteValue & (1U << sourceBit)) != 0U) {
-                    reversed |= (uint8_t)(
-                        1U << ((CHAR_BIT - 1U) - sourceBit));
+                    reversed |= (uint8_t)(1U << ((CHAR_BIT - 1U) - sourceBit));
                 }
             }
             reverseBitsTable[byteValue] = reversed;
         }
     }
 
-    for (uint32_t byteIndex = 0;
-         byteIndex < sizeof(value);
-         ++byteIndex) {
+    for (uint32_t byteIndex = 0; byteIndex < sizeof(value); ++byteIndex) {
         const uint32_t shift = byteIndex * CHAR_BIT;
         const uint32_t byteValue = (value >> shift) & UINT8_MAX;
 
@@ -140,14 +126,10 @@ uint32_t reverse_bits(uint32_t value)
 qboolean R_SkyTracePassed(const trace_t *trace)
 {
     if (trace->startsolid != 0) {
-        return ((uint32_t)trace->contents &
-                CONTENTS_SKY) != 0U
-                   ? qtrue
-                   : qfalse;
+        return ((uint32_t)trace->contents & CONTENTS_SKY) != 0U ? qtrue : qfalse;
     }
 
-    if (trace->fraction == 1.0f ||
-        ((uint32_t)trace->surfaceFlags & SURF_SKY) != 0U) {
+    if (trace->fraction == 1.0f || ((uint32_t)trace->surfaceFlags & SURF_SKY) != 0U) {
         return qtrue;
     }
     return qfalse;
@@ -161,11 +143,8 @@ uint8_t R_LightCacheSkyTrace(const vec3_t start, const vec3_t end)
 {
     trace_t trace;
 
-    CM_BoxTrace(&trace, start, end, vec3_origin, vec3_origin,
-                CM_WORLD_MODEL, LIGHT_CACHE_TRACE_CONTENTS, qfalse);
-    return R_SkyTracePassed(&trace) != qfalse
-               ? LIGHT_CACHE_SKY_VISIBLE
-               : 0;
+    CM_BoxTrace(&trace, start, end, vec3_origin, vec3_origin, CM_WORLD_MODEL, LIGHT_CACHE_TRACE_CONTENTS, qfalse);
+    return R_SkyTracePassed(&trace) != qfalse ? LIGHT_CACHE_SKY_VISIBLE : 0;
 }
 
 /* Source: CoDUOMP.exe 0x004c5860..0x004c58b2.
@@ -177,8 +156,7 @@ qboolean R_LightCacheTrace(const vec3_t start, const vec3_t end)
 {
     trace_t trace;
 
-    CM_BoxTrace(&trace, start, end, vec3_origin, vec3_origin,
-                CM_WORLD_MODEL, LIGHT_CACHE_TRACE_CONTENTS, qfalse);
+    CM_BoxTrace(&trace, start, end, vec3_origin, vec3_origin, CM_WORLD_MODEL, LIGHT_CACHE_TRACE_CONTENTS, qfalse);
     if (trace.startsolid != 0 || trace.fraction < 1.0f)
         return qfalse;
     return qtrue;
@@ -190,17 +168,11 @@ qboolean R_LightCacheTrace(const vec3_t start, const vec3_t end)
  * Windows proves the packed key, bit-reversed Z contribution, both hash
  * coefficients, and 8192-bucket mask. Unsigned arithmetic states the original
  * 32-bit shift/wrap behavior for negative grid coordinates explicitly. */
-void R_LightVisHash(int32_t gridX, int32_t gridY, int32_t gridZ,
-                    int32_t cluster,
-                    uint32_t *cacheKey, uint32_t *bucketIndex)
+void R_LightVisHash(int32_t gridX, int32_t gridY, int32_t gridZ, int32_t cluster, uint32_t *cacheKey, uint32_t *bucketIndex)
 {
-    *cacheKey = ((uint32_t)gridY << 22) |
-                (((uint32_t)gridX & LIGHT_VIS_GRID_X_MASK) << 12) |
-                ((uint32_t)cluster & LIGHT_VIS_CLUSTER_MASK);
+    *cacheKey = ((uint32_t)gridY << 22) | (((uint32_t)gridX & LIGHT_VIS_GRID_X_MASK) << 12) | ((uint32_t)cluster & LIGHT_VIS_CLUSTER_MASK);
     *bucketIndex =
-        (reverse_bits((uint32_t)gridZ) +
-         (uint32_t)gridY * LIGHT_VIS_GRID_Y_HASH_FACTOR -
-         (uint32_t)gridX * LIGHT_VIS_GRID_X_HASH_FACTOR) &
+        (reverse_bits((uint32_t)gridZ) + (uint32_t)gridY * LIGHT_VIS_GRID_Y_HASH_FACTOR - (uint32_t)gridX * LIGHT_VIS_GRID_X_HASH_FACTOR) &
         LIGHT_VIS_BUCKET_MASK;
 }
 
@@ -210,10 +182,8 @@ void R_LightVisHash(int32_t gridX, int32_t gridY, int32_t gridZ,
  * R_GetCachedVisibility. Windows proves the 32-entry bucket walk, history
  * record layout and limit, miss statistics, full-bucket move, grid-to-world
  * conversion, sampling call, output byte, and UINT32_MAX blocked sentinel. */
-uint32_t R_GetCachedVisibility(
-    int32_t gridX, int32_t gridY, int32_t gridZ, int32_t cluster,
-    int32_t lightCount, renderer_light_t *const *lights,
-    const vec3_t traceTarget, uint8_t *diffuseSunVisibility)
+uint32_t R_GetCachedVisibility(int32_t gridX, int32_t gridY, int32_t gridZ, int32_t cluster, int32_t lightCount,
+                               renderer_light_t *const *lights, const vec3_t traceTarget, uint8_t *diffuseSunVisibility)
 {
     uint32_t cacheKey;
     uint32_t bucketIndex;
@@ -221,17 +191,14 @@ uint32_t R_GetCachedVisibility(
     renderer_light_vis_cache_entry_t *cacheEntry;
     int32_t remainingEntries = R_LIGHT_VIS_ENTRIES_PER_BUCKET;
 
-    R_LightVisHash(gridX, gridY, gridZ, cluster,
-                   &cacheKey, &bucketIndex);
+    R_LightVisHash(gridX, gridY, gridZ, cluster, &cacheKey, &bucketIndex);
     bucket = rendererLightVisCache[bucketIndex];
     cacheEntry = bucket;
 
     while (cacheEntry->sampleState != R_LIGHT_VIS_SAMPLE_EMPTY) {
         if (cacheEntry->key == cacheKey) {
             *diffuseSunVisibility = cacheEntry->diffuseSunVisibility;
-            return cacheEntry->sampleState == R_LIGHT_VIS_SAMPLE_VALID
-                       ? cacheEntry->visibleLightBits
-                       : UINT32_MAX;
+            return cacheEntry->sampleState == R_LIGHT_VIS_SAMPLE_VALID ? cacheEntry->visibleLightBits : UINT32_MAX;
         }
         ++cacheEntry;
         --remainingEntries;
@@ -239,10 +206,8 @@ uint32_t R_GetCachedVisibility(
             break;
     }
 
-    if (rendererLightVisHistory != NULL &&
-        rendererLightVisHistoryCount < R_LIGHT_VIS_HISTORY_MAX_ENTRIES) {
-        renderer_light_vis_history_entry_t *historyEntry =
-            &rendererLightVisHistory[rendererLightVisHistoryCount];
+    if (rendererLightVisHistory != NULL && rendererLightVisHistoryCount < R_LIGHT_VIS_HISTORY_MAX_ENTRIES) {
+        renderer_light_vis_history_entry_t *historyEntry = &rendererLightVisHistory[rendererLightVisHistoryCount];
 
         historyEntry->gridX = gridX;
         historyEntry->gridY = gridY;
@@ -250,22 +215,17 @@ uint32_t R_GetCachedVisibility(
         historyEntry->traceTarget[0] = traceTarget[0];
         historyEntry->traceTarget[1] = traceTarget[1];
         historyEntry->traceTarget[2] = traceTarget[2];
-        (void)R_SortedHistoryEntry(gridX, gridY, gridZ,
-                                   LIGHT_VIS_HISTORY_INSERT);
+        (void)R_SortedHistoryEntry(gridX, gridY, gridZ, LIGHT_VIS_HISTORY_INSERT);
         ++rendererLightVisHistoryCount;
     }
 
-    rendererLightVisRuntimeFillCount = (int32_t)(
-        (uint32_t)rendererLightVisRuntimeFillCount + 1u);
+    rendererLightVisRuntimeFillCount = (int32_t)((uint32_t)rendererLightVisRuntimeFillCount + 1u);
     if (remainingEntries == 0) {
-        memmove(&bucket[1], &bucket[0],
-                (R_LIGHT_VIS_ENTRIES_PER_BUCKET - 1) * sizeof(bucket[0]));
+        memmove(&bucket[1], &bucket[0], (R_LIGHT_VIS_ENTRIES_PER_BUCKET - 1) * sizeof(bucket[0]));
         cacheEntry = &bucket[0];
-        rendererLightVisFlushedEntryCount = (int32_t)(
-            (uint32_t)rendererLightVisFlushedEntryCount + 1u);
+        rendererLightVisFlushedEntryCount = (int32_t)((uint32_t)rendererLightVisFlushedEntryCount + 1u);
     } else {
-        const int32_t probeDepth =
-            (R_LIGHT_VIS_ENTRIES_PER_BUCKET + 1) - remainingEntries;
+        const int32_t probeDepth = (R_LIGHT_VIS_ENTRIES_PER_BUCKET + 1) - remainingEntries;
 
         ++rendererLightVisUsedEntryCount;
         if (rendererLightVisMaxAssociativity < probeDepth)
@@ -275,28 +235,19 @@ uint32_t R_GetCachedVisibility(
     {
         vec3_t origin;
 
-        const int32_t originX = (int32_t)(
-            ((uint32_t)gridX - LIGHT_VIS_GRID_XY_BIAS) *
-            LIGHT_VIS_GRID_XY_SCALE);
-        const int32_t originY = (int32_t)(
-            ((uint32_t)gridY - LIGHT_VIS_GRID_XY_BIAS) *
-            LIGHT_VIS_GRID_XY_SCALE);
-        const int32_t originZ = (int32_t)(
-            ((uint32_t)gridZ - LIGHT_VIS_GRID_Z_BIAS) *
-            LIGHT_VIS_GRID_Z_SCALE);
+        const int32_t originX = (int32_t)(((uint32_t)gridX - LIGHT_VIS_GRID_XY_BIAS) * LIGHT_VIS_GRID_XY_SCALE);
+        const int32_t originY = (int32_t)(((uint32_t)gridY - LIGHT_VIS_GRID_XY_BIAS) * LIGHT_VIS_GRID_XY_SCALE);
+        const int32_t originZ = (int32_t)(((uint32_t)gridZ - LIGHT_VIS_GRID_Z_BIAS) * LIGHT_VIS_GRID_Z_SCALE);
 
         origin[0] = (float)originX;
         origin[1] = (float)originY;
         origin[2] = (float)originZ;
         cacheEntry->key = cacheKey;
-        (void)R_SampleLightVisibility(cacheEntry, origin,
-                                      lightCount, lights, traceTarget);
+        (void)R_SampleLightVisibility(cacheEntry, origin, lightCount, lights, traceTarget);
     }
 
     *diffuseSunVisibility = cacheEntry->diffuseSunVisibility;
-    return cacheEntry->sampleState == R_LIGHT_VIS_SAMPLE_VALID
-               ? cacheEntry->visibleLightBits
-               : UINT32_MAX;
+    return cacheEntry->sampleState == R_LIGHT_VIS_SAMPLE_VALID ? cacheEntry->visibleLightBits : UINT32_MAX;
 }
 
 /* Source: CoDUOMP.exe 0x004c58c0..0x004c5a52.
@@ -307,10 +258,7 @@ uint32_t R_GetCachedVisibility(
  * skipped and represented by hasSunLight. The original LTCG register ABI is
  * cacheEntry=ESI, origin=EDI, and leaf=EAX. Trace coordinates preserve each
  * retained multiply/add until its binary32 destination store. */
-void R_SampleDiffuseSunVisibility(
-    renderer_light_vis_cache_entry_t *cacheEntry,
-    const vec3_t origin,
-    const mnode_t *leaf)
+void R_SampleDiffuseSunVisibility(renderer_light_vis_cache_entry_t *cacheEntry, const vec3_t origin, const mnode_t *leaf)
 {
     float sampleSpacing;
     float sampleRadius;
@@ -320,56 +268,41 @@ void R_SampleDiffuseSunVisibility(
     if (leaf->data.leaf.hasSunLight == qfalse)
         return;
 
-    sampleSpacing = tr.diffuseSunSteps <= DIFFUSE_SUN_WIDE_SAMPLE_MAX_STEPS
-                        ? DIFFUSE_SUN_WIDE_SAMPLE_SPACING
-                        : DIFFUSE_SUN_NARROW_SAMPLE_SPACING;
-    const int32_t sampleStepCount = (int32_t)(
-        (uint32_t)tr.diffuseSunSteps - 1u);
-    sampleRadius = (float)(
-        (long double)sampleStepCount *
-        ((long double)sampleSpacing * 0.5L));
+    sampleSpacing =
+        tr.diffuseSunSteps <= DIFFUSE_SUN_WIDE_SAMPLE_MAX_STEPS ? DIFFUSE_SUN_WIDE_SAMPLE_SPACING : DIFFUSE_SUN_NARROW_SAMPLE_SPACING;
+    const int32_t sampleStepCount = (int32_t)((uint32_t)tr.diffuseSunSteps - 1u);
+    sampleRadius = (float)((long double)sampleStepCount * ((long double)sampleSpacing * 0.5L));
 
-    traceStart[2] = (float)(
-        (long double)origin[2] + DIFFUSE_SUN_TRACE_START_HEIGHT);
-    traceEnd[2] = (float)(
-        (long double)origin[2] + DIFFUSE_SUN_TRACE_END_HEIGHT);
+    traceStart[2] = (float)((long double)origin[2] + DIFFUSE_SUN_TRACE_START_HEIGHT);
+    traceEnd[2] = (float)((long double)origin[2] + DIFFUSE_SUN_TRACE_END_HEIGHT);
 
     float yOffset = -sampleRadius;
     while (yOffset <= sampleRadius) {
-        traceStart[1] = (float)(
-            (long double)yOffset * DIFFUSE_SUN_TRACE_START_SCALE +
-            origin[1]);
-        traceEnd[1] =
-            (float)((long double)yOffset + origin[1]);
+        traceStart[1] = (float)((long double)yOffset * DIFFUSE_SUN_TRACE_START_SCALE + origin[1]);
+        traceEnd[1] = (float)((long double)yOffset + origin[1]);
 
         float xOffset = -sampleRadius;
         while (xOffset <= sampleRadius) {
             uint8_t visibility;
 
-            traceStart[0] = (float)(
-                (long double)xOffset * DIFFUSE_SUN_TRACE_START_SCALE +
-                origin[0]);
-            traceEnd[0] =
-                (float)((long double)xOffset + origin[0]);
+            traceStart[0] = (float)((long double)xOffset * DIFFUSE_SUN_TRACE_START_SCALE + origin[0]);
+            traceEnd[0] = (float)((long double)xOffset + origin[0]);
             visibility = R_LightCacheSkyTrace(traceStart, traceEnd);
             if (visibility != 0) {
                 cacheEntry->visibleLightBits |= LIGHT_VIS_DIFFUSE_SUN_BIT;
-                cacheEntry->diffuseSunVisibility =
-                    (uint8_t)(cacheEntry->diffuseSunVisibility + visibility);
+                cacheEntry->diffuseSunVisibility = (uint8_t)(cacheEntry->diffuseSunVisibility + visibility);
             }
 
             /* 0x004c5a05 stores the next offset to the float loop local but
              * compares the still-retained x87 sum against sampleRadius. */
-            const long double nextXOffset =
-                (long double)xOffset + (long double)sampleSpacing;
+            const long double nextXOffset = (long double)xOffset + (long double)sampleSpacing;
             xOffset = (float)nextXOffset;
             if (nextXOffset > (long double)sampleRadius)
                 break;
         }
 
         /* 0x004c5a20 uses the same store-without-pop loop test for Y. */
-        const long double nextYOffset =
-            (long double)yOffset + (long double)sampleSpacing;
+        const long double nextYOffset = (long double)yOffset + (long double)sampleSpacing;
         yOffset = (float)nextYOffset;
         if (nextYOffset > (long double)sampleRadius)
             break;
@@ -384,12 +317,8 @@ void R_SampleDiffuseSunVisibility(
  * light trace constructions, the indexed-light bit writes, and cache state.
  * R_LoadNodesAndLeafs separately proves that a leaf has at most 15 indexed
  * lights, so each shift below is within the 16-bit result. */
-mnode_t *R_SampleLightVisibility(
-    renderer_light_vis_cache_entry_t *cacheEntry,
-    const vec3_t origin,
-    int32_t lightCount,
-    renderer_light_t *const *lights,
-    const vec3_t traceTarget)
+mnode_t *R_SampleLightVisibility(renderer_light_vis_cache_entry_t *cacheEntry, const vec3_t origin, int32_t lightCount,
+                                 renderer_light_t *const *lights, const vec3_t traceTarget)
 {
     mnode_t *leaf;
     qboolean blocked = qfalse;
@@ -398,8 +327,7 @@ mnode_t *R_SampleLightVisibility(
     cacheEntry->diffuseSunVisibility = 0;
     leaf = R_PointInLeaf(origin);
 
-    if (((uint32_t)leaf->contents & CONTENTS_SOLID) != 0U ||
-        leaf->data.leaf.cluster < 0) {
+    if (((uint32_t)leaf->contents & CONTENTS_SOLID) != 0U || leaf->data.leaf.cluster < 0) {
         blocked = qtrue;
     } else {
         vec3_t traceStart;
@@ -408,46 +336,32 @@ mnode_t *R_SampleLightVisibility(
         traceStart[1] = traceTarget[1] - origin[1];
         traceStart[2] = traceTarget[2] - origin[2];
         VectorNormalizeFast(traceStart);
-        traceStart[0] = origin[0] +
-                        traceStart[0] * LIGHT_CACHE_TRACE_START_OFFSET;
-        traceStart[1] = origin[1] +
-                        traceStart[1] * LIGHT_CACHE_TRACE_START_OFFSET;
-        traceStart[2] = origin[2] +
-                        traceStart[2] * LIGHT_CACHE_TRACE_START_OFFSET;
+        traceStart[0] = origin[0] + traceStart[0] * LIGHT_CACHE_TRACE_START_OFFSET;
+        traceStart[1] = origin[1] + traceStart[1] * LIGHT_CACHE_TRACE_START_OFFSET;
+        traceStart[2] = origin[2] + traceStart[2] * LIGHT_CACHE_TRACE_START_OFFSET;
 
-        if (CM_BoxSightTrace(0, traceTarget, traceStart,
-                             vec3_origin, vec3_origin,
-                             CM_WORLD_MODEL, LIGHT_CACHE_TRACE_CONTENTS,
-                             qfalse) != 0) {
+        if (CM_BoxSightTrace(0, traceTarget, traceStart, vec3_origin, vec3_origin, CM_WORLD_MODEL, LIGHT_CACHE_TRACE_CONTENTS, qfalse) !=
+            0) {
             blocked = qtrue;
         }
     }
 
     if (blocked == qfalse) {
-        for (int32_t lightIndex = 0;
-             lightIndex < lightCount;
-             ++lightIndex) {
+        for (int32_t lightIndex = 0; lightIndex < lightCount; ++lightIndex) {
             const renderer_light_t *light = lights[lightIndex];
             vec3_t traceStart;
 
             if (light->position[3] == 0.0f) {
                 vec3_t traceEnd;
 
-                traceStart[0] = origin[0] +
-                    light->position[0] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
-                traceStart[1] = origin[1] +
-                    light->position[1] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
-                traceStart[2] = origin[2] +
-                    light->position[2] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
-                traceEnd[0] = origin[0] +
-                    light->position[0] * LIGHT_CACHE_DIRECTIONAL_END_SCALE;
-                traceEnd[1] = origin[1] +
-                    light->position[1] * LIGHT_CACHE_DIRECTIONAL_END_SCALE;
-                traceEnd[2] = origin[2] +
-                    light->position[2] * LIGHT_CACHE_DIRECTIONAL_END_SCALE;
+                traceStart[0] = origin[0] + light->position[0] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
+                traceStart[1] = origin[1] + light->position[1] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
+                traceStart[2] = origin[2] + light->position[2] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
+                traceEnd[0] = origin[0] + light->position[0] * LIGHT_CACHE_DIRECTIONAL_END_SCALE;
+                traceEnd[1] = origin[1] + light->position[1] * LIGHT_CACHE_DIRECTIONAL_END_SCALE;
+                traceEnd[2] = origin[2] + light->position[2] * LIGHT_CACHE_DIRECTIONAL_END_SCALE;
 
-                if (R_LightCacheSkyTrace(traceStart, traceEnd) !=
-                    LIGHT_CACHE_SKY_VISIBLE) {
+                if (R_LightCacheSkyTrace(traceStart, traceEnd) != LIGHT_CACHE_SKY_VISIBLE) {
                     continue;
                 }
             } else {
@@ -455,27 +369,21 @@ mnode_t *R_SampleLightVisibility(
                 traceStart[1] = light->position[1] - origin[1];
                 traceStart[2] = light->position[2] - origin[2];
                 VectorNormalizeFast(traceStart);
-                traceStart[0] = origin[0] +
-                    traceStart[0] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
-                traceStart[1] = origin[1] +
-                    traceStart[1] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
-                traceStart[2] = origin[2] +
-                    traceStart[2] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
+                traceStart[0] = origin[0] + traceStart[0] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
+                traceStart[1] = origin[1] + traceStart[1] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
+                traceStart[2] = origin[2] + traceStart[2] * LIGHT_CACHE_DIRECTIONAL_START_SCALE;
 
                 if (R_LightCacheTrace(traceStart, light->position) == qfalse)
                     continue;
             }
 
-            cacheEntry->visibleLightBits |=
-                (uint16_t)(1U << (uint32_t)lightIndex);
+            cacheEntry->visibleLightBits |= (uint16_t)(1U << (uint32_t)lightIndex);
         }
 
         R_SampleDiffuseSunVisibility(cacheEntry, origin, leaf);
     }
 
-    cacheEntry->sampleState = blocked != qfalse
-                                  ? R_LIGHT_VIS_SAMPLE_BLOCKED
-                                  : R_LIGHT_VIS_SAMPLE_VALID;
+    cacheEntry->sampleState = blocked != qfalse ? R_LIGHT_VIS_SAMPLE_BLOCKED : R_LIGHT_VIS_SAMPLE_VALID;
     return leaf;
 }
 
@@ -502,16 +410,13 @@ void R_ShowLeafLights(const vec3_t point, const trRefEntity_t *entity)
         viewDirection[1] = point[1] - tr.refdef.vieworg[1];
         viewDirection[2] = point[2] - tr.refdef.vieworg[2];
         VectorNormalizeFast(viewDirection);
-        viewDot = tr.refdef.viewaxis[0][2] * viewDirection[2] +
-                  tr.refdef.viewaxis[0][1] * viewDirection[1] +
+        viewDot = tr.refdef.viewaxis[0][2] * viewDirection[2] + tr.refdef.viewaxis[0][1] * viewDirection[1] +
                   tr.refdef.viewaxis[0][0] * viewDirection[0];
         if (viewDot < SHOW_LEAF_LIGHT_VIEW_DOT_MINIMUM)
             return;
     }
 
-    if (showMode == R_SHOW_LEAF_LIGHTS_NEARBY &&
-        VectorDistanceSquared(point, tr.refdef.vieworg) >
-            SHOW_LEAF_LIGHT_MAX_DISTANCE_SQUARED) {
+    if (showMode == R_SHOW_LEAF_LIGHTS_NEARBY && VectorDistanceSquared(point, tr.refdef.vieworg) > SHOW_LEAF_LIGHT_MAX_DISTANCE_SQUARED) {
         return;
     }
 
@@ -519,40 +424,27 @@ void R_ShowLeafLights(const vec3_t point, const trRefEntity_t *entity)
     if (leaf == NULL)
         return;
 
-    for (int32_t leafLightIndex = 0;
-         leafLightIndex < leaf->data.leaf.lightCount;
-         ++leafLightIndex) {
-        const int32_t worldLightIndex = tr.world->lightIndexes[
-            leaf->data.leaf.firstLightIndex + leafLightIndex];
-        const renderer_light_t *light =
-            &tr.world->lights[worldLightIndex];
+    for (int32_t leafLightIndex = 0; leafLightIndex < leaf->data.leaf.lightCount; ++leafLightIndex) {
+        const int32_t worldLightIndex = tr.world->lightIndexes[leaf->data.leaf.firstLightIndex + leafLightIndex];
+        const renderer_light_t *light = &tr.world->lights[worldLightIndex];
         qboolean attachedToEntity = qfalse;
         const vec4_t *color;
         vec3_t directionalEnd;
         const float *lineEnd;
 
-        for (int32_t entityLightIndex = 0;
-             entityLightIndex < entity->lightCount;
-             ++entityLightIndex) {
+        for (int32_t entityLightIndex = 0; entityLightIndex < entity->lightCount; ++entityLightIndex) {
             if (entity->lights[entityLightIndex].light == light) {
                 attachedToEntity = qtrue;
                 break;
             }
         }
 
-        color = attachedToEntity != qfalse
-                    ? &leafLightColorGreen
-                    : &leafLightColorRed;
+        color = attachedToEntity != qfalse ? &leafLightColorGreen : &leafLightColorRed;
         if (light->position[3] == 0.0f) {
-            color = attachedToEntity != qfalse
-                        ? &leafLightColorYellow
-                        : &leafLightColorBlue;
-            directionalEnd[0] = point[0] +
-                light->position[0] * SHOW_LEAF_LIGHT_DIRECTION_LENGTH;
-            directionalEnd[1] = point[1] +
-                light->position[1] * SHOW_LEAF_LIGHT_DIRECTION_LENGTH;
-            directionalEnd[2] = point[2] +
-                light->position[2] * SHOW_LEAF_LIGHT_DIRECTION_LENGTH;
+            color = attachedToEntity != qfalse ? &leafLightColorYellow : &leafLightColorBlue;
+            directionalEnd[0] = point[0] + light->position[0] * SHOW_LEAF_LIGHT_DIRECTION_LENGTH;
+            directionalEnd[1] = point[1] + light->position[1] * SHOW_LEAF_LIGHT_DIRECTION_LENGTH;
+            directionalEnd[2] = point[2] + light->position[2] * SHOW_LEAF_LIGHT_DIRECTION_LENGTH;
             lineEnd = directionalEnd;
         } else {
             lineEnd = light->position;
@@ -560,14 +452,10 @@ void R_ShowLeafLights(const vec3_t point, const trRefEntity_t *entity)
         R_AddDebugLine(point, lineEnd, *color);
     }
 
-    if (r_showLeafLights->integer >= R_SHOW_LEAF_LIGHTS_NEARBY &&
-        leaf->data.leaf.hasSunLight != qfalse) {
+    if (r_showLeafLights->integer >= R_SHOW_LEAF_LIGHTS_NEARBY && leaf->data.leaf.hasSunLight != qfalse) {
         float sampleSpacing =
-            tr.diffuseSunSteps <= DIFFUSE_SUN_WIDE_SAMPLE_MAX_STEPS
-                ? DIFFUSE_SUN_WIDE_SAMPLE_SPACING
-                : DIFFUSE_SUN_NARROW_SAMPLE_SPACING;
-        float sampleRadius = (float)(tr.diffuseSunSteps - 1) *
-                             (sampleSpacing * 0.5f);
+            tr.diffuseSunSteps <= DIFFUSE_SUN_WIDE_SAMPLE_MAX_STEPS ? DIFFUSE_SUN_WIDE_SAMPLE_SPACING : DIFFUSE_SUN_NARROW_SAMPLE_SPACING;
+        float sampleRadius = (float)(tr.diffuseSunSteps - 1) * (sampleSpacing * 0.5f);
         vec3_t traceStart;
         vec3_t traceEnd;
         vec3_t blockedTraceEnd;
@@ -577,45 +465,37 @@ void R_ShowLeafLights(const vec3_t point, const trRefEntity_t *entity)
 
         float yOffset = -sampleRadius;
         while (yOffset <= sampleRadius) {
-            traceStart[1] = point[1] +
-                yOffset * DIFFUSE_SUN_TRACE_START_SCALE;
+            traceStart[1] = point[1] + yOffset * DIFFUSE_SUN_TRACE_START_SCALE;
             traceEnd[1] = point[1] + yOffset;
 
             float xOffset = -sampleRadius;
             while (xOffset <= sampleRadius) {
                 qboolean skyVisible;
 
-                traceStart[0] = point[0] +
-                    xOffset * DIFFUSE_SUN_TRACE_START_SCALE;
+                traceStart[0] = point[0] + xOffset * DIFFUSE_SUN_TRACE_START_SCALE;
                 traceEnd[0] = point[0] + xOffset;
-                skyVisible = R_LightCacheSkyTrace(traceStart, traceEnd) != 0
-                                 ? qtrue
-                                 : qfalse;
+                skyVisible = R_LightCacheSkyTrace(traceStart, traceEnd) != 0 ? qtrue : qfalse;
 
                 if (skyVisible != qfalse) {
-                    R_AddDebugLine(traceStart, traceEnd,
-                                   leafLightColorOrange);
+                    R_AddDebugLine(traceStart, traceEnd, leafLightColorOrange);
                 } else {
                     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
                     blockedTraceEnd[0] = traceStart[0];
                     blockedTraceEnd[1] = traceStart[1];
                     blockedTraceEnd[2] = traceStart[2];
-                    R_AddDebugLine(traceStart, blockedTraceEnd,
-                                   leafLightColorGray);
+                    R_AddDebugLine(traceStart, blockedTraceEnd, leafLightColorGray);
                 }
 
                 /* 0x004c6392 stores the float offset while retaining the x87
                  * increment for the loop-bound comparison. */
-                const long double nextXOffset =
-                    (long double)xOffset + (long double)sampleSpacing;
+                const long double nextXOffset = (long double)xOffset + (long double)sampleSpacing;
                 xOffset = (float)nextXOffset;
                 if (nextXOffset > (long double)sampleRadius)
                     break;
             }
 
             /* 0x004c63a9 is the matching retained Y increment. */
-            const long double nextYOffset =
-                (long double)yOffset + (long double)sampleSpacing;
+            const long double nextYOffset = (long double)yOffset + (long double)sampleSpacing;
             yOffset = (float)nextYOffset;
             if (nextYOffset > (long double)sampleRadius)
                 break;
@@ -631,17 +511,11 @@ void R_ShowLeafLights(const vec3_t point, const trRefEntity_t *entity)
 void R_VC_Stats_f(void)
 {
     ri.Printf(R_PRINT_ALL, "light visibility cache performance:\n");
-    ri.Printf(R_PRINT_ALL, "%i entries used (%.1f%%)\n",
-              rendererLightVisUsedEntryCount,
-              (double)rendererLightVisUsedEntryCount *
-                  (double)LIGHT_VIS_CACHE_PERCENT_PER_ENTRY);
-    ri.Printf(R_PRINT_ALL, "%i max associativity\n",
-              rendererLightVisMaxAssociativity);
-    ri.Printf(R_PRINT_ALL, "%i entries flushed\n",
-              rendererLightVisFlushedEntryCount);
-    ri.Printf(R_PRINT_ALL,
-              "%i entries filled in at runtime instead of read from disk\n",
-              rendererLightVisRuntimeFillCount);
+    ri.Printf(R_PRINT_ALL, "%i entries used (%.1f%%)\n", rendererLightVisUsedEntryCount,
+              (double)rendererLightVisUsedEntryCount * (double)LIGHT_VIS_CACHE_PERCENT_PER_ENTRY);
+    ri.Printf(R_PRINT_ALL, "%i max associativity\n", rendererLightVisMaxAssociativity);
+    ri.Printf(R_PRINT_ALL, "%i entries flushed\n", rendererLightVisFlushedEntryCount);
+    ri.Printf(R_PRINT_ALL, "%i entries filled in at runtime instead of read from disk\n", rendererLightVisRuntimeFillCount);
 }
 
 /* Source: CoDUOMP.exe 0x004c7c60..0x004c7cd5.
@@ -659,11 +533,8 @@ void R_LightVisHistoryFilename(char *filename)
         *write++ = *worldName++;
     *write = '\0';
 
-    if ((size_t)(write - filename) + sizeof(suffix) >
-        R_WORLD_NAME_SIZE) {
-        ri.Error(ERR_DROP,
-                 "light vis cache log filename '%s.vclog' is too long\n",
-                 filename);
+    if ((size_t)(write - filename) + sizeof(suffix) > R_WORLD_NAME_SIZE) {
+        ri.Error(ERR_DROP, "light vis cache log filename '%s.vclog' is too long\n", filename);
     }
 
     memcpy(write, suffix, sizeof(suffix));
@@ -690,23 +561,15 @@ void R_InitLightVisHistory(void)
         return;
     }
 
-    rendererLightVisHistory = malloc(
-        R_LIGHT_VIS_HISTORY_MAX_ENTRIES *
-        sizeof(*rendererLightVisHistory));
+    rendererLightVisHistory = malloc(R_LIGHT_VIS_HISTORY_MAX_ENTRIES * sizeof(*rendererLightVisHistory));
     if (rendererLightVisHistory == NULL)
         Sys_OutOfMemory();
-    memset(rendererLightVisHistory, 0,
-           R_LIGHT_VIS_HISTORY_MAX_ENTRIES *
-               sizeof(*rendererLightVisHistory));
+    memset(rendererLightVisHistory, 0, R_LIGHT_VIS_HISTORY_MAX_ENTRIES * sizeof(*rendererLightVisHistory));
 
-    rendererLightVisSortedHistory = malloc(
-        R_LIGHT_VIS_HISTORY_MAX_ENTRIES *
-        sizeof(*rendererLightVisSortedHistory));
+    rendererLightVisSortedHistory = malloc(R_LIGHT_VIS_HISTORY_MAX_ENTRIES * sizeof(*rendererLightVisSortedHistory));
     if (rendererLightVisSortedHistory == NULL)
         Sys_OutOfMemory();
-    memset(rendererLightVisSortedHistory, 0,
-           R_LIGHT_VIS_HISTORY_MAX_ENTRIES *
-               sizeof(*rendererLightVisSortedHistory));
+    memset(rendererLightVisSortedHistory, 0, R_LIGHT_VIS_HISTORY_MAX_ENTRIES * sizeof(*rendererLightVisSortedHistory));
 
     if (r_vc_makelog->integer != 2)
         return;
@@ -720,44 +583,29 @@ void R_InitLightVisHistory(void)
 
     loadBytes = (uint32_t)fileSize;
     if (loadBytes % sizeof(*rendererLightVisHistory) == 0U) {
-        if (loadBytes >
-            R_LIGHT_VIS_HISTORY_MAX_ENTRIES *
-                sizeof(*rendererLightVisHistory)) {
-            loadBytes = R_LIGHT_VIS_HISTORY_MAX_ENTRIES *
-                        sizeof(*rendererLightVisHistory);
+        if (loadBytes > R_LIGHT_VIS_HISTORY_MAX_ENTRIES * sizeof(*rendererLightVisHistory)) {
+            loadBytes = R_LIGHT_VIS_HISTORY_MAX_ENTRIES * sizeof(*rendererLightVisHistory);
         }
 
         memcpy(rendererLightVisHistory, fileBuffer, loadBytes);
         loadEntryCount = loadBytes / sizeof(*rendererLightVisHistory);
 
-        for (uint32_t entryIndex = 0;
-             entryIndex < loadEntryCount;
-             ++entryIndex) {
-            renderer_light_vis_history_entry_t *historyEntry =
-                &rendererLightVisHistory[entryIndex];
-            mnode_t *leaf =
-                R_PointInLeaf(historyEntry->traceTarget);
+        for (uint32_t entryIndex = 0; entryIndex < loadEntryCount; ++entryIndex) {
+            renderer_light_vis_history_entry_t *historyEntry = &rendererLightVisHistory[entryIndex];
+            mnode_t *leaf = R_PointInLeaf(historyEntry->traceTarget);
 
             if (leaf->data.leaf.cluster >= 0) {
                 renderer_light_t *lights[R_LIGHT_VIS_MAX_LEAF_LIGHTS];
                 uint8_t diffuseSunVisibility;
 
-                for (int32_t lightIndex = 0;
-                     lightIndex < leaf->data.leaf.lightCount;
-                     ++lightIndex) {
-                    const int32_t worldLightIndex =
-                        tr.world->lightIndexes[
-                            leaf->data.leaf.firstLightIndex + lightIndex];
+                for (int32_t lightIndex = 0; lightIndex < leaf->data.leaf.lightCount; ++lightIndex) {
+                    const int32_t worldLightIndex = tr.world->lightIndexes[leaf->data.leaf.firstLightIndex + lightIndex];
 
-                    lights[lightIndex] =
-                        &tr.world->lights[worldLightIndex];
+                    lights[lightIndex] = &tr.world->lights[worldLightIndex];
                 }
 
-                (void)R_GetCachedVisibility(
-                    historyEntry->gridX, historyEntry->gridY,
-                    historyEntry->gridZ, leaf->data.leaf.cluster,
-                    leaf->data.leaf.lightCount, lights,
-                    historyEntry->traceTarget, &diffuseSunVisibility);
+                (void)R_GetCachedVisibility(historyEntry->gridX, historyEntry->gridY, historyEntry->gridZ, leaf->data.leaf.cluster,
+                                            leaf->data.leaf.lightCount, lights, historyEntry->traceTarget, &diffuseSunVisibility);
             }
         }
     }
@@ -777,13 +625,10 @@ void R_SaveLightVisHistory(void)
         char filename[R_WORLD_NAME_SIZE];
         /* LEA/SHL at 0x004c7eeb..0x004c7ef4 multiply the count by
          * the 24-byte record size with wrapping 32-bit arithmetic. */
-        const uint32_t writeBytes =
-            (uint32_t)rendererLightVisHistoryCount *
-            (uint32_t)sizeof(*rendererLightVisHistory);
+        const uint32_t writeBytes = (uint32_t)rendererLightVisHistoryCount * (uint32_t)sizeof(*rendererLightVisHistory);
 
         R_LightVisHistoryFilename(filename);
-        ri.FS_WriteFile(filename, rendererLightVisHistory,
-                        (int32_t)writeBytes);
+        ri.FS_WriteFile(filename, rendererLightVisHistory, (int32_t)writeBytes);
     }
 
     free(rendererLightVisHistory);
@@ -797,28 +642,19 @@ void R_SaveLightVisHistory(void)
 /* Source: CoDUOMP.exe 0x004c8490..0x004c84e3.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c8490_004c84e3.mcode.
  * Name: same-module Mac symbol R_AddSortedHistoryEntry. */
-qboolean R_AddSortedHistoryEntry(
-    int32_t insertIndex,
-    const renderer_light_vis_sort_entry_t *entry)
+qboolean R_AddSortedHistoryEntry(int32_t insertIndex, const renderer_light_vis_sort_entry_t *entry)
 {
     uint32_t moveBytes;
 
-    if (rendererLightVisSortedHistoryCount >=
-        R_LIGHT_VIS_HISTORY_MAX_ENTRIES) {
+    if (rendererLightVisSortedHistoryCount >= R_LIGHT_VIS_HISTORY_MAX_ENTRIES) {
         return qfalse;
     }
 
     /* SUB/SHL at 0x004c84a5..0x004c84a7 form this byte count with
      * wrapping 32-bit arithmetic before the original i386 memmove call. */
-    moveBytes =
-        ((uint32_t)rendererLightVisSortedHistoryCount -
-         (uint32_t)insertIndex) *
-        (uint32_t)sizeof(*rendererLightVisSortedHistory);
-    memmove(&rendererLightVisSortedHistory[insertIndex + 1],
-            &rendererLightVisSortedHistory[insertIndex],
-            (size_t)moveBytes);
-    memcpy(&rendererLightVisSortedHistory[insertIndex], entry,
-           sizeof(*entry));
+    moveBytes = ((uint32_t)rendererLightVisSortedHistoryCount - (uint32_t)insertIndex) * (uint32_t)sizeof(*rendererLightVisSortedHistory);
+    memmove(&rendererLightVisSortedHistory[insertIndex + 1], &rendererLightVisSortedHistory[insertIndex], (size_t)moveBytes);
+    memcpy(&rendererLightVisSortedHistory[insertIndex], entry, sizeof(*entry));
     ++rendererLightVisSortedHistoryCount;
     return qtrue;
 }
@@ -828,13 +664,10 @@ qboolean R_AddSortedHistoryEntry(
  * Name: same-module Mac symbol R_SortedHistoryEntry. Windows compares the
  * packed X/Y shorts first and Z second, then optionally inserts at the binary
  * search position. Mode 2 inserts a duplicate even when the key exists. */
-int32_t R_SortedHistoryEntry(int32_t gridX, int32_t gridY,
-                             int32_t gridZ, int32_t updateMode)
+int32_t R_SortedHistoryEntry(int32_t gridX, int32_t gridY, int32_t gridZ, int32_t updateMode)
 {
     renderer_light_vis_sort_entry_t sought;
-    const uint32_t soughtXY =
-        (uint32_t)(uint16_t)gridX |
-        ((uint32_t)(uint16_t)gridY << 16);
+    const uint32_t soughtXY = (uint32_t)(uint16_t)gridX | ((uint32_t)(uint16_t)gridY << 16);
     int32_t lower = 0;
     int32_t upper = rendererLightVisSortedHistoryCount - 1;
 
@@ -844,16 +677,12 @@ int32_t R_SortedHistoryEntry(int32_t gridX, int32_t gridY,
 
     while (lower <= upper) {
         const int32_t middle = (lower + upper) / 2;
-        const renderer_light_vis_sort_entry_t *entry =
-            &rendererLightVisSortedHistory[middle];
-        const uint32_t entryXY =
-            (uint32_t)(uint16_t)entry->gridX |
-            ((uint32_t)(uint16_t)entry->gridY << 16);
+        const renderer_light_vis_sort_entry_t *entry = &rendererLightVisSortedHistory[middle];
+        const uint32_t entryXY = (uint32_t)(uint16_t)entry->gridX | ((uint32_t)(uint16_t)entry->gridY << 16);
         int32_t comparison = (int32_t)(soughtXY - entryXY);
 
         if (comparison == 0) {
-            comparison = (int32_t)(uint16_t)gridZ -
-                         (int32_t)(uint16_t)entry->gridZ;
+            comparison = (int32_t)(uint16_t)gridZ - (int32_t)(uint16_t)entry->gridZ;
             if (comparison == 0) {
                 if (updateMode == LIGHT_VIS_HISTORY_INSERT_DUPLICATE)
                     (void)R_AddSortedHistoryEntry(middle, &sought);
@@ -867,8 +696,7 @@ int32_t R_SortedHistoryEntry(int32_t gridX, int32_t gridY,
             lower = middle + 1;
     }
 
-    if (updateMode != LIGHT_VIS_HISTORY_FIND &&
-        R_AddSortedHistoryEntry(lower, &sought) != qfalse) {
+    if (updateMode != LIGHT_VIS_HISTORY_FIND && R_AddSortedHistoryEntry(lower, &sought) != qfalse) {
         return lower;
     }
 
@@ -897,23 +725,14 @@ void R_ShowLightVisCachePoints(void)
     if (showRadius <= 0)
         return;
 
-    biasedCoordinate =
-        tr.viewParms.orientation.origin[0] - LIGHT_VIS_GRID_WORLD_MIN;
-    centerGridX =
-        (int32_t)lrint((double)biasedCoordinate +
-                       LIGHT_VIS_GRID_ROUND_EPSILON) >> 5;
+    biasedCoordinate = tr.viewParms.orientation.origin[0] - LIGHT_VIS_GRID_WORLD_MIN;
+    centerGridX = (int32_t)lrint((double)biasedCoordinate + LIGHT_VIS_GRID_ROUND_EPSILON) >> 5;
 
-    biasedCoordinate =
-        tr.viewParms.orientation.origin[1] - LIGHT_VIS_GRID_WORLD_MIN;
-    centerGridY =
-        (int32_t)lrint((double)biasedCoordinate +
-                       LIGHT_VIS_GRID_ROUND_EPSILON) >> 5;
+    biasedCoordinate = tr.viewParms.orientation.origin[1] - LIGHT_VIS_GRID_WORLD_MIN;
+    centerGridY = (int32_t)lrint((double)biasedCoordinate + LIGHT_VIS_GRID_ROUND_EPSILON) >> 5;
 
-    biasedCoordinate =
-        tr.viewParms.orientation.origin[2] - LIGHT_VIS_GRID_WORLD_MIN;
-    centerGridZ =
-        (int32_t)lrint((double)biasedCoordinate -
-                       LIGHT_VIS_GRID_FLOOR_ADJUSTMENT) >> 6;
+    biasedCoordinate = tr.viewParms.orientation.origin[2] - LIGHT_VIS_GRID_WORLD_MIN;
+    centerGridZ = (int32_t)lrint((double)biasedCoordinate - LIGHT_VIS_GRID_FLOOR_ADJUSTMENT) >> 6;
 
     for (int32_t zOffset = -1; zOffset <= 1; ++zOffset) {
         const int32_t gridZ = centerGridZ + zOffset;
@@ -921,42 +740,31 @@ void R_ShowLightVisCachePoints(void)
         if (gridZ < 0 || gridZ > LIGHT_VIS_GRID_Z_MAX_INDEX)
             continue;
 
-        for (int32_t yOffset = -showRadius;
-             yOffset <= showRadius;
-             ++yOffset) {
+        for (int32_t yOffset = -showRadius; yOffset <= showRadius; ++yOffset) {
             const int32_t gridY = centerGridY + yOffset;
 
             if (gridY < 0 || gridY > LIGHT_VIS_GRID_XY_MAX_INDEX)
                 continue;
 
-            for (int32_t xOffset = -showRadius;
-                 xOffset <= showRadius;
-                 ++xOffset) {
+            for (int32_t xOffset = -showRadius; xOffset <= showRadius; ++xOffset) {
                 const int32_t gridX = centerGridX + xOffset;
                 const vec4_t *color;
                 vec3_t point;
 
                 if (gridX < 0 || gridX > LIGHT_VIS_GRID_XY_MAX_INDEX)
                     continue;
-                if (R_SortedHistoryEntry(
-                        gridX, gridY, gridZ,
-                        LIGHT_VIS_HISTORY_FIND) >= 0) {
+                if (R_SortedHistoryEntry(gridX, gridY, gridZ, LIGHT_VIS_HISTORY_FIND) >= 0) {
                     continue;
                 }
 
-                point[0] = (float)((gridX - LIGHT_VIS_GRID_XY_BIAS) *
-                                   LIGHT_VIS_GRID_XY_SCALE);
-                point[1] = (float)((gridY - LIGHT_VIS_GRID_XY_BIAS) *
-                                   LIGHT_VIS_GRID_XY_SCALE);
-                point[2] = (float)((gridZ - LIGHT_VIS_GRID_Z_BIAS) *
-                                   LIGHT_VIS_GRID_Z_SCALE);
+                point[0] = (float)((gridX - LIGHT_VIS_GRID_XY_BIAS) * LIGHT_VIS_GRID_XY_SCALE);
+                point[1] = (float)((gridY - LIGHT_VIS_GRID_XY_BIAS) * LIGHT_VIS_GRID_XY_SCALE);
+                point[2] = (float)((gridZ - LIGHT_VIS_GRID_Z_BIAS) * LIGHT_VIS_GRID_Z_SCALE);
 
                 if (R_CullPointAndRadius(point, 0.0f) != CULL_IN)
                     continue;
 
-                color = zOffset == -1
-                            ? &leafLightColorYellow
-                            : &leafLightColorGreen;
+                color = zOffset == -1 ? &leafLightColorYellow : &leafLightColorGreen;
                 R_AddDebugString(point, *color, 1.0f, ".");
             }
         }
@@ -969,11 +777,8 @@ void R_ShowLightVisCachePoints(void)
  * 8192x32 table of 12-byte disk records and its five diffuse-sun samples,
  * taken with tr.diffuseSunSteps set successively to one through five. Grid
  * conversion uses wrapping 32-bit subtract/shift arithmetic before FILD. */
-void R_PrecalcLightVisCachePoint(
-    int32_t gridX, int32_t gridY, int32_t gridZ,
-    const vec3_t traceTarget,
-    renderer_light_vis_disk_entry_t
-        cache[R_LIGHT_VIS_BUCKET_COUNT][R_LIGHT_VIS_ENTRIES_PER_BUCKET])
+void R_PrecalcLightVisCachePoint(int32_t gridX, int32_t gridY, int32_t gridZ, const vec3_t traceTarget,
+                                 renderer_light_vis_disk_entry_t cache[R_LIGHT_VIS_BUCKET_COUNT][R_LIGHT_VIS_ENTRIES_PER_BUCKET])
 {
     mnode_t *leaf = R_PointInLeaf(traceTarget);
     renderer_light_t *lights[R_LIGHT_VIS_MAX_LEAF_LIGHTS];
@@ -987,49 +792,35 @@ void R_PrecalcLightVisCachePoint(
     if (leaf->data.leaf.cluster < 0)
         return;
 
-    for (int32_t lightIndex = 0;
-         lightIndex < leaf->data.leaf.lightCount;
-         ++lightIndex) {
-        const int32_t worldLightIndex = tr.world->lightIndexes[
-            leaf->data.leaf.firstLightIndex + lightIndex];
+    for (int32_t lightIndex = 0; lightIndex < leaf->data.leaf.lightCount; ++lightIndex) {
+        const int32_t worldLightIndex = tr.world->lightIndexes[leaf->data.leaf.firstLightIndex + lightIndex];
 
         lights[lightIndex] = &tr.world->lights[worldLightIndex];
     }
 
-    R_LightVisHash(gridX, gridY, gridZ, leaf->data.leaf.cluster,
-                   &cacheKey, &bucketIndex);
+    R_LightVisHash(gridX, gridY, gridZ, leaf->data.leaf.cluster, &cacheKey, &bucketIndex);
     diskEntry = cache[bucketIndex];
 
-    for (int32_t entryIndex = 0;
-         entryIndex < R_LIGHT_VIS_ENTRIES_PER_BUCKET;
-         ++entryIndex, ++diskEntry) {
+    for (int32_t entryIndex = 0; entryIndex < R_LIGHT_VIS_ENTRIES_PER_BUCKET; ++entryIndex, ++diskEntry) {
         if (diskEntry->sampleState == R_LIGHT_VIS_SAMPLE_EMPTY)
             break;
         if (diskEntry->key == cacheKey)
             return;
     }
 
-    if (diskEntry ==
-        &cache[bucketIndex][R_LIGHT_VIS_ENTRIES_PER_BUCKET]) {
+    if (diskEntry == &cache[bucketIndex][R_LIGHT_VIS_ENTRIES_PER_BUCKET]) {
         return;
     }
 
-    const int32_t originX = (int32_t)(
-        ((uint32_t)gridX - LIGHT_VIS_GRID_XY_BIAS) *
-        LIGHT_VIS_GRID_XY_SCALE);
-    const int32_t originY = (int32_t)(
-        ((uint32_t)gridY - LIGHT_VIS_GRID_XY_BIAS) *
-        LIGHT_VIS_GRID_XY_SCALE);
-    const int32_t originZ = (int32_t)(
-        ((uint32_t)gridZ - LIGHT_VIS_GRID_Z_BIAS) *
-        LIGHT_VIS_GRID_Z_SCALE);
+    const int32_t originX = (int32_t)(((uint32_t)gridX - LIGHT_VIS_GRID_XY_BIAS) * LIGHT_VIS_GRID_XY_SCALE);
+    const int32_t originY = (int32_t)(((uint32_t)gridY - LIGHT_VIS_GRID_XY_BIAS) * LIGHT_VIS_GRID_XY_SCALE);
+    const int32_t originZ = (int32_t)(((uint32_t)gridZ - LIGHT_VIS_GRID_Z_BIAS) * LIGHT_VIS_GRID_Z_SCALE);
     origin[0] = (float)originX;
     origin[1] = (float)originY;
     origin[2] = (float)originZ;
 
     tr.diffuseSunSteps = 1;
-    sampledLeaf = R_SampleLightVisibility(
-        &sampled, origin, leaf->data.leaf.lightCount, lights, traceTarget);
+    sampledLeaf = R_SampleLightVisibility(&sampled, origin, leaf->data.leaf.lightCount, lights, traceTarget);
 
     diskEntry->key = cacheKey;
     diskEntry->sampleState = sampled.sampleState;
@@ -1037,15 +828,12 @@ void R_PrecalcLightVisCachePoint(
     diskEntry->visibleLightBits = sampled.visibleLightBits;
 
     if (sampledLeaf->data.leaf.hasSunLight != qfalse) {
-        for (tr.diffuseSunSteps = 2;
-             tr.diffuseSunSteps <= 5;
-             ++tr.diffuseSunSteps) {
+        for (tr.diffuseSunSteps = 2; tr.diffuseSunSteps <= 5; ++tr.diffuseSunSteps) {
             if (sampled.sampleState != R_LIGHT_VIS_SAMPLE_BLOCKED) {
                 sampled.diffuseSunVisibility = 0;
                 R_SampleDiffuseSunVisibility(&sampled, origin, sampledLeaf);
             }
-            diskEntry->diffuseSunVisibility[tr.diffuseSunSteps - 1] =
-                sampled.diffuseSunVisibility;
+            diskEntry->diffuseSunVisibility[tr.diffuseSunSteps - 1] = sampled.diffuseSunVisibility;
         }
     }
 }
@@ -1061,8 +849,7 @@ void R_PrecalcLightVisCache(int32_t *checksum)
     int32_t fileSize;
     uint32_t historyEntryCount;
     int32_t savedDiffuseSunSteps;
-    renderer_light_vis_disk_entry_t (*cache)
-        [R_LIGHT_VIS_ENTRIES_PER_BUCKET];
+    renderer_light_vis_disk_entry_t(*cache)[R_LIGHT_VIS_ENTRIES_PER_BUCKET];
 
     if (tr.world->lightIndexCount == 0) {
         ri.Error(ERR_DROP,
@@ -1074,43 +861,28 @@ void R_PrecalcLightVisCache(int32_t *checksum)
     R_LightVisHistoryFilename(filename);
     fileSize = ri.FS_ReadFile(filename, &fileBuffer);
     if (fileSize <= 0) {
-        ri.Error(ERR_DROP,
-                 "light vis cache file '%s' is missing or empty\n",
-                 filename);
+        ri.Error(ERR_DROP, "light vis cache file '%s' is missing or empty\n", filename);
     }
 
-    historyEntryCount =
-        (uint32_t)fileSize / sizeof(renderer_light_vis_history_entry_t);
-    if ((uint32_t)fileSize %
-            sizeof(renderer_light_vis_history_entry_t) != 0U) {
+    historyEntryCount = (uint32_t)fileSize / sizeof(renderer_light_vis_history_entry_t);
+    if ((uint32_t)fileSize % sizeof(renderer_light_vis_history_entry_t) != 0U) {
         ri.Error(ERR_DROP, "light vis cache has funny size\n");
     }
 
     savedDiffuseSunSteps = tr.diffuseSunSteps;
-    cache = ri.Hunk_AllocateTempMemory(
-        sizeof(renderer_light_vis_disk_entry_t) *
-        R_LIGHT_VIS_BUCKET_COUNT * R_LIGHT_VIS_ENTRIES_PER_BUCKET);
+    cache = ri.Hunk_AllocateTempMemory(sizeof(renderer_light_vis_disk_entry_t) * R_LIGHT_VIS_BUCKET_COUNT * R_LIGHT_VIS_ENTRIES_PER_BUCKET);
 
-    for (uint32_t entryIndex = 0;
-         entryIndex < historyEntryCount;
-         ++entryIndex) {
-        const renderer_light_vis_history_entry_t *historyEntry =
-            &((const renderer_light_vis_history_entry_t *)fileBuffer)
-                [entryIndex];
+    for (uint32_t entryIndex = 0; entryIndex < historyEntryCount; ++entryIndex) {
+        const renderer_light_vis_history_entry_t *historyEntry = &((const renderer_light_vis_history_entry_t *)fileBuffer)[entryIndex];
 
-        R_PrecalcLightVisCachePoint(
-            historyEntry->gridX, historyEntry->gridY,
-            historyEntry->gridZ, historyEntry->traceTarget, cache);
+        R_PrecalcLightVisCachePoint(historyEntry->gridX, historyEntry->gridY, historyEntry->gridZ, historyEntry->traceTarget, cache);
     }
 
     ri.FS_FreeFile(fileBuffer);
     tr.diffuseSunSteps = savedDiffuseSunSteps;
-    ri.CM_SaveLump(
-        LIGHT_VIS_CACHE_DISK_TYPE, cache,
-        (int32_t)(sizeof(renderer_light_vis_disk_entry_t) *
-                  R_LIGHT_VIS_BUCKET_COUNT *
-                  R_LIGHT_VIS_ENTRIES_PER_BUCKET),
-        checksum);
+    ri.CM_SaveLump(LIGHT_VIS_CACHE_DISK_TYPE, cache,
+                   (int32_t)(sizeof(renderer_light_vis_disk_entry_t) * R_LIGHT_VIS_BUCKET_COUNT * R_LIGHT_VIS_ENTRIES_PER_BUCKET),
+                   checksum);
     ri.Hunk_FreeTempMemory(cache);
 
     if (r_vc_compile->integer == 2)
@@ -1123,19 +895,12 @@ void R_PrecalcLightVisCache(int32_t *checksum)
  * Name: same-module Mac symbol R_InitLightVisCacheFromBuffer. The Windows body
  * selects diskCache[i].diffuseSunVisibility[tr.diffuseSunSteps - 1] and
  * rebuilds the used-entry and maximum-associativity statistics. */
-qboolean R_InitLightVisCacheFromBuffer(
-    const renderer_light_vis_disk_entry_t *diskCache,
-    int32_t diskCacheSize)
+qboolean R_InitLightVisCacheFromBuffer(const renderer_light_vis_disk_entry_t *diskCache, int32_t diskCacheSize)
 {
-    const int32_t expectedSize =
-        (int32_t)(sizeof(*diskCache) *
-                  R_LIGHT_VIS_BUCKET_COUNT *
-                  R_LIGHT_VIS_ENTRIES_PER_BUCKET);
+    const int32_t expectedSize = (int32_t)(sizeof(*diskCache) * R_LIGHT_VIS_BUCKET_COUNT * R_LIGHT_VIS_ENTRIES_PER_BUCKET);
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (r_vc_makelog->integer != 0 ||
-        r_vc_compile->integer != 0 ||
-        diskCache == NULL || diskCacheSize != expectedSize) {
+    if (r_vc_makelog->integer != 0 || r_vc_compile->integer != 0 || diskCache == NULL || diskCacheSize != expectedSize) {
         return qtrue;
     }
 
@@ -1144,23 +909,14 @@ qboolean R_InitLightVisCacheFromBuffer(
     rendererLightVisFlushedEntryCount = 0;
     rendererLightVisRuntimeFillCount = 0;
 
-    for (int32_t bucketIndex = 0;
-         bucketIndex < R_LIGHT_VIS_BUCKET_COUNT;
-         ++bucketIndex) {
-        for (int32_t associativity = 0;
-             associativity < R_LIGHT_VIS_ENTRIES_PER_BUCKET;
-             ++associativity) {
-            const renderer_light_vis_disk_entry_t *source =
-                &diskCache[
-                    bucketIndex * R_LIGHT_VIS_ENTRIES_PER_BUCKET +
-                    associativity];
-            renderer_light_vis_cache_entry_t *destination =
-                &rendererLightVisCache[bucketIndex][associativity];
+    for (int32_t bucketIndex = 0; bucketIndex < R_LIGHT_VIS_BUCKET_COUNT; ++bucketIndex) {
+        for (int32_t associativity = 0; associativity < R_LIGHT_VIS_ENTRIES_PER_BUCKET; ++associativity) {
+            const renderer_light_vis_disk_entry_t *source = &diskCache[bucketIndex * R_LIGHT_VIS_ENTRIES_PER_BUCKET + associativity];
+            renderer_light_vis_cache_entry_t *destination = &rendererLightVisCache[bucketIndex][associativity];
 
             destination->key = source->key;
             destination->sampleState = source->sampleState;
-            destination->diffuseSunVisibility =
-                source->diffuseSunVisibility[tr.diffuseSunSteps - 1];
+            destination->diffuseSunVisibility = source->diffuseSunVisibility[tr.diffuseSunSteps - 1];
             destination->visibleLightBits = source->visibleLightBits;
 
             if (destination->sampleState != R_LIGHT_VIS_SAMPLE_EMPTY) {

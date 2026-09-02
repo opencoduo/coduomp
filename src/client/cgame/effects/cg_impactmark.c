@@ -28,10 +28,8 @@
 
 #include "client/cgame/client_recovered.h"
 
-void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
-                   float orientation, float red, float green, float blue,
-                   float alpha, qboolean alphaFade, float radius,
-                   qboolean temporary, int32_t markLifeTime)
+void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir, float orientation, float red, float green, float blue,
+                   float alpha, qboolean alphaFade, float radius, qboolean temporary, int32_t markLifeTime)
 {
     /* NOTE: the final two params are (temporary, markLifeTime) in stack order:
      * the DLL reads the immediate-draw flag from the 2nd-to-last slot (entry+0x28,
@@ -42,13 +40,13 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
      * [0] is normalized dir, [2] is the rotated perpendicular, and [1] is then
      * overwritten with [2] x [0]. The syscall passes &axis[0], and the engine
      * reads all three rows through its axis_t MarkFragments parameter. */
-    axis_t   projectionAxis;          /* [esp+0x1c..0x3f] */
-    vec3_t   markPoints[4];           /* [esp+0x68..]: the 4 source quad corners     */
+    axis_t projectionAxis;          /* [esp+0x1c..0x3f] */
+    vec3_t markPoints[4];           /* [esp+0x68..]: the 4 source quad corners     */
     polyVert_t projectedPoints[1024]; /* trap output vertex buffer (maxPoints 0x400;
                                        * indexed with a 32-byte polyVert_t stride)   */
     markFragment_t markFragments[384];/* trap output fragments (maxFragments 0x180)  */
-    uint8_t  colorInt[4];             /* [esp+0x10]: packed RGBA byte quad           */
-    int32_t  numFragments;            /* trap_CM_MarkFragments return value          */
+    uint8_t colorInt[4];             /* [esp+0x10]: packed RGBA byte quad           */
+    int32_t numFragments;            /* trap_CM_MarkFragments return value          */
 
     /* 3002e536 / 3002e54b: both marks-subsystem gates. */
     if (cg_marks_vmCvar.integer == 0) {
@@ -70,19 +68,12 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
     PerpendicularVector(projectionAxis[1], projectionAxis[0]);
 
     /* 3002e589-3002e59c: rotate row 1 about row 0 into row 2. */
-    RotatePointAroundVector(projectionAxis[2], projectionAxis[0],
-                            projectionAxis[1], orientation);
+    RotatePointAroundVector(projectionAxis[2], projectionAxis[0], projectionAxis[1], orientation);
 
     /* 3002e5a1-3002e5df: overwrite row 1 with row 2 x row 0. */
-    projectionAxis[1][0] =
-        projectionAxis[2][2] * projectionAxis[0][1] -
-        projectionAxis[2][1] * projectionAxis[0][2];
-    projectionAxis[1][1] =
-        projectionAxis[2][0] * projectionAxis[0][2] -
-        projectionAxis[2][2] * projectionAxis[0][0];
-    projectionAxis[1][2] =
-        projectionAxis[2][1] * projectionAxis[0][0] -
-        projectionAxis[2][0] * projectionAxis[0][1];
+    projectionAxis[1][0] = projectionAxis[2][2] * projectionAxis[0][1] - projectionAxis[2][1] * projectionAxis[0][2];
+    projectionAxis[1][1] = projectionAxis[2][0] * projectionAxis[0][2] - projectionAxis[2][2] * projectionAxis[0][0];
+    projectionAxis[1][2] = projectionAxis[2][1] * projectionAxis[0][0] - projectionAxis[2][0] * projectionAxis[0][1];
 
     /* 3002e5e3-3002e74b: form the four quad corners of side 2*radius, centered on
      * `origin` in the (axis[1], axis[2]) plane. Verified component-by-component
@@ -97,9 +88,7 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 
         markPoints[0][c] = originMinusRc - rr; /* origin - r*axis1 - r*axis2 */
         markPoints[1][c] = (rc + origin[c]) - rr;
-        markPoints[2][c] =
-            (projectionAxis[2][c] + projectionAxis[1][c]) * radius +
-            origin[c];
+        markPoints[2][c] = (projectionAxis[2][c] + projectionAxis[1][c]) * radius + origin[c];
         markPoints[3][c] = rr + originMinusRc;
     }
 
@@ -107,29 +96,23 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
      * fragment count. Args transcribed in exact push order (reversed to C order):
      * (id, numPoints=4, points, origin, axis, radius, maxPoints=1024, pointBuffer,
      * maxFragments=384, fragmentBuffer, markShader). */
-    numFragments = coduo_int32_from_bits((uint32_t)cgame_syscall(
-                                          CG_CM_MARKFRAGMENTS,
-                                          4,                    /* numPoints     */
-                                          markPoints,           /* source quad   */
-                                          origin,               /* projection origin */
-                                          projectionAxis,       /* contiguous basis  */
-                                          CG_FloatBits(radius), /* radius bits   */
-                                          1024,                 /* maxPoints     */
-                                          projectedPoints,      /* point buffer  */
-                                          384,                  /* maxFragments  */
-                                          markFragments,        /* frag buffer   */
-                                          markShader));         /* mark shader   */
+    numFragments = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_CM_MARKFRAGMENTS, 4, /* numPoints     */
+                                                                 markPoints, /* source quad   */
+                                                                 origin, /* projection origin */
+                                                                 projectionAxis, /* contiguous basis  */
+                                                                 CG_FloatBits(radius), /* radius bits   */
+                                                                 1024, /* maxPoints     */
+                                                                 projectedPoints, /* point buffer  */
+                                                                 384, /* maxFragments  */
+                                                                 markFragments, /* frag buffer   */
+                                                                 markShader)); /* mark shader   */
 
     /* 3002e758-3002e7b3: pack (r,g,b,a)*255 rounded to bytes. The trap return in
      * EAX is captured as numFragments before the first Q_rint call. */
-    colorInt[0] = (uint8_t)coduo_fp_to_i32_extended(
-        (long double)red * (long double)255.0f);
-    colorInt[1] = (uint8_t)coduo_fp_to_i32_extended(
-        (long double)green * (long double)255.0f);
-    colorInt[2] = (uint8_t)coduo_fp_to_i32_extended(
-        (long double)blue * (long double)255.0f);
-    colorInt[3] = (uint8_t)coduo_fp_to_i32_extended(
-        (long double)alpha * (long double)255.0f);
+    colorInt[0] = (uint8_t)coduo_fp_to_i32_extended((long double)red * (long double)255.0f);
+    colorInt[1] = (uint8_t)coduo_fp_to_i32_extended((long double)green * (long double)255.0f);
+    colorInt[2] = (uint8_t)coduo_fp_to_i32_extended((long double)blue * (long double)255.0f);
+    colorInt[3] = (uint8_t)coduo_fp_to_i32_extended((long double)alpha * (long double)255.0f);
 
     /* 3002e7b7: nothing to do if the projection produced no fragments. */
     if (numFragments <= 0) {
@@ -139,8 +122,8 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
     /* 3002e7bd-3002e89d: per-fragment emit loop. */
     for (int32_t i = 0; i < numFragments; i++) {
         markFragment_t *frag = &markFragments[i];
-        polyVert_t     *verts;
-        int32_t         numPoints;
+        polyVert_t *verts;
+        int32_t numPoints;
 
         /* 3002e7d0-3002e7d5: clamp to the poly vertex capacity, written back into
          * the fragment record (MOV DWORD PTR [ebx],0xa) so both the emit and the
@@ -166,15 +149,15 @@ void CG_ImpactMark(qhandle_t markShader, const vec3_t origin, const vec3_t dir,
             /* 3002e81d-3002e88f: persist as a mark for CG_AddMarks. */
             markPoly_t *mark = CG_AllocMark();
 
-            mark->markTime   = cg_time;         /* +0x08 */
-            mark->duration   = markLifeTime;    /* +0x170 */
-            mark->markShader = frag->shaderHandle;/* +0x0c */
-            mark->numVerts   = numPoints;       /* +0x28 */
-            mark->colors[0]  = red;             /* +0x14 */
-            mark->colors[1]  = green;           /* +0x18 */
-            mark->colors[2]  = blue;            /* +0x1c */
-            mark->colors[3]  = alpha;           /* +0x20 */
-            mark->alphaFade  = alphaFade;       /* +0x10 */
+            mark->markTime = cg_time; /* +0x08 */
+            mark->duration = markLifeTime; /* +0x170 */
+            mark->markShader = frag->shaderHandle; /* +0x0c */
+            mark->numVerts = numPoints; /* +0x28 */
+            mark->colors[0] = red; /* +0x14 */
+            mark->colors[1] = green; /* +0x18 */
+            mark->colors[2] = blue; /* +0x1c */
+            mark->colors[3] = alpha; /* +0x20 */
+            mark->alphaFade = alphaFade; /* +0x10 */
 
             /* 3002e86e-3002e88f: copy numPoints verts (32 bytes each) into the
              * mark node (REP MOVSD + REP MOVSB over numPoints*0x20 bytes). */

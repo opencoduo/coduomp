@@ -53,13 +53,10 @@ void PM_UFOMove(void)
      */
     {
         const uint8_t wbuttons = cmd->wbuttons;
-        const uint8_t buttonDelta =
-            (uint8_t)((wbuttons & PM_WBUTTON_LEAN_LEFT) -
-                      (wbuttons & PM_WBUTTON_LEAN_RIGHT));
+        const uint8_t buttonDelta = (uint8_t)((wbuttons & PM_WBUTTON_LEAN_LEFT) - (wbuttons & PM_WBUTTON_LEAN_RIGHT));
         const uint8_t buttonProduct = (uint8_t)(buttonDelta * 127u);
 
-        cmd->upmove =
-            (int8_t)((uint8_t)cmd->upmove + buttonProduct);
+        cmd->upmove = (int8_t)((uint8_t)cmd->upmove + buttonProduct);
     }
 
     if (cmd->forwardmove == 0 && cmd->rightmove == 0) {
@@ -77,21 +74,14 @@ void PM_UFOMove(void)
          * its result as binary32. There is no binary64 argument boundary.
          */
 #if EMULATE_X87
-        speed = x87f_store_f32(x87f_sqrt(x87f_add(
-            x87f_add(
-                x87f_mul(x87f_load_f32(move->ps->velocity[0]),
-                         x87f_load_f32(move->ps->velocity[0])),
-                x87f_mul(x87f_load_f32(move->ps->velocity[1]),
-                         x87f_load_f32(move->ps->velocity[1]))),
-            x87f_mul(x87f_load_f32(move->ps->velocity[2]),
-                     x87f_load_f32(move->ps->velocity[2])))));
+        speed = x87f_store_f32(
+            x87f_sqrt(x87f_add(x87f_add(x87f_mul(x87f_load_f32(move->ps->velocity[0]), x87f_load_f32(move->ps->velocity[0])),
+                                        x87f_mul(x87f_load_f32(move->ps->velocity[1]), x87f_load_f32(move->ps->velocity[1]))),
+                               x87f_mul(x87f_load_f32(move->ps->velocity[2]), x87f_load_f32(move->ps->velocity[2])))));
 #else
-        long double speedSquared =
-            (long double)move->ps->velocity[0] * move->ps->velocity[0];
-        speedSquared +=
-            (long double)move->ps->velocity[1] * move->ps->velocity[1];
-        speedSquared +=
-            (long double)move->ps->velocity[2] * move->ps->velocity[2];
+        long double speedSquared = (long double)move->ps->velocity[0] * move->ps->velocity[0];
+        speedSquared += (long double)move->ps->velocity[1] * move->ps->velocity[1];
+        speedSquared += (long double)move->ps->velocity[2] * move->ps->velocity[2];
         speed = (float)coduo_x87_sqrtl(speedSquared);
 #endif
     }
@@ -111,39 +101,25 @@ void PM_UFOMove(void)
          * quotient are also stored before the next stage consumes them.
          */
 #if EMULATE_X87
-        drop = x87f_store_f32(x87f_add(
-            x87f_mul(
-                x87f_mul(x87f_load_f32(pml.frametime),
-                         x87f_load_f32(control)),
-                x87f_load_f32(8.25f)),
-            x87f_load_f32(0.0f)));
-        newSpeed = x87f_store_f32(x87f_sub(
-            x87f_load_f32(speed), x87f_load_f32(drop)));
+        drop = x87f_store_f32(
+            x87f_add(x87f_mul(x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(control)), x87f_load_f32(8.25f)), x87f_load_f32(0.0f)));
+        newSpeed = x87f_store_f32(x87f_sub(x87f_load_f32(speed), x87f_load_f32(drop)));
 #else
-        drop = (float)(
-            (long double)pml.frametime * (long double)control * 8.25L +
-            0.0L);
-        newSpeed =
-            (float)((long double)speed - (long double)drop);
+        drop = (float)((long double)pml.frametime * (long double)control * 8.25L + 0.0L);
+        newSpeed = (float)((long double)speed - (long double)drop);
 #endif
         if (newSpeed < 0.0f) {
             newSpeed = 0.0f;
         }
 #if EMULATE_X87
-        frictionScale = x87f_store_f32(x87f_div(
-            x87f_load_f32(newSpeed), x87f_load_f32(speed)));
+        frictionScale = x87f_store_f32(x87f_div(x87f_load_f32(newSpeed), x87f_load_f32(speed)));
         for (int32_t lane = 0; lane < 3; ++lane) {
-            move->ps->velocity[lane] = x87f_store_f32(x87f_mul(
-                x87f_load_f32(frictionScale),
-                x87f_load_f32(move->ps->velocity[lane])));
+            move->ps->velocity[lane] = x87f_store_f32(x87f_mul(x87f_load_f32(frictionScale), x87f_load_f32(move->ps->velocity[lane])));
         }
 #else
-        frictionScale = (float)((long double)newSpeed /
-                                (long double)speed);
+        frictionScale = (float)((long double)newSpeed / (long double)speed);
         for (int32_t lane = 0; lane < 3; ++lane) {
-            move->ps->velocity[lane] = (float)(
-                (long double)frictionScale *
-                (long double)move->ps->velocity[lane]);
+            move->ps->velocity[lane] = (float)((long double)frictionScale * (long double)move->ps->velocity[lane]);
         }
 #endif
     }
@@ -165,45 +141,25 @@ void PM_UFOMove(void)
          * right.x, 0}.
          */
 #if EMULATE_X87
-        const float zeroFromRightZ = x87f_store_f32(x87f_mul(
-            x87f_load_f32(pml.right[2]), x87f_load_f32(0.0f)));
-        forwardBasis[0] = x87f_store_f32(x87f_sub(
-            x87f_load_f32(zeroFromRightZ),
-            x87f_load_f32(pml.right[1])));
-        forwardBasis[1] = x87f_store_f32(x87f_sub(
-            x87f_load_f32(pml.right[0]),
-            x87f_load_f32(zeroFromRightZ)));
-        forwardBasis[2] = x87f_store_f32(x87f_sub(
-            x87f_mul(x87f_load_f32(pml.right[1]),
-                     x87f_load_f32(0.0f)),
-            x87f_mul(x87f_load_f32(pml.right[0]),
-                     x87f_load_f32(0.0f))));
+        const float zeroFromRightZ = x87f_store_f32(x87f_mul(x87f_load_f32(pml.right[2]), x87f_load_f32(0.0f)));
+        forwardBasis[0] = x87f_store_f32(x87f_sub(x87f_load_f32(zeroFromRightZ), x87f_load_f32(pml.right[1])));
+        forwardBasis[1] = x87f_store_f32(x87f_sub(x87f_load_f32(pml.right[0]), x87f_load_f32(zeroFromRightZ)));
+        forwardBasis[2] = x87f_store_f32(x87f_sub(x87f_mul(x87f_load_f32(pml.right[1]), x87f_load_f32(0.0f)),
+                                                  x87f_mul(x87f_load_f32(pml.right[0]), x87f_load_f32(0.0f))));
 #else
-        const float zeroFromRightZ =
-            (float)((long double)pml.right[2] * 0.0L);
-        forwardBasis[0] = (float)(
-            (long double)zeroFromRightZ -
-            (long double)pml.right[1]);
-        forwardBasis[1] = (float)(
-            (long double)pml.right[0] -
-            (long double)zeroFromRightZ);
-        forwardBasis[2] = (float)(
-            (long double)pml.right[1] * 0.0L -
-            (long double)pml.right[0] * 0.0L);
+        const float zeroFromRightZ = (float)((long double)pml.right[2] * 0.0L);
+        forwardBasis[0] = (float)((long double)zeroFromRightZ - (long double)pml.right[1]);
+        forwardBasis[1] = (float)((long double)pml.right[0] - (long double)zeroFromRightZ);
+        forwardBasis[2] = (float)((long double)pml.right[1] * 0.0L - (long double)pml.right[0] * 0.0L);
 #endif
 
         for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-            wishdir[lane] = x87f_store_f32(x87f_add(
-                x87f_mul(x87f_load_f32(pml.right[lane]),
-                         x87f_load_f32(rightMove)),
-                x87f_mul(x87f_load_f32(forwardBasis[lane]),
-                         x87f_load_f32(forwardMove))));
+            wishdir[lane] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pml.right[lane]), x87f_load_f32(rightMove)),
+                                                    x87f_mul(x87f_load_f32(forwardBasis[lane]), x87f_load_f32(forwardMove))));
 #else
-            wishdir[lane] = (float)(
-                (long double)pml.right[lane] * (long double)rightMove +
-                (long double)forwardBasis[lane] *
-                    (long double)forwardMove);
+            wishdir[lane] =
+                (float)((long double)pml.right[lane] * (long double)rightMove + (long double)forwardBasis[lane] * (long double)forwardMove);
 #endif
         }
 
@@ -212,38 +168,27 @@ void PM_UFOMove(void)
          * up-move is added.
          */
 #if EMULATE_X87
-        wishdir[2] = x87f_store_f32(x87f_add(
-            x87f_add(x87f_load_f32(upMove), x87f_load_f32(upMove)),
-            x87f_load_f32(wishdir[2])));
+        wishdir[2] = x87f_store_f32(x87f_add(x87f_add(x87f_load_f32(upMove), x87f_load_f32(upMove)), x87f_load_f32(wishdir[2])));
 #else
-        wishdir[2] = (float)(
-            ((long double)upMove + (long double)upMove) +
-            (long double)wishdir[2]);
+        wishdir[2] = (float)(((long double)upMove + (long double)upMove) + (long double)wishdir[2]);
 #endif
 
         wishSpeed = VectorNormalize(wishdir);
 #if EMULATE_X87
-        wishSpeed = x87f_store_f32(x87f_mul(
-            x87f_load_f32(wishSpeed),
-            x87f_load_f32(commandScale)));
+        wishSpeed = x87f_store_f32(x87f_mul(x87f_load_f32(wishSpeed), x87f_load_f32(commandScale)));
 #else
-        wishSpeed = (float)((long double)wishSpeed *
-                            (long double)commandScale);
+        wishSpeed = (float)((long double)wishSpeed * (long double)commandScale);
 #endif
         PM_Accelerate(wishdir, wishSpeed, 9.0f);
     }
 
     for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-        move->ps->psOrigin[lane] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(pml.frametime),
-                     x87f_load_f32(move->ps->velocity[lane])),
-            x87f_load_f32(move->ps->psOrigin[lane])));
+        move->ps->psOrigin[lane] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(pml.frametime), x87f_load_f32(move->ps->velocity[lane])),
+                                                           x87f_load_f32(move->ps->psOrigin[lane])));
 #else
-        move->ps->psOrigin[lane] = (float)(
-            (long double)pml.frametime *
-                (long double)move->ps->velocity[lane] +
-            (long double)move->ps->psOrigin[lane]);
+        move->ps->psOrigin[lane] =
+            (float)((long double)pml.frametime * (long double)move->ps->velocity[lane] + (long double)move->ps->psOrigin[lane]);
 #endif
     }
 }
@@ -271,18 +216,13 @@ void PM_UFOMove(void)
         const uint8_t wbuttons = pm->command.wbuttons;
         uint8_t upmove = (uint8_t)pm->command.upmove;
 
-        upmove = (uint8_t)(
-            upmove -
-            (uint8_t)((uint8_t)(wbuttons & PM_WBUTTON_LEAN_RIGHT) * 127u));
+        upmove = (uint8_t)(upmove - (uint8_t)((uint8_t)(wbuttons & PM_WBUTTON_LEAN_RIGHT) * 127u));
         pm->command.upmove = (int8_t)upmove;
-        upmove = (uint8_t)(
-            upmove +
-            (uint8_t)((uint8_t)(wbuttons & PM_WBUTTON_LEAN_LEFT) * 127u));
+        upmove = (uint8_t)(upmove + (uint8_t)((uint8_t)(wbuttons & PM_WBUTTON_LEAN_LEFT) * 127u));
         pm->command.upmove = (int8_t)upmove;
     }
 
-    if (pm->command.forwardmove == 0 &&
-        pm->command.rightmove == 0) {
+    if (pm->command.forwardmove == 0 && pm->command.rightmove == 0) {
         if (pm->command.upmove == 0) {
             speed = 0.0f;
         } else {
@@ -297,18 +237,13 @@ void PM_UFOMove(void)
          * argument, then stores the returned root as binary32.
          */
 #if EMULATE_X87
-        speed = (float)CoduoLibm_SqrtGlibc(x87f_store_f64(x87f_add(
-            x87f_add(
-                x87f_mul(x87f_load_f32(pm->ps->velocity[0]),
-                         x87f_load_f32(pm->ps->velocity[0])),
-                x87f_mul(x87f_load_f32(pm->ps->velocity[1]),
-                         x87f_load_f32(pm->ps->velocity[1]))),
-            x87f_mul(x87f_load_f32(pm->ps->velocity[2]),
-                     x87f_load_f32(pm->ps->velocity[2])))));
+        speed = (float)CoduoLibm_SqrtGlibc(
+            x87f_store_f64(x87f_add(x87f_add(x87f_mul(x87f_load_f32(pm->ps->velocity[0]), x87f_load_f32(pm->ps->velocity[0])),
+                                             x87f_mul(x87f_load_f32(pm->ps->velocity[1]), x87f_load_f32(pm->ps->velocity[1]))),
+                                    x87f_mul(x87f_load_f32(pm->ps->velocity[2]), x87f_load_f32(pm->ps->velocity[2])))));
 #else
         const long double speedSquared =
-            ((long double)pm->ps->velocity[0] * pm->ps->velocity[0] +
-             (long double)pm->ps->velocity[1] * pm->ps->velocity[1]) +
+            ((long double)pm->ps->velocity[0] * pm->ps->velocity[0] + (long double)pm->ps->velocity[1] * pm->ps->velocity[1]) +
             (long double)pm->ps->velocity[2] * pm->ps->velocity[2];
         speed = (float)CoduoLibm_SqrtGlibc((double)speedSquared);
 #endif
@@ -320,49 +255,32 @@ void PM_UFOMove(void)
         pm->ps->velocity[2] = 0.0f;
     } else {
 #if EMULATE_X87
-        frictionScale = x87f_store_f32(x87f_mul(
-            x87f_load_f32(pm_friction), x87f_load_f32(1.5f)));
+        frictionScale = x87f_store_f32(x87f_mul(x87f_load_f32(pm_friction), x87f_load_f32(1.5f)));
 #else
-        frictionScale =
-            (float)((long double)pm_friction * 1.5L);
+        frictionScale = (float)((long double)pm_friction * 1.5L);
 #endif
         control = speed < pm_stopspeed ? pm_stopspeed : speed;
         drop = 0.0f;
 #if EMULATE_X87
         drop = x87f_store_f32(x87f_add(
-            x87f_mul(
-                x87f_mul(x87f_load_f32(control),
-                         x87f_load_f32(frictionScale)),
-                x87f_load_f32(pml.frametime)),
-            x87f_load_f32(drop)));
-        newSpeed = x87f_store_f32(x87f_sub(
-            x87f_load_f32(speed), x87f_load_f32(drop)));
+            x87f_mul(x87f_mul(x87f_load_f32(control), x87f_load_f32(frictionScale)), x87f_load_f32(pml.frametime)), x87f_load_f32(drop)));
+        newSpeed = x87f_store_f32(x87f_sub(x87f_load_f32(speed), x87f_load_f32(drop)));
 #else
-        drop = (float)(
-            (long double)control * (long double)frictionScale *
-                (long double)pml.frametime +
-            (long double)drop);
-        newSpeed =
-            (float)((long double)speed - (long double)drop);
+        drop = (float)((long double)control * (long double)frictionScale * (long double)pml.frametime + (long double)drop);
+        newSpeed = (float)((long double)speed - (long double)drop);
 #endif
         if (newSpeed < 0.0f) {
             newSpeed = 0.0f;
         }
 #if EMULATE_X87
-        newSpeed = x87f_store_f32(x87f_div(
-            x87f_load_f32(newSpeed), x87f_load_f32(speed)));
+        newSpeed = x87f_store_f32(x87f_div(x87f_load_f32(newSpeed), x87f_load_f32(speed)));
         for (int32_t lane = 0; lane < 3; ++lane) {
-            pm->ps->velocity[lane] = x87f_store_f32(x87f_mul(
-                x87f_load_f32(pm->ps->velocity[lane]),
-                x87f_load_f32(newSpeed)));
+            pm->ps->velocity[lane] = x87f_store_f32(x87f_mul(x87f_load_f32(pm->ps->velocity[lane]), x87f_load_f32(newSpeed)));
         }
 #else
-        newSpeed =
-            (float)((long double)newSpeed / (long double)speed);
+        newSpeed = (float)((long double)newSpeed / (long double)speed);
         for (int32_t lane = 0; lane < 3; ++lane) {
-            pm->ps->velocity[lane] = (float)(
-                (long double)pm->ps->velocity[lane] *
-                (long double)newSpeed);
+            pm->ps->velocity[lane] = (float)((long double)pm->ps->velocity[lane] * (long double)newSpeed);
         }
 #endif
     }
@@ -376,27 +294,18 @@ void PM_UFOMove(void)
     CrossProduct(upAxis, pml.right, forwardBasis);
     for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-        wishvel[lane] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(forwardBasis[lane]),
-                     x87f_load_f32(forwardMove)),
-            x87f_mul(x87f_load_f32(pml.right[lane]),
-                     x87f_load_f32(rightMove))));
+        wishvel[lane] = x87f_store_f32(x87f_add(x87f_mul(x87f_load_f32(forwardBasis[lane]), x87f_load_f32(forwardMove)),
+                                                x87f_mul(x87f_load_f32(pml.right[lane]), x87f_load_f32(rightMove))));
 #else
-        wishvel[lane] = (float)(
-            (long double)forwardBasis[lane] *
-                (long double)forwardMove +
-            (long double)pml.right[lane] * (long double)rightMove);
+        wishvel[lane] =
+            (float)((long double)forwardBasis[lane] * (long double)forwardMove + (long double)pml.right[lane] * (long double)rightMove);
 #endif
     }
 
 #if EMULATE_X87
-    wishvel[2] = x87f_store_f32(x87f_add(
-        x87f_add(x87f_load_f32(upMove), x87f_load_f32(upMove)),
-        x87f_load_f32(wishvel[2])));
+    wishvel[2] = x87f_store_f32(x87f_add(x87f_add(x87f_load_f32(upMove), x87f_load_f32(upMove)), x87f_load_f32(wishvel[2])));
 #else
-    wishvel[2] = (float)(
-        ((long double)upMove + (long double)upMove) +
-        (long double)wishvel[2]);
+    wishvel[2] = (float)(((long double)upMove + (long double)upMove) + (long double)wishvel[2]);
 #endif
 
     wishdir[0] = wishvel[0];
@@ -404,26 +313,20 @@ void PM_UFOMove(void)
     wishdir[2] = wishvel[2];
     float wishSpeed = VectorNormalize(wishdir);
 #if EMULATE_X87
-    wishSpeed = x87f_store_f32(x87f_mul(
-        x87f_load_f32(wishSpeed), x87f_load_f32(commandScale)));
+    wishSpeed = x87f_store_f32(x87f_mul(x87f_load_f32(wishSpeed), x87f_load_f32(commandScale)));
 #else
-    wishSpeed = (float)((long double)wishSpeed *
-                        (long double)commandScale);
+    wishSpeed = (float)((long double)wishSpeed * (long double)commandScale);
 #endif
 
     PM_Accelerate(wishdir, wishSpeed, pm_accelerate);
 
     for (int32_t lane = 0; lane < 3; ++lane) {
 #if EMULATE_X87
-        pm->ps->psOrigin[lane] = x87f_store_f32(x87f_add(
-            x87f_mul(x87f_load_f32(pm->ps->velocity[lane]),
-                     x87f_load_f32(pml.frametime)),
-            x87f_load_f32(pm->ps->psOrigin[lane])));
+        pm->ps->psOrigin[lane] = x87f_store_f32(
+            x87f_add(x87f_mul(x87f_load_f32(pm->ps->velocity[lane]), x87f_load_f32(pml.frametime)), x87f_load_f32(pm->ps->psOrigin[lane])));
 #else
-        pm->ps->psOrigin[lane] = (float)(
-            (long double)pm->ps->velocity[lane] *
-                (long double)pml.frametime +
-            (long double)pm->ps->psOrigin[lane]);
+        pm->ps->psOrigin[lane] =
+            (float)((long double)pm->ps->velocity[lane] * (long double)pml.frametime + (long double)pm->ps->psOrigin[lane]);
 #endif
     }
 }

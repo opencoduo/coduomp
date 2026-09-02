@@ -35,32 +35,19 @@ typedef struct gitem_s {
 } gitem_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-#define BG_ITEM_LAYOUT_ASSERT(name, expression) \
-    typedef char name[(expression) ? 1 : -1]
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_classname_offset,
-                      offsetof(gitem_t, classname) == 0x00);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_pickup_sound_offset,
-                      offsetof(gitem_t, pickupSound) == 0x04);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_world_model_offset,
-                      offsetof(gitem_t, worldModel) == 0x08);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_icon_model_offset,
-                      offsetof(gitem_t, iconModel) == 0x0c);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_hud_icon_offset,
-                      offsetof(gitem_t, hudIcon) == 0x10);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_ammo_icon_offset,
-                      offsetof(gitem_t, ammoIcon) == 0x14);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_pickup_name_offset,
-                      offsetof(gitem_t, pickupName) == 0x18);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_quantity_offset,
-                      offsetof(gitem_t, quantity) == 0x1c);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_type_offset,
-                      offsetof(gitem_t, type) == 0x20);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_weapon_offset,
-                      offsetof(gitem_t, weapon) == 0x24);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_ammo_index_offset,
-                      offsetof(gitem_t, ammoIndex) == 0x28);
-BG_ITEM_LAYOUT_ASSERT(q_bg_item_clip_index_offset,
-                      offsetof(gitem_t, clipIndex) == 0x2c);
+#define BG_ITEM_LAYOUT_ASSERT(name, expression) typedef char name[(expression) ? 1 : -1]
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_classname_offset, offsetof(gitem_t, classname) == 0x00);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_pickup_sound_offset, offsetof(gitem_t, pickupSound) == 0x04);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_world_model_offset, offsetof(gitem_t, worldModel) == 0x08);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_icon_model_offset, offsetof(gitem_t, iconModel) == 0x0c);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_hud_icon_offset, offsetof(gitem_t, hudIcon) == 0x10);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_ammo_icon_offset, offsetof(gitem_t, ammoIcon) == 0x14);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_pickup_name_offset, offsetof(gitem_t, pickupName) == 0x18);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_quantity_offset, offsetof(gitem_t, quantity) == 0x1c);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_type_offset, offsetof(gitem_t, type) == 0x20);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_weapon_offset, offsetof(gitem_t, weapon) == 0x24);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_ammo_index_offset, offsetof(gitem_t, ammoIndex) == 0x28);
+BG_ITEM_LAYOUT_ASSERT(q_bg_item_clip_index_offset, offsetof(gitem_t, clipIndex) == 0x2c);
 BG_ITEM_LAYOUT_ASSERT(q_bg_item_extent, sizeof(gitem_t) == 0x30);
 #undef BG_ITEM_LAYOUT_ASSERT
 #endif

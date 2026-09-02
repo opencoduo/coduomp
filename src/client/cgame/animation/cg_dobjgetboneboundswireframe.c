@@ -70,14 +70,11 @@
  * each row are read; column 3 is untouched.
  */
 
-qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self,
-                                       const char *tagName,
-                                       vec3_t out[24])
+qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self, const char *tagName, vec3_t out[24])
 {
     /* 30020026..3002002f: EBX = trap(0xb2, self, tagName). The parent loads its
      * second stack argument into EAX immediately before this call. */
-    int32_t boneHandle = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_DOBJ_GET_BONE_INDEX, (intptr_t)self, (intptr_t)tagName));
+    int32_t boneHandle = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_GET_BONE_INDEX, (intptr_t)self, (intptr_t)tagName));
 
     /* 3002003a: JGE keeps handle>=0; a negative handle means no DObj -> return 0. */
     if (boneHandle < 0) {
@@ -85,8 +82,7 @@ qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self,
     }
 
     /* 30020048: EAX = trap(0xb1, self) -> number of DObj parts/bones. */
-    int32_t partCount = coduo_int32_from_bits((uint32_t)cgame_syscall(
-        CG_DOBJ_NUM_BONES, (intptr_t)self));
+    int32_t partCount = coduo_int32_from_bits((uint32_t)cgame_syscall(CG_DOBJ_NUM_BONES, (intptr_t)self));
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if ((uint32_t)boneHandle >= (uint32_t)partCount) {
         return qfalse;
@@ -96,20 +92,15 @@ qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self,
      * wrapping SHL/ADD/AND dword arithmetic. Native engines write native pointers
      * through trap 0xb4, so wider hosts must widen each slot while retaining the
      * same dword byte-count carrier. */
-    uint32_t partTableBytes =
-        ((uint32_t)partCount * (uint32_t)sizeof(XModelPartColl *) + 3u) & ~3u;
-    XModelPartColl **partTable =
-        (XModelPartColl **)__builtin_alloca(partTableBytes);
+    uint32_t partTableBytes = ((uint32_t)partCount * (uint32_t)sizeof(XModelPartColl *) + 3u) & ~3u;
+    XModelPartColl **partTable = (XModelPartColl **)__builtin_alloca(partTableBytes);
 
     /* 30020067: trap(0xb4, self, partTable) -> fill the table with a per-part
      * pointer (here, a pointer to each part's local {mins,maxs} bounds record). */
-    cgame_syscall(CG_DOBJ_BUILD_PART_COLLISION_TABLE, (intptr_t)self,
-                  (intptr_t)partTable);
+    cgame_syscall(CG_DOBJ_BUILD_PART_COLLISION_TABLE, (intptr_t)self, (intptr_t)partTable);
 
     /* 30020074: EAX = trap(0xa0, self, 0) -> base of the per-bone matrix table. */
-    DObjSkelMat *matrixTable =
-        (DObjSkelMat *)(intptr_t)cgame_syscall(
-            CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
+    DObjSkelMat *matrixTable = (DObjSkelMat *)(intptr_t)cgame_syscall(CG_DOBJ_GET_BONE_MATRICES, (intptr_t)self, 0);
 
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     if (matrixTable == NULL || partTable[boneHandle] == NULL) {
@@ -119,8 +110,7 @@ qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self,
     /* 30020082/0x30020085: select this bone's source bounds and world matrix. */
     const XModelPartColl *src = partTable[boneHandle];
     uint32_t boneOffset = (uint32_t)boneHandle << 6;
-    const DObjSkelMat *bone = (const DObjSkelMat *)(
-        (uintptr_t)(const void *)matrixTable + (uintptr_t)boneOffset);
+    const DObjSkelMat *bone = (const DObjSkelMat *)((uintptr_t)(const void *)matrixTable + (uintptr_t)boneOffset);
 
     /* 300200a0-0x30020176: for each of the 24 box-edge endpoints, build the corner
      * by picking mins/maxs per axis from the selector table, then transform it by
@@ -136,19 +126,13 @@ qboolean CG_DObjGetBoneBoundsWireframe(struct DObj_s *self,
         const long double py = bounds[selY][1];
         const long double pz = bounds[selZ][2];
 
-        const long double outX =
-            ((px * bone->axis[0][0] + pz * bone->axis[2][0]) +
-             py * bone->axis[1][0]) + bone->origin[0];
+        const long double outX = ((px * bone->axis[0][0] + pz * bone->axis[2][0]) + py * bone->axis[1][0]) + bone->origin[0];
         out[i][0] = (float)outX;
 
-        const long double outY =
-            ((px * bone->axis[0][1] + pz * bone->axis[2][1]) +
-             py * bone->axis[1][1]) + bone->origin[1];
+        const long double outY = ((px * bone->axis[0][1] + pz * bone->axis[2][1]) + py * bone->axis[1][1]) + bone->origin[1];
         out[i][1] = (float)outY;
 
-        const long double outZ =
-            ((px * bone->axis[0][2] + pz * bone->axis[2][2]) +
-             py * bone->axis[1][2]) + bone->origin[2];
+        const long double outZ = ((px * bone->axis[0][2] + pz * bone->axis[2][2]) + py * bone->axis[1][2]) + bone->origin[2];
         out[i][2] = (float)outZ;
     }
 

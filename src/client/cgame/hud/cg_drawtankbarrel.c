@@ -75,11 +75,11 @@
 
 /* eType value that enables the HUD entity tag: ET_VEHICLE (12), proven by the
  * CMP [entity+0x4],0xc gate and shared with the tag-family siblings. */
-enum { CG_TAG_ENTITY_ETYPE = 12 };
+enum {
+    CG_TAG_ENTITY_ETYPE = 12
+};
 
-void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
-                       int32_t hShader,
-                               const float *color)
+void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter, int32_t hShader, const float *color)
 {
     /* 0x30031e20..0x30031e38: gate on the local predicted player's entityStateFlags. */
     uint32_t flags = cg_predictedPlayerState.entityStateFlags;
@@ -92,7 +92,8 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_DrawTankBarrel: invalid view-lock entity %i",
+                  "\x15"
+                  "CG_DrawTankBarrel: invalid view-lock entity %i",
                   entityNum);
         return;
     }
@@ -107,8 +108,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
 
     /* 0x30031e6b..0x30031e81: obtain the entity's live DObj handle from the engine
      * (trap 0xa5, one arg = currentState.number). A zero handle means no model. */
-    void *dobj = (void *)(intptr_t)cgame_syscall(
-        CG_DOBJ_GET_HANDLE, entity->currentState.number);
+    void *dobj = (void *)(intptr_t)cgame_syscall(CG_DOBJ_GET_HANDLE, entity->currentState.number);
     if (dobj == NULL)
         return;
 
@@ -123,8 +123,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
      * (qfalse) return means the tag is absent, and the draw is skipped. (EAX is the
      * tagName argument the callee forwards to trap(0xb2), proven from its body.) */
     DObjSkelMat tagWorldMatrix;
-    if (!CG_DObjGetWorldTagMatrix(dobj, "tag_turret",
-                                         entity, &tagWorldMatrix))
+    if (!CG_DObjGetWorldTagMatrix(dobj, "tag_turret", entity, &tagWorldMatrix))
         return;
 
     /* 0x30031eaa..0x30031eb2: convert the resolved tag matrix to Euler angles.
@@ -141,9 +140,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
 
     /* 0x30031ecc..0x30031ee5: slid X, the shared HUD slide idiom, computed from
      * cg_hudCompassSize_vmCvar.value (0x3048c4a8), 1.0f (0x3007bce0), 112.0f (0x3007c1e0). */
-    float slidX = (float)(
-        ((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L +
-        (long double)rect->x);
+    float slidX = (float)(((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L + (long double)rect->x);
 
     /* 0x30031ee9..0x30031f30: build the icon quad's four {x,y} corner offsets from
      * the rect width (rect[2]) and height (rect[3]). 0.5f (0x3007bce8), 0.25f
@@ -155,8 +152,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
      * rounding mode. */
     long double halfW = (long double)rect->w * (long double)0.5f;
     long double quarterH = (long double)rect->h * (long double)0.25f;
-    long double threeQuarterH =
-        (long double)rect->h * (long double)0.75f;
+    long double threeQuarterH = (long double)rect->h * (long double)0.75f;
 
     float cornerOffsets[8];
     cornerOffsets[0] = (float)-halfW;         /* +0x18 (FST [ESP+0x2c]) */
@@ -176,8 +172,7 @@ void CG_DrawTankBarrel(const rectDef_t *rect, int32_t stateFilter,
      * (first pushed = deepest arg): hShader(arg0), angleResult, cg_turretTagShaderParams
      * (0x30071a3c), rect[1], slidX; EDX = &cornerOffsets. So the argument order is
      * (cornerOffsets, x=slidX, y=rect[1], shaderParams, rotOrScale=angleResult, hShader). */
-    CG_DrawTurretTagQuad(cornerOffsets, slidX, rect->y,
-                         cg_turretTagShaderParams, angleResult, hShader);
+    CG_DrawTurretTagQuad(cornerOffsets, slidX, rect->y, cg_turretTagShaderParams, angleResult, hShader);
 
     /* 0x30031f5a..0x30031f5e: reset the 2D draw color to opaque white
      * (cgame_syscall(0x48, 0) == trap_R_SetColor(NULL)). */

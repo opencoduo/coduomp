@@ -8,8 +8,7 @@ void Com_WriteCDKey(void);
 #else
 void Com_ReadCDKey(const char *gameDirectory);
 void Com_AppendCDKey(const char *gameDirectory);
-void Com_WriteCDKey(const char *gameDirectory,
-                    const char *key, const char *checksum);
+void Com_WriteCDKey(const char *gameDirectory, const char *key, const char *checksum);
 #endif
 
 #endif

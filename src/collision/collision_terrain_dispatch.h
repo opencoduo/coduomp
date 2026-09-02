@@ -9,18 +9,10 @@
 extern "C" {
 #endif
 
-void CM_TraceSquareThroughTerrainCollide(
-    traceWork_t *traceWork,
-    const collisionTriangleSoup_t *terrainCollide);
-void CM_TraceThroughTerrainCollide(
-    traceWork_t *traceWork,
-    const collisionTriangleSoup_t *terrainCollide);
-qboolean CM_SightTraceThroughTerrainCollide(
-    const traceWork_t *traceWork,
-    const collisionTriangleSoup_t *terrainCollide);
-qboolean CM_PositionTestInTerrainCollide(
-    traceWork_t *traceWork,
-    const collisionTriangleSoup_t *terrainCollide);
+void CM_TraceSquareThroughTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
+void CM_TraceThroughTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
+qboolean CM_SightTraceThroughTerrainCollide(const traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
+qboolean CM_PositionTestInTerrainCollide(traceWork_t *traceWork, const collisionTriangleSoup_t *terrainCollide);
 
 #ifdef __cplusplus
 }

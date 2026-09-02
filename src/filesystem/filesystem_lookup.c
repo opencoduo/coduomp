@@ -16,8 +16,7 @@ uint32_t FS_HashFileName(const char *name, int32_t hashSize)
     uint32_t hash = 0;
 
     for (int32_t index = 0; name[index] != '\0'; ++index) {
-        int32_t character = tolower(
-            coduo_ctype_signed_byte_arg(name[index]));
+        int32_t character = tolower(coduo_ctype_signed_byte_arg(name[index]));
         if (character == '.')
             break;
         if (character == '\\')
@@ -26,7 +25,6 @@ uint32_t FS_HashFileName(const char *name, int32_t hashSize)
         hash += (uint32_t)(index + 119) * (uint32_t)character;
     }
 
-    hash = coduo_int32_sar_bits(hash, 20U) ^
-           coduo_int32_sar_bits(hash, 10U) ^ hash;
+    hash = coduo_int32_sar_bits(hash, 20U) ^ coduo_int32_sar_bits(hash, 10U) ^ hash;
     return hash & ((uint32_t)hashSize - 1u);
 }

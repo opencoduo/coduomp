@@ -23,8 +23,7 @@
 #define UI_INT(index) ((int32_t)UI_ARG(index))
 #define UI_SIZE(index) ((size_t)UI_ARG(index))
 #define UI_PTR(type, index) ((type *)(uintptr_t)UI_ARG(index))
-#define UI_CONST_PTR(type, index) \
-    ((const type *)(uintptr_t)UI_ARG(index))
+#define UI_CONST_PTR(type, index) ((const type *)(uintptr_t)UI_ARG(index))
 #define UI_STRING(index) ((const char *)(uintptr_t)UI_ARG(index))
 
 #define UI_SOUND_ALIAS_SELECTOR (-1.0f)
@@ -33,8 +32,7 @@
 /* NOT_FROM_ORIGINAL_SOURCE: explicit source expression of the UI VM ABI's
  * four-byte float-bit transport. memcpy preserves the bit pattern without
  * depending on a compiler's inactive-union-member extension. */
-_Static_assert(sizeof(float) == 4 && FLT_RADIX == 2 &&
-                   FLT_MANT_DIG == 24 && FLT_MAX_EXP == 128,
+_Static_assert(sizeof(float) == 4 && FLT_RADIX == 2 && FLT_MANT_DIG == 24 && FLT_MAX_EXP == 128,
                "UI syscall float transport requires IEEE binary32");
 static float CL_UISyscallFloatArgument(intptr_t argument)
 {
@@ -74,8 +72,7 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
     case UI_MILLISECONDS:
         return (intptr_t)Sys_Milliseconds();
     case UI_CVAR_REGISTER:
-        Cvar_Register(UI_PTR(vmCvar_t, 1), UI_STRING(2),
-                      UI_STRING(3), (uint32_t)UI_ARG(4));
+        Cvar_Register(UI_PTR(vmCvar_t, 1), UI_STRING(2), UI_STRING(3), (uint32_t)UI_ARG(4));
         return 0;
     case UI_CVAR_UPDATE:
         Cvar_Update(UI_PTR(vmCvar_t, 1));
@@ -86,23 +83,19 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
     case UI_CVAR_VARIABLE_VALUE:
         return CL_UISyscallFloatResult(Cvar_VariableValue(UI_STRING(1)));
     case UI_CVAR_VARIABLE_STRING_BUFFER:
-        Cvar_VariableStringBuffer(
-            UI_STRING(1), UI_PTR(char, 2), UI_INT(3));
+        Cvar_VariableStringBuffer(UI_STRING(1), UI_PTR(char, 2), UI_INT(3));
         return 0;
     case UI_CVAR_SET_VALUE:
-        Cvar_SetValue(
-            UI_STRING(1), CL_UISyscallFloatArgument(UI_ARG(2)));
+        Cvar_SetValue(UI_STRING(1), CL_UISyscallFloatArgument(UI_ARG(2)));
         return 0;
     case UI_CVAR_RESET:
         (void)Cvar_Set2(UI_STRING(1), NULL, qfalse);
         return 0;
     case UI_CVAR_CREATE:
-        (void)Cvar_Get(UI_STRING(1), UI_STRING(2),
-                       (uint32_t)UI_ARG(3));
+        (void)Cvar_Get(UI_STRING(1), UI_STRING(2), (uint32_t)UI_ARG(3));
         return 0;
     case UI_CVAR_INFO_STRING_BUFFER:
-        Cvar_InfoStringBuffer(
-            (uint32_t)UI_ARG(1), UI_PTR(char, 2), UI_INT(3));
+        Cvar_InfoStringBuffer((uint32_t)UI_ARG(1), UI_PTR(char, 2), UI_INT(3));
         return 0;
     case UI_ARGC:
         return Cmd_Argc();
@@ -113,8 +106,7 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         Cbuf_ExecuteText((cbufExec_t)UI_ARG(1), UI_STRING(2));
         return 0;
     case UI_FS_FOPEN_FILE:
-        return FS_FOpenFileByMode(
-            UI_STRING(1), UI_PTR(int32_t, 2), (fsMode_t)UI_INT(3));
+        return FS_FOpenFileByMode(UI_STRING(1), UI_PTR(int32_t, 2), (fsMode_t)UI_INT(3));
     case UI_FS_READ:
         (void)FS_Read(UI_PTR(void, 1), UI_INT(2), UI_INT(3));
         return 0;
@@ -128,8 +120,7 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         FS_FCloseFile(UI_INT(1));
         return 0;
     case UI_FS_GET_FILE_LIST:
-        return FS_GetFileList(
-            UI_STRING(1), UI_STRING(2), UI_PTR(char, 3), UI_INT(4));
+        return FS_GetFileList(UI_STRING(1), UI_STRING(2), UI_PTR(char, 3), UI_INT(4));
     case UI_FS_DELETE:
         return FS_Delete(UI_STRING(1));
     case UI_R_REGISTER_MODEL:
@@ -142,34 +133,21 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         rendererExports.ClearScene();
         return 0;
     case UI_R_ADD_REF_ENTITY:
-        rendererExports.AddRefEntityToScene(
-            UI_CONST_PTR(refEntity_t, 1), NULL);
+        rendererExports.AddRefEntityToScene(UI_CONST_PTR(refEntity_t, 1), NULL);
         return 0;
     case UI_R_ADD_POLY_TO_SCENE:
-        rendererExports.AddPolyToScene(
-            UI_INT(1), UI_INT(2), UI_CONST_PTR(polyVert_t, 3));
+        rendererExports.AddPolyToScene(UI_INT(1), UI_INT(2), UI_CONST_PTR(polyVert_t, 3));
         return 0;
     case UI_R_ADD_POLYS_TO_SCENE:
-        rendererExports.AddPolysToScene(
-            UI_INT(1), UI_INT(2), UI_CONST_PTR(polyVert_t, 3),
-            UI_INT(4));
+        rendererExports.AddPolysToScene(UI_INT(1), UI_INT(2), UI_CONST_PTR(polyVert_t, 3), UI_INT(4));
         return 0;
     case UI_R_ADD_LIGHT_TO_SCENE:
-        rendererExports.AddLightToScene(
-            UI_CONST_PTR(float, 1),
-            CL_UISyscallFloatArgument(UI_ARG(2)),
-            CL_UISyscallFloatArgument(UI_ARG(3)),
-            CL_UISyscallFloatArgument(UI_ARG(4)),
-            CL_UISyscallFloatArgument(UI_ARG(5)));
+        rendererExports.AddLightToScene(UI_CONST_PTR(float, 1), CL_UISyscallFloatArgument(UI_ARG(2)), CL_UISyscallFloatArgument(UI_ARG(3)),
+                                        CL_UISyscallFloatArgument(UI_ARG(4)), CL_UISyscallFloatArgument(UI_ARG(5)));
         return 0;
     case UI_R_ADD_CORONA_TO_SCENE:
-        rendererExports.AddCoronaToScene(
-            UI_CONST_PTR(float, 1),
-            CL_UISyscallFloatArgument(UI_ARG(2)),
-            CL_UISyscallFloatArgument(UI_ARG(3)),
-            CL_UISyscallFloatArgument(UI_ARG(4)),
-            CL_UISyscallFloatArgument(UI_ARG(5)), UI_INT(6),
-            qtrue);
+        rendererExports.AddCoronaToScene(UI_CONST_PTR(float, 1), CL_UISyscallFloatArgument(UI_ARG(2)), CL_UISyscallFloatArgument(UI_ARG(3)),
+                                         CL_UISyscallFloatArgument(UI_ARG(4)), CL_UISyscallFloatArgument(UI_ARG(5)), UI_INT(6), qtrue);
         return 0;
     case UI_R_RENDER_SCENE:
         rendererExports.RenderScene(UI_CONST_PTR(refdef_t, 1));
@@ -178,44 +156,32 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         rendererExports.SetColor(UI_CONST_PTR(float, 1));
         return 0;
     case UI_R_DRAW_STRETCH_PIC:
-        rendererExports.StretchPic(
-            CL_UISyscallFloatArgument(UI_ARG(1)),
-            CL_UISyscallFloatArgument(UI_ARG(2)),
-            CL_UISyscallFloatArgument(UI_ARG(3)),
-            CL_UISyscallFloatArgument(UI_ARG(4)),
-            CL_UISyscallFloatArgument(UI_ARG(5)),
-            CL_UISyscallFloatArgument(UI_ARG(6)),
-            CL_UISyscallFloatArgument(UI_ARG(7)),
-            CL_UISyscallFloatArgument(UI_ARG(8)), UI_INT(9));
+        rendererExports.StretchPic(CL_UISyscallFloatArgument(UI_ARG(1)), CL_UISyscallFloatArgument(UI_ARG(2)),
+                                   CL_UISyscallFloatArgument(UI_ARG(3)), CL_UISyscallFloatArgument(UI_ARG(4)),
+                                   CL_UISyscallFloatArgument(UI_ARG(5)), CL_UISyscallFloatArgument(UI_ARG(6)),
+                                   CL_UISyscallFloatArgument(UI_ARG(7)), CL_UISyscallFloatArgument(UI_ARG(8)), UI_INT(9));
         return 0;
     case UI_R_MODEL_BOUNDS:
-        rendererExports.ModelBounds(
-            UI_INT(1), UI_PTR(float, 2), UI_PTR(float, 3));
+        rendererExports.ModelBounds(UI_INT(1), UI_PTR(float, 2), UI_PTR(float, 3));
         return 0;
     case UI_UPDATE_SCREEN:
         SCR_UpdateScreen();
         return 0;
     case UI_S_REGISTER_SOUND: {
-        snd_alias_t *const alias = Com_FindSoundAlias(
-            UI_STRING(1), SND_ALIAS_BANK_COMMON,
-            UI_SOUND_ALIAS_SELECTOR);
+        snd_alias_t *const alias = Com_FindSoundAlias(UI_STRING(1), SND_ALIAS_BANK_COMMON, UI_SOUND_ALIAS_SELECTOR);
         return alias != NULL ? (intptr_t)alias->aliasName : 0;
     }
     case UI_MSS_PLAY_LOCAL_SOUND_ALIAS:
-        (void)MSS_PlayLocalSoundAlias(
-            UI_STRING(1), SND_ALIAS_BANK_COMMON);
+        (void)MSS_PlayLocalSoundAlias(UI_STRING(1), SND_ALIAS_BANK_COMMON);
         return 0;
     case UI_MSS_FADE_ALL_SOUNDS:
-        MSS_FadeAllSounds(
-            CL_UISyscallFloatArgument(UI_ARG(1)), UI_INT(2));
+        MSS_FadeAllSounds(CL_UISyscallFloatArgument(UI_ARG(1)), UI_INT(2));
         return 0;
     case UI_KEY_KEYNUM_TO_STRING_BUF:
-        Key_KeynumToStringBuf(
-            UI_INT(1), UI_PTR(char, 2), UI_INT(3));
+        Key_KeynumToStringBuf(UI_INT(1), UI_PTR(char, 2), UI_INT(3));
         return 0;
     case UI_KEY_GET_BINDING_BUF:
-        Key_GetBindingBuf(
-            UI_INT(1), UI_PTR(char, 2), UI_INT(3));
+        Key_GetBindingBuf(UI_INT(1), UI_PTR(char, 2), UI_INT(3));
         return 0;
     case UI_KEY_SET_BINDING:
         Key_SetBinding(UI_INT(1), UI_STRING(2));
@@ -245,70 +211,49 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         CL_GetGlconfig(UI_PTR(glconfig_t, 1));
         return 0;
     case UI_GET_CONFIG_STRING:
-        return GetConfigString(
-            UI_INT(1), UI_PTR(char, 2), UI_INT(3));
+        return GetConfigString(UI_INT(1), UI_PTR(char, 2), UI_INT(3));
     case UI_GET_CLIENT_NAME:
-        return GetClientname(
-            UI_INT(1), UI_PTR(char, 2), UI_INT(3));
+        return GetClientname(UI_INT(1), UI_PTR(char, 2), UI_INT(3));
     case UI_LAN_GET_PING_QUEUE_COUNT:
         return LAN_GetPingQueueCount();
     case UI_LAN_CLEAR_PING:
         LAN_ClearPing(UI_INT(1));
         return 0;
     case UI_LAN_GET_PING:
-        LAN_GetPing(
-            UI_INT(1), UI_PTR(char, 2), UI_INT(3),
-            UI_PTR(int32_t, 4));
+        LAN_GetPing(UI_INT(1), UI_PTR(char, 2), UI_INT(3), UI_PTR(int32_t, 4));
         return 0;
     case UI_LAN_GET_PING_INFO:
-        LAN_GetPingInfo(
-            UI_INT(1), UI_PTR(char, 2), UI_INT(3));
+        LAN_GetPingInfo(UI_INT(1), UI_PTR(char, 2), UI_INT(3));
         return 0;
     case UI_MEMORY_REMAINING:
         return (intptr_t)Hunk_MemoryRemaining();
     case UI_GET_CD_KEY:
-        CLUI_GetCDKey(
-            UI_PTR(char, 1), UI_INT(2), UI_PTR(char, 3));
+        CLUI_GetCDKey(UI_PTR(char, 1), UI_INT(2), UI_PTR(char, 3));
         return 0;
     case UI_SET_CD_KEY:
         CLUI_SetCDKey(UI_STRING(1), UI_STRING(2));
         return 0;
     case UI_R_REGISTER_FONT:
-        rendererExports.RegisterFont(
-            UI_STRING(1), UI_INT(2), UI_PTR(fontInfo_t, 3),
-            UI_INT(4));
+        rendererExports.RegisterFont(UI_STRING(1), UI_INT(2), UI_PTR(fontInfo_t, 3), UI_INT(4));
         return 0;
     case UI_R_TEXT_WIDTH:
-        return rendererExports.TextWidth(
-            UI_STRING(1), UI_INT(2),
-            CL_UISyscallFloatArgument(UI_ARG(3)),
-            UI_TEXT_FIXED_ADVANCE, UI_INT(4));
+        return rendererExports.TextWidth(UI_STRING(1), UI_INT(2), CL_UISyscallFloatArgument(UI_ARG(3)), UI_TEXT_FIXED_ADVANCE, UI_INT(4));
     case UI_R_TEXT_HEIGHT:
-        return rendererExports.TextHeight(
-            UI_INT(1), CL_UISyscallFloatArgument(UI_ARG(2)));
+        return rendererExports.TextHeight(UI_INT(1), CL_UISyscallFloatArgument(UI_ARG(2)));
     case UI_R_TEXT_PAINT:
-        rendererExports.TextPaint(
-            CL_UISyscallFloatArgument(UI_ARG(1)),
-            CL_UISyscallFloatArgument(UI_ARG(2)), UI_INT(3),
-            CL_UISyscallFloatArgument(UI_ARG(4)),
-            UI_CONST_PTR(float, 5), UI_STRING(6),
-            CL_UISyscallFloatArgument(UI_ARG(7)), UI_INT(8),
-            UI_INT(9));
+        rendererExports.TextPaint(CL_UISyscallFloatArgument(UI_ARG(1)), CL_UISyscallFloatArgument(UI_ARG(2)), UI_INT(3),
+                                  CL_UISyscallFloatArgument(UI_ARG(4)), UI_CONST_PTR(float, 5), UI_STRING(6),
+                                  CL_UISyscallFloatArgument(UI_ARG(7)), UI_INT(8), UI_INT(9));
         return 0;
     case UI_R_TEXT_PAINT_WITH_CURSOR:
-        rendererExports.TextPaintWithCursor(
-            CL_UISyscallFloatArgument(UI_ARG(1)),
-            CL_UISyscallFloatArgument(UI_ARG(2)), UI_INT(3),
-            CL_UISyscallFloatArgument(UI_ARG(4)),
-            UI_CONST_PTR(float, 5), UI_STRING(6), UI_INT(7),
-            (uint8_t)UI_ARG(8), UI_TEXT_FIXED_ADVANCE, UI_INT(9),
-            UI_INT(10));
+        rendererExports.TextPaintWithCursor(CL_UISyscallFloatArgument(UI_ARG(1)), CL_UISyscallFloatArgument(UI_ARG(2)), UI_INT(3),
+                                            CL_UISyscallFloatArgument(UI_ARG(4)), UI_CONST_PTR(float, 5), UI_STRING(6), UI_INT(7),
+                                            (uint8_t)UI_ARG(8), UI_TEXT_FIXED_ADVANCE, UI_INT(9), UI_INT(10));
         return 0;
     case UI_SE_TRANSLATE_REFERENCE:
         return (intptr_t)SEH_StringEd_GetString(UI_STRING(1));
     case UI_SE_LOCALIZE_MESSAGE:
-        return (intptr_t)SEH_LocalizeTextMessage(
-            UI_STRING(1), UI_STRING(2), LOCMSG_SAFE);
+        return (intptr_t)SEH_LocalizeTextMessage(UI_STRING(1), UI_STRING(2), LOCMSG_SAFE);
     case UI_PC_ADD_GLOBAL_DEFINE:
         return PC_AddGlobalDefine(UI_STRING(1));
     case UI_PC_LOAD_SOURCE:
@@ -316,36 +261,26 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
     case UI_PC_FREE_SOURCE:
         return PC_FreeSourceHandle(UI_INT(1));
     case UI_PC_READ_TOKEN:
-        return PC_ReadTokenHandle(
-            UI_INT(1), UI_PTR(pc_token_t, 2));
+        return PC_ReadTokenHandle(UI_INT(1), UI_PTR(pc_token_t, 2));
     case UI_PC_SOURCE_FILE_AND_LINE:
-        return PC_SourceFileAndLine(
-            UI_INT(1), UI_PTR(char, 2), UI_PTR(int32_t, 3));
+        return PC_SourceFileAndLine(UI_INT(1), UI_PTR(char, 2), UI_PTR(int32_t, 3));
     case UI_REAL_TIME:
         return (intptr_t)Com_RealTime(UI_PTR(qtime_t, 1));
     case UI_LAN_GET_SERVER_COUNT:
         return LAN_GetServerCount((lan_server_source_t)UI_ARG(1));
     case UI_LAN_WAIT_SERVER_RESPONSE:
-        return LAN_WaitServerResponse(
-            (lan_server_source_t)UI_ARG(1));
+        return LAN_WaitServerResponse((lan_server_source_t)UI_ARG(1));
     case UI_LAN_GET_SERVER_ADDRESS_STRING:
-        LAN_GetServerAddressString(
-            (lan_server_source_t)UI_ARG(1), UI_INT(2),
-            UI_PTR(char, 3), UI_INT(4));
+        LAN_GetServerAddressString((lan_server_source_t)UI_ARG(1), UI_INT(2), UI_PTR(char, 3), UI_INT(4));
         return 0;
     case UI_LAN_GET_SERVER_INFO:
-        LAN_GetServerInfo(
-            (lan_server_source_t)UI_ARG(1), UI_INT(2),
-            UI_PTR(char, 3), UI_INT(4));
+        LAN_GetServerInfo((lan_server_source_t)UI_ARG(1), UI_INT(2), UI_PTR(char, 3), UI_INT(4));
         return 0;
     case UI_LAN_MARK_SERVER_DIRTY:
-        LAN_MarkServerDirty(
-            (lan_server_source_t)UI_ARG(1), UI_INT(2),
-            (qboolean)UI_ARG(3));
+        LAN_MarkServerDirty((lan_server_source_t)UI_ARG(1), UI_INT(2), (qboolean)UI_ARG(3));
         return 0;
     case UI_LAN_UPDATE_DIRTY_PINGS:
-        return LAN_UpdateDirtyPings(
-            (lan_server_source_t)UI_ARG(1));
+        return LAN_UpdateDirtyPings((lan_server_source_t)UI_ARG(1));
     case UI_LAN_RESET_PINGS:
         LAN_ResetPings((lan_server_source_t)UI_ARG(1));
         return 0;
@@ -356,18 +291,13 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         LAN_SaveServersToCache();
         return 0;
     case UI_LAN_ADD_SERVER:
-        return LAN_AddServer(
-            (lan_server_source_t)UI_ARG(1), UI_STRING(2),
-            UI_STRING(3));
+        return LAN_AddServer((lan_server_source_t)UI_ARG(1), UI_STRING(2), UI_STRING(3));
     case UI_LAN_REMOVE_SERVER:
-        LAN_RemoveServer(
-            (lan_server_source_t)UI_ARG(1), UI_STRING(2));
+        LAN_RemoveServer((lan_server_source_t)UI_ARG(1), UI_STRING(2));
         return 0;
     case UI_CIN_PLAY_CINEMATIC:
         Com_DPrintf("UI_CIN_PlayCinematic");
-        return CIN_PlayCinematic(
-            UI_STRING(1), UI_INT(2), UI_INT(3), UI_INT(4),
-            UI_INT(5), UI_INT(6));
+        return CIN_PlayCinematic(UI_STRING(1), UI_INT(2), UI_INT(3), UI_INT(4), UI_INT(5), UI_INT(6));
     case UI_CIN_STOP_CINEMATIC:
         return CIN_StopCinematic(UI_INT(1));
     case UI_CIN_RUN_CINEMATIC:
@@ -376,28 +306,21 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
         CIN_DrawCinematic(UI_INT(1));
         return 0;
     case UI_CIN_SET_EXTENTS:
-        CIN_SetExtents(
-            UI_INT(1), UI_INT(2), UI_INT(3), UI_INT(4), UI_INT(5));
+        CIN_SetExtents(UI_INT(1), UI_INT(2), UI_INT(3), UI_INT(4), UI_INT(5));
         return 0;
     case UI_VERIFY_CD_KEY:
         return CL_CDKeyValidate(UI_STRING(1), UI_STRING(2));
     case UI_LAN_SERVER_STATUS:
-        return LAN_GetServerStatus(
-            UI_STRING(1), UI_PTR(char, 2), UI_INT(3));
+        return LAN_GetServerStatus(UI_STRING(1), UI_PTR(char, 2), UI_INT(3));
     case UI_LAN_GET_SERVER_PING:
-        return LAN_GetServerPing(
-            (lan_server_source_t)UI_ARG(1), UI_INT(2));
+        return LAN_GetServerPing((lan_server_source_t)UI_ARG(1), UI_INT(2));
     case UI_LAN_SERVER_IS_PUNKBUSTER:
-        return LAN_GetServerPunkBuster(
-            (lan_server_source_t)UI_ARG(1), UI_INT(2));
+        return LAN_GetServerPunkBuster((lan_server_source_t)UI_ARG(1), UI_INT(2));
     case UI_LAN_SERVER_IS_DIRTY:
-        return LAN_ServerIsDirty(
-            (lan_server_source_t)UI_ARG(1), UI_INT(2));
+        return LAN_ServerIsDirty((lan_server_source_t)UI_ARG(1), UI_INT(2));
     case UI_LAN_COMPARE_SERVERS:
-        return LAN_CompareServers(
-            (lan_server_source_t)UI_ARG(1),
-            (lan_server_sort_key_t)UI_ARG(2),
-            (qboolean)UI_ARG(3), UI_INT(4), UI_INT(5));
+        return LAN_CompareServers((lan_server_source_t)UI_ARG(1), (lan_server_sort_key_t)UI_ARG(2), (qboolean)UI_ARG(3), UI_INT(4),
+                                  UI_INT(5));
     case UI_SET_PB_CLIENT_STATUS:
         CLUI_SetPbClStatus((qboolean)UI_ARG(1));
         return 0;
@@ -407,33 +330,23 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
     case UI_RUNNING_GAME:
         return cls.state == CA_ACTIVE ? qtrue : qfalse;
     case UI_MEMSET:
-        return (intptr_t)memset(
-            UI_PTR(void, 1), UI_INT(2), UI_SIZE(3));
+        return (intptr_t)memset(UI_PTR(void, 1), UI_INT(2), UI_SIZE(3));
     case UI_MEMCPY:
-        return (intptr_t)memcpy(
-            UI_PTR(void, 1), UI_CONST_PTR(void, 2), UI_SIZE(3));
+        return (intptr_t)memcpy(UI_PTR(void, 1), UI_CONST_PTR(void, 2), UI_SIZE(3));
     case UI_STRNCPY:
-        return (intptr_t)strncpy(
-            UI_PTR(char, 1), UI_STRING(2), UI_SIZE(3));
+        return (intptr_t)strncpy(UI_PTR(char, 1), UI_STRING(2), UI_SIZE(3));
     case UI_SIN:
-        return CL_UISyscallFloatResult(
-            sinf(CL_UISyscallFloatArgument(UI_ARG(1))));
+        return CL_UISyscallFloatResult(sinf(CL_UISyscallFloatArgument(UI_ARG(1))));
     case UI_COS:
-        return CL_UISyscallFloatResult(
-            cosf(CL_UISyscallFloatArgument(UI_ARG(1))));
+        return CL_UISyscallFloatResult(cosf(CL_UISyscallFloatArgument(UI_ARG(1))));
     case UI_ATAN2:
-        return CL_UISyscallFloatResult(
-            atan2f(CL_UISyscallFloatArgument(UI_ARG(1)),
-                   CL_UISyscallFloatArgument(UI_ARG(2))));
+        return CL_UISyscallFloatResult(atan2f(CL_UISyscallFloatArgument(UI_ARG(1)), CL_UISyscallFloatArgument(UI_ARG(2))));
     case UI_SQRT:
-        return CL_UISyscallFloatResult(
-            sqrtf(CL_UISyscallFloatArgument(UI_ARG(1))));
+        return CL_UISyscallFloatResult(sqrtf(CL_UISyscallFloatArgument(UI_ARG(1))));
     case UI_FLOOR:
-        return CL_UISyscallFloatResult((float)floor(
-            (double)CL_UISyscallFloatArgument(UI_ARG(1))));
+        return CL_UISyscallFloatResult((float)floor((double)CL_UISyscallFloatArgument(UI_ARG(1))));
     case UI_CEIL:
-        return CL_UISyscallFloatResult((float)ceil(
-            (double)CL_UISyscallFloatArgument(UI_ARG(1))));
+        return CL_UISyscallFloatResult((float)ceil((double)CL_UISyscallFloatArgument(UI_ARG(1))));
     case UI_MALLOC:
         return (intptr_t)Z_MallocInternal(UI_SIZE(1));
     case UI_FREE:
@@ -445,7 +358,9 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
     case UI_RESERVED_57:
     case UI_RESERVED_58:
     default:
-        Com_Error(ERR_DROP, "\x15" "Bad UI system trap: %i",
+        Com_Error(ERR_DROP,
+                  "\x15"
+                  "Bad UI system trap: %i",
                   (int32_t)syscall);
         return 0;
     }

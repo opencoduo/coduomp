@@ -2,7 +2,9 @@
 
 #include <stddef.h>
 
-enum { CG_VOICE_MENU_TIMEOUT_MS = 2500 };
+enum {
+    CG_VOICE_MENU_TIMEOUT_MS = 2500
+};
 
 // Source: uo_cgame_mp_x86.dll 0x3001ab00..0x3001ab50
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3001ab00_3001ab50.mcode
@@ -34,8 +36,7 @@ void CG_VoiceMenuTimeout(void)
      * signed against 2500 (0x9c4). JLE returns, so work runs only when the
      * signed elapsed value is strictly greater than 2500 ms.
      */
-    int32_t elapsed = coduo_int32_from_bits(
-        (uint32_t)cg_time - startTime);
+    int32_t elapsed = coduo_int32_from_bits((uint32_t)cg_time - startTime);
     if (elapsed <= CG_VOICE_MENU_TIMEOUT_MS) {
         return;
     }

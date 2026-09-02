@@ -39,63 +39,61 @@ enum {
  * source names; these replace the cgame reconstruction-only
  * UI_UpdateKeyBindingCache, UI_FindBindingIndex, and CG_KeyBindingText names.
  */
-bind_t g_bindings[CONTROL_BINDING_COUNT] = {
-    { "+scores", { -1, -1, -1 }, -1, 0 },
-    { "+speed", { 201, -1, -1 }, -1, 0 },
-    { "+forward", { 119, -1, -1 }, -1, 0 },
-    { "+back", { 115, -1, -1 }, -1, 0 },
-    { "+moveleft", { 44, -1, -1 }, -1, 0 },
-    { "+moveright", { 46, -1, -1 }, -1, 0 },
-    { "+moveup", { 32, -1, -1 }, -1, 0 },
-    { "+movedown", { 99, -1, -1 }, -1, 0 },
-    { "+left", { 156, -1, -1 }, -1, 0 },
-    { "+right", { 157, -1, -1 }, -1, 0 },
-    { "+strafe", { 158, -1, -1 }, -1, 0 },
-    { "+lookup", { 163, -1, -1 }, -1, 0 },
-    { "+lookdown", { 162, -1, -1 }, -1, 0 },
-    { "+mlook", { 47, -1, -1 }, -1, 0 },
-    { "centerview", { 166, -1, -1 }, -1, 0 },
-    { "+attack", { 159, -1, -1 }, -1, 0 },
-    { "weapprev", { 205, -1, -1 }, -1, 0 },
-    { "weapnext", { 206, -1, -1 }, -1, 0 },
-    { "weapalt", { -1, -1, -1 }, -1, 0 },
-    { "scoresUp", { -1, -1, -1 }, -1, 0 },
-    { "scoresDown", { -1, -1, -1 }, -1, 0 },
-    { "messagemode", { -1, -1, -1 }, -1, 0 },
-    { "messagemode2", { -1, -1, -1 }, -1, 0 },
-    { "messagemode3", { -1, -1, -1 }, -1, 0 },
-    { "messagemode4", { -1, -1, -1 }, -1, 0 },
-    { "+activate", { -1, -1, -1 }, -1, 0 },
-    { "+reload", { -1, -1, -1 }, -1, 0 },
-    { "help", { 167, -1, -1 }, -1, 0 },
-    { "+leanleft", { -1, -1, -1 }, -1, 0 },
-    { "+leanright", { -1, -1, -1 }, -1, 0 },
-    { "vote yes", { -1, -1, -1 }, -1, 0 },
-    { "vote no", { -1, -1, -1 }, -1, 0 },
-    { "mp_QuickMessage", { -1, -1, -1 }, -1, 0 },
-    { "mp_quickmap", { -1, -1, -1 }, -1, 0 },
-    { "mp_purchase", { -1, -1, -1 }, -1, 0 },
-    { "weaponslot primary", { 49, -1, -1 }, -1, 0 },
-    { "weaponslot primaryb", { 50, -1, -1 }, -1, 0 },
-    { "weaponslot pistol", { 51, -1, -1 }, -1, 0 },
-    { "weaponslot grenade", { 52, -1, -1 }, -1, 0 },
-    { "weaponslot smokegrenade", { 53, -1, -1 }, -1, 0 },
-    { "weaponslot satchel", { 54, -1, -1 }, -1, 0 },
-    { "weaponslot binocular", { 55, -1, -1 }, -1, 0 },
-    { "+melee", { -1, -1, -1 }, -1, 0 },
-    { "+prone", { -1, -1, -1 }, -1, 0 },
-    { "lowerstance", { -1, -1, -1 }, -1, 0 },
-    { "raisestance", { -1, -1, -1 }, -1, 0 },
-    { "togglecrouch", { -1, -1, -1 }, -1, 0 },
-    { "toggleprone", { -1, -1, -1 }, -1, 0 },
-    { "goprone", { -1, -1, -1 }, -1, 0 },
-    { "gocrouch", { -1, -1, -1 }, -1, 0 },
-    { "+gostand", { -1, -1, -1 }, -1, 0 },
-    { "toggle cl_run", { -1, -1, -1 }, -1, 0 },
-    { "+sprint", { -1, -1, -1 }, -1, 0 },
-    { "screenshot", { -1, -1, -1 }, -1, 0 },
-    { "screenshotJPEG", { -1, -1, -1 }, -1, 0 }
-};
+bind_t g_bindings[CONTROL_BINDING_COUNT] = {{"+scores", {-1, -1, -1}, -1, 0},
+                                            {"+speed", {201, -1, -1}, -1, 0},
+                                            {"+forward", {119, -1, -1}, -1, 0},
+                                            {"+back", {115, -1, -1}, -1, 0},
+                                            {"+moveleft", {44, -1, -1}, -1, 0},
+                                            {"+moveright", {46, -1, -1}, -1, 0},
+                                            {"+moveup", {32, -1, -1}, -1, 0},
+                                            {"+movedown", {99, -1, -1}, -1, 0},
+                                            {"+left", {156, -1, -1}, -1, 0},
+                                            {"+right", {157, -1, -1}, -1, 0},
+                                            {"+strafe", {158, -1, -1}, -1, 0},
+                                            {"+lookup", {163, -1, -1}, -1, 0},
+                                            {"+lookdown", {162, -1, -1}, -1, 0},
+                                            {"+mlook", {47, -1, -1}, -1, 0},
+                                            {"centerview", {166, -1, -1}, -1, 0},
+                                            {"+attack", {159, -1, -1}, -1, 0},
+                                            {"weapprev", {205, -1, -1}, -1, 0},
+                                            {"weapnext", {206, -1, -1}, -1, 0},
+                                            {"weapalt", {-1, -1, -1}, -1, 0},
+                                            {"scoresUp", {-1, -1, -1}, -1, 0},
+                                            {"scoresDown", {-1, -1, -1}, -1, 0},
+                                            {"messagemode", {-1, -1, -1}, -1, 0},
+                                            {"messagemode2", {-1, -1, -1}, -1, 0},
+                                            {"messagemode3", {-1, -1, -1}, -1, 0},
+                                            {"messagemode4", {-1, -1, -1}, -1, 0},
+                                            {"+activate", {-1, -1, -1}, -1, 0},
+                                            {"+reload", {-1, -1, -1}, -1, 0},
+                                            {"help", {167, -1, -1}, -1, 0},
+                                            {"+leanleft", {-1, -1, -1}, -1, 0},
+                                            {"+leanright", {-1, -1, -1}, -1, 0},
+                                            {"vote yes", {-1, -1, -1}, -1, 0},
+                                            {"vote no", {-1, -1, -1}, -1, 0},
+                                            {"mp_QuickMessage", {-1, -1, -1}, -1, 0},
+                                            {"mp_quickmap", {-1, -1, -1}, -1, 0},
+                                            {"mp_purchase", {-1, -1, -1}, -1, 0},
+                                            {"weaponslot primary", {49, -1, -1}, -1, 0},
+                                            {"weaponslot primaryb", {50, -1, -1}, -1, 0},
+                                            {"weaponslot pistol", {51, -1, -1}, -1, 0},
+                                            {"weaponslot grenade", {52, -1, -1}, -1, 0},
+                                            {"weaponslot smokegrenade", {53, -1, -1}, -1, 0},
+                                            {"weaponslot satchel", {54, -1, -1}, -1, 0},
+                                            {"weaponslot binocular", {55, -1, -1}, -1, 0},
+                                            {"+melee", {-1, -1, -1}, -1, 0},
+                                            {"+prone", {-1, -1, -1}, -1, 0},
+                                            {"lowerstance", {-1, -1, -1}, -1, 0},
+                                            {"raisestance", {-1, -1, -1}, -1, 0},
+                                            {"togglecrouch", {-1, -1, -1}, -1, 0},
+                                            {"toggleprone", {-1, -1, -1}, -1, 0},
+                                            {"goprone", {-1, -1, -1}, -1, 0},
+                                            {"gocrouch", {-1, -1, -1}, -1, 0},
+                                            {"+gostand", {-1, -1, -1}, -1, 0},
+                                            {"toggle cl_run", {-1, -1, -1}, -1, 0},
+                                            {"+sprint", {-1, -1, -1}, -1, 0},
+                                            {"screenshot", {-1, -1, -1}, -1, 0},
+                                            {"screenshotJPEG", {-1, -1, -1}, -1, 0}};
 
 static char bindingText[UI_BINDING_TEXT_SIZE];
 static char secondBindingText[UI_BINDING_TEXT_SIZE];
@@ -114,9 +112,7 @@ void Controls_GetKeyAssignment(const char *command, int32_t keys[2])
 
     for (key = 0; key < MAX_KEYS; ++key) {
         DC->getBindingBuf(key, binding, UI_BINDING_SCAN_BUFFER_SIZE);
-        if (binding[0] != '\0' && command != NULL &&
-            Q_stricmpn(command, binding,
-                       UI_UNBOUNDED_STRING_COMPARE) == 0) {
+        if (binding[0] != '\0' && command != NULL && Q_stricmpn(command, binding, UI_UNBOUNDED_STRING_COMPARE) == 0) {
             keys[found++] = key;
             if (found == UI_KEYS_PER_BINDING) {
                 return;
@@ -174,8 +170,7 @@ int32_t BindingIDFromName(const char *command)
 
     for (index = 0; index < CONTROL_BINDING_COUNT; ++index) {
         if (command != NULL && g_bindings[index].command != NULL &&
-            Q_stricmpn(g_bindings[index].command, command,
-                       UI_UNBOUNDED_STRING_COMPARE) == 0) {
+            Q_stricmpn(g_bindings[index].command, command, UI_UNBOUNDED_STRING_COMPARE) == 0) {
             return index;
         }
     }
@@ -196,8 +191,7 @@ const char *BindingFromName(const char *command, qboolean firstKeyOnly)
     }
 
     binding = &g_bindings[bindingIndex];
-    DC->keynumToStringBuf(binding->bind1, bindingText,
-                          UI_BINDING_KEY_TEXT_SIZE);
+    DC->keynumToStringBuf(binding->bind1, bindingText, UI_BINDING_KEY_TEXT_SIZE);
     localized = DC->getLocalizedString(bindingText);
     if (localized != bindingText) {
         Q_strncpyz(bindingText, localized, UI_BINDING_TEXT_SIZE);
@@ -206,8 +200,7 @@ const char *BindingFromName(const char *command, qboolean firstKeyOnly)
         return bindingText;
     }
 
-    DC->keynumToStringBuf(binding->bind2, secondBindingText,
-                          UI_BINDING_KEY_TEXT_SIZE);
+    DC->keynumToStringBuf(binding->bind2, secondBindingText, UI_BINDING_KEY_TEXT_SIZE);
     localized = DC->getLocalizedString(secondBindingText);
     if (localized != secondBindingText) {
         Q_strncpyz(secondBindingText, localized, UI_BINDING_TEXT_SIZE);
@@ -228,12 +221,10 @@ qboolean GetCommandHasBinding(const char *command)
     if (bindingIndex < 0) {
         return qfalse;
     }
-    return g_bindings[bindingIndex].bind1 != UI_KEY_UNBOUND
-               ? qtrue : qfalse;
+    return g_bindings[bindingIndex].bind1 != UI_KEY_UNBOUND ? qtrue : qfalse;
 }
 
-int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName,
-                              const char *command)
+int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName, const char *command)
 {
     const int32_t bindingIndex = BindingIDFromName(command);
     bind_t *binding;
@@ -243,20 +234,17 @@ int32_t Key_GetKeysForCommand(char **firstKeyName, char **secondKeyName,
     secondKeyNameBuffer[0] = '\0';
     *secondKeyName = secondKeyNameBuffer;
 
-    if (bindingIndex < 0 ||
-        g_bindings[bindingIndex].bind1 == UI_KEY_UNBOUND) {
+    if (bindingIndex < 0 || g_bindings[bindingIndex].bind1 == UI_KEY_UNBOUND) {
         memcpy(firstKeyNameBuffer, "KEY_UNBOUND", sizeof("KEY_UNBOUND"));
         return 0;
     }
 
     binding = &g_bindings[bindingIndex];
-    DC->keynumToStringBuf(binding->bind1, firstKeyNameBuffer,
-                          UI_KEY_NAME_BUFFER_SIZE);
+    DC->keynumToStringBuf(binding->bind1, firstKeyNameBuffer, UI_KEY_NAME_BUFFER_SIZE);
     if (binding->bind2 == UI_KEY_UNBOUND) {
         return 1;
     }
-    DC->keynumToStringBuf(binding->bind2, secondKeyNameBuffer,
-                          UI_KEY_NAME_BUFFER_SIZE);
+    DC->keynumToStringBuf(binding->bind2, secondKeyNameBuffer, UI_KEY_NAME_BUFFER_SIZE);
     return 2;
 }
 

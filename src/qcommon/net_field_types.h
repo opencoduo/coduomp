@@ -28,14 +28,10 @@ enum {
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(sizeof(netField_t) == 0x0c,
-               "netField_t size mismatch");
-_Static_assert(offsetof(netField_t, name) == 0x00,
-               "netField_t.name offset mismatch");
-_Static_assert(offsetof(netField_t, offset) == 0x04,
-               "netField_t.offset offset mismatch");
-_Static_assert(offsetof(netField_t, bits) == 0x08,
-               "netField_t.bits offset mismatch");
+_Static_assert(sizeof(netField_t) == 0x0c, "netField_t size mismatch");
+_Static_assert(offsetof(netField_t, name) == 0x00, "netField_t.name offset mismatch");
+_Static_assert(offsetof(netField_t, offset) == 0x04, "netField_t.offset offset mismatch");
+_Static_assert(offsetof(netField_t, bits) == 0x08, "netField_t.bits offset mismatch");
 #endif
 #endif
 

@@ -36,8 +36,7 @@ void SendScoreboardMessageToAllIntermissionClients(void)
     for (clientNum = 0; clientNum < lvl->maxclients; clientNum++) {
         gclient_t *client = &level.clients[clientNum];
 
-        if (client->connectedState == CON_CONNECTED &&
-            client->ps.pmType == PM_TYPE_INTERMISSION) {
+        if (client->connectedState == CON_CONNECTED && client->ps.pmType == PM_TYPE_INTERMISSION) {
             DeathmatchScoreboardMessage(&g_entities[clientNum]);
         }
     }
@@ -61,8 +60,7 @@ static int SortRanks(const void *lhs, const void *rhs)
     if (right->connectedState == CON_CONNECTING) {
         return -1;
     }
-    if (left->sessionTeam == TEAM_SPECTATOR &&
-        right->sessionTeam == TEAM_SPECTATOR) {
+    if (left->sessionTeam == TEAM_SPECTATOR && right->sessionTeam == TEAM_SPECTATOR) {
         if (leftClientNum < rightClientNum) {
             return -1;
         }
@@ -109,15 +107,13 @@ void CalculateRanks(void)
             lvl->sortedClients[lvl->sortedClientCount] = clientNum;
             lvl->sortedClientCount++;
 
-            if (client->sessionTeam != TEAM_SPECTATOR &&
-                client->connectedState == CON_CONNECTED) {
+            if (client->sessionTeam != TEAM_SPECTATOR && client->connectedState == CON_CONNECTED) {
                 lvl->numVotingClients++;
             }
         }
     }
 
-    coduo_qsort(lvl->sortedClients, (size_t)lvl->sortedClientCount,
-                sizeof(lvl->sortedClients[0]), SortRanks);
+    coduo_qsort(lvl->sortedClients, (size_t)lvl->sortedClientCount, sizeof(lvl->sortedClients[0]), SortRanks);
     lvl->scoreboardDirty = 1;
 }
 
@@ -175,24 +171,19 @@ void CheckVote(void)
     now = trap_Milliseconds();
     /* Stock 0x593d3..0x593e1 tests the sign of the wrapping dword
      * subtraction, rather than directly comparing the two signed times. */
-    if (coduo_int32_from_bits((uint32_t)now -
-                              (uint32_t)lvl->voteTime) < 0) {
+    if (coduo_int32_from_bits((uint32_t)now - (uint32_t)lvl->voteTime) < 0) {
         passThreshold = lvl->numVotingClients / 2 + 1;
         if (lvl->voteYes < passThreshold) {
             if (lvl->voteNo <= lvl->numVotingClients - passThreshold) {
                 return;
             }
-            trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0,
-                                   "e \"GAME_VOTEFAILED\"");
+            trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0, "e \"GAME_VOTEFAILED\"");
         } else {
-            trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0,
-                                   "e \"GAME_VOTEPASSED\"");
-            lvl->voteExecuteTime = coduo_int32_from_bits(
-                (uint32_t)trap_Milliseconds() + UINT32_C(3000));
+            trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0, "e \"GAME_VOTEPASSED\"");
+            lvl->voteExecuteTime = coduo_int32_from_bits((uint32_t)trap_Milliseconds() + UINT32_C(3000));
         }
     } else {
-        trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0,
-                               "e \"GAME_VOTEFAILED\"");
+        trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0, "e \"GAME_VOTEFAILED\"");
     }
 
     lvl->voteTime = 0;
@@ -223,30 +214,19 @@ void CheckMatchTimeout(void)
 
     now = trap_Milliseconds();
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (coduo_int32_from_bits((uint32_t)lvl->matchTimeoutStartTime +
-                              (uint32_t)lvl->matchTimeoutDuration) <= now) {
-        Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage),
-                    "PATCH_1_5_TIMEOUT_ENDING\x15");
+    if (coduo_int32_from_bits((uint32_t)lvl->matchTimeoutStartTime + (uint32_t)lvl->matchTimeoutDuration) <= now) {
+        Com_sprintf(lvl->timeoutMessage, sizeof(lvl->timeoutMessage), "PATCH_1_5_TIMEOUT_ENDING\x15");
         if (lvl->matchTimeoutTeam == TEAM_ALLIES) {
-            lvl->timeoutCache1 = coduo_int32_from_bits(
-                (uint32_t)lvl->timeoutCache1 -
-                (uint32_t)lvl->matchTimeoutDuration);
+            lvl->timeoutCache1 = coduo_int32_from_bits((uint32_t)lvl->timeoutCache1 - (uint32_t)lvl->matchTimeoutDuration);
         } else {
-            lvl->timeoutCache2 = coduo_int32_from_bits(
-                (uint32_t)lvl->timeoutCache2 -
-                (uint32_t)lvl->matchTimeoutDuration);
+            lvl->timeoutCache2 = coduo_int32_from_bits((uint32_t)lvl->timeoutCache2 - (uint32_t)lvl->matchTimeoutDuration);
         }
 
         lvl->matchTimeoutDuration = 0;
-        lvl->matchTimeoutRecoveryEndTime = coduo_int32_from_bits(
-            (uint32_t)trap_Milliseconds() +
-            (uint32_t)g_timeoutRecovery.integer);
-        trap_SetConfigstring(CS_TIMEOUT_TIME,
-                             va("%i", g_timeoutRecovery.integer));
-        trap_SetConfigstring(CS_TIMEOUT_STRING,
-                             lvl->timeoutMessage);
-        trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0,
-                               "e \"PATCH_1_5_TIMEOUT_EXPIRED\"");
+        lvl->matchTimeoutRecoveryEndTime = coduo_int32_from_bits((uint32_t)trap_Milliseconds() + (uint32_t)g_timeoutRecovery.integer);
+        trap_SetConfigstring(CS_TIMEOUT_TIME, va("%i", g_timeoutRecovery.integer));
+        trap_SetConfigstring(CS_TIMEOUT_STRING, lvl->timeoutMessage);
+        trap_SendServerCommand(SERVER_COMMAND_ALL_CLIENTS, 0, "e \"PATCH_1_5_TIMEOUT_EXPIRED\"");
     }
 }
 
@@ -269,14 +249,11 @@ void G_UpdateObjectiveToClients(void)
 
         client = ent->client;
         team = client->sessionTeam;
-        for (objectiveIndex = 0; objectiveIndex < PLAYERSTATE_OBJECTIVE_COUNT;
-             objectiveIndex++) {
+        for (objectiveIndex = 0; objectiveIndex < PLAYERSTATE_OBJECTIVE_COUNT; objectiveIndex++) {
             objective_t *objective = &lvl->objectives[objectiveIndex];
 
-            if (objective->state == OBJECTIVE_STATE_EMPTY ||
-                (objective->teamNum != TEAM_FREE && objective->teamNum != team)) {
-                client->ps.objectives[objectiveIndex].state =
-                    OBJECTIVE_STATE_EMPTY;
+            if (objective->state == OBJECTIVE_STATE_EMPTY || (objective->teamNum != TEAM_FREE && objective->teamNum != team)) {
+                client->ps.objectives[objectiveIndex].state = OBJECTIVE_STATE_EMPTY;
             } else {
                 client->ps.objectives[objectiveIndex] = *objective;
             }
@@ -304,8 +281,7 @@ void G_UpdateHudElemsToClients(void)
 /* VERIFIED_DECOMPILER(0x598d9, 698d9_DebugDumpAnims.c, VERIFY-FRAME-RANK-UPDATE-2026-06-17): DATAFLOW_VERIFIED - g_dumpAnims signed bounds check and entity-stride DObj display argument checked. */
 void DebugDumpAnims(void)
 {
-    if (g_dumpAnims.integer >= 0 &&
-        g_dumpAnims.integer < (int)MAX_GENTITIES) {
+    if (g_dumpAnims.integer >= 0 && g_dumpAnims.integer < (int)MAX_GENTITIES) {
         trap_DObjDisplayAnim(&level.gentities[g_dumpAnims.integer]);
     }
 }
@@ -314,9 +290,7 @@ void DebugDumpAnims(void)
 /* VERIFIED_DECOMPILER(0x5992c, 6992c_G_XAnimUpdateEnt.c, VERIFY-FRAME-RANK-UPDATE-2026-06-17): DATAFLOW_VERIFIED - linked/non-scriptClass 0x4000 loop, G_DObjUpdateServerTime arguments, and script thread pump checked. */
 void G_XAnimUpdateEnt(gentity_t *ent)
 {
-    while (ent->linked != 0 &&
-           (ent->flags & GENTITY_FLAG_SKIP_XANIM_UPDATE) == 0 &&
-           G_DObjUpdateServerTime(ent, 1) != 0) {
+    while (ent->linked != 0 && (ent->flags & GENTITY_FLAG_SKIP_XANIM_UPDATE) == 0 && G_DObjUpdateServerTime(ent, 1) != 0) {
         Scr_RunCurrentThreads();
     }
 }
@@ -333,9 +307,7 @@ void G_XAnimUpdate(void)
     for (entityNum = 0; entityNum < lvl->num_entities; entityNum++) {
         if (ent->linked != 0) {
             /* 0x599c7: bare fild of frameTime, no float32 rounding of the int. */
-            trap_DObjInitServerTime(
-                ent, (float)((long double)lvl->frameTime *
-                             (long double)0.001f));
+            trap_DObjInitServerTime(ent, (float)((long double)lvl->frameTime * (long double)0.001f));
         }
         ent = &ent[1];
     }
@@ -385,15 +357,13 @@ void G_RunFrame(int levelTimeIn)
 
     /* ---- Timing ---- */
     oldTime = lvl->time;
-    lvl->framenum = coduo_int32_from_bits(
-        (uint32_t)lvl->framenum + UINT32_C(1)); /* level.framenum++ */
-    lvl->previousTime = lvl->time;              /* level.previousTime = old time */
-    lvl->time = levelTimeIn;                    /* level.time = now */
-    bg.frameTime = coduo_int32_from_bits(
-        (uint32_t)levelTimeIn - (uint32_t)oldTime); /* frame delta (msec) */
+    lvl->framenum = coduo_int32_from_bits((uint32_t)lvl->framenum + UINT32_C(1)); /* level.framenum++ */
+    lvl->previousTime = lvl->time; /* level.previousTime = old time */
+    lvl->time = levelTimeIn; /* level.time = now */
+    bg.frameTime = coduo_int32_from_bits((uint32_t)levelTimeIn - (uint32_t)oldTime); /* frame delta (msec) */
     bg.time = levelTimeIn;
     bg.levelFrameTime = levelTimeIn;
-    lvl->frameTime = bg.frameTime;             /* level.frameTime */
+    lvl->frameTime = bg.frameTime; /* level.frameTime */
 
     G_UpdateCvars();
 
@@ -426,7 +396,7 @@ void G_RunFrame(int levelTimeIn)
                 }
                 hadMatch = 1;
             } else {
-remove_entry:
+            remove_entry:
                 /* Remove entry by swapping with last */
                 lvl->notifyWatchCount = lvl->notifyWatchCount - 1;
                 i = i - 1;
@@ -446,8 +416,7 @@ remove_entry:
 
             /* ---- Check bounds cvar changes ---- */
             /* VERIFIED_DECOMPILER(0x59c21, 69c21_G_RunFrame.c, VERIFY-FRAME-RANK-UPDATE-2026-06-17): DATAFLOW_VERIFIED - cached bounds slots compare against cvar.value floats, not integer. */
-            if (lvl->cachedBoundsWidth != g_bounds_width.value ||
-                lvl->cachedBoundsHeightStanding != g_bounds_height_standing.value) {
+            if (lvl->cachedBoundsWidth != g_bounds_width.value || lvl->cachedBoundsHeightStanding != g_bounds_height_standing.value) {
                 lvl->cachedBoundsWidth = g_bounds_width.value;
                 lvl->cachedBoundsHeightStanding = g_bounds_height_standing.value;
                 G_SetPlayerSize();
@@ -480,8 +449,7 @@ remove_entry:
             /* ---- Check viewheight cvar changes ---- */
             /* VERIFIED_DECOMPILER(0x59c21, 69c21_G_RunFrame.c, VERIFY-FRAME-RANK-UPDATE-2026-06-17): DATAFLOW_VERIFIED - cached viewheight slots compare against cvar.value floats and client slots receive cvar.integer. */
             if (lvl->cachedViewheightStanding != bg_viewheight_standing.value ||
-                lvl->cachedViewheightCrouched != bg_viewheight_crouched.value ||
-                lvl->cachedViewheightProne != bg_viewheight_prone.value) {
+                lvl->cachedViewheightCrouched != bg_viewheight_crouched.value || lvl->cachedViewheightProne != bg_viewheight_prone.value) {
                 lvl->cachedViewheightStanding = bg_viewheight_standing.value;
                 lvl->cachedViewheightCrouched = bg_viewheight_crouched.value;
                 lvl->cachedViewheightProne = bg_viewheight_prone.value;
@@ -534,8 +502,7 @@ remove_entry:
             if (g_listEntity.integer != 0) {
                 ent = g_entities;
                 for (i = 0; i < (int)MAX_GENTITIES; i++) {
-                    G_Printf("%4i: %s\n", i,
-                             SL_ConvertToString(ent->scriptClassname));
+                    G_Printf("%4i: %s\n", i, SL_ConvertToString(ent->scriptClassname));
                     ent = &ent[1];
                 }
                 trap_Cvar_Set("g_listEntity", zeroString);

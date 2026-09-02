@@ -124,12 +124,7 @@ void CG_ScanForCrosshairEntity(void)
      * Register/stack ABI (see header): handle=CG_CROSSHAIR_TRACE_MASK, origin=end,
      * flags=&vec3_origin, out=&trace, arg1=&start, arg2=&vec3_origin,
      * arg3=cg_snap->ps.psClientNum. */
-    CG_Trace(CG_CROSSHAIR_TRACE_MASK, end,
-                       vec3_origin,
-                       &trace,
-                       start,
-                       vec3_origin,
-                       passEntityNum);
+    CG_Trace(CG_CROSSHAIR_TRACE_MASK, end, vec3_origin, &trace, start, vec3_origin, passEntityNum);
 
     /* 0x3001a559/0x3001a55d: read the hit contents and the traced entity number. */
     contents = trace.contents;
@@ -141,8 +136,7 @@ void CG_ScanForCrosshairEntity(void)
      * is the raw trace entity number into cg_entities[] (base 0x3048c6e0,
      * stride 0x288). */
     if ((uint32_t)contents & CG_CROSSHAIR_HITTABLE_CONTENTS) {
-        const centity_t *cent =
-            cg_entities + entityNum;
+        const centity_t *cent = cg_entities + entityNum;
         if (cent->currentState.eType == ET_VEHICLE) {
             entityNum = cent->currentState.vehicleEntityNum;
         }

@@ -44,26 +44,22 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
     /* 0x30039ff0..0x30039ffa: gate on cg_noVoiceChats. */
     if (cg_noVoiceChats_vmCvar.integer == 0) {
         /* 0x3003a000..0x3003a015: play the voice sound on the local channel. */
-        CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                                &cg_snap->ps.psOrigin, msg->soundName);
+        CG_PlaySoundAliasByName(cg_snap->ps.psClientNum, &cg_snap->ps.psOrigin, msg->soundName);
 
         /* 0x3003a017..0x3003a02a: is the speaker the local player? */
         if (msg->clientNum == cg_snap->ps.psClientNum) {
             /* 0x3003a02c..0x3003a072: local player — stamp the cg.* voice-chat state. */
             cg_predictedEventEntity.voiceChatIcon = msg->icon;
             if ((uint32_t)msg->icon == cgs_voiceChatIcon) {
-                cg_predictedEventEntity.voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
-                    (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                cg_predictedEventEntity.voiceChatTime =
+                    coduo_int32_from_bits((uint32_t)cg_time + (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             } else {
-                cg_predictedEventEntity.voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
-                    2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                cg_predictedEventEntity.voiceChatTime =
+                    coduo_int32_from_bits((uint32_t)cg_time + 2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             }
         } else {
             /* 0x3003a074..0x3003a0f9: remote speaker — stamp cg_entities[speaker]. */
-            centity_t *cent =
-                cg_entities + msg->clientNum;
+            centity_t *cent = cg_entities + msg->clientNum;
 
             cent->voiceChatIcon = msg->icon;
             cent->lerpOrigin[0] = msg->spriteOrigin[0];
@@ -71,13 +67,9 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
             cent->lerpOrigin[2] = msg->spriteOrigin[2];
 
             if ((uint32_t)msg->icon == cgs_voiceChatIcon) {
-                cent->voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
-                    (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                cent->voiceChatTime = coduo_int32_from_bits((uint32_t)cg_time + (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             } else {
-                cent->voiceChatTime = coduo_int32_from_bits(
-                    (uint32_t)cg_time +
-                    2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
+                cent->voiceChatTime = coduo_int32_from_bits((uint32_t)cg_time + 2u * (uint32_t)cg_voiceSpriteTime_vmCvar.integer);
             }
         }
     }

@@ -47,9 +47,7 @@ long double CM_LittleFloat(float value)
 void coduo_engine_collision_digest_bytes_external(const void *data, size_t length, uint64_t *accum);
 
 /* NOT_FROM_ORIGINAL_SOURCE: curved-patch parity digest. */
-void coduo_engine_digest_curve_collide(const void *curveCollide, uint64_t *accum,
-                                       int32_t *planeCountOut,
-                                       int32_t *facetCountOut)
+void coduo_engine_digest_curve_collide(const void *curveCollide, uint64_t *accum, int32_t *planeCountOut, int32_t *facetCountOut)
 {
     const patchCollide_t *build = curveCollide;
 
@@ -60,23 +58,17 @@ void coduo_engine_digest_curve_collide(const void *curveCollide, uint64_t *accum
         const patchPlane_t *plane = &build->planes[planeIndex];
         coduo_engine_collision_digest_bytes_external(plane->normal, sizeof(plane->normal), accum);
         coduo_engine_collision_digest_bytes_external(&plane->dist, sizeof(plane->dist), accum);
-        coduo_engine_collision_digest_bytes_external(&plane->signbits, sizeof(plane->signbits),
-                               accum);
+        coduo_engine_collision_digest_bytes_external(&plane->signbits, sizeof(plane->signbits), accum);
     }
 
     for (int32_t facetIndex = 0; facetIndex < build->numFacets; ++facetIndex) {
         const facet_t *facet = &build->facets[facetIndex];
-        coduo_engine_collision_digest_bytes_external(&facet->surfacePlane, sizeof(facet->surfacePlane),
-                               accum);
-        coduo_engine_collision_digest_bytes_external(&facet->numBorders,
-                               sizeof(facet->numBorders), accum);
+        coduo_engine_collision_digest_bytes_external(&facet->surfacePlane, sizeof(facet->surfacePlane), accum);
+        coduo_engine_collision_digest_bytes_external(&facet->numBorders, sizeof(facet->numBorders), accum);
         for (int32_t border = 0; border < facet->numBorders; ++border) {
-            coduo_engine_collision_digest_bytes_external(&facet->borderPlanes[border],
-                                   sizeof(facet->borderPlanes[border]), accum);
-            coduo_engine_collision_digest_bytes_external(&facet->borderInward[border],
-                                   sizeof(facet->borderInward[border]), accum);
-            coduo_engine_collision_digest_bytes_external(&facet->borderNoAdjust[border],
-                                   sizeof(facet->borderNoAdjust[border]), accum);
+            coduo_engine_collision_digest_bytes_external(&facet->borderPlanes[border], sizeof(facet->borderPlanes[border]), accum);
+            coduo_engine_collision_digest_bytes_external(&facet->borderInward[border], sizeof(facet->borderInward[border]), accum);
+            coduo_engine_collision_digest_bytes_external(&facet->borderNoAdjust[border], sizeof(facet->borderNoAdjust[border]), accum);
         }
     }
 }

@@ -44,8 +44,7 @@ void SV_FreeClient(client_t *client)
 
     SV_CloseDownload(client);
     if (sv.state == SS_GAME) {
-        (void)VM_Call(sv_gameVM, GAME_CLIENT_DISCONNECT,
-                      clientNum, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        (void)VM_Call(sv_gameVM, GAME_CLIENT_DISCONNECT, clientNum, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
     SV_SetUserinfo(clientNum, "");
     SV_FreeClientScriptId(client);
@@ -54,9 +53,7 @@ void SV_FreeClient(client_t *client)
 void SV_FreeClients(void)
 {
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
         if (client->state >= CS_CONNECTED) {
             SV_FreeClient(client);
         }
@@ -67,9 +64,7 @@ void SV_FreeClients(void)
 void SV_FreeClientScriptPers(void)
 {
     client_t *client = svs.clients;
-    for (int32_t clientNum = 0;
-         clientNum < sv_maxclients->integer;
-         ++clientNum, ++client) {
+    for (int32_t clientNum = 0; clientNum < sv_maxclients->integer; ++clientNum, ++client) {
         if (client->state >= CS_CONNECTED) {
             SV_FreeClientScriptId(client);
             client->scriptId = Scr_AllocArray();

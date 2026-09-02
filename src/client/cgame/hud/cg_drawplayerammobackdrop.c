@@ -39,10 +39,7 @@
 // the two cdecl stack arguments (push eax=color; push edx=hShader; add esp,8 after
 // return). Register-argument inputs are written here as ordinary parameters, per
 // the codebase convention for MSVC register-passed args.
-void CG_DrawPlayerAmmoBackdrop(int32_t wantVehicleView,
-                               const rectDef_t *rect,
-                               const float *color,
-                               qhandle_t hShader)
+void CG_DrawPlayerAmmoBackdrop(int32_t wantVehicleView, const rectDef_t *rect, const float *color, qhandle_t hShader)
 {
     // 0x3002eb90 MOV EAX,[0x30483248]; 0x3002eb95 TEST AH,0x60; 0x3002eb98 JNZ ret.
     // AH holds bits 8..15 of entityStateFlags, so AH&0x60 tests flags&0x6000.

@@ -22,7 +22,9 @@
 #include <math.h>
 
 
-enum { CG_WEAPON_SELECT_FADE_MSEC = 1800 }; /* 0x30046bec: ECX=0x708 */
+enum {
+    CG_WEAPON_SELECT_FADE_MSEC = 1800
+}; /* 0x30046bec: ECX=0x708 */
 
 #define CG_WEAPON_SELECT_FLOAT_SIGN_MASK 0x80000000u
 
@@ -45,8 +47,7 @@ void CG_DrawWeaponSelect(void)
 
     /* 0x30046bb6..0x30046bd1: milliseconds since the previous carousel frame;
      * latch the new draw time and clamp a backwards clock to zero (JNS). */
-    frameMsec = coduo_int32_from_bits(
-        (uint32_t)cg_time - (uint32_t)cg_weaponSelectLastTime);
+    frameMsec = coduo_int32_from_bits((uint32_t)cg_time - (uint32_t)cg_weaponSelectLastTime);
     cg_weaponSelectLastTime = cg_time;
     if (frameMsec < 0)
         frameMsec = 0;
@@ -120,9 +121,7 @@ void CG_DrawWeaponSelect(void)
                 /* frameMsec enters via a bare FILD fed straight into FMUL 0.01f
                  * (0x30046d29 FILD; 0x30046d2d FMUL), so drop the (float) cast
                  * (Class 4). */
-                long double scaleRaw =
-                    (long double)*scale -
-                    (long double)frameMsec * (long double)0.01f;
+                long double scaleRaw = (long double)*scale - (long double)frameMsec * (long double)0.01f;
                 *scale = (float)scaleRaw; /* [0x3007bdb4] */
                 if (scaleRaw < 0.0L)
                     *scale = 0.0f;
@@ -135,17 +134,14 @@ void CG_DrawWeaponSelect(void)
             float iconWidth = weaponInfo->wideListIcon ? iconHeight * 2.0f /* FADD ST0,ST0 */
                                                        : iconHeight;
             x -= iconWidth;
-            CG_DrawPic(x, 8.0f, iconWidth, iconHeight,
-                       (qhandle_t)cgWeaponInfo->hudIconShader);
+            CG_DrawPic(x, 8.0f, iconWidth, iconHeight, (qhandle_t)cgWeaponInfo->hudIconShader);
         } else {
             /* 0x30046daa..0x30046de3: expand: only while scale < 1 and time
              * advanced; clamp at 1 (FADD; FCOMP vs [0x3007bce0]=1.0f). */
             if (*scale < 1.0f && frameMsec != 0) {
                 /* Bare FILD into FMUL 0.01f (0x30046dbf FILD; 0x30046dc3 FMUL);
                  * drop the (float) cast (Class 4). */
-                long double scaleRaw =
-                    (long double)*scale +
-                    (long double)frameMsec * (long double)0.01f;
+                long double scaleRaw = (long double)*scale + (long double)frameMsec * (long double)0.01f;
                 *scale = (float)scaleRaw;
                 if (scaleRaw > 1.0L)
                     *scale = 1.0f;
@@ -157,8 +153,7 @@ void CG_DrawWeaponSelect(void)
              * chain returns to the selected weapon or hits 0. */
             int32_t chainHead = bg_weaponInfos[selectedWeapon]->altWeapon;
             int32_t count = 1; /* EDI */
-            for (int32_t w = chainHead; w != 0 && w != selectedWeapon;
-                 w = bg_weaponInfos[w]->altWeapon)
+            for (int32_t w = chainHead; w != 0 && w != selectedWeapon; w = bg_weaponInfos[w]->altWeapon)
                 ++count;
 
             if (count == 1) {
@@ -174,11 +169,9 @@ void CG_DrawWeaponSelect(void)
                 cgame_syscall(CG_R_SETCOLOR, (intptr_t)color);
 
                 float iconHeight = (*scale + 1.0f) * 32.0f;
-                float iconWidth = weaponInfo->wideListIcon ? iconHeight * 2.0f
-                                                           : iconHeight;
+                float iconWidth = weaponInfo->wideListIcon ? iconHeight * 2.0f : iconHeight;
                 x -= iconWidth;
-                CG_DrawPic(x, 8.0f, iconWidth, iconHeight,
-                           (qhandle_t)cgWeaponInfo->hudIconShader);
+                CG_DrawPic(x, 8.0f, iconWidth, iconHeight, (qhandle_t)cgWeaponInfo->hudIconShader);
 
                 /* 0x300472de..0x30047303: restore the 0.5 gray draw color. */
                 color[0] = 0.5f;
@@ -198,10 +191,7 @@ void CG_DrawWeaponSelect(void)
                 } else {
                     if (cg_weaponSelectPreviousWeapon != selectedWeapon) {
                         cg_weaponSelectTransition =
-                            bg_weaponInfos[cg_weaponSelectPreviousWeapon]->altWeapon
-                                    == selectedWeapon
-                                ? 1.0f
-                                : -1.0f;
+                            bg_weaponInfos[cg_weaponSelectPreviousWeapon]->altWeapon == selectedWeapon ? 1.0f : -1.0f;
                         cg_weaponSelectPreviousWeapon = selectedWeapon;
                     }
 
@@ -214,18 +204,14 @@ void CG_DrawWeaponSelect(void)
                     if (cg_weaponSelectTransition != 0.0f) {
                         /* Bare FILD into FMUL 0.006666667f (0x30046f2f FILD;
                          * 0x30046f33 FMUL); drop the (float) cast (Class 4). */
-                        long double step =
-                            (long double)frameMsec *
-                            (long double)0.006666667f;
+                        long double step = (long double)frameMsec * (long double)0.006666667f;
                         if (cg_weaponSelectTransition < 0.0f) {
-                            long double transitionRaw =
-                                (long double)cg_weaponSelectTransition + step;
+                            long double transitionRaw = (long double)cg_weaponSelectTransition + step;
                             cg_weaponSelectTransition = (float)transitionRaw;
                             if (transitionRaw > 0.0L)
                                 cg_weaponSelectTransition = 0.0f;
                         } else {
-                            long double transitionRaw =
-                                (long double)cg_weaponSelectTransition - step;
+                            long double transitionRaw = (long double)cg_weaponSelectTransition - step;
                             cg_weaponSelectTransition = (float)transitionRaw;
                             if (transitionRaw < 0.0L)
                                 cg_weaponSelectTransition = 0.0f;
@@ -238,8 +224,7 @@ void CG_DrawWeaponSelect(void)
                  * pos[0]=8 (the strip row), pos[1]=iconHeight+10 (first alt
                  * row), each further row 34 lower ([0x3007bf20]; the mcode
                  * builds it with a 4-unrolled loop + remainder). */
-                long double iconHeightRaw =
-                    ((long double)*scale + 1.0L) * 32.0L;
+                long double iconHeightRaw = ((long double)*scale + 1.0L) * 32.0L;
                 float iconHeight = (float)iconHeightRaw;
                 long double iconWidthRaw;
                 if (weaponInfo->wideListIcon) {
@@ -264,19 +249,16 @@ void CG_DrawWeaponSelect(void)
                 /* 0x3004701b..0x30047025: FMUL [0x3007bf50] = -0.5f; the
                  * common "back up half the expanded slot width" term both
                  * draw paths center on. */
-                float iconHalfBack =
-                    (float)(iconWidthRaw * (long double)-0.5f);
+                float iconHalfBack = (float)(iconWidthRaw * (long double)-0.5f);
 
                 /* 0x30047031..0x300471bc: draw the alt chain, dim (current
                  * gray color), stopping at the selected weapon. Sizes are
                  * UNexpanded (32, or 64 wide [0x3007c000]); every alt icon
                  * uses layout row pos[1]. */
-                for (int32_t w = chainHead; w != 0 && w != selectedWeapon;
-                     w = bg_weaponInfos[w]->altWeapon) {
+                for (int32_t w = chainHead; w != 0 && w != selectedWeapon; w = bg_weaponInfos[w]->altWeapon) {
                     weaponInfo_t *altInfo = bg_weaponInfos[w];          /* 0x30047048 */
                     cgWeaponInfo_t *altCgInfo = &cg_weaponInfos[w];  /* 0x30047051 */
-                    long double drawWidthRaw =
-                        altInfo->wideListIcon ? 64.0L : 32.0L;
+                    long double drawWidthRaw = altInfo->wideListIcon ? 64.0L : 32.0L;
                     float drawHeight = 32.0f; /* 0x30047066: [ESP+0x14]=0x42000000 */
                     long double yRaw;
 
@@ -286,27 +268,19 @@ void CG_DrawWeaponSelect(void)
                          * the float's sign: SETL on the raw dword; the IDIV
                          * remainder matches C's % on the nonnegative 0/2). */
                         float shift = fabsf(cg_weaponSelectTransition);
-                        int32_t dir =
-                            (CG_FloatBits(cg_weaponSelectTransition) &
-                             CG_WEAPON_SELECT_FLOAT_SIGN_MASK) != 0u
-                                ? CG_WEAPON_SELECT_DIRECTION_BACKWARD
-                                : CG_WEAPON_SELECT_DIRECTION_FORWARD;
+                        int32_t dir = (CG_FloatBits(cg_weaponSelectTransition) & CG_WEAPON_SELECT_FLOAT_SIGN_MASK) != 0u
+                                          ? CG_WEAPON_SELECT_DIRECTION_BACKWARD
+                                          : CG_WEAPON_SELECT_DIRECTION_FORWARD;
                         int32_t target = (1 + dir) % count;
-                        yRaw = (long double)pos[1] -
-                               ((long double)pos[1] -
-                                (long double)pos[target]) *
-                                   (long double)shift;
+                        yRaw = (long double)pos[1] - ((long double)pos[1] - (long double)pos[target]) * (long double)shift;
 
                         /* 0x300470cb..0x30047110: while sliding toward the
                          * strip (transition > 0, or the two-weapon chain's
                          * backward slide), the alt icon grows toward the
                          * expanded size: factor 1 + |transition|*scale
                          * (FMULP ST3 scales the width, FMUL 32 the height). */
-                        if (cg_weaponSelectTransition > 0.0f
-                            || (count == 2 && cg_weaponSelectTransition < 0.0f)) {
-                            long double growRaw =
-                                (long double)shift * (long double)*scale +
-                                1.0L;
+                        if (cg_weaponSelectTransition > 0.0f || (count == 2 && cg_weaponSelectTransition < 0.0f)) {
+                            long double growRaw = (long double)shift * (long double)*scale + 1.0L;
                             drawWidthRaw *= growRaw;
                             drawHeight = (float)(growRaw * 32.0L);
                         }
@@ -320,22 +294,13 @@ void CG_DrawWeaponSelect(void)
                      * from the alt weapon's cgWeaponInfo (+0x144) with NO
                      * no-icon fallback. The icon is centered on the slot
                      * center x + iconHalfBack. */
-                    cgame_syscall(
-                        CG_R_DRAWSTRETCHPIC,
-                        CG_FloatBits((float)(
-                            ((long double)x + (long double)iconHalfBack -
-                             drawWidthRaw * 0.5L) *
-                            (long double)cgs_screenXScale)),
-                        CG_FloatBits((float)(
-                            yRaw * (long double)cgs_screenYScale)),
-                        CG_FloatBits((float)(
-                            drawWidthRaw * (long double)cgs_screenXScale)),
-                        CG_FloatBits((float)(
-                            (long double)drawHeight *
-                            (long double)cgs_screenYScale)),
-                        CG_FloatBits(0.0f), CG_FloatBits(0.0f),
-                        CG_FloatBits(1.0f), CG_FloatBits(1.0f),
-                        (intptr_t)altCgInfo->hudIconShader);
+                    cgame_syscall(CG_R_DRAWSTRETCHPIC,
+                                  CG_FloatBits((float)(((long double)x + (long double)iconHalfBack - drawWidthRaw * 0.5L) *
+                                                       (long double)cgs_screenXScale)),
+                                  CG_FloatBits((float)(yRaw * (long double)cgs_screenYScale)),
+                                  CG_FloatBits((float)(drawWidthRaw * (long double)cgs_screenXScale)),
+                                  CG_FloatBits((float)((long double)drawHeight * (long double)cgs_screenYScale)), CG_FloatBits(0.0f),
+                                  CG_FloatBits(0.0f), CG_FloatBits(1.0f), CG_FloatBits(1.0f), (intptr_t)altCgInfo->hudIconShader);
                 }
 
                 /* 0x300471c2..0x300471e1: selected weapon drawn white. */
@@ -356,11 +321,9 @@ void CG_DrawWeaponSelect(void)
                      * pos[dir % count] (dir = +1/-1 via SETL on the sign
                      * bit; the IDIV remainder of -1/count is -1, as C's %). */
                     float shift = fabsf(cg_weaponSelectTransition);
-                    int32_t dir =
-                        (CG_FloatBits(cg_weaponSelectTransition) &
-                         CG_WEAPON_SELECT_FLOAT_SIGN_MASK) != 0u
-                            ? CG_WEAPON_SELECT_DIRECTION_BACKWARD
-                            : CG_WEAPON_SELECT_DIRECTION_FORWARD;
+                    int32_t dir = (CG_FloatBits(cg_weaponSelectTransition) & CG_WEAPON_SELECT_FLOAT_SIGN_MASK) != 0u
+                                      ? CG_WEAPON_SELECT_DIRECTION_BACKWARD
+                                      : CG_WEAPON_SELECT_DIRECTION_FORWARD;
                     int32_t target = dir % count; /* 1 or -1 */
                     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
                     float targetPos = target < 0 ? color[3] : pos[target];
@@ -379,9 +342,7 @@ void CG_DrawWeaponSelect(void)
                  * alts' raw pixel trap), centered on the same slot center. */
                 float selWidth = growSel * baseWidth;
                 float selHeight = growSel * 32.0f;
-                CG_DrawPic(x + iconHalfBack - selWidth * 0.5f, ySel,
-                           selWidth, selHeight,
-                           (qhandle_t)cgWeaponInfo->hudIconShader);
+                CG_DrawPic(x + iconHalfBack - selWidth * 0.5f, ySel, selWidth, selHeight, (qhandle_t)cgWeaponInfo->hudIconShader);
 
                 /* 0x300472d2: commit the slot advance. */
                 x -= iconWidth;

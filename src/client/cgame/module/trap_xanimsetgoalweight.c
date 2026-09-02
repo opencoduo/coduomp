@@ -43,16 +43,9 @@
  * the guess, so the function is named trap_XAnimSetGoalWeight. The recovered
  * engine dispatcher independently maps command 0x8f to XAnimSetGoalWeight.
  */
-int32_t trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight,
-                                float blendTime, float rate,
-                                uint16_t notifyName, qboolean restart)
+int32_t trap_XAnimSetGoalWeight(XAnimTree *tree, uint32_t anim, float weight, float blendTime, float rate, uint16_t notifyName,
+                                qboolean restart)
 {
-    return (int32_t)cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT,
-                         (intptr_t)tree,
-                         (uint16_t)anim,
-                         CG_FloatBits(weight),
-                         CG_FloatBits(blendTime),
-                         CG_FloatBits(rate),
-                         notifyName,
-                         restart);
+    return (int32_t)cgame_syscall(CG_XANIM_SET_GOAL_WEIGHT, (intptr_t)tree, (uint16_t)anim, CG_FloatBits(weight), CG_FloatBits(blendTime),
+                                  CG_FloatBits(rate), notifyName, restart);
 }

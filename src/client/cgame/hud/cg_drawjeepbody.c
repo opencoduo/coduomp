@@ -59,14 +59,17 @@
 
 /* eType value that enables the HUD entity tag (an ET_* entity type; exact enum name
  * unproven — only value 12 is proven by the CMP [entity+0x4],0xc gate). */
-enum { CG_TAG_ENTITY_ETYPE = 12 };
+enum {
+    CG_TAG_ENTITY_ETYPE = 12
+};
 
 /* stateFilter value this member requires (siblings compare it to a passed-in filter;
  * this one hardcodes 1). */
-enum { CG_TAG_STATE_FILTER = 1 };
+enum {
+    CG_TAG_STATE_FILTER = 1
+};
 
-void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader,
-                     const float *color)
+void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader, const float *color)
 {
     /* 0x30031cb1..0x30031cc6: gate on the local predicted player's entityStateFlags. */
     uint32_t flags = cg_predictedPlayerState.entityStateFlags;
@@ -79,7 +82,8 @@ void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader,
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
     if ((uint32_t)entityNum >= (uint32_t)MAX_GENTITIES) {
         Com_Error(ERR_DROP,
-                  "\x15" "CG_DrawJeepBody: invalid view-lock entity %i",
+                  "\x15"
+                  "CG_DrawJeepBody: invalid view-lock entity %i",
                   entityNum);
         return;
     }
@@ -95,9 +99,7 @@ void CG_DrawJeepBody(const rectDef_t *rect, int32_t hShader,
     /* 0x30031cf1..0x30031d10: set the 2D draw color, then compute the slid X.
      * The slid X (0x3007bce0 = 1.0f, 0x3007c1e0 = 112.0f) is evaluated before the
      * color call in the machine code but is only consumed by the draw below. */
-    float slidX = (float)(
-        ((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L +
-        (long double)rect->x);
+    float slidX = (float)(((long double)cg_hudCompassSize_vmCvar.value - 1.0L) * 112.0L + (long double)rect->x);
     trap_R_SetColor(color);
 
     /* 0x30031d16..0x30031d33: draw the tag quad (angle 0), sliding in from slidX. */

@@ -54,9 +54,6 @@ int32_t trap_XAnimGetChildAt(uint32_t packed, int32_t extra)
 {
     /* AX (16-bit syscall result) is spliced into the low word of `packed`; the
      * high word of the returned value keeps packed>>16 shifted back up. */
-    uint16_t lo = (uint16_t)cgame_syscall(CG_XANIM_GET_CHILD_AT,
-                                          (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT),
-                                          (uint16_t)packed,
-                                          extra);
+    uint16_t lo = (uint16_t)cgame_syscall(CG_XANIM_GET_CHILD_AT, (int32_t)(packed >> SCR_ANIM_TREE_INDEX_SHIFT), (uint16_t)packed, extra);
     return coduo_int32_from_bits((packed & 0xffff0000u) | (uint32_t)lo);
 }

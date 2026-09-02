@@ -13,8 +13,7 @@
 enum {
     SERVER_PB_CLIENT_NAME_FIELD_SIZE = MAX_NAME_LENGTH + 1,
     SERVER_PB_CLIENT_GUID_OFFSET = SERVER_PB_CLIENT_NAME_FIELD_SIZE,
-    SERVER_PB_CLIENT_ADDRESS_OFFSET =
-        SERVER_PB_CLIENT_GUID_OFFSET + SERVER_PUNKBUSTER_GUID_SIZE,
+    SERVER_PB_CLIENT_ADDRESS_OFFSET = SERVER_PB_CLIENT_GUID_OFFSET + SERVER_PUNKBUSTER_GUID_SIZE,
     SERVER_PB_CLIENT_INFO_BUFFER_SIZE = 104
 };
 
@@ -46,30 +45,26 @@ int32_t Pb_Q_maxclients(void)
 qboolean Pb_Q_client(int32_t clientNum, char *info)
 {
     memset(info, 0, SERVER_PB_CLIENT_INFO_BUFFER_SIZE);
-    if (clientNum < 0 || clientNum >= sv_maxclients->integer ||
-        svs.clients == NULL || svs.clients[clientNum].state < CS_ACTIVE) {
+    if (clientNum < 0 || clientNum >= sv_maxclients->integer || svs.clients == NULL || svs.clients[clientNum].state < CS_ACTIVE) {
         return qfalse;
     }
 
     client_t *const client = &svs.clients[clientNum];
     strcpy(info, client->name);
     strcpy(info + SERVER_PB_CLIENT_GUID_OFFSET, client->punkbusterGuid);
-    strcpy(info + SERVER_PB_CLIENT_ADDRESS_OFFSET,
-           NET_AdrToString(client->netchan.remoteAddress));
+    strcpy(info + SERVER_PB_CLIENT_ADDRESS_OFFSET, NET_AdrToString(client->netchan.remoteAddress));
     return qtrue;
 }
 
 qboolean Pb_Q_stats(int32_t clientNum, char *info)
 {
     info[0] = '\0';
-    if (clientNum < 0 || clientNum >= sv_maxclients->integer ||
-        svs.clients == NULL || svs.clients[clientNum].state < CS_ACTIVE) {
+    if (clientNum < 0 || clientNum >= sv_maxclients->integer || svs.clients == NULL || svs.clients[clientNum].state < CS_ACTIVE) {
         return qfalse;
     }
 
     client_t *const client = &svs.clients[clientNum];
-    sprintf(info, "ping=%d score=%d", client->ping,
-            SV_GetClientScore(client));
+    sprintf(info, "ping=%d score=%d", client->ping, SV_GetClientScore(client));
     return qtrue;
 }
 
@@ -81,10 +76,8 @@ void SV_SendPbPacket(int32_t length, const void *data, int32_t clientNum)
 
     for (int32_t slot = 0; slot < sv_maxclients->integer; ++slot) {
         client_t *const client = &svs.clients[slot];
-        if ((clientNum < 0 || clientNum == slot) &&
-            client->state >= CS_CONNECTED) {
-            NET_OutOfBandPbPacket(NS_SERVER, client->netchan.remoteAddress,
-                                  data, length);
+        if ((clientNum < 0 || clientNum == slot) && client->state >= CS_CONNECTED) {
+            NET_OutOfBandPbPacket(NS_SERVER, client->netchan.remoteAddress, data, length);
         }
     }
 }

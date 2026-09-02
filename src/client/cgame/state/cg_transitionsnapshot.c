@@ -148,10 +148,7 @@ void CG_TransitionSnapshot(void)
     ps = &snap->ps;
     ops = &oldSnap->ps;
 
-    if (cg_demoPlayback != 0 ||
-        (snap->ps.playerStateFlags & PSF_FOLLOWING) != 0 ||
-        cg_fireGateTurretA != 0 ||
-        cg_fireGateTurretB != 0) {
+    if (cg_demoPlayback != 0 || (snap->ps.playerStateFlags & PSF_FOLLOWING) != 0 || cg_fireGateTurretA != 0 || cg_fireGateTurretB != 0) {
         if (ps->damageEvent != ops->damageEvent && ps->damageCount != 0) {
             CG_DamageFeedback(ps->damageYaw, ps->damagePitch, ps->damageCount);
         }

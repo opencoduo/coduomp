@@ -42,49 +42,39 @@ void PM_ReloadClip(void)
 {
     playerState_t *const ps = pm->ps;
     const int32_t weaponState = ps->weaponState;
-    const qboolean reloadStartState =
-        weaponState == WEAPON_STATE_RELOAD_START ||
-        weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT;
-    const weaponInfo_t *const weaponInfo =
-        BG_GetInfoForWeapon(ps->currentWeapon);
+    const qboolean reloadStartState = weaponState == WEAPON_STATE_RELOAD_START || weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT;
+    const weaponInfo_t *const weaponInfo = BG_GetInfoForWeapon(ps->currentWeapon);
     const int32_t ammoIndex = weaponInfo->ammoIndex;
     const int32_t clipIndex = weaponInfo->clipIndex;
     const int32_t clipSize = BG_GetAmmoClipSize(clipIndex);
     int32_t amount;
 
-    if (reloadStartState != qfalse &&
-        pml.weaponInfo->reloadStartAmmoAdd == 0) {
+    if (reloadStartState != qfalse && pml.weaponInfo->reloadStartAmmoAdd == 0) {
         return;
     }
 
-    amount = coduo_int32_from_bits(
-        (uint32_t)clipSize - (uint32_t)ps->clips[clipIndex]);
+    amount = coduo_int32_from_bits((uint32_t)clipSize - (uint32_t)ps->clips[clipIndex]);
     if (ps->ammo[ammoIndex] < amount) {
         amount = ps->ammo[ammoIndex];
     }
 
     if (reloadStartState != qfalse) {
-        const int32_t reloadStartAmmoAdd =
-            pml.weaponInfo->reloadStartAmmoAdd;
+        const int32_t reloadStartAmmoAdd = pml.weaponInfo->reloadStartAmmoAdd;
 
-        if (reloadStartAmmoAdd < clipSize &&
-            reloadStartAmmoAdd < amount) {
+        if (reloadStartAmmoAdd < clipSize && reloadStartAmmoAdd < amount) {
             amount = reloadStartAmmoAdd;
         }
     } else {
         const int32_t reloadAmmoAdd = pml.weaponInfo->reloadAmmoAdd;
 
-        if (reloadAmmoAdd != 0 && reloadAmmoAdd < clipSize &&
-            reloadAmmoAdd < amount) {
+        if (reloadAmmoAdd != 0 && reloadAmmoAdd < clipSize && reloadAmmoAdd < amount) {
             amount = reloadAmmoAdd;
         }
     }
 
     if (amount != 0) {
-        ps->ammo[ammoIndex] = coduo_int32_from_bits(
-            (uint32_t)ps->ammo[ammoIndex] - (uint32_t)amount);
-        ps->clips[clipIndex] = coduo_int32_from_bits(
-            (uint32_t)ps->clips[clipIndex] + (uint32_t)amount);
+        ps->ammo[ammoIndex] = coduo_int32_from_bits((uint32_t)ps->ammo[ammoIndex] - (uint32_t)amount);
+        ps->clips[clipIndex] = coduo_int32_from_bits((uint32_t)ps->clips[clipIndex] + (uint32_t)amount);
     }
 }
 
@@ -95,10 +85,8 @@ void PM_SetWeaponReloadAddAmmoDelay(void)
     const int32_t weaponState = ps->weaponState;
     int32_t delay;
 
-    if (weaponState == WEAPON_STATE_RELOAD_START ||
-        weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) {
-        const int32_t reloadStartAddTime =
-            weaponInfo->reloadStartAddTime;
+    if (weaponState == WEAPON_STATE_RELOAD_START || weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) {
+        const int32_t reloadStartAddTime = weaponInfo->reloadStartAddTime;
 
         if (reloadStartAddTime == 0) {
             delay = 0;
@@ -108,24 +96,20 @@ void PM_SetWeaponReloadAddAmmoDelay(void)
             delay = weaponInfo->reloadStartTime;
         }
     } else {
-        const int32_t clipIndex =
-            BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
+        const int32_t clipIndex = BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
 
-        if (ps->clips[clipIndex] == 0 &&
-            weaponInfo->weaponType == WEAPTYPE_BULLET) {
+        if (ps->clips[clipIndex] == 0 && weaponInfo->weaponType == WEAPTYPE_BULLET) {
             delay = weaponInfo->reloadEmptyTime;
         } else {
             delay = weaponInfo->reloadTime;
         }
 
-        if (weaponInfo->reloadAddTime != 0 &&
-            weaponInfo->reloadAddTime < delay) {
+        if (weaponInfo->reloadAddTime != 0 && weaponInfo->reloadAddTime < delay) {
             delay = weaponInfo->reloadAddTime;
         }
     }
 
-    if (weaponInfo->raiseEnabled != 0 &&
-        Com_BitCheck(ps->weaponRechamberBits, ps->currentWeapon) != 0) {
+    if (weaponInfo->raiseEnabled != 0 && Com_BitCheck(ps->weaponRechamberBits, ps->currentWeapon) != 0) {
         if (delay == 0) {
             delay = ps->weaponTime;
         }
@@ -147,11 +131,9 @@ void PM_SetWeaponReloadAddAmmoDelay(void)
 void PM_SetReloadingState(void)
 {
     playerState_t *const ps = pm->ps;
-    const int32_t clipIndex =
-        BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
+    const int32_t clipIndex = BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
 
-    if (ps->clips[clipIndex] == 0 &&
-        pml.weaponInfo->weaponType == WEAPTYPE_BULLET) {
+    if (ps->clips[clipIndex] == 0 && pml.weaponInfo->weaponType == WEAPTYPE_BULLET) {
         PM_StartWeaponAnim(PM_WEAPON_ANIM_RELOAD_EMPTY);
         ps->weaponTime = pml.weaponInfo->reloadEmptyTime;
         PM_AddEvent(EV_RELOAD_FROM_EMPTY);
@@ -176,9 +158,7 @@ void PM_BeginWeaponReload(void)
     const int32_t weaponState = ps->weaponState;
     const int32_t weapon = ps->currentWeapon;
 
-    if ((weaponState != WEAPON_STATE_IDLE &&
-         weaponState != WEAPON_STATE_FIRING &&
-         weaponState != WEAPON_STATE_RECHAMBERING) ||
+    if ((weaponState != WEAPON_STATE_IDLE && weaponState != WEAPON_STATE_FIRING && weaponState != WEAPON_STATE_RECHAMBERING) ||
         weapon == 0 || weapon > BG_GetNumWeapons()) {
         return;
     }
@@ -187,8 +167,7 @@ void PM_BeginWeaponReload(void)
         BG_AnimScriptEvent(ps, ANIM_EVENT_RELOAD, qfalse, qtrue);
     }
 
-    if (pml.weaponInfo->segmentedReload == 0 ||
-        pml.weaponInfo->reloadStartTime == 0) {
+    if (pml.weaponInfo->segmentedReload == 0 || pml.weaponInfo->reloadStartTime == 0) {
         PM_SetReloadingState();
         return;
     }
@@ -203,8 +182,7 @@ void PM_BeginWeaponReload(void)
 qboolean PM_Weapon_AllowReload(void)
 {
     const playerState_t *const ps = pm->ps;
-    const weaponInfo_t *const weaponInfo =
-        BG_GetInfoForWeapon(ps->currentWeapon);
+    const weaponInfo_t *const weaponInfo = BG_GetInfoForWeapon(ps->currentWeapon);
     const int32_t clipIndex = weaponInfo->clipIndex;
     const int32_t ammoIndex = weaponInfo->ammoIndex;
     const int32_t clipSize = BG_GetAmmoClipSize(clipIndex);
@@ -223,10 +201,7 @@ qboolean PM_Weapon_AllowReload(void)
         return clipAmmo == 0 ? qtrue : qfalse;
     }
 
-    return reloadAmmoAdd <= coduo_int32_from_bits(
-               (uint32_t)clipSize - (uint32_t)clipAmmo)
-               ? qtrue
-               : qfalse;
+    return reloadAmmoAdd <= coduo_int32_from_bits((uint32_t)clipSize - (uint32_t)clipAmmo) ? qtrue : qfalse;
 }
 
 void PM_Weapon_ReloadDelayedAction(void)
@@ -237,8 +212,7 @@ void PM_Weapon_ReloadDelayedAction(void)
     int32_t fillTime;
     int32_t interruptTime;
 
-    if (weaponInfo->raiseEnabled == 0 ||
-        Com_BitCheck(ps->weaponRechamberBits, ps->currentWeapon) == 0) {
+    if (weaponInfo->raiseEnabled == 0 || Com_BitCheck(ps->weaponRechamberBits, ps->currentWeapon) == 0) {
         PM_ReloadClip();
         return;
     }
@@ -246,8 +220,7 @@ void PM_Weapon_ReloadDelayedAction(void)
     Com_BitClear(ps->weaponRechamberBits, ps->currentWeapon);
     PM_AddEvent(EV_EJECT_BRASS);
 
-    if ((weaponState == WEAPON_STATE_RELOAD_START ||
-         weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) &&
+    if ((weaponState == WEAPON_STATE_RELOAD_START || weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) &&
         weaponInfo->reloadStartAddTime == 0) {
         return;
     }
@@ -256,24 +229,20 @@ void PM_Weapon_ReloadDelayedAction(void)
         return;
     }
 
-    if (weaponState == WEAPON_STATE_RELOAD_START ||
-        weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) {
+    if (weaponState == WEAPON_STATE_RELOAD_START || weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) {
         fillTime = weaponInfo->reloadStartAddTime;
         if (weaponInfo->reloadStartTime < fillTime) {
             fillTime = weaponInfo->reloadStartTime;
         }
     } else {
-        const int32_t clipIndex =
-            BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
+        const int32_t clipIndex = BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
 
-        if (ps->clips[clipIndex] == 0 &&
-            weaponInfo->weaponType == WEAPTYPE_BULLET) {
+        if (ps->clips[clipIndex] == 0 && weaponInfo->weaponType == WEAPTYPE_BULLET) {
             fillTime = weaponInfo->reloadEmptyTime;
         } else {
             fillTime = weaponInfo->reloadTime;
         }
-        if (weaponInfo->reloadAddTime != 0 &&
-            weaponInfo->reloadAddTime < fillTime) {
+        if (weaponInfo->reloadAddTime != 0 && weaponInfo->reloadAddTime < fillTime) {
             fillTime = weaponInfo->reloadAddTime;
         }
     }
@@ -284,8 +253,7 @@ void PM_Weapon_ReloadDelayedAction(void)
         interruptTime = 1;
     }
 
-    fillTime = coduo_int32_from_bits(
-        (uint32_t)fillTime - (uint32_t)interruptTime);
+    fillTime = coduo_int32_from_bits((uint32_t)fillTime - (uint32_t)interruptTime);
     if (fillTime < 1) {
         PM_ReloadClip();
     } else {
@@ -298,19 +266,15 @@ qboolean PM_Weapon_FinishReload(qboolean pendingInterrupt)
     playerState_t *const ps = pm->ps;
     const int32_t weaponState = ps->weaponState;
 
-    if (weaponState == WEAPON_STATE_RELOAD_START ||
-        weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) {
+    if (weaponState == WEAPON_STATE_RELOAD_START || weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT) {
         if (pendingInterrupt != qfalse) {
             PM_Weapon_ReloadDelayedAction();
         }
 
         if (ps->weaponTime == 0) {
-            const int32_t clipIndex =
-                BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
+            const int32_t clipIndex = BG_GetInfoForWeapon(ps->currentWeapon)->clipIndex;
 
-            if ((weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT &&
-                 ps->clips[clipIndex] != 0) ||
-                PM_Weapon_AllowReload() == qfalse) {
+            if ((weaponState == WEAPON_STATE_RELOAD_START_INTERRUPT && ps->clips[clipIndex] != 0) || PM_Weapon_AllowReload() == qfalse) {
                 Com_BitClear(ps->weaponRechamberBits, ps->currentWeapon);
                 if (pml.weaponInfo->reloadEndTime == 0) {
                     ps->weaponState = WEAPON_STATE_IDLE;
@@ -332,8 +296,7 @@ qboolean PM_Weapon_FinishReload(qboolean pendingInterrupt)
     if (weaponState == WEAPON_STATE_RELOAD_END) {
         ps->weaponState = WEAPON_STATE_IDLE;
         PM_StartWeaponAnim(PM_WEAPON_ANIM_IDLE);
-    } else if (weaponState == WEAPON_STATE_RELOADING ||
-               weaponState == WEAPON_STATE_RELOADING_INTERRUPT) {
+    } else if (weaponState == WEAPON_STATE_RELOADING || weaponState == WEAPON_STATE_RELOADING_INTERRUPT) {
         if (pendingInterrupt != qfalse) {
             PM_Weapon_ReloadDelayedAction();
             if (ps->weaponTime != 0) {
@@ -347,8 +310,7 @@ qboolean PM_Weapon_FinishReload(qboolean pendingInterrupt)
                 ps->weaponState = WEAPON_STATE_IDLE;
                 PM_StartWeaponAnim(PM_WEAPON_ANIM_IDLE);
             } else {
-                if (weaponState != WEAPON_STATE_RELOADING_INTERRUPT &&
-                    PM_Weapon_AllowReload() != qfalse) {
+                if (weaponState != WEAPON_STATE_RELOADING_INTERRUPT && PM_Weapon_AllowReload() != qfalse) {
                     PM_SetReloadingState();
                     return qtrue;
                 }
@@ -380,11 +342,8 @@ void PM_Weapon_CheckForReload(void)
     int32_t weaponState = ps->weaponState;
     qboolean shouldBeginReload = qfalse;
 
-    if (pml.weaponInfo->segmentedReload != 0 &&
-        (weaponState == WEAPON_STATE_RELOAD_START ||
-         weaponState == WEAPON_STATE_RELOADING) &&
-        (pm->command.buttons & PM_BUTTON_FIRE) != 0 &&
-        (pm->oldCommand.buttons & PM_BUTTON_FIRE) == 0) {
+    if (pml.weaponInfo->segmentedReload != 0 && (weaponState == WEAPON_STATE_RELOAD_START || weaponState == WEAPON_STATE_RELOADING) &&
+        (pm->command.buttons & PM_BUTTON_FIRE) != 0 && (pm->oldCommand.buttons & PM_BUTTON_FIRE) == 0) {
         if (weaponState == WEAPON_STATE_RELOAD_START) {
             ps->weaponState = WEAPON_STATE_RELOAD_START_INTERRUPT;
         } else {
@@ -394,8 +353,7 @@ void PM_Weapon_CheckForReload(void)
     }
 
     if (pml.weaponInfo->weaponClass == WEAPCLASS_LMG) {
-        if ((ps->playerStateFlags & PMF_ADS) == 0 ||
-            ps->adsFraction < PM_WEAPON_LMG_ADS_FRACTION_MIN) {
+        if ((ps->playerStateFlags & PMF_ADS) == 0 || ps->adsFraction < PM_WEAPON_LMG_ADS_FRACTION_MIN) {
             return;
         }
     }
@@ -417,28 +375,22 @@ void PM_Weapon_CheckForReload(void)
     case WEAPON_STATE_RELOAD_START:
     case WEAPON_STATE_RELOAD_START_INTERRUPT:
     case WEAPON_STATE_RELOAD_END:
-        if (pm->weaponAnimscriptEnabled != 0 &&
-            BG_GetInfoForWeapon(ps->currentWeapon)->clipRequired == 0) {
+        if (pm->weaponAnimscriptEnabled != 0 && BG_GetInfoForWeapon(ps->currentWeapon)->clipRequired == 0) {
             BG_AnimScriptEvent(ps, ANIM_EVENT_RELOAD, qfalse, qtrue);
         }
         return;
 
     default: {
-        const weaponInfo_t *const weaponInfo =
-            BG_GetInfoForWeapon(ps->currentWeapon);
+        const weaponInfo_t *const weaponInfo = BG_GetInfoForWeapon(ps->currentWeapon);
         const int32_t clipIndex = weaponInfo->clipIndex;
         const int32_t ammoIndex = weaponInfo->ammoIndex;
 
-        if ((pm->command.wbuttons & PM_WBUTTON_RELOAD) != 0 &&
-            PM_Weapon_AllowReload() != qfalse) {
+        if ((pm->command.wbuttons & PM_WBUTTON_RELOAD) != 0 && PM_Weapon_AllowReload() != qfalse) {
             shouldBeginReload = qtrue;
         }
 
-        if (ps->clips[clipIndex] == 0 && ps->ammo[ammoIndex] != 0 &&
-            weaponState != WEAPON_STATE_FIRING &&
-            ((ps->playerStateFlags & PMF_PRONE) == 0 ||
-             (pm->command.forwardmove == 0 &&
-              pm->command.rightmove == 0))) {
+        if (ps->clips[clipIndex] == 0 && ps->ammo[ammoIndex] != 0 && weaponState != WEAPON_STATE_FIRING &&
+            ((ps->playerStateFlags & PMF_PRONE) == 0 || (pm->command.forwardmove == 0 && pm->command.rightmove == 0))) {
             shouldBeginReload = qtrue;
         }
 
@@ -456,9 +408,7 @@ void PM_RemoveEmptyClipOnlyWeapon(void)
     const int32_t weapon = ps->currentWeapon;
     const weaponInfo_t *const weaponInfo = BG_GetInfoForWeapon(weapon);
 
-    if (weaponInfo->clipRequired == 0 ||
-        pml.weaponInfo->weaponClass == WEAPCLASS_SPOTTER ||
-        ps->clips[weaponInfo->clipIndex] != 0 ||
+    if (weaponInfo->clipRequired == 0 || pml.weaponInfo->weaponClass == WEAPCLASS_SPOTTER || ps->clips[weaponInfo->clipIndex] != 0 ||
         ps->ammo[weaponInfo->ammoIndex] != 0) {
         return;
     }

@@ -46,14 +46,7 @@
 //    (1-frac)*length*0.5 (0x3007bce8=0.5f); the span color is `blend` when
 //    BLEND_COLOR3, else `color`.
 
-void CG_FilledBar(int flags,
-                  const float *fillColor,
-                  float *color3,
-                  float x,
-                  float y,
-                  float width,
-                  float height,
-                  const float *borderColor,
+void CG_FilledBar(int flags, const float *fillColor, float *color3, float x, float y, float width, float height, const float *borderColor,
                   float frac)
 {
     /* Local color[4] = a copy of the stack borderColor, made first thing
@@ -69,7 +62,7 @@ void CG_FilledBar(int flags,
      * (0x3001c5f4..0x3001c60c). Overridden by *fillColor only when the FILLCOLOR
      * flag is set AND fillColor is non-NULL (0x3001c5ef AND 0x10; 0x3001c61a
      * TEST ECX,ECX). */
-    vec4_t fill = { 1.0f, 1.0f, 1.0f, 0.25f };
+    vec4_t fill = {1.0f, 1.0f, 1.0f, 0.25f};
     /* 0x3001c614 delays the already-loaded blue word until after the default
      * fill object has been initialized. */
     memcpy(&color[2], &color2Bits, sizeof(color[2]));
@@ -86,14 +79,11 @@ void CG_FilledBar(int flags,
      * place through the caller's pointer, exactly as the machine code does. */
     if ((flags & CG_FILLEDBAR_NO_ALPHA_FADE) == 0) {
         qboolean color3Present = color3 != NULL;           /* 0x3001c63e TEST EDX */
-        color[3] = (float)((long double)cg_hudAlpha_vmCvar.value *
-                           (long double)color[3]);            /* 0x3001c640 */
+        color[3] = (float)((long double)cg_hudAlpha_vmCvar.value * (long double)color[3]);            /* 0x3001c640 */
         if (color3Present) {
-            color3[3] = (float)((long double)cg_hudAlpha_vmCvar.value *
-                                (long double)color3[3]); /* 0x3001c650: *(EDX+0xc) */
+            color3[3] = (float)((long double)cg_hudAlpha_vmCvar.value * (long double)color3[3]); /* 0x3001c650: *(EDX+0xc) */
         }
-        fill[3] = (float)((long double)cg_hudAlpha_vmCvar.value *
-                          (long double)fill[3]);               /* 0x3001c65c */
+        fill[3] = (float)((long double)cg_hudAlpha_vmCvar.value * (long double)fill[3]); /* 0x3001c65c */
     }
 
     /* Optional frac-blend of the span color between the base color and color3
@@ -111,28 +101,24 @@ void CG_FilledBar(int flags,
     vec4_t blend;
     if ((flags & CG_FILLEDBAR_BLEND_COLOR3) != 0) {
         long double inverse = 1.0L - (long double)frac;
-        blend[0] = (float)((long double)frac * (long double)color3[0] +
-                           inverse * (long double)color[0]); /* 0x3001c67e..0x3001c68c */
-        blend[1] = (float)((long double)frac * (long double)color3[1] +
-                           inverse * (long double)color[1]); /* 0x3001c690..0x3001c69f */
-        blend[2] = (float)((long double)frac * (long double)color3[2] +
-                           inverse * (long double)color[2]); /* 0x3001c6a3..0x3001c6b2 */
-        blend[3] = (float)((long double)frac * (long double)color3[3] +
-                           inverse * (long double)color[3]); /* 0x3001c6b6..0x3001c6c5 */
+        blend[0] = (float)((long double)frac * (long double)color3[0] + inverse * (long double)color[0]); /* 0x3001c67e..0x3001c68c */
+        blend[1] = (float)((long double)frac * (long double)color3[1] + inverse * (long double)color[1]); /* 0x3001c690..0x3001c69f */
+        blend[2] = (float)((long double)frac * (long double)color3[2] + inverse * (long double)color[2]); /* 0x3001c6a3..0x3001c6b2 */
+        blend[3] = (float)((long double)frac * (long double)color3[3] + inverse * (long double)color[3]); /* 0x3001c6b6..0x3001c6c5 */
     }
 
     /* Optional background fill (0x3001c6c9 TEST EAX,EAX, EAX = flags & 0x10). When
      * drawn, fill the whole rect first, then inset the rect for the filled span. */
     if ((flags & CG_FILLEDBAR_FILLCOLOR) != 0) {
-        CG_FillRect(x, y, width, height, fill);        /* 0x3001c6cd..0x3001c6eb */
+        CG_FillRect(x, y, width, height, fill); /* 0x3001c6cd..0x3001c6eb */
 
-        if ((flags & CG_FILLEDBAR_NO_INSET) == 0) {    /* 0x3001c6ee TEST BL,0x40 */
+        if ((flags & CG_FILLEDBAR_NO_INSET) == 0) { /* 0x3001c6ee TEST BL,0x40 */
             if ((flags & CG_FILLEDBAR_INSET_VERT) != 0) { /* 0x3001c6f3 TEST BL,0x20 */
-                y = (float)((long double)y + 3.0f);     /* 0x3001c6f8 FADD 0x3007be5c */
+                y = (float)((long double)y + 3.0f); /* 0x3001c6f8 FADD 0x3007be5c */
                 height = (float)((long double)height - 6.0f); /* 0x3001c706 FSUB 0x3007bddc */
             } else {
-                x = (float)((long double)x + 1.0f);     /* 0x3001c712 FADD 0x3007bce0 */
-                y = (float)((long double)y + 1.0f);     /* 0x3001c720 FADD 0x3007bce0 */
+                x = (float)((long double)x + 1.0f); /* 0x3001c712 FADD 0x3007bce0 */
+                y = (float)((long double)y + 1.0f); /* 0x3001c720 FADD 0x3007bce0 */
                 width = (float)((long double)width - 2.0f); /* 0x3001c72e FSUB 0x3007bce4 */
                 height = (float)((long double)height - 2.0f); /* 0x3001c73c FSUB 0x3007bce4 */
             }
@@ -141,37 +127,26 @@ void CG_FilledBar(int flags,
 
     /* Color used to draw the filled span: the frac-blend when BLEND_COLOR3, else the
      * base color. Both tail paths pass either &blend or &color to CG_FillRect. */
-    const float *spanColor =
-        ((flags & CG_FILLEDBAR_BLEND_COLOR3) != 0) ? blend : color;
+    const float *spanColor = ((flags & CG_FILLEDBAR_BLEND_COLOR3) != 0) ? blend : color;
 
     if ((flags & CG_FILLEDBAR_VERTICAL) != 0) {
         /* Vertical bar: filled length runs along HEIGHT (0x3001c74a JZ not taken).
          * ANCHOR_END/ANCHOR_CENTER shift y so the span is bottom/center anchored. */
-        if ((flags & CG_FILLEDBAR_ANCHOR_END) != 0) {          /* 0x3001c74f */
-            y = (float)((long double)y +
-                        (1.0L - (long double)frac) *
-                        (long double)height);                    /* 0x3001c754..0x3001c781 */
+        if ((flags & CG_FILLEDBAR_ANCHOR_END) != 0) { /* 0x3001c74f */
+            y = (float)((long double)y + (1.0L - (long double)frac) * (long double)height); /* 0x3001c754..0x3001c781 */
         } else if ((flags & CG_FILLEDBAR_ANCHOR_CENTER) != 0) { /* 0x3001c764 */
-            y = (float)((long double)y +
-                        (1.0L - (long double)frac) *
-                        (long double)height * 0.5L);             /* 0x3001c769..0x3001c781 */
+            y = (float)((long double)y + (1.0L - (long double)frac) * (long double)height * 0.5L); /* 0x3001c769..0x3001c781 */
         }
-        float spanHeight = (float)((long double)height *
-                                   (long double)frac);
-        CG_FillRect(x, y, width, spanHeight, spanColor);        /* 0x3001c785..0x3001c83e */
+        float spanHeight = (float)((long double)height * (long double)frac);
+        CG_FillRect(x, y, width, spanHeight, spanColor); /* 0x3001c785..0x3001c83e */
     } else {
         /* Horizontal bar: filled length runs along WIDTH (0x3001c7c9). */
-        if ((flags & CG_FILLEDBAR_ANCHOR_END) != 0) {          /* 0x3001c7c9 */
-            x = (float)((long double)x +
-                        (1.0L - (long double)frac) *
-                        (long double)width);                     /* 0x3001c7ce..0x3001c7fb */
+        if ((flags & CG_FILLEDBAR_ANCHOR_END) != 0) { /* 0x3001c7c9 */
+            x = (float)((long double)x + (1.0L - (long double)frac) * (long double)width); /* 0x3001c7ce..0x3001c7fb */
         } else if ((flags & CG_FILLEDBAR_ANCHOR_CENTER) != 0) { /* 0x3001c7de */
-            x = (float)((long double)x +
-                        (1.0L - (long double)frac) *
-                        (long double)width * 0.5L);              /* 0x3001c7e3..0x3001c7fb */
+            x = (float)((long double)x + (1.0L - (long double)frac) * (long double)width * 0.5L); /* 0x3001c7e3..0x3001c7fb */
         }
-        float spanWidth = (float)((long double)width *
-                                  (long double)frac);
-        CG_FillRect(x, y, spanWidth, height, spanColor);        /* 0x3001c7ff..0x3001c854 */
+        float spanWidth = (float)((long double)width * (long double)frac);
+        CG_FillRect(x, y, spanWidth, height, spanColor); /* 0x3001c7ff..0x3001c854 */
     }
 }

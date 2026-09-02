@@ -9,20 +9,13 @@
  * target width against the machine code (CMP [EAX+0x4],3; TEST byte [EAX+0xfc],2;
  * CMP [EAX+0x194],0xffffff). These are fields of the canonical per-entity
  * effect slot (base 0x3048c6e0, stride 0x288 = 648); 0x194 is nextState.solid. */
-_Static_assert(offsetof(centity_t, currentState.eType) == 0x04,
-               "centity_t.eType at +0x04");
-_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, eFlags) == 0xfc,
-               "centity_t.nextState.eFlags at +0xfc");
-_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, solid) == 0x194,
-               "centity_t.nextState.solid at +0x194");
-_Static_assert(sizeof(centity_t) == 0x288,
-               "mark-source array stride 0x288 (IMUL EAX,EAX,0x288)");
-_Static_assert(offsetof(snapshot_t, numEntities) == 0x4510,
-               "cg_nextSnap->numEntities at +0x4510 ([EDI+0x4510])");
-_Static_assert(offsetof(snapshot_t, entities) == 0x4518,
-               "cg_nextSnap->entities at +0x4518 (LEA EDX,[EDI+0x4518])");
-_Static_assert(sizeof(entityState_t) == 0xf4,
-               "snapshot entity stride 0xf4 (ADD EDX,0xf4)");
+_Static_assert(offsetof(centity_t, currentState.eType) == 0x04, "centity_t.eType at +0x04");
+_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, eFlags) == 0xfc, "centity_t.nextState.eFlags at +0xfc");
+_Static_assert(offsetof(centity_t, nextState) + offsetof(entityState_t, solid) == 0x194, "centity_t.nextState.solid at +0x194");
+_Static_assert(sizeof(centity_t) == 0x288, "mark-source array stride 0x288 (IMUL EAX,EAX,0x288)");
+_Static_assert(offsetof(snapshot_t, numEntities) == 0x4510, "cg_nextSnap->numEntities at +0x4510 ([EDI+0x4510])");
+_Static_assert(offsetof(snapshot_t, entities) == 0x4518, "cg_nextSnap->entities at +0x4518 (LEA EDX,[EDI+0x4518])");
+_Static_assert(sizeof(entityState_t) == 0xf4, "snapshot entity stride 0xf4 (ADD EDX,0xf4)");
 
 /*
  * CG_BuildSolidList (0x30035030)
@@ -76,8 +69,7 @@ void CG_BuildSolidList(void)
     snapshot_t *snap = cg_nextSnap;
 
     /* The centity array begins at 0x3048c6e0. */
-    centity_t *entitySource =
-        cg_entities;
+    centity_t *entitySource = cg_entities;
 
     int32_t solidCount = 0;   /* EBP: cg_solidEntities[] fill index */
     int32_t triggerCount = 0; /* EBX: cg_triggerEntities[] fill index */
@@ -93,8 +85,7 @@ void CG_BuildSolidList(void)
         uint32_t solid = cent->nextState.solid;
 
         /* Exclude inline models whose next state marks them non-solid. */
-        if (solid == SOLID_BMODEL &&
-            (cent->nextState.eFlags & EF_NONSOLID_BMODEL) != 0) {
+        if (solid == SOLID_BMODEL && (cent->nextState.eFlags & EF_NONSOLID_BMODEL) != 0) {
             continue;
         }
 
