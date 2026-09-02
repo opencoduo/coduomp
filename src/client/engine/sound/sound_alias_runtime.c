@@ -14,6 +14,13 @@ static const char SOUND_ALIAS_TYPE_MISMATCH_WARNING_EXEMPT_FILE[] =
  * loaded record or streamed-file result. */
 void Com_LoadSoundAliasSounds(sndAliasBank_t bank)
 {
+#if defined(CODUOMP_DISABLE_AUDIO)
+    /* NOT_FROM_ORIGINAL_SOURCE: an explicit no-audio build retains alias
+     * metadata but has no digital driver that can consume audio payloads. */
+    (void)bank;
+    return;
+#endif
+
     snd_alias_t *const aliases = com_soundAliases[bank];
     const int32_t aliasCount = com_soundAliasCount[bank];
     int32_t missingSoundCount = 0;
