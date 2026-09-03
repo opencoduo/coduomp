@@ -138,9 +138,13 @@ cvar_t *cl_executeString;           /* 0x0495807c */
 
 /* Original Win32 CL_Shutdown recursion guard at 0x0389fcec. */
 static qboolean cl_shutdownInProgress;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: preserve the process-start mod
+ * independently of optional per-server cache isolation. */
+static char coduomp_clientStartupGame[FS_PACK_NAME_SIZE];
+static qboolean coduomp_clientStartupGameCaptured;
 /* NOT_FROM_ORIGINAL_SOURCE: frontend startup waits until the command-buffer
- * pass containing the server-cache teardown has finished. */
-static qboolean coduomp_serverCacheModTeardownRestartPending;
+ * pass containing the server-mod teardown has finished. */
+static qboolean coduomp_serverModTeardownRestartPending;
 
 /* Original Win32 ConcatArgs return buffer at 0x008ce4e0. */
 static char cl_concatArgs[CL_CONCAT_ARGS_CAPACITY];
@@ -280,43 +284,54 @@ void CL_ClearStaticDownload(void)
     cls.staticDownload.originalDownloadName[0] = '\0';
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: tear down the non-stock isolated server-cache mod
- * at the client boundary shared by manual disconnects, connection errors,
- * demo transitions, and direct server switches. A crash leaves the cache
- * unmounted at the next process start. A graceful exit restores front-end
- * cvars and search paths immediately, then schedules config and hunk users at
- * the next safe command-buffer boundary. */
-static void coduomp_client_teardown_server_cache_mod(void)
+/* NOT_FROM_ORIGINAL_SOURCE: restore the process-start mod at the client
+ * boundary shared by manual disconnects, connection errors, demo transitions,
+ * and direct server switches. Optional server-cache teardown happens at the
+ * same safe filesystem boundary but does not control whether mod reset runs. */
+static void coduomp_client_teardown_server_mod(void)
 {
-    if (coduomp_server_namespace_is_active() == qfalse ||
+    const qboolean namespaceActive =
+        coduomp_server_namespace_is_active();
+    const qboolean serverModActive =
+        coduomp_clientStartupGameCaptured != qfalse &&
+        Q_stricmp(fs_game->string, coduomp_clientStartupGame) != 0
+            ? qtrue
+            : qfalse;
+
+    if ((namespaceActive == qfalse && serverModActive == qfalse) ||
         cls.wwwDownloadDisconnected != 0 ||
         cl_shutdownInProgress != qfalse) {
         return;
     }
 
-    Com_WriteConfiguration();
+    if (namespaceActive != qfalse)
+        Com_WriteConfiguration();
     CL_ShutdownAll();
     Hunk_ClearToStart();
-    if (coduomp_server_namespace_deactivate() == qfalse)
+    if (namespaceActive != qfalse &&
+        coduomp_server_namespace_deactivate() == qfalse) {
         return;
+    }
+    if (coduomp_clientStartupGameCaptured != qfalse)
+        Cvar_Set("fs_game", coduomp_clientStartupGame);
 
     FS_PureServerSetLoadedPaks("", "");
     FS_PureServerSetReferencedPaks("", "");
     FS_Restart(0);
     cl_connectedToPureServer = qfalse;
-    coduomp_serverCacheModTeardownRestartPending = qtrue;
+    coduomp_serverModTeardownRestartPending = qtrue;
     Cbuf_InsertText("exec uoconfig_mp.cfg");
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: finish the deferred half of server-cache mod
+/* NOT_FROM_ORIGINAL_SOURCE: finish the deferred half of server-mod
  * teardown only after Cbuf_Execute has returned and the restored frontend
  * config has run. */
-void coduomp_client_complete_server_cache_mod_teardown(void)
+void coduomp_client_complete_server_mod_teardown(void)
 {
-    if (coduomp_serverCacheModTeardownRestartPending == qfalse)
+    if (coduomp_serverModTeardownRestartPending == qfalse)
         return;
 
-    coduomp_serverCacheModTeardownRestartPending = qfalse;
+    coduomp_serverModTeardownRestartPending = qfalse;
     CL_StartHunkUsers();
 }
 
@@ -379,7 +394,7 @@ void CL_Disconnect(qboolean showMainMenu)
     cls.state = CA_DISCONNECTED;
     cl_connectedToPureServer = qfalse;
     fs_checksumFeed = 0;
-    coduomp_client_teardown_server_cache_mod();
+    coduomp_client_teardown_server_mod();
 }
 
 /* Source: CoDUOMP.exe 0x00410b60..0x00410baf.
@@ -528,16 +543,15 @@ void CL_Connect_f(void)
     (void)Cvar_Set2("r_uiFullScreen", "0", qtrue);
     clc.serverMessage[0] = '\0';
 
-    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the isolated server-cache
-     * teardown below restarts the filesystem, whose startup processing reuses
-     * the stock command tokenizer. Preserve the current connect argument only
-     * when that extension is active so the restart cannot replace it. */
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): server-mod teardown can
+     * restart the filesystem, whose startup processing reuses the stock
+     * command tokenizer. Preserve the current connect argument so the restart
+     * cannot replace it. */
     char serverAfterModTeardown[sizeof(cls.serverName)];
-    const char *server = Cmd_Argv(CL_CONNECT_SERVER_ARGUMENT);
-    if (coduomp_server_namespace_is_active() != qfalse) {
-        Q_strncpyz(serverAfterModTeardown, server, sizeof(serverAfterModTeardown));
-        server = serverAfterModTeardown;
-    }
+    Q_strncpyz(serverAfterModTeardown,
+               Cmd_Argv(CL_CONNECT_SERVER_ARGUMENT),
+               sizeof(serverAfterModTeardown));
+    const char *const server = serverAfterModTeardown;
     if (sv_running->integer != 0 &&
         strcmp(server, "localhost") == 0) {
         Com_Shutdown("EXE_SERVERQUIT");
@@ -1464,6 +1478,12 @@ void CL_Init(void)
 {
     Com_Printf("----- Client Initialization -----\n");
     Con_Init();
+
+    if (coduomp_clientStartupGameCaptured == qfalse) {
+        Q_strncpyz(coduomp_clientStartupGame, fs_game->string,
+                   sizeof(coduomp_clientStartupGame));
+        coduomp_clientStartupGameCaptured = qtrue;
+    }
 
     memset(&cl, 0, sizeof(cl));
     cls.state = CA_DISCONNECTED;

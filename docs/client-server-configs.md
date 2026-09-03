@@ -16,8 +16,7 @@ server-cache/v1/<server-name>-<endpoint-id>/
 
 `state` contains that server's configuration. `content` contains files
 downloaded from that server or reused from an ordinary game root. On a normal
-disconnect, the client restores the global configuration and the `fs_game`
-selected during process startup.
+disconnect, the client restores the global configuration.
 
 Before downloading a referenced PK3, the client compares the server's expected
 checksum with PK3s already installed in the ordinary game roots. A matching
@@ -35,7 +34,9 @@ remain scoped to the corresponding `server-cache/v1` content directory.
 Server Cache is enabled by default. It can be changed from **Options → System
 → Advanced**. Disabling it prevents new connections from activating an
 isolated server namespace and hides cached server mods from the Mods list;
-existing cache files remain on disk.
+existing cache files remain on disk. This setting does not control server-mod
+reset: after a server changes `fs_game`, the client independently restores the
+`fs_game` selected during process startup before returning to the main menu.
 
 These paths and commands are an improved CoDUOMP compatibility feature. They
 are not available in the stock source line.

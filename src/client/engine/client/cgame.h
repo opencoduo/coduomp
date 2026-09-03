@@ -564,7 +564,7 @@ void CL_FirstSnapshot(void);
 void CL_GetCurrentSnapshotNumber(int32_t *snapshotNumber,
                                  int32_t *serverTime);
 void CL_Disconnect(qboolean showMainMenu);
-void coduomp_client_complete_server_cache_mod_teardown(void);
+void coduomp_client_complete_server_mod_teardown(void);
 void CL_Disconnect_f(void);
 void CL_Init(void);
 void CL_Shutdown(void);

@@ -78,10 +78,10 @@ void Com_Frame(void)
     } while (msec < minimumMsec);
 
     Cbuf_Execute();
-    /* NOT_FROM_ORIGINAL_SOURCE: an isolated server-cache mod can be torn down
+    /* NOT_FROM_ORIGINAL_SOURCE: a server-selected mod can be torn down
      * by a command executed above. Finish its frontend restart only after the
      * stock command tokenizer's global argument storage is no longer live. */
-    coduomp_client_complete_server_cache_mod_teardown();
+    coduomp_client_complete_server_mod_teardown();
     comPreviousEventTime = com_frameTime;
 
     const int32_t realMsec = Com_ClampMsec(msec);
@@ -133,7 +133,7 @@ void Com_Frame(void)
     if (dedicated->integer == 0) {
         (void)Com_EventLoop();
         Cbuf_Execute();
-        coduomp_client_complete_server_cache_mod_teardown();
+        coduomp_client_complete_server_mod_teardown();
 
         if (com_speeds->integer != 0)
             clientStartTime = (int32_t)Sys_Milliseconds();

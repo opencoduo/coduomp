@@ -4,17 +4,12 @@
 #include "filesystem/filesystem.h"
 #include "filesystem/filesystem_path_security.h"
 #include "qcommon/q_command.h"
-#include "qcommon/q_string.h"
 
 #include <string.h>
 
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: archived user policy for the
  * compatibility server namespace. It defaults on for normal client builds. */
 static cvar_t *coduomp_serverCache;
-
-/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: fs_game selected during process
- * startup, before any remote server can replace it through systeminfo. */
-static char coduomp_serverNamespaceInitialGame[FS_PACK_NAME_SIZE];
 
 /* NOT_FROM_ORIGINAL_SOURCE: centralizes the policy gate so every cache entry
  * point agrees with the Advanced-menu setting. */
@@ -41,7 +36,6 @@ static qboolean coduomp_server_namespace_download_qpath_valid(
 
 void coduomp_server_namespace_reset_for_startup(void)
 {
-    coduomp_serverNamespaceInitialGame[0] = '\0';
     coduomp_server_namespace_provider.resetForStartup();
 }
 
@@ -73,9 +67,6 @@ void coduomp_server_namespace_register_commands(void)
 {
     coduomp_serverCache =
         Cvar_Get("cl_serverCache", "1", CVAR_ARCHIVE);
-    Q_strncpyz(coduomp_serverNamespaceInitialGame,
-               fs_game->string,
-               sizeof(coduomp_serverNamespaceInitialGame));
     Cmd_AddCommand("promoteserverconfig",
                    coduomp_server_namespace_promote_config_f);
     Cmd_AddCommand("clearserverconfigs",
@@ -97,11 +88,7 @@ qboolean coduomp_server_namespace_activate(
 
 qboolean coduomp_server_namespace_deactivate(void)
 {
-    if (coduomp_server_namespace_provider.deactivate() == qfalse)
-        return qfalse;
-
-    Cvar_Set("fs_game", coduomp_serverNamespaceInitialGame);
-    return qtrue;
+    return coduomp_server_namespace_provider.deactivate();
 }
 
 qboolean coduomp_server_namespace_is_active(void)
