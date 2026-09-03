@@ -8,7 +8,8 @@
 #include <string.h>
 
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: archived user policy for the
- * compatibility server namespace. It defaults on for normal client builds. */
+ * compatibility server namespace. It is opt-in because its disconnect-time
+ * filesystem restart also reloads front-end UI state. */
 static cvar_t *coduomp_serverCache;
 
 /* NOT_FROM_ORIGINAL_SOURCE: centralizes the policy gate so every cache entry
@@ -66,7 +67,7 @@ static void coduomp_server_namespace_clear_configs_f(void)
 void coduomp_server_namespace_register_commands(void)
 {
     coduomp_serverCache =
-        Cvar_Get("cl_serverCache", "1", CVAR_ARCHIVE);
+        Cvar_Get("cl_serverCache", "0", CVAR_ARCHIVE);
     Cmd_AddCommand("promoteserverconfig",
                    coduomp_server_namespace_promote_config_f);
     Cmd_AddCommand("clearserverconfigs",

@@ -32,10 +32,11 @@ The main-screen Mods list also includes cached non-basegame directories that
 contain PK3s. Their labels use `server-name/mod`, while their launch paths
 remain scoped to the corresponding `server-cache/v1` content directory.
 
-Server Cache is enabled by default. It can be changed from **Options → System
-→ Advanced**. Disabling it prevents new connections from activating an
-isolated server namespace and hides cached server mods from the Mods list;
-existing cache files remain on disk.
+Server Cache is disabled by default so ordinary disconnects do not reload the
+filesystem and front-end menus. It can be enabled from **Options → System →
+Advanced**. Disabling it prevents new connections from activating an isolated
+server namespace and hides cached server mods from the Mods list; existing
+cache files remain on disk.
 
 These paths and commands are an improved CoDUOMP compatibility feature. They
 are not available in the stock source line.
