@@ -153,10 +153,10 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/server/sv_netchan.c \
 	src/client/engine/server/sv_operator_commands.c \
 	src/client/engine/server/sv_world.c \
-	src/client/engine/sound/miles_boundary.c \
-	src/client/engine/sound/miles_miniaudio_provider.c \
-	src/client/engine/sound/miles_null_backend.c \
-	src/client/engine/sound/miles_openal_backend.c \
+	src/client/engine/sound/audio_backend_api.c \
+	src/client/engine/sound/audio_backend_miniaudio.c \
+	src/client/engine/sound/audio_backend_openal.c \
+	src/client/engine/sound/sound_system.c \
 	src/client/engine/sound/sound_alias_diagnostics.c \
 	src/client/engine/sound/sound_alias_localize_command.c \
 	src/client/engine/sound/sound_alias_runtime.c \
@@ -322,7 +322,7 @@ CLIENT_ENGINE_PROFILE_HOT_C_SOURCES := \
 	src/client/engine/renderer/renderer_draw_surfs.c \
 	src/client/engine/renderer/renderer_dpvs.c \
 	src/client/engine/renderer/renderer_light_visibility.c \
-	src/client/engine/sound/miles_miniaudio_provider.c
+	src/client/engine/sound/audio_backend_miniaudio.c
 
 # These translation units are dominated by filesystem/archive ingestion and
 # map or asset decoding. This tier adds no renderer geometry construction,

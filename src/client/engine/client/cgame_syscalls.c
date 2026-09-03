@@ -18,7 +18,7 @@
 #include "compat/coduo_native_x87.h"
 #include "../renderer/renderer_api.h"
 #include "../scripting/script_runtime.h"
-#include "../sound/miles_boundary.h"
+#include "../sound/sound_system.h"
 #include "sound/alias/sound_alias.h"
 
 #include <float.h>

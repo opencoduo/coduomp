@@ -201,10 +201,11 @@ See [CD-key location on macOS and Linux](../CDKEY.md) for the native `codkey`
 filename, default locations, custom `fs_homepath` behavior, and safe migration
 guidance, including the optional `UO_CODKEY` environment override.
 
-The client uses a native OpenAL compatibility backend for the original Miles
-audio boundary. Linux uses OpenAL Soft for playback and libsndfile for streamed
-audio decoding; EFX reverb is enabled when the selected OpenAL device supports
-it, with ordinary dry playback as the fallback.
+Native clients use the built-in Miniaudio backend by default. OpenAL remains a
+deprecated backup backend on macOS and Linux; Linux uses libsndfile for its
+streamed-audio decoding, and EFX reverb is enabled when the selected OpenAL
+device supports it. The stock-named `mss_3d_provider` cvar selects the complete
+audio backend on these clients.
 
 Linux builds default `CASE_SENSITIVE_FS=1`. This preserves the original
 case-insensitive game-file lookup on a case-sensitive host filesystem without
@@ -215,7 +216,7 @@ to `0`.
 The recovered executable, cgame, UI, and listen-server game module can also be
 cross-compiled for 32-bit or 64-bit Windows with MinGW-w64. These are MinGW
 targets, not builds performed with a native Windows compiler. The i686
-executable uses the original Miles boundary and therefore requires the user to
+executable uses the original Miles engine and therefore requires the user to
 provide `mss32.dll` from a legally owned retail installation. The build reads
 its export table to generate a MinGW import library; packages do not copy or
 redistribute the DLL.
@@ -271,10 +272,8 @@ conditional precision hook and skip it, inheriting the executable's mode.
 The recovered cgame/UI sources therefore do not install a separate control
 word; the recovered executable owns the process setting.
 
-The x86-64 build uses the explicit no-audio compatibility backend because a
-64-bit process cannot load the retail 32-bit `mss32.dll`. It is suitable for
-testing and online play without sound, but should not be presented as having
-audio parity with the other releases. Compiler commands can be overridden
+The x86-64 build uses the built-in Miniaudio backend because a 64-bit process
+cannot load the retail 32-bit `mss32.dll`. Compiler commands can be overridden
 with `MINGW32_CC`, `MINGW32_CXX`, `MINGW32_DLLTOOL`, `MINGW32_OBJDUMP`,
 `MINGW32_STRIP`, `MINGW64_CC`, `MINGW64_CXX`, `MINGW64_OBJDUMP`,
 `MINGW64_STRIP`, `CC`, and `CXX`; dependency flags can be overridden with

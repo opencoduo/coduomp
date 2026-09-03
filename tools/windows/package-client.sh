@@ -43,7 +43,7 @@ case "$package_arch" in
     x86_64)
         architecture='Windows PE32+ / x86-64'
         build_target=client-windows-x86_64-package
-        audio_note='This experimental x86-64 build uses the no-audio compatibility backend.'
+        audio_note='This x86-64 build uses the built-in Miniaudio backend.'
         objdump=${MINGW64_OBJDUMP:-x86_64-w64-mingw32-objdump}
         strip_tool=${MINGW64_STRIP:-x86_64-w64-mingw32-strip}
         ;;

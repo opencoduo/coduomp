@@ -59,10 +59,11 @@ make client-windows-x86_64-package \
   MINGW64_DEP_PREFIX=/path/to/x86_64-mingw-prefix
 ```
 
-The Windows x86-64 build uses the explicit no-audio compatibility backend; a
-64-bit process cannot load the retail 32-bit Miles library. Package targets
-create complete architecture-matched client/module archives without retail
-game data. The macOS target creates a Finder-launchable application bundle.
+The Windows i686 build uses the retail 32-bit Miles library. Every other
+client uses the built-in Miniaudio backend by default, with OpenAL retained as
+a deprecated backup where it is available. Package targets create complete
+architecture-matched client/module archives without retail game data. The
+macOS target creates a Finder-launchable application bundle.
 
 From macOS, `make release-builds` creates the macOS arm64 package locally and
 dispatches Linux x86-64 plus Windows i686/x86-64 builds to a configured Linux

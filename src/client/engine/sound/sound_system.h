@@ -1,5 +1,5 @@
-#ifndef CODUOMP_MILES_BOUNDARY_H
-#define CODUOMP_MILES_BOUNDARY_H
+#ifndef SOUND_SYSTEM_H
+#define SOUND_SYSTEM_H
 
 #include "../q_shared.h"
 #include "qcommon/sound_types.h"
@@ -12,41 +12,41 @@ extern "C" {
 #endif
 
 #if defined(_WIN32) && defined(_MSC_VER) && defined(_M_IX86)
-#define MILES_CALLBACK __stdcall
+#define AUDIO_CALLBACK __stdcall
 #elif defined(_WIN32) && defined(__i386__)
-#define MILES_CALLBACK __attribute__((stdcall))
+#define AUDIO_CALLBACK __attribute__((stdcall))
 #else
-#define MILES_CALLBACK
+#define AUDIO_CALLBACK
 #endif
 
-typedef void *miles_digital_driver_t;
-typedef void *miles_window_handle_t;
-typedef int32_t miles_3d_provider_t;
-typedef int32_t miles_3d_provider_enumerator_t;
-typedef struct miles_sample_handle_s *miles_sample_handle_t;
-typedef struct miles_3d_sample_handle_s *miles_3d_sample_handle_t;
-typedef struct miles_stream_handle_s *miles_stream_handle_t;
+typedef void *audio_driver_t;
+typedef void *audio_window_handle_t;
+typedef int32_t audio_provider_t;
+typedef int32_t audio_provider_enumerator_t;
+typedef struct audio_sample_handle_s *audio_sample_handle_t;
+typedef struct audio_3d_sample_handle_s *audio_3d_sample_handle_t;
+typedef struct audio_stream_handle_s *audio_stream_handle_t;
 typedef struct eax_manager_s eax_manager_t;
-typedef int32_t (MILES_CALLBACK *miles_file_open_callback_t)(
+typedef int32_t (AUDIO_CALLBACK *audio_file_open_callback_t)(
     const char *filename, int32_t *fileHandle);
-typedef void (MILES_CALLBACK *miles_file_close_callback_t)(
+typedef void (AUDIO_CALLBACK *audio_file_close_callback_t)(
     int32_t fileHandle);
-typedef int32_t (MILES_CALLBACK *miles_file_seek_callback_t)(
+typedef int32_t (AUDIO_CALLBACK *audio_file_seek_callback_t)(
     int32_t fileHandle, int32_t offset, int32_t origin);
-typedef int32_t (MILES_CALLBACK *miles_file_read_callback_t)(
+typedef int32_t (AUDIO_CALLBACK *audio_file_read_callback_t)(
     int32_t fileHandle, void *buffer, int32_t byteCount);
 
-typedef enum milesSampleType_e {
-    MILES_SAMPLE_TYPE_MONO_8 = 0,
-    MILES_SAMPLE_TYPE_MONO_16 = 1,
-    MILES_SAMPLE_TYPE_STEREO_8 = 2,
-    MILES_SAMPLE_TYPE_STEREO_16 = 3,
-    MILES_SAMPLE_TYPE_MONO_IMA_ADPCM = 5,
-    MILES_SAMPLE_TYPE_STEREO_IMA_ADPCM = 7
-} milesSampleType_t;
+typedef enum audioSampleType_e {
+    AUDIO_SAMPLE_TYPE_MONO_8 = 0,
+    AUDIO_SAMPLE_TYPE_MONO_16 = 1,
+    AUDIO_SAMPLE_TYPE_STEREO_8 = 2,
+    AUDIO_SAMPLE_TYPE_STEREO_16 = 3,
+    AUDIO_SAMPLE_TYPE_MONO_IMA_ADPCM = 5,
+    AUDIO_SAMPLE_TYPE_STEREO_IMA_ADPCM = 7
+} audio_sample_type_t;
 
 enum {
-    MILES_SAMPLE_STATUS_DONE = 2,
+    AUDIO_SAMPLE_STATUS_DONE = 2,
     MSS_3D_CHANNEL_FIRST = 0,
     MSS_3D_CHANNEL_CAPACITY = 32,
     MSS_STREAM_CHANNEL_FIRST = 32,
@@ -118,7 +118,7 @@ enum { MSS_RAW_BUFFER_COUNT = 32 };
 #endif
 
 typedef struct mss_raw_sample_state_s {
-    miles_sample_handle_t sample;
+    audio_sample_handle_t sample;
     int32_t sampleRate;
     int32_t sampleWidthBytes;
     int32_t channelCount;
@@ -141,25 +141,25 @@ typedef struct mss_raw_sample_state_s {
  * private state through +0x74. The private tail is needed only on 32-bit
  * targets; native replacement backends consume the widened public prefix. */
 enum {
-    MILES_SOUND_INFO_I386_PUBLIC_EXTENT = 0x24,
-    MILES_SOUND_INFO_I386_EXTENT = 0x78
+    AUDIO_SOUND_INFO_I386_PUBLIC_EXTENT = 0x24,
+    AUDIO_SOUND_INFO_I386_EXTENT = 0x78
 };
 
-typedef struct miles_sound_info_s {
+typedef struct audio_sound_info_s {
     snd_alias_sound_file_t publicInfo;
 #if UINTPTR_MAX == UINT32_MAX
     uint8_t privateState[
-        MILES_SOUND_INFO_I386_EXTENT -
-        MILES_SOUND_INFO_I386_PUBLIC_EXTENT];
+        AUDIO_SOUND_INFO_I386_EXTENT -
+        AUDIO_SOUND_INFO_I386_PUBLIC_EXTENT];
 #endif
-} miles_sound_info_t;
+} audio_sound_info_t;
 
 #if UINTPTR_MAX == UINT32_MAX
-_Static_assert(offsetof(miles_sound_info_t, privateState) ==
-                   MILES_SOUND_INFO_I386_PUBLIC_EXTENT,
+_Static_assert(offsetof(audio_sound_info_t, privateState) ==
+                   AUDIO_SOUND_INFO_I386_PUBLIC_EXTENT,
                "i386 Miles sound-info private-state offset changed");
-_Static_assert(sizeof(miles_sound_info_t) ==
-                   MILES_SOUND_INFO_I386_EXTENT,
+_Static_assert(sizeof(audio_sound_info_t) ==
+                   AUDIO_SOUND_INFO_I386_EXTENT,
                "i386 Miles sound-info extent changed");
 #endif
 
@@ -324,7 +324,7 @@ extern cvar_t *mss_3d_provider;
 extern cvar_t *mss_volume;
 extern cvar_t *mss_roomtype;
 extern cvar_t *mss_wetlevel;
-extern miles_digital_driver_t mss_digitalDriver;
+extern audio_driver_t mss_digitalDriver;
 extern int32_t mss_sampleRate;
 extern int32_t mss_sampleBits;
 extern int32_t mss_channelCount;
@@ -344,18 +344,18 @@ extern qboolean mss_eaxEnvironmentLoaded;
 extern int32_t mss_eaxRoomId;
 extern int32_t mss_2dChannelCount;
 extern int32_t mss_streamChannelCount;
-extern miles_3d_provider_t mss_3dProvider;
+extern audio_provider_t mss_3dProvider;
 extern int32_t mss_max3DChannels;
 extern qboolean mss_eaxAvailable;
 extern char mss_eaxMapName[MAX_QPATH];
 extern vec3_t mss_listenerOrigin;
 extern axis_t mss_listenerAxis;
 extern int32_t mss_listenerTime;
-extern miles_sample_handle_t
+extern audio_sample_handle_t
     mss_2dSampleHandles[MSS_2D_CHANNEL_CAPACITY];
-extern miles_3d_sample_handle_t
+extern audio_3d_sample_handle_t
     mss_3dSampleHandles[MSS_3D_CHANNEL_CAPACITY];
-extern miles_stream_handle_t
+extern audio_stream_handle_t
     mss_streamHandles[MSS_STREAM_CHANNEL_CAPACITY];
 extern int32_t mss_ambientBackgroundIndex;
 extern mss_background_fade_t
@@ -373,178 +373,14 @@ extern mss_channel_info_t mss_channelInfo[MSS_TOTAL_CHANNEL_COUNT];
 extern mss_stream_channel_t
     mss_streamChannels[MSS_STREAM_CHANNEL_CAPACITY];
 
-/* Miles Sound System linkage boundary. The original Win32 target resolves
- * these stdcall functions from mss32.dll; modern ports provide equivalents. */
-int32_t MILES_CALLBACK AIL_set_preference(int32_t preference,
-                                           int32_t value);
-void MILES_CALLBACK AIL_set_file_callbacks(
-    miles_file_open_callback_t openCallback,
-    miles_file_close_callback_t closeCallback,
-    miles_file_seek_callback_t seekCallback,
-    miles_file_read_callback_t readCallback);
-void MILES_CALLBACK AIL_set_redist_directory(const char *directory);
-int32_t MILES_CALLBACK AIL_startup(void);
-void MILES_CALLBACK AIL_shutdown(void);
-void MILES_CALLBACK AIL_close_3D_provider(
-    miles_3d_provider_t provider);
-void MILES_CALLBACK AIL_set_DirectSound_HWND(
-    miles_digital_driver_t driver,
-    miles_window_handle_t windowHandle);
-int32_t MILES_CALLBACK AIL_WAV_info(
-    const void *fileData, miles_sound_info_t *soundInfo);
-uint32_t MILES_CALLBACK AIL_size_processed_digital_audio(
-    uint32_t sampleRate, milesSampleType_t sampleType,
-    int32_t bufferCount, const miles_sound_info_t *sourceInfo);
-int32_t MILES_CALLBACK AIL_process_digital_audio(
-    void *destination, uint32_t destinationSize, uint32_t sampleRate,
-    milesSampleType_t sampleType, int32_t bufferCount,
-    miles_sound_info_t *sourceInfo);
-int32_t MILES_CALLBACK AIL_digital_CPU_percent(
-    miles_digital_driver_t driver);
-miles_digital_driver_t MILES_CALLBACK AIL_open_digital_driver(
-    int32_t sampleRate, int32_t sampleFormat, int32_t channels,
-    int32_t flags);
-const char *MILES_CALLBACK AIL_last_error(void);
-int32_t MILES_CALLBACK AIL_enumerate_3D_providers(
-    miles_3d_provider_enumerator_t *enumerator,
-    miles_3d_provider_t *provider, const char **providerName);
-int32_t MILES_CALLBACK AIL_open_3D_provider(miles_3d_provider_t provider);
-int32_t MILES_CALLBACK AIL_3D_provider_attribute(
-    miles_3d_provider_t provider, const char *attributeName, void *value);
-int32_t MILES_CALLBACK AIL_set_3D_provider_preference(
-    miles_3d_provider_t provider, const char *preferenceName, void *value);
-void MILES_CALLBACK AIL_set_3D_distance_factor(
-    miles_3d_provider_t provider, float distanceFactor);
-miles_sample_handle_t MILES_CALLBACK AIL_allocate_sample_handle(
-    miles_digital_driver_t driver);
-miles_3d_sample_handle_t MILES_CALLBACK AIL_allocate_3D_sample_handle(
-    miles_3d_provider_t provider);
-void MILES_CALLBACK AIL_set_3D_position(
-    miles_3d_sample_handle_t sample, float x, float y, float z);
-void MILES_CALLBACK AIL_end_sample(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_stop_sample(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_resume_sample(miles_sample_handle_t sample);
-int32_t MILES_CALLBACK AIL_sample_status(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_end_3D_sample(miles_3d_sample_handle_t sample);
-void MILES_CALLBACK AIL_stop_3D_sample(miles_3d_sample_handle_t sample);
-void MILES_CALLBACK AIL_resume_3D_sample(miles_3d_sample_handle_t sample);
-int32_t MILES_CALLBACK AIL_3D_sample_status(miles_3d_sample_handle_t sample);
-miles_stream_handle_t MILES_CALLBACK AIL_open_stream(
-    miles_digital_driver_t driver, const char *filename,
-    int32_t streamMemory);
-void MILES_CALLBACK AIL_close_stream(miles_stream_handle_t stream);
-void MILES_CALLBACK AIL_pause_stream(miles_stream_handle_t stream,
-                                     qboolean paused);
-int32_t MILES_CALLBACK AIL_stream_status(miles_stream_handle_t stream);
-int32_t MILES_CALLBACK AIL_stream_playback_rate(
-    miles_stream_handle_t stream);
-void MILES_CALLBACK AIL_set_stream_playback_rate(
-    miles_stream_handle_t stream, int32_t playbackRate);
-void MILES_CALLBACK AIL_set_stream_volume_pan(
-    miles_stream_handle_t stream, float volume, float pan);
-void MILES_CALLBACK AIL_stream_volume_pan(
-    miles_stream_handle_t stream, float *volume, float *pan);
-void MILES_CALLBACK AIL_set_stream_loop_count(
-    miles_stream_handle_t stream, int32_t loopCount);
-void MILES_CALLBACK AIL_set_stream_reverb_levels(
-    miles_stream_handle_t stream, float dryLevel, float wetLevel);
-void MILES_CALLBACK AIL_stream_ms_position(miles_stream_handle_t stream,
-                                            int32_t *totalMsec,
-                                            int32_t *currentMsec);
-void MILES_CALLBACK AIL_set_stream_ms_position(
-    miles_stream_handle_t stream, int32_t positionMsec);
-void MILES_CALLBACK AIL_start_stream(miles_stream_handle_t stream);
-void MILES_CALLBACK AIL_init_sample(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_set_sample_type(miles_sample_handle_t sample,
-                                        milesSampleType_t sampleType,
-                                        int32_t flags);
-void MILES_CALLBACK AIL_set_sample_address(miles_sample_handle_t sample,
-                                           const void *data,
-                                           uint32_t dataLength);
-void MILES_CALLBACK AIL_set_sample_adpcm_block_size(
-    miles_sample_handle_t sample, uint32_t blockSize);
-#if (defined(__APPLE__) || defined(__linux__)) && \
-    !defined(CODUOMP_DISABLE_AUDIO)
-/* NOT_FROM_ORIGINAL_SOURCE: native OpenAL cache hook for loaded aliases. */
-void coduomp_openal_bind_loaded_sample(
-    miles_sample_handle_t sample,
-    const snd_alias_sound_file_t *soundFile);
-/* NOT_FROM_ORIGINAL_SOURCE: release native cache state before the owning
- * loaded-alias hunk payload becomes reusable. */
-void coduomp_openal_forget_loaded_sound(
-    const snd_alias_sound_file_t *soundFile);
-#endif
-int32_t MILES_CALLBACK AIL_sample_playback_rate(
-    miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_set_sample_playback_rate(
-    miles_sample_handle_t sample, int32_t playbackRate);
-void MILES_CALLBACK AIL_set_sample_volume_pan(miles_sample_handle_t sample,
-                                              float volume, float pan);
-void MILES_CALLBACK AIL_sample_volume_pan(miles_sample_handle_t sample,
-                                          float *volume, float *pan);
-void MILES_CALLBACK AIL_set_sample_loop_count(miles_sample_handle_t sample,
-                                              int32_t loopCount);
-void MILES_CALLBACK AIL_set_sample_reverb_levels(
-    miles_sample_handle_t sample, float dryLevel, float wetLevel);
-void MILES_CALLBACK AIL_sample_ms_position(miles_sample_handle_t sample,
-                                           int32_t *totalMsec,
-                                           int32_t *currentMsec);
-void MILES_CALLBACK AIL_set_sample_ms_position(miles_sample_handle_t sample,
-                                               int32_t positionMsec);
-void MILES_CALLBACK AIL_start_sample(miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_release_sample_handle(
-    miles_sample_handle_t sample);
-int32_t MILES_CALLBACK AIL_minimum_sample_buffer_size(
-    miles_digital_driver_t driver, int32_t sampleRate,
-    milesSampleType_t sampleType);
-uint32_t MILES_CALLBACK AIL_sample_position(
-    miles_sample_handle_t sample);
-int32_t MILES_CALLBACK AIL_sample_buffer_ready(
-    miles_sample_handle_t sample);
-void MILES_CALLBACK AIL_load_sample_buffer(
-    miles_sample_handle_t sample, int32_t bufferIndex,
-    const void *data, int32_t byteCount);
-void MILES_CALLBACK AIL_set_3D_sample_info(
-    miles_3d_sample_handle_t sample,
-    const snd_alias_sound_file_t *soundFile);
-void MILES_CALLBACK AIL_set_3D_sample_volume(
-    miles_3d_sample_handle_t sample, float volume);
-void MILES_CALLBACK AIL_set_3D_sample_distances(
-    miles_3d_sample_handle_t sample, float maximumDistance,
-    float minimumDistance);
-int32_t MILES_CALLBACK AIL_3D_sample_playback_rate(
-    miles_3d_sample_handle_t sample);
-uint32_t MILES_CALLBACK AIL_3D_sample_offset(
-    miles_3d_sample_handle_t sample);
-uint32_t MILES_CALLBACK AIL_3D_sample_length(
-    miles_3d_sample_handle_t sample);
-float MILES_CALLBACK AIL_3D_sample_volume(
-    miles_3d_sample_handle_t sample);
-void MILES_CALLBACK AIL_3D_position(
-    miles_3d_sample_handle_t sample, float *x, float *y, float *z);
-void MILES_CALLBACK AIL_set_3D_sample_playback_rate(
-    miles_3d_sample_handle_t sample, int32_t playbackRate);
-void MILES_CALLBACK AIL_set_3D_sample_loop_count(
-    miles_3d_sample_handle_t sample, int32_t loopCount);
-void MILES_CALLBACK AIL_set_3D_sample_effects_level(
-    miles_3d_sample_handle_t sample, float effectsLevel);
-int32_t MILES_CALLBACK AIL_set_3D_sample_preference(
-    miles_3d_sample_handle_t sample, const char *preferenceName,
-    void *value);
-void MILES_CALLBACK AIL_set_digital_master_room_type(
-    miles_digital_driver_t driver, int32_t roomType);
-void MILES_CALLBACK AIL_set_3D_room_type(
-    miles_3d_provider_t provider, int32_t roomType);
-void MILES_CALLBACK AIL_set_3D_sample_offset(
-    miles_3d_sample_handle_t sample, int32_t byteOffset);
-void MILES_CALLBACK AIL_start_3D_sample(miles_3d_sample_handle_t sample);
 
-int32_t MILES_CALLBACK MSS_FileOpenCallback(const char *filename,
+
+int32_t AUDIO_CALLBACK MSS_FileOpenCallback(const char *filename,
                                              int32_t *fileHandle);
-void MILES_CALLBACK MSS_FileCloseCallback(int32_t fileHandle);
-int32_t MILES_CALLBACK MSS_FileSeekCallback(int32_t fileHandle,
+void AUDIO_CALLBACK MSS_FileCloseCallback(int32_t fileHandle);
+int32_t AUDIO_CALLBACK MSS_FileSeekCallback(int32_t fileHandle,
                                              int32_t offset, int32_t origin);
-int32_t MILES_CALLBACK MSS_FileReadCallback(int32_t fileHandle, void *buffer,
+int32_t AUDIO_CALLBACK MSS_FileReadCallback(int32_t fileHandle, void *buffer,
                                              int32_t byteCount);
 void StripExtension(const char *input, char *output);
 void *MSS_Alloc(size_t size);
@@ -553,7 +389,7 @@ void MSS_InitFailed(void);
 void MSS_Init(void);
 void MSS_Shutdown(void);
 void MSS_ErrorCleanup(void);
-void MSS_SetWindowHandle(miles_window_handle_t windowHandle);
+void MSS_SetWindowHandle(audio_window_handle_t windowHandle);
 int32_t MSS_Write(uint8_t *buffer, int32_t offset,
                   int32_t bufferSize, const void *source,
                   size_t byteCount);
@@ -610,9 +446,9 @@ long double MSS_Attenuate(float distance, float minimumDistance,
                           float maximumDistance);
 void MSS_GetCurrent3DPosition(int32_t effectId, const vec3_t localOffset,
                               vec3_t worldPosition);
-void MSS_Set3DPosition(miles_3d_sample_handle_t sample,
+void MSS_Set3DPosition(audio_3d_sample_handle_t sample,
                        const vec3_t worldPosition);
-void UpdateEAXBuffer(miles_3d_sample_handle_t sample,
+void UpdateEAXBuffer(audio_3d_sample_handle_t sample,
                      const vec3_t position);
 qboolean MSS_IsAliasChannel3D(sndAliasChannel_t aliasChannel);
 int32_t MSS_CompareReplacableChannels(int32_t firstChannelIndex,
@@ -665,7 +501,7 @@ void MSS_UpdateRoomEffects(int32_t elapsedMsec);
 void MSS_UpdateTimeScale(void);
 void MSS_UpdatePause(void);
 void MSS_Restore(const uint8_t *saveData, int32_t saveSize);
-milesSampleType_t MSS_SampleType(int32_t waveFormatTag,
+audio_sample_type_t MSS_SampleType(int32_t waveFormatTag,
                                  int32_t sampleBits,
                                  int32_t channelCount);
 snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename);

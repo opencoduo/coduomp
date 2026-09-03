@@ -34,7 +34,7 @@ MINGW32_TARGET_PATTERN ?= i?86-w64-mingw32*
 MINGW32_TARGET_DESCRIPTION ?= i686 MinGW-w64
 MINGW32_ARCHIVE_FORMAT ?= pe-i386
 MINGW32_REQUIRE_MSS ?= 1
-MINGW32_AUDIO_CPPFLAGS ?=
+MINGW32_AUDIO_CPPFLAGS ?= -DAUDIO_BACKEND_MILES
 MINGW32_COMMON_CFLAGS ?= -g -O0
 MINGW32_ENGINE_CFLAGS := $(filter-out -O%,$(MINGW32_COMMON_CFLAGS))
 MINGW32_FLOAT_FLAGS := -O0 -mfpmath=387 -fexcess-precision=fast
@@ -96,7 +96,7 @@ mingw64:
 		MINGW32_TARGET_DESCRIPTION='x86_64 MinGW-w64' \
 		MINGW32_ARCHIVE_FORMAT=pe-x86-64 \
 		MINGW32_REQUIRE_MSS=0 \
-		MINGW32_AUDIO_CPPFLAGS=-DCODUOMP_DISABLE_AUDIO \
+		MINGW32_AUDIO_CPPFLAGS=-DAUDIO_BACKEND_MINIAUDIO \
 		MINGW32_FLOAT_FLAGS='-O0 -mfpmath=387 -fexcess-precision=fast' MINGW32_ARCH_FLAGS=-m64 \
 		MINGW32_STACK_RESERVE_PE=0000000000800000 \
 		MINGW32_STACK_COMMIT_PE=0000000000001000
@@ -225,7 +225,7 @@ help:
 	  'MSS32_DLL=path names the user-supplied retail mss32.dll.' \
 	  'MINGW32_DEP_PREFIX=path names the i686 dependency prefix.' \
 	  'MINGW64_DEP_PREFIX=path names the x86_64 dependency prefix.' \
-	  'The mingw64 target uses the explicit no-audio compatibility backend.'
+	  'The mingw64 target uses the built-in Miniaudio backend.'
 
 -include $(MINGW32_C_OBJECTS:.o=.d)
 -include $(MINGW32_CXX_OBJECTS:.o=.d)

@@ -1,4 +1,5 @@
-#include "miles_boundary.h"
+#include "sound_system.h"
+#include "audio_backend_api.h"
 
 #include "../client/cgame.h"
 #include "../math/vector_math.h"
@@ -15,15 +16,15 @@
 #include <string.h>
 
 enum {
-    MILES_FILE_OPEN_FAILED = -1,
-    MILES_FILE_OPEN_FAILURE_RESULT = 0
+    AUDIO_FILE_OPEN_FAILED = -1,
+    AUDIO_FILE_OPEN_FAILURE_RESULT = 0
 };
 
-typedef enum milesFileSeekOrigin_e {
-    MILES_FILE_SEEK_END = 0,
-    MILES_FILE_SEEK_SET = 1,
-    MILES_FILE_SEEK_CURRENT = 2
-} milesFileSeekOrigin_t;
+typedef enum audioFileSeekOrigin_e {
+    AUDIO_FILE_SEEK_END = 0,
+    AUDIO_FILE_SEEK_SET = 1,
+    AUDIO_FILE_SEEK_CURRENT = 2
+} audioFileSeekOrigin_t;
 
 typedef enum engineFileSeekOrigin_e {
     ENGINE_FILE_SEEK_SET = 0,
@@ -32,9 +33,9 @@ typedef enum engineFileSeekOrigin_e {
 } engineFileSeekOrigin_t;
 
 enum {
-    MILES_ALLOCATION_SIZE_ALIGNMENT = 4,
-    MILES_HUNK_ALIGNMENT = 32,
-    MILES_MIXER_CHANNEL_PREFERENCE = 1,
+    AUDIO_ALLOCATION_SIZE_ALIGNMENT = 4,
+    AUDIO_HUNK_ALIGNMENT = 32,
+    AUDIO_MIXER_CHANNEL_PREFERENCE = 1,
     MSS_EFFECT_ID_LIMIT = 1024,
     MSS_MUSIC_BACKGROUND_INDEX = 0,
     MSS_AMBIENT_BACKGROUND_FIRST_INDEX = 1,
@@ -42,21 +43,21 @@ enum {
     MSS_AMBIENT_BACKGROUND_INITIAL_INDEX =
         MSS_AMBIENT_BACKGROUND_SECOND_INDEX,
     MSS_BACKGROUND_FADE_IMMEDIATE_MSEC = 0,
-    MILES_CHANNEL_COUNT_MONO = 1,
-    MILES_CHANNEL_COUNT_STEREO = 2,
-    MILES_SAMPLE_BITS_IMA_ADPCM = 4,
-    MILES_SAMPLE_BITS_8 = 8,
-    MILES_SAMPLE_BITS_16 = 16,
-    MILES_WAVE_FORMAT_PCM = 1,
-    MILES_WAVE_FORMAT_IMA_ADPCM = 17,
+    AUDIO_CHANNEL_COUNT_MONO = 1,
+    AUDIO_CHANNEL_COUNT_STEREO = 2,
+    AUDIO_SAMPLE_BITS_IMA_ADPCM = 4,
+    AUDIO_SAMPLE_BITS_8 = 8,
+    AUDIO_SAMPLE_BITS_16 = 16,
+    AUDIO_WAVE_FORMAT_PCM = 1,
+    AUDIO_WAVE_FORMAT_IMA_ADPCM = 17,
     MSS_RAW_MINIMUM_BUFFER_SIZE = 8192,
     MSS_ROOM_TYPE_COUNT = 26,
     MSS_SOUND_CPU_WARNING_THRESHOLD_PERCENT = 2,
     MSS_SOUND_CPU_WARNING_ENTRY = 2,
     MSS_SOUND_CPU_WARNING_DURATION_MSEC = 3000,
     MSS_ENVIRONMENT_FADE_IMMEDIATE_MSEC = 0,
-    MILES_WAV_INFO_INVALID = 0,
-    MILES_PROCESS_AUDIO_SINGLE_BUFFER = 1,
+    AUDIO_WAV_INFO_INVALID = 0,
+    AUDIO_PROCESS_SINGLE_BUFFER = 1,
     MSS_RIFF_FILE_HEADER_BYTES = 12,
     MSS_RIFF_CHUNK_HEADER_BYTES = 8,
     MSS_RIFF_FOURCC_BYTES = 4,
@@ -81,7 +82,7 @@ enum {
     MSS_EAL_PATH_BYTES = 260,
     MSS_EAL_GEOMETRY_MINIMUM_BYTES = 28,
     MSS_LIGHT_VIS_COMPILE_AND_QUIT_MODE = 2,
-    MILES_STARTUP_FAILED = 0,
+    AUDIO_STARTUP_FAILED = 0,
     MSS_EAX_DRY_ROOM_LEVEL = -10000,
     MSS_EAX_ROOM_ID_INVALID = 65535,
     MSS_EAX_RESULT_OK = 0,
@@ -95,32 +96,32 @@ enum {
     MSS_EAL_FILE_READ_FAILED = -1
 };
 
-typedef uint32_t (MILES_CALLBACK *eax_manager_release_method_t)(
+typedef uint32_t (AUDIO_CALLBACK *eax_manager_release_method_t)(
     eax_manager_t *manager);
-typedef int32_t (MILES_CALLBACK *eax_manager_query_interface_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_query_interface_method_t)(
     eax_manager_t *manager, const void *interfaceId, void **outInterface);
-typedef uint32_t (MILES_CALLBACK *eax_manager_add_ref_method_t)(
+typedef uint32_t (AUDIO_CALLBACK *eax_manager_add_ref_method_t)(
     eax_manager_t *manager);
-typedef int32_t (MILES_CALLBACK *eax_manager_load_environment_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_load_environment_method_t)(
     eax_manager_t *manager, const void *source, int32_t sourceType);
-typedef int32_t (MILES_CALLBACK *eax_manager_clear_environment_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_clear_environment_method_t)(
     eax_manager_t *manager, int32_t environmentId);
-typedef int32_t (MILES_CALLBACK *eax_manager_get_loaded_data_size_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_loaded_data_size_method_t)(
     eax_manager_t *manager, uint32_t *outSizeBytes,
     uint32_t unusedArgument);
-typedef int32_t (MILES_CALLBACK *eax_manager_get_listener_position_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_listener_position_method_t)(
     eax_manager_t *manager, vec3_t outPosition);
-typedef int32_t (MILES_CALLBACK *eax_manager_find_named_id_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_find_named_id_method_t)(
     eax_manager_t *manager, const char *name, int32_t *outId);
-typedef int32_t (MILES_CALLBACK *eax_manager_get_source_properties_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_source_properties_method_t)(
     eax_manager_t *manager, int32_t sourceId,
     uint8_t outProperties[EAX_SOURCE_PROPERTIES_SIZE]);
-typedef int32_t (MILES_CALLBACK *eax_manager_get_source_position_count_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_source_position_count_method_t)(
     eax_manager_t *manager, int32_t sourceId, int32_t *outPositionCount);
-typedef int32_t (MILES_CALLBACK *eax_manager_get_source_position_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_source_position_method_t)(
     eax_manager_t *manager, int32_t sourceId, int32_t positionIndex,
     vec3_t outPosition);
-typedef int32_t (MILES_CALLBACK *eax_manager_get_material_properties_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_material_properties_method_t)(
     eax_manager_t *manager, int32_t materialId,
     uint8_t outProperties[EAX_MATERIAL_PROPERTIES_SIZE]);
 
@@ -164,13 +165,13 @@ typedef struct eax_source_query_workspace_s {
     float scale; /* written but otherwise unused by CoDUOMP.exe */
 } eax_source_query_workspace_t;
 
-typedef int32_t (MILES_CALLBACK *eax_manager_get_environment_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_get_environment_method_t)(
     eax_manager_t *manager, int32_t environmentId,
     eax_listener_properties_t *properties);
-typedef int32_t (MILES_CALLBACK *eax_manager_query_listener_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_query_listener_method_t)(
     eax_manager_t *manager, int32_t listenerId, const vec3_t position,
     int32_t *environmentId, qboolean updateState);
-typedef int32_t (MILES_CALLBACK *eax_manager_query_source_method_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_query_source_method_t)(
     eax_manager_t *manager, int32_t sourceId, const vec3_t position,
     int32_t *obstruction, float *obstructionLFRatio,
     int32_t *occlusion, float *occlusionLFRatio,
@@ -434,7 +435,7 @@ _Static_assert(sizeof(((eax_manager_t *)0)->vtable) == 0x04,
                "i386 EAX manager vtable-pointer extent changed");
 #endif
 
-typedef int32_t (MILES_CALLBACK *eax_manager_create_t)(
+typedef int32_t (AUDIO_CALLBACK *eax_manager_create_t)(
     eax_manager_t **outManager);
 
 /* Source: CoDUOMP.exe pointer table 0x005ca2e8 and strings
@@ -463,10 +464,10 @@ static const char *const mss_roomTypeNames[MSS_ROOM_TYPE_COUNT] = {
 /* Exact 1.25f at CoDUOMP.exe 0x005b9d78 (0x3fa00000). */
 #define MSS_OVERLAY_VOLUME_SCALE 1.25f
 
-typedef enum milesDigitalFormat_e {
-    MILES_DIGITAL_FORMAT_8_BIT = 1,
-    MILES_DIGITAL_FORMAT_16_BIT = 2
-} milesDigitalFormat_t;
+typedef enum audioDigitalFormat_e {
+    AUDIO_DIGITAL_FORMAT_8_BIT = 1,
+    AUDIO_DIGITAL_FORMAT_16_BIT = 2
+} audio_digital_format_t;
 
 /* Raw private savegame payloads written and read by the paired MSS channel and
  * environment routines. The original passes each complete record to
@@ -596,6 +597,8 @@ _Static_assert(sizeof(mss_environment_save_t) == 0x10,
                "i386 MSS environment save size changed");
 #endif
 
+/* The stock cvar names are retained. In this context the mss_ prefix is the
+ * historical audio-engine namespace, not a claim that every backend is Miles. */
 cvar_t *mss_stereo;                       /* original 0x0491cd50 */
 cvar_t *mss_bits;                         /* original 0x0491cd58 */
 cvar_t *mss_khz;                          /* original 0x0491cd5c */
@@ -605,7 +608,7 @@ cvar_t *mss_3d_provider;                  /* original 0x0491cd68 */
 cvar_t *mss_volume;                       /* original 0x0491cd64 */
 cvar_t *mss_roomtype;                     /* original 0x0491cd78 */
 cvar_t *mss_wetlevel;                     /* original 0x0491cd7c */
-miles_digital_driver_t mss_digitalDriver; /* original 0x009cbeb8 */
+audio_driver_t mss_digitalDriver; /* original 0x009cbeb8 */
 int32_t mss_sampleRate;                   /* original 0x009cbec0 */
 int32_t mss_sampleBits;                   /* original 0x009cbec4 */
 int32_t mss_channelCount;                 /* original 0x009cbec8 */
@@ -628,7 +631,7 @@ static qboolean mss_eaxApplyOcclusion = qtrue;   /* original 0x005ca2e0 */
 static qboolean mss_eaxApplyListener = qtrue;    /* original 0x005ca2e4 */
 int32_t mss_2dChannelCount;               /* original 0x009cd2c4 */
 int32_t mss_streamChannelCount;           /* original 0x009cd2cc */
-miles_3d_provider_t mss_3dProvider;       /* original 0x009cbebc */
+audio_provider_t mss_3dProvider;       /* original 0x009cbebc */
 int32_t mss_max3DChannels;                /* original 0x009cd2c8 */
 qboolean mss_eaxAvailable;                /* original 0x0491cd84 */
 char mss_eaxMapName[MAX_QPATH];           /* original 0x0389fd70 */
@@ -638,11 +641,11 @@ static qboolean mss_eaxMapNameWasTruncated;
 vec3_t mss_listenerOrigin;                /* original 0x009cbfa8 */
 axis_t mss_listenerAxis;                  /* original 0x009cbfb4 */
 int32_t mss_listenerTime;                 /* original 0x009cbfd8 */
-miles_sample_handle_t
+audio_sample_handle_t
     mss_2dSampleHandles[MSS_2D_CHANNEL_CAPACITY];      /* 0x009cd0c0 */
-miles_3d_sample_handle_t
+audio_3d_sample_handle_t
     mss_3dSampleHandles[MSS_3D_CHANNEL_CAPACITY];      /* 0x009cd140 */
-miles_stream_handle_t
+audio_stream_handle_t
 mss_streamHandles[MSS_STREAM_CHANNEL_CAPACITY];    /* 0x009cd1c0 */
 int32_t mss_ambientBackgroundIndex;       /* original 0x009cbf94 */
 mss_background_fade_t
@@ -785,7 +788,7 @@ static qboolean coduomp_mss_reject_wav(const char *path, const char *reason)
     return qfalse;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: mirror the bundled AIL_WAV_info first-match,
+/* NOT_FROM_ORIGINAL_SOURCE: mirror the bundled audio_WAV_info first-match,
  * case-insensitive top-level chunk search without reading outside the loaded
  * file. A target chunk may declare more payload than remains; the caller then
  * has both the declared and physically available extents. */
@@ -832,7 +835,7 @@ static qboolean coduomp_mss_find_loaded_wav_chunk(
  * value is uniquely determined by the loaded bytes and the declared codec. */
 static qboolean coduomp_mss_parse_loaded_wav(
     void *fileData, int32_t fileLength, const char *path,
-    miles_sound_info_t *soundInfo)
+    audio_sound_info_t *soundInfo)
 {
     if (fileData == NULL || path == NULL || soundInfo == NULL ||
         fileLength < MSS_RIFF_FILE_HEADER_BYTES) {
@@ -899,12 +902,12 @@ static qboolean coduomp_mss_parse_loaded_wav(
     const uint16_t bitsPerSample = coduomp_mss_read_wav_u16(
         formatChunk.data + MSS_WAVE_BITS_PER_SAMPLE_OFFSET);
 
-    if (formatTag != MILES_WAVE_FORMAT_PCM &&
-        formatTag != MILES_WAVE_FORMAT_IMA_ADPCM) {
+    if (formatTag != AUDIO_WAVE_FORMAT_PCM &&
+        formatTag != AUDIO_WAVE_FORMAT_IMA_ADPCM) {
         return coduomp_mss_reject_wav(path, "unsupported format tag");
     }
-    if (channelCount != MILES_CHANNEL_COUNT_MONO &&
-        channelCount != MILES_CHANNEL_COUNT_STEREO) {
+    if (channelCount != AUDIO_CHANNEL_COUNT_MONO &&
+        channelCount != AUDIO_CHANNEL_COUNT_STEREO) {
         return coduomp_mss_reject_wav(path, "unsupported channel count");
     }
 
@@ -916,9 +919,9 @@ static qboolean coduomp_mss_parse_loaded_wav(
     }
 
     uint32_t sampleCount;
-    if (formatTag == MILES_WAVE_FORMAT_PCM) {
-        if (bitsPerSample != MILES_SAMPLE_BITS_8 &&
-            bitsPerSample != MILES_SAMPLE_BITS_16) {
+    if (formatTag == AUDIO_WAVE_FORMAT_PCM) {
+        if (bitsPerSample != AUDIO_SAMPLE_BITS_8 &&
+            bitsPerSample != AUDIO_SAMPLE_BITS_16) {
             return coduomp_mss_reject_wav(path, "unsupported PCM bit depth");
         }
 
@@ -956,14 +959,14 @@ static qboolean coduomp_mss_parse_loaded_wav(
         }
         sampleCount = dataLength * 8u / bitsPerSample;
     } else {
-        if (bitsPerSample != MILES_SAMPLE_BITS_IMA_ADPCM)
+        if (bitsPerSample != AUDIO_SAMPLE_BITS_IMA_ADPCM)
             return coduomp_mss_reject_wav(path, "invalid IMA bit depth");
 
         const uint32_t imaHeaderSize =
             (uint32_t)channelCount * MSS_WAVE_IMA_HEADER_BYTES_PER_CHANNEL;
         if (blockSize < imaHeaderSize)
             return coduomp_mss_reject_wav(path, "invalid IMA block size");
-        if (channelCount == MILES_CHANNEL_COUNT_STEREO &&
+        if (channelCount == AUDIO_CHANNEL_COUNT_STEREO &&
             ((uint32_t)blockSize - imaHeaderSize) %
                     MSS_WAVE_IMA_STEREO_GROUP_BYTES != 0) {
             return coduomp_mss_reject_wav(
@@ -1001,7 +1004,7 @@ static qboolean coduomp_mss_parse_loaded_wav(
             coduomp_mss_warn_wav_repair(
                 path, "trailing incomplete IMA header", sourceDataLength,
                 dataLength);
-        } else if (channelCount == MILES_CHANNEL_COUNT_STEREO &&
+        } else if (channelCount == AUDIO_CHANNEL_COUNT_STEREO &&
                    incompleteBlockSize > imaHeaderSize) {
             const uint32_t stereoPayloadSize =
                 incompleteBlockSize - imaHeaderSize;
@@ -1371,9 +1374,9 @@ static qboolean coduomp_mss_validate_eal_extent(
 void *MSS_Alloc(size_t size)
 {
     const size_t alignedSize =
-        (size + MILES_ALLOCATION_SIZE_ALIGNMENT - 1u) &
-        ~(size_t)(MILES_ALLOCATION_SIZE_ALIGNMENT - 1u);
-    return Hunk_AllocAlignInternal(alignedSize, MILES_HUNK_ALIGNMENT);
+        (size + AUDIO_ALLOCATION_SIZE_ALIGNMENT - 1u) &
+        ~(size_t)(AUDIO_ALLOCATION_SIZE_ALIGNMENT - 1u);
+    return Hunk_AllocAlignInternal(alignedSize, AUDIO_HUNK_ALIGNMENT);
 }
 
 /* Source: CoDUOMP.exe 0x004508f0. Name: exact same-module Mac symbol MSS_Free.
@@ -1393,21 +1396,26 @@ void MSS_InitFailed(void)
 {
     cvar_t *const lightVisCompile =
         Cvar_Get("r_vc_compile", "0", CVAR_NONE);
-    if (lightVisCompile->integer != MSS_LIGHT_VIS_COMPILE_AND_QUIT_MODE)
+    if (lightVisCompile->integer != MSS_LIGHT_VIS_COMPILE_AND_QUIT_MODE) {
+#if defined(AUDIO_BACKEND_MILES)
         Com_Printf("Miles sound system initialization failed\n");
+#else
+        Com_Printf("Audio system initialization failed\n");
+#endif
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: portable source spelling of the static-linkage
  * no-argument thunk at 0x005399c0, registered by 0x005399d0. */
-static void coduomp_mss_ail_shutdown_at_exit(void)
+static void audio_shutdown_at_exit(void)
 {
-    AIL_shutdown();
+    audio_shutdown();
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: typed factoring of the original memset over
  * CoDUOMP.exe 0x009cbeb8..0x009cd328. Explicit objects replace that raw
  * contiguous i386 range so native pointers can widen safely. */
-static void coduomp_mss_clear_runtime_state(void)
+static void audio_clear_runtime_state(void)
 {
     mss_digitalDriver = NULL;
     mss_3dProvider = 0;
@@ -1449,20 +1457,39 @@ static void coduomp_mss_clear_runtime_state(void)
 /* Source: CoDUOMP.exe 0x004551c0..0x00455594.
  * Name and source-level loop structure: exact same-module Mac symbol
  * MSS_Init. Windows additionally selects the "miles" redistribution folder
- * and registers the statically linked AIL_shutdown atexit thunk. */
+ * and registers the statically linked audio_shutdown atexit thunk. */
 void MSS_Init(void)
 {
+#if defined(AUDIO_BACKEND_MILES)
     Com_Printf("\n------- Miles sound system initialization -------\n");
+#else
+    Com_Printf("\n------- Audio system initialization -------\n");
+    mss_3d_provider = Cvar_Get(
+        "mss_3d_provider", AUDIO_BACKEND_DEFAULT_NAME,
+        CVAR_ARCHIVE | CVAR_LATCH);
+    const char *selectedBackendName = NULL;
+    if (!audio_select_backend(
+            mss_3d_provider->string, &selectedBackendName)) {
+        MSS_InitFailed();
+        return;
+    }
+    if (coduo_crt_stricmp(
+            mss_3d_provider->string, selectedBackendName) != 0) {
+        (void)Cvar_Set2("mss_3d_provider", selectedBackendName, qtrue);
+    }
+#endif
 
     mss_q3fs = Cvar_Get("mss_q3fs", "1", CVAR_LATCH);
     if (mss_q3fs->integer != 0) {
-        AIL_set_file_callbacks(
+        audio_set_file_callbacks(
             MSS_FileOpenCallback, MSS_FileCloseCallback,
             MSS_FileSeekCallback, MSS_FileReadCallback);
     }
-    AIL_set_redist_directory("miles");
-    (void)atexit(coduomp_mss_ail_shutdown_at_exit);
-    if (AIL_startup() == MILES_STARTUP_FAILED) {
+#if defined(AUDIO_BACKEND_MILES)
+    audio_set_redist_directory("miles");
+#endif
+    (void)atexit(audio_shutdown_at_exit);
+    if (audio_startup() == AUDIO_STARTUP_FAILED) {
         MSS_InitFailed();
         return;
     }
@@ -1472,19 +1499,19 @@ void MSS_Init(void)
     mss_khz = Cvar_Get("mss_khz", "44", CVAR_ARCHIVE | CVAR_LATCH);
     mss_bits = Cvar_Get("mss_bits", "16", CVAR_ARCHIVE | CVAR_LATCH);
     mss_stereo = Cvar_Get("mss_stereo", "1", CVAR_ARCHIVE | CVAR_LATCH);
-    /* NOT_FROM_ORIGINAL_SOURCE: native builds archive their platform adapter
-     * name; the macro remains the retail provider name on Win32. */
+#if defined(AUDIO_BACKEND_MILES)
     mss_3d_provider = Cvar_Get(
-        "mss_3d_provider", CODUOMP_3D_PROVIDER_NAME,
+        "mss_3d_provider", AUDIO_BACKEND_DEFAULT_NAME,
         CVAR_ARCHIVE | CVAR_LATCH);
+#endif
     mss_volume = Cvar_Get("mss_volume", "0.8", CVAR_ARCHIVE);
     mss_roomtype = Cvar_Get("mss_roomtype", "0", CVAR_CHEAT);
     mss_wetlevel = Cvar_Get("mss_wetlevel", "0", CVAR_CHEAT);
 
     if (!MSS_Init2D() ||
         !MSS_Init3DProvider(mss_3d_provider->string, qtrue)) {
-        AIL_shutdown();
-        coduomp_mss_clear_runtime_state();
+        audio_shutdown();
+        audio_clear_runtime_state();
         MSS_InitFailed();
         return;
     }
@@ -1505,7 +1532,11 @@ void MSS_Init(void)
     mss_anyMasters = qfalse;
     mss_effectVolume = Com_ClampFloat(
         MSS_SILENT_VOLUME, MSS_FULL_VOLUME, mss_volume->value);
+#if defined(AUDIO_BACKEND_MILES)
     Com_Printf("------- Miles successfully initialized -------\n");
+#else
+    Com_Printf("------- Audio system successfully initialized -------\n");
+#endif
 }
 
 /* Source: CoDUOMP.exe 0x004555a0..0x004556bf.
@@ -1529,15 +1560,15 @@ void MSS_Shutdown(void)
     Com_UnloadSoundAliases(SND_ALIAS_BANK_CGAME);
     Com_UnloadSoundAliases(SND_ALIAS_BANK_COMMON);
 
-    AIL_close_3D_provider(mss_3dProvider);
+    audio_close_3D_provider(mss_3dProvider);
     mss_3dProvider = 0;
     if (mss_eaxAvailable) {
         ReleaseEAXManager();
         mss_eaxAvailable = qfalse;
     }
 
-    AIL_shutdown();
-    coduomp_mss_clear_runtime_state();
+    audio_shutdown();
+    audio_clear_runtime_state();
 }
 
 /* Source: CoDUOMP.exe 0x004556c0..0x004556dd, recovered from the executable
@@ -1555,10 +1586,10 @@ void MSS_ErrorCleanup(void)
 /* Source: CoDUOMP.exe 0x004556e0..0x004556f2. Windows-only role name: this
  * WM_CREATE path passes the native game-window handle to Miles after the
  * digital driver exists. The Mac build has no corresponding function. */
-void MSS_SetWindowHandle(miles_window_handle_t windowHandle)
+void MSS_SetWindowHandle(audio_window_handle_t windowHandle)
 {
     if (mss_digitalDriver != NULL)
-        AIL_set_DirectSound_HWND(mss_digitalDriver, windowHandle);
+        audio_set_DirectSound_HWND(mss_digitalDriver, windowHandle);
 }
 
 /* Source: CoDUOMP.exe 0x00455700..0x0045573e.
@@ -1699,7 +1730,7 @@ int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
 
     mss_channel_info_t *const channel =
         &mss_channelInfo[channelIndex];
-    miles_3d_sample_handle_t const sample =
+    audio_3d_sample_handle_t const sample =
         mss_3dSampleHandles[channelIndex];
     const uint16_t primaryAliasIndex = (uint16_t)
         Com_SoundAliasIndex(channel->alias, SND_ALIAS_BANK_CGAME);
@@ -1710,9 +1741,9 @@ int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
     if (secondaryAliasIndex == 0)
         return offset;
 
-    const uint32_t sampleOffset = AIL_3D_sample_offset(sample);
-    const uint32_t sampleLength = AIL_3D_sample_length(sample);
-    const int32_t playbackRate = AIL_3D_sample_playback_rate(sample);
+    const uint32_t sampleOffset = audio_3D_sample_offset(sample);
+    const uint32_t sampleLength = audio_3D_sample_length(sample);
+    const int32_t playbackRate = audio_3D_sample_playback_rate(sample);
     if (sampleLength == 0 || playbackRate == 0)
         return offset;
 
@@ -1720,14 +1751,14 @@ int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
     savedState.startFraction = (float)(
         (long double)sampleOffset / (long double)sampleLength);
     savedState.aliasPitchScale = channel->aliasPitchScale;
-    const float sampleVolume = AIL_3D_sample_volume(sample);
+    const float sampleVolume = audio_3D_sample_volume(sample);
     if (mss_effectVolume == MSS_FULL_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
         savedState.logicalVolume =
             sampleVolume / mss_effectVolume;
     }
-    AIL_3D_position(sample,
+    audio_3D_position(sample,
                     &savedState.position[0],
                     &savedState.position[1],
                     &savedState.position[2]);
@@ -1808,7 +1839,7 @@ int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
 
     mss_channel_info_t *const channel =
         &mss_channelInfo[channelIndex];
-    miles_sample_handle_t const sample =
+    audio_sample_handle_t const sample =
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST];
     const uint16_t primaryAliasIndex = (uint16_t)
         Com_SoundAliasIndex(channel->alias, SND_ALIAS_BANK_CGAME);
@@ -1821,8 +1852,8 @@ int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
 
     int32_t totalMsec;
     int32_t currentMsec;
-    AIL_sample_ms_position(sample, &totalMsec, &currentMsec);
-    const int32_t playbackRate = AIL_sample_playback_rate(sample);
+    audio_sample_ms_position(sample, &totalMsec, &currentMsec);
+    const int32_t playbackRate = audio_sample_playback_rate(sample);
     if (totalMsec == 0 || playbackRate == 0)
         return offset;
 
@@ -1831,7 +1862,7 @@ int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
         (long double)(uint32_t)currentMsec /
         (long double)(uint32_t)totalMsec);
     savedState.aliasPitchScale = channel->aliasPitchScale;
-    AIL_sample_volume_pan(
+    audio_sample_volume_pan(
         sample, &savedState.logicalVolume, &savedState.pan);
     if (mss_effectVolume == MSS_FULL_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
@@ -1892,10 +1923,10 @@ int32_t MSS_Restore2DChannel(const uint8_t *buffer, int32_t offset,
         savedState.logicalVolume, savedState.aliasPitchScale,
         0, savedState.startFraction);
     if (channelIndex >= 0) {
-        miles_sample_handle_t const sample =
+        audio_sample_handle_t const sample =
             mss_2dSampleHandles[
                 channelIndex - MSS_2D_CHANNEL_FIRST];
-        AIL_set_sample_volume_pan(
+        audio_set_sample_volume_pan(
             sample, mss_effectVolume * savedState.logicalVolume,
             savedState.pan);
         memcpy(mss_channelInfo[channelIndex].effectOffset,
@@ -1935,7 +1966,7 @@ int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
 
     const int32_t streamIndex =
         channelIndex - MSS_STREAM_CHANNEL_FIRST;
-    miles_stream_handle_t const stream =
+    audio_stream_handle_t const stream =
         mss_streamHandles[streamIndex];
     mss_channel_info_t *const channel =
         &mss_channelInfo[channelIndex];
@@ -1950,7 +1981,7 @@ int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
 
     int32_t totalMsec;
     int32_t currentMsec;
-    AIL_stream_ms_position(stream, &totalMsec, &currentMsec);
+    audio_stream_ms_position(stream, &totalMsec, &currentMsec);
     if (totalMsec == 0)
         return offset;
 
@@ -1958,12 +1989,12 @@ int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
     savedState.startFraction = (float)(
         (long double)(uint32_t)currentMsec /
         (long double)(uint32_t)totalMsec);
-    const int32_t playbackRate = AIL_stream_playback_rate(stream);
+    const int32_t playbackRate = audio_stream_playback_rate(stream);
     savedState.basePlaybackRate = FastRound((float)(
         (long double)playbackRate /
         (long double)mss_playbackRateScale));
     savedState.logicalVolume = channel->logicalVolume;
-    AIL_stream_volume_pan(
+    audio_stream_volume_pan(
         stream, &savedState.relativeVolume, &savedState.pan);
     if (mss_effectVolume == MSS_FULL_VOLUME) {
         savedState.relativeVolume = channel->logicalVolume;
@@ -2040,20 +2071,20 @@ int32_t MSS_RestoreStreamChannel(const uint8_t *buffer,
     if (channelIndex >= 0) {
         const int32_t streamIndex =
             channelIndex - MSS_STREAM_CHANNEL_FIRST;
-        miles_stream_handle_t const stream =
+        audio_stream_handle_t const stream =
             mss_streamHandles[streamIndex];
         const int32_t elapsedMsec = FastRound((float)(
             (long double)durationMsec *
             (long double)savedState.startFraction));
         mss_channelInfo[channelIndex].endTime -= elapsedMsec;
-        AIL_set_stream_volume_pan(
+        audio_set_stream_volume_pan(
             stream, mss_effectVolume * savedState.relativeVolume,
             savedState.pan);
         const float scaledPlaybackRate = (float)(
             (long double)savedState.basePlaybackRate *
             (long double)mss_channelInfo[channelIndex].aliasPitchScale *
             (long double)mss_playbackRateScale);
-        AIL_set_stream_playback_rate(
+        audio_set_stream_playback_rate(
             stream, FastRound(scaledPlaybackRate));
         memcpy(mss_channelInfo[channelIndex].effectOffset,
                savedChannel.effectOffset,
@@ -2163,8 +2194,8 @@ void MSS_Restore(const uint8_t *saveData, int32_t saveSize)
     mss_reverbLevel = environment.reverbLevel;
     mss_reverbTarget = environment.reverbTarget;
     mss_reverbRate = environment.reverbRatePerMsec;
-    AIL_set_digital_master_room_type(mss_digitalDriver, mss_roomType);
-    AIL_set_3D_room_type(mss_3dProvider, mss_roomType);
+    audio_set_digital_master_room_type(mss_digitalDriver, mss_roomType);
+    audio_set_3D_room_type(mss_3dProvider, mss_roomType);
 
     offset = MSS_Read(saveData, offset, saveSize,
                       &mss_backgroundFades[0],
@@ -2287,14 +2318,14 @@ int32_t MSS_GetSoundOverlay2D(mss_sound_overlay_t *overlay,
 
         const mss_channel_info_t *const channel =
             &mss_channelInfo[channelIndex];
-        miles_sample_handle_t const sample = mss_2dSampleHandles[index];
+        audio_sample_handle_t const sample = mss_2dSampleHandles[index];
         entry->soundFile = channel->alias->soundFile;
-        int32_t playbackRate = AIL_sample_playback_rate(sample);
+        int32_t playbackRate = audio_sample_playback_rate(sample);
         if (playbackRate == 0)
             playbackRate = channel->basePlaybackRate;
         entry->logicalVolume =
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
-        AIL_sample_volume_pan(sample, &entry->relativeVolume, NULL);
+        audio_sample_volume_pan(sample, &entry->relativeVolume, NULL);
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
         if (mss_effectVolume != MSS_FULL_VOLUME)
             entry->relativeVolume /= mss_effectVolume;
@@ -2326,20 +2357,20 @@ int32_t MSS_GetSoundOverlay3D(mss_sound_overlay_t *overlay,
 
         const mss_channel_info_t *const channel =
             &mss_channelInfo[channelIndex];
-        miles_3d_sample_handle_t const sample =
+        audio_3d_sample_handle_t const sample =
             mss_3dSampleHandles[channelIndex];
         entry->soundFile = channel->alias->soundFile;
-        (void)AIL_3D_sample_length(sample);
-        int32_t playbackRate = AIL_3D_sample_playback_rate(sample);
+        (void)audio_3D_sample_length(sample);
+        int32_t playbackRate = audio_3D_sample_playback_rate(sample);
         if (playbackRate == 0)
             playbackRate = channel->basePlaybackRate;
         vec3_t unusedPosition;
-        AIL_3D_position(sample, &unusedPosition[0],
+        audio_3D_position(sample, &unusedPosition[0],
                         &unusedPosition[1], &unusedPosition[2]);
         entry->logicalVolume =
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         entry->relativeVolume =
-            AIL_3D_sample_volume(sample) * MSS_OVERLAY_VOLUME_SCALE;
+            audio_3D_sample_volume(sample) * MSS_OVERLAY_VOLUME_SCALE;
         if (mss_effectVolume != MSS_FULL_VOLUME)
             entry->relativeVolume /= mss_effectVolume;
         entry->basePlaybackRate = channel->basePlaybackRate;
@@ -2375,12 +2406,12 @@ int32_t MSS_GetSoundOverlayStream(mss_sound_overlay_t *overlay,
 
         const mss_channel_info_t *const channel =
             &mss_channelInfo[channelIndex];
-        miles_stream_handle_t const stream = mss_streamHandles[index];
+        audio_stream_handle_t const stream = mss_streamHandles[index];
         entry->soundFile = channel->alias->soundFile;
-        const int32_t playbackRate = AIL_stream_playback_rate(stream);
+        const int32_t playbackRate = audio_stream_playback_rate(stream);
         entry->logicalVolume =
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
-        AIL_stream_volume_pan(stream, &entry->relativeVolume, NULL);
+        audio_stream_volume_pan(stream, &entry->relativeVolume, NULL);
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
         if (mss_effectVolume != MSS_FULL_VOLUME)
             entry->relativeVolume /= mss_effectVolume;
@@ -2482,7 +2513,7 @@ void ReleaseEAXManager(void)
     }
 
     int32_t dryRoomLevel = MSS_EAX_DRY_ROOM_LEVEL;
-    (void)AIL_set_3D_provider_preference(
+    (void)audio_set_3D_provider_preference(
         mss_3dProvider, "EAX2 room", &dryRoomLevel);
 
     if (mss_eaxManager != NULL) {
@@ -2526,7 +2557,7 @@ void EALFileInit(const char *mapName)
     mss_eaxEnvironmentLoaded = LoadEALFile(ealPath);
     if (!mss_eaxEnvironmentLoaded) {
         int32_t dryRoomLevel = MSS_EAX_DRY_ROOM_LEVEL;
-        (void)AIL_set_3D_provider_preference(
+        (void)audio_set_3D_provider_preference(
             mss_3dProvider, "EAX2 room", &dryRoomLevel);
     }
 }
@@ -2608,7 +2639,7 @@ void UpdateEAXListener(const vec3_t origin)
     }
 
     properties.airAbsorptionHF = 0.0f;
-    (void)AIL_set_3D_provider_preference(
+    (void)audio_set_3D_provider_preference(
         mss_3dProvider, "EAX all parameters", &properties);
     mss_eaxRoomId = environmentId;
 }
@@ -2619,7 +2650,7 @@ void UpdateEAXListener(const vec3_t origin)
  * EAX; both are real source inputs. The previous one-argument prototype lost
  * that sample dependency. EAXMan again consumes x,z,y coordinates and returns
  * the five Miles EAX2 sample preferences used below. */
-void UpdateEAXBuffer(miles_3d_sample_handle_t sample,
+void UpdateEAXBuffer(audio_3d_sample_handle_t sample,
                      const vec3_t position)
 {
     if (!mss_eaxEnvironmentLoaded || mss_underwaterEffectActive)
@@ -2643,19 +2674,19 @@ void UpdateEAXBuffer(miles_3d_sample_handle_t sample,
     }
 
     if (mss_eaxApplyObstruction) {
-        (void)AIL_set_3D_sample_preference(
+        (void)audio_set_3D_sample_preference(
             sample, "EAX2 sample obstruction", &obstruction);
-        (void)AIL_set_3D_sample_preference(
+        (void)audio_set_3D_sample_preference(
             sample, "EAX2 sample obstruction LF ratio",
             &obstructionLFRatio);
     }
     if (mss_eaxApplyOcclusion) {
-        (void)AIL_set_3D_sample_preference(
+        (void)audio_set_3D_sample_preference(
             sample, "EAX2 sample occlusion", &occlusion);
-        (void)AIL_set_3D_sample_preference(
+        (void)audio_set_3D_sample_preference(
             sample, "EAX2 sample occlusion LF ratio",
             &occlusionLFRatio);
-        (void)AIL_set_3D_sample_preference(
+        (void)audio_set_3D_sample_preference(
             sample, "EAX2 sample occlusion room ratio",
             &occlusionRoomRatio);
     }
@@ -2685,19 +2716,19 @@ qboolean MSS_Init2D(void)
         break;
     }
 
-    milesDigitalFormat_t sampleFormat;
+    audio_digital_format_t sampleFormat;
     switch (mss_bits->integer) {
     case 8:
-        sampleFormat = MILES_DIGITAL_FORMAT_8_BIT;
+        sampleFormat = AUDIO_DIGITAL_FORMAT_8_BIT;
         break;
     case 16:
-        sampleFormat = MILES_DIGITAL_FORMAT_16_BIT;
+        sampleFormat = AUDIO_DIGITAL_FORMAT_16_BIT;
         break;
     default:
         Com_Printf(
             "invalid value %i for mss_bits (should be 8 or 16), using 16 instead\n",
             mss_bits->integer);
-        sampleFormat = MILES_DIGITAL_FORMAT_16_BIT;
+        sampleFormat = AUDIO_DIGITAL_FORMAT_16_BIT;
         break;
     }
 
@@ -2707,12 +2738,12 @@ qboolean MSS_Init2D(void)
     Com_Printf("Attempting %i kHz %i bit %s sound\n", sampleRate / 1000,
                sampleBits, channelLayout);
 
-    (void)AIL_set_preference(MILES_MIXER_CHANNEL_PREFERENCE,
+    (void)audio_set_preference(AUDIO_MIXER_CHANNEL_PREFERENCE,
                              MSS_TOTAL_CHANNEL_COUNT);
-    mss_digitalDriver = AIL_open_digital_driver(
+    mss_digitalDriver = audio_open_digital_driver(
         sampleRate, sampleFormat, channelCount, 0);
     if (mss_digitalDriver == NULL) {
-        Com_Printf("couldn't initialize 2D provider: %s\n", AIL_last_error());
+        Com_Printf("couldn't initialize 2D provider: %s\n", audio_last_error());
         return qfalse;
     }
 
@@ -2741,17 +2772,22 @@ qboolean MSS_Init3DProvider(const char *preferredProviderName,
      * platform adapter. Existing configs naming the retail Miles provider
      * reach this fallback and are migrated by the original Cvar_Set2 path. */
     static const char fallbackProviderName[] =
-        CODUOMP_3D_PROVIDER_NAME;
-    miles_3d_provider_enumerator_t enumerator = 0;
-    miles_3d_provider_t requestedProvider = 0;
-    miles_3d_provider_t fallbackProvider = 0;
-    miles_3d_provider_t enumeratedProvider;
+        AUDIO_BACKEND_DEFAULT_NAME;
+    audio_provider_enumerator_t enumerator = 0;
+    audio_provider_t requestedProvider = 0;
+    audio_provider_t fallbackProvider = 0;
+    audio_provider_t enumeratedProvider;
     const char *enumeratedName;
 
-    if (listProviders)
+    if (listProviders) {
+#if defined(AUDIO_BACKEND_MILES)
         Com_Printf("available 3D providers:\n");
+#else
+        Com_Printf("available audio backends:\n");
+#endif
+    }
 
-    while (AIL_enumerate_3D_providers(
+    while (audio_enumerate_3D_providers(
                &enumerator, &enumeratedProvider, &enumeratedName)) {
         if (listProviders)
             Com_Printf("  %s\n", enumeratedName);
@@ -2763,12 +2799,21 @@ qboolean MSS_Init3DProvider(const char *preferredProviderName,
 
     mss_3dProvider = 0;
     if (requestedProvider != 0) {
-        if (AIL_open_3D_provider(requestedProvider) == 0) {
+        if (audio_open_3D_provider(requestedProvider) == 0) {
+#if defined(AUDIO_BACKEND_MILES)
             Com_Printf("using 3D provider '%s'\n", preferredProviderName);
+#else
+            Com_Printf("using audio backend '%s'\n", preferredProviderName);
+#endif
             mss_3dProvider = requestedProvider;
         } else {
+#if defined(AUDIO_BACKEND_MILES)
             Com_Printf("couldn't open 3D provider '%s': %s\n",
-                       preferredProviderName, AIL_last_error());
+                       preferredProviderName, audio_last_error());
+#else
+            Com_Printf("couldn't open audio backend '%s': %s\n",
+                       preferredProviderName, audio_last_error());
+#endif
         }
     }
 
@@ -2779,7 +2824,7 @@ qboolean MSS_Init3DProvider(const char *preferredProviderName,
         if (preferredProviderName[0] != '\0' &&
             coduo_crt_stricmp(preferredProviderName,
                                 fallbackProviderName) != 0) {
-#if defined(__APPLE__) || defined(__linux__)
+#if !defined(AUDIO_BACKEND_MILES)
             Com_Printf(
                 "trying to use '%s' instead of '%s'\n",
                 fallbackProviderName, preferredProviderName);
@@ -2790,28 +2835,37 @@ qboolean MSS_Init3DProvider(const char *preferredProviderName,
 #endif
         }
 
-        if (AIL_open_3D_provider(fallbackProvider) != 0) {
+        if (audio_open_3D_provider(fallbackProvider) != 0) {
+#if defined(AUDIO_BACKEND_MILES)
             Com_Printf("couldn't open 3D provider '%s': %s\n",
-                       fallbackProviderName, AIL_last_error());
+                       fallbackProviderName, audio_last_error());
+#else
+            Com_Printf("couldn't open audio backend '%s': %s\n",
+                       fallbackProviderName, audio_last_error());
+#endif
             return qfalse;
         }
 
+#if defined(AUDIO_BACKEND_MILES)
         Com_Printf("using 3D provider '%s'\n", fallbackProviderName);
+#else
+        Com_Printf("using audio backend '%s'\n", fallbackProviderName);
+#endif
         /* 0x00450d13 publishes the working handle before Cvar_Set2. */
         mss_3dProvider = fallbackProvider;
         (void)Cvar_Set2("mss_3d_provider", fallbackProviderName, qtrue);
     }
 
-    (void)AIL_3D_provider_attribute(
+    (void)audio_3D_provider_attribute(
         mss_3dProvider, "Maximum supported samples", &mss_max3DChannels);
     if (mss_max3DChannels > MSS_3D_CHANNEL_CAPACITY)
         mss_max3DChannels = MSS_3D_CHANNEL_CAPACITY;
     Com_Printf("%i max 3D channels\n", mss_max3DChannels);
 
-    AIL_set_3D_distance_factor(mss_3dProvider, 0.02539999969303608f);
+    audio_set_3D_distance_factor(mss_3dProvider, 0.02539999969303608f);
 
     int32_t eaxRoomLowFrequency = 0;
-    (void)AIL_3D_provider_attribute(
+    (void)audio_3D_provider_attribute(
         mss_3dProvider, "EAX3 room LF", &eaxRoomLowFrequency);
     if (eaxRoomLowFrequency != -1)
         mss_eaxAvailable = qtrue;
@@ -2885,7 +2939,7 @@ void MSS_InitChannels(void)
 {
     for (int32_t channel = 0; channel < mss_2dChannelCount; ++channel) {
         mss_2dSampleHandles[channel] =
-            AIL_allocate_sample_handle(mss_digitalDriver);
+            audio_allocate_sample_handle(mss_digitalDriver);
         if (mss_2dSampleHandles[channel] == NULL) {
             Com_Error(ERR_DROP,
                       "\x15MILES 2D sound sample allocation failed on channel %i\n",
@@ -2895,7 +2949,7 @@ void MSS_InitChannels(void)
 
     for (int32_t channel = 0; channel < mss_max3DChannels; ++channel) {
         mss_3dSampleHandles[channel] =
-            AIL_allocate_3D_sample_handle(mss_3dProvider);
+            audio_allocate_3D_sample_handle(mss_3dProvider);
         if (mss_3dSampleHandles[channel] == NULL) {
             Com_Error(ERR_DROP,
                       "\x15MILES 3D sound sample allocation failed on channel %i\n",
@@ -3002,7 +3056,7 @@ void MSS_GetCurrent3DPosition(int32_t effectId, const vec3_t localOffset,
  * Name: exact same-module Mac symbol MSS_Set3DPosition. Miles uses a different
  * axis convention: negative listener-right, listener-up, listener-forward.
  * Each dot product is rounded to float before crossing the Miles boundary. */
-void MSS_Set3DPosition(miles_3d_sample_handle_t sample,
+void MSS_Set3DPosition(audio_3d_sample_handle_t sample,
                        const vec3_t worldPosition)
 {
     const long double deltaX =
@@ -3020,7 +3074,7 @@ void MSS_Set3DPosition(miles_3d_sample_handle_t sample,
             (long double)mss_listenerAxis[axis][0] * deltaX);
     }
 
-    AIL_set_3D_position(sample,
+    audio_set_3D_position(sample,
                         -listenerCoordinates[1],
                         listenerCoordinates[2],
                         listenerCoordinates[0]);
@@ -3113,7 +3167,7 @@ int32_t MSS_FindReplacableChannel(int32_t firstChannelIndex,
  * Name: exact same-module Mac symbol MSS_Stop2DChannel. */
 void MSS_Stop2DChannel(int32_t channelIndex)
 {
-    AIL_end_sample(
+    audio_end_sample(
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST]);
     mss_channelInfo[channelIndex].paused = qfalse;
 }
@@ -3122,7 +3176,7 @@ void MSS_Stop2DChannel(int32_t channelIndex)
  * Name: exact same-module Mac symbol MSS_Pause2DChannel. */
 void MSS_Pause2DChannel(int32_t channelIndex)
 {
-    AIL_stop_sample(
+    audio_stop_sample(
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST]);
     mss_channelInfo[channelIndex].paused = qtrue;
 }
@@ -3133,7 +3187,7 @@ void MSS_Pause2DChannel(int32_t channelIndex)
  * eligible for replacement again. */
 void MSS_Unpause2DChannel(int32_t channelIndex, int32_t timeShift)
 {
-    AIL_resume_sample(
+    audio_resume_sample(
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST]);
     mss_channelInfo[channelIndex].endTime += timeShift;
     mss_channelInfo[channelIndex].paused = qfalse;
@@ -3146,9 +3200,9 @@ qboolean MSS_Is2DChannelFree(int32_t channelIndex)
 {
     if (mss_channelInfo[channelIndex].paused)
         return qfalse;
-    return AIL_sample_status(
+    return audio_sample_status(
                mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST]) ==
-           MILES_SAMPLE_STATUS_DONE;
+           AUDIO_SAMPLE_STATUS_DONE;
 }
 
 /* Source: CoDUOMP.exe 0x004515d0..0x00451664.
@@ -3177,7 +3231,7 @@ int32_t MSS_FindFree2DChannel(int32_t preferredEffectId,
  * Name: exact same-module Mac symbol MSS_Stop3DChannel. */
 void MSS_Stop3DChannel(int32_t channelIndex)
 {
-    AIL_end_3D_sample(mss_3dSampleHandles[channelIndex]);
+    audio_end_3D_sample(mss_3dSampleHandles[channelIndex]);
     mss_channelInfo[channelIndex].paused = qfalse;
 }
 
@@ -3185,7 +3239,7 @@ void MSS_Stop3DChannel(int32_t channelIndex)
  * Name: exact same-module Mac symbol MSS_Pause3DChannel. */
 void MSS_Pause3DChannel(int32_t channelIndex)
 {
-    AIL_stop_3D_sample(mss_3dSampleHandles[channelIndex]);
+    audio_stop_3D_sample(mss_3dSampleHandles[channelIndex]);
     mss_channelInfo[channelIndex].paused = qtrue;
 }
 
@@ -3193,7 +3247,7 @@ void MSS_Pause3DChannel(int32_t channelIndex)
  * Name: exact same-module Mac symbol MSS_Unpause3DChannel. */
 void MSS_Unpause3DChannel(int32_t channelIndex, int32_t timeShift)
 {
-    AIL_resume_3D_sample(mss_3dSampleHandles[channelIndex]);
+    audio_resume_3D_sample(mss_3dSampleHandles[channelIndex]);
     mss_channelInfo[channelIndex].endTime += timeShift;
     mss_channelInfo[channelIndex].paused = qfalse;
 }
@@ -3204,8 +3258,8 @@ qboolean MSS_Is3DChannelFree(int32_t channelIndex)
 {
     if (mss_channelInfo[channelIndex].paused)
         return qfalse;
-    return AIL_3D_sample_status(mss_3dSampleHandles[channelIndex]) ==
-           MILES_SAMPLE_STATUS_DONE;
+    return audio_3D_sample_status(mss_3dSampleHandles[channelIndex]) ==
+           AUDIO_SAMPLE_STATUS_DONE;
 }
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -3232,9 +3286,9 @@ int32_t MSS_FindFree3DChannel(int32_t preferredEffectId,
  * use logical IDs 32..44; the native handle array uses local indices 0..12. */
 void MSS_StopStreamChannel(int32_t channelIndex)
 {
-    miles_stream_handle_t *const stream =
+    audio_stream_handle_t *const stream =
         &mss_streamHandles[channelIndex - MSS_STREAM_CHANNEL_FIRST];
-    AIL_close_stream(*stream);
+    audio_close_stream(*stream);
     *stream = NULL;
     mss_channelInfo[channelIndex].paused = qfalse;
 }
@@ -3243,7 +3297,7 @@ void MSS_StopStreamChannel(int32_t channelIndex)
  * Name: exact same-module Mac symbol MSS_PauseStreamChannel. */
 void MSS_PauseStreamChannel(int32_t channelIndex)
 {
-    AIL_pause_stream(
+    audio_pause_stream(
         mss_streamHandles[channelIndex - MSS_STREAM_CHANNEL_FIRST], qtrue);
     mss_channelInfo[channelIndex].paused = qtrue;
 }
@@ -3252,7 +3306,7 @@ void MSS_PauseStreamChannel(int32_t channelIndex)
  * Name: exact same-module Mac symbol MSS_UnpauseStreamChannel. */
 void MSS_UnpauseStreamChannel(int32_t channelIndex, int32_t timeShift)
 {
-    AIL_pause_stream(
+    audio_pause_stream(
         mss_streamHandles[channelIndex - MSS_STREAM_CHANNEL_FIRST], qfalse);
     mss_channelInfo[channelIndex].endTime += timeShift;
     mss_channelInfo[channelIndex].paused = qfalse;
@@ -3263,16 +3317,16 @@ void MSS_UnpauseStreamChannel(int32_t channelIndex, int32_t timeShift)
  * streams are closed here and their slots cleared before being reported free. */
 qboolean MSS_IsStreamChannelFree(int32_t channelIndex)
 {
-    miles_stream_handle_t *const stream =
+    audio_stream_handle_t *const stream =
         &mss_streamHandles[channelIndex - MSS_STREAM_CHANNEL_FIRST];
     if (*stream == NULL)
         return qtrue;
     if (mss_channelInfo[channelIndex].paused)
         return qfalse;
-    if (AIL_stream_status(*stream) != MILES_SAMPLE_STATUS_DONE)
+    if (audio_stream_status(*stream) != AUDIO_SAMPLE_STATUS_DONE)
         return qfalse;
 
-    AIL_close_stream(*stream);
+    audio_close_stream(*stream);
     *stream = NULL;
     return qtrue;
 }
@@ -3350,25 +3404,25 @@ void MSS_StopEntityChannel(int32_t effectId,
 
 /* Source: CoDUOMP.exe 0x00451ab0..0x00451adf.
  * Name and parameter roles: exact same-module Mac symbol MSS_SampleType and
- * the Windows AIL_set_sample_type caller. The return values are the Miles
+ * the Windows audio_set_sample_type caller. The return values are the Miles
  * mono/stereo, 8/16-bit, and IMA ADPCM format constants. */
-milesSampleType_t MSS_SampleType(int32_t waveFormatTag,
+audio_sample_type_t MSS_SampleType(int32_t waveFormatTag,
                                  int32_t sampleBits,
                                  int32_t channelCount)
 {
-    if (channelCount == MILES_CHANNEL_COUNT_MONO) {
-        if (waveFormatTag == MILES_WAVE_FORMAT_IMA_ADPCM)
-            return MILES_SAMPLE_TYPE_MONO_IMA_ADPCM;
-        return sampleBits > MILES_SAMPLE_BITS_8
-                   ? MILES_SAMPLE_TYPE_MONO_16
-                   : MILES_SAMPLE_TYPE_MONO_8;
+    if (channelCount == AUDIO_CHANNEL_COUNT_MONO) {
+        if (waveFormatTag == AUDIO_WAVE_FORMAT_IMA_ADPCM)
+            return AUDIO_SAMPLE_TYPE_MONO_IMA_ADPCM;
+        return sampleBits > AUDIO_SAMPLE_BITS_8
+                   ? AUDIO_SAMPLE_TYPE_MONO_16
+                   : AUDIO_SAMPLE_TYPE_MONO_8;
     }
 
-    if (waveFormatTag == MILES_WAVE_FORMAT_IMA_ADPCM)
-        return MILES_SAMPLE_TYPE_STEREO_IMA_ADPCM;
-    return sampleBits > MILES_SAMPLE_BITS_8
-               ? MILES_SAMPLE_TYPE_STEREO_16
-               : MILES_SAMPLE_TYPE_STEREO_8;
+    if (waveFormatTag == AUDIO_WAVE_FORMAT_IMA_ADPCM)
+        return AUDIO_SAMPLE_TYPE_STEREO_IMA_ADPCM;
+    return sampleBits > AUDIO_SAMPLE_BITS_8
+               ? AUDIO_SAMPLE_TYPE_STEREO_16
+               : AUDIO_SAMPLE_TYPE_STEREO_8;
 }
 
 /* Source: CoDUOMP.exe 0x00454f60..0x00455167.
@@ -3390,9 +3444,9 @@ snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename)
         return NULL;
     }
 
-    miles_sound_info_t sourceInfo;
+    audio_sound_info_t sourceInfo;
 #if defined(_WIN32)
-    if (AIL_WAV_info(fileData, &sourceInfo) == MILES_WAV_INFO_INVALID)
+    if (audio_WAV_info(fileData, &sourceInfo) == AUDIO_WAV_INFO_INVALID)
         goto invalid_sound_file;
     /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
     if (coduomp_mss_bound_miles_wav_payload(
@@ -3412,14 +3466,14 @@ snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename)
 #if SIZE_MAX == UINT32_MAX
     if (publicInfo->dataLength >
             SIZE_MAX - sizeof(*soundFile) -
-                (MILES_ALLOCATION_SIZE_ALIGNMENT - 1u)) {
+                (AUDIO_ALLOCATION_SIZE_ALIGNMENT - 1u)) {
         goto invalid_sound_file;
     }
 #endif
 
     if (publicInfo->sampleRate <= (uint32_t)mss_sampleRate &&
         (publicInfo->bitsPerSample <= mss_sampleBits ||
-         publicInfo->formatTag == MILES_WAVE_FORMAT_IMA_ADPCM) &&
+         publicInfo->formatTag == AUDIO_WAVE_FORMAT_IMA_ADPCM) &&
         publicInfo->channelCount <= mss_channelCount) {
         soundFile = MSS_Alloc(sizeof(*soundFile) + publicInfo->dataLength);
         *soundFile = *publicInfo;
@@ -3442,16 +3496,16 @@ snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename)
         if (channelCount > mss_channelCount)
             channelCount = mss_channelCount;
 
-        const milesSampleType_t sampleType = MSS_SampleType(
+        const audio_sample_type_t sampleType = MSS_SampleType(
             publicInfo->formatTag, sampleBits, channelCount);
-        const uint32_t processedSize = AIL_size_processed_digital_audio(
-            sampleRate, sampleType, MILES_PROCESS_AUDIO_SINGLE_BUFFER,
+        const uint32_t processedSize = audio_size_processed_digital_audio(
+            sampleRate, sampleType, AUDIO_PROCESS_SINGLE_BUFFER,
             &sourceInfo);
         /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
 #if SIZE_MAX == UINT32_MAX
         if (processedSize >
             SIZE_MAX - sizeof(*soundFile) -
-                (MILES_ALLOCATION_SIZE_ALIGNMENT - 1u)) {
+                (AUDIO_ALLOCATION_SIZE_ALIGNMENT - 1u)) {
             goto invalid_sound_file;
         }
 #endif
@@ -3466,9 +3520,9 @@ snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename)
         soundFile->sampleCount = sampleCount;
         soundFile->blockSize = publicInfo->blockSize;
         soundFile->initialData = payload;
-        (void)AIL_process_digital_audio(
+        (void)audio_process_digital_audio(
             payload, processedSize, sampleRate, sampleType,
-            MILES_PROCESS_AUDIO_SINGLE_BUFFER, &sourceInfo);
+            AUDIO_PROCESS_SINGLE_BUFFER, &sourceInfo);
     }
 
     FS_FreeFile(fileData);
@@ -3486,13 +3540,11 @@ invalid_sound_file:
  * no-op for hunk allocations, so MSVC reduces this body to RET. */
 void MSS_UnloadSoundFile(snd_alias_sound_file_t *soundFile)
 {
-#if (defined(__APPLE__) || defined(__linux__)) && \
-    !defined(CODUOMP_DISABLE_AUDIO)
-    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): OpenAL copies loaded
-     * aliases into cache-owned buffers. The original unload caller has
-     * already stopped every channel, so detach and evict those copies before
-     * a map hunk clear makes the payload address reusable. */
-    coduomp_openal_forget_loaded_sound(soundFile);
+#if !defined(AUDIO_BACKEND_MILES)
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): native backends may
+     * retain voice or cache state for a loaded alias. Detach it before a map
+     * hunk clear makes the payload address reusable. */
+    audio_forget_loaded_sound(soundFile);
 #endif
     MSS_Free(soundFile);
 }
@@ -3525,42 +3577,40 @@ qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
     if (channelIndex < 0)
         return qfalse;
 
-    miles_sample_handle_t const sample =
+    audio_sample_handle_t const sample =
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST];
     const snd_alias_sound_file_t *const soundFile = alias->soundFileInfo;
 
-    AIL_init_sample(sample);
-    AIL_set_sample_type(
+    audio_init_sample(sample);
+    audio_set_sample_type(
         sample,
         MSS_SampleType(soundFile->formatTag, soundFile->bitsPerSample,
                        soundFile->channelCount),
         0);
-    AIL_set_sample_address(sample, soundFile->data, soundFile->dataLength);
-    AIL_set_sample_adpcm_block_size(sample, soundFile->blockSize);
-#if (defined(__APPLE__) || defined(__linux__)) && \
-    !defined(CODUOMP_DISABLE_AUDIO)
-    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the native OpenAL
-     * adapter shares one immutable decoded buffer per loaded sound. Supply
-     * the base rate before the per-play pitch is applied below. */
-    coduomp_openal_bind_loaded_sample(sample, soundFile);
+    audio_set_sample_address(sample, soundFile->data, soundFile->dataLength);
+    audio_set_sample_adpcm_block_size(sample, soundFile->blockSize);
+#if !defined(AUDIO_BACKEND_MILES)
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): supply immutable loaded
+     * alias metadata before the native backend applies per-play parameters. */
+    audio_bind_loaded_sample(sample, soundFile);
 #endif
 
     const float scaledPlaybackRate = (float)(
         (long double)soundFile->sampleRate *
         (long double)mss_playbackRateScale * (long double)pitch);
     const int32_t playbackRate = FastRound(scaledPlaybackRate);
-    AIL_set_sample_playback_rate(sample, playbackRate);
+    audio_set_sample_playback_rate(sample, playbackRate);
 
     const float sampleVolume = (float)(
         (long double)mss_effectVolume *
         (long double)mss_channelVolumes[alias->channel].current *
         (long double)volume);
-    AIL_set_sample_volume_pan(sample, sampleVolume, 0.5f);
-    AIL_set_sample_loop_count(sample, alias->loop == 0);
-    AIL_set_sample_reverb_levels(sample, 1.0f, mss_reverbLevel);
+    audio_set_sample_volume_pan(sample, sampleVolume, 0.5f);
+    audio_set_sample_loop_count(sample, alias->loop == 0);
+    audio_set_sample_reverb_levels(sample, 1.0f, mss_reverbLevel);
 
     int32_t durationMsec;
-    AIL_sample_ms_position(sample, &durationMsec, NULL);
+    audio_sample_ms_position(sample, &durationMsec, NULL);
 
     int32_t samplePositionMsec;
     if (startFraction != 0.0f) {
@@ -3573,13 +3623,13 @@ qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
     }
 
     if (samplePositionMsec != 0)
-        AIL_set_sample_ms_position(sample, samplePositionMsec);
+        audio_set_sample_ms_position(sample, samplePositionMsec);
 
     if (!mss_paused || alias->channel == SND_ALIAS_CHANNEL_MENU) {
         if (samplePositionMsec != 0)
-            AIL_resume_sample(sample);
+            audio_resume_sample(sample);
         else
-            AIL_start_sample(sample);
+            audio_start_sample(sample);
     }
 
     if (alias->loop != 0)
@@ -3613,7 +3663,7 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
     if (channelIndex < 0)
         return qfalse;
 
-    miles_3d_sample_handle_t const sample =
+    audio_3d_sample_handle_t const sample =
         mss_3dSampleHandles[channelIndex];
     const snd_alias_sound_file_t *const soundFile = alias->soundFileInfo;
     const float oneMinusBlend = 1.0f - aliasBlend;
@@ -3626,7 +3676,7 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
         (long double)aliasBlend *
             (long double)secondaryAlias->distanceMax);
 
-    AIL_set_3D_sample_info(sample, soundFile);
+    audio_set_3D_sample_info(sample, soundFile);
 
     vec3_t listenerDelta;
     for (int32_t component = 0; component < 3; ++component) {
@@ -3661,19 +3711,19 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
     const float sampleVolume =
         (float)((long double)mss_effectVolume *
                 (long double)attenuatedVolume);
-    AIL_set_3D_sample_volume(sample, sampleVolume);
-    AIL_set_3D_sample_distances(sample, maximumDistance, maximumDistance);
+    audio_set_3D_sample_volume(sample, sampleVolume);
+    audio_set_3D_sample_distances(sample, maximumDistance, maximumDistance);
 
-    const int32_t basePlaybackRate = AIL_3D_sample_playback_rate(sample);
+    const int32_t basePlaybackRate = audio_3D_sample_playback_rate(sample);
     const float basePlaybackRateFloat = (float)basePlaybackRate;
     const float scaledPlaybackRate = (float)(
         (long double)basePlaybackRateFloat *
         (long double)mss_playbackRateScale * (long double)pitch);
     const int32_t playbackRate = FastRound(scaledPlaybackRate);
-    AIL_set_3D_sample_playback_rate(sample, playbackRate);
+    audio_set_3D_sample_playback_rate(sample, playbackRate);
     MSS_Set3DPosition(sample, position);
-    AIL_set_3D_sample_loop_count(sample, alias->loop == 0);
-    AIL_set_3D_sample_effects_level(
+    audio_set_3D_sample_loop_count(sample, alias->loop == 0);
+    audio_set_3D_sample_effects_level(
         sample, mss_eaxEnvironmentLoaded ? 1.0f : mss_reverbLevel);
 
     const uint32_t scaledSampleCount = soundFile->sampleCount * 1000u;
@@ -3702,11 +3752,11 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
         const float scaledByteOffset =
             (float)((long double)dataLengthFloat *
                     (long double)startFraction);
-        AIL_set_3D_sample_offset(sample, FastRound(scaledByteOffset));
+        audio_set_3D_sample_offset(sample, FastRound(scaledByteOffset));
         if (!mss_paused)
-            AIL_resume_3D_sample(sample);
+            audio_resume_3D_sample(sample);
     } else if (!mss_paused) {
-        AIL_start_3D_sample(sample);
+        audio_start_3D_sample(sample);
     }
 
     if (alias->loop != 0)
@@ -3774,41 +3824,41 @@ int32_t MSS_StartAliasStreamOnChannel(
 
     const int32_t streamIndex =
         channelIndex - MSS_STREAM_CHANNEL_FIRST;
-    miles_stream_handle_t *const streamSlot =
+    audio_stream_handle_t *const streamSlot =
         &mss_streamHandles[streamIndex];
     if (*streamSlot != NULL) {
-        AIL_close_stream(*streamSlot);
+        audio_close_stream(*streamSlot);
         *streamSlot = NULL;
     }
 
     const char *const qpath = va("sound/%s", alias->soundFile);
     const char *const streamPath =
         mss_q3fs->integer ? qpath : FS_ShortOSFilePath(qpath);
-    miles_stream_handle_t const stream =
-        AIL_open_stream(mss_digitalDriver, streamPath, 0);
+    audio_stream_handle_t const stream =
+        audio_open_stream(mss_digitalDriver, streamPath, 0);
     if (stream == NULL) {
         Com_Printf("Couldn't play stream '%s' from alias '%s' - %s\n",
-                   qpath, alias->aliasName, AIL_last_error());
+                   qpath, alias->aliasName, audio_last_error());
         return 0;
     }
     *streamSlot = stream;
 
-    const int32_t basePlaybackRate = AIL_stream_playback_rate(stream);
+    const int32_t basePlaybackRate = audio_stream_playback_rate(stream);
     const float scaledPlaybackRate = (float)(
         (long double)basePlaybackRate *
         (long double)mss_playbackRateScale * (long double)pitch);
-    AIL_set_stream_playback_rate(stream, FastRound(scaledPlaybackRate));
+    audio_set_stream_playback_rate(stream, FastRound(scaledPlaybackRate));
 
     const float initialVolume = (float)(
         (long double)mss_effectVolume *
         (long double)mss_channelVolumes[alias->channel].current *
         (long double)volume);
-    AIL_set_stream_volume_pan(stream, initialVolume, 0.5f);
-    AIL_set_stream_loop_count(stream, alias->loop == 0);
-    AIL_set_stream_reverb_levels(stream, 1.0f, mss_reverbLevel);
+    audio_set_stream_volume_pan(stream, initialVolume, 0.5f);
+    audio_set_stream_loop_count(stream, alias->loop == 0);
+    audio_set_stream_reverb_levels(stream, 1.0f, mss_reverbLevel);
 
     int32_t durationMsec;
-    AIL_stream_ms_position(stream, &durationMsec, NULL);
+    audio_stream_ms_position(stream, &durationMsec, NULL);
 
     int32_t streamPositionMsec;
     if (startFraction != 0.0f) {
@@ -3821,12 +3871,12 @@ int32_t MSS_StartAliasStreamOnChannel(
     }
 
     if (streamPositionMsec != 0) {
-        AIL_set_stream_ms_position(stream, streamPositionMsec);
+        audio_set_stream_ms_position(stream, streamPositionMsec);
         if (!mss_paused || alias->channel == SND_ALIAS_CHANNEL_MENU)
-            AIL_pause_stream(stream, qfalse);
+            audio_pause_stream(stream, qfalse);
     } else if (!mss_paused ||
                alias->channel == SND_ALIAS_CHANNEL_MENU) {
-        AIL_start_stream(stream);
+        audio_start_stream(stream);
     }
 
     if (alias->loop != 0)
@@ -3849,7 +3899,7 @@ int32_t MSS_StartAliasStreamOnChannel(
         const float spatializedVolume =
             (float)((long double)mss_effectVolume *
                     (long double)volume);
-        AIL_set_stream_volume_pan(stream, spatializedVolume, pan);
+        audio_set_stream_volume_pan(stream, spatializedVolume, pan);
     }
 
     return durationMsec;
@@ -3929,7 +3979,7 @@ qboolean MSS_ContinueLoopingSound(
             (long double)channel->aliasPitchScale *
             (long double)mss_playbackRateScale *
             (long double)pitchScale);
-        AIL_set_3D_sample_playback_rate(
+        audio_set_3D_sample_playback_rate(
             mss_3dSampleHandles[channelIndex],
             FastRound(scaledPlaybackRate));
         MSS_Set3DPosition(mss_3dSampleHandles[channelIndex], position);
@@ -3969,7 +4019,7 @@ qboolean MSS_ContinueLoopingSound(
             (long double)channel->aliasPitchScale *
             (long double)mss_playbackRateScale *
             (long double)pitchScale);
-        AIL_set_sample_playback_rate(
+        audio_set_sample_playback_rate(
             mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST],
             FastRound(scaledPlaybackRate));
         channel->lastUpdateTime = mss_lastSoundTime;
@@ -4009,7 +4059,7 @@ qboolean MSS_ContinueLoopingSound(
             (long double)pitchScale);
         const int32_t streamIndex =
             channelIndex - MSS_STREAM_CHANNEL_FIRST;
-        AIL_set_stream_playback_rate(
+        audio_set_stream_playback_rate(
             mss_streamHandles[streamIndex],
             FastRound(scaledPlaybackRate));
         for (int32_t component = 0; component < 3; ++component) {
@@ -4490,7 +4540,7 @@ void MSS_BeginRawSamples(int32_t sampleRate, int32_t sampleWidthBytes,
                          int32_t channelCount)
 {
     mss_raw_sample_state_t *const raw = &mss_rawSampleState;
-    raw->sample = AIL_allocate_sample_handle(mss_digitalDriver);
+    raw->sample = audio_allocate_sample_handle(mss_digitalDriver);
     if (raw->sample == NULL) {
         Com_Error(
             ERR_DROP,
@@ -4500,27 +4550,27 @@ void MSS_BeginRawSamples(int32_t sampleRate, int32_t sampleWidthBytes,
     raw->sampleRate = sampleRate;
     raw->sampleWidthBytes = sampleWidthBytes;
     raw->channelCount = channelCount;
-    AIL_init_sample(raw->sample);
+    audio_init_sample(raw->sample);
 
-    milesSampleType_t sampleType;
-    if (channelCount == MILES_CHANNEL_COUNT_MONO) {
+    audio_sample_type_t sampleType;
+    if (channelCount == AUDIO_CHANNEL_COUNT_MONO) {
         sampleType = sampleWidthBytes == 1
-                         ? MILES_SAMPLE_TYPE_MONO_8
-                         : MILES_SAMPLE_TYPE_MONO_16;
+                         ? AUDIO_SAMPLE_TYPE_MONO_8
+                         : AUDIO_SAMPLE_TYPE_MONO_16;
     } else {
         sampleType = sampleWidthBytes == 1
-                         ? MILES_SAMPLE_TYPE_STEREO_8
-                         : MILES_SAMPLE_TYPE_STEREO_16;
+                         ? AUDIO_SAMPLE_TYPE_STEREO_8
+                         : AUDIO_SAMPLE_TYPE_STEREO_16;
     }
-    AIL_set_sample_type(raw->sample, sampleType, 0);
-    AIL_set_sample_playback_rate(raw->sample, sampleRate);
-    AIL_set_sample_volume_pan(raw->sample, mss_effectVolume, 0.5f);
+    audio_set_sample_type(raw->sample, sampleType, 0);
+    audio_set_sample_playback_rate(raw->sample, sampleRate);
+    audio_set_sample_volume_pan(raw->sample, mss_effectVolume, 0.5f);
 
     raw->segmentSize = MSS_RAW_MINIMUM_BUFFER_SIZE;
-    const int32_t milesMinimum = AIL_minimum_sample_buffer_size(
+    const int32_t backendMinimum = audio_minimum_sample_buffer_size(
         mss_digitalDriver, sampleRate, sampleType);
-    if (milesMinimum > raw->segmentSize)
-        raw->segmentSize = milesMinimum;
+    if (backendMinimum > raw->segmentSize)
+        raw->segmentSize = backendMinimum;
 
     raw->ringBuffer = Z_MallocInternal(
         (size_t)raw->segmentSize * MSS_RAW_BUFFER_COUNT);
@@ -4541,8 +4591,8 @@ void MSS_EndRawSamples(void)
     if (raw->sample == NULL)
         return;
 
-    AIL_end_sample(raw->sample);
-    AIL_release_sample_handle(raw->sample);
+    audio_end_sample(raw->sample);
+    audio_release_sample_handle(raw->sample);
     raw->sample = NULL;
     Z_FreeInternal(raw->ringBuffer);
 }
@@ -4557,7 +4607,7 @@ int32_t MSS_RawSamplesTime(void)
     if (raw->sample == NULL)
         return 0;
 
-    const uint32_t samplePosition = AIL_sample_position(raw->sample);
+    const uint32_t samplePosition = audio_sample_position(raw->sample);
     return coduo_fp_to_i32_extended(
         (long double)raw->sampleTimeBaseMsec +
         (long double)samplePosition *
@@ -4575,19 +4625,19 @@ void MSS_UpdateRawSamples(void)
     if (raw->sample == NULL)
         return;
 
-    AIL_set_sample_volume_pan(raw->sample, mss_effectVolume, 0.5f);
+    audio_set_sample_volume_pan(raw->sample, mss_effectVolume, 0.5f);
     if (!raw->segmentReady[raw->readSegmentIndex])
         return;
 
-    const int32_t milesBufferIndex =
-        AIL_sample_buffer_ready(raw->sample);
-    if (milesBufferIndex == -1)
+    const int32_t backendBufferIndex =
+        audio_sample_buffer_ready(raw->sample);
+    if (backendBufferIndex == -1)
         return;
 
     raw->sampleTimeBaseMsec +=
         (double)raw->segmentSize * raw->sampleTimePerByteMsec;
-    AIL_load_sample_buffer(
-        raw->sample, milesBufferIndex,
+    audio_load_sample_buffer(
+        raw->sample, backendBufferIndex,
         raw->ringBuffer +
             raw->readSegmentIndex * raw->segmentSize,
         raw->segmentSize);
@@ -4980,7 +5030,7 @@ void MSS_Update3DChannel(int32_t channelIndex)
     snd_alias_t *const secondaryAlias = channel->secondaryAlias;
     const float aliasBlend = channel->aliasBlend;
     const float oneMinusBlend = 1.0f - aliasBlend;
-    miles_3d_sample_handle_t const sample =
+    audio_3d_sample_handle_t const sample =
         mss_3dSampleHandles[channelIndex];
     vec3_t position;
 
@@ -5043,7 +5093,7 @@ void MSS_Update3DChannel(int32_t channelIndex)
         (long double)mss_channelVolumes[alias->channel].current);
     const float sampleVolume = (float)(
         (long double)mss_effectVolume * (long double)volume);
-    AIL_set_3D_sample_volume(sample, sampleVolume);
+    audio_set_3D_sample_volume(sample, sampleVolume);
 }
 
 /* Source: CoDUOMP.exe 0x00454390..0x00454418.
@@ -5069,7 +5119,7 @@ void MSS_Update2DChannel(int32_t channelIndex)
     }
 
     volume *= (long double)mss_channelVolumes[alias->channel].current;
-    AIL_set_sample_volume_pan(
+    audio_set_sample_volume_pan(
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST],
         (float)((long double)mss_effectVolume * volume), 0.5f);
 }
@@ -5118,7 +5168,7 @@ void MSS_UpdateStreamChannel(int32_t channelIndex,
 
     volumeWide *=
         (long double)mss_channelVolumes[alias->channel].current;
-    AIL_set_stream_volume_pan(
+    audio_set_stream_volume_pan(
         mss_streamHandles[streamIndex],
         (float)((long double)mss_effectVolume * volumeWide), pan);
 }
@@ -5204,7 +5254,7 @@ void MSS_SetEnvironmentEffects(const char *roomType, float reverbLevel,
             for (int32_t channelIndex = 0;
                  channelIndex < mss_max3DChannels; ++channelIndex) {
                 if (!MSS_Is3DChannelFree(channelIndex)) {
-                    AIL_set_3D_sample_effects_level(
+                    audio_set_3D_sample_effects_level(
                         mss_3dSampleHandles[channelIndex], 1.0f);
                 }
             }
@@ -5217,8 +5267,8 @@ void MSS_SetEnvironmentEffects(const char *roomType, float reverbLevel,
         return;
 
     const int32_t roomTypeIndex = MSS_RoomTypeFromString(roomType);
-    AIL_set_digital_master_room_type(mss_digitalDriver, roomTypeIndex);
-    AIL_set_3D_room_type(mss_3dProvider, roomTypeIndex);
+    audio_set_digital_master_room_type(mss_digitalDriver, roomTypeIndex);
+    audio_set_3D_room_type(mss_3dProvider, roomTypeIndex);
     mss_roomType = roomTypeIndex;
     mss_reverbTarget = reverbLevel;
     if (fadeMsec < 1)
@@ -5263,7 +5313,7 @@ void MSS_UpdateRoomEffects(int32_t elapsedMsec)
     for (int32_t channelIndex = 0;
          channelIndex < mss_max3DChannels; ++channelIndex) {
         if (!MSS_Is3DChannelFree(channelIndex)) {
-            AIL_set_3D_sample_effects_level(
+            audio_set_3D_sample_effects_level(
                 mss_3dSampleHandles[channelIndex], mss_reverbLevel);
         }
     }
@@ -5273,7 +5323,7 @@ void MSS_UpdateRoomEffects(int32_t elapsedMsec)
     for (int32_t channelIndex = MSS_2D_CHANNEL_FIRST;
          channelIndex < end2DChannel; ++channelIndex) {
         if (!MSS_Is2DChannelFree(channelIndex)) {
-            AIL_set_sample_reverb_levels(
+            audio_set_sample_reverb_levels(
                 mss_2dSampleHandles[
                     channelIndex - MSS_2D_CHANNEL_FIRST],
                 1.0f, mss_reverbLevel);
@@ -5285,7 +5335,7 @@ void MSS_UpdateRoomEffects(int32_t elapsedMsec)
     for (int32_t channelIndex = MSS_STREAM_CHANNEL_FIRST;
          channelIndex < endStreamChannel; ++channelIndex) {
         if (!MSS_IsStreamChannelFree(channelIndex)) {
-            AIL_set_stream_reverb_levels(
+            audio_set_stream_reverb_levels(
                 mss_streamHandles[
                     channelIndex - MSS_STREAM_CHANNEL_FIRST],
                 1.0f, mss_reverbLevel);
@@ -5311,11 +5361,11 @@ void MSS_UpdateTimeScale(void)
     for (int32_t channelIndex = 0;
          channelIndex < mss_max3DChannels; ++channelIndex) {
         if (!MSS_Is3DChannelFree(channelIndex)) {
-            miles_3d_sample_handle_t const sample =
+            audio_3d_sample_handle_t const sample =
                 mss_3dSampleHandles[channelIndex];
             const int32_t playbackRate =
-                AIL_3D_sample_playback_rate(sample);
-            AIL_set_3D_sample_playback_rate(
+                audio_3D_sample_playback_rate(sample);
+            audio_set_3D_sample_playback_rate(
                 sample, FastRound((float)(
                     (long double)playbackRate *
                     (long double)rateScale)));
@@ -5327,11 +5377,11 @@ void MSS_UpdateTimeScale(void)
     for (int32_t channelIndex = MSS_STREAM_CHANNEL_FIRST;
          channelIndex < endStreamChannel; ++channelIndex) {
         if (!MSS_IsStreamChannelFree(channelIndex)) {
-            miles_stream_handle_t const stream =
+            audio_stream_handle_t const stream =
                 mss_streamHandles[
                     channelIndex - MSS_STREAM_CHANNEL_FIRST];
-            const int32_t playbackRate = AIL_stream_playback_rate(stream);
-            AIL_set_stream_playback_rate(
+            const int32_t playbackRate = audio_stream_playback_rate(stream);
+            audio_set_stream_playback_rate(
                 stream, FastRound((float)(
                     (long double)playbackRate *
                     (long double)rateScale)));
@@ -5343,11 +5393,11 @@ void MSS_UpdateTimeScale(void)
     for (int32_t channelIndex = MSS_2D_CHANNEL_FIRST;
          channelIndex < end2DChannel; ++channelIndex) {
         if (!MSS_Is2DChannelFree(channelIndex)) {
-            miles_sample_handle_t const sample =
+            audio_sample_handle_t const sample =
                 mss_2dSampleHandles[
                     channelIndex - MSS_2D_CHANNEL_FIRST];
-            const int32_t playbackRate = AIL_sample_playback_rate(sample);
-            AIL_set_sample_playback_rate(
+            const int32_t playbackRate = audio_sample_playback_rate(sample);
+            audio_set_sample_playback_rate(
                 sample, FastRound((float)(
                     (long double)playbackRate *
                     (long double)rateScale)));
@@ -5366,7 +5416,7 @@ void MSS_Update(void)
     if (mss_digitalDriver == NULL)
         return;
 
-    mss_cpuPercent = AIL_digital_CPU_percent(mss_digitalDriver);
+    mss_cpuPercent = audio_digital_CPU_percent(mss_digitalDriver);
     if (com_statmon->integer != 0 &&
         mss_cpuPercent > MSS_SOUND_CPU_WARNING_THRESHOLD_PERCENT) {
         StatMon_Warning(MSS_SOUND_CPU_WARNING_ENTRY,
@@ -5569,21 +5619,21 @@ void MSS_SetChannelInfo(int32_t channelIndex, int32_t effectId,
 
 /* Source: CoDUOMP.exe 0x00450900..0x00450922.
  * Name and callback role: exact same-module Mac symbol MSS_FileOpenCallback;
- * the function-pointer position is proven by AIL_set_file_callbacks at
+ * the function-pointer position is proven by audio_set_file_callbacks at
  * 0x004551ea. Miles receives zero rather than the engine's -1 open failure. */
-int32_t MILES_CALLBACK MSS_FileOpenCallback(const char *filename,
+int32_t AUDIO_CALLBACK MSS_FileOpenCallback(const char *filename,
                                              int32_t *fileHandle)
 {
     const int32_t fileSize = FS_FOpenFileRead_Internal(
         filename, fileHandle, qtrue, qtrue);
-    return fileSize == MILES_FILE_OPEN_FAILED
-               ? MILES_FILE_OPEN_FAILURE_RESULT
+    return fileSize == AUDIO_FILE_OPEN_FAILED
+               ? AUDIO_FILE_OPEN_FAILURE_RESULT
                : fileSize;
 }
 
 /* Source: CoDUOMP.exe 0x00450930..0x0045093d.
  * Name and callback role: exact same-module Mac symbol MSS_FileCloseCallback. */
-void MILES_CALLBACK MSS_FileCloseCallback(int32_t fileHandle)
+void AUDIO_CALLBACK MSS_FileCloseCallback(int32_t fileHandle)
 {
     FS_FCloseFile(fileHandle);
 }
@@ -5592,18 +5642,18 @@ void MILES_CALLBACK MSS_FileCloseCallback(int32_t fileHandle)
  * Name and callback role: exact same-module Mac symbol MSS_FileSeekCallback.
  * Miles' origin values are reordered into the engine/CRT SEEK_SET/CUR/END
  * values before seeking; the original then inlines FS_FTell. */
-int32_t MILES_CALLBACK MSS_FileSeekCallback(int32_t fileHandle,
+int32_t AUDIO_CALLBACK MSS_FileSeekCallback(int32_t fileHandle,
                                              int32_t offset, int32_t origin)
 {
     engineFileSeekOrigin_t engineOrigin;
-    switch ((milesFileSeekOrigin_t)origin) {
-    case MILES_FILE_SEEK_END:
+    switch ((audioFileSeekOrigin_t)origin) {
+    case AUDIO_FILE_SEEK_END:
         engineOrigin = ENGINE_FILE_SEEK_END;
         break;
-    case MILES_FILE_SEEK_SET:
+    case AUDIO_FILE_SEEK_SET:
         engineOrigin = ENGINE_FILE_SEEK_SET;
         break;
-    case MILES_FILE_SEEK_CURRENT:
+    case AUDIO_FILE_SEEK_CURRENT:
         engineOrigin = ENGINE_FILE_SEEK_CURRENT;
         break;
     default:
@@ -5616,7 +5666,7 @@ int32_t MILES_CALLBACK MSS_FileSeekCallback(int32_t fileHandle,
 
 /* Source: CoDUOMP.exe 0x004509c0..0x004509d9.
  * Name and callback role: exact same-module Mac symbol MSS_FileReadCallback. */
-int32_t MILES_CALLBACK MSS_FileReadCallback(int32_t fileHandle, void *buffer,
+int32_t AUDIO_CALLBACK MSS_FileReadCallback(int32_t fileHandle, void *buffer,
                                              int32_t byteCount)
 {
     return FS_Read(buffer, byteCount, fileHandle);

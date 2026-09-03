@@ -9,7 +9,7 @@
 #include "platform/crt_boundary.h"
 #include "renderer/renderer_cvars.h"
 #include "server/server.h"
-#include "sound/miles_boundary.h"
+#include "sound/sound_system.h"
 #include "qcommon/q_string.h"
 
 #include <stddef.h>

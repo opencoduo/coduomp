@@ -243,11 +243,9 @@ CODUO_DEFAULT_BEHAVIOR := windows
 # a client build.
 override CODUO_BEHAVIOR := windows
 include build-mk/platform-behavior.mk
-CODUOMP_DISABLE_AUDIO ?= 0
 RECOVERY_POLICY_CPPFLAGS :=
-ifeq ($(CODUOMP_DISABLE_AUDIO),1)
-CODUOMP_AUDIO_CPPFLAGS := -DCODUOMP_DISABLE_AUDIO
-endif
+AUDIO_BACKEND_CPPFLAGS := -DAUDIO_BACKEND_MINIAUDIO \
+	-DAUDIO_BACKEND_OPENAL
 CODUOMP_C_SOURCES := $(CLIENT_ENGINE_C_SOURCES)
 CODUOMP_CXX_SOURCES := $(CLIENT_ENGINE_CXX_SOURCES)
 CODUOMP_WINDOWS_GENERATED_DIR := src/scripting/generated/windows
@@ -263,18 +261,12 @@ CODUOMP_MINIZIP_LIBS ?= $(shell $(PKG_CONFIG) --libs minizip 2>/dev/null)
 ifeq ($(shell uname -s),Darwin)
 CODUOMP_NATIVE_PLATFORM_LIBS := -framework OpenGL -framework CoreGraphics \
 	-framework AppKit -framework Foundation
-ifneq ($(CODUOMP_DISABLE_AUDIO),1)
 CODUOMP_NATIVE_PLATFORM_LIBS += -framework OpenAL -framework AudioToolbox \
 	-framework CoreAudio -framework AudioUnit -framework CoreFoundation
-endif
 CODUOMP_MACOS_OBJC_SOURCES := \
 	src/client/engine/platform/macos_app_bundle.m
 else
-ifeq ($(CODUOMP_DISABLE_AUDIO),1)
-CODUOMP_NATIVE_PLATFORM_LIBS := -lm
-else
 CODUOMP_NATIVE_PLATFORM_LIBS := $(shell $(PKG_CONFIG) --libs openal sndfile 2>/dev/null) -lm -ldl -pthread
-endif
 CODUOMP_MACOS_OBJC_SOURCES :=
 endif
 CODUOMP_NATIVE_WIDTH_WARNINGS := -Wshorten-64-to-32 \
@@ -299,7 +291,7 @@ CODUOMP_NATIVE_CFLAGS := -g -O0 $(CODUOMP_INTEGER_FLAGS) \
 	$(CODUOMP_FLOAT_FLAGS) $(CODUOMP_STORAGE_FLAGS) \
 	$(CLIENT_FP_CPPFLAGS) \
 	$(RECOVERY_POLICY_CPPFLAGS) \
-	$(CODUOMP_AUDIO_CPPFLAGS) \
+	$(AUDIO_BACKEND_CPPFLAGS) \
 	$(PLATFORM_BEHAVIOR_CPPFLAGS) \
 	$(CODUOMP_INCLUDE_FLAGS) \
 	$(CODUOMP_JPEG_CFLAGS) $(CODUOMP_SDL_CFLAGS) \
