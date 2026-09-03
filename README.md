@@ -36,61 +36,91 @@ See [the branch policy](docs/branch-policy.md) for the exact boundary. Run
 
 ## Build
 
-The default target builds the native client executable, cgame, and UI:
+Choose the section for the platform where you are building. A legally owned
+Call of Duty: United Offensive installation is needed to run the client, but
+the retail game files are not part of the source build.
+
+### macOS (Apple Silicon)
+
+Install Apple's Command Line Tools (the full Xcode application also provides
+them):
+
+```sh
+xcode-select --install
+```
+
+Install [Homebrew](https://brew.sh/) if it is not already available, then
+install the remaining dependencies:
+
+```sh
+brew install pkgconf sdl2 jpeg-turbo minizip
+```
+
+`pkgconf` supplies the `pkg-config` command used by the Makefiles. The macOS
+SDK supplies Clang, `make`, libcurl, zlib, and the required system frameworks.
+
+Build the native client executable, cgame, and UI:
 
 ```sh
 make
 ```
 
-Useful client targets:
+To create a Finder-launchable application bundle or a distributable ZIP:
 
 ```sh
-make client
 make macos-app
 make macos-zip
-make client-linux32
-make client-linux64
-make client-linux32-package
-make client-linux64-package
-make client-windows-i686-package \
-  MSS32_DLL=/path/to/mss32.dll \
-  MINGW32_DEP_PREFIX=/path/to/i686-mingw-prefix
-make client-windows-x86_64-package \
-  MINGW64_DEP_PREFIX=/path/to/x86_64-mingw-prefix
 ```
 
-The Windows i686 build uses the retail 32-bit Miles library. Every other
-client uses the built-in Miniaudio backend by default, with OpenAL retained as
-a deprecated backup where it is available. Package targets create complete
-architecture-matched client/module archives without retail game data. The
-macOS target creates a Finder-launchable application bundle.
+### Debian or Ubuntu Linux (x86-64)
 
-From macOS, `make release-builds` creates the macOS arm64 package locally and
-dispatches Linux x86-64 plus Windows i686/x86-64 builds to a configured Linux
-build host. Its host and path settings are intentionally supplied at invocation
-time and are never stored in the repository. Run `make help` for the required
-`RELEASE_REMOTE_*` options.
-
-The Linux dedicated-server targets build the engine and matching game module:
+Install the compiler and development packages:
 
 ```sh
+sudo apt-get update
+sudo apt-get install -y build-essential pkg-config libsdl2-dev libjpeg-dev \
+  libcurl4-openssl-dev libminizip-dev zlib1g-dev libgl1-mesa-dev \
+  libopenal-dev libsndfile1-dev
+```
+
+Build the native client executable, cgame, and UI:
+
+```sh
+make
+```
+
+To build a complete x86-64 client archive or the dedicated server and matching
+game module:
+
+```sh
+make client-linux64-package
 make server64
+```
+
+### Debian or Ubuntu Linux (32-bit on an x86-64 host)
+
+Enable i386 packages and install the complete 32-bit toolchain and dependency
+set:
+
+```sh
+sudo dpkg --add-architecture i386
+sudo apt-get update
+sudo apt-get install -y build-essential gcc-multilib g++-multilib pkg-config \
+  libsdl2-dev:i386 libjpeg-dev:i386 libcurl4-openssl-dev:i386 \
+  libminizip-dev:i386 zlib1g-dev:i386 libgl1-mesa-dev:i386 \
+  libopenal-dev:i386 libsndfile1-dev:i386
+```
+
+Build the 32-bit client archive or dedicated server:
+
+```sh
+make client-linux32-package
 make server32
 ```
 
-Windows dedicated-server targets are independent of the Windows client target:
-
-```sh
-make server-windows-i386
-make server-windows-i686
-```
-
-Generated build, package, and runtime files stay under `.workbench/`. Use
-`make help` for build options. Linux i386 and MinGW targets require their
-corresponding multilib or cross-compilation toolchains. Native builds on a
-non-x87 host must explicitly select `CODUO_FP_FAITHFUL=relaxed`; exact server
-builds use GCC on x86/x86-64 or the original i386 target. Release package
-targets strip staging copies and reject embedded personal or build-host paths.
+Generated build, package, and runtime files stay under `.workbench/`. Package
+targets create complete architecture-matched archives without retail game
+data. Use `make help` for additional build options.
 
 To build and run the native client as the normal system game, point it at a
 game-data root containing `main/` and `uo/`:
