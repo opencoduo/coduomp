@@ -25,6 +25,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - The graphics menu adds a Current Display option and filters modern presets through 3840 x 2160 to resolutions reported by the primary display.
 - Windowed, exclusive fullscreen, and borderless desktop modes are available.
 - Widescreen support covers the gameplay FOV, menus, HUD, reticles, optical overlays, and full-screen effects; classic fitted 4:3 remains selectable.
+- Mods that replace the HUD menu file (e.g. Reign of the Undead) are detected and render their HUD with the stock full-width presentation so their authored layout stays intact, while the world keeps the widescreen FOV; `cg_modHudPresentation` can force stretched, centered, or anchored HUD presentation.
 - Retina and other high-DPI displays are supported.
 - Alt-Tab from fullscreen is enabled by default on Windows.
 - New Apple Silicon profiles default to 2560 x 1440, high graphics settings, and a 250 FPS cap.

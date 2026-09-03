@@ -198,6 +198,10 @@ qboolean coduomp_get_output_presentation_compat(
  * scope recorded in the renderer command stream. It is distinct from the
  * frontend submission flag because renderer commands execute later. */
 qboolean coduomp_backend_cgame_2d_compat_active;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the cgame scope's
+ * full-width HUD stretch policy recorded alongside it in the command
+ * stream. */
+qboolean coduomp_backend_cgame_2d_stretch_active;
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the native-width
  * console scope recorded in the renderer command stream. */
 qboolean coduomp_backend_console_2d_compat_active;

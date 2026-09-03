@@ -35,6 +35,7 @@ void RE_DrawQuadPic(const vec2_t positions[4], const vec2_t texCoords[4],
 static qboolean coduomp_uses_widescreen_cgame_2d(void)
 {
     if (coduomp_cgame_rendering_compat_active == qfalse ||
+        coduomp_cgame_hud_stretch_active != qfalse ||
         r_aspectMode == NULL || r_aspectMode->integer != 0 ||
         glConfig.vidWidth <= 0 || glConfig.vidHeight <= 0) {
         return qfalse;
@@ -87,15 +88,26 @@ void coduomp_re_begin_frame_compat(stereoFrame_t stereoFrame)
  * boolean alone cannot reliably describe the source of later text commands. */
 void coduomp_queue_cgame_2d_presentation(qboolean enabled)
 {
-    coduomp_cgame_2d_presentation_command_t *command =
-        (coduomp_cgame_2d_presentation_command_t *)R_GetCommandBuffer(
-            (int32_t)sizeof(*command));
+    coduomp_cgame_2d_presentation_command_t *command;
+
+    /* Snapshot the cgame-published stretch policy once per scope open so the
+     * frontend picture bias and the deferred text transform inside this scope
+     * agree, even if the policy cvar changes mid-frame. */
+    if (enabled != qfalse) {
+        coduomp_cgame_hud_stretch_active =
+            coduomp_cgame_hud_stretch_requested();
+    }
+
+    command = (coduomp_cgame_2d_presentation_command_t *)R_GetCommandBuffer(
+        (int32_t)sizeof(*command));
 
     if (command == NULL)
         return;
 
     command->commandId = RC_SET_CGAME_2D_PRESENTATION;
     command->enabled = enabled;
+    command->stretched =
+        enabled != qfalse ? coduomp_cgame_hud_stretch_active : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: record a console presentation transition in the

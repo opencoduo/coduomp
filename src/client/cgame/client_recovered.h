@@ -2544,6 +2544,13 @@ void cgame_compat_project_server_hud_item(
     cgAlignedDrawItem *item, const struct hudElem_s *elem);
 float cgame_compat_left_hud_virtual_offset(void);
 qboolean cgame_compat_uses_classic_aspect(void);
+/* NOT_FROM_ORIGINAL_SOURCE: mod-authored HUD detection and its presentation
+ * fallback (cgame_compat_hud_authorship.c / cgame_compat_presentation.c). */
+void cgame_compat_evaluate_hud_menu_authorship(void);
+void cgame_compat_reset_hud_menu_authorship(void);
+qboolean cgame_compat_hud_menus_are_mod_authored(void);
+qboolean cgame_compat_uses_stretched_hud(void);
+void cgame_compat_publish_hud_presentation(void);
 void cgame_compat_tile_clear(void);
 void cgame_compat_draw_physical_stretch_pic(
     float x, float y, float width, float height,

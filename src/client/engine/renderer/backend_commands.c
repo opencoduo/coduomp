@@ -44,6 +44,7 @@ static const void *coduomp_rb_set_cgame_2d_presentation(
         RB_EndSurface();
 
     coduomp_backend_cgame_2d_compat_active = command->enabled;
+    coduomp_backend_cgame_2d_stretch_active = command->stretched;
     if (backEnd.projection2D != qfalse)
         coduomp_apply_2d_presentation_viewport();
 
@@ -110,6 +111,7 @@ const void *RB_DrawBuffer(const drawBufferCommand_t *command)
      * frames. No legitimate scope spans this frame-begin command, so it
      * restores the neutral presentation state. */
     coduomp_backend_cgame_2d_compat_active = qfalse;
+    coduomp_backend_cgame_2d_stretch_active = qfalse;
     coduomp_backend_console_2d_compat_active = qfalse;
     coduomp_backend_ui_2d_compat_active = qfalse;
     qglDrawBuffer(command->buffer);

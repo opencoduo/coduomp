@@ -13,6 +13,22 @@ qboolean coduomp_cgame_rendering_compat_active;
  * primitives are being submitted. Renderer-side console icons call the client
  * AdjustFrom640 import immediately instead of waiting for backend execution. */
 qboolean coduomp_console_rendering_compat_active;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: snapshot of the cgame-published
+ * full-width HUD stretch policy, taken when a cgame presentation scope opens
+ * (coduomp_queue_cgame_2d_presentation). While set, ordinary cgame 2D keeps
+ * the recovered stock vidWidth/640 transform: no centered-canvas bias for
+ * pictures and the stock stretch for deferred text. */
+qboolean coduomp_cgame_hud_stretch_active;
+
+/* NOT_FROM_ORIGINAL_SOURCE: the cgame module owns mod-HUD presentation policy
+ * (authorship detection plus the cg_modHudPresentation cvar) and publishes
+ * the resolved state through this engine cvar. Absent means not stretched. */
+qboolean coduomp_cgame_hud_stretch_requested(void)
+{
+    const cvar_t *stretch = Cvar_FindVar("cg_hudStretchActive");
+
+    return stretch != NULL && stretch->integer != 0 ? qtrue : qfalse;
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: expose the UI VM's authoritative fullscreen state
  * to the renderer's existing 4:3 fullscreen viewport policy.  The recovered
@@ -39,7 +55,8 @@ int32_t coduomp_left_hud_virtual_x_compat(int32_t x)
         cls.rendererConfig.vidHeight <= 0 ||
         (int64_t)cls.rendererConfig.vidWidth * 3 <=
             (int64_t)cls.rendererConfig.vidHeight * 4 ||
-        (aspectMode != NULL && aspectMode->integer != 0)) {
+        (aspectMode != NULL && aspectMode->integer != 0) ||
+        coduomp_cgame_hud_stretch_requested() != qfalse) {
         return x;
     }
 
@@ -77,8 +94,10 @@ void coduomp_scr_adjust_from_640_compat(float *x, float *y,
         (int64_t)cls.rendererConfig.vidWidth * 3 >
             (int64_t)cls.rendererConfig.vidHeight * 4 &&
         (aspectMode == NULL || aspectMode->integer == 0) &&
-        (coduomp_cgame_rendering_compat_active != qfalse ||
-         coduomp_backend_cgame_2d_compat_active != qfalse)) {
+        ((coduomp_cgame_rendering_compat_active != qfalse &&
+          coduomp_cgame_hud_stretch_active == qfalse) ||
+         (coduomp_backend_cgame_2d_compat_active != qfalse &&
+          coduomp_backend_cgame_2d_stretch_active == qfalse))) {
         horizontalScale = verticalScale;
         horizontalBias =
             ((float)cls.rendererConfig.vidWidth -

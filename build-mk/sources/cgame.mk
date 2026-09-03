@@ -364,6 +364,7 @@ CGAME_C_SOURCES := \
 	src/client/cgame/render/cg_settlevieworiginz.c \
 	src/client/cgame/render/cg_setupweaponlightingorigin.c \
 	src/client/cgame/render/cg_updateviewkick.c \
+	src/client/cgame/render/cgame_compat_hud_authorship.c \
 	src/client/cgame/render/cgame_compat_presentation.c \
 	src/client/cgame/sound/cg_findvoicechatfileindex.c \
 	src/client/cgame/sound/cg_gettranslatedvoicechatstring.c \

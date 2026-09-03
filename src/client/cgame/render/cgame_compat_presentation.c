@@ -26,6 +26,37 @@ enum {
  * original enable/detail-level semantics. */
 static vmCvar_t cgameCompatDrawFpsMode;
 
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: presentation policy for HUD content
+ * whose layout the widescreen anchor model cannot classify - a mod-authored
+ * ui_mp/hud.menu (see cgame_compat_hud_authorship.c).  0 auto: stock-authored
+ * menus keep the anchor model, a mod-authored set falls back to the stock
+ * full-width stretch; 1 always stretch; 2 always centered canvas with every
+ * anchor offset zero; 3 always the anchor model (legacy behavior). */
+static vmCvar_t cgameCompatModHudPresentation;
+
+enum {
+    CG_COMPAT_MOD_HUD_AUTO = 0,
+    CG_COMPAT_MOD_HUD_STRETCH = 1,
+    CG_COMPAT_MOD_HUD_CENTERED = 2,
+    CG_COMPAT_MOD_HUD_ANCHORED = 3
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: the resolved presentation for ordinary cgame 2D.
+ * ANCHORED is the widescreen anchor model; STRETCHED is the stock full-width
+ * transform (positions and dimensions both scale with vidWidth/640, exactly
+ * the retail presentation every HUD mod was authored against); CENTERED keeps
+ * the proportional centered canvas with every anchor offset zero. */
+typedef enum {
+    CGAME_COMPAT_HUD_PRESENTATION_ANCHORED = 0,
+    CGAME_COMPAT_HUD_PRESENTATION_STRETCHED = 1,
+    CGAME_COMPAT_HUD_PRESENTATION_CENTERED = 2
+} cgameCompatHudPresentation_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: last stretch state published to the
+ * engine (-1 = never published). The engine's 2D command wrappers consume it
+ * through the cg_hudStretchActive cvar at cgame scope-open time. */
+static int32_t cgameCompatPublishedHudStretch;
+
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: active declared-menu translation for
  * the passive Menu_PaintAll HUD pass. It is consumed only inside Item_Paint's
  * paint phase and is zero for every menu/open-menu call. */
@@ -42,8 +73,12 @@ void cgame_compat_reset_presentation_state(void)
     memset(&cgameCompatAspectMode, 0, sizeof(cgameCompatAspectMode));
     memset(&cgameCompatWideHudElems, 0, sizeof(cgameCompatWideHudElems));
     memset(&cgameCompatDrawFpsMode, 0, sizeof(cgameCompatDrawFpsMode));
+    memset(&cgameCompatModHudPresentation, 0,
+           sizeof(cgameCompatModHudPresentation));
+    cgameCompatPublishedHudStretch = -1;
     cgameCompatPassiveHudMenuOffset = 0.0f;
     cgameCompatPassiveHudMenuSplit = qfalse;
+    cgame_compat_reset_hud_menu_authorship();
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: registers presentation controls without changing
@@ -56,6 +91,8 @@ void cgame_compat_register_presentation_cvars(void)
                        CVAR_ARCHIVE);
     trap_Cvar_Register(&cgameCompatDrawFpsMode, "cg_drawFPSMode", "1",
                        CVAR_ARCHIVE);
+    trap_Cvar_Register(&cgameCompatModHudPresentation, "cg_modHudPresentation",
+                       "0", CVAR_ARCHIVE);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: refreshes the compatibility mirror alongside the
@@ -65,6 +102,8 @@ void cgame_compat_update_presentation_cvars(void)
     cgame_syscall(CG_CVAR_UPDATE, (intptr_t)&cgameCompatAspectMode);
     cgame_syscall(CG_CVAR_UPDATE, (intptr_t)&cgameCompatWideHudElems);
     cgame_syscall(CG_CVAR_UPDATE, (intptr_t)&cgameCompatDrawFpsMode);
+    cgame_syscall(CG_CVAR_UPDATE, (intptr_t)&cgameCompatModHudPresentation);
+    cgame_compat_publish_hud_presentation();
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: exposes only the compact-mode policy so the
@@ -81,6 +120,55 @@ qboolean cgame_compat_uses_simple_fps_display(void)
 qboolean cgame_compat_uses_classic_aspect(void)
 {
     return cgameCompatAspectMode.integer != 0 ? qtrue : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolve the ordinary-2D presentation from the
+ * cg_modHudPresentation policy and the HUD menu authorship verdict. */
+static cgameCompatHudPresentation_t cgame_compat_resolved_hud_presentation(void)
+{
+    switch (cgameCompatModHudPresentation.integer) {
+    case CG_COMPAT_MOD_HUD_STRETCH:
+        return CGAME_COMPAT_HUD_PRESENTATION_STRETCHED;
+    case CG_COMPAT_MOD_HUD_CENTERED:
+        return CGAME_COMPAT_HUD_PRESENTATION_CENTERED;
+    case CG_COMPAT_MOD_HUD_ANCHORED:
+        return CGAME_COMPAT_HUD_PRESENTATION_ANCHORED;
+    default:
+        return cgame_compat_hud_menus_are_mod_authored() != qfalse
+                   ? CGAME_COMPAT_HUD_PRESENTATION_STRETCHED
+                   : CGAME_COMPAT_HUD_PRESENTATION_ANCHORED;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: true when ordinary cgame 2D uses the stock
+ * full-width stretch. The world view, its Hor+ FOV, the physical-pixel
+ * crosshair, and native full-screen effects are unaffected; every
+ * canvas-relative mechanism (proportional scales, centered-canvas bias,
+ * anchor offsets, hudElem snap, full-canvas shader expansion, optical
+ * letterbox) collapses to the recovered stock transform. */
+qboolean cgame_compat_uses_stretched_hud(void)
+{
+    return cgame_compat_resolved_hud_presentation() ==
+                   CGAME_COMPAT_HUD_PRESENTATION_STRETCHED
+               ? qtrue
+               : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: publish the resolved stretch state to the engine,
+ * whose 2D command wrappers own the centered-canvas bias and the deferred
+ * text transform. Republished only on change; the engine snapshots the cvar
+ * at each cgame presentation scope open, so a mid-game policy flip changes
+ * the complete next frame rather than part of the current one. */
+void cgame_compat_publish_hud_presentation(void)
+{
+    const int32_t active = cgame_compat_uses_stretched_hud() != qfalse ? 1 : 0;
+
+    if (active == cgameCompatPublishedHudStretch)
+        return;
+
+    cgameCompatPublishedHudStretch = active;
+    cgame_syscall(CG_CVAR_SET, (intptr_t)"cg_hudStretchActive",
+                  (intptr_t)(active != 0 ? "1" : "0"));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the stock cropped-view tile fill for native
@@ -109,6 +197,7 @@ void cgame_compat_configure_screen_scales(void)
 
     cgs_screenYScale = stockYScale;
     if (cgame_compat_uses_classic_aspect() == qfalse &&
+        cgame_compat_uses_stretched_hud() == qfalse &&
         cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
         (int64_t)cgs_glconfig.vidWidth * 3 >
             (int64_t)cgs_glconfig.vidHeight * 4) {
@@ -129,6 +218,7 @@ float cgame_compat_begin_open_menu_canvas(void)
     const float previousXScale = cgs_screenXScale;
 
     if (cgame_compat_uses_classic_aspect() == qfalse &&
+        cgame_compat_uses_stretched_hud() == qfalse &&
         cgs_glconfig.vidWidth > 0 && cgs_glconfig.vidHeight > 0 &&
         (int64_t)cgs_glconfig.vidWidth * 3 >
             (int64_t)cgs_glconfig.vidHeight * 4) {
@@ -151,6 +241,7 @@ void cgame_compat_end_open_menu_canvas(float previousXScale)
 static float cgame_compat_virtual_side_width(void)
 {
     if (cgame_compat_uses_classic_aspect() != qfalse ||
+        cgame_compat_uses_stretched_hud() != qfalse ||
         cgs_glconfig.vidWidth <= 0 || cgs_glconfig.vidHeight <= 0 ||
         (int64_t)cgs_glconfig.vidWidth * 3 <=
             (int64_t)cgs_glconfig.vidHeight * 4) {
@@ -184,6 +275,14 @@ static float cgame_compat_hud_anchor_offset(cgameCompatHudAnchor_t anchor)
 
     if (sideWidth <= 0.0f)
         return 0.0f;
+    /* The forced-centered policy keeps the centered canvas (and therefore a
+     * real sideWidth for the physical bias and optics) while zeroing every
+     * anchor translation, so the complete ordinary-2D layout renders exactly
+     * like the letterboxed 4:3 composition. */
+    if (cgame_compat_resolved_hud_presentation() ==
+        CGAME_COMPAT_HUD_PRESENTATION_CENTERED) {
+        return 0.0f;
+    }
     if (anchor == CGAME_COMPAT_HUD_ANCHOR_LEFT)
         return -sideWidth;
     if (anchor == CGAME_COMPAT_HUD_ANCHOR_RIGHT)
@@ -369,7 +468,7 @@ void cgame_compat_project_server_hud_item(
  * Applying this same virtual translation to both keeps the group intact. */
 float cgame_compat_left_hud_virtual_offset(void)
 {
-    return -cgame_compat_virtual_side_width();
+    return cgame_compat_hud_anchor_offset(CGAME_COMPAT_HUD_ANCHOR_LEFT);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: matching explicit offset for direct stock HUD
@@ -379,7 +478,7 @@ float cgame_compat_left_hud_virtual_offset(void)
  * translates each complete draw to the native right edge. */
 float cgame_compat_right_hud_virtual_offset(void)
 {
-    return cgame_compat_virtual_side_width();
+    return cgame_compat_hud_anchor_offset(CGAME_COMPAT_HUD_ANCHOR_RIGHT);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: reticle and optical-overlay routines construct

@@ -174,4 +174,10 @@ void CG_LoadMenus(int32_t loadMode, const char *menuFile)
                coduo_int32_from_bits(
                    (uint32_t)cgame_syscall(CG_MILLISECONDS) -
                    (uint32_t)startMs));
+
+    /* NOT_FROM_ORIGINAL_SOURCE: classify the freshly registered HUD menu set
+     * as stock- or mod-authored for the widescreen presentation policy. Runs
+     * after every complete menu-list load (initial CG_Init load and the
+     * console reload command). */
+    cgame_compat_evaluate_hud_menu_authorship();
 }

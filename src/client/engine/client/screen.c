@@ -342,6 +342,7 @@ void SCR_UpdateScreen(void)
      * guard above blocks the one nested caller that runs inside a scope — so
      * frame start restores the neutral state. */
     coduomp_cgame_rendering_compat_active = qfalse;
+    coduomp_cgame_hud_stretch_active = qfalse;
     coduomp_console_rendering_compat_active = qfalse;
     if (cls.state == CA_ACTIVE) {
         dobj_skelCacheKey =
