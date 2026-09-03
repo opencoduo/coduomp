@@ -8,7 +8,7 @@
 #include "../platform/crt_boundary.h"
 #include "qcommon/q_string.h"
 #include "../renderer/renderer_api.h"
-#include "../sound/miles_boundary.h"
+#include "../sound/sound_system.h"
 #include "../system_platform.h"
 
 #include <math.h>

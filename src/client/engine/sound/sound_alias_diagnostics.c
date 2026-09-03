@@ -1,6 +1,6 @@
 #include "sound/alias/sound_alias.h"
 
-#include "miles_boundary.h"
+#include "sound_system.h"
 
 static const float SOUND_ALIAS_BYTES_TO_KILOBYTES =
     1.0f / 1024.0f;

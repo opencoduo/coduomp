@@ -9,7 +9,7 @@
 #include "qcommon/hunk.h"
 #include "scripting/script_runtime.h"
 #include "server/server.h"
-#include "sound/miles_boundary.h"
+#include "sound/sound_system.h"
 #include "system_platform.h"
 #include "ui/ui_module_loader.h"
 #include "renderer/renderer_api.h"

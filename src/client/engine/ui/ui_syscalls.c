@@ -9,7 +9,7 @@
 #include "../localization/string_ed_api.h"
 #include "qcommon/hunk.h"
 #include "../renderer/renderer_api.h"
-#include "../sound/miles_boundary.h"
+#include "../sound/sound_system.h"
 #include "sound/alias/sound_alias.h"
 #include "ui_client_state.h"
 

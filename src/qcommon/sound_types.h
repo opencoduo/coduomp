@@ -6,29 +6,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* NOT_FROM_ORIGINAL_SOURCE: names of the statically linked native adapters
- * exposed through the retail sound-provider cvar and options-menu control. */
-#if defined(__APPLE__) || defined(__linux__)
-#define CODUOMP_OPENAL_3D_PROVIDER_NAME \
-    "OpenAL Fast 2D Positional Audio"
-#define CODUOMP_MINIAUDIO_3D_PROVIDER_NAME \
-    "Miniaudio Fast 2D Positional Audio"
-#else
-#define CODUOMP_OPENAL_3D_PROVIDER_NAME \
-    "Miles Fast 2D Positional Audio"
-#define CODUOMP_MINIAUDIO_3D_PROVIDER_NAME \
-    "Miles Fast 2D Positional Audio"
-#endif
+/* NOT_FROM_ORIGINAL_SOURCE: canonical values of the stock-named
+ * mss_3d_provider cvar. Native clients interpret it as the complete audio
+ * backend selector. */
+#define AUDIO_BACKEND_MINIAUDIO_NAME "Miniaudio"
+#define AUDIO_BACKEND_OPENAL_NAME "OpenAL"
+#define AUDIO_BACKEND_MILES_PROVIDER_NAME "Miles Fast 2D Positional Audio"
 
-#if defined(__APPLE__) || defined(__linux__)
-/* NOT_FROM_ORIGINAL_SOURCE: one Miles Fast 2D voice has one transport and
- * playback cursor. The native OpenAL adapter needs two independent sources to
- * reproduce the provider's left/right gain law, so it cannot also preserve
- * that lifetime invariant. Miniaudio supplies the same gain law through one
- * transport and is the default native 3D provider. */
-#define CODUOMP_3D_PROVIDER_NAME CODUOMP_MINIAUDIO_3D_PROVIDER_NAME
+#if defined(AUDIO_BACKEND_MILES)
+#define AUDIO_BACKEND_DEFAULT_NAME AUDIO_BACKEND_MILES_PROVIDER_NAME
 #else
-#define CODUOMP_3D_PROVIDER_NAME CODUOMP_OPENAL_3D_PROVIDER_NAME
+#define AUDIO_BACKEND_DEFAULT_NAME AUDIO_BACKEND_MINIAUDIO_NAME
 #endif
 
 /* The three engine-owned alias banks and their compact hash tables are shared
@@ -68,7 +56,7 @@ typedef enum sndAliasChannel_e {
     SND_ALIAS_CHANNEL_COUNT = 10
 } sndAliasChannel_t;
 
-/* Public Miles metadata stored behind a loaded client alias. The Linux
+/* Public loaded-sound metadata stored behind a client alias. The Linux
  * dedicated engine keeps the same pointer lane in snd_alias_t but stores NULL
  * because it has no sound backend. */
 typedef struct snd_alias_sound_file_s {

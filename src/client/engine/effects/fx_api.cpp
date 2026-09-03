@@ -5,7 +5,7 @@
 #include "../platform/crt_boundary.h"
 #include "../renderer/renderer_api.h"
 #include "../scripting/script_runtime.h"
-#include "../sound/miles_boundary.h"
+#include "../sound/sound_system.h"
 #include "../ui/ui_module_loader.h"
 
 #include "fx_model.h"

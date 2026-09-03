@@ -18,7 +18,7 @@
 #include "../renderer/renderer_api.h"
 #include "../renderer/renderer_cvars.h"
 #include "../server/server.h"
-#include "../sound/miles_boundary.h"
+#include "../sound/sound_system.h"
 #include "../system_event.h"
 #include "../system_platform.h"
 #include "../ui/ui_client_state.h"

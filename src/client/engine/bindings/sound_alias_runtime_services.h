@@ -3,7 +3,7 @@
 
 #include "qcommon/q_command.h"
 #include "math/q_math.h"
-#include "client/engine/sound/miles_boundary.h"
+#include "client/engine/sound/sound_system.h"
 #include "sound/alias/sound_alias.h"
 
 /* NOT_FROM_ORIGINAL_SOURCE: target boundary for the client-only command and
