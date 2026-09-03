@@ -40,7 +40,6 @@ enum {
     COM_RECOMMENDED_SYSTEM_ALLOWANCE_MB = 8,
     COM_RECOMMENDED_MINIMUM_VIDEO_MB = 32,
     COM_BUILD_VERSION_CAPACITY = 64,
-    COM_BUILD_NUMBER = 1463,
     COM_QPORT_MASK = 65535,
     COM_CONSOLE_VISIBLE = 1
 };
@@ -53,11 +52,13 @@ static char comBuildVersion[COM_BUILD_VERSION_CAPACITY];
  * time into the static buffer at 0x04e3d2e0 and returns that buffer. The exact
  * source symbol is absent from the Mac binary; the role name follows the
  * common-system naming used by the surrounding source. MSVC retained this
- * out-of-line definition while also inlining it into Com_Init. */
+ * out-of-line definition while also inlining it into Com_Init.
+ * INTENTIONAL_OVERRIDE: the improved client does not maintain a numeric build
+ * sequence, so its local display identity retains only the date and time. */
 const char *Com_GetBuildVersion(void)
 {
-    (void)sprintf(comBuildVersion, "%d %s %s",
-                  COM_BUILD_NUMBER, CODUOMP_DISPLAY_BUILD_DATE, "20:33:18");
+    (void)sprintf(comBuildVersion, "%s %s",
+                  CODUOMP_DISPLAY_BUILD_DATE, "20:33:18");
     return comBuildVersion;
 }
 
@@ -469,7 +470,8 @@ parsing_complete:
 void Com_Init(char *commandLine)
 {
     Com_Printf("%s %s build %s %s\n",
-               CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION, "win-x86",
+               CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION,
+               CODUOMP_PLATFORM_TAG,
                CODUOMP_DISPLAY_BUILD_DATE);
 
     if (setjmp(com_abortFrame) != 0) {
@@ -599,7 +601,7 @@ void Com_Init(char *commandLine)
         Cvar_Get("version",
                  va("%s %s build %s %s",
                     CODUOMP_DISPLAY_PRODUCT, CODUOMP_DISPLAY_VERSION,
-                    Com_GetBuildVersion(), "win-x86"),
+                    Com_GetBuildVersion(), CODUOMP_PLATFORM_TAG),
                  CVAR_ROM);
     com_shortVersion =
         Cvar_Get("shortversion", "1.51",

@@ -3,6 +3,36 @@
 
 #include "q_shared.h"
 
+/* NOT_FROM_ORIGINAL_SOURCE: identify the platform and executable architecture
+ * consistently in the client version text and legacy update query. */
+#if defined(_WIN32)
+#if defined(_M_IX86) || defined(__i386__)
+#define CODUOMP_PLATFORM_TAG "win-x86"
+#elif defined(_M_X64) || defined(__x86_64__)
+#define CODUOMP_PLATFORM_TAG "win-x64"
+#else
+#error "Unsupported Windows client architecture"
+#endif
+#elif defined(__APPLE__)
+#if defined(__aarch64__) || defined(__arm64__)
+#define CODUOMP_PLATFORM_TAG "macos-arm64"
+#elif defined(__x86_64__)
+#define CODUOMP_PLATFORM_TAG "macos-amd64"
+#else
+#error "Unsupported macOS client architecture"
+#endif
+#elif defined(__linux__)
+#if defined(__i386__)
+#define CODUOMP_PLATFORM_TAG "linux-x86"
+#elif defined(__x86_64__)
+#define CODUOMP_PLATFORM_TAG "linux-x64"
+#else
+#error "Unsupported Linux client architecture"
+#endif
+#else
+#error "Unsupported client platform"
+#endif
+
 extern void *sysSplashWindow;
 extern qboolean sysCheckCrashOrRerun;
 extern uint32_t sysExecutableChecksum;

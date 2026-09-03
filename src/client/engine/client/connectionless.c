@@ -102,7 +102,7 @@ void CL_CheckAutoUpdate(void)
 
     NET_OutOfBandPrint(NS_CLIENT, cls.autoUpdateServer,
                        "getUpdateInfo \"%s\" \"%s\"",
-                       "1.51", "win-x86");
+                       "1.51", CODUOMP_PLATFORM_TAG);
     cls_autoupdateServerResolved = qtrue;
 }
 
