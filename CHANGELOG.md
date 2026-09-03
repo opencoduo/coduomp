@@ -34,9 +34,9 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - The **Start New Server** menu's local catalog now supports up to 2,048 maps, replacing stock's 128-map table, 64-arena staging limit, and 1 KiB filename list so large custom-map installs no longer hide later maps, including stock maps. Server broadcast protocol limits remain unchanged.
 - `MAX_GAMESTATE_CHARS` is increased from 20,480 to 32,768 bytes, allowing larger custom-map and mod gamestates on existing protocol-22 servers.
 - Downloads are enabled by default unless the user has explicitly disabled them.
-- Optional Server Cache isolation keeps each remote server's settings and downloaded content separate, then restores the global profile after disconnecting.
+- Server Cache isolates each remote server's settings and downloaded content, then restores the global profile and startup `fs_game` after disconnecting.
 - Cached server mods appear in the Mods list, and checksum-matching installed PK3s are reused instead of downloaded again.
-- Server Cache is disabled by default and can be enabled under **Options -> System -> Advanced**.
+- Server Cache can be disabled under **Options -> System -> Advanced**.
 - `promoteserverconfig` saves the current isolated server profile as the global configuration.
 - `clearserverconfigs` clears all per-server configurations while preserving downloaded content.
 - New profiles default to `snaps 30`, `cl_maxpackets 125`, and `rate 30000` instead of the retail `20`, `30`, and `25000` values.
