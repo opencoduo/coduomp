@@ -1133,12 +1133,61 @@ static qboolean coduomp_namespace_pack_is_from_ordinary_root(
                : qfalse;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: retain wrong or older cached files while choosing
- * a nonconflicting name for a known-good root pak. */
+/* NOT_FROM_ORIGINAL_SOURCE: release a temporary FS_LoadZipFile catalog
+ * without publishing it as a search path or retaining its file count. */
+static void coduomp_namespace_free_probed_pak(pack_t *pack)
+{
+    fs_packFiles -= pack->numFiles;
+    filesystem_compat_pack_close(pack);
+    Z_FreeInternal(pack->fileList);
+    Z_FreeInternal(pack);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: verify an unmounted cache candidate by the same
+ * pak checksum used for the server's referenced-pak comparison. */
+static qboolean coduomp_namespace_cached_pak_matches(
+    const char *candidateQPath, int32_t checksum)
+{
+    if (strlen(coduomp_namespace_state.contentRoot) +
+            strlen(candidateQPath) + 3u >
+        MAX_OSPATH) {
+        return qfalse;
+    }
+
+    char candidatePath[MAX_OSPATH];
+    FS_BuildOSPath(coduomp_namespace_state.contentRoot,
+                   candidateQPath, "", candidatePath);
+    candidatePath[strlen(candidatePath) - 1u] = '\0';
+
+    char resolvedPath[MAX_OSPATH];
+    if (coduomp_resolve_case_path(
+            coduomp_namespace_state.contentRoot,
+            candidatePath, resolvedPath,
+            sizeof(resolvedPath)) != qfalse) {
+        Q_strncpyz(candidatePath, resolvedPath,
+                   sizeof(candidatePath));
+    }
+
+    pack_t *const pack = FS_LoadZipFile(
+        candidatePath, candidateQPath);
+    if (pack == NULL)
+        return qfalse;
+
+    const qboolean matches = pack->checksum == checksum
+                                 ? qtrue : qfalse;
+    coduomp_namespace_free_probed_pak(pack);
+    return matches;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: reuse an unmounted checksum-matching cache file;
+ * otherwise retain wrong or older files while choosing a nonconflicting name
+ * for a known-good root pak. */
 static qboolean coduomp_namespace_choose_cache_pak_path(
     const char *pakName, int32_t checksum,
-    char destinationQPath[MAX_OSPATH])
+    char destinationQPath[MAX_OSPATH], qboolean *needsCopy)
 {
+    *needsCopy = qfalse;
+
     const int baseWritten = snprintf(
         destinationQPath, MAX_OSPATH, "%s.pk3", pakName);
     if (baseWritten <= 0 || baseWritten >= MAX_OSPATH)
@@ -1146,6 +1195,11 @@ static qboolean coduomp_namespace_choose_cache_pak_path(
     if (coduomp_fs_root_file_exists(
             coduomp_namespace_state.contentRoot,
             destinationQPath) == qfalse) {
+        *needsCopy = qtrue;
+        return qtrue;
+    }
+    if (coduomp_namespace_cached_pak_matches(
+            destinationQPath, checksum) != qfalse) {
         return qtrue;
     }
 
@@ -1157,18 +1211,27 @@ static qboolean coduomp_namespace_choose_cache_pak_path(
     if (coduomp_fs_root_file_exists(
             coduomp_namespace_state.contentRoot,
             destinationQPath) == qfalse) {
+        *needsCopy = qtrue;
+        return qtrue;
+    }
+    if (coduomp_namespace_cached_pak_matches(
+            destinationQPath, checksum) != qfalse) {
         return qtrue;
     }
 
     const int reuseWritten = snprintf(
         destinationQPath, MAX_OSPATH, "%s.root-%08x.pk3", pakName,
         (uint32_t)checksum);
-    return reuseWritten > 0 && reuseWritten < MAX_OSPATH &&
-                   coduomp_fs_root_file_exists(
-                       coduomp_namespace_state.contentRoot,
-                       destinationQPath) == qfalse
-               ? qtrue
-               : qfalse;
+    if (reuseWritten <= 0 || reuseWritten >= MAX_OSPATH)
+        return qfalse;
+    if (coduomp_fs_root_file_exists(
+            coduomp_namespace_state.contentRoot,
+            destinationQPath) == qfalse) {
+        *needsCopy = qtrue;
+        return qtrue;
+    }
+    return coduomp_namespace_cached_pak_matches(
+        destinationQPath, checksum);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: stage and atomically install a checksum-matched
@@ -1177,10 +1240,14 @@ static qboolean coduomp_namespace_copy_root_pak(
     const pack_t *pack, const char *pakName, int32_t checksum)
 {
     char destinationQPath[MAX_OSPATH];
+    qboolean needsCopy;
     if (coduomp_namespace_choose_cache_pak_path(
-            pakName, checksum, destinationQPath) == qfalse) {
+            pakName, checksum, destinationQPath,
+            &needsCopy) == qfalse) {
         return qfalse;
     }
+    if (needsCopy == qfalse)
+        return qtrue;
 
     char temporaryQPath[MAX_OSPATH];
     const int temporaryWritten = snprintf(
@@ -1225,16 +1292,6 @@ static qboolean coduomp_namespace_copy_root_pak(
     Com_Printf("Reused root pak %s in the active server cache.\n",
                pakName);
     return qtrue;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: release a temporary FS_LoadZipFile catalog
- * without publishing it as a search path or retaining its file count. */
-static void coduomp_namespace_free_probed_pak(pack_t *pack)
-{
-    fs_packFiles -= pack->numFiles;
-    filesystem_compat_pack_close(pack);
-    Z_FreeInternal(pack->fileList);
-    Z_FreeInternal(pack);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate the exact server-named PK3 below one
