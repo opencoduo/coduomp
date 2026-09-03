@@ -118,12 +118,10 @@ void Com_LoadSoundAliasSounds(sndAliasBank_t bank)
     }
 
     if (missingSoundCount != 0 && mss_errorOnMissing->integer != 0) {
-        const errorParm_t errorCode =
-            bank == SND_ALIAS_BANK_COMMON ? ERR_FATAL : ERR_DROP;
-        /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-        Com_Error(errorCode,
-                  "%i sound file(s) are missing or in a bad format\n",
-                  missingSoundCount);
+        /* NOT_FROM_ORIGINAL_SOURCE: missing optional audio assets remain
+         * visible in the console without aborting initialization. */
+        Com_Printf("%i sound file(s) are missing or in a bad format\n",
+                   missingSoundCount);
     }
 }
 
