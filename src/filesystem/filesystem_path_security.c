@@ -1,6 +1,7 @@
 #include "filesystem_path_security.h"
 
 #include <stddef.h>
+#include <string.h>
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level helper for the shared confinement
  * policy below. */
@@ -43,4 +44,24 @@ qboolean coduo_compat_path_is_safe_relative(const char *path)
             return qtrue;
         component = cursor + 1;
     }
+}
+
+qboolean coduo_compat_path_is_pk3(const char *path)
+{
+    /* NOT_FROM_ORIGINAL_SOURCE: accept the case-insensitive package suffix
+     * used by legitimate client/server download names. */
+    if (path == NULL)
+        return qfalse;
+
+    const size_t pathLength = strlen(path);
+    if (pathLength < 4)
+        return qfalse;
+
+    const char *const extension = path + pathLength - 4;
+    return extension[0] == '.' &&
+                   (extension[1] == 'p' || extension[1] == 'P') &&
+                   (extension[2] == 'k' || extension[2] == 'K') &&
+                   extension[3] == '3'
+               ? qtrue
+               : qfalse;
 }

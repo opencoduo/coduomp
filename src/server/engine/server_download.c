@@ -126,9 +126,10 @@ void SV_BeginDownload_f(client_t *client)
 {
     SV_CloseDownload(client);
     const char *const fileName = Cmd_Argv(1);
-    /* NOT_FROM_ORIGINAL_SOURCE: require a relative virtual path at
+    /* NOT_FROM_ORIGINAL_SOURCE: require a relative virtual download path at
      * the network boundary; filesystem opens independently repeat the policy. */
-    if (coduo_compat_path_is_safe_relative(fileName) == qfalse) {
+    if (coduo_compat_path_is_safe_relative(fileName) == qfalse ||
+        coduo_compat_path_is_pk3(fileName) == qfalse) {
         Com_Printf("WARNING: client '%s' requested invalid download path '%s'\n", client->name, fileName);
         SV_DropClient(client, "invalid download path");
         return;
