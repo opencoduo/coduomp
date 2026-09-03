@@ -24,6 +24,13 @@ static const char comDefaultCdKey[CL_CDKEY_PART_SIZE + 1] =
 static const char comCdKeyRegistryPath[] =
     "SOFTWARE\\Activision\\Call of Duty United Offensive";
 static const char comCdKeyRegistryValue[] = "key";
+#if defined(_WIN64)
+/* NOT_FROM_ORIGINAL_SOURCE: the PE32+ client must select the stock PE32
+ * registry view explicitly so both Windows architectures share one record. */
+#define COM_WINDOWS_CDKEY_REGISTRY_VIEW KEY_WOW64_32KEY
+#else
+#define COM_WINDOWS_CDKEY_REGISTRY_VIEW 0
+#endif
 #endif
 
 /* Source: CoDUOMP.exe 0x0043b020..0x0043b058.
@@ -49,8 +56,10 @@ void Com_ReadCDKey(void)
     qboolean readSucceeded = qfalse;
     HKEY keyHandle;
 
-    if (RegOpenKeyA(HKEY_LOCAL_MACHINE, comCdKeyRegistryPath,
-                    &keyHandle) == ERROR_SUCCESS) {
+    if (RegOpenKeyExA(
+            HKEY_LOCAL_MACHINE, comCdKeyRegistryPath, 0,
+            KEY_QUERY_VALUE | COM_WINDOWS_CDKEY_REGISTRY_VIEW,
+            &keyHandle) == ERROR_SUCCESS) {
         DWORD valueType = REG_SZ;
         DWORD recordSize = sizeof(record);
 
@@ -106,8 +115,12 @@ void Com_WriteCDKey(void)
     record[COM_WINDOWS_CDKEY_RECORD_BYTES - 1] = '\0';
 
     HKEY keyHandle;
-    if (RegCreateKeyA(HKEY_LOCAL_MACHINE, comCdKeyRegistryPath,
-                      &keyHandle) != ERROR_SUCCESS) {
+    DWORD disposition;
+    if (RegCreateKeyExA(
+            HKEY_LOCAL_MACHINE, comCdKeyRegistryPath, 0, NULL,
+            REG_OPTION_NON_VOLATILE,
+            KEY_WRITE | COM_WINDOWS_CDKEY_REGISTRY_VIEW,
+            NULL, &keyHandle, &disposition) != ERROR_SUCCESS) {
         return;
     }
     (void)RegSetValueExA(
