@@ -676,7 +676,7 @@ void StripExtension(const char *input, char *output)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-static qboolean coduomp_mss_validate_riff_extent(
+static qboolean audio_validate_riff_extent(
     const void *fileData, int32_t fileLength, const char *expectedForm,
     const char *payloadChunkId, const void *payload,
     uint32_t payloadLength, qboolean requireCompleteStream)
@@ -746,9 +746,8 @@ static qboolean coduomp_mss_validate_riff_extent(
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: report a deterministic compatibility repair. */
-static void coduomp_mss_warn_wav_repair(const char *path, const char *field,
-                                        uint32_t oldValue,
-                                        uint32_t newValue)
+static void audio_warn_wav_repair(const char *path, const char *field,
+                                  uint32_t oldValue, uint32_t newValue)
 {
     Com_Printf("^3WARNING: repaired WAV '%s' %s (%u -> %u)\n",
                path, field, oldValue, newValue);
@@ -756,22 +755,22 @@ static void coduomp_mss_warn_wav_repair(const char *path, const char *field,
 
 #if !defined(_WIN32)
 /* NOT_FROM_ORIGINAL_SOURCE: a bounded top-level chunk found in a loaded WAV. */
-typedef struct coduompMssWavChunk_s {
+typedef struct audio_wav_chunk_s {
     uint8_t *data;
     uint32_t declaredSize;
     uint32_t availableSize;
-} coduompMssWavChunk_t;
+} audio_wav_chunk_t;
 
 /* NOT_FROM_ORIGINAL_SOURCE: read a little-endian WAV word without relying on
  * host alignment. */
-static uint16_t coduomp_mss_read_wav_u16(const uint8_t *bytes)
+static uint16_t audio_read_wav_u16(const uint8_t *bytes)
 {
     return (uint16_t)bytes[0] | (uint16_t)((uint16_t)bytes[1] << 8);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: read a little-endian RIFF dword without relying
  * on host alignment. */
-static uint32_t coduomp_mss_read_wav_u32(const uint8_t *bytes)
+static uint32_t audio_read_wav_u32(const uint8_t *bytes)
 {
     return (uint32_t)bytes[0] |
            ((uint32_t)bytes[1] << 8) |
@@ -781,7 +780,7 @@ static uint32_t coduomp_mss_read_wav_u32(const uint8_t *bytes)
 
 /* NOT_FROM_ORIGINAL_SOURCE: report why a loaded WAV cannot be represented by
  * the native OpenAL/miniaudio descriptor without guessing. */
-static qboolean coduomp_mss_reject_wav(const char *path, const char *reason)
+static qboolean audio_reject_wav(const char *path, const char *reason)
 {
     Com_Printf("^3WARNING: WAV '%s' cannot be decoded without guessing: %s\n",
                path, reason);
@@ -792,9 +791,9 @@ static qboolean coduomp_mss_reject_wav(const char *path, const char *reason)
  * case-insensitive top-level chunk search without reading outside the loaded
  * file. A target chunk may declare more payload than remains; the caller then
  * has both the declared and physically available extents. */
-static qboolean coduomp_mss_find_loaded_wav_chunk(
+static qboolean audio_find_loaded_wav_chunk(
     uint8_t *bytes, uint32_t loadedLength, uint32_t scanEnd,
-    const char *chunkId, coduompMssWavChunk_t *outChunk)
+    const char *chunkId, audio_wav_chunk_t *outChunk)
 {
     uint32_t offset = MSS_RIFF_FILE_HEADER_BYTES;
     memset(outChunk, 0, sizeof(*outChunk));
@@ -807,7 +806,7 @@ static qboolean coduomp_mss_find_loaded_wav_chunk(
             return qfalse;
         }
 
-        const uint32_t chunkSize = coduomp_mss_read_wav_u32(
+        const uint32_t chunkSize = audio_read_wav_u32(
             bytes + offset + MSS_RIFF_CHUNK_SIZE_OFFSET);
         const uint32_t dataOffset = offset + MSS_RIFF_CHUNK_HEADER_BYTES;
         if (Q_stricmpn((const char *)bytes + offset, chunkId,
@@ -833,7 +832,7 @@ static qboolean coduomp_mss_find_loaded_wav_chunk(
  * length-bounded WAV before the source-visible OpenAL/miniaudio adapters see
  * audio data. It accepts harmless RIFF quirks and performs only repairs whose
  * value is uniquely determined by the loaded bytes and the declared codec. */
-static qboolean coduomp_mss_parse_loaded_wav(
+static qboolean audio_parse_loaded_wav(
     void *fileData, int32_t fileLength, const char *path,
     audio_sound_info_t *soundInfo)
 {
@@ -845,76 +844,76 @@ static qboolean coduomp_mss_parse_loaded_wav(
     uint8_t *const bytes = fileData;
     if (Q_stricmpn((const char *)bytes + MSS_RIFF_FORM_OFFSET, "WAVE",
                    MSS_RIFF_FOURCC_BYTES) != 0) {
-        return coduomp_mss_reject_wav(path, "missing WAVE form");
+        return audio_reject_wav(path, "missing WAVE form");
     }
 
     const uint32_t loadedLength = (uint32_t)fileLength;
-    const uint32_t declaredScanEnd = coduomp_mss_read_wav_u32(
+    const uint32_t declaredScanEnd = audio_read_wav_u32(
         bytes + MSS_RIFF_SIZE_OFFSET);
     uint32_t scanEnd = declaredScanEnd;
     if (scanEnd > loadedLength) {
         scanEnd = loadedLength;
-        coduomp_mss_warn_wav_repair(
+        audio_warn_wav_repair(
             path, "RIFF scan extent", declaredScanEnd, scanEnd);
     }
 
-    coduompMssWavChunk_t formatChunk;
-    coduompMssWavChunk_t dataChunk;
-    qboolean foundFormat = coduomp_mss_find_loaded_wav_chunk(
+    audio_wav_chunk_t formatChunk;
+    audio_wav_chunk_t dataChunk;
+    qboolean foundFormat = audio_find_loaded_wav_chunk(
         bytes, loadedLength, scanEnd, "fmt ", &formatChunk);
-    qboolean foundData = coduomp_mss_find_loaded_wav_chunk(
+    qboolean foundData = audio_find_loaded_wav_chunk(
         bytes, loadedLength, scanEnd, "data", &dataChunk);
 
     if ((foundFormat == qfalse || foundData == qfalse) &&
         scanEnd < loadedLength) {
         if (foundFormat == qfalse) {
-            foundFormat = coduomp_mss_find_loaded_wav_chunk(
+            foundFormat = audio_find_loaded_wav_chunk(
                 bytes, loadedLength, loadedLength, "fmt ", &formatChunk);
         }
         if (foundData == qfalse) {
-            foundData = coduomp_mss_find_loaded_wav_chunk(
+            foundData = audio_find_loaded_wav_chunk(
                 bytes, loadedLength, loadedLength, "data", &dataChunk);
         }
         if (foundFormat != qfalse && foundData != qfalse) {
-            coduomp_mss_warn_wav_repair(
+            audio_warn_wav_repair(
                 path, "short RIFF scan extent", scanEnd, loadedLength);
             scanEnd = loadedLength;
         }
     }
 
     if (foundFormat == qfalse || foundData == qfalse)
-        return coduomp_mss_reject_wav(path, "missing fmt or data chunk");
+        return audio_reject_wav(path, "missing fmt or data chunk");
     if (formatChunk.declaredSize < MSS_WAVE_FORMAT_BASE_BYTES ||
         formatChunk.availableSize < MSS_WAVE_FORMAT_BASE_BYTES) {
-        return coduomp_mss_reject_wav(path, "truncated base format record");
+        return audio_reject_wav(path, "truncated base format record");
     }
 
-    const uint16_t formatTag = coduomp_mss_read_wav_u16(
+    const uint16_t formatTag = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_FORMAT_TAG_OFFSET);
-    const uint16_t channelCount = coduomp_mss_read_wav_u16(
+    const uint16_t channelCount = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_CHANNEL_COUNT_OFFSET);
-    uint32_t sampleRate = coduomp_mss_read_wav_u32(
+    uint32_t sampleRate = audio_read_wav_u32(
         formatChunk.data + MSS_WAVE_SAMPLE_RATE_OFFSET);
-    const uint32_t averageBytesPerSecond = coduomp_mss_read_wav_u32(
+    const uint32_t averageBytesPerSecond = audio_read_wav_u32(
         formatChunk.data + MSS_WAVE_AVERAGE_BYTES_PER_SECOND_OFFSET);
-    uint16_t blockSize = coduomp_mss_read_wav_u16(
+    uint16_t blockSize = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_BLOCK_SIZE_OFFSET);
-    const uint16_t bitsPerSample = coduomp_mss_read_wav_u16(
+    const uint16_t bitsPerSample = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_BITS_PER_SAMPLE_OFFSET);
 
     if (formatTag != AUDIO_WAVE_FORMAT_PCM &&
         formatTag != AUDIO_WAVE_FORMAT_IMA_ADPCM) {
-        return coduomp_mss_reject_wav(path, "unsupported format tag");
+        return audio_reject_wav(path, "unsupported format tag");
     }
     if (channelCount != AUDIO_CHANNEL_COUNT_MONO &&
         channelCount != AUDIO_CHANNEL_COUNT_STEREO) {
-        return coduomp_mss_reject_wav(path, "unsupported channel count");
+        return audio_reject_wav(path, "unsupported channel count");
     }
 
     uint32_t dataLength = dataChunk.declaredSize;
     if (dataLength > dataChunk.availableSize) {
         dataLength = dataChunk.availableSize;
-        coduomp_mss_warn_wav_repair(
+        audio_warn_wav_repair(
             path, "data length", dataChunk.declaredSize, dataLength);
     }
 
@@ -922,29 +921,29 @@ static qboolean coduomp_mss_parse_loaded_wav(
     if (formatTag == AUDIO_WAVE_FORMAT_PCM) {
         if (bitsPerSample != AUDIO_SAMPLE_BITS_8 &&
             bitsPerSample != AUDIO_SAMPLE_BITS_16) {
-            return coduomp_mss_reject_wav(path, "unsupported PCM bit depth");
+            return audio_reject_wav(path, "unsupported PCM bit depth");
         }
 
         const uint16_t derivedBlockSize =
             (uint16_t)(channelCount * (bitsPerSample / 8u));
         if (blockSize != derivedBlockSize) {
-            coduomp_mss_warn_wav_repair(
+            audio_warn_wav_repair(
                 path, "PCM block size", blockSize, derivedBlockSize);
             blockSize = derivedBlockSize;
         }
         if (sampleRate == 0) {
             if (averageBytesPerSecond == 0 ||
                 averageBytesPerSecond % blockSize != 0) {
-                return coduomp_mss_reject_wav(
+                return audio_reject_wav(
                     path, "PCM sample rate is not derivable");
             }
             const uint32_t derivedSampleRate =
                 averageBytesPerSecond / blockSize;
             if (derivedSampleRate == 0 || derivedSampleRate > INT32_MAX) {
-                return coduomp_mss_reject_wav(
+                return audio_reject_wav(
                     path, "PCM sample rate is out of range");
             }
-            coduomp_mss_warn_wav_repair(
+            audio_warn_wav_repair(
                 path, "PCM sample rate", sampleRate, derivedSampleRate);
             sampleRate = derivedSampleRate;
         }
@@ -953,23 +952,23 @@ static qboolean coduomp_mss_parse_loaded_wav(
         if (trailingBytes != 0) {
             const uint32_t sourceDataLength = dataLength;
             dataLength -= trailingBytes;
-            coduomp_mss_warn_wav_repair(
+            audio_warn_wav_repair(
                 path, "trailing incomplete PCM frame", sourceDataLength,
                 dataLength);
         }
         sampleCount = dataLength * 8u / bitsPerSample;
     } else {
         if (bitsPerSample != AUDIO_SAMPLE_BITS_IMA_ADPCM)
-            return coduomp_mss_reject_wav(path, "invalid IMA bit depth");
+            return audio_reject_wav(path, "invalid IMA bit depth");
 
         const uint32_t imaHeaderSize =
             (uint32_t)channelCount * MSS_WAVE_IMA_HEADER_BYTES_PER_CHANNEL;
         if (blockSize < imaHeaderSize)
-            return coduomp_mss_reject_wav(path, "invalid IMA block size");
+            return audio_reject_wav(path, "invalid IMA block size");
         if (channelCount == AUDIO_CHANNEL_COUNT_STEREO &&
             ((uint32_t)blockSize - imaHeaderSize) %
                     MSS_WAVE_IMA_STEREO_GROUP_BYTES != 0) {
-            return coduomp_mss_reject_wav(
+            return audio_reject_wav(
                 path, "incomplete channel group in each IMA block");
         }
         const uint32_t samplesPerFullBlock =
@@ -979,19 +978,19 @@ static qboolean coduomp_mss_parse_loaded_wav(
                 (uint64_t)averageBytesPerSecond * samplesPerFullBlock;
             if (averageBytesPerSecond == 0 ||
                 sampleRateNumerator % blockSize != 0) {
-                return coduomp_mss_reject_wav(
+                return audio_reject_wav(
                     path, "IMA sample rate is not derivable");
             }
             const uint64_t derivedSampleRateWide =
                 sampleRateNumerator / blockSize;
             if (derivedSampleRateWide == 0 ||
                 derivedSampleRateWide > INT32_MAX) {
-                return coduomp_mss_reject_wav(
+                return audio_reject_wav(
                     path, "IMA sample rate is out of range");
             }
             const uint32_t derivedSampleRate =
                 (uint32_t)derivedSampleRateWide;
-            coduomp_mss_warn_wav_repair(
+            audio_warn_wav_repair(
                 path, "IMA sample rate", sampleRate, derivedSampleRate);
             sampleRate = derivedSampleRate;
         }
@@ -1001,7 +1000,7 @@ static qboolean coduomp_mss_parse_loaded_wav(
             incompleteBlockSize < imaHeaderSize) {
             const uint32_t sourceDataLength = dataLength;
             dataLength -= incompleteBlockSize;
-            coduomp_mss_warn_wav_repair(
+            audio_warn_wav_repair(
                 path, "trailing incomplete IMA header", sourceDataLength,
                 dataLength);
         } else if (channelCount == AUDIO_CHANNEL_COUNT_STEREO &&
@@ -1013,7 +1012,7 @@ static qboolean coduomp_mss_parse_loaded_wav(
             if (incompleteGroupSize != 0) {
                 const uint32_t sourceDataLength = dataLength;
                 dataLength -= incompleteGroupSize;
-                coduomp_mss_warn_wav_repair(
+                audio_warn_wav_repair(
                     path, "trailing incomplete stereo IMA group",
                     sourceDataLength, dataLength);
             }
@@ -1025,7 +1024,7 @@ static qboolean coduomp_mss_parse_loaded_wav(
             if (currentBlockSize > blockSize)
                 currentBlockSize = blockSize;
             if (currentBlockSize < imaHeaderSize)
-                return coduomp_mss_reject_wav(path, "truncated IMA header");
+                return audio_reject_wav(path, "truncated IMA header");
             for (uint32_t channel = 0; channel < channelCount; ++channel) {
                 const uint32_t stepIndexOffset =
                     blockOffset +
@@ -1033,7 +1032,7 @@ static qboolean coduomp_mss_parse_loaded_wav(
                     MSS_WAVE_IMA_STEP_INDEX_OFFSET;
                 if (dataChunk.data[stepIndexOffset] >
                     MSS_WAVE_IMA_MAXIMUM_STEP_INDEX) {
-                    return coduomp_mss_reject_wav(
+                    return audio_reject_wav(
                         path, "IMA step index is out of range");
                 }
             }
@@ -1049,11 +1048,11 @@ static qboolean coduomp_mss_parse_loaded_wav(
                 1u + (partialBlockSize - imaHeaderSize) * 2u / channelCount;
         }
         if (maximumSampleCount == 0 || maximumSampleCount > UINT32_MAX)
-            return coduomp_mss_reject_wav(path, "IMA sample count is out of range");
+            return audio_reject_wav(path, "IMA sample count is out of range");
 
         sampleCount = (uint32_t)maximumSampleCount;
-        coduompMssWavChunk_t factChunk;
-        if (coduomp_mss_find_loaded_wav_chunk(
+        audio_wav_chunk_t factChunk;
+        if (audio_find_loaded_wav_chunk(
                 bytes, loadedLength, scanEnd, "fact", &factChunk) != qfalse) {
             if (factChunk.declaredSize < sizeof(uint32_t) ||
                 factChunk.availableSize < sizeof(uint32_t)) {
@@ -1061,15 +1060,15 @@ static qboolean coduomp_mss_parse_loaded_wav(
                            path);
             } else {
                 const uint32_t declaredSampleCount =
-                    coduomp_mss_read_wav_u32(factChunk.data);
+                    audio_read_wav_u32(factChunk.data);
                 if (declaredSampleCount == 0) {
-                    return coduomp_mss_reject_wav(
+                    return audio_reject_wav(
                         path, "IMA fact sample count is zero");
                 }
                 if (declaredSampleCount <= maximumSampleCount) {
                     sampleCount = declaredSampleCount;
                 } else {
-                    coduomp_mss_warn_wav_repair(
+                    audio_warn_wav_repair(
                         path, "IMA sample count", declaredSampleCount,
                         sampleCount);
                 }
@@ -1078,9 +1077,9 @@ static qboolean coduomp_mss_parse_loaded_wav(
     }
 
     if (sampleRate == 0 || sampleRate > INT32_MAX)
-        return coduomp_mss_reject_wav(path, "sample rate is out of range");
+        return audio_reject_wav(path, "sample rate is out of range");
     if (dataLength == 0 || sampleCount == 0)
-        return coduomp_mss_reject_wav(path, "empty audio payload");
+        return audio_reject_wav(path, "empty audio payload");
 
     memset(soundInfo, 0, sizeof(*soundInfo));
     snd_alias_sound_file_t *const publicInfo = &soundInfo->publicInfo;
@@ -1101,7 +1100,7 @@ static qboolean coduomp_mss_parse_loaded_wav(
 /* NOT_FROM_ORIGINAL_SOURCE: Miles parses the original WAV buffer on Windows,
  * matching stock. Bound only the payload range returned to the engine before
  * its allocation and copy; do not reinterpret or repair Miles metadata. */
-static qboolean coduomp_mss_bound_miles_wav_payload(
+static qboolean audio_bound_miles_wav_payload(
     const void *fileData, int32_t fileLength, const char *path,
     snd_alias_sound_file_t *publicInfo)
 {
@@ -1123,7 +1122,7 @@ static qboolean coduomp_mss_bound_miles_wav_payload(
     if (publicInfo->dataLength > availableDataLength) {
         const uint32_t declaredDataLength = publicInfo->dataLength;
         publicInfo->dataLength = availableDataLength;
-        coduomp_mss_warn_wav_repair(
+        audio_warn_wav_repair(
             path, "data length", declaredDataLength,
             publicInfo->dataLength);
     }
@@ -1132,7 +1131,7 @@ static qboolean coduomp_mss_bound_miles_wav_payload(
 #endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-static uint32_t coduomp_mss_read_eal_u32(const uint8_t *bytes)
+static uint32_t audio_read_eal_u32(const uint8_t *bytes)
 {
     return (uint32_t)bytes[0] |
            ((uint32_t)bytes[1] << 8) |
@@ -1141,7 +1140,7 @@ static uint32_t coduomp_mss_read_eal_u32(const uint8_t *bytes)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-static qboolean coduomp_mss_validate_eal_list(
+static qboolean audio_validate_eal_list(
     const uint8_t *listData, uint32_t listSize)
 {
     if (listData == NULL || listSize < MSS_EAL_LIST_TYPE_BYTES)
@@ -1192,7 +1191,7 @@ static qboolean coduomp_mss_validate_eal_list(
             return qfalse;
 
         const uint32_t chunkSize =
-            coduomp_mss_read_eal_u32(
+            audio_read_eal_u32(
                 listData + offset + MSS_RIFF_CHUNK_SIZE_OFFSET);
         const uint32_t dataOffset = offset + MSS_RIFF_CHUNK_HEADER_BYTES;
         /* EAXMan advances by the raw size and does not consume RIFF's pad
@@ -1237,7 +1236,7 @@ static qboolean coduomp_mss_validate_eal_list(
         return qfalse;
     }
 
-    const uint32_t recordCount = coduomp_mss_read_eal_u32(countData);
+    const uint32_t recordCount = audio_read_eal_u32(countData);
     if (recordCount > INT32_MAX ||
         nameSize % MSS_EAL_NAME_BYTES != 0 ||
         nameSize / MSS_EAL_NAME_BYTES != recordCount ||
@@ -1261,10 +1260,10 @@ static qboolean coduomp_mss_validate_eal_list(
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-static qboolean coduomp_mss_validate_eal_extent(
+static qboolean audio_validate_eal_extent(
     const void *fileData, int32_t fileLength)
 {
-    if (coduomp_mss_validate_riff_extent(
+    if (audio_validate_riff_extent(
             fileData, fileLength, "eal ", NULL, NULL, 0,
             qtrue) == qfalse) {
         return qfalse;
@@ -1272,7 +1271,7 @@ static qboolean coduomp_mss_validate_eal_extent(
 
     const uint8_t *const bytes = fileData;
     const uint32_t riffEnd =
-        coduomp_mss_read_eal_u32(bytes + MSS_RIFF_SIZE_OFFSET) +
+        audio_read_eal_u32(bytes + MSS_RIFF_SIZE_OFFSET) +
         MSS_RIFF_CHUNK_HEADER_BYTES;
     qboolean foundMajorVersion = qfalse;
     qboolean foundMinorVersion = qfalse;
@@ -1288,7 +1287,7 @@ static qboolean coduomp_mss_validate_eal_extent(
 
     for (uint32_t offset = MSS_RIFF_FILE_HEADER_BYTES;
          offset < riffEnd;) {
-        const uint32_t chunkSize = coduomp_mss_read_eal_u32(
+        const uint32_t chunkSize = audio_read_eal_u32(
             bytes + offset + MSS_RIFF_CHUNK_SIZE_OFFSET);
         const uint32_t dataOffset = offset + MSS_RIFF_CHUNK_HEADER_BYTES;
         qboolean *foundFixedChunk = NULL;
@@ -1348,7 +1347,7 @@ static qboolean coduomp_mss_validate_eal_extent(
 
             if (foundList != NULL) {
                 if (*foundList ||
-                    coduomp_mss_validate_eal_list(listData, chunkSize) ==
+                    audio_validate_eal_list(listData, chunkSize) ==
                         qfalse) {
                     return qfalse;
                 }
@@ -2581,7 +2580,7 @@ qboolean LoadEALFile(const char *path)
     const int32_t fileLength = FS_ReadFile(path, &fileData);
     if (fileData != NULL && fileLength != MSS_EAL_FILE_READ_FAILED) {
         /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-        if (coduomp_mss_validate_eal_extent(fileData, fileLength) == qfalse) {
+        if (audio_validate_eal_extent(fileData, fileLength) == qfalse) {
             Com_Printf("WARNING: rejecting malformed EAX environment '%s'\n",
                        path);
             FS_FreeFile(fileData);
@@ -3449,13 +3448,13 @@ snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename)
     if (audio_WAV_info(fileData, &sourceInfo) == AUDIO_WAV_INFO_INVALID)
         goto invalid_sound_file;
     /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-    if (coduomp_mss_bound_miles_wav_payload(
+    if (audio_bound_miles_wav_payload(
             fileData, fileLength, path, &sourceInfo.publicInfo) == qfalse) {
         goto invalid_sound_file;
     }
 #else
     /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
-    if (coduomp_mss_parse_loaded_wav(
+    if (audio_parse_loaded_wav(
             fileData, fileLength, path, &sourceInfo) == qfalse) {
         goto invalid_sound_file;
     }
