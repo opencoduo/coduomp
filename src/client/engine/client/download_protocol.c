@@ -242,17 +242,9 @@ void CL_DownloadsComplete(void)
  * initialized before the reliable "download" command is queued. */
 void CL_BeginDownload(const char *localName, const char *remoteName)
 {
-    const qboolean authorizedUpdate =
-        cl_updateStarted != qfalse &&
-        NET_CompareAdrSigned(
-            &clc.serverAddress, &cls.autoUpdateServer) == 0;
-
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (coduo_compat_path_is_safe_relative(localName) == qfalse ||
-        coduo_compat_path_is_safe_relative(remoteName) == qfalse ||
-        (authorizedUpdate == qfalse &&
-         (coduo_compat_path_is_pk3(localName) == qfalse ||
-          coduo_compat_path_is_pk3(remoteName) == qfalse))) {
+        coduo_compat_path_is_safe_relative(remoteName) == qfalse) {
         Com_Error(
             ERR_DROP,
             "Refusing invalid download path\n");
