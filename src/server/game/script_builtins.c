@@ -5014,6 +5014,10 @@ void GScr_LoadConsts(void)
     game_compat_gscr_load_const(54, "prone");
     game_compat_gscr_load_const(55, "reached_end_node");
     game_compat_gscr_load_const(56, "reached_wait_node");
+    /* Apparent ORIGINAL-source bug, preserved: stock loads the same string
+     * into both slots (uo_game_mp_x86.dll 0x20035979 and 0x2003598c push
+     * rodata 0x2007aaf8 back-to-back into table slots 0x20110370/0x20110372;
+     * no "reached_wait_speed"-like sibling exists in rdata). Do not "fix". */
     game_compat_gscr_load_const(57, "reached_wait_node");
     game_compat_gscr_load_const(58, "right");
     game_compat_gscr_load_const(59, "rocket");
