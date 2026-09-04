@@ -180,15 +180,9 @@ void DObjQuatMultiplyIntoFirst(vec4_t quat, const vec4_t rhs);
 void DObjQuatMultiplyIntoSecond(const vec4_t lhs, vec4_t quat);
 void DObjSkelMatrixMultiply43(const DObjSkelMat *left,
                               const matrix43_t *right, matrix43_t *output);
-#if defined(WINDOWS_BEHAVIOR)
-void DObjSkel2MatrixMultiply43(const float left[3][4],
-                               const float right[3][4],
-                               float output[3][4]);
-#elif defined(LINUX_BEHAVIOR)
 void DObjSkel2MatrixMultiply43(const DObjSkelMat *left,
                                const matrix43_t *right,
                                DObjSkelMat *output);
-#endif
 void MatrixInverse(axis_t input, axis_t output);
 void MatrixInverse44(float input[4][4], float output[4][4]);
 void MatrixMultiply(axis_t left, axis_t right, axis_t output);
