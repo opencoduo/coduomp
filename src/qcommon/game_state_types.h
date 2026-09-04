@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "qcommon/qcommon_limits.h"
+
 enum {
     MAX_CONFIGSTRINGS = 2048,
     MAX_GAMESTATE_CHARS_RETAIL = 20480,
@@ -14,8 +16,35 @@ enum {
  * servers can serialize more configstring data than the retail client can
  * retain in its 20-KiB packed pool. The stock source keeps the original
  * engine/cgame ABI; the improved source expands both client-side copies to a
- * 32-KiB packed pool. */
+ * 32-KiB packed pool.
+ *
+ * Practical budget: a full gamestate must still fit ONE MAX_MSGLEN message,
+ * which also carries per-configstring framing (command byte + index short),
+ * entity baselines, pending server commands, and the header/trailer words —
+ * so the usable configstring payload tops out a few KiB below
+ * MAX_GAMESTATE_CHARS. SV_SendClientGameState fails loudly (Com_Error) when
+ * a composed gamestate overflows its message rather than shipping it
+ * truncated, and MSG_WriteBigString replaces any single configstring of
+ * BIG_INFO_STRING or more with an empty string (stock-shaped behavior). */
 enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_EXTENDED };
+
+#if defined(__cplusplus)
+#define GAME_STATE_TYPES_STATIC_ASSERT(expression, message) \
+    static_assert((expression), message)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#define GAME_STATE_TYPES_STATIC_ASSERT(expression, message) \
+    _Static_assert((expression), message)
+#else
+/* C99 translation units (game module) get the negative-array-size form. */
+#define GAME_STATE_TYPES_STATIC_ASSERT(expression, message) \
+    typedef char game_state_types_compile_assert[(expression) ? 1 : -1]
+#endif
+
+/* NOT_FROM_ORIGINAL_SOURCE: a packed pool larger than one message could never
+ * be delivered at connect, so refuse such a configuration at compile time. */
+GAME_STATE_TYPES_STATIC_ASSERT(
+    MAX_GAMESTATE_CHARS <= MAX_MSGLEN,
+    "MAX_GAMESTATE_CHARS must fit a single MAX_MSGLEN gamestate message");
 
 /*
  * Shared multiplayer config-string layout.  The Windows cgame asset loaders

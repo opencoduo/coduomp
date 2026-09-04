@@ -20,6 +20,7 @@ extern char *sv_configstrings[MAX_CONFIGSTRINGS];
 extern vm_t *sv_gameVM;
 
 void Com_DPrintf(const char *format, ...);
+void Com_Error(errorParm_t code, const char *format, ...);
 
 /*
  * Complete server gamestate-delivery and client-activation transition shared
@@ -93,6 +94,18 @@ void SV_SendClientGameState(client_t *client)
     MSG_WriteLong(&message, clientNum);
     MSG_WriteLong(&message, sv.gamestateChecksumFeed);
     MSG_WriteByte(&message, SERVER_SVC_EOF);
+
+    /* NOT_FROM_ORIGINAL_SOURCE: the extended MAX_GAMESTATE_CHARS budget can
+     * compose more than one MAX_MSGLEN message holds once per-string framing,
+     * baselines, and pending server commands ride along. The message writers
+     * only latch message.overflowed, so fail loudly here instead of handing
+     * the netchan a silently truncated gamestate. */
+    if (message.overflowed != qfalse) {
+        Com_Error(ERR_DROP,
+                  "\x15" "SV_SendClientGameState: gamestate for client %i "
+                  "exceeds the %i-byte message budget",
+                  clientNum, MAX_MSGLEN);
+    }
 
     Com_DPrintf("Sending %i bytes in gamestate to client: %i\n",
                 message.cursize, clientNum);
