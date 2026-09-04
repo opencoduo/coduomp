@@ -421,10 +421,16 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
     case CG_DOBJ_WRAP_MODEL:
         return (intptr_t)rendererExports.GetXModelByHandle(CG_INT(1));
     case CG_R_REGISTER_FONT:
+        /* Stock's case body (0x402f1e) falls through into the
+         * CG_R_REGISTERSHADER body at 0x402f37 with no jump between them:
+         * after RegisterFont it also registers a no-mip shader under the
+         * same name/loadMode pair and returns that handle (which the cgame
+         * wrapper discards). */
         rendererExports.RegisterFont(CG_STRING(1), CG_INT(2),
                                      CG_PTR(fontInfo_t, 3),
                                      CG_INT(4));
-        return 0;
+        return rendererExports.RegisterShaderNoMip(CG_STRING(1),
+                                                    CG_INT(2));
     case CG_R_TEXT_WIDTH:
         /* 0x00402f5b..0x00402f73 passes the cgame's four payload words as
          * (text, font, scale, 0.0f, limit); fixedAdvance is inserted here and
@@ -691,10 +697,10 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
         return FloatAsInt((float)ceil(
             (double)CL_CgameSyscallFloatArgument(CG_ARG(1))));
     case CG_TEST_PRINT_INT:
-        Com_Printf("%s%i", CG_STRING(1), CG_INT(2));
+        Com_Printf("%s%i\n", CG_STRING(1), CG_INT(2));
         return 0;
     case CG_TEST_PRINT_FLOAT:
-        Com_Printf("%s%f", CG_STRING(1),
+        Com_Printf("%s%f\n", CG_STRING(1),
                    (double)CL_CgameSyscallFloatArgument(CG_ARG(2)));
         return 0;
     case CG_ACOS:
@@ -797,12 +803,16 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
      * generation entirely (0x498770: test di,di), killing every client
      * anim notetrack (anim_gunhand hand swaps included). */
     case CG_XANIM_SET_GOAL_WEIGHT:
-        return XAnimSetGoalWeight(
+        /* Stock zeroes this trap's return (0x403f37 xor eax,eax) even
+         * though the callee produces one; only the sibling knob traps
+         * propagate values. */
+        (void)XAnimSetGoalWeight(
             CG_PTR(XAnimTree, 1), CG_INT(2),
             CL_CgameSyscallFloatArgument(CG_ARG(3)),
             CL_CgameSyscallFloatArgument(CG_ARG(4)),
             CL_CgameSyscallFloatArgument(CG_ARG(5)),
             0, (uint16_t)CG_ARG(6), (qboolean)CG_ARG(7));
+        return 0;
     case CG_XANIM_SET_COMPLETE_GOAL_WEIGHT:
         XAnimSetCompleteGoalWeight(
             CG_PTR(XAnimTree, 1), CG_INT(2),
@@ -894,9 +904,10 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
             CG_PTR(DObj, 1), CG_CONST_PTR(uint8_t, 2),
             CG_INT(3));
     case CG_XANIM_GET_ANIM_NAME:
+        /* Stock forwards the full 32-bit word (0x404292). */
         return (intptr_t)XAnimGetAnimName(
             Scr_GetAnims((uint32_t)CG_ARG(1)),
-            (uint16_t)CG_ARG(2));
+            (int32_t)CG_ARG(2));
     case CG_DOBJ_GET_HANDLE:
         return (intptr_t)Com_GetClientDObj(CG_INT(1));
     case CG_DOBJ_CREATE:
