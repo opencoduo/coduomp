@@ -52,7 +52,7 @@ enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_EXTENDED };
  * pool above MAX_MSGLEN is safe (it is client-internal, never on the wire)
  * and only adds headroom for configstring growth during play. */
 GAME_STATE_TYPES_STATIC_ASSERT(
-    MAX_GAMESTATE_CHARS >= MAX_MSGLEN,
+    (int32_t)MAX_GAMESTATE_CHARS >= (int32_t)MAX_MSGLEN,
     "the gamestate pool must retain any single-message gamestate");
 
 /*
