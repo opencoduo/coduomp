@@ -1940,10 +1940,13 @@ typedef struct coduomp_console_2d_presentation_command_s {
 } coduomp_console_2d_presentation_command_t;
 
 /* NOT_FROM_ORIGINAL_SOURCE: command-buffer marker for one complete UI
- * presentation scope. */
+ * presentation scope. `stretched` records, at scope open, that the connected
+ * mod owns HUD presentation and the in-game UI canvas follows the same stock
+ * full-width stretch instead of the fitted 4:3 viewport. */
 typedef struct coduomp_ui_2d_presentation_command_s {
     int32_t commandId;
     qboolean enabled;
+    qboolean stretched;
 } coduomp_ui_2d_presentation_command_t;
 
 #pragma pack(pop)
@@ -1958,6 +1961,7 @@ extern qboolean coduomp_backend_cgame_2d_compat_active;
 extern qboolean coduomp_backend_cgame_2d_stretch_active;
 extern qboolean coduomp_backend_console_2d_compat_active;
 extern qboolean coduomp_backend_ui_2d_compat_active;
+extern qboolean coduomp_backend_ui_2d_stretch_active;
 extern shaderCommands_t tess;
 extern renderer_surface_fn_t rb_surfaceTable[];
 extern shader_t rendererParsedShader;

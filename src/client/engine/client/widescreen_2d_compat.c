@@ -30,6 +30,18 @@ qboolean coduomp_cgame_hud_stretch_requested(void)
     return stretch != NULL && stretch->integer != 0 ? qtrue : qfalse;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: true when the in-game UI canvas follows the
+ * connected mod's full-width stretch. Only an active connection has a
+ * mod-owned HUD verdict to honor; every other UI state (main menu, connect,
+ * loading) presents stock-owned compositions on the fitted 4:3 canvas. */
+qboolean coduomp_ui_hud_stretch_requested(void)
+{
+    return cls.state == CA_ACTIVE &&
+                   coduomp_cgame_hud_stretch_requested() != qfalse
+               ? qtrue
+               : qfalse;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: expose the UI VM's authoritative fullscreen state
  * to the renderer's existing 4:3 fullscreen viewport policy.  The recovered
  * screen dispatcher otherwise keeps that state in a stack local, leaving an

@@ -208,6 +208,10 @@ qboolean coduomp_backend_console_2d_compat_active;
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the fitted UI scope
  * recorded in the renderer command stream. */
 qboolean coduomp_backend_ui_2d_compat_active;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: backend copy of the UI scope's
+ * mod-owned full-width stretch policy. While set, the in-game UI composition
+ * keeps the full drawable instead of the fitted 4:3 viewport. */
+qboolean coduomp_backend_ui_2d_stretch_active;
 
 /* NOT_FROM_ORIGINAL_SOURCE: select a viewport for the composition currently
  * executing in the backend. Native-aspect cgame owns the complete drawable;
@@ -217,8 +221,10 @@ void coduomp_apply_2d_presentation_viewport(void)
 {
     if (coduomp_backend_console_2d_compat_active == qfalse &&
         ((r_aspectMode != NULL && r_aspectMode->integer != 0) ||
-         coduomp_backend_ui_2d_compat_active != qfalse ||
+         (coduomp_backend_ui_2d_compat_active != qfalse &&
+          coduomp_backend_ui_2d_stretch_active == qfalse) ||
          (coduomp_backend_cgame_2d_compat_active == qfalse &&
+          coduomp_backend_ui_2d_stretch_active == qfalse &&
           r_uifullscreen != NULL && r_uifullscreen->integer != 0))) {
         int32_t viewportX;
         int32_t viewportY;

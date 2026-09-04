@@ -142,6 +142,12 @@ void coduomp_queue_ui_2d_presentation(qboolean enabled)
 
     command->commandId = RC_SET_UI_2D_PRESENTATION;
     command->enabled = enabled;
+    /* A mod that owns HUD presentation authored its in-game menu screens
+     * against the same stock full-width stretch; those UI scopes skip the
+     * fitted 4:3 viewport. Main-menu, connect, and loading UI scopes are
+     * stock-owned and stay fitted. */
+    command->stretched =
+        enabled != qfalse ? coduomp_ui_hud_stretch_requested() : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: returns the single physical translation from the
