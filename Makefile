@@ -52,7 +52,10 @@ CLIENT_ENGINE_OUTPUT := $(CLIENT_NATIVE_DIR)/CoDUOMP
 CLIENT_BASEGAME_DIR := $(CLIENT_NATIVE_DIR)/uo
 CLIENT_CGAME_OUTPUT := $(CLIENT_BASEGAME_DIR)/uo_cgame_mp_$(CLIENT_NATIVE_ARCH).$(CLIENT_NATIVE_EXT)
 CLIENT_UI_OUTPUT := $(CLIENT_BASEGAME_DIR)/uo_ui_mp_$(CLIENT_NATIVE_ARCH).$(CLIENT_NATIVE_EXT)
-CLIENT_GAME_BUILD_DIR ?= $(BUILD_DIR)/game/client-native
+# Client game modules select Windows behavior even on native macOS and Linux.
+# Keep their objects and artifacts separate from Linux-behavior standalone
+# server modules so incremental builds cannot silently reuse the wrong policy.
+CLIENT_GAME_BUILD_DIR ?= $(BUILD_DIR)/game/client-native-windows
 CLIENT_GAME_OUTPUT := $(CLIENT_BASEGAME_DIR)/uo_game_mp_$(CLIENT_NATIVE_ARCH).$(CLIENT_NATIVE_EXT)
 CLIENT_DATA_PATH ?=
 CLIENT_WORK_DIR ?= $(CURDIR)/$(WORKBENCH_DIR)/runtime/client
@@ -65,15 +68,15 @@ MACOS_BUNDLE_ID ?= org.opencoduo.coduomp
 MACOS_BUNDLE_VERSION ?= 0.1.0
 MACOS_BUNDLE_BUILD ?= 1
 MACOS_SIGN_IDENTITY ?= -
-WINDOWS_GAME_OUTPUT ?= $(BUILD_DIR)/game/windows-i686/uo_game_mp_x86.dll
-WINDOWS64_GAME_OUTPUT ?= $(BUILD_DIR)/game/windows-x86_64/uo_game_mp_x86.dll
+WINDOWS_GAME_OUTPUT ?= $(BUILD_DIR)/game/client-windows-i686/uo_game_mp_x86.dll
+WINDOWS64_GAME_OUTPUT ?= $(BUILD_DIR)/game/client-windows-x86_64/uo_game_mp_x86.dll
 SOURCE_COMMIT ?= $(shell git rev-parse HEAD 2>/dev/null || printf unknown)
 WINDOWS_PACKAGE_OUTPUT ?= $(BUILD_DIR)/windows/opencoduo-windows-i686-$(shell printf '%s' "$(SOURCE_COMMIT)" | cut -c1-9).zip
 WINDOWS64_PACKAGE_OUTPUT ?= $(BUILD_DIR)/windows/opencoduo-windows-x86_64-$(shell printf '%s' "$(SOURCE_COMMIT)" | cut -c1-9).zip
 LINUX32_CLIENT_DIR ?= $(BUILD_DIR)/client/linux-i686
 LINUX64_CLIENT_DIR ?= $(BUILD_DIR)/client/linux-x86_64
-LINUX32_GAME_OUTPUT ?= $(BUILD_DIR)/game/linux-i386/uo_game_mp_x86.so
-LINUX64_GAME_OUTPUT ?= $(BUILD_DIR)/game/linux-x86_64/uo_game_mp_x86_64.so
+LINUX32_GAME_OUTPUT ?= $(BUILD_DIR)/game/client-linux-i386/uo_game_mp_x86.so
+LINUX64_GAME_OUTPUT ?= $(BUILD_DIR)/game/client-linux-x86_64/uo_game_mp_x86_64.so
 LINUX32_PACKAGE_OUTPUT ?= $(BUILD_DIR)/linux/opencoduo-linux-i686-$(shell printf '%s' "$(SOURCE_COMMIT)" | cut -c1-9).tar.gz
 LINUX64_PACKAGE_OUTPUT ?= $(BUILD_DIR)/linux/opencoduo-linux-x86_64-$(shell printf '%s' "$(SOURCE_COMMIT)" | cut -c1-9).tar.gz
 RELEASE_OUTPUT_DIR ?= $(BUILD_DIR)/release
@@ -128,7 +131,7 @@ client-ui: softfloat
 
 client-game: check-macos-host softfloat
 	$(MAKE) $(MAKE_JOBS) -f build-mk/game.mk \
-		CC="$(CC)" CODUO_FP_FAITHFUL=relaxed \
+		CC="$(CC)" CODUO_BEHAVIOR=windows CODUO_FP_FAITHFUL=relaxed \
 		NATIVE64_SHARED_BUILD_DIR="$(abspath $(CLIENT_GAME_BUILD_DIR))" \
 		NATIVE64_SHARED_TARGET="$(abspath $(CLIENT_GAME_OUTPUT))" \
 		native64-shared
@@ -226,8 +229,8 @@ client-linux32:
 		CXX="$(LINUX32_CXX) -m32 -msse" \
 		PKG_CONFIG="$(LINUX32_PKG_CONFIG)"
 	$(MAKE) $(MAKE_JOBS) -f build-mk/game.mk \
-		CC="$(LINUX32_CC)" \
-		I386_SHARED_BUILD_DIR="$(abspath $(BUILD_DIR)/game/linux-i386)" \
+		CC="$(LINUX32_CC)" CODUO_BEHAVIOR=windows \
+		I386_SHARED_BUILD_DIR="$(abspath $(dir $(LINUX32_GAME_OUTPUT)))" \
 		I386_SHARED_TARGET="$(abspath $(LINUX32_GAME_OUTPUT))" shared-i386
 
 client-linux64:
@@ -241,8 +244,8 @@ client-linux64:
 		CC="$(LINUX64_CC) -m64" CXX="$(LINUX64_CXX) -m64" \
 		PKG_CONFIG="$(LINUX64_PKG_CONFIG)"
 	$(MAKE) $(MAKE_JOBS) -f build-mk/game.mk \
-		CC="$(LINUX64_CC)" \
-		NATIVE64_SHARED_BUILD_DIR="$(abspath $(BUILD_DIR)/game/linux-x86_64)" \
+		CC="$(LINUX64_CC)" CODUO_BEHAVIOR=windows \
+		NATIVE64_SHARED_BUILD_DIR="$(abspath $(dir $(LINUX64_GAME_OUTPUT)))" \
 		NATIVE64_SHARED_TARGET="$(abspath $(LINUX64_GAME_OUTPUT))" native64-shared
 
 client-linux32-package: client-linux32
@@ -287,7 +290,7 @@ client-windows-i686:
 	$(MAKE) $(MAKE_JOBS) -f build-mk/game.mk windows-i686 \
 		MINGW32_CC="$(MINGW32_CC)" \
 		CODUO_BEHAVIOR=windows \
-		WINDOWS_I686_BUILD_DIR="$(abspath $(BUILD_DIR)/game/windows-i686)" \
+		WINDOWS_I686_BUILD_DIR="$(abspath $(dir $(WINDOWS_GAME_OUTPUT)))" \
 		WINDOWS_I686_TARGET="$(abspath $(WINDOWS_GAME_OUTPUT))"
 
 client-windows-x86_64:
@@ -303,8 +306,8 @@ client-windows-x86_64:
 		WINDOWS_CC="$(MINGW64_CC)" \
 		WINDOWS_LIBRARY="$(abspath $(BUILD_DIR)/client/windows-x86_64/uo_ui_mp_x86.dll)"
 	$(MAKE) $(MAKE_JOBS) -f build-mk/game.mk windows-x86_64 \
-		MINGW64_CC="$(MINGW64_CC)" \
-		WINDOWS_X86_64_BUILD_DIR="$(abspath $(BUILD_DIR)/game/windows-x86_64)" \
+		MINGW64_CC="$(MINGW64_CC)" CODUO_BEHAVIOR=windows \
+		WINDOWS_X86_64_BUILD_DIR="$(abspath $(dir $(WINDOWS64_GAME_OUTPUT)))" \
 		WINDOWS_X86_64_TARGET="$(abspath $(WINDOWS64_GAME_OUTPUT))"
 
 client-windows-package: client-windows-i686-package
