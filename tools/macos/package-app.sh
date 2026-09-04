@@ -2,26 +2,27 @@
 
 set -eu
 
-if [ "$#" -ne 9 ]; then
-    echo "usage: $0 engine cgame ui app info-plist bundle-id version build-number sign-identity" >&2
+if [ "$#" -ne 10 ]; then
+    echo "usage: $0 engine cgame ui game app info-plist bundle-id version build-number sign-identity" >&2
     exit 2
 fi
 
 engine_path=$1
 cgame_path=$2
 ui_path=$3
-app_path=$4
-info_plist_path=$5
-bundle_identifier=$6
-bundle_version=$7
-bundle_build_number=$8
-sign_identity=$9
+game_path=$4
+app_path=$5
+info_plist_path=$6
+bundle_identifier=$7
+bundle_version=$8
+bundle_build_number=$9
+sign_identity=${10}
 
 if [ "$(uname -s)" != "Darwin" ]; then
     echo "error: macOS application packaging must run on macOS" >&2
     exit 2
 fi
-for required_path in "$engine_path" "$cgame_path" "$ui_path" "$info_plist_path"; do
+for required_path in "$engine_path" "$cgame_path" "$ui_path" "$game_path" "$info_plist_path"; do
     if [ ! -f "$required_path" ]; then
         echo "error: missing packaging input: $required_path" >&2
         exit 2
@@ -52,6 +53,7 @@ contents_path="$staged_app/Contents"
 macos_path="$contents_path/MacOS"
 frameworks_path="$contents_path/Frameworks"
 resources_path="$contents_path/Resources"
+game_module_path="$resources_path/uo/uo_game_mp_arm64.dylib"
 
 cleanup_stage()
 {
@@ -61,13 +63,14 @@ cleanup_stage()
 }
 trap cleanup_stage EXIT HUP INT TERM
 
-mkdir -p "$macos_path" "$frameworks_path" "$resources_path"
+mkdir -p "$macos_path" "$frameworks_path" "$resources_path/uo"
 COPYFILE_DISABLE=1 cp "$info_plist_path" "$contents_path/Info.plist"
 COPYFILE_DISABLE=1 cp "$engine_path" "$macos_path/CoDUOMP"
 COPYFILE_DISABLE=1 cp "$cgame_path" "$frameworks_path/uo_cgame_mp_arm64.dylib"
 COPYFILE_DISABLE=1 cp "$ui_path" "$frameworks_path/uo_ui_mp_arm64.dylib"
+COPYFILE_DISABLE=1 cp "$game_path" "$game_module_path"
 chmod 755 "$macos_path/CoDUOMP" "$frameworks_path/uo_cgame_mp_arm64.dylib" \
-    "$frameworks_path/uo_ui_mp_arm64.dylib"
+    "$frameworks_path/uo_ui_mp_arm64.dylib" "$game_module_path"
 
 plutil -replace CFBundleIdentifier -string "$bundle_identifier" \
     "$contents_path/Info.plist"
@@ -127,14 +130,17 @@ install_name_tool -id '@rpath/uo_cgame_mp_arm64.dylib' \
     "$frameworks_path/uo_cgame_mp_arm64.dylib"
 install_name_tool -id '@rpath/uo_ui_mp_arm64.dylib' \
     "$frameworks_path/uo_ui_mp_arm64.dylib"
+install_name_tool -id '@rpath/uo_game_mp_arm64.dylib' "$game_module_path"
 
-for code_path in "$macos_path/CoDUOMP" "$frameworks_path"/*.dylib; do
+for code_path in "$macos_path/CoDUOMP" "$frameworks_path"/*.dylib \
+                 "$game_module_path"; do
     xcrun strip -S -x "$code_path"
     codesign --remove-signature "$code_path" >/dev/null 2>&1 || true
 done
 
 for module_path in "$frameworks_path/uo_cgame_mp_arm64.dylib" \
-                   "$frameworks_path/uo_ui_mp_arm64.dylib"; do
+                   "$frameworks_path/uo_ui_mp_arm64.dylib" \
+                   "$game_module_path"; do
     if ! dyld_info -exports "$module_path" | grep -q '_dllEntry$' ||
        ! dyld_info -exports "$module_path" | grep -q '_vmMain$'; then
         echo "error: required module exports were stripped from $module_path" >&2
@@ -143,7 +149,7 @@ for module_path in "$frameworks_path/uo_cgame_mp_arm64.dylib" \
 done
 
 xattr -cr "$staged_app"
-for code_path in "$frameworks_path"/*.dylib; do
+for code_path in "$frameworks_path"/*.dylib "$game_module_path"; do
     if [ "$sign_identity" = "-" ]; then
         codesign --sign - --timestamp=none "$code_path"
     else

@@ -74,7 +74,7 @@ provides Clang, `make`, libcurl, zlib, and the OpenGL, OpenAL, and AudioToolbox
 frameworks; they do not need separate Homebrew packages.
 
 After installing the dependencies for your platform, build the executable and
-its architecture-matched cgame/UI modules:
+its architecture-matched cgame, UI, and listen-server game modules:
 
 ```sh
 make
@@ -95,8 +95,8 @@ make macos-zip
 
 The outputs are `.workbench/build/macos/OpenCoDUO.app` and
 `.workbench/build/macos/opencoduo-macos-arm64.zip`. The application contains
-the engine, the reconstructed cgame/UI modules, and the open-source runtime
-libraries it needs. It does not contain retail game data.
+the engine, the reconstructed cgame/UI and listen-server game modules, and the
+open-source runtime libraries it needs. It does not contain retail game data.
 
 At launch, Open CoD:UO first reuses its saved game-data location. It can then
 discover Steam app 2640 in Steam's configured macOS libraries or a conventional
