@@ -364,7 +364,7 @@ intptr_t CL_UISystemCalls(intptr_t *arguments)
             (lan_server_source_t)UI_ARG(1), UI_STRING(2));
         return 0;
     case UI_CIN_PLAY_CINEMATIC:
-        Com_DPrintf("UI_CIN_PlayCinematic");
+        Com_DPrintf("UI_CIN_PlayCinematic\n");
         return CIN_PlayCinematic(
             UI_STRING(1), UI_INT(2), UI_INT(3), UI_INT(4),
             UI_INT(5), UI_INT(6));
