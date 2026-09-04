@@ -53,46 +53,6 @@ static uint8_t game_compat_g_attach_ignore_collision_value(const gentity_t *ent)
     return ent->attachIgnoreCollision;
 }
 
-#if defined(WINDOWS_BEHAVIOR)
-/*
- * NOT_FROM_ORIGINAL_SOURCE: the recovered game source is organized around the
- * Linux module's padded 0x40-byte DObjSkelMat carrier, while the original
- * Windows DObjSkel2MatrixMultiply43 ABI uses three compact 0x10-byte rows with
- * translation in each row's fourth lane.  Convert only at that proven ABI
- * boundary so WINDOWS_BEHAVIOR retains the original Windows arithmetic and the
- * rest of the game module retains one honest DObjSkelMat representation.
- */
-static void game_compat_dobj_skel2_matrix_multiply43(
-    const DObjSkelMat *left, const matrix43_t *right, DObjSkelMat *output)
-{
-    float compactLeft[3][4];
-    float compactRight[3][4];
-    float compactOutput[3][4];
-
-    for (int32_t row = 0; row < 3; ++row) {
-        for (int32_t column = 0; column < 3; ++column) {
-            compactLeft[row][column] = left->axis[row][column];
-            compactRight[row][column] = right->axis[row][column];
-        }
-        compactLeft[row][3] = left->origin[row];
-        compactRight[row][3] = right->origin[row];
-    }
-
-    DObjSkel2MatrixMultiply43((const float (*)[4])compactLeft,
-                              (const float (*)[4])compactRight,
-                              compactOutput);
-
-    for (int32_t row = 0; row < 3; ++row) {
-        for (int32_t column = 0; column < 3; ++column) {
-            output->axis[row][column] = compactOutput[row][column];
-        }
-        output->axis[row][3] = 0.0f;
-        output->origin[row] = compactOutput[row][3];
-    }
-    output->origin[3] = 1.0f;
-}
-#endif
-
 void G_SetOrigin(gentity_t *ent, const float *origin);
 void G_SetAngle(gentity_t *ent, const float *angles);
 void G_GeneralLink(gentity_t *ent);
@@ -918,12 +878,10 @@ void G_DObjGetWorldBoneIndexMatrix(gentity_t *ent, int boneIndex,
         }
         return;
     }
-#if defined(WINDOWS_BEHAVIOR)
-    game_compat_dobj_skel2_matrix_multiply43(localMatrix, &entityAxis,
-                                             outMatrix);
-#else
+    /* Windows identity: uo_game_mp_x86.dll composes here through the padded
+     * body at 0x20017b80 (its only two callers are this function pair) —
+     * bone-first, matching the Linux module.  See DObjSkel2MatrixMultiply43. */
     DObjSkel2MatrixMultiply43(localMatrix, &entityAxis, outMatrix);
-#endif
 }
 
 /* VERIFIED_DECOMPILER(0x79135, 89135_G_DObjGetLocalTagMatrix.c, VERIFY-DOBJ-LOOKUP-TARGET-2026-06-17): DATAFLOW_VERIFIED - tag bone lookup, negative-index NULL path, bone calc, and matrix-array return offset boneIndex*0x40 checked against current decompiler output. */
@@ -960,12 +918,10 @@ qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, const char *tagName,
     entityAxis.origin[0] = ent->currentOrigin[0];
     entityAxis.origin[1] = ent->currentOrigin[1];
     entityAxis.origin[2] = ent->currentOrigin[2];
-#if defined(WINDOWS_BEHAVIOR)
-    game_compat_dobj_skel2_matrix_multiply43(localMatrix, &entityAxis,
-                                             outMatrix);
-#else
+    /* Windows identity: uo_game_mp_x86.dll composes here through the padded
+     * body at 0x20017b80 (its only two callers are this function pair) —
+     * bone-first, matching the Linux module.  See DObjSkel2MatrixMultiply43. */
     DObjSkel2MatrixMultiply43(localMatrix, &entityAxis, outMatrix);
-#endif
     return qtrue;
 }
 
