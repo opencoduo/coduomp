@@ -64,7 +64,7 @@ brew install pkgconf sdl2 jpeg-turbo minizip
 `pkgconf` supplies the `pkg-config` command used by the Makefiles. The macOS
 SDK supplies Clang, `make`, libcurl, zlib, and the required system frameworks.
 
-Build the native client executable, cgame, and UI:
+Build the native client executable, cgame, UI, and listen-server game module:
 
 ```sh
 make

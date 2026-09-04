@@ -52,6 +52,8 @@ CLIENT_ENGINE_OUTPUT := $(CLIENT_NATIVE_DIR)/CoDUOMP
 CLIENT_BASEGAME_DIR := $(CLIENT_NATIVE_DIR)/uo
 CLIENT_CGAME_OUTPUT := $(CLIENT_BASEGAME_DIR)/uo_cgame_mp_$(CLIENT_NATIVE_ARCH).$(CLIENT_NATIVE_EXT)
 CLIENT_UI_OUTPUT := $(CLIENT_BASEGAME_DIR)/uo_ui_mp_$(CLIENT_NATIVE_ARCH).$(CLIENT_NATIVE_EXT)
+CLIENT_GAME_BUILD_DIR ?= $(BUILD_DIR)/game/client-native
+CLIENT_GAME_OUTPUT := $(CLIENT_BASEGAME_DIR)/uo_game_mp_$(CLIENT_NATIVE_ARCH).$(CLIENT_NATIVE_EXT)
 CLIENT_DATA_PATH ?=
 CLIENT_WORK_DIR ?= $(CURDIR)/$(WORKBENCH_DIR)/runtime/client
 CLIENT_TEST_WORK_DIR ?= $(CURDIR)/$(WORKBENCH_DIR)/runtime/client-test
@@ -81,7 +83,7 @@ RELEASE_REMOTE_MSS32_DLL ?=
 RELEASE_REMOTE_MINGW32_DEP_PREFIX ?=
 RELEASE_REMOTE_MINGW64_DEP_PREFIX ?=
 
-.PHONY: all policy-check client client-engine client-cgame client-ui client-run client-test-run \
+.PHONY: all policy-check client client-engine client-cgame client-ui client-game client-run client-test-run \
 	client-linux32 client-linux64 client-windows client-windows-i686 \
 	client-windows-x86_64 client-linux32-package client-linux64-package \
 	client-windows-package client-windows-i686-package \
@@ -99,7 +101,11 @@ policy-check:
 softfloat:
 	$(MAKE) -C vendor/softfloat/build/coduo-x87
 
-client: client-engine client-cgame client-ui
+ifeq ($(HOST_OS),Darwin)
+CLIENT_PLATFORM_TARGETS := client-game
+endif
+
+client: client-engine client-cgame client-ui $(CLIENT_PLATFORM_TARGETS)
 
 client-engine: softfloat
 	$(MAKE) $(MAKE_JOBS) -f build-mk/client-targets.mk \
@@ -119,6 +125,13 @@ client-ui: softfloat
 		CC="$(CC)" \
 		NATIVE_LIBRARY="$(abspath $(CLIENT_UI_OUTPUT))" \
 		native-link
+
+client-game: check-macos-host softfloat
+	$(MAKE) $(MAKE_JOBS) -f build-mk/game.mk \
+		CC="$(CC)" CODUO_FP_FAITHFUL=relaxed \
+		NATIVE64_SHARED_BUILD_DIR="$(abspath $(CLIENT_GAME_BUILD_DIR))" \
+		NATIVE64_SHARED_TARGET="$(abspath $(CLIENT_GAME_OUTPUT))" \
+		native64-shared
 
 client-run: client
 	@if test -z "$(CLIENT_DATA_PATH)" || \
@@ -178,6 +191,7 @@ macos-app: check-macos-host client
 		"$(abspath $(CLIENT_ENGINE_OUTPUT))" \
 		"$(abspath $(CLIENT_CGAME_OUTPUT))" \
 		"$(abspath $(CLIENT_UI_OUTPUT))" \
+		"$(abspath $(CLIENT_GAME_OUTPUT))" \
 		"$(abspath $(MACOS_APP_DIR))" \
 		"$(abspath packaging/macos/Info.plist)" \
 		"$(MACOS_BUNDLE_ID)" "$(MACOS_BUNDLE_VERSION)" \
@@ -401,7 +415,7 @@ help:
 	  '  client-windows-i686 client-windows-x86_64' \
 	  '  client-linux32-package client-linux64-package client-windows-package' \
 	  '  client-windows-i686-package client-windows-x86_64-package' \
-	  '  client-engine client-cgame client-ui' \
+	  '  client-engine client-cgame client-ui client-game' \
 	  'macOS distribution targets:' \
 	  '  macos-app macos-privacy-check macos-zip' \
 	  'Release target:' \
