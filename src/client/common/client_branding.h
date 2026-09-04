@@ -6,7 +6,8 @@
  * not used for network protocol, server info, or updater requests. */
 #define CODUOMP_DISPLAY_PRODUCT "Open CoD:UO"
 #define CODUOMP_DISPLAY_VERSION "1.51"
-#define CODUOMP_DISPLAY_BUILD_DATE "Aug 20 2026"
+#define CODUOMP_DISPLAY_BUILD_DATE __DATE__
+#define CODUOMP_DISPLAY_BUILD_TIME __TIME__
 
 #define CODUOMP_DISPLAY_LABEL \
     CODUOMP_DISPLAY_PRODUCT " " CODUOMP_DISPLAY_VERSION

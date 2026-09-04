@@ -58,7 +58,7 @@ static char comBuildVersion[COM_BUILD_VERSION_CAPACITY];
 const char *Com_GetBuildVersion(void)
 {
     (void)sprintf(comBuildVersion, "%s %s",
-                  CODUOMP_DISPLAY_BUILD_DATE, "20:33:18");
+                  CODUOMP_DISPLAY_BUILD_DATE, CODUOMP_DISPLAY_BUILD_TIME);
     return comBuildVersion;
 }
 
