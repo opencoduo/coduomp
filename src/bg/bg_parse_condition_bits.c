@@ -182,7 +182,11 @@ void BG_ParseConditionBits(char **text_pp, bg_indexed_string_t *stringTable,
         }
 
         // --- Resolve the key to a mask (0x30001bac) ---------------------------
-        if (Q_stricmpn(keyBuffer, "default", BG_STRICMP_LIMIT) == 0) {   // 0x30001bb6
+        /* The wildcard value keyword is "all" (stock compares the literal at
+         * cgame rdata 0x300727d8 / game rdata 0x20070a08 / .so rodata 0x98d07);
+         * "default" (the adjacent literal) belongs only to BG_ParseConditions'
+         * clause-level early return. */
+        if (Q_stricmpn(keyBuffer, "all", BG_STRICMP_LIMIT) == 0) {       // 0x30001bb6
             localWords[0] = ~0;                                          // 0x30001bc3
             localWords[1] = ~0;                                          // 0x30001bc6
         } else {
