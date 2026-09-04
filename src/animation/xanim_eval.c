@@ -7,6 +7,11 @@
 #include <string.h>
 
 #define XANIM_PACKED_SHORT_SCALE 3.0518509447574615e-05f
+/* The relative-delta rotation lanes accumulate products of TWO int16-packed
+ * rotation samples, so XAnimCalcRelDeltaParts scales by the SQUARE of the
+ * packed-short scale: bits 0x30800200 (CoDUOMP.exe fmuls [0x5b9e14] at
+ * 0x498009, coduo_lnxded rodata 0x80ea1bc), each binary's only reference. */
+#define XANIM_PACKED_SHORT_SCALE_SQUARED 9.313794180343393e-10f
 
 enum {
     XANIM_EVAL_TREE_ROOT_NODE = 0,
@@ -1780,7 +1785,7 @@ void XAnimCalcRelDeltaParts(XAnimParts *record, float weight,
                             float startTime, float endTime)
 {
     float *delta = deltaLanes;
-    const float packedShortScale = XANIM_PACKED_SHORT_SCALE;
+    const float packedShortScaleSquared = XANIM_PACKED_SHORT_SCALE_SQUARED;
     vec2_t startRotation;
     vec2_t endRotation;
     vec3_t startMove;
@@ -1816,7 +1821,7 @@ void XAnimCalcRelDeltaParts(XAnimParts *record, float weight,
     }
 
     float scaledWeight =
-        xanim_eval_mul_store(weight, packedShortScale);
+        xanim_eval_mul_store(weight, packedShortScaleSquared);
 #if defined(WINDOWS_BEHAVIOR)
     delta[XANIM_DELTA_ROTATION_0] = (float)(
         (long double)delta[XANIM_DELTA_ROTATION_0] +
