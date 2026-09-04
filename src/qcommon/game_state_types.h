@@ -44,11 +44,16 @@ enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_EXTENDED };
     typedef char game_state_types_compile_assert[(expression) ? 1 : -1]
 #endif
 
-/* NOT_FROM_ORIGINAL_SOURCE: a packed pool larger than one message could never
- * be delivered at connect, so refuse such a configuration at compile time. */
+/* NOT_FROM_ORIGINAL_SOURCE: every configstring costs the gamestate message
+ * three more bytes (command byte + index short) than it costs the packed
+ * pool, so a pool of at least MAX_MSGLEN retains ANY gamestate one message
+ * can physically deliver — the connect-time "MAX_GAMESTATE_CHARS exceeded"
+ * error cannot occur. Refuse a smaller pool at compile time. Raising the
+ * pool above MAX_MSGLEN is safe (it is client-internal, never on the wire)
+ * and only adds headroom for configstring growth during play. */
 GAME_STATE_TYPES_STATIC_ASSERT(
-    MAX_GAMESTATE_CHARS <= MAX_MSGLEN,
-    "MAX_GAMESTATE_CHARS must fit a single MAX_MSGLEN gamestate message");
+    MAX_GAMESTATE_CHARS >= MAX_MSGLEN,
+    "the gamestate pool must retain any single-message gamestate");
 
 /*
  * Shared multiplayer config-string layout.  The Windows cgame asset loaders
