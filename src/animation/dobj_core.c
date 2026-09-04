@@ -908,6 +908,11 @@ void DObjCreate(const DObjModel *models,
                 Com_Printf("WARNING: Part '%s' not found in model '%s' or any "
                            "of its descendants\n",
                            tagName, rootModelRecord->name);
+                /* Stock 0x494aeb jumps to the loop continue here: a model
+                 * whose attach tag cannot be resolved is EXCLUDED from the
+                 * DObj (its slot writes are overwritten by the next model and
+                 * neither childCount nor the bone span count it). */
+                continue;
             }
         }
 
