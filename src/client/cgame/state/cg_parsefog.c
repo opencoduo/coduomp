@@ -20,8 +20,12 @@ void CG_ParseFog(void)
 
     token = Com_Parse(&cursor);
     if (token == NULL || token[0] == '\0') {
+        /* Stock pushes FOUR trailing zeros here (0x3003873d..0x30038770,
+         * add $0x20 cleanup = id + 7 args), same shape as the full-parse
+         * call below; the engine dispatcher always reads all seven. */
         cgame_syscall(CG_R_SET_FOG, 8, 3,
-                      coduo_fp_to_i32_extended((long double)values[0]), 0, 0, 0);
+                      coduo_fp_to_i32_extended((long double)values[0]), 0, 0, 0,
+                      0);
         return;
     }
 
