@@ -55,6 +55,12 @@ void CG_NextWeapon_f(void) /* 0x300474c0 */
      * delay too. (CG_AltWeapon_f/CG_WeaponSlot_f keep the bundled helper -- their binary
      * gates all four before the vehicle test.) */
     if (cg_snap == NULL) return;
+    /* IMPROVED (NOT_FROM_ORIGINAL_SOURCE): the default mouse-wheel-up binding
+     * selects the next spectator target while following a player. */
+    if ((cg_snap->ps.playerStateFlags & PSF_FOLLOWING) != 0) {
+        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"follownext");
+        return;
+    }
     if ((cg_predictedPlayerState.playerStateFlags & PMF_FOLLOW) != 0) return;
     if (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"nextvehslot");
@@ -86,6 +92,12 @@ void CG_PrevWeapon_f(void) /* 0x30047550 */
      * weaponCycleDelay time check (0x300475d1) come AFTER the vehicle branch and gate
      * only CG_CycleWeap. A prior pass used the bundled CG_WeaponCommandReady() first. */
     if (cg_snap == NULL) return;
+    /* IMPROVED (NOT_FROM_ORIGINAL_SOURCE): the default mouse-wheel-down binding
+     * selects the previous spectator target while following a player. */
+    if ((cg_snap->ps.playerStateFlags & PSF_FOLLOWING) != 0) {
+        cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"followprev");
+        return;
+    }
     if ((cg_predictedPlayerState.playerStateFlags & PMF_FOLLOW) != 0) return;
     if (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
         cgame_syscall(CG_SEND_CLIENT_COMMAND, (intptr_t)"prevvehslot");
