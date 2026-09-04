@@ -169,6 +169,14 @@ void cgame_compat_publish_hud_presentation(void)
     cgameCompatPublishedHudStretch = active;
     cgame_syscall(CG_CVAR_SET, (intptr_t)"cg_hudStretchActive",
                   (intptr_t)(active != 0 ? "1" : "0"));
+
+    /* The cgame picture pre-scale must flip together with the engine-side
+     * transform this publication selects. CG_Init configures the scales
+     * before the HUD menu list is classified, so without this the pictures
+     * keep the aspect-true scale while the engine drops the centered-canvas
+     * bias and stretches text - a torn half-and-half layout (and a 2D
+     * loading canvas narrower than the drawable). */
+    cgame_compat_configure_screen_scales();
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the stock cropped-view tile fill for native
