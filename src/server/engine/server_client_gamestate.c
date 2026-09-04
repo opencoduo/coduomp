@@ -20,7 +20,7 @@ extern char *sv_configstrings[MAX_CONFIGSTRINGS];
 extern vm_t *sv_gameVM;
 
 void Com_DPrintf(const char *format, ...);
-void Com_Error(errorParm_t code, const char *format, ...);
+void Com_Printf(const char *format, ...);
 
 /*
  * Complete server gamestate-delivery and client-activation transition shared
@@ -98,13 +98,15 @@ void SV_SendClientGameState(client_t *client)
     /* NOT_FROM_ORIGINAL_SOURCE: the extended MAX_GAMESTATE_CHARS budget can
      * compose more than one MAX_MSGLEN message holds once per-string framing,
      * baselines, and pending server commands ride along. The message writers
-     * only latch message.overflowed, so fail loudly here instead of handing
-     * the netchan a silently truncated gamestate. */
+     * only latch message.overflowed. Preserve the in-the-wild outcome exactly
+     * (the truncated message is still sent and the joining client fails its
+     * own parse, while the server and every other client are unaffected), but
+     * say why on the server console instead of leaving the failed join
+     * undiagnosable. */
     if (message.overflowed != qfalse) {
-        Com_Error(ERR_DROP,
-                  "\x15" "SV_SendClientGameState: gamestate for client %i "
-                  "exceeds the %i-byte message budget",
-                  clientNum, MAX_MSGLEN);
+        Com_Printf("WARNING: gamestate for client %i overflowed the %i-byte "
+                   "message budget; that client cannot finish connecting\n",
+                   clientNum, MAX_MSGLEN);
     }
 
     Com_DPrintf("Sending %i bytes in gamestate to client: %i\n",

@@ -18,14 +18,18 @@ enum {
  * engine/cgame ABI; the improved source expands both client-side copies to a
  * 32-KiB packed pool.
  *
- * Practical budget: a full gamestate must still fit ONE MAX_MSGLEN message,
- * which also carries per-configstring framing (command byte + index short),
- * entity baselines, pending server commands, and the header/trailer words —
- * so the usable configstring payload tops out a few KiB below
- * MAX_GAMESTATE_CHARS. SV_SendClientGameState fails loudly (Com_Error) when
- * a composed gamestate overflows its message rather than shipping it
- * truncated, and MSG_WriteBigString replaces any single configstring of
- * BIG_INFO_STRING or more with an empty string (stock-shaped behavior). */
+ * Practical budget: the gamestate delivered at connect must fit ONE
+ * MAX_MSGLEN message, which also carries per-configstring framing (command
+ * byte + index short), entity baselines, pending server commands, and the
+ * header/trailer words — so the connect-time configstring payload tops out a
+ * few KiB below MAX_GAMESTATE_CHARS. Configstring updates applied during
+ * play repack into the client pool bounded only by MAX_GAMESTATE_CHARS,
+ * which is why the pool is larger than the connect-time budget. On overflow
+ * SV_SendClientGameState preserves the in-the-wild outcome (the truncated
+ * message is sent and only that client's join fails, on its own parser) and
+ * prints a server console warning naming the cause. MSG_WriteBigString
+ * replaces any single configstring of BIG_INFO_STRING or more with an empty
+ * string (stock-shaped behavior). */
 enum { MAX_GAMESTATE_CHARS = MAX_GAMESTATE_CHARS_EXTENDED };
 
 #if defined(__cplusplus)
