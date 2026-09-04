@@ -822,20 +822,29 @@ intptr_t CL_CgameSystemCalls(intptr_t *arguments)
             CG_PTR(XAnimTree, 1), CG_INT(2),
             CL_CgameSyscallFloatArgument(CG_ARG(3)));
         return 0;
+    /* Stock's CLIENT dispatcher routes arg6 into the notifyType slot with
+     * notifyName 0 for these two cases (CoDUOMP.exe 0x403f4c trap 0x90:
+     * xor ecx,ecx + arg6 into the [esi+6] type word; 0x403f12 trap 0x8f
+     * likewise), opposite to the server dispatcher (0x45e32c: arg6 into the
+     * name word, type 0) and to the knob cases above, which stock routes
+     * name-wards on both dispatchers.  The cgame passes usedByScript here;
+     * a zero notifyType makes XAnimSetClientTime skip client-notify
+     * generation entirely (0x498770: test di,di), killing every client
+     * anim notetrack (anim_gunhand hand swaps included). */
     case CG_XANIM_SET_GOAL_WEIGHT:
         return XAnimSetGoalWeight(
             CG_PTR(XAnimTree, 1), CG_INT(2),
             CL_CgameSyscallFloatArgument(CG_ARG(3)),
             CL_CgameSyscallFloatArgument(CG_ARG(4)),
             CL_CgameSyscallFloatArgument(CG_ARG(5)),
-            (uint16_t)CG_ARG(6), 0, (qboolean)CG_ARG(7));
+            0, (uint16_t)CG_ARG(6), (qboolean)CG_ARG(7));
     case CG_XANIM_SET_COMPLETE_GOAL_WEIGHT:
         XAnimSetCompleteGoalWeight(
             CG_PTR(XAnimTree, 1), CG_INT(2),
             CL_CgameSyscallFloatArgument(CG_ARG(3)),
             CL_CgameSyscallFloatArgument(CG_ARG(4)),
             CL_CgameSyscallFloatArgument(CG_ARG(5)),
-            (uint16_t)CG_ARG(6), 0, (qboolean)CG_ARG(7));
+            0, (uint16_t)CG_ARG(6), (qboolean)CG_ARG(7));
         return 0;
     case CG_XANIM_SET_ANIM_RATE:
         XAnimSetAnimRate(
