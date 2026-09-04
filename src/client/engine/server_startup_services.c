@@ -14,7 +14,8 @@ uint32_t Sys_Milliseconds(void);
 void Com_Restart(void);
 
 /* NOT_FROM_ORIGINAL_SOURCE: target adapter for the Windows client-owned map
- * transition calls embedded in SV_SpawnServer at 0x0045fb4d..0x0045fb54. */
+ * transition calls embedded in SV_SpawnServer at 0x0045fb71..0x0045fb9e
+ * (CL_SetupForNewServerMap call, then CL_ShutdownAll's body inlined). */
 void server_compat_begin_map_load(void)
 {
     CL_SetupForNewServerMap();
