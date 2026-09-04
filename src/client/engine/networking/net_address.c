@@ -1032,9 +1032,12 @@ static void NET_OpenSocks(int32_t port)
     const uint16_t networkPort = htons((uint16_t)port);
     memcpy(&message[8], &networkPort, sizeof(networkPort));
 
-    if (coduomp_net_socks_send_all(message,
-                                   NET_SOCKS_UDP_REQUEST_BYTES) == qfalse)
-        goto failed;
+    /* Unlike the greeting and auth sends (which print and return), stock
+     * prints the send warning for the UDP-associate request and FALLS
+     * THROUGH to the reply recv (0x46d86d..0x46d882 converge on the recv at
+     * 0x46d885), so a transient send failure can still complete
+     * negotiation. */
+    (void)coduomp_net_socks_send_all(message, NET_SOCKS_UDP_REQUEST_BYTES);
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (coduomp_net_socks_receive_exact(message,
@@ -1072,6 +1075,9 @@ static void NET_OpenSocks(int32_t port)
     return;
 
 failed:
+    /* NOT_FROM_ORIGINAL_SOURCE: stock's failure paths print and return,
+     * leaving the SOCKS control socket open; this cleanup releases it and
+     * marks the handle closed so later state checks see a coherent value. */
 #if defined(_WIN32)
     closesocket(netSocksSocket);
 #else
