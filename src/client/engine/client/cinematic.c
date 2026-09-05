@@ -275,6 +275,11 @@ int32_t CIN_PlayCinematic(const char *name, int32_t x, int32_t y,
     lastCinematicHandle = handle;
 
     cinematic_t *const cinematic = &cinematics[handle];
+    /* NOT_FROM_ORIGINAL_SOURCE: a reused slot must start with a new decode
+     * target and no presented frame. Otherwise an unchanged startup clock can
+     * retain the previous movie's target and decode it before the first draw. */
+    cinematic->targetFrame = 0;
+    cinematic->decodedFrame = NULL;
     strcpy(cinematic->fileName, fileName);
     cinematic->fileSize = 0;
 
