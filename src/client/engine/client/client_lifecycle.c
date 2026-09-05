@@ -623,7 +623,7 @@ void CL_Rcon_f(void)
     /* An empty cvar still permits the password as the first command argument. */
     if (rcon_client_password->string == NULL) {
         Com_Printf(
-            "You must set 'rcon_password' before\n"
+            "You must set 'rconPassword' before\n"
             "issuing an rcon command.\n");
         return;
     }
