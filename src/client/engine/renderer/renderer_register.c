@@ -41,6 +41,7 @@ cvar_t *r_vbo_smc_static_draw;
 cvar_t *r_vbo_stream_draw;
 cvar_t *r_vbo_interleave;
 cvar_t *r_vbo_paranoia;
+cvar_t *r_vbo_stream_map;
 cvar_t *r_skip_auto_config;
 cvar_t *r_picmip;
 cvar_t *r_picmip2;
@@ -264,6 +265,12 @@ void R_Register(void)
         "r_vbo_interleave", "0", CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_paranoia =
         ri.Cvar_Get("r_vbo_paranoia", "0", CVAR_ARCHIVE);
+    /* NOT_FROM_ORIGINAL_SOURCE DIAGNOSTIC: 0 sends stream-mode stage batches
+     * through the recovered map-failure fallback (temporary memory plus
+     * BufferData) so the original unmap-failure draw suppression can never
+     * trigger (CoDUOMP.exe 0x51ee5d..0x51eec8). */
+    r_vbo_stream_map =
+        ri.Cvar_Get("r_vbo_stream_map", "1", CVAR_ARCHIVE);
     r_skip_auto_config = ri.Cvar_Get(
         "r_skip_auto_config", "0", CVAR_ARCHIVE | CVAR_LATCH);
     r_picmip =

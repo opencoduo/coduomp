@@ -38,6 +38,7 @@ extern cvar_t *r_vbo_smc_static_draw;
 extern cvar_t *r_vbo_stream_draw;
 extern cvar_t *r_vbo_interleave;
 extern cvar_t *r_vbo_paranoia;
+extern cvar_t *r_vbo_stream_map;
 extern cvar_t *r_skip_auto_config;
 extern cvar_t *r_picmip;
 extern cvar_t *r_picmip2;
