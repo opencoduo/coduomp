@@ -4239,16 +4239,10 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
 #if defined(__APPLE__) && defined(__aarch64__)
         if (useTransient2DBuffer == qfalse) {
 #endif
-            /* NOT_FROM_ORIGINAL_SOURCE DIAGNOSTIC: r_vbo_stream_map 0 skips
-             * the recovered orphan/map upload so every stream batch takes the
-             * recovered map-failure fallback below, making the original
-             * unmap-failure draw suppression unreachable. */
-            if (r_vbo_stream_map->integer != 0) {
-                qglBufferDataARB(GL_ARRAY_BUFFER_ARB, (intptr_t)packedBytes,
-                                 NULL, GL_STREAM_DRAW_ARB);
-                packedVertices = qglMapBufferARB(GL_ARRAY_BUFFER_ARB,
-                                                 GL_WRITE_ONLY_ARB);
-            }
+            qglBufferDataARB(GL_ARRAY_BUFFER_ARB, (intptr_t)packedBytes,
+                             NULL, GL_STREAM_DRAW_ARB);
+            packedVertices = qglMapBufferARB(GL_ARRAY_BUFFER_ARB,
+                                             GL_WRITE_ONLY_ARB);
 #if defined(__APPLE__) && defined(__aarch64__)
         }
 #endif
@@ -4411,20 +4405,6 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
         ri.Hunk_FreeTempMemory(temporaryVertices);
     } else if (temporaryVertices == NULL) {
         if (qglUnmapBufferARB(GL_ARRAY_BUFFER_ARB) == 0) {
-            /* NOT_FROM_ORIGINAL_SOURCE DIAGNOSTIC: the recovered path
-             * reproduces the original's silent skip of this stage draw when
-             * the driver reports the mapped stream buffer lost (CoDUOMP.exe
-             * 0x51ee63 je 0x51eec8). Count and report each loss so transient
-             * material-specific artifacts can be attributed to it. */
-            static int32_t streamUnmapFailureCount;
-            ++streamUnmapFailureCount;
-            if (streamUnmapFailureCount <= 20 ||
-                streamUnmapFailureCount % 100 == 0) {
-                ri.Printf(R_PRINT_WARNING,
-                          "WARNING: stream buffer unmap failed; skipping a "
-                          "'%s' stage draw (occurrence %i)\n",
-                          tess.shader->name, streamUnmapFailureCount);
-            }
             qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
             return;
         }
