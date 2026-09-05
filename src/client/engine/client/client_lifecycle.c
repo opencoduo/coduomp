@@ -551,7 +551,8 @@ void CL_Rcon_f(void)
     int32_t messageLength = CL_RCON_CONNECTIONLESS_MARKER_SIZE;
     netadr_t destination;
 
-    if (rcon_client_password->string[0] == '\0') {
+    /* An empty cvar still permits the password as the first command argument. */
+    if (rcon_client_password->string == NULL) {
         Com_Printf(
             "You must set 'rcon_password' before\n"
             "issuing an rcon command.\n");
