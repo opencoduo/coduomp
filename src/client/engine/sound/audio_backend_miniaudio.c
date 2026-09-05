@@ -587,12 +587,13 @@ void miniaudio_3d_sample_seek_frame(
 
 enum {
     MINIAUDIO_BACKEND_PROVIDER = 1,
-    MINIAUDIO_BACKEND_STATUS_PLAYING = 4
+    MINIAUDIO_BACKEND_STATUS_PLAYING = 4,
+    MINIAUDIO_RAW_BUFFER_COUNT = 2
 };
 
 struct audio_sample_handle_s {
     miniaudio_3d_sample_t *voice;
-    miniaudio_3d_sample_t *rawVoices[MSS_RAW_BUFFER_COUNT];
+    miniaudio_3d_sample_t *rawVoices[MINIAUDIO_RAW_BUFFER_COUNT];
     const snd_alias_sound_file_t *soundFile;
     const void *data;
     uint32_t dataLength;
@@ -604,6 +605,7 @@ struct audio_sample_handle_s {
     float volume;
     float pan;
     uint64_t rawNextStartFrame;
+    uint64_t rawStartFrames[MINIAUDIO_RAW_BUFFER_COUNT];
     qboolean rawMode;
     struct audio_sample_handle_s *next;
 };
@@ -708,7 +710,7 @@ static void miniaudio_backend_apply_2d_gains(
     const float right = volume * (pan >= 0.5f ? 1.0f : pan * 2.0f);
     miniaudio_3d_sample_set_channel_gains(
         sample->voice, left, right);
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index) {
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index) {
         miniaudio_3d_sample_set_channel_gains(
             sample->rawVoices[index], left, right);
     }
@@ -763,7 +765,7 @@ static void miniaudio_backend_reset_sample(
         return;
     if (sample->voice != NULL)
         miniaudio_3d_sample_reset(sample->voice);
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index) {
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index) {
         miniaudio_3d_sample_destroy(sample->rawVoices[index]);
         sample->rawVoices[index] = NULL;
     }
@@ -775,6 +777,7 @@ static void miniaudio_backend_reset_sample(
     sample->sampleRate = 0;
     sample->playbackRate = 0;
     sample->rawNextStartFrame = 0;
+    memset(sample->rawStartFrames, 0, sizeof(sample->rawStartFrames));
     sample->rawMode = qfalse;
 }
 
@@ -1297,7 +1300,7 @@ void miniaudio_end_sample(audio_sample_handle_t sample)
     if (sample == NULL)
         return;
     miniaudio_3d_sample_end(sample->voice);
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index)
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index)
         miniaudio_3d_sample_end(sample->rawVoices[index]);
 }
 
@@ -1306,7 +1309,7 @@ void miniaudio_stop_sample(audio_sample_handle_t sample)
     if (sample == NULL)
         return;
     miniaudio_3d_sample_stop(sample->voice);
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index)
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index)
         miniaudio_3d_sample_stop(sample->rawVoices[index]);
 }
 
@@ -1315,7 +1318,7 @@ void miniaudio_resume_sample(audio_sample_handle_t sample)
     if (sample == NULL)
         return;
     miniaudio_3d_sample_resume(sample->voice);
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index)
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index)
         miniaudio_3d_sample_resume(sample->rawVoices[index]);
 }
 
@@ -1325,7 +1328,7 @@ int32_t miniaudio_sample_status(audio_sample_handle_t sample)
         return AUDIO_SAMPLE_STATUS_DONE;
     if (miniaudio_3d_sample_is_active(sample->voice))
         return MINIAUDIO_BACKEND_STATUS_PLAYING;
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index) {
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index) {
         if (miniaudio_3d_sample_is_active(
                 sample->rawVoices[index])) {
             return MINIAUDIO_BACKEND_STATUS_PLAYING;
@@ -1781,7 +1784,26 @@ int32_t miniaudio_minimum_sample_buffer_size(
 
 uint32_t miniaudio_sample_position(audio_sample_handle_t sample)
 {
-    if (sample == NULL || sample->frameCount == 0)
+    if (sample == NULL)
+        return 0;
+    /* NOT_FROM_ORIGINAL_SOURCE: streaming position belongs to the currently
+     * playing buffer. The ordinary loaded-sample voice is unused in raw mode. */
+    if (sample->rawMode) {
+        const uint64_t now = ma_engine_get_time_in_pcm_frames(&miniaudio_engine);
+        miniaudio_3d_sample_t *currentVoice = NULL;
+        uint64_t currentStart = 0;
+        for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index) {
+            if (sample->rawVoices[index] != NULL && sample->rawStartFrames[index] <= now &&
+                (currentVoice == NULL || sample->rawStartFrames[index] > currentStart)) {
+                currentVoice = sample->rawVoices[index];
+                currentStart = sample->rawStartFrames[index];
+            }
+        }
+        return miniaudio_3d_sample_cursor_frame(currentVoice) *
+               (uint32_t)miniaudio_backend_channels(sample->sampleType) *
+               (uint32_t)miniaudio_backend_bytes_per_sample(sample->sampleType);
+    }
+    if (sample->frameCount == 0)
         return 0;
     const uint32_t cursor =
         miniaudio_3d_sample_cursor_frame(sample->voice);
@@ -1800,7 +1822,10 @@ int32_t miniaudio_sample_buffer_ready(
         sample->rawNextStartFrame =
             ma_engine_get_time_in_pcm_frames(&miniaudio_engine);
     }
-    for (int32_t index = 0; index < MSS_RAW_BUFFER_COUNT; ++index) {
+    /* NOT_FROM_ORIGINAL_SOURCE: the backend has two playback buffers; the
+     * engine's 32-segment producer ring is separate. Keeping that distinction
+     * bounds read-ahead and preserves borrowed PCM until playback completes. */
+    for (int32_t index = 0; index < MINIAUDIO_RAW_BUFFER_COUNT; ++index) {
         if (sample->rawVoices[index] == NULL)
             return index;
         if (!miniaudio_3d_sample_is_active(
@@ -1819,7 +1844,7 @@ void miniaudio_load_sample_buffer(
     const void *data, int32_t byteCount)
 {
     if (sample == NULL || bufferIndex < 0 ||
-        bufferIndex >= MSS_RAW_BUFFER_COUNT || data == NULL ||
+        bufferIndex >= MINIAUDIO_RAW_BUFFER_COUNT || data == NULL ||
         byteCount <= 0 || sample->sampleRate <= 0)
         return;
     const int32_t channels =
@@ -1859,8 +1884,9 @@ void miniaudio_load_sample_buffer(
         ma_engine_get_time_in_pcm_frames(&miniaudio_engine);
     if (sample->rawNextStartFrame < now)
         sample->rawNextStartFrame = now;
+    sample->rawStartFrames[bufferIndex] = sample->rawNextStartFrame;
     ma_sound_set_start_time_in_pcm_frames(
-        &voice->sound, sample->rawNextStartFrame);
+        &voice->sound, sample->rawStartFrames[bufferIndex]);
     const uint32_t sourceFrames =
         (uint32_t)byteCount /
         ((uint32_t)channels * (uint32_t)bytesPerSample);
