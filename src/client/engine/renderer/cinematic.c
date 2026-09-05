@@ -64,6 +64,12 @@ void RE_StretchRaw(int32_t x, int32_t y, int32_t width, int32_t height,
         return;
 
     R_SyncRenderThread();
+    /* NOT_FROM_ORIGINAL_SOURCE: command execution can leave the widescreen
+     * backdrop in the pending 2D batch. Submit it before drawing the raw frame
+     * so the later frame swap cannot paint that backdrop over the cinematic. */
+    if (tess.indexCount != 0)
+        RB_EndSurface();
+
     if (r_speeds->integer != 0)
         uploadStart = ri.Milliseconds();
 
