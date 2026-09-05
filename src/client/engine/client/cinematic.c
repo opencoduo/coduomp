@@ -3,6 +3,7 @@
 #include "cgame.h"
 #include "console.h"
 #include "qcommon/q_string.h"
+#include "compat/coduo_fp_conversion.h"
 #include "../renderer/gl_state.h"
 #include "../renderer/renderer_api.h"
 
@@ -1199,7 +1200,7 @@ void readQuadInfo(const uint8_t *data)
     cinematic->displayWidth = cinematic->width;
     cinematic->displayHeight = cinematic->height;
 
-    if (glConfig.vidWidth <= ROQ_LEGACY_MAX_DIMENSION) {
+    if (glConfig.maxTextureSize <= ROQ_LEGACY_MAX_DIMENSION) {
         if (cinematic->displayWidth > ROQ_LEGACY_MAX_DIMENSION)
             cinematic->displayWidth = ROQ_LEGACY_MAX_DIMENSION;
         if (cinematic->displayHeight > ROQ_LEGACY_MAX_DIMENSION)
@@ -1276,7 +1277,7 @@ void RoQ_init(void)
 {
     cinematic_t *const cinematic = &cinematics[currentCinematicHandle];
     int32_t scaledTime = CL_ScaledMilliseconds();
-    scaledTime = (int32_t)((float)scaledTime * com_timescale->value);
+    scaledTime = coduo_fp_to_i32_extended((long double)scaledTime * (long double)com_timescale->value);
 
     cinematic->startTime = scaledTime;
     cinematic->currentTime = scaledTime;
@@ -1557,8 +1558,7 @@ void RoQInterrupt(void)
                     return;
                 setupQuad(0, 0);
                 int32_t scaledTime = CL_ScaledMilliseconds();
-                scaledTime = (int32_t)(
-                    (float)scaledTime * com_timescale->value);
+                scaledTime = coduo_fp_to_i32_extended((long double)scaledTime * (long double)com_timescale->value);
                 cinematic = &cinematics[currentCinematicHandle];
                 cinematic->currentTime = scaledTime;
                 cinematic->startTime = scaledTime;
