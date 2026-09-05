@@ -189,7 +189,9 @@ enum {
     CIN_OPTION_HOLD = '1',
     CIN_OPTION_LOOP = '2',
     CIN_OPTION_LETTERBOX = '3',
-    CIN_AUDIO_FADE_MSEC = 1
+    CIN_AUDIO_FADE_MSEC = 1,
+    CIN_MILLISECONDS_PER_SECOND = 1000,
+    CIN_CLOCK_STALL_FRAMES = 4
 };
 
 /* Source: CoDUOMP.exe 0x00405d40..0x00405d6c.
@@ -1886,8 +1888,15 @@ cinematic_status_t CIN_RunCinematic(int32_t handle)
     } else {
         const uint32_t stalledTime =
             (uint32_t)now - (uint32_t)cinematic->lastTime;
-        if (stalledTime * (uint32_t)cinematic->frameRate > UINT32_C(4000))
-            cinematic->status = FMV_EOF;
+        const uint32_t stalledFrameMsec = stalledTime * (uint32_t)cinematic->frameRate;
+        if (stalledFrameMsec > CIN_CLOCK_STALL_FRAMES * CIN_MILLISECONDS_PER_SECOND) {
+            /* NOT_FROM_ORIGINAL_SOURCE: a stalled audio clock does not mark
+             * the end of the movie. Advance from the last frame target using
+             * elapsed time; the decoder still owns file EOF and error exits. */
+            cinematic->targetFrame = (int32_t)((uint32_t)cinematic->targetFrame +
+                stalledFrameMsec / CIN_MILLISECONDS_PER_SECOND);
+            cinematic->lastTime = now;
+        }
     }
 
     int32_t decoderStartTime = cinematic->startTime;
