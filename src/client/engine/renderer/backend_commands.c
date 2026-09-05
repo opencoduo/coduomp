@@ -167,24 +167,32 @@ const void *RB_SaveScreen(const save_screen_command_t *command)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c0d10_004c0de6.mcode.
  * Name: same-module Mac symbol RB_BlendSavedScreen.
  *
- * The exponent, clamp, scale, and rounding bias retain the exact constants
+ * The base, clamp, scale, and rounding bias retain the exact constants
  * loaded at 0x004c0d42, 0x004c0d55, 0x004c0d6a, and 0x004c0d82. */
 const void *RB_BlendSavedScreen(
     const blend_saved_screen_command_t *command)
 {
-    const int32_t elapsed = backEnd.refdef.time - tr.screenImageSaveTime;
-
     if (!backEnd.projection2D)
         RB_SetGL2D();
 
+    /* 0x004c0d22 reads backEnd.refdef.time only AFTER the conditional
+     * RB_SetGL2D above, which restamps it with ri.Milliseconds(); the blend
+     * follows the 3D view, so this always measures wall-clock milliseconds
+     * since RB_SaveScreen stamped the same field. Reading it before the call
+     * subtracts a wall-clock stamp from the scene's game time and never blends. */
+    const int32_t elapsed = backEnd.refdef.time - tr.screenImageSaveTime;
+
     if (elapsed < command->duration) {
-        const double blendExponent = 0.009999999776482582;
+        const double blendBase = 0.009999999776482582;
         const double roundingBias = 9.313225746154785e-10;
-        /* 0x004c0d42..0x004c0d7a retains the pow result through the clamp
-         * and multiplication, then performs the sole binary32 spill. */
+        /* 0x004c0d42 FLD 0.01 first (pow base, st1), then FILD elapsed /
+         * FIDIV duration (exponent, st0) before _CIpow: the retained fraction
+         * is 0.01^(elapsed/duration), fading toward 0.01 as the level ramps
+         * down. 0x004c0d55..0x004c0d7a retains the pow result through the
+         * clamp and multiplication, then performs the sole binary32 spill. */
         long double blendRaw = (long double)pow(
-            (double)elapsed / (double)command->duration,
-            blendExponent);
+            blendBase,
+            (double)elapsed / (double)command->duration);
         renderer_rgba8_t color = {
             .components = {255, 255, 255, 0}
         };
