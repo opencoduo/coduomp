@@ -289,7 +289,11 @@ static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *pr
     }
     Q_strncpyz(input->name, file, sizeof(input->name));
     char error[256] = "could not read config";
-    if (profile && !Q_stricmp(file, coduomp_config_name)) {
+    if (com_journal && com_journal->integer) {
+        input->result = coduomp_fs_config_read(file, &input->data, &input->size, input->source, error);
+        if (com_journal->integer == 2)
+            coduomp_config_fail(profile, input->source, 1, "journal playback uses temporary settings");
+    } else if (profile && !Q_stricmp(file, coduomp_config_name)) {
         coduomp_config_revision_t observed;
         strcpy(input->source, profile->path);
         input->result = coduomp_config_read_disk(profile->path, &input->data, &input->size, &observed, error);
@@ -484,7 +488,10 @@ static void coduomp_config_loaded(coduomp_config_profile_t *profile)
     if (!envelope)
         return;
     char path[CODUOMP_CONFIG_PATH];
-    snprintf(path, sizeof(path), "%s.loaded.cfg", profile->path);
+    if (snprintf(path, sizeof(path), "%s.loaded.cfg", profile->path) >= (int)sizeof(path)) {
+        free(envelope);
+        return;
+    }
     coduomp_config_revision_t observed;
     char *old;
     size_t oldSize;
@@ -627,11 +634,14 @@ qboolean coduomp_config_save(const char *root, const char *game, const char *fil
  * profile's managed snapshots; each snapshot is checked before use. */
 static qboolean coduomp_config_backup(coduomp_config_profile_t *profile, const char *selection, char **data, size_t *size, char path[CODUOMP_CONFIG_PATH])
 {
+    int written;
     if (!strcmp(selection, "loaded"))
-        snprintf(path, CODUOMP_CONFIG_PATH, "%s.loaded.cfg", profile->path);
+        written = snprintf(path, CODUOMP_CONFIG_PATH, "%s.loaded.cfg", profile->path);
     else if (strlen(selection) == 1 && selection[0] >= '1' && selection[0] <= '3')
-        snprintf(path, CODUOMP_CONFIG_PATH, "%s.backup%c.cfg", profile->path, selection[0]);
+        written = snprintf(path, CODUOMP_CONFIG_PATH, "%s.backup%c.cfg", profile->path, selection[0]);
     else
+        return qfalse;
+    if (written < 0 || written >= CODUOMP_CONFIG_PATH)
         return qfalse;
     char error[256];
     if (!coduomp_config_read_snapshot(path, data, size, error))

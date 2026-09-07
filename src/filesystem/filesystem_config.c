@@ -15,6 +15,7 @@
 
 static char *coduomp_config_readSource;
 static qboolean coduomp_config_readFailed;
+extern cvar_t *com_journal;
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the exact selected VFS origin while the
  * handle is open; a pak or installation fallback is not the writable file. */
@@ -107,6 +108,29 @@ int coduomp_fs_config_read(const char *name, char **data, size_t *size, char sou
     snprintf(source, CODUOMP_CONFIG_PATH, "%s", name);
     coduomp_config_readSource = source;
     coduomp_config_readFailed = qfalse;
+    /* Keep the existing journal stream aligned during recording and replay.
+     * Its temporary allocation is copied before parsing or queuing commands. */
+    if (com_journal && com_journal->integer && strstr(name, ".cfg")) {
+        void *journalData = NULL;
+        int32_t length = FS_ReadFile(name, &journalData);
+        coduomp_config_readSource = NULL;
+        if (com_journal->integer == 2)
+            snprintf(source, CODUOMP_CONFIG_PATH, "journal::%s", name);
+        if (length < 0 || !journalData)
+            return coduomp_config_readFailed ? -1 : 0;
+        qboolean accepted = !coduomp_config_readFailed && length <= CODUOMP_CONFIG_MAX_BYTES;
+        char *bytes = accepted ? malloc((size_t)length + 1) : NULL;
+        if (bytes)
+            memcpy(bytes, journalData, (size_t)length + 1);
+        FS_FreeFile(journalData);
+        if (!bytes) {
+            snprintf(error, 256, "journal config could not be read within execution capacity");
+            return -1;
+        }
+        *data = bytes;
+        *size = (size_t)length;
+        return 1;
+    }
     int32_t handle = 0;
     int32_t length = FS_FOpenFileRead(name, &handle, qtrue);
     coduomp_config_readSource = NULL;

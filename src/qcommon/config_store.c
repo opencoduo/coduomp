@@ -489,8 +489,9 @@ static qboolean coduomp_store_history(coduomp_config_job_t *job, const char *pre
     qboolean ok = coduomp_store_prepare(prepared, snapshot, size, NULL, qfalse, weaker, job->result.detail);
     free(snapshot);
     for (int generation = 3; ok && generation >= 2; --generation) {
-        snprintf(from, sizeof(from), "%s.backup%d.cfg", job->path, generation - 1);
-        snprintf(to, sizeof(to), "%s.backup%d.cfg", job->path, generation);
+        if (snprintf(from, sizeof(from), "%s.backup%d.cfg", job->path, generation - 1) >= (int)sizeof(from) ||
+            snprintf(to, sizeof(to), "%s.backup%d.cfg", job->path, generation) >= (int)sizeof(to))
+            return qfalse;
         char *bytes;
         size_t length;
         coduomp_config_revision_t revision;
@@ -499,7 +500,8 @@ static qboolean coduomp_store_history(coduomp_config_job_t *job, const char *pre
         if (exists < 0 || (exists && !coduomp_store_move(from, to)))
             ok = qfalse;
     }
-    snprintf(to, sizeof(to), "%s.backup1.cfg", job->path);
+    if (snprintf(to, sizeof(to), "%s.backup1.cfg", job->path) >= (int)sizeof(to))
+        return qfalse;
     return ok && coduomp_store_move(prepared, to);
 }
 
@@ -515,7 +517,8 @@ static void coduomp_store_commit(coduomp_config_job_t *job)
     job->result.status = CODUOMP_CONFIG_NOT_COMMITTED;
     if (strlen(job->path) + 100 >= sizeof(lockPath) || !coduomp_config_path(job->path, checked, job->result.detail))
         return;
-    snprintf(lockPath, sizeof(lockPath), "%s.lock", job->path);
+    if (snprintf(lockPath, sizeof(lockPath), "%s.lock", job->path) >= (int)sizeof(lockPath))
+        return;
 #if defined(_WIN32)
     wchar_t lockWide[CODUOMP_CONFIG_PATH], pathWide[CODUOMP_CONFIG_PATH], tempWide[CODUOMP_CONFIG_PATH], rollbackWide[CODUOMP_CONFIG_PATH];
     if (!coduomp_store_wide(lockPath, lockWide) || !coduomp_store_wide(job->path, pathWide))
