@@ -26,7 +26,8 @@ enum {
     CODUOMP_CONFIG_QUIET_MS = 1000,
     CODUOMP_CONFIG_MAX_AGE_MS = 5000,
     CODUOMP_CONFIG_WAIT_MS = 5000,
-    CODUOMP_CONFIG_RETRY_MS = 10000
+    CODUOMP_CONFIG_RETRY_MS = 10000,
+    CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE = -1
 };
 
 #if defined(WINDOWS_BEHAVIOR)
@@ -705,6 +706,71 @@ static void coduomp_config_use_backup_f(void)
     free(data);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: recover the last complete language assignment
+ * without executing the file or accepting values hidden in comments/bindings.
+ * Bad commands do not prevent inspecting later unambiguous command boundaries. */
+static int coduomp_config_language(const char *data, size_t size)
+{
+    int language = CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE;
+    if (size >= 2 && (((unsigned char)data[0] == 255 && (unsigned char)data[1] == 254) ||
+                     ((unsigned char)data[0] == 254 && (unsigned char)data[1] == 255)))
+        return language;
+    size_t offset = size >= 3 && !memcmp(data, "\xef\xbb\xbf", 3) ? 3 : 0;
+    while (offset < size) {
+        size_t span = coduomp_command_span(data + offset, size - offset);
+        coduomp_config_tokens_t tokens;
+        if (coduomp_config_validate(data + offset, span, NULL) &&
+            coduomp_command_tokens(data + offset, span, 0, &tokens, NULL)) {
+            const char *value = NULL;
+            if (tokens.argc == 2 && !Q_stricmp(tokens.argv[0], "cl_language"))
+                value = tokens.argv[1];
+            else if (tokens.argc == 3 && !Q_stricmp(tokens.argv[1], "cl_language") &&
+                (!Q_stricmp(tokens.argv[0], "set") || !Q_stricmp(tokens.argv[0], "seta") ||
+                 !Q_stricmp(tokens.argv[0], "setu") || !Q_stricmp(tokens.argv[0], "sets")))
+                value = tokens.argv[2];
+            if (value) {
+                char *end;
+                long parsed = strtol(value, &end, 10);
+                if (end != value && !*end && parsed >= LANGUAGE_ENGLISH && parsed <= LANGUAGE_CHINESE)
+                    language = (int)parsed;
+            }
+        }
+        offset += span + (span < size - offset);
+    }
+    return language;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: both recovery entry points preserve the saved
+ * language after defaults execute. A missing/unreadable assignment retains the
+ * session's selected language, including a pending language change. */
+static void coduomp_config_queue_defaults(void)
+{
+    char *data, error[256], source[CODUOMP_CONFIG_PATH];
+    size_t size;
+    coduomp_config_revision_t observed;
+    int result = coduomp_config_read_disk(coduomp_config_active->path, &data, &size, &observed, error);
+    if (result == 0)
+        result = coduomp_fs_config_read(coduomp_config_name, &data, &size, source, error);
+    int language = result == 1 ? coduomp_config_language(data, size) : CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE;
+    free(data);
+    if (language == CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE) {
+        const cvar_t *var = Cvar_FindVar("cl_language");
+        if (var) {
+            const char *value = var->latchedString ? var->latchedString : var->string;
+            char *end;
+            long parsed = strtol(value, &end, 10);
+            if (end != value && !*end && parsed >= LANGUAGE_ENGLISH && parsed <= LANGUAGE_CHINESE)
+                language = (int)parsed;
+        }
+    }
+    char commands[128];
+    if (language != CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE)
+        snprintf(commands, sizeof(commands), "unbindall\ncvar_restart\nexec default_mp.cfg\nseta cl_language \"%i\"\n", language);
+    else
+        strcpy(commands, "unbindall\ncvar_restart\nexec default_mp.cfg\n");
+    Cbuf_InsertText(commands);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: defaults remain temporary until an explicit named
  * export; the original and recovery history stay protected. */
 static void coduomp_config_defaults_f(void)
@@ -713,7 +779,7 @@ static void coduomp_config_defaults_f(void)
         return;
     coduomp_config_pause("using temporary defaults");
     coduomp_config_active->announced = qtrue;
-    Cbuf_InsertText("unbindall\ncvar_restart\nexec default_mp.cfg\n");
+    coduomp_config_queue_defaults();
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: a manual repair is re-read and checked. All
@@ -867,7 +933,7 @@ void coduomp_config_present_recovery(void)
     if (choice > 0 && data)
         coduomp_command_queue_config(profile, path, data, size);
     else
-        Cbuf_InsertText("unbindall\ncvar_restart\nexec default_mp.cfg\n");
+        coduomp_config_queue_defaults();
     free(data);
 }
 

@@ -17,6 +17,11 @@ from automatic saves. The client offers a backup for this session, temporary
 defaults, or exit. Neither session choice replaces the original. Console-only
 clients report the failure and expose the same recovery commands.
 
+Resetting to temporary defaults preserves the last complete, valid `cl_language`
+assignment recoverable from the existing config, even when another command is
+malformed. If none can be recovered, the current language preference is retained.
+The retained preference is included when the resulting settings are exported.
+
 | Console command | Effect |
 | --- | --- |
 | `config_status` | Show the active config path, saving state, and available recovery files. |
