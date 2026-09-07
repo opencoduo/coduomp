@@ -16,8 +16,6 @@ char sysProcessLockFile[SYS_PROCESS_LOCK_NAME_CAPACITY];
 
 enum {
     SYS_PROCESS_ID_BYTES = 4,
-    SYS_PROCESS_LOCK_DIALOG_FLAGS =
-        MB_YESNOCANCEL | MB_ICONWARNING,
     SYS_PROCESS_LOCK_ERROR_FLAGS = MB_ICONERROR,
     SYS_FATAL_EXIT_STATUS = -1
 };
@@ -126,24 +124,16 @@ qboolean Sys_CheckProcessLock(void)
             &bytesRead, NULL);
         CloseHandle(lockFile);
 
-        /* Only a complete saved PID participates in the process check and
-         * recovery prompt. Failed or short reads proceed to rewrite the lock. */
+        /* NOT_FROM_ORIGINAL_SOURCE: a complete PID still detects another
+         * running copy. A stale marker says nothing about config validity
+         * and must never select a settings preset. */
         if (readSucceeded != FALSE && bytesRead == SYS_PROCESS_ID_BYTES) {
             if (savedProcessId != currentProcessId &&
                 Sys_ProcessMatchesExecutable(savedProcessId) != qfalse) {
                 return qfalse;
             }
 
-            const char *const title =
-                Sys_LocalizeString("WIN_IMPROPER_QUIT_TITLE");
-            const char *const body =
-                Sys_LocalizeString("WIN_IMPROPER_QUIT_BODY");
-            const int32_t response = MessageBoxA(
-                NULL, body, title, SYS_PROCESS_LOCK_DIALOG_FLAGS);
-            if (response == IDYES)
-                Com_SetSafeMode();
-            else if (response == IDCANCEL)
-                return qfalse;
+
         }
     }
 

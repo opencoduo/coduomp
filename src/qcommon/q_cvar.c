@@ -1,3 +1,4 @@
+#include "qcommon/config_profile.h"
 #include "q_cvar.h"
 #include "q_cvar_services.h"
 
@@ -157,8 +158,14 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
             Z_FreeInternal(cvar->resetString);
             cvar->resetString = CopyStringInternal(defaultValue);
             cvar_modifiedFlags |= flags;
+            if (flags & CVAR_ARCHIVE)
+                coduomp_config_settings_changed();
         }
 
+        /* NOT_FROM_ORIGINAL_SOURCE: adding persistence changes the captured
+         * settings even when this cvar's value does not change. */
+        if ((flags & CVAR_ARCHIVE) && !(cvar->flags & CVAR_ARCHIVE))
+            coduomp_config_settings_changed();
         cvar->flags |= flags;
         if (cvar->resetString[0] == '\0') {
             Z_FreeInternal(cvar->resetString);
@@ -208,6 +215,8 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
     const uint32_t hash = generateHashValue(name);
     cvar->hashNext = cvarHashTable[hash];
     cvarHashTable[hash] = cvar;
+    if (flags & CVAR_ARCHIVE)
+        coduomp_config_settings_changed();
     return cvar;
 }
 
@@ -242,6 +251,8 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
     if (strcmp(value, cvar->string) == 0) {
         if ((cvar->flags & CVAR_LATCH) != 0 &&
             cvar->latchedString != NULL) {
+            if (cvar->flags & CVAR_ARCHIVE)
+                coduomp_config_settings_changed();
             Z_FreeInternal(cvar->latchedString);
             cvar->latchedString = NULL;
         }
@@ -249,6 +260,8 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
     }
 
     cvar_modifiedFlags |= cvar->flags;
+    if (cvar->flags & CVAR_ARCHIVE)
+        coduomp_config_settings_changed();
     if (force == qfalse) {
         if ((cvar->flags & CVAR_ROM) != 0) {
             Com_Printf("%s is read only.\n", name);
@@ -450,8 +463,11 @@ void Cvar_SetA_f(void)
 
     Cvar_Set_f();
     cvar_t *const cvar = Cvar_FindVar(Cmd_Argv(1));
-    if (cvar != NULL)
+    if (cvar != NULL) {
+        if (!(cvar->flags & CVAR_ARCHIVE))
+            coduomp_config_settings_changed();
         cvar->flags |= CVAR_ARCHIVE;
+    }
 }
 
 /* Source: CoDUOMP.exe 0x0043e700..0x0043e753, recovered from an executable
@@ -1070,6 +1086,8 @@ void Cvar_Restart_f(void)
         }
 
         if ((cvar->flags & CVAR_USER_CREATED) != 0) {
+            if (cvar->flags & CVAR_ARCHIVE)
+                coduomp_config_settings_changed();
             *link = cvar->next;
 
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */

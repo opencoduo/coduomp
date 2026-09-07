@@ -4,6 +4,9 @@
 LAYOUT_QCOMMON_C_SOURCES := \
 	src/qcommon/com_command_handlers.c \
 	src/qcommon/com_config.c \
+	src/qcommon/config_script.c \
+	src/qcommon/config_store.c \
+	src/qcommon/config_profile.c \
 	src/qcommon/com_event_loop.c \
 	src/qcommon/com_event_queue.c \
 	src/qcommon/com_frame.c \
@@ -162,6 +165,7 @@ LAYOUT_FILESYSTEM_C_SOURCES := \
 	src/filesystem/filesystem_open_read.c \
 	src/filesystem/filesystem_open_wrappers.c \
 	src/filesystem/filesystem_open_write.c \
+	src/filesystem/filesystem_config.c \
 	src/filesystem/filesystem_pack.c \
 	src/filesystem/filesystem_path_build.c \
 	src/filesystem/filesystem_path_order.c \

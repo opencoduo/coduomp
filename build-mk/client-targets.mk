@@ -180,6 +180,9 @@ SHARED_QCOMMON_C_SOURCES := $(SHARED_QCOMMON_DIR)/com_parse.c \
 	$(SHARED_QCOMMON_DIR)/com_redirect.c \
 	$(SHARED_QCOMMON_DIR)/com_sprintf.c \
 	$(SHARED_QCOMMON_DIR)/com_config.c \
+	$(SHARED_QCOMMON_DIR)/config_script.c \
+	$(SHARED_QCOMMON_DIR)/config_store.c \
+	$(SHARED_QCOMMON_DIR)/config_profile.c \
 	$(SHARED_QCOMMON_DIR)/com_command_handlers.c \
 	$(SHARED_QCOMMON_DIR)/com_frame.c \
 	$(SHARED_QCOMMON_DIR)/com_event_queue.c \

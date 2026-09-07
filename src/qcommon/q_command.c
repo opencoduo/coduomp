@@ -1,6 +1,9 @@
 #include "q_command.h"
+#include "config_script.h"
+#include "config_profile.h"
 
 #include "q_checksum.h"
+#include "q_cvar.h"
 #include "q_memory.h"
 #include "q_path.h"
 #include "q_string.h"
@@ -8,6 +11,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -50,6 +54,145 @@ void PB_CallServerSbGlobal(int32_t command, int32_t clientNum,
 
 #include "q_command_services.h"
 
+typedef struct coduomp_command_origin_s {
+    struct coduomp_command_origin_s *parent;
+    coduomp_config_profile_t *profile;
+    size_t references;
+    unsigned depth, line, includeLine, commands;
+    qboolean canceled;
+    char source[CODUOMP_CONFIG_PATH];
+} coduomp_command_origin_t;
+
+typedef struct coduomp_command_frame_s {
+    struct coduomp_command_frame_s *previous;
+    coduomp_command_origin_t *origin;
+} coduomp_command_frame_t;
+
+enum { CODUOMP_EXEC_DEPTH = 32, CODUOMP_EXEC_COMMANDS = 8192 };
+static coduomp_command_origin_t *coduomp_command_origins[CBUF_TEXT_CAPACITY];
+static coduomp_command_frame_t *coduomp_command_frame;
+
+/* NOT_FROM_ORIGINAL_SOURCE: generated commands inherit their executing file's
+ * origin, including while a command recursively executes another command. */
+static coduomp_command_origin_t *coduomp_command_origin(void)
+{
+    return coduomp_command_frame ? coduomp_command_frame->origin : NULL;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: release ownership only after all queued bytes,
+ * active execution frames, and descendant includes have finished. */
+static void coduomp_command_release(coduomp_command_origin_t *origin)
+{
+    if (!origin || --origin->references)
+        return;
+    coduomp_command_origin_t *parent = origin->parent;
+    coduomp_config_load_reference(origin->profile, -1);
+    free(origin);
+    coduomp_command_release(parent);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: report failures with the complete include chain. */
+static void coduomp_command_failure(coduomp_command_origin_t *origin, const char *reason)
+{
+    if (!origin)
+        return;
+    coduomp_config_fail(origin->profile, origin->source, origin->line, reason);
+    for (coduomp_command_origin_t *child = origin; child->parent; child = child->parent)
+        Com_Printf("  included from %s:%u\n", child->parent->source, child->includeLine);
+    for (coduomp_command_origin_t *ancestor = origin; ancestor; ancestor = ancestor->parent)
+        ancestor->canceled = qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: match metadata moves to command-buffer moves. */
+static void coduomp_command_tag(size_t offset, size_t length, coduomp_command_origin_t *origin)
+{
+    for (size_t i = 0; i < length; ++i)
+        coduomp_command_origins[offset + i] = origin;
+    if (origin)
+        origin->references += length;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: preflight and queue an entire owned file, with no
+ * visible internal sentinel commands and no partially inserted tail. */
+static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, const char *source, const char *data, size_t size, coduomp_command_origin_t *parent, qboolean append)
+{
+    coduomp_config_error_t error;
+    if (!coduomp_config_validate(data, size, &error)) {
+        coduomp_config_fail(profile, source, error.line, error.reason);
+        return qfalse;
+    }
+    if ((parent && parent->depth >= CODUOMP_EXEC_DEPTH) || cmd_text.cursize < 0 ||
+        size + 1 > (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
+        coduomp_config_fail(profile, source, 1, parent && parent->depth >= CODUOMP_EXEC_DEPTH ?
+            "config include depth exceeded" : "command queue cannot accept this complete file");
+        return qfalse;
+    }
+    coduomp_command_origin_t *origin = calloc(1, sizeof(*origin));
+    if (!origin) {
+        coduomp_config_fail(profile, source, 1, "not enough memory to queue settings");
+        return qfalse;
+    }
+    origin->profile = profile;
+    origin->parent = parent;
+    origin->includeLine = parent ? parent->line : 0;
+    origin->line = 1;
+    origin->depth = parent ? parent->depth + 1 : 1;
+    snprintf(origin->source, sizeof(origin->source), "%s", source);
+    if (parent)
+        ++parent->references;
+    coduomp_config_load_reference(profile, 1);
+    size_t inserted = size + 1;
+    size_t offset = append ? (size_t)cmd_text.cursize : 0;
+    if (!append) {
+        memmove(cmd_text.data + inserted, cmd_text.data, (size_t)cmd_text.cursize);
+        memmove(coduomp_command_origins + inserted, coduomp_command_origins, (size_t)cmd_text.cursize * sizeof(*coduomp_command_origins));
+    }
+    memcpy(cmd_text.data + offset, data, size);
+    cmd_text.data[offset + size] = '\n';
+    coduomp_command_tag(offset, inserted, origin);
+    cmd_text.cursize += (int32_t)inserted;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: ordinary includes retain their executing parent. */
+qboolean coduomp_command_queue_config(coduomp_config_profile_t *profile, const char *source, const char *data, size_t size)
+{
+    return coduomp_command_queue_owned(profile, source, data, size, coduomp_command_origin(), qfalse);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: filesystem transitions capture the selected
+ * profile's bytes now, before another restart can change VFS resolution. */
+void coduomp_command_queue_profile(const char *file, qboolean append)
+{
+    coduomp_config_profile_t *profile = coduomp_config_current_profile();
+    char *data, source[CODUOMP_CONFIG_PATH];
+    size_t size;
+    if (coduomp_config_read(profile, file, qfalse, &data, &size, source) == 1) {
+        coduomp_command_queue_owned(profile, source, data, size, NULL, append);
+        free(data);
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: used to keep recovery actions out of scripts. */
+qboolean coduomp_command_config_active(void)
+{
+    return coduomp_command_origin() != NULL;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: longjmp cannot leave a successful-looking load or
+ * a dangling execution frame. Remaining bytes from failed origins are skipped. */
+void coduomp_command_abort_config(void)
+{
+    coduomp_config_abort_load();
+    while (coduomp_command_frame) {
+        coduomp_command_frame_t *frame = coduomp_command_frame;
+        coduomp_command_frame = frame->previous;
+        coduomp_command_failure(frame->origin, "command execution did not complete");
+        coduomp_command_release(frame->origin);
+        free(frame);
+    }
+}
+
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
 
 void Cmd_Wait_f(void)
@@ -64,6 +207,9 @@ void Cmd_Wait_f(void)
 
 void Cbuf_Init(void)
 {
+    for (int32_t i = 0; i < cmd_text.cursize; ++i)
+        coduomp_command_release(coduomp_command_origins[i]);
+    memset(coduomp_command_origins, 0, sizeof(coduomp_command_origins));
     cmd_text.data = cmd_textData;
     cmd_text.maxsize = (int32_t)sizeof(cmd_textData);
     cmd_text.cursize = 0;
@@ -76,9 +222,11 @@ void Cbuf_AddText(const char *text)
     if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize ||
         textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         Com_Printf("Cbuf_AddText: overflow\n");
+        coduomp_command_failure(coduomp_command_origin(), "generated input exceeds command queue capacity");
         return;
     }
 
+    coduomp_command_tag((size_t)cmd_text.cursize, textLength, coduomp_command_origin());
     memcpy(cmd_text.data + cmd_text.cursize, text, textLength);
     cmd_text.cursize += (int32_t)textLength;
 }
@@ -90,10 +238,13 @@ void Cbuf_InsertText(const char *text)
     if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize ||
         textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         Com_Printf("Cbuf_InsertText overflowed\n");
+        coduomp_command_failure(coduomp_command_origin(), "generated input exceeds command queue capacity");
         return;
     }
     const int32_t insertLength = (int32_t)textLength + 1;
     const int32_t newSize = cmd_text.cursize + insertLength;
+    memmove(coduomp_command_origins + insertLength, coduomp_command_origins, (size_t)cmd_text.cursize * sizeof(*coduomp_command_origins));
+    coduomp_command_tag(0, (size_t)insertLength, coduomp_command_origin());
 
     /* Both authoritative i386 bodies copy overlapping bytes backwards and
      * skip the move when cursize is negative.  A size_t memmove expression
@@ -135,119 +286,117 @@ void Cbuf_ExecuteText(cbufExec_t executionMode, const char *text)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: command boundaries and capacities match preflight;
+ * queued origins remain live across wait, nested exec, and filesystem changes. */
 void Cbuf_Execute(void)
 {
     char command[CBUF_COMMAND_CAPACITY];
-
     while (cmd_text.cursize != 0) {
         if (cmd_wait != 0) {
             --cmd_wait;
             return;
         }
-
-        int32_t quoteCount = 0;
-        int32_t commandLength;
-        for (commandLength = 0;
-             commandLength < cmd_text.cursize;
-             ++commandLength) {
-            const char character = cmd_text.data[commandLength];
-            if (character == '"') {
-                ++quoteCount;
-            }
-
-            if ((((quoteCount & 1) == 0) && character == ';') ||
-                character == '\n' || character == '\r') {
-                break;
-            }
+        size_t length = coduomp_command_span(cmd_text.data, (size_t)cmd_text.cursize);
+        size_t consumed = length + (length < (size_t)cmd_text.cursize);
+        coduomp_command_origin_t *origin = coduomp_command_origins[0];
+        coduomp_command_frame_t *frame = malloc(sizeof(*frame));
+        if (!frame) {
+            coduomp_command_failure(origin, "not enough memory to execute settings");
+            return;
         }
-
-        if (commandLength > CBUF_COMMAND_CAPACITY - 2) {
-            commandLength = CBUF_COMMAND_CAPACITY - 1;
-        }
-
-        memcpy(command, cmd_text.data, (size_t)commandLength);
-        command[commandLength] = '\0';
-
-        if (commandLength == cmd_text.cursize) {
-            cmd_text.cursize = 0;
+        frame->previous = coduomp_command_frame;
+        frame->origin = origin;
+        coduomp_command_frame = frame;
+        if (origin)
+            ++origin->references;
+        qboolean execute = length < sizeof(command);
+        if (!execute) {
+            Com_Printf("Command exceeds execution capacity; skipped.\n");
+            if (length >= sizeof(command))
+                coduomp_command_failure(origin, "command exceeds execution capacity");
         } else {
-            ++commandLength;
-            cmd_text.cursize -= commandLength;
-            memmove(cmd_text.data, cmd_text.data + commandLength,
-                    (size_t)(uint32_t)cmd_text.cursize);
+            memcpy(command, cmd_text.data, length);
+            command[length] = '\0';
         }
-
-        Cmd_ExecuteString(command);
+        if (origin && origin->profile != coduomp_config_current_profile()) {
+            coduomp_command_failure(origin, "queued config belongs to a departed profile");
+            coduomp_config_pause("a profile changed before queued settings finished");
+            execute = qfalse;
+        }
+        unsigned lines = 0;
+        for (size_t i = 0; i < consumed; ++i) {
+            if (cmd_text.data[i] == '\n' || (cmd_text.data[i] == '\r' &&
+                (i + 1 == (size_t)cmd_text.cursize || cmd_text.data[i + 1] != '\n')))
+                ++lines;
+            coduomp_command_release(coduomp_command_origins[i]);
+        }
+        cmd_text.cursize -= (int32_t)consumed;
+        memmove(cmd_text.data, cmd_text.data + consumed, (size_t)cmd_text.cursize);
+        memmove(coduomp_command_origins, coduomp_command_origins + consumed,
+            (size_t)cmd_text.cursize * sizeof(*coduomp_command_origins));
+        for (coduomp_command_origin_t *ancestor = origin; ancestor; ancestor = ancestor->parent) {
+            if (ancestor->canceled)
+                execute = qfalse;
+            if (++ancestor->commands > CODUOMP_EXEC_COMMANDS) {
+                coduomp_command_failure(ancestor, "config command expansion limit exceeded");
+                execute = qfalse;
+            }
+        }
+        if (execute)
+            Cmd_ExecuteString(command);
+        if (origin)
+            origin->line += lines;
+        coduomp_command_frame = frame->previous;
+        coduomp_command_release(origin);
+        free(frame);
     }
 }
 
-#if defined(WINDOWS_BEHAVIOR)
+/* NOT_FROM_ORIGINAL_SOURCE: configs are checked as whole files, and the exact
+ * accepted snapshot is queued with its source profile and include ancestry. */
 void Cmd_Exec_f(void)
 {
-    char filename[MAX_QPATH];
-    void *fileBuffer;
-
     if (Cmd_Argc() != 2) {
         Com_Printf("exec <filename> : execute a script file\n");
+        coduomp_command_failure(coduomp_command_origin(), "exec needs a filename");
         return;
     }
-
-    Q_strncpyz(filename, Cmd_Argv(1), (int32_t)sizeof(filename));
-    Com_DefaultExtension(filename, (int32_t)sizeof(filename), ".cfg");
-    const int32_t fileLength = FS_ReadFile(filename, &fileBuffer);
-
-    if (fileBuffer == NULL) {
-        Com_Printf("couldn't exec %s\n", Cmd_Argv(1));
-        return;
-    }
-
-    Com_Printf("execing %s\n", Cmd_Argv(1));
-    const cvar_t *const consoleLockout =
-        Cvar_FindVar("sv_console_lockout");
-    if (consoleLockout != NULL && consoleLockout->integer != 0) {
-        const int32_t checksum =
-            (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
-        Cbuf_InsertText(
-            va("say Server exec: %s, size: %i, checksum: %i",
-               filename, fileLength, checksum));
-    }
-
-    Cbuf_InsertText((const char *)fileBuffer);
-    FS_FreeFile(fileBuffer);
-}
-#else
-void Cmd_Exec_f(void)
-{
     char filename[MAX_QPATH];
-    void *fileBuffer;
-
-    if (Cmd_Argc() != 2) {
-        Com_Printf("exec <filename> : execute a script file\n");
+    const char *argument = Cmd_Argv(1);
+    if (!coduomp_config_filename(argument, filename, sizeof(filename))) {
+        coduomp_command_failure(coduomp_command_origin(), "exec filename exceeds supported length");
+        Com_Printf("Config filename is too long.\n");
         return;
     }
-
-    Q_strncpyz(filename, Cmd_Argv(1), (int32_t)sizeof(filename));
-    Com_DefaultExtension(filename, (int32_t)sizeof(filename), ".cfg");
-    const int32_t fileLength = FS_ReadFile(filename, &fileBuffer);
-
-    if (fileBuffer == NULL) {
-        Com_Printf("couldn't exec %s\n", Cmd_Argv(1));
+    coduomp_command_origin_t *parent = coduomp_command_origin();
+    coduomp_config_profile_t *profile = parent ? parent->profile : coduomp_config_current_profile();
+    char *data, source[CODUOMP_CONFIG_PATH];
+    size_t size;
+    if (coduomp_config_read(profile, filename, parent != NULL, &data, &size, source) != 1) {
+        Com_Printf("couldn't exec %s\n", filename);
+        if (parent)
+            coduomp_command_failure(parent, "included config could not be loaded");
         return;
     }
-
-    Com_Printf("execing %s\n", Cmd_Argv(1));
-    if (Cvar_VariableIntegerValue("sv_console_lockout") != 0) {
-        const int32_t checksum =
-            (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
-        Cbuf_InsertText(
-            va("say Server exec: %s, size: %i, checksum: %i",
-               filename, fileLength, checksum));
+    const cvar_t *consoleLockout = Cvar_FindVar("sv_console_lockout");
+    char notice[CBUF_COMMAND_CAPACITY] = "";
+    if (consoleLockout && consoleLockout->integer)
+        snprintf(notice, sizeof(notice), "say Server exec: %s, size: %i, checksum: %i", filename,
+            (int)size, (int32_t)Com_BlockChecksum(data, (int32_t)size));
+    if (size + 1 + (notice[0] ? strlen(notice) + 1 : 0) > (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
+        coduomp_config_fail(profile, source, 1, "command queue cannot accept this complete file");
+        coduomp_command_failure(parent, "included config could not be queued");
+        free(data);
+        return;
     }
-
-    Cbuf_InsertText((const char *)fileBuffer);
-    FS_FreeFile(fileBuffer);
+    if (notice[0])
+        Cbuf_InsertText(notice);
+    if (coduomp_command_queue_config(profile, source, data, size))
+        Com_Printf("execing %s\n", filename);
+    else
+        coduomp_command_failure(parent, "included config could not be queued");
+    free(data);
 }
-#endif
 
 void Cmd_ShowChecksum_f(void)
 {
@@ -363,103 +512,26 @@ void Cmd_ArgsBuffer(char *buffer, int32_t bufferLength)
     Q_strncpyz(buffer, Cmd_Args(1), bufferLength);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: publish only a complete tokenization using the
+ * same length-delimited parser as config validation and serialization. */
 void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
 {
     cmd_argc = 0;
-    if (text == NULL) {
+    if (!text)
+        return;
+    coduomp_config_tokens_t tokens;
+    coduomp_config_error_t error;
+    if (!coduomp_command_tokens(text, strlen(text), maxTokens, &tokens, &error)) {
+        Com_Printf("Command could not be parsed: %s\n", error.reason);
+        coduomp_command_failure(coduomp_command_origin(), error.reason);
         return;
     }
-
-    size_t textLength = 0;
-    while (textLength < CMD_TOKEN_BUFFER_CAPACITY &&
-           text[textLength] != '\0') {
-        ++textLength;
-    }
-    /* NOT_FROM_ORIGINAL_SOURCE: tokenization requires the complete input and
-     * its NUL inside the owned buffer capacity; rejection leaves no arguments
-     * published. */
-    if (textLength == CMD_TOKEN_BUFFER_CAPACITY) {
-        Com_Printf("Cmd_TokenizeString2: command exceeds token buffer\n");
-        return;
-    }
-
-    char *token = cmd_tokenBuffer;
-    while (cmd_argc != CMD_ARGUMENT_CAPACITY) {
-        --maxTokens;
-        if (maxTokens == 0) {
-            if (*text == '\0') {
-                return;
-            }
-
-            cmd_argv[cmd_argc++] = token;
-            while (*text != '\0') {
-                *token++ = *text++;
-            }
-            *token = '\0';
-            return;
-        }
-
-        for (;;) {
-            while (*text != '\0' && (int8_t)*text <= (int8_t)' ') {
-                ++text;
-            }
-
-            if (*text == '\0') {
-                return;
-            }
-            if (text[0] == '/' && text[1] == '/') {
-                return;
-            }
-            if (text[0] != '/' || text[1] != '*') {
-                break;
-            }
-
-            while (*text != '\0' &&
-                   (text[0] != '*' || text[1] != '/')) {
-                ++text;
-            }
-            if (*text == '\0') {
-                return;
-            }
-            text += 2;
-        }
-
-        cmd_argv[cmd_argc++] = token;
-
-        if (*text == '"') {
-            ++text;
-            while (*text != '\0' && *text != '"') {
-                *token++ = *text++;
-            }
-            *token++ = '\0';
-
-            if (*text == '\0') {
-                return;
-            }
-            ++text;
-            if (*text == '\0') {
-                return;
-            }
-            if ((int8_t)*text <= (int8_t)' ') {
-                ++text;
-            }
-        } else {
-            while ((int8_t)*text > (int8_t)' ' &&
-                   *text != '"' &&
-                   (text[0] != '/' || text[1] != '/') &&
-                   (text[0] != '/' || text[1] != '*')) {
-                *token++ = *text++;
-            }
-            *token++ = '\0';
-
-            if (*text == '\0') {
-                return;
-            }
-            if ((int8_t)*text <= (int8_t)' ') {
-                ++text;
-            }
-        }
-    }
+    size_t used = tokens.argc ? (size_t)(tokens.argv[tokens.argc - 1] - tokens.text) + strlen(tokens.argv[tokens.argc - 1]) + 1 : 0;
+    if (used)
+        memcpy(cmd_tokenBuffer, tokens.text, used);
+    for (int i = 0; i < tokens.argc; ++i)
+        cmd_argv[i] = cmd_tokenBuffer + (tokens.argv[i] - tokens.text);
+    cmd_argc = tokens.argc;
 }
 
 void Cmd_TokenizeString(const char *text)

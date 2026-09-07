@@ -84,10 +84,13 @@ isolated servers. It preserves:
 - downloaded server files below each `content` directory; and
 - the server-cache directory structure.
 
-It does not alter settings already loaded in memory. Running it while connected
-does remove the files immediately, but the active server can create its config
-again during a later automatic write or normal disconnect. Run it from the main
-menu when the intent is to leave every server profile cleared.
+It does not alter settings already loaded in memory. Outstanding config writes
+must finish before clearing proceeds. Cleared profiles stop saving for the
+remainder of that session, so a delayed write or disconnect cannot recreate the
+removed files. Reconnecting starts a fresh profile.
 
 The console reports how many files were removed and separately reports any
 files it could not remove.
+
+Config validation, protected recovery sessions, and checked saves also apply
+to server profiles and promotion. See [Configuration recovery](configuration-recovery.md).

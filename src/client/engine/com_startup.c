@@ -1,3 +1,5 @@
+#include "qcommon/config_profile.h"
+#include "system_fatal.h"
 #include "q_shared.h"
 
 #include "client/common/client_branding.h"
@@ -138,28 +140,7 @@ static void coduomp_apply_apple_silicon_first_run_profile(void)
 static qboolean coduomp_config_sets_cvar(const char *path,
                                          const char *cvarName)
 {
-    void *fileBuffer = NULL;
-    const int32_t fileLength = FS_ReadFile(path, &fileBuffer);
-    qboolean found = qfalse;
-
-    if (fileLength <= 0 || fileBuffer == NULL)
-        return qfalse;
-
-    char *parseCursor = fileBuffer;
-    Com_BeginParseSession(path);
-    for (;;) {
-        const char *const token = Com_Parse(&parseCursor);
-
-        if (token[0] == '\0')
-            break;
-        if (Q_stricmp(token, cvarName) == 0) {
-            found = qtrue;
-            break;
-        }
-    }
-    Com_EndParseSession();
-    FS_FreeFile(fileBuffer);
-    return found;
+    return coduomp_config_preference(path, cvarName);
 }
 
 /* Source: CoDUOMP.exe 0x0043bba0..0x0043bc0f.
@@ -502,6 +483,8 @@ void Com_Init(char *commandLine)
     coduomp_server_namespace_reset_for_startup();
     FS_InitFilesystem();
     Com_InitJournaling();
+    coduomp_config_begin_profile();
+    coduomp_config_register(Cvar_VariableIntegerValue("dedicated") ? NULL : coduomp_config_recovery_dialog);
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve an explicit
      * user choice, but do not let the retail default_mp.cfg silently disable
@@ -515,20 +498,30 @@ void Com_Init(char *commandLine)
     Cbuf_AddText("exec language.cfg\n");
     Cbuf_AddText("exec uoconfig_mp.cfg\n");
     Cbuf_AddText("exec autoexec_mp.cfg\n");
-    if (Com_SafeMode() != qfalse)
+    if (Com_SafeMode() != qfalse) {
+        coduomp_config_pause("explicit safe mode uses temporary settings");
         Cbuf_AddText("exec safemode_mp.cfg\n");
+    }
     Cbuf_Execute();
+    const qboolean configsPending = cmd_text.cursize != 0;
+    coduomp_config_present_recovery();
+    if (!configsPending && cmd_text.cursize != 0)
+        Cbuf_Execute();
 
     com_recommendedSet =
         Cvar_Get("com_recommendedSet", "0", CVAR_ARCHIVE);
     if (com_recommendedSet->integer == 0 ||
         Com_ConfigureChecksum() != qfalse) {
+        if (com_recommendedSet->integer != 0)
+            coduomp_config_pause("configuration recommendations changed; review temporary settings before saving");
         Com_SetRecommended(qfalse);
         (void)Cvar_Set2("com_recommendedSet", "1", qtrue);
     }
 
-    if (Sys_InfoChanged() != qfalse)
+    if (Sys_InfoChanged() != qfalse) {
+        coduomp_config_pause("hardware recommendations use temporary settings");
         Com_SetRecommended(qfalse);
+    }
 
     if (allowDownloadConfigured == qfalse) {
         cvar_t *const allowDownload =

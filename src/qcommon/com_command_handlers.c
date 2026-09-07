@@ -1,3 +1,4 @@
+#include "config_profile.h"
 #include "com_command_handlers.h"
 #include "com_command_services.h"
 
@@ -36,6 +37,7 @@ _Noreturn void Com_Quit_f(void)
         Sys_Quit();
     }
 
+    coduomp_config_flush();
     Com_ClearTempMemory();
     COM_QUIT_TARGET_CLEANUP();
     SV_Shutdown("EXE_SERVERQUIT");
