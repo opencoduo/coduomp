@@ -1999,7 +1999,7 @@ image_t *R_FindImageFile(const char *name, uint32_t textureTarget,
     if (name == NULL)
         return NULL;
 
-    if (r_picmip->integer == 0 || r_picmip2->integer == 0)
+    if (r_optimize->integer == 0 || r_optimizeTextures->integer == 0)
         flags &= ~IMAGE_FLAG_DELAYED_UPLOAD;
 
     if (imageTrack == R_IMAGE_TRACK_GENERATED_TEXTURE) {
@@ -2159,8 +2159,8 @@ image_t *R_FindImageInstance(const char *originalName,
         effectiveColorScale = NULL;
     }
 
-    if (forceLoad == qfalse && r_picmip2->integer != 0 &&
-        r_picmip->integer != 0 &&
+    if (forceLoad == qfalse && r_optimizeTextures->integer != 0 &&
+        r_optimize->integer != 0 &&
         (flags & IMAGE_FLAG_NO_TEXTURE_SHEET) == 0) {
         flags |= IMAGE_FLAG_DELAYED_UPLOAD;
     } else {
@@ -2645,7 +2645,7 @@ void UploadImageGroup_r(renderer_image_group_node_t *group,
         group = group->next;
     }
 
-    if (r_showImages->integer != 0) {
+    if (r_debugOptTex->integer != 0) {
         ri.Printf(R_PRINT_ALL,
                   "  %-36s(%4i,%4i)%4i x %4i from %4i x %4i\n",
                   group->image->imgName, destinationX, destinationY,
@@ -2668,7 +2668,7 @@ void UploadImageGroup(renderer_image_group_node_t *group,
                       int32_t groupIndex, uint32_t format, uint32_t flags)
 {
     if (group->next == NULL) {
-        if (r_showImages->integer != 0) {
+        if (r_debugOptTex->integer != 0) {
             ri.Printf(R_PRINT_ALL,
                       "image %2i: %4i x %4i from %4i x %4i -- %s\n",
                       groupIndex, group->width, group->height,
@@ -2679,7 +2679,7 @@ void UploadImageGroup(renderer_image_group_node_t *group,
         return;
     }
 
-    if (r_showImages->integer != 0) {
+    if (r_debugOptTex->integer != 0) {
         ri.Printf(R_PRINT_ALL, "sheet %2i: %4i x %4i\n",
                   groupIndex, group->width, group->height);
     }
@@ -2722,7 +2722,7 @@ void UploadImageGroup(renderer_image_group_node_t *group,
     UploadImageGroup_r(group, sheetImage, pixels,
                        pixels + allocationBytes, 0, 0);
 
-    if (format == GL_RGBA && r_showImages->integer != 0) {
+    if (format == GL_RGBA && r_debugOptTex->integer != 0) {
         SaveJPG(va("%s.jpg", sheetImage->imgName + 1), 100,
                 sheetImage->width, sheetImage->height,
                 pixels, qfalse);
@@ -2960,7 +2960,7 @@ int32_t CombineImageGroups(renderer_image_group_node_t **groups,
 void MergeAndLoadDelayedImages(image_t **images, int32_t imageCount,
                                uint32_t format, uint32_t flags)
 {
-    if (r_showImages->integer != 0)
+    if (r_debugOptTex->integer != 0)
         ri.Printf(R_PRINT_ALL, "%i groups -> ", imageCount);
 
     const int32_t nodeCapacity = imageCount * 2 - 1;
@@ -3030,7 +3030,7 @@ void MergeAndLoadDelayedImages(image_t **images, int32_t imageCount,
             nodes, mergeNodeCount);
     }
 
-    if (r_showImages->integer != 0)
+    if (r_debugOptTex->integer != 0)
         ri.Printf(R_PRINT_ALL, "%i groups\n", imageCount);
 
     for (int32_t groupIndex = 0;
