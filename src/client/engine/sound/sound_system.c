@@ -610,7 +610,7 @@ cvar_t *mss_volume;                       /* original 0x0491cd64 */
 cvar_t *mss_roomtype;                     /* original 0x0491cd78 */
 cvar_t *mss_wetlevel;                     /* original 0x0491cd7c */
 /* NOT_FROM_ORIGINAL_SOURCE: archived, backend-independent music preference. */
-static cvar_t *mss_musicEnabled;
+static cvar_t *mss_playMusic;
 audio_driver_t mss_digitalDriver; /* original 0x009cbeb8 */
 int32_t mss_sampleRate;                   /* original 0x009cbec0 */
 int32_t mss_sampleBits;                   /* original 0x009cbec4 */
@@ -1374,7 +1374,7 @@ static qboolean audio_validate_eal_extent(
  * a music-channel alias, or a music file played on another alias channel. */
 static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIndex)
 {
-    if (mss_musicEnabled == NULL || mss_musicEnabled->integer != 0)
+    if (mss_playMusic == NULL || mss_playMusic->integer != 0)
         return qfalse;
     if (channelIndex == MSS_STREAM_CHANNEL_FIRST + MSS_MUSIC_BACKGROUND_INDEX)
         return qtrue;
@@ -1391,7 +1391,7 @@ static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIn
  * its channels also prevents silent music from ducking sound effects. */
 static void audio_stop_disabled_music(void)
 {
-    if (mss_musicEnabled == NULL || mss_musicEnabled->integer != 0)
+    if (mss_playMusic == NULL || mss_playMusic->integer != 0)
         return;
 
     for (int32_t channelIndex = MSS_3D_CHANNEL_FIRST; channelIndex < mss_max3DChannels; ++channelIndex) {
@@ -1547,7 +1547,7 @@ void MSS_Init(void)
         CVAR_ARCHIVE | CVAR_LATCH);
 #endif
     mss_volume = Cvar_Get("mss_volume", "0.8", CVAR_ARCHIVE);
-    mss_musicEnabled = Cvar_Get("mss_musicEnabled", "1", CVAR_ARCHIVE);
+    mss_playMusic = Cvar_Get("playMusic", "1", CVAR_ARCHIVE);
     mss_roomtype = Cvar_Get("mss_roomtype", "0", CVAR_CHEAT);
     mss_wetlevel = Cvar_Get("mss_wetlevel", "0", CVAR_CHEAT);
 
