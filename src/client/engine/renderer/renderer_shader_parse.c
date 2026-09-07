@@ -1417,15 +1417,17 @@ qboolean MergableShader(shader_t *shader)
  * Name: exact same-module Mac symbol UpdateDelayLoadImagesForShader.
  *
  * Delayed image grouping is useful only while a model group is active and its
- * tile mode remains below r_picmip2. Outside that case the original forces
- * each referenced image to load immediately. */
+ * tile mode remains below r_optimizeTextures. Texture quality controls mip
+ * reduction separately; changing it must not change packing eligibility.
+ * Outside the allowed group/tile mode the original forces each referenced
+ * image to load immediately. */
 void UpdateDelayLoadImagesForShader(shader_t *shader, qboolean forceLoad)
 {
     if ((shader->flags & SHADER_FLAG_DELAYED_IMAGES) == 0)
         return;
 
     if (tr.delayedImageGroup == 0 ||
-        tr.delayedImageGroupTileMode >= r_picmip2->integer) {
+        tr.delayedImageGroupTileMode >= r_optimizeTextures->integer) {
         forceLoad = qtrue;
     }
 
