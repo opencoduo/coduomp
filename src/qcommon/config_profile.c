@@ -470,6 +470,8 @@ static void coduomp_config_loaded(coduomp_config_profile_t *profile)
     if (profile->protected || profile->loadedSnapshot || profile->loadedJob)
         return;
     profile->loadedSnapshot = qtrue;
+    if (!profile->observed.exists)
+        coduomp_config_settings_changed();
     char error[256] = "could not capture settings";
     size_t size, envelopeSize;
     char *data = coduomp_config_capture(qfalse, &size, error);
@@ -569,7 +571,7 @@ qboolean coduomp_config_save(const char *root, const char *game, const char *fil
             break;
         }
     }
-    if (owner && owner->loading && !owner->loads && com_configAutowriteEnabled && !coduomp_command_config_active())
+    if (owner && owner == coduomp_config_active && owner->loading && !owner->loads && com_configAutowriteEnabled && !coduomp_command_config_active())
         coduomp_config_loaded(owner);
     if (owner && (owner->protected || owner->loading || owner->loads || owner->discarded)) {
         Com_Printf("Settings at %s are protected. Use config_retry after repair or config_restore to restore a backup.\n", path);
@@ -717,7 +719,9 @@ static void coduomp_config_retry_f(void)
     }
     char *data, error[256];
     size_t size;
-    if (coduomp_config_read_disk(profile->path, &data, &size, &profile->observed, error) != 1) {
+    coduomp_config_revision_t observed;
+    if (coduomp_config_read_disk(profile->path, &data, &size, &observed, error) != 1) {
+        coduomp_config_fail(profile, profile->path, 1, "config could not be reloaded; repair the original first");
         Com_Printf("Cannot retry %s: repair the original file first.\n", profile->path);
         return;
     }
@@ -727,10 +731,12 @@ static void coduomp_config_retry_f(void)
     }
     coduomp_config_error_t problem;
     if (!coduomp_config_validate(data, size, &problem)) {
+        coduomp_config_fail(profile, profile->path, problem.line, problem.reason);
         Com_Printf("Cannot retry %s:%u: %s\n", profile->path, problem.line, problem.reason);
         free(data);
         return;
     }
+    profile->observed = observed;
     profile->protected = qfalse;
     profile->loading = qtrue;
     profile->announced = qfalse;

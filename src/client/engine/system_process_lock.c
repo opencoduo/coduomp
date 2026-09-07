@@ -132,8 +132,6 @@ qboolean Sys_CheckProcessLock(void)
                 Sys_ProcessMatchesExecutable(savedProcessId) != qfalse) {
                 return qfalse;
             }
-
-
         }
     }
 
