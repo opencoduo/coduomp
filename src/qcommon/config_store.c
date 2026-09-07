@@ -379,6 +379,9 @@ static qboolean coduomp_store_metadata(int source, int destination)
     struct stat st;
     if (fstat(source, &st) || fchown(destination, st.st_uid, st.st_gid) || fchmod(destination, st.st_mode & 07777))
         return qfalse;
+    const struct timespec times[2] = {st.st_atim, st.st_mtim};
+    if (futimens(destination, times) != 0)
+        return qfalse;
     ssize_t count = flistxattr(source, NULL, 0);
     if (count < 0)
         return errno == ENOTSUP;

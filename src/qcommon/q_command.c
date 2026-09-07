@@ -337,10 +337,6 @@ void Cbuf_Execute(void)
         for (coduomp_command_origin_t *ancestor = origin; ancestor; ancestor = ancestor->parent) {
             if (ancestor->canceled)
                 execute = qfalse;
-            if (++ancestor->commands > CODUOMP_EXEC_COMMANDS) {
-                coduomp_command_failure(ancestor, "config command expansion limit exceeded");
-                execute = qfalse;
-            }
         }
         if (execute)
             Cmd_ExecuteString(command);
@@ -659,6 +655,21 @@ void Cmd_CommandCompletion(name_completion_callback_t callback)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: bound actual command expansion, without charging
+ * blank lines or comments against a config's execution budget. */
+static qboolean coduomp_command_count(void)
+{
+    for (coduomp_command_origin_t *origin = coduomp_command_origin(); origin; origin = origin->parent) {
+        if (origin->canceled)
+            return qfalse;
+        if (++origin->commands > CODUOMP_EXEC_COMMANDS) {
+            coduomp_command_failure(origin, "config command expansion limit exceeded");
+            return qfalse;
+        }
+    }
+    return qtrue;
+}
+
 #if defined(WINDOWS_BEHAVIOR)
 void Cmd_ExecuteString(const char *text)
 {
@@ -670,6 +681,8 @@ void Cmd_ExecuteString(const char *text)
     if (cmd_argc == 0) {
         return;
     }
+    if (!coduomp_command_count())
+        return;
 
     cmd_function_t **link = &cmd_functions;
     while (*link != NULL) {
@@ -722,6 +735,8 @@ void Cmd_ExecuteString(const char *text)
     if (cmd_argc == 0) {
         return;
     }
+    if (!coduomp_command_count())
+        return;
 
     cmd_function_t **link = &cmd_functions;
     while (*link != NULL) {
