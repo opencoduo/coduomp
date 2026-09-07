@@ -16,11 +16,11 @@
   optimizations.
 - Make changes in the correct concrete branch. Never add `STRICT_STOCK` or an
   equivalent compile-time or runtime selector that recombines the branches.
-- For shared changes, including original-binary-proven transcription
-  corrections, implement, validate, and commit on `stock` first. Then merge
-  `stock` into `master` and validate there in the same work cycle. Preserve
-  ancestry rather than duplicating commits; follow the shared-change workflow
-  in `docs/branch-policy.md`.
+- For transcription bug fixes proven against the original binary, implement,
+  validate, and commit on `stock` first. Then merge `stock` into `master` and
+  validate there in the same work cycle. Preserve ancestry rather than
+  duplicating commits; follow the transcription bugfix workflow in
+  `docs/branch-policy.md`.
 
 ## Security and provenance
 

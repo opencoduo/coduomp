@@ -41,14 +41,12 @@ The `stock..master` diff is the maintained description of customization.
 Do not recreate a mixed source tree with `STRICT_STOCK`, another preprocessor
 selector, a make variable, or a runtime switch.
 
-## Shared-change workflow
+## Transcription bugfix workflow
 
 Recovered-source transcription corrections proven against the original binary
-restore stock behavior and belong in both branches. Shared hardening and
-required compatibility or portability changes also belong in both branches
-when they satisfy the stock contract above.
+restore stock behavior and belong in both branches.
 
-For every shared change:
+For every transcription bug fix:
 
 1. Implement, validate, and commit the change on `stock` first.
 2. Merge `stock` into `master`, preserving the stock commit's ancestry.
@@ -56,8 +54,8 @@ For every shared change:
    both worktrees, and complete both branches in the same work cycle.
 
 Use a forward merge rather than duplicate cherry-picks or independently
-reapplying the patch. A shared correction is incomplete while present on only
-one branch. Keep intentional master-only behavior out of `stock`.
+reapplying the patch. A transcription correction is incomplete while present
+on only one branch. Keep intentional master-only behavior out of `stock`.
 
 ## Public explanations
 
