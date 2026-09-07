@@ -207,6 +207,16 @@ streamed-audio decoding, and EFX reverb is enabled when the selected OpenAL
 device supports it. The stock-named `mss_3d_provider` cvar selects the complete
 audio backend on these clients.
 
+On `master`, disable music with `mss_musicEnabled 0` in the console. This saved
+setting stops current music and blocks new map, menu, and end-match music
+without a restart. It covers the background-music slot, aliases on the `music`
+channel, and files under `sound/music/`, while leaving other sound effects and
+ambient sounds enabled. Custom maps should use that channel or directory for
+music played outside the background-music slot.
+
+Use `mss_musicEnabled 1` to allow music again (the default). Stopped tracks are
+not replayed automatically; music plays when the game next requests it.
+
 Linux builds default `CASE_SENSITIVE_FS=1`. This preserves the original
 case-insensitive game-file lookup on a case-sensitive host filesystem without
 renaming retail or mod files. Set `CASE_SENSITIVE_FS=1` explicitly when

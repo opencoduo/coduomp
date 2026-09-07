@@ -17,7 +17,8 @@
 
 enum {
     AUDIO_FILE_OPEN_FAILED = -1,
-    AUDIO_FILE_OPEN_FAILURE_RESULT = 0
+    AUDIO_FILE_OPEN_FAILURE_RESULT = 0,
+    AUDIO_UNASSIGNED_CHANNEL = -1
 };
 
 typedef enum audioFileSeekOrigin_e {
@@ -608,6 +609,8 @@ cvar_t *mss_3d_provider;                  /* original 0x0491cd68 */
 cvar_t *mss_volume;                       /* original 0x0491cd64 */
 cvar_t *mss_roomtype;                     /* original 0x0491cd78 */
 cvar_t *mss_wetlevel;                     /* original 0x0491cd7c */
+/* NOT_FROM_ORIGINAL_SOURCE: archived, backend-independent music preference. */
+static cvar_t *mss_musicEnabled;
 audio_driver_t mss_digitalDriver; /* original 0x009cbeb8 */
 int32_t mss_sampleRate;                   /* original 0x009cbec0 */
 int32_t mss_sampleBits;                   /* original 0x009cbec4 */
@@ -1367,6 +1370,46 @@ static qboolean audio_validate_eal_extent(
                : qfalse;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: music can use the dedicated background slot,
+ * a music-channel alias, or a music file played on another alias channel. */
+static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIndex)
+{
+    if (mss_musicEnabled == NULL || mss_musicEnabled->integer != 0)
+        return qfalse;
+    if (channelIndex == MSS_STREAM_CHANNEL_FIRST + MSS_MUSIC_BACKGROUND_INDEX)
+        return qtrue;
+    if (alias == NULL)
+        return qfalse;
+    if (alias->channel == SND_ALIAS_CHANNEL_MUSIC)
+        return qtrue;
+    return alias->soundFile != NULL &&
+           (Q_stricmpn(alias->soundFile, "music/", sizeof("music/") - 1) == 0 ||
+            Q_stricmpn(alias->soundFile, "music\\", sizeof("music\\") - 1) == 0);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: stop current music even while paused. Releasing
+ * its channels also prevents silent music from ducking sound effects. */
+static void audio_stop_disabled_music(void)
+{
+    if (mss_musicEnabled == NULL || mss_musicEnabled->integer != 0)
+        return;
+
+    for (int32_t channelIndex = MSS_3D_CHANNEL_FIRST; channelIndex < mss_max3DChannels; ++channelIndex) {
+        if (!MSS_Is3DChannelFree(channelIndex) && audio_music_disabled(mss_channelInfo[channelIndex].alias, channelIndex))
+            MSS_Stop3DChannel(channelIndex);
+    }
+    const int32_t endStreamChannel = MSS_STREAM_CHANNEL_FIRST + mss_streamChannelCount;
+    for (int32_t channelIndex = MSS_STREAM_CHANNEL_FIRST; channelIndex < endStreamChannel; ++channelIndex) {
+        if (!MSS_IsStreamChannelFree(channelIndex) && audio_music_disabled(mss_channelInfo[channelIndex].alias, channelIndex))
+            MSS_StopStreamChannel(channelIndex);
+    }
+    const int32_t end2DChannel = MSS_2D_CHANNEL_FIRST + mss_2dChannelCount;
+    for (int32_t channelIndex = MSS_2D_CHANNEL_FIRST; channelIndex < end2DChannel; ++channelIndex) {
+        if (!MSS_Is2DChannelFree(channelIndex) && audio_music_disabled(mss_channelInfo[channelIndex].alias, channelIndex))
+            MSS_Stop2DChannel(channelIndex);
+    }
+}
+
 /* Source: CoDUOMP.exe 0x004508e0..0x004508ef.
  * Name: exact same-module Mac symbol MSS_Alloc. Miles rounds requests to four
  * bytes before taking 32-byte-aligned permanent hunk storage. */
@@ -1504,6 +1547,7 @@ void MSS_Init(void)
         CVAR_ARCHIVE | CVAR_LATCH);
 #endif
     mss_volume = Cvar_Get("mss_volume", "0.8", CVAR_ARCHIVE);
+    mss_musicEnabled = Cvar_Get("mss_musicEnabled", "1", CVAR_ARCHIVE);
     mss_roomtype = Cvar_Get("mss_roomtype", "0", CVAR_CHEAT);
     mss_wetlevel = Cvar_Get("mss_wetlevel", "0", CVAR_CHEAT);
 
@@ -1811,6 +1855,8 @@ int32_t MSS_Restore3DChannel(const uint8_t *buffer, int32_t offset,
     }
 
     int32_t channelIndex = -1;
+    if (audio_music_disabled(primaryAlias, AUDIO_UNASSIGNED_CHANNEL))
+        return offset;
     (void)MSS_StartAlias3DSample(
         &channelIndex, primaryAlias, savedState.position,
         secondaryAlias, savedChannel.aliasBlend,
@@ -1916,6 +1962,8 @@ int32_t MSS_Restore2DChannel(const uint8_t *buffer, int32_t offset,
     }
 
     int32_t channelIndex = -1;
+    if (audio_music_disabled(primaryAlias, AUDIO_UNASSIGNED_CHANNEL))
+        return offset;
     (void)MSS_StartAlias2DSample(
         &channelIndex, primaryAlias, secondaryAlias,
         savedChannel.aliasBlend, savedChannel.effectId,
@@ -2052,6 +2100,8 @@ int32_t MSS_RestoreStreamChannel(const uint8_t *buffer,
     }
 
     int32_t channelIndex = requestedChannelIndex;
+    if (audio_music_disabled(primaryAlias, channelIndex))
+        return offset;
     int32_t durationMsec;
     if (requestedChannelIndex < 0) {
         durationMsec = MSS_StartAliasStream(
@@ -4139,6 +4189,9 @@ int32_t MSS_PlaySoundAlias_Internal(
     if (outChannelIndex != NULL)
         *outChannelIndex = -1;
 
+    if (audio_music_disabled(alias, AUDIO_UNASSIGNED_CHANNEL))
+        return 0;
+
     if (MSS_IsAliasChannel3D(alias->channel)) {
         const long double oneMinusBlend =
             (long double)1.0f - (long double)aliasBlend;
@@ -4360,6 +4413,8 @@ int32_t MSS_PlayLocalSoundAlias(const char *name, sndAliasBank_t bank)
 void MSS_StartBackground(int32_t backgroundIndex, snd_alias_t *alias,
                          int32_t fadeTimeMsec)
 {
+    if (audio_music_disabled(alias, MSS_STREAM_CHANNEL_FIRST + backgroundIndex))
+        return;
     MSS_UpdatePause();
 
     if (MSS_IsAliasChannel3D(alias->channel)) {
@@ -5415,6 +5470,7 @@ void MSS_Update(void)
     if (mss_digitalDriver == NULL)
         return;
 
+    audio_stop_disabled_music();
     mss_cpuPercent = audio_digital_CPU_percent(mss_digitalDriver);
     if (com_statmon->integer != 0 &&
         mss_cpuPercent > MSS_SOUND_CPU_WARNING_THRESHOLD_PERCENT) {
