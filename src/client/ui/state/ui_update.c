@@ -1,8 +1,6 @@
 #include "../module/ui_functions.h"
 
 enum {
-    UI_RATE_HIGH_THRESHOLD = 5000,
-    UI_RATE_MEDIUM_THRESHOLD = 4000,
     UI_COLOR_BITS_DEFAULT = 0,
     UI_COLOR_BITS_16 = 16,
     UI_COLOR_BITS_32 = 32,
@@ -28,18 +26,8 @@ void UI_Update(const char *name)
         return;
     }
     if (Q_stricmpn("ui_setRate", name, UI_UPDATE_NAME_COMPARE_LIMIT) == 0) {
-        float rate = trap_Cvar_VariableValue("rate");
-
-        if (rate >= (float)UI_RATE_HIGH_THRESHOLD) {
-            trap_Cvar_Set("cl_maxpackets", "30");
-            trap_Cvar_Set("cl_packetdup", "1");
-        } else if (rate >= (float)UI_RATE_MEDIUM_THRESHOLD) {
-            trap_Cvar_Set("cl_maxpackets", "15");
-            trap_Cvar_Set("cl_packetdup", "2");
-        } else {
-            trap_Cvar_Set("cl_maxpackets", "15");
-            trap_Cvar_Set("cl_packetdup", "1");
-        }
+        /* NOT_FROM_ORIGINAL_SOURCE: legacy menu scripts must leave packet
+         * settings at their defaults or the user's explicit cvar values. */
         return;
     }
     if (Q_stricmpn("ui_GetName", name, UI_UPDATE_NAME_COMPARE_LIMIT) == 0) {
