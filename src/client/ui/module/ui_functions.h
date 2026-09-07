@@ -55,6 +55,7 @@ static UI_RECOVERY_ALWAYS_INLINE float UI_FloatFromBits(uint32_t bits)
 
 void UI_Init(void);
 void ui_compat_extend_graphics_menu(void);
+void ui_compat_refresh_graphics_resolution(void);
 void ui_compat_extend_console_binding_menu(void);
 void ui_compat_extend_advanced_menu(void);
 void ui_compat_brand_main_menu_version(void);

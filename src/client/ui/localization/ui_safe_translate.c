@@ -25,6 +25,7 @@ typedef struct ui_compat_translation_s {
  * queried first and therefore overrides these built-in strings. */
 static const ui_compat_translation_t uiCompatTranslations[] = {
     { "CODUOMP_GRAPHICS_CURRENT_DISPLAY", "Maximum Display (Automatic)", "Resolución máxima (automática)" },
+    { "CODUOMP_GRAPHICS_AUTOMATIC", "Automatic", "Automática" },
     { "CODUOMP_GRAPHICS_WINDOWED", "Windowed", "En ventana" },
     { "CODUOMP_GRAPHICS_FULLSCREEN", "Fullscreen", "Pantalla completa" },
     { "CODUOMP_GRAPHICS_BORDERLESS", "Borderless", "Sin bordes" },

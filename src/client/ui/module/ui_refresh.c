@@ -43,6 +43,8 @@ void UI_Refresh(int32_t realtime)
     }
 
     if (Menu_Count() > 0) {
+        /* NOT_FROM_ORIGINAL_SOURCE: update resolution labels before painting. */
+        ui_compat_refresh_graphics_resolution();
         Menu_PaintAll();
         UI_DoServerRefresh();
         UI_BuildServerStatus(qfalse);

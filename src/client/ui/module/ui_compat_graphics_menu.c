@@ -12,10 +12,15 @@ typedef struct ui_compat_multi_value_s {
     float value;
 } ui_compat_multi_value_t;
 
+enum {
+    UI_COMPAT_CURRENT_DISPLAY_MODE = -2,
+    UI_COMPAT_CUSTOM_RESOLUTION_MODE = -1
+};
+
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: labels and stable renderer mode
  * numbers used to replace the retail seven-entry resolution selector. */
 static const ui_compat_multi_value_t uiCompatResolutions[] = {
-    { "@CODUOMP_GRAPHICS_CURRENT_DISPLAY", -2.0f },
+    { "@CODUOMP_GRAPHICS_CURRENT_DISPLAY", UI_COMPAT_CURRENT_DISPLAY_MODE },
     { "640 x 480 (4:3)", 3.0f },
     { "800 x 600 (4:3)", 4.0f },
     { "1024 x 768 (4:3)", 6.0f },
@@ -142,6 +147,85 @@ static void ui_compat_set_numeric_multi(
     for (int32_t index = 0; index < count; ++index) {
         multi->cvarList[index] = String_Alloc(values[index].label);
         multi->cvarValue[index] = values[index].value;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: keep the visible selector in sync with renderer
+ * dimensions and retain both the active and staged modes even when the display
+ * does not advertise them. Reuse the multi's storage and persistent label
+ * buffers; refreshing must neither allocate UI pool memory nor commit cvars. */
+void ui_compat_refresh_graphics_resolution(void)
+{
+    static char automaticLabel[MAX_STRING_CHARS];
+    static char unlistedLabels[2][64];
+    menuDef_t *const menu = Menus_FindByName("options_graphics");
+    itemDef_t *item;
+    multiDef_t *multi;
+    glconfig_t config;
+
+    if (menu == NULL || (menu->window.flags & WINDOW_VISIBLE) == 0)
+        return;
+
+    item = ui_compat_find_cvar_item(menu, "ui_r_mode", NULL);
+    if (item == NULL || item->typeValidated != ITEM_TYPE_MULTI || item->typeData == NULL)
+        return;
+    multi = item->typeData;
+    if (multi->strDef != 0)
+        return;
+
+    const float activeMode = (float)trap_Cvar_VariableValue("r_mode");
+    const float stagedMode = (float)trap_Cvar_VariableValue("ui_r_mode");
+    const float retainedModes[] = { activeMode, stagedMode };
+    const uint32_t availableModes = (uint32_t)coduo_crt_atoi(UI_Cvar_VariableString("r_availableModes"));
+
+    trap_GetGlconfig(&config);
+    multi->count = 0;
+    for (size_t index = 0; index < sizeof(uiCompatResolutions) / sizeof(uiCompatResolutions[0]); ++index) {
+        const ui_compat_multi_value_t *const mode = &uiCompatResolutions[index];
+        const qboolean automatic = mode->value == UI_COMPAT_CURRENT_DISPLAY_MODE;
+
+        if (automatic == qfalse && mode->value != activeMode && mode->value != stagedMode &&
+            (availableModes & (UINT32_C(1) << (int32_t)mode->value)) == 0) {
+            continue;
+        }
+        if (multi->count >= MAX_MULTI_CVARS)
+            break;
+
+        const char *label = mode->label;
+        if (automatic != qfalse && activeMode == UI_COMPAT_CURRENT_DISPLAY_MODE) {
+            Com_sprintf(automaticLabel, sizeof(automaticLabel), "%d x %d (%s)", config.vidWidth, config.vidHeight,
+                        UI_SafeTranslateString("CODUOMP_GRAPHICS_AUTOMATIC"));
+            label = automaticLabel;
+        }
+        multi->cvarList[multi->count] = label;
+        multi->cvarValue[multi->count++] = mode->value;
+    }
+
+    for (size_t index = 0; index < sizeof(retainedModes) / sizeof(retainedModes[0]); ++index) {
+        const float mode = retainedModes[index];
+        int32_t entry;
+
+        for (entry = 0; entry < multi->count; ++entry) {
+            if (multi->cvarValue[entry] == mode)
+                break;
+        }
+        if (entry < multi->count || multi->count >= MAX_MULTI_CVARS)
+            continue;
+
+        int32_t width = config.vidWidth;
+        int32_t height = config.vidHeight;
+        if (mode == UI_COMPAT_CUSTOM_RESOLUTION_MODE && mode != activeMode) {
+            const int32_t customWidth = coduo_crt_atoi(UI_Cvar_VariableString("r_customwidth"));
+            const int32_t customHeight = coduo_crt_atoi(UI_Cvar_VariableString("r_customheight"));
+
+            if (customWidth > 0 && customHeight > 0) {
+                width = customWidth;
+                height = customHeight;
+            }
+        }
+        Com_sprintf(unlistedLabels[index], sizeof(unlistedLabels[index]), "%d x %d", width, height);
+        multi->cvarList[multi->count] = unlistedLabels[index];
+        multi->cvarValue[multi->count++] = mode;
     }
 }
 
