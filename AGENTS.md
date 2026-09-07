@@ -40,6 +40,15 @@
 
 ## Change discipline
 
+- This is a maintained product repository, not a scratchboard. Do not create
+  or commit plans, proposed designs, task notes, audit write-ups, or working
+  documents here unless the user explicitly requests that document here.
+- Requests to evaluate, discuss, plan, or "design first" belong in the
+  conversation by default. Naming this repository as an implementation target
+  does not authorize adding design documents. Keep optional draft files in the
+  designated private analysis workspace, not in this public tree.
+- Public product documentation should describe implemented, supported behavior
+  unless the user explicitly requests otherwise.
 - Do not delete an existing code comment unless the complete code section it
   describes is also removed. Rewrite an inaccurate comment in place.
 - Keep nearby C/C++ formatting; do not mechanically hard-wrap unaffected code.
