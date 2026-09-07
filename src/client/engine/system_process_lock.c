@@ -126,23 +126,25 @@ qboolean Sys_CheckProcessLock(void)
             &bytesRead, NULL);
         CloseHandle(lockFile);
 
-        if (readSucceeded != FALSE &&
-            bytesRead == SYS_PROCESS_ID_BYTES &&
-            savedProcessId != currentProcessId &&
-            Sys_ProcessMatchesExecutable(savedProcessId) != qfalse) {
-            return qfalse;
-        }
+        /* Only a complete saved PID participates in the process check and
+         * recovery prompt. Failed or short reads proceed to rewrite the lock. */
+        if (readSucceeded != FALSE && bytesRead == SYS_PROCESS_ID_BYTES) {
+            if (savedProcessId != currentProcessId &&
+                Sys_ProcessMatchesExecutable(savedProcessId) != qfalse) {
+                return qfalse;
+            }
 
-        const char *const title =
-            Sys_LocalizeString("WIN_IMPROPER_QUIT_TITLE");
-        const char *const body =
-            Sys_LocalizeString("WIN_IMPROPER_QUIT_BODY");
-        const int32_t response = MessageBoxA(
-            NULL, body, title, SYS_PROCESS_LOCK_DIALOG_FLAGS);
-        if (response == IDYES)
-            Com_SetSafeMode();
-        else if (response == IDCANCEL)
-            return qfalse;
+            const char *const title =
+                Sys_LocalizeString("WIN_IMPROPER_QUIT_TITLE");
+            const char *const body =
+                Sys_LocalizeString("WIN_IMPROPER_QUIT_BODY");
+            const int32_t response = MessageBoxA(
+                NULL, body, title, SYS_PROCESS_LOCK_DIALOG_FLAGS);
+            if (response == IDYES)
+                Com_SetSafeMode();
+            else if (response == IDCANCEL)
+                return qfalse;
+        }
     }
 
     lockFile = CreateFileA(
