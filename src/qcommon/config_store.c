@@ -20,6 +20,8 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <process.h>
+static CRITICAL_SECTION coduomp_store_name_lock;
+static qboolean coduomp_store_name_lock_ready;
 #else
 #include <dirent.h>
 #include <fcntl.h>
@@ -337,8 +339,10 @@ invalid:
 static qboolean coduomp_store_name(const char *path, const char *kind, char output[CODUOMP_CONFIG_PATH])
 {
 #if defined(_WIN32)
-    static volatile LONG serial;
-    unsigned sequence = (unsigned)InterlockedIncrement(&serial);
+    static unsigned serial;
+    EnterCriticalSection(&coduomp_store_name_lock);
+    unsigned sequence = ++serial;
+    LeaveCriticalSection(&coduomp_store_name_lock);
     unsigned long process = GetCurrentProcessId();
 #else
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -725,6 +729,15 @@ static void *coduomp_store_worker(void *argument)
 /* NOT_FROM_ORIGINAL_SOURCE: capture all transaction inputs before dispatch. */
 coduomp_config_job_t *coduomp_config_store_start(const char *path, const char *data, size_t size, const coduomp_config_revision_t *expected, qboolean preserveOriginal, qboolean recoveryHistory)
 {
+#if defined(_WIN32)
+    /* Main-thread dispatch initializes this process-lifetime lock before any
+     * worker starts. Kernel synchronization also supports the i386 build. */
+    if (!coduomp_store_name_lock_ready) {
+        if (!InitializeCriticalSectionAndSpinCount(&coduomp_store_name_lock, 0))
+            return NULL;
+        coduomp_store_name_lock_ready = qtrue;
+    }
+#endif
     if (strlen(path) + 100 >= CODUOMP_CONFIG_PATH)
         return NULL;
     coduomp_config_job_t *job = calloc(1, sizeof(*job));
