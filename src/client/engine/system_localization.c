@@ -4,8 +4,7 @@
 #include <string.h>
 
 enum {
-    SYS_LOCALIZATION_TEXT_CAPACITY = 4096,
-    SYS_LOCALIZATION_LANGUAGE_SPANISH = 4
+    SYS_LOCALIZATION_TEXT_CAPACITY = 4096
 };
 
 /* Original storage is 0x009cdda8..0x009ceda7. The two original pointer
@@ -16,9 +15,8 @@ static char *sysLocalizationBuffer;  /* original 0x009cdda0 */
 static char *sysLocalizationEntries; /* original 0x009cdda4 */
 
 /* NOT_FROM_ORIGINAL_SOURCE: the Spanish retail startup table can omit the
- * improper-quit strings. These Windows-1252 fallbacks are used only when the
- * file selected Spanish and the ordinary key lookup misses. */
-static int32_t coduompLocalizationLanguageIndex;
+ * improper-quit strings. File-provided translations take priority over these
+ * Windows-1252 fallbacks for unresolved references. */
 static const char coduompSpanishImproperQuitBody[] =
     "Parece que Call of Duty no se cerr\363 correctamente la \372ltima vez que se ejecut\363.\n"
     "\277Quieres ejecutar el juego en modo seguro?\n\n"
@@ -39,7 +37,6 @@ int32_t Sys_InitLocalization(void)
 
     sysLocalizationBuffer = NULL;
     sysLocalizationEntries = NULL;
-    coduompLocalizationLanguageIndex = 0;
 
     file = fopen("localization.txt", "r");
     if (file == NULL)
@@ -83,7 +80,6 @@ int32_t Sys_InitLocalization(void)
                 &sysLocalizationBuffer[offset + 1];
             (void)SEH_GetLanguageIndexForName(
                 sysLocalizationBuffer, &languageIndex);
-            coduompLocalizationLanguageIndex = languageIndex;
             break;
         }
     }
@@ -99,7 +95,6 @@ void Sys_ShutdownLocalization(void)
 {
     sysLocalizationBuffer = NULL;
     sysLocalizationEntries = NULL;
-    coduompLocalizationLanguageIndex = 0;
 }
 
 /* Source: CoDUOMP.exe 0x0046a800..0x0046a80e, recovered from an executable
@@ -139,10 +134,10 @@ const char *Sys_LocalizeString(const char *reference)
     }
     Com_EndParseSession();
 
-    /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    if (result == reference &&
-        coduompLocalizationLanguageIndex ==
-            SYS_LOCALIZATION_LANGUAGE_SPANISH) {
+    /* NOT_FROM_ORIGINAL_SOURCE: an unresolved key, including a file value
+     * that repeats the key, uses the in-code translation without depending
+     * on the startup file's language header. */
+    if (strcmp(result, reference) == 0) {
         if (strcmp(reference, "WIN_IMPROPER_QUIT_BODY") == 0) {
             result = coduompSpanishImproperQuitBody;
         } else if (strcmp(reference, "WIN_IMPROPER_QUIT_TITLE") == 0) {
