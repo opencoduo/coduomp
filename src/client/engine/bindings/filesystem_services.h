@@ -133,9 +133,9 @@ int32_t filesystem_compat_archive_tell(
     const fileHandleData_t *fileHandle);
 int32_t filesystem_compat_archive_length(
     const fileHandleData_t *fileHandle);
-void filesystem_compat_archive_close_current(
+int32_t filesystem_compat_archive_close_current(
     fileHandleData_t *fileHandle);
-void filesystem_compat_archive_close(fileHandleData_t *fileHandle);
+int32_t filesystem_compat_archive_close(fileHandleData_t *fileHandle);
 int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle,
                                        void *buffer, uint32_t byteCount);
 int32_t filesystem_compat_archive_rewind(fileHandleData_t *fileHandle);

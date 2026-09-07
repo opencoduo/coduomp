@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <stdatomic.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -97,7 +96,22 @@ qboolean coduomp_config_path(const char *input, char output[CODUOMP_CONFIG_PATH]
         if (*p == '/')
             *p = '\\';
     }
-    const size_t first = strlen(path) > 2 && path[1] == ':' ? 3 : 2;
+    size_t first = strlen(path) > 2 && path[1] == ':' ? 3 : 2;
+    if (path[0] == '\\' && path[1] == '\\') {
+        const char *serverEnd = strchr(path + 2, '\\');
+        if (!serverEnd || !serverEnd[1]) {
+            snprintf(error, 256, "config network path needs a share name");
+            return qfalse;
+        }
+        const char *shareEnd = strchr(serverEnd + 1, '\\');
+        /* GetFileAttributes cannot inspect a UNC server or share root.
+         * Inspect its children; the selected share is the filesystem root. */
+        if (!shareEnd) {
+            strcpy(output, path);
+            return qtrue;
+        }
+        first = (size_t)(shareEnd - path) + 1;
+    }
     for (size_t i = first; ; ++i) {
         if (path[i] != '\\' && path[i] != '\0')
             continue;
@@ -322,11 +336,16 @@ invalid:
  * and never reuse a previous transaction's prepared file or rollback copy. */
 static qboolean coduomp_store_name(const char *path, const char *kind, char output[CODUOMP_CONFIG_PATH])
 {
-    static atomic_uint serial;
-    unsigned sequence = atomic_fetch_add(&serial, 1);
 #if defined(_WIN32)
+    static volatile LONG serial;
+    unsigned sequence = (unsigned)InterlockedIncrement(&serial);
     unsigned long process = GetCurrentProcessId();
 #else
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    static unsigned serial;
+    pthread_mutex_lock(&mutex);
+    unsigned sequence = ++serial;
+    pthread_mutex_unlock(&mutex);
     unsigned long process = (unsigned long)getpid();
 #endif
     return snprintf(output, CODUOMP_CONFIG_PATH, "%s.%s-%lld-%lu-%u.cfg", path, kind,
@@ -570,8 +589,15 @@ lock_failed:
             coduomp_store_error(job->result.detail, "config is not writable");
             goto done;
         }
+        BY_HANDLE_FILE_INFORMATION writableInfo;
+        qboolean writableFile = GetFileInformationByHandle(writable, &writableInfo) && writableInfo.nNumberOfLinks == 1 &&
+            !(writableInfo.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT));
         if (!CloseHandle(writable))
             goto done;
+        if (!writableFile) {
+            snprintf(job->result.detail, sizeof(job->result.detail), "config is hard-linked or not a supported regular file");
+            goto done;
+        }
 #else
         struct stat st;
         int writable = open(job->path, O_WRONLY | O_NOFOLLOW);

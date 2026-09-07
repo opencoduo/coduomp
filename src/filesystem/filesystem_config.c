@@ -153,6 +153,7 @@ int coduomp_fs_config_read(const char *name, char **data, size_t *size, char sou
         return -1;
     }
     qboolean ok = FS_Read(bytes, length, handle) == length;
+    filesystem_compat_end_streamed_file(handle);
     if (fs_handleFiles[handle].zipArchive == NULL) {
         FILE *file = FS_FileForHandle(handle);
         if (fgetc(file) != EOF || ferror(file))
@@ -161,7 +162,13 @@ int coduomp_fs_config_read(const char *name, char **data, size_t *size, char sou
             ok = qfalse;
         memset(&fs_handleFiles[handle], 0, sizeof(fs_handleFiles[handle]));
     } else {
-        FS_FCloseFile(handle);
+        enum { CODUOMP_CONFIG_ARCHIVE_OK = 0 };
+        if (filesystem_compat_archive_close_current(&fs_handleFiles[handle]) != CODUOMP_CONFIG_ARCHIVE_OK)
+            ok = qfalse;
+        if (fs_handleFiles[handle].uniqueObject &&
+            filesystem_compat_archive_close(&fs_handleFiles[handle]) != CODUOMP_CONFIG_ARCHIVE_OK)
+            ok = qfalse;
+        memset(&fs_handleFiles[handle], 0, sizeof(fs_handleFiles[handle]));
     }
     if (!ok) {
         free(bytes);

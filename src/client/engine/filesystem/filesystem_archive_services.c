@@ -29,16 +29,16 @@ int32_t filesystem_compat_archive_length(
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local minizip adaptation for the shared
  * original filesystem handle functions. */
-void filesystem_compat_archive_close_current(fileHandleData_t *fileHandle)
+int32_t filesystem_compat_archive_close_current(fileHandleData_t *fileHandle)
 {
-    (void)unzCloseCurrentFile((unzFile)fileHandle->ioObject);
+    return unzCloseCurrentFile((unzFile)fileHandle->ioObject);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local minizip adaptation for the shared
  * original filesystem handle functions. */
-void filesystem_compat_archive_close(fileHandleData_t *fileHandle)
+int32_t filesystem_compat_archive_close(fileHandleData_t *fileHandle)
 {
-    (void)unzClose((unzFile)fileHandle->ioObject);
+    return unzClose((unzFile)fileHandle->ioObject);
 }
 
 int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle,

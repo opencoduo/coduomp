@@ -28,18 +28,18 @@ int32_t filesystem_compat_archive_length(
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local retained-unzip adaptation for the
  * shared original filesystem handle functions. */
-void filesystem_compat_archive_close_current(fileHandleData_t *fileHandle)
+int32_t filesystem_compat_archive_close_current(fileHandleData_t *fileHandle)
 {
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    (void)Unzip_CloseCurrentFile(
+    return Unzip_CloseCurrentFile(
         (struct coduo_unz_s *)fileHandle->ioObject);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: target-local retained-unzip adaptation for the
  * shared original filesystem handle functions. */
-void filesystem_compat_archive_close(fileHandleData_t *fileHandle)
+int32_t filesystem_compat_archive_close(fileHandleData_t *fileHandle)
 {
-    (void)Unzip_Close((struct coduo_unz_s *)fileHandle->ioObject);
+    return Unzip_Close((struct coduo_unz_s *)fileHandle->ioObject);
 }
 
 int32_t filesystem_compat_archive_read(fileHandleData_t *fileHandle,
