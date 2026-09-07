@@ -3,13 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(_WIN32)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#endif
-
 enum {
     SYS_LOCALIZATION_TEXT_CAPACITY = 4096,
     SYS_LOCALIZATION_LANGUAGE_SPANISH = 4
@@ -22,10 +15,9 @@ static char sysLocalizationText[SYS_LOCALIZATION_TEXT_CAPACITY];
 static char *sysLocalizationBuffer;  /* original 0x009cdda0 */
 static char *sysLocalizationEntries; /* original 0x009cdda4 */
 
-/* NOT_FROM_ORIGINAL_SOURCE: startup tables can omit the improper-quit strings
- * or be absent altogether. These Windows-1252 fallbacks apply when the file
- * language or the Windows UI language is Spanish and no translated text is
- * available. File-provided translations take priority. */
+/* NOT_FROM_ORIGINAL_SOURCE: the Spanish retail startup table can omit the
+ * improper-quit strings. These Windows-1252 fallbacks are used only when the
+ * file selected Spanish and the ordinary key lookup misses. */
 static int32_t coduompLocalizationLanguageIndex;
 static const char coduompSpanishImproperQuitBody[] =
     "Parece que Call of Duty no se cerr\363 correctamente la \372ltima vez que se ejecut\363.\n"
@@ -147,22 +139,14 @@ const char *Sys_LocalizeString(const char *reference)
     }
     Com_EndParseSession();
 
-    /* NOT_FROM_ORIGINAL_SOURCE: this prompt precedes cvar and game-language
-     * initialization. A missing entry or a value that repeats its key can
-     * use the Spanish Windows UI language even if the file did not select
-     * Spanish. PRIMARYLANGID includes every Spanish region, such as Argentina. */
-    if (strcmp(result, reference) == 0) {
-        qboolean spanish = coduompLocalizationLanguageIndex == SYS_LOCALIZATION_LANGUAGE_SPANISH;
-#if defined(_WIN32)
-        if (PRIMARYLANGID(GetUserDefaultUILanguage()) == LANG_SPANISH)
-            spanish = qtrue;
-#endif
-        if (spanish != qfalse) {
-            if (strcmp(reference, "WIN_IMPROPER_QUIT_BODY") == 0) {
-                result = coduompSpanishImproperQuitBody;
-            } else if (strcmp(reference, "WIN_IMPROPER_QUIT_TITLE") == 0) {
-                result = coduompSpanishImproperQuitTitle;
-            }
+    /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
+    if (result == reference &&
+        coduompLocalizationLanguageIndex ==
+            SYS_LOCALIZATION_LANGUAGE_SPANISH) {
+        if (strcmp(reference, "WIN_IMPROPER_QUIT_BODY") == 0) {
+            result = coduompSpanishImproperQuitBody;
+        } else if (strcmp(reference, "WIN_IMPROPER_QUIT_TITLE") == 0) {
+            result = coduompSpanishImproperQuitTitle;
         }
     }
     return Sys_CopyLocalizationString(result);
