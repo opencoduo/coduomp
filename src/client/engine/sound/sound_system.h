@@ -507,20 +507,20 @@ audio_sample_type_t MSS_SampleType(int32_t waveFormatTag,
 snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename);
 void MSS_UnloadSoundFile(snd_alias_sound_file_t *soundFile);
 int32_t MSS_GetSoundFileSize(const snd_alias_sound_file_t *soundFile);
-qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
+int32_t MSS_StartAlias2DSample(int32_t *outChannelIndex,
                                 snd_alias_t *alias,
                                 snd_alias_t *secondaryAlias,
                                 float aliasBlend, int32_t effectId,
                                 float volume, float pitch,
                                 int32_t timeShift, float startFraction);
-qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
+int32_t MSS_StartAlias3DSample(int32_t *outChannelIndex,
                                 snd_alias_t *alias,
                                 const vec3_t position,
                                 snd_alias_t *secondaryAlias,
                                 float aliasBlend, int32_t effectId,
                                 float volume, float pitch,
                                 int32_t timeShift, float startFraction);
-qboolean MSS_StartAliasSample(int32_t *outChannelIndex,
+int32_t MSS_StartAliasSample(int32_t *outChannelIndex,
                               snd_alias_t *alias,
                               snd_alias_t *secondaryAlias,
                               float aliasBlend, int32_t effectId,
