@@ -169,7 +169,18 @@ void SV_Trace(trace_t *trace, const vec3_t start,
     CM_ClipMoveToEntities(&work);
 
     if (work.bestTrace.fraction < worldTrace.fraction) {
-        /* Both originals spill end-start to binary32 before interpolation. */
+        /* Windows retains the X/Y deltas; Z and all Linux deltas are rounded
+         * to binary32 before interpolation. */
+#if defined(WINDOWS_BEHAVIOR)
+        const long double deltaX = (long double)end[0] - (long double)start[0];
+        const long double deltaY = (long double)end[1] - (long double)start[1];
+        const float deltaZ = end[2] - start[2];
+        work.bestTrace.endpos[0] = (float)(
+            deltaX * (long double)work.bestTrace.fraction + (long double)start[0]);
+        work.bestTrace.endpos[1] = (float)(
+            deltaY * (long double)work.bestTrace.fraction + (long double)start[1]);
+        work.bestTrace.endpos[2] = start[2] + deltaZ * work.bestTrace.fraction;
+#else
         const vec3_t delta = {
             end[0] - start[0],
             end[1] - start[1],
@@ -181,6 +192,7 @@ void SV_Trace(trace_t *trace, const vec3_t start,
             start[1] + delta[1] * work.bestTrace.fraction;
         work.bestTrace.endpos[2] =
             start[2] + delta[2] * work.bestTrace.fraction;
+#endif
     }
 
     *trace = work.bestTrace;

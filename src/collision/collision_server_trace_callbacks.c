@@ -176,17 +176,12 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
         MatrixTransformVector(dobjTrace.normal, matrixView->axis,
                               trace.normal);
 
-        const vec3_t delta = {
-            work->end[0] - work->start[0],
-            work->end[1] - work->start[1],
-            work->end[2] - work->start[2]
-        };
-        trace.endpos[0] =
-            work->start[0] + delta[0] * trace.fraction;
-        trace.endpos[1] =
-            work->start[1] + delta[1] * trace.fraction;
-        trace.endpos[2] =
-            work->start[2] + delta[2] * trace.fraction;
+        /* Keep each ray delta live until the interpolated endpoint is stored. */
+        for (int32_t axis = 0; axis < 3; ++axis) {
+            trace.endpos[axis] = (float)(
+                ((long double)work->end[axis] - (long double)work->start[axis]) *
+                (long double)trace.fraction + (long double)work->start[axis]);
+        }
     } else {
         const float *const angles =
             gentity->bmodel != qfalse
