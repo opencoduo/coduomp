@@ -16,6 +16,7 @@
 #include "g_syscalls.h"
 #include "scr_vm.h"
 #include "game_functions.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_x87emu.h" /* defines EMULATE_X87; x87 shim when it is 1 */
 
 #define TRIGGER_HURT_DEFAULT_SOUND "world_hurt_me"
@@ -240,7 +241,7 @@ void SP_trigger_hurt(gentity_t *ent)
     }
 
     G_SpawnString(TRIGGER_HURT_LIFE_KEY, "0", &duration);
-    *game_compat_trigger_hurt_duration_seconds(ent) = (float)atof(duration);
+    *game_compat_trigger_hurt_duration_seconds(ent) = (float)coduo_compat_atof(duration);
 }
 
 /* ------------------------------------------------------------------ */
@@ -478,7 +479,7 @@ void SP_trigger_damage(gentity_t *ent)
     const char *randomText;
 
     G_SpawnString("random", TRIGGER_DAMAGE_DEFAULT_RANDOM, &randomText);
-    random = atof(randomText);
+    random = coduo_compat_atof(randomText);
     ent->itemRandom = (float)random;
     /* The Windows clamp compares the parsed value before float rounding. */
 #else

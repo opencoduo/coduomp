@@ -17,6 +17,7 @@
 #include "g_syscalls.h"
 #include "game_functions.h"
 #include "qcommon/info.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_x87emu.h" /* defines EMULATE_X87; x87 shim when it is 1 */
 #include "compat/coduo_native_x87.h"
 #include "scr_vm.h"
@@ -8481,7 +8482,7 @@ void VP_ParseDynamicVehicleNodeField(const char *key, const char *value,
     }
 
     if (fieldType == VEH_SCRIPT_FIELD_FLOAT) {
-        Scr_AddFloat((float)atof(value));
+        Scr_AddFloat((float)coduo_compat_atof(value));
     } else if (fieldType < VEH_SCRIPT_FIELD_INT) {
         if (fieldType != VEH_SCRIPT_FIELD_STRING) {
             return;
@@ -8532,7 +8533,7 @@ void VP_ParseVehicleNodeField(const char *key, const char *value,
         *base = (uint8_t)atoi(value);
         break;
     case 3:
-        *(float *)(void *)base = (float)atof(value);
+        *(float *)(void *)base = (float)coduo_compat_atof(value);
         break;
     case 5:
         Scr_SetString((uint16_t *)(void *)base, 0);

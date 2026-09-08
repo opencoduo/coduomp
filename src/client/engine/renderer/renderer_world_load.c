@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "compat/crt/atof_compat.h"
 
 #include "gl_api.h"
 #include "gl_state.h"
@@ -893,7 +894,7 @@ float R_FloatForKey(int32_t pairCount,
                     const char *key, float defaultValue)
 {
     const char *value = R_ValueForKey(pairCount, pairs, key);
-    return value != NULL ? (float)atof(value) : defaultValue;
+    return value != NULL ? (float)coduo_compat_atof(value) : defaultValue;
 }
 
 /* Source: CoDUOMP.exe 0x0050caa0..0x0050cad5.
@@ -949,7 +950,7 @@ void R_LoadMiscModel(int32_t pairCount,
 
     vec3_t angles;
     const char *angle = R_ValueForKey(pairCount, pairs, "angle");
-    const double scalarAngle = angle != NULL ? atof(angle) : 0.0;
+    const double scalarAngle = angle != NULL ? coduo_compat_atof(angle) : 0.0;
     if (scalarAngle != 0.0) {
         angles[0] = 0.0f;
         angles[1] = (float)scalarAngle;
@@ -1004,7 +1005,7 @@ void R_LoadCorona(int32_t pairCount,
     const char *scaleText =
         R_ValueForKey(pairCount, pairs, "scale");
     const long double scaleRaw =
-        scaleText != NULL ? (long double)atof(scaleText) : 1.0L;
+        scaleText != NULL ? (long double)coduo_compat_atof(scaleText) : 1.0L;
     const float scale = (float)scaleRaw;
     /* R_FloatForKey is inlined at 0x0050cd5f..0x0050cd93: atof's value is
      * stored as float but the positivity check consumes retained ST0.
@@ -1080,7 +1081,7 @@ void R_LoadEntities(const lump_t *entityLump)
         Q_strncpyz(value, token, (int32_t)sizeof(value));
 
         if (Q_stricmp(key, "ambient") == 0) {
-            const long double ambientRaw = (long double)atof(value);
+            const long double ambientRaw = (long double)coduo_compat_atof(value);
             ambient = (float)ambientRaw;
             /* 0x0050d133 stores ambient as float while comparing retained
              * atof precision with the legacy-scale threshold. */
@@ -1095,7 +1096,7 @@ void R_LoadEntities(const lump_t *entityLump)
             (void)sscanf(value, "%f %f %f", &entityAmbientColor[0],
                          &entityAmbientColor[1], &entityAmbientColor[2]);
         } else if (Q_stricmp(key, "diffuseFraction") == 0) {
-            diffuseFraction = (float)atof(value);
+            diffuseFraction = (float)coduo_compat_atof(value);
         } else if (Q_stricmp(key, "suncolor") == 0) {
             (void)sscanf(value, "%f %f %f", &sunColor[0],
                          &sunColor[1], &sunColor[2]);
@@ -1106,7 +1107,7 @@ void R_LoadEntities(const lump_t *entityLump)
             (void)ColorNormalize(sunDiffuseColor, sunDiffuseColor);
             hasSunDiffuseColor = qtrue;
         } else if (Q_stricmp(key, "sunlight") == 0) {
-            sunlight = (float)atof(value);
+            sunlight = (float)coduo_compat_atof(value);
         } else if (Q_stricmp(key, "sundirection") == 0) {
             vec3_t sunDirectionAngles;
             (void)sscanf(value, "%f %f %f", &sunDirectionAngles[0],

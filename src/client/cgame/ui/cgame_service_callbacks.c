@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "client/cgame/client_recovered.h"
+#include "compat/crt/atof_compat.h"
 #include "client/cgame/globals.h"
 
 long double CG_Cvar_Get(const char *name) /* 0x3002d530 */
@@ -16,7 +17,7 @@ long double CG_Cvar_Get(const char *name) /* 0x3002d530 */
     /* 0x3002d56f CALL atof; authoritative Win32 returns immediately with the
      * binary64 value still in ST0.  Keep that value in the display-context
      * carrier; consumers perform their own proven binary32/binary64 stores. */
-    return (long double)atof(buffer);
+    return (long double)coduo_compat_atof(buffer);
 }
 
 int32_t CG_OwnerDrawWidth(int32_t ownerDraw, int32_t font,

@@ -2,6 +2,7 @@
 #include "com_command_handlers.h"
 #include "com_command_services.h"
 
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_int32_bits.h"
 
 #include <stdint.h>
@@ -65,7 +66,7 @@ void Com_Freeze_f(void)
         return;
     }
 
-    const float seconds = (float)atof(Cmd_Argv(COM_FREEZE_SECONDS_ARG));
+    const float seconds = (float)coduo_compat_atof(Cmd_Argv(COM_FREEZE_SECONDS_ARG));
     const uint32_t startTime = (uint32_t)Com_Milliseconds();
 
     /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */

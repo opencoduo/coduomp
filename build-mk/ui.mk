@@ -28,6 +28,7 @@ SHARED_C_SOURCES := $(ROOT)/src/qcommon/com_parse.c \
 	$(ROOT)/src/qcommon/q_shared_misc.c \
 	$(ROOT)/src/qcommon/q_string.c \
 	$(ROOT)/src/qcommon/q_temp.c \
+	$(ROOT)/src/compat/crt/atof_compat.c \
 	$(ROOT)/src/compat/crt/format_compat.c \
 	$(ROOT)/src/compat/crt/msvc_compat.c \
 	$(ROOT)/src/compat/crt/qsort_compat.c \

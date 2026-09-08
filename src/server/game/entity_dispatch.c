@@ -18,6 +18,7 @@
 #include "game_functions.h"
 #include "level_locals.h"
 #include "scr_vm.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_x87emu.h" /* defines EMULATE_X87; x87 shim when it is 1 */
 #include "compat/coduo_native_x87.h"
 #include "compat/libm/coduo_libm.h"
@@ -737,7 +738,7 @@ void SP_trigger_multiple(gentity_t *ent)
     const char *randomText;
 
     G_SpawnString("random", TRIGGER_DEFAULT_RANDOM, &randomText);
-    random = atof(randomText);
+    random = coduo_compat_atof(randomText);
     ent->itemRandom = (float)random;
     /* The Windows clamp compares the parsed value before float rounding. */
 #else

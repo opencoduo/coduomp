@@ -1,6 +1,7 @@
 #include "qcommon/config_profile.h"
 #include "system_fatal.h"
 #include "q_shared.h"
+#include "compat/crt/atof_compat.h"
 
 #include "client/common/client_branding.h"
 #include "client/common/client_legacy_crt.h"
@@ -308,7 +309,7 @@ void Com_SetRecommended(qboolean restartSound)
             continue;
         }
 
-        const double rowCpuMHz = atof(token);
+        const double rowCpuMHz = coduo_compat_atof(token);
         if (rowCpuMHz < 0.0) {
             Com_Error(
                 ERR_FATAL,

@@ -1,4 +1,5 @@
 #include "com_parse.h"
+#include "compat/crt/atof_compat.h"
 #include "com_parse_error_binding.h"
 #include "q_string.h"
 
@@ -670,13 +671,13 @@ char *Com_ParseRestOfLine(char **data)
 long double Com_ParseFloat(char **data)
 {
     char *token = Com_Parse(data);
-    return token[0] == '\0' ? 0.0L : (long double)atof(token);
+    return token[0] == '\0' ? 0.0L : (long double)coduo_compat_atof(token);
 }
 #else
 float Com_ParseFloat(char **data)
 {
     char *token = Com_Parse(data);
-    return token[0] == '\0' ? 0.0f : (float)atof(token);
+    return token[0] == '\0' ? 0.0f : (float)coduo_compat_atof(token);
 }
 #endif
 
@@ -694,7 +695,7 @@ void Com_Parse1DMatrix(char **data, int32_t x, float *matrix)
 {
     Com_MatchToken(data, "(", qfalse);
     for (int32_t column = 0; column < x; ++column)
-        matrix[column] = (float)atof(Com_Parse(data));
+        matrix[column] = (float)coduo_compat_atof(Com_Parse(data));
     Com_MatchToken(data, ")", qfalse);
 }
 

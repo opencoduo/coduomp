@@ -1,4 +1,5 @@
 #include "ui_runtime.h"
+#include "compat/crt/atof_compat.h"
 
 #include "client/common/client_legacy_crt.h"
 #include "ui_parse.h"
@@ -132,7 +133,7 @@ void Script_ExecOnCvarFloatValue(itemDef_t *item, char **arguments)
         return;
     }
     currentValue = (double)DC->getCVarValue(cvarName);
-    if (fabs(currentValue - atof(compareValue)) < (double)0.00001f) {
+    if (fabs(currentValue - coduo_compat_atof(compareValue)) < (double)0.00001f) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         DC->executeText(EXEC_APPEND, va("%s\n", command));
     }

@@ -1,5 +1,6 @@
 #include "info.h"
 #include "info_private.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_fp_conversion.h"
 
 #include <limits.h>
@@ -490,21 +491,21 @@ qboolean ParseConfigStringToStruct(
             break;
         }
         case PARSE_FIELD_FLOAT: {
-            float parsed = (float)atof(value);
+            float parsed = (float)coduo_compat_atof(value);
             memcpy(destination, &parsed, sizeof(parsed));
             break;
         }
         case PARSE_FIELD_MILLISECONDS: {
             int32_t parsed;
 #if defined(WINDOWS_BEHAVIOR)
-            volatile double scaledMilliseconds = atof(value) * 1000.0;
+            volatile double scaledMilliseconds = coduo_compat_atof(value) * 1000.0;
 
             /* ORIGINAL_PLATFORM_DIFFERENCE: every authoritative Windows body
              * keeps atof's binary64 value through the multiply under the
              * process PC=53 x87 policy, then retains _ftol2's low dword. */
             parsed = coduo_fp_to_i32_f64(scaledMilliseconds);
 #else
-            volatile float seconds = (float)atof(value);
+            volatile float seconds = (float)coduo_compat_atof(value);
             const long double scaledMilliseconds =
                 (long double)seconds * (long double)1000.0f;
 

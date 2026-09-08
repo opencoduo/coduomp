@@ -11,6 +11,7 @@
 // PPC symbol CG_DrawSkyBoxPortal.
 
 #include "../client_recovered.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_native_x87.h"
 #include "../globals.h"
 
@@ -42,19 +43,19 @@ void CG_DrawSkyBoxPortal(void)
         if (token == NULL || token[0] == '\0') {
             Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
-        cg_refdef.vieworg[0] = (float)atof(token);
+        cg_refdef.vieworg[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
             Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
-        cg_refdef.vieworg[1] = (float)atof(token);
+        cg_refdef.vieworg[1] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(&parse);
         if (token == NULL || token[0] == '\0') {
             Com_ErrorMessage("CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
         }
-        cg_refdef.vieworg[2] = (float)atof(token);
+        cg_refdef.vieworg[2] = (float)coduo_compat_atof(token);
 
         /* The fourth required integer is parsed for format compatibility but is not
          * consumed afterward by this build (CALL Q_atoi, result overwritten). */
@@ -81,21 +82,21 @@ void CG_DrawSkyBoxPortal(void)
                 Com_ErrorMessage(
                     "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[0]\n");
             }
-            fogParam[0] = (float)atof(token);
+            fogParam[0] = (float)coduo_compat_atof(token);
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
                 Com_ErrorMessage(
                     "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[1]\n");
             }
-            fogParam[1] = (float)atof(token);
+            fogParam[1] = (float)coduo_compat_atof(token);
 
             token = Com_ParseOnLine(&parse);
             if (token == NULL || token[0] == '\0') {
                 Com_ErrorMessage(
                     "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[2]\n");
             }
-            fogParam[2] = (float)atof(token);
+            fogParam[2] = (float)coduo_compat_atof(token);
 
             token = Com_ParseOnLine(&parse);
             fogInt0 = (token != NULL && token[0] != '\0') ? coduo_crt_atoi(token) : 0;

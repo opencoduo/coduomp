@@ -3,6 +3,7 @@
 // CG_ServerCommand — dispatch one compact, single-byte reliable server command.
 
 #include "../client_recovered.h"
+#include "compat/crt/atof_compat.h"
 
 #include <stdlib.h>
 
@@ -102,7 +103,7 @@ void CG_ServerCommand(void)
         return;
     case 'q':   /* 0x3003b011 */
         value = coduo_crt_atoi(CG_Argv(2));
-        trap_MSS_FadeAllSounds((float)atof(CG_Argv(1)), value);
+        trap_MSS_FadeAllSounds((float)coduo_compat_atof(CG_Argv(1)), value);
         return;
     case 'r': CG_ReverbCmd(); return;         /* 0x3003b058 */
     case 's': CG_LocalSound(); return;        /* 0x3003b072 */
