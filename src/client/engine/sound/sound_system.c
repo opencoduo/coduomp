@@ -3611,8 +3611,9 @@ int32_t MSS_GetSoundFileSize(const snd_alias_sound_file_t *soundFile)
  * MSS_StartAlias2DSample and its Windows callers. Loaded sound metadata is
  * passed directly to the Miles sample API. Playback-rate and fractional-start
  * conversions use FastRound, matching the executable's float store, exact
- * 2^-30 bias, and x87 FISTP. */
-qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
+ * 2^-30 bias, and x87 FISTP. Returns the non-looping duration in milliseconds,
+ * or zero for a loop or allocation failure. */
+int32_t MSS_StartAlias2DSample(int32_t *outChannelIndex,
                                 snd_alias_t *alias,
                                 snd_alias_t *secondaryAlias,
                                 float aliasBlend, int32_t effectId,
@@ -3624,7 +3625,7 @@ qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
     if (outChannelIndex != NULL)
         *outChannelIndex = channelIndex;
     if (channelIndex < 0)
-        return qfalse;
+        return 0;
 
     audio_sample_handle_t const sample =
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST];
@@ -3687,7 +3688,7 @@ qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
                        aliasBlend, NULL, volume, pitch,
                        (int32_t)soundFile->sampleRate,
                        durationMsec, samplePositionMsec);
-    return qtrue;
+    return durationMsec;
 }
 
 /* Source: CoDUOMP.exe 0x00451cf0..0x0045203f.
@@ -3696,8 +3697,9 @@ qboolean MSS_StartAlias2DSample(int32_t *outChannelIndex,
  * performed by the game before Miles receives the volume; Miles gets equal
  * minimum/maximum distances so it does not apply a second rolloff. The stored
  * channel rate remains the sound file's base rate, while the handle receives
- * the pitch- and global-scale-adjusted rate. */
-qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
+ * the pitch- and global-scale-adjusted rate. Returns the non-looping duration
+ * in milliseconds, or zero for a loop or allocation failure. */
+int32_t MSS_StartAlias3DSample(int32_t *outChannelIndex,
                                 snd_alias_t *alias,
                                 const vec3_t position,
                                 snd_alias_t *secondaryAlias,
@@ -3710,7 +3712,7 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
     if (outChannelIndex != NULL)
         *outChannelIndex = channelIndex;
     if (channelIndex < 0)
-        return qfalse;
+        return 0;
 
     audio_3d_sample_handle_t const sample =
         mss_3dSampleHandles[channelIndex];
@@ -3814,7 +3816,7 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
                        aliasBlend, position, volume, pitch,
                        (int32_t)soundFile->sampleRate,
                        durationMsec, samplePositionMsec);
-    return qtrue;
+    return durationMsec;
 }
 
 /* Source: CoDUOMP.exe 0x00452040..0x004520c9.
@@ -3822,8 +3824,9 @@ qboolean MSS_StartAlias3DSample(int32_t *outChannelIndex,
  * MSS_StartAliasSample and the Windows calls into the typed 2D/3D starters.
  * The loaded-file failure diagnostic deliberately names the sound file before
  * its alias. Menu and non-spatial channels use a 2D sample; the other alias
- * channels use the supplied world position and a 3D sample. */
-qboolean MSS_StartAliasSample(int32_t *outChannelIndex,
+ * channels use the supplied world position and a 3D sample. The selected
+ * starter's duration is forwarded unchanged; an unloaded file returns zero. */
+int32_t MSS_StartAliasSample(int32_t *outChannelIndex,
                               snd_alias_t *alias,
                               snd_alias_t *secondaryAlias,
                               float aliasBlend, int32_t effectId,
@@ -3837,7 +3840,7 @@ qboolean MSS_StartAliasSample(int32_t *outChannelIndex,
             alias->soundFile, alias->aliasName);
         if (outChannelIndex != NULL)
             *outChannelIndex = -1;
-        return qfalse;
+        return 0;
     }
 
     if (MSS_IsAliasChannel3D(alias->channel)) {
