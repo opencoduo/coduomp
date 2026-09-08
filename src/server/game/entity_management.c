@@ -117,23 +117,33 @@ void trap_XAnimCalcAbsDelta(XAnimTree *tree, uint32_t anim, float *rot,
 /* VERIFIED_DECOMPILER(0x7a17a, 8a17a_G_SetOrigin.c, VERIFY-ENTITYMGMT-ORIGIN-VIS-2026-06-17): DATAFLOW_VERIFIED - trajectory base, type/time/duration clears, delta clears, currentOrigin mirror, and void return checked against current decompiler output. */
 void G_SetOrigin(gentity_t *ent, const float *origin)
 {
+    uint32_t bits;
+
+    /* Preserve stored bits and per-lane read/store order, including aliased inputs. */
     /* Set trajectory base */
-    ent->s.pos.trBase[0] = origin[0];
-    ent->s.pos.trBase[1] = origin[1];
-    ent->s.pos.trBase[2] = origin[2];
+    memcpy(&bits, &origin[0], sizeof(bits));
+    memcpy(&ent->s.pos.trBase[0], &bits, sizeof(bits));
+    memcpy(&bits, &origin[1], sizeof(bits));
+    memcpy(&ent->s.pos.trBase[1], &bits, sizeof(bits));
+    memcpy(&bits, &origin[2], sizeof(bits));
+    memcpy(&ent->s.pos.trBase[2], &bits, sizeof(bits));
     
     /* Reset trajectory to stationary */
     ent->s.pos.trType = TR_STATIONARY;
     ent->s.pos.trTime = 0;
     ent->s.pos.trDuration = 0;
-    ent->s.pos.trDelta[0] = 0.0f;
-    ent->s.pos.trDelta[1] = 0.0f;
-    ent->s.pos.trDelta[2] = 0.0f;
+    bits = 0;
+    memcpy(&ent->s.pos.trDelta[2], &bits, sizeof(bits));
+    memcpy(&ent->s.pos.trDelta[1], &bits, sizeof(bits));
+    memcpy(&ent->s.pos.trDelta[0], &bits, sizeof(bits));
     
     /* Update current position */
-    ent->currentOrigin[0] = origin[0];
-    ent->currentOrigin[1] = origin[1];
-    ent->currentOrigin[2] = origin[2];
+    memcpy(&bits, &origin[0], sizeof(bits));
+    memcpy(&ent->currentOrigin[0], &bits, sizeof(bits));
+    memcpy(&bits, &origin[1], sizeof(bits));
+    memcpy(&ent->currentOrigin[1], &bits, sizeof(bits));
+    memcpy(&bits, &origin[2], sizeof(bits));
+    memcpy(&ent->currentOrigin[2], &bits, sizeof(bits));
 }
 
 /* ------------------------------------------------------------------ */
@@ -150,23 +160,33 @@ void G_SetOrigin(gentity_t *ent, const float *origin)
 /* VERIFIED_DECOMPILER(0x7a21b, 8a21b_G_SetAngle.c, VERIFY-ENTITYMGMT-ORIGIN-VIS-2026-06-17): DATAFLOW_VERIFIED - angle trajectory base, type/time/duration clears, delta clears, currentAngles mirror, and void return checked against current decompiler output. */
 void G_SetAngle(gentity_t *ent, const float *angles)
 {
+    uint32_t bits;
+
+    /* Preserve stored bits and per-lane read/store order, including aliased inputs. */
     /* Set angle trajectory base */
-    ent->s.apos.trBase[0] = angles[0];
-    ent->s.apos.trBase[1] = angles[1];
-    ent->s.apos.trBase[2] = angles[2];
+    memcpy(&bits, &angles[0], sizeof(bits));
+    memcpy(&ent->s.apos.trBase[0], &bits, sizeof(bits));
+    memcpy(&bits, &angles[1], sizeof(bits));
+    memcpy(&ent->s.apos.trBase[1], &bits, sizeof(bits));
+    memcpy(&bits, &angles[2], sizeof(bits));
+    memcpy(&ent->s.apos.trBase[2], &bits, sizeof(bits));
     
     /* Reset angle trajectory to stationary */
     ent->s.apos.trType = TR_STATIONARY;
     ent->s.apos.trTime = 0;
     ent->s.apos.trDuration = 0;
-    ent->s.apos.trDelta[0] = 0.0f;
-    ent->s.apos.trDelta[1] = 0.0f;
-    ent->s.apos.trDelta[2] = 0.0f;
+    bits = 0;
+    memcpy(&ent->s.apos.trDelta[2], &bits, sizeof(bits));
+    memcpy(&ent->s.apos.trDelta[1], &bits, sizeof(bits));
+    memcpy(&ent->s.apos.trDelta[0], &bits, sizeof(bits));
     
     /* Update current angles */
-    ent->currentAngles[0] = angles[0];
-    ent->currentAngles[1] = angles[1];
-    ent->currentAngles[2] = angles[2];
+    memcpy(&bits, &angles[0], sizeof(bits));
+    memcpy(&ent->currentAngles[0], &bits, sizeof(bits));
+    memcpy(&bits, &angles[1], sizeof(bits));
+    memcpy(&ent->currentAngles[1], &bits, sizeof(bits));
+    memcpy(&bits, &angles[2], sizeof(bits));
+    memcpy(&ent->currentAngles[2], &bits, sizeof(bits));
 }
 
 /* ------------------------------------------------------------------ */
