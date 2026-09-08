@@ -486,7 +486,7 @@ char *MSG_ReadStringLine(msg_t *message)
 
 float MSG_ReadAngle16(msg_t *message)
 {
-    /* The scale is exactly 9/16384. Every int16 product is exactly
+    /* The scale is exactly 45/8192. Every int16 product is exactly
      * representable in binary32, so the Windows/Linux x87 precision policy
      * cannot change this result. */
     return (float)MSG_ReadShort(message) * MSG_ANGLE16_FROM_SHORT_SCALE;

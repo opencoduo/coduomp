@@ -308,9 +308,8 @@ static void ScriptInterpreter_EnterFunctionCall(
     uint16_t *thread,
     uint16_t parent, int32_t argumentCount,
     uint8_t *targetCodePos, uint8_t *returnCodePos,
-    qboolean addParentRef, qboolean setErrorParameterIndex)
+    qboolean addParentRef)
 {
-    ScriptInterpreter_CheckCallDepth(setErrorParameterIndex);
     ScriptInterpreter_SaveCallCodepos(*codePos);
 
     if (addParentRef != qfalse) {
@@ -1037,11 +1036,16 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 uint16_t parent;
 
                 RemoveRefToObject(thread);
+                /* Call operands remain live until the depth check succeeds so
+                 * error cleanup starts at the expected stack slot. */
+                /* 0x25/0x27 do not set errorParameterIndex on overflow. */
                 if (opcode == SCRIPT_OP_CALL_FUNCTION) {
+                    ScriptInterpreter_CheckCallDepth(qfalse);
                     parent = GetSelf(thread);
                 } else {
                     uint16_t object =
                         ScriptInterpreter_RequireObject(stackTop, 1);
+                    ScriptInterpreter_CheckCallDepth(qfalse);
                     parent = object;
                     --stackTop;
                 }
@@ -1049,9 +1053,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 ScriptInterpreter_EnterFunctionCall(
                     &stackTop, &codePos, &thread, parent, argumentCount,
                     targetCodePos, returnCodePos,
-                    opcode == SCRIPT_OP_CALL_FUNCTION ? qtrue : qfalse,
-                    /* 0x25/0x27 do not set errorParameterIndex on overflow. */
-                    qfalse);
+                    opcode == SCRIPT_OP_CALL_FUNCTION ? qtrue : qfalse);
                 break;
             }
 
@@ -1072,6 +1074,10 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                            script_variableTypeNames[badType]));
                 }
 
+                /* 0x26/0x28 set errorParameterIndex on overflow. */
+                if (opcode == SCRIPT_OP_CALL_POINTER) {
+                    ScriptInterpreter_CheckCallDepth(qtrue);
+                }
                 uint8_t *targetCodePos =
                     ScriptInterpreter_CodeposFromPayload(stackTop->payload);
                 --stackTop;
@@ -1082,6 +1088,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 } else {
                     uint16_t object =
                         ScriptInterpreter_RequireObject(stackTop, 2);
+                    ScriptInterpreter_CheckCallDepth(qtrue);
                     parent = object;
                     --stackTop;
                 }
@@ -1090,9 +1097,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     &stackTop, &codePos, &thread, parent, argumentCount,
                     targetCodePos,
                     codePos + SCRIPT_INTERPRETER_POINTER_CALL_OPERAND_BYTES,
-                    opcode == SCRIPT_OP_CALL_POINTER ? qtrue : qfalse,
-                    /* 0x26/0x28 set errorParameterIndex on overflow. */
-                    qtrue);
+                    opcode == SCRIPT_OP_CALL_POINTER ? qtrue : qfalse);
                 break;
             }
 
