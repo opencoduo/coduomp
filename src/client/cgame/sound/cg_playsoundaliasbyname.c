@@ -45,13 +45,11 @@
 
 #include <math.h>
 
-int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
-                            const char *aliasName)
+/* NOT_FROM_ORIGINAL_SOURCE: share the original playback and subtitle path
+ * after alias selection, so local ownership can use the selected channel
+ * without consuming another randomized alias pick. */
+static int cgame_compat_play_selected_sound_alias(snd_alias_t *alias, int32_t entityNum, const void *soundPosition)
 {
-    /* 3002ca87: choose the named sound alias for this origin. */
-    snd_alias_t *alias = trap_Com_PickSoundAlias(
-        aliasName, (const float *)soundPosition);
-
     /* 3002ca99: registration failed -> return the syscall's 0. */
     if (alias == NULL) {
         return 0;
@@ -115,4 +113,37 @@ int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
 
     /* 3002cb38: return the playback duration (EDI). */
     return durationMs;
+}
+
+int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const char *aliasName)
+{
+    /* 3002ca87: choose the named sound alias for this origin. */
+    snd_alias_t *alias = trap_Com_PickSoundAlias(aliasName, (const float *)soundPosition);
+    return cgame_compat_play_selected_sound_alias(alias, entityNum, soundPosition);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: explicit-local nonspatial sounds belong to the
+ * connection's client slot. Keep the caller's owner and origin for spatial
+ * aliases, and select exactly once before consulting the chosen channel.
+ * The nonspatial set matches the engine's MSS_IsAliasChannel3D classification. */
+int cgame_compat_play_local_sound_alias(int32_t spatialEntityNum, const void *soundPosition, const char *aliasName)
+{
+    snd_alias_t *alias = trap_Com_PickSoundAlias(aliasName, (const float *)soundPosition);
+    int32_t entityNum = spatialEntityNum;
+
+    if (alias != NULL) {
+        switch (alias->channel) {
+        case SND_ALIAS_CHANNEL_MENU:
+        case SND_ALIAS_CHANNEL_LOCAL:
+        case SND_ALIAS_CHANNEL_MUSIC:
+        case SND_ALIAS_CHANNEL_ANNOUNCER:
+        case SND_ALIAS_CHANNEL_SHELLSHOCK:
+            entityNum = cg_clientNum;
+            break;
+        default:
+            break;
+        }
+    }
+
+    return cgame_compat_play_selected_sound_alias(alias, entityNum, soundPosition);
 }

@@ -816,10 +816,17 @@ void CG_SetConfigValues(void);
 int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
                             const char *aliasName);
 
+/* NOT_FROM_ORIGINAL_SOURCE: play an explicit-local alias with stable connection
+ * ownership for nonspatial channels, preserving the supplied spatial owner and
+ * origin for spatial channels and the shared playback/subtitle behavior. */
+int cgame_compat_play_local_sound_alias(int32_t spatialEntityNum, const void *soundPosition, const char *aliasName);
+
 /*
  * CG_PlayClientSoundAliasByName (0x3002ca30) — convenience wrapper that plays `sound`
- * on the LOCAL player's own snapshot sound channel. Reads cg_snap and forwards
- * CG_PlaySoundAliasByName(cg_snap->ps.psClientNum, &cg_snap->ps.psOrigin, sound). Plain
+ * using the snapshot origin and, for spatial aliases, the snapshot owner.
+ * Originally forwards CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
+ * &cg_snap->ps.psOrigin, sound); the shared local policy now supplies stable
+ * connection ownership for nonspatial aliases. Plain
  * cdecl, one forwarded argument (callers PUSH one arg / CALL / ADD ESP,4 at
  * 0x3001a158, 0x3003adaf, 0x3003adf2, 0x3003ae6e). Reconstructed in
  * src/sound/cg_playclientsoundaliasbyname.c. Role name (behavioral); the mechanical

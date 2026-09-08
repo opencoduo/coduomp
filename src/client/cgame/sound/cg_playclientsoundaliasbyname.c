@@ -2,9 +2,9 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3002ca30_3002ca4c.mcode
 //
 // CG_PlayClientSoundAliasByName — convenience wrapper that plays a sound on the local
-// player's own snapshot sound channel. It reads the current snapshot pointer
-// cg_snap (0x30459160) and forwards to CG_PlaySoundAliasByName with that player's
-// channel object and client number, letting callers supply just the sound to play:
+// recipient's sound channel. The original reads the current snapshot pointer
+// cg_snap (0x30459160) and forwards to CG_PlaySoundAliasByName with the viewed
+// player's channel object and client number, letting callers supply just the sound:
 //
 //     CG_PlaySoundAliasByName(&cg_snap->ps.psOrigin, sound, cg_snap->ps.psClientNum)
 //
@@ -37,8 +37,10 @@
 
 void CG_PlayClientSoundAliasByName(const char *sound)
 {
-    /* 3002ca35 / 3002ca38: the local player's own sound channel object and client
-     * number come straight out of the current snapshot. */
-    (void)CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                                  &cg_snap->ps.psOrigin, sound);
+    /* 3002ca35 / 3002ca38: the viewed player's spatial origin and client number
+     * come straight out of the current snapshot. */
+    /* NOT_FROM_ORIGINAL_SOURCE: explicit local playback keeps a stable
+     * nonspatial owner while retaining the snapshot's spatial source. */
+    (void)cgame_compat_play_local_sound_alias(cg_snap->ps.psClientNum,
+                                             &cg_snap->ps.psOrigin, sound);
 }

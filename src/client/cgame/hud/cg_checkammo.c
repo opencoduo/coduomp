@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_30034a00_30034abf.mcode
 //
 // CG_CheckAmmo — per-frame check that plays the "player_out_of_ammo" local
-// warning sound when the local player runs low on / out of ammunition, using a
+// warning sound when the viewed player runs low on / out of ammunition, using a
 // persistent state so the sound fires only on the transition into the low state.
 //
 // Name evidence: the sound it plays is the registered "player_out_of_ammo" handle
@@ -75,12 +75,14 @@ void CG_CheckAmmo(void)
     }
 
     /* Below threshold. Fire the warning sound only on the transition from the
-     * "not warned" state (0). CG_PlaySoundAliasByName receives &cg_snap->ps.psOrigin
-     * as the channel object, the registered sound identifier, and the local
-     * client number. */
+     * "not warned" state (0). The original CG_PlaySoundAliasByName call receives
+     * &cg_snap->ps.psOrigin as the channel object, the registered sound identifier,
+     * and the viewed client number. */
     if (cg_outOfAmmoState == 0) {
-        CG_PlaySoundAliasByName(snap->ps.psClientNum, &snap->ps.psOrigin,
-                                cg_soundOutOfAmmo);
+        /* NOT_FROM_ORIGINAL_SOURCE: stabilize the nonspatial HUD warning while
+         * retaining the viewed player's spatial source and ammo-state logic. */
+        cgame_compat_play_local_sound_alias(snap->ps.psClientNum, &snap->ps.psOrigin,
+                                           cg_soundOutOfAmmo);
     }
 
     /* Record the warned state: 2 when completely out of ammo, 1 otherwise. */

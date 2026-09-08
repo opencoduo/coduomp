@@ -44,8 +44,10 @@ void CG_PlayVoiceChat(cgVoiceChatMsg_t *msg)
     /* 0x30039ff0..0x30039ffa: gate on cg_noVoiceChats. */
     if (cg_noVoiceChats_vmCvar.integer == 0) {
         /* 0x3003a000..0x3003a015: play the voice sound on the local channel. */
-        CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                                &cg_snap->ps.psOrigin, msg->soundName);
+        /* NOT_FROM_ORIGINAL_SOURCE: stabilize nonspatial voice playback;
+         * speaker icons below still belong to the viewed player or speaker. */
+        cgame_compat_play_local_sound_alias(cg_snap->ps.psClientNum,
+                                           &cg_snap->ps.psOrigin, msg->soundName);
 
         /* 0x3003a017..0x3003a02a: is the speaker the local player? */
         if (msg->clientNum == cg_snap->ps.psClientNum) {

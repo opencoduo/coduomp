@@ -4390,8 +4390,8 @@ int32_t MSS_PlayBlendedSoundAliases(
 /* Source: CoDUOMP.exe 0x00452c60..0x00452c99.
  * Name and signature: exact same-module Mac symbol MSS_PlayLocalSoundAlias.
  * Alias selection is position-independent at vec3_origin; playback itself is
- * attached to the current listener origin and uses listener time as its
- * unique effect identifier. */
+ * attached to the current listener origin. Spatial aliases retain the current
+ * listener's effect identifier. */
 int32_t MSS_PlayLocalSoundAlias(const char *name, sndAliasBank_t bank)
 {
     if (name == NULL)
@@ -4402,8 +4402,12 @@ int32_t MSS_PlayLocalSoundAlias(const char *name, sndAliasBank_t bank)
     if (alias == NULL)
         return 0;
 
+    /* NOT_FROM_ORIGINAL_SOURCE: share nonspatial local channels with cgame's
+     * connection-owned playback, independent of the current viewed player. */
+    const int32_t effectId = MSS_IsAliasChannel3D(alias->channel) ? mss_listenerTime : clc.clientNum;
+
     return MSS_PlaySoundAlias_Internal(
-        alias, alias, 0.0f, 0.0f, mss_listenerTime,
+        alias, alias, 0.0f, 0.0f, effectId,
         mss_listenerOrigin, NULL, 0);
 }
 

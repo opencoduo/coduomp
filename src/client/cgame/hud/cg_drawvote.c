@@ -171,7 +171,9 @@ void CG_DrawVote(void)
         cg_voteModified = qfalse;
         int32_t soundClientNum = soundSnap->ps.psClientNum;
         const char *talkSound = cgs_media_playerTalkSound;
-        CG_PlaySoundAliasByName(soundClientNum, soundOrigin, talkSound);
+        /* NOT_FROM_ORIGINAL_SOURCE: keep the local notification's nonspatial
+         * owner stable without changing its captured spatial source. */
+        cgame_compat_play_local_sound_alias(soundClientNum, soundOrigin, talkSound);
     }
 
     {

@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3003ac00_3003ac90.mcode
 //
 // CG_LocalSound_f — the enable-gated console-command variant of CG_LocalSound.
-// It plays a numbered local (non-positional) sound named by a CS_SOUNDS config
+// It plays a numbered sound alias for this client, named by a CS_SOUNDS config
 // string.
 //
 // Name evidence: the body is BYTE-FOR-BYTE identical to CG_LocalSound
@@ -80,6 +80,8 @@ void CG_LocalSound_f(void)
     /* MOV EDX,[cg_snap] ; LEA ECX,[EDX+0x20] ; MOV EDX,[EDX+0xe0] ; PUSH EDX
      * ; CALL CG_PlaySoundAliasByName (0x3002ca80) ; ADD ESP,8 ; RET
      * ECX(this) = &cg_snap->ps.psOrigin, EAX = soundName, stack = clientNum. */
-    CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                            &cg_snap->ps.psOrigin, soundName);
+    /* NOT_FROM_ORIGINAL_SOURCE: explicit local playback keeps a stable
+     * nonspatial owner while retaining the snapshot's spatial source. */
+    cgame_compat_play_local_sound_alias(cg_snap->ps.psClientNum,
+                                       &cg_snap->ps.psOrigin, soundName);
 }

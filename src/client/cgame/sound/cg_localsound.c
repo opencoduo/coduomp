@@ -2,7 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3003ab70_3003abf3.mcode
 //
 // CG_LocalSound — the "cg_localSound"/"localsound"-style console command handler
-// that plays a numbered local (non-positional) sound.
+// that plays a numbered sound alias for this client.
 //
 // Name evidence: the two embedded .rdata error strings decide it outright —
 //   0x30079f20 "ERROR: CG_LocalSound called with %i args (should be 2)\n"
@@ -64,6 +64,8 @@ void CG_LocalSound(void)
     /* MOV EDX,[cg_snap] ; LEA ECX,[EDX+0x20] ; MOV EDX,[EDX+0xe0] ; PUSH EDX
      * ; CALL CG_PlaySoundAliasByName (0x3002ca80) ; ADD ESP,8 ; RET
      * ECX(this) = &cg_snap->ps.psOrigin, EAX = soundName, stack = clientNum. */
-    CG_PlaySoundAliasByName(cg_snap->ps.psClientNum,
-                            &cg_snap->ps.psOrigin, soundName);
+    /* NOT_FROM_ORIGINAL_SOURCE: explicit local playback keeps a stable
+     * nonspatial owner while retaining the snapshot's spatial source. */
+    cgame_compat_play_local_sound_alias(cg_snap->ps.psClientNum,
+                                       &cg_snap->ps.psOrigin, soundName);
 }
