@@ -28,21 +28,21 @@ uint16_t EvalArrayRef(uint16_t handle,
     script_variable_type_t type = GetVarType(handle);
     uintptr_t payload = node->payload.valuePayload;
 
+    while (type == SCRIPT_VAR_KEY_VALUE) {
+        VariableValue *resolved = index + 1;
+
+        ScriptImport_ResolveKeyValue(node, resolved);
+        type = resolved->type;
+        payload = resolved->payload;
+        RemoveRefToValue(resolved);
+    }
+
     if (type == SCRIPT_VAR_UNDEFINED) {
         type = SCRIPT_VAR_OBJECT;
         payload = Scr_AllocArray();
         node->packedTypeIndex |= SCRIPT_VAR_OBJECT;
         node->payload.valuePayload = payload;
     } else {
-        while (type == SCRIPT_VAR_KEY_VALUE) {
-            VariableValue *resolved = index + 1;
-
-            ScriptImport_ResolveKeyValue(node, resolved);
-            type = resolved->type;
-            payload = resolved->payload;
-            RemoveRefToValue(resolved);
-        }
-
         if (type != SCRIPT_VAR_OBJECT) {
             script_errorParameterIndex =
                 SCRIPT_IMPORT_ERROR_PARAMETER_CONTAINER;
