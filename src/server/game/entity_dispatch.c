@@ -519,9 +519,15 @@ static int game_compat_g_mover_angle_to_short(float angle)
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of original trigger_use (0x64f76); no standalone original body. */
 static void game_compat_g_copy_vector3(const float *src, float *dest)
 {
-    dest[0] = src[0];
-    dest[1] = src[1];
-    dest[2] = src[2];
+    uint32_t bits;
+
+    /* Preserve each lane's stored bits in read/store order without FP evaluation. */
+    memcpy(&bits, &src[0], sizeof(bits));
+    memcpy(&dest[0], &bits, sizeof(bits));
+    memcpy(&bits, &src[1], sizeof(bits));
+    memcpy(&dest[1], &bits, sizeof(bits));
+    memcpy(&bits, &src[2], sizeof(bits));
+    memcpy(&dest[2], &bits, sizeof(bits));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: mover speed payload accessor; extracted during reconstruction of 0x62e2e. */
@@ -2698,14 +2704,11 @@ void Use_Func_Rotate(gentity_t *ent, gentity_t *other, gentity_t *activator)
     (void)activator;
 
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_Z_AXIS) != 0) {
-        ent->s.apos.trDelta[2] =
-            (*game_compat_g_binary_mover_speed(ent));
+        memcpy(&ent->s.apos.trDelta[2], game_compat_g_binary_mover_speed(ent), sizeof(ent->s.apos.trDelta[2]));
     } else if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_X_AXIS) != 0) {
-        ent->s.apos.trDelta[0] =
-            (*game_compat_g_binary_mover_speed(ent));
+        memcpy(&ent->s.apos.trDelta[0], game_compat_g_binary_mover_speed(ent), sizeof(ent->s.apos.trDelta[0]));
     } else {
-        ent->s.apos.trDelta[1] =
-            (*game_compat_g_binary_mover_speed(ent));
+        memcpy(&ent->s.apos.trDelta[1], game_compat_g_binary_mover_speed(ent), sizeof(ent->s.apos.trDelta[1]));
     }
 
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_START_UNLINKED) != 0) {
@@ -2731,15 +2734,12 @@ void SP_func_rotating(gentity_t *ent)
 
     if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_START_ON) != 0) {
         if ((ent->spawnflags & FUNC_ROTATING_SPAWNFLAG_Z_AXIS) != 0) {
-            ent->s.apos.trDelta[2] =
-                (*game_compat_g_binary_mover_speed(ent));
+            memcpy(&ent->s.apos.trDelta[2], game_compat_g_binary_mover_speed(ent), sizeof(ent->s.apos.trDelta[2]));
         } else if ((ent->spawnflags &
                     FUNC_ROTATING_SPAWNFLAG_X_AXIS) != 0) {
-            ent->s.apos.trDelta[0] =
-                (*game_compat_g_binary_mover_speed(ent));
+            memcpy(&ent->s.apos.trDelta[0], game_compat_g_binary_mover_speed(ent), sizeof(ent->s.apos.trDelta[0]));
         } else {
-            ent->s.apos.trDelta[1] =
-                (*game_compat_g_binary_mover_speed(ent));
+            memcpy(&ent->s.apos.trDelta[1], game_compat_g_binary_mover_speed(ent), sizeof(ent->s.apos.trDelta[1]));
         }
     }
 
@@ -2800,11 +2800,11 @@ void SP_func_bobbing(gentity_t *ent)
     ent->s.pos.trType = TR_SINE;
 
     if ((ent->spawnflags & FUNC_BOBBING_SPAWNFLAG_X_AXIS) != 0) {
-        ent->s.pos.trDelta[0] = height;
+        memcpy(&ent->s.pos.trDelta[0], &height, sizeof(height));
     } else if ((ent->spawnflags & FUNC_BOBBING_SPAWNFLAG_Y_AXIS) != 0) {
-        ent->s.pos.trDelta[1] = height;
+        memcpy(&ent->s.pos.trDelta[1], &height, sizeof(height));
     } else {
-        ent->s.pos.trDelta[2] = height;
+        memcpy(&ent->s.pos.trDelta[2], &height, sizeof(height));
     }
 }
 
@@ -2906,7 +2906,7 @@ void SP_func_pendulum(gentity_t *ent)
         (long double)ent->s.apos.trDuration * (long double)phase);
 #endif
     ent->s.apos.trType = TR_SINE;
-    ent->s.apos.trDelta[2] = speed;
+    memcpy(&ent->s.apos.trDelta[2], &speed, sizeof(speed));
 }
 
 /* ------------------------------------------------------------------ */
