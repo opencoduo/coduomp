@@ -469,13 +469,24 @@ void Die_trigger_damage(gentity_t *ent, gentity_t *inflictor,
 void SP_trigger_damage(gentity_t *ent)
 {
     const char *teamString;
+    double random;
 
     teamString = SL_ConvertToString(game_compat_trigger_damage_team_string(ent));
 
     G_SpawnFloat("wait", TRIGGER_DAMAGE_DEFAULT_WAIT, &ent->itemWait);
-    G_SpawnFloat("random", TRIGGER_DAMAGE_DEFAULT_RANDOM, &ent->itemRandom);
+#if defined(WINDOWS_BEHAVIOR)
+    const char *randomText;
 
-    if (ent->itemWait >= 0.0f && ent->itemWait <= ent->itemRandom) {
+    G_SpawnString("random", TRIGGER_DAMAGE_DEFAULT_RANDOM, &randomText);
+    random = atof(randomText);
+    ent->itemRandom = (float)random;
+    /* The Windows clamp compares the parsed value before float rounding. */
+#else
+    G_SpawnFloat("random", TRIGGER_DAMAGE_DEFAULT_RANDOM, &ent->itemRandom);
+    random = ent->itemRandom;
+#endif
+
+    if (ent->itemWait >= 0.0f && ent->itemWait <= random) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         ent->itemRandom = ent->itemWait - 100.0f;
         G_Printf("trigger_damage has random >= wait\n");

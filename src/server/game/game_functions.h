@@ -352,7 +352,7 @@ extern void ExitLevel(void);
 extern void DeathmatchScoreboardMessage(gentity_t *ent);
 extern void DebugDumpAnims(void);
 extern qboolean G_GetHintStringIndex(int *outIndex, const char *value);
-extern int Game_RoundFloatPlusHalf(float value);
+extern int Game_RoundAmmoCount(float value);
 
 /* Logging */
 extern void G_Printf(const char *format, ...);

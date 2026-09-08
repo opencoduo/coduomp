@@ -91,13 +91,9 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
     }
 
     trace_t trace;
-    DObj *const dobj = work->useDObj != qfalse
-#if defined(WINDOWS_BEHAVIOR)
-                           ? Com_GetServerDObj(gentity->entityState.number)
-#else
-                           ? Com_GetServerDObj(entityNum)
-#endif
-                           : NULL;
+    /* The array index selects the game record; its entity number supplies
+     * the DObj lookup, pose request, and reported hit identity. */
+    DObj *const dobj = work->useDObj != qfalse ? Com_GetServerDObj(gentity->entityState.number) : NULL;
 
     if (dobj != NULL &&
         (gentity->svFlags & SVF_DOBJ_BOUNDS_MASK) != 0U) {
@@ -133,11 +129,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
          * intptr_t casts keep the shared native varargs boundary valid on
          * 64-bit hosts; Linux consumes only the command's one declared arg. */
         (void)(VM_Call)(sv_gameVM, GAME_DOBJ_CALC_POSE,
-#if defined(WINDOWS_BEHAVIOR)
                         (intptr_t)gentity->entityState.number,
-#else
-                        (intptr_t)entityNum,
-#endif
                         (intptr_t)0, (intptr_t)0, (intptr_t)0,
                         (intptr_t)0, (intptr_t)0, (intptr_t)0,
                         (intptr_t)0, (intptr_t)0, (intptr_t)0,
@@ -221,11 +213,7 @@ void SV_PointTraceToEntity(cmPointTraceWork_t *work,
      * CM_TransformedBoxTrace result, as in stock. */
     trace.allsolid |= work->bestTrace.allsolid;
     trace.startsolid |= work->bestTrace.startsolid;
-#if defined(WINDOWS_BEHAVIOR)
     trace.entityNum = (uint16_t)gentity->entityState.number;
-#else
-    trace.entityNum = (uint16_t)entityNum;
-#endif
     trace.contents = gentity->contents;
     trace.material = NULL;
     work->bestTrace = trace;

@@ -245,9 +245,19 @@ void Com_DPrintf(const char *format, ...)
 }
 
 /* 0x56a7d FUN_00066a7d */
-/* VERIFIED_DECOMPILER(0x56a7d, 66a7d_FUN_00066a7d.c, VERIFY-GAME-HELPERS-PARSE-INFO-2026-06-17): DATAFLOW_VERIFIED; float-plus-half integer conversion. */
-int Game_RoundFloatPlusHalf(float value)
+/* VERIFIED_DECOMPILER(0x56a7d, 66a7d_FUN_00066a7d.c, VERIFY-GAME-HELPERS-PARSE-INFO-2026-06-17): DATAFLOW_VERIFIED; Linux float-plus-half integer conversion. */
+int Game_RoundAmmoCount(float value)
 {
+#if defined(WINDOWS_BEHAVIOR)
+    /* Windows adds a double bias and converts in the current rounding mode.
+     * Ammo generation keeps the result in int32_t range on either long ABI. */
+    static const double roundingBias = 0x1p-30;
+#if EMULATE_X87
+    return x87f_store_i32(x87f_add(x87f_load_f32(value), x87f_load_f64(roundingBias)));
+#else
+    return (int32_t)lrintl((long double)value + roundingBias);
+#endif
+#else
     /* 0x56a8f-0x56aac: the +0.5f sum is truncated straight from the x87
      * register (fistp direct), with no float32 rounding of the sum -> shim. */
 #if EMULATE_X87
@@ -256,6 +266,7 @@ int Game_RoundFloatPlusHalf(float value)
 #else
     return game_compat_int32_from_long_double_trunc(
         (long double)value + (long double)0.5f);
+#endif
 #endif
 }
 
