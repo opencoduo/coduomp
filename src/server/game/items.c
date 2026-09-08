@@ -1030,6 +1030,50 @@ static int game_compat_pickup_weapon_random_count(int weapon)
     if (maxAmmo == 0 && minAmmo == 0) {
         int clipIndex = BG_ClipForWeapon(weapon);
         int clipSize = BG_GetAmmoClipSize(clipIndex);
+#if defined(WINDOWS_BEHAVIOR)
+        /* NOT_FROM_ORIGINAL_SOURCE: preserve the Windows arithmetic widths,
+         * float spill, double bias spill, and ambient-mode integer conversion. */
+        static const float randomScale = 0x1p-15f;
+        static const float randomOffset = 1.0f;
+        static const float countScale = 0.5f;
+        static const double roundingBias = 0x1p-30;
+        int32_t randomValue = coduo_crt_rand();
+        int32_t clipMultiplier = clipSize - 1;
+#if EMULATE_X87
+        x87f scaled = x87f_mul(x87f_load_i32(randomValue), x87f_load_f32(randomScale));
+        scaled = x87f_add(scaled, x87f_load_f32(randomOffset));
+        scaled = x87f_mul(scaled, x87f_load_i32(clipMultiplier));
+        scaled = x87f_mul(scaled, x87f_load_f32(countScale));
+        float storedCount = x87f_store_f32(scaled);
+        double storedBias = x87f_store_f64(x87f_load_f64(roundingBias));
+
+        return x87f_store_i32(x87f_add(x87f_load_f32(storedCount), x87f_load_f64(storedBias))) + 1;
+#else
+        float storedCount;
+        double storedBias;
+        int32_t roundedCount;
+
+        __asm__ __volatile__(
+            "fildl %[randomValue]\n\t"
+            "fmuls %[randomScale]\n\t"
+            "fadds %[randomOffset]\n\t"
+            "fimull %[clipMultiplier]\n\t"
+            "fmuls %[countScale]\n\t"
+            "fstps %[storedCount]\n\t"
+            "fldl %[roundingBias]\n\t"
+            "fstpl %[storedBias]\n\t"
+            "flds %[storedCount]\n\t"
+            "faddl %[storedBias]\n\t"
+            "fistpl %[roundedCount]"
+            : [storedCount] "=&m"(storedCount), [storedBias] "=&m"(storedBias), [roundedCount] "=&m"(roundedCount)
+            : [randomValue] "m"(randomValue), [clipMultiplier] "m"(clipMultiplier),
+              [randomScale] "m"(randomScale), [randomOffset] "m"(randomOffset),
+              [countScale] "m"(countScale), [roundingBias] "m"(roundingBias)
+            : "st", "memory");
+
+        return roundedCount + 1;
+#endif
+#else
         /* Original i386 Pickup_Weapon 0x53991..0x539de keeps rand()/2^31 in
          * x87, rounds (v + 1.0) * 0.5 once to float, and multiplies the raw
          * integer clipSize-1 in 80-bit; same shape as game_compat_drop_weapon_default_ammo. */
@@ -1049,6 +1093,7 @@ static int game_compat_pickup_weapon_random_count(int weapon)
                    (float)((long double)(clipSize - 1) *
                            (long double)ammoScale)) +
                1;
+#endif
 #endif
     }
 

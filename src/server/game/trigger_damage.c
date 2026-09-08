@@ -542,8 +542,9 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
             continue;
         }
 
+#if !defined(WINDOWS_BEHAVIOR)
         if (!requireGrenadeTouchFlag) {
-            /* The hit scan evaluates these bounds without passing them to the trace.
+            /* The Linux hit scan evaluates these bounds without passing them to the trace.
              * Preserve the float stores and their FP exception/status effects.
              * NOT_FROM_ORIGINAL_SOURCE: volatile keeps the unused evaluations;
              * native instruction constraints retain FADD's memory operand instead
@@ -576,6 +577,7 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
             (void)triggerMins;
             (void)triggerMaxs;
         }
+#endif
 
         if (requireGrenadeTouchFlag &&
             (game_compat_trigger_damage_grenade_touch_flags(trigger) &
