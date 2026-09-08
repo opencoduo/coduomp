@@ -800,10 +800,10 @@ static void game_compat_drop_weapon_default_ammo(int clipIndex, int *ammoCount, 
         x87f_add(x87f_load_f64(coduo_server_rand_unit()), x87f_load_f32(1.0f)),
         x87f_load_f32(0.5f)));
 
-    *ammoCount = Game_RoundFloatPlusHalf(x87f_store_f32(x87f_mul(
+    *ammoCount = Game_RoundAmmoCount(x87f_store_f32(x87f_mul(
                      x87f_load_i32(clipSize - 1), x87f_load_f32(ammoScale)))) +
                  1;
-    *clipCount = Game_RoundFloatPlusHalf(x87f_store_f32(x87f_mul(
+    *clipCount = Game_RoundAmmoCount(x87f_store_f32(x87f_mul(
         x87f_load_i32(*ammoCount),
         x87f_add(x87f_mul(x87f_load_f64(coduo_server_rand_unit()), x87f_load_f32(0.5f)),
                  x87f_load_f32(0.25f)))));
@@ -811,11 +811,11 @@ static void game_compat_drop_weapon_default_ammo(int clipIndex, int *ammoCount, 
     float ammoScale =
         (float)(((long double)coduo_server_rand_unit() + 1.0L) * 0.5L);
 
-    *ammoCount = Game_RoundFloatPlusHalf(
+    *ammoCount = Game_RoundAmmoCount(
                      (float)((long double)(clipSize - 1) *
                              (long double)ammoScale)) +
                  1;
-    *clipCount = Game_RoundFloatPlusHalf(
+    *clipCount = Game_RoundAmmoCount(
         (float)((long double)*ammoCount *
                 ((long double)coduo_server_rand_unit() * 0.5L + 0.25L)));
 #endif
@@ -1061,14 +1061,14 @@ static int game_compat_pickup_weapon_random_count(int weapon)
             x87f_add(x87f_load_f64(coduo_server_rand_unit()), x87f_load_f32(1.0f)),
             x87f_load_f32(0.5f)));
 
-        return Game_RoundFloatPlusHalf(x87f_store_f32(x87f_mul(
+        return Game_RoundAmmoCount(x87f_store_f32(x87f_mul(
                    x87f_load_i32(clipSize - 1), x87f_load_f32(ammoScale)))) +
                1;
 #else
         float ammoScale =
             (float)(((long double)coduo_server_rand_unit() + 1.0L) * 0.5L);
 
-        return Game_RoundFloatPlusHalf(
+        return Game_RoundAmmoCount(
                    (float)((long double)(clipSize - 1) *
                            (long double)ammoScale)) +
                1;
