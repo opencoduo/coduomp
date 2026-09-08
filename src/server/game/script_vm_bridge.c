@@ -95,10 +95,17 @@ DEFINE_RET_1(int, Scr_GetInt, SCRIPT_IMPORT_GET_INT, int_from_u32, uint32_t,
 DEFINE_RET_2(scr_anim_t, Scr_GetAnim, SCRIPT_IMPORT_GET_ANIM,
              anim_ref_from_u32_xanimtree, uint32_t, index, XAnimTree *,
              runtimeTree)
+#if defined(WINDOWS_BEHAVIOR)
+/* uo_game_mp_x86.dll RVA 0x58f00 passes the index to callback slot 3
+ * and returns its pointer in EAX. Match the engine's pointer-return callback. */
+DEFINE_RET_1(XAnim *, Scr_GetAnimTree, SCRIPT_IMPORT_GET_ANIM_TREE,
+             xanim_from_u32, uint32_t, index)
+#else
 /* VERIFIED_DECOMPILER(0x94b1d, a4b1d_Scr_GetAnimTree.c, VERIFY-SCRIPT-VM-BRIDGE-WRAPPERS-2026-06-17): DATAFLOW_VERIFIED; forwards through script VM callback slot using the original i386 struct-return ABI. */
 DEFINE_RET_1(script_anim_tree_ref_t, Scr_GetAnimTree,
              SCRIPT_IMPORT_GET_ANIM_TREE, anim_tree_ref_from_u32, uint32_t,
              index)
+#endif
 /* VERIFIED_DECOMPILER(0x94b53, a4b53_Scr_GetFloat.c, VERIFY-SCRIPT-VM-BRIDGE-WRAPPERS-2026-06-17): DATAFLOW_VERIFIED; forwards through script VM callback slot; slot address and argument arity mechanically checked against decompiler. */
 DEFINE_RET_1(float, Scr_GetFloat, SCRIPT_IMPORT_GET_FLOAT, float_from_u32,
              uint32_t, index)
