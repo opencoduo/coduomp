@@ -19,6 +19,7 @@
 #include "level_locals.h"
 #include "scr_vm.h"
 #include "compat/crt/atof_compat.h"
+#include "compat/coduo_fp_conversion.h"
 #include "compat/coduo_x87emu.h" /* defines EMULATE_X87; x87 shim when it is 1 */
 #include "compat/coduo_native_x87.h"
 #include "compat/libm/coduo_libm.h"
@@ -504,12 +505,18 @@ GAME_STATIC_ASSERT(mover_push_record_yaw_offset,
 /* VERIFIED_DECOMPILER(0x605e5, 705e5_G_TryPushingEntity.c, VERIFY-WORKER-MOVER-STATIC-2026-06-17): DATAFLOW_VERIFIED - source-only helper checked against pushed client deltaAngles[1] update using x87 truncate of yaw * 182.04445 masked to 16 bits. */
 static int game_compat_g_mover_angle_to_short(float angle)
 {
-    /* 0x6080d/0x60ab3: the product feeds truncating fistp directly. */
+    /* Linux truncates the live product to a signed dword; Windows takes the
+     * low word of the CRT's signed-qword conversion for both push and rollback. */
 #if EMULATE_X87
-    int32_t packed = x87f_store_i32_trunc(x87f_mul(
+#if defined(WINDOWS_BEHAVIOR)
+    int32_t packed = (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(
         x87f_load_f32(angle), x87f_load_f32(MOVER_ANGLE_SHORT_SCALE)));
 #else
-    int32_t packed = game_compat_int32_from_long_double_trunc(
+    int32_t packed = x87f_store_i32_trunc(x87f_mul(
+        x87f_load_f32(angle), x87f_load_f32(MOVER_ANGLE_SHORT_SCALE)));
+#endif
+#else
+    int32_t packed = coduo_fp_to_i32_extended(
         (long double)angle * MOVER_ANGLE_SHORT_SCALE);
 #endif
     return packed & 0xffff;
