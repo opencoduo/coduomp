@@ -14,6 +14,7 @@
 
 #include "recovered_game.h"
 #include "compat/crt/atof_compat.h"
+#include "compat/crt/scan_compat.h"
 #include "compat/coduo_ctype_compat.h"
 #include "qcommon/info.h"
 #include "game_globals.h"
@@ -1362,7 +1363,7 @@ int G_SpawnVector(const char *key, const char *defaultValue, float *out)
     const char *text;
     int found = G_SpawnString(key, defaultValue, &text);
 
-    sscanf(text, "%f %f %f", &out[0], &out[1], &out[2]);
+    coduo_compat_scan_vec3(text, out);
     return found;
 }
 
@@ -1460,7 +1461,7 @@ void G_ParseEntityField(const char *key, const char *value, gentity_t *ent)
     case SCRIPT_SPAWN_FIELD_VECTOR: {
         vec3_t vector;
 
-        sscanf(value, "%f %f %f", &vector[0], &vector[1], &vector[2]);
+        coduo_compat_scan_vec3(value, vector);
         game_compat_script_spawn_copy_vector_at(ent, field->offset, vector);
         break;
     }

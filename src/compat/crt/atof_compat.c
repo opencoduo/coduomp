@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-/* Windows C-locale decimal-to-double conversion. Function RVAs identify the
+/* Windows C-locale decimal conversions. Function RVAs identify the
  * game module's CRT copy. Parsing never delegates to the host CRT or x87 emulation. */
 enum {
     CODUO_CRT_DECIMAL_LIMBS = 5,
@@ -377,7 +377,7 @@ enum {
 };
 
 /* RVA 63e7a: logical right shift of three most-significant-first words.
- * The binary64 converter calls this only with counts from 0 through 53. */
+ * The binary32 and binary64 converters use counts from 0 through 53. */
 static void coduo_crt_atof_shift_right96(uint32_t words[3], unsigned count)
 {
     const unsigned wholeWords = count / 32;
@@ -492,4 +492,190 @@ double coduo_crt_atof(const char *string)
     /* This constructs a double from its encoded IEEE representation. */
     memcpy(&result, &bits, sizeof(result));
     return result;
+}
+
+enum {
+    CODUO_CRT_BINARY32_WORD_BITS = 32,
+    CODUO_CRT_BINARY32_PRECISION = 24,
+    CODUO_CRT_BINARY32_EXPONENT_BITS = 8,
+    CODUO_CRT_BINARY32_MIN_EXPONENT = -127,
+    CODUO_CRT_BINARY32_MAX_EXPONENT = 128,
+    CODUO_CRT_BINARY32_EXPONENT_BIAS = 127
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: the 24-bit specialization of RVA 63dc8.
+ * As in its binary64 use, an exact halfway value remains toward zero. */
+static int coduo_crt_scan_round24(uint32_t words[3])
+{
+    const uint32_t guardBit = UINT32_C(1) << (CODUO_CRT_BINARY32_WORD_BITS - CODUO_CRT_BINARY32_PRECISION - 1);
+    const uint32_t retainedIncrement = UINT32_C(1) << (CODUO_CRT_BINARY32_WORD_BITS - CODUO_CRT_BINARY32_PRECISION);
+    const uint32_t lowerMask = guardBit - 1;
+    int carry = 0;
+
+    if ((words[0] & guardBit) != 0 &&
+        ((words[0] & lowerMask) != 0 || words[1] != 0 || words[2] != 0)) {
+        words[0] += retainedIncrement;
+        carry = words[0] < retainedIncrement;
+    }
+    words[0] &= ~lowerMask;
+    words[1] = 0;
+    words[2] = 0;
+    return carry;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: RVA 64063 selects the binary32 format
+ * {128, -127, 24, 8, 32, 127} for converter 63ef5. This specialization
+ * returns only the encoded result; the scanf adapter ignores conversion status. */
+static uint32_t coduo_crt_scan_decimal80_to_binary32(const coduo_crt_decimal80_t *input)
+{
+    const uint32_t sign = (uint32_t)(input->exponent & UINT16_C(0x8000)) << 16;
+    const unsigned biasedExponent = input->exponent & UINT16_C(0x7fff);
+    uint32_t words[3] = {
+        (uint32_t)input->significand[3] | (uint32_t)input->significand[4] << 16,
+        (uint32_t)input->significand[1] | (uint32_t)input->significand[2] << 16,
+        (uint32_t)input->significand[0] << 16
+    };
+    const uint32_t saved[3] = {words[0], words[1], words[2]};
+    int exponent = (int)biasedExponent - CODUO_CRT_EXTENDED_BIAS;
+
+    if (biasedExponent == 0)
+        return sign;
+    exponent += coduo_crt_scan_round24(words);
+    if (exponent < CODUO_CRT_BINARY32_MIN_EXPONENT - CODUO_CRT_BINARY32_PRECISION)
+        return sign;
+    if (exponent <= CODUO_CRT_BINARY32_MIN_EXPONENT) {
+        /* The subnormal path restores the unrounded significand but keeps
+         * the first round's exponent carry and ignores the second carry. */
+        words[0] = saved[0];
+        words[1] = saved[1];
+        words[2] = saved[2];
+        coduo_crt_atof_shift_right96(words, (unsigned)(CODUO_CRT_BINARY32_MIN_EXPONENT - exponent));
+        (void)coduo_crt_scan_round24(words);
+        return sign | (words[0] >> (CODUO_CRT_BINARY32_EXPONENT_BITS + 1));
+    }
+    if (exponent >= CODUO_CRT_BINARY32_MAX_EXPONENT)
+        return sign | UINT32_C(0x7f800000);
+    return sign | (uint32_t)(exponent + CODUO_CRT_BINARY32_EXPONENT_BIAS) <<
+        (CODUO_CRT_BINARY32_WORD_BITS - CODUO_CRT_BINARY32_EXPONENT_BITS - 1) |
+        (words[0] & UINT32_C(0x7fffffff)) >> CODUO_CRT_BINARY32_EXPONENT_BITS;
+}
+
+enum {
+    CODUO_CRT_SCAN_INPUT_FAILURE = -1,
+    CODUO_CRT_SCAN_MATCH_FAILURE = 0,
+    CODUO_CRT_SCAN_CONVERTED = 1,
+    CODUO_CRT_SCAN_FLOAT_LIMIT = 349,
+    CODUO_CRT_SCAN_VECTOR_LANES = 3
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: C-locale whitespace consumed by the numeric
+ * conversions and the intervening spaces in the fixed vector format. */
+static const char *coduo_crt_scan_skip_space(const char *text)
+{
+    while (*text == ' ' || (*text >= '\t' && *text <= '\r'))
+        ++text;
+    return text;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: the unqualified %f path of scanner RVA 5ce00,
+ * through adapter 646ce and converter 64170. The scanner accepts decimal
+ * syntax with e/E, bounds the token after its optional sign to 349 characters,
+ * and writes a destination only after matching a mantissa digit. */
+static int coduo_crt_scan_float_cursor(const char **text, float *output)
+{
+    const char *cursor = coduo_crt_scan_skip_space(*text);
+    char token[CODUO_CRT_SCAN_FLOAT_LIMIT + 2];
+    size_t length = 0;
+    unsigned remaining = CODUO_CRT_SCAN_FLOAT_LIMIT;
+    int haveDigits = 0;
+
+    if (*cursor == '-' || *cursor == '+') {
+        if (*cursor == '-')
+            token[length++] = '-';
+        ++cursor;
+    }
+    while (remaining != 0 && *cursor >= '0' && *cursor <= '9') {
+        token[length++] = *cursor++;
+        --remaining;
+        haveDigits = 1;
+    }
+    if (remaining != 0 && *cursor == '.') {
+        token[length++] = *cursor++;
+        --remaining;
+        while (remaining != 0 && *cursor >= '0' && *cursor <= '9') {
+            token[length++] = *cursor++;
+            --remaining;
+            haveDigits = 1;
+        }
+    }
+    if (haveDigits && remaining != 0 && (*cursor == 'e' || *cursor == 'E')) {
+        token[length++] = 'e';
+        ++cursor;
+        --remaining;
+        if (remaining != 0 && (*cursor == '-' || *cursor == '+')) {
+            if (*cursor == '-')
+                token[length++] = '-';
+            ++cursor;
+            --remaining;
+        }
+        while (remaining != 0 && *cursor >= '0' && *cursor <= '9') {
+            token[length++] = *cursor++;
+            --remaining;
+        }
+    }
+    *text = cursor;
+    if (!haveDigits)
+        return *cursor == '\0' ? CODUO_CRT_SCAN_INPUT_FAILURE : CODUO_CRT_SCAN_MATCH_FAILURE;
+
+    token[length] = '\0';
+    coduo_crt_decimal80_t decimal;
+    (void)coduo_crt_parse_decimal80(token, &decimal);
+    const uint32_t bits = coduo_crt_scan_decimal80_to_binary32(&decimal);
+    memcpy(output, &bits, sizeof(bits));
+    return CODUO_CRT_SCAN_CONVERTED;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: typed entry point for the original %f format. */
+int coduo_crt_scan_float(const char *text, float *output)
+{
+    return coduo_crt_scan_float_cursor(&text, output);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: typed entry point for the original %f %f %f
+ * format. Earlier successful lanes remain written if a later match fails. */
+int coduo_crt_scan_vec3(const char *text, float *output)
+{
+    int count = 0;
+    while (count != CODUO_CRT_SCAN_VECTOR_LANES) {
+        int result = coduo_crt_scan_float_cursor(&text, &output[count]);
+        if (result != CODUO_CRT_SCAN_CONVERTED)
+            return count == 0 ? result : count;
+        ++count;
+    }
+    return count;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: the unqualified %d path of scanner RVA 5ce00.
+ * Decimal accumulation wraps at 32 bits before the optional negation; a
+ * failed conversion leaves the destination unchanged. */
+int coduo_crt_scan_int(const char *text, int32_t *output)
+{
+    const char *cursor = coduo_crt_scan_skip_space(text);
+    uint32_t bits = 0;
+    int negative = 0;
+
+    if (*cursor == '-' || *cursor == '+') {
+        negative = *cursor == '-';
+        ++cursor;
+    }
+    if (*cursor < '0' || *cursor > '9')
+        return *cursor == '\0' ? CODUO_CRT_SCAN_INPUT_FAILURE : CODUO_CRT_SCAN_MATCH_FAILURE;
+    do {
+        bits = bits * 10u + (uint32_t)(*cursor - '0');
+        ++cursor;
+    } while (*cursor >= '0' && *cursor <= '9');
+    if (negative)
+        bits = 0u - bits;
+    *output = coduo_int32_from_bits(bits);
+    return CODUO_CRT_SCAN_CONVERTED;
 }

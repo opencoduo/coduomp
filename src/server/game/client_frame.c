@@ -1339,7 +1339,8 @@ void G_UpdateClientInfo(gentity_t *ent)
 
     for (int slot = 0; slot < CLIENT_INFO_ATTACHMENT_COUNT; slot++) {
         if (ent->attachModelIndex[slot] == 0) {
-            /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
+            /* NOT_FROM_ORIGINAL_SOURCE: rebuild the cached player DObj when a
+             * populated attachment slot becomes empty. */
             if (clientInfo->attachModelNames[slot][0] != '\0' ||
                 clientInfo->attachTagNames[slot][0] != '\0') {
                 modelChanged = 1;

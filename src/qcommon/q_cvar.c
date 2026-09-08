@@ -3,6 +3,7 @@
 #include "q_cvar_services.h"
 
 #include "compat/crt/atof_compat.h"
+#include "compat/crt/atoi_compat.h"
 #include "compat/coduo_ctype_compat.h"
 #include "compat/coduo_fp_conversion.h"
 #include "compat/crt/format_compat.h"
@@ -201,7 +202,7 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
     cvar->modified = qtrue;
     cvar->modificationCount = 1;
     cvar->value = (float)coduo_compat_atof(cvar->string);
-    cvar->integer = atoi(cvar->string);
+    cvar->integer = coduo_compat_atoi(cvar->string);
     cvar->resetString = CopyStringInternal(defaultValue);
 
     cvar_t **sortedLink = &cvar_vars;
@@ -309,7 +310,7 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
         Z_FreeInternal(cvar->string);
         cvar->string = CopyStringInternal(value);
         cvar->value = (float)coduo_compat_atof(cvar->string);
-        cvar->integer = atoi(cvar->string);
+        cvar->integer = coduo_compat_atoi(cvar->string);
     }
     return cvar;
 }
@@ -579,7 +580,7 @@ char *PbCvarValidate(char *buffer)
          cvar != NULL;
          cvar = cvar->next) {
         const float parsedValue = (float)coduo_compat_atof(cvar->string);
-        const int32_t parsedInteger = atoi(cvar->string);
+        const int32_t parsedInteger = coduo_compat_atoi(cvar->string);
         if (parsedValue != cvar->value ||
             parsedInteger != cvar->integer) {
             /* NOT_FROM_ORIGINAL_SOURCE: the callback result must fit the
