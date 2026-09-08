@@ -143,6 +143,10 @@ DEFINE_VOID_1(Scr_AddBool, SCRIPT_IMPORT_ADD_BOOL, void_from_bool, qboolean,
 /* VERIFIED_DECOMPILER(0x94d4f, a4d4f_Scr_AddInt.c, VERIFY-SCRIPT-VM-BRIDGE-WRAPPERS-2026-06-17): DATAFLOW_VERIFIED; forwards through script VM callback slot; slot address and argument arity mechanically checked against decompiler. */
 DEFINE_VOID_1(Scr_AddInt, SCRIPT_IMPORT_ADD_INT, void_from_int, int, value)
 /* VERIFIED_DECOMPILER(0x94d75, a4d75_Scr_AddFloat.c, VERIFY-SCRIPT-VM-BRIDGE-WRAPPERS-2026-06-17): DATAFLOW_VERIFIED; forwards through script VM callback slot; slot address and argument arity mechanically checked against decompiler. */
+#if defined(__i386__) && defined(__GNUC__) && !defined(__clang__)
+/* NOT_FROM_ORIGINAL_SOURCE: keep raw cdecl argument forwarding out of x87 evaluation. */
+__attribute__((target("general-regs-only")))
+#endif
 DEFINE_VOID_1(Scr_AddFloat, SCRIPT_IMPORT_ADD_FLOAT, void_from_float, float,
               value)
 /* VERIFIED_DECOMPILER(0x94d9b, a4d9b_Scr_AddAnim.c, VERIFY-SCRIPT-VM-BRIDGE-WRAPPERS-2026-06-17): DATAFLOW_VERIFIED; forwards through script VM callback slot; slot address and argument arity mechanically checked against decompiler. */
