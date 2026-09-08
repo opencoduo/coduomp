@@ -1761,18 +1761,14 @@ void Scr_SetGenericField(void *base, int type, size_t offset)
     }
     case SCRIPT_SPAWN_FIELD_VECTOR: {
         vec3_t value;
-        uint32_t bits;
 
         Scr_GetVector(0, value);
         float *vectorSlot = (float *)(void *)slot;
 
-        /* Preserve each lane's representation and read/store order. */
-        memcpy(&bits, &value[0], sizeof(bits));
-        memcpy(&vectorSlot[0], &bits, sizeof(bits));
-        memcpy(&bits, &value[1], sizeof(bits));
-        memcpy(&vectorSlot[1], &bits, sizeof(bits));
-        memcpy(&bits, &value[2], sizeof(bits));
-        memcpy(&vectorSlot[2], &bits, sizeof(bits));
+        /* Store coordinates in lane order. */
+        vectorSlot[0] = value[0];
+        vectorSlot[1] = value[1];
+        vectorSlot[2] = value[2];
         break;
     }
     case SCRIPT_SPAWN_FIELD_ENTITY:
@@ -1780,12 +1776,10 @@ void Scr_SetGenericField(void *base, int type, size_t offset)
         break;
     case SCRIPT_SPAWN_FIELD_VECTOR_Y: {
         vec3_t value;
-        uint32_t bits;
 
         Scr_GetVector(0, value);
-        /* The middle lane is copied without floating-point evaluation. */
-        memcpy(&bits, &value[1], sizeof(bits));
-        memcpy(slot, &bits, sizeof(bits));
+        /* Store the middle coordinate. */
+        *(float *)(void *)slot = value[1];
         break;
     }
     default:
@@ -1829,11 +1823,6 @@ void Scr_GetEntityField(int entityNum, uint32_t fieldIndex)
 }
 
 /* VERIFIED_DECOMPILER(0x72131, 82131_Scr_GetGenericField.c, VERIFY-SCRIPT-FIELDS-2026-06-17): DATAFLOW_VERIFIED - int/float/cstring/string/vector/entity/vector-y/object/model cases, zero guards, VM adder call arguments, vector-y stack layout, model byte read, default fallthrough, and void return checked against current decompiler output. */
-#if defined(__i386__) && defined(__GNUC__) && !defined(__clang__)
-/* NOT_FROM_ORIGINAL_SOURCE: this getter only transports representations.
- * Keep its scalar cdecl argument out of x87 evaluation as well. */
-__attribute__((target("general-regs-only")))
-#endif
 void Scr_GetGenericField(void *base, int type, size_t offset)
 {
     uint8_t *slot = &((uint8_t *)base)[offset];
@@ -1842,14 +1831,10 @@ void Scr_GetGenericField(void *base, int type, size_t offset)
     case SCRIPT_SPAWN_FIELD_INT:
         Scr_AddInt(*(int32_t *)(void *)slot);
         break;
-    case SCRIPT_SPAWN_FIELD_FLOAT: {
-        float value;
-
-        /* Forward the stored representation to the script VM. */
-        memcpy(&value, slot, sizeof(value));
-        Scr_AddFloat(value);
+    case SCRIPT_SPAWN_FIELD_FLOAT:
+        /* Forward the scalar field value to the script VM. */
+        Scr_AddFloat(*(float *)(void *)slot);
         break;
-    }
     case SCRIPT_SPAWN_FIELD_CSTRING:
         Scr_AddString((const char *)(const void *)slot);
         break;
@@ -1873,15 +1858,9 @@ void Scr_GetGenericField(void *base, int type, size_t offset)
         break;
     }
     case SCRIPT_SPAWN_FIELD_VECTOR_Y: {
-        vec3_t vector;
-        uint32_t bits = 0;
+        /* Return the middle coordinate with zero outer coordinates. */
+        vec3_t vector = {0.0f, *(float *)(void *)slot, 0.0f};
 
-        /* Write raw zero, middle-lane, and zero representations in order. */
-        memcpy(&vector[0], &bits, sizeof(bits));
-        memcpy(&bits, slot, sizeof(bits));
-        memcpy(&vector[1], &bits, sizeof(bits));
-        bits = 0;
-        memcpy(&vector[2], &bits, sizeof(bits));
         Scr_AddVector(vector);
         break;
     }

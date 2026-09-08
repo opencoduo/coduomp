@@ -1031,8 +1031,8 @@ static int game_compat_pickup_weapon_random_count(int weapon)
         int clipIndex = BG_ClipForWeapon(weapon);
         int clipSize = BG_GetAmmoClipSize(clipIndex);
 #if defined(WINDOWS_BEHAVIOR)
-        /* NOT_FROM_ORIGINAL_SOURCE: preserve the Windows arithmetic widths,
-         * float spill, double bias spill, and ambient-mode integer conversion. */
+        /* NOT_FROM_ORIGINAL_SOURCE: express the Windows count calculation with
+         * its float rounding point and current-rounding-mode integer conversion. */
         static const float randomScale = 0x1p-15f;
         static const float randomOffset = 1.0f;
         static const float countScale = 0.5f;
@@ -1045,33 +1045,12 @@ static int game_compat_pickup_weapon_random_count(int weapon)
         scaled = x87f_mul(scaled, x87f_load_i32(clipMultiplier));
         scaled = x87f_mul(scaled, x87f_load_f32(countScale));
         float storedCount = x87f_store_f32(scaled);
-        double storedBias = x87f_store_f64(x87f_load_f64(roundingBias));
-
-        return x87f_store_i32(x87f_add(x87f_load_f32(storedCount), x87f_load_f64(storedBias))) + 1;
+        return x87f_store_i32(x87f_add(x87f_load_f32(storedCount), x87f_load_f64(roundingBias))) + 1;
 #else
-        float storedCount;
-        double storedBias;
-        int32_t roundedCount;
+        float storedCount = (float)(((long double)randomValue * randomScale + randomOffset) * clipMultiplier * countScale);
 
-        __asm__ __volatile__(
-            "fildl %[randomValue]\n\t"
-            "fmuls %[randomScale]\n\t"
-            "fadds %[randomOffset]\n\t"
-            "fimull %[clipMultiplier]\n\t"
-            "fmuls %[countScale]\n\t"
-            "fstps %[storedCount]\n\t"
-            "fldl %[roundingBias]\n\t"
-            "fstpl %[storedBias]\n\t"
-            "flds %[storedCount]\n\t"
-            "faddl %[storedBias]\n\t"
-            "fistpl %[roundedCount]"
-            : [storedCount] "=&m"(storedCount), [storedBias] "=&m"(storedBias), [roundedCount] "=&m"(roundedCount)
-            : [randomValue] "m"(randomValue), [clipMultiplier] "m"(clipMultiplier),
-              [randomScale] "m"(randomScale), [randomOffset] "m"(randomOffset),
-              [countScale] "m"(countScale), [roundingBias] "m"(roundingBias)
-            : "st", "memory");
-
-        return roundedCount + 1;
+        /* The 15-bit random factor keeps the rounded count within int32_t for either long ABI. */
+        return (int32_t)lrintl((long double)storedCount + roundingBias) + 1;
 #endif
 #else
         /* Original i386 Pickup_Weapon 0x53991..0x539de keeps rand()/2^31 in
@@ -1260,11 +1239,10 @@ static void game_compat_pickup_weapon_trace_dropped_replacement(gentity_t *picku
         trace_t trace;
         vec3_t end;
 
-        /* Preserve the stored lanes before evaluating the vertical offset. */
-        memcpy(&end[0], &dropped->currentOrigin[0], sizeof(end[0]));
-        memcpy(&end[1], &dropped->currentOrigin[1], sizeof(end[1]));
-        memcpy(&end[2], &dropped->currentOrigin[2], sizeof(end[2]));
-        end[2] = end[2] - WEAPON_REDROP_TRACE_DISTANCE;
+        /* Keep the horizontal position and offset the vertical trace endpoint. */
+        end[0] = dropped->currentOrigin[0];
+        end[1] = dropped->currentOrigin[1];
+        end[2] = dropped->currentOrigin[2] - WEAPON_REDROP_TRACE_DISTANCE;
 
         trap_Trace(&trace, dropped->currentOrigin,
                    dropped->mins,

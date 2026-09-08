@@ -513,21 +513,14 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
     int entityList[TRIGGER_DAMAGE_SCAN_MAX_ENTITIES];
     int entityCount;
     int i;
-    uint32_t bits;
 
-    /* Copy the start point into each bound in the original lane order without FP evaluation. */
-    memcpy(&bits, &start[0], sizeof(bits));
-    memcpy(&mins[0], &bits, sizeof(bits));
-    memcpy(&bits, &start[1], sizeof(bits));
-    memcpy(&mins[1], &bits, sizeof(bits));
-    memcpy(&bits, &start[2], sizeof(bits));
-    memcpy(&mins[2], &bits, sizeof(bits));
-    memcpy(&bits, &start[0], sizeof(bits));
-    memcpy(&maxs[0], &bits, sizeof(bits));
-    memcpy(&bits, &start[1], sizeof(bits));
-    memcpy(&maxs[1], &bits, sizeof(bits));
-    memcpy(&bits, &start[2], sizeof(bits));
-    memcpy(&maxs[2], &bits, sizeof(bits));
+    /* Initialize each bound from the start point before extending it to the endpoint. */
+    mins[0] = start[0];
+    mins[1] = start[1];
+    mins[2] = start[2];
+    maxs[0] = start[0];
+    maxs[1] = start[1];
+    maxs[2] = start[2];
 
     AddPointToBounds(end, mins, maxs);
 
@@ -541,43 +534,6 @@ static void game_compat_trigger_damage_scan(gentity_t *activator, const float *s
         if (game_compat_trigger_damage_classname(trigger) != scr_const_trigger_damage) {
             continue;
         }
-
-#if !defined(WINDOWS_BEHAVIOR)
-        if (!requireGrenadeTouchFlag) {
-            /* The Linux hit scan evaluates these bounds without passing them to the trace.
-             * Preserve the float stores and their FP exception/status effects.
-             * NOT_FROM_ORIGINAL_SOURCE: volatile keeps the unused evaluations;
-             * native instruction constraints retain FADD's memory operand instead
-             * of evaluating that operand separately through another FLD. */
-            volatile vec3_t triggerMins;
-            volatile vec3_t triggerMaxs;
-
-            for (int axis = 0; axis < 3; ++axis) {
-#if EMULATE_X87
-                x87f origin = x87f_load_f32(trigger->currentOrigin[axis]);
-                triggerMins[axis] = x87f_store_f32(x87f_add(origin, x87f_load_f32(trigger->mins[axis])));
-#else
-                __asm__ __volatile__("flds %1\n\tfadds %2\n\tfstps %0"
-                                     : "=m"(triggerMins[axis])
-                                     : "m"(trigger->currentOrigin[axis]), "m"(trigger->mins[axis])
-                                     : "st");
-#endif
-            }
-            for (int axis = 0; axis < 3; ++axis) {
-#if EMULATE_X87
-                x87f origin = x87f_load_f32(trigger->currentOrigin[axis]);
-                triggerMaxs[axis] = x87f_store_f32(x87f_add(origin, x87f_load_f32(trigger->maxs[axis])));
-#else
-                __asm__ __volatile__("flds %1\n\tfadds %2\n\tfstps %0"
-                                     : "=m"(triggerMaxs[axis])
-                                     : "m"(trigger->currentOrigin[axis]), "m"(trigger->maxs[axis])
-                                     : "st");
-#endif
-            }
-            (void)triggerMins;
-            (void)triggerMaxs;
-        }
-#endif
 
         if (requireGrenadeTouchFlag &&
             (game_compat_trigger_damage_grenade_touch_flags(trigger) &
