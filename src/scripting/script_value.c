@@ -4,6 +4,7 @@
 #include "script_string.h"
 #include "script_variable.h"
 #include "compat/crt/atof_compat.h"
+#include "compat/crt/atoi_compat.h"
 #include "compat/coduo_fp_conversion.h"
 
 #include <math.h>
@@ -566,7 +567,7 @@ qboolean CastBool(VariableValue *value)
         uint16_t string = (uint16_t)value->payload;
         const char *text = SL_ConvertToString(string);
 
-        value->payload = atoi(text) != 0 ? qtrue : qfalse;
+        value->payload = coduo_compat_atoi(text) != 0 ? qtrue : qfalse;
         if (value->payload == qfalse &&
             ScriptRuntime_StringStartsWithZeroLiteral(
                 SL_ConvertToString(string)) == qfalse) {
@@ -612,7 +613,7 @@ qboolean CastInt(VariableValue *value)
     if (value->type == SCRIPT_VAR_STRING) {
         uint16_t string = (uint16_t)value->payload;
         const char *text = SL_ConvertToString(string);
-        int32_t intValue = atoi(text);
+        int32_t intValue = coduo_compat_atoi(text);
 
         value->payload = (uint32_t)intValue;
         if (intValue == 0 &&
