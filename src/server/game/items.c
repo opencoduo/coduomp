@@ -1060,7 +1060,10 @@ static int game_compat_pickup_weapon_random_count(int weapon)
         return minAmmo;
     }
 
-    return coduo_server_randrange(minAmmo, maxAmmo);
+    int count = coduo_server_randrange(minAmmo, maxAmmo);
+
+    /* Only explicit ammo ranges clamp nonpositive results. */
+    return count < 1 ? 0 : count;
 }
 
 /* VERIFIED_DECOMPILER(0x533b8, 633b8_Fill_Clip.c, VERIFY-P1-ITEMS2-2026-06-17): DATAFLOW_VERIFIED - weapon bounds guard, ammo/clip refill amount, and conditional stores checked against current decompiler output. */
@@ -1158,9 +1161,6 @@ static int game_compat_pickup_weapon_reserve_count(gentity_t *itemEnt, int weapo
     if (count == 0) {
         count = game_compat_pickup_weapon_random_count(weapon);
         itemEnt->itemCount = count;
-        if (itemEnt->itemCount < 1) {
-            itemEnt->itemCount = 0;
-        }
     }
 
     ammoIndex = BG_AmmoForWeapon(weapon);
@@ -1215,9 +1215,11 @@ static void game_compat_pickup_weapon_trace_dropped_replacement(gentity_t *picku
         trace_t trace;
         vec3_t end;
 
-        end[0] = dropped->currentOrigin[0];
-        end[1] = dropped->currentOrigin[1];
-        end[2] = dropped->currentOrigin[2] - WEAPON_REDROP_TRACE_DISTANCE;
+        /* Preserve the stored lanes before evaluating the vertical offset. */
+        memcpy(&end[0], &dropped->currentOrigin[0], sizeof(end[0]));
+        memcpy(&end[1], &dropped->currentOrigin[1], sizeof(end[1]));
+        memcpy(&end[2], &dropped->currentOrigin[2], sizeof(end[2]));
+        end[2] = end[2] - WEAPON_REDROP_TRACE_DISTANCE;
 
         trap_Trace(&trace, dropped->currentOrigin,
                    dropped->mins,
