@@ -10,6 +10,9 @@ extern "C" {
 
 int32_t coduo_crt_atoi(const char *string);
 double coduo_crt_atof(const char *string);
+int coduo_crt_scan_float(const char *text, float *output);
+int coduo_crt_scan_vec3(const char *text, float *output);
+int coduo_crt_scan_int(const char *text, int32_t *output);
 int32_t coduo_crt_stricmp(const char *left, const char *right);
 int32_t coduo_crt_strnicmp(const char *left, const char *right,
                            size_t count);

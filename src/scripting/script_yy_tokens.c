@@ -2,6 +2,7 @@
 
 #include "script_string.h"
 #include "script_yy_tokens.h"
+#include "compat/crt/scan_compat.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -72,7 +73,7 @@ void IntegerValue(const char *text)
 {
     int32_t value;
 
-    sscanf(text, "%d", &value);
+    coduo_compat_scan_int(text, &value);
     script_yylval.source.value = (uintptr_t)(uint32_t)value;
 }
 
@@ -83,7 +84,7 @@ void FloatValue(const char *text)
 {
     float value;
 
-    sscanf(text, "%f", &value);
+    coduo_compat_scan_float(text, &value);
     script_yylval.source.value = 0;
     memcpy(&script_yylval.source.value, &value, sizeof(value));
 }
