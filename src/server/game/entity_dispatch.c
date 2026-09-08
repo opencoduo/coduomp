@@ -730,10 +730,22 @@ void Touch_Multi(gentity_t *ent, gentity_t *other, int traceMode)
 /* VERIFIED_DECOMPILER(0x7662d, 8662d_SP_trigger_multiple.c, VERIFY-WAVE2-ENTITY-DISPATCH-COLLISION-2026-06-17): DATAFLOW_VERIFIED - wait/random spawn floats, random>=wait clamp/print, Touch_Multi/Use_Multi installs, trigger init, sentient contents, and link call checked. */
 void SP_trigger_multiple(gentity_t *ent)
 {
-    G_SpawnFloat("wait", TRIGGER_DEFAULT_WAIT, &ent->itemWait);
-    G_SpawnFloat("random", TRIGGER_DEFAULT_RANDOM, &ent->itemRandom);
+    double random;
 
-    if (ent->itemWait >= 0.0f && ent->itemWait <= ent->itemRandom) {
+    G_SpawnFloat("wait", TRIGGER_DEFAULT_WAIT, &ent->itemWait);
+#if defined(WINDOWS_BEHAVIOR)
+    const char *randomText;
+
+    G_SpawnString("random", TRIGGER_DEFAULT_RANDOM, &randomText);
+    random = atof(randomText);
+    ent->itemRandom = (float)random;
+    /* The Windows clamp compares the parsed value before float rounding. */
+#else
+    G_SpawnFloat("random", TRIGGER_DEFAULT_RANDOM, &ent->itemRandom);
+    random = ent->itemRandom;
+#endif
+
+    if (ent->itemWait >= 0.0f && ent->itemWait <= random) {
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
         ent->itemRandom = ent->itemWait - 100.0f;
         G_Printf("trigger_multiple has random >= wait\n");
