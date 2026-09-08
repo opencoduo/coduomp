@@ -16,6 +16,7 @@
 #include "compat/crt/atof_compat.h"
 #include "compat/crt/scan_compat.h"
 #include "compat/coduo_ctype_compat.h"
+#include "compat/coduo_fp_conversion.h"
 #include "qcommon/info.h"
 #include "game_globals.h"
 #include "level_locals.h"
@@ -5336,17 +5337,24 @@ void *Scr_LoadRead(uint32_t size)
 static int game_compat_script_mover_truncate_milliseconds(float seconds)
 {
     /*
-     * All mover duration conversions (e.g. 0x6f1b2, 0x6f717, 0x6fc01) are
+     * Linux mover duration conversions (e.g. 0x6f1b2, 0x6f717, 0x6fc01) are
      * fmul DWORD 1000.0f followed by a truncating fistp (RC=0xc00) straight
      * from the x87 register — no +0.5 bias and no intermediate float rounding
      * of the product -> shim.
      */
 #if EMULATE_X87
-    return x87f_store_i32_trunc(x87f_mul(
+#if defined(WINDOWS_BEHAVIOR)
+    return (int32_t)(uint32_t)x87f_store_i64_trunc(x87f_mul(
         x87f_load_f32(seconds),
         x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS)));
 #else
-    return game_compat_int32_from_long_double_trunc(
+    return x87f_store_i32_trunc(x87f_mul(
+        x87f_load_f32(seconds),
+        x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS)));
+#endif
+#else
+    /* The adapter selects Windows low-dword qword conversion or Linux dword conversion. */
+    return coduo_fp_to_i32_extended(
         (long double)seconds *
         (long double)SCRIPT_SECONDS_TO_MILLISECONDS);
 #endif
@@ -5365,13 +5373,38 @@ int ScriptMover_Updatemove(trajectory_t *trajectory,
     (void)currentValue;
 
     if (trajectory->trType == TR_ACCELERATE && linearTime > 0.0f) {
-        vec3_t delta;
-        float inverseDuration;
-
         trajectory->trTime = level.time;
-        /* 0x6f1b2..0x6f1cf: inline fmul 1000.0f + truncating fistp — no +0.5. */
+        /* Convert the live seconds * 1000 product at the selected platform width, without a +0.5 bias. */
         trajectory->trDuration = game_compat_script_mover_truncate_milliseconds(linearTime);
         game_compat_script_copy_vector(trajectory->trBase, linearStart);
+
+#if defined(WINDOWS_BEHAVIOR)
+        /* X/Y differences remain extended. X uses the live reciprocal;
+         * Y/Z use its float copy, and Z also uses a float difference. */
+#if EMULATE_X87
+        const x87f deltaX = x87f_sub(x87f_load_f32(decelStart[0]), x87f_load_f32(linearStart[0]));
+        const x87f deltaY = x87f_sub(x87f_load_f32(decelStart[1]), x87f_load_f32(linearStart[1]));
+        const float deltaZ = x87f_store_f32(x87f_sub(x87f_load_f32(decelStart[2]), x87f_load_f32(linearStart[2])));
+        const x87f inverseDurationRaw = x87f_div(x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS), x87f_load_i32(trajectory->trDuration));
+        const float inverseDuration = x87f_store_f32(inverseDurationRaw);
+
+        trajectory->trDelta[0] = x87f_store_f32(x87f_mul(deltaX, inverseDurationRaw));
+        trajectory->trDelta[1] = x87f_store_f32(x87f_mul(deltaY, x87f_load_f32(inverseDuration)));
+        trajectory->trDelta[2] = x87f_store_f32(x87f_mul(x87f_load_f32(deltaZ), x87f_load_f32(inverseDuration)));
+#else
+        const long double deltaX = (long double)decelStart[0] - linearStart[0];
+        const long double deltaY = (long double)decelStart[1] - linearStart[1];
+        const float deltaZ = decelStart[2] - linearStart[2];
+        const long double inverseDurationRaw = (long double)SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
+        const float inverseDuration = (float)inverseDurationRaw;
+
+        trajectory->trDelta[0] = (float)(deltaX * inverseDurationRaw);
+        trajectory->trDelta[1] = (float)(deltaY * inverseDuration);
+        trajectory->trDelta[2] = deltaZ * inverseDuration;
+#endif
+#else
+        vec3_t delta;
+        float inverseDuration;
 
         /* 0x6f1fc..0x6f22c: each difference is stored to a float slot before
          * the inverse-duration multiply reloads it. */
@@ -5390,6 +5423,7 @@ int ScriptMover_Updatemove(trajectory_t *trajectory,
         trajectory->trDelta[0] = delta[0] * inverseDuration;
         trajectory->trDelta[1] = delta[1] * inverseDuration;
         trajectory->trDelta[2] = delta[2] * inverseDuration;
+#endif
         trajectory->trType = TR_LINEAR_STOP;
         return 0;
     }
@@ -5626,14 +5660,28 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
     }
 
     if (accelTime == 0.0f && decelTime == 0.0f) {
-        float inverseDuration;
-
         trajectory->trTime = level.time;
         trajectory->trDuration = game_compat_script_mover_truncate_milliseconds(totalTime);
         *linearTime = totalTime;
         *storedDecelTime = 0.0f;
         game_compat_script_copy_vector(storedTargetValue, targetValue);
         game_compat_script_copy_vector(trajectory->trBase, currentValue);
+
+        /* Windows retains the reciprocal through all three velocity products. */
+#if defined(WINDOWS_BEHAVIOR)
+#if EMULATE_X87
+        x87f inverseDuration = x87f_div(x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS), x87f_load_i32(trajectory->trDuration));
+        for (int axis = 0; axis < 3; axis++) {
+            trajectory->trDelta[axis] = x87f_store_f32(x87f_mul(x87f_load_f32(delta[axis]), inverseDuration));
+        }
+#else
+        long double inverseDuration = (long double)SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
+        trajectory->trDelta[0] = delta[0] * inverseDuration;
+        trajectory->trDelta[1] = delta[1] * inverseDuration;
+        trajectory->trDelta[2] = delta[2] * inverseDuration;
+#endif
+#else
+        float inverseDuration;
 
         /* 0x6f7a0: fild trDuration feeds the divide directly (no float cast). */
 #if EMULATE_X87
@@ -5647,6 +5695,7 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
         trajectory->trDelta[0] = delta[0] * inverseDuration;
         trajectory->trDelta[1] = delta[1] * inverseDuration;
         trajectory->trDelta[2] = delta[2] * inverseDuration;
+#endif
         trajectory->trType = TR_LINEAR_STOP;
         BG_EvaluateTrajectory(trajectory, level.time, currentValue);
     } else {
@@ -5662,6 +5711,19 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
         *storedDecelTime = decelTime;
 
         {
+            /* Windows keeps the square root live until the speed is stored. */
+#if defined(WINDOWS_BEHAVIOR)
+#if EMULATE_X87
+            x87f distance = x87f_sqrt(x87f_add(x87f_add(
+                x87f_mul(x87f_load_f32(delta[2]), x87f_load_f32(delta[2])),
+                x87f_mul(x87f_load_f32(delta[1]), x87f_load_f32(delta[1]))),
+                x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0]))));
+#else
+            long double distance = sqrtl((long double)delta[2] * delta[2] +
+                                         (long double)delta[1] * delta[1] +
+                                         (long double)delta[0] * delta[0]);
+#endif
+#else
 #if EMULATE_X87
             float distance = (float)CoduoLibm_Sqrt(x87f_store_f64(x87f_add(x87f_add(
                 x87f_mul(x87f_load_f32(delta[0]), x87f_load_f32(delta[0])),
@@ -5673,12 +5735,17 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                                      delta[1] * delta[1] +
                                      delta[2] * delta[2]));
 #endif
+#endif
             vec3_t velocity;
 
             /* (dist+dist) / ((tt+tt) - at - dt) kept 80-bit, one store -> shim. */
 #if EMULATE_X87
             *speed = x87f_store_f32(x87f_div(
+#if defined(WINDOWS_BEHAVIOR)
+                x87f_add(distance, distance),
+#else
                 x87f_add(x87f_load_f32(distance), x87f_load_f32(distance)),
+#endif
                 x87f_sub(x87f_sub(
                     x87f_add(x87f_load_f32(totalTime), x87f_load_f32(totalTime)),
                     x87f_load_f32(accelTime)),
@@ -5705,14 +5772,38 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                 game_compat_script_copy_vector(linearStart, currentValue);
 
                 if (*linearTime != 0.0f) {
+#if !defined(WINDOWS_BEHAVIOR)
                     vec3_t linearDelta;
                     float inverseDuration;
+#endif
 
                     trajectory->trTime = level.time;
                     trajectory->trDuration =
                         game_compat_script_mover_truncate_milliseconds(*linearTime);
                     game_compat_script_copy_vector(trajectory->trBase, currentValue);
 
+                    /* Windows retains X/Y products and uses the live reciprocal for X. */
+#if defined(WINDOWS_BEHAVIOR)
+#if EMULATE_X87
+                    x87f linearDeltaX = x87f_mul(x87f_load_f32(velocity[0]), x87f_load_f32(*linearTime));
+                    x87f linearDeltaY = x87f_mul(x87f_load_f32(velocity[1]), x87f_load_f32(*linearTime));
+                    float linearDeltaZ = x87f_store_f32(x87f_mul(x87f_load_f32(velocity[2]), x87f_load_f32(*linearTime)));
+                    x87f inverseDuration = x87f_div(x87f_load_f32(SCRIPT_SECONDS_TO_MILLISECONDS), x87f_load_i32(trajectory->trDuration));
+                    float storedInverseDuration = x87f_store_f32(inverseDuration);
+                    trajectory->trDelta[0] = x87f_store_f32(x87f_mul(inverseDuration, linearDeltaX));
+                    trajectory->trDelta[1] = x87f_store_f32(x87f_mul(x87f_load_f32(storedInverseDuration), linearDeltaY));
+                    trajectory->trDelta[2] = x87f_store_f32(x87f_mul(x87f_load_f32(storedInverseDuration), x87f_load_f32(linearDeltaZ)));
+#else
+                    long double linearDeltaX = (long double)velocity[0] * *linearTime;
+                    long double linearDeltaY = (long double)velocity[1] * *linearTime;
+                    float linearDeltaZ = velocity[2] * *linearTime;
+                    long double inverseDuration = (long double)SCRIPT_SECONDS_TO_MILLISECONDS / trajectory->trDuration;
+                    float storedInverseDuration = inverseDuration;
+                    trajectory->trDelta[0] = inverseDuration * linearDeltaX;
+                    trajectory->trDelta[1] = storedInverseDuration * linearDeltaY;
+                    trajectory->trDelta[2] = storedInverseDuration * linearDeltaZ;
+#endif
+#else
                     linearDelta[0] = velocity[0] * *linearTime;
                     linearDelta[1] = velocity[1] * *linearTime;
                     linearDelta[2] = velocity[2] * *linearTime;
@@ -5729,6 +5820,7 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
                     trajectory->trDelta[0] = linearDelta[0] * inverseDuration;
                     trajectory->trDelta[1] = linearDelta[1] * inverseDuration;
                     trajectory->trDelta[2] = linearDelta[2] * inverseDuration;
+#endif
                     trajectory->trType = TR_LINEAR_STOP;
                 } else {
                     trajectory->trTime = level.time;
@@ -6019,7 +6111,12 @@ void ScriptEntCmdGetCommandTimes(float *totalTime, float *accelTime,
         }
     }
 
+    /* Compare the live sum before any binary32 rounding. */
+#if EMULATE_X87
+    if (x87f_lt(x87f_load_f32(*totalTime), x87f_add(x87f_load_f32(*accelTime), x87f_load_f32(*decelTime)))) {
+#else
     if (*totalTime < *accelTime + *decelTime) {
+#endif
         Scr_Error("accel time plus decel time is greater than total time");
     }
 }
