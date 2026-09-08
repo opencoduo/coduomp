@@ -809,14 +809,14 @@ static void game_compat_script_bullettrace_add_entity(uint16_t entityNum)
     Scr_AddEntity(&g_entities[entityNum]);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_bullettrace_add_position_or_direction). */
-static void game_compat_script_bullettrace_add_position_or_direction(
+/* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_bullettrace_add_normal_or_direction). */
+static void game_compat_script_bullettrace_add_normal_or_direction(
     const trace_t *trace, const vec3_t start, const vec3_t end)
 {
     vec3_t direction;
 
     if (trace->fraction < 1.0f) {
-        Scr_AddVector(trace->endpos);
+        Scr_AddVector(trace->normal);
         return;
     }
 
@@ -2863,7 +2863,9 @@ int GScr_GetHeadIconIndex(const char *name)
         1);
 }
 
-/* VERIFIED_DECOMPILER(0x6b145, 7b145_script_func_bullettrace.c, VERIFY-SCRIPT-BUILTINS-TRIGGER-MENU-TRACE-2026-06-17): DATAFLOW_VERIFIED; trace mask/pass entity handling, LocationalTrace call, array keys, entity/position fallback, and surface-type extraction checked against current decompiler output. */
+/* Source: Linux game RVA 0x6b145 and Windows game RVA 0x3a320.
+ * Position always uses the trace endpoint; normal uses the hit normal or the
+ * normalized trace direction when the trace does not hit. */
 void script_func_bullettrace(void)
 {
     trace_t trace;
@@ -2894,14 +2896,14 @@ void script_func_bullettrace(void)
     Scr_AddFloat(trace.fraction);
     Scr_AddArrayStringIndexed(scr_const_fraction);
 
-    Scr_AddVector(trace.normal);
-    Scr_AddArrayStringIndexed(scr_const_normal);
+    Scr_AddVector(trace.endpos);
+    Scr_AddArrayStringIndexed(scr_const_position);
 
     game_compat_script_bullettrace_add_entity(trace.entityNum);
     Scr_AddArrayStringIndexed(scr_const_entity);
 
-    game_compat_script_bullettrace_add_position_or_direction(&trace, start, end);
-    Scr_AddArrayStringIndexed(scr_const_position);
+    game_compat_script_bullettrace_add_normal_or_direction(&trace, start, end);
+    Scr_AddArrayStringIndexed(scr_const_normal);
 
     if (trace.fraction < 1.0f) {
         surfaceType = (trace.surfaceFlags &
