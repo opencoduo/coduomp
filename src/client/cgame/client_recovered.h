@@ -816,9 +816,12 @@ void CG_SetConfigValues(void);
 int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition,
                             const char *aliasName);
 
-/* NOT_FROM_ORIGINAL_SOURCE: play an explicit-local alias with stable connection
- * ownership for nonspatial channels, preserving the supplied spatial owner and
- * origin for spatial channels and the shared playback/subtitle behavior. */
+/* NOT_FROM_ORIGINAL_SOURCE: fixes same-channel local sounds overlapping after
+ * a spectator follow change. Replacement matches owner plus channel, but the
+ * snapshot owner changes with the viewed player, leaving the previous sound
+ * unmatched. Use stable connection ownership for nonspatial local aliases;
+ * preserve the supplied owner and origin for spatial aliases and the shared
+ * playback/subtitle behavior. */
 int cgame_compat_play_local_sound_alias(int32_t spatialEntityNum, const void *soundPosition, const char *aliasName);
 
 /*
