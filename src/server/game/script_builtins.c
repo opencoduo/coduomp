@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "recovered_game.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_ctype_compat.h"
 #include "qcommon/info.h"
 #include "game_globals.h"
@@ -1341,7 +1342,7 @@ int G_SpawnFloat(const char *key, const char *defaultValue, float *out)
     const char *text;
     int found = G_SpawnString(key, defaultValue, &text);
 
-    *out = (float)atof(text);
+    *out = (float)coduo_compat_atof(text);
     return found;
 }
 
@@ -1400,7 +1401,7 @@ void G_ParseDynamicEntityField(const char *key, const char *value, gentity_t *en
     }
 
     if (fieldType == SCRIPT_VAR_FLOAT) {
-        Scr_AddFloat((float)atof(value));
+        Scr_AddFloat((float)coduo_compat_atof(value));
     } else if (fieldType < SCRIPT_VAR_INT) {
         if (fieldType != SCRIPT_VAR_STRING) {
             return;
@@ -1450,7 +1451,7 @@ void G_ParseEntityField(const char *key, const char *value, gentity_t *ent)
         *(int32_t *)(void *)base = atoi(value);
         break;
     case SCRIPT_SPAWN_FIELD_FLOAT:
-        *(float *)(void *)base = (float)atof(value);
+        *(float *)(void *)base = (float)coduo_compat_atof(value);
         break;
     case SCRIPT_SPAWN_FIELD_STRING:
         Scr_SetString((uint16_t *)(void *)base, 0);

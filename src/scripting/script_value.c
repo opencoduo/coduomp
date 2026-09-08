@@ -3,6 +3,7 @@
 #include "script_memory.h"
 #include "script_string.h"
 #include "script_variable.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_fp_conversion.h"
 
 #include <math.h>
@@ -662,7 +663,7 @@ qboolean CastFloat(VariableValue *value)
          * un-narrowed double still in ST(0) (FUCOMPP at 0x00488731). Testing
          * the narrowed float instead wrongly rejects sub-float-min nonzero
          * strings like "1e-300", which the DLL accepts as float 0.0. */
-        double parsedValue = atof(SL_ConvertToString(string));
+        double parsedValue = coduo_compat_atof(SL_ConvertToString(string));
         float floatValue = (float)parsedValue;
 
         memcpy(&value->payload, &floatValue, sizeof(floatValue));
@@ -710,7 +711,7 @@ qboolean CastFloat(VariableValue *value)
     if (value->type == SCRIPT_VAR_STRING) {
         uint16_t string = (uint16_t)value->payload;
         float floatValue =
-            (float)atof(SL_ConvertToString(string));
+            (float)coduo_compat_atof(SL_ConvertToString(string));
 
         memcpy(&value->payload, &floatValue, sizeof(floatValue));
         if (floatValue == 0.0f &&

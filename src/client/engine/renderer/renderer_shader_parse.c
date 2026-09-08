@@ -5,6 +5,7 @@
 #include "../math/vector_math.h"
 #include "../platform/crt_boundary.h"
 #include "../surface_types.h"
+#include "compat/crt/atof_compat.h"
 #include "compat/crt/qsort_compat.h"
 
 #include <ctype.h>
@@ -1866,7 +1867,7 @@ qboolean ParseVector(char **text, int32_t componentCount, float *values)
                       rendererParsedShader.name);
             return qfalse;
         }
-        values[component] = (float)atof(token);
+        values[component] = (float)coduo_compat_atof(token);
     }
 
     token = Com_ParseOnLine(text);
@@ -1997,22 +1998,22 @@ void ParseWaveForm(char **text, waveForm_t *waveform)
     token = Com_ParseOnLine(text);
     if (token[0] == '\0')
         goto missing_parameter;
-    waveform->base = (float)atof(token);
+    waveform->base = (float)coduo_compat_atof(token);
 
     token = Com_ParseOnLine(text);
     if (token[0] == '\0')
         goto missing_parameter;
-    waveform->amplitude = (float)atof(token);
+    waveform->amplitude = (float)coduo_compat_atof(token);
 
     token = Com_ParseOnLine(text);
     if (token[0] == '\0')
         goto missing_parameter;
-    waveform->phase = (float)atof(token);
+    waveform->phase = (float)coduo_compat_atof(token);
 
     token = Com_ParseOnLine(text);
     if (token[0] == '\0')
         goto missing_parameter;
-    waveform->frequency = (float)atof(token);
+    waveform->frequency = (float)coduo_compat_atof(token);
     return;
 
 missing_parameter:
@@ -2088,17 +2089,17 @@ void ParseDeform(char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_bulge_parameter;
-        deform->bulgeWidth = (float)atof(token);
+        deform->bulgeWidth = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_bulge_parameter;
-        deform->bulgeHeight = (float)atof(token);
+        deform->bulgeHeight = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_bulge_parameter;
-        deform->bulgeSpeed = (float)atof(token);
+        deform->bulgeSpeed = (float)coduo_compat_atof(token);
 
         rendererParsedShader.boundsExpansion +=
             fabsf(deform->bulgeHeight);
@@ -2111,8 +2112,8 @@ void ParseDeform(char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_deform_parameter;
-        if (atof(token) != 0.0) {
-            deform->deformationSpread = (float)(1.0f / atof(token));
+        if (coduo_compat_atof(token) != 0.0) {
+            deform->deformationSpread = (float)(1.0f / coduo_compat_atof(token));
         } else {
             deform->deformationSpread = 100.0f;
             ri.Printf(
@@ -2158,8 +2159,8 @@ void ParseDeform(char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_deform_parameter;
-        if (atof(token) != 0.0) {
-            deform->deformationSpread = (float)(1.0f / atof(token));
+        if (coduo_compat_atof(token) != 0.0) {
+            deform->deformationSpread = (float)(1.0f / coduo_compat_atof(token));
         } else {
             deform->deformationSpread = 100.0f;
             ri.Printf(
@@ -2180,12 +2181,12 @@ void ParseDeform(char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_deform_parameter;
-        deform->deformationWave.amplitude = (float)atof(token);
+        deform->deformationWave.amplitude = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_deform_parameter;
-        deform->deformationWave.frequency = (float)atof(token);
+        deform->deformationWave.frequency = (float)coduo_compat_atof(token);
         deform->deformation = DEFORM_NORMALS;
     } else if (Q_stricmp(token, "syncnormal") == 0) {
         rendererParsedShader.surfaceFlags |=
@@ -2214,7 +2215,7 @@ void ParseDeform(char **text)
                       rendererParsedShader.name);
             return;
         }
-        deform->deformationWave.amplitude *= (float)atof(token);
+        deform->deformationWave.amplitude *= (float)coduo_compat_atof(token);
         deform->deformation = DEFORM_SYNC_NORMALS;
     } else if (Q_stricmp(token, "move") == 0) {
         rendererParsedShader.surfaceFlags |=
@@ -2224,7 +2225,7 @@ void ParseDeform(char **text)
             token = Com_ParseOnLine(text);
             if (token[0] == '\0')
                 goto missing_deform_parameter;
-            deform->moveVector[component] = (float)atof(token);
+            deform->moveVector[component] = (float)coduo_compat_atof(token);
         }
 
         ParseWaveForm(text, &deform->deformationWave);
@@ -2317,7 +2318,7 @@ void ParseSkyParms(char **text, renderer_image_track_t imageTrack)
     if (token[0] == '\0')
         goto missing_parameter;
 
-    rendererParsedShader.skyCloudHeight = (float)atof(token);
+    rendererParsedShader.skyCloudHeight = (float)coduo_compat_atof(token);
     if (rendererParsedShader.skyCloudHeight == 0.0f)
         rendererParsedShader.skyCloudHeight = 512.0f;
     R_InitSkyTexCoords(rendererParsedShader.skyCloudHeight);
@@ -2411,7 +2412,7 @@ qboolean ParseSort(char **text)
     } else if (Q_stricmp(token, "nearest") == 0) {
         rendererParsedShader.sort = SHADER_SORT_NEAREST;
     } else {
-        rendererParsedShader.sort = (float)atof(token);
+        rendererParsedShader.sort = (float)coduo_compat_atof(token);
         if (rendererParsedShader.sort == 0.0f &&
             token[0] != '0') {
             ri.Printf(R_PRINT_WARNING,
@@ -2509,22 +2510,22 @@ void ParseTexMod(shaderStage_t *stage, int32_t bundleIndex, char **text)
                       rendererParsedShader.name);
             return;
         }
-        texMod->wave.base = (float)atof(token);
+        texMod->wave.base = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_turb_parameters;
-        texMod->wave.amplitude = (float)atof(token);
+        texMod->wave.amplitude = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_turb_parameters;
-        texMod->wave.phase = (float)atof(token);
+        texMod->wave.phase = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_turb_parameters;
-        texMod->wave.frequency = (float)atof(token);
+        texMod->wave.frequency = (float)coduo_compat_atof(token);
 
         texMod->type = TMOD_TURBULENT;
         rendererParsedShader.surfaceFlags |=
@@ -2537,12 +2538,12 @@ void ParseTexMod(shaderStage_t *stage, int32_t bundleIndex, char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_scale_parameters;
-        texMod->scale[0] = (float)atof(token);
+        texMod->scale[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_scale_parameters;
-        texMod->scale[1] = (float)atof(token);
+        texMod->scale[1] = (float)coduo_compat_atof(token);
 
         texMod->type = TMOD_SCALE;
         ++bundle->numTexMods;
@@ -2553,12 +2554,12 @@ void ParseTexMod(shaderStage_t *stage, int32_t bundleIndex, char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_scroll_parameters;
-        texMod->scroll[0] = (float)atof(token);
+        texMod->scroll[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_scroll_parameters;
-        texMod->scroll[1] = (float)atof(token);
+        texMod->scroll[1] = (float)coduo_compat_atof(token);
 
         texMod->type = TMOD_SCROLL;
         rendererParsedShader.surfaceFlags |=
@@ -2576,22 +2577,22 @@ void ParseTexMod(shaderStage_t *stage, int32_t bundleIndex, char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_stretch_parameters;
-        texMod->wave.base = (float)atof(token);
+        texMod->wave.base = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_stretch_parameters;
-        texMod->wave.amplitude = (float)atof(token);
+        texMod->wave.amplitude = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_stretch_parameters;
-        texMod->wave.phase = (float)atof(token);
+        texMod->wave.phase = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_stretch_parameters;
-        texMod->wave.frequency = (float)atof(token);
+        texMod->wave.frequency = (float)coduo_compat_atof(token);
 
         texMod->type = TMOD_STRETCH;
         rendererParsedShader.surfaceFlags |=
@@ -2604,32 +2605,32 @@ void ParseTexMod(shaderStage_t *stage, int32_t bundleIndex, char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_transform_parameters;
-        texMod->matrix[0][0] = (float)atof(token);
+        texMod->matrix[0][0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_transform_parameters;
-        texMod->matrix[0][1] = (float)atof(token);
+        texMod->matrix[0][1] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_transform_parameters;
-        texMod->matrix[1][0] = (float)atof(token);
+        texMod->matrix[1][0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_transform_parameters;
-        texMod->matrix[1][1] = (float)atof(token);
+        texMod->matrix[1][1] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_transform_parameters;
-        texMod->translate[0] = (float)atof(token);
+        texMod->translate[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_transform_parameters;
-        texMod->translate[1] = (float)atof(token);
+        texMod->translate[1] = (float)coduo_compat_atof(token);
 
         texMod->type = TMOD_TRANSFORM;
         ++bundle->numTexMods;
@@ -2640,7 +2641,7 @@ void ParseTexMod(shaderStage_t *stage, int32_t bundleIndex, char **text)
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto missing_rotate_parameters;
-        texMod->rotateSpeed = (float)atof(token);
+        texMod->rotateSpeed = (float)coduo_compat_atof(token);
 
         texMod->type = TMOD_ROTATE;
         rendererParsedShader.surfaceFlags |=
@@ -2932,7 +2933,7 @@ invalid_source:
         return qfalse;
     }
 
-    arguments->scale = (float)atof(token);
+    arguments->scale = (float)coduo_compat_atof(token);
     if (arguments->scale == 1.0f ||
         arguments->scale == 2.0f ||
         arguments->scale == 4.0f) {
@@ -3015,21 +3016,21 @@ qboolean ParseTextureEnvCombine(
                 rendererParsedShader.name);
             return qfalse;
         }
-        combine->environmentColor[0] = (float)atof(token);
+        combine->environmentColor[0] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto truncated_constant_color;
-        combine->environmentColor[1] = (float)atof(token);
+        combine->environmentColor[1] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] == '\0')
             goto truncated_constant_color;
-        combine->environmentColor[2] = (float)atof(token);
+        combine->environmentColor[2] = (float)coduo_compat_atof(token);
 
         token = Com_ParseOnLine(text);
         if (token[0] != ')' && token[0] != '\0') {
-            combine->environmentColor[3] = (float)atof(token);
+            combine->environmentColor[3] = (float)coduo_compat_atof(token);
             token = Com_Parse(text);
         }
         if (token[0] != ')') {
@@ -3218,7 +3219,7 @@ qboolean ParseImage(
         }
         if (Q_stricmp(imageName, "heightToNormal") == 0) {
             imageFlags |= IMAGE_FLAG_HEIGHT_TO_NORMAL;
-            heightScale = (float)atof(Com_ParseOnLine(text));
+            heightScale = (float)coduo_compat_atof(Com_ParseOnLine(text));
             if (heightScale == 1.0f) {
                 Com_UngetToken();
                 heightScale = 1.0f;
@@ -3399,7 +3400,7 @@ float ParseWaterMapPositiveFloat(
         return 0.0f;
     }
 
-    *value = (float)atof(token);
+    *value = (float)coduo_compat_atof(token);
     if (*value <= 0.0f) {
         ri.Printf(
             R_PRINT_WARNING,
@@ -3427,7 +3428,7 @@ float ParseWaterMapFloat(
         return 0.0f;
     }
 
-    *value = (float)atof(token);
+    *value = (float)coduo_compat_atof(token);
     return 1.0f;
 }
 
@@ -3584,7 +3585,7 @@ qboolean ParseNVFloatParm(
 
     stage->bundle[bundleIndex]
         .textureShader->parameters.floats[parameterIndex] =
-        (float)atof(token);
+        (float)coduo_compat_atof(token);
     return qtrue;
 }
 
@@ -3896,7 +3897,7 @@ qboolean ParseNVRC_ConstColor(
 
     for (int32_t component = 0; component < 4; ++component) {
         token = Com_Parse(text);
-        const long double componentRaw = (long double)atof(token);
+        const long double componentRaw = (long double)coduo_compat_atof(token);
         constantColors[constantIndex][component] = (float)componentRaw;
 
         /* The original accepts any nonzero atof result and also accepts a
@@ -5282,7 +5283,7 @@ qboolean ParseATIFS_ConstDefs(
     for (int32_t component = 0; component < 4; ++component) {
         const char *token = Com_Parse(text);
         const long double componentRaw =
-            (long double)atof(token);
+            (long double)coduo_compat_atof(token);
         definition->value[component] = (float)componentRaw;
 
         /* 0x004fcafd stores the rounded float but retains the atof result on
@@ -6555,7 +6556,7 @@ qboolean ParseStageRequirementsOperand(
     }
 
     if (operand->leadingNotCount != 0) {
-        const qboolean valueIsNonzero = atof(value) != 0.0;
+        const qboolean valueIsNonzero = coduo_compat_atof(value) != 0.0;
         const qboolean negatedValue =
             (operand->leadingNotCount & 1) != 0
                 ? !valueIsNonzero
@@ -6619,7 +6620,7 @@ void UpdateRequiresCondition(
     /* 0x004f9462..0x004f9473 stores atof's result as float, but _ftol
      * consumes the retained x87 return value. */
     const long double literalValueRaw =
-        (long double)atof(literalOperand->value);
+        (long double)coduo_compat_atof(literalOperand->value);
     literalValue = (float)literalValueRaw;
     if (!isfinite(literalValueRaw) ||
         literalValueRaw < -2147483648.0L ||
@@ -6728,22 +6729,22 @@ qboolean ParseStageRequirements(
 
     if (strcmp(operatorText, "==") == 0) {
         operatorKind = SHADER_REQUIREMENT_EQUAL;
-        result = atof(first.value) == atof(second.value);
+        result = coduo_compat_atof(first.value) == coduo_compat_atof(second.value);
     } else if (strcmp(operatorText, "!=") == 0) {
         operatorKind = SHADER_REQUIREMENT_NOT_EQUAL;
-        result = atof(first.value) != atof(second.value);
+        result = coduo_compat_atof(first.value) != coduo_compat_atof(second.value);
     } else if (strcmp(operatorText, ">") == 0) {
         operatorKind = SHADER_REQUIREMENT_GREATER;
-        result = atof(first.value) > atof(second.value);
+        result = coduo_compat_atof(first.value) > coduo_compat_atof(second.value);
     } else if (strcmp(operatorText, ">=") == 0) {
         operatorKind = SHADER_REQUIREMENT_GREATER_OR_EQUAL;
-        result = atof(first.value) >= atof(second.value);
+        result = coduo_compat_atof(first.value) >= coduo_compat_atof(second.value);
     } else if (strcmp(operatorText, "<") == 0) {
         operatorKind = SHADER_REQUIREMENT_LESS;
-        result = atof(first.value) < atof(second.value);
+        result = coduo_compat_atof(first.value) < coduo_compat_atof(second.value);
     } else if (strcmp(operatorText, "<=") == 0) {
         operatorKind = SHADER_REQUIREMENT_LESS_OR_EQUAL;
-        result = atof(first.value) <= atof(second.value);
+        result = coduo_compat_atof(first.value) <= coduo_compat_atof(second.value);
     } else {
         ri.Error(
             ERR_DROP,
@@ -6765,7 +6766,7 @@ qboolean ParseStageRequirements(
     return result;
 
 evaluate_single_operand:
-    result = atof(first.value) != 0.0;
+    result = coduo_compat_atof(first.value) != 0.0;
     if (token[0] != '\0') {
         return result |
                ParseStageRequirements(text, qtrue);
@@ -6960,7 +6961,7 @@ qboolean ParseStage(
                 return qfalse;
             }
 
-            bundle->imageAnimationSpeed = (float)atof(token);
+            bundle->imageAnimationSpeed = (float)coduo_compat_atof(token);
             /* The Windows store is stage+0xca, hence bundle zero even if the
              * keyword appears after `nextbundle`. */
             stage->bundle[0].clampAnimation = (uint8_t)oneShot;
@@ -7462,13 +7463,13 @@ qboolean ParseStage(
             } else if (Q_stricmp(token, "const") == 0) {
                 stage->constantColor[3] =
                     (uint8_t)(int32_t)(
-                        255.0 * atof(Com_ParseOnLine(text)));
+                        255.0 * coduo_compat_atof(Com_ParseOnLine(text)));
                 stage->alphaGen = AGEN_CONSTANT;
             } else if (Q_stricmp(token, "constLighting") == 0) {
                 stage->constantColor[3] =
                     (uint8_t)(int32_t)(
                         255.0 * tr.identityLight *
-                        atof(Com_ParseOnLine(text)));
+                        coduo_compat_atof(Com_ParseOnLine(text)));
                 stage->alphaGen = AGEN_CONSTANT;
             } else if (Q_stricmp(token, "identity") == 0) {
                 stage->alphaGen = AGEN_UNSPECIFIED;
@@ -7499,7 +7500,7 @@ qboolean ParseStage(
                         rendererParsedShader.name);
                 } else {
                     rendererParsedShader.portalRange =
-                        (float)atof(token);
+                        (float)coduo_compat_atof(token);
                 }
             } else if (Q_stricmp(token, "dot") == 0) {
                 rendererParsedShader.surfaceFlags |=
@@ -7870,7 +7871,7 @@ qboolean ParseStage(
                     return qfalse;
                 } else {
                     imageColorScale[argumentCount] =
-                        (float)atof(token);
+                        (float)coduo_compat_atof(token);
                 }
                 ++argumentCount;
             }
@@ -8007,21 +8008,21 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
             float elevation;
             float elevationCosine;
 
-            tr.sunLight[0] = (float)atof(Com_ParseOnLine(text));
-            tr.sunLight[1] = (float)atof(Com_ParseOnLine(text));
-            tr.sunLight[2] = (float)atof(Com_ParseOnLine(text));
+            tr.sunLight[0] = (float)coduo_compat_atof(Com_ParseOnLine(text));
+            tr.sunLight[1] = (float)coduo_compat_atof(Com_ParseOnLine(text));
+            tr.sunLight[2] = (float)coduo_compat_atof(Com_ParseOnLine(text));
             (void)VectorNormalize(tr.sunLight);
 
-            intensity = (float)atof(Com_ParseOnLine(text));
+            intensity = (float)coduo_compat_atof(Com_ParseOnLine(text));
             tr.sunLight[0] *= intensity;
             tr.sunLight[1] *= intensity;
             tr.sunLight[2] *= intensity;
 
             azimuth =
-                (float)atof(Com_ParseOnLine(text)) *
+                (float)coduo_compat_atof(Com_ParseOnLine(text)) *
                 degreesToRadians;
             elevation =
-                (float)atof(Com_ParseOnLine(text)) *
+                (float)coduo_compat_atof(Com_ParseOnLine(text)) *
                 degreesToRadians;
             elevationCosine = cosf(elevation);
             tr.sunDirection[0] =
@@ -8047,7 +8048,7 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
         if (Q_stricmp(token, "clampTime") == 0) {
             token = Com_ParseOnLine(text);
             if (token[0] != '\0')
-                rendererParsedShader.clampTime = (float)atof(token);
+                rendererParsedShader.clampTime = (float)coduo_compat_atof(token);
             continue;
         }
 
@@ -8129,7 +8130,7 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
             }
 
             rendererParsedShader.fogDepthForOpaque =
-                (float)atof(token);
+                (float)coduo_compat_atof(token);
             Com_SkipRestOfLine(text);
             continue;
         }

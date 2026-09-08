@@ -2,6 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_3002df30_3002e385.mcode
 
 #include "../client_recovered.h"
+#include "compat/crt/atof_compat.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -123,7 +124,7 @@ void CG_Init(int32_t serverMessageNum, int32_t serverCommandSequence,
 
     CG_LoadingString("");
 
-    cg_hudSpinBaseTime = (float)atof(
+    cg_hudSpinBaseTime = (float)coduo_compat_atof(
         &cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
 
     cgame_syscall(CG_R_FINISH_LOADING_MODELS);

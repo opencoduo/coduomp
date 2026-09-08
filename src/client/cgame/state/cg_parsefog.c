@@ -2,6 +2,7 @@
 // Evidence: cgame_mp/mcode/uo_cgame_mp_x86/FUN_300384c0_3003878b.mcode
 
 #include "../client_recovered.h"
+#include "compat/crt/atof_compat.h"
 #include "../globals.h"
 
 /*
@@ -16,7 +17,7 @@ void CG_ParseFog(void)
     float values[6];
     char *token;
 
-    values[0] = (float)atof(Com_Parse(&cursor));
+    values[0] = (float)coduo_compat_atof(Com_Parse(&cursor));
 
     token = Com_Parse(&cursor);
     if (token == NULL || token[0] == '\0') {
@@ -29,11 +30,11 @@ void CG_ParseFog(void)
         return;
     }
 
-    values[1] = (float)atof(token);
-    values[2] = (float)atof(Com_Parse(&cursor));
-    values[3] = (float)atof(Com_Parse(&cursor));
-    values[4] = (float)atof(Com_Parse(&cursor));
-    values[5] = (float)atof(Com_Parse(&cursor));
+    values[1] = (float)coduo_compat_atof(token);
+    values[2] = (float)coduo_compat_atof(Com_Parse(&cursor));
+    values[3] = (float)coduo_compat_atof(Com_Parse(&cursor));
+    values[4] = (float)coduo_compat_atof(Com_Parse(&cursor));
+    values[5] = (float)coduo_compat_atof(Com_Parse(&cursor));
 
     token = Com_Parse(&cursor);
     int32_t fogType = coduo_crt_atoi(token);

@@ -1,4 +1,5 @@
 #include "ui_parse.h"
+#include "compat/crt/atof_compat.h"
 
 #include "client/common/client_legacy_crt.h"
 #include "qcommon/com_parse.h"
@@ -66,7 +67,7 @@ have_token:
     if (token == NULL || token[0] == '\0')
         return qfalse;
 
-    *destination = (float)atof(token);
+    *destination = (float)coduo_compat_atof(token);
     return qtrue;
 }
 

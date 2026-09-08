@@ -1,6 +1,7 @@
 #include "q_cvar.h"
 #include "q_cvar_services.h"
 
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_ctype_compat.h"
 #include "compat/coduo_fp_conversion.h"
 #include "compat/crt/format_compat.h"
@@ -192,7 +193,7 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
     cvar->string = CopyStringInternal(defaultValue);
     cvar->modified = qtrue;
     cvar->modificationCount = 1;
-    cvar->value = (float)atof(cvar->string);
+    cvar->value = (float)coduo_compat_atof(cvar->string);
     cvar->integer = atoi(cvar->string);
     cvar->resetString = CopyStringInternal(defaultValue);
 
@@ -294,7 +295,7 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
         ++cvar->modificationCount;
         Z_FreeInternal(cvar->string);
         cvar->string = CopyStringInternal(value);
-        cvar->value = (float)atof(cvar->string);
+        cvar->value = (float)coduo_compat_atof(cvar->string);
         cvar->integer = atoi(cvar->string);
     }
     return cvar;
@@ -561,7 +562,7 @@ char *PbCvarValidate(char *buffer)
     for (cvar_t *cvar = cvar_vars;
          cvar != NULL;
          cvar = cvar->next) {
-        const float parsedValue = (float)atof(cvar->string);
+        const float parsedValue = (float)coduo_compat_atof(cvar->string);
         const int32_t parsedInteger = atoi(cvar->string);
         if (parsedValue != cvar->value ||
             parsedInteger != cvar->integer) {

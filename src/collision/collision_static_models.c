@@ -1,5 +1,6 @@
 #include "collision_static_models.h"
 
+#include "compat/crt/atof_compat.h"
 #include "compat/crt/msvc_compat.h"
 #include "collision_world_sector.h"
 #include "qcommon/com_parse.h"
@@ -303,7 +304,7 @@ void CM_LoadStaticModels(void)
                     &scale[2]);
             } else if (field == CM_STATIC_MODEL_FIELD_SCALE) {
                 scale[0] =
-                    (float)atof(token);
+                    (float)coduo_compat_atof(token);
                 scale[1] = scale[0];
                 scale[2] = scale[0];
             }
@@ -500,7 +501,7 @@ void CM_LoadStaticModels(void)
             } else if (field == CM_STATIC_MODEL_FIELD_SCALE_VECTOR) {
                 sscanf(token, "%f %f %f", &scale[0], &scale[1], &scale[2]);
             } else if (field == CM_STATIC_MODEL_FIELD_SCALE) {
-                scale[0] = (float)atof(token);
+                scale[0] = (float)coduo_compat_atof(token);
                 scale[1] = scale[0];
                 scale[2] = scale[0];
             }

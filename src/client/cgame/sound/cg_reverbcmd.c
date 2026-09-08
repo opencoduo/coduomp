@@ -46,6 +46,7 @@
 // local frame (ADD ESP,0x1c) after cleaning their own pushed args (caller-clean).
 
 #include "client/cgame/client_recovered.h"
+#include "compat/crt/atof_compat.h"
 #include "client/cgame/globals.h"
 
 void CG_ReverbCmd(void)
@@ -63,12 +64,12 @@ void CG_ReverbCmd(void)
      * FSTP DWORD [ESP+0x20] (frame+0xc). The float's raw bits are what the trap
      * ultimately receives as its second argument. */
     trap_Argv(2, g_textScratchBuffer, sizeof(g_textScratchBuffer));
-    float reverbParam = (float)atof(g_textScratchBuffer);
+    float reverbParam = (float)coduo_compat_atof(g_textScratchBuffer);
 
     /* trap_Argv(3, g_textScratchBuffer, 1024) then atof -> narrowed to float by
      * FSTP DWORD [ESP+0x14] (frame+0x0). */
     trap_Argv(3, g_textScratchBuffer, sizeof(g_textScratchBuffer));
-    float argv3 = (float)atof(g_textScratchBuffer);
+    float argv3 = (float)coduo_compat_atof(g_textScratchBuffer);
 
     /* trap_Argv(1, g_textScratchBuffer, 1024): argv[1] stays in the buffer as the
      * reverb-preset name string handed to the trap below. No atof for this one. */

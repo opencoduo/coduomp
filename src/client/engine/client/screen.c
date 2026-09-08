@@ -1,4 +1,5 @@
 #include "cgame.h"
+#include "compat/crt/atof_compat.h"
 
 #include "cinematic.h"
 #include "console.h"
@@ -378,12 +379,12 @@ void CL_CubemapShot_f(void)
             return;
         }
 
-        horizonColor[0] = (float)atof(Cmd_Argv(4));
-        horizonColor[1] = (float)atof(Cmd_Argv(5));
-        horizonColor[2] = (float)atof(Cmd_Argv(6));
-        zenithColor[0] = (float)atof(Cmd_Argv(7));
-        zenithColor[1] = (float)atof(Cmd_Argv(8));
-        zenithColor[2] = (float)atof(Cmd_Argv(9));
+        horizonColor[0] = (float)coduo_compat_atof(Cmd_Argv(4));
+        horizonColor[1] = (float)coduo_compat_atof(Cmd_Argv(5));
+        horizonColor[2] = (float)coduo_compat_atof(Cmd_Argv(6));
+        zenithColor[0] = (float)coduo_compat_atof(Cmd_Argv(7));
+        zenithColor[1] = (float)coduo_compat_atof(Cmd_Argv(8));
+        zenithColor[2] = (float)coduo_compat_atof(Cmd_Argv(9));
 
         for (int32_t faceIndex = CUBEMAP_FACE_UP;
              faceIndex <= CUBEMAP_FACE_BACK; ++faceIndex) {
@@ -405,8 +406,8 @@ void CL_CubemapShot_f(void)
             CL_CubemapShotUsage();
             return;
         }
-        fresnelN0 = (float)atof(Cmd_Argv(4));
-        fresnelN1 = (float)atof(Cmd_Argv(5));
+        fresnelN0 = (float)coduo_compat_atof(Cmd_Argv(4));
+        fresnelN1 = (float)coduo_compat_atof(Cmd_Argv(5));
         if (fresnelN0 < CL_CUBEMAP_MIN_REFRACTION_INDEX ||
             fresnelN1 < CL_CUBEMAP_MIN_REFRACTION_INDEX) {
             CL_CubemapShotUsage();

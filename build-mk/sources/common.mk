@@ -53,6 +53,7 @@ LAYOUT_QCOMMON_C_SOURCES := \
 	src/qcommon/vm_runtime.c
 
 LAYOUT_CRT_COMPAT_C_SOURCES := \
+	src/compat/crt/atof_compat.c \
 	src/compat/crt/format_compat.c \
 	src/compat/crt/msvc_compat.c \
 	src/compat/crt/qsort_compat.c \

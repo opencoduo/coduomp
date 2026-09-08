@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 int32_t coduo_crt_atoi(const char *string);
+double coduo_crt_atof(const char *string);
 int32_t coduo_crt_stricmp(const char *left, const char *right);
 int32_t coduo_crt_strnicmp(const char *left, const char *right,
                            size_t count);

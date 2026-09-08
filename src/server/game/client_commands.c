@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "compat/crt/atof_compat.h"
 #include "compat/coduo_ctype_compat.h"
 #include "recovered_game.h"
 #include "game_globals.h"
@@ -1371,11 +1372,11 @@ void Cmd_SetViewpos_f(gentity_t *ent)
 
     for (int axis = 0; axis < 3; axis++) {
         trap_Argv(axis + 1, arg, MAX_STRING_CHARS);
-        origin[axis] = (float)atof(arg);
+        origin[axis] = (float)coduo_compat_atof(arg);
     }
 
     trap_Argv(4, arg, MAX_STRING_CHARS);
-    angles[1] = (float)atof(arg);
+    angles[1] = (float)coduo_compat_atof(arg);
     TeleportPlayer(ent, origin, angles);
 }
 

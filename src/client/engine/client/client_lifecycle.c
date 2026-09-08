@@ -1,4 +1,5 @@
 #include "cgame.h"
+#include "compat/crt/atof_compat.h"
 #include "cinematic.h"
 #include "console.h"
 #include "debug_lines.h"
@@ -965,11 +966,11 @@ void CL_PlayLogo_f(void)
 
     const char *const imageName = Cmd_Argv(1);
     cls.logoFadeInDuration = FastRound(
-        (float)(atof(Cmd_Argv(2)) * 1000.0));
+        (float)(coduo_compat_atof(Cmd_Argv(2)) * 1000.0));
     const int32_t fullDuration = FastRound(
-        (float)(atof(Cmd_Argv(3)) * 1000.0));
+        (float)(coduo_compat_atof(Cmd_Argv(3)) * 1000.0));
     cls.logoFadeOutDuration = FastRound(
-        (float)(atof(Cmd_Argv(4)) * 1000.0));
+        (float)(coduo_compat_atof(Cmd_Argv(4)) * 1000.0));
     cls.logoTotalDuration =
         cls.logoFadeInDuration + fullDuration +
         cls.logoFadeOutDuration;

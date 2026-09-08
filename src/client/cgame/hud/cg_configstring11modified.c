@@ -32,6 +32,7 @@
 // float, matching the FSUB float ptr consumer at 0x3001d3aa.
 
 #include "client/cgame/globals.h"
+#include "compat/crt/atof_compat.h"
 #include "client/cgame/client_recovered.h"
 
 void CG_ConfigString11Modified(void)
@@ -40,5 +41,5 @@ void CG_ConfigString11Modified(void)
      * here N = 11. Parse it as a float (atof returns a double in ST(0)); the FSTP
      * of a DWORD narrows the result to the 32-bit float cg_hudSpinBaseTime. */
     cg_hudSpinBaseTime =
-        (float)atof(&cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
+        (float)coduo_compat_atof(&cg_gameState.stringData[cg_gameState.stringOffsets[11]]);
 }

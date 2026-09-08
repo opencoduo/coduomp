@@ -1,4 +1,5 @@
 #include "../client_recovered.h"
+#include "compat/crt/atof_compat.h"
 #include "../globals.h"
 
 #include <limits.h>
@@ -87,7 +88,7 @@ void CG_ShellShock_f(void)
      * float slot, add the double nudge, then use a bare FISTP under the active
      * (normally nearest-even) control word. */
     float scaledMilliseconds = (float)(
-        (long double)atof(token) * (long double)CG_MS_PER_SECOND);
+        (long double)coduo_compat_atof(token) * (long double)CG_MS_PER_SECOND);
     double rounded = nearbyint(
         (double)scaledMilliseconds + CG_SHELLSHOCK_ROUND_NUDGE);
     int32_t durationMs;

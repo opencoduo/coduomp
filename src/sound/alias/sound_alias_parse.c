@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "sound_alias_private.h"
+#include "compat/crt/atof_compat.h"
 
 enum {
     SOUND_ALIAS_CHANNEL_LIST_BUFFER_SIZE = 16384,
@@ -270,7 +271,7 @@ void Com_SoundAliasMasterSlave(const char *text,
     } else {
         node->isMaster = 0;
         node->isSlave = 1;
-        node->slavePercentage = (float)atof(text);
+        node->slavePercentage = (float)coduo_compat_atof(text);
     }
 }
 
@@ -353,28 +354,28 @@ void Com_LoadSoundAliasField(
         strcpy(node->subtitle, text);
         break;
     case SND_ALIAS_FIELD_VOLUME_MIN:
-        node->volumeMin = (float)atof(text);
+        node->volumeMin = (float)coduo_compat_atof(text);
         if (seenColumns[SND_ALIAS_FIELD_VOLUME_MAX] == 0) {
             node->volumeMax = node->volumeMin;
         }
         break;
     case SND_ALIAS_FIELD_VOLUME_MAX:
-        node->volumeMax = (float)atof(text);
+        node->volumeMax = (float)coduo_compat_atof(text);
         break;
     case SND_ALIAS_FIELD_PITCH_MIN:
-        node->pitchMin = (float)atof(text);
+        node->pitchMin = (float)coduo_compat_atof(text);
         if (seenColumns[SND_ALIAS_FIELD_PITCH_MAX] == 0) {
             node->pitchMax = node->pitchMin;
         }
         break;
     case SND_ALIAS_FIELD_PITCH_MAX:
-        node->pitchMax = (float)atof(text);
+        node->pitchMax = (float)coduo_compat_atof(text);
         break;
     case SND_ALIAS_FIELD_DISTANCE_MIN:
-        node->distanceMin = (float)atof(text);
+        node->distanceMin = (float)coduo_compat_atof(text);
         break;
     case SND_ALIAS_FIELD_DISTANCE_MAX:
-        node->distanceMax = (float)atof(text);
+        node->distanceMax = (float)coduo_compat_atof(text);
         break;
     case SND_ALIAS_FIELD_CHANNEL:
         node->channel = Com_SoundAliasChannelForName(text);
@@ -386,7 +387,7 @@ void Com_LoadSoundAliasField(
         node->loop = Com_SoundAliasLoop(text);
         break;
     case SND_ALIAS_FIELD_PROBABILITY:
-        node->selectionWeight = (float)atof(text);
+        node->selectionWeight = (float)coduo_compat_atof(text);
         break;
     case SND_ALIAS_FIELD_LOAD_SPEC:
         node->matchesLoadSpecification =
@@ -396,10 +397,10 @@ void Com_LoadSoundAliasField(
         Com_SoundAliasMasterSlave(text, node);
         break;
     case SND_ALIAS_FIELD_LOD_MIN:
-        node->lodMin = (float)atof(text);
+        node->lodMin = (float)coduo_compat_atof(text);
         break;
     case SND_ALIAS_FIELD_LOD_MAX:
-        node->lodMax = (float)atof(text);
+        node->lodMax = (float)coduo_compat_atof(text);
         break;
     default:
         break;
