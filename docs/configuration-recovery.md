@@ -4,13 +4,21 @@ The improved client no longer recommends resetting settings because a previous
 process did not quit cleanly. It checks config input directly and reports the
 file, line, and reason when settings cannot finish loading. Stock is unchanged.
 
-Each file is checked before any of its commands execute. Checks cover unfinished
+The generated primary settings file and its includes are checked before any of
+their commands execute. Checks cover unfinished
 quotes or block comments, embedded NUL bytes, unsupported text encodings,
 invalid built-in argument counts, and execution limits. Unknown mod commands,
 empty values, comments, legacy text bytes, UTF-8 with or without a BOM, and a
 missing final newline are supported. Config backslashes are ordinary characters.
-Nested files are checked when loaded; a failed include pauses saving even if
+Nested settings files are checked when loaded; a failed include pauses saving even if
 earlier commands already ran. Arbitrary script side effects are not rolled back.
+
+Ordinary scripts such as `server.cfg`, mod configs, and `autoexec_mp.cfg` retain
+the original command-by-command execution behavior. A built-in usage error or
+missing included script reports the problem and lets later commands run.
+Ordinary quoted values may end at the end of their command, as in the original
+interpreter. File reads, command storage, include depth, and expansion remain
+bounded; these scripts do not enter whole-file settings recovery.
 
 When loading fails, the original config and its recovery history are protected
 from automatic saves. The client offers a backup for this session, temporary

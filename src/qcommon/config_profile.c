@@ -86,7 +86,7 @@ qboolean coduomp_config_append(coduomp_config_buffer_t *buffer, const char *comm
     coduomp_config_tokens_t tokens;
     if (written < 0 || written >= (int)sizeof(line) ||
         !coduomp_config_validate(line, (size_t)written, NULL) ||
-        !coduomp_command_tokens(line, (size_t)written, 0, &tokens, NULL) ||
+        !coduomp_command_tokens(line, (size_t)written, 0, qtrue, &tokens, NULL) ||
         tokens.argc != (name[0] ? 3 : 1) || strcmp(tokens.argv[0], command) ||
         (name[0] && (strcmp(tokens.argv[1], name) || strcmp(tokens.argv[2], value)))) {
         snprintf(buffer->error, sizeof(buffer->error), "setting '%s' cannot be represented by config syntax", name);
@@ -279,9 +279,17 @@ void coduomp_config_load_reference(coduomp_config_profile_t *profile, int delta)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: only the generated primary settings file enters
+ * automatic recovery; server and mod scripts retain ordinary exec semantics. */
+qboolean coduomp_config_is_primary(const char *file)
+{
+    return Q_stricmp(file, coduomp_config_name) == 0 ? qtrue : qfalse;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: optional startup files may be absent; a nested
- * include is required. Every present file is validated before publication. */
-static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *profile, const char *file, qboolean nested)
+ * settings include is required. Ordinary scripts are interpreted command by
+ * command, so one usage error or absent include cannot reject the whole file. */
+static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *profile, const char *file, qboolean nested, qboolean checked)
 {
     coduomp_config_input_t *input = calloc(1, sizeof(*input));
     if (!input) {
@@ -307,7 +315,7 @@ static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *pr
             input->result = coduomp_fs_config_read(file, &input->data, &input->size, input->source, error);
     } else
         input->result = coduomp_fs_config_read(file, &input->data, &input->size, input->source, error);
-    if (input->result == 0) {
+    if (input->result == 0 && checked) {
         qboolean optional = !nested && (!Q_stricmp(file, coduomp_config_name) || !Q_stricmp(file, "autoexec_mp.cfg") ||
             !Q_stricmp(file, "autoexec.cfg") || !Q_stricmp(file, "language.cfg"));
         if (!optional) {
@@ -315,8 +323,12 @@ static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *pr
             strcpy(error, "required config file is missing");
         }
     }
-    if (input->result < 0)
-        coduomp_config_fail(profile, input->source, 1, error);
+    if (input->result < 0) {
+        if (checked)
+            coduomp_config_fail(profile, input->source, 1, error);
+        else
+            Com_Printf("%s: %s\n", input->source, error);
+    }
     if (input->result == 1) {
         /* UTF-8's signature is metadata, not a command token. */
         if (input->size >= 3 && !memcmp(input->data, "\xef\xbb\xbf", 3)) {
@@ -324,7 +336,7 @@ static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *pr
             input->size -= 3;
         }
         coduomp_config_error_t problem;
-        if (!coduomp_config_validate(input->data, input->size, &problem)) {
+        if (checked && !coduomp_config_validate(input->data, input->size, &problem)) {
             coduomp_config_fail(profile, input->source, problem.line, problem.reason);
             input->result = -1;
         }
@@ -345,17 +357,17 @@ qboolean coduomp_config_preference(const char *file, const char *name)
             break;
     }
     if (!input) {
-        input = coduomp_config_input(profile, file, qfalse);
+        input = coduomp_config_input(profile, file, qfalse, coduomp_config_is_primary(file));
         if (!input)
             return qfalse;
         input->next = profile->inputs;
         profile->inputs = input;
     }
-    return input->result == 1 && coduomp_config_has_assignment(input->data, input->size, name);
+    return input->result == 1 && coduomp_config_has_assignment(input->data, input->size, name, coduomp_config_is_primary(file));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: return ownership of the exact preflighted bytes. */
-int coduomp_config_read(coduomp_config_profile_t *profile, const char *file, qboolean nested, char **data, size_t *size, char source[CODUOMP_CONFIG_PATH])
+int coduomp_config_read(coduomp_config_profile_t *profile, const char *file, qboolean nested, qboolean checked, char **data, size_t *size, char source[CODUOMP_CONFIG_PATH])
 {
     *data = NULL;
     *size = 0;
@@ -374,7 +386,7 @@ int coduomp_config_read(coduomp_config_profile_t *profile, const char *file, qbo
         }
     }
     if (!input)
-        input = coduomp_config_input(profile, file, nested);
+        input = coduomp_config_input(profile, file, nested, checked);
     if (!input)
         return -1;
     int result = input->result;
@@ -717,10 +729,10 @@ static int coduomp_config_language(const char *data, size_t size)
         return language;
     size_t offset = size >= 3 && !memcmp(data, "\xef\xbb\xbf", 3) ? 3 : 0;
     while (offset < size) {
-        size_t span = coduomp_command_span(data + offset, size - offset);
+        size_t span = coduomp_command_span(data + offset, size - offset, qtrue);
         coduomp_config_tokens_t tokens;
         if (coduomp_config_validate(data + offset, span, NULL) &&
-            coduomp_command_tokens(data + offset, span, 0, &tokens, NULL)) {
+            coduomp_command_tokens(data + offset, span, 0, qtrue, &tokens, NULL)) {
             const char *value = NULL;
             if (tokens.argc == 2 && !Q_stricmp(tokens.argv[0], "cl_language"))
                 value = tokens.argv[1];

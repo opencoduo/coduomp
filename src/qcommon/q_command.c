@@ -59,7 +59,7 @@ typedef struct coduomp_command_origin_s {
     coduomp_config_profile_t *profile;
     size_t references;
     unsigned depth, line, includeLine, commands;
-    qboolean canceled;
+    qboolean canceled, checked;
     char source[CODUOMP_CONFIG_PATH];
 } coduomp_command_origin_t;
 
@@ -112,12 +112,13 @@ static void coduomp_command_tag(size_t offset, size_t length, coduomp_command_or
         origin->references += length;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: preflight and queue an entire owned file, with no
- * visible internal sentinel commands and no partially inserted tail. */
-static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, const char *source, const char *data, size_t size, coduomp_command_origin_t *parent, qboolean append)
+/* NOT_FROM_ORIGINAL_SOURCE: preflight saved settings and queue an entire owned
+ * file, with no visible internal sentinels or partially inserted tail. Ordinary
+ * exec scripts preserve the interpreter's per-command error handling. */
+static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, const char *source, const char *data, size_t size, coduomp_command_origin_t *parent, qboolean append, qboolean checked)
 {
     coduomp_config_error_t error;
-    if (!coduomp_config_validate(data, size, &error)) {
+    if (checked && !coduomp_config_validate(data, size, &error)) {
         coduomp_config_fail(profile, source, error.line, error.reason);
         return qfalse;
     }
@@ -133,6 +134,7 @@ static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, c
         return qfalse;
     }
     origin->profile = profile;
+    origin->checked = checked;
     origin->parent = parent;
     origin->includeLine = parent ? parent->line : 0;
     origin->line = 1;
@@ -157,7 +159,7 @@ static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, c
 /* NOT_FROM_ORIGINAL_SOURCE: ordinary includes retain their executing parent. */
 qboolean coduomp_command_queue_config(coduomp_config_profile_t *profile, const char *source, const char *data, size_t size)
 {
-    return coduomp_command_queue_owned(profile, source, data, size, coduomp_command_origin(), qfalse);
+    return coduomp_command_queue_owned(profile, source, data, size, coduomp_command_origin(), qfalse, qtrue);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: filesystem transitions capture the selected
@@ -167,8 +169,8 @@ void coduomp_command_queue_profile(const char *file, qboolean append)
     coduomp_config_profile_t *profile = coduomp_config_current_profile();
     char *data, source[CODUOMP_CONFIG_PATH];
     size_t size;
-    if (coduomp_config_read(profile, file, qfalse, &data, &size, source) == 1) {
-        coduomp_command_queue_owned(profile, source, data, size, NULL, append);
+    if (coduomp_config_read(profile, file, qfalse, qtrue, &data, &size, source) == 1) {
+        coduomp_command_queue_owned(profile, source, data, size, NULL, append, qtrue);
         free(data);
     }
 }
@@ -286,8 +288,9 @@ void Cbuf_ExecuteText(cbufExec_t executionMode, const char *text)
     }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: command boundaries and capacities match preflight;
- * queued origins remain live across wait, nested exec, and filesystem changes. */
+/* NOT_FROM_ORIGINAL_SOURCE: saved-settings boundaries match preflight, while
+ * ordinary commands retain the original delimiters. Queued origins remain
+ * live across wait, nested exec, and filesystem changes. */
 void Cbuf_Execute(void)
 {
     char command[CBUF_COMMAND_CAPACITY];
@@ -296,9 +299,9 @@ void Cbuf_Execute(void)
             --cmd_wait;
             return;
         }
-        size_t length = coduomp_command_span(cmd_text.data, (size_t)cmd_text.cursize);
-        size_t consumed = length + (length < (size_t)cmd_text.cursize);
         coduomp_command_origin_t *origin = coduomp_command_origins[0];
+        size_t length = coduomp_command_span(cmd_text.data, (size_t)cmd_text.cursize, origin && origin->checked);
+        size_t consumed = length + (length < (size_t)cmd_text.cursize);
         coduomp_command_frame_t *frame = malloc(sizeof(*frame));
         if (!frame) {
             coduomp_command_failure(origin, "not enough memory to execute settings");
@@ -348,13 +351,15 @@ void Cbuf_Execute(void)
     }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: configs are checked as whole files, and the exact
- * accepted snapshot is queued with its source profile and include ancestry. */
+/* NOT_FROM_ORIGINAL_SOURCE: saved settings are checked as whole files; ordinary
+ * server/mod scripts retain command-by-command execution. Both queue their
+ * exact read snapshot with its source profile and bounded include ancestry. */
 void Cmd_Exec_f(void)
 {
     if (Cmd_Argc() != 2) {
         Com_Printf("exec <filename> : execute a script file\n");
-        coduomp_command_failure(coduomp_command_origin(), "exec needs a filename");
+        if (coduomp_command_origin() && coduomp_command_origin()->checked)
+            coduomp_command_failure(coduomp_command_origin(), "exec needs a filename");
         return;
     }
     char filename[MAX_QPATH];
@@ -365,12 +370,13 @@ void Cmd_Exec_f(void)
         return;
     }
     coduomp_command_origin_t *parent = coduomp_command_origin();
+    const qboolean checked = (parent && parent->checked) || coduomp_config_is_primary(filename);
     coduomp_config_profile_t *profile = parent ? parent->profile : coduomp_config_current_profile();
     char *data, source[CODUOMP_CONFIG_PATH];
     size_t size;
-    if (coduomp_config_read(profile, filename, parent != NULL, &data, &size, source) != 1) {
+    if (coduomp_config_read(profile, filename, parent != NULL, checked, &data, &size, source) != 1) {
         Com_Printf("couldn't exec %s\n", filename);
-        if (parent)
+        if (parent && parent->checked)
             coduomp_command_failure(parent, "included config could not be loaded");
         return;
     }
@@ -379,7 +385,10 @@ void Cmd_Exec_f(void)
     if (consoleLockout && consoleLockout->integer)
         snprintf(notice, sizeof(notice), "say Server exec: %s, size: %i, checksum: %i", filename,
             (int)size, (int32_t)Com_BlockChecksum(data, (int32_t)size));
-    if (size + 1 + (notice[0] ? strlen(notice) + 1 : 0) > (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
+    /* Ordinary exec inserts a NUL-terminated string but reports the complete
+     * file's size and checksum. Checked settings reject embedded NULs. */
+    const size_t queuedSize = checked ? size : strlen(data);
+    if (queuedSize + 1 + (notice[0] ? strlen(notice) + 1 : 0) > (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         coduomp_config_fail(profile, source, 1, "command queue cannot accept this complete file");
         coduomp_command_failure(parent, "included config could not be queued");
         free(data);
@@ -387,7 +396,7 @@ void Cmd_Exec_f(void)
     }
     if (notice[0])
         Cbuf_InsertText(notice);
-    if (coduomp_command_queue_config(profile, source, data, size))
+    if (coduomp_command_queue_owned(profile, source, data, queuedSize, parent, qfalse, checked))
         Com_Printf("execing %s\n", filename);
     else
         coduomp_command_failure(parent, "included config could not be queued");
@@ -508,8 +517,9 @@ void Cmd_ArgsBuffer(char *buffer, int32_t bufferLength)
     Q_strncpyz(buffer, Cmd_Args(1), bufferLength);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: publish only a complete tokenization using the
- * same length-delimited parser as config validation and serialization. */
+/* NOT_FROM_ORIGINAL_SOURCE: publish bounded execution tokens using the same
+ * parser as config validation, while retaining end-of-input token termination.
+ * Saved settings have already passed the stricter whole-file preflight. */
 void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
 {
     cmd_argc = 0;
@@ -517,7 +527,8 @@ void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
         return;
     coduomp_config_tokens_t tokens;
     coduomp_config_error_t error;
-    if (!coduomp_command_tokens(text, strlen(text), maxTokens, &tokens, &error)) {
+    const coduomp_command_origin_t *origin = coduomp_command_origin();
+    if (!coduomp_command_tokens(text, strlen(text), maxTokens, origin && origin->checked, &tokens, &error)) {
         Com_Printf("Command could not be parsed: %s\n", error.reason);
         coduomp_command_failure(coduomp_command_origin(), error.reason);
         return;
