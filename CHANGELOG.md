@@ -8,7 +8,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 - Spawn reload animation is fixed, it won't play anymore
 - Local server map list limit increased to 2048
-- Sound Options has independent Effects Volume and Music Volume sliders. `playMusic 0` remains available as a saved hard music switch.
+- Sound Options has independent Effects Volume and Music Volume sliders.
 
 ### Server browser
 

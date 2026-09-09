@@ -213,15 +213,12 @@ profile's initial `musicVolume` inherits its existing `mss_volume`, so enabling
 the separate control does not change that profile's established mix. Profiles
 that already disabled music start the new slider at zero.
 
-Disable music completely with `playMusic 0` in the console. This saved setting
-stops current music and blocks new map, menu, and end-match music without a
-restart. It covers the background-music slot, aliases on the `music` channel,
-and files under `sound/music/`, while leaving other sound effects and ambient
-sounds enabled. Custom maps should use that channel or directory for music
-played outside the background-music slot.
-
-Use `playMusic 1` to allow music again (the default). Stopped tracks are
-not replayed automatically; music plays when the game next requests it.
+Setting Music Volume to zero silences the background-music slot, aliases on the
+`music` channel, and files under `sound/music/`, while leaving other sound
+effects and ambient sounds enabled. Custom maps should use that channel or
+directory for music played outside the background-music slot. Profiles that
+used the former `playMusic 0` setting migrate to zero Music Volume, and the
+retired cvar is removed from later config writes.
 
 Linux builds default `CASE_SENSITIVE_FS=1`. This preserves the original
 case-insensitive game-file lookup on a case-sensitive host filesystem without

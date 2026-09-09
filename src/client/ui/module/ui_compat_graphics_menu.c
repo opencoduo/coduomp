@@ -382,8 +382,6 @@ void ui_compat_extend_sound_menu(void)
     musicItem->typeData = musicRange;
     musicItem->text = String_Alloc("@CODUOMP_MUSIC_VOLUME");
     musicItem->cvar = String_Alloc("musicVolume");
-    musicItem->action = ui_compat_prepend_menu_script(
-        "setcvar playMusic 1; ", musicItem->action);
 
     qualityItem->window.rectClient.y += 30.0f;
     providerItem->window.rectClient.y += 30.0f;

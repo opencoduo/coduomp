@@ -609,9 +609,8 @@ cvar_t *mss_3d_provider;                  /* original 0x0491cd68 */
 cvar_t *mss_volume;                       /* original 0x0491cd64 */
 cvar_t *mss_roomtype;                     /* original 0x0491cd78 */
 cvar_t *mss_wetlevel;                     /* original 0x0491cd7c */
-/* NOT_FROM_ORIGINAL_SOURCE: archived, backend-independent music preferences. */
+/* NOT_FROM_ORIGINAL_SOURCE: archived, backend-independent music volume. */
 static cvar_t *mss_musicVolume;
-static cvar_t *mss_playMusic;
 audio_driver_t mss_digitalDriver; /* original 0x009cbeb8 */
 int32_t mss_sampleRate;                   /* original 0x009cbec0 */
 int32_t mss_sampleBits;                   /* original 0x009cbec4 */
@@ -1397,37 +1396,6 @@ static float audio_sound_gain(const snd_alias_t *alias, int32_t channelIndex)
                : mss_effectVolume;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: the hard music switch shares the same classifier
- * as the continuously adjustable music-volume control. */
-static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIndex)
-{
-    return mss_playMusic != NULL && mss_playMusic->integer == 0 &&
-           audio_sound_is_music(alias, channelIndex);
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: stop current music even while paused. Releasing
- * its channels also prevents silent music from ducking sound effects. */
-static void audio_stop_disabled_music(void)
-{
-    if (mss_playMusic == NULL || mss_playMusic->integer != 0)
-        return;
-
-    for (int32_t channelIndex = MSS_3D_CHANNEL_FIRST; channelIndex < mss_max3DChannels; ++channelIndex) {
-        if (!MSS_Is3DChannelFree(channelIndex) && audio_music_disabled(mss_channelInfo[channelIndex].alias, channelIndex))
-            MSS_Stop3DChannel(channelIndex);
-    }
-    const int32_t endStreamChannel = MSS_STREAM_CHANNEL_FIRST + mss_streamChannelCount;
-    for (int32_t channelIndex = MSS_STREAM_CHANNEL_FIRST; channelIndex < endStreamChannel; ++channelIndex) {
-        if (!MSS_IsStreamChannelFree(channelIndex) && audio_music_disabled(mss_channelInfo[channelIndex].alias, channelIndex))
-            MSS_StopStreamChannel(channelIndex);
-    }
-    const int32_t end2DChannel = MSS_2D_CHANNEL_FIRST + mss_2dChannelCount;
-    for (int32_t channelIndex = MSS_2D_CHANNEL_FIRST; channelIndex < end2DChannel; ++channelIndex) {
-        if (!MSS_Is2DChannelFree(channelIndex) && audio_music_disabled(mss_channelInfo[channelIndex].alias, channelIndex))
-            MSS_Stop2DChannel(channelIndex);
-    }
-}
-
 /* Source: CoDUOMP.exe 0x004508e0..0x004508ef.
  * Name: exact same-module Mac symbol MSS_Alloc. Miles rounds requests to four
  * bytes before taking 32-byte-aligned permanent hunk storage. */
@@ -1568,15 +1536,23 @@ void MSS_Init(void)
     mss_volume = Cvar_Get("mss_volume", "0.8", CVAR_ARCHIVE);
     const qboolean musicVolumeAlreadyConfigured =
         Cvar_FindVar("musicVolume") != NULL;
-    mss_playMusic = Cvar_Get("playMusic", "1", CVAR_ARCHIVE);
+    cvar_t *const legacyPlayMusic = Cvar_FindVar("playMusic");
     /* NOT_FROM_ORIGINAL_SOURCE: a profile's first independent music value
      * inherits its existing effects volume to avoid an audible migration.
-     * A profile that had music disabled starts its new slider at silence. */
+     * A profile that used the retired playMusic switch starts its new slider
+     * at silence, then drops that obsolete cvar from future config writes. */
     mss_musicVolume = Cvar_Get(
         "musicVolume", "0.8", CVAR_ARCHIVE);
     if (musicVolumeAlreadyConfigured == qfalse) {
         Cvar_Set("musicVolume",
-                 mss_playMusic->integer == 0 ? "0" : mss_volume->string);
+                 legacyPlayMusic != NULL && legacyPlayMusic->integer == 0
+                     ? "0"
+                     : mss_volume->string);
+    }
+    if (legacyPlayMusic != NULL &&
+        (legacyPlayMusic->flags & CVAR_ARCHIVE) != 0) {
+        legacyPlayMusic->flags &= ~(uint32_t)CVAR_ARCHIVE;
+        cvar_modifiedFlags |= CVAR_ARCHIVE;
     }
     mss_roomtype = Cvar_Get("mss_roomtype", "0", CVAR_CHEAT);
     mss_wetlevel = Cvar_Get("mss_wetlevel", "0", CVAR_CHEAT);
@@ -1892,8 +1868,6 @@ int32_t MSS_Restore3DChannel(const uint8_t *buffer, int32_t offset,
     }
 
     int32_t channelIndex = -1;
-    if (audio_music_disabled(primaryAlias, AUDIO_UNASSIGNED_CHANNEL))
-        return offset;
     (void)MSS_StartAlias3DSample(
         &channelIndex, primaryAlias, savedState.position,
         secondaryAlias, savedChannel.aliasBlend,
@@ -2002,8 +1976,6 @@ int32_t MSS_Restore2DChannel(const uint8_t *buffer, int32_t offset,
     }
 
     int32_t channelIndex = -1;
-    if (audio_music_disabled(primaryAlias, AUDIO_UNASSIGNED_CHANNEL))
-        return offset;
     (void)MSS_StartAlias2DSample(
         &channelIndex, primaryAlias, secondaryAlias,
         savedChannel.aliasBlend, savedChannel.effectId,
@@ -2145,8 +2117,6 @@ int32_t MSS_RestoreStreamChannel(const uint8_t *buffer,
     }
 
     int32_t channelIndex = requestedChannelIndex;
-    if (audio_music_disabled(primaryAlias, channelIndex))
-        return offset;
     int32_t durationMsec;
     if (requestedChannelIndex < 0) {
         durationMsec = MSS_StartAliasStream(
@@ -4251,9 +4221,6 @@ int32_t MSS_PlaySoundAlias_Internal(
     if (outChannelIndex != NULL)
         *outChannelIndex = -1;
 
-    if (audio_music_disabled(alias, AUDIO_UNASSIGNED_CHANNEL))
-        return 0;
-
     if (MSS_IsAliasChannel3D(alias->channel)) {
         const long double oneMinusBlend =
             (long double)1.0f - (long double)aliasBlend;
@@ -4479,8 +4446,6 @@ int32_t MSS_PlayLocalSoundAlias(const char *name, sndAliasBank_t bank)
 void MSS_StartBackground(int32_t backgroundIndex, snd_alias_t *alias,
                          int32_t fadeTimeMsec)
 {
-    if (audio_music_disabled(alias, MSS_STREAM_CHANNEL_FIRST + backgroundIndex))
-        return;
     MSS_UpdatePause();
 
     if (MSS_IsAliasChannel3D(alias->channel)) {
@@ -5551,7 +5516,6 @@ void MSS_Update(void)
     if (mss_digitalDriver == NULL)
         return;
 
-    audio_stop_disabled_music();
     mss_cpuPercent = audio_digital_CPU_percent(mss_digitalDriver);
     if (com_statmon->integer != 0 &&
         mss_cpuPercent > MSS_SOUND_CPU_WARNING_THRESHOLD_PERCENT) {
