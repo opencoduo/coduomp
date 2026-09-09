@@ -46,6 +46,7 @@ void Cvar_Reset_f(void);
 void Cvar_List_f(void);
 void Cvar_Dump_f(void);
 void Cvar_Restart_f(void);
+void coduomp_cvar_reset_defaults(void);
 void Cvar_DumpToChannel(int32_t channel);
 void Cvar_WriteVariables(int32_t handle);
 void Cvar_WriteDefaults(int32_t handle);

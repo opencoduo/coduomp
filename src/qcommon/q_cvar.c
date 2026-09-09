@@ -1117,6 +1117,18 @@ void Cvar_Restart_f(void)
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: settings recovery can run after subsystems have
+ * retained cvar_t pointers. Reset values without unlinking or clearing any
+ * registry record, including command-line-created records later adopted by a
+ * subsystem. */
+void coduomp_cvar_reset_defaults(void)
+{
+    for (cvar_t *cvar = cvar_vars; cvar != NULL; cvar = cvar->next) {
+        if ((cvar->flags & CVAR_RESTART_PRESERVE_MASK) == 0)
+            (void)Cvar_Set2(cvar->name, cvar->resetString, qtrue);
+    }
+}
+
 /* Source: CoDUOMP.exe 0x0043edd0..0x0043ee6c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043edd0_0043ee6d.mcode.
  * Name: exact same-module Mac symbol Cvar_AddCommands. */

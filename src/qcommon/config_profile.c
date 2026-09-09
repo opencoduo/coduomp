@@ -293,14 +293,17 @@ static coduomp_config_input_t *coduomp_config_input(coduomp_config_profile_t *pr
 {
     coduomp_config_input_t *input = calloc(1, sizeof(*input));
     if (!input) {
-        coduomp_config_fail(profile, file, 1, "not enough memory to read settings");
+        if (checked)
+            coduomp_config_fail(profile, file, 1, "not enough memory to read settings");
+        else
+            Com_Printf("%s: not enough memory to read config\n", file);
         return NULL;
     }
     Q_strncpyz(input->name, file, sizeof(input->name));
     char error[256] = "could not read config";
     if (com_journal && com_journal->integer) {
         input->result = coduomp_fs_config_read(file, &input->data, &input->size, input->source, error);
-        if (com_journal->integer == 2)
+        if (com_journal->integer == 2 && checked)
             coduomp_config_fail(profile, input->source, 1, "journal playback uses temporary settings");
     } else if (profile && !Q_stricmp(file, coduomp_config_name)) {
         coduomp_config_revision_t observed;
@@ -373,7 +376,7 @@ int coduomp_config_read(coduomp_config_profile_t *profile, const char *file, qbo
     *size = 0;
     if (!profile)
         profile = coduomp_config_active;
-    if (profile)
+    if (profile && checked)
         profile->loading = qtrue;
     coduomp_config_input_t *input = NULL;
     if (profile) {
@@ -775,11 +778,12 @@ static void coduomp_config_queue_defaults(void)
                 language = (int)parsed;
         }
     }
+    coduomp_cvar_reset_defaults();
     char commands[128];
     if (language != CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE)
-        snprintf(commands, sizeof(commands), "unbindall\ncvar_restart\nexec default_mp.cfg\nseta cl_language \"%i\"\n", language);
+        snprintf(commands, sizeof(commands), "unbindall\nexec default_mp.cfg\nseta cl_language \"%i\"\n", language);
     else
-        strcpy(commands, "unbindall\ncvar_restart\nexec default_mp.cfg\n");
+        strcpy(commands, "unbindall\nexec default_mp.cfg\n");
     Cbuf_InsertText(commands);
 }
 

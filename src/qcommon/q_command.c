@@ -86,7 +86,8 @@ static void coduomp_command_release(coduomp_command_origin_t *origin)
     if (!origin || --origin->references)
         return;
     coduomp_command_origin_t *parent = origin->parent;
-    coduomp_config_load_reference(origin->profile, -1);
+    if (origin->checked)
+        coduomp_config_load_reference(origin->profile, -1);
     free(origin);
     coduomp_command_release(parent);
 }
@@ -94,13 +95,25 @@ static void coduomp_command_release(coduomp_command_origin_t *origin)
 /* NOT_FROM_ORIGINAL_SOURCE: report failures with the complete include chain. */
 static void coduomp_command_failure(coduomp_command_origin_t *origin, const char *reason)
 {
-    if (!origin)
+    if (!origin || !origin->checked)
         return;
     coduomp_config_fail(origin->profile, origin->source, origin->line, reason);
     for (coduomp_command_origin_t *child = origin; child->parent; child = child->parent)
         Com_Printf("  included from %s:%u\n", child->parent->source, child->includeLine);
-    for (coduomp_command_origin_t *ancestor = origin; ancestor; ancestor = ancestor->parent)
-        ancestor->canceled = qtrue;
+    for (coduomp_command_origin_t *ancestor = origin; ancestor; ancestor = ancestor->parent) {
+        if (ancestor->checked)
+            ancestor->canceled = qtrue;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: ordinary exec failures remain console diagnostics
+ * and cannot place the protected settings profile into recovery. */
+static void coduomp_command_reject(coduomp_config_profile_t *profile, const char *source, unsigned line, const char *reason, qboolean checked)
+{
+    if (checked)
+        coduomp_config_fail(profile, source, line, reason);
+    else
+        Com_Printf("%s:%u: %s\n", source, line, reason);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: match metadata moves to command-buffer moves. */
@@ -124,13 +137,13 @@ static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, c
     }
     if ((parent && parent->depth >= CODUOMP_EXEC_DEPTH) || cmd_text.cursize < 0 ||
         size + 1 > (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
-        coduomp_config_fail(profile, source, 1, parent && parent->depth >= CODUOMP_EXEC_DEPTH ?
-            "config include depth exceeded" : "command queue cannot accept this complete file");
+        coduomp_command_reject(profile, source, 1, parent && parent->depth >= CODUOMP_EXEC_DEPTH ?
+            "config include depth exceeded" : "command queue cannot accept this complete file", checked);
         return qfalse;
     }
     coduomp_command_origin_t *origin = calloc(1, sizeof(*origin));
     if (!origin) {
-        coduomp_config_fail(profile, source, 1, "not enough memory to queue settings");
+        coduomp_command_reject(profile, source, 1, "not enough memory to queue config", checked);
         return qfalse;
     }
     origin->profile = profile;
@@ -142,7 +155,8 @@ static qboolean coduomp_command_queue_owned(coduomp_config_profile_t *profile, c
     snprintf(origin->source, sizeof(origin->source), "%s", source);
     if (parent)
         ++parent->references;
-    coduomp_config_load_reference(profile, 1);
+    if (checked)
+        coduomp_config_load_reference(profile, 1);
     size_t inserted = size + 1;
     size_t offset = append ? (size_t)cmd_text.cursize : 0;
     if (!append) {
@@ -321,7 +335,7 @@ void Cbuf_Execute(void)
             memcpy(command, cmd_text.data, length);
             command[length] = '\0';
         }
-        if (origin && origin->profile != coduomp_config_current_profile()) {
+        if (origin && origin->checked && origin->profile != coduomp_config_current_profile()) {
             coduomp_command_failure(origin, "queued config belongs to a departed profile");
             coduomp_config_pause("a profile changed before queued settings finished");
             execute = qfalse;
@@ -389,7 +403,7 @@ void Cmd_Exec_f(void)
      * file's size and checksum. Checked settings reject embedded NULs. */
     const size_t queuedSize = checked ? size : strlen(data);
     if (queuedSize + 1 + (notice[0] ? strlen(notice) + 1 : 0) > (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
-        coduomp_config_fail(profile, source, 1, "command queue cannot accept this complete file");
+        coduomp_command_reject(profile, source, 1, "command queue cannot accept this complete file", checked);
         coduomp_command_failure(parent, "included config could not be queued");
         free(data);
         return;

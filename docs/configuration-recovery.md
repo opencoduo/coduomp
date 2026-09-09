@@ -18,7 +18,8 @@ the original command-by-command execution behavior. A built-in usage error or
 missing included script reports the problem and lets later commands run.
 Ordinary quoted values may end at the end of their command, as in the original
 interpreter. File reads, command storage, include depth, and expansion remain
-bounded; these scripts do not enter whole-file settings recovery.
+bounded; these scripts do not enter whole-file settings recovery or keep a
+settings profile open across a map or filesystem transition.
 
 When loading fails, the original config and its recovery history are protected
 from automatic saves. The client offers a backup for this session, temporary
@@ -29,6 +30,8 @@ Resetting to temporary defaults preserves the last complete, valid `cl_language`
 assignment recoverable from the existing config, even when another command is
 malformed. If none can be recovered, the current language preference is retained.
 The retained preference is included when the resulting settings are exported.
+Registered cvar records remain stable when defaults are applied, so subsystems
+that have already initialized keep valid references.
 
 | Console command | Effect |
 | --- | --- |
