@@ -8,6 +8,13 @@
 #include <arm_neon.h>
 #endif
 
+#if (defined(__i386__) || defined(__x86_64__)) && defined(__SSE__)
+#include <xmmintrin.h>
+#define CODUOMP_XMODEL_NATIVE_SSE 1
+#else
+#define CODUOMP_XMODEL_NATIVE_SSE 0
+#endif
+
 enum {
     RB_XMODEL_TEXCOORD_POINTER_COUNT = 4
 };
@@ -206,6 +213,7 @@ static void RB_TransformRigidVertex(
 #endif
 }
 
+#if !CODUOMP_XMODEL_NATIVE_SSE
 /* NOT_FROM_ORIGINAL_SOURCE: portable scalar spelling of the four-lane SSE
  * arithmetic used by RB_SurfaceXModelRigidSSE and WeightSSE. */
 static void RB_TransformVertexSSEOrder(
@@ -246,6 +254,7 @@ static void RB_TransformWeightedPrimarySSEOrder(
             normal[2] * matrix->axis[2][component];
     }
 }
+#endif
 
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the inlined x87 loop at
  * CoDUOMP.exe 0x0052116f..0x005211d5. It associates X as axis 1 + axis 2 +
@@ -414,12 +423,39 @@ void RB_SurfaceXModelRigidSSE(renderer_surface_t *surfaceData)
         (uint32_t)(int32_t)surface->vertexCount;
     uint32_t vertexIndex = 0;
 
+#if CODUOMP_XMODEL_NATIVE_SSE
+    /* Each packed multiply/add rounds to binary32 independently of x87.
+     * The rigid surface shares one matrix across all of its vertices. */
+    const __m128 axis0 = _mm_loadu_ps(boneMatrix->axis[0]);
+    const __m128 axis1 = _mm_loadu_ps(boneMatrix->axis[1]);
+    const __m128 axis2 = _mm_loadu_ps(boneMatrix->axis[2]);
+    const __m128 origin = _mm_loadu_ps(boneMatrix->origin);
+#endif
+
     do {
         const XSurfaceRigidVert *vertex =
             &surface->vertexData.rigidVertices[vertexIndex];
+#if CODUOMP_XMODEL_NATIVE_SSE
+        __m128 position = _mm_mul_ps(_mm_set1_ps(vertex->position[0]), axis0);
+        __m128 normal = _mm_mul_ps(_mm_set1_ps(vertex->normal[0]), axis0);
+        position = _mm_add_ps(position, _mm_mul_ps(_mm_set1_ps(vertex->position[1]), axis1));
+        normal = _mm_add_ps(normal, _mm_mul_ps(_mm_set1_ps(vertex->normal[1]), axis1));
+        position = _mm_add_ps(position, _mm_mul_ps(_mm_set1_ps(vertex->position[2]), axis2));
+        normal = _mm_add_ps(normal, _mm_mul_ps(_mm_set1_ps(vertex->normal[2]), axis2));
+        position = _mm_add_ps(position, origin);
+
+        /* The destination streams own three lanes per vertex. */
+        _mm_store_ss(&range.normals[vertexIndex][0], normal);
+        _mm_store_ss(&range.normals[vertexIndex][1], _mm_shuffle_ps(normal, normal, _MM_SHUFFLE(1, 1, 1, 1)));
+        _mm_store_ss(&range.normals[vertexIndex][2], _mm_shuffle_ps(normal, normal, _MM_SHUFFLE(2, 2, 2, 2)));
+        _mm_store_ss(&range.positions[vertexIndex][0], position);
+        _mm_store_ss(&range.positions[vertexIndex][1], _mm_shuffle_ps(position, position, _MM_SHUFFLE(1, 1, 1, 1)));
+        _mm_store_ss(&range.positions[vertexIndex][2], _mm_shuffle_ps(position, position, _MM_SHUFFLE(2, 2, 2, 2)));
+#else
         RB_TransformVertexSSEOrder(
             boneMatrix, vertex->normal, vertex->position,
             range.positions[vertexIndex], range.normals[vertexIndex]);
+#endif
         ++vertexIndex;
         remainingVertices -= 1u;
     } while (remainingVertices != 0U);
@@ -703,11 +739,66 @@ void RB_SurfaceXModelWeightSSE(renderer_surface_t *surfaceData)
         surface->weightedPoints;
     uint32_t remainingVertices =
         (uint32_t)(int32_t)surface->vertexCount;
+#if CODUOMP_XMODEL_NATIVE_SSE
+    uint32_t vertexIndex = 0;
+    do {
+        const XSurfaceBlendVertNoWeight *primary =
+            (const XSurfaceBlendVertNoWeight *)(const void *)primaryCursor;
+        const DObjSkelMat *primaryMatrix = (const DObjSkelMat *)(const void *)(
+            (const uint8_t *)basePose + primary->blend.boneMatrixOffset);
+        const __m128 axis0 = _mm_loadu_ps(primaryMatrix->axis[0]);
+        const __m128 axis1 = _mm_loadu_ps(primaryMatrix->axis[1]);
+        const __m128 axis2 = _mm_loadu_ps(primaryMatrix->axis[2]);
+        const __m128 origin = _mm_loadu_ps(primaryMatrix->origin);
+
+        __m128 position = _mm_mul_ps(_mm_set1_ps(primary->blend.position[0]), axis0);
+        __m128 normal = _mm_mul_ps(_mm_set1_ps(primary->normal[0]), axis0);
+        position = _mm_add_ps(position, _mm_mul_ps(_mm_set1_ps(primary->blend.position[1]), axis1));
+        normal = _mm_add_ps(normal, _mm_mul_ps(_mm_set1_ps(primary->normal[1]), axis1));
+        /* The primary point adds the origin before the third axis product. */
+        position = _mm_add_ps(position, origin);
+        position = _mm_add_ps(position, _mm_mul_ps(_mm_set1_ps(primary->blend.position[2]), axis2));
+        normal = _mm_add_ps(normal, _mm_mul_ps(_mm_set1_ps(primary->normal[2]), axis2));
+        _mm_store_ss(&range.normals[vertexIndex][0], normal);
+        _mm_store_ss(&range.normals[vertexIndex][1], _mm_shuffle_ps(normal, normal, _MM_SHUFFLE(1, 1, 1, 1)));
+        _mm_store_ss(&range.normals[vertexIndex][2], _mm_shuffle_ps(normal, normal, _MM_SHUFFLE(2, 2, 2, 2)));
+
+        if (primary->additiveWeightCount <= 0) {
+            primaryCursor += sizeof(*primary);
+        } else {
+            const XSurfaceBlendVert *expandedPrimary =
+                (const XSurfaceBlendVert *)(const void *)primaryCursor;
+            position = _mm_mul_ps(position, _mm_set1_ps(expandedPrimary->primaryWeight));
+            uint32_t remainingWeights = (uint32_t)primary->additiveWeightCount;
+            do {
+                const DObjSkelMat *additiveMatrix = (const DObjSkelMat *)(const void *)(
+                    (const uint8_t *)basePose + additivePoint->blend.boneMatrixOffset);
+                __m128 transformed = _mm_mul_ps(
+                    _mm_set1_ps(additivePoint->blend.position[0]), _mm_loadu_ps(additiveMatrix->axis[0]));
+                transformed = _mm_add_ps(transformed, _mm_mul_ps(
+                    _mm_set1_ps(additivePoint->blend.position[1]), _mm_loadu_ps(additiveMatrix->axis[1])));
+                transformed = _mm_add_ps(transformed, _mm_mul_ps(
+                    _mm_set1_ps(additivePoint->blend.position[2]), _mm_loadu_ps(additiveMatrix->axis[2])));
+                transformed = _mm_add_ps(transformed, _mm_loadu_ps(additiveMatrix->origin));
+                transformed = _mm_mul_ps(transformed, _mm_set1_ps(additivePoint->weight));
+                position = _mm_add_ps(position, transformed);
+                ++additivePoint;
+                remainingWeights -= 1u;
+            } while (remainingWeights != 0U);
+            primaryCursor += sizeof(*expandedPrimary);
+        }
+
+        _mm_store_ss(&range.positions[vertexIndex][0], position);
+        _mm_store_ss(&range.positions[vertexIndex][1], _mm_shuffle_ps(position, position, _MM_SHUFFLE(1, 1, 1, 1)));
+        _mm_store_ss(&range.positions[vertexIndex][2], _mm_shuffle_ps(position, position, _MM_SHUFFLE(2, 2, 2, 2)));
+        ++vertexIndex;
+        remainingVertices -= 1u;
+    } while (remainingVertices != 0U);
+#else
     /* NOT_FROM_ORIGINAL_SOURCE: non-stock builds walk the fixed destination
      * streams directly instead of reconstructing indexed addresses. */
     vec3_t *position = range.positions;
     vec3_t *normal = range.normals;
-
     do {
         const XSurfaceBlendVertNoWeight *primary =
             (const XSurfaceBlendVertNoWeight *)(const void *)
@@ -763,4 +854,5 @@ void RB_SurfaceXModelWeightSSE(renderer_surface_t *surfaceData)
         ++normal;
         remainingVertices -= 1u;
     } while (remainingVertices != 0U);
+#endif
 }

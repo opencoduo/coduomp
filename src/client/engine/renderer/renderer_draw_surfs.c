@@ -548,9 +548,9 @@ void R_AddEntityDrawSurf(trRefEntity_t *entity, DObj *obj,
     R_AddDrawSurf(&entitySurface->base, storageMode, shader, 0, 1, 0);
     ++tr.refdef.entitySurfaceCount;
 
-    if (cg_skybox->integer == 2 &&
+    if (cg_shadows->integer == 2 &&
         (entity->e.renderfx & RF_DOBJ_MODEL) != 0) {
-        R_AddDrawSurf(&entitySurface->base, tr.defaultStorageMode,
+        R_AddDrawSurf(&entitySurface->base, storageMode,
                       tr.stencilShadowShader, 0, 0, 0);
         /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     }
@@ -622,7 +622,7 @@ void R_AddXModelSurfaces(trRefEntity_t *entity)
 
     surfaceCount = DObjGetNumSurfaces(obj, lodIndices);
     /* Each accepted model surface owns one entity-surface record. Its
-     * optional skybox shadow draw references that same record. */
+     * optional stencil shadow draw references that same record. */
     if (tr.refdef.entitySurfaceCount + surfaceCount >
         R_MAX_ENTITY_SURFACES) {
         if (com_developer->integer != 0)
@@ -744,7 +744,7 @@ void R_AddXModelSurfaces(trRefEntity_t *entity)
     if (r_xdebug->string[0] != '\0')
         R_XModelDebug(entity, partBits);
 
-    if ((thirdPersonOnly == qfalse || cg_skybox->integer > 1) &&
+    if ((thirdPersonOnly == qfalse || cg_shadows->integer > 1) &&
         needsLighting != qfalse) {
         R_SetupEntityLighting(&tr.refdef, entity);
     }

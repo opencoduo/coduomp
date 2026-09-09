@@ -750,7 +750,7 @@ void R_PickLights(const trRefdef_t *refdef, const vec3_t point,
 /* Source: CoDUOMP.exe 0x004c7980..0x004c7aab.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004c7980_004c7aac.mcode.
  * Name and parameter roles: same-module Mac symbol R_SetupEntityLighting.
- * The inverse-axis debug direction is deliberately accumulated through the
+ * The inverse-axis shadow direction is deliberately accumulated through the
  * entity field after each source-axis contribution, matching the DLL's float
  * stores and rounding at 0x004c79f3..0x004c7aa1. */
 void R_SetupEntityLighting(const trRefdef_t *refdef,
@@ -774,7 +774,7 @@ void R_SetupEntityLighting(const trRefdef_t *refdef,
     }
     R_PickLights(refdef, samplePoint, entity, qtrue);
 
-    if (r_debugEntLight->integer == 2) {
+    if (cg_shadows->integer == 2) {
         axis_t inverseAxis;
 
         MatrixInverse(entity->e.axis, inverseAxis);
@@ -823,7 +823,7 @@ void R_SetupStaticModelLighting(const trRefdef_t *refdef,
                       lighting->diffuseSunContribution, lighting->lights,
                       qtrue);
 
-    if (r_debugEntLight->integer == 2) {
+    if (cg_shadows->integer == 2) {
         axis_t inverseAxis;
 
         MatrixInverse(entity->e.axis, inverseAxis);
