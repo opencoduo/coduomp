@@ -517,13 +517,23 @@ void R_AddEntityDrawSurf(trRefEntity_t *entity, DObj *obj,
     int32_t storageMode = tr.defaultStorageMode;
 
     if (XSurfaceGetBoneIndex(surface) == -1) {
+#if defined(__APPLE__) && defined(__aarch64__)
+        /* NOT_FROM_ORIGINAL_SOURCE: Apple ARM64 implements the packed model
+         * handlers with NEON; the hardware SSE capability remains x86-only. */
+        entitySurface->base.surfaceType = R_SURFACE_XMODEL_WEIGHT_SSE;
+#else
         entitySurface->base.surfaceType = sysSseSupported != qfalse
             ? R_SURFACE_XMODEL_WEIGHT_SSE
             : R_SURFACE_XMODEL_WEIGHT;
+#endif
     } else {
+#if defined(__APPLE__) && defined(__aarch64__)
+        entitySurface->base.surfaceType = R_SURFACE_XMODEL_RIGID_SSE;
+#else
         entitySurface->base.surfaceType = sysSseSupported != qfalse
             ? R_SURFACE_XMODEL_RIGID_SSE
             : R_SURFACE_XMODEL_RIGID;
+#endif
 
         if ((shader->surfaceFlags &
              SHADER_XMODEL_OPTIMIZATION_BLOCK_MASK) == 0) {

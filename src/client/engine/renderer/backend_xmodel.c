@@ -213,7 +213,7 @@ static void RB_TransformRigidVertex(
 #endif
 }
 
-#if !CODUOMP_XMODEL_NATIVE_SSE
+#if !CODUOMP_XMODEL_NATIVE_SSE && !(defined(__APPLE__) && defined(__aarch64__))
 /* NOT_FROM_ORIGINAL_SOURCE: portable scalar spelling of the four-lane SSE
  * arithmetic used by RB_SurfaceXModelRigidSSE and WeightSSE. */
 static void RB_TransformVertexSSEOrder(
@@ -430,6 +430,13 @@ void RB_SurfaceXModelRigidSSE(renderer_surface_t *surfaceData)
     const __m128 axis1 = _mm_loadu_ps(boneMatrix->axis[1]);
     const __m128 axis2 = _mm_loadu_ps(boneMatrix->axis[2]);
     const __m128 origin = _mm_loadu_ps(boneMatrix->origin);
+#elif defined(__APPLE__) && defined(__aarch64__)
+    /* NOT_FROM_ORIGINAL_SOURCE: Apple ARM64 uses NEON for the original packed
+     * binary32 skinning path. Separate multiplies and adds retain its rounding. */
+    const float32x4_t axis0 = vld1q_f32(boneMatrix->axis[0]);
+    const float32x4_t axis1 = vld1q_f32(boneMatrix->axis[1]);
+    const float32x4_t axis2 = vld1q_f32(boneMatrix->axis[2]);
+    const float32x4_t origin = vld1q_f32(boneMatrix->origin);
 #endif
 
     do {
@@ -451,6 +458,20 @@ void RB_SurfaceXModelRigidSSE(renderer_surface_t *surfaceData)
         _mm_store_ss(&range.positions[vertexIndex][0], position);
         _mm_store_ss(&range.positions[vertexIndex][1], _mm_shuffle_ps(position, position, _MM_SHUFFLE(1, 1, 1, 1)));
         _mm_store_ss(&range.positions[vertexIndex][2], _mm_shuffle_ps(position, position, _MM_SHUFFLE(2, 2, 2, 2)));
+#elif defined(__APPLE__) && defined(__aarch64__)
+        float32x4_t position = vmulq_n_f32(axis0, vertex->position[0]);
+        float32x4_t normal = vmulq_n_f32(axis0, vertex->normal[0]);
+        position = vaddq_f32(position, vmulq_n_f32(axis1, vertex->position[1]));
+        normal = vaddq_f32(normal, vmulq_n_f32(axis1, vertex->normal[1]));
+        position = vaddq_f32(position, vmulq_n_f32(axis2, vertex->position[2]));
+        normal = vaddq_f32(normal, vmulq_n_f32(axis2, vertex->normal[2]));
+        position = vaddq_f32(position, origin);
+
+        /* Store only the three lanes owned by each destination vertex. */
+        vst1_f32(&range.normals[vertexIndex][0], vget_low_f32(normal));
+        vst1q_lane_f32(&range.normals[vertexIndex][2], normal, 2);
+        vst1_f32(&range.positions[vertexIndex][0], vget_low_f32(position));
+        vst1q_lane_f32(&range.positions[vertexIndex][2], position, 2);
 #else
         RB_TransformVertexSSEOrder(
             boneMatrix, vertex->normal, vertex->position,
@@ -792,6 +813,59 @@ void RB_SurfaceXModelWeightSSE(renderer_surface_t *surfaceData)
         _mm_store_ss(&range.positions[vertexIndex][1], _mm_shuffle_ps(position, position, _MM_SHUFFLE(1, 1, 1, 1)));
         _mm_store_ss(&range.positions[vertexIndex][2], _mm_shuffle_ps(position, position, _MM_SHUFFLE(2, 2, 2, 2)));
         ++vertexIndex;
+        remainingVertices -= 1u;
+    } while (remainingVertices != 0U);
+#elif defined(__APPLE__) && defined(__aarch64__)
+    /* NOT_FROM_ORIGINAL_SOURCE: NEON evaluates the original SSE operation
+     * order in four binary32 lanes, including the live weighted accumulator. */
+    vec3_t *positionOutput = range.positions;
+    vec3_t *normalOutput = range.normals;
+    do {
+        const XSurfaceBlendVertNoWeight *primary =
+            (const XSurfaceBlendVertNoWeight *)(const void *)primaryCursor;
+        const DObjSkelMat *primaryMatrix = (const DObjSkelMat *)(const void *)(
+            (const uint8_t *)basePose + primary->blend.boneMatrixOffset);
+        const float32x4_t axis0 = vld1q_f32(primaryMatrix->axis[0]);
+        const float32x4_t axis1 = vld1q_f32(primaryMatrix->axis[1]);
+        const float32x4_t axis2 = vld1q_f32(primaryMatrix->axis[2]);
+        const float32x4_t origin = vld1q_f32(primaryMatrix->origin);
+
+        float32x4_t position = vmulq_n_f32(axis0, primary->blend.position[0]);
+        float32x4_t normal = vmulq_n_f32(axis0, primary->normal[0]);
+        position = vaddq_f32(position, vmulq_n_f32(axis1, primary->blend.position[1]));
+        normal = vaddq_f32(normal, vmulq_n_f32(axis1, primary->normal[1]));
+        position = vaddq_f32(position, origin);
+        position = vaddq_f32(position, vmulq_n_f32(axis2, primary->blend.position[2]));
+        normal = vaddq_f32(normal, vmulq_n_f32(axis2, primary->normal[2]));
+        vst1_f32(&(*normalOutput)[0], vget_low_f32(normal));
+        vst1q_lane_f32(&(*normalOutput)[2], normal, 2);
+
+        if (primary->additiveWeightCount <= 0) {
+            primaryCursor += sizeof(*primary);
+        } else {
+            const XSurfaceBlendVert *expandedPrimary =
+                (const XSurfaceBlendVert *)(const void *)primaryCursor;
+            position = vmulq_n_f32(position, expandedPrimary->primaryWeight);
+            uint32_t remainingWeights = (uint32_t)primary->additiveWeightCount;
+            do {
+                const DObjSkelMat *additiveMatrix = (const DObjSkelMat *)(const void *)(
+                    (const uint8_t *)basePose + additivePoint->blend.boneMatrixOffset);
+                float32x4_t transformed = vmulq_n_f32(vld1q_f32(additiveMatrix->axis[0]), additivePoint->blend.position[0]);
+                transformed = vaddq_f32(transformed, vmulq_n_f32(vld1q_f32(additiveMatrix->axis[1]), additivePoint->blend.position[1]));
+                transformed = vaddq_f32(transformed, vmulq_n_f32(vld1q_f32(additiveMatrix->axis[2]), additivePoint->blend.position[2]));
+                transformed = vaddq_f32(transformed, vld1q_f32(additiveMatrix->origin));
+                transformed = vmulq_n_f32(transformed, additivePoint->weight);
+                position = vaddq_f32(position, transformed);
+                ++additivePoint;
+                remainingWeights -= 1u;
+            } while (remainingWeights != 0U);
+            primaryCursor += sizeof(*expandedPrimary);
+        }
+
+        vst1_f32(&(*positionOutput)[0], vget_low_f32(position));
+        vst1q_lane_f32(&(*positionOutput)[2], position, 2);
+        ++positionOutput;
+        ++normalOutput;
         remainingVertices -= 1u;
     } while (remainingVertices != 0U);
 #else

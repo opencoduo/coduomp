@@ -360,8 +360,8 @@ qboolean Sys_LowPhysicalMemory(void)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00469960_00469990.mcode.
  * Provisional role name: this Windows-only routine executes CPUID leaf 1,
  * tests EDX bit 25, and executes XORPS once before returning true. The Mac
- * binary has no corresponding SSE probe. Non-x86 targets must return false so
- * the renderer never selects its x86-specific SSE surface handlers. */
+ * binary has no corresponding SSE probe. Non-x86 targets return false;
+ * renderer selection of a native SIMD implementation is handled separately. */
 qboolean Sys_DetectSSESupport(void)
 {
 #if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
