@@ -1965,15 +1965,15 @@ void GLimp_Init(void)
     if (strstr(glConfig.vendorString, "NVIDIA") != NULL) {
         ri.Printf(R_PRINT_ALL, "NVIDIA detected");
         if (strstr(glConfig.rendererString, "GeForce") != NULL &&
-            strstr(glConfig.rendererString, "ATI") != NULL) {
+            strstr(glConfig.rendererString, "256") != NULL) {
             optimizeValue = "0";
         }
     }
 
-    if (strstr(glConfig.vendorString, "RADEON") != NULL) {
+    if (strstr(glConfig.vendorString, "ATI") != NULL) {
         ri.Printf(R_PRINT_ALL, "ATI detected");
-        if (strstr(glConfig.rendererString, "ATI") != NULL &&
-            strstr(glConfig.rendererString, "RADEON") != NULL) {
+        if (strstr(glConfig.rendererString, "RADEON") != NULL &&
+            strstr(glConfig.rendererString, "9000") != NULL) {
             optimizeValue = "0";
         }
     }
