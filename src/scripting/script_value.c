@@ -30,6 +30,22 @@ enum {
 static const float script_floatEqualityEpsilon =
     9.9999999747524270788e-07f; /* 0x358637bd, approximately 1e-6 */
 
+/* NOT_FROM_ORIGINAL_SOURCE: prevents recovered VM paths from writing beyond
+ * the fixed script value stack. IncInParam has the original equivalent guard. */
+VariableValue *coduomp_script_value_next_stack_slot(
+    VariableValue *stackTop)
+{
+    if (stackTop >= script_valueStackLimit) {
+#if defined(WINDOWS_BEHAVIOR)
+        Com_Error(ERR_DROP, "\x15Internal script stack overflow");
+#else
+        Com_Error(ERR_DROP, "Internal script stack overflow");
+#endif
+    }
+
+    return stackTop + 1;
+}
+
 /* Source: CoDUOMP.exe 0x00490e70..0x00490f24.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00490e70_00490f25.mcode. */
 uint16_t VM_ConcatenateStrings(const VariableValue values[2])

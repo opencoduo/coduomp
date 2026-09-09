@@ -756,7 +756,7 @@ void VM_Resume(uint16_t threadList)
         VariableValue *stackTop = &script_valueStack[0];
 
         while (valueCount != 0) {
-            ++stackTop;
+            stackTop = coduomp_script_value_next_stack_slot(stackTop);
             --valueCount;
             coduomp_script_notify_read_frame_value(frameValue, stackTop);
             ++frameValue;
