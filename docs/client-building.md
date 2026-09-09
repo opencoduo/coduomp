@@ -207,21 +207,6 @@ streamed-audio decoding, and EFX reverb is enabled when the selected OpenAL
 device supports it. The stock-named `mss_3d_provider` cvar selects the complete
 audio backend on these clients.
 
-On `master`, the Sound Options page has independent Effects Volume and Music
-Volume sliders. The stock-named `mss_volume` cvar is the effects/SFX control,
-and the new `musicVolume` cvar is the music control. There is no separate
-`sfxVolume` cvar. A profile's initial `musicVolume` inherits its existing
-`mss_volume`, so enabling the separate control does not change that profile's
-established mix. Profiles that already disabled music start the new slider at
-zero.
-
-Setting Music Volume to zero silences the background-music slot, aliases on the
-`music` channel, and files under `sound/music/`, while leaving other sound
-effects and ambient sounds enabled. Custom maps should use that channel or
-directory for music played outside the background-music slot. Profiles that
-used the former `playMusic 0` setting migrate to zero Music Volume, and the
-retired cvar is removed from later config writes.
-
 Linux builds default `CASE_SENSITIVE_FS=1`. This preserves the original
 case-insensitive game-file lookup on a case-sensitive host filesystem without
 renaming retail or mod files. Set `CASE_SENSITIVE_FS=1` explicitly when

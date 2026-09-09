@@ -234,6 +234,9 @@ logs, downloads, and caches isolated from personal profiles.
 On the `master` branch, see [client gamma control](docs/client-gamma.md) for
 the selectable output-gamma policies and provider order.
 
+See [client audio controls](docs/client-audio.md) for the Effects Volume and
+Music Volume settings, their saved cvars, and compatibility migration.
+
 See [per-server client configuration](docs/client-server-configs.md) for the
 console commands that promote the current server profile to the global config
 or clear every isolated server config while preserving downloaded content.
