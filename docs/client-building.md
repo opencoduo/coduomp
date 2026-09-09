@@ -207,12 +207,18 @@ streamed-audio decoding, and EFX reverb is enabled when the selected OpenAL
 device supports it. The stock-named `mss_3d_provider` cvar selects the complete
 audio backend on these clients.
 
-On `master`, disable music with `playMusic 0` in the console. This saved
-setting stops current music and blocks new map, menu, and end-match music
-without a restart. It covers the background-music slot, aliases on the `music`
-channel, and files under `sound/music/`, while leaving other sound effects and
-ambient sounds enabled. Custom maps should use that channel or directory for
-music played outside the background-music slot.
+On `master`, the Sound Options page has independent Effects Volume and Music
+Volume sliders. Their saved cvars are `mss_volume` and `musicVolume`. A
+profile's initial `musicVolume` inherits its existing `mss_volume`, so enabling
+the separate control does not change that profile's established mix. Profiles
+that already disabled music start the new slider at zero.
+
+Disable music completely with `playMusic 0` in the console. This saved setting
+stops current music and blocks new map, menu, and end-match music without a
+restart. It covers the background-music slot, aliases on the `music` channel,
+and files under `sound/music/`, while leaving other sound effects and ambient
+sounds enabled. Custom maps should use that channel or directory for music
+played outside the background-music slot.
 
 Use `playMusic 1` to allow music again (the default). Stopped tracks are
 not replayed automatically; music plays when the game next requests it.

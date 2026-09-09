@@ -609,7 +609,8 @@ cvar_t *mss_3d_provider;                  /* original 0x0491cd68 */
 cvar_t *mss_volume;                       /* original 0x0491cd64 */
 cvar_t *mss_roomtype;                     /* original 0x0491cd78 */
 cvar_t *mss_wetlevel;                     /* original 0x0491cd7c */
-/* NOT_FROM_ORIGINAL_SOURCE: archived, backend-independent music preference. */
+/* NOT_FROM_ORIGINAL_SOURCE: archived, backend-independent music preferences. */
+static cvar_t *mss_musicVolume;
 static cvar_t *mss_playMusic;
 audio_driver_t mss_digitalDriver; /* original 0x009cbeb8 */
 int32_t mss_sampleRate;                   /* original 0x009cbec0 */
@@ -617,6 +618,8 @@ int32_t mss_sampleBits;                   /* original 0x009cbec4 */
 int32_t mss_channelCount;                 /* original 0x009cbec8 */
 float mss_playbackRateScale;              /* original 0x009cbecc */
 float mss_effectVolume;                   /* original 0x009cbee4 */
+/* NOT_FROM_ORIGINAL_SOURCE: effective music gain after the shared fade. */
+static float mss_musicGain;
 mss_channel_volume_t mss_masterVolume;    /* original 0x009cbee8 */
 mss_channel_volume_t
     mss_channelVolumes[SND_ALIAS_CHANNEL_COUNT]; /* original 0x009cbef4 */
@@ -1372,10 +1375,8 @@ static qboolean audio_validate_eal_extent(
 
 /* NOT_FROM_ORIGINAL_SOURCE: music can use the dedicated background slot,
  * a music-channel alias, or a music file played on another alias channel. */
-static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIndex)
+static qboolean audio_sound_is_music(const snd_alias_t *alias, int32_t channelIndex)
 {
-    if (mss_playMusic == NULL || mss_playMusic->integer != 0)
-        return qfalse;
     if (channelIndex == MSS_STREAM_CHANNEL_FIRST + MSS_MUSIC_BACKGROUND_INDEX)
         return qtrue;
     if (alias == NULL)
@@ -1385,6 +1386,23 @@ static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIn
     return alias->soundFile != NULL &&
            (Q_stricmpn(alias->soundFile, "music/", sizeof("music/") - 1) == 0 ||
             Q_stricmpn(alias->soundFile, "music\\", sizeof("music\\") - 1) == 0);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: selects the independently configured final gain
+ * without disturbing alias fades, shellshock channel fades, or ducking. */
+static float audio_sound_gain(const snd_alias_t *alias, int32_t channelIndex)
+{
+    return audio_sound_is_music(alias, channelIndex)
+               ? mss_musicGain
+               : mss_effectVolume;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: the hard music switch shares the same classifier
+ * as the continuously adjustable music-volume control. */
+static qboolean audio_music_disabled(const snd_alias_t *alias, int32_t channelIndex)
+{
+    return mss_playMusic != NULL && mss_playMusic->integer == 0 &&
+           audio_sound_is_music(alias, channelIndex);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: stop current music even while paused. Releasing
@@ -1471,6 +1489,7 @@ static void audio_clear_runtime_state(void)
     mss_restoreBuffer = NULL;
     mss_restoreSize = 0;
     mss_effectVolume = 0.0f;
+    mss_musicGain = 0.0f;
     memset(&mss_masterVolume, 0, sizeof(mss_masterVolume));
     memset(mss_channelVolumes, 0, sizeof(mss_channelVolumes));
     memset(mss_backgroundFades, 0, sizeof(mss_backgroundFades));
@@ -1547,7 +1566,18 @@ void MSS_Init(void)
         CVAR_ARCHIVE | CVAR_LATCH);
 #endif
     mss_volume = Cvar_Get("mss_volume", "0.8", CVAR_ARCHIVE);
+    const qboolean musicVolumeAlreadyConfigured =
+        Cvar_FindVar("musicVolume") != NULL;
     mss_playMusic = Cvar_Get("playMusic", "1", CVAR_ARCHIVE);
+    /* NOT_FROM_ORIGINAL_SOURCE: a profile's first independent music value
+     * inherits its existing effects volume to avoid an audible migration.
+     * A profile that had music disabled starts its new slider at silence. */
+    mss_musicVolume = Cvar_Get(
+        "musicVolume", "0.8", CVAR_ARCHIVE);
+    if (musicVolumeAlreadyConfigured == qfalse) {
+        Cvar_Set("musicVolume",
+                 mss_playMusic->integer == 0 ? "0" : mss_volume->string);
+    }
     mss_roomtype = Cvar_Get("mss_roomtype", "0", CVAR_CHEAT);
     mss_wetlevel = Cvar_Get("mss_wetlevel", "0", CVAR_CHEAT);
 
@@ -1575,6 +1605,8 @@ void MSS_Init(void)
     mss_anyMasters = qfalse;
     mss_effectVolume = Com_ClampFloat(
         MSS_SILENT_VOLUME, MSS_FULL_VOLUME, mss_volume->value);
+    mss_musicGain = Com_ClampFloat(
+        MSS_SILENT_VOLUME, MSS_FULL_VOLUME, mss_musicVolume->value);
 #if defined(AUDIO_BACKEND_MILES)
     Com_Printf("------- Miles successfully initialized -------\n");
 #else
@@ -1795,11 +1827,16 @@ int32_t MSS_Save3DChannel(uint8_t *buffer, int32_t offset,
         (long double)sampleOffset / (long double)sampleLength);
     savedState.aliasPitchScale = channel->aliasPitchScale;
     const float sampleVolume = audio_3D_sample_volume(sample);
-    if (mss_effectVolume == MSS_FULL_VOLUME) {
+    const float outputGain = audio_sound_gain(channel->alias, channelIndex);
+    /* NOT_FROM_ORIGINAL_SOURCE: zero is a normal user-selectable group gain;
+     * retain a finite logical value rather than dividing a silent handle by
+     * zero while preparing the original save representation. */
+    if (outputGain == MSS_SILENT_VOLUME ||
+        outputGain == MSS_FULL_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
         savedState.logicalVolume =
-            sampleVolume / mss_effectVolume;
+            sampleVolume / outputGain;
     }
     audio_3D_position(sample,
                     &savedState.position[0],
@@ -1909,10 +1946,13 @@ int32_t MSS_Save2DChannel(uint8_t *buffer, int32_t offset,
     savedState.aliasPitchScale = channel->aliasPitchScale;
     audio_sample_volume_pan(
         sample, &savedState.logicalVolume, &savedState.pan);
-    if (mss_effectVolume == MSS_FULL_VOLUME) {
+    const float outputGain = audio_sound_gain(channel->alias, channelIndex);
+    /* NOT_FROM_ORIGINAL_SOURCE: avoid a zero-gain normalization divide. */
+    if (outputGain == MSS_SILENT_VOLUME ||
+        outputGain == MSS_FULL_VOLUME) {
         savedState.logicalVolume = channel->logicalVolume;
     } else {
-        savedState.logicalVolume /= mss_effectVolume;
+        savedState.logicalVolume /= outputGain;
     }
 
     offset = MSS_Write(buffer, offset, bufferSize,
@@ -1974,7 +2014,9 @@ int32_t MSS_Restore2DChannel(const uint8_t *buffer, int32_t offset,
             mss_2dSampleHandles[
                 channelIndex - MSS_2D_CHANNEL_FIRST];
         audio_set_sample_volume_pan(
-            sample, mss_effectVolume * savedState.logicalVolume,
+            sample,
+            audio_sound_gain(primaryAlias, channelIndex) *
+                savedState.logicalVolume,
             savedState.pan);
         memcpy(mss_channelInfo[channelIndex].effectOffset,
                savedChannel.effectOffset,
@@ -2043,10 +2085,13 @@ int32_t MSS_SaveStreamChannel(uint8_t *buffer, int32_t offset,
     savedState.logicalVolume = channel->logicalVolume;
     audio_stream_volume_pan(
         stream, &savedState.relativeVolume, &savedState.pan);
-    if (mss_effectVolume == MSS_FULL_VOLUME) {
+    const float outputGain = audio_sound_gain(channel->alias, channelIndex);
+    /* NOT_FROM_ORIGINAL_SOURCE: avoid a zero-gain normalization divide. */
+    if (outputGain == MSS_SILENT_VOLUME ||
+        outputGain == MSS_FULL_VOLUME) {
         savedState.relativeVolume = channel->logicalVolume;
     } else {
-        savedState.relativeVolume /= mss_effectVolume;
+        savedState.relativeVolume /= outputGain;
     }
     memcpy(savedState.position,
            mss_streamChannels[streamIndex].position,
@@ -2127,7 +2172,9 @@ int32_t MSS_RestoreStreamChannel(const uint8_t *buffer,
             (long double)savedState.startFraction));
         mss_channelInfo[channelIndex].endTime -= elapsedMsec;
         audio_set_stream_volume_pan(
-            stream, mss_effectVolume * savedState.relativeVolume,
+            stream,
+            audio_sound_gain(primaryAlias, channelIndex) *
+                savedState.relativeVolume,
             savedState.pan);
         const float scaledPlaybackRate = (float)(
             (long double)savedState.basePlaybackRate *
@@ -2376,8 +2423,12 @@ int32_t MSS_GetSoundOverlay2D(mss_sound_overlay_t *overlay,
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         audio_sample_volume_pan(sample, &entry->relativeVolume, NULL);
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
-        if (mss_effectVolume != MSS_FULL_VOLUME)
-            entry->relativeVolume /= mss_effectVolume;
+        const float outputGain =
+            audio_sound_gain(channel->alias, channelIndex);
+        if (outputGain != MSS_SILENT_VOLUME &&
+            outputGain != MSS_FULL_VOLUME) {
+            entry->relativeVolume /= outputGain;
+        }
         entry->basePlaybackRate = channel->basePlaybackRate;
         entry->pitchScale = (float)(
             (long double)playbackRate /
@@ -2420,8 +2471,12 @@ int32_t MSS_GetSoundOverlay3D(mss_sound_overlay_t *overlay,
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         entry->relativeVolume =
             audio_3D_sample_volume(sample) * MSS_OVERLAY_VOLUME_SCALE;
-        if (mss_effectVolume != MSS_FULL_VOLUME)
-            entry->relativeVolume /= mss_effectVolume;
+        const float outputGain =
+            audio_sound_gain(channel->alias, channelIndex);
+        if (outputGain != MSS_SILENT_VOLUME &&
+            outputGain != MSS_FULL_VOLUME) {
+            entry->relativeVolume /= outputGain;
+        }
         entry->basePlaybackRate = channel->basePlaybackRate;
         /* Unlike the 2D and stream bodies, this path stores both integer
          * conversions as binary32 before reloading them for the divide. */
@@ -2462,8 +2517,12 @@ int32_t MSS_GetSoundOverlayStream(mss_sound_overlay_t *overlay,
             channel->logicalVolume * MSS_OVERLAY_VOLUME_SCALE;
         audio_stream_volume_pan(stream, &entry->relativeVolume, NULL);
         entry->relativeVolume *= MSS_OVERLAY_VOLUME_SCALE;
-        if (mss_effectVolume != MSS_FULL_VOLUME)
-            entry->relativeVolume /= mss_effectVolume;
+        const float outputGain =
+            audio_sound_gain(channel->alias, channelIndex);
+        if (outputGain != MSS_SILENT_VOLUME &&
+            outputGain != MSS_FULL_VOLUME) {
+            entry->relativeVolume /= outputGain;
+        }
         entry->basePlaybackRate = channel->basePlaybackRate;
         entry->pitchScale = (float)(
             (long double)playbackRate /
@@ -3652,7 +3711,7 @@ int32_t MSS_StartAlias2DSample(int32_t *outChannelIndex,
     audio_set_sample_playback_rate(sample, playbackRate);
 
     const float sampleVolume = (float)(
-        (long double)mss_effectVolume *
+        (long double)audio_sound_gain(alias, channelIndex) *
         (long double)mss_channelVolumes[alias->channel].current *
         (long double)volume);
     audio_set_sample_volume_pan(sample, sampleVolume, 0.5f);
@@ -3760,7 +3819,7 @@ int32_t MSS_StartAlias3DSample(int32_t *outChannelIndex,
         (long double)mss_channelVolumes[alias->channel].current *
         (long double)volume);
     const float sampleVolume =
-        (float)((long double)mss_effectVolume *
+        (float)((long double)audio_sound_gain(alias, channelIndex) *
                 (long double)attenuatedVolume);
     audio_set_3D_sample_volume(sample, sampleVolume);
     audio_set_3D_sample_distances(sample, maximumDistance, maximumDistance);
@@ -3902,7 +3961,7 @@ int32_t MSS_StartAliasStreamOnChannel(
     audio_set_stream_playback_rate(stream, FastRound(scaledPlaybackRate));
 
     const float initialVolume = (float)(
-        (long double)mss_effectVolume *
+        (long double)audio_sound_gain(alias, channelIndex) *
         (long double)mss_channelVolumes[alias->channel].current *
         (long double)volume);
     audio_set_stream_volume_pan(stream, initialVolume, 0.5f);
@@ -3949,7 +4008,7 @@ int32_t MSS_StartAliasStreamOnChannel(
         float pan;
         MSS_SpatializeStream(streamIndex, &volume, &pan);
         const float spatializedVolume =
-            (float)((long double)mss_effectVolume *
+            (float)((long double)audio_sound_gain(alias, channelIndex) *
                     (long double)volume);
         audio_set_stream_volume_pan(stream, spatializedVolume, pan);
     }
@@ -4991,8 +5050,9 @@ void MSS_UpdateVolume(mss_channel_volume_t *volume,
  * Name and source-level factoring: exact same-module Mac symbol
  * MSS_UpdateMasterVolumes. MSVC inlined all eleven MSS_UpdateVolume calls;
  * the Mac body proves the original loop over the ten alias-channel records.
- * The public mss_volume cvar is clamped to [0,1] before it scales the fading
- * master volume, with unordered values deliberately left unchanged. */
+ * The original mss_volume cvar and the added musicVolume cvar are clamped to
+ * [0,1] before independently scaling the fading master volume, with unordered
+ * values deliberately left unchanged. */
 void MSS_UpdateMasterVolumes(int32_t elapsedMsec)
 {
     for (int32_t channel = 0;
@@ -5015,7 +5075,7 @@ void MSS_UpdateMasterVolumes(int32_t elapsedMsec)
     }
 
     if (mss_masterVolume.ratePerMsec == 0.0f) {
-        if (!mss_volume->modified)
+        if (!mss_volume->modified && !mss_musicVolume->modified)
             return;
     } else {
         float updated =
@@ -5038,12 +5098,21 @@ void MSS_UpdateMasterVolumes(int32_t elapsedMsec)
     }
 
     mss_volume->modified = qfalse;
-    float configuredVolume = mss_volume->value;
-    if (configuredVolume < 0.0f)
-        configuredVolume = 0.0f;
-    else if (configuredVolume > 1.0f)
-        configuredVolume = 1.0f;
-    mss_effectVolume = mss_masterVolume.current * configuredVolume;
+    mss_musicVolume->modified = qfalse;
+    float configuredEffectVolume = mss_volume->value;
+    if (configuredEffectVolume < 0.0f)
+        configuredEffectVolume = 0.0f;
+    else if (configuredEffectVolume > 1.0f)
+        configuredEffectVolume = 1.0f;
+    float configuredMusicVolume = mss_musicVolume->value;
+    if (configuredMusicVolume < 0.0f)
+        configuredMusicVolume = 0.0f;
+    else if (configuredMusicVolume > 1.0f)
+        configuredMusicVolume = 1.0f;
+    mss_effectVolume =
+        mss_masterVolume.current * configuredEffectVolume;
+    mss_musicGain =
+        mss_masterVolume.current * configuredMusicVolume;
 }
 
 /* Source: CoDUOMP.exe 0x00454090..0x004541ca.
@@ -5153,7 +5222,8 @@ void MSS_Update3DChannel(int32_t channelIndex)
         (long double)volume *
         (long double)mss_channelVolumes[alias->channel].current);
     const float sampleVolume = (float)(
-        (long double)mss_effectVolume * (long double)volume);
+        (long double)audio_sound_gain(alias, channelIndex) *
+        (long double)volume);
     audio_set_3D_sample_volume(sample, sampleVolume);
 }
 
@@ -5182,7 +5252,9 @@ void MSS_Update2DChannel(int32_t channelIndex)
     volume *= (long double)mss_channelVolumes[alias->channel].current;
     audio_set_sample_volume_pan(
         mss_2dSampleHandles[channelIndex - MSS_2D_CHANNEL_FIRST],
-        (float)((long double)mss_effectVolume * volume), 0.5f);
+        (float)((long double)audio_sound_gain(alias, channelIndex) *
+                volume),
+        0.5f);
 }
 
 /* Source: CoDUOMP.exe 0x00454420..0x0045452e.
@@ -5231,7 +5303,9 @@ void MSS_UpdateStreamChannel(int32_t channelIndex,
         (long double)mss_channelVolumes[alias->channel].current;
     audio_set_stream_volume_pan(
         mss_streamHandles[streamIndex],
-        (float)((long double)mss_effectVolume * volumeWide), pan);
+        (float)((long double)audio_sound_gain(alias, channelIndex) *
+                volumeWide),
+        pan);
 }
 
 /* Source: CoDUOMP.exe 0x00454530..0x0045464f.

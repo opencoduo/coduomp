@@ -8,7 +8,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 - Spawn reload animation is fixed, it won't play anymore
 - Local server map list limit increased to 2048
-- `playMusic 0` disables map, menu, and end-match music without muting other sounds. The setting is saved automatically; `playMusic 1` allows music again (the default).
+- Sound Options has independent Effects Volume and Music Volume sliders. `playMusic 0` remains available as a saved hard music switch.
 
 ### Server browser
 

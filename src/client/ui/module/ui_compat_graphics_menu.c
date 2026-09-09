@@ -340,6 +340,62 @@ void ui_compat_extend_graphics_menu(void)
     Menu_UpdatePosition(menu);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: completes the music-volume row left commented out
+ * in the retail sound asset. The existing slider supplies its styling and
+ * range; the quality/provider rows move into the asset's available space. */
+void ui_compat_extend_sound_menu(void)
+{
+    menuDef_t *const menu = Menus_FindByName("options_sound");
+    itemDef_t *effectsItem;
+    itemDef_t *qualityItem;
+    itemDef_t *providerItem;
+    itemDef_t *musicItem;
+    editFieldDef_t *musicRange;
+    int32_t effectsIndex;
+
+    if (menu == NULL || menu->itemCount >= MAX_MENUITEMS)
+        return;
+
+    effectsItem = ui_compat_find_cvar_item(
+        menu, "mss_volume", &effectsIndex);
+    qualityItem = ui_compat_find_cvar_item(
+        menu, "ui_mss_khz", NULL);
+    providerItem = ui_compat_find_cvar_item(
+        menu, "ui_mss_3d_provider", NULL);
+    if (effectsItem == NULL || qualityItem == NULL ||
+        providerItem == NULL ||
+        effectsItem->typeValidated != ITEM_TYPE_SLIDER ||
+        effectsItem->typeData == NULL) {
+        return;
+    }
+
+    effectsItem->text = String_Alloc("@CODUOMP_EFFECTS_VOLUME");
+
+    musicItem = ui_compat_clone_menu_item(effectsItem, menu);
+    musicRange = UI_Alloc(sizeof(*musicRange));
+    memcpy(musicRange, effectsItem->typeData, sizeof(*musicRange));
+    musicItem->window.name = String_Alloc("coduomp_music_volume");
+    musicItem->window.rectClient.y =
+        effectsItem->window.rectClient.y + 30.0f;
+    musicItem->type = ITEM_TYPE_SLIDER;
+    musicItem->typeValidated = ITEM_TYPE_SLIDER;
+    musicItem->typeData = musicRange;
+    musicItem->text = String_Alloc("@CODUOMP_MUSIC_VOLUME");
+    musicItem->cvar = String_Alloc("musicVolume");
+    musicItem->action = ui_compat_prepend_menu_script(
+        "setcvar playMusic 1; ", musicItem->action);
+
+    qualityItem->window.rectClient.y += 30.0f;
+    providerItem->window.rectClient.y += 30.0f;
+    for (int32_t index = menu->itemCount;
+         index > effectsIndex + 1; --index) {
+        menu->items[index] = menu->items[index - 1];
+    }
+    menu->items[effectsIndex + 1] = musicItem;
+    ++menu->itemCount;
+    Menu_UpdatePosition(menu);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: adds the console binding contemplated by the
  * retail options_misc asset without copying or replacing that proprietary
  * menu.  The screenshot row supplies the established multiplayer control
