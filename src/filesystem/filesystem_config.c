@@ -2,6 +2,10 @@
 #define _XOPEN_SOURCE 700
 #endif
 
+#if !defined(WINDOWS_BEHAVIOR)
+#error "filesystem_config.c is client-only"
+#endif
+
 #include "filesystem_config.h"
 #include "filesystem.h"
 #include "filesystem_services.h"

@@ -1,3 +1,7 @@
+#if !defined(WINDOWS_BEHAVIOR)
+#error "config_script.c is client-only"
+#endif
+
 #include "config_script.h"
 #include "q_string.h"
 

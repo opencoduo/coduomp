@@ -1,8 +1,10 @@
-# Configuration recovery
+# Client configuration recovery
 
 The improved client no longer recommends resetting settings because a previous
 process did not quit cleanly. It checks config input directly and reports the
 file, line, and reason when settings cannot finish loading. Stock is unchanged.
+Dedicated-server configuration is unchanged and does not use this recovery
+system.
 
 The generated primary settings file and its includes are checked before any of
 their commands execute. Checks cover unfinished
@@ -13,7 +15,8 @@ missing final newline are supported. Config backslashes are ordinary characters.
 Nested settings files are checked when loaded; a failed include pauses saving even if
 earlier commands already ran. Arbitrary script side effects are not rolled back.
 
-Ordinary scripts such as `server.cfg`, mod configs, and `autoexec_mp.cfg` retain
+Ordinary scripts such as locally executed `server.cfg`, mod configs, and
+`autoexec_mp.cfg` retain
 the original command-by-command execution behavior. A built-in usage error or
 missing included script reports the problem and lets later commands run.
 Ordinary quoted values may end at the end of their command, as in the original

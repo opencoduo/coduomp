@@ -1,5 +1,11 @@
 include build-mk/sources/common.mk
 
+CLIENT_CONFIG_RECOVERY_C_SOURCES := \
+	src/qcommon/config_script.c \
+	src/qcommon/config_store.c \
+	src/qcommon/config_profile.c \
+	src/filesystem/filesystem_config.c
+
 CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/animation/dobj_core.c \
 	src/client/engine/animation/dobj_matrix.c \
@@ -274,6 +280,7 @@ CLIENT_ENGINE_MATH_C_SOURCES := \
 
 CLIENT_ENGINE_TARGET_C_SOURCES := \
 	$(CLIENT_ENGINE_C_SOURCES) \
+	$(CLIENT_CONFIG_RECOVERY_C_SOURCES) \
 	$(LAYOUT_WINDOWS_GENERATED_C_SOURCES) \
 	$(LAYOUT_CLIENT_COMMON_C_SOURCES) \
 	$(CLIENT_ENGINE_CLIENT_MATH_C_SOURCES) \

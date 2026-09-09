@@ -2,6 +2,10 @@
 #define _XOPEN_SOURCE 700
 #endif
 
+#if !defined(WINDOWS_BEHAVIOR)
+#error "config_profile.c is client-only"
+#endif
+
 #include "config_profile.h"
 #include "config_script.h"
 #include "com_config.h"
@@ -30,11 +34,7 @@ enum {
     CODUOMP_CONFIG_LANGUAGE_UNAVAILABLE = -1
 };
 
-#if defined(WINDOWS_BEHAVIOR)
 static const char coduomp_config_name[] = "uoconfig_mp.cfg";
-#else
-static const char coduomp_config_name[] = "uoconfig_mp_server.cfg";
-#endif
 
 typedef struct coduomp_config_input_s {
     struct coduomp_config_input_s *next;

@@ -8,6 +8,10 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+#if !defined(WINDOWS_BEHAVIOR)
+#error "config_store.c is client-only"
+#endif
+
 #include "config_store.h"
 
 #include <errno.h>

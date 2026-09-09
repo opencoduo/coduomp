@@ -1,6 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "qcommon/config_profile.h"
 #include <setjmp.h>
 #include <stdint.h>
 
@@ -96,15 +95,12 @@ void Com_Init(char *commandLine)
     CL_InitKeyCommands();
     FS_InitFilesystem();
     Com_InitJournaling();
-    coduomp_config_begin_profile();
-    coduomp_config_register(NULL);
 
     Cbuf_AddText(COM_INIT_DEFAULT_CONFIG);
     Cbuf_AddText(COM_INIT_LANGUAGE_CONFIG);
     Cbuf_AddText(COM_INIT_UO_CONFIG);
     Cbuf_AddText(COM_INIT_AUTOEXEC_CONFIG);
     if (Com_SafeMode() != qfalse) {
-        coduomp_config_pause("explicit safe mode uses temporary settings");
         Cbuf_AddText(COM_INIT_SAFE_MODE_CONFIG);
     }
     Cbuf_Execute();

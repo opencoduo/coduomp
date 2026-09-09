@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #define _POSIX_C_SOURCE 200809L
 
 #include <setjmp.h>
@@ -76,7 +75,6 @@ void Com_ErrorCleanup(void)
 
 void Com_Error(errorParm_t code, const char *format, ...)
 {
-    coduomp_command_abort_config();
     char shutdownMessage[COM_ERROR_BUFFER_COPY_SIZE];
     va_list args;
 

@@ -1,6 +1,9 @@
-#include "config_profile.h"
 #include "com_command_handlers.h"
 #include "com_command_services.h"
+
+#if defined(WINDOWS_BEHAVIOR)
+#include "config_profile.h"
+#endif
 
 #include "compat/crt/atof_compat.h"
 #include "compat/coduo_int32_bits.h"
@@ -38,7 +41,9 @@ _Noreturn void Com_Quit_f(void)
         Sys_Quit();
     }
 
+#if defined(WINDOWS_BEHAVIOR)
     coduomp_config_flush();
+#endif
     Com_ClearTempMemory();
     COM_QUIT_TARGET_CLEANUP();
     SV_Shutdown("EXE_SERVERQUIT");

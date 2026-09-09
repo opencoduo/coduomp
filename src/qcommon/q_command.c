@@ -1,9 +1,12 @@
 #include "q_command.h"
+
+#if defined(WINDOWS_BEHAVIOR)
 #include "config_script.h"
 #include "config_profile.h"
+#include "q_cvar.h"
+#endif
 
 #include "q_checksum.h"
-#include "q_cvar.h"
 #include "q_memory.h"
 #include "q_path.h"
 #include "q_string.h"
@@ -11,9 +14,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if defined(WINDOWS_BEHAVIOR)
+#include <stdio.h>
+#endif
 
 #if defined(WINDOWS_BEHAVIOR) && defined(LINUX_BEHAVIOR)
 #error "Select only one of WINDOWS_BEHAVIOR or LINUX_BEHAVIOR"
@@ -54,6 +60,7 @@ void PB_CallServerSbGlobal(int32_t command, int32_t clientNum,
 
 #include "q_command_services.h"
 
+#if defined(WINDOWS_BEHAVIOR)
 typedef struct coduomp_command_origin_s {
     struct coduomp_command_origin_s *parent;
     coduomp_config_profile_t *profile;
@@ -208,6 +215,7 @@ void coduomp_command_abort_config(void)
         free(frame);
     }
 }
+#endif
 
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
 
@@ -223,9 +231,11 @@ void Cmd_Wait_f(void)
 
 void Cbuf_Init(void)
 {
+#if defined(WINDOWS_BEHAVIOR)
     for (int32_t i = 0; i < cmd_text.cursize; ++i)
         coduomp_command_release(coduomp_command_origins[i]);
     memset(coduomp_command_origins, 0, sizeof(coduomp_command_origins));
+#endif
     cmd_text.data = cmd_textData;
     cmd_text.maxsize = (int32_t)sizeof(cmd_textData);
     cmd_text.cursize = 0;
@@ -238,11 +248,15 @@ void Cbuf_AddText(const char *text)
     if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize ||
         textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         Com_Printf("Cbuf_AddText: overflow\n");
+#if defined(WINDOWS_BEHAVIOR)
         coduomp_command_failure(coduomp_command_origin(), "generated input exceeds command queue capacity");
+#endif
         return;
     }
 
+#if defined(WINDOWS_BEHAVIOR)
     coduomp_command_tag((size_t)cmd_text.cursize, textLength, coduomp_command_origin());
+#endif
     memcpy(cmd_text.data + cmd_text.cursize, text, textLength);
     cmd_text.cursize += (int32_t)textLength;
 }
@@ -254,13 +268,17 @@ void Cbuf_InsertText(const char *text)
     if (cmd_text.cursize < 0 || cmd_text.maxsize <= cmd_text.cursize ||
         textLength >= (size_t)(cmd_text.maxsize - cmd_text.cursize)) {
         Com_Printf("Cbuf_InsertText overflowed\n");
+#if defined(WINDOWS_BEHAVIOR)
         coduomp_command_failure(coduomp_command_origin(), "generated input exceeds command queue capacity");
+#endif
         return;
     }
     const int32_t insertLength = (int32_t)textLength + 1;
     const int32_t newSize = cmd_text.cursize + insertLength;
+#if defined(WINDOWS_BEHAVIOR)
     memmove(coduomp_command_origins + insertLength, coduomp_command_origins, (size_t)cmd_text.cursize * sizeof(*coduomp_command_origins));
     coduomp_command_tag(0, (size_t)insertLength, coduomp_command_origin());
+#endif
 
     /* Both authoritative i386 bodies copy overlapping bytes backwards and
      * skip the move when cursize is negative.  A size_t memmove expression
@@ -302,12 +320,13 @@ void Cbuf_ExecuteText(cbufExec_t executionMode, const char *text)
     }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: saved-settings boundaries match preflight, while
- * ordinary commands retain the original delimiters. Queued origins remain
- * live across wait, nested exec, and filesystem changes. */
 void Cbuf_Execute(void)
 {
     char command[CBUF_COMMAND_CAPACITY];
+#if defined(WINDOWS_BEHAVIOR)
+    /* NOT_FROM_ORIGINAL_SOURCE: saved-settings boundaries match preflight,
+     * while ordinary commands retain the original delimiters. Queued origins
+     * remain live across wait, nested exec, and filesystem changes. */
     while (cmd_text.cursize != 0) {
         if (cmd_wait != 0) {
             --cmd_wait;
@@ -363,10 +382,53 @@ void Cbuf_Execute(void)
         coduomp_command_release(origin);
         free(frame);
     }
+#else
+    while (cmd_text.cursize != 0) {
+        if (cmd_wait != 0) {
+            --cmd_wait;
+            return;
+        }
+
+        int32_t quoteCount = 0;
+        int32_t commandLength;
+        for (commandLength = 0;
+             commandLength < cmd_text.cursize;
+             ++commandLength) {
+            const char character = cmd_text.data[commandLength];
+            if (character == '"') {
+                ++quoteCount;
+            }
+
+            if ((((quoteCount & 1) == 0) && character == ';') ||
+                character == '\n' || character == '\r') {
+                break;
+            }
+        }
+
+        if (commandLength > CBUF_COMMAND_CAPACITY - 2) {
+            commandLength = CBUF_COMMAND_CAPACITY - 1;
+        }
+
+        memcpy(command, cmd_text.data, (size_t)commandLength);
+        command[commandLength] = '\0';
+
+        if (commandLength == cmd_text.cursize) {
+            cmd_text.cursize = 0;
+        } else {
+            ++commandLength;
+            cmd_text.cursize -= commandLength;
+            memmove(cmd_text.data, cmd_text.data + commandLength,
+                    (size_t)(uint32_t)cmd_text.cursize);
+        }
+
+        Cmd_ExecuteString(command);
+    }
+#endif
 }
 
+#if defined(WINDOWS_BEHAVIOR)
 /* NOT_FROM_ORIGINAL_SOURCE: saved settings are checked as whole files; ordinary
- * server/mod scripts retain command-by-command execution. Both queue their
+ * client-side scripts retain command-by-command execution. Both queue their
  * exact read snapshot with its source profile and bounded include ancestry. */
 void Cmd_Exec_f(void)
 {
@@ -416,6 +478,39 @@ void Cmd_Exec_f(void)
         coduomp_command_failure(parent, "included config could not be queued");
     free(data);
 }
+#else
+void Cmd_Exec_f(void)
+{
+    char filename[MAX_QPATH];
+    void *fileBuffer;
+
+    if (Cmd_Argc() != 2) {
+        Com_Printf("exec <filename> : execute a script file\n");
+        return;
+    }
+
+    Q_strncpyz(filename, Cmd_Argv(1), (int32_t)sizeof(filename));
+    Com_DefaultExtension(filename, (int32_t)sizeof(filename), ".cfg");
+    const int32_t fileLength = FS_ReadFile(filename, &fileBuffer);
+
+    if (fileBuffer == NULL) {
+        Com_Printf("couldn't exec %s\n", Cmd_Argv(1));
+        return;
+    }
+
+    Com_Printf("execing %s\n", Cmd_Argv(1));
+    if (Cvar_VariableIntegerValue("sv_console_lockout") != 0) {
+        const int32_t checksum =
+            (int32_t)Com_BlockChecksum(fileBuffer, fileLength);
+        Cbuf_InsertText(
+            va("say Server exec: %s, size: %i, checksum: %i",
+               filename, fileLength, checksum));
+    }
+
+    Cbuf_InsertText((const char *)fileBuffer);
+    FS_FreeFile(fileBuffer);
+}
+#endif
 
 void Cmd_ShowChecksum_f(void)
 {
@@ -531,11 +626,12 @@ void Cmd_ArgsBuffer(char *buffer, int32_t bufferLength)
     Q_strncpyz(buffer, Cmd_Args(1), bufferLength);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: publish bounded execution tokens using the same
- * parser as config validation, while retaining end-of-input token termination.
- * Saved settings have already passed the stricter whole-file preflight. */
 void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
 {
+#if defined(WINDOWS_BEHAVIOR)
+    /* NOT_FROM_ORIGINAL_SOURCE: publish bounded execution tokens using the
+     * same parser as config validation, while retaining end-of-input token
+     * termination. Saved settings passed the stricter whole-file preflight. */
     cmd_argc = 0;
     if (!text)
         return;
@@ -553,6 +649,103 @@ void Cmd_TokenizeString2(const char *text, int32_t maxTokens)
     for (int i = 0; i < tokens.argc; ++i)
         cmd_argv[i] = cmd_tokenBuffer + (tokens.argv[i] - tokens.text);
     cmd_argc = tokens.argc;
+#else
+    cmd_argc = 0;
+    if (text == NULL) {
+        return;
+    }
+
+    size_t textLength = 0;
+    while (textLength < CMD_TOKEN_BUFFER_CAPACITY &&
+           text[textLength] != '\0') {
+        ++textLength;
+    }
+    /* NOT_FROM_ORIGINAL_SOURCE: tokenization requires the complete input and
+     * its NUL inside the owned buffer capacity; rejection leaves no arguments
+     * published. */
+    if (textLength == CMD_TOKEN_BUFFER_CAPACITY) {
+        Com_Printf("Cmd_TokenizeString2: command exceeds token buffer\n");
+        return;
+    }
+
+    char *token = cmd_tokenBuffer;
+    while (cmd_argc != CMD_ARGUMENT_CAPACITY) {
+        --maxTokens;
+        if (maxTokens == 0) {
+            if (*text == '\0') {
+                return;
+            }
+
+            cmd_argv[cmd_argc++] = token;
+            while (*text != '\0') {
+                *token++ = *text++;
+            }
+            *token = '\0';
+            return;
+        }
+
+        for (;;) {
+            while (*text != '\0' && (int8_t)*text <= (int8_t)' ') {
+                ++text;
+            }
+
+            if (*text == '\0') {
+                return;
+            }
+            if (text[0] == '/' && text[1] == '/') {
+                return;
+            }
+            if (text[0] != '/' || text[1] != '*') {
+                break;
+            }
+
+            while (*text != '\0' &&
+                   (text[0] != '*' || text[1] != '/')) {
+                ++text;
+            }
+            if (*text == '\0') {
+                return;
+            }
+            text += 2;
+        }
+
+        cmd_argv[cmd_argc++] = token;
+
+        if (*text == '"') {
+            ++text;
+            while (*text != '\0' && *text != '"') {
+                *token++ = *text++;
+            }
+            *token++ = '\0';
+
+            if (*text == '\0') {
+                return;
+            }
+            ++text;
+            if (*text == '\0') {
+                return;
+            }
+            if ((int8_t)*text <= (int8_t)' ') {
+                ++text;
+            }
+        } else {
+            while ((int8_t)*text > (int8_t)' ' &&
+                   *text != '"' &&
+                   (text[0] != '/' || text[1] != '/') &&
+                   (text[0] != '/' || text[1] != '*')) {
+                *token++ = *text++;
+            }
+            *token++ = '\0';
+
+            if (*text == '\0') {
+                return;
+            }
+            if ((int8_t)*text <= (int8_t)' ') {
+                ++text;
+            }
+        }
+    }
+#endif
 }
 
 void Cmd_TokenizeString(const char *text)
@@ -680,6 +873,7 @@ void Cmd_CommandCompletion(name_completion_callback_t callback)
     }
 }
 
+#if defined(WINDOWS_BEHAVIOR)
 /* NOT_FROM_ORIGINAL_SOURCE: bound actual command expansion, without charging
  * blank lines or comments against a config's execution budget. */
 static qboolean coduomp_command_count(void)
@@ -694,6 +888,7 @@ static qboolean coduomp_command_count(void)
     }
     return qtrue;
 }
+#endif
 
 #if defined(WINDOWS_BEHAVIOR)
 void Cmd_ExecuteString(const char *text)
@@ -760,8 +955,6 @@ void Cmd_ExecuteString(const char *text)
     if (cmd_argc == 0) {
         return;
     }
-    if (!coduomp_command_count())
-        return;
 
     cmd_function_t **link = &cmd_functions;
     while (*link != NULL) {

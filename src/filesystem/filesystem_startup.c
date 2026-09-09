@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #include "filesystem.h"
 #include "filesystem_services.h"
 
@@ -7,6 +6,8 @@
 #include "qcommon/q_string.h"
 
 #if defined(WINDOWS_BEHAVIOR)
+#include "qcommon/config_profile.h"
+
 #include <stdlib.h>
 #endif
 #include <string.h>
@@ -364,7 +365,6 @@ void FS_InitFilesystem(void)
     Com_StartupVariable("cl_language");
 
     FS_Startup("main");
-    coduomp_config_begin_profile();
     FS_CheckRestrictedDemoPaks();
 
     if (FS_ReadFile("default_mp.cfg", NULL) < 1) {
@@ -384,12 +384,10 @@ void FS_InitFilesystem(void)
 
 void FS_Restart(int32_t checksumFeed)
 {
-    coduomp_config_flush();
     FS_Shutdown(qfalse);
     fs_checksumFeed = checksumFeed;
     FS_ClearPakReferences(qfalse);
     FS_Startup("main");
-    coduomp_config_begin_profile();
     FS_CheckRestrictedDemoPaks();
 
     if (FS_ReadFile("default_mp.cfg", NULL) < 1) {
@@ -411,7 +409,7 @@ void FS_Restart(int32_t checksumFeed)
 
     if (Q_stricmp(fs_game->string, fs_savedGame) != 0) {
         if (Com_SafeMode() == 0) {
-            coduomp_command_queue_profile("uoconfig_mp_server.cfg", qtrue);
+            Cbuf_AddText(va("exec %s\n", "uoconfig_mp_server.cfg"));
         }
     }
 

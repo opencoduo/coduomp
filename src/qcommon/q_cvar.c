@@ -1,4 +1,6 @@
+#if defined(WINDOWS_BEHAVIOR)
 #include "qcommon/config_profile.h"
+#endif
 #include "q_cvar.h"
 #include "q_cvar_services.h"
 
@@ -160,14 +162,18 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
             Z_FreeInternal(cvar->resetString);
             cvar->resetString = CopyStringInternal(defaultValue);
             cvar_modifiedFlags |= flags;
+#if defined(WINDOWS_BEHAVIOR)
             if (flags & CVAR_ARCHIVE)
                 coduomp_config_settings_changed();
+#endif
         }
 
+#if defined(WINDOWS_BEHAVIOR)
         /* NOT_FROM_ORIGINAL_SOURCE: adding persistence changes the captured
          * settings even when this cvar's value does not change. */
         if ((flags & CVAR_ARCHIVE) && !(cvar->flags & CVAR_ARCHIVE))
             coduomp_config_settings_changed();
+#endif
         cvar->flags |= flags;
         if (cvar->resetString[0] == '\0') {
             Z_FreeInternal(cvar->resetString);
@@ -217,8 +223,10 @@ cvar_t *Cvar_Get(const char *name, const char *defaultValue,
     const uint32_t hash = generateHashValue(name);
     cvar->hashNext = cvarHashTable[hash];
     cvarHashTable[hash] = cvar;
+#if defined(WINDOWS_BEHAVIOR)
     if (flags & CVAR_ARCHIVE)
         coduomp_config_settings_changed();
+#endif
     return cvar;
 }
 
@@ -253,8 +261,10 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
     if (strcmp(value, cvar->string) == 0) {
         if ((cvar->flags & CVAR_LATCH) != 0 &&
             cvar->latchedString != NULL) {
+#if defined(WINDOWS_BEHAVIOR)
             if (cvar->flags & CVAR_ARCHIVE)
                 coduomp_config_settings_changed();
+#endif
             Z_FreeInternal(cvar->latchedString);
             cvar->latchedString = NULL;
         }
@@ -262,8 +272,10 @@ cvar_t *Cvar_Set2(const char *name, const char *value, qboolean force)
     }
 
     cvar_modifiedFlags |= cvar->flags;
+#if defined(WINDOWS_BEHAVIOR)
     if (cvar->flags & CVAR_ARCHIVE)
         coduomp_config_settings_changed();
+#endif
     if (force == qfalse) {
         if ((cvar->flags & CVAR_ROM) != 0) {
             Com_Printf("%s is read only.\n", name);
@@ -465,11 +477,16 @@ void Cvar_SetA_f(void)
 
     Cvar_Set_f();
     cvar_t *const cvar = Cvar_FindVar(Cmd_Argv(1));
+#if defined(WINDOWS_BEHAVIOR)
     if (cvar != NULL) {
         if (!(cvar->flags & CVAR_ARCHIVE))
             coduomp_config_settings_changed();
         cvar->flags |= CVAR_ARCHIVE;
     }
+#else
+    if (cvar != NULL)
+        cvar->flags |= CVAR_ARCHIVE;
+#endif
 }
 
 /* Source: CoDUOMP.exe 0x0043e700..0x0043e753, recovered from an executable
@@ -1088,8 +1105,10 @@ void Cvar_Restart_f(void)
         }
 
         if ((cvar->flags & CVAR_USER_CREATED) != 0) {
+#if defined(WINDOWS_BEHAVIOR)
             if (cvar->flags & CVAR_ARCHIVE)
                 coduomp_config_settings_changed();
+#endif
             *link = cvar->next;
 
             /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
@@ -1117,6 +1136,7 @@ void Cvar_Restart_f(void)
     }
 }
 
+#if defined(WINDOWS_BEHAVIOR)
 /* NOT_FROM_ORIGINAL_SOURCE: settings recovery can run after subsystems have
  * retained cvar_t pointers. Reset values without unlinking or clearing any
  * registry record, including command-line-created records later adopted by a
@@ -1128,6 +1148,7 @@ void coduomp_cvar_reset_defaults(void)
             (void)Cvar_Set2(cvar->name, cvar->resetString, qtrue);
     }
 }
+#endif
 
 /* Source: CoDUOMP.exe 0x0043edd0..0x0043ee6c.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043edd0_0043ee6d.mcode.

@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #include "core_runtime_private.h"
 
 /*
@@ -174,10 +173,4 @@ void FUN_08085210(void)
 
 void FUN_08085215(void)
 {
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: dedicated servers have no client key bindings. */
-void coduomp_config_capture_bindings(coduomp_config_buffer_t *buffer)
-{
-    (void)buffer;
 }

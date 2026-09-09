@@ -92,5 +92,6 @@ removed files. Reconnecting starts a fresh profile.
 The console reports how many files were removed and separately reports any
 files it could not remove.
 
-Config validation, protected recovery sessions, and checked saves also apply
-to server profiles and promotion. See [Configuration recovery](configuration-recovery.md).
+Client settings stored inside an isolated server namespace use the client-only
+recovery behavior described in [Configuration recovery](configuration-recovery.md).
+Dedicated-server configuration is outside that feature.
