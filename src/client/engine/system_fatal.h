@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 void Sys_OutOfMemory(void);
-int coduomp_config_recovery_dialog(const char *message, const char *backup);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #include "q_shared.h"
 
 #include "com_startup.h"
@@ -136,7 +135,6 @@ void Com_SetErrorMessage(const char *message)
 /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
 _Noreturn void Com_Error(errorParm_t errorCode, const char *format, ...)
 {
-    coduomp_command_abort_config();
     char originalMessage[COM_ERROR_MESSAGE_CAPACITY];
     va_list args;
 

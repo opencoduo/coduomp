@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #include "console.h"
 
 #include "cgame.h"
@@ -1039,7 +1038,6 @@ void Key_SetBinding(int32_t key, const char *binding)
         free(keyStates[key].binding);
     keyStates[key].binding = CopyStringInternal(binding);
     cvar_modifiedFlags |= CVAR_ARCHIVE;
-    coduomp_config_settings_changed();
 }
 
 /* Source: CoDUOMP.exe 0x0040eb10..0x0040eb82, recovered from the executable
@@ -1689,17 +1687,5 @@ void Key_Shutdown(void)
     for (int32_t key = 0; key < MAX_KEYS; ++key) {
         free(keyStates[key].binding);
         keyStates[key].binding = NULL;
-    }
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: checked, owned binding serialization for the
- * configuration persistence service. Keep key order and binding spelling. */
-void coduomp_config_capture_bindings(coduomp_config_buffer_t *buffer)
-{
-    coduomp_config_append(buffer, "unbindall", NULL, NULL);
-    for (int32_t key = 0; key < MAX_KEYS; ++key) {
-        const char *binding = keyStates[key].binding;
-        if (binding && binding[0])
-            coduomp_config_append(buffer, "bind", Key_KeynumToString(key, qfalse), binding);
     }
 }

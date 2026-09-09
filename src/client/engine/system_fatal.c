@@ -8,57 +8,11 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
-#include <commctrl.h>
 #else
 #include "platform/sdl_platform.h"
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-/* NOT_FROM_ORIGINAL_SOURCE: present explicit session-only recovery choices
- * after localization startup, including when the renderer is unavailable. */
-int coduomp_config_recovery_dialog(const char *message, const char *backup)
-{
-#if defined(_WIN32)
-    enum { CODUOMP_DIALOG_BACKUP = 1001, CODUOMP_DIALOG_DEFAULTS, CODUOMP_DIALOG_EXIT };
-    char detail[6144];
-    snprintf(detail, sizeof(detail), "%s\n\n%s%s\n\nThe original settings stay protected. To replace them later, use config_restore in the console; it preserves the original first.",
-        message, backup ? "Available recovery snapshot:\n" : "No complete recovery snapshot is available.", backup ? backup : "");
-    wchar_t wide[6144];
-    MultiByteToWideChar(CP_ACP, 0, detail, -1, wide, (int)(sizeof(wide) / sizeof(wide[0])));
-    HMODULE controls = LoadLibraryW(L"comctl32.dll");
-    typedef HRESULT (WINAPI *coduomp_task_dialog_t)(const TASKDIALOGCONFIG *, int *, int *, BOOL *);
-    coduomp_task_dialog_t show = controls ? (coduomp_task_dialog_t)(void *)GetProcAddress(controls, "TaskDialogIndirect") : NULL;
-    TASKDIALOG_BUTTON buttons[] = {
-        {CODUOMP_DIALOG_BACKUP, L"Use backup for this session"},
-        {CODUOMP_DIALOG_DEFAULTS, L"Use temporary defaults"}, {CODUOMP_DIALOG_EXIT, L"Exit"}
-    };
-    TASKDIALOGCONFIG dialog = {0};
-    dialog.cbSize = sizeof(dialog);
-    dialog.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_SIZE_TO_CONTENT;
-    dialog.pszWindowTitle = L"Settings could not be loaded";
-    dialog.pszContent = wide;
-    dialog.cButtons = backup ? 3 : 2;
-    dialog.pButtons = backup ? buttons : buttons + 1;
-    dialog.nDefaultButton = CODUOMP_DIALOG_EXIT;
-    int selected = CODUOMP_DIALOG_EXIT;
-    HRESULT status = show ? show(&dialog, &selected, NULL, NULL) : E_NOTIMPL;
-    if (controls)
-        FreeLibrary(controls);
-    if (SUCCEEDED(status))
-        return selected == CODUOMP_DIALOG_BACKUP ? 1 : selected == CODUOMP_DIALOG_DEFAULTS ? 0 : -1;
-    /* Older common-controls installations still get an explicit mapping and
-     * default to cancellation instead of selecting a reset. */
-    snprintf(detail, sizeof(detail), "%s\n\nYes: %s\nNo: Use temporary defaults\nCancel: Exit", message,
-        backup ? "Use backup for this session" : "Use temporary defaults (no backup available)");
-    int response = MessageBoxA(NULL, detail, "Settings could not be loaded", MB_YESNOCANCEL | MB_ICONWARNING | MB_DEFBUTTON3);
-    return response == IDYES && backup ? 1 : response == IDYES || response == IDNO ? 0 : -1;
-#else
-    return coduomp_sdl_config_recovery_dialog(message, backup);
-#endif
-}
 
 enum {
     SYS_ERROR_DIALOG_TYPE = 16,

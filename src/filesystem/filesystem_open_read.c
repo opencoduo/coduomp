@@ -1,7 +1,4 @@
 #include "filesystem.h"
-#if defined(WINDOWS_BEHAVIOR)
-#include "filesystem_config.h"
-#endif
 #include "filesystem_path_security.h"
 #include "filesystem_services.h"
 
@@ -201,9 +198,6 @@ int32_t FS_FOpenFileRead_Internal(const char *qpath, int32_t *handle,
 
                 Q_strncpyz(fileHandle->name, qpath,
                            FS_HANDLE_NAME_SIZE);
-#if defined(WINDOWS_BEHAVIOR)
-                coduomp_fs_config_read_origin(NULL, pack->pakFilename, qpath);
-#endif
                 if (fs_debug->integer != 0 && quiet == qfalse) {
                     Com_Printf(
                         "FS_FOpenFileRead: %s (found in '%s')\n",
@@ -239,15 +233,8 @@ int32_t FS_FOpenFileRead_Internal(const char *qpath, int32_t *handle,
                 qpath, osPath, quiet);
             fileHandle->ioObject = filesystem_compat_fopen_read(
                 directory->path, osPath);
-            if (fileHandle->ioObject == NULL) {
-#if defined(WINDOWS_BEHAVIOR)
-                coduomp_fs_config_read_error();
-#endif
+            if (fileHandle->ioObject == NULL)
                 continue;
-            }
-#if defined(WINDOWS_BEHAVIOR)
-            coduomp_fs_config_read_origin(directory->path, osPath, NULL);
-#endif
 
             if (search->localized == qfalse &&
                 FS_PureIgnoresExtension(extension) == qfalse) {

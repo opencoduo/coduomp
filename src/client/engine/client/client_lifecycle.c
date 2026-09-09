@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #include "cgame.h"
 #include "widescreen_2d_compat.h"
 #include "compat/crt/atof_compat.h"
@@ -306,8 +305,8 @@ static void coduomp_client_teardown_server_mod(void)
         return;
     }
 
-    coduomp_config_flush();
-    coduomp_config_leave_profile();
+    if (namespaceActive != qfalse)
+        Com_WriteConfiguration();
     CL_ShutdownAll();
     Hunk_ClearToStart();
     if (namespaceActive != qfalse &&
@@ -322,7 +321,7 @@ static void coduomp_client_teardown_server_mod(void)
     FS_Restart(0);
     cl_connectedToPureServer = qfalse;
     coduomp_serverModTeardownRestartPending = qtrue;
-    coduomp_command_queue_profile("uoconfig_mp.cfg", qfalse);
+    Cbuf_InsertText("exec uoconfig_mp.cfg");
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: finish the deferred half of server-mod

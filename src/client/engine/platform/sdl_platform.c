@@ -645,26 +645,6 @@ void CoduoSDL_ShowErrorDialog(const char *message, const char *title)
         SDL_MESSAGEBOX_ERROR, title, message, coduoSdlWindow);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: settings recovery is usable before GL startup;
- * no reset is preselected and restoring the file is a separate explicit action. */
-int coduomp_sdl_config_recovery_dialog(const char *message, const char *backup)
-{
-    char detail[6144];
-    snprintf(detail, sizeof(detail), "%s\n\n%s%s\n\nThe original settings stay protected. To replace them later, use config_restore in the console; it preserves the original first.",
-        message, backup ? "Available recovery snapshot:\n" : "No complete recovery snapshot is available.", backup ? backup : "");
-    SDL_MessageBoxButtonData buttons[] = {
-        {0, 1, "Use backup for this session"},
-        {0, 0, "Use temporary defaults"},
-        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, -1, "Exit"}
-    };
-    SDL_MessageBoxData dialog = {SDL_MESSAGEBOX_WARNING, coduoSdlWindow, "Settings could not be loaded", detail,
-        backup ? 3 : 2, backup ? buttons : buttons + 1, NULL};
-    int selected = -1;
-    if (SDL_ShowMessageBox(&dialog, &selected) != 0)
-        Com_Printf("Could not show settings recovery dialog: %s\n", SDL_GetError());
-    return selected;
-}
-
 static int32_t CoduoSDL_MapKey(SDL_Keycode key)
 {
     if (key >= SDLK_SPACE && key <= SDLK_z)

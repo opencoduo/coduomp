@@ -8,7 +8,6 @@
 #if !defined(_WIN32)
 
 qboolean CoduoSDL_Init(void);
-int coduomp_sdl_config_recovery_dialog(const char *message, const char *backup);
 void CoduoSDL_Shutdown(void);
 qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
                                      int32_t colorBits, int32_t depthBits,

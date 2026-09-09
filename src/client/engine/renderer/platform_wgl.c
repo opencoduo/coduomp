@@ -1,4 +1,3 @@
-#include "qcommon/config_profile.h"
 #include "backend.h"
 
 #include "client/common/client_legacy_crt.h"
@@ -1962,7 +1961,6 @@ qboolean GLW_LoadOpenGL(void)
     if (GLW_StartDriverAndSetMode("opengl32") != qfalse)
         return qtrue;
 
-    coduomp_config_pause("graphics initialization required temporary fallback settings");
     if (r_displayRefresh->integer != 0) {
         ri.Printf(
             R_PRINT_ALL,
