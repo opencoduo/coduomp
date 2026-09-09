@@ -85,8 +85,8 @@ int32_t rendererMaxPolys;
 int32_t rendererMaxPolyVerts;
 
 image_t *imageHashTable[R_IMAGE_HASH_SIZE];
-/* Original 0x0488bb20/0x0488bb24. Image creation accumulates the first;
- * the renderer export boundary lets the effects system manage the second. */
+/* Original texture-filter globals at 0x005ce9fc/0x005cea00 default to
+ * GL_LINEAR_MIPMAP_NEAREST/GL_LINEAR; GL_TextureMode updates both. */
 uint32_t rendererTextureMinFilter = GL_LINEAR_MIPMAP_NEAREST;
 uint32_t rendererTextureMagFilter = GL_LINEAR;
 uint8_t rendererGammaTable[256];
