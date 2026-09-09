@@ -16,6 +16,7 @@ void RB_RenderDrawSurfList(const drawSurf_t *drawSurfs,
                            int32_t drawSurfCount)
 {
     const float originalFloatTime = backEnd.refdef.floatTime;
+    uint32_t previousSort = UINT32_MAX;
     shader_t *previousShader = NULL;
     int32_t previousEntityNumber = -1;
     renderer_static_vertex_memory_source_t previousStorageMode =
@@ -43,7 +44,8 @@ void RB_RenderDrawSurfList(const drawSurf_t *drawSurfs,
         qboolean entityChanged;
         qboolean batchChanged;
 
-        if (sort == UINT32_MAX) {
+        /* Consecutive surfaces with the same sort key reuse the current state. */
+        if (sort == previousSort) {
             const int32_t surfaceType = *(const int32_t *)drawSurf->surface;
 
             rb_surfaceTable[surfaceType](drawSurf->surface);
@@ -229,6 +231,7 @@ void RB_RenderDrawSurfList(const drawSurf_t *drawSurfs,
 
             rb_surfaceTable[surfaceType](drawSurf->surface);
         }
+        previousSort = sort;
     }
 
     if (previousShader != NULL)

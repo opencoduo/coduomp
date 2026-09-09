@@ -34,16 +34,16 @@ static qboolean coduomp_renderer_validate_triangle_soup_records(
 {
     if ((uint32_t)surfaceLump->filelen % sizeof(dsurface_t) != 0U ||
         (uint32_t)vertexLump->filelen % sizeof(drawVert_t) != 0U ||
-        (uint32_t)indexLump->filelen % sizeof(int16_t) != 0U) {
+        (uint32_t)indexLump->filelen % sizeof(uint16_t) != 0U) {
         ri.Error(ERR_DROP, "\x15" "LoadMap: funny triangle soup lump size in %s", rendererWorldData.name);
         return qfalse;
     }
 
     const dsurface_t *const surfaces = (const dsurface_t *)(rendererWorldFileBase + surfaceLump->fileofs);
-    const int16_t *const indices = (const int16_t *)(rendererWorldFileBase + indexLump->fileofs);
+    const uint16_t *const indices = (const uint16_t *)(rendererWorldFileBase + indexLump->fileofs);
     const uint32_t surfaceCount = (uint32_t)surfaceLump->filelen / sizeof(dsurface_t);
     const uint32_t vertexCount = (uint32_t)vertexLump->filelen / sizeof(drawVert_t);
-    const uint32_t indexCount = (uint32_t)indexLump->filelen / sizeof(int16_t);
+    const uint32_t indexCount = (uint32_t)indexLump->filelen / sizeof(uint16_t);
 
     for (uint32_t surfaceIndex = 0; surfaceIndex < surfaceCount; ++surfaceIndex) {
         const dsurface_t *const surface = &surfaces[surfaceIndex];
@@ -59,14 +59,13 @@ static qboolean coduomp_renderer_validate_triangle_soup_records(
             return qfalse;
         }
 
-        const int16_t *const surfaceIndices = &indices[surface->firstIndex];
+        const uint16_t *const surfaceIndices = &indices[surface->firstIndex];
         if (surfaceIndices[0] != 0) {
             ri.Error(ERR_DROP, "\x15" "First index is not 0 in triangle soup surface");
             return qfalse;
         }
         for (uint32_t index = 0; index < surface->numIndexes; ++index) {
-            if (surfaceIndices[index] < 0 ||
-                (uint32_t)surfaceIndices[index] >= (uint32_t)surface->numVerts) {
+            if ((uint32_t)surfaceIndices[index] >= (uint32_t)surface->numVerts) {
                 ri.Error(ERR_DROP, "\x15" "Bad index in triangle soup surface");
                 return qfalse;
             }
@@ -282,7 +281,7 @@ void ParseTriangleSoup(
     const renderer_lightmap_placement_t *lightmapPlacements,
     const drawVert_t *vertices,
     msurface_t *worldSurface,
-    const int16_t *indices)
+    const uint16_t *indices)
 {
     worldSurface->shader = build->shader;
     if (r_singleShader->integer != 0 &&
@@ -333,7 +332,7 @@ void R_LoadSurfaces(
                  rendererWorldData.name);
     }
 
-    const int16_t *indices = (const int16_t *)(
+    const uint16_t *indices = (const uint16_t *)(
         rendererWorldFileBase + indexLump->fileofs);
     if (((uint32_t)indexLump->filelen % sizeof(*indices)) != 0) {
         ri.Error(ERR_DROP, "\x15LoadMap: funny lump size in %s",

@@ -1235,6 +1235,10 @@ void R_AddCellOccluders(renderer_world_cell_t *cell,
     rendererDpvsOccluderCount = 0;
     rendererDpvsActivePlaneCount = 0;
 
+    /* Consumed clip planes remain consumed across this cell's occluders. */
+    uint32_t planesRemaining = (uint32_t)planeCount;
+    const renderer_dpvs_plane_t *plane = planes;
+
     for (int32_t occluderIndex = 0;
          occluderIndex < cell->occluderCount;
          ++occluderIndex) {
@@ -1246,8 +1250,6 @@ void R_AddCellOccluders(renderer_world_cell_t *cell,
         }
 
         qboolean clipped = qfalse;
-        uint32_t planesRemaining = (uint32_t)planeCount;
-        const renderer_dpvs_plane_t *plane = planes;
         while (planesRemaining != 0u) {
             qboolean culledByPlane = qtrue;
             for (int32_t vertexIndex = 0;
