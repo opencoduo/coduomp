@@ -373,6 +373,8 @@ static qboolean ScriptInterpreter_ReturnFromFrame(
      * `return <undefinedValue>;` still writes the payload dword. */
     --script_callStackDepth;
     if (top == stackBase) {
+        /* NOT_FROM_ORIGINAL_SOURCE: bounds the original stackBase[1] result
+         * destination before preserving the original type/payload writes. */
         VariableValue *resultSlot =
             coduomp_script_value_next_stack_slot(stackBase);
         if (copyPayloadUnconditionally == qfalse &&
@@ -407,6 +409,8 @@ static qboolean ScriptInterpreter_ReturnFromFrame(
             }
             --script_callStackDepth;
             if (top == stackBase) {
+                /* NOT_FROM_ORIGINAL_SOURCE: bounds the original stackBase[1]
+                 * result destination before preserving its type-only write. */
                 VariableValue *resultSlot =
                     coduomp_script_value_next_stack_slot(stackBase);
                 resultSlot->type = SCRIPT_VAR_UNDEFINED;
