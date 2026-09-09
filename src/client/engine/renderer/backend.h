@@ -5096,14 +5096,14 @@ qboolean BuildOptimizedSurface(
     renderer_shader_surface_build_t *build,
     const renderer_lightmap_placement_t *lightmapPlacement,
     int32_t vertexCount, const drawVert_t *vertices,
-    int32_t indexCount, const int16_t *indices);
+    int32_t indexCount, const uint16_t *indices);
 void ParseTriangleSoup(
     const dsurface_t *diskSurface,
     renderer_shader_surface_build_t *build,
     const renderer_lightmap_placement_t *lightmapPlacements,
     const drawVert_t *vertices,
     msurface_t *worldSurface,
-    const int16_t *indices);
+    const uint16_t *indices);
 void R_LoadSurfaces(
     const lump_t *surfaceLump,
     const lump_t *vertexLump,

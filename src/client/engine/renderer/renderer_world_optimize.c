@@ -201,16 +201,15 @@ void LittleVertices_T2T2C4V3(
 /* Source: CoDUOMP.exe 0x0050bb70..0x0050bddb.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050bb70_0050bddc.mcode.
  * Name and seven-argument source signature: exact same-module Mac symbol
- * BuildOptimizedSurface. The check of each still-zero destination index
- * before it is overwritten is present in both shipped binaries; Hunk_AllocInternal's
- * zero-fill contract makes it ineffective for ordinary positive vertex
- * counts, but it is retained as original behavior. */
+ * BuildOptimizedSurface. Input words address the full unsigned 16-bit vertex
+ * range and are validated against vertexCount before applying the shared
+ * vertex base. */
 qboolean BuildOptimizedSurface(
     msurface_t *worldSurface,
     renderer_shader_surface_build_t *build,
     const renderer_lightmap_placement_t *lightmapPlacement,
     int32_t vertexCount, const drawVert_t *vertices,
-    int32_t indexCount, const int16_t *indices)
+    int32_t indexCount, const uint16_t *indices)
 {
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     if (vertexCount <= 0 || indexCount <= 0) {
@@ -272,9 +271,10 @@ qboolean BuildOptimizedSurface(
         surface->boundsMax[component] = -262144.0f;
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: validate source indices before applying the shared vertex base. */
     for (int32_t index = 0; index < indexCount; ++index) {
         const int32_t sourceIndex = indices[index];
-        if (sourceIndex < 0 || sourceIndex >= vertexCount) {
+        if (sourceIndex >= vertexCount) {
             ri.Error(ERR_DROP, "\x15" "Bad index in triangle soup surface");
             return qfalse;
         }
