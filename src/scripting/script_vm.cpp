@@ -233,7 +233,7 @@ ScriptInterpreter_Push(VariableValue *stackTop,
                        script_variable_type_t type,
                        uintptr_t payload)
 {
-    ++stackTop;
+    stackTop = coduomp_script_value_next_stack_slot(stackTop);
     stackTop->payload = payload;
     stackTop->type = type;
     return stackTop;
@@ -245,7 +245,7 @@ static VariableValue *
 ScriptInterpreter_PushTypeOnly(VariableValue *stackTop,
                                script_variable_type_t type)
 {
-    ++stackTop;
+    stackTop = coduomp_script_value_next_stack_slot(stackTop);
     stackTop->type = type;
     return stackTop;
 }
@@ -373,11 +373,13 @@ static qboolean ScriptInterpreter_ReturnFromFrame(
      * `return <undefinedValue>;` still writes the payload dword. */
     --script_callStackDepth;
     if (top == stackBase) {
+        VariableValue *resultSlot =
+            coduomp_script_value_next_stack_slot(stackBase);
         if (copyPayloadUnconditionally == qfalse &&
             returnValue->type == SCRIPT_VAR_UNDEFINED) {
-            stackBase[1].type = SCRIPT_VAR_UNDEFINED;
+            resultSlot->type = SCRIPT_VAR_UNDEFINED;
         } else {
-            stackBase[1] = *returnValue;
+            *resultSlot = *returnValue;
         }
         *stackTop = top;
         return qtrue;
@@ -405,7 +407,9 @@ static qboolean ScriptInterpreter_ReturnFromFrame(
             }
             --script_callStackDepth;
             if (top == stackBase) {
-                stackBase[1].type = SCRIPT_VAR_UNDEFINED;
+                VariableValue *resultSlot =
+                    coduomp_script_value_next_stack_slot(stackBase);
+                resultSlot->type = SCRIPT_VAR_UNDEFINED;
                 *stackTop = top;
                 return qtrue;
             }
@@ -766,7 +770,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
             case SCRIPT_OP_GET_ANIM: {
                 VariableValue value;
                 GetVariableValue(script_animArrayHandle, &value);
-                ++stackTop;
+                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 *stackTop = value;
                 AddRefToValue(stackTop);
                 break;
@@ -802,7 +806,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     GetVariable(thread,
                                             ScriptInterpreter_ReadU16(codePos));
                 codePos += sizeof(uint16_t);
-                ++stackTop;
+                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 GetVariableValue(child, stackTop);
                 AddRefToValue(stackTop);
                 break;
@@ -836,7 +840,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 break;
 
             case SCRIPT_OP_NEW_ARRAY:
-                ++stackTop;
+                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 GetEmptyArray(stackTop);
                 break;
 
@@ -845,7 +849,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     GetVariableField(
                         fieldRef, ScriptInterpreter_ReadU16(codePos));
                 codePos += sizeof(uint16_t);
-                ++stackTop;
+                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 GetVariableFieldValue(child, stackTop);
                 break;
             }
@@ -914,8 +918,8 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 stackTop = script_valueStackTop;
                 codePos += sizeof(uint8_t) + sizeof(callback);
                 if (script_valueStackDepth == 0) {
-                    stackTop++;
-                    stackTop->type = SCRIPT_VAR_UNDEFINED;
+                    stackTop = ScriptInterpreter_PushTypeOnly(
+                        stackTop, SCRIPT_VAR_UNDEFINED);
                 } else {
                     script_valueStackDepth = 0;
                 }
@@ -955,8 +959,8 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 stackTop = script_valueStackTop;
                 codePos += sizeof(uint8_t) + sizeof(callback);
                 if (script_valueStackDepth == 0) {
-                    stackTop++;
-                    stackTop->type = SCRIPT_VAR_UNDEFINED;
+                    stackTop = ScriptInterpreter_PushTypeOnly(
+                        stackTop, SCRIPT_VAR_UNDEFINED);
                 } else {
                     script_valueStackDepth = 0;
                 }
@@ -1020,8 +1024,8 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 stackTop = ScriptInterpreter_Push(stackTop,
                                                   SCRIPT_VAR_OBJECT,
                                                   thread);
-                stackTop++;
-                stackTop->type = SCRIPT_VAR_UNDEFINED;
+                stackTop = ScriptInterpreter_PushTypeOnly(
+                    stackTop, SCRIPT_VAR_UNDEFINED);
                 break;
 
             case SCRIPT_OP_CALL_FUNCTION:
@@ -1364,7 +1368,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
 
             case SCRIPT_OP_INC:
             case SCRIPT_OP_DEC: {
-                ++stackTop;
+                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 GetVariableFieldValue(fieldRef, stackTop);
                 if (stackTop->type != SCRIPT_VAR_INT) {
                     Scr_Error(

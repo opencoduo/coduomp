@@ -39,6 +39,8 @@ void AddRefToValue(const VariableValue *value);
 void RemoveRefToValueOfType(script_variable_type_t type,
                             VariableUnion value);
 void RemoveRefToValue(VariableValue *value);
+VariableValue *coduomp_script_value_next_stack_slot(
+    VariableValue *stackTop);
 
 uint16_t VM_ConcatenateStrings(const VariableValue values[2]);
 void GetSizeValue(VariableValue *value);

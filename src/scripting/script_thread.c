@@ -51,7 +51,8 @@ uint16_t VM_ExecuteThread(uint16_t parent, script_codepos_t codePos,
         valuesToRelease--;
     }
 
-    script_valueStackTop++;
+    script_valueStackTop =
+        coduomp_script_value_next_stack_slot(script_valueStackTop);
     script_valueStackTop->type = SCRIPT_VAR_UNDEFINED;
     RuntimeError(
         codePos, 0,
