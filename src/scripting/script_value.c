@@ -36,11 +36,7 @@ VariableValue *coduomp_script_value_next_stack_slot(
     VariableValue *stackTop)
 {
     if (stackTop >= script_valueStackLimit) {
-#if defined(WINDOWS_BEHAVIOR)
-        Com_Error(ERR_DROP, "\x15Internal script stack overflow");
-#else
         Com_Error(ERR_DROP, "Internal script stack overflow");
-#endif
     }
 
     return stackTop + 1;
