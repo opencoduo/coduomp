@@ -8,7 +8,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 - Spawn reload animation is fixed, it won't play anymore
 - Local server map list limit increased to 2048
-- Sound Options has independent Effects Volume and Music Volume sliders.
+- Sound Options has independent Effects Volume and Music Volume sliders. The existing `mss_volume` cvar controls effects/SFX, and the new `musicVolume` cvar controls music; there is no separate `sfxVolume` cvar.
 
 ### Server browser
 

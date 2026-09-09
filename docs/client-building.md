@@ -208,10 +208,12 @@ device supports it. The stock-named `mss_3d_provider` cvar selects the complete
 audio backend on these clients.
 
 On `master`, the Sound Options page has independent Effects Volume and Music
-Volume sliders. Their saved cvars are `mss_volume` and `musicVolume`. A
-profile's initial `musicVolume` inherits its existing `mss_volume`, so enabling
-the separate control does not change that profile's established mix. Profiles
-that already disabled music start the new slider at zero.
+Volume sliders. The stock-named `mss_volume` cvar is the effects/SFX control,
+and the new `musicVolume` cvar is the music control. There is no separate
+`sfxVolume` cvar. A profile's initial `musicVolume` inherits its existing
+`mss_volume`, so enabling the separate control does not change that profile's
+established mix. Profiles that already disabled music start the new slider at
+zero.
 
 Setting Music Volume to zero silences the background-music slot, aliases on the
 `music` channel, and files under `sound/music/`, while leaving other sound
