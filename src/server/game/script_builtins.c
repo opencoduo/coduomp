@@ -5738,7 +5738,9 @@ void ScriptMover_SetupMove(trajectory_t *trajectory,
 #endif
             vec3_t velocity;
 
-            /* (dist+dist) / ((tt+tt) - at - dt) kept 80-bit, one store -> shim. */
+            /* Both platforms compute (dist+dist) / ((tt+tt) - at - dt), then store speed as float.
+             * Windows doubles the live square root; Linux reloads its already-rounded float value.
+             * The addition and division retain x87 precision on both paths. */
 #if EMULATE_X87
             *speed = x87f_store_f32(x87f_div(
 #if defined(WINDOWS_BEHAVIOR)
