@@ -4421,8 +4421,8 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
 /* Source: CoDUOMP.exe 0x0051f250..0x0051f2ba.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0051f250_0051f2bb.mcode.
  * Name and source-level no-argument boundary: exact same-module Mac symbol
- * RB_IterateStagesGenericARB. Stream mode selects the mapped/interleaved path;
- * the persistent mode uses segmented BufferSubData uploads. */
+ * RB_IterateStagesGenericARB. Interleaving selects packed vertex uploads;
+ * otherwise each enabled array is uploaded separately. */
 void RB_IterateStagesGenericARB(void)
 {
     for (int32_t stageIndex = 0;
@@ -4435,7 +4435,7 @@ void RB_IterateStagesGenericARB(void)
         if ((stage->flags & SHADER_STAGE_PER_LIGHT) != 0)
             continue;
 
-        if (tr.vboStreamDraw != qfalse) {
+        if (tr.vboInterleaved != qfalse) {
             RB_SingleStageGenericARB(stage, tess.indexCount,
                                      tess.indexes);
         } else {
@@ -4495,7 +4495,7 @@ void ProjectDlightTextureARB(void)
                 if ((stage->flags & SHADER_STAGE_PER_LIGHT) == 0)
                     continue;
 
-                if (tr.vboStreamDraw != qfalse) {
+                if (tr.vboInterleaved != qfalse) {
                     RB_SingleStageGenericARB(stage, filteredIndexCount,
                                              filteredIndexes);
                 } else {
@@ -4504,7 +4504,7 @@ void ProjectDlightTextureARB(void)
                 }
             }
         } else if (tr.dlightShader->stages[0] != NULL) {
-            if (tr.vboStreamDraw != qfalse) {
+            if (tr.vboInterleaved != qfalse) {
                 RB_SingleStageGenericARB(tr.dlightShader->stages[0],
                                          filteredIndexCount,
                                          filteredIndexes);
@@ -4580,7 +4580,7 @@ void RB_StageIteratorGenericARB(qboolean portalPass)
             if ((stage->flags & SHADER_STAGE_PER_LIGHT) == 0)
                 continue;
 
-            if (tr.vboStreamDraw != qfalse) {
+            if (tr.vboInterleaved != qfalse) {
                 RB_SingleStageGenericARB(stage, tess.indexCount,
                                          tess.indexes);
             } else {
