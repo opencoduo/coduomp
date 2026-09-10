@@ -3,6 +3,14 @@
 
 #include "../q_shared.h"
 
+#if defined(__APPLE__) && defined(__aarch64__)
+/* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): Apple's Metal-backed OpenGL
+ * renderer stalls on the separate-array BufferSubData upload path. */
+#define CODUOMP_VBO_INTERLEAVE_DEFAULT "1"
+#else
+#define CODUOMP_VBO_INTERLEAVE_DEFAULT "0"
+#endif
+
 /* Renderer-owned cvar pointers populated by R_Register. Names follow the
  * original registration strings except where the source role is clearer than
  * the console spelling (r_cheats aliases the engine's "sv_cheats" cvar, and

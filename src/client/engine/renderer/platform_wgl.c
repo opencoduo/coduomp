@@ -2061,7 +2061,16 @@ void GLW_ApplyRendererAutoConfig(void)
 
     for (int32_t cvarIndex = 0; cvarIndex < cvarCount; ++cvarIndex) {
         cvar_t *const cvar = cvars[cvarIndex];
-        ri.Cvar_Set(cvar->name, values[cvarIndex]);
+        const char *configuredValue = values[cvarIndex];
+#if defined(__APPLE__) && defined(__aarch64__)
+        /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail renderer
+         * profiles predate Apple's Metal-backed OpenGL implementation. Keep
+         * auto-configuration on the interleaved upload path required by this
+         * driver instead of restoring the platform-inappropriate stock value. */
+        if (cvar == r_vbo_interleave)
+            configuredValue = CODUOMP_VBO_INTERLEAVE_DEFAULT;
+#endif
+        ri.Cvar_Set(cvar->name, configuredValue);
         (void)ri.Cvar_Get(cvar->name, cvar->resetString, cvar->flags);
     }
 }

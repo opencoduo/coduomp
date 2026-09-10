@@ -261,7 +261,8 @@ void R_Register(void)
     /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): default to the reusable dynamic-VBO upload path while preserving user selection. */
     r_vbo_stream_draw = ri.Cvar_Get("r_vbo_stream_draw", "0", CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_interleave = ri.Cvar_Get(
-        "r_vbo_interleave", "0", CVAR_ARCHIVE | CVAR_LATCH);
+        "r_vbo_interleave", CODUOMP_VBO_INTERLEAVE_DEFAULT,
+        CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_paranoia =
         ri.Cvar_Get("r_vbo_paranoia", "0", CVAR_ARCHIVE);
     r_skip_auto_config = ri.Cvar_Get(
