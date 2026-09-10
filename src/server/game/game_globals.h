@@ -126,6 +126,8 @@ extern vmCvar_t ui_killcam;
 extern vmCvar_t g_complaintlimit;
 extern vmCvar_t g_voiceChatsAllowed;
 extern vmCvar_t g_deadChat;
+/* NOT_FROM_ORIGINAL_SOURCE: master-only control for player general chat. */
+extern vmCvar_t g_allowGlobalChat;
 extern vmCvar_t g_developer;
 extern vmCvar_t g_ScoresBanner_Allies;
 extern vmCvar_t g_ScoresBanner_Axis;

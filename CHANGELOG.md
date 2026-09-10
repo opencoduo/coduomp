@@ -21,6 +21,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 - Attached models reload correctly when detached
 - Per-map `<map>_<gametype>.cfg` files load by the visible map name even when the map asset name contains color escapes.
+- Servers can set `g_allowGlobalChat 0` to disable player general chat while preserving team, squad, private, scripted, and server-console messages. General chat remains enabled by default.
 
 ### Platforms and display
 

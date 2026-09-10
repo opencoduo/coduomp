@@ -74,6 +74,7 @@
 #define SAY_COLOR_AXIS "^9"
 #define SAY_COLOR_ALLIES "^8"
 #define SAY_COLOR_RESET "^7"
+#define GENERAL_CHAT_DISABLED_COMMAND "e \"\x15General chat is disabled.\""
 #define TELL_NAME_BUFFER_SIZE 64
 #define TELL_MODE SAY_MODE_TELL
 #define VOTE_ARG_BUFFER_SIZE 64
@@ -1197,6 +1198,13 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *message)
 void Cmd_Say_f(gentity_t *ent, int mode, qboolean arg0)
 {
     const char *message;
+
+    /* NOT_FROM_ORIGINAL_SOURCE: let servers disable player general chat while
+     * preserving team, squad, private, script, and console messages. */
+    if (mode == SAY_MODE_ALL && g_allowGlobalChat.integer == 0) {
+        game_compat_command_send_literal_status(ent, GENERAL_CHAT_DISABLED_COMMAND);
+        return;
+    }
 
     if (trap_Argc() <= 1 && arg0 == qfalse) {
         return;
