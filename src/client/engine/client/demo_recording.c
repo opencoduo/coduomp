@@ -30,6 +30,65 @@ enum {
  * CL_Record_f chooses and opens a demo, then copied into clc.demoName. */
 static char cl_demoBaseName[CL_DEMO_BASE_NAME_CAPACITY];
 
+/* NOT_FROM_ORIGINAL_SOURCE: draw a resolution-independent recording dot as a
+ * regular polygon so the indicator does not depend on proprietary UI assets. */
+static void coduomp_scr_draw_demo_recording_indicator(void)
+{
+    enum {
+        SCR_DEMO_INDICATOR_POINT_COUNT = 16
+    };
+    static const vec2_t unitCircle[SCR_DEMO_INDICATOR_POINT_COUNT + 1] = {
+        { 1.0f, 0.0f },
+        { 0.9238795f, 0.3826834f },
+        { 0.7071068f, 0.7071068f },
+        { 0.3826834f, 0.9238795f },
+        { 0.0f, 1.0f },
+        { -0.3826834f, 0.9238795f },
+        { -0.7071068f, 0.7071068f },
+        { -0.9238795f, 0.3826834f },
+        { -1.0f, 0.0f },
+        { -0.9238795f, -0.3826834f },
+        { -0.7071068f, -0.7071068f },
+        { -0.3826834f, -0.9238795f },
+        { 0.0f, -1.0f },
+        { 0.3826834f, -0.9238795f },
+        { 0.7071068f, -0.7071068f },
+        { 0.9238795f, -0.3826834f },
+        { 1.0f, 0.0f }
+    };
+    static const vec2_t textureCoordinates[4] = {
+        { 0.5f, 0.5f }, { 1.0f, 0.5f },
+        { 0.5f, 1.0f }, { 0.5f, 0.5f }
+    };
+    static const vec4_t recordingColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+    const float scale = (float)cls.rendererConfig.vidHeight / 480.0f;
+    const float radius = 7.0f * scale;
+    const float centerX =
+        (float)cls.rendererConfig.vidWidth - 16.0f * scale;
+    const float centerY = (float)cls.rendererConfig.vidHeight * 0.5f;
+
+    rendererExports.SetColor(recordingColor);
+    for (int32_t point = 0;
+         point < SCR_DEMO_INDICATOR_POINT_COUNT; ++point) {
+        const vec2_t positions[4] = {
+            { centerX, centerY },
+            {
+                centerX + unitCircle[point][0] * radius,
+                centerY + unitCircle[point][1] * radius
+            },
+            {
+                centerX + unitCircle[point + 1][0] * radius,
+                centerY + unitCircle[point + 1][1] * radius
+            },
+            { centerX, centerY }
+        };
+
+        rendererExports.DrawQuadPic(
+            positions, textureCoordinates, cls.whiteShader);
+    }
+    rendererExports.SetColor(NULL);
+}
+
 /* Source: CoDUOMP.exe 0x00419a60..0x00419b5e.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00419a60_00419b5f.mcode.
  * Name and no-argument signature: exact same-module Mac symbol
@@ -65,6 +124,10 @@ void SCR_DrawDemoRecording(void)
     rendererExports.TextPaint(
         5.0f, 479.0f, SCR_DEMO_FONT, textScale, color, text,
         8.0f, 0, SCR_DEMO_TEXT_STYLE);
+
+    /* NOT_FROM_ORIGINAL_SOURCE: supplement the stock text with a compact
+     * right-center recording indicator that remains round at every aspect. */
+    coduomp_scr_draw_demo_recording_indicator();
 }
 
 /* Source: CoDUOMP.exe 0x0040fa10..0x0040fa61.
