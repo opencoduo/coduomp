@@ -6,6 +6,9 @@
 enum {
     UI_COMPAT_BINDING_TEXT_SIZE = 128,
     UI_COMPAT_KEY_NAME_SIZE = 32,
+    UI_COMPAT_BINDING_CONSOLE = 0,
+    UI_COMPAT_BINDING_TOGGLE_RECORD = 1,
+    UI_COMPAT_BINDING_COUNT = 2,
     UI_KEY_CONSOLE = 96,
     UI_KEY_MOUSE1 = 200,
     UI_KEY_MWHEELUP = 206
@@ -13,25 +16,46 @@ enum {
 
 #define UI_KEY_UNBOUND ((int32_t)-1)
 
-/* NOT_FROM_ORIGINAL_SOURCE: the native UI adds one configurable console row
+/* NOT_FROM_ORIGINAL_SOURCE: the native UI adds improved configurable actions
  * outside the retail 55-row g_bindings table owned by src/client/menu. */
-bind_t ui_compat_consoleBinding = {
-    "toggleconsole", { -1, -1, -1 }, -1, -1
+static bind_t ui_compat_bindings[UI_COMPAT_BINDING_COUNT] = {
+    [UI_COMPAT_BINDING_CONSOLE] =
+        { "toggleconsole", { -1, -1, -1 }, -1, -1 },
+    [UI_COMPAT_BINDING_TOGGLE_RECORD] =
+        { "togglerecord", { -1, -1, -1 }, -1, -1 }
 };
 
-static char ui_compat_consoleBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
-static char ui_compat_consoleSecondBindingText[UI_COMPAT_BINDING_TEXT_SIZE];
+static char ui_compat_bindingText[UI_COMPAT_BINDING_COUNT]
+                                 [UI_COMPAT_BINDING_TEXT_SIZE];
+static char ui_compat_secondBindingText[UI_COMPAT_BINDING_COUNT]
+                                       [UI_COMPAT_BINDING_TEXT_SIZE];
 
-/* NOT_FROM_ORIGINAL_SOURCE: recognize the one UI-only compatibility row. */
+/* NOT_FROM_ORIGINAL_SOURCE: locate an improved binding without expanding the
+ * original shared table's recovered index domain. */
+static int32_t ui_compat_binding_index_for_name(const char *command)
+{
+    if (command == NULL)
+        return -1;
+
+    for (int32_t index = 0; index < UI_COMPAT_BINDING_COUNT; ++index) {
+        if (Q_stricmp(command, ui_compat_bindings[index].command) == 0)
+            return index;
+    }
+    return -1;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: recognize the console row whose key-capture rules
+ * intentionally differ from all other controls. */
 static qboolean ui_compat_is_console_binding(const char *command)
 {
-    return command != NULL &&
-           Q_stricmp(command, ui_compat_consoleBinding.command) == 0
+    return command != NULL && Q_stricmp(
+               command,
+               ui_compat_bindings[UI_COMPAT_BINDING_CONSOLE].command) == 0
                ? qtrue : qfalse;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: restore module load state for the shared retail
- * table and, when enabled, the separate UI-only console row. */
+ * table and the separate improved binding rows. */
 void ui_compat_reset_control_binding_state(void)
 {
     int32_t index;
@@ -40,108 +64,118 @@ void ui_compat_reset_control_binding_state(void)
         g_bindings[index].bind1 = UI_KEY_UNBOUND;
         g_bindings[index].bind2 = 0;
     }
-    ui_compat_consoleBinding.bind1 = UI_KEY_UNBOUND;
-    ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: refresh the retail table through its original
- * function, then refresh the optional UI-only row. */
-void ui_compat_controls_get_config(void)
-{
-    Controls_GetConfig();
-    {
-        int32_t keys[2];
-
-        Controls_GetKeyAssignment(ui_compat_consoleBinding.command, keys);
-        ui_compat_consoleBinding.bind1 = keys[0];
-        ui_compat_consoleBinding.bind2 = keys[1];
+    for (index = 0; index < UI_COMPAT_BINDING_COUNT; ++index) {
+        ui_compat_bindings[index].bind1 = UI_KEY_UNBOUND;
+        ui_compat_bindings[index].bind2 = UI_KEY_UNBOUND;
     }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: apply the optional UI-only console row, then commit
- * the retail table so its original in_restart command remains the final action. */
+/* NOT_FROM_ORIGINAL_SOURCE: refresh the retail table through its original
+ * function, then refresh the improved UI-only rows. */
+void ui_compat_controls_get_config(void)
+{
+    Controls_GetConfig();
+    for (int32_t index = 0; index < UI_COMPAT_BINDING_COUNT; ++index) {
+        int32_t keys[2];
+
+        Controls_GetKeyAssignment(ui_compat_bindings[index].command, keys);
+        ui_compat_bindings[index].bind1 = keys[0];
+        ui_compat_bindings[index].bind2 = keys[1];
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: apply the improved UI-only rows, then commit the
+ * retail table so its original in_restart command remains the final action. */
 void client_ui_compat_controls_set_config(void)
 {
-    if (ui_compat_consoleBinding.bind1 != UI_KEY_UNBOUND) {
-        DC->setBinding(ui_compat_consoleBinding.bind1,
-                       ui_compat_consoleBinding.command);
-        if (ui_compat_consoleBinding.bind2 != UI_KEY_UNBOUND) {
-            DC->setBinding(ui_compat_consoleBinding.bind2,
-                           ui_compat_consoleBinding.command);
+    for (int32_t index = 0; index < UI_COMPAT_BINDING_COUNT; ++index) {
+        bind_t *const binding = &ui_compat_bindings[index];
+
+        if (binding->bind1 != UI_KEY_UNBOUND) {
+            DC->setBinding(binding->bind1, binding->command);
+            if (binding->bind2 != UI_KEY_UNBOUND)
+                DC->setBinding(binding->bind2, binding->command);
         }
     }
     Controls_SetConfig();
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: retain the original reset bug for the retail
- * rows and reset the non-original console row to its unbound default. */
+ * rows and reset the non-original improved rows to their unbound defaults. */
 void ui_compat_controls_set_defaults(void)
 {
     Controls_SetDefaults();
-    ui_compat_consoleBinding.bind1 = UI_KEY_UNBOUND;
-    ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
+    for (int32_t index = 0; index < UI_COMPAT_BINDING_COUNT; ++index) {
+        ui_compat_bindings[index].bind1 = UI_KEY_UNBOUND;
+        ui_compat_bindings[index].bind2 = UI_KEY_UNBOUND;
+    }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: expose exactly one target-private row without
- * changing BindingIDFromName's retail index domain. */
+/* NOT_FROM_ORIGINAL_SOURCE: expose target-private rows without changing
+ * BindingIDFromName's retail index domain. */
 bind_t *client_ui_compat_extra_binding_for_name(const char *command)
 {
-    if (ui_compat_is_console_binding(command) != qfalse) {
-        return &ui_compat_consoleBinding;
-    }
-    return NULL;
+    const int32_t index = ui_compat_binding_index_for_name(command);
+
+    return index >= 0 ? &ui_compat_bindings[index] : NULL;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: extend the common handler's original duplicate-key
- * removal to the optional target-private console row. */
+ * removal to every improved target-private row. */
 void client_ui_compat_remove_key_from_extra_bindings(int32_t key)
 {
-    if (ui_compat_consoleBinding.bind2 == key) {
-        ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
-    }
-    if (ui_compat_consoleBinding.bind1 == key) {
-        ui_compat_consoleBinding.bind1 = ui_compat_consoleBinding.bind2;
-        ui_compat_consoleBinding.bind2 = UI_KEY_UNBOUND;
+    for (int32_t index = 0; index < UI_COMPAT_BINDING_COUNT; ++index) {
+        bind_t *const binding = &ui_compat_bindings[index];
+
+        if (binding->bind2 == key)
+            binding->bind2 = UI_KEY_UNBOUND;
+        if (binding->bind1 == key) {
+            binding->bind1 = binding->bind2;
+            binding->bind2 = UI_KEY_UNBOUND;
+        }
     }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: render the optional console row using the same UI
- * presentation as BindingFromName while leaving the original function stock. */
+/* NOT_FROM_ORIGINAL_SOURCE: render improved rows using the same UI presentation
+ * as BindingFromName while leaving the original function stock. */
 const char *client_ui_compat_binding_from_name(const char *command,
                                                qboolean firstKeyOnly)
 {
+    const int32_t index = ui_compat_binding_index_for_name(command);
     bind_t *binding;
+    char *bindingText;
+    char *secondBindingText;
 
-    if (ui_compat_is_console_binding(command) != qfalse) {
-        binding = &ui_compat_consoleBinding;
+    if (index >= 0) {
+        binding = &ui_compat_bindings[index];
+        bindingText = ui_compat_bindingText[index];
+        secondBindingText = ui_compat_secondBindingText[index];
         if (binding->bind1 == UI_KEY_UNBOUND) {
             coduo_client_crt_strcpy(
-                ui_compat_consoleBindingText,
+                bindingText,
                 DC->getLocalizedString("KEY_UNBOUND"));
-            return ui_compat_consoleBindingText;
+            return bindingText;
         }
 
         DC->keynumToStringBuf(binding->bind1,
-                              ui_compat_consoleBindingText,
+                              bindingText,
                               UI_COMPAT_KEY_NAME_SIZE);
         coduo_client_crt_strcpy(
-            ui_compat_consoleBindingText,
-            DC->getLocalizedString(ui_compat_consoleBindingText));
+            bindingText, DC->getLocalizedString(bindingText));
         if (binding->bind2 == UI_KEY_UNBOUND || firstKeyOnly != qfalse) {
-            return ui_compat_consoleBindingText;
+            return bindingText;
         }
 
         DC->keynumToStringBuf(binding->bind2,
-                              ui_compat_consoleSecondBindingText,
+                              secondBindingText,
                               UI_COMPAT_KEY_NAME_SIZE);
         coduo_client_crt_strcpy(
-            ui_compat_consoleSecondBindingText,
-            DC->getLocalizedString(ui_compat_consoleSecondBindingText));
-        strcat(ui_compat_consoleBindingText,
+            secondBindingText,
+            DC->getLocalizedString(secondBindingText));
+        strcat(bindingText,
                va(" %s ", DC->getLocalizedString("KEY_OR")));
-        strcat(ui_compat_consoleBindingText,
-               ui_compat_consoleSecondBindingText);
-        return ui_compat_consoleBindingText;
+        strcat(bindingText, secondBindingText);
+        return bindingText;
     }
     return BindingFromName(command, firstKeyOnly);
 }

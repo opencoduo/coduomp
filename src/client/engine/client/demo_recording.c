@@ -233,6 +233,18 @@ void CL_Record_f(void)
     (void)FS_Write(compressedData, compressedSize, clc.demoFile);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: provide one bindable action for manually starting
+ * an auto-named demo and stopping the active recording on the next press. */
+void coduomp_ToggleRecord_f(void)
+{
+    if (clc.demoRecording != qfalse) {
+        CL_StopRecord_f();
+        return;
+    }
+
+    CL_Record_f();
+}
+
 /* Source: CoDUOMP.exe 0x0040ffb0..0x0041005b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0040ffb0_0041005c.mcode.
  * Name and signature: exact same-module Mac symbol CL_DemoCompleted. The

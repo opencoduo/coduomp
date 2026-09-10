@@ -394,43 +394,65 @@ void ui_compat_extend_sound_menu(void)
     Menu_UpdatePosition(menu);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: adds the console binding contemplated by the
- * retail options_misc asset without copying or replacing that proprietary
- * menu.  The screenshot row supplies the established multiplayer control
- * styling, and the adjacent single-player quick-save row is hidden because
- * ui_multiplayer is a read-only one in this module. */
-void ui_compat_extend_console_binding_menu(void)
+/* NOT_FROM_ORIGINAL_SOURCE: adds improved bindings without copying or replacing
+ * the proprietary options_misc asset. The screenshot row supplies the
+ * established multiplayer control styling, and adjacent single-player rows
+ * are hidden because ui_multiplayer is a read-only one in this module. */
+void ui_compat_extend_misc_binding_menu(void)
 {
     menuDef_t *const menu = Menus_FindByName("options_misc");
     itemDef_t *screenshotItem;
     itemDef_t *consoleItem;
+    itemDef_t *recordDemoItem;
     int32_t screenshotIndex;
+    int32_t insertionIndex;
+    int32_t missingItemCount;
 
-    if (menu == NULL ||
-        ui_compat_find_cvar_item(menu, "toggleconsole", NULL) != NULL ||
-        menu->itemCount >= MAX_MENUITEMS) {
+    if (menu == NULL)
         return;
-    }
+
+    missingItemCount =
+        (ui_compat_find_cvar_item(menu, "toggleconsole", NULL) == NULL) +
+        (ui_compat_find_cvar_item(menu, "togglerecord", NULL) == NULL);
+    if (missingItemCount == 0 ||
+        menu->itemCount > MAX_MENUITEMS - missingItemCount)
+        return;
 
     screenshotItem = ui_compat_find_cvar_item(
         menu, "screenshotjpeg", &screenshotIndex);
     if (screenshotItem == NULL)
         return;
 
-    consoleItem = UI_Alloc(sizeof(*consoleItem));
-    memcpy(consoleItem, screenshotItem, sizeof(*consoleItem));
-    consoleItem->window.name = String_Alloc("coduomp_open_console");
-    consoleItem->window.rectClient.y += 15.0f;
-    consoleItem->text = String_Alloc("Open Console");
-    consoleItem->cvar = String_Alloc("toggleconsole");
-    consoleItem->parent = menu;
+    insertionIndex = screenshotIndex + 1;
+    if (ui_compat_find_cvar_item(menu, "toggleconsole", NULL) == NULL) {
+        consoleItem = ui_compat_clone_menu_item(screenshotItem, menu);
+        consoleItem->window.name = String_Alloc("coduomp_open_console");
+        consoleItem->window.rectClient.y += 15.0f;
+        consoleItem->text = String_Alloc("Open Console");
+        consoleItem->cvar = String_Alloc("toggleconsole");
 
-    for (int32_t index = menu->itemCount;
-         index > screenshotIndex + 1; --index) {
-        menu->items[index] = menu->items[index - 1];
+        for (int32_t index = menu->itemCount;
+             index > insertionIndex; --index) {
+            menu->items[index] = menu->items[index - 1];
+        }
+        menu->items[insertionIndex++] = consoleItem;
+        ++menu->itemCount;
     }
-    menu->items[screenshotIndex + 1] = consoleItem;
-    ++menu->itemCount;
+
+    if (ui_compat_find_cvar_item(menu, "togglerecord", NULL) == NULL) {
+        recordDemoItem = ui_compat_clone_menu_item(screenshotItem, menu);
+        recordDemoItem->window.name = String_Alloc("coduomp_record_demo");
+        recordDemoItem->window.rectClient.y += 30.0f;
+        recordDemoItem->text = String_Alloc("Record Demo");
+        recordDemoItem->cvar = String_Alloc("togglerecord");
+
+        for (int32_t index = menu->itemCount;
+             index > insertionIndex; --index) {
+            menu->items[index] = menu->items[index - 1];
+        }
+        menu->items[insertionIndex] = recordDemoItem;
+        ++menu->itemCount;
+    }
     Menu_UpdatePosition(menu);
 }
 

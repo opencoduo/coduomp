@@ -51,6 +51,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 - Windows mouse input uses Raw Input by default, bypassing the system's **Enhance pointer precision** acceleration without changing the Windows setting; **Raw Input Active** under **Options -> Advanced** can disable it.
 - The console key can be rebound from the options menu, including rebinding the backtick key itself.
+- **Record Demo** under **Options -> Miscellaneous** can bind one or two keys to start an auto-named demo and stop the active recording.
 - Native Linux/macOS clients support Ctrl-V or Command-V clipboard paste.
 - Ctrl-W deletes the previous console word and treats underscores as word delimiters.
 - Console scrollback is four times larger.

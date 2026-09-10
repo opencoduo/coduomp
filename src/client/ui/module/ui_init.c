@@ -132,7 +132,7 @@ void UI_Init(void)
     trap_Cvar_Set(UI_COMPAT_CONSOLE_BIND_CAPTURE_CVAR, "0");
     ui_compat_extend_graphics_menu();
     ui_compat_extend_sound_menu();
-    ui_compat_extend_console_binding_menu();
+    ui_compat_extend_misc_binding_menu();
     ui_compat_extend_advanced_menu();
     ui_compat_brand_main_menu_version();
     ui_compat_remove_single_player_menu_item();

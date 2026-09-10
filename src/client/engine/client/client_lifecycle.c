@@ -1675,6 +1675,7 @@ void CL_Init(void)
     Cmd_AddCommand("vid_restart", CL_Vid_Restart_f);
     Cmd_AddCommand("disconnect", CL_Disconnect_f);
     Cmd_AddCommand("record", CL_Record_f);
+    Cmd_AddCommand("togglerecord", coduomp_ToggleRecord_f);
     Cmd_AddCommand("demo", CL_PlayDemo_f);
     Cmd_AddCommand("cinematic", CL_PlayCinematic_f);
     Cmd_AddCommand("logo", CL_PlayLogo_f);
@@ -1744,6 +1745,7 @@ void CL_Shutdown(void)
     Cmd_RemoveCommand("vid_restart");
     Cmd_RemoveCommand("disconnect");
     Cmd_RemoveCommand("record");
+    Cmd_RemoveCommand("togglerecord");
     Cmd_RemoveCommand("demo");
     Cmd_RemoveCommand("cinematic");
     Cmd_RemoveCommand("stoprecord");

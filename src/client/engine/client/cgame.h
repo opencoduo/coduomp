@@ -658,6 +658,7 @@ void CL_WriteDemoMessage(const msg_t *message, int32_t headerBytes);
 void CL_StopRecord_f(void);
 void CL_DemoFilename(int32_t number, char *fileName);
 void CL_Record_f(void);
+void coduomp_ToggleRecord_f(void);
 void CL_DemoCompleted(void);
 void CL_StartDemoLoop(void);
 void CL_NextDemo(void);
