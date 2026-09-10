@@ -246,6 +246,19 @@ See [client build notes](docs/client-building.md),
 [the project boundary](docs/project-boundary.md) for platform details and
 repository scope.
 
+## Server configuration
+
+Player general chat is enabled by default. To disable `say` messages, add this
+to the server configuration or enter it in the server console:
+
+```cfg
+set g_allowGlobalChat 0
+```
+
+The setting can be changed while the server is running. It affects only player
+general chat; team, squad, private, scripted, and server-console messages remain
+available. Set `g_allowGlobalChat 1` to enable general chat again.
+
 ## Status
 
 The goal is functional equivalence rather than a byte-identical rebuild.
