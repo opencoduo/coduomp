@@ -93,7 +93,10 @@ enum {
     UI_FEEDER_IMAGE_HANDLE_NONE = -1,
     /* NOT_FROM_ORIGINAL_SOURCE: a feeder may return two adjacent C strings;
      * the second is painted as a grey suffix by the listbox renderer. */
-    UI_FEEDER_TEXT_GREY_SUFFIX = -2
+    UI_FEEDER_TEXT_GREY_SUFFIX = -2,
+    /* NOT_FROM_ORIGINAL_SOURCE: fit this text to the following listbox column
+     * in pixels so proportional glyphs cannot overlap the adjacent cell. */
+    UI_FEEDER_TEXT_CLIP_TO_COLUMN = -3
 };
 typedef const char *(*ui_feederItemText_t)(float feeder, int32_t index,
                                            int32_t column,

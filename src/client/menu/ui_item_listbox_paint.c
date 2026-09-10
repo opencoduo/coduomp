@@ -51,6 +51,50 @@ void Com_Printf(const char *format, ...);
 /* Feeder-row image inset/highlight math reuses SCROLLBAR_SIZE-adjacent float
  * constants; there are no additional magic numbers in this function. */
 
+/* NOT_FROM_ORIGINAL_SOURCE: convert a proportional-font cell width into the
+ * raw-byte limit expected by drawText. Measuring copied prefixes keeps color
+ * escapes and multibyte text consistent with the renderer's actual parser. */
+static qboolean coduomp_listbox_fit_text(const char *text, int32_t font,
+                                         float scale, int32_t configuredLimit,
+                                         float availableWidth,
+                                         int32_t *drawLimit)
+{
+    char prefix[MAX_STRING_CHARS];
+    size_t candidateLength = strlen(text);
+    size_t fittedLength = 0;
+
+    *drawLimit = configuredLimit;
+    if (configuredLimit > 0 && candidateLength > (size_t)configuredLimit) {
+        candidateLength = (size_t)configuredLimit;
+    }
+    if (candidateLength >= sizeof(prefix)) {
+        candidateLength = sizeof(prefix) - 1;
+    }
+    if (candidateLength == 0) {
+        return qtrue;
+    }
+    if (availableWidth <= 0.0f) {
+        return qfalse;
+    }
+
+    for (size_t length = 1; length <= candidateLength; ++length) {
+        prefix[length - 1] = text[length - 1];
+        prefix[length] = '\0';
+        if ((float)DC->textWidth(prefix, font, scale, 0) <= availableWidth) {
+            fittedLength = length;
+        }
+    }
+
+    if (fittedLength == candidateLength) {
+        return qtrue;
+    }
+    if (fittedLength == 0) {
+        return qfalse;
+    }
+    *drawLimit = (int32_t)fittedLength;
+    return qtrue;
+}
+
 void Item_ListBox_Paint(itemDef_t *item)
 {
     listBoxDef_t *listBox;
@@ -403,14 +447,30 @@ void Item_ListBox_Paint(itemDef_t *item)
                             float textX =
                                 (float)((long double)col->pos +
                                         item->textalignx + x + 4.0f);
-                            DC->drawText(
-                                textX, textY,
-                                item->font,
-                                item->textscale,
-                                item->window.foreColor,
-                                text,
-                                0, col->maxChars,
-                                item->textStyle);
+                            int32_t drawLimit = col->maxChars;
+                            qboolean paintText = qtrue;
+
+                            if (handle == UI_FEEDER_TEXT_CLIP_TO_COLUMN &&
+                                column + 1 < listBox->numColumns) {
+                                const columnInfo_t *nextCol = col + 1;
+                                const float availableWidth =
+                                    (float)(nextCol->pos - col->pos) -
+                                    item->textalignx - 4.0f;
+                                paintText = coduomp_listbox_fit_text(
+                                    text, item->font, item->textscale,
+                                    col->maxChars, availableWidth, &drawLimit);
+                            }
+
+                            if (paintText != qfalse) {
+                                DC->drawText(
+                                    textX, textY,
+                                    item->font,
+                                    item->textscale,
+                                    item->window.foreColor,
+                                    text,
+                                    0, drawLimit,
+                                    item->textStyle);
+                            }
 
                             /* NOT_FROM_ORIGINAL_SOURCE: improved server rows
                              * may attach a second string for a subdued bot

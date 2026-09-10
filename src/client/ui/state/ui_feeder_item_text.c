@@ -98,6 +98,9 @@ const char *UI_FeederItemText(float feeder, int32_t index, int32_t column,
         }
 
         case UI_SERVER_COLUMN_NAME:
+            /* NOT_FROM_ORIGINAL_SOURCE: server names use proportional glyphs,
+             * so the listbox painter must fit them to the actual cell width. */
+            *imageHandle = UI_FEEDER_TEXT_CLIP_TO_COLUMN;
             /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail shows a
              * favorite's address whenever its latest getinfo request times
              * out, even when the persistent favorite record still has a
@@ -114,6 +117,9 @@ const char *UI_FeederItemText(float feeder, int32_t index, int32_t column,
                                     ping > 0 ? "hostname" : "addr");
 
         case UI_SERVER_COLUMN_MAP:
+            /* NOT_FROM_ORIGINAL_SOURCE: map names are fitted to the map cell
+             * rather than relying only on the menu's character limit. */
+            *imageHandle = UI_FEEDER_TEXT_CLIP_TO_COLUMN;
             return Info_ValueForKey(ui_cachedServerInfo, "mapname");
 
         case UI_SERVER_COLUMN_CLIENTS: {
