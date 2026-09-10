@@ -137,12 +137,17 @@ void SV_Map_f(void)
     if (Cmd_Argc() < 3 ||
         (Cmd_Argv(2) != NULL &&
          Q_stricmp(Cmd_Argv(2), "noautoexec") != 0)) {
+        char configMapName[SERVER_MAP_NAME_BUFFER_SIZE];
         char gametype[16];
+        Q_strncpyz(configMapName, cleanMapName, sizeof(configMapName));
+        /* Color escapes decorate the server-browser map name, not the
+         * corresponding per-map config basename. */
+        Q_CleanStr(configMapName);
         Q_strncpyz(gametype, Cvar_VariableString("g_gametype"),
                    sizeof(gametype));
         Q_strlwr(gametype);
         Cbuf_ExecuteText(EXEC_NOW,
-                         va("exec %s_%s.cfg\n", cleanMapName, gametype));
+                         va("exec %s_%s.cfg\n", configMapName, gametype));
     }
 
     if (sv_running->integer != 0 &&
