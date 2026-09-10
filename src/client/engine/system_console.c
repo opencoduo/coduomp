@@ -1222,6 +1222,7 @@ LRESULT CALLBACK MainWndProc(HWND window, UINT message,
     switch (message) {
     case WM_CREATE:
         win32MainWindow = window;
+        coduomp_win32_raw_input_window_created();
         MSS_SetWindowHandle(window);
         vid_xpos = Cvar_Get("vid_xpos", "3", CVAR_ARCHIVE);
         vid_ypos = Cvar_Get("vid_ypos", "22", CVAR_ARCHIVE);
@@ -1242,9 +1243,14 @@ LRESULT CALLBACK MainWndProc(HWND window, UINT message,
         break;
 
     case WM_DESTROY:
+        coduomp_win32_raw_input_window_destroyed();
         win32MainWindow = NULL;
         if (r_fullscreen->integer == 1)
             WIN_EnableAltTab();
+        break;
+
+    case WM_INPUT:
+        coduomp_win32_raw_input_event((HRAWINPUT)lParam);
         break;
 
     case WM_MOVE:

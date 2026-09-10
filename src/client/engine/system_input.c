@@ -31,7 +31,9 @@ enum {
     IN_MIDI_CHANNEL_MASK = 0x0f,
     IN_MIDI_NOTE_ON = 0x90,
     IN_MIDI_NOTE_OFF = 0x80,
-    IN_MIDI_DATA_BYTE_MASK = 0xff
+    IN_MIDI_DATA_BYTE_MASK = 0xff,
+    IN_RAW_INPUT_GENERIC_DESKTOP_USAGE_PAGE = 1,
+    IN_RAW_INPUT_MOUSE_USAGE = 2
 };
 
 cvar_t *in_mouse; /* original 0x048a5484 */
@@ -60,6 +62,14 @@ static int32_t midiDeviceCount;     /* original 0x009cda50 */
  * process-local platform handle, not a serialized or cross-module ABI field. */
 HWND win32MainWindow; /* original 0x0489bb88 */
 
+cvar_t *in_rawInput;
+
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: Windows Raw Input registration and
+ * per-frame motion state for the improved client's unaccelerated mouse path. */
+static qboolean rawInputRegistered;
+static int64_t rawMouseDeltaX;
+static int64_t rawMouseDeltaY;
+
 static MIDIINCAPSA midiDeviceCaps[IN_MIDI_DEVICE_CAPACITY];
                                       /* original 0x009cda54..0x009cdbb3 */
 static HMIDIIN midiInputHandle;       /* original 0x009cdbb4 */
@@ -84,6 +94,135 @@ static void IN_JoyMove(void);
 static void IN_StartupMIDI(void);
 static void IN_ShutdownMIDI(void);
 static void MidiInfo_f(void);
+
+#if defined(_WIN32)
+/* NOT_FROM_ORIGINAL_SOURCE: publish whether the requested Raw Input path is
+ * currently available without conflating it with the archived user choice. */
+static void coduomp_win32_publish_raw_input_status(qboolean active)
+{
+    (void)Cvar_Set2("in_rawInputActive",
+                    active != qfalse ? "1" : "0", qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: discard reports from an earlier capture or input
+ * mode so they cannot become movement after focus or configuration changes. */
+static void coduomp_win32_clear_raw_mouse_motion(void)
+{
+    rawMouseDeltaX = 0;
+    rawMouseDeltaY = 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: register the foreground game window for generic
+ * desktop mouse reports. Legacy messages remain enabled for buttons/wheel. */
+static qboolean coduomp_win32_register_raw_input(void)
+{
+    RAWINPUTDEVICE mouse = {
+        .usUsagePage = IN_RAW_INPUT_GENERIC_DESKTOP_USAGE_PAGE,
+        .usUsage = IN_RAW_INPUT_MOUSE_USAGE,
+        .dwFlags = 0,
+        .hwndTarget = win32MainWindow
+    };
+
+    if (win32MainWindow == NULL)
+        return qfalse;
+    if (RegisterRawInputDevices(&mouse, 1, sizeof(mouse)) == FALSE) {
+        Com_Printf("WARNING: Raw mouse input registration failed (%lu); "
+                   "using legacy Windows mouse input.\n",
+                   (unsigned long)GetLastError());
+        return qfalse;
+    }
+
+    rawInputRegistered = qtrue;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: release this process's generic-mouse Raw Input
+ * registration while preserving the legacy button and wheel message path. */
+static void coduomp_win32_unregister_raw_input(void)
+{
+    RAWINPUTDEVICE mouse = {
+        .usUsagePage = IN_RAW_INPUT_GENERIC_DESKTOP_USAGE_PAGE,
+        .usUsage = IN_RAW_INPUT_MOUSE_USAGE,
+        .dwFlags = RIDEV_REMOVE,
+        .hwndTarget = NULL
+    };
+
+    if (rawInputRegistered == qfalse)
+        return;
+    if (RegisterRawInputDevices(&mouse, 1, sizeof(mouse)) == FALSE) {
+        Com_Printf("WARNING: Raw mouse input removal failed (%lu).\n",
+                   (unsigned long)GetLastError());
+    }
+    rawInputRegistered = qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: make the live Raw Input registration follow the
+ * archived setting and the lifetime of the current game window. */
+static void coduomp_win32_sync_raw_input(void)
+{
+    const qboolean requested =
+        mouseInitialized != qfalse && in_rawInput != NULL &&
+        in_rawInput->integer != 0;
+
+    coduomp_win32_clear_raw_mouse_motion();
+    if (requested != qfalse && rawInputRegistered == qfalse) {
+        coduomp_win32_publish_raw_input_status(
+            coduomp_win32_register_raw_input());
+    } else if (requested == qfalse) {
+        coduomp_win32_unregister_raw_input();
+        coduomp_win32_publish_raw_input_status(qfalse);
+        if (mouseActive != qfalse && win32MainWindow != NULL)
+            (void)SetCursorPos(windowCenterX, windowCenterY);
+    } else {
+        coduomp_win32_publish_raw_input_status(qtrue);
+    }
+
+    if (in_rawInput != NULL)
+        in_rawInput->modified = qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: attach Raw Input to each recreated renderer
+ * window, including windows created by a video restart. */
+void coduomp_win32_raw_input_window_created(void)
+{
+    coduomp_win32_sync_raw_input();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: detach before the renderer destroys its target
+ * window so a later video restart can register the replacement cleanly. */
+void coduomp_win32_raw_input_window_destroyed(void)
+{
+    coduomp_win32_unregister_raw_input();
+    coduomp_win32_clear_raw_mouse_motion();
+    coduomp_win32_publish_raw_input_status(qfalse);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: consume one foreground relative mouse report and
+ * accumulate it for the engine's existing once-per-frame movement event. */
+void coduomp_win32_raw_input_event(HRAWINPUT inputHandle)
+{
+    RAWINPUT input;
+    UINT inputSize = sizeof(input);
+    const UINT copied = GetRawInputData(
+        inputHandle, RID_INPUT, &input, &inputSize,
+        sizeof(RAWINPUTHEADER));
+
+    if (copied == (UINT)-1 ||
+        copied < sizeof(RAWINPUTHEADER) + sizeof(RAWMOUSE)) {
+        return;
+    }
+    if (input.header.dwType != RIM_TYPEMOUSE ||
+        (input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) != 0 ||
+        rawInputRegistered == qfalse || in_rawInput == NULL ||
+        in_rawInput->integer == 0 || mouseActive == qfalse ||
+        sysInputAppActive == qfalse) {
+        return;
+    }
+
+    rawMouseDeltaX += input.data.mouse.lLastX;
+    rawMouseDeltaY += input.data.mouse.lLastY;
+}
+#endif
 
 /* Source: CoDUOMP.exe 0x004699b0..0x00469a72.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004699b0_00469a73.mcode.
@@ -182,6 +321,9 @@ void IN_DeactivateMouse(void)
 {
     if (mouseInitialized != qfalse && mouseActive != qfalse) {
         mouseActive = qfalse;
+#if defined(_WIN32)
+        coduomp_win32_clear_raw_mouse_motion();
+#endif
         IN_DeactivateWin32Mouse();
     }
 }
@@ -233,7 +375,28 @@ void IN_MouseMove(void)
     int32_t deltaX;
     int32_t deltaY;
 
+#if defined(_WIN32)
+    if (rawInputRegistered != qfalse && in_rawInput != NULL &&
+        in_rawInput->integer != 0) {
+        if (rawMouseDeltaX > INT32_MAX)
+            deltaX = INT32_MAX;
+        else if (rawMouseDeltaX < INT32_MIN)
+            deltaX = INT32_MIN;
+        else
+            deltaX = (int32_t)rawMouseDeltaX;
+        if (rawMouseDeltaY > INT32_MAX)
+            deltaY = INT32_MAX;
+        else if (rawMouseDeltaY < INT32_MIN)
+            deltaY = INT32_MIN;
+        else
+            deltaY = (int32_t)rawMouseDeltaY;
+        coduomp_win32_clear_raw_mouse_motion();
+    } else {
+        IN_Win32Mouse(&deltaX, &deltaY);
+    }
+#else
     IN_Win32Mouse(&deltaX, &deltaY);
+#endif
     if (deltaX != 0 || deltaY != 0)
         Sys_QueEvent(0, SE_MOUSE, deltaX, deltaY, 0, NULL);
 }
@@ -257,6 +420,10 @@ static void IN_Startup(void)
 void IN_Shutdown(void)
 {
     IN_DeactivateMouse();
+#if defined(_WIN32)
+    coduomp_win32_unregister_raw_input();
+    coduomp_win32_publish_raw_input_status(qfalse);
+#endif
     IN_ShutdownMIDI();
     Cmd_RemoveCommand("midiinfo");
 }
@@ -285,6 +452,10 @@ void IN_Init(void)
 
     in_mouse = Cvar_Get("in_mouse", "1",
                         CVAR_ARCHIVE | CVAR_LATCH);
+#if defined(_WIN32)
+    in_rawInput = Cvar_Get("in_rawInput", "1", CVAR_ARCHIVE);
+    (void)Cvar_Get("in_rawInputActive", "0", CVAR_ROM);
+#endif
     in_joystick = Cvar_Get("in_joystick", "0",
                            CVAR_ARCHIVE | CVAR_LATCH);
     in_joyBallScale =
@@ -295,6 +466,9 @@ void IN_Init(void)
         Cvar_Get("joy_threshold", "0.15", CVAR_ARCHIVE);
 
     IN_Startup();
+#if defined(_WIN32)
+    coduomp_win32_sync_raw_input();
+#endif
 }
 
 /* Source: CoDUOMP.exe 0x00469e20..0x00469e4a, recovered from an executable
@@ -314,6 +488,10 @@ void IN_Activate(qboolean active)
 void IN_Frame(void)
 {
     IN_JoyMove();
+#if defined(_WIN32)
+    if (in_rawInput != NULL && in_rawInput->modified != qfalse)
+        coduomp_win32_sync_raw_input();
+#endif
     if (mouseInitialized == qfalse)
         return;
 
@@ -339,6 +517,9 @@ void IN_Frame(void)
 void IN_ClearStates(void)
 {
     previousMouseButtons = 0;
+#if defined(_WIN32)
+    coduomp_win32_clear_raw_mouse_motion();
+#endif
 }
 
 /* Source: CoDUOMP.exe 0x00469ed0..0x0046a067.

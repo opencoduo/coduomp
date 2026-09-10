@@ -36,7 +36,8 @@ static const ui_compat_translation_t uiCompatTranslations[] = {
     { "CODUOMP_EFFECTS_VOLUME", "Effects Volume", "Volumen de efectos" },
     { "CODUOMP_MUSIC_VOLUME", "Music Volume", "Volumen de m\372sica" },
     { "CODUOMP_ADVANCED", "Advanced", "Avanzado" },
-    { "CODUOMP_SERVER_CACHE", "Server Cache", "Cach\351 del servidor" }
+    { "CODUOMP_SERVER_CACHE", "Server Cache", "Cach\351 del servidor" },
+    { "CODUOMP_RAW_INPUT_ACTIVE", "Raw Input Active", "Entrada directa activa" }
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: resolves code-authored UI references after the

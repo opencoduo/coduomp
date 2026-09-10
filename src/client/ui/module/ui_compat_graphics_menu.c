@@ -458,6 +458,9 @@ void ui_compat_extend_advanced_menu(void)
         Menus_FindByName("options_performance");
     itemDef_t *performanceNavigation;
     itemDef_t *serverCacheItem;
+#if defined(_WIN32)
+    itemDef_t *rawInputItem;
+#endif
     itemDef_t *advancedNavigation;
     itemDef_t *controlTemplate;
     menuDef_t *advancedMenu;
@@ -509,6 +512,18 @@ void ui_compat_extend_advanced_menu(void)
     serverCacheItem->action = String_Alloc("play \"mouse_click\"; ");
     advancedMenu->items[advancedMenu->itemCount] = serverCacheItem;
     ++advancedMenu->itemCount;
+
+#if defined(_WIN32)
+    rawInputItem =
+        ui_compat_clone_menu_item(controlTemplate, advancedMenu);
+    rawInputItem->window.name = String_Alloc("coduomp_raw_input");
+    rawInputItem->window.rectClient.y = 70.0f;
+    rawInputItem->text = String_Alloc("@CODUOMP_RAW_INPUT_ACTIVE");
+    rawInputItem->cvar = String_Alloc("in_rawInput");
+    rawInputItem->action = String_Alloc("play \"mouse_click\"; ");
+    advancedMenu->items[advancedMenu->itemCount] = rawInputItem;
+    ++advancedMenu->itemCount;
+#endif
     Menu_UpdatePosition(advancedMenu);
     ++menuCount;
 
