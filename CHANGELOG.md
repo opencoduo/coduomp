@@ -47,6 +47,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 ### Console and input
 
+- Windows mouse input uses Raw Input by default, bypassing the system's **Enhance pointer precision** acceleration without changing the Windows setting; **Raw Input Active** under **Options -> Advanced** can disable it.
 - The console key can be rebound from the options menu, including rebinding the backtick key itself.
 - Native Linux/macOS clients support Ctrl-V or Command-V clipboard paste.
 - Ctrl-W deletes the previous console word and treats underscores as word delimiters.
