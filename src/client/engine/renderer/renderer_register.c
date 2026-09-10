@@ -254,7 +254,8 @@ void R_Register(void)
         "r_vbo_smc_static_draw", "1", CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_stream_draw = ri.Cvar_Get("r_vbo_stream_draw", "1", CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_interleave = ri.Cvar_Get(
-        "r_vbo_interleave", "0", CVAR_ARCHIVE | CVAR_LATCH);
+        "r_vbo_interleave", CODUOMP_VBO_INTERLEAVE_DEFAULT,
+        CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_paranoia =
         ri.Cvar_Get("r_vbo_paranoia", "0", CVAR_ARCHIVE);
     r_skip_auto_config = ri.Cvar_Get(
