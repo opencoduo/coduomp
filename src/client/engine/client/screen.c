@@ -276,6 +276,9 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
         case CA_ACTIVE:
             CL_CGameRendering(stereoFrame, qtrue);
             SCR_DrawDemoRecording();
+            /* NOT_FROM_ORIGINAL_SOURCE: present discoverable demo-player
+             * controls above the rendered cgame frame. */
+            SCR_DrawDemoPlaybackControls();
             break;
 
         case CA_CINEMATIC:

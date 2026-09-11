@@ -5,6 +5,7 @@
 #include "qcommon/q_string.h"
 #include "../renderer/renderer_api.h"
 
+#include <limits.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -23,12 +24,310 @@ enum {
     CL_DEMO_SVC_GAMESTATE = 2,
     CL_DEMO_SVC_CONFIGSTRING = 3,
     CL_DEMO_SVC_BASELINE = 4,
-    CL_DEMO_SVC_EOF = 8
+    CL_DEMO_SVC_EOF = 8,
+    CODUOMP_DEMO_SEEK_MSEC = 5000,
+    CODUOMP_DEMO_TIME_NUDGE_MIN_MSEC = -30,
+    CODUOMP_DEMO_TIME_NUDGE_MAX_MSEC = 30,
+    CODUOMP_DEMO_CONTROL_FONT = 5,
+    CODUOMP_DEMO_CONTROL_TEXT_STYLE = 3
 };
 
 /* Original temporary base-name storage at 0x008ce960. It is only used while
  * CL_Record_f chooses and opens a demo, then copied into clc.demoName. */
 static char cl_demoBaseName[CL_DEMO_BASE_NAME_CAPACITY];
+
+/* NOT_FROM_ORIGINAL_SOURCE: keep manual demo controls on the existing demo
+ * clock while preventing timedemo or AVI capture from overriding a pause. */
+static void coduomp_demo_prepare_manual_control(void)
+{
+    if (cl_timedemo != NULL && cl_timedemo->integer != 0) {
+        (void)Cvar_Set2("timedemo", "0", qtrue);
+        if (clc.timeDemoLogFile != 0) {
+            FS_FCloseFile(clc.timeDemoLogFile);
+            clc.timeDemoLogFile = 0;
+        }
+    }
+    if (cl_avidemo != NULL && cl_avidemo->integer != 0)
+        (void)Cvar_Set2("cl_avidemo", "0", qtrue);
+    if (cl_forceavidemo != NULL && cl_forceavidemo->integer != 0)
+        (void)Cvar_Set2("cl_forceavidemo", "0", qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: freeze both the demo clock and game audio. When
+ * playback resumes, rebase the demo clock so wall time spent paused is not
+ * interpreted as a request to skip forward. */
+static void coduomp_demo_set_paused(qboolean paused)
+{
+    if (paused == qfalse) {
+        int32_t timeNudge = cl_timeNudge != NULL
+            ? cl_timeNudge->integer : 0;
+        if (timeNudge < CODUOMP_DEMO_TIME_NUDGE_MIN_MSEC)
+            timeNudge = CODUOMP_DEMO_TIME_NUDGE_MIN_MSEC;
+        else if (timeNudge > CODUOMP_DEMO_TIME_NUDGE_MAX_MSEC)
+            timeNudge = CODUOMP_DEMO_TIME_NUDGE_MAX_MSEC;
+        cl.serverTimeDelta = (int32_t)(
+            (uint32_t)cl.serverTime - (uint32_t)cls.realtime +
+            (uint32_t)timeNudge);
+        cl.oldServerTime = cl.serverTime;
+    }
+
+    (void)Cvar_Set2("cl_freezeDemo", paused != qfalse ? "1" : "0", qtrue);
+    (void)Cvar_Set2("cl_paused", paused != qfalse ? "1" : "0", qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: report whether the packet stream has reached the
+ * active snapshot state required by playback seeking and frame stepping. */
+static qboolean coduomp_demo_controls_available(void)
+{
+    return clc.demoPlayback != qfalse && clc.demoFile != 0 &&
+           cls.state == CA_ACTIVE && cl.snap.valid != qfalse &&
+           coduo_cgameVm != NULL
+               ? qtrue : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: consume packets until the current snapshot lies
+ * beyond the requested presentation time. Advance the cgame without drawing
+ * at every crossed snapshot so its finite snapshot and server-command rings
+ * cannot cycle out state needed at the destination. */
+static qboolean coduomp_demo_advance_to_time(int32_t targetTime)
+{
+    while (clc.demoFile != 0 && cls.state == CA_ACTIVE &&
+           cl.snap.valid != qfalse && cl.snap.serverTime <= targetTime) {
+        const int32_t presentationTime = cl.snap.serverTime;
+        CL_ReadDemoMessage();
+        if (clc.demoFile != 0 && cls.state == CA_ACTIVE &&
+            cl.newSnapshots != qfalse) {
+            cl.newSnapshots = qfalse;
+            cl.serverTime = presentationTime;
+            cl.oldServerTime = presentationTime;
+            CL_CGameRendering(STEREO_CENTER, qfalse);
+        }
+    }
+
+    if (coduomp_demo_controls_available() == qfalse)
+        return qfalse;
+
+    cl.serverTime = targetTime;
+    cl.oldServerTime = targetTime;
+    cl.serverTimeDelta = (int32_t)(
+        (uint32_t)targetTime - (uint32_t)cls.realtime);
+    cl.extrapolatedSnapshot = qfalse;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: demos contain forward-only delta snapshots, so a
+ * rewind restarts the stream, rebuilds cgame state from its gamestate record,
+ * and replays packets up to the requested presentation time. */
+static qboolean coduomp_demo_replay_to_time(int32_t targetTime)
+{
+    MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+    if (FS_Seek(clc.demoFile, 0, FS_SEEK_ORIGIN_SET) != 0) {
+        Com_Printf("Unable to rewind the demo stream.\n");
+        return qfalse;
+    }
+
+    clc.lastExecutedServerCommand = 0;
+    clc.demoFirstFrameSkipped = qtrue;
+    clc.timeDemoFrameCount = 0;
+    clc.timeDemoStartTime = 0;
+    clc.timeDemoPreviousFrameTime = 0;
+    cls.state = CA_CONNECTED;
+
+    while (clc.demoFile != 0 && cls.state >= CA_CONNECTED &&
+           cls.state < CA_PRIMED) {
+        CL_ReadDemoMessage();
+    }
+    while (clc.demoFile != 0 && cls.state == CA_PRIMED &&
+           cl.newSnapshots == qfalse) {
+        CL_ReadDemoMessage();
+    }
+
+    if (clc.demoFile == 0 || cls.state != CA_PRIMED ||
+        cl.newSnapshots == qfalse || cl.snap.valid == qfalse) {
+        return qfalse;
+    }
+
+    cl.newSnapshots = qfalse;
+    CL_FirstSnapshot();
+    if (cls.state != CA_ACTIVE)
+        return qfalse;
+
+    if (targetTime < cl.snap.serverTime)
+        targetTime = cl.snap.serverTime;
+    return coduomp_demo_advance_to_time(targetTime);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: seek relative to the currently presented demo
+ * time. Backward movement rebuilds delta-dependent state from the stream's
+ * gamestate; forward movement can consume the existing stream directly. */
+static void coduomp_demo_seek_relative(int32_t deltaMsec)
+{
+    if (coduomp_demo_controls_available() == qfalse) {
+        Com_Printf("Demo playback controls require an active demo.\n");
+        return;
+    }
+
+    coduomp_demo_prepare_manual_control();
+    const qboolean wasPaused =
+        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
+            ? qtrue : qfalse;
+    int64_t targetTime = (int64_t)cl.serverTime + (int64_t)deltaMsec;
+    if (targetTime < INT32_MIN)
+        targetTime = INT32_MIN;
+    else if (targetTime > INT32_MAX)
+        targetTime = INT32_MAX;
+
+    const qboolean seekCompleted = deltaMsec < 0
+        ? coduomp_demo_replay_to_time((int32_t)targetTime)
+        : coduomp_demo_advance_to_time((int32_t)targetTime);
+    if (seekCompleted != qfalse) {
+        MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+        coduomp_demo_set_paused(wasPaused);
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: toggle manual playback pause. */
+void coduomp_DemoPause_f(void)
+{
+    if (coduomp_demo_controls_available() == qfalse) {
+        Com_Printf("Demo playback controls require an active demo.\n");
+        return;
+    }
+
+    coduomp_demo_prepare_manual_control();
+    coduomp_demo_set_paused(
+        cl_freezeDemo == NULL || cl_freezeDemo->integer == 0
+            ? qtrue : qfalse);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: rewind the active demo by five seconds. */
+void coduomp_DemoRewind_f(void)
+{
+    coduomp_demo_seek_relative(-CODUOMP_DEMO_SEEK_MSEC);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: advance the active demo by five seconds. */
+void coduomp_DemoForward_f(void)
+{
+    coduomp_demo_seek_relative(CODUOMP_DEMO_SEEK_MSEC);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: advance exactly one recorded snapshot and remain
+ * paused so each key press produces one newly rendered demo frame. */
+void coduomp_DemoFrameStep_f(void)
+{
+    if (coduomp_demo_controls_available() == qfalse) {
+        Com_Printf("Demo playback controls require an active demo.\n");
+        return;
+    }
+
+    coduomp_demo_prepare_manual_control();
+    coduomp_demo_set_paused(qtrue);
+    MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+    (void)coduomp_demo_advance_to_time(cl.snap.serverTime);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: restore ordinary client timing and audio state
+ * when demo playback begins, completes, or is disconnected manually. */
+void coduomp_DemoPlaybackReset(void)
+{
+    if (cl_freezeDemo != NULL)
+        (void)Cvar_Set2("cl_freezeDemo", "0", qtrue);
+    if (cl_paused != NULL)
+        (void)Cvar_Set2("cl_paused", "0", qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: give demos a small set of direct player controls
+ * while retaining Escape as the existing route back to the main menu. Exact
+ * command bindings are also recognized so advanced users can remap controls. */
+qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
+                                      const char *binding)
+{
+    enum coduomp_demo_key_action_e {
+        CODUOMP_DEMO_KEY_NONE,
+        CODUOMP_DEMO_KEY_PAUSE,
+        CODUOMP_DEMO_KEY_REWIND,
+        CODUOMP_DEMO_KEY_FORWARD,
+        CODUOMP_DEMO_KEY_FRAME_STEP
+    } action = CODUOMP_DEMO_KEY_NONE;
+
+    if (coduomp_demo_controls_available() == qfalse || cls.keyCatchers != 0)
+        return qfalse;
+
+    if (key == K_SPACE)
+        action = CODUOMP_DEMO_KEY_PAUSE;
+    else if (key == K_LEFTARROW || key == K_KP_LEFTARROW)
+        action = CODUOMP_DEMO_KEY_REWIND;
+    else if (key == K_RIGHTARROW || key == K_KP_RIGHTARROW)
+        action = CODUOMP_DEMO_KEY_FORWARD;
+    else if (key == '.')
+        action = CODUOMP_DEMO_KEY_FRAME_STEP;
+    else if (binding != NULL && Q_stricmp(binding, "demopause") == 0)
+        action = CODUOMP_DEMO_KEY_PAUSE;
+    else if (binding != NULL && Q_stricmp(binding, "demorewind") == 0)
+        action = CODUOMP_DEMO_KEY_REWIND;
+    else if (binding != NULL && Q_stricmp(binding, "demoforward") == 0)
+        action = CODUOMP_DEMO_KEY_FORWARD;
+    else if (binding != NULL && Q_stricmp(binding, "demoframestep") == 0)
+        action = CODUOMP_DEMO_KEY_FRAME_STEP;
+
+    if (action == CODUOMP_DEMO_KEY_NONE)
+        return qfalse;
+    if (down == qfalse)
+        return qtrue;
+
+    switch (action) {
+    case CODUOMP_DEMO_KEY_PAUSE:
+        coduomp_DemoPause_f();
+        break;
+    case CODUOMP_DEMO_KEY_REWIND:
+        coduomp_DemoRewind_f();
+        break;
+    case CODUOMP_DEMO_KEY_FORWARD:
+        coduomp_DemoForward_f();
+        break;
+    case CODUOMP_DEMO_KEY_FRAME_STEP:
+        coduomp_DemoFrameStep_f();
+        break;
+    case CODUOMP_DEMO_KEY_NONE:
+        break;
+    }
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: draw a compact, optional control legend during
+ * demo playback so the direct controls are discoverable. */
+void SCR_DrawDemoPlaybackControls(void)
+{
+    static const float textScale =
+        0.3333333432674408f; /* 0x3eaaaaab, semantically 1/3 */
+    static const vec4_t backgroundColor = { 0.0f, 0.0f, 0.0f, 0.62f };
+    static const vec4_t playingColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    static const vec4_t pausedColor = { 1.0f, 0.82f, 0.2f, 1.0f };
+    const qboolean paused =
+        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
+            ? qtrue : qfalse;
+    const char *const text = paused != qfalse
+        ? "DEMO PAUSED  SPACE Play   LEFT -5s   RIGHT +5s   . Frame step"
+        : "DEMO  SPACE Pause   LEFT -5s   RIGHT +5s   . Frame step";
+
+    if (clc.demoPlayback == qfalse || cls.state != CA_ACTIVE ||
+        cls.keyCatchers != 0 ||
+        Cvar_VariableIntegerValue("cl_demoControlOverlay") == 0) {
+        return;
+    }
+
+    const float fixedAdvance = 7.0f;
+    const float textWidth = (float)rendererExports.TextWidth(
+        text, CODUOMP_DEMO_CONTROL_FONT, textScale, fixedAdvance, 0);
+    const float textX = (640.0f - textWidth) * 0.5f;
+    SCR_FillRect(textX - 7.0f, 450.0f, textWidth + 14.0f, 24.0f,
+                 backgroundColor);
+    rendererExports.TextPaint(
+        textX, 468.0f, CODUOMP_DEMO_CONTROL_FONT, textScale,
+        paused != qfalse ? pausedColor : playingColor, text,
+        fixedAdvance, 0, CODUOMP_DEMO_CONTROL_TEXT_STYLE);
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: draw a resolution-independent recording dot as a
  * regular polygon so the indicator does not depend on proprietary UI assets. */
@@ -333,6 +632,9 @@ void CL_DemoCompleted(void)
         clc.timeDemoLogFile = 0;
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: demo completion also releases any manual
+     * playback pause before the next queued demo begins. */
+    coduomp_DemoPlaybackReset();
     CL_Disconnect(qtrue);
     CL_NextDemo();
 }
@@ -407,6 +709,9 @@ void CL_PlayDemo_f(void)
     }
 
     CL_Disconnect(qtrue);
+    /* NOT_FROM_ORIGINAL_SOURCE: a manually frozen prior demo must not carry
+     * its timing or audio pause into newly started playback. */
+    coduomp_DemoPlaybackReset();
 
     const char *const demoName = Cmd_Argv(1);
     char extension[CL_DEMO_EXTENSION_CAPACITY];

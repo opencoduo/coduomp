@@ -659,6 +659,13 @@ void CL_StopRecord_f(void);
 void CL_DemoFilename(int32_t number, char *fileName);
 void CL_Record_f(void);
 void coduomp_ToggleRecord_f(void);
+void coduomp_DemoPause_f(void);
+void coduomp_DemoRewind_f(void);
+void coduomp_DemoForward_f(void);
+void coduomp_DemoFrameStep_f(void);
+void coduomp_DemoPlaybackReset(void);
+qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
+                                      const char *binding);
 void CL_DemoCompleted(void);
 void CL_StartDemoLoop(void);
 void CL_NextDemo(void);
@@ -714,6 +721,7 @@ void SCR_DrawConsoleString(int32_t x, int32_t y,
                            const uint16_t *encodedText,
                            int32_t encodedCount, const vec4_t color);
 void SCR_DrawDemoRecording(void);
+void SCR_DrawDemoPlaybackControls(void);
 void SCR_DrawDebugGraph(void);
 void SCR_DebugGraph(float value, int32_t color);
 

@@ -1303,6 +1303,11 @@ void CL_KeyEvent(int32_t key, qboolean down, uint32_t time)
         return;
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: route the direct demo-player keys before the
+     * original any-key-to-Escape playback behavior. */
+    if (coduomp_DemoPlaybackKeyEvent(key, down, coduompBinding) != qfalse)
+        return;
+
     if (down != qfalse &&
         (key < K_CHAR_MICRO || key == K_MOUSE1) &&
         (clc.demoPlayback != qfalse ||

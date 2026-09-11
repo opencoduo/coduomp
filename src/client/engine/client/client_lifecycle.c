@@ -365,6 +365,11 @@ void CL_Disconnect(qboolean showMainMenu)
      * to the server that supplied it. */
     cl_updateFileName[0] = '\0';
 
+    /* NOT_FROM_ORIGINAL_SOURCE: clear manual demo pause state before the
+     * connection record and its demo flag are released. */
+    if (clc.demoPlayback != qfalse)
+        coduomp_DemoPlaybackReset();
+
     if (clc.demoFile != 0) {
         FS_FCloseFile(clc.demoFile);
         clc.demoFile = 0;
@@ -1508,6 +1513,9 @@ void CL_Init(void)
     cl_showTimeDelta =
         Cvar_Get("cl_showTimeDelta", "0", CVAR_TEMP);
     cl_freezeDemo = Cvar_Get("cl_freezeDemo", "0", CVAR_TEMP);
+    /* NOT_FROM_ORIGINAL_SOURCE: allow the playback legend to be hidden while
+     * retaining its discoverable default. */
+    (void)Cvar_Get("cl_demoControlOverlay", "1", CVAR_ARCHIVE);
     rcon_client_password =
         Cvar_Get("rconPassword", "", CVAR_TEMP);
     cl_activeAction = Cvar_Get("activeAction", "", CVAR_TEMP);
@@ -1677,6 +1685,12 @@ void CL_Init(void)
     Cmd_AddCommand("record", CL_Record_f);
     Cmd_AddCommand("togglerecord", coduomp_ToggleRecord_f);
     Cmd_AddCommand("demo", CL_PlayDemo_f);
+    /* NOT_FROM_ORIGINAL_SOURCE: expose bindable forms of the direct demo
+     * playback controls. */
+    Cmd_AddCommand("demopause", coduomp_DemoPause_f);
+    Cmd_AddCommand("demorewind", coduomp_DemoRewind_f);
+    Cmd_AddCommand("demoforward", coduomp_DemoForward_f);
+    Cmd_AddCommand("demoframestep", coduomp_DemoFrameStep_f);
     Cmd_AddCommand("cinematic", CL_PlayCinematic_f);
     Cmd_AddCommand("logo", CL_PlayLogo_f);
     Cmd_AddCommand("stoprecord", CL_StopRecord_f);
@@ -1747,6 +1761,11 @@ void CL_Shutdown(void)
     Cmd_RemoveCommand("record");
     Cmd_RemoveCommand("togglerecord");
     Cmd_RemoveCommand("demo");
+    /* NOT_FROM_ORIGINAL_SOURCE: mirror the playback command registrations. */
+    Cmd_RemoveCommand("demopause");
+    Cmd_RemoveCommand("demorewind");
+    Cmd_RemoveCommand("demoforward");
+    Cmd_RemoveCommand("demoframestep");
     Cmd_RemoveCommand("cinematic");
     Cmd_RemoveCommand("stoprecord");
     Cmd_RemoveCommand("connect");
