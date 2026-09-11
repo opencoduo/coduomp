@@ -1112,6 +1112,10 @@ void CL_Frame(int32_t msec, int32_t realMsec)
         }
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: demo fast-forward scales only playback; it
+     * does not alter server timing or the user's global timescale setting. */
+    msec = coduomp_DemoPlaybackScaleMsec(msec);
+
     CL_ChangeReliableCommand();
 
     cls.realtime = (int32_t)(
@@ -1137,6 +1141,7 @@ void CL_Frame(int32_t msec, int32_t realMsec)
     CL_SendCmd();
     CL_CheckForResend();
     CL_SetCGameTime();
+    coduomp_DemoPlaybackUpdate();
     CL_UpdateInGameState();
     SCR_UpdateScreen();
     MSS_Update();

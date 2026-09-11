@@ -29,12 +29,79 @@ enum {
     CODUOMP_DEMO_TIME_NUDGE_MIN_MSEC = -30,
     CODUOMP_DEMO_TIME_NUDGE_MAX_MSEC = 30,
     CODUOMP_DEMO_CONTROL_FONT = 5,
-    CODUOMP_DEMO_CONTROL_TEXT_STYLE = 3
+    CODUOMP_DEMO_CONTROL_TEXT_STYLE = 3,
+    CODUOMP_DEMO_PLAYBACK_SPEED_MAX = 8,
+    CODUOMP_DEMO_TIME_TEXT_CAPACITY = 32,
+    CODUOMP_DEMO_STATUS_TEXT_CAPACITY = 192
 };
+
+#define CODUOMP_DEMO_TIMELINE_X 50.0f
+#define CODUOMP_DEMO_TIMELINE_WIDTH 540.0f
+
+typedef struct coduomp_demo_playback_state_s {
+    qboolean timelineKnown;
+    qboolean timelineScanning;
+    qboolean timelineScanEnded;
+    qboolean scrubActive;
+    qboolean resumeAfterScrub;
+    int32_t startTime;
+    int32_t endTime;
+    double scrubFraction;
+} coduomp_demo_playback_state_t;
+
+static cvar_t *coduomp_demoPlaybackSpeed;
+static coduomp_demo_playback_state_t coduomp_demoPlaybackState;
 
 /* Original temporary base-name storage at 0x008ce960. It is only used while
  * CL_Record_f chooses and opens a demo, then copied into clc.demoName. */
 static char cl_demoBaseName[CL_DEMO_BASE_NAME_CAPACITY];
+
+/* NOT_FROM_ORIGINAL_SOURCE: register the improved demo-player speed control
+ * without changing the process-wide timescale setting. */
+void coduomp_DemoPlaybackInit(void)
+{
+    coduomp_demoPlaybackSpeed =
+        Cvar_Get("cl_demoPlaybackSpeed", "1", CVAR_TEMP);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: keep the demo-only speed in the supported cycle
+ * even if the cvar is changed manually from the console. */
+static int32_t coduomp_demo_playback_speed(void)
+{
+    if (coduomp_demoPlaybackSpeed == NULL)
+        return 1;
+
+    const int32_t speed = coduomp_demoPlaybackSpeed->integer;
+    if (speed < 1)
+        return 1;
+    if (speed > CODUOMP_DEMO_PLAYBACK_SPEED_MAX)
+        return CODUOMP_DEMO_PLAYBACK_SPEED_MAX;
+    return speed;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: apply the demo-only multiplier to the client
+ * clock after the ordinary process timescale has been evaluated. */
+int32_t coduomp_DemoPlaybackScaleMsec(int32_t msec)
+{
+    if (clc.demoPlayback == qfalse)
+        return msec;
+
+    const int64_t scaled =
+        (int64_t)msec * (int64_t)coduomp_demo_playback_speed();
+    if (scaled > INT32_MAX)
+        return INT32_MAX;
+    if (scaled < INT32_MIN)
+        return INT32_MIN;
+    return (int32_t)scaled;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: expose the effective demo multiplier to the
+ * sound mixer so fast playback accelerates active channels consistently. */
+float coduomp_DemoPlaybackSpeedScale(void)
+{
+    return clc.demoPlayback != qfalse
+        ? (float)coduomp_demo_playback_speed() : 1.0f;
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: keep manual demo controls on the existing demo
  * clock while preventing timedemo or AVI capture from overriding a pause. */
@@ -93,6 +160,11 @@ static qboolean coduomp_demo_advance_to_time(int32_t targetTime)
 {
     while (clc.demoFile != 0 && cls.state == CA_ACTIVE &&
            cl.snap.valid != qfalse && cl.snap.serverTime <= targetTime) {
+        if (coduomp_demoPlaybackState.timelineKnown != qfalse &&
+            cl.snap.serverTime >= coduomp_demoPlaybackState.endTime) {
+            break;
+        }
+
         const int32_t presentationTime = cl.snap.serverTime;
         CL_ReadDemoMessage();
         if (clc.demoFile != 0 && cls.state == CA_ACTIVE &&
@@ -157,6 +229,103 @@ static qboolean coduomp_demo_replay_to_time(int32_t targetTime)
     return coduomp_demo_advance_to_time(targetTime);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: scan the delta stream once to discover its true
+ * first and last snapshot timestamps, then rebuild playback at the position
+ * visible before the scan. */
+static qboolean coduomp_demo_ensure_timeline(void)
+{
+    if (coduomp_demoPlaybackState.timelineKnown != qfalse)
+        return qtrue;
+    if (coduomp_demo_controls_available() == qfalse)
+        return qfalse;
+
+    coduomp_demo_prepare_manual_control();
+    const qboolean wasPaused =
+        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
+            ? qtrue : qfalse;
+    const int32_t visibleTime = cl.serverTime;
+
+    coduomp_demo_set_paused(qtrue);
+    MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+    coduomp_demoPlaybackState.startTime = clc.timeDemoBaseTime;
+    coduomp_demoPlaybackState.timelineScanning = qtrue;
+    coduomp_demoPlaybackState.timelineScanEnded = qfalse;
+
+    while (clc.demoFile != 0 && cls.state == CA_ACTIVE &&
+           coduomp_demoPlaybackState.timelineScanEnded == qfalse) {
+        CL_ReadDemoMessage();
+    }
+
+    coduomp_demoPlaybackState.timelineScanning = qfalse;
+    if (clc.demoFile == 0 || cl.snap.valid == qfalse)
+        return qfalse;
+
+    coduomp_demoPlaybackState.endTime = cl.snap.serverTime;
+    if (coduomp_demoPlaybackState.endTime <
+        coduomp_demoPlaybackState.startTime) {
+        coduomp_demoPlaybackState.endTime =
+            coduomp_demoPlaybackState.startTime;
+    }
+    coduomp_demoPlaybackState.timelineKnown = qtrue;
+
+    int32_t restoredTime = visibleTime;
+    if (restoredTime < coduomp_demoPlaybackState.startTime)
+        restoredTime = coduomp_demoPlaybackState.startTime;
+    else if (restoredTime > coduomp_demoPlaybackState.endTime)
+        restoredTime = coduomp_demoPlaybackState.endTime;
+
+    if (coduomp_demo_replay_to_time(restoredTime) == qfalse) {
+        coduomp_demoPlaybackState.timelineKnown = qfalse;
+        return qfalse;
+    }
+
+    MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+    coduomp_demo_set_paused(wasPaused);
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: index the active demo before screen rendering so
+ * the one-time cgame rebuild cannot invalidate an in-progress render frame. */
+void coduomp_DemoPlaybackUpdate(void)
+{
+    if (Cvar_VariableIntegerValue("cl_demoControlOverlay") == 0 ||
+        (cl_timedemo != NULL && cl_timedemo->integer != 0) ||
+        (cl_avidemo != NULL && cl_avidemo->integer != 0) ||
+        (cl_forceavidemo != NULL && cl_forceavidemo->integer != 0)) {
+        return;
+    }
+    (void)coduomp_demo_ensure_timeline();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: seek to an indexed absolute timestamp while
+ * preserving whether playback was paused before the operation. */
+static qboolean coduomp_demo_seek_absolute(int32_t targetTime)
+{
+    if (coduomp_demo_ensure_timeline() == qfalse) {
+        Com_Printf("Demo playback controls require an active demo.\n");
+        return qfalse;
+    }
+
+    coduomp_demo_prepare_manual_control();
+    const qboolean wasPaused =
+        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
+            ? qtrue : qfalse;
+
+    if (targetTime < coduomp_demoPlaybackState.startTime)
+        targetTime = coduomp_demoPlaybackState.startTime;
+    else if (targetTime > coduomp_demoPlaybackState.endTime)
+        targetTime = coduomp_demoPlaybackState.endTime;
+
+    const qboolean seekCompleted = targetTime < cl.serverTime
+        ? coduomp_demo_replay_to_time(targetTime)
+        : coduomp_demo_advance_to_time(targetTime);
+    if (seekCompleted != qfalse) {
+        MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+        coduomp_demo_set_paused(wasPaused);
+    }
+    return seekCompleted;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: seek relative to the currently presented demo
  * time. Backward movement rebuilds delta-dependent state from the stream's
  * gamestate; forward movement can consume the existing stream directly. */
@@ -167,23 +336,13 @@ static void coduomp_demo_seek_relative(int32_t deltaMsec)
         return;
     }
 
-    coduomp_demo_prepare_manual_control();
-    const qboolean wasPaused =
-        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
-            ? qtrue : qfalse;
     int64_t targetTime = (int64_t)cl.serverTime + (int64_t)deltaMsec;
     if (targetTime < INT32_MIN)
         targetTime = INT32_MIN;
     else if (targetTime > INT32_MAX)
         targetTime = INT32_MAX;
 
-    const qboolean seekCompleted = deltaMsec < 0
-        ? coduomp_demo_replay_to_time((int32_t)targetTime)
-        : coduomp_demo_advance_to_time((int32_t)targetTime);
-    if (seekCompleted != qfalse) {
-        MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
-        coduomp_demo_set_paused(wasPaused);
-    }
+    (void)coduomp_demo_seek_absolute((int32_t)targetTime);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: toggle manual playback pause. */
@@ -227,6 +386,120 @@ void coduomp_DemoFrameStep_f(void)
     (void)coduomp_demo_advance_to_time(cl.snap.serverTime);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: cycle the active demo through useful analysis
+ * speeds while leaving the global timescale cvar untouched. */
+void coduomp_DemoFastForward_f(void)
+{
+    if (coduomp_demo_controls_available() == qfalse) {
+        Com_Printf("Demo playback controls require an active demo.\n");
+        return;
+    }
+
+    coduomp_demo_prepare_manual_control();
+    const int32_t currentSpeed = coduomp_demo_playback_speed();
+    int32_t nextSpeed;
+    if (currentSpeed < 2)
+        nextSpeed = 2;
+    else if (currentSpeed < 4)
+        nextSpeed = 4;
+    else if (currentSpeed < CODUOMP_DEMO_PLAYBACK_SPEED_MAX)
+        nextSpeed = CODUOMP_DEMO_PLAYBACK_SPEED_MAX;
+    else
+        nextSpeed = 1;
+
+    (void)Cvar_Set2(
+        "cl_demoPlaybackSpeed", va("%i", nextSpeed), qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: begin relative mouse dragging at the currently
+ * displayed timeline position and freeze playback until release. */
+static void coduomp_demo_begin_scrub(void)
+{
+    if (coduomp_demo_ensure_timeline() == qfalse)
+        return;
+
+    const int64_t duration =
+        (int64_t)coduomp_demoPlaybackState.endTime -
+        (int64_t)coduomp_demoPlaybackState.startTime;
+    coduomp_demoPlaybackState.scrubFraction = duration > 0
+        ? (double)((int64_t)cl.serverTime -
+                   (int64_t)coduomp_demoPlaybackState.startTime) /
+              (double)duration
+        : 0.0;
+    if (coduomp_demoPlaybackState.scrubFraction < 0.0)
+        coduomp_demoPlaybackState.scrubFraction = 0.0;
+    else if (coduomp_demoPlaybackState.scrubFraction > 1.0)
+        coduomp_demoPlaybackState.scrubFraction = 1.0;
+
+    coduomp_demoPlaybackState.resumeAfterScrub =
+        cl_freezeDemo == NULL || cl_freezeDemo->integer == 0
+            ? qtrue : qfalse;
+    coduomp_demoPlaybackState.scrubActive = qtrue;
+    coduomp_demo_set_paused(qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: convert the dragged timeline thumb to an exact
+ * demo timestamp, seek on release, and restore the prior pause state. */
+static void coduomp_demo_finish_scrub(void)
+{
+    if (coduomp_demoPlaybackState.scrubActive == qfalse)
+        return;
+
+    coduomp_demoPlaybackState.scrubActive = qfalse;
+    const int64_t duration =
+        (int64_t)coduomp_demoPlaybackState.endTime -
+        (int64_t)coduomp_demoPlaybackState.startTime;
+    const int64_t offset = (int64_t)(
+        coduomp_demoPlaybackState.scrubFraction * (double)duration + 0.5);
+    const int32_t targetTime = (int32_t)(
+        (int64_t)coduomp_demoPlaybackState.startTime + offset);
+
+    if (coduomp_demo_seek_absolute(targetTime) != qfalse &&
+        coduomp_demoPlaybackState.resumeAfterScrub != qfalse) {
+        coduomp_demo_set_paused(qfalse);
+    }
+    coduomp_demoPlaybackState.resumeAfterScrub = qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: discard an interrupted drag without changing the
+ * current position and restore playback if it was running beforehand. */
+static void coduomp_demo_cancel_scrub(void)
+{
+    if (coduomp_demoPlaybackState.scrubActive == qfalse)
+        return;
+
+    coduomp_demoPlaybackState.scrubActive = qfalse;
+    if (coduomp_demoPlaybackState.resumeAfterScrub != qfalse)
+        coduomp_demo_set_paused(qfalse);
+    coduomp_demoPlaybackState.resumeAfterScrub = qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: use captured relative mouse motion to move the
+ * timeline thumb while a demo scrub is active. */
+qboolean coduomp_DemoPlaybackMouseEvent(int32_t deltaX, int32_t deltaY)
+{
+    (void)deltaY;
+    if (coduomp_demoPlaybackState.scrubActive == qfalse ||
+        coduomp_demo_controls_available() == qfalse ||
+        cls.keyCatchers != 0) {
+        return qfalse;
+    }
+
+    const int32_t videoWidth = cls.rendererConfig.vidWidth;
+    if (videoWidth > 0) {
+        const double physicalTimelineWidth =
+            (double)videoWidth *
+            ((double)CODUOMP_DEMO_TIMELINE_WIDTH / 640.0);
+        coduomp_demoPlaybackState.scrubFraction +=
+            (double)deltaX / physicalTimelineWidth;
+        if (coduomp_demoPlaybackState.scrubFraction < 0.0)
+            coduomp_demoPlaybackState.scrubFraction = 0.0;
+        else if (coduomp_demoPlaybackState.scrubFraction > 1.0)
+            coduomp_demoPlaybackState.scrubFraction = 1.0;
+    }
+    return qtrue;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: restore ordinary client timing and audio state
  * when demo playback begins, completes, or is disconnected manually. */
 void coduomp_DemoPlaybackReset(void)
@@ -235,6 +508,10 @@ void coduomp_DemoPlaybackReset(void)
         (void)Cvar_Set2("cl_freezeDemo", "0", qtrue);
     if (cl_paused != NULL)
         (void)Cvar_Set2("cl_paused", "0", qtrue);
+    if (coduomp_demoPlaybackSpeed != NULL)
+        (void)Cvar_Set2("cl_demoPlaybackSpeed", "1", qtrue);
+    memset(&coduomp_demoPlaybackState, 0,
+           sizeof(coduomp_demoPlaybackState));
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: give demos a small set of direct player controls
@@ -248,7 +525,9 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         CODUOMP_DEMO_KEY_PAUSE,
         CODUOMP_DEMO_KEY_REWIND,
         CODUOMP_DEMO_KEY_FORWARD,
-        CODUOMP_DEMO_KEY_FRAME_STEP
+        CODUOMP_DEMO_KEY_FRAME_STEP,
+        CODUOMP_DEMO_KEY_FAST_FORWARD,
+        CODUOMP_DEMO_KEY_SCRUB
     } action = CODUOMP_DEMO_KEY_NONE;
 
     if (coduomp_demo_controls_available() == qfalse || cls.keyCatchers != 0)
@@ -262,6 +541,11 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         action = CODUOMP_DEMO_KEY_FORWARD;
     else if (key == '.')
         action = CODUOMP_DEMO_KEY_FRAME_STEP;
+    else if (key == 'f')
+        action = CODUOMP_DEMO_KEY_FAST_FORWARD;
+    else if (key == K_MOUSE1 &&
+             Cvar_VariableIntegerValue("cl_demoControlOverlay") != 0)
+        action = CODUOMP_DEMO_KEY_SCRUB;
     else if (binding != NULL && Q_stricmp(binding, "demopause") == 0)
         action = CODUOMP_DEMO_KEY_PAUSE;
     else if (binding != NULL && Q_stricmp(binding, "demorewind") == 0)
@@ -270,9 +554,22 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         action = CODUOMP_DEMO_KEY_FORWARD;
     else if (binding != NULL && Q_stricmp(binding, "demoframestep") == 0)
         action = CODUOMP_DEMO_KEY_FRAME_STEP;
+    else if (binding != NULL &&
+             Q_stricmp(binding, "demofastforward") == 0)
+        action = CODUOMP_DEMO_KEY_FAST_FORWARD;
+
+    if (key == K_ESCAPE && down != qfalse)
+        coduomp_demo_cancel_scrub();
 
     if (action == CODUOMP_DEMO_KEY_NONE)
         return qfalse;
+    if (action == CODUOMP_DEMO_KEY_SCRUB) {
+        if (down != qfalse)
+            coduomp_demo_begin_scrub();
+        else
+            coduomp_demo_finish_scrub();
+        return qtrue;
+    }
     if (down == qfalse)
         return qtrue;
 
@@ -289,10 +586,39 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
     case CODUOMP_DEMO_KEY_FRAME_STEP:
         coduomp_DemoFrameStep_f();
         break;
+    case CODUOMP_DEMO_KEY_FAST_FORWARD:
+        coduomp_DemoFastForward_f();
+        break;
+    case CODUOMP_DEMO_KEY_SCRUB:
+        break;
     case CODUOMP_DEMO_KEY_NONE:
         break;
     }
     return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: format demo-relative time with millisecond
+ * precision for frame-oriented playback analysis. */
+static void coduomp_demo_format_time(int64_t milliseconds, char *text,
+                                     size_t textCapacity)
+{
+    if (milliseconds < 0)
+        milliseconds = 0;
+
+    const int64_t totalSeconds = milliseconds / 1000;
+    const int32_t millis = (int32_t)(milliseconds % 1000);
+    const int32_t seconds = (int32_t)(totalSeconds % 60);
+    const int32_t minutes = (int32_t)((totalSeconds / 60) % 60);
+    const int64_t hours = totalSeconds / 3600;
+    if (hours > 0) {
+        (void)coduo_crt_snprintf(
+            text, textCapacity, "%lld:%02i:%02i.%03i",
+            (long long)hours, minutes, seconds, millis);
+    } else {
+        (void)coduo_crt_snprintf(
+            text, textCapacity, "%02i:%02i.%03i",
+            minutes, seconds, millis);
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: draw a compact, optional control legend during
@@ -304,12 +630,19 @@ void SCR_DrawDemoPlaybackControls(void)
     static const vec4_t backgroundColor = { 0.0f, 0.0f, 0.0f, 0.62f };
     static const vec4_t playingColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     static const vec4_t pausedColor = { 1.0f, 0.82f, 0.2f, 1.0f };
+    static const vec4_t timelineColor = { 0.2f, 0.2f, 0.2f, 0.9f };
+    static const vec4_t progressColor = { 0.9f, 0.16f, 0.12f, 1.0f };
+    static const vec4_t thumbColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     const qboolean paused =
         cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
             ? qtrue : qfalse;
-    const char *const text = paused != qfalse
-        ? "DEMO PAUSED  SPACE Play   LEFT -5s   RIGHT +5s   . Frame step"
-        : "DEMO  SPACE Pause   LEFT -5s   RIGHT +5s   . Frame step";
+    char statusText[CODUOMP_DEMO_STATUS_TEXT_CAPACITY];
+    (void)coduo_crt_snprintf(
+        statusText, sizeof(statusText),
+        paused != qfalse
+            ? "DEMO PAUSED  %ix   SPACE Play   F Speed   LEFT/RIGHT 5s   . Step   MOUSE1 Scrub"
+            : "DEMO  %ix   SPACE Pause   F Speed   LEFT/RIGHT 5s   . Step   MOUSE1 Scrub",
+        coduomp_demo_playback_speed());
 
     if (clc.demoPlayback == qfalse || cls.state != CA_ACTIVE ||
         cls.keyCatchers != 0 ||
@@ -317,15 +650,69 @@ void SCR_DrawDemoPlaybackControls(void)
         return;
     }
 
-    const float fixedAdvance = 7.0f;
+    const float fixedAdvance = 6.0f;
     const float textWidth = (float)rendererExports.TextWidth(
-        text, CODUOMP_DEMO_CONTROL_FONT, textScale, fixedAdvance, 0);
+        statusText, CODUOMP_DEMO_CONTROL_FONT, textScale, fixedAdvance, 0);
     const float textX = (640.0f - textWidth) * 0.5f;
-    SCR_FillRect(textX - 7.0f, 450.0f, textWidth + 14.0f, 24.0f,
-                 backgroundColor);
+    SCR_FillRect(24.0f, 426.0f, 592.0f, 52.0f, backgroundColor);
     rendererExports.TextPaint(
-        textX, 468.0f, CODUOMP_DEMO_CONTROL_FONT, textScale,
-        paused != qfalse ? pausedColor : playingColor, text,
+        textX, 441.0f, CODUOMP_DEMO_CONTROL_FONT, textScale,
+        paused != qfalse ? pausedColor : playingColor, statusText,
+        fixedAdvance, 0, CODUOMP_DEMO_CONTROL_TEXT_STYLE);
+
+    if (coduomp_demoPlaybackState.timelineKnown == qfalse)
+        return;
+
+    const int64_t duration =
+        (int64_t)coduomp_demoPlaybackState.endTime -
+        (int64_t)coduomp_demoPlaybackState.startTime;
+    double fraction;
+    int64_t visibleTime;
+    if (coduomp_demoPlaybackState.scrubActive != qfalse) {
+        fraction = coduomp_demoPlaybackState.scrubFraction;
+        visibleTime = (int64_t)(fraction * (double)duration + 0.5);
+    } else {
+        visibleTime = (int64_t)cl.serverTime -
+                      (int64_t)coduomp_demoPlaybackState.startTime;
+        fraction = duration > 0
+            ? (double)visibleTime / (double)duration : 0.0;
+    }
+    if (fraction < 0.0)
+        fraction = 0.0;
+    else if (fraction > 1.0)
+        fraction = 1.0;
+    if (visibleTime < 0)
+        visibleTime = 0;
+    else if (visibleTime > duration)
+        visibleTime = duration;
+
+    const float progressWidth =
+        (float)(fraction * (double)CODUOMP_DEMO_TIMELINE_WIDTH);
+    SCR_FillRect(CODUOMP_DEMO_TIMELINE_X, 449.0f,
+                 CODUOMP_DEMO_TIMELINE_WIDTH, 6.0f, timelineColor);
+    if (progressWidth > 0.0f) {
+        SCR_FillRect(CODUOMP_DEMO_TIMELINE_X, 449.0f,
+                     progressWidth, 6.0f, progressColor);
+    }
+    SCR_FillRect(
+        CODUOMP_DEMO_TIMELINE_X + progressWidth - 2.0f,
+        446.0f, 4.0f, 12.0f, thumbColor);
+
+    char currentText[CODUOMP_DEMO_TIME_TEXT_CAPACITY];
+    char durationText[CODUOMP_DEMO_TIME_TEXT_CAPACITY];
+    char timeText[CODUOMP_DEMO_STATUS_TEXT_CAPACITY];
+    coduomp_demo_format_time(
+        visibleTime, currentText, sizeof(currentText));
+    coduomp_demo_format_time(
+        duration, durationText, sizeof(durationText));
+    (void)coduo_crt_snprintf(
+        timeText, sizeof(timeText), "%s / %s",
+        currentText, durationText);
+    const float timeWidth = (float)rendererExports.TextWidth(
+        timeText, CODUOMP_DEMO_CONTROL_FONT, textScale, fixedAdvance, 0);
+    rendererExports.TextPaint(
+        (640.0f - timeWidth) * 0.5f, 473.0f,
+        CODUOMP_DEMO_CONTROL_FONT, textScale, playingColor, timeText,
         fixedAdvance, 0, CODUOMP_DEMO_CONTROL_TEXT_STYLE);
 }
 
@@ -648,9 +1035,18 @@ void CL_ReadDemoMessage(void)
     msg_t message;
     int32_t sequence;
 
-    if (clc.demoFile == 0 ||
-        FS_Read(&sequence, sizeof(sequence), clc.demoFile) !=
-            (int32_t)sizeof(sequence)) {
+    if (clc.demoFile == 0) {
+        CL_DemoCompleted();
+        return;
+    }
+    if (FS_Read(&sequence, sizeof(sequence), clc.demoFile) !=
+        (int32_t)sizeof(sequence)) {
+        /* NOT_FROM_ORIGINAL_SOURCE: timeline indexing owns EOF temporarily;
+         * ordinary playback retains the original completion path below. */
+        if (coduomp_demoPlaybackState.timelineScanning != qfalse) {
+            coduomp_demoPlaybackState.timelineScanEnded = qtrue;
+            return;
+        }
         CL_DemoCompleted();
         return;
     }
@@ -660,6 +1056,12 @@ void CL_ReadDemoMessage(void)
     if (FS_Read(&message.cursize, sizeof(message.cursize), clc.demoFile) !=
             (int32_t)sizeof(message.cursize) ||
         message.cursize == CL_DEMO_STREAM_END) {
+        /* NOT_FROM_ORIGINAL_SOURCE: keep the stream open so the completed
+         * index can rewind it to the user's visible timestamp. */
+        if (coduomp_demoPlaybackState.timelineScanning != qfalse) {
+            coduomp_demoPlaybackState.timelineScanEnded = qtrue;
+            return;
+        }
         CL_DemoCompleted();
         return;
     }

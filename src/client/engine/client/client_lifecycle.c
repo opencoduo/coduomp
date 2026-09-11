@@ -1513,6 +1513,7 @@ void CL_Init(void)
     cl_showTimeDelta =
         Cvar_Get("cl_showTimeDelta", "0", CVAR_TEMP);
     cl_freezeDemo = Cvar_Get("cl_freezeDemo", "0", CVAR_TEMP);
+    coduomp_DemoPlaybackInit();
     /* NOT_FROM_ORIGINAL_SOURCE: allow the playback legend to be hidden while
      * retaining its discoverable default. */
     (void)Cvar_Get("cl_demoControlOverlay", "1", CVAR_ARCHIVE);
@@ -1691,6 +1692,7 @@ void CL_Init(void)
     Cmd_AddCommand("demorewind", coduomp_DemoRewind_f);
     Cmd_AddCommand("demoforward", coduomp_DemoForward_f);
     Cmd_AddCommand("demoframestep", coduomp_DemoFrameStep_f);
+    Cmd_AddCommand("demofastforward", coduomp_DemoFastForward_f);
     Cmd_AddCommand("cinematic", CL_PlayCinematic_f);
     Cmd_AddCommand("logo", CL_PlayLogo_f);
     Cmd_AddCommand("stoprecord", CL_StopRecord_f);
