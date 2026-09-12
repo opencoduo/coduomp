@@ -1563,24 +1563,10 @@ void CL_PlayDemo_f(void)
         const char *const modFolder = Cmd_Argv(2);
         const char *const serverName =
             argumentCount == 4 ? Cmd_Argv(3) : "";
-        if (serverName[0] == '\0') {
-            ordinaryMod = coduomp_demo_resolve_ordinary_mod(
-                modFolder, demoFileName, resolvedMod);
-        }
-        const int32_t matchCount = ordinaryMod == qfalse
-            ? coduomp_server_namespace_resolve_cached_demo(
-                  modFolder, demoFileName, serverName,
-                  resolvedServer, resolvedMod)
-            : 0;
-        if (matchCount == 0) {
-            if (ordinaryMod == qfalse) {
-                Com_Printf("No demo matches %s in mod folder %s%s%s.\n",
-                           demoName, modFolder,
-                           serverName[0] != '\0' ? " on " : "",
-                           serverName);
-                return;
-            }
-        }
+        const int32_t matchCount =
+            coduomp_server_namespace_resolve_cached_demo(
+                modFolder, demoFileName, serverName,
+                resolvedServer, resolvedMod);
         if (matchCount > 1) {
             Com_Printf(
                 "Specify the server: playdemo %s %s <server_name>\n",
@@ -1588,6 +1574,17 @@ void CL_PlayDemo_f(void)
             return;
         }
         cachedMod = matchCount == 1 ? qtrue : qfalse;
+        if (cachedMod == qfalse && serverName[0] == '\0') {
+            ordinaryMod = coduomp_demo_resolve_ordinary_mod(
+                modFolder, demoFileName, resolvedMod);
+        }
+        if (cachedMod == qfalse && ordinaryMod == qfalse) {
+            Com_Printf("No demo matches %s in mod folder %s%s%s.\n",
+                       demoName, modFolder,
+                       serverName[0] != '\0' ? " on " : "",
+                       serverName);
+            return;
+        }
     }
 
     CL_Disconnect(qtrue);
