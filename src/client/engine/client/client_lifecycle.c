@@ -1686,6 +1686,9 @@ void CL_Init(void)
     Cmd_AddCommand("record", CL_Record_f);
     Cmd_AddCommand("togglerecord", coduomp_ToggleRecord_f);
     Cmd_AddCommand("demo", CL_PlayDemo_f);
+    /* NOT_FROM_ORIGINAL_SOURCE: accept the command spelling documented by
+     * CL_PlayDemo_f while preserving the existing demo command. */
+    Cmd_AddCommand("playdemo", CL_PlayDemo_f);
     /* NOT_FROM_ORIGINAL_SOURCE: expose bindable forms of the direct demo
      * playback controls. */
     Cmd_AddCommand("demopause", coduomp_DemoPause_f);
@@ -1763,11 +1766,14 @@ void CL_Shutdown(void)
     Cmd_RemoveCommand("record");
     Cmd_RemoveCommand("togglerecord");
     Cmd_RemoveCommand("demo");
-    /* NOT_FROM_ORIGINAL_SOURCE: mirror the playback command registrations. */
+    /* NOT_FROM_ORIGINAL_SOURCE: mirror the demo alias and playback command
+     * registrations. */
+    Cmd_RemoveCommand("playdemo");
     Cmd_RemoveCommand("demopause");
     Cmd_RemoveCommand("demorewind");
     Cmd_RemoveCommand("demoforward");
     Cmd_RemoveCommand("demoframestep");
+    Cmd_RemoveCommand("demofastforward");
     Cmd_RemoveCommand("cinematic");
     Cmd_RemoveCommand("stoprecord");
     Cmd_RemoveCommand("connect");
