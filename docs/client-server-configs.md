@@ -32,8 +32,9 @@ contain PK3s. Their labels use `server-name/mod`, while their launch paths
 remain scoped to the corresponding server namespace.
 
 `listdemos [moddir]` lists recordings from the current filesystem and every
-server cache. A cached recording can be played without manually locating its
-server directory:
+server cache. The conventional leading `mods/` storage directory is omitted
+from the displayed mod name and is optional in command input. A cached
+recording can be played without manually locating its server directory:
 
 ```text
 playdemo <moddir> <demoname>

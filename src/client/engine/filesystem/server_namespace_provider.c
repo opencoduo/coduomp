@@ -781,6 +781,19 @@ typedef struct coduomp_namespace_demo_scan_s {
     int32_t matchCount;
 } coduomp_namespace_demo_scan_t;
 
+/* NOT_FROM_ORIGINAL_SOURCE: keep the conventional storage-only mods prefix
+ * out of console identities while retaining the complete path for fs_game. */
+static const char *coduomp_namespace_user_mod_path(
+    const char *relativePath)
+{
+    static const char modsPrefix[] = "mods/";
+    return Q_stricmpn(relativePath, modsPrefix,
+                      sizeof(modsPrefix) - 1u) == 0 &&
+                   relativePath[sizeof(modsPrefix) - 1u] != '\0'
+               ? relativePath + sizeof(modsPrefix) - 1u
+               : relativePath;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: recursively inspect the normal filesystem tree
  * below one server namespace and treat each parent of a demos directory as a
  * complete game/mod path. */
@@ -788,9 +801,12 @@ static void coduomp_namespace_scan_cached_demo_tree(
     const char *serverName, const char *directoryPath,
     const char *relativePath, coduomp_namespace_demo_scan_t *scan)
 {
+    const char *const userModPath =
+        coduomp_namespace_user_mod_path(relativePath);
     if (relativePath[0] != '\0' &&
         (scan->modFilter == NULL ||
-         Q_stricmp(relativePath, scan->modFilter) == 0)) {
+         Q_stricmp(relativePath, scan->modFilter) == 0 ||
+         Q_stricmp(userModPath, scan->modFilter) == 0)) {
         char demosPath[MAX_OSPATH];
         if (coduomp_namespace_build_safe_child_path(
                 directoryPath, "demos", qtrue, demosPath) != qfalse) {
@@ -818,7 +834,7 @@ static void coduomp_namespace_scan_cached_demo_tree(
                 }
                 ++scan->matchCount;
                 if (scan->printMatches != qfalse) {
-                    Com_Printf("  %s %s  (%s)\n", relativePath,
+                    Com_Printf("  %s %s  (%s)\n", userModPath,
                                demoFileName, serverName);
                 }
             }
@@ -964,6 +980,8 @@ static void coduomp_namespace_append_cached_mod_tree(
     const char *serverName, const char *directoryPath,
     const char *relativePath, coduomp_namespace_mod_list_t *list)
 {
+    const char *const userModPath =
+        coduomp_namespace_user_mod_path(relativePath);
     if (list->full != qfalse)
         return;
 
@@ -981,7 +999,7 @@ static void coduomp_namespace_append_cached_mod_tree(
                 "server-cache/%s/%s", serverName, relativePath);
             const int descriptionWritten = snprintf(
                 description, sizeof(description), "%s/%s",
-                serverName, relativePath);
+                serverName, userModPath);
             if (launchWritten > 0 &&
                 launchWritten < (int)sizeof(launchDirectory) &&
                 descriptionWritten > 0 &&
