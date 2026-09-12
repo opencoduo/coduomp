@@ -237,6 +237,9 @@ the selectable output-gamma policies and provider order.
 See [client audio controls](docs/client-audio.md) for the Effects Volume and
 Music Volume settings, their saved cvars, and compatibility migration.
 
+See [demo playback controls](docs/client-demo-playback.md) for playback
+commands, direct controls, and the saved scrubber-overlay setting.
+
 See [per-server client configuration](docs/client-server-configs.md) for the
 console commands that promote the current server profile to the global config
 or clear every isolated server config while preserving downloaded content.
