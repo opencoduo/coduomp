@@ -664,6 +664,11 @@ void coduomp_DemoPlaybackInit(void);
 int32_t coduomp_DemoPlaybackScaleMsec(int32_t msec);
 float coduomp_DemoPlaybackSpeedScale(void);
 void coduomp_DemoPlaybackUpdate(void);
+qboolean coduomp_DemoPlaybackIsIndexing(void);
+void coduomp_DemoPlaybackGamestateParsed(void);
+void coduomp_DemoPlaybackCacheServerCommand(int32_t sequence,
+                                             const char *command);
+const char *coduomp_DemoPlaybackServerCommand(int32_t sequence);
 void coduomp_DemoPause_f(void);
 void coduomp_DemoRewind_f(void);
 void coduomp_DemoForward_f(void);

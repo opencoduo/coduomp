@@ -129,9 +129,10 @@ void CL_ConfigstringModified(void)
  * the cgame syscall caller proves the command-number argument. */
 qboolean CL_GetServerCommand(int32_t serverCommandNumber)
 {
-    const char *command;
+    const char *command =
+        coduomp_DemoPlaybackServerCommand(serverCommandNumber);
 
-    if (serverCommandNumber <=
+    if (command == NULL && serverCommandNumber <=
         clc.serverCommandSequence - CODUO_RELIABLE_COMMAND_COUNT) {
         if (clc.demoPlayback != qfalse)
             return qfalse;
@@ -161,9 +162,10 @@ qboolean CL_GetServerCommand(int32_t serverCommandNumber)
     }
 
     clc.lastExecutedServerCommand = serverCommandNumber;
-    command =
-        clc.serverCommands[
+    if (command == NULL) {
+        command = clc.serverCommands[
             serverCommandNumber & CL_RELIABLE_COMMAND_MASK];
+    }
 
 process_command:
     if (cl_showServerCommands->integer != 0) {

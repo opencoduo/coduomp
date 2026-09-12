@@ -44,19 +44,199 @@ enum {
 #define CODUOMP_DEMO_TIMELINE_X 50.0f
 #define CODUOMP_DEMO_TIMELINE_WIDTH 540.0f
 
+typedef struct coduomp_demo_timeline_entry_s {
+    int32_t messageNum;
+    int32_t serverTime;
+    int32_t serverCommandSequence;
+    size_t dataOffset;
+    size_t dataLength;
+} coduomp_demo_timeline_entry_t;
+
+typedef struct coduomp_demo_timeline_command_s {
+    int32_t sequence;
+    size_t textOffset;
+} coduomp_demo_timeline_command_t;
+
 typedef struct coduomp_demo_playback_state_s {
     qboolean timelineKnown;
     qboolean timelineScanning;
     qboolean timelineScanEnded;
+    qboolean timelineActive;
+    qboolean timelineAllocationFailed;
     qboolean scrubActive;
     qboolean resumeAfterScrub;
     int32_t startTime;
     int32_t endTime;
+    int32_t initialServerCommandSequence;
+    size_t currentTimelineEntry;
+    coduomp_demo_timeline_entry_t *timelineEntries;
+    size_t timelineEntryCount;
+    size_t timelineEntryCapacity;
+    uint8_t *timelineData;
+    size_t timelineDataLength;
+    size_t timelineDataCapacity;
+    coduomp_demo_timeline_command_t *timelineCommands;
+    size_t timelineCommandCount;
+    size_t timelineCommandCapacity;
+    char *timelineCommandText;
+    size_t timelineCommandTextLength;
+    size_t timelineCommandTextCapacity;
+    gameState_t initialGameState;
     double scrubFraction;
 } coduomp_demo_playback_state_t;
 
 static cvar_t *coduomp_demoPlaybackSpeed;
 static coduomp_demo_playback_state_t coduomp_demoPlaybackState;
+
+/* NOT_FROM_ORIGINAL_SOURCE: grow one heap-backed timeline buffer without
+ * exposing allocator details to the snapshot and command cache paths. */
+static qboolean coduomp_demo_reserve_timeline_storage(
+    void **storage, size_t *capacity, size_t requiredBytes)
+{
+    if (requiredBytes <= *capacity)
+        return qtrue;
+
+    size_t nextCapacity = *capacity != 0 ? *capacity : 4096;
+    while (nextCapacity < requiredBytes) {
+        if (nextCapacity > SIZE_MAX / 2) {
+            nextCapacity = requiredBytes;
+            break;
+        }
+        nextCapacity *= 2;
+    }
+
+    void *const replacement = realloc(*storage, nextCapacity);
+    if (replacement == NULL)
+        return qfalse;
+    *storage = replacement;
+    *capacity = nextCapacity;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: release the decoded demo timeline while leaving
+ * the ordinary demo file and playback cvars under their existing owners. */
+static void coduomp_demo_clear_timeline(void)
+{
+    free(coduomp_demoPlaybackState.timelineEntries);
+    free(coduomp_demoPlaybackState.timelineData);
+    free(coduomp_demoPlaybackState.timelineCommands);
+    free(coduomp_demoPlaybackState.timelineCommandText);
+    coduomp_demoPlaybackState.timelineEntries = NULL;
+    coduomp_demoPlaybackState.timelineData = NULL;
+    coduomp_demoPlaybackState.timelineCommands = NULL;
+    coduomp_demoPlaybackState.timelineCommandText = NULL;
+    coduomp_demoPlaybackState.timelineEntryCount = 0;
+    coduomp_demoPlaybackState.timelineEntryCapacity = 0;
+    coduomp_demoPlaybackState.timelineDataLength = 0;
+    coduomp_demoPlaybackState.timelineDataCapacity = 0;
+    coduomp_demoPlaybackState.timelineCommandCount = 0;
+    coduomp_demoPlaybackState.timelineCommandCapacity = 0;
+    coduomp_demoPlaybackState.timelineCommandTextLength = 0;
+    coduomp_demoPlaybackState.timelineCommandTextCapacity = 0;
+    coduomp_demoPlaybackState.timelineKnown = qfalse;
+    coduomp_demoPlaybackState.timelineScanning = qfalse;
+    coduomp_demoPlaybackState.timelineScanEnded = qfalse;
+    coduomp_demoPlaybackState.timelineActive = qfalse;
+    coduomp_demoPlaybackState.timelineAllocationFailed = qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: encode a complete normalized snapshot with a
+ * byte-oriented zero-run format. Each record remains independently decodable,
+ * so a seek never depends on an earlier network delta. */
+static qboolean coduomp_demo_encode_timeline_snapshot(
+    const snapshot_t *snapshot, size_t *encodedOffset,
+    size_t *encodedLength)
+{
+    const uint8_t *const source = (const uint8_t *)snapshot;
+    const size_t maximumEncodedBytes = sizeof(*snapshot) * 2;
+    if (coduomp_demoPlaybackState.timelineDataLength >
+        SIZE_MAX - maximumEncodedBytes) {
+        return qfalse;
+    }
+
+    const size_t offset = coduomp_demoPlaybackState.timelineDataLength;
+    if (coduomp_demo_reserve_timeline_storage(
+            (void **)&coduomp_demoPlaybackState.timelineData,
+            &coduomp_demoPlaybackState.timelineDataCapacity,
+            offset + maximumEncodedBytes) == qfalse) {
+        return qfalse;
+    }
+
+    uint8_t *destination = coduomp_demoPlaybackState.timelineData + offset;
+    size_t sourceIndex = 0;
+    size_t destinationIndex = 0;
+    while (sourceIndex < sizeof(*snapshot)) {
+        size_t zeroRun = 0;
+        while (sourceIndex + zeroRun < sizeof(*snapshot) &&
+               source[sourceIndex + zeroRun] == 0 && zeroRun < 128) {
+            ++zeroRun;
+        }
+        if (zeroRun >= 2) {
+            destination[destinationIndex++] =
+                (uint8_t)(0x80u | (uint8_t)(zeroRun - 1));
+            sourceIndex += zeroRun;
+            continue;
+        }
+
+        const size_t literalStart = sourceIndex;
+        size_t literalRun = 0;
+        while (sourceIndex < sizeof(*snapshot) && literalRun < 128) {
+            zeroRun = 0;
+            while (sourceIndex + zeroRun < sizeof(*snapshot) &&
+                   source[sourceIndex + zeroRun] == 0 && zeroRun < 2) {
+                ++zeroRun;
+            }
+            if (zeroRun >= 2)
+                break;
+            ++sourceIndex;
+            ++literalRun;
+        }
+        destination[destinationIndex++] = (uint8_t)(literalRun - 1);
+        memcpy(destination + destinationIndex, source + literalStart,
+               literalRun);
+        destinationIndex += literalRun;
+    }
+
+    coduomp_demoPlaybackState.timelineDataLength += destinationIndex;
+    *encodedOffset = offset;
+    *encodedLength = destinationIndex;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: decode one independently stored full snapshot
+ * selected by the timeline index. */
+static qboolean coduomp_demo_decode_timeline_snapshot(
+    const coduomp_demo_timeline_entry_t *entry, snapshot_t *snapshot)
+{
+    if (entry->dataOffset > coduomp_demoPlaybackState.timelineDataLength ||
+        entry->dataLength >
+            coduomp_demoPlaybackState.timelineDataLength - entry->dataOffset) {
+        return qfalse;
+    }
+
+    const uint8_t *source =
+        coduomp_demoPlaybackState.timelineData + entry->dataOffset;
+    const uint8_t *const sourceEnd = source + entry->dataLength;
+    uint8_t *destination = (uint8_t *)snapshot;
+    size_t destinationIndex = 0;
+    while (source < sourceEnd && destinationIndex < sizeof(*snapshot)) {
+        const uint8_t token = *source++;
+        const size_t runLength = (size_t)(token & 0x7fu) + 1;
+        if (runLength > sizeof(*snapshot) - destinationIndex)
+            return qfalse;
+        if ((token & 0x80u) != 0) {
+            memset(destination + destinationIndex, 0, runLength);
+        } else {
+            if (runLength > (size_t)(sourceEnd - source))
+                return qfalse;
+            memcpy(destination + destinationIndex, source, runLength);
+            source += runLength;
+        }
+        destinationIndex += runLength;
+    }
+    return source == sourceEnd && destinationIndex == sizeof(*snapshot)
+               ? qtrue : qfalse;
+}
 
 typedef struct coduomp_demo_list_entry_s {
     char modFolder[FS_PACK_NAME_SIZE];
@@ -175,6 +355,141 @@ static qboolean coduomp_demo_controls_available(void)
                ? qtrue : qfalse;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: let the gamestate parser distinguish the private
+ * indexing pass from a real map transition. */
+qboolean coduomp_DemoPlaybackIsIndexing(void)
+{
+    return coduomp_demoPlaybackState.timelineScanning;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: retain the initial configstring table used by a
+ * decoded-timeline jump before later server commands modify it. */
+void coduomp_DemoPlaybackGamestateParsed(void)
+{
+    if (coduomp_demoPlaybackState.timelineScanning == qfalse)
+        return;
+    coduomp_demoPlaybackState.initialGameState = cl.gameState;
+    coduomp_demoPlaybackState.initialServerCommandSequence =
+        clc.serverCommandSequence;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: retain every reliable command encountered while
+ * decoding so an arbitrary snapshot can execute commands older than the
+ * engine's ordinary 64-command ring. */
+void coduomp_DemoPlaybackCacheServerCommand(int32_t sequence,
+                                             const char *command)
+{
+    if (coduomp_demoPlaybackState.timelineScanning == qfalse ||
+        coduomp_demoPlaybackState.timelineAllocationFailed != qfalse) {
+        return;
+    }
+    if (coduomp_demoPlaybackState.timelineCommandCount != 0 &&
+        coduomp_demoPlaybackState.timelineCommands[
+            coduomp_demoPlaybackState.timelineCommandCount - 1].sequence ==
+            sequence) {
+        return;
+    }
+
+    const size_t entryBytes =
+        (coduomp_demoPlaybackState.timelineCommandCount + 1) *
+        sizeof(*coduomp_demoPlaybackState.timelineCommands);
+    const size_t textBytes = strlen(command) + 1;
+    if (coduomp_demoPlaybackState.timelineCommandTextLength >
+            SIZE_MAX - textBytes ||
+        coduomp_demo_reserve_timeline_storage(
+            (void **)&coduomp_demoPlaybackState.timelineCommands,
+            &coduomp_demoPlaybackState.timelineCommandCapacity,
+            entryBytes) == qfalse ||
+        coduomp_demo_reserve_timeline_storage(
+            (void **)&coduomp_demoPlaybackState.timelineCommandText,
+            &coduomp_demoPlaybackState.timelineCommandTextCapacity,
+            coduomp_demoPlaybackState.timelineCommandTextLength +
+                textBytes) == qfalse) {
+        coduomp_demoPlaybackState.timelineAllocationFailed = qtrue;
+        coduomp_demoPlaybackState.timelineScanEnded = qtrue;
+        return;
+    }
+
+    coduomp_demo_timeline_command_t *const entry =
+        &coduomp_demoPlaybackState.timelineCommands[
+            coduomp_demoPlaybackState.timelineCommandCount++];
+    entry->sequence = sequence;
+    entry->textOffset =
+        coduomp_demoPlaybackState.timelineCommandTextLength;
+    memcpy(coduomp_demoPlaybackState.timelineCommandText + entry->textOffset,
+           command, textBytes);
+    coduomp_demoPlaybackState.timelineCommandTextLength += textBytes;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: provide commands from the decoded timeline when
+ * direct seeking moves beyond the live connection ring's history. */
+const char *coduomp_DemoPlaybackServerCommand(int32_t sequence)
+{
+    if (coduomp_demoPlaybackState.timelineActive == qfalse)
+        return NULL;
+
+    size_t low = 0;
+    size_t high = coduomp_demoPlaybackState.timelineCommandCount;
+    while (low < high) {
+        const size_t middle = low + (high - low) / 2;
+        const int32_t candidate =
+            coduomp_demoPlaybackState.timelineCommands[middle].sequence;
+        if (candidate < sequence)
+            low = middle + 1;
+        else
+            high = middle;
+    }
+    if (low >= coduomp_demoPlaybackState.timelineCommandCount ||
+        coduomp_demoPlaybackState.timelineCommands[low].sequence !=
+            sequence) {
+        return NULL;
+    }
+    return coduomp_demoPlaybackState.timelineCommandText +
+           coduomp_demoPlaybackState.timelineCommands[low].textOffset;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: convert the freshly decoded engine snapshot into
+ * an independently compressed full-snapshot timeline record. */
+static void coduomp_demo_cache_current_snapshot(void)
+{
+    snapshot_t snapshot = {0};
+    if (coduomp_demoPlaybackState.timelineScanning == qfalse ||
+        coduomp_demoPlaybackState.timelineAllocationFailed != qfalse ||
+        CL_GetSnapshot(cl.snap.messageNum, &snapshot) == qfalse) {
+        return;
+    }
+
+    const size_t entryBytes =
+        (coduomp_demoPlaybackState.timelineEntryCount + 1) *
+        sizeof(*coduomp_demoPlaybackState.timelineEntries);
+    if (coduomp_demo_reserve_timeline_storage(
+            (void **)&coduomp_demoPlaybackState.timelineEntries,
+            &coduomp_demoPlaybackState.timelineEntryCapacity,
+            entryBytes) == qfalse) {
+        coduomp_demoPlaybackState.timelineAllocationFailed = qtrue;
+        coduomp_demoPlaybackState.timelineScanEnded = qtrue;
+        return;
+    }
+
+    size_t dataOffset;
+    size_t dataLength;
+    if (coduomp_demo_encode_timeline_snapshot(
+            &snapshot, &dataOffset, &dataLength) == qfalse) {
+        coduomp_demoPlaybackState.timelineAllocationFailed = qtrue;
+        coduomp_demoPlaybackState.timelineScanEnded = qtrue;
+        return;
+    }
+
+    coduomp_demo_timeline_entry_t *const entry =
+        &coduomp_demoPlaybackState.timelineEntries[
+            coduomp_demoPlaybackState.timelineEntryCount++];
+    entry->messageNum = cl.snap.messageNum;
+    entry->serverTime = snapshot.serverTime;
+    entry->serverCommandSequence = snapshot.serverCommandSequence;
+    entry->dataOffset = dataOffset;
+    entry->dataLength = dataLength;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: consume packets until the current snapshot lies
  * beyond the requested presentation time. Advance the cgame without drawing
  * at every crossed snapshot so its finite snapshot and server-command rings
@@ -210,51 +525,199 @@ static qboolean coduomp_demo_advance_to_time(int32_t targetTime)
     return qtrue;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: demos contain forward-only delta snapshots, so a
- * rewind restarts the stream, rebuilds cgame state from its gamestate record,
- * and replays packets up to the requested presentation time. */
+/* NOT_FROM_ORIGINAL_SOURCE: publish one independently decoded timeline record
+ * through the ordinary engine snapshot rings used by the cgame boundary. */
+static qboolean coduomp_demo_publish_timeline_entry(size_t entryIndex)
+{
+    if (entryIndex >= coduomp_demoPlaybackState.timelineEntryCount)
+        return qfalse;
+
+    const coduomp_demo_timeline_entry_t *const entry =
+        &coduomp_demoPlaybackState.timelineEntries[entryIndex];
+    snapshot_t snapshot;
+    if (coduomp_demo_decode_timeline_snapshot(entry, &snapshot) == qfalse ||
+        snapshot.numEntities < 0 ||
+        snapshot.numEntities > MAX_ENTITIES_IN_SNAPSHOT ||
+        snapshot.numClients < 0 ||
+        snapshot.numClients > MAX_CLIENTS_IN_SNAPSHOT) {
+        Com_Printf("Invalid decoded demo timeline record.\n");
+        return qfalse;
+    }
+
+    clSnapshot_t normalized = {0};
+    normalized.valid = qtrue;
+    normalized.snapFlags = snapshot.snapFlags;
+    normalized.serverTime = snapshot.serverTime;
+    normalized.messageNum = entry->messageNum;
+    normalized.deltaNum = -1;
+    normalized.ping = snapshot.ping;
+    normalized.ps = snapshot.ps;
+    normalized.numEntities = snapshot.numEntities;
+    normalized.numClients = snapshot.numClients;
+    normalized.firstEntitySequence = 0;
+    normalized.firstClientSequence = 0;
+    normalized.serverCommandSequence = snapshot.serverCommandSequence;
+
+    for (size_t index = 0;
+         index < sizeof(cl.snapshots) / sizeof(cl.snapshots[0]); ++index) {
+        cl.snapshots[index].valid = qfalse;
+    }
+    cl.parseEntitySequence = snapshot.numEntities;
+    cl.parseClientSequence = snapshot.numClients;
+    memcpy(cl.parseEntities, snapshot.entities,
+           (size_t)snapshot.numEntities * sizeof(snapshot.entities[0]));
+    memcpy(cl.parseClients, snapshot.clients,
+           (size_t)snapshot.numClients * sizeof(snapshot.clients[0]));
+
+    cl.previousSnapshotServerTime = cl.snap.serverTime;
+    cl.snap = normalized;
+    cl.snapshots[(uint32_t)entry->messageNum &
+                 (CODUO_SNAPSHOT_BACKUP_COUNT - 1)] = normalized;
+    clc.serverMessageSequence = entry->messageNum;
+    clc.serverCommandSequence = entry->serverCommandSequence;
+    cl.newSnapshots = qtrue;
+    coduomp_demoPlaybackState.currentTimelineEntry = entryIndex;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: choose the latest decoded snapshot at or before a
+ * requested presentation timestamp. */
+static size_t coduomp_demo_timeline_entry_for_time(int32_t targetTime)
+{
+    size_t low = 0;
+    size_t high = coduomp_demoPlaybackState.timelineEntryCount;
+    while (low < high) {
+        const size_t middle = low + (high - low) / 2;
+        if (coduomp_demoPlaybackState.timelineEntries[middle].serverTime <=
+            targetTime) {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low == 0 ? 0 : low - 1;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: reset only transient cgame playback state and
+ * install a decoded full snapshot. The loaded map, filesystem, renderer, and
+ * registered mod assets remain alive throughout the jump. */
 static qboolean coduomp_demo_replay_to_time(int32_t targetTime)
 {
+    if (coduomp_demoPlaybackState.timelineKnown == qfalse ||
+        coduomp_demoPlaybackState.timelineEntryCount == 0 ||
+        coduo_cgameVm == NULL) {
+        return qfalse;
+    }
+
+    const size_t entryIndex =
+        coduomp_demo_timeline_entry_for_time(targetTime);
+    const coduomp_demo_timeline_entry_t *const entry =
+        &coduomp_demoPlaybackState.timelineEntries[entryIndex];
+
     MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+    cl.gameState = coduomp_demoPlaybackState.initialGameState;
+    clc.lastExecutedServerCommand =
+        coduomp_demoPlaybackState.initialServerCommandSequence;
+    clc.demoFirstFrameSkipped = qtrue;
+    clc.timeDemoFrameCount = 0;
+    clc.timeDemoStartTime = 0;
+    clc.timeDemoPreviousFrameTime = 0;
+
+    (void)VM_Call(
+        coduo_cgameVm, CGVM_DEMO_REWIND,
+        (int32_t)((uint32_t)entry->messageNum - 1u),
+        coduomp_demoPlaybackState.initialServerCommandSequence,
+        clc.clientNum,
+        0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    if (coduomp_demo_publish_timeline_entry(entryIndex) == qfalse)
+        return qfalse;
+
+    cls.state = CA_ACTIVE;
+    cl.serverTime = entry->serverTime;
+    cl.oldServerTime = entry->serverTime;
+    cl.oldFrameServerTime = entry->serverTime;
+    cl.serverTimeDelta = (int32_t)(
+        (uint32_t)entry->serverTime - (uint32_t)cls.realtime);
+    cl.extrapolatedSnapshot = qfalse;
+    cl.newSnapshots = qfalse;
+    CL_CGameRendering(STEREO_CENTER, qfalse);
+
+    if (targetTime < entry->serverTime)
+        targetTime = entry->serverTime;
+    return coduomp_demo_advance_to_time(targetTime);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: decode the compressed demo exactly once into an
+ * independently seekable full-snapshot stream. Gamestate parsing during this
+ * pass reuses the already loaded map instead of entering the download/load
+ * path again. */
+static qboolean coduomp_demo_scan_timeline(void)
+{
+    if (coduomp_demoPlaybackState.timelineKnown != qfalse)
+        return qtrue;
+    if (coduomp_demo_controls_available() == qfalse)
+        return qfalse;
+
+    const clientCgameInputState_t savedInputState = cl.inputState;
+    char savedMapBspName[sizeof(cl.mapBspName)];
+    vec4_t savedTeamColorAllies;
+    vec4_t savedTeamColorAxis;
+    memcpy(savedMapBspName, cl.mapBspName, sizeof(savedMapBspName));
+    memcpy(savedTeamColorAllies, cl.teamColorAllies,
+           sizeof(savedTeamColorAllies));
+    memcpy(savedTeamColorAxis, cl.teamColorAxis,
+           sizeof(savedTeamColorAxis));
+
+    coduomp_demo_clear_timeline();
+    coduomp_demoPlaybackState.timelineScanning = qtrue;
     if (FS_Seek(clc.demoFile, 0, FS_SEEK_ORIGIN_SET) != 0) {
-        Com_Printf("Unable to rewind the demo stream.\n");
+        coduomp_demoPlaybackState.timelineScanning = qfalse;
+        Com_Printf("Unable to index the demo stream.\n");
         return qfalse;
     }
 
     clc.lastExecutedServerCommand = 0;
     clc.demoFirstFrameSkipped = qtrue;
-    clc.timeDemoFrameCount = 0;
-    clc.timeDemoStartTime = 0;
-    clc.timeDemoPreviousFrameTime = 0;
     cls.state = CA_CONNECTED;
-
-    while (clc.demoFile != 0 && cls.state >= CA_CONNECTED &&
-           cls.state < CA_PRIMED) {
+    while (clc.demoFile != 0 &&
+           coduomp_demoPlaybackState.timelineScanEnded == qfalse &&
+           coduomp_demoPlaybackState.timelineAllocationFailed == qfalse) {
         CL_ReadDemoMessage();
     }
-    while (clc.demoFile != 0 && cls.state == CA_PRIMED &&
-           cl.newSnapshots == qfalse) {
-        CL_ReadDemoMessage();
-    }
+    coduomp_demoPlaybackState.timelineScanning = qfalse;
 
-    if (clc.demoFile == 0 || cls.state != CA_PRIMED ||
-        cl.newSnapshots == qfalse || cl.snap.valid == qfalse) {
+    cl.inputState = savedInputState;
+    memcpy(cl.mapBspName, savedMapBspName, sizeof(cl.mapBspName));
+    memcpy(cl.teamColorAllies, savedTeamColorAllies,
+           sizeof(cl.teamColorAllies));
+    memcpy(cl.teamColorAxis, savedTeamColorAxis,
+           sizeof(cl.teamColorAxis));
+
+    if (clc.demoFile == 0 ||
+        coduomp_demoPlaybackState.timelineAllocationFailed != qfalse ||
+        coduomp_demoPlaybackState.timelineEntryCount == 0) {
+        Com_Printf("Unable to build the decoded demo timeline.\n");
         return qfalse;
     }
 
-    cl.newSnapshots = qfalse;
-    CL_FirstSnapshot();
-    if (cls.state != CA_ACTIVE)
-        return qfalse;
-
-    if (targetTime < cl.snap.serverTime)
-        targetTime = cl.snap.serverTime;
-    return coduomp_demo_advance_to_time(targetTime);
+    coduomp_demoPlaybackState.startTime =
+        coduomp_demoPlaybackState.timelineEntries[0].serverTime;
+    coduomp_demoPlaybackState.endTime =
+        coduomp_demoPlaybackState.timelineEntries[
+            coduomp_demoPlaybackState.timelineEntryCount - 1].serverTime;
+    if (coduomp_demoPlaybackState.endTime <
+        coduomp_demoPlaybackState.startTime) {
+        coduomp_demoPlaybackState.endTime =
+            coduomp_demoPlaybackState.startTime;
+    }
+    coduomp_demoPlaybackState.timelineKnown = qtrue;
+    coduomp_demoPlaybackState.timelineActive = qtrue;
+    return qtrue;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: scan the delta stream once to discover its true
- * first and last snapshot timestamps, then rebuild playback at the position
- * visible before the scan. */
+/* NOT_FROM_ORIGINAL_SOURCE: index the timeline and restore the position that
+ * was visible before indexing without reloading the map. */
 static qboolean coduomp_demo_ensure_timeline(void)
 {
     if (coduomp_demoPlaybackState.timelineKnown != qfalse)
@@ -270,35 +733,8 @@ static qboolean coduomp_demo_ensure_timeline(void)
 
     coduomp_demo_set_paused(qtrue);
     MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
-    coduomp_demoPlaybackState.startTime = clc.timeDemoBaseTime;
-    coduomp_demoPlaybackState.timelineScanning = qtrue;
-    coduomp_demoPlaybackState.timelineScanEnded = qfalse;
-
-    while (clc.demoFile != 0 && cls.state == CA_ACTIVE &&
-           coduomp_demoPlaybackState.timelineScanEnded == qfalse) {
-        CL_ReadDemoMessage();
-    }
-
-    coduomp_demoPlaybackState.timelineScanning = qfalse;
-    if (clc.demoFile == 0 || cl.snap.valid == qfalse)
-        return qfalse;
-
-    coduomp_demoPlaybackState.endTime = cl.snap.serverTime;
-    if (coduomp_demoPlaybackState.endTime <
-        coduomp_demoPlaybackState.startTime) {
-        coduomp_demoPlaybackState.endTime =
-            coduomp_demoPlaybackState.startTime;
-    }
-    coduomp_demoPlaybackState.timelineKnown = qtrue;
-
-    int32_t restoredTime = visibleTime;
-    if (restoredTime < coduomp_demoPlaybackState.startTime)
-        restoredTime = coduomp_demoPlaybackState.startTime;
-    else if (restoredTime > coduomp_demoPlaybackState.endTime)
-        restoredTime = coduomp_demoPlaybackState.endTime;
-
-    if (coduomp_demo_replay_to_time(restoredTime) == qfalse) {
-        coduomp_demoPlaybackState.timelineKnown = qfalse;
+    if (coduomp_demo_scan_timeline() == qfalse ||
+        coduomp_demo_replay_to_time(visibleTime) == qfalse) {
         return qfalse;
     }
 
@@ -308,7 +744,7 @@ static qboolean coduomp_demo_ensure_timeline(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: index the active demo before screen rendering so
- * the one-time cgame rebuild cannot invalidate an in-progress render frame. */
+ * the one-time in-place state reset cannot invalidate an active render frame. */
 void coduomp_DemoPlaybackUpdate(void)
 {
     if (Cvar_VariableIntegerValue("cl_demoControlOverlay") == 0 ||
@@ -324,7 +760,7 @@ void coduomp_DemoPlaybackUpdate(void)
  * preserving whether playback was paused before the operation. */
 static qboolean coduomp_demo_seek_absolute(int32_t targetTime)
 {
-    if (coduomp_demo_ensure_timeline() == qfalse) {
+    if (coduomp_demo_controls_available() == qfalse) {
         Com_Printf("Demo playback controls require an active demo.\n");
         return qfalse;
     }
@@ -333,13 +769,24 @@ static qboolean coduomp_demo_seek_absolute(int32_t targetTime)
     const qboolean wasPaused =
         cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
             ? qtrue : qfalse;
+    const qboolean timelineWasKnown =
+        coduomp_demoPlaybackState.timelineKnown;
+    coduomp_demo_set_paused(qtrue);
+    MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+
+    if (coduomp_demo_scan_timeline() == qfalse) {
+        if (clc.demoPlayback != qfalse)
+            coduomp_demo_set_paused(wasPaused);
+        return qfalse;
+    }
 
     if (targetTime < coduomp_demoPlaybackState.startTime)
         targetTime = coduomp_demoPlaybackState.startTime;
     else if (targetTime > coduomp_demoPlaybackState.endTime)
         targetTime = coduomp_demoPlaybackState.endTime;
 
-    const qboolean seekCompleted = targetTime < cl.serverTime
+    const qboolean seekCompleted =
+        timelineWasKnown == qfalse || targetTime < cl.serverTime
         ? coduomp_demo_replay_to_time(targetTime)
         : coduomp_demo_advance_to_time(targetTime);
     if (seekCompleted != qfalse) {
@@ -350,8 +797,8 @@ static qboolean coduomp_demo_seek_absolute(int32_t targetTime)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: seek relative to the currently presented demo
- * time. Backward movement rebuilds delta-dependent state from the stream's
- * gamestate; forward movement can consume the existing stream directly. */
+ * time. Backward movement installs an independent decoded snapshot; forward
+ * movement can consume the normalized stream directly. */
 static void coduomp_demo_seek_relative(int32_t deltaMsec)
 {
     if (coduomp_demo_controls_available() == qfalse) {
@@ -533,6 +980,7 @@ void coduomp_DemoPlaybackReset(void)
         (void)Cvar_Set2("cl_paused", "0", qtrue);
     if (coduomp_demoPlaybackSpeed != NULL)
         (void)Cvar_Set2("cl_demoPlaybackSpeed", "1", qtrue);
+    coduomp_demo_clear_timeline();
     memset(&coduomp_demoPlaybackState, 0,
            sizeof(coduomp_demoPlaybackState));
 }
@@ -986,6 +1434,17 @@ void CL_DemoCompleted(void)
     CL_NextDemo();
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: advance the already decoded full-snapshot stream
+ * without touching the compressed demo file. */
+static qboolean coduomp_demo_read_timeline_message(void)
+{
+    const size_t nextEntry =
+        coduomp_demoPlaybackState.currentTimelineEntry + 1;
+    if (nextEntry >= coduomp_demoPlaybackState.timelineEntryCount)
+        return qfalse;
+    return coduomp_demo_publish_timeline_entry(nextEntry);
+}
+
 /* Source: CoDUOMP.exe 0x00410060..0x004101c2.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00410060_004101c3.mcode.
  * Name and signature: exact same-module Mac symbol CL_ReadDemoMessage. */
@@ -994,6 +1453,13 @@ void CL_ReadDemoMessage(void)
     uint8_t messageData[CL_DEMO_MESSAGE_CAPACITY];
     msg_t message;
     int32_t sequence;
+
+    if (coduomp_demoPlaybackState.timelineActive != qfalse &&
+        coduomp_demoPlaybackState.timelineScanning == qfalse) {
+        if (coduomp_demo_read_timeline_message() == qfalse)
+            CL_DemoCompleted();
+        return;
+    }
 
     if (clc.demoFile == 0) {
         CL_DemoCompleted();
@@ -1049,6 +1515,16 @@ void CL_ReadDemoMessage(void)
     }
 
     CL_ParseServerMessage(&message);
+
+    /* NOT_FROM_ORIGINAL_SOURCE: normalize every valid decoded snapshot before
+     * the parser ring advances to the next network delta. */
+    if (coduomp_demoPlaybackState.timelineScanning != qfalse &&
+        cl.newSnapshots != qfalse) {
+        coduomp_demo_cache_current_snapshot();
+        cl.newSnapshots = qfalse;
+        if (cls.state == CA_PRIMED)
+            CL_FirstSnapshot();
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: normalize the optional protocol suffix once for

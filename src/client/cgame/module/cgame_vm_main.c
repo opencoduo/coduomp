@@ -14,7 +14,8 @@
 
 /*
  * Exported cgame dispatcher. The binary uses an unsigned range check, so negative
- * commands take the same diagnostic path as values above 20. The default result
+ * original commands take the same diagnostic path as values above 20. The rebuilt
+ * dispatcher adds command 21 for decoded-demo rewind. The default result
  * is zero; only commands 0, 3, 5, 7, 10 and 18 replace it, while invalid commands
  * report the original diagnostic and return -1.
  */
@@ -162,6 +163,15 @@ CGAME_EXPORT intptr_t CGAME_ABI_CDECL vmMain(
 
     case CGVM_SAVE_STATE:
     case CGVM_RESTORE_STATE:
+        break;
+
+    case CGVM_DEMO_REWIND:
+        /* NOT_FROM_ORIGINAL_SOURCE: reset only transient presentation state;
+         * the engine keeps the loaded map and registered media alive. */
+        cgame_compat_demo_rewind(
+            coduo_int32_from_bits((uint32_t)arg0),
+            coduo_int32_from_bits((uint32_t)arg1),
+            coduo_int32_from_bits((uint32_t)arg2));
         break;
     }
 

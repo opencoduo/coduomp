@@ -1,11 +1,12 @@
 #ifndef QCOMMON_CGAME_MODULE_ABI_TYPES_H
 #define QCOMMON_CGAME_MODULE_ABI_TYPES_H
 
-/* vmMain is exported as ordinal 2. The 21 command values and every destination
+/* vmMain is exported as ordinal 2. The first 21 command values and every destination
  * come from the jump table at 0x3002b148 in uo_cgame_mp_x86.dll. Names through
  * command 9 are the established cgame VM interface; extension names describe
- * their machine-code-proven targets. CoDUOMP.exe uses the same values when it
- * calls the cgame module. */
+ * their machine-code-proven targets. CoDUOMP.exe uses the same values through
+ * command 20 when it calls the cgame module; command 21 is the rebuilt-client
+ * decoded-demo extension. */
 typedef enum cgameVmCommand_e {
     CGVM_GET_API_VERSION = 0,
     CGVM_INIT = 1,
@@ -27,13 +28,14 @@ typedef enum cgameVmCommand_e {
     CGVM_DRAW_SCALED = 17,
     CGVM_SCRIPT_FAR_HOOK = 18,
     CGVM_SAVE_STATE = 19,
-    CGVM_RESTORE_STATE = 20
+    CGVM_RESTORE_STATE = 20,
+    CGVM_DEMO_REWIND = 21
 } cgVmCommand_t;
 
 enum {
     CGVM_API_VERSION = 2,
-    CGVM_COMMAND_COUNT = 21,
-    CGVM_LAST_COMMAND = CGVM_RESTORE_STATE
+    CGVM_COMMAND_COUNT = 22,
+    CGVM_LAST_COMMAND = CGVM_DEMO_REWIND
 };
 
 #endif

@@ -678,6 +678,16 @@ void CL_ParseGamestate(msg_t *message)
     clc.clientNum = MSG_ReadLong(message);
     clc.checksumFeed = MSG_ReadLong(message);
 
+    /* NOT_FROM_ORIGINAL_SOURCE: timeline indexing reparses the recorded
+     * gamestate only to decode snapshots. The already loaded map and mod
+     * assets remain valid, so do not enter the filesystem/download/load path. */
+    if (coduomp_DemoPlaybackIsIndexing() != qfalse) {
+        CL_SystemInfoChanged();
+        coduomp_DemoPlaybackGamestateParsed();
+        cls.state = CA_PRIMED;
+        return;
+    }
+
     const char *serverDisplayName = cls.serverName;
     const char *const serverInfo =
         &cl.gameState.stringData[
@@ -996,6 +1006,9 @@ void CL_ParseCommandString(msg_t *message)
             (uint32_t)sequence &
             (CODUO_RELIABLE_COMMAND_COUNT - 1)],
         command, CODUO_RELIABLE_COMMAND_CAPACITY);
+    /* NOT_FROM_ORIGINAL_SOURCE: decoded demo seeking retains commands beyond
+     * the live 64-entry reliable-command ring. */
+    coduomp_DemoPlaybackCacheServerCommand(sequence, command);
 }
 
 /* Source: CoDUOMP.exe 0x00419500..0x004196b0.

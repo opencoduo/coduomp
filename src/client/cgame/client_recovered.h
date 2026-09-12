@@ -943,6 +943,11 @@ void CG_OpenScriptMenu(void);
 void CG_ServerCommand(void);
 void CG_ParseScores(void);
 void CG_MapRestart(qboolean restart);
+/* NOT_FROM_ORIGINAL_SOURCE: rebuild transient demo state around a decoded
+ * snapshot without reloading the map or registered media. */
+void cgame_compat_demo_rewind(int32_t processedSnapshotNum,
+                              int32_t serverCommandSequence,
+                              int32_t clientNum);
 void CG_ReverbCmd(void);
 void CG_GameMessage(const char *message);
 

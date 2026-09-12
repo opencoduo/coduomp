@@ -147,3 +147,36 @@ void CG_MapRestart(qboolean restart)
      * return becomes this function's return. Modeled as the equivalent tail call. */
     cgame_syscall(CG_SYNC_TIMES);                 /* MOV [ESP+4],0xf8; JMP *cgame_syscall */
 }
+
+/* NOT_FROM_ORIGINAL_SOURCE: reset transient demo presentation state around an
+ * independently decoded snapshot while preserving the loaded map and all
+ * registered media. This is the rebuilt cgame half of in-place demo rewind. */
+void cgame_compat_demo_rewind(int32_t processedSnapshotNum,
+                              int32_t serverCommandSequence,
+                              int32_t clientNum)
+{
+    cgame_syscall(CG_MSS_STOP_SOUNDS, 0);
+    cgame_syscall(CG_FX_FREE_SYSTEM);
+    cgame_syscall(CG_MAP_RESTART_RESET_RENDERER);
+    CG_InitLocalEntities();
+    CG_InitMarkPolys();
+    if (cg_flameChunks != NULL)
+        CG_ClearFlameChunks();
+
+    cgame_compat_reset_recovered_cg_state();
+    memset(cg_entities, 0, sizeof(cg_entities));
+    memset(cg_lagometerFrameSamples, 0,
+           sizeof(cg_lagometerFrameSamples));
+    memset(&cg_lagometer, 0, sizeof(cg_lagometer));
+    cg_lagometerFrameCount = 0;
+    cg_effectTime = 0;
+    cg_effectAnimTime = 0;
+    cg_effectFrameTime = 0;
+
+    cg_clientNum = clientNum;
+    cg_processedSnapshotNum = processedSnapshotNum;
+    cgs_serverCommandSequence = serverCommandSequence;
+    cgame_syscall(CG_GET_GAME_STATE, (intptr_t)&cg_gameState);
+    CG_ParseServerinfo();
+    CG_SetConfigValues();
+}
