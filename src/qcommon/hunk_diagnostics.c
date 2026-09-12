@@ -14,7 +14,6 @@ enum {
     HUNK_LOG_BUFFER_SIZE = 4096,
     HUNK_LOG_COMPARE_LIMIT = 99999,
     HUNK_MINIMUM_MEGABYTES_DEDICATED = 1,
-    HUNK_MINIMUM_MEGABYTES_CLIENT = 80,
     HUNK_MEGABYTE_SHIFT = 20
 };
 
@@ -22,12 +21,14 @@ enum {
 /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the native client retains
  * host pointers in renderer world, model, and cell records.  Large stock-era
  * maps can consequently consume more of the fixed hunk than their original
- * i386 equivalents and leave no room for ordinary renderer scratch.  Use a
- * wider default only when the client cvar does not already exist; explicit
- * com_hunkMegs values, dedicated servers, and original-width builds retain
- * their existing meaning and defaults. */
+ * i386 equivalents and leave no room for ordinary renderer scratch.  Require
+ * the wider allocation even when an older archived com_hunkMegs value exists;
+ * dedicated servers and original-width builds retain their existing minimums
+ * and defaults. */
+#define HUNK_MINIMUM_MEGABYTES_CLIENT 256
 #define HUNK_DEFAULT_CLIENT_MEGABYTES "256"
 #else
+#define HUNK_MINIMUM_MEGABYTES_CLIENT 80
 #define HUNK_DEFAULT_CLIENT_MEGABYTES "128"
 #endif
 #define HUNK_DEFAULT_DEDICATED_MEGABYTES "128"
@@ -256,5 +257,6 @@ void Com_InitHunkMemory(void)
 #undef HUNK_SIZE_ARGUMENT
 #undef HUNK_LOG_SIZE_FORMAT
 #undef HUNK_LOG_SIZE_ARGUMENT
+#undef HUNK_MINIMUM_MEGABYTES_CLIENT
 #undef HUNK_DEFAULT_CLIENT_MEGABYTES
 #undef HUNK_DEFAULT_DEDICATED_MEGABYTES
