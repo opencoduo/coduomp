@@ -9,7 +9,6 @@
 #include "filesystem/filesystem_path_security.h"
 #include "filesystem_services.h"
 #include "qcommon/com_config.h"
-#include "qcommon/q_endian.h"
 #include "qcommon/q_memory.h"
 #include "qcommon/q_string.h"
 
@@ -26,19 +25,8 @@
 
 enum {
     CODUOMP_NAMESPACE_SLUG_LENGTH = 40,
-    CODUOMP_NAMESPACE_HASH_HEX_LENGTH = 16,
-    CODUOMP_NAMESPACE_HASH_BYTE_LENGTH = 8,
-    CODUOMP_NAMESPACE_ENDPOINT_VERSION = 1,
-    CODUOMP_NAMESPACE_ENDPOINT_MAX_LENGTH = 14,
-    CODUOMP_NAMESPACE_SHA256_DIGEST_SIZE = 32,
-    CODUOMP_NAMESPACE_SHA256_BLOCK_SIZE = 64,
-    CODUOMP_NAMESPACE_SHA256_WORD_COUNT = 64,
     CODUOMP_NAMESPACE_OFFICIAL_PAK_VARIANT_COUNT = 24
 };
-
-_Static_assert(CODUOMP_NAMESPACE_HASH_HEX_LENGTH ==
-                   CODUOMP_NAMESPACE_HASH_BYTE_LENGTH * 2,
-               "namespace hash text must encode every retained byte");
 
 typedef struct coduomp_namespace_cvar_snapshot_s {
     char *name;
@@ -51,7 +39,7 @@ typedef struct coduomp_namespace_cvar_snapshot_s {
 
 typedef struct coduomp_namespace_state_s {
     qboolean active;
-    char endpointHash[CODUOMP_NAMESPACE_HASH_HEX_LENGTH + 1];
+    char serverName[MAX_QPATH];
     char stateRoot[MAX_OSPATH];
     char contentRoot[MAX_OSPATH];
     char frontendConfigGame[FS_PACK_NAME_SIZE];
@@ -259,163 +247,6 @@ static void coduomp_namespace_restore_snapshot(void)
         }
     }
     cvar_modifiedFlags |= CVAR_ARCHIVE;
-}
-
-static uint32_t coduomp_namespace_rotate_right(uint32_t value,
-                                               uint32_t count)
-{
-    return (value >> count) | (value << (32u - count));
-}
-
-static uint32_t coduomp_namespace_load_be32(const uint8_t *bytes)
-{
-    return ((uint32_t)bytes[0] << 24u) |
-           ((uint32_t)bytes[1] << 16u) |
-           ((uint32_t)bytes[2] << 8u) |
-           (uint32_t)bytes[3];
-}
-
-static void coduomp_namespace_store_be32(uint8_t *bytes, uint32_t value)
-{
-    bytes[0] = (uint8_t)(value >> 24u);
-    bytes[1] = (uint8_t)(value >> 16u);
-    bytes[2] = (uint8_t)(value >> 8u);
-    bytes[3] = (uint8_t)value;
-}
-
-static void coduomp_namespace_sha256(const uint8_t *message,
-                                     size_t messageLength,
-                                     uint8_t digest[
-                                         CODUOMP_NAMESPACE_SHA256_DIGEST_SIZE])
-{
-    static const uint32_t constants[CODUOMP_NAMESPACE_SHA256_WORD_COUNT] = {
-        0x428a2f98u, 0x71374491u, 0xb5c0fbcfu, 0xe9b5dba5u,
-        0x3956c25bu, 0x59f111f1u, 0x923f82a4u, 0xab1c5ed5u,
-        0xd807aa98u, 0x12835b01u, 0x243185beu, 0x550c7dc3u,
-        0x72be5d74u, 0x80deb1feu, 0x9bdc06a7u, 0xc19bf174u,
-        0xe49b69c1u, 0xefbe4786u, 0x0fc19dc6u, 0x240ca1ccu,
-        0x2de92c6fu, 0x4a7484aau, 0x5cb0a9dcu, 0x76f988dau,
-        0x983e5152u, 0xa831c66du, 0xb00327c8u, 0xbf597fc7u,
-        0xc6e00bf3u, 0xd5a79147u, 0x06ca6351u, 0x14292967u,
-        0x27b70a85u, 0x2e1b2138u, 0x4d2c6dfcu, 0x53380d13u,
-        0x650a7354u, 0x766a0abbu, 0x81c2c92eu, 0x92722c85u,
-        0xa2bfe8a1u, 0xa81a664bu, 0xc24b8b70u, 0xc76c51a3u,
-        0xd192e819u, 0xd6990624u, 0xf40e3585u, 0x106aa070u,
-        0x19a4c116u, 0x1e376c08u, 0x2748774cu, 0x34b0bcb5u,
-        0x391c0cb3u, 0x4ed8aa4au, 0x5b9cca4fu, 0x682e6ff3u,
-        0x748f82eeu, 0x78a5636fu, 0x84c87814u, 0x8cc70208u,
-        0x90befffau, 0xa4506cebu, 0xbef9a3f7u, 0xc67178f2u
-    };
-    uint8_t block[CODUOMP_NAMESPACE_SHA256_BLOCK_SIZE] = {0};
-    uint32_t words[CODUOMP_NAMESPACE_SHA256_WORD_COUNT];
-    uint32_t state[8] = {
-        0x6a09e667u, 0xbb67ae85u, 0x3c6ef372u, 0xa54ff53au,
-        0x510e527fu, 0x9b05688cu, 0x1f83d9abu, 0x5be0cd19u
-    };
-
-    /* Endpoint identities are at most fourteen bytes, so one SHA-256 block
-     * always contains the complete canonical address. */
-    memcpy(block, message, messageLength);
-    block[messageLength] = 0x80u;
-    const uint64_t bitLength = (uint64_t)messageLength * 8u;
-    for (size_t byte = 0; byte < 8u; ++byte)
-        block[63u - byte] = (uint8_t)(bitLength >> (byte * 8u));
-
-    for (size_t index = 0; index < 16u; ++index)
-        words[index] = coduomp_namespace_load_be32(&block[index * 4u]);
-    for (size_t index = 16u;
-         index < CODUOMP_NAMESPACE_SHA256_WORD_COUNT; ++index) {
-        const uint32_t s0 =
-            coduomp_namespace_rotate_right(words[index - 15u], 7u) ^
-            coduomp_namespace_rotate_right(words[index - 15u], 18u) ^
-            (words[index - 15u] >> 3u);
-        const uint32_t s1 =
-            coduomp_namespace_rotate_right(words[index - 2u], 17u) ^
-            coduomp_namespace_rotate_right(words[index - 2u], 19u) ^
-            (words[index - 2u] >> 10u);
-        words[index] = words[index - 16u] + s0 +
-                       words[index - 7u] + s1;
-    }
-
-    uint32_t a = state[0];
-    uint32_t b = state[1];
-    uint32_t c = state[2];
-    uint32_t d = state[3];
-    uint32_t e = state[4];
-    uint32_t f = state[5];
-    uint32_t g = state[6];
-    uint32_t h = state[7];
-    for (size_t index = 0;
-         index < CODUOMP_NAMESPACE_SHA256_WORD_COUNT; ++index) {
-        const uint32_t upper0 =
-            coduomp_namespace_rotate_right(a, 2u) ^
-            coduomp_namespace_rotate_right(a, 13u) ^
-            coduomp_namespace_rotate_right(a, 22u);
-        const uint32_t majority = (a & b) ^ (a & c) ^ (b & c);
-        const uint32_t upper1 =
-            coduomp_namespace_rotate_right(e, 6u) ^
-            coduomp_namespace_rotate_right(e, 11u) ^
-            coduomp_namespace_rotate_right(e, 25u);
-        const uint32_t choose = (e & f) ^ ((~e) & g);
-        const uint32_t first = h + upper1 + choose +
-                               constants[index] + words[index];
-        const uint32_t second = upper0 + majority;
-        h = g;
-        g = f;
-        f = e;
-        e = d + first;
-        d = c;
-        c = b;
-        b = a;
-        a = first + second;
-    }
-
-    state[0] += a;
-    state[1] += b;
-    state[2] += c;
-    state[3] += d;
-    state[4] += e;
-    state[5] += f;
-    state[6] += g;
-    state[7] += h;
-    for (size_t index = 0; index < 8u; ++index)
-        coduomp_namespace_store_be32(&digest[index * 4u], state[index]);
-}
-
-static qboolean coduomp_namespace_endpoint_hash(
-    const netadr_t *address,
-    char hash[CODUOMP_NAMESPACE_HASH_HEX_LENGTH + 1])
-{
-    static const char hex[] = "0123456789abcdef";
-    uint8_t canonical[CODUOMP_NAMESPACE_ENDPOINT_MAX_LENGTH];
-    size_t length = 0;
-
-    canonical[length++] = CODUOMP_NAMESPACE_ENDPOINT_VERSION;
-    canonical[length++] = (uint8_t)address->type;
-    if (address->type == NA_IP) {
-        memcpy(&canonical[length], address->ip, sizeof(address->ip));
-        length += sizeof(address->ip);
-    } else if (address->type == NA_IPX) {
-        memcpy(&canonical[length], address->ipx, sizeof(address->ipx));
-        length += sizeof(address->ipx);
-    } else {
-        return qfalse;
-    }
-
-    const uint16_t hostPort =
-        (uint16_t)BigShort((int16_t)address->port);
-    canonical[length++] = (uint8_t)(hostPort >> 8u);
-    canonical[length++] = (uint8_t)hostPort;
-
-    uint8_t digest[CODUOMP_NAMESPACE_SHA256_DIGEST_SIZE];
-    coduomp_namespace_sha256(canonical, length, digest);
-    for (size_t index = 0;
-         index < CODUOMP_NAMESPACE_HASH_BYTE_LENGTH; ++index) {
-        hash[index * 2u] = hex[digest[index] >> 4u];
-        hash[index * 2u + 1u] = hex[digest[index] & 15u];
-    }
-    hash[CODUOMP_NAMESPACE_HASH_HEX_LENGTH] = '\0';
-    return qtrue;
 }
 
 static qboolean coduomp_namespace_is_hex(char character)
@@ -657,26 +488,15 @@ static void coduomp_namespace_sanitize_name(
         Q_strncpyz(slug, "server", CODUOMP_NAMESPACE_SLUG_LENGTH + 1);
 }
 
-static qboolean coduomp_namespace_has_hash_suffix(
-    const char *directoryName, const char *hash)
-{
-    const size_t nameLength = strlen(directoryName);
-    const size_t hashLength = strlen(hash);
-
-    if (nameLength <= hashLength ||
-        directoryName[nameLength - hashLength - 1u] != '-') {
-        return qfalse;
-    }
-    return Q_stricmp(&directoryName[nameLength - hashLength], hash) == 0
-               ? qtrue
-               : qfalse;
-}
-
+/* NOT_FROM_ORIGINAL_SOURCE: accept only the character set emitted by the
+ * server-name sanitizer before a cache directory becomes a host path. */
 static qboolean coduomp_namespace_directory_name_is_safe(
     const char *directoryName)
 {
-    const size_t length = strlen(directoryName);
+    if (directoryName == NULL)
+        return qfalse;
 
+    const size_t length = strlen(directoryName);
     if (length == 0 || length >= MAX_QPATH ||
         directoryName[0] == '-' || directoryName[length - 1u] == '-') {
         return qfalse;
@@ -692,42 +512,12 @@ static qboolean coduomp_namespace_directory_name_is_safe(
     return qtrue;
 }
 
-static qboolean coduomp_namespace_select_directory(
-    const char *homeRoot, const char *slug, const char *hash,
-    char directoryName[MAX_QPATH])
-{
-    char cacheRoot[MAX_OSPATH];
-    if (strlen(homeRoot) + strlen("server-cache/v1") + 3u > MAX_OSPATH)
-        return qfalse;
-    FS_BuildOSPath(homeRoot, "server-cache/v1", "", cacheRoot);
-    cacheRoot[strlen(cacheRoot) - 1u] = '\0';
-
-    int32_t directoryCount = 0;
-    char **const directories = Sys_ListFiles(
-        cacheRoot, NULL, NULL, &directoryCount, qtrue);
-    for (int32_t index = 0; index < directoryCount; ++index) {
-        if (coduomp_namespace_directory_name_is_safe(
-                directories[index]) != qfalse &&
-            coduomp_namespace_has_hash_suffix(
-                directories[index], hash) != qfalse) {
-            Q_strncpyz(directoryName, directories[index], MAX_QPATH);
-            Sys_FreeFileList(directories);
-            return qtrue;
-        }
-    }
-    Sys_FreeFileList(directories);
-
-    const int written = snprintf(
-        directoryName, MAX_QPATH, "%s-%s", slug, hash);
-    return written > 0 && written < MAX_QPATH ? qtrue : qfalse;
-}
-
 static qboolean coduomp_namespace_build_roots(
     const char *homeRoot, const char *directoryName)
 {
     char relative[MAX_OSPATH];
     const int written = snprintf(relative, sizeof(relative),
-                                 "server-cache/v1/%s/content",
+                                 "server-cache/%s/content",
                                  directoryName);
     if (written <= 0 || written >= (int)sizeof(relative))
         return qfalse;
@@ -743,7 +533,7 @@ static qboolean coduomp_namespace_build_roots(
     }
 
     const int stateWritten = snprintf(
-        relative, sizeof(relative), "server-cache/v1/%s/state",
+        relative, sizeof(relative), "server-cache/%s/state",
         directoryName);
     if (stateWritten <= 0 || stateWritten >= (int)sizeof(relative) ||
         strlen(homeRoot) + strlen(relative) + 3u > MAX_OSPATH) {
@@ -984,47 +774,174 @@ static qboolean coduomp_namespace_build_safe_child_path(
     return qtrue;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: recover the stable display-name slug from the
- * cache directory's <server-name>-<endpoint-id> identity. */
-static qboolean coduomp_namespace_split_server_label(
-    const char *directoryName, char serverLabel[MAX_QPATH])
+/* NOT_FROM_ORIGINAL_SOURCE: construct the single greenfield cache root shared
+ * by connection isolation, cached-mod discovery, and demo playback. */
+static qboolean coduomp_namespace_build_cache_root(
+    char cacheRoot[MAX_OSPATH])
 {
-    const size_t nameLength = strlen(directoryName);
-    if (nameLength <= CODUOMP_NAMESPACE_HASH_HEX_LENGTH + 1u)
+    if (fs_homepath == NULL || fs_homepath->string[0] == '\0' ||
+        strlen(fs_homepath->string) + strlen("server-cache") + 3u >
+            MAX_OSPATH) {
         return qfalse;
-
-    const size_t delimiterIndex =
-        nameLength - CODUOMP_NAMESPACE_HASH_HEX_LENGTH - 1u;
-    if (directoryName[delimiterIndex] != '-')
-        return qfalse;
-    for (size_t index = delimiterIndex + 1u;
-         index < nameLength; ++index) {
-        if (coduomp_namespace_is_hex(directoryName[index]) == qfalse)
-            return qfalse;
     }
 
-    memcpy(serverLabel, directoryName, delimiterIndex);
-    serverLabel[delimiterIndex] = '\0';
+    FS_BuildOSPath(fs_homepath->string, "server-cache", "", cacheRoot);
+    cacheRoot[strlen(cacheRoot) - 1u] = '\0';
     return qtrue;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: scan server-owned state directories without
+ * mounting them. Filters use user-facing server/mod/demo names; selected
+ * directory spellings are returned so case-sensitive hosts mount correctly. */
+static int32_t coduomp_namespace_scan_cached_demos(
+    const char *modFilter, const char *demoFilter,
+    const char *serverFilter, qboolean printMatches,
+    char resolvedServer[MAX_QPATH],
+    char resolvedMod[FS_PACK_NAME_SIZE])
+{
+    char cacheRoot[MAX_OSPATH];
+    if (coduomp_namespace_build_cache_root(cacheRoot) == qfalse)
+        return 0;
+
+    int32_t namespaceCount = 0;
+    char **const namespaces = Sys_ListFiles(
+        cacheRoot, NULL, NULL, &namespaceCount, qtrue);
+    int32_t matchCount = 0;
+    for (int32_t namespaceIndex = 0;
+         namespaceIndex < namespaceCount; ++namespaceIndex) {
+        const char *const namespaceName = namespaces[namespaceIndex];
+        char namespacePath[MAX_OSPATH];
+        char statePath[MAX_OSPATH];
+        if (coduomp_namespace_directory_name_is_safe(namespaceName) == qfalse ||
+            (serverFilter != NULL &&
+             Q_stricmp(namespaceName, serverFilter) != 0) ||
+            coduomp_namespace_build_safe_child_path(
+                cacheRoot, namespaceName, qtrue, namespacePath) == qfalse ||
+            coduomp_namespace_build_safe_child_path(
+                namespacePath, "state", qtrue, statePath) == qfalse) {
+            continue;
+        }
+
+        int32_t gameCount = 0;
+        char **const gameDirectories = Sys_ListFiles(
+            statePath, NULL, NULL, &gameCount, qtrue);
+        for (int32_t gameIndex = 0;
+             gameIndex < gameCount; ++gameIndex) {
+            const char *const gameName = gameDirectories[gameIndex];
+            char gamePath[MAX_OSPATH];
+            char demosPath[MAX_OSPATH];
+            if ((modFilter != NULL &&
+                 Q_stricmp(gameName, modFilter) != 0) ||
+                coduomp_namespace_build_safe_child_path(
+                    statePath, gameName, qtrue, gamePath) == qfalse ||
+                coduomp_namespace_build_safe_child_path(
+                    gamePath, "demos", qtrue, demosPath) == qfalse) {
+                continue;
+            }
+
+            int32_t demoCount = 0;
+            char **const demoFiles = Sys_ListFiles(
+                demosPath, ".dm_3", NULL, &demoCount, qfalse);
+            for (int32_t demoIndex = 0;
+                 demoIndex < demoCount; ++demoIndex) {
+                const char *const demoFileName = demoFiles[demoIndex];
+                char demoPath[MAX_OSPATH];
+                if ((demoFilter != NULL &&
+                     Q_stricmp(demoFileName, demoFilter) != 0) ||
+                    coduomp_namespace_build_safe_child_path(
+                        demosPath, demoFileName, qfalse,
+                        demoPath) == qfalse) {
+                    continue;
+                }
+
+                if (matchCount == 0 && resolvedServer != NULL &&
+                    resolvedMod != NULL) {
+                    Q_strncpyz(resolvedServer, namespaceName, MAX_QPATH);
+                    Q_strncpyz(resolvedMod, gameName, FS_PACK_NAME_SIZE);
+                }
+                ++matchCount;
+                if (printMatches != qfalse) {
+                    Com_Printf("  %s %s  (%s)\n", gameName,
+                               demoFileName, namespaceName);
+                }
+            }
+            Sys_FreeFileList(demoFiles);
+        }
+        Sys_FreeFileList(gameDirectories);
+    }
+    Sys_FreeFileList(namespaces);
+    return matchCount;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolve a cached recording by mod and demo, using
+ * an optional sanitized server name only when that pair is ambiguous. */
+static int32_t coduomp_compat_server_namespace_resolve_cached_demo(
+    const char *modName, const char *demoFileName,
+    const char *serverName, char resolvedServer[MAX_QPATH],
+    char resolvedMod[FS_PACK_NAME_SIZE])
+{
+    if (resolvedServer == NULL || resolvedMod == NULL)
+        return 0;
+    resolvedServer[0] = '\0';
+    resolvedMod[0] = '\0';
+
+    if (modName == NULL || modName[0] == '\0' ||
+        demoFileName == NULL || demoFileName[0] == '\0' ||
+        strlen(modName) >= FS_PACK_NAME_SIZE ||
+        strpbrk(modName, "/\\") != NULL ||
+        strpbrk(demoFileName, "/\\") != NULL ||
+        coduo_compat_path_is_safe_relative(modName) == qfalse ||
+        coduo_compat_path_is_safe_relative(demoFileName) == qfalse) {
+        return 0;
+    }
+
+    char serverSlug[CODUOMP_NAMESPACE_SLUG_LENGTH + 1];
+    const char *serverFilter = NULL;
+    if (serverName != NULL && serverName[0] != '\0') {
+        coduomp_namespace_sanitize_name(serverName, serverSlug);
+        serverFilter = serverSlug;
+    }
+
+    const int32_t matchCount = coduomp_namespace_scan_cached_demos(
+        modName, demoFileName, serverFilter, qfalse,
+        resolvedServer, resolvedMod);
+    if (matchCount > 1) {
+        Com_Printf("Cached demo matches multiple servers:\n");
+        (void)coduomp_namespace_scan_cached_demos(
+            modName, demoFileName, serverFilter, qtrue, NULL, NULL);
+        resolvedServer[0] = '\0';
+        resolvedMod[0] = '\0';
+    }
+    return matchCount;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: list cached demos in the same mod/demo/server
+ * vocabulary accepted by the playback command. */
+static int32_t coduomp_compat_server_namespace_list_cached_demos(
+    const char *modName)
+{
+    if (modName != NULL &&
+        (modName[0] == '\0' || strpbrk(modName, "/\\") != NULL ||
+         coduo_compat_path_is_safe_relative(modName) == qfalse)) {
+        return 0;
+    }
+    return coduomp_namespace_scan_cached_demos(
+        modName, NULL, NULL, qtrue, NULL, NULL);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: publish cached mod folders through the retail
- * paired-string mod-list ABI without exposing the endpoint hash as UI text. */
+ * paired-string mod-list ABI with their owning server as display context. */
 static int32_t coduomp_compat_server_namespace_append_cached_mods(
     char *listBuffer, int32_t bufferSize)
 {
-    if (listBuffer == NULL || bufferSize <= 0 || fs_homepath == NULL ||
-        fs_homepath->string[0] == '\0' ||
-        strlen(fs_homepath->string) + strlen("server-cache/v1") + 3u >
-            MAX_OSPATH) {
+    if (listBuffer == NULL || bufferSize <= 0) {
         return 0;
     }
     listBuffer[0] = '\0';
 
     char cacheRoot[MAX_OSPATH];
-    FS_BuildOSPath(fs_homepath->string, "server-cache/v1", "",
-                   cacheRoot);
-    cacheRoot[strlen(cacheRoot) - 1u] = '\0';
+    if (coduomp_namespace_build_cache_root(cacheRoot) == qfalse)
+        return 0;
 
     int32_t namespaceCount = 0;
     char **const namespaces = Sys_ListFiles(
@@ -1034,12 +951,9 @@ static int32_t coduomp_compat_server_namespace_append_cached_mods(
     for (int32_t namespaceIndex = 0;
          namespaceIndex < namespaceCount; ++namespaceIndex) {
         const char *const namespaceName = namespaces[namespaceIndex];
-        char serverLabel[MAX_QPATH];
         char namespacePath[MAX_OSPATH];
         char contentPath[MAX_OSPATH];
         if (coduomp_namespace_directory_name_is_safe(namespaceName) == qfalse ||
-            coduomp_namespace_split_server_label(
-                namespaceName, serverLabel) == qfalse ||
             coduomp_namespace_build_safe_child_path(
                 cacheRoot, namespaceName, qtrue, namespacePath) == qfalse ||
             coduomp_namespace_build_safe_child_path(
@@ -1071,11 +985,11 @@ static int32_t coduomp_compat_server_namespace_append_cached_mods(
             char description[FS_PACK_NAME_SIZE];
             const int launchWritten = snprintf(
                 launchDirectory, sizeof(launchDirectory),
-                "server-cache/v1/%s/content/%s",
+                "server-cache/%s/content/%s",
                 namespaceName, gameName);
             const int descriptionWritten = snprintf(
                 description, sizeof(description), "%s/%s",
-                serverLabel, gameName);
+                namespaceName, gameName);
             if (launchWritten <= 0 ||
                 launchWritten >= (int)sizeof(launchDirectory) ||
                 descriptionWritten <= 0 ||
@@ -1363,13 +1277,9 @@ static qboolean coduomp_compat_server_namespace_cache_referenced_paks(void)
     }
 
     char cacheRoot[MAX_OSPATH];
-    if (strlen(fs_homepath->string) + strlen("server-cache/v1") + 3u >
-        sizeof(cacheRoot)) {
+    if (coduomp_namespace_build_cache_root(cacheRoot) == qfalse) {
         return qfalse;
     }
-    FS_BuildOSPath(fs_homepath->string, "server-cache/v1", "",
-                   cacheRoot);
-    cacheRoot[strlen(cacheRoot) - 1u] = '\0';
 
     qboolean copiedAny = qfalse;
     for (int32_t pakIndex = 0;
@@ -1488,15 +1398,10 @@ static void coduomp_namespace_clear_config_tree(
 static void coduomp_compat_server_namespace_clear_configs(void)
 {
     char cacheRoot[MAX_OSPATH];
-    if (fs_homepath == NULL || fs_homepath->string[0] == '\0' ||
-        strlen(fs_homepath->string) + strlen("server-cache/v1") + 3u >
-            sizeof(cacheRoot)) {
+    if (coduomp_namespace_build_cache_root(cacheRoot) == qfalse) {
         Com_Printf("Server configuration cache path is unavailable.\n");
         return;
     }
-    FS_BuildOSPath(fs_homepath->string, "server-cache/v1", "",
-                   cacheRoot);
-    cacheRoot[strlen(cacheRoot) - 1u] = '\0';
 
     int32_t namespaceCount = 0;
     char **const namespaces = Sys_ListFiles(
@@ -1541,24 +1446,18 @@ static void coduomp_compat_server_namespace_reset(void)
     memset(&coduomp_namespace_state, 0, sizeof(coduomp_namespace_state));
 }
 
-static qboolean coduomp_compat_server_namespace_activate(
-    const netadr_t *address, const char *serverName,
-    qboolean eligibleRemoteServer)
+/* NOT_FROM_ORIGINAL_SOURCE: capture the frontend state and select one
+ * sanitized server-name directory as the active writable/content root. */
+static qboolean coduomp_namespace_activate_directory(
+    const char *serverName)
 {
-    char hash[CODUOMP_NAMESPACE_HASH_HEX_LENGTH + 1];
-    char slug[CODUOMP_NAMESPACE_SLUG_LENGTH + 1];
-    char directoryName[MAX_QPATH];
-
-    if (eligibleRemoteServer == qfalse)
+    if (fs_homepath == NULL || fs_homepath->string[0] == '\0' ||
+        serverName == NULL ||
+        coduomp_namespace_directory_name_is_safe(serverName) == qfalse) {
         return qfalse;
-    if (address == NULL || fs_homepath == NULL ||
-        fs_homepath->string[0] == '\0' ||
-        coduomp_namespace_endpoint_hash(address, hash) == qfalse) {
-        Com_Error(ERR_DROP,
-                  "Cannot isolate files for this server address\n");
     }
     if (coduomp_namespace_state.active != qfalse &&
-        strcmp(coduomp_namespace_state.endpointHash, hash) == 0) {
+        Q_stricmp(coduomp_namespace_state.serverName, serverName) == 0) {
         return qfalse;
     }
     if (coduomp_namespace_state.active != qfalse) {
@@ -1567,29 +1466,61 @@ static qboolean coduomp_compat_server_namespace_activate(
         coduomp_namespace_state.active = qfalse;
     }
 
-    /* Flush the user's current global state before the writable root changes.
-     * Thereafter every automatic write lands in the transient server root. */
     Com_WriteConfiguration();
-    if (coduomp_namespace_capture_snapshot() == qfalse) {
-        Com_Error(ERR_DROP,
-                  "Could not isolate server configuration\n");
+    if (coduomp_namespace_capture_snapshot() == qfalse)
+        return qfalse;
+    if (coduomp_namespace_build_roots(
+            fs_homepath->string, serverName) == qfalse) {
+        coduomp_namespace_free_snapshot();
+        return qfalse;
     }
+
+    Q_strncpyz(coduomp_namespace_state.serverName, serverName,
+               sizeof(coduomp_namespace_state.serverName));
+    coduomp_namespace_state.active = qtrue;
+    Com_Printf("Server Cache active for %s\n", serverName);
+    return qtrue;
+}
+
+static qboolean coduomp_compat_server_namespace_activate(
+    const char *serverName, qboolean eligibleRemoteServer)
+{
+    char slug[CODUOMP_NAMESPACE_SLUG_LENGTH + 1];
+
+    if (eligibleRemoteServer == qfalse)
+        return qfalse;
 
     coduomp_namespace_sanitize_name(serverName, slug);
-    if (coduomp_namespace_select_directory(
-            fs_homepath->string, slug, hash, directoryName) == qfalse ||
-        coduomp_namespace_build_roots(
-            fs_homepath->string, directoryName) == qfalse) {
-        coduomp_namespace_free_snapshot();
-        Com_Error(ERR_DROP,
-                  "Server namespace path is too long\n");
+    if (coduomp_namespace_state.active != qfalse &&
+        Q_stricmp(coduomp_namespace_state.serverName, slug) == 0) {
+        return qfalse;
     }
-
-    Q_strncpyz(coduomp_namespace_state.endpointHash, hash,
-               sizeof(coduomp_namespace_state.endpointHash));
-    coduomp_namespace_state.active = qtrue;
-    Com_Printf("Server files isolated in %s\n", directoryName);
+    if (coduomp_namespace_activate_directory(slug) == qfalse) {
+        Com_Error(ERR_DROP,
+                  "Could not isolate server files\n");
+    }
     return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: activate an existing cache selected by cached-demo
+ * discovery. The directory must already exist and may not be a link/reparse. */
+static qboolean coduomp_compat_server_namespace_activate_cached(
+    const char *serverName)
+{
+    char cacheRoot[MAX_OSPATH];
+    char serverPath[MAX_OSPATH];
+    if (coduomp_namespace_build_cache_root(cacheRoot) == qfalse ||
+        serverName == NULL ||
+        coduomp_namespace_directory_name_is_safe(serverName) == qfalse ||
+        coduomp_namespace_build_safe_child_path(
+            cacheRoot, serverName, qtrue, serverPath) == qfalse) {
+        return qfalse;
+    }
+    if (coduomp_namespace_state.active != qfalse &&
+        Q_stricmp(coduomp_namespace_state.serverName, serverName) == 0) {
+        return qtrue;
+    }
+    return coduomp_namespace_activate_directory(serverName);
 }
 
 static qboolean coduomp_compat_server_namespace_deactivate(void)
@@ -1600,7 +1531,7 @@ static qboolean coduomp_compat_server_namespace_deactivate(void)
     coduomp_namespace_restore_snapshot();
     coduomp_namespace_free_snapshot();
     coduomp_namespace_state.active = qfalse;
-    coduomp_namespace_state.endpointHash[0] = '\0';
+    coduomp_namespace_state.serverName[0] = '\0';
     coduomp_namespace_state.stateRoot[0] = '\0';
     coduomp_namespace_state.contentRoot[0] = '\0';
     return qtrue;
@@ -1728,10 +1659,13 @@ const coduomp_server_namespace_provider_t
     coduomp_server_namespace_provider = {
         coduomp_compat_server_namespace_reset,
         coduomp_compat_server_namespace_activate,
+        coduomp_compat_server_namespace_activate_cached,
         coduomp_compat_server_namespace_deactivate,
         coduomp_compat_server_namespace_is_active,
         coduomp_compat_server_namespace_cache_referenced_paks,
         coduomp_compat_server_namespace_append_cached_mods,
+        coduomp_compat_server_namespace_resolve_cached_demo,
+        coduomp_compat_server_namespace_list_cached_demos,
         coduomp_compat_server_namespace_state_root,
         coduomp_compat_server_namespace_content_root,
         coduomp_compat_server_namespace_allows,

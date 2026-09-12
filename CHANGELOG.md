@@ -45,6 +45,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Server Cache can be disabled under **Options -> System -> Advanced**.
 - `promoteserverconfig` saves the current isolated server profile as the global configuration.
 - `clearserverconfigs` clears all per-server configurations while preserving downloaded content.
+- Server Cache directories now use the direct `server-cache/<server-name>` layout without a version or endpoint hash.
 - New profiles default to `snaps 30`, `cl_maxpackets 125`, and `rate 30000` instead of the retail `20`, `30`, and `25000` values.
 
 ### Console and input
@@ -52,7 +53,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Windows mouse input uses Raw Input by default, bypassing the system's **Enhance pointer precision** acceleration without changing the Windows setting; **Raw Input Active** under **Options -> Advanced** can disable it.
 - The console key can be rebound from the options menu, including rebinding the backtick key itself.
 - **Record Demo** under **Options -> Miscellaneous** can bind one or two keys to start an auto-named demo and stop the active recording.
-- Demo playback can be started with either `demo <demoname>` or `playdemo <demoname>` and has direct controls for pause/play (**Space**), five-second rewind/forward (**Left/Right**), paused frame-step (**.**), and 1x/2x/4x/8x speed cycling (**F**). Its on-screen controls include a timestamped, mouse-draggable timeline and can be hidden with `cl_demoControlOverlay 0`.
+- Demo playback can be started with either `demo <demoname>` or `playdemo <demoname>`. `listdemos [moddir]` also discovers recordings inside Server Cache, and `playdemo <moddir> <demoname> [server-name]` loads their cached mod and map content. Playback has direct controls for pause/play (**Space**), five-second rewind/forward (**Left/Right**), paused frame-step (**.**), and 1x/2x/4x/8x speed cycling (**F**). Its on-screen controls include a timestamped, mouse-draggable timeline and can be hidden with `cl_demoControlOverlay 0`.
 - Native Linux/macOS clients support Ctrl-V or Command-V clipboard paste.
 - Ctrl-W deletes the previous console word and treats underscores as word delimiters.
 - Console scrollback is four times larger.

@@ -74,16 +74,25 @@ void coduomp_server_namespace_register_commands(void)
 }
 
 qboolean coduomp_server_namespace_activate(
-    const netadr_t *address, const char *serverName,
-    qboolean eligibleRemoteServer)
+    const char *serverName, qboolean eligibleRemoteServer)
 {
+    if (eligibleRemoteServer == qfalse)
+        return qfalse;
     if (coduomp_server_namespace_enabled() == qfalse) {
         return coduomp_server_namespace_provider.isActive() != qfalse
                    ? coduomp_server_namespace_deactivate()
                    : qfalse;
     }
     return coduomp_server_namespace_provider.activate(
-        address, serverName, eligibleRemoteServer);
+        serverName, eligibleRemoteServer);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: mount an explicitly selected server cache for
+ * offline demo playback without requiring a live server endpoint. */
+qboolean coduomp_server_namespace_activate_cached(
+    const char *serverName)
+{
+    return coduomp_server_namespace_provider.activateCached(serverName);
 }
 
 qboolean coduomp_server_namespace_deactivate(void)
@@ -114,6 +123,25 @@ int32_t coduomp_server_namespace_append_cached_mods(
         return 0;
     return coduomp_server_namespace_provider.appendCachedMods(
         listBuffer, bufferSize);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolve the user-facing mod/demo identity to one
+ * server cache while keeping the cache directory plumbing out of the command. */
+int32_t coduomp_server_namespace_resolve_cached_demo(
+    const char *modName, const char *demoFileName,
+    const char *serverName, char resolvedServer[MAX_QPATH],
+    char resolvedMod[FS_PACK_NAME_SIZE])
+{
+    return coduomp_server_namespace_provider.resolveCachedDemo(
+        modName, demoFileName, serverName, resolvedServer, resolvedMod);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: enumerate cached recordings through their
+ * user-facing server, mod, and demo names. */
+int32_t coduomp_server_namespace_list_cached_demos(
+    const char *modName)
+{
+    return coduomp_server_namespace_provider.listCachedDemos(modName);
 }
 
 const char *coduomp_server_namespace_state_root(

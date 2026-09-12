@@ -1689,6 +1689,9 @@ void CL_Init(void)
     /* NOT_FROM_ORIGINAL_SOURCE: accept the command spelling documented by
      * CL_PlayDemo_f while preserving the existing demo command. */
     Cmd_AddCommand("playdemo", CL_PlayDemo_f);
+    /* NOT_FROM_ORIGINAL_SOURCE: enumerate ordinary and server-cached demos in
+     * the same vocabulary accepted by the extended playback command. */
+    Cmd_AddCommand("listdemos", coduomp_ListDemos_f);
     /* NOT_FROM_ORIGINAL_SOURCE: expose bindable forms of the direct demo
      * playback controls. */
     Cmd_AddCommand("demopause", coduomp_DemoPause_f);
@@ -1769,6 +1772,7 @@ void CL_Shutdown(void)
     /* NOT_FROM_ORIGINAL_SOURCE: mirror the demo alias and playback command
      * registrations. */
     Cmd_RemoveCommand("playdemo");
+    Cmd_RemoveCommand("listdemos");
     Cmd_RemoveCommand("demopause");
     Cmd_RemoveCommand("demorewind");
     Cmd_RemoveCommand("demoforward");

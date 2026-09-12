@@ -613,6 +613,7 @@ void CL_ForwardToServer_f(void);
 void CL_Configstrings_f(void);
 void CL_Clientinfo_f(void);
 void CL_PlayDemo_f(void);
+void coduomp_ListDemos_f(void);
 void CL_Setenv_f(void);
 void CL_Reconnect_f(void);
 void CL_Connect_f(void);

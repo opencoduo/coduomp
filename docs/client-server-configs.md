@@ -5,12 +5,13 @@ to an eligible remote server. This prevents a server-specific name, sensitivity,
 binding, mod setting, or downloaded file from silently changing the normal
 client profile or another server's files.
 
-For each server endpoint, the client uses a directory below `fs_homepath` with
+For each server, the client uses a directory below `fs_homepath` with
 this layout:
 
 ```text
-server-cache/v1/<server-name>-<endpoint-id>/
+server-cache/<server-name>/
   state/<game>/uoconfig_mp.cfg
+  state/<game>/demos/*.dm_3
   content/<game>/...
 ```
 
@@ -29,7 +30,26 @@ path remains available.
 
 The main-screen Mods list also includes cached non-basegame directories that
 contain PK3s. Their labels use `server-name/mod`, while their launch paths
-remain scoped to the corresponding `server-cache/v1` content directory.
+remain scoped to the corresponding `server-cache` content directory.
+
+`listdemos [moddir]` lists recordings from the current filesystem and every
+server cache. A cached recording can be played without manually locating its
+server directory:
+
+```text
+playdemo <moddir> <demoname>
+```
+
+If the same mod and demo name exist under more than one server, the command
+prints the matching server names instead of choosing one. Select the intended
+recording explicitly with:
+
+```text
+playdemo <moddir> <demoname> "<server-name>"
+```
+
+The client mounts that server's cached content and state for playback, then
+restores the normal frontend filesystem when the demo ends.
 
 Server Cache is enabled by default. It can be changed from **Options → System
 → Advanced**. Disabling it prevents new connections from activating an

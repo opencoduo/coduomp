@@ -2,8 +2,6 @@
 #define CODUOMP_SERVER_NAMESPACE_H
 
 #include "client/engine/q_shared.h"
-#include "qcommon/net_types.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -18,13 +16,20 @@ extern "C" {
 void coduomp_server_namespace_reset_for_startup(void);
 void coduomp_server_namespace_register_commands(void);
 qboolean coduomp_server_namespace_activate(
-    const netadr_t *address, const char *serverName,
-    qboolean eligibleRemoteServer);
+    const char *serverName, qboolean eligibleRemoteServer);
+qboolean coduomp_server_namespace_activate_cached(
+    const char *serverName);
 qboolean coduomp_server_namespace_deactivate(void);
 qboolean coduomp_server_namespace_is_active(void);
 qboolean coduomp_server_namespace_cache_referenced_paks(void);
 int32_t coduomp_server_namespace_append_cached_mods(
     char *listBuffer, int32_t bufferSize);
+int32_t coduomp_server_namespace_resolve_cached_demo(
+    const char *modName, const char *demoFileName,
+    const char *serverName, char resolvedServer[MAX_QPATH],
+    char resolvedMod[FS_PACK_NAME_SIZE]);
+int32_t coduomp_server_namespace_list_cached_demos(
+    const char *modName);
 
 const char *coduomp_server_namespace_state_root(
     const char *ordinaryHomeRoot);

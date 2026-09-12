@@ -690,7 +690,7 @@ void CL_ParseGamestate(msg_t *message)
         serverDisplayName = advertisedName;
     const qboolean namespaceChanged =
         coduomp_server_namespace_activate(
-            &clc.serverAddress, serverDisplayName,
+            serverDisplayName,
             sv_running->integer == 0 &&
                     clc.demoPlayback == qfalse &&
                     cl_updateStarted == qfalse

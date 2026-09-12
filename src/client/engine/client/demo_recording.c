@@ -1,6 +1,7 @@
 #include "cgame.h"
 #include "console.h"
 
+#include "../filesystem/server_namespace.h"
 #include "../platform/crt_boundary.h"
 #include "qcommon/q_string.h"
 #include "../renderer/renderer_api.h"
@@ -1028,6 +1029,95 @@ void CL_ReadDemoMessage(void)
     CL_ParseServerMessage(&message);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: normalize the optional protocol suffix once for
+ * both ordinary and cached demo playback. */
+static qboolean coduomp_demo_build_playback_path(
+    const char *demoName, char demoFileName[CL_DEMO_FILENAME_CAPACITY],
+    char path[CL_DEMO_FILENAME_CAPACITY])
+{
+    char extension[CL_DEMO_EXTENSION_CAPACITY];
+    const int32_t extensionWritten = coduo_crt_snprintf(
+        extension, sizeof(extension), ".dm_%d", CL_DEMO_PROTOCOL_VERSION);
+    if (demoName == NULL || demoName[0] == '\0' || extensionWritten <= 0 ||
+        extensionWritten >= (int32_t)sizeof(extension)) {
+        return qfalse;
+    }
+
+    const size_t demoNameLength = strlen(demoName);
+    const size_t extensionLength = (size_t)extensionWritten;
+    int32_t fileNameWritten;
+    if (demoNameLength >= extensionLength &&
+        Q_stricmp(demoName + demoNameLength - extensionLength,
+                  extension) == 0) {
+        fileNameWritten = coduo_crt_snprintf(
+            demoFileName, CL_DEMO_FILENAME_CAPACITY, "%s", demoName);
+    } else {
+        fileNameWritten = coduo_crt_snprintf(
+            demoFileName, CL_DEMO_FILENAME_CAPACITY, "%s%s",
+            demoName, extension);
+    }
+    if (fileNameWritten <= 0 ||
+        fileNameWritten >= CL_DEMO_FILENAME_CAPACITY) {
+        return qfalse;
+    }
+
+    const int32_t pathWritten = coduo_crt_snprintf(
+        path, CL_DEMO_FILENAME_CAPACITY, "demos/%s", demoFileName);
+    return pathWritten > 0 && pathWritten < CL_DEMO_FILENAME_CAPACITY
+               ? qtrue : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: switch the filesystem to the selected cached mod
+ * before the demo gamestate loads its map and client module. Normal disconnect
+ * teardown restores the frontend filesystem when playback ends. */
+static void coduomp_demo_activate_cached_mod(
+    const char *serverName, const char *modName)
+{
+    CL_ShutdownAll();
+    Hunk_ClearToStart();
+    if (coduomp_server_namespace_activate_cached(serverName) == qfalse) {
+        Com_Error(ERR_DROP, "Could not activate Server Cache for %s", serverName);
+    }
+
+    Cvar_Set("fs_game", modName);
+    FS_PureServerSetLoadedPaks("", "");
+    FS_PureServerSetReferencedPaks("", "");
+    FS_Restart(0);
+    cl_connectedToPureServer = qfalse;
+    CL_StartHunkUsers();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: list ordinary demos visible in the current
+ * filesystem plus every recording retained under Server Cache. */
+void coduomp_ListDemos_f(void)
+{
+    if (Cmd_Argc() > 2) {
+        Com_Printf("listdemos [moddir]\n");
+        return;
+    }
+
+    const char *const modFilter = Cmd_Argc() == 2 ? Cmd_Argv(1) : NULL;
+    int32_t ordinaryCount = 0;
+    Com_Printf("Available demos:\n");
+    if (coduomp_server_namespace_is_active() == qfalse &&
+        (modFilter == NULL ||
+         Q_stricmp(modFilter, fs_currentGameDir) == 0)) {
+        char **const ordinaryDemos = FS_ListFiles(
+            "demos", "dm_3", &ordinaryCount);
+        for (int32_t index = 0; index < ordinaryCount; ++index) {
+            Com_Printf("  %s  (current %s filesystem)\n",
+                       ordinaryDemos[index], fs_currentGameDir);
+        }
+        FS_FreeFileList(ordinaryDemos);
+    }
+
+    const int32_t cachedCount =
+        coduomp_server_namespace_list_cached_demos(modFilter);
+    const int32_t totalCount = ordinaryCount + cachedCount;
+    Com_Printf("%d demo%s\n", totalCount,
+               totalCount == 1 ? "" : "s");
+}
+
 /* Source: CoDUOMP.exe 0x004101d0..0x004103d0.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004101d0_004103d1.mcode.
  * Name and no-argument signature: exact same-module Mac symbol
@@ -1037,8 +1127,12 @@ void CL_ReadDemoMessage(void)
  * primed state or demo completion disconnects it. */
 void CL_PlayDemo_f(void)
 {
-    if (Cmd_Argc() != 2) {
+    const int32_t argumentCount = Cmd_Argc();
+    /* NOT_FROM_ORIGINAL_SOURCE: extend the recovered one-name command with a
+     * cached mod/demo locator and optional server disambiguator. */
+    if (argumentCount < 2 || argumentCount > 4) {
         Com_Printf("playdemo <demoname>\n");
+        Com_Printf("playdemo <moddir> <demoname> [server-name]\n");
         return;
     }
 
@@ -1047,29 +1141,53 @@ void CL_PlayDemo_f(void)
         return;
     }
 
+    const char *const demoArgument =
+        Cmd_Argv(argumentCount == 2 ? 1 : 2);
+    if (strlen(demoArgument) >= CL_DEMO_FILENAME_CAPACITY) {
+        Com_Printf("Demo name is too long or invalid.\n");
+        return;
+    }
+    char demoName[CL_DEMO_FILENAME_CAPACITY];
+    Q_strncpyz(demoName, demoArgument, sizeof(demoName));
+    char demoFileName[CL_DEMO_FILENAME_CAPACITY];
+    char path[CL_DEMO_FILENAME_CAPACITY];
+    if (coduomp_demo_build_playback_path(
+            demoName, demoFileName, path) == qfalse) {
+        Com_Printf("Demo name is too long or invalid.\n");
+        return;
+    }
+
+    char resolvedServer[MAX_QPATH];
+    char resolvedMod[FS_PACK_NAME_SIZE];
+    if (argumentCount >= 3) {
+        const char *const modName = Cmd_Argv(1);
+        const char *const serverName =
+            argumentCount == 4 ? Cmd_Argv(3) : "";
+        const int32_t matchCount =
+            coduomp_server_namespace_resolve_cached_demo(
+                modName, demoFileName, serverName,
+                resolvedServer, resolvedMod);
+        if (matchCount == 0) {
+            Com_Printf("No cached demo matches %s %s%s%s.\n",
+                       modName, demoName,
+                       serverName[0] != '\0' ? " on " : "",
+                       serverName);
+            return;
+        }
+        if (matchCount > 1) {
+            Com_Printf(
+                "Specify the server: playdemo %s %s \"<server-name>\"\n",
+                modName, demoName);
+            return;
+        }
+    }
+
     CL_Disconnect(qtrue);
     /* NOT_FROM_ORIGINAL_SOURCE: a manually frozen prior demo must not carry
      * its timing or audio pause into newly started playback. */
     coduomp_DemoPlaybackReset();
-
-    const char *const demoName = Cmd_Argv(1);
-    char extension[CL_DEMO_EXTENSION_CAPACITY];
-    char path[CL_DEMO_FILENAME_CAPACITY];
-
-    Com_sprintf(extension, sizeof(extension), ".dm_%d",
-                CL_DEMO_PROTOCOL_VERSION);
-
-    /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
-    const size_t demoNameLength = strlen(demoName);
-    const size_t extensionLength = strlen(extension);
-    if (demoNameLength >= extensionLength &&
-        Q_stricmp(demoName + demoNameLength - extensionLength,
-                  extension) == 0) {
-        Com_sprintf(path, sizeof(path), "demos/%s", demoName);
-    } else {
-        Com_sprintf(path, sizeof(path), "demos/%s.dm_%d",
-                    demoName, CL_DEMO_PROTOCOL_VERSION);
-    }
+    if (argumentCount >= 3)
+        coduomp_demo_activate_cached_mod(resolvedServer, resolvedMod);
 
     (void)FS_FOpenFileRead(path, &clc.demoFile, qtrue);
     if (clc.demoFile == 0) {
