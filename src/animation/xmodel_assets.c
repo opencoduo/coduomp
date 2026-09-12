@@ -111,6 +111,15 @@ typedef struct coduo_xmodel_validation_stream_s {
     const uint8_t *end;
 } coduo_xmodel_validation_stream_t;
 
+/* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): identify whether part-state
+ * bytes follow all collision records or each corresponding collision record.
+ * Both layouts are emitted by stock-compatible XModel exporters. */
+typedef enum coduo_xmodel_parts_layout_e {
+    CODUO_XMODEL_PARTS_LAYOUT_INVALID,
+    CODUO_XMODEL_PARTS_LAYOUT_TRAILING_STATE,
+    CODUO_XMODEL_PARTS_LAYOUT_INLINE_STATE
+} coduo_xmodel_parts_layout_t;
+
 static size_t coduo_xmodel_validation_remaining(
     const coduo_xmodel_validation_stream_t *stream)
 {
@@ -360,11 +369,11 @@ static qboolean coduo_xmodel_validate_surfs_file(
     return qtrue;
 }
 
-static qboolean coduo_xmodel_validate_parts_file(
+static coduo_xmodel_parts_layout_t coduo_xmodel_validate_parts_file(
     const uint8_t *data, size_t size)
 {
     if (data == NULL) {
-        return qfalse;
+        return CODUO_XMODEL_PARTS_LAYOUT_INVALID;
     }
     coduo_xmodel_validation_stream_t stream = {data, data + size};
     int16_t version;
@@ -375,13 +384,13 @@ static qboolean coduo_xmodel_validate_parts_file(
         coduo_xmodel_validation_i16(&stream, &childPartCount) == qfalse ||
         coduo_xmodel_validation_i16(&stream, &rootPartCount) == qfalse ||
         childPartCount < 0 || rootPartCount < 0) {
-        return qfalse;
+        return CODUO_XMODEL_PARTS_LAYOUT_INVALID;
     }
 
     const int32_t totalPartCount =
         (int32_t)childPartCount + (int32_t)rootPartCount;
     if (totalPartCount <= 0 || totalPartCount > XMODEL_MAX_BONES) {
-        return qfalse;
+        return CODUO_XMODEL_PARTS_LAYOUT_INVALID;
     }
 
     for (int32_t partIndex = rootPartCount;
@@ -392,20 +401,47 @@ static qboolean coduo_xmodel_validate_parts_file(
             coduo_xmodel_validation_take(
                 &stream, sizeof(vec3_t) + 3u * sizeof(int16_t), NULL) ==
                 qfalse) {
-            return qfalse;
+            return CODUO_XMODEL_PARTS_LAYOUT_INVALID;
         }
     }
 
+    const coduo_xmodel_validation_stream_t partRecords = stream;
+    qboolean trailingStateValid = qtrue;
     for (int32_t partIndex = 0;
          partIndex < totalPartCount; ++partIndex) {
         if (coduo_xmodel_validation_c_string(&stream, NULL) == qfalse ||
             coduo_xmodel_validation_take(
                 &stream, 2u * sizeof(vec3_t), NULL) == qfalse) {
-            return qfalse;
+            trailingStateValid = qfalse;
+            break;
         }
     }
-    return coduo_xmodel_validation_take(
-        &stream, (size_t)totalPartCount, NULL);
+    if (trailingStateValid != qfalse &&
+        coduo_xmodel_validation_take(
+            &stream, (size_t)totalPartCount, NULL) != qfalse) {
+        return CODUO_XMODEL_PARTS_LAYOUT_TRAILING_STATE;
+    }
+
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): some legitimate
+     * exporters place each state byte immediately after that part's bounds.
+     * Require this alternate interpretation to consume the file exactly so
+     * malformed canonical streams cannot gain a permissive fallback. */
+    stream = partRecords;
+    for (int32_t partIndex = 0;
+         partIndex < totalPartCount; ++partIndex) {
+        uint8_t partState;
+        if (coduo_xmodel_validation_c_string(&stream, NULL) == qfalse ||
+            coduo_xmodel_validation_take(
+                &stream, 2u * sizeof(vec3_t), NULL) == qfalse ||
+            coduo_xmodel_validation_u8(&stream, &partState) == qfalse) {
+            return CODUO_XMODEL_PARTS_LAYOUT_INVALID;
+        }
+        (void)partState;
+    }
+    if (coduo_xmodel_validation_remaining(&stream) != 0) {
+        return CODUO_XMODEL_PARTS_LAYOUT_INVALID;
+    }
+    return CODUO_XMODEL_PARTS_LAYOUT_INLINE_STATE;
 }
 
 static qboolean coduo_xmodel_validate_model_file(
@@ -1990,10 +2026,12 @@ fileData_t *XModelPartsPrecache(const char *name,
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate the complete parts stream, count
-     * domains, links, names, collision records, and state tail before the
-     * retained pointer-only parser. */
-    if (coduo_xmodel_validate_parts_file(
-            fileBuffer, (size_t)fileLength) == qfalse) {
+     * domains, links, names, collision records, and supported state layout
+     * before the retained pointer-only parser. */
+    const coduo_xmodel_parts_layout_t partsLayout =
+        coduo_xmodel_validate_parts_file(
+            fileBuffer, (size_t)fileLength);
+    if (partsLayout == CODUO_XMODEL_PARTS_LAYOUT_INVALID) {
         FS_FreeFile(fileBuffer);
         Com_Error(ERR_DROP,
                   "\x15" "Malformed xmodelparts asset '%s'", name);
@@ -2158,10 +2196,16 @@ fileData_t *XModelPartsPrecache(const char *name,
              (long double)deltaY * (long double)deltaY) +
             (long double)deltaZ * (long double)deltaZ);
 #endif
+
+        if (partsLayout == CODUO_XMODEL_PARTS_LAYOUT_INLINE_STATE) {
+            parts->partStateIndices[partIndex] = *cursor++;
+        }
     }
 
-    memcpy(parts->partStateIndices, cursor,
-           (size_t)(uint32_t)(int32_t)totalPartCount);
+    if (partsLayout == CODUO_XMODEL_PARTS_LAYOUT_TRAILING_STATE) {
+        memcpy(parts->partStateIndices, cursor,
+               (size_t)(uint32_t)(int32_t)totalPartCount);
+    }
     FS_FreeFile(fileBuffer);
     entry->data.xmodelParts = parts;
     entry->freeData = XModelPartsFree;
