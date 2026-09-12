@@ -258,8 +258,10 @@ void R_Register(void)
         ri.Cvar_Get("r_ati_fragment_shader", "1", CVAR_LATCH);
     r_vbo_smc_static_draw = ri.Cvar_Get(
         "r_vbo_smc_static_draw", "1", CVAR_ARCHIVE | CVAR_LATCH);
-    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): default to the reusable dynamic-VBO upload path while preserving user selection. */
-    r_vbo_stream_draw = ri.Cvar_Get("r_vbo_stream_draw", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): select the platform upload default while preserving user selection. */
+    r_vbo_stream_draw = ri.Cvar_Get(
+        "r_vbo_stream_draw", CODUOMP_VBO_STREAM_DRAW_DEFAULT,
+        CVAR_ARCHIVE | CVAR_LATCH);
     r_vbo_interleave = ri.Cvar_Get(
         "r_vbo_interleave", CODUOMP_VBO_INTERLEAVE_DEFAULT,
         CVAR_ARCHIVE | CVAR_LATCH);

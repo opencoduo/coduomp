@@ -105,6 +105,8 @@ static void coduomp_apply_apple_silicon_first_run_profile(void)
         { "r_depthbits", "24" },
         { "r_stencilbits", "8" },
         { "r_ext_compressed_textures", "0" },
+        { "r_vbo_stream_draw", "1" },
+        { "r_vbo_interleave", "1" },
         { "r_vertexLight", "0" },
         { "r_lodbias", "0" },
         { "r_lodscale", "0" },

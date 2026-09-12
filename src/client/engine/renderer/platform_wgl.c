@@ -2065,9 +2065,10 @@ void GLW_ApplyRendererAutoConfig(void)
 #if defined(__APPLE__) && defined(__aarch64__)
         /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): retail renderer
          * profiles predate Apple's Metal-backed OpenGL implementation. Keep
-         * auto-configuration on the interleaved upload path required by this
-         * driver instead of restoring the platform-inappropriate stock value. */
-        if (cvar == r_vbo_interleave)
+         * auto-configuration on its paired streamed/interleaved upload path. */
+        if (cvar == r_vbo_stream_draw)
+            configuredValue = CODUOMP_VBO_STREAM_DRAW_DEFAULT;
+        else if (cvar == r_vbo_interleave)
             configuredValue = CODUOMP_VBO_INTERLEAVE_DEFAULT;
 #endif
         ri.Cvar_Set(cvar->name, configuredValue);

@@ -5,9 +5,11 @@
 
 #if defined(__APPLE__) && defined(__aarch64__)
 /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): Apple's Metal-backed OpenGL
- * renderer stalls on the separate-array BufferSubData upload path. */
+ * renderer uses the paired streamed/interleaved VBO upload path. */
+#define CODUOMP_VBO_STREAM_DRAW_DEFAULT "1"
 #define CODUOMP_VBO_INTERLEAVE_DEFAULT "1"
 #else
+#define CODUOMP_VBO_STREAM_DRAW_DEFAULT "0"
 #define CODUOMP_VBO_INTERLEAVE_DEFAULT "0"
 #endif
 
