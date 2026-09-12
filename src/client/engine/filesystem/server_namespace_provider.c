@@ -776,10 +776,25 @@ typedef struct coduomp_namespace_demo_scan_s {
     const char *modFilter;
     const char *demoFilter;
     qboolean printMatches;
+    coduomp_cached_demo_callback_t callback;
+    void *callbackContext;
     char *resolvedServer;
     char *resolvedMod;
     int32_t matchCount;
+    qboolean stopped;
 } coduomp_namespace_demo_scan_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE: retain loose-demo recency while the cache tree is
+ * enumerated so listdemos can order recordings independently of traversal. */
+static int64_t coduomp_namespace_demo_modification_time(
+    const char *demoPath)
+{
+    struct stat status;
+
+    return stat(demoPath, &status) == 0
+               ? (int64_t)status.st_mtime
+               : 0;
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: keep the conventional storage-only mods prefix
  * out of console identities while retaining the complete path for fs_game. */
@@ -801,6 +816,9 @@ static void coduomp_namespace_scan_cached_demo_tree(
     const char *serverName, const char *directoryPath,
     const char *relativePath, coduomp_namespace_demo_scan_t *scan)
 {
+    if (scan->stopped != qfalse)
+        return;
+
     const char *const userModPath =
         coduomp_namespace_user_mod_path(relativePath);
     if (relativePath[0] != '\0' &&
@@ -837,10 +855,18 @@ static void coduomp_namespace_scan_cached_demo_tree(
                     Com_Printf("  %s %s  (%s)\n", userModPath,
                                demoFileName, serverName);
                 }
+                if (scan->callback != NULL &&
+                    scan->callback(
+                        userModPath, demoFileName, serverName,
+                        coduomp_namespace_demo_modification_time(demoPath),
+                        scan->callbackContext) == qfalse) {
+                    scan->stopped = qtrue;
+                    break;
+                }
             }
             Sys_FreeFileList(demoFiles);
         }
-        if (scan->modFilter != NULL)
+        if (scan->modFilter != NULL || scan->stopped != qfalse)
             return;
     }
 
@@ -848,6 +874,8 @@ static void coduomp_namespace_scan_cached_demo_tree(
     char **const directories = Sys_ListFiles(
         directoryPath, NULL, NULL, &directoryCount, qtrue);
     for (int32_t index = 0; index < directoryCount; ++index) {
+        if (scan->stopped != qfalse)
+            break;
         if (Q_stricmp(directories[index], "demos") == 0)
             continue;
 
@@ -879,6 +907,7 @@ static void coduomp_namespace_scan_cached_demo_tree(
 static int32_t coduomp_namespace_scan_cached_demos(
     const char *modFilter, const char *demoFilter,
     const char *serverFilter, qboolean printMatches,
+    coduomp_cached_demo_callback_t callback, void *callbackContext,
     char resolvedServer[MAX_QPATH],
     char resolvedMod[FS_PACK_NAME_SIZE])
 {
@@ -887,13 +916,15 @@ static int32_t coduomp_namespace_scan_cached_demos(
         return 0;
 
     coduomp_namespace_demo_scan_t scan = {
-        modFilter, demoFilter, printMatches,
-        resolvedServer, resolvedMod, 0};
+        modFilter, demoFilter, printMatches, callback, callbackContext,
+        resolvedServer, resolvedMod, 0, qfalse};
     int32_t namespaceCount = 0;
     char **const namespaces = Sys_ListFiles(
         cacheRoot, NULL, NULL, &namespaceCount, qtrue);
     for (int32_t namespaceIndex = 0;
          namespaceIndex < namespaceCount; ++namespaceIndex) {
+        if (scan.stopped != qfalse)
+            break;
         const char *const namespaceName = namespaces[namespaceIndex];
         char namespacePath[MAX_OSPATH];
         if (coduomp_namespace_directory_name_is_safe(namespaceName) == qfalse ||
@@ -941,29 +972,32 @@ static int32_t coduomp_compat_server_namespace_resolve_cached_demo(
 
     const int32_t matchCount = coduomp_namespace_scan_cached_demos(
         modName, demoFileName, serverFilter, qfalse,
-        resolvedServer, resolvedMod);
+        NULL, NULL, resolvedServer, resolvedMod);
     if (matchCount > 1) {
         Com_Printf("Cached demo matches multiple servers:\n");
         (void)coduomp_namespace_scan_cached_demos(
-            modName, demoFileName, serverFilter, qtrue, NULL, NULL);
+            modName, demoFileName, serverFilter, qtrue,
+            NULL, NULL, NULL, NULL);
         resolvedServer[0] = '\0';
         resolvedMod[0] = '\0';
     }
     return matchCount;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: list cached demos in the same mod/demo/server
+/* NOT_FROM_ORIGINAL_SOURCE: visit cached demos in the same mod/demo/server
  * vocabulary accepted by the playback command. */
-static int32_t coduomp_compat_server_namespace_list_cached_demos(
-    const char *modName)
+static int32_t coduomp_compat_server_namespace_visit_cached_demos(
+    const char *modName, coduomp_cached_demo_callback_t callback,
+    void *context)
 {
-    if (modName != NULL &&
+    if (callback == NULL ||
+        (modName != NULL &&
         (modName[0] == '\0' || strlen(modName) >= FS_PACK_NAME_SIZE ||
-         coduo_compat_path_is_safe_relative(modName) == qfalse)) {
+         coduo_compat_path_is_safe_relative(modName) == qfalse))) {
         return 0;
     }
     return coduomp_namespace_scan_cached_demos(
-        modName, NULL, NULL, qtrue, NULL, NULL);
+        modName, NULL, NULL, qfalse, callback, context, NULL, NULL);
 }
 
 typedef struct coduomp_namespace_mod_list_s {
@@ -1710,7 +1744,7 @@ const coduomp_server_namespace_provider_t
         coduomp_compat_server_namespace_cache_referenced_paks,
         coduomp_compat_server_namespace_append_cached_mods,
         coduomp_compat_server_namespace_resolve_cached_demo,
-        coduomp_compat_server_namespace_list_cached_demos,
+        coduomp_compat_server_namespace_visit_cached_demos,
         coduomp_compat_server_namespace_root,
         coduomp_compat_server_namespace_allows,
         coduomp_compat_server_namespace_promote_config,

@@ -1,14 +1,18 @@
 #include "cgame.h"
 #include "console.h"
 
+#include "filesystem/filesystem.h"
 #include "../filesystem/server_namespace.h"
 #include "../platform/crt_boundary.h"
 #include "qcommon/q_string.h"
 #include "../renderer/renderer_api.h"
 
+#include <ctype.h>
 #include <limits.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 enum {
     CL_DEMO_BASE_NAME_CAPACITY = 64,
@@ -52,6 +56,22 @@ typedef struct coduomp_demo_playback_state_s {
 
 static cvar_t *coduomp_demoPlaybackSpeed;
 static coduomp_demo_playback_state_t coduomp_demoPlaybackState;
+
+typedef struct coduomp_demo_list_entry_s {
+    char modName[FS_PACK_NAME_SIZE];
+    char demoFileName[CL_DEMO_FILENAME_CAPACITY];
+    char sourceName[MAX_QPATH];
+    int64_t modificationTime;
+    int64_t numberSuffix;
+    qboolean hasNumberSuffix;
+} coduomp_demo_list_entry_t;
+
+typedef struct coduomp_demo_list_s {
+    coduomp_demo_list_entry_t *entries;
+    size_t count;
+    size_t capacity;
+    qboolean allocationFailed;
+} coduomp_demo_list_t;
 
 /* Original temporary base-name storage at 0x008ce960. It is only used while
  * CL_Record_f chooses and opens a demo, then copied into clc.demoName. */
@@ -1123,8 +1143,179 @@ static void coduomp_demo_activate_cached_mod(
     CL_StartHunkUsers();
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: extract the last decimal run before the demo
+ * extension as a recency fallback for files without comparable timestamps. */
+static qboolean coduomp_demo_list_number_suffix(
+    const char *demoFileName, int64_t *numberOut)
+{
+    const char *const extension = strrchr(demoFileName, '.');
+    const char *const numberEnd = extension != NULL
+                                      ? extension
+                                      : demoFileName + strlen(demoFileName);
+    const char *numberStart = numberEnd;
+
+    while (numberStart > demoFileName &&
+           isdigit((unsigned char)numberStart[-1]) != 0) {
+        --numberStart;
+    }
+    if (numberStart == numberEnd)
+        return qfalse;
+
+    int64_t number = 0;
+    for (const char *digit = numberStart; digit < numberEnd; ++digit) {
+        const int32_t value = *digit - '0';
+        if (number > (INT64_MAX - value) / 10) {
+            number = INT64_MAX;
+            break;
+        }
+        number = number * 10 + value;
+    }
+    *numberOut = number;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: keep the conventional cache-only mods prefix out
+ * of the group heading so ordinary and cached copies share one mod identity. */
+static const char *coduomp_demo_list_user_mod_name(const char *modName)
+{
+    static const char modsPrefix[] = "mods/";
+
+    return Q_stricmpn(modName, modsPrefix, sizeof(modsPrefix) - 1u) == 0 &&
+                   modName[sizeof(modsPrefix) - 1u] != '\0'
+               ? modName + sizeof(modsPrefix) - 1u
+               : modName;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: grow the temporary unified demo catalog used only
+ * while the listdemos command formats its sorted output. */
+static qboolean coduomp_demo_list_append(
+    coduomp_demo_list_t *list, const char *modName,
+    const char *demoFileName, const char *sourceName,
+    int64_t modificationTime)
+{
+    if (list->count == list->capacity) {
+        const size_t newCapacity = list->capacity == 0
+                                       ? 32u
+                                       : list->capacity * 2u;
+        if (newCapacity < list->capacity ||
+            newCapacity > SIZE_MAX / sizeof(*list->entries)) {
+            list->allocationFailed = qtrue;
+            return qfalse;
+        }
+        coduomp_demo_list_entry_t *const entries =
+            (coduomp_demo_list_entry_t *)realloc(
+                list->entries, newCapacity * sizeof(*list->entries));
+        if (entries == NULL) {
+            list->allocationFailed = qtrue;
+            return qfalse;
+        }
+        list->entries = entries;
+        list->capacity = newCapacity;
+    }
+
+    coduomp_demo_list_entry_t *const entry = &list->entries[list->count++];
+    Q_strncpyz(entry->modName, modName, sizeof(entry->modName));
+    Q_strncpyz(entry->demoFileName, demoFileName,
+               sizeof(entry->demoFileName));
+    Q_strncpyz(entry->sourceName, sourceName, sizeof(entry->sourceName));
+    entry->modificationTime = modificationTime;
+    entry->hasNumberSuffix = coduomp_demo_list_number_suffix(
+        demoFileName, &entry->numberSuffix);
+    if (entry->hasNumberSuffix == qfalse)
+        entry->numberSuffix = 0;
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: adapt server-cache enumeration to the temporary
+ * unified catalog without leaking its allocation policy into the provider. */
+static qboolean coduomp_demo_list_append_cached(
+    const char *modName, const char *demoFileName,
+    const char *serverName, int64_t modificationTime,
+    void *context)
+{
+    return coduomp_demo_list_append(
+        (coduomp_demo_list_t *)context, modName, demoFileName,
+        serverName, modificationTime);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: obtain recency for ordinary loose recordings
+ * when present, while allowing catalog and PK3 entries to use the suffix
+ * fallback. */
+static int64_t coduomp_demo_list_ordinary_modification_time(
+    const char *demoFileName)
+{
+    char qpath[CL_DEMO_FILENAME_CAPACITY];
+    char osPath[MAX_OSPATH];
+    struct stat status;
+
+    const int32_t written = coduo_crt_snprintf(
+        qpath, sizeof(qpath), "demos/%s", demoFileName);
+    if (written <= 0 || written >= (int32_t)sizeof(qpath))
+        return 0;
+
+    const char *roots[2] = {fs_homepath->string, fs_basepath->string};
+    for (size_t index = 0; index < 2u; ++index) {
+        if (strlen(roots[index]) + strlen(fs_currentGameDir) +
+                strlen(qpath) + 4u >
+            sizeof(osPath)) {
+            continue;
+        }
+        FS_BuildOSPath(
+            roots[index], fs_currentGameDir, qpath, osPath);
+        if (stat(osPath, &status) == 0 && S_ISREG(status.st_mode))
+            return (int64_t)status.st_mtime;
+    }
+    return 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: group case-insensitively by user-visible mod,
+ * then order each group by timestamp and numbered-name recency. */
+static int coduomp_demo_list_compare(const void *leftValue,
+                                     const void *rightValue)
+{
+    const coduomp_demo_list_entry_t *const left =
+        (const coduomp_demo_list_entry_t *)leftValue;
+    const coduomp_demo_list_entry_t *const right =
+        (const coduomp_demo_list_entry_t *)rightValue;
+    int comparison = Q_stricmp(left->modName, right->modName);
+
+    if (comparison != 0)
+        return comparison;
+    if ((left->modificationTime != 0) !=
+        (right->modificationTime != 0)) {
+        return left->modificationTime != 0 ? -1 : 1;
+    }
+    if (left->modificationTime != right->modificationTime) {
+        return left->modificationTime > right->modificationTime ? -1 : 1;
+    }
+    if (left->hasNumberSuffix != qfalse &&
+        right->hasNumberSuffix != qfalse &&
+        left->numberSuffix != right->numberSuffix) {
+        return left->numberSuffix > right->numberSuffix ? -1 : 1;
+    }
+    if ((left->hasNumberSuffix != qfalse) !=
+        (right->hasNumberSuffix != qfalse)) {
+        return left->hasNumberSuffix != qfalse ? -1 : 1;
+    }
+
+    comparison = Q_stricmp(right->demoFileName, left->demoFileName);
+    if (comparison != 0)
+        return comparison;
+    comparison = Q_stricmp(left->sourceName, right->sourceName);
+    if (comparison != 0)
+        return comparison;
+    comparison = strcmp(left->modName, right->modName);
+    if (comparison != 0)
+        return comparison;
+    comparison = strcmp(left->demoFileName, right->demoFileName);
+    return comparison != 0
+               ? comparison
+               : strcmp(left->sourceName, right->sourceName);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: list ordinary demos visible in the current
- * filesystem plus every recording retained under Server Cache. */
+ * filesystem plus every recording retained under Server Cache, grouped by
+ * mod name and ordered newest-first within each group. */
 void coduomp_ListDemos_f(void)
 {
     if (Cmd_Argc() > 2) {
@@ -1133,25 +1324,59 @@ void coduomp_ListDemos_f(void)
     }
 
     const char *const modFilter = Cmd_Argc() == 2 ? Cmd_Argv(1) : NULL;
+    coduomp_demo_list_t list = {0};
     int32_t ordinaryCount = 0;
-    Com_Printf("Available demos:\n");
     if (coduomp_server_namespace_is_active() == qfalse &&
         (modFilter == NULL ||
          Q_stricmp(modFilter, fs_currentGameDir) == 0)) {
         char **const ordinaryDemos = FS_ListFiles(
             "demos", "dm_3", &ordinaryCount);
         for (int32_t index = 0; index < ordinaryCount; ++index) {
-            Com_Printf("  %s  (current %s filesystem)\n",
-                       ordinaryDemos[index], fs_currentGameDir);
+            if (coduomp_demo_list_append(
+                    &list,
+                    coduomp_demo_list_user_mod_name(fs_currentGameDir),
+                    ordinaryDemos[index],
+                    "current filesystem",
+                    coduomp_demo_list_ordinary_modification_time(
+                        ordinaryDemos[index])) == qfalse) {
+                break;
+            }
         }
         FS_FreeFileList(ordinaryDemos);
     }
 
-    const int32_t cachedCount =
-        coduomp_server_namespace_list_cached_demos(modFilter);
-    const int32_t totalCount = ordinaryCount + cachedCount;
+    if (list.allocationFailed == qfalse) {
+        (void)coduomp_server_namespace_visit_cached_demos(
+            modFilter, coduomp_demo_list_append_cached, &list);
+    }
+    if (list.allocationFailed != qfalse) {
+        free(list.entries);
+        Com_Printf("Could not list demos: out of memory.\n");
+        return;
+    }
+
+    if (list.count > 1u) {
+        qsort(list.entries, list.count, sizeof(*list.entries),
+              coduomp_demo_list_compare);
+    }
+
+    Com_Printf("Available demos:\n");
+    const char *previousMod = NULL;
+    for (size_t index = 0; index < list.count; ++index) {
+        const coduomp_demo_list_entry_t *const entry = &list.entries[index];
+        if (previousMod == NULL ||
+            Q_stricmp(previousMod, entry->modName) != 0) {
+            Com_Printf("%s:\n", entry->modName);
+            previousMod = entry->modName;
+        }
+        Com_Printf("  %s  (%s)\n", entry->demoFileName,
+                   entry->sourceName);
+    }
+
+    const int32_t totalCount = (int32_t)list.count;
     Com_Printf("%d demo%s\n", totalCount,
                totalCount == 1 ? "" : "s");
+    free(list.entries);
 }
 
 /* Source: CoDUOMP.exe 0x004101d0..0x004103d0.

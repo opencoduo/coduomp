@@ -28,8 +28,13 @@ int32_t coduomp_server_namespace_resolve_cached_demo(
     const char *modName, const char *demoFileName,
     const char *serverName, char resolvedServer[MAX_QPATH],
     char resolvedMod[FS_PACK_NAME_SIZE]);
-int32_t coduomp_server_namespace_list_cached_demos(
-    const char *modName);
+typedef qboolean (*coduomp_cached_demo_callback_t)(
+    const char *modName, const char *demoFileName,
+    const char *serverName, int64_t modificationTime,
+    void *context);
+int32_t coduomp_server_namespace_visit_cached_demos(
+    const char *modName, coduomp_cached_demo_callback_t callback,
+    void *context);
 
 const char *coduomp_server_namespace_root(
     const char *ordinaryHomeRoot);

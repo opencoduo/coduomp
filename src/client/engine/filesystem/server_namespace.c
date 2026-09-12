@@ -136,12 +136,14 @@ int32_t coduomp_server_namespace_resolve_cached_demo(
         modName, demoFileName, serverName, resolvedServer, resolvedMod);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: enumerate cached recordings through their
- * user-facing server, mod, and demo names. */
-int32_t coduomp_server_namespace_list_cached_demos(
-    const char *modName)
+/* NOT_FROM_ORIGINAL_SOURCE: enumerate cached recordings and their timestamps
+ * without exposing the server-cache directory hierarchy to the caller. */
+int32_t coduomp_server_namespace_visit_cached_demos(
+    const char *modName, coduomp_cached_demo_callback_t callback,
+    void *context)
 {
-    return coduomp_server_namespace_provider.listCachedDemos(modName);
+    return coduomp_server_namespace_provider.visitCachedDemos(
+        modName, callback, context);
 }
 
 const char *coduomp_server_namespace_root(

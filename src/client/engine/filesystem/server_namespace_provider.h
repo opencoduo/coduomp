@@ -16,7 +16,9 @@ typedef struct coduomp_server_namespace_provider_s {
         const char *modName, const char *demoFileName,
         const char *serverName, char resolvedServer[MAX_QPATH],
         char resolvedMod[FS_PACK_NAME_SIZE]);
-    int32_t (*listCachedDemos)(const char *modName);
+    int32_t (*visitCachedDemos)(
+        const char *modName, coduomp_cached_demo_callback_t callback,
+        void *context);
     const char *(*root)(const char *ordinaryHomeRoot);
     qboolean (*allowsSearchpath)(const searchpath_t *searchpath);
     void (*promoteCurrentConfig)(void);
