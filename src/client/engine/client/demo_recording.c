@@ -3,6 +3,7 @@
 
 #include "filesystem/filesystem.h"
 #include "../filesystem/server_namespace.h"
+#include "filesystem/filesystem_path_security.h"
 #include "../platform/crt_boundary.h"
 #include "qcommon/q_string.h"
 #include "../renderer/renderer_api.h"
@@ -58,12 +59,13 @@ static cvar_t *coduomp_demoPlaybackSpeed;
 static coduomp_demo_playback_state_t coduomp_demoPlaybackState;
 
 typedef struct coduomp_demo_list_entry_s {
-    char modName[FS_PACK_NAME_SIZE];
+    char modFolder[FS_PACK_NAME_SIZE];
     char demoFileName[CL_DEMO_FILENAME_CAPACITY];
     char sourceName[MAX_QPATH];
     int64_t modificationTime;
     int64_t numberSuffix;
     qboolean hasNumberSuffix;
+    qboolean serverScoped;
 } coduomp_demo_list_entry_t;
 
 typedef struct coduomp_demo_list_s {
@@ -1143,6 +1145,76 @@ static void coduomp_demo_activate_cached_mod(
     CL_StartHunkUsers();
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: map the command's prefix-free mod folder to its
+ * ordinary on-disk fs_game path. */
+static qboolean coduomp_demo_build_ordinary_mod_path(
+    const char *modFolder, char modPath[FS_PACK_NAME_SIZE])
+{
+    static const char modsPrefix[] = "mods/";
+    const char *const userModFolder =
+        Q_stricmpn(modFolder, modsPrefix, sizeof(modsPrefix) - 1u) == 0
+            ? modFolder + sizeof(modsPrefix) - 1u
+            : modFolder;
+    if (userModFolder[0] == '\0' ||
+        coduo_compat_path_is_safe_relative(userModFolder) == qfalse) {
+        return qfalse;
+    }
+
+    const int32_t written = coduo_crt_snprintf(
+        modPath, FS_PACK_NAME_SIZE, "mods/%s", userModFolder);
+    return written > 0 && written < FS_PACK_NAME_SIZE ? qtrue : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: test an unmounted ordinary mod for the requested
+ * loose recording without changing the active filesystem. */
+static qboolean coduomp_demo_resolve_ordinary_mod(
+    const char *modFolder, const char *demoFileName,
+    char resolvedMod[FS_PACK_NAME_SIZE])
+{
+    char modPath[FS_PACK_NAME_SIZE];
+    char qpath[CL_DEMO_FILENAME_CAPACITY];
+    const int32_t pathWritten = coduo_crt_snprintf(
+        qpath, sizeof(qpath), "demos/%s", demoFileName);
+    if (coduomp_demo_build_ordinary_mod_path(modFolder, modPath) == qfalse ||
+        strpbrk(demoFileName, "/\\") != NULL || pathWritten <= 0 ||
+        pathWritten >= (int32_t)sizeof(qpath)) {
+        return qfalse;
+    }
+
+    const char *const roots[3] = {
+        fs_homepath->string, fs_basepath->string, fs_cdpath->string};
+    for (size_t index = 0; index < 3u; ++index) {
+        const char *const root = roots[index];
+        char osPath[MAX_OSPATH];
+        struct stat status;
+        if (root == NULL || root[0] == '\0' ||
+            strlen(root) + strlen(modPath) + strlen(qpath) + 4u >
+                sizeof(osPath)) {
+            continue;
+        }
+        FS_BuildOSPath(root, modPath, qpath, osPath);
+        if (stat(osPath, &status) == 0 && S_ISREG(status.st_mode)) {
+            Q_strncpyz(resolvedMod, modPath, FS_PACK_NAME_SIZE);
+            return qtrue;
+        }
+    }
+    return qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: mount an ordinary mod selected for offline demo
+ * playback. Demo completion restores the process-start fs_game as usual. */
+static void coduomp_demo_activate_ordinary_mod(const char *modPath)
+{
+    CL_ShutdownAll();
+    Hunk_ClearToStart();
+    Cvar_Set("fs_game", modPath);
+    FS_PureServerSetLoadedPaks("", "");
+    FS_PureServerSetReferencedPaks("", "");
+    FS_Restart(0);
+    cl_connectedToPureServer = qfalse;
+    CL_StartHunkUsers();
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: extract the last decimal run before the demo
  * extension as a recency fallback for files without comparable timestamps. */
 static qboolean coduomp_demo_list_number_suffix(
@@ -1177,9 +1249,9 @@ static qboolean coduomp_demo_list_number_suffix(
 /* NOT_FROM_ORIGINAL_SOURCE: grow the temporary unified demo catalog used only
  * while the listdemos command formats its sorted output. */
 static qboolean coduomp_demo_list_append(
-    coduomp_demo_list_t *list, const char *modName,
+    coduomp_demo_list_t *list, const char *modFolder,
     const char *demoFileName, const char *sourceName,
-    int64_t modificationTime)
+    int64_t modificationTime, qboolean serverScoped)
 {
     if (list->count == list->capacity) {
         const size_t newCapacity = list->capacity == 0
@@ -1202,7 +1274,7 @@ static qboolean coduomp_demo_list_append(
     }
 
     coduomp_demo_list_entry_t *const entry = &list->entries[list->count++];
-    Q_strncpyz(entry->modName, modName, sizeof(entry->modName));
+    Q_strncpyz(entry->modFolder, modFolder, sizeof(entry->modFolder));
     Q_strncpyz(entry->demoFileName, demoFileName,
                sizeof(entry->demoFileName));
     Q_strncpyz(entry->sourceName, sourceName, sizeof(entry->sourceName));
@@ -1211,6 +1283,7 @@ static qboolean coduomp_demo_list_append(
         demoFileName, &entry->numberSuffix);
     if (entry->hasNumberSuffix == qfalse)
         entry->numberSuffix = 0;
+    entry->serverScoped = serverScoped;
     return qtrue;
 }
 
@@ -1223,40 +1296,77 @@ static qboolean coduomp_demo_list_append_cached(
 {
     return coduomp_demo_list_append(
         (coduomp_demo_list_t *)context, modName, demoFileName,
-        serverName, modificationTime);
+        serverName, modificationTime, qtrue);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: obtain recency for ordinary loose recordings
- * when present, while allowing catalog and PK3 entries to use the suffix
- * fallback. */
-static int64_t coduomp_demo_list_ordinary_modification_time(
+/* NOT_FROM_ORIGINAL_SOURCE: avoid duplicate ordinary entries when the same
+ * loose recording is visible from more than one installation root. */
+static qboolean coduomp_demo_list_has_ordinary_entry(
+    const coduomp_demo_list_t *list, const char *modFolder,
     const char *demoFileName)
 {
-    char qpath[CL_DEMO_FILENAME_CAPACITY];
-    char osPath[MAX_OSPATH];
-    struct stat status;
-
-    const int32_t written = coduo_crt_snprintf(
-        qpath, sizeof(qpath), "demos/%s", demoFileName);
-    if (written <= 0 || written >= (int32_t)sizeof(qpath))
-        return 0;
-
-    const char *roots[2] = {fs_homepath->string, fs_basepath->string};
-    for (size_t index = 0; index < 2u; ++index) {
-        if (strlen(roots[index]) + strlen(fs_currentGameDir) +
-                strlen(qpath) + 4u >
-            sizeof(osPath)) {
-            continue;
+    for (size_t index = 0; index < list->count; ++index) {
+        const coduomp_demo_list_entry_t *const entry =
+            &list->entries[index];
+        if (entry->serverScoped == qfalse &&
+            Q_stricmp(entry->modFolder, modFolder) == 0 &&
+            Q_stricmp(entry->demoFileName, demoFileName) == 0) {
+            return qtrue;
         }
-        FS_BuildOSPath(
-            roots[index], fs_currentGameDir, qpath, osPath);
-        if (stat(osPath, &status) == 0 && S_ISREG(status.st_mode))
-            return (int64_t)status.st_mtime;
     }
-    return 0;
+    return qfalse;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: group case-insensitively by exact mod directory,
+/* NOT_FROM_ORIGINAL_SOURCE: enumerate loose demos from one exact ordinary
+ * game directory rather than inheriting fallback files from mounted games. */
+static void coduomp_demo_list_ordinary_game_directory(
+    coduomp_demo_list_t *list, const char *modFolder,
+    const char *gameDirectory)
+{
+    const char *const roots[3] = {
+        fs_homepath->string, fs_basepath->string, fs_cdpath->string};
+    for (size_t rootIndex = 0; rootIndex < 3u; ++rootIndex) {
+        const char *const root = roots[rootIndex];
+        char demosPath[MAX_OSPATH];
+        if (root == NULL || root[0] == '\0' ||
+            strlen(root) + strlen(gameDirectory) +
+                    sizeof("demos") + 3u >
+                sizeof(demosPath)) {
+            continue;
+        }
+        FS_BuildOSPath(root, gameDirectory, "demos", demosPath);
+
+        int32_t demoCount = 0;
+        char **const demoFiles = Sys_ListFiles(
+            demosPath, ".dm_3", NULL, &demoCount, qfalse);
+        for (int32_t demoIndex = 0;
+             demoIndex < demoCount; ++demoIndex) {
+            const char *const demoFileName = demoFiles[demoIndex];
+            char demoPath[MAX_OSPATH];
+            struct stat status;
+            const int32_t written = coduo_crt_snprintf(
+                demoPath, sizeof(demoPath), "%s/%s",
+                demosPath, demoFileName);
+            if (written <= 0 || written >= (int32_t)sizeof(demoPath) ||
+                stat(demoPath, &status) != 0 ||
+                S_ISREG(status.st_mode) == 0 ||
+                coduomp_demo_list_has_ordinary_entry(
+                    list, modFolder, demoFileName) != qfalse) {
+                continue;
+            }
+            if (coduomp_demo_list_append(
+                    list, modFolder, demoFileName, "local",
+                    (int64_t)status.st_mtime, qfalse) == qfalse) {
+                break;
+            }
+        }
+        Sys_FreeFileList(demoFiles);
+        if (list->allocationFailed != qfalse)
+            return;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: group case-insensitively by mod folder,
  * then order each group by timestamp and numbered-name recency. */
 static int coduomp_demo_list_compare(const void *leftValue,
                                      const void *rightValue)
@@ -1265,7 +1375,7 @@ static int coduomp_demo_list_compare(const void *leftValue,
         (const coduomp_demo_list_entry_t *)leftValue;
     const coduomp_demo_list_entry_t *const right =
         (const coduomp_demo_list_entry_t *)rightValue;
-    int comparison = Q_stricmp(left->modName, right->modName);
+    int comparison = Q_stricmp(left->modFolder, right->modFolder);
 
     if (comparison != 0)
         return comparison;
@@ -1292,7 +1402,7 @@ static int coduomp_demo_list_compare(const void *leftValue,
     comparison = Q_stricmp(left->sourceName, right->sourceName);
     if (comparison != 0)
         return comparison;
-    comparison = strcmp(left->modName, right->modName);
+    comparison = strcmp(left->modFolder, right->modFolder);
     if (comparison != 0)
         return comparison;
     comparison = strcmp(left->demoFileName, right->demoFileName);
@@ -1301,34 +1411,65 @@ static int coduomp_demo_list_compare(const void *leftValue,
                : strcmp(left->sourceName, right->sourceName);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: list ordinary demos visible in the current
- * filesystem plus every recording retained under Server Cache, grouped by
- * mod name and ordered newest-first within each group. */
+/* NOT_FROM_ORIGINAL_SOURCE: a server name is required only when the same
+ * command identity names another ordinary or server-scoped recording. */
+static qboolean coduomp_demo_list_server_required(
+    const coduomp_demo_list_t *list, size_t entryIndex)
+{
+    const coduomp_demo_list_entry_t *const entry =
+        &list->entries[entryIndex];
+    if (entry->serverScoped == qfalse)
+        return qfalse;
+
+    for (size_t index = 0; index < list->count; ++index) {
+        const coduomp_demo_list_entry_t *const other =
+            &list->entries[index];
+        if (index != entryIndex &&
+            Q_stricmp(entry->modFolder, other->modFolder) == 0 &&
+            Q_stricmp(entry->demoFileName, other->demoFileName) == 0) {
+            return qtrue;
+        }
+    }
+    return qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: list ordinary top-level/current-mod demos plus
+ * every recording retained under Server Cache, grouped by mod folder and
+ * ordered newest-first within each group. */
 void coduomp_ListDemos_f(void)
 {
     if (Cmd_Argc() > 2) {
-        Com_Printf("listdemos [moddir]\n");
+        Com_Printf("listdemos [mod_folder]\n");
         return;
     }
 
     const char *const modFilter = Cmd_Argc() == 2 ? Cmd_Argv(1) : NULL;
     coduomp_demo_list_t list = {0};
-    int32_t ordinaryCount = 0;
-    if (coduomp_server_namespace_is_active() == qfalse &&
-        (modFilter == NULL ||
-         Q_stricmp(modFilter, fs_currentGameDir) == 0)) {
-        char **const ordinaryDemos = FS_ListFiles(
-            "demos", "dm_3", &ordinaryCount);
-        for (int32_t index = 0; index < ordinaryCount; ++index) {
-            if (coduomp_demo_list_append(
-                    &list, fs_currentGameDir, ordinaryDemos[index],
-                    "current filesystem",
-                    coduomp_demo_list_ordinary_modification_time(
-                        ordinaryDemos[index])) == qfalse) {
-                break;
+    static const char modsPrefix[] = "mods/";
+    const char *ordinaryModFolder = "";
+    if (fs_game->string[0] != '\0') {
+        ordinaryModFolder =
+            Q_stricmpn(fs_game->string, modsPrefix,
+                       sizeof(modsPrefix) - 1u) == 0
+                ? fs_game->string + sizeof(modsPrefix) - 1u
+                : fs_game->string;
+    }
+    if (coduomp_server_namespace_is_active() == qfalse) {
+        if (modFilter == NULL) {
+            coduomp_demo_list_ordinary_game_directory(
+                &list, "", fs_basegame->string);
+            if (fs_game->string[0] != '\0') {
+                coduomp_demo_list_ordinary_game_directory(
+                    &list, ordinaryModFolder, fs_game->string);
+            }
+        } else {
+            char ordinaryModPath[FS_PACK_NAME_SIZE];
+            if (coduomp_demo_build_ordinary_mod_path(
+                    modFilter, ordinaryModPath) != qfalse) {
+                coduomp_demo_list_ordinary_game_directory(
+                    &list, modFilter, ordinaryModPath);
             }
         }
-        FS_FreeFileList(ordinaryDemos);
     }
 
     if (list.allocationFailed == qfalse) {
@@ -1346,17 +1487,28 @@ void coduomp_ListDemos_f(void)
               coduomp_demo_list_compare);
     }
 
-    Com_Printf("Available demos (copy moddir into playdemo):\n");
+    Com_Printf("Available demos:\n");
     const char *previousMod = NULL;
     for (size_t index = 0; index < list.count; ++index) {
         const coduomp_demo_list_entry_t *const entry = &list.entries[index];
         if (previousMod == NULL ||
-            Q_stricmp(previousMod, entry->modName) != 0) {
-            Com_Printf("moddir: %s\n", entry->modName);
-            previousMod = entry->modName;
+            Q_stricmp(previousMod, entry->modFolder) != 0) {
+            if (entry->modFolder[0] == '\0')
+                Com_Printf("top level:\n");
+            else
+                Com_Printf("mod_folder: %s\n", entry->modFolder);
+            previousMod = entry->modFolder;
         }
-        Com_Printf("  %s  (%s)\n", entry->demoFileName,
-                   entry->sourceName);
+        if (entry->modFolder[0] == '\0') {
+            Com_Printf("  playdemo %s\n", entry->demoFileName);
+        } else if (coduomp_demo_list_server_required(&list, index) !=
+                   qfalse) {
+            Com_Printf("  playdemo %s %s %s\n", entry->demoFileName,
+                       entry->modFolder, entry->sourceName);
+        } else {
+            Com_Printf("  playdemo %s %s\n", entry->demoFileName,
+                       entry->modFolder);
+        }
     }
 
     const int32_t totalCount = (int32_t)list.count;
@@ -1376,10 +1528,10 @@ void CL_PlayDemo_f(void)
 {
     const int32_t argumentCount = Cmd_Argc();
     /* NOT_FROM_ORIGINAL_SOURCE: extend the recovered one-name command with a
-     * cached mod/demo locator and optional server disambiguator. */
+     * mod-folder locator and optional server disambiguator. */
     if (argumentCount < 2 || argumentCount > 4) {
         Com_Printf("playdemo <demoname>\n");
-        Com_Printf("playdemo <moddir> <demoname> [server-name]\n");
+        Com_Printf("playdemo <demoname> <mod_folder> [server_name]\n");
         return;
     }
 
@@ -1388,8 +1540,7 @@ void CL_PlayDemo_f(void)
         return;
     }
 
-    const char *const demoArgument =
-        Cmd_Argv(argumentCount == 2 ? 1 : 2);
+    const char *const demoArgument = Cmd_Argv(1);
     if (strlen(demoArgument) >= CL_DEMO_FILENAME_CAPACITY) {
         Com_Printf("Demo name is too long or invalid.\n");
         return;
@@ -1406,34 +1557,48 @@ void CL_PlayDemo_f(void)
 
     char resolvedServer[MAX_QPATH];
     char resolvedMod[FS_PACK_NAME_SIZE];
+    qboolean ordinaryMod = qfalse;
+    qboolean cachedMod = qfalse;
     if (argumentCount >= 3) {
-        const char *const modName = Cmd_Argv(1);
+        const char *const modFolder = Cmd_Argv(2);
         const char *const serverName =
             argumentCount == 4 ? Cmd_Argv(3) : "";
-        const int32_t matchCount =
-            coduomp_server_namespace_resolve_cached_demo(
-                modName, demoFileName, serverName,
-                resolvedServer, resolvedMod);
+        if (serverName[0] == '\0') {
+            ordinaryMod = coduomp_demo_resolve_ordinary_mod(
+                modFolder, demoFileName, resolvedMod);
+        }
+        const int32_t matchCount = ordinaryMod == qfalse
+            ? coduomp_server_namespace_resolve_cached_demo(
+                  modFolder, demoFileName, serverName,
+                  resolvedServer, resolvedMod)
+            : 0;
         if (matchCount == 0) {
-            Com_Printf("No cached demo matches %s %s%s%s.\n",
-                       modName, demoName,
-                       serverName[0] != '\0' ? " on " : "",
-                       serverName);
-            return;
+            if (ordinaryMod == qfalse) {
+                Com_Printf("No demo matches %s in mod folder %s%s%s.\n",
+                           demoName, modFolder,
+                           serverName[0] != '\0' ? " on " : "",
+                           serverName);
+                return;
+            }
         }
         if (matchCount > 1) {
             Com_Printf(
-                "Specify the server: playdemo %s %s \"<server-name>\"\n",
-                modName, demoName);
+                "Specify the server: playdemo %s %s <server_name>\n",
+                demoName, modFolder);
             return;
         }
+        cachedMod = matchCount == 1 ? qtrue : qfalse;
     }
 
     CL_Disconnect(qtrue);
     /* NOT_FROM_ORIGINAL_SOURCE: a manually frozen prior demo must not carry
      * its timing or audio pause into newly started playback. */
     coduomp_DemoPlaybackReset();
-    if (argumentCount >= 3)
+    if (argumentCount == 2 && fs_game->string[0] != '\0')
+        coduomp_demo_activate_ordinary_mod("");
+    else if (ordinaryMod != qfalse)
+        coduomp_demo_activate_ordinary_mod(resolvedMod);
+    else if (cachedMod != qfalse)
         coduomp_demo_activate_cached_mod(resolvedServer, resolvedMod);
 
     (void)FS_FOpenFileRead(path, &clc.demoFile, qtrue);

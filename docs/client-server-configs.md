@@ -31,21 +31,26 @@ The main-screen Mods list also includes cached non-basegame directories that
 contain PK3s. Their labels use `server-name/mod`, while their launch paths
 remain scoped to the corresponding server namespace.
 
-`listdemos [moddir]` lists recordings from the current filesystem and every
+`listdemos [mod_folder]` lists recordings from the current filesystem and every
 server cache. The conventional leading `mods/` storage directory is omitted
-from the displayed mod name and is optional in command input. A cached
-recording can be played without manually locating its server directory:
+from both listing output and command input. Each listed row is a complete
+command. Top-level recordings need only their demo name:
 
 ```text
-playdemo <moddir> <demoname>
+playdemo <demoname>
 ```
 
-If the same mod and demo name exist under more than one server, the command
-prints the matching server names instead of choosing one. Select the intended
-recording explicitly with:
+A recording in an ordinary or uniquely server-scoped mod adds its mod folder:
 
 ```text
-playdemo <moddir> <demoname> "<server-name>"
+playdemo <demoname> <mod_folder>
+```
+
+If the same mod and demo name exist under more than one server, `listdemos`
+includes the server name needed to select each recording:
+
+```text
+playdemo <demoname> <mod_folder> <server_name>
 ```
 
 The client mounts that server namespace for playback, then restores the normal
