@@ -66,12 +66,14 @@
   move, seed, restore, replace, or delete files in the profile it uses unless
   the user explicitly requests the exact operation and identifies the
   authoritative source for any restored or replacement data.
-- Agents may use `client-test-run` only after verifying that its exact final
-  `fs_homepath` is a disposable, purpose-specific directory under the
-  repository-root `.workbench/runtime/`. It must not be used by `client-run`,
-  any other launcher, any other test run, a personal game or Wine profile, a
-  retail installation, or any existing configuration. Never launch if the path
-  is missing, ambiguous, shared, reused, or can fall back to another profile.
+- Agents must never launch a native macOS client on the user's machine. This
+  includes direct execution, application bundles, `client-test-run`, and
+  `client-run`, even when `fs_homepath` appears isolated. Local client work
+  stops at build, link, package, and static validation. Agent-run client
+  runtime tests must use the designated remote host with a fresh test root and
+  fresh Wine prefix; `WINEPREFIX`, `HOME`, the complete rebuilt engine/module
+  set, and explicit `fs_homepath` must all remain inside that one test root.
+  Never reuse a test root, Wine prefix, personal profile, or configuration.
 - Do not edit, refactor, rename, restructure, or otherwise change `client-run`,
   `client-test-run`, their dependency graph, or their
   configuration/profile/home-path routing unless the user explicitly requests
