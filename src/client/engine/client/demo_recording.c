@@ -1067,6 +1067,42 @@ static qboolean coduomp_demo_build_playback_path(
                ? qtrue : qfalse;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: a cached demo opens inside the selected server
+ * namespace before its first gamestate supplies the recorded checksum feed.
+ * Preserve the next-message position while the filesystem is rebuilt with
+ * that feed instead of leaving clc.demoFile bound to the closed handle. */
+qboolean coduomp_demo_restart_cached_filesystem(int32_t checksumFeed)
+{
+    if (clc.demoPlayback == qfalse || clc.demoFile == 0 ||
+        coduomp_server_namespace_is_active() == qfalse) {
+        return qfalse;
+    }
+
+    const int32_t demoPosition = FS_FTell(clc.demoFile);
+    char demoFileName[CL_DEMO_FILENAME_CAPACITY];
+    char path[CL_DEMO_FILENAME_CAPACITY];
+    if (demoPosition < 0 ||
+        coduomp_demo_build_playback_path(
+            clc.demoName, demoFileName, path) == qfalse) {
+        Com_Error(ERR_DROP, "Could not preserve cached demo position");
+    }
+
+    FS_FCloseFile(clc.demoFile);
+    clc.demoFile = 0;
+    FS_Restart(checksumFeed);
+
+    (void)FS_FOpenFileRead(path, &clc.demoFile, qtrue);
+    if (clc.demoFile == 0 ||
+        FS_Seek(clc.demoFile, demoPosition, FS_SEEK_ORIGIN_SET) != 0) {
+        if (clc.demoFile != 0) {
+            FS_FCloseFile(clc.demoFile);
+            clc.demoFile = 0;
+        }
+        Com_Error(ERR_DROP, "Could not reopen cached demo %s", path);
+    }
+    return qtrue;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: switch the filesystem to the selected cached mod
  * before the demo gamestate loads its map and client module. Normal disconnect
  * teardown restores the frontend filesystem when playback ends. */

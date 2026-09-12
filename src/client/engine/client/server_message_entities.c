@@ -704,11 +704,18 @@ void CL_ParseGamestate(msg_t *message)
         coduomp_server_namespace_cache_referenced_paks();
 
     if (sv_running->integer == 0) {
-        if (namespaceChanged != qfalse || cachedRootPaks != qfalse)
-            FS_Restart(clc.checksumFeed);
-        else if (fs_game->modified != qfalse ||
-                 clc.checksumFeed != fs_checksumFeed)
-            (void)FS_ConditionalRestart(clc.checksumFeed);
+        if (namespaceChanged != qfalse || cachedRootPaks != qfalse) {
+            if (coduomp_demo_restart_cached_filesystem(
+                    clc.checksumFeed) == qfalse) {
+                FS_Restart(clc.checksumFeed);
+            }
+        } else if (fs_game->modified != qfalse ||
+                   clc.checksumFeed != fs_checksumFeed) {
+            if (coduomp_demo_restart_cached_filesystem(
+                    clc.checksumFeed) == qfalse) {
+                (void)FS_ConditionalRestart(clc.checksumFeed);
+            }
+        }
     }
 
     if (net_lanauthorize->integer != 0 ||
