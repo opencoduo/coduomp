@@ -45,7 +45,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Server Cache can be disabled under **Options -> System -> Advanced**.
 - `promoteserverconfig` saves the current isolated server profile as the global configuration.
 - `clearserverconfigs` clears all per-server configurations while preserving downloaded content.
-- Server Cache directories now use the direct `server-cache/<server-name>` layout without a version or endpoint hash.
+- Server Cache uses `server-cache/<server-name>/` as the sole namespace boundary, with ordinary relative filesystem paths directly below it and no version, endpoint hash, or separate content/state trees.
 - New profiles default to `snaps 30`, `cl_maxpackets 125`, and `rate 30000` instead of the retail `20`, `30`, and `25000` values.
 
 ### Console and input

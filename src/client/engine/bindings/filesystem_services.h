@@ -94,7 +94,7 @@ static inline void filesystem_compat_host_paths_changed(void)
 static inline const char *filesystem_compat_state_root(
     const char *ordinaryHomeRoot)
 {
-    return coduomp_server_namespace_state_root(ordinaryHomeRoot);
+    return coduomp_server_namespace_root(ordinaryHomeRoot);
 }
 
 static inline void filesystem_compat_add_server_game_directory(

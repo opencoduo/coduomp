@@ -51,7 +51,7 @@ static void coduomp_server_namespace_promote_config_f(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: remove only configuration files from every
- * isolated server namespace while retaining downloaded server content. */
+ * isolated server namespace while retaining other server files. */
 static void coduomp_server_namespace_clear_configs_f(void)
 {
     if (Cmd_Argc() != 1) {
@@ -144,17 +144,10 @@ int32_t coduomp_server_namespace_list_cached_demos(
     return coduomp_server_namespace_provider.listCachedDemos(modName);
 }
 
-const char *coduomp_server_namespace_state_root(
+const char *coduomp_server_namespace_root(
     const char *ordinaryHomeRoot)
 {
-    return coduomp_server_namespace_provider.stateRoot(
-        ordinaryHomeRoot);
-}
-
-const char *coduomp_server_namespace_content_root(
-    const char *ordinaryHomeRoot)
-{
-    return coduomp_server_namespace_provider.contentRoot(
+    return coduomp_server_namespace_provider.root(
         ordinaryHomeRoot);
 }
 
@@ -165,15 +158,8 @@ void coduomp_server_namespace_add_game_directory(const char *gameName)
         return;
     }
 
-    const char *const contentRoot =
-        coduomp_server_namespace_content_root(fs_homepath->string);
-    const char *const stateRoot =
-        coduomp_server_namespace_state_root(fs_homepath->string);
-
-    /* Content is added first so the writable state directory is the final,
-     * highest-priority loose-file search path for this game. */
-    FS_AddLocalizedGameDirectory(contentRoot, gameName);
-    FS_AddLocalizedGameDirectory(stateRoot, gameName);
+    FS_AddLocalizedGameDirectory(
+        coduomp_server_namespace_root(fs_homepath->string), gameName);
 }
 
 qboolean coduomp_server_namespace_allows_searchpath(
@@ -186,7 +172,7 @@ qboolean coduomp_server_namespace_download_file_exists(
     const char *qpath)
 {
     const char *const root =
-        coduomp_server_namespace_content_root(fs_homepath->string);
+        coduomp_server_namespace_root(fs_homepath->string);
     return coduomp_server_namespace_download_qpath_valid(root, qpath) !=
                    qfalse
                ? coduomp_fs_root_file_exists(root, qpath)
@@ -197,7 +183,7 @@ int32_t coduomp_server_namespace_open_download_write(
     const char *qpath)
 {
     const char *const root =
-        coduomp_server_namespace_content_root(fs_homepath->string);
+        coduomp_server_namespace_root(fs_homepath->string);
     return coduomp_server_namespace_download_qpath_valid(root, qpath) !=
                    qfalse
                ? coduomp_fs_root_fopen_file_write(root, qpath)
@@ -208,7 +194,7 @@ void coduomp_server_namespace_rename_download(
     const char *sourceQPath, const char *destQPath)
 {
     const char *const root =
-        coduomp_server_namespace_content_root(fs_homepath->string);
+        coduomp_server_namespace_root(fs_homepath->string);
     if (coduomp_server_namespace_download_qpath_valid(
             root, sourceQPath) != qfalse &&
         coduomp_server_namespace_download_qpath_valid(
@@ -221,7 +207,7 @@ qboolean coduomp_server_namespace_build_download_path(
     const char *qpath, char *osPath, size_t osPathSize)
 {
     const char *const root =
-        coduomp_server_namespace_content_root(fs_homepath->string);
+        coduomp_server_namespace_root(fs_homepath->string);
 
     if (osPath == NULL || osPathSize == 0 ||
         coduomp_server_namespace_download_qpath_valid(root, qpath) ==
@@ -240,7 +226,7 @@ qboolean coduomp_server_namespace_build_download_path(
 void coduomp_server_namespace_remove_download(const char *qpath)
 {
     const char *const root =
-        coduomp_server_namespace_content_root(fs_homepath->string);
+        coduomp_server_namespace_root(fs_homepath->string);
     if (coduomp_server_namespace_download_qpath_valid(root, qpath) != qfalse)
         coduomp_fs_root_remove(root, qpath);
 }

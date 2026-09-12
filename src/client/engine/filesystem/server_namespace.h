@@ -31,9 +31,7 @@ int32_t coduomp_server_namespace_resolve_cached_demo(
 int32_t coduomp_server_namespace_list_cached_demos(
     const char *modName);
 
-const char *coduomp_server_namespace_state_root(
-    const char *ordinaryHomeRoot);
-const char *coduomp_server_namespace_content_root(
+const char *coduomp_server_namespace_root(
     const char *ordinaryHomeRoot);
 
 void coduomp_server_namespace_add_game_directory(const char *gameName);

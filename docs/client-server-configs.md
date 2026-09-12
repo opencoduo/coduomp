@@ -10,19 +10,18 @@ this layout:
 
 ```text
 server-cache/<server-name>/
-  state/<game>/uoconfig_mp.cfg
-  state/<game>/demos/*.dm_3
-  content/<game>/...
+  ...normal game filesystem...
 ```
 
-`state` contains that server's configuration. `content` contains files
-downloaded from that server or reused from an ordinary game root. On a normal
-disconnect, the client restores the global configuration.
+The server-name directory is the namespace. Below it, files use the same paths
+they would use in the ordinary game filesystem, including the server's exact
+`fs_game` path. On a normal disconnect, the client restores the global
+configuration.
 
 Before downloading a referenced PK3, the client compares the server's expected
 checksum with PK3s already installed in the ordinary game roots. A matching
-non-official PK3 is copied into the active server's `content` directory and
-used after the same filesystem restart that would load a download. Official
+non-official PK3 is copied into the active server namespace and used after the
+same filesystem restart that would load a download. Official
 PK3s remain mounted in their canonical `main` or `uo` game directory so a
 server alias cannot change their stock search priority. A copied PK3 is staged
 under a temporary name; a failed copy is discarded and the normal download
@@ -30,7 +29,7 @@ path remains available.
 
 The main-screen Mods list also includes cached non-basegame directories that
 contain PK3s. Their labels use `server-name/mod`, while their launch paths
-remain scoped to the corresponding `server-cache` content directory.
+remain scoped to the corresponding server namespace.
 
 `listdemos [moddir]` lists recordings from the current filesystem and every
 server cache. A cached recording can be played without manually locating its
@@ -48,8 +47,8 @@ recording explicitly with:
 playdemo <moddir> <demoname> "<server-name>"
 ```
 
-The client mounts that server's cached content and state for playback, then
-restores the normal frontend filesystem when the demo ends.
+The client mounts that server namespace for playback, then restores the normal
+frontend filesystem when the demo ends.
 
 Server Cache is enabled by default. It can be changed from **Options → System
 → Advanced**. Disabling it prevents new connections from activating an
@@ -97,11 +96,11 @@ From the main menu, after disconnecting from a server, enter:
 clearserverconfigs
 ```
 
-The command removes every `.cfg` file below the `state` directories for all
-isolated servers. It preserves:
+The command removes every `.cfg` file below all isolated server directories. It
+preserves:
 
 - the global `uoconfig_mp.cfg`;
-- downloaded server files below each `content` directory; and
+- downloaded server files;
 - the server-cache directory structure.
 
 It does not alter settings already loaded in memory. Running it while connected
