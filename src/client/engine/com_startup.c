@@ -502,6 +502,12 @@ void Com_Init(char *commandLine)
      * server-cache directory is enumerated or mounted during normal startup. */
     coduomp_server_namespace_reset_for_startup();
     FS_InitFilesystem();
+#if defined(_WIN32)
+    const qboolean regenerateImproperQuitConfig =
+        Cvar_VariableIntegerValue("dedicated") == 0
+            ? coduomp_sys_check_improper_quit_config()
+            : qfalse;
+#endif
     Com_InitJournaling();
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve an explicit
@@ -509,15 +515,28 @@ void Com_Init(char *commandLine)
      * downloads when the saved config and autoexec omit the setting. */
     allowDownloadConfigured =
         allowDownloadConfigured ||
+#if defined(_WIN32)
+        (regenerateImproperQuitConfig == qfalse &&
+         coduomp_config_sets_cvar(
+             "uoconfig_mp.cfg", "cl_allowDownload")) ||
+#else
         coduomp_config_sets_cvar("uoconfig_mp.cfg", "cl_allowDownload") ||
+#endif
         coduomp_config_sets_cvar("autoexec_mp.cfg", "cl_allowDownload");
 
     Cbuf_AddText("exec default_mp.cfg\n");
     Cbuf_AddText("exec language.cfg\n");
+#if defined(_WIN32)
+    if (regenerateImproperQuitConfig == qfalse)
+#endif
     Cbuf_AddText("exec uoconfig_mp.cfg\n");
     Cbuf_AddText("exec autoexec_mp.cfg\n");
     if (Com_SafeMode() != qfalse)
         Cbuf_AddText("exec safemode_mp.cfg\n");
+#if defined(_WIN32)
+    if (regenerateImproperQuitConfig != qfalse)
+        coduomp_sys_queue_improper_quit_language();
+#endif
     Cbuf_Execute();
 
     com_recommendedSet =
@@ -645,5 +664,9 @@ void Com_Init(char *commandLine)
 
     (void)Cvar_Set2("com_statmon", "0", qtrue);
     com_configAutowriteEnabled = qtrue;
+#if defined(_WIN32)
+    if (regenerateImproperQuitConfig != qfalse)
+        cvar_modifiedFlags |= CVAR_ARCHIVE;
+#endif
     Com_Printf("--- Common Initialization Complete ---\n");
 }
