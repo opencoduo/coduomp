@@ -852,12 +852,12 @@ static void coduomp_namespace_scan_cached_demo_tree(
                 }
                 ++scan->matchCount;
                 if (scan->printMatches != qfalse) {
-                    Com_Printf("  %s %s  (%s)\n", userModPath,
+                    Com_Printf("  %s %s  (%s)\n", relativePath,
                                demoFileName, serverName);
                 }
                 if (scan->callback != NULL &&
                     scan->callback(
-                        userModPath, demoFileName, serverName,
+                        relativePath, demoFileName, serverName,
                         coduomp_namespace_demo_modification_time(demoPath),
                         scan->callbackContext) == qfalse) {
                     scan->stopped = qtrue;

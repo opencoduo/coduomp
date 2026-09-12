@@ -1174,18 +1174,6 @@ static qboolean coduomp_demo_list_number_suffix(
     return qtrue;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: keep the conventional cache-only mods prefix out
- * of the group heading so ordinary and cached copies share one mod identity. */
-static const char *coduomp_demo_list_user_mod_name(const char *modName)
-{
-    static const char modsPrefix[] = "mods/";
-
-    return Q_stricmpn(modName, modsPrefix, sizeof(modsPrefix) - 1u) == 0 &&
-                   modName[sizeof(modsPrefix) - 1u] != '\0'
-               ? modName + sizeof(modsPrefix) - 1u
-               : modName;
-}
-
 /* NOT_FROM_ORIGINAL_SOURCE: grow the temporary unified demo catalog used only
  * while the listdemos command formats its sorted output. */
 static qboolean coduomp_demo_list_append(
@@ -1268,7 +1256,7 @@ static int64_t coduomp_demo_list_ordinary_modification_time(
     return 0;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: group case-insensitively by user-visible mod,
+/* NOT_FROM_ORIGINAL_SOURCE: group case-insensitively by exact mod directory,
  * then order each group by timestamp and numbered-name recency. */
 static int coduomp_demo_list_compare(const void *leftValue,
                                      const void *rightValue)
@@ -1333,9 +1321,7 @@ void coduomp_ListDemos_f(void)
             "demos", "dm_3", &ordinaryCount);
         for (int32_t index = 0; index < ordinaryCount; ++index) {
             if (coduomp_demo_list_append(
-                    &list,
-                    coduomp_demo_list_user_mod_name(fs_currentGameDir),
-                    ordinaryDemos[index],
+                    &list, fs_currentGameDir, ordinaryDemos[index],
                     "current filesystem",
                     coduomp_demo_list_ordinary_modification_time(
                         ordinaryDemos[index])) == qfalse) {
@@ -1360,13 +1346,13 @@ void coduomp_ListDemos_f(void)
               coduomp_demo_list_compare);
     }
 
-    Com_Printf("Available demos:\n");
+    Com_Printf("Available demos (copy moddir into playdemo):\n");
     const char *previousMod = NULL;
     for (size_t index = 0; index < list.count; ++index) {
         const coduomp_demo_list_entry_t *const entry = &list.entries[index];
         if (previousMod == NULL ||
             Q_stricmp(previousMod, entry->modName) != 0) {
-            Com_Printf("%s:\n", entry->modName);
+            Com_Printf("moddir: %s\n", entry->modName);
             previousMod = entry->modName;
         }
         Com_Printf("  %s  (%s)\n", entry->demoFileName,
