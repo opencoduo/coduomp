@@ -48,12 +48,19 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Server Cache uses `server-cache/<server-name>/` as the sole namespace boundary, with ordinary relative filesystem paths directly below it and no version, endpoint hash, or separate content/state trees.
 - New profiles default to `snaps 30`, `cl_maxpackets 125`, and `rate 30000` instead of the retail `20`, `30`, and `25000` values.
 
+### Demo recording and playback
+
+- **Record Demo** under **Options -> Miscellaneous** can bind one or two keys to start an auto-named demo and stop the active recording.
+- `listdemos [mod_folder]` lists available recordings using command-ready demo, mod-folder, and optional server names. `playdemo <demo_name> [mod_folder] [server_name]` loads top-level, ordinary-mod, or server-scoped recordings with the required mod and map content.
+- Demo playback provides pause/play (**Space**), five-second rewind/forward (**Left/Right**), paused previous/next snapshot stepping (**Comma/Period**), and a 0.125x/0.25x/0.5x/1x/2x/4x/8x speed cycle traversed forward with **F** and backward with **D**.
+- The on-screen playback tools show the current time, duration, speed, control legend, and a mouse-draggable timeline. Set the archived `cl_demoControlOverlay` cvar to `0` to hide them or `1` to show them.
+- The decoded timeline supports in-place backward seeking without reloading the map. Recorded playback suppresses live-network lag, connection-interruption, and timeout behavior.
+- See [Demo Playback Controls](docs/client-demo-playback.md) for command and cvar details.
+
 ### Console and input
 
 - Windows mouse input uses Raw Input by default, bypassing the system's **Enhance pointer precision** acceleration without changing the Windows setting; **Raw Input Active** under **Options -> Advanced** can disable it.
 - The console key can be rebound from the options menu, including rebinding the backtick key itself.
-- **Record Demo** under **Options -> Miscellaneous** can bind one or two keys to start an auto-named demo and stop the active recording.
-- Demo playback can be started with either `demo <demoname>` or `playdemo <demoname>`. `listdemos [mod_folder]` prints command-ready entries for recordings inside Server Cache, and `playdemo <demoname> <mod_folder> [server_name]` loads their mod and map content. Playback has direct controls for pause/play (**Space**), five-second rewind/forward (**Left/Right**), paused previous/next snapshot stepping (**Comma/Period**), and a 0.125x/0.25x/0.5x/1x/2x/4x/8x speed cycle traversed forward with **F** and backward with **D**. Its on-screen controls include a timestamped, mouse-draggable timeline. The archived `cl_demoControlOverlay` cvar shows them at `1` (the default) or hides them at `0` without disabling keyboard and console playback controls. Network lag and connection-interruption indicators are suppressed during playback, and paused demos do not trigger live-server connection timeouts. The timeline is decoded into independently seekable full snapshots, so rewinding does not reload the map.
 - Native Linux/macOS clients support Ctrl-V or Command-V clipboard paste.
 - Ctrl-W deletes the previous console word and treats underscores as word delimiters.
 - Console scrollback is four times larger.
