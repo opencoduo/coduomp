@@ -841,6 +841,33 @@ void coduomp_DemoForward_f(void)
     coduomp_demo_seek_relative(CODUOMP_DEMO_SEEK_MSEC);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: move to the preceding recorded snapshot and remain
+ * paused. Between snapshots, the immediately preceding boundary is selected;
+ * at an exact boundary, the snapshot before it is selected. */
+void coduomp_DemoFrameBack_f(void)
+{
+    if (coduomp_demo_controls_available() == qfalse) {
+        Com_Printf("Demo playback controls require an active demo.\n");
+        return;
+    }
+    if (coduomp_demo_ensure_timeline() == qfalse)
+        return;
+
+    coduomp_demo_prepare_manual_control();
+    coduomp_demo_set_paused(qtrue);
+    MSS_StopSounds(MSS_STOP_ALL_SOUNDS);
+
+    size_t entryIndex =
+        coduomp_demo_timeline_entry_for_time(cl.serverTime);
+    if (entryIndex > 0 &&
+        coduomp_demoPlaybackState.timelineEntries[entryIndex].serverTime >=
+            cl.serverTime) {
+        --entryIndex;
+    }
+    (void)coduomp_demo_seek_absolute(
+        coduomp_demoPlaybackState.timelineEntries[entryIndex].serverTime);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: advance exactly one recorded snapshot and remain
  * paused so each key press produces one newly rendered demo frame. */
 void coduomp_DemoFrameStep_f(void)
@@ -996,6 +1023,7 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         CODUOMP_DEMO_KEY_PAUSE,
         CODUOMP_DEMO_KEY_REWIND,
         CODUOMP_DEMO_KEY_FORWARD,
+        CODUOMP_DEMO_KEY_FRAME_BACK,
         CODUOMP_DEMO_KEY_FRAME_STEP,
         CODUOMP_DEMO_KEY_FAST_FORWARD,
         CODUOMP_DEMO_KEY_SCRUB
@@ -1010,6 +1038,8 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         action = CODUOMP_DEMO_KEY_REWIND;
     else if (key == K_RIGHTARROW || key == K_KP_RIGHTARROW)
         action = CODUOMP_DEMO_KEY_FORWARD;
+    else if (key == ',')
+        action = CODUOMP_DEMO_KEY_FRAME_BACK;
     else if (key == '.')
         action = CODUOMP_DEMO_KEY_FRAME_STEP;
     else if (key == 'f')
@@ -1023,6 +1053,8 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         action = CODUOMP_DEMO_KEY_REWIND;
     else if (binding != NULL && Q_stricmp(binding, "demoforward") == 0)
         action = CODUOMP_DEMO_KEY_FORWARD;
+    else if (binding != NULL && Q_stricmp(binding, "demoframeback") == 0)
+        action = CODUOMP_DEMO_KEY_FRAME_BACK;
     else if (binding != NULL && Q_stricmp(binding, "demoframestep") == 0)
         action = CODUOMP_DEMO_KEY_FRAME_STEP;
     else if (binding != NULL &&
@@ -1053,6 +1085,9 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         break;
     case CODUOMP_DEMO_KEY_FORWARD:
         coduomp_DemoForward_f();
+        break;
+    case CODUOMP_DEMO_KEY_FRAME_BACK:
+        coduomp_DemoFrameBack_f();
         break;
     case CODUOMP_DEMO_KEY_FRAME_STEP:
         coduomp_DemoFrameStep_f();
@@ -1111,8 +1146,8 @@ void SCR_DrawDemoPlaybackControls(void)
     (void)coduo_crt_snprintf(
         statusText, sizeof(statusText),
         paused != qfalse
-            ? "DEMO PAUSED  %ix   SPACE Play   F Speed   LEFT/RIGHT 5s   . Step   MOUSE1 Scrub"
-            : "DEMO  %ix   SPACE Pause   F Speed   LEFT/RIGHT 5s   . Step   MOUSE1 Scrub",
+            ? "DEMO PAUSED  %ix   SPACE Play   F Speed   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub"
+            : "DEMO  %ix   SPACE Pause   F Speed   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub",
         coduomp_demo_playback_speed());
 
     if (clc.demoPlayback == qfalse || cls.state != CA_ACTIVE ||

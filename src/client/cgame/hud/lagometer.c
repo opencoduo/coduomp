@@ -43,6 +43,12 @@ extern float cgame_compat_right_hud_virtual_offset(void);
 
 void CG_DrawLagometer(void)
 {
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): recorded snapshots do not
+     * represent a live network connection. Suppress both the meaningless ping
+     * graph and its usercmd-based connection-interrupted warning in demos. */
+    if (cg_demoPlayback != qfalse)
+        return;
+
     if (cg_lagometer_vmCvar.integer != qfalse && cgs_localServer == 0) {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): preserve the
          * recovered graph as one fixed-size composition while translating its

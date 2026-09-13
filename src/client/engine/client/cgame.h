@@ -672,6 +672,7 @@ const char *coduomp_DemoPlaybackServerCommand(int32_t sequence);
 void coduomp_DemoPause_f(void);
 void coduomp_DemoRewind_f(void);
 void coduomp_DemoForward_f(void);
+void coduomp_DemoFrameBack_f(void);
 void coduomp_DemoFrameStep_f(void);
 void coduomp_DemoFastForward_f(void);
 void coduomp_DemoPlaybackReset(void);
