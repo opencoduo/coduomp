@@ -674,6 +674,7 @@ void coduomp_DemoRewind_f(void);
 void coduomp_DemoForward_f(void);
 void coduomp_DemoFrameBack_f(void);
 void coduomp_DemoFrameStep_f(void);
+void coduomp_DemoSpeedDown_f(void);
 void coduomp_DemoFastForward_f(void);
 void coduomp_DemoPlaybackReset(void);
 qboolean coduomp_demo_restart_cached_filesystem(int32_t checksumFeed);

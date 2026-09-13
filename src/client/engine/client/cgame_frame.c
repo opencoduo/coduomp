@@ -1112,7 +1112,7 @@ void CL_Frame(int32_t msec, int32_t realMsec)
         }
     }
 
-    /* NOT_FROM_ORIGINAL_SOURCE: demo fast-forward scales only playback; it
+    /* NOT_FROM_ORIGINAL_SOURCE: demo speed control scales only playback; it
      * does not alter server timing or the user's global timescale setting. */
     msec = coduomp_DemoPlaybackScaleMsec(msec);
 

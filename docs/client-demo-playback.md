@@ -20,10 +20,11 @@ it automatically.
 
 During playback, **Space** pauses or resumes, **Left/Right** seeks five seconds,
 **Comma/Period** steps to the previous or next snapshot and remains paused, and
-**F** cycles through 1x, 2x, 4x, and 8x playback. The on-screen controls also
-provide a mouse-draggable timeline. Network lag and connection-interruption
-indicators are hidden during demo playback because recorded snapshots do not
-represent a live connection.
+**F/D** moves forward or backward through the 0.125x, 0.25x, 0.5x, 1x, 2x, 4x,
+and 8x speed cycle. Playback starts at 1x. The on-screen controls also provide a
+mouse-draggable timeline. Network lag and connection-interruption indicators
+are hidden during demo playback because recorded snapshots do not represent a
+live connection.
 
 The same actions are available as bindable console commands:
 
@@ -34,7 +35,8 @@ The same actions are available as bindable console commands:
 | `demoforward` | Seek forward five seconds. |
 | `demoframeback` | Move to the previous recorded snapshot and remain paused. |
 | `demoframestep` | Advance one recorded snapshot and remain paused. |
-| `demofastforward` | Cycle the playback speed through 1x, 2x, 4x, and 8x. |
+| `demospeeddown` | Move backward through the playback-speed cycle. |
+| `demofastforward` | Move forward through the playback-speed cycle. |
 
 ## Scrubber overlay
 

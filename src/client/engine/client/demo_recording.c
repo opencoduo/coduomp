@@ -43,6 +43,7 @@ enum {
 
 #define CODUOMP_DEMO_TIMELINE_X 50.0f
 #define CODUOMP_DEMO_TIMELINE_WIDTH 540.0f
+#define CODUOMP_DEMO_PLAYBACK_SPEED_MIN 0.125f
 
 typedef struct coduomp_demo_timeline_entry_s {
     int32_t messageNum;
@@ -83,6 +84,7 @@ typedef struct coduomp_demo_playback_state_s {
     size_t timelineCommandTextCapacity;
     gameState_t initialGameState;
     double scrubFraction;
+    double scaledMsecRemainder;
 } coduomp_demo_playback_state_t;
 
 static cvar_t *coduomp_demoPlaybackSpeed;
@@ -267,35 +269,49 @@ void coduomp_DemoPlaybackInit(void)
         Cvar_Get("cl_demoPlaybackSpeed", "1", CVAR_TEMP);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: keep the demo-only speed in the supported cycle
- * even if the cvar is changed manually from the console. */
-static int32_t coduomp_demo_playback_speed(void)
+/* NOT_FROM_ORIGINAL_SOURCE: clamp manual values to the range traversed by the
+ * demo speed controls while retaining fractional slow-motion multipliers. */
+static float coduomp_demo_playback_speed(void)
 {
     if (coduomp_demoPlaybackSpeed == NULL)
-        return 1;
+        return 1.0f;
 
-    const int32_t speed = coduomp_demoPlaybackSpeed->integer;
-    if (speed < 1)
-        return 1;
-    if (speed > CODUOMP_DEMO_PLAYBACK_SPEED_MAX)
-        return CODUOMP_DEMO_PLAYBACK_SPEED_MAX;
+    const float speed = coduomp_demoPlaybackSpeed->value;
+    if (speed != speed)
+        return 1.0f;
+    if (speed < CODUOMP_DEMO_PLAYBACK_SPEED_MIN)
+        return CODUOMP_DEMO_PLAYBACK_SPEED_MIN;
+    if (speed > (float)CODUOMP_DEMO_PLAYBACK_SPEED_MAX)
+        return (float)CODUOMP_DEMO_PLAYBACK_SPEED_MAX;
     return speed;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: apply the demo-only multiplier to the client
- * clock after the ordinary process timescale has been evaluated. */
+ * clock after the ordinary process timescale has been evaluated. Preserve
+ * sub-millisecond fractions so slow motion advances smoothly over time. */
 int32_t coduomp_DemoPlaybackScaleMsec(int32_t msec)
 {
-    if (clc.demoPlayback == qfalse)
+    if (clc.demoPlayback == qfalse) {
+        coduomp_demoPlaybackState.scaledMsecRemainder = 0.0;
         return msec;
+    }
 
-    const int64_t scaled =
-        (int64_t)msec * (int64_t)coduomp_demo_playback_speed();
-    if (scaled > INT32_MAX)
+    const double scaled =
+        (double)msec * (double)coduomp_demo_playback_speed() +
+        coduomp_demoPlaybackState.scaledMsecRemainder;
+    if (scaled > (double)INT32_MAX) {
+        coduomp_demoPlaybackState.scaledMsecRemainder = 0.0;
         return INT32_MAX;
-    if (scaled < INT32_MIN)
+    }
+    if (scaled < (double)INT32_MIN) {
+        coduomp_demoPlaybackState.scaledMsecRemainder = 0.0;
         return INT32_MIN;
-    return (int32_t)scaled;
+    }
+
+    const int32_t wholeMsec = (int32_t)scaled;
+    coduomp_demoPlaybackState.scaledMsecRemainder =
+        scaled - (double)wholeMsec;
+    return wholeMsec;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: expose the effective demo multiplier to the
@@ -303,7 +319,7 @@ int32_t coduomp_DemoPlaybackScaleMsec(int32_t msec)
 float coduomp_DemoPlaybackSpeedScale(void)
 {
     return clc.demoPlayback != qfalse
-        ? (float)coduomp_demo_playback_speed() : 1.0f;
+        ? coduomp_demo_playback_speed() : 1.0f;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: keep manual demo controls on the existing demo
@@ -883,9 +899,9 @@ void coduomp_DemoFrameStep_f(void)
     (void)coduomp_demo_advance_to_time(cl.snap.serverTime);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: cycle the active demo through useful analysis
- * speeds while leaving the global timescale cvar untouched. */
-void coduomp_DemoFastForward_f(void)
+/* NOT_FROM_ORIGINAL_SOURCE: traverse the demo speed cycle in either direction
+ * while leaving the global timescale cvar untouched. */
+static void coduomp_demo_cycle_speed(qboolean forward)
 {
     if (coduomp_demo_controls_available() == qfalse) {
         Com_Printf("Demo playback controls require an active demo.\n");
@@ -893,19 +909,53 @@ void coduomp_DemoFastForward_f(void)
     }
 
     coduomp_demo_prepare_manual_control();
-    const int32_t currentSpeed = coduomp_demo_playback_speed();
-    int32_t nextSpeed;
-    if (currentSpeed < 2)
-        nextSpeed = 2;
-    else if (currentSpeed < 4)
-        nextSpeed = 4;
-    else if (currentSpeed < CODUOMP_DEMO_PLAYBACK_SPEED_MAX)
-        nextSpeed = CODUOMP_DEMO_PLAYBACK_SPEED_MAX;
-    else
-        nextSpeed = 1;
+    const float currentSpeed = coduomp_demo_playback_speed();
+    const char *nextSpeed;
+    if (forward != qfalse) {
+        if (currentSpeed < 0.25f)
+            nextSpeed = "0.25";
+        else if (currentSpeed < 0.5f)
+            nextSpeed = "0.5";
+        else if (currentSpeed < 1.0f)
+            nextSpeed = "1";
+        else if (currentSpeed < 2.0f)
+            nextSpeed = "2";
+        else if (currentSpeed < 4.0f)
+            nextSpeed = "4";
+        else if (currentSpeed < 8.0f)
+            nextSpeed = "8";
+        else
+            nextSpeed = "0.125";
+    } else {
+        if (currentSpeed > 4.0f)
+            nextSpeed = "4";
+        else if (currentSpeed > 2.0f)
+            nextSpeed = "2";
+        else if (currentSpeed > 1.0f)
+            nextSpeed = "1";
+        else if (currentSpeed > 0.5f)
+            nextSpeed = "0.5";
+        else if (currentSpeed > 0.25f)
+            nextSpeed = "0.25";
+        else if (currentSpeed > CODUOMP_DEMO_PLAYBACK_SPEED_MIN)
+            nextSpeed = "0.125";
+        else
+            nextSpeed = "8";
+    }
 
-    (void)Cvar_Set2(
-        "cl_demoPlaybackSpeed", va("%i", nextSpeed), qtrue);
+    (void)Cvar_Set2("cl_demoPlaybackSpeed", nextSpeed, qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: advance one position through the demo speed cycle. */
+void coduomp_DemoFastForward_f(void)
+{
+    coduomp_demo_cycle_speed(qtrue);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: move back one position through the demo speed cycle. */
+void coduomp_DemoSpeedDown_f(void)
+{
+    coduomp_demo_cycle_speed(qfalse);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: begin relative mouse dragging at the currently
@@ -1025,6 +1075,7 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         CODUOMP_DEMO_KEY_FORWARD,
         CODUOMP_DEMO_KEY_FRAME_BACK,
         CODUOMP_DEMO_KEY_FRAME_STEP,
+        CODUOMP_DEMO_KEY_SPEED_DOWN,
         CODUOMP_DEMO_KEY_FAST_FORWARD,
         CODUOMP_DEMO_KEY_SCRUB
     } action = CODUOMP_DEMO_KEY_NONE;
@@ -1042,6 +1093,8 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         action = CODUOMP_DEMO_KEY_FRAME_BACK;
     else if (key == '.')
         action = CODUOMP_DEMO_KEY_FRAME_STEP;
+    else if (key == 'd')
+        action = CODUOMP_DEMO_KEY_SPEED_DOWN;
     else if (key == 'f')
         action = CODUOMP_DEMO_KEY_FAST_FORWARD;
     else if (key == K_MOUSE1 &&
@@ -1057,6 +1110,8 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         action = CODUOMP_DEMO_KEY_FRAME_BACK;
     else if (binding != NULL && Q_stricmp(binding, "demoframestep") == 0)
         action = CODUOMP_DEMO_KEY_FRAME_STEP;
+    else if (binding != NULL && Q_stricmp(binding, "demospeeddown") == 0)
+        action = CODUOMP_DEMO_KEY_SPEED_DOWN;
     else if (binding != NULL &&
              Q_stricmp(binding, "demofastforward") == 0)
         action = CODUOMP_DEMO_KEY_FAST_FORWARD;
@@ -1091,6 +1146,9 @@ qboolean coduomp_DemoPlaybackKeyEvent(int32_t key, qboolean down,
         break;
     case CODUOMP_DEMO_KEY_FRAME_STEP:
         coduomp_DemoFrameStep_f();
+        break;
+    case CODUOMP_DEMO_KEY_SPEED_DOWN:
+        coduomp_DemoSpeedDown_f();
         break;
     case CODUOMP_DEMO_KEY_FAST_FORWARD:
         coduomp_DemoFastForward_f();
@@ -1146,9 +1204,9 @@ void SCR_DrawDemoPlaybackControls(void)
     (void)coduo_crt_snprintf(
         statusText, sizeof(statusText),
         paused != qfalse
-            ? "DEMO PAUSED  %ix   SPACE Play   F Speed   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub"
-            : "DEMO  %ix   SPACE Pause   F Speed   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub",
-        coduomp_demo_playback_speed());
+            ? "DEMO PAUSED  %gx   SPACE Play   D/F Speed -/+   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub"
+            : "DEMO  %gx   SPACE Pause   D/F Speed -/+   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub",
+        (double)coduomp_demo_playback_speed());
 
     if (clc.demoPlayback == qfalse || cls.state != CA_ACTIVE ||
         cls.keyCatchers != 0 ||

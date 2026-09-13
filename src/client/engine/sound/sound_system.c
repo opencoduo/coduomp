@@ -5449,7 +5449,7 @@ void MSS_UpdateRoomEffects(int32_t elapsedMsec)
  * every live channel's current Miles playback rate is rescaled by new/old. */
 void MSS_UpdateTimeScale(void)
 {
-    /* NOT_FROM_ORIGINAL_SOURCE: demo-only fast-forward participates in the
+    /* NOT_FROM_ORIGINAL_SOURCE: demo-only playback speed participates in the
      * existing channel-rate update without changing global timescale. */
     float newScale =
         com_timescale->value * coduomp_DemoPlaybackSpeedScale();

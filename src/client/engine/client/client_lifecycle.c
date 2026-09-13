@@ -1699,6 +1699,7 @@ void CL_Init(void)
     Cmd_AddCommand("demoforward", coduomp_DemoForward_f);
     Cmd_AddCommand("demoframeback", coduomp_DemoFrameBack_f);
     Cmd_AddCommand("demoframestep", coduomp_DemoFrameStep_f);
+    Cmd_AddCommand("demospeeddown", coduomp_DemoSpeedDown_f);
     Cmd_AddCommand("demofastforward", coduomp_DemoFastForward_f);
     Cmd_AddCommand("cinematic", CL_PlayCinematic_f);
     Cmd_AddCommand("logo", CL_PlayLogo_f);
@@ -1779,6 +1780,7 @@ void CL_Shutdown(void)
     Cmd_RemoveCommand("demoforward");
     Cmd_RemoveCommand("demoframeback");
     Cmd_RemoveCommand("demoframestep");
+    Cmd_RemoveCommand("demospeeddown");
     Cmd_RemoveCommand("demofastforward");
     Cmd_RemoveCommand("cinematic");
     Cmd_RemoveCommand("stoprecord");
