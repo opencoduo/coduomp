@@ -697,6 +697,13 @@ void CL_PacketEvent(netadr_t from, msg_t *message, int32_t time)
  * before dropping the connection. */
 void CL_CheckTimeout(void)
 {
+    /* NOT_FROM_ORIGINAL_SOURCE: demo messages come from a local file, so
+     * wall-clock time without a network packet must never end playback. */
+    if (clc.demoPlayback != qfalse) {
+        cl.timeoutCount = 0;
+        return;
+    }
+
     if (cl_paused->integer != 0 &&
         sv_paused->integer != 0) {
         cl.timeoutCount = 0;
