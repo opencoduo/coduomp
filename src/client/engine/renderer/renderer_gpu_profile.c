@@ -18,6 +18,8 @@ enum {
     CODUOMP_GL_TIME_ELAPSED = 0x88bf
 };
 
+static const char coduompGpuProfileLogPath[] = "gpu_profile.log";
+
 typedef void (RENDERER_GL_API_CALL *coduomp_gl_gen_queries_t)(
     int32_t count, uint32_t *queries);
 typedef void (RENDERER_GL_API_CALL *coduomp_gl_delete_queries_t)(
@@ -86,6 +88,36 @@ static uint64_t
     coduompGpuProfileSummaryNanoseconds[CODUOMP_GPU_PROFILE_PHASE_COUNT];
 static uint64_t coduompGpuProfileSummaryMaximumNanoseconds;
 static uint32_t coduompGpuProfileSummaryDroppedQueries;
+static int32_t coduompGpuProfileLogFile;
+static qboolean coduompGpuProfileLogOpenAttempted;
+static qboolean coduompGpuProfileWasEnabled;
+static qboolean coduompGpuProfileCapacityWarningPrinted;
+
+/* NOT_FROM_ORIGINAL_SOURCE: open one filesystem-buffered diagnostic log and
+ * leave the console for one-time status and error messages only. */
+static qboolean coduomp_gpu_profile_open_log(void)
+{
+    if (coduompGpuProfileLogFile != 0)
+        return qtrue;
+    if (coduompGpuProfileLogOpenAttempted != qfalse)
+        return qfalse;
+
+    coduompGpuProfileLogOpenAttempted = qtrue;
+    coduompGpuProfileLogFile =
+        FS_FOpenFileWrite(coduompGpuProfileLogPath);
+    if (coduompGpuProfileLogFile == 0) {
+        ri.Printf(R_PRINT_WARNING,
+                  "GPU profiling unavailable: could not open %s\n",
+                  coduompGpuProfileLogPath);
+        return qfalse;
+    }
+
+    FS_Printf(coduompGpuProfileLogFile,
+              "GPU_PROFILE_LOG version=1 time_unit=milliseconds\n");
+    ri.Printf(R_PRINT_ALL, "GPU profiling writing to %s\n",
+              coduompGpuProfileLogPath);
+    return qtrue;
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: return milliseconds without narrowing the stored
  * nanosecond result before conversion. */
@@ -142,14 +174,14 @@ static void coduomp_gpu_profile_find_top_shaders(
 
 /* NOT_FROM_ORIGINAL_SOURCE: emit a parseable slow-frame record and its most
  * expensive shader batches after every query for the frame has completed. */
-static void coduomp_gpu_profile_print_frame(
+static void coduomp_gpu_profile_write_frame(
     const coduomp_gpu_profile_frame_t *frame, uint64_t totalNanoseconds)
 {
     int32_t top[3];
 
     coduomp_gpu_profile_find_top_shaders(frame, top);
-    ri.Printf(
-        R_PRINT_ALL,
+    FS_Printf(
+        coduompGpuProfileLogFile,
         "GPU_PROFILE frame=%u total_ms=%.3f view_ms=%.3f world_ms=%.3f "
         "bmodel_ms=%.3f model_ms=%.3f smodel_ms=%.3f effects_ms=%.3f "
         "sky_ms=%.3f shadows_ms=%.3f flares_ms=%.3f 2d_ms=%.3f "
@@ -187,8 +219,8 @@ static void coduomp_gpu_profile_print_frame(
         frame->droppedQueries);
 
     if (top[0] >= 0) {
-        ri.Printf(
-            R_PRINT_ALL,
+        FS_Printf(
+            coduompGpuProfileLogFile,
             "GPU_PROFILE_TOP frame=%u shader1=%s:%.3f shader2=%s:%.3f "
             "shader3=%s:%.3f untracked_ms=%.3f\n",
             frame->serial,
@@ -212,7 +244,7 @@ static void coduomp_gpu_profile_print_frame(
 
 /* NOT_FROM_ORIGINAL_SOURCE: periodically report average phase costs even when
  * no individual frame exceeds the configured slow-frame threshold. */
-static void coduomp_gpu_profile_print_summary(void)
+static void coduomp_gpu_profile_write_summary(void)
 {
     uint64_t totalNanoseconds = 0;
 
@@ -221,8 +253,8 @@ static void coduomp_gpu_profile_print_summary(void)
         totalNanoseconds += coduompGpuProfileSummaryNanoseconds[phase];
     }
 
-    ri.Printf(
-        R_PRINT_ALL,
+    FS_Printf(
+        coduompGpuProfileLogFile,
         "GPU_PROFILE_SUMMARY frames=%u avg_total_ms=%.3f max_total_ms=%.3f "
         "avg_view_ms=%.3f avg_world_ms=%.3f avg_bmodel_ms=%.3f "
         "avg_model_ms=%.3f avg_smodel_ms=%.3f avg_effects_ms=%.3f "
@@ -271,6 +303,24 @@ static void coduomp_gpu_profile_print_summary(void)
            sizeof(coduompGpuProfileSummaryNanoseconds));
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: finish and flush a capture only after every
+ * delayed query from it has resolved, keeping later captures in the same log. */
+static void coduomp_gpu_profile_pause_log(void)
+{
+    if (coduompGpuProfileLogFile == 0)
+        return;
+
+    if (coduompGpuProfileSummaryCount != 0)
+        coduomp_gpu_profile_write_summary();
+    FS_Printf(coduompGpuProfileLogFile,
+              "GPU_PROFILE_END next_frame=%u\n",
+              coduompGpuProfileNextFrameSerial + 1);
+    FS_Flush(coduompGpuProfileLogFile);
+    coduompGpuProfileWasEnabled = qfalse;
+    ri.Printf(R_PRINT_ALL, "GPU profiling paused; flushed %s\n",
+              coduompGpuProfileLogPath);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: finish one frame record only after all of its GPU
  * queries have become available. */
 static void coduomp_gpu_profile_finish_frame(int32_t frameIndex)
@@ -282,7 +332,7 @@ static void coduomp_gpu_profile_finish_frame(int32_t frameIndex)
 
     if (frame->mode >= 2 ||
         coduomp_gpu_profile_msec(totalNanoseconds) >= frame->slowMsec) {
-        coduomp_gpu_profile_print_frame(frame, totalNanoseconds);
+        coduomp_gpu_profile_write_frame(frame, totalNanoseconds);
     }
 
     ++coduompGpuProfileSummaryCount;
@@ -297,7 +347,7 @@ static void coduomp_gpu_profile_finish_frame(int32_t frameIndex)
 
     if (coduompGpuProfileSummaryCount >=
         CODUOMP_GPU_PROFILE_SUMMARY_FRAMES) {
-        coduomp_gpu_profile_print_summary();
+        coduomp_gpu_profile_write_summary();
     }
 
     memset(frame, 0, sizeof(*frame));
@@ -474,9 +524,28 @@ void coduomp_gpu_profile_frame_begin(void)
         coduomp_gpu_profile_collect();
 
     if (coduompGpuProfileMode == NULL ||
-        coduompGpuProfileMode->integer <= 0 ||
-        coduomp_gpu_profile_load_api() == qfalse) {
+        coduompGpuProfileMode->integer <= 0) {
+        if (coduompGpuProfileWasEnabled != qfalse &&
+            coduompGpuProfilePendingQueries == 0) {
+            coduomp_gpu_profile_pause_log();
+        }
         return;
+    }
+
+    if (coduomp_gpu_profile_load_api() == qfalse ||
+        coduomp_gpu_profile_open_log() == qfalse) {
+        return;
+    }
+
+    if (coduompGpuProfileWasEnabled == qfalse) {
+        FS_Printf(coduompGpuProfileLogFile,
+                  "GPU_PROFILE_BEGIN mode=%d slow_ms=%.3f\n",
+                  coduompGpuProfileMode->integer,
+                  coduompGpuProfileSlowMsec != NULL
+                      ? (double)coduompGpuProfileSlowMsec->value
+                      : 0.0);
+        coduompGpuProfileWasEnabled = qtrue;
+        coduompGpuProfileCapacityWarningPrinted = qfalse;
     }
 
     for (int32_t frameIndex = 0;
@@ -498,8 +567,11 @@ void coduomp_gpu_profile_frame_begin(void)
         return;
     }
 
-    ri.Printf(R_PRINT_WARNING,
-              "GPU profiling skipped a frame: delayed frame records are full\n");
+    if (coduompGpuProfileCapacityWarningPrinted == qfalse) {
+        coduompGpuProfileCapacityWarningPrinted = qtrue;
+        ri.Printf(R_PRINT_WARNING,
+                  "GPU profiling skipped frames: delayed records are full\n");
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: mark the current command list complete and poll
@@ -623,6 +695,24 @@ void coduomp_gpu_profile_end(qboolean started)
  * renderer destroys or replaces its OpenGL context. */
 void coduomp_gpu_profile_shutdown(void)
 {
+    if (coduompGpuProfileApiReady != qfalse)
+        coduomp_gpu_profile_collect();
+
+    if (coduompGpuProfileLogFile != 0) {
+        if (coduompGpuProfileSummaryCount != 0)
+            coduomp_gpu_profile_write_summary();
+        if (coduompGpuProfileWasEnabled != qfalse) {
+            FS_Printf(coduompGpuProfileLogFile,
+                      "GPU_PROFILE_END shutdown=1 pending_queries=%d\n",
+                      coduompGpuProfilePendingQueries);
+        }
+        FS_FCloseFile(coduompGpuProfileLogFile);
+        if (coduompGpuProfileWasEnabled != qfalse) {
+            ri.Printf(R_PRINT_ALL, "GPU profiling stopped; closed %s\n",
+                      coduompGpuProfileLogPath);
+        }
+    }
+
     if (coduompGpuProfileActiveQuery >= 0 &&
         coduompGlEndQuery != NULL) {
         coduompGlEndQuery(CODUOMP_GL_TIME_ELAPSED);
@@ -658,6 +748,10 @@ void coduomp_gpu_profile_shutdown(void)
     coduompGpuProfileSummaryCount = 0;
     coduompGpuProfileSummaryMaximumNanoseconds = 0;
     coduompGpuProfileSummaryDroppedQueries = 0;
+    coduompGpuProfileLogFile = 0;
+    coduompGpuProfileLogOpenAttempted = qfalse;
+    coduompGpuProfileWasEnabled = qfalse;
+    coduompGpuProfileCapacityWarningPrinted = qfalse;
 }
 
 #endif
