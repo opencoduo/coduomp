@@ -14,8 +14,9 @@ playdemo <demo_name> <mod_folder>
 playdemo <demo_name> <mod_folder> <server_name>
 ```
 
-`listdemos [mod_folder]` prints the arguments needed to play each available
-demo.
+`listdemos [mod_folder]` prints the command needed to play each available demo.
+The displayed demo name omits the `.dm_3` file suffix because `playdemo` adds
+it automatically.
 
 During playback, **Space** pauses or resumes, **Left/Right** seeks five seconds,
 **.** advances one snapshot while paused, and **F** cycles through 1x, 2x, 4x,

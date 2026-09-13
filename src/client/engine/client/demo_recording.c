@@ -1964,9 +1964,23 @@ void coduomp_ListDemos_f(void)
     }
 
     Com_Printf("Available demos:\n");
+    char demoExtension[CL_DEMO_EXTENSION_CAPACITY];
+    Com_sprintf(demoExtension, sizeof(demoExtension), ".dm_%d",
+                CL_DEMO_PROTOCOL_VERSION);
+    const size_t demoExtensionLength = strlen(demoExtension);
     const char *previousMod = NULL;
     for (size_t index = 0; index < list.count; ++index) {
         const coduomp_demo_list_entry_t *const entry = &list.entries[index];
+        char commandDemoName[CL_DEMO_FILENAME_CAPACITY];
+        Q_strncpyz(commandDemoName, entry->demoFileName,
+                   sizeof(commandDemoName));
+        const size_t commandDemoNameLength = strlen(commandDemoName);
+        if (commandDemoNameLength >= demoExtensionLength &&
+            Q_stricmp(commandDemoName + commandDemoNameLength -
+                          demoExtensionLength,
+                      demoExtension) == 0) {
+            commandDemoName[commandDemoNameLength - demoExtensionLength] = '\0';
+        }
         if (previousMod == NULL ||
             Q_stricmp(previousMod, entry->modFolder) != 0) {
             if (entry->modFolder[0] == '\0')
@@ -1976,13 +1990,13 @@ void coduomp_ListDemos_f(void)
             previousMod = entry->modFolder;
         }
         if (entry->modFolder[0] == '\0') {
-            Com_Printf("  playdemo %s\n", entry->demoFileName);
+            Com_Printf("  playdemo %s\n", commandDemoName);
         } else if (coduomp_demo_list_server_required(&list, index) !=
                    qfalse) {
-            Com_Printf("  playdemo %s %s %s\n", entry->demoFileName,
+            Com_Printf("  playdemo %s %s %s\n", commandDemoName,
                        entry->modFolder, entry->sourceName);
         } else {
-            Com_Printf("  playdemo %s %s\n", entry->demoFileName,
+            Com_Printf("  playdemo %s %s\n", commandDemoName,
                        entry->modFolder);
         }
     }
