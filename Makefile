@@ -429,6 +429,7 @@ help:
 	  'Options:' \
 	  '  WORKBENCH_DIR=path BUILD_DIR=path JOBS=N AUTH=1|0' \
 	  '  CODUO_FP_FAITHFUL=auto|strict|relaxed' \
+	  '  CODUOMP_RENDERER_GPU_PROFILE=1 builds asynchronous renderer GPU timings' \
 	  '  CLIENT_DATA_PATH=/path/to/retail/root CLIENT_ARGS=...' \
 	  '  CLIENT_TEST_WORK_DIR=path CLIENT_TEST_HOME_PATH=path' \
 	  '  MACOS_BUNDLE_VERSION=X.Y.Z MACOS_BUNDLE_BUILD=N' \

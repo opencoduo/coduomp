@@ -2,6 +2,7 @@
 
 #include "gl_api.h"
 #include "gl_state.h"
+#include "renderer_gpu_profile.h"
 
 #include "../client/debug_lines.h"
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -107,6 +108,11 @@ const void *RB_DrawSurfs(const drawSurfsCommand_t *command)
  * Name: same-module Mac symbol RB_DrawBuffer. */
 const void *RB_DrawBuffer(const drawBufferCommand_t *command)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated GPU diagnostic timing. */
+    const qboolean gpuProfileStarted = coduomp_gpu_profile_begin(
+        CODUOMP_GPU_PROFILE_PHASE_CLEAR, NULL);
+#endif
     /* NOT_FROM_ORIGINAL_SOURCE: an error abort between a scope's queued open
      * and close markers leaves the backend presentation flags stuck across
      * frames. No legitimate scope spans this frame-begin command, so it
@@ -137,6 +143,9 @@ const void *RB_DrawBuffer(const drawBufferCommand_t *command)
         qglClear(GL_COLOR_BUFFER_BIT);
     }
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
     return command + 1;
 }
 
@@ -145,15 +154,27 @@ const void *RB_DrawBuffer(const drawBufferCommand_t *command)
  * Name: same-module Mac symbol RB_SaveScreen. */
 const void *RB_SaveScreen(const save_screen_command_t *command)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated GPU diagnostic timing. */
+    qboolean gpuProfileStarted;
+#endif
+
     if (!backEnd.projection2D)
         RB_SetGL2D();
     if (tess.vertexCount != 0)
         RB_EndSurface();
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    gpuProfileStarted = coduomp_gpu_profile_begin(
+        CODUOMP_GPU_PROFILE_PHASE_SCREEN_COPY, NULL);
+#endif
     RB_EndMultitexture();
     GL_Bind(tr.screenImage);
     qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0,
                          glConfig.vidWidth, glConfig.vidHeight);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
 
     tr.screenImageSaveTime = backEnd.refdef.time;
     tr.screenImageSMax =
@@ -446,6 +467,11 @@ void RB_ExecuteRenderCommands(const void *data)
         GLimp_EndFrame();
     }
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: delimit one diagnostic backend frame. */
+    coduomp_gpu_profile_frame_begin();
+#endif
+
     backEnd.dynamicBuffer.freeBytes = backEnd.dynamicBuffer.capacity;
     backEnd.dynamicBuffer.allocationSequence = 0;
     backEnd.dynamicBuffer.reclaimSequence = 1;
@@ -546,6 +572,10 @@ void RB_ExecuteRenderCommands(const void *data)
                 tr.dynamicBufferMaxFrameSerial =
                     backEnd.dynamicBuffer.frameSerial;
             }
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            /* NOT_FROM_ORIGINAL_SOURCE: collect without waiting for the GPU. */
+            coduomp_gpu_profile_frame_end();
+#endif
             return;
         }
     }

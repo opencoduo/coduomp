@@ -4,6 +4,7 @@
 #include "gl_api.h"
 #include "gl_debug.h"
 #include "platform_gamma.h"
+#include "renderer_gpu_profile.h"
 #include "wgl_debug.h"
 #include "output_gamma_compat.h"
 #include "../platform/hardware_profile.h"
@@ -2289,7 +2290,15 @@ void GLimp_EndFrame(void)
             R_VERTEX_ARRAY_RANGE_NONE) {
             qglFlushVertexArrayRangeNV();
         }
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: time the software-gamma presentation. */
+        const qboolean gpuProfileStarted = coduomp_gpu_profile_begin(
+            CODUOMP_GPU_PROFILE_PHASE_PRESENT, NULL);
+#endif
         coduomp_output_gamma_present_compat();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
 #if defined(_WIN32)
         SwapBuffers((HDC)rendererWin32DeviceContext);
 #else

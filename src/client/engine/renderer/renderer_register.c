@@ -3,6 +3,7 @@
 #include "gl_state.h"
 #include "platform_gamma.h"
 #include "renderer_cvars.h"
+#include "renderer_gpu_profile.h"
 #include "../platform/hardware_profile.h"
 
 enum {
@@ -203,6 +204,10 @@ cvar_t *r_smc_enable;
  * the source-level registration boundary and command names. */
 void R_Register(void)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: runtime controls exist only in profile builds. */
+    coduomp_gpu_profile_register();
+#endif
     r_cheats = Cvar_Get("sv_cheats", "0",
                         CVAR_ROM | CVAR_SYSTEMINFO);
     r_maxActiveTextures =

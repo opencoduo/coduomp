@@ -3,6 +3,7 @@
 #include "gl_api.h"
 #include "gl_state.h"
 #include "renderer_cvars.h"
+#include "renderer_gpu_profile.h"
 
 #include <string.h>
 
@@ -861,14 +862,25 @@ void RB_EndSurface_Optimized(void)
 void RB_EndSurface(void)
 {
     qboolean optimizedSurfaceEnded = qfalse;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: time each submitted batch by material. */
+    const qboolean gpuProfileStarted =
+        tess.renderedIndexCount != 0 || tess.indexCount != 0
+            ? coduomp_gpu_profile_begin_surface()
+            : qfalse;
+#endif
 
     if (tess.renderedIndexCount != 0) {
         RB_EndSurface_Optimized();
         optimizedSurfaceEnded = qtrue;
     }
 
-    if (tess.indexCount == 0)
+    if (tess.indexCount == 0) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
         return;
+    }
 
     if (tess.indexes[R_MAX_TESS_INDEXES - 1] != 0) {
         ri.Error(ERR_DROP,
@@ -883,12 +895,18 @@ void RB_EndSurface(void)
     if (tess.shader == tr.stencilShadowShader) {
         RB_ShadowTessEnd();
         tess.indexCount = 0;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
         return;
     }
 
     if (r_debugSort->integer != 0 &&
         (float)r_debugSort->integer < tess.shader->sort) {
         tess.indexCount = 0;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
         return;
     }
 
@@ -896,11 +914,17 @@ void RB_EndSurface(void)
         if ((backEnd.refdef.rdflags & RDF_SKYBOX_PORTAL) == 0) {
             if (tess.stageIterator == RB_StageIteratorSky) {
                 tess.indexCount = 0;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
                 return;
             }
         } else if (rendererSkyboxPortalActive == qfalse &&
                    tess.stageIterator != RB_StageIteratorSky) {
             tess.indexCount = 0;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
             return;
         }
     }
@@ -929,6 +953,9 @@ void RB_EndSurface(void)
 
     tess.indexCount = 0;
     GLimp_LogComment("----------\n");
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
 }
 
 /* Source: CoDUOMP.exe 0x004f0c40..0x004f0ccd.

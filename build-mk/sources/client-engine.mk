@@ -107,6 +107,7 @@ CLIENT_ENGINE_C_SOURCES := \
 	src/client/engine/renderer/renderer_fog.c \
 	src/client/engine/renderer/renderer_font.c \
 	src/client/engine/renderer/renderer_frame_commands.c \
+	src/client/engine/renderer/renderer_gpu_profile.c \
 	src/client/engine/renderer/renderer_freetype.c \
 	src/client/engine/renderer/renderer_image.c \
 	src/client/engine/renderer/reticle_upscale_compat.c \

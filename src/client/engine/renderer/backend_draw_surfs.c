@@ -2,6 +2,7 @@
 
 #include "gl_api.h"
 #include "gl_state.h"
+#include "renderer_gpu_profile.h"
 
 /* Source: CoDUOMP.exe 0x004bec70..0x004bf1f0.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004bec70_004bf1f1.mcode.
@@ -27,8 +28,19 @@ void RB_RenderDrawSurfList(const drawSurf_t *drawSurfs,
     uint32_t currentDepthRangeFlags = 0;
     uint32_t shaderFlagChanges = 0;
     int32_t drawSurfIndex;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated GPU diagnostic timing. */
+    qboolean gpuProfileStarted;
+#endif
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    gpuProfileStarted = coduomp_gpu_profile_begin(
+        CODUOMP_GPU_PROFILE_PHASE_VIEW_SETUP, NULL);
+#endif
     RB_BeginDrawingView();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
     backEnd.pc.surfaceCount += drawSurfCount;
     backEnd.currentEntity = &tr.worldEntity;
 
@@ -256,6 +268,18 @@ void RB_RenderDrawSurfList(const drawSurf_t *drawSurfs,
     if (currentDepthRangeFlags != 0)
         qglDepthRange(0.0, 1.0);
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    gpuProfileStarted = coduomp_gpu_profile_begin(
+        CODUOMP_GPU_PROFILE_PHASE_SHADOWS, NULL);
+#endif
     RB_ShadowFinish();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_end(gpuProfileStarted);
+    gpuProfileStarted = coduomp_gpu_profile_begin(
+        CODUOMP_GPU_PROFILE_PHASE_FLARES, NULL);
+#endif
     RB_RenderFlares();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_end(gpuProfileStarted);
+#endif
 }

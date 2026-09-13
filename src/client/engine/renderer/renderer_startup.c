@@ -3,6 +3,7 @@
 #include "gl_api.h"
 #include "gl_state.h"
 #include "renderer_cvars.h"
+#include "renderer_gpu_profile.h"
 #include "../animation/dobj.h"
 
 #include <math.h>
@@ -315,6 +316,10 @@ void RE_Shutdown(qboolean destroyWindow)
     ri.Cmd_RemoveCommand("r_vbo_refresh");
 
     if (tr.registered != qfalse) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: release context-owned diagnostic queries. */
+        coduomp_gpu_profile_shutdown();
+#endif
         R_DeleteTextures();
         R_DeleteVertexPrograms();
         R_DeleteFragmentShaders();
