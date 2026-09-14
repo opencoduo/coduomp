@@ -512,6 +512,7 @@ void CM_TraceThroughPatchCollide(
             traceWork->trace.fraction;
         int32_t hitBorder = -1;
         vec3_t hitNormal;
+        qboolean hasHitNormal = qfalse;
         qboolean facetAccepted = qtrue;
 
         for (int32_t facetPlaneIndex = -1;
@@ -616,12 +617,14 @@ void CM_TraceThroughPatchCollide(
                 hitNormal[0] = plane[0];
                 hitNormal[1] = plane[1];
                 hitNormal[2] = plane[2];
+                hasHitNormal = qtrue;
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
             }
         }
 
         if (facetAccepted == qfalse ||
+            hasHitNormal == qfalse ||
             hitBorder ==
                 facet->numBorders - 1 ||
             !(enterFraction < leaveFraction) ||
