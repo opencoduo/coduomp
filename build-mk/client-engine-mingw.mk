@@ -35,6 +35,13 @@ MINGW32_TARGET_DESCRIPTION ?= i686 MinGW-w64
 MINGW32_ARCHIVE_FORMAT ?= pe-i386
 MINGW32_REQUIRE_MSS ?= 1
 MINGW32_AUDIO_CPPFLAGS ?= -DAUDIO_BACKEND_MILES
+# GCC 14 promotes these C constraint violations to errors by default. Keep
+# older MinGW toolchains equally strict so cross-builds enforce the same source
+# type safety as current native compilers.
+CLIENT_C_TYPE_ERRORS := -Werror=implicit-int \
+	-Werror=implicit-function-declaration \
+	-Werror=incompatible-pointer-types \
+	-Werror=int-conversion -Werror=return-type
 MINGW32_COMMON_CFLAGS ?= -g -O0
 MINGW32_ENGINE_CFLAGS := $(filter-out -O%,$(MINGW32_COMMON_CFLAGS))
 MINGW32_FLOAT_FLAGS := -O0 -mfpmath=387 -fexcess-precision=fast
@@ -50,7 +57,8 @@ MINGW32_CPPFLAGS := -Isrc \
 	$(if $(MINGW32_DEP_PREFIX),-I$(MINGW32_DEP_PREFIX)/include/SDL2) \
 	$(MINGW32_AUDIO_CPPFLAGS) \
 	$(MINGW32_DEP_CPPFLAGS)
-MINGW32_CFLAGS := -std=c11 $(MINGW32_ENGINE_CFLAGS) -fwrapv \
+MINGW32_CFLAGS := -std=c11 $(CLIENT_C_TYPE_ERRORS) \
+	$(MINGW32_ENGINE_CFLAGS) -fwrapv \
 	$(MINGW32_FLOAT_FLAGS) $(MINGW32_ARCH_FLAGS) -MMD -MP
 MINGW32_CXXFLAGS := -std=c++17 $(MINGW32_ENGINE_CFLAGS) -fwrapv \
 	$(MINGW32_FLOAT_FLAGS) $(MINGW32_ARCH_FLAGS) -MMD -MP

@@ -169,6 +169,13 @@ override CLIENT_FP_CPPFLAGS := -DEMULATE_X87=0
 CLIENT_INCLUDE_FLAGS := -iquote src/client/cgame/bindings \
 	-iquote src/qcommon/bindings/default \
 	-Isrc
+# GCC 14 promotes these C constraint violations to errors by default. Keep
+# older release toolchains equally strict so downstream compilers cannot be
+# the first to reject a client source build.
+CLIENT_C_TYPE_ERRORS := -Werror=implicit-int \
+	-Werror=implicit-function-declaration \
+	-Werror=incompatible-pointer-types \
+	-Werror=int-conversion -Werror=return-type
 CLIENT_WINDOWS_CC ?= x86_64-w64-mingw32-gcc
 CLIENT_WIN32_CC ?= i686-w64-mingw32-gcc
 CLIENT_WINDOWS_DEF := build-mk/abi/cgame/uo_cgame_mp_x86.def
@@ -297,6 +304,8 @@ CODUOMP_NATIVE_CFLAGS := -g -O0 $(CODUOMP_INTEGER_FLAGS) \
 	$(CODUOMP_JPEG_CFLAGS) $(CODUOMP_SDL_CFLAGS) \
 	$(CODUOMP_CURL_CFLAGS) $(CODUOMP_MINIZIP_CFLAGS) \
 	-MMD -MP
+CODUOMP_NATIVE_C_COMPILE_FLAGS := $(CODUOMP_NATIVE_CFLAGS) \
+	$(CLIENT_C_TYPE_ERRORS)
 CODUOMP_NATIVE_C_OBJECTS := $(patsubst src/client/engine/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/%.c.o,$(CODUOMP_C_SOURCES)) \
 	$(patsubst $(CODUOMP_WINDOWS_GENERATED_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/generated-windows/%.c.o,$(CODUOMP_WINDOWS_GENERATED_C_SOURCES)) \
 	$(patsubst $(SHARED_CLIENT_COMMON_DIR)/%.c,$(CODUOMP_NATIVE_BUILD_DIR)/src/client/common/%.c.o,$(SHARED_CLIENT_COMMON_C_SOURCES)) \
@@ -326,15 +335,15 @@ endif
 CLIENT_NATIVE_FLOAT_FLAGS := -ffp-contract=off
 client-native-link:
 	@mkdir -p $(dir $(CLIENT_NATIVE_LIBRARY))
-	$(CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) $(PLATFORM_BEHAVIOR_CPPFLAGS) -g -O0 $(CLIENT_NATIVE_FLOAT_FLAGS) -fno-common -fPIC -fvisibility=hidden $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) $(CLIENT_NATIVE_LDFLAGS) -lm -o $(CLIENT_NATIVE_LIBRARY)
+	$(CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) $(PLATFORM_BEHAVIOR_CPPFLAGS) $(CLIENT_C_TYPE_ERRORS) -g -O0 $(CLIENT_NATIVE_FLOAT_FLAGS) -fno-common -fPIC -fvisibility=hidden $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) $(CLIENT_NATIVE_LDFLAGS) -lm -o $(CLIENT_NATIVE_LIBRARY)
 
 client-windows-cross-link:
 	@mkdir -p $(dir $(CLIENT_WINDOWS_LIBRARY))
-	$(CLIENT_WINDOWS_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WINDOWS_LIBRARY)
+	$(CLIENT_WINDOWS_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_C_TYPE_ERRORS) $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WINDOWS_LIBRARY)
 
 client-win32-abi-link:
 	@mkdir -p $(dir $(CLIENT_WIN32_LIBRARY))
-	$(CLIENT_WIN32_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WIN32_LIBRARY)
+	$(CLIENT_WIN32_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_C_TYPE_ERRORS) $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WIN32_LIBRARY)
 
 # Compiler-policy changes in these files must invalidate existing native
 # objects.  Dependency files cover source/header changes but do not record the
@@ -348,59 +357,59 @@ $(CODUOMP_NATIVE_C_OBJECTS) $(CODUOMP_NATIVE_CXX_OBJECTS) \
 
 $(CODUOMP_NATIVE_BUILD_DIR)/%.c.o: src/client/engine/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) \
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) \
 		$(CODUOMP_NATIVE_C_OPTIMIZATION_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/generated-windows/%.c.o: $(CODUOMP_WINDOWS_GENERATED_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/qcommon/%.c.o: $(SHARED_QCOMMON_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/compat/crt/%.c.o: $(SHARED_CRT_COMPAT_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/client/common/%.c.o: $(SHARED_CLIENT_COMMON_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/client/math/%.c.o: $(CLIENT_MODULE_MATH_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/math/%.c.o: $(SHARED_MATH_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) \
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) \
 		$(CODUOMP_NATIVE_C_OPTIMIZATION_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/sound/alias/%.c.o: $(SHARED_SOUND_ALIAS_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/animation/%.c.o: $(SHARED_ANIMATION_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) \
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) \
 		$(CODUOMP_NATIVE_C_OPTIMIZATION_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/collision/%.c.o: $(SHARED_COLLISION_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) \
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) \
 		$(CODUOMP_NATIVE_C_OPTIMIZATION_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/filesystem/%.c.o: $(SHARED_FILESYSTEM_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/shared-server/%.c.o: $(SHARED_SERVER_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/scripting/%.c.o: $(SHARED_SCRIPT_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -std=c11 $(CODUOMP_NATIVE_CFLAGS) -c $< -o $@
+	$(CC) -std=c11 $(CODUOMP_NATIVE_C_COMPILE_FLAGS) -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/%.cpp.o: src/client/engine/%.cpp
 	@mkdir -p $(dir $@)
@@ -408,7 +417,7 @@ $(CODUOMP_NATIVE_BUILD_DIR)/%.cpp.o: src/client/engine/%.cpp
 
 $(CODUOMP_NATIVE_BUILD_DIR)/%.m.o: src/client/engine/%.m
 	@mkdir -p $(dir $@)
-	$(CC) $(CODUOMP_NATIVE_CFLAGS) $(CODUOMP_NATIVE_OBJC_OPTIMIZATION_FLAGS) -fobjc-arc -c $< -o $@
+	$(CC) $(CODUOMP_NATIVE_C_COMPILE_FLAGS) $(CODUOMP_NATIVE_OBJC_OPTIMIZATION_FLAGS) -fobjc-arc -c $< -o $@
 
 $(CODUOMP_NATIVE_BUILD_DIR)/src/scripting/%.cpp.o: $(SHARED_SCRIPT_DIR)/%.cpp
 	@mkdir -p $(dir $@)
