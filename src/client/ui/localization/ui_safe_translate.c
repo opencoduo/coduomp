@@ -33,6 +33,7 @@ static const ui_compat_translation_t uiCompatTranslations[] = {
     { "CODUOMP_GRAPHICS_FILL_SCREEN", "Fill Screen (Wider FOV)", "Llenar pantalla (FOV m\341s amplio)" },
     { "CODUOMP_GRAPHICS_LETTERBOX", "Classic 4:3 (Letterboxed)", "4:3 cl\341sico (con barras)" },
     { "CODUOMP_GRAPHICS_GAMEPLAY_VIEW", "Gameplay View", "Vista de juego" },
+    { "CODUOMP_GRAPHICS_FIELD_OF_VIEW", "Field of View", "Campo de visi\363n" },
     { "CODUOMP_EFFECTS_VOLUME", "Effects Volume", "Volumen de efectos" },
     { "CODUOMP_MUSIC_VOLUME", "Music Volume", "Volumen de m\372sica" },
     { "CODUOMP_ADVANCED", "Advanced", "Avanzado" },

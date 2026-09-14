@@ -253,10 +253,14 @@ void ui_compat_extend_graphics_menu(void)
     itemDef_t *resolutionItem;
     itemDef_t *displayModeItem;
     itemDef_t *aspectItem;
+    itemDef_t *gammaItem;
+    itemDef_t *fovItem;
+    editFieldDef_t *fovRange;
     ui_compat_multi_value_t resolutionModes[
         sizeof(uiCompatResolutions) / sizeof(uiCompatResolutions[0])];
     int32_t resolutionModeCount = 0;
     int32_t displayModeIndex;
+    int32_t gammaLastIndex;
     const uint32_t availableModes = (uint32_t)coduo_crt_atoi(
         UI_Cvar_VariableString("r_availableModes"));
 
@@ -268,9 +272,21 @@ void ui_compat_extend_graphics_menu(void)
     displayModeItem =
         ui_compat_find_cvar_item(
             menu, "ui_r_fullscreen", &displayModeIndex);
+    gammaItem = ui_compat_find_cvar_item(menu, "r_gamma", &gammaLastIndex);
     if (resolutionItem == NULL || displayModeItem == NULL ||
-        menu->itemCount > MAX_MENUITEMS - 1) {
+        gammaItem == NULL || gammaItem->typeValidated != ITEM_TYPE_SLIDER ||
+        gammaItem->typeData == NULL ||
+        menu->itemCount > MAX_MENUITEMS - 2) {
         return;
+    }
+    for (int32_t index = gammaLastIndex + 1;
+         index < menu->itemCount; ++index) {
+        const itemDef_t *const item = menu->items[index];
+
+        if (item != NULL && item->cvar != NULL &&
+            Q_stricmp(item->cvar, "r_gamma") == 0) {
+            gammaLastIndex = index;
+        }
     }
 
     resolutionModes[resolutionModeCount++] = uiCompatResolutions[0];
@@ -312,8 +328,11 @@ void ui_compat_extend_graphics_menu(void)
         itemDef_t *const item = menu->items[index];
 
         if (item->window.rectClient.y >= 110.0f &&
-            item->window.rectClient.y <= 200.0f) {
+            item->window.rectClient.y <= 185.0f) {
             item->window.rectClient.y += 15.0f;
+        } else if (item->window.rectClient.y > 185.0f &&
+                   item->window.rectClient.y <= 200.0f) {
+            item->window.rectClient.y += 30.0f;
         }
     }
 
@@ -330,6 +349,33 @@ void ui_compat_extend_graphics_menu(void)
     ui_compat_set_numeric_multi(
         aspectItem, aspectModes,
         (int32_t)(sizeof(aspectModes) / sizeof(aspectModes[0])));
+
+    /* The recovered cgame treats cg_fov as a 4:3-reference horizontal angle:
+     * Fill Screen expands 80 degrees to the selected widescreen aspect while
+     * Classic 4:3 leaves it at 80. Expose the cgame's useful 80..120 range;
+     * the shared slider input uses defVal for this row's right-click reset. */
+    fovItem = ui_compat_clone_menu_item(gammaItem, menu);
+    fovRange = UI_Alloc(sizeof(*fovRange));
+    memcpy(fovRange, gammaItem->typeData, sizeof(*fovRange));
+    fovRange->defVal = 80.0f;
+    fovRange->minVal = 80.0f;
+    fovRange->maxVal = 120.0f;
+    fovItem->window.name = String_Alloc("coduomp_field_of_view");
+    fovItem->window.rectClient.y = 215.0f;
+    fovItem->text = String_Alloc("@CODUOMP_GRAPHICS_FIELD_OF_VIEW");
+    fovItem->cvar = String_Alloc("cg_fov");
+    fovItem->cvarTest = NULL;
+    fovItem->enableCvar = NULL;
+    fovItem->cvarFlags = 0;
+    fovItem->action = String_Alloc("play \"mouse_click\"; ");
+    fovItem->typeData = fovRange;
+
+    for (int32_t index = menu->itemCount;
+         index > gammaLastIndex + 1; --index) {
+        menu->items[index] = menu->items[index - 1];
+    }
+    menu->items[gammaLastIndex + 1] = fovItem;
+    menu->itemCount += 1;
 
     for (int32_t index = menu->itemCount;
          index > displayModeIndex + 1; --index) {

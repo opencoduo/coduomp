@@ -119,6 +119,13 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key)
     if (editField == NULL) {
         return qfalse;
     }
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the improved graphics
+     * menu's FOV slider uses its parsed/default range value as a right-click
+     * reset. Other sliders retain the original right-click positioning. */
+    if (key == K_MOUSE2 && Q_stricmp(item->cvar, "cg_fov") == 0) {
+        DC->setCVar(item->cvar, va("%f", (double)editField->defVal));
+        return qtrue;
+    }
     if (item->text != NULL) {
         origin = item->textRect.x + item->textRect.w + UI_SLIDER_TEXT_GAP;
     } else {
