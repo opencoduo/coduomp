@@ -128,6 +128,8 @@ extern cvar_t *com_statmon;                   /* original 0x04927ea8 */
 extern cvar_t *com_viewlog;                   /* original 0x04927eb4 */
 extern cvar_t *com_speeds;                    /* original 0x04929064 */
 extern cvar_t *com_maxfps;                    /* original 0x0492908c */
+/* NOT_FROM_ORIGINAL_SOURCE: opt-in improved-client frame-deadline scheduler. */
+extern cvar_t *com_preciseFramePacing;
 extern cvar_t *com_recommendedSet;            /* original 0x04929094 */
 extern cvar_t *com_introPlayed;               /* original 0x04929098 */
 extern cvar_t *com_animCheck;                 /* original 0x04929078 */
@@ -162,6 +164,8 @@ extern int32_t statmonEntryCount;
 extern const vec4_t colorBlack;               /* original 0x0058fb98 */
 extern const vec4_t colorWhite;               /* original 0x0058fc68 */
 uint32_t Sys_Milliseconds(void);
+/* NOT_FROM_ORIGINAL_SOURCE: monotonic precision clock used only for scheduling. */
+uint64_t coduomp_monotonic_nanoseconds(void);
 qboolean Com_ConfigureChecksum(void);
 void Com_SetRecommended(qboolean restartSound);
 char *Sys_DateTimeStamp(void);
