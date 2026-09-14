@@ -485,13 +485,13 @@ void R_AddTrianglesSurface(msurface_t *worldSurface,
         return;
 
     surface = (renderer_lit_surface_t *)worldSurface->data;
-    if (R_CullBoxDPVS(&surface->boundsMin, planes,
+    if (R_CullBoxDPVS(surface->bounds, planes,
                       planeCount, planeIndex)) {
         return;
     }
 
     if ((r_showaabbtrees->integer & 2) != 0) {
-        R_AddDebugBox(surface->boundsMin, surface->boundsMax,
+        R_AddDebugBox(surface->bounds[0], surface->bounds[1],
                       visibleSurfaceDebugColor);
     }
     R_AddWorldSurfaceNoCull(worldSurface, dlightBits);
@@ -521,7 +521,7 @@ void R_AddSkySurfacesDPVS(void)
             (renderer_lit_surface_t *)worldSurface->data;
 
         if (worldSurface->viewCount != tr.viewCount &&
-            R_BoxBehindPlane(&surface->boundsMin, farPlane)) {
+            R_BoxBehindPlane(surface->bounds, farPlane)) {
             R_AddTrianglesSurface(worldSurface, 0,
                                   rendererDpvsFrustumPlanes,
                                   R_FRUSTUM_PLANE_COUNT, 0);
@@ -1063,11 +1063,12 @@ void R_AddCullGroupDPVS(renderer_cull_group_t *group,
                         const renderer_dpvs_plane_t *planes,
                         int32_t planeCount, uint32_t dlightBits)
 {
-    if (R_CullBoxDPVS(&group->mins, planes, planeCount, 0))
+    if (R_CullBoxDPVS(group->bounds, planes, planeCount, 0))
         return;
 
     if ((r_showportals->integer & 1) != 0)
-        R_AddDebugBox(group->mins, group->maxs, cullGroupDebugColor);
+        R_AddDebugBox(group->bounds[0], group->bounds[1],
+                      cullGroupDebugColor);
 
     group->viewCount = tr.viewCount;
     uint32_t surfacesRemaining = (uint32_t)group->surfaceCount;
@@ -1090,7 +1091,7 @@ void R_AddStaticModelDPVS(renderer_static_model_t *model,
                           const renderer_dpvs_plane_t *planes,
                           int32_t planeCount)
 {
-    /* The Windows compiler inlines R_CullBoxDPVS(&model->mins, planes,
+    /* The Windows compiler inlines R_CullBoxDPVS(model->bounds, planes,
      * planeCount, 0) here.  In that inlined copy the frustum-plane corner
      * distance is evaluated (normal[0]*x + normal[1]*y) + normal[2]*z --
      * X->Y->Z, 0x00511e74..0x00511e8f -- distinct from the standalone
@@ -1098,7 +1099,7 @@ void R_AddStaticModelDPVS(renderer_static_model_t *model,
      * 0x00511ee8) and occluder sub-tests keep R_BoxBehindPlane's z+y+x order,
      * so those remain R_BoxBehindPlane calls; only the frustum loop is inlined
      * to preserve the X->Y->Z association. */
-    const vec3_t *bounds = &model->mins;
+    const vec3_t *bounds = model->bounds;
 
     if (0 < rendererDpvsCullPlaneLimit) {
         rendererDpvsCullPlaneLimit = INT32_MAX;
@@ -1148,7 +1149,8 @@ void R_AddStaticModelDPVS(renderer_static_model_t *model,
     }
 
     if (r_showCullSModels->integer != 0)
-        R_AddDebugBox(model->mins, model->maxs, staticModelDebugColor);
+        R_AddDebugBox(model->bounds[0], model->bounds[1],
+                      staticModelDebugColor);
 
     model->viewCount = tr.viewCount;
     RE_AddRefEntityToScene(&model->entity, model);
@@ -1521,7 +1523,7 @@ static void R_AddModelToCell(trRefEntity_t *entity,
          link != NULL;
          link = link->next) {
         if (link->entity == entity) {
-            ExpandBounds(mins, maxs, link->mins, link->maxs);
+            ExpandBounds(mins, maxs, link->bounds[0], link->bounds[1]);
             return;
         }
     }
@@ -1529,8 +1531,8 @@ static void R_AddModelToCell(trRefEntity_t *entity,
     renderer_cell_entity_link_t *link =
         &rendererDpvsCellEntityLinks[rendererDpvsCellEntityLinkCount++];
     link->entity = entity;
-    memcpy(link->mins, mins, sizeof(link->mins));
-    memcpy(link->maxs, maxs, sizeof(link->maxs));
+    memcpy(link->bounds[0], mins, sizeof(link->bounds[0]));
+    memcpy(link->bounds[1], maxs, sizeof(link->bounds[1]));
     link->next = cell->entityLinks;
     cell->entityLinks = link;
 }
@@ -1690,7 +1692,7 @@ void R_CullModels(renderer_world_cell_t *cell,
         if (link->entity->cullState == CULL_IN)
             continue;
 
-        if (R_CullBoxDPVS(&link->mins, planes, planeCount, 0) == qfalse)
+        if (R_CullBoxDPVS(link->bounds, planes, planeCount, 0) == qfalse)
             link->entity->cullState = CULL_IN;
     }
 }
@@ -1707,20 +1709,20 @@ void R_AddAABBTreeSurfaces_r(renderer_aabb_tree_t *tree,
                              int32_t planeCount, uint32_t dlightBits,
                              int32_t planeIndex)
 {
-    const vec3_t *bounds = &tree->mins;
+    const vec3_t *bounds = tree->bounds;
 
     if (R_CullBoxDPVS(bounds, planes, planeCount, planeIndex))
         return;
 
     if (dlightBits != 0) {
-        dlightBits = R_CullDlightsForBox(tree->mins, tree->maxs,
+        dlightBits = R_CullDlightsForBox(tree->bounds[0], tree->bounds[1],
                                          dlightBits);
     }
 
     if (R_CullBoxDPVSStrict(bounds, planes,
                             planeCount, planeIndex) == qfalse) {
         if (r_showaabbtrees->integer != 0) {
-            R_AddDebugBox(tree->mins, tree->maxs,
+            R_AddDebugBox(tree->bounds[0], tree->bounds[1],
                           acceptedTreeDebugColor);
         }
         for (int32_t surfaceIndex = 0;
@@ -1747,7 +1749,7 @@ void R_AddAABBTreeSurfaces_r(renderer_aabb_tree_t *tree,
     }
 
     if (r_showaabbtrees->integer != 0) {
-        R_AddDebugBox(tree->mins, tree->maxs,
+        R_AddDebugBox(tree->bounds[0], tree->bounds[1],
                       clippedLeafDebugColor);
     }
     for (int32_t surfaceIndex = 0;
@@ -1873,7 +1875,7 @@ void R_AddWorldSurfacesDPVS(void)
             }
 
             R_AddDebugBox(
-                link->mins, link->maxs,
+                link->bounds[0], link->bounds[1],
                 entity->cullState != 0
                     ? culledEntityDebugColor
                     : visibleEntityDebugColor);

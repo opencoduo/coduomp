@@ -389,7 +389,7 @@ void R_AddWorldSurfaceNoCull(msurface_t *worldSurface,
         storageMode = litSurface->storageMode;
         if (dlightBits != 0) {
             litSurface->dlightBits = R_CullDlightsForBox(
-                litSurface->boundsMin, litSurface->boundsMax, dlightBits);
+                litSurface->bounds[0], litSurface->bounds[1], dlightBits);
             hasDlights = litSurface->dlightBits != 0;
         }
     }
@@ -423,9 +423,7 @@ qboolean R_CullWorldSurface(const renderer_surface_t *surface)
 
     const renderer_lit_surface_t *litSurface =
         (const renderer_lit_surface_t *)surface;
-    return R_CullLocalBox(
-               (const vec3_t *)(const void *)&litSurface->boundsMin) ==
-           CULL_OUT;
+    return R_CullLocalBox(litSurface->bounds) == CULL_OUT;
 }
 
 /* Source: CoDUOMP.exe 0x0051cd40..0x0051cdd6.

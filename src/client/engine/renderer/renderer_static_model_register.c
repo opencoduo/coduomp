@@ -414,14 +414,14 @@ void R_AddStaticModelToWorld(renderer_static_model_instance_t *instance)
     worldModel->entity.shaderRGBA[3] = UINT8_MAX;
 
     for (int32_t axis = 0; axis < 3; ++axis) {
-        worldModel->mins[axis] = instance->mins[axis];
-        worldModel->maxs[axis] = instance->maxs[axis];
+        worldModel->bounds[0][axis] = instance->mins[axis];
+        worldModel->bounds[1][axis] = instance->maxs[axis];
     }
     worldModel->viewCount = 0;
 
     R_FilterStaticModelIntoCells_r(
         tr.world, tr.world->nodes, worldModel,
-        worldModel->mins, worldModel->maxs);
+        worldModel->bounds[0], worldModel->bounds[1]);
     worldModel->lightCount = R_GetStaticLightContributions(
         worldModel->entity.lightingOrigin, worldModel->contributions,
         &worldModel->diffuseSunContribution, worldModel->lights);
