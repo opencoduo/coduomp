@@ -180,12 +180,6 @@ void FS_Startup(const char *gameName);
 void FS_InitFilesystem(void);
 void FS_Restart(int32_t checksumFeed);
 qboolean FS_ConditionalRestart(int32_t checksumFeed);
-/* NOT_FROM_ORIGINAL_SOURCE: retain one caller-owned open stream across a
- * search-path restart without changing the original restart entry points. */
-void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
-                                      int32_t preservedHandle);
-void coduomp_FS_ShutdownPreservingFile(qboolean clearLookupLists,
-                                       int32_t preservedHandle);
 void FS_CheckRestrictedDemoPaks(void);
 void FS_ClearPakReferences(qboolean preserveGeneralAndGameReferences);
 void FS_PureServerSetLoadedPaks(
