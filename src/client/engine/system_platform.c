@@ -304,16 +304,18 @@ void coduomp_sys_enable_dpi_awareness(void)
 
     HMODULE user32 = GetModuleHandleA("user32.dll");
     if (user32 != NULL) {
-        sys_set_dpi_context_fn setContext = (sys_set_dpi_context_fn)
-            GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+        sys_set_dpi_context_fn setContext = NULL;
+        coduomp_library_symbol(user32, "SetProcessDpiAwarenessContext",
+                               &setContext, sizeof(setContext));
         if (setContext != NULL && setContext(perMonitorAwareV2) != FALSE)
             return;
     }
 
     HMODULE shcore = LoadLibraryA("shcore.dll");
     if (shcore != NULL) {
-        sys_set_dpi_awareness_fn setAwareness = (sys_set_dpi_awareness_fn)
-            GetProcAddress(shcore, "SetProcessDpiAwareness");
+        sys_set_dpi_awareness_fn setAwareness = NULL;
+        coduomp_library_symbol(shcore, "SetProcessDpiAwareness",
+                               &setAwareness, sizeof(setAwareness));
         if (setAwareness != NULL &&
             SUCCEEDED(setAwareness(SYS_PROCESS_PER_MONITOR_DPI_AWARE))) {
             FreeLibrary(shcore);
@@ -323,8 +325,9 @@ void coduomp_sys_enable_dpi_awareness(void)
     }
 
     if (user32 != NULL) {
-        sys_set_dpi_aware_fn setAware = (sys_set_dpi_aware_fn)
-            GetProcAddress(user32, "SetProcessDPIAware");
+        sys_set_dpi_aware_fn setAware = NULL;
+        coduomp_library_symbol(user32, "SetProcessDPIAware", &setAware,
+                               sizeof(setAware));
         if (setAware != NULL)
             (void)setAware();
     }
