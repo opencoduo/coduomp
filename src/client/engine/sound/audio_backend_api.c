@@ -26,6 +26,12 @@ qboolean audio_select_backend(
     const char *preferredName, const char **selectedName)
 {
     const audio_backend_api_t *selected = NULL;
+#if defined(AUDIO_BACKEND_MINIAUDIO)
+    if (audio_backend_name_matches(
+            preferredName, miniaudio_backend.name, NULL)) {
+        selected = &miniaudio_backend;
+    }
+#endif
 #if defined(AUDIO_BACKEND_OPENAL)
     if (audio_backend_name_matches(
             preferredName, openal_backend.name,
