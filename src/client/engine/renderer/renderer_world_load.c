@@ -1680,23 +1680,13 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
 
     tr.world = NULL;
     memset(&rendererWorldData, 0, sizeof(rendererWorldData));
-    strncpy(rendererWorldData.name, name,
-            sizeof(rendererWorldData.name) - 1U);
-    rendererWorldData.name[sizeof(rendererWorldData.name) - 1U] = '\0';
-
-    const char *baseName = rendererWorldData.name;
-    for (const char *cursor = rendererWorldData.name;
-         *cursor != '\0'; ++cursor) {
-        if (*cursor == '/')
-            baseName = cursor + 1;
-    }
-    strncpy(rendererWorldData.baseName, baseName,
-            sizeof(rendererWorldData.baseName) - 1U);
-    rendererWorldData.baseName[
-        sizeof(rendererWorldData.baseName) - 1U] = '\0';
-    char *extension = strchr(rendererWorldData.baseName, '.');
-    if (extension != NULL)
-        *extension = '\0';
+    Q_strncpyz(rendererWorldData.name, name,
+               (int32_t)sizeof(rendererWorldData.name));
+    Q_strncpyz(rendererWorldData.baseName,
+               Com_SkipPath(rendererWorldData.name),
+               (int32_t)sizeof(rendererWorldData.baseName));
+    Com_StripExtension(rendererWorldData.baseName,
+                       rendererWorldData.baseName);
 
     R_SetSkyBox(&rendererWorldData.skyVertexStorage);
     uint8_t *const hunkStart = (uint8_t *)ri.Hunk_Alloc(0);
