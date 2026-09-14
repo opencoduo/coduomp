@@ -1105,7 +1105,8 @@ void CL_Vid_Restart_f(void)
         CVAR_LATCH | CVAR_CHEAT);
 
     if (sv_running->integer == 0)
-        FS_ConditionalRestart(clc.checksumFeed);
+        (void)coduomp_FS_ConditionalRestartPreservingFile(
+            clc.checksumFeed, clc.demoFile);
     SEH_UpdateLanguageInfo();
 
     cls.rendererStarted = qfalse;

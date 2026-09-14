@@ -184,6 +184,8 @@ qboolean FS_ConditionalRestart(int32_t checksumFeed);
  * search-path restart without changing the original restart entry points. */
 void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
                                       int32_t preservedHandle);
+qboolean coduomp_FS_ConditionalRestartPreservingFile(
+    int32_t checksumFeed, int32_t preservedHandle);
 void coduomp_FS_ShutdownPreservingFile(qboolean clearLookupLists,
                                        int32_t preservedHandle);
 void FS_CheckRestrictedDemoPaks(void);

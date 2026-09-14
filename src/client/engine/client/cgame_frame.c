@@ -682,9 +682,22 @@ void CL_PacketEvent(netadr_t from, msg_t *message, int32_t time)
     CL_Netchan_Decode(
         message->data + message->readcount,
         message->cursize - message->readcount);
+
+    /* ORIGINAL_BINARY_BUG: retail appends a packet only after parsing it, but
+     * gamestate parsing can run a nested event loop and reverse packet order.
+     * NOT_FROM_ORIGINAL_SOURCE: once recording has reached a self-contained
+     * snapshot, append each packet before parsing it. */
+    const qboolean demoWrittenBeforeParse =
+        clc.demoRecording != qfalse && clc.demoWaiting == qfalse
+            ? qtrue
+            : qfalse;
+    if (demoWrittenBeforeParse != qfalse)
+        CL_WriteDemoMessage(message, headerBytes);
+
     CL_ParseServerMessage(message);
 
-    if (clc.demoRecording != qfalse &&
+    if (demoWrittenBeforeParse == qfalse &&
+        clc.demoRecording != qfalse &&
         clc.demoWaiting == qfalse) {
         CL_WriteDemoMessage(message, headerBytes);
     }

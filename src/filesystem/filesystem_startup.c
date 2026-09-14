@@ -211,7 +211,9 @@ void FS_Restart(int32_t checksumFeed)
     coduomp_FS_RestartInternal(checksumFeed, 0);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: preserve a caller-owned stream across the same
+/* ORIGINAL_BINARY_BUG: FS_Restart closes every ordinary filesystem handle,
+ * including a live demo stream whose client state remains active.
+ * NOT_FROM_ORIGINAL_SOURCE: preserve one caller-owned stream across the same
  * filesystem rebuild performed by FS_Restart. */
 void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
                                       int32_t preservedHandle)
@@ -407,7 +409,9 @@ void FS_Restart(int32_t checksumFeed)
     coduomp_FS_RestartInternal(checksumFeed, 0);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: preserve a caller-owned stream across the same
+/* ORIGINAL_BINARY_BUG: FS_Restart closes every ordinary filesystem handle,
+ * including a live demo stream whose client state remains active.
+ * NOT_FROM_ORIGINAL_SOURCE: preserve one caller-owned stream across the same
  * filesystem rebuild performed by FS_Restart. */
 void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
                                       int32_t preservedHandle)
@@ -462,6 +466,14 @@ static void coduomp_FS_RestartInternal(int32_t checksumFeed,
  * otherwise a changed game directory or checksum feed triggers a restart. */
 qboolean FS_ConditionalRestart(int32_t checksumFeed)
 {
+    return coduomp_FS_ConditionalRestartPreservingFile(checksumFeed, 0);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: conditional form of the stream-preserving
+ * restart; the decision remains the original FS_ConditionalRestart test. */
+qboolean coduomp_FS_ConditionalRestartPreservingFile(
+    int32_t checksumFeed, int32_t preservedHandle)
+{
     if (sv_running->integer != 0)
         return qfalse;
 
@@ -470,6 +482,6 @@ qboolean FS_ConditionalRestart(int32_t checksumFeed)
         return qfalse;
     }
 
-    FS_Restart(checksumFeed);
+    coduomp_FS_RestartPreservingFile(checksumFeed, preservedHandle);
     return qtrue;
 }

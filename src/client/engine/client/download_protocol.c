@@ -204,7 +204,8 @@ void CL_DownloadsComplete(void)
 
     if (cls.staticDownload.downloadRestart != qfalse) {
         cls.staticDownload.downloadRestart = qfalse;
-        FS_Restart(clc.checksumFeed);
+        coduomp_FS_RestartPreservingFile(clc.checksumFeed,
+                                         clc.demoFile);
         if (cls.wwwDownloadDisconnected == 0)
             CL_AddReliableCommand("donedl");
         cls.wwwDownloadDisconnected = 0;
