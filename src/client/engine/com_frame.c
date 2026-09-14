@@ -32,7 +32,7 @@ static int32_t comPreviousEventTime;        /* original 0x00980230 */
 static int32_t comPreviousStatmonFrameTime; /* original 0x00981e80 */
 static int32_t comFrameNumber;              /* original 0x049290a0 */
 
-/* NOT_FROM_ORIGINAL_SOURCE: state for the opt-in improved-client frame-start
+/* NOT_FROM_ORIGINAL_SOURCE: state for the improved-client frame-start
  * scheduler. None of these values enter the engine's gameplay time domain. */
 typedef struct {
     qboolean initialized;
