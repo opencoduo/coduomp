@@ -50,10 +50,10 @@ static qboolean coduomp_sys_config_parseable(
         return qfalse;
     }
     if (length >= 2 &&
-        (((const uint8_t *)text)[0] == 0xffu &&
-         ((const uint8_t *)text)[1] == 0xfeu) ||
-        (((const uint8_t *)text)[0] == 0xfeu &&
-         ((const uint8_t *)text)[1] == 0xffu)) {
+        ((((const uint8_t *)text)[0] == 0xffu &&
+          ((const uint8_t *)text)[1] == 0xfeu) ||
+         (((const uint8_t *)text)[0] == 0xfeu &&
+          ((const uint8_t *)text)[1] == 0xffu))) {
         error->line = 1;
         error->reason = "UTF-16 text is unsupported";
         return qfalse;
