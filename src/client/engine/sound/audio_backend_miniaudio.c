@@ -658,7 +658,7 @@ struct audio_stream_handle_s {
     ma_sound sound;
     void *ownedFileBytes;
     size_t fileByteCount;
-    uint64_t frameCount;
+    ma_uint64 frameCount;
     int32_t baseRate;
     int32_t playbackRate;
     float volume;
