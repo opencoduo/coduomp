@@ -573,8 +573,6 @@ void CM_TraceThroughPatchCollide(
         float leaveFraction =
             traceWork->trace.fraction;
         int32_t hitBorder = -1;
-        vec3_t hitNormal;
-        qboolean hasHitNormal = qfalse;
         qboolean facetAccepted = qtrue;
 
         for (int32_t facetPlaneIndex = -1;
@@ -676,17 +674,12 @@ void CM_TraceThroughPatchCollide(
                 break;
             }
             if (hit != qfalse) {
-                hitNormal[0] = plane[0];
-                hitNormal[1] = plane[1];
-                hitNormal[2] = plane[2];
-                hasHitNormal = qtrue;
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
             }
         }
 
         if (facetAccepted == qfalse ||
-            hasHitNormal == qfalse ||
             hitBorder ==
                 facet->numBorders - 1 ||
             !(enterFraction < leaveFraction) ||
@@ -698,12 +691,28 @@ void CM_TraceThroughPatchCollide(
 
         traceWork->trace.fraction =
             enterFraction;
-        traceWork->trace.normal[0] =
-            hitNormal[0];
-        traceWork->trace.normal[1] =
-            hitNormal[1];
-        traceWork->trace.normal[2] =
-            hitNormal[2];
+        const int32_t hitPlaneIndex =
+            hitBorder < 0
+                ? facet->surfacePlane
+                : facet->borderPlanes[hitBorder];
+        const patchPlane_t *const hitPlane =
+            &patchCollide->planes[hitPlaneIndex];
+        if (hitBorder >= 0 &&
+            facet->borderInward[hitBorder] != qfalse) {
+            traceWork->trace.normal[0] =
+                -hitPlane->normal[0];
+            traceWork->trace.normal[1] =
+                -hitPlane->normal[1];
+            traceWork->trace.normal[2] =
+                -hitPlane->normal[2];
+        } else {
+            traceWork->trace.normal[0] =
+                hitPlane->normal[0];
+            traceWork->trace.normal[1] =
+                hitPlane->normal[1];
+            traceWork->trace.normal[2] =
+                hitPlane->normal[2];
+        }
     }
 }
 
