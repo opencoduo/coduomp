@@ -8,7 +8,7 @@
 //
 // The intptr_t parameters retain the original VM/syscall word representation.
 // ui_shared callers use semantic float arguments, so native register ABIs reach
-// this recovered wrapper through OpenCoDUO_UI_DrawTextWithCursorAdapter.
+// this recovered wrapper through cgame_compat_ui_draw_text_with_cursor.
 
 #include "../client_recovered.h"
 

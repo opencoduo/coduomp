@@ -5034,19 +5034,19 @@ void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
 
 /*
  * NOT_FROM_ORIGINAL_SOURCE: semantic-float/native-register-ABI adapters for
- * original opaque-dword renderer trap wrappers on non-i386 hosts.
+ * original opaque-dword renderer trap wrappers on every native target.
  */
-void OpenCoDUO_UI_DrawTextAdapter(float x, float y, int32_t font,
-                                  float scale, const vec4_t color,
-                                  const char *text, float fixedAdvance,
-                                  int32_t limit, int32_t textStyle);
-void OpenCoDUO_UI_DrawStretchPicAdapter(
+void cgame_compat_ui_draw_text(float x, float y, int32_t font,
+                               float scale, const vec4_t color,
+                               const char *text, float fixedAdvance,
+                               int32_t limit, int32_t textStyle);
+void cgame_compat_ui_draw_stretch_pic(
     float x, float y, float w, float h,
     float s1, float t1, float s2, float t2, qhandle_t shaderHandle);
-int32_t OpenCoDUO_UI_TextWidthAdapter(const char *text, int32_t font,
-                                      float scale, int32_t limit);
-int32_t OpenCoDUO_UI_TextHeightAdapter(int32_t font, float scale);
-void OpenCoDUO_UI_DrawTextWithCursorAdapter(
+int32_t cgame_compat_ui_text_width(const char *text, int32_t font,
+                                   float scale, int32_t limit);
+int32_t cgame_compat_ui_text_height(int32_t font, float scale);
+void cgame_compat_ui_draw_text_with_cursor(
     float x, float y, int32_t font, float scale, const vec4_t color,
     const char *text, int32_t cursorPos, int8_t cursorChar,
     int32_t limit, int32_t textStyle);
