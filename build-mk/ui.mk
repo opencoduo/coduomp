@@ -162,20 +162,11 @@ INCLUDE_FLAGS := -iquote $(UI_DIR)/bindings \
 ifeq ($(shell uname -s),Darwin)
 NATIVE_LIBRARY ?= .workbench/build/ui/native/libcoduo_ui.dylib
 NATIVE_LDFLAGS := -dynamiclib
-NATIVE_RECOVERY_WARNINGS :=
 else
 NATIVE_LIBRARY ?= .workbench/build/ui/native/libcoduo_ui.so
 NATIVE_LDFLAGS := -shared -Wl,--no-undefined
-# UI_LoadArenas rejects a filename that cannot fit its 128-byte path before
-# calling the variadic formatting wrapper. GCC does not carry that runtime
-# length proof through the wrapper, so keep only its conservative
-# format-overflow diagnostic downgraded for native Linux builds.
-NATIVE_RECOVERY_WARNINGS := -Wno-error=format-overflow
 endif
 
-# Both supported MinGW compilers use GCC's format-overflow diagnostic.  This
-# exception has the same deliberately narrow scope as the native Linux gate.
-WINDOWS_RECOVERY_WARNINGS := -Wno-error=format-overflow
 # The retail MSVC target performs signed integer arithmetic in 32-bit
 # registers. Preserve that defined target behavior without per-expression
 # rollover adapters in recovered source.
@@ -188,7 +179,7 @@ UI_NATIVE_STORAGE_FLAGS := -fno-common
 native-link:
 	mkdir -p $(dir $(NATIVE_LIBRARY))
 	$(CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) $(PLATFORM_BEHAVIOR_CPPFLAGS) -Wall -Wextra -Werror -g -O0 -fPIC \
-		$(UI_INTEGER_FLAGS) $(UI_NATIVE_STORAGE_FLAGS) $(NATIVE_RECOVERY_WARNINGS) -fvisibility=hidden $(INCLUDE_FLAGS) $(ALL_C_SOURCES) $(NATIVE_LDFLAGS) -lm \
+		$(UI_INTEGER_FLAGS) $(UI_NATIVE_STORAGE_FLAGS) -fvisibility=hidden $(INCLUDE_FLAGS) $(ALL_C_SOURCES) $(NATIVE_LDFLAGS) -lm \
 		-o $(NATIVE_LIBRARY)
 
 syntax-check:
@@ -200,20 +191,20 @@ syntax-check:
 
 windows-cross-link:
 	@mkdir -p $(dir $(WINDOWS_LIBRARY))
-	$(WINDOWS_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(WINDOWS_RECOVERY_WARNINGS) $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
+	$(WINDOWS_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
 		-shared -static-libgcc $(WINDOWS_DEF) -Wl,--no-undefined -luser32 -lgdi32 -lm \
 		-o $(WINDOWS_LIBRARY)
 
 win32-abi-link:
 	@mkdir -p $(dir $(WIN32_LIBRARY))
-	$(WIN32_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(WINDOWS_RECOVERY_WARNINGS) $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
+	$(WIN32_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror $(INCLUDE_FLAGS) $(ALL_C_SOURCES) \
 		-shared -static-libgcc $(WINDOWS_DEF) -Wl,--no-undefined -luser32 -lgdi32 -lm \
 		-o $(WIN32_LIBRARY)
 
 linux-i386-link:
 	@mkdir -p $(dir $(LINUX_I386_LIBRARY))
 	$(CC) -m32 -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) $(PLATFORM_BEHAVIOR_CPPFLAGS) $(UI_INTEGER_FLAGS) -Wall -Wextra -Werror \
-		-Wno-error=format-overflow -g -O0 -fPIC -fvisibility=hidden \
+		-g -O0 -fPIC -fvisibility=hidden \
 		$(INCLUDE_FLAGS) $(ALL_C_SOURCES) -shared -Wl,--no-undefined -lm \
 		-o $(LINUX_I386_LIBRARY)
 

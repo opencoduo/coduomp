@@ -100,19 +100,20 @@ void CG_ParseScores(void)
          * supplies each row as clientNum, score, ping, deaths, statusIcon. */
         bgs.clientinfo[client].score = cg_scoreboardEntries[i].score;
 
+        team_t clientTeam;
         if (bgs.clientinfo[client].infoValid != 0) {
-            team = bgs.clientinfo[client].team;
+            clientTeam = bgs.clientinfo[client].team;
         } else {
-            team = 0;
+            clientTeam = TEAM_FREE;
         }
-        cg_scoreboardEntries[i].team = team;
+        cg_scoreboardEntries[i].team = clientTeam;
 
         /* clientState_t.team is a two-bit snapshot netfield, so the direct
          * four-row aggregate lookup at 0x30038295/0x300382a2 has domain 0..3. */
-        cg_scoreboardTeamCount[team] = coduo_int32_from_bits(
-            (uint32_t)cg_scoreboardTeamCount[team] + 1u);
-        cg_scoreboardTeamPings[team] = coduo_int32_from_bits(
-            (uint32_t)cg_scoreboardTeamPings[team] +
+        cg_scoreboardTeamCount[clientTeam] = coduo_int32_from_bits(
+            (uint32_t)cg_scoreboardTeamCount[clientTeam] + 1u);
+        cg_scoreboardTeamPings[clientTeam] = coduo_int32_from_bits(
+            (uint32_t)cg_scoreboardTeamPings[clientTeam] +
             (uint32_t)cg_scoreboardEntries[i].ping);
     }
 

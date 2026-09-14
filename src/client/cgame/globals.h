@@ -1319,7 +1319,7 @@ extern int32_t cg_statBarLastClientNum;
  * the lead order is stable across frames. Both refs are in that one function.
  * Mechanical owner label cg_entitypreevent was the exporter's wrong size-match
  * guess. Signed team_t; named by proven role. */
-extern int32_t cg_scoreboardLeadTeam;
+extern team_t cg_scoreboardLeadTeam;
 /*
  * cg_shockParamNames / cg_shockParamTargets (0x30085dc0 / 0x30085e30) — the
  * shellshock (.shock) parameter definition tables. Each entry i pairs the
@@ -3939,7 +3939,7 @@ typedef struct cgScore_s {
     int32_t score;                   /* +0x04: reported client score */
     int32_t ping;                    /* +0x08: ping; averaged per team */
     int32_t deaths;                  /* +0x0c: reported deaths */
-    int32_t team;                    /* +0x10: team_t of this row; compared to the
+    team_t team;                     /* +0x10: team of this row; compared to the
                                       *        requested section (0x30037866). */
     qhandle_t statusIcon;            /* +0x14: status index or registered shader */
 } cgScore_t;

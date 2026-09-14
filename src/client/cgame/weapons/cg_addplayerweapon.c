@@ -24,10 +24,9 @@
 #include <string.h>
 
 enum {
-    /* Exact source enum names are unresolved. Machine code proves that this
-     * vehicle type/position pair is the only disabled-state pose allowed to
-     * continue rendering the weapon (30045d21/30045d2e). */
-    CG_WEAPON_VEHICLE_TYPE_ALLOWED = 1,
+    /* Machine code proves that this vehicle position, paired with shared
+     * vehicle type VEHICLE_TYPE_4_WHEEL, is the only disabled-state pose
+     * allowed to continue rendering the weapon (30045d21/30045d2e). */
     CG_WEAPON_VEHICLE_POSITION_ALLOWED = 3,
 
     /* Packed cent->currentState.stateFilter fields selecting the equivalent world-player
@@ -77,7 +76,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps,
         if (ps != NULL) {
             /* 30045d21: [ps+0x618] != 1 -> return; 30045d2e: [ps+0x614] == 3
              * continues, else return (inline epilogue at 30045d37). */
-            if (ps->vehicleType != CG_WEAPON_VEHICLE_TYPE_ALLOWED ||
+            if (ps->vehicleType != VEHICLE_TYPE_4_WHEEL ||
                 ps->vehiclePosition != CG_WEAPON_VEHICLE_POSITION_ALLOWED) {
                 return;
             }

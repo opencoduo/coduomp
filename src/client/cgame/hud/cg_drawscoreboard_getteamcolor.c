@@ -87,7 +87,7 @@ cgame_compat_clamp_scoreboard_color(vec_t *c)
         *c = 1.0f;         /* 0x3007bce0 = 1.0f */
 }
 
-void CG_DrawScoreboard_GetTeamColor(int team, vec3_t colorOut)
+void CG_DrawScoreboard_GetTeamColor(team_t team, vec3_t colorOut)
 {
     char cvarValue[MAX_STRING_CHARS]; /* the /GS-guarded 1024-byte cvar text buffer */
 

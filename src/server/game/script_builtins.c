@@ -3472,7 +3472,7 @@ static gclient_t *game_compat_script_level_client(int clientNum)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: local helper extracted from recovered script builtin behavior (game_compat_script_team_from_const). */
-static int game_compat_script_team_from_const(uint16_t team)
+static team_t game_compat_script_team_from_const(uint16_t team)
 {
     if (team == scr_const_allies) {
         return TEAM_ALLIES;
@@ -3544,7 +3544,7 @@ void script_func_updateclientnames(void)
 /* VERIFIED_DECOMPILER(0x6d6db, 7d6db_script_func_getteamplayersalive.c, VERIFY-SCRIPT-BUILTINS-FX-TEAM-2026-06-17): DATAFLOW_VERIFIED; team-string validation helper, g_maxclients loop, linked/session-team/health gates, count, and integer return checked against current decompiler output. */
 void script_func_getteamplayersalive(void)
 {
-    int team = game_compat_script_team_from_const(Scr_GetConstString(0));
+    team_t team = game_compat_script_team_from_const(Scr_GetConstString(0));
     int count = 0;
 
     for (int clientNum = 0; clientNum < g_maxclients.integer; clientNum++) {

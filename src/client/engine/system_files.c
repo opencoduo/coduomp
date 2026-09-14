@@ -27,7 +27,9 @@ enum {
 static char sysCurrentWorkingDirectory[MAX_OSPATH];
 /* NOT_FROM_ORIGINAL_SOURCE: native writable-data path used on modern Unix
  * targets. The retail Windows executable has no per-user filesystem root. */
+#if !defined(_WIN32)
 static char sysDefaultHomePath[MAX_OSPATH];
+#endif
 
 /* Source: CoDUOMP.exe 0x004688f0..0x004688f7.
  * Name and signature: exact same-module Mac symbol Sys_Mkdir. */

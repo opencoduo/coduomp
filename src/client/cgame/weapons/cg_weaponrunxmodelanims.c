@@ -65,12 +65,8 @@
  * single 0x106000 mask (TEST EAX,0x106000). Exact bit names unresolved. */
 enum { CG_PS_MOUNTED_MASK = 0x106000 };
 
-/* Vehicle gate constants (ps->vehicleType / ps->vehiclePosition). */
-enum { CG_VEHICLE_TYPE_MOUNTED = 1, CG_VEHICLE_SEAT_GUNNER = 3 };
-
-/* weaponClass values (weaponInfo_t::weaponClass, +0x80) that skip the ADS-overlay
- * blend and take the "held weapon" idle branch. */
-enum { CG_WEAPONCLASS_SKIP_ADS_A = 3, CG_WEAPONCLASS_SKIP_ADS_B = 8 };
+/* Vehicle position paired with VEHICLE_TYPE_4_WHEEL in the mounted gate. */
+enum { CG_VEHICLE_SEAT_GUNNER = 3 };
 
 void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
 {
@@ -87,7 +83,7 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
 
     /* 3. Vehicle/mounted gate. */
     if ((ps->entityStateFlags & CG_PS_MOUNTED_MASK) != 0) {
-        if (ps->vehicleType != CG_VEHICLE_TYPE_MOUNTED) {
+        if (ps->vehicleType != VEHICLE_TYPE_4_WHEEL) {
             return;
         }
         if (ps->vehiclePosition != CG_VEHICLE_SEAT_GUNNER) {
@@ -108,8 +104,8 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
 
     /* 5. ADS overlay cross-fade for ADS-capable weapons (except classes 3/8). */
     if (weaponInfo->adsEnabled != 0 &&
-        weaponInfo->weaponClass != CG_WEAPONCLASS_SKIP_ADS_A &&
-        weaponInfo->weaponClass != CG_WEAPONCLASS_SKIP_ADS_B) {
+        weaponInfo->weaponClass != WEAPCLASS_LMG &&
+        weaponInfo->weaponClass != WEAPCLASS_SPOTTER) {
         CG_PlayADSAnim(useAdsAnim ? WEAPON_XANIM_ADS_UP
                                   : WEAPON_XANIM_ADS_DOWN,
                        animTree);
@@ -140,8 +136,8 @@ void CG_WeaponRunXModelAnims(playerState_t *ps, cgWeaponInfo_t *wi)
         /* All present. "Held weapon" classes with the QUALIFY flag use
          * LMG_DEPLOYED; every other weapon picks IDLE (clip loaded) or
          * EMPTY_IDLE (empty). */
-        if ((weaponInfo->weaponClass == CG_WEAPONCLASS_SKIP_ADS_A ||
-             weaponInfo->weaponClass == CG_WEAPONCLASS_SKIP_ADS_B) &&
+        if ((weaponInfo->weaponClass == WEAPCLASS_LMG ||
+             weaponInfo->weaponClass == WEAPCLASS_SPOTTER) &&
             (ps->playerStateFlags & PMF_ADS) != 0) {
             CG_StartWeaponAnim(ps->currentWeapon, animTree,
                                WEAPON_XANIM_LMG_DEPLOYED);

@@ -45,7 +45,7 @@
 #include "client/cgame/client_recovered.h"
 
 float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
-                                   float y, int team, float rowScale,
+                                   float y, team_t team, float rowScale,
                                    int *rowCounter) {
     vec4_t rowColor;
     int alternateShade;

@@ -98,10 +98,9 @@
 /* CG_FadeColor lifetime for the selected-weapon-name overlay (ms). MOV ECX,0x708. */
 enum { CG_WEAPON_NAME_FADE_MS = 1800 };
 
-/* Vehicle-view gate discriminants (proven from the CMP immediates). Exact CoD
- * enum names for vehiclePosition/vehicleType are unproven; named by proven value. */
+/* Vehicle-view gate discriminants (proven from the CMP immediates). The vehicle
+ * type uses the shared parsed domain; the vehiclePosition name remains unproven. */
 enum {
-    CG_VEHICLE_TYPE_RIDING = 1,      /* cg_predictedPlayerState.vehicleType == 1 to draw */
     CG_VEHICLE_POSITION_DRIVER = 3   /* cg_predictedPlayerState.vehiclePosition == 3 to draw */
 };
 
@@ -119,7 +118,7 @@ void CG_DrawPlayerWeaponName(const vec3_t color, rectDef_t *obj,
      * while the local player is riding in the driver position.
      */
     if (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
-        if (cg_predictedPlayerState.vehicleType != CG_VEHICLE_TYPE_RIDING)
+        if (cg_predictedPlayerState.vehicleType != VEHICLE_TYPE_4_WHEEL)
             return;
         if (cg_predictedPlayerState.vehiclePosition != CG_VEHICLE_POSITION_DRIVER)
             return;

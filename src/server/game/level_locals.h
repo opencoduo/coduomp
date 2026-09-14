@@ -76,7 +76,7 @@ typedef struct level_locals_s {
     int32_t matchTimeoutDuration;        /* +0x1758, DAT_0024cc78 */
     int32_t matchTimeoutStartTime;       /* +0x175c, DAT_0024cc7c */
     int32_t matchTimeoutRecoveryEndTime; /* +0x1760, DAT_0024cc80 */
-    int32_t matchTimeoutTeam;            /* +0x1764, DAT_0024cc84 */
+    team_t matchTimeoutTeam;             /* +0x1764, DAT_0024cc84 */
     char abiGap_1768_176b[0x004];        /* +0x1768, size 4; checked metadata/decompiler for DAT_0024cc88 access, none found; retained for spawningMapEntities +0x176c ABI */
     int32_t spawningMapEntities;          /* +0x176c, DAT_0024cc8c */
     int32_t spawnVarCount;               /* +0x1770, DAT_0024cc90 */

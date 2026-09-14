@@ -87,10 +87,9 @@
 enum { CG_WEAPON_NAME_FADE_MS = 1800 };
 
 /* Vehicle-view gate discriminants (proven from the CMP immediates at 0x3002ed72/
- * 0x3002ed7f). Exact CoD enum names for vehicleType/vehiclePosition are unproven;
- * named by proven value, matching the sibling CG_DrawPlayerWeaponName. */
+ * 0x3002ed7f). The vehicle type uses the shared parsed domain; the
+ * vehiclePosition name remains unproven. */
 enum {
-    CG_VEHICLE_TYPE_RIDING = 1,      /* cg_predictedPlayerState.vehicleType == 1 to draw */
     CG_VEHICLE_POSITION_DRIVER = 3   /* cg_predictedPlayerState.vehiclePosition == 3 to draw */
 };
 
@@ -109,7 +108,7 @@ void CG_DrawPlayerWeaponNameBack(const vec3_t color, rectDef_t *rect,
      * position; otherwise the flag path is skipped entirely (JZ 0x3002ed8c).
      */
     if (cg_predictedPlayerState.entityStateFlags & EF_IN_VEHICLE) {
-        if (cg_predictedPlayerState.vehicleType != CG_VEHICLE_TYPE_RIDING)
+        if (cg_predictedPlayerState.vehicleType != VEHICLE_TYPE_4_WHEEL)
             return;
         if (cg_predictedPlayerState.vehiclePosition != CG_VEHICLE_POSITION_DRIVER)
             return;

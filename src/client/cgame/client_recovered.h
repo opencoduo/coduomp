@@ -5089,19 +5089,19 @@ void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
 
 /*
  * NOT_FROM_ORIGINAL_SOURCE: semantic-float/native-register-ABI adapters for
- * original opaque-dword renderer trap wrappers on non-i386 hosts.
+ * original opaque-dword renderer trap wrappers on every native target.
  */
-void OpenCoDUO_UI_DrawTextAdapter(float x, float y, int32_t font,
-                                  float scale, const vec4_t color,
-                                  const char *text, float fixedAdvance,
-                                  int32_t limit, int32_t textStyle);
-void OpenCoDUO_UI_DrawStretchPicAdapter(
+void cgame_compat_ui_draw_text(float x, float y, int32_t font,
+                               float scale, const vec4_t color,
+                               const char *text, float fixedAdvance,
+                               int32_t limit, int32_t textStyle);
+void cgame_compat_ui_draw_stretch_pic(
     float x, float y, float w, float h,
     float s1, float t1, float s2, float t2, qhandle_t shaderHandle);
-int32_t OpenCoDUO_UI_TextWidthAdapter(const char *text, int32_t font,
-                                      float scale, int32_t limit);
-int32_t OpenCoDUO_UI_TextHeightAdapter(int32_t font, float scale);
-void OpenCoDUO_UI_DrawTextWithCursorAdapter(
+int32_t cgame_compat_ui_text_width(const char *text, int32_t font,
+                                   float scale, int32_t limit);
+int32_t cgame_compat_ui_text_height(int32_t font, float scale);
+void cgame_compat_ui_draw_text_with_cursor(
     float x, float y, int32_t font, float scale, const vec4_t color,
     const char *text, int32_t cursorPos, int8_t cursorChar,
     int32_t limit, int32_t textStyle);
@@ -5465,7 +5465,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
  * unproven from the allowed inputs.
  */
 float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
-                                  float boardWidth, float bannerHeight, int team,
+                                  float boardWidth, float bannerHeight, team_t team,
                                   int *lineCounter);
 
 /* cgScore_t (the collected scoreboard row, stride 0x18) is defined in globals.h
@@ -5481,7 +5481,7 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
  * same-module PPC bank (CG_DrawScoreboard_GetTeamColor); the color-out register
  * arg is modelled as an ordinary leading parameter for the syntax-only build.
  */
-void CG_DrawScoreboard_GetTeamColor(int team, vec3_t colorOut);
+void CG_DrawScoreboard_GetTeamColor(team_t team, vec3_t colorOut);
 
 /*
  * CG_DrawClientScore (0x30037420) — draws one scoreboard client row: optional
@@ -5503,7 +5503,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
  * for the full evidence trace.
  */
 float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
-                                   float y, int team, float rowScale,
+                                   float y, team_t team, float rowScale,
                                    int *rowCounter);
 
 /*

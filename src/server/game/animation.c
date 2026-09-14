@@ -253,7 +253,7 @@ void BG_UpdatePlayerDObj(gentity_t *ent, const gentity_t *entState,
                          uint8_t *dObjVersion)
 {
     qboolean dobjExists = trap_DObjExists(ent);
-    int modelIndex = entState->s.weapon;
+    uint32_t modelIndex = entState->s.weapon;
     if ((entState->s.eFlags & EF_RESTRICTED_MASK) != 0) {
         const uint32_t vehicleAnimState = (uint32_t)entState->s.vehicleAnimState;
         const int vehicleType =

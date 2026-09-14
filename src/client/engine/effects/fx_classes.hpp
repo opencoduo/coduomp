@@ -485,6 +485,14 @@ extern fx_pool_allocator_t fxLightAllocator;              /* 0x0389ffb0 */
 extern fx_pool_allocator_t fxDecalAllocator;              /* 0x0389ffb8 */
 
 #if UINTPTR_MAX == UINT32_MAX
+/* The recovered i386 classes are intentionally polymorphic, so ISO C++ makes
+ * offsetof conditionally supported for them. GCC and Clang implement the
+ * operation as an ABI query; retain the offset assertions and confine the
+ * implementation-specific diagnostic handling to this assertion block. */
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
 static_assert(alignof(CEffect::resource_reference_t) == 0x04,
               "i386 CEffect resource-reference alignment changed");
 static_assert(offsetof(CEffect::resource_reference_t, model) == 0x00,
@@ -651,6 +659,9 @@ static_assert(FX_DECAL_POINT_CAPACITY != 5 ||
                   sizeof(((fx_mem_block_t *)nullptr)->storage) /
                           sizeof(CDecal) == 71,
               "i386 CDecal pool capacity changed");
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 #endif
 
 #endif

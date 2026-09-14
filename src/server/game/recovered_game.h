@@ -228,7 +228,7 @@ typedef struct game_hudElem_s {
     hudElem_t client;                              /* +0x000..+0x07b */
     /* Server-side fields (not included in client snapshot) */
     int32_t clientNum;                             /* +0x07c */
-    int32_t team;                                  /* +0x080 */
+    team_t team;                                   /* +0x080 */
     int32_t archived;                              /* +0x084 */
 } game_hudElem_t;                                  /* ABI total size: 0x88 bytes */
 
@@ -535,7 +535,7 @@ struct gclient_s {
     int16_t sessionSquad;                    /* +0x45b4 */
     char padding45b6[2];                     /* +0x45b6..+0x45b7, aligns clientNum. */
     int32_t clientNum;                       /* +0x45b8 */
-    int32_t sessionTeam;                     /* +0x45bc, RECOVERED(UO-GAME-UNK-0024) */
+    team_t sessionTeam;                      /* +0x45bc, RECOVERED(UO-GAME-UNK-0024) */
     int32_t baseModelIndex;                  /* +0x45c0 */
     int32_t attachModelIndices[6];           /* +0x45c4 */
     int32_t attachTagIndices[6];             /* +0x45dc */

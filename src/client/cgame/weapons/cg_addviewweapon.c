@@ -12,7 +12,6 @@
 
 enum {
     CG_VIEW_WEAPON_RENDERFX = 12,
-    CG_VIEW_WEAPON_PULLBACK_CLASS = 3,
     CG_DRAW_GUN_HIDDEN = 0,
     CG_DRAW_GUN_ALWAYS = 2
 };
@@ -151,7 +150,7 @@ void CG_AddViewWeapon(void)
 
     float viewOriginOffset = 0.0f;
     if ((ps->playerStateFlags & CG_VIEW_WEAPON_PULLBACK_FLAG) != 0 &&
-        weapon->weaponClass == CG_VIEW_WEAPON_PULLBACK_CLASS) {
+        weapon->weaponClass == WEAPCLASS_LMG) {
         viewOriginOffset = CG_VIEW_WEAPON_PULLBACK_DISTANCE;
         CG_PerturbCamera(viewOriginOffset);
     }

@@ -170,8 +170,12 @@ CPPFLAGS += -iquote $(GAME_DIR)/bindings \
 # Stock i386 uses signed plain char, 32-bit enum-backed domains, and wrapping
 # ADD/SUB/IMUL semantics. GCC, Clang, and MinGW support explicit switches for
 # those rules, preventing host defaults or inherited flags from changing them.
+# Keep tentative globals in ordinary zero-fill storage. Darwin ld64 otherwise
+# derives a 32 KiB COMMON alignment from the large game state and reduces it to
+# the arm64 Mach-O segment maximum with a link warning.
+GAME_STORAGE_FLAGS := -fno-common
 CFLAGS += -std=c99 -Wall -Wextra -Werror -pedantic -fsigned-char \
-	-fno-short-enums -fwrapv -MMD -MP
+	-fno-short-enums -fwrapv $(GAME_STORAGE_FLAGS) -MMD -MP
 
 # x87 floating-point faithfulness policy (shared with the engine, and the single
 # source of truth for FP faithfulness across both). Governs whether the x86-64

@@ -52,6 +52,7 @@ CLIENT_C_TYPE_ERRORS := -Werror=implicit-int \
 	-Werror=implicit-function-declaration \
 	-Werror=incompatible-pointer-types \
 	-Werror=int-conversion -Werror=return-type
+CLIENT_WARNING_FLAGS := -Wall -Wextra -Werror
 MINGW32_COMMON_CFLAGS ?= -g -O0
 MINGW32_ENGINE_CFLAGS := $(filter-out -O%,$(MINGW32_COMMON_CFLAGS))
 MINGW32_FLOAT_FLAGS := -O0 -mfpmath=387 -fexcess-precision=fast
@@ -68,10 +69,10 @@ MINGW32_CPPFLAGS := -Isrc \
 	$(if $(MINGW32_DEP_PREFIX),-I$(MINGW32_DEP_PREFIX)/include/SDL2) \
 	$(MINGW32_AUDIO_CPPFLAGS) \
 	$(MINGW32_DEP_CPPFLAGS)
-MINGW32_CFLAGS := -std=c11 $(CLIENT_C_TYPE_ERRORS) \
+MINGW32_CFLAGS := -std=c11 $(CLIENT_WARNING_FLAGS) $(CLIENT_C_TYPE_ERRORS) \
 	$(MINGW32_ENGINE_CFLAGS) -fwrapv \
 	$(MINGW32_FLOAT_FLAGS) $(MINGW32_ARCH_FLAGS) -MMD -MP
-MINGW32_CXXFLAGS := -std=c++17 $(MINGW32_ENGINE_CFLAGS) -fwrapv \
+MINGW32_CXXFLAGS := -std=c++17 $(CLIENT_WARNING_FLAGS) $(MINGW32_ENGINE_CFLAGS) -fwrapv \
 	$(MINGW32_FLOAT_FLAGS) $(MINGW32_ARCH_FLAGS) -MMD -MP
 MINGW32_LDFLAGS ?= -mwindows -static-libgcc -static-libstdc++
 MINGW32_STACK_RESERVE := 0x800000

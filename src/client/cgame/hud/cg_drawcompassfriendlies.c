@@ -48,7 +48,7 @@ enum {
 void CG_DrawCompassFriendlies(const rectDef_t *rect, const vec4_t color)
 {
     clientInfo_t *localState = &bgs.clientinfo[cg_nextSnap->ps.psClientNum];
-    int32_t localTeam;
+    team_t localTeam;
 
     if (localState->infoValid == 0) {
         return;

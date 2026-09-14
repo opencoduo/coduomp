@@ -80,7 +80,7 @@ void CG_DrawCrosshairNames(void)
     if (localState->infoValid == 0) {
         return;
     }
-    int32_t localTeam = localState->team;
+    team_t localTeam = localState->team;
     if (localTeam == TEAM_FREE) {
         return;
     }

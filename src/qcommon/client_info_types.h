@@ -2,6 +2,7 @@
 #define QCOMMON_CLIENT_INFO_TYPES_H
 
 #include "asset_type_names.h"
+#include "client_state_types.h"
 #include "q_shared_types.h"
 #include "q_vector_types.h"
 
@@ -97,8 +98,8 @@ typedef struct clientInfo_s {
     } moduleState;
     int32_t clientNum;                              /* +0x008, phase seed/index */
     char name[CLIENT_INFO_NAME_SIZE];                /* +0x00c */
-    int32_t team;                                   /* +0x02c */
-    int32_t obituaryTeam;                           /* +0x030 */
+    team_t team;                                    /* +0x02c */
+    team_t obituaryTeam;                            /* +0x030 */
     int32_t score;                                  /* +0x034 */
     int32_t location;                               /* +0x038 */
     int32_t health;                                 /* +0x03c */
@@ -146,7 +147,7 @@ typedef struct clientInfo_s {
                            [BG_ANIM_CONDITION_WORD_COUNT]; /* +0x468 */
     int32_t animTransitionTime;                     /* +0x4c0 */
     XAnimTree *animTree;                            /* i386 +0x4c4 */
-    int32_t dobjSavedModel;                         /* i386 +0x4c8 */
+    uint32_t dobjSavedModel;                        /* i386 +0x4c8 */
     uint8_t dobjVersion;                            /* i386 +0x4cc */
     uint8_t padding4cd[3];                          /* i386 +0x4cd */
 } clientInfo_t;
