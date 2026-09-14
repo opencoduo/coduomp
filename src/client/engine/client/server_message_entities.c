@@ -720,13 +720,11 @@ void CL_ParseGamestate(msg_t *message)
         coduomp_server_namespace_cache_referenced_paks();
 
     if (sv_running->integer == 0) {
-        if (namespaceChanged != qfalse || cachedRootPaks != qfalse) {
-            if (coduomp_demo_restart_cached_filesystem(
-                    clc.checksumFeed) == qfalse) {
-                FS_Restart(clc.checksumFeed);
-            }
-        } else if (fs_game->modified != qfalse ||
-                   clc.checksumFeed != fs_checksumFeed) {
+        if (namespaceChanged != qfalse || cachedRootPaks != qfalse)
+            coduomp_FS_RestartPreservingFile(clc.checksumFeed,
+                                             clc.demoFile);
+        else if (fs_game->modified != qfalse ||
+                 clc.checksumFeed != fs_checksumFeed) {
             if (coduomp_demo_restart_cached_filesystem(
                     clc.checksumFeed) == qfalse) {
                 (void)FS_ConditionalRestart(clc.checksumFeed);
