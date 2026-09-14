@@ -492,6 +492,12 @@ qboolean CM_SightTracePointThroughPatchCollide(
  * non-point facet is clipped as an expanded convex volume. The final border
  * is its back plane, so entering through that plane is not a visible surface
  * collision. */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+/* A nonnegative enterFraction is produced only by the same
+ * CM_CheckFacetPlane result that initializes hitNormal. */
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 void CM_TraceThroughPatchCollide(
     traceWork_t *traceWork,
     const patchCollide_t *patchCollide)
@@ -511,6 +517,7 @@ void CM_TraceThroughPatchCollide(
         float leaveFraction =
             traceWork->trace.fraction;
         int32_t hitBorder = -1;
+        vec3_t hitNormal;
         qboolean facetAccepted = qtrue;
 
         for (int32_t facetPlaneIndex = -1;
@@ -612,6 +619,9 @@ void CM_TraceThroughPatchCollide(
                 break;
             }
             if (hit != qfalse) {
+                hitNormal[0] = plane[0];
+                hitNormal[1] = plane[1];
+                hitNormal[2] = plane[2];
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
             }
@@ -629,30 +639,17 @@ void CM_TraceThroughPatchCollide(
 
         traceWork->trace.fraction =
             enterFraction;
-        const int32_t hitPlaneIndex =
-            hitBorder < 0
-                ? facet->surfacePlane
-                : facet->borderPlanes[hitBorder];
-        const patchPlane_t *const hitPlane =
-            &patchCollide->planes[hitPlaneIndex];
-        if (hitBorder >= 0 &&
-            facet->borderInward[hitBorder] != qfalse) {
-            traceWork->trace.normal[0] =
-                -hitPlane->normal[0];
-            traceWork->trace.normal[1] =
-                -hitPlane->normal[1];
-            traceWork->trace.normal[2] =
-                -hitPlane->normal[2];
-        } else {
-            traceWork->trace.normal[0] =
-                hitPlane->normal[0];
-            traceWork->trace.normal[1] =
-                hitPlane->normal[1];
-            traceWork->trace.normal[2] =
-                hitPlane->normal[2];
-        }
+        traceWork->trace.normal[0] =
+            hitNormal[0];
+        traceWork->trace.normal[1] =
+            hitNormal[1];
+        traceWork->trace.normal[2] =
+            hitNormal[2];
     }
 }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 /* Source: CoDUOMP.exe 0x00421090..0x00421509.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00421090_00421509.mcode.
