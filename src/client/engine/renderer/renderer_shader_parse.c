@@ -8156,15 +8156,17 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
                 continue;
             }
 
-            tr.sunName[R_WORLD_NAME_SIZE - 1] = '\0';
-            strncpy(tr.sunName, token, sizeof(tr.sunName));
-            if (tr.sunName[R_WORLD_NAME_SIZE - 1] != '\0') {
+            const size_t sunNameLength = strlen(token);
+            if (sunNameLength >= sizeof(tr.sunName)) {
                 ri.Printf(
                     R_PRINT_WARNING,
                     "WARNING: name '%s' too long for sunfile\n",
                     token);
                 tr.sunName[0] = '\0';
+                continue;
             }
+
+            memcpy(tr.sunName, token, sunNameLength + 1);
             continue;
         }
 
