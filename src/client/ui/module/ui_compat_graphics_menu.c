@@ -233,6 +233,8 @@ void ui_compat_refresh_graphics_resolution(void)
  * so no proprietary menu asset is copied into the source distribution. */
 void ui_compat_extend_graphics_menu(void)
 {
+    static const float defaultFov = 80.0f;
+    static const char resetFov[] = "set cg_fov 80; ";
     static const char stageCompatibilityCvars[] =
         "exec \"setfromcvar ui_r_aspectMode r_aspectMode\"; ";
     static const char applyCompatibilityCvars[] =
@@ -301,6 +303,8 @@ void ui_compat_extend_graphics_menu(void)
     }
     ui_compat_set_numeric_multi(
         resolutionItem, resolutionModes, resolutionModeCount);
+    resolutionItem->action =
+        ui_compat_prepend_menu_script(resetFov, resolutionItem->action);
 
     ui_compat_set_numeric_multi(
         displayModeItem, displayModes,
@@ -343,8 +347,8 @@ void ui_compat_extend_graphics_menu(void)
     aspectItem->text =
         String_Alloc("@CODUOMP_GRAPHICS_GAMEPLAY_VIEW");
     aspectItem->cvar = String_Alloc("ui_r_aspectMode");
-    aspectItem->action =
-        String_Alloc("play \"mouse_click\" ; show graphicsapply ; ");
+    aspectItem->action = ui_compat_prepend_menu_script(
+        resetFov, "play \"mouse_click\" ; show graphicsapply ; ");
     aspectItem->parent = menu;
     ui_compat_set_numeric_multi(
         aspectItem, aspectModes,
@@ -357,8 +361,8 @@ void ui_compat_extend_graphics_menu(void)
     fovItem = ui_compat_clone_menu_item(gammaItem, menu);
     fovRange = UI_Alloc(sizeof(*fovRange));
     memcpy(fovRange, gammaItem->typeData, sizeof(*fovRange));
-    fovRange->defVal = 80.0f;
-    fovRange->minVal = 80.0f;
+    fovRange->defVal = defaultFov;
+    fovRange->minVal = defaultFov;
     fovRange->maxVal = 120.0f;
     fovItem->window.name = String_Alloc("coduomp_field_of_view");
     fovItem->window.rectClient.y = 215.0f;
