@@ -678,6 +678,12 @@ void CL_ParseGamestate(msg_t *message)
     clc.clientNum = MSG_ReadLong(message);
     clc.checksumFeed = MSG_ReadLong(message);
 
+    /* NOT_FROM_ORIGINAL_SOURCE: filesystem restart closes ordinary handles.
+     * Finish the current recording before map loading can restart it and
+     * process another packet through the nested download event loop. */
+    if (clc.demoRecording != qfalse)
+        CL_StopRecord_f();
+
     /* NOT_FROM_ORIGINAL_SOURCE: timeline indexing reparses the recorded
      * gamestate only to decode snapshots. The already loaded map and mod
      * assets remain valid, so do not enter the filesystem/download/load path. */
