@@ -115,7 +115,7 @@ void CG_DrawScoreboardBody(float fadeAlpha)
         /* 0x30037c0c..0x30037c2f: the team with the higher aggregate leads and is
          * drawn first; on an exact tie reuse the previously latched lead team so
          * the order is stable across frames. Then latch the result. */
-        int leadTeam;
+        team_t leadTeam;
         if (cg_scoreboardTeamScores[TEAM_ALLIES] < cg_scoreboardTeamScores[TEAM_AXIS]) {
             leadTeam = TEAM_AXIS;
         } else if (cg_scoreboardTeamScores[TEAM_ALLIES] >
@@ -137,7 +137,7 @@ void CG_DrawScoreboardBody(float fadeAlpha)
 
         /* 0x30037c73..0x30037c84: the trailing team is the other scored team
          * (AXIS<->ALLIES). */
-        int trailTeam = (leadTeam == TEAM_AXIS) ? TEAM_ALLIES : TEAM_AXIS;
+        team_t trailTeam = (leadTeam == TEAM_AXIS) ? TEAM_ALLIES : TEAM_AXIS;
 
         /* 0x30037c79..0x30037cb4: trailing team section, same shape. */
         y = CG_DrawScoreboardTeamHeader(&drawCtx, y, boardWidth,

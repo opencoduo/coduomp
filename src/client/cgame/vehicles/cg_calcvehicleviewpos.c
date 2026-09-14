@@ -38,7 +38,6 @@ enum {
     VEHICLE_VIEW_MODE_GUNNER = 2,
     VEHICLE_VIEW_MODE_PASSENGER = 3,
     VEHICLE_VIEW_MODE_CHASE_ADS = 5,
-    VEHICLE_TYPE_PRIMARY = 1,
     CG_VEHICLE_VIEW_TRACE_MODEL = 0x211,
     CG_VEHICLE_VIEW_RETRACE_MODEL = 0x11
 };
@@ -313,7 +312,7 @@ void CG_CalcVehicleViewPos(void)
          *   (0x30040d8b FUCOMPP/TEST AH,0x44: JP 0x30040da7 -> EAX=0 on ads!=0/NaN,
          *    fallthrough MOV EAX,1 on ads==0.) */
         qboolean gotoSeatSelector = qfalse;
-        if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_PRIMARY &&
+        if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_4_WHEEL &&
             cg_predictedPlayerState.vehiclePosition == VEHICLE_VIEW_MODE_PASSENGER) {
             gotoSeatSelector = qtrue;
         } else {

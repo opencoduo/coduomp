@@ -58,7 +58,7 @@ void CG_Obituary(centity_t *self)
     char attackerName[CG_OBITUARY_COLORED_NAME_SIZE];
     clientInfo_t *targetInfo;
     clientInfo_t *attackerInfo = NULL;
-    int32_t targetTeam;
+    team_t targetTeam;
 
     if ((int8_t)meansOfDeath < 0) {
         meansOfDeath &= ~((uint32_t)CG_OBITUARY_MOD_FLAG);
@@ -127,7 +127,7 @@ void CG_Obituary(centity_t *self)
                    CG_OBITUARY_NAME_SIZE);
         attackerName[CG_OBITUARY_NAME_SIZE - 1] = '\0';
         strcat(attackerName, "^7");
-        int32_t attackerColorTeam = attackerInfo->obituaryTeam;
+        team_t attackerColorTeam = attackerInfo->obituaryTeam;
         CG_DrawScoreboard_GetTeamColor(attackerColorTeam, attackerColor);
 
         if (target == cg_snap->ps.psClientNum) {
@@ -149,9 +149,10 @@ void CG_Obituary(centity_t *self)
         /* 0x30022567 reloads the attacker team after the name/color helpers,
          * then 0x3002256e compares the target row directly rather than retaining
          * either earlier color-selection load. */
-        int32_t liveAttackerTeam =
-            attackerInfo != NULL ? attackerInfo->obituaryTeam : 0;
-        if (liveAttackerTeam != 0 &&
+        team_t liveAttackerTeam = attackerInfo != NULL
+                                      ? attackerInfo->obituaryTeam
+                                      : TEAM_FREE;
+        if (liveAttackerTeam != TEAM_FREE &&
             targetInfo->obituaryTeam == liveAttackerTeam) {
             message = va("CGAME_YOUKILLED\x15^1%%s^7 %s\x14%s",
                          targetName, "CGAME_TEAMMATE");

@@ -1376,7 +1376,7 @@ void G_UpdateClientInfo(gentity_t *ent)
 /* VERIFIED_DECOMPILER(0x45762, 55762_G_GetNonPVSFriendlyInfo.c, VERIFY-WAVE4-CLIENT-FRAME-LOCAL-2026-06-17): DATAFLOW_VERIFIED - team gates, 64-client ring scan, linked/live/team/snapshot filters, initial ROUND(delta + 0.5), scale clamp, signed quarter-offset packing, yaw packing, and entity-number bits checked. */
 int G_GetNonPVSFriendlyInfo(gentity_t *ent, const float *origin, int lastClient)
 {
-    int team = ent->client->sessionTeam;
+    team_t team = ent->client->sessionTeam;
 
     if (team == TEAM_FREE ||
         team == TEAM_SPECTATOR) {

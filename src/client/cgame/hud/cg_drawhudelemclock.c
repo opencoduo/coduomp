@@ -10,12 +10,10 @@
 
 #define CG_CLOCK_NEEDLE_SUFFIX "Needle"
 
-enum {
-    CG_CLOCK_NEEDLE_SUFFIX_LENGTH =
-        sizeof(CG_CLOCK_NEEDLE_SUFFIX) - 1,
-    CG_CLOCK_BASE_NAME_CAPACITY =
-        MAX_QPATH - CG_CLOCK_NEEDLE_SUFFIX_LENGTH
-};
+#define CG_CLOCK_NEEDLE_SUFFIX_LENGTH \
+    (sizeof(CG_CLOCK_NEEDLE_SUFFIX) - 1u)
+#define CG_CLOCK_BASE_NAME_CAPACITY \
+    (MAX_QPATH - CG_CLOCK_NEEDLE_SUFFIX_LENGTH)
 
 _Static_assert(MAX_QPATH > CG_CLOCK_NEEDLE_SUFFIX_LENGTH,
                "clock shader path cannot hold its Needle suffix");

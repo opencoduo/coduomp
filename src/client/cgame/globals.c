@@ -77,7 +77,7 @@ void cgame_compat_reset_module_load_state(void)
     cg_statBarHoldSeed = 1;
     cg_statBarHoldTimer = 1;
     cg_statBarLastClientNum = -1;
-    cg_scoreboardLeadTeam = 2;
+    cg_scoreboardLeadTeam = TEAM_ALLIES;
     sharedRandSeed = UINT32_C(0x89abcdef);
     bgPlayerAnimScriptPath = "mp/playeranim.script";
 
@@ -1350,7 +1350,7 @@ int32_t cg_statBarLastClientNum = -1;
  * Example: 30037c29   8b 1d b8 5d 08 30            MOV EBX,dword ptr [0x30085db8] | 30037c43   89 1d b8 5d 08 30            MOV dword ptr [0x30085db8],EBX
  */
 /* Source: uo_cgame_mp_x86.dll 0x30085db8. */
-int32_t cg_scoreboardLeadTeam = 2;
+team_t cg_scoreboardLeadTeam = TEAM_ALLIES;
 /*
  * Source: uo_cgame_mp_x86.dll 0x30085dc0 / 0x30085e30 (.data) — the shellshock
  * parameter definition tables (see globals.h). 27 entries each, proven by
@@ -4725,7 +4725,7 @@ int32_t cg_lagometerFrameCount = 0;
  * uint32_t symbols (owner=vector4scale was the first-touching function, not the identity).
  * Example: 30018a4c   c7 04 85 a4 82 53 30 ff ff ff ff MOV dword ptr [EAX*0x4 + 0x305382a4],0xffffffff | 30018a57   ff 05 a4 84 53 30            INC dword ptr [0x305384a4] | 30018e28   f6 04 8d a4 80 53 30 01      TEST byte ptr [ECX*0x4 + 0x305380a4],0x1
  */
-lagometer_t cg_lagometer = { { 0 }, { 0 }, 0 };
+lagometer_t cg_lagometer = { 0 };
 /* Source: uo_cgame_mp_x86.dll 0x305384c0 (.data); refs=3 width=4; first=0x30030f3c.
  * RESOLVED: cg_hudEmitClientTable[] — index->clientNum table (see globals.h). Sized to
  * the 8-dword span before the next distinct symbol at 0x305384e0; exact extent unproven.

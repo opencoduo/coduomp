@@ -216,7 +216,7 @@ void HudElem_SetDefaults(game_hudElem_t *elem)
 }
 
 /* VERIFIED_DECOMPILER(0x51a1c, 61a1c_HudElem_Alloc.c, VERIFY-NEXT-004-HUDELEM-2026-06-17): DATAFLOW_VERIFIED - 2048-slot scan, default initialization call, client/team stores at +0x7c/+0x80, null exhaustion return, and allocated pointer return checked against current decompiler output. */
-game_hudElem_t *HudElem_Alloc(int clientNum, int team)
+game_hudElem_t *HudElem_Alloc(int clientNum, team_t team)
 {
     for (int index = 0; index < HUDELEM_COUNT; index++) {
         game_hudElem_t *elem = &g_hudelems[index];
@@ -267,7 +267,7 @@ void HudElem_DestroyAll(void)
 /* VERIFIED_DECOMPILER(0x524ab, 624ab_GScr_NewHudElem.c, VERIFY-NEXT-004-HUDELEM-2026-06-17): DATAFLOW_VERIFIED - global client 0x3ff allocation, zero team argument, out-of-hudelems error path, Scr_AddHudElem argument, and void return checked against current decompiler output. */
 void GScr_NewHudElem(void)
 {
-    game_hudElem_t *elem = HudElem_Alloc(HUDELEM_GLOBAL_CLIENT, 0);
+    game_hudElem_t *elem = HudElem_Alloc(HUDELEM_GLOBAL_CLIENT, TEAM_FREE);
 
     if (elem == 0) {
         Scr_Error("out of hudelems");
@@ -286,7 +286,7 @@ void GScr_NewClientHudElem(void)
         Scr_ParamError(0, "not a client");
     }
 
-    elem = HudElem_Alloc(ent->s.number, 0);
+    elem = HudElem_Alloc(ent->s.number, TEAM_FREE);
     if (elem == 0) {
         Scr_Error("out of hudelems");
     }
@@ -298,7 +298,7 @@ void GScr_NewClientHudElem(void)
 void GScr_NewTeamHudElem(void)
 {
     uint16_t teamName = Scr_GetConstString(0);
-    int team;
+    team_t team;
     game_hudElem_t *elem;
 
     if (teamName == scr_const_allies) {
@@ -311,7 +311,7 @@ void GScr_NewTeamHudElem(void)
         Scr_ParamError(0,
                        va("team \"%s\" should be \"allies\", \"axis\", or \"spectator\"",
                           Scr_GetString(0)));
-        team = 0;
+        team = TEAM_FREE;
     }
 
     elem = HudElem_Alloc(HUDELEM_GLOBAL_CLIENT, team);
@@ -771,7 +771,7 @@ void HudElem_UpdateClient(gclient_t *client, int clientNum, uint32_t updateFlags
         if (elem->client.type == HE_TYPE_NONE) {
             continue;
         }
-        if (elem->team != 0 && elem->team != client->sessionTeam) {
+        if (elem->team != TEAM_FREE && elem->team != client->sessionTeam) {
             continue;
         }
         if (elem->clientNum != HUDELEM_GLOBAL_CLIENT && elem->clientNum != clientNum) {

@@ -38,7 +38,7 @@ enum { TANK_COMPASS_BLIP_LIFETIME_MS = 800 };
 void CG_DrawCompassTanks(const rectDef_t *rect, const vec4_t color)
 {
     clientInfo_t *localState = &bgs.clientinfo[cg_nextSnap->ps.psClientNum];
-    int32_t localTeam;
+    team_t localTeam;
 
     if (localState->infoValid == 0) {
         return;

@@ -30,9 +30,9 @@
 //   type 4  HE_TYPE_TIMER            EAX = elem->timerValue - cg_time + 0x3e7 (999)
 //   type 6  HE_TYPE_TENTHS_TIMER     EAX = elem->timerValue - cg_time + 0x63  (99)
 //   type 8  HE_TYPE_CLOCK            EAX = elem->timerValue - cg_time
-//   type 5  HE_TYPE_TIMER_UP        \
-//   type 7  HE_TYPE_TENTHS_TIMER_UP  } EAX = cg_time - elem->timerValue
-//   type 9  HE_TYPE_CLOCK_UP        /
+//   type 5  HE_TYPE_TIMER_UP
+//   type 7  HE_TYPE_TENTHS_TIMER_UP    EAX = cg_time - elem->timerValue
+//   type 9  HE_TYPE_CLOCK_UP
 // Countdown types (4/6/8) measure time remaining until timerValue; the +999/+99
 // biases round the ms up to the next whole second / tenth-second before the
 // callers divide by 1000 / 100. Count-up types (5/7/9) measure time elapsed

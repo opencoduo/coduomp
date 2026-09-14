@@ -118,15 +118,16 @@ enum {
     PROJECTILE_EXPLOSION_NONE = 8,
     PROJECTILE_EXPLOSION_SOUND_BANK_COUNT = PROJECTILE_EXPLOSION_NONE,
     CG_EVENT_SOUND_NONE = 8,
-    CG_SURFACE_SOUND_COUNT =
-        sizeof(cg_grenadeExplodeSurfaceSounds) /
-        sizeof(cg_grenadeExplodeSurfaceSounds[0]),
     CG_SHELL_FLASH_SOUND_COUNT =
         sizeof(cg_shellFlashSounds) / sizeof(cg_shellFlashSounds[0]),
     CG_BARRAGE_SOUND_COUNT =
         sizeof(cg_barrageIncomingSounds) /
         sizeof(cg_barrageIncomingSounds[0]),
 };
+
+#define CG_SURFACE_SOUND_COUNT \
+    (sizeof(cg_grenadeExplodeSurfaceSounds) / \
+     sizeof(cg_grenadeExplodeSurfaceSounds[0]))
 
 _Static_assert(CG_SURFACE_SOUND_COUNT ==
                    sizeof(cg_grenadeBounceSurfaceSounds) /

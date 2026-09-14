@@ -58,9 +58,6 @@ enum {
     VEHICLE_POSITION_PASSENGER = 3 /* diverts to the non-vehicle FOV path */
 };
 
-/* cg.predictedPlayerState.vehicleType value gated on (== 1) before the position check. */
-enum { VEHICLE_TYPE_ONE = 1 };
-
 /* FOV-fade timing constants proven as decimal immediates in the .mcode. */
 enum {
     FOV_FADE_BACKDATE_MS   = 10,  /* startTime = cg.time - 10 for the "just changed" fade */
@@ -102,7 +99,7 @@ float CG_CalcFov(void)
             /* Vehicle/turret view FOV path (0x3004003a). */
             const int32_t vehiclePosition = cg_predictedPlayerState.vehiclePosition; /* ESI */
 
-            if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_ONE &&
+            if (cg_predictedPlayerState.vehicleType == VEHICLE_TYPE_4_WHEEL &&
                 vehiclePosition == VEHICLE_POSITION_PASSENGER) {
                 /* 0x3004004c: passenger of a type-1 vehicle -> non-vehicle path. */
                 goto non_vehicle;

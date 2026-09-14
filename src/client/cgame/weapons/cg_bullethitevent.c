@@ -85,11 +85,9 @@
  * its low three bits select the vehicle mount position when the caller passes 0. */
 #define CG_FIRE_MODE_MASK 0x7
 
-enum {
-    CG_BULLET_SURFACE_SOUND_COUNT =
-        sizeof(cg_bulletSmallSurfaceSounds) /
-        sizeof(cg_bulletSmallSurfaceSounds[0])
-};
+#define CG_BULLET_SURFACE_SOUND_COUNT \
+    (sizeof(cg_bulletSmallSurfaceSounds) / \
+     sizeof(cg_bulletSmallSurfaceSounds[0]))
 
 _Static_assert(CG_BULLET_SURFACE_SOUND_COUNT ==
                    sizeof(cg_bulletLargeSurfaceSounds) /

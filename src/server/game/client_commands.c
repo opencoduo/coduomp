@@ -2043,10 +2043,14 @@ qboolean Cmd_Activate_f(gentity_t *ent)
         } else {
             target->use(target, ent, ent);
         }
-    } else if (classname == scr_const_team_WOLF_checkpoint &&
-               target->itemCount != client->sessionTeam) {
-        target->health = coduo_int32_from_bits(
-            (uint32_t)target->health + UINT32_C(1));
+    } else if (classname == scr_const_team_WOLF_checkpoint) {
+        /* This entity class stores its team selector in the otherwise generic
+         * itemCount lane. The original compares that dword to sessionTeam. */
+        const team_t checkpointTeam = (team_t)target->itemCount;
+        if (checkpointTeam != client->sessionTeam) {
+            target->health = coduo_int32_from_bits(
+                (uint32_t)target->health + UINT32_C(1));
+        }
     }
 
     return result;

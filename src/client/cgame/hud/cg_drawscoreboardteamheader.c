@@ -100,16 +100,11 @@ enum {
 #define CG_SB_FMT_INT              "%i"                        /* 0x300769e0 */
 
 /* Section selector encoded as `team - 0` / DEC EAX chain (0x30037171): the caller
- * passes team in EBX; team 0 => "None"/spectator-band banner, 1 => Axis, 2 =>
- * Allies, others => the default (spectators). Named provisionally by role. */
-enum {
-    CG_SB_SECTION_NONE   = 0,
-    CG_SB_SECTION_AXIS   = 1,
-    CG_SB_SECTION_ALLIES = 2
-};
+ * passes team in EBX; TEAM_FREE => "None"/spectator-band banner, followed by
+ * Axis and Allies, while other values select the default spectators banner. */
 
 float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
-                                  float boardWidth, float bannerHeight, int team,
+                                  float boardWidth, float bannerHeight, team_t team,
                                   int *lineCounter)
 {
     /* 0x300370a2: if the scoreboard has already overflowed the visible area this
@@ -177,13 +172,13 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
                                   *   (fed to CG_SE_LOCALIZE_MESSAGE to localize) */
     const char *teamName;
 
-    if (team == CG_SB_SECTION_NONE) {
+    if (team == TEAM_FREE) {
         /* 0x3003723f: spectator/none banner — read only the banner-icon cvar; the
          * team name is the localized banner text itself. */
         trap_Cvar_VariableStringBuffer(cg_scoreboardNoneBannerCvarName, iconCvarValue,
                                        sizeof(iconCvarValue));
         teamName = bannerText;   /* EDI retained from the banner localize */
-    } else if (team == CG_SB_SECTION_ALLIES) {
+    } else if (team == TEAM_ALLIES) {
         /* 0x30037200: Allies. Read banner-icon cvar and the team-name cvar, then
          * localize the team name. */
         trap_Cvar_VariableStringBuffer(cg_scoreboardAlliesBannerCvarName, iconCvarValue,
@@ -195,7 +190,7 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
                                                   (intptr_t)nameCvarValue,
                                                   (intptr_t)cg_scoreboardTeamNameLocalizationContext);
         teamName = va(cg_scoreboardTeamNameFormat, localized, bannerText);
-    } else if (team == CG_SB_SECTION_AXIS) {
+    } else if (team == TEAM_AXIS) {
         /* 0x300371c4: Axis. Same shape as Allies with the Axis cvars. */
         trap_Cvar_VariableStringBuffer(cg_scoreboardAxisBannerCvarName, iconCvarValue,
                                        sizeof(iconCvarValue));
@@ -256,7 +251,7 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
 
     /* 0x300372fc: only the AXIS and ALLIES sections draw the per-team totals row.
      * Every other section returns the banner Y advance now. */
-    if (team == CG_SB_SECTION_AXIS || team == CG_SB_SECTION_ALLIES) {
+    if (team == TEAM_AXIS || team == TEAM_ALLIES) {
         /* 0x3003730a: totals row X cursor starts at 129.0f. */
         float xCursor = CG_SB_BANNER_X;
         int32_t i;

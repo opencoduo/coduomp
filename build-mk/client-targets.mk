@@ -176,6 +176,7 @@ CLIENT_C_TYPE_ERRORS := -Werror=implicit-int \
 	-Werror=implicit-function-declaration \
 	-Werror=incompatible-pointer-types \
 	-Werror=int-conversion -Werror=return-type
+CLIENT_WARNING_FLAGS := -Wall -Wextra -Werror
 CLIENT_WINDOWS_CC ?= x86_64-w64-mingw32-gcc
 CLIENT_WIN32_CC ?= i686-w64-mingw32-gcc
 CLIENT_WINDOWS_DEF := build-mk/abi/cgame/uo_cgame_mp_x86.def
@@ -296,6 +297,7 @@ CODUOMP_INCLUDE_FLAGS := -Isrc \
 	-iquote src/qcommon/bindings/default
 CODUOMP_NATIVE_CFLAGS := -g -O0 $(CODUOMP_INTEGER_FLAGS) \
 	$(CODUOMP_FLOAT_FLAGS) $(CODUOMP_STORAGE_FLAGS) \
+	$(CLIENT_WARNING_FLAGS) \
 	$(CLIENT_FP_CPPFLAGS) \
 	$(RECOVERY_POLICY_CPPFLAGS) \
 	$(AUDIO_BACKEND_CPPFLAGS) \
@@ -335,15 +337,15 @@ endif
 CLIENT_NATIVE_FLOAT_FLAGS := -ffp-contract=off
 client-native-link:
 	@mkdir -p $(dir $(CLIENT_NATIVE_LIBRARY))
-	$(CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) $(PLATFORM_BEHAVIOR_CPPFLAGS) $(CLIENT_C_TYPE_ERRORS) -g -O0 $(CLIENT_NATIVE_FLOAT_FLAGS) -fno-common -fPIC -fvisibility=hidden $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) $(CLIENT_NATIVE_LDFLAGS) -lm -o $(CLIENT_NATIVE_LIBRARY)
+	$(CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) $(PLATFORM_BEHAVIOR_CPPFLAGS) $(CLIENT_WARNING_FLAGS) $(CLIENT_C_TYPE_ERRORS) -g -O0 $(CLIENT_NATIVE_FLOAT_FLAGS) -fno-common -fPIC -fvisibility=hidden $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) $(CLIENT_NATIVE_LDFLAGS) -lm -o $(CLIENT_NATIVE_LIBRARY)
 
 client-windows-cross-link:
 	@mkdir -p $(dir $(CLIENT_WINDOWS_LIBRARY))
-	$(CLIENT_WINDOWS_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_C_TYPE_ERRORS) $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WINDOWS_LIBRARY)
+	$(CLIENT_WINDOWS_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_WARNING_FLAGS) $(CLIENT_C_TYPE_ERRORS) $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WINDOWS_LIBRARY)
 
 client-win32-abi-link:
 	@mkdir -p $(dir $(CLIENT_WIN32_LIBRARY))
-	$(CLIENT_WIN32_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_C_TYPE_ERRORS) $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WIN32_LIBRARY)
+	$(CLIENT_WIN32_CC) -std=c11 $(CLIENT_FP_CPPFLAGS) $(RECOVERY_POLICY_CPPFLAGS) -DWINDOWS_BEHAVIOR $(CLIENT_WARNING_FLAGS) $(CLIENT_C_TYPE_ERRORS) $(CLIENT_INCLUDE_FLAGS) $(CLIENT_ALL_C_SOURCES) -shared -static-libgcc $(CLIENT_WINDOWS_DEF) -Wl,--no-undefined -lm -o $(CLIENT_WIN32_LIBRARY)
 
 # Compiler-policy changes in these files must invalidate existing native
 # objects.  Dependency files cover source/header changes but do not record the

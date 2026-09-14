@@ -5410,7 +5410,7 @@ _Static_assert(sizeof(cgScoreboardDrawCtx_t) == 0x10,
  * unproven from the allowed inputs.
  */
 float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
-                                  float boardWidth, float bannerHeight, int team,
+                                  float boardWidth, float bannerHeight, team_t team,
                                   int *lineCounter);
 
 /* cgScore_t (the collected scoreboard row, stride 0x18) is defined in globals.h
@@ -5426,7 +5426,7 @@ float CG_DrawScoreboardTeamHeader(const cgScoreboardDrawCtx_t *drawCtx, float y,
  * same-module PPC bank (CG_DrawScoreboard_GetTeamColor); the color-out register
  * arg is modelled as an ordinary leading parameter for the syntax-only build.
  */
-void CG_DrawScoreboard_GetTeamColor(int team, vec3_t colorOut);
+void CG_DrawScoreboard_GetTeamColor(team_t team, vec3_t colorOut);
 
 /*
  * CG_DrawClientScore (0x30037420) — draws one scoreboard client row: optional
@@ -5448,7 +5448,7 @@ float CG_DrawClientScore(const vec_t *color, float y, const cgScore_t *entry,
  * for the full evidence trace.
  */
 float CG_DrawScoreboard_ScoresList(const cgScoreboardDrawCtx_t *drawCtx,
-                                   float y, int team, float rowScale,
+                                   float y, team_t team, float rowScale,
                                    int *rowCounter);
 
 /*
