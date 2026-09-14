@@ -11,10 +11,6 @@
 #define CODUOMP_XMODEL_NATIVE_SSE 0
 #endif
 
-enum {
-    RB_XMODEL_TEXCOORD_POINTER_COUNT = 4
-};
-
 /* NOT_FROM_ORIGINAL_SOURCE: return carrier for the two tessellation-array
  * bases produced by RB_BeginXModelTessRange. */
 typedef struct rb_xmodel_tess_range_s {
@@ -90,9 +86,10 @@ static void RB_DrawOptimizedXModelPasses(
     const XSurface *surface, const void *baseTexCoord,
     const void *indices)
 {
-    const void *baseTexCoords[RB_XMODEL_TEXCOORD_POINTER_COUNT] = {
-        baseTexCoord, NULL, NULL, NULL
-    };
+    /* R_AddEntityDrawSurf permits this path only when the shader uses texture
+     * unit zero. Keep the full RB_SetupMultitexture input extent so its scan
+     * up to glConfig.maxActiveTextures remains within this object. */
+    const void *baseTexCoords[R_MAX_TEXTURE_UNITS] = { baseTexCoord };
     const int32_t indexCount = surface->triangleCount * 3;
 
     for (int32_t passIndex = 0;

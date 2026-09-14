@@ -153,7 +153,7 @@ void LittleVertices_T2T2C4V3(
         memcpy(surface->positions[vertexIndex], source->xyz,
                sizeof(surface->positions[vertexIndex]));
         AddPointToBounds(surface->positions[vertexIndex],
-                         surface->boundsMin, surface->boundsMax);
+                         surface->bounds[0], surface->bounds[1]);
     }
 
     if (surface->tangents == NULL || surface->bitangents == NULL ||
@@ -267,8 +267,8 @@ qboolean BuildOptimizedSurface(
         /* 0x0050bc0e MOV EAX,0x48800000 (+262144.0f) / 0x0050bc1c 0xc8800000
          * (-262144.0f). A prior pass used +/-65536.0f (0x47800000), too small for a
          * world reaching +/-131072. Same sentinel class as R_BModelWorldBounds. */
-        surface->boundsMin[component] = 262144.0f;
-        surface->boundsMax[component] = -262144.0f;
+        surface->bounds[0][component] = 262144.0f;
+        surface->bounds[1][component] = -262144.0f;
     }
 
     /* NOT_FROM_ORIGINAL_SOURCE: validate source indices before applying the shared vertex base. */
@@ -317,8 +317,8 @@ qboolean BuildOptimizedSurface(
     }
 
     for (int32_t component = 0; component < 3; ++component) {
-        surface->boundsMin[component] -= shader->boundsExpansion;
-        surface->boundsMax[component] += shader->boundsExpansion;
+        surface->bounds[0][component] -= shader->boundsExpansion;
+        surface->bounds[1][component] += shader->boundsExpansion;
     }
 
     if (build->optimized != qfalse)

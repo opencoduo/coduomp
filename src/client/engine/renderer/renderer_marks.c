@@ -191,9 +191,9 @@ void R_AABBTreeSurfaces_r(
 {
     int32_t index;
 
-    if (tree->maxs[0] < mins[0] || tree->mins[0] > maxs[0] ||
-        tree->maxs[1] < mins[1] || tree->mins[1] > maxs[1] ||
-        tree->maxs[2] < mins[2] || tree->mins[2] > maxs[2]) {
+    if (tree->bounds[1][0] < mins[0] || tree->bounds[0][0] > maxs[0] ||
+        tree->bounds[1][1] < mins[1] || tree->bounds[0][1] > maxs[1] ||
+        tree->bounds[1][2] < mins[2] || tree->bounds[0][2] > maxs[2]) {
         return;
     }
 
@@ -218,12 +218,12 @@ void R_AABBTreeSurfaces_r(
             continue;
 
         surface = (const renderer_lit_surface_t *)worldSurface->data;
-        if (surface->boundsMax[0] < mins[0] ||
-            surface->boundsMin[0] > maxs[0] ||
-            surface->boundsMax[1] < mins[1] ||
-            surface->boundsMin[1] > maxs[1] ||
-            surface->boundsMax[2] < mins[2] ||
-            surface->boundsMin[2] > maxs[2]) {
+        if (surface->bounds[1][0] < mins[0] ||
+            surface->bounds[0][0] > maxs[0] ||
+            surface->bounds[1][1] < mins[1] ||
+            surface->bounds[0][1] > maxs[1] ||
+            surface->bounds[1][2] < mins[2] ||
+            surface->bounds[0][2] > maxs[2]) {
             continue;
         }
 
@@ -252,9 +252,9 @@ void R_CellSurfaces(
         const renderer_cull_group_t *group = cell->cullGroups[groupIndex];
         int32_t surfaceIndex;
 
-        if (group->maxs[0] < mins[0] || group->mins[0] > maxs[0] ||
-            group->maxs[1] < mins[1] || group->mins[1] > maxs[1] ||
-            group->maxs[2] < mins[2] || group->mins[2] > maxs[2]) {
+        if (group->bounds[1][0] < mins[0] || group->bounds[0][0] > maxs[0] ||
+            group->bounds[1][1] < mins[1] || group->bounds[0][1] > maxs[1] ||
+            group->bounds[1][2] < mins[2] || group->bounds[0][2] > maxs[2]) {
             continue;
         }
 
@@ -273,12 +273,12 @@ void R_CellSurfaces(
                 continue;
 
             surface = (const renderer_lit_surface_t *)worldSurface->data;
-            if (surface->boundsMax[0] < mins[0] ||
-                surface->boundsMin[0] > maxs[0] ||
-                surface->boundsMax[1] < mins[1] ||
-                surface->boundsMin[1] > maxs[1] ||
-                surface->boundsMax[2] < mins[2] ||
-                surface->boundsMin[2] > maxs[2]) {
+            if (surface->bounds[1][0] < mins[0] ||
+                surface->bounds[0][0] > maxs[0] ||
+                surface->bounds[1][1] < mins[1] ||
+                surface->bounds[0][1] > maxs[1] ||
+                surface->bounds[1][2] < mins[2] ||
+                surface->bounds[0][2] > maxs[2]) {
                 continue;
             }
 

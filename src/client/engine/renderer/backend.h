@@ -616,8 +616,7 @@ enum {
  * variable surface-lighting cache sized from all registered LOD surfaces. */
 struct renderer_static_model_s {
     refEntity_t entity;                    /* original +0x000 */
-    vec3_t mins;                            /* original +0x09c */
-    vec3_t maxs;                            /* original +0x0a8 */
+    vec3_t bounds[2];                       /* original +0x09c, +0x0a8 */
     int32_t viewCount;                      /* original +0x0b4 */
     int32_t lightCount;                    /* original +0x0b8 */
     float diffuseSunContribution;          /* original +0x0bc */
@@ -749,8 +748,7 @@ typedef struct renderer_lit_surface_s {
     renderer_surface_type_t surfaceType;    /* original +0x00 */
     renderer_static_vertex_memory_source_t storageMode; /* original +0x04 */
     uint32_t dlightBits;                    /* original +0x08 */
-    vec3_t boundsMin;                       /* original +0x0c */
-    vec3_t boundsMax;                       /* original +0x18 */
+    vec3_t bounds[2];                       /* original +0x0c, +0x18 */
 } renderer_lit_surface_t;
 
 /* World mesh surfaces use the same pointer-rich representation for the
@@ -761,8 +759,7 @@ typedef struct renderer_world_mesh_surface_s {
     renderer_surface_type_t surfaceType;     /* original +0x00 */
     renderer_static_vertex_memory_source_t storageMode; /* original +0x04 */
     uint32_t dlightBits;                     /* original +0x08 */
-    vec3_t boundsMin;                        /* original +0x0c */
-    vec3_t boundsMax;                        /* original +0x18 */
+    vec3_t bounds[2];                        /* original +0x0c, +0x18 */
     int32_t vertexCount;                     /* original +0x24 */
     vec3_t *tangents;                        /* original +0x28, optional */
     vec3_t *bitangents;                      /* original +0x2c, optional */
@@ -819,8 +816,7 @@ enum renderer_shader_mark_flags_e {
  * contiguous child array; terminal records own 12-byte world-surface entries. */
 typedef struct renderer_aabb_tree_s renderer_aabb_tree_t;
 struct renderer_aabb_tree_s {
-    vec3_t mins;                            /* original +0x00 */
-    vec3_t maxs;                            /* original +0x0c */
+    vec3_t bounds[2];                       /* original +0x00, +0x0c */
     msurface_t *surfaces;                   /* original +0x18 */
     int32_t surfaceCount;                   /* original +0x1c */
     renderer_aabb_tree_t *children;         /* original +0x20 */
@@ -831,8 +827,7 @@ struct renderer_aabb_tree_s {
  * R_AddCellCullGroups compares the runtime-only tail against tr.viewCount so
  * each group is submitted at most once in a view. */
 typedef struct renderer_cull_group_s {
-    vec3_t mins;                            /* original +0x00 */
-    vec3_t maxs;                            /* original +0x0c */
+    vec3_t bounds[2];                       /* original +0x00, +0x0c */
     msurface_t *surfaces;                   /* original +0x18 */
     int32_t surfaceCount;                   /* original +0x1c */
     int32_t viewCount;                      /* original +0x20 */
@@ -897,8 +892,7 @@ typedef struct renderer_cell_model_link_s {
  * encountered again and otherwise prepends one of these transient records. */
 typedef struct renderer_cell_entity_link_s {
     trRefEntity_t *entity;                    /* original +0x00 */
-    vec3_t mins;                              /* original +0x04 */
-    vec3_t maxs;                              /* original +0x10 */
+    vec3_t bounds[2];                         /* original +0x04, +0x10 */
     struct renderer_cell_entity_link_s *next; /* original +0x1c */
 } renderer_cell_entity_link_t;
 
@@ -1972,14 +1966,12 @@ extern int32_t rendererLightVisSortedHistoryCount;
 #if UINTPTR_MAX == UINT32_MAX
 _Static_assert(_Alignof(renderer_aabb_tree_t) == 0x04,
                "i386 renderer AABB-tree alignment changed");
-_Static_assert(offsetof(renderer_aabb_tree_t, mins) == 0x00,
+_Static_assert(offsetof(renderer_aabb_tree_t, bounds) == 0x00,
                "i386 renderer AABB-tree minimum-bounds offset changed");
-_Static_assert(sizeof(((renderer_aabb_tree_t *)0)->mins) == 0x0c,
-               "i386 renderer AABB-tree minimum-bounds extent changed");
-_Static_assert(offsetof(renderer_aabb_tree_t, maxs) == 0x0c,
+_Static_assert(sizeof(((renderer_aabb_tree_t *)0)->bounds) == 0x18,
+               "i386 renderer AABB-tree bounds extent changed");
+_Static_assert(offsetof(renderer_aabb_tree_t, bounds[1]) == 0x0c,
                "i386 renderer AABB-tree maximum-bounds offset changed");
-_Static_assert(sizeof(((renderer_aabb_tree_t *)0)->maxs) == 0x0c,
-               "i386 renderer AABB-tree maximum-bounds extent changed");
 _Static_assert(offsetof(renderer_aabb_tree_t, surfaces) == 0x18,
                "i386 renderer AABB-tree surface-pointer offset changed");
 _Static_assert(sizeof(((renderer_aabb_tree_t *)0)->surfaces) == 0x04,
@@ -2001,14 +1993,12 @@ _Static_assert(sizeof(renderer_aabb_tree_t) == 0x28,
 
 _Static_assert(_Alignof(renderer_cull_group_t) == 0x04,
                "i386 renderer cull-group alignment changed");
-_Static_assert(offsetof(renderer_cull_group_t, mins) == 0x00,
+_Static_assert(offsetof(renderer_cull_group_t, bounds) == 0x00,
                "i386 renderer cull-group minimum-bounds offset changed");
-_Static_assert(sizeof(((renderer_cull_group_t *)0)->mins) == 0x0c,
-               "i386 renderer cull-group minimum-bounds extent changed");
-_Static_assert(offsetof(renderer_cull_group_t, maxs) == 0x0c,
+_Static_assert(sizeof(((renderer_cull_group_t *)0)->bounds) == 0x18,
+               "i386 renderer cull-group bounds extent changed");
+_Static_assert(offsetof(renderer_cull_group_t, bounds[1]) == 0x0c,
                "i386 renderer cull-group maximum-bounds offset changed");
-_Static_assert(sizeof(((renderer_cull_group_t *)0)->maxs) == 0x0c,
-               "i386 renderer cull-group maximum-bounds extent changed");
 _Static_assert(offsetof(renderer_cull_group_t, surfaces) == 0x18,
                "i386 renderer cull-group surface-pointer offset changed");
 _Static_assert(sizeof(((renderer_cull_group_t *)0)->surfaces) == 0x04,
@@ -2136,14 +2126,12 @@ _Static_assert(offsetof(renderer_cell_entity_link_t, entity) == 0x00,
                "i386 renderer cell-entity link entity offset changed");
 _Static_assert(sizeof(((renderer_cell_entity_link_t *)0)->entity) == 0x04,
                "i386 renderer cell-entity link entity extent changed");
-_Static_assert(offsetof(renderer_cell_entity_link_t, mins) == 0x04,
+_Static_assert(offsetof(renderer_cell_entity_link_t, bounds) == 0x04,
                "i386 renderer cell-entity link minimum-bounds offset changed");
-_Static_assert(sizeof(((renderer_cell_entity_link_t *)0)->mins) == 0x0c,
-               "i386 renderer cell-entity link minimum-bounds extent changed");
-_Static_assert(offsetof(renderer_cell_entity_link_t, maxs) == 0x10,
+_Static_assert(sizeof(((renderer_cell_entity_link_t *)0)->bounds) == 0x18,
+               "i386 renderer cell-entity link bounds extent changed");
+_Static_assert(offsetof(renderer_cell_entity_link_t, bounds[1]) == 0x10,
                "i386 renderer cell-entity link maximum-bounds offset changed");
-_Static_assert(sizeof(((renderer_cell_entity_link_t *)0)->maxs) == 0x0c,
-               "i386 renderer cell-entity link maximum-bounds extent changed");
 _Static_assert(offsetof(renderer_cell_entity_link_t, next) == 0x1c,
                "i386 renderer cell-entity link next offset changed");
 _Static_assert(sizeof(((renderer_cell_entity_link_t *)0)->next) == 0x04,
@@ -2547,14 +2535,12 @@ _Static_assert(offsetof(renderer_lit_surface_t, dlightBits) == 0x08,
                "i386 lit-surface dlight-mask offset changed");
 _Static_assert(sizeof(((renderer_lit_surface_t *)0)->dlightBits) == 0x04,
                "i386 lit-surface dlight-mask extent changed");
-_Static_assert(offsetof(renderer_lit_surface_t, boundsMin) == 0x0c,
+_Static_assert(offsetof(renderer_lit_surface_t, bounds) == 0x0c,
                "i386 lit-surface minimum-bounds offset changed");
-_Static_assert(sizeof(((renderer_lit_surface_t *)0)->boundsMin) == 0x0c,
-               "i386 lit-surface minimum-bounds extent changed");
-_Static_assert(offsetof(renderer_lit_surface_t, boundsMax) == 0x18,
+_Static_assert(sizeof(((renderer_lit_surface_t *)0)->bounds) == 0x18,
+               "i386 lit-surface bounds extent changed");
+_Static_assert(offsetof(renderer_lit_surface_t, bounds[1]) == 0x18,
                "i386 lit-surface maximum-bounds offset changed");
-_Static_assert(sizeof(((renderer_lit_surface_t *)0)->boundsMax) == 0x0c,
-               "i386 lit-surface maximum-bounds extent changed");
 _Static_assert(sizeof(renderer_lit_surface_t) == 0x24,
                "original i386 lit-surface prefix size changed");
 
@@ -2575,14 +2561,12 @@ _Static_assert(offsetof(renderer_world_mesh_surface_t, dlightBits) == 0x08,
 _Static_assert(sizeof(((renderer_world_mesh_surface_t *)0)->dlightBits) ==
                    0x04,
                "i386 world-mesh dlight-mask extent changed");
-_Static_assert(offsetof(renderer_world_mesh_surface_t, boundsMin) == 0x0c,
+_Static_assert(offsetof(renderer_world_mesh_surface_t, bounds) == 0x0c,
                "i386 world-mesh minimum-bounds offset changed");
-_Static_assert(sizeof(((renderer_world_mesh_surface_t *)0)->boundsMin) == 0x0c,
-               "i386 world-mesh minimum-bounds extent changed");
-_Static_assert(offsetof(renderer_world_mesh_surface_t, boundsMax) == 0x18,
+_Static_assert(sizeof(((renderer_world_mesh_surface_t *)0)->bounds) == 0x18,
+               "i386 world-mesh bounds extent changed");
+_Static_assert(offsetof(renderer_world_mesh_surface_t, bounds[1]) == 0x18,
                "i386 world-mesh maximum-bounds offset changed");
-_Static_assert(sizeof(((renderer_world_mesh_surface_t *)0)->boundsMax) == 0x0c,
-               "i386 world-mesh maximum-bounds extent changed");
 _Static_assert(offsetof(renderer_world_mesh_surface_t, vertexCount) == 0x24,
                "i386 world-mesh vertex-count offset changed");
 _Static_assert(sizeof(((renderer_world_mesh_surface_t *)0)->vertexCount) ==
@@ -2962,14 +2946,12 @@ _Static_assert(offsetof(renderer_static_model_t, entity) == 0x000,
                "i386 static-model entity offset changed");
 _Static_assert(sizeof(((renderer_static_model_t *)0)->entity) == 0x09c,
                "i386 static-model entity extent changed");
-_Static_assert(offsetof(renderer_static_model_t, mins) == 0x09c,
+_Static_assert(offsetof(renderer_static_model_t, bounds) == 0x09c,
                "i386 static-model minimum-bounds offset changed");
-_Static_assert(sizeof(((renderer_static_model_t *)0)->mins) == 0x00c,
-               "i386 static-model minimum-bounds extent changed");
-_Static_assert(offsetof(renderer_static_model_t, maxs) == 0x0a8,
+_Static_assert(sizeof(((renderer_static_model_t *)0)->bounds) == 0x018,
+               "i386 static-model bounds extent changed");
+_Static_assert(offsetof(renderer_static_model_t, bounds[1]) == 0x0a8,
                "i386 static-model maximum-bounds offset changed");
-_Static_assert(sizeof(((renderer_static_model_t *)0)->maxs) == 0x00c,
-               "i386 static-model maximum-bounds extent changed");
 _Static_assert(offsetof(renderer_static_model_t, viewCount) == 0x0b4,
                "i386 static-model view-count offset changed");
 _Static_assert(sizeof(((renderer_static_model_t *)0)->viewCount) == 0x004,

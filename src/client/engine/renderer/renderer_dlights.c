@@ -154,8 +154,8 @@ uint32_t R_DlightTris(renderer_lit_surface_t *surface,
             const long double low =
                 (long double)light->transformedPosition[axis] -
                 light->radius;
-            if (high <= surface->boundsMin[axis] ||
-                low >= surface->boundsMax[axis]) {
+            if (high <= surface->bounds[0][axis] ||
+                low >= surface->bounds[1][axis]) {
                 overlaps = qfalse;
                 break;
             }

@@ -1237,8 +1237,8 @@ int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree,
 {
     const float clearBound = 262144.0f; /* exact bits 0x48800000 */
     for (int32_t component = 0; component < 3; ++component) {
-        tree->mins[component] = clearBound;
-        tree->maxs[component] = -clearBound;
+        tree->bounds[0][component] = clearBound;
+        tree->bounds[1][component] = -clearBound;
     }
 
     if (tree->childCount == 0) {
@@ -1247,8 +1247,8 @@ int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree,
             const renderer_lit_surface_t *surface =
                 (const renderer_lit_surface_t *)
                     tree->surfaces[surfaceIndex].data;
-            ExpandBounds(surface->boundsMin, surface->boundsMax,
-                         tree->mins, tree->maxs);
+            ExpandBounds(surface->bounds[0], surface->bounds[1],
+                         tree->bounds[0], tree->bounds[1]);
         }
         return nextTreeIndex;
     }
@@ -1261,7 +1261,8 @@ int32_t R_FinishLoadingAABBTrees_r(renderer_aabb_tree_t *tree,
         renderer_aabb_tree_t *child = &tree->children[childIndex];
         nextTreeIndex =
             R_FinishLoadingAABBTrees_r(child, nextTreeIndex);
-        ExpandBounds(child->mins, child->maxs, tree->mins, tree->maxs);
+        ExpandBounds(child->bounds[0], child->bounds[1],
+                     tree->bounds[0], tree->bounds[1]);
     }
     return nextTreeIndex;
 }
@@ -1463,8 +1464,8 @@ void R_LoadCullGroups(const lump_t *cullGroupLump)
         renderer_cull_group_t *group =
             &rendererWorldData.cullGroups[groupIndex];
 
-        memcpy(group->mins, diskGroup->mins, sizeof(group->mins));
-        memcpy(group->maxs, diskGroup->maxs, sizeof(group->maxs));
+        memcpy(group->bounds[0], diskGroup->mins, sizeof(group->bounds[0]));
+        memcpy(group->bounds[1], diskGroup->maxs, sizeof(group->bounds[1]));
         group->surfaces =
             &rendererWorldData.surfaces[diskGroup->firstSurface];
         group->surfaceCount = diskGroup->surfaceCount;
