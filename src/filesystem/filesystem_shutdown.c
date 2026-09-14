@@ -35,13 +35,23 @@ void FS_ShutdownSearchPaths(searchpath_t *searchpath)
  * teardown remains at the target service boundary. */
 void FS_Shutdown(qboolean clearLookupLists)
 {
+    coduomp_FS_ShutdownPreservingFile(clearLookupLists, 0);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: filesystem search paths can be rebuilt while a
+ * client-owned stream remains valid. All other ordinary handles retain the
+ * original FS_Shutdown ownership and close behavior. */
+void coduomp_FS_ShutdownPreservingFile(qboolean clearLookupLists,
+                                       int32_t preservedHandle)
+{
     filesystem_compat_shutdown_begin();
 
     for (int32_t handle = 1; handle < FS_HANDLE_COUNT; ++handle) {
         /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
         if (handle == com_consoleLogFile ||
             handle == com_journalFile ||
-            handle == com_journalDataFile) {
+            handle == com_journalDataFile ||
+            handle == preservedHandle) {
             continue;
         }
 

@@ -22,6 +22,11 @@ void Com_ReadCDKey(void);
 
 #if defined(WINDOWS_BEHAVIOR)
 
+/* NOT_FROM_ORIGINAL_SOURCE: common implementation for the original restart
+ * entry point and the client stream-preserving compatibility entry point. */
+static void coduomp_FS_RestartInternal(int32_t checksumFeed,
+                                       int32_t preservedHandle);
+
 /* NOT_FROM_ORIGINAL_SOURCE: source-level factoring of the two identical
  * basegame/fs_game directory-addition blocks in FS_Startup. */
 static void filesystem_compat_add_startup_game_directories(
@@ -166,8 +171,24 @@ void FS_InitFilesystem(void)
  * recursive retry. */
 void FS_Restart(int32_t checksumFeed)
 {
+    coduomp_FS_RestartInternal(checksumFeed, 0);
+}
 
-    FS_Shutdown(qfalse);
+/* NOT_FROM_ORIGINAL_SOURCE: preserve a caller-owned stream across the same
+ * filesystem rebuild performed by FS_Restart. */
+void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
+                                      int32_t preservedHandle)
+{
+    coduomp_FS_RestartInternal(checksumFeed, preservedHandle);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: parameterized source-level factoring only; a
+ * zero preserved handle follows the original FS_Restart instruction flow. */
+static void coduomp_FS_RestartInternal(int32_t checksumFeed,
+                                       int32_t preservedHandle)
+{
+
+    coduomp_FS_ShutdownPreservingFile(qfalse, preservedHandle);
     fs_checksumFeed = checksumFeed;
     FS_ClearPakReferences(qfalse);
     FS_Startup("main");
@@ -185,7 +206,7 @@ void FS_Restart(int32_t checksumFeed)
             fs_savedBasePath[0] = '\0';
             fs_savedGame[0] = '\0';
             (void)Cvar_Set2("fs_restrict", "0", qtrue);
-            FS_Restart(checksumFeed);
+            coduomp_FS_RestartInternal(checksumFeed, preservedHandle);
             Com_Error(ERR_DROP, "Invalid game folder\n");
         }
 
@@ -208,6 +229,11 @@ void FS_Restart(int32_t checksumFeed)
 }
 
 #else
+
+/* NOT_FROM_ORIGINAL_SOURCE: common implementation for the original restart
+ * entry point and the client stream-preserving compatibility entry point. */
+static void coduomp_FS_RestartInternal(int32_t checksumFeed,
+                                       int32_t preservedHandle);
 
 void FS_Startup(const char *gameName)
 {
@@ -339,7 +365,23 @@ void FS_InitFilesystem(void)
 
 void FS_Restart(int32_t checksumFeed)
 {
-    FS_Shutdown(qfalse);
+    coduomp_FS_RestartInternal(checksumFeed, 0);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: preserve a caller-owned stream across the same
+ * filesystem rebuild performed by FS_Restart. */
+void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
+                                      int32_t preservedHandle)
+{
+    coduomp_FS_RestartInternal(checksumFeed, preservedHandle);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: parameterized source-level factoring only; a
+ * zero preserved handle follows the original FS_Restart instruction flow. */
+static void coduomp_FS_RestartInternal(int32_t checksumFeed,
+                                       int32_t preservedHandle)
+{
+    coduomp_FS_ShutdownPreservingFile(qfalse, preservedHandle);
     fs_checksumFeed = checksumFeed;
     FS_ClearPakReferences(qfalse);
     FS_Startup("main");
@@ -353,7 +395,7 @@ void FS_Restart(int32_t checksumFeed)
             fs_savedBasePath[0] = '\0';
             fs_savedGame[0] = '\0';
             Cvar_Set("fs_restrict", "0");
-            FS_Restart(checksumFeed);
+            coduomp_FS_RestartInternal(checksumFeed, preservedHandle);
             Com_Error(ERR_DROP, "Invalid game folder\n");
         }
         Com_Error(ERR_FATAL,

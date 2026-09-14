@@ -705,7 +705,8 @@ void CL_ParseGamestate(msg_t *message)
 
     if (sv_running->integer == 0) {
         if (namespaceChanged != qfalse || cachedRootPaks != qfalse)
-            FS_Restart(clc.checksumFeed);
+            coduomp_FS_RestartPreservingFile(clc.checksumFeed,
+                                             clc.demoFile);
         else if (fs_game->modified != qfalse ||
                  clc.checksumFeed != fs_checksumFeed)
             (void)FS_ConditionalRestart(clc.checksumFeed);
