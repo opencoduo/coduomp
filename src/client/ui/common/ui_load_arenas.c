@@ -39,7 +39,8 @@ void UI_LoadArenas(void)
             fileCount--;
             continue;
         }
-        Com_sprintf(path, sizeof(path), "mp/%s", filename);
+        memcpy(path, "mp/", sizeof("mp/") - 1);
+        memcpy(path + sizeof("mp/") - 1, filename, filenameLength + 1);
         UI_LoadArenasFromFile(path);
         filename += filenameLength + 1;
         fileCount--;
