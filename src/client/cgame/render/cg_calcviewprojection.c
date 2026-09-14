@@ -4,7 +4,7 @@
 // CG_CalcViewProjection (provisional name; address-anchored below because the
 // exact original cgame symbol is not proven). Role proven from behavior:
 //
-//   1. Calls CG_CalcFov (0x3003ffc0), which leaves the base horizontal FOV
+//   1. Calls CG_CalcFov (0x3003ffc0), which leaves the current horizontal FOV
 //      (degrees) on the x87 stack as its float return value.
 //   2. Derives the vertical FOV from the horizontal FOV and the current 3D-view
 //      aspect ratio (cg_refdef.width / cg_refdef.height) using the exact
@@ -54,17 +54,13 @@ qboolean CG_CalcViewProjection(void)
      * in fovX. (Instruction 0x300402b1 CALL 0x3003ffc0, then 0x300402c4 FLD ST2
      * re-reads this returned value after the two FILDs pushed W and H above it.)
      */
-    long double authoredFovX = (long double)CG_CalcFov();
+    long double fovX = (long double)CG_CalcFov();
 
     /* Screen (3D-view) dimensions, converted int -> float (FILD). */
     long double viewHeightCurrent =
         (long double)coduo_int32_from_bits(cg_refdef.height); /* FILD [0x30487a84] */
     long double viewWidth =
         (long double)coduo_int32_from_bits(cg_refdef.width);  /* FILD [0x30487a80] */
-    long double fovX = cgame_compat_expand_horizontal_fov(
-        authoredFovX, coduo_int32_from_bits(cg_refdef.width),
-        coduo_int32_from_bits(cg_refdef.height));
-
     /*
      * Vertical FOV from horizontal FOV and aspect. Exactly the x87 sequence:
      *   FMUL pi/360   -> halfFovX radians
@@ -91,7 +87,7 @@ qboolean CG_CalcViewProjection(void)
     int32_t drewFirst;
     long double termA = fovY; /* st0 at 0x30040315 (fovY, possibly pulsed) */
     long double termB = fovX; /* st1 at 0x30040315 (fovX, possibly pulsed) */
-    long double sensitivityFov = authoredFovX;
+    long double sensitivityFov = fovX;
 
     if (CG_PointContents(MARK_VIEWORG_ARG, MARK_EXCLUDE_NONE,
                                     MARK_PASS_MASK) != 0) {   /* 0x300402e1 CALL, 0x300402e9 TEST */
@@ -105,7 +101,7 @@ qboolean CG_CalcViewProjection(void)
         markFlags |= RDF_DRAW_SKYBOX;                       /* 0x300402fd OR EAX,0x20 */
         termB = fovX + pulse;                                 /* 0x3004030a FADDP ST3,ST0 */
         termA = fovY - pulse;                                 /* 0x3004030c FSUBP */
-        sensitivityFov = authoredFovX + pulse;
+        sensitivityFov = fovX + pulse;
         drewFirst = 1;                                        /* 0x300402f8 MOV ESI,1 */
     } else {
         markFlags &= ~RDF_DRAW_SKYBOX;                      /* 0x30040310 AND EAX,~0x20 */

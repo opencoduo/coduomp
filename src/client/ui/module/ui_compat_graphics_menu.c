@@ -2,6 +2,7 @@
 #include "ui_globals.h"
 #include "client/common/client_branding.h"
 #include "client/common/client_legacy_crt.h"
+#include "compat/coduo_native_x87.h"
 
 #include <string.h>
 
@@ -12,35 +13,63 @@ typedef struct ui_compat_multi_value_s {
     float value;
 } ui_compat_multi_value_t;
 
+typedef struct ui_compat_resolution_s {
+    const char *label;
+    float value;
+    int32_t width;
+    int32_t height;
+} ui_compat_resolution_t;
+
+typedef struct ui_compat_aspect_s {
+    int32_t width;
+    int32_t height;
+    long double pixelAspect;
+} ui_compat_aspect_t;
+
 enum {
     UI_COMPAT_CURRENT_DISPLAY_MODE = -2,
     UI_COMPAT_CUSTOM_RESOLUTION_MODE = -1
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: the menu exposes the cgame's useful
+ * range and preserves the stock 80-degree horizontal view at 4:3. */
+static const float uiCompatMinimumFov = 80.0f;
+static const float uiCompatMaximumFov = 120.0f;
+static const long double uiCompatDegreesToHalfRadians =
+    0.00872664625997164788461845384244L;
+static const long double uiCompatHalfRadiansToDegrees =
+    114.591559026164641753596309628L;
+static const long double uiCompatAspectComparisonTolerance = 0.000001L;
+
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: tracks only the effective staged
+ * aspect while the graphics page is visible. */
+static ui_compat_aspect_t uiCompatPreviousGraphicsAspect;
+static qboolean uiCompatPreviousGraphicsAspectValid;
+
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: labels and stable renderer mode
  * numbers used to replace the retail seven-entry resolution selector. */
-static const ui_compat_multi_value_t uiCompatResolutions[] = {
-    { "@CODUOMP_GRAPHICS_CURRENT_DISPLAY", UI_COMPAT_CURRENT_DISPLAY_MODE },
-    { "640 x 480 (4:3)", 3.0f },
-    { "800 x 600 (4:3)", 4.0f },
-    { "1024 x 768 (4:3)", 6.0f },
-    { "1152 x 864 (4:3)", 7.0f },
-    { "1280 x 720 (16:9)", 13.0f },
-    { "1280 x 800 (16:10)", 14.0f },
-    { "1280 x 1024 (5:4)", 8.0f },
-    { "1366 x 768 (16:9)", 15.0f },
-    { "1440 x 900 (16:10)", 16.0f },
-    { "1600 x 900 (16:9)", 17.0f },
-    { "1600 x 1200 (4:3)", 9.0f },
-    { "1680 x 1050 (16:10)", 18.0f },
-    { "1920 x 1080 (16:9)", 19.0f },
-    { "1920 x 1200 (16:10)", 12.0f },
-    { "2560 x 1440 (16:9)", 20.0f },
-    { "2560 x 1600 (16:10)", 21.0f },
-    { "2880 x 1800 (16:10)", 22.0f },
-    { "3024 x 1964 (16:10)", 23.0f },
-    { "3456 x 2234 (16:10)", 24.0f },
-    { "3840 x 2160 (16:9)", 25.0f }
+static const ui_compat_resolution_t uiCompatResolutions[] = {
+    { "@CODUOMP_GRAPHICS_CURRENT_DISPLAY", UI_COMPAT_CURRENT_DISPLAY_MODE, 0, 0 },
+    { "640 x 480 (4:3)", 3.0f, 640, 480 },
+    { "800 x 600 (4:3)", 4.0f, 800, 600 },
+    { "1024 x 768 (4:3)", 6.0f, 1024, 768 },
+    { "1152 x 864 (4:3)", 7.0f, 1152, 864 },
+    { "1280 x 720 (16:9)", 13.0f, 1280, 720 },
+    { "1280 x 800 (16:10)", 14.0f, 1280, 800 },
+    { "1280 x 1024 (5:4)", 8.0f, 1280, 1024 },
+    { "1366 x 768 (16:9)", 15.0f, 1366, 768 },
+    { "1440 x 900 (16:10)", 16.0f, 1440, 900 },
+    { "1600 x 900 (16:9)", 17.0f, 1600, 900 },
+    { "1600 x 1200 (4:3)", 9.0f, 1600, 1200 },
+    { "1680 x 1050 (16:10)", 18.0f, 1680, 1050 },
+    { "1920 x 1080 (16:9)", 19.0f, 1920, 1080 },
+    { "1920 x 1200 (16:10)", 12.0f, 1920, 1200 },
+    { "2560 x 1440 (16:9)", 20.0f, 2560, 1440 },
+    { "2560 x 1600 (16:10)", 21.0f, 2560, 1600 },
+    { "2880 x 1800 (16:10)", 22.0f, 2880, 1800 },
+    { "3024 x 1964 (16:10)", 23.0f, 3024, 1964 },
+    { "3456 x 2234 (16:10)", 24.0f, 3456, 2234 },
+    { "3840 x 2160 (16:9)", 25.0f, 3840, 2160 }
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE: joins persistent parsed-menu scripts without
@@ -150,10 +179,144 @@ static void ui_compat_set_numeric_multi(
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: resolves the dimensions represented by the
+ * staged resolution selector. */
+static qboolean ui_compat_staged_resolution_dimensions(
+    const glconfig_t *config, int32_t *width, int32_t *height,
+    long double *pixelAspect)
+{
+    const float stagedMode =
+        (float)trap_Cvar_VariableValue("ui_r_mode");
+
+    if (stagedMode == UI_COMPAT_CURRENT_DISPLAY_MODE) {
+        *width = coduo_crt_atoi(
+            UI_Cvar_VariableString("r_currentDisplayWidth"));
+        *height = coduo_crt_atoi(
+            UI_Cvar_VariableString("r_currentDisplayHeight"));
+        if (*width <= 0 || *height <= 0) {
+            *width = config->vidWidth;
+            *height = config->vidHeight;
+        }
+        *pixelAspect = 1.0L;
+    } else if (stagedMode == UI_COMPAT_CUSTOM_RESOLUTION_MODE) {
+        *width = coduo_crt_atoi(UI_Cvar_VariableString("r_customwidth"));
+        *height = coduo_crt_atoi(UI_Cvar_VariableString("r_customheight"));
+        *pixelAspect =
+            (long double)trap_Cvar_VariableValue("r_customaspect");
+        if (*pixelAspect <= 0.0L)
+            *pixelAspect = 1.0L;
+    } else {
+        for (size_t index = 1;
+             index < sizeof(uiCompatResolutions) /
+                         sizeof(uiCompatResolutions[0]); ++index) {
+            if (uiCompatResolutions[index].value == stagedMode) {
+                *width = uiCompatResolutions[index].width;
+                *height = uiCompatResolutions[index].height;
+                *pixelAspect = 1.0L;
+                return qtrue;
+            }
+        }
+        *width = config->vidWidth;
+        *height = config->vidHeight;
+        *pixelAspect = 1.0L;
+    }
+
+    return *width > 0 && *height > 0 ? qtrue : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolves the effective aspect that the staged
+ * resolution and presentation mode will produce after Apply. */
+static qboolean ui_compat_staged_graphics_aspect(
+    const glconfig_t *config, ui_compat_aspect_t *aspect)
+{
+    if (trap_Cvar_VariableValue("ui_r_aspectMode") != 0.0f) {
+        aspect->width = 4;
+        aspect->height = 3;
+        aspect->pixelAspect = 1.0L;
+        return qtrue;
+    }
+    return ui_compat_staged_resolution_dimensions(
+        config, &aspect->width, &aspect->height,
+        &aspect->pixelAspect);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: compares effective aspect ratios while ignoring
+ * only floating-point representation noise from custom pixel-aspect cvars. */
+static qboolean ui_compat_graphics_aspects_equal(
+    const ui_compat_aspect_t *left, const ui_compat_aspect_t *right)
+{
+    const long double leftCross =
+        (long double)left->width * (long double)right->height *
+        right->pixelAspect;
+    const long double rightCross =
+        (long double)right->width * (long double)left->height *
+        left->pixelAspect;
+    const long double difference = leftCross >= rightCross
+        ? leftCross - rightCross : rightCross - leftCross;
+    const long double scale = leftCross >= rightCross
+        ? leftCross : rightCross;
+
+    return difference <= scale * uiCompatAspectComparisonTolerance
+        ? qtrue : qfalse;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: derives the direct horizontal cg_fov default for
+ * an aspect while preserving the stock 80-degree 4:3 vertical view. */
+static float ui_compat_default_fov_for_aspect(
+    const ui_compat_aspect_t *aspect)
+{
+    const long double classicAspect = 4.0L / 3.0L;
+    const long double outputAspect =
+        (long double)aspect->width /
+        ((long double)aspect->height * aspect->pixelAspect);
+    const long double halfAngle =
+        (long double)uiCompatMinimumFov * uiCompatDegreesToHalfRadians;
+    const long double tangent = coduo_x87_tanl(halfAngle);
+    long double fov = coduo_x87_atan2l(
+                          tangent * outputAspect / classicAspect, 1.0L) *
+                      uiCompatHalfRadiansToDegrees;
+
+    if (fov < (long double)uiCompatMinimumFov)
+        fov = uiCompatMinimumFov;
+    if (fov > (long double)uiCompatMaximumFov)
+        fov = uiCompatMaximumFov;
+    return (float)fov;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: keeps the slider reset value synchronized with
+ * the staged presentation and resets cg_fov only when its effective aspect
+ * ratio changes. */
+static void ui_compat_refresh_graphics_fov(
+    menuDef_t *menu, const glconfig_t *config)
+{
+    itemDef_t *const item =
+        ui_compat_find_cvar_item(menu, "cg_fov", NULL);
+    ui_compat_aspect_t aspect;
+
+    if (item == NULL || item->typeValidated != ITEM_TYPE_SLIDER ||
+        item->typeData == NULL ||
+        ui_compat_staged_graphics_aspect(config, &aspect) == qfalse) {
+        uiCompatPreviousGraphicsAspectValid = qfalse;
+        return;
+    }
+
+    const float defaultFov = ui_compat_default_fov_for_aspect(&aspect);
+    editFieldDef_t *const range = item->typeData;
+
+    range->defVal = defaultFov;
+    if (uiCompatPreviousGraphicsAspectValid != qfalse &&
+        ui_compat_graphics_aspects_equal(
+            &uiCompatPreviousGraphicsAspect, &aspect) == qfalse) {
+        trap_Cvar_SetValue("cg_fov", defaultFov);
+    }
+    uiCompatPreviousGraphicsAspect = aspect;
+    uiCompatPreviousGraphicsAspectValid = qtrue;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: keep the visible selector in sync with renderer
  * dimensions and retain both the active and staged modes even when the display
  * does not advertise them. Reuse the multi's storage and persistent label
- * buffers; refreshing must neither allocate UI pool memory nor commit cvars. */
+ * buffers; refreshing allocates no UI pool memory. */
 void ui_compat_refresh_graphics_resolution(void)
 {
     static char automaticLabel[MAX_STRING_CHARS];
@@ -163,15 +326,21 @@ void ui_compat_refresh_graphics_resolution(void)
     multiDef_t *multi;
     glconfig_t config;
 
-    if (menu == NULL || (menu->window.flags & WINDOW_VISIBLE) == 0)
+    if (menu == NULL || (menu->window.flags & WINDOW_VISIBLE) == 0) {
+        uiCompatPreviousGraphicsAspectValid = qfalse;
         return;
+    }
 
     item = ui_compat_find_cvar_item(menu, "ui_r_mode", NULL);
-    if (item == NULL || item->typeValidated != ITEM_TYPE_MULTI || item->typeData == NULL)
+    if (item == NULL || item->typeValidated != ITEM_TYPE_MULTI || item->typeData == NULL) {
+        uiCompatPreviousGraphicsAspectValid = qfalse;
         return;
+    }
     multi = item->typeData;
-    if (multi->strDef != 0)
+    if (multi->strDef != 0) {
+        uiCompatPreviousGraphicsAspectValid = qfalse;
         return;
+    }
 
     const float activeMode = (float)trap_Cvar_VariableValue("r_mode");
     const float stagedMode = (float)trap_Cvar_VariableValue("ui_r_mode");
@@ -179,9 +348,10 @@ void ui_compat_refresh_graphics_resolution(void)
     const uint32_t availableModes = (uint32_t)coduo_crt_atoi(UI_Cvar_VariableString("r_availableModes"));
 
     trap_GetGlconfig(&config);
+    ui_compat_refresh_graphics_fov(menu, &config);
     multi->count = 0;
     for (size_t index = 0; index < sizeof(uiCompatResolutions) / sizeof(uiCompatResolutions[0]); ++index) {
-        const ui_compat_multi_value_t *const mode = &uiCompatResolutions[index];
+        const ui_compat_resolution_t *const mode = &uiCompatResolutions[index];
         const qboolean automatic = mode->value == UI_COMPAT_CURRENT_DISPLAY_MODE;
 
         if (automatic == qfalse && mode->value != activeMode && mode->value != stagedMode &&
@@ -233,8 +403,6 @@ void ui_compat_refresh_graphics_resolution(void)
  * so no proprietary menu asset is copied into the source distribution. */
 void ui_compat_extend_graphics_menu(void)
 {
-    static const float defaultFov = 80.0f;
-    static const char resetFov[] = "set cg_fov 80; ";
     static const char stageCompatibilityCvars[] =
         "exec \"setfromcvar ui_r_aspectMode r_aspectMode\"; ";
     static const char applyCompatibilityCvars[] =
@@ -291,7 +459,9 @@ void ui_compat_extend_graphics_menu(void)
         }
     }
 
-    resolutionModes[resolutionModeCount++] = uiCompatResolutions[0];
+    resolutionModes[resolutionModeCount++] = (ui_compat_multi_value_t) {
+        uiCompatResolutions[0].label, uiCompatResolutions[0].value
+    };
     for (size_t index = 1;
          index < sizeof(uiCompatResolutions) /
                      sizeof(uiCompatResolutions[0]); ++index) {
@@ -299,13 +469,13 @@ void ui_compat_extend_graphics_menu(void)
 
         if ((availableModes & (UINT32_C(1) << mode)) != 0)
             resolutionModes[resolutionModeCount++] =
-                uiCompatResolutions[index];
+                (ui_compat_multi_value_t) {
+                    uiCompatResolutions[index].label,
+                    uiCompatResolutions[index].value
+                };
     }
     ui_compat_set_numeric_multi(
         resolutionItem, resolutionModes, resolutionModeCount);
-    resolutionItem->action =
-        ui_compat_prepend_menu_script(resetFov, resolutionItem->action);
-
     ui_compat_set_numeric_multi(
         displayModeItem, displayModes,
         (int32_t)(sizeof(displayModes) / sizeof(displayModes[0])));
@@ -347,23 +517,22 @@ void ui_compat_extend_graphics_menu(void)
     aspectItem->text =
         String_Alloc("@CODUOMP_GRAPHICS_GAMEPLAY_VIEW");
     aspectItem->cvar = String_Alloc("ui_r_aspectMode");
-    aspectItem->action = ui_compat_prepend_menu_script(
-        resetFov, "play \"mouse_click\" ; show graphicsapply ; ");
+    aspectItem->action =
+        String_Alloc("play \"mouse_click\" ; show graphicsapply ; ");
     aspectItem->parent = menu;
     ui_compat_set_numeric_multi(
         aspectItem, aspectModes,
         (int32_t)(sizeof(aspectModes) / sizeof(aspectModes[0])));
 
-    /* The recovered cgame treats cg_fov as a 4:3-reference horizontal angle:
-     * Fill Screen expands 80 degrees to the selected widescreen aspect while
-     * Classic 4:3 leaves it at 80. Expose the cgame's useful 80..120 range;
-     * the shared slider input uses defVal for this row's right-click reset. */
+    /* cg_fov directly stores the unzoomed horizontal view angle. Expose the
+     * useful 80..120 range; refresh derives defVal from the staged effective
+     * aspect, and the shared slider input uses it for right-click reset. */
     fovItem = ui_compat_clone_menu_item(gammaItem, menu);
     fovRange = UI_Alloc(sizeof(*fovRange));
     memcpy(fovRange, gammaItem->typeData, sizeof(*fovRange));
-    fovRange->defVal = defaultFov;
-    fovRange->minVal = defaultFov;
-    fovRange->maxVal = 120.0f;
+    fovRange->defVal = uiCompatMinimumFov;
+    fovRange->minVal = uiCompatMinimumFov;
+    fovRange->maxVal = uiCompatMaximumFov;
     fovItem->window.name = String_Alloc("coduomp_field_of_view");
     fovItem->window.rectClient.y = 215.0f;
     fovItem->text = String_Alloc("@CODUOMP_GRAPHICS_FIELD_OF_VIEW");
@@ -387,6 +556,7 @@ void ui_compat_extend_graphics_menu(void)
     }
     menu->items[displayModeIndex + 1] = aspectItem;
     menu->itemCount += 1;
+    uiCompatPreviousGraphicsAspectValid = qfalse;
     Menu_UpdatePosition(menu);
 }
 

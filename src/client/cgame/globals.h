@@ -4596,8 +4596,9 @@ extern vmCvar_t cg_viewSizeCvar;
  * single consumer, so the role name is behavioral. */
 
 /* 0x3052f7c8 .data refs=2 width=4.
- * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fov_vmCvar.value -- the base view
- * field-of-view in degrees (the cg_fov cvar's float value mirror). CG_CalcFov reads
+ * RESOLVED on consume by CG_CalcFov (0x3003ffc0): cg_fov_vmCvar.value -- the
+ * configured unzoomed horizontal field-of-view in degrees (the cg_fov cvar's
+ * float value mirror). CG_CalcFov reads
  * it and clamps it to [80, 160] degrees; a screen-projection helper at 0x30040330
  * divides a screen coordinate by it (FDIV) as a float. Read as a float by both
  * consumers; no direct .text writer (engine cvar-registration path updates it). The

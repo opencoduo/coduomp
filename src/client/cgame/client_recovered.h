@@ -2584,9 +2584,6 @@ void cgame_compat_draw_physical_quad_pic(
     float s1, float t1, float s2, float t2,
     float angleDegrees, int32_t shaderHandle);
 long double cgame_compat_spread_fov_x(void);
-long double cgame_compat_expand_horizontal_fov(long double baseFov,
-                                               int32_t width,
-                                               int32_t height);
 void CG_BuildLockedViewRefdef(void);
 qboolean CG_CalcViewProjection(void);
 void CG_CalcTurretViewValues(void);

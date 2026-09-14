@@ -764,6 +764,14 @@ renderer_mode_set_result_t GLW_SetMode(
             &currentDisplayWidth, &currentDisplayHeight,
             &currentDisplayAspect, &currentDisplayRefreshRate);
 
+    /* NOT_FROM_ORIGINAL_SOURCE: publish the automatic mode's dimensions so
+     * the separately linked UI can derive its effective staged aspect. */
+    ri.Cvar_Set("r_currentDisplayWidth",
+                currentDisplayModeAvailable != qfalse
+                    ? va("%d", currentDisplayWidth) : "0");
+    ri.Cvar_Set("r_currentDisplayHeight",
+                currentDisplayModeAvailable != qfalse
+                    ? va("%d", currentDisplayHeight) : "0");
     coduomp_renderer_publish_available_video_modes_compat(
         coduomp_glw_display_mode_available_compat);
 

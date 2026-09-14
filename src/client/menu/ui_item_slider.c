@@ -8,6 +8,7 @@
 enum {
     UI_SLIDER_TEXT_GAP = 8,
     UI_SLIDER_TRACK_WIDTH = 96,
+    UI_SLIDER_VALUE_GAP = 8,
     UI_SLIDER_USABLE_WIDTH = 84,
     UI_SLIDER_THUMB_CENTER = 6,
     UI_SLIDER_THUMB_HALF_WIDTH = 5,
@@ -122,7 +123,9 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key)
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the improved graphics
      * menu's FOV slider uses its parsed/default range value as a right-click
      * reset. Other sliders retain the original right-click positioning. */
-    if (key == K_MOUSE2 && Q_stricmp(item->cvar, "cg_fov") == 0) {
+    if (key == K_MOUSE2 && item->window.name != NULL &&
+        Q_stricmp(item->window.name, "coduomp_field_of_view") == 0 &&
+        Q_stricmp(item->cvar, "cg_fov") == 0) {
         DC->setCVar(item->cvar, va("%f", (double)editField->defVal));
         return qtrue;
     }
@@ -152,10 +155,11 @@ void Item_Slider_Paint(itemDef_t *item)
     float trackX;
     float rectY;
     const char *cvar = item->cvar;
+    float cvarValue = 0.0f;
     menuDef_t *parent = item->parent;
 
     if (cvar != NULL) {
-        (void)DC->getCVarValue(cvar);
+        cvarValue = (float)DC->getCVarValue(cvar);
     }
 
     if ((item->window.flags & WINDOW_HASFOCUS) != 0) {
@@ -207,5 +211,19 @@ void Item_Slider_Paint(itemDef_t *item)
         display->drawHandlePic((float)(thumbX - UI_SLIDER_THUMB_HALF_WIDTH),
                                (float)thumbY, UI_SLIDER_THUMB_WIDTH,
                                UI_SLIDER_THUMB_HEIGHT, sliderThumb);
+    }
+
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): show the direct cg_fov
+     * value beside the improved graphics-menu slider. */
+    if (cvar != NULL && item->window.name != NULL &&
+        Q_stricmp(item->window.name, "coduomp_field_of_view") == 0 &&
+        Q_stricmp(cvar, "cg_fov") == 0) {
+        displayContextDef_t *const display = DC;
+
+        display->drawText(trackX + UI_SLIDER_TRACK_WIDTH +
+                              UI_SLIDER_VALUE_GAP,
+                          item->textRect.y, item->font, item->textscale,
+                          color, va("%.1f", (double)cvarValue),
+                          0.0f, 0, item->textStyle);
     }
 }

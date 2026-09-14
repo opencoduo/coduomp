@@ -318,6 +318,10 @@ void R_Register(void)
     /* NOT_FROM_ORIGINAL_SOURCE: platform-discovered renderer-mode bits for
      * the separately linked compatibility UI. */
     (void)ri.Cvar_Get("r_availableModes", "0", CVAR_ROM);
+    /* NOT_FROM_ORIGINAL_SOURCE: native primary-display dimensions let the
+     * separately linked UI resolve the staged automatic mode before Apply. */
+    (void)ri.Cvar_Get("r_currentDisplayWidth", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayHeight", "0", CVAR_ROM);
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): edge-preserving
      * load-time upscale of gfx/reticle/ images; latched because the
      * transform runs when images load. */

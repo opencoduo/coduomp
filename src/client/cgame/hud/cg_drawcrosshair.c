@@ -472,7 +472,7 @@ void CG_DrawCrosshair(void)
         // (640/fovX vs 480/fovY degrees-to-virtual-pixels).
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): 640/fov_x is
          * authored against the 4:3 canvas; use the 4:3-equivalent angle so
-         * the Hor+ expansion does not narrow the horizontal spread. */
+         * a widescreen horizontal view does not narrow the spread. */
         spreadX = (float)(((long double)640.0f /
                            cgame_compat_spread_fov_x()) * spreadScaled);
         spreadYRaw = ((long double)480.0f /

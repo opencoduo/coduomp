@@ -141,8 +141,8 @@ static cgameCompatHudPresentation_t cgame_compat_resolved_hud_presentation(void)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: true when ordinary cgame 2D uses the stock
- * full-width stretch. The world view, its Hor+ FOV, the physical-pixel
- * crosshair, and native full-screen effects are unaffected; every
+ * full-width stretch. The world view, its configured horizontal FOV, the
+ * physical-pixel crosshair, and native full-screen effects are unaffected; every
  * canvas-relative mechanism (proportional scales, centered-canvas bias,
  * anchor offsets, hudElem snap, full-canvas shader expansion, optical
  * letterbox) collapses to the recovered stock transform. */
@@ -646,16 +646,11 @@ void cgame_compat_draw_physical_quad_pic(
         CG_FloatBits(angleDegrees), shaderHandle);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: converts a 4:3-authored horizontal FOV to Hor+
- * while preserving its vertical FOV.  Narrow and classic presentations keep
- * the authored angle unchanged. */
 /* NOT_FROM_ORIGINAL_SOURCE: the 4:3-equivalent horizontal FOV for the
- * current view - the exact inverse of cgame_compat_expand_horizontal_fov.
- * The recovered crosshair spread converts degrees to virtual pixels with
- * 640/fov_x, an expression authored against the 640-wide 4:3 canvas; feeding
- * it the Hor+-expanded angle narrows the horizontal spread by the expansion
- * factor and the reticle cross stops being square.  Narrow and classic
- * presentations return the live angle unchanged. */
+ * current view. The recovered crosshair spread converts degrees to virtual
+ * pixels with 640/fov_x, an expression authored against the 640-wide 4:3
+ * canvas; convert the direct horizontal view angle so the reticle cross stays
+ * square. Narrow and classic presentations return the live angle unchanged. */
 long double cgame_compat_spread_fov_x(void)
 {
     const long double classicAspect = 4.0L / 3.0L;
@@ -676,30 +671,5 @@ long double cgame_compat_spread_fov_x(void)
     tangent = coduo_x87_tanl(halfAngle);
     return coduo_x87_atan2l(
                tangent * classicAspect / aspect, 1.0L) *
-           (long double)HALF_RAD_TO_DEG;
-}
-
-long double cgame_compat_expand_horizontal_fov(long double baseFov,
-                                               int32_t width,
-                                               int32_t height)
-{
-    const long double classicAspect = 4.0L / 3.0L;
-    long double aspect;
-    long double halfAngle;
-    long double tangent;
-
-    if (cgame_compat_uses_classic_aspect() != qfalse ||
-        width <= 0 || height <= 0) {
-        return baseFov;
-    }
-
-    aspect = (long double)width / (long double)height;
-    if (aspect <= classicAspect)
-        return baseFov;
-
-    halfAngle = baseFov * (long double)DEG_TO_HALF_RAD;
-    tangent = coduo_x87_tanl(halfAngle);
-    return coduo_x87_atan2l(
-               tangent * aspect / classicAspect, 1.0L) *
            (long double)HALF_RAD_TO_DEG;
 }

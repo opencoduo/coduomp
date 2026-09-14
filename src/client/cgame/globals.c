@@ -4644,7 +4644,7 @@ vmCvar_t cg_viewSizeCvar;
 /* Source: uo_cgame_mp_x86.dll 0x3052f7c8 (.data); refs=2 width=4; first=0x3003ffef; owner=bg_parseweaponinfospecificfieldtyp.
  * Example: 3003ffef   8b 0d c8 f7 52 30            MOV ECX,dword ptr [0x3052f7c8] | 30040352   d8 35 c8 f7 52 30            FDIV float ptr [0x3052f7c8]
  */
-/* 0x3052f7c8; see globals.h. Base FOV degrees (cg_fov cvar mirror). */
+/* 0x3052f7c8; see globals.h. Configured horizontal FOV degrees (cg_fov cvar mirror). */
 /* Source: uo_cgame_mp_x86.dll 0x3052f8ec (.data); refs=2 width=4; first=0x3001b07c; owner=colorbytes3 (mechanical owner wrong).
  * Resolved on consume by Com_DPrintf (0x3002b470): developer-mode gate, the cached
  * integer of the Quake3 `developer` cvar. Both readers test it as a boolean and
