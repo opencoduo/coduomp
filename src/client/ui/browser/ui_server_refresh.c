@@ -13,16 +13,28 @@ enum {
 /* NOT_FROM_ORIGINAL_SOURCE: rebuild the compatibility server list without
  * resetting its listbox state. Clearing ui_currentServer during insertion also
  * prevents UI_BinaryServerInsertion from advancing the selection to the end of
- * the newly sorted list. Restore the same display row, clamped only when the
- * filtered list became shorter, so reordering does not move the viewport. */
+ * the newly sorted list. Restore the selected server at its new display row;
+ * if it disappeared, retain the prior row clamped to the shorter list. */
 static void ui_compat_rebuild_server_list_preserving_selection(void)
 {
     int32_t savedDisplayRow = ui_currentServer;
+    int32_t savedServerIndex = UI_NO_CURRENT_SERVER;
+
+    if (savedDisplayRow >= 0 && savedDisplayRow < ui_displayServerCount) {
+        savedServerIndex = ui_displayServers[savedDisplayRow];
+    }
 
     ui_currentServer = UI_NO_CURRENT_SERVER;
     UI_BuildServerDisplayList(UI_SERVER_REBUILD_COUNT_CHANGED);
 
     if (savedDisplayRow >= 0 && ui_displayServerCount > 0) {
+        for (int32_t displayRow = 0; displayRow < ui_displayServerCount;
+             ++displayRow) {
+            if (ui_displayServers[displayRow] == savedServerIndex) {
+                savedDisplayRow = displayRow;
+                break;
+            }
+        }
         if (savedDisplayRow >= ui_displayServerCount) {
             savedDisplayRow = ui_displayServerCount - 1;
         }
