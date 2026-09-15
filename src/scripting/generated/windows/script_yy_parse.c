@@ -40,14 +40,6 @@ static void __yy_memcpy(void *destination, const void *source,
         write[index] = read[index];
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: file-local state used only to factor the original
- * parser's register/local-stack reduction code into readable helpers. */
-static int16_t *script_yyssp;
-/* NOT_FROM_ORIGINAL_SOURCE: see the factoring note above. */
-static sval_u script_yyval;
-/* NOT_FROM_ORIGINAL_SOURCE: see the factoring note above. */
-static sval_u *script_yyvsp;
-
 /* NOT_FROM_ORIGINAL_SOURCE: readable bounds check for generated yytable probes. */
 static qboolean ScriptYyTableIndexIsValid(int32_t tableIndex)
 {
@@ -62,19 +54,23 @@ static qboolean ScriptYyCheckMatches(int32_t tableIndex, int32_t value)
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: names the generated state/value stack push. */
-static void ScriptYyPushValue(int16_t state,
+static void ScriptYyPushValue(int16_t **stateStackCursor,
+                              sval_u **valueStackCursor,
+                              int16_t state,
                               sval_u value,
                               uint32_t sourcePos)
 {
-    script_yyssp++;
-    *script_yyssp = state;
-    script_yyvsp++;
-    *script_yyvsp = value;
-    script_yyvsp->source.sourcePos = sourcePos;
+    (*stateStackCursor)++;
+    **stateStackCursor = state;
+    (*valueStackCursor)++;
+    **valueStackCursor = value;
+    (*valueStackCursor)->source.sourcePos = sourcePos;
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: factors generated yacc reduction actions from yyparse. */
-static void ScriptYyRunReduction(int32_t rule)
+static sval_u ScriptYyRunReduction(int32_t rule,
+                                   sval_u script_yyval,
+                                   const sval_u *script_yyvsp)
 {
     sval_u local_10 = {0};
     sval_u local_14 = {0};
@@ -803,6 +799,8 @@ static void ScriptYyRunReduction(int32_t rule)
         local_2ac.source.value = (uintptr_t)node0(0);
         script_yyval.source.value = (uintptr_t)linked_list_end((void *)local_2ac.source.value);
     }
+
+    return script_yyval;
 }
 
 int32_t yyparse(void)
@@ -814,6 +812,13 @@ int32_t yyparse(void)
     int32_t stackCapacity = SCRIPT_YYSTACK_INITIAL_COUNT;
     int32_t state = SCRIPT_YY_INITIAL_STATE;
     int32_t errorStatus = 0;
+    /* ORIGINAL_SOURCE_CORRECTION: the original i386 parser keeps these stack
+     * cursors and the current reduction value within yyparse's frame and
+     * registers. Local storage also eliminates GCC's -Wdangling-pointer
+     * warning about retaining the initial local-stack addresses after return. */
+    int16_t *script_yyssp;
+    sval_u script_yyval;
+    sval_u *script_yyvsp;
 
     script_yynerrs = 0;
     script_yychar = SCRIPT_YY_EMPTY_LOOKAHEAD;
@@ -877,7 +882,8 @@ int32_t yyparse(void)
 
                     SCRIPT_YY_ENSURE_PUSHABLE();
                     state = action;
-                    ScriptYyPushValue((int16_t)state, script_yylval,
+                    ScriptYyPushValue(&script_yyssp, &script_yyvsp,
+                                      (int16_t)state, script_yylval,
                                       script_yylval.source.sourcePos);
                     script_yychar = SCRIPT_YY_EMPTY_LOOKAHEAD;
                     if (errorStatus > 0) {
@@ -922,7 +928,8 @@ int32_t yyparse(void)
                 if (errorState > 0) {
                     SCRIPT_YY_ENSURE_PUSHABLE();
                     state = errorState;
-                    ScriptYyPushValue((int16_t)state, script_yylval,
+                    ScriptYyPushValue(&script_yyssp, &script_yyvsp,
+                                      (int16_t)state, script_yylval,
                                       script_yylval.source.sourcePos);
                     break;
                 }
@@ -940,7 +947,8 @@ reduce: {
             int32_t rule = action;
             int32_t ruleLength = script_yyr2[rule];
             script_yyval = script_yyvsp[1 - ruleLength];
-            ScriptYyRunReduction(rule);
+            script_yyval = ScriptYyRunReduction(rule, script_yyval,
+                                                script_yyvsp);
 
             script_yyssp -= ruleLength;
             script_yyvsp -= ruleLength;
@@ -956,7 +964,8 @@ reduce: {
             }
 
             SCRIPT_YY_ENSURE_PUSHABLE();
-            ScriptYyPushValue((int16_t)state, script_yyval,
+            ScriptYyPushValue(&script_yyssp, &script_yyvsp,
+                              (int16_t)state, script_yyval,
                               script_yyval.source.sourcePos);
         }
     }
