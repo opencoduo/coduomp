@@ -25,7 +25,8 @@
 
 enum {
     CODUOMP_NAMESPACE_SLUG_LENGTH = 40,
-    CODUOMP_NAMESPACE_OFFICIAL_PAK_VARIANT_COUNT = 24
+    CODUOMP_NAMESPACE_OFFICIAL_PAK_VARIANT_COUNT = 24,
+    CODUOMP_NAMESPACE_PAK_COPY_BUFFER_SIZE = 64 * 1024
 };
 
 typedef struct coduomp_namespace_cvar_snapshot_s {
@@ -1197,7 +1198,7 @@ static qboolean coduomp_namespace_cached_pak_matches(
 
 /* NOT_FROM_ORIGINAL_SOURCE: reuse an unmounted checksum-matching cache file;
  * otherwise retain wrong or older files while choosing a nonconflicting name
- * for a known-good root pak. */
+ * for a known-good local pak. */
 static qboolean coduomp_namespace_choose_cache_pak_path(
     const char *pakName, int32_t checksum,
     char destinationQPath[MAX_OSPATH], qboolean *needsCopy)
@@ -1251,9 +1252,10 @@ static qboolean coduomp_namespace_choose_cache_pak_path(
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: stage and atomically install a checksum-matched
- * root pak; any failed attempt removes only its temporary copy. */
-static qboolean coduomp_namespace_copy_root_pak(
-    const pack_t *pack, const char *pakName, int32_t checksum)
+ * local pak; any failed attempt removes only its temporary copy. Recheck the
+ * staged catalog before publishing it under the server-requested name. */
+static qboolean coduomp_namespace_copy_pak(
+    const char *sourcePath, const char *pakName, int32_t checksum)
 {
     char destinationQPath[MAX_OSPATH];
     qboolean needsCopy;
@@ -1289,23 +1291,52 @@ static qboolean coduomp_namespace_copy_root_pak(
     temporaryPath[strlen(temporaryPath) - 1u] = '\0';
     destinationPath[strlen(destinationPath) - 1u] = '\0';
 
-    FS_Copyfiles(pack->pakFilename, temporaryPath);
+    if (FS_CreatePath(temporaryPath) != qfalse)
+        return qfalse;
+
+    FILE *const source = fopen(sourcePath, "rb");
+    if (source == NULL)
+        return qfalse;
+    FILE *const temporary = fopen(temporaryPath, "wb");
+    if (temporary == NULL) {
+        fclose(source);
+        return qfalse;
+    }
+
+    qboolean copySucceeded = qtrue;
+    unsigned char buffer[CODUOMP_NAMESPACE_PAK_COPY_BUFFER_SIZE];
+    for (;;) {
+        const size_t bytesRead = fread(buffer, 1, sizeof(buffer), source);
+        if (ferror(source) != 0 ||
+            (bytesRead != 0 && fwrite(buffer, 1, bytesRead, temporary) != bytesRead)) {
+            copySucceeded = qfalse;
+            break;
+        }
+        if (bytesRead < sizeof(buffer))
+            break;
+    }
+    if (fclose(source) != 0)
+        copySucceeded = qfalse;
+    if (fclose(temporary) != 0)
+        copySucceeded = qfalse;
 
     struct stat sourceStatus;
     struct stat temporaryStatus;
-    if (stat(pack->pakFilename, &sourceStatus) != 0 ||
+    if (copySucceeded == qfalse ||
+        stat(sourcePath, &sourceStatus) != 0 ||
         stat(temporaryPath, &temporaryStatus) != 0 ||
         sourceStatus.st_size < 0 ||
         sourceStatus.st_size != temporaryStatus.st_size ||
+        coduomp_namespace_cached_pak_matches(temporaryQPath, checksum) == qfalse ||
         rename(temporaryPath, destinationPath) != 0) {
         FS_Remove(temporaryPath);
-        Com_Printf("Could not reuse root pak %s; falling back to download.\n",
+        Com_Printf("Could not reuse local pak %s; falling back to download.\n",
                    pakName);
         return qfalse;
     }
 
     coduomp_case_path_cache_clear();
-    Com_Printf("Reused root pak %s in the active server cache.\n",
+    Com_Printf("Reused local pak %s in the active server cache.\n",
                pakName);
     return qtrue;
 }
@@ -1362,15 +1393,69 @@ static qboolean coduomp_namespace_probe_and_copy_root_pak(
 
     qboolean copied = qfalse;
     if (pack->checksum == checksum) {
-        copied = coduomp_namespace_copy_root_pak(
-            pack, pakName, checksum);
+        copied = coduomp_namespace_copy_pak(
+            sourcePath, pakName, checksum);
     }
     coduomp_namespace_free_probed_pak(pack);
     return copied;
 }
 
+typedef struct coduomp_namespace_pak_scan_s {
+    qboolean needed[FS_MAX_SERVER_PAKS];
+    int32_t remaining;
+    qboolean copiedAny;
+} coduomp_namespace_pak_scan_t;
+
+/* NOT_FROM_ORIGINAL_SOURCE: inspect each completed PK3 once for all missing
+ * references, regardless of its filename or mod directory. Probed catalogs
+ * never enter the search path; only matching copies enter the active cache. */
+static void coduomp_namespace_reuse_cached_pak_tree(
+    const char *directoryPath, coduomp_namespace_pak_scan_t *scan)
+{
+    int32_t pakCount = 0;
+    char **const pakFiles = Sys_ListFiles(directoryPath, ".pk3", NULL, &pakCount, qfalse);
+    for (int32_t fileIndex = 0; fileIndex < pakCount && scan->remaining != 0; ++fileIndex) {
+        char sourcePath[MAX_OSPATH];
+        if (coduomp_namespace_build_safe_child_path(
+                directoryPath, pakFiles[fileIndex], qfalse, sourcePath) == qfalse) {
+            continue;
+        }
+
+        pack_t *const pack = FS_LoadZipFile(sourcePath, pakFiles[fileIndex]);
+        if (pack == NULL)
+            continue;
+        for (int32_t pakIndex = 0; pakIndex < fs_numServerReferencedPaks; ++pakIndex) {
+            if (scan->needed[pakIndex] == qfalse ||
+                pack->checksum != fs_serverReferencedPaks[pakIndex]) {
+                continue;
+            }
+            if (coduomp_namespace_copy_pak(
+                    sourcePath, fs_serverReferencedPakNames[pakIndex], pack->checksum) != qfalse) {
+                scan->needed[pakIndex] = qfalse;
+                --scan->remaining;
+                scan->copiedAny = qtrue;
+            }
+        }
+        coduomp_namespace_free_probed_pak(pack);
+    }
+    Sys_FreeFileList(pakFiles);
+    if (scan->remaining == 0)
+        return;
+
+    int32_t directoryCount = 0;
+    char **const directories = Sys_ListFiles(directoryPath, NULL, NULL, &directoryCount, qtrue);
+    for (int32_t index = 0; index < directoryCount && scan->remaining != 0; ++index) {
+        char childPath[MAX_OSPATH];
+        if (coduomp_namespace_build_safe_child_path(
+                directoryPath, directories[index], qtrue, childPath) != qfalse) {
+            coduomp_namespace_reuse_cached_pak_tree(childPath, scan);
+        }
+    }
+    Sys_FreeFileList(directories);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: match server-published checksums against paks in
- * the ordinary roots and seed the active cache before download comparison. */
+ * ordinary roots and other server caches before download comparison. */
 static qboolean coduomp_compat_server_namespace_cache_referenced_paks(void)
 {
     if (coduomp_namespace_state.active == qfalse ||
@@ -1384,6 +1469,7 @@ static qboolean coduomp_compat_server_namespace_cache_referenced_paks(void)
     }
 
     qboolean copiedAny = qfalse;
+    coduomp_namespace_pak_scan_t scan = {0};
     for (int32_t pakIndex = 0;
          pakIndex < fs_numServerReferencedPaks; ++pakIndex) {
         const char *const pakName =
@@ -1430,8 +1516,8 @@ static qboolean coduomp_compat_server_namespace_cache_referenced_paks(void)
             continue;
 
         if (alreadyCached == qfalse && rootPack != NULL &&
-            coduomp_namespace_copy_root_pak(
-                rootPack, pakName, expectedChecksum) != qfalse) {
+            coduomp_namespace_copy_pak(
+                rootPack->pakFilename, pakName, expectedChecksum) != qfalse) {
             copiedAny = qtrue;
             continue;
         }
@@ -1454,9 +1540,29 @@ static qboolean coduomp_compat_server_namespace_cache_referenced_paks(void)
                  fs_cdpath->string, cacheRoot, pakName,
                  expectedChecksum) != qfalse)) {
             copiedAny = qtrue;
+        } else {
+            scan.needed[pakIndex] = qtrue;
+            ++scan.remaining;
         }
     }
-    return copiedAny;
+    if (scan.remaining == 0)
+        return copiedAny;
+
+    int32_t namespaceCount = 0;
+    char **const namespaces = Sys_ListFiles(cacheRoot, NULL, NULL, &namespaceCount, qtrue);
+    for (int32_t index = 0; index < namespaceCount && scan.remaining != 0; ++index) {
+        const char *const namespaceName = namespaces[index];
+        char namespacePath[MAX_OSPATH];
+        if (coduomp_namespace_directory_name_is_safe(namespaceName) == qfalse ||
+            Q_stricmp(namespaceName, coduomp_namespace_state.serverName) == 0 ||
+            coduomp_namespace_build_safe_child_path(
+                cacheRoot, namespaceName, qtrue, namespacePath) == qfalse) {
+            continue;
+        }
+        coduomp_namespace_reuse_cached_pak_tree(namespacePath, &scan);
+    }
+    Sys_FreeFileList(namespaces);
+    return copiedAny != qfalse || scan.copiedAny != qfalse ? qtrue : qfalse;
 }
 
 static void coduomp_namespace_clear_config_tree(

@@ -19,13 +19,18 @@ they would use in the ordinary game filesystem, including the server's exact
 configuration.
 
 Before downloading a referenced PK3, the client compares the server's expected
-checksum with PK3s already installed in the ordinary game roots. A matching
-non-official PK3 is copied into the active server namespace and used after the
-same filesystem restart that would load a download. Official
-PK3s remain mounted in their canonical `main` or `uo` game directory so a
+checksum with PK3s already installed in the ordinary game roots, then searches
+other servers' caches for any still-missing PK3s. Cache matches use the game's
+PK3 checksum, so the source filename and mod directory can differ. A matching
+non-official PK3 is copied into the active server namespace under the requested
+name and used after the same filesystem restart that would load a download.
+The source cache keeps its copy; its configuration and unrelated files remain
+isolated. Official PK3s remain mounted in their canonical `main` or `uo` game directory so a
 server alias cannot change their stock search priority. A copied PK3 is staged
-under a temporary name; a failed copy is discarded and the normal download
-path remains available.
+under a temporary name and its checksum is checked again before installation.
+An existing file with a different checksum is retained using an alternate name
+for the new copy. Incomplete temporary downloads are skipped. If no match is
+available or copying fails, the normal download path remains available.
 
 The main-screen Mods list also includes cached non-basegame directories that
 contain PK3s. Their labels use `server-name/mod`, while their launch paths

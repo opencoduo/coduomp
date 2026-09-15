@@ -709,12 +709,12 @@ void CL_ParseGamestate(msg_t *message)
 
     CL_SystemInfoChanged();
     /* NOT_FROM_ORIGINAL_SOURCE: seed the newly selected isolated namespace
-     * from checksum-matched ordinary-root paks before restart/download. */
-    const qboolean cachedRootPaks =
+     * from checksum-matched local paks before restart/download. */
+    const qboolean cachedPaks =
         coduomp_server_namespace_cache_referenced_paks();
 
     if (sv_running->integer == 0) {
-        if (namespaceChanged != qfalse || cachedRootPaks != qfalse)
+        if (namespaceChanged != qfalse || cachedPaks != qfalse)
             coduomp_FS_RestartPreservingFile(clc.checksumFeed,
                                              clc.demoFile);
         else if (fs_game->modified != qfalse ||
