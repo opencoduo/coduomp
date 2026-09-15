@@ -17,7 +17,7 @@ script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd -P)
 project_root=$(cd "$script_dir/../.." && pwd -P)
 builder_home=${HOME-}
 builder_user=$(id -un)
-builder_host=$(hostname)
+builder_host=$(hostname 2>/dev/null || hostnamectl hostname 2>/dev/null || cat /etc/hostname 2>/dev/null || uname -n 2>/dev/null || echo "unknown")
 audit_failed=0
 
 report_private_match()
