@@ -577,11 +577,10 @@ void CM_TraceThroughPatchCollide(
          * stack slots unwritten until CM_CheckFacetPlane reports an entering
          * hit, and reaches the final copy only after such a report. GCC's
          * -Wmaybe-uninitialized analysis does not preserve that dependency
-         * through this loop. Zero-initialize the candidate for portable C;
-         * hitNormalSet below still rejects the impossible no-hit path, so an
-         * accepted trace never observes the initializer. */
+         * through this loop. Zero-initializing the candidate eliminates the
+         * warning; every accepted trace overwrites all three values before
+         * they are observed. */
         vec3_t hitNormal = {0.0f, 0.0f, 0.0f};
-        qboolean hitNormalSet = qfalse;
         qboolean facetAccepted = qtrue;
 
         for (int32_t facetPlaneIndex = -1;
@@ -686,7 +685,6 @@ void CM_TraceThroughPatchCollide(
                 hitNormal[0] = plane[0];
                 hitNormal[1] = plane[1];
                 hitNormal[2] = plane[2];
-                hitNormalSet = qtrue;
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
             }
@@ -699,15 +697,6 @@ void CM_TraceThroughPatchCollide(
             enterFraction < 0.0f ||
             !(enterFraction <
               traceWork->trace.fraction)) {
-            continue;
-        }
-
-        /* NOT_FROM_ORIGINAL_SOURCE: the retail dataflow makes this check
-         * redundant: CM_CheckFacetPlane can make enterFraction nonnegative
-         * only when it also reports the update whose plane is copied into
-         * hitNormal. The explicit guard preserves that invariant in C and
-         * eliminates GCC's -Wmaybe-uninitialized warning. */
-        if (hitNormalSet == qfalse) {
             continue;
         }
 
