@@ -1107,15 +1107,12 @@ void CL_ServerInfoPacket(netadr_t address, msg_t *message,
         CL_SetServerInfoByAddress(
             address, info, ping->pingMsec);
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): getinfo has only an
-         * aggregate client count. Ask for a roster only when no persistent bot
-         * count exists or the cached count cannot fit the new population. */
+         * aggregate client count. Keep displaying the persistent bot count
+         * while requesting the current roster needed to validate or replace
+         * it. */
         const int32_t aggregateClientCount =
             coduo_crt_atoi(Info_ValueForKey(info, "clients"));
-        const coduomp_server_bot_cache_entry_t *const botCache =
-            coduomp_find_server_bot_cache(address, qfalse);
-        if (aggregateClientCount > 0 &&
-            (botCache == NULL || botCache->cachedBotCountValid == 0 ||
-             botCache->cachedBotCount > aggregateClientCount)) {
+        if (aggregateClientCount > 0) {
             coduomp_queue_server_player_query(address, ping->pingMsec);
         }
         return;
