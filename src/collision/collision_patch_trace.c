@@ -513,11 +513,11 @@ void CM_TraceThroughPatchCollide(
         int32_t hitBorder = -1;
         /* ORIGINAL_SOURCE_DIFFERENCE: the retail machine code leaves these
          * stack slots unwritten until CM_CheckFacetPlane reports an entering
-         * hit, and reaches the final copy only after such a report. GCC's
-         * -Wmaybe-uninitialized analysis does not preserve that dependency
-         * through this loop. Zero-initializing the candidate eliminates the
-         * warning; every accepted trace overwrites all three values before
-         * they are observed. */
+         * hit, and reaches the final copy only after such a report. GCC emits
+         * -Wmaybe-uninitialized for the final hitNormal[0..2] reads below
+         * because it cannot prove that a hit branch executed in this loop.
+         * Zero-initializing the candidate eliminates the warning; every
+         * accepted trace overwrites all three values before they are read. */
         vec3_t hitNormal = {0.0f, 0.0f, 0.0f};
         qboolean facetAccepted = qtrue;
 
