@@ -14,6 +14,7 @@
 
 #include "../client_recovered.h"
 #include "../globals.h"
+#include "../state/cg_predicted_events.h"
 
 enum {
     CG_FIRE_EVENT_ALT = 0xa4,
@@ -80,6 +81,11 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
      * sound/brass effect. */
     if (weapon->weaponType == WEAPTYPE_GAS) {
         cent->gasFireTime = (int32_t)cg_time;
+        return;
+    }
+
+    /* NOT_FROM_ORIGINAL_SOURCE: suppress repeated fire FX after validation and the gas-weapon timer update. */
+    if (!coduomp_predicted_events_allow_fx(cent->currentState.number, event, CODUOMP_PREDICTED_FX_WEAPON_FIRE)) {
         return;
     }
 

@@ -77,7 +77,7 @@ void CG_PredictPlayerState_Internal(void)
            sizeof(cg_predictedPlayerState));
     cg_latestSnapshotTime = cg_nextSnap->serverTime;
 
-    /* NOT_FROM_ORIGINAL_SOURCE: rebuild event provenance while retaining dispatch history for replayable commands. */
+    /* NOT_FROM_ORIGINAL_SOURCE: rebuild event provenance while retaining FX history for replayable commands. */
     coduomp_predicted_events_begin_prediction(currentCmdNumber);
 
     cg_pmove.viewClampTargetAngles[2] = 0.0f;

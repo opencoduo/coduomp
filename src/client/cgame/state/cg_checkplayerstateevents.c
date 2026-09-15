@@ -33,9 +33,9 @@
 #include <string.h>
 
 /* NOT_FROM_ORIGINAL_SOURCE: track locally predicted event occurrences independently of ring position.
- * Four retained events per buffered command bound presentation history. Per-step counters distinguish equal
+ * Four retained events per buffered command bound FX history. Per-step counters distinguish equal
  * events without counting unrelated event types, parameters, weapons or source entities. Snapshot events
- * without local provenance retain the original dispatch path. */
+ * without local provenance retain their original effects. Event handlers and state updates always run. */
 enum {
     CODUOMP_PREDICTED_EVENT_HISTORY = CG_PREDICTED_COMMAND_BACKUP * MAX_PS_EVENTS,
     CODUOMP_PREDICTED_EVENT_COUNTERS = 512
@@ -51,6 +51,7 @@ typedef struct {
 typedef struct {
     coduomp_predicted_event_origin_t origin;
     int32_t entityNum, presentedWeapon;
+    uint32_t playedFx;
 } coduomp_predicted_event_record_t;
 
 typedef struct {
@@ -60,6 +61,9 @@ typedef struct {
 
 static coduomp_predicted_event_origin_t coduomp_event_origins[MAX_PS_EVENTS];
 static coduomp_predicted_event_record_t coduomp_event_history[CODUOMP_PREDICTED_EVENT_HISTORY];
+static coduomp_predicted_event_record_t coduomp_event_dispatch;
+static unsigned int coduomp_event_dispatch_slot;
+static uint32_t coduomp_event_suppressed_fx;
 static coduomp_predicted_event_counter_t coduomp_event_counters[CODUOMP_PREDICTED_EVENT_COUNTERS];
 static unsigned int coduomp_event_history_cursor, coduomp_event_counter_count;
 static int32_t coduomp_event_command, coduomp_event_command_time, coduomp_event_step_time;
@@ -71,6 +75,7 @@ void coduomp_predicted_events_reset(void)
 {
     memset(coduomp_event_origins, 0, sizeof(coduomp_event_origins));
     memset(coduomp_event_history, 0, sizeof(coduomp_event_history));
+    coduomp_event_dispatch.origin.valid = qfalse;
     coduomp_event_history_cursor = 0;
     coduomp_event_counter_count = 0;
     coduomp_event_step_valid = qfalse;
@@ -82,6 +87,7 @@ void coduomp_predicted_events_reset(void)
 void coduomp_predicted_events_begin_prediction(int32_t currentCommandNumber)
 {
     memset(coduomp_event_origins, 0, sizeof(coduomp_event_origins));
+    coduomp_event_dispatch.origin.valid = qfalse;
     coduomp_predictable_event_observer = NULL;
     for (unsigned int i = 0; i < CODUOMP_PREDICTED_EVENT_HISTORY; ++i) {
         coduomp_predicted_event_origin_t *origin = &coduomp_event_history[i].origin;
@@ -167,18 +173,20 @@ void coduomp_predicted_events_end_command(void)
     coduomp_event_source = ENTITYNUM_NONE;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: dispatch a locally predicted occurrence once regardless of its current sequence.
- * Matching includes the producer context and the entity/weapon context consumed by CG_EntityEvent. */
-static qboolean coduomp_predicted_events_should_dispatch(const playerState_t *ps, int32_t sequence)
+/* NOT_FROM_ORIGINAL_SOURCE: scope FX history to one event dispatch while allowing its state updates to run.
+ * Freeze the previously played groups so all sounds, flashes and muzzle tags in this dispatch stay together. */
+void coduomp_predicted_events_begin_dispatch(const playerState_t *ps, int32_t sequence)
 {
+    coduomp_event_dispatch.origin.valid = qfalse;
+    coduomp_event_suppressed_fx = 0;
     unsigned int slot = (uint32_t)sequence & (MAX_PS_EVENTS - 1u);
     const coduomp_predicted_event_origin_t *now = &coduomp_event_origins[slot];
     if (ps != &cg_predictedPlayerState || !now->valid || now->sequence != sequence ||
         now->event != ps->events[slot] || now->parm != ps->eventParms[slot]) {
-        return qtrue;
+        return;
     }
 
-    coduomp_predicted_event_record_t current = {
+    coduomp_event_dispatch = (coduomp_predicted_event_record_t) {
         .origin = *now,
         .entityNum = cg_predictedEventEntity.currentState.number,
         .presentedWeapon = cg_predictedEventEntity.currentState.weapon
@@ -196,17 +204,41 @@ static qboolean coduomp_predicted_events_should_dispatch(const playerState_t *ps
         if (old->commandNumber != now->commandNumber || old->commandTime != now->commandTime ||
             old->simulationTime != now->simulationTime || old->event != now->event || old->parm != now->parm ||
             old->weapon != now->weapon || old->sourceEntity != now->sourceEntity || old->ordinal != now->ordinal ||
-            first->entityNum != current.entityNum || first->presentedWeapon != current.presentedWeapon) {
+            first->entityNum != coduomp_event_dispatch.entityNum ||
+            first->presentedWeapon != coduomp_event_dispatch.presentedWeapon) {
             continue;
         }
-        return qfalse;
+        coduomp_event_dispatch_slot = i;
+        coduomp_event_dispatch.playedFx = first->playedFx;
+        coduomp_event_suppressed_fx = first->playedFx;
+        return;
     }
     if (available == CODUOMP_PREDICTED_EVENT_HISTORY) {
         available = coduomp_event_history_cursor;
     }
-    coduomp_event_history[available] = current;
-    coduomp_event_history_cursor = (available + 1u) % CODUOMP_PREDICTED_EVENT_HISTORY;
+    coduomp_event_dispatch_slot = available;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: only an FX emission path consumes history; state-only or rejected handlers do not. */
+qboolean coduomp_predicted_events_allow_fx(int32_t entityNum, int32_t event, uint32_t fxMask)
+{
+    if (!coduomp_event_dispatch.origin.valid || coduomp_event_dispatch.entityNum != entityNum ||
+        coduomp_event_dispatch.origin.event != event) {
+        return qtrue;
+    }
+    if ((coduomp_event_suppressed_fx & fxMask) != 0) {
+        return qfalse;
+    }
+    coduomp_event_dispatch.playedFx |= fxMask;
+    coduomp_event_history[coduomp_event_dispatch_slot] = coduomp_event_dispatch;
+    coduomp_event_history_cursor = (coduomp_event_dispatch_slot + 1u) % CODUOMP_PREDICTED_EVENT_HISTORY;
     return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: unrelated entity events must not inherit the local event's FX suppression. */
+void coduomp_predicted_events_end_dispatch(void)
+{
+    coduomp_event_dispatch.origin.valid = qfalse;
 }
 
 void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
@@ -249,11 +281,11 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
         // BEFORE dispatch; 0x30034f0d..0x30034f1c call CG_EntityEvent(self=ECX, event=EAX,
         // predicted=1 on the stack).
         cg_predictedEventEntity.currentState.eventParm = ps->eventParms[ring];
-        /* NOT_FROM_ORIGINAL_SOURCE: suppress repeated local occurrences while keeping event accounting below. */
-        if (coduomp_predicted_events_should_dispatch(ps, i)) {
-            /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-            CG_EntityEvent(&cg_predictedEventEntity, event, 1);
-        }
+        /* NOT_FROM_ORIGINAL_SOURCE: scope duplicate FX suppression; the handler and its state updates still run. */
+        coduomp_predicted_events_begin_dispatch(ps, i);
+        /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
+        CG_EntityEvent(&cg_predictedEventEntity, event, 1);
+        coduomp_predicted_events_end_dispatch();
 
         // 0x30034f23/0x30034f26 cg_predictedEvents[i & 0xf] = event;
         cg_predictedEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;
