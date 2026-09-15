@@ -5033,8 +5033,8 @@ void trap_Key_KeynumToStringBuf(int32_t keynum, char *buffer,
                                 int32_t bufferSize);
 
 /*
- * NOT_FROM_ORIGINAL_SOURCE: semantic-float/native-register-ABI adapters for
- * original opaque-dword renderer trap wrappers on non-i386 hosts.
+ * NOT_FROM_ORIGINAL_SOURCE: defined-C semantic-float adapters for original
+ * opaque-dword renderer trap wrappers; also required by register-based ABIs.
  */
 void cgame_compat_ui_draw_text(float x, float y, int32_t font,
                                float scale, const vec4_t color,

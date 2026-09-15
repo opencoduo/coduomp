@@ -5,6 +5,7 @@
 
 enum {
     UI_ARENA_PATH_SIZE = 128,
+    UI_ARENA_FILENAME_MAX = UI_ARENA_PATH_SIZE - sizeof("mp/"),
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     UI_ARENA_FILE_LIST_SIZE = UI_MAX_ARENA_INFOS * UI_ARENA_PATH_SIZE,
     UI_ARENA_TYPE_COMPARE_LIMIT = 99999
@@ -39,16 +40,13 @@ void UI_LoadArenas(void)
             fileCount--;
             continue;
         }
-        /* The length gate proves the complete formatted path fits. GCC cannot
-         * carry that runtime proof through the variadic formatting wrapper. */
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-overflow"
-#endif
-        Com_sprintf(path, sizeof(path), "mp/%s", filename);
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+        /* ORIGINAL_SOURCE_DIFFERENCE: retail formats this as "mp/%s". The
+         * precision is never reached for an accepted name because the gate
+         * above proves filenameLength <= UI_ARENA_FILENAME_MAX, so output is
+         * unchanged. It also exposes that proven bound to GCC instead of
+         * disabling its format-overflow diagnostic. */
+        Com_sprintf(path, sizeof(path), "mp/%.*s",
+                    UI_ARENA_FILENAME_MAX, filename);
         UI_LoadArenasFromFile(path);
         filename += filenameLength + 1;
         fileCount--;

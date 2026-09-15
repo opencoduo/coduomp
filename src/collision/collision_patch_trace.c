@@ -492,12 +492,6 @@ qboolean CM_SightTracePointThroughPatchCollide(
  * non-point facet is clipped as an expanded convex volume. The final border
  * is its back plane, so entering through that plane is not a visible surface
  * collision. */
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-/* A nonnegative enterFraction is produced only by the same
- * CM_CheckFacetPlane result that initializes hitNormal. */
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
 void CM_TraceThroughPatchCollide(
     traceWork_t *traceWork,
     const patchCollide_t *patchCollide)
@@ -518,6 +512,7 @@ void CM_TraceThroughPatchCollide(
             traceWork->trace.fraction;
         int32_t hitBorder = -1;
         vec3_t hitNormal;
+        qboolean hitNormalSet = qfalse;
         qboolean facetAccepted = qtrue;
 
         for (int32_t facetPlaneIndex = -1;
@@ -622,18 +617,26 @@ void CM_TraceThroughPatchCollide(
                 hitNormal[0] = plane[0];
                 hitNormal[1] = plane[1];
                 hitNormal[2] = plane[2];
+                hitNormalSet = qtrue;
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
             }
         }
 
+        /* NOT_FROM_ORIGINAL_SOURCE: the retail dataflow makes the final
+         * hitNormalSet condition redundant: CM_CheckFacetPlane can make
+         * enterFraction nonnegative only when it also reports the update
+         * whose plane is copied into hitNormal. Keeping that dependency
+         * explicit gives C a checked initialization invariant instead of
+         * suppressing the compiler's uninitialized-value diagnostic. */
         if (facetAccepted == qfalse ||
             hitBorder ==
                 facet->numBorders - 1 ||
             !(enterFraction < leaveFraction) ||
             enterFraction < 0.0f ||
             !(enterFraction <
-              traceWork->trace.fraction)) {
+              traceWork->trace.fraction) ||
+            hitNormalSet == qfalse) {
             continue;
         }
 
@@ -647,9 +650,6 @@ void CM_TraceThroughPatchCollide(
             hitNormal[2];
     }
 }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /* Source: CoDUOMP.exe 0x00421090..0x00421509.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00421090_00421509.mcode.

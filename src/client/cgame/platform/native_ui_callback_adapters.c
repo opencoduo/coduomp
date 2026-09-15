@@ -4,8 +4,9 @@
  * NOT_FROM_ORIGINAL_SOURCE: native-ABI adapters between ui_shared's semantic
  * float callback signatures and the recovered i386 trap wrappers, whose float
  * arguments are represented as their original opaque 32-bit syscall words.
- * On i386 both forms occupy the same stack dword. Register-based 64-bit ABIs
- * require this explicit bit conversion at the callback boundary.
+ * On i386 both forms occupy the same stack dword, but calling through the
+ * incompatible function-pointer type is not defined C. Register-based 64-bit
+ * ABIs additionally require this explicit bit conversion at the boundary.
  */
 void cgame_compat_ui_draw_stretch_pic(
     float x, float y, float w, float h,
