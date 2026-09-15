@@ -511,7 +511,14 @@ void CM_TraceThroughPatchCollide(
         float leaveFraction =
             traceWork->trace.fraction;
         int32_t hitBorder = -1;
-        vec3_t hitNormal;
+        /* ORIGINAL_SOURCE_DIFFERENCE: the retail machine code leaves these
+         * stack slots unwritten until CM_CheckFacetPlane reports an entering
+         * hit, and reaches the final copy only after such a report. GCC's
+         * -Wmaybe-uninitialized analysis does not preserve that dependency
+         * through this loop. Zero-initialize the candidate for portable C;
+         * hitNormalSet below still rejects the impossible no-hit path, so an
+         * accepted trace never observes the initializer. */
+        vec3_t hitNormal = {0.0f, 0.0f, 0.0f};
         qboolean hitNormalSet = qfalse;
         qboolean facetAccepted = qtrue;
 
@@ -614,7 +621,9 @@ void CM_TraceThroughPatchCollide(
                 break;
             }
             if (hit != qfalse) {
-                memcpy(hitNormal, plane, sizeof(hitNormal));
+                hitNormal[0] = plane[0];
+                hitNormal[1] = plane[1];
+                hitNormal[2] = plane[2];
                 hitNormalSet = qtrue;
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
