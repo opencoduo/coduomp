@@ -8,7 +8,7 @@
 
 #include "../client_recovered.h"
 #include "../globals.h"
-#include "../state/cg_reload_replay_assert.h"
+#include "../state/cg_fire_replay_assert.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -78,8 +78,8 @@ void CG_PredictPlayerState_Internal(void)
            sizeof(cg_predictedPlayerState));
     cg_latestSnapshotTime = cg_nextSnap->serverTime;
 
-    /* NOT_FROM_ORIGINAL_SOURCE: temporary reload assertion tracks this prediction pass separately. */
-    coduomp_reload_assert_begin_prediction(&oldPlayerState);
+    /* NOT_FROM_ORIGINAL_SOURCE: temporary fire assertion tracks this prediction pass separately. */
+    coduomp_fire_assert_begin_prediction(&oldPlayerState);
 
     cg_pmove.viewClampTargetAngles[2] = 0.0f;
     cg_pmove.viewClampTargetAngles[1] = 0.0f;
@@ -377,10 +377,10 @@ void CG_PredictPlayerState_Internal(void)
             }
         }
 
-        /* NOT_FROM_ORIGINAL_SOURCE: temporary reload assertion records command identity across normal prediction replay. */
-        coduomp_reload_assert_begin_command(cmdNumber, cmd->commandTime);
+        /* NOT_FROM_ORIGINAL_SOURCE: temporary fire assertion records command identity across normal prediction replay. */
+        coduomp_fire_assert_begin_command(cmdNumber, cmd->commandTime);
         Pmove(&cg_pmove);
-        coduomp_reload_assert_end_command();
+        coduomp_fire_assert_end_command();
         if (predictionCollisionEntity != NULL) {
             predictionCollisionEntity->predictionCollisionActive = qfalse;
         }

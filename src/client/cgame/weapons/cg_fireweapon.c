@@ -14,6 +14,7 @@
 
 #include "../client_recovered.h"
 #include "../globals.h"
+#include "../state/cg_fire_replay_assert.h"
 
 enum {
     CG_FIRE_EVENT_ALT = 0xa4,
@@ -83,6 +84,8 @@ void CG_FireWeapon(uint32_t packedWeapon, centity_t *cent,
         return;
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: temporary assertion before presenting the same predicted shot's effects a second time. */
+    coduomp_fire_assert_present((int32_t)model->numberBits, weaponIndex, event, muzzleTagIndex);
     cent->weaponEffectActive = qtrue;
 
     /* Local first-person fire applies random weapon view kick/recoil. */

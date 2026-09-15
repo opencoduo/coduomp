@@ -26,8 +26,8 @@
  */
 void BG_AddPredictableEventToPlayerstate(int32_t event, int32_t eventParm,
                                          playerState_t *ps);
-/* NOT_FROM_ORIGINAL_SOURCE: temporary reload assertion observer, installed only while the client predicts a command. */
-extern void (*coduomp_reload_event_observer)(const playerState_t *ps, int32_t event, int32_t eventParm);
+/* NOT_FROM_ORIGINAL_SOURCE: temporary fire assertion observer, installed only while the client predicts a command. */
+extern void (*coduomp_fire_event_observer)(const playerState_t *ps, int32_t event, int32_t eventParm);
 /* Project a mutable player state into its network entity state. Both routines
  * advance the player state's event cursors. Linux symbols establish the
  * canonical player-state-first source signature; the Windows register order

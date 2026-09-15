@@ -42,7 +42,6 @@
 
 #include "../client_recovered.h"
 #include "../globals.h"
-#include "../state/cg_reload_replay_assert.h"
 
 #include <math.h>
 
@@ -118,9 +117,6 @@ static int cgame_compat_play_selected_sound_alias(snd_alias_t *alias, int32_t en
 
 int CG_PlaySoundAliasByName(int32_t entityNum, const void *soundPosition, const char *aliasName)
 {
-    /* NOT_FROM_ORIGINAL_SOURCE: temporary assertion immediately before a predicted reload requests its sound again. */
-    coduomp_reload_assert_sound(entityNum, aliasName);
-
     /* 3002ca87: choose the named sound alias for this origin. */
     snd_alias_t *alias = trap_Com_PickSoundAlias(aliasName, (const float *)soundPosition);
     return cgame_compat_play_selected_sound_alias(alias, entityNum, soundPosition);
