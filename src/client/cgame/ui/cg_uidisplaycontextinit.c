@@ -146,10 +146,31 @@ void CG_UIDisplayContextInit(void)
     display->registerShaderNoMip = trap_R_RegisterShaderNoMip; // +0x00
     display->setColor            = trap_R_SetColor;            // +0x04
     display->drawHandlePic       = CG_DrawPic;                 // +0x08
+#if defined(__i386__) || defined(_M_IX86)
+    /* The retail initializer stores these exact trap-wrapper addresses
+     * (0x3003e0f0/0x3003de30/0x3003dde0/0x3003de10). Their recovered
+     * declarations expose the original opaque 32-bit syscall words, whereas
+     * the display table exposes the same words as semantic floats. On i386,
+     * both forms use identical stack dwords, so the casts preserve the
+     * proved function-pointer values and call frames. Register-based 64-bit
+     * ABIs require the adapters below. */
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+    display->drawStretchPic = (ui_drawStretchPic_t)trap_R_DrawStretchPic; // +0x0c
+    display->drawText       = (ui_drawText_t)trap_R_Text_Paint;           // +0x10
+    display->textWidth      = (ui_textWidth_t)trap_R_Text_Width;          // +0x14
+    display->textHeight     = (ui_textHeight_t)trap_R_Text_Height;        // +0x18
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#else
     display->drawStretchPic = cgame_compat_ui_draw_stretch_pic; // +0x0c
     display->drawText       = cgame_compat_ui_draw_text;        // +0x10
     display->textWidth      = cgame_compat_ui_text_width;       // +0x14
     display->textHeight     = cgame_compat_ui_text_height;      // +0x18
+#endif
     display->translateString     = trap_SE_TranslateReference;     // +0x1c
     display->getLocalizedString  = CG_SafeTranslateString;         // +0x20
     display->localizeWithBinding = CG_TranslateMessage;            // +0x24
@@ -172,7 +193,18 @@ void CG_UIDisplayContextInit(void)
     display->getCVarValue        = CG_Cvar_Get;                    // +0x6c
     display->setCVar             = trap_Cvar_Set;                  // +0x70
     display->getConfigString     = CG_ConfigString;                // +0x74
+#if defined(__i386__) || defined(_M_IX86)
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+    display->drawTextWithCursor = (ui_drawTextWithCursor_t)trap_R_Text_PaintWithCursor; // +0x78
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#else
     display->drawTextWithCursor = cgame_compat_ui_draw_text_with_cursor; // +0x78
+#endif
     /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
     display->setOverstrikeMode = cgame_compat_set_overstrike_mode; // +0x7c
     display->getOverstrikeMode = cgame_compat_get_overstrike_mode; // +0x80

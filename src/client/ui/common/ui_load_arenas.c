@@ -39,8 +39,16 @@ void UI_LoadArenas(void)
             fileCount--;
             continue;
         }
-        memcpy(path, "mp/", sizeof("mp/") - 1);
-        memcpy(path + sizeof("mp/") - 1, filename, filenameLength + 1);
+        /* The length gate proves the complete formatted path fits. GCC cannot
+         * carry that runtime proof through the variadic formatting wrapper. */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow"
+#endif
+        Com_sprintf(path, sizeof(path), "mp/%s", filename);
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
         UI_LoadArenasFromFile(path);
         filename += filenameLength + 1;
         fileCount--;

@@ -8165,17 +8165,24 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
                 continue;
             }
 
-            const size_t sunNameLength = strlen(token);
-            if (sunNameLength >= sizeof(tr.sunName)) {
+            /* The retail sequence pre-clears the final byte, copies the full
+             * extent, then uses that byte as its truncation detector. */
+            tr.sunName[R_WORLD_NAME_SIZE - 1] = '\0';
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+            strncpy(tr.sunName, token, sizeof(tr.sunName));
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+            if (tr.sunName[R_WORLD_NAME_SIZE - 1] != '\0') {
                 ri.Printf(
                     R_PRINT_WARNING,
                     "WARNING: name '%s' too long for sunfile\n",
                     token);
                 tr.sunName[0] = '\0';
-                continue;
             }
-
-            memcpy(tr.sunName, token, sunNameLength + 1);
             continue;
         }
 
