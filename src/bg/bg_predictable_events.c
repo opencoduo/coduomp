@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-/* NOT_FROM_ORIGINAL_SOURCE: temporary client fire assertion; server modules leave this unset. */
+/* NOT_FROM_ORIGINAL_SOURCE: client shot provenance observer; server modules leave this unset. */
 void (*coduomp_fire_event_observer)(const playerState_t *ps, int32_t event, int32_t eventParm);
 
 void BG_AddPredictableEventToPlayerstate(int32_t event, int32_t eventParm,

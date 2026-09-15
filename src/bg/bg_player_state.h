@@ -26,7 +26,7 @@
  */
 void BG_AddPredictableEventToPlayerstate(int32_t event, int32_t eventParm,
                                          playerState_t *ps);
-/* NOT_FROM_ORIGINAL_SOURCE: temporary fire assertion observer, installed only while the client predicts a command. */
+/* NOT_FROM_ORIGINAL_SOURCE: attach shot identity to events while the client predicts a command. Server modules leave this unset. */
 extern void (*coduomp_fire_event_observer)(const playerState_t *ps, int32_t event, int32_t eventParm);
 /* Project a mutable player state into its network entity state. Both routines
  * advance the player state's event cursors. Linux symbols establish the

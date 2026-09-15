@@ -59,6 +59,7 @@
 
 #include "bg_animation.h"
 #include "bg_animation_services.h"
+#include "bg_player_state.h"
 #include "bg_pmove_services.h"
 #include "compat/coduo_int32_bits.h"
 #include "compat/crt/random_compat.h"
@@ -210,6 +211,10 @@ void PM_Weapon(void)
                 uint32_t eventIndex = (uint32_t)ps->eventIndex;
                 ps->events[eventIndex & (MAX_PS_EVENTS - 1u)] = EV_FIRE_WEAPON;
                 ps->eventParms[eventIndex & (MAX_PS_EVENTS - 1u)] = 0;
+                /* NOT_FROM_ORIGINAL_SOURCE: this inline fire append also needs the client's producing-command identity. */
+                if (coduomp_fire_event_observer != NULL) {
+                    coduomp_fire_event_observer(ps, EV_FIRE_WEAPON, ps->eventParms[eventIndex & (MAX_PS_EVENTS - 1u)]);
+                }
                 ps->eventIndex = coduo_int32_from_bits(eventIndex + 1u);
 
                 /* 0x300148b5: when the weapon launches on cook-off, also append

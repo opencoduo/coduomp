@@ -8,14 +8,13 @@
 
 #include "../client_recovered.h"
 #include "../globals.h"
-#include "../state/cg_fire_replay_assert.h"
+#include "../state/cg_predicted_fire.h"
 
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
 
 enum {
-    CMD_BACKUP = 128,
     PMOVE_TRACE_MASK_SPECTATOR_CLEAR = 0x02010000,
     PMOVE_VEHICLE_TYPE = 12
 };
@@ -59,7 +58,7 @@ void CG_PredictPlayerState_Internal(void)
     const int32_t currentCmdNumber =
         coduo_int32_from_bits((uint32_t)cgame_syscall(CG_GET_CURRENT_CMD_NUMBER));
     const int32_t oldestCmdNumber = coduo_int32_from_bits(
-        (uint32_t)currentCmdNumber - (uint32_t)(CMD_BACKUP - 1));
+        (uint32_t)currentCmdNumber - (uint32_t)(CG_PREDICTED_COMMAND_BACKUP - 1));
     usercmd_t oldestCmd;
     if (cgame_syscall(CG_GET_USER_CMD, oldestCmdNumber, &oldestCmd) == 0) {
         if (cg_showmiss_vmCvar.integer != 0) {
@@ -78,8 +77,8 @@ void CG_PredictPlayerState_Internal(void)
            sizeof(cg_predictedPlayerState));
     cg_latestSnapshotTime = cg_nextSnap->serverTime;
 
-    /* NOT_FROM_ORIGINAL_SOURCE: temporary fire assertion tracks this prediction pass separately. */
-    coduomp_fire_assert_begin_prediction(&oldPlayerState);
+    /* NOT_FROM_ORIGINAL_SOURCE: rebuild shot provenance while retaining presentation history for replayable commands. */
+    coduomp_predicted_fire_begin_prediction(currentCmdNumber);
 
     cg_pmove.viewClampTargetAngles[2] = 0.0f;
     cg_pmove.viewClampTargetAngles[1] = 0.0f;
@@ -377,10 +376,10 @@ void CG_PredictPlayerState_Internal(void)
             }
         }
 
-        /* NOT_FROM_ORIGINAL_SOURCE: temporary fire assertion records command identity across normal prediction replay. */
-        coduomp_fire_assert_begin_command(cmdNumber, cmd->commandTime);
+        /* NOT_FROM_ORIGINAL_SOURCE: record command identity across normal prediction replay. */
+        coduomp_predicted_fire_begin_command(cmdNumber, cmd->commandTime);
         Pmove(&cg_pmove);
-        coduomp_fire_assert_end_command();
+        coduomp_predicted_fire_end_command();
         if (predictionCollisionEntity != NULL) {
             predictionCollisionEntity->predictionCollisionActive = qfalse;
         }
