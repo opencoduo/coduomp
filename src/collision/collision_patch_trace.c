@@ -705,8 +705,8 @@ void CM_TraceThroughPatchCollide(
         /* NOT_FROM_ORIGINAL_SOURCE: the retail dataflow makes this check
          * redundant: CM_CheckFacetPlane can make enterFraction nonnegative
          * only when it also reports the update whose plane is copied into
-         * hitNormal. Keep the initialization proof as a separate guard so
-         * compilers preserve that dependency without a warning suppression. */
+         * hitNormal. The explicit guard preserves that invariant in C and
+         * eliminates GCC's -Wmaybe-uninitialized warning. */
         if (hitNormalSet == qfalse) {
             continue;
         }
