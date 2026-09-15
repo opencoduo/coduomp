@@ -1634,8 +1634,10 @@ no_step_used:
 
     // 0x3000f8fd..0x3000f92c: push EV_STEP_VIEW with the biased delta into the event ring.
     ps = move->ps;
-    BG_AddPredictableEventToPlayerstate(EV_STEP_VIEW,
-        (uint8_t)((uint32_t)(stepInt + (int32_t)PM_STEP_PARM_BIAS) & 0xffu), ps); // dword event store 0x91
+    ps->events[ps->eventIndex & 3] = EV_STEP_VIEW;            // dword store 0x91
+    ps->eventParms[ps->eventIndex & 3] =
+        (uint8_t)((uint32_t)(stepInt + (int32_t)PM_STEP_PARM_BIAS) & 0xffu);
+    ps->eventIndex = coduo_int32_from_bits((uint32_t)ps->eventIndex + 1u);
 
     // 0x3000f932..0x3000f984: smooth the interpolated view height fraction. The
     // origin z-shift this frame drives a 0.8/0.2 blend that scales all three

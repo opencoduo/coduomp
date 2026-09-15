@@ -13,7 +13,6 @@
 
 #include "bg_pmove.h"
 
-#include "bg_player_state.h"
 #include "bg_pmove_services.h"
 #include "bg_weapon.h"
 #include "compat/coduo_int32_bits.h"
@@ -30,9 +29,12 @@ enum {
     PM_VIEWHEIGHT_PRONE_LERP_TIME = 1800
 };
 
-/* Repeated predictable-event appends emitted inline at the original stance branches share the common producer. */
-#define PM_APPEND_STANCE_EVENT(ps_, event_) do { \
-    BG_AddPredictableEventToPlayerstate((event_), 0, (ps_)); \
+/* Repeated predictable-event append emitted inline at four stance branches. */
+#define PM_APPEND_STANCE_EVENT(ps_, event_) do {                            \
+    int32_t pm_event_index_ = (ps_)->eventIndex & (MAX_PS_EVENTS - 1);      \
+    (ps_)->events[pm_event_index_] = (event_);                              \
+    (ps_)->eventParms[pm_event_index_] = 0;                                \
+    (ps_)->eventIndex = coduo_int32_from_bits((uint32_t)(ps_)->eventIndex + 1u);  \
 } while (0)
 
 /* Repeated viewheight-transition animation reset at 0x3000b570/0x3000b5ce. */

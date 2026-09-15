@@ -377,13 +377,14 @@ void CG_PredictPlayerState_Internal(void)
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: record command identity across normal prediction replay. */
-        coduomp_predicted_events_begin_command(cmdNumber, cmd->commandTime);
+        int32_t firstEventSequence = cg_predictedPlayerState.eventIndex;
+        int32_t eventCommandTime = cmd->commandTime;
         Pmove(&cg_pmove);
+        coduomp_predicted_events_record_command(cmdNumber, eventCommandTime, firstEventSequence);
         if (predictionCollisionEntity != NULL) {
             predictionCollisionEntity->predictionCollisionActive = qfalse;
         }
         CG_TouchTriggerPrediction();
-        coduomp_predicted_events_end_command();
         predictionRan = qtrue;
 
 next_command:

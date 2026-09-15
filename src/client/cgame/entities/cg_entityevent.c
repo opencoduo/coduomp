@@ -49,7 +49,6 @@
 #include "../client_recovered.h"
 #include "qcommon/fx_types.h"
 #include "../globals.h"
-#include "../state/cg_predicted_events.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -159,22 +158,6 @@ static const char *(*const cg_projectileExplosionSurfaceSoundBanks
     [PROJECTILE_EXPLOSION_B17] = &cg_eventSurfaceSounds,
 };
 
-/* NOT_FROM_ORIGINAL_SOURCE: filter event audio without suppressing the handler's state changes. */
-static void coduomp_event_play_entity_sound(centity_t *self, int32_t event, int32_t entityNum, const char *alias)
-{
-    if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_SOUND)) {
-        CG_PlayEntitySoundAliasByName(entityNum, alias);
-    }
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: positional event sounds share the same per-occurrence audio decision. */
-static void coduomp_event_play_sound(centity_t *self, int32_t event, int32_t entityNum, const vec3_t origin, const char *alias)
-{
-    if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_SOUND)) {
-        (void)CG_PlaySoundAliasByName(entityNum, origin, alias);
-    }
-}
-
 void CG_EntityEvent(centity_t *self, int event, int predicted)
 {
     int eventParm;
@@ -229,37 +212,37 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
 
     if (event >= EV_STEP_A_LO && event < EV_STEP_A_HI) {          /* [1, 0x18) */
         if (cg_footsteps) {
-            coduomp_event_play_entity_sound(self, event, entNum, (const char *)(intptr_t)
+            CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                                 cg_stepRunSurfaceSounds[event - EV_STEP_A_LO]);
         }
-        coduomp_event_play_entity_sound(self, event, entNum, cg_soundGearRattleRun);
+        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleRun);
         return;
     }
 
     if (event >= EV_STEP_D_LO && event < EV_STEP_D_HI) {          /* [0x46, 0x5d) */
         if (cg_footsteps) {
-            coduomp_event_play_entity_sound(self, event, entNum, (const char *)(intptr_t)
+            CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                                 cg_stepSprintSurfaceSounds[event - EV_STEP_D_LO]);
         }
-        coduomp_event_play_entity_sound(self, event, entNum, cg_soundGearRattleSprint);
+        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleSprint);
         return;
     }
 
     if (event >= EV_STEP_B_LO && event < EV_STEP_B_HI) {          /* [0x18, 0x2f) */
         if (cg_footsteps) {
-            coduomp_event_play_entity_sound(self, event, entNum, (const char *)(intptr_t)
+            CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                                 cg_stepWalkSurfaceSounds[event - EV_STEP_B_LO]);
         }
-        coduomp_event_play_entity_sound(self, event, entNum, cg_soundGearRattleWalk);
+        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleWalk);
         return;
     }
 
     if (event >= EV_STEP_C_LO && event < EV_STEP_C_HI) {          /* [0x2f, 0x46) */
         if (cg_footsteps) {
-            coduomp_event_play_entity_sound(self, event, entNum, (const char *)(intptr_t)
+            CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                                 cg_stepProneSurfaceSounds[event - EV_STEP_C_LO]);
         }
-        coduomp_event_play_entity_sound(self, event, entNum, cg_soundGearRattleWalk);
+        CG_PlayEntitySoundAliasByName(entNum, cg_soundGearRattleWalk);
         return;
     }
 
@@ -273,7 +256,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     /* [0x5d, 0x74): bullet-flesh events. Play the flesh pool; then, only for the
      * local client, set the weapon-movement float state. */
     if (event >= EV_FLESH_LO && event < EV_FLESH_HI) {
-        coduomp_event_play_entity_sound(self, event, entNum, (const char *)(intptr_t)
+        CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_shellFlashSurfaceSounds[event - EV_FLESH_LO]);
         if (clientNum == (int)cg_clientNum) {
             cg_impactViewKickTime = coduo_int32_from_bits(cg_time);
@@ -286,9 +269,9 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
      * sound 0x3044bbbc; then, for the local client, run the flesh envelope and
      * clamp its rounded result before stamping the kick state. */
     if (event >= EV_BODY_LO && event < EV_BODY_HI) {
-        coduomp_event_play_entity_sound(self, event, entNum, (const char *)(intptr_t)
+        CG_PlayEntitySoundAliasByName(entNum, (const char *)(intptr_t)
                             cg_shellFlashSurfaceSounds[event - EV_BODY_LO]);
-        coduomp_event_play_entity_sound(self, event, entNum, cg_soundLandDamage);
+        CG_PlayEntitySoundAliasByName(entNum, cg_soundLandDamage);
         if (clientNum == (int)cg_clientNum) {
             /* envelope = (hi - lo) * eventParm * 0.01 + lo; FCOM against 12.0.
              * TEST AH,0x41 followed by JNP at 0x30022a97 skips the kick only for
@@ -343,15 +326,15 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     switch (event) {
 
     case EV_FOLIAGE_SOUND:  /* 0x8b, 0x30022b09 */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundMovementFoliage);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundMovementFoliage);
         return;
 
     case EV_FATIGUE_SOUND:  /* 0x8d, 0x30022b23 */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundSprintBreathLast);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundSprintBreathLast);
         return;
 
     case EV_FATIGUE_LAST_SOUND:  /* 0x8c, 0x30022b3c */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundFatigueBreath);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundFatigueBreath);
         return;
 
     /* 0x8e/0x8f/0x90 (0x30022b56/b92/bcd): taunt/voice. For a non-local client,
@@ -430,11 +413,11 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         }
 
     case EV_WATER_TOUCH:  /* 0x92, 0x30022cff */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundPlayerWaterIn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerWaterIn);
         return;
 
     case EV_WATER_LEAVE:  /* 0x93, 0x30022d19 */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundPlayerWaterOut);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerWaterOut);
         return;
 
     /* 0x94/0x95/0x96 (0x30022d32): weapon-fire foley from the item-indexed
@@ -451,9 +434,9 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         }
         rec = &cg_items[wparm];
         if (event == EV_ITEM_PICKUP) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, rec->pickupSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, rec->pickupSound);
         } else {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, rec->pickupSoundAlt);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, rec->pickupSoundAlt);
         }
         if ((cg_snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
             && (uint32_t)self->currentState.number == (uint32_t)cg_snap->ps.psClientNum) {
@@ -483,11 +466,11 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_RELOAD: {
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->reloadSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->reloadSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->reloadSound);
             return;
         }
         if (w->reloadEmptySound != 0) {
-                coduomp_event_play_entity_sound(self, event, self->currentState.number, w->reloadEmptySound);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, w->reloadEmptySound);
         }
         return;
     }
@@ -497,11 +480,11 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_RELOAD_FROM_EMPTY: {
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->reloadEmptySound != 0) {
-                coduomp_event_play_entity_sound(self, event, self->currentState.number, w->reloadEmptySound);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, w->reloadEmptySound);
                 return;
         }
         if (w->reloadSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->reloadSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->reloadSound);
         }
         return;
     }
@@ -509,7 +492,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_RELOAD_START: {  /* 0x9b, 0x30022e36 */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->reloadStartSound != 0) {
-                coduomp_event_play_entity_sound(self, event, self->currentState.number, w->reloadStartSound);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, w->reloadStartSound);
         }
         return;
     }
@@ -517,7 +500,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_RELOAD_END: {  /* 0x9c, 0x30022e64 */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->reloadEndSound != 0) {
-                coduomp_event_play_entity_sound(self, event, self->currentState.number, w->reloadEndSound);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, w->reloadEndSound);
         }
         return;
     }
@@ -545,12 +528,12 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
             }
             weaponInfo_t *weaponInfo = bg_weaponInfos[weaponIndex];
             if (weaponInfo->clipRequired == 0) {
-                coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundOutOfAmmo);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundOutOfAmmo);
             }
         } else {
             cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
             if (w->putawaySound != 0) {
-                coduomp_event_play_entity_sound(self, event, self->currentState.number, w->putawaySound);
+                CG_PlayEntitySoundAliasByName(self->currentState.number, w->putawaySound);
             }
         }
         if ((cg_snap->ps.playerStateFlags & WEAPON_FIRE_FLAGS) != 0
@@ -563,7 +546,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_RAISE_WEAPON: {  /* 0x9d, 0x30022f06 */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->raiseSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->raiseSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->raiseSound);
         }
         return;
     }
@@ -571,7 +554,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_PUTAWAY_WEAPON: {  /* 0x9e, 0x30022f34 */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->putawaySound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->putawaySound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->putawaySound);
         }
         return;
     }
@@ -579,7 +562,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_WEAPON_ALT: {  /* 0x9f, 0x30022f62 */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->altSwitchSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->altSwitchSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->altSwitchSound);
         }
         return;
     }
@@ -587,7 +570,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_DEPLOY_WEAPON: {  /* 0xa0, 0x30022f90 */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->deploySound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->deploySound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->deploySound);
         }
         return;
     }
@@ -595,7 +578,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_BREAKDOWN_WEAPON: {  /* 0xa1, 0x30022fbe */
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->breakdownSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->breakdownSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->breakdownSound);
         }
         return;
     }
@@ -604,7 +587,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_PULLBACK_WEAPON: {
         cgWeaponInfo_t *w = &cg_weaponInfos[self->currentState.weapon];
         if (w->pullbackSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->pullbackSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->pullbackSound);
         }
         return;
     }
@@ -649,7 +632,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         }
         w = &cg_weaponInfos[self->currentState.weapon];
         if (w->rechamberSound != 0) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, w->rechamberSound);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, w->rechamberSound);
         }
         return;
     }
@@ -659,9 +642,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         if (predicted == 0) {
             return;
         }
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_EjectWeaponBrass((entityState_t *)self, event);
-        }
+        CG_EjectWeaponBrass((entityState_t *)self, event);
         return;
 
     /* EV_MELEE_SWIPE (0xa9, 0x300230f6): dry-fire; if the weapon descriptor
@@ -682,10 +663,10 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         weaponInfo_t *weaponInfo = bg_weaponInfos[weaponIndex];
         if (weaponInfo->ricochet == 0 &&
             weaponInfo->weaponType != WEAPTYPE_PROJECTILE) {
-            coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundMeleeSwingSmall);
+            CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundMeleeSwingSmall);
             return;
         }
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundMeleeSwingLarge);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundMeleeSwingLarge);
         return;
     }
 
@@ -694,16 +675,14 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
     case EV_MELEE_HIT: {
         vec3_t evOrigin;
         ByteToDir(coduo_int32_from_bits(self->currentState.eventParm), evOrigin);
-        coduomp_event_play_entity_sound(self, event, (int)self->currentState.vehicleEntityNum, cg_soundMeleeHit);
+        CG_PlayEntitySoundAliasByName((int)self->currentState.vehicleEntityNum, cg_soundMeleeHit);
         return;
     }
 
     /* 0xb0 (0x30023172): weapon bullet/impact effect between the two origins. */
     case EV_BULLET_TRACER:
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_SpawnTracerLine(self->currentState.effectEndOrigin, self->currentState.origin,
-                               coduo_int32_from_bits(self->currentState.eventParm));
-        }
+        CG_SpawnTracerLine(self->currentState.effectEndOrigin, self->currentState.origin,
+                           coduo_int32_from_bits(self->currentState.eventParm));
         return;
 
     /* 0xb1 (0x30023492): fire-loop config-string sound. index = eventParm + 0x295
@@ -713,7 +692,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         int32_t configStringIndex = coduo_int32_from_bits(
             self->currentState.eventParm + (uint32_t)CS_WEAPON_SOUND_BASE);
         const char *name = CG_ConfigString(configStringIndex);
-        coduomp_event_play_sound(self, event, self->currentState.number, self->currentState.origin, name);
+        CG_PlaySoundAliasByName(self->currentState.number, &self->currentState.origin, name);
         return;
     }
 
@@ -761,7 +740,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
             }
             muzzle = cg_grenadeBounceSurfaceSounds[surfaceType];
         }
-        coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin, muzzle);
+        CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin, muzzle);
 
         /* Row 12 of cg_impactEffects (0x3044c6f4 ==
          * &cg_impactEffects[12][0]), indexed by surfType. */
@@ -772,28 +751,26 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         if (flashHandle == 0) {
             return;
         }
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                          coduo_int32_from_bits(flashHandle),
-                          (intptr_t)&self->lerpOrigin,
-                          (intptr_t)evOrigin);
-        }
+        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
+                      coduo_int32_from_bits(flashHandle),
+                      (intptr_t)&self->lerpOrigin,
+                      (intptr_t)evOrigin);
         return;
     }
 
     case EV_GRENADE_SPOON:  /* 0xb6, 0x30023298 */
-        coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin,
+        CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin,
                                 cg_soundUsGrenadeLever);
         return;
 
     /* 0xd0 (0x300232b4): flag-selected sound at &self->lerpOrigin. */
     case EV_OVERHEATING:
         if ((self->currentState.eType & EFLAGS_STEP_ALT) != 0) {
-            coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin,
+            CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin,
                                     cg_soundMgOverheatVehicle);
             return;
         }
-        coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin,
+        CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin,
                                 cg_soundMgOverheat);
         return;
 
@@ -817,7 +794,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         if (name == NULL) {
             return;
         }
-        coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin, name);
+        CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin, name);
         return;
     }
 
@@ -841,7 +818,7 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         if (name == NULL) {
             return;
         }
-        coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin, name);
+        CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin, name);
         return;
     }
 
@@ -901,13 +878,11 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                         coduo_int32_from_bits(
                             14u * CG_IMPACT_SURFACE_TYPES +
                             (uint32_t)surfaceType));
-                if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-                    cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
-                                  coduo_int32_from_bits(handle),
-                                  (intptr_t)&self->lerpOrigin,
-                                  0,
-                                  (intptr_t)&boltInfo);
-                }
+                cgame_syscall(CG_PLAY_EFFECT_ON_TAG,
+                              coduo_int32_from_bits(handle),
+                              (intptr_t)&self->lerpOrigin,
+                              0,
+                              (intptr_t)&boltInfo);
             }
         } else if (explosionType != PROJECTILE_EXPLOSION_NONE) {
             int handled = 0;
@@ -923,12 +898,10 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                         &cg_impactEffects[0][0],
                         coduo_int32_from_bits(flatIndex));
                 if (handle != 0) {
-                    if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-                        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                                      coduo_int32_from_bits(handle),
-                                      (intptr_t)&self->lerpOrigin,
-                                      (intptr_t)&evOrigin);
-                    }
+                    cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
+                                  coduo_int32_from_bits(handle),
+                                  (intptr_t)&self->lerpOrigin,
+                                  (intptr_t)&evOrigin);
                     handled = 1;
                 }
             }
@@ -945,12 +918,10 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
                         &cg_impactEffects[0][0],
                         coduo_int32_from_bits(flatIndex));
                 if (handle != 0) {
-                    if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-                        cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                                      coduo_int32_from_bits(handle),
-                                      (intptr_t)&self->lerpOrigin,
-                                      (intptr_t)&evOrigin);
-                    }
+                    cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
+                                  coduo_int32_from_bits(handle),
+                                  (intptr_t)&self->lerpOrigin,
+                                  (intptr_t)&evOrigin);
                 }
             }
         }
@@ -962,18 +933,16 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
             const char *const *soundBank =
                 *cg_projectileExplosionSurfaceSoundBanks[explosionType];
             const char *foley = soundBank[surfaceType];
-            coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin, foley);
+            CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin, foley);
         }
 
         /* per-weapon-model gate effect + impact name sound. */
         w = &cg_weaponInfos[self->currentState.weapon];
         if (w->projectileExplosionEffect != 0) {
-            if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-                cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
-                              coduo_int32_from_bits(w->projectileExplosionEffect),
-                              (intptr_t)&self->lerpOrigin,
-                              (intptr_t)&evOrigin);
-            }
+            cgame_syscall(CG_PLAY_EFFECT_ORIENTED,
+                          coduo_int32_from_bits(w->projectileExplosionEffect),
+                          (intptr_t)&self->lerpOrigin,
+                          (intptr_t)&evOrigin);
         }
         {
             cgWeaponInfo_t *w2 = &cg_weaponInfos[self->currentState.weapon];
@@ -982,32 +951,26 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
             if (nm == NULL || nm[0] == '\0') {
                 return;
             }
-            coduomp_event_play_sound(self, event, LOCAL_SOUND_ENTITY, self->lerpOrigin, nm);
+            CG_PlaySoundAliasByName(LOCAL_SOUND_ENTITY, &self->lerpOrigin, nm);
         }
         return;
     }
 
     /* 0xbd (0x30023202): blood/missile impact for the companion entity. */
     case EV_RAILTRAIL:
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_RailTrail(self->currentState.cursorHint, self->currentState.origin, self->currentState.effectEndOrigin);
-        }
+        CG_RailTrail(self->currentState.cursorHint, self->currentState.origin, self->currentState.effectEndOrigin);
         return;
 
     case EV_DEATH:  /* 0xc1, 0x300234bc */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundDeath);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundDeath);
         return;
 
     case EV_DEBUG_LINE:  /* 0xc2, 0x300234e6 */
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_AddLightningBeam(self);
-        }
+        CG_AddLightningBeam(self);
         return;
 
     case EV_PLAY_FX:  /* 0xc3, 0x300234f5 */
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_PlayFx(self, NULL);
-        }
+        CG_PlayFx(self, NULL);
         return;
 
     case EV_PLAY_FX_DIR: {  /* 0xc4, 0x30023506 */
@@ -1016,38 +979,34 @@ void CG_EntityEvent(centity_t *self, int event, int predicted)
         /* 0x30023515: ECX still holds &evOrigin — ByteToDir (0x30049400)
          * provably preserves ECX — so the decoded direction IS passed; only
          * the 0xc3 leg (0x300234f5) zeroes ECX for a NULL direction. */
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_PlayFx(self, evOrigin);
-        }
+        CG_PlayFx(self, evOrigin);
         return;
     }
 
     case EV_PLAY_FX_ON_TAG:  /* 0xc5, 0x30023524 */
-        if (coduomp_predicted_events_allow_fx(self->currentState.number, event, CODUOMP_PREDICTED_FX_VISUAL)) {
-            CG_PlayFxOnTag(self, coduo_int32_from_bits(self->currentState.eventParm));
-        }
+        CG_PlayFxOnTag(self, coduo_int32_from_bits(self->currentState.eventParm));
         return;
 
     case EV_FLAMEBARREL_BOUNCE:  /* 0xc8, 0x300231e8 */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundFlameBarrelBounce);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundFlameBarrelBounce);
         return;
 
     /* 0xcc (0x300231c2): stamp cg.time into self->miscTime, then play 0x3044bbcc. */
     case EV_ITEM_RESPAWN:
         self->miscTime = coduo_int32_from_bits(cg_time);
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundItemRespawn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundItemRespawn);
         return;
 
     case EV_ITEM_POP:  /* 0xcd, 0x300231ce */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundItemRespawn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundItemRespawn);
         return;
 
     case EV_PLAYER_TELEPORT_IN:  /* 0xce, 0x3002318f */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundPlayerTeleportIn);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerTeleportIn);
         return;
 
     case EV_PLAYER_TELEPORT_OUT:  /* 0xcf, 0x300231a9 */
-        coduomp_event_play_entity_sound(self, event, self->currentState.number, cg_soundPlayerTeleportOut);
+        CG_PlayEntitySoundAliasByName(self->currentState.number, cg_soundPlayerTeleportOut);
         return;
 
     case EV_OBITUARY:  /* 0xd1, 0x300234d5 */
