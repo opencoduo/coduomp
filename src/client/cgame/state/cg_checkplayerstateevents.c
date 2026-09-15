@@ -28,51 +28,63 @@
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
 #include "bg/bg_player_state.h"
-#include "cg_predicted_fire.h"
+#include "cg_predicted_events.h"
 
 #include <string.h>
 
-/* NOT_FROM_ORIGINAL_SOURCE: identify locally predicted shots independently of event-ring position.
- * Keep presentation history across replay passes, with space for four retained events per buffered command.
- * Acknowledged commands and commands outside the replay window expire; player-state resets clear the history.
- * Snapshot-owned events have no local producer record and continue through the original presentation path. */
-enum { CODUOMP_PREDICTED_FIRE_HISTORY = CG_PREDICTED_COMMAND_BACKUP * MAX_PS_EVENTS };
+/* NOT_FROM_ORIGINAL_SOURCE: track locally predicted event occurrences independently of ring position.
+ * Four retained events per buffered command bound presentation history. Per-step counters distinguish equal
+ * events without counting unrelated event types, parameters, weapons or source entities. Snapshot events
+ * without local provenance retain the original dispatch path. */
+enum {
+    CODUOMP_PREDICTED_EVENT_HISTORY = CG_PREDICTED_COMMAND_BACKUP * MAX_PS_EVENTS,
+    CODUOMP_PREDICTED_EVENT_COUNTERS = 512
+};
 
 typedef struct {
     qboolean valid;
-    int32_t sequence, commandNumber, commandTime, simulationTime, ordinal;
-    int32_t weapon, event, parm;
-} coduomp_predicted_fire_origin_t;
+    int32_t sequence, commandNumber, commandTime, simulationTime;
+    int32_t event, parm, weapon, sourceEntity;
+    uint32_t ordinal;
+} coduomp_predicted_event_origin_t;
 
 typedef struct {
-    coduomp_predicted_fire_origin_t origin;
-    int32_t entityNum, presentedWeapon, muzzleTagIndex;
-} coduomp_predicted_fire_record_t;
+    coduomp_predicted_event_origin_t origin;
+    int32_t entityNum, presentedWeapon;
+} coduomp_predicted_event_record_t;
 
-static coduomp_predicted_fire_origin_t coduomp_fire_origins[MAX_PS_EVENTS];
-static coduomp_predicted_fire_record_t coduomp_fire_history[CODUOMP_PREDICTED_FIRE_HISTORY];
-static coduomp_predicted_fire_record_t coduomp_fire_dispatch;
-static unsigned int coduomp_fire_history_cursor;
-static int32_t coduomp_fire_command, coduomp_fire_command_time, coduomp_fire_ordinal;
+typedef struct {
+    int32_t event, parm, weapon, sourceEntity;
+    uint32_t count;
+} coduomp_predicted_event_counter_t;
 
-/* NOT_FROM_ORIGINAL_SOURCE: shots from different lives or sessions must not share presentation history. */
-void coduomp_predicted_fire_reset(void)
+static coduomp_predicted_event_origin_t coduomp_event_origins[MAX_PS_EVENTS];
+static coduomp_predicted_event_record_t coduomp_event_history[CODUOMP_PREDICTED_EVENT_HISTORY];
+static coduomp_predicted_event_counter_t coduomp_event_counters[CODUOMP_PREDICTED_EVENT_COUNTERS];
+static unsigned int coduomp_event_history_cursor, coduomp_event_counter_count;
+static int32_t coduomp_event_command, coduomp_event_command_time, coduomp_event_step_time;
+static int32_t coduomp_event_source = ENTITYNUM_NONE;
+static qboolean coduomp_event_step_valid;
+
+/* NOT_FROM_ORIGINAL_SOURCE: different lives and sessions do not share predicted event history. */
+void coduomp_predicted_events_reset(void)
 {
-    memset(coduomp_fire_origins, 0, sizeof(coduomp_fire_origins));
-    memset(coduomp_fire_history, 0, sizeof(coduomp_fire_history));
-    coduomp_fire_dispatch.origin.valid = qfalse;
-    coduomp_fire_history_cursor = 0;
-    coduomp_fire_event_observer = NULL;
+    memset(coduomp_event_origins, 0, sizeof(coduomp_event_origins));
+    memset(coduomp_event_history, 0, sizeof(coduomp_event_history));
+    coduomp_event_history_cursor = 0;
+    coduomp_event_counter_count = 0;
+    coduomp_event_step_valid = qfalse;
+    coduomp_event_source = ENTITYNUM_NONE;
+    coduomp_predictable_event_observer = NULL;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: refresh replay provenance and retire shots whose commands cannot be replayed. */
-void coduomp_predicted_fire_begin_prediction(int32_t currentCommandNumber)
+/* NOT_FROM_ORIGINAL_SOURCE: rebuild local provenance and retire history for commands that cannot replay. */
+void coduomp_predicted_events_begin_prediction(int32_t currentCommandNumber)
 {
-    memset(coduomp_fire_origins, 0, sizeof(coduomp_fire_origins));
-    coduomp_fire_dispatch.origin.valid = qfalse;
-    coduomp_fire_event_observer = NULL;
-    for (unsigned int i = 0; i < CODUOMP_PREDICTED_FIRE_HISTORY; ++i) {
-        coduomp_predicted_fire_origin_t *origin = &coduomp_fire_history[i].origin;
+    memset(coduomp_event_origins, 0, sizeof(coduomp_event_origins));
+    coduomp_predictable_event_observer = NULL;
+    for (unsigned int i = 0; i < CODUOMP_PREDICTED_EVENT_HISTORY; ++i) {
+        coduomp_predicted_event_origin_t *origin = &coduomp_event_history[i].origin;
         if (origin->valid &&
             ((uint32_t)currentCommandNumber - (uint32_t)origin->commandNumber >= CG_PREDICTED_COMMAND_BACKUP ||
              origin->commandTime <= cg_nextSnap->ps.commandTime)) {
@@ -81,89 +93,119 @@ void coduomp_predicted_fire_begin_prediction(int32_t currentCommandNumber)
     }
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: attach command identity before the locally generated fire event advances the ring. */
-static void coduomp_predicted_fire_record_event(const playerState_t *ps, int32_t event, int32_t parm)
+/* NOT_FROM_ORIGINAL_SOURCE: every local append gets an occurrence identity before the event sequence advances. */
+static void coduomp_predicted_events_record(const playerState_t *ps, int32_t event, int32_t parm)
 {
-    if (ps != &cg_predictedPlayerState || event < EV_FIRE_WEAPON || event > EV_FIRE_WEAPON_LASTSHOT) {
+    if (ps != &cg_predictedPlayerState) {
         return;
     }
-    coduomp_predicted_fire_origin_t *origin = &coduomp_fire_origins[(uint32_t)ps->eventIndex & (MAX_PS_EVENTS - 1u)];
-    *origin = (coduomp_predicted_fire_origin_t) {
-        qtrue, ps->eventIndex, coduomp_fire_command, coduomp_fire_command_time, ps->commandTime,
-        coduomp_fire_ordinal++, ps->currentWeapon, event, parm
+    coduomp_predicted_event_origin_t *origin = &coduomp_event_origins[(uint32_t)ps->eventIndex & (MAX_PS_EVENTS - 1u)];
+    origin->valid = qfalse;
+    if (event <= EV_NONE || event >= EV_MAX_EVENTS) {
+        return;
+    }
+
+    if (!coduomp_event_step_valid || coduomp_event_step_time != ps->commandTime) {
+        coduomp_event_counter_count = 0;
+        coduomp_event_step_time = ps->commandTime;
+        coduomp_event_step_valid = qtrue;
+    }
+    coduomp_predicted_event_counter_t *counter = NULL;
+    for (unsigned int i = 0; i < coduomp_event_counter_count; ++i) {
+        coduomp_predicted_event_counter_t *candidate = &coduomp_event_counters[i];
+        if (candidate->event == event && candidate->parm == parm && candidate->weapon == ps->currentWeapon &&
+            candidate->sourceEntity == coduomp_event_source) {
+            counter = candidate;
+            break;
+        }
+    }
+    if (counter == NULL) {
+        /* Exhausted provenance storage must leave dispatch enabled instead of aliasing different occurrences. */
+        if (coduomp_event_counter_count == CODUOMP_PREDICTED_EVENT_COUNTERS) {
+            return;
+        }
+        counter = &coduomp_event_counters[coduomp_event_counter_count++];
+        *counter = (coduomp_predicted_event_counter_t) { event, parm, ps->currentWeapon, coduomp_event_source, 0 };
+    }
+    *origin = (coduomp_predicted_event_origin_t) {
+        .valid = qtrue,
+        .sequence = ps->eventIndex,
+        .commandNumber = coduomp_event_command,
+        .commandTime = coduomp_event_command_time,
+        .simulationTime = ps->commandTime,
+        .event = event,
+        .parm = parm,
+        .weapon = ps->currentWeapon,
+        .sourceEntity = coduomp_event_source,
+        .ordinal = counter->count++
     };
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: identify the original buffered command, including multi-step movement commands. */
-void coduomp_predicted_fire_begin_command(int32_t commandNumber, int32_t commandTime)
+/* NOT_FROM_ORIGINAL_SOURCE: observe all simulation substeps and the subsequent trigger prediction for a command. */
+void coduomp_predicted_events_begin_command(int32_t commandNumber, int32_t commandTime)
 {
-    coduomp_fire_command = commandNumber;
-    coduomp_fire_command_time = commandTime;
-    coduomp_fire_ordinal = 0;
-    coduomp_fire_event_observer = coduomp_predicted_fire_record_event;
+    coduomp_event_command = commandNumber;
+    coduomp_event_command_time = commandTime;
+    coduomp_event_counter_count = 0;
+    coduomp_event_step_valid = qfalse;
+    coduomp_event_source = ENTITYNUM_NONE;
+    coduomp_predictable_event_observer = coduomp_predicted_events_record;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: the observer belongs only to this client prediction command. */
-void coduomp_predicted_fire_end_command(void)
+/* NOT_FROM_ORIGINAL_SOURCE: source context distinguishes separate entities that produce identical event payloads. */
+int32_t coduomp_predicted_events_set_source(int32_t entityNum)
 {
-    coduomp_fire_event_observer = NULL;
+    int32_t previousSource = coduomp_event_source;
+    coduomp_event_source = entityNum;
+    return previousSource;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: associate the ensuing weapon presentation with its exact locally produced fire event. */
-void coduomp_predicted_fire_begin_dispatch(const playerState_t *ps, int32_t sequence)
+/* NOT_FROM_ORIGINAL_SOURCE: event observation is owned only by the current local prediction command. */
+void coduomp_predicted_events_end_command(void)
 {
-    coduomp_fire_dispatch.origin.valid = qfalse;
+    coduomp_predictable_event_observer = NULL;
+    coduomp_event_source = ENTITYNUM_NONE;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: dispatch a locally predicted occurrence once regardless of its current sequence.
+ * Matching includes the producer context and the entity/weapon context consumed by CG_EntityEvent. */
+static qboolean coduomp_predicted_events_should_dispatch(const playerState_t *ps, int32_t sequence)
+{
     unsigned int slot = (uint32_t)sequence & (MAX_PS_EVENTS - 1u);
-    const coduomp_predicted_fire_origin_t *origin = &coduomp_fire_origins[slot];
-    if (ps != &cg_predictedPlayerState || !origin->valid || origin->sequence != sequence ||
-        origin->event != ps->events[slot] || origin->parm != ps->eventParms[slot]) {
-        return;
-    }
-    coduomp_fire_dispatch.origin = *origin;
-    coduomp_fire_dispatch.entityNum = cg_predictedEventEntity.currentState.number;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: unrelated entity events must not inherit a shot's identity. */
-void coduomp_predicted_fire_end_dispatch(void)
-{
-    coduomp_fire_dispatch.origin.valid = qfalse;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: present each matching shot once, even if replay places it at another sequence.
- * The producer's command, simulation time and ordinal distinguish repeated automatic fire; weapon/event/tag
- * differences retain their own presentation. Only fire effects are gated; prediction and event accounting continue. */
-qboolean coduomp_predicted_fire_should_present(int32_t entityNum, int32_t weapon, int32_t event, int32_t muzzleTagIndex)
-{
-    coduomp_predicted_fire_record_t *current = &coduomp_fire_dispatch;
-    if (!current->origin.valid || current->entityNum != entityNum || current->origin.event != event) {
+    const coduomp_predicted_event_origin_t *now = &coduomp_event_origins[slot];
+    if (ps != &cg_predictedPlayerState || !now->valid || now->sequence != sequence ||
+        now->event != ps->events[slot] || now->parm != ps->eventParms[slot]) {
         return qtrue;
     }
-    current->presentedWeapon = weapon;
-    current->muzzleTagIndex = muzzleTagIndex;
-    const coduomp_predicted_fire_origin_t *now = &current->origin;
-    unsigned int available = CODUOMP_PREDICTED_FIRE_HISTORY;
-    for (unsigned int i = 0; i < CODUOMP_PREDICTED_FIRE_HISTORY; ++i) {
-        const coduomp_predicted_fire_record_t *first = &coduomp_fire_history[i];
-        const coduomp_predicted_fire_origin_t *old = &first->origin;
+
+    coduomp_predicted_event_record_t current = {
+        .origin = *now,
+        .entityNum = cg_predictedEventEntity.currentState.number,
+        .presentedWeapon = cg_predictedEventEntity.currentState.weapon
+    };
+    unsigned int available = CODUOMP_PREDICTED_EVENT_HISTORY;
+    for (unsigned int i = 0; i < CODUOMP_PREDICTED_EVENT_HISTORY; ++i) {
+        const coduomp_predicted_event_record_t *first = &coduomp_event_history[i];
+        const coduomp_predicted_event_origin_t *old = &first->origin;
         if (!old->valid) {
-            if (available == CODUOMP_PREDICTED_FIRE_HISTORY) {
+            if (available == CODUOMP_PREDICTED_EVENT_HISTORY) {
                 available = i;
             }
             continue;
         }
         if (old->commandNumber != now->commandNumber || old->commandTime != now->commandTime ||
-            old->simulationTime != now->simulationTime || old->ordinal != now->ordinal || old->weapon != now->weapon ||
-            old->event != now->event || old->parm != now->parm || first->entityNum != entityNum ||
-            first->presentedWeapon != weapon || first->muzzleTagIndex != muzzleTagIndex) {
+            old->simulationTime != now->simulationTime || old->event != now->event || old->parm != now->parm ||
+            old->weapon != now->weapon || old->sourceEntity != now->sourceEntity || old->ordinal != now->ordinal ||
+            first->entityNum != current.entityNum || first->presentedWeapon != current.presentedWeapon) {
             continue;
         }
         return qfalse;
     }
-    if (available == CODUOMP_PREDICTED_FIRE_HISTORY) {
-        available = coduomp_fire_history_cursor;
+    if (available == CODUOMP_PREDICTED_EVENT_HISTORY) {
+        available = coduomp_event_history_cursor;
     }
-    coduomp_fire_history[available] = *current;
-    coduomp_fire_history_cursor = (available + 1u) % CODUOMP_PREDICTED_FIRE_HISTORY;
+    coduomp_event_history[available] = current;
+    coduomp_event_history_cursor = (available + 1u) % CODUOMP_PREDICTED_EVENT_HISTORY;
     return qtrue;
 }
 
@@ -207,11 +249,11 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
         // BEFORE dispatch; 0x30034f0d..0x30034f1c call CG_EntityEvent(self=ECX, event=EAX,
         // predicted=1 on the stack).
         cg_predictedEventEntity.currentState.eventParm = ps->eventParms[ring];
-        /* NOT_FROM_ORIGINAL_SOURCE: scope the predicted shot identity to this event's weapon presentation. */
-        coduomp_predicted_fire_begin_dispatch(ps, i);
-        /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
-        CG_EntityEvent(&cg_predictedEventEntity, event, 1);
-        coduomp_predicted_fire_end_dispatch();
+        /* NOT_FROM_ORIGINAL_SOURCE: suppress repeated local occurrences while keeping event accounting below. */
+        if (coduomp_predicted_events_should_dispatch(ps, i)) {
+            /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered client-module boundary input and state before use. */
+            CG_EntityEvent(&cg_predictedEventEntity, event, 1);
+        }
 
         // 0x30034f23/0x30034f26 cg_predictedEvents[i & 0xf] = event;
         cg_predictedEvents[(int32_t)((uint32_t)i & (MAX_PREDICTED_EVENTS - 1u))] = event;

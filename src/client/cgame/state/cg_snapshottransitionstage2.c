@@ -46,7 +46,7 @@
 
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
-#include "cg_predicted_fire.h"
+#include "cg_predicted_events.h"
 
 // Offsets this function proves against the machine code (i386, 4-byte words):
 _Static_assert(offsetof(snapshot_t, ps.commandTime) == 0x0c,
@@ -56,8 +56,8 @@ _Static_assert(offsetof(snapshot_t, ps.currentWeapon) == 0xe4,
 
 void CG_SnapshotTransitionStage2(void)
 {
-    /* NOT_FROM_ORIGINAL_SOURCE: clear shot presentation history across different lives or sessions. */
-    coduomp_predicted_fire_reset();
+    /* NOT_FROM_ORIGINAL_SOURCE: clear predicted event history across different lives or sessions. */
+    coduomp_predicted_events_reset();
 
     // 0x30034d4a: clear the initial-snapshot-processed latch.
     cg_initialSnapshotPending = 0;

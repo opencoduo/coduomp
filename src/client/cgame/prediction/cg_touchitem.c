@@ -32,6 +32,8 @@
 
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
+#include "bg/bg_player_state.h"
+#include "../state/cg_predicted_events.h"
 
 // Offsets this function proves against the machine code (i386, 4-byte pointers):
 _Static_assert(offsetof(centity_t, currentState.eFlags) == 0x08,
@@ -99,10 +101,8 @@ void CG_TouchItem(centity_t *cent)
     //   eventIndex++;
     // Note the machine code re-reads eventIndex for the parm store; the mask is
     // recomputed each time but the value is unchanged until the final INC.
-    cg_predictedPlayerState.events[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
-        EV_ITEM_PICKUP;
-    cg_predictedPlayerState.eventParms[cg_predictedPlayerState.eventIndex & (MAX_PS_EVENTS - 1)] =
-        (int32_t)(uint32_t)(uint8_t)modelindex;
-    cg_predictedPlayerState.eventIndex = coduo_int32_from_bits(
-        (uint32_t)cg_predictedPlayerState.eventIndex + 1u);
+    /* NOT_FROM_ORIGINAL_SOURCE: identical pickup payloads from different item entities are separate occurrences. */
+    int32_t previousSource = coduomp_predicted_events_set_source(cent->currentState.number);
+    BG_AddPredictableEventToPlayerstate(EV_ITEM_PICKUP, (int32_t)(uint32_t)(uint8_t)modelindex, &cg_predictedPlayerState);
+    coduomp_predicted_events_set_source(previousSource);
 }

@@ -176,10 +176,7 @@ void PM_Weapon(void)
 
                     /* 0x3001481a..0x30014840: append EV_GRENADE_SPOON (182), parm 0. */
                     ps = move->ps;
-                    uint32_t eventIndex = (uint32_t)ps->eventIndex;
-                    ps->events[eventIndex & (MAX_PS_EVENTS - 1u)] = EV_GRENADE_SPOON;
-                    ps->eventParms[eventIndex & (MAX_PS_EVENTS - 1u)] = 0;
-                    ps->eventIndex = coduo_int32_from_bits(eventIndex + 1u);
+                    BG_AddPredictableEventToPlayerstate(EV_GRENADE_SPOON, 0, ps);
 
                     weaponInfo = pml.weaponInfo; /* reload EDX at 0x30014846 */
                 }
@@ -208,23 +205,13 @@ void PM_Weapon(void)
                 ps->grenadeTimeLeft = 50;
 
                 /* 0x30014889..0x300148af: append EV_FIRE_WEAPON (163), parm 0. */
-                uint32_t eventIndex = (uint32_t)ps->eventIndex;
-                ps->events[eventIndex & (MAX_PS_EVENTS - 1u)] = EV_FIRE_WEAPON;
-                ps->eventParms[eventIndex & (MAX_PS_EVENTS - 1u)] = 0;
-                /* NOT_FROM_ORIGINAL_SOURCE: this inline fire append also needs the client's producing-command identity. */
-                if (coduomp_fire_event_observer != NULL) {
-                    coduomp_fire_event_observer(ps, EV_FIRE_WEAPON, ps->eventParms[eventIndex & (MAX_PS_EVENTS - 1u)]);
-                }
-                ps->eventIndex = coduo_int32_from_bits(eventIndex + 1u);
+                BG_AddPredictableEventToPlayerstate(EV_FIRE_WEAPON, 0, ps);
 
                 /* 0x300148b5: when the weapon launches on cook-off, also append
                  * EV_GRENADE_SUICIDE (210), parm 0. */
                 if (pml.weaponInfo->missileSplashDamage != 0) {
                     ps = move->ps;
-                    eventIndex = (uint32_t)ps->eventIndex;
-                    ps->events[eventIndex & (MAX_PS_EVENTS - 1u)] = EV_GRENADE_SUICIDE;
-                    ps->eventParms[eventIndex & (MAX_PS_EVENTS - 1u)] = 0;
-                    ps->eventIndex = coduo_int32_from_bits(eventIndex + 1u);
+                    BG_AddPredictableEventToPlayerstate(EV_GRENADE_SUICIDE, 0, ps);
                 }
 
                 /* 0x300148ee..0x300148fb: consume one round from the current weapon's

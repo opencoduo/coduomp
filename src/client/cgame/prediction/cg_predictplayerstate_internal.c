@@ -8,7 +8,7 @@
 
 #include "../client_recovered.h"
 #include "../globals.h"
-#include "../state/cg_predicted_fire.h"
+#include "../state/cg_predicted_events.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -77,8 +77,8 @@ void CG_PredictPlayerState_Internal(void)
            sizeof(cg_predictedPlayerState));
     cg_latestSnapshotTime = cg_nextSnap->serverTime;
 
-    /* NOT_FROM_ORIGINAL_SOURCE: rebuild shot provenance while retaining presentation history for replayable commands. */
-    coduomp_predicted_fire_begin_prediction(currentCmdNumber);
+    /* NOT_FROM_ORIGINAL_SOURCE: rebuild event provenance while retaining dispatch history for replayable commands. */
+    coduomp_predicted_events_begin_prediction(currentCmdNumber);
 
     cg_pmove.viewClampTargetAngles[2] = 0.0f;
     cg_pmove.viewClampTargetAngles[1] = 0.0f;
@@ -377,13 +377,13 @@ void CG_PredictPlayerState_Internal(void)
         }
 
         /* NOT_FROM_ORIGINAL_SOURCE: record command identity across normal prediction replay. */
-        coduomp_predicted_fire_begin_command(cmdNumber, cmd->commandTime);
+        coduomp_predicted_events_begin_command(cmdNumber, cmd->commandTime);
         Pmove(&cg_pmove);
-        coduomp_predicted_fire_end_command();
         if (predictionCollisionEntity != NULL) {
             predictionCollisionEntity->predictionCollisionActive = qfalse;
         }
         CG_TouchTriggerPrediction();
+        coduomp_predicted_events_end_command();
         predictionRan = qtrue;
 
 next_command:
