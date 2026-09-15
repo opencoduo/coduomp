@@ -46,6 +46,7 @@
 
 #include "client/cgame/client_recovered.h"
 #include "client/cgame/globals.h"
+#include "cg_reload_replay_assert.h"
 
 // Offsets this function proves against the machine code (i386, 4-byte words):
 _Static_assert(offsetof(snapshot_t, ps.commandTime) == 0x0c,
@@ -55,6 +56,9 @@ _Static_assert(offsetof(snapshot_t, ps.currentWeapon) == 0xe4,
 
 void CG_SnapshotTransitionStage2(void)
 {
+    /* NOT_FROM_ORIGINAL_SOURCE: temporary reload assertion must not compare different lives or sessions. */
+    coduomp_reload_assert_reset();
+
     // 0x30034d4a: clear the initial-snapshot-processed latch.
     cg_initialSnapshotPending = 0;
 
