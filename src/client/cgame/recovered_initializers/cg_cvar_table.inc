@@ -2,7 +2,8 @@
     { &cg_drawGun_vmCvar, "cg_drawGun", "1", 0x201 }, /* 1: object 0x30452780 */
     { &cg_cursorHints_vmCvar, "cg_cursorHints", "3", 0x1 }, /* 2: object 0x305301e0 */
     { &cg_hintFadeTime_vmCvar, "cg_hintFadeTime", "100", 0x1 }, /* 3: object 0x3052fc40 */
-    { &cg_fov_vmCvar, "cg_fov", "80", 0x201 }, /* 4: object 0x3052f7c0 */
+    /* INTENTIONAL_OVERRIDE: the graphics FOV preference survives registration on servers with cheats disabled. */
+    { &cg_fov_vmCvar, "cg_fov", "80", CVAR_ARCHIVE }, /* 4: object 0x3052f7c0 */
     { &cg_viewSizeCvar, "cg_viewsize", "100", 0x1 }, /* 5: object 0x3052eec0 */
     { &cg_letterbox_vmCvar, "cg_letterbox", "0", 0x100 }, /* 6: object 0x304567a0 */
     { &cg_stereoSeparation_vmCvar, "cg_stereoSeparation", "0.4", 0x1 }, /* 7: object 0x304570a0 */
