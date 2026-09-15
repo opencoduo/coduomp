@@ -676,9 +676,7 @@ void CM_TraceThroughPatchCollide(
                 break;
             }
             if (hit != qfalse) {
-                hitNormal[0] = plane[0];
-                hitNormal[1] = plane[1];
-                hitNormal[2] = plane[2];
+                memcpy(hitNormal, plane, sizeof(hitNormal));
                 hitNormalSet = qtrue;
                 if (facetPlaneIndex >= 0)
                     hitBorder = facetPlaneIndex;
