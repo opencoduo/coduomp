@@ -43,8 +43,8 @@ void UI_LoadArenas(void)
         /* ORIGINAL_SOURCE_DIFFERENCE: retail formats this as "mp/%s". The
          * precision is never reached for an accepted name because the gate
          * above proves filenameLength <= UI_ARENA_FILENAME_MAX, so output is
-         * unchanged. It also exposes that proven bound to GCC instead of
-         * disabling its format-overflow diagnostic. */
+         * unchanged. The explicit precision gives GCC the same bound and
+         * eliminates its -Wformat-overflow warning. */
         Com_sprintf(path, sizeof(path), "mp/%.*s",
                     UI_ARENA_FILENAME_MAX, filename);
         UI_LoadArenasFromFile(path);

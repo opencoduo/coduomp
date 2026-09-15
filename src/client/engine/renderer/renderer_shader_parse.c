@@ -8160,10 +8160,9 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
              * extent, then uses that byte as its truncation detector. */
             tr.sunName[R_WORLD_NAME_SIZE - 1] = '\0';
             /* ORIGINAL_SOURCE_DIFFERENCE: retail calls strncpy here. This
-             * explicit loop has the same byte-for-byte copy and zero-padding
+             * explicit loop preserves its byte-for-byte copy and zero-padding
              * behavior, including a nonterminated result when token fills the
-             * array, while leaving GCC's intentional-truncation diagnostic
-             * enabled. */
+             * array, while eliminating GCC's -Wstringop-truncation warning. */
             size_t sunNameIndex = 0;
             while (sunNameIndex < sizeof(tr.sunName) &&
                    token[sunNameIndex] != '\0') {
