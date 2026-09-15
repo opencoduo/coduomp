@@ -8168,14 +8168,21 @@ qboolean ParseShader(char **text, qboolean allowTextureName,
             /* The retail sequence pre-clears the final byte, copies the full
              * extent, then uses that byte as its truncation detector. */
             tr.sunName[R_WORLD_NAME_SIZE - 1] = '\0';
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-            strncpy(tr.sunName, token, sizeof(tr.sunName));
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+            /* ORIGINAL_SOURCE_DIFFERENCE: retail calls strncpy here. This
+             * explicit loop has the same byte-for-byte copy and zero-padding
+             * behavior, including a nonterminated result when token fills the
+             * array, while leaving GCC's intentional-truncation diagnostic
+             * enabled. */
+            size_t sunNameIndex = 0;
+            while (sunNameIndex < sizeof(tr.sunName) &&
+                   token[sunNameIndex] != '\0') {
+                tr.sunName[sunNameIndex] = token[sunNameIndex];
+                ++sunNameIndex;
+            }
+            while (sunNameIndex < sizeof(tr.sunName)) {
+                tr.sunName[sunNameIndex] = '\0';
+                ++sunNameIndex;
+            }
             if (tr.sunName[R_WORLD_NAME_SIZE - 1] != '\0') {
                 ri.Printf(
                     R_PRINT_WARNING,
