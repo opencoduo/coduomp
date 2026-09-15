@@ -76,6 +76,8 @@ void CG_PredictPlayerState_Internal(void)
     memcpy(&cg_predictedPlayerState, &cg_nextSnap->ps,
            sizeof(cg_predictedPlayerState));
     cg_latestSnapshotTime = cg_nextSnap->serverTime;
+    int32_t replayedEventStart = cg_predictedPlayerState.eventIndex;
+    int32_t replayedEventEnd = replayedEventStart;
 
     cg_pmove.viewClampTargetAngles[2] = 0.0f;
     cg_pmove.viewClampTargetAngles[1] = 0.0f;
@@ -151,6 +153,8 @@ void CG_PredictPlayerState_Internal(void)
         if (cgame_syscall(CG_GET_USER_CMD, previousCmdNumber, oldCmd) == 0) {
             goto next_command;
         }
+        qboolean commandWasPreviouslyPredicted =
+            cmd->commandTime <= oldPlayerState.commandTime ? qtrue : qfalse;
 
         if (cg_predictedPlayerState.commandTime == oldPlayerState.commandTime) {
             vec3_t adjustedOrigin;
@@ -378,6 +382,9 @@ void CG_PredictPlayerState_Internal(void)
             predictionCollisionEntity->predictionCollisionActive = qfalse;
         }
         CG_TouchTriggerPrediction();
+        if (commandWasPreviouslyPredicted != qfalse) {
+            replayedEventEnd = cg_predictedPlayerState.eventIndex;
+        }
         predictionRan = qtrue;
 
 next_command:
@@ -408,5 +415,7 @@ next_command:
                               cg_predictedPlayerState.groundEntityNum,
                               cg_latestSnapshotTime, coduo_int32_from_bits(cg_time),
                               cg_predictedPlayerState.psOrigin, moverAngleDelta);
+    cgame_compat_set_replayed_event_range(replayedEventStart,
+                                          replayedEventEnd);
     CG_TransitionPlayerState(&cg_predictedPlayerState, &oldPlayerState);
 }

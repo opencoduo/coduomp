@@ -4802,6 +4802,8 @@ _Static_assert(sizeof(playerState_t) == 0x4504, "playerState_t is the full 0x450
  * `ps` in EBX, `ops` a single stack arg (caller-cleaned).
  */
 void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops);
+/* NOT_FROM_ORIGINAL_SOURCE: pass prediction replay provenance into event reconciliation. */
+void cgame_compat_set_replayed_event_range(int32_t start, int32_t end);
 void CG_CheckChangedPredictableEvents(playerState_t *ps);
 void CG_UpdatePlayerDObj(centity_t *cent);
 
