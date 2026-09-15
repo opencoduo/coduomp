@@ -220,22 +220,34 @@ qboolean FS_ComparePaks(char *neededPaks, int32_t neededPaksSize,
             continue;
 
         if (includeAlternateNames != qfalse) {
+            char localName[MAX_OSPATH];
+
+            if (filesystem_compat_download_file_exists(
+                    va("%s.pk3", pakName)) == qfalse) {
+                Com_sprintf(localName, sizeof(localName),
+                            "%s.pk3", pakName);
+            } else {
+                Com_sprintf(localName, sizeof(localName),
+                            "%s.%08x.pk3", pakName,
+                            (uint32_t)fs_serverReferencedPaks[pakIndex]);
+            }
+
+            const size_t currentLength = strlen(neededPaks);
+            const size_t pairLength =
+                strlen(pakName) + strlen(localName) +
+                sizeof("@.pk3@") - 1u;
+            /* CL_NextDownload treats the final local substring as complete,
+             * so defer the entire pair rather than appending a partial one. */
+            if (currentLength + pairLength + 1u >
+                (size_t)neededPaksSize) {
+                break;
+            }
+
             Q_strcat(neededPaks, neededPaksSize, "@");
             Q_strcat(neededPaks, neededPaksSize, pakName);
             Q_strcat(neededPaks, neededPaksSize, ".pk3");
             Q_strcat(neededPaks, neededPaksSize, "@");
-
-            if (filesystem_compat_download_file_exists(
-                    va("%s.pk3", pakName)) == qfalse) {
-                Q_strcat(neededPaks, neededPaksSize, pakName);
-                Q_strcat(neededPaks, neededPaksSize, ".pk3");
-            } else {
-                char alternateName[MAX_OSPATH];
-                Com_sprintf(alternateName, sizeof(alternateName),
-                            "%s.%08x.pk3", pakName,
-                            (uint32_t)fs_serverReferencedPaks[pakIndex]);
-                Q_strcat(neededPaks, neededPaksSize, alternateName);
-            }
+            Q_strcat(neededPaks, neededPaksSize, localName);
             continue;
         }
 
