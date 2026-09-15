@@ -22,8 +22,6 @@ cvar_t *com_viewlog; /* original 0x04927eb4 */
 cvar_t *com_fixedtime;
 cvar_t *com_speeds;
 cvar_t *com_maxfps;       /* original 0x0492908c */
-/* NOT_FROM_ORIGINAL_SOURCE: opt-in improved-client frame-deadline scheduler. */
-cvar_t *com_preciseFramePacing;
 cvar_t *com_recommendedSet; /* original 0x04929094 */
 cvar_t *com_introPlayed;  /* original 0x04929098 */
 cvar_t *com_animCheck;    /* original 0x04929078 */

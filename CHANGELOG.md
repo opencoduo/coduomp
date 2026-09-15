@@ -9,7 +9,6 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 - Spawn reload animation is fixed, it won't play anymore
 - Local server map list limit increased to 2048
 - Sound Options has independent Effects Volume and Music Volume sliders. The existing `mss_volume` cvar controls effects/SFX, and the new `musicVolume` cvar controls music; there is no separate `sfxVolume` cvar.
-- Client frame caps use a high-resolution frame-start schedule instead of re-anchoring after every late frame. Catch-up is bounded and discarded after a full missed period, while gameplay, snapshot, animation, and renderer timestamps remain on the original real-time clock. Set the archived `com_preciseFramePacing` cvar to `0` to restore the stock limiter.
 
 ### Server browser
 

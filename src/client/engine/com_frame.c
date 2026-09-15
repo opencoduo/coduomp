@@ -17,123 +17,14 @@ enum {
     COM_STATMON_FILE_ENTRY = 1,
     COM_STATMON_WARNING_DURATION_MSEC = 3000,
     COM_STATMON_SLOW_FRAME_MSEC = 33,
-    COM_CONSOLE_VISIBLE = 1,
-    COM_FRAME_MINIMUM_MSEC = 1,
-    CODUOMP_FRAME_PACING_MAX_FPS = 1000,
-    CODUOMP_FRAME_PACING_CORRECTION_DIVISOR = 4
+    COM_CONSOLE_VISIBLE = 1
 };
-
-#define CODUOMP_NANOSECONDS_PER_SECOND UINT64_C(1000000000)
-#define CODUOMP_FRAME_PACING_MAX_CORRECTION_NSEC UINT64_C(1000000)
 
 /* Original common-frame bookkeeping. These are private to Com_Frame in the
  * Windows executable; addresses are retained only as binary evidence. */
 static int32_t comPreviousEventTime;        /* original 0x00980230 */
 static int32_t comPreviousStatmonFrameTime; /* original 0x00981e80 */
 static int32_t comFrameNumber;              /* original 0x049290a0 */
-
-/* NOT_FROM_ORIGINAL_SOURCE: state for the improved-client frame-start
- * scheduler. None of these values enter the engine's gameplay time domain. */
-typedef struct {
-    qboolean initialized;
-    int32_t maxFps;
-    uint64_t nextIdealNanoseconds;
-    uint64_t lastStartNanoseconds;
-    uint64_t periodNanoseconds;
-    uint64_t periodRemainder;
-    uint64_t remainderAccumulator;
-} coduomp_frame_pacing_state_t;
-
-static coduomp_frame_pacing_state_t coduompFramePacing;
-
-/* NOT_FROM_ORIGINAL_SOURCE: abandon all phase history when precise pacing is
- * disabled so re-enabling it cannot repay stale timing debt. */
-static void coduomp_frame_pacing_disable(void)
-{
-    coduompFramePacing.initialized = qfalse;
-    coduompFramePacing.maxFps = 0;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: distribute the fractional nanoseconds in 1/fps
- * without allowing integer division to bias the long-term frame period. */
-static uint64_t coduomp_frame_pacing_period_step(void)
-{
-    uint64_t interval = coduompFramePacing.periodNanoseconds;
-
-    coduompFramePacing.remainderAccumulator +=
-        coduompFramePacing.periodRemainder;
-    if (coduompFramePacing.remainderAccumulator >=
-        (uint64_t)coduompFramePacing.maxFps) {
-        coduompFramePacing.remainderAccumulator -=
-            (uint64_t)coduompFramePacing.maxFps;
-        ++interval;
-    }
-
-    return interval;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: choose this frame's start boundary. Recovery from
- * a late frame is limited to one millisecond or one quarter of the requested
- * period, whichever is smaller, preventing a burst of near-zero frames. */
-static uint64_t coduomp_frame_pacing_prepare(int32_t maxFps,
-                                             uint64_t nowNanoseconds)
-{
-    if (coduompFramePacing.initialized == qfalse ||
-        coduompFramePacing.maxFps != maxFps ||
-        nowNanoseconds < coduompFramePacing.lastStartNanoseconds) {
-        coduompFramePacing.initialized = qtrue;
-        coduompFramePacing.maxFps = maxFps;
-        coduompFramePacing.periodNanoseconds =
-            CODUOMP_NANOSECONDS_PER_SECOND / (uint64_t)maxFps;
-        coduompFramePacing.periodRemainder =
-            CODUOMP_NANOSECONDS_PER_SECOND % (uint64_t)maxFps;
-        coduompFramePacing.remainderAccumulator = 0;
-        coduompFramePacing.nextIdealNanoseconds = nowNanoseconds;
-        coduompFramePacing.lastStartNanoseconds = nowNanoseconds;
-        return nowNanoseconds;
-    }
-
-    uint64_t correctionLimit =
-        coduompFramePacing.periodNanoseconds /
-        CODUOMP_FRAME_PACING_CORRECTION_DIVISOR;
-    if (correctionLimit > CODUOMP_FRAME_PACING_MAX_CORRECTION_NSEC)
-        correctionLimit = CODUOMP_FRAME_PACING_MAX_CORRECTION_NSEC;
-
-    const uint64_t earliestStart =
-        coduompFramePacing.lastStartNanoseconds +
-        coduompFramePacing.periodNanoseconds - correctionLimit;
-
-    if (coduompFramePacing.nextIdealNanoseconds < earliestStart)
-        return earliestStart;
-    return coduompFramePacing.nextIdealNanoseconds;
-}
-
-/* NOT_FROM_ORIGINAL_SOURCE: advance the ideal schedule after an actual frame
- * start. Missing a full period discards accumulated debt rather than trying to
- * catch up, while smaller misses remain eligible for bounded phase recovery. */
-static void coduomp_frame_pacing_accept(uint64_t nowNanoseconds)
-{
-    if (nowNanoseconds < coduompFramePacing.lastStartNanoseconds) {
-        coduomp_frame_pacing_disable();
-        return;
-    }
-
-    const uint64_t lateness =
-        nowNanoseconds > coduompFramePacing.nextIdealNanoseconds
-            ? nowNanoseconds - coduompFramePacing.nextIdealNanoseconds
-            : 0;
-
-    coduompFramePacing.lastStartNanoseconds = nowNanoseconds;
-    if (lateness >= coduompFramePacing.periodNanoseconds) {
-        coduompFramePacing.remainderAccumulator = 0;
-        coduompFramePacing.nextIdealNanoseconds =
-            nowNanoseconds + coduomp_frame_pacing_period_step();
-        return;
-    }
-
-    coduompFramePacing.nextIdealNanoseconds +=
-        coduomp_frame_pacing_period_step();
-}
 
 /* Source: CoDUOMP.exe 0x0043c580..0x0043c9e5.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0043c580_0043c9e6.mcode.
@@ -148,11 +39,8 @@ void Com_Frame(void)
     int32_t clientStartTime = 0;
     int32_t frameEndTime = 0;
     int32_t postServerTime = 0;
-    int32_t minimumMsec = COM_FRAME_MINIMUM_MSEC;
+    int32_t minimumMsec = 1;
     int32_t msec;
-    qboolean preciseFramePacing = qfalse;
-    uint64_t preciseFrameTarget = 0;
-    uint64_t preciseFrameNow = 0;
 
     if (setjmp(com_abortFrame) != 0) {
         Com_ErrorCleanup();
@@ -179,34 +67,15 @@ void Com_Frame(void)
     if (com_speeds->integer != 0)
         frameStartTime = (int32_t)Sys_Milliseconds();
 
-    if (com_preciseFramePacing->integer != 0 &&
-        com_maxfps->integer > 0 &&
-        com_maxfps->integer <= CODUOMP_FRAME_PACING_MAX_FPS &&
-        dedicated->integer == 0) {
-        preciseFramePacing = qtrue;
-        preciseFrameNow = coduomp_monotonic_nanoseconds();
-        preciseFrameTarget = coduomp_frame_pacing_prepare(
-            com_maxfps->integer, preciseFrameNow);
-    } else {
-        coduomp_frame_pacing_disable();
-        if (com_maxfps->integer > 0 && dedicated->integer == 0)
-            minimumMsec = 1000 / com_maxfps->integer;
-    }
+    if (com_maxfps->integer > 0 && dedicated->integer == 0)
+        minimumMsec = 1000 / com_maxfps->integer;
 
     do {
         com_frameTime = Com_EventLoop();
         if (comPreviousEventTime > com_frameTime)
             comPreviousEventTime = com_frameTime;
         msec = com_frameTime - comPreviousEventTime;
-        if (preciseFramePacing != qfalse)
-            preciseFrameNow = coduomp_monotonic_nanoseconds();
-    } while (preciseFramePacing != qfalse
-                 ? (preciseFrameNow < preciseFrameTarget ||
-                    msec < COM_FRAME_MINIMUM_MSEC)
-                 : msec < minimumMsec);
-
-    if (preciseFramePacing != qfalse)
-        coduomp_frame_pacing_accept(preciseFrameNow);
+    } while (msec < minimumMsec);
 
     Cbuf_Execute();
     /* NOT_FROM_ORIGINAL_SOURCE: a server-selected mod can be torn down

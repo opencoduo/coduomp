@@ -40,45 +40,6 @@ static uint32_t Sys_RawMilliseconds(void)
 #endif
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: monotonic precision clock for frame scheduling.
- * Engine, snapshot, animation, and renderer timestamps continue to use the
- * original wrapping millisecond clock; this value is never gameplay time. */
-uint64_t coduomp_monotonic_nanoseconds(void)
-{
-#if defined(_WIN32)
-    static uint64_t frequency;
-    LARGE_INTEGER counter;
-
-    if (frequency == 0) {
-        LARGE_INTEGER queriedFrequency;
-
-        if (QueryPerformanceFrequency(&queriedFrequency) == FALSE ||
-            queriedFrequency.QuadPart <= 0) {
-            return (uint64_t)Sys_RawMilliseconds() * UINT64_C(1000000);
-        }
-        frequency = (uint64_t)queriedFrequency.QuadPart;
-    }
-    if (QueryPerformanceCounter(&counter) == FALSE || counter.QuadPart < 0) {
-        return (uint64_t)Sys_RawMilliseconds() * UINT64_C(1000000);
-    }
-
-    const uint64_t ticks = (uint64_t)counter.QuadPart;
-    const uint64_t seconds = ticks / frequency;
-    const uint64_t remainder = ticks % frequency;
-
-    return seconds * UINT64_C(1000000000) +
-           remainder * UINT64_C(1000000000) / frequency;
-#else
-    struct timespec now;
-
-    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
-        return (uint64_t)Sys_RawMilliseconds() * UINT64_C(1000000);
-    }
-    return (uint64_t)now.tv_sec * UINT64_C(1000000000) +
-           (uint64_t)now.tv_nsec;
-#endif
-}
-
 /* Source: CoDUOMP.exe 0x0046dff0..0x0046e01b.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0046dff0_0046e01b.mcode.
  * Name: exact same-module Mac symbol Sys_Milliseconds. */

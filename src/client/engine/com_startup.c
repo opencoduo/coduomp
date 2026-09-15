@@ -582,10 +582,6 @@ void Com_Init(char *commandLine)
         "com_maxfps",
         coduomp_is_apple_silicon() != qfalse ? "250" : "85",
         CVAR_ARCHIVE);
-    /* NOT_FROM_ORIGINAL_SOURCE: improved deadline scheduler with an archived
-     * compatibility switch for restoring the stock frame limiter. */
-    com_preciseFramePacing =
-        Cvar_Get("com_preciseFramePacing", "1", CVAR_ARCHIVE);
     com_developer =
         Cvar_Get("developer", "0", CVAR_TEMP);
     com_developerScript =
