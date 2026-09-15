@@ -252,21 +252,25 @@ void CL_BeginDownload(const char *localName, const char *remoteName)
     if (coduo_compat_path_is_safe_relative(localName) == qfalse ||
         (authorizedUpdate == qfalse &&
          coduo_compat_path_is_pk3(localName) == qfalse)) {
-        Com_Error(
-            ERR_DROP,
-            "Refusing invalid local download path '%s' for remote '%s'\n",
+        Com_Printf(
+            "Invalid local download path '%s' for remote '%s'\n",
             localName != NULL ? localName : "(null)",
             remoteName != NULL ? remoteName : "(null)");
+        Com_Error(
+            ERR_DROP,
+            "Refusing invalid download path\n");
         return;
     }
     if (coduo_compat_path_is_safe_relative(remoteName) == qfalse ||
         (authorizedUpdate == qfalse &&
          coduo_compat_path_is_pk3(remoteName) == qfalse)) {
-        Com_Error(
-            ERR_DROP,
-            "Refusing invalid remote download path '%s' for local '%s'\n",
+        Com_Printf(
+            "Invalid remote download path '%s' for local '%s'\n",
             remoteName != NULL ? remoteName : "(null)",
             localName != NULL ? localName : "(null)");
+        Com_Error(
+            ERR_DROP,
+            "Refusing invalid download path\n");
         return;
     }
 
