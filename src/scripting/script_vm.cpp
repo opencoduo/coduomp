@@ -1392,16 +1392,18 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
             case SCRIPT_OP_BIT_AND:
             case SCRIPT_OP_SHIFT_LEFT:
             case SCRIPT_OP_SHIFT_RIGHT: {
-                VariableValue *left = stackTop - 1;
-                if (CastWeakerPair(left, stackTop) == qfalse) {
+                /* Consume the right operand before conversion can raise an error. */
+                VariableValue *rightValue = stackTop;
+                VariableValue *left = --stackTop;
+                if (CastWeakerPair(left, rightValue) == qfalse) {
                     ScriptRuntime_RaiseError();
                 }
                 if (left->type != SCRIPT_VAR_INT) {
-                    UnmatchingTypesError(left, stackTop);
+                    UnmatchingTypesError(left, rightValue);
                     ScriptRuntime_RaiseError();
                 }
                 uint32_t leftValue = (uint32_t)left->payload;
-                uint32_t right = (uint32_t)stackTop->payload;
+                uint32_t right = (uint32_t)rightValue->payload;
                 switch (opcode) {
                 case SCRIPT_OP_BIT_OR:
                     left->payload = ScriptInterpreter_U32Payload(leftValue | right);
@@ -1425,7 +1427,6 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 default:
                     break;
                 }
-                stackTop = left;
                 break;
             }
 
@@ -1525,15 +1526,17 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
             case SCRIPT_OP_GREATER:
             case SCRIPT_OP_LESS_EQUAL:
             case SCRIPT_OP_GREATER_EQUAL: {
-                VariableValue *left = stackTop - 1;
-                if (CastWeakerPair(left, stackTop) == qfalse) {
+                /* Consume the right operand before conversion can raise an error. */
+                VariableValue *rightValue = stackTop;
+                VariableValue *left = --stackTop;
+                if (CastWeakerPair(left, rightValue) == qfalse) {
                     ScriptRuntime_RaiseError();
                 }
 
                 qboolean result = qfalse;
                 if (left->type == SCRIPT_VAR_FLOAT) {
                     float lhs = ScriptInterpreter_PayloadFloat(left->payload);
-                    float rhs = ScriptInterpreter_PayloadFloat(stackTop->payload);
+                    float rhs = ScriptInterpreter_PayloadFloat(rightValue->payload);
                     if (opcode == SCRIPT_OP_LESS) {
                         result = lhs < rhs ? qtrue : qfalse;
                     } else if (opcode == SCRIPT_OP_GREATER) {
@@ -1545,7 +1548,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     }
                 } else if (left->type == SCRIPT_VAR_INT) {
                     int32_t lhs = (int32_t)left->payload;
-                    int32_t rhs = (int32_t)stackTop->payload;
+                    int32_t rhs = (int32_t)rightValue->payload;
                     if (opcode == SCRIPT_OP_LESS) {
                         result = lhs < rhs ? qtrue : qfalse;
                     } else if (opcode == SCRIPT_OP_GREATER) {
@@ -1556,12 +1559,11 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                         result = rhs <= lhs ? qtrue : qfalse;
                     }
                 } else {
-                    UnmatchingTypesError(left, stackTop);
+                    UnmatchingTypesError(left, rightValue);
                     ScriptRuntime_RaiseError();
                 }
                 left->type = SCRIPT_VAR_INT;
                 left->payload = result;
-                stackTop = left;
                 break;
             }
 
@@ -1570,14 +1572,16 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
             case SCRIPT_OP_MULTIPLY:
             case SCRIPT_OP_DIVIDE:
             case SCRIPT_OP_MODULO: {
-                VariableValue *left = stackTop - 1;
-                if (CastWeakerPair(left, stackTop) == qfalse) {
+                /* Consume the right operand before conversion can raise an error. */
+                VariableValue *rightValue = stackTop;
+                VariableValue *left = --stackTop;
+                if (CastWeakerPair(left, rightValue) == qfalse) {
                     ScriptRuntime_RaiseError();
                 }
 
                 if (left->type == SCRIPT_VAR_INT) {
                     int32_t lhs = (int32_t)left->payload;
-                    int32_t rhs = (int32_t)stackTop->payload;
+                    int32_t rhs = (int32_t)rightValue->payload;
                     switch (opcode) {
                     case SCRIPT_OP_PLUS:
                         left->payload = ScriptInterpreter_U32Payload(
@@ -1622,7 +1626,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     }
                 } else if (left->type == SCRIPT_VAR_FLOAT) {
                     float lhs = ScriptInterpreter_PayloadFloat(left->payload);
-                    float rhs = ScriptInterpreter_PayloadFloat(stackTop->payload);
+                    float rhs = ScriptInterpreter_PayloadFloat(rightValue->payload);
                     float result = 0.0f;
                     switch (opcode) {
                     case SCRIPT_OP_PLUS:
@@ -1642,7 +1646,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                         result = lhs / rhs;
                         break;
                     case SCRIPT_OP_MODULO:
-                        UnmatchingTypesError(left, stackTop);
+                        UnmatchingTypesError(left, rightValue);
                         ScriptRuntime_RaiseError();
                         break;
                     default:
@@ -1653,7 +1657,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                            (opcode == SCRIPT_OP_PLUS ||
                             opcode == SCRIPT_OP_MINUS)) {
                     float *leftVector = ScriptInterpreter_Vector(left->payload);
-                    float *rightVector = ScriptInterpreter_Vector(stackTop->payload);
+                    float *rightVector = ScriptInterpreter_Vector(rightValue->payload);
                     float *result = AllocVector();
                     uintptr_t resultPayload =
                         (uintptr_t)result;
@@ -1667,22 +1671,21 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
 
                     RemoveRefToVector((const float *)left->payload);
                     RemoveRefToVector(
-                        (const float *)stackTop->payload);
+                        (const float *)rightValue->payload);
                     left->payload = resultPayload;
                 } else if (opcode == SCRIPT_OP_PLUS &&
                            left->type == SCRIPT_VAR_STRING) {
                     uint16_t leftString =
                         (uint16_t)left->payload;
                     uint16_t rightString =
-                        (uint16_t)stackTop->payload;
+                        (uint16_t)rightValue->payload;
                     left->payload = VM_ConcatenateStrings(left);
                     SL_RemoveRefToString(leftString);
                     SL_RemoveRefToString(rightString);
                 } else {
-                    UnmatchingTypesError(left, stackTop);
+                    UnmatchingTypesError(left, rightValue);
                     ScriptRuntime_RaiseError();
                 }
-                stackTop = left;
                 break;
             }
 

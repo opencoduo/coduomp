@@ -916,12 +916,8 @@ void IncInParam(void)
     ++script_valueStackTop;
     ++script_valueStackDepth;
     if (script_valueStackTop > script_valueStackLimit) {
-#if defined(WINDOWS_BEHAVIOR)
         Com_Error(ERR_DROP,
                   "\x15Internal script stack overflow");
-#else
-        Com_Error(ERR_DROP, "Internal script stack overflow");
-#endif
     }
 }
 
