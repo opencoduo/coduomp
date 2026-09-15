@@ -118,6 +118,52 @@ make client-linux32-package
 make server32
 ```
 
+### Selecting Linux compilers
+
+Compiler commands are configurable Make variables. The ordinary native
+`client` target uses `CC` and `CXX`:
+
+```sh
+make client \
+  BUILD_DIR=.workbench/build/client-gcc16 \
+  CC=gcc-16 CXX=g++-16
+```
+
+The explicit architecture targets use `LINUX64_CC`/`LINUX64_CXX` or
+`LINUX32_CC`/`LINUX32_CXX`. For example, build complete packages with a
+particular GCC version using:
+
+```sh
+make client-linux64-package \
+  BUILD_DIR=.workbench/build/linux-x86_64-gcc16 \
+  LINUX64_CC=gcc-16 LINUX64_CXX=g++-16
+
+make client-linux32-package \
+  BUILD_DIR=.workbench/build/linux-i686-gcc16 \
+  LINUX32_CC=gcc-16 LINUX32_CXX=g++-16
+```
+
+Use a fresh `BUILD_DIR` when changing compilers or important compiler flags;
+Make does not otherwise know that existing objects were produced by a
+different toolchain. Compiler variables may also name absolute paths or
+compiler-wrapper commands.
+
+Faithful x86 and x86-64 builds require a GCC-compatible compiler that supports
+the x87 options selected by the build. Clang does not implement
+`-mfpmath=387`, so the default fidelity policy rejects it for these targets.
+`CODUO_FP_FAITHFUL=relaxed` permits such a build for portability work, but its
+floating-point behavior is not the validated faithful configuration.
+
+The multi-platform `release-builds` target uses the unversioned compiler
+commands available in the configured remote host's `PATH`; local `CC`,
+`LINUX64_CC`, and MinGW compiler selections are not forwarded to that remote
+build. It is an architecture/platform matrix, not a compiler-version matrix.
+Release maintainers should verify and provision the remote compiler versions
+explicitly, and should test new compiler diagnostics in a separate strict
+`-Werror` build before promoting a new release toolchain. Compiler upgrades
+also require the normal floating-point-fidelity, package, and Windows import
+audits.
+
 ### Windows
 
 The Windows targets use GNU Make and GCC rather than Visual Studio. Install
