@@ -7,6 +7,20 @@ The public tree contains two independently useful target families:
 - `build-mk/game.mk` builds the server game module from `src/server/game/` and
   its shared BG/qcommon/math dependencies.
 
+## CD-key Authorization
+
+On `master`, dedicated and listen servers skip external CD-key authorization
+by default. Dedicated-server builds can enable authorization with `AUTH=1`:
+
+```sh
+make server64 AUTH=1
+make server32 AUTH=1
+```
+
+When invoking `build-mk/server.mk` directly, set
+`CODUO_DISABLE_SERVER_AUTH=0` to enable authorization. The `stock` branch keeps
+its original authorization defaults.
+
 ## Requirements
 
 - `make`
@@ -64,13 +78,13 @@ make -f build-mk/server.mk shared-check-link CODUO_FP_FAITHFUL=relaxed
 For a native dedicated-server executable:
 
 ```sh
-make engine64
+make server-engine64
 ```
 
 Output:
 
 ```text
-build/server/linux-x86_64-auth/coduo_lnxded_recovered
+.workbench/build/server/linux-x86_64-noauth/coduo_lnxded_recovered
 ```
 
 ## Windows Dedicated Server

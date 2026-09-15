@@ -42,7 +42,8 @@ static const char sv_authorizeServerName[] =
     "coduoauthorize.activision.com";
 
 #ifndef CODUO_DISABLE_SERVER_AUTH
-#define CODUO_DISABLE_SERVER_AUTH 0
+/* NOT_FROM_ORIGINAL_SOURCE: dedicated and listen servers skip external CD-key authorization by default. */
+#define CODUO_DISABLE_SERVER_AUTH 1
 #endif
 
 /*

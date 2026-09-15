@@ -22,7 +22,7 @@ WINDOWS_I386_TARGET := $(WINDOWS_I386_BUILD_DIR)/coduo_dedicated_recovered.exe
 WINDOWS_I686_BUILD_DIR ?= .workbench/build/server/windows-i686
 WINDOWS_I686_TARGET := $(WINDOWS_I686_BUILD_DIR)/coduo_dedicated_recovered.exe
 CODUO_ENABLE_PUNKBUSTER ?= 0
-CODUO_DISABLE_SERVER_AUTH ?= 0
+CODUO_DISABLE_SERVER_AUTH ?= 1
 QCOMMON_DIR := src/qcommon
 QCOMMON_CSRCS := $(LAYOUT_QCOMMON_C_SOURCES)
 CRT_COMPAT_DIR := src/compat/crt
@@ -309,7 +309,7 @@ help:
 	@printf '%s\n' \
 	  'Targets: check native64-check native64-shared native64-exe native-macos-exe shared-check-link exe exe-i386 windows-i386 windows-i686 clean' \
 	  'Options: CODUO_ENABLE_PUNKBUSTER=1 compiles PunkBuster recovery code.' \
-	  '         CODUO_DISABLE_SERVER_AUTH=1 disables external server authorization.' \
+	  '         CODUO_DISABLE_SERVER_AUTH=1 (default) skips external CD-key authorization; 0 enables it.' \
 	  '         CODUO_FP_FAITHFUL=auto|strict|relaxed controls x87 float faithfulness;' \
 	  '           native-macos-exe selects relaxed plus EMULATE_X87=1.' \
 	  '         EMU_X87_BACKEND=softfloat|double selects the emulated-site backend.' \

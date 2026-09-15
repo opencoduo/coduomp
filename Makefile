@@ -18,7 +18,7 @@ MINGW64_CXX ?= x86_64-w64-mingw32-g++
 MINGW64_DEP_PREFIX ?=
 WINDOWS_DEP_PREFIX ?=
 MSS32_DLL ?=
-AUTH ?= 1
+AUTH ?= 0
 
 MAKE_JOBS := $(if $(JOBS),-j $(JOBS),)
 HOST_OS := $(shell uname -s)
@@ -428,6 +428,7 @@ help:
 	  '  server-engine64 server-engine32 server-game64 server-game32' \
 	  'Options:' \
 	  '  WORKBENCH_DIR=path BUILD_DIR=path JOBS=N AUTH=1|0' \
+	  '  Server CD-key authorization is disabled by default; AUTH=1 enables it.' \
 	  '  CODUO_FP_FAITHFUL=auto|strict|relaxed' \
 	  '  CODUOMP_RENDERER_GPU_PROFILE=1 builds asynchronous renderer GPU timings' \
 	  '  CLIENT_DATA_PATH=/path/to/retail/root CLIENT_ARGS=...' \
