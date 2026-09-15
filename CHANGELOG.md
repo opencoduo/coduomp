@@ -14,7 +14,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 ### Server browser
 
 - Server and map names are fitted to their columns by rendered pixel width, preventing wide or colored text from overlapping neighboring fields.
-- Server refreshes distinguish human players from bots reported with the conventional 999 ping. The player column shows the human count against the server capacity and appends the bot count in subdued text; remembered bot counts remain stable while later refresh responses arrive.
+- Server refreshes distinguish human players from bots reported with the conventional 999 ping. The player column shows the human count against the server capacity and appends the bot count in subdued text. Learned bot counts persist across client launches, so known servers skip the delayed roster scan on later refreshes.
 - Server-name sorting follows visible names, ignoring color escapes and ordering digits consistently. Final roster updates preserve the selected row and viewport while applying deterministic tie-breaking.
 - Favorites retain their last known or user-supplied hostname when a refresh times out instead of falling back to the numeric address.
 
