@@ -6,6 +6,7 @@ This is a feature-oriented summary of lasting, user-visible differences from the
 
 ### Client
 
+- Suppresses duplicate local-player firing effects caused by prediction replay, including recoil, muzzle flashes, shot sounds and brass; the same filter covers replayed reload and rechamber sounds.
 - Spawn reload animation is fixed, it won't play anymore
 - Local server map list limit increased to 2048
 - Sound Options has independent Effects Volume and Music Volume sliders. The existing `mss_volume` cvar controls effects/SFX, and the new `musicVolume` cvar controls music; there is no separate `sfxVolume` cvar.
