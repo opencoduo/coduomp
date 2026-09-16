@@ -280,16 +280,17 @@ void RE_SetCullDist(float distance)
 qboolean R_BoxBehindPlane(const vec3_t bounds[2],
                           const renderer_dpvs_plane_t *plane)
 {
-    const int32_t xBound =
-        plane->sideOffsets[0] == R_DPVS_SIDE_X_POSITIVE_OFFSET ? 1 : 0;
-    const int32_t yBound =
-        plane->sideOffsets[1] == R_DPVS_SIDE_Y_POSITIVE_OFFSET ? 1 : 0;
-    const int32_t zBound =
-        plane->sideOffsets[2] == R_DPVS_SIDE_Z_POSITIVE_OFFSET ? 1 : 0;
+    const uint8_t *boundsBytes = (const uint8_t *)(const void *)bounds;
+    const float x = *(const float *)(const void *)(
+        boundsBytes + plane->sideOffsets[0]);
+    const float y = *(const float *)(const void *)(
+        boundsBytes + plane->sideOffsets[1]);
+    const float z = *(const float *)(const void *)(
+        boundsBytes + plane->sideOffsets[2]);
     const long double cornerDistance =
-        (long double)plane->normal[2] * bounds[zBound][2] +
-        (long double)plane->normal[1] * bounds[yBound][1] +
-        (long double)plane->normal[0] * bounds[xBound][0];
+        (long double)plane->normal[2] * z +
+        (long double)plane->normal[1] * y +
+        (long double)plane->normal[0] * x;
 
     return cornerDistance < plane->distance ? qtrue : qfalse;
 }
@@ -334,21 +335,20 @@ qboolean R_CullBoxDPVS(const vec3_t bounds[2],
         rendererDpvsCullPlaneLimit = INT32_MAX;
         for (int32_t index = 0; index < planeCount; ++index) {
             const renderer_dpvs_plane_t *plane = &planes[index];
-            const int32_t xBound =
-                plane->sideOffsets[0] == R_DPVS_SIDE_X_POSITIVE_OFFSET
-                    ? 1 : 0;
-            const int32_t yBound =
-                plane->sideOffsets[1] == R_DPVS_SIDE_Y_POSITIVE_OFFSET
-                    ? 1 : 0;
-            const int32_t zBound =
-                plane->sideOffsets[2] == R_DPVS_SIDE_Z_POSITIVE_OFFSET
-                    ? 1 : 0;
+            const uint8_t *boundsBytes =
+                (const uint8_t *)(const void *)bounds;
+            const float x = *(const float *)(const void *)(
+                boundsBytes + plane->sideOffsets[0]);
+            const float y = *(const float *)(const void *)(
+                boundsBytes + plane->sideOffsets[1]);
+            const float z = *(const float *)(const void *)(
+                boundsBytes + plane->sideOffsets[2]);
             /* This inlined PE body evaluates X, Y, then Z; the standalone
              * R_BoxBehindPlane helper uses a different association. */
             const long double cornerDistance =
-                ((long double)plane->normal[0] * bounds[xBound][0] +
-                 (long double)plane->normal[1] * bounds[yBound][1]) +
-                (long double)plane->normal[2] * bounds[zBound][2];
+                ((long double)plane->normal[0] * x +
+                 (long double)plane->normal[1] * y) +
+                (long double)plane->normal[2] * z;
             if (cornerDistance < plane->distance)
                 return qtrue;
         }
@@ -1105,16 +1105,18 @@ void R_AddStaticModelDPVS(renderer_static_model_t *model,
         rendererDpvsCullPlaneLimit = INT32_MAX;
         for (int32_t index = 0; index < planeCount; ++index) {
             const renderer_dpvs_plane_t *plane = &planes[index];
-            const int32_t xBound =
-                plane->sideOffsets[0] == R_DPVS_SIDE_X_POSITIVE_OFFSET ? 1 : 0;
-            const int32_t yBound =
-                plane->sideOffsets[1] == R_DPVS_SIDE_Y_POSITIVE_OFFSET ? 1 : 0;
-            const int32_t zBound =
-                plane->sideOffsets[2] == R_DPVS_SIDE_Z_POSITIVE_OFFSET ? 1 : 0;
+            const uint8_t *boundsBytes =
+                (const uint8_t *)(const void *)bounds;
+            const float x = *(const float *)(const void *)(
+                boundsBytes + plane->sideOffsets[0]);
+            const float y = *(const float *)(const void *)(
+                boundsBytes + plane->sideOffsets[1]);
+            const float z = *(const float *)(const void *)(
+                boundsBytes + plane->sideOffsets[2]);
             const long double cornerDistance =
-                ((long double)plane->normal[0] * bounds[xBound][0] +
-                 (long double)plane->normal[1] * bounds[yBound][1]) +
-                (long double)plane->normal[2] * bounds[zBound][2];
+                ((long double)plane->normal[0] * x +
+                 (long double)plane->normal[1] * y) +
+                (long double)plane->normal[2] * z;
             if (cornerDistance < plane->distance)
                 return;
         }
