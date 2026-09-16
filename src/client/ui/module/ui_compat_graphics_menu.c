@@ -438,8 +438,10 @@ void ui_compat_refresh_graphics_resolution(void)
 void ui_compat_extend_graphics_menu(void)
 {
     static const char stageCompatibilityCvars[] =
+        "exec \"setfromcvar ui_r_display r_display\"; "
         "exec \"setfromcvar ui_r_aspectMode r_aspectMode\"; ";
     static const char applyCompatibilityCvars[] =
+        "exec \"setfromcvar r_display ui_r_display\"; "
         "exec \"setfromcvar r_aspectMode ui_r_aspectMode\"; ";
     static const ui_compat_multi_value_t displayModes[] = {
         { "@CODUOMP_GRAPHICS_WINDOWED", 0.0f },
@@ -456,13 +458,18 @@ void ui_compat_extend_graphics_menu(void)
         Menus_FindByName("vid_restart_popmenu_listen");
     itemDef_t *resolutionItem;
     itemDef_t *displayModeItem;
+    itemDef_t *monitorItem;
     itemDef_t *aspectItem;
     itemDef_t *gammaItem;
     itemDef_t *fovItem;
     editFieldDef_t *fovRange;
     ui_compat_multi_value_t resolutionModes[
         sizeof(uiCompatResolutions) / sizeof(uiCompatResolutions[0])];
+    ui_compat_multi_value_t monitorValues[MAX_MULTI_CVARS];
+    static char monitorLabels[MAX_MULTI_CVARS][32];
     int32_t resolutionModeCount = 0;
+    int32_t monitorCount =
+        (int32_t)trap_Cvar_VariableValue("r_displayCount");
     int32_t displayModeIndex;
     int32_t gammaLastIndex;
     const uint32_t availableModes = (uint32_t)coduo_crt_atoi(
@@ -481,8 +488,20 @@ void ui_compat_extend_graphics_menu(void)
     if (resolutionItem == NULL || displayModeItem == NULL ||
         gammaItem == NULL || gammaItem->typeValidated != ITEM_TYPE_SLIDER ||
         gammaItem->typeData == NULL ||
-        menu->itemCount > MAX_MENUITEMS - 2) {
+        menu->itemCount > MAX_MENUITEMS - 3) {
         return;
+    }
+    if (monitorCount < 1)
+        monitorCount = 1;
+    if (monitorCount > MAX_MULTI_CVARS)
+        monitorCount = MAX_MULTI_CVARS;
+    for (int32_t index = 0; index < monitorCount; ++index) {
+        Com_sprintf(
+            monitorLabels[index], sizeof(monitorLabels[index]),
+            "%s %d", UI_SafeTranslateString("CODUOMP_GRAPHICS_DISPLAY"),
+            index + 1);
+        monitorValues[index].label = monitorLabels[index];
+        monitorValues[index].value = (float)index;
     }
     for (int32_t index = gammaLastIndex + 1;
          index < menu->itemCount; ++index) {
@@ -531,24 +550,36 @@ void ui_compat_extend_graphics_menu(void)
             applyCompatibilityCvars, listenRestartMenu->onESC);
     }
 
-    /* Make one control row below Fullscreen, preserving the stock Apply and
+    /* Make two control rows below Fullscreen, preserving the stock Apply and
      * language rows at the bottom of the panel. */
     for (int32_t index = 0; index < menu->itemCount; ++index) {
         itemDef_t *const item = menu->items[index];
 
         if (item->window.rectClient.y >= 110.0f &&
             item->window.rectClient.y <= 185.0f) {
-            item->window.rectClient.y += 15.0f;
+            item->window.rectClient.y += 30.0f;
         } else if (item->window.rectClient.y > 185.0f &&
                    item->window.rectClient.y <= 200.0f) {
-            item->window.rectClient.y += 30.0f;
+            item->window.rectClient.y += 45.0f;
         }
     }
+
+    monitorItem = UI_Alloc(sizeof(*monitorItem));
+    memcpy(monitorItem, displayModeItem, sizeof(*monitorItem));
+    monitorItem->window.name = String_Alloc("coduomp_monitor");
+    monitorItem->window.rectClient.y = 110.0f;
+    monitorItem->text = String_Alloc("@CODUOMP_GRAPHICS_MONITOR");
+    monitorItem->cvar = String_Alloc("ui_r_display");
+    monitorItem->action =
+        String_Alloc("play \"mouse_click\" ; show graphicsapply ; ");
+    monitorItem->parent = menu;
+    ui_compat_set_numeric_multi(
+        monitorItem, monitorValues, monitorCount);
 
     aspectItem = UI_Alloc(sizeof(*aspectItem));
     memcpy(aspectItem, displayModeItem, sizeof(*aspectItem));
     aspectItem->window.name = String_Alloc("coduomp_aspect_mode");
-    aspectItem->window.rectClient.y = 110.0f;
+    aspectItem->window.rectClient.y = 125.0f;
     aspectItem->text =
         String_Alloc("@CODUOMP_GRAPHICS_GAMEPLAY_VIEW");
     aspectItem->cvar = String_Alloc("ui_r_aspectMode");
@@ -569,7 +600,7 @@ void ui_compat_extend_graphics_menu(void)
     fovRange->minVal = uiCompatMinimumFov;
     fovRange->maxVal = uiCompatMaximumFov;
     fovItem->window.name = String_Alloc("coduomp_field_of_view");
-    fovItem->window.rectClient.y = 215.0f;
+    fovItem->window.rectClient.y = 230.0f;
     fovItem->text = String_Alloc("@CODUOMP_GRAPHICS_FIELD_OF_VIEW");
     fovItem->cvar = String_Alloc("cg_fov");
     fovItem->cvarTest = NULL;
@@ -590,6 +621,13 @@ void ui_compat_extend_graphics_menu(void)
         menu->items[index] = menu->items[index - 1];
     }
     menu->items[displayModeIndex + 1] = aspectItem;
+    menu->itemCount += 1;
+
+    for (int32_t index = menu->itemCount;
+         index > displayModeIndex + 1; --index) {
+        menu->items[index] = menu->items[index - 1];
+    }
+    menu->items[displayModeIndex + 1] = monitorItem;
     menu->itemCount += 1;
     uiCompatPreviousGraphicsAspectValid = qfalse;
     Menu_UpdatePosition(menu);

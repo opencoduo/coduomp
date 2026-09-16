@@ -82,6 +82,9 @@ int32_t rendererWin32DesktopWidth;
 int32_t rendererWin32DesktopHeight;
 renderer_win32_window_proc_t rendererWin32WindowProcedure;
 qboolean rendererWin32FullscreenModeSet;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: selected SDL display used by the
+ * mode-query callback and native window creation during one renderer start. */
+static int32_t coduompRendererDisplayIndex;
 #if defined(_WIN32)
 static renderer_pixel_format_descriptor_t rendererWin32PixelFormat;
 static qboolean rendererWin32WindowClassRegistered;
@@ -563,9 +566,16 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
     return qtrue;
 #else
     (void)driverName;
-    return CoduoSDL_CreateOpenGLWindow(
+    const qboolean created = CoduoSDL_CreateOpenGLWindow(
         width, height, colorBits, r_depthbits->integer,
-        r_stencilbits->integer, windowMode);
+        r_stencilbits->integer, windowMode,
+        coduompRendererDisplayIndex, r_displayRefresh->integer);
+    if (created == qfalse) {
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: SDL window setup failed: %s\n",
+                  coduomp_sdl_error_compat());
+    }
+    return created;
 #endif
 }
 
@@ -664,7 +674,7 @@ cleanup:
 }
 #endif
 
-/* NOT_FROM_ORIGINAL_SOURCE: resolves the active primary output's automatic
+/* NOT_FROM_ORIGINAL_SOURCE: resolves the selected output's automatic
  * hardware-sized mode before either platform enters fixed-mode setup. */
 static qboolean coduomp_glw_get_native_display_mode_compat(
     int32_t *width, int32_t *height, float *aspect, int32_t *refreshRate)
@@ -676,6 +686,7 @@ static qboolean coduomp_glw_get_native_display_mode_compat(
     }
 #else
     if (coduomp_sdl_get_native_display_mode_compat(
+            coduompRendererDisplayIndex,
             width, height, refreshRate) == qfalse) {
         return qfalse;
     }
@@ -685,7 +696,7 @@ static qboolean coduomp_glw_get_native_display_mode_compat(
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: tests a fixed renderer preset against the modes
- * exposed by the primary display on the current platform. */
+ * exposed by the selected display on the current platform. */
 static qboolean coduomp_glw_display_mode_available_compat(int32_t width,
                                                           int32_t height)
 {
@@ -712,7 +723,8 @@ static qboolean coduomp_glw_display_mode_available_compat(int32_t width,
         }
     }
 #else
-    return coduomp_sdl_display_mode_available_compat(width, height);
+    return coduomp_sdl_display_mode_available_compat(
+        coduompRendererDisplayIndex, width, height);
 #endif
 }
 
@@ -755,6 +767,55 @@ renderer_mode_set_result_t GLW_SetMode(
     const char *driverName, int32_t mode, int32_t colorBits,
     int32_t windowMode)
 {
+#if defined(_WIN32)
+    const int32_t displayCount = 1;
+    coduompRendererDisplayIndex = 0;
+#else
+    const int32_t displayCount =
+        coduomp_sdl_get_display_count_compat();
+    coduomp_sdl_display_info_t displayInfo;
+
+    coduompRendererDisplayIndex = r_display->integer;
+    if (coduompRendererDisplayIndex < 0 ||
+        coduompRendererDisplayIndex >= displayCount) {
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: display %d is unavailable; using display 1\n",
+                  coduompRendererDisplayIndex + 1);
+        coduompRendererDisplayIndex = 0;
+    }
+#endif
+    ri.Cvar_Set("r_displayCount", va("%d", displayCount));
+    ri.Cvar_Set("r_currentDisplayIndex",
+                va("%d", coduompRendererDisplayIndex));
+#if !defined(_WIN32)
+    if (coduomp_sdl_get_display_info_compat(
+            coduompRendererDisplayIndex, &displayInfo) != qfalse) {
+        ri.Cvar_Set("r_currentDisplayLogicalWidth",
+                    va("%d", displayInfo.logicalWidth));
+        ri.Cvar_Set("r_currentDisplayLogicalHeight",
+                    va("%d", displayInfo.logicalHeight));
+        ri.Cvar_Set("r_currentDisplayBackingWidth",
+                    va("%d", displayInfo.backingWidth));
+        ri.Cvar_Set("r_currentDisplayBackingHeight",
+                    va("%d", displayInfo.backingHeight));
+        ri.Cvar_Set("r_currentDisplayBuiltin",
+                    displayInfo.builtin != qfalse ? "1" : "0");
+        ri.Printf(
+            R_PRINT_ALL,
+            "...display %d/%d: logical %dx%d, backing %dx%d, native %dx%d%s\n",
+            coduompRendererDisplayIndex + 1, displayCount,
+            displayInfo.logicalWidth, displayInfo.logicalHeight,
+            displayInfo.backingWidth, displayInfo.backingHeight,
+            displayInfo.nativeWidth, displayInfo.nativeHeight,
+            displayInfo.builtin != qfalse ? ", built-in" : ", external");
+    } else {
+        ri.Cvar_Set("r_currentDisplayLogicalWidth", "0");
+        ri.Cvar_Set("r_currentDisplayLogicalHeight", "0");
+        ri.Cvar_Set("r_currentDisplayBackingWidth", "0");
+        ri.Cvar_Set("r_currentDisplayBackingHeight", "0");
+        ri.Cvar_Set("r_currentDisplayBuiltin", "0");
+    }
+#endif
     int32_t currentDisplayWidth = 0;
     int32_t currentDisplayHeight = 0;
     int32_t currentDisplayRefreshRate = 0;
@@ -911,6 +972,7 @@ renderer_mode_set_result_t GLW_SetMode(
     }
 
     CoduoSDL_GetDesktopMode(
+        coduompRendererDisplayIndex,
         &rendererWin32DesktopWidth, &rendererWin32DesktopHeight,
         &refreshRate);
     if (mode == R_CURRENT_DISPLAY_VIDEO_MODE &&
@@ -942,22 +1004,16 @@ renderer_mode_set_result_t GLW_SetMode(
             : (windowMode == R_WINDOW_MODE_BORDERLESS ? "B" : "W"));
     int32_t outputWindowWidth = glConfig.vidWidth;
     int32_t outputWindowHeight = glConfig.vidHeight;
-#if defined(__APPLE__)
-    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fullscreen-desktop
-     * ignores the requested window dimensions, but the SDL platform layer
-     * uses the selected render dimensions to choose a render-sized or Retina
-     * drawable. */
-#else
-    if (windowMode == R_WINDOW_MODE_FULLSCREEN) {
-        outputWindowWidth = currentDisplayWidth;
-        outputWindowHeight = currentDisplayHeight;
-    }
-#endif
     if (GLW_CreateWindow(
             driverName, outputWindowWidth, outputWindowHeight,
             colorBits, windowMode) == qfalse) {
         return R_MODE_SET_INVALID;
     }
+
+    CoduoSDL_GetDesktopMode(
+        coduompRendererDisplayIndex,
+        &rendererWin32DesktopWidth, &rendererWin32DesktopHeight,
+        &refreshRate);
 
     int32_t outputDrawableWidth;
     int32_t outputDrawableHeight;

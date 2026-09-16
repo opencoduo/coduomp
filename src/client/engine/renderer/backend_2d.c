@@ -117,7 +117,7 @@ typedef struct coduomp_output_presentation_s {
 } coduomp_output_presentation_t;
 
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: separates the resolution rendered by
- * the game from the hardware-native fullscreen surface that presents it. */
+ * the game from the realized fullscreen drawable that presents it. */
 static coduomp_output_presentation_t coduompOutputPresentation;
 
 /* NOT_FROM_ORIGINAL_SOURCE: records the drawable and selected render sizes.

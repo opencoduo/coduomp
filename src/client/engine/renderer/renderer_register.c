@@ -56,6 +56,7 @@ cvar_t *r_ignorehwgamma;
 cvar_t *r_gammaMode;
 cvar_t *r_mode;
 cvar_t *r_fullscreen;
+cvar_t *r_display;
 cvar_t *r_aspectMode;
 cvar_t *r_hiresReticles;
 cvar_t *r_customwidth;
@@ -308,6 +309,13 @@ void R_Register(void)
     r_mode = ri.Cvar_Get("r_mode", "3", CVAR_ARCHIVE | CVAR_LATCH);
     r_fullscreen =
         ri.Cvar_Get("r_fullscreen", "1", CVAR_ARCHIVE | CVAR_LATCH);
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): select the SDL display
+     * that owns windowed, exclusive-fullscreen, and borderless presentation.
+     * The platform layer validates the archived index against the active
+     * display count on every renderer start. */
+    r_display =
+        ri.Cvar_Get("r_display", "0", CVAR_ARCHIVE | CVAR_LATCH);
+    AssertCvarRange(r_display, 0.0f, 31.0f, qtrue);
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): zero uses the native
      * display aspect; one presents the complete renderer in a fitted 4:3
      * viewport with black bars. Keep the cgame and renderer presentation
@@ -318,10 +326,17 @@ void R_Register(void)
     /* NOT_FROM_ORIGINAL_SOURCE: platform-discovered renderer-mode bits for
      * the separately linked compatibility UI. */
     (void)ri.Cvar_Get("r_availableModes", "0", CVAR_ROM);
-    /* NOT_FROM_ORIGINAL_SOURCE: native primary-display dimensions let the
+    /* NOT_FROM_ORIGINAL_SOURCE: native selected-display dimensions let the
      * separately linked UI resolve the staged automatic mode before Apply. */
     (void)ri.Cvar_Get("r_currentDisplayWidth", "0", CVAR_ROM);
     (void)ri.Cvar_Get("r_currentDisplayHeight", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_displayCount", "1", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayIndex", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayLogicalWidth", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayLogicalHeight", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayBackingWidth", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayBackingHeight", "0", CVAR_ROM);
+    (void)ri.Cvar_Get("r_currentDisplayBuiltin", "0", CVAR_ROM);
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): edge-preserving
      * load-time upscale of gfx/reticle/ images; latched because the
      * transform runs when images load. */

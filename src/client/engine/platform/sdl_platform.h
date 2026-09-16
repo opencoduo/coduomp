@@ -7,21 +7,41 @@
 
 #if !defined(_WIN32)
 
+typedef struct coduomp_sdl_display_info_s {
+    int32_t logicalWidth;
+    int32_t logicalHeight;
+    int32_t backingWidth;
+    int32_t backingHeight;
+    int32_t nativeWidth;
+    int32_t nativeHeight;
+    int32_t refreshRate;
+    qboolean builtin;
+} coduomp_sdl_display_info_t;
+
 qboolean CoduoSDL_Init(void);
 void CoduoSDL_Shutdown(void);
 qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
                                      int32_t colorBits, int32_t depthBits,
                                      int32_t stencilBits,
-                                     int32_t windowMode);
+                                     int32_t windowMode,
+                                     int32_t displayIndex,
+                                     int32_t refreshRate);
 void CoduoSDL_DestroyOpenGLWindow(void);
-void CoduoSDL_GetDesktopMode(int32_t *width, int32_t *height,
+int32_t coduomp_sdl_get_display_count_compat(void);
+qboolean coduomp_sdl_get_display_info_compat(
+    int32_t displayIndex, coduomp_sdl_display_info_t *displayInfo);
+void CoduoSDL_GetDesktopMode(int32_t displayIndex,
+                             int32_t *width, int32_t *height,
                              int32_t *refreshRate);
-qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
+qboolean coduomp_sdl_get_native_display_mode_compat(int32_t displayIndex,
+                                                     int32_t *width,
                                                      int32_t *height,
                                                      int32_t *refreshRate);
-qboolean coduomp_sdl_display_mode_available_compat(int32_t width,
+qboolean coduomp_sdl_display_mode_available_compat(int32_t displayIndex,
+                                                    int32_t width,
                                                     int32_t height);
-void coduomp_sdl_window_size_for_drawable_compat(int32_t *width,
+void coduomp_sdl_window_size_for_drawable_compat(int32_t displayIndex,
+                                                  int32_t *width,
                                                   int32_t *height);
 void CoduoSDL_GetFramebufferSize(int32_t *width, int32_t *height);
 void coduomp_sdl_get_window_size_compat(int32_t *width, int32_t *height);

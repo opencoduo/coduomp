@@ -30,6 +30,8 @@ static const ui_compat_translation_t uiCompatTranslations[] = {
     { "CODUOMP_GRAPHICS_FULLSCREEN", "Fullscreen", "Pantalla completa" },
     { "CODUOMP_GRAPHICS_BORDERLESS", "Borderless", "Sin bordes" },
     { "CODUOMP_GRAPHICS_DISPLAY_MODE", "Display Mode", "Modo de pantalla" },
+    { "CODUOMP_GRAPHICS_MONITOR", "Monitor", "Monitor" },
+    { "CODUOMP_GRAPHICS_DISPLAY", "Display", "Pantalla" },
     { "CODUOMP_GRAPHICS_FILL_SCREEN", "Fill Screen (Wider FOV)", "Llenar pantalla (FOV m\341s amplio)" },
     { "CODUOMP_GRAPHICS_LETTERBOX", "Classic 4:3 (Letterboxed)", "4:3 cl\341sico (con barras)" },
     { "CODUOMP_GRAPHICS_GAMEPLAY_VIEW", "Gameplay View", "Vista de juego" },

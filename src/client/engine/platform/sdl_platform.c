@@ -144,7 +144,9 @@ char *coduomp_sdl_get_clipboard_text_compat(void)
 qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
                                      int32_t colorBits, int32_t depthBits,
                                      int32_t stencilBits,
-                                     int32_t windowMode)
+                                     int32_t windowMode,
+                                     int32_t displayIndex,
+                                     int32_t refreshRate)
 {
     enum {
         CODUO_WINDOW_MODE_FULLSCREEN = 1,
@@ -153,31 +155,22 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
     const char *windowTitle = "Call of Duty: United Offensive Multiplayer";
     uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
     qboolean allowHighDpi = qtrue;
+    SDL_DisplayMode fullscreenMode;
 
     if (CoduoSDL_Init() == qfalse)
         return qfalse;
 
 #if defined(__APPLE__)
-    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN) {
-        CGDisplayModeRef currentMode =
-            CGDisplayCopyDisplayMode(CGMainDisplayID());
-
-        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): when the selected
-         * render size already matches the macOS desktop's logical dimensions,
-         * a Retina drawable only makes SDL allocate and present a four-times-
-         * larger surface after the renderer has scaled the same frame into it.
-         * Use a render-sized fullscreen drawable and let WindowServer perform
-         * the final backing-scale mapping. Keep Retina enabled for native-pixel
-         * and differently sized modes so their presentation path is unchanged. */
-        if (currentMode != NULL) {
-            allowHighDpi =
-                width != (int32_t)CGDisplayModeGetWidth(currentMode) ||
-                height != (int32_t)CGDisplayModeGetHeight(currentMode)
-                    ? qtrue
-                    : qfalse;
-            CGDisplayModeRelease(currentMode);
-        }
-    }
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fullscreen drawables
+     * use the selected game's pixel dimensions. Enabling Retina here would
+     * silently replace that surface with the display's scaled backing size,
+     * which can be substantially larger than both the selected mode and the
+     * physical panel. Windowed mode retains Retina and converts its requested
+     * drawable pixels to screen coordinates below. */
+    allowHighDpi = windowMode == CODUO_WINDOW_MODE_FULLSCREEN ||
+                           windowMode == CODUO_WINDOW_MODE_BORDERLESS
+                       ? qfalse
+                       : qtrue;
 #endif
     if (allowHighDpi != qfalse)
         flags |= SDL_WINDOW_ALLOW_HIGHDPI;
@@ -209,39 +202,79 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
         SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
     if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN) {
-        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): never capture or
-         * switch the OS display mode for fullscreen. Preserve every connected
-         * monitor and let the renderer present its hardware-sized image into
-         * this non-exclusive fullscreen surface on every SDL platform. */
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-    } else if (windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
-        SDL_DisplayMode desktopMode;
+        const int modeCount = SDL_GetNumDisplayModes(displayIndex);
+        int32_t preferredRefreshRate = refreshRate;
+        int32_t selectedRefreshDifference = INT32_MAX;
 
-        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): a desktop-sized
-         * undecorated window avoids the OS-exclusive fullscreen state while
-         * retaining a seamless presentation for fast task switching. */
-        memset(&desktopMode, 0, sizeof(desktopMode));
-        if (SDL_GetCurrentDisplayMode(0, &desktopMode) == 0) {
-            width = desktopMode.w;
-            height = desktopMode.h;
+        memset(&fullscreenMode, 0, sizeof(fullscreenMode));
+        if (preferredRefreshRate <= 0) {
+            SDL_DisplayMode currentMode;
+
+            memset(&currentMode, 0, sizeof(currentMode));
+            if (SDL_GetCurrentDisplayMode(displayIndex, &currentMode) == 0)
+                preferredRefreshRate = currentMode.refresh_rate;
         }
-        flags |= SDL_WINDOW_BORDERLESS;
+        for (int index = 0; index < modeCount; ++index) {
+            SDL_DisplayMode candidate;
+            int32_t refreshDifference;
+
+            memset(&candidate, 0, sizeof(candidate));
+            if (SDL_GetDisplayMode(displayIndex, index, &candidate) != 0 ||
+                candidate.w != width || candidate.h != height ||
+                (refreshRate > 0 &&
+                 candidate.refresh_rate != refreshRate)) {
+                continue;
+            }
+            refreshDifference = preferredRefreshRate > 0
+                ? candidate.refresh_rate - preferredRefreshRate : 0;
+            if (refreshDifference < 0)
+                refreshDifference = -refreshDifference;
+            if (fullscreenMode.w == 0 ||
+                refreshDifference < selectedRefreshDifference ||
+                (refreshDifference == selectedRefreshDifference &&
+                 candidate.refresh_rate > fullscreenMode.refresh_rate)) {
+                fullscreenMode = candidate;
+                selectedRefreshDifference = refreshDifference;
+            }
+        }
+        if (fullscreenMode.w == 0) {
+            SDL_SetError("display %d has no %dx%d fullscreen mode",
+                         displayIndex + 1, width, height);
+            return qfalse;
+        }
+    } else if (windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): borderless follows
+         * the selected display's desktop mode without changing it. The SDL
+         * fullscreen-desktop flag also tracks the complete display bounds on
+         * arrangements whose origin is not the main display's origin. */
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #if defined(__APPLE__)
     } else {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): SDL window sizes
          * are screen coordinates on macOS, while the graphics menu expresses
          * render pixels. Convert through the active backing scale so a
          * requested 1920x1080 window has a 1920x1080 drawable. */
-        coduomp_sdl_window_size_for_drawable_compat(&width, &height);
+        coduomp_sdl_window_size_for_drawable_compat(
+            displayIndex, &width, &height);
 #endif
     }
 
     coduoSdlWindow = SDL_CreateWindow(
         windowTitle,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex),
+        SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex),
         width, height, flags);
     if (coduoSdlWindow == NULL)
         return qfalse;
+
+    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN &&
+        (SDL_SetWindowDisplayMode(coduoSdlWindow, &fullscreenMode) != 0 ||
+         SDL_SetWindowFullscreen(coduoSdlWindow,
+                                 SDL_WINDOW_FULLSCREEN) != 0)) {
+        SDL_DestroyWindow(coduoSdlWindow);
+        coduoSdlWindow = NULL;
+        return qfalse;
+    }
 
     coduoSdlGlContext = SDL_GL_CreateContext(coduoSdlWindow);
     if (coduoSdlGlContext == NULL) {
@@ -289,13 +322,36 @@ void CoduoSDL_DestroyOpenGLWindow(void)
     }
 }
 
-void CoduoSDL_GetDesktopMode(int32_t *width, int32_t *height,
+/* NOT_FROM_ORIGINAL_SOURCE: SDL numbers active displays from zero. Keep
+ * invalid archived selections on the primary display instead of passing an
+ * out-of-range index into several backend-specific queries. */
+static int32_t coduomp_sdl_normalize_display_index_compat(
+    int32_t displayIndex)
+{
+    const int32_t displayCount = SDL_GetNumVideoDisplays();
+
+    return displayIndex >= 0 && displayIndex < displayCount
+        ? displayIndex : 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: exposes the active SDL output count to the
+ * renderer and its separately linked graphics menu. */
+int32_t coduomp_sdl_get_display_count_compat(void)
+{
+    const int32_t displayCount = SDL_GetNumVideoDisplays();
+
+    return displayCount > 0 ? displayCount : 1;
+}
+
+void CoduoSDL_GetDesktopMode(int32_t displayIndex,
+                             int32_t *width, int32_t *height,
                              int32_t *refreshRate)
 {
     SDL_DisplayMode mode;
 
+    displayIndex = coduomp_sdl_normalize_display_index_compat(displayIndex);
     memset(&mode, 0, sizeof(mode));
-    if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
+    if (SDL_GetCurrentDisplayMode(displayIndex, &mode) != 0) {
         *width = 0;
         *height = 0;
         *refreshRate = 0;
@@ -308,6 +364,61 @@ void CoduoSDL_GetDesktopMode(int32_t *width, int32_t *height,
 }
 
 #if defined(__APPLE__)
+enum {
+    CODUOMP_SDL_MAX_CORE_GRAPHICS_DISPLAYS = 32
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: SDL does not publish its Cocoa display ID. Match
+ * the selected SDL desktop rectangle to the active Core Graphics rectangles
+ * so native-mode and backing-pixel queries describe the same monitor that
+ * owns the game window. */
+static CGDirectDisplayID coduomp_sdl_cg_display_for_index_compat(
+    int32_t displayIndex)
+{
+    CGDirectDisplayID displays[CODUOMP_SDL_MAX_CORE_GRAPHICS_DISPLAYS];
+    uint32_t displayCount = 0;
+    SDL_Rect sdlBounds;
+    CGDirectDisplayID selectedDisplay = CGMainDisplayID();
+    int64_t selectedDifference = INT64_MAX;
+
+    displayIndex = coduomp_sdl_normalize_display_index_compat(displayIndex);
+    if (SDL_GetDisplayBounds(displayIndex, &sdlBounds) != 0 ||
+        CGGetActiveDisplayList(
+            CODUOMP_SDL_MAX_CORE_GRAPHICS_DISPLAYS,
+            displays, &displayCount) != kCGErrorSuccess) {
+        return selectedDisplay;
+    }
+
+    for (uint32_t index = 0; index < displayCount; ++index) {
+        const CGRect bounds = CGDisplayBounds(displays[index]);
+        const int64_t cgX = (int64_t)bounds.origin.x;
+        const int64_t cgY = (int64_t)bounds.origin.y;
+        const int64_t cgWidth = (int64_t)bounds.size.width;
+        const int64_t cgHeight = (int64_t)bounds.size.height;
+        int64_t deltaX = cgX - sdlBounds.x;
+        int64_t deltaY = cgY - sdlBounds.y;
+        int64_t deltaWidth = cgWidth - sdlBounds.w;
+        int64_t deltaHeight = cgHeight - sdlBounds.h;
+
+        if (deltaX < 0)
+            deltaX = -deltaX;
+        if (deltaY < 0)
+            deltaY = -deltaY;
+        if (deltaWidth < 0)
+            deltaWidth = -deltaWidth;
+        if (deltaHeight < 0)
+            deltaHeight = -deltaHeight;
+
+        const int64_t difference =
+            deltaX + deltaY + deltaWidth + deltaHeight;
+        if (difference < selectedDifference) {
+            selectedDifference = difference;
+            selectedDisplay = displays[index];
+        }
+    }
+    return selectedDisplay;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: selects the physical panel mode identified by
  * CoreGraphics. Scaled modes can have larger backing surfaces than the panel,
  * so neither their logical dimensions nor pixel dimensions are native. */
@@ -363,15 +474,18 @@ static qboolean coduomp_sdl_find_native_display_mode_compat(
 }
 #endif
 
-/* NOT_FROM_ORIGINAL_SOURCE: reports the primary display's hardware-sized
+/* NOT_FROM_ORIGINAL_SOURCE: reports the selected display's hardware-sized
  * pixel mode. Desktop scaling remains a separate logical-window concern. */
-qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
+qboolean coduomp_sdl_get_native_display_mode_compat(int32_t displayIndex,
+                                                     int32_t *width,
                                                      int32_t *height,
                                                      int32_t *refreshRate)
 {
+    displayIndex = coduomp_sdl_normalize_display_index_compat(displayIndex);
 #if defined(__APPLE__)
-    CFArrayRef modes =
-        CGDisplayCopyAllDisplayModes(CGMainDisplayID(), NULL);
+    const CGDirectDisplayID display =
+        coduomp_sdl_cg_display_for_index_compat(displayIndex);
+    CFArrayRef modes = CGDisplayCopyAllDisplayModes(display, NULL);
     qboolean found;
 
     if (modes == NULL)
@@ -384,7 +498,7 @@ qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
     int32_t selectedWidth = 0;
     int32_t selectedHeight = 0;
     int32_t selectedRefreshRate = 0;
-    const int modeCount = SDL_GetNumDisplayModes(0);
+    const int modeCount = SDL_GetNumDisplayModes(displayIndex);
 
     /* SDL2 does not expose an output's preferred-mode marker. Select the
      * largest mode the active display actually enumerates instead of calling
@@ -393,7 +507,7 @@ qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
         SDL_DisplayMode mode;
 
         memset(&mode, 0, sizeof(mode));
-        if (SDL_GetDisplayMode(0, index, &mode) != 0 ||
+        if (SDL_GetDisplayMode(displayIndex, index, &mode) != 0 ||
             mode.w <= 0 || mode.h <= 0) {
             continue;
         }
@@ -416,15 +530,73 @@ qboolean coduomp_sdl_get_native_display_mode_compat(int32_t *width,
 #endif
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: distinguishes the selected macOS desktop's
+ * logical coordinates, scaled backing surface, and physical-native panel
+ * mode. Other SDL platforms report their current pixel desktop separately
+ * from the largest enumerated hardware mode. */
+qboolean coduomp_sdl_get_display_info_compat(
+    int32_t displayIndex, coduomp_sdl_display_info_t *displayInfo)
+{
+    SDL_DisplayMode desktopMode;
+    int32_t nativeRefreshRate = 0;
+
+    if (displayInfo == NULL)
+        return qfalse;
+    memset(displayInfo, 0, sizeof(*displayInfo));
+    displayIndex = coduomp_sdl_normalize_display_index_compat(displayIndex);
+    memset(&desktopMode, 0, sizeof(desktopMode));
+    if (SDL_GetCurrentDisplayMode(displayIndex, &desktopMode) != 0)
+        return qfalse;
+
+    displayInfo->logicalWidth = desktopMode.w;
+    displayInfo->logicalHeight = desktopMode.h;
+    displayInfo->backingWidth = desktopMode.w;
+    displayInfo->backingHeight = desktopMode.h;
+    displayInfo->refreshRate = desktopMode.refresh_rate;
+    (void)coduomp_sdl_get_native_display_mode_compat(
+        displayIndex, &displayInfo->nativeWidth,
+        &displayInfo->nativeHeight, &nativeRefreshRate);
+    if (displayInfo->refreshRate <= 0)
+        displayInfo->refreshRate = nativeRefreshRate;
+
+#if defined(__APPLE__)
+    const CGDirectDisplayID display =
+        coduomp_sdl_cg_display_for_index_compat(displayIndex);
+    CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+
+    displayInfo->builtin = CGDisplayIsBuiltin(display) != 0
+        ? qtrue : qfalse;
+    if (currentMode != NULL) {
+        displayInfo->logicalWidth =
+            (int32_t)CGDisplayModeGetWidth(currentMode);
+        displayInfo->logicalHeight =
+            (int32_t)CGDisplayModeGetHeight(currentMode);
+        displayInfo->backingWidth =
+            (int32_t)CGDisplayModeGetPixelWidth(currentMode);
+        displayInfo->backingHeight =
+            (int32_t)CGDisplayModeGetPixelHeight(currentMode);
+        const double currentRefreshRate =
+            CGDisplayModeGetRefreshRate(currentMode);
+        if (currentRefreshRate > 0.0)
+            displayInfo->refreshRate = (int32_t)currentRefreshRate;
+        CGDisplayModeRelease(currentMode);
+    }
+#endif
+    return qtrue;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: converts requested drawable pixels to SDL window
  * coordinates using the active macOS backing scale. Other SDL platforms use
  * pixel-sized window coordinates and leave the request unchanged. */
-void coduomp_sdl_window_size_for_drawable_compat(int32_t *width,
+void coduomp_sdl_window_size_for_drawable_compat(int32_t displayIndex,
+                                                  int32_t *width,
                                                   int32_t *height)
 {
 #if defined(__APPLE__)
+    const CGDirectDisplayID display =
+        coduomp_sdl_cg_display_for_index_compat(displayIndex);
     CGDisplayModeRef currentMode =
-        CGDisplayCopyDisplayMode(CGMainDisplayID());
+        CGDisplayCopyDisplayMode(display);
 
     if (currentMode == NULL)
         return;
@@ -445,71 +617,49 @@ void coduomp_sdl_window_size_for_drawable_compat(int32_t *width,
     }
     CGDisplayModeRelease(currentMode);
 #else
+    (void)displayIndex;
     (void)width;
     (void)height;
 #endif
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: reports whether the primary display exposes an
- * exact preset resolution. macOS display modes can include supersampled
- * backing surfaces larger than the physical panel, so cap candidates at the
- * mode that Core Graphics identifies as native. */
-qboolean coduomp_sdl_display_mode_available_compat(int32_t width,
+/* NOT_FROM_ORIGINAL_SOURCE: reports whether the selected display exposes an
+ * exact SDL fullscreen resolution. macOS display modes can include surfaces
+ * larger than the physical panel, so cap candidates at the mode that Core
+ * Graphics identifies as native before accepting SDL's mode entry. */
+qboolean coduomp_sdl_display_mode_available_compat(int32_t displayIndex,
+                                                    int32_t width,
                                                     int32_t height)
 {
     if (width <= 0 || height <= 0)
         return qfalse;
 
+    displayIndex = coduomp_sdl_normalize_display_index_compat(displayIndex);
+
 #if defined(__APPLE__)
-    CFArrayRef modes =
-        CGDisplayCopyAllDisplayModes(CGMainDisplayID(), NULL);
     int32_t nativeWidth = 0;
     int32_t nativeHeight = 0;
     int32_t nativeRefreshRate = 0;
-    qboolean available = qfalse;
 
-    if (modes == NULL)
-        return qfalse;
-
-    if (coduomp_sdl_find_native_display_mode_compat(
-            modes, &nativeWidth, &nativeHeight,
-            &nativeRefreshRate) == qfalse) {
-        CFRelease(modes);
+    if (coduomp_sdl_get_native_display_mode_compat(
+            displayIndex, &nativeWidth, &nativeHeight,
+            &nativeRefreshRate) == qfalse ||
+        width > nativeWidth || height > nativeHeight) {
         return qfalse;
     }
-
-    if (width <= nativeWidth && height <= nativeHeight) {
-        const CFIndex modeCount = CFArrayGetCount(modes);
-
-        for (CFIndex index = 0; index < modeCount; ++index) {
-            CGDisplayModeRef mode = (CGDisplayModeRef)
-                CFArrayGetValueAtIndex(modes, index);
-
-            if (CGDisplayModeIsUsableForDesktopGUI(mode) &&
-                CGDisplayModeGetPixelWidth(mode) == (size_t)width &&
-                CGDisplayModeGetPixelHeight(mode) == (size_t)height) {
-                available = qtrue;
-                break;
-            }
-        }
-    }
-
-    CFRelease(modes);
-    return available;
-#else
-    const int modeCount = SDL_GetNumDisplayModes(0);
+#endif
+    const int modeCount = SDL_GetNumDisplayModes(displayIndex);
 
     for (int index = 0; index < modeCount; ++index) {
         SDL_DisplayMode mode;
 
         memset(&mode, 0, sizeof(mode));
-        if (SDL_GetDisplayMode(0, index, &mode) == 0 &&
+        if (SDL_GetDisplayMode(displayIndex, index, &mode) == 0 &&
             mode.w == width && mode.h == height) {
             return qtrue;
         }
     }
     return qfalse;
-#endif
 }
 
 void CoduoSDL_GetFramebufferSize(int32_t *width, int32_t *height)

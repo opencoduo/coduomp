@@ -62,6 +62,7 @@ extern cvar_t *r_ignorehwgamma;
 extern cvar_t *r_gammaMode;
 extern cvar_t *r_mode;
 extern cvar_t *r_fullscreen;
+extern cvar_t *r_display;
 extern cvar_t *r_aspectMode;
 extern cvar_t *r_hiresReticles;
 extern cvar_t *r_customwidth;
