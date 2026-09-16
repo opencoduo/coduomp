@@ -118,12 +118,13 @@ make macos-zip \
 ```
 
 The packaging target strips debug and local-symbol data, rewrites bundled
-Mach-O dependencies to portable locations, and runs a privacy gate. The gate
-rejects embedded personal/build-host paths, debug debris, symlinks, and
-nonportable dependencies or runtime paths. Run it independently with:
+Mach-O dependencies to portable locations, and checks the package. The check
+rejects debug debris, symlinks, unexpected extended attributes, and nonportable
+dependencies or runtime paths. It does not inspect the builder's identity or
+scan embedded strings for personal paths. Run it independently with:
 
 ```sh
-make macos-privacy-check
+make macos-package-check
 ```
 
 The ZIP target also rejects unexpected archive entries and omits resource-fork,
@@ -150,9 +151,9 @@ make client-linux64-package
 
 The resulting archives are written under `.workbench/build/linux/`. They
 contain the reconstructed executable and modules, but no retail game data or
-Linux system libraries. Package staging strips debug and local-symbol data and
-runs a privacy gate that rejects embedded personal, source-workspace, and
-build-host paths.
+Linux system libraries. Package staging strips debug and local-symbol data
+and checks for build debris and symlinks. It does not require a hostname utility
+or scan embedded strings for the builder's identity or paths.
 
 To launch it as the normal system game, point `CLIENT_DATA_PATH` at a legally
 owned retail installation root containing both `main/` and `uo/`:
@@ -252,10 +253,11 @@ The Windows system libraries required by static libcurl are added even when
 `MINGW32_LIBS` is overridden.
 
 Windows package staging strips debug and local-symbol data, repeats the MinGW
-runtime-DLL import audit on the staged files, and applies the same release
-privacy gate used by Linux packages. Static dependency archives must therefore
-be built without retained absolute source paths; use compiler file/debug prefix
-maps or an equivalent reproducible-build setting when producing them.
+runtime-DLL import audit on the staged files, and checks for build debris and
+symlinks. It does not require a hostname utility or scan embedded strings for
+the builder's identity or paths. When distributing builds, use compiler
+file/debug prefix maps or equivalent settings in static dependencies to avoid
+retaining absolute source paths.
 
 The i686 build is pinned to `-O0 -mfpmath=387
 -fexcess-precision=fast`. At runtime the executable selects the retail
@@ -280,16 +282,13 @@ with `MINGW32_CC`, `MINGW32_CXX`, `MINGW32_DLLTOOL`, `MINGW32_OBJDUMP`,
 `MINGW32_DEP_CPPFLAGS`, `MINGW32_DEP_LDFLAGS`, and `MINGW32_LIBS`. Run
 `make help` for the primary build options.
 
-### Four-platform release build
+### Developer packages and official releases
 
-`make release-builds` runs on macOS, builds the macOS arm64 ZIP locally, and
-uses SSH to build Linux x86-64 and both Windows packages in a fresh directory
-on a configured Linux host. It archives the clean current commit and refuses
-to overwrite an existing local release artifact. Supply the five required
-`RELEASE_REMOTE_*` settings listed by `make help`; all four outputs are copied
-to `RELEASE_OUTPUT_DIR` (default `.workbench/build/release`). Hostnames,
-accounts, and remote paths remain invocation-time values and are not stored in
-the repository.
+The platform package targets build distributable archives on their supported
+hosts. They check package structure and runtime dependencies independently of
+the builder's username, home directory, or hostname. Official releases use a
+separate maintainer workflow with additional privacy checks on the configured
+release hosts.
 
 ## Project status
 

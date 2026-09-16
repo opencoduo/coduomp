@@ -79,22 +79,16 @@ LINUX32_GAME_OUTPUT ?= $(BUILD_DIR)/game/client-linux-i386/uo_game_mp_x86.so
 LINUX64_GAME_OUTPUT ?= $(BUILD_DIR)/game/client-linux-x86_64/uo_game_mp_x86_64.so
 LINUX32_PACKAGE_OUTPUT ?= $(BUILD_DIR)/linux/opencoduo-linux-i686-$(shell printf '%s' "$(SOURCE_COMMIT)" | cut -c1-9).tar.gz
 LINUX64_PACKAGE_OUTPUT ?= $(BUILD_DIR)/linux/opencoduo-linux-x86_64-$(shell printf '%s' "$(SOURCE_COMMIT)" | cut -c1-9).tar.gz
-RELEASE_OUTPUT_DIR ?= $(BUILD_DIR)/release
-RELEASE_REMOTE_HOST ?=
-RELEASE_REMOTE_BASE ?=
-RELEASE_REMOTE_MSS32_DLL ?=
-RELEASE_REMOTE_MINGW32_DEP_PREFIX ?=
-RELEASE_REMOTE_MINGW64_DEP_PREFIX ?=
 
 .PHONY: all policy-check client client-engine client-cgame client-ui client-game client-run client-test-run \
 	client-linux32 client-linux64 client-windows client-windows-i686 \
 	client-windows-x86_64 client-linux32-package client-linux64-package \
 	client-windows-package client-windows-i686-package \
-	client-windows-x86_64-package release-builds \
+	client-windows-x86_64-package \
 	server server64 server32 server-engine64 server-engine32 \
 	server-game64 server-game32 server-windows server-windows-i386 \
 	server-windows-i686 check-linux-host check-macos-host softfloat \
-	macos-app macos-privacy-check macos-zip clean help
+	macos-app macos-package-check macos-zip clean help
 
 all: client
 
@@ -200,8 +194,8 @@ macos-app: check-macos-host client
 		"$(MACOS_BUNDLE_ID)" "$(MACOS_BUNDLE_VERSION)" \
 		"$(MACOS_BUNDLE_BUILD)" "$(MACOS_SIGN_IDENTITY)"
 
-macos-privacy-check: check-macos-host
-	tools/macos/audit-app-privacy.sh "$(abspath $(MACOS_APP_DIR))"
+macos-package-check: check-macos-host
+	tools/macos/audit-app.sh "$(abspath $(MACOS_APP_DIR))"
 
 macos-zip: macos-app
 	@case "$(abspath $(MACOS_ZIP))" in \
@@ -330,22 +324,6 @@ client-windows-x86_64-package: client-windows-x86_64
 		"$(abspath $(WINDOWS64_PACKAGE_OUTPUT))" \
 		x86_64 "$(SOURCE_COMMIT)"
 
-release-builds:
-	@if test -z "$(RELEASE_REMOTE_HOST)" || \
-	    test -z "$(RELEASE_REMOTE_BASE)" || \
-	    test -z "$(RELEASE_REMOTE_MSS32_DLL)" || \
-	    test -z "$(RELEASE_REMOTE_MINGW32_DEP_PREFIX)" || \
-	    test -z "$(RELEASE_REMOTE_MINGW64_DEP_PREFIX)"; then \
-		echo 'error: release-builds requires all RELEASE_REMOTE_* options shown by make help' >&2; \
-		exit 2; \
-	fi
-	JOBS="$(JOBS)" tools/release/build-all.sh \
-		"$(RELEASE_REMOTE_HOST)" "$(RELEASE_REMOTE_BASE)" \
-		"$(RELEASE_REMOTE_MSS32_DLL)" \
-		"$(RELEASE_REMOTE_MINGW32_DEP_PREFIX)" \
-		"$(RELEASE_REMOTE_MINGW64_DEP_PREFIX)" \
-		"$(abspath $(RELEASE_OUTPUT_DIR))"
-
 server: server64
 
 server64: server-engine64 server-game64
@@ -420,9 +398,7 @@ help:
 	  '  client-windows-i686-package client-windows-x86_64-package' \
 	  '  client-engine client-cgame client-ui client-game' \
 	  'macOS distribution targets:' \
-	  '  macos-app macos-privacy-check macos-zip' \
-	  'Release target:' \
-	  '  release-builds (macOS arm64, Linux x86_64, Windows i686/x86_64)' \
+	  '  macos-app macos-package-check macos-zip' \
 	  'Server targets:' \
 	  '  server server64 server32 server-windows-i386 server-windows-i686' \
 	  '  server-engine64 server-engine32 server-game64 server-game32' \
@@ -434,8 +410,4 @@ help:
 	  '  MACOS_BUNDLE_VERSION=X.Y.Z MACOS_BUNDLE_BUILD=N' \
 	  '  MACOS_SIGN_IDENTITY=- (ad-hoc default) or Developer ID name' \
 	  '  MSS32_DLL=/path/to/mss32.dll MINGW32_DEP_PREFIX=/path MINGW64_DEP_PREFIX=/path' \
-	  '  RELEASE_REMOTE_HOST=user@host RELEASE_REMOTE_BASE=/fresh/build/parent' \
-	  '  RELEASE_REMOTE_MSS32_DLL=/path/to/mss32.dll' \
-	  '  RELEASE_REMOTE_MINGW32_DEP_PREFIX=/path RELEASE_REMOTE_MINGW64_DEP_PREFIX=/path' \
-	  '  RELEASE_OUTPUT_DIR=path' \
 	  '  WINDOWS_DEP_PREFIX=/path'
