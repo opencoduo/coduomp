@@ -159,15 +159,9 @@ the x87 options selected by the build. Clang does not implement
 `CODUO_FP_FAITHFUL=relaxed` permits such a build for portability work, but its
 floating-point behavior is not the validated faithful configuration.
 
-The multi-platform `release-builds` target uses the unversioned compiler
-commands available in the configured remote host's `PATH`; local `CC`,
-`LINUX64_CC`, and MinGW compiler selections are not forwarded to that remote
-build. It is an architecture/platform matrix, not a compiler-version matrix.
-Release maintainers should verify and provision the remote compiler versions
-explicitly, and should test new compiler diagnostics in a separate strict
-`-Werror` build before promoting a new release toolchain. Compiler upgrades
-also require the normal floating-point-fidelity, package, and Windows import
-audits.
+Build and package each platform with the targets below and in the
+[client build guide](docs/client-building.md). Official release orchestration
+and maintainer privacy checks are separate from these developer targets.
 
 ### Windows
 

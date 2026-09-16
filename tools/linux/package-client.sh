@@ -99,7 +99,7 @@ cp "$game" "$package_root/uo/uo_game_mp_$module_arch.so"
     printf 'build_target=%s\n' "$build_target"
 } > "$package_root/BUILDINFO.txt"
 
-"$project_root/tools/release/audit-package-privacy.sh" "$package_root"
+"$project_root/tools/audit-package.sh" "$package_root"
 
 (
     cd "$package_root"

@@ -165,7 +165,7 @@ else
 fi
 
 codesign --verify --deep --strict --verbose=2 "$staged_app"
-"$project_root/tools/macos/audit-app-privacy.sh" "$staged_app"
+"$project_root/tools/macos/audit-app.sh" "$staged_app"
 
 mv "$staged_app" "$app_path"
 rmdir "$staging_root"
