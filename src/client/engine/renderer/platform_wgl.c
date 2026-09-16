@@ -942,10 +942,17 @@ renderer_mode_set_result_t GLW_SetMode(
             : (windowMode == R_WINDOW_MODE_BORDERLESS ? "B" : "W"));
     int32_t outputWindowWidth = glConfig.vidWidth;
     int32_t outputWindowHeight = glConfig.vidHeight;
+#if defined(__APPLE__)
+    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fullscreen-desktop
+     * ignores the requested window dimensions, but the SDL platform layer
+     * uses the selected render dimensions to choose a render-sized or Retina
+     * drawable. */
+#else
     if (windowMode == R_WINDOW_MODE_FULLSCREEN) {
         outputWindowWidth = currentDisplayWidth;
         outputWindowHeight = currentDisplayHeight;
     }
+#endif
     if (GLW_CreateWindow(
             driverName, outputWindowWidth, outputWindowHeight,
             colorBits, windowMode) == qfalse) {

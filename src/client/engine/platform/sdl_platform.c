@@ -151,11 +151,36 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
         CODUO_WINDOW_MODE_BORDERLESS = 2
     };
     const char *windowTitle = "Call of Duty: United Offensive Multiplayer";
-    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI |
-                     SDL_WINDOW_SHOWN;
+    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+    qboolean allowHighDpi = qtrue;
 
     if (CoduoSDL_Init() == qfalse)
         return qfalse;
+
+#if defined(__APPLE__)
+    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN) {
+        CGDisplayModeRef currentMode =
+            CGDisplayCopyDisplayMode(CGMainDisplayID());
+
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): when the selected
+         * render size already matches the macOS desktop's logical dimensions,
+         * a Retina drawable only makes SDL allocate and present a four-times-
+         * larger surface after the renderer has scaled the same frame into it.
+         * Use a render-sized fullscreen drawable and let WindowServer perform
+         * the final backing-scale mapping. Keep Retina enabled for native-pixel
+         * and differently sized modes so their presentation path is unchanged. */
+        if (currentMode != NULL) {
+            allowHighDpi =
+                width != (int32_t)CGDisplayModeGetWidth(currentMode) ||
+                height != (int32_t)CGDisplayModeGetHeight(currentMode)
+                    ? qtrue
+                    : qfalse;
+            CGDisplayModeRelease(currentMode);
+        }
+    }
+#endif
+    if (allowHighDpi != qfalse)
+        flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
     CoduoSDL_DestroyOpenGLWindow();
 
