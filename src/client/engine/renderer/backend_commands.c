@@ -483,6 +483,41 @@ void RB_ExecuteRenderCommands(const void *data)
         int32_t commandId;
         memcpy(&commandId, commandBytes, sizeof(commandId));
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: group adjacent command classes so phase
+         * timing needs only a few non-overlapping queries per frame. */
+        switch ((renderer_command_id_t)commandId) {
+        case RC_DRAW_SURFS:
+            coduomp_gpu_profile_segment(CODUOMP_GPU_PROFILE_PHASE_SCENE);
+            break;
+        case RC_SET_COLOR:
+        case RC_STRETCH_PIC:
+        case RC_STRETCH_PIC_GRADIENT:
+        case RC_STRETCH_PIC_ROTATE:
+        case RC_DRAW_QUAD_PIC:
+        case RC_TEXT_PAINT_WITH_CURSOR:
+        case RC_SET_CGAME_2D_PRESENTATION:
+        case RC_SET_CONSOLE_2D_PRESENTATION:
+        case RC_SET_UI_2D_PRESENTATION:
+        case RC_SWAP_BUFFERS:
+            coduomp_gpu_profile_segment(CODUOMP_GPU_PROFILE_PHASE_2D);
+            break;
+        case RC_DRAW_BUFFER:
+            coduomp_gpu_profile_segment(CODUOMP_GPU_PROFILE_PHASE_CLEAR);
+            break;
+        case RC_SAVE_SCREEN:
+        case RC_BLEND_SAVED_SCREEN:
+            coduomp_gpu_profile_segment(
+                CODUOMP_GPU_PROFILE_PHASE_SCREEN_COPY);
+            break;
+        case RC_END_OF_LIST:
+            break;
+        default:
+            coduomp_gpu_profile_segment(CODUOMP_GPU_PROFILE_PHASE_MISC);
+            break;
+        }
+#endif
+
         switch ((renderer_command_id_t)commandId) {
         case RC_SET_COLOR:
             commandBytes = RB_SetColor(

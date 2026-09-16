@@ -9,6 +9,7 @@
 
 typedef enum coduomp_gpu_profile_phase_e {
     CODUOMP_GPU_PROFILE_PHASE_VIEW_SETUP,
+    CODUOMP_GPU_PROFILE_PHASE_SCENE,
     CODUOMP_GPU_PROFILE_PHASE_WORLD,
     CODUOMP_GPU_PROFILE_PHASE_BRUSH_MODELS,
     CODUOMP_GPU_PROFILE_PHASE_MODELS,
@@ -29,6 +30,7 @@ void coduomp_gpu_profile_register(void);
 void coduomp_gpu_profile_shutdown(void);
 void coduomp_gpu_profile_frame_begin(void);
 void coduomp_gpu_profile_frame_end(void);
+void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase);
 qboolean coduomp_gpu_profile_begin(
     coduomp_gpu_profile_phase_t phase, const char *shaderName);
 qboolean coduomp_gpu_profile_begin_surface(void);

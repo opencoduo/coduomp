@@ -42,10 +42,10 @@ typedef struct coduomp_gpu_profile_shader_s {
 typedef struct coduomp_gpu_profile_frame_s {
     qboolean used;
     qboolean closed;
-    qboolean detailed;
     qboolean sawWorld;
     uint32_t serial;
     int32_t mode;
+    int32_t detailLevel;
     float slowMsec;
     uint32_t outstandingQueries;
     uint32_t droppedQueries;
@@ -208,7 +208,7 @@ static void coduomp_gpu_profile_write_frame(
     coduomp_gpu_profile_find_top_shaders(frame, top);
     fprintf(
         coduompGpuProfileLogFile,
-        "GPU_PROFILE frame=%u total_ms=%.3f view_ms=%.3f world_ms=%.3f "
+        "GPU_PROFILE frame=%u total_ms=%.3f view_ms=%.3f scene_ms=%.3f world_ms=%.3f "
         "bmodel_ms=%.3f model_ms=%.3f smodel_ms=%.3f effects_ms=%.3f "
         "sky_ms=%.3f shadows_ms=%.3f flares_ms=%.3f 2d_ms=%.3f "
         "clear_ms=%.3f copy_ms=%.3f present_ms=%.3f misc_ms=%.3f "
@@ -216,6 +216,8 @@ static void coduomp_gpu_profile_write_frame(
         frame->serial, coduomp_gpu_profile_msec(totalNanoseconds),
         coduomp_gpu_profile_msec(
             frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_VIEW_SETUP]),
+        coduomp_gpu_profile_msec(
+            frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_SCENE]),
         coduomp_gpu_profile_msec(
             frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_WORLD]),
         coduomp_gpu_profile_msec(
@@ -274,11 +276,12 @@ static void coduomp_gpu_profile_write_frame(
 
     fprintf(
         coduompGpuProfileLogFile,
-        "GPU_PROFILE_BATCHES frame=%u view=%u world=%u bmodel=%u model=%u "
+        "GPU_PROFILE_BATCHES frame=%u view=%u scene=%u world=%u bmodel=%u model=%u "
         "smodel=%u effects=%u sky=%u shadows=%u flares=%u 2d=%u clear=%u "
         "copy=%u present=%u misc=%u\n",
         frame->serial,
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_VIEW_SETUP],
+        frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_SCENE],
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_WORLD],
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_BRUSH_MODELS],
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_MODELS],
@@ -308,7 +311,7 @@ static void coduomp_gpu_profile_write_summary(void)
     fprintf(
         coduompGpuProfileLogFile,
         "GPU_PROFILE_SUMMARY frames=%u avg_total_ms=%.3f max_total_ms=%.3f "
-        "avg_view_ms=%.3f avg_world_ms=%.3f avg_bmodel_ms=%.3f "
+        "avg_view_ms=%.3f avg_scene_ms=%.3f avg_world_ms=%.3f avg_bmodel_ms=%.3f "
         "avg_model_ms=%.3f avg_smodel_ms=%.3f avg_effects_ms=%.3f "
         "avg_sky_ms=%.3f avg_shadows_ms=%.3f avg_flares_ms=%.3f "
         "avg_2d_ms=%.3f avg_clear_ms=%.3f avg_copy_ms=%.3f "
@@ -320,6 +323,8 @@ static void coduomp_gpu_profile_write_summary(void)
             coduompGpuProfileSummaryMaximumNanoseconds),
         coduomp_gpu_profile_summary_phase_msec(
             CODUOMP_GPU_PROFILE_PHASE_VIEW_SETUP),
+        coduomp_gpu_profile_summary_phase_msec(
+            CODUOMP_GPU_PROFILE_PHASE_SCENE),
         coduomp_gpu_profile_summary_phase_msec(
             CODUOMP_GPU_PROFILE_PHASE_WORLD),
         coduomp_gpu_profile_summary_phase_msec(
@@ -464,7 +469,8 @@ static void coduomp_gpu_profile_collect(void)
             if (frame->used != qfalse &&
                 frame->serial == query->frameSerial) {
                 frame->phaseNanoseconds[query->phase] += nanoseconds;
-                ++frame->phaseBatches[query->phase];
+                if (frame->detailLevel >= 2)
+                    ++frame->phaseBatches[query->phase];
                 coduomp_gpu_profile_add_shader(
                     frame, query->shaderName, nanoseconds);
                 if (frame->outstandingQueries > 0)
@@ -556,7 +562,7 @@ static qboolean coduomp_gpu_profile_load_api(void)
     coduompGpuProfileApiReady = qtrue;
     ri.Printf(R_PRINT_ALL,
               "GPU profiling ready: r_gpuProfile 1 logs slow frames; 2 logs every frame; "
-              "r_gpuProfileDetail enables invasive per-batch timing\n");
+              "r_gpuProfileDetail 1 logs command phases; 2 enables invasive per-batch timing\n");
     return qtrue;
 }
 
@@ -621,16 +627,15 @@ void coduomp_gpu_profile_frame_begin(void)
         frame->used = qtrue;
         frame->serial = ++coduompGpuProfileNextFrameSerial;
         frame->mode = coduompGpuProfileMode->integer;
-        frame->detailed = coduompGpuProfileDetail != NULL &&
-                                  coduompGpuProfileDetail->integer > 0
-                              ? qtrue
-                              : qfalse;
+        frame->detailLevel = coduompGpuProfileDetail != NULL
+                                 ? coduompGpuProfileDetail->integer
+                                 : 0;
         frame->slowMsec = coduompGpuProfileSlowMsec != NULL &&
                                   coduompGpuProfileSlowMsec->value > 0.0f
                               ? coduompGpuProfileSlowMsec->value
                               : 0.0f;
         coduompGpuProfileCurrentFrame = frameIndex;
-        if (frame->detailed == qfalse) {
+        if (frame->detailLevel <= 0) {
             (void)coduomp_gpu_profile_begin(
                 CODUOMP_GPU_PROFILE_PHASE_MISC, NULL);
         }
@@ -653,7 +658,7 @@ void coduomp_gpu_profile_frame_end(void)
     if (frameIndex < 0)
         return;
 
-    if (coduompGpuProfileFrames[frameIndex].detailed == qfalse &&
+    if (coduompGpuProfileFrames[frameIndex].detailLevel <= 1 &&
         coduompGpuProfileActiveQuery >= 0) {
         coduomp_gpu_profile_end(qtrue);
     }
@@ -665,6 +670,35 @@ void coduomp_gpu_profile_frame_end(void)
         coduomp_gpu_profile_finish_frame(frameIndex);
     }
     coduompGpuProfileCurrentFrame = -1;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: group adjacent backend commands into a handful of
+ * non-overlapping GPU scopes. This middle detail level avoids the render-pass
+ * disruption caused by starting a timer query for every submitted batch. */
+void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase)
+{
+    coduomp_gpu_profile_frame_t *frame;
+
+    if (coduompGpuProfileCurrentFrame < 0)
+        return;
+
+    frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
+    if (frame->detailLevel != 1)
+        return;
+
+    if (coduompGpuProfileActiveQuery >= 0) {
+        const coduomp_gpu_profile_query_t *query =
+            &coduompGpuProfileQueries[coduompGpuProfileActiveQuery];
+
+        if (query->frameIndex == coduompGpuProfileCurrentFrame &&
+            query->frameSerial == frame->serial &&
+            query->phase == phase) {
+            return;
+        }
+        coduomp_gpu_profile_end(qtrue);
+    }
+
+    (void)coduomp_gpu_profile_begin(phase, NULL);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: begin one non-overlapping elapsed-time query. A
@@ -746,8 +780,10 @@ qboolean coduomp_gpu_profile_begin_surface(void)
         frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
         if (phase == CODUOMP_GPU_PROFILE_PHASE_WORLD)
             frame->sawWorld = qtrue;
-        if (frame->detailed == qfalse)
+        if (frame->detailLevel < 2)
             ++frame->phaseBatches[phase];
+        if (frame->detailLevel < 2)
+            return qfalse;
     }
 
     return coduomp_gpu_profile_begin(phase, shaderName);
