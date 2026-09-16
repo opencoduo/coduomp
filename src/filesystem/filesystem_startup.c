@@ -221,13 +221,19 @@ void coduomp_FS_RestartPreservingFile(int32_t checksumFeed,
     coduomp_FS_RestartInternal(checksumFeed, preservedHandle);
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: parameterized source-level factoring only; a
- * zero preserved handle follows the original FS_Restart instruction flow. */
+/* NOT_FROM_ORIGINAL_SOURCE: preserve a caller-owned stream and the client's
+ * presentation preferences around the original filesystem restart flow. */
 static void coduomp_FS_RestartInternal(int32_t checksumFeed,
                                        int32_t preservedHandle)
 {
     const int32_t savedAspectMode =
         filesystem_compat_saved_aspect_mode();
+    const float savedFov = Cvar_VariableValue("cg_fov");
+    const qboolean savedFovInitialized =
+        Cvar_FindVar("cg_fov") != NULL &&
+        Cvar_VariableIntegerValue("cg_fovAspectInitialized") != 0
+            ? qtrue : qfalse;
+
     coduomp_FS_ShutdownPreservingFile(qfalse, preservedHandle);
     fs_checksumFeed = checksumFeed;
     FS_ClearPakReferences(qfalse);
@@ -261,6 +267,15 @@ static void coduomp_FS_RestartInternal(int32_t checksumFeed,
         Com_SafeMode() == qfalse) {
         Cbuf_AddText(va("exec %s\n", "uoconfig_mp.cfg"));
         filesystem_compat_queue_saved_aspect_mode(savedAspectMode);
+        /* NOT_FROM_ORIGINAL_SOURCE: an old mod config must not replace the
+         * FOV selected for the active presentation. Restore its migration
+         * marker too, so later UI reloads preserve an explicit 80-degree choice.
+         * Nine significant digits round-trip the saved float without placing
+         * arbitrary cvar text in the command buffer. */
+        if (savedFovInitialized != qfalse) {
+            Cbuf_AddText(va("set cg_fov %.9g\nset cg_fovAspectInitialized 1\n",
+                            (double)savedFov));
+        }
     }
 
     Q_strncpyz(fs_savedBasePath, fs_basepath->string,
