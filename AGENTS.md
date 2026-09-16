@@ -66,14 +66,6 @@
   move, seed, restore, replace, or delete files in the profile it uses unless
   the user explicitly requests the exact operation and identifies the
   authoritative source for any restored or replacement data.
-- Agents must never launch a native macOS client on the user's machine. This
-  includes direct execution, application bundles, `client-test-run`, and
-  `client-run`, even when `fs_homepath` appears isolated. Local client work
-  stops at build, link, package, and static validation. Agent-run client
-  runtime tests must use the designated remote host with a fresh test root and
-  fresh Wine prefix; `WINEPREFIX`, `HOME`, the complete rebuilt engine/module
-  set, and explicit `fs_homepath` must all remain inside that one test root.
-  Never reuse a test root, Wine prefix, personal profile, or configuration.
 - Do not edit, refactor, rename, restructure, or otherwise change `client-run`,
   `client-test-run`, their dependency graph, or their
   configuration/profile/home-path routing unless the user explicitly requests
