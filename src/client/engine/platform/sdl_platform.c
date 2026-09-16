@@ -155,7 +155,8 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
     const char *windowTitle = "Call of Duty: United Offensive Multiplayer";
     uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
     qboolean allowHighDpi = qtrue;
-    SDL_DisplayMode fullscreenMode;
+    int32_t windowX = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
+    int32_t windowY = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
 
     if (CoduoSDL_Init() == qfalse)
         return qfalse;
@@ -185,6 +186,7 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
         stencilBits = 0;
     if (depthBits < 24)
         stencilBits = 0;
+    (void)refreshRate;
 
     SDL_GL_ResetAttributes();
     (void)SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -202,52 +204,25 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
         SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
     if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN) {
-        const int modeCount = SDL_GetNumDisplayModes(displayIndex);
-        int32_t preferredRefreshRate = refreshRate;
-        int32_t selectedRefreshDifference = INT32_MAX;
-
-        memset(&fullscreenMode, 0, sizeof(fullscreenMode));
-        if (preferredRefreshRate <= 0) {
-            SDL_DisplayMode currentMode;
-
-            memset(&currentMode, 0, sizeof(currentMode));
-            if (SDL_GetCurrentDisplayMode(displayIndex, &currentMode) == 0)
-                preferredRefreshRate = currentMode.refresh_rate;
-        }
-        for (int index = 0; index < modeCount; ++index) {
-            SDL_DisplayMode candidate;
-            int32_t refreshDifference;
-
-            memset(&candidate, 0, sizeof(candidate));
-            if (SDL_GetDisplayMode(displayIndex, index, &candidate) != 0 ||
-                candidate.w != width || candidate.h != height ||
-                (refreshRate > 0 &&
-                 candidate.refresh_rate != refreshRate)) {
-                continue;
-            }
-            refreshDifference = preferredRefreshRate > 0
-                ? candidate.refresh_rate - preferredRefreshRate : 0;
-            if (refreshDifference < 0)
-                refreshDifference = -refreshDifference;
-            if (fullscreenMode.w == 0 ||
-                refreshDifference < selectedRefreshDifference ||
-                (refreshDifference == selectedRefreshDifference &&
-                 candidate.refresh_rate > fullscreenMode.refresh_rate)) {
-                fullscreenMode = candidate;
-                selectedRefreshDifference = refreshDifference;
-            }
-        }
-        if (fullscreenMode.w == 0) {
-            SDL_SetError("display %d has no %dx%d fullscreen mode",
-                         displayIndex + 1, width, height);
-            return qfalse;
-        }
-    } else if (windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
-        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): borderless follows
-         * the selected display's desktop mode without changing it. The SDL
-         * fullscreen-desktop flag also tracks the complete display bounds on
-         * arrangements whose origin is not the main display's origin. */
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): do not capture or
+         * switch the selected OS display. Desktop fullscreen preserves the
+         * other connected displays while the renderer presents its selected
+         * resolution into this display-sized surface. */
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    } else if (windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
+        SDL_Rect displayBounds;
+
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): borderless follows
+         * the selected display's complete desktop bounds without entering an
+         * OS fullscreen state or changing its mode. */
+        memset(&displayBounds, 0, sizeof(displayBounds));
+        if (SDL_GetDisplayBounds(displayIndex, &displayBounds) != 0)
+            return qfalse;
+        windowX = displayBounds.x;
+        windowY = displayBounds.y;
+        width = displayBounds.w;
+        height = displayBounds.h;
+        flags |= SDL_WINDOW_BORDERLESS;
 #if defined(__APPLE__)
     } else {
         /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): SDL window sizes
@@ -260,21 +235,10 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
     }
 
     coduoSdlWindow = SDL_CreateWindow(
-        windowTitle,
-        SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex),
-        SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex),
+        windowTitle, windowX, windowY,
         width, height, flags);
     if (coduoSdlWindow == NULL)
         return qfalse;
-
-    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN &&
-        (SDL_SetWindowDisplayMode(coduoSdlWindow, &fullscreenMode) != 0 ||
-         SDL_SetWindowFullscreen(coduoSdlWindow,
-                                 SDL_WINDOW_FULLSCREEN) != 0)) {
-        SDL_DestroyWindow(coduoSdlWindow);
-        coduoSdlWindow = NULL;
-        return qfalse;
-    }
 
     coduoSdlGlContext = SDL_GL_CreateContext(coduoSdlWindow);
     if (coduoSdlGlContext == NULL) {
