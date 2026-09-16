@@ -369,6 +369,13 @@ const void *RB_SwapBuffers(const swapBuffersCommand_t *command)
     if (tess.indexCount != 0)
         RB_EndSurface();
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: the pending 2D surface ends above. Close its
+     * query before platform presentation; GLimp_EndFrame separately measures
+     * the output-composite GPU pass without spanning the blocking window swap. */
+    coduomp_gpu_profile_suspend_segment();
+#endif
+
     CL_UpdateDebugData();
     RB_DrawDebug();
     CL_FlushDebugData(qfalse);
@@ -499,8 +506,11 @@ void RB_ExecuteRenderCommands(const void *data)
         case RC_SET_CGAME_2D_PRESENTATION:
         case RC_SET_CONSOLE_2D_PRESENTATION:
         case RC_SET_UI_2D_PRESENTATION:
-        case RC_SWAP_BUFFERS:
             coduomp_gpu_profile_segment(CODUOMP_GPU_PROFILE_PHASE_2D);
+            break;
+        case RC_SWAP_BUFFERS:
+            /* RB_SwapBuffers closes pending 2D geometry before suspending the
+             * command-group query, so the boundary must be set there. */
             break;
         case RC_DRAW_BUFFER:
             coduomp_gpu_profile_segment(CODUOMP_GPU_PROFILE_PHASE_CLEAR);

@@ -701,6 +701,20 @@ void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase)
     (void)coduomp_gpu_profile_begin(phase, NULL);
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: close the low-overhead command-group query before
+ * entering platform code that may block without submitting GPU work. */
+void coduomp_gpu_profile_suspend_segment(void)
+{
+    coduomp_gpu_profile_frame_t *frame;
+
+    if (coduompGpuProfileCurrentFrame < 0)
+        return;
+
+    frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
+    if (frame->detailLevel == 1 && coduompGpuProfileActiveQuery >= 0)
+        coduomp_gpu_profile_end(qtrue);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: begin one non-overlapping elapsed-time query. A
  * full query pool drops the sample rather than stalling the render thread. */
 qboolean coduomp_gpu_profile_begin(

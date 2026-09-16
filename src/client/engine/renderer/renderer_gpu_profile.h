@@ -31,6 +31,7 @@ void coduomp_gpu_profile_shutdown(void);
 void coduomp_gpu_profile_frame_begin(void);
 void coduomp_gpu_profile_frame_end(void);
 void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase);
+void coduomp_gpu_profile_suspend_segment(void);
 qboolean coduomp_gpu_profile_begin(
     coduomp_gpu_profile_phase_t phase, const char *shaderName);
 qboolean coduomp_gpu_profile_begin_surface(void);
