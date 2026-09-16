@@ -203,18 +203,14 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
     (void)SDL_GL_SetAttribute(
         SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 
-    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN) {
-        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): do not capture or
-         * switch the selected OS display. Desktop fullscreen preserves the
-         * other connected displays while the renderer presents its selected
-         * resolution into this display-sized surface. */
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-    } else if (windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
+    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN ||
+        windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
         SDL_Rect displayBounds;
 
-        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): borderless follows
-         * the selected display's complete desktop bounds without entering an
-         * OS fullscreen state or changing its mode. */
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): every SDL platform
+         * uses a desktop-sized borderless window for both non-windowed modes.
+         * This follows the selected display's complete bounds without asking
+         * the window system to capture it, enter fullscreen, or change mode. */
         memset(&displayBounds, 0, sizeof(displayBounds));
         if (SDL_GetDisplayBounds(displayIndex, &displayBounds) != 0)
             return qfalse;
