@@ -82,12 +82,14 @@ int32_t rendererWin32DesktopWidth;
 int32_t rendererWin32DesktopHeight;
 renderer_win32_window_proc_t rendererWin32WindowProcedure;
 qboolean rendererWin32FullscreenModeSet;
-/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: selected SDL display used by the
- * mode-query callback and native window creation during one renderer start. */
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: selected platform display used by
+ * mode queries and native window creation during one renderer start. */
 static int32_t coduompRendererDisplayIndex;
 #if defined(_WIN32)
 static renderer_pixel_format_descriptor_t rendererWin32PixelFormat;
 static qboolean rendererWin32WindowClassRegistered;
+static int32_t coduompRendererDisplayX;
+static int32_t coduompRendererDisplayY;
 #endif
 
 /* Source: CoDUOMP.exe 0x004f3fa0..0x004f4079.
@@ -497,8 +499,8 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
          * topmost style here hides non-activating OS overlays such as Windows
          * screen snipping behind the game. */
         extendedStyle = 0;
-        windowX = 0;
-        windowY = 0;
+        windowX = coduompRendererDisplayX;
+        windowY = coduompRendererDisplayY;
     } else {
         style = WS_VISIBLE | WS_CAPTION | WS_SYSMENU;
         extendedStyle = 0;
@@ -508,12 +510,12 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
             ri.Cvar_Get("vid_xpos", "0", CVAR_NONE);
         cvar_t *yPosition =
             ri.Cvar_Get("vid_ypos", "0", CVAR_NONE);
-        windowX = xPosition->integer;
-        windowY = yPosition->integer;
-        if (windowX < 0)
-            windowX = 0;
-        if (windowY < 0)
-            windowY = 0;
+        windowX = coduompRendererDisplayX + xPosition->integer;
+        windowY = coduompRendererDisplayY + yPosition->integer;
+        if (windowX < coduompRendererDisplayX)
+            windowX = coduompRendererDisplayX;
+        if (windowY < coduompRendererDisplayY)
+            windowY = coduompRendererDisplayY;
     }
 
     const int32_t windowWidth = windowRect.right - windowRect.left;
@@ -521,10 +523,16 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
     if (windowMode == R_WINDOW_MODE_WINDOWED &&
         windowWidth < rendererWin32DesktopWidth &&
         windowHeight < rendererWin32DesktopHeight) {
-        if (windowX + windowWidth > rendererWin32DesktopWidth)
-            windowX = rendererWin32DesktopWidth - windowWidth;
-        if (windowY + windowHeight > rendererWin32DesktopHeight)
-            windowY = rendererWin32DesktopHeight - windowHeight;
+        if (windowX + windowWidth >
+            coduompRendererDisplayX + rendererWin32DesktopWidth) {
+            windowX = coduompRendererDisplayX +
+                      rendererWin32DesktopWidth - windowWidth;
+        }
+        if (windowY + windowHeight >
+            coduompRendererDisplayY + rendererWin32DesktopHeight) {
+            windowY = coduompRendererDisplayY +
+                      rendererWin32DesktopHeight - windowHeight;
+        }
     }
 
     if (win32MainWindow == NULL) {
@@ -580,30 +588,73 @@ qboolean GLW_CreateWindow(const char *driverName, int32_t width,
 }
 
 #if defined(_WIN32)
-/* NOT_FROM_ORIGINAL_SOURCE: asks Windows for the primary output target's
- * preferred signal mode. Unlike ENUM_CURRENT_SETTINGS, this is independent of
- * desktop scaling and the user's current logical desktop resolution. */
-static qboolean coduomp_glw_get_windows_native_display_mode_compat(
-    int32_t *width, int32_t *height, int32_t *refreshRate)
+/* NOT_FROM_ORIGINAL_SOURCE: reports whether a Windows display device is an
+ * independently addressable part of the active desktop. */
+static qboolean coduomp_glw_windows_display_is_available_compat(
+    const DISPLAY_DEVICEA *device)
 {
-    DISPLAY_DEVICEA primaryDevice = {0};
-    UINT32 pathCount = 0;
-    UINT32 modeCount = 0;
-    DISPLAYCONFIG_PATH_INFO *paths = NULL;
-    DISPLAYCONFIG_MODE_INFO *modes = NULL;
-    qboolean found = qfalse;
+    return (device->StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) != 0 &&
+           (device->StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) == 0;
+}
 
-    primaryDevice.cb = sizeof(primaryDevice);
+/* NOT_FROM_ORIGINAL_SOURCE: counts active Windows desktop display devices in
+ * the same order used to interpret r_display. */
+static int32_t coduomp_glw_get_windows_display_count_compat(void)
+{
+    int32_t displayCount = 0;
+
     for (DWORD index = 0;; ++index) {
         DISPLAY_DEVICEA device = {0};
 
         device.cb = sizeof(device);
         if (EnumDisplayDevicesA(NULL, index, &device, 0) == FALSE)
             break;
-        if ((device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0) {
-            primaryDevice = device;
-            break;
-        }
+        if (coduomp_glw_windows_display_is_available_compat(&device) != qfalse)
+            ++displayCount;
+    }
+    return displayCount;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: resolves an r_display index to the corresponding
+ * active Windows display device. */
+static qboolean coduomp_glw_get_windows_display_device_compat(
+    int32_t displayIndex, DISPLAY_DEVICEA *selectedDevice)
+{
+    int32_t availableIndex = 0;
+
+    if (displayIndex < 0)
+        return qfalse;
+    for (DWORD index = 0;; ++index) {
+        DISPLAY_DEVICEA device = {0};
+
+        device.cb = sizeof(device);
+        if (EnumDisplayDevicesA(NULL, index, &device, 0) == FALSE)
+            return qfalse;
+        if (coduomp_glw_windows_display_is_available_compat(&device) == qfalse)
+            continue;
+        if (availableIndex++ != displayIndex)
+            continue;
+        *selectedDevice = device;
+        return qtrue;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: asks Windows for the selected output target's
+ * preferred signal mode. Unlike ENUM_CURRENT_SETTINGS, this is independent of
+ * desktop scaling and the user's current logical desktop resolution. */
+static qboolean coduomp_glw_get_windows_native_display_mode_compat(
+    int32_t *width, int32_t *height, int32_t *refreshRate)
+{
+    DISPLAY_DEVICEA selectedDevice = {0};
+    UINT32 pathCount = 0;
+    UINT32 modeCount = 0;
+    DISPLAYCONFIG_PATH_INFO *paths = NULL;
+    DISPLAYCONFIG_MODE_INFO *modes = NULL;
+    qboolean found = qfalse;
+
+    if (coduomp_glw_get_windows_display_device_compat(
+            coduompRendererDisplayIndex, &selectedDevice) == qfalse) {
+        return qfalse;
     }
 
     if (GetDisplayConfigBufferSizes(
@@ -639,8 +690,7 @@ static qboolean coduomp_glw_get_windows_native_display_mode_compat(
                 NULL, NULL) == 0) {
             continue;
         }
-        if (primaryDevice.DeviceName[0] != '\0' &&
-            strcmp(primaryDevice.DeviceName, sourceDeviceName) != 0) {
+        if (strcmp(selectedDevice.DeviceName, sourceDeviceName) != 0) {
             continue;
         }
 
@@ -701,10 +751,15 @@ static qboolean coduomp_glw_display_mode_available_compat(int32_t width,
                                                           int32_t height)
 {
 #if defined(_WIN32)
+    DISPLAY_DEVICEA selectedDevice = {0};
     int32_t nativeWidth;
     int32_t nativeHeight;
     int32_t nativeRefreshRate;
 
+    if (coduomp_glw_get_windows_display_device_compat(
+            coduompRendererDisplayIndex, &selectedDevice) == qfalse) {
+        return qfalse;
+    }
     if (coduomp_glw_get_windows_native_display_mode_compat(
             &nativeWidth, &nativeHeight,
             &nativeRefreshRate) != qfalse &&
@@ -715,8 +770,10 @@ static qboolean coduomp_glw_display_mode_available_compat(int32_t width,
         DEVMODEA mode = {0};
 
         mode.dmSize = sizeof(mode);
-        if (EnumDisplaySettingsA(NULL, index, &mode) == FALSE)
+        if (EnumDisplaySettingsA(
+                selectedDevice.DeviceName, index, &mode) == FALSE) {
             return qfalse;
+        }
         if ((int32_t)mode.dmPelsWidth == width &&
             (int32_t)mode.dmPelsHeight == height) {
             return qtrue;
@@ -768,13 +825,15 @@ renderer_mode_set_result_t GLW_SetMode(
     int32_t windowMode)
 {
 #if defined(_WIN32)
-    const int32_t displayCount = 1;
-    coduompRendererDisplayIndex = 0;
+    const int32_t displayCount =
+        coduomp_glw_get_windows_display_count_compat();
+    DISPLAY_DEVICEA windowsDisplayDevice = {0};
+    DEVMODEA windowsDesktopMode = {0};
 #else
     const int32_t displayCount =
         coduomp_sdl_get_display_count_compat();
     coduomp_sdl_display_info_t displayInfo;
-
+#endif
     coduompRendererDisplayIndex = r_display->integer;
     if (coduompRendererDisplayIndex < 0 ||
         coduompRendererDisplayIndex >= displayCount) {
@@ -783,11 +842,46 @@ renderer_mode_set_result_t GLW_SetMode(
                   coduompRendererDisplayIndex + 1);
         coduompRendererDisplayIndex = 0;
     }
-#endif
     ri.Cvar_Set("r_displayCount", va("%d", displayCount));
     ri.Cvar_Set("r_currentDisplayIndex",
                 va("%d", coduompRendererDisplayIndex));
-#if !defined(_WIN32)
+#if defined(_WIN32)
+    windowsDesktopMode.dmSize = sizeof(windowsDesktopMode);
+    if (displayCount <= 0 ||
+        coduomp_glw_get_windows_display_device_compat(
+            coduompRendererDisplayIndex, &windowsDisplayDevice) == qfalse ||
+        EnumDisplaySettingsA(
+            windowsDisplayDevice.DeviceName, ENUM_CURRENT_SETTINGS,
+            &windowsDesktopMode) == FALSE) {
+        ri.Printf(R_PRINT_WARNING,
+                  "WARNING: could not query display %d\n",
+                  coduompRendererDisplayIndex + 1);
+        return R_MODE_SET_INVALID;
+    }
+    coduompRendererDisplayX = windowsDesktopMode.dmPosition.x;
+    coduompRendererDisplayY = windowsDesktopMode.dmPosition.y;
+    rendererWin32DesktopColorBits =
+        (int32_t)windowsDesktopMode.dmBitsPerPel;
+    rendererWin32DesktopWidth =
+        (int32_t)windowsDesktopMode.dmPelsWidth;
+    rendererWin32DesktopHeight =
+        (int32_t)windowsDesktopMode.dmPelsHeight;
+    ri.Cvar_Set("r_currentDisplayLogicalWidth",
+                va("%d", rendererWin32DesktopWidth));
+    ri.Cvar_Set("r_currentDisplayLogicalHeight",
+                va("%d", rendererWin32DesktopHeight));
+    ri.Cvar_Set("r_currentDisplayBackingWidth",
+                va("%d", rendererWin32DesktopWidth));
+    ri.Cvar_Set("r_currentDisplayBackingHeight",
+                va("%d", rendererWin32DesktopHeight));
+    ri.Cvar_Set("r_currentDisplayBuiltin", "0");
+    ri.Printf(R_PRINT_ALL,
+              "...display %d/%d: desktop %dx%d at %d,%d (%s)\n",
+              coduompRendererDisplayIndex + 1, displayCount,
+              rendererWin32DesktopWidth, rendererWin32DesktopHeight,
+              coduompRendererDisplayX, coduompRendererDisplayY,
+              windowsDisplayDevice.DeviceName);
+#else
     if (coduomp_sdl_get_display_info_compat(
             coduompRendererDisplayIndex, &displayInfo) != qfalse) {
         ri.Cvar_Set("r_currentDisplayLogicalWidth",
@@ -877,15 +971,6 @@ renderer_mode_set_result_t GLW_SetMode(
     ri.Printf(R_PRINT_ALL, " %d %d %s\n",
               glConfig.vidWidth, glConfig.vidHeight, modeKind);
 
-    HDC desktopDeviceContext = GetDC(GetDesktopWindow());
-    rendererWin32DesktopColorBits =
-        GetDeviceCaps(desktopDeviceContext, BITSPIXEL);
-    rendererWin32DesktopWidth =
-        GetDeviceCaps(desktopDeviceContext, HORZRES);
-    rendererWin32DesktopHeight =
-        GetDeviceCaps(desktopDeviceContext, VERTRES);
-    ReleaseDC(GetDesktopWindow(), desktopDeviceContext);
-
     if (windowMode == R_WINDOW_MODE_WINDOWED) {
         if (mode != R_CURRENT_DISPLAY_VIDEO_MODE) {
             while (rendererWin32DesktopWidth < glConfig.vidWidth ||
@@ -918,7 +1003,7 @@ renderer_mode_set_result_t GLW_SetMode(
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fullscreen presentation
      * must not change or capture the OS display mode. The game keeps its
      * selected hardware-sized render surface and composites it into a popup
-     * covering the current primary desktop, leaving other monitors active. */
+     * covering the selected desktop, leaving other monitors active. */
     if (rendererWin32FullscreenModeSet != qfalse)
         ChangeDisplaySettingsA(NULL, 0);
     rendererWin32FullscreenModeSet = qfalse;
@@ -938,7 +1023,8 @@ renderer_mode_set_result_t GLW_SetMode(
     DEVMODEA currentMode = {0};
     currentMode.dmSize = sizeof(currentMode);
     if (EnumDisplaySettingsA(
-            NULL, ENUM_CURRENT_SETTINGS, &currentMode) != FALSE) {
+            windowsDisplayDevice.DeviceName,
+            ENUM_CURRENT_SETTINGS, &currentMode) != FALSE) {
         glConfig.displayFrequency =
             (int32_t)currentMode.dmDisplayFrequency;
     }
