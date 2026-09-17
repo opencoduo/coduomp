@@ -753,7 +753,7 @@ static void audio_warn_wav_repair(const char *path, const char *field,
                path, field, oldValue, newValue);
 }
 
-#if !defined(_WIN32)
+#if !defined(AUDIO_BACKEND_MILES)
 /* NOT_FROM_ORIGINAL_SOURCE: a bounded top-level chunk found in a loaded WAV. */
 typedef struct audio_wav_chunk_s {
     uint8_t *data;
@@ -1097,8 +1097,8 @@ static qboolean audio_parse_loaded_wav(
 }
 #endif
 
-#if defined(_WIN32)
-/* NOT_FROM_ORIGINAL_SOURCE: Miles parses the original WAV buffer on Windows,
+#if defined(AUDIO_BACKEND_MILES)
+/* NOT_FROM_ORIGINAL_SOURCE: the Miles backend parses the original WAV buffer,
  * matching stock. Bound only the payload range returned to the engine before
  * its allocation and copy; do not reinterpret or repair Miles metadata. */
 static qboolean audio_bound_miles_wav_payload(
@@ -3445,7 +3445,7 @@ snd_alias_sound_file_t *MSS_LoadSoundFile(const char *filename)
     }
 
     audio_sound_info_t sourceInfo;
-#if defined(_WIN32)
+#if defined(AUDIO_BACKEND_MILES)
     if (audio_WAV_info(fileData, &sourceInfo) == AUDIO_WAV_INFO_INVALID)
         goto invalid_sound_file;
     /* NOT_FROM_ORIGINAL_SOURCE: validate the loaded audio data and playback state before crossing the Miles boundary. */
