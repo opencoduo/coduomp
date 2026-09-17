@@ -399,10 +399,11 @@ void CM_LoadMap(const char *mapName, qboolean clientLoad,
         Com_Error(ERR_DROP, "EXE_ERR_COULDNT_LOAD\x15%s", localMapName);
     }
 
-    /* NOT_FROM_ORIGINAL_SOURCE: validate the header and every nonempty lump
-     * range against the loaded file before dereferencing or dispatching it. */
+    /* NOT_FROM_ORIGINAL_SOURCE: validate the header and consumed lump ranges
+     * before dereferencing or dispatching them. The renderer bounds a partial
+     * lighting prefix separately. */
     const int32_t invalidLump =
-        coduo_compat_bsp_invalid_lump_index(fileBuffer, fileLength);
+        coduo_compat_bsp_invalid_load_lump_index(fileBuffer, fileLength);
     if (invalidLump == CODUO_BSP_VALIDATION_SHORT_HEADER) {
         Com_Error(ERR_DROP, "CM_LoadMap: %s has a truncated BSP header",
                   localMapName);

@@ -44,4 +44,24 @@ static inline int32_t coduo_compat_bsp_invalid_lump_index(
     return CODUO_BSP_VALIDATION_VALID;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: map loading retains the declared light count,
+ * while the renderer supplies zeroes for unavailable light bytes. Permit that
+ * bounded prefix only for loading; direct lump reads and rewrites stay strict.
+ * Retain the file-size bound on the declared lighting allocation. */
+static inline int32_t coduo_compat_bsp_invalid_load_lump_index(const void *fileData, int32_t fileLength)
+{
+    if (fileData == NULL || fileLength < (int32_t)sizeof(dheader_t))
+        return CODUO_BSP_VALIDATION_SHORT_HEADER;
+
+    dheader_t boundedHeader = *(const dheader_t *)fileData;
+    lump_t *const lights = &boundedHeader.lumps[BSP_LUMP_LIGHTS];
+    if (lights->filelen > 0 && lights->filelen <= fileLength &&
+        lights->fileofs >= 0 && lights->fileofs <= fileLength) {
+        const int32_t availableBytes = fileLength - lights->fileofs;
+        if (lights->filelen > availableBytes)
+            lights->filelen = availableBytes;
+    }
+    return coduo_compat_bsp_invalid_lump_index(&boundedHeader, fileLength);
+}
+
 #endif
