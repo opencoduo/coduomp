@@ -118,12 +118,14 @@ int32_t FS_ReadFile(const char *qpath, void **buffer)
     char *const contents = Hunk_AllocateTempMemoryInternal(
         (size_t)((uint32_t)length + 1u));
     *buffer = contents;
+    const qboolean archiveFile = fs_handleFiles[handle].zipArchive != NULL ? qtrue : qfalse;
     const int32_t bytesRead = FS_Read(contents, length, handle);
     FS_FCloseFile(handle);
 
-    /* NOT_FROM_ORIGINAL_SOURCE: publish the owned whole-file buffer only after
-     * the complete requested payload has been read. */
-    if (bytesRead != length) {
+    /* NOT_FROM_ORIGINAL_SOURCE: loose files must supply their measured length.
+     * Archive reads retain the declared-length buffer, including the produced
+     * prefix and the initialized remainder supplied by FS_Read. */
+    if (bytesRead != length && archiveFile == qfalse) {
         Com_Printf("FS_ReadFile: short read for %s (%i of %i bytes)\n",
                    qpath, bytesRead, length);
         FS_FreeFile(contents);
