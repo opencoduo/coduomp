@@ -1197,22 +1197,30 @@ void SCR_DrawDemoPlaybackControls(void)
     static const vec4_t timelineColor = { 0.2f, 0.2f, 0.2f, 0.9f };
     static const vec4_t progressColor = { 0.9f, 0.16f, 0.12f, 1.0f };
     static const vec4_t thumbColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    const qboolean paused =
-        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
-            ? qtrue : qfalse;
-    char statusText[CODUOMP_DEMO_STATUS_TEXT_CAPACITY];
-    (void)coduo_crt_snprintf(
-        statusText, sizeof(statusText),
-        paused != qfalse
-            ? "DEMO PAUSED  %gx   SPACE Play   D/F Speed -/+   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub"
-            : "DEMO  %gx   SPACE Pause   D/F Speed -/+   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub",
-        (double)coduomp_demo_playback_speed());
 
     if (clc.demoPlayback == qfalse || cls.state != CA_ACTIVE ||
         cls.keyCatchers != 0 ||
         Cvar_VariableIntegerValue("cl_demoControlOverlay") == 0) {
         return;
     }
+
+    const qboolean paused =
+        cl_freezeDemo != NULL && cl_freezeDemo->integer != 0
+            ? qtrue : qfalse;
+    const char *statusFormat = paused != qfalse
+        ? "DEMO PAUSED  %gx   SPACE Play   D/F Speed -/+   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub"
+        : "DEMO  %gx   SPACE Pause   D/F Speed -/+   LEFT/RIGHT 5s   ,/. Prev/Next   MOUSE1 Scrub";
+    if (SEH_GetCurrentLanguage() == LANGUAGE_SPANISH) {
+        /* Match the game's Windows-1252 glyph encoding and keep the longer
+         * paused legend within the panel at the slowest playback speed. */
+        statusFormat = paused != qfalse
+            ? "DEMO EN PAUSA %gx  ESPACIO Seguir  D/F Vel. -/+  IZQ/DER 5s  ,/. Ant./Sig.  RAT\323N1 Arrastrar"
+            : "DEMO  %gx  ESPACIO Pausa  D/F Vel. -/+  IZQ/DER 5s  ,/. Ant./Sig.  RAT\323N1 Arrastrar";
+    }
+    char statusText[CODUOMP_DEMO_STATUS_TEXT_CAPACITY];
+    (void)coduo_crt_snprintf(
+        statusText, sizeof(statusText), statusFormat,
+        (double)coduomp_demo_playback_speed());
 
     const float fixedAdvance = 6.0f;
     const float textWidth = (float)rendererExports.TextWidth(

@@ -47,6 +47,10 @@ The same actions are available as bindable console commands:
 | `1` | Show the playback controls and enable mouse scrubbing. This is the default. |
 | `0` | Hide the playback controls and disable mouse scrubbing. Keyboard and console playback controls remain available. |
 
+The control legend follows the game language: Spanish (`cl_language 4`) uses
+Spanish labels for playback status, keys, speed, frame stepping, and scrubbing.
+Other languages use the English legend.
+
 The setting is archived in the client profile. To hide the controls and save
 the choice:
 
