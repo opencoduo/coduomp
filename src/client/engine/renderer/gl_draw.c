@@ -87,6 +87,9 @@ void GL_DrawElements(uint32_t mode, int32_t count, uint32_t type,
 void GL_DrawRangeElements(uint32_t mode, uint32_t start, uint32_t end,
                           int32_t count, uint32_t type, const void *indices)
 {
+    uint32_t drawIndexType = type;
+    const void *drawIndices = indices;
+
     /* The original ADD/INC counters wrap in 32 bits. */
     backEnd.pc.drawnIndexCount = (int32_t)(
         (uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)count);
@@ -97,13 +100,33 @@ void GL_DrawRangeElements(uint32_t mode, uint32_t start, uint32_t end,
     coduomp_gpu_profile_record_draw_call();
 #endif
 
+    /* NOT_FROM_ORIGINAL_SOURCE: cached static models can use an enlarged
+     * shared vertex cache. Route only those optimized backends through the
+     * dedicated 32-bit index stream so cache-wide offsets above 65,535 do not
+     * wrap; all original 16-bit optimized geometry remains unchanged. */
+    if (type == GL_UNSIGNED_SHORT && indices == tess.optimizedIndexes &&
+        tess.shader != NULL) {
+        switch (tess.shader->optimizedBackend) {
+        case SHADER_BACKEND_CACHED_STATIC_MODEL_GENERIC:
+        case SHADER_BACKEND_CACHED_STATIC_MODEL_ARB:
+        case SHADER_BACKEND_CACHED_STATIC_MODEL_ATI:
+        case SHADER_BACKEND_CACHED_STATIC_MODEL_NV:
+            drawIndexType = GL_UNSIGNED_INT;
+            drawIndices = coduomp_cached_static_model_indexes;
+            break;
+
+        default:
+            break;
+        }
+    }
+
     if (qglDrawRangeElementsEXT != NULL && end != 0) {
         /* Callers supply an exclusive vertex bound; OpenGL defines `end` as
          * inclusive. Convert the bound at the API boundary. */
         qglDrawRangeElementsEXT(mode, start, end - 1u,
-                                count, type, indices);
+                                count, drawIndexType, drawIndices);
     } else {
-        qglDrawElements(mode, count, type, indices);
+        qglDrawElements(mode, count, drawIndexType, drawIndices);
     }
 }
 

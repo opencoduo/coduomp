@@ -1957,6 +1957,11 @@ extern qboolean coduomp_backend_console_2d_compat_active;
 extern qboolean coduomp_backend_ui_2d_compat_active;
 extern qboolean coduomp_backend_ui_2d_stretch_active;
 extern shaderCommands_t tess;
+/* NOT_FROM_ORIGINAL_SOURCE: cached static models may address more than one
+ * 16-bit vertex range, so the enlarged cache uses a dedicated 32-bit index
+ * stream without changing the recovered shaderCommands_t layout. */
+extern uint32_t
+    coduomp_cached_static_model_indexes[R_MAX_OPTIMIZED_TESS_INDEXES];
 extern renderer_surface_fn_t rb_surfaceTable[];
 extern shader_t rendererParsedShader;
 /* Original shader-parser requirement bank at 0x03880468..0x03880476. */

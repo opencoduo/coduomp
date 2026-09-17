@@ -8,6 +8,10 @@
 #include <stdint.h>
 #include <string.h>
 
+/* NOT_FROM_ORIGINAL_SOURCE: 32-bit cached-static-model indices allow the
+ * cache-wide vertex offset to exceed the original 65,535 limit. */
+uint32_t coduomp_cached_static_model_indexes[R_MAX_OPTIMIZED_TESS_INDEXES];
+
 typedef enum rb_static_model_show_color_e {
     RB_STATIC_MODEL_SHOW_COLOR_BLUE,
     RB_STATIC_MODEL_SHOW_COLOR_T2V3
@@ -290,6 +294,13 @@ void RB_SurfaceStaticModelCached(renderer_surface_t *surfaceData)
 
     renderer_static_model_surface_t *surface =
         cachedSurface->cached.source;
+    const int32_t requestedIndexEnd = (int32_t)(
+        (uint32_t)tess.renderedIndexCount +
+        (uint32_t)surface->indexCount);
+
+    if (requestedIndexEnd >= R_MAX_OPTIMIZED_TESS_INDEXES)
+        RB_CheckOverflow_Optimized();
+
     const int32_t firstVertex = cachedSurface->cached.vertexOffset;
     const int32_t vertexEnd = (int32_t)(
         (uint32_t)firstVertex + (uint32_t)surface->vertexCount);
@@ -304,30 +315,21 @@ void RB_SurfaceStaticModelCached(renderer_surface_t *surfaceData)
             tess.optimizedVertexEnd = vertexEnd;
     }
 
-    uint16_t *destination =
-        &tess.optimizedIndexes[tess.renderedIndexCount];
-    const uint32_t packedVertexOffset =
-        (uint32_t)firstVertex | ((uint32_t)firstVertex << 16);
-    const int32_t sixIndexBlockCount = surface->indexCount / 6;
+    uint32_t *destination =
+        &coduomp_cached_static_model_indexes[tess.renderedIndexCount];
 
     tess.renderedIndexCount = (int32_t)(
         (uint32_t)tess.renderedIndexCount +
         (uint32_t)surface->indexCount);
 
-    /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
-    for (uint32_t blockIndex = 0;
-         blockIndex < (uint32_t)sixIndexBlockCount;
-         ++blockIndex) {
-        for (int32_t packedWord = 0; packedWord < 3; ++packedWord) {
-            const uint32_t packedIndex =
-                blockIndex * 3u + (uint32_t)packedWord;
-            uint32_t indices;
-            memcpy(&indices, &surface->indices[packedIndex * 2],
-                   sizeof(indices));
-            indices += packedVertexOffset;
-            memcpy(&destination[packedIndex * 2], &indices,
-                   sizeof(indices));
-        }
+    /* NOT_FROM_ORIGINAL_SOURCE: widen each local surface index before adding
+     * the cache-wide vertex offset; the original packed 16-bit addition
+     * wraps once the cache contains more than 65,536 vertices. */
+    for (uint32_t index = 0;
+         index < (uint32_t)surface->indexCount;
+         ++index) {
+        destination[index] =
+            (uint32_t)surface->indices[index] + (uint32_t)firstVertex;
     }
 }
 

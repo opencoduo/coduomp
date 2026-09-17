@@ -8,13 +8,15 @@
 #include <string.h>
 
 enum {
-    R_STATIC_MODEL_CACHE_VERTEX_CAPACITY = 65536,
+    SMC_PAGE_VERTEX_COUNT = 512,
+    SMC_ORIGINAL_PAGE_COUNT = 128,
+    SMC_PAGE_COUNT = 512,
+    R_STATIC_MODEL_CACHE_VERTEX_CAPACITY =
+        SMC_PAGE_COUNT * SMC_PAGE_VERTEX_COUNT,
     R_STATIC_MODEL_CACHE_VERTEX_BYTES = 24,
     R_STATIC_MODEL_CACHE_STORAGE_BYTES =
         R_STATIC_MODEL_CACHE_VERTEX_CAPACITY *
         R_STATIC_MODEL_CACHE_VERTEX_BYTES,
-    SMC_PAGE_COUNT = 128,
-    SMC_PAGE_VERTEX_COUNT = 512,
     SMC_SURFACES_PER_PAGE = 16,
     SMC_TREE_NODE_COUNT = 31,
     SMC_MIN_BLOCK_VERTEX_COUNT = 32,
@@ -22,11 +24,6 @@ enum {
     SMC_MIN_SIZE_SHIFT = 5,
     SMC_MAX_SIZE_SHIFT = 9
 };
-
-/* Cached static-model draw indices are 16-bit and include the cache-wide
- * vertex offset, so the shared cache cannot address more than 65536 vertices. */
-_Static_assert(R_STATIC_MODEL_CACHE_VERTEX_CAPACITY == 65536,
-               "static-model cache exceeds its 16-bit draw-index range");
 
 typedef struct smc_tree_node_s {
     uint16_t usedVertexCount;                 /* original +0x00 */
@@ -43,15 +40,29 @@ typedef struct smc_page_s {
 } smc_page_t;
 
 typedef struct smc_cache_s {
+    /* NOT_FROM_ORIGINAL_SOURCE: retain four times the original 128 pages so
+     * dense maps do not continuously evict and rebuild visible static-model
+     * lighting. Cached draws use a dedicated 32-bit index stream. */
     smc_page_t pages[SMC_PAGE_COUNT];
     renderer_static_model_cache_link_t
-        freeLists[SMC_SIZE_CLASS_COUNT];          /* original +0xe400 */
-    renderer_static_model_cache_link_t lruList;  /* original +0xe428 */
-    int32_t allocatedVertexCapacity;              /* original +0xe430 */
-    int32_t usedVertexCount;                      /* original +0xe434 */
+        freeLists[SMC_SIZE_CLASS_COUNT]; /* original after 128 pages: +0xe400 */
+    renderer_static_model_cache_link_t lruList; /* original after 128 pages: +0xe428 */
+    int32_t allocatedVertexCapacity; /* original after 128 pages: +0xe430 */
+    int32_t usedVertexCount; /* original after 128 pages: +0xe434 */
 } smc_cache_t;
 
 #if UINTPTR_MAX == UINT32_MAX
+/* NOT_FROM_ORIGINAL_SOURCE: preserve an i386 description of the retail
+ * cache's 128-page layout while the maintained runtime uses the enlarged
+ * cache above. */
+typedef struct smc_original_cache_layout_s {
+    smc_page_t pages[SMC_ORIGINAL_PAGE_COUNT];
+    renderer_static_model_cache_link_t freeLists[SMC_SIZE_CLASS_COUNT];
+    renderer_static_model_cache_link_t lruList;
+    int32_t allocatedVertexCapacity;
+    int32_t usedVertexCount;
+} smc_original_cache_layout_t;
+
 _Static_assert(_Alignof(smc_tree_node_t) == 0x2,
                "smc_tree_node_t original alignment");
 _Static_assert(offsetof(smc_tree_node_t, usedVertexCount) == 0x00,
@@ -92,27 +103,29 @@ _Static_assert(sizeof(smc_page_t) == 0x1c8,
 
 _Static_assert(_Alignof(smc_cache_t) == 0x4,
                "smc_cache_t original alignment");
-_Static_assert(offsetof(smc_cache_t, pages) == 0x0000,
+_Static_assert(offsetof(smc_original_cache_layout_t, pages) == 0x0000,
                "smc_cache_t pages offset");
-_Static_assert(sizeof(((smc_cache_t *)0)->pages) == 0xe400,
+_Static_assert(sizeof(((smc_original_cache_layout_t *)0)->pages) == 0xe400,
                "smc_cache_t pages extent");
-_Static_assert(offsetof(smc_cache_t, freeLists) == 0xe400,
+_Static_assert(offsetof(smc_original_cache_layout_t, freeLists) == 0xe400,
                "smc_cache_t freeLists offset");
-_Static_assert(sizeof(((smc_cache_t *)0)->freeLists) == 0x0028,
+_Static_assert(sizeof(((smc_original_cache_layout_t *)0)->freeLists) == 0x0028,
                "smc_cache_t freeLists extent");
-_Static_assert(offsetof(smc_cache_t, lruList) == 0xe428,
+_Static_assert(offsetof(smc_original_cache_layout_t, lruList) == 0xe428,
                "smc_cache_t lruList offset");
-_Static_assert(sizeof(((smc_cache_t *)0)->lruList) == 0x0008,
+_Static_assert(sizeof(((smc_original_cache_layout_t *)0)->lruList) == 0x0008,
                "smc_cache_t lruList extent");
-_Static_assert(offsetof(smc_cache_t, allocatedVertexCapacity) == 0xe430,
+_Static_assert(offsetof(smc_original_cache_layout_t,
+                        allocatedVertexCapacity) == 0xe430,
                "smc_cache_t allocatedVertexCapacity offset");
-_Static_assert(sizeof(((smc_cache_t *)0)->allocatedVertexCapacity) == 0x0004,
+_Static_assert(sizeof(((smc_original_cache_layout_t *)0)
+                          ->allocatedVertexCapacity) == 0x0004,
                "smc_cache_t allocatedVertexCapacity extent");
-_Static_assert(offsetof(smc_cache_t, usedVertexCount) == 0xe434,
+_Static_assert(offsetof(smc_original_cache_layout_t, usedVertexCount) == 0xe434,
                "smc_cache_t usedVertexCount offset");
-_Static_assert(sizeof(((smc_cache_t *)0)->usedVertexCount) == 0x0004,
+_Static_assert(sizeof(((smc_original_cache_layout_t *)0)->usedVertexCount) == 0x0004,
                "smc_cache_t usedVertexCount extent");
-_Static_assert(sizeof(smc_cache_t) == 0xe438,
+_Static_assert(sizeof(smc_original_cache_layout_t) == 0xe438,
                "smc_cache_t original size");
 #endif
 
@@ -765,7 +778,8 @@ void R_InitStaticModelCache(void)
  * alignment banks. Name: same-module Mac symbol R_StaticModelCacheStats_f. */
 void R_StaticModelCacheStats_f(void)
 {
-    const float cachePercentPerVertex = 0.00152587890625f;
+    const float cachePercentPerVertex =
+        100.0f / (float)R_STATIC_MODEL_CACHE_VERTEX_CAPACITY;
 
     ri.Printf(R_PRINT_ALL,
               "%.2f%% of cache is currently allocated.\n",
