@@ -12,9 +12,20 @@ enum {
     R_FONT_CACHE_COUNT = 8,
     R_FONT_GLYPH_COUNT = 256,
     R_FONT_GLYPH_SHADER_COUNT = 255,
+    R_FONT_ATLAS_MAX_PAGES = R_FONT_GLYPH_SHADER_COUNT,
     R_FONT_PATH_SIZE = 1024,
     R_LOCALIZED_FONT_PATH_SIZE = 256
 };
+
+typedef struct coduomp_font_atlas_page_s {
+    char imageName[MAX_QPATH];
+    uint8_t *pixels;
+    uint16_t width;
+    uint16_t height;
+    uint16_t x;
+    uint16_t y;
+    uint32_t format;
+} coduomp_font_atlas_page_t;
 
 /* Original storage at 0x0387ba20..0x0387ba67. R_LoadAsianFont initializes the
  * page handles and the shared glyph record; R_GetCharacterGlyph rewrites only
@@ -401,6 +412,179 @@ static void R_ReadFontGlyph(glyphInfo_t *glyph)
     rendererFontDataCursor += sizeof(glyph->shaderName);
 }
 
+/* OPTIMIZATION (NOT_FROM_ORIGINAL_SOURCE): copy one font page into a shared
+ * load-time atlas without changing the page's compressed representation. */
+static qboolean coduomp_font_copy_atlas_page(
+    const image_t *atlasLayout, uint8_t *atlasPixels,
+    const coduomp_font_atlas_page_t *page)
+{
+    switch (page->format) {
+    case GL_RGBA:
+        CopyImageTile_RGBA(atlasLayout, atlasPixels, page->pixels,
+                           page->x, page->y, page->width, page->height);
+        return qtrue;
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+        CopyImageTile_DXT1(atlasLayout, atlasPixels, page->pixels,
+                           page->x, page->y, page->width, page->height);
+        return qtrue;
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+        CopyImageTile_DXT3(atlasLayout, atlasPixels, page->pixels,
+                           page->x, page->y, page->width, page->height);
+        return qtrue;
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+        CopyImageTile_DXT5(atlasLayout, atlasPixels, page->pixels,
+                           page->x, page->y, page->width, page->height);
+        return qtrue;
+    default:
+        return qfalse;
+    }
+}
+
+/* OPTIMIZATION (NOT_FROM_ORIGINAL_SOURCE): Latin font data can alternate
+ * between several texture pages inside one string. Build one synchronous
+ * atlas and remap the serialized glyph UVs once, so every glyph uses the same
+ * shader without buffering or reordering any draw. */
+static qboolean coduomp_font_build_atlas(fontInfo_t *font, int32_t pointSize,
+                                         int32_t loadMode)
+{
+    coduomp_font_atlas_page_t pages[R_FONT_ATLAS_MAX_PAGES];
+    int32_t glyphPages[R_FONT_GLYPH_SHADER_COUNT];
+    int32_t pageCount = 0;
+    int32_t columnCount;
+    int32_t rowCount;
+    int32_t atlasWidth;
+    int32_t atlasHeight;
+    int32_t atlasBytes;
+    image_t atlasLayout;
+    uint8_t *atlasPixels;
+    image_t *atlasImage;
+    int32_t atlasShader;
+    char atlasName[MAX_QPATH];
+
+    memset(pages, 0, sizeof(pages));
+    for (int32_t glyphIndex = 0;
+         glyphIndex < R_FONT_GLYPH_SHADER_COUNT;
+         ++glyphIndex) {
+        const char *localizedName = RE_GetFontLanguageTGA(
+            font->glyphs[glyphIndex].shaderName);
+        int32_t pageIndex;
+
+        for (pageIndex = 0; pageIndex < pageCount; ++pageIndex) {
+            if (Q_stricmp(pages[pageIndex].imageName, localizedName) == 0)
+                break;
+        }
+        if (pageIndex == pageCount) {
+            if (pageCount >= R_FONT_ATLAS_MAX_PAGES)
+                return qfalse;
+            Q_strncpyz(pages[pageCount].imageName, localizedName,
+                       sizeof(pages[pageCount].imageName));
+            ++pageCount;
+        }
+        glyphPages[glyphIndex] = pageIndex;
+    }
+
+    if (pageCount < 2)
+        return qfalse;
+
+    for (int32_t pageIndex = 0; pageIndex < pageCount; ++pageIndex) {
+        qboolean mipMapsAvailable;
+
+        R_LoadImage(pages[pageIndex].imageName,
+                    &pages[pageIndex].pixels,
+                    &pages[pageIndex].width,
+                    &pages[pageIndex].height,
+                    &pages[pageIndex].format,
+                    &mipMapsAvailable, R_IMAGE_LOAD_PIXELS);
+        if (pages[pageIndex].pixels == NULL ||
+            pages[pageIndex].width == 0 ||
+            pages[pageIndex].height == 0 ||
+            (pageIndex != 0 &&
+             (pages[pageIndex].width != pages[0].width ||
+              pages[pageIndex].height != pages[0].height ||
+              pages[pageIndex].format != pages[0].format))) {
+            R_FreeImageAllocations();
+            return qfalse;
+        }
+    }
+
+    columnCount = 1;
+    while (columnCount * columnCount < pageCount)
+        columnCount <<= 1;
+    rowCount = (pageCount + columnCount - 1) / columnCount;
+    atlasWidth = SmallestTextureSizeFitting(
+        (int32_t)pages[0].width * columnCount);
+    atlasHeight = SmallestTextureSizeFitting(
+        (int32_t)pages[0].height * rowCount);
+    if (atlasWidth > glConfig.maxTextureSize ||
+        atlasHeight > glConfig.maxTextureSize) {
+        R_FreeImageAllocations();
+        return qfalse;
+    }
+
+    atlasBytes = GetCardMemoryAmount(pages[0].format,
+                                     atlasWidth, atlasHeight);
+    if (atlasBytes <= 0) {
+        R_FreeImageAllocations();
+        return qfalse;
+    }
+    atlasPixels = R_AllocTempMemory((size_t)atlasBytes);
+    if (atlasPixels == NULL) {
+        R_FreeImageAllocations();
+        return qfalse;
+    }
+    memset(atlasPixels, 0, (size_t)atlasBytes);
+
+    memset(&atlasLayout, 0, sizeof(atlasLayout));
+    atlasLayout.width = (uint16_t)atlasWidth;
+    atlasLayout.height = (uint16_t)atlasHeight;
+    atlasLayout.internalFormat = pages[0].format;
+    for (int32_t pageIndex = 0; pageIndex < pageCount; ++pageIndex) {
+        pages[pageIndex].x = (uint16_t)(
+            (pageIndex % columnCount) * pages[0].width);
+        pages[pageIndex].y = (uint16_t)(
+            (pageIndex / columnCount) * pages[0].height);
+        if (coduomp_font_copy_atlas_page(
+                &atlasLayout, atlasPixels, &pages[pageIndex]) == qfalse) {
+            R_FreeImageAllocations();
+            return qfalse;
+        }
+    }
+
+    Com_sprintf(atlasName, sizeof(atlasName), "*fontAtlas_%d_%d",
+                pointSize, cl_language->integer);
+    atlasImage = R_CreateImage(
+        atlasName, atlasPixels, atlasWidth, atlasHeight, pages[0].format,
+        IMAGE_FLAG_CLAMP_S | IMAGE_FLAG_CLAMP_T, loadMode, NULL);
+    R_FreeImageAllocations();
+    if (atlasImage == NULL)
+        return qfalse;
+
+    atlasShader = R_RegisterShaderFromImage(
+        atlasName, LIGHTMAP_2D, atlasImage);
+    if (atlasShader == 0)
+        return qfalse;
+
+    for (int32_t glyphIndex = 0;
+         glyphIndex < R_FONT_GLYPH_SHADER_COUNT;
+         ++glyphIndex) {
+        glyphInfo_t *glyph = &font->glyphs[glyphIndex];
+        const coduomp_font_atlas_page_t *page =
+            &pages[glyphPages[glyphIndex]];
+        const float scaleS = (float)page->width / (float)atlasWidth;
+        const float scaleT = (float)page->height / (float)atlasHeight;
+        const float offsetS = (float)page->x / (float)atlasWidth;
+        const float offsetT = (float)page->y / (float)atlasHeight;
+
+        glyph->s = glyph->s * scaleS + offsetS;
+        glyph->s2 = glyph->s2 * scaleS + offsetS;
+        glyph->t = glyph->t * scaleT + offsetT;
+        glyph->t2 = glyph->t2 * scaleT + offsetT;
+        glyph->glyph = atlasShader;
+    }
+    return qtrue;
+}
+
 /* Source: CoDUOMP.exe 0x004e8f40..0x004e9435.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004e8f40_004e9436.mcode.
  * Name: exact same-module Mac symbol RE_RegisterFont. The Windows body
@@ -478,12 +662,14 @@ void RE_RegisterFont(const char *name, int32_t pointSize,
     Q_strncpyz(font->fontDataName, fontDataName,
                sizeof(font->fontDataName));
 
-    for (int32_t glyphIndex = 0;
-         glyphIndex < R_FONT_GLYPH_SHADER_COUNT;
-         ++glyphIndex) {
-        glyphInfo_t *glyph = &font->glyphs[glyphIndex];
-        glyph->glyph = RE_RegisterShaderNoMip(
-            RE_GetFontLanguageTGA(glyph->shaderName), loadMode);
+    if (coduomp_font_build_atlas(font, pointSize, loadMode) == qfalse) {
+        for (int32_t glyphIndex = 0;
+             glyphIndex < R_FONT_GLYPH_SHADER_COUNT;
+             ++glyphIndex) {
+            glyphInfo_t *glyph = &font->glyphs[glyphIndex];
+            glyph->glyph = RE_RegisterShaderNoMip(
+                RE_GetFontLanguageTGA(glyph->shaderName), loadMode);
+        }
     }
 
     rendererRegisteredFonts[rendererRegisteredFontCount++] = *font;
