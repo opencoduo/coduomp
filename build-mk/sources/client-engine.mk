@@ -329,6 +329,8 @@ CLIENT_ENGINE_PROFILE_HOT_C_SOURCES := \
 	src/client/engine/renderer/renderer_draw_surfs.c \
 	src/client/engine/renderer/renderer_dpvs.c \
 	src/client/engine/renderer/renderer_light_visibility.c \
+	src/client/engine/renderer/renderer_static_model_cache.c \
+	src/client/engine/renderer/renderer_static_model_draw.c \
 	src/client/engine/sound/audio_backend_miniaudio.c
 
 # These translation units are dominated by filesystem/archive ingestion and
