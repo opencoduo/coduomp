@@ -173,6 +173,9 @@ the same `CLIENT_DATA_PATH` and optional `CLIENT_ARGS`. That target forces
 `fs_homepath` below `.workbench/runtime/` and will not access the personal
 profile. Agents must never invoke `client-run` for testing.
 
+For compiler-gated OpenGL GPU timing, renderer-phase attribution, and batch
+census captures, see [Renderer GPU profiling](client-renderer-gpu-profiling.md).
+
 #### macOS Wi-Fi latency
 
 Apple Wireless Direct Link (AWDL) can cause short periodic Wi-Fi latency spikes
