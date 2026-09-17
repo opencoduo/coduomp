@@ -283,40 +283,6 @@ static float ui_compat_default_fov_for_aspect(
     return (float)fov;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: initialize the direct horizontal FOV before the
- * graphics page or cgame opens. Upgrade the legacy 80-degree default once;
- * subsequent UI/map/video reloads preserve every saved choice, including 80. */
-static void ui_compat_initialize_graphics_fov(const glconfig_t *config)
-{
-    const qboolean missingFov = UI_Cvar_VariableString("cg_fov")[0] == '\0';
-    vmCvar_t fov;
-    vmCvar_t initialized;
-    ui_compat_aspect_t aspect = { config->vidWidth, config->vidHeight, 1.0L };
-
-    trap_Cvar_Register(&fov, "cg_fov", "80", CVAR_ARCHIVE);
-    trap_Cvar_Register(&initialized, "cg_fovAspectInitialized", "0", CVAR_ARCHIVE);
-    if ((initialized.integer != 0 && missingFov == qfalse) ||
-        aspect.width <= 0 || aspect.height <= 0) {
-        return;
-    }
-
-    /* Startup uses the active drawable and presentation, before ui_r_* has
-     * been staged by opening the Graphics page. */
-    if (trap_Cvar_VariableValue("r_aspectMode") != 0.0f) {
-        aspect.width = 4;
-        aspect.height = 3;
-    } else if (trap_Cvar_VariableValue("r_mode") == UI_COMPAT_CUSTOM_RESOLUTION_MODE) {
-        const long double pixelAspect = (long double)trap_Cvar_VariableValue("r_customaspect");
-
-        if (pixelAspect > 0.0L)
-            aspect.pixelAspect = pixelAspect;
-    }
-
-    if (missingFov != qfalse || fov.value == uiCompatMinimumFov)
-        trap_Cvar_SetValue("cg_fov", ui_compat_default_fov_for_aspect(&aspect));
-    trap_Cvar_Set("cg_fovAspectInitialized", "1");
-}
-
 /* NOT_FROM_ORIGINAL_SOURCE: keeps the slider reset value synchronized with
  * the staged presentation and resets cg_fov only when its effective aspect
  * ratio changes. */
@@ -475,7 +441,9 @@ void ui_compat_extend_graphics_menu(void)
     const uint32_t availableModes = (uint32_t)coduo_crt_atoi(
         UI_Cvar_VariableString("r_availableModes"));
 
-    ui_compat_initialize_graphics_fov(&ui_displayContextStorage.context.glConfig);
+    /* Register the preference before cgame loads without replacing a saved
+     * value when the UI reloads. Aspect-based resets belong to menu changes. */
+    trap_Cvar_Register(NULL, "cg_fov", "80", CVAR_ARCHIVE);
     if (menu == NULL)
         return;
 
