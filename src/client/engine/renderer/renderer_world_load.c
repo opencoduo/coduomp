@@ -25,6 +25,10 @@ enum {
     R_ENTITY_VALUE_CHARS = 2048
 };
 
+/* NOT_FROM_ORIGINAL_SOURCE: extent of the BSP backing rendererWorldFileBase
+ * during the synchronous world load, for bounded partial light records. */
+static int32_t coduomp_rendererWorldFileLength;
+
 /* NOT_FROM_ORIGINAL_SOURCE: validate the complete renderer-owned triangle-
  * soup record graph before R_BuildLightmapMergability or R_LoadSurfaces turns
  * any disk field into an array index or pointer. */
@@ -652,6 +656,10 @@ void R_LoadLights(const lump_t *lightLump)
     const renderer_disk_light_t *diskLights =
         (const renderer_disk_light_t *)(
             rendererWorldFileBase + lightLump->fileofs);
+    /* NOT_FROM_ORIGINAL_SOURCE: the load validator bounds the starting offset
+     * and declared count; individual records may end beyond the loaded bytes. */
+    const size_t availableLightBytes = lightLump->filelen != 0
+        ? (size_t)(coduomp_rendererWorldFileLength - lightLump->fileofs) : 0;
 
     if (((uint32_t)lightLump->filelen % sizeof(*diskLights)) != 0) {
         ri.Error(ERR_DROP, "\x15R_LoadLights: funny lump size in %s",
@@ -668,7 +676,20 @@ void R_LoadLights(const lump_t *lightLump)
     for (int32_t lightIndex = 0;
          lightIndex < rendererWorldData.lightCount;
          ++lightIndex) {
-        const renderer_disk_light_t *diskLight = &diskLights[lightIndex];
+        /* NOT_FROM_ORIGINAL_SOURCE: retain complete records and the available
+         * prefix of a partial record, initializing only its unavailable tail.
+         * Preserve the declared count so existing light indices remain valid. */
+        const size_t recordOffset = (size_t)lightIndex * sizeof(*diskLights);
+        renderer_disk_light_t boundedLight;
+        const renderer_disk_light_t *diskLight;
+        if (recordOffset <= availableLightBytes && sizeof(*diskLights) <= availableLightBytes - recordOffset) {
+            diskLight = &diskLights[lightIndex];
+        } else {
+            memset(&boundedLight, 0, sizeof(boundedLight));
+            if (recordOffset < availableLightBytes)
+                memcpy(&boundedLight, (const uint8_t *)diskLights + recordOffset, availableLightBytes - recordOffset);
+            diskLight = &boundedLight;
+        }
         renderer_light_t *light = &rendererWorldData.lights[lightIndex];
         vec3_t scaledColor;
 
@@ -1692,7 +1713,7 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
     uint8_t *const hunkStart = (uint8_t *)ri.Hunk_Alloc(0);
     /* NOT_FROM_ORIGINAL_SOURCE: validate this recovered engine boundary input and state before use. */
     const int32_t invalidLump =
-        coduo_compat_bsp_invalid_lump_index(fileBuffer, fileLength);
+        coduo_compat_bsp_invalid_load_lump_index(fileBuffer, fileLength);
     if (invalidLump == CODUO_BSP_VALIDATION_SHORT_HEADER) {
         ri.Error(ERR_DROP, "RE_LoadWorldMap: %s has a truncated BSP header",
                  name);
@@ -1704,6 +1725,7 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
 
     const dheader_t *header = (const dheader_t *)fileBuffer;
     rendererWorldFileBase = (uint8_t *)fileBuffer;
+    coduomp_rendererWorldFileLength = fileLength;
 
     /* All maintained targets are little-endian. The original Windows
      * LittleLong pass over the 68 header words consequently compiled into an
@@ -1803,4 +1825,5 @@ void RE_LoadWorldMap(const char *name, int32_t *checksum)
         R_LoadSunThroughCvars(tr.sunName);
 
     ri.FS_FreeFile(fileBuffer);
+    coduomp_rendererWorldFileLength = 0;
 }
