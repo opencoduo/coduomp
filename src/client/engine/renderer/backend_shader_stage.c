@@ -3978,9 +3978,21 @@ void RB_SingleStageGenericARB2(shaderStage_t *stage, int32_t indexCount,
     } else {
         currentOffset = 0;
         capacity = INT32_MAX;
+#if defined(__APPLE__) && defined(__aarch64__)
+        /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): BufferData replaces
+         * the transient object's storage before every upload, so reusing one
+         * name avoids creating hundreds of Apple OpenGL objects per frame
+         * without reusing storage that may still be in flight. */
+        if (backEnd.dynamicBuffer.frameSerial ==
+            tr.dynamicBufferFrameSerial) {
+            backEnd.dynamicBuffer.frameSerial = (int32_t)(
+                (uint32_t)backEnd.dynamicBuffer.frameSerial + 1u);
+        }
+#else
         /* Preserve the target x86 INC's 32-bit modulo behavior. */
         backEnd.dynamicBuffer.frameSerial = (int32_t)(
             (uint32_t)backEnd.dynamicBuffer.frameSerial + 1u);
+#endif
         buffer = (uint32_t)backEnd.dynamicBuffer.frameSerial;
     }
 
@@ -4157,8 +4169,8 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
 #if defined(__APPLE__) && defined(__aarch64__)
     /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): a call redirected from
      * RB_SingleStageGenericARB2 for a 2D surface must not fall back onto the
-     * same persistent VBO. A fresh buffer name plus BufferData replaces its
-     * storage without waiting for earlier glyph draws to finish. */
+     * same persistent VBO. BufferData replaces the transient buffer's storage
+     * without waiting for earlier glyph draws to finish. */
     const qboolean useTransient2DBuffer =
         configuredPersistentBuffer != 0 &&
         backEnd.projection2D != qfalse &&
@@ -4177,9 +4189,21 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
         bufferOffset = RB_PickBufferOffsetARB(
             &currentOffset, packedBytes, backEnd.dynamicBuffer.capacity);
     } else {
+#if defined(__APPLE__) && defined(__aarch64__)
+        /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): orphaning with
+         * BufferData gives every batch fresh storage. Reuse the transient
+         * object name so AppleMetalOpenGLRenderer need not create a new GL
+         * object for every world, model, effect, and 2D shader batch. */
+        if (backEnd.dynamicBuffer.frameSerial ==
+            tr.dynamicBufferFrameSerial) {
+            backEnd.dynamicBuffer.frameSerial = (int32_t)(
+                (uint32_t)backEnd.dynamicBuffer.frameSerial + 1u);
+        }
+#else
         /* Preserve the target x86 INC's 32-bit modulo behavior. */
         backEnd.dynamicBuffer.frameSerial = (int32_t)(
             (uint32_t)backEnd.dynamicBuffer.frameSerial + 1u);
+#endif
         activeBuffer = (uint32_t)backEnd.dynamicBuffer.frameSerial;
     }
     qglBindBufferARB(GL_ARRAY_BUFFER_ARB, activeBuffer);
@@ -4415,7 +4439,14 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
     }
 
     GL_DrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, indexes);
+#if defined(__APPLE__) && defined(__aarch64__)
+    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): every Apple ARM64
+     * renderer path selected while ARB VBOs are available binds its own
+     * array buffer before installing pointers. Keep the streamed buffer bound
+     * between batches instead of unbinding and immediately rebinding it. */
+#else
     qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+#endif
 }
 
 /* Source: CoDUOMP.exe 0x0051f250..0x0051f2ba.
