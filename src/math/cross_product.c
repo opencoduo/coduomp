@@ -42,8 +42,12 @@ void CrossProduct(const vec3_t left, const vec3_t right, vec3_t output)
         x87f_mul(x87f_load_f32(left[0]), x87f_load_f32(right[1])),
         x87f_mul(x87f_load_f32(left[1]), x87f_load_f32(right[0]))));
 #else
-    output[0] = left[1] * right[2] - left[2] * right[1];
-    output[1] = left[2] * right[0] - left[0] * right[2];
-    output[2] = left[0] * right[1] - left[1] * right[0];
+    /* Preserve the single binary32 store per lane on native FP hosts too. */
+    output[0] = (float)((long double)left[1] * (long double)right[2] -
+                        (long double)left[2] * (long double)right[1]);
+    output[1] = (float)((long double)left[2] * (long double)right[0] -
+                        (long double)left[0] * (long double)right[2]);
+    output[2] = (float)((long double)left[0] * (long double)right[1] -
+                        (long double)left[1] * (long double)right[0]);
 #endif
 }
