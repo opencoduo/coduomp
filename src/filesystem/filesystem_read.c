@@ -52,11 +52,16 @@ int32_t FS_Read(void *buffer, int32_t byteCount, int32_t handle)
         const int32_t bytesRead = filesystem_compat_archive_read(
             fileHandle, buffer, (uint32_t)byteCount);
 
-        /* NOT_FROM_ORIGINAL_SOURCE: ordinary reads may end at the declared
-         * member boundary; an error or earlier short read closes the member
-         * and follows the logged drop path. */
+        /* NOT_FROM_ORIGINAL_SOURCE: preserve the inflater's status and any
+         * produced prefix. Initialize only the remaining declared bytes before
+         * returning the member and its lifetime to the caller. */
         if (bytesRead < 0 || (uint32_t)bytesRead != expectedByteCount) {
             uint32_t completed = bytesRead > 0 ? (uint32_t)bytesRead : 0;
+            const int32_t positionAfter = filesystem_compat_archive_tell(fileHandle);
+            if (positionAfter >= currentPosition &&
+                (uint32_t)(positionAfter - currentPosition) > completed) {
+                completed = (uint32_t)(positionAfter - currentPosition);
+            }
             if (completed > expectedByteCount)
                 completed = expectedByteCount;
             if (buffer != NULL && completed < expectedByteCount) {
@@ -66,11 +71,8 @@ int32_t FS_Read(void *buffer, int32_t byteCount, int32_t handle)
             char entryName[FS_HANDLE_NAME_SIZE];
             memcpy(entryName, fileHandle->name, sizeof(entryName));
             entryName[sizeof(entryName) - 1u] = '\0';
-            FS_FCloseFile(handle);
-            Com_Error(ERR_DROP,
-                      "\x15" "FS_Read: malformed archive entry %s (%i of %u bytes)",
-                      entryName, bytesRead, expectedByteCount);
-            return -1;
+            Com_Printf("WARNING: FS_Read: incomplete archive entry %s (%i of %u bytes; %u produced)\n",
+                       entryName, bytesRead, expectedByteCount, completed);
         }
         return bytesRead;
     }
