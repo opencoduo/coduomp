@@ -836,7 +836,8 @@ static qboolean audio_find_loaded_wav_chunk(
 /* NOT_FROM_ORIGINAL_SOURCE: construct the native sound descriptor from a
  * length-bounded WAV before the source-visible OpenAL/miniaudio adapters see
  * audio data. It accepts harmless RIFF quirks and performs only repairs whose
- * value is uniquely determined by the loaded bytes and the declared codec. */
+ * value is uniquely determined by the loaded bytes and the engine's sample
+ * classification. */
 static qboolean audio_parse_loaded_wav(
     void *fileData, int32_t fileLength, const char *path,
     audio_sound_info_t *soundInfo)
@@ -893,8 +894,12 @@ static qboolean audio_parse_loaded_wav(
         return audio_reject_wav(path, "truncated base format record");
     }
 
-    const uint16_t formatTag = audio_read_wav_u16(
+    const uint16_t sourceFormatTag = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_FORMAT_TAG_OFFSET);
+    /* MSS_SampleType selects linear samples for every tag except IMA ADPCM.
+     * Normalize that selection for the native backends' bounded decoders. */
+    const uint16_t formatTag = sourceFormatTag == AUDIO_WAVE_FORMAT_IMA_ADPCM
+        ? AUDIO_WAVE_FORMAT_IMA_ADPCM : AUDIO_WAVE_FORMAT_PCM;
     const uint16_t channelCount = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_CHANNEL_COUNT_OFFSET);
     uint32_t sampleRate = audio_read_wav_u32(
@@ -906,10 +911,6 @@ static qboolean audio_parse_loaded_wav(
     const uint16_t bitsPerSample = audio_read_wav_u16(
         formatChunk.data + MSS_WAVE_BITS_PER_SAMPLE_OFFSET);
 
-    if (formatTag != AUDIO_WAVE_FORMAT_PCM &&
-        formatTag != AUDIO_WAVE_FORMAT_IMA_ADPCM) {
-        return audio_reject_wav(path, "unsupported format tag");
-    }
     if (channelCount != AUDIO_CHANNEL_COUNT_MONO &&
         channelCount != AUDIO_CHANNEL_COUNT_STEREO) {
         return audio_reject_wav(path, "unsupported channel count");
