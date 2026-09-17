@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "renderer_gpu_profile.h"
 
 #include "gl_debug.h"
 #include "../math/vector_math.h"
@@ -274,6 +275,12 @@ void RE_RenderScene(const refdef_t *refdef)
     if (r_norefresh->integer != 0)
         return;
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: isolate visibility and draw-surface work from
+     * the surrounding cgame frame construction. */
+    coduomp_gpu_profile_render_scene_begin();
+#endif
+
     startTime = ri.Milliseconds();
     if (tr.world == NULL &&
         (refdef->rdflags & RDF_NOWORLDMODEL) == 0) {
@@ -363,6 +370,10 @@ void RE_RenderScene(const refdef_t *refdef)
            sizeof(viewParms.pvsOrigin));
 
     R_RenderView(&viewParms);
+
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_render_scene_end();
+#endif
 
     rendererSceneFrameState.drawSurfCount = tr.refdef.numDrawSurfs;
     rendererSceneFrameState.firstEntity =

@@ -6,6 +6,7 @@
 #include "gl_state.h"
 #include "renderer_api.h"
 #include "renderer_cvars.h"
+#include "renderer_gpu_profile.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -362,6 +363,12 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
     if (tr.registered == qfalse)
         return;
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: delimit frontend CPU work in the dedicated
+     * profiling build. */
+    coduomp_gpu_profile_frontend_begin();
+#endif
+
     ++tr.frameCount;
     glState.finishCalled = qfalse;
     tr.frameSceneNum = 0;
@@ -534,6 +541,11 @@ void RE_EndFrame(int32_t *frontEndMsec, int32_t *backEndMsec)
 {
     if (tr.registered == qfalse)
         return;
+
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: the backend executes synchronously below. */
+    coduomp_gpu_profile_frontend_end();
+#endif
 
     swapBuffersCommand_t *const command =
         (swapBuffersCommand_t *)&rendererBackendData

@@ -1,6 +1,7 @@
 #include "backend.h"
 
 #include "../math/vector_math.h"
+#include "renderer_gpu_profile.h"
 
 /* Source data: CoDUOMP.exe 0x0058fc28. R_AddStaticModelSurfaces passes this
  * exact cyan RGBA value to both optional model-count debug strings. */
@@ -49,15 +50,33 @@ void R_AddStaticModelSurfaces(trRefEntity_t *entity)
 
         if (cached == NULL && surface->cachedShader != NULL) {
             if (lightingInitialized == qfalse) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                const uint64_t profileLightingStartNanoseconds =
+                    coduomp_gpu_profile_frontend_scope_begin();
+#endif
                 MatrixInverse(entity->e.axis, inverseAxis);
                 R_SetupStaticModelLighting(&tr.refdef, entity);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                coduomp_gpu_profile_frontend_scope_end(
+                    CODUOMP_GPU_PROFILE_FRONTEND_STATIC_LIGHTING,
+                    profileLightingStartNanoseconds);
+#endif
                 lightingInitialized = qtrue;
             }
 
             if (entity->hasDynamicLights == 0) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                const uint64_t profileCacheStartNanoseconds =
+                    coduomp_gpu_profile_frontend_scope_begin();
+#endif
                 cached = R_CacheStaticModelSurface(
                     surface, lighting, globalSurfaceIndex,
                     entity, inverseAxis);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                coduomp_gpu_profile_frontend_scope_end(
+                    CODUOMP_GPU_PROFILE_FRONTEND_STATIC_CACHE_BUILD,
+                    profileCacheStartNanoseconds);
+#endif
                 *cacheSlot = cached;
             }
         }
@@ -79,7 +98,16 @@ void R_AddStaticModelSurfaces(trRefEntity_t *entity)
                               tr.cachedStaticModelStorageSource,
                               surface->cachedShader, 0, 0, 0);
             } else {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                const uint64_t profileLightingStartNanoseconds =
+                    coduomp_gpu_profile_frontend_scope_begin();
+#endif
                 R_SetupStaticModelLighting(&tr.refdef, entity);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                coduomp_gpu_profile_frontend_scope_end(
+                    CODUOMP_GPU_PROFILE_FRONTEND_STATIC_LIGHTING,
+                    profileLightingStartNanoseconds);
+#endif
                 if (entity->hasDynamicLights == 0) {
                     R_AddDrawSurf((renderer_surface_t *)cached,
                                   tr.cachedStaticModelStorageSource,
@@ -107,6 +135,16 @@ void R_AddStaticModelSurfaces(trRefEntity_t *entity)
         }
     }
 
-    if (needsLighting != qfalse)
+    if (needsLighting != qfalse) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        const uint64_t profileLightingStartNanoseconds =
+            coduomp_gpu_profile_frontend_scope_begin();
+#endif
         R_SetupStaticModelLighting(&tr.refdef, entity);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_frontend_scope_end(
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_LIGHTING,
+            profileLightingStartNanoseconds);
+#endif
+    }
 }

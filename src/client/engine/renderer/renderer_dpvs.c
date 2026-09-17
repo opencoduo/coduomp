@@ -3,6 +3,7 @@
 #include "compat/coduo_fp_conversion.h"
 #include "compat/coduo_native_x87.h"
 #include "math/q_math.h"
+#include "renderer_gpu_profile.h"
 
 #include <limits.h>
 #include <math.h>
@@ -1779,6 +1780,9 @@ void R_AddWorldSurfacesDPVS(void)
         cellEntityLinks[R_DPVS_MAX_CELL_ENTITY_LINKS];
     renderer_dpvs_plane_t
         activeOccluderPlanes[R_DPVS_MAX_ACTIVE_OCCLUDER_PLANES];
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    uint64_t profileStartNanoseconds;
+#endif
 
     if (r_drawworld->integer == 0 ||
         (tr.refdef.rdflags & RDF_NOWORLDMODEL) != 0) {
@@ -1802,9 +1806,27 @@ void R_AddWorldSurfacesDPVS(void)
          ((uint32_t)tr.refdef.num_dlights &
           (R_MAX_DLIGHTS - 1U))) - 1U;
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    profileStartNanoseconds =
+        coduomp_gpu_profile_frontend_scope_begin();
+#endif
     R_SetupDPVS();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_frontend_scope_end(
+        CODUOMP_GPU_PROFILE_FRONTEND_DPVS_SETUP,
+        profileStartNanoseconds);
+    profileStartNanoseconds =
+        coduomp_gpu_profile_frontend_scope_begin();
+#endif
     R_FilterModelsIntoCells(rendererDpvsFrustumPlanes,
                             R_FRUSTUM_PLANE_COUNT);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_frontend_scope_end(
+        CODUOMP_GPU_PROFILE_FRONTEND_MODEL_FILTER,
+        profileStartNanoseconds);
+    profileStartNanoseconds =
+        coduomp_gpu_profile_frontend_scope_begin();
+#endif
     R_AddCoronas(rendererDpvsFrustumPlanes, R_FRUSTUM_PLANE_COUNT);
 
     const int32_t cameraCellIndex = R_CellForCamera();
@@ -1851,6 +1873,12 @@ void R_AddWorldSurfacesDPVS(void)
     }
 
     R_AddSkySurfacesDPVS();
+
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_frontend_scope_end(
+        CODUOMP_GPU_PROFILE_FRONTEND_WORLD_TRAVERSAL,
+        profileStartNanoseconds);
+#endif
 
     if (r_showCullXModels->integer != R_SHOW_CULL_MODE_CELL_LINKS &&
         r_showCullBModels->integer != R_SHOW_CULL_MODE_CELL_LINKS) {

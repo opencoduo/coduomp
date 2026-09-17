@@ -9,6 +9,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <time.h>
+#endif
 
 enum {
     CODUOMP_GPU_PROFILE_QUERY_CAPACITY = 4096,
@@ -64,6 +69,23 @@ typedef struct coduomp_gpu_profile_frame_s {
     int32_t mode;
     int32_t detailLevel;
     float slowMsec;
+    int32_t refdefTime;
+    uint64_t cpuFrameStartNanoseconds;
+    uint64_t cpuFrameNanoseconds;
+    uint64_t cpuFrameIntervalNanoseconds;
+    uint64_t cpuPreFrontendNanoseconds;
+    uint64_t cpuFrontendNanoseconds;
+    uint64_t cpuCgameNanoseconds;
+    uint64_t cpuRenderSceneNanoseconds;
+    uint64_t cpuBackendStartNanoseconds;
+    uint64_t cpuBackendNanoseconds;
+    uint64_t cpuFinishNanoseconds;
+    uint64_t cpuPresentNanoseconds;
+    uint64_t frontendScopeCpuNanoseconds[
+        CODUOMP_GPU_PROFILE_FRONTEND_SCOPE_COUNT];
+    uint32_t frontendScopeCounts[
+        CODUOMP_GPU_PROFILE_FRONTEND_SCOPE_COUNT];
+    uint64_t phaseCpuNanoseconds[CODUOMP_GPU_PROFILE_PHASE_COUNT];
     uint32_t outstandingQueries;
     uint32_t droppedQueries;
     uint64_t phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_COUNT];
@@ -150,6 +172,48 @@ static uint32_t coduompGpuProfileSurfaceFrameSerial;
 static int32_t coduompGpuProfileSurfaceShader = -1;
 static coduomp_gpu_profile_phase_t coduompGpuProfileSurfacePhase;
 static qboolean coduompGpuProfileSurfacePortal;
+static uint64_t coduompGpuProfileFrontendStartNanoseconds;
+static uint64_t coduompGpuProfileLastFrontendStartNanoseconds;
+static uint64_t coduompGpuProfilePendingFrameIntervalNanoseconds;
+static uint64_t coduompGpuProfilePendingFrontendNanoseconds;
+static uint64_t coduompGpuProfilePendingFrameStartNanoseconds;
+static uint64_t coduompGpuProfilePendingPreFrontendNanoseconds;
+static uint64_t coduompGpuProfilePendingCgameNanoseconds;
+static uint64_t coduompGpuProfilePendingRenderSceneNanoseconds;
+static uint64_t coduompGpuProfilePendingFrontendScopeNanoseconds[
+    CODUOMP_GPU_PROFILE_FRONTEND_SCOPE_COUNT];
+static uint32_t coduompGpuProfilePendingFrontendScopeCounts[
+    CODUOMP_GPU_PROFILE_FRONTEND_SCOPE_COUNT];
+static uint64_t coduompGpuProfileCgameStartNanoseconds;
+static uint64_t coduompGpuProfileRenderSceneStartNanoseconds;
+static uint64_t coduompGpuProfileFinishStartNanoseconds;
+static uint64_t coduompGpuProfilePresentStartNanoseconds;
+static coduomp_gpu_profile_phase_t coduompGpuProfileCpuPhase =
+    CODUOMP_GPU_PROFILE_PHASE_COUNT;
+static uint64_t coduompGpuProfileCpuSegmentStartNanoseconds;
+
+/* NOT_FROM_ORIGINAL_SOURCE: provide a monotonic high-resolution CPU clock for
+ * the compiler-gated diagnostic without narrowing measurements to milliseconds. */
+static uint64_t coduomp_gpu_profile_cpu_nanoseconds(void)
+{
+#if defined(_WIN32)
+    LARGE_INTEGER counter;
+    static LARGE_INTEGER frequency;
+
+    if (frequency.QuadPart == 0 &&
+        QueryPerformanceFrequency(&frequency) == 0) {
+        return 0;
+    }
+    QueryPerformanceCounter(&counter);
+    return (uint64_t)(((long double)counter.QuadPart * 1000000000.0L) /
+                      (long double)frequency.QuadPart);
+#else
+    struct timespec now;
+
+    (void)clock_gettime(CLOCK_MONOTONIC, &now);
+    return (uint64_t)now.tv_sec * 1000000000u + (uint64_t)now.tv_nsec;
+#endif
+}
 
 /* NOT_FROM_ORIGINAL_SOURCE: open one host-file diagnostic log below
  * fs_homepath. This deliberately avoids an engine filesystem handle because
@@ -191,7 +255,7 @@ static qboolean coduomp_gpu_profile_open_log(void)
     }
 
     fprintf(coduompGpuProfileLogFile,
-            "GPU_PROFILE_LOG version=2 time_unit=milliseconds\n");
+            "GPU_PROFILE_LOG version=3 time_unit=milliseconds\n");
     ri.Printf(R_PRINT_ALL, "GPU profiling writing to %s\n", logPath);
     return qtrue;
 }
@@ -612,24 +676,29 @@ static void coduomp_gpu_profile_write_world_merge_census(
 static void coduomp_gpu_profile_write_frame(
     const coduomp_gpu_profile_frame_t *frame, uint64_t totalNanoseconds)
 {
-    int32_t top[3];
-    int32_t batchTop[3];
-    int32_t sceneTop[3];
-    int32_t entityTop[3];
-    int32_t worldTop[CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT];
-
-    coduomp_gpu_profile_find_top_shaders(frame, top);
-    coduomp_gpu_profile_find_top_batch_shaders(frame, batchTop);
-    coduomp_gpu_profile_find_top_scene_shaders(frame, sceneTop);
-    coduomp_gpu_profile_find_top_entity_break_shaders(frame, entityTop);
-    coduomp_gpu_profile_find_top_world_shaders(frame, worldTop);
     fprintf(
         coduompGpuProfileLogFile,
         "GPU_PROFILE frame=%u total_ms=%.3f view_ms=%.3f scene_ms=%.3f world_ms=%.3f "
         "bmodel_ms=%.3f model_ms=%.3f smodel_ms=%.3f effects_ms=%.3f "
         "sky_ms=%.3f shadows_ms=%.3f flares_ms=%.3f 2d_ms=%.3f "
         "clear_ms=%.3f copy_ms=%.3f present_ms=%.3f misc_ms=%.3f "
-        "dropped=%u gameplay=%d\n",
+        "dropped=%u gameplay=%d refdef_time=%d frame_cpu_ms=%.3f "
+        "frame_interval_cpu_ms=%.3f "
+        "pre_frontend_cpu_ms=%.3f frontend_cpu_ms=%.3f "
+        "cgame_cpu_ms=%.3f render_scene_cpu_ms=%.3f "
+        "dpvs_setup_cpu_ms=%.3f model_filter_cpu_ms=%.3f "
+        "world_traversal_cpu_ms=%.3f entities_cpu_ms=%.3f "
+        "sort_cpu_ms=%.3f "
+        "brush_entities_cpu_ms=%.3f xmodel_entities_cpu_ms=%.3f "
+        "static_entities_cpu_ms=%.3f effect_entities_cpu_ms=%.3f "
+        "brush_entity_count=%u xmodel_entity_count=%u "
+        "static_entity_count=%u effect_entity_count=%u "
+        "static_cache_build_cpu_ms=%.3f static_lighting_cpu_ms=%.3f "
+        "static_cache_build_count=%u static_lighting_count=%u "
+        "backend_cpu_ms=%.3f finish_cpu_ms=%.3f "
+        "present_cpu_ms=%.3f scene_submit_cpu_ms=%.3f "
+        "2d_submit_cpu_ms=%.3f clear_submit_cpu_ms=%.3f "
+        "misc_submit_cpu_ms=%.3f other_cpu_ms=%.3f\n",
         frame->serial, coduomp_gpu_profile_msec(totalNanoseconds),
         coduomp_gpu_profile_msec(
             frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_VIEW_SETUP]),
@@ -661,7 +730,86 @@ static void coduomp_gpu_profile_write_frame(
             frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_PRESENT]),
         coduomp_gpu_profile_msec(
             frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_MISC]),
-        frame->droppedQueries, frame->sawWorld);
+        frame->droppedQueries, frame->sawWorld, frame->refdefTime,
+        coduomp_gpu_profile_msec(frame->cpuFrameNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuFrameIntervalNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuPreFrontendNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuFrontendNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuCgameNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuRenderSceneNanoseconds),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_DPVS_SETUP]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_MODEL_FILTER]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_WORLD_TRAVERSAL]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_ENTITIES]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_SORT]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_BRUSH_ENTITIES]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_XMODEL_ENTITIES]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_ENTITIES]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_EFFECT_ENTITIES]),
+        frame->frontendScopeCounts[
+            CODUOMP_GPU_PROFILE_FRONTEND_BRUSH_ENTITIES],
+        frame->frontendScopeCounts[
+            CODUOMP_GPU_PROFILE_FRONTEND_XMODEL_ENTITIES],
+        frame->frontendScopeCounts[
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_ENTITIES],
+        frame->frontendScopeCounts[
+            CODUOMP_GPU_PROFILE_FRONTEND_EFFECT_ENTITIES],
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_CACHE_BUILD]),
+        coduomp_gpu_profile_msec(frame->frontendScopeCpuNanoseconds[
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_LIGHTING]),
+        frame->frontendScopeCounts[
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_CACHE_BUILD],
+        frame->frontendScopeCounts[
+            CODUOMP_GPU_PROFILE_FRONTEND_STATIC_LIGHTING],
+        coduomp_gpu_profile_msec(frame->cpuBackendNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuFinishNanoseconds),
+        coduomp_gpu_profile_msec(frame->cpuPresentNanoseconds),
+        coduomp_gpu_profile_msec(
+            frame->phaseCpuNanoseconds[CODUOMP_GPU_PROFILE_PHASE_SCENE]),
+        coduomp_gpu_profile_msec(
+            frame->phaseCpuNanoseconds[CODUOMP_GPU_PROFILE_PHASE_2D]),
+        coduomp_gpu_profile_msec(
+            frame->phaseCpuNanoseconds[CODUOMP_GPU_PROFILE_PHASE_CLEAR]),
+        coduomp_gpu_profile_msec(
+            frame->phaseCpuNanoseconds[CODUOMP_GPU_PROFILE_PHASE_MISC]),
+        coduomp_gpu_profile_msec(
+            frame->cpuFrameNanoseconds >
+                    frame->cpuPreFrontendNanoseconds +
+                        frame->cpuFrontendNanoseconds +
+                        frame->cpuBackendNanoseconds
+                ? frame->cpuFrameNanoseconds -
+                      frame->cpuPreFrontendNanoseconds -
+                      frame->cpuFrontendNanoseconds -
+                      frame->cpuBackendNanoseconds
+                : 0));
+
+    /* CPU-only stability captures deliberately omit the per-surface census.
+     * Its material lookup, merge analysis, and multi-line output are useful
+     * for batch investigations but measurably perturb high-rate frames. */
+    if (frame->mode == 3)
+        return;
+
+    int32_t top[3];
+    int32_t batchTop[3];
+    int32_t sceneTop[3];
+    int32_t entityTop[3];
+    int32_t worldTop[CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT];
+
+    coduomp_gpu_profile_find_top_shaders(frame, top);
+    coduomp_gpu_profile_find_top_batch_shaders(frame, batchTop);
+    coduomp_gpu_profile_find_top_scene_shaders(frame, sceneTop);
+    coduomp_gpu_profile_find_top_entity_break_shaders(frame, entityTop);
+    coduomp_gpu_profile_find_top_world_shaders(frame, worldTop);
 
     if (top[0] >= 0 && frame->shaders[top[0]].nanoseconds != 0) {
         fprintf(
@@ -1002,6 +1150,11 @@ static void coduomp_gpu_profile_finish_frame(int32_t frameIndex)
         coduomp_gpu_profile_write_frame(frame, totalNanoseconds);
     }
 
+    if (frame->mode == 3) {
+        memset(frame, 0, sizeof(*frame));
+        return;
+    }
+
     ++coduompGpuProfileSummaryCount;
     if (totalNanoseconds > coduompGpuProfileSummaryMaximumNanoseconds)
         coduompGpuProfileSummaryMaximumNanoseconds = totalNanoseconds;
@@ -1223,12 +1376,150 @@ static qboolean coduomp_gpu_profile_load_api(void)
  * CODUOMP_RENDERER_GPU_PROFILE=1 */
 void coduomp_gpu_profile_register(void)
 {
+    coduompGpuProfileFrontendStartNanoseconds = 0;
+    coduompGpuProfileLastFrontendStartNanoseconds = 0;
+    coduompGpuProfilePendingFrameIntervalNanoseconds = 0;
+    coduompGpuProfilePendingFrontendNanoseconds = 0;
+    coduompGpuProfilePendingFrameStartNanoseconds = 0;
+    coduompGpuProfilePendingPreFrontendNanoseconds = 0;
+    coduompGpuProfilePendingCgameNanoseconds = 0;
+    coduompGpuProfilePendingRenderSceneNanoseconds = 0;
+    memset(coduompGpuProfilePendingFrontendScopeNanoseconds, 0,
+           sizeof(coduompGpuProfilePendingFrontendScopeNanoseconds));
+    memset(coduompGpuProfilePendingFrontendScopeCounts, 0,
+           sizeof(coduompGpuProfilePendingFrontendScopeCounts));
+    coduompGpuProfileCgameStartNanoseconds = 0;
+    coduompGpuProfileRenderSceneStartNanoseconds = 0;
+    coduompGpuProfileFinishStartNanoseconds = 0;
+    coduompGpuProfilePresentStartNanoseconds = 0;
+    coduompGpuProfileCpuPhase = CODUOMP_GPU_PROFILE_PHASE_COUNT;
+    coduompGpuProfileCpuSegmentStartNanoseconds = 0;
     coduompGpuProfileMode =
         ri.Cvar_Get("r_gpuProfile", "0", CVAR_TEMP);
     coduompGpuProfileSlowMsec =
         ri.Cvar_Get("r_gpuProfileSlowMsec", "4.0", CVAR_TEMP);
     coduompGpuProfileDetail =
         ri.Cvar_Get("r_gpuProfileDetail", "0", CVAR_TEMP);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: start the client frame early enough to include
+ * snapshot/demo processing and other work preceding renderer submission. */
+void coduomp_gpu_profile_client_frame_begin(void)
+{
+    const uint64_t now = coduomp_gpu_profile_cpu_nanoseconds();
+
+    coduompGpuProfilePendingFrameStartNanoseconds = now;
+    coduompGpuProfilePendingFrameIntervalNanoseconds =
+        coduompGpuProfileLastFrontendStartNanoseconds != 0
+            ? now - coduompGpuProfileLastFrontendStartNanoseconds
+            : 0;
+    coduompGpuProfileLastFrontendStartNanoseconds = now;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: begin the CPU portion of one rendered frame. The
+ * interval between these calls includes simulation, event processing, frame
+ * limiting, and the preceding renderer work. */
+void coduomp_gpu_profile_frontend_begin(void)
+{
+    const uint64_t now = coduomp_gpu_profile_cpu_nanoseconds();
+
+    coduompGpuProfileFrontendStartNanoseconds = now;
+    coduompGpuProfilePendingCgameNanoseconds = 0;
+    coduompGpuProfilePendingRenderSceneNanoseconds = 0;
+    memset(coduompGpuProfilePendingFrontendScopeNanoseconds, 0,
+           sizeof(coduompGpuProfilePendingFrontendScopeNanoseconds));
+    memset(coduompGpuProfilePendingFrontendScopeCounts, 0,
+           sizeof(coduompGpuProfilePendingFrontendScopeCounts));
+    if (coduompGpuProfilePendingFrameStartNanoseconds == 0) {
+        coduompGpuProfilePendingFrameStartNanoseconds = now;
+        coduompGpuProfilePendingFrameIntervalNanoseconds =
+            coduompGpuProfileLastFrontendStartNanoseconds != 0
+                ? now - coduompGpuProfileLastFrontendStartNanoseconds
+                : 0;
+        coduompGpuProfileLastFrontendStartNanoseconds = now;
+    }
+    coduompGpuProfilePendingPreFrontendNanoseconds =
+        now - coduompGpuProfilePendingFrameStartNanoseconds;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: retain frontend wall time until the synchronous
+ * backend allocates the corresponding delayed GPU-query record. */
+void coduomp_gpu_profile_frontend_end(void)
+{
+    if (coduompGpuProfileFrontendStartNanoseconds == 0)
+        return;
+
+    coduompGpuProfilePendingFrontendNanoseconds =
+        coduomp_gpu_profile_cpu_nanoseconds() -
+        coduompGpuProfileFrontendStartNanoseconds;
+    coduompGpuProfileFrontendStartNanoseconds = 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: begin timing cgame frame construction and its
+ * renderer export calls as one frontend component. */
+void coduomp_gpu_profile_cgame_begin(void)
+{
+    coduompGpuProfileCgameStartNanoseconds =
+        coduomp_gpu_profile_cpu_nanoseconds();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: finish the cgame frontend component. */
+void coduomp_gpu_profile_cgame_end(void)
+{
+    if (coduompGpuProfileCgameStartNanoseconds == 0)
+        return;
+
+    coduompGpuProfilePendingCgameNanoseconds +=
+        coduomp_gpu_profile_cpu_nanoseconds() -
+        coduompGpuProfileCgameStartNanoseconds;
+    coduompGpuProfileCgameStartNanoseconds = 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: begin timing renderer visibility, sorting, and
+ * draw-surface construction performed by RE_RenderScene. */
+void coduomp_gpu_profile_render_scene_begin(void)
+{
+    coduompGpuProfileRenderSceneStartNanoseconds =
+        coduomp_gpu_profile_cpu_nanoseconds();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: finish one possibly repeated scene build. */
+void coduomp_gpu_profile_render_scene_end(void)
+{
+    if (coduompGpuProfileRenderSceneStartNanoseconds == 0)
+        return;
+
+    coduompGpuProfilePendingRenderSceneNanoseconds +=
+        coduomp_gpu_profile_cpu_nanoseconds() -
+        coduompGpuProfileRenderSceneStartNanoseconds;
+    coduompGpuProfileRenderSceneStartNanoseconds = 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: start a nested frontend scope only while frame
+ * capture is enabled. The returned timestamp keeps recursive renderer calls
+ * independent instead of storing one global start value per scope. */
+uint64_t coduomp_gpu_profile_frontend_scope_begin(void)
+{
+    if (coduompGpuProfileMode == NULL ||
+        coduompGpuProfileMode->integer <= 0) {
+        return 0;
+    }
+    return coduomp_gpu_profile_cpu_nanoseconds();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: accumulate visibility and sorting subscopes for
+ * the frontend record that the synchronous backend will claim later. */
+void coduomp_gpu_profile_frontend_scope_end(
+    coduomp_gpu_profile_frontend_scope_t scope,
+    uint64_t startNanoseconds)
+{
+    if (startNanoseconds == 0 || scope < 0 ||
+        scope >= CODUOMP_GPU_PROFILE_FRONTEND_SCOPE_COUNT) {
+        return;
+    }
+    coduompGpuProfilePendingFrontendScopeNanoseconds[scope] +=
+        coduomp_gpu_profile_cpu_nanoseconds() - startNanoseconds;
+    ++coduompGpuProfilePendingFrontendScopeCounts[scope];
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: choose a free delayed-result record for the next
@@ -1250,7 +1541,8 @@ void coduomp_gpu_profile_frame_begin(void)
         return;
     }
 
-    if (coduomp_gpu_profile_load_api() == qfalse ||
+    if ((coduompGpuProfileMode->integer != 3 &&
+         coduomp_gpu_profile_load_api() == qfalse) ||
         coduomp_gpu_profile_open_log() == qfalse) {
         return;
     }
@@ -1287,6 +1579,38 @@ void coduomp_gpu_profile_frame_begin(void)
                                   coduompGpuProfileSlowMsec->value > 0.0f
                               ? coduompGpuProfileSlowMsec->value
                               : 0.0f;
+        frame->cpuFrameIntervalNanoseconds =
+            coduompGpuProfilePendingFrameIntervalNanoseconds;
+        frame->cpuFrameStartNanoseconds =
+            coduompGpuProfilePendingFrameStartNanoseconds;
+        frame->cpuFrontendNanoseconds =
+            coduompGpuProfilePendingFrontendNanoseconds;
+        frame->cpuPreFrontendNanoseconds =
+            coduompGpuProfilePendingPreFrontendNanoseconds;
+        frame->cpuCgameNanoseconds =
+            coduompGpuProfilePendingCgameNanoseconds;
+        frame->cpuRenderSceneNanoseconds =
+            coduompGpuProfilePendingRenderSceneNanoseconds;
+        memcpy(frame->frontendScopeCpuNanoseconds,
+               coduompGpuProfilePendingFrontendScopeNanoseconds,
+               sizeof(frame->frontendScopeCpuNanoseconds));
+        memcpy(frame->frontendScopeCounts,
+               coduompGpuProfilePendingFrontendScopeCounts,
+               sizeof(frame->frontendScopeCounts));
+        frame->cpuBackendStartNanoseconds =
+            coduomp_gpu_profile_cpu_nanoseconds();
+        coduompGpuProfilePendingFrameIntervalNanoseconds = 0;
+        coduompGpuProfilePendingFrontendNanoseconds = 0;
+        coduompGpuProfilePendingFrameStartNanoseconds = 0;
+        coduompGpuProfilePendingPreFrontendNanoseconds = 0;
+        coduompGpuProfilePendingCgameNanoseconds = 0;
+        coduompGpuProfilePendingRenderSceneNanoseconds = 0;
+        memset(coduompGpuProfilePendingFrontendScopeNanoseconds, 0,
+               sizeof(coduompGpuProfilePendingFrontendScopeNanoseconds));
+        memset(coduompGpuProfilePendingFrontendScopeCounts, 0,
+               sizeof(coduompGpuProfilePendingFrontendScopeCounts));
+        coduompGpuProfileCpuPhase = CODUOMP_GPU_PROFILE_PHASE_COUNT;
+        coduompGpuProfileCpuSegmentStartNanoseconds = 0;
         coduompGpuProfileCurrentFrame = frameIndex;
         if (frame->detailLevel <= 0) {
             (void)coduomp_gpu_profile_begin(
@@ -1307,6 +1631,7 @@ void coduomp_gpu_profile_frame_begin(void)
 void coduomp_gpu_profile_frame_end(void)
 {
     const int32_t frameIndex = coduompGpuProfileCurrentFrame;
+    uint64_t now;
 
     if (frameIndex < 0)
         return;
@@ -1315,6 +1640,23 @@ void coduomp_gpu_profile_frame_end(void)
         coduompGpuProfileActiveQuery >= 0) {
         coduomp_gpu_profile_end(qtrue);
     }
+
+    now = coduomp_gpu_profile_cpu_nanoseconds();
+    if (coduompGpuProfileCpuPhase < CODUOMP_GPU_PROFILE_PHASE_COUNT &&
+        coduompGpuProfileCpuSegmentStartNanoseconds != 0) {
+        coduompGpuProfileFrames[frameIndex]
+            .phaseCpuNanoseconds[coduompGpuProfileCpuPhase] +=
+            now - coduompGpuProfileCpuSegmentStartNanoseconds;
+    }
+    coduompGpuProfileCpuPhase = CODUOMP_GPU_PROFILE_PHASE_COUNT;
+    coduompGpuProfileCpuSegmentStartNanoseconds = 0;
+    coduompGpuProfileFrames[frameIndex].cpuBackendNanoseconds =
+        now - coduompGpuProfileFrames[frameIndex].cpuBackendStartNanoseconds;
+    if (coduompGpuProfileFrames[frameIndex].cpuFrameStartNanoseconds != 0) {
+        coduompGpuProfileFrames[frameIndex].cpuFrameNanoseconds =
+            now - coduompGpuProfileFrames[frameIndex].cpuFrameStartNanoseconds;
+    }
+    coduompGpuProfileFrames[frameIndex].refdefTime = backEnd.refdef.time;
 
     coduompGpuProfileFrames[frameIndex].closed = qtrue;
     coduomp_gpu_profile_collect();
@@ -1325,21 +1667,70 @@ void coduomp_gpu_profile_frame_end(void)
     coduompGpuProfileCurrentFrame = -1;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: measure any explicit glFinish wait separately
+ * from ordinary backend command submission. */
+void coduomp_gpu_profile_finish_begin(void)
+{
+    coduompGpuProfileFinishStartNanoseconds =
+        coduomp_gpu_profile_cpu_nanoseconds();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: finish the explicit GPU-wait measurement. */
+void coduomp_gpu_profile_finish_end(void)
+{
+    if (coduompGpuProfileCurrentFrame < 0 ||
+        coduompGpuProfileFinishStartNanoseconds == 0) {
+        return;
+    }
+
+    coduompGpuProfileFrames[coduompGpuProfileCurrentFrame]
+        .cpuFinishNanoseconds +=
+        coduomp_gpu_profile_cpu_nanoseconds() -
+        coduompGpuProfileFinishStartNanoseconds;
+    coduompGpuProfileFinishStartNanoseconds = 0;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: begin timing the platform presentation call,
+ * including any compositor or drawable back-pressure. */
+void coduomp_gpu_profile_present_begin(void)
+{
+    coduompGpuProfilePresentStartNanoseconds =
+        coduomp_gpu_profile_cpu_nanoseconds();
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: finish the platform presentation measurement. */
+void coduomp_gpu_profile_present_end(void)
+{
+    if (coduompGpuProfileCurrentFrame < 0 ||
+        coduompGpuProfilePresentStartNanoseconds == 0) {
+        return;
+    }
+
+    coduompGpuProfileFrames[coduompGpuProfileCurrentFrame]
+        .cpuPresentNanoseconds +=
+        coduomp_gpu_profile_cpu_nanoseconds() -
+        coduompGpuProfilePresentStartNanoseconds;
+    coduompGpuProfilePresentStartNanoseconds = 0;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: group adjacent backend commands into a handful of
  * non-overlapping GPU scopes. This middle detail level avoids the render-pass
  * disruption caused by starting a timer query for every submitted batch. */
 void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase)
 {
     coduomp_gpu_profile_frame_t *frame;
+    qboolean cpuOnly;
+    uint64_t now;
 
     if (coduompGpuProfileCurrentFrame < 0)
         return;
 
     frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
-    if (frame->detailLevel != 1)
+    cpuOnly = frame->mode == 3;
+    if (frame->detailLevel != 1 && cpuOnly == qfalse)
         return;
 
-    if (coduompGpuProfileActiveQuery >= 0) {
+    if (cpuOnly == qfalse && coduompGpuProfileActiveQuery >= 0) {
         const coduomp_gpu_profile_query_t *query =
             &coduompGpuProfileQueries[coduompGpuProfileActiveQuery];
 
@@ -1351,7 +1742,16 @@ void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase)
         coduomp_gpu_profile_end(qtrue);
     }
 
-    (void)coduomp_gpu_profile_begin(phase, NULL);
+    now = coduomp_gpu_profile_cpu_nanoseconds();
+    if (coduompGpuProfileCpuPhase < CODUOMP_GPU_PROFILE_PHASE_COUNT &&
+        coduompGpuProfileCpuSegmentStartNanoseconds != 0) {
+        frame->phaseCpuNanoseconds[coduompGpuProfileCpuPhase] +=
+            now - coduompGpuProfileCpuSegmentStartNanoseconds;
+    }
+    coduompGpuProfileCpuPhase = phase;
+    coduompGpuProfileCpuSegmentStartNanoseconds = now;
+    if (cpuOnly == qfalse)
+        (void)coduomp_gpu_profile_begin(phase, NULL);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: close the low-overhead command-group query before
@@ -1359,13 +1759,25 @@ void coduomp_gpu_profile_segment(coduomp_gpu_profile_phase_t phase)
 void coduomp_gpu_profile_suspend_segment(void)
 {
     coduomp_gpu_profile_frame_t *frame;
+    uint64_t now;
 
     if (coduompGpuProfileCurrentFrame < 0)
         return;
 
     frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
-    if (frame->detailLevel == 1 && coduompGpuProfileActiveQuery >= 0)
+    if (frame->mode != 3 && frame->detailLevel == 1 &&
+        coduompGpuProfileActiveQuery >= 0) {
         coduomp_gpu_profile_end(qtrue);
+    }
+    now = coduomp_gpu_profile_cpu_nanoseconds();
+    if ((frame->mode == 3 || frame->detailLevel == 1) &&
+        coduompGpuProfileCpuPhase < CODUOMP_GPU_PROFILE_PHASE_COUNT &&
+        coduompGpuProfileCpuSegmentStartNanoseconds != 0) {
+        frame->phaseCpuNanoseconds[coduompGpuProfileCpuPhase] +=
+            now - coduompGpuProfileCpuSegmentStartNanoseconds;
+        coduompGpuProfileCpuPhase = CODUOMP_GPU_PROFILE_PHASE_COUNT;
+        coduompGpuProfileCpuSegmentStartNanoseconds = 0;
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: begin one non-overlapping elapsed-time query. A
@@ -1451,6 +1863,8 @@ qboolean coduomp_gpu_profile_begin_surface(void)
     frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
     if (phase == CODUOMP_GPU_PROFILE_PHASE_WORLD)
         frame->sawWorld = qtrue;
+    if (frame->mode == 3)
+        return qfalse;
     ++frame->phaseBatches[phase];
 
     shaderIndex = coduomp_gpu_profile_find_shader(frame, tess.shader);
@@ -1495,6 +1909,11 @@ void coduomp_gpu_profile_end_surface(qboolean started)
 void coduomp_gpu_profile_record_draw_call(void)
 {
     coduomp_gpu_profile_frame_t *frame;
+
+    if (coduompGpuProfileCurrentFrame >= 0 &&
+        coduompGpuProfileFrames[coduompGpuProfileCurrentFrame].mode == 3) {
+        return;
+    }
 
     if (coduompGpuProfileSurfaceFrame < 0 ||
         coduompGpuProfileSurfaceFrame >= CODUOMP_GPU_PROFILE_FRAME_CAPACITY) {
@@ -1548,6 +1967,8 @@ void coduomp_gpu_profile_note_drawsurf_break(
         return;
     }
     frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
+    if (frame->mode == 3)
+        return;
     ++frame->drawSurfBreaks;
     ++frame->breakReasonMasks[reasons & 31u];
     if ((reasons & CODUOMP_GPU_PROFILE_BREAK_SHADER) != 0)
@@ -1578,7 +1999,8 @@ void coduomp_gpu_profile_note_drawsurf_break(
  * from sort-key transitions. */
 void coduomp_gpu_profile_note_overflow(void)
 {
-    if (coduompGpuProfileCurrentFrame >= 0) {
+    if (coduompGpuProfileCurrentFrame >= 0 &&
+        coduompGpuProfileFrames[coduompGpuProfileCurrentFrame].mode != 3) {
         ++coduompGpuProfileFrames[coduompGpuProfileCurrentFrame]
               .overflowBreaks;
     }

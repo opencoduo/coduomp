@@ -1,4 +1,5 @@
 #include "cgame.h"
+#include "../renderer/renderer_gpu_profile.h"
 #include "widescreen_2d_compat.h"
 
 #include "cinematic.h"
@@ -1089,6 +1090,12 @@ void CL_Frame(int32_t msec, int32_t realMsec)
     if (cl_running->integer == 0)
         return;
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: include client work preceding screen drawing
+     * in the compiler-gated correlated frame record. */
+    coduomp_gpu_profile_client_frame_begin();
+#endif
+
     if (cls.state == CA_ACTIVE &&
         cl_executeString->string[0] != '\0') {
         Cmd_ExecuteString(cl_executeString->string);
@@ -1211,11 +1218,18 @@ void CL_CGameRendering(int32_t stereoView, qboolean drawFrame)
      * menus, scoreboard, text, or HUD geometry. */
     coduomp_queue_cgame_2d_presentation(qtrue);
     coduomp_cgame_rendering_compat_active = qtrue;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: isolate cgame frontend construction. */
+    coduomp_gpu_profile_cgame_begin();
+#endif
     (void)VM_Call(
         coduo_cgameVm, CGVM_DRAW_ACTIVE_FRAME,
         cl.serverTime, stereoView, clc.demoPlayback,
         0, 0, drawFrame,
         0, 0, 0, 0, 0, 0);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_cgame_end();
+#endif
     coduomp_cgame_rendering_compat_active = qfalse;
     coduomp_queue_cgame_2d_presentation(qfalse);
 }

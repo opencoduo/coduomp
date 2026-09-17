@@ -1,7 +1,7 @@
-# Renderer GPU profiling
+# Renderer frame profiling
 
-The client has an opt-in OpenGL GPU-timing and renderer-batch diagnostic. It
-is excluded from normal builds and must be enabled with the compiler gate
+The client has opt-in CPU frame timing, OpenGL GPU timing, and renderer-batch
+diagnostics. They are excluded from normal builds and must be enabled with the compiler gate
 `CODUOMP_RENDERER_GPU_PROFILE=1`.
 
 Use a dedicated build directory. Make does not track build-variable changes as
@@ -15,10 +15,11 @@ make client \
 ```
 
 The flag is supported by the native client-engine build and the MinGW client
-engine builds. Runtime GPU timing additionally requires the OpenGL driver to
-expose `GL_ARB_timer_query` or `GL_EXT_timer_query` and the associated query
-entry points. The client prints a warning and leaves profiling inactive when
-they are unavailable.
+engine builds. Modes 1 and 2 additionally require the OpenGL driver to expose
+`GL_ARB_timer_query` or `GL_EXT_timer_query` and the associated query entry
+points. The client prints a warning and leaves those modes inactive when the
+entry points are unavailable. CPU-only mode 3 does not use OpenGL timer
+queries.
 
 ## Running a capture
 
@@ -31,7 +32,7 @@ make client-test-run \
   CLIENT_DATA_PATH="/absolute/path/to/Call of Duty UO" \
   CLIENT_TEST_WORK_DIR=.workbench/runtime/gpu-profile/work \
   CLIENT_TEST_HOME_PATH=.workbench/runtime/gpu-profile/home \
-  CLIENT_ARGS="+set r_gpuProfile 2 +set r_gpuProfileDetail 1"
+  CLIENT_ARGS="+set r_gpuProfile 3"
 ```
 
 The diagnostic writes `gpu_profile.log` directly below `fs_homepath`. The file
@@ -47,13 +48,17 @@ The runtime controls exist only in an instrumented build:
   GPU time reaches `r_gpuProfileSlowMsec`. Periodic summaries still include
   every captured frame.
 - `r_gpuProfile 2` writes an individual record for every completed frame.
+- `r_gpuProfile 3` is the low-overhead CPU frame-stability mode. It writes one
+  timing record per frame without creating OpenGL timer queries or collecting
+  shader, batch, draw-call, or merge census data. Use this mode for p95/p99
+  wall-clock analysis and presentation stalls.
 - `r_gpuProfileSlowMsec` sets the mode-1 threshold in milliseconds and defaults
   to `4.0`.
 - `r_gpuProfileDetail 0` uses one low-overhead timer scope for the backend
   frame. It is useful for detecting slow GPU frames but cannot attribute time
   to renderer phases.
-- `r_gpuProfileDetail 1` times adjacent backend command groups by phase. This
-  is the recommended level for ordinary captures and frame-stability work.
+- `r_gpuProfileDetail 1` times adjacent backend command groups by phase in GPU
+  modes 1 and 2. Use it only for a short GPU-attribution capture.
 - `r_gpuProfileDetail 2` starts a query for each tessellation batch. It enables
   per-material GPU timing but is deliberately invasive and should not be used
   to judge normal FPS or frame stability.
@@ -61,7 +66,13 @@ The runtime controls exist only in an instrumented build:
 Timer results are polled asynchronously. The render thread does not wait for a
 query result; a full query or delayed-frame pool produces dropped samples
 instead of a GPU synchronization stall. Check `dropped=0` before treating a
-capture as complete.
+GPU capture as complete.
+
+On Apple's OpenGL implementation, even asynchronous timer-query scopes can
+perturb command submission and produce long stalls that do not occur in mode
+3. Do not use modes 1 or 2 to judge ordinary frame stability on macOS. First
+locate a wall-clock problem with mode 3, then use a short mode-1 or mode-2
+capture only when GPU attribution is still necessary.
 
 ## Reading the log
 
@@ -73,10 +84,29 @@ file.
 
 The most useful records are:
 
-- `GPU_PROFILE` reports measured GPU milliseconds by renderer phase.
-  `gameplay=1` means the frame submitted world geometry; use it to exclude
-  menus and most loading frames. These values are scoped GPU-command time, not
-  CPU frame time or an FPS-derived wall-clock duration.
+- `GPU_PROFILE` reports both CPU fields and, in modes 1 and 2, measured GPU
+  milliseconds by renderer phase. `gameplay=1` means the frame submitted world
+  geometry; use it to exclude menus and most loading frames. `refdef_time` is
+  the demo/game timestamp used to compare the same event across repeated runs.
+- `frame_interval_cpu_ms` is the start-to-start interval used for frame-pacing
+  percentiles. It includes frame limiting and work after the preceding timing
+  record closed. `frame_cpu_ms` measures from early client-frame processing
+  through synchronous renderer completion.
+- `pre_frontend_cpu_ms`, `frontend_cpu_ms`, and `backend_cpu_ms` split that CPU
+  work. `cgame_cpu_ms` and `render_scene_cpu_ms` further isolate cgame frame
+  construction and renderer visibility/sorting work. `dpvs_setup_cpu_ms`,
+  `model_filter_cpu_ms`, `world_traversal_cpu_ms`, `entities_cpu_ms`, and
+  `sort_cpu_ms` divide the repeatable scene-construction work without changing
+  visibility behavior. The `brush_entities`, `xmodel_entities`,
+  `static_entities`, and `effect_entities` CPU/count fields further attribute
+  `R_AddEntitySurfaces` without changing what it submits. The
+  `static_cache_build` and `static_lighting` CPU/count fields distinguish
+  static-model cache population from steady-state surface submission.
+- `finish_cpu_ms` is time blocked in an explicit `glFinish`, while
+  `present_cpu_ms` is time inside the platform buffer-swap/presentation call.
+  `scene_submit_cpu_ms`, `2d_submit_cpu_ms`, `clear_submit_cpu_ms`, and
+  `misc_submit_cpu_ms` divide synchronous backend command execution. These
+  submission fields are CPU time, not GPU execution time.
 - `GPU_PROFILE_BATCHES` counts logical tessellation submissions by phase.
 - `GPU_PROFILE_DRAWS` counts actual OpenGL draw calls and separates portal
   rendering from the main scene.
@@ -108,4 +138,7 @@ objects.
 For repeatable comparisons, keep resolution, display, view position, demo,
 `r_swapInterval`, `r_finish`, and the detail level fixed. Compare census counts
 first; compare timing only between runs made with the same profiling detail
-and build configuration.
+and build configuration. Discard loading and the first warm-up frames, and
+repeat deterministic demos: a spike at the same `refdef_time` is evidence for
+content-dependent work, while presentation spikes that move between timestamps
+are usually platform scheduling or drawable back-pressure.

@@ -2,6 +2,7 @@
 
 #include "../client/debug_lines.h"
 #include "gl_state.h"
+#include "renderer_gpu_profile.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -841,6 +842,10 @@ void R_SortDrawSurfs(drawSurf_t *drawSurfs, int32_t drawSurfCount)
  * surface that RB_SurfaceEntity expands according to the current entity. */
 void R_AddEntitySurfaces(void)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    uint64_t profileStartNanoseconds;
+#endif
+
     if (r_drawentities->integer == 0)
         return;
 
@@ -863,15 +868,42 @@ void R_AddEntitySurfaces(void)
 
         switch (entityType) {
         case RT_BRUSH_MODEL:
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            profileStartNanoseconds =
+                coduomp_gpu_profile_frontend_scope_begin();
+#endif
             R_AddBrushModelSurfaces(entity);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            coduomp_gpu_profile_frontend_scope_end(
+                CODUOMP_GPU_PROFILE_FRONTEND_BRUSH_ENTITIES,
+                profileStartNanoseconds);
+#endif
             break;
 
         case RT_MODEL:
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            profileStartNanoseconds =
+                coduomp_gpu_profile_frontend_scope_begin();
+#endif
             R_AddXModelSurfaces(entity);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            coduomp_gpu_profile_frontend_scope_end(
+                CODUOMP_GPU_PROFILE_FRONTEND_XMODEL_ENTITIES,
+                profileStartNanoseconds);
+#endif
             break;
 
         case RT_STATIC_MODEL:
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            profileStartNanoseconds =
+                coduomp_gpu_profile_frontend_scope_begin();
+#endif
             R_AddStaticModelSurfaces(entity);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            coduomp_gpu_profile_frontend_scope_end(
+                CODUOMP_GPU_PROFILE_FRONTEND_STATIC_ENTITIES,
+                profileStartNanoseconds);
+#endif
             break;
 
         case RT_PORTALSURFACE:
@@ -895,6 +927,10 @@ void R_AddEntitySurfaces(void)
                 break;
             }
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            profileStartNanoseconds =
+                coduomp_gpu_profile_frontend_scope_begin();
+#endif
             {
                 const int32_t shaderHandle =
                     entity->e.spriteShaderHandle;
@@ -914,6 +950,11 @@ void R_AddEntitySurfaces(void)
                               tr.defaultStorageMode, shader,
                               0, 0, 0);
             }
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+            coduomp_gpu_profile_frontend_scope_end(
+                CODUOMP_GPU_PROFILE_FRONTEND_EFFECT_ENTITIES,
+                profileStartNanoseconds);
+#endif
             break;
         }
 
@@ -987,13 +1028,26 @@ void R_AddPolygonSurfaces(void)
  * follow the PE call sequence. */
 void R_GenerateDrawSurfs(void)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    uint64_t profileStartNanoseconds;
+#endif
+
     R_SetupProjection();
 
     if (tr.world != NULL && tr.world->cells != NULL)
         R_AddWorldSurfacesDPVS();
 
     R_AddPolygonSurfaces();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    profileStartNanoseconds =
+        coduomp_gpu_profile_frontend_scope_begin();
+#endif
     R_AddEntitySurfaces();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_frontend_scope_end(
+        CODUOMP_GPU_PROFILE_FRONTEND_ENTITIES,
+        profileStartNanoseconds);
+#endif
 
     if (r_vc_showlog->integer != 0)
         R_ShowLightVisCachePoints();
@@ -1009,6 +1063,9 @@ void R_RenderView(const viewParms_t *viewParms)
 {
     int32_t firstDrawSurf;
     int32_t drawSurfCount;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    uint64_t profileStartNanoseconds;
+#endif
 
     if (viewParms->viewportWidth <= 0 || viewParms->viewportHeight <= 0)
         return;
@@ -1032,6 +1089,15 @@ void R_RenderView(const viewParms_t *viewParms)
 
     drawSurfCount = (int32_t)(
         (uint32_t)tr.refdef.numDrawSurfs - (uint32_t)firstDrawSurf);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    profileStartNanoseconds =
+        coduomp_gpu_profile_frontend_scope_begin();
+#endif
     R_SortDrawSurfs(&tr.refdef.drawSurfs[firstDrawSurf],
                     drawSurfCount);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    coduomp_gpu_profile_frontend_scope_end(
+        CODUOMP_GPU_PROFILE_FRONTEND_SORT,
+        profileStartNanoseconds);
+#endif
 }

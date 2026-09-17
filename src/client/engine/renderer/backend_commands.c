@@ -440,14 +440,30 @@ const void *RB_SwapBuffers(const swapBuffersCommand_t *command)
         }
     }
 
-    if (glState.finishCalled == qfalse)
+    if (glState.finishCalled == qfalse) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: isolate an explicit GPU drain from swap. */
+        coduomp_gpu_profile_finish_begin();
+#endif
         qglFinish();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_finish_end();
+#endif
+    }
 
     GLimp_LogComment(
         "***************** RB_SwapBuffers *****************\n\n\n");
 
     if (r_swapDelay->integer == 0) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: time the complete platform presentation
+         * path, not only its GPU gamma-composite commands. */
+        coduomp_gpu_profile_present_begin();
+#endif
         GLimp_EndFrame();
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        coduomp_gpu_profile_present_end();
+#endif
         backEnd.projection2D = qfalse;
     } else {
         qglFlush();
