@@ -243,9 +243,11 @@ float VectorNormalize(vec3_t vector)
             x87f_load_f32(vector[2]), x87f_load_f32(inverseLength)));
     }
 #else
-    lengthSquared = ((vector[0] * vector[0]) +
-                     (vector[1] * vector[1])) +
-                    (vector[2] * vector[2]);
+    /* Keep the products and additions wide until the original binary32
+     * squared-length store, including on hosts without x87 excess precision. */
+    lengthSquared = (float)(((long double)vector[0] * (long double)vector[0] +
+                             (long double)vector[1] * (long double)vector[1]) +
+                            (long double)vector[2] * (long double)vector[2]);
     length = (float)sqrt((double)lengthSquared);
     if (length != 0.0f) {
         const float inverseLength = 1.0f / length;
@@ -441,9 +443,10 @@ float VectorNormalize2(const vec3_t input, vec3_t output)
         output[0] = 0.0f;
     }
 #else
-    lengthSquared = ((input[0] * input[0]) +
-                     (input[1] * input[1])) +
-                    (input[2] * input[2]);
+    /* Match VectorNormalize's single squared-length rounding boundary. */
+    lengthSquared = (float)(((long double)input[0] * (long double)input[0] +
+                             (long double)input[1] * (long double)input[1]) +
+                            (long double)input[2] * (long double)input[2]);
     length = (float)sqrt((double)lengthSquared);
     if (length != 0.0f) {
         const float inverseLength = 1.0f / length;
