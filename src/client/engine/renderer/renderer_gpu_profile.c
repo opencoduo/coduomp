@@ -15,6 +15,7 @@ enum {
     CODUOMP_GPU_PROFILE_FRAME_CAPACITY = 64,
     CODUOMP_GPU_PROFILE_SHADER_CAPACITY = 512,
     CODUOMP_GPU_PROFILE_SHADER_NAME_CAPACITY = 64,
+    CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT = 12,
     CODUOMP_GPU_PROFILE_SUMMARY_FRAMES = 250,
     CODUOMP_GL_TIME_ELAPSED = 0x88bf
 };
@@ -40,8 +41,20 @@ typedef struct coduomp_gpu_profile_shader_s {
     uint32_t batches;
     uint32_t drawCalls;
     uint32_t sceneDrawCalls;
+    uint32_t worldBatches;
+    uint32_t worldDrawCalls;
     uint32_t entityBreaks;
 } coduomp_gpu_profile_shader_t;
+
+typedef struct coduomp_gpu_profile_merge_class_s {
+    const shader_t *shader;
+    uint32_t shaderCount;
+    uint32_t batches;
+    uint32_t collapsedBatches;
+    uint32_t drawCalls;
+    uint32_t collapsedDrawCalls;
+    qboolean worldArrayEligible;
+} coduomp_gpu_profile_merge_class_t;
 
 typedef struct coduomp_gpu_profile_frame_s {
     qboolean used;
@@ -355,6 +368,245 @@ static void coduomp_gpu_profile_find_top_entity_break_shaders(
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: rank world materials without allowing model or
+ * screen-space submissions to obscure the static-map workload. */
+static void coduomp_gpu_profile_find_top_world_shaders(
+    const coduomp_gpu_profile_frame_t *frame,
+    int32_t top[CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT])
+{
+    for (int32_t rank = 0;
+         rank < CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT; ++rank) {
+        top[rank] = -1;
+    }
+
+    for (int32_t shader = 0; shader < frame->shaderCount; ++shader) {
+        for (int32_t rank = 0;
+             rank < CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT; ++rank) {
+            const qboolean outranks =
+                top[rank] < 0 ||
+                frame->shaders[shader].worldDrawCalls >
+                    frame->shaders[top[rank]].worldDrawCalls ||
+                (frame->shaders[shader].worldDrawCalls ==
+                     frame->shaders[top[rank]].worldDrawCalls &&
+                 frame->shaders[shader].worldBatches >
+                     frame->shaders[top[rank]].worldBatches);
+
+            if (outranks != qfalse) {
+                for (int32_t move =
+                         CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT - 1;
+                     move > rank; --move) {
+                    top[move] = top[move - 1];
+                }
+                top[rank] = shader;
+                break;
+            }
+        }
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: identify images that could occupy layers of one
+ * texture array without resampling or changing their sampler wrap policy. */
+static qboolean coduomp_gpu_profile_array_images_compatible(
+    const image_t *left, const image_t *right)
+{
+    const uint32_t samplerFlags =
+        IMAGE_FLAG_MIPMAP | IMAGE_FLAG_CLAMP_S | IMAGE_FLAG_CLAMP_T;
+
+    return left != NULL && right != NULL &&
+           left->target == GL_TEXTURE_2D && right->target == GL_TEXTURE_2D &&
+           left->uploadWidth == right->uploadWidth &&
+           left->uploadHeight == right->uploadHeight &&
+           left->internalFormat == right->internalFormat &&
+           (left->flags & samplerFlags) == (right->flags & samplerFlags);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: restrict the implementation census to the
+ * fixed-function world case that a texture-array fragment program can replace
+ * exactly without dynamic texture coordinates or vendor-specific programs. */
+static qboolean coduomp_gpu_profile_world_array_shader_eligible(
+    const shader_t *shader)
+{
+    if (shader == NULL || shader->primaryImage == NULL ||
+        CanOptimizeShader(shader) == qfalse) {
+        return qfalse;
+    }
+
+    int32_t ordinaryStageCount = 0;
+    for (int32_t stageIndex = 0;
+         stageIndex < shader->numUnfoggedPasses; ++stageIndex) {
+        const shaderStage_t *candidate = shader->stages[stageIndex];
+
+        if (candidate != NULL &&
+            (candidate->flags & SHADER_STAGE_PER_LIGHT) == 0) {
+            ++ordinaryStageCount;
+        }
+    }
+    if (ordinaryStageCount != 1)
+        return qfalse;
+
+    const image_t *image = shader->primaryImage;
+    if (image->internalFormat != GL_COMPRESSED_RGB_S3TC_DXT1_EXT &&
+        image->internalFormat != GL_COMPRESSED_RGBA_S3TC_DXT1_EXT &&
+        image->internalFormat != GL_COMPRESSED_RGBA_S3TC_DXT3_EXT &&
+        image->internalFormat != GL_COMPRESSED_RGBA_S3TC_DXT5_EXT) {
+        return qfalse;
+    }
+
+    const shaderStage_t *stage = shader->stages[0];
+    if (stage == NULL ||
+        (stage->flags & SHADER_STAGE_PER_LIGHT) != 0 ||
+        stage->fragmentShaderATI != 0 || stage->registerCombiners != NULL ||
+        stage->vertexProgram != NULL) {
+        return qfalse;
+    }
+
+    const textureBundle_t *base = &stage->bundle[0];
+    const textureBundle_t *lightmap = &stage->bundle[1];
+    if (base->image[0] != image || base->numImageAnimations > 1 ||
+        base->textureEnvMode != GL_MODULATE ||
+        base->texCoordComponentCount != 2 || base->tcGen != TCGEN_TEXTURE ||
+        base->numTexMods != 0 || base->waterMap != NULL ||
+        base->textureCombine != NULL || base->textureShader != NULL ||
+        base->isVideoMap != 0 ||
+        lightmap->image[0] == NULL || lightmap->numImageAnimations > 1 ||
+        lightmap->textureEnvMode != GL_MODULATE ||
+        lightmap->texCoordComponentCount != 2 ||
+        lightmap->tcGen != TCGEN_LIGHTMAP || lightmap->numTexMods != 0 ||
+        lightmap->waterMap != NULL || lightmap->textureCombine != NULL ||
+        lightmap->textureShader != NULL || lightmap->isLightmap == 0 ||
+        lightmap->isVideoMap != 0 ||
+        stage->bundle[2].textureEnvMode != 0) {
+        return qfalse;
+    }
+
+    return qtrue;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: estimate the best-case draw reduction if world
+ * materials with identical render state shared one texture-array pipeline.
+ * This is a census only; it does not alter sorting or rendering. */
+static void coduomp_gpu_profile_write_world_merge_census(
+    const coduomp_gpu_profile_frame_t *frame)
+{
+    coduomp_gpu_profile_merge_class_t compatible[
+        CODUOMP_GPU_PROFILE_SHADER_CAPACITY] = {{0}};
+    coduomp_gpu_profile_merge_class_t arrayCompatible[
+        CODUOMP_GPU_PROFILE_SHADER_CAPACITY] = {{0}};
+    int32_t compatibleCount = 0;
+    int32_t arrayCompatibleCount = 0;
+    uint32_t worldShaders = 0;
+
+    for (int32_t shaderIndex = 0;
+         shaderIndex < frame->shaderCount; ++shaderIndex) {
+        const coduomp_gpu_profile_shader_t *entry =
+            &frame->shaders[shaderIndex];
+        const shader_t *shader = entry->shader;
+
+        if (shader == NULL || entry->worldBatches == 0)
+            continue;
+        ++worldShaders;
+
+        int32_t classIndex;
+        for (classIndex = 0; classIndex < compatibleCount; ++classIndex) {
+            const shader_t *representative = compatible[classIndex].shader;
+            if (CompareMergableShaders(
+                    representative, shader,
+                    representative->primaryImage,
+                    shader->primaryImage) == 0) {
+                break;
+            }
+        }
+        if (classIndex == compatibleCount) {
+            compatible[classIndex].shader = shader;
+            ++compatibleCount;
+        }
+        coduomp_gpu_profile_merge_class_t *mergeClass =
+            &compatible[classIndex];
+        ++mergeClass->shaderCount;
+        mergeClass->batches += entry->worldBatches;
+        mergeClass->drawCalls += entry->worldDrawCalls;
+        if (entry->worldBatches > mergeClass->collapsedBatches)
+            mergeClass->collapsedBatches = entry->worldBatches;
+        if (entry->worldDrawCalls > mergeClass->collapsedDrawCalls)
+            mergeClass->collapsedDrawCalls = entry->worldDrawCalls;
+
+        for (classIndex = 0;
+             classIndex < arrayCompatibleCount; ++classIndex) {
+            const shader_t *representative =
+                arrayCompatible[classIndex].shader;
+            if (coduomp_gpu_profile_array_images_compatible(
+                    representative->primaryImage,
+                    shader->primaryImage) != qfalse &&
+                CompareMergableShaders(
+                    representative, shader,
+                    representative->primaryImage,
+                    shader->primaryImage) == 0) {
+                break;
+            }
+        }
+        if (classIndex == arrayCompatibleCount) {
+            arrayCompatible[classIndex].shader = shader;
+            arrayCompatible[classIndex].worldArrayEligible =
+                coduomp_gpu_profile_world_array_shader_eligible(shader);
+            ++arrayCompatibleCount;
+        }
+        mergeClass = &arrayCompatible[classIndex];
+        ++mergeClass->shaderCount;
+        mergeClass->batches += entry->worldBatches;
+        mergeClass->drawCalls += entry->worldDrawCalls;
+        if (entry->worldBatches > mergeClass->collapsedBatches)
+            mergeClass->collapsedBatches = entry->worldBatches;
+        if (entry->worldDrawCalls > mergeClass->collapsedDrawCalls)
+            mergeClass->collapsedDrawCalls = entry->worldDrawCalls;
+    }
+
+    uint32_t compatibleBatches = 0;
+    uint32_t compatibleDraws = 0;
+    uint32_t arrayCompatibleBatches = 0;
+    uint32_t arrayCompatibleDraws = 0;
+    uint32_t eligibleShaders = 0;
+    uint32_t eligibleClasses = 0;
+    uint32_t eligibleBatches = 0;
+    uint32_t eligibleDraws = 0;
+    uint32_t eligibleCollapsedBatches = 0;
+    uint32_t eligibleCollapsedDraws = 0;
+    for (int32_t classIndex = 0;
+         classIndex < compatibleCount; ++classIndex) {
+        compatibleBatches += compatible[classIndex].collapsedBatches;
+        compatibleDraws += compatible[classIndex].collapsedDrawCalls;
+    }
+    for (int32_t classIndex = 0;
+         classIndex < arrayCompatibleCount; ++classIndex) {
+        arrayCompatibleBatches +=
+            arrayCompatible[classIndex].collapsedBatches;
+        arrayCompatibleDraws +=
+            arrayCompatible[classIndex].collapsedDrawCalls;
+        if (arrayCompatible[classIndex].worldArrayEligible != qfalse) {
+            eligibleShaders += arrayCompatible[classIndex].shaderCount;
+            ++eligibleClasses;
+            eligibleBatches += arrayCompatible[classIndex].batches;
+            eligibleDraws += arrayCompatible[classIndex].drawCalls;
+            eligibleCollapsedBatches +=
+                arrayCompatible[classIndex].collapsedBatches;
+            eligibleCollapsedDraws +=
+                arrayCompatible[classIndex].collapsedDrawCalls;
+        }
+    }
+
+    fprintf(
+        coduompGpuProfileLogFile,
+        "GPU_PROFILE_WORLD_MERGE frame=%u shaders=%u compatible_classes=%d "
+        "compatible_batches=%u compatible_draws=%u array_classes=%d "
+        "array_batches=%u array_draws=%u eligible_shaders=%u "
+        "eligible_classes=%u eligible_batches=%u eligible_draws=%u "
+        "eligible_collapsed_batches=%u eligible_collapsed_draws=%u\n",
+        frame->serial, worldShaders, compatibleCount,
+        compatibleBatches, compatibleDraws, arrayCompatibleCount,
+        arrayCompatibleBatches, arrayCompatibleDraws, eligibleShaders,
+        eligibleClasses, eligibleBatches, eligibleDraws,
+        eligibleCollapsedBatches, eligibleCollapsedDraws);
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: emit a parseable slow-frame record and its most
  * expensive shader batches after every query for the frame has completed. */
 static void coduomp_gpu_profile_write_frame(
@@ -364,11 +616,13 @@ static void coduomp_gpu_profile_write_frame(
     int32_t batchTop[3];
     int32_t sceneTop[3];
     int32_t entityTop[3];
+    int32_t worldTop[CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT];
 
     coduomp_gpu_profile_find_top_shaders(frame, top);
     coduomp_gpu_profile_find_top_batch_shaders(frame, batchTop);
     coduomp_gpu_profile_find_top_scene_shaders(frame, sceneTop);
     coduomp_gpu_profile_find_top_entity_break_shaders(frame, entityTop);
+    coduomp_gpu_profile_find_top_world_shaders(frame, worldTop);
     fprintf(
         coduompGpuProfileLogFile,
         "GPU_PROFILE frame=%u total_ms=%.3f view_ms=%.3f scene_ms=%.3f world_ms=%.3f "
@@ -540,6 +794,34 @@ static void coduomp_gpu_profile_write_frame(
             entityTop[2] >= 0 ? frame->shaders[entityTop[2]].name : "-",
             entityTop[2] >= 0
                 ? frame->shaders[entityTop[2]].entityBreaks : 0);
+    }
+
+    coduomp_gpu_profile_write_world_merge_census(frame);
+    if (worldTop[0] >= 0 &&
+        frame->shaders[worldTop[0]].worldDrawCalls != 0 &&
+        frame->serial % 60u == 0) {
+        for (int32_t rank = 0;
+             rank < CODUOMP_GPU_PROFILE_WORLD_TOP_COUNT; ++rank) {
+            if (worldTop[rank] < 0)
+                break;
+            const coduomp_gpu_profile_shader_t *entry =
+                &frame->shaders[worldTop[rank]];
+            const image_t *image = entry->shader != NULL
+                                       ? entry->shader->primaryImage
+                                       : NULL;
+            fprintf(
+                coduompGpuProfileLogFile,
+                "GPU_PROFILE_WORLD_MATERIAL frame=%u rank=%d shader=%s "
+                "batches=%u draws=%u image=%s upload=%ux%u format=0x%x "
+                "flags=0x%x\n",
+                frame->serial, rank + 1, entry->name,
+                entry->worldBatches, entry->worldDrawCalls,
+                image != NULL ? image->imgName : "-",
+                image != NULL ? image->uploadWidth : 0,
+                image != NULL ? image->uploadHeight : 0,
+                image != NULL ? image->internalFormat : 0,
+                image != NULL ? image->flags : 0);
+        }
     }
 
     fprintf(
@@ -1174,6 +1456,8 @@ qboolean coduomp_gpu_profile_begin_surface(void)
     shaderIndex = coduomp_gpu_profile_find_shader(frame, tess.shader);
     if (shaderIndex >= 0) {
         ++frame->shaders[shaderIndex].batches;
+        if (phase == CODUOMP_GPU_PROFILE_PHASE_WORLD)
+            ++frame->shaders[shaderIndex].worldBatches;
     } else if (tess.shader != NULL) {
         ++frame->untrackedShaderBatches;
     }
@@ -1238,6 +1522,11 @@ void coduomp_gpu_profile_record_draw_call(void)
                 coduompGpuProfileSurfacePhase) != qfalse) {
             ++frame->shaders[coduompGpuProfileSurfaceShader]
                   .sceneDrawCalls;
+        }
+        if (coduompGpuProfileSurfacePhase ==
+            CODUOMP_GPU_PROFILE_PHASE_WORLD) {
+            ++frame->shaders[coduompGpuProfileSurfaceShader]
+                  .worldDrawCalls;
         }
     }
     if (coduompGpuProfileSurfacePortal != qfalse)
