@@ -2,6 +2,7 @@
 
 #include "gl_api.h"
 #include "gl_state.h"
+#include "renderer_gpu_profile.h"
 #include "../system_fatal.h"
 
 #include <stddef.h>
@@ -84,6 +85,11 @@ void RB_glBegin(uint32_t mode)
  * gap; exact same-module Mac symbol RB_glEnd. */
 void RB_glEnd(void)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: include immediate-mode emulation in the
+     * compiler-gated draw census. */
+    coduomp_gpu_profile_record_draw_call();
+#endif
     qglDrawArrays(rendererDebugState.immediatePrimitiveMode, 0,
                   rendererDebugState.immediateVertexCount);
     rendererDebugState.immediateVertexCount = 0;

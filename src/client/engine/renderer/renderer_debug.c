@@ -2,6 +2,7 @@
 
 #include "gl_api.h"
 #include "gl_state.h"
+#include "renderer_gpu_profile.h"
 
 #include "../client/debug_lines.h"
 #include "../math/vector_math.h"
@@ -370,12 +371,20 @@ void RB_DrawDebugPolys(void)
 
         GL_State(R_DEBUG_POLYGON_FILL_STATE);
         qglColor4fv(polygon->color);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated debug draw census. */
+        coduomp_gpu_profile_record_draw_call();
+#endif
         qglDrawArrays(GL_POLYGON, polygon->firstVertex,
                       polygon->vertexCount);
 
         GL_State(R_DEBUG_POLYGON_WIREFRAME_STATE);
         qglDepthRange(0.0, 0.0);
         qglColor3fv(polygon->color);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+        /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated debug draw census. */
+        coduomp_gpu_profile_record_draw_call();
+#endif
         qglDrawArrays(GL_POLYGON, polygon->firstVertex,
                       polygon->vertexCount);
         qglDepthRange(0.0, 1.0);

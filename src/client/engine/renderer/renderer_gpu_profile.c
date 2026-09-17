@@ -34,9 +34,13 @@ typedef void (RENDERER_GL_API_CALL *coduomp_gl_get_query_object_ui64v_t)(
     uint32_t query, uint32_t parameter, uint64_t *value);
 
 typedef struct coduomp_gpu_profile_shader_s {
+    const shader_t *shader;
     char name[CODUOMP_GPU_PROFILE_SHADER_NAME_CAPACITY];
     uint64_t nanoseconds;
     uint32_t batches;
+    uint32_t drawCalls;
+    uint32_t sceneDrawCalls;
+    uint32_t entityBreaks;
 } coduomp_gpu_profile_shader_t;
 
 typedef struct coduomp_gpu_profile_frame_s {
@@ -51,6 +55,20 @@ typedef struct coduomp_gpu_profile_frame_s {
     uint32_t droppedQueries;
     uint64_t phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_COUNT];
     uint32_t phaseBatches[CODUOMP_GPU_PROFILE_PHASE_COUNT];
+    uint32_t phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_COUNT];
+    uint32_t portalBatches;
+    uint32_t portalDrawCalls;
+    uint32_t mainSceneBatches;
+    uint32_t mainSceneDrawCalls;
+    uint32_t drawSurfBreaks;
+    uint32_t shaderBreaks;
+    uint32_t storageBreaks;
+    uint32_t dlightBreaks;
+    uint32_t batchFlag2Breaks;
+    uint32_t entityBreaks;
+    uint32_t exactShaderBreaks;
+    uint32_t overflowBreaks;
+    uint32_t breakReasonMasks[32];
     coduomp_gpu_profile_shader_t
         shaders[CODUOMP_GPU_PROFILE_SHADER_CAPACITY];
     int32_t shaderCount;
@@ -95,10 +113,30 @@ static uint64_t
     coduompGpuProfileSummaryNanoseconds[CODUOMP_GPU_PROFILE_PHASE_COUNT];
 static uint64_t coduompGpuProfileSummaryMaximumNanoseconds;
 static uint32_t coduompGpuProfileSummaryDroppedQueries;
+static uint64_t coduompGpuProfileSummaryBatches;
+static uint64_t coduompGpuProfileSummaryDrawCalls;
+static uint64_t coduompGpuProfileSummaryPortalBatches;
+static uint64_t coduompGpuProfileSummaryPortalDrawCalls;
+static uint64_t coduompGpuProfileSummaryMainSceneBatches;
+static uint64_t coduompGpuProfileSummaryMainSceneDrawCalls;
+static uint64_t coduompGpuProfileSummaryDrawSurfBreaks;
+static uint64_t coduompGpuProfileSummaryShaderBreaks;
+static uint64_t coduompGpuProfileSummaryStorageBreaks;
+static uint64_t coduompGpuProfileSummaryDlightBreaks;
+static uint64_t coduompGpuProfileSummaryBatchFlag2Breaks;
+static uint64_t coduompGpuProfileSummaryEntityBreaks;
+static uint64_t coduompGpuProfileSummaryExactShaderBreaks;
+static uint64_t coduompGpuProfileSummaryOverflowBreaks;
+static uint64_t coduompGpuProfileSummaryBreakReasonMasks[32];
 static FILE *coduompGpuProfileLogFile;
 static qboolean coduompGpuProfileLogOpenAttempted;
 static qboolean coduompGpuProfileWasEnabled;
 static qboolean coduompGpuProfileCapacityWarningPrinted;
+static int32_t coduompGpuProfileSurfaceFrame = -1;
+static uint32_t coduompGpuProfileSurfaceFrameSerial;
+static int32_t coduompGpuProfileSurfaceShader = -1;
+static coduomp_gpu_profile_phase_t coduompGpuProfileSurfacePhase;
+static qboolean coduompGpuProfileSurfacePortal;
 
 /* NOT_FROM_ORIGINAL_SOURCE: open one host-file diagnostic log below
  * fs_homepath. This deliberately avoids an engine filesystem handle because
@@ -140,7 +178,7 @@ static qboolean coduomp_gpu_profile_open_log(void)
     }
 
     fprintf(coduompGpuProfileLogFile,
-            "GPU_PROFILE_LOG version=1 time_unit=milliseconds\n");
+            "GPU_PROFILE_LOG version=2 time_unit=milliseconds\n");
     ri.Printf(R_PRINT_ALL, "GPU profiling writing to %s\n", logPath);
     return qtrue;
 }
@@ -175,6 +213,49 @@ static uint64_t coduomp_gpu_profile_frame_total(
     return total;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: total the CPU-side tessellation batches recorded
+ * without adding timer queries around individual surfaces. */
+static uint32_t coduomp_gpu_profile_frame_batches(
+    const coduomp_gpu_profile_frame_t *frame)
+{
+    uint32_t total = 0;
+
+    for (int32_t phase = 0;
+         phase < CODUOMP_GPU_PROFILE_PHASE_COUNT; ++phase) {
+        total += frame->phaseBatches[phase];
+    }
+    return total;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: total actual GL draw submissions attributed to
+ * the current backend frame. */
+static uint32_t coduomp_gpu_profile_frame_draw_calls(
+    const coduomp_gpu_profile_frame_t *frame)
+{
+    uint32_t total = 0;
+
+    for (int32_t phase = 0;
+         phase < CODUOMP_GPU_PROFILE_PHASE_COUNT; ++phase) {
+        total += frame->phaseDrawCalls[phase];
+    }
+    return total;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: identify phases submitted by an RE_RenderScene
+ * command rather than later screen-space or miscellaneous backend work. */
+static qboolean coduomp_gpu_profile_phase_is_scene(
+    coduomp_gpu_profile_phase_t phase)
+{
+    return phase == CODUOMP_GPU_PROFILE_PHASE_WORLD ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_BRUSH_MODELS ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_MODELS ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_STATIC_MODELS ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_EFFECTS ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_SKY ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_SHADOWS ||
+           phase == CODUOMP_GPU_PROFILE_PHASE_FLARES;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: retain the three largest per-frame shader totals
  * without allocating or sorting renderer-owned records. */
 static void coduomp_gpu_profile_find_top_shaders(
@@ -198,14 +279,96 @@ static void coduomp_gpu_profile_find_top_shaders(
     }
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: retain the three materials responsible for the
+ * most actual draw submissions, breaking ties by tessellation batch count. */
+static void coduomp_gpu_profile_find_top_batch_shaders(
+    const coduomp_gpu_profile_frame_t *frame, int32_t top[3])
+{
+    top[0] = -1;
+    top[1] = -1;
+    top[2] = -1;
+
+    for (int32_t shader = 0; shader < frame->shaderCount; ++shader) {
+        for (int32_t rank = 0; rank < 3; ++rank) {
+            const qboolean outranks =
+                top[rank] < 0 ||
+                frame->shaders[shader].drawCalls >
+                    frame->shaders[top[rank]].drawCalls ||
+                (frame->shaders[shader].drawCalls ==
+                     frame->shaders[top[rank]].drawCalls &&
+                 frame->shaders[shader].batches >
+                     frame->shaders[top[rank]].batches);
+
+            if (outranks != qfalse) {
+                for (int32_t move = 2; move > rank; --move)
+                    top[move] = top[move - 1];
+                top[rank] = shader;
+                break;
+            }
+        }
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: rank scene materials separately so frequently
+ * changing UI font pages cannot hide world or entity submission hot spots. */
+static void coduomp_gpu_profile_find_top_scene_shaders(
+    const coduomp_gpu_profile_frame_t *frame, int32_t top[3])
+{
+    top[0] = -1;
+    top[1] = -1;
+    top[2] = -1;
+
+    for (int32_t shader = 0; shader < frame->shaderCount; ++shader) {
+        for (int32_t rank = 0; rank < 3; ++rank) {
+            if (top[rank] < 0 ||
+                frame->shaders[shader].sceneDrawCalls >
+                    frame->shaders[top[rank]].sceneDrawCalls) {
+                for (int32_t move = 2; move > rank; --move)
+                    top[move] = top[move - 1];
+                top[rank] = shader;
+                break;
+            }
+        }
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: rank the materials whose repeated entity
+ * transforms prevent otherwise equal sort-key surfaces from sharing a batch. */
+static void coduomp_gpu_profile_find_top_entity_break_shaders(
+    const coduomp_gpu_profile_frame_t *frame, int32_t top[3])
+{
+    top[0] = -1;
+    top[1] = -1;
+    top[2] = -1;
+
+    for (int32_t shader = 0; shader < frame->shaderCount; ++shader) {
+        for (int32_t rank = 0; rank < 3; ++rank) {
+            if (top[rank] < 0 ||
+                frame->shaders[shader].entityBreaks >
+                    frame->shaders[top[rank]].entityBreaks) {
+                for (int32_t move = 2; move > rank; --move)
+                    top[move] = top[move - 1];
+                top[rank] = shader;
+                break;
+            }
+        }
+    }
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: emit a parseable slow-frame record and its most
  * expensive shader batches after every query for the frame has completed. */
 static void coduomp_gpu_profile_write_frame(
     const coduomp_gpu_profile_frame_t *frame, uint64_t totalNanoseconds)
 {
     int32_t top[3];
+    int32_t batchTop[3];
+    int32_t sceneTop[3];
+    int32_t entityTop[3];
 
     coduomp_gpu_profile_find_top_shaders(frame, top);
+    coduomp_gpu_profile_find_top_batch_shaders(frame, batchTop);
+    coduomp_gpu_profile_find_top_scene_shaders(frame, sceneTop);
+    coduomp_gpu_profile_find_top_entity_break_shaders(frame, entityTop);
     fprintf(
         coduompGpuProfileLogFile,
         "GPU_PROFILE frame=%u total_ms=%.3f view_ms=%.3f scene_ms=%.3f world_ms=%.3f "
@@ -246,7 +409,7 @@ static void coduomp_gpu_profile_write_frame(
             frame->phaseNanoseconds[CODUOMP_GPU_PROFILE_PHASE_MISC]),
         frame->droppedQueries, frame->sawWorld);
 
-    if (top[0] >= 0) {
+    if (top[0] >= 0 && frame->shaders[top[0]].nanoseconds != 0) {
         fprintf(
             coduompGpuProfileLogFile,
             "GPU_PROFILE_TOP frame=%u shader1=%s:%.3f shader2=%s:%.3f "
@@ -295,6 +458,104 @@ static void coduomp_gpu_profile_write_frame(
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_SCREEN_COPY],
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_PRESENT],
         frame->phaseBatches[CODUOMP_GPU_PROFILE_PHASE_MISC]);
+
+    fprintf(
+        coduompGpuProfileLogFile,
+        "GPU_PROFILE_DRAWS frame=%u total_batches=%u total_draws=%u "
+        "portal_batches=%u portal_draws=%u main_batches=%u main_draws=%u "
+        "world=%u bmodel=%u model=%u smodel=%u effects=%u sky=%u "
+        "shadows=%u flares=%u 2d=%u misc=%u\n",
+        frame->serial, coduomp_gpu_profile_frame_batches(frame),
+        coduomp_gpu_profile_frame_draw_calls(frame),
+        frame->portalBatches, frame->portalDrawCalls,
+        frame->mainSceneBatches, frame->mainSceneDrawCalls,
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_WORLD],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_BRUSH_MODELS],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_MODELS],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_STATIC_MODELS],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_EFFECTS],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_SKY],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_SHADOWS],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_FLARES],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_2D],
+        frame->phaseDrawCalls[CODUOMP_GPU_PROFILE_PHASE_MISC]);
+
+    fprintf(
+        coduompGpuProfileLogFile,
+        "GPU_PROFILE_BREAKS frame=%u transitions=%u shader=%u storage=%u "
+        "dlight=%u batch2=%u entity=%u overflow=%u overlapping=1\n",
+        frame->serial, frame->drawSurfBreaks, frame->shaderBreaks,
+        frame->storageBreaks, frame->dlightBreaks,
+        frame->batchFlag2Breaks, frame->entityBreaks,
+        frame->overflowBreaks);
+
+    if (batchTop[0] >= 0) {
+        fprintf(
+            coduompGpuProfileLogFile,
+            "GPU_PROFILE_BATCH_TOP frame=%u shader1=%s:%u/%u "
+            "shader2=%s:%u/%u shader3=%s:%u/%u "
+            "untracked_batches=%u\n",
+            frame->serial,
+            frame->shaders[batchTop[0]].name,
+            frame->shaders[batchTop[0]].drawCalls,
+            frame->shaders[batchTop[0]].batches,
+            batchTop[1] >= 0 ? frame->shaders[batchTop[1]].name : "-",
+            batchTop[1] >= 0 ? frame->shaders[batchTop[1]].drawCalls : 0,
+            batchTop[1] >= 0 ? frame->shaders[batchTop[1]].batches : 0,
+            batchTop[2] >= 0 ? frame->shaders[batchTop[2]].name : "-",
+            batchTop[2] >= 0 ? frame->shaders[batchTop[2]].drawCalls : 0,
+            batchTop[2] >= 0 ? frame->shaders[batchTop[2]].batches : 0,
+            frame->untrackedShaderBatches);
+    }
+
+    if (sceneTop[0] >= 0 &&
+        frame->shaders[sceneTop[0]].sceneDrawCalls != 0) {
+        fprintf(
+            coduompGpuProfileLogFile,
+            "GPU_PROFILE_SCENE_TOP frame=%u shader1=%s:%u "
+            "shader2=%s:%u shader3=%s:%u\n",
+            frame->serial,
+            frame->shaders[sceneTop[0]].name,
+            frame->shaders[sceneTop[0]].sceneDrawCalls,
+            sceneTop[1] >= 0 ? frame->shaders[sceneTop[1]].name : "-",
+            sceneTop[1] >= 0
+                ? frame->shaders[sceneTop[1]].sceneDrawCalls : 0,
+            sceneTop[2] >= 0 ? frame->shaders[sceneTop[2]].name : "-",
+            sceneTop[2] >= 0
+                ? frame->shaders[sceneTop[2]].sceneDrawCalls : 0);
+    }
+
+    if (entityTop[0] >= 0 &&
+        frame->shaders[entityTop[0]].entityBreaks != 0) {
+        fprintf(
+            coduompGpuProfileLogFile,
+            "GPU_PROFILE_ENTITY_TOP frame=%u shader1=%s:%u "
+            "shader2=%s:%u shader3=%s:%u\n",
+            frame->serial,
+            frame->shaders[entityTop[0]].name,
+            frame->shaders[entityTop[0]].entityBreaks,
+            entityTop[1] >= 0 ? frame->shaders[entityTop[1]].name : "-",
+            entityTop[1] >= 0
+                ? frame->shaders[entityTop[1]].entityBreaks : 0,
+            entityTop[2] >= 0 ? frame->shaders[entityTop[2]].name : "-",
+            entityTop[2] >= 0
+                ? frame->shaders[entityTop[2]].entityBreaks : 0);
+    }
+
+    fprintf(
+        coduompGpuProfileLogFile,
+        "GPU_PROFILE_BREAK_MASKS frame=%u shader_only=%u entity_only=%u "
+        "shader_entity=%u other=%u\n",
+        frame->serial,
+        frame->breakReasonMasks[CODUOMP_GPU_PROFILE_BREAK_SHADER],
+        frame->breakReasonMasks[CODUOMP_GPU_PROFILE_BREAK_ENTITY],
+        frame->breakReasonMasks[CODUOMP_GPU_PROFILE_BREAK_SHADER |
+                                CODUOMP_GPU_PROFILE_BREAK_ENTITY],
+        frame->drawSurfBreaks -
+            frame->breakReasonMasks[CODUOMP_GPU_PROFILE_BREAK_SHADER] -
+            frame->breakReasonMasks[CODUOMP_GPU_PROFILE_BREAK_ENTITY] -
+            frame->breakReasonMasks[CODUOMP_GPU_PROFILE_BREAK_SHADER |
+                                    CODUOMP_GPU_PROFILE_BREAK_ENTITY]);
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: periodically report average phase costs even when
@@ -353,9 +614,76 @@ static void coduomp_gpu_profile_write_summary(void)
             CODUOMP_GPU_PROFILE_PHASE_MISC),
         coduompGpuProfileSummaryDroppedQueries);
 
+    fprintf(
+        coduompGpuProfileLogFile,
+        "GPU_PROFILE_CENSUS_SUMMARY frames=%u avg_batches=%.3f avg_draws=%.3f "
+        "avg_portal_batches=%.3f avg_portal_draws=%.3f "
+        "avg_main_batches=%.3f avg_main_draws=%.3f "
+        "breaks=%llu shader=%llu storage=%llu dlight=%llu batch2=%llu "
+        "entity=%llu exact_shader=%llu overflow=%llu overlapping=1\n",
+        coduompGpuProfileSummaryCount,
+        (double)coduompGpuProfileSummaryBatches /
+            (double)coduompGpuProfileSummaryCount,
+        (double)coduompGpuProfileSummaryDrawCalls /
+            (double)coduompGpuProfileSummaryCount,
+        (double)coduompGpuProfileSummaryPortalBatches /
+            (double)coduompGpuProfileSummaryCount,
+        (double)coduompGpuProfileSummaryPortalDrawCalls /
+            (double)coduompGpuProfileSummaryCount,
+        (double)coduompGpuProfileSummaryMainSceneBatches /
+            (double)coduompGpuProfileSummaryCount,
+        (double)coduompGpuProfileSummaryMainSceneDrawCalls /
+            (double)coduompGpuProfileSummaryCount,
+        (unsigned long long)coduompGpuProfileSummaryDrawSurfBreaks,
+        (unsigned long long)coduompGpuProfileSummaryShaderBreaks,
+        (unsigned long long)coduompGpuProfileSummaryStorageBreaks,
+        (unsigned long long)coduompGpuProfileSummaryDlightBreaks,
+        (unsigned long long)coduompGpuProfileSummaryBatchFlag2Breaks,
+        (unsigned long long)coduompGpuProfileSummaryEntityBreaks,
+        (unsigned long long)coduompGpuProfileSummaryExactShaderBreaks,
+        (unsigned long long)coduompGpuProfileSummaryOverflowBreaks);
+
+    fprintf(
+        coduompGpuProfileLogFile,
+        "GPU_PROFILE_CENSUS_BREAK_MASKS frames=%u shader_only=%llu "
+        "entity_only=%llu shader_entity=%llu other=%llu\n",
+        coduompGpuProfileSummaryCount,
+        (unsigned long long)coduompGpuProfileSummaryBreakReasonMasks[
+            CODUOMP_GPU_PROFILE_BREAK_SHADER],
+        (unsigned long long)coduompGpuProfileSummaryBreakReasonMasks[
+            CODUOMP_GPU_PROFILE_BREAK_ENTITY],
+        (unsigned long long)coduompGpuProfileSummaryBreakReasonMasks[
+            CODUOMP_GPU_PROFILE_BREAK_SHADER |
+            CODUOMP_GPU_PROFILE_BREAK_ENTITY],
+        (unsigned long long)(
+            coduompGpuProfileSummaryDrawSurfBreaks -
+            coduompGpuProfileSummaryBreakReasonMasks[
+                CODUOMP_GPU_PROFILE_BREAK_SHADER] -
+            coduompGpuProfileSummaryBreakReasonMasks[
+                CODUOMP_GPU_PROFILE_BREAK_ENTITY] -
+            coduompGpuProfileSummaryBreakReasonMasks[
+                CODUOMP_GPU_PROFILE_BREAK_SHADER |
+                CODUOMP_GPU_PROFILE_BREAK_ENTITY]));
+
     coduompGpuProfileSummaryCount = 0;
     coduompGpuProfileSummaryMaximumNanoseconds = 0;
     coduompGpuProfileSummaryDroppedQueries = 0;
+    coduompGpuProfileSummaryBatches = 0;
+    coduompGpuProfileSummaryDrawCalls = 0;
+    coduompGpuProfileSummaryPortalBatches = 0;
+    coduompGpuProfileSummaryPortalDrawCalls = 0;
+    coduompGpuProfileSummaryMainSceneBatches = 0;
+    coduompGpuProfileSummaryMainSceneDrawCalls = 0;
+    coduompGpuProfileSummaryDrawSurfBreaks = 0;
+    coduompGpuProfileSummaryShaderBreaks = 0;
+    coduompGpuProfileSummaryStorageBreaks = 0;
+    coduompGpuProfileSummaryDlightBreaks = 0;
+    coduompGpuProfileSummaryBatchFlag2Breaks = 0;
+    coduompGpuProfileSummaryEntityBreaks = 0;
+    coduompGpuProfileSummaryExactShaderBreaks = 0;
+    coduompGpuProfileSummaryOverflowBreaks = 0;
+    memset(coduompGpuProfileSummaryBreakReasonMasks, 0,
+           sizeof(coduompGpuProfileSummaryBreakReasonMasks));
     memset(coduompGpuProfileSummaryNanoseconds, 0,
            sizeof(coduompGpuProfileSummaryNanoseconds));
 }
@@ -396,6 +724,28 @@ static void coduomp_gpu_profile_finish_frame(int32_t frameIndex)
     if (totalNanoseconds > coduompGpuProfileSummaryMaximumNanoseconds)
         coduompGpuProfileSummaryMaximumNanoseconds = totalNanoseconds;
     coduompGpuProfileSummaryDroppedQueries += frame->droppedQueries;
+    coduompGpuProfileSummaryBatches +=
+        coduomp_gpu_profile_frame_batches(frame);
+    coduompGpuProfileSummaryDrawCalls +=
+        coduomp_gpu_profile_frame_draw_calls(frame);
+    coduompGpuProfileSummaryPortalBatches += frame->portalBatches;
+    coduompGpuProfileSummaryPortalDrawCalls += frame->portalDrawCalls;
+    coduompGpuProfileSummaryMainSceneBatches += frame->mainSceneBatches;
+    coduompGpuProfileSummaryMainSceneDrawCalls +=
+        frame->mainSceneDrawCalls;
+    coduompGpuProfileSummaryDrawSurfBreaks += frame->drawSurfBreaks;
+    coduompGpuProfileSummaryShaderBreaks += frame->shaderBreaks;
+    coduompGpuProfileSummaryStorageBreaks += frame->storageBreaks;
+    coduompGpuProfileSummaryDlightBreaks += frame->dlightBreaks;
+    coduompGpuProfileSummaryBatchFlag2Breaks += frame->batchFlag2Breaks;
+    coduompGpuProfileSummaryEntityBreaks += frame->entityBreaks;
+    coduompGpuProfileSummaryExactShaderBreaks +=
+        frame->exactShaderBreaks;
+    coduompGpuProfileSummaryOverflowBreaks += frame->overflowBreaks;
+    for (int32_t reasonMask = 0; reasonMask < 32; ++reasonMask) {
+        coduompGpuProfileSummaryBreakReasonMasks[reasonMask] +=
+            frame->breakReasonMasks[reasonMask];
+    }
     for (int32_t phase = 0;
          phase < CODUOMP_GPU_PROFILE_PHASE_COUNT; ++phase) {
         coduompGpuProfileSummaryNanoseconds[phase] +=
@@ -410,9 +760,33 @@ static void coduomp_gpu_profile_finish_frame(int32_t frameIndex)
     memset(frame, 0, sizeof(*frame));
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: find or add a CPU-side shader census entry using
+ * pointer identity so recording a batch does not compare material strings. */
+static int32_t coduomp_gpu_profile_find_shader(
+    coduomp_gpu_profile_frame_t *frame, const shader_t *shader)
+{
+    if (shader == NULL)
+        return -1;
+
+    for (int32_t shaderIndex = 0;
+         shaderIndex < frame->shaderCount; ++shaderIndex) {
+        if (frame->shaders[shaderIndex].shader == shader)
+            return shaderIndex;
+    }
+
+    if (frame->shaderCount >= CODUOMP_GPU_PROFILE_SHADER_CAPACITY)
+        return -1;
+
+    const int32_t shaderIndex = frame->shaderCount++;
+    frame->shaders[shaderIndex].shader = shader;
+    Q_strncpyz(frame->shaders[shaderIndex].name, shader->name,
+               sizeof(frame->shaders[shaderIndex].name));
+    return shaderIndex;
+}
+
 /* NOT_FROM_ORIGINAL_SOURCE: aggregate a completed surface query by shader so
  * slow-frame records identify the renderer material that contributed most. */
-static void coduomp_gpu_profile_add_shader(
+static void coduomp_gpu_profile_add_shader_time(
     coduomp_gpu_profile_frame_t *frame, const char *shaderName,
     uint64_t nanoseconds)
 {
@@ -422,21 +796,18 @@ static void coduomp_gpu_profile_add_shader(
     for (int32_t shader = 0; shader < frame->shaderCount; ++shader) {
         if (strcmp(frame->shaders[shader].name, shaderName) == 0) {
             frame->shaders[shader].nanoseconds += nanoseconds;
-            ++frame->shaders[shader].batches;
             return;
         }
     }
 
     if (frame->shaderCount >= CODUOMP_GPU_PROFILE_SHADER_CAPACITY) {
         frame->untrackedShaderNanoseconds += nanoseconds;
-        ++frame->untrackedShaderBatches;
         return;
     }
 
     Q_strncpyz(frame->shaders[frame->shaderCount].name, shaderName,
                sizeof(frame->shaders[frame->shaderCount].name));
     frame->shaders[frame->shaderCount].nanoseconds = nanoseconds;
-    frame->shaders[frame->shaderCount].batches = 1;
     ++frame->shaderCount;
 }
 
@@ -469,9 +840,7 @@ static void coduomp_gpu_profile_collect(void)
             if (frame->used != qfalse &&
                 frame->serial == query->frameSerial) {
                 frame->phaseNanoseconds[query->phase] += nanoseconds;
-                if (frame->detailLevel >= 2)
-                    ++frame->phaseBatches[query->phase];
-                coduomp_gpu_profile_add_shader(
+                coduomp_gpu_profile_add_shader_time(
                     frame, query->shaderName, nanoseconds);
                 if (frame->outstandingQueries > 0)
                     --frame->outstandingQueries;
@@ -585,6 +954,8 @@ void coduomp_gpu_profile_register(void)
 void coduomp_gpu_profile_frame_begin(void)
 {
     coduompGpuProfileCurrentFrame = -1;
+    coduompGpuProfileSurfaceFrame = -1;
+    coduompGpuProfileSurfaceShader = -1;
     if (coduompGpuProfileApiReady != qfalse)
         coduomp_gpu_profile_collect();
 
@@ -760,6 +1131,8 @@ qboolean coduomp_gpu_profile_begin_surface(void)
 {
     coduomp_gpu_profile_phase_t phase;
     coduomp_gpu_profile_frame_t *frame;
+    int32_t shaderIndex;
+    qboolean portalScene;
     const char *shaderName =
         tess.shader != NULL ? tess.shader->name : NULL;
 
@@ -790,17 +1163,136 @@ qboolean coduomp_gpu_profile_begin_surface(void)
         }
     }
 
-    if (coduompGpuProfileCurrentFrame >= 0) {
-        frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
-        if (phase == CODUOMP_GPU_PROFILE_PHASE_WORLD)
-            frame->sawWorld = qtrue;
-        if (frame->detailLevel < 2)
-            ++frame->phaseBatches[phase];
-        if (frame->detailLevel < 2)
-            return qfalse;
+    if (coduompGpuProfileCurrentFrame < 0)
+        return qfalse;
+
+    frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
+    if (phase == CODUOMP_GPU_PROFILE_PHASE_WORLD)
+        frame->sawWorld = qtrue;
+    ++frame->phaseBatches[phase];
+
+    shaderIndex = coduomp_gpu_profile_find_shader(frame, tess.shader);
+    if (shaderIndex >= 0) {
+        ++frame->shaders[shaderIndex].batches;
+    } else if (tess.shader != NULL) {
+        ++frame->untrackedShaderBatches;
     }
 
+    portalScene = coduomp_gpu_profile_phase_is_scene(phase) != qfalse &&
+                  (backEnd.refdef.rdflags & RDF_SKYBOX_PORTAL) != 0;
+    if (portalScene != qfalse) {
+        ++frame->portalBatches;
+    } else if (coduomp_gpu_profile_phase_is_scene(phase) != qfalse) {
+        ++frame->mainSceneBatches;
+    }
+
+    coduompGpuProfileSurfaceFrame = coduompGpuProfileCurrentFrame;
+    coduompGpuProfileSurfaceFrameSerial = frame->serial;
+    coduompGpuProfileSurfaceShader = shaderIndex;
+    coduompGpuProfileSurfacePhase = phase;
+    coduompGpuProfileSurfacePortal = portalScene;
+
+    if (frame->detailLevel < 2)
+        return qfalse;
     return coduomp_gpu_profile_begin(phase, shaderName);
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: end an instrumented surface and clear its
+ * CPU-side draw-call attribution after the optional timer query closes. */
+void coduomp_gpu_profile_end_surface(qboolean started)
+{
+    coduomp_gpu_profile_end(started);
+    coduompGpuProfileSurfaceFrame = -1;
+    coduompGpuProfileSurfaceShader = -1;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: count one actual GL draw under the active
+ * tessellation batch without starting a timer query or synchronizing. */
+void coduomp_gpu_profile_record_draw_call(void)
+{
+    coduomp_gpu_profile_frame_t *frame;
+
+    if (coduompGpuProfileSurfaceFrame < 0 ||
+        coduompGpuProfileSurfaceFrame >= CODUOMP_GPU_PROFILE_FRAME_CAPACITY) {
+        if (coduompGpuProfileCurrentFrame >= 0) {
+            frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
+            ++frame->phaseDrawCalls[
+                backEnd.projection2D != qfalse
+                    ? CODUOMP_GPU_PROFILE_PHASE_2D
+                    : CODUOMP_GPU_PROFILE_PHASE_MISC];
+        }
+        return;
+    }
+
+    frame = &coduompGpuProfileFrames[coduompGpuProfileSurfaceFrame];
+    if (frame->used == qfalse ||
+        frame->serial != coduompGpuProfileSurfaceFrameSerial) {
+        return;
+    }
+
+    ++frame->phaseDrawCalls[coduompGpuProfileSurfacePhase];
+    if (coduompGpuProfileSurfaceShader >= 0 &&
+        coduompGpuProfileSurfaceShader < frame->shaderCount) {
+        ++frame->shaders[coduompGpuProfileSurfaceShader].drawCalls;
+        if (coduomp_gpu_profile_phase_is_scene(
+                coduompGpuProfileSurfacePhase) != qfalse) {
+            ++frame->shaders[coduompGpuProfileSurfaceShader]
+                  .sceneDrawCalls;
+        }
+    }
+    if (coduompGpuProfileSurfacePortal != qfalse)
+        ++frame->portalDrawCalls;
+    else if (coduomp_gpu_profile_phase_is_scene(
+                 coduompGpuProfileSurfacePhase) != qfalse)
+        ++frame->mainSceneDrawCalls;
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: record every changed draw-surface key field that
+ * contributed to a batch transition. Counts overlap intentionally. */
+void coduomp_gpu_profile_note_drawsurf_break(
+    uint32_t reasons, const shader_t *nextShader)
+{
+    coduomp_gpu_profile_frame_t *frame;
+
+    if (coduompGpuProfileCurrentFrame < 0 ||
+        (tess.indexCount == 0 && tess.renderedIndexCount == 0)) {
+        return;
+    }
+    frame = &coduompGpuProfileFrames[coduompGpuProfileCurrentFrame];
+    ++frame->drawSurfBreaks;
+    ++frame->breakReasonMasks[reasons & 31u];
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_SHADER) != 0)
+        ++frame->shaderBreaks;
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_SHADER) != 0 &&
+        tess.shader != NULL && nextShader != NULL &&
+        CompareMergableShaders(
+            tess.shader, nextShader, NULL, NULL) == 0) {
+        ++frame->exactShaderBreaks;
+    }
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_STORAGE) != 0)
+        ++frame->storageBreaks;
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_DLIGHT) != 0)
+        ++frame->dlightBreaks;
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_BATCH_FLAG2) != 0)
+        ++frame->batchFlag2Breaks;
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_ENTITY) != 0)
+        ++frame->entityBreaks;
+    if ((reasons & CODUOMP_GPU_PROFILE_BREAK_ENTITY) != 0) {
+        const int32_t shaderIndex =
+            coduomp_gpu_profile_find_shader(frame, tess.shader);
+        if (shaderIndex >= 0)
+            ++frame->shaders[shaderIndex].entityBreaks;
+    }
+}
+
+/* NOT_FROM_ORIGINAL_SOURCE: identify capacity-driven submissions separately
+ * from sort-key transitions. */
+void coduomp_gpu_profile_note_overflow(void)
+{
+    if (coduompGpuProfileCurrentFrame >= 0) {
+        ++coduompGpuProfileFrames[coduompGpuProfileCurrentFrame]
+              .overflowBreaks;
+    }
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: close a query only when its matching begin call
@@ -882,6 +1374,27 @@ void coduomp_gpu_profile_shutdown(void)
     coduompGpuProfileSummaryCount = 0;
     coduompGpuProfileSummaryMaximumNanoseconds = 0;
     coduompGpuProfileSummaryDroppedQueries = 0;
+    coduompGpuProfileSummaryBatches = 0;
+    coduompGpuProfileSummaryDrawCalls = 0;
+    coduompGpuProfileSummaryPortalBatches = 0;
+    coduompGpuProfileSummaryPortalDrawCalls = 0;
+    coduompGpuProfileSummaryMainSceneBatches = 0;
+    coduompGpuProfileSummaryMainSceneDrawCalls = 0;
+    coduompGpuProfileSummaryDrawSurfBreaks = 0;
+    coduompGpuProfileSummaryShaderBreaks = 0;
+    coduompGpuProfileSummaryStorageBreaks = 0;
+    coduompGpuProfileSummaryDlightBreaks = 0;
+    coduompGpuProfileSummaryBatchFlag2Breaks = 0;
+    coduompGpuProfileSummaryEntityBreaks = 0;
+    coduompGpuProfileSummaryExactShaderBreaks = 0;
+    coduompGpuProfileSummaryOverflowBreaks = 0;
+    memset(coduompGpuProfileSummaryBreakReasonMasks, 0,
+           sizeof(coduompGpuProfileSummaryBreakReasonMasks));
+    coduompGpuProfileSurfaceFrame = -1;
+    coduompGpuProfileSurfaceFrameSerial = 0;
+    coduompGpuProfileSurfaceShader = -1;
+    coduompGpuProfileSurfacePhase = CODUOMP_GPU_PROFILE_PHASE_MISC;
+    coduompGpuProfileSurfacePortal = qfalse;
     coduompGpuProfileLogFile = NULL;
     coduompGpuProfileLogOpenAttempted = qfalse;
     coduompGpuProfileWasEnabled = qfalse;

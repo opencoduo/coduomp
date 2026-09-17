@@ -2,6 +2,7 @@
 
 #include "backend.h"
 #include "gl_api.h"
+#include "renderer_gpu_profile.h"
 
 /* Source: CoDUOMP.exe 0x004be1c0..0x004be497.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_004be1c0_004be498.mcode.
@@ -72,6 +73,11 @@ void GL_DrawElements(uint32_t mode, int32_t count, uint32_t type,
         (uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)count);
     backEnd.pc.drawCallCount = (int32_t)(
         (uint32_t)backEnd.pc.drawCallCount + 1u);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: count actual GL submissions without adding a
+     * timer query or a synchronization point. */
+    coduomp_gpu_profile_record_draw_call();
+#endif
     qglDrawElements(mode, count, type, indices);
 }
 
@@ -86,6 +92,10 @@ void GL_DrawRangeElements(uint32_t mode, uint32_t start, uint32_t end,
         (uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)count);
     backEnd.pc.drawCallCount = (int32_t)(
         (uint32_t)backEnd.pc.drawCallCount + 1u);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated batch census. */
+    coduomp_gpu_profile_record_draw_call();
+#endif
 
     if (qglDrawRangeElementsEXT != NULL && end != 0) {
         /* Callers supply an exclusive vertex bound; OpenGL defines `end` as
@@ -107,5 +117,9 @@ void GL_DrawElementArrayATI(uint32_t mode, int32_t count)
         (uint32_t)backEnd.pc.drawnIndexCount + (uint32_t)count);
     backEnd.pc.drawCallCount = (int32_t)(
         (uint32_t)backEnd.pc.drawCallCount + 1u);
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: compiler-gated batch census. */
+    coduomp_gpu_profile_record_draw_call();
+#endif
     qglDrawElementArrayATI(mode, count);
 }

@@ -5,6 +5,7 @@
 #include "../platform/crt_boundary.h"
 #include "gl_api.h"
 #include "gl_state.h"
+#include "renderer_gpu_profile.h"
 
 #include <float.h>
 #include <math.h>
@@ -3650,6 +3651,11 @@ void RB_SingleStageGenericATI(shaderStage_t *stage, int32_t indexCount,
 
     GL_State(stage->stateBits);
     backEnd.dynamicBuffer.currentOffset = currentOffset;
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: this ATI path bypasses GL_DrawElements, so it
+     * reports its direct submission explicitly in profiling builds. */
+    coduomp_gpu_profile_record_draw_call();
+#endif
     qglDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, indexes);
     qglDisable(GL_ELEMENT_ARRAY_ATI);
 }

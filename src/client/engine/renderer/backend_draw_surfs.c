@@ -85,6 +85,27 @@ void RB_RenderDrawSurfList(const drawSurf_t *drawSurfs,
             (entityChanged &&
              (shader->flags & SHADER_FLAG_ENTITY_MERGABLE) == 0)) {
             if (previousShader != NULL) {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+                /* NOT_FROM_ORIGINAL_SOURCE: record all sort-key fields that
+                 * changed at this batch boundary. Reasons intentionally
+                 * overlap when more than one field changes together. */
+                uint32_t breakReasons = 0;
+
+                if (shader != previousShader)
+                    breakReasons |= CODUOMP_GPU_PROFILE_BREAK_SHADER;
+                if (storageMode != previousStorageMode)
+                    breakReasons |= CODUOMP_GPU_PROFILE_BREAK_STORAGE;
+                if (batchFlag0 != previousBatchFlag0)
+                    breakReasons |= CODUOMP_GPU_PROFILE_BREAK_DLIGHT;
+                if (batchFlag2 != previousBatchFlag2)
+                    breakReasons |= CODUOMP_GPU_PROFILE_BREAK_BATCH_FLAG2;
+                if (entityChanged &&
+                    (shader->flags & SHADER_FLAG_ENTITY_MERGABLE) == 0) {
+                    breakReasons |= CODUOMP_GPU_PROFILE_BREAK_ENTITY;
+                }
+                coduomp_gpu_profile_note_drawsurf_break(
+                    breakReasons, shader);
+#endif
                 RB_EndSurface();
                 shaderFlagChanges = previousShader->flags ^ shader->flags;
             }

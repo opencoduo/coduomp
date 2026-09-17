@@ -877,7 +877,7 @@ void RB_EndSurface(void)
 
     if (tess.indexCount == 0) {
 #if defined(CODUOMP_RENDERER_GPU_PROFILE)
-        coduomp_gpu_profile_end(gpuProfileStarted);
+        coduomp_gpu_profile_end_surface(gpuProfileStarted);
 #endif
         return;
     }
@@ -896,7 +896,7 @@ void RB_EndSurface(void)
         RB_ShadowTessEnd();
         tess.indexCount = 0;
 #if defined(CODUOMP_RENDERER_GPU_PROFILE)
-        coduomp_gpu_profile_end(gpuProfileStarted);
+        coduomp_gpu_profile_end_surface(gpuProfileStarted);
 #endif
         return;
     }
@@ -905,7 +905,7 @@ void RB_EndSurface(void)
         (float)r_debugSort->integer < tess.shader->sort) {
         tess.indexCount = 0;
 #if defined(CODUOMP_RENDERER_GPU_PROFILE)
-        coduomp_gpu_profile_end(gpuProfileStarted);
+        coduomp_gpu_profile_end_surface(gpuProfileStarted);
 #endif
         return;
     }
@@ -915,7 +915,7 @@ void RB_EndSurface(void)
             if (tess.stageIterator == RB_StageIteratorSky) {
                 tess.indexCount = 0;
 #if defined(CODUOMP_RENDERER_GPU_PROFILE)
-                coduomp_gpu_profile_end(gpuProfileStarted);
+                coduomp_gpu_profile_end_surface(gpuProfileStarted);
 #endif
                 return;
             }
@@ -923,7 +923,7 @@ void RB_EndSurface(void)
                    tess.stageIterator != RB_StageIteratorSky) {
             tess.indexCount = 0;
 #if defined(CODUOMP_RENDERER_GPU_PROFILE)
-            coduomp_gpu_profile_end(gpuProfileStarted);
+            coduomp_gpu_profile_end_surface(gpuProfileStarted);
 #endif
             return;
         }
@@ -954,7 +954,7 @@ void RB_EndSurface(void)
     tess.indexCount = 0;
     GLimp_LogComment("----------\n");
 #if defined(CODUOMP_RENDERER_GPU_PROFILE)
-    coduomp_gpu_profile_end(gpuProfileStarted);
+    coduomp_gpu_profile_end_surface(gpuProfileStarted);
 #endif
 }
 
@@ -979,6 +979,11 @@ void RB_CheckOverflow(int32_t vertexCount, int32_t indexCount)
         return;
     }
 
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: distinguish buffer-capacity submissions from
+     * draw-surface sort transitions in diagnostic builds. */
+    coduomp_gpu_profile_note_overflow();
+#endif
     RB_EndSurface();
 
     if (vertexCount > R_MAX_TESS_VERTICES) {
@@ -1002,6 +1007,11 @@ void RB_CheckOverflow(int32_t vertexCount, int32_t indexCount)
  * inlines this body into RB_SurfaceOptimized at 0x004f391d..0x004f3940. */
 void RB_CheckOverflow_Optimized(void)
 {
+#if defined(CODUOMP_RENDERER_GPU_PROFILE)
+    /* NOT_FROM_ORIGINAL_SOURCE: distinguish optimized buffer exhaustion in
+     * compiler-gated batch diagnostics. */
+    coduomp_gpu_profile_note_overflow();
+#endif
     RB_EndSurface();
     backEnd.currentEntity = tess.entity;
     RB_BeginSurface(tess.shader, tess.vertexComponentCount);
