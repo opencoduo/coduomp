@@ -112,7 +112,7 @@ void CODUO_SCRIPT_CDECL Scr_BeginLoadAnimTrees(void)
     script_animTreeCounts[slot] = 0;
     script_animTrees[slot][0] = NULL;
     script_animTreeRoot = Scr_AllocArray();
-    script_animCurrentUsingTree = 0;
+    script_animCurrentTreeRoot = 0;
 }
 
 /* Source: CoDUOMP.exe 0x00493760..0x00493802.
@@ -243,8 +243,10 @@ void CODUO_SCRIPT_CDECL Scr_EndLoadAnimTrees(void)
     RemoveRefToObject(script_animTreeRoot);
     script_animTreeRoot = 0;
 
-    if (script_animCurrentUsingTree != 0) {
-        RemoveRefToObject(script_animCurrentUsingTree);
+    /* The temporary parse tree owns a reference outside the registry;
+     * the current #using_animtree selection only borrows its registry entry. */
+    if (script_animCurrentTreeRoot != 0) {
+        RemoveRefToObject(script_animCurrentTreeRoot);
     }
 
     SL_ShutdownSystem(SCRIPT_STRING_USAGE_FUNCTION);
