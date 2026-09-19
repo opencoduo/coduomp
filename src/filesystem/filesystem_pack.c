@@ -108,9 +108,11 @@ pack_t *FS_LoadZipFile(const char *zipFile, const char *basename)
             filesystem_compat_archive_close_catalog(archive);
             return NULL;
         }
-        /* NOT_FROM_ORIGINAL_SOURCE: the raw archive-name field must encode one
-         * complete C string with no embedded NUL. */
-        if (strlen(filename) != (size_t)fileInfo.filenameLength) {
+        /* NOT_FROM_ORIGINAL_SOURCE: the raw archive-name field may include its
+         * final NUL, but must not hide additional bytes after the C string. */
+        const size_t filenameLength = strlen(filename);
+        if ((size_t)fileInfo.filenameLength != filenameLength &&
+            (size_t)fileInfo.filenameLength != filenameLength + 1u) {
             Com_Printf("WARNING: refusing pak '%s' with an embedded-NUL entry name\n",
                        zipFile);
             fs_packFiles -= (int32_t)entryCount;
@@ -141,7 +143,7 @@ pack_t *FS_LoadZipFile(const char *zipFile, const char *basename)
             return NULL;
         }
 
-        namesByteCount += (size_t)fileInfo.filenameLength + 1u;
+        namesByteCount += filenameLength + 1u;
         if (index + 1u < entryCount &&
             filesystem_compat_archive_go_to_next(archive) != FS_ARCHIVE_OK) {
             Com_Printf("WARNING: refusing pak '%s': could not select next entry\n",
@@ -225,7 +227,9 @@ pack_t *FS_LoadZipFile(const char *zipFile, const char *basename)
             Z_FreeInternal(packFiles);
             return NULL;
         }
-        if (strlen(filename) != (size_t)fileInfo.filenameLength) {
+        const size_t filenameLength = strlen(filename);
+        if ((size_t)fileInfo.filenameLength != filenameLength &&
+            (size_t)fileInfo.filenameLength != filenameLength + 1u) {
             Com_Printf("WARNING: refusing pak '%s' with an embedded-NUL entry name\n",
                        zipFile);
             fs_packFiles -= (int32_t)entryCount;
@@ -265,8 +269,7 @@ pack_t *FS_LoadZipFile(const char *zipFile, const char *basename)
             return NULL;
         }
 
-        const size_t publishedNameBytes =
-            (size_t)fileInfo.filenameLength + 1u;
+        const size_t publishedNameBytes = filenameLength + 1u;
         /* NOT_FROM_ORIGINAL_SOURCE: bound publication by the trailing name
          * pool measured during the first metadata pass. */
         if (publishedNameBytes > remainingNameBytes) {
