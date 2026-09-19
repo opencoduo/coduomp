@@ -4445,14 +4445,10 @@ void RB_SingleStageGenericARB(shaderStage_t *stage, int32_t indexCount,
     }
 
     GL_DrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, indexes);
-#if defined(__APPLE__) && defined(__aarch64__)
-    /* PERFORMANCE_PATCH (NOT_FROM_ORIGINAL_SOURCE): every Apple ARM64
-     * renderer path selected while ARB VBOs are available binds its own
-     * array buffer before installing pointers. Keep the streamed buffer bound
-     * between batches instead of unbinding and immediately rebinding it. */
-#else
+    /* Client-memory consumers, including immediate-mode drawing, install
+     * host pointers without binding a buffer. Restore their required state
+     * after every streamed batch, including on Apple ARM64. */
     qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 }
 
 /* Source: CoDUOMP.exe 0x0051f250..0x0051f2ba.
