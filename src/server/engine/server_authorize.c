@@ -108,16 +108,20 @@ void SV_GetChallenge(netadr_t from)
     }
 
 #if CODUO_DISABLE_SERVER_AUTH
-    challenge->pingStartTime = svs.realTime;
-    if (sv_onlyVisibleClients->integer != 0) {
-        NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i %i",
-                           challenge->challengeNumber,
-                           sv_onlyVisibleClients->integer);
-    } else {
-        NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i",
-                           challenge->challengeNumber);
+    /* NOT_FROM_ORIGINAL_SOURCE: bypass CD-key authorization for joining
+     * clients while preserving the master's registration exchange. */
+    if (NET_CompareAdr(from, *SV_MasterAddress()) == qfalse) {
+        challenge->pingStartTime = svs.realTime;
+        if (sv_onlyVisibleClients->integer != 0) {
+            NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i %i",
+                               challenge->challengeNumber,
+                               sv_onlyVisibleClients->integer);
+        } else {
+            NET_OutOfBandPrint(NS_SERVER, from, "challengeResponse %i",
+                               challenge->challengeNumber);
+        }
+        return;
     }
-    return;
 #endif
 
     if (net_lanauthorize->integer == 0 &&
@@ -181,9 +185,12 @@ void SV_GetChallenge(netadr_t from)
 void SV_AuthorizeRequest(netadr_t from, int32_t challenge)
 {
 #if CODUO_DISABLE_SERVER_AUTH
-    (void)from;
-    (void)challenge;
-#else
+    /* NOT_FROM_ORIGINAL_SOURCE: the master still requires this request when
+     * joining clients are exempt from CD-key authorization. */
+    if (NET_CompareAdr(from, *SV_MasterAddress()) == qfalse) {
+        return;
+    }
+#endif
     char fsGame[MAX_STRING_CHARS];
 
     if (svs.authorizeServerAddress.type == NA_BOT) {
@@ -211,7 +218,6 @@ void SV_AuthorizeRequest(netadr_t from, int32_t challenge)
                        challenge,
                        from.ip[0], from.ip[1], from.ip[2], from.ip[3],
                        fsGame, allowAnonymous->integer);
-#endif
 }
 
 void SV_AuthorizeIpPacket(netadr_t from)
