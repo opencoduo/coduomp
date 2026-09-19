@@ -155,11 +155,11 @@ void SV_GetChallenge(netadr_t from)
 
     if (svs.realTime - challenge->authorizeStartTime >
         SERVER_AUTHORIZE_TIMEOUT_MSEC) {
-        challenge->pingStartTime = svs.realTime;
         if (NET_CompareAdr(from, *SV_MasterAddress()) == qfalse) {
             /* Linux 0x08089b39 calls Com_DPrintf at 0x08070297; the former
              * recovered Com_Printf spelling was a transcription error. */
             Com_DPrintf("authorize server timed out\n");
+            challenge->pingStartTime = svs.realTime;
             if (sv_onlyVisibleClients->integer != 0) {
                 NET_OutOfBandPrint(NS_SERVER, challenge->address,
                                    "challengeResponse %i %i",
