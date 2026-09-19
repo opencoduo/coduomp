@@ -473,8 +473,11 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
         R_SetNVFogMode();
     }
 
-    if (r_gamma->modified != qfalse) {
+    /* NOT_FROM_ORIGINAL_SOURCE: contrast shares the synchronized live LUT
+     * update used by brightness. */
+    if (r_gamma->modified != qfalse || r_contrast->modified != qfalse) {
         r_gamma->modified = qfalse;
+        r_contrast->modified = qfalse;
         R_SyncRenderThread();
         R_SetColorMappings();
     }

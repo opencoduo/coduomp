@@ -3,11 +3,28 @@
 #include "output_gamma_compat.h"
 #include "platform_gamma.h"
 #include "renderer_cvars.h"
+#include "client/common/client_color_settings.h"
 
 #include <math.h>
 #include <stdint.h>
 
 #define R_COLOR_MAPPING_INV_255_F 0.003921568859368563f /* 0x3b808081 */
+#define CODUOMP_COLOR_CHANNEL_MAXIMUM 255
+#define CODUOMP_CONTRAST_MIDPOINT 127.5f
+
+/* NOT_FROM_ORIGINAL_SOURCE: adjust the completed gamma/overbright mapping
+ * around mid-gray, then round and saturate to an output byte. The neutral
+ * setting preserves every existing table entry exactly. */
+static uint8_t coduomp_contrast_channel(int32_t value)
+{
+    const float adjusted = ((float)value - CODUOMP_CONTRAST_MIDPOINT) * r_contrast->value + CODUOMP_CONTRAST_MIDPOINT;
+
+    if (adjusted <= 0.0f)
+        return 0;
+    if (adjusted >= CODUOMP_COLOR_CHANNEL_MAXIMUM)
+        return CODUOMP_COLOR_CHANNEL_MAXIMUM;
+    return (uint8_t)(adjusted + 0.5f);
+}
 
 /* Source: CoDUOMP.exe 0x0050a650..0x0050a851.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_0050a650_0050a852.mcode.
@@ -36,6 +53,12 @@ void R_SetColorMappings(void)
     else if (r_gamma->value > 3.0f)
         ri.Cvar_Set("r_gamma", "3.0");
 
+    /* NOT_FROM_ORIGINAL_SOURCE: console/config values obey the same limits
+     * as the menu, including non-finite input before float-to-byte conversion. */
+    if (!isfinite(r_contrast->value))
+        ri.Cvar_Set("r_contrast", CODUOMP_CONTRAST_DEFAULT_STRING);
+    AssertCvarRange(r_contrast, CODUOMP_CONTRAST_MINIMUM, CODUOMP_CONTRAST_MAXIMUM, qfalse);
+
     const float inverseGamma = 1.0f / r_gamma->value;
     for (int32_t input = 0; input < 256; ++input) {
         int32_t gammaValue = input;
@@ -49,7 +72,7 @@ void R_SetColorMappings(void)
             gammaValue = 0;
         else if (gammaValue > 255)
             gammaValue = 255;
-        rendererGammaTable[input] = (uint8_t)gammaValue;
+        rendererGammaTable[input] = coduomp_contrast_channel(gammaValue);
 
         int32_t overbrightValue = input << tr.overbrightBits;
         if (overbrightValue < 0)
@@ -67,7 +90,7 @@ void R_SetColorMappings(void)
         else if (gammaOverbrightValue > 255)
             gammaOverbrightValue = 255;
         rendererGammaOverbrightTable[input] =
-            (uint8_t)gammaOverbrightValue;
+            coduomp_contrast_channel(gammaOverbrightValue);
     }
 
     for (int32_t input = 0; input < 256; ++input) {

@@ -92,6 +92,7 @@ extern cvar_t *r_textureMode;
 extern cvar_t *r_swapDelay;
 extern cvar_t *r_swapInterval;
 extern cvar_t *r_gamma;
+extern cvar_t *r_contrast;
 extern cvar_t *r_railWidth;
 extern cvar_t *r_railCoreWidth;
 extern cvar_t *r_railSegmentLength;

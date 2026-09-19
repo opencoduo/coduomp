@@ -41,6 +41,16 @@ configs and documentation. It is a hardware veto, not a master gamma switch:
 valid range is `0.5` through `3.0`; `1.0` is the neutral identity curve. Values
 above `1.0` brighten midtones, and values below `1.0` darken them.
 
+The Graphics menu's **Contrast** slider stores the archived `r_contrast`
+preference. Its range is `0.5` through `1.5`, with a neutral default of `1.0`.
+Lower values soften contrast; higher values deepen shadows and brighten
+highlights around mid-gray. Right-click the slider to reset it to `1.0`.
+Changes update the native or software output lookup table immediately and
+need no Apply or restart. Contrast is applied after gamma and overbright,
+with output clamped to the display's channel range. `r_gammaMode 0` disables
+contrast along with gamma and disables the slider. The limited texture-upload
+fallback applies contrast only when textures are loaded, just like gamma.
+
 `r_overBrightBits` is the stock fixed-function overbright mechanism, not HDR.
 The recovered renderer enables one effective overbright bit only in fullscreen
 when a final-output gamma provider is active. Off mode therefore makes the
@@ -50,7 +60,7 @@ effective overbright value zero even if the archived cvar remains `1`.
 
 A lookup table (LUT) is a fixed array that maps each input channel value to an
 output value. The client computes a 256-entry red, green, and blue mapping from
-`r_gamma` and overbright state, then gives that mapping to one of these paths:
+`r_gamma`, `r_contrast`, and overbright state, then gives that mapping to one of these paths:
 
 1. **Native display gamma** changes the monitor/display pipeline. On Windows,
    the client uses the GDI device for the monitor containing the game window;
@@ -85,4 +95,4 @@ own gamma.
 
 This guide describes the `master` branch. The `stock` branch retains the
 recovered original gamma selection and fallback behavior and does not register
-`r_gammaMode`.
+`r_gammaMode` or `r_contrast`.

@@ -4,6 +4,7 @@
 #include "platform_gamma.h"
 #include "renderer_cvars.h"
 #include "renderer_gpu_profile.h"
+#include "client/common/client_color_settings.h"
 #include "../platform/hardware_profile.h"
 
 enum {
@@ -86,6 +87,8 @@ cvar_t *r_textureMode;
 cvar_t *r_swapDelay;
 cvar_t *r_swapInterval;
 cvar_t *r_gamma;
+/* NOT_FROM_ORIGINAL_SOURCE_STORAGE: live, archived output contrast. */
+cvar_t *r_contrast;
 cvar_t *r_railWidth;
 cvar_t *r_railCoreWidth;
 cvar_t *r_railSegmentLength;
@@ -395,6 +398,9 @@ void R_Register(void)
     r_swapInterval =
         ri.Cvar_Get("r_swapInterval", "0", CVAR_ARCHIVE);
     r_gamma = ri.Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE);
+    /* NOT_FROM_ORIGINAL_SOURCE: contrast is applied by the color mappings
+     * immediately, without a renderer restart. */
+    r_contrast = ri.Cvar_Get("r_contrast", CODUOMP_CONTRAST_DEFAULT_STRING, CVAR_ARCHIVE);
     r_railWidth = ri.Cvar_Get("r_railWidth", "16", CVAR_ARCHIVE);
     r_railCoreWidth =
         ri.Cvar_Get("r_railCoreWidth", "1", CVAR_ARCHIVE);

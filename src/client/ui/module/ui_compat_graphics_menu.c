@@ -1,6 +1,7 @@
 #include "ui_functions.h"
 #include "ui_globals.h"
 #include "client/common/client_branding.h"
+#include "client/common/client_color_settings.h"
 #include "client/common/client_legacy_crt.h"
 #include "compat/coduo_native_x87.h"
 
@@ -28,7 +29,8 @@ typedef struct ui_compat_aspect_s {
 
 enum {
     UI_COMPAT_CURRENT_DISPLAY_MODE = -2,
-    UI_COMPAT_CUSTOM_RESOLUTION_MODE = -1
+    UI_COMPAT_CUSTOM_RESOLUTION_MODE = -1,
+    UI_COMPAT_GRAPHICS_ADDED_ITEM_COUNT = 4
 };
 
 /* NOT_FROM_ORIGINAL_SOURCE_STORAGE_FILE: the menu exposes the cgame's useful
@@ -427,7 +429,9 @@ void ui_compat_extend_graphics_menu(void)
     itemDef_t *monitorItem;
     itemDef_t *aspectItem;
     itemDef_t *gammaItem;
+    itemDef_t *contrastItem;
     itemDef_t *fovItem;
+    editFieldDef_t *contrastRange;
     editFieldDef_t *fovRange;
     ui_compat_multi_value_t resolutionModes[
         sizeof(uiCompatResolutions) / sizeof(uiCompatResolutions[0])];
@@ -456,7 +460,7 @@ void ui_compat_extend_graphics_menu(void)
     if (resolutionItem == NULL || displayModeItem == NULL ||
         gammaItem == NULL || gammaItem->typeValidated != ITEM_TYPE_SLIDER ||
         gammaItem->typeData == NULL ||
-        menu->itemCount > MAX_MENUITEMS - 3) {
+        menu->itemCount > MAX_MENUITEMS - UI_COMPAT_GRAPHICS_ADDED_ITEM_COUNT) {
         return;
     }
     if (monitorCount < 1)
@@ -518,8 +522,8 @@ void ui_compat_extend_graphics_menu(void)
             applyCompatibilityCvars, listenRestartMenu->onESC);
     }
 
-    /* Make two control rows below Fullscreen, preserving the stock Apply and
-     * language rows at the bottom of the panel. */
+    /* Make two control rows below Fullscreen and two below Brightness,
+     * retaining room for the language row and stock Apply controls. */
     for (int32_t index = 0; index < menu->itemCount; ++index) {
         itemDef_t *const item = menu->items[index];
 
@@ -528,7 +532,7 @@ void ui_compat_extend_graphics_menu(void)
             item->window.rectClient.y += 30.0f;
         } else if (item->window.rectClient.y > 185.0f &&
                    item->window.rectClient.y <= 200.0f) {
-            item->window.rectClient.y += 45.0f;
+            item->window.rectClient.y += 60.0f;
         }
     }
 
@@ -558,6 +562,24 @@ void ui_compat_extend_graphics_menu(void)
         aspectItem, aspectModes,
         (int32_t)(sizeof(aspectModes) / sizeof(aspectModes[0])));
 
+    /* Contrast uses the live brightness output path. Disabling color
+     * correction leaves the preference saved but disables this control. */
+    contrastItem = ui_compat_clone_menu_item(gammaItem, menu);
+    contrastRange = UI_Alloc(sizeof(*contrastRange));
+    memcpy(contrastRange, gammaItem->typeData, sizeof(*contrastRange));
+    contrastRange->defVal = CODUOMP_CONTRAST_DEFAULT;
+    contrastRange->minVal = CODUOMP_CONTRAST_MINIMUM;
+    contrastRange->maxVal = CODUOMP_CONTRAST_MAXIMUM;
+    contrastItem->window.name = String_Alloc("coduomp_contrast");
+    contrastItem->window.rectClient.y = 230.0f;
+    contrastItem->text = String_Alloc("@CODUOMP_GRAPHICS_CONTRAST");
+    contrastItem->cvar = String_Alloc("r_contrast");
+    contrastItem->cvarTest = String_Alloc("r_gammaMode");
+    contrastItem->enableCvar = String_Alloc("0");
+    contrastItem->cvarFlags = ITEM_CVAR_DISABLE;
+    contrastItem->action = String_Alloc("play \"mouse_click\"; ");
+    contrastItem->typeData = contrastRange;
+
     /* cg_fov directly stores the unzoomed horizontal view angle. Expose the
      * useful 80..120 range; refresh derives defVal from the staged effective
      * aspect, and the shared slider input uses it for right-click reset. */
@@ -568,7 +590,7 @@ void ui_compat_extend_graphics_menu(void)
     fovRange->minVal = uiCompatMinimumFov;
     fovRange->maxVal = uiCompatMaximumFov;
     fovItem->window.name = String_Alloc("coduomp_field_of_view");
-    fovItem->window.rectClient.y = 230.0f;
+    fovItem->window.rectClient.y = 245.0f;
     fovItem->text = String_Alloc("@CODUOMP_GRAPHICS_FIELD_OF_VIEW");
     fovItem->cvar = String_Alloc("cg_fov");
     fovItem->cvarTest = NULL;
@@ -582,6 +604,12 @@ void ui_compat_extend_graphics_menu(void)
         menu->items[index] = menu->items[index - 1];
     }
     menu->items[gammaLastIndex + 1] = fovItem;
+    menu->itemCount += 1;
+
+    for (int32_t index = menu->itemCount; index > gammaLastIndex + 1; --index) {
+        menu->items[index] = menu->items[index - 1];
+    }
+    menu->items[gammaLastIndex + 1] = contrastItem;
     menu->itemCount += 1;
 
     for (int32_t index = menu->itemCount;

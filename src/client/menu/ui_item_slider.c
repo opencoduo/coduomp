@@ -24,6 +24,16 @@ extern displayContextDef_t *DC;
 void Com_Printf(const char *format, ...);
 void Item_Text_Paint(itemDef_t *item);
 
+/* NOT_FROM_ORIGINAL_SOURCE: identify the improved graphics controls that
+ * display their value and support right-click reset to their own default. */
+static qboolean ui_compat_is_graphics_value_slider(const itemDef_t *item)
+{
+    if (item->window.name == NULL || item->cvar == NULL)
+        return qfalse;
+    return (Q_stricmp(item->window.name, "coduomp_field_of_view") == 0 && Q_stricmp(item->cvar, "cg_fov") == 0) ||
+           (Q_stricmp(item->window.name, "coduomp_contrast") == 0 && Q_stricmp(item->cvar, "r_contrast") == 0);
+}
+
 /*
  * This complete slider geometry/input/paint cluster is instruction-identical
  * between the original Windows client modules after rebasing image-local
@@ -121,11 +131,9 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int32_t key)
         return qfalse;
     }
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): the improved graphics
-     * menu's FOV slider uses its parsed/default range value as a right-click
+     * menu's FOV and contrast sliders use their default range value as a right-click
      * reset. Other sliders retain the original right-click positioning. */
-    if (key == K_MOUSE2 && item->window.name != NULL &&
-        Q_stricmp(item->window.name, "coduomp_field_of_view") == 0 &&
-        Q_stricmp(item->cvar, "cg_fov") == 0) {
+    if (key == K_MOUSE2 && ui_compat_is_graphics_value_slider(item)) {
         DC->setCVar(item->cvar, va("%f", (double)editField->defVal));
         return qtrue;
     }
@@ -214,16 +222,15 @@ void Item_Slider_Paint(itemDef_t *item)
     }
 
     /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): show the direct cg_fov
-     * value beside the improved graphics-menu slider. */
-    if (cvar != NULL && item->window.name != NULL &&
-        Q_stricmp(item->window.name, "coduomp_field_of_view") == 0 &&
-        Q_stricmp(cvar, "cg_fov") == 0) {
+     * or contrast value beside the improved graphics-menu slider. */
+    if (ui_compat_is_graphics_value_slider(item)) {
         displayContextDef_t *const display = DC;
+        const char *const valueFormat = Q_stricmp(cvar, "r_contrast") == 0 ? "%.2f" : "%.1f";
 
         display->drawText(trackX + UI_SLIDER_TRACK_WIDTH +
                               UI_SLIDER_VALUE_GAP,
                           item->textRect.y, item->font, item->textscale,
-                          color, va("%.1f", (double)cvarValue),
+                          color, va(valueFormat, (double)cvarValue),
                           0.0f, 0, item->textStyle);
     }
 }
