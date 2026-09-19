@@ -1603,6 +1603,12 @@ gentity_t *G_CallSpawn(void)
         return 0;
     }
 
+    /* NOT_FROM_ORIGINAL_SOURCE: An empty map classname does not identify a
+     * spawnable entity and must not match an unnamed weapon item. */
+    if (classname[0] == '\0') {
+        return 0;
+    }
+
     if (strcmp(SPAWN_CLASS_INFO_VEHICLE_NODE, classname) == 0) {
         SP_info_vehicle_node(qfalse);
         return 0;
