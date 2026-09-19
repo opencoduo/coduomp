@@ -618,15 +618,19 @@ qboolean IsItemRegistered(int itemIndex)
 /* VERIFIED_DECOMPILER(0x559d2, 659d2_FinishSpawningItem.c, VERIFY-P1-ITEMS-2026-06-17): DATAFLOW_VERIFIED - item type lookup, floor trace, startsolid retry/free path, ground entity, origin/angle placement, weapon roll adjust, and link side effect checked against current decompiler output. */
 void FinishSpawningItem(gentity_t *ent)
 {
-    int itemIndex = ent->s.itemIndex;
-    itemType_t itemType = game_compat_item_def_for_index(itemIndex)->type;
-
     if ((ent->spawnflags &
          ITEM_SPAWNFLAG_NO_DROP_TO_FLOOR) == 0) {
         trace_t trace;
         vec3_t end;
+        vec3_t traceMins = {-1.0f, -1.0f, 0.0f};
+        vec3_t traceMaxs = {1.0f, 1.0f, 2.0f};
 
-        game_compat_set_item_bounds(ent, itemType);
+        /* Linux RVA 0x55a14 and Windows RVA 0x29d82 select temporary
+         * trace bounds through itemInfo; the entity's bounds stay intact. */
+        if (ent->itemInfo->type == IT_WEAPON) {
+            traceMins[2] = -1.0f;
+            traceMaxs[2] = 1.0f;
+        }
         ent->svFlags |= SVF_CAPSULE;
         ent->s.eFlags |= EF_CAPSULE;
 
@@ -635,8 +639,8 @@ void FinishSpawningItem(gentity_t *ent)
         end[2] = ent->currentOrigin[2] - ITEM_DROP_TRACE_DISTANCE;
 
         trap_TraceCapsule(&trace, ent->currentOrigin,
-                          ent->mins,
-                          ent->maxs,
+                          traceMins,
+                          traceMaxs,
                           end, ent->s.number, ITEM_TRACE_CONTENTS);
 
         if (trace.startsolid != 0) {
@@ -646,8 +650,8 @@ void FinishSpawningItem(gentity_t *ent)
             retryStart[1] = ent->currentOrigin[1];
             retryStart[2] = ent->currentOrigin[2] - ITEM_STARTSOLID_RETRY_Z;
             trap_TraceCapsule(&trace, retryStart,
-                              ent->mins,
-                              ent->maxs,
+                              traceMins,
+                              traceMaxs,
                               end, ent->s.number, ITEM_TRACE_CONTENTS);
         }
 
@@ -674,7 +678,7 @@ void FinishSpawningItem(gentity_t *ent)
             CrossProduct(axis[1], axis[2], axis[0]);
             AxisToAngles((const vec_t (*)[3])axis, angles);
 
-            if (itemType == IT_WEAPON) {
+            if (game_compat_item_def_for_index(ent->s.itemIndex)->type == IT_WEAPON) {
                 angles[2] += ITEM_WEAPON_ANGLE_ADJUST;
             }
 
