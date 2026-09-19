@@ -419,6 +419,7 @@ static qboolean ScriptInterpreter_ReturnFromFrame(
             }
 
             RemoveRefToObject(*thread);
+            *codePos = ScriptInterpreter_CodeposFromPayload(top->payload);
             --top;
             *thread = (uint16_t)top->payload;
             top->type = SCRIPT_VAR_UNDEFINED;
@@ -434,7 +435,7 @@ static void ScriptInterpreter_CleanupAfterError(
     uint8_t opcode, VariableValue **stackTop, uint8_t **codePos,
     uint16_t *fieldRef, int32_t switchCaseCount)
 {
-    switch ((script_interpreter_opcode_e)opcode) {
+    switch (opcode) {
     case SCRIPT_OP_EVAL_INDEX:
         RemoveRefToValue(*stackTop);
         RemoveRefToValue(*stackTop + 1);
@@ -484,7 +485,7 @@ static void ScriptInterpreter_CleanupAfterError(
             script_errorParameterIndex =
                 (script_parameterCount - script_errorParameterIndex) + 1;
         }
-        *codePos += sizeof(uint8_t) + sizeof(script_function_callback_t);
+        *codePos += sizeof(script_function_callback_t);
         ScriptInterpreter_ReleaseActiveParams();
         *stackTop = ScriptInterpreter_PushTypeOnly(
             script_valueStackTop, SCRIPT_VAR_UNDEFINED);
@@ -497,7 +498,7 @@ static void ScriptInterpreter_CleanupAfterError(
             script_errorParameterIndex =
                 (script_parameterCount - script_errorParameterIndex) + 2;
         }
-        *codePos += sizeof(uint8_t) + sizeof(script_method_callback_t);
+        *codePos += sizeof(script_method_callback_t);
         ScriptInterpreter_ReleaseActiveParams();
         *stackTop = ScriptInterpreter_PushTypeOnly(
             script_valueStackTop, SCRIPT_VAR_UNDEFINED);
@@ -682,7 +683,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 opcodeAlreadyLoaded = qfalse;
             }
 
-            switch ((script_interpreter_opcode_e)opcode) {
+            switch (opcode) {
             case SCRIPT_OP_END: {
                 KillThread(thread);
                 VariableValue returnValue;
@@ -912,15 +913,15 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 break;
 
             case SCRIPT_OP_BUILTIN_FUNCTION: {
-                script_parameterCount = *codePos;
+                script_parameterCount = *codePos++;
                 script_valueStackTop = stackTop;
                 script_function_callback_t callback =
-                    ScriptInterpreter_ReadBuiltinFunction(codePos + 1);
+                    ScriptInterpreter_ReadBuiltinFunction(codePos);
                 callback();
+                codePos += sizeof(callback);
                 stackTop = script_valueStackTop;
                 ScriptInterpreter_ReleaseActiveParams();
                 stackTop = script_valueStackTop;
-                codePos += sizeof(uint8_t) + sizeof(callback);
                 if (script_valueStackDepth == 0) {
                     stackTop = ScriptInterpreter_PushTypeOnly(
                         stackTop, SCRIPT_VAR_UNDEFINED);
@@ -931,7 +932,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
             }
 
             case SCRIPT_OP_BUILTIN_METHOD: {
-                script_parameterCount = *codePos;
+                script_parameterCount = *codePos++;
                 script_valueStackTop = stackTop - 1;
                 if (stackTop->type != SCRIPT_VAR_OBJECT) {
                     script_variable_type_t type =
@@ -956,12 +957,12 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     (int32_t)GetSelf(object);
                 RemoveRefToObject(object);
                 script_method_callback_t callback =
-                    ScriptInterpreter_ReadBuiltinMethod(codePos + 1);
+                    ScriptInterpreter_ReadBuiltinMethod(codePos);
                 callback(objectNum);
+                codePos += sizeof(callback);
                 stackTop = script_valueStackTop;
                 ScriptInterpreter_ReleaseActiveParams();
                 stackTop = script_valueStackTop;
-                codePos += sizeof(uint8_t) + sizeof(callback);
                 if (script_valueStackDepth == 0) {
                     stackTop = ScriptInterpreter_PushTypeOnly(
                         stackTop, SCRIPT_VAR_UNDEFINED);
@@ -1928,6 +1929,13 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 script_frameBackupCodepos[script_callStackDepth] = 0;
                 developerDepth--;
                 opcodeAlreadyLoaded = qtrue;
+                break;
+
+            default:
+                if (script_errorMessage == NULL) {
+                    UnmatchingTypesError(stackTop, stackTop + 1);
+                }
+                ScriptRuntime_RaiseError();
                 break;
             }
         } catch (const ScriptErrorClass &) {
