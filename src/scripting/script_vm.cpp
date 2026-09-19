@@ -1051,6 +1051,12 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                     ScriptInterpreter_CheckCallDepth(qfalse);
                     parent = GetSelf(thread);
                 } else {
+                    /* Windows RVA 0x8a2ff and Linux RVA 0x64224 retain
+                     * the current source-position index for a non-object
+                     * named-method receiver. */
+                    if (stackTop->type != SCRIPT_VAR_OBJECT) {
+                        Scr_Error(va("%s is not an object", script_variableTypeNames[stackTop->type]));
+                    }
                     uint16_t object =
                         ScriptInterpreter_RequireObject(stackTop, 1);
                     ScriptInterpreter_CheckCallDepth(qfalse);
