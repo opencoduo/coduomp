@@ -37,7 +37,6 @@ scr_ast_list_item_t **prepend_node(void *entry,
 scr_ast_list_t *append_node(scr_ast_list_t *list, void *entry);
 scr_ast_list_t *ScriptParse_ConcatLists(scr_ast_list_t *first,
                                         const scr_ast_list_t *second);
-void *coduomp_script_parse_allocate(size_t size);
 
 void AddOpcodePos(uint32_t sourcePos);
 uint16_t GetVariable(uint16_t parentId, uint32_t name);

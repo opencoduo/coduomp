@@ -2,22 +2,13 @@
 
 #include <stddef.h>
 
-/* NOT_FROM_ORIGINAL_SOURCE: source factoring for the identical inlined
- * Hunk_AllocateTempMemoryHighInternal sequence in the parser's node constructors.
- * Use the shared allocator's checked size_t accounting and alignment so parser
- * allocations retain the same bounds as all other high temporary allocations. */
-void *coduomp_script_parse_allocate(size_t size)
-{
-    return Hunk_AllocateTempMemoryHighInternal(size);
-}
-
 /* Source: CoDUOMP.exe 0x00482050..0x004820cc.
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00482050_004820cd.mcode. */
 scr_ast_node_t *node6(uintptr_t word0, uintptr_t word1, uintptr_t word2,
                       uintptr_t word3, uintptr_t word4, uintptr_t word5,
                       uintptr_t word6)
 {
-    scr_ast_node_t *node = coduomp_script_parse_allocate(
+    scr_ast_node_t *node = Hunk_AllocateTempMemoryHighInternal(
         offsetof(scr_ast_node_t, payload) +
         sizeof(node->payload.forStatement));
 
@@ -36,13 +27,13 @@ scr_ast_node_t *node6(uintptr_t word0, uintptr_t word1, uintptr_t word2,
 scr_ast_list_t *linked_list_end(void *entry)
 {
     scr_ast_list_item_t *item =
-        coduomp_script_parse_allocate(sizeof(*item));
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*item));
     scr_ast_list_t *list;
 
     item->entry = entry;
     item->next = NULL;
 
-    list = coduomp_script_parse_allocate(sizeof(*list));
+    list = Hunk_AllocateTempMemoryHighInternal(sizeof(*list));
     list->head = item;
     list->tail = item;
     return list;
@@ -54,7 +45,7 @@ scr_ast_list_item_t **prepend_node(void *entry,
                                    scr_ast_list_item_t **headLink)
 {
     scr_ast_list_item_t *item =
-        coduomp_script_parse_allocate(sizeof(*item));
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*item));
 
     item->entry = entry;
     item->next = *headLink;
@@ -67,7 +58,7 @@ scr_ast_list_item_t **prepend_node(void *entry,
 scr_ast_list_t *append_node(scr_ast_list_t *list, void *entry)
 {
     scr_ast_list_item_t *item =
-        coduomp_script_parse_allocate(sizeof(*item));
+        Hunk_AllocateTempMemoryHighInternal(sizeof(*item));
 
     item->entry = entry;
     item->next = NULL;
