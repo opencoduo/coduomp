@@ -1304,6 +1304,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                         script_loopWatchdogTick =
                             rdtsc();
                         while (true) {
+                            KillThread(thread);
                             VariableValue returnValue;
                             returnValue.payload =
                                 SCRIPT_INTERPRETER_STACK_SENTINEL_VALUE;
@@ -1352,6 +1353,7 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
 #endif
                     script_loopWatchdogTick = rdtsc();
                     while (true) {
+                        KillThread(thread);
                         VariableValue returnValue;
                         returnValue.payload =
                             SCRIPT_INTERPRETER_STACK_SENTINEL_VALUE;
