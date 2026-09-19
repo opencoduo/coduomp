@@ -1624,6 +1624,37 @@ static qboolean game_compat_command_callvote_allowed_cvar(const char *command,
     return qtrue;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: restrict both game-type vote paths to exact,
+ * case-insensitive tokens from the optional whitespace-separated allowlist. */
+static qboolean coduomp_vote_gametype_allowed(const char *scriptName)
+{
+    const char *cursor = g_voteGameTypes.string;
+    size_t scriptLength = strlen(scriptName);
+
+    if (*cursor == '\0') {
+        return qtrue;
+    }
+
+    while (*cursor != '\0') {
+        const char *token;
+        size_t length;
+
+        while (isspace((unsigned char)*cursor)) {
+            cursor++;
+        }
+        token = cursor;
+        while (*cursor != '\0' && !isspace((unsigned char)*cursor)) {
+            cursor++;
+        }
+        length = (size_t)(cursor - token);
+        if (length == scriptLength && Q_stricmpn(token, scriptName, (int)length) == 0) {
+            return qtrue;
+        }
+    }
+
+    return qfalse;
+}
+
 /* VERIFIED_DECOMPILER(0x4c5d0, 5c5d0_Cmd_CallVote_f.c, VERIFY-CLIENT-COMMANDS-REMAINING-2026-06-17): DATAFLOW_VERIFIED - voting gates, command allow-cvars, map/gametype/kick/cvar vote branches, configstring updates, and helper side effects checked. */
 void Cmd_CallVote_f(gentity_t *ent)
 {
@@ -1693,7 +1724,8 @@ void Cmd_CallVote_f(gentity_t *ent)
         char mapName[CALLVOTE_MAPNAME_BUFFER_SIZE];
         vmCvar_t mapnameCvar;
 
-        if (Scr_IsValidGameType(arg) == 0) {
+        /* NOT_FROM_ORIGINAL_SOURCE: apply the configured vote allowlist. */
+        if (Scr_IsValidGameType(arg) == 0 || !coduomp_vote_gametype_allowed(arg)) {
             game_compat_command_send_literal_status(ent, "e \"GAME_INVALIDGAMETYPE\"");
             return;
         }
@@ -1748,7 +1780,8 @@ void Cmd_CallVote_f(gentity_t *ent)
             }
         }
     } else if (Q_stricmp(command, "g_gametype") == 0) {
-        if (Scr_IsValidGameType(arg) == 0) {
+        /* NOT_FROM_ORIGINAL_SOURCE: apply the same policy to direct type votes. */
+        if (Scr_IsValidGameType(arg) == 0 || !coduomp_vote_gametype_allowed(arg)) {
             game_compat_command_send_literal_status(ent, "e \"GAME_INVALIDGAMETYPE\"");
             return;
         }

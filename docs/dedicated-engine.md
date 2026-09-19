@@ -34,3 +34,20 @@ The Windows targets use 32-bit MinGW and produce the engine under
 MinGW zlib; use `WINDOWS_DEP_PREFIX` when it is outside the compiler's default
 search path. The executable is a console application and loads
 `uo/uo_game_mp_x86.dll`.
+
+## Game-type voting
+
+The improved game module accepts a whitespace-separated `g_voteGameTypes`
+allowlist. For example:
+
+```text
+set g_voteGameTypes "tdm dm ctf dom"
+```
+
+The list applies to both `callvote g_gametype` and `callvote typemap`, with
+case-insensitive, whole-name matching. An empty value (the default) allows
+every installed game type. Changes take effect without restarting the map.
+The ordinary `g_allowVoteGameType` and `g_allowVoteTypeMap` switches still
+control whether those vote commands are enabled. Direct administrator
+commands and configured rotations are unaffected. Client menus can still
+display installed game types that the server will reject for voting.

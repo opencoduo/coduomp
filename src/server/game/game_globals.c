@@ -172,6 +172,8 @@ vmCvar_t g_voiceChatsAllowed;
 vmCvar_t g_deadChat;
 /* NOT_FROM_ORIGINAL_SOURCE: master-only control for player general chat. */
 vmCvar_t g_allowGlobalChat;
+/* NOT_FROM_ORIGINAL_SOURCE: optional list of game types permitted by votes. */
+vmCvar_t g_voteGameTypes;
 vmCvar_t g_developer;
 vmCvar_t g_ScoresBanner_Allies;
 vmCvar_t g_ScoresBanner_Axis;

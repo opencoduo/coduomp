@@ -293,6 +293,10 @@ void G_RegisterCvars(void)
      * machine-backed retail cvar table. */
     trap_Cvar_Register(&g_allowGlobalChat, "g_allowGlobalChat", "1", CVAR_ARCHIVE);
 
+    /* NOT_FROM_ORIGINAL_SOURCE: an empty list retains unrestricted game-type
+     * voting; otherwise both game-type vote commands use this allowlist. */
+    trap_Cvar_Register(&g_voteGameTypes, "g_voteGameTypes", "", CVAR_ARCHIVE);
+
     if (Scr_IsValidGameType(g_gametype.string) == 0) {
         G_Printf("g_gametype %s is not a valid gametype, defaulting to dm\n",
                  g_gametype.string);
@@ -331,6 +335,9 @@ void G_UpdateCvars(void)
     /* NOT_FROM_ORIGINAL_SOURCE: refresh the master-only chat policy alongside
      * the machine-backed cvars. */
     trap_Cvar_Update(&g_allowGlobalChat);
+
+    /* NOT_FROM_ORIGINAL_SOURCE: allow vote policy changes without a map restart. */
+    trap_Cvar_Update(&g_voteGameTypes);
 }
 
 /* ------------------------------------------------------------------ */
