@@ -849,12 +849,12 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
                 break;
 
             case SCRIPT_OP_GET_FIELD: {
+                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 uint16_t child =
                     GetVariableField(
                         fieldRef, ScriptInterpreter_ReadU16(codePos));
-                codePos += sizeof(uint16_t);
-                stackTop = coduomp_script_value_next_stack_slot(stackTop);
                 GetVariableFieldValue(child, stackTop);
+                codePos += sizeof(uint16_t);
                 break;
             }
 
