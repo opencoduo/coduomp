@@ -13,7 +13,7 @@
 static scr_ast_node_t *coduomp_script_ast_allocate(scr_ast_kind_t kind,
                                                     size_t size)
 {
-    scr_ast_node_t *node = coduomp_script_parse_allocate(size);
+    scr_ast_node_t *node = Hunk_AllocateTempMemoryHighInternal(size);
     node->kind = kind;
     return node;
 }
@@ -38,7 +38,7 @@ uint32_t (node_pos)(uint32_t word)
 /* Source: CoDUOMP.exe 0x00481c80..0x00481cd2. */
 uintptr_t *node0(uintptr_t word0)
 {
-    uintptr_t *word = coduomp_script_parse_allocate(sizeof(*word));
+    uintptr_t *word = Hunk_AllocateTempMemoryHighInternal(sizeof(*word));
     *word = word0;
     return word;
 }
@@ -161,20 +161,20 @@ void *node2_(uintptr_t word0, uintptr_t word1)
 #if UINTPTR_MAX > UINT32_MAX
     if (word0 <= UINT16_MAX) {
         scr_ast_string_entry_t *entry =
-            coduomp_script_parse_allocate(sizeof(*entry));
+            Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
         entry->stringHandle = (uint32_t)word0;
         entry->sourcePos = (uint32_t)word1;
         pair = entry;
     } else {
         scr_ast_expression_entry_t *entry =
-            coduomp_script_parse_allocate(sizeof(*entry));
+            Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
         entry->node = (scr_ast_node_t *)word0;
         entry->sourcePos = (uint32_t)word1;
         pair = entry;
 #else
     {
         scr_ast_string_entry_t *entry =
-            coduomp_script_parse_allocate(sizeof(*entry));
+            Hunk_AllocateTempMemoryHighInternal(sizeof(*entry));
         entry->stringHandle = (uint32_t)word0;
         entry->sourcePos = (uint32_t)word1;
         pair = entry;
@@ -263,7 +263,7 @@ scr_ast_node_t *node3(uintptr_t word0, uintptr_t word1, uintptr_t word2,
 uintptr_t *node3_(uintptr_t word0, uintptr_t word1, uintptr_t word2)
 {
     uintptr_t *record =
-        coduomp_script_parse_allocate(3 * sizeof(record[0]));
+        Hunk_AllocateTempMemoryHighInternal(3 * sizeof(record[0]));
 
     record[0] = word0;
     record[1] = word1;
@@ -362,7 +362,7 @@ uintptr_t *node4_(uintptr_t word0, uintptr_t word1, uintptr_t word2,
                   uintptr_t word3)
 {
     uintptr_t *record =
-        coduomp_script_parse_allocate(4 * sizeof(record[0]));
+        Hunk_AllocateTempMemoryHighInternal(4 * sizeof(record[0]));
 
     record[0] = word0;
     record[1] = word1;
