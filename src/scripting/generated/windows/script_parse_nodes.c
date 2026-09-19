@@ -2,30 +2,13 @@
 
 #include <stddef.h>
 
-enum {
-    SCRIPT_PARSE_HUNK_ALIGNMENT = 16,
-    SCRIPT_PARSE_HUNK_ALIGNMENT_MASK = SCRIPT_PARSE_HUNK_ALIGNMENT - 1,
-};
-
 /* NOT_FROM_ORIGINAL_SOURCE: source factoring for the identical inlined
- * Hunk_AllocateTempMemoryHighInternal sequence in the parser's node constructors. */
+ * Hunk_AllocateTempMemoryHighInternal sequence in the parser's node constructors.
+ * Use the shared allocator's checked size_t accounting and alignment so parser
+ * allocations retain the same bounds as all other high temporary allocations. */
 void *coduomp_script_parse_allocate(size_t size)
 {
-    size_t newHighTempBytes =
-        (hunk.highTemp + size +
-         SCRIPT_PARSE_HUNK_ALIGNMENT_MASK) &
-        ~(size_t)SCRIPT_PARSE_HUNK_ALIGNMENT_MASK;
-    hunk.highTemp = newHighTempBytes;
-
-    if ((int32_t)(hunk.lowTemp + newHighTempBytes) >
-        (int32_t)hunk.totalSize) {
-        Com_Meminfo_f();
-        Com_Error(ERR_DROP,
-                  "\x15Hunk_AllocateTempMemoryHigh: failed on %i",
-                  (int32_t)size);
-    }
-
-    return hunk_data + hunk.totalSize - newHighTempBytes;
+    return Hunk_AllocateTempMemoryHighInternal(size);
 }
 
 /* Source: CoDUOMP.exe 0x00482050..0x004820cc.
