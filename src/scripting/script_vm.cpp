@@ -1814,8 +1814,8 @@ VM_Execute(VariableValue *stackTop, uint8_t *codePos,
             }
 
             case SCRIPT_OP_PUSH_CODEPOS:
-                stackTop = ScriptInterpreter_PushTypeOnly(
-                    stackTop, SCRIPT_VAR_CODEPOS);
+                stackTop = ScriptInterpreter_Push(
+                    stackTop, SCRIPT_VAR_CODEPOS, ScriptInterpreter_CodeposPayload(NULL));
                 break;
 
             case SCRIPT_OP_SWITCH_JUMP:
