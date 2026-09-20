@@ -731,13 +731,15 @@ void Autosprite2Deform(void)
             secondCenter[1] - shortestCenter[1],
             secondCenter[2] - shortestCenter[2]
         };
+        /* Keep both products live until the cross-product component is
+         * stored; rounding them separately can erase a near-parallel axis. */
         vec3_t perpendicular = {
-            centerDelta[1] * viewForward[2] -
-                centerDelta[2] * viewForward[1],
-            centerDelta[2] * viewForward[0] -
-                centerDelta[0] * viewForward[2],
-            centerDelta[0] * viewForward[1] -
-                centerDelta[1] * viewForward[0]
+            (float)((long double)centerDelta[1] * viewForward[2] -
+                    (long double)centerDelta[2] * viewForward[1]),
+            (float)((long double)centerDelta[2] * viewForward[0] -
+                    (long double)centerDelta[0] * viewForward[2]),
+            (float)((long double)centerDelta[0] * viewForward[1] -
+                    (long double)centerDelta[1] * viewForward[0])
         };
 
         (void)VectorNormalize(perpendicular);
@@ -746,32 +748,34 @@ void Autosprite2Deform(void)
             sqrtf(shortestSquared) * 0.5f;
         const float secondHalfLength =
             sqrtf(secondShortestSquared) * 0.5f;
+        const float negativeShortestHalfLength = -shortestHalfLength;
+        const float negativeSecondHalfLength = -secondHalfLength;
 
         shortestMinus[0] =
-            shortestCenter[0] - perpendicular[0] * shortestHalfLength;
+            (float)((long double)negativeShortestHalfLength * perpendicular[0] + shortestCenter[0]);
         shortestMinus[1] =
-            shortestCenter[1] - perpendicular[1] * shortestHalfLength;
+            (float)((long double)negativeShortestHalfLength * perpendicular[1] + shortestCenter[1]);
         shortestMinus[2] =
-            shortestCenter[2] - perpendicular[2] * shortestHalfLength;
+            (float)((long double)negativeShortestHalfLength * perpendicular[2] + shortestCenter[2]);
         shortestPlus[0] =
-            shortestCenter[0] + perpendicular[0] * shortestHalfLength;
+            (float)((long double)perpendicular[0] * shortestHalfLength + shortestCenter[0]);
         shortestPlus[1] =
-            shortestCenter[1] + perpendicular[1] * shortestHalfLength;
+            (float)((long double)perpendicular[1] * shortestHalfLength + shortestCenter[1]);
         shortestPlus[2] =
-            shortestCenter[2] + perpendicular[2] * shortestHalfLength;
+            (float)((long double)perpendicular[2] * shortestHalfLength + shortestCenter[2]);
 
         secondPlus[0] =
-            secondCenter[0] + perpendicular[0] * secondHalfLength;
+            (float)((long double)perpendicular[0] * secondHalfLength + secondCenter[0]);
         secondPlus[1] =
-            secondCenter[1] + perpendicular[1] * secondHalfLength;
+            (float)((long double)perpendicular[1] * secondHalfLength + secondCenter[1]);
         secondPlus[2] =
-            secondCenter[2] + perpendicular[2] * secondHalfLength;
+            (float)((long double)perpendicular[2] * secondHalfLength + secondCenter[2]);
         secondMinus[0] =
-            secondCenter[0] - perpendicular[0] * secondHalfLength;
+            (float)((long double)negativeSecondHalfLength * perpendicular[0] + secondCenter[0]);
         secondMinus[1] =
-            secondCenter[1] - perpendicular[1] * secondHalfLength;
+            (float)((long double)negativeSecondHalfLength * perpendicular[1] + secondCenter[1]);
         secondMinus[2] =
-            secondCenter[2] - perpendicular[2] * secondHalfLength;
+            (float)((long double)negativeSecondHalfLength * perpendicular[2] + secondCenter[2]);
     }
 }
 
