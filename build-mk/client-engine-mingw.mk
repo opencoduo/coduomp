@@ -172,6 +172,18 @@ check-mingw32-deps:
 				exit 2; \
 			fi; \
 		done; \
+		curl_config="$(MINGW32_DEP_PREFIX)/bin/curl-config"; \
+		if test ! -x "$$curl_config"; then \
+			echo "error: dependency prefix must include bin/curl-config to verify download protocols" >&2; \
+			exit 2; \
+		fi; \
+		curl_protocols="$$("$$curl_config" --protocols)" || exit 2; \
+		for protocol in FTP HTTP HTTPS; do \
+			if ! printf '%s\n' "$$curl_protocols" | grep -qx "$$protocol"; then \
+				echo "error: dependency libcurl must support $$protocol downloads" >&2; \
+				exit 2; \
+			fi; \
+		done; \
 	fi
 
 mingw32-mss-import: check-mingw32-deps
