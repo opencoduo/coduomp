@@ -536,20 +536,16 @@ static qboolean coduo_xmodel_validate_model_file(
     return qtrue;
 }
 
-/* NOT_FROM_ORIGINAL_SOURCE: cross-file validation for references consumed
- * after the stock loader has independently accepted the three asset files.
- * Geometry indexes the surface-name table, so fewer names than geometry
- * surfaces is unsafe; extra authored names are unused and are stock-valid. */
+/* NOT_FROM_ORIGINAL_SOURCE: cross-file validation for bone references consumed
+ * after the loader has independently accepted the three asset files.
+ * Surface-name accessors resolve omitted names to the default material without
+ * indexing beyond the authored table; unused trailing names remain accepted. */
 static qboolean coduo_xmodel_loaded_references_fit(
-    const XModelInfo *model, const XModelLodInfo *lod,
-    const XModelSurfsData *surfs)
+    const XModelInfo *model, const XModelSurfsData *surfs)
 {
     const int32_t boneCount =
         model->parts->data.xmodelParts->partNameTableSlot
             ->partNameTable->count;
-    if (lod->surfaceCount < surfs->surfaceCount) {
-        return qfalse;
-    }
     for (int32_t surfaceIndex = 0;
          surfaceIndex < surfs->surfaceCount; ++surfaceIndex) {
         const XSurface *surface = surfs->surfaces[surfaceIndex];
@@ -2493,11 +2489,11 @@ XModel *XModelPrecache(const char *name, xmodel_load_mode_t loadMode,
             return entry;
         }
 
-        /* NOT_FROM_ORIGINAL_SOURCE: require enough names for loaded geometry
-         * and every serialized bone reference to fit the independent parts
-         * table; unused trailing names remain accepted. */
+        /* NOT_FROM_ORIGINAL_SOURCE: require every serialized bone reference
+         * to fit the independent parts table. Omitted material names are
+         * handled by the bounded surface-name accessors. */
         if (coduo_xmodel_loaded_references_fit(
-                collision, lod, lod->surfs->surfs) == qfalse) {
+                collision, lod->surfs->surfs) == qfalse) {
             Com_Error(ERR_DROP,
                       "\x15" "XModel '%s' has invalid surface references",
                       name);
