@@ -106,15 +106,17 @@ void RB_ProjectionShadowDeform(void)
         float *vertex =
             &tess.xyz[(size_t)vertexIndex *
                       (size_t)tess.vertexComponentCount];
-        const float height =
-            vertex[2] * groundNormal[2] +
-            vertex[1] * groundNormal[1] +
-            vertex[0] * groundNormal[0] +
+        /* Retain the plane distance through all three projections; only
+         * each resulting vertex coordinate rounds to float. */
+        const long double height =
+            (long double)vertex[2] * groundNormal[2] +
+            (long double)vertex[1] * groundNormal[1] +
+            (long double)vertex[0] * groundNormal[0] +
             groundDistance;
 
-        vertex[0] -= projectedDirection[0] * height;
-        vertex[1] -= projectedDirection[1] * height;
-        vertex[2] -= projectedDirection[2] * height;
+        vertex[0] = (float)((long double)vertex[0] - (long double)projectedDirection[0] * height);
+        vertex[1] = (float)((long double)vertex[1] - (long double)projectedDirection[1] * height);
+        vertex[2] = (float)((long double)vertex[2] - (long double)projectedDirection[2] * height);
     }
 }
 
