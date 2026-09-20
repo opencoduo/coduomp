@@ -400,13 +400,14 @@ void CDecal::Init()
         }
     }
 
-    const float inversePointCount =
-        1.0f / static_cast<float>(pointCount);
-    for (int component = 0; component < 3; ++component) {
-        origin[component] = static_cast<float>(
-            originRaw[component] *
-            static_cast<long double>(inversePointCount));
-    }
+    /* X retains the extended reciprocal. Y and Z reload its float value,
+     * and the accumulated Z coordinate is also stored as float first. */
+    const float summedZ = static_cast<float>(originRaw[2]);
+    const long double inversePointCountRaw = 1.0L / static_cast<long double>(pointCount);
+    const float inversePointCount = static_cast<float>(inversePointCountRaw);
+    origin[0] = static_cast<float>(originRaw[0] * inversePointCountRaw);
+    origin[1] = static_cast<float>(originRaw[1] * static_cast<long double>(inversePointCount));
+    origin[2] = static_cast<float>(static_cast<long double>(summedZ) * inversePointCount);
 
     float radiusSquared = 0.0f;
     for (int32_t pointIndex = 0; pointIndex < pointCount; ++pointIndex) {
