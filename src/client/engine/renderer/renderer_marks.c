@@ -110,23 +110,26 @@ void R_ChopPolyBehindPlane(
         if (nextSide != R_MARK_SIDE_ON && nextSide != side) {
             const renderer_mark_clip_vertex_t *nextPoint =
                 &inPoints[(pointIndex + 1) % inPointCount];
-            const float denominator =
-                distances[pointIndex] - distances[pointIndex + 1];
-            const float fraction = denominator == 0.0f
-                ? 0.0f
-                : distances[pointIndex] / denominator;
+            /* Keep the distance difference and intersection fraction live
+             * through all five interpolations; only the output fields round
+             * to float. */
+            const long double denominator =
+                (long double)distances[pointIndex] - distances[pointIndex + 1];
+            const long double fraction = denominator == 0.0L
+                ? 0.0L
+                : (long double)distances[pointIndex] / denominator;
             int32_t component;
 
             for (component = 0; component < 3; ++component) {
-                outPoint->xyz[component] = point->xyz[component] +
-                    fraction *
-                        (nextPoint->xyz[component] - point->xyz[component]);
+                outPoint->xyz[component] = (float)(
+                    ((long double)nextPoint->xyz[component] - point->xyz[component]) *
+                        fraction + point->xyz[component]);
             }
             for (component = 0; component < 2; ++component) {
-                outPoint->lightmapCoords[component] =
-                    point->lightmapCoords[component] +
-                    fraction * (nextPoint->lightmapCoords[component] -
-                                point->lightmapCoords[component]);
+                outPoint->lightmapCoords[component] = (float)(
+                    ((long double)nextPoint->lightmapCoords[component] -
+                        point->lightmapCoords[component]) * fraction +
+                    point->lightmapCoords[component]);
             }
             ++*outPointCount;
         }
