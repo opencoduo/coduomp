@@ -819,17 +819,25 @@ void CDecal::RotatePoints()
     constexpr float degreesPerHalfTurn = 180.0f;
     const float frameTime = static_cast<float>(fxFrameTime);
     const float firstAngle = static_cast<float>(
-        static_cast<double>(frameTime) * angularVelocity[1] * timeScale *
+        static_cast<long double>(frameTime) * angularVelocity[1] * timeScale *
         pi / degreesPerHalfTurn);
     float firstSin;
     float firstCos;
     coduo_x87_sincosf(firstAngle, &firstSin, &firstCos);
     const float secondAngle = static_cast<float>(
-        static_cast<double>(frameTime) * angularVelocity[0] * timeScale *
+        static_cast<long double>(frameTime) * angularVelocity[0] * timeScale *
         pi / degreesPerHalfTurn);
     float secondSin;
     float secondCos;
     coduo_x87_sincosf(secondAngle, &secondSin, &secondCos);
+
+    /* The rotation coefficients are rounded to float before they are
+     * multiplied by the point coordinates. Each dot product then retains
+     * extended precision until its destination coordinate is stored. */
+    const float xy = secondCos * firstSin;
+    const float xz = secondSin * firstSin;
+    const float yy = secondCos * firstCos;
+    const float yz = secondSin * firstCos;
 
     /* The factory and archive loader validate pointCount against the owned
      * CDecal array before this update path can run. */
@@ -839,17 +847,19 @@ void CDecal::RotatePoints()
         const float z = points[pointIndex][2];
         vec3_t rotated;
         rotated[0] = static_cast<float>(
-            static_cast<double>(secondCos) * firstSin * y +
-            static_cast<double>(secondSin) * firstSin * z +
-            static_cast<double>(firstCos) * x);
+            static_cast<long double>(xy) * y +
+            static_cast<long double>(xz) * z +
+            static_cast<long double>(firstCos) * x);
         rotated[1] = static_cast<float>(
-            static_cast<double>(secondCos) * firstCos * y +
-            static_cast<double>(secondSin) * firstCos * z -
-            static_cast<double>(firstSin) * x);
+            static_cast<long double>(yy) * y +
+            static_cast<long double>(yz) * z -
+            static_cast<long double>(firstSin) * x);
         /* Preserve this recovered boundary's validated input, state, and compatibility invariants. */
+        /* The Z row has no X contribution; adding X shears the polygon on
+         * every update, including when both angular velocities are zero. */
         rotated[2] = static_cast<float>(
-            -static_cast<double>(secondSin) * y +
-            static_cast<double>(secondCos) * z + x);
+            -static_cast<long double>(secondSin) * y +
+            static_cast<long double>(secondCos) * z);
         for (int component = 0; component < 3; ++component) {
             points[pointIndex][component] = rotated[component];
         }
