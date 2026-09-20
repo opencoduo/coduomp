@@ -245,7 +245,9 @@ make client-windows-x86_64-package \
 ```
 
 Each dependency prefix must contain matching static MinGW builds of
-libjpeg-turbo, libcurl, Minizip, zlib, and SDL2. The build verifies that the
+libjpeg-turbo, libcurl, Minizip, zlib, and SDL2. Libcurl must enable FTP, HTTP,
+and HTTPS and include its `bin/curl-config` script so the build can verify
+download protocol support. The build verifies that the
 selected compilers target i686 MinGW-w64 and rejects incompatible static
 archives found in the dependency prefix. The prefix may reside on a mounted
 Windows filesystem as long as its libraries target the same i686 MinGW ABI.

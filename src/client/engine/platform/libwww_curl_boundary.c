@@ -439,8 +439,10 @@ static int32_t Libwww_BeginTransfer(HTRequest *request)
     request->errorBuffer[0] = '\0';
     CODUOMP_LIBWWW_SETOPT(CURLOPT_ERRORBUFFER, request->errorBuffer);
     CODUOMP_LIBWWW_SETOPT(CURLOPT_URL, request->url);
-    CODUOMP_LIBWWW_SETOPT(CURLOPT_PROTOCOLS_STR, "http,https");
-    CODUOMP_LIBWWW_SETOPT(CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+    /* The original download path accepts FTP URLs as well as HTTP. Keep
+     * direct transfers and redirects within the supported network protocols. */
+    CODUOMP_LIBWWW_SETOPT(CURLOPT_PROTOCOLS_STR, "http,https,ftp");
+    CODUOMP_LIBWWW_SETOPT(CURLOPT_REDIR_PROTOCOLS_STR, "http,https,ftp");
     CODUOMP_LIBWWW_SETOPT(CURLOPT_FOLLOWLOCATION, 1L);
     CODUOMP_LIBWWW_SETOPT(CURLOPT_FAILONERROR, 1L);
     CODUOMP_LIBWWW_SETOPT(CURLOPT_WRITEFUNCTION, Libwww_WriteFile);
