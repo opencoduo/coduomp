@@ -83,8 +83,14 @@ int32_t XModelGetSurfaces(const XModel *model, XSurface ***surfacesOut,
 const char *XModelGetSurfaceName(const XModel *model,
                                  int32_t surfaceIndex, int32_t lodIndex)
 {
-    const uint16_t name =
-        model->info->lodRecords[lodIndex].surfaceNameTable[surfaceIndex];
+    const XModelLodInfo *lod = &model->info->lodRecords[lodIndex];
+    /* NOT_FROM_ORIGINAL_SOURCE: geometry may omit trailing material names.
+     * Resolve those slots to the existing default without reading past the
+     * authored name table. */
+    if (surfaceIndex < 0 || surfaceIndex >= lod->surfaceCount) {
+        return xmodel_defaultName;
+    }
+    const uint16_t name = lod->surfaceNameTable[surfaceIndex];
 
     return name != 0 ? SL_ConvertToString(name) : xmodel_defaultName;
 }

@@ -51,6 +51,11 @@ const char *DObjGetSurfaceName(const DObj *obj, int32_t modelIndex,
     const XModelLodInfo *lod =
         &obj->models[modelIndex]
              ->info->lodRecords[lodIndices[modelIndex]];
+    /* NOT_FROM_ORIGINAL_SOURCE: dynamic models use the same default for
+     * omitted material names as the bounded XModel surface-name accessor. */
+    if (surfaceIndex < 0 || surfaceIndex >= lod->surfaceCount) {
+        return dobj_defaultSurfaceName;
+    }
     uint16_t name = lod->surfaceNameTable[surfaceIndex];
 
     return name != 0 ? SL_ConvertToString(name)
