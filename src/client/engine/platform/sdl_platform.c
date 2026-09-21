@@ -162,16 +162,22 @@ qboolean CoduoSDL_CreateOpenGLWindow(int32_t width, int32_t height,
         return qfalse;
 
 #if defined(__APPLE__)
-    /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): fullscreen drawables
-     * use the selected game's pixel dimensions. Enabling Retina here would
-     * silently replace that surface with the display's scaled backing size,
-     * which can be substantially larger than both the selected mode and the
-     * physical panel. Windowed mode retains Retina and converts its requested
-     * drawable pixels to screen coordinates below. */
-    allowHighDpi = windowMode == CODUO_WINDOW_MODE_FULLSCREEN ||
-                           windowMode == CODUO_WINDOW_MODE_BORDERLESS
-                       ? qfalse
-                       : qtrue;
+    if (windowMode == CODUO_WINDOW_MODE_FULLSCREEN || windowMode == CODUO_WINDOW_MODE_BORDERLESS) {
+        SDL_Rect displayBounds;
+
+        /* COMPATIBILITY_PATCH (NOT_FROM_ORIGINAL_SOURCE): desktop fullscreen
+         * and borderless windows use screen coordinates, not the requested
+         * render pixels. The renderer draws into that window's backbuffer
+         * before copying it for presentation, so native-pixel modes need
+         * Retina when they exceed the selected display's logical bounds.
+         * Keep the smaller drawable when it already contains the complete
+         * render frame to avoid an unnecessary scaled backing surface.
+         * Windowed mode retains Retina and converts its requested drawable
+         * pixels to screen coordinates below. */
+        if (SDL_GetDisplayBounds(displayIndex, &displayBounds) == 0) {
+            allowHighDpi = width > displayBounds.w || height > displayBounds.h ? qtrue : qfalse;
+        }
+    }
 #endif
     if (allowHighDpi != qfalse)
         flags |= SDL_WINDOW_ALLOW_HIGHDPI;
