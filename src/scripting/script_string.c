@@ -18,7 +18,6 @@
 
 enum {
     SCRIPT_STRING_HASH_SHORT_TEXT_LIMIT = 256,
-    SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT = UINT8_MAX,
     SCRIPT_STRING_HASH_MULTIPLIER = 31,
     SCRIPT_STRING_HASH_OCCUPIED = 0x8000,
     SCRIPT_STRING_HASH_CHAINED = 0x4000,
@@ -42,6 +41,15 @@ typedef struct script_string_entry_s {
     uint8_t flags;
     char text[];
 } script_string_entry_t;
+
+enum {
+    SCRIPT_STRING_MAX_BYTE_COUNT = SCRIPT_MEMORY_MAX_ALLOCATION_SIZE - sizeof(script_string_entry_t) - 1
+};
+
+/* NOT_FROM_ORIGINAL_SOURCE: retain full payload sizes for bounded comparisons
+ * without changing the four-byte arena header. Its byteCount stores only the
+ * low byte; interned data can also contain embedded NUL bytes. */
+static uint16_t coduomp_script_string_entry_sizes[SCRIPT_MEMORY_BLOCK_COUNT];
 
 /* NOT_FROM_ORIGINAL_SOURCE: express the original INC/DEC word operations
  * without relying on the host C implementation's signed-overflow rules. */
@@ -137,9 +145,10 @@ static qboolean coduomp_script_string_entry_matches(
     const script_string_entry_t *entry =
         GetRefStringByHandle(slot->stringHandle);
 
-    /* NOT_FROM_ORIGINAL_SOURCE: callers establish that size fits the entry's
-     * one-byte length field before this complete comparison. */
+    /* NOT_FROM_ORIGINAL_SOURCE: compare complete allocation sizes before the
+     * byte comparison; the header's low byte alone is not a size bound. */
     return entry->byteCount == (uint8_t)size &&
+                   coduomp_script_string_entry_sizes[slot->stringHandle] == size &&
                    memcmp(entry->text, text, size) == 0
                ? qtrue
                : qfalse;
@@ -273,9 +282,9 @@ uint16_t GetHashCode(const char *text, size_t size)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00482390_004824d8.mcode. */
 uint16_t SL_FindStringOfLen(const char *text, size_t size)
 {
-    /* NOT_FROM_ORIGINAL_SOURCE: reject lookup sizes that the entry's one-byte
-     * length field cannot represent. */
-    if (size > SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT) {
+    /* NOT_FROM_ORIGINAL_SOURCE: reject lookup sizes that cannot fit an arena
+     * allocation, including the entry header. */
+    if (size > SCRIPT_STRING_MAX_BYTE_COUNT) {
         return 0;
     }
 
@@ -326,14 +335,14 @@ uint16_t SL_FindString(const char *text)
 uint16_t SL_FindLowercaseString(const char *text)
 {
     size_t textSize = strlen(text) + 1u;
-    if (textSize > SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT) {
+    if (textSize > SCRIPT_STRING_MAX_BYTE_COUNT) {
         return 0;
     }
 
     uint32_t size = (uint32_t)textSize;
-    /* NOT_FROM_ORIGINAL_SOURCE: fixed scratch capacity matches the complete
-     * representable script-string entry domain established above. */
-    char lowercase[SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT];
+    /* The original scratch allocation covers the full input. The arena bound
+     * above also bounds this stack allocation. */
+    char lowercase[size];
 
     for (int32_t index = coduomp_script_string_int32_from_bits(size - 1u);
          index >= 0; --index) {
@@ -348,10 +357,10 @@ uint16_t SL_FindLowercaseString(const char *text)
 uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size,
                            int32_t type)
 {
-    /* NOT_FROM_ORIGINAL_SOURCE: reject sizes that the entry's one-byte length
-     * field cannot represent before hash matching or publication. */
-    if (size > SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT) {
-        Com_Error(ERR_DROP, "\x15" "script string exceeds maximum length of %i bytes", SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT - 1);
+    /* NOT_FROM_ORIGINAL_SOURCE: bound the complete allocation before hash
+     * matching or publication. The header retains only the low length byte. */
+    if (size > SCRIPT_STRING_MAX_BYTE_COUNT) {
+        Com_Error(ERR_DROP, "\x15" "script string exceeds maximum length of %i bytes", SCRIPT_STRING_MAX_BYTE_COUNT - 1);
         return 0;
     }
 
@@ -423,6 +432,7 @@ uint16_t SL_GetStringOfLen(const char *text, uint8_t user, size_t size,
     entry->flags = user;
     entry->refCount = 0;
     entry->byteCount = (uint8_t)size;
+    coduomp_script_string_entry_sizes[head->stringHandle] = (uint16_t)size;
     return head->stringHandle;
 }
 
@@ -449,15 +459,15 @@ uint16_t SL_GetString_(const char *text, uint8_t user, int32_t type)
 uint16_t SL_GetLowercaseStringOfLen(const char *text, uint8_t user,
                                     size_t size, int32_t type)
 {
-    if (size > SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT) {
-        Com_Error(ERR_DROP, "\x15" "script string exceeds maximum length of %i bytes", SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT - 1);
+    if (size > SCRIPT_STRING_MAX_BYTE_COUNT) {
+        Com_Error(ERR_DROP, "\x15" "script string exceeds maximum length of %i bytes", SCRIPT_STRING_MAX_BYTE_COUNT - 1);
         return 0;
     }
 
     uint32_t targetSize = (uint32_t)size;
-    /* NOT_FROM_ORIGINAL_SOURCE: fixed scratch capacity matches the complete
-     * representable script-string entry domain established above. */
-    char lowercase[SCRIPT_STRING_ENTRY_BYTE_COUNT_LIMIT];
+    /* The original scratch allocation covers the full input. Keep a valid C
+     * array extent for the empty byte sequence as well. */
+    char lowercase[targetSize != 0 ? targetSize : 1];
 
     for (int32_t index =
              coduomp_script_string_int32_from_bits(targetSize - 1u);
@@ -491,6 +501,7 @@ uint16_t SL_GetLowercaseString_(const char *text, uint8_t user,
 void SL_Init(void)
 {
     MT_Init();
+    memset(coduomp_script_string_entry_sizes, 0, sizeof(coduomp_script_string_entry_sizes));
 
     script_stringHashSlots[0].linkAndFlags = 0;
     uint16_t previous = 0;
@@ -590,6 +601,7 @@ void SL_FreeString(uint16_t string, const char *text, uint32_t size)
     MT_FreeIndex(
         string, (uint32_t)size +
                     (uint32_t)sizeof(script_string_entry_t));
+    coduomp_script_string_entry_sizes[string] = 0;
 
     uint16_t replacementSlot =
         head->linkAndFlags & SCRIPT_STRING_HASH_LINK_MASK;
