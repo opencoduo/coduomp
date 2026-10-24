@@ -97,7 +97,12 @@ void XAnimLoadAnimTree(XAnimTree *tree)
 {
     uint32_t nodeCount = tree->sourceTree->nodeCount;
     uint32_t bitsetSize = ((nodeCount - 1U) >> 3) + 1U;
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    uint8_t *liveNodes = (uint8_t *)_alloca(bitsetSize);
+#else
     uint8_t liveNodes[bitsetSize];
+#endif
 
     ScriptLoad_ReadData(liveNodes, bitsetSize);
     for (uint32_t animIndex = 0; animIndex < nodeCount; ++animIndex) {
@@ -115,7 +120,12 @@ void XAnimSaveAnimTree(XAnimTree *tree)
 {
     uint32_t nodeCount = tree->sourceTree->nodeCount;
     uint32_t bitsetSize = ((nodeCount - 1U) >> 3) + 1U;
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    uint8_t *liveNodes = (uint8_t *)_alloca(bitsetSize);
+#else
     uint8_t liveNodes[bitsetSize];
+#endif
 
     Com_Memset(liveNodes, 0, bitsetSize);
     for (uint32_t animIndex = 0; animIndex < nodeCount; ++animIndex) {

@@ -1143,7 +1143,13 @@ void XAnimCalc(uint32_t animIndex, float weight,
         return;
     }
 
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    DObjAnimMat *scratch = (DObjAnimMat *)_alloca(
+        (size_t)xanim_evalPartCount * sizeof(DObjAnimMat));
+#else
     DObjAnimMat scratch[xanim_evalPartCount];
+#endif
     DObjAnimMat *blendParts = clear != qfalse ? parts : scratch;
     XAnimCalc(entry->payload.parent.firstChildIndex + firstActiveChild,
               firstWeight, blendParts, qtrue, qtrue);

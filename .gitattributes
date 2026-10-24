@@ -1,0 +1,19 @@
+# Normalize text to LF in the repository and check it out with the Windows
+# line endings this project uses.
+* text=auto eol=crlf
+
+# Git control files stay LF.
+.gitattributes	text eol=lf
+.gitignore	text eol=lf
+
+# Build inputs that make and sh consume must keep LF on every platform.
+Makefile	text eol=lf
+*.mk		text eol=lf
+*.sh		text eol=lf
+configure	text eol=lf
+*.in		text eol=lf
+
+# Binary assets.
+*.png	binary
+*.ico	binary
+*.icns	binary

@@ -4765,10 +4765,13 @@ _Static_assert(offsetof(playerState_t, currentWeapon) == 0xd8, "playerState curr
 _Static_assert(offsetof(playerState_t, weaponState) == 0xdc, "playerState weaponState @ +0xdc");
 _Static_assert(offsetof(playerState_t, damageEvent) == 0x10c, "playerState damageEvent @ +0x10c");
 _Static_assert(offsetof(playerState_t, damageCount) == 0x118, "playerState damageCount @ +0x118");
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(playerState_t, stats[STAT_HEALTH]) == 0x11c,
                "playerState health @ +0x11c");
 _Static_assert(offsetof(playerState_t, stats[STAT_MAX_HEALTH]) == 0x124,
                "playerState maxHealth @ +0x124");
+#endif
 _Static_assert(offsetof(playerState_t, ammo) == 0x134, "playerState ammo @ +0x134");
 _Static_assert(offsetof(playerState_t, clips) == 0x334, "playerState clips @ +0x334");
 _Static_assert(offsetof(playerState_t, weaponRechamberBits) == 0x54c, "playerState weaponRechamberBits @ +0x54c");
@@ -4776,8 +4779,10 @@ _Static_assert(offsetof(playerState_t, deltaAngles) == 0x4c, "playerState deltaA
 _Static_assert(offsetof(playerState_t, groundEntityNum) == 0x58, "playerState groundEntityNum @ +0x58");
 _Static_assert(offsetof(playerState_t, viewModelIndex) == 0xe4, "playerState viewModelIndex @ +0xe4");
 _Static_assert(offsetof(playerState_t, viewAngles) == 0xe8, "playerState viewAngles @ +0xe8");
+#if !defined(_MSC_VER)
 _Static_assert(offsetof(playerState_t, stats[STAT_DEAD_YAW]) == 0x120,
                "playerState deathYaw @ +0x120");
+#endif
 _Static_assert(offsetof(playerState_t, playerMaxs) == 0x568, "playerState playerMaxs @ +0x568");
 _Static_assert(offsetof(playerState_t, proneViewHeight) == 0x574, "playerState proneViewHeight @ +0x574");
 _Static_assert(offsetof(playerState_t, proneDirection) == 0x5a4, "playerState proneDirection @ +0x5a4");

@@ -842,7 +842,10 @@ static void game_compat_veh_set_entity_passenger_bits(gentity_t *ent, uint32_t v
 }
 
 /* NOT_FROM_ORIGINAL_SOURCE: maintained source helper; no standalone original body. */
-static void __attribute__((unused))
+static void
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((unused))
+#endif
 game_compat_veh_register_weapon_if_present(const char *vehicleName,
                                            const char weaponName[0x040])
 {
@@ -942,7 +945,10 @@ static float game_compat_veh_approach_float_step(float current, float target, fl
  * unrounded 80-bit factor and round the pass-through arm stepwise (see the
  * cascades at 0x7dca9/0x7dfa8/0x7e20d/0x7e9a4), which this helper cannot
  * reproduce. Kept for reference. */
-static float __attribute__((unused))
+static float
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((unused))
+#endif
 VEH_SpeedScaledFactor(float speed, float maxSpeed,
                                    float baseFactor, float rangeFactor)
 {

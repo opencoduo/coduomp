@@ -2237,6 +2237,9 @@ qboolean GLW_LoadOpenGL(void)
     }
 
     ri.Error(ERR_FATAL, "EXE_ERR_COULDNT_LOAD_OPENGL");
+    /* ri.Error does not return; the return keeps MSVC's control-flow analysis
+     * quiet because the import pointer has no noreturn annotation there. */
+    return qfalse;
 }
 
 /* Source: CoDUOMP.exe 0x004f6920..0x004f6c80.

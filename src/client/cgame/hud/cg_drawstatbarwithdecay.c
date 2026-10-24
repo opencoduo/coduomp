@@ -47,10 +47,16 @@
  * a float literal in natural source form (bit pattern 0x3a9d4952) rather than the
  * mechanical g_const_float_0_0012000001 symbol. */
 
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(snapshot_t, ps.stats[STAT_HEALTH]) == 0x128,
                "snapshot health at +0x128");
+#endif
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(playerState_t, stats[STAT_MAX_HEALTH]) == 0x124,
                "playerState maxHealth at +0x124");
+#endif
 _Static_assert(offsetof(playerState_t, psClientNum) == 0xd4,
                "playerState client number at +0xd4");
 

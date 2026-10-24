@@ -293,10 +293,13 @@ XMODEL_TYPES_ASSERT(xmodel_collision_triangle_alignment,
                     XMODEL_TYPES_ALIGNOF(XModelCollTri) == 4);
 XMODEL_TYPES_ASSERT(xmodel_collision_triangle_planes_offset,
                     offsetof(XModelCollTri, planes) == 0x00);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 XMODEL_TYPES_ASSERT(xmodel_collision_triangle_second_plane_offset,
                     offsetof(XModelCollTri, planes[1]) == 0x10);
 XMODEL_TYPES_ASSERT(xmodel_collision_triangle_third_plane_offset,
                     offsetof(XModelCollTri, planes[2]) == 0x20);
+#endif
 XMODEL_TYPES_ASSERT(xmodel_collision_triangle_size,
                     sizeof(XModelCollTri) == 0x30);
 XMODEL_TYPES_ASSERT(xmodel_collision_surface_alignment,
@@ -521,10 +524,13 @@ XMODEL_TYPES_ASSERT(xmodel_config_alignment,
                     XMODEL_TYPES_ALIGNOF(XModelConfig) == 4);
 XMODEL_TYPES_ASSERT(xmodel_config_lods_offset,
                     offsetof(XModelConfig, lods) == 0x000);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 XMODEL_TYPES_ASSERT(xmodel_config_second_lod_offset,
                     offsetof(XModelConfig, lods[1]) == 0x404);
 XMODEL_TYPES_ASSERT(xmodel_config_third_lod_offset,
                     offsetof(XModelConfig, lods[2]) == 0x808);
+#endif
 XMODEL_TYPES_ASSERT(xmodel_config_mins_offset,
                     offsetof(XModelConfig, mins) == 0xc0c);
 XMODEL_TYPES_ASSERT(xmodel_config_maxs_offset,

@@ -191,8 +191,11 @@ _Static_assert(offsetof(menuDef_t, onESC) == 0xe4,
                "original menuDef_t onESC offset is 228 bytes");
 _Static_assert(offsetof(menuDef_t, onKey) == 0xe8,
                "original menuDef_t key-script array offset is 232 bytes");
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(menuDef_t, onKey[255]) == 0x4e4,
                "original menuDef_t any-key script offset is 1252 bytes");
+#endif
 _Static_assert(offsetof(menuDef_t, soundName) == 0x4e8,
                "original menuDef_t sound-loop offset is 1256 bytes");
 _Static_assert(offsetof(menuDef_t, loadMode) == 0x4ec,

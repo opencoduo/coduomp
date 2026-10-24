@@ -860,10 +860,13 @@ GAME_STATIC_ASSERT(gclient_velocity_offset, offsetof(gclient_t, ps.velocity) == 
 GAME_STATIC_ASSERT(gclient_ground_offset, offsetof(gclient_t, ps.groundEntityNum) == 0x058);
 GAME_STATIC_ASSERT(gclient_ladder_normal_offset,
                  offsetof(gclient_t, ps.ladderNormal) == 0x05c);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 GAME_STATIC_ASSERT(gclient_ladder_normal_y_offset,
                  offsetof(gclient_t, ps.ladderNormal[1]) == 0x060);
 GAME_STATIC_ASSERT(gclient_ladder_normal_z_offset,
                  offsetof(gclient_t, ps.ladderNormal[2]) == 0x064);
+#endif
 GAME_STATIC_ASSERT(gclient_movement_dir_offset,
                  offsetof(gclient_t, ps.movementDir) == 0x080);
 GAME_STATIC_ASSERT(gclient_entity_state_flags_offset,
@@ -893,6 +896,8 @@ GAME_STATIC_ASSERT(gclient_damage_yaw_offset,
                  offsetof(gclient_t, ps.damageYaw) == 0x110);
 GAME_STATIC_ASSERT(gclient_damage_pitch_offset,
                  offsetof(gclient_t, ps.damagePitch) == 0x114);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 GAME_STATIC_ASSERT(gclient_player_state_health_offset,
                  offsetof(gclient_t, ps.stats[STAT_HEALTH]) == 0x11c);
 GAME_STATIC_ASSERT(gclient_death_yaw_offset,
@@ -905,6 +910,7 @@ GAME_STATIC_ASSERT(gclient_ident_client_health_offset,
                  offsetof(gclient_t, ps.stats[STAT_IDENT_CLIENT_HEALTH]) == 0x12c);
 GAME_STATIC_ASSERT(gclient_spawn_count_offset,
                  offsetof(gclient_t, ps.stats[STAT_SPAWN_COUNT]) == 0x130);
+#endif
 GAME_STATIC_ASSERT(gclient_prone_direction_offset,
                  offsetof(gclient_t, ps.proneDirection) == 0x5a4);
 GAME_STATIC_ASSERT(gclient_prone_direction_pitch_offset,
@@ -916,8 +922,10 @@ GAME_STATIC_ASSERT(gclient_weapon_slots_offset, offsetof(gclient_t, ps.weaponSlo
 GAME_STATIC_ASSERT(gclient_weapon_rechamber_bits_offset,
                  offsetof(gclient_t, ps.weaponRechamberBits) == 0x54c);
 GAME_STATIC_ASSERT(gclient_player_mins_offset, offsetof(gclient_t, ps.playerMins) == 0x55c);
+#if !defined(_MSC_VER)
 GAME_STATIC_ASSERT(gclient_player_mins_z_offset,
                  offsetof(gclient_t, ps.playerMins[2]) == 0x564);
+#endif
 GAME_STATIC_ASSERT(gclient_prone_view_height_offset,
                  offsetof(gclient_t, ps.proneViewHeight) == 0x574);
 GAME_STATIC_ASSERT(gclient_crouch_view_height_offset,
@@ -1274,6 +1282,8 @@ GAME_STATIC_ASSERT(bg_player_anim_legs_timer_offset,
                  offsetof(clientInfo_t, legsTimer) == 0x388);
 GAME_STATIC_ASSERT(bg_player_anim_legs_anim_offset,
                  offsetof(clientInfo_t, legsAnim) == 0x38c);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 GAME_STATIC_ASSERT(bg_player_anim_override_angle_offset,
                  offsetof(clientInfo_t, turretOverrideAngles[1]) == 0x3f8);
 GAME_STATIC_ASSERT(bg_player_anim_override_pitch_offset,
@@ -1282,6 +1292,7 @@ GAME_STATIC_ASSERT(bg_player_anim_override_yaw_offset,
                  offsetof(clientInfo_t, turretOverrideAngles[1]) == 0x3f8);
 GAME_STATIC_ASSERT(bg_player_anim_override_roll_offset,
                  offsetof(clientInfo_t, turretOverrideAngles[2]) == 0x3fc);
+#endif
 GAME_STATIC_ASSERT(bg_player_anim_gun_hand_left_offset,
                  offsetof(clientInfo_t, gunHandLeft) == 0x400);
 GAME_STATIC_ASSERT(bg_player_anim_dobj_needs_update_alias_offset,
@@ -1589,10 +1600,13 @@ GAME_STATIC_ASSERT(pmove_weapon_offset,
                  offsetof(pmove_t, command) + offsetof(usercmd_t, weapon) == 0x00a);
 GAME_STATIC_ASSERT(pmove_usercmd_angles_offset,
                  offsetof(pmove_t, command) + offsetof(usercmd_t, angles) == 0x00c);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 GAME_STATIC_ASSERT(pmove_usercmd_angle_yaw_offset,
                  offsetof(pmove_t, command) + offsetof(usercmd_t, angles[1]) == 0x010);
 GAME_STATIC_ASSERT(pmove_usercmd_angle_roll_offset,
                  offsetof(pmove_t, command) + offsetof(usercmd_t, angles[2]) == 0x014);
+#endif
 GAME_STATIC_ASSERT(pmove_forwardmove_offset,
                  offsetof(pmove_t, command) + offsetof(usercmd_t, forwardmove) == 0x018);
 GAME_STATIC_ASSERT(pmove_rightmove_offset,

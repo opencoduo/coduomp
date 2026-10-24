@@ -2,6 +2,11 @@
 /build/
 /run/
 
+# Third-party sources fetched into libs/ on the first configure. Only the
+# aggregator is tracked; delete a directory to have it fetched again.
+/libs/*
+!/libs/CMakeLists.txt
+
 .DS_Store
 __pycache__/
 *.pyc

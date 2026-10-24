@@ -723,8 +723,13 @@ void Com_Parse3DMatrix(char **data, int32_t z, int32_t y, int32_t x,
 #if UINTPTR_MAX == UINT32_MAX
 #define COM_PARSE_LAYOUT_ASSERT(name, expression) \
     typedef char name[(expression) ? 1 : -1]
+#if defined(_MSC_VER)
+#define COM_PARSE_ALIGNOF(type) __alignof(type)
+#else
+#define COM_PARSE_ALIGNOF(type) __alignof__(type)
+#endif
 COM_PARSE_LAYOUT_ASSERT(com_parse_session_alignment,
-                        __alignof__(com_parse_session_t) == 4);
+                        COM_PARSE_ALIGNOF(com_parse_session_t) == 4);
 COM_PARSE_LAYOUT_ASSERT(com_parse_session_token_offset,
                         offsetof(com_parse_session_t, token) == 0x000);
 COM_PARSE_LAYOUT_ASSERT(com_parse_session_token_extent,
@@ -750,7 +755,7 @@ COM_PARSE_LAYOUT_ASSERT(com_parse_session_name_extent,
 COM_PARSE_LAYOUT_ASSERT(com_parse_session_size,
                         sizeof(com_parse_session_t) == 0x45c);
 COM_PARSE_LAYOUT_ASSERT(com_parse_mark_alignment,
-                        __alignof__(com_parse_mark_t) == 4);
+                        COM_PARSE_ALIGNOF(com_parse_mark_t) == 4);
 COM_PARSE_LAYOUT_ASSERT(com_parse_mark_line_offset,
                         offsetof(com_parse_mark_t, line) == 0x00);
 COM_PARSE_LAYOUT_ASSERT(com_parse_mark_parse_offset,

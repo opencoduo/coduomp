@@ -145,8 +145,11 @@ struct DObj_s {
 
 DOBJ_TYPES_ASSERT(dobj_eval_part_span_alignment,
                   DOBJ_TYPES_ALIGNOF(dobj_eval_part_span_t) == 0x04);
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 DOBJ_TYPES_ASSERT(dobj_eval_part_span_second_part_offset,
                   offsetof(dobj_eval_part_span_t, parts[1]) == 0x20);
+#endif
 DOBJ_TYPES_ASSERT(dobj_eval_part_span_size,
                   sizeof(dobj_eval_part_span_t) == 0x40);
 DOBJ_TYPES_ASSERT(dobj_eval_storage_span_alignment,

@@ -64,8 +64,11 @@ _Static_assert(offsetof(dnode_t, planeNum) == 0x00,
                "original BSP node plane index moved");
 _Static_assert(offsetof(dnode_t, children) == 0x04,
                "original BSP node children moved");
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(dnode_t, children[1]) == 0x08,
                "original BSP node second child moved");
+#endif
 _Static_assert(offsetof(dnode_t, mins) == 0x0c,
                "original BSP node mins moved");
 _Static_assert(offsetof(dnode_t, maxs) == 0x18,

@@ -43,9 +43,12 @@ _Static_assert(offsetof(dheader_t, version) == 0x04,
                "collision BSP header version moved");
 _Static_assert(offsetof(dheader_t, lumps) == 0x08,
                "collision BSP header lump table moved");
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(dheader_t,
                         lumps[HEADER_LUMPS - 1]) == 0x108,
                "collision BSP header last lump moved");
+#endif
 _Static_assert(sizeof(dheader_t) == 0x110,
                "collision BSP header size changed");
 

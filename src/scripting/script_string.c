@@ -342,7 +342,12 @@ uint16_t SL_FindLowercaseString(const char *text)
     uint32_t size = (uint32_t)textSize;
     /* The original scratch allocation covers the full input. The arena bound
      * above also bounds this stack allocation. */
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    char *lowercase = (char *)_alloca(size);
+#else
     char lowercase[size];
+#endif
 
     for (int32_t index = coduomp_script_string_int32_from_bits(size - 1u);
          index >= 0; --index) {
@@ -467,7 +472,13 @@ uint16_t SL_GetLowercaseStringOfLen(const char *text, uint8_t user,
     uint32_t targetSize = (uint32_t)size;
     /* The original scratch allocation covers the full input. Keep a valid C
      * array extent for the empty byte sequence as well. */
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    char *lowercase =
+        (char *)_alloca(targetSize != 0 ? targetSize : 1);
+#else
     char lowercase[targetSize != 0 ? targetSize : 1];
+#endif
 
     for (int32_t index =
              coduomp_script_string_int32_from_bits(targetSize - 1u);

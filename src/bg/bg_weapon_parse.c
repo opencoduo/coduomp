@@ -22,9 +22,11 @@ const parseField_t bg_weaponFieldDefs[BG_WEAPON_FIELD_COUNT] = {
 };
 #undef BG_WEAPON_FIELD
 
-#if UINTPTR_MAX == UINT32_MAX
+#if UINTPTR_MAX == UINT32_MAX && !defined(_MSC_VER)
 /* The retained i386 offsets are direct table evidence, not host-layout
- * assumptions. */
+ * assumptions. MSVC cannot evaluate offsetof(type, member[index]) as an
+ * integer constant expression, so this cross-check is GCC/clang-only; the
+ * offset table above is still built from the same offsetof expressions. */
 enum {
 #define BG_WEAPON_FIELD(index_, key_, member_, i386_offset_, type_) \
     bg_weapon_field_offset_check_##index_ = \

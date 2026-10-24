@@ -292,7 +292,12 @@ void DObjBuildTracePartRemap(DObj *state)
 
     record = state;
     remapStackSize = dobj_compat_trace_remap_stack_size(state);
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    uint8_t *remap = (uint8_t *)_alloca(remapStackSize);
+#else
     uint8_t remap[remapStackSize];
+#endif
 
     Com_Memset(remap, 0, DOBJ_PART_REMAP_PREFIX_SIZE);
 

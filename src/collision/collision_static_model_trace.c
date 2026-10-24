@@ -48,7 +48,13 @@ void CM_TraceStaticModel(worldSectorAreaLink_t *areaLink,
     localTrace.partGroup = 0;
 
     const int32_t partNameCount = XModelNumBones(areaLink->model);
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    DObjSkelMat *basePose = (DObjSkelMat *)_alloca(
+        (size_t)partNameCount * sizeof(DObjSkelMat));
+#else
     DObjSkelMat basePose[partNameCount];
+#endif
     XModelGetBasePose(areaLink->model, basePose);
 
     vec3_t offsetStart;
@@ -173,7 +179,13 @@ void CM_TraceStaticModel(worldSectorAreaLink_t *areaLink,
     localTrace.partGroup = 0;
 
     const int32_t partNameCount = XModelNumBones(areaLink->model);
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    DObjSkelMat *basePose = (DObjSkelMat *)_alloca(
+        (size_t)partNameCount * sizeof(DObjSkelMat));
+#else
     DObjSkelMat basePose[partNameCount];
+#endif
     XModelGetBasePose(areaLink->model, basePose);
 
     vec3_t offsetStart;

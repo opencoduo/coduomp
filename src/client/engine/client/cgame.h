@@ -428,7 +428,13 @@ _Static_assert(sizeof(clientStatic_t) == 0x2f08ec,
 
 extern clientActive_t cl;
 extern clientConnection_t clc;
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern clientStatic_t cls;
+#ifdef __cplusplus
+}
+#endif
 extern qboolean cl_connectedToPureServer;
 extern cvar_t *cl_activeAction;
 extern cvar_t *cl_freezeDemo;

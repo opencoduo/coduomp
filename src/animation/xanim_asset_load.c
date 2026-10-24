@@ -737,8 +737,15 @@ uint16_t XAnimSetModel(XAnimEntry *entry,
     const uint16_t *animPartNames = animPartNameTable + 1;
     size_t remapSize = (size_t)(
         (uint32_t)animPartCount + DOBJ_PART_REMAP_PREFIX_SIZE);
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    uint32_t *remapStorage = (uint32_t *)_alloca(
+        ((size_t)remapSize + sizeof(uint32_t) - 1U) &
+        ~(sizeof(uint32_t) - 1U));
+#else
     uint32_t remapStorage[(remapSize + sizeof(uint32_t) - 1U) /
                           sizeof(uint32_t)];
+#endif
     XAnimToXModel *remap = (XAnimToXModel *)remapStorage;
     uint8_t *animToDObjPart = remap->boneIndex;
 

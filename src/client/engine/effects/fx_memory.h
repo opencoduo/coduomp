@@ -93,15 +93,15 @@ CODUOMP_FX_STATIC_ASSERT(sizeof(fx_pool_allocator_t) == 0x08,
 #undef CODUOMP_FX_ALIGNOF
 #undef CODUOMP_FX_STATIC_ASSERT
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern fx_mem_block_t fxMemBlocks[FX_MEM_BLOCK_COUNT];
 /* Peak byte extent claimed from the arena base (0x8000 for block 0). */
 extern int32_t fxMemHighWaterBytes;
 extern fx_pool_allocator_t fxModelAllocator;
 extern fx_pool_allocator_t fxBoltFrameAllocator;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void FxMem_Init(void);
 fx_mem_block_t *FxMem_ClaimBlock(fx_mem_block_t *previous,

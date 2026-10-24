@@ -258,13 +258,43 @@ renaming retail or mod files. Set `CASE_SENSITIVE_FS=1` explicitly when
 building for a case-sensitive macOS volume; ordinary macOS builds default it
 to `0`.
 
-The recovered executable, cgame, UI, and listen-server game module can also be
-cross-compiled for 32-bit or 64-bit Windows with MinGW-w64. These are MinGW
-targets, not builds performed with a native Windows compiler. The i686
-executable uses the original Miles engine and therefore requires the user to
-provide `mss32.dll` from a legally owned retail installation. The build reads
-its export table to generate a MinGW import library; packages do not copy or
-redistribute the DLL.
+### Native Windows build (MSVC)
+
+A native 32-bit Windows build is available through `CMakeLists.txt`. It uses
+the Visual Studio 2022 toolchain and the third-party libraries bundled in
+`libs/` (zlib, minizip, SDL2, libjpeg-turbo and libcurl). The first configure
+downloads the pinned GitHub archives into `libs/<name>` (verified by SHA-256,
+no git installation required); later configures reuse them.
+
+Generate a Visual Studio solution:
+
+```sh
+cmake -G "Visual Studio 17 2022" -A Win32 -DBUNDLED_LIBS=YES ..
+MSBuild.exe CoDUOMP.sln /m /p:Configuration=Release /p:Platform=Win32
+```
+
+or use NMake makefiles:
+
+```sh
+mkdir build && cd build
+cmake -G "NMake Makefiles" -DBUNDLED_LIBS=YES .. && nmake
+```
+
+
+The executable is written to `build/bin/Release/CoDUOMP.exe` and its modules to
+`build/bin/Release/uo/`. This build links the bundled libraries and the MSVC
+runtime statically, and it uses the built-in Miniaudio backend, so it does not
+load the retail 32-bit `mss32.dll`. The dedicated server project is disabled by
+default because its Windows configuration relies on MinGW's POSIX headers; use
+the Makefile target below for it.
+
+### Makefile
+
+The Makefile targets additionally cross-compile the same modules for 32-bit or
+64-bit Windows with MinGW-w64. The i686 executable uses the original Miles
+engine and therefore requires the user to provide `mss32.dll` from a legally
+owned retail installation. The build reads its export table to generate a MinGW
+import library; packages do not copy or redistribute the DLL.
 
 ```sh
 make client-windows-i686 \

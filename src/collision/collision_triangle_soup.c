@@ -24,10 +24,13 @@ typedef struct collisionSoupBuildEdge_s {
 #if UINTPTR_MAX == UINT32_MAX
 _Static_assert(_Alignof(collisionSoupBuildEdge_t) == 2,
                "i386 soup-build edge alignment changed");
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(collisionSoupBuildEdge_t, vertexIndices[0]) == 0x00,
                "i386 soup-build edge first vertex index moved");
 _Static_assert(offsetof(collisionSoupBuildEdge_t, vertexIndices[1]) == 0x02,
                "i386 soup-build edge second vertex index moved");
+#endif
 _Static_assert(sizeof(collisionSoupBuildEdge_t) == 0x04,
                "i386 soup-build edge size changed");
 #endif

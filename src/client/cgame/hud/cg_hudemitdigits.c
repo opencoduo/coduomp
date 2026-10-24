@@ -57,8 +57,11 @@ _Static_assert(offsetof(clientInfo_t, infoValid) == 0x00, "infoValid +0x00");
 _Static_assert(offsetof(clientInfo_t, health) == 0x3c, "health +0x3c");
 #if UINTPTR_MAX == 0xFFFFFFFFu
 _Static_assert(offsetof(snapshot_t, ps.psClientNum) == 0xe0, "cg_snap->ps.psClientNum +0xe0");
+#if !defined(_MSC_VER)
+/* MSVC cannot evaluate offsetof(type, member[index]) as a constant expression. */
 _Static_assert(offsetof(snapshot_t, ps.stats[STAT_HEALTH]) == 0x128,
                "cg_snap->ps.stats[STAT_HEALTH] +0x128");
+#endif
 _Static_assert(offsetof(rectDef_t, x) == 0x0, "rectDef_t.x +0x0");
 _Static_assert(offsetof(rectDef_t, y) == 0x4, "rectDef_t.y +0x4");
 _Static_assert(offsetof(rectDef_t, w) == 0x8, "rectDef_t.w +0x8");

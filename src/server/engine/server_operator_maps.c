@@ -273,7 +273,12 @@ const char *SV_GetMapRotationToken(void)
         return NULL;
     }
 
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    char *remainingRotation = (char *)_alloca(strlen(parseData) + 1);
+#else
     char remainingRotation[strlen(parseData) + 1];
+#endif
     strcpy(remainingRotation, parseData);
     Cvar_Set("sv_mapRotationCurrent", remainingRotation);
     return token;

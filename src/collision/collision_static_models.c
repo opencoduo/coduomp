@@ -12,7 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(_MSC_VER)
 #include <strings.h>
+#endif
 
 void Com_Error(errorParm_t code, const char *format, ...);
 extern char *cm_entityString;

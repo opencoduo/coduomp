@@ -2200,7 +2200,7 @@ void BG_SetupWeaponInfo(void)
                   COM_ERROR_MARKER "Could not allocate WeaponInfo array\n");
     }
 
-    memset(bg_ammoTypeNames, 0, sizeof(bg_ammoTypeNames));
+    memset((void *)bg_ammoTypeNames, 0, sizeof(bg_ammoTypeNames));
     bg_ammoTypeMax[0] = 0;
     /* VERIFIED_ORIGINAL(0x31693 BG_SetupWeaponInfo): the i386 module seeds
      * ammo/clip type slot 0 with the rodata string "none"; the empty string is
@@ -2208,12 +2208,12 @@ void BG_SetupWeaponInfo(void)
     bg_ammoTypeNames[0] = WEAPON_AMMO_NONE_NAME;
     bg_numAmmoTypes = 1;
 
-    memset(bg_ammoClipNames, 0, sizeof(bg_ammoClipNames));
+    memset((void *)bg_ammoClipNames, 0, sizeof(bg_ammoClipNames));
     bg_ammoClipSizes[0] = 0;
     bg_ammoClipNames[0] = WEAPON_AMMO_NONE_NAME;
     bg_numAmmoClips = 1;
 
-    memset(weaponFiles, 0, sizeof(weaponFiles));
+    memset((void *)weaponFiles, 0, sizeof(weaponFiles));
 
     if (alreadyLoaded == 0) {
         int weaponFileCount =
@@ -2249,7 +2249,7 @@ void BG_SetupWeaponInfo(void)
             weaponFileName = &weaponFileName[weaponFileNameLength + 1];
         }
 
-        coduo_qsort(weaponFiles, (size_t)weaponFileCount,
+        coduo_qsort((void *)weaponFiles, (size_t)weaponFileCount,
                     sizeof(weaponFiles[0]), compare_weaponfile_names);
 
         weaponFileConfigstring[0] = '\0';

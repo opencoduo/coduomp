@@ -33,7 +33,12 @@ void TextValue(const char *text, int32_t length)
  * Name and signature: same-module Mac symbol StringValue. */
 void StringValue(const char *text, int32_t length)
 {
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    char *unescaped = (char *)_alloca((size_t)length + 1);
+#else
     char unescaped[(size_t)length + 1];
+#endif
     int32_t readIndex = 0;
     int32_t writeIndex = 0;
 
