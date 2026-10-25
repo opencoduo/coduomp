@@ -309,6 +309,19 @@ void CL_ConnectionlessPacket(netadr_t address, msg_t *message,
         return;
     }
     if (strncmp(command, "needcdkey", 9) == 0) {
+        /* NOT_FROM_ORIGINAL_SOURCE: a client with no usable key cannot answer
+         * this request, so report the retail invalid-key error instead of
+         * printing the awaiting message and stalling on a reply that the key
+         * store can never produce. A client with a key still runs the retail
+         * validation and authorization request below. */
+        if (clc.serverAddress.type != NA_LOOPBACK &&
+            clc.serverAddress.type != NA_BAD &&
+            CL_CDKeyValidate(
+                &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
+                &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
+            Com_Error(ERR_DROP, "EXE_ERR_INVALID_CD_KEY");
+        }
+
         strncpy(clc.serverMessage, "EXE_AWAITINGCDKEYAUTH",
                 CL_SERVER_MESSAGE_SIZE - 1);
         clc.serverMessage[CL_SERVER_MESSAGE_SIZE - 1] = '\0';

@@ -553,8 +553,8 @@ void CL_Reconnect_f(void)
  * Evidence: coduomp/mcode/CoDUOMP/FUN_00410fe0_004111b9.mcode.
  * Name and no-argument signature: exact same-module Mac symbol CL_Connect_f.
  * The client first tears down any local listen server and old connection,
- * resolves the requested address, validates the retail key for non-local
- * servers, then primes the challenge resend state. */
+ * resolves the requested address, then primes the challenge resend state. The
+ * key is checked by the authorization path once the challenge is armed. */
 void CL_Connect_f(void)
 {
     if (Cmd_Argc() != CL_CONNECT_ARGUMENT_COUNT) {
@@ -608,14 +608,6 @@ void CL_Connect_f(void)
                clc.serverAddress.ip[3],
                (int32_t)(int16_t)BigShort(
                    (int16_t)clc.serverAddress.port));
-
-    if (clc.serverAddress.type != NA_LOOPBACK &&
-        clc.serverAddress.type != NA_BAD &&
-        CL_CDKeyValidate(
-            &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
-            &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
-        Com_Error(ERR_DROP, "EXE_ERR_INVALID_CD_KEY");
-    }
 
     if (clc.serverAddress.type == NA_LOOPBACK ||
         clc.serverAddress.type == NA_BAD) {
@@ -1311,10 +1303,14 @@ void CL_RequestAuthorization(void)
     static const char authorizeHost[] =
         "coduoauthorize.activision.com";
 
+    /* NOT_FROM_ORIGINAL_SOURCE: the key is checked here, before the connection
+     * is attempted. A client without a usable key has nothing to authorize, so
+     * no request is sent. A server that demands a key is handled by the
+     * needcdkey branch, which reports the retail error instead of waiting for a
+     * reply that cannot arrive. */
     if (CL_CDKeyValidate(
             &cl_cdkey[CL_PRIMARY_CDKEY_OFFSET],
             &cl_cdkeyChecksums[CL_PRIMARY_CDKEY_CHECKSUM_OFFSET]) == qfalse) {
-        Com_Error(1, "EXE_ERR_INVALID_CD_KEY");
         return;
     }
 
