@@ -169,6 +169,25 @@ qboolean Sys_StringToAdr(const char *name, netadr_t *adr)
     return qtrue;
 }
 
+/* NOT_FROM_ORIGINAL_SOURCE: receive statuses that carry no packet and stay
+ * quiet. The original Linux loop ignores EAGAIN and ECONNREFUSED. Windows
+ * also reports an ICMP port-unreachable from a departed UDP peer as
+ * WSAECONNRESET on the next receive, which the Windows engine's own
+ * NET_GetPacket path treats as benign. */
+static qboolean coduomp_sys_receive_error_is_quiet(int32_t socketError)
+{
+    if (socketError == CODUO_SOCKET_WOULD_BLOCK ||
+        socketError == CODUO_SOCKET_CONNECTION_REFUSED) {
+        return qtrue;
+    }
+#if defined(_WIN32)
+    if (socketError == WSAECONNRESET) {
+        return qtrue;
+    }
+#endif
+    return qfalse;
+}
+
 qboolean Sys_GetPacket(netadr_t *from, msg_t *msg)
 {
     for (int32_t socketIndex = 0; socketIndex < SYS_NET_SOCKET_COUNT;
@@ -190,8 +209,7 @@ qboolean Sys_GetPacket(netadr_t *from, msg_t *msg)
         if (received == CODUO_SOCKET_ERROR_RESULT) {
             int socketError = CODUO_SOCKET_LAST_ERROR();
 
-            if (socketError != CODUO_SOCKET_WOULD_BLOCK &&
-                socketError != CODUO_SOCKET_CONNECTION_REFUSED) {
+            if (coduomp_sys_receive_error_is_quiet(socketError) == qfalse) {
                 /* NOT_FROM_ORIGINAL_SOURCE: preserve this recovered boundary's validated input, state, and compatibility invariants. */
                 Com_Printf("NET_GetPacket: %s\n", NET_ErrorString());
             }
