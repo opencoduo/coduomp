@@ -205,6 +205,26 @@ Place the engine executable beside the `main/` and `uo/` game-data directories,
 or pass an explicit `+set fs_basepath`. The engine loads
 `uo/uo_game_mp_x86.dll` through its Win32 loader path.
 
+## Running and testing locally
+
+Start the engine from the directory that holds the game data (`main/` and
+`uo/`) and load a map. The CMake build stages the executable under
+`.workbench/build/<preset>/bin/Release/`; the MinGW targets stage it under
+`build/server/windows-i386/` or `build/server/windows-i686/`:
+
+```cmd
+coduo_dedicated_recovered.exe +set dedicated 2 +set net_ip 0.0.0.0 +set net_port 28960 +map mp_carentan
+```
+
+`dedicated 2` starts an internet server and `dedicated 1` a LAN server.
+`net_ip 0.0.0.0` listens on every interface, so a client on the same machine
+can use the loopback address. Start the client, open the console with `~`, and
+connect to the local server:
+
+```text
+/connect 127.0.0.1
+```
+
 ## 32-bit Module Notes
 
 The original Linux game module is i386. Building the 32-bit shared module
