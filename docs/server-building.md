@@ -7,6 +7,10 @@ The public tree contains two independently useful target families:
 - `build-mk/game.mk` builds the server game module from `src/server/game/` and
   its shared BG/qcommon/math dependencies.
 
+`CMakeLists.txt` builds the same dedicated-server executable natively with the
+Visual Studio 2022 toolchain on Windows; see
+[Native Windows build (MSVC)](#native-windows-build-msvc).
+
 ## CD-key Authorization
 
 On `master`, dedicated and listen servers skip external CD-key authorization
@@ -29,6 +33,8 @@ its original authorization defaults.
 - For Windows cross-builds, a 32-bit MinGW compiler such as
   `i686-w64-mingw32-gcc` plus its matching `g++`
 - MinGW-compatible zlib headers and library for the Windows engine
+- For the native Windows build, CMake 4.4 or newer and the Visual Studio 2022
+  C++ build tools
 
 ## Compile Checks
 
@@ -86,6 +92,69 @@ Output:
 ```text
 .workbench/build/server/linux-x86_64-noauth/coduo_lnxded_recovered
 ```
+
+## Native Windows build (MSVC)
+
+`CMakeLists.txt` builds the dedicated server with the Visual Studio 2022
+toolchain together with the client targets. It uses the bundled `libs/` tree
+described in `client-building.md`, so no MinGW toolchain or external zlib
+installation is required. The checked-in presets keep every build inside
+`.workbench/`:
+
+```sh
+cmake --preset msvc
+cmake --build --preset msvc --parallel 2
+```
+
+Output:
+
+```text
+.workbench/build/msvc/bin/Release/coduo_dedicated_recovered.exe
+```
+
+To build only the server project:
+
+```cmd
+cmake --build --preset msvc --target coduo_dedicated_recovered
+```
+
+To generate a solution that contains only the dedicated server, disable the
+other components. The client-only dependencies (`minizip`, `SDL2`,
+`libjpeg-turbo`, `libcurl`, Khronos GL headers) are then neither fetched nor
+built:
+
+```sh
+cmake -B .workbench/build/server-msvc -G "Visual Studio 17 2022" -A Win32 ^
+  -DBUNDLED_LIBS=YES -DCODUOMP_BUILD_CLIENT=OFF -DCODUOMP_BUILD_MODULES=OFF
+cmake --build .workbench/build/server-msvc --config Release
+```
+
+That solution contains `coduo_dedicated_recovered` and the bundled zlib.
+
+The target keeps the original Windows server's CD-key and PunkBuster selection
+while using the Windows CRT and Win32 services. `cmake/msvc-posix/` supplies the
+POSIX names the sources use (`unistd.h`, `strings.h`, `sys/time.h`, `dirent.h`)
+and maps file descriptors, `stat`/`chmod`, `gettimeofday`, sleep and directory
+iteration onto the CRT and Win32 APIs. The target links with the retail 8 MiB
+stack reservation because map and game initialization exceed the MSVC default.
+
+CD-key authorization and PunkBuster are selected at configure time; the default
+matches the Makefile target (`AUTH=0`, PunkBuster disabled):
+
+```sh
+cmake -B .workbench/build/server-msvc-auth -G "Visual Studio 17 2022" -A Win32 -DBUNDLED_LIBS=YES
+```
+
+A single-configuration generator also works when its binary directory stays
+under `.workbench/`:
+
+```sh
+cmake -B .workbench/build/server-nmake -G "NMake Makefiles" -DBUNDLED_LIBS=YES && ^
+  cmake --build .workbench/build/server-nmake
+```
+
+The MinGW targets below remain available for the `-march=i386` and
+`-march=i686` retail-baseline cross-builds.
 
 ## Windows Dedicated Server
 

@@ -66,6 +66,15 @@ add_subdirectory(
 	EXCLUDE_FROM_ALL)
 
 #-----------------------------------------------------------------
+# Client-only dependencies
+#
+# The dedicated server links zlib only; minizip, SDL2, libjpeg-turbo and
+# libcurl are used by the client executable, so a server-only configuration
+# does not fetch or build them.
+#-----------------------------------------------------------------
+if(CODUOMP_BUILD_CLIENT)
+
+#-----------------------------------------------------------------
 # minizip (zlib/contrib/minizip)
 #
 # zlib's contributed CMake project refuses 32-bit Windows builds ("libminizip
@@ -237,3 +246,5 @@ add_subdirectory(
 	"${CODUOMP_curl_SOURCE_DIR}"
 	"${CMAKE_BINARY_DIR}/libs/curl"
 	EXCLUDE_FROM_ALL)
+
+endif()

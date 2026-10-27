@@ -7,7 +7,11 @@
 # CODUOMP_<LIB>_* variables the system-library path uses.
 #-----------------------------------------------------------------
 
-if(NOT BUNDLED_LIBS OR NOT CODUOMP_BUILD_CLIENT)
+if(NOT BUNDLED_LIBS)
+	return()
+endif()
+
+if(NOT CODUOMP_BUILD_CLIENT AND NOT CODUOMP_BUILD_SERVER)
 	return()
 endif()
 
@@ -20,10 +24,14 @@ endif()
 
 include("${CMAKE_SOURCE_DIR}/libs/CMakeLists.txt")
 
-# zlib
+# zlib (the client executable and the dedicated server both link it)
 set(CODUOMP_ZLIB_FOUND TRUE)
 set(CODUOMP_ZLIB_INCLUDE_DIRS "")
 set(CODUOMP_ZLIB_LIBRARIES ZLIB::ZLIBSTATIC)
+
+# Client-only dependencies. A server-only configuration does not fetch or
+# build minizip, SDL2, libjpeg-turbo, libcurl or the GL headers.
+if(CODUOMP_BUILD_CLIENT)
 
 # minizip (from the vendored zlib)
 set(CODUOMP_MINIZIP_FOUND TRUE)
@@ -51,3 +59,5 @@ set(CODUOMP_CURL_LIBRARIES coduomp_curl)
 
 # Khronos GL extension headers fetched into the binary-tree dependency cache
 set(CODUOMP_GL_INCLUDE_DIR "${_gl_dir}")
+
+endif()

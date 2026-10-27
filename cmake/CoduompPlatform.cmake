@@ -68,3 +68,6 @@ set(CODUOMP_CLIENT_SYSTEM_LIBS
 	imm32 setupapi iphlpapi secur32 wldap32 ddraw dxguid)
 
 set(CODUOMP_UI_SYSTEM_LIBS user32 gdi32)
+
+# System libraries required by the dedicated server executable.
+set(CODUOMP_SERVER_SYSTEM_LIBS ws2_32)

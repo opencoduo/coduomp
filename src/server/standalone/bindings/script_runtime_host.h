@@ -7,6 +7,7 @@ extern "C" {
 
 #include <ctype.h>
 #if defined(_WIN32)
+#include <malloc.h>
 #include <string.h>
 #else
 #include <strings.h>
@@ -33,7 +34,13 @@ extern "C" {
 #define SCRIPT_HUNK_CLEAR_TEMP_HIGH() Hunk_ClearTempMemoryHigh()
 #define SCRIPT_HUNK_COMMIT_TEMP() Hunk_CommitTempMemory()
 #define SCRIPT_OUT_OF_MEMORY() Sys_OutOfMemory()
+/* MSVC's caller-stack allocation is declared in <malloc.h>; GCC and Clang
+ * provide the builtin even though it is not declared in any header. */
+#if defined(_MSC_VER)
+#define SCRIPT_HOST_ALLOCA(size) _alloca(size)
+#else
 #define SCRIPT_HOST_ALLOCA(size) __builtin_alloca(size)
+#endif
 #if defined(_WIN32)
 #define SCRIPT_STRICMP(left, right) _stricmp((left), (right))
 #else

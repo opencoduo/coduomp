@@ -425,7 +425,12 @@ int main(int argc, char **argv)
         commandLineSize += (int32_t)strlen(argv[index]) + 1;
     }
 
+#if defined(_MSC_VER)
+    /* MSVC has no variable-length arrays. */
+    char *commandLine = (char *)_alloca((size_t)commandLineSize);
+#else
     char commandLine[commandLineSize];
+#endif
     commandLine[0] = '\0';
     for (int32_t index = 1; index < argc; ++index) {
         if (index > 1) {

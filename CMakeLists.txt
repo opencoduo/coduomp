@@ -1,7 +1,10 @@
-# MSVC and clang-cl client and module build. Makefile targets remain authoritative on other
-# toolchains; source ownership comes from their shared build-mk manifests.
+# MSVC and clang-cl client, module, and dedicated-server build. Makefile targets
+# remain authoritative on other toolchains; source ownership comes from their
+# shared build-mk manifests.
 #
-# See docs/client-building.md for audio backend and architecture selection.
+# See docs/client-building.md for audio backend and architecture selection, and
+# docs/server-building.md for the dedicated server. The dedicated server uses
+# cmake/msvc-posix/ for the POSIX names MinGW provides.
 # cmake --preset msvc
 # cmake --build --preset msvc
 # The msvc preset selects x86; msvc-x64 explicitly selects the 64-bit port.
@@ -23,15 +26,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CODUOMP_BUILD_CLIENT "Build the client executable" ON)
 option(CODUOMP_BUILD_MODULES "Build cgame, UI, and game modules" ON)
+option(CODUOMP_BUILD_SERVER "Build the dedicated server executable" ON)
 option(CODUOMP_STATIC_VCRT "Link the MSVC runtime statically" ON)
 option(BUNDLED_LIBS "Build pinned third-party dependencies" ON)
 option(CODUOMP_CURL_STATIC "Link a static system libcurl (bundled curl is always static)" ON)
 option(CODUOMP_RENDERER_GPU_PROFILE "Compile renderer GPU timing" OFF)
+option(CODUOMP_ENABLE_PUNKBUSTER "Compile PunkBuster recovery code into the server" OFF)
+option(CODUOMP_DISABLE_SERVER_AUTH "Build the server without external CD-key authorization" ON)
 set(CODUOMP_DEP_PREFIX "" CACHE PATH "Prefix containing MSVC dependencies")
-# The POSIX dedicated server remains a Makefile/MinGW target.
-if(CODUOMP_BUILD_SERVER)
-    message(FATAL_ERROR "MSVC dedicated-server support is not implemented; use the Makefile target.")
-endif()
 
 include(cmake/CoduompManifest.cmake)
 include(cmake/CoduompCommon.cmake)

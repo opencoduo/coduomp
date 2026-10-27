@@ -30,3 +30,32 @@ set(CODUOMP_GAME_SOURCES
 	${MATH_SRCS}
 	${BG_SRCS})
 coduomp_manifest_reset()
+
+# Dedicated server membership: mirror the native composition in build-mk/server.mk.
+coduomp_manifest_read("build-mk/sources/server-engine.mk")
+set(CODUOMP_SERVER_SOURCES
+	${STANDALONE_SERVER_C_SOURCES}
+	${STANDALONE_SERVER_CXX_SOURCES}
+	${LAYOUT_POSIX_GENERATED_C_SOURCES}
+	${LAYOUT_QCOMMON_C_SOURCES}
+	${LAYOUT_CRT_COMPAT_C_SOURCES}
+	${LAYOUT_MATH_C_SOURCES}
+	${LAYOUT_SOUND_ALIAS_C_SOURCES}
+	${LAYOUT_ANIMATION_C_SOURCES}
+	${LAYOUT_COLLISION_C_SOURCES}
+	${LAYOUT_FILESYSTEM_C_SOURCES}
+	${LAYOUT_SERVER_ENGINE_C_SOURCES}
+	${LAYOUT_SCRIPT_C_SOURCES}
+	${LAYOUT_SCRIPT_CXX_SOURCES})
+if(CODUOMP_ENABLE_PUNKBUSTER)
+	list(REMOVE_ITEM CODUOMP_SERVER_SOURCES
+		"src/server/standalone/punkbuster/pb_disabled.c")
+else()
+	list(REMOVE_ITEM CODUOMP_SERVER_SOURCES
+		"src/server/standalone/punkbuster/pb_server.c")
+endif()
+# The standalone engine excludes the module-local helper owned by the client
+# game module (see build-mk/server.mk).
+list(REMOVE_ITEM CODUOMP_SERVER_SOURCES
+	"src/math/local_matrix_transform_vector43.c")
+coduomp_manifest_reset()

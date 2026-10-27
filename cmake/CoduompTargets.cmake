@@ -131,3 +131,56 @@ if(CODUOMP_BUILD_CLIENT)
 	set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT CoDUOMP)
 
 endif()
+
+#-----------------------------------------------------------------
+# coduo_dedicated_recovered (dedicated server)
+#-----------------------------------------------------------------
+if(CODUOMP_BUILD_SERVER)
+
+	coduomp_absolute_sources(CODUOMP_SERVER_ABSOLUTE ${CODUOMP_SERVER_SOURCES})
+
+	add_executable(coduo_dedicated_recovered ${CODUOMP_SERVER_ABSOLUTE})
+
+	coduomp_target_output(coduo_dedicated_recovered)
+	coduomp_apply_common(coduo_dedicated_recovered)
+	set_target_properties(coduo_dedicated_recovered PROPERTIES
+		OUTPUT_NAME "coduo_dedicated_recovered"
+		FOLDER "server"
+		VS_DEBUGGER_WORKING_DIRECTORY "${CODUOMP_BIN_ROOT}/$<CONFIG>")
+
+	# The standalone engine keeps the original Windows server's CD-key and
+	# PunkBuster selection while using the Windows CRT and Win32 services.
+	# Native MSVC x86 arithmetic is x87, so the source-level non-x87 guard is
+	# acknowledged the same way the Makefile's windows-i686 target does.
+	target_compile_definitions(coduo_dedicated_recovered PRIVATE
+		_WIN32_WINNT=0x0601
+		CODUO_ENABLE_PUNKBUSTER=$<BOOL:${CODUOMP_ENABLE_PUNKBUSTER}>
+		CODUO_DISABLE_SERVER_AUTH=$<BOOL:${CODUOMP_DISABLE_SERVER_AUTH}>
+		CODUO_ENGINE_ALLOW_NON_X87_FLOAT=1)
+
+	target_include_directories(coduo_dedicated_recovered PRIVATE
+		"${CMAKE_SOURCE_DIR}/src/server/standalone/bindings"
+		"${CMAKE_SOURCE_DIR}/src/qcommon/bindings/default"
+		"${CMAKE_SOURCE_DIR}/src"
+		# POSIX names the MinGW build gets from its C library.
+		"${CMAKE_SOURCE_DIR}/cmake/msvc-posix"
+		${CODUOMP_ZLIB_INCLUDE_DIRS})
+
+	target_compile_options(coduo_dedicated_recovered PRIVATE
+		# Windows SDK 10.0.19041 winbase.h expands "defined" inside a macro,
+		# which MSVC C11 reports as C5105 for every translation unit.
+		/wd5105
+		"SHELL:/FI\"${CMAKE_SOURCE_DIR}/cmake/msvc-posix/coduomp_posix_compat.h\"")
+
+	target_link_libraries(coduo_dedicated_recovered PRIVATE
+		${CODUOMP_ZLIB_LIBRARIES}
+		${CODUOMP_SERVER_SYSTEM_LIBS})
+
+	# The retail Windows executables reserve 8 MiB of stack with a 4 KiB
+	# initial commit. Server map and game initialization exceed the MSVC
+	# default of 1 MiB, so match the retail reservation rather than crash.
+	target_link_options(coduo_dedicated_recovered PRIVATE "/STACK:8388608,4096")
+
+	coduomp_group_sources(${CODUOMP_SERVER_ABSOLUTE})
+
+endif()

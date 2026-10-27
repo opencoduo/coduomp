@@ -91,31 +91,34 @@ if(CODUOMP_DEP_PREFIX)
 endif()
 
 # cmake/CoduompBundledLibs.cmake already supplied the targets for every bundled
-# library; only look for system copies of the remaining ones.
-if(NOT CODUOMP_SDL2_FOUND)
-	coduomp_resolve_dependency(SDL2
-		PACKAGE SDL2 TARGET SDL2::SDL2
-		HEADER SDL.h
-		LIBRARIES SDL2 SDL2-static
-		PATH_SUFFIXES include/SDL2)
-endif()
-if(NOT CODUOMP_JPEG_FOUND)
-	coduomp_resolve_dependency(JPEG
-		PACKAGE JPEG TARGET JPEG::JPEG
-		HEADER jpeglib.h
-		LIBRARIES jpeg jpeg-static)
-endif()
-if(NOT CODUOMP_CURL_FOUND)
-	coduomp_resolve_dependency(CURL
-		PACKAGE CURL TARGET CURL::libcurl
-		HEADER curl/curl.h
-		LIBRARIES libcurl curl)
-endif()
-if(NOT CODUOMP_MINIZIP_FOUND)
-	coduomp_resolve_dependency(MINIZIP
-		HEADER unzip.h
-		LIBRARIES minizip minizip-ng
-		PATH_SUFFIXES include/minizip)
+# library; only look for system copies of the remaining ones. The client-only
+# dependencies are skipped entirely when the client is not built.
+if(CODUOMP_BUILD_CLIENT)
+	if(NOT CODUOMP_SDL2_FOUND)
+		coduomp_resolve_dependency(SDL2
+			PACKAGE SDL2 TARGET SDL2::SDL2
+			HEADER SDL.h
+			LIBRARIES SDL2 SDL2-static
+			PATH_SUFFIXES include/SDL2)
+	endif()
+	if(NOT CODUOMP_JPEG_FOUND)
+		coduomp_resolve_dependency(JPEG
+			PACKAGE JPEG TARGET JPEG::JPEG
+			HEADER jpeglib.h
+			LIBRARIES jpeg jpeg-static)
+	endif()
+	if(NOT CODUOMP_CURL_FOUND)
+		coduomp_resolve_dependency(CURL
+			PACKAGE CURL TARGET CURL::libcurl
+			HEADER curl/curl.h
+			LIBRARIES libcurl curl)
+	endif()
+	if(NOT CODUOMP_MINIZIP_FOUND)
+		coduomp_resolve_dependency(MINIZIP
+			HEADER unzip.h
+			LIBRARIES minizip minizip-ng
+			PATH_SUFFIXES include/minizip)
+	endif()
 endif()
 if(NOT CODUOMP_ZLIB_FOUND)
 	coduomp_resolve_dependency(ZLIB
@@ -134,8 +137,14 @@ foreach(_dependency SDL2 JPEG CURL MINIZIP ZLIB)
 	endif()
 endforeach()
 
-if(NOT CODUOMP_HAVE_CLIENT_DEPS)
+if(CODUOMP_BUILD_CLIENT AND NOT CODUOMP_HAVE_CLIENT_DEPS)
     message(FATAL_ERROR
         "Missing client dependencies: ${CODUOMP_MISSING_CLIENT_DEPS}. "
         "Use BUNDLED_LIBS=ON or provide matching MSVC libraries via CODUOMP_DEP_PREFIX.")
+endif()
+
+if(CODUOMP_BUILD_SERVER AND NOT CODUOMP_ZLIB_FOUND)
+    message(FATAL_ERROR
+        "The dedicated server needs zlib. "
+        "Use BUNDLED_LIBS=ON or provide a matching MSVC zlib via CODUOMP_DEP_PREFIX.")
 endif()

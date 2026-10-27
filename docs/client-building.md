@@ -99,11 +99,12 @@ We accept the resulting narrowing; MSVC builds do not promise extended-precision
 fidelity, even with `/arch:IA32` or optimization disabled.
 
 Use Visual Studio 2022 17.9 or newer with the C++ desktop workload and CMake 4.4 or newer.
-The CMake build reads the Makefile source manifests and builds the executable
-and all three modules. The POSIX dedicated server remains a Makefile target.
-The checked-in CMake presets generate Visual Studio/MSBuild projects. Select
-the `msvc` preset for a **32-bit x86** build, which uses
-`/arch:IA32` for compiler-generated x87 arithmetic:
+The CMake build reads the Makefile source manifests and builds the executable,
+all three modules, and the dedicated server. The dedicated server uses
+`cmake/msvc-posix/` for the POSIX names the MinGW build gets from its C library;
+see `server-building.md`. The checked-in CMake presets generate Visual
+Studio/MSBuild projects. Select the `msvc` preset for a **32-bit x86** build,
+which uses `/arch:IA32` for compiler-generated x87 arithmetic:
 
 ```sh
 cmake --preset msvc
@@ -196,8 +197,9 @@ CMake interface, select the desired MSVC or clang-cl entry from the
 configure-preset selector.
 
 Outputs are `bin/<configuration>/CoDUOMP.exe` and the cgame, UI, and game DLLs
-under `bin/<configuration>/uo/`, relative to the build directory. Keep the
-executable and modules from the same build and architecture together.
+under `bin/<configuration>/uo/`, relative to the build directory. The dedicated
+server is staged as `bin/<configuration>/coduo_dedicated_recovered.exe`. Keep
+the executable and modules from the same build and architecture together.
 
 Architecture selection and source-path fidelity are separate. MSVC x86 can
 retain extended intermediates in x87 registers even though its C `long double`
@@ -216,8 +218,9 @@ the x64 preset; choosing it emits the architecture warning above.
 
 Pinned, hash-checked zlib, SDL2, libjpeg-turbo, curl, and GL headers download
 under the build directory. Set `BUNDLED_LIBS=OFF` and `CODUOMP_DEP_PREFIX` to use
-matching MSVC dependencies instead. `CODUOMP_BUILD_CLIENT=OFF` builds modules
-without downloading client dependencies. Missing client dependencies are a
+matching MSVC dependencies instead. `CODUOMP_BUILD_CLIENT=OFF` builds the
+modules and the dedicated server without downloading client dependencies; the
+server links zlib only. Missing dependencies for an enabled target are a
 configuration error.
 
 The CRT is static by default (`/MT` for Release, `/MTd` for Debug).
